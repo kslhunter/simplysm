@@ -1,19 +1,19 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from "@angular/core";
 import { SdInputValidate } from "../decorators/SdInputValidate";
-import { faAngleDoubleLeft } from "@fortawesome/pro-solid-svg-icons/faAngleDoubleLeft";
-import { faAngleLeft } from "@fortawesome/pro-solid-svg-icons/faAngleLeft";
-import { faAngleRight } from "@fortawesome/pro-solid-svg-icons/faAngleRight";
-import { faAngleDoubleRight } from "@fortawesome/pro-solid-svg-icons/faAngleDoubleRight";
+import { faAngleDoubleLeft } from "@fortawesome/pro-duotone-svg-icons/faAngleDoubleLeft";
+import { faAngleLeft } from "@fortawesome/pro-duotone-svg-icons/faAngleLeft";
+import { faAngleRight } from "@fortawesome/pro-duotone-svg-icons/faAngleRight";
+import { faAngleDoubleRight } from "@fortawesome/pro-duotone-svg-icons/faAngleDoubleRight";
 
 @Component({
   selector: "sd-pagination",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <sd-anchor [disabled]="!hasPrev" (click)="onGoFirstClick()">
-      <fa-icon [icon]="icons.fasAngleDoubleLeft" [fixedWidth]="true"></fa-icon>
+      <fa-icon [icon]="icons.fadAngleDoubleLeft" [fixedWidth]="true"></fa-icon>
     </sd-anchor>
     <sd-anchor [disabled]="!hasPrev" (click)="onPrevClick()">
-      <fa-icon [icon]="icons.fasAngleLeft" [fixedWidth]="true"></fa-icon>
+      <fa-icon [icon]="icons.fadAngleLeft" [fixedWidth]="true"></fa-icon>
     </sd-anchor>
     <sd-anchor *ngFor="let displayPage of displayPages; trackBy: trackByPageFn"
                (click)="onPageClick(displayPage)"
@@ -21,10 +21,10 @@ import { faAngleDoubleRight } from "@fortawesome/pro-solid-svg-icons/faAngleDoub
       {{ displayPage + 1 }}
     </sd-anchor>
     <sd-anchor [disabled]="!hasNext" (click)="onNextClick()">
-      <fa-icon [icon]="icons.fasAngleRight" [fixedWidth]="true"></fa-icon>
+      <fa-icon [icon]="icons.fadAngleRight" [fixedWidth]="true"></fa-icon>
     </sd-anchor>
     <sd-anchor [disabled]="!hasNext" (click)="onGoLastClick()">
-      <fa-icon [icon]="icons.fasAngleDoubleRight" [fixedWidth]="true"></fa-icon>
+      <fa-icon [icon]="icons.fadAngleDoubleRight" [fixedWidth]="true"></fa-icon>
     </sd-anchor>`,
   styles: [/* language=SCSS */ `
     :host {
@@ -48,10 +48,10 @@ import { faAngleDoubleRight } from "@fortawesome/pro-solid-svg-icons/faAngleDoub
 })
 export class SdPaginationControl {
   public icons = {
-    fasAngleDoubleLeft: faAngleDoubleLeft,
-    fasAngleLeft: faAngleLeft,
-    fasAngleRight: faAngleRight,
-    fasAngleDoubleRight: faAngleDoubleRight
+    fadAngleDoubleLeft: faAngleDoubleLeft,
+    fadAngleLeft: faAngleLeft,
+    fadAngleRight: faAngleRight,
+    fadAngleDoubleRight: faAngleDoubleRight
   };
 
   @Input()

@@ -9,8 +9,8 @@ import {
 } from "@angular/core";
 import { SdInputValidate } from "../decorators/SdInputValidate";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
-import { faCheck as fasCheck } from "@fortawesome/pro-solid-svg-icons/faCheck";
 import { sdThemes, TSdTheme } from "../commons";
+import { faCheck } from "@fortawesome/pro-solid-svg-icons";
 
 @Component({
   selector: "sd-checkbox",
@@ -227,7 +227,7 @@ export class SdCheckboxControl {
   public theme?: TSdTheme;
 
   @Input()
-  public icon: IconProp = fasCheck;
+  public icon: IconProp = faCheck;
 
   @Input("label.style")
   @SdInputValidate(String)

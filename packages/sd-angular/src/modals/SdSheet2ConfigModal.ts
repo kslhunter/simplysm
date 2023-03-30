@@ -2,8 +2,8 @@ import { ChangeDetectionStrategy, Component } from "@angular/core";
 import { SdModalBase } from "../providers/SdModalProvider";
 import { ISdSheet2Config } from "../controls/SdSheet2Control";
 import { SdSheet2ColumnControl } from "../controls/SdSheet2ColumnControl";
-import { faAngleUp } from "@fortawesome/pro-solid-svg-icons/faAngleUp";
-import { faAngleDown } from "@fortawesome/pro-solid-svg-icons/faAngleDown";
+import { faAngleUp } from "@fortawesome/pro-duotone-svg-icons/faAngleUp";
+import { faAngleDown } from "@fortawesome/pro-duotone-svg-icons/faAngleDown";
 import { faXmark } from "@fortawesome/pro-solid-svg-icons/faXmark";
 
 @Component({
@@ -26,11 +26,11 @@ import { faXmark } from "@fortawesome/pro-solid-svg-icons/faXmark";
               <div class="sd-padding-xs-sm" style="text-align: center">
                 <sd-anchor [disabled]="index === 0 || (!item.fixed && !!items[index - 1].fixed)"
                            (click)="onDisplayOrderUpButtonClick(item)">
-                  <fa-icon [icon]="icons.fasAngleUp" [fixedWidth]=true></fa-icon>
+                  <fa-icon [icon]="icons.fadAngleUp" [fixedWidth]=true></fa-icon>
                 </sd-anchor>
                 <sd-anchor [disabled]="index === items.length - 1 || (item.fixed && !items[index + 1].fixed)"
                            (click)="onDisplayOrderDownButtonClick(item)">
-                  <fa-icon [icon]="icons.fasAngleDown" [fixedWidth]=true></fa-icon>
+                  <fa-icon [icon]="icons.fadAngleDown" [fixedWidth]=true></fa-icon>
                 </sd-anchor>
               </div>
             </ng-template>
@@ -74,8 +74,8 @@ import { faXmark } from "@fortawesome/pro-solid-svg-icons/faXmark";
 })
 export class SdSheet2ConfigModal<T> extends SdModalBase<ISdSheet2ConfigModalInput<T>, ISdSheet2Config> {
   public icons = {
-    fasAngleUp: faAngleUp,
-    fasAngleDown: faAngleDown,
+    fadAngleUp: faAngleUp,
+    fadAngleDown: faAngleDown,
     fasXmark: faXmark
   };
 

@@ -10,11 +10,11 @@ import {
   ViewChild
 } from "@angular/core";
 import { SdInputValidate } from "../decorators/SdInputValidate";
-import { faEye } from "@fortawesome/pro-solid-svg-icons/faEye";
-import { faPen } from "@fortawesome/pro-solid-svg-icons/faPen";
-import { faCode } from "@fortawesome/pro-solid-svg-icons/faCode";
-import { faPlus } from "@fortawesome/pro-solid-svg-icons/faPlus";
-import { faMinus } from "@fortawesome/pro-solid-svg-icons/faMinus";
+import { faEye } from "@fortawesome/pro-duotone-svg-icons/faEye";
+import { faPen } from "@fortawesome/pro-duotone-svg-icons/faPen";
+import { faCode } from "@fortawesome/pro-duotone-svg-icons/faCode";
+import { faPlus } from "@fortawesome/pro-duotone-svg-icons/faPlus";
+import { faMinus } from "@fortawesome/pro-duotone-svg-icons/faMinus";
 
 @Component({
   selector: "sd-html-editor",
@@ -23,21 +23,21 @@ import { faMinus } from "@fortawesome/pro-solid-svg-icons/faMinus";
     <sd-dock-container>
       <sd-dock class="_toolbar" *ngIf="!disabled">
         <sd-anchor (click)="viewState = 'preview'" [class._selected]="viewState === 'preview'">
-          <fa-icon [icon]="icons.fasEye" [fixedWidth]="true"></fa-icon>
+          <fa-icon [icon]="icons.fadEye" [fixedWidth]="true"></fa-icon>
         </sd-anchor>
         <sd-anchor (click)="viewState = 'edit'" [class._selected]="viewState === 'edit'">
-          <fa-icon [icon]="icons.fasPen" [fixedWidth]="true"></fa-icon>
+          <fa-icon [icon]="icons.fadPen" [fixedWidth]="true"></fa-icon>
         </sd-anchor>
         <sd-anchor (click)="viewState = 'code'" [class._selected]="viewState === 'code'">
-          <fa-icon [icon]="icons.fasCode" [fixedWidth]="true"></fa-icon>
+          <fa-icon [icon]="icons.fadCode" [fixedWidth]="true"></fa-icon>
         </sd-anchor>
         <ng-container *ngIf="rowsButton && !inset && viewState === 'code'">
           |
           <sd-anchor (click)="rows = rows + 1">
-            <fa-icon [icon]="icons.fasPlus" [fixedWidth]="true"></fa-icon>
+            <fa-icon [icon]="icons.fadPlus" [fixedWidth]="true"></fa-icon>
           </sd-anchor>
           <sd-anchor (click)="rows = rows - 1" *ngIf="rows > 1">
-            <fa-icon [icon]="icons.fasMinus" [fixedWidth]="true"></fa-icon>
+            <fa-icon [icon]="icons.fadMinus" [fixedWidth]="true"></fa-icon>
           </sd-anchor>
         </ng-container>
       </sd-dock>
@@ -128,11 +128,11 @@ import { faMinus } from "@fortawesome/pro-solid-svg-icons/faMinus";
 })
 export class SdHtmlEditorControl {
   public icons = {
-    fasEye: faEye,
-    fasPen: faPen,
-    fasCode: faCode,
-    fasPlus: faPlus,
-    fasMinus: faMinus
+    fadEye: faEye,
+    fadPen: faPen,
+    fadCode: faCode,
+    fadPlus: faPlus,
+    fadMinus: faMinus
   };
 
   @Input()

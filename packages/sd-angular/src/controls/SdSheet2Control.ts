@@ -21,12 +21,12 @@ import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRoot
 import { NumberUtil, ObjectUtil } from "@simplysm/sd-core-common";
 import { SdSheet2ConfigModal } from "../modals/SdSheet2ConfigModal";
 import { SdModalProvider } from "../providers/SdModalProvider";
-import { faCog } from "@fortawesome/pro-solid-svg-icons/faCog";
-import { faArrowRight } from "@fortawesome/pro-solid-svg-icons/faArrowRight";
+import { faCog } from "@fortawesome/pro-duotone-svg-icons/faCog";
+import { faArrowRight } from "@fortawesome/pro-duotone-svg-icons/faArrowRight";
 import { faSort } from "@fortawesome/pro-solid-svg-icons/faSort";
 import { faSortDown } from "@fortawesome/pro-solid-svg-icons/faSortDown";
 import { faSortUp } from "@fortawesome/pro-solid-svg-icons/faSortUp";
-import { faCaretRight } from "@fortawesome/pro-solid-svg-icons/faCaretRight";
+import { faCaretRight } from "@fortawesome/pro-duotone-svg-icons/faCaretRight";
 
 @Component({
   selector: "sd-sheet2",
@@ -37,7 +37,7 @@ import { faCaretRight } from "@fortawesome/pro-solid-svg-icons/faCaretRight";
         <sd-dock *ngIf="(key || displayPageLength > 0) && !hideConfigBar">
           <sd-flex direction="row" gap="sm">
             <sd-anchor *ngIf="key" (click)="onConfigButtonClick()">
-              <fa-icon [icon]="icons.cog" [fixedWidth]="true"></fa-icon>
+              <fa-icon [icon]="icons.fadCog" [fixedWidth]="true"></fa-icon>
             </sd-anchor>
             <sd-pagination *ngIf="displayPageLength > 1"
                            [page]="page"
@@ -57,7 +57,7 @@ import { faCaretRight } from "@fortawesome/pro-solid-svg-icons/faCaretRight";
                     [attr.c]="getChildrenFn ? -2 : -1"
                     (sdResizeOutside)="onFixedCellResizeOutside(getChildrenFn ? -2 : -1)">
                   <ng-container *ngIf="selectMode === 'multi' && hasSelectableItem">
-                    <fa-icon [icon]="icons.selectArrow" [fixedWidth]="true"
+                    <fa-icon [icon]="icons.fadArrowRight" [fixedWidth]="true"
                              [class.sd-text-color-primary-default]="isAllItemsSelected"
                              (click)="onAllItemsSelectIconClick()"></fa-icon>
                   </ng-container>
@@ -68,7 +68,7 @@ import { faCaretRight } from "@fortawesome/pro-solid-svg-icons/faCaretRight";
                     [attr.c]="-1"
                     (sdResizeOutside)="onFixedCellResizeOutside(-1)">
                   <ng-container *ngIf="hasExpandableItem">
-                    <fa-icon [icon]="icons.expand" [fixedWidth]="true"
+                    <fa-icon [icon]="icons.fadCaretRight" [fixedWidth]="true"
                              [class.sd-text-color-primary-default]="isAllItemsExpanded"
                              [rotate]="isAllItemsExpanded ? 90 : undefined"
                              (click)="onAllItemsExpandIconClick()"></fa-icon>
@@ -104,10 +104,10 @@ import { faCaretRight } from "@fortawesome/pro-solid-svg-icons/faCaretRight";
                         *ngIf="headerCell.isLastDepth && headerCell.control.useOrdering && headerCell.control.key">
                         <div class="_sort-icon">
                           <fa-layers>
-                            <fa-icon [icon]="icons.sortBase" class="sd-text-brightness-lightest"></fa-icon>
-                            <fa-icon [icon]="icons.sortDown"
+                            <fa-icon [icon]="icons.fasSort" class="sd-text-brightness-lightest"></fa-icon>
+                            <fa-icon [icon]="icons.fasSortDown"
                                      *ngIf="getIsColumnOrderingDesc(headerCell.control.key) === false"></fa-icon>
-                            <fa-icon [icon]="icons.sortUp"
+                            <fa-icon [icon]="icons.fasSortUp"
                                      *ngIf="getIsColumnOrderingDesc(headerCell.control.key) === true"></fa-icon>
                           </fa-layers>
                           <sub *ngIf="getColumnOrderingIndexText(headerCell.control.key) as text">{{ text }}</sub>
@@ -150,7 +150,7 @@ import { faCaretRight } from "@fortawesome/pro-solid-svg-icons/faCaretRight";
                     [attr.r]="r"
                     [attr.c]="getChildrenFn ? -2 : -1">
                   <ng-container *ngIf="selectMode && getIsItemSelectable(itemDef.item)">
-                    <fa-icon [icon]="icons.selectArrow" [fixedWidth]="true"
+                    <fa-icon [icon]="icons.fadArrowRight" [fixedWidth]="true"
                              [class.sd-text-color-primary-default]="selectedItems.includes(itemDef.item)"
                              (click)="onItemSelectIconClick(itemDef.item)"></fa-icon>
                   </ng-container>
@@ -163,7 +163,7 @@ import { faCaretRight } from "@fortawesome/pro-solid-svg-icons/faCaretRight";
                     <div class="_depth-indicator" [style.margin-left.em]="itemDef.depth - .5"></div>
                   </ng-container>
                   <ng-container *ngIf="itemDef.hasChildren">
-                    <fa-icon [icon]="icons.expand" [fixedWidth]="true"
+                    <fa-icon [icon]="icons.fadCaretRight" [fixedWidth]="true"
                              [rotate]="expandedItems.includes(itemDef.item) ? 90 : undefined"
                              [class.sd-text-color-primary-default]="expandedItems.includes(itemDef.item)"
                              (click)="onItemExpandIconClick(itemDef.item)"></fa-icon>
@@ -443,12 +443,12 @@ import { faCaretRight } from "@fortawesome/pro-solid-svg-icons/faCaretRight";
 })
 export class SdSheet2Control<T> implements OnInit, AfterContentChecked, DoCheck {
   public icons = {
-    cog: faCog,
-    selectArrow: faArrowRight,
-    sortBase: faSort,
-    sortDown: faSortDown,
-    sortUp: faSortUp,
-    expand: faCaretRight
+    fadCog: faCog,
+    fadArrowRight: faArrowRight,
+    fasSort: faSort,
+    fasSortDown: faSortDown,
+    fasSortUp: faSortUp,
+    fadCaretRight: faCaretRight
   };
 
   @ContentChildren(forwardRef(() => SdSheet2ColumnControl))

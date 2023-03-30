@@ -14,16 +14,16 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
 import { ObjectUtil } from "@simplysm/sd-core-common";
 import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRootProvider";
 import { SdToastProvider } from "../providers/SdToastProvider";
-import { faStar } from "@fortawesome/pro-solid-svg-icons/faStar";
-import { faSave } from "@fortawesome/pro-solid-svg-icons/faSave";
-import { faTimes } from "@fortawesome/pro-solid-svg-icons/faTimes";
+import { faStar } from "@fortawesome/pro-duotone-svg-icons/faStar";
+import { faSave } from "@fortawesome/pro-duotone-svg-icons/faSave";
+import { faXmark } from "@fortawesome/pro-solid-svg-icons/faXmark";
 
 @Component({
   selector: "sd-state-preset",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <sd-anchor (click)="onAddButtonClick()">
-      <fa-icon [icon]="icons.fasStar" class="sd-text-color-warning-default" [fixedWidth]="true"></fa-icon>
+      <fa-icon [icon]="icons.fadStar" class="sd-text-color-warning-default" [fixedWidth]="true"></fa-icon>
     </sd-anchor>
     <sd-gap width="sm"></sd-gap>
     <ng-container *ngFor="let preset of presets; trackBy: trackByNameFn">
@@ -33,10 +33,10 @@ import { faTimes } from "@fortawesome/pro-solid-svg-icons/faTimes";
           {{ preset.name }}
         </sd-anchor>
         <sd-anchor (click)="onSaveButtonClick(preset)">
-          <fa-icon [icon]="icons.fasSave" size="sm"></fa-icon>
+          <fa-icon [icon]="icons.fadSave" size="sm"></fa-icon>
         </sd-anchor>
         <sd-anchor (click)="onRemoveButtonClick(preset)">
-          <fa-icon [icon]="icons.fasTimes" size="sm"></fa-icon>
+          <fa-icon [icon]="icons.fasXmark" size="sm"></fa-icon>
         </sd-anchor>
       </div>
       <sd-gap width="sm"></sd-gap>
@@ -92,9 +92,9 @@ import { faTimes } from "@fortawesome/pro-solid-svg-icons/faTimes";
 })
 export class SdStatePresetControl implements OnInit, OnChanges {
   public icons = {
-    fasStar: faStar,
-    fasSave: faSave,
-    fasTimes: faTimes
+    fadStar: faStar,
+    fadSave: faSave,
+    fasXmark: faXmark
   };
 
   @Input()

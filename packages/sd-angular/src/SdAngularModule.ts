@@ -10,7 +10,7 @@ import { SdMutationEventPlugin } from "./plugins/SdMutationEventPlugin";
 import { SdPasteEventPlugin } from "./plugins/SdPasteEventPlugin";
 import { SdGlobalErrorHandlerPlugin } from "./plugins/SdGlobalErrorHandlerPlugin";
 import { FaConfig } from "@fortawesome/angular-fontawesome";
-import { faQuestionCircle as fasQuestionCircle } from "@fortawesome/pro-light-svg-icons/faQuestionCircle";
+import { faQuestionCircle } from "@fortawesome/pro-light-svg-icons/faQuestionCircle";
 
 @NgModule({
   imports: [
@@ -19,7 +19,7 @@ import { faQuestionCircle as fasQuestionCircle } from "@fortawesome/pro-light-sv
 })
 export class SdAngularModule {
   public constructor(private readonly _faConfig: FaConfig) {
-    this._faConfig.fallbackIcon = fasQuestionCircle;
+    this._faConfig.fallbackIcon = faQuestionCircle;
   }
 
   public static forRoot(): ModuleWithProviders<SdAngularModule> {

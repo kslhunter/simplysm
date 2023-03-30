@@ -28,13 +28,13 @@ import { SdModalProvider } from "../providers/SdModalProvider";
 import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRootProvider";
 import { SdSheetConfigModal } from "../modals/SdSheetConfigModal";
 import { faBars } from "@fortawesome/pro-solid-svg-icons/faBars";
-import { faTable } from "@fortawesome/pro-solid-svg-icons/faTable";
-import { faCog } from "@fortawesome/pro-solid-svg-icons/faCog";
+import { faTable } from "@fortawesome/pro-duotone-svg-icons/faTable";
+import { faCog } from "@fortawesome/pro-duotone-svg-icons/faCog";
 import { faSort } from "@fortawesome/pro-solid-svg-icons/faSort";
 import { faSortDown } from "@fortawesome/pro-solid-svg-icons/faSortDown";
 import { faSortUp } from "@fortawesome/pro-solid-svg-icons/faSortUp";
-import { faCaretRight } from "@fortawesome/pro-solid-svg-icons/faCaretRight";
-import { faArrowRight } from "@fortawesome/pro-solid-svg-icons/faArrowRight";
+import { faCaretRight } from "@fortawesome/pro-duotone-svg-icons/faCaretRight";
+import { faArrowRight } from "@fortawesome/pro-duotone-svg-icons/faArrowRight";
 
 @Component({
   selector: "sd-sheet",
@@ -44,12 +44,12 @@ import { faArrowRight } from "@fortawesome/pro-solid-svg-icons/faArrowRight";
       <sd-dock *ngIf="(key || pageLength > 0) && !hideConfigBar">
         <sd-anchor (click)="onConfigButtonClick()"
                    *ngIf="key">
-          <fa-icon [icon]="icons.fasCog" [fixedWidth]=true></fa-icon>
+          <fa-icon [icon]="icons.fadCog" [fixedWidth]=true></fa-icon>
         </sd-anchor>
 
         <sd-anchor *ngIf="useCardDisplayType"
                    (click)="onDisplayTypeChangeButtonClick()">
-          <fa-icon [icon]="(displayType === 'card' ? icons.fasBars : icons.fasTable)"
+          <fa-icon [icon]="(displayType === 'card' ? icons.fasBars : icons.fadTable)"
                    [fixedWidth]=true></fa-icon>
         </sd-anchor>
 
@@ -111,7 +111,7 @@ import { faArrowRight } from "@fortawesome/pro-solid-svg-icons/faArrowRight";
               <div class="_cell _feature-cell">
                 <div class="_cell-content">
                   <fa-icon class="_icon _selected-icon"
-                           [icon]="icons.fasArrowRight"
+                           [icon]="icons.fadArrowRight"
                            (click)="onAllSelectIconClick($event)"
                            [class._selected]="getIsAllSelected()"
                            [class._selectable]="selectMode === 'multi'"
@@ -120,7 +120,7 @@ import { faArrowRight } from "@fortawesome/pro-solid-svg-icons/faArrowRight";
                            style="pointer-events: auto"></fa-icon>
                   <fa-icon class="_icon _expand-icon"
                            *ngIf="getChildrenFn"
-                           [icon]="icons.fasCaretRight"
+                           [icon]="icons.fadCaretRight"
                            (click)="onAllExpandIconClick($event)"
                            [class._expanded]="getIsAllExpanded()"
                            [class._expandable]="getHasSomeChildren()"
@@ -310,7 +310,7 @@ import { faArrowRight } from "@fortawesome/pro-solid-svg-icons/faArrowRight";
                 <div class="_cell _feature-cell">
                   <div class="_cell-content">
                     <fa-icon class="_icon _selected-icon"
-                             [icon]="icons.fasArrowRight"
+                             [icon]="icons.fadArrowRight"
                              (click)="onItemSelectIconClick($event, item, index)"
                              [class._selected]="getIsSelectedItem(item)"
                              [class._selectable]="selectMode && (!getItemSelectableFn || getItemSelectableFn(index, item))"
@@ -325,7 +325,7 @@ import { faArrowRight } from "@fortawesome/pro-solid-svg-icons/faArrowRight";
 
                     <fa-icon class="_icon _expand-icon"
                              *ngIf="getChildrenFn"
-                             [icon]="icons.fasCaretRight"
+                             [icon]="icons.fadCaretRight"
                              (click)="onItemExpandIconClick($event, item)"
                              [class._expanded]="getIsExpandedItem(item)"
                              [class._expandable]="getChildrenFn && getChildrenFn(index, item) && getChildrenFn(index, item)!.length > 0"
@@ -748,13 +748,13 @@ import { faArrowRight } from "@fortawesome/pro-solid-svg-icons/faArrowRight";
 export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
   public icons = {
     fasBars: faBars,
-    fasTable: faTable,
-    fasCog: faCog,
+    fadTable: faTable,
+    fadCog: faCog,
     fasSort: faSort,
     fasSortDown: faSortDown,
     fasSortUp: faSortUp,
-    fasArrowRight: faArrowRight,
-    fasCaretRight: faCaretRight
+    fadArrowRight: faArrowRight,
+    fadCaretRight: faCaretRight
   };
 
   /**

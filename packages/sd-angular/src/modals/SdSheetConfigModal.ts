@@ -2,9 +2,9 @@ import { ChangeDetectionStrategy, Component } from "@angular/core";
 import { SdModalBase } from "../providers/SdModalProvider";
 import { ISdSheetColumnConfigVM } from "../controls/SdSheetControl";
 import { SdSheetColumnControl } from "../controls/SdSheetColumnControl";
-import { faAngleUp } from "@fortawesome/pro-solid-svg-icons/faAngleUp";
-import { faAngleDown } from "@fortawesome/pro-solid-svg-icons/faAngleDown";
-import { faTimes } from "@fortawesome/pro-solid-svg-icons/faTimes";
+import { faAngleUp } from "@fortawesome/pro-duotone-svg-icons/faAngleUp";
+import { faAngleDown } from "@fortawesome/pro-duotone-svg-icons/faAngleDown";
+import { faXmark } from "@fortawesome/pro-solid-svg-icons/faXmark";
 
 @Component({
   selector: "sd-sheet-config-modal",
@@ -26,11 +26,11 @@ import { faTimes } from "@fortawesome/pro-solid-svg-icons/faTimes";
               <div class="sd-padding-xs-sm">
                 <sd-anchor [disabled]="index === 0 || (!item.fixed && !!displayConfigs[index - 1].fixed)"
                            (click)="onDisplayOrderUpButtonClick(item)">
-                  <fa-icon [icon]="icons.fasAngleUp" [fixedWidth]=true></fa-icon>
+                  <fa-icon [icon]="icons.fadAngleUp" [fixedWidth]=true></fa-icon>
                 </sd-anchor>
                 <sd-anchor [disabled]="index === configs.length - 1 || (item.fixed && !displayConfigs[index + 1].fixed)"
                            (click)="onDisplayOrderDownButtonClick(item)">
-                  <fa-icon [icon]="icons.fasAngleDown" [fixedWidth]=true></fa-icon>
+                  <fa-icon [icon]="icons.fadAngleDown" [fixedWidth]=true></fa-icon>
                 </sd-anchor>
               </div>
             </ng-template>
@@ -61,7 +61,7 @@ import { faTimes } from "@fortawesome/pro-solid-svg-icons/faTimes";
             <ng-template #cell let-item="item">
               <div style="text-align: center">
                 <sd-checkbox size="sm" [(value)]="item.hidden"
-                             [icon]="icons.fasTimes" theme="danger"></sd-checkbox>
+                             [icon]="icons.fasXmark" theme="danger"></sd-checkbox>
               </div>
             </ng-template>
           </sd-sheet-column>
@@ -83,9 +83,9 @@ import { faTimes } from "@fortawesome/pro-solid-svg-icons/faTimes";
 })
 export class SdSheetConfigModal extends SdModalBase<ISdSheetConfigModalInput, Record<string, ISdSheetColumnConfigVM>> {
   public icons = {
-    fasAngleUp: faAngleUp,
-    fasAngleDown: faAngleDown,
-    fasTimes: faTimes
+    fadAngleUp: faAngleUp,
+    fadAngleDown: faAngleDown,
+    fasXmark: faXmark
   };
 
   public param!: ISdSheetConfigModalInput;
