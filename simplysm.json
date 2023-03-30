@@ -24,16 +24,6 @@
       },
       "publish": "npm"
     },
-    "sd-angular-templates": {
-      "type": "library",
-      "angular": true,
-      "autoIndex": {
-        "polyfills": [
-          "@simplysm/sd-core-browser"
-        ]
-      },
-      "publish": "npm"
-    },
     "sd-cordova": {
       "type": "library",
       "autoIndex": {},
