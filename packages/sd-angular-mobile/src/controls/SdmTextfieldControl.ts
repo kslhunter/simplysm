@@ -121,12 +121,13 @@ import { DateOnly, DateTime, StringUtil, Time } from "@simplysm/sd-core-common";
 
           padding: var(--gap-sm) 0;
         }
-        
+
         &[sd-size=sm] {
           > input {
             padding: var(--gap-xs) 0;
           }
         }
+
         &[sd-size=lg] {
           > input {
             padding: var(--gap-default) 0;
@@ -217,11 +218,11 @@ export class SdmTextfieldControl {
   @SdInputValidate(Function)
   public validatorFn?: (value: number | string | DateOnly | DateTime | Time | undefined) => string | undefined;
 
-  @Input("input.style")
+  @Input()
   @SdInputValidate(String)
   public inputStyle?: string;
 
-  @Input("input.class")
+  @Input()
   @SdInputValidate(String)
   public inputClass?: string;
 
