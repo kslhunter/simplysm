@@ -15,6 +15,9 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
       border-radius: var(--border-radius-default);
       overflow: hidden;
       border-top: 3px solid var(--theme-color-primary-default);
+      border-bottom: 1px solid var(--theme-color-primary-default);
+      border-left: 1px solid var(--theme-color-grey-light);
+      border-right: 1px solid var(--theme-color-grey-light);
 
       &[sd-elevation=none] {
         border-top-width: 0;
