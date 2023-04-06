@@ -24,12 +24,12 @@ import { faCaretDown } from "@fortawesome/pro-duotone-svg-icons/faCaretDown";
   selector: "sd-combobox",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <sd-textfield #textfield
-                  [value]="text"
-                  (valueChange)="onTextChange($event)"
-                  [required]="required"
-                  [disabled]="disabled">
-    </sd-textfield>
+    <sd-textfield2 #textfield
+                   [value]="text"
+                   (valueChange)="onTextChange($event)"
+                   [required]="required"
+                   [disabled]="disabled">
+    </sd-textfield2>
     <div class="_icon" *ngIf="!disabled">
       <fa-icon [fixedWidth]="true" [icon]="icons.fadCaretDown"></fa-icon>
     </div>
@@ -54,7 +54,7 @@ import { faCaretDown } from "@fortawesome/pro-duotone-svg-icons/faCaretDown";
         pointer-events: none;
       }
 
-      > sd-textfield > input {
+      > sd-textfield2 > input {
         padding-right: 30px !important;
       }
     }

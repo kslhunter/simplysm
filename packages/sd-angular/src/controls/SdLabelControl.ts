@@ -21,7 +21,7 @@ import { sdThemes, TSdTheme } from "../commons";
       //color: var(--text-brightness-rev-default);
       color: white;
       padding: 0 var(--gap-sm);
-      border-radius: var(--border-radius-sm);
+      border-radius: var(--border-radius-default);
       text-indent: 0;
 
       @each $color in $arr-theme-color {

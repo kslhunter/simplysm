@@ -81,13 +81,15 @@ import { faChevronDown } from "@fortawesome/pro-light-svg-icons/faChevronDown";
 
       &[sd-selected=true] {
         > ._content {
-          background: var(--theme-color-primary-default);
-          color: var(--text-brightness-rev-default);
+          color: var(--theme-color-primary-default);
+          font-weight: bold;
+          //background: var(--theme-color-primary-lightest);
 
           &:hover,
           &:active {
-            background: var(--theme-color-primary-default);
-            color: var(--text-brightness-rev-default);
+            color: var(--theme-color-primary-default);
+            font-weight: bold;
+            //background: var(--theme-color-primary-lightest);
           }
         }
       }

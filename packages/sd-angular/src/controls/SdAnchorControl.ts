@@ -15,6 +15,7 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
       &:hover {
         color: var(--theme-color-primary-dark);
         text-decoration: underline;
+        filter: drop-shadow(1px 1px 0 var(--text-brightness-lightest));
       }
 
       &:active {

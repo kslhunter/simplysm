@@ -13,8 +13,8 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
 import { faEye } from "@fortawesome/pro-duotone-svg-icons/faEye";
 import { faPen } from "@fortawesome/pro-duotone-svg-icons/faPen";
 import { faCode } from "@fortawesome/pro-duotone-svg-icons/faCode";
-import { faPlus } from "@fortawesome/pro-duotone-svg-icons/faPlus";
-import { faMinus } from "@fortawesome/pro-duotone-svg-icons/faMinus";
+import { faPlus } from "@fortawesome/pro-solid-svg-icons/faPlus";
+import { faMinus } from "@fortawesome/pro-solid-svg-icons/faMinus";
 
 @Component({
   selector: "sd-html-editor",
@@ -34,10 +34,10 @@ import { faMinus } from "@fortawesome/pro-duotone-svg-icons/faMinus";
         <ng-container *ngIf="rowsButton && !inset && viewState === 'code'">
           |
           <sd-anchor (click)="rows = rows + 1">
-            <fa-icon [icon]="icons.fadPlus" [fixedWidth]="true"></fa-icon>
+            <fa-icon [icon]="icons.fasPlus" [fixedWidth]="true"></fa-icon>
           </sd-anchor>
           <sd-anchor (click)="rows = rows - 1" *ngIf="rows > 1">
-            <fa-icon [icon]="icons.fadMinus" [fixedWidth]="true"></fa-icon>
+            <fa-icon [icon]="icons.fasMinus" [fixedWidth]="true"></fa-icon>
           </sd-anchor>
         </ng-container>
       </sd-dock>
@@ -131,8 +131,8 @@ export class SdHtmlEditorControl {
     fadEye: faEye,
     fadPen: faPen,
     fadCode: faCode,
-    fadPlus: faPlus,
-    fadMinus: faMinus
+    fasPlus: faPlus,
+    fasMinus: faMinus
   };
 
   @Input()

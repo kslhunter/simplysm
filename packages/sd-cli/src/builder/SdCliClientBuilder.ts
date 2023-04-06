@@ -216,7 +216,6 @@ export class SdCliClientBuilder extends EventEmitter {
     await this._ngModuleGenerator.runAsync();
 
     // CORDOVA 초기화
-    this._logger.debug("Cordova");
     if (this._cordova) {
       this._logger.debug("CORDOVA 구성...");
       await this._cordova.initializeAsync();

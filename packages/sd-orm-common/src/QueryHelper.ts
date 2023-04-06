@@ -558,10 +558,12 @@ export class QueryHelper {
       return value ? 1 : 0;
     }
     else if (value instanceof DateTime) {
-      return value.date;
+      return value.toFormatString("yyyy-MM-dd HH:mm:ss");
+      // return value.date;
     }
     else if (value instanceof DateOnly) {
-      return value.date;
+      return value.toFormatString("yyyy-MM-dd");
+      //return this._dialect === "mssql" || this._dialect === "mssql-azure" ? value.date : value;
     }
     else if (value instanceof Time) {
       return value.toFormatString("HH:mm:ss");

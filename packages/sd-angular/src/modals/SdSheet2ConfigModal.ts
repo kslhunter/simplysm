@@ -44,7 +44,7 @@ import { faXmark } from "@fortawesome/pro-solid-svg-icons/faXmark";
           </sd-sheet2-column>
           <sd-sheet2-column header="Width" resizable width="60px">
             <ng-template #cell let-item="item">
-              <sd-textfield size="sm" inset [(value)]="item.width" *ngIf="item.resizable"></sd-textfield>
+              <sd-textfield2 size="sm" inset [(value)]="item.width" *ngIf="item.resizable"></sd-textfield2>
             </ng-template>
           </sd-sheet2-column>
           <sd-sheet2-column header="Hidden">

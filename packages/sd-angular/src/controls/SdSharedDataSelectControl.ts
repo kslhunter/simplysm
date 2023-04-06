@@ -38,7 +38,7 @@ import { ISharedDataBase, SdSharedDataRootProvider } from "../root-providers/SdS
       <ng-template #header>
         <sd-dock-container>
           <sd-dock class="sd-border-bottom-brightness-default" *ngIf="getSearchTextFn">
-            <sd-textfield [(value)]="searchText" placeholder="검색어" inset></sd-textfield>
+            <sd-textfield2 [(value)]="searchText" placeholder="검색어" inset></sd-textfield2>
           </sd-dock>
 
           <sd-pane class="sd-padding-xs-default sd-border-bottom-brightness-default" *ngIf="modalType">
@@ -167,15 +167,27 @@ export class SdSharedDataSelectControl implements OnInit, DoCheck {
   @SdInputValidate(String)
   public parentKeyProp?: string;
 
+  @Input()
+  @SdInputValidate(String)
+  public displayOrderKeyProp?: string;
+
   public searchText?: string;
   public items: any[] = [];
   public itemByParentKeyMap?: Map<string | number | undefined, any>;
 
   public get rootDisplayItems(): any[] {
-    return this.items.filter((item, index) => (
+    let result = this.items;
+
+    result = result.filter((item, index) => (
       (!this.filterFn || this.filterFn(index, item))
       && (this.parentKeyProp === undefined || item[this.parentKeyProp] === undefined)
     ));
+
+    if (this.displayOrderKeyProp !== undefined) {
+      result = result.orderBy((item) => item[this.displayOrderKeyProp!]);
+    }
+
+    return result;
   }
 
   private readonly _itemsIterableDiffer: IterableDiffer<any>;
@@ -216,7 +228,13 @@ export class SdSharedDataSelectControl implements OnInit, DoCheck {
   }
 
   public getChildrenFn = (index: number, item: ISharedDataBase<string | number>, depth: number): any[] => {
-    return this.itemByParentKeyMap?.get(item.__valueKey) ?? [];
+    let result = this.itemByParentKeyMap?.get(item.__valueKey) ?? [];
+
+    if (this.displayOrderKeyProp !== undefined) {
+      result = result.orderBy((item1) => item1[this.displayOrderKeyProp!]);
+    }
+
+    return result;
   };
 
   public constructor(private readonly _sharedData: SdSharedDataRootProvider,
