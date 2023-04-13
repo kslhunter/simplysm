@@ -250,9 +250,7 @@ export class SdSharedDataSelectControl implements OnInit, DoCheck {
     if (this.dataKey === undefined) return;
     if (this.serviceKey === undefined) return;
 
-    const items = await this._sharedData.getDataAsync(this.serviceKey, this.dataKey);
-    if (!items) return;
-    this.items = items;
+    this.items = await this._sharedData.getDataAsync(this.serviceKey, this.dataKey);
 
     this._cdr.markForCheck();
 
