@@ -63,7 +63,8 @@ export class SdServiceServer extends EventEmitter {
         const pfx = typeof this.options.ssl.pfxBuffer === "function" ? await this.options.ssl.pfxBuffer() : this.options.ssl.pfxBuffer;
         this._httpServer = https.createServer({
           pfx,
-          passphrase: this.options.ssl.passphrase
+          passphrase: this.options.ssl.passphrase,
+
         });
       }
       else {

@@ -38,7 +38,7 @@ import { ISharedDataBase, SdSharedDataRootProvider } from "../root-providers/SdS
       <ng-template #header>
         <sd-dock-container>
           <sd-dock class="sd-border-bottom-brightness-default" *ngIf="getSearchTextFn">
-            <sd-textfield2 [(value)]="searchText" placeholder="검색어" inset></sd-textfield2>
+            <sd-textfield [(value)]="searchText" placeholder="검색어" inset></sd-textfield>
           </sd-dock>
 
           <sd-pane class="sd-padding-xs-default sd-border-bottom-brightness-default" *ngIf="modalType">

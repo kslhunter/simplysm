@@ -38,8 +38,8 @@ import { faUserCircle } from "@fortawesome/pro-duotone-svg-icons/faUserCircle";
 
           <sd-pane class="sd-padding-sm-0">
             <sd-list inset>
-              <sd-list-item [sdRouterLink]="['/home/sheet2']">
-                시트2
+              <sd-list-item [sdRouterLink]="['/home/sheet']">
+                시트
               </sd-list-item>
             </sd-list>
           </sd-pane>

@@ -7,7 +7,7 @@
 
 ## Installation for dev
 
-    npm install
+    yarn install
 
 ## READMEs
 

@@ -959,6 +959,8 @@ DROP PROCEDURE ${procName};`;
       return `
 USE ${def.from.split(".")[0]};
       
+SET foreign_key_checks=0;
+
 SET @cols = NULL;
 
 SELECT GROUP_CONCAT('${"`_" + def.as.slice(1)}.\`', COLUMN_NAME, '\`', ' = ', '${def.as}.\`', COLUMN_NAME, '\`' separator ' AND ') INTO @cols
@@ -972,7 +974,9 @@ SELECT @sql;
 
 PREPARE stmt FROM @sql;
 EXECUTE stmt;
-DEALLOCATE PREPARE stmt;`.trim();
+DEALLOCATE PREPARE stmt;
+
+SET foreign_key_checks=1;`.trim();
     }
     else {
       if (this._dialect === "sqlite") {

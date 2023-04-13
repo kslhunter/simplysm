@@ -3,11 +3,11 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
 import { Uuid } from "@simplysm/sd-core-common";
 
 @Component({
-  selector: "sd-sheet2-column",
+  selector: "sd-sheet-column",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: ""
 })
-export class SdSheet2ColumnControl<T> {
+export class SdSheetColumnControl<T> {
   public guid = Uuid.new().toString();
 
   @Input()
@@ -21,6 +21,10 @@ export class SdSheet2ColumnControl<T> {
   @Input()
   @SdInputValidate([String, Array])
   public header?: string | string[];
+
+  @Input()
+  @SdInputValidate(String)
+  public headerStyle?: string;
 
   @Input()
   @SdInputValidate(String)

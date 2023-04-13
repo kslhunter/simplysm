@@ -35,14 +35,14 @@ export class SdSharedDataRootProvider {
     this._dataInfoMap.set(dataType, info);
   }
 
-  public async getDataAsync(serviceKey: string, dataType: string): Promise<any[] | undefined> {
+  public async getDataAsync(serviceKey: string, dataType: string): Promise<any[]> {
     await this._loadDataAsync(serviceKey, dataType);
-    return this._dataMap.get(dataType);
+    return this._dataMap.get(dataType)!;
   }
 
-  public async getDataMapAsync(serviceKey: string, dataType: string): Promise<Map<number | string, any> | undefined> {
+  public async getDataMapAsync(serviceKey: string, dataType: string): Promise<Map<number | string, any>> {
     await this._loadDataAsync(serviceKey, dataType);
-    return this._dataMapMap.get(dataType);
+    return this._dataMapMap.get(dataType)!;
   }
 
   public on(dataType: string, callback: () => void): void {

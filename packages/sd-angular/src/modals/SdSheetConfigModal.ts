@@ -1,27 +1,27 @@
 import { ChangeDetectionStrategy, Component } from "@angular/core";
 import { SdModalBase } from "../providers/SdModalProvider";
-import { ISdSheet2Config } from "../controls/SdSheet2Control";
-import { SdSheet2ColumnControl } from "../controls/SdSheet2ColumnControl";
+import { ISdSheetConfig } from "../controls/SdSheetControl";
+import { SdSheetColumnControl } from "../controls/SdSheetColumnControl";
 import { faAngleUp } from "@fortawesome/pro-duotone-svg-icons/faAngleUp";
 import { faAngleDown } from "@fortawesome/pro-duotone-svg-icons/faAngleDown";
 import { faXmark } from "@fortawesome/pro-solid-svg-icons/faXmark";
 
 @Component({
-  selector: "sd-sheet2-config-modal",
+  selector: "sd-sheet-config-modal",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <sd-dock-container>
       <sd-pane class="sd-padding-default">
-        <sd-sheet2 [items]="items"
+        <sd-sheet [items]="items"
                    [trackByFn]="trackByKeyFn">
-          <sd-sheet2-column header="Fix">
+          <sd-sheet-column header="Fix">
             <ng-template #cell let-item="item">
               <div style="text-align: center">
                 <sd-checkbox size="sm" inset [(value)]="item.fixed"></sd-checkbox>
               </div>
             </ng-template>
-          </sd-sheet2-column>
-          <sd-sheet2-column header="Order">
+          </sd-sheet-column>
+          <sd-sheet-column header="Order">
             <ng-template #cell let-item="item" let-index="index">
               <div class="sd-padding-xs-sm" style="text-align: center">
                 <sd-anchor [disabled]="index === 0 || (!item.fixed && !!items[index - 1].fixed)"
@@ -34,28 +34,28 @@ import { faXmark } from "@fortawesome/pro-solid-svg-icons/faXmark";
                 </sd-anchor>
               </div>
             </ng-template>
-          </sd-sheet2-column>
-          <sd-sheet2-column header="Header" resizable>
+          </sd-sheet-column>
+          <sd-sheet-column header="Header" resizable>
             <ng-template #cell let-item="item">
               <div class="sd-padding-xs-sm">
                 {{ item.header }}
               </div>
             </ng-template>
-          </sd-sheet2-column>
-          <sd-sheet2-column header="Width" resizable width="60px">
+          </sd-sheet-column>
+          <sd-sheet-column header="Width" resizable width="60px">
             <ng-template #cell let-item="item">
-              <sd-textfield2 size="sm" inset [(value)]="item.width" *ngIf="item.resizable"></sd-textfield2>
+              <sd-textfield size="sm" inset [(value)]="item.width" *ngIf="item.resizable"></sd-textfield>
             </ng-template>
-          </sd-sheet2-column>
-          <sd-sheet2-column header="Hidden">
+          </sd-sheet-column>
+          <sd-sheet-column header="Hidden">
             <ng-template #cell let-item="item">
               <div style="text-align: center">
                 <sd-checkbox size="sm" inset [(value)]="item.hidden" [icon]="icons.fasXmark"
                              theme="danger"></sd-checkbox>
               </div>
             </ng-template>
-          </sd-sheet2-column>
-        </sd-sheet2>
+          </sd-sheet-column>
+        </sd-sheet>
       </sd-pane>
 
       <sd-dock position="bottom" class="sd-padding-sm-default sd-padding-top-0">
@@ -72,26 +72,26 @@ import { faXmark } from "@fortawesome/pro-solid-svg-icons/faXmark";
   styles: [/* language=SCSS */ `
   `]
 })
-export class SdSheet2ConfigModal<T> extends SdModalBase<ISdSheet2ConfigModalInput<T>, ISdSheet2Config> {
+export class SdSheetConfigModal<T> extends SdModalBase<ISdSheetConfigModalInput<T>, ISdSheetConfig> {
   public icons = {
     fadAngleUp: faAngleUp,
     fadAngleDown: faAngleDown,
     fasXmark: faXmark
   };
 
-  public param!: ISdSheet2ConfigModalInput<T>;
+  public param!: ISdSheetConfigModalInput<T>;
 
   public items: IItemVM[] = [];
 
   public trackByKeyFn = (index: number, item: any): any => item.key;
 
-  public sdOnOpen(param: ISdSheet2ConfigModalInput<T>): void {
+  public sdOnOpen(param: ISdSheetConfigModalInput<T>): void {
     this.param = param;
 
     const items: IItemVM[] = [];
     for (const control of param.controls) {
       if (control.key === undefined) continue;
-      const config = param.config?.columnRecord[control.key];
+      const config = param.config?.columnRecord?.[control.key];
 
       items.push({
         key: control.key,
@@ -128,9 +128,9 @@ export class SdSheet2ConfigModal<T> extends SdModalBase<ISdSheet2ConfigModalInpu
   }
 
   public onOkButtonClick(): void {
-    const result: ISdSheet2Config = { columnRecord: {} };
+    const result: ISdSheetConfig = { columnRecord: {} };
     for (const config of this.items) {
-      result.columnRecord[config.key] = {
+      result.columnRecord![config.key] = {
         fixed: config.fixed,
         width: config.width,
         displayOrder: config.displayOrder,
@@ -152,9 +152,9 @@ export class SdSheet2ConfigModal<T> extends SdModalBase<ISdSheet2ConfigModalInpu
   }
 }
 
-export interface ISdSheet2ConfigModalInput<T> {
-  controls: SdSheet2ColumnControl<T>[];
-  config: ISdSheet2Config | undefined;
+export interface ISdSheetConfigModalInput<T> {
+  controls: SdSheetColumnControl<T>[];
+  config: ISdSheetConfig | undefined;
 }
 
 interface IItemVM {

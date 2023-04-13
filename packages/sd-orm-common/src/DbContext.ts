@@ -16,8 +16,8 @@ import { SystemMigration } from "./models/SystemMigration";
 import { DbDefinitionUtil } from "./utils/DbDefinitionUtil";
 
 export abstract class DbContext {
-  public static readonly SELECT_CACHE_TIMEOUT = 1000;
-  public static readonly selectCache = new Map<string, { result: any[]; timeout: any } | undefined>();
+  // public static readonly SELECT_CACHE_TIMEOUT = 1000;
+  // public static readonly selectCache = new Map<string, { result: any[]; timeout: any } | undefined>();
 
   public status: "ready" | "connect" | "transact" = "ready";
 
@@ -177,7 +177,7 @@ export abstract class DbContext {
     await this.executeDefsAsync(this.prepareDefs);
 
     this.prepareDefs = [];
-    DbContext.selectCache.clear();
+    // DbContext.selectCache.clear();
   }
 
   public async getIsDbExistsAsync(database?: string): Promise<boolean> {

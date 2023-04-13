@@ -547,9 +547,7 @@ export class ObjectUtil {
 
     if (typeof obj === "object") {
       for (const key of Object.keys(obj)) {
-        if (obj[key] == null) {
-          obj[key] = undefined;
-        }
+        obj[key] = ObjectUtil.nullToUndefined(obj[key]);
       }
 
       return obj;

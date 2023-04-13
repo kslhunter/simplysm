@@ -21,7 +21,7 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
 import { sdThemes, TSdTheme } from "../commons";
 
 @Component({
-  selector: "sd-textfield2",
+  selector: "sd-textfield",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="_contents"
@@ -265,7 +265,7 @@ import { sdThemes, TSdTheme } from "../commons";
     }
   `]
 })
-export class SdTextfield2Control implements INotifyPropertyChange, DoCheck {
+export class SdTextfieldControl implements INotifyPropertyChange, DoCheck {
   private _changeProperties: (keyof this)[] = [];
 
   @Input()
@@ -493,7 +493,7 @@ export class SdTextfield2Control implements INotifyPropertyChange, DoCheck {
       this.controlValueText = this.controlValue;
     }
     else {
-      throw new Error(`'sd-textfield2'에 대한 'value'가 잘못되었습니다. (입력값: ${this.value.toString()})`);
+      throw new Error(`'sd-textfield'에 대한 'value'가 잘못되었습니다. (입력값: ${this.value.toString()})`);
     }
   }
 

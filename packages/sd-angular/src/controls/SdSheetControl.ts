@@ -15,11 +15,11 @@ import {
   Output,
   QueryList
 } from "@angular/core";
-import { SdSheet2ColumnControl } from "./SdSheet2ColumnControl";
+import { SdSheetColumnControl } from "./SdSheetColumnControl";
 import { SdInputValidate } from "../decorators/SdInputValidate";
 import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRootProvider";
 import { NumberUtil, ObjectUtil } from "@simplysm/sd-core-common";
-import { SdSheet2ConfigModal } from "../modals/SdSheet2ConfigModal";
+import { SdSheetConfigModal } from "../modals/SdSheetConfigModal";
 import { SdModalProvider } from "../providers/SdModalProvider";
 import { faCog } from "@fortawesome/pro-duotone-svg-icons/faCog";
 import { faArrowRight } from "@fortawesome/pro-duotone-svg-icons/faArrowRight";
@@ -29,7 +29,7 @@ import { faSortUp } from "@fortawesome/pro-solid-svg-icons/faSortUp";
 import { faCaretRight } from "@fortawesome/pro-duotone-svg-icons/faCaretRight";
 
 @Component({
-  selector: "sd-sheet2",
+  selector: "sd-sheet",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <sd-busy-container [busy]="!isInitialized">
@@ -91,7 +91,8 @@ import { faCaretRight } from "@fortawesome/pro-duotone-svg-icons/faCaretRight";
                       [class.sd-help]="headerCell.isLastDepth && headerCell.control.tooltip">
                     <sd-flex direction="row" alignItems="end">
                       <div class="_contents"
-                           [class._padding]="!headerCell.useTemplate">
+                           [class._padding]="!headerCell.useTemplate"
+                           [attr.style]="headerCell.style">
                         <ng-container *ngIf="!headerCell.useTemplate">
                           <pre>{{ headerCell.text }}</pre>
                         </ng-container>
@@ -179,7 +180,8 @@ import { faCaretRight } from "@fortawesome/pro-duotone-svg-icons/faCaretRight";
                       [style.minWidth]="columnDef.width"
                       [style.maxWidth]="columnDef.width"
                       (click)="onItemCellClick(itemDef.item)"
-                      (dblclick)="onCellDoubleClick($event)">
+                      (dblclick)="onCellDoubleClick($event)"
+                      (keydown)="this.cellKeydown.emit({ item: itemDef.item, key: columnDef.control.key, event: $event })">
                     <ng-template [ngTemplateOutlet]="columnDef.control.cellTemplateRef"
                                  [ngTemplateOutletContext]="{item: itemDef.item, index: r, depth: itemDef.depth, edit: getIsCellEditMode(r, c) }"></ng-template>
                   </td>
@@ -263,6 +265,7 @@ import { faCaretRight } from "@fortawesome/pro-duotone-svg-icons/faCaretRight";
                 white-space: nowrap;
                 overflow: hidden;
                 padding: 0;
+                position: relative;
 
                 &._feature-cell {
                   background: var(--theme-color-grey-lightest);
@@ -441,7 +444,7 @@ import { faCaretRight } from "@fortawesome/pro-duotone-svg-icons/faCaretRight";
     }
   `]
 })
-export class SdSheet2Control<T> implements OnInit, AfterContentChecked, DoCheck {
+export class SdSheetControl<T> implements OnInit, AfterContentChecked, DoCheck {
   public icons = {
     fadCog: faCog,
     fadArrowRight: faArrowRight,
@@ -451,8 +454,8 @@ export class SdSheet2Control<T> implements OnInit, AfterContentChecked, DoCheck 
     fadCaretRight: faCaretRight
   };
 
-  @ContentChildren(forwardRef(() => SdSheet2ColumnControl))
-  public columnControls?: QueryList<SdSheet2ColumnControl<T>>;
+  @ContentChildren(forwardRef(() => SdSheetColumnControl))
+  public columnControls?: QueryList<SdSheetColumnControl<T>>;
 
   /**
    * 시트설정 저장 키
@@ -480,13 +483,13 @@ export class SdSheet2Control<T> implements OnInit, AfterContentChecked, DoCheck 
    * 정렬규칙
    */
   @Input()
-  public ordering: ISdSheet2ColumnOrderingVM[] = [];
+  public ordering: ISdSheetColumnOrderingVM[] = [];
 
   /**
    * 정렬규칙 변경 이벤트
    */
   @Output()
-  public readonly orderingChange = new EventEmitter<ISdSheet2ColumnOrderingVM[]>();
+  public readonly orderingChange = new EventEmitter<ISdSheetColumnOrderingVM[]>();
 
   /**
    * [pagination] 현재 표시 페이지
@@ -590,7 +593,13 @@ export class SdSheet2Control<T> implements OnInit, AfterContentChecked, DoCheck 
    * 항목 키 다운 이벤트
    */
   @Output()
-  public readonly itemKeydown = new EventEmitter<ISdSheet2ItemKeydownEventParam<T>>();
+  public readonly itemKeydown = new EventEmitter<ISdSheetItemKeydownEventParam<T>>();
+
+  /**
+   * 셀 키 다운 이벤트
+   */
+  @Output()
+  public readonly cellKeydown = new EventEmitter<ISdSheetItemKeydownEventParam<T>>();
 
   /**
    * Children 설정하는 함수
@@ -615,7 +624,7 @@ export class SdSheet2Control<T> implements OnInit, AfterContentChecked, DoCheck 
   public trackByIndexFn = (index: number, item: any): any => index;
   public trackByFnForDisplayItemDef = (index: number, item: IItemDef<T>): any => this.trackByFn(index, item.item);
 
-  private _config?: ISdSheet2Config;
+  private _config?: ISdSheetConfig;
 
   private readonly _prevData: Record<string, any> = {};
 
@@ -662,14 +671,15 @@ export class SdSheet2Control<T> implements OnInit, AfterContentChecked, DoCheck 
 
         const tempColumnDefs = this.columnControls
           .map((columnControl) => {
-            const config = columnControl.key === undefined ? undefined : this._config?.columnRecord[columnControl.key];
+            const config = columnControl.key === undefined ? undefined : this._config?.columnRecord?.[columnControl.key];
             return {
               control: columnControl,
               key: columnControl.key,
               fixed: config?.fixed ?? columnControl.fixed,
               width: this._resizedWidths[columnControl.guid] ?? config?.width ?? columnControl.width,
               displayOrder: config?.displayOrder,
-              hidden: config?.hidden ?? columnControl.hidden
+              hidden: config?.hidden ?? columnControl.hidden,
+              headerStyle: columnControl.headerStyle
             };
           });
         if (!ObjectUtil.equal(this._prevData["tempColumnDefs"], tempColumnDefs, { excludes: ["control"] })) {
@@ -682,14 +692,22 @@ export class SdSheet2Control<T> implements OnInit, AfterContentChecked, DoCheck 
             .map((item) => ({
               control: item.control,
               fixed: item.fixed,
-              width: item.width
+              width: item.width,
+              headerStyle: item.headerStyle
             }));
           this._cdr.markForCheck();
         }
 
         //-- displayHeaderDefTable
 
-        const tempHeaderDefTable: ({ control: SdSheet2ColumnControl<T>; width: string | undefined; fixed: boolean; text: string | undefined; useTemplate: string | undefined } | undefined)[][] = [];
+        const tempHeaderDefTable: ({
+          control: SdSheetColumnControl<T>;
+          width: string | undefined;
+          fixed: boolean;
+          text: string | undefined;
+          useTemplate: string | undefined;
+          style: string | undefined;
+        } | undefined)[][] = [];
         for (let c = 0; c < this.displayColumnDefs.length; c++) {
           const columnDef = this.displayColumnDefs[c];
 
@@ -704,7 +722,8 @@ export class SdSheet2Control<T> implements OnInit, AfterContentChecked, DoCheck 
               width: columnDef.width,
               fixed: columnDef.fixed ?? false,
               text: headers[r],
-              useTemplate: undefined
+              useTemplate: undefined,
+              style: columnDef.headerStyle
             };
           }
           if (columnDef.control.headerTemplateRef) {
@@ -714,7 +733,8 @@ export class SdSheet2Control<T> implements OnInit, AfterContentChecked, DoCheck 
               width: columnDef.width,
               fixed: columnDef.fixed ?? false,
               text: undefined,
-              useTemplate: columnDef.control.guid
+              useTemplate: columnDef.control.guid,
+              style: columnDef.headerStyle
             };
           }
         }
@@ -752,7 +772,9 @@ export class SdSheet2Control<T> implements OnInit, AfterContentChecked, DoCheck 
                 rowspan: undefined,
                 text: tempHeaderDefTable[r][c]!.text,
                 useTemplate: Boolean(tempHeaderDefTable[r][c]!.useTemplate),
-                isLastDepth: false
+                isLastDepth: false,
+
+                style: tempHeaderDefTable[r][c]!.style
               };
 
               // rowspan
@@ -1104,7 +1126,7 @@ export class SdSheet2Control<T> implements OnInit, AfterContentChecked, DoCheck 
     }
   }
 
-  public onResizerMousedown(event: MouseEvent, columnControl: SdSheet2ColumnControl<T>): void {
+  public onResizerMousedown(event: MouseEvent, columnControl: SdSheetColumnControl<T>): void {
     this._isOnResizing = true;
 
     const thEl = (event.target as HTMLElement).findParent("th")!;
@@ -1156,7 +1178,7 @@ export class SdSheet2Control<T> implements OnInit, AfterContentChecked, DoCheck 
     });
   }
 
-  public async onResizerDoubleClick(event: MouseEvent, columnControl: SdSheet2ColumnControl<T>): Promise<void> {
+  public async onResizerDoubleClick(event: MouseEvent, columnControl: SdSheetColumnControl<T>): Promise<void> {
     delete this._resizedWidths[columnControl.guid];
 
     if (columnControl.key !== undefined) {
@@ -1281,7 +1303,7 @@ export class SdSheet2Control<T> implements OnInit, AfterContentChecked, DoCheck 
    * 시트 설정창 보기 버튼 클릭시 이벤트
    */
   public async onConfigButtonClick(): Promise<void> {
-    const result = await this._modal.showAsync(SdSheet2ConfigModal, "시트 설정창", {
+    const result = await this._modal.showAsync(SdSheetConfigModal, "시트 설정창", {
       controls: this.columnControls!.toArray(),
       config: this._config
     }, {
@@ -1290,7 +1312,7 @@ export class SdSheet2Control<T> implements OnInit, AfterContentChecked, DoCheck 
     if (!result) return;
 
     this._config = result;
-    await this._systemConfig.setAsync(`sd-sheet2.${this.key!}`, this._config);
+    await this._systemConfig.setAsync(`sd-sheet.${this.key!}`, this._config);
     this._cdr.markForCheck();
   }
 
@@ -1597,7 +1619,7 @@ export class SdSheet2Control<T> implements OnInit, AfterContentChecked, DoCheck 
 
   private async _reloadConfigAsync(): Promise<void> {
     if (this.key !== undefined) {
-      this._config = await this._systemConfig.getAsync(`sd-sheet2.${this.key}`);
+      this._config = await this._systemConfig.getAsync(`sd-sheet.${this.key}`);
     }
   }
 
@@ -1607,14 +1629,15 @@ export class SdSheet2Control<T> implements OnInit, AfterContentChecked, DoCheck 
    */
   private async _saveColumnConfigAsync(columnKey: string, config: Partial<IConfigColumn>): Promise<void> {
     this._config = this._config ?? { columnRecord: {} };
+    this._config.columnRecord = this._config.columnRecord ?? {};
     this._config.columnRecord[columnKey] = this._config.columnRecord[columnKey] ?? {};
     Object.assign(this._config.columnRecord[columnKey]!, config);
-    await this._systemConfig.setAsync(`sd-sheet2.${this.key}`, this._config);
+    await this._systemConfig.setAsync(`sd-sheet.${this.key}`, this._config);
   }
 }
 
-export interface ISdSheet2Config {
-  columnRecord: Record<string, IConfigColumn | undefined>;
+export interface ISdSheetConfig {
+  columnRecord: Record<string, IConfigColumn | undefined> | undefined;
 }
 
 interface IConfigColumn {
@@ -1625,13 +1648,14 @@ interface IConfigColumn {
 }
 
 interface IColumnDef<T> {
-  control: SdSheet2ColumnControl<T>;
+  control: SdSheetColumnControl<T>;
   fixed: boolean | undefined;
   width: string | undefined;
+  headerStyle: string | undefined;
 }
 
 interface IHeaderDef<T> {
-  control: SdSheet2ColumnControl<T>;
+  control: SdSheetColumnControl<T>;
   width: string | undefined;
   fixed: boolean;
   colspan: number | undefined;
@@ -1639,6 +1663,8 @@ interface IHeaderDef<T> {
   text: string | undefined;
   useTemplate: boolean;
   isLastDepth: boolean;
+
+  style: string | undefined;
 }
 
 interface IItemDef<T> {
@@ -1648,12 +1674,13 @@ interface IItemDef<T> {
   depth: number;
 }
 
-export interface ISdSheet2ColumnOrderingVM {
+export interface ISdSheetColumnOrderingVM {
   key: string;
   desc: boolean;
 }
 
-export interface ISdSheet2ItemKeydownEventParam<T> {
+export interface ISdSheetItemKeydownEventParam<T> {
   item: T;
+  key?: string;
   event: KeyboardEvent;
 }

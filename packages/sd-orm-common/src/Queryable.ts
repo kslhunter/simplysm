@@ -1,13 +1,11 @@
 import { DbContext } from "./DbContext";
 import {
   FunctionUtil,
-  JsonConvert,
   NeverEntryError,
   NotImplementError,
   ObjectUtil,
   Type,
-  UnwrappedType,
-  Wait
+  UnwrappedType
 } from "@simplysm/sd-core-common";
 import {
   IDeleteQueryDef,
@@ -1137,33 +1135,33 @@ export class Queryable<D extends DbContext, T> {
 
     const def = this.getSelectQueryDef();
 
-    const cacheKey = JsonConvert.stringify(def)!;
-
-    if (DbContext.selectCache.has(cacheKey)) {
-      try {
-        await Wait.until(() => DbContext.selectCache.get(cacheKey) !== undefined, undefined, 30000);
-        const cacheValue = DbContext.selectCache.get(cacheKey)!;
-
-        clearTimeout(cacheValue.timeout);
-        cacheValue.timeout = setTimeout(() => {
-          DbContext.selectCache.delete(cacheKey);
-        }, DbContext.SELECT_CACHE_TIMEOUT);
-
-        return cacheValue.result;
-      }
-      catch (err) {
-        // eslint-disable-next-line no-console
-        console.error(err);
-      }
-    }
-    DbContext.selectCache.set(cacheKey, undefined);
+    // const cacheKey = JsonConvert.stringify(def)!;
+    //
+    // if (DbContext.selectCache.has(cacheKey)) {
+    //   try {
+    //     await Wait.until(() => DbContext.selectCache.get(cacheKey) !== undefined, undefined, 30000);
+    //     const cacheValue = DbContext.selectCache.get(cacheKey)!;
+    //
+    //     clearTimeout(cacheValue.timeout);
+    //     cacheValue.timeout = setTimeout(() => {
+    //       DbContext.selectCache.delete(cacheKey);
+    //     }, DbContext.SELECT_CACHE_TIMEOUT);
+    //
+    //     return cacheValue.result;
+    //   }
+    //   catch (err) {
+    //     // eslint-disable-next-line no-console
+    //     console.error(err);
+    //   }
+    // }
+    // DbContext.selectCache.set(cacheKey, undefined);
 
     const results = await this.db.executeDefsAsync([{ type: "select", ...def }], [this._getParseOption(undefined)]);
 
-    const timeout = setTimeout(() => {
-      DbContext.selectCache.delete(cacheKey);
-    }, DbContext.SELECT_CACHE_TIMEOUT);
-    DbContext.selectCache.set(cacheKey, { result: results[0] ?? [], timeout });
+    // const timeout = setTimeout(() => {
+    //   DbContext.selectCache.delete(cacheKey);
+    // }, DbContext.SELECT_CACHE_TIMEOUT);
+    // DbContext.selectCache.set(cacheKey, { result: results[0] ?? [], timeout });
 
     return results[0];
   }
@@ -1203,7 +1201,7 @@ export class Queryable<D extends DbContext, T> {
     if (typeof this.db === "undefined") {
       throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
     }
-    DbContext.selectCache.clear();
+    // DbContext.selectCache.clear();
 
     if (!this.tableDef) {
       throw new Error("'Wrapping'된 이후에는 테이블의 정보를 가져올 수 없습니다.");
@@ -1275,7 +1273,7 @@ export class Queryable<D extends DbContext, T> {
     if (!this.tableDef) {
       throw new Error("'Wrapping'된 이후에는 테이블의 정보를 가져올 수 없습니다.");
     }
-    DbContext.selectCache.clear();
+    // DbContext.selectCache.clear();
 
     const pkColNames = this.tableDef.columns.filter((item) => item.primaryKey !== undefined).map((item) => item.name);
     const aiColNames = this.tableDef.columns.filter((item) => item.autoIncrement).map((item) => item.name);
@@ -1391,7 +1389,7 @@ export class Queryable<D extends DbContext, T> {
     if (!this.tableDef) {
       throw new Error("'Wrapping'된 이후에는 편집 쿼리를 실행할 수 없습니다.");
     }
-    DbContext.selectCache.clear();
+    // DbContext.selectCache.clear();
 
     let dataIndex: number;
     const defs: TQueryDef[] = [];
@@ -1442,7 +1440,7 @@ export class Queryable<D extends DbContext, T> {
     if (!this.tableDef) {
       throw new Error("'Wrapping'된 이후에는 편집 쿼리를 실행할 수 없습니다.");
     }
-    DbContext.selectCache.clear();
+    // DbContext.selectCache.clear();
 
     const defs: TQueryDef[] = [];
 
@@ -1521,7 +1519,7 @@ export class Queryable<D extends DbContext, T> {
     if (!this.tableDef) {
       throw new Error("'Wrapping'된 이후에는 편집 쿼리를 실행할 수 없습니다.");
     }
-    DbContext.selectCache.clear();
+    // DbContext.selectCache.clear();
 
     const pkColNames = this.tableDef.columns.filter((item) => item.primaryKey !== undefined).map((item) => item.name);
     const aiColNames = this.tableDef.columns.filter((item) => item.autoIncrement).map((item) => item.name);
