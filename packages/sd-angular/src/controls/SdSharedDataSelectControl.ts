@@ -110,14 +110,10 @@ export class SdSharedDataSelectControl implements OnInit, DoCheck {
 
   @Input()
   @SdInputValidate(Function)
-  public filterFn?: (index: number, item: any) => boolean;
+  public filterFn?: (index: number, item: ISharedDataBase<string | number>) => boolean;
 
   @ContentChild("itemTemplate", { static: true })
-  public itemTemplateRef?: TemplateRef<{ item: any; index: number }>;
-
-  @Input()
-  @SdInputValidate({ type: String })
-  public serviceKey?: string;
+  public itemTemplateRef?: TemplateRef<{ item: ISharedDataBase<string | number>; index: number }>;
 
   @Input()
   @SdInputValidate({ type: String })
@@ -125,7 +121,7 @@ export class SdSharedDataSelectControl implements OnInit, DoCheck {
 
   @Input()
   @SdInputValidate(Object)
-  public modalInputParam?: Record<string, any>;
+  public modalInputParam?: Record<string, ISharedDataModalInputParam>;
 
   @Input()
   public modalType?: Type<SdModalBase<ISharedDataModalInputParam, ISharedDataModalOutputResult>>;
@@ -248,9 +244,8 @@ export class SdSharedDataSelectControl implements OnInit, DoCheck {
 
   public async ngOnInit(): Promise<void> {
     if (this.dataKey === undefined) return;
-    if (this.serviceKey === undefined) return;
 
-    this.items = await this._sharedData.getDataAsync(this.serviceKey, this.dataKey);
+    this.items = await this._sharedData.getDataAsync(this.dataKey);
 
     this._cdr.markForCheck();
 

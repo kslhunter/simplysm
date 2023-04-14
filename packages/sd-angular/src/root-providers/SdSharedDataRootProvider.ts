@@ -5,7 +5,7 @@ import { SdServiceEventBase } from "@simplysm/sd-service-common";
 
 @Injectable({ providedIn: "root" })
 export class SdSharedDataRootProvider {
-  private readonly _dataInfoMap = new Map<string, ISharedDataInfo<any, any>>();
+  private readonly _dataInfoMap = new Map<string, ISharedDataInfo<string | number, ISharedDataBase<string | number>>>();
   private readonly _dataChangeListenerMap = new Map<string, (() => void)[]>();
   private readonly _dataMap = new Map<string, any[]>();
   private readonly _dataMapMap = new Map<string, Map<number | string, any>>();
@@ -32,16 +32,16 @@ export class SdSharedDataRootProvider {
     if (this._dataInfoMap.has(dataType)) {
       throw new NeverEntryError();
     }
-    this._dataInfoMap.set(dataType, info);
+    this._dataInfoMap.set(dataType, info as any);
   }
 
-  public async getDataAsync(serviceKey: string, dataType: string): Promise<any[]> {
-    await this._loadDataAsync(serviceKey, dataType);
+  public async getDataAsync(dataType: string): Promise<any[]> {
+    await this._loadDataAsync(dataType);
     return this._dataMap.get(dataType)!;
   }
 
-  public async getDataMapAsync(serviceKey: string, dataType: string): Promise<Map<number | string, any>> {
-    await this._loadDataAsync(serviceKey, dataType);
+  public async getDataMapAsync(dataType: string): Promise<Map<number | string, any>> {
+    await this._loadDataAsync(dataType);
     return this._dataMapMap.get(dataType)!;
   }
 
@@ -61,15 +61,18 @@ export class SdSharedDataRootProvider {
     list.remove((item: Function) => item === callback);
   }
 
-  public async emitAsync(serviceKey: string, dataType: string, changeKeys?: (string | number)[]): Promise<void> {
-    await this._serviceFactory.get(serviceKey).emitAsync(
+  public async emitAsync(dataType: string, changeKeys?: (string | number)[]): Promise<void> {
+    const info = this._dataInfoMap.get(dataType);
+    if (!info) throw new Error(`'${dataType}'에 대한 'SdSharedData' 로직 정보가 없습니다.`);
+
+    await this._serviceFactory.get(info.serviceKey).emitAsync(
       SdSharedDataChangeEvent,
       (item) => item === dataType,
       changeKeys
     );
   }
 
-  private async _loadDataAsync(serviceKey: string, dataType: string): Promise<void> {
+  private async _loadDataAsync(dataType: string): Promise<void> {
     if (this._isProcessingMap.get(dataType)) {
       await Wait.until(() => !this._isProcessingMap.get(dataType));
     }
@@ -85,9 +88,9 @@ export class SdSharedDataRootProvider {
           : data.orderBy((item) => orderBy[0](item));
       }
       this._dataMap.set(dataType, data);
-      this._dataMapMap.set(dataType, data.toMap((item) => info.getKey(item)));
+      this._dataMapMap.set(dataType, data.toMap((item) => item.__valueKey));
 
-      await this._serviceFactory.get(serviceKey).addEventListenerAsync(
+      await this._serviceFactory.get(info.serviceKey).addEventListenerAsync(
         SdSharedDataChangeEvent,
         dataType,
         async (changeKeys) => {
@@ -101,17 +104,17 @@ export class SdSharedDataRootProvider {
             const dbItems = await info.getData(changeKeys);
 
             // 삭제된 항목 제거 (DB에 없는 항목)
-            const deleteKeys = changeKeys.filter((changeKey) => !dbItems.some((dbItem) => info.getKey(dbItem) === changeKey));
-            currItems.remove((item) => deleteKeys.includes(info.getKey(item)));
+            const deleteKeys = changeKeys.filter((changeKey) => !dbItems.some((dbItem) => dbItem.__valueKey === changeKey));
+            currItems.remove((item) => deleteKeys.includes(item.__valueKey));
             for (const deleteKey of deleteKeys) {
               currMapData.delete(deleteKey);
             }
 
             // 수정된 항목 변경
             for (const dbItem of dbItems) {
-              const dbItemKey = info.getKey(dbItem);
+              const dbItemKey = dbItem.__valueKey;
 
-              const currItem = currItems.single((item) => info.getKey(item) === dbItemKey);
+              const currItem = currItems.single((item) => item.__valueKey === dbItemKey);
               if (currItem !== undefined) {
                 ObjectUtil.clear(currItem);
                 Object.assign(currItem, dbItem);
@@ -138,7 +141,7 @@ export class SdSharedDataRootProvider {
             currMapData.clear();
             for (const newItem of dbItems) {
               currItems.push(newItem);
-              const newKey = info.getKey(newItem);
+              const newKey = newItem.__valueKey;
               currMapData.set(newKey, newItem);
             }
           }
@@ -167,8 +170,8 @@ export class SdSharedDataRootProvider {
 }
 
 export interface ISharedDataInfo<V extends string | number, T extends ISharedDataBase<V>> {
+  serviceKey: string;
   getData: (changeKeys?: V[]) => T[] | Promise<T[]>;
-  getKey: (data: T) => V;
   orderBy: [(data: T) => any, "asc" | "desc"][];
 }
 
