@@ -21,7 +21,7 @@
   ],
   "dependencies": {
     "@simplysm/sd-service-client": "7.2.4",
-    "semver": "^7.3.8"
+    "semver": "^7.4.0"
   },
   "devDependencies": {
     "@types/semver": "^7.3.13"

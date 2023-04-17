@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { NeverEntryError, ObjectUtil, Wait } from "@simplysm/sd-core-common";
 import { SdServiceFactoryRootProvider } from "./SdServiceFactoryRootProvider";
-import { SdServiceEventBase } from "@simplysm/sd-service-common";
+import { SdServiceEventListenerBase } from "@simplysm/sd-service-common";
 
 @Injectable({ providedIn: "root" })
 export class SdSharedDataRootProvider {
@@ -181,5 +181,5 @@ export interface ISharedDataBase<V extends string | number> {
   __isHidden: boolean;
 }
 
-export class SdSharedDataChangeEvent extends SdServiceEventBase<string, (string | number)[] | undefined> {
+export class SdSharedDataChangeEvent extends SdServiceEventListenerBase<string, (string | number)[] | undefined> {
 }

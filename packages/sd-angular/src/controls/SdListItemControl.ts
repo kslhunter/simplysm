@@ -22,13 +22,17 @@ import { faChevronDown } from "@fortawesome/pro-light-svg-icons/faChevronDown";
     <div [attr.class]="'_content ' + contentClass"
          [attr.style]="safeHtml(contentStyle)"
          (click)="onContentClick()">
-      <fa-icon class="_selected-icon" *ngIf="selectedIcon && !hasChildren" [icon]="selectedIcon"
-               [fixedWidth]="true"></fa-icon>
-      <ng-content></ng-content>
+      <sd-flex direction="row" gap="xs">
+        <fa-icon class="_selected-icon" *ngIf="selectedIcon && !hasChildren" [icon]="selectedIcon"
+                 [fixedWidth]="true"></fa-icon>
+        <div style="flex-grow: 1">
+          <ng-content></ng-content>
+        </div>
 
-      <sd-collapse-icon [open]="open" *ngIf="hasChildren && layout==='accordion'"
-                        [icon]="icons.falChevronDown"
-                        style="float: right"></sd-collapse-icon>
+        <sd-collapse-icon [open]="open" *ngIf="hasChildren && layout==='accordion'"
+                          [icon]="icons.falChevronDown"
+                          style="float: right"></sd-collapse-icon>
+      </sd-flex>
     </div>
     <sd-collapse class="_child" [open]="layout === 'flat' || open">
       <ng-content select="sd-list"></ng-content>
@@ -39,9 +43,9 @@ import { faChevronDown } from "@fortawesome/pro-light-svg-icons/faChevronDown";
         padding: var(--gap-sm) var(--gap-default);
         cursor: pointer;
 
-        > ._selected-icon {
-          //color: var(--text-brightness-lighter);
-          color: transparent;
+        > sd-flex > ._selected-icon {
+          color: var(--text-brightness-lightest);
+          //color: transparent;
         }
       }
 
@@ -98,11 +102,11 @@ import { faChevronDown } from "@fortawesome/pro-light-svg-icons/faChevronDown";
         > ._content {
           background: transparent;
           color: var(--text-brightness-default);
-          
-          > ._selected-icon {
+
+          > sd-flex > ._selected-icon {
             color: var(--theme-color-primary-default);
           }
-          
+
           &:hover {
             background: var(--trans-brightness-light);
           }

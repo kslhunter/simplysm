@@ -1,6 +1,6 @@
 import { ISdServiceClientConnectionConfig } from "./ISdServiceClientConnectionConfig";
 import { JsonConvert, Type, Uuid, Wait } from "@simplysm/sd-core-common";
-import { SdServiceEventBase, TSdServiceC2SMessage, TSdServiceS2CMessage } from "@simplysm/sd-service-common";
+import { SdServiceEventListenerBase, TSdServiceC2SMessage, TSdServiceS2CMessage } from "@simplysm/sd-service-common";
 import { SdWebSocket } from "./SdWebSocket";
 
 export class SdServiceClient {
@@ -154,9 +154,9 @@ export class SdServiceClient {
     });
   }
 
-  public async addEventListenerAsync<T extends SdServiceEventBase<any, any>>(eventType: Type<T>,
-                                                                             info: T["info"],
-                                                                             cb: (data: T["data"]) => PromiseLike<void>): Promise<string> {
+  public async addEventListenerAsync<T extends SdServiceEventListenerBase<any, any>>(eventListenerType: Type<T>,
+                                                                                     info: T["info"],
+                                                                                     cb: (data: T["data"]) => PromiseLike<void>): Promise<string> {
     if (!this.connected) {
       throw new Error("서버와 연결되어있지 않습니다. 인터넷 연결을 확인하세요.");
     }
@@ -170,14 +170,14 @@ export class SdServiceClient {
       await cb(msg.body);
     });
 
-    await this._sendCommandAsync("addEventListener", [key, eventType.name, info]);
+    await this._sendCommandAsync("addEventListener", [key, eventListenerType.name, info]);
 
     return key;
   }
 
-  public async emitAsync<T extends SdServiceEventBase<any, any>>(eventType: Type<T>,
-                                                                 infoSelector: (item: T["info"]) => boolean,
-                                                                 data: T["data"]): Promise<void> {
+  public async emitAsync<T extends SdServiceEventListenerBase<any, any>>(eventType: Type<T>,
+                                                                         infoSelector: (item: T["info"]) => boolean,
+                                                                         data: T["data"]): Promise<void> {
     const listenerInfos: { key: string; info: T["info"] }[] = await this._sendCommandAsync("getEventListenerInfos", [eventType.name]);
     const targetListenerKeys = listenerInfos
       .filter((item) => infoSelector(item.info))

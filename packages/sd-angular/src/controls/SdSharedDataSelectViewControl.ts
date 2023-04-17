@@ -15,6 +15,7 @@ import { ISharedDataBase, SdSharedDataRootProvider } from "../root-providers/SdS
 import { SdInputValidate } from "../decorators/SdInputValidate";
 import { ISdSheetColumnOrderingVM } from "./SdSheetControl";
 import { SdToastProvider } from "../providers/SdToastProvider";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 @Component({
   selector: "sd-shared-data-select-view",
@@ -35,12 +36,14 @@ import { SdToastProvider } from "../providers/SdToastProvider";
           <sd-list inset>
             <sd-list-item *ngIf="useUndefined"
                           [selected]="selectedItem === undefined"
-                          (click)="onSelectedItemChange(undefined)">
+                          (click)="onSelectedItemChange(undefined)"
+                          [selectedIcon]="selectedIcon">
               <span class="sd-text-color-grey-default">미지정</span>
             </sd-list-item>
             <sd-list-item *ngFor="let item of filteredItems; let index = index; trackBy: trackByFn"
                           [selected]="item === selectedItem"
-                          (click)="selectedItem === item ? onSelectedItemChange(undefined) : onSelectedItemChange(item)">
+                          (click)="selectedItem === item ? onSelectedItemChange(undefined) : onSelectedItemChange(item)"
+                          [selectedIcon]="selectedIcon">
               <ng-template [ngTemplateOutlet]="itemTemplateRef"
                            [ngTemplateOutletContext]="{item: item, index: index}"></ng-template>
             </sd-list-item>
@@ -50,6 +53,9 @@ import { SdToastProvider } from "../providers/SdToastProvider";
     </sd-busy-container>`
 })
 export class SdSharedDataSelectViewControl implements OnInit, DoCheck {
+  @Input()
+  public selectedIcon?: IconProp;
+
   @Input()
   public selectedItem?: ISharedDataBase<string | number>;
 
@@ -146,6 +152,8 @@ export class SdSharedDataSelectViewControl implements OnInit, DoCheck {
       this._prevData["items"] = ObjectUtil.clone(this.items);
       this._cdr.markForCheck();
     }
+
+    this._cdr.markForCheck();
   }
 
   public onSelectedItemChange(item: ISharedDataBase<string | number> | undefined): void {
