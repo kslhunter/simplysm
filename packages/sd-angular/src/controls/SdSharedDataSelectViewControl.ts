@@ -60,7 +60,7 @@ export class SdSharedDataSelectViewControl implements OnInit, DoCheck {
   public selectedItem?: ISharedDataBase<string | number>;
 
   @Output()
-  public readonly selectedItemChange = new EventEmitter<ISharedDataBase<string | number> | undefined>();
+  public readonly selectedItemChange = new EventEmitter<any>();
 
   @Input()
   @SdInputValidate(Boolean)

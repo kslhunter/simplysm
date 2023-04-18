@@ -26,6 +26,7 @@ import { sdThemes, TSdTheme } from "../commons";
   template: `
     <div class="_contents"
          [style]="inputStyle"
+         [class]="('_contents ' + inputClass ?? '').trim()"
          [attr.title]="title ?? placeholder">
       <div *ngIf="controlType === 'password'" class="sd-text-brightness-light">
         ****
@@ -53,7 +54,8 @@ import { sdThemes, TSdTheme } from "../commons";
            [attr.title]="title ?? placeholder"
            (input)="onInput($event)"
            [attr.inputmode]="type === 'number' ? 'numeric' : undefined"
-           [style]="inputStyle"/>
+           [style]="inputStyle"
+           [class]="inputClass"/>
 
     <div class="_invalid-indicator"></div>`,
   styles: [/* language=SCSS */ `
@@ -179,6 +181,13 @@ import { sdThemes, TSdTheme } from "../commons";
           height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
           min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
         }
+        
+        &[sd-type=month] {
+          > input,
+          > ._contents {
+            width: 100px;
+          }
+        }
 
         &[sd-type=date] {
           > input,
@@ -186,7 +195,7 @@ import { sdThemes, TSdTheme } from "../commons";
             width: 95px;
           }
         }
-        
+
         &[sd-type=datetime] {
           > input,
           > ._contents {
@@ -381,7 +390,10 @@ export class SdTextfieldControl implements INotifyPropertyChange, DoCheck {
   public design?: "bottom-line";
 
   @Input()
-  public inputStyle?: any;
+  public inputStyle?: string;
+
+  @Input()
+  public inputClass?: string;
 
   @HostBinding("attr.sd-invalid")
   public get isInvalid(): boolean {
