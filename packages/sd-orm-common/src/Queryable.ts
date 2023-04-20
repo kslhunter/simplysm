@@ -293,7 +293,7 @@ export class Queryable<D extends DbContext, T> {
   public pivot<V extends TQueryValue, P extends string>(valueFwd: ((entity: TEntity<T>) => TEntityValue<V>),
                                                         valueDupFwd: ((value: TEntityValue<V>) => TEntityValue<V>),
                                                         emptyValue: V,
-                                                        pivotFwd: ((entity: TEntity<T>) => TEntityValue<P>),
+                                                        pivotFwd: ((entity: TEntity<T>) => TEntityValue<any>),
                                                         pivotKeys: P[]): Queryable<D, T & Record<P, V>> {
     const valueColumn = valueFwd(this._entity);
     const pivotColumn = pivotFwd(this._entity);
