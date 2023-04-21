@@ -399,6 +399,9 @@ declare global {
       else if (typeof cpn === "number" && typeof cpp === "number") {
         return (cpn > cpp ? -1 : cpn < cpp ? 1 : 0);
       }
+      else if (typeof cpn === "boolean" && typeof cpp === "boolean") {
+        return cpn === cpp ? 0 : cpn ? -1 : 1;
+      }
       else if (typeof cpp === "undefined") {
         return -1;
       }
@@ -406,7 +409,7 @@ declare global {
         return 1;
       }
       else {
-        throw new Error("orderBy 는 string 이나 number 에 대해서만 사용할 수 있습니다.");
+        throw new Error("orderBy를 사용할 수 없는 타입입니다.");
       }
     });
   };
@@ -434,6 +437,9 @@ declare global {
       else if (typeof cpn === "number" && typeof cpp === "number") {
         return (cpn > cpp ? -1 : cpn < cpp ? 1 : 0);
       }
+      else if (typeof cpn === "boolean" && typeof cpp === "boolean") {
+        return cpn === cpp ? 0 : cpn ? -1 : 1;
+      }
       else if (typeof cpp === "undefined") {
         return -1;
       }
@@ -441,7 +447,7 @@ declare global {
         return 1;
       }
       else {
-        throw new Error("orderBy 는 string 이나 number 에 대해서만 사용할 수 있습니다.");
+        throw new Error("orderBy를 사용할 수 없는 타입입니다.");
       }
     });
   };
@@ -469,6 +475,9 @@ declare global {
       else if (typeof cpn === "number" && typeof cpp === "number") {
         return (cpn < cpp ? -1 : cpn > cpp ? 1 : 0);
       }
+      else if (typeof cpn === "boolean" && typeof cpp === "boolean") {
+        return cpn === cpp ? 0 : cpn ? 1 : -1;
+      }
       else if (typeof cpp === "undefined") {
         return 1;
       }
@@ -476,7 +485,7 @@ declare global {
         return -1;
       }
       else {
-        throw new Error("orderBy 는 string 이나 number 에 대해서만 사용할 수 있습니다.");
+        throw new Error("orderBy를 사용할 수 없는 타입입니다.");
       }
     });
   };
@@ -504,6 +513,9 @@ declare global {
       else if (typeof cpn === "number" && typeof cpp === "number") {
         return (cpn < cpp ? -1 : cpn > cpp ? 1 : 0);
       }
+      else if (typeof cpn === "boolean" && typeof cpp === "boolean") {
+        return cpn === cpp ? 0 : cpn ? 1 : -1;
+      }
       else if (typeof cpp === "undefined") {
         return 1;
       }
@@ -511,7 +523,7 @@ declare global {
         return -1;
       }
       else {
-        throw new Error("orderBy 는 string 이나 number 에 대해서만 사용할 수 있습니다.");
+        throw new Error("orderBy를 사용할 수 없는 타입입니다.");
       }
     });
   };

@@ -332,7 +332,7 @@ export class SdModalControl implements OnInit, AfterViewInit, OnChanges {
 
   @Input()
   @SdInputValidate(Boolean)
-  public resizable = true;
+  public resizable = false;
 
   @Output()
   public readonly openChange = new EventEmitter<boolean>();
