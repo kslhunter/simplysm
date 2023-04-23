@@ -45,6 +45,10 @@ export class SdToastProvider {
       return await fn();
     }
     catch (err) {
+      if (navigator.userAgent.toLowerCase().indexOf("android") !== -1) {
+        navigator.vibrate(500);
+      }
+
       if (err instanceof Error) {
         if (messageFn) {
           this.danger(messageFn(err));
