@@ -45,10 +45,6 @@ export class SdToastProvider {
       return await fn();
     }
     catch (err) {
-      if (navigator.userAgent.toLowerCase().indexOf("android") !== -1) {
-        navigator.vibrate(500);
-      }
-
       if (err instanceof Error) {
         if (messageFn) {
           this.danger(messageFn(err));
@@ -121,19 +117,23 @@ export class SdToastProvider {
   }
 
   public info<T extends boolean>(message: string, progress?: T): (T extends true ? ISdProgressToast : void) {
-    return this._show("info", message, progress) as any;
+    return this._show("info", message, progress);
   }
 
   public success<T extends boolean>(message: string, progress?: T): (T extends true ? ISdProgressToast : void) {
-    return this._show("success", message, progress) as any;
+    return this._show("success", message, progress);
   }
 
   public warning<T extends boolean>(message: string, progress?: T): (T extends true ? ISdProgressToast : void) {
-    return this._show("warning", message, progress) as any;
+    return this._show("warning", message, progress);
   }
 
   public danger<T extends boolean>(message: string, progress?: T): (T extends true ? ISdProgressToast : void) {
-    return this._show("danger", message, progress) as any;
+    if (typeof navigator.vibrate === "function") {
+      navigator.vibrate(500);
+    }
+
+    return this._show("danger", message, progress);
   }
 
   private _show<T extends boolean>(theme: "info" | "success" | "warning" | "danger", message: string, progress?: T): (T extends true ? ISdProgressToast : void) {
