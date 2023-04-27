@@ -25,7 +25,8 @@ import { faCaretDown } from "@fortawesome/pro-duotone-svg-icons/faCaretDown";
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <sd-dropdown #dropdown [disabled]="disabled" (open)="open.emit()"
-                 [content.class]="contentClass">
+                 [content.class]="contentClass"
+                 [content.style]="contentStyle">
       <div [innerHTML]="contentSafeInnerHTML"></div>
       <div class="_invalid-indicator"></div>
       <div class="_icon">
@@ -305,6 +306,10 @@ export class SdSelectControl implements DoCheck {
   @Input("content.class")
   @SdInputValidate(String)
   public contentClass?: string;
+
+  @Input("content.style")
+  @SdInputValidate(String)
+  public contentStyle?: string;
 
   @Input()
   @SdInputValidate({ type: String, includes: ["vertical", "horizontal"] })

@@ -18,7 +18,8 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
   template: `
     <div [attr.tabindex]="disabled ? undefined : '0'"
          class="_sd-dropdown-control"
-         [ngClass]="contentClass">
+         [ngClass]="contentClass"
+         [style]="contentStyle">
       <ng-content></ng-content>
     </div>
     <ng-content select="sd-dropdown-popup"></ng-content>`,
@@ -50,6 +51,10 @@ export class SdDropdownControl implements OnInit, OnDestroy {
   @Input("content.class")
   @SdInputValidate(String)
   public contentClass?: string;
+
+  @Input("content.style")
+  @SdInputValidate(String)
+  public contentStyle?: string;
 
   private _isOpen = false;
 
