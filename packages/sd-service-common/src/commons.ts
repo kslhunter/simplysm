@@ -3,6 +3,8 @@ export type TSdServiceS2CMessage =
   | ISdServiceClientGetIdCommand
   | ISdServiceClientConnectedAlarm
   | ISdServiceResponse
+  | ISdServiceResponseForSplit
+  | ISdServiceSplitResponse
   | ISdServiceEmittedEvent;
 
 export type TSdServiceC2SMessage = ISdServiceClientGetIdResponse
@@ -44,6 +46,20 @@ export interface ISdServiceRequest {
 export interface ISdServiceSplitRequest {
   name: "request-split";
   uuid: string;
+  fullSize: number;
+  index: number;
+  body: string;
+}
+
+export interface ISdServiceResponseForSplit {
+  name: "response-for-split";
+  reqUuid: string;
+  completedSize: number;
+}
+
+export interface ISdServiceSplitResponse {
+  name: "response-split";
+  reqUuid: string;
   fullSize: number;
   index: number;
   body: string;

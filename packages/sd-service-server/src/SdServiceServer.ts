@@ -46,13 +46,27 @@ export class SdServiceServer extends EventEmitter {
     super();
   }
 
-  public getWsClient(socketId: string): WebSocket | undefined {
-    if (!this._wsServer) return undefined;
-    const wsClients = Array.from(this._wsServer.clients).filter((item) => item.readyState === WebSocket.OPEN && item["id"] === socketId);
-    if (wsClients.length > 1) {
-      this._logger.debug("클라이언트 중복: " + socketId + ": " + wsClients.length + "\n" + wsClients.map((item) => "  - " + item["connectedAtDateTime"].toFormatString("yyyy:MM:dd HH:mm:ss.fff")).join("\n"));
+  public async getWsClientAsync(socketId: string): Promise<WebSocket | undefined> {
+    try {
+      await Wait.until(() => {
+        if (!this._wsServer) return false;
+
+        const wsClients = Array.from(this._wsServer.clients).filter((item) => item.readyState === WebSocket.OPEN && item["id"] === socketId);
+        if (wsClients.length > 1) {
+          this._logger.debug("클라이언트 중복: " + socketId + ": " + wsClients.length + "\n" + wsClients.map((item) => "  - " + item["connectedAtDateTime"].toFormatString("yyyy:MM:dd HH:mm:ss.fff")).join("\n"));
+          return true;
+        }
+        else {
+          return wsClients.length === 1;
+        }
+      }, 500, 1000);
+
+      return Array.from(this._wsServer!.clients).single((item) => item.readyState === WebSocket.OPEN && item["id"] === socketId);
     }
-    return wsClients.last();
+    catch (err) {
+      this._logger.error("소켓요청을 처리하는 중에 클라이언트 소켓이 끊김", err);
+      return undefined;
+    }
   }
 
   public async listenAsync(): Promise<void> {
@@ -147,14 +161,13 @@ export class SdServiceServer extends EventEmitter {
 
   public broadcastReload(): void {
     this._logger.debug("서버내 모든 클라이언트 RELOAD 명령 전송");
-    this._wsServer?.clients.forEach((client) => {
-      const cmd: TSdServiceS2CMessage = { name: "client-reload" };
-      client.send(JsonConvert.stringify(cmd));
+    this._wsServer?.clients.forEach(async (wsClient) => {
+      await this._sendAsync(wsClient, { name: "client-reload" });
     });
   }
 
   private async _getWsClientIdAsync(wsClient: WebSocket): Promise<string> {
-    return await new Promise<string>((resolve) => {
+    return await new Promise<string>(async (resolve) => {
       const msgFn = (msgJson: string): void => {
         const msg = JsonConvert.parse(msgJson) as TSdServiceC2SMessage;
         if (msg.name === "client-get-id-response") {
@@ -164,8 +177,7 @@ export class SdServiceServer extends EventEmitter {
       };
       wsClient.on("message", msgFn);
 
-      const cmd: TSdServiceS2CMessage = { name: "client-get-id" };
-      wsClient.send(JsonConvert.stringify(cmd));
+      await this._sendAsync(wsClient, { name: "client-get-id" });
     });
   }
 
@@ -192,8 +204,7 @@ export class SdServiceServer extends EventEmitter {
       await this._onWsClientMessageAsync(wsClientId, msgJson);
     });
 
-    const cmd: TSdServiceS2CMessage = { name: "connected" };
-    wsClient.send(JsonConvert.stringify(cmd));
+    await this._sendAsync(wsClient, { name: "connected" });
   }
 
   private _onWsClientClosed(wsClientId: string, code: number): void {
@@ -223,15 +234,8 @@ export class SdServiceServer extends EventEmitter {
 
     const res = await this._processSocketRequestAsync(socketId, req);
 
-    const wsClient = this.getWsClient(socketId);
-    try {
-      await Wait.until(() => wsClient !== undefined, 500, 10000);
-      this._logger.debug(`응답 전송 (size: ${Buffer.from(JsonConvert.stringify(res)).length})`);
-      wsClient!.send(JsonConvert.stringify(res));
-    }
-    catch (err) {
-      this._logger.error("소켓요청을 처리하는 중에 클라이언트 소켓이 끊김", err);
-    }
+    this._logger.debug(`응답 전송 (size: ${Buffer.from(JsonConvert.stringify(res)).length})`);
+    await this._sendAsync(socketId, res);
   }
 
   private async _onSocketRequestSplitAsync(socketId: string, splitReq: ISdServiceSplitRequest): Promise<void> {
@@ -240,9 +244,60 @@ export class SdServiceServer extends EventEmitter {
     const cacheInfo = this._splitReqCache.getOrCreate(splitReq.uuid, { completedSize: 0, data: [] });
     cacheInfo.data[splitReq.index] = splitReq.body;
     cacheInfo.completedSize += splitReq.body.length;
+
     if (cacheInfo.completedSize === splitReq.fullSize) {
       const req = JsonConvert.parse(cacheInfo.data.join("")) as ISdServiceRequest;
       await this._onSocketRequestAsync(socketId, req);
+    }
+
+    await this._sendAsync(socketId, {
+      name: "response-for-split",
+      reqUuid: splitReq.uuid,
+      completedSize: cacheInfo.completedSize
+    });
+  }
+
+  private async _sendAsync(wsClient: WebSocket, cmd: TSdServiceS2CMessage): Promise<void>;
+  private async _sendAsync(socketId: string, cmd: TSdServiceS2CMessage): Promise<void>;
+  private async _sendAsync(arg: WebSocket | string, cmd: TSdServiceS2CMessage): Promise<void> {
+    const cmdJson = JsonConvert.stringify(cmd);
+
+    if (cmd.name === "response" && cmdJson.length > 1000 * 1000) {
+      const splitSize = 1000 * 100;
+
+      let index = 0;
+      let currSize = 0;
+      while (currSize !== cmdJson.length) {
+        const splitBody = cmdJson.substring(currSize, currSize + splitSize - 1);
+        const splitReq: TSdServiceS2CMessage = {
+          name: "response-split",
+          reqUuid: cmd.reqUuid,
+          fullSize: cmdJson.length,
+          index,
+          body: splitBody
+        };
+        const splitReqJson = JsonConvert.stringify(splitReq);
+
+        try {
+          const wsClient = arg instanceof WebSocket ? arg : await this.getWsClientAsync(arg);
+          wsClient?.send(splitReqJson);
+        }
+        catch (err) {
+          this._logger.error("소켓요청을 처리하는 중에 클라이언트 소켓이 끊김", err);
+        }
+
+        currSize += splitBody.length;
+        index++;
+      }
+    }
+    else {
+      try {
+        const wsClient = arg instanceof WebSocket ? arg : await this.getWsClientAsync(arg);
+        wsClient?.send(cmdJson);
+      }
+      catch (err) {
+        this._logger.error("소켓요청을 처리하는 중에 클라이언트 소켓이 끊김", err);
+      }
     }
   }
 
@@ -335,14 +390,14 @@ export class SdServiceServer extends EventEmitter {
 
         const listeners = this._eventListeners.filter((item) => targetKeys.includes(item.key));
         for (const listener of listeners) {
-          const currSocket = this.getWsClient(listener.socketId);
-          if (currSocket?.readyState === WebSocket.OPEN) {
+          const wsClient = await this.getWsClientAsync(listener.socketId);
+          if (wsClient?.readyState === WebSocket.OPEN) {
             const evtMsg: TSdServiceS2CMessage = {
               name: "event",
               key: listener.key,
               body: data
             };
-            currSocket.send(JsonConvert.stringify(evtMsg));
+            wsClient.send(JsonConvert.stringify(evtMsg));
           }
         }
 

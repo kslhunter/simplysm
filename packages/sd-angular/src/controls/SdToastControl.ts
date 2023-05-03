@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, HostBinding, Input } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  EventEmitter,
+  HostBinding,
+  Input,
+  ViewChild
+} from "@angular/core";
 import { SdInputValidate } from "../decorators/SdInputValidate";
 import { sdThemes, TSdTheme } from "../commons";
 
@@ -11,7 +19,7 @@ import { sdThemes, TSdTheme } from "../commons";
         <ng-content></ng-content>
       </div>
       <div class="_sd-toast-progress" *ngIf="useProgress">
-        <div class="_sd-toast-progress-bar" [style.width.%]="progress">
+        <div #progressBar class="_sd-toast-progress-bar">
         </div>
       </div>
     </div>`,
@@ -43,9 +51,11 @@ import { sdThemes, TSdTheme } from "../commons";
         > ._sd-toast-progress {
           background: var(--theme-color-grey-default);
           height: 4px;
-          border-radius: var(--border-radius-lg);
+          border-radius: var(--border-radius-xl);
+          margin: 0 4px 4px 4px;
 
           > ._sd-toast-progress-bar {
+            border-radius: var(--border-radius-xl);
             height: 4px;
             transition: width 1s ease-out;
           }
@@ -58,8 +68,10 @@ import { sdThemes, TSdTheme } from "../commons";
             background: var(--theme-color-#{$color}-default);
 
             > ._sd-toast-progress {
+              background: var(--theme-color-#{$color}-darker);
+              
               > ._sd-toast-progress-bar {
-                background: var(--theme-color-#{$color}-default);
+                background: var(--theme-color-#{$color}-lighter);
               }
             }
           }
@@ -115,9 +127,11 @@ export class SdToastControl {
   @SdInputValidate(Boolean)
   public useProgress?: boolean;
 
-  @Input()
-  @SdInputValidate(Number)
-  public progress?: number;
+  public set progress(val: number) {
+    if (this.progressBarElRef) {
+      this.progressBarElRef.nativeElement.style.width = val + "%";
+    }
+  }
 
   public close = new EventEmitter<any>();
 
@@ -129,4 +143,7 @@ export class SdToastControl {
   })
   @HostBinding("attr.sd-theme")
   public theme?: TSdTheme = "info";
+
+  @ViewChild("progressBar", { static: false, read: ElementRef })
+  public progressBarElRef?: ElementRef<HTMLDivElement>;
 }

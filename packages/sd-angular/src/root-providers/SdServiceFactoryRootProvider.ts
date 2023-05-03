@@ -1,10 +1,16 @@
 import { Injectable } from "@angular/core";
 import { ObjectUtil } from "@simplysm/sd-core-common";
 import { ISdServiceClientConnectionConfig, SdServiceClient } from "@simplysm/sd-service-client";
+import { ISdProgressToast, SdToastProvider } from "../providers/SdToastProvider";
 
 @Injectable({ providedIn: "root" })
 export class SdServiceFactoryRootProvider {
   private readonly _clientMap = new Map<string, SdServiceClient>();
+  private readonly _reqProgToastMap = new Map<string, ISdProgressToast>();
+  private readonly _resProgToastMap = new Map<string, ISdProgressToast>();
+
+  public constructor(private readonly _toast: SdToastProvider) {
+  }
 
   public async connectAsync(clientName: string, key: string, options: Partial<ISdServiceClientConnectionConfig> = {}): Promise<void> {
     if (this._clientMap.has(key)) {
@@ -21,6 +27,23 @@ export class SdServiceFactoryRootProvider {
       host: location.hostname,
       ssl: location.protocol.startsWith("https")
     }, options));
+
+    client.on("request-progress", (state) => {
+      if (!this._reqProgToastMap.has(state.uuid)) {
+        this._reqProgToastMap.set(state.uuid, this._toast.info("요청을 전송하는 중입니다.", true));
+      }
+      const progressToast = this._reqProgToastMap.get(state.uuid)!;
+      progressToast.progress((state.completedSize / state.fullSize) * 100);
+    });
+
+    client.on("response-progress", (state) => {
+      if (!this._resProgToastMap.has(state.reqUuid)) {
+        this._resProgToastMap.set(state.reqUuid, this._toast.info("응답을 전송받는 중입니다.", true));
+      }
+      const progressToast = this._resProgToastMap.get(state.reqUuid)!;
+      progressToast.progress((state.completedSize / state.fullSize) * 100);
+    });
+
     await client.connectAsync();
 
     this._clientMap.set(key, client);

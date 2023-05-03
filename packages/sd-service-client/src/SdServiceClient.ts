@@ -1,9 +1,15 @@
 import { ISdServiceClientConnectionConfig } from "./ISdServiceClientConnectionConfig";
 import { JsonConvert, Type, Uuid, Wait } from "@simplysm/sd-core-common";
-import { SdServiceEventListenerBase, TSdServiceC2SMessage, TSdServiceS2CMessage } from "@simplysm/sd-service-common";
+import {
+  ISdServiceResponse,
+  SdServiceEventListenerBase,
+  TSdServiceC2SMessage,
+  TSdServiceS2CMessage
+} from "@simplysm/sd-service-common";
 import { SdWebSocket } from "./SdWebSocket";
+import { EventEmitter } from "events";
 
-export class SdServiceClient {
+export class SdServiceClient extends EventEmitter {
   public static isOnShowAlert = false;
 
   private readonly _id = Uuid.new().toString();
@@ -22,8 +28,16 @@ export class SdServiceClient {
     return this._ws.connected && this.isConnected;
   }
 
+  public override on(event: "request-progress", listener: (state: ISdServiceClientRequestProgressState) => void): this;
+  public override on(event: "response-progress", listener: (state: ISdServiceClientResponseProgressState) => void): this;
+  public override on(event: string | symbol, listener: (...args: any[]) => void): this {
+    return super.on(event, listener);
+  }
+
   public constructor(private readonly _name: string,
                      public readonly options: ISdServiceClientConnectionConfig) {
+    super();
+
     this.websocketUrl = `${this.options.ssl ? "wss" : "ws"}://${this.options.host}:${this.options.port}`;
     this.serverUrl = `${this.options.ssl ? "https" : "http"}://${this.options.host}:${this.options.port}`;
     this._ws = new SdWebSocket(this.websocketUrl);
@@ -104,22 +118,6 @@ export class SdServiceClient {
     const uuid = Uuid.new().toString();
 
     return await new Promise<any>(async (resolve, reject) => {
-      const msgFn = (msgJson: string): void => {
-        const msg = JsonConvert.parse(msgJson) as TSdServiceS2CMessage;
-        if (msg.name !== "response") return;
-        if (msg.reqUuid !== uuid) return;
-
-        this._ws.off("message", msgFn);
-
-        if (msg.state === "error") {
-          reject(new Error(msg.body));
-          return;
-        }
-
-        resolve(msg.body);
-      };
-      this._ws.on(`message`, msgFn);
-
       const req: TSdServiceC2SMessage = {
         name: "request",
         clientName: this._name,
@@ -129,7 +127,55 @@ export class SdServiceClient {
       };
 
       const reqText = JsonConvert.stringify(req);
+
+      const splitResInfo: { completedSize: number; data: string[] } = { completedSize: 0, data: [] };
+      const msgFn = (msgJson: string): void => {
+        const msg = JsonConvert.parse(msgJson) as TSdServiceS2CMessage;
+        if (msg.name !== "response" && msg.name !== "response-for-split" && msg.name !== "response-split") return;
+        if (msg.reqUuid !== uuid) return;
+
+        if (msg.name === "response-for-split") {
+          this.emit("request-progress", { reqUuid: uuid, fullSize: reqText.length, completedSize: msg.completedSize });
+        }
+        else if (msg.name === "response-split") {
+          splitResInfo.data[msg.index] = msg.body;
+          splitResInfo.completedSize += msg.body.length;
+
+          if (splitResInfo.completedSize === msg.fullSize) {
+            const res = JsonConvert.parse(splitResInfo.data.join("")) as ISdServiceResponse;
+
+            this._ws.off("message", msgFn);
+
+            if (res.state === "error") {
+              reject(new Error(res.body));
+              return;
+            }
+
+            resolve(res.body);
+          }
+
+          this.emit("response-progress", {
+            reqUuid: uuid,
+            fullSize: msg.fullSize,
+            completedSize: splitResInfo.completedSize
+          });
+        }
+        else {
+          this._ws.off("message", msgFn);
+
+          if (msg.state === "error") {
+            reject(new Error(msg.body));
+            return;
+          }
+
+          resolve(msg.body);
+        }
+      };
+      this._ws.on(`message`, msgFn);
+
       if (reqText.length > 1000 * 1000) {
+        this.emit("request-progress", { uuid: uuid, fullSize: reqText.length, completedSize: 0 });
+
         const splitSize = 1000 * 100;
 
         let index = 0;
@@ -212,3 +258,16 @@ export class SdServiceClient {
     });
   }
 }
+
+export interface ISdServiceClientRequestProgressState {
+  uuid: string;
+  fullSize: number;
+  completedSize: number;
+}
+
+export interface ISdServiceClientResponseProgressState {
+  reqUuid: string;
+  fullSize: number;
+  completedSize: number;
+}
+
