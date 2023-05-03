@@ -32,16 +32,26 @@ export class SdServiceFactoryRootProvider {
       if (!this._reqProgToastMap.has(state.uuid)) {
         this._reqProgToastMap.set(state.uuid, this._toast.info("요청을 전송하는 중입니다.", true));
       }
-      const progressToast = this._reqProgToastMap.get(state.uuid)!;
-      progressToast.progress((state.completedSize / state.fullSize) * 100);
+
+      const reqProgToast = this._reqProgToastMap.get(state.uuid);
+      reqProgToast?.progress((state.completedSize / state.fullSize) * 100);
+
+      if (state.completedSize === state.fullSize) {
+        this._reqProgToastMap.delete(state.uuid);
+      }
     });
 
     client.on("response-progress", (state) => {
       if (!this._resProgToastMap.has(state.reqUuid)) {
         this._resProgToastMap.set(state.reqUuid, this._toast.info("응답을 전송받는 중입니다.", true));
       }
-      const progressToast = this._resProgToastMap.get(state.reqUuid)!;
-      progressToast.progress((state.completedSize / state.fullSize) * 100);
+
+      const resProgToast = this._resProgToastMap.get(state.reqUuid);
+      resProgToast?.progress((state.completedSize / state.fullSize) * 100);
+
+      if (state.completedSize === state.fullSize) {
+        this._resProgToastMap.delete(state.reqUuid);
+      }
     });
 
     await client.connectAsync();

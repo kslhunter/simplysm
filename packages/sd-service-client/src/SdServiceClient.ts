@@ -135,13 +135,20 @@ export class SdServiceClient extends EventEmitter {
         if (msg.reqUuid !== uuid) return;
 
         if (msg.name === "response-for-split") {
-          this.emit("request-progress", { reqUuid: uuid, fullSize: reqText.length, completedSize: msg.completedSize });
+          this.emit("request-progress", { uuid, fullSize: reqText.length, completedSize: msg.completedSize });
         }
         else if (msg.name === "response-split") {
           splitResInfo.data[msg.index] = msg.body;
           splitResInfo.completedSize += msg.body.length;
+          const isCompleted = splitResInfo.completedSize === msg.fullSize;
 
-          if (splitResInfo.completedSize === msg.fullSize) {
+          this.emit("response-progress", {
+            reqUuid: uuid,
+            fullSize: msg.fullSize,
+            completedSize: splitResInfo.completedSize
+          });
+
+          if (isCompleted) {
             const res = JsonConvert.parse(splitResInfo.data.join("")) as ISdServiceResponse;
 
             this._ws.off("message", msgFn);
@@ -153,12 +160,6 @@ export class SdServiceClient extends EventEmitter {
 
             resolve(res.body);
           }
-
-          this.emit("response-progress", {
-            reqUuid: uuid,
-            fullSize: msg.fullSize,
-            completedSize: splitResInfo.completedSize
-          });
         }
         else {
           this._ws.off("message", msgFn);
@@ -174,7 +175,7 @@ export class SdServiceClient extends EventEmitter {
       this._ws.on(`message`, msgFn);
 
       if (reqText.length > 1000 * 1000) {
-        this.emit("request-progress", { uuid: uuid, fullSize: reqText.length, completedSize: 0 });
+        this.emit("request-progress", { uuid, fullSize: reqText.length, completedSize: 0 });
 
         const splitSize = 1000 * 100;
 
@@ -236,7 +237,7 @@ export class SdServiceClient extends EventEmitter {
     await this._sendCommandAsync("removeEventListener", [key]);
   }
 
-  public async downloadAsync(relPath: string): Promise<Buffer> {
+  public async downloadFileBufferAsync(relPath: string): Promise<Buffer> {
     return await new Promise<Buffer>((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       xhr.open("GET", `${this.serverUrl}${(relPath.startsWith("/") ? "" : "/")}${relPath}`, true);

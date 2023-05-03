@@ -245,16 +245,19 @@ export class SdServiceServer extends EventEmitter {
     cacheInfo.data[splitReq.index] = splitReq.body;
     cacheInfo.completedSize += splitReq.body.length;
 
-    if (cacheInfo.completedSize === splitReq.fullSize) {
-      const req = JsonConvert.parse(cacheInfo.data.join("")) as ISdServiceRequest;
-      await this._onSocketRequestAsync(socketId, req);
-    }
+    const isCompleted = cacheInfo.completedSize === splitReq.fullSize;
 
     await this._sendAsync(socketId, {
       name: "response-for-split",
       reqUuid: splitReq.uuid,
       completedSize: cacheInfo.completedSize
     });
+
+    if (isCompleted) {
+      const req = JsonConvert.parse(cacheInfo.data.join("")) as ISdServiceRequest;
+      await this._onSocketRequestAsync(socketId, req);
+      this._splitReqCache.delete(splitReq.uuid);
+    }
   }
 
   private async _sendAsync(wsClient: WebSocket, cmd: TSdServiceS2CMessage): Promise<void>;
