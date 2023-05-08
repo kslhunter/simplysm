@@ -324,7 +324,7 @@ export class Queryable<D extends DbContext, T> {
     let result = new Queryable(this.db, this as any, entity);
 
     if (this.db.opt.dialect === "mysql") {
-      /*result = result
+      result = result
         .groupBy((item) => (
           Object.entries(item)
             .filter(([k, v]) => (
@@ -333,7 +333,7 @@ export class Queryable<D extends DbContext, T> {
               && !ObjectUtil.equal(v, pivotColumn)
             ))
             .map(([k, v]) => v) as any
-        ));*/
+        ));
     }
     else {
       result._def.pivot = {

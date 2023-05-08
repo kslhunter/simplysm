@@ -187,6 +187,7 @@ export interface ICreateIndexQueryDef {
     columns: {
       name: string;
       orderBy: "ASC" | "DESC";
+      unique: boolean;
     }[];
   };
 }
@@ -358,6 +359,7 @@ export interface IIndexDef {
     columnPropertyKey: string;
     order: number;
     orderBy: "ASC" | "DESC";
+    unique: boolean;
   }[];
 }
 

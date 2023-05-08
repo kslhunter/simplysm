@@ -8,7 +8,12 @@ import { SdBusyRootProvider } from "../root-providers/SdBusyRootProvider";
   template: `
     <div class="_screen">
       <div class="_rect">
-        <div class="_indicator"></div>
+        <div class="_indicator">
+          <div class="_cube1"></div>
+          <div class="_cube2"></div>
+          <div class="_cube4"></div>
+          <div class="_cube3"></div>
+        </div>
         <div class="_message" *ngIf="message">
           <pre>{{ message }}</pre>
         </div>
@@ -99,6 +104,10 @@ import { SdBusyRootProvider } from "../root-providers/SdBusyRootProvider";
             border-radius: 100%;
             border-bottom-color: var(--theme-color-primary-default);
             animation: _sd-busy-spin 1s linear infinite;
+
+            > div {
+              display: none;
+            }
           }
 
           > ._message {
@@ -155,6 +164,10 @@ import { SdBusyRootProvider } from "../root-providers/SdBusyRootProvider";
                 background-color: white;
                 animation: _sd-busy-bar-indicator-after 2s infinite ease-out;
               }
+
+              > div {
+                display: none;
+              }
             }
 
             > ._message {
@@ -163,6 +176,69 @@ import { SdBusyRootProvider } from "../root-providers/SdBusyRootProvider";
               right: 0;
               display: inline-block;
             }
+          }
+        }
+      }
+
+      &[sd-type=cube] {
+        > ._screen > ._rect {
+          > ._indicator {
+            position: absolute;
+            top: calc(50% - 20px);
+            left: calc(50% - 20px);
+            width: 40px;
+            height: 40px;
+            transform: rotateZ(45deg);
+
+            ._cube1, ._cube2, ._cube3, ._cube4 {
+              float: left;
+              width: 50%;
+              height: 50%;
+              position: relative;
+
+              &:before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: var(--trans-brightness-light);
+                animation: _sd-busy-cube 2.4s infinite linear both;
+                transform-origin: 100% 100%;
+              }
+            }
+
+            ._cube2 {
+              transform: rotateZ(90deg);
+
+              &:before {
+                animation-delay: 0.3s;
+              }
+            }
+
+            ._cube3 {
+              transform: rotateZ(180deg);
+
+              &:before {
+                animation-delay: 0.6s;
+              }
+            }
+
+            ._cube4 {
+              transform: rotateZ(270deg);
+
+              &:before {
+                animation-delay: 0.9s;
+              }
+            }
+          }
+
+          > ._message {
+            position: absolute;
+            top: 2px;
+            right: 0;
+            display: inline-block;
           }
         }
       }
@@ -194,6 +270,24 @@ import { SdBusyRootProvider } from "../root-providers/SdBusyRootProvider";
         transform: scaleX(1.0);
       }
     }
+
+    @keyframes _sd-busy-cube {
+      0%, 10% {
+        -webkit-transform: perspective(140px) rotateX(-180deg);
+        transform: perspective(140px) rotateX(-180deg);
+        opacity: 0;
+      }
+      25%, 75% {
+        -webkit-transform: perspective(140px) rotateX(0deg);
+        transform: perspective(140px) rotateX(0deg);
+        opacity: 1;
+      }
+      90%, 100% {
+        -webkit-transform: perspective(140px) rotateY(180deg);
+        transform: perspective(140px) rotateY(180deg);
+        opacity: 0;
+      }
+    }
   `]
 })
 export class SdBusyContainerControl {
@@ -209,11 +303,11 @@ export class SdBusyContainerControl {
   @Input()
   @SdInputValidate({
     type: String,
-    includes: ["spinner", "bar"],
+    includes: ["spinner", "bar", "cube"],
     notnull: true
   })
   @HostBinding("attr.sd-type")
-  public type: "spinner" | "bar";
+  public type: "spinner" | "bar" | "cube";
 
   @Input()
   @SdInputValidate({

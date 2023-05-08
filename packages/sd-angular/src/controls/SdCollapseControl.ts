@@ -8,14 +8,21 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
   template: `
     <div class="_content"
          (sdResize)="onContentResize($event)"
-         [style.marginTop]="contentMarginTop"
-         [style.transition]="contentTransition">
+         [style.marginTop]="contentMarginTop">
       <ng-content></ng-content>
     </div>`,
   styles: [/* language=SCSS */ `
     :host {
       display: block;
       overflow: hidden;
+      
+      &[sd-open=false] > ._content {
+        transition: margin-top .1s ease-in;
+      }
+
+      &[sd-open=true] > ._content {
+        transition: margin-top .1s ease-out;
+      }
     }
   `]
 })
@@ -29,11 +36,6 @@ export class SdCollapseControl implements AfterContentInit {
 
   public get contentMarginTop(): string | undefined {
     return this.open ? undefined : `${-this.contentHeight}px`;
-  }
-
-  public get contentTransition(): string | undefined {
-    return this.open === undefined ? undefined
-      : this.open ? "margin-top .1s ease-out" : "margin-top .1s ease-in";
   }
 
   public constructor(private readonly _elRef: ElementRef) {

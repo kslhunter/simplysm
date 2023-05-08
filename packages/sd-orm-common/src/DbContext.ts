@@ -555,7 +555,8 @@ export abstract class DbContext {
               name: fkDef.name,
               columns: fkDef.columnPropertyKeys.map((item) => ({
                 name: tableDef.columns.single((col) => col.propertyKey === item)!.name,
-                orderBy: "ASC"
+                orderBy: "ASC",
+                unique: false
               }))
             }
           } as TQueryDef
@@ -588,7 +589,8 @@ export abstract class DbContext {
           name: indexDef.name,
           columns: indexDef.columns.orderBy((item) => item.order).map((item) => ({
             name: tableDef.columns.single((col) => col.propertyKey === item.columnPropertyKey)!.name,
-            orderBy: item.orderBy
+            orderBy: item.orderBy,
+            unique: item.unique
           }))
         }
       });
@@ -718,7 +720,8 @@ export abstract class DbContext {
           columnPropertyKey: propKey,
           name: tableDef.columns.single((col) => col.propertyKey === propKey)!.name,
           order: i + 1,
-          orderBy: "ASC"
+          orderBy: "ASC",
+          unique: false
         }))
       };
     }
@@ -730,7 +733,8 @@ export abstract class DbContext {
         name: indexDef.name,
         columns: indexDef.columns.orderBy((item) => item.order).map((item) => ({
           name: tableDef.columns.single((col) => col.propertyKey === item.columnPropertyKey)!.name,
-          orderBy: item.orderBy
+          orderBy: item.orderBy,
+          unique: item.unique
         }))
       }
     };

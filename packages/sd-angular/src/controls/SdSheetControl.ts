@@ -32,8 +32,8 @@ import { faCaretRight } from "@fortawesome/pro-duotone-svg-icons/faCaretRight";
   selector: "sd-sheet",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <sd-busy-container [busy]="!isInitialized">
-      <sd-dock-container [hidden]="!isInitialized">
+    <sd-busy-container [busy]="!isInitialized || busy" type="cube">
+      <sd-dock-container [hidden]="!isInitialized || busy">
         <sd-dock *ngIf="(key || displayPageLength > 0) && !hideConfigBar">
           <sd-flex direction="row" gap="sm">
             <sd-anchor *ngIf="key" (click)="onConfigButtonClick()">
@@ -582,6 +582,10 @@ export class SdSheetControl<T> implements OnInit, AfterContentChecked, DoCheck {
    */
   @Input()
   public expandedItems: T[] = [];
+
+  @Input()
+  @SdInputValidate(Boolean)
+  public busy = false;
 
   /**
    * 확장된 항목 변경 이벤트

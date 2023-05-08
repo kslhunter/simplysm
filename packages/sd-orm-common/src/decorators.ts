@@ -84,6 +84,7 @@ export function Index<T extends object>(def?: {
   name?: string;
   order?: number;
   orderBy?: "ASC" | "DESC";
+  unique?: boolean;
 }): TPropertyDecoratorReturn<T> {
   return (object, propertyKey) => {
     const classType = object.constructor as Type<T>;
@@ -94,7 +95,8 @@ export function Index<T extends object>(def?: {
         {
           columnPropertyKey: propertyKey,
           order: def?.order ?? 1,
-          orderBy: def?.orderBy ?? "ASC"
+          orderBy: def?.orderBy ?? "ASC",
+          unique: def?.unique ?? false
         }
       ]
     });

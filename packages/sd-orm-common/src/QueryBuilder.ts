@@ -498,10 +498,11 @@ pragma writable_schema=0;`.trim();
     const tableKey = this._dialect === "mysql" && tableNameChain.join("_").length > 30
       ? tableNameChain.join("_").replace(/[a-z]/g, "")
       : tableNameChain.join("_");
+    const isUnique = def.index.columns.some((item) => item.unique);
 
-    const idxName = this.wrap(`IDX_${tableKey}_${def.index.name}`);
+    const idxName = this.wrap(`${isUnique ? "UDX" : "IDX"}_${tableKey}_${def.index.name}`);
 
-    return `CREATE INDEX ${idxName} ON ${tableName} (${def.index.columns.map((item) => `${this.wrap(item.name)} ${item.orderBy}`).join(", ")});`;
+    return `CREATE ${isUnique ? "UNIQUE " : ""}INDEX ${idxName} ON ${tableName} (${def.index.columns.map((item) => `${this.wrap(item.name)} ${item.orderBy}`).join(", ")});`;
   }
 
   public dropIndex(def: IDropIndexQueryDef): string {
