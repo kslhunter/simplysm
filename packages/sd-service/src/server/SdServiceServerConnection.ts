@@ -22,12 +22,6 @@ export class SdServiceServerConnection extends EventEmitter {
     super();
     this.origin = optional(() => req.headers.origin!.toString()) || "";
 
-    this._conn.on("close", () => {
-      this._splitRequestMap.clear();
-      this._uploadRequestMap.clear();
-      this.emit("close");
-    });
-
     this._conn.on("message", async (msg: string) => {
       try {
         await this._onMessageAsync(msg);
@@ -35,6 +29,12 @@ export class SdServiceServerConnection extends EventEmitter {
       catch (err) {
         this._logger.error(err);
       }
+    });
+
+    this._conn.on("close", () => {
+      this._splitRequestMap.clear();
+      this._uploadRequestMap.clear();
+      this.emit("close");
     });
   }
 
@@ -90,34 +90,50 @@ export class SdServiceServerConnection extends EventEmitter {
         });
       }
 
-      const splitRequestValue = this._splitRequestMap.get(requestId)!;
-      splitRequestValue.bufferStrings[i] = str;
+      const splitRequestValue = this._splitRequestMap.get(requestId);
 
-      clearTimeout(splitRequestValue.timer);
-      splitRequestValue.timer = setTimeout(() => {
-        this._logger.warn(`분할요청중에 타임아웃이 발생했습니다. : ${this.origin}`);
+      if (splitRequestValue) {
+        splitRequestValue.bufferStrings[i] = str;
+
+        clearTimeout(splitRequestValue.timer);
+        splitRequestValue.timer = setTimeout(() => {
+          this._logger.warn(`분할요청중에 타임아웃이 발생했습니다. : ${this.origin}`);
+          this._splitRequestMap.delete(requestId);
+        }, 30000);
+
+        const res: ISdServiceResponse = {
+          requestId,
+          type: "split",
+          body: str.length
+        };
+
+        await this.sendAsync(res);
+
+
+        const receivedLength = splitRequestValue.bufferStrings.filterExists().length;
+        if (receivedLength !== length) {
+          clearTimeout(splitRequestValue.timer);
+          splitRequestValue.timer = setTimeout(() => {
+            this._logger.warn(`분할요청중에 타임아웃이 발생했습니다. : ${this.origin}`);
+            this._splitRequestMap.delete(requestId);
+          }, 30000);
+          return;
+        }
+
+        const currentLength = splitRequestValue.bufferStrings.filterExists().length;
+        this._logger.log(`분할된 요청을 받았습니다 : ${this.origin} - ${i.toString().toLocaleString().padStart(length.toString().toLocaleString().length)}번째 /${length.toLocaleString()}`);
+
+        if (!this._splitRequestMap.has(requestId)) return; // 동시작업이 있어, 동시 Request가 뜨는 경우가 있음. 이 문제 해결
+
+        if (currentLength !== length) {
+          this._splitRequestMap.set(requestId, splitRequestValue);
+          return;
+        }
+
         this._splitRequestMap.delete(requestId);
-      }, 30000);
-
-      const res: ISdServiceResponse = {
-        requestId,
-        type: "split",
-        body: str.length
-      };
-
-      await this.sendAsync(res);
-
-      const currentLength = splitRequestValue.bufferStrings.filterExists().length;
-      this._logger.log(`분할된 요청을 받았습니다 : ${this.origin} - ${i.toString().toLocaleString().padStart(length.toString().toLocaleString().length)}번째 /${length.toLocaleString()}`);
-
-      if (currentLength !== length) {
-        this._splitRequestMap.set(requestId, splitRequestValue);
-        return;
+        message = splitRequestValue.bufferStrings.join("");
+        this._logger.log(`분할요청 처리 : ${JsonConvert.parse(message)}`);
       }
-
-      clearTimeout(this._splitRequestMap.get(requestId)!.timer);
-      this._splitRequestMap.delete(requestId);
-      message = splitRequestValue.bufferStrings.join("");
     }
     // MD5 확인 요청 처리
     else if (checkMd5Regexp.test(msg)) {

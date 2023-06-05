@@ -11,8 +11,9 @@ export class Queryable<T extends object> {
   private readonly _db: DbContext;
 
   private readonly _qbaFirstParam: Type<T> | Queryable<T> | Queryable<T>[];
-  private __qba?: QueryBuilderAdv<T>; //tslint:disable-line:variable-name
-  private get _qba(): QueryBuilderAdv<T> {
+  public __qba?: QueryBuilderAdv<T>; //tslint:disable-line:variable-name
+  // @ts-ignore
+  public get _qba(): QueryBuilderAdv<T> {
     if (!this.__qba) {
       if (this._qbaFirstParam instanceof Function) {
         this.__qba = new QueryBuilderAdv(this._qbaFirstParam, this._db.mainDb);
@@ -27,7 +28,7 @@ export class Queryable<T extends object> {
     return this.__qba;
   }
 
-  private set _qba(value: QueryBuilderAdv<T>) {
+  public set _qba(value: QueryBuilderAdv<T>) {
     this.__qba = value;
   }
 
