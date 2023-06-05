@@ -17,7 +17,7 @@ import {SdTypeValidate} from "../../commons/SdTypeValidate";
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   template: `
-    <div class="_sd-dropdown-control" [attr.tabindex]="disabled ? undefined : '0'">
+    <div class="_sd-dropdown-control" [attr.tabindex]="disabled ? undefined : tabindex">
       <ng-content></ng-content>
     </div>
     <ng-content select="sd-dropdown-popup"></ng-content>`,
@@ -40,6 +40,13 @@ export class SdDropdownControl implements OnInit, OnDestroy {
 
   @Output()
   public readonly close = new EventEmitter();
+
+  @Input()
+  @SdTypeValidate({
+    type: Number,
+    notnull: true
+  })
+  public tabindex = 0;
 
   private _isOpen = false;
 

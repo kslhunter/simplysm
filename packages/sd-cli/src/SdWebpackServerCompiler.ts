@@ -190,7 +190,14 @@ export class SdWebpackServerCompiler extends events.EventEmitter {
               content: JSON.stringify({
                 name: packageNpmConfig.name.replace(/@/g, "").replace(/\//g, "-"),
                 script: "app.js",
-                watch: false,
+                watch: true,
+                watch_delay: 2000,
+                ignore_watch: [
+                  "node_modules",
+                  "www",
+                  "logs"
+                ],
+                interpreter: "node@12.13.1",
                 env: {
                   NODE_ENV: "production",
                   VERSION: this._projectNpmConfig.version,

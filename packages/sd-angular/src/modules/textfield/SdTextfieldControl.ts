@@ -19,6 +19,7 @@ import {DateOnly, DateTime, Time} from "@simplysm/sd-core";
   encapsulation: ViewEncapsulation.None,
   template: `
     <input #input
+           [tabindex]="tabindex"
            [attr.type]="type === 'number' ? 'text' : type === 'datetime' ? 'datetime-local' : type"
            [required]="required"
            [value]="controlValue"
@@ -33,6 +34,7 @@ import {DateOnly, DateTime, Time} from "@simplysm/sd-core";
            [step]="step"
            *ngIf="!multiline"/>
     <textarea #input
+              [tabindex]="tabindex"
               [rows]="rows"
               [required]="required"
               [value]="controlValue"
@@ -213,6 +215,10 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
   @Input()
   @SdTypeValidate(Number)
   public min?: number;
+
+  @Input()
+  @SdTypeValidate(Number)
+  public tabindex?: number;
 
   @Input()
   @SdTypeValidate(Number)
