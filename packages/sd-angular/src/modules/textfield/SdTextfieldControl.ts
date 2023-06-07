@@ -25,6 +25,7 @@ import {DateOnly, DateTime, Time} from "@simplysm/sd-core";
            [value]="controlValue"
            [placeholder]="placeholder || ''"
            [attr.pattern]="pattern"
+           [attr.inputmode]="type === 'number' ? 'numeric' : undefined"
            [attr.sd-invalid]="getIsInvalid()"
            (input)="onInputInput($event)"
            (focus)="onFocus($event)"
