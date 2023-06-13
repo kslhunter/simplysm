@@ -7,4 +7,13 @@ export class SdCryptoServiceClient {
   public async encryptAsync(data: string | Buffer): Promise<string> {
     return await this._client.sendAsync("SdCryptoService", "encryptAsync", [data]);
   }
+
+  public async encryptAesAsync(data: Buffer): Promise<string> {
+    return await this._client.sendAsync("SdCryptoService", "encryptAesAsync", [data]);
+
+  }
+
+  public async decryptAesAsync(encText: string): Promise<Buffer> {
+    return await this._client.sendAsync("SdCryptoService", "decryptAesAsync", [encText]);
+  }
 }

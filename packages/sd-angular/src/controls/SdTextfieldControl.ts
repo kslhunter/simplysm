@@ -181,7 +181,7 @@ import { sdThemes, TSdTheme } from "../commons";
           height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
           min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
         }
-        
+
         &[sd-type=month] {
           > input,
           > ._contents {
@@ -246,7 +246,6 @@ import { sdThemes, TSdTheme } from "../commons";
       }
 
       > input:invalid + ._invalid-indicator,
-      > textarea:invalid + ._invalid-indicator,
       &[sd-invalid=true] > ._invalid-indicator {
         @include invalid-indicator();
       }
@@ -280,12 +279,12 @@ export class SdTextfieldControl implements INotifyPropertyChange, DoCheck {
   @Input()
   @SdInputValidate({
     type: String,
-    includes: ["number", "text", "password", "date", "datetime", "datetime-sec", "time", "time-sec", "month", "year", "color", "email", "brn"],
+    includes: ["number", "text", "password", "date", "datetime", "datetime-sec", "time", "time-sec", "month", "year", "color", "email", "format"],
     notnull: true
   })
   @HostBinding("attr.sd-type")
   @NotifyPropertyChange()
-  public type: "number" | "text" | "password" | "date" | "datetime" | "datetime-sec" | "time" | "time-sec" | "month" | "year" | "color" | "email" | "brn" = "text";
+  public type: "number" | "text" | "password" | "date" | "datetime" | "datetime-sec" | "time" | "time-sec" | "month" | "year" | "color" | "email" | "format" = "text";
 
   @Input()
   @SdInputValidate(String)
@@ -395,6 +394,9 @@ export class SdTextfieldControl implements INotifyPropertyChange, DoCheck {
   @Input()
   public inputClass?: string;
 
+  @Input()
+  public format?: string;
+
   @HostBinding("attr.sd-invalid")
   public get isInvalid(): boolean {
     return Boolean(this.errorMessage);
@@ -436,7 +438,7 @@ export class SdTextfieldControl implements INotifyPropertyChange, DoCheck {
     if (!changedProps.includes("type")) return;
 
     this.controlType = this.type === "number" ? "text"
-      : this.type === "brn" ? "text"
+      : this.type === "format" ? "text"
         : this.type === "datetime" ? "datetime-local"
           : this.type === "datetime-sec" ? "datetime-local"
             : this.type === "time-sec" ? "time"
@@ -458,18 +460,30 @@ export class SdTextfieldControl implements INotifyPropertyChange, DoCheck {
       this.controlValue = this.useNumberComma ? this.value.toLocaleString(undefined, { maximumFractionDigits: 10 }) : this.value.toString(10);
       this.controlValueText = this.controlValue;
     }
-    else if (this.type === "brn" && typeof this.value === "string") {
-      const str = this.value.replace(/[^0-9]/g, "");
-      const first = str.substring(0, 3);
-      const second = str.substring(3, 5);
-      const third = str.substring(5, 10);
-      this.controlValue = first
-        + (
-          StringUtil.isNullOrEmpty(second) ? "" : "-" + second
-            + (
-              StringUtil.isNullOrEmpty(third) ? "" : "-" + third
-            )
-        );
+    else if (this.type === "format" && !StringUtil.isNullOrEmpty(this.format) && typeof this.value === "string") {
+      const formatItems = this.format.split("|");
+
+      for (const formatItem of formatItems) {
+        const fullLength = formatItem.match(/X/g)?.length;
+        if (fullLength === this.value.length) {
+          let result = "";
+          let valCur = 0;
+          for (const formatItemChar of formatItem) {
+            if (formatItemChar === "X") {
+              result += this.value[valCur];
+              valCur++;
+            }
+            else {
+              result += formatItemChar;
+            }
+          }
+          this.controlValue = result;
+          this.controlValueText = result;
+          return;
+        }
+      }
+
+      this.controlValue = this.value;
       this.controlValueText = this.controlValue;
     }
     else if (this.type === "datetime" && this.value instanceof DateTime) {
@@ -579,9 +593,11 @@ export class SdTextfieldControl implements INotifyPropertyChange, DoCheck {
         }
       }
     }
-    else if (this.type === "brn") {
-      if (typeof this.value !== "string" || !(/^[0-9]{10}$/).test(this.value)) {
-        errorMessages.push("BRN 형식이 잘못되었습니다.");
+    else if (this.type === "format" && !StringUtil.isNullOrEmpty(this.format)) {
+      const formatItems = this.format.split("|");
+
+      if (!formatItems.some((formatItem) => formatItem.match(/X/g)?.length === (this.value as string).length)) {
+        errorMessages.push(`문자의 길이가 요구되는 길이와 다릅니다.`);
       }
     }
     else if (["year", "month", "date"].includes(this.type)) {
@@ -660,8 +676,14 @@ export class SdTextfieldControl implements INotifyPropertyChange, DoCheck {
         this._setValue(Number(inputValue));
       }
     }
-    else if (this.type === "brn") {
-      this._setValue(inputEl.value.replace(/[^0-9]/g, ""));
+    else if (this.type === "format") {
+      const nonFormatChars = this.format?.match(/[^X]/g)?.distinct();
+      if (nonFormatChars) {
+        this._setValue(inputEl.value.replace(new RegExp(`[${nonFormatChars.map((item) => "\\" + item).join("")}]`, "g"), ""));
+      }
+      else {
+        this._setValue(inputEl.value);
+      }
     }
     else if (["year", "month", "date"].includes(this.type)) {
       try {

@@ -202,12 +202,12 @@ import { faCaretRight } from "@fortawesome/pro-duotone-svg-icons/faCaretRight";
   styles: [/* language=SCSS */ `
     @import "../../scss/mixins";
 
-    $z-index-fixed: 1;
-    $z-index-head: 2;
-    $z-index-head-fixed: 3;
-    $z-index-select-row-indicator: 4;
-    $z-index-focus-row-indicator: 5;
-    $z-index-resize-indicator: 6;
+    $z-index-fixed: 2;
+    $z-index-head: 3;
+    $z-index-head-fixed: 4;
+    $z-index-select-row-indicator: 5;
+    $z-index-focus-row-indicator: 6;
+    $z-index-resize-indicator: 7;
 
     $border-color: var(--theme-color-blue-grey-lightest);
     $border-color-dark: var(--theme-color-grey-light);
@@ -863,7 +863,7 @@ export class SdSheetControl<T> implements OnInit, AfterContentChecked, DoCheck {
         // set display item defs
 
         let displayItems = this.items;
-        if (this.pageItemCount !== undefined && this.pageItemCount !== 0 && this.items.length > 0) {
+        if (!this.orderingChange.observed) {
           for (const orderingItem of this.ordering.reverse()) {
             if (orderingItem.desc) {
               displayItems = displayItems.orderByDesc((item) => item[orderingItem.key]);
@@ -872,6 +872,9 @@ export class SdSheetControl<T> implements OnInit, AfterContentChecked, DoCheck {
               displayItems = displayItems.orderBy((item) => item[orderingItem.key]);
             }
           }
+        }
+
+        if (this.pageItemCount !== undefined && this.pageItemCount !== 0 && this.items.length > 0) {
           displayItems = displayItems.slice(this.page * this.pageItemCount, (this.page + 1) * this.pageItemCount);
         }
 
@@ -894,7 +897,7 @@ export class SdSheetControl<T> implements OnInit, AfterContentChecked, DoCheck {
 
 
                 let displayChildren = children;
-                if (this.pageItemCount !== undefined && this.pageItemCount !== 0 && this.items.length > 0) {
+                if (!this.orderingChange.observed) {
                   for (const orderingItem of this.ordering.reverse()) {
                     if (orderingItem.desc) {
                       displayChildren = displayChildren.orderByDesc((item) => item[orderingItem.key]);

@@ -213,7 +213,11 @@ declare global {
   };
 
   prototype.mapAsync = async function <T, R>(this: T[], selector: (item: T, index: number) => Promise<R>): Promise<R[]> {
-    return await Promise.all(this.map(selector));
+    const result: R[] = [];
+    for (let i = 0; i < this.length; i++) {
+      result.push(await selector(this[i], i));
+    }
+    return result;
   };
 
   prototype.mapMany = function <T, R>(this: T[], selector?: (item: T, index: number) => R[]): T | R[] {

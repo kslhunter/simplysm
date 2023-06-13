@@ -5,6 +5,7 @@ import { SdExcelRow } from "./SdExcelRow";
 import { SdExcelCell } from "./SdExcelCell";
 import { SdExcelXmlWorkbook } from "./files/SdExcelXmlWorkbook";
 import { SdExcelCol } from "./SdExcelCol";
+import { StringUtil } from "@simplysm/sd-core-common";
 
 export class SdExcelWorksheet {
   private readonly _rowMap = new Map<number, SdExcelRow>();
@@ -87,6 +88,20 @@ export class SdExcelWorksheet {
       for (let c = 0; c < matrix[r].length; c++) {
         const val = matrix[r][c];
         await this.cell(r, c).setValAsync(val);
+      }
+    }
+  }
+
+  public async setRecords(record: Record<string, any>[]): Promise<void> {
+    const headers = record.mapMany((item) => Object.keys(item)).distinct().filter((item) => !StringUtil.isNullOrEmpty(item));
+
+    for (let c = 0; c < headers.length; c++) {
+      await this.cell(0, c).setValAsync(headers[c]);
+    }
+
+    for (let r = 1; r < record.length + 1; r++) {
+      for (let c = 0; c < headers.length; c++) {
+        await this.cell(r, c).setValAsync(record[r - 1][headers[c]]);
       }
     }
   }

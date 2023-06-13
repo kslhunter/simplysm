@@ -29,12 +29,12 @@ export class SdExcelReaderWorkSheet {
   public dataTable(startRow?: number, startCol?: number, endRow?: number, endCol?: number): SdExcelReaderDataTable {
     return new SdExcelReaderDataTable(this, {
       s: {
-        r: startRow ?? this.range.s.r,
-        c: startCol ?? this.range.s.c
+        r: startRow === undefined ? this.range.s.r : startRow < 0 ? this.range.s.r + startRow : startRow,
+        c: startCol === undefined ? this.range.s.c : startCol < 0 ? this.range.s.c + startCol : startCol,
       },
       e: {
-        r: endRow ?? this.range.e.r,
-        c: endCol ?? this.range.e.c
+        r: endRow === undefined ? this.range.e.r : endRow < 0 ? this.range.e.r + endRow : endRow,
+        c: endCol === undefined ? this.range.e.c : endCol < 0 ? this.range.e.c + endCol : endCol,
       }
     });
   }
