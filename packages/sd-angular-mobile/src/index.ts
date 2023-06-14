@@ -1,6 +1,5 @@
 import "@simplysm/sd-core-browser";
 export * from "./SdAngularMobileModule";
-export * from "./plugins/SdAndroidBackbuttonEventPlugin";
 export * from "./controls/SdmTopbarNavControl";
 export * from "./controls/SdmTopbarMenuControl";
 export * from "./controls/SdmTopbarControl";
@@ -22,6 +21,7 @@ export * from "./controls/SdmCardControl";
 export * from "./controls/SdmButtonControl";
 export * from "./controls/SdmBusyContainerControl";
 export * from "./controls/SdmAnchorControl";
+export * from "./plugins/SdAndroidBackbuttonEventPlugin";
 export * from "./_modules/controls/SdmTopbarNavControlModule";
 export * from "./_modules/controls/SdmTopbarMenuControlModule";
 export * from "./_modules/controls/SdmTopbarControlModule";
