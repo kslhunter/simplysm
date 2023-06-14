@@ -16,39 +16,35 @@ import { sdThemes, TSdTheme } from "../commons";
       background: white;
       border-radius: var(--border-radius-default);
       overflow: hidden;
-      @include elevation(4);
-      /*border-top: 3px solid var(--theme-color-primary-default);
+      border-top: 3px solid var(--theme-color-primary-default);
       border-bottom: 1px solid var(--theme-color-primary-default);
       border-left: 0 solid var(--theme-color-grey-light);
-      border-right: 0 solid var(--theme-color-grey-light);*/
+      border-right: 0 solid var(--theme-color-grey-light);
 
       &[sd-elevation=none] {
-        @include elevation(0);
-        //border-top-width: 0;
-        //border-bottom-width: 0;
+        border-top-width: 0;
+        border-bottom-width: 0;
       }
 
       &[sd-elevation=lg] {
-        @include elevation(8);
-        //border-top-width: 5px;
-        //border-left-width: 1px;
-        //border-right-width: 1px;
+        border-top-width: 5px;
+        border-left-width: 1px;
+        border-right-width: 1px;
         border-radius: var(--border-radius-xl);
       }
 
       &[sd-elevation=xl] {
-        @include elevation(16);
-        //border-top-width: 7px;
-        //border-left-width: 1px;
-        //border-right-width: 1px;
+        border-top-width: 7px;
+        border-left-width: 1px;
+        border-right-width: 1px;
         border-radius: var(--border-radius-xxl);
       }
 
-      //@each $color in $arr-theme-color {
-      //  &[sd-theme=#{$color}] {
-      //    border-color: var(--theme-color-#{$color}-default);
-      //  }
-      //}
+      @each $color in $arr-theme-color {
+        &[sd-theme=#{$color}] {
+          border-color: var(--theme-color-#{$color}-default);
+        }
+      }
     }
   `]
 })
