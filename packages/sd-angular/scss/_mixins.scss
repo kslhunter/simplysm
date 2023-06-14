@@ -2,7 +2,7 @@
   @if $value == none or $value == 0 {
     box-shadow: none;
   } @else {
-    box-shadow: 0 0 2px rgba(0, 0, 0, .2), 0 #{$value * 0.5}px #{$value + 1}px rgba(0, 0, 0, .3);
+    box-shadow: 0 0 2px rgba(0, 0, 0, .05), 0 #{$value * 1}px #{$value * 2}px rgba(0, 0, 0, .1);
   }
 }
 

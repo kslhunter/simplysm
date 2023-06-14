@@ -243,7 +243,7 @@ import { faCaretRight } from "@fortawesome/pro-duotone-svg-icons/faCaretRight";
 
           > sd-pane._sheet-container {
             background: var(--sd-sheet-background-color);
-            border-radius: var(--border-radius-default);
+            border-radius: var(--border-radius-default);;
 
             > table {
               border-spacing: 0;

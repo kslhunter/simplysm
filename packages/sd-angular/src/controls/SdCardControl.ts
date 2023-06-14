@@ -1,6 +1,4 @@
-import { ChangeDetectionStrategy, Component, HostBinding, Input } from "@angular/core";
-import { SdInputValidate } from "../decorators/SdInputValidate";
-import { sdThemes, TSdTheme } from "../commons";
+import { ChangeDetectionStrategy, Component } from "@angular/core";
 
 @Component({
   selector: "sd-card",
@@ -16,55 +14,15 @@ import { sdThemes, TSdTheme } from "../commons";
       background: white;
       border-radius: var(--border-radius-default);
       overflow: hidden;
-      @include elevation(4);
-      /*border-top: 3px solid var(--theme-color-primary-default);
-      border-bottom: 1px solid var(--theme-color-primary-default);
-      border-left: 0 solid var(--theme-color-grey-light);
-      border-right: 0 solid var(--theme-color-grey-light);*/
+      @include elevation(2);
+      transition: box-shadow .1s ease-in-out;
 
-      &[sd-elevation=none] {
-        @include elevation(0);
-        //border-top-width: 0;
-        //border-bottom-width: 0;
+      &:hover {
+        @include elevation(6);
       }
-
-      &[sd-elevation=lg] {
-        @include elevation(8);
-        //border-top-width: 5px;
-        //border-left-width: 1px;
-        //border-right-width: 1px;
-        border-radius: var(--border-radius-xl);
-      }
-
-      &[sd-elevation=xl] {
-        @include elevation(16);
-        //border-top-width: 7px;
-        //border-left-width: 1px;
-        //border-right-width: 1px;
-        border-radius: var(--border-radius-xxl);
-      }
-
-      //@each $color in $arr-theme-color {
-      //  &[sd-theme=#{$color}] {
-      //    border-color: var(--theme-color-#{$color}-default);
-      //  }
-      //}
     }
   `]
 })
 export class SdCardControl {
-  @Input()
-  @SdInputValidate({ type: String, includes: ["none", "lg", "xl"] })
-  @HostBinding("attr.sd-elevation")
-  public elevation?: "none" | "lg" | "xl";
-
-  @Input()
-  @SdInputValidate({
-    type: String,
-    notnull: true,
-    includes: sdThemes
-  })
-  @HostBinding("attr.sd-theme")
-  public theme?: TSdTheme = "primary";
 }
 
