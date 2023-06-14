@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-core-browser",
-  "version": "7.3.1",
+  "version": "7.3.2",
   "description": "심플리즘 패키지 - 코어 모듈 (browser)",
   "author": "김석래",
   "repository": {
@@ -19,6 +19,6 @@
     "**/*"
   ],
   "dependencies": {
-    "@simplysm/sd-core-common": "7.3.1"
+    "@simplysm/sd-core-common": "7.3.2"
   }
 }
