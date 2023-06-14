@@ -6,7 +6,7 @@ import path from "path";
 import { createHash } from "crypto";
 import { SdCliBuildResultUtil } from "../utils/SdCliBuildResultUtil";
 import { NgtscProgram } from "@angular/compiler-cli";
-import sass from "sass";
+import * as sass from "sass";
 import { SdCliPackageLinter } from "../build-tool/SdCliPackageLinter";
 import { SdCliCacheCompilerHost } from "../build-tool/SdCliCacheCompilerHost";
 import { SdCliNgCacheCompilerHost } from "../build-tool/SdCliNgCacheCompilerHost";

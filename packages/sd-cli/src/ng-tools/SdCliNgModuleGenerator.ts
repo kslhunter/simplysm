@@ -232,6 +232,7 @@ export class SdCliNgModuleGenerator {
       const fileMeta = entryRecord[moduleName];
       for (const exp of fileMeta.exports) {
         const metas = this._findBbMetasFromMeta(exp.target);
+
         for (const meta of metas) {
           if (meta instanceof SdCliBbClassMetadata) {
             if (meta.ngDecl instanceof SdCliBbNgModuleMetadata) {
@@ -295,7 +296,6 @@ export class SdCliNgModuleGenerator {
         }
       }
     }
-
     return result;
   }
 

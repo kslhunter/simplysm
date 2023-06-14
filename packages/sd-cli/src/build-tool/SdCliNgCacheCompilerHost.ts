@@ -1,6 +1,6 @@
 import ts from "typescript";
 import { PathUtil } from "@simplysm/sd-core-node";
-import sass from "sass";
+import * as sass from "sass";
 import { fileURLToPath, pathToFileURL, URL } from "url";
 
 export class SdCliNgCacheCompilerHost {

@@ -1,5 +1,5 @@
 import path from "path";
-import glob from "glob";
+import * as glob from "glob";
 import os from "os";
 import fs from "fs";
 import crypto from "crypto";
@@ -32,9 +32,10 @@ export class FsUtil {
   }
 
   public static async globAsync(pattern: string): Promise<string[]>;
-  public static async globAsync(pattern: string, options: glob.IOptions): Promise<string[]>;
-  public static async globAsync(pattern: string, options?: glob.IOptions): Promise<string[]> {
-    return await new Promise<string[]>((resolve, reject) => {
+  public static async globAsync(pattern: string, options: glob.GlobOptions): Promise<string[]>;
+  public static async globAsync(pattern: string, options?: glob.GlobOptions): Promise<string[]> {
+    return (await glob.glob(pattern.replace(/\\/g, "/"), options ?? {})).map((item) => path.resolve(item));
+    /*return await new Promise<string[]>((resolve, reject) => {
       glob(pattern.replace(/\\/g, "/"), options ?? {}, (err: (Error | null), matches) => {
         if (err) {
           reject(err);
@@ -42,11 +43,11 @@ export class FsUtil {
         }
         resolve(matches.map((item) => path.resolve(item)));
       });
-    });
+    });*/
   }
 
-  public static glob(pattern: string, options?: glob.IOptions): string[] {
-    return glob.sync(pattern.replace(/\\/g, "/"), options);
+  public static glob(pattern: string, options?: glob.GlobOptions): string[] {
+    return glob.globSync(pattern.replace(/\\/g, "/"), options ?? {}).map((item) => path.resolve(item));
   }
 
   public static async readdirAsync(targetPath: string): Promise<string[]> {
