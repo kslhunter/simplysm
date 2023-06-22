@@ -8,7 +8,10 @@ import qrcode from "qrcode";
   selector: "sd-barcode",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <canvas [hidden]="!value" [style.margin-bottom]="type === 'qrcode' ? undefined : '-5px'"></canvas>`
+    <canvas [hidden]="!value"
+            [style.display]="type !== 'qrcode' ? 'none' : undefined"></canvas>
+    <svg [hidden]="!value" [style.display]="type === 'qrcode' ? 'none' : undefined"
+         [style.margin-bottom]="'-5px'"></svg>`
 })
 export class SdBarcodeControl implements OnChanges {
   @Input()
@@ -33,16 +36,23 @@ export class SdBarcodeControl implements OnChanges {
   public async ngOnChanges(changes: SimpleChanges): Promise<void> {
     if (Object.keys(changes).length > 0) {
       if (this.value !== undefined) {
-        const canvasEl = (this._elRef.nativeElement as HTMLElement).findFirst("> canvas") as HTMLCanvasElement;
-
         if (this.type === "qrcode") {
-          await qrcode.toCanvas(canvasEl, this.value || "", {
+          const canvasEl = (this._elRef.nativeElement as HTMLElement).findFirst("> canvas") as HTMLCanvasElement;
+
+          await qrcode.toCanvas(canvasEl, this.value ?? "", {
             scale: this.lineWidth
           });
+
+          /*svgEl.outerHTML = await qrcode.toString(this.value ?? "", {
+            type: "svg",
+            scale: this.lineWidth
+          });*/
         }
         else {
+          const svgEl = (this._elRef.nativeElement as HTMLElement).findFirst("> svg") as HTMLCanvasElement;
+
           jsbarcode(
-            canvasEl,
+            svgEl,
             this.value,
             {
               margin: 0,

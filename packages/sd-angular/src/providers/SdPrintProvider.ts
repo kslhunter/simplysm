@@ -35,8 +35,8 @@ export class SdPrintProvider {
         this._root.appRef.attachView(compRef.hostView);
         setTimeout(() => {
           window.print();
-          compEl.remove();
-          styleEl.remove();
+          // compEl.remove();
+          // styleEl.remove();
           resolve();
         });
       }
