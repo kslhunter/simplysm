@@ -42,7 +42,8 @@ export class SdCliElectron {
       description: npmConfig.description,
       main: "electron.js",
       author: npmConfig.author,
-      license: npmConfig.license/*,
+      license: npmConfig.license,
+      /*,
       devDependencies: {
         "electron": electronVersion.replace("^", "")
       },

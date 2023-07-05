@@ -287,7 +287,7 @@ export class SdCliClientBuilder extends EventEmitter {
         description: npmConfig.description,
         main: "electron.js",
         author: npmConfig.author,
-        license: npmConfig.license/*,
+        license: npmConfig.license,/*,
         devDependencies: {
           "electron": electronVersion.replace("^", "")
         },
@@ -519,12 +519,13 @@ export class SdCliClientBuilder extends EventEmitter {
               priority: 5
             },
             vendors: false,
-            defaultVendors: watch ? {
+            defaultVendors: false,
+            /*defaultVendors: watch ? {
               name: "vendor",
               chunks: (chunk) => chunk.name === "main",
               enforce: true,
               test: /[\\/]node_modules[\\/]/
-            } : false
+            } : false*/
           }
         }
       },
@@ -746,7 +747,7 @@ export class SdCliClientBuilder extends EventEmitter {
             ["runtime", !watch],
             ["polyfills", true],
             ["styles", false],
-            ["vendor", true],
+            // ["vendor", true],
             ["main", true],
             ...builderType === "cordova" ? [
               ["cordova-entry", true] as Entrypoint

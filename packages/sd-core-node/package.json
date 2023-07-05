@@ -22,7 +22,7 @@
   "dependencies": {
     "@simplysm/sd-core-common": "7.3.2",
     "chokidar": "^3.5.3",
-    "glob": "^10.2.7"
+    "glob": "^10.3.1"
   },
   "devDependencies": {
     "@types/glob": "^8.1.0"

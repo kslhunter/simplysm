@@ -26,7 +26,7 @@ import { sdThemes, TSdTheme } from "../commons";
   template: `
     <div class="_contents"
          [style]="inputStyle"
-         [class]="('_contents ' + inputClass ?? '').trim()"
+         [class]="('_contents ' + (inputClass ?? '')).trim()"
          [attr.title]="title ?? placeholder">
       <div *ngIf="controlType === 'password'" class="sd-text-brightness-light">
         ****
