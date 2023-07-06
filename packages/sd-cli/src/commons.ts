@@ -148,4 +148,5 @@ export interface ISdCliClientBuilderElectronConfig {
   appId: string;
   icon?: string;
   installerIcon?: string;
+  postinstall?: string;
 }

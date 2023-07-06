@@ -264,6 +264,7 @@ export class SdCliClientBuilder extends EventEmitter {
 
     // ELECTRON
     if (this._config.builder?.electron) {
+      this._logger.debug("ELECTRON 빌드...");
       const npmConfig = this._getNpmConfig(this._rootPath)!;
 
       const electronVersion = npmConfig.dependencies?.["electron"];
@@ -287,18 +288,23 @@ export class SdCliClientBuilder extends EventEmitter {
         description: npmConfig.description,
         main: "electron.js",
         author: npmConfig.author,
-        license: npmConfig.license,/*,
-        devDependencies: {
-          "electron": electronVersion.replace("^", "")
-        },
+        license: npmConfig.license,
+        // devDependencies: {
+        //   "electron": electronVersion.replace("^", "")
+        // },
         dependencies: {
-          "dotenv": dotenvVersion,
-          ...remoteVersion !== undefined ? {
-            "@electron/remote": remoteVersion
-          } : {},
+          // "dotenv": dotenvVersion,
+          // ...remoteVersion !== undefined ? {
+          //   "@electron/remote": remoteVersion
+          // } : {},
           ...extModules.filter((item) => item.exists).map((item) => item.name)
             .toObject((item) => item, () => "*")
-        }*/
+        },
+        ...this._config.builder.electron.postinstall !== undefined ? {
+          "scripts": {
+            postinstall: this._config.builder.electron.postinstall
+          }
+        } : {}
       }, { space: 2 });
       await FsUtil.writeFileAsync(path.resolve(electronSrcPath, "yarn.lock"), "");
 
@@ -331,7 +337,8 @@ export class SdCliClientBuilder extends EventEmitter {
           },
           ...this._config.builder.electron.installerIcon !== undefined ? {
             icon: path.resolve(this._rootPath, "src", this._config.builder.electron.installerIcon)
-          } : {}
+          } : {},
+          removePackageScripts: false
         }
       });
 
