@@ -96,7 +96,7 @@ export class SdExcelUtil {
     else if (numFmtCode.includes("0_")) {
       return "number";
     }
-    else if (numFmtCode.includes("0_")) {
+    else if (numFmtCode.includes("0.0")) {
       return "number";
     }
     else if (numFmtCode.includes("##0")) {
