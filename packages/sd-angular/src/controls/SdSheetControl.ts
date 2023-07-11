@@ -1500,7 +1500,7 @@ export class SdSheetControl<T> implements OnInit, AfterContentChecked, DoCheck {
 
   private _onChildrenKeydown(event: KeyboardEvent): void {
     if (event.target instanceof HTMLTableCellElement) {
-      if (event.key === "F2") {
+      if (event.key === "F2" || event.key === "Enter") {
         event.preventDefault();
         this._editModeCellAddr = {
           r: NumberUtil.parseInt(event.target.getAttribute("r"))!,
@@ -1510,6 +1510,10 @@ export class SdSheetControl<T> implements OnInit, AfterContentChecked, DoCheck {
           const focusableEl = (event.target as HTMLElement).findFocusableFirst();
           if (focusableEl) focusableEl.focus();
         });
+
+        if (this._moveCellIfExists(event.target, 1, 0, false)) {
+          event.preventDefault();
+        }
       }
       else if (event.key === "ArrowDown") {
         if (this._moveCellIfExists(event.target, 1, 0, false)) {
@@ -1540,7 +1544,7 @@ export class SdSheetControl<T> implements OnInit, AfterContentChecked, DoCheck {
         tdEl.focus();
         this._editModeCellAddr = undefined;
       }
-      else if (event.ctrlKey && event.key === "ArrowDown") {
+      else if ((event.ctrlKey && event.key === "ArrowDown") || event.key === "Enter") {
         if (this._moveCellIfExists(tdEl, 1, 0, true)) {
           event.preventDefault();
         }

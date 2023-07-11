@@ -92,7 +92,10 @@ export class SdExcelCell {
   }
 
   public async getValAsync(): Promise<TSdExcelValueType> {
-    const wsData = await this._getWsDataAsync();
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (wsData === undefined) {
+      throw new Error(`읽기전용 파일일 수 있습니다. 파일을 열어 '편집 사용'을 클릭 후 저장하세요.`);
+    }
     const cellVal = wsData.getCellVal(this._addr);
     if (cellVal === undefined || StringUtil.isNullOrEmpty(cellVal)) {
       return undefined;
