@@ -6,6 +6,7 @@ import { SdExcelXmlContentType } from "./files/SdExcelXmlContentType";
 import { SdExcelXmlWorksheet } from "./files/SdExcelXmlWorksheet";
 import { SdExcelZipCache } from "./utils/SdExcelZipCache";
 import { ISdExcelXml } from "./commons";
+import * as path from "path";
 
 export class SdExcelWorkbook {
   public async getWorksheetNamesAsync(): Promise<string[]> {
@@ -76,7 +77,7 @@ export class SdExcelWorkbook {
     const wsXml = new SdExcelXmlWorksheet();
     this._zipCache.set(`xl/worksheets/sheet${newWsRelId}.xml`, wsXml);
 
-    const ws = new SdExcelWorksheet(this._zipCache, newWsRelId);
+    const ws = new SdExcelWorksheet(this._zipCache, newWsRelId, `sheet${newWsRelId}.xml`);
     this._wsMap.set(newWsRelId, ws);
     return ws;
   }
@@ -96,13 +97,16 @@ export class SdExcelWorkbook {
       return this._wsMap.get(wsId)!;
     }
 
-    const ws = new SdExcelWorksheet(this._zipCache, wsId);
+    const relData = await this._zipCache.getAsync("xl/_rels/workbook.xml.rels") as SdExcelXmlRelationship;
+    const targetFilePath = relData.getTargetByRelId(wsId)!;
+
+    const ws = new SdExcelWorksheet(this._zipCache, wsId, path.basename(targetFilePath));
     this._wsMap.set(wsId, ws);
     return ws;
   }
 
-  public async getCustomFileDataAsync(path: string): Promise<ISdExcelXml | Buffer | undefined> {
-    return await this._zipCache.getAsync(path);
+  public async getCustomFileDataAsync(filePath: string): Promise<ISdExcelXml | Buffer | undefined> {
+    return await this._zipCache.getAsync(filePath);
   }
 
   public async getBufferAsync(): Promise<Buffer> {

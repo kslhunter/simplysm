@@ -12,6 +12,12 @@ export class SdExcelXmlRelationship implements ISdExcelXml {
     return NumberUtil.parseInt((/[0-9]*$/).exec(rel.$.Id)![0])!;
   }
 
+  public getTargetByRelId(rId: number): string | undefined {
+    return this.data.Relationships.Relationship
+      ?.single((rel) => this.getRelId(rel) === rId)
+      ?.$.Target;
+  }
+
   public constructor(data?: ISdExcelXmlRelationshipData) {
     if (data === undefined) {
       this.data = {
