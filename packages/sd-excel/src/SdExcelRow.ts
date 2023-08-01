@@ -6,12 +6,12 @@ export class SdExcelRow {
   private readonly _cellMap = new Map<number, SdExcelCell>();
 
   public constructor(private readonly _zipCache: SdExcelZipCache,
-                     private readonly _wsRelId: number,
+                     private readonly _targetFileName: string,
                      private readonly _r: number) {
   }
 
   public cell(c: number): SdExcelCell {
-    return this._cellMap.getOrCreate(c, new SdExcelCell(this._zipCache, this._wsRelId, this._r, c));
+    return this._cellMap.getOrCreate(c, new SdExcelCell(this._zipCache, this._targetFileName, this._r, c));
   }
 
   public async getCellsAsync(): Promise<SdExcelCell[]> {
@@ -28,6 +28,6 @@ export class SdExcelRow {
   }
 
   private async _getWsDataAsync(): Promise<SdExcelXmlWorksheet> {
-    return await this._zipCache.getAsync(`xl/worksheets/sheet${this._wsRelId}.xml`) as SdExcelXmlWorksheet;
+    return await this._zipCache.getAsync(`xl/worksheets/${this._targetFileName}`) as SdExcelXmlWorksheet;
   }
 }

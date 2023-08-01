@@ -12,7 +12,7 @@ export class SdExcelCell {
   private readonly _addr: string;
 
   public constructor(private readonly _zipCache: SdExcelZipCache,
-                     private readonly _wsRelId: number,
+                     private readonly _targetFileName: string,
                      private readonly _r: number,
                      private readonly _c: number) {
     this._addr = SdExcelUtil.stringifyAddr({ r: this._r, c: this._c });
@@ -177,7 +177,7 @@ export class SdExcelCell {
   }
 
   private async _getWsDataAsync(): Promise<SdExcelXmlWorksheet> {
-    return await this._zipCache.getAsync(`xl/worksheets/sheet${this._wsRelId}.xml`) as SdExcelXmlWorksheet;
+    return await this._zipCache.getAsync(`xl/worksheets/${this._targetFileName}`) as SdExcelXmlWorksheet;
   }
 
   private async _getTypeDataAsync(): Promise<SdExcelXmlContentType> {

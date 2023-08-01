@@ -11,7 +11,8 @@ export class SdExcelWorksheet {
   private readonly _rowMap = new Map<number, SdExcelRow>();
 
   public constructor(private readonly _zipCache: SdExcelZipCache,
-                     private readonly _relId: number) {
+                     private readonly _relId: number,
+                     private readonly _targetFileName: string) {
   }
 
   public async getNameAsync(): Promise<string> {
@@ -20,7 +21,7 @@ export class SdExcelWorksheet {
   }
 
   public row(r: number): SdExcelRow {
-    return this._rowMap.getOrCreate(r, new SdExcelRow(this._zipCache, this._relId, r));
+    return this._rowMap.getOrCreate(r, new SdExcelRow(this._zipCache, this._targetFileName, r));
   }
 
   public cell(r: number, c: number): SdExcelCell {
@@ -28,7 +29,7 @@ export class SdExcelWorksheet {
   }
 
   public col(c: number): SdExcelCol {
-    return new SdExcelCol(this._zipCache, this._relId, c);
+    return new SdExcelCol(this._zipCache, this._targetFileName, c);
   }
 
   public async getRangeAsync(): Promise<ISdExcelAddressRangePoint> {
@@ -107,7 +108,7 @@ export class SdExcelWorksheet {
   }
 
   private async _getDataAsync(): Promise<SdExcelXmlWorksheet> {
-    return await this._zipCache.getAsync(`xl/worksheets/sheet${this._relId}.xml`) as SdExcelXmlWorksheet;
+    return await this._zipCache.getAsync(`xl/worksheets/${this._targetFileName}`) as SdExcelXmlWorksheet;
   }
 
   private async _getWbDataAsync(): Promise<SdExcelXmlWorkbook> {

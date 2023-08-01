@@ -12,6 +12,6 @@ export * from "./DbContext";
 export * from "./commons";
 export * from "./CaseWhenQueryHelper";
 export * from "./CaseQueryHelper";
+export * from "./models/SystemMigration";
 export * from "./utils/SdOrmUtil";
 export * from "./utils/DbDefinitionUtil";
-export * from "./models/SystemMigration";
