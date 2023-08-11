@@ -108,6 +108,9 @@ export class SdExcelCell {
     else if (cellType === "b") {
       return cellVal === "1";
     }
+    else if (cellType === "n") {
+      return NumberUtil.parseFloat(cellVal);
+    }
     else if (cellType === "e") {
       throw new Error(`[${this._addr}] 타입분석 실패\n- 셀 내용에서, 에러가 감지되었습니다.(${cellVal})`);
     }
