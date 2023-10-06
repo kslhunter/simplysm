@@ -1,0 +1,47 @@
+{
+  "name": "@simplysm/sd-cli",
+  "version": "11.0.0",
+  "description": "심플리즘 패키지 - CLI",
+  "author": "김석래",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm11.git",
+    "directory": "packages/sd-cli"
+  },
+  "license": "MIT",
+  "bin": "./dist/sd-cli.js",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "engines": {
+    "node": "^16"
+  },
+  "dependencies": {
+    "@angular-devkit/build-angular": "^16.2.5",
+    "@angular/common": "^16.2.8",
+    "@angular/compiler": "^16.2.8",
+    "@angular/compiler-cli": "^16.2.8",
+    "@angular/core": "^16.2.8",
+    "@electron/rebuild": "^3.3.0",
+    "@simplysm/sd-core-common": "11.0.0",
+    "@simplysm/sd-core-node": "11.0.0",
+    "@simplysm/sd-service-server": "11.0.0",
+    "@simplysm/sd-storage": "11.0.0",
+    "electron": "^26.2.4",
+    "electron-builder": "^24.7.0",
+    "esbuild": "^0.19.4",
+    "esbuild-plugin-tsc": "^0.4.0",
+    "eslint": "^8.50.0",
+    "rxjs": "^7.8.1",
+    "semver": "^7.5.4",
+    "yargs": "^17.7.2",
+    "zone.js": "~0.13.0"
+  },
+  "devDependencies": {
+    "@types/eslint": "^8.44.3",
+    "@types/yargs": "^17.0.26"
+  },
+  "peerDependencies": {
+    "typescript": "^4.9.5"
+  }
+}

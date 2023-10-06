@@ -1,0 +1,30 @@
+{
+  "name": "@simplysm/eslint-plugin",
+  "version": "11.0.0",
+  "description": "심플리즘 패키지 - ESLINT 플러그인",
+  "author": "김석래",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm11.git",
+    "directory": "packages/eslint-plugin"
+  },
+  "license": "MIT",
+  "type": "module",
+  "main": "src/index.cjs",
+  "engines": {
+    "node": "^16"
+  },
+  "dependencies": {
+    "@angular-eslint/eslint-plugin": "^16.2.0",
+    "@angular-eslint/eslint-plugin-template": "^16.2.0",
+    "@angular-eslint/template-parser": "^16.2.0",
+    "@typescript-eslint/eslint-plugin": "^6.7.4",
+    "@typescript-eslint/experimental-utils": "^5.62.0",
+    "@typescript-eslint/parser": "^6.7.4",
+    "eslint": "^8.50.0",
+    "eslint-import-resolver-typescript": "^3.6.1",
+    "eslint-module-utils": "^2.8.0",
+    "eslint-plugin-import": "^2.28.1",
+    "typescript": "^4.9.5"
+  }
+}

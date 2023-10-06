@@ -1,0 +1,12 @@
+import { SdViewControl } from "../../controls/SdViewControl";
+import { CommonModule } from "@angular/common";
+import { NgModule } from "@angular/core";
+
+@NgModule({
+  imports: [CommonModule],
+  declarations: [SdViewControl],
+  exports: [SdViewControl],
+  providers: []
+})
+export class SdViewControlModule {
+}

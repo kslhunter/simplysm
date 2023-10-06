@@ -1,0 +1,27 @@
+{
+  "name": "@simplysm/sd-orm-node-mssql",
+  "version": "11.0.0",
+  "description": "심플리즘 패키지 - MSSQL ORM 모듈 (node)",
+  "author": "김석래",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm11.git",
+    "directory": "packages/sd-orm-node-mssql"
+  },
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "engines": {
+    "node": "^16"
+  },
+  "dependencies": {
+    "@simplysm/sd-core-common": "11.0.0",
+    "@simplysm/sd-core-node": "11.0.0",
+    "@simplysm/sd-orm-common": "11.0.0",
+    "tedious": "^16.4.1"
+  },
+  "devDependencies": {
+    "@types/tedious": "^4.0.12"
+  }
+}

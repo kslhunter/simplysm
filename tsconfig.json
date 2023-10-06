@@ -1,0 +1,31 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "downlevelIteration": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "module": "ESNext",
+    "target": "ES2021",
+    "strict": true,
+    "moduleResolution": "Node",
+    "esModuleInterop": true,
+    "noImplicitReturns": true,
+    "noImplicitAny": false,
+    "noImplicitOverride": true,
+    "useUnknownInCatchVariables": false,
+    "noFallthroughCasesInSwitch": true,
+    "sourceMap": true,
+    "skipDefaultLibCheck": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "importHelpers": true,
+    "baseUrl": ".",
+    "paths": {
+      "@simplysm/*": [
+        "./packages/*/src/index.ts",
+        "./packages/*/src/index.tsx"
+      ]
+    }
+  }
+}

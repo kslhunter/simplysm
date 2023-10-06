@@ -1,0 +1,25 @@
+{
+  "name": "@simplysm/sd-storage",
+  "version": "11.0.0",
+  "description": "심플리즘 패키지 - 저장소 모듈 (node)",
+  "author": "김석래",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm11.git",
+    "directory": "packages/sd-storage"
+  },
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "engines": {
+    "node": "^16"
+  },
+  "dependencies": {
+    "basic-ftp": "^5.0.3",
+    "ssh2-sftp-client": "^9.1.0"
+  },
+  "devDependencies": {
+    "@types/ssh2-sftp-client": "^9.0.1"
+  }
+}

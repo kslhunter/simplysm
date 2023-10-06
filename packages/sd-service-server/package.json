@@ -1,0 +1,38 @@
+{
+  "name": "@simplysm/sd-service-server",
+  "version": "11.0.0",
+  "description": "심플리즘 패키지 - 서비스 모듈 (서버)",
+  "author": "김석래",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm11.git",
+    "directory": "packages/sd-service-server"
+  },
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "engines": {
+    "node": "^16"
+  },
+  "dependencies": {
+    "@simplysm/sd-core-common": "11.0.0",
+    "@simplysm/sd-core-node": "11.0.0",
+    "@simplysm/sd-orm-common": "11.0.0",
+    "@simplysm/sd-orm-node": "11.0.0",
+    "@simplysm/sd-service-common": "11.0.0",
+    "@types/connect": "^3.4.36",
+    "bufferutil": "^4.0.7",
+    "connect": "^3.7.0",
+    "mime": "^3.0.0",
+    "nodemailer": "^6.9.5",
+    "semver": "^7.5.4",
+    "utf-8-validate": "^6.0.3",
+    "ws": "^8.14.2"
+  },
+  "devDependencies": {
+    "@types/mime": "^3.0.2",
+    "@types/nodemailer": "^6.4.11",
+    "@types/ws": "^8.5.6"
+  }
+}

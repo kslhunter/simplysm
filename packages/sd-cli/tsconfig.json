@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "lib": [
+      "ES2021"
+    ],
+    "outDir": "./dist"
+  },
+  "files": [
+    "src/index.ts",
+    "src/sd-cli.ts",
+    "src/build-cluster.ts",
+    "src/server-worker.ts"
+  ]
+}
