@@ -99,10 +99,7 @@ const __dirname = __path__.dirname(__filename);`.trim()
         esbuildPluginTsc(),
         {
           name: "sd-additional",
-          setup: ({
-                    onEnd,
-                    onStart
-                  }) => {
+          setup: ({onEnd, onStart}) => {
             onStart(() => {
               if (!isFirst) {
                 this.emit("change");

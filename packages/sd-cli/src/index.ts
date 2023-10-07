@@ -1,6 +1,7 @@
 export * from "./build-tools/SdCliIndexFileGenerator";
 export * from "./build-tools/SdLinter";
 export * from "./build-tools/SdTsIncrementalBuilder";
+export * from "./builders/SdCliClientBuilder";
 export * from "./builders/SdCliJsLibLinter";
 export * from "./builders/SdCliServerBuilder";
 export * from "./builders/SdCliTsLibBuilder";

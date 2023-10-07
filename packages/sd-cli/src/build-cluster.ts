@@ -5,8 +5,9 @@ import path from "path";
 import {SdCliJsLibLinter} from "./builders/SdCliJsLibLinter";
 import {EventEmitter} from "events";
 import {ISdCliBuildClusterReqMessage, ISdCliBuildClusterResMessage} from "./commons";
-import {NeverEntryError, NotImplementError} from "@simplysm/sd-core-common";
+import {NeverEntryError} from "@simplysm/sd-core-common";
 import {SdCliServerBuilder} from "./builders/SdCliServerBuilder";
+import {SdCliClientBuilder} from "./builders/SdCliClientBuilder";
 
 Error.stackTraceLimit = Infinity;
 EventEmitter.defaultMaxListeners = 0;
@@ -120,8 +121,7 @@ else {
     }
     // [client]
     else if (pkgConf.type === "client") {
-      throw new NotImplementError();
-      /*await new SdCliClientBuilder(message.projConf, message.pkgPath, message.builderKey ?? "web", message.withLint)
+      await new SdCliClientBuilder(message.projConf, message.pkgPath)
         .on("change", () => {
           sendMessage({
             type: "change",
@@ -139,7 +139,7 @@ else {
       sendMessage({
         type: "ready",
         req: message
-      });*/
+      });
     }
     else {
       throw new NeverEntryError();
@@ -184,13 +184,12 @@ else {
     }
     // [client]
     else if (pkgConf.type === "client") {
-      throw new NotImplementError();
-      /*const result = await new SdCliClientBuilder(message.projConf, message.pkgPath, message.builderKey ?? "web", message.withLint).buildAsync();
+      const result = await new SdCliClientBuilder(message.projConf, message.pkgPath).buildAsync();
       sendMessage({
         type: "complete",
         result,
         req: message
-      });*/
+      });
     }
     else {
       throw new NeverEntryError();
