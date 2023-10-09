@@ -28,21 +28,21 @@
     "@simplysm/sd-service-server": "11.0.4",
     "@simplysm/sd-storage": "11.0.4",
     "browserslist": "^4.22.1",
-    "electron": "^26.2.4",
+    "electron": "^26.3.0",
     "electron-builder": "^24.7.0",
-    "esbuild": "0.18.17",
+    "esbuild": "0.18.20",
     "esbuild-plugin-tsc": "^0.4.0",
-    "eslint": "^8.50.0",
+    "eslint": "^8.51.0",
     "node-stdlib-browser": "^1.2.0",
     "rxjs": "^7.8.1",
     "sass": "^1.69.0",
     "semver": "^7.5.4",
     "yargs": "^17.7.2",
-    "zone.js": "~0.13.0"
+    "zone.js": "~0.13.3"
   },
   "devDependencies": {
     "@types/eslint": "^8.44.3",
-    "@types/yargs": "^17.0.26"
+    "@types/yargs": "^17.0.28"
   },
   "peerDependencies": {
     "typescript": "^4.9.5"
