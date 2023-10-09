@@ -11,7 +11,7 @@ import {faXmark} from "@fortawesome/pro-solid-svg-icons/faXmark";
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <sd-dock-container>
-      <sd-pane class="sd-padding-default">
+      <sd-pane class="p-default">
         <sd-sheet [items]="items"
                   [trackByFn]="trackByKeyFn">
           <sd-sheet-column header="Fix">
@@ -23,7 +23,7 @@ import {faXmark} from "@fortawesome/pro-solid-svg-icons/faXmark";
           </sd-sheet-column>
           <sd-sheet-column header="Order">
             <ng-template #cell let-item="item" let-index="index">
-              <div class="sd-padding-xs-sm" style="text-align: center">
+              <div class="p-xs-sm" style="text-align: center">
                 <sd-anchor [disabled]="index === 0 || (!item.fixed && !!items[index - 1].fixed)"
                            (click)="onDisplayOrderUpButtonClick(item)">
                   <fa-icon [icon]="icons.fadAngleUp" [fixedWidth]=true></fa-icon>
@@ -37,7 +37,7 @@ import {faXmark} from "@fortawesome/pro-solid-svg-icons/faXmark";
           </sd-sheet-column>
           <sd-sheet-column header="Header" resizable>
             <ng-template #cell let-item="item">
-              <div class="sd-padding-xs-sm">
+              <div class="p-xs-sm">
                 {{ item.header }}
               </div>
             </ng-template>
@@ -58,7 +58,7 @@ import {faXmark} from "@fortawesome/pro-solid-svg-icons/faXmark";
         </sd-sheet>
       </sd-pane>
 
-      <sd-dock position="bottom" class="sd-padding-sm-default sd-padding-top-0">
+      <sd-dock position="bottom" class="p-sm-default pt-0">
         <div style="float: left">
           <sd-button inline theme="warning" (click)="onInitButtonClick()" button.style="min-width: 60px;">Reset
           </sd-button>

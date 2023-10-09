@@ -105,7 +105,7 @@ import {faCaretRight} from "@fortawesome/pro-duotone-svg-icons/faCaretRight";
                         *ngIf="headerCell.isLastDepth && headerCell.control.useOrdering && headerCell.control.key">
                         <div class="_sort-icon">
                           <fa-layers>
-                            <fa-icon [icon]="icons.fasSort" class="sd-text-brightness-lightest"></fa-icon>
+                            <fa-icon [icon]="icons.fasSort" class="tx-trans-lightest"></fa-icon>
                             <fa-icon [icon]="icons.fasSortDown"
                                      *ngIf="getIsColumnOrderingDesc(headerCell.control.key) === false"></fa-icon>
                             <fa-icon [icon]="icons.fasSortUp"

@@ -26,7 +26,7 @@ import {CommonModule} from "@angular/common";
   ],
   template: `
     <sd-dock-container *ngIf="data && keys">
-      <sd-pane class="sd-padding-sm-default">
+      <sd-pane class="p-sm-default">
         <sd-table>
           <thead>
           <tr>
@@ -40,17 +40,17 @@ import {CommonModule} from "@angular/common";
           </thead>
           <tbody>
           <tr *ngFor="let key of keys; trackBy: trackByMeFn"
-              [class.sd-background-color-danger-lightest]="getIsAllNotEqual(key)">
+              [class.bg-theme-danger-lightest]="getIsAllNotEqual(key)">
             <th style="text-align: right">
               {{ this.getDisplayTitle(key) }}
             </th>
             <td style="text-align: right"
-                [class.sd-background-color-success-lightest]="getIsOrgAllNotEqual(key) && !getIsNotEqual(data.theirs[key], data.origin[key])">
+                [class.bg-theme-success-lightest]="getIsOrgAllNotEqual(key) && !getIsNotEqual(data.theirs[key], data.origin[key])">
               >
               {{ getDisplayName(key, data.theirs[key], data.theirs) }}
             </td>
             <td
-              [class.sd-background-color-success-lightest]="getIsOrgAllNotEqual(key) && !getIsNotEqual(data.theirs[key], data.origin[key])">
+              [class.bg-theme-success-lightest]="getIsOrgAllNotEqual(key) && !getIsNotEqual(data.theirs[key], data.origin[key])">
               <sd-anchor [disabled]="!getIsNotEqual(data.theirs[key], data.origin[key])">
                 <fa-icon [fixedWidth]="true" [icon]="icons.fadArrowRight"
                          (click)="$any(data.origin)[key] = $any(data.theirs)[key]"
@@ -58,11 +58,11 @@ import {CommonModule} from "@angular/common";
               </sd-anchor>
             </td>
             <td style="text-align: center"
-                [class.sd-background-color-success-lightest]="getIsOrgAllNotEqual(key) && !getIsAllNotEqual(key)">
+                [class.bg-theme-success-lightest]="getIsOrgAllNotEqual(key) && !getIsAllNotEqual(key)">
               {{ getDisplayName(key, data.origin[key], data.origin) }}
             </td>
             <td
-              [class.sd-background-color-success-lightest]="getIsOrgAllNotEqual(key) && !getIsNotEqual(data.yours[key], data.origin[key])">
+              [class.bg-theme-success-lightest]="getIsOrgAllNotEqual(key) && !getIsNotEqual(data.yours[key], data.origin[key])">
               <sd-anchor [disabled]="!getIsNotEqual(data.yours[key], data.origin[key])">
                 <fa-icon [fixedWidth]="true" [icon]="icons.fadArrowLeft"
                          (click)="$any(data.origin)[key] = $any(data.yours)[key]"
@@ -70,7 +70,7 @@ import {CommonModule} from "@angular/common";
               </sd-anchor>
             </td>
             <td style="text-align: left"
-                [class.sd-background-color-success-lightest]="getIsOrgAllNotEqual(key) && !getIsNotEqual(data.yours[key], data.origin[key])">
+                [class.bg-theme-success-lightest]="getIsOrgAllNotEqual(key) && !getIsNotEqual(data.yours[key], data.origin[key])">
               {{ getDisplayName(key, data.yours[key], data.yours) }}
             </td>
           </tr>
@@ -78,7 +78,7 @@ import {CommonModule} from "@angular/common";
         </sd-table>
       </sd-pane>
 
-      <sd-dock position="bottom" class="sd-padding-sm-default sd-padding-top-0">
+      <sd-dock position="bottom" class="p-sm-default pt-0">
         <sd-button theme="primary" (click)="onConfirmButtonClick()">
           결과 확정
         </sd-button>

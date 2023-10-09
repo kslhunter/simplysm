@@ -36,7 +36,7 @@ import {faCaretDown} from "@fortawesome/pro-duotone-svg-icons/faCaretDown";
       <sd-dropdown-popup #dropdownPopup (keydown)="onPopupKeydown($event)">
         <ng-container *ngIf="!items">
           <sd-dock-container>
-            <sd-dock class="sd-border-bottom-brightness-default sd-padding-sm-default"
+            <sd-dock class="bdb bdb-trans-default p-sm-default"
                      *ngIf="selectMode === 'multi' && !hideSelectAll">
               <sd-anchor (click)="onSelectAllButtonClick(true)">전체선택</sd-anchor>
               <sd-gap width="sm"></sd-gap>
@@ -59,7 +59,7 @@ import {faCaretDown} from "@fortawesome/pro-duotone-svg-icons/faCaretDown";
               <ng-template [ngTemplateOutlet]="headerTemplateRef"></ng-template>
             </sd-dock>
 
-            <sd-dock class="sd-border-bottom-brightness-default sd-padding-sm-default"
+            <sd-dock class="bdb bdb-trans-default p-sm-default"
                      *ngIf="selectMode === 'multi' && !hideSelectAll">
               <sd-anchor (click)="onSelectAllButtonClick(true)">전체선택</sd-anchor>
               <sd-gap width="sm"></sd-gap>
@@ -385,7 +385,7 @@ export class SdSelectControl implements DoCheck {
         }
       })
       .map((item) => `<div style="display: inline-block">${item}</div>`)
-      .join(this.multiSelectionDisplayDirection === "vertical" ? "<div class='sd-padding-sm-0'></div>" : ", ");
+      .join(this.multiSelectionDisplayDirection === "vertical" ? "<div class='p-sm-0'></div>" : ", ");
 
     if (innerHTML === "" && this.placeholder !== undefined) {
       return this._domSanitizer.bypassSecurityTrustHtml(`<span class='sd-text-color-grey-default'>${this.placeholder}</span>`);

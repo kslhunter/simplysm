@@ -55,19 +55,19 @@ import {SdAnchorControl} from "./SdAnchorControl";
       <sd-busy-container [busy]="busyCount > 0" [innerHTML]="innerHTML" type="bar">
       </sd-busy-container>
     </div>
-    <div *ngIf="viewState === 'help'" class="_help sd-padding-default">
-      <div class="sd-margin-bottom-default">
-        <h4 class="sd-margin-bottom-xs">강조</h4>
-        <div class="sd-padding-default sd-background-grey-lightest sd-border-radius-default">
+    <div *ngIf="viewState === 'help'" class="_help p-default">
+      <div class="mb-default">
+        <h4 class="mb-xs">강조</h4>
+        <div class="p-default bg-grey-lightest bd-radius-default">
           <div style="font-weight: bold">**굵게**</div>
           <div style="font-style: italic;">*기울임*</div>
           <div style="text-decoration: line-through;">~~취소선~~</div>
         </div>
       </div>
 
-      <div class="sd-margin-bottom-default">
-        <h4 class="sd-margin-bottom-xs">헤더</h4>
-        <div class="sd-padding-default sd-background-grey-lightest sd-border-radius-default">
+      <div class="mb-default">
+        <h4 class="mb-xs">헤더</h4>
+        <div class="p-default bg-grey-lightest bd-radius-default">
           <h1># 헤더 1</h1>
           <h2>## 헤더 2</h2>
           <h3>### 헤더 3</h3>
@@ -75,9 +75,9 @@ import {SdAnchorControl} from "./SdAnchorControl";
         </div>
       </div>
 
-      <div class="sd-margin-bottom-default">
-        <h4 class="sd-margin-bottom-xs">목록</h4>
-        <div class="sd-padding-default sd-background-grey-lightest sd-border-radius-default">
+      <div class="mb-default">
+        <h4 class="mb-xs">목록</h4>
+        <div class="p-default bg-theme-grey-lightest bd-radius-default">
           <div>* 일반목록 항목</div>
           <div>* 일반목록 항목</div>
           <br/>
@@ -86,31 +86,31 @@ import {SdAnchorControl} from "./SdAnchorControl";
         </div>
       </div>
 
-      <div class="sd-margin-bottom-default">
-        <h4 class="sd-margin-bottom-xs">링크</h4>
-        <div class="sd-padding-default sd-background-grey-lightest sd-border-radius-default">
+      <div class="mb-default">
+        <h4 class="mb-xs">링크</h4>
+        <div class="p-default bg-theme-grey-lightest bd-radius-default">
           [보여줄텍스트](http://www.example.com)
         </div>
       </div>
 
-      <div class="sd-margin-bottom-default">
-        <h4 class="sd-margin-bottom-xs">참조</h4>
-        <div class="sd-padding-default sd-background-grey-lightest sd-border-radius-default">
+      <div class="mb-default">
+        <h4 class="mb-xs">참조</h4>
+        <div class="p-default bg-theme-grey-lightest bd-radius-default">
           > 참조입니다.<br/>
           > 여러줄을 적을 수 있습니다.
         </div>
       </div>
 
-      <div class="sd-margin-bottom-default">
-        <h4 class="sd-margin-bottom-xs">이미지</h4>
-        <div class="sd-padding-default sd-background-grey-lightest sd-border-radius-default">
+      <div class="mb-default">
+        <h4 class="mb-xs">이미지</h4>
+        <div class="p-default bg-theme-grey-lightest bd-radius-default">
           ![이미지타이틀](http://www.example.com/image.jpg)
         </div>
       </div>
 
-      <div class="sd-margin-bottom-default">
-        <h4 class="sd-margin-bottom-xs">표</h4>
-        <div class="sd-padding-default sd-background-grey-lightest sd-border-radius-default">
+      <div class="mb-default">
+        <h4 class="mb-xs">표</h4>
+        <div class="p-default bg-theme-grey-lightest bd-radius-default">
           | 컬럼 1 | 컬럼 2 | 컬럼 3 |<br/>
           | - | - | - |<br/>
           | 홍 | 길동 | 남성 |<br/>
@@ -118,9 +118,9 @@ import {SdAnchorControl} from "./SdAnchorControl";
         </div>
       </div>
 
-      <div class="sd-margin-bottom-default">
-        <h4 class="sd-margin-bottom-xs">코드</h4>
-        <div class="sd-padding-default sd-background-grey-lightest sd-border-radius-default">
+      <div class="mb-default">
+        <h4 class="mb-xs">코드</h4>
+        <div class="p-default bg-theme-grey-lightest bd-radius-default">
           \`var example = "hello!";\`<br/>
           <br/>
           여러줄일 경우, 아래와 같이...<br/>
@@ -407,7 +407,7 @@ export class SdMarkdownEditorControl implements OnChanges {
         }
       }
       else if (this.placeholder !== undefined && this.placeholder !== "") {
-        this.innerHTML = this._sanitizer.bypassSecurityTrustHtml(`<span class="sd-text-color-grey-default">${this.placeholder}</span>`);
+        this.innerHTML = this._sanitizer.bypassSecurityTrustHtml(`<span class="tx-theme-grey-default">${this.placeholder}</span>`);
       }
       else {
         this.innerHTML = "";

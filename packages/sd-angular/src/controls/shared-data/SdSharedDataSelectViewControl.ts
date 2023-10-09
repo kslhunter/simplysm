@@ -24,11 +24,11 @@ import {IconProp} from "@fortawesome/fontawesome-svg-core";
     <sd-busy-container [busy]="busyCount > 0">
       <sd-dock-container>
         <ng-container *ngIf="headerTemplateRef">
-          <sd-dock class="sd-padding-default sd-padding-bottom-0">
+          <sd-dock class="p-default p-bottom-0">
             <ng-template [ngTemplateOutlet]="headerTemplateRef"></ng-template>
           </sd-dock>
         </ng-container>
-        <sd-dock class="sd-padding-default">
+        <sd-dock class="p-default">
           <sd-textfield placeholder="검색어" [(value)]="searchText"></sd-textfield>
         </sd-dock>
 
@@ -38,7 +38,7 @@ import {IconProp} from "@fortawesome/fontawesome-svg-core";
                           [selected]="selectedItem === undefined"
                           (click)="onSelectedItemChange(undefined)"
                           [selectedIcon]="selectedIcon">
-              <span class="sd-text-color-grey-default">미지정</span>
+              <span class="tx-theme-grey-default">미지정</span>
             </sd-list-item>
             <sd-list-item *ngFor="let item of filteredItems; let index = index; trackBy: trackByFn"
                           [selected]="item === selectedItem"

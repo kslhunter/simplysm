@@ -29,7 +29,7 @@ import {SdAnchorControl} from "./SdAnchorControl";
   imports: [CommonModule, FontAwesomeModule, SdAnchorControl, SdGapControl],
   template: `
     <sd-anchor (click)="onAddButtonClick()">
-      <fa-icon [icon]="icons.fadStar" class="sd-text-color-warning-default" [fixedWidth]="true"></fa-icon>
+      <fa-icon [icon]="icons.fadStar" class="tx-theme-warning-default" [fixedWidth]="true"></fa-icon>
     </sd-anchor>
     <sd-gap width="sm"></sd-gap>
     <ng-container *ngFor="let preset of presets; trackBy: trackByNameFn">

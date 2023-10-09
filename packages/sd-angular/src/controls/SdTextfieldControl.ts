@@ -31,7 +31,7 @@ import {CommonModule} from "@angular/common";
          [style]="inputStyle"
          [class]="('_contents ' + (inputClass ?? '')).trim()"
          [attr.title]="title ?? placeholder">
-      <div *ngIf="controlType === 'password'" class="sd-text-brightness-light">
+      <div *ngIf="controlType === 'password'" class="tx-trans-light">
         ****
       </div>
       <ng-container *ngIf="controlType !== 'password'">
@@ -39,7 +39,7 @@ import {CommonModule} from "@angular/common";
           <pre>{{ controlValueText }}</pre>
         </ng-container>
         <ng-container *ngIf="!controlValue">
-          <span class="sd-text-brightness-lighter">{{ placeholder }}</span>
+          <span class="tx-trans-lighter">{{ placeholder }}</span>
         </ng-container>
       </ng-container>
     </div>

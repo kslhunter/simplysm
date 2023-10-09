@@ -10,7 +10,7 @@ import useBgJpg from "../../../res/user_bg.jpg";
     <div class="_content"
          *ngIf="backgroundImage"
          [style]="'background: ' + 'url(' + backgroundImage + '); ' + contentStyle">
-      <div class="sd-padding-lg">
+      <div class="p-lg">
         <ng-content></ng-content>
       </div>
       <div class="_menu-button" *ngIf="menuTitle" (click)="onMenuOpenButtonClick()">
