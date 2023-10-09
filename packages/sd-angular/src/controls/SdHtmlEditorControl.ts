@@ -9,16 +9,23 @@ import {
   Output,
   ViewChild
 } from "@angular/core";
-import { SdInputValidate } from "../decorators/SdInputValidate";
-import { faEye } from "@fortawesome/pro-duotone-svg-icons/faEye";
-import { faPen } from "@fortawesome/pro-duotone-svg-icons/faPen";
-import { faCode } from "@fortawesome/pro-duotone-svg-icons/faCode";
-import { faPlus } from "@fortawesome/pro-solid-svg-icons/faPlus";
-import { faMinus } from "@fortawesome/pro-solid-svg-icons/faMinus";
+import {SdInputValidate} from "../utils/SdInputValidate";
+import {faEye} from "@fortawesome/pro-duotone-svg-icons/faEye";
+import {faPen} from "@fortawesome/pro-duotone-svg-icons/faPen";
+import {faCode} from "@fortawesome/pro-duotone-svg-icons/faCode";
+import {faPlus} from "@fortawesome/pro-solid-svg-icons/faPlus";
+import {faMinus} from "@fortawesome/pro-solid-svg-icons/faMinus";
+import {CommonModule} from "@angular/common";
+import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
+import {SdDockingModule} from "./dock/SdDockingModule";
+import {SdAnchorControl} from "./SdAnchorControl";
+import {SdPaneControl} from "./SdPaneControl";
 
 @Component({
   selector: "sd-html-editor",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [CommonModule, FontAwesomeModule, SdAnchorControl, SdDockingModule, SdPaneControl],
   template: `
     <sd-dock-container>
       <sd-dock class="_toolbar" *ngIf="!disabled">
@@ -56,11 +63,11 @@ import { faMinus } from "@fortawesome/pro-solid-svg-icons/faMinus";
       </sd-pane>
     </sd-dock-container>`,
   styles: [/* language=SCSS */ `
-    @import "../../scss/mixins";
+    @import "../scss/mixins";
 
     :host {
       display: block;
-      border: 1px solid var(--trans-brightness-default);
+      border: 1px solid var(--trans-default);
       border-radius: var(--border-radius-default);
       overflow: hidden;
 
@@ -80,8 +87,8 @@ import { faMinus } from "@fortawesome/pro-solid-svg-icons/faMinus";
               }
 
               &._selected {
-                background: var(--theme-color-primary-default);
-                color: var(--text-brightness-rev-default);
+                background: var(--theme-primary-default);
+                color: var(--text-trans-rev-default);
               }
             }
           }
@@ -95,25 +102,25 @@ import { faMinus } from "@fortawesome/pro-solid-svg-icons/faMinus";
 
             &[contenteditable=true] {
               cursor: text;
-              background: var(--theme-color-secondary-lightest);
+              background: var(--theme-secondary-lightest);
             }
           }
 
           > textarea {
             @include form-control-base();
             height: 100%;
-            background: var(--theme-color-info-lightest);
+            background: var(--theme-info-lightest);
             border: none;
             transition: outline-color .1s linear;
             outline: 1px solid transparent;
             outline-offset: -1px;
 
             &::-webkit-input-placeholder {
-              color: var(--text-brightness-lighter);
+              color: var(--text-trans-lighter);
             }
 
             &:focus {
-              outline-color: var(--theme-color-primary-default);
+              outline-color: var(--theme-primary-default);
             }
           }
         }
@@ -154,7 +161,7 @@ export class SdHtmlEditorControl {
   public readonly valueChange = new EventEmitter<string>();
 
   @Input()
-  @SdInputValidate({ type: String, includes: ["preview", "edit", "code"] })
+  @SdInputValidate({type: String, includes: ["preview", "edit", "code"]})
   @HostBinding("attr.sd-view-state")
   public get viewState(): "preview" | "edit" | "code" {
     return this._viewState;
@@ -170,11 +177,11 @@ export class SdHtmlEditorControl {
   private _viewState: "preview" | "edit" | "code" = "edit";
 
   @Input()
-  @SdInputValidate({ type: Boolean, notnull: true })
+  @SdInputValidate({type: Boolean, notnull: true})
   public rowsButton = true;
 
   @Input()
-  @SdInputValidate({ type: Number, notnull: true })
+  @SdInputValidate({type: Number, notnull: true})
   public rows = 3;
 
   @Input()
@@ -188,7 +195,7 @@ export class SdHtmlEditorControl {
   public disabled?: boolean;
 
   @Input("content.min-height.px")
-  @SdInputValidate({ type: Number, notnull: true })
+  @SdInputValidate({type: Number, notnull: true})
   public contentMinHeightPx = 100;
 
   @Input()

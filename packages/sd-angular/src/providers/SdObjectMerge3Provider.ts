@@ -1,10 +1,10 @@
-import { Injectable } from "@angular/core";
-import { ObjectUtil } from "@simplysm/sd-core-common";
-import { SdModalProvider } from "./SdModalProvider";
-import { SdToastProvider } from "./SdToastProvider";
-import { SdObjectMerge3Modal } from "../modals/SdObjectMerge3Modal";
+import {Injectable} from "@angular/core";
+import {ObjectUtil} from "@simplysm/sd-core-common";
+import {SdModalProvider} from "./SdModalProvider";
+import {SdToastProvider} from "./SdToastProvider";
+import {SdObjectMerge3Modal} from "../controls/SdObjectMerge3Modal";
 
-@Injectable({ providedIn: null })
+@Injectable({providedIn: "root"})
 export class SdObjectMerge3Provider {
   public constructor(private readonly _modal: SdModalProvider,
                      private readonly _toast: SdToastProvider) {

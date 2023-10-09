@@ -10,12 +10,15 @@ import {
   SimpleChanges,
   ViewChild
 } from "@angular/core";
-import { DateOnly, DateTime, Time } from "@simplysm/sd-core-common";
-import { SdInputValidate } from "../decorators/SdInputValidate";
+import {DateOnly, DateTime, Time} from "@simplysm/sd-core-common";
+import {SdInputValidate} from "../utils/SdInputValidate";
+import {CommonModule} from "@angular/common";
 
 @Component({
   selector: "sd-content-editor",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [CommonModule],
   template: `
     <div #editor
          class="_editor"
@@ -27,7 +30,7 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
          (focus)="onEditorFocus()"></div>
     <div class="_invalid-indicator"></div>`,
   styles: [/* language=SCSS */ `
-    @import "../../scss/mixins";
+    @import "../scss/mixins";
 
     :host {
       display: block;
@@ -37,7 +40,7 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
         @include form-control-base();
         white-space: pre-wrap;
 
-        background: var(--theme-color-secondary-lightest);
+        background: var(--theme-secondary-lightest);
         border: 1px solid var(--border-color);
         border-radius: var(--border-radius-default);
 
@@ -45,14 +48,14 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
 
         &:focus {
           outline: none;
-          border-color: var(--theme-color-primary-default);
+          border-color: var(--theme-primary-default);
         }
       }
 
       &[sd-disabled=true] {
         > ._editor {
-          background: var(--theme-color-grey-lightest);
-          color: var(--text-brightness-light);
+          background: var(--theme-grey-lightest);
+          color: var(--text-trans-light);
         }
       }
 
@@ -89,7 +92,7 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
         &[sd-disabled=true] {
           > ._editor {
             background: white !important;
-            color: var(--text-brightness-default);
+            color: var(--text-trans-default);
           }
         }
 
@@ -110,7 +113,7 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
         }
 
         > ._editor:focus {
-          outline: 1px solid var(--theme-color-primary-default);
+          outline: 1px solid var(--theme-primary-default);
           outline-offset: -1px;
         }
       }
@@ -121,7 +124,15 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
 
       &[sd-invalid=true] {
         > ._invalid-indicator {
-          @include invalid-indicator();
+          display: block;
+          position: absolute;
+          background: var(--theme-color-danger-default);
+
+          top: var(--gap-xs);
+          left: var(--gap-xs);
+          border-radius: 100%;
+          width: var(--gap-sm);
+          height: var(--gap-sm);
         }
       }
     }
@@ -160,7 +171,7 @@ export class SdContentEditorControl implements OnChanges {
   public inset?: boolean;
 
   @Input()
-  @SdInputValidate({ type: String, includes: ["sm", "lg"] })
+  @SdInputValidate({type: String, includes: ["sm", "lg"]})
   @HostBinding("attr.sd-size")
   public size?: "sm" | "lg";
 

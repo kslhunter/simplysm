@@ -1,8 +1,9 @@
-import { Directive, EventEmitter, HostListener, Output } from "@angular/core";
-import { ISdResizeEvent } from "@simplysm/sd-core-browser";
+import {Directive, EventEmitter, HostListener, Output} from "@angular/core";
+import {ISdResizeEvent} from "@simplysm/sd-core-browser";
 
 @Directive({
-  selector: "[sdResizeOutside]"
+  selector: "[sdResizeOutside]",
+  standalone: true,
 })
 export class SdResizeOutsideDirective {
   @Output()

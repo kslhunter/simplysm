@@ -1,18 +1,11 @@
 import {EventEmitter} from "events";
-import {FsUtil, Logger} from "@simplysm/sd-core-node";
-import {
-  INpmConfig,
-  ISdCliBuilderResult,
-  ISdCliConfig,
-  ISdCliPackageBuildResult,
-  ISdCliServerPackageConfig
-} from "../commons";
-import esbuild from "esbuild";
+import {FsUtil, Logger, SdFsWatcher} from "@simplysm/sd-core-node";
+import {INpmConfig, ISdCliBuilderResult, ISdCliConfig, ISdCliServerPackageConfig} from "../commons";
 import path from "path";
-import {SdTsIncrementalBuilder} from "../build-tools/SdTsIncrementalBuilder";
+import {SdTsCompiler} from "../build-tools/SdTsCompiler";
 import {SdLinter} from "../build-tools/SdLinter";
-import {ObjectUtil, StringUtil} from "@simplysm/sd-core-common";
-import esbuildPluginTsc from 'esbuild-plugin-tsc';
+import {FunctionQueue, ObjectUtil, StringUtil} from "@simplysm/sd-core-common";
+import {SdTsBundler} from "../build-tools/SdTsBundler";
 
 export class SdCliServerBuilder extends EventEmitter {
   private readonly _logger = Logger.get(["simplysm", "sd-cli", "SdCliServerBuilder"]);
@@ -33,144 +26,67 @@ export class SdCliServerBuilder extends EventEmitter {
   }
 
   public async watchAsync(): Promise<void> {
-    this._debug("빌드 준비...");
-    const sdTsProgram = await SdTsIncrementalBuilder.createAsync(this._pkgPath, () => ({emitJs: false}));
+    const extModules = await this._getExternalModulesAsync();
 
     this._debug("dist 초기화...");
     await FsUtil.removeAsync(path.resolve(this._pkgPath, "dist"));
-
-    this.emit("change");
 
     this._debug("GEN .config...");
     const confDistPath = path.resolve(this._pkgPath, "dist/.config.json");
     await FsUtil.writeFileAsync(confDistPath, JSON.stringify(this._pkgConf.configs ?? {}, undefined, 2));
 
-    this._debug(`BUILD...`);
-    const tsConfig = await FsUtil.readJsonAsync(path.resolve(this._pkgPath, "tsconfig.json"));
-
-    const extModules = await this._getExternalModulesAsync();
-    let isFirst = true;
-    const ctx = await esbuild.context({
-      entryPoints: "files" in tsConfig ? tsConfig.files.map((relPath) => path.resolve(this._pkgPath, relPath)) : [
-        path.resolve(this._pkgPath, "src", "main.ts"),
+    this._debug(`BUILD 준비...`);
+    const builder = new SdTsBundler({
+      dev: false,
+      pkgPath: this._pkgPath,
+      entryPoints: [
+        path.resolve(this._pkgPath, "src/main.ts")
       ],
-      keepNames: true,
-      bundle: true,
-      sourcemap: true,
-      target: "node20",
-      mainFields: ["es2021", "es2020", "module", "main"],
-      conditions: ["es2021", "es2020", "es2015", "module"],
-      tsconfig: path.resolve(this._pkgPath, "tsconfig.json"),
-      write: true,
-      format: "esm",
-      resolveExtensions: [".js", ".mjs", ".cjs", ".jsx", ".ts", ".tsx"],
-      loader: {
-        ".xlsx": "binary",
-        ".xls": "binary",
-        ".docx": "binary",
-        ".doc": "binary",
-        ".pptx": "binary",
-        ".ppt": "binary",
-        ".woff": "binary",
-        ".woff2": "binary",
-        ".ttf": "binary",
-        ".eot": "binary",
-        ".otf": "binary",
-        ".csv": "binary",
-        ".zip": "binary",
-        ".pfx": "binary",
-        ".pkl": "binary",
-      },
-      platform: "node",
-      logLevel: "silent",
-      outdir: path.resolve(this._pkgPath, "dist"),
-      external: extModules.map((item) => item.name),
-      banner: {
-        js: `
-import __path__ from 'path';
-import { fileURLToPath as __fileURLToPath__ } from 'url';
-import { createRequire as __createRequire__ } from 'module';
-
-const require = __createRequire__(import.meta.url);
-const __filename = __fileURLToPath__(import.meta.url);
-const __dirname = __path__.dirname(__filename);`.trim()
-      },
-      plugins: [
-        esbuildPluginTsc(),
-        {
-          name: "sd-additional",
-          setup: ({onEnd, onStart}) => {
-            onStart(() => {
-              if (!isFirst) {
-                this.emit("change");
-                this._debug(`BUILD...`);
-              }
-              isFirst = false;
-            });
-
-            onEnd(async (result) => {
-              try {
-                const buildResults = [
-                  ...result.warnings.map((warn) => ({
-                    filePath: warn.location?.file !== undefined ? path.resolve(warn.location.file) : undefined,
-                    line: warn.location?.line,
-                    char: warn.location?.column,
-                    code: undefined,
-                    severity: "warning" as const,
-                    message: warn.text
-                  })),
-                  ...result.errors.map((err) => ({
-                    filePath: err.location?.file !== undefined ? path.resolve(err.location.file) : undefined,
-                    line: err.location?.line,
-                    char: err.location?.column !== undefined ? err.location.column + 1 : undefined,
-                    code: undefined,
-                    severity: "error" as const,
-                    message: err.text
-                  }))
-                ];
-
-                this._debug("CHECK...");
-                const checkResult = await sdTsProgram.buildAsync();
-
-                this._debug("LINT...");
-                const lintResults = !this._withLint ? [] : await SdLinter.lintAsync(checkResult.affectedFilePaths, sdTsProgram.builderProgram!.getProgram());
-
-                this._debug(`빌드 완료`);
-                this.emit("complete", {
-                  affectedFilePaths: checkResult.affectedFilePaths,
-                  buildResults: [...buildResults, ...checkResult.results, ...lintResults]
-                });
-              }
-              catch (err) {
-                this._logger.error(err);
-              }
-            });
-          },
-        },
-        {
-          name: "jsdom-patch",
-          setup: ({onLoad}) => {
-            onLoad({filter: /XMLHttpRequest-impl\.js$/}, async (args) => {
-              let contents = await FsUtil.readFileAsync(args.path);
-              contents = contents.replace(
-                './xhr-sync-worker.js',
-                'jsdom/lib/jsdom/living/xhr/xhr-sync-worker.js'
-              );
-              return {contents};
-            });
-          },
-        }
-      ]
+      external: extModules.map((item) => item.name)
     });
-    await ctx.watch();
+
+    const checker = new SdTsCompiler({
+      pkgPath: this._pkgPath,
+      emit: false,
+      emitDts: false,
+      globalStyle: false
+    });
+
+    this._debug("WATCH...");
+    const fnQ = new FunctionQueue();
+    SdFsWatcher
+      .watch([
+        path.resolve(this._pkgPath, "src/**/*.*")
+      ], {
+        ignoreInitial: false
+      })
+      .onChange({
+        delay: 100
+      }, () => {
+        fnQ.runLast(async () => {
+          this.emit("change");
+
+          this._debug(`BUILD...`);
+          const buildResults = await builder.bundleAsync();
+
+          this._debug("CHECK...");
+          const checkResult = await checker.buildAsync();
+
+          this._debug(`LINT...`);
+          const lintResults = await SdLinter.lintAsync(checkResult.affectedFilePaths, checker.program);
+
+          this._debug(`빌드 완료`);
+          this.emit("complete", {
+            affectedFilePaths: checkResult.affectedFilePaths,
+            buildResults: [...buildResults, ...checkResult.results, ...lintResults]
+          });
+        });
+      });
   }
 
   public async buildAsync(): Promise<ISdCliBuilderResult> {
     const npmConfig = (await FsUtil.readJsonAsync(path.resolve(this._pkgPath, "package.json"))) as INpmConfig;
     const extModules = await this._getExternalModulesAsync();
-
-    this._debug("빌드 준비...");
-    const sdTsProgram = await SdTsIncrementalBuilder.createAsync(this._pkgPath, () => ({emitJs: false}));
 
     this._debug("dist 초기화...");
     await FsUtil.removeAsync(path.resolve(this._pkgPath, "dist"));
@@ -178,6 +94,29 @@ const __dirname = __path__.dirname(__filename);`.trim()
     this._debug("GEN .config.json...");
     const confDistPath = path.resolve(this._pkgPath, "dist/.config.json");
     await FsUtil.writeFileAsync(confDistPath, JSON.stringify(this._pkgConf.configs ?? {}, undefined, 2));
+
+    this._debug("GEN package.json...");
+    {
+      const deps = extModules.filter((item) => item.exists).map((item) => item.name);
+
+      const distNpmConfig = ObjectUtil.clone(npmConfig);
+      distNpmConfig.dependencies = {};
+      for (const dep of deps) {
+        distNpmConfig.dependencies[dep] = "*";
+      }
+      delete distNpmConfig.optionalDependencies;
+      delete distNpmConfig.devDependencies;
+      delete distNpmConfig.peerDependencies;
+
+      if (this._pkgConf.pm2 && !this._pkgConf.pm2.noStartScript) {
+        distNpmConfig.scripts = {"start": "pm2 start pm2.json"};
+      }
+
+      await FsUtil.writeFileAsync(
+        path.resolve(this._pkgPath, "dist/package.json"),
+        JSON.stringify(distNpmConfig, undefined, 2)
+      );
+    }
 
     if (this._pkgConf.pm2) {
       this._debug("GEN pm2.json...");
@@ -209,8 +148,9 @@ const __dirname = __path__.dirname(__filename);`.trim()
       );
     }
 
-    this._debug("GEN web.config...");
     if (this._pkgConf.iis) {
+      this._debug("GEN web.config...");
+
       const iisDistPath = path.resolve(this._pkgPath, "dist/web.config");
       const serverExeFilePath = this._pkgConf.iis.nodeExeFilePath ?? "C:\\Program Files\\nodejs\\node.exe";
       await FsUtil.writeFileAsync(iisDistPath, `
@@ -237,119 +177,31 @@ const __dirname = __path__.dirname(__filename);`.trim()
 `.trim());
     }
 
-    this._debug("GEN package.json...");
-    {
-      const deps = extModules.filter((item) => item.exists).map((item) => item.name);
-
-      const distNpmConfig = ObjectUtil.clone(npmConfig);
-      distNpmConfig.dependencies = {};
-      for (const dep of deps) {
-        distNpmConfig.dependencies[dep] = "*";
-      }
-      delete distNpmConfig.optionalDependencies;
-      delete distNpmConfig.devDependencies;
-      delete distNpmConfig.peerDependencies;
-
-      if (this._pkgConf.pm2 && !this._pkgConf.pm2.noStartScript) {
-        distNpmConfig.scripts = {"start": "pm2 start pm2.json"};
-      }
-
-      await FsUtil.writeFileAsync(
-        path.resolve(this._pkgPath, "dist/package.json"),
-        JSON.stringify(distNpmConfig, undefined, 2)
-      );
-    }
-
-    this._debug("BUILD...");
-    const tsConfig = await FsUtil.readJsonAsync(path.resolve(this._pkgPath, "tsconfig.json"));
-    const esbuildResult = await esbuild.build({
-      entryPoints: "files" in tsConfig ? tsConfig.files.map((relPath) => path.resolve(this._pkgPath, relPath)) : [
-        path.resolve(this._pkgPath, "src", "main.ts"),
+    this._debug(`BUILD 준비...`);
+    const builder = new SdTsBundler({
+      dev: true,
+      pkgPath: this._pkgPath,
+      entryPoints: [
+        path.resolve(this._pkgPath, "src/main.ts")
       ],
-      keepNames: true,
-      bundle: true,
-      target: "node20",
-      mainFields: ["es2021", "es2020", "module", "main"],
-      conditions: ["es2021", "es2020", "es2015", "module"],
-      tsconfig: path.resolve(this._pkgPath, "tsconfig.json"),
-      write: true,
-      format: "esm",
-      resolveExtensions: [".js", ".mjs", ".cjs", ".jsx", ".ts", ".tsx"],
-      loader: {
-        ".xlsx": "binary",
-        ".xls": "binary",
-        ".docx": "binary",
-        ".doc": "binary",
-        ".pptx": "binary",
-        ".ppt": "binary",
-        ".woff": "binary",
-        ".woff2": "binary",
-        ".ttf": "binary",
-        ".eot": "binary",
-        ".otf": "binary",
-        ".csv": "binary",
-        ".zip": "binary",
-        ".pfx": "binary",
-        ".pkl": "binary",
-      },
-      platform: "node",
-      logLevel: "silent",
-      outdir: path.resolve(this._pkgPath, "dist"),
-      external: extModules.map((item) => item.name),
-      banner: {
-        js: `
-import __path__ from 'path';
-import { fileURLToPath as __fileURLToPath__ } from 'url';
-import { createRequire as __createRequire__ } from 'module';
-
-const require = __createRequire__(import.meta.url);
-const __filename = __fileURLToPath__(import.meta.url);
-const __dirname = __path__.dirname(__filename);`.trim()
-      },
-      plugins: [
-        esbuildPluginTsc(),
-        {
-          name: "jsdom-patch",
-          setup: ({onLoad}) => {
-            onLoad({filter: /XMLHttpRequest-impl\.js$/}, async (args) => {
-              let contents = await FsUtil.readFileAsync(args.path);
-              contents = contents.replace(
-                './xhr-sync-worker.js',
-                'jsdom/lib/jsdom/living/xhr/xhr-sync-worker.js'
-              );
-              return {contents};
-            });
-          },
-        }
-      ]
+      external: extModules.map((item) => item.name)
     });
 
-    const buildResults: ISdCliPackageBuildResult[] = [
-      ...esbuildResult.warnings.map((warn) => ({
-        filePath: warn.location?.file !== undefined ? path.resolve(warn.location.file) : undefined,
-        line: warn.location?.line,
-        char: warn.location?.column,
-        code: undefined,
-        severity: "warning" as const,
-        message: warn.text,
-        type: "build" as const
-      })),
-      ...esbuildResult.errors.map((err) => ({
-        filePath: err.location?.file !== undefined ? path.resolve(err.location.file) : undefined,
-        line: err.location?.line,
-        char: err.location?.column !== undefined ? err.location.column + 1 : undefined,
-        code: undefined,
-        severity: "warning" as const,
-        message: err.text,
-        type: "build" as const
-      }))
-    ];
+    const checker = new SdTsCompiler({
+      pkgPath: this._pkgPath,
+      emit: false,
+      emitDts: false,
+      globalStyle: false
+    });
+
+    this._debug(`BUILD...`);
+    const buildResults = await builder.bundleAsync();
 
     this._debug("CHECK...");
-    const checkResult = await sdTsProgram.buildAsync();
+    const checkResult = await checker.buildAsync();
 
-    this._debug("LINT...");
-    const lintResults = !this._withLint ? [] : await SdLinter.lintAsync(checkResult.affectedFilePaths, sdTsProgram.builderProgram!.getProgram());
+    this._debug(`LINT...`);
+    const lintResults = await SdLinter.lintAsync(checkResult.affectedFilePaths, checker.program);
 
     this._debug(`빌드 완료`);
     return {

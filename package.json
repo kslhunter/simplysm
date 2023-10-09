@@ -19,6 +19,7 @@
   ],
   "scripts": {
     "watch": "yarn _sd-cli_ watch",
+    "watch:sd-angular": "yarn _sd-cli_ --debug watch --packages sd-angular",
     "build": "yarn _sd-cli_ --debug build",
     "publish": "yarn _sd-cli_ --debug publish",
     "--": "",

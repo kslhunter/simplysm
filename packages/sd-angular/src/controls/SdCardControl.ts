@@ -1,13 +1,15 @@
-import { ChangeDetectionStrategy, Component } from "@angular/core";
+import {ChangeDetectionStrategy, Component} from "@angular/core";
+import {CommonModule} from "@angular/common";
 
 @Component({
   selector: "sd-card",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [CommonModule],
   template: `
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
-    @import "../../scss/mixins";
-    @import "../../scss/variables-scss-arr";
+    @import "../scss/mixins";
 
     :host {
       display: block;

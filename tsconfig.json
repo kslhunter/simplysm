@@ -5,7 +5,7 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "module": "ESNext",
-    "target": "ES2021",
+    "target": "ES2022",
     "strict": true,
     "moduleResolution": "Node",
     "esModuleInterop": true,
@@ -20,11 +20,11 @@
     "forceConsistentCasingInFileNames": true,
     "noPropertyAccessFromIndexSignature": true,
     "importHelpers": true,
+    "useDefineForClassFields": false,
     "baseUrl": ".",
     "paths": {
       "@simplysm/*": [
-        "./packages/*/src/index.ts",
-        "./packages/*/src/index.tsx"
+        "./packages/*/src/index.ts"
       ]
     }
   }

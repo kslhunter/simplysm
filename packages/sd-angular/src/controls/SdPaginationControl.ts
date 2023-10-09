@@ -1,13 +1,18 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from "@angular/core";
-import { SdInputValidate } from "../decorators/SdInputValidate";
-import { faAngleDoubleLeft } from "@fortawesome/pro-duotone-svg-icons/faAngleDoubleLeft";
-import { faAngleLeft } from "@fortawesome/pro-duotone-svg-icons/faAngleLeft";
-import { faAngleRight } from "@fortawesome/pro-duotone-svg-icons/faAngleRight";
-import { faAngleDoubleRight } from "@fortawesome/pro-duotone-svg-icons/faAngleDoubleRight";
+import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from "@angular/core";
+import {SdInputValidate} from "../utils/SdInputValidate";
+import {faAngleDoubleLeft} from "@fortawesome/pro-duotone-svg-icons/faAngleDoubleLeft";
+import {faAngleLeft} from "@fortawesome/pro-duotone-svg-icons/faAngleLeft";
+import {faAngleRight} from "@fortawesome/pro-duotone-svg-icons/faAngleRight";
+import {faAngleDoubleRight} from "@fortawesome/pro-duotone-svg-icons/faAngleDoubleRight";
+import {CommonModule} from "@angular/common";
+import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
+import {SdAnchorControl} from "./SdAnchorControl";
 
 @Component({
   selector: "sd-pagination",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [CommonModule, FontAwesomeModule, SdAnchorControl],
   template: `
     <sd-anchor [disabled]="!hasPrev" (click)="onGoFirstClick()">
       <fa-icon [icon]="icons.fadAngleDoubleLeft" [fixedWidth]="true"></fa-icon>
@@ -40,7 +45,7 @@ import { faAngleDoubleRight } from "@fortawesome/pro-duotone-svg-icons/faAngleDo
         }
 
         &:hover {
-          background: var(--theme-color-grey-lightest);
+          background: var(--theme-grey-lightest);
         }
       }
     }

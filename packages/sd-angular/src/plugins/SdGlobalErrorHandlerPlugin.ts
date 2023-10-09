@@ -1,10 +1,10 @@
-import { ApplicationRef, ErrorHandler, Injectable, NgModuleRef } from "@angular/core";
-import { SdSystemLogRootProvider } from "../root-providers/SdSystemLogRootProvider";
+import {ApplicationRef, ErrorHandler, Injectable, NgModuleRef} from "@angular/core";
+import {SdSystemLogProvider} from "../providers/SdSystemLogProvider";
 
-@Injectable({ providedIn: null })
+@Injectable({providedIn: null})
 export class SdGlobalErrorHandlerPlugin implements ErrorHandler {
   public constructor(private readonly _ngModuleRef: NgModuleRef<any>,
-                     private readonly _systemLog: SdSystemLogRootProvider) {
+                     private readonly _systemLog: SdSystemLogProvider) {
   }
 
   public handleError(error: any): void {

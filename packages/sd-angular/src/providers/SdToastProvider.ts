@@ -1,40 +1,28 @@
-import { ComponentFactoryResolver, ComponentRef, Injectable, Injector, Type } from "@angular/core";
-import { SdToastContainerControl } from "../controls/SdToastContainerControl";
-import { SdRootRootProvider } from "../root-providers/SdRootRootProvider";
-import { SdSystemLogRootProvider } from "../root-providers/SdSystemLogRootProvider";
-import { SdToastControl } from "../controls/SdToastControl";
+import {ApplicationRef, ComponentRef, inject, Injectable, Type, ViewContainerRef} from "@angular/core";
+import {SdToastContainerControl} from "../controls/toast/SdToastContainerControl";
+import {SdSystemLogProvider} from "./SdSystemLogProvider";
+import {SdToastControl} from "../controls/toast/SdToastControl";
 
-@Injectable({ providedIn: null })
+@Injectable({providedIn: "root"})
 export class SdToastProvider {
-  public get containerRef(): ComponentRef<SdToastContainerControl> {
-    this._root.data["toast"] = this._root.data["toast"] ?? {};
+  private readonly _appRef = inject(ApplicationRef);
+  private readonly _systemLog = inject(SdSystemLogProvider);
 
-    if (this._root.data["toast"].containerRef === undefined) {
-      const compRef = this._cfr.resolveComponentFactory(SdToastContainerControl).create(this._injector);
-      const rootComp = this._root.appRef.components[0];
+  public alertThemes: ("info" | "success" | "warning" | "danger")[] = [];
+
+  private _containerRef?: ComponentRef<SdToastContainerControl>;
+
+  public get containerRef(): ComponentRef<SdToastContainerControl> {
+    const vcr = this._appRef.injector.get(ViewContainerRef);
+    if (this._containerRef === undefined) {
+      const compRef = vcr.createComponent(SdToastContainerControl);
+      const rootComp = this._appRef.components[0];
       const rootCompEl = rootComp.location.nativeElement as HTMLElement;
       rootCompEl.appendChild(compRef.location.nativeElement);
-      this._root.appRef.attachView(compRef.hostView);
-      this._root.data["toast"].containerRef = compRef;
+      this._appRef.attachView(compRef.hostView);
+      this._containerRef = compRef;
     }
-    return this._root.data["toast"].containerRef;
-  }
-
-  public get alertThemes(): ("info" | "success" | "warning" | "danger")[] {
-    this._root.data["toast"] = this._root.data["toast"] ?? {};
-    this._root.data["toast"].alertThemes = this._root.data["toast"].alertThemes ?? [];
-    return this._root.data["toast"].alertThemes;
-  }
-
-  public set alertThemes(value: ("info" | "success" | "warning" | "danger")[]) {
-    this._root.data["toast"] = this._root.data["toast"] ?? {};
-    this._root.data["toast"].alertThemes = value;
-  }
-
-  public constructor(private readonly _cfr: ComponentFactoryResolver,
-                     private readonly _injector: Injector,
-                     private readonly _root: SdRootRootProvider,
-                     private readonly _systemLog: SdSystemLogRootProvider) {
+    return this._containerRef;
   }
 
   public async try<R>(fn: () => Promise<R>, messageFn?: (err: Error) => string): Promise<R>;
@@ -63,13 +51,14 @@ export class SdToastProvider {
   }
 
   public notify<T extends SdToastBase<any, any>>(toastType: Type<T>, param: T["tParam"], onclose: (result: T["tResult"] | undefined) => void | Promise<void>): void {
-    const compRef = this._cfr.resolveComponentFactory(toastType).create(this.containerRef.injector);
+    const vcr = this.containerRef.injector.get(ViewContainerRef);
+
+    const compRef = vcr.createComponent(toastType);
     const containerEl = this.containerRef.location.nativeElement as HTMLElement;
 
-    const toastRef = this._cfr.resolveComponentFactory(SdToastControl).create(
-      this.containerRef.injector,
-      [[compRef.location.nativeElement]]
-    );
+    const toastRef = vcr.createComponent(SdToastControl, {
+      projectableNodes: [[compRef.location.nativeElement]]
+    });
     const toastEl = toastRef.location.nativeElement as HTMLElement;
     containerEl.appendChild(toastEl);
 
@@ -90,15 +79,15 @@ export class SdToastProvider {
     };
 
     window.setTimeout(async () => {
-      this._root.appRef.attachView(compRef.hostView);
-      this._root.appRef.attachView(toastRef.hostView);
-      this._root.appRef.tick();
+      this._appRef.attachView(compRef.hostView);
+      this._appRef.attachView(toastRef.hostView);
+      this._appRef.tick();
 
       try {
         toastRef.instance.open = true;
-        this._root.appRef.tick();
+        this._appRef.tick();
         await compRef.instance.sdOnOpen(param);
-        this._root.appRef.tick();
+        this._appRef.tick();
       }
       catch (e) {
         await close();
@@ -141,11 +130,14 @@ export class SdToastProvider {
       return undefined as any;
     }
 
-    const containerEl = this.containerRef.location.nativeElement as HTMLElement;
-    const toastRef = this._cfr.resolveComponentFactory(SdToastControl).create(this.containerRef.injector);
+    const vcr = this.containerRef.injector.get(ViewContainerRef);
+
+    const toastRef = vcr.createComponent(SdToastControl);
     const toastEl = toastRef.location.nativeElement as HTMLElement;
+
+    const containerEl = this.containerRef.location.nativeElement as HTMLElement;
     containerEl.appendChild(toastEl);
-    this._root.appRef.attachView(toastRef.hostView);
+    this._appRef.attachView(toastRef.hostView);
 
     toastEl.findAll<HTMLElement>("._sd-toast-message")[0].innerText = message;
     toastRef.instance.useProgress = progress;
@@ -158,7 +150,7 @@ export class SdToastProvider {
     toastRef.instance.open = true;
     toastRef.instance.theme = theme;
     try {
-      this._root.appRef.tick();
+      this._appRef.tick();
     }
     catch {
     }
@@ -195,7 +187,7 @@ export class SdToastProvider {
             toastRef.destroy();
           });
           toastRef.instance.open = false;
-          this._root.appRef.tick();
+          this._appRef.tick();
         }
       },
       ms

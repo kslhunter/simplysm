@@ -1,29 +1,32 @@
-import { ChangeDetectionStrategy, Component, HostBinding, Input } from "@angular/core";
-import { SdInputValidate } from "../decorators/SdInputValidate";
+import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
+import {SdInputValidate} from "../utils/SdInputValidate";
+import {CommonModule} from "@angular/common";
 
 @Component({
   selector: "sd-anchor",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [CommonModule],
   template: `
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
     :host {
       display: inline-block;
       cursor: pointer;
-      color: var(--theme-color-primary-default);
+      color: var(--theme-primary-default);
 
       &:hover {
-        color: var(--theme-color-primary-dark);
+        color: var(--theme-primary-dark);
         text-decoration: underline;
-        filter: drop-shadow(1px 1px 0 var(--text-brightness-lightest));
+        filter: drop-shadow(1px 1px 0 var(--text-trans-lightest));
       }
 
       &:active {
-        color: var(--theme-color-primary-darker);
+        color: var(--theme-primary-darker);
       }
 
       &[disabled=true] {
-        color: var(--theme-color-grey-light);
+        color: var(--theme-grey-light);
         cursor: default;
         pointer-events: none;
       }
@@ -32,12 +35,12 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
     @media (hover: none) and (pointer: coarse) {
       :host {
         &:hover {
-          color: var(--theme-color-primary-default);
+          color: var(--theme-primary-default);
           text-decoration: none;
         }
 
         &:active {
-          color: var(--theme-color-primary-default);
+          color: var(--theme-primary-default);
         }
       }
     }

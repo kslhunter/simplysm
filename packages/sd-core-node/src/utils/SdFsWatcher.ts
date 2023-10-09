@@ -5,14 +5,14 @@ export class SdFsWatcher {
   private readonly _watcher: chokidar.FSWatcher;
 
   private constructor(paths: string[], options?: chokidar.WatchOptions) {
-    this._watcher = chokidar.watch(paths, ObjectUtil.merge(options, {ignoreInitial: true, persistent: true}));
+    this._watcher = chokidar.watch(paths, ObjectUtil.merge({ignoreInitial: true, persistent: true}, options));
   }
 
-  public static watch(paths: string[]): SdFsWatcher {
-    return new SdFsWatcher(paths);
+  public static watch(paths: string[], options?: chokidar.WatchOptions): SdFsWatcher {
+    return new SdFsWatcher(paths, options);
   }
 
-  public onChange(opt: { delay?: number }, cb: (changeInfos: ISdFsWatcherChangeInfo[]) => void | Promise<void>): void {
+  public onChange(opt: { delay?: number }, cb: (changeInfos: ISdFsWatcherChangeInfo[]) => void | Promise<void>): this {
     const changeInfoMap = new Map<string, TSdFsWatcherEvent>();
     this._watcher
       .on("all", (event: TSdFsWatcherEvent, filePath: string) => {
@@ -41,6 +41,8 @@ export class SdFsWatcher {
           await cb(changeInfos);
         }, opt.delay ?? 500);
       });
+
+    return this;
   }
 
   public add(paths: string[]): void {

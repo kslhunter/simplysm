@@ -1,9 +1,19 @@
-import { ChangeDetectionStrategy, Component, HostBinding, Input } from "@angular/core";
-import { SdInputValidate } from "../decorators/SdInputValidate";
+import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
+import {SdInputValidate} from "../utils/SdInputValidate";
+import {CommonModule} from "@angular/common";
+
+const vars = {
+  borderColor: {
+    light: "var(--theme-blue-grey-lightest)",
+    dark: "var(--theme-grey-light)"
+  }
+};
 
 @Component({
   selector: "sd-table",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [CommonModule],
   template: `
     <table>
       <ng-content></ng-content>
@@ -11,49 +21,47 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
   styles: [/* language=SCSS */ `
     :host {
       display: block;
-      $border-color-light: var(--theme-color-blue-grey-lightest);
-      $border-color-dark: var(--theme-color-grey-light);
 
       ::ng-deep > table {
         width: 100%;
         border-collapse: separate;
         border-spacing: 0;
-        border-right: 1px solid $border-color-dark;
-        border-bottom: 1px solid $border-color-dark;
+        border-right: 1px solid ${vars.borderColor.dark};
+        border-bottom: 1px solid ${vars.borderColor.dark};
 
         > * > tr > * {
           padding: var(--gap-xs) var(--gap-sm);
-          border-left: 1px solid $border-color-light;
+          border-left: 1px solid ${vars.borderColor.light};
 
           &:first-child {
-            border-left: 1px solid $border-color-dark;
+            border-left: 1px solid ${vars.borderColor.dark};
           }
         }
 
         > tbody > tr > td:first-child {
-          border-left: 1px solid $border-color-dark;
+          border-left: 1px solid ${vars.borderColor.dark};
         }
 
         > * > tr {
           > * {
-            border-top: 1px solid $border-color-light;
+            border-top: 1px solid ${vars.borderColor.light};
           }
 
           &:first-child > * {
-            border-top: 1px solid $border-color-dark;
+            border-top: 1px solid ${vars.borderColor.dark};
           }
         }
 
         > tbody > tr:first-child {
-          border-top: 1px solid $border-color-dark;
+          border-top: 1px solid ${vars.borderColor.dark};
         }
 
         > thead > tr > th {
-          background: var(--theme-color-grey-lightest);
+          background: var(--theme-grey-lightest);
         }
 
         > tbody > tr > th {
-          background: var(--theme-color-grey-lightest);
+          background: var(--theme-grey-lightest);
         }
       }
 
@@ -89,7 +97,7 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
           > tbody > tr > td:first-child {
             border-left: none;
           }
-          
+
           > * > tr > * {
             border-left: none;
           }
@@ -105,7 +113,7 @@ export class SdTableControl {
   public inset?: boolean;
 
   @Input()
-  @SdInputValidate({ type: String, includes: ["vertical", "horizontal", "all"] })
+  @SdInputValidate({type: String, includes: ["vertical", "horizontal", "all"]})
   @HostBinding("attr.sd-cell-border")
   public cellBorder: "vertical" | "horizontal" | "all" = "all";
 }

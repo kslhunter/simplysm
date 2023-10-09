@@ -1,0 +1,397 @@
+@mixin writeVars($value, $prevKey) {
+  @if type-of($value) == map {
+    @each $key, $val in $value {
+      @include writeVars($val, $prevKey + "-" + $key);
+    }
+  } @else {
+    --#{$prevKey}: #{$value};
+  }
+}
+
+:root {
+  @include writeVars($vars, "");
+}
+
+*, *:after, *:before {
+  box-sizing: border-box;
+  outline-color: var(--theme-primary-default);
+
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+*:focus {
+  outline: none;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  background: var(--background-color);
+  color: var(--text-trans-default);
+  font-family: var(--font-family);
+  font-size: var(--font-size-default);
+  line-height: var(--line-height);
+}
+
+*::-webkit-scrollbar {
+  width: 16px;
+  height: 16px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--theme-grey-light);
+  border-radius: 12px;
+  background-clip: padding-box;
+  border: 4px solid transparent;
+}
+
+*::-webkit-scrollbar-track {
+  &:hover {
+    background-color: var(--theme-grey-lighter);
+    border-radius: 8px;
+    background-clip: padding-box;
+    border: 2px solid transparent;
+  }
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+hr {
+  border: none;
+  height: 1px;
+  background-color: var(--border-color-light);
+}
+
+p {
+  margin: 0;
+}
+
+pre, code {
+  font-size: var(--font-size-default);
+  line-height: var(--line-height);
+  margin: 0;
+}
+
+pre {
+  font-family: var(--font-family);
+}
+
+code {
+  font-family: var(--font-family-monospace);
+}
+
+small {
+  vertical-align: top;
+}
+
+sub {
+  display: inline-block;
+  overflow: visible;
+  height: 0;
+}
+
+form {
+  display: inline;
+}
+
+//-- FONT SIZE
+
+@each $h in (h1, h2, h3, h4, h5, h6) {
+  #{$h} {
+    font-size: var(--font-size-#{$h});
+    line-height: var(--line-height);
+    margin: 0;
+  }
+}
+
+@each $key, $val in map-get($vars, font-size) {
+  .ft-size-#{$key} {
+    font-size: var(--font-size-#{$key}) !important;
+  }
+}
+
+//-- BACKGROUND COLOR
+
+@each $key, $val in map-get($vars, theme) {
+  .bg-theme-#{$key} {
+    background: var(--theme-#{$key}) !important;
+  }
+}
+
+@each $key, $val in map-get($vars, trans) {
+  .bg-trans-#{$key} {
+    background: var(--trans-#{$key}) !important;
+  }
+}
+
+.bg-white {
+  background: white !important;
+}
+
+.bg-default {
+  background: var(--background-color) !important;
+}
+
+//-- TEXT COLOR
+
+@each $key, $val in map-get($vars, theme) {
+  .tx-theme-#{$key} {
+    color: var(--theme-#{$key}) !important;
+  }
+}
+
+@each $key, $val in map-get($vars, text-trans) {
+  .tx-trans-#{$key} {
+    color: var(--text-trans-#{$key}) !important;
+  }
+}
+
+//-- BORDER
+
+.bd {
+  border: 1px solid !important;
+}
+
+@each $key, $val in map-get($vars, theme) {
+  .bd-theme-#{$key} {
+    border-color: var(--theme-#{$key}) !important;
+  }
+}
+
+@each $key, $val in map-get($vars, trans) {
+  .bd-trans-#{$key} {
+    border-color: var(--trans-#{$key}) !important;
+  }
+}
+
+@each $key, $val in map-get($vars, border-color) {
+  .bd-color-#{$key} {
+    border-color: var(--border-color-#{$key}) !important;
+  }
+}
+
+.bd-none {
+  border: none !important;
+}
+
+.bd-trans {
+  border-color: transparent !important;
+}
+
+@each $dir in (top, right, bottom, left) {
+  $d: str-slice($dir, 1, 1);
+  .bd#{$d} {
+    border-#{$dir}: 1px solid !important;
+  }
+
+  @each $key, $val in map-get($vars, theme) {
+    .bd#{$d}-theme-#{$key} {
+      border-#{$dir}-color: var(--theme-#{$key}) !important;
+    }
+  }
+
+  @each $key, $val in map-get($vars, trans) {
+    .bd#{$d}-trans-#{$key} {
+      border-#{$dir}-color: var(--trans-#{$key}) !important;
+    }
+  }
+
+  @each $key, $val in map-get($vars, border-color) {
+    .bd#{$d}-color-#{$key} {
+      border-#{$dir}-color: var(--border-color-#{$key}) !important;
+    }
+  }
+
+  .bd#{$d}-none {
+    border-#{$dir}: none !important;
+  }
+
+  .bd#{$d}-trans {
+    border-#{$dir}-color: transparent !important;
+  }
+}
+
+//-- BORDER WIDTH
+@each $key, $val in map-get($vars, gap) {
+  .bd-width-#{$key} {
+    border-width: var(--gap-#{$key}) !important;
+  }
+
+  @each $dir in (top, right, bottom, left) {
+    $d: str-slice($dir, 1, 1);
+    .bd#{$d}-width-#{$key} {
+      border-#{$dir}-width: var(--gap-#{$key}) !important;
+    }
+  }
+}
+
+//-- BORDER RADIUS
+
+@each $key, $val in map-get($vars, border-radius) {
+  .bd-radius-#{$key} {
+    border-radius: var(--border-radius-#{$key}) !important;
+  }
+
+  .bdt-radius-#{$key} {
+    border-top-right-radius: var(--border-radius-#{$key}) !important;
+    border-top-left-radius: var(--border-radius-#{$key}) !important;
+  }
+
+  .bdb-radius-#{$key} {
+    border-bottom-right-radius: var(--border-radius-#{$key}) !important;
+    border-bottom-left-radius: var(--border-radius-#{$key}) !important;
+  }
+
+  .bdl-radius-#{$key} {
+    border-top-left-radius: var(--border-radius-#{$key}) !important;
+    border-bottom-left-radius: var(--border-radius-#{$key}) !important;
+  }
+
+  .bdr-radius-#{$key} {
+    border-top-right-radius: var(--border-radius-#{$key}) !important;
+    border-bottom-right-radius: var(--border-radius-#{$key}) !important;
+  }
+}
+
+//-- PADDING, MARGIN
+
+@each $key, $val in map-get($vars, gap) {
+  .p-#{$key} {
+    padding: var(--gap-#{$key}) !important;
+  }
+
+  .m-#{$key} {
+    margin: var(--gap-#{$key}) !important;
+  }
+
+  @each $key1, $val1 in map-get($vars, gap) {
+    .p-#{$key}-#{$key1} {
+      padding: var(--gap-#{$key}) var(--gap-#{$key1}) !important;
+    }
+
+    .m-#{$key}-#{$key1} {
+      margin: var(--gap-#{$key}) var(--gap-#{$key1}) !important;
+    }
+  }
+
+  .pv-#{$key} {
+    padding-top: var(--gap-#{$key}) !important;
+    padding-bottom: var(--gap-#{$key}) !important;
+  }
+
+  .ph-#{$key} {
+    padding-left: var(--gap-#{$key}) !important;
+    padding-right: var(--gap-#{$key}) !important;
+  }
+
+  .mv-#{$key} {
+    margin-top: var(--gap-#{$key}) !important;
+    margin-bottom: var(--gap-#{$key}) !important;
+  }
+
+  .mh-#{$key} {
+    margin-left: var(--gap-#{$key}) !important;
+    margin-right: var(--gap-#{$key}) !important;
+  }
+
+  .sw-#{$key} {
+    width: var(--gap-#{$key}) !important;
+  }
+
+  .sh-#{$key} {
+    height: var(--gap-#{$key}) !important;
+  }
+
+  @each $dir in (top, right, bottom, left) {
+    $d: str-slice($dir, 1, 1);
+
+    .p#{$d}-#{$key} {
+      padding-#{$dir}: var(--gap-#{$key}) !important;
+    }
+
+    .m#{$d}-#{$key} {
+      margin-#{$dir}: var(--gap-#{$key}) !important;
+    }
+
+    .#{$d}-#{$key} {
+      #{$dir}: var(--gap-#{$key}) !important;
+    }
+  }
+}
+
+//-- TEXT ALIGN
+
+@each $align in (left, right, center) {
+  $a: str-slice($align, 1, 1);
+  .tx#{$a} {
+    text-align: #{$align} !important;
+  }
+}
+
+//-- FLEX
+
+.flex-row {
+  display: flex;
+  flex-wrap: nowrap;
+  flex-direction: row;
+}
+
+.flex-row-inline {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  flex-direction: row;
+  white-space: nowrap;
+}
+
+.flex-column {
+  display: flex;
+  flex-wrap: nowrap;
+  flex-direction: column;
+}
+
+.flex-column-inline {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  flex-direction: column;
+  white-space: nowrap;
+}
+
+@each $key, $val in map-get($vars, gap) {
+  .flex-gap-#{$key} {
+    gap: var(--gap-#{$key});
+  }
+}
+
+.flex-grow {
+  flex-grow: 1;
+  overflow: auto;
+}
+
+.flex-grow-0 {
+  flex-grow: 0;
+}
+
+//-- ETC
+
+.form-control {
+  @include form-control-base();
+}
+
+.help {
+  @include help();
+}
+
+.sh-topbar {
+  height: var(--topbar-height) !important;
+}
+
+.sw-sidebar {
+  width: var(--sidebar-width) !important;
+}

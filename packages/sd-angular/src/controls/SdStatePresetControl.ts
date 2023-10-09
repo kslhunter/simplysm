@@ -10,17 +10,23 @@ import {
   Output,
   SimpleChanges
 } from "@angular/core";
-import { SdInputValidate } from "../decorators/SdInputValidate";
-import { ObjectUtil } from "@simplysm/sd-core-common";
-import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRootProvider";
-import { SdToastProvider } from "../providers/SdToastProvider";
-import { faStar } from "@fortawesome/pro-duotone-svg-icons/faStar";
-import { faSave } from "@fortawesome/pro-duotone-svg-icons/faSave";
-import { faXmark } from "@fortawesome/pro-solid-svg-icons/faXmark";
+import {SdInputValidate} from "../utils/SdInputValidate";
+import {ObjectUtil} from "@simplysm/sd-core-common";
+import {SdSystemConfigProvider} from "../providers/SdSystemConfigProvider";
+import {SdToastProvider} from "../providers/SdToastProvider";
+import {faStar} from "@fortawesome/pro-duotone-svg-icons/faStar";
+import {faSave} from "@fortawesome/pro-duotone-svg-icons/faSave";
+import {faXmark} from "@fortawesome/pro-solid-svg-icons/faXmark";
+import {CommonModule} from "@angular/common";
+import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
+import {SdGapControl} from "./SdGapControl";
+import {SdAnchorControl} from "./SdAnchorControl";
 
 @Component({
   selector: "sd-state-preset",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [CommonModule, FontAwesomeModule, SdAnchorControl, SdGapControl],
   template: `
     <sd-anchor (click)="onAddButtonClick()">
       <fa-icon [icon]="icons.fadStar" class="sd-text-color-warning-default" [fixedWidth]="true"></fa-icon>
@@ -62,11 +68,11 @@ import { faXmark } from "@fortawesome/pro-solid-svg-icons/faXmark";
         border: 1px solid transparent;
         padding: var(--gap-sm) var(--gap-default);
 
-        background: var(--theme-color-grey-lightest);
+        background: var(--theme-grey-lightest);
         border-radius: var(--border-radius-lg);
 
         &:hover {
-          background: var(--theme-color-grey-lighter);
+          background: var(--theme-grey-lighter);
         }
 
         > sd-anchor {
@@ -120,7 +126,7 @@ export class SdStatePresetControl implements OnInit, OnChanges {
 
   public trackByNameFn = (i: number, item: ISdStatePresetVM): string => item.name;
 
-  public constructor(private readonly _systemConfig: SdSystemConfigRootProvider,
+  public constructor(private readonly _systemConfig: SdSystemConfigProvider,
                      private readonly _cdr: ChangeDetectorRef,
                      private readonly _toast: SdToastProvider) {
   }

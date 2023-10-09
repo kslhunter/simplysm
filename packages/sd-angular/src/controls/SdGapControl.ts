@@ -1,20 +1,24 @@
-import { ChangeDetectionStrategy, Component, HostBinding, Input } from "@angular/core";
-import { SdInputValidate } from "../decorators/SdInputValidate";
+import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
+import {SdInputValidate} from "../utils/SdInputValidate";
+import {CommonModule} from "@angular/common";
 
 @Component({
   selector: "sd-gap",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [CommonModule],
   template: "",
   styles: [/* language=SCSS */ `
-    @import "../../scss/variables-scss-arr";
+    @import "../scss/variables";
 
     :host {
-      @each $gap in $arr-gap {
-        &[sd-height='#{$gap}'] {
-          height: var(--gap-#{$gap});
+      @each $key, $val in map-get($vars, gap) {
+        &[sd-height='#{$key}'] {
+          height: var(--gap-#{$key});
         }
-        &[sd-width='#{$gap}'] {
-          width: var(--gap-#{$gap});
+
+        &[sd-width='#{$key}'] {
+          width: var(--gap-#{$key});
         }
       }
     }

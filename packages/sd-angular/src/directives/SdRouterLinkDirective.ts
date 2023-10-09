@@ -1,9 +1,10 @@
-import { Directive, HostBinding, HostListener, Input } from "@angular/core";
-import { Router } from "@angular/router";
-import { SdNavigateWindowRootProvider } from "../root-providers/SdNavigateWindowRootProvider";
+import {Directive, HostBinding, HostListener, Input} from "@angular/core";
+import {Router} from "@angular/router";
+import {SdNavigateWindowProvider} from "../providers/SdNavigateWindowProvider";
 
 @Directive({
-  selector: "[sdRouterLink]"
+  selector: "[sdRouterLink]",
+  standalone: true
 })
 export class SdRouterLinkDirective {
   @Input()
@@ -13,7 +14,7 @@ export class SdRouterLinkDirective {
   public styleCursor = "pointer";
 
   public constructor(private readonly _router: Router,
-                     private readonly _navWindow: SdNavigateWindowRootProvider) {
+                     private readonly _navWindow: SdNavigateWindowProvider) {
   }
 
   @HostListener("click", ["$event"])
@@ -45,7 +46,7 @@ export class SdRouterLinkDirective {
       await this._router.navigate([`${this.sdRouterLink[0]}`, ...(obj ? [obj] : [])]);
     }
     else {
-      await this._router.navigate([{ outlets: { [this.sdRouterLink[3]]: this.sdRouterLink[0] } }, ...(obj ? [obj] : [])]);
+      await this._router.navigate([{outlets: {[this.sdRouterLink[3]]: this.sdRouterLink[0]}}, ...(obj ? [obj] : [])]);
     }
   }
 }

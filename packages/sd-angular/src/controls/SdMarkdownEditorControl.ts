@@ -9,16 +9,22 @@ import {
   Output,
   SimpleChanges
 } from "@angular/core";
-import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
+import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
 import * as marked1 from "marked";
-import { SdInputValidate } from "../decorators/SdInputValidate";
-import { faEye } from "@fortawesome/pro-duotone-svg-icons/faEye";
-import { faPen } from "@fortawesome/pro-duotone-svg-icons/faPen";
-import { faQuestion } from "@fortawesome/pro-duotone-svg-icons/faQuestion";
+import {SdInputValidate} from "../utils/SdInputValidate";
+import {faEye} from "@fortawesome/pro-duotone-svg-icons/faEye";
+import {faPen} from "@fortawesome/pro-duotone-svg-icons/faPen";
+import {faQuestion} from "@fortawesome/pro-duotone-svg-icons/faQuestion";
+import {CommonModule} from "@angular/common";
+import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
+import {SdBusyContainerControl} from "./SdBusyContainerControl";
+import {SdAnchorControl} from "./SdAnchorControl";
 
 @Component({
   selector: "sd-markdown-editor",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [CommonModule, FontAwesomeModule, SdAnchorControl, SdBusyContainerControl],
   template: `
     <div class="_toolbar" *ngIf="!disabled">
       <sd-anchor (click)="viewState = 'preview'" [class._selected]="viewState === 'preview'">
@@ -128,7 +134,7 @@ import { faQuestion } from "@fortawesome/pro-duotone-svg-icons/faQuestion";
     </div>
     <div class="_invalid-indicator"></div>`,
   styles: [/* language=SCSS */ `
-    @import "../../scss/mixins";
+    @import "../scss/mixins";
 
     :host {
       display: block;
@@ -151,33 +157,6 @@ import { faQuestion } from "@fortawesome/pro-duotone-svg-icons/faQuestion";
         }
       }
 
-      /*&[sd-view-state=preview] {
-        > ._toolbar {
-          position: absolute;
-          z-index: 1;
-          top: 0;
-          right: 0;
-          user-select: none;
-          border: none;
-
-          > sd-anchor {
-            display: inline-block;
-            padding: var(--gap-sm) var(--gap-default);
-            text-align: center;
-            border-radius: 100%;
-            opacity: 0.2;
-
-            &:hover {
-              opacity: 0.7;
-            }
-
-            &._selected {
-              display: none;
-            }
-          }
-        }
-      }*/
-
       > ._editor {
         position: relative;
         width: 100%;
@@ -187,7 +166,7 @@ import { faQuestion } from "@fortawesome/pro-duotone-svg-icons/faQuestion";
         > textarea {
           @include form-control-base();
           height: 100%;
-          background: var(--theme-color-secondary-lightest);
+          background: var(--theme-secondary-lightest);
           border: none;
           transition: outline-color .1s linear;
           outline: 1px solid transparent;
@@ -195,11 +174,11 @@ import { faQuestion } from "@fortawesome/pro-duotone-svg-icons/faQuestion";
           white-space: nowrap;
 
           &::-webkit-input-placeholder {
-            color: var(--text-brightness-lighter);
+            color: var(--text-trans-lighter);
           }
 
           &:focus {
-            outline-color: var(--theme-color-primary-default);
+            outline-color: var(--theme-primary-default);
           }
 
           > ._invalid-indicator {
@@ -208,7 +187,15 @@ import { faQuestion } from "@fortawesome/pro-duotone-svg-icons/faQuestion";
 
           > input[sd-invalid=true] + ._invalid-indicator,
           > input:invalid + ._invalid-indicator {
-            @include invalid-indicator();
+            display: block;
+            position: absolute;
+            background: var(--theme-danger-default);
+
+            top: var(--gap-xs);
+            left: var(--gap-xs);
+            border-radius: 100%;
+            width: var(--gap-sm);
+            height: var(--gap-sm);
           }
         }
 
@@ -276,10 +263,6 @@ import { faQuestion } from "@fortawesome/pro-duotone-svg-icons/faQuestion";
       &[sd-inset=true] > * {
         border: none !important;
         padding: 0;
-
-        //::ng-deep > sd-dock-container> ._toolbar {
-        //  border-bottom: none !important;
-        //}
       }
 
       &[sd-disabled=true] {
@@ -311,7 +294,7 @@ export class SdMarkdownEditorControl implements OnChanges {
   public readonly valueChange = new EventEmitter<string>();
 
   @Input()
-  @SdInputValidate({ type: String, includes: ["preview", "edit", "help"] })
+  @SdInputValidate({type: String, includes: ["preview", "edit", "help"]})
   @HostBinding("attr.view-state")
   public viewState: "preview" | "edit" | "help" = "edit";
 
@@ -341,11 +324,11 @@ export class SdMarkdownEditorControl implements OnChanges {
   public resize = "vertical";
 
   @Input()
-  @SdInputValidate({ type: Number, notnull: true })
+  @SdInputValidate({type: Number, notnull: true})
   public rows = 3;
 
   @Input()
-  @SdInputValidate({ type: Boolean, notnull: true })
+  @SdInputValidate({type: Boolean, notnull: true})
   @HostBinding("attr.sd-inset")
   public inset = false;
 
@@ -388,7 +371,7 @@ export class SdMarkdownEditorControl implements OnChanges {
 
     const files = Array.from(event.dataTransfer!.files);
     const position = (event.target as HTMLTextAreaElement).selectionEnd;
-    this.dropFiles.emit({ position, files });
+    this.dropFiles.emit({position, files});
     this.dragover = false;
   }
 
@@ -402,7 +385,7 @@ export class SdMarkdownEditorControl implements OnChanges {
 
     if (files.length > 0) {
       const position = (event.target as HTMLTextAreaElement).selectionEnd;
-      this.dropFiles.emit({ position, files });
+      this.dropFiles.emit({position, files});
     }
   }
 

@@ -1,12 +1,15 @@
 import {ChangeDetectionStrategy, Component, ElementRef, Input, OnChanges, SimpleChanges} from "@angular/core";
-import {SdInputValidate} from "../decorators/SdInputValidate";
+import {SdInputValidate} from "../utils/SdInputValidate";
 
 import jsbarcode from "jsbarcode";
 import qrcode from "qrcode";
+import {CommonModule} from "@angular/common";
 
 @Component({
   selector: "sd-barcode",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [CommonModule],
   template: `
     <canvas [hidden]="!value"
             [style.display]="type !== 'qrcode' ? 'none' : undefined"></canvas>

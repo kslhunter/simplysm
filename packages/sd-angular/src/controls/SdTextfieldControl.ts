@@ -17,12 +17,15 @@ import {
   StringUtil,
   Time
 } from "@simplysm/sd-core-common";
-import { SdInputValidate } from "../decorators/SdInputValidate";
-import { sdThemes, TSdTheme } from "../commons";
+import {SdInputValidate} from "../utils/SdInputValidate";
+import {sdThemes, TSdTheme} from "../commons";
+import {CommonModule} from "@angular/common";
 
 @Component({
   selector: "sd-textfield",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [CommonModule],
   template: `
     <div class="_contents"
          [style]="inputStyle"
@@ -59,8 +62,8 @@ import { sdThemes, TSdTheme } from "../commons";
 
     <div class="_invalid-indicator"></div>`,
   styles: [/* language=SCSS */ `
-    @import "../../scss/mixins";
-    @import "../../scss/variables-scss-arr";
+    @import "../scss/variables";
+    @import "../scss/mixins";
 
     :host {
       display: block;
@@ -68,11 +71,11 @@ import { sdThemes, TSdTheme } from "../commons";
 
       > input,
       > ._contents {
-        @include form-control-base2();
+        @include form-control-base();
 
-        border: 1px solid var(--trans-brightness-light);
+        border: 1px solid var(--trans-light);
         border-radius: var(--border-radius-default);
-        background: var(--theme-color-secondary-lightest);
+        background: var(--theme-secondary-lightest);
         height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
         min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
         overflow: auto;
@@ -83,7 +86,7 @@ import { sdThemes, TSdTheme } from "../commons";
         }
 
         &::-webkit-input-placeholder {
-          color: var(--text-brightness-lighter);
+          color: var(--text-trans-lighter);
         }
 
         &::-webkit-outer-spin-button,
@@ -99,7 +102,7 @@ import { sdThemes, TSdTheme } from "../commons";
 
         &:focus {
           outline: none;
-          border-color: var(--theme-color-primary-default);
+          border-color: var(--theme-primary-default);
         }
       }
 
@@ -114,11 +117,11 @@ import { sdThemes, TSdTheme } from "../commons";
         }
       }
 
-      @each $theme in $arr-theme-color {
-        &[sd-theme=#{$theme}] {
+      @each $key, $val in map-get($vars, theme) {
+        &[sd-theme=#{$key}] {
           > input,
           > ._contents {
-            background: var(--theme-color-#{$theme}-lightest);
+            background: var(--theme-#{$key}-lightest);
           }
         }
       }
@@ -220,7 +223,7 @@ import { sdThemes, TSdTheme } from "../commons";
         }
 
         > input:focus {
-          outline: 1px solid var(--theme-color-primary-default);
+          outline: 1px solid var(--theme-primary-default);
           outline-offset: -1px;
         }
       }
@@ -229,14 +232,14 @@ import { sdThemes, TSdTheme } from "../commons";
       &[sd-disabled=true] {
         > ._contents {
           display: block;
-          background: var(--theme-color-grey-lightest);
-          color: var(--text-brightness-light);
+          background: var(--theme-grey-lightest);
+          color: var(--text-trans-light);
         }
 
         &[sd-inset=true] {
           > ._contents {
             background: white;
-            color: var(--text-brightness-default);
+            color: var(--text-trans-default);
           }
         }
       }
@@ -247,7 +250,15 @@ import { sdThemes, TSdTheme } from "../commons";
 
       > input:invalid + ._invalid-indicator,
       &[sd-invalid=true] > ._invalid-indicator {
-        @include invalid-indicator();
+        display: block;
+        position: absolute;
+        background: var(--theme-danger-default);
+
+        top: var(--gap-xs);
+        left: var(--gap-xs);
+        border-radius: 100%;
+        width: var(--gap-sm);
+        height: var(--gap-sm);
       }
 
       &[sd-design=bottom-line] {
@@ -261,12 +272,12 @@ import { sdThemes, TSdTheme } from "../commons";
           transition: border-color 0.3s;
 
           &:focus {
-            border-color: var(--theme-color-primary-default);
+            border-color: var(--theme-primary-default);
           }
 
           &:disabled {
             border-bottom-color: transparent;
-            color: var(--text-brightness-light);
+            color: var(--text-trans-light);
           }
         }
       }
@@ -457,7 +468,7 @@ export class SdTextfieldControl implements INotifyPropertyChange, DoCheck {
       this.controlValueText = this.controlValue;
     }
     else if (this.type === "number" && typeof this.value === "number") {
-      this.controlValue = this.useNumberComma ? this.value.toLocaleString(undefined, { maximumFractionDigits: 10 }) : this.value.toString(10);
+      this.controlValue = this.useNumberComma ? this.value.toLocaleString(undefined, {maximumFractionDigits: 10}) : this.value.toString(10);
       this.controlValueText = this.controlValue;
     }
     else if (this.type === "format" && !StringUtil.isNullOrEmpty(this.format) && typeof this.value === "string") {

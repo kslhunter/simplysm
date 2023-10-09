@@ -42,4 +42,7 @@ process.on("message", (message: any) => {
   if (message.type === "setPathProxy") {
     server.pathProxy = message.pathProxy;
   }
+  if (message.type === "broadcastReload") {
+    server.broadcastReload();
+  }
 });

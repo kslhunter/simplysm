@@ -1,29 +1,28 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, Type } from "@angular/core";
-import { SdInputValidate } from "../decorators/SdInputValidate";
-import { SdToastProvider } from "../providers/SdToastProvider";
-import { SdLazyPageLoaderProvider } from "../root-providers/SdLazyPageLoaderProvider";
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, Type} from "@angular/core";
+import {SdInputValidate} from "../utils/SdInputValidate";
+import {SdToastProvider} from "../providers/SdToastProvider";
+import {SdLazyPageLoaderProvider} from "../providers/SdLazyPageLoaderProvider";
+import {CommonModule} from "@angular/common";
+import {SdBusyContainerControl} from "./SdBusyContainerControl";
 
 @Component({
   selector: "sd-lazy-page",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [CommonModule, SdBusyContainerControl],
   template: `
     <sd-busy-container [busy]="busyCount > 0" noFade type="bar">
       <ng-container *ngIf="componentType">
         <ng-container *ngComponentOutlet="componentType; ngModuleFactory: moduleFactory">
         </ng-container>
       </ng-container>
-    </sd-busy-container>`,
-  styles: [/* language=SCSS */ `
-    :host {
-
-    }
-  `]
+    </sd-busy-container>`
 })
 export class SdLazyPageControl implements OnInit {
   public busyCount = 0;
 
   @Input()
-  @SdInputValidate({ type: String, notnull: true })
+  @SdInputValidate({type: String, notnull: true})
   public code!: string;
 
   public componentType?: Type<any>;

@@ -200,7 +200,7 @@ export class SdExcelCell {
   }
 
   private async _getStyleDataAsync(): Promise<SdExcelXmlStyle | undefined> {
-    return await this._zipCache.getAsync("xl/styles.xml") as SdExcelXmlStyle | undefined;
+    return await this._zipCache.getAsync("xl/scss.xml") as SdExcelXmlStyle | undefined;
   }
 
   private async _getOrCreateSsDataAsync(): Promise<SdExcelXmlSharedString> {
@@ -233,13 +233,13 @@ export class SdExcelCell {
     if (!styleData) {
       //-- Style
       styleData = new SdExcelXmlStyle();
-      this._zipCache.set("xl/styles.xml", styleData);
+      this._zipCache.set("xl/scss.xml", styleData);
 
       //-- Content Type
       const typeData = await this._getTypeDataAsync();
       typeData.add(
-        "/xl/styles.xml",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"
+        "/xl/scss.xml",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.scss+xml"
       );
 
       //-- Workbook Rel

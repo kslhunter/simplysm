@@ -1,25 +1,28 @@
-import { ChangeDetectionStrategy, Component, HostBinding, Input } from "@angular/core";
-import { SdInputValidate } from "../decorators/SdInputValidate";
-import { sdThemes, TSdTheme } from "../commons";
+import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
+import {SdInputValidate} from "../utils/SdInputValidate";
+import {sdThemes, TSdTheme} from "../commons";
+import {CommonModule} from "@angular/common";
 
 @Component({
   selector: "sd-note",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [CommonModule],
   template: `
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
-    @import "../../scss/variables-scss-arr";
+    @import "../scss/variables";
 
     :host {
       display: block;
       padding: var(--gap-default);
-      background: var(--theme-color-grey-lightest);
-      border-left: var(--gap-sm) solid var(--trans-brightness-default);
+      background: var(--theme-grey-lightest);
+      border-left: var(--gap-sm) solid var(--trans-default);
 
-      @each $color in $arr-theme-color {
-        &[sd-theme=#{$color}] {
-          background: var(--theme-color-#{$color}-lightest);
-          border-color: var(--theme-color-#{$color}-light);
+      @each $key, $val in map-get($vars, theme) {
+        &[sd-theme=#{$key}] {
+          background: var(--theme-#{$key}-lightest);
+          border-color: var(--theme-#{$key}-light);
         }
       }
 

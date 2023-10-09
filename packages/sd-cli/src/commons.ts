@@ -17,6 +17,12 @@ export interface INpmConfig {
   scripts?: Record<string, string>;
 }
 
+export interface ITsConfig {
+  files?: string[],
+  compilerOptions: { lib: string[] };
+  angularCompilerOptions?: {};
+}
+
 export interface ISdCliBuildClusterReqMessage {
   cmd: "watch" | "build";
   projConf: ISdCliConfig;

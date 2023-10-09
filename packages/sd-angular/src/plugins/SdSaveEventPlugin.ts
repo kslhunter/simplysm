@@ -1,8 +1,8 @@
-import { Injectable } from "@angular/core";
-import { EventManager } from "@angular/platform-browser";
-import { NeverEntryError } from "@simplysm/sd-core-common";
+import {Injectable} from "@angular/core";
+import {EventManager} from "@angular/platform-browser";
+import {NeverEntryError} from "@simplysm/sd-core-common";
 
-@Injectable({ providedIn: null })
+@Injectable({providedIn: null})
 export class SdSaveEventPlugin {
   public manager!: EventManager;
 

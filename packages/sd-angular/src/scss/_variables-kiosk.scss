@@ -1,0 +1,25 @@
+@import "variables";
+
+$vars: map-merge($vars, (
+  gap: (
+    xxs: 8px,
+    xs: 12px,
+    sm: 16px,
+    default: 24px,
+    lg: 32px,
+    xl: 40px,
+    xxl: 48px,
+  ),
+  font-size: (
+    lg: 36px,
+    default: 30px,
+    sm: 24px,
+    h1: 72px,
+    h2: 60px,
+    h3: 48px,
+    h4: 36px,
+    h5: 30px,
+    h6: 24px,
+  ),
+  backgroundColor: var(--theme-grey-lighter)
+))

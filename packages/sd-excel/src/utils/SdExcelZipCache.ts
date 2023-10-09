@@ -46,7 +46,7 @@ export class SdExcelZipCache {
       else if (filePath.startsWith("xl/sharedStrings.xml")) {
         this._cache.set(filePath, new SdExcelXmlSharedString(xml));
       }
-      else if (filePath.startsWith("xl/styles.xml")) {
+      else if (filePath.startsWith("xl/scss.xml")) {
         this._cache.set(filePath, new SdExcelXmlStyle(xml));
       }
       else {

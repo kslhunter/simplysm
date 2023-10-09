@@ -1,10 +1,13 @@
-import { ChangeDetectionStrategy, Component, HostBinding, HostListener, Input } from "@angular/core";
-import { SdInputValidate } from "../decorators/SdInputValidate";
-import { SdBusyRootProvider } from "../root-providers/SdBusyRootProvider";
+import {ChangeDetectionStrategy, Component, HostBinding, HostListener, Input} from "@angular/core";
+import {SdInputValidate} from "../utils/SdInputValidate";
+import {SdBusyProvider} from "../providers/SdBusyProvider";
+import {CommonModule} from "@angular/common";
 
 @Component({
   selector: "sd-busy-container",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [CommonModule],
   template: `
     <div class="_screen">
       <div class="_rect">
@@ -69,7 +72,7 @@ import { SdBusyRootProvider } from "../root-providers/SdBusyRootProvider";
             transition-property: transform;
             transform-origin: left;
             transform: scaleX(0);
-            background-color: var(--theme-color-primary-default);
+            background-color: var(--theme-primary-default);
           }
         }
       }
@@ -102,7 +105,7 @@ import { SdBusyRootProvider } from "../root-providers/SdBusyRootProvider";
             margin: 20px auto 0 auto;
             border: 6px solid white;
             border-radius: 100%;
-            border-bottom-color: var(--theme-color-primary-default);
+            border-bottom-color: var(--theme-primary-default);
             animation: _sd-busy-spin 1s linear infinite;
 
             > div {
@@ -156,7 +159,7 @@ import { SdBusyRootProvider } from "../root-providers/SdBusyRootProvider";
               }
 
               &:before {
-                background-color: var(--theme-color-primary-default);
+                background-color: var(--theme-primary-default);
                 animation: _sd-busy-bar-indicator-before 2s infinite ease-in;
               }
 
@@ -203,7 +206,7 @@ import { SdBusyRootProvider } from "../root-providers/SdBusyRootProvider";
                 left: 0;
                 width: 100%;
                 height: 100%;
-                background-color: var(--trans-brightness-light);
+                background-color: var(--trans-light);
                 animation: _sd-busy-cube 2.4s infinite linear both;
                 transform-origin: 100% 100%;
               }
@@ -321,7 +324,7 @@ export class SdBusyContainerControl {
   @SdInputValidate(Number)
   public progressPercent?: number;
 
-  public constructor(private readonly _busy: SdBusyRootProvider) {
+  public constructor(private readonly _busy: SdBusyProvider) {
     this.type = this._busy.type ?? "spinner";
     this.noFade = this._busy.noFade ?? false;
   }

@@ -1,32 +1,29 @@
-import { ChangeDetectionStrategy, Component, HostBinding, Input } from "@angular/core";
-import { SdInputValidate } from "../decorators/SdInputValidate";
-import { sdThemes, TSdTheme } from "../commons";
-
-/*export function sdLabelColorValidator(value: string): boolean {
-  const result = /^#[0-9a-fA-F]*$/.test(value);
-  return result;
-}*/
+import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
+import {SdInputValidate} from "../utils/SdInputValidate";
+import {sdThemes, TSdTheme} from "../commons";
+import {CommonModule} from "@angular/common";
 
 @Component({
   selector: "sd-label",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [CommonModule],
   template: `
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
-    @import "../../scss/variables-scss-arr";
+    @import "../scss/variables";
 
     :host {
       display: inline-block;
-      background: var(--theme-color-grey-darker);
-      //color: var(--text-brightness-rev-default);
+      background: var(--theme-grey-darker);
       color: white;
       padding: 0 var(--gap-sm);
       border-radius: var(--border-radius-default);
       text-indent: 0;
 
-      @each $color in $arr-theme-color {
-        &[sd-theme=#{$color}] {
-          background: var(--theme-color-#{$color}-default);
+      @each $key, $val in map-get($vars, theme) {
+        &[sd-theme=#{$key}] {
+          background: var(--theme-#{$key}-default);
         }
       }
 
@@ -34,11 +31,11 @@ import { sdThemes, TSdTheme } from "../commons";
         cursor: pointer;
 
         &:hover {
-          background: var(--theme-color-grey-dark);
+          background: var(--theme-grey-dark);
 
-          @each $color in $arr-theme-color {
-            &[sd-theme=#{$color}] {
-              background: var(--theme-color-#{$color}-dark);
+          @each $key, $val in map-get($vars, theme) {
+            &[sd-theme=#{$key}] {
+              background: var(--theme-#{$key}-dark);
             }
           }
         }

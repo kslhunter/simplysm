@@ -1,10 +1,13 @@
-import { ChangeDetectionStrategy, Component, HostBinding, Input } from "@angular/core";
-import { SdInputValidate } from "../decorators/SdInputValidate";
-import { sdThemes, TSdTheme } from "../commons";
+import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
+import {SdInputValidate} from "../utils/SdInputValidate";
+import {sdThemes, TSdTheme} from "../commons";
+import {CommonModule} from "@angular/common";
 
 @Component({
   selector: "sd-button",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [CommonModule],
   template: `
     <button tabindex="0"
             [attr.type]="type"
@@ -14,8 +17,8 @@ import { sdThemes, TSdTheme } from "../commons";
       <ng-content></ng-content>
     </button>`,
   styles: [/* language=SCSS */ `
-    @import "../../scss/mixins";
-    @import "../../scss/variables-scss-arr";
+    @import "../scss/variables";
+    @import "../scss/mixins";
 
     :host {
       > button {
@@ -32,17 +35,17 @@ import { sdThemes, TSdTheme } from "../commons";
         cursor: pointer;
 
         &:hover {
-          background: var(--theme-color-grey-lightest);
+          background: var(--theme-grey-lightest);
         }
 
         &:active {
-          background: var(--theme-color-grey-lighter);
+          background: var(--theme-grey-lighter);
         }
 
         &:disabled {
           background: white;
-          border-color: var(--theme-color-grey-lighter);
-          color: var(--text-brightness-lighter);
+          border-color: var(--theme-grey-lighter);
+          color: var(--text-trans-lighter);
           cursor: default;
         }
       }
@@ -50,59 +53,59 @@ import { sdThemes, TSdTheme } from "../commons";
       &[sd-inset] > button {
         border-radius: 0;
         border: none;
-        color: var(--theme-color-primary-default);
+        color: var(--theme-primary-default);
 
         &:hover {
-          color: var(--theme-color-primary-darker);
+          color: var(--theme-primary-darker);
         }
 
         &:disabled {
           background: white;
-          border-color: var(--theme-color-grey-lighter);
-          //color: var(--text-brightness-lighter);
-          color: var(--text-brightness-default);
+          border-color: var(--theme-grey-lighter);
+          // color:var(--text-trans-lighter);
+          color: var(--text-trans-default);
           cursor: default;
         }
       }
 
       &[sd-link] > button {
         border: none;
-        color: var(--theme-color-primary-default);
+        color: var(--theme-primary-default);
 
         &:hover {
-          color: var(--theme-color-primary-darker);
+          color: var(--theme-primary-darker);
         }
 
         &:disabled {
           background: white;
-          border-color: var(--theme-color-grey-lighter);
-          color: var(--text-brightness-default);
+          border-color: var(--theme-grey-lighter);
+          color: var(--text-trans-default);
           cursor: default;
         }
       }
 
-      @each $theme in $arr-theme-color {
-        &[sd-theme=#{$theme}] > button {
-          background: var(--theme-color-#{$theme}-default);
-          border-color: var(--theme-color-#{$theme}-default);
-          color: var(--text-brightness-rev-default);
+      @each $key, $val in map-get($vars, theme) {
+        &[sd-theme=#{$key}] > button {
+          background: var(--theme-#{$key}-default);
+          border-color: var(--theme-#{$key}-default);
+          color: var(--text-trans-rev-default);
 
           &:hover {
-            background: var(--theme-color-#{$theme}-dark);
-            border-color: var(--theme-color-#{$theme}-dark);
-            color: var(--text-brightness-rev-default);
+            background: var(--theme-#{$key}-dark);
+            border-color: var(--theme-#{$key}-dark);
+            color: var(--text-trans-rev-default);
           }
 
           &:active {
-            background: var(--theme-color-#{$theme}-darker);
-            border-color: var(--theme-color-#{$theme}-darker);
-            color: var(--text-brightness-rev-default);
+            background: var(--theme-#{$key}-darker);
+            border-color: var(--theme-#{$key}-darker);
+            color: var(--text-trans-rev-default);
           }
 
           &:disabled {
-            background: var(--theme-color-grey-lighter);
-            border-color: var(--theme-color-grey-lighter);
-            color: var(--text-brightness-lighter);
+            background: var(--theme-grey-lighter);
+            border-color: var(--theme-grey-lighter);
+            color: var(--text-trans-lighter);
             cursor: default;
           }
         }
@@ -121,7 +124,7 @@ import { sdThemes, TSdTheme } from "../commons";
 
       &[sd-size=lg] > button {
         padding: var(--gap-default) var(--gap-xl);
-        //border-radius: 2px;
+        // border-radius:2 px;
       }
 
       &[disabled=true] {

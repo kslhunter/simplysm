@@ -1,25 +1,12 @@
-import { ComponentFactoryResolver, Injectable, Injector, Type } from "@angular/core";
-import { Wait } from "@simplysm/sd-core-common";
-import { SdRootRootProvider } from "../root-providers/SdRootRootProvider";
-import { SdModalControl } from "../controls/SdModalControl";
+import {ApplicationRef, inject, Injectable, Type, ViewContainerRef} from "@angular/core";
+import {Wait} from "@simplysm/sd-core-common";
+import {SdModalControl} from "../controls/SdModalControl";
 
-@Injectable({ providedIn: null })
+@Injectable({providedIn: "root"})
 export class SdModalProvider {
-  public get modalCount(): number {
-    this._root.data["modal"] = this._root.data["modal"] ?? {};
-    this._root.data["modal"].modalCount = this._root.data["modal"].modalCount ?? 0;
-    return this._root.data["modal"].modalCount;
-  }
+  private readonly _appRef = inject(ApplicationRef);
 
-  public set modalCount(value: number) {
-    this._root.data["modal"] = this._root.data["modal"] ?? {};
-    this._root.data["modal"].modalCount = value;
-  }
-
-  public constructor(private readonly _cfr: ComponentFactoryResolver,
-                     private readonly _injector: Injector,
-                     private readonly _root: SdRootRootProvider) {
-  }
+  public modalCount = 0;
 
   public async showAsync<T extends SdModalBase<any, any>>(modalType: Type<T>,
                                                           title: string,
@@ -37,15 +24,15 @@ export class SdModalProvider {
                                                           }): Promise<T["__tOutput__"] | undefined> {
     return await new Promise<T["__tOutput__"] | undefined>(async (resolve, reject) => {
       try {
-        const userModalRef = this._cfr.resolveComponentFactory(modalType).create(this._injector);
-        const modalEntryRef = this._cfr.resolveComponentFactory(SdModalControl).create(
-          this._injector,
-          [[userModalRef.location.nativeElement]]
-        );
+        const vcr = this._appRef.injector.get(ViewContainerRef);
+        const userModalRef = vcr.createComponent(modalType);
+        const modalEntryRef = vcr.createComponent(SdModalControl, {
+          projectableNodes: [[userModalRef.location.nativeElement]]
+        });
 
         const modalEntryEl = modalEntryRef.location.nativeElement as HTMLElement;
 
-        const rootComp = this._root.appRef.components[0];
+        const rootComp = this._appRef.components[0];
         const rootCompEl = rootComp.location.nativeElement as HTMLElement;
         rootCompEl.appendChild(modalEntryEl);
 
@@ -84,8 +71,8 @@ export class SdModalProvider {
           }
         });
 
-        this._root.appRef.attachView(userModalRef.hostView);
-        this._root.appRef.attachView(modalEntryRef.hostView);
+        this._appRef.attachView(userModalRef.hostView);
+        this._appRef.attachView(modalEntryRef.hostView);
 
         this.modalCount++;
         modalEntryRef.instance.open = true;

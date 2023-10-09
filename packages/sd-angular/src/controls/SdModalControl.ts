@@ -13,14 +13,27 @@ import {
   Output,
   SimpleChanges
 } from "@angular/core";
-import { NeverEntryError } from "@simplysm/sd-core-common";
-import { SdInputValidate } from "../decorators/SdInputValidate";
-import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRootProvider";
-import { faXmark } from "@fortawesome/pro-solid-svg-icons/faXmark";
+import {NeverEntryError} from "@simplysm/sd-core-common";
+import {SdInputValidate} from "../utils/SdInputValidate";
+import {faXmark} from "@fortawesome/pro-solid-svg-icons/faXmark";
+import {SdDockingModule} from "./dock/SdDockingModule";
+import {SdAnchorControl} from "./SdAnchorControl";
+import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
+import {SdPaneControl} from "./SdPaneControl";
+import {SdSystemConfigProvider} from "../providers/SdSystemConfigProvider";
+import {CommonModule} from "@angular/common";
 
 @Component({
   selector: "sd-modal",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [
+    CommonModule,
+    SdDockingModule,
+    SdAnchorControl,
+    FontAwesomeModule,
+    SdPaneControl
+  ],
   template: `
     <div class="_backdrop" (click)="onBackdropClick()"></div>
     <div class="_dialog" tabindex="0"
@@ -55,7 +68,7 @@ import { faXmark } from "@fortawesome/pro-solid-svg-icons/faXmark";
       </ng-container>
     </div>`,
   styles: [/* language=SCSS */ `
-    @import "../../scss/mixins";
+    @import "../scss/mixins";
 
     :host {
       display: block;
@@ -83,8 +96,8 @@ import { faXmark } from "@fortawesome/pro-solid-svg-icons/faXmark";
         width: fit-content;
         min-width: 240px;
         background: white;
-        border: 1px solid var(--theme-color-primary-darker);
-        //border-radius: 2px;
+        border: 1px solid var(--theme-primary-darker);
+        // border-radius:2 px;
         overflow: hidden;
         @include elevation(16);
 
@@ -96,15 +109,11 @@ import { faXmark } from "@fortawesome/pro-solid-svg-icons/faXmark";
 
         ::ng-deep > sd-dock-container > ._content {
           > ._header {
-            //background: var(--theme-color-primary-default);
-            //background: var(--theme-color-grey-lightest);
-            //color: var(--text-brightness-rev-default);
             user-select: none;
-            //border-bottom: 1px solid var(--theme-color-primary-darker);
 
             ._title {
               display: inline-block;
-              //padding: var(--gap-sm) var(--gap-default);
+              // padding:var(--gap-sm) var(--gap-default);
               padding: var(--gap-default) var(--gap-lg);
             }
 
@@ -114,13 +123,13 @@ import { faXmark } from "@fortawesome/pro-solid-svg-icons/faXmark";
               float: right;
               cursor: pointer;
               text-align: center;
-              //padding: var(--gap-sm) var(--gap-default);
+              // padding:var(--gap-sm) var(--gap-default);
               padding: var(--gap-default) var(--gap-lg);
-              //color: var(--text-brightness-rev-dark);
+              // color:var(--text-trans-rev-dark);
 
               &:hover {
                 background: rgba(0, 0, 0, .2);
-                //color: var(--text-brightness-rev-default);
+                // color:var(--text-trans-rev-default);
               }
 
               &:active {
@@ -279,15 +288,15 @@ import { faXmark } from "@fortawesome/pro-solid-svg-icons/faXmark";
 
           > sd-dock-container > ._content > ._header {
             background: transparent;
-            color: var(--text-brightness-lighter);
+            color: var(--text-trans-lighter);
 
             ._close-button,
             ._clear-config-button {
-              color: var(--text-brightness-lighter);
+              color: var(--text-trans-lighter);
 
               &:hover {
                 background: transparent;
-                color: var(--text-brightness-lighter);
+                color: var(--text-trans-lighter);
               }
             }
           }
@@ -306,7 +315,7 @@ export class SdModalControl implements OnInit, AfterViewInit, OnChanges {
   public key?: string;
 
   @Input()
-  @SdInputValidate({ type: String, notnull: true })
+  @SdInputValidate({type: String, notnull: true})
   public title = "창";
 
   @Input()
@@ -376,7 +385,7 @@ export class SdModalControl implements OnInit, AfterViewInit, OnChanges {
 
   public constructor(private readonly _elRef: ElementRef,
                      private readonly _zone: NgZone,
-                     private readonly _systemConfig: SdSystemConfigRootProvider) {
+                     private readonly _systemConfig: SdSystemConfigProvider) {
     this._el = this._elRef.nativeElement;
   }
 

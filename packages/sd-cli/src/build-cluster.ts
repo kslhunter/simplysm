@@ -1,5 +1,4 @@
 import cluster from "node:cluster";
-import {SdCliTsLibBuilder} from "./builders/SdCliTsLibBuilder";
 import {FsUtil, Logger, LoggerSeverity} from "@simplysm/sd-core-node";
 import path from "path";
 import {SdCliJsLibLinter} from "./builders/SdCliJsLibLinter";
@@ -8,6 +7,7 @@ import {ISdCliBuildClusterReqMessage, ISdCliBuildClusterResMessage} from "./comm
 import {NeverEntryError} from "@simplysm/sd-core-common";
 import {SdCliServerBuilder} from "./builders/SdCliServerBuilder";
 import {SdCliClientBuilder} from "./builders/SdCliClientBuilder";
+import {SdCliTsLibBuilder} from "./builders/SdCliTsLibBuilder";
 
 Error.stackTraceLimit = Infinity;
 EventEmitter.defaultMaxListeners = 0;

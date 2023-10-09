@@ -79,8 +79,8 @@ export class SdCliProject {
       hasChanges: boolean;
 
       //client
-      pathProxy: Record<string, number | undefined>; // persist
-      changeFilePaths: string[];
+      pathProxy: Record<string, string | number | undefined>; // persist
+      // changeFilePaths: string[];
     }>();
     cluster.on("message", (message: ISdCliBuildClusterResMessage) => {
       if (message.type === "change") {
@@ -106,7 +106,7 @@ export class SdCliProject {
           const serverInfo = serverInfoMap.getOrCreate(pkgName, {
             hasChanges: false,
             pathProxy: {},
-            changeFilePaths: []
+            // changeFilePaths: []
           });
           serverInfo.pkgPath = message.req.pkgPath;
           serverInfo.hasChanges = true;
@@ -119,19 +119,24 @@ export class SdCliProject {
             const serverInfo = serverInfoMap.getOrCreate(pkgConf.server, {
               hasChanges: false,
               pathProxy: {},
-              changeFilePaths: []
+              // changeFilePaths: []
             });
-            serverInfo.pathProxy[pkgName] = message.result!.port;
-            serverInfo.changeFilePaths.push(...message.result!.affectedFilePaths);
+            serverInfo.pathProxy[pkgName] = path.resolve(message.req.pkgPath, "dist");
+            //message.result!.port;
+            // serverInfo.changeFilePaths.push(...message.result!.affectedFilePaths);
+
+            serverInfo.worker?.send({type: "broadcastReload"});
           }
           else {
             const serverInfo = serverInfoMap.getOrCreate(pkgName, {
               hasChanges: false,
               pathProxy: {},
-              changeFilePaths: []
+              // changeFilePaths: []
             });
             serverInfo.port = message.result!.port;
-            serverInfo.changeFilePaths.push(...message.result!.affectedFilePaths);
+            // serverInfo.changeFilePaths.push(...message.result!.affectedFilePaths);
+
+            serverInfo.worker?.send({type: "broadcastReload"});
           }
         }
 
