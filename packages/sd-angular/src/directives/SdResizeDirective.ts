@@ -1,21 +1,32 @@
-import {Directive, EventEmitter, HostListener, NgZone, Output} from "@angular/core";
-import {ISdResizeEvent} from "@simplysm/sd-core-browser";
+import {Directive, ElementRef, EventEmitter, inject, NgZone, OnDestroy, OnInit, Output} from "@angular/core";
 
 @Directive({
   selector: "[sdResize]",
   standalone: true
 })
-export class SdResizeDirective {
-  @Output()
-  public readonly sdResize = new EventEmitter<ISdResizeEvent>();
+export class SdResizeDirective implements OnInit, OnDestroy {
+  private readonly _elRef = inject(ElementRef);
+  private readonly _ngZone = inject(NgZone);
 
-  public constructor(private readonly _zone: NgZone) {
+  @Output()
+  public readonly sdResize = new EventEmitter<ResizeObserverEntry>();
+
+  private _observer?: ResizeObserver;
+
+  public ngOnInit(): void {
+    this._observer = new ResizeObserver((entries) => {
+      const entry = entries.single();
+      if (!entry) return;
+
+      this._ngZone.run(() => {
+        this.sdResize.emit(entry);
+      });
+    });
+    this._observer.observe(this._elRef.nativeElement);
   }
 
-  @HostListener("resize", ["$event"])
-  public onResize(event: ISdResizeEvent): void {
-    this._zone.run(() => {
-      this.sdResize.emit(event);
-    });
+  public ngOnDestroy(): void {
+    this._observer?.disconnect();
+    delete this._observer;
   }
 }

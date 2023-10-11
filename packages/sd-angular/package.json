@@ -12,7 +12,7 @@
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "style": "./style.css",
+  "style": "./styles.css",
   "engines": {
     "node": "^16"
   },

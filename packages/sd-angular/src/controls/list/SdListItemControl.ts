@@ -34,7 +34,9 @@ import {faChevronDown} from "@fortawesome/pro-light-svg-icons/faChevronDown";
                           style="float: right"></sd-collapse-icon>
       </div>
     </div>
-    <sd-collapse class="_child" [open]="layout === 'flat' || open">
+    <sd-collapse *ngIf="hasChildren"
+                 class="_child"
+                 [open]="layout === 'flat' || open">
       <ng-content select="sd-list"></ng-content>
     </sd-collapse>`,
   styles: [/* language=SCSS */ `
@@ -124,11 +126,11 @@ export class SdListItemControl {
     falChevronDown: faChevronDown
   };
 
-  @Input("content.style")
+  @Input()
   @SdInputValidate(String)
   public contentStyle?: string;
 
-  @Input("content.class")
+  @Input()
   @SdInputValidate(String)
   public contentClass?: string;
 

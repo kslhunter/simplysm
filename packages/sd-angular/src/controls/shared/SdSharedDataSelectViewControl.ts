@@ -6,16 +6,16 @@ import {
   DoCheck,
   EventEmitter,
   Input,
-  OnInit,
   Output,
   TemplateRef
 } from "@angular/core";
 import {ObjectUtil, StringUtil} from "@simplysm/sd-core-common";
+import {IconProp} from "@fortawesome/fontawesome-svg-core";
 import {ISharedDataBase, SdSharedDataProvider} from "../../providers/SdSharedDataProvider";
 import {SdInputValidate} from "../../utils/SdInputValidate";
 import {ISdSheetColumnOrderingVM} from "../sheet/SdSheetControl";
 import {SdToastProvider} from "../../providers/SdToastProvider";
-import {IconProp} from "@fortawesome/fontawesome-svg-core";
+import {SdSharedDataItemTemplateContext, SdSharedDataItemTemplateDirective} from "./SdSharedDataItemTemplateDirective";
 
 @Component({
   selector: "sd-shared-data-select-view",
@@ -52,15 +52,15 @@ import {IconProp} from "@fortawesome/fontawesome-svg-core";
       </sd-dock-container>
     </sd-busy-container>`
 })
-export class SdSharedDataSelectViewControl implements OnInit, DoCheck {
+export class SdSharedDataSelectViewControl<T extends ISharedDataBase<string | number>> implements DoCheck {
   @Input()
   public selectedIcon?: IconProp;
 
   @Input()
-  public selectedItem?: ISharedDataBase<string | number>;
+  public selectedItem?: T;
 
   @Output()
-  public readonly selectedItemChange = new EventEmitter<any>();
+  public readonly selectedItemChange = new EventEmitter<T>();
 
   @Input()
   @SdInputValidate(Boolean)
@@ -68,23 +68,20 @@ export class SdSharedDataSelectViewControl implements OnInit, DoCheck {
 
   @Input()
   @SdInputValidate(Function)
-  public filterFn?: (index: number, item: ISharedDataBase<string | number>) => boolean;
+  public filterFn?: (index: number, item: T) => boolean;
 
   @ContentChild("headerTemplate", {static: true})
   public headerTemplateRef?: TemplateRef<void>;
 
-  @ContentChild("itemTemplate", {static: true})
-  public itemTemplateRef?: TemplateRef<{ item: ISharedDataBase<string | number>; index: number }>;
+  @ContentChild(SdSharedDataItemTemplateDirective, {static: true, read: TemplateRef})
+  public itemTemplateRef?: TemplateRef<SdSharedDataItemTemplateContext<T>>;
 
   @Input()
-  @SdInputValidate({type: String})
-  public dataKey?: string;
+  public items?: T[];
 
   public busyCount = 0;
 
-  public trackByFn = (index: number, item: ISharedDataBase<string | number>): (string | number) => item.__valueKey;
-
-  public items?: ISharedDataBase<string | number>[];
+  public trackByFn = (index: number, item: T): (string | number) => item.__valueKey;
 
   public searchText?: string;
   public ordering: ISdSheetColumnOrderingVM[] = [];
@@ -121,23 +118,6 @@ export class SdSharedDataSelectViewControl implements OnInit, DoCheck {
 
   private readonly _prevData: Record<string, any> = {};
 
-  public async ngOnInit(): Promise<void> {
-    if (this.dataKey === undefined) return;
-
-    this.busyCount++;
-
-    await this._toast.try(async () => {
-      this.items = await this._sharedData.getDataAsync(this.dataKey!);
-    });
-
-    this.busyCount--;
-    this._cdr.markForCheck();
-
-    this._sharedData.on(this.dataKey, () => {
-      this._cdr.markForCheck();
-    });
-  }
-
   public ngDoCheck(): void {
     if (!ObjectUtil.equal(this.items, this._prevData["items"])) {
       if (this.selectedItem && !this.items?.includes(this.selectedItem)) {
@@ -156,7 +136,7 @@ export class SdSharedDataSelectViewControl implements OnInit, DoCheck {
     this._cdr.markForCheck();
   }
 
-  public onSelectedItemChange(item: ISharedDataBase<string | number> | undefined): void {
+  public onSelectedItemChange(item: T | undefined): void {
     if (this.selectedItemChange.observed) {
       this.selectedItemChange.emit(item);
     }

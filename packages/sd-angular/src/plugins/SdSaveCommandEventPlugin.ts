@@ -3,12 +3,13 @@ import {EventManager} from "@angular/platform-browser";
 import {NeverEntryError} from "@simplysm/sd-core-common";
 
 @Injectable({providedIn: null})
-export class SdInsertEventPlugin {
+export class SdSaveCommandEventPlugin {
   public manager!: EventManager;
 
   public addEventListener(element: HTMLElement, eventName: string, handler: (event: Event) => void): () => void {
     const listener = (event: KeyboardEvent): void => {
-      if (event.key === "Insert" && event.ctrlKey && !event.altKey) {
+      if ((event.key === "s" || event.key === "S") && event.ctrlKey && !event.altKey && !event.shiftKey) {
+        event.preventDefault();
         this.manager.getZone().run(() => {
           handler(event);
         });
@@ -25,7 +26,8 @@ export class SdInsertEventPlugin {
   public addGlobalEventListener(element: string, eventName: string, handler: Function): Function {
     if (element === "document") {
       const listener = (event: KeyboardEvent): void => {
-        if (event.key === "Insert" && event.ctrlKey && !event.altKey) {
+        if ((event.key === "s" || event.key === "S") && event.ctrlKey && !event.altKey && !event.shiftKey) {
+          event.preventDefault();
           this.manager.getZone().run(() => {
             handler(event);
           });
@@ -43,6 +45,6 @@ export class SdInsertEventPlugin {
   }
 
   public supports(eventName: string): boolean {
-    return eventName === "sdInsert";
+    return eventName === "sdSaveCommand";
   }
 }

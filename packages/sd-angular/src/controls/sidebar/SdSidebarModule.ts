@@ -1,27 +1,26 @@
 import {SdSidebarControl} from "./SdSidebarControl";
 import {CommonModule} from "@angular/common";
 import {NgModule} from "@angular/core";
-import {SdSidebarUserMenuControl} from "./SdSidebarUserMenuControl";
 import {SdSidebarUserControl} from "./SdSidebarUserControl";
 import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
-import {SdSidebarBrandControl} from "./SdSidebarBrandControl";
 import {SdCollapseModule} from "../collapse/SdCollapseModule";
+import {SdListModule} from "../list/SdListModule";
+import {SdSidebarMenuControl} from "./SdSidebarMenuControl";
+import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
 
 @NgModule({
-  imports: [CommonModule, SdCollapseModule],
+  imports: [CommonModule, SdCollapseModule, SdListModule, FontAwesomeModule],
   declarations: [
     SdSidebarControl,
-    SdSidebarUserMenuControl,
     SdSidebarUserControl,
     SdSidebarContainerControl,
-    SdSidebarBrandControl
+    SdSidebarMenuControl
   ],
   exports: [
     SdSidebarControl,
-    SdSidebarUserMenuControl,
     SdSidebarUserControl,
     SdSidebarContainerControl,
-    SdSidebarBrandControl
+    SdSidebarMenuControl
   ],
   providers: []
 })

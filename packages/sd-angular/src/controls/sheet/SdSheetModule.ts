@@ -12,12 +12,13 @@ import {SdTextfieldControl} from "../SdTextfieldControl";
 import {SdButtonControl} from "../SdButtonControl";
 import {SdBusyContainerControl} from "../SdBusyContainerControl";
 import {SdPaginationControl} from "../SdPaginationControl";
-import {SdResizeOutsideDirective} from "../../directives/SdResizeOutsideDirective";
+import {SdResizeDirective} from "../../directives/SdResizeDirective";
+import {SdSheetColumnCellTemplateDirective} from "./SdSheetColumnCellTemplateDirective";
 
 @NgModule({
-  imports: [CommonModule, SdDockingModule, SdPaneControl, SdCheckboxModule, SdAnchorControl, FontAwesomeModule, SdTextfieldControl, SdButtonControl, SdBusyContainerControl, SdPaginationControl, SdResizeOutsideDirective],
-  declarations: [SdSheetConfigModal, SdSheetControl, SdSheetColumnControl],
-  exports: [SdSheetConfigModal, SdSheetControl, SdSheetColumnControl],
+  imports: [CommonModule, SdDockingModule, SdPaneControl, SdCheckboxModule, SdAnchorControl, FontAwesomeModule, SdTextfieldControl, SdButtonControl, SdBusyContainerControl, SdPaginationControl, SdResizeDirective],
+  declarations: [SdSheetConfigModal, SdSheetControl, SdSheetColumnControl, SdSheetColumnCellTemplateDirective],
+  exports: [SdSheetConfigModal, SdSheetControl, SdSheetColumnControl, SdSheetColumnCellTemplateDirective],
   providers: []
 })
 export class SdSheetModule {

@@ -6,6 +6,7 @@ import {
   EventEmitter,
   forwardRef,
   HostBinding,
+  HostListener,
   Inject,
   Input,
   NgZone,
@@ -179,26 +180,17 @@ export class SdDockControl implements OnDestroy, OnInit, OnChanges {
 
   private _config?: { size?: string };
 
-  private readonly _el: HTMLElement;
-
-  public constructor(public readonly elRef: ElementRef,
+  public constructor(public readonly elRef: ElementRef<HTMLElement>,
                      @Inject(forwardRef(() => SdDockContainerControl))
                      private readonly _parentControl: SdDockContainerControl,
                      private readonly _cdr: ChangeDetectorRef,
                      private readonly _zone: NgZone,
                      private readonly _systemConfig: SdSystemConfigProvider) {
-    this._el = this.elRef.nativeElement;
+  }
 
-    this._zone.runOutsideAngular(() => {
-      this._el.addEventListener("resize", (event) => {
-        if (event.prevHeight !== event.newHeight && ["top", "bottom"].includes(this.position)) {
-          this._parentControl.redraw();
-        }
-        else if (event.prevWidth !== event.newWidth && ["left", "right"].includes(this.position)) {
-          this._parentControl.redraw();
-        }
-      });
-    });
+  @HostListener("sdResize", ["$event"])
+  public onResize(): void {
+    this._parentControl.redraw();
   }
 
   public async ngOnInit(): Promise<void> {
@@ -208,10 +200,10 @@ export class SdDockControl implements OnDestroy, OnInit, OnChanges {
 
     if (this.resizable && this._config && this._config.size !== undefined) {
       if (["right", "left"].includes(this.position)) {
-        this._el.style.width = this._config.size;
+        this.elRef.nativeElement.style.width = this._config.size;
       }
       if (["top", "bottom"].includes(this.position)) {
-        this._el.style.height = this._config.size;
+        this.elRef.nativeElement.style.height = this._config.size;
       }
     }
 
@@ -227,7 +219,7 @@ export class SdDockControl implements OnDestroy, OnInit, OnChanges {
   }
 
   public onResizeBarMousedown(event: MouseEvent): void {
-    const thisEl = this._el;
+    const thisEl = this.elRef.nativeElement;
     const startX = event.clientX;
     const startY = event.clientY;
     const startHeight = thisEl.clientHeight;

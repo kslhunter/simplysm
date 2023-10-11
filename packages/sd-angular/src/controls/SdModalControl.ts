@@ -22,6 +22,7 @@ import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
 import {SdPaneControl} from "./SdPaneControl";
 import {SdSystemConfigProvider} from "../providers/SdSystemConfigProvider";
 import {CommonModule} from "@angular/common";
+import {SdResizeDirective} from "../directives/SdResizeDirective";
 
 @Component({
   selector: "sd-modal",
@@ -32,14 +33,16 @@ import {CommonModule} from "@angular/common";
     SdDockingModule,
     SdAnchorControl,
     FontAwesomeModule,
-    SdPaneControl
+    SdPaneControl,
+    SdResizeDirective
   ],
   template: `
     <div class="_backdrop" (click)="onBackdropClick()"></div>
     <div class="_dialog" tabindex="0"
          (keydown.escape)="onDialogEscapeKeydown()"
          [style.width.px]="(minWidthPx && (minWidthPx > (widthPx || 0))) ? minWidthPx : widthPx"
-         [style.height.px]="(minHeightPx && (minHeightPx > (heightPx || 0))) ? minHeightPx : heightPx">
+         [style.height.px]="(minHeightPx && (minHeightPx > (heightPx || 0))) ? minHeightPx : heightPx"
+         (sdResize)="onResize()">
       <sd-dock-container>
         <sd-dock class="_header" (mousedown)="onHeaderMouseDown($event)"
                  *ngIf="!hideHeader">
@@ -78,7 +81,7 @@ import {CommonModule} from "@angular/common";
       left: 0;
       width: 100%;
       height: 100%;
-      padding-top: calc(var(--sd-topbar-height) + var(--gap-sm));
+      padding-top: calc(var(--topbar-height) + var(--gap-sm));
 
       > ._backdrop {
         position: fixed;
@@ -351,19 +354,19 @@ export class SdModalControl implements OnInit, AfterViewInit, OnChanges {
   @HostBinding("attr.sd-float")
   public float?: boolean;
 
-  @Input("height.px")
+  @Input()
   @SdInputValidate(Number)
   public heightPx?: number;
 
-  @Input("width.px")
+  @Input()
   @SdInputValidate(Number)
   public widthPx?: number;
 
-  @Input("min-hHeight.px")
+  @Input()
   @SdInputValidate(Number)
   public minHeightPx?: number;
 
-  @Input("min-width.px")
+  @Input()
   @SdInputValidate(Number)
   public minWidthPx?: number;
 
@@ -396,25 +399,6 @@ export class SdModalControl implements OnInit, AfterViewInit, OnChanges {
     this._zone.runOutsideAngular(() => {
       if (!this._dialogEl) throw new NeverEntryError();
 
-      this._dialogEl.addEventListener("resize", (event) => {
-        if (event.prevHeight !== event.newHeight) {
-          const style = getComputedStyle(this._el);
-          if (style.paddingTop !== "") {
-            if (!this._dialogEl) throw new NeverEntryError();
-
-            const paddingTopMatch = (/(\d*)/).exec(style.paddingTop);
-            if (!paddingTopMatch || typeof paddingTopMatch[1] === "undefined") throw new NeverEntryError();
-            const paddingTopNum = Number.parseInt(paddingTopMatch[1], 10);
-            const paddingTop = Number.isNaN(paddingTopNum) ? 0 : paddingTopNum;
-
-            if (this._dialogEl.offsetHeight > this._el.offsetHeight - paddingTop) {
-              this._dialogEl.style.maxHeight = `calc(100% - ${paddingTop * 2}px)`;
-              this._dialogEl.style.height = `calc(100% - ${paddingTop * 2}px)`;
-            }
-          }
-        }
-      });
-
       this._dialogEl.addEventListener("focus", () => {
         const maxZIndex = document.body.findAll("sd-modal").max((el) => Number(getComputedStyle(el).zIndex));
         if (maxZIndex !== undefined) {
@@ -428,6 +412,23 @@ export class SdModalControl implements OnInit, AfterViewInit, OnChanges {
     });
 
     this.initialized = true;
+  }
+
+  public onResize(): void {
+    const style = getComputedStyle(this._el);
+    if (style.paddingTop !== "") {
+      if (!this._dialogEl) throw new NeverEntryError();
+
+      const paddingTopMatch = (/(\d*)/).exec(style.paddingTop);
+      if (!paddingTopMatch || typeof paddingTopMatch[1] === "undefined") throw new NeverEntryError();
+      const paddingTopNum = Number.parseInt(paddingTopMatch[1], 10);
+      const paddingTop = Number.isNaN(paddingTopNum) ? 0 : paddingTopNum;
+
+      if (this._dialogEl.offsetHeight > this._el.offsetHeight - paddingTop) {
+        this._dialogEl.style.maxHeight = `calc(100% - ${paddingTop * 2}px)`;
+        this._dialogEl.style.height = `calc(100% - ${paddingTop * 2}px)`;
+      }
+    }
   }
 
   public async ngAfterViewInit(): Promise<void> {

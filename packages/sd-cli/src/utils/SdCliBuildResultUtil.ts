@@ -4,7 +4,7 @@ import path from "path";
 import {ISdCliPackageBuildResult} from "../commons";
 
 export class SdCliBuildResultUtil {
-  public static convertFromTsDiag(diag: ts.Diagnostic): ISdCliPackageBuildResult {
+  public static convertFromTsDiag(diag: ts.Diagnostic, type: "build" | "check"): ISdCliPackageBuildResult {
     const severity = diag.category === ts.DiagnosticCategory.Error ? "error" as const
       : diag.category === ts.DiagnosticCategory.Warning ? "warning" as const
         : diag.category === ts.DiagnosticCategory.Suggestion ? "suggestion" as const
@@ -34,9 +34,9 @@ export class SdCliBuildResultUtil {
     if (result.filePath !== undefined) {
       str += `${result.filePath}(${result.line ?? 0}, ${result.char ?? 0}): `;
     }
-    if (result.code !== undefined) {
-      str += `${result.code}: `;
-    }
+    // if (result.code !== undefined) {
+    //   str += `${result.code}: `;
+    // }
     str += `(${result.type}) ${result.severity} ${result.message}`;
 
     return str;

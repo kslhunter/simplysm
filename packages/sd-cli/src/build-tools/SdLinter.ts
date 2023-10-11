@@ -33,9 +33,9 @@ export class SdLinter {
       filePath: lintResult.filePath,
       line: msg.line,
       char: msg.column,
-      code: msg.ruleId ?? undefined,
+      code: undefined,
       severity: msg.severity === 1 ? "warning" as const : "error" as const,
-      message: msg.message,
+      message: (msg.ruleId != null ? `${msg.ruleId}: ` : ``) + msg.message,
       type: "lint" as const
     })));
   }

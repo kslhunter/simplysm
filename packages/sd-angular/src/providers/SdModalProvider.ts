@@ -1,10 +1,11 @@
-import {ApplicationRef, inject, Injectable, Type, ViewContainerRef} from "@angular/core";
+import {ApplicationRef, createComponent, inject, Injectable, NgZone, Type} from "@angular/core";
 import {Wait} from "@simplysm/sd-core-common";
 import {SdModalControl} from "../controls/SdModalControl";
 
 @Injectable({providedIn: "root"})
 export class SdModalProvider {
   private readonly _appRef = inject(ApplicationRef);
+  private readonly _ngZone = inject(NgZone);
 
   public modalCount = 0;
 
@@ -24,9 +25,12 @@ export class SdModalProvider {
                                                           }): Promise<T["__tOutput__"] | undefined> {
     return await new Promise<T["__tOutput__"] | undefined>(async (resolve, reject) => {
       try {
-        const vcr = this._appRef.injector.get(ViewContainerRef);
-        const userModalRef = vcr.createComponent(modalType);
-        const modalEntryRef = vcr.createComponent(SdModalControl, {
+        const userModalRef = createComponent(modalType, {
+          environmentInjector: this._appRef.injector
+        });
+
+        const modalEntryRef = createComponent(SdModalControl, {
+          environmentInjector: this._appRef.injector,
           projectableNodes: [[userModalRef.location.nativeElement]]
         });
 
@@ -71,8 +75,8 @@ export class SdModalProvider {
           }
         });
 
-        this._appRef.attachView(userModalRef.hostView);
         this._appRef.attachView(modalEntryRef.hostView);
+        this._appRef.attachView(userModalRef.hostView);
 
         this.modalCount++;
         modalEntryRef.instance.open = true;

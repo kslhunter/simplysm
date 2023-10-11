@@ -20,7 +20,7 @@ import {SdInputValidate} from "../../utils/SdInputValidate";
       }
 
       &[sd-layout="inline"] {
-        display: flex;
+        display: inline-flex;
         flex-wrap: wrap;
         gap: var(--gap-sm);
       }
@@ -41,11 +41,11 @@ export class SdFormBoxControl {
   @HostBinding("attr.sd-layout")
   public layout: "cascade" | "inline" | "table" | "none" = "cascade";
 
-  @Input("label.width")
+  @Input()
   @SdInputValidate(String)
   public labelWidth?: string;
 
-  @Input("label.align")
+  @Input()
   @SdInputValidate({
     type: String,
     includes: ["left", "right", "center"]

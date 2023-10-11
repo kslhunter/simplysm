@@ -1,4 +1,4 @@
-import {ApplicationRef, ComponentRef, inject, Injectable, Type, ViewContainerRef} from "@angular/core";
+import {ApplicationRef, ComponentRef, createComponent, inject, Injectable, NgZone, Type} from "@angular/core";
 import {SdToastContainerControl} from "../controls/toast/SdToastContainerControl";
 import {SdSystemLogProvider} from "./SdSystemLogProvider";
 import {SdToastControl} from "../controls/toast/SdToastControl";
@@ -7,15 +7,17 @@ import {SdToastControl} from "../controls/toast/SdToastControl";
 export class SdToastProvider {
   private readonly _appRef = inject(ApplicationRef);
   private readonly _systemLog = inject(SdSystemLogProvider);
+  private readonly _ngZone = inject(NgZone);
 
   public alertThemes: ("info" | "success" | "warning" | "danger")[] = [];
 
   private _containerRef?: ComponentRef<SdToastContainerControl>;
 
   public get containerRef(): ComponentRef<SdToastContainerControl> {
-    const vcr = this._appRef.injector.get(ViewContainerRef);
     if (this._containerRef === undefined) {
-      const compRef = vcr.createComponent(SdToastContainerControl);
+      const compRef = createComponent(SdToastContainerControl, {
+        environmentInjector: this._appRef.injector
+      });
       const rootComp = this._appRef.components[0];
       const rootCompEl = rootComp.location.nativeElement as HTMLElement;
       rootCompEl.appendChild(compRef.location.nativeElement);
@@ -51,12 +53,13 @@ export class SdToastProvider {
   }
 
   public notify<T extends SdToastBase<any, any>>(toastType: Type<T>, param: T["tParam"], onclose: (result: T["tResult"] | undefined) => void | Promise<void>): void {
-    const vcr = this.containerRef.injector.get(ViewContainerRef);
-
-    const compRef = vcr.createComponent(toastType);
+    const compRef = createComponent(toastType, {
+      environmentInjector: this._appRef.injector
+    });
     const containerEl = this.containerRef.location.nativeElement as HTMLElement;
 
-    const toastRef = vcr.createComponent(SdToastControl, {
+    const toastRef = createComponent(SdToastControl, {
+      environmentInjector: this._appRef.injector,
       projectableNodes: [[compRef.location.nativeElement]]
     });
     const toastEl = toastRef.location.nativeElement as HTMLElement;
@@ -74,25 +77,26 @@ export class SdToastProvider {
     toastRef.instance.close.subscribe(async () => {
       await close();
     });
+
     compRef.instance.close = async (v) => {
       await close(v);
     };
 
-    window.setTimeout(async () => {
-      this._appRef.attachView(compRef.hostView);
-      this._appRef.attachView(toastRef.hostView);
-      this._appRef.tick();
+    requestAnimationFrame(async () => {
+      await this._ngZone.run(async () => {
+        this._appRef.attachView(compRef.hostView);
+        this._appRef.attachView(toastRef.hostView);
+        this._appRef.tick();
 
-      try {
-        toastRef.instance.open = true;
-        this._appRef.tick();
-        await compRef.instance.sdOnOpen(param);
-        this._appRef.tick();
-      }
-      catch (e) {
-        await close();
-        throw e;
-      }
+        try {
+          toastRef.instance.open = true;
+          await compRef.instance.sdOnOpen(param);
+        }
+        catch (e) {
+          await close();
+          throw e;
+        }
+      });
     });
 
     window.setTimeout(
@@ -130,9 +134,9 @@ export class SdToastProvider {
       return undefined as any;
     }
 
-    const vcr = this.containerRef.injector.get(ViewContainerRef);
-
-    const toastRef = vcr.createComponent(SdToastControl);
+    const toastRef = createComponent(SdToastControl, {
+      environmentInjector: this._appRef.injector
+    });
     const toastEl = toastRef.location.nativeElement as HTMLElement;
 
     const containerEl = this.containerRef.location.nativeElement as HTMLElement;

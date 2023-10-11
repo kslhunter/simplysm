@@ -74,7 +74,7 @@ module.exports = {
         // "import/no-duplicates": ["error"], // 느림
 
         // 타입스크립트
-        "@typescript-eslint/explicit-member-accessibility": ["error"],
+        // "@typescript-eslint/explicit-member-accessibility": ["error"],
         "@typescript-eslint/require-await": ["error"],
         "@typescript-eslint/await-thenable": ["error"],
         "@typescript-eslint/return-await": ["error", "always"],
@@ -87,19 +87,19 @@ module.exports = {
         "@typescript-eslint/non-nullable-type-assertion-style": ["error"],
         "@typescript-eslint/prefer-reduce-type-parameter": ["error"],
         "@typescript-eslint/prefer-return-this-type": ["error"],
-        "@typescript-eslint/prefer-readonly": ["error"],
+        // "@typescript-eslint/prefer-readonly": ["error"],
         "@typescript-eslint/typedef": ["error"],
-        "@typescript-eslint/explicit-function-return-type": ["error", {
+        /*"@typescript-eslint/explicit-function-return-type": ["error", {
           allowExpressions: true,
           allowTypedFunctionExpressions: true,
           allowHigherOrderFunctions: true,
           allowDirectConstAssertionInArrowFunctions: true,
           allowConciseArrowFunctionExpressionsStartingWithVoid: true,
           allowFunctionsWithoutTypeParameters: true
-        }],
-        "@typescript-eslint/explicit-module-boundary-types": ["error", {
+        }],*/
+        /*"@typescript-eslint/explicit-module-boundary-types": ["error", {
           allowArgumentsExplicitlyTypedAsAny: true,
-        }],
+        }],*/
         "@typescript-eslint/no-unused-expressions": ["error"],
         "@typescript-eslint/no-unused-vars": ["error", {args: "none"}],
         "@typescript-eslint/strict-boolean-expressions": ["error", {

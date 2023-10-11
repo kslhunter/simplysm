@@ -194,7 +194,7 @@ export class SdHtmlEditorControl {
   @HostBinding("attr.sd-disabled")
   public disabled?: boolean;
 
-  @Input("content.min-height.px")
+  @Input()
   @SdInputValidate({type: Number, notnull: true})
   public contentMinHeightPx = 100;
 

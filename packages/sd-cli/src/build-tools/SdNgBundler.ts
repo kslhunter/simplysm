@@ -42,7 +42,10 @@ export class SdNgBundler {
     this._sourceFileCache.invalidate(filePaths);
   }
 
-  public async bundleAsync(): Promise<ISdCliPackageBuildResult[]> {
+  public async bundleAsync(): Promise<{
+    filePaths: string[],
+    results: ISdCliPackageBuildResult[]
+  }> {
     if (!this._contexts) {
       this._contexts = [];
       this._contexts.push(await this._getAppContextAsync());
@@ -54,26 +57,32 @@ export class SdNgBundler {
 
     const results = [
       ...bundlingResult.warnings.map((warn) => ({
-        filePath: warn.location?.file !== undefined ? path.resolve(warn.location.file) : undefined,
+        filePath: warn.location?.file !== undefined ? path.resolve(this._opt.pkgPath, warn.location.file) : undefined,
         line: warn.location?.line,
         char: warn.location?.column,
         code: undefined,
         severity: "warning" as const,
-        message: warn.text,
+        message: warn.text.replace(/^(NG|TS)[0-9]+: /, ""),
         type: "build" as const
       })),
       ...bundlingResult.errors?.map((err) => ({
-        filePath: err.location?.file !== undefined ? path.resolve(err.location.file) : undefined,
+        filePath: err.location?.file !== undefined ? path.resolve(this._opt.pkgPath, err.location.file) : undefined,
         line: err.location?.line,
         char: err.location?.column !== undefined ? err.location.column + 1 : undefined,
         code: undefined,
-        severity: "warning" as const,
-        message: err.text,
+        severity: "error" as const,
+        message: err.text.replace(/^[^:]*: /, ""),
         type: "build" as const
       })) ?? []
     ];
     if (bundlingResult.errors) {
-      return results;
+      return {
+        filePaths: [
+          ...this._sourceFileCache.typeScriptFileCache.keys(),
+          ...this._sourceFileCache.babelFileCache.keys()
+        ],
+        results
+      };
     }
 
     const executionResult = new ExecutionResult(this._contexts, this._sourceFileCache);
@@ -121,7 +130,14 @@ export class SdNgBundler {
       }
       catch (error) {
         this._logger.error(error instanceof Error ? error.message : `${error}`);
-        return results;
+
+        return {
+          filePaths: [
+            ...this._sourceFileCache.typeScriptFileCache.keys(),
+            ...this._sourceFileCache.babelFileCache.keys()
+          ],
+          results
+        };
       }
     }
 
@@ -146,7 +162,13 @@ export class SdNgBundler {
       }
     }
 
-    return results;
+    return {
+      filePaths: [
+        ...this._sourceFileCache.typeScriptFileCache.keys(),
+        ...this._sourceFileCache.babelFileCache.keys()
+      ],
+      results
+    };
   }
 
   private async _getAppContextAsync(): Promise<BundlerContext> {
@@ -211,6 +233,7 @@ export class SdNgBundler {
     return {
       absWorkingDir: this._options.workspaceRoot,
       bundle: true,
+      keepNames: true,
       format: 'esm',
       assetNames: 'media/[name]',
       conditions: ['es2020', 'es2015', 'module'],

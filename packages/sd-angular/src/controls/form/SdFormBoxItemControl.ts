@@ -15,8 +15,7 @@ import {SdInputValidate} from "../../utils/SdInputValidate";
   selector: "sd-form-box-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <label [attr.unvisible]="!label && !labelTemplateRef"
-           [style.width]="labelWidth"
+    <label [style.width]="labelWidth"
            [hidden]="layout === 'none'"
            [style.text-align]="labelAlign"
            [title]="labelTooltip"
@@ -32,7 +31,6 @@ import {SdInputValidate} from "../../utils/SdInputValidate";
     </div>`,
   styles: [/* language=SCSS */ `
     :host {
-
       > label {
         font-weight: bold;
         white-space: nowrap;
@@ -110,6 +108,16 @@ import {SdInputValidate} from "../../utils/SdInputValidate";
           text-align: center;
         }
       }
+
+      &[sd-no-label=true] {
+        > label {
+          visibility: hidden !important;
+          width: 0 !important;
+          height: 0 !important;
+          padding: 0 !important;
+          margin: 0 !important;
+        }
+      }
     }
   `]
 })
@@ -137,6 +145,11 @@ export class SdFormBoxItemControl {
 
   public get labelWidth(): string | undefined {
     return this.layout === "table" ? this._parentFormControl.labelWidth : undefined;
+  }
+
+  @HostBinding("attr.sd-no-label")
+  get noLabel() {
+    return this.label == null && !this.labelTemplateRef;
   }
 
   public constructor(@Inject(forwardRef(() => SdFormBoxControl))

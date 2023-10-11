@@ -106,7 +106,7 @@ import {CommonModule} from "@angular/common";
             border: 6px solid white;
             border-radius: 100%;
             border-bottom-color: var(--theme-primary-default);
-            animation: _sd-busy-spin 1s linear infinite;
+            animation: sd-busy-spin 1s linear infinite;
 
             > div {
               display: none;
@@ -160,12 +160,12 @@ import {CommonModule} from "@angular/common";
 
               &:before {
                 background-color: var(--theme-primary-default);
-                animation: _sd-busy-bar-indicator-before 2s infinite ease-in;
+                animation: sd-busy-bar-indicator-before 2s infinite ease-in;
               }
 
               &:after {
                 background-color: white;
-                animation: _sd-busy-bar-indicator-after 2s infinite ease-out;
+                animation: sd-busy-bar-indicator-after 2s infinite ease-out;
               }
 
               > div {
@@ -207,7 +207,7 @@ import {CommonModule} from "@angular/common";
                 width: 100%;
                 height: 100%;
                 background-color: var(--trans-light);
-                animation: _sd-busy-cube 2.4s infinite linear both;
+                animation: sd-busy-cube 2.4s infinite linear both;
                 transform-origin: 100% 100%;
               }
             }
@@ -247,7 +247,7 @@ import {CommonModule} from "@angular/common";
       }
     }
 
-    @keyframes _sd-busy-spin {
+    @keyframes sd-busy-spin {
       from {
         transform: rotate(0deg);
       }
@@ -256,7 +256,7 @@ import {CommonModule} from "@angular/common";
       }
     }
 
-    @keyframes _sd-busy-bar-indicator-before {
+    @keyframes sd-busy-bar-indicator-before {
       0% {
         transform: scaleX(0);
       }
@@ -265,7 +265,7 @@ import {CommonModule} from "@angular/common";
       }
     }
 
-    @keyframes _sd-busy-bar-indicator-after {
+    @keyframes sd-busy-bar-indicator-after {
       0%, 50% {
         transform: scaleX(0);
       }
@@ -274,19 +274,16 @@ import {CommonModule} from "@angular/common";
       }
     }
 
-    @keyframes _sd-busy-cube {
+    @keyframes sd-busy-cube {
       0%, 10% {
-        -webkit-transform: perspective(140px) rotateX(-180deg);
         transform: perspective(140px) rotateX(-180deg);
         opacity: 0;
       }
       25%, 75% {
-        -webkit-transform: perspective(140px) rotateX(0deg);
         transform: perspective(140px) rotateX(0deg);
         opacity: 1;
       }
       90%, 100% {
-        -webkit-transform: perspective(140px) rotateY(180deg);
         transform: perspective(140px) rotateY(180deg);
         opacity: 0;
       }

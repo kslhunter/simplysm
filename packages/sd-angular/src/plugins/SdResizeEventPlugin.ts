@@ -6,23 +6,23 @@ import {NeverEntryError} from "@simplysm/sd-core-common";
 export class SdResizeEventPlugin {
   public manager!: EventManager;
 
-  public addEventListener(element: HTMLElement, eventName: string, handler: (event: Event) => void): () => void {
-    const listener = (event: Event): void => {
-      event.preventDefault();
+  public addEventListener(element: HTMLElement, eventName: string, handler: (entry: ResizeObserverEntry) => void): () => void {
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries.single();
+      if (!entry) return;
 
       this.manager.getZone().run(() => {
-        handler(event);
+        handler(entry);
       });
-    };
-
-    element.addEventListener("resize", listener);
+    });
+    observer.observe(element);
 
     return (): void => {
-      element.removeEventListener("resize", listener);
+      observer.disconnect();
     };
   }
 
-  public addGlobalEventListener(element: string, eventName: string, handler: Function): Function {
+  public addGlobalEventListener(element: string, eventName: string, handler: (event: Event) => void): () => void {
     if (element === "window") {
       const listener = (event: Event): void => {
         this.manager.getZone().run(() => {

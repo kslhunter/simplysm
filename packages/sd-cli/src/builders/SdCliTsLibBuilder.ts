@@ -87,7 +87,7 @@ export class SdCliTsLibBuilder extends EventEmitter {
             buildResults: [...checkResult.results, ...lintResults]
           });
 
-          watcher.add(builder.program.getSourceFiles().map((item) => item.fileName));
+          watcher.add(builder.program.getSourceFiles().map((item) => item.fileName).distinct());
         });
       });
   }

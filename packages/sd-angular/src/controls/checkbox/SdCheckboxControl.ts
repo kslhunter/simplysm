@@ -3,6 +3,7 @@ import {IconProp} from "@fortawesome/fontawesome-svg-core";
 import {faCheck} from "@fortawesome/pro-solid-svg-icons";
 import {SdInputValidate} from "../../utils/SdInputValidate";
 import {sdThemes, TSdTheme} from "../../commons";
+import {coerceBoolean} from "../../utils/coerceBoolean";
 
 @Component({
   selector: "sd-checkbox",
@@ -136,14 +137,6 @@ import {sdThemes, TSdTheme} from "../../commons";
 
         > div {
           padding-left: 0;
-        }
-      }
-
-      &[sd-inline=text] {
-        display: inline-block;
-
-        > div {
-          padding-left: 0;
           padding-top: 0;
           padding-bottom: 0;
         }
@@ -176,31 +169,24 @@ export class SdCheckboxControl {
   @HostBinding("attr.sd-checked")
   public value = false;
 
-  @Input()
-  @SdInputValidate(Boolean)
+  @Input({transform: coerceBoolean})
   @HostBinding("attr.sd-disabled")
-  public disabled?: boolean;
+  public disabled = false;
 
   @Output()
   public readonly valueChange = new EventEmitter<boolean>();
 
-  @Input()
-  @SdInputValidate({
-    type: [Boolean, String],
-    includes: [true, false, "text"]
-  })
+  @Input({transform: coerceBoolean})
   @HostBinding("attr.sd-inline")
-  public inline?: boolean | "text";
+  public inline = false;
 
-  @Input()
-  @SdInputValidate(Boolean)
+  @Input({transform: coerceBoolean})
   @HostBinding("attr.sd-inset")
-  public inset?: boolean;
+  public inset = false;
 
-  @Input()
-  @SdInputValidate(Boolean)
+  @Input({transform: coerceBoolean})
   @HostBinding("attr.sd-radio")
-  public radio?: boolean;
+  public radio = false;
 
   @Input()
   @SdInputValidate({
@@ -221,7 +207,7 @@ export class SdCheckboxControl {
   @Input()
   public icon: IconProp = faCheck;
 
-  @Input("label.style")
+  @Input()
   @SdInputValidate(String)
   public labelStyle?: string;
 

@@ -35,9 +35,9 @@ import {faCaretRight} from "@fortawesome/pro-duotone-svg-icons/faCaretRight";
     <sd-busy-container [busy]="!isInitialized || busy" type="cube">
       <sd-dock-container [hidden]="!isInitialized || busy">
         <sd-dock *ngIf="(key || displayPageLength > 0) && !hideConfigBar">
-          <div class="flex-row flex-gap-sm">
+          <div class="flex-row-inline flex-gap-sm">
             <sd-anchor *ngIf="key" (click)="onConfigButtonClick()">
-              <fa-icon [icon]="icons.fadCog" [fixedWidth]="true"></fa-icon>
+              <fa-icon [icon]="icons.fadCog" [fixedWidth]="true"/>
             </sd-anchor>
             <sd-pagination *ngIf="displayPageLength > 1"
                            [page]="page"
@@ -55,7 +55,7 @@ import {faCaretRight} from "@fortawesome/pro-duotone-svg-icons/faCaretRight";
                     *ngIf="r === 0"
                     [attr.rowspan]="!hasSummaryTemplate && headerRow.length < 1 ? undefined : displayHeaderDefTable.length + (hasSummaryTemplate ? 1 : 0)"
                     [attr.c]="getChildrenFn ? -2 : -1"
-                    (sdResizeOutside)="onFixedCellResizeOutside(getChildrenFn ? -2 : -1)">
+                    (sdResize)="onFixedCellResize(getChildrenFn ? -2 : -1)">
                   <ng-container *ngIf="selectMode === 'multi' && hasSelectableItem">
                     <fa-icon [icon]="icons.fadArrowRight" [fixedWidth]="true"
                              [class.sd-text-color-primary-default]="isAllItemsSelected"
@@ -66,7 +66,7 @@ import {faCaretRight} from "@fortawesome/pro-duotone-svg-icons/faCaretRight";
                     *ngIf="getChildrenFn && r === 0"
                     [attr.rowspan]="!hasSummaryTemplate && headerRow.length < 1 ? undefined : displayHeaderDefTable.length + (hasSummaryTemplate ? 1 : 0)"
                     [attr.c]="-1"
-                    (sdResizeOutside)="onFixedCellResizeOutside(-1)">
+                    (sdResize)="onFixedCellResize(-1)">
                   <ng-container *ngIf="hasExpandableItem">
                     <fa-icon [icon]="icons.fadCaretRight" [fixedWidth]="true"
                              [class.sd-text-color-primary-default]="isAllItemsExpanded"
@@ -81,23 +81,23 @@ import {faCaretRight} from "@fortawesome/pro-duotone-svg-icons/faCaretRight";
                       [attr.rowspan]="headerCell.rowspan"
                       [class._last-depth]="headerCell.isLastDepth"
                       [attr.c]="c"
-                      (sdResizeOutside)="headerCell.fixed && headerCell.isLastDepth ? onFixedCellResizeOutside(c) : undefined"
                       [style.width]="headerCell.isLastDepth ? headerCell.width : undefined"
                       [style.min-width]="headerCell.isLastDepth ? headerCell.width : undefined"
                       [style.max-width]="headerCell.isLastDepth ? headerCell.width : undefined"
                       [class._ordering]="headerCell.isLastDepth && headerCell.control.useOrdering && headerCell.control.key"
-                      (click)="headerCell.isLastDepth && headerCell.control.useOrdering && headerCell.control.key ? onOrderingHeaderClick($event, headerCell.control.key) : undefined"
                       [attr.title]="headerCell.isLastDepth ? (headerCell.control.tooltip ?? headerCell.text) : undefined"
-                      [class.sd-help]="headerCell.isLastDepth && headerCell.control.tooltip">
+                      [class.sd-help]="headerCell.isLastDepth && headerCell.control.tooltip"
+                      (sdResize)="onHeaderCellResize(headerCell, c)"
+                      (click)="onHeaderCellClick($event, headerCell)">
                     <div class="flex-row align-items-end">
-                      <div class="_contents"
+                      <div class="_contents flex-grow"
                            [class._padding]="!headerCell.useTemplate"
-                           [attr.style]="headerCell.style">
+                           [attr.style]="headerCell!.style">
                         <ng-container *ngIf="!headerCell.useTemplate">
                           <pre>{{ headerCell.text }}</pre>
                         </ng-container>
                         <ng-container *ngIf="headerCell.useTemplate">
-                          <ng-template [ngTemplateOutlet]="headerCell.control.headerTemplateRef"></ng-template>
+                          <ng-template [ngTemplateOutlet]="headerCell.control.headerTemplateRef!"></ng-template>
                         </ng-container>
                       </div>
 
@@ -177,13 +177,13 @@ import {faCaretRight} from "@fortawesome/pro-duotone-svg-icons/faCaretRight";
                       [attr.r]="r"
                       [attr.c]="c"
                       [style.width]="columnDef.width"
-                      [style.minWidth]="columnDef.width"
-                      [style.maxWidth]="columnDef.width"
+                      [style.min-width]="columnDef.width"
+                      [style.max-width]="columnDef.width"
                       (click)="onItemCellClick(itemDef.item)"
                       (dblclick)="onCellDoubleClick($event)"
                       (keydown)="this.cellKeydown.emit({ item: itemDef.item, key: columnDef.control.key, event: $event })">
-                    <ng-template [ngTemplateOutlet]="columnDef.control.cellTemplateRef"
-                                 [ngTemplateOutletContext]="{item: itemDef.item, index: r, depth: itemDef.depth, edit: getIsCellEditMode(r, c) }"></ng-template>
+                    <ng-template [ngTemplateOutlet]="columnDef.control.cellTemplateRef!"
+                                 [ngTemplateOutletContext]="{$implicit: itemDef.item, item: itemDef.item, index: r, depth: itemDef.depth, edit: getIsCellEditMode(r, c) }"/>
                   </td>
                 </ng-container>
               </tr>
@@ -230,7 +230,7 @@ import {faCaretRight} from "@fortawesome/pro-duotone-svg-icons/faCaretRight";
             border-top-right-radius: var(--border-radius-default);
             border-bottom: 1px solid $border-color-dark;
 
-            > sd-flex > sd-anchor {
+            > div > sd-anchor {
               padding: var(--gap-xs) var(--gap-sm);
               margin: var(--gap-xs);
               border-radius: var(--border-radius-default);
@@ -242,7 +242,7 @@ import {faCaretRight} from "@fortawesome/pro-duotone-svg-icons/faCaretRight";
           }
 
           > sd-pane._sheet-container {
-            background: var(--sd-sheet-background-color);
+            background: var(--sheet-bg);
             border-radius: var(--border-radius-default);;
 
             > table {
@@ -270,7 +270,7 @@ import {faCaretRight} from "@fortawesome/pro-duotone-svg-icons/faCaretRight";
                 &._feature-cell {
                   background: var(--theme-grey-lightest);
                   min-width: 2em;
-                  padding: var(--sd-sheet-padding-v) var(--sd-sheet-padding-h);
+                  padding: var(--sheet-pv) var(--sheet-ph);
 
                   > fa-icon {
                     cursor: pointer;
@@ -318,12 +318,10 @@ import {faCaretRight} from "@fortawesome/pro-duotone-svg-icons/faCaretRight";
                     }
                   }
 
-                  > sd-flex {
+                  > div:first-child {
                     > ._contents {
-                      flex-grow: 1;
-
                       &._padding {
-                        padding: var(--sd-sheet-padding-v) var(--sd-sheet-padding-h);
+                        padding: var(--sheet-pv) var(--sheet-ph);
                       }
                     }
 
@@ -1115,7 +1113,13 @@ export class SdSheetControl<T> implements OnInit, AfterContentChecked, DoCheck {
     }
   }
 
-  public onFixedCellResizeOutside(c: number): void {
+  public onHeaderCellResize(headerCell: IHeaderDef<T>, c: number): void {
+    if (headerCell.fixed && headerCell.isLastDepth) {
+      this.onFixedCellResize(c);
+    }
+  }
+
+  public onFixedCellResize(c: number): void {
     const sheetContainerEl = this._elRef.nativeElement.findFirst("._sheet-container")!;
 
     const fixedColumnLength = this.displayColumnDefs.filter((item) => item.fixed).length;
@@ -1292,16 +1296,18 @@ export class SdSheetControl<T> implements OnInit, AfterContentChecked, DoCheck {
   /**
    * 헤더 클릭시 이벤트
    * @param event
-   * @param columnKey
+   * @param headerCell
    */
-  public onOrderingHeaderClick(event: MouseEvent, columnKey: string): void {
-    if (this._isOnResizing) return;
-    if (event.target instanceof HTMLElement && event.target.classList.contains("_resizer")) return;
-    if (event.shiftKey || event.ctrlKey) {
-      this._toggleOrdering(columnKey, true);
-    }
-    else {
-      this._toggleOrdering(columnKey, false);
+  public onHeaderCellClick(event: MouseEvent, headerCell: IHeaderDef<T>): void {
+    if (headerCell.isLastDepth && headerCell.control.useOrdering && headerCell.control.key != null) {
+      if (this._isOnResizing) return;
+      if (event.target instanceof HTMLElement && event.target.classList.contains("_resizer")) return;
+      if (event.shiftKey || event.ctrlKey) {
+        this._toggleOrdering(headerCell.control.key, true);
+      }
+      else {
+        this._toggleOrdering(headerCell.control.key, false);
+      }
     }
   }
 

@@ -12,7 +12,7 @@ import {NavigationStart, Router} from "@angular/router";
       display: block;
       position: relative;
       height: 100%;
-      padding-left: var(--sd-sidebar-width);
+      padding-left: var(--sidebar-width);
       transition: padding-left .1s ease-out;
 
       &[sd-desktop-toggle=true] {

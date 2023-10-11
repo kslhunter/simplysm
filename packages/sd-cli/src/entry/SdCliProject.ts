@@ -476,10 +476,10 @@ export class SdCliProject {
   }
 
   private static _logging(buildResults: ISdCliPackageBuildResult[], logger: Logger): void {
-    const messages = buildResults.filter((item) => item.severity === "message");
-    const suggestions = buildResults.filter((item) => item.severity === "suggestion");
-    const warnings = buildResults.filter((item) => item.severity === "warning");
-    const errors = buildResults.filter((item) => item.severity === "error");
+    const messages = buildResults.filter((item) => item.severity === "message").distinct();
+    const suggestions = buildResults.filter((item) => item.severity === "suggestion").distinct();
+    const warnings = buildResults.filter((item) => item.severity === "warning").distinct();
+    const errors = buildResults.filter((item) => item.severity === "error").distinct();
 
     if (messages.length > 0) {
       logger.log("\n" + messages.map((item) => SdCliBuildResultUtil.getMessage(item)).join("\n"));

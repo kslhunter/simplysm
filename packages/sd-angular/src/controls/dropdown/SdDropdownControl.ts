@@ -48,11 +48,11 @@ export class SdDropdownControl implements OnInit, OnDestroy {
   @Output()
   public readonly close = new EventEmitter();
 
-  @Input("content.class")
+  @Input()
   @SdInputValidate(String)
   public contentClass?: string;
 
-  @Input("content.style")
+  @Input()
   @SdInputValidate(String)
   public contentStyle?: string;
 

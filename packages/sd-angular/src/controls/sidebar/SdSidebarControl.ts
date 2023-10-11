@@ -15,7 +15,7 @@ import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
       z-index: var(--z-index-sidebar);
       top: 0;
       left: 0;
-      width: var(--sd-sidebar-width);
+      width: var(--sidebar-width);
       height: 100%;
       background: var(--theme-blue-grey-darkest);
       color: var(--text-trans-rev-default);

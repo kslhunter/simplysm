@@ -1,11 +1,10 @@
-import {ChangeDetectionStrategy, Component, ElementRef, NgZone, OnInit} from "@angular/core";
-import {ISdResizeEvent} from "@simplysm/sd-core-browser";
+import {ChangeDetectionStrategy, Component, ElementRef} from "@angular/core";
 
 @Component({
   selector: "sd-dropdown-popup",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div>
+    <div (sdResize)="onResize()">
       <ng-content></ng-content>
     </div>`,
   styles: [/* language=SCSS */ `
@@ -38,33 +37,24 @@ import {ISdResizeEvent} from "@simplysm/sd-core-browser";
 
       @media screen and (max-width: 520px) {
         @include elevation(0);
-        border: 1px solid var(--border-color);
+        border: 1px solid var(--border-color-default);
       }
     }
   `]
 })
-export class SdDropdownPopupControl implements OnInit {
-  public constructor(private readonly _elRef: ElementRef,
-                     private readonly _zone: NgZone) {
+export class SdDropdownPopupControl {
+  public constructor(private readonly _elRef: ElementRef<HTMLElement>) {
   }
 
-  public ngOnInit(): void {
-    const thisEl = (this._elRef.nativeElement as HTMLElement);
-    const divEl = (this._elRef.nativeElement as HTMLElement).firstElementChild!;
+  public onResize(): void {
+    const thisEl = this._elRef.nativeElement;
+    const divEl = this._elRef.nativeElement.firstElementChild!;
 
-    this._zone.runOutsideAngular(() => {
-      divEl.addEventListener("resize", (e: Event) => {
-        const evt = e as ISdResizeEvent;
-
-        if (evt.prevHeight !== evt.newHeight) {
-          if (divEl.clientHeight > 300) {
-            thisEl.style.height = "300px";
-          }
-          else {
-            delete (thisEl.style as any).height;
-          }
-        }
-      });
-    });
+    if (divEl.clientHeight > 300) {
+      thisEl.style.height = "300px";
+    }
+    else {
+      delete (thisEl.style as any).height;
+    }
   }
 }

@@ -63,8 +63,8 @@ export class SdAppStructureUtil {
     return resultMenus;
   }
 
-  public static getFlatPages(menus: ISdAppStructureItem[], titleChain: string[] = [], codeChain: string[] = [], modulesChain: string[][] = []): ISdFlatMenu[] {
-    const resultFlatMenus: ISdFlatMenu[] = [];
+  public static getFlatPages(menus: ISdAppStructureItem[], titleChain: string[] = [], codeChain: string[] = [], modulesChain: string[][] = []): ISdFlatPage[] {
+    const resultFlatMenus: ISdFlatPage[] = [];
     for (const menu of menus) {
       if (menu.isNotPage) {
         continue;
@@ -223,7 +223,7 @@ export interface ISdMenu {
   children?: ISdMenu[];
 }
 
-export interface ISdFlatMenu {
+export interface ISdFlatPage {
   titleChain: string[];
   codeChain: string[];
   modulesChain: string[][];

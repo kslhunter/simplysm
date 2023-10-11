@@ -1,6 +1,6 @@
 import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
 import {SdInputValidate} from "../utils/SdInputValidate";
-import {sdThemes, TSdTheme} from "../commons";
+import {TSdTheme} from "../commons";
 import {CommonModule} from "@angular/common";
 
 @Component({
@@ -27,7 +27,7 @@ import {CommonModule} from "@angular/common";
         padding: var(--gap-sm) var(--gap-lg);
 
         background: white;
-        border-color: var(--border-color);
+        border-color: var(--border-color-default);
         border-radius: var(--border-radius-default);
 
         font-weight: bold;
@@ -68,22 +68,6 @@ import {CommonModule} from "@angular/common";
         }
       }
 
-      &[sd-link] > button {
-        border: none;
-        color: var(--theme-primary-default);
-
-        &:hover {
-          color: var(--theme-primary-darker);
-        }
-
-        &:disabled {
-          background: white;
-          border-color: var(--theme-grey-lighter);
-          color: var(--text-trans-default);
-          cursor: default;
-        }
-      }
-
       @each $key, $val in map-get($vars, theme) {
         &[sd-theme=#{$key}] > button {
           background: var(--theme-#{$key}-default);
@@ -111,6 +95,24 @@ import {CommonModule} from "@angular/common";
         }
       }
 
+      &[sd-theme=link] > button {
+        border-color: transparent;
+        color: var(--theme-primary-default);
+
+        &:hover {
+          color: var(--theme-primary-darker);
+        }
+
+        &:disabled {
+          border-color: transparent;
+          color: var(--trans-brightness-defalt);
+          /*background: white;
+          border-color: var(--theme-grey-lighter);
+          color: var(--text-trans-default);
+          cursor: default;*/
+        }
+      }
+
       &[sd-inline=true] > button {
         display: inline-block;
         width: auto;
@@ -135,22 +137,13 @@ import {CommonModule} from "@angular/common";
 })
 export class SdButtonControl {
   @Input()
-  @SdInputValidate({
-    type: String,
-    includes: sdThemes
-  })
   @HostBinding("attr.sd-theme")
-  public theme?: TSdTheme;
+  public theme?: TSdTheme | "link";
 
   @Input()
   @SdInputValidate(Boolean)
   @HostBinding("attr.sd-inline")
   public inline?: boolean;
-
-  @Input()
-  @SdInputValidate(Boolean)
-  @HostBinding("attr.sd-link")
-  public link?: boolean;
 
   @Input()
   @SdInputValidate({
@@ -165,11 +158,11 @@ export class SdButtonControl {
   @HostBinding("attr.disabled")
   public disabled?: boolean;
 
-  @Input("button.style")
+  @Input()
   @SdInputValidate(String)
   public buttonStyle?: string;
 
-  @Input("button.class")
+  @Input()
   @SdInputValidate(String)
   public buttonClass?: string;
 

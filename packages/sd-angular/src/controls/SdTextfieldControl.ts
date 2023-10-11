@@ -266,7 +266,7 @@ import {CommonModule} from "@angular/common";
         > input,
         > ._contents {
           border: none;
-          border-bottom: 2px solid var(--border-color);
+          border-bottom: 2px solid var(--border-color-default);
           background: transparent;
           border-radius: 0;
           transition: border-color 0.3s;
@@ -667,59 +667,61 @@ export class SdTextfieldControl implements INotifyPropertyChange, DoCheck {
   }
 
   public onInput(event: Event): void {
-    const inputEl = event.target as HTMLInputElement;
+    this._zone.run(() => {
+      const inputEl = event.target as HTMLInputElement;
 
-    if (inputEl.value === "") {
-      this._setValue(undefined);
-    }
-    else if (this.type === "number") {
-      const inputValue = inputEl.value.replace(/[^0-9-.]/g, "");
-      if (
-        Number.isNaN(Number(inputValue))
-        || inputValue.endsWith(".")
-        || (
-          inputValue.includes(".")
-          && Number(inputValue) === 0
-        )
-      ) {
+      if (inputEl.value === "") {
+        this._setValue(undefined);
       }
-      else {
-        this._setValue(Number(inputValue));
+      else if (this.type === "number") {
+        const inputValue = inputEl.value.replace(/[^0-9-.]/g, "");
+        if (
+          Number.isNaN(Number(inputValue))
+          || inputValue.endsWith(".")
+          || (
+            inputValue.includes(".")
+            && Number(inputValue) === 0
+          )
+        ) {
+        }
+        else {
+          this._setValue(Number(inputValue));
+        }
       }
-    }
-    else if (this.type === "format") {
-      const nonFormatChars = this.format?.match(/[^X]/g)?.distinct();
-      if (nonFormatChars) {
-        this._setValue(inputEl.value.replace(new RegExp(`[${nonFormatChars.map((item) => "\\" + item).join("")}]`, "g"), ""));
+      else if (this.type === "format") {
+        const nonFormatChars = this.format?.match(/[^X]/g)?.distinct();
+        if (nonFormatChars) {
+          this._setValue(inputEl.value.replace(new RegExp(`[${nonFormatChars.map((item) => "\\" + item).join("")}]`, "g"), ""));
+        }
+        else {
+          this._setValue(inputEl.value);
+        }
+      }
+      else if (["year", "month", "date"].includes(this.type)) {
+        try {
+          this._setValue(DateOnly.parse(inputEl.value));
+        }
+        catch (err) {
+        }
+      }
+      else if (["datetime", "datetime-sec"].includes(this.type)) {
+        try {
+          this._setValue(DateTime.parse(inputEl.value));
+        }
+        catch (err) {
+        }
+      }
+      else if (["time", "time-sec"].includes(this.type)) {
+        try {
+          this._setValue(Time.parse(inputEl.value));
+        }
+        catch (err) {
+        }
       }
       else {
         this._setValue(inputEl.value);
       }
-    }
-    else if (["year", "month", "date"].includes(this.type)) {
-      try {
-        this._setValue(DateOnly.parse(inputEl.value));
-      }
-      catch (err) {
-      }
-    }
-    else if (["datetime", "datetime-sec"].includes(this.type)) {
-      try {
-        this._setValue(DateTime.parse(inputEl.value));
-      }
-      catch (err) {
-      }
-    }
-    else if (["time", "time-sec"].includes(this.type)) {
-      try {
-        this._setValue(Time.parse(inputEl.value));
-      }
-      catch (err) {
-      }
-    }
-    else {
-      this._setValue(inputEl.value);
-    }
+    });
   }
 
   private _setValue(newValue: any): void {

@@ -1,18 +1,16 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  ElementRef,
   forwardRef,
   HostBinding,
+  HostListener,
   Inject,
   Injector,
-  Input,
-  NgZone
+  Input
 } from "@angular/core";
 import {SdTopbarContainerControl} from "./SdTopbarContainerControl";
 import {SdSidebarContainerControl} from "../sidebar/SdSidebarContainerControl";
 import {faBars} from "@fortawesome/pro-solid-svg-icons/faBars";
-import {ISdResizeEvent} from "@simplysm/sd-core-browser";
 
 @Component({
   selector: "sd-topbar",
@@ -32,20 +30,20 @@ import {ISdResizeEvent} from "@simplysm/sd-core-browser";
       top: 0;
       left: 0;
       width: 100%;
-      height: var(--sd-topbar-height);
+      height: var(--topbar-height);
       background: var(--theme-primary-default);
       color: var(--text-trans-rev-default);
       overflow-x: auto;
       overflow-y: hidden;
       white-space: nowrap;
-      line-height: var(--sd-topbar-height);
+      line-height: var(--topbar-height);
       user-select: none;
 
       @each $h in (h1, h2, h3, h4, h5, h6) {
         > ::ng-deep #{$h} {
           display: inline-block;
           vertical-align: top;
-          line-height: var(--sd-topbar-height);
+          line-height: var(--topbar-height);
           margin-right: var(--gap-xxl);
         }
       }
@@ -71,7 +69,7 @@ import {ISdResizeEvent} from "@simplysm/sd-core-browser";
       > ._sidebar-toggle-button {
         display: inline-block;
         vertical-align: top;
-        min-width: var(--sd-topbar-height);
+        min-width: var(--topbar-height);
         text-align: center;
         margin-right: var(--gap-default);
         color: var(--text-trans-rev-dark);
@@ -80,36 +78,6 @@ import {ISdResizeEvent} from "@simplysm/sd-core-browser";
         &:hover {
           background: rgba(0, 0, 0, .2);
           color: var(--text-trans-rev-default);
-        }
-      }
-
-      &[sd-size="sm"] {
-        height: var(--sd-topbar-height-sm);
-        line-height: var(--sd-topbar-height-sm);
-
-        @each $h in (h1, h2, h3, h4, h5, h6) {
-          > ::ng-deep #{$h} {
-            line-height: var(--sd-topbar-height-sm);
-          }
-        }
-
-        > ._sidebar-toggle-button {
-          min-width: var(--sd-topbar-height-sm);
-        }
-      }
-
-      &[sd-size="lg"] {
-        height: var(--sd-topbar-height-lg);
-        line-height: var(--sd-topbar-height-lg);
-
-        @each $h in (h1, h2, h3, h4, h5, h6) {
-          > ::ng-deep #{$h} {
-            line-height: var(--sd-topbar-height-lg);
-          }
-        }
-
-        > ._sidebar-toggle-button {
-          min-width: var(--sd-topbar-height-lg);
         }
       }
     }
@@ -132,20 +100,17 @@ export class SdTopbarControl {
 
   public constructor(@Inject(forwardRef(() => SdTopbarContainerControl))
                      private readonly _topbarContainerControl: SdTopbarContainerControl,
-                     private readonly _injector: Injector,
-                     private readonly _elRef: ElementRef,
-                     private readonly _zone: NgZone) {
+                     private readonly _injector: Injector) {
     this.sidebarContainerControl = this._injector.get<SdSidebarContainerControl | null>(SdSidebarContainerControl, null) ?? undefined;
-
-    this._zone.runOutsideAngular(() => {
-      this._elRef.nativeElement.addEventListener("resize", (event: ISdResizeEvent) => {
-        this._topbarContainerControl.elRef.nativeElement.style.paddingTop = event.newHeight + "px";
-      });
-    });
   }
 
   public onSidebarToggleButtonClick(): void {
     const sidebarContainerControl = this.sidebarContainer ?? this.sidebarContainerControl;
     sidebarContainerControl!.toggle = !sidebarContainerControl!.toggle;
+  }
+
+  @HostListener("sdResize", ["$event"])
+  public sdResize(entry: ResizeObserverEntry): void {
+    this._topbarContainerControl.elRef.nativeElement.style.paddingTop = entry.contentRect.height + "px";
   }
 }

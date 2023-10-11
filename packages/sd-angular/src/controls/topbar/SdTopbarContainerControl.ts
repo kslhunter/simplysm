@@ -13,11 +13,11 @@ import {SdInputValidate} from "../../utils/SdInputValidate";
       height: 100%;
 
       &[sd-size="sm"] {
-        padding-top: var(--sd-topbar-height-sm);
+        padding-top: var(--topbar-height-sm);
       }
 
       &[sd-size="lg"] {
-        padding-top: var(--sd-topbar-height-lg);
+        padding-top: var(--topbar-height-lg);
       }
     }
   `]

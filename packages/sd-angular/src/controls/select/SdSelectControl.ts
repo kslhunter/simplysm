@@ -25,8 +25,8 @@ import {faCaretDown} from "@fortawesome/pro-duotone-svg-icons/faCaretDown";
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <sd-dropdown #dropdown [disabled]="disabled" (open)="open.emit()"
-                 [content.class]="contentClass"
-                 [content.style]="contentStyle">
+                 [contentClass]="contentClass"
+                 [contentStyle]="contentStyle">
       <div [innerHTML]="contentSafeInnerHTML"></div>
       <div class="_invalid-indicator"></div>
       <div class="_icon">
@@ -108,7 +108,7 @@ import {faCaretDown} from "@fortawesome/pro-duotone-svg-icons/faCaretDown";
         padding-right: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px) !important;
         min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
 
-        // border:1 px solid var(--border-color);
+        // border:1 px solid var(--border-color-default);
         border: 1px solid var(--trans-light);
         transition: outline-color .1s linear;
         outline: 1px solid transparent;
@@ -310,11 +310,11 @@ export class SdSelectControl implements DoCheck {
   @SdInputValidate({type: String, includes: ["single", "multi"], notnull: true})
   public selectMode: "single" | "multi" = "single";
 
-  @Input("content.class")
+  @Input()
   @SdInputValidate(String)
   public contentClass?: string;
 
-  @Input("content.style")
+  @Input()
   @SdInputValidate(String)
   public contentStyle?: string;
 

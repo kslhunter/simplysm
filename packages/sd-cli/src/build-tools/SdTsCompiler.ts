@@ -287,7 +287,7 @@ export class SdTsCompiler {
 
     this._logger.debug(`[${path.basename(this._opt.pkgPath)}] 영향받는 파일 ${this._opt.emit ? "EMIT" : "CHECK"} 완료`, affectedFilePaths);
 
-    const buildResults = diagnostics.map((item) => SdCliBuildResultUtil.convertFromTsDiag(item));
+    const buildResults = diagnostics.map((item) => SdCliBuildResultUtil.convertFromTsDiag(item, this._opt.emit ? "build" : "check"));
 
     return {
       affectedFilePaths: affectedFilePaths.filter((item) => !item.endsWith(".scss")),

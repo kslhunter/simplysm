@@ -8,15 +8,15 @@ import {
   Input,
   IterableDiffer,
   IterableDiffers,
-  OnInit,
   Output,
   TemplateRef,
   Type
 } from "@angular/core";
 import {ObjectUtil} from "@simplysm/sd-core-common";
+import {ISharedDataBase, SdSharedDataProvider} from "../../providers/SdSharedDataProvider";
 import {SdInputValidate} from "../../utils/SdInputValidate";
 import {SdModalBase, SdModalProvider} from "../../providers/SdModalProvider";
-import {ISharedDataBase, SdSharedDataProvider} from "../../providers/SdSharedDataProvider";
+import {SdSharedDataItemTemplateContext, SdSharedDataItemTemplateDirective} from "./SdSharedDataItemTemplateDirective";
 
 @Component({
   selector: "sd-shared-data-select",
@@ -32,7 +32,7 @@ import {ISharedDataBase, SdSharedDataProvider} from "../../providers/SdSharedDat
                [items]="rootDisplayItems"
                [trackByFn]="trackByFn"
                [selectMode]="selectMode"
-               [content.class]="selectClass"
+               [contentClass]="selectClass"
                [multiSelectionDisplayDirection]="multiSelectionDisplayDirection"
                [getChildrenFn]="parentKeyProp ? getChildrenFn : undefined">
       <ng-template #header>
@@ -49,7 +49,7 @@ import {ISharedDataBase, SdSharedDataProvider} from "../../providers/SdSharedDat
 
       <ng-template #before>
         <sd-select-item *ngIf="(!required && selectMode === 'single') || (useUndefined && selectMode === 'multi')">
-          <span class="sd-text-color-grey-default">미지정</span>
+          <span class="tx-theme-grey-default">미지정</span>
         </sd-select-item>
       </ng-template>
 
@@ -63,15 +63,17 @@ import {ISharedDataBase, SdSharedDataProvider} from "../../providers/SdSharedDat
           </span>
         </sd-select-item>
       </ng-template>
-    </sd-select>
-  `
+    </sd-select>`
 })
-export class SdSharedDataSelectControl implements OnInit, DoCheck {
+export class SdSharedDataSelectControl<T extends ISharedDataBase<string | number>> implements DoCheck {
   @Input()
-  public value?: any | any[];
+  public items: T[] = [];
+
+  @Input()
+  public value?: this["selectMode"] extends "multi" ? (T["__valueKey"][]) : T["__valueKey"];
 
   @Output()
-  public readonly valueChange = new EventEmitter<any | any[]>();
+  public readonly valueChange = new EventEmitter<(this["selectMode"] extends "multi" ? (T["__valueKey"][]) : T["__valueKey"]) | undefined>();
 
   @Input()
   @SdInputValidate(Boolean)
@@ -110,14 +112,10 @@ export class SdSharedDataSelectControl implements OnInit, DoCheck {
 
   @Input()
   @SdInputValidate(Function)
-  public filterFn?: (index: number, item: ISharedDataBase<string | number>) => boolean;
+  public filterFn?: (index: number, item: T) => boolean;
 
-  @ContentChild("itemTemplate", {static: true})
-  public itemTemplateRef?: TemplateRef<{ item: ISharedDataBase<string | number>; index: number }>;
-
-  @Input()
-  @SdInputValidate({type: String})
-  public dataKey?: string;
+  @ContentChild(SdSharedDataItemTemplateDirective, {static: true, read: TemplateRef})
+  public itemTemplateRef?: TemplateRef<SdSharedDataItemTemplateContext<T>>;
 
   @Input()
   @SdInputValidate(Object)
@@ -130,7 +128,7 @@ export class SdSharedDataSelectControl implements OnInit, DoCheck {
   @SdInputValidate({type: String})
   public modalHeader?: string;
 
-  @Input("select.class")
+  @Input()
   @SdInputValidate(String)
   public selectClass?: string;
 
@@ -143,21 +141,21 @@ export class SdSharedDataSelectControl implements OnInit, DoCheck {
     type: Function,
     notnull: true
   })
-  public trackByFn = (index: number, item: ISharedDataBase<string | number>): (string | number) => item.__valueKey;
+  public trackByFn = (index: number, item: T): (string | number) => item.__valueKey;
 
   @Input()
   @SdInputValidate({
     type: Function,
     notnull: true
   })
-  public getIsHiddenFn = (index: number, item: ISharedDataBase<string | number>): boolean => item.__isHidden;
+  public getIsHiddenFn = (index: number, item: T): boolean => item.__isHidden;
 
   @Input()
   @SdInputValidate({
     type: Function,
     notnull: true
   })
-  public getSearchTextFn = (index: number, item: ISharedDataBase<string | number>): string => item.__searchText;
+  public getSearchTextFn = (index: number, item: T): string => item.__searchText;
 
   @Input()
   @SdInputValidate(String)
@@ -168,8 +166,7 @@ export class SdSharedDataSelectControl implements OnInit, DoCheck {
   public displayOrderKeyProp?: string;
 
   public searchText?: string;
-  public items: any[] = [];
-  public itemByParentKeyMap?: Map<string | number | undefined, any>;
+  public itemByParentKeyMap?: Map<T["__valueKey"] | undefined, any>;
 
   public get rootDisplayItems(): any[] {
     let result = this.items;
@@ -199,10 +196,10 @@ export class SdSharedDataSelectControl implements OnInit, DoCheck {
         this._isIncludeSearchText(index, item, depth)
         && !this.getIsHiddenFn(index, item)
       )
-      || this.value === this.trackByFn(index, item)
+      || this.value === this.trackByFn(index, item) as any
       || (
         this.value instanceof Array
-        && this.value.includes(this.trackByFn(index, item))
+        && this.value.includes(this.trackByFn(index, item) as any)
       );
   }
 
@@ -242,18 +239,6 @@ export class SdSharedDataSelectControl implements OnInit, DoCheck {
 
   private readonly _prevData: Record<string, any> = {};
 
-  public async ngOnInit(): Promise<void> {
-    if (this.dataKey === undefined) return;
-
-    this.items = await this._sharedData.getDataAsync(this.dataKey);
-
-    this._cdr.markForCheck();
-
-    this._sharedData.on(this.dataKey, () => {
-      this._cdr.markForCheck();
-    });
-  }
-
   public ngDoCheck(): void {
     const itemChanges = this._itemsIterableDiffer.diff(this.items);
 
@@ -263,15 +248,8 @@ export class SdSharedDataSelectControl implements OnInit, DoCheck {
     const isValueChange = !ObjectUtil.equal(this._prevData["value"], this.value);
     if (isValueChange) this._prevData["value"] = ObjectUtil.clone(this.value);
 
-    const isDataKeyChange = !ObjectUtil.equal(this._prevData["dataKey"], this.dataKey);
-    if (isDataKeyChange) this._prevData["dataKey"] = ObjectUtil.clone(this.dataKey);
-
     const isParentKeyPropChange = !ObjectUtil.equal(this._prevData["parentKeyProp"], this.parentKeyProp);
     if (isParentKeyPropChange) this._prevData["parentKeyProp"] = ObjectUtil.clone(this.parentKeyProp);
-
-    if (isDataKeyChange) {
-      this._cdr.markForCheck();
-    }
 
     if (itemChanges || (this.value instanceof Array && isValueChange)) {
       this._cdr.markForCheck();
@@ -305,7 +283,7 @@ export class SdSharedDataSelectControl implements OnInit, DoCheck {
         selectMode: this.selectMode,
         selectedItemKeys: (this.selectMode === "multi" ? (this.value as any[]) : [this.value]).filterExists(),
         ...this.modalInputParam
-      }, {key: "sd-shared-data-select-detail-modal." + this.dataKey});
+      }, {key: "sd-shared-data-select-detail-modal"});
 
       if (result) {
         const newValue = this.selectMode === "multi" ? result.selectedItemKeys : result.selectedItemKeys[0];

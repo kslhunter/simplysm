@@ -1,12 +1,10 @@
 import {ErrorHandler, ModuleWithProviders, NgModule} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {EVENT_MANAGER_PLUGINS} from "@angular/platform-browser";
-import {SdSaveEventPlugin} from "./plugins/SdSaveEventPlugin";
-import {SdDataRefreshEventPlugin} from "./plugins/SdDataRefreshEventPlugin";
-import {SdInsertEventPlugin} from "./plugins/SdInsertEventPlugin";
-import {SdCopyEventPlugin} from "./plugins/SdCopyEventPlugin";
+import {SdSaveCommandEventPlugin} from "./plugins/SdSaveCommandEventPlugin";
+import {SdRefreshCommandEventPlugin} from "./plugins/SdRefreshCommandEventPlugin";
+import {SdInsertCommandEventPlugin} from "./plugins/SdInsertCommandEventPlugin";
 import {SdResizeEventPlugin} from "./plugins/SdResizeEventPlugin";
-import {SdMutationEventPlugin} from "./plugins/SdMutationEventPlugin";
 import {SdPasteEventPlugin} from "./plugins/SdPasteEventPlugin";
 import {SdGlobalErrorHandlerPlugin} from "./plugins/SdGlobalErrorHandlerPlugin";
 import {FaConfig} from "@fortawesome/angular-fontawesome";
@@ -26,12 +24,10 @@ export class SdAngularModule {
     return {
       ngModule: SdAngularModule,
       providers: [
-        {provide: EVENT_MANAGER_PLUGINS, useClass: SdSaveEventPlugin, multi: true},
-        {provide: EVENT_MANAGER_PLUGINS, useClass: SdDataRefreshEventPlugin, multi: true},
-        {provide: EVENT_MANAGER_PLUGINS, useClass: SdInsertEventPlugin, multi: true},
-        {provide: EVENT_MANAGER_PLUGINS, useClass: SdCopyEventPlugin, multi: true},
+        {provide: EVENT_MANAGER_PLUGINS, useClass: SdSaveCommandEventPlugin, multi: true},
+        {provide: EVENT_MANAGER_PLUGINS, useClass: SdRefreshCommandEventPlugin, multi: true},
+        {provide: EVENT_MANAGER_PLUGINS, useClass: SdInsertCommandEventPlugin, multi: true},
         {provide: EVENT_MANAGER_PLUGINS, useClass: SdResizeEventPlugin, multi: true},
-        {provide: EVENT_MANAGER_PLUGINS, useClass: SdMutationEventPlugin, multi: true},
         {provide: EVENT_MANAGER_PLUGINS, useClass: SdPasteEventPlugin, multi: true},
         {provide: ErrorHandler, useClass: SdGlobalErrorHandlerPlugin}
       ]

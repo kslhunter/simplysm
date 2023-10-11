@@ -41,7 +41,7 @@ import {CommonModule} from "@angular/common";
         white-space: pre-wrap;
 
         background: var(--theme-secondary-lightest);
-        border: 1px solid var(--border-color);
+        border: 1px solid var(--border-color-default);
         border-radius: var(--border-radius-default);
 
         min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
@@ -175,7 +175,7 @@ export class SdContentEditorControl implements OnChanges {
   @HostBinding("attr.sd-size")
   public size?: "sm" | "lg";
 
-  @Input("editor.style")
+  @Input()
   @SdInputValidate(String)
   public editorStyle?: string;
 

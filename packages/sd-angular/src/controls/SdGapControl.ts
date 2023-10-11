@@ -33,7 +33,7 @@ export class SdGapControl {
   @HostBinding("attr.sd-height")
   public height?: "xxs" | "xs" | "sm" | "default" | "lg" | "xl" | "xxl";
 
-  @Input("height.px")
+  @Input()
   @SdInputValidate(Number)
   @HostBinding("style.height.px")
   public heightPx?: number;
@@ -46,12 +46,12 @@ export class SdGapControl {
   @HostBinding("attr.sd-width")
   public width?: "xxs" | "xs" | "sm" | "default" | "lg" | "xl" | "xxl";
 
-  @Input("width.px")
+  @Input()
   @SdInputValidate(Number)
   @HostBinding("style.width.px")
   public widthPx?: number;
 
-  @Input("width.em")
+  @Input()
   @SdInputValidate(Number)
   @HostBinding("style.width.em")
   public widthEm?: number;

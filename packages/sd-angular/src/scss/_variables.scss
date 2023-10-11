@@ -336,12 +336,10 @@ $vars: (
     default: rgba(0, 0, 0, .2),
     light: rgba(0, 0, 0, .1),
     lighter: rgba(0, 0, 0, .03),
-    rev: (
-      default: rgba(255, 255, 255, .1),
-      light: rgba(255, 255, 255, .2),
-      lighter: rgba(255, 255, 255, .3),
-      lightest: rgba(255, 255, 255, .4),
-    )
+    rev-default: rgba(255, 255, 255, .1),
+    rev-light: rgba(255, 255, 255, .2),
+    rev-lighter: rgba(255, 255, 255, .3),
+    rev-lightest: rgba(255, 255, 255, .4),
   ),
   text-trans: (
     dark: black,
@@ -349,11 +347,9 @@ $vars: (
     light: rgba(0, 0, 0, .60),
     lighter: rgba(0, 0, 0, .38),
     lightest: rgba(0, 0, 0, .2),
-    rev: (
-      default: white,
-      dark: rgba(255, 255, 255, .7),
-      darker: rgba(255, 255, 255, .5),
-    )
+    rev-default: white,
+    rev-dark: rgba(255, 255, 255, .7),
+    rev-darker: rgba(255, 255, 255, .5),
   ),
   font-size: (
     lg: 14px,
@@ -373,7 +369,9 @@ $vars: (
     default: 6px,
     lg: 8px,
     xl: 12px,
-    xxl: 18px
+    xxl: 18px,
+    0: 0,
+    auto: "auto"
   ),
   border-color: (
     light: var(--theme-grey-lighter),

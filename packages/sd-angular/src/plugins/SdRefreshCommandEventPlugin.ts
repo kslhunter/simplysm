@@ -3,12 +3,12 @@ import {EventManager} from "@angular/platform-browser";
 import {NeverEntryError} from "@simplysm/sd-core-common";
 
 @Injectable({providedIn: null})
-export class SdDataRefreshEventPlugin {
+export class SdRefreshCommandEventPlugin {
   public manager!: EventManager;
 
   public addEventListener(element: HTMLElement, eventName: string, handler: (event: Event) => void): () => void {
     const listener = (event: KeyboardEvent): void => {
-      if ((event.key === "l" || event.key === "L") && event.ctrlKey && event.altKey) {
+      if ((event.key === "l" || event.key === "L") && event.ctrlKey && event.altKey && !event.shiftKey) {
         event.preventDefault();
 
         this.manager.getZone().run(() => {
@@ -27,7 +27,7 @@ export class SdDataRefreshEventPlugin {
   public addGlobalEventListener(element: string, eventName: string, handler: Function): Function {
     if (element === "document") {
       const listener = (event: KeyboardEvent): void => {
-        if ((event.key === "l" || event.key === "L") && event.ctrlKey && event.altKey) {
+        if ((event.key === "l" || event.key === "L") && event.ctrlKey && event.altKey && !event.shiftKey) {
           event.preventDefault();
 
           this.manager.getZone().run(() => {
@@ -47,6 +47,6 @@ export class SdDataRefreshEventPlugin {
   }
 
   public supports(eventName: string): boolean {
-    return eventName === "sdDataRefresh";
+    return eventName === "sdDataRefreshCommand";
   }
 }

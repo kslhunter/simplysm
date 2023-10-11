@@ -1,16 +1,13 @@
-import {Injectable} from "@angular/core";
+import {inject, Injectable, OnDestroy} from "@angular/core";
 import {ObjectUtil} from "@simplysm/sd-core-common";
 import {ISdServiceClientConnectionConfig, SdServiceClient} from "@simplysm/sd-service-client";
 import {ISdProgressToast, SdToastProvider} from "./SdToastProvider";
 
 @Injectable({providedIn: "root"})
-export class SdServiceFactoryProvider {
-  private readonly _clientMap = new Map<string, SdServiceClient>();
-  private readonly _reqProgToastMap = new Map<string, ISdProgressToast>();
-  private readonly _resProgToastMap = new Map<string, ISdProgressToast>();
+export class SdServiceFactoryProvider implements OnDestroy {
+  private readonly _sdToast = inject(SdToastProvider);
 
-  public constructor(private readonly _toast: SdToastProvider) {
-  }
+  private readonly _clientMap = new Map<string, SdServiceClient>();
 
   public async connectAsync(clientName: string, key: string, options: Partial<ISdServiceClientConnectionConfig> = {}): Promise<void> {
     if (this._clientMap.has(key)) {
@@ -28,29 +25,27 @@ export class SdServiceFactoryProvider {
       ssl: location.protocol.startsWith("https")
     }, options));
 
+    const reqProgressToastMap = new Map<string, ISdProgressToast | undefined>();
     client.on("request-progress", (state) => {
-      if (!this._reqProgToastMap.has(state.uuid)) {
-        this._reqProgToastMap.set(state.uuid, this._toast.info("요청을 전송하는 중입니다.", true));
-      }
-
-      const reqProgToast = this._reqProgToastMap.get(state.uuid);
-      reqProgToast?.progress((state.completedSize / state.fullSize) * 100);
+      const toast = reqProgressToastMap.getOrCreate(state.uuid, this._sdToast.info("요청을 전송하는 중입니다.", true));
+      toast?.progress((state.completedSize / state.fullSize) * 100);
 
       if (state.completedSize === state.fullSize) {
-        this._reqProgToastMap.delete(state.uuid);
+        reqProgressToastMap.delete(state.uuid);
       }
     });
 
+    const resProgressToastMap = new Map<string, ISdProgressToast | undefined>();
     client.on("response-progress", (state) => {
-      if (!this._resProgToastMap.has(state.reqUuid)) {
-        this._resProgToastMap.set(state.reqUuid, this._toast.info("응답을 전송받는 중입니다.", true));
+      if (!resProgressToastMap.has(state.reqUuid)) {
+        resProgressToastMap.set(state.reqUuid, this._sdToast.info("응답을 전송받는 중입니다.", true));
       }
 
-      const resProgToast = this._resProgToastMap.get(state.reqUuid);
-      resProgToast?.progress((state.completedSize / state.fullSize) * 100);
+      const toast = resProgressToastMap.get(state.reqUuid);
+      toast?.progress((state.completedSize / state.fullSize) * 100);
 
       if (state.completedSize === state.fullSize) {
-        this._resProgToastMap.delete(state.reqUuid);
+        resProgressToastMap.delete(state.reqUuid);
       }
     });
 
@@ -65,5 +60,12 @@ export class SdServiceFactoryProvider {
     }
 
     return this._clientMap.get(key)!;
+  }
+
+  public async ngOnDestroy(): Promise<void> {
+    for (const key of this._clientMap.keys()) {
+      await this._clientMap.get(key)!.closeAsync();
+      this._clientMap.delete(key);
+    }
   }
 }

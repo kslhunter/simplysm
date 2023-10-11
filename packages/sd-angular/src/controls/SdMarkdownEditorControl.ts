@@ -142,7 +142,7 @@ import {SdAnchorControl} from "./SdAnchorControl";
 
       > ._toolbar {
         display: block;
-        border: 1px solid var(--border-color);
+        border: 1px solid var(--border-color-default);
         border-bottom: none;
         text-align: right;
 
@@ -161,7 +161,7 @@ import {SdAnchorControl} from "./SdAnchorControl";
         position: relative;
         width: 100%;
         height: 100%;
-        border: 1px solid var(--border-color);
+        border: 1px solid var(--border-color-default);
 
         > textarea {
           @include form-control-base();
@@ -221,7 +221,7 @@ import {SdAnchorControl} from "./SdAnchorControl";
         overflow: auto;
         background: white;
         min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) + 2px);
-        border: 1px solid var(--border-color);
+        border: 1px solid var(--border-color-default);
 
         ::ng-deep {
           ol, ul {
@@ -254,7 +254,7 @@ import {SdAnchorControl} from "./SdAnchorControl";
 
       > ._help {
         padding: var(--gap-sm);
-        border: 1px solid var(--border-color);
+        border: 1px solid var(--border-color-default);
         height: 100%;
         overflow: auto;
         background: white;

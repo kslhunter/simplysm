@@ -3,14 +3,12 @@ import {EventManager} from "@angular/platform-browser";
 import {NeverEntryError} from "@simplysm/sd-core-common";
 
 @Injectable({providedIn: null})
-export class SdCopyEventPlugin {
+export class SdInsertCommandEventPlugin {
   public manager!: EventManager;
 
   public addEventListener(element: HTMLElement, eventName: string, handler: (event: Event) => void): () => void {
     const listener = (event: KeyboardEvent): void => {
-      if (event.key === "Insert" && event.ctrlKey && event.altKey) {
-        event.preventDefault();
-
+      if (event.key === "Insert" && event.ctrlKey && !event.altKey && !event.shiftKey) {
         this.manager.getZone().run(() => {
           handler(event);
         });
@@ -27,9 +25,7 @@ export class SdCopyEventPlugin {
   public addGlobalEventListener(element: string, eventName: string, handler: Function): Function {
     if (element === "document") {
       const listener = (event: KeyboardEvent): void => {
-        if (event.key === "Insert" && event.ctrlKey && event.altKey) {
-          event.preventDefault();
-
+        if (event.key === "Insert" && event.ctrlKey && !event.altKey && !event.shiftKey) {
           this.manager.getZone().run(() => {
             handler(event);
           });
@@ -47,6 +43,6 @@ export class SdCopyEventPlugin {
   }
 
   public supports(eventName: string): boolean {
-    return eventName === "sdCopy";
+    return eventName === "sdInsertCommand";
   }
 }
