@@ -81,21 +81,14 @@ export class SdCliClientBuilder extends EventEmitter {
       pkgPath: this._pkgPath
     }));
 
-    this._checker = this._checker ?? new SdTsCompiler({
-      pkgPath: this._pkgPath,
-      emit: false,
-      emitDts: false,
-      globalStyle: false
-    });
-
-    this._debug(`BUILD...`);
+    this._debug(`BUILD & CHECK...`);
     const buildResults = await Promise.all(this._builders.map((builder) => builder.bundleAsync()));
-
-    this._debug("CHECK...");
-    const checkResult = await this._checker.buildAsync();
+    const filePaths = buildResults.mapMany(item => item.filePaths).distinct();
+    const affectedFilePaths = buildResults.mapMany(item => item.affectedFilePaths).distinct();
+    const results = buildResults.mapMany((item) => item.results).distinct();
 
     this._debug(`LINT...`);
-    const lintResults = await SdLinter.lintAsync(checkResult.affectedFilePaths, this._checker.program);
+    const lintResults = await SdLinter.lintAsync(affectedFilePaths, this._pkgPath);
 
     if (opt.genConf) {
       this._debug("GEN .config...");
@@ -111,7 +104,7 @@ export class SdCliClientBuilder extends EventEmitter {
 
     const localUpdatePaths = Object.keys(this._projConf.localUpdates ?? {})
       .mapMany((key) => FsUtil.glob(path.resolve(this._pkgPath, "../../node_modules", key)));
-    const watchFilePaths = buildResults.mapMany((item) => item.filePaths)
+    const watchFilePaths = filePaths
       .filter((item) =>
         PathUtil.isChildPath(item, path.resolve(this._pkgPath, "../")) ||
         localUpdatePaths.some((lu) => PathUtil.isChildPath(item, lu))
@@ -120,8 +113,8 @@ export class SdCliClientBuilder extends EventEmitter {
     this._debug(`빌드 완료`);
     return {
       watchFilePaths: watchFilePaths,
-      affectedFilePaths: checkResult.affectedFilePaths,
-      buildResults: [...buildResults.mapMany((item) => item.results), ...checkResult.results, ...lintResults]
+      affectedFilePaths: affectedFilePaths,
+      buildResults: [...results, ...lintResults]
     };
   }
 

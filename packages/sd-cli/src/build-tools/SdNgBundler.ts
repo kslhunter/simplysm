@@ -44,6 +44,7 @@ export class SdNgBundler {
 
   public async bundleAsync(): Promise<{
     filePaths: string[],
+    affectedFilePaths: string[],
     results: ISdCliPackageBuildResult[]
   }> {
     if (!this._contexts) {
@@ -75,14 +76,48 @@ export class SdNgBundler {
         type: "build" as const
       })) ?? []
     ];
+    const watchFilePaths = [
+      ...this._sourceFileCache.typeScriptFileCache.keys(),
+      ...this._sourceFileCache.babelFileCache.keys()
+    ].map((item) => path.resolve(item));
+    let affectedSourceFilePaths = watchFilePaths.filter((item) => PathUtil.isChildPath(item, this._opt.pkgPath));
     if (bundlingResult.errors) {
       return {
-        filePaths: [
-          ...this._sourceFileCache.typeScriptFileCache.keys(),
-          ...this._sourceFileCache.babelFileCache.keys()
-        ],
+        filePaths: watchFilePaths,
+        affectedFilePaths: affectedSourceFilePaths,
         results
       };
+    }
+
+    const depsMap = new Map<string, Set<string>>();
+    for (const entry of Object.entries(bundlingResult.metafile.inputs)) {
+      for (const imp of entry[1].imports) {
+        const deps = depsMap.getOrCreate(path.resolve(this._opt.pkgPath, imp.path), new Set<string>());
+        deps.add(path.resolve(this._opt.pkgPath, entry[0]));
+      }
+    }
+
+    const searchAffectedFiles = (filePath: string, prev?: Set<string>): Set<string> => {
+      const result = new Set<string>(prev);
+
+      const importerPaths = depsMap.get(filePath);
+      if (!importerPaths) return result;
+
+      for (const importerPath of importerPaths) {
+        if (result.has(importerPath)) continue;
+        result.adds(importerPath);
+        result.adds(...searchAffectedFiles(importerPath, result));
+      }
+
+      return result;
+    };
+
+    if (this._sourceFileCache.modifiedFiles.size > 0) {
+      const affectedFilePathSet = new Set<string>();
+      for (const modFile of this._sourceFileCache.modifiedFiles) {
+        affectedFilePathSet.adds(...searchAffectedFiles(path.resolve(modFile)));
+      }
+      affectedSourceFilePaths = Array.from(affectedFilePathSet.values()).filter((item) => PathUtil.isChildPath(item, this._opt.pkgPath));
     }
 
     const executionResult = new ExecutionResult(this._contexts, this._sourceFileCache);
@@ -132,10 +167,8 @@ export class SdNgBundler {
         this._logger.error(error instanceof Error ? error.message : `${error}`);
 
         return {
-          filePaths: [
-            ...this._sourceFileCache.typeScriptFileCache.keys(),
-            ...this._sourceFileCache.babelFileCache.keys()
-          ],
+          filePaths: watchFilePaths,
+          affectedFilePaths: affectedSourceFilePaths,
           results
         };
       }
@@ -163,10 +196,8 @@ export class SdNgBundler {
     }
 
     return {
-      filePaths: [
-        ...this._sourceFileCache.typeScriptFileCache.keys(),
-        ...this._sourceFileCache.babelFileCache.keys()
-      ],
+      filePaths: watchFilePaths,
+      affectedFilePaths: affectedSourceFilePaths,
       results
     };
   }

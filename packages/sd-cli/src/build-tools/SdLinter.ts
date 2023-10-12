@@ -1,24 +1,34 @@
 import {ISdCliPackageBuildResult} from "../commons";
 import {ESLint} from "eslint";
 import ts from "typescript";
+import path from "path";
 
 export class SdLinter {
-  public static async lintAsync(filePaths: string[], program?: ts.Program): Promise<ISdCliPackageBuildResult[]> {
-    const linter = new ESLint(program ? {
+  public static async lintAsync(filePaths: string[], programOrPkgPath?: ts.Program | string): Promise<ISdCliPackageBuildResult[]> {
+    const linter = new ESLint(programOrPkgPath !== null ? {
       overrideConfig: {
         overrides: [
           {
             files: ["*.ts", "*.tsx"],
             parserOptions: {
-              programs: [program],
-              tsconfigRootDir: null,
-              project: null
+              ...typeof programOrPkgPath === "string" ? {
+                tsconfigRootDir: programOrPkgPath,
+                project: "tsconfig.json"
+              } : {
+                programs: [programOrPkgPath],
+                tsconfigRootDir: null,
+                project: null
+              }
             },
             settings: {
               "import/resolver": {
                 "typescript": {
-                  programs: [program],
-                  project: null
+                  ...typeof programOrPkgPath === "string" ? {
+                    project: path.resolve(programOrPkgPath, "tsconfig.json")
+                  } : {
+                    programs: [programOrPkgPath],
+                    project: null
+                  }
                 }
               }
             }
