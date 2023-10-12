@@ -77,7 +77,7 @@ export class SdNgBundler {
       })) ?? []
     ];
     const watchFilePaths = [
-      ...this._sourceFileCache.typeScriptFileCache.keys(),
+      ...this._sourceFileCache.keys(),
       ...this._sourceFileCache.babelFileCache.keys()
     ].map((item) => path.resolve(item));
     let affectedSourceFilePaths = watchFilePaths.filter((item) => PathUtil.isChildPath(item, this._opt.pkgPath));
@@ -89,6 +89,7 @@ export class SdNgBundler {
       };
     }
 
+    // TODO: sourceFileCache의 ts.SourceFile 목록을 활용하면, export 명칭까지 맵핑할 수 있으므로 bundlingResult.metafile.inputs보다 효율적이게 만들 수 있다.
     const depsMap = new Map<string, Set<string>>();
     for (const entry of Object.entries(bundlingResult.metafile.inputs)) {
       for (const imp of entry[1].imports) {

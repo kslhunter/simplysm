@@ -80,7 +80,7 @@ export class SdSelectItemControl implements AfterViewInit, AfterContentChecked, 
   public disabled?: boolean;
 
   @ContentChild("label", {static: true})
-  public labelTemplateRef?: TemplateRef<any>;
+  public labelTemplateRef?: TemplateRef<void>;
 
   @HostBinding("attr.sd-select-mode")
   public get selectMode(): "single" | "multi" {

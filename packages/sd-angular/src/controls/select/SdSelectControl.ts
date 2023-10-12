@@ -265,13 +265,13 @@ export class SdSelectControl implements DoCheck {
   public dropdownPopupElRef?: ElementRef<HTMLElement>;
 
   @ContentChild("item", {static: true})
-  public itemTemplateRef?: TemplateRef<any>;
+  public itemTemplateRef?: TemplateRef<any>; // TODO: TemplateDirective로
 
   @ContentChild("header", {static: true})
-  public headerTemplateRef?: TemplateRef<any>;
+  public headerTemplateRef?: TemplateRef<void>;
 
   @ContentChild("before", {static: true})
-  public beforeTemplateRef?: TemplateRef<any>;
+  public beforeTemplateRef?: TemplateRef<void>;
 
   @Input()
   @SdInputValidate(Array)

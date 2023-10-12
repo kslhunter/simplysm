@@ -58,8 +58,8 @@ export class SdSheetColumnControl<T> {
   public cellTemplateRef?: TemplateRef<SdSheetColumnCellTemplateContext<T>>;
 
   @ContentChild("header", {static: true})
-  public headerTemplateRef?: TemplateRef<undefined>;
+  public headerTemplateRef?: TemplateRef<void>;
 
   @ContentChild("summary", {static: true})
-  public summaryTemplateRef?: TemplateRef<undefined>;
+  public summaryTemplateRef?: TemplateRef<void>;
 }
