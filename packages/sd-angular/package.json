@@ -17,10 +17,10 @@
     "node": "^16"
   },
   "dependencies": {
-    "@angular/common": "^16.2.8",
-    "@angular/core": "^16.2.8",
-    "@angular/platform-browser": "^16.2.8",
-    "@angular/router": "^16.2.8",
+    "@angular/common": "^16.2.9",
+    "@angular/core": "^16.2.9",
+    "@angular/platform-browser": "^16.2.9",
+    "@angular/router": "^16.2.9",
     "@fortawesome/angular-fontawesome": "^0.13.0",
     "@fortawesome/fontawesome-svg-core": "^6.4.2",
     "@fortawesome/pro-duotone-svg-icons": "^6.4.2",
@@ -31,7 +31,7 @@
     "@simplysm/sd-service-client": "11.0.6",
     "@simplysm/sd-service-common": "11.0.6",
     "jsbarcode": "^3.11.5",
-    "marked": "^9.1.0",
+    "marked": "^9.1.1",
     "qrcode": "^1.5.3",
     "rxjs": "^7.8.1",
     "zone.js": "~0.13.3"

@@ -102,7 +102,6 @@ export * from "./providers/SdSystemLogProvider";
 export * from "./providers/SdToastProvider";
 export * from "./SdAngularModule";
 export * from "./SdLazyPageLoaderModule";
-export * from "./utils/coerceBoolean";
 export * from "./utils/SdAppStructureUtil";
 export * from "./utils/sdCanDeactivateGuard";
 export * from "./utils/SdInputValidate";
