@@ -2,7 +2,7 @@ import {SdSheetControl} from "./SdSheetControl";
 import {SdSheetConfigModal} from "./SdSheetConfigModal";
 import {CommonModule} from "@angular/common";
 import {NgModule} from "@angular/core";
-import {SdSheetColumnControl} from "./SdSheetColumnControl";
+import {SdSheetColumnDirective} from "./SdSheetColumnDirective";
 import {SdDockingModule} from "../dock/SdDockingModule";
 import {SdPaneControl} from "../SdPaneControl";
 import {SdCheckboxModule} from "../checkbox/SdCheckboxModule";
@@ -17,8 +17,8 @@ import {SdSheetColumnCellTemplateDirective} from "./SdSheetColumnCellTemplateDir
 
 @NgModule({
   imports: [CommonModule, SdDockingModule, SdPaneControl, SdCheckboxModule, SdAnchorControl, FontAwesomeModule, SdTextfieldControl, SdButtonControl, SdBusyContainerControl, SdPaginationControl, SdResizeDirective],
-  declarations: [SdSheetConfigModal, SdSheetControl, SdSheetColumnControl, SdSheetColumnCellTemplateDirective],
-  exports: [SdSheetConfigModal, SdSheetControl, SdSheetColumnControl, SdSheetColumnCellTemplateDirective],
+  declarations: [SdSheetConfigModal, SdSheetControl, SdSheetColumnDirective, SdSheetColumnCellTemplateDirective],
+  exports: [SdSheetConfigModal, SdSheetControl, SdSheetColumnDirective, SdSheetColumnCellTemplateDirective],
   providers: []
 })
 export class SdSheetModule {

@@ -31,9 +31,10 @@
     "@simplysm/sd-service-client": "11.0.6",
     "@simplysm/sd-service-common": "11.0.6",
     "jsbarcode": "^3.11.5",
-    "marked": "^9.1.1",
+    "marked": "^9.1.2",
     "qrcode": "^1.5.3",
     "rxjs": "^7.8.1",
+    "semver": "^7.5.4",
     "zone.js": "~0.13.3"
   },
   "devDependencies": {

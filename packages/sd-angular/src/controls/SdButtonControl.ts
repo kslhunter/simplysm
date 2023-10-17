@@ -42,11 +42,19 @@ import {CommonModule} from "@angular/common";
           background: var(--theme-grey-lighter);
         }
 
+        @media all and (hover: none) and (pointer: coarse) {
+          @include mobile-active-effect(true);
+        }
+
         &:disabled {
           background: white;
           border-color: var(--theme-grey-lighter);
           color: var(--text-trans-lighter);
           cursor: default;
+
+          @media all and (hover: none) and (pointer: coarse) {
+            @include mobile-active-effect(false);
+          }
         }
       }
 
@@ -106,10 +114,6 @@ import {CommonModule} from "@angular/common";
         &:disabled {
           border-color: transparent;
           color: var(--trans-brightness-defalt);
-          /*background: white;
-          border-color: var(--theme-grey-lighter);
-          color: var(--text-trans-default);
-          cursor: default;*/
         }
       }
 

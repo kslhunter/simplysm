@@ -1,5 +1,6 @@
 import {ChangeDetectionStrategy, Component, ElementRef} from "@angular/core";
 
+// TODO: 모바일일때는 창 형식으로 표현
 @Component({
   selector: "sd-dropdown-popup",
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -35,7 +36,7 @@ import {ChangeDetectionStrategy, Component, ElementRef} from "@angular/core";
         outline: 1px solid var(--theme-primary-default);
       }
 
-      @media screen and (max-width: 520px) {
+      @media all and (max-width: 520px) {
         @include elevation(0);
         border: 1px solid var(--border-color-default);
       }

@@ -35,7 +35,7 @@ import {SdAnchorControl} from "./SdAnchorControl";
     <ng-container *ngFor="let preset of presets; trackBy: trackByNameFn">
       <div>
         <sd-anchor (click)="onItemClick(preset)"
-                   class="sd-text-brightness-default">
+                   class="tx-trans-default">
           {{ preset.name }}
         </sd-anchor>
         <sd-anchor (click)="onSaveButtonClick(preset)">

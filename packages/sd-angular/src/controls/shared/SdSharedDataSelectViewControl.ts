@@ -11,11 +11,10 @@ import {
 } from "@angular/core";
 import {ObjectUtil, StringUtil} from "@simplysm/sd-core-common";
 import {IconProp} from "@fortawesome/fontawesome-svg-core";
-import {ISharedDataBase, SdSharedDataProvider} from "../../providers/SdSharedDataProvider";
+import {ISharedDataBase} from "../../providers/SdSharedDataProvider";
 import {SdInputValidate} from "../../utils/SdInputValidate";
-import {ISdSheetColumnOrderingVM} from "../sheet/SdSheetControl";
-import {SdToastProvider} from "../../providers/SdToastProvider";
 import {SdSharedDataItemTemplateContext, SdSharedDataItemTemplateDirective} from "./SdSharedDataItemTemplateDirective";
+import {ISdSheetColumnOrderingVM} from "../sheet/SdSheetControl";
 
 @Component({
   selector: "sd-shared-data-select-view",
@@ -45,7 +44,7 @@ import {SdSharedDataItemTemplateContext, SdSharedDataItemTemplateDirective} from
                           (click)="selectedItem === item ? onSelectedItemChange(undefined) : onSelectedItemChange(item)"
                           [selectedIcon]="selectedIcon">
               <ng-template [ngTemplateOutlet]="itemTemplateRef"
-                           [ngTemplateOutletContext]="{item: item, index: index}"></ng-template>
+                           [ngTemplateOutletContext]="{$implicit: item, item: item, index: index}"></ng-template>
             </sd-list-item>
           </sd-list>
         </sd-pane>
@@ -111,9 +110,7 @@ export class SdSharedDataSelectViewControl<T extends ISharedDataBase<string | nu
     return result;
   }
 
-  public constructor(private readonly _sharedData: SdSharedDataProvider,
-                     private readonly _toast: SdToastProvider,
-                     private readonly _cdr: ChangeDetectorRef) {
+  public constructor(private readonly _cdr: ChangeDetectorRef) {
   }
 
   private readonly _prevData: Record<string, any> = {};

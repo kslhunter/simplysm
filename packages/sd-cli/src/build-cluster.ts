@@ -77,7 +77,7 @@ else {
     }
     // [library] typescript
     else if (pkgConf.type === "library" && FsUtil.exists(path.resolve(message.pkgPath, "tsconfig.json"))) {
-      await new SdCliTsLibBuilder(message.projConf, message.pkgPath, message.withLint)
+      await new SdCliTsLibBuilder(message.pkgPath, message.withLint)
         .on("change", () => {
           sendMessage({
             type: "change",
@@ -166,7 +166,7 @@ else {
     }
     // [library] typescript
     else if (pkgConf.type === "library" && FsUtil.exists(path.resolve(message.pkgPath, "tsconfig.json"))) {
-      const result = await new SdCliTsLibBuilder(message.projConf, message.pkgPath, message.withLint).buildAsync();
+      const result = await new SdCliTsLibBuilder(message.pkgPath, message.withLint).buildAsync();
       sendMessage({
         type: "complete",
         result,

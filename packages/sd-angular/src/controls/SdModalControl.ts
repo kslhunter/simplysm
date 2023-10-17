@@ -280,7 +280,7 @@ import {SdResizeDirective} from "../directives/SdResizeDirective";
         }
       }
 
-      @media screen and (max-width: 520px) {
+      @media all and (max-width: 520px) {
         padding-top: 0;
 
         > ._dialog {

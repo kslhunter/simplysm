@@ -19,7 +19,7 @@ import {ISdPermission} from "../utils/SdAppStructureUtil";
   template: `
     <table>
       <tbody>
-      <ng-container *ngFor="let item of items; trackBy: itemTrackBy;">
+      <ng-container *ngFor="let item of items; trackBy: trackByForItem;">
         <ng-template [ngTemplateOutlet]="itemTemplate"
                      [ngTemplateOutletContext]="{item: item, parentKey: 'root', depth: 0, parent: undefined}">
         </ng-template>
@@ -80,7 +80,7 @@ import {ISdPermission} from "../utils/SdAppStructureUtil";
         </td>
       </tr>
       <ng-container *ngIf="item.children && item.children.length > 0">
-        <ng-container *ngFor="let child of item.children">
+        <ng-container *ngFor="let child of item.children; trackBy: trackByForItem">
           <ng-template [ngTemplateOutlet]="itemTemplate"
                        [ngTemplateOutletContext]="{item: child, parentKey: parentKey + '_' + item.codes.join('.'), depth: depth + 1, parent: item}">
           </ng-template>
@@ -164,6 +164,8 @@ import {ISdPermission} from "../utils/SdAppStructureUtil";
   `]
 })
 export class SdPermissionTableControl implements DoCheck {
+  faChevronRight = faChevronRight;
+
   @Input()
   items: ISdPermission[] = [];
 
@@ -181,6 +183,9 @@ export class SdPermissionTableControl implements DoCheck {
 
   prevData: Record<string, any> = {};
 
+  trackByForItem = (i: number, item: ISdPermission): string => item.codes.join(".");
+  trackByIndex = (i: number): number => i;
+
   ngDoCheck() {
     if (this.prevData["items"] !== this.items) {
       this.prevData["items"] = this.items;
@@ -189,25 +194,22 @@ export class SdPermissionTableControl implements DoCheck {
     }
   }
 
-  itemTrackBy = (i: number, item: ISdPermission) => item.codes.join(".");
-  trackByIndex = (i: number) => i;
-
-  arr(len: number) {
+  arr(len: number): number[] {
     return Array(len).fill(0);
   }
 
-  getPermCollapse(item: ISdPermission) {
+  getPermCollapse(item: ISdPermission): boolean {
     return this.collapsedItems.has(item);
   }
 
-  getAllChildren(item: ISdPermission) {
+  getAllChildren(item: ISdPermission): ISdPermission[] {
     return item.children?.mapMany((child) => [
       child,
       ...this.getAllChildren(child)
     ]) ?? [];
   }
 
-  getIsPermExists(item: ISdPermission, type: "use" | "edit") {
+  getIsPermExists(item: ISdPermission, type: "use" | "edit"): boolean {
     if (item.perms) {
       return item.perms.includes(type);
     }
@@ -223,7 +225,7 @@ export class SdPermissionTableControl implements DoCheck {
     return false;
   }
 
-  getIsPermChecked(item: ISdPermission, type: "use" | "edit") {
+  getIsPermChecked(item: ISdPermission, type: "use" | "edit"): boolean {
     if (item === undefined) {
       return true;
     }
@@ -281,7 +283,7 @@ export class SdPermissionTableControl implements DoCheck {
     }
   }
 
-  _getDepthLength(items: ISdPermission[], depth: number): number {
+  private _getDepthLength(items: ISdPermission[], depth: number): number {
     return items.max((item) => {
       if (item.children) {
         return this._getDepthLength(item.children, depth + 1);
@@ -291,6 +293,4 @@ export class SdPermissionTableControl implements DoCheck {
       }
     }) ?? depth;
   }
-
-  protected readonly faChevronRight = faChevronRight;
 }

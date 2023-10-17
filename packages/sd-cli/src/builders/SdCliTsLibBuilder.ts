@@ -1,6 +1,6 @@
 import {FsUtil, Logger, SdFsWatcher} from "@simplysm/sd-core-node";
 import path from "path";
-import {ISdCliBuilderResult, ISdCliConfig} from "../commons";
+import {ISdCliBuilderResult} from "../commons";
 import {EventEmitter} from "events";
 import {SdTsCompiler} from "../build-tools/SdTsCompiler";
 import {SdLinter} from "../build-tools/SdLinter";
@@ -9,8 +9,7 @@ import {FunctionQueue} from "@simplysm/sd-core-common";
 export class SdCliTsLibBuilder extends EventEmitter {
   private readonly _logger = Logger.get(["simplysm", "sd-cli", "SdCliTsLibBuilder"]);
 
-  public constructor(private readonly _projConf: ISdCliConfig,
-                     private readonly _pkgPath: string,
+  public constructor(private readonly _pkgPath: string,
                      private readonly _withLint: boolean) {
     super();
   }

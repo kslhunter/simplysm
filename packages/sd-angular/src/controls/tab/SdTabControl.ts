@@ -8,10 +8,17 @@ import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from "@
   styles: [/* language=SCSS */ `
     :host {
       display: block;
-      background: var(--theme-grey-lightest);
       border-bottom: 2px solid var(--theme-grey-lighter);
-      padding-left: var(--gap-default);
-      padding-top: 1px;
+
+      @media not all and (hover: none) and (pointer: coarse) {
+        background: var(--theme-grey-lightest);
+        padding-left: var(--gap-default);
+        padding-top: 1px;
+      }
+
+      @media all and (hover: none) and (pointer: coarse) {
+        padding: 0 calc(var(--gap-default) + 1px) 0 calc(var(--gap-default) - 1px);
+      }
     }
   `]
 })

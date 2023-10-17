@@ -19,7 +19,7 @@ import {SdInputValidate} from "../../utils/SdInputValidate";
            [hidden]="layout === 'none'"
            [style.text-align]="labelAlign"
            [title]="labelTooltip"
-           [class.sd-help]="labelTooltip">
+           [class.help]="labelTooltip">
       <ng-container *ngIf="!labelTemplateRef">{{ label }}</ng-container>
       <ng-container *ngIf="labelTemplateRef">
         <ng-template [ngTemplateOutlet]="labelTemplateRef"
@@ -148,7 +148,7 @@ export class SdFormBoxItemControl {
   }
 
   @HostBinding("attr.sd-no-label")
-  get noLabel() {
+  get noLabel(): boolean {
     return this.label == null && !this.labelTemplateRef;
   }
 

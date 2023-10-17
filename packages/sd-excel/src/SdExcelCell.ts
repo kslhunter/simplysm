@@ -73,18 +73,24 @@ export class SdExcelCell {
     else if (val instanceof DateOnly) {
       const wsData = await this._getWsDataAsync();
       wsData.setCellType(this._addr, undefined);
-      wsData.setCellVal(this._addr, SdExcelUtil.convertDateToNumber(val.date).toString());
+      wsData.setCellVal(this._addr, SdExcelUtil.convertTimeTickToNumber(val.tick).toString());
 
       await this._setStyleAsync({numFmtId: SdExcelUtil.convertNumFmtNameToId("DateOnly").toString()});
     }
     else if (val instanceof DateTime) {
       const wsData = await this._getWsDataAsync();
       wsData.setCellType(this._addr, undefined);
-      wsData.setCellVal(this._addr, SdExcelUtil.convertDateToNumber(val.date).toString());
+      wsData.setCellVal(this._addr, SdExcelUtil.convertTimeTickToNumber(val.tick).toString());
 
       await this._setStyleAsync({numFmtId: SdExcelUtil.convertNumFmtNameToId("DateTime").toString()});
     }
-    // TODO: TIME차례 (18번)
+    else if (val instanceof Time) {
+      const wsData = await this._getWsDataAsync();
+      wsData.setCellType(this._addr, undefined);
+      wsData.setCellVal(this._addr, SdExcelUtil.convertTimeTickToNumber(val.tick).toString());
+
+      await this._setStyleAsync({numFmtId: SdExcelUtil.convertNumFmtNameToId("Time").toString()});
+    }
     else {
       throw new Error(`[${this._addr}] 지원되지 않는 타입입니다: ${val}`);
     }
@@ -139,18 +145,18 @@ export class SdExcelCell {
       }
       else if (numFmt === "DateOnly") {
         const dateNum = NumberUtil.parseFloat(cellVal)!;
-        const date = SdExcelUtil.convertNumberToDate(dateNum);
-        return new DateOnly(date);
+        const tick = SdExcelUtil.convertNumberToTimeTick(dateNum);
+        return new DateOnly(tick);
       }
       else if (numFmt === "DateTime") {
         const dateNum = NumberUtil.parseFloat(cellVal)!;
-        const date = SdExcelUtil.convertNumberToDate(dateNum);
-        return new DateTime(date);
+        const tick = SdExcelUtil.convertNumberToTimeTick(dateNum);
+        return new DateTime(tick);
       }
       else if (numFmt === "Time") {
         const dateNum = NumberUtil.parseFloat(cellVal)!;
-        const date = SdExcelUtil.convertNumberToDate(dateNum);
-        return new Time(date);
+        const tick = SdExcelUtil.convertNumberToTimeTick(dateNum);
+        return new Time(tick);
       }
       else {
         throw new Error(`[${this._addr}] 타입분석 실패 (${numFmt})`);

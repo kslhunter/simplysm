@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, ElementRef, EventEmitter, HostBinding, Input, Output} from "@angular/core";
+import {ChangeDetectionStrategy, Component, EventEmitter, HostBinding, Input, Output} from "@angular/core";
 import {IconProp} from "@fortawesome/fontawesome-svg-core";
 import {faCheck} from "@fortawesome/pro-solid-svg-icons";
 import {SdInputValidate} from "../../utils/SdInputValidate";
@@ -164,57 +164,51 @@ import {sdThemes, TSdTheme} from "../../commons";
 })
 export class SdCheckboxControl {
   @Input()
-  @SdInputValidate({type: Boolean})
+  @SdInputValidate({type: Boolean, notnull: true})
   @HostBinding("attr.sd-checked")
-  public value = false;
+  value = false;
 
   @Input()
-  @SdInputValidate({type: Boolean})
+  @SdInputValidate({type: Boolean, notnull: true})
   @HostBinding("attr.sd-disabled")
-  public disabled = false;
+  disabled = false;
 
   @Output()
-  public readonly valueChange = new EventEmitter<boolean>();
+  valueChange = new EventEmitter<boolean>();
 
   @Input()
-  @SdInputValidate({type: Boolean})
+  @SdInputValidate({type: Boolean, notnull: true})
   @HostBinding("attr.sd-inline")
-  public inline = false;
+  inline = false;
 
   @Input()
-  @SdInputValidate({type: Boolean})
+  @SdInputValidate({type: Boolean, notnull: true})
   @HostBinding("attr.sd-inset")
-  public inset = false;
+  inset = false;
 
   @Input()
-  @SdInputValidate({type: Boolean})
+  @SdInputValidate({type: Boolean, notnull: true})
   @HostBinding("attr.sd-radio")
-  public radio = false;
+  radio = false;
 
   @Input()
   @SdInputValidate({type: String, includes: ["sm", "lg"]})
   @HostBinding("attr.sd-size")
-  public size?: "sm" | "lg";
+  size?: "sm" | "lg";
 
   @Input()
   @SdInputValidate({type: String, includes: sdThemes})
   @HostBinding("attr.sd-theme")
-  public theme?: TSdTheme;
+  theme?: TSdTheme;
 
   @Input()
-  public icon: IconProp = faCheck;
+  icon: IconProp = faCheck;
 
   @Input()
   @SdInputValidate(String)
-  public labelStyle?: string;
+  labelStyle?: string;
 
-  public el: HTMLElement;
-
-  public constructor(private readonly _elRef: ElementRef) {
-    this.el = this._elRef.nativeElement as HTMLElement;
-  }
-
-  public onClick(): void {
+  onClick(): void {
     if (this.disabled) return;
 
     if (this.valueChange.observed) {
@@ -225,7 +219,7 @@ export class SdCheckboxControl {
     }
   }
 
-  public onKeydown(event: KeyboardEvent): void {
+  onKeydown(event: KeyboardEvent): void {
     if (this.disabled) return;
 
     if (event.key === " ") {

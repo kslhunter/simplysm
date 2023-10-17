@@ -24,3 +24,38 @@
   text-decoration-style: dotted;
   cursor: help;
 }
+
+@mixin mobile-active-effect($use) {
+  @if $use == false {
+    &:after {
+      display: none;
+    }
+  } @else {
+    position: relative;
+    overflow: hidden;
+    vertical-align: top;
+
+    &:after {
+      content: "";
+      display: block;
+      position: absolute;
+      width: 120%;
+      height: 300%;
+      border-radius: 100%;
+      left: -10%;
+      top: -100%;
+      background: transparent;
+      transition: transform var(--mobile-animation-duration);
+      transform: scaleX(.5);
+
+      pointer-events: none;
+    }
+
+    &:active {
+      &:after {
+        background: var(--trans-brightness-lighter);
+        transform: none;
+      }
+    }
+  }
+}

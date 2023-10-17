@@ -39,9 +39,9 @@ export class SdSidebarMenuControl {
   @Input()
   getMenuIsSelectedFn?: (menu: ISdMenu) => boolean;
 
-  menuTrackBy = (i: number, menu: ISdMenu) => menu.codeChain.join(".");
+  menuTrackBy = (i: number, menu: ISdMenu): string => menu.codeChain.join(".");
 
-  getIsMenuSelected(menu: ISdMenu) {
+  getIsMenuSelected(menu: ISdMenu): boolean {
     const pageCode = this.router.url.split("/").slice(2).map((item) => item.split(";").first()).join(".");
 
     return this.getMenuIsSelectedFn
@@ -49,7 +49,7 @@ export class SdSidebarMenuControl {
       : pageCode === menu.codeChain.join(".");
   }
 
-  async onMenuItemClick(menu: ISdMenu) {
+  async onMenuItemClick(menu: ISdMenu): Promise<void> {
     if (!menu.children) {
       await this.router.navigate(["/home/" + menu.codeChain.join("/")]);
       this.cdr.markForCheck();

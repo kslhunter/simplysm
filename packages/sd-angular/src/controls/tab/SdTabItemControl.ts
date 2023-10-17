@@ -11,18 +11,32 @@ import {SdTabControl} from "./SdTabControl";
       display: inline-block;
       padding: var(--gap-sm) var(--gap-default);
       cursor: pointer;
-      border-top: 2px solid transparent;
-      border-left: 1px solid transparent;
-      border-right: 1px solid transparent;
       margin-bottom: -2px;
 
-      &:hover {
-        background: rgba(0, 0, 0, .05);
+      @media not all and (hover: none) and (pointer: coarse) {
+        border-top: 2px solid transparent;
+        border-left: 1px solid transparent;
+        border-right: 1px solid transparent;
+
+        &:hover {
+          background: rgba(0, 0, 0, .05);
+        }
+
+        &[sd-selected=true] {
+          background: white;
+          border-color: var(--theme-grey-lighter);
+        }
       }
 
-      &[sd-selected=true] {
-        background: white;
-        border-color: var(--theme-grey-lighter);
+      @media all and (hover: none) and (pointer: coarse) {
+        border-bottom: 2px solid transparent !important;
+        font-weight: bold;
+        color: var(--theme-grey-default);
+
+        &[sd-selected=true] {
+          border-bottom: 3px solid var(--theme-primary-default) !important;
+          color: var(--theme-primary-default);
+        }
       }
     }
   `]

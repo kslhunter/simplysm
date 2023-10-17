@@ -10,7 +10,7 @@ export class SdTsBundler {
     dev: boolean;
     pkgPath: string;
     entryPoints: string[];
-    external?: string[];
+    // external?: string[];
   }) {
   }
 
@@ -64,14 +64,15 @@ export class SdTsBundler {
       },
       platform: "node",
       logLevel: "silent",
-      external: this._opt.external,
+      packages: "external",
+      // external: this._opt.external,
       banner: {
         js: `
 import __path__ from 'path';
 import { fileURLToPath as __fileURLToPath__ } from 'url';
-import { createRequire as __createRequire__ } from 'module';
-
-const require = __createRequire__(import.meta.url);
+// import { createRequire as __createRequire__ } from 'module';
+//
+// const require = __createRequire__(import.meta.url);
 const __filename = __fileURLToPath__(import.meta.url);
 const __dirname = __path__.dirname(__filename);`.trim()
       },

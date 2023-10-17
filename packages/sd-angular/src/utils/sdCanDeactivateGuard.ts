@@ -5,5 +5,5 @@ export const sdCanDeactivateGuard: CanDeactivateFn<SdCanDeactivate> = (component
 };
 
 export interface SdCanDeactivate {
-  sdCanDeactivate?(): boolean;
+  sdCanDeactivate: (() => boolean) | undefined;
 }

@@ -1,11 +1,10 @@
-import {ApplicationRef, createComponent, inject, Injectable, NgZone, Type} from "@angular/core";
+import {ApplicationRef, createComponent, inject, Injectable, Type} from "@angular/core";
 import {Wait} from "@simplysm/sd-core-common";
 import {SdModalControl} from "../controls/SdModalControl";
 
 @Injectable({providedIn: "root"})
 export class SdModalProvider {
   private readonly _appRef = inject(ApplicationRef);
-  private readonly _ngZone = inject(NgZone);
 
   public modalCount = 0;
 

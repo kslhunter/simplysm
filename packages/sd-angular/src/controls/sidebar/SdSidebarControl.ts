@@ -27,7 +27,7 @@ import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
       }
     }
 
-    @media screen and (max-width: 520px) {
+    @media all and (max-width: 520px) {
       :host {
         transform: translateX(-100%);
         transition: transform .3s ease-in;

@@ -57,21 +57,21 @@ export class SdExcelUtil {
     }
   }
 
-  public static convertDateToNumber(date: Date): number {
-    const currDate = new Date(date);
-    currDate.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+  public static convertTimeTickToNumber(tick: number): number {
+    const currDate = new Date(tick);
+    currDate.setMinutes(currDate.getMinutes() - currDate.getTimezoneOffset());
     const excelBaseDateNumberUtc = Date.UTC(1899, 11, 31);
     const inputExcelDateNumberUtc = currDate.getTime() - excelBaseDateNumberUtc;
     return (inputExcelDateNumberUtc / (24 * 60 * 60 * 1000)) + 1;
   }
 
-  public static convertNumberToDate(num: number): Date {
+  public static convertNumberToTimeTick(num: number): number {
     const excelBaseDateNumberUtc = Date.UTC(1899, 11, 31);
     const excelDateNumberUtc = (num - 1) * 24 * 60 * 60 * 1000;
     const dateNumberUtc = excelBaseDateNumberUtc + excelDateNumberUtc;
     const date = new Date(dateNumberUtc);
     date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
-    return date;
+    return date.getTime();
   }
 
   public static convertNumFmtCodeToName(numFmtCode: string): TSdExcelNumberFormat {

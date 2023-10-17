@@ -9,7 +9,8 @@ import useBgJpg from "../../../res/user_bg.jpg";
   template: `
     <div class="_content"
          *ngIf="backgroundImage"
-         [style]="'background-image: ' + 'url(' + backgroundImage + '); ' + contentStyle">
+         [style]="'background-image: ' + 'url(' + backgroundImage + '); ' + contentStyle"
+         [class]="contentClass">
       <div class="p-lg">
         <ng-content></ng-content>
       </div>
@@ -29,6 +30,8 @@ import useBgJpg from "../../../res/user_bg.jpg";
       </sd-list>
     </sd-collapse>`,
   styles: [/* language=SCSS */ `
+    @import "../../scss/mixins";
+    
     :host {
       > ._content {
         background-size: cover;
@@ -42,6 +45,10 @@ import useBgJpg from "../../../res/user_bg.jpg";
           background: var(--trans-default);
           cursor: pointer;
           user-select: none;
+
+          @media all and (hover: none) and (pointer: coarse) {
+            @include mobile-active-effect(true);
+          }
 
           &:hover {
             background: var(--trans-dark);
@@ -88,7 +95,11 @@ export class SdSidebarUserControl {
   @SdInputValidate(String)
   public contentStyle?: string;
 
-  public menuTrackBy = (i: number, item: ISidebarUserMenu["menus"][0]) => item.title;
+  @Input()
+  @SdInputValidate(String)
+  public contentClass?: string;
+
+  public menuTrackBy = (i: number, item: ISidebarUserMenu["menus"][0]): string => item.title;
 
   public onMenuOpenButtonClick(): void {
     this.menuOpen = !this.menuOpen;

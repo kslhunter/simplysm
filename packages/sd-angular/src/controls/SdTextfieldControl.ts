@@ -73,13 +73,23 @@ import {CommonModule} from "@angular/common";
       > ._contents {
         @include form-control-base();
 
-        border: 1px solid var(--trans-light);
-        border-radius: var(--border-radius-default);
-        background: var(--theme-secondary-lightest);
         height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
         min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
         overflow: auto;
         width: 100%;
+
+        @media not all and (hover: none) and (pointer: coarse) {
+          border: 1px solid var(--trans-light);
+          border-radius: var(--border-radius-default);
+          background: var(--theme-secondary-lightest);
+        }
+        
+        @media all and (hover: none) and (pointer: coarse) {
+          border: none;
+          border-bottom: 2px solid var(--border-color-default);
+          background: transparent;
+          transition: border-color 0.3s;
+        }
 
         &::-webkit-scrollbar {
           display: none;
@@ -248,21 +258,29 @@ import {CommonModule} from "@angular/common";
         display: none;
       }
 
-      > input:invalid + ._invalid-indicator,
-      &[sd-invalid=true] > ._invalid-indicator {
-        display: block;
-        position: absolute;
-        background: var(--theme-danger-default);
+      @media not all and (hover: none) and (pointer: coarse) {
+        > input:invalid + ._invalid-indicator,
+        &[sd-invalid=true] > ._invalid-indicator {
+          display: block;
+          position: absolute;
+          background: var(--theme-danger-default);
 
-        top: var(--gap-xs);
-        left: var(--gap-xs);
-        border-radius: 100%;
-        width: var(--gap-sm);
-        height: var(--gap-sm);
+          top: var(--gap-xs);
+          left: var(--gap-xs);
+          border-radius: 100%;
+          width: var(--gap-sm);
+          height: var(--gap-sm);
+        }
+      }
+
+      @media all and (hover: none) and (pointer: coarse) {
+        > input:invalid,
+        &[sd-invalid=true] > input {
+          border-bottom-color: var(--theme-color-danger-default);
+        }
       }
 
       &[sd-design=bottom-line] {
-
         > input,
         > ._contents {
           border: none;

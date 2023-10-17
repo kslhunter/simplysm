@@ -1,18 +1,19 @@
 import {ChangeDetectionStrategy, Component} from "@angular/core";
 import {SdModalBase} from "../../providers/SdModalProvider";
-import {ISdSheetConfig} from "./SdSheetControl";
-import {SdSheetColumnControl} from "./SdSheetColumnControl";
+import {SdSheetColumnDirective} from "./SdSheetColumnDirective";
 import {faAngleUp} from "@fortawesome/pro-duotone-svg-icons/faAngleUp";
 import {faAngleDown} from "@fortawesome/pro-duotone-svg-icons/faAngleDown";
 import {faXmark} from "@fortawesome/pro-solid-svg-icons/faXmark";
+import {ISdSheetConfig} from "./SdSheetControl";
 
 @Component({
   selector: "sd-sheet-config-modal",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <sd-dock-container>
+    <sd-dock-container *ngIf="param">
       <sd-pane class="p-default">
-        <sd-sheet [items]="items"
+        <sd-sheet [key]="param.sheetKey + '-config'"
+                  [items]="items"
                   [trackByFn]="trackByKeyFn">
           <sd-sheet-column header="Fix">
             <ng-template #cell let-item="item">
@@ -77,7 +78,7 @@ export class SdSheetConfigModal<T> extends SdModalBase<ISdSheetConfigModalInput<
     fasXmark: faXmark
   };
 
-  public param!: ISdSheetConfigModalInput<T>;
+  public param?: ISdSheetConfigModalInput<T>;
 
   public items: IItemVM[] = [];
 
@@ -151,7 +152,8 @@ export class SdSheetConfigModal<T> extends SdModalBase<ISdSheetConfigModalInput<
 }
 
 export interface ISdSheetConfigModalInput<T> {
-  controls: SdSheetColumnControl<T>[];
+  sheetKey: string;
+  controls: SdSheetColumnDirective<T>[];
   config: ISdSheetConfig | undefined;
 }
 

@@ -392,6 +392,14 @@ form {
 
 //-- ETC
 
+.sh-topbar {
+  height: var(--topbar-height) !important;
+}
+
+.sw-sidebar {
+  width: var(--sidebar-width) !important;
+}
+
 .form-control {
   @include form-control-base();
 }
@@ -400,10 +408,9 @@ form {
   @include help();
 }
 
-.sh-topbar {
-  height: var(--topbar-height) !important;
-}
-
-.sw-sidebar {
-  width: var(--sidebar-width) !important;
+.page-header {
+  margin-top: var(--gap-default);
+  margin-bottom: var(--gap-default);
+  padding-bottom: var(--gap-xxs);
+  border-bottom: 1px solid var(--border-color-default);
 }

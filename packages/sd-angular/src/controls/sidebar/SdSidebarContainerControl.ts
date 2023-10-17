@@ -25,7 +25,7 @@ import {NavigationStart, Router} from "@angular/router";
       }
     }
 
-    @media screen and (max-width: 520px) {
+    @media all and (max-width: 520px) {
       :host {
         padding-left: 0;
 

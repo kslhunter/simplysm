@@ -10,6 +10,7 @@ import {CommonModule} from "@angular/common";
   imports: [CommonModule],
   template: `
     <div class="_screen">
+      <div class="_bar"></div>
       <div class="_rect">
         <div class="_indicator">
           <div class="_cube1"></div>
@@ -44,12 +45,19 @@ import {CommonModule} from "@angular/common";
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, .2);
         z-index: var(--z-index-busy);
+
+        background: rgba(0, 0, 0, .2);
         visibility: hidden;
         pointer-events: none;
         opacity: 0;
         transition: opacity 1s linear;
+
+        @media all and (hover: none) and (pointer: coarse) {
+          background: rgba(255, 255, 255, .3);
+          backdrop-filter: none;
+          transition: opacity .3s, backdrop-filter 5s;
+        }
 
         > ._progress {
           display: block;
@@ -82,6 +90,10 @@ import {CommonModule} from "@angular/common";
           visibility: visible;
           pointer-events: auto;
           opacity: 1;
+
+          @media all and (hover: none) and (pointer: coarse) {
+            backdrop-filter: blur(10px);
+          }
         }
       }
 
@@ -89,6 +101,10 @@ import {CommonModule} from "@angular/common";
         > ._screen {
           background: transparent;
           transition: none;
+
+          @media all and (hover: none) and (pointer: coarse) {
+            backdrop-filter: none;
+          }
         }
       }
 
@@ -185,6 +201,31 @@ import {CommonModule} from "@angular/common";
 
       &[sd-type=cube] {
         > ._screen > ._rect {
+          > ._bar {
+            &:before,
+            &:after {
+              position: absolute;
+              top: 0;
+              left: 0;
+              display: inline-block;
+              content: "";
+              height: 2px;
+              width: 100%;
+
+              transform-origin: left;
+            }
+
+            &:before {
+              background-color: var(--theme-primary-default);
+              animation: sd-busy-bar-indicator-before 2s infinite ease-in;
+            }
+
+            &:after {
+              background-color: white;
+              animation: sd-busy-bar-indicator-after 2s infinite ease-out;
+            }
+          }
+
           > ._indicator {
             position: absolute;
             top: calc(50% - 20px);

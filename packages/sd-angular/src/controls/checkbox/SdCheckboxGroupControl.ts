@@ -6,13 +6,13 @@ import {
   DoCheck,
   EventEmitter,
   HostBinding,
+  inject,
   Input,
-  IterableDiffer,
-  IterableDiffers,
   Output,
   QueryList
 } from "@angular/core";
 import {SdInputValidate} from "../../utils/SdInputValidate";
+import {SdDoCheckHelper} from "../../utils/SdDoCheckHelper";
 
 @Component({
   selector: "sd-checkbox-group",
@@ -21,60 +21,61 @@ import {SdInputValidate} from "../../utils/SdInputValidate";
     <ng-content></ng-content>`
 })
 export class SdCheckboxGroupControl implements DoCheck {
+  private _cdr = inject(ChangeDetectorRef);
+
   @Input()
-  @SdInputValidate(Array)
-  public value?: any[];
+  @SdInputValidate({type: Array, notnull: true})
+  value: any[] = [];
 
   @Output()
-  public readonly valueChange = new EventEmitter<any[]>();
+  valueChange = new EventEmitter<any[]>();
 
   @Input()
-  @SdInputValidate(Boolean)
+  @SdInputValidate({type: Boolean, notnull: true})
   @HostBinding("attr.sd-disabled")
-  public disabled?: boolean;
+  disabled = false;
 
   @Input()
   @SdInputValidate(String)
-  public keyProp?: string;
+  keyProp?: string;
 
   @ContentChildren(SdCheckboxGroupControl, {descendants: true})
-  public itemControls?: QueryList<SdCheckboxGroupControl>;
+  itemControls?: QueryList<SdCheckboxGroupControl>;
 
-  private readonly _iterableDiffer: IterableDiffer<any>;
+  private _prevData: Record<string, any> = {};
 
-  public constructor(private readonly _iterableDiffers: IterableDiffers,
-                     private readonly _cdr: ChangeDetectorRef) {
-    this._iterableDiffer = this._iterableDiffers.find([]).create((index, item) => item);
-  }
+  ngDoCheck(): void {
+    const $ = new SdDoCheckHelper(this._prevData);
 
-  public ngDoCheck(): void {
-    if (this.value && this._iterableDiffer.diff(this.value)) {
+    $.run({value: [this.value, "one"]}, () => {
       this._cdr.markForCheck();
-    }
+    });
+
+    Object.assign(this._prevData, $.changeData);
   }
 
-  public getIsItemSelected(value: any): boolean {
-    const thisKeyValue = (this.keyProp !== undefined && this.value) ? this.value.map((item) => item[this.keyProp!]) : this.value;
-    const itemKeyValue = (this.keyProp !== undefined && value !== undefined) ? value[this.keyProp] : value;
-    return thisKeyValue?.includes(itemKeyValue) ?? false;
+  getIsItemSelected(value: any): boolean {
+    const thisKeys = (this.keyProp !== undefined) ? this.value?.map((item) => item[this.keyProp!]) : this.value;
+    const itemKey = (this.keyProp !== undefined) ? value?.[this.keyProp] : value;
+    return thisKeys?.includes(itemKey) ?? false;
   }
 
-  public toggleValueItem(item: any): void {
-    const newValue = this.value ? [...this.value] : [];
+  toggleValueItem(item: any): void {
+    const newValues = [...this.value];
 
     const isSelected = this.getIsItemSelected(item);
     if (isSelected) {
-      newValue.remove(item);
+      newValues.remove(item);
     }
     else {
-      newValue.push(item);
+      newValues.push(item);
     }
 
     if (this.valueChange.observed) {
-      this.valueChange.emit(newValue);
+      this.valueChange.emit(newValues);
     }
     else {
-      this.value = newValue;
+      this.value = newValues;
     }
   }
 }

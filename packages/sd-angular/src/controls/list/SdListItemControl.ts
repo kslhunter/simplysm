@@ -40,14 +40,19 @@ import {faChevronDown} from "@fortawesome/pro-light-svg-icons/faChevronDown";
       <ng-content select="sd-list"></ng-content>
     </sd-collapse>`,
   styles: [/* language=SCSS */ `
+    @import "../../scss/mixins";
+    
     :host {
       > ._content {
         padding: var(--gap-sm) var(--gap-default);
         cursor: pointer;
 
-        > sd-flex > ._selected-icon {
+        @media all and (hover: none) and (pointer: coarse) {
+          @include mobile-active-effect(true);
+        }
+
+        > .flex-row > ._selected-icon {
           color: var(--text-trans-lightest);
-          //color: transparent;
         }
       }
 
@@ -74,6 +79,10 @@ import {faChevronDown} from "@fortawesome/pro-light-svg-icons/faChevronDown";
         }
 
         &[sd-has-children=true] {
+          @media all and (hover: none) and (pointer: coarse) {
+            @include mobile-active-effect(false);
+          }
+          
           > ._content {
             display: block;
             background: transparent;
@@ -89,13 +98,11 @@ import {faChevronDown} from "@fortawesome/pro-light-svg-icons/faChevronDown";
         > ._content {
           color: var(--theme-primary-default);
           font-weight: bold;
-          //background: var(--theme-primary-lightest);
 
           &:hover,
           &:active {
             color: var(--theme-primary-default);
             font-weight: bold;
-            //background: var(--theme-primary-lightest);
           }
         }
       }
@@ -105,7 +112,7 @@ import {faChevronDown} from "@fortawesome/pro-light-svg-icons/faChevronDown";
           background: transparent;
           color: var(--text-trans-default);
 
-          > sd-flex > ._selected-icon {
+          > .flex-row > ._selected-icon {
             color: var(--theme-primary-default);
           }
 

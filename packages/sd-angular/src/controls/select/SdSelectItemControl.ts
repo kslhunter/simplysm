@@ -24,7 +24,7 @@ import {SdInputValidate} from "../../utils/SdInputValidate";
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ng-container *ngIf="selectMode === 'multi'">
-      <sd-checkbox [value]="isSelected" inline="text" inset></sd-checkbox>
+      <sd-checkbox [value]="isSelected" inline inset></sd-checkbox>
     </ng-container>
 
     <div class="_content" style="display: inline-block;">
@@ -36,12 +36,18 @@ import {SdInputValidate} from "../../utils/SdInputValidate";
       </ng-container>
     </div>`,
   styles: [/* language=SCSS */ `
+    @import "../../scss/mixins";
+    
     :host {
       display: block;
       padding: var(--gap-sm) var(--gap-default);
       cursor: pointer;
       transition: background .1s ease-in;
       background: white;
+
+      @media all and (hover: none) and (pointer: coarse) {
+        @include mobile-active-effect(true);
+      }
 
       &:hover {
         transition: background .1s ease-out;
@@ -63,6 +69,10 @@ import {SdInputValidate} from "../../utils/SdInputValidate";
       &[sd-disabled=true] {
         background: var(--theme-grey-default);
         opacity: .3;
+
+        @media all and (hover: none) and (pointer: coarse) {
+          @include mobile-active-effect(false);
+        }
       }
     }
   `]

@@ -89,17 +89,20 @@ module.exports = {
         "@typescript-eslint/prefer-return-this-type": ["error"],
         // "@typescript-eslint/prefer-readonly": ["error"],
         "@typescript-eslint/typedef": ["error"],
-        /*"@typescript-eslint/explicit-function-return-type": ["error", {
-          allowExpressions: true,
-          allowTypedFunctionExpressions: true,
-          allowHigherOrderFunctions: true,
-          allowDirectConstAssertionInArrowFunctions: true,
-          allowConciseArrowFunctionExpressionsStartingWithVoid: true,
-          allowFunctionsWithoutTypeParameters: true
-        }],*/
-        /*"@typescript-eslint/explicit-module-boundary-types": ["error", {
-          allowArgumentsExplicitlyTypedAsAny: true,
-        }],*/
+        // "@typescript-eslint/explicit-function-return-type": ["error", {
+        //   allowExpressions: true,
+        //   allowTypedFunctionExpressions: true,
+        //   allowHigherOrderFunctions: true,
+        //   allowDirectConstAssertionInArrowFunctions: true,
+        //   allowConciseArrowFunctionExpressionsStartingWithVoid: true,
+        //   allowFunctionsWithoutTypeParameters: true
+        // }],
+        // "@typescript-eslint/explicit-module-boundary-types": ["error", {
+        //   allowArgumentsExplicitlyTypedAsAny: true,
+        //   allowTypedFunctionExpressions: true,
+        //   allowHigherOrderFunctions: true,
+        //   allowDirectConstAssertionInArrowFunctions: true
+        // }],
         "@typescript-eslint/no-unused-expressions": ["error"],
         "@typescript-eslint/no-unused-vars": ["error", {args: "none"}],
         "@typescript-eslint/strict-boolean-expressions": ["error", {
@@ -124,7 +127,8 @@ module.exports = {
         "@simplysm"
       ],
       rules: {
-        "@simplysm/ng-template-no-todo-comments": "warn"
+        "@simplysm/ng-template-no-todo-comments": "warn",
+        "@angular-eslint/template/use-track-by-function": "error"
       }
     }
   ]

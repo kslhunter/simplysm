@@ -17,7 +17,7 @@ import {ChangeDetectionStrategy, Component} from "@angular/core";
       padding: var(--gap-xxl);
       z-index: var(--z-index-toast);
 
-      @media screen and (max-width: 520px) {
+      @media all and (max-width: 520px) {
         flex-direction: column-reverse;
       }
     }

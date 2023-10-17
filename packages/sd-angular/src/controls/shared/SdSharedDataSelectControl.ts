@@ -13,7 +13,7 @@ import {
   Type
 } from "@angular/core";
 import {ObjectUtil} from "@simplysm/sd-core-common";
-import {ISharedDataBase, SdSharedDataProvider} from "../../providers/SdSharedDataProvider";
+import {ISharedDataBase} from "../../providers/SdSharedDataProvider";
 import {SdInputValidate} from "../../utils/SdInputValidate";
 import {SdModalBase, SdModalProvider} from "../../providers/SdModalProvider";
 import {SdSharedDataItemTemplateContext, SdSharedDataItemTemplateDirective} from "./SdSharedDataItemTemplateDirective";
@@ -59,7 +59,7 @@ import {SdSharedDataItemTemplateContext, SdSharedDataItemTemplateDirective} from
                         [hidden]="!getItemVisible(index, item, depth)">
           <span [style.text-decoration]="getIsHiddenFn(index, item) ? 'line-through' : undefined">
             <ng-template [ngTemplateOutlet]="itemTemplateRef"
-                         [ngTemplateOutletContext]="{item: item, index: index, depth: depth}"></ng-template>
+                         [ngTemplateOutletContext]="{$implicit: item, item: item, index: index, depth: depth}"></ng-template>
           </span>
         </sd-select-item>
       </ng-template>
@@ -70,7 +70,7 @@ export class SdSharedDataSelectControl<T extends ISharedDataBase<string | number
   public items: T[] = [];
 
   @Input()
-  public value?: this["selectMode"] extends "multi" ? (T["__valueKey"][]) : T["__valueKey"];
+  public value?: (T["__valueKey"][]) | T["__valueKey"];
 
   @Output()
   public readonly valueChange = new EventEmitter<(this["selectMode"] extends "multi" ? (T["__valueKey"][]) : T["__valueKey"]) | undefined>();
@@ -230,8 +230,7 @@ export class SdSharedDataSelectControl<T extends ISharedDataBase<string | number
     return result;
   };
 
-  public constructor(private readonly _sharedData: SdSharedDataProvider,
-                     private readonly _cdr: ChangeDetectorRef,
+  public constructor(private readonly _cdr: ChangeDetectorRef,
                      private readonly _iterableDiffers: IterableDiffers,
                      private readonly _modal: SdModalProvider) {
     this._itemsIterableDiffer = this._iterableDiffers.find(this.items).create((i, item) => this.trackByFn(i, item));

@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, ContentChild, Input, TemplateRef} from "@angular/core";
+import {ContentChild, Directive, Input, TemplateRef} from "@angular/core";
 import {SdInputValidate} from "../../utils/SdInputValidate";
 import {Uuid} from "@simplysm/sd-core-common";
 import {
@@ -6,12 +6,15 @@ import {
   SdSheetColumnCellTemplateDirective
 } from "./SdSheetColumnCellTemplateDirective";
 
-@Component({
+/*@Component({
   selector: "sd-sheet-column",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: ""
+})*/
+@Directive({
+  selector: "sd-sheet-column"
 })
-export class SdSheetColumnControl<T> {
+export class SdSheetColumnDirective<T> {
   public guid = Uuid.new().toString();
 
   @Input()

@@ -89,7 +89,6 @@ export class SdNgBundler {
       };
     }
 
-    // TODO: sourceFileCache의 ts.SourceFile 목록을 활용하면, export 명칭까지 맵핑할 수 있으므로 bundlingResult.metafile.inputs보다 효율적이게 만들 수 있다.
     const depsMap = new Map<string, Set<string>>();
     for (const entry of Object.entries(bundlingResult.metafile.inputs)) {
       for (const imp of entry[1].imports) {
@@ -116,6 +115,7 @@ export class SdNgBundler {
     if (this._sourceFileCache.modifiedFiles.size > 0) {
       const affectedFilePathSet = new Set<string>();
       for (const modFile of this._sourceFileCache.modifiedFiles) {
+        affectedFilePathSet.add(path.resolve(modFile));
         affectedFilePathSet.adds(...searchAffectedFiles(path.resolve(modFile)));
       }
       affectedSourceFilePaths = Array.from(affectedFilePathSet.values()).filter((item) => PathUtil.isChildPath(item, this._opt.pkgPath));
@@ -293,6 +293,7 @@ export class SdNgBundler {
         process: 'process',
         Buffer: 'Buffer',
         'process.env.SD_VERSION': JSON.stringify(pkgNpmConf.version),
+        "process.env.NODE_ENV": JSON.stringify(this._options.watch ? "development" : "production")
       },
       platform: 'browser',
       mainFields: ['es2020', 'es2015', 'browser', 'module', 'main'],

@@ -10,6 +10,8 @@ import {CommonModule} from "@angular/common";
   template: `
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
+    @import "../scss/mixins";
+    
     :host {
       display: inline-block;
       cursor: pointer;
@@ -25,15 +27,9 @@ import {CommonModule} from "@angular/common";
         color: var(--theme-primary-darker);
       }
 
-      &[disabled=true] {
-        color: var(--theme-grey-light);
-        cursor: default;
-        pointer-events: none;
-      }
-    }
-
-    @media (hover: none) and (pointer: coarse) {
-      :host {
+      @media all and (hover: none) and (pointer: coarse) {
+        @include mobile-active-effect(true);
+        
         &:hover {
           color: var(--theme-primary-default);
           text-decoration: none;
@@ -41,6 +37,16 @@ import {CommonModule} from "@angular/common";
 
         &:active {
           color: var(--theme-primary-default);
+        }
+      }
+
+      &[disabled=true] {
+        color: var(--theme-grey-light);
+        cursor: default;
+        pointer-events: none;
+
+        @media all and (hover: none) and (pointer: coarse) {
+          @include mobile-active-effect(false);
         }
       }
     }

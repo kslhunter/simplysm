@@ -4,7 +4,7 @@ import {INpmConfig, ISdCliBuilderResult, ISdCliConfig, ISdCliServerPackageConfig
 import path from "path";
 import {SdTsCompiler} from "../build-tools/SdTsCompiler";
 import {SdLinter} from "../build-tools/SdLinter";
-import {FunctionQueue, ObjectUtil, StringUtil} from "@simplysm/sd-core-common";
+import {FunctionQueue, ObjectUtil} from "@simplysm/sd-core-common";
 import {SdTsBundler} from "../build-tools/SdTsBundler";
 
 export class SdCliServerBuilder extends EventEmitter {
@@ -26,7 +26,7 @@ export class SdCliServerBuilder extends EventEmitter {
   }
 
   public async watchAsync(): Promise<void> {
-    const extModules = await this._getExternalModulesAsync();
+    // const extModules = await this._getExternalModulesAsync();
 
     this._debug("dist 초기화...");
     await FsUtil.removeAsync(path.resolve(this._pkgPath, "dist"));
@@ -42,7 +42,7 @@ export class SdCliServerBuilder extends EventEmitter {
       entryPoints: [
         path.resolve(this._pkgPath, "src/main.ts")
       ],
-      external: extModules.map((item) => item.name)
+      // external: extModules.map((item) => item.name)
     });
 
     const checker = new SdTsCompiler({
@@ -73,7 +73,7 @@ export class SdCliServerBuilder extends EventEmitter {
           const checkResult = await checker.buildAsync();
 
           this._debug(`LINT...`);
-          const lintResults = await SdLinter.lintAsync(checkResult.affectedFilePaths, checker.program);
+          const lintResults = !this._withLint ? [] : await SdLinter.lintAsync(checkResult.affectedFilePaths, checker.program);
 
           this._debug(`빌드 완료`);
           this.emit("complete", {
@@ -86,7 +86,7 @@ export class SdCliServerBuilder extends EventEmitter {
 
   public async buildAsync(): Promise<ISdCliBuilderResult> {
     const npmConfig = (await FsUtil.readJsonAsync(path.resolve(this._pkgPath, "package.json"))) as INpmConfig;
-    const extModules = await this._getExternalModulesAsync();
+    // const extModules = await this._getExternalModulesAsync();
 
     this._debug("dist 초기화...");
     await FsUtil.removeAsync(path.resolve(this._pkgPath, "dist"));
@@ -97,13 +97,13 @@ export class SdCliServerBuilder extends EventEmitter {
 
     this._debug("GEN package.json...");
     {
-      const deps = extModules.filter((item) => item.exists).map((item) => item.name);
+      // const deps = extModules.filter((item) => item.exists).map((item) => item.name);
 
       const distNpmConfig = ObjectUtil.clone(npmConfig);
-      distNpmConfig.dependencies = {};
-      for (const dep of deps) {
-        distNpmConfig.dependencies[dep] = "*";
-      }
+      // distNpmConfig.dependencies = {};
+      // for (const dep of deps) {
+      //   distNpmConfig.dependencies[dep] = "*";
+      // }
       delete distNpmConfig.optionalDependencies;
       delete distNpmConfig.devDependencies;
       delete distNpmConfig.peerDependencies;
@@ -184,7 +184,7 @@ export class SdCliServerBuilder extends EventEmitter {
       entryPoints: [
         path.resolve(this._pkgPath, "src/main.ts")
       ],
-      external: extModules.map((item) => item.name)
+      // external: extModules.map((item) => item.name)
     });
 
     const checker = new SdTsCompiler({
@@ -201,7 +201,7 @@ export class SdCliServerBuilder extends EventEmitter {
     const checkResult = await checker.buildAsync();
 
     this._debug(`LINT...`);
-    const lintResults = await SdLinter.lintAsync(checkResult.affectedFilePaths, checker.program);
+    const lintResults = !this._withLint ? [] : await SdLinter.lintAsync(checkResult.affectedFilePaths, checker.program);
 
     this._debug(`빌드 완료`);
     return {
@@ -210,7 +210,7 @@ export class SdCliServerBuilder extends EventEmitter {
     };
   }
 
-  private async _getExternalModulesAsync(): Promise<{
+  /*private async _getExternalModulesAsync(): Promise<{
     name: string;
     exists: boolean
   }[]> {
@@ -245,7 +245,7 @@ export class SdCliServerBuilder extends EventEmitter {
           continue;
         }
 
-        if (FsUtil.glob(path.resolve(modulePath, "**/binding.gyp")).length > 0) {
+        if (FsUtil.glob(path.resolve(modulePath, "**!/binding.gyp")).length > 0) {
           results.push({
             name: moduleName,
             exists: true
@@ -275,7 +275,7 @@ export class SdCliServerBuilder extends EventEmitter {
           continue;
         }
 
-        if (FsUtil.glob(path.resolve(optModulePath, "**/binding.gyp")).length > 0) {
+        if (FsUtil.glob(path.resolve(optModulePath, "**!/binding.gyp")).length > 0) {
           results.push({
             name: optModuleName,
             exists: true
@@ -296,7 +296,7 @@ export class SdCliServerBuilder extends EventEmitter {
     await fn(this._pkgPath);
 
     return results;
-  }
+  }*/
 
   private _debug(msg: string): void {
     this._logger.debug(`[${path.basename(this._pkgPath)}] ${msg}`);

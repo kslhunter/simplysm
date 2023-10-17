@@ -11,7 +11,7 @@ export class ObjectUtil {
   public static clone<T>(source: T, options?: {
     excludes?: string[];
     useRefTypes?: any[];
-    onlyOneDeps?: boolean;
+    onlyOneDepth?: boolean;
   }): T {
     return ObjectUtil._clone(source, options);
   }
@@ -19,7 +19,7 @@ export class ObjectUtil {
   private static _clone(source: any, options?: {
     excludes?: any[];
     useRefTypes?: any[];
-    onlyOneDeps?: boolean;
+    onlyOneDepth?: boolean;
   }, prevClones?: {
     source: any;
     clone: any
@@ -28,7 +28,7 @@ export class ObjectUtil {
       return source;
     }
     if (source instanceof Array) {
-      if (options?.onlyOneDeps) {
+      if (options?.onlyOneDepth) {
         return [...source];
       }
       else {
@@ -57,7 +57,7 @@ export class ObjectUtil {
       return Buffer.from(source.buffer);
     }
     if (typeof source === "object") {
-      if (options?.onlyOneDeps) {
+      if (options?.onlyOneDepth) {
         return {...source};
       }
       else {

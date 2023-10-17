@@ -117,6 +117,10 @@ import {faCaretDown} from "@fortawesome/pro-duotone-svg-icons/faCaretDown";
 
         border-radius: var(--border-radius-default);
 
+        @media all and (hover: none) and (pointer: coarse) {
+          @include mobile-active-effect(true);
+        }
+
         > div:first-child {
           overflow: visible;
           white-space: nowrap;
@@ -148,6 +152,10 @@ import {faCaretDown} from "@fortawesome/pro-duotone-svg-icons/faCaretDown";
         background: var(--theme-grey-lightest);
         color: var(--text-trans-light);
         cursor: default;
+
+        @media all and (hover: none) and (pointer: coarse) {
+          @include mobile-active-effect(false);
+        }
 
         > ._icon {
           display: none;
