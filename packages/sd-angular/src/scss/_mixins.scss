@@ -25,7 +25,7 @@
   cursor: help;
 }
 
-@mixin mobile-active-effect($use) {
+@mixin active-effect($use) {
   @if $use == false {
     &:after {
       display: none;
@@ -45,7 +45,7 @@
       left: -10%;
       top: -100%;
       background: transparent;
-      transition: transform var(--mobile-animation-duration);
+      transition: transform var(--animation-duration);
       transform: scaleX(.5);
 
       pointer-events: none;

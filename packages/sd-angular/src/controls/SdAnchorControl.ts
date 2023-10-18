@@ -27,8 +27,8 @@ import {CommonModule} from "@angular/common";
         color: var(--theme-primary-darker);
       }
 
-      @media all and (hover: none) and (pointer: coarse) {
-        @include mobile-active-effect(true);
+      @media all and (pointer: coarse) {
+        @include active-effect(true);
         
         &:hover {
           color: var(--theme-primary-default);
@@ -45,8 +45,8 @@ import {CommonModule} from "@angular/common";
         cursor: default;
         pointer-events: none;
 
-        @media all and (hover: none) and (pointer: coarse) {
-          @include mobile-active-effect(false);
+        @media all and (pointer: coarse) {
+          @include active-effect(false);
         }
       }
     }

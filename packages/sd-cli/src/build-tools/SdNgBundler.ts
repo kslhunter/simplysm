@@ -17,7 +17,7 @@ import {
 import nodeStdLibBrowser from "node-stdlib-browser";
 import nodeStdLibBrowserPlugin from "node-stdlib-browser/helpers/esbuild/plugin";
 import {ExecutionResult} from "@angular-devkit/build-angular/src/tools/esbuild/bundler-execution-result";
-import {INpmConfig, ISdCliClientPackageConfig, ISdCliPackageBuildResult} from "../commons";
+import {INpmConfig, ISdCliPackageBuildResult} from "../commons";
 import {generateIndexHtml} from "@angular-devkit/build-angular/src/tools/esbuild/index-html-generator";
 import {copyAssets} from "@angular-devkit/build-angular/src/utils/copy-assets";
 import {extractLicenses} from "@angular-devkit/build-angular/src/tools/esbuild/license-extractor";
@@ -30,19 +30,22 @@ export class SdNgBundler {
 
   private readonly _sourceFileCache = new SourceFileCache();
   private readonly _options: NormalizedApplicationBuildOptions;
+  private readonly _env?: Record<string, any>;
 
   private _contexts: BundlerContext[] | undefined;
 
   private readonly _outputCache = new Map<string, string | number>();
 
   public constructor(opt: {
-    dev: boolean,
-    builderType: keyof ISdCliClientPackageConfig["builder"],
-    pkgPath: string,
-    cordovaPlatforms: string[] | undefined,
-    outputPath: string
+    dev: boolean;
+    outputPath: string;
+    pkgPath: string;
+    builderType: string;
+    cordovaPlatforms: string[] | undefined;
+    env: Record<string, string> | undefined;
   }) {
     this._options = this._getOptions(opt);
+    this._env = opt.env;
   }
 
   public removeCache(filePaths: string[]): void {
@@ -299,7 +302,11 @@ export class SdNgBundler {
         process: 'process',
         Buffer: 'Buffer',
         'process.env.SD_VERSION': JSON.stringify(pkgNpmConf.version),
-        "process.env.NODE_ENV": JSON.stringify(this._options.watch ? "development" : "production")
+        "process.env.NODE_ENV": JSON.stringify(this._options.watch ? "development" : "production"),
+        ...this._env ? Object.keys(this._env).toObject(
+          key => `process.env.${key}`,
+          key => JSON.stringify(this._env![key])
+        ) : {}
       },
       platform: 'browser',
       mainFields: ['es2020', 'es2015', 'browser', 'module', 'main'],
@@ -368,7 +375,7 @@ export class SdNgBundler {
 
   private _getOptions(opt: {
     dev: boolean,
-    builderType: keyof ISdCliClientPackageConfig["builder"],
+    builderType: string,
     pkgPath: string,
     cordovaPlatforms: string[] | undefined,
     outputPath: string,
@@ -382,10 +389,12 @@ export class SdNgBundler {
 
     const pkgName = path.basename(opt.pkgPath);
 
+    const baseHref = opt.builderType === "web" ? `/${pkgName}/` : opt.dev ? `/${pkgName}/${opt.builderType}/` : ``;
+
     return {
       advancedOptimizations: true,
       allowedCommonJsDependencies: [],
-      baseHref: `/${pkgName}/`,
+      baseHref,
       cacheOptions: {
         enabled: true,
         basePath: cacheBasePath,
@@ -430,25 +439,26 @@ export class SdNgBundler {
       projectRoot: opt.pkgPath,
       assets: [
         {input: 'src', glob: 'favicon.ico', output: ''},
+        {input: 'src', glob: 'manifest.webmanifest', output: ''},
         {input: 'src\\assets', glob: '**/*', output: 'assets'},
         ...opt.dev && opt.cordovaPlatforms ? opt.cordovaPlatforms.mapMany((platform) => [
           {
-            input: `.cache\\cordova\\platforms\\${platform}\\platform_www\\plugins`,
+            input: `.cordova\\platforms\\${platform}\\platform_www\\plugins`,
             glob: '**/*',
             output: `cordova-${platform}/plugins`
           },
           {
-            input: `.cache\\cordova\\platforms\\${platform}\\platform_www`,
+            input: `.cordova\\platforms\\${platform}\\platform_www`,
             glob: 'cordova.js',
             output: `cordova-${platform}`
           },
           {
-            input: `.cache\\cordova\\platforms\\${platform}\\platform_www`,
+            input: `.cordova\\platforms\\${platform}\\platform_www`,
             glob: 'cordova_plugins.js',
             output: `cordova-${platform}`
           },
           {
-            input: `.cache\\cordova\\platforms\\${platform}\\www`,
+            input: `.cordova\\platforms\\${platform}\\www`,
             glob: 'config.xml',
             output: `cordova-${platform}`
           },

@@ -78,17 +78,18 @@ import {CommonModule} from "@angular/common";
         overflow: auto;
         width: 100%;
 
-        @media not all and (hover: none) and (pointer: coarse) {
+        @media not all and (pointer: coarse) {
           border: 1px solid var(--trans-light);
           border-radius: var(--border-radius-default);
           background: var(--theme-secondary-lightest);
         }
         
-        @media all and (hover: none) and (pointer: coarse) {
+        @media all and (pointer: coarse) {
           border: none;
           border-bottom: 2px solid var(--border-color-default);
           background: transparent;
           transition: border-color 0.3s;
+          padding: calc(var(--gap-sm) + 1px) 0 calc(var(--gap-sm) - 1px);
         }
 
         &::-webkit-scrollbar {
@@ -258,7 +259,7 @@ import {CommonModule} from "@angular/common";
         display: none;
       }
 
-      @media not all and (hover: none) and (pointer: coarse) {
+      @media not all and (pointer: coarse) {
         > input:invalid + ._invalid-indicator,
         &[sd-invalid=true] > ._invalid-indicator {
           display: block;
@@ -273,10 +274,10 @@ import {CommonModule} from "@angular/common";
         }
       }
 
-      @media all and (hover: none) and (pointer: coarse) {
+      @media all and (pointer: coarse) {
         > input:invalid,
         &[sd-invalid=true] > input {
-          border-bottom-color: var(--theme-color-danger-default);
+          border-bottom-color: var(--theme-danger-default);
         }
       }
 

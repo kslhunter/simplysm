@@ -47,11 +47,12 @@ export class SdCheckboxGroupControl implements DoCheck {
   ngDoCheck(): void {
     const $ = new SdDoCheckHelper(this._prevData);
 
-    $.run({value: [this.value, "one"]}, () => {
-      this._cdr.markForCheck();
-    });
+    $.run({value: [this.value, "one"]}, () => {});
 
-    Object.assign(this._prevData, $.changeData);
+    if (Object.keys($.changeData).length > 0) {
+      Object.assign(this._prevData, $.changeData);
+      this._cdr.markForCheck();
+    }
   }
 
   getIsItemSelected(value: any): boolean {

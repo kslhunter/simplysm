@@ -46,8 +46,8 @@ import useBgJpg from "../../../res/user_bg.jpg";
           cursor: pointer;
           user-select: none;
 
-          @media all and (hover: none) and (pointer: coarse) {
-            @include mobile-active-effect(true);
+          @media all and (pointer: coarse) {
+            @include active-effect(true);
           }
 
           &:hover {

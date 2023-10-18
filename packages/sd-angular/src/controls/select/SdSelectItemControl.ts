@@ -45,8 +45,8 @@ import {SdInputValidate} from "../../utils/SdInputValidate";
       transition: background .1s ease-in;
       background: white;
 
-      @media all and (hover: none) and (pointer: coarse) {
-        @include mobile-active-effect(true);
+      @media all and (pointer: coarse) {
+        @include active-effect(true);
       }
 
       &:hover {
@@ -70,8 +70,8 @@ import {SdInputValidate} from "../../utils/SdInputValidate";
         background: var(--theme-grey-default);
         opacity: .3;
 
-        @media all and (hover: none) and (pointer: coarse) {
-          @include mobile-active-effect(false);
+        @media all and (pointer: coarse) {
+          @include active-effect(false);
         }
       }
     }

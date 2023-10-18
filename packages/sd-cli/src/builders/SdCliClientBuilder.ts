@@ -74,13 +74,13 @@ export class SdCliClientBuilder extends EventEmitter {
     affectedFilePaths: string[];
     buildResults: ISdCliPackageBuildResult[];
   }> {
-    const builderTypes = (Object.keys(this._pkgConf.builder ?? {web: {}}) as (keyof ISdCliClientPackageConfig["builder"])[]);
+    const builderTypes = (Object.keys(this._pkgConf.builder ?? {web: {}}) as ("web" | "electron" | "cordova")[]);
     if (this._pkgConf.builder?.cordova && !this._cordova) {
       this._debug("CORDOVA 준비...");
       this._cordova = new SdCliCordova({
         pkgPath: this._pkgPath,
         config: this._pkgConf.builder.cordova,
-        cordovaPath: path.resolve(this._pkgPath, ".cache/cordova")
+        cordovaPath: path.resolve(this._pkgPath, ".cordova")
       });
       await this._cordova.initializeAsync();
     }
@@ -92,9 +92,13 @@ export class SdCliClientBuilder extends EventEmitter {
       pkgPath: this._pkgPath,
       cordovaPlatforms: builderType === "cordova" ? Object.keys(this._pkgConf.builder!.cordova!.platform ?? {browser: {}}) : undefined,
       outputPath: builderType === "web" ? path.resolve(this._pkgPath, "dist")
-        : builderType === "electron" ? path.resolve(this._pkgPath, ".cache/electron/src")
-          : builderType === "cordova" && !opt.dev ? path.resolve(this._pkgPath, ".cache/cordova/www")
-            : path.resolve(this._pkgPath, "dist", builderType)
+        : builderType === "electron" ? path.resolve(this._pkgPath, ".electron/src")
+          : builderType === "cordova" && !opt.dev ? path.resolve(this._pkgPath, ".cordova/www")
+            : path.resolve(this._pkgPath, "dist", builderType),
+      env: {
+        ...this._pkgConf.env,
+        ...this._pkgConf.builder?.[builderType]?.env
+      }
     }));
 
     this._debug(`BUILD & CHECK...`);
@@ -120,7 +124,7 @@ export class SdCliClientBuilder extends EventEmitter {
 
     if (!opt.dev && this._cordova) {
       this._debug("CORDOVA BUILD...");
-      await this._cordova.buildAsync(path.resolve(this._pkgPath, ".cache/cordova"));
+      await this._cordova.buildAsync(path.resolve(this._pkgPath, "dist"));
     }
 
     const localUpdatePaths = Object.keys(this._projConf.localUpdates ?? {})

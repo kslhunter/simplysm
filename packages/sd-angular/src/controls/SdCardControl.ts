@@ -23,7 +23,7 @@ import {CommonModule} from "@angular/common";
         @include elevation(6);
       }
 
-      @media all and (hover: none) and (pointer: coarse) {
+      @media all and (pointer: coarse) {
         @include elevation(0);
       }
     }

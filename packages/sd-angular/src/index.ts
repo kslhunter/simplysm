@@ -78,6 +78,7 @@ export * from "./controls/topbar/SdTopbarContainerControl";
 export * from "./controls/topbar/SdTopbarControl";
 export * from "./controls/topbar/SdTopbarMenuControl";
 export * from "./controls/topbar/SdTopbarModule";
+export * from "./controls/topbar/SdTopbarNavControl";
 export * from "./controls/topbar/SdTopbarTabControl";
 export * from "./directives/SdResizeDirective";
 export * from "./directives/SdRouterLinkDirective";

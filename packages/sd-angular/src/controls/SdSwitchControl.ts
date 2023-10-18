@@ -11,7 +11,7 @@ import {SdInputValidate} from "@simplysm/sd-angular";
 import {CommonModule} from "@angular/common";
 
 @Component({
-  selector: "sdm-switch",
+  selector: "sd-switch",
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
@@ -36,7 +36,7 @@ import {CommonModule} from "@angular/common";
         border-radius: calc(var(--line-height) / 2);
         text-align: left;
 
-        background: var(--theme-color-grey-lighter);
+        background: var(--theme-grey-lighter);
 
         > div {
           display: inline-block;
@@ -46,13 +46,13 @@ import {CommonModule} from "@angular/common";
 
           background: white;
 
-          transition: transform var(--mobile-animation-duration);
+          transition: transform var(--animation-duration);
         }
       }
 
       &[sd-on=true] {
         > div {
-          background: var(--theme-color-success-default);
+          background: var(--theme-success-default);
 
           > div {
             transform: translateX(100%);
@@ -82,7 +82,7 @@ import {CommonModule} from "@angular/common";
         &[sd-theme=#{$key}] {
           &[sd-on=true] {
             > div {
-              background: var(--theme-color-#{$key}-default);
+              background: var(--theme-#{$key}-default);
             }
           }
         }
@@ -94,14 +94,14 @@ import {CommonModule} from "@angular/common";
           opacity: .5;
 
           > div {
-            background: var(--theme-color-grey-default);
+            background: var(--theme-grey-default);
           }
         }
       }
     }
   `]
 })
-export class SdmSwitchControl {
+export class SdSwitchControl {
   @Input()
   @SdInputValidate({type: Boolean, notnull: true})
   @HostBinding("attr.sd-on")

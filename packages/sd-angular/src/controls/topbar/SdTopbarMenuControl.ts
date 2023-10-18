@@ -15,8 +15,8 @@ import {SdInputValidate} from "../../utils/SdInputValidate";
       cursor: pointer;
       color: var(--text-trans-rev-dark);
 
-      @media all and (hover: none) and (pointer: coarse) {
-        @include mobile-active-effect(true);
+      @media all and (pointer: coarse) {
+        @include active-effect(true);
       }
 
       &:hover {
@@ -28,8 +28,8 @@ import {SdInputValidate} from "../../utils/SdInputValidate";
         pointer-events: none;
         opacity: .5;
 
-        @media all and (hover: none) and (pointer: coarse) {
-          @include mobile-active-effect(false);
+        @media all and (pointer: coarse) {
+          @include active-effect(false);
         }
       }
     }

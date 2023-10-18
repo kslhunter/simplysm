@@ -967,10 +967,9 @@ export class SdSheetControl<T> implements DoCheck {
     });
 
     if (Object.keys($.changeData).length > 0) {
+      Object.assign(this._prevData, $.changeData);
       this._cdr.markForCheck();
     }
-
-    Object.assign(this._prevData, $.changeData);
   }
 
   public getIsCellEditMode(r: number, c: number): boolean {

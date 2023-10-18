@@ -47,8 +47,8 @@ import {faChevronDown} from "@fortawesome/pro-light-svg-icons/faChevronDown";
         padding: var(--gap-sm) var(--gap-default);
         cursor: pointer;
 
-        @media all and (hover: none) and (pointer: coarse) {
-          @include mobile-active-effect(true);
+        @media all and (pointer: coarse) {
+          @include active-effect(true);
         }
 
         > .flex-row > ._selected-icon {
@@ -79,8 +79,8 @@ import {faChevronDown} from "@fortawesome/pro-light-svg-icons/faChevronDown";
         }
 
         &[sd-has-children=true] {
-          @media all and (hover: none) and (pointer: coarse) {
-            @include mobile-active-effect(false);
+          @media all and (pointer: coarse) {
+            @include active-effect(false);
           }
           
           > ._content {

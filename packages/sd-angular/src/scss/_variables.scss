@@ -395,9 +395,12 @@ $vars: (
   ),
   line-height: 1.5em,
   line-height-strip-unit: 1.5,
-  font-family: "'맑은 고딕', 'Malgun Gothic', 'AppleGothicNeoSD', 'Apple SD 산돌고딕 Neo', 'Microsoft NeoGothic', 'Droid Sans', sans-serif",
-  font-family-monospace: "'D2Coding', monospace",
+  //font-family: "'맑은 고딕', 'Malgun Gothic', 'AppleGothicNeoSD', 'Apple SD 산돌고딕 Neo', 'Microsoft NeoGothic', 'Droid Sans', sans-serif",
+  //font-family-monospace: "'D2Coding', monospace",
+  font-family: sans-serif,
+  font-family-monospace: monospace,
   background-color: var(--theme-grey-lightest),
+  animation-duration: .1s,
   sidebar: (
     width: 180px
   ),

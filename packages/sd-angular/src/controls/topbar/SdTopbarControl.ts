@@ -20,6 +20,11 @@ import {faBars} from "@fortawesome/pro-solid-svg-icons/faBars";
                *ngIf="sidebarContainerControl || sidebarContainer">
       <fa-icon [icon]="icons.fasBars" [fixedWidth]="true"></fa-icon>
     </sd-anchor>
+
+    <div class="_nav">
+      <ng-content select="sd-topbar-nav"></ng-content>
+    </div>
+    
     <sd-gap width="default" *ngIf="!sidebarContainerControl && !sidebarContainer"></sd-gap>
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
@@ -39,6 +44,13 @@ import {faBars} from "@fortawesome/pro-solid-svg-icons/faBars";
       line-height: var(--topbar-height);
       user-select: none;
 
+      > ._nav {
+        display: inline-block;
+        height: var(--topbar-height);
+        white-space: nowrap;
+        vertical-align: top;
+      }
+      
       @each $h in (h1, h2, h3, h4, h5, h6) {
         > ::ng-deep #{$h} {
           display: inline-block;

@@ -13,7 +13,7 @@ export class SdCliElectron {
     const logger = Logger.get(["simplysm", "sd-cli", "SdCliElectron", "runAsync"]);
 
     const pkgPath = path.resolve(process.cwd(), `packages/${opt.pkgName}`);
-    const electronPath = path.resolve(pkgPath, ".cache/dev/electron/src");
+    const electronPath = path.resolve(pkgPath, ".electron/dev/src");
 
     logger.log("설정 가져오기...");
     const projConf = (await import(pathToFileURL(path.resolve(process.cwd(), opt.confFileRelPath)).href)).default(true, opt.optNames) as ISdCliConfig;
@@ -62,8 +62,8 @@ export class SdCliElectron {
     const logger = Logger.get(["simplysm", "sd-cli", "SdCliElectron", "buildForDevAsync"]);
 
     const pkgPath = path.resolve(process.cwd(), `packages/${opt.pkgName}`);
-    const electronPath = path.resolve(pkgPath, ".cache/dev/electron/src");
-    const electronDistPath = path.resolve(pkgPath, ".cache/dev/electron/dist");
+    const electronPath = path.resolve(pkgPath, ".electron/dev/src");
+    const electronDistPath = path.resolve(pkgPath, ".electron/dev/dist");
 
     logger.log("설정 가져오기...");
     const projConf = (await import(pathToFileURL(path.resolve(process.cwd(), opt.confFileRelPath)).href)).default(true, opt.optNames) as ISdCliConfig;

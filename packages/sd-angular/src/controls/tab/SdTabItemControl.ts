@@ -13,7 +13,7 @@ import {SdTabControl} from "./SdTabControl";
       cursor: pointer;
       margin-bottom: -2px;
 
-      @media not all and (hover: none) and (pointer: coarse) {
+      @media not all and (pointer: coarse) {
         border-top: 2px solid transparent;
         border-left: 1px solid transparent;
         border-right: 1px solid transparent;
@@ -28,7 +28,7 @@ import {SdTabControl} from "./SdTabControl";
         }
       }
 
-      @media all and (hover: none) and (pointer: coarse) {
+      @media all and (pointer: coarse) {
         border-bottom: 2px solid transparent !important;
         font-weight: bold;
         color: var(--theme-grey-default);

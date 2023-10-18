@@ -99,7 +99,7 @@ export class SdCliCordova {
     // ANDROID SIGN 파일 복사
     if (this._opt.config.platform?.android?.sign) {
       await FsUtil.copyAsync(
-        path.resolve(this._opt.pkgPath, this._opt.config.platform.android.sign.keystore),
+        path.resolve(this._opt.pkgPath, "src", this._opt.config.platform.android.sign.keystore),
         path.resolve(this._opt.cordovaPath, "android.keystore")
       );
     }
@@ -132,10 +132,10 @@ export class SdCliCordova {
 
     // ICON 파일 복사
     if (this._opt.config.icon !== undefined) {
-      await FsUtil.copyAsync(path.resolve(this._opt.cordovaPath, this._opt.config.icon), path.resolve(this._opt.cordovaPath, "res", "icon.png"));
+      await FsUtil.copyAsync(path.resolve(this._opt.pkgPath, "src", this._opt.config.icon), path.resolve(this._opt.cordovaPath, "res/icon", path.basename(this._opt.config.icon)));
     }
     else {
-      await FsUtil.removeAsync(path.resolve(this._opt.cordovaPath, "res", "icon.png"));
+      await FsUtil.removeAsync(path.resolve(this._opt.cordovaPath, "res/icon"));
     }
 
     // CONFIG: 초기값 백업
@@ -155,7 +155,7 @@ export class SdCliCordova {
 
     // CONFIG: ICON 설정
     if (this._opt.config.icon !== undefined) {
-      configXml["widget"]["icon"] = [{"$": {"src": "res/icon.png"}}];
+      configXml["widget"]["icon"] = [{"$": {"src": "res/icon/" + path.basename(this._opt.config.icon)}}];
     }
 
     // CONFIG: 접근허용 세팅
@@ -226,7 +226,7 @@ export class SdCliCordova {
     pkgName: string,
     url?: string
   }): Promise<void> {
-    const cordovaPath = path.resolve(process.cwd(), `packages/${opt.pkgName}/.cache/cordova/`);
+    const cordovaPath = path.resolve(process.cwd(), `packages/${opt.pkgName}/.cordova/`);
 
     if (opt.url !== undefined) {
       await FsUtil.removeAsync(path.resolve(cordovaPath, "www"));

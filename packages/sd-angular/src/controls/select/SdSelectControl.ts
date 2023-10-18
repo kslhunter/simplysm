@@ -117,8 +117,8 @@ import {faCaretDown} from "@fortawesome/pro-duotone-svg-icons/faCaretDown";
 
         border-radius: var(--border-radius-default);
 
-        @media all and (hover: none) and (pointer: coarse) {
-          @include mobile-active-effect(true);
+        @media all and (pointer: coarse) {
+          @include active-effect(true);
         }
 
         > div:first-child {
@@ -153,8 +153,8 @@ import {faCaretDown} from "@fortawesome/pro-duotone-svg-icons/faCaretDown";
         color: var(--text-trans-light);
         cursor: default;
 
-        @media all and (hover: none) and (pointer: coarse) {
-          @include mobile-active-effect(false);
+        @media all and (pointer: coarse) {
+          @include active-effect(false);
         }
 
         > ._icon {

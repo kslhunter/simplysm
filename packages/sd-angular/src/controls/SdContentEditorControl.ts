@@ -126,7 +126,7 @@ import {CommonModule} from "@angular/common";
         > ._invalid-indicator {
           display: block;
           position: absolute;
-          background: var(--theme-color-danger-default);
+          background: var(--theme-danger-default);
 
           top: var(--gap-xs);
           left: var(--gap-xs);

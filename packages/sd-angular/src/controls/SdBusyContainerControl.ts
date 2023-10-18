@@ -53,7 +53,7 @@ import {CommonModule} from "@angular/common";
         opacity: 0;
         transition: opacity 1s linear;
 
-        @media all and (hover: none) and (pointer: coarse) {
+        @media all and (pointer: coarse) {
           background: rgba(255, 255, 255, .3);
           backdrop-filter: none;
           transition: opacity .3s, backdrop-filter 5s;
@@ -91,7 +91,7 @@ import {CommonModule} from "@angular/common";
           pointer-events: auto;
           opacity: 1;
 
-          @media all and (hover: none) and (pointer: coarse) {
+          @media all and (pointer: coarse) {
             backdrop-filter: blur(10px);
           }
         }
@@ -102,7 +102,7 @@ import {CommonModule} from "@angular/common";
           background: transparent;
           transition: none;
 
-          @media all and (hover: none) and (pointer: coarse) {
+          @media all and (pointer: coarse) {
             backdrop-filter: none;
           }
         }

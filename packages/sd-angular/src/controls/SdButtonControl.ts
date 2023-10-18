@@ -42,8 +42,8 @@ import {CommonModule} from "@angular/common";
           background: var(--theme-grey-lighter);
         }
 
-        @media all and (hover: none) and (pointer: coarse) {
-          @include mobile-active-effect(true);
+        @media all and (pointer: coarse) {
+          @include active-effect(true);
         }
 
         &:disabled {
@@ -52,8 +52,8 @@ import {CommonModule} from "@angular/common";
           color: var(--text-trans-lighter);
           cursor: default;
 
-          @media all and (hover: none) and (pointer: coarse) {
-            @include mobile-active-effect(false);
+          @media all and (pointer: coarse) {
+            @include active-effect(false);
           }
         }
       }

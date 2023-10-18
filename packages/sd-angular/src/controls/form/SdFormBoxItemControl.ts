@@ -43,6 +43,13 @@ import {SdInputValidate} from "../../utils/SdInputValidate";
           display: block;
           margin-bottom: var(--gap-xs);
         }
+
+        @media all and (pointer: coarse) {
+          margin-bottom: var(--gap-default);
+          > label {
+            margin-bottom: 0;
+          }
+        }
       }
 
       &[sd-layout="table"] {
