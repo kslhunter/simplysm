@@ -1,3 +1,4 @@
+export * from "./build-tools/SdCliCordova";
 export * from "./build-tools/SdCliIndexFileGenerator";
 export * from "./build-tools/SdLinter";
 export * from "./build-tools/SdNgBundler";

@@ -1,0 +1,48 @@
+@import "variables";
+
+$vars: map-merge($vars, (
+  gap: (
+    xxs: 4px,
+    xs: 6px,
+    sm: 8px,
+    default: 14px,
+    lg: 18px,
+    xl: 24px,
+    xxl: 32px,
+  ),
+  font-size: (
+    lg: 18px,
+    default: 16px,
+    sm: 14px,
+    h1: 48px,
+    h2: 32px,
+    h3: 24px,
+    h4: 18px,
+    h5: 16px,
+    h6: 14px,
+  ),
+  background-color: var(--color-grey-50),
+  border-color: (
+    light: var(--theme-grey-lightest),
+    default: var(--theme-grey-lighter),
+    dark: var(--theme-grey-default),
+    darker: var(--theme-grey-dark)
+  ),
+  sidebar: (
+    width: 240px
+  ),
+  topbar: (
+    height: 48px
+  ),
+  font-family: "'맑은 고딕', 'Malgun Gothic', 'AppleGothicNeoSD', 'Apple SD 산돌고딕 Neo', 'Microsoft NeoGothic', 'Droid Sans', sans-serif",
+  text-trans: (
+    dark: black,
+    default: rgba(0, 0, 0, .87),
+    light: rgba(0, 0, 0, .60),
+    lighter: rgba(0, 0, 0, .38),
+    lightest: rgba(0, 0, 0, .2),
+    rev-default: rgba(255, 255, 255, .7),
+    rev-dark: rgba(255, 255, 255, .5),
+    rev-darker: rgba(255, 255, 255, .3),
+  ),
+))

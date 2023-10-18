@@ -7,6 +7,7 @@ import {Logger, LoggerSeverity} from "@simplysm/sd-core-node";
 import {EventEmitter} from "events";
 import {SdCliElectron} from "./entry/SdCliElectron";
 import {SdCliLocalUpdate} from "./entry/SdCliLocalUpdate";
+import {SdCliCordova} from "./build-tools/SdCliCordova";
 
 Error.stackTraceLimit = Infinity;
 EventEmitter.defaultMaxListeners = 0;
@@ -163,6 +164,26 @@ const argv = (
           }
         })
     )
+    .command(
+      "run-cordova <platform> <package> <url>",
+      "변경감지중인 플랫폼을 코도바 디바이스에 앱 형태로 띄웁니다.",
+      (cmd) => cmd
+        .positional("platform", {
+          type: "string",
+          describe: "빌드 플랫폼(android,...)",
+          demandOption: true
+        })
+        .positional("package", {
+          type: "string",
+          describe: "패키지명",
+          demandOption: true
+        })
+        .positional("url", {
+          type: "string",
+          describe: "Webview로 오픈할 URL",
+          demandOption: true
+        })
+    )
     .parseAsync()
 ) as any;
 
@@ -229,6 +250,13 @@ else if (argv._[0] === "build-electron-for-dev") {
       optNames: argv.options ?? [],
       pkgName: argv.package
     });
+}
+else if (argv._[0] === "run-cordova") {
+  await SdCliCordova.runWebviewOnDeviceAsync({
+    platform: argv.platform,
+    pkgName: argv.package,
+    url: argv.url
+  });
 }
 else {
   throw new Error(`명령어가 잘못 되었습니다.\n\t${argv._[0]}\n`);

@@ -17,12 +17,13 @@ import {
 import nodeStdLibBrowser from "node-stdlib-browser";
 import nodeStdLibBrowserPlugin from "node-stdlib-browser/helpers/esbuild/plugin";
 import {ExecutionResult} from "@angular-devkit/build-angular/src/tools/esbuild/bundler-execution-result";
-import {INpmConfig, ISdCliPackageBuildResult} from "../commons";
+import {INpmConfig, ISdCliClientPackageConfig, ISdCliPackageBuildResult} from "../commons";
 import {generateIndexHtml} from "@angular-devkit/build-angular/src/tools/esbuild/index-html-generator";
 import {copyAssets} from "@angular-devkit/build-angular/src/utils/copy-assets";
 import {extractLicenses} from "@angular-devkit/build-angular/src/tools/esbuild/license-extractor";
 import {augmentAppWithServiceWorkerEsbuild} from "@angular-devkit/build-angular/src/utils/service-worker";
 import {createGlobalStylesBundleOptions} from "@angular-devkit/build-angular/src/tools/esbuild/global-styles";
+import {Entrypoint} from "@angular-devkit/build-angular/src/utils/index-file/augment-index-html";
 
 export class SdNgBundler {
   private readonly _logger = Logger.get(["simplysm", "sd-cli", "SdNgEsbuildBuilder"]);
@@ -34,8 +35,14 @@ export class SdNgBundler {
 
   private readonly _outputCache = new Map<string, string | number>();
 
-  public constructor(private readonly _opt: { dev: boolean, builderType: string, pkgPath: string }) {
-    this._options = this._getOptions(_opt);
+  public constructor(opt: {
+    dev: boolean,
+    builderType: keyof ISdCliClientPackageConfig["builder"],
+    pkgPath: string,
+    cordovaPlatforms: string[] | undefined,
+    outputPath: string
+  }) {
+    this._options = this._getOptions(opt);
   }
 
   public removeCache(filePaths: string[]): void {
@@ -58,7 +65,7 @@ export class SdNgBundler {
 
     const results = [
       ...bundlingResult.warnings.map((warn) => ({
-        filePath: warn.location?.file !== undefined ? path.resolve(this._opt.pkgPath, warn.location.file) : undefined,
+        filePath: warn.location?.file !== undefined ? path.resolve(this._options.workspaceRoot, warn.location.file) : undefined,
         line: warn.location?.line,
         char: warn.location?.column,
         code: undefined,
@@ -67,7 +74,7 @@ export class SdNgBundler {
         type: "build" as const
       })),
       ...bundlingResult.errors?.map((err) => ({
-        filePath: err.location?.file !== undefined ? path.resolve(this._opt.pkgPath, err.location.file) : undefined,
+        filePath: err.location?.file !== undefined ? path.resolve(this._options.workspaceRoot, err.location.file) : undefined,
         line: err.location?.line,
         char: err.location?.column !== undefined ? err.location.column + 1 : undefined,
         code: undefined,
@@ -80,7 +87,7 @@ export class SdNgBundler {
       ...this._sourceFileCache.keys(),
       ...this._sourceFileCache.babelFileCache.keys()
     ].map((item) => path.resolve(item));
-    let affectedSourceFilePaths = watchFilePaths.filter((item) => PathUtil.isChildPath(item, this._opt.pkgPath));
+    let affectedSourceFilePaths = watchFilePaths.filter((item) => PathUtil.isChildPath(item, this._options.workspaceRoot));
     if (bundlingResult.errors) {
       return {
         filePaths: watchFilePaths,
@@ -92,8 +99,8 @@ export class SdNgBundler {
     const depsMap = new Map<string, Set<string>>();
     for (const entry of Object.entries(bundlingResult.metafile.inputs)) {
       for (const imp of entry[1].imports) {
-        const deps = depsMap.getOrCreate(path.resolve(this._opt.pkgPath, imp.path), new Set<string>());
-        deps.add(path.resolve(this._opt.pkgPath, entry[0]));
+        const deps = depsMap.getOrCreate(path.resolve(this._options.workspaceRoot, imp.path), new Set<string>());
+        deps.add(path.resolve(this._options.workspaceRoot, entry[0]));
       }
     }
 
@@ -118,7 +125,7 @@ export class SdNgBundler {
         affectedFilePathSet.add(path.resolve(modFile));
         affectedFilePathSet.adds(...searchAffectedFiles(path.resolve(modFile)));
       }
-      affectedSourceFilePaths = Array.from(affectedFilePathSet.values()).filter((item) => PathUtil.isChildPath(item, this._opt.pkgPath));
+      affectedSourceFilePaths = Array.from(affectedFilePathSet.values()).filter((item) => PathUtil.isChildPath(item, this._options.workspaceRoot));
     }
 
     const executionResult = new ExecutionResult(this._contexts, this._sourceFileCache);
@@ -177,9 +184,8 @@ export class SdNgBundler {
 
     //-- write
 
-    const distPath = path.resolve(this._options.outputPath, "dist", ...(this._opt.builderType === "web" ? [] : [this._opt.builderType]));
     for (const outputFile of executionResult.outputFiles) {
-      const distFilePath = path.resolve(distPath, outputFile.path);
+      const distFilePath = path.resolve(this._options.outputPath, outputFile.path);
 
       const prev = this._outputCache.get(distFilePath);
       if (prev !== Buffer.from(outputFile.contents).toString("base64")) {
@@ -191,7 +197,7 @@ export class SdNgBundler {
       const prev = this._outputCache.get(assetFile.source);
       const curr = FsUtil.lstat(assetFile.source).mtime.getTime();
       if (prev !== curr) {
-        await FsUtil.copyAsync(assetFile.source, path.resolve(distPath, assetFile.destination));
+        await FsUtil.copyAsync(assetFile.source, path.resolve(this._options.outputPath, assetFile.destination));
         this._outputCache.set(assetFile.source, curr);
       }
     }
@@ -277,7 +283,7 @@ export class SdNgBundler {
       minifySyntax: !this._options.watch,
       minifyWhitespace: !this._options.watch,
       pure: ['forwardRef'],
-      outdir: this._options.outputPath,
+      outdir: this._options.workspaceRoot,
       outExtension: undefined,
       sourcemap: this._options.watch,
       splitting: true,
@@ -360,7 +366,13 @@ export class SdNgBundler {
     };
   }
 
-  private _getOptions(opt: { dev: boolean, builderType: string, pkgPath: string }): NormalizedApplicationBuildOptions {
+  private _getOptions(opt: {
+    dev: boolean,
+    builderType: keyof ISdCliClientPackageConfig["builder"],
+    pkgPath: string,
+    cordovaPlatforms: string[] | undefined,
+    outputPath: string,
+  }): NormalizedApplicationBuildOptions {
     const mainFilePath = path.resolve(opt.pkgPath, "src/main.ts");
     const tsconfigFilePath = path.resolve(opt.pkgPath, "tsconfig.json");
     const indexHtmlFilePath = path.resolve(opt.pkgPath, "src/index.html");
@@ -400,20 +412,47 @@ export class SdNgBundler {
       verbose: false,
       watch: opt.dev,
       workspaceRoot: opt.pkgPath,
-      entryPoints: {main: mainFilePath},
+      entryPoints: {
+        main: mainFilePath,
+        ...opt.builderType === "cordova" ? {
+          "cordova-entry": path.resolve(path.dirname(fileURLToPath(import.meta.url)), `../../lib/cordova-entry.js`)
+        } : {}
+      },
       optimizationOptions: {
         scripts: !opt.dev,
         styles: {minify: !opt.dev, inlineCritical: !opt.dev},
         fonts: {inline: !opt.dev}
       },
-      outputPath: opt.pkgPath,
+      outputPath: opt.outputPath,
       outExtension: undefined,
       sourcemapOptions: {vendor: false, hidden: false, scripts: opt.dev, styles: opt.dev},
       tsconfig: tsconfigFilePath,
       projectRoot: opt.pkgPath,
       assets: [
-        {glob: 'favicon.ico', input: 'src', output: ''},
-        {glob: '**/*', input: 'src\\assets', output: 'assets'}
+        {input: 'src', glob: 'favicon.ico', output: ''},
+        {input: 'src\\assets', glob: '**/*', output: 'assets'},
+        ...opt.dev && opt.cordovaPlatforms ? opt.cordovaPlatforms.mapMany((platform) => [
+          {
+            input: `.cache\\cordova\\platforms\\${platform}\\platform_www\\plugins`,
+            glob: '**/*',
+            output: `cordova-${platform}/plugins`
+          },
+          {
+            input: `.cache\\cordova\\platforms\\${platform}\\platform_www`,
+            glob: 'cordova.js',
+            output: `cordova-${platform}`
+          },
+          {
+            input: `.cache\\cordova\\platforms\\${platform}\\platform_www`,
+            glob: 'cordova_plugins.js',
+            output: `cordova-${platform}`
+          },
+          {
+            input: `.cache\\cordova\\platforms\\${platform}\\www`,
+            glob: 'config.xml',
+            output: `cordova-${platform}`
+          },
+        ]) : []
       ],
       outputNames: {bundles: '[name]', media: 'media/[name]'},
       fileReplacements: undefined,
@@ -428,7 +467,10 @@ export class SdNgBundler {
           ['polyfills', true],
           ['styles', false],
           ['vendor', true],
-          ['main', true]
+          ['main', true],
+          ...opt.builderType === "cordova" ? [
+            ["cordova-entry", true] as Entrypoint
+          ] : []
         ]
       },
       tailwindConfiguration: undefined

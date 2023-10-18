@@ -94,6 +94,7 @@ export interface ISdCliClientPackageConfig {
   builder?: {
     web?: ISdCliClientBuilderWebConfig;
     electron?: ISdCliClientBuilderElectronConfig;
+    cordova?: ISdCliClientBuilderCordovaConfig;
   }
 }
 
@@ -124,5 +125,27 @@ export interface ISdCliClientBuilderElectronConfig {
 export interface ISdCliClientBuilderWebConfig {
   devServerHost?: string;
   devServerPort?: number;
+  env?: Record<string, string>;
+}
+
+export interface ISdCliClientBuilderCordovaConfig {
+  appId: string;
+  appName: string;
+  plugins?: string[];
+  icon?: string;
+  debug?: boolean;
+  platform?: {
+    browser?: {};
+    android?: {
+      bundle?: boolean;
+      sign?: {
+        keystore: string;
+        storePassword: string;
+        alias: string;
+        password: string;
+        keystoreType: string;
+      };
+    }
+  }
   env?: Record<string, string>;
 }

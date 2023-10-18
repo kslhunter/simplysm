@@ -5,11 +5,14 @@ import {FunctionQueue, Wait} from "@simplysm/sd-core-common";
 import path from "path";
 import {SdNgBundler} from "../build-tools/SdNgBundler";
 import {SdLinter} from "../build-tools/SdLinter";
+import {SdCliCordova} from "../build-tools/SdCliCordova";
 
+// TODO: ROUTER 자동생성
 export class SdCliClientBuilder extends EventEmitter {
   private readonly _logger = Logger.get(["simplysm", "sd-cli", "SdCliClientBuilder"]);
   private readonly _pkgConf: ISdCliClientPackageConfig;
   private _builders?: SdNgBundler[];
+  private _cordova?: SdCliCordova;
 
   public constructor(private readonly _projConf: ISdCliConfig,
                      private readonly _pkgPath: string) {
@@ -71,12 +74,27 @@ export class SdCliClientBuilder extends EventEmitter {
     affectedFilePaths: string[];
     buildResults: ISdCliPackageBuildResult[];
   }> {
+    const builderTypes = (Object.keys(this._pkgConf.builder ?? {web: {}}) as (keyof ISdCliClientPackageConfig["builder"])[]);
+    if (this._pkgConf.builder?.cordova && !this._cordova) {
+      this._debug("CORDOVA 준비...");
+      this._cordova = new SdCliCordova({
+        pkgPath: this._pkgPath,
+        config: this._pkgConf.builder.cordova,
+        cordovaPath: path.resolve(this._pkgPath, ".cache/cordova")
+      });
+      await this._cordova.initializeAsync();
+    }
+
     this._debug(`BUILD 준비...`);
-    const builderTypes = (Object.keys(this._pkgConf.builder ?? {web: {}}) as ("web")[]);
     this._builders = this._builders ?? builderTypes.map((builderType) => new SdNgBundler({
       dev: opt.dev,
       builderType: builderType,
-      pkgPath: this._pkgPath
+      pkgPath: this._pkgPath,
+      cordovaPlatforms: builderType === "cordova" ? Object.keys(this._pkgConf.builder!.cordova!.platform ?? {browser: {}}) : undefined,
+      outputPath: builderType === "web" ? path.resolve(this._pkgPath, "dist")
+        : builderType === "electron" ? path.resolve(this._pkgPath, ".cache/electron/src")
+          : builderType === "cordova" && !opt.dev ? path.resolve(this._pkgPath, ".cache/cordova/www")
+            : path.resolve(this._pkgPath, "dist", builderType)
     }));
 
     this._debug(`BUILD & CHECK...`);
@@ -98,6 +116,11 @@ export class SdCliClientBuilder extends EventEmitter {
       else {
         await FsUtil.writeJsonAsync(path.resolve(this._pkgPath, "dist/.config.json"), this._pkgConf.configs ?? {}, {space: 2});
       }
+    }
+
+    if (!opt.dev && this._cordova) {
+      this._debug("CORDOVA BUILD...");
+      await this._cordova.buildAsync(path.resolve(this._pkgPath, ".cache/cordova"));
     }
 
     const localUpdatePaths = Object.keys(this._projConf.localUpdates ?? {})
