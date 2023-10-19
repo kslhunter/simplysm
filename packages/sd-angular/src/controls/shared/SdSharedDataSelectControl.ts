@@ -217,47 +217,40 @@ export class SdSharedDataSelectControl<T extends ISharedDataBase<string | number
                      private readonly _modal: SdModalProvider) {
   }
 
-  private _prevData: Record<string, any> = {};
-
   public ngDoCheck(): void {
-    const $ = new SdDoCheckHelper(this._prevData);
+    SdDoCheckHelper.use($ => {
+      $.run({
+        items: [this.items, "all"],
+        filterFn: [this.filterFn],
+        parentKeyProp: [this.parentKeyProp],
+        displayOrderKeyProp: [this.displayOrderKeyProp]
+      }, () => {
+        let result = this.items.filter((item, index) => (
+          (!this.filterFn || this.filterFn(index, item))
+          && (this.parentKeyProp === undefined || item[this.parentKeyProp] === undefined)
+        ));
 
-    $.run({
-      items: [this.items, "all"],
-      filterFn: [this.filterFn],
-      parentKeyProp: [this.parentKeyProp],
-      displayOrderKeyProp: [this.displayOrderKeyProp]
-    }, () => {
-      let result = this.items.filter((item, index) => (
-        (!this.filterFn || this.filterFn(index, item))
-        && (this.parentKeyProp === undefined || item[this.parentKeyProp] === undefined)
-      ));
+        if (this.displayOrderKeyProp !== undefined) {
+          result = result.orderBy((item) => item[this.displayOrderKeyProp!]);
+        }
 
-      if (this.displayOrderKeyProp !== undefined) {
-        result = result.orderBy((item) => item[this.displayOrderKeyProp!]);
-      }
+        this.rootDisplayItems = result;
+      });
 
-      this.rootDisplayItems = result;
-    });
-
-    $.run({
-      items: [this.items, "all"],
-      parentKeyProp: [this.parentKeyProp]
-    }, () => {
-      if (this.parentKeyProp !== undefined) {
-        this.itemByParentKeyMap = this.items
-          .groupBy((item) => item[this.parentKeyProp!])
-          .toMap((item) => item.key, (item1) => item1.values);
-      }
-      else {
-        this.itemByParentKeyMap = undefined;
-      }
-    });
-
-    if (Object.keys($.changeData).length > 0) {
-      Object.assign(this._prevData, $.changeData);
-      this._cdr.markForCheck();
-    }
+      $.run({
+        items: [this.items, "all"],
+        parentKeyProp: [this.parentKeyProp]
+      }, () => {
+        if (this.parentKeyProp !== undefined) {
+          this.itemByParentKeyMap = this.items
+            .groupBy((item) => item[this.parentKeyProp!])
+            .toMap((item) => item.key, (item1) => item1.values);
+        }
+        else {
+          this.itemByParentKeyMap = undefined;
+        }
+      });
+    }, this._cdr);
   }
 
   public onValueChange(value: any | any[]): void {

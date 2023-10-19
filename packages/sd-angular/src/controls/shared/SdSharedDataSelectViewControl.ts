@@ -9,7 +9,7 @@ import {
   Output,
   TemplateRef
 } from "@angular/core";
-import {ObjectUtil, StringUtil} from "@simplysm/sd-core-common";
+import {StringUtil} from "@simplysm/sd-core-common";
 import {IconProp} from "@fortawesome/fontawesome-svg-core";
 import {ISharedDataBase} from "../../providers/SdSharedDataProvider";
 import {SdInputValidate} from "../../utils/SdInputValidate";
@@ -54,39 +54,39 @@ import {SdDoCheckHelper} from "../../utils/SdDoCheckHelper";
 })
 export class SdSharedDataSelectViewControl<T extends ISharedDataBase<string | number>> implements DoCheck {
   @Input()
-  public selectedIcon?: IconProp;
+  selectedIcon?: IconProp;
 
   @Input()
-  public selectedItem?: T;
+  selectedItem?: T;
 
   @Output()
-  public readonly selectedItemChange = new EventEmitter<T>();
+  readonly selectedItemChange = new EventEmitter<T>();
 
   @Input()
   @SdInputValidate(Boolean)
-  public useUndefined?: boolean;
+  useUndefined?: boolean;
 
   @Input()
   @SdInputValidate(Function)
-  public filterFn?: (index: number, item: T) => boolean;
+  filterFn?: (index: number, item: T) => boolean;
 
   @ContentChild("headerTemplate", {static: true})
-  public headerTemplateRef?: TemplateRef<void>;
+  headerTemplateRef?: TemplateRef<void>;
 
   @ContentChild(SdSharedDataItemTemplateDirective, {static: true, read: TemplateRef})
-  public itemTemplateRef?: TemplateRef<SdSharedDataItemTemplateContext<T>>;
+  itemTemplateRef?: TemplateRef<SdSharedDataItemTemplateContext<T>>;
 
   @Input()
-  public items?: T[];
+  items?: T[];
 
-  public busyCount = 0;
+  busyCount = 0;
 
-  public trackByFn = (index: number, item: T): (string | number) => item.__valueKey;
+  trackByFn = (index: number, item: T): (string | number) => item.__valueKey;
 
-  public searchText?: string;
-  public ordering: ISdSheetColumnOrderingVM[] = [];
+  searchText?: string;
+  ordering: ISdSheetColumnOrderingVM[] = [];
 
-  public get filteredItems(): any[] {
+  get filteredItems(): any[] {
     if (!this.items) return [];
 
     let result = this.items.filter((item) => !item.__isHidden);
@@ -111,25 +111,20 @@ export class SdSharedDataSelectViewControl<T extends ISharedDataBase<string | nu
     return result;
   }
 
-  public constructor(private readonly _cdr: ChangeDetectorRef) {
+  constructor(private readonly _cdr: ChangeDetectorRef) {
   }
-
-  private _prevData: Record<string, any> = {};
 
   ngDoCheck(): void {
-    const $ = new SdDoCheckHelper(this._prevData);
+    SdDoCheckHelper.use($ => {
 
-    $.run({value: [this.items, "one"]}, () => {
-      this.selectedItem = this.items?.single((item) => item.__valueKey === this.selectedItem?.__valueKey);
-    });
+      $.run({value: [this.items, "one"]}, () => {
+        this.selectedItem = this.items?.single((item) => item.__valueKey === this.selectedItem?.__valueKey);
+      });
 
-    if (Object.keys($.changeData).length > 0) {
-      Object.assign(this._prevData, $.changeData);
-      this._cdr.markForCheck();
-    }
+    }, this._cdr);
   }
 
-  public onSelectedItemChange(item: T | undefined): void {
+  onSelectedItemChange(item: T | undefined) {
     if (this.selectedItemChange.observed) {
       this.selectedItemChange.emit(item);
     }

@@ -1,4 +1,5 @@
 import {ObjectUtil} from "@simplysm/sd-core-common";
+import {ChangeDetectorRef} from "@angular/core";
 
 export class SdDoCheckHelper {
   changeData: Record<string, any> = {};
@@ -41,6 +42,30 @@ export class SdDoCheckHelper {
 
     if (changed) {
       return cb();
+    }
+  }
+
+  static use(fn: ($: SdDoCheckHelper) => void | Promise<void>, cdr: ChangeDetectorRef): void {
+    cdr["__sdPrevData__"] = cdr["__sdPrevData__"] ?? {};
+
+    const $ = new SdDoCheckHelper(cdr["__sdPrevData__"]);
+
+    const result = fn($);
+    if (result instanceof Promise) {
+      result.then(() => {
+        if (Object.keys($.changeData).length > 0) {
+          Object.assign(cdr["__sdPrevData__"], $.changeData);
+          cdr.markForCheck();
+        }
+      }).catch(err => {
+        throw err;
+      });
+    }
+    else {
+      if (Object.keys($.changeData).length > 0) {
+        Object.assign(cdr["__sdPrevData__"], $.changeData);
+        cdr.markForCheck();
+      }
     }
   }
 }

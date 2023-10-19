@@ -51,7 +51,7 @@ import {SdDoCheckHelper} from "../../utils/SdDoCheckHelper";
           <table>
             <thead>
             <ng-container
-                *ngFor="let headerRow of displayHeaderDefTable; let r = index; trackBy: trackByFnForHeaderDefTable">
+              *ngFor="let headerRow of displayHeaderDefTable; let r = index; trackBy: trackByFnForHeaderDefTable">
               <tr>
                 <th class="_fixed _feature-cell _last-depth"
                     *ngIf="r === 0"
@@ -104,7 +104,7 @@ import {SdDoCheckHelper} from "../../utils/SdDoCheckHelper";
                       </div>
 
                       <ng-container
-                          *ngIf="headerCell.isLastDepth && headerCell.control.useOrdering && headerCell.control.key">
+                        *ngIf="headerCell.isLastDepth && headerCell.control.useOrdering && headerCell.control.key">
                         <div class="_sort-icon">
                           <fa-layers>
                             <fa-icon [icon]="faSort" class="tx-trans-lightest"></fa-icon>
@@ -130,7 +130,7 @@ import {SdDoCheckHelper} from "../../utils/SdDoCheckHelper";
             <ng-container *ngIf="hasSummaryTemplate">
               <tr class="_summary-row">
                 <ng-container
-                    *ngFor="let columnDef of displayColumnDefs; let c = index; trackBy: trackByFnForColumnDef">
+                  *ngFor="let columnDef of displayColumnDefs; let c = index; trackBy: trackByFnForColumnDef">
                   <th [class._fixed]="columnDef.fixed"
                       [attr.c]="c"
                       [style.width]="columnDef.width"
@@ -173,7 +173,7 @@ import {SdDoCheckHelper} from "../../utils/SdDoCheckHelper";
                   </ng-container>
                 </td>
                 <ng-container
-                    *ngFor="let columnDef of displayColumnDefs; let c = index; trackBy: trackByFnForColumnDef">
+                  *ngFor="let columnDef of displayColumnDefs; let c = index; trackBy: trackByFnForColumnDef">
                   <td tabindex="0"
                       [class._fixed]="columnDef.fixed"
                       [attr.r]="r"
@@ -452,11 +452,11 @@ export class SdSheetControl<T> implements DoCheck {
   faSortUp = faSortUp;
   faCaretRight = faCaretRight;
 
-  private _cdr = inject(ChangeDetectorRef);
-  private _ngZone = inject(NgZone);
-  private _sdSystemConfig = inject(SdSystemConfigProvider);
-  private _sdModal = inject(SdModalProvider);
-  private _elRef = inject<ElementRef<HTMLElement>>(ElementRef);
+  #cdr = inject(ChangeDetectorRef);
+  #ngZone = inject(NgZone);
+  #sdSystemConfig = inject(SdSystemConfigProvider);
+  #sdModal = inject(SdModalProvider);
+  #elRef = inject<ElementRef<HTMLElement>>(ElementRef);
 
   @ContentChildren(SdSheetColumnDirective)
   columnControls?: QueryList<SdSheetColumnDirective<T>>;
@@ -624,14 +624,12 @@ export class SdSheetControl<T> implements DoCheck {
   trackByFnForColumnDef = (i: number, item: IColumnDef<T>): string => item.control.guid;
   trackByFnForDisplayItemDef = (i: number, item: IItemDef<T>): any => this.trackByFn(i, item.item);
 
-  private _config?: ISdSheetConfig;
+  #config?: ISdSheetConfig;
 
-  private _prevData: Record<string, any> = {};
+  #editModeCellAddr?: { r: number; c: number };
 
-  private _editModeCellAddr?: { r: number; c: number };
-
-  private _resizedWidths: Record<string, string | undefined> = {};
-  private _isOnResizing = false;
+  #resizedWidths: Record<string, string | undefined> = {};
+  #isOnResizing = false;
 
   orderedItems: T[] = [];
   orderedPagedItems: T[] = [];
@@ -639,348 +637,342 @@ export class SdSheetControl<T> implements DoCheck {
   /**
    * 변수 변경 체크 ng Lifecycle
    */
-  async ngDoCheck(): Promise<void> {
-    // let changes: Record<string, any> = {};
-    const $ = new SdDoCheckHelper(this._prevData);
+  ngDoCheck(): void {
+    SdDoCheckHelper.use(async $ => {
+      //-- config
+      await $.run({
+        key: [this.key]
+      }, async () => {
+        this.#config = await this.#sdSystemConfig.getAsync(`sd-sheet.${this.key}`);
+      });
 
-    //-- config
-    await $.run({
-      key: [this.key]
-    }, async () => {
-      this._config = await this._sdSystemConfig.getAsync(`sd-sheet.${this.key}`);
-    });
+      //-- column/header defs
+      $.run({
+        columnControls: [this.columnControls, "one"],
+        config: [this.#config],
+        resizedWidths: [this.#resizedWidths, "one"]
+      }, () => {
+        //-- displayColumnDefs
+        if (this.columnControls) {
+          this.displayColumnDefs = this.columnControls
+            .map((columnControl) => {
+              const config = columnControl.key === undefined ? undefined : this.#config?.columnRecord?.[columnControl.key];
+              return {
+                control: columnControl,
+                key: columnControl.key,
+                fixed: config?.fixed ?? columnControl.fixed,
+                width: this.#resizedWidths[columnControl.guid] ?? config?.width ?? columnControl.width,
+                displayOrder: config?.displayOrder,
+                hidden: config?.hidden ?? columnControl.hidden,
+                headerStyle: columnControl.headerStyle
+              };
+            })
+            .filter((item) => !item.hidden && !item.control.collapse)
+            .orderBy((item) => item.displayOrder)
+            .orderBy((item) => (item.fixed ? -1 : 0))
+            .map((item) => ({
+              control: item.control,
+              fixed: item.fixed,
+              width: item.width,
+              headerStyle: item.headerStyle
+            }));
+        }
+        else {
+          this.displayColumnDefs = [];
+        }
 
-    //-- column/header defs
-    $.run({
-      columnControls: [this.columnControls, "one"],
-      config: [this._config],
-      resizedWidths: [this._resizedWidths, "one"]
-    }, () => {
-      //-- displayColumnDefs
-      if (this.columnControls) {
-        this.displayColumnDefs = this.columnControls
-          .map((columnControl) => {
-            const config = columnControl.key === undefined ? undefined : this._config?.columnRecord?.[columnControl.key];
-            return {
-              control: columnControl,
-              key: columnControl.key,
-              fixed: config?.fixed ?? columnControl.fixed,
-              width: this._resizedWidths[columnControl.guid] ?? config?.width ?? columnControl.width,
-              displayOrder: config?.displayOrder,
-              hidden: config?.hidden ?? columnControl.hidden,
-              headerStyle: columnControl.headerStyle
+        //-- displayHeaderDefTable
+        const tempHeaderDefTable: ({
+          control: SdSheetColumnDirective<T>;
+          width: string | undefined;
+          fixed: boolean;
+          text: string | undefined;
+          useTemplate: string | undefined;
+          style: string | undefined;
+        } | undefined)[][] = [];
+        for (let c = 0; c < this.displayColumnDefs.length; c++) {
+          const columnDef = this.displayColumnDefs[c];
+
+          const headers = columnDef.control.header === undefined ? []
+            : typeof columnDef.control.header === "string" ? [columnDef.control.header]
+              : columnDef.control.header;
+
+          for (let r = 0; r < headers.length; r++) {
+            tempHeaderDefTable[r] = tempHeaderDefTable[r] ?? [];
+            tempHeaderDefTable[r][c] = {
+              control: columnDef.control,
+              width: columnDef.width,
+              fixed: columnDef.fixed ?? false,
+              text: headers[r],
+              useTemplate: undefined,
+              style: columnDef.headerStyle
             };
-          })
-          .filter((item) => !item.hidden && !item.control.collapse)
-          .orderBy((item) => item.displayOrder)
-          .orderBy((item) => (item.fixed ? -1 : 0))
-          .map((item) => ({
-            control: item.control,
-            fixed: item.fixed,
-            width: item.width,
-            headerStyle: item.headerStyle
-          }));
-      }
-      else {
-        this.displayColumnDefs = [];
-      }
-
-      //-- displayHeaderDefTable
-      const tempHeaderDefTable: ({
-        control: SdSheetColumnDirective<T>;
-        width: string | undefined;
-        fixed: boolean;
-        text: string | undefined;
-        useTemplate: string | undefined;
-        style: string | undefined;
-      } | undefined)[][] = [];
-      for (let c = 0; c < this.displayColumnDefs.length; c++) {
-        const columnDef = this.displayColumnDefs[c];
-
-        const headers = columnDef.control.header === undefined ? []
-          : typeof columnDef.control.header === "string" ? [columnDef.control.header]
-            : columnDef.control.header;
-
-        for (let r = 0; r < headers.length; r++) {
-          tempHeaderDefTable[r] = tempHeaderDefTable[r] ?? [];
-          tempHeaderDefTable[r][c] = {
-            control: columnDef.control,
-            width: columnDef.width,
-            fixed: columnDef.fixed ?? false,
-            text: headers[r],
-            useTemplate: undefined,
-            style: columnDef.headerStyle
-          };
+          }
+          if (columnDef.control.headerTemplateRef) {
+            tempHeaderDefTable[headers.length] = tempHeaderDefTable[headers.length] ?? [];
+            tempHeaderDefTable[headers.length][c] = {
+              control: columnDef.control,
+              width: columnDef.width,
+              fixed: columnDef.fixed ?? false,
+              text: undefined,
+              useTemplate: columnDef.control.guid,
+              style: columnDef.headerStyle
+            };
+          }
         }
-        if (columnDef.control.headerTemplateRef) {
-          tempHeaderDefTable[headers.length] = tempHeaderDefTable[headers.length] ?? [];
-          tempHeaderDefTable[headers.length][c] = {
-            control: columnDef.control,
-            width: columnDef.width,
-            fixed: columnDef.fixed ?? false,
-            text: undefined,
-            useTemplate: columnDef.control.guid,
-            style: columnDef.headerStyle
-          };
-        }
-      }
 
-      const headerDefTable: (IHeaderDef<T> | undefined)[][] = [];
-      for (let r = 0; r < tempHeaderDefTable.length; r++) {
-        headerDefTable[r] = [];
+        const headerDefTable: (IHeaderDef<T> | undefined)[][] = [];
+        for (let r = 0; r < tempHeaderDefTable.length; r++) {
+          headerDefTable[r] = [];
 
-        const colLength = tempHeaderDefTable[r].length;
-        for (let c = 0; c < colLength; c++) {
-          if (!tempHeaderDefTable[r][c]) continue;
+          const colLength = tempHeaderDefTable[r].length;
+          for (let c = 0; c < colLength; c++) {
+            if (!tempHeaderDefTable[r][c]) continue;
 
-          if (c > 0) {
-            let isIgnore = true;
-            for (let rr = 0; rr <= r; rr++) {
-              if (!ObjectUtil.equal(tempHeaderDefTable[rr][c], tempHeaderDefTable[rr][c - 1], {includes: ["text", "fixed", "useTemplate", "isLastDepth"]})) {
-                isIgnore = false;
-                break;
-              }
-            }
-            if (isIgnore) continue;
-          }
-
-          headerDefTable[r][c] = {
-            control: tempHeaderDefTable[r][c]!.control,
-            width: tempHeaderDefTable[r][c]!.width,
-            fixed: tempHeaderDefTable[r][c]!.fixed,
-            colspan: undefined,
-            rowspan: undefined,
-            text: tempHeaderDefTable[r][c]!.text,
-            useTemplate: Boolean(tempHeaderDefTable[r][c]!.useTemplate),
-            isLastDepth: false,
-
-            style: tempHeaderDefTable[r][c]!.style
-          };
-
-          // rowspan
-
-          let rowspan = 1;
-          for (let rr = r + 1; rr < tempHeaderDefTable.length; rr++) {
-            if (tempHeaderDefTable[rr][c] !== undefined) break;
-            rowspan++;
-          }
-          if (rowspan > 1) {
-            headerDefTable[r][c]!.rowspan = rowspan;
-          }
-
-          // last-depth
-
-          if (r + rowspan === tempHeaderDefTable.length) {
-            headerDefTable[r][c]!.isLastDepth = true;
-          }
-          else {
-
-            // colspan
-
-            let colspan = 1;
-            for (let cc = c + 1; cc < colLength; cc++) {
-              let isDiff = false;
+            if (c > 0) {
+              let isIgnore = true;
               for (let rr = 0; rr <= r; rr++) {
-                if (!ObjectUtil.equal(tempHeaderDefTable[rr][c], tempHeaderDefTable[rr][cc], {includes: ["text", "fixed", "useTemplate", "isLastDepth"]})) {
-                  isDiff = true;
+                if (!ObjectUtil.equal(tempHeaderDefTable[rr][c], tempHeaderDefTable[rr][c - 1], {includes: ["text", "fixed", "useTemplate", "isLastDepth"]})) {
+                  isIgnore = false;
                   break;
                 }
               }
-              if (isDiff) break;
-
-              colspan++;
+              if (isIgnore) continue;
             }
-            if (colspan > 1) {
-              headerDefTable[r][c]!.colspan = colspan;
+
+            headerDefTable[r][c] = {
+              control: tempHeaderDefTable[r][c]!.control,
+              width: tempHeaderDefTable[r][c]!.width,
+              fixed: tempHeaderDefTable[r][c]!.fixed,
+              colspan: undefined,
+              rowspan: undefined,
+              text: tempHeaderDefTable[r][c]!.text,
+              useTemplate: Boolean(tempHeaderDefTable[r][c]!.useTemplate),
+              isLastDepth: false,
+
+              style: tempHeaderDefTable[r][c]!.style
+            };
+
+            // rowspan
+
+            let rowspan = 1;
+            for (let rr = r + 1; rr < tempHeaderDefTable.length; rr++) {
+              if (tempHeaderDefTable[rr][c] !== undefined) break;
+              rowspan++;
             }
-          }
-        }
-      }
+            if (rowspan > 1) {
+              headerDefTable[r][c]!.rowspan = rowspan;
+            }
 
-      this.displayHeaderDefTable = headerDefTable;
-    });
+            // last-depth
 
-    //-- displayPageLength
-    $.run({
-      pageItemCount: [this.pageItemCount],
-      itemsLength: [this.items.length],
-      pageLength: [this.pageLength]
-    }, () => {
-      if (this.pageItemCount !== undefined && this.pageItemCount !== 0 && this.items.length > 0) {
-        this.displayPageLength = Math.ceil(this.items.length / this.pageItemCount);
-      }
-      else if (this.displayPageLength !== this.pageLength) {
-        this.displayPageLength = this.pageLength;
-      }
-    });
+            if (r + rowspan === tempHeaderDefTable.length) {
+              headerDefTable[r][c]!.isLastDepth = true;
+            }
+            else {
 
-    //-- items: ordering
-    $.run({
-      items: [this.items, "one"],
-      observedOrdering: [!this.orderingChange.observed ? this.ordering : undefined, "all"]
-    }, () => {
-      let orderedItems = [...this.items];
-      if (!this.orderingChange.observed) {
-        for (const orderingItem of this.ordering.reverse()) {
-          if (orderingItem.desc) {
-            orderedItems = orderedItems.orderByDesc((item) => item[orderingItem.key]);
-          }
-          else {
-            orderedItems = orderedItems.orderBy((item) => item[orderingItem.key]);
-          }
-        }
-      }
-      this.orderedItems = orderedItems;
-    });
+              // colspan
 
-    //-- items: paging
-    $.run({
-      orderedItems: [this.orderedItems],
-      pageItemCount: [this.pageItemCount],
-      itemsLength: [this.items.length],
-      page: [this.page]
-    }, () => {
-      let orderedPagedItems = [...this.orderedItems];
-      if (this.pageItemCount !== undefined && this.pageItemCount !== 0 && this.items.length > 0) {
-        orderedPagedItems = orderedPagedItems.slice(this.page * this.pageItemCount, (this.page + 1) * this.pageItemCount);
-      }
-      this.orderedPagedItems = orderedPagedItems;
-    });
-
-    //-- displayItemDefs
-    $.run({
-      orderedPagedItems: [this.orderedPagedItems],
-      getChildrenFn: [this.getChildrenFn],
-      observedOrdering: [!this.orderingChange.observed ? this.ordering : undefined, "all"]
-    }, () => {
-      let displayItemDefs: IItemDef<T>[] = this.orderedPagedItems.map((item) => ({
-        item,
-        parentDef: undefined,
-        hasChildren: false,
-        depth: 0
-      }));
-
-      if (this.getChildrenFn) {
-        let fn = (arr: IItemDef<T>[]): IItemDef<T>[] => {
-          let fnResult: IItemDef<T>[] = [];
-          for (let i = 0; i < arr.length; i++) {
-            fnResult.push(arr[i]);
-
-            const children = this.getChildrenFn!(i, arr[i].item) ?? [];
-            if (children.length > 0) {
-              arr[i].hasChildren = true;
-
-
-              let displayChildren = children;
-              if (!this.orderingChange.observed) {
-                for (const orderingItem of this.ordering.reverse()) {
-                  if (orderingItem.desc) {
-                    displayChildren = displayChildren.orderByDesc((item) => item[orderingItem.key]);
-                  }
-                  else {
-                    displayChildren = displayChildren.orderBy((item) => item[orderingItem.key]);
+              let colspan = 1;
+              for (let cc = c + 1; cc < colLength; cc++) {
+                let isDiff = false;
+                for (let rr = 0; rr <= r; rr++) {
+                  if (!ObjectUtil.equal(tempHeaderDefTable[rr][c], tempHeaderDefTable[rr][cc], {includes: ["text", "fixed", "useTemplate", "isLastDepth"]})) {
+                    isDiff = true;
+                    break;
                   }
                 }
-              }
+                if (isDiff) break;
 
-              fnResult.push(...fn(children.map((item) => ({
-                item,
-                parentDef: arr[i],
-                hasChildren: false,
-                depth: arr[i].depth + 1
-              }))));
+                colspan++;
+              }
+              if (colspan > 1) {
+                headerDefTable[r][c]!.colspan = colspan;
+              }
             }
           }
-
-          return fnResult;
-        };
-
-        displayItemDefs = fn(displayItemDefs);
-      }
-
-      this.displayItemDefs = displayItemDefs;
-
-      /*const prevFocusEl = document.activeElement;
-      if (prevFocusEl instanceof HTMLElement && prevFocusEl.findParent(this._elRef.nativeElement)) {
-        const prevFocusTdEl = prevFocusEl.tagName === "TD" ? prevFocusEl : prevFocusEl.findParent("td");
-        if (prevFocusTdEl) {
-          const addr = {
-            r: NumberUtil.parseInt(prevFocusTdEl.getAttribute("r")),
-            c: NumberUtil.parseInt(prevFocusTdEl.getAttribute("c"))
-          };
-          requestAnimationFrame(() => {
-            if (document.activeElement !== prevFocusEl) {
-              const newFocusTdEl = this._elRef.nativeElement.findFirst<HTMLTableCellElement>(`._sheet-container > table > tbody > tr[r='${addr.r}'] > td[r='${addr.r}'][c='${addr.c}']`);
-              newFocusTdEl?.focus();
-            }
-          });
         }
-      }*/
-    });
 
-    // select props
-    $.run({
-      selectMode: [this.selectMode],
-      displayItemDefs: [this.displayItemDefs],
-      getIsItemSelectable: [this.getIsItemSelectable],
-      selectedItems: [this.selectedItems, "one"]
-    }, () => {
-      if (this.selectMode) {
-        const selectableItems = this.displayItemDefs.filter((item) => this.getIsItemSelectable(item.item)).map((item) => item.item);
-        this.hasSelectableItem = selectableItems.length > 0;
-        this.isAllItemsSelected = selectableItems.length <= this.selectedItems.length && selectableItems.every((item) => this.selectedItems.includes(item));
-      }
-      else {
-        this.hasSelectableItem = false;
-        this.isAllItemsSelected = false;
-      }
-    });
+        this.displayHeaderDefTable = headerDefTable;
+      });
 
-    // expand props
-    $.run({
-      getChildrenFn: [this.getChildrenFn],
-      displayItemDefs: [this.displayItemDefs],
-      expandedItems: [this.expandedItems, "one"]
-    }, () => {
-      if (this.getChildrenFn) {
-        const expandableItemDefs = this.displayItemDefs.filter((item) => item.hasChildren);
-        this.hasExpandableItem = expandableItemDefs.length > 0;
-        this.isAllItemsExpanded = expandableItemDefs.length <= this.expandedItems.length && expandableItemDefs.every((itemDef) => this.expandedItems.includes(itemDef.item));
-      }
-      else {
-        this.hasExpandableItem = false;
-        this.isAllItemsExpanded = false;
-      }
-    });
+      //-- displayPageLength
+      $.run({
+        pageItemCount: [this.pageItemCount],
+        itemsLength: [this.items.length],
+        pageLength: [this.pageLength]
+      }, () => {
+        if (this.pageItemCount !== undefined && this.pageItemCount !== 0 && this.items.length > 0) {
+          this.displayPageLength = Math.ceil(this.items.length / this.pageItemCount);
+        }
+        else if (this.displayPageLength !== this.pageLength) {
+          this.displayPageLength = this.pageLength;
+        }
+      });
+
+      //-- items: ordering
+      $.run({
+        items: [this.items, "one"],
+        observedOrdering: [!this.orderingChange.observed ? this.ordering : undefined, "all"]
+      }, () => {
+        let orderedItems = [...this.items];
+        if (!this.orderingChange.observed) {
+          for (const orderingItem of this.ordering.reverse()) {
+            if (orderingItem.desc) {
+              orderedItems = orderedItems.orderByDesc((item) => item[orderingItem.key]);
+            }
+            else {
+              orderedItems = orderedItems.orderBy((item) => item[orderingItem.key]);
+            }
+          }
+        }
+        this.orderedItems = orderedItems;
+      });
+
+      //-- items: paging
+      $.run({
+        orderedItems: [this.orderedItems],
+        pageItemCount: [this.pageItemCount],
+        itemsLength: [this.items.length],
+        page: [this.page]
+      }, () => {
+        let orderedPagedItems = [...this.orderedItems];
+        if (this.pageItemCount !== undefined && this.pageItemCount !== 0 && this.items.length > 0) {
+          orderedPagedItems = orderedPagedItems.slice(this.page * this.pageItemCount, (this.page + 1) * this.pageItemCount);
+        }
+        this.orderedPagedItems = orderedPagedItems;
+      });
+
+      //-- displayItemDefs
+      $.run({
+        orderedPagedItems: [this.orderedPagedItems],
+        getChildrenFn: [this.getChildrenFn],
+        observedOrdering: [!this.orderingChange.observed ? this.ordering : undefined, "all"]
+      }, () => {
+        let displayItemDefs: IItemDef<T>[] = this.orderedPagedItems.map((item) => ({
+          item,
+          parentDef: undefined,
+          hasChildren: false,
+          depth: 0
+        }));
+
+        if (this.getChildrenFn) {
+          let fn = (arr: IItemDef<T>[]): IItemDef<T>[] => {
+            let fnResult: IItemDef<T>[] = [];
+            for (let i = 0; i < arr.length; i++) {
+              fnResult.push(arr[i]);
+
+              const children = this.getChildrenFn!(i, arr[i].item) ?? [];
+              if (children.length > 0) {
+                arr[i].hasChildren = true;
 
 
-    //-- summary props
-    $.run({
-      columnControls: [this.columnControls, "one"]
-    }, () => {
-      if (this.columnControls) {
-        this.hasSummaryTemplate = this.columnControls.some((item) => item.summaryTemplateRef !== undefined);
-      }
-      else {
-        this.hasSummaryTemplate = false;
-      }
-    });
+                let displayChildren = children;
+                if (!this.orderingChange.observed) {
+                  for (const orderingItem of this.ordering.reverse()) {
+                    if (orderingItem.desc) {
+                      displayChildren = displayChildren.orderByDesc((item) => item[orderingItem.key]);
+                    }
+                    else {
+                      displayChildren = displayChildren.orderBy((item) => item[orderingItem.key]);
+                    }
+                  }
+                }
 
-    if (Object.keys($.changeData).length > 0) {
-      Object.assign(this._prevData, $.changeData);
-      this._cdr.markForCheck();
-    }
+                fnResult.push(...fn(children.map((item) => ({
+                  item,
+                  parentDef: arr[i],
+                  hasChildren: false,
+                  depth: arr[i].depth + 1
+                }))));
+              }
+            }
+
+            return fnResult;
+          };
+
+          displayItemDefs = fn(displayItemDefs);
+        }
+
+        this.displayItemDefs = displayItemDefs;
+
+        /*const prevFocusEl = document.activeElement;
+        if (prevFocusEl instanceof HTMLElement && prevFocusEl.findParent(this._elRef.nativeElement)) {
+          const prevFocusTdEl = prevFocusEl.tagName === "TD" ? prevFocusEl : prevFocusEl.findParent("td");
+          if (prevFocusTdEl) {
+            const addr = {
+              r: NumberUtil.parseInt(prevFocusTdEl.getAttribute("r")),
+              c: NumberUtil.parseInt(prevFocusTdEl.getAttribute("c"))
+            };
+            requestAnimationFrame(() => {
+              if (document.activeElement !== prevFocusEl) {
+                const newFocusTdEl = this._elRef.nativeElement.findFirst<HTMLTableCellElement>(`._sheet-container > table > tbody > tr[r='${addr.r}'] > td[r='${addr.r}'][c='${addr.c}']`);
+                newFocusTdEl?.focus();
+              }
+            });
+          }
+        }*/
+      });
+
+      // select props
+      $.run({
+        selectMode: [this.selectMode],
+        displayItemDefs: [this.displayItemDefs],
+        getIsItemSelectable: [this.getIsItemSelectable],
+        selectedItems: [this.selectedItems, "one"]
+      }, () => {
+        if (this.selectMode) {
+          const selectableItems = this.displayItemDefs.filter((item) => this.getIsItemSelectable(item.item)).map((item) => item.item);
+          this.hasSelectableItem = selectableItems.length > 0;
+          this.isAllItemsSelected = selectableItems.length <= this.selectedItems.length && selectableItems.every((item) => this.selectedItems.includes(item));
+        }
+        else {
+          this.hasSelectableItem = false;
+          this.isAllItemsSelected = false;
+        }
+      });
+
+      // expand props
+      $.run({
+        getChildrenFn: [this.getChildrenFn],
+        displayItemDefs: [this.displayItemDefs],
+        expandedItems: [this.expandedItems, "one"]
+      }, () => {
+        if (this.getChildrenFn) {
+          const expandableItemDefs = this.displayItemDefs.filter((item) => item.hasChildren);
+          this.hasExpandableItem = expandableItemDefs.length > 0;
+          this.isAllItemsExpanded = expandableItemDefs.length <= this.expandedItems.length && expandableItemDefs.every((itemDef) => this.expandedItems.includes(itemDef.item));
+        }
+        else {
+          this.hasExpandableItem = false;
+          this.isAllItemsExpanded = false;
+        }
+      });
+
+
+      //-- summary props
+      $.run({
+        columnControls: [this.columnControls, "one"]
+      }, () => {
+        if (this.columnControls) {
+          this.hasSummaryTemplate = this.columnControls.some((item) => item.summaryTemplateRef !== undefined);
+        }
+        else {
+          this.hasSummaryTemplate = false;
+        }
+      });
+    }, this.#cdr);
   }
 
-  public getIsCellEditMode(r: number, c: number): boolean {
-    return this._editModeCellAddr !== undefined && this._editModeCellAddr.r === r && this._editModeCellAddr.c === c;
+  getIsCellEditMode(r: number, c: number): boolean {
+    return this.#editModeCellAddr !== undefined && this.#editModeCellAddr.r === r && this.#editModeCellAddr.c === c;
   }
 
   /**
    * 셀렉팅 가능한 항목인지 확인
    * @param item
    */
-  public getIsItemSelectable(item: T): boolean {
+  getIsItemSelectable(item: T): boolean {
     return !this.getIsItemSelectableFn || this.getIsItemSelectableFn(item);
   }
 
@@ -988,7 +980,7 @@ export class SdSheetControl<T> implements DoCheck {
    * 컬럼 컨트롤의 오더링 방향이 DESC인지 여부 가져오기
    * @param columnKey
    */
-  public getIsColumnOrderingDesc(columnKey: string): boolean | undefined {
+  getIsColumnOrderingDesc(columnKey: string): boolean | undefined {
     return this.ordering.single((item) => item.key === columnKey)?.desc;
   }
 
@@ -996,7 +988,7 @@ export class SdSheetControl<T> implements DoCheck {
    * 컬럼 컨트롤의 오더링 순서번호 가져오기
    * @param columnKey
    */
-  public getColumnOrderingIndexText(columnKey: string): string | undefined {
+  getColumnOrderingIndexText(columnKey: string): string | undefined {
     if (this.ordering.length < 2) {
       return undefined;
     }
@@ -1008,7 +1000,7 @@ export class SdSheetControl<T> implements DoCheck {
    * 모든 상위항목이 Expand됬는지 여부 가져오기
    * @param itemDef
    */
-  public getIsHiddenItemDef(itemDef: IItemDef<T>): boolean {
+  getIsHiddenItemDef(itemDef: IItemDef<T>): boolean {
     let currItemDef = itemDef;
     while (currItemDef.parentDef) {
       if (!this.expandedItems.some((item) => item === currItemDef.parentDef!.item)) {
@@ -1025,7 +1017,7 @@ export class SdSheetControl<T> implements DoCheck {
   onFocusCapture(event: FocusEvent): void {
     if (!(event.target instanceof HTMLElement)) return;
 
-    const sheetContainerEl = this._elRef.nativeElement.findFirst("._sheet-container")!;
+    const sheetContainerEl = this.#elRef.nativeElement.findFirst("._sheet-container")!;
     const focusRowIndicatorEl = sheetContainerEl.findFirst<HTMLDivElement>("> ._focus-row-indicator")!;
 
     const theadEl = sheetContainerEl.findFirst<HTMLTableSectionElement>("> table > thead")!;
@@ -1084,8 +1076,8 @@ export class SdSheetControl<T> implements DoCheck {
 
     const item = this.displayItemDefs[NumberUtil.parseInt(tdEl.getAttribute("r"))!].item;
     if (this.autoSelect === "focus" && this.getIsItemSelectable(item)) {
-      this._selectItem(item);
-      this._cdr.markForCheck();
+      this.#selectItem(item);
+      this.#cdr.markForCheck();
     }
   }
 
@@ -1095,10 +1087,10 @@ export class SdSheetControl<T> implements DoCheck {
       event.target instanceof HTMLTableCellElement &&
       !(
         event.relatedTarget instanceof HTMLTableCellElement &&
-        event.relatedTarget.findParent(this._elRef.nativeElement)
+        event.relatedTarget.findParent(this.#elRef.nativeElement)
       )
     ) {
-      const focusRowIndicatorEl = this._elRef.nativeElement.findFirst<HTMLDivElement>("._focus-row-indicator")!;
+      const focusRowIndicatorEl = this.#elRef.nativeElement.findFirst<HTMLDivElement>("._focus-row-indicator")!;
       const focusCellIndicatorEl = focusRowIndicatorEl.firstElementChild as HTMLElement;
 
       focusCellIndicatorEl.style.display = "none";
@@ -1112,15 +1104,15 @@ export class SdSheetControl<T> implements DoCheck {
     }
 
     if (
-      this._editModeCellAddr &&
+      this.#editModeCellAddr &&
       !(
         event.target instanceof HTMLElement &&
         event.relatedTarget instanceof HTMLElement &&
         (event.target.findParent("td") ?? event.target) === event.relatedTarget.findParent("td")
       )
     ) {
-      this._editModeCellAddr = undefined;
-      this._cdr.markForCheck();
+      this.#editModeCellAddr = undefined;
+      this.#cdr.markForCheck();
     }
   }
 
@@ -1129,7 +1121,7 @@ export class SdSheetControl<T> implements DoCheck {
     if (event.target instanceof HTMLTableCellElement) {
       if (event.key === "F2") {
         event.preventDefault();
-        this._editModeCellAddr = {
+        this.#editModeCellAddr = {
           r: NumberUtil.parseInt(event.target.getAttribute("r"))!,
           c: NumberUtil.parseInt(event.target.getAttribute("c"))!
         };
@@ -1139,22 +1131,22 @@ export class SdSheetControl<T> implements DoCheck {
         });
       }
       else if (event.key === "ArrowDown") {
-        if (this._moveCellIfExists(event.target, 1, 0, false)) {
+        if (this.#moveCellIfExists(event.target, 1, 0, false)) {
           event.preventDefault();
         }
       }
       else if (event.key === "ArrowUp") {
-        if (this._moveCellIfExists(event.target, -1, 0, false)) {
+        if (this.#moveCellIfExists(event.target, -1, 0, false)) {
           event.preventDefault();
         }
       }
       else if (event.key === "ArrowRight") {
-        if (this._moveCellIfExists(event.target, 0, 1, false)) {
+        if (this.#moveCellIfExists(event.target, 0, 1, false)) {
           event.preventDefault();
         }
       }
       else if (event.key === "ArrowLeft") {
-        if (this._moveCellIfExists(event.target, 0, -1, false)) {
+        if (this.#moveCellIfExists(event.target, 0, -1, false)) {
           event.preventDefault();
         }
       }
@@ -1165,25 +1157,25 @@ export class SdSheetControl<T> implements DoCheck {
       if (event.key === "Escape") {
         event.preventDefault();
         tdEl.focus();
-        this._editModeCellAddr = undefined;
+        this.#editModeCellAddr = undefined;
       }
       else if (event.ctrlKey && event.key === "ArrowDown") {
-        if (this._moveCellIfExists(tdEl, 1, 0, true)) {
+        if (this.#moveCellIfExists(tdEl, 1, 0, true)) {
           event.preventDefault();
         }
       }
       else if (event.ctrlKey && event.key === "ArrowUp") {
-        if (this._moveCellIfExists(tdEl, -1, 0, true)) {
+        if (this.#moveCellIfExists(tdEl, -1, 0, true)) {
           event.preventDefault();
         }
       }
       else if (event.ctrlKey && event.key === "ArrowRight") {
-        if (this._moveCellIfExists(tdEl, 0, 1, true)) {
+        if (this.#moveCellIfExists(tdEl, 0, 1, true)) {
           event.preventDefault();
         }
       }
       else if (event.ctrlKey && event.key === "ArrowLeft") {
-        if (this._moveCellIfExists(tdEl, 0, -1, true)) {
+        if (this.#moveCellIfExists(tdEl, 0, -1, true)) {
           event.preventDefault();
         }
       }
@@ -1243,7 +1235,7 @@ export class SdSheetControl<T> implements DoCheck {
   }
 
   onFixedCellResize(c: number): void {
-    const sheetContainerEl = this._elRef.nativeElement.findFirst("._sheet-container")!;
+    const sheetContainerEl = this.#elRef.nativeElement.findFirst("._sheet-container")!;
 
     const fixedColumnLength = this.displayColumnDefs.filter((item) => item.fixed).length;
 
@@ -1261,10 +1253,10 @@ export class SdSheetControl<T> implements DoCheck {
   }
 
   onResizerMousedown(event: MouseEvent, columnControl: SdSheetColumnDirective<T>): void {
-    this._isOnResizing = true;
+    this.#isOnResizing = true;
 
     const thEl = (event.target as HTMLElement).findParent("th")!;
-    const resizeIndicatorEl = this._elRef.nativeElement.findFirst<HTMLDivElement>("._sheet-container > ._resize-indicator")!;
+    const resizeIndicatorEl = this.#elRef.nativeElement.findFirst<HTMLDivElement>("._sheet-container > ._resize-indicator")!;
 
     const startX = event.clientX;
     const startWidthPx = thEl.clientWidth;
@@ -1290,33 +1282,33 @@ export class SdSheetControl<T> implements DoCheck {
       resizeIndicatorEl.style.display = "none";
 
       const newWidthPx = Math.max(startWidthPx + e.clientX - startX, 5);
-      this._resizedWidths[columnControl.guid] = newWidthPx + 1 + "px";
+      this.#resizedWidths[columnControl.guid] = newWidthPx + 1 + "px";
 
       if (columnControl.key !== undefined) {
-        await this._saveColumnConfigAsync(columnControl.key, {width: newWidthPx + "px"});
+        await this.#saveColumnConfigAsync(columnControl.key, {width: newWidthPx + "px"});
       }
 
-      this._ngZone.run(() => {
-        this._cdr.markForCheck();
+      this.#ngZone.run(() => {
+        this.#cdr.markForCheck();
       });
 
       setTimeout(() => {
-        this._isOnResizing = false;
+        this.#isOnResizing = false;
       }, 300);
     };
 
-    this._ngZone.runOutsideAngular(() => {
+    this.#ngZone.runOutsideAngular(() => {
       document.documentElement.addEventListener("mousemove", doDrag, false);
       document.documentElement.addEventListener("mouseup", stopDrag, false);
     });
   }
 
   async onResizerDoubleClick(event: MouseEvent, columnControl: SdSheetColumnDirective<T>): Promise<void> {
-    delete this._resizedWidths[columnControl.guid];
+    delete this.#resizedWidths[columnControl.guid];
 
     if (columnControl.key !== undefined) {
-      await this._saveColumnConfigAsync(columnControl.key, {width: undefined});
-      this._cdr.markForCheck();
+      await this.#saveColumnConfigAsync(columnControl.key, {width: undefined});
+      this.#cdr.markForCheck();
     }
   }
 
@@ -1328,10 +1320,10 @@ export class SdSheetControl<T> implements DoCheck {
     if (!this.getIsItemSelectable(item)) return;
 
     if (this.selectedItems.includes(item)) {
-      this._unselectItem(item);
+      this.#unselectItem(item);
     }
     else {
-      this._selectItem(item);
+      this.#selectItem(item);
     }
   }
 
@@ -1356,14 +1348,14 @@ export class SdSheetControl<T> implements DoCheck {
     if (this.autoSelect !== "click") return;
     if (!this.getIsItemSelectable(item)) return;
 
-    this._selectItem(item);
+    this.#selectItem(item);
   }
 
   onCellDoubleClick(event: MouseEvent): void {
     if (!(event.target instanceof HTMLElement)) return;
     const tdEl = event.target.tagName === "TD" ? event.target : event.target.findParent("td")!;
 
-    this._editModeCellAddr = {
+    this.#editModeCellAddr = {
       r: NumberUtil.parseInt(tdEl.getAttribute("r"))!,
       c: NumberUtil.parseInt(tdEl.getAttribute("c"))!
     };
@@ -1422,13 +1414,13 @@ export class SdSheetControl<T> implements DoCheck {
    */
   onHeaderCellClick(event: MouseEvent, headerCell: IHeaderDef<T>): void {
     if (headerCell.isLastDepth && headerCell.control.useOrdering && headerCell.control.key != null) {
-      if (this._isOnResizing) return;
+      if (this.#isOnResizing) return;
       if (event.target instanceof HTMLElement && event.target.classList.contains("_resizer")) return;
       if (event.shiftKey || event.ctrlKey) {
-        this._toggleOrdering(headerCell.control.key, true);
+        this.#toggleOrdering(headerCell.control.key, true);
       }
       else {
-        this._toggleOrdering(headerCell.control.key, false);
+        this.#toggleOrdering(headerCell.control.key, false);
       }
     }
   }
@@ -1437,18 +1429,18 @@ export class SdSheetControl<T> implements DoCheck {
    * 시트 설정창 보기 버튼 클릭시 이벤트
    */
   async onConfigButtonClick(): Promise<void> {
-    const result = await this._sdModal.showAsync(SdSheetConfigModal, "시트 설정창", {
+    const result = await this.#sdModal.showAsync(SdSheetConfigModal, "시트 설정창", {
       sheetKey: this.key,
       controls: this.columnControls!.toArray(),
-      config: this._config
+      config: this.#config
     }, {
       useCloseByBackdrop: true
     });
     if (!result) return;
 
-    this._config = result;
-    await this._sdSystemConfig.setAsync(`sd-sheet.${this.key!}`, this._config);
-    this._cdr.markForCheck();
+    this.#config = result;
+    await this.#sdSystemConfig.setAsync(`sd-sheet.${this.key!}`, this.#config);
+    this.#cdr.markForCheck();
   }
 
   /**
@@ -1457,7 +1449,7 @@ export class SdSheetControl<T> implements DoCheck {
    * @param multiple 여러 컬럼에 대한 정렬조건을 사용하는 토글인지 여부
    * @private
    */
-  private _toggleOrdering(key: string, multiple: boolean): void {
+  #toggleOrdering(key: string, multiple: boolean): void {
     let ordering = ObjectUtil.clone(this.ordering);
 
     const orderingItem = ordering.single((item) => item.key === key);
@@ -1491,7 +1483,7 @@ export class SdSheetControl<T> implements DoCheck {
    * @param item 선택 설정할 항목
    * @private
    */
-  private _selectItem(item: T): void {
+  #selectItem(item: T): void {
     if (this.selectedItems.includes(item)) return;
 
     if (this.selectedItemsChange.observed) {
@@ -1517,7 +1509,7 @@ export class SdSheetControl<T> implements DoCheck {
    * @param item 선택 해제할 항목
    * @private
    */
-  private _unselectItem(item: T): void {
+  #unselectItem(item: T): void {
     if (!this.selectedItems.includes(item)) return;
 
     if (this.selectedItemsChange.observed) {
@@ -1530,23 +1522,23 @@ export class SdSheetControl<T> implements DoCheck {
     }
   }
 
-  private _moveCellIfExists(el: HTMLTableCellElement, offsetR: number, offsetC: number, isEditMode: boolean): boolean {
+  #moveCellIfExists(el: HTMLTableCellElement, offsetR: number, offsetC: number, isEditMode: boolean): boolean {
     const targetAddr = {
       r: NumberUtil.parseInt(el.getAttribute("r"))! + offsetR,
       c: NumberUtil.parseInt(el.getAttribute("c"))! + offsetC
     };
-    const targetEl = this._elRef.nativeElement.findFirst<HTMLTableCellElement>(`._sheet-container > table > tbody > tr > td[r='${targetAddr.r}'][c='${targetAddr.c}']`);
+    const targetEl = this.#elRef.nativeElement.findFirst<HTMLTableCellElement>(`._sheet-container > table > tbody > tr > td[r='${targetAddr.r}'][c='${targetAddr.c}']`);
     if (targetEl) {
       targetEl.focus();
       if (isEditMode) {
-        this._editModeCellAddr = {r: targetAddr.r, c: targetAddr.c};
+        this.#editModeCellAddr = {r: targetAddr.r, c: targetAddr.c};
         requestAnimationFrame(() => {
           const focusableEl = targetEl.findFocusableFirst();
           if (focusableEl) focusableEl.focus();
         });
       }
       else {
-        this._editModeCellAddr = undefined;
+        this.#editModeCellAddr = undefined;
       }
       return true;
     }
@@ -1557,12 +1549,12 @@ export class SdSheetControl<T> implements DoCheck {
    * 시트 설정중 컬럼설정 저장
    * @private
    */
-  private async _saveColumnConfigAsync(columnKey: string, config: Partial<IConfigColumn>): Promise<void> {
-    this._config = this._config ?? {columnRecord: {}};
-    this._config.columnRecord = this._config.columnRecord ?? {};
-    this._config.columnRecord[columnKey] = this._config.columnRecord[columnKey] ?? {};
-    Object.assign(this._config.columnRecord[columnKey]!, config);
-    await this._sdSystemConfig.setAsync(`sd-sheet.${this.key}`, this._config);
+  async #saveColumnConfigAsync(columnKey: string, config: Partial<IConfigColumn>): Promise<void> {
+    this.#config = this.#config ?? {columnRecord: {}};
+    this.#config.columnRecord = this.#config.columnRecord ?? {};
+    this.#config.columnRecord[columnKey] = this.#config.columnRecord[columnKey] ?? {};
+    Object.assign(this.#config.columnRecord[columnKey]!, config);
+    await this.#sdSystemConfig.setAsync(`sd-sheet.${this.key}`, this.#config);
   }
 }
 

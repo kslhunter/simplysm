@@ -1,18 +1,14 @@
 import {
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   ContentChildren,
-  DoCheck,
   EventEmitter,
   HostBinding,
-  inject,
   Input,
   Output,
   QueryList
 } from "@angular/core";
 import {SdInputValidate} from "../../utils/SdInputValidate";
-import {SdDoCheckHelper} from "../../utils/SdDoCheckHelper";
 
 @Component({
   selector: "sd-checkbox-group",
@@ -20,9 +16,7 @@ import {SdDoCheckHelper} from "../../utils/SdDoCheckHelper";
   template: `
     <ng-content></ng-content>`
 })
-export class SdCheckboxGroupControl implements DoCheck {
-  private _cdr = inject(ChangeDetectorRef);
-
+export class SdCheckboxGroupControl {
   @Input()
   @SdInputValidate({type: Array, notnull: true})
   value: any[] = [];
@@ -41,19 +35,6 @@ export class SdCheckboxGroupControl implements DoCheck {
 
   @ContentChildren(SdCheckboxGroupControl, {descendants: true})
   itemControls?: QueryList<SdCheckboxGroupControl>;
-
-  private _prevData: Record<string, any> = {};
-
-  ngDoCheck(): void {
-    const $ = new SdDoCheckHelper(this._prevData);
-
-    $.run({value: [this.value, "one"]}, () => {});
-
-    if (Object.keys($.changeData).length > 0) {
-      Object.assign(this._prevData, $.changeData);
-      this._cdr.markForCheck();
-    }
-  }
 
   getIsItemSelected(value: any): boolean {
     const thisKeys = (this.keyProp !== undefined) ? this.value?.map((item) => item[this.keyProp!]) : this.value;
