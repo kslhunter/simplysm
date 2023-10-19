@@ -15,6 +15,7 @@ import {ISharedDataBase} from "../../providers/SdSharedDataProvider";
 import {SdInputValidate} from "../../utils/SdInputValidate";
 import {SdSharedDataItemTemplateContext, SdSharedDataItemTemplateDirective} from "./SdSharedDataItemTemplateDirective";
 import {ISdSheetColumnOrderingVM} from "../sheet/SdSheetControl";
+import {SdDoCheckHelper} from "../../utils/SdDoCheckHelper";
 
 @Component({
   selector: "sd-shared-data-select-view",
@@ -113,24 +114,19 @@ export class SdSharedDataSelectViewControl<T extends ISharedDataBase<string | nu
   public constructor(private readonly _cdr: ChangeDetectorRef) {
   }
 
-  private readonly _prevData: Record<string, any> = {};
+  private _prevData: Record<string, any> = {};
 
-  public ngDoCheck(): void {
-    if (!ObjectUtil.equal(this.items, this._prevData["items"])) {
-      if (this.selectedItem && !this.items?.includes(this.selectedItem)) {
-        if (this.selectedItemChange.observed) {
-          this.selectedItemChange.emit(undefined);
-        }
-        else {
-          this.selectedItem = undefined;
-        }
-      }
+  ngDoCheck(): void {
+    const $ = new SdDoCheckHelper(this._prevData);
 
-      this._prevData["items"] = ObjectUtil.clone(this.items);
+    $.run({value: [this.items, "one"]}, () => {
+      this.selectedItem = this.items?.single((item) => item.__valueKey === this.selectedItem?.__valueKey);
+    });
+
+    if (Object.keys($.changeData).length > 0) {
+      Object.assign(this._prevData, $.changeData);
       this._cdr.markForCheck();
     }
-
-    this._cdr.markForCheck();
   }
 
   public onSelectedItemChange(item: T | undefined): void {
