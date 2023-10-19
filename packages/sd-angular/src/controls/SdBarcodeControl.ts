@@ -11,8 +11,7 @@ import {CommonModule} from "@angular/common";
   standalone: true,
   imports: [CommonModule],
   template: `
-    <canvas [hidden]="!value"
-            [style.display]="type !== 'qrcode' ? 'none' : undefined"></canvas>
+    <canvas [hidden]="!value" [style.display]="type !== 'qrcode' ? 'none' : undefined"></canvas>
     <svg [hidden]="!value" [style.display]="type === 'qrcode' ? 'none' : undefined"
          [style.margin-bottom]="'-5px'"></svg>`
 })

@@ -13,4 +13,6 @@
 _logs
 node_modules
 packages/*/.cache
+packages/*/.cordova
+packages/*/.electron
 packages/*/dist

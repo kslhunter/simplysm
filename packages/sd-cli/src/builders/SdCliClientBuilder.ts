@@ -108,7 +108,15 @@ export class SdCliClientBuilder extends EventEmitter {
     const results = buildResults.mapMany((item) => item.results).distinct();
 
     this._debug(`LINT...`);
-    const lintResults = await SdLinter.lintAsync(affectedFilePaths, this._pkgPath);
+    const lintResults = await SdLinter.lintAsync(
+      affectedFilePaths.filter((item) =>
+        item.endsWith(".ts") ||
+        item.endsWith(".js") ||
+        item.endsWith(".cjs") ||
+        item.endsWith(".mjs")
+      ),
+      this._pkgPath
+    );
 
     if (opt.genConf) {
       this._debug("GEN .config...");

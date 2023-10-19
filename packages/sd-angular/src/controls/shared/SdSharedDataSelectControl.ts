@@ -6,17 +6,15 @@ import {
   DoCheck,
   EventEmitter,
   Input,
-  IterableDiffer,
-  IterableDiffers,
   Output,
   TemplateRef,
   Type
 } from "@angular/core";
-import {ObjectUtil} from "@simplysm/sd-core-common";
 import {ISharedDataBase} from "../../providers/SdSharedDataProvider";
 import {SdInputValidate} from "../../utils/SdInputValidate";
 import {SdModalBase, SdModalProvider} from "../../providers/SdModalProvider";
 import {SdSharedDataItemTemplateContext, SdSharedDataItemTemplateDirective} from "./SdSharedDataItemTemplateDirective";
+import {SdDoCheckHelper} from "../../utils/SdDoCheckHelper";
 
 @Component({
   selector: "sd-shared-data-select",
@@ -56,7 +54,7 @@ import {SdSharedDataItemTemplateContext, SdSharedDataItemTemplateDirective} from
       <ng-template #item let-item="item" let-index="index" let-depth="depth">
         <sd-select-item [value]="item.__valueKey"
                         *ngIf="getItemSelectable(index, item, depth)"
-                        [hidden]="!getItemVisible(index, item, depth)">
+                        [style.display]="!getItemVisible(index, item, depth) ? 'none' : undefined">
           <span [style.text-decoration]="getIsHiddenFn(index, item) ? 'line-through' : undefined">
             <ng-template [ngTemplateOutlet]="itemTemplateRef"
                          [ngTemplateOutletContext]="{$implicit: item, item: item, index: index, depth: depth}"></ng-template>
@@ -166,24 +164,9 @@ export class SdSharedDataSelectControl<T extends ISharedDataBase<string | number
   public displayOrderKeyProp?: string;
 
   public searchText?: string;
+
   public itemByParentKeyMap?: Map<T["__valueKey"] | undefined, any>;
-
-  public get rootDisplayItems(): any[] {
-    let result = this.items;
-
-    result = result.filter((item, index) => (
-      (!this.filterFn || this.filterFn(index, item))
-      && (this.parentKeyProp === undefined || item[this.parentKeyProp] === undefined)
-    ));
-
-    if (this.displayOrderKeyProp !== undefined) {
-      result = result.orderBy((item) => item[this.displayOrderKeyProp!]);
-    }
-
-    return result;
-  }
-
-  private readonly _itemsIterableDiffer: IterableDiffer<any>;
+  public rootDisplayItems: T[] = [];
 
   // 선택될 수 있는것들 (검색어에 의해 숨겨진것도 포함)
   public getItemSelectable(index: number, item: any, depth: number): boolean {
@@ -231,30 +214,36 @@ export class SdSharedDataSelectControl<T extends ISharedDataBase<string | number
   };
 
   public constructor(private readonly _cdr: ChangeDetectorRef,
-                     private readonly _iterableDiffers: IterableDiffers,
                      private readonly _modal: SdModalProvider) {
-    this._itemsIterableDiffer = this._iterableDiffers.find(this.items).create((i, item) => this.trackByFn(i, item));
   }
 
-  private readonly _prevData: Record<string, any> = {};
+  private _prevData: Record<string, any> = {};
 
   public ngDoCheck(): void {
-    const itemChanges = this._itemsIterableDiffer.diff(this.items);
+    const $ = new SdDoCheckHelper(this._prevData);
 
-    const isFilterFnChange = this._prevData["filterFn"] !== this.filterFn;
-    if (isFilterFnChange) this._prevData["filterFn"] = this.filterFn;
+    $.run({
+      items: [this.items, "all"],
+      filterFn: [this.filterFn],
+      parentKeyProp: [this.parentKeyProp],
+      displayOrderKeyProp: [this.displayOrderKeyProp]
+    }, () => {
+      let result = this.items.filter((item, index) => (
+        (!this.filterFn || this.filterFn(index, item))
+        && (this.parentKeyProp === undefined || item[this.parentKeyProp] === undefined)
+      ));
 
-    const isValueChange = !ObjectUtil.equal(this._prevData["value"], this.value);
-    if (isValueChange) this._prevData["value"] = ObjectUtil.clone(this.value);
+      if (this.displayOrderKeyProp !== undefined) {
+        result = result.orderBy((item) => item[this.displayOrderKeyProp!]);
+      }
 
-    const isParentKeyPropChange = !ObjectUtil.equal(this._prevData["parentKeyProp"], this.parentKeyProp);
-    if (isParentKeyPropChange) this._prevData["parentKeyProp"] = ObjectUtil.clone(this.parentKeyProp);
+      this.rootDisplayItems = result;
+    });
 
-    if (itemChanges || (this.value instanceof Array && isValueChange)) {
-      this._cdr.markForCheck();
-    }
-
-    if (itemChanges || isParentKeyPropChange) {
+    $.run({
+      items: [this.items, "all"],
+      parentKeyProp: [this.parentKeyProp]
+    }, () => {
       if (this.parentKeyProp !== undefined) {
         this.itemByParentKeyMap = this.items
           .groupBy((item) => item[this.parentKeyProp!])
@@ -263,6 +252,10 @@ export class SdSharedDataSelectControl<T extends ISharedDataBase<string | number
       else {
         this.itemByParentKeyMap = undefined;
       }
+    });
+
+    if (Object.keys($.changeData).length > 0) {
+      Object.assign(this._prevData, $.changeData);
       this._cdr.markForCheck();
     }
   }

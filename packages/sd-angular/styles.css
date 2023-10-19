@@ -458,6 +458,10 @@ form {
   display: inline;
 }
 
+hidden {
+  display: none !important;
+}
+
 h1 {
   font-size: var(--font-size-h1);
   line-height: var(--line-height);
@@ -4244,65 +4248,65 @@ h6 {
 }
 
 .flex-row {
-  display: flex;
+  display: flex !important;
   flex-wrap: nowrap;
   flex-direction: row;
 }
 
 .flex-row-inline {
-  display: inline-flex;
+  display: inline-flex !important;
   flex-wrap: nowrap;
   flex-direction: row;
   white-space: nowrap;
 }
 
 .flex-column {
-  display: flex;
+  display: flex !important;
   flex-wrap: nowrap;
   flex-direction: column;
 }
 
 .flex-column-inline {
-  display: inline-flex;
+  display: inline-flex !important;
   flex-wrap: nowrap;
   flex-direction: column;
   white-space: nowrap;
 }
 
 .flex-gap-xxs {
-  gap: var(--gap-xxs);
+  gap: var(--gap-xxs) !important;
 }
 
 .flex-gap-xs {
-  gap: var(--gap-xs);
+  gap: var(--gap-xs) !important;
 }
 
 .flex-gap-sm {
-  gap: var(--gap-sm);
+  gap: var(--gap-sm) !important;
 }
 
 .flex-gap-default {
-  gap: var(--gap-default);
+  gap: var(--gap-default) !important;
 }
 
 .flex-gap-lg {
-  gap: var(--gap-lg);
+  gap: var(--gap-lg) !important;
 }
 
 .flex-gap-xl {
-  gap: var(--gap-xl);
+  gap: var(--gap-xl) !important;
 }
 
 .flex-gap-xxl {
-  gap: var(--gap-xxl);
+  gap: var(--gap-xxl) !important;
 }
 
 .flex-gap-0 {
-  gap: var(--gap-0);
+  gap: var(--gap-0) !important;
 }
 
 .flex-gap-auto {
-  gap: var(--gap-auto);
+  gap: var(--gap-auto) !important;
 }
 
 .flex-grow {
