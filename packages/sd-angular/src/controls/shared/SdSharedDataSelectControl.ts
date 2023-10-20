@@ -4,7 +4,7 @@ import {
   Component,
   ContentChild,
   DoCheck,
-  EventEmitter,
+  EventEmitter, inject,
   Input,
   Output,
   TemplateRef,
@@ -65,40 +65,40 @@ import {SdDoCheckHelper} from "../../utils/SdDoCheckHelper";
 })
 export class SdSharedDataSelectControl<T extends ISharedDataBase<string | number>> implements DoCheck {
   @Input()
-  public items: T[] = [];
+  items: T[] = [];
 
   @Input()
-  public value?: (T["__valueKey"][]) | T["__valueKey"];
+  value?: (T["__valueKey"][]) | T["__valueKey"];
 
   @Output()
-  public readonly valueChange = new EventEmitter<(this["selectMode"] extends "multi" ? (T["__valueKey"][]) : T["__valueKey"]) | undefined>();
+  valueChange = new EventEmitter<(this["selectMode"] extends "multi" ? (T["__valueKey"][]) : T["__valueKey"]) | undefined>();
 
   @Input()
   @SdInputValidate(Boolean)
-  public disabled?: boolean;
+  disabled?: boolean;
 
   @Input()
   @SdInputValidate(Boolean)
-  public required?: boolean;
+  required?: boolean;
 
   @Input()
   @SdInputValidate(Boolean)
-  public useUndefined?: boolean;
+  useUndefined?: boolean;
 
   @Input()
   @SdInputValidate(Boolean)
-  public inset?: boolean;
+  inset?: boolean;
 
   @Input()
   @SdInputValidate(Boolean)
-  public inline?: boolean;
+  inline?: boolean;
 
   @Input()
   @SdInputValidate({
     type: String,
     includes: ["sm", "lg"]
   })
-  public size?: "sm" | "lg";
+  size?: "sm" | "lg";
 
   @Input()
   @SdInputValidate({
@@ -106,77 +106,81 @@ export class SdSharedDataSelectControl<T extends ISharedDataBase<string | number
     includes: ["single", "multi"],
     notnull: true
   })
-  public selectMode: "single" | "multi" = "single";
+  selectMode: "single" | "multi" = "single";
 
   @Input()
   @SdInputValidate(Function)
-  public filterFn?: (index: number, item: T) => boolean;
+  filterFn?: (index: number, item: T) => boolean;
 
   @ContentChild(SdSharedDataItemTemplateDirective, {static: true, read: TemplateRef})
-  public itemTemplateRef?: TemplateRef<SdSharedDataItemTemplateContext<T>>;
+  itemTemplateRef?: TemplateRef<SdSharedDataItemTemplateContext<T>>;
 
   @Input()
   @SdInputValidate(Object)
-  public modalInputParam?: Record<string, ISharedDataModalInputParam>;
+  modalInputParam?: Record<string, ISharedDataModalInputParam>;
 
   @Input()
-  public modalType?: Type<SdModalBase<ISharedDataModalInputParam, ISharedDataModalOutputResult>>;
+  modalType?: Type<SdModalBase<ISharedDataModalInputParam, ISharedDataModalOutputResult>>;
 
   @Input()
   @SdInputValidate({type: String})
-  public modalHeader?: string;
+  modalHeader?: string;
 
   @Input()
   @SdInputValidate(String)
-  public selectClass?: string;
+  selectClass?: string;
 
   @Input()
   @SdInputValidate({type: String, includes: ["vertical", "horizontal"]})
-  public multiSelectionDisplayDirection?: "vertical" | "horizontal";
+  multiSelectionDisplayDirection?: "vertical" | "horizontal";
 
   @Input()
   @SdInputValidate({
     type: Function,
     notnull: true
   })
-  public trackByFn = (index: number, item: T): (string | number) => item.__valueKey;
+  trackByFn = (index: number, item: T): (string | number) => item.__valueKey;
 
   @Input()
   @SdInputValidate({
     type: Function,
     notnull: true
   })
-  public getIsHiddenFn = (index: number, item: T): boolean => item.__isHidden;
+  getIsHiddenFn = (index: number, item: T): boolean => item.__isHidden;
 
   @Input()
   @SdInputValidate({
     type: Function,
     notnull: true
   })
-  public getSearchTextFn = (index: number, item: T): string => item.__searchText;
+  getSearchTextFn = (index: number, item: T): string => item.__searchText;
 
   @Input()
   @SdInputValidate(String)
-  public parentKeyProp?: string;
+  parentKeyProp?: string;
 
   @Input()
   @SdInputValidate(String)
-  public displayOrderKeyProp?: string;
+  displayOrderKeyProp?: string;
 
-  public searchText?: string;
 
-  public itemByParentKeyMap?: Map<T["__valueKey"] | undefined, any>;
-  public rootDisplayItems: T[] = [];
+  searchText?: string;
+
+  itemByParentKeyMap?: Map<T["__valueKey"] | undefined, any>;
+  rootDisplayItems: T[] = [];
+
+  #cdr = inject(ChangeDetectorRef);
+  #sdModal = inject(SdModalProvider);
 
   // 선택될 수 있는것들 (검색어에 의해 숨겨진것도 포함)
-  public getItemSelectable(index: number, item: any, depth: number): boolean {
+  getItemSelectable(index: number, item: any, depth: number): boolean {
     return (this.parentKeyProp === undefined || depth !== 0 || item[this.parentKeyProp] === undefined);
   }
 
   // 화면 목록에서 뿌려질것 (검색어에 의해 숨겨진것 제외)
-  public getItemVisible(index: number, item: any, depth: number): boolean {
+  getItemVisible(index: number, item: any, depth: number): boolean {
     return (
-        this._isIncludeSearchText(index, item, depth)
+        this.#isIncludeSearchText(index, item, depth)
         && !this.getIsHiddenFn(index, item)
       )
       || this.value === this.trackByFn(index, item) as any
@@ -186,7 +190,7 @@ export class SdSharedDataSelectControl<T extends ISharedDataBase<string | number
       );
   }
 
-  private _isIncludeSearchText(index: number, item: any, depth: number): boolean {
+  #isIncludeSearchText(index: number, item: any, depth: number): boolean {
     if (this.getSearchTextFn(index, item).toLowerCase().includes(this.searchText?.toLowerCase() ?? "")) {
       return true;
     }
@@ -194,7 +198,7 @@ export class SdSharedDataSelectControl<T extends ISharedDataBase<string | number
     if (this.parentKeyProp !== undefined) {
       const children = this.getChildrenFn(index, item, item.depth);
       for (let i = 0; i < children.length; i++) {
-        if (this._isIncludeSearchText(i, children[i], item.depth + 1)) {
+        if (this.#isIncludeSearchText(i, children[i], item.depth + 1)) {
           return true;
         }
       }
@@ -203,7 +207,7 @@ export class SdSharedDataSelectControl<T extends ISharedDataBase<string | number
     return false;
   }
 
-  public getChildrenFn = (index: number, item: ISharedDataBase<string | number>, depth: number): any[] => {
+  getChildrenFn = (index: number, item: ISharedDataBase<string | number>, depth: number): any[] => {
     let result = this.itemByParentKeyMap?.get(item.__valueKey) ?? [];
 
     if (this.displayOrderKeyProp !== undefined) {
@@ -213,11 +217,8 @@ export class SdSharedDataSelectControl<T extends ISharedDataBase<string | number
     return result;
   };
 
-  public constructor(private readonly _cdr: ChangeDetectorRef,
-                     private readonly _modal: SdModalProvider) {
-  }
-
-  public ngDoCheck(): void {
+  ngDoCheck(): void {
+    //-- rootDisplayItems
     SdDoCheckHelper.use($ => {
       $.run({
         items: [this.items, "all"],
@@ -237,6 +238,7 @@ export class SdSharedDataSelectControl<T extends ISharedDataBase<string | number
         this.rootDisplayItems = result;
       });
 
+      //-- itemByParentKeyMap
       $.run({
         items: [this.items, "all"],
         parentKeyProp: [this.parentKeyProp]
@@ -250,10 +252,10 @@ export class SdSharedDataSelectControl<T extends ISharedDataBase<string | number
           this.itemByParentKeyMap = undefined;
         }
       });
-    }, this._cdr);
+    }, this.#cdr);
   }
 
-  public onValueChange(value: any | any[]): void {
+  onValueChange(value: any | any[]): void {
     if (this.valueChange.observed) {
       this.valueChange.emit(value);
     }
@@ -262,9 +264,9 @@ export class SdSharedDataSelectControl<T extends ISharedDataBase<string | number
     }
   }
 
-  public async onDetailButtonClick(): Promise<void> {
+  async onDetailButtonClick(): Promise<void> {
     if (this.modalType) {
-      const result = await this._modal.showAsync(this.modalType, this.modalHeader ?? "자세히...", {
+      const result = await this.#sdModal.showAsync(this.modalType, this.modalHeader ?? "자세히...", {
         selectMode: this.selectMode,
         selectedItemKeys: (this.selectMode === "multi" ? (this.value as any[]) : [this.value]).filterExists(),
         ...this.modalInputParam
@@ -280,7 +282,7 @@ export class SdSharedDataSelectControl<T extends ISharedDataBase<string | number
           this.value = newValue;
         }
       }
-      this._cdr.markForCheck();
+      this.#cdr.markForCheck();
     }
   }
 }

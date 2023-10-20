@@ -14,7 +14,6 @@ import {fileURLToPath, pathToFileURL} from "url";
 import {SdCliBuildResultUtil} from "../utils/SdCliBuildResultUtil";
 import semver from "semver";
 import {NotImplementError, StringUtil, Wait} from "@simplysm/sd-core-common";
-import {SdCliIndexFileGenerator} from "../build-tools/SdCliIndexFileGenerator";
 import {SdStorage} from "@simplysm/sd-storage";
 import {SdCliLocalUpdate} from "./SdCliLocalUpdate";
 
@@ -56,14 +55,6 @@ export class SdCliProject {
     if (notExistsPkgs.length > 0) {
       throw new Error("패키지를 찾을 수 없습니다. (" + notExistsPkgs.join(", ") + ")");
     }
-
-    logger.debug("라이브러리 INDEX 파일 생성...");
-    await pkgPaths.parallelAsync(async (pkgPath) => {
-      const pkgConf = projConf.packages[path.basename(pkgPath)]!;
-      if (pkgConf.type === "library" && FsUtil.exists(path.resolve(pkgPath, "tsconfig.json"))) {
-        await SdCliIndexFileGenerator.watchAsync(pkgPath, pkgConf.polyfills);
-      }
-    });
 
     logger.debug("빌드 프로세스 준비...");
     const cluster = await this._prepareClusterAsync();
@@ -244,14 +235,6 @@ export class SdCliProject {
     logger.debug("프로젝트 및 패키지 버전 설정...");
     await this._upgradeVersionAsync(projNpmConf, allPkgPaths);
 
-    logger.debug("라이브러리 INDEX 파일 생성...");
-    await pkgPaths.parallelAsync(async (pkgPath) => {
-      const pkgConf = projConf.packages[path.basename(pkgPath)]!;
-      if (pkgConf.type === "library" && FsUtil.exists(path.resolve(pkgPath, "tsconfig.json"))) {
-        await SdCliIndexFileGenerator.runAsync(pkgPath, pkgConf.polyfills);
-      }
-    });
-
     logger.debug("빌드 프로세스 준비...");
     const cluster = await this._prepareClusterAsync();
 
@@ -321,14 +304,6 @@ export class SdCliProject {
 
     // 빌드
     if (!opt.noBuild) {
-      logger.debug("라이브러리 INDEX 파일 생성...");
-      await pkgPaths.parallelAsync(async (pkgPath) => {
-        const pkgConf = projConf.packages[path.basename(pkgPath)]!;
-        if (pkgConf.type === "library" && FsUtil.exists(path.resolve(pkgPath, "tsconfig.json"))) {
-          await SdCliIndexFileGenerator.runAsync(pkgPath, pkgConf.polyfills);
-        }
-      });
-
       logger.debug("빌드 프로세스 준비...");
       const cluster = await this._prepareClusterAsync();
 

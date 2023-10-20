@@ -1,15 +1,17 @@
 import {FsUtil, Logger, SdFsWatcher} from "@simplysm/sd-core-node";
 import path from "path";
-import {ISdCliBuilderResult} from "../commons";
+import {ISdCliBuilderResult, ISdCliLibPackageConfig} from "../commons";
 import {EventEmitter} from "events";
 import {SdTsCompiler} from "../build-tools/SdTsCompiler";
 import {SdLinter} from "../build-tools/SdLinter";
 import {FunctionQueue} from "@simplysm/sd-core-common";
+import {SdCliIndexFileGenerator} from "../build-tools/SdCliIndexFileGenerator";
 
 export class SdCliTsLibBuilder extends EventEmitter {
   private readonly _logger = Logger.get(["simplysm", "sd-cli", "SdCliTsLibBuilder"]);
 
   public constructor(private readonly _pkgPath: string,
+                     private readonly _pkgConf: ISdCliLibPackageConfig,
                      private readonly _withLint: boolean) {
     super();
   }
@@ -32,6 +34,9 @@ export class SdCliTsLibBuilder extends EventEmitter {
       emitDts: true,
       globalStyle: true
     });
+
+    this._debug("GEN INDEX...");
+    await SdCliIndexFileGenerator.runAsync(this._pkgPath, this._pkgConf.polyfills);
 
     this._debug(`BUILD & CHECK...`);
     const checkResult = await builder.buildAsync();
@@ -58,6 +63,9 @@ export class SdCliTsLibBuilder extends EventEmitter {
       globalStyle: true
     });
 
+    this._debug("WATCH GEN INDEX...");
+    await SdCliIndexFileGenerator.watchAsync(this._pkgPath, this._pkgConf.polyfills);
+
     this._debug("WATCH...");
     const fnQ = new FunctionQueue();
     const watcher = SdFsWatcher
@@ -74,7 +82,7 @@ export class SdCliTsLibBuilder extends EventEmitter {
         fnQ.runLast(async () => {
           this.emit("change");
 
-          this._debug(`CHECK & BUILD...`);
+          this._debug(`BUILD && CHECK...`);
           const checkResult = await builder.buildAsync();
 
           this._debug("LINT...");

@@ -6,6 +6,7 @@ import path from "path";
 import {SdNgBundler} from "../build-tools/SdNgBundler";
 import {SdLinter} from "../build-tools/SdLinter";
 import {SdCliCordova} from "../build-tools/SdCliCordova";
+import {SdCliNgRoutesFileGenerator} from "../build-tools/SdCliNgRoutesFileGenerator";
 
 // TODO: ROUTER 자동생성
 export class SdCliClientBuilder extends EventEmitter {
@@ -31,6 +32,9 @@ export class SdCliClientBuilder extends EventEmitter {
     this._debug("dist 초기화...");
     await FsUtil.removeAsync(path.resolve(this._pkgPath, "dist"));
 
+    this._debug(`GEN INDEX...`);
+    await SdCliNgRoutesFileGenerator.runAsync(this._pkgPath);
+
     return await this._runAsync({dev: false, genConf: true});
   }
 
@@ -39,6 +43,9 @@ export class SdCliClientBuilder extends EventEmitter {
 
     this._debug("dist 초기화...");
     await FsUtil.removeAsync(path.resolve(this._pkgPath, "dist"));
+
+    this._debug(`WATCH GEN INDEX...`);
+    await SdCliNgRoutesFileGenerator.watchAsync(this._pkgPath);
 
     const result = await this._runAsync({dev: true, genConf: true});
     this.emit("complete", result);
