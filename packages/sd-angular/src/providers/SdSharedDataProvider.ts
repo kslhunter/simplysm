@@ -73,12 +73,20 @@ export class SdSharedDataProvider {
   public async getDataAsync(dataType: string, cdr: ChangeDetectorRef): Promise<ISharedDataBase<string | number>[]> {
     await this._loadDataAsync(dataType);
     await this._addListenerAsync(dataType);
+
+    this._cdrRecord[dataType] = this._cdrRecord[dataType] ?? [];
+    this._cdrRecord[dataType]!.push(cdr);
+
     return this._dataRecord[dataType]!.arr;
   }
 
   public async getDataMapAsync(dataType: string, cdr: ChangeDetectorRef): Promise<Map<number | string, ISharedDataBase<string | number>>> {
     await this._loadDataAsync(dataType);
     await this._addListenerAsync(dataType);
+
+    this._cdrRecord[dataType] = this._cdrRecord[dataType] ?? [];
+    this._cdrRecord[dataType]!.push(cdr);
+
     return this._dataRecord[dataType]!.map;
   }
 
