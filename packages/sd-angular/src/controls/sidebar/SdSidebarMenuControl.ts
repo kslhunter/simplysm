@@ -13,6 +13,7 @@ import {Router} from "@angular/router";
     <ng-template #itemTemplateRef let-currMenus="menus" let-depth="depth">
       <ng-container *ngFor="let menu of currMenus; trackBy: menuTrackBy;">
         <sd-list-item [class]="depth === 0 ? 'pv-default' : ('pl-' + (depth + 1) * 6)"
+                      [style.padding-left]="((depth + 1) * 6) + 'px'"
                       (click)="onMenuItemClick(menu)"
                       [selected]="getIsMenuSelected(menu)"
                       [layout]="depth === 0 ? (layout ?? 'accordion') : 'accordion'">
