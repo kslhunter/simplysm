@@ -1,36 +1,34 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  ContentChildren,
+  ContentChild,
   EventEmitter,
   forwardRef,
   HostBinding,
   Input,
-  Output,
-  QueryList
+  Output
 } from "@angular/core";
-import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
-import {SdInputValidate} from "../../utils/SdInputValidate";
 import {SdListControl} from "./SdListControl";
 import {IconProp} from "@fortawesome/fontawesome-svg-core";
-import {faChevronDown} from "@fortawesome/pro-light-svg-icons/faChevronDown";
+import {coercionBoolean} from "../../utils/commons";
+import {faChevronDown} from "@fortawesome/pro-light-svg-icons";
 
 @Component({
   selector: "sd-list-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div [attr.class]="'_content ' + contentClass"
-         [attr.style]="safeHtml(contentStyle)"
+    <div [class]="['_content', contentClass].filterExists().join(' ')"
+         [style]="contentStyle"
          (click)="onContentClick()">
       <div class="flex-row flex-gap-xs">
-        <fa-icon class="_selected-icon" *ngIf="selectedIcon && !hasChildren" [icon]="selectedIcon"
-                 [fixedWidth]="true"></fa-icon>
+        <sd-icon class="_selected-icon" *ngIf="selectedIcon && !hasChildren" [icon]="selectedIcon"
+                 fixedWidth/>
         <div style="flex-grow: 1">
           <ng-content></ng-content>
         </div>
 
         <sd-collapse-icon [open]="open" *ngIf="hasChildren && layout==='accordion'"
-                          [icon]="icons.falChevronDown"
+                          [icon]="faChevronDown"
                           style="float: right"></sd-collapse-icon>
       </div>
     </div>
@@ -41,7 +39,7 @@ import {faChevronDown} from "@fortawesome/pro-light-svg-icons/faChevronDown";
     </sd-collapse>`,
   styles: [/* language=SCSS */ `
     @import "../../scss/mixins";
-    
+
     :host {
       > ._content {
         padding: var(--gap-sm) var(--gap-default);
@@ -82,7 +80,7 @@ import {faChevronDown} from "@fortawesome/pro-light-svg-icons/faChevronDown";
           @media all and (pointer: coarse) {
             @include active-effect(false);
           }
-          
+
           > ._content {
             display: block;
             background: transparent;
@@ -129,65 +127,44 @@ import {faChevronDown} from "@fortawesome/pro-light-svg-icons/faChevronDown";
   `]
 })
 export class SdListItemControl {
-  public icons = {
-    falChevronDown: faChevronDown
-  };
+  @Input()
+  contentStyle?: string;
 
   @Input()
-  @SdInputValidate(String)
-  public contentStyle?: string;
+  contentClass?: string;
 
   @Input()
-  @SdInputValidate(String)
-  public contentClass?: string;
-
-  @Input()
-  @SdInputValidate({
-    type: String,
-    includes: ["accordion", "flat"],
-    notnull: true
-  })
   @HostBinding("attr.sd-layout")
-  public layout: "accordion" | "flat" = "accordion";
+  layout: "accordion" | "flat" = "accordion";
 
-  @Input()
-  @SdInputValidate(Boolean)
+  @Input({transform: coercionBoolean})
   @HostBinding("attr.sd-open")
-  public open?: boolean;
+  open = false;
 
   @Output()
-  public readonly openChange = new EventEmitter<boolean | undefined>();
+  openChange = new EventEmitter<boolean>();
 
-  @Input()
-  @SdInputValidate(Boolean)
+  @Input({transform: coercionBoolean})
   @HostBinding("attr.sd-selected")
-  public selected?: boolean;
+  selected = false;
 
   @Input()
-  public selectedIcon?: IconProp;
+  selectedIcon?: IconProp;
 
   @HostBinding("attr.sd-has-selected-icon")
-  public get hasSelectedIcon(): boolean {
+  get hasSelectedIcon(): boolean {
     return Boolean(this.selectedIcon);
   }
 
   @HostBinding("attr.sd-has-children")
-  public get hasChildren(): boolean {
-    return this.listControls !== undefined && this.listControls.length > 0;
+  get hasChildren(): boolean {
+    return this.childListControl !== undefined;
   }
 
-  @ContentChildren(forwardRef(() => SdListControl))
-  public listControls?: QueryList<SdListControl>;
+  @ContentChild(forwardRef(() => SdListControl))
+  childListControl?: SdListControl;
 
-
-  public constructor(private readonly _sanitization: DomSanitizer) {
-  }
-
-  public safeHtml(value?: string): SafeHtml | undefined {
-    return value !== undefined ? this._sanitization.bypassSecurityTrustStyle(value) : undefined;
-  }
-
-  public onContentClick(): void {
+  onContentClick() {
     if (this.openChange.observed) {
       this.openChange.emit(!this.open);
     }
@@ -195,4 +172,6 @@ export class SdListItemControl {
       this.open = !this.open;
     }
   }
+
+  protected readonly faChevronDown = faChevronDown;
 }

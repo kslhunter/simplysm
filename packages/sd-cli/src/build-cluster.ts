@@ -53,23 +53,22 @@ else {
   if (message.cmd === "watch") {
     // [library] javascript
     if (pkgConf.type === "library" && !FsUtil.exists(path.resolve(message.pkgPath, "tsconfig.json"))) {
-      if (message.withLint) {
-        await new SdCliJsLibLinter(message.pkgPath)
-          .on("change", () => {
-            sendMessage({
-              type: "change",
-              req: message
-            });
-          })
-          .on("complete", (result) => {
-            sendMessage({
-              type: "complete",
-              result,
-              req: message
-            });
-          })
-          .watchAsync();
-      }
+      await new SdCliJsLibLinter(message.pkgPath)
+        .on("change", () => {
+          sendMessage({
+            type: "change",
+            req: message
+          });
+        })
+        .on("complete", (result) => {
+          sendMessage({
+            type: "complete",
+            result,
+            req: message
+          });
+        })
+        .watchAsync();
+
       sendMessage({
         type: "ready",
         req: message
@@ -77,7 +76,7 @@ else {
     }
     // [library] typescript
     else if (pkgConf.type === "library" && FsUtil.exists(path.resolve(message.pkgPath, "tsconfig.json"))) {
-      await new SdCliTsLibBuilder(message.pkgPath, pkgConf, message.withLint)
+      await new SdCliTsLibBuilder(message.projConf, message.pkgPath)
         .on("change", () => {
           sendMessage({
             type: "change",
@@ -99,7 +98,7 @@ else {
     }
     // [server]
     else if (pkgConf.type === "server") {
-      await new SdCliServerBuilder(message.projConf, message.pkgPath, message.withLint)
+      await new SdCliServerBuilder(message.projConf, message.pkgPath)
         .on("change", () => {
           sendMessage({
             type: "change",
@@ -148,25 +147,16 @@ else {
   else { // build
     // [library] javascript
     if (pkgConf.type === "library" && !FsUtil.exists(path.resolve(message.pkgPath, "tsconfig.json"))) {
-      if (message.withLint) {
-        const result = await new SdCliJsLibLinter(message.pkgPath).buildAsync();
-        sendMessage({
-          type: "complete",
-          result,
-          req: message
-        });
-      }
-      else {
-        sendMessage({
-          type: "complete",
-          result: undefined,
-          req: message
-        });
-      }
+      const result = await new SdCliJsLibLinter(message.pkgPath).buildAsync();
+      sendMessage({
+        type: "complete",
+        result,
+        req: message
+      });
     }
     // [library] typescript
     else if (pkgConf.type === "library" && FsUtil.exists(path.resolve(message.pkgPath, "tsconfig.json"))) {
-      const result = await new SdCliTsLibBuilder(message.pkgPath, pkgConf, message.withLint).buildAsync();
+      const result = await new SdCliTsLibBuilder(message.projConf, message.pkgPath).buildAsync();
       sendMessage({
         type: "complete",
         result,
@@ -175,7 +165,7 @@ else {
     }
     // [server]
     else if (pkgConf.type === "server") {
-      const result = await new SdCliServerBuilder(message.projConf, message.pkgPath, message.withLint).buildAsync();
+      const result = await new SdCliServerBuilder(message.projConf, message.pkgPath).buildAsync();
       sendMessage({
         type: "complete",
         result,

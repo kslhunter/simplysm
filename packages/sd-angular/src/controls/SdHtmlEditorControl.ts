@@ -5,46 +5,42 @@ import {
   EventEmitter,
   HostBinding,
   Input,
-  NgZone,
   Output,
   ViewChild
 } from "@angular/core";
-import {SdInputValidate} from "../utils/SdInputValidate";
-import {faEye} from "@fortawesome/pro-duotone-svg-icons/faEye";
-import {faPen} from "@fortawesome/pro-duotone-svg-icons/faPen";
-import {faCode} from "@fortawesome/pro-duotone-svg-icons/faCode";
-import {faPlus} from "@fortawesome/pro-solid-svg-icons/faPlus";
-import {faMinus} from "@fortawesome/pro-solid-svg-icons/faMinus";
 import {CommonModule} from "@angular/common";
-import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
 import {SdDockingModule} from "./dock/SdDockingModule";
 import {SdAnchorControl} from "./SdAnchorControl";
 import {SdPaneControl} from "./SdPaneControl";
+import {SdIconControl} from "./SdIconControl";
+import {coercionBoolean, coercionNonNullableNumber} from "../utils/commons";
+import {faCode, faEye, faPen} from "@fortawesome/pro-duotone-svg-icons";
+import {faMinus, faPlus} from "@fortawesome/pro-solid-svg-icons";
 
 @Component({
   selector: "sd-html-editor",
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, FontAwesomeModule, SdAnchorControl, SdDockingModule, SdPaneControl],
+  imports: [CommonModule, SdAnchorControl, SdDockingModule, SdPaneControl, SdIconControl],
   template: `
     <sd-dock-container>
       <sd-dock class="_toolbar" *ngIf="!disabled">
         <sd-anchor (click)="viewState = 'preview'" [class._selected]="viewState === 'preview'">
-          <fa-icon [icon]="icons.fadEye" [fixedWidth]="true"></fa-icon>
+          <sd-icon [icon]="faEye" fixedWidth/>
         </sd-anchor>
         <sd-anchor (click)="viewState = 'edit'" [class._selected]="viewState === 'edit'">
-          <fa-icon [icon]="icons.fadPen" [fixedWidth]="true"></fa-icon>
+          <sd-icon [icon]="faPen" fixedWidth/>
         </sd-anchor>
         <sd-anchor (click)="viewState = 'code'" [class._selected]="viewState === 'code'">
-          <fa-icon [icon]="icons.fadCode" [fixedWidth]="true"></fa-icon>
+          <sd-icon [icon]="faCode" fixedWidth/>
         </sd-anchor>
         <ng-container *ngIf="rowsButton && !inset && viewState === 'code'">
           |
           <sd-anchor (click)="rows = rows + 1">
-            <fa-icon [icon]="icons.fasPlus" [fixedWidth]="true"></fa-icon>
+            <sd-icon [icon]="faPlus" fixedWidth/>
           </sd-anchor>
           <sd-anchor (click)="rows = rows - 1" *ngIf="rows > 1">
-            <fa-icon [icon]="icons.fasMinus" [fixedWidth]="true"></fa-icon>
+            <sd-icon [icon]="faMinus" fixedWidth/>
           </sd-anchor>
         </ng-container>
       </sd-dock>
@@ -53,7 +49,8 @@ import {SdPaneControl} from "./SdPaneControl";
         <div #editor *ngIf="viewState !== 'code' || disabled"
              [attr.contenteditable]="viewState === 'edit' && !disabled"
              [style.min-height.px]="contentMinHeightPx"
-             (input)="onContentInput($event)"></div>
+             (input)="onContentInput($event)"
+             [innerHTML]="value"></div>
         <textarea *ngIf="viewState === 'code' && !disabled"
                   [value]="value || ''"
                   [rows]="inset ? undefined : rows"
@@ -71,7 +68,7 @@ import {SdPaneControl} from "./SdPaneControl";
       border-radius: var(--border-radius-default);
       overflow: hidden;
 
-      ::ng-deep > sd-dock-container > ._content {
+      ::ng-deep > sd-dock-container {
         > ._toolbar {
           > div {
             user-select: none;
@@ -134,114 +131,64 @@ import {SdPaneControl} from "./SdPaneControl";
   `]
 })
 export class SdHtmlEditorControl {
-  public icons = {
-    fadEye: faEye,
-    fadPen: faPen,
-    fadCode: faCode,
-    fasPlus: faPlus,
-    fasMinus: faMinus
-  };
-
   @Input()
-  @SdInputValidate(String)
-  public get value(): string | undefined {
-    return this._value;
-  }
-
-  public set value(value: string | undefined) {
-    if (this._value !== value) {
-      this._value = value;
-      this.reloadEditor();
-    }
-  }
-
-  private _value?: string;
+  value?: string;
 
   @Output()
-  public readonly valueChange = new EventEmitter<string>();
+  valueChange = new EventEmitter<string | undefined>();
 
   @Input()
-  @SdInputValidate({type: String, includes: ["preview", "edit", "code"]})
   @HostBinding("attr.sd-view-state")
-  public get viewState(): "preview" | "edit" | "code" {
-    return this._viewState;
-  }
+  viewState: "preview" | "edit" | "code" = "edit";
 
-  public set viewState(value: "preview" | "edit" | "code") {
-    if (this._viewState !== value) {
-      this._viewState = value;
-      this.reloadEditor();
-    }
-  }
+  @Input({transform: coercionBoolean})
+  rowsButton = true;
 
-  private _viewState: "preview" | "edit" | "code" = "edit";
+  @Input({transform: coercionNonNullableNumber})
+  rows = 3;
 
-  @Input()
-  @SdInputValidate({type: Boolean, notnull: true})
-  public rowsButton = true;
-
-  @Input()
-  @SdInputValidate({type: Number, notnull: true})
-  public rows = 3;
-
-  @Input()
-  @SdInputValidate(Boolean)
+  @Input({transform: coercionBoolean})
   @HostBinding("attr.sd-inset")
-  public inset?: boolean;
+  inset = false;
 
-  @Input()
-  @SdInputValidate(Boolean)
+  @Input({transform: coercionBoolean})
   @HostBinding("attr.sd-disabled")
-  public disabled?: boolean;
+  disabled = false;
 
-  @Input()
-  @SdInputValidate({type: Number, notnull: true})
+  @Input({transform: coercionNonNullableNumber})
   public contentMinHeightPx = 100;
 
   @Input()
-  @SdInputValidate({
-    type: String,
-    notnull: true,
-    includes: ["both", "horizontal", "vertical", "none"]
-  })
-  public resize = "vertical";
+  public resize: "both" | "horizontal" | "vertical" | "none" = "vertical";
 
   @ViewChild("editor")
-  public editorElRef?: ElementRef;
+  editorElRef?: ElementRef<HTMLElement>;
 
-  public constructor(private readonly _zone: NgZone) {
-  }
-
-  public onTextareaInput(event: Event): void {
+  onTextareaInput(event: Event) {
     const textareaEl = event.target as HTMLTextAreaElement;
     const newValue = textareaEl.value;
     if (this.valueChange.observed) {
       this.valueChange.emit(newValue);
     }
     else {
-      this._value = newValue;
+      this.value = newValue;
     }
   }
 
-  public onContentInput(event: Event): void {
+  onContentInput(event: Event) {
     const editorEl = event.target as HTMLDivElement;
     const newValue = editorEl.innerHTML;
     if (this.valueChange.observed) {
       this.valueChange.emit(newValue);
     }
     else {
-      this._value = newValue;
+      this.value = newValue;
     }
   }
 
-  public reloadEditor(): void {
-    setTimeout(() => {
-      this._zone.run(() => {
-        const editorEl = this.editorElRef?.nativeElement as HTMLDivElement | undefined;
-        if (editorEl !== undefined && editorEl.innerHTML !== (this._value ?? "")) {
-          editorEl.innerHTML = this._value ?? "";
-        }
-      });
-    });
-  }
+  protected readonly faEye = faEye;
+  protected readonly faPen = faPen;
+  protected readonly faCode = faCode;
+  protected readonly faPlus = faPlus;
+  protected readonly faMinus = faMinus;
 }

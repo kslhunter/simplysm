@@ -13,7 +13,7 @@ import {
 export class MysqlDbConnection extends EventEmitter implements IDbConnection {
   private readonly _logger = Logger.get(["simplysm", "sd-orm-node", this.constructor.name]);
 
-  private readonly _timeout = 300000;
+  private readonly _timeout = 5 * 60 * 1000;
 
   private _conn?: mysql.Connection;
   private _connTimeout?: NodeJS.Timeout;
@@ -173,7 +173,7 @@ export class MysqlDbConnection extends EventEmitter implements IDbConnection {
 
       const resultItems: any[] = [];
       for (const queryString of queryStrings) {
-        this._logger.debug("쿼리 실행:\n" + queryString);
+        this._logger.debug(`쿼리 실행(${queryString.length.toLocaleString()}): ${queryString}`);
         await new Promise<void>((resolve, reject) => {
           let rejected = false;
           conn

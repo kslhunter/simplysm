@@ -9,17 +9,17 @@ import {SdCheckboxGroupControl} from "./SdCheckboxGroupControl";
       <ng-content></ng-content>
     </sd-checkbox>`
 })
-export class SdCheckboxGroupItemControl {
-  private _parentControl = inject(forwardRef(() => SdCheckboxGroupControl));
+export class SdCheckboxGroupItemControl<T> {
+  #parentControl = inject(forwardRef(() => SdCheckboxGroupControl));
 
   @Input()
-  value?: any;
+  value?: T;
 
   get isSelected(): boolean {
-    return this._parentControl.getIsItemSelected(this.value);
+    return this.#parentControl.getIsItemSelected(this.value);
   }
 
   onValueChange(): void {
-    this._parentControl.toggleValueItem(this.value);
+    this.#parentControl.toggleValueItem(this.value);
   }
 }

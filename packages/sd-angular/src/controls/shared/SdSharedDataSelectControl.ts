@@ -4,17 +4,19 @@ import {
   Component,
   ContentChild,
   DoCheck,
-  EventEmitter, inject,
+  EventEmitter,
+  inject,
+  Injector,
   Input,
   Output,
   TemplateRef,
   Type
 } from "@angular/core";
 import {ISharedDataBase} from "../../providers/SdSharedDataProvider";
-import {SdInputValidate} from "../../utils/SdInputValidate";
 import {SdModalBase, SdModalProvider} from "../../providers/SdModalProvider";
-import {SdSharedDataItemTemplateContext, SdSharedDataItemTemplateDirective} from "./SdSharedDataItemTemplateDirective";
-import {SdDoCheckHelper} from "../../utils/SdDoCheckHelper";
+import {SdNgHelper} from "../../utils/SdNgHelper";
+import {coercionBoolean, TSdFnInfo} from "../../utils/commons";
+import {SdItemOfTemplateContext, SdItemOfTemplateDirective} from "../../directives/SdItemOfTemplateDirective";
 
 @Component({
   selector: "sd-shared-data-select",
@@ -32,11 +34,11 @@ import {SdDoCheckHelper} from "../../utils/SdDoCheckHelper";
                [selectMode]="selectMode"
                [contentClass]="selectClass"
                [multiSelectionDisplayDirection]="multiSelectionDisplayDirection"
-               [getChildrenFn]="parentKeyProp ? getChildrenFn : undefined">
+               [getChildrenFn]="parentKeyProp ? [getChildrenFn, [this.itemByParentKeyMap, 'all'], [this.displayOrderKeyProp]] : undefined">
       <ng-template #header>
         <sd-dock-container>
           <sd-dock class="bdb bdb-trans-default" *ngIf="getSearchTextFn">
-            <sd-textfield [(value)]="searchText" placeholder="검색어" inset></sd-textfield>
+            <sd-textfield type="text" [(value)]="searchText" placeholder="검색어" inset></sd-textfield>
           </sd-dock>
 
           <sd-pane class="p-xs-default bdb bdb-trans-default" *ngIf="modalType">
@@ -51,118 +53,84 @@ import {SdDoCheckHelper} from "../../utils/SdDoCheckHelper";
         </sd-select-item>
       </ng-template>
 
-      <ng-template #item let-item="item" let-index="index" let-depth="depth">
+      <ng-template [itemOf]="items" let-item="item" let-index="index" let-depth="depth">
         <sd-select-item [value]="item.__valueKey"
                         *ngIf="getItemSelectable(index, item, depth)"
                         [style.display]="!getItemVisible(index, item, depth) ? 'none' : undefined">
-          <span [style.text-decoration]="getIsHiddenFn(index, item) ? 'line-through' : undefined">
+          <span [style.text-decoration]="getIsHiddenFn[0](index, item) ? 'line-through' : undefined">
             <ng-template [ngTemplateOutlet]="itemTemplateRef"
-                         [ngTemplateOutletContext]="{$implicit: item, item: item, index: index, depth: depth}"></ng-template>
+                         [ngTemplateOutletContext]="{item: item, index: index, depth: depth}"></ng-template>
           </span>
         </sd-select-item>
       </ng-template>
     </sd-select>`
 })
 export class SdSharedDataSelectControl<T extends ISharedDataBase<string | number>> implements DoCheck {
-  @Input()
+  @Input({required: true})
   items: T[] = [];
 
   @Input()
-  value?: (T["__valueKey"][]) | T["__valueKey"];
+  value?: T["__valueKey"] | T["__valueKey"][];
 
   @Output()
   valueChange = new EventEmitter<(this["selectMode"] extends "multi" ? (T["__valueKey"][]) : T["__valueKey"]) | undefined>();
 
-  @Input()
-  @SdInputValidate(Boolean)
-  disabled?: boolean;
+  @Input({transform: coercionBoolean})
+  disabled = false;
+
+  @Input({transform: coercionBoolean})
+  required = false;
+
+  @Input({transform: coercionBoolean})
+  useUndefined = false;
+
+  @Input({transform: coercionBoolean})
+  inset = false;
+
+  @Input({transform: coercionBoolean})
+  inline = false;
 
   @Input()
-  @SdInputValidate(Boolean)
-  required?: boolean;
-
-  @Input()
-  @SdInputValidate(Boolean)
-  useUndefined?: boolean;
-
-  @Input()
-  @SdInputValidate(Boolean)
-  inset?: boolean;
-
-  @Input()
-  @SdInputValidate(Boolean)
-  inline?: boolean;
-
-  @Input()
-  @SdInputValidate({
-    type: String,
-    includes: ["sm", "lg"]
-  })
   size?: "sm" | "lg";
 
   @Input()
-  @SdInputValidate({
-    type: String,
-    includes: ["single", "multi"],
-    notnull: true
-  })
   selectMode: "single" | "multi" = "single";
 
   @Input()
-  @SdInputValidate(Function)
-  filterFn?: (index: number, item: T) => boolean;
+  filterFn?: TSdFnInfo<(index: number, item: T) => boolean>;
 
-  @ContentChild(SdSharedDataItemTemplateDirective, {static: true, read: TemplateRef})
-  itemTemplateRef?: TemplateRef<SdSharedDataItemTemplateContext<T>>;
+  @ContentChild(SdItemOfTemplateDirective, {static: true, read: TemplateRef})
+  itemTemplateRef: TemplateRef<SdItemOfTemplateContext<T>> | null = null;
 
   @Input()
-  @SdInputValidate(Object)
   modalInputParam?: Record<string, ISharedDataModalInputParam>;
 
   @Input()
   modalType?: Type<SdModalBase<ISharedDataModalInputParam, ISharedDataModalOutputResult>>;
 
   @Input()
-  @SdInputValidate({type: String})
   modalHeader?: string;
 
   @Input()
-  @SdInputValidate(String)
   selectClass?: string;
 
   @Input()
-  @SdInputValidate({type: String, includes: ["vertical", "horizontal"]})
   multiSelectionDisplayDirection?: "vertical" | "horizontal";
 
   @Input()
-  @SdInputValidate({
-    type: Function,
-    notnull: true
-  })
-  trackByFn = (index: number, item: T): (string | number) => item.__valueKey;
+  trackByFn: TSdFnInfo<(index: number, item: T) => (string | number)> = [(index, item) => item.__valueKey];
 
   @Input()
-  @SdInputValidate({
-    type: Function,
-    notnull: true
-  })
-  getIsHiddenFn = (index: number, item: T): boolean => item.__isHidden;
+  getIsHiddenFn: TSdFnInfo<(index: number, item: T) => boolean> = [(index, item) => item.__isHidden];
 
   @Input()
-  @SdInputValidate({
-    type: Function,
-    notnull: true
-  })
-  getSearchTextFn = (index: number, item: T): string => item.__searchText;
+  getSearchTextFn: TSdFnInfo<(index: number, item: T) => string> = [(index, item) => item.__searchText];
 
   @Input()
-  @SdInputValidate(String)
   parentKeyProp?: string;
 
   @Input()
-  @SdInputValidate(String)
   displayOrderKeyProp?: string;
-
 
   searchText?: string;
 
@@ -181,17 +149,17 @@ export class SdSharedDataSelectControl<T extends ISharedDataBase<string | number
   getItemVisible(index: number, item: any, depth: number): boolean {
     return (
         this.#isIncludeSearchText(index, item, depth)
-        && !this.getIsHiddenFn(index, item)
+        && !this.getIsHiddenFn[0](index, item)
       )
-      || this.value === this.trackByFn(index, item) as any
+      || this.value === this.trackByFn[0](index, item) as any
       || (
         this.value instanceof Array
-        && this.value.includes(this.trackByFn(index, item) as any)
+        && this.value.includes(this.trackByFn[0](index, item) as any)
       );
   }
 
   #isIncludeSearchText(index: number, item: any, depth: number): boolean {
-    if (this.getSearchTextFn(index, item).toLowerCase().includes(this.searchText?.toLowerCase() ?? "")) {
+    if (this.getSearchTextFn[0](index, item).toLowerCase().includes(this.searchText?.toLowerCase() ?? "")) {
       return true;
     }
 
@@ -217,17 +185,19 @@ export class SdSharedDataSelectControl<T extends ISharedDataBase<string | number
     return result;
   };
 
+  #sdNgHelper = new SdNgHelper(inject(Injector));
+
   ngDoCheck(): void {
     //-- rootDisplayItems
-    SdDoCheckHelper.use($ => {
-      $.run({
+    this.#sdNgHelper.doCheck(run => {
+      run({
         items: [this.items, "all"],
         filterFn: [this.filterFn],
         parentKeyProp: [this.parentKeyProp],
         displayOrderKeyProp: [this.displayOrderKeyProp]
       }, () => {
         let result = this.items.filter((item, index) => (
-          (!this.filterFn || this.filterFn(index, item))
+          (!this.filterFn?.[0] || this.filterFn[0](index, item))
           && (this.parentKeyProp === undefined || item[this.parentKeyProp] === undefined)
         ));
 
@@ -239,7 +209,7 @@ export class SdSharedDataSelectControl<T extends ISharedDataBase<string | number
       });
 
       //-- itemByParentKeyMap
-      $.run({
+      run({
         items: [this.items, "all"],
         parentKeyProp: [this.parentKeyProp]
       }, () => {
@@ -252,7 +222,7 @@ export class SdSharedDataSelectControl<T extends ISharedDataBase<string | number
           this.itemByParentKeyMap = undefined;
         }
       });
-    }, this.#cdr);
+    });
   }
 
   onValueChange(value: any | any[]): void {

@@ -1,4 +1,5 @@
 import {ChangeDetectionStrategy, Component, Input} from "@angular/core";
+import {coercionNumber} from "../../utils/commons";
 
 @Component({
   selector: "sd-progress",
@@ -39,8 +40,8 @@ import {ChangeDetectionStrategy, Component, Input} from "@angular/core";
 })
 export class SdProgressControl {
   @Input()
-  public label?: string;
+  label?: string;
 
-  @Input()
-  public maxValue?: number;
+  @Input({transform: coercionNumber})
+  maxValue?: number;
 }

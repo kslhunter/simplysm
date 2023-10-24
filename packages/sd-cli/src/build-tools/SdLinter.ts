@@ -5,6 +5,17 @@ import path from "path";
 
 export class SdLinter {
   public static async lintAsync(filePaths: string[], programOrPkgPath?: ts.Program | string): Promise<ISdCliPackageBuildResult[]> {
+    const sourceFilePaths = filePaths.filter((item) =>
+      (!item.endsWith(".d.ts") && item.endsWith(".ts")) ||
+      item.endsWith(".js") ||
+      item.endsWith(".cjs") ||
+      item.endsWith(".mjs")
+    );
+
+    if (sourceFilePaths.length === 0) {
+      return [];
+    }
+
     const linter = new ESLint(programOrPkgPath !== null ? {
       overrideConfig: {
         overrides: [
@@ -37,7 +48,7 @@ export class SdLinter {
       }
     } : undefined);
 
-    const lintResults = await linter.lintFiles(filePaths);
+    const lintResults = await linter.lintFiles(sourceFilePaths);
 
     return lintResults.mapMany((lintResult) => lintResult.messages.map((msg) => ({
       filePath: lintResult.filePath,

@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, HostBinding, Injector, Input} from "@angular/core";
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, HostBinding, inject, OnInit} from "@angular/core";
 import {NavigationStart, Router} from "@angular/router";
 
 @Component({
@@ -15,7 +15,7 @@ import {NavigationStart, Router} from "@angular/router";
       padding-left: var(--sidebar-width);
       transition: padding-left .1s ease-out;
 
-      &[sd-desktop-toggle=true] {
+      &[sd-toggle=true] {
         padding-left: 0;
         transition: padding-left .1s ease-in;
       }
@@ -43,7 +43,7 @@ import {NavigationStart, Router} from "@angular/router";
           transition: opacity .3s ease-in-out;
         }
 
-        &[sd-desktop-toggle=true] {
+        &[sd-toggle=true] {
           > ._backdrop {
             opacity: .6;
             pointer-events: auto;
@@ -53,39 +53,28 @@ import {NavigationStart, Router} from "@angular/router";
     }
   `]
 })
-export class SdSidebarContainerControl {
+export class SdSidebarContainerControl implements OnInit {
   @HostBinding("attr.sd-toggle")
-  public toggle = false;
+  toggle = false;
 
-  @Input()
-  @HostBinding("attr.sd-open-on-desktop")
-  public openOnDesktop = true;
+  #router: Router | null = inject(Router, {optional: true});
+  #cdr = inject(ChangeDetectorRef);
 
-  @HostBinding("attr.sd-desktop-toggle")
-  public get desktopToggle(): boolean {
-    if (!this.openOnDesktop) {
-      return !this.toggle;
-    }
-    else {
-      return this.toggle;
+  ngOnInit(): void {
+    if (this.#router) {
+      this.#router.events.subscribe((value) => {
+        if (value instanceof NavigationStart) {
+          this.toggle = false;
+          this.#cdr.markForCheck();
+        }
+      });
     }
   }
 
-  private readonly _router?: Router;
-
-  public constructor(private readonly _cdr: ChangeDetectorRef,
-                     private readonly _injector: Injector) {
-    this._router = this._injector.get<Router | null>(Router, null) ?? undefined;
-
-    this._router?.events.subscribe((value) => {
-      if (value instanceof NavigationStart) {
-        this.toggle = false;
-        this._cdr.markForCheck();
-      }
-    });
-  }
-
-  public onBackdropClick(): void {
+  onBackdropClick() {
     this.toggle = !this.toggle;
   }
 }
+
+
+// V11 LOGIC OK

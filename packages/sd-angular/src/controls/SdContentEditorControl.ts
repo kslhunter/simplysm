@@ -1,33 +1,35 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DoCheck,
   ElementRef,
   EventEmitter,
   HostBinding,
+  inject,
+  Injector,
   Input,
-  OnChanges,
   Output,
-  SimpleChanges,
   ViewChild
 } from "@angular/core";
-import {DateOnly, DateTime, Time} from "@simplysm/sd-core-common";
-import {SdInputValidate} from "../utils/SdInputValidate";
 import {CommonModule} from "@angular/common";
+import {coercionBoolean, getSdFnCheckData, TSdFnInfo} from "../utils/commons";
+import {SdNgHelper} from "../utils/SdNgHelper";
+import {SdEventDirectiveModule} from "../directives/SdEventDirectiveModule";
 
 @Component({
   selector: "sd-content-editor",
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, SdEventDirectiveModule],
   template: `
-    <div #editor
+    <div #editorEl
          class="_editor"
-         [innerHTML]="controlValue"
+         [innerHTML]="value"
          (input)="onInput()"
          [attr.contenteditable]="!disabled && !readonly"
-         [title]="controlValue"
-         [attr.style]="editorStyle"
-         (focus)="onEditorFocus()"></div>
+         [title]="value"
+         [style]="editorStyle"
+         (focus.outside)="onEditorFocusOutside()"></div>
     <div class="_invalid-indicator"></div>`,
   styles: [/* language=SCSS */ `
     @import "../scss/mixins";
@@ -138,80 +140,72 @@ import {CommonModule} from "@angular/common";
     }
   `]
 })
-export class SdContentEditorControl implements OnChanges {
+export class SdContentEditorControl implements DoCheck {
   @Input()
-  @SdInputValidate([Number, String, DateOnly, DateTime, Time])
-  public value?: string;
+  value?: string;
 
   @Output()
-  public readonly valueChange = new EventEmitter<string | undefined>();
+  valueChange = new EventEmitter<string | undefined>();
 
-  @Input()
-  @SdInputValidate(Boolean)
+  @Input({transform: coercionBoolean})
   @HostBinding("attr.sd-disabled")
-  public disabled?: boolean;
+  disabled = false;
 
-  @Input()
-  @SdInputValidate(Boolean)
+  @Input({transform: coercionBoolean})
   @HostBinding("attr.sd-readonly")
-  public readonly?: boolean;
+  readonly = false;
 
-  @Input()
-  @SdInputValidate(Boolean)
-  public required?: boolean;
+  @Input({transform: coercionBoolean})
+  required = false;
 
-  @Input()
-  @SdInputValidate(Boolean)
+  @Input({transform: coercionBoolean})
   @HostBinding("attr.sd-inline")
-  public inline?: boolean;
+  inline = false;
 
-  @Input()
-  @SdInputValidate(Boolean)
+  @Input({transform: coercionBoolean})
   @HostBinding("attr.sd-inset")
-  public inset?: boolean;
+  inset = false;
 
   @Input()
-  @SdInputValidate({type: String, includes: ["sm", "lg"]})
   @HostBinding("attr.sd-size")
-  public size?: "sm" | "lg";
+  size?: "sm" | "lg";
 
   @Input()
-  @SdInputValidate(String)
-  public editorStyle?: string;
+  editorStyle?: string;
 
   @Input()
-  @SdInputValidate(Function)
-  public validatorFn?: (value: string | undefined) => boolean;
+  validatorFn?: TSdFnInfo<(value: string | undefined) => boolean>;
 
-  @ViewChild("editor")
-  public editorElRef?: ElementRef<HTMLDivElement>;
-
-  public controlValue?: string;
+  @ViewChild("editorEl", {static: true})
+  editorElRef!: ElementRef<HTMLDivElement>;
 
   @HostBinding("attr.sd-invalid")
-  public get isInvalid(): boolean {
-    if (this.value == null && this.required) {
-      return true;
-    }
+  isInvalid = false;
 
-    if (this.validatorFn) {
-      return !this.validatorFn(this.value);
-    }
+  #sdNgHelper = new SdNgHelper(inject(Injector));
 
-    return false;
+  ngDoCheck() {
+    this.#sdNgHelper.doCheck(run => {
+      run({
+        value: [this.value],
+        required: [this.required],
+        ...getSdFnCheckData("validatorFn", this.validatorFn)
+      }, () => {
+        if (this.value == null && this.required) {
+          this.isInvalid = true;
+        }
+        else if (this.validatorFn?.[0]) {
+          this.isInvalid = !this.validatorFn[0](this.value);
+        }
+        else {
+          this.isInvalid = false;
+        }
+      });
+    });
   }
 
-  public ngOnChanges(changes: SimpleChanges): void {
-    if ("value" in changes) {
-      const editorEl = this.editorElRef?.nativeElement;
-      if (this.value !== editorEl?.innerHTML) {
-        this.controlValue = this.value;
-      }
-    }
-  }
-
-  public onEditorFocus(): void {
-    if (this.readonly === false) {
+  onEditorFocusOutside() {
+    if (!this.readonly) {
       const selection = window.getSelection()!;
       selection.removeAllRanges();
 
@@ -222,7 +216,7 @@ export class SdContentEditorControl implements OnChanges {
     }
   }
 
-  public onInput(): void {
+  onInput() {
     const editorEl = this.editorElRef!.nativeElement;
 
     let value: string | undefined;

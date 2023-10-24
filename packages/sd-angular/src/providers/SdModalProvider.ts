@@ -1,5 +1,4 @@
 import {ApplicationRef, createComponent, inject, Injectable, Type} from "@angular/core";
-import {Wait} from "@simplysm/sd-core-common";
 import {SdModalControl} from "../controls/SdModalControl";
 
 @Injectable({providedIn: "root"})
@@ -59,11 +58,11 @@ export class SdModalProvider {
 
         modalEntryRef.instance.key = options?.key;
         modalEntryRef.instance.title = title;
-        modalEntryRef.instance.hideHeader = options?.hideHeader;
-        modalEntryRef.instance.hideCloseButton = options?.hideCloseButton;
+        modalEntryRef.instance.hideHeader = options?.hideHeader ?? false;
+        modalEntryRef.instance.hideCloseButton = options?.hideCloseButton ?? false;
         modalEntryRef.instance.useCloseByBackdrop = options?.useCloseByBackdrop ?? true;
         modalEntryRef.instance.useCloseByEscapeKey = options?.useCloseByEscapeKey ?? true;
-        modalEntryRef.instance.float = options?.float;
+        modalEntryRef.instance.float = options?.float ?? false;
         modalEntryRef.instance.minHeightPx = options?.minHeightPx;
         modalEntryRef.instance.minWidthPx = options?.minWidthPx;
         modalEntryRef.instance.resizable = options?.resizable ?? false;
@@ -81,7 +80,6 @@ export class SdModalProvider {
         modalEntryRef.instance.open = true;
         await userModalRef.instance.sdOnOpen(param);
 
-        await Wait.until(() => modalEntryRef.instance.initialized);
         modalEntryEl.findFirst<HTMLDivElement>("> ._dialog")!.focus();
       }
       catch (err) {

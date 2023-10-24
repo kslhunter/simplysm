@@ -19,9 +19,9 @@
     "@simplysm/sd-core-common": "11.0.9",
     "@simplysm/sd-core-node": "11.0.9",
     "@simplysm/sd-orm-common": "11.0.9",
-    "tedious": "^16.5.0"
+    "tedious": "^16.6.0"
   },
   "devDependencies": {
-    "@types/tedious": "^4.0.12"
+    "@types/tedious": "^4.0.13"
   }
 }

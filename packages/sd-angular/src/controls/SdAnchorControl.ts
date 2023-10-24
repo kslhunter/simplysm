@@ -1,6 +1,6 @@
 import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
-import {SdInputValidate} from "../utils/SdInputValidate";
 import {CommonModule} from "@angular/common";
+import {coercionBoolean} from "../utils/commons";
 
 @Component({
   selector: "sd-anchor",
@@ -11,7 +11,7 @@ import {CommonModule} from "@angular/common";
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
     @import "../scss/mixins";
-    
+
     :host {
       display: inline-block;
       cursor: pointer;
@@ -29,7 +29,7 @@ import {CommonModule} from "@angular/common";
 
       @media all and (pointer: coarse) {
         @include active-effect(true);
-        
+
         &:hover {
           color: var(--theme-primary-default);
           text-decoration: none;
@@ -54,12 +54,11 @@ import {CommonModule} from "@angular/common";
 })
 export class SdAnchorControl {
   @HostBinding("attr.tabindex")
-  public get tabIndex(): number | undefined {
-    return this.disabled === true ? undefined : 0;
+  get tabIndex(): number | undefined {
+    return this.disabled ? undefined : 0;
   }
 
-  @Input()
-  @SdInputValidate(Boolean)
+  @Input({transform: coercionBoolean})
   @HostBinding("attr.disabled")
-  public disabled?: boolean;
+  disabled = false;
 }

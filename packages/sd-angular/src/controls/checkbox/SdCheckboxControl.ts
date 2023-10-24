@@ -1,8 +1,7 @@
 import {ChangeDetectionStrategy, Component, EventEmitter, HostBinding, Input, Output} from "@angular/core";
 import {IconProp} from "@fortawesome/fontawesome-svg-core";
 import {faCheck} from "@fortawesome/pro-solid-svg-icons";
-import {SdInputValidate} from "../../utils/SdInputValidate";
-import {sdThemes, TSdTheme} from "../../commons";
+import {coercionBoolean} from "../../utils/commons";
 
 @Component({
   selector: "sd-checkbox",
@@ -10,7 +9,7 @@ import {sdThemes, TSdTheme} from "../../commons";
   template: `
     <div (click)="onClick()" tabindex="0" (keydown)="onKeydown($event)" [style]="labelStyle">
       <div class="_indicator_rect"></div>
-      <fa-icon class="_indicator" [icon]="icon" *ngIf="!radio"></fa-icon>
+      <sd-icon class="_indicator" [icon]="icon" *ngIf="!radio"/>
       <div class="_indicator" *ngIf="radio">
         <div></div>
       </div>
@@ -163,49 +162,41 @@ import {sdThemes, TSdTheme} from "../../commons";
   `]
 })
 export class SdCheckboxControl {
-  @Input()
-  @SdInputValidate({type: Boolean, notnull: true})
+  @Input({transform: coercionBoolean})
   @HostBinding("attr.sd-checked")
   value = false;
 
-  @Input()
-  @SdInputValidate({type: Boolean, notnull: true})
+  @Input({transform: coercionBoolean})
   @HostBinding("attr.sd-disabled")
   disabled = false;
 
   @Output()
   valueChange = new EventEmitter<boolean>();
 
-  @Input()
-  @SdInputValidate({type: Boolean, notnull: true})
+  @Input({transform: coercionBoolean})
   @HostBinding("attr.sd-inline")
   inline = false;
 
-  @Input()
-  @SdInputValidate({type: Boolean, notnull: true})
+  @Input({transform: coercionBoolean})
   @HostBinding("attr.sd-inset")
   inset = false;
 
-  @Input()
-  @SdInputValidate({type: Boolean, notnull: true})
+  @Input({transform: coercionBoolean})
   @HostBinding("attr.sd-radio")
   radio = false;
 
   @Input()
-  @SdInputValidate({type: String, includes: ["sm", "lg"]})
   @HostBinding("attr.sd-size")
   size?: "sm" | "lg";
 
   @Input()
-  @SdInputValidate({type: String, includes: sdThemes})
   @HostBinding("attr.sd-theme")
-  theme?: TSdTheme;
+  theme?: "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey";
 
   @Input()
   icon: IconProp = faCheck;
 
   @Input()
-  @SdInputValidate(String)
   labelStyle?: string;
 
   onClick(): void {

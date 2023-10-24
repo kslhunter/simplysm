@@ -1,5 +1,4 @@
 import nodemailer from "nodemailer";
-import {SdServiceServerConfigUtil} from "../utils/SdServiceServerConfigUtil";
 import {
   ISmtpClientDefaultConfig,
   ISmtpClientSendByDefaultOption,
@@ -8,7 +7,7 @@ import {
 import {SdServiceBase} from "../commons";
 
 export class SdSmtpClientService extends SdServiceBase {
-  public async sendAsync(options: ISmtpClientSendOption): Promise<string> {
+  async send(options: ISmtpClientSendOption): Promise<string> {
     return await new Promise<string>((resolve, reject) => {
       const transport = nodemailer.createTransport({
         host: options.host,
@@ -37,15 +36,13 @@ export class SdSmtpClientService extends SdServiceBase {
     });
   }
 
-  public async sendByConfigAsync(configName: string, options: ISmtpClientSendByDefaultOption): Promise<string> {
-    const config = (
-      await SdServiceServerConfigUtil.getConfigAsync(this.server.options.rootPath, this.request?.clientName)
-    )["smtp"]?.[configName] as ISmtpClientDefaultConfig | undefined;
+  async sendByConfig(configName: string, options: ISmtpClientSendByDefaultOption): Promise<string> {
+    const config = this.server.getConfig(this.request?.clientName)["smtp"]?.[configName] as ISmtpClientDefaultConfig | undefined;
     if (config === undefined) {
       throw new Error("서버에서 메일서버 설정을 찾을 수 없습니다.");
     }
 
-    return await this.sendAsync({
+    return await this.send({
       user: config.user,
       pass: config.pass,
       host: config.host,

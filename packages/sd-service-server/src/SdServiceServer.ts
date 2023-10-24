@@ -5,7 +5,7 @@ import path from "path";
 import {FsUtil, Logger} from "@simplysm/sd-core-node";
 import {ISdServiceServerOptions, SdServiceBase} from "./commons";
 import {EventEmitter} from "events";
-import {DateTime, JsonConvert, Type, Wait} from "@simplysm/sd-core-common";
+import {DateTime, JsonConvert, ObjectUtil, Type, Wait} from "@simplysm/sd-core-common";
 import {WebSocket, WebSocketServer} from "ws";
 import {
   ISdServiceRequest,
@@ -70,6 +70,28 @@ export class SdServiceServer extends EventEmitter {
 
       return undefined;
     }
+  }
+
+  public getConfig(clientName?: string): Record<string, any | undefined> {
+    let result: Record<string, any | undefined> = {};
+
+    const rootFilePath = path.resolve(this.options.rootPath, ".config.json");
+    if (FsUtil.exists(rootFilePath)) {
+      result = FsUtil.readJson(rootFilePath);
+    }
+
+    if (clientName !== undefined) {
+      const targetPath = typeof this.pathProxy[clientName] === "string"
+        ? this.pathProxy[clientName] as string
+        : path.resolve(this.options.rootPath, "www", clientName);
+
+      const filePath = path.resolve(targetPath, ".config.json");
+      if (FsUtil.exists(filePath)) {
+        result = ObjectUtil.merge(result, FsUtil.readJson(filePath));
+      }
+    }
+
+    return result;
   }
 
   public async listenAsync(): Promise<void> {
@@ -480,7 +502,7 @@ export class SdServiceServer extends EventEmitter {
               resolve();
             });
           });
-          if(res.writableEnded) return;
+          if (res.writableEnded) return;
         }
       }
 

@@ -6,10 +6,12 @@ import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
 import {SdCollapseModule} from "../collapse/SdCollapseModule";
 import {SdListModule} from "../list/SdListModule";
 import {SdSidebarMenuControl} from "./SdSidebarMenuControl";
-import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
+import {SdIconControl} from "../SdIconControl";
+import {SdTypedTemplateDirective} from "../../directives/SdTypedTemplateDirective";
+
 
 @NgModule({
-  imports: [CommonModule, SdCollapseModule, SdListModule, FontAwesomeModule],
+    imports: [CommonModule, SdCollapseModule, SdListModule, SdIconControl, SdTypedTemplateDirective],
   declarations: [
     SdSidebarControl,
     SdSidebarUserControl,

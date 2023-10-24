@@ -7,16 +7,18 @@ import {SdDockingModule} from "../dock/SdDockingModule";
 import {SdPaneControl} from "../SdPaneControl";
 import {SdCheckboxModule} from "../checkbox/SdCheckboxModule";
 import {SdAnchorControl} from "../SdAnchorControl";
-import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
+
 import {SdTextfieldControl} from "../SdTextfieldControl";
 import {SdButtonControl} from "../SdButtonControl";
 import {SdBusyContainerControl} from "../SdBusyContainerControl";
 import {SdPaginationControl} from "../SdPaginationControl";
-import {SdResizeDirective} from "../../directives/SdResizeDirective";
 import {SdSheetColumnCellTemplateDirective} from "./SdSheetColumnCellTemplateDirective";
+import {SdIconControl} from "../SdIconControl";
+import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
+import {SdEventDirectiveModule} from "../../directives/SdEventDirectiveModule";
 
 @NgModule({
-  imports: [CommonModule, SdDockingModule, SdPaneControl, SdCheckboxModule, SdAnchorControl, FontAwesomeModule, SdTextfieldControl, SdButtonControl, SdBusyContainerControl, SdPaginationControl, SdResizeDirective],
+  imports: [CommonModule, SdDockingModule, SdPaneControl, SdCheckboxModule, SdAnchorControl, SdTextfieldControl, SdButtonControl, SdBusyContainerControl, SdPaginationControl, SdIconControl, FontAwesomeModule, SdEventDirectiveModule],
   declarations: [SdSheetConfigModal, SdSheetControl, SdSheetColumnDirective, SdSheetColumnCellTemplateDirective],
   exports: [SdSheetConfigModal, SdSheetControl, SdSheetColumnDirective, SdSheetColumnCellTemplateDirective],
   providers: []

@@ -1,14 +1,14 @@
 import {
-  AfterContentChecked,
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   ContentChildren,
+  DoCheck,
   ElementRef,
   EventEmitter,
+  HostListener,
+  inject,
+  Injector,
   Input,
-  IterableDiffer,
-  IterableDiffers,
   OnDestroy,
   OnInit,
   Output,
@@ -17,23 +17,28 @@ import {
 } from "@angular/core";
 import {SdComboboxItemControl} from "./SdComboboxItemControl";
 import {NumberUtil} from "@simplysm/sd-core-common";
-import {SdInputValidate} from "../../utils/SdInputValidate";
-import {faCaretDown} from "@fortawesome/pro-duotone-svg-icons/faCaretDown";
+import {coercionBoolean} from "../../utils/commons";
+import {faCaretDown} from "@fortawesome/pro-duotone-svg-icons";
+import {SdNgHelper} from "../../utils/SdNgHelper";
 
 @Component({
   selector: "sd-combobox",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <sd-textfield #textfield
+                  type="text"
                   [value]="text"
                   (valueChange)="onTextChange($event)"
                   [required]="required"
-                  [disabled]="disabled">
+                  [disabled]="disabled"
+                  (focus)="onTextfieldFocus($event)"
+                  (blur)="onChildBlur($event)">
     </sd-textfield>
     <div class="_icon" *ngIf="!disabled">
-      <fa-icon [fixedWidth]="true" [icon]="icons.fadCaretDown"></fa-icon>
+      <sd-icon [icon]="faCaretDown" fixedWidth/>
     </div>
-    <div #dropdown class="_sd-combobox-dropdown" tabindex="0">
+    <div class="_sd-combobox-dropdown" tabindex="0"
+         (blur)="onChildBlur($event)">
       <ng-content></ng-content>
     </div>`,
   styles: [/* language=SCSS */ `
@@ -77,78 +82,63 @@ import {faCaretDown} from "@fortawesome/pro-duotone-svg-icons/faCaretDown";
     }
   `]
 })
-export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked {
-  public icons = {
-    fadCaretDown: faCaretDown
-  };
-
+export class SdComboboxControl<T> implements OnInit, OnDestroy, DoCheck {
   @Input()
-  public value?: any;
+  public value!: T;
 
-  @Input()
-  @SdInputValidate(Boolean)
-  public required?: boolean;
+  @Input({transform: coercionBoolean})
+  required = false;
 
-  @Input()
-  @SdInputValidate(Boolean)
-  public disabled?: boolean;
+  @Input({transform: coercionBoolean})
+  disabled = false;
 
   @Output()
-  public readonly valueChange = new EventEmitter<any | undefined>();
+  valueChange = new EventEmitter<T>();
 
   @Input()
-  @SdInputValidate(String)
-  public text?: string;
+  text?: string;
 
   @Output()
-  public readonly textChange = new EventEmitter<string | undefined>();
+  textChange = new EventEmitter<string | undefined>();
 
   @Output()
-  public readonly textChangeByInput = new EventEmitter<string | undefined>();
+  textChangeByInput = new EventEmitter<string | undefined>();
 
   @ContentChildren(SdComboboxItemControl, {descendants: true})
-  public itemControls?: QueryList<SdComboboxItemControl>;
+  itemControls?: QueryList<SdComboboxItemControl<T>>;
 
   @ViewChild("textfield", {static: true, read: ElementRef})
-  public textfieldElRef?: ElementRef<HTMLElement>;
+  textfieldElRef?: ElementRef<HTMLElement>;
 
   @ViewChild("dropdown", {static: true})
-  public dropdownElRef?: ElementRef<HTMLDivElement>;
+  dropdownElRef?: ElementRef<HTMLDivElement>;
 
   @Output()
-  public readonly open = new EventEmitter();
+  open = new EventEmitter();
 
   @Output()
-  public readonly close = new EventEmitter();
+  close = new EventEmitter();
 
-  @Input()
-  public userCustomText?: boolean;
+  @Input({transform: coercionBoolean})
+  userCustomText = false;
 
-  private readonly _iterableDiffer: IterableDiffer<SdComboboxItemControl>;
+  #elRef: ElementRef<HTMLElement> = inject(ElementRef);
 
-  public constructor(private readonly _iterableDiffers: IterableDiffers,
-                     private readonly _elRef: ElementRef,
-                     private readonly _cdr: ChangeDetectorRef) {
-    this._iterableDiffer = this._iterableDiffers.find([]).create((i, itemControl) => itemControl.value);
+  #sdNgHelper = new SdNgHelper(inject(Injector));
+
+  ngDoCheck() {
+    this.#sdNgHelper.doCheck(run => {
+      run({
+        itemControls: [this.itemControls, "one"]
+      }, () => {
+        this.#refreshText();
+      });
+    });
   }
 
-  public ngAfterContentChecked(): void {
-    if (this.itemControls && this._iterableDiffer.diff(this.itemControls.toArray())) {
-      this._refreshText();
-      this._cdr.markForCheck();
-    }
-  }
-
-  public ngOnInit(): void {
-    const textfieldEl = this.textfieldElRef!.nativeElement;
-    const dropdownEl = this.dropdownElRef!.nativeElement;
-
-    textfieldEl.addEventListener("focus", this.focusEventHandler, true);
-    textfieldEl.addEventListener("blur", this.blurEventHandler, true);
-    dropdownEl.addEventListener("blur", this.blurEventHandler, true);
-
+  ngOnInit() {
     if (this.userCustomText) {
-      const newText = this.value != null ? this.value.toString() : this.value;
+      const newText = this.value != null ? this.value.toString() : undefined;
       if (this.textChange.observed) {
         this.textChange.emit(newText);
       }
@@ -158,11 +148,11 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
     }
   }
 
-  public ngOnDestroy(): void {
+  ngOnDestroy() {
     this.dropdownElRef!.nativeElement.remove();
   }
 
-  public onTextChange(text: string): void {
+  onTextChange(text: string | undefined) {
     if (this.textChange.observed) {
       this.textChange.emit(text);
     }
@@ -171,9 +161,9 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
     }
     this.textChangeByInput.emit(text);
 
-    if (this.value !== undefined) {
+    if (this.value != null) {
       if (this.userCustomText) {
-        const newValue = NumberUtil.parseInt(text);
+        const newValue = NumberUtil.parseInt(text) as T;
         if (this.valueChange.observed) {
           this.valueChange.emit(newValue);
         }
@@ -182,7 +172,7 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
         }
       }
       else {
-        const newValue = undefined;
+        const newValue = undefined as T;
         if (this.valueChange.observed) {
           this.valueChange.emit(newValue);
         }
@@ -193,7 +183,7 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
     }
     else {
       if (this.userCustomText) {
-        const newValue = NumberUtil.parseInt(text);
+        const newValue = NumberUtil.parseInt(text) as T;
         if (this.valueChange.observed) {
           this.valueChange.emit(newValue);
         }
@@ -204,7 +194,7 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
     }
   }
 
-  public setValueFromItemControl(value: any, itemControl: SdComboboxItemControl): void {
+  setValueFromItemControl(value: T, itemControl: SdComboboxItemControl<T>) {
     if (this.value !== value) {
       if (this.valueChange.observed) {
         this.valueChange.emit(value);
@@ -226,7 +216,7 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
     }
   }
 
-  public openPopup(): void {
+  openPopup() {
     const textfieldEl = this.textfieldElRef!.nativeElement;
     const dropdownEl = this.dropdownElRef!.nativeElement;
     document.body.appendChild(dropdownEl);
@@ -258,11 +248,10 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
       );
     }
 
-    document.addEventListener("scroll", this.scrollEventHandler, true);
     this.open.emit();
   }
 
-  public closePopup(): void {
+  closePopup() {
     const dropdownEl = this.dropdownElRef!.nativeElement;
     try {
       // dropdownEl.remove();
@@ -298,15 +287,16 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
       return;
     }
 
-    this._refreshText();
+    this.#refreshText();
     this.close.emit();
   }
 
-  public scrollEventHandler = (event: Event): void => {
+  @HostListener("document:scroll", ["$event"])
+  onDocumentScroll(event: Event) {
     const textfieldEl = this.textfieldElRef!.nativeElement;
     const dropdownEl = this.dropdownElRef!.nativeElement;
 
-    if ((this._elRef.nativeElement as HTMLElement).findParent(event.target as HTMLElement)) {
+    if ((this.#elRef.nativeElement as HTMLElement).findParent(event.target as HTMLElement)) {
       if (window.innerHeight < textfieldEl.getRelativeOffset(window.document.body).top * 2) {
         Object.assign(
           dropdownEl.style,
@@ -330,13 +320,12 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
     }
   };
 
-  public focusEventHandler = (event: FocusEvent): void => {
+  onTextfieldFocus(event: FocusEvent) {
     this.openPopup();
   };
 
-  public blurEventHandler = (event: FocusEvent): void => {
-    document.removeEventListener("scroll", this.scrollEventHandler, true);
 
+  onChildBlur(event: FocusEvent) {
     const textfieldEl = this.textfieldElRef!.nativeElement;
     const dropdownEl = this.dropdownElRef!.nativeElement;
 
@@ -356,7 +345,7 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
     this.closePopup();
   };
 
-  private _refreshText(): void {
+  #refreshText() {
     if (this.value != null) {
       if (!this.userCustomText) {
         const selectedItemControl = this.itemControls!.find((item) => item.value === this.value);
@@ -375,4 +364,6 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
       }
     }
   }
+
+  protected readonly faCaretDown = faCaretDown;
 }

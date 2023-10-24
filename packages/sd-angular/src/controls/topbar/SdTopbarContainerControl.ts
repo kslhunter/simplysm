@@ -1,5 +1,4 @@
-import {ChangeDetectionStrategy, Component, ElementRef, HostBinding, Input} from "@angular/core";
-import {SdInputValidate} from "../../utils/SdInputValidate";
+import {ChangeDetectionStrategy, Component, ElementRef, inject} from "@angular/core";
 
 @Component({
   selector: "sd-topbar-container",
@@ -11,26 +10,9 @@ import {SdInputValidate} from "../../utils/SdInputValidate";
       display: block;
       position: relative;
       height: 100%;
-
-      &[sd-size="sm"] {
-        padding-top: var(--topbar-height-sm);
-      }
-
-      &[sd-size="lg"] {
-        padding-top: var(--topbar-height-lg);
-      }
     }
   `]
 })
 export class SdTopbarContainerControl {
-  @Input()
-  @SdInputValidate({
-    type: String,
-    includes: ["sm", "lg"]
-  })
-  @HostBinding("attr.sd-size")
-  public size?: "sm" | "lg";
-
-  public constructor(public readonly elRef: ElementRef) {
-  }
+  elRef: ElementRef<HTMLElement> = inject(ElementRef);
 }

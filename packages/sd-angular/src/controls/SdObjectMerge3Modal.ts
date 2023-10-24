@@ -1,15 +1,14 @@
 import {ChangeDetectionStrategy, Component} from "@angular/core";
 import {ObjectUtil, TFlatType} from "@simplysm/sd-core-common";
 import {SdModalBase} from "../providers/SdModalProvider";
-import {faArrowRight} from "@fortawesome/pro-duotone-svg-icons/faArrowRight";
-import {faArrowLeft} from "@fortawesome/pro-duotone-svg-icons/faArrowLeft";
 import {SdDockingModule} from "./dock/SdDockingModule";
 import {SdPaneControl} from "./SdPaneControl";
 import {SdTableControl} from "./SdTableControl";
 import {SdAnchorControl} from "./SdAnchorControl";
-import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
 import {SdButtonControl} from "./SdButtonControl";
 import {CommonModule} from "@angular/common";
+import {SdIconControl} from "./SdIconControl";
+import {faArrowLeft, faArrowRight} from "@fortawesome/pro-duotone-svg-icons";
 
 @Component({
   selector: "sd-object-merge3-modal",
@@ -21,8 +20,8 @@ import {CommonModule} from "@angular/common";
     SdPaneControl,
     SdTableControl,
     SdAnchorControl,
-    FontAwesomeModule,
-    SdButtonControl
+    SdButtonControl,
+    SdIconControl
   ],
   template: `
     <sd-dock-container *ngIf="data && keys">
@@ -52,9 +51,9 @@ import {CommonModule} from "@angular/common";
             <td
               [class.bg-theme-success-lightest]="getIsOrgAllNotEqual(key) && !getIsNotEqual(data.theirs[key], data.origin[key])">
               <sd-anchor [disabled]="!getIsNotEqual(data.theirs[key], data.origin[key])">
-                <fa-icon [fixedWidth]="true" [icon]="icons.fadArrowRight"
+                <sd-icon fixedWidth [icon]="faArrowRight"
                          (click)="$any(data.origin)[key] = $any(data.theirs)[key]"
-                         style="pointer-events: auto"></fa-icon>
+                         style="pointer-events: auto"/>
               </sd-anchor>
             </td>
             <td style="text-align: center"
@@ -64,9 +63,9 @@ import {CommonModule} from "@angular/common";
             <td
               [class.bg-theme-success-lightest]="getIsOrgAllNotEqual(key) && !getIsNotEqual(data.yours[key], data.origin[key])">
               <sd-anchor [disabled]="!getIsNotEqual(data.yours[key], data.origin[key])">
-                <fa-icon [fixedWidth]="true" [icon]="icons.fadArrowLeft"
+                <sd-icon fixedWidth [icon]="faArrowLeft"
                          (click)="$any(data.origin)[key] = $any(data.yours)[key]"
-                         style="pointer-events: auto"></fa-icon>
+                         style="pointer-events: auto"/>
               </sd-anchor>
             </td>
             <td style="text-align: left"
@@ -86,24 +85,15 @@ import {CommonModule} from "@angular/common";
     </sd-dock-container>`
 })
 export class SdObjectMerge3Modal<T extends Record<string, TFlatType>> extends SdModalBase<ISdObjectMerge3ModalInput<T>, T> {
-  public icons = {
-    fadArrowRight: faArrowRight,
-    fadArrowLeft: faArrowLeft
-  };
+  data!: Omit<ISdObjectMerge3ModalInput<T>, "displayNameRecord">;
+  orgData!: Omit<ISdObjectMerge3ModalInput<T>, "displayNameRecord">;
+  keys!: string[];
+  displayNameRecord?: Partial<Record<keyof T, string>>;
+  valueTextConverter?: <K extends keyof T>(key: K, value: T[K], item: T) => string | undefined;
 
-  public data!: Omit<ISdObjectMerge3ModalInput<T>, "displayNameRecord">;
-  public orgData!: Omit<ISdObjectMerge3ModalInput<T>, "displayNameRecord">;
-  public keys!: string[];
-  public displayNameRecord?: Partial<Record<keyof T, string>>;
-  public valueTextConverter?: <K extends keyof T>(key: K, value: T[K], item: T) => string | undefined;
+  trackByMeFn = <TT>(index: number, item: TT) => item;
 
-  public trackByMeFn = (index: number, item: any): any => item;
-
-  public constructor() {
-    super();
-  }
-
-  public sdOnOpen(param: ISdObjectMerge3ModalInput<T>): void {
+  sdOnOpen(param: ISdObjectMerge3ModalInput<T>) {
     this.data = {
       theirs: param.theirs,
       origin: ObjectUtil.clone(param.origin),
@@ -122,35 +112,38 @@ export class SdObjectMerge3Modal<T extends Record<string, TFlatType>> extends Sd
     this.valueTextConverter = param.valueTextConverter;
   }
 
-  public getDisplayTitle(key: string): string {
+  getDisplayTitle(key: string): string {
     if (!this.displayNameRecord) return key;
     return this.displayNameRecord[key] ?? key;
   }
 
-  public getDisplayName(key: string, val: any, item: any): TFlatType {
+  getDisplayName(key: string, val: any, item: any): TFlatType {
     if (!this.valueTextConverter) return val;
     return this.valueTextConverter(key, val, item);
   }
 
-  public getIsOrgAllNotEqual(key: string): boolean {
+  getIsOrgAllNotEqual(key: string): boolean {
     return !ObjectUtil.equal(this.orgData.theirs[key], this.orgData.origin[key])
       && !ObjectUtil.equal(this.orgData.theirs[key], this.orgData.yours[key])
       && !ObjectUtil.equal(this.orgData.origin[key], this.orgData.yours[key]);
   }
 
-  public getIsAllNotEqual(key: string): boolean {
+  getIsAllNotEqual(key: string): boolean {
     return !ObjectUtil.equal(this.data.theirs[key], this.data.origin[key])
       && !ObjectUtil.equal(this.data.theirs[key], this.data.yours[key])
       && !ObjectUtil.equal(this.data.origin[key], this.data.yours[key]);
   }
 
-  public getIsNotEqual(item1: TFlatType, item2: TFlatType): boolean {
+  getIsNotEqual(item1: TFlatType, item2: TFlatType): boolean {
     return !ObjectUtil.equal(item1, item2);
   }
 
-  public onConfirmButtonClick(): void {
+  onConfirmButtonClick() {
     this.close(this.data.origin);
   }
+
+  protected readonly faArrowRight = faArrowRight;
+  protected readonly faArrowLeft = faArrowLeft;
 }
 
 export interface ISdObjectMerge3ModalInput<T extends Record<string, TFlatType>> {

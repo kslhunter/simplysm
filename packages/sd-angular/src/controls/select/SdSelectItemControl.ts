@@ -1,23 +1,17 @@
 import {
-  AfterContentChecked,
-  AfterViewInit,
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   ContentChild,
   ElementRef,
-  EventEmitter,
   forwardRef,
   HostBinding,
   HostListener,
-  Inject,
+  inject,
   Input,
-  OnDestroy,
-  Output,
   TemplateRef
 } from "@angular/core";
 import {SdSelectControl} from "./SdSelectControl";
-import {SdInputValidate} from "../../utils/SdInputValidate";
+import {coercionBoolean} from "../../utils/commons";
 
 @Component({
   selector: "sd-select-item",
@@ -37,7 +31,7 @@ import {SdInputValidate} from "../../utils/SdInputValidate";
     </div>`,
   styles: [/* language=SCSS */ `
     @import "../../scss/mixins";
-    
+
     :host {
       display: block;
       padding: var(--gap-sm) var(--gap-default);
@@ -77,91 +71,57 @@ import {SdInputValidate} from "../../utils/SdInputValidate";
     }
   `]
 })
-export class SdSelectItemControl implements AfterViewInit, AfterContentChecked, OnDestroy {
+export class SdSelectItemControl<T> {
   @HostBinding("attr.tabindex")
-  public tabIndex = 0;
+  tabIndex = 0;
 
   @Input()
-  public value?: any;
+  value!: T;
 
-  @Input()
+  @Input({transform: coercionBoolean})
   @HostBinding("attr.sd-disabled")
-  @SdInputValidate(Boolean)
-  public disabled?: boolean;
+  disabled = false;
 
   @ContentChild("label", {static: true})
-  public labelTemplateRef?: TemplateRef<void>;
+  labelTemplateRef?: TemplateRef<void>;
+
+  elRef: ElementRef<HTMLElement> = inject(ElementRef);
+  #selectControl: SdSelectControl<T> = inject(forwardRef(() => SdSelectControl));
 
   @HostBinding("attr.sd-select-mode")
   public get selectMode(): "single" | "multi" {
-    return this._selectControl.selectMode;
+    return this.#selectControl.selectMode;
   }
 
   @HostBinding("attr.sd-selected")
   public get isSelected(): boolean {
-    return this._selectControl.getIsSelectedItemControl(this);
-  }
-
-  public contentHTML = "";
-  public el: HTMLElement;
-  public contentEl?: HTMLElement;
-
-  @Output()
-  public readonly contentHTMLChange = new EventEmitter<string>();
-
-  public constructor(@Inject(forwardRef(() => SdSelectControl))
-                     private readonly _selectControl: SdSelectControl,
-                     private readonly _elRef: ElementRef,
-                     private readonly _cdr: ChangeDetectorRef) {
-    this.el = this._elRef.nativeElement;
-  }
-
-  public ngAfterViewInit(): void {
-    this.contentEl = this.el.findFirst("> ._content");
-    this.contentHTML = this.contentEl?.innerHTML ?? "";
-    this._selectControl.onItemControlInit(this);
-  }
-
-  public ngOnDestroy(): void {
-    this._selectControl.onItemControlDestroy(this);
-  }
-
-  public ngAfterContentChecked(): void {
-    const newContentHTML = this.contentEl?.innerHTML ?? "";
-    if (newContentHTML !== this.contentHTML) {
-      this.contentHTML = newContentHTML;
-      this._selectControl.onItemControlContentChanged(this);
-    }
+    return this.#selectControl.getIsSelectedItemControl(this);
   }
 
   @HostListener("click", ["$event"])
-  public onClick(event: MouseEvent): void {
+  onClick(event: MouseEvent) {
     event.preventDefault();
     event.stopPropagation();
     if (this.disabled) return;
 
-    this._selectControl.onItemControlClick(this);
+    this.#selectControl.onItemControlClick(this, this.selectMode === "single");
   }
 
   @HostListener("keydown", ["$event"])
-  public onKeydown(event: KeyboardEvent): void {
+  onKeydown(event: KeyboardEvent) {
     if (this.disabled) return;
 
     if (!event.ctrlKey && !event.altKey && event.key === " ") {
       event.preventDefault();
       event.stopPropagation();
 
-      this._selectControl.onItemControlClick(this, true);
+      this.#selectControl.onItemControlClick(this, false);
     }
     if (!event.ctrlKey && !event.altKey && event.key === "Enter") {
       event.preventDefault();
       event.stopPropagation();
 
-      this._selectControl.onItemControlClick(this);
+      this.#selectControl.onItemControlClick(this, this.selectMode === "single");
     }
-  }
-
-  public markForCheck(): void {
-    this._cdr.markForCheck();
   }
 }

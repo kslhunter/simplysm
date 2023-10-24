@@ -49,6 +49,8 @@ export class SdNgBundler {
   private readonly _pkgName: string;
   private readonly _baseHref: string;
 
+  private _depsMap?: Map<string, Set<string>>;
+
   public constructor(private readonly _opt: {
     dev: boolean;
     outputPath: string;
@@ -110,27 +112,27 @@ export class SdNgBundler {
       ...this._sourceFileCache.babelFileCache.keys(),
       ...this._sourceFileCache.loadResultCache.fileDependencies.keys()
     ].map((item) => path.resolve(item)).distinct();
-    let affectedSourceFilePaths = watchFilePaths.filter((item) => PathUtil.isChildPath(item, this._opt.pkgPath));
-    if (bundlingResult.errors) {
-      return {
-        filePaths: watchFilePaths,
-        affectedFilePaths: affectedSourceFilePaths,
-        results
-      };
-    }
 
-    const depsMap = new Map<string, Set<string>>();
-    for (const entry of Object.entries(bundlingResult.metafile.inputs)) {
-      for (const imp of entry[1].imports) {
-        const deps = depsMap.getOrCreate(path.resolve(this._opt.pkgPath, imp.path), new Set<string>());
-        deps.add(path.resolve(this._opt.pkgPath, entry[0]));
+    let affectedSourceFilePaths = watchFilePaths.filter((item) => PathUtil.isChildPath(item, this._opt.pkgPath));
+
+    if (bundlingResult.errors) {
+      // TODO: 제대로 deps를 적용해야함.. 코드 분석 필요
+      this._depsMap = this._depsMap ?? new Map<string, Set<string>>();
+    }
+    else {
+      this._depsMap = new Map<string, Set<string>>();
+      for (const entry of Object.entries(bundlingResult.metafile.inputs)) {
+        for (const imp of entry[1].imports) {
+          const deps = this._depsMap.getOrCreate(path.resolve(this._opt.pkgPath, imp.path), new Set<string>());
+          deps.add(path.resolve(this._opt.pkgPath, entry[0]));
+        }
       }
     }
 
     const searchAffectedFiles = (filePath: string, prev?: Set<string>): Set<string> => {
       const result = new Set<string>(prev);
 
-      const importerPaths = depsMap.get(filePath);
+      const importerPaths = this._depsMap!.get(filePath);
       if (!importerPaths) return result;
 
       for (const importerPath of importerPaths) {
@@ -149,6 +151,14 @@ export class SdNgBundler {
         affectedFilePathSet.adds(...searchAffectedFiles(path.resolve(modFile)));
       }
       affectedSourceFilePaths = Array.from(affectedFilePathSet.values()).filter((item) => PathUtil.isChildPath(item, this._opt.pkgPath));
+    }
+
+    if (bundlingResult.errors) {
+      return {
+        filePaths: watchFilePaths,
+        affectedFilePaths: affectedSourceFilePaths,
+        results
+      };
     }
 
     const executionResult = new ExecutionResult(this._contexts, this._sourceFileCache);

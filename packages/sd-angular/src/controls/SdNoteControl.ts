@@ -1,6 +1,4 @@
 import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
-import {SdInputValidate} from "../utils/SdInputValidate";
-import {sdThemes, TSdTheme} from "../commons";
 import {CommonModule} from "@angular/common";
 
 @Component({
@@ -39,18 +37,10 @@ import {CommonModule} from "@angular/common";
 })
 export class SdNoteControl {
   @Input()
-  @SdInputValidate({
-    type: String,
-    includes: sdThemes
-  })
   @HostBinding("attr.sd-theme")
-  public theme?: TSdTheme;
+  theme?: "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey";
 
   @Input()
-  @SdInputValidate({
-    type: String,
-    includes: ["sm", "lg"]
-  })
   @HostBinding("attr.sd-size")
-  public size?: "sm" | "lg";
+  size?: "sm" | "lg";
 }

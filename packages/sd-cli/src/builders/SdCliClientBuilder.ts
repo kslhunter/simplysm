@@ -1,14 +1,13 @@
 import {EventEmitter} from "events";
 import {FsUtil, Logger, PathUtil, SdFsWatcher} from "@simplysm/sd-core-node";
 import {ISdCliBuilderResult, ISdCliClientPackageConfig, ISdCliConfig, ISdCliPackageBuildResult} from "../commons";
-import {FunctionQueue, Wait} from "@simplysm/sd-core-common";
+import {FunctionQueue} from "@simplysm/sd-core-common";
 import path from "path";
 import {SdNgBundler} from "../build-tools/SdNgBundler";
 import {SdLinter} from "../build-tools/SdLinter";
 import {SdCliCordova} from "../build-tools/SdCliCordova";
 import {SdCliNgRoutesFileGenerator} from "../build-tools/SdCliNgRoutesFileGenerator";
 
-// TODO: ROUTER 자동생성
 export class SdCliClientBuilder extends EventEmitter {
   private readonly _logger = Logger.get(["simplysm", "sd-cli", "SdCliClientBuilder"]);
   private readonly _pkgConf: ISdCliClientPackageConfig;
@@ -32,10 +31,14 @@ export class SdCliClientBuilder extends EventEmitter {
     this._debug("dist 초기화...");
     await FsUtil.removeAsync(path.resolve(this._pkgPath, "dist"));
 
-    this._debug(`GEN INDEX...`);
+    this._debug(`GEN index.ts...`);
     await SdCliNgRoutesFileGenerator.runAsync(this._pkgPath);
 
-    return await this._runAsync({dev: false, genConf: true});
+    this._debug("GEN .config...");
+    const confDistPath = path.resolve(this._pkgPath, "dist/.config.json");
+    await FsUtil.writeFileAsync(confDistPath, JSON.stringify(this._pkgConf.configs ?? {}, undefined, 2));
+
+    return await this._runAsync({dev: false});
   }
 
   public async watchAsync(): Promise<void> {
@@ -44,19 +47,20 @@ export class SdCliClientBuilder extends EventEmitter {
     this._debug("dist 초기화...");
     await FsUtil.removeAsync(path.resolve(this._pkgPath, "dist"));
 
-    this._debug(`WATCH GEN INDEX...`);
+    this._debug(`WATCH GEN index.ts...`);
     await SdCliNgRoutesFileGenerator.watchAsync(this._pkgPath);
 
-    const result = await this._runAsync({dev: true, genConf: true});
+    this._debug("GEN .config...");
+    const confDistPath = path.resolve(this._pkgPath, "dist/.config.json");
+    await FsUtil.writeFileAsync(confDistPath, JSON.stringify(this._pkgConf.configs ?? {}, undefined, 2));
+
+    const result = await this._runAsync({dev: true});
     this.emit("complete", result);
 
     this._debug("WATCH...");
     const fnQ = new FunctionQueue();
     const watcher = SdFsWatcher
-      .watch([
-        ...result.watchFilePaths,
-        path.resolve(this._pkgPath, "src/**/*.*")
-      ])
+      .watch(result.watchFilePaths)
       .onChange({delay: 100}, (changeInfos) => {
         for (const builder of this._builders!) {
           builder.removeCache(changeInfos.map((item) => item.path));
@@ -65,7 +69,7 @@ export class SdCliClientBuilder extends EventEmitter {
         fnQ.runLast(async () => {
           this.emit("change");
 
-          const watchResult = await this._runAsync({dev: true, genConf: false});
+          const watchResult = await this._runAsync({dev: true});
           this.emit("complete", watchResult);
 
           watcher.add(watchResult.watchFilePaths);
@@ -75,7 +79,6 @@ export class SdCliClientBuilder extends EventEmitter {
 
   private async _runAsync(opt: {
     dev: boolean;
-    genConf: boolean;
   }): Promise<{
     watchFilePaths: string[];
     affectedFilePaths: string[];
@@ -92,21 +95,23 @@ export class SdCliClientBuilder extends EventEmitter {
       await this._cordova.initializeAsync();
     }
 
-    this._debug(`BUILD 준비...`);
-    this._builders = this._builders ?? builderTypes.map((builderType) => new SdNgBundler({
-      dev: opt.dev,
-      builderType: builderType,
-      pkgPath: this._pkgPath,
-      cordovaPlatforms: builderType === "cordova" ? Object.keys(this._pkgConf.builder!.cordova!.platform ?? {browser: {}}) : undefined,
-      outputPath: builderType === "web" ? path.resolve(this._pkgPath, "dist")
-        : builderType === "electron" ? path.resolve(this._pkgPath, ".electron/src")
-          : builderType === "cordova" && !opt.dev ? path.resolve(this._pkgPath, ".cordova/www")
-            : path.resolve(this._pkgPath, "dist", builderType),
-      env: {
-        ...this._pkgConf.env,
-        ...this._pkgConf.builder?.[builderType]?.env
-      }
-    }));
+    if (!this._builders) {
+      this._debug(`BUILD 준비...`);
+      this._builders = builderTypes.map((builderType) => new SdNgBundler({
+        dev: opt.dev,
+        builderType: builderType,
+        pkgPath: this._pkgPath,
+        cordovaPlatforms: builderType === "cordova" ? Object.keys(this._pkgConf.builder!.cordova!.platform ?? {browser: {}}) : undefined,
+        outputPath: builderType === "web" ? path.resolve(this._pkgPath, "dist")
+          : builderType === "electron" ? path.resolve(this._pkgPath, ".electron/src")
+            : builderType === "cordova" && !opt.dev ? path.resolve(this._pkgPath, ".cordova/www")
+              : path.resolve(this._pkgPath, "dist", builderType),
+        env: {
+          ...this._pkgConf.env,
+          ...this._pkgConf.builder?.[builderType]?.env
+        }
+      }));
+    }
 
     this._debug(`BUILD & CHECK...`);
     const buildResults = await Promise.all(this._builders.map((builder) => builder.bundleAsync()));
@@ -116,41 +121,36 @@ export class SdCliClientBuilder extends EventEmitter {
 
     this._debug(`LINT...`);
     const lintResults = await SdLinter.lintAsync(
-      affectedFilePaths.filter((item) =>
-        item.endsWith(".ts") ||
-        item.endsWith(".js") ||
-        item.endsWith(".cjs") ||
-        item.endsWith(".mjs")
-      ),
+      affectedFilePaths,
       this._pkgPath
     );
-
-    if (opt.genConf) {
-      this._debug("GEN .config...");
-      if (opt.dev && this._pkgConf.server !== undefined) {
-        const serverDistPath = path.resolve(this._pkgPath, "../", this._pkgConf.server, "dist");
-        await Wait.until(() => FsUtil.exists(serverDistPath));
-        await FsUtil.writeJsonAsync(path.resolve(serverDistPath, "www", path.basename(this._pkgPath), ".config.json"), this._pkgConf.configs ?? {}, {space: 2});
-      }
-      else {
-        await FsUtil.writeJsonAsync(path.resolve(this._pkgPath, "dist/.config.json"), this._pkgConf.configs ?? {}, {space: 2});
-      }
-    }
 
     if (!opt.dev && this._cordova) {
       this._debug("CORDOVA BUILD...");
       await this._cordova.buildAsync(path.resolve(this._pkgPath, "dist"));
     }
 
+    this._debug(`빌드 완료`);
     const localUpdatePaths = Object.keys(this._projConf.localUpdates ?? {})
       .mapMany((key) => FsUtil.glob(path.resolve(this._pkgPath, "../../node_modules", key)));
-    const watchFilePaths = filePaths
-      .filter((item) =>
-        PathUtil.isChildPath(item, path.resolve(this._pkgPath, "../")) ||
-        localUpdatePaths.some((lu) => PathUtil.isChildPath(item, lu))
-      );
+    /*const watchFilePaths = filePaths
+      .map((item) => {
+        if (PathUtil.isChildPath(item, path.resolve(this._pkgPath, "../"))) {
+          return path.resolve(this._pkgPath, "..", path.relative(path.resolve(this._pkgPath, "../"), item).split("\\").slice(0, 2).join("/"), "**!/!*.*");
+        }
 
-    this._debug(`빌드 완료`);
+        const localUpdatePath = localUpdatePaths.single((lu) => PathUtil.isChildPath(item, lu));
+        if (localUpdatePath != null) {
+          return path.resolve(localUpdatePath, path.relative(localUpdatePath, item).split("\\").slice(0, 1).join("/"), "**!/!*.*");
+        }
+
+        return undefined;
+      }).filterExists().distinct();
+    console.log(watchFilePaths);*/
+    const watchFilePaths = filePaths.filter(item =>
+      PathUtil.isChildPath(item, path.resolve(this._pkgPath, "../")) ||
+      localUpdatePaths.some((lu) => PathUtil.isChildPath(item, lu))
+    );
     return {
       watchFilePaths: watchFilePaths,
       affectedFilePaths: affectedFilePaths,

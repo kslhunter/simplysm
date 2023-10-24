@@ -1,5 +1,5 @@
 import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
-import {SdInputValidate} from "../../utils/SdInputValidate";
+import {coercionBoolean} from "../../utils/commons";
 
 @Component({
   selector: "sd-list",
@@ -27,8 +27,7 @@ import {SdInputValidate} from "../../utils/SdInputValidate";
   `]
 })
 export class SdListControl {
-  @Input()
-  @SdInputValidate(Boolean)
+  @Input({transform: coercionBoolean})
   @HostBinding("attr.sd-inset")
-  public inset?: boolean;
+  inset = false;
 }

@@ -1,35 +1,42 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from "@angular/core";
-import {SdInputValidate} from "../utils/SdInputValidate";
-import {faAngleDoubleLeft} from "@fortawesome/pro-duotone-svg-icons/faAngleDoubleLeft";
-import {faAngleLeft} from "@fortawesome/pro-duotone-svg-icons/faAngleLeft";
-import {faAngleRight} from "@fortawesome/pro-duotone-svg-icons/faAngleRight";
-import {faAngleDoubleRight} from "@fortawesome/pro-duotone-svg-icons/faAngleDoubleRight";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DoCheck,
+  EventEmitter,
+  inject,
+  Injector,
+  Input,
+  Output
+} from "@angular/core";
 import {CommonModule} from "@angular/common";
-import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
 import {SdAnchorControl} from "./SdAnchorControl";
+import {SdIconControl} from "./SdIconControl";
+import {coercionNumber} from "../utils/commons";
+import {faAngleDoubleLeft, faAngleDoubleRight, faAngleLeft, faAngleRight} from "@fortawesome/pro-duotone-svg-icons";
+import {SdNgHelper} from "../utils/SdNgHelper";
 
 @Component({
   selector: "sd-pagination",
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, FontAwesomeModule, SdAnchorControl],
+  imports: [CommonModule, SdAnchorControl, SdIconControl],
   template: `
     <sd-anchor [disabled]="!hasPrev" (click)="onGoFirstClick()">
-      <fa-icon [icon]="icons.fadAngleDoubleLeft" [fixedWidth]="true"></fa-icon>
+      <sd-icon [icon]="faAngleDoubleLeft" fixedWidth/>
     </sd-anchor>
     <sd-anchor [disabled]="!hasPrev" (click)="onPrevClick()">
-      <fa-icon [icon]="icons.fadAngleLeft" [fixedWidth]="true"></fa-icon>
+      <sd-icon [icon]="faAngleLeft" fixedWidth/>
     </sd-anchor>
-    <sd-anchor *ngFor="let displayPage of displayPages; trackBy: trackByPageFn"
+    <sd-anchor *ngFor="let displayPage of displayPages; trackBy: trackByFnForPage"
                (click)="onPageClick(displayPage)"
                [attr.sd-selected]="displayPage === page">
       {{ displayPage + 1 }}
     </sd-anchor>
     <sd-anchor [disabled]="!hasNext" (click)="onNextClick()">
-      <fa-icon [icon]="icons.fadAngleRight" [fixedWidth]="true"></fa-icon>
+      <sd-icon [icon]="faAngleRight" fixedWidth/>
     </sd-anchor>
     <sd-anchor [disabled]="!hasNext" (click)="onGoLastClick()">
-      <fa-icon [icon]="icons.fadAngleDoubleRight" [fixedWidth]="true"></fa-icon>
+      <sd-icon [icon]="faAngleDoubleRight" fixedWidth/>
     </sd-anchor>`,
   styles: [/* language=SCSS */ `
     :host {
@@ -51,60 +58,60 @@ import {SdAnchorControl} from "./SdAnchorControl";
     }
   `]
 })
-export class SdPaginationControl {
-  public icons = {
-    fadAngleDoubleLeft: faAngleDoubleLeft,
-    fadAngleLeft: faAngleLeft,
-    fadAngleRight: faAngleRight,
-    fadAngleDoubleRight: faAngleDoubleRight
-  };
+export class SdPaginationControl implements DoCheck {
+  @Input({transform: coercionNumber})
+  page = 0;
 
-  @Input()
-  @SdInputValidate({
-    type: Number,
-    notnull: true
-  })
-  public page = 0;
+  @Input({transform: coercionNumber})
+  pageLength = 0;
 
-  @Input()
-  @SdInputValidate({
-    type: Number,
-    notnull: true
-  })
-  public pageLength = 0;
-
-  @Input()
-  @SdInputValidate({
-    type: Number,
-    notnull: true
-  })
-  public displayPageLength = 10;
+  @Input({transform: coercionNumber})
+  displayPageLength = 10;
 
   @Output()
-  public readonly pageChange = new EventEmitter<number>();
+  pageChange = new EventEmitter<number>();
 
-  public trackByPageFn = (index: number, item: number): any => item;
+  trackByFnForPage = (index: number, item: number): any => item;
 
-  public get displayPages(): number[] {
-    const pages: number[] = [];
-    for (let i = 0; i < this.pageLength; i++) {
-      pages.push(i);
-    }
+  displayPages: number[] = [];
+  hasNext = false;
+  hasPrev = false;
 
-    const from = Math.floor(this.page / this.displayPageLength) * this.displayPageLength;
-    const to = Math.min(from + this.displayPageLength, this.pageLength);
-    return pages.filter((item) => item >= from && item < to);
+  #sdNgHelper = new SdNgHelper(inject(Injector));
+
+  ngDoCheck() {
+    this.#sdNgHelper.doCheck(run => {
+      run({
+        pageLength: [this.pageLength],
+        page: [this.page],
+        displayPageLength: [this.displayPageLength],
+      }, () => {
+        const pages: number[] = [];
+        for (let i = 0; i < this.pageLength; i++) {
+          pages.push(i);
+        }
+
+        const from = Math.floor(this.page / this.displayPageLength) * this.displayPageLength;
+        const to = Math.min(from + this.displayPageLength, this.pageLength);
+        this.displayPages = pages.filter((item) => item >= from && item < to);
+      });
+
+      run({
+        displayPages: [this.displayPages],
+        pageLength: [this.pageLength]
+      }, () => {
+        this.hasNext = (this.displayPages.last() ?? 0) < (this.pageLength - 1);
+      });
+
+      run({
+        displayPages: [this.displayPages]
+      }, () => {
+        this.hasPrev = (this.displayPages[0] ?? 0) > 0;
+      });
+    });
   }
 
-  public get hasNext(): boolean {
-    return (this.displayPages.last() ?? 0) < (this.pageLength - 1);
-  }
-
-  public get hasPrev(): boolean {
-    return (this.displayPages[0] ?? 0) > 0;
-  }
-
-  public onPageClick(page: number): void {
+  onPageClick(page: number) {
     if (this.pageChange.observed) {
       this.pageChange.emit(page);
     }
@@ -113,7 +120,7 @@ export class SdPaginationControl {
     }
   }
 
-  public onNextClick(): void {
+  onNextClick() {
     const page = (this.displayPages.last() ?? 0) + 1;
 
     if (this.pageChange.observed) {
@@ -124,7 +131,7 @@ export class SdPaginationControl {
     }
   }
 
-  public onPrevClick(): void {
+  onPrevClick() {
     const page = (this.displayPages[0] ?? 0) - 1;
 
     if (this.pageChange.observed) {
@@ -135,7 +142,7 @@ export class SdPaginationControl {
     }
   }
 
-  public onGoFirstClick(): void {
+  onGoFirstClick() {
     const page = 0;
 
     if (this.pageChange.observed) {
@@ -146,7 +153,7 @@ export class SdPaginationControl {
     }
   }
 
-  public onGoLastClick(): void {
+  onGoLastClick() {
     const page = this.pageLength - 1;
 
     if (this.pageChange.observed) {
@@ -156,4 +163,9 @@ export class SdPaginationControl {
       this.page = page;
     }
   }
+
+  protected readonly faAngleDoubleLeft = faAngleDoubleLeft;
+  protected readonly faAngleLeft = faAngleLeft;
+  protected readonly faAngleRight = faAngleRight;
+  protected readonly faAngleDoubleRight = faAngleDoubleRight;
 }

@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, forwardRef, HostBinding, Inject} from "@angular/core";
+import {ChangeDetectionStrategy, Component, forwardRef, HostBinding, inject} from "@angular/core";
 import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
 
 @Component({
@@ -21,7 +21,7 @@ import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
       color: var(--text-trans-rev-default);
       transition: transform .1s ease-out;
 
-      &[sd-desktop-toggle=true] {
+      &[sd-toggle=true] {
         transform: translateX(-100%);
         transition: transform .1s ease-in;
       }
@@ -42,17 +42,10 @@ import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
   `]
 })
 export class SdSidebarControl {
+  #parentControl: SdSidebarContainerControl = inject(forwardRef(() => SdSidebarContainerControl));
+
   @HostBinding("attr.sd-toggle")
-  public get toggle(): boolean | undefined {
-    return this.parentControl?.toggle;
-  }
-
-  @HostBinding("attr.sd-desktop-toggle")
-  public get desktopToggle(): boolean | undefined {
-    return this.parentControl?.desktopToggle;
-  }
-
-  public constructor(@Inject(forwardRef(() => SdSidebarContainerControl))
-                     public readonly parentControl?: SdSidebarContainerControl) {
+  get toggle(): boolean | undefined {
+    return this.#parentControl.toggle;
   }
 }

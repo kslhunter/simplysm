@@ -17,10 +17,10 @@
     "node": "^16"
   },
   "dependencies": {
-    "@angular/common": "^16.2.9",
-    "@angular/core": "^16.2.9",
-    "@angular/platform-browser": "^16.2.9",
-    "@angular/router": "^16.2.9",
+    "@angular/common": "^16.2.10",
+    "@angular/core": "^16.2.10",
+    "@angular/platform-browser": "^16.2.10",
+    "@angular/router": "^16.2.10",
     "@fortawesome/angular-fontawesome": "^0.13.0",
     "@fortawesome/fontawesome-svg-core": "^6.4.2",
     "@fortawesome/pro-duotone-svg-icons": "^6.4.2",
@@ -39,6 +39,6 @@
   },
   "devDependencies": {
     "@types/marked": "^6.0.0",
-    "@types/qrcode": "^1.5.2"
+    "@types/qrcode": "^1.5.4"
   }
 }

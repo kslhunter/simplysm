@@ -1,5 +1,13 @@
-import {AfterContentInit, ChangeDetectionStrategy, Component, ElementRef, HostBinding, Input} from "@angular/core";
-import {SdInputValidate} from "../../utils/SdInputValidate";
+import {
+  AfterContentInit,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  HostBinding,
+  inject,
+  Input
+} from "@angular/core";
+import {coercionBoolean} from "../../utils/commons";
 
 @Component({
   selector: "sd-collapse",
@@ -26,25 +34,23 @@ import {SdInputValidate} from "../../utils/SdInputValidate";
   `]
 })
 export class SdCollapseControl implements AfterContentInit {
-  @Input()
-  @SdInputValidate(Boolean)
+  @Input({transform: coercionBoolean})
   @HostBinding("attr.sd-open")
-  public open?: boolean;
+  open = false;
 
-  public contentHeight = 0;
+  contentHeight = 0;
 
-  public get contentMarginTop(): string | undefined {
+  get contentMarginTop(): string | undefined {
     return this.open ? undefined : `${-this.contentHeight}px`;
   }
 
-  public constructor(private readonly _elRef: ElementRef<HTMLElement>) {
+  #elRef: ElementRef<HTMLElement> = inject(ElementRef);
+
+  ngAfterContentInit() {
+    this.contentHeight = this.#elRef.nativeElement.findFirst<HTMLDivElement>("> ._content")!.offsetHeight;
   }
 
-  public ngAfterContentInit(): void {
-    this.contentHeight = this._elRef.nativeElement.findFirst<HTMLDivElement>("> ._content")!.offsetHeight;
-  }
-
-  public onContentResize(): void {
-    this.contentHeight = this._elRef.nativeElement.findFirst<HTMLDivElement>("> ._content")!.offsetHeight;
+  onContentResize() {
+    this.contentHeight = this.#elRef.nativeElement.findFirst<HTMLDivElement>("> ._content")!.offsetHeight;
   }
 }

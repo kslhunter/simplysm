@@ -1,7 +1,7 @@
-import {ChangeDetectionStrategy, Component, HostBinding, HostListener, Input} from "@angular/core";
-import {SdInputValidate} from "../utils/SdInputValidate";
+import {ChangeDetectionStrategy, Component, HostBinding, HostListener, inject, Input} from "@angular/core";
 import {SdBusyProvider} from "../providers/SdBusyProvider";
 import {CommonModule} from "@angular/common";
+import {coercionBoolean, coercionNumber} from "../utils/commons";
 
 @Component({
   selector: "sd-busy-container",
@@ -332,46 +332,33 @@ import {CommonModule} from "@angular/common";
   `]
 })
 export class SdBusyContainerControl {
-  @Input()
-  @SdInputValidate(Boolean)
+  #sdBusy = inject(SdBusyProvider);
+
+  @Input({transform: coercionBoolean})
   @HostBinding("attr.sd-busy")
-  public busy?: boolean;
+  busy = false;
 
   @Input()
-  @SdInputValidate(String)
-  public message?: string;
+  message?: string;
 
   @Input()
-  @SdInputValidate({
-    type: String,
-    includes: ["spinner", "bar", "cube"],
-    notnull: true
-  })
   @HostBinding("attr.sd-type")
-  public type: "spinner" | "bar" | "cube";
+  type: "spinner" | "bar" | "cube" = this.#sdBusy.type ?? "spinner";
 
-  @Input()
-  @SdInputValidate({
-    type: Boolean,
-    notnull: true
-  })
+  @Input({transform: coercionBoolean})
   @HostBinding("attr.sd-no-fade")
-  public noFade: boolean;
+  noFade = this.#sdBusy.noFade ?? false;
 
-  @Input()
-  @SdInputValidate(Number)
-  public progressPercent?: number;
+  @Input({transform: coercionNumber})
+  progressPercent?: number;
 
-  public constructor(private readonly _busy: SdBusyProvider) {
-    this.type = this._busy.type ?? "spinner";
-    this.noFade = this._busy.noFade ?? false;
-  }
-
-  @HostListener("keydown", ["$event"])
-  public onKeydown(event: KeyboardEvent): void {
+  @HostListener("keydown.outside", ["$event"])
+  onKeydownOutside(event: KeyboardEvent) {
     if (this.busy) {
       event.preventDefault();
       event.stopPropagation();
     }
   }
 }
+
+// V11 LOGIC OK

@@ -1,29 +1,18 @@
 import crypto from "crypto";
-import {SdServiceServerConfigUtil} from "../utils/SdServiceServerConfigUtil";
 import {SdServiceBase} from "../commons";
 import {ICryptoConfig} from "@simplysm/sd-service-common";
 
 export class SdCryptoService extends SdServiceBase {
-  public async encryptAsync(data: string | Buffer): Promise<string> {
-    const config = (
-      await SdServiceServerConfigUtil.getConfigAsync(this.server.options.rootPath, this.request?.clientName)
-    )["crypto"] as ICryptoConfig | undefined;
-    if (config === undefined) {
-      throw new Error("암호화 설정을 찾을 수 없습니다.");
-    }
+  encrypt(data: string | Buffer): string {
+    const config = this.#getConf();
 
     return crypto.createHmac("sha256", config.key)
       .update(data)
       .digest("hex");
   }
 
-  public async encryptAesAsync(data: Buffer): Promise<string> {
-    const config = (
-      await SdServiceServerConfigUtil.getConfigAsync(this.server.options.rootPath, this.request?.clientName)
-    )["crypto"] as ICryptoConfig | undefined;
-    if (config === undefined) {
-      throw new Error("암호화 설정을 찾을 수 없습니다.");
-    }
+  encryptAes(data: Buffer): string {
+    const config = this.#getConf();
 
     const iv = crypto.randomBytes(16);
     const cipher = crypto.createCipheriv(
@@ -40,13 +29,8 @@ export class SdCryptoService extends SdServiceBase {
     );
   }
 
-  public async decryptAesAsync(encText: string): Promise<Buffer> {
-    const config = (
-      await SdServiceServerConfigUtil.getConfigAsync(this.server.options.rootPath, this.request?.clientName)
-    )["crypto"] as ICryptoConfig | undefined;
-    if (config === undefined) {
-      throw new Error("암호화 설정을 찾을 수 없습니다.");
-    }
+  decryptAes(encText: string): Buffer {
+    const config = this.#getConf();
 
     const textParts = encText.split(":");
     const iv = Buffer.from(textParts.shift()!, "hex");
@@ -59,5 +43,13 @@ export class SdCryptoService extends SdServiceBase {
     const decrypted = decipher.update(encryptedText);
 
     return Buffer.concat([decrypted, decipher.final()]);
+  }
+
+  #getConf() {
+    const config = this.server.getConfig(this.request?.clientName)["crypto"] as ICryptoConfig | undefined;
+    if (config === undefined) {
+      throw new Error("암호화 설정을 찾을 수 없습니다.");
+    }
+    return config;
   }
 }

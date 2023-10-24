@@ -1,7 +1,6 @@
 import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
-import {SdInputValidate} from "../../utils/SdInputValidate";
-import {faChevronDown} from "@fortawesome/pro-light-svg-icons/faChevronDown";
 import useBgJpg from "../../../res/user_bg.jpg";
+import {faChevronDown} from "@fortawesome/pro-light-svg-icons";
 
 @Component({
   selector: "sd-sidebar-user",
@@ -17,12 +16,12 @@ import useBgJpg from "../../../res/user_bg.jpg";
       <div class="_menu-button" *ngIf="userMenu?.title" (click)="onMenuOpenButtonClick()">
         {{ userMenu?.title }}
         <sd-collapse-icon [open]="menuOpen" style="float: right;" openRotate="180"
-                          [icon]="icons.falChevronDown"></sd-collapse-icon>
+                          [icon]="faChevronDown"></sd-collapse-icon>
       </div>
     </div>
     <sd-collapse [open]="menuOpen" *ngIf="userMenu?.title">
       <sd-list class="bg-trans-default pv-sm" inset>
-        <sd-list-item *ngFor="let menu of userMenu?.menus; trackBy: menuTrackBy;"
+        <sd-list-item *ngFor="let menu of userMenu?.menus; trackBy: trackByForMenu;"
                       style="text-indent: 1em"
                       (click)="menu.onClick()">
           {{menu.title}}
@@ -31,16 +30,14 @@ import useBgJpg from "../../../res/user_bg.jpg";
     </sd-collapse>`,
   styles: [/* language=SCSS */ `
     @import "../../scss/mixins";
-    
+
     :host {
       > ._content {
         background-size: cover;
         text-shadow: 0 0 1px var(--text-trans-default);
-        text-align: center;
 
         > ._menu-button {
           display: block;
-          text-align: left;
           padding: var(--gap-sm) var(--gap-default);
           background: var(--trans-default);
           cursor: pointer;
@@ -75,35 +72,30 @@ import useBgJpg from "../../../res/user_bg.jpg";
   `]
 })
 export class SdSidebarUserControl {
-  public icons = {
-    falChevronDown: faChevronDown
-  };
-
-  public backgroundImage = useBgJpg;
+  backgroundImage = useBgJpg;
 
   @Input()
-  public userMenu?: ISidebarUserMenu;
+  userMenu?: ISidebarUserMenu;
 
   @Input()
-  @SdInputValidate(String)
-  public menuTitle?: string;
+  menuTitle?: string;
 
   @HostBinding("attr.sd-menu-open")
-  public menuOpen?: boolean;
+  menuOpen = false;
 
   @Input()
-  @SdInputValidate(String)
-  public contentStyle?: string;
+  contentStyle?: string;
 
   @Input()
-  @SdInputValidate(String)
-  public contentClass?: string;
+  contentClass?: string;
 
-  public menuTrackBy = (i: number, item: ISidebarUserMenu["menus"][0]): string => item.title;
+  trackByForMenu = (i: number, item: ISidebarUserMenu["menus"][0]): string => item.title;
 
-  public onMenuOpenButtonClick(): void {
+  onMenuOpenButtonClick() {
     this.menuOpen = !this.menuOpen;
   }
+
+  protected readonly faChevronDown = faChevronDown;
 }
 
 

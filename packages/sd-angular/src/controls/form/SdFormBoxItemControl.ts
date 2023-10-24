@@ -4,12 +4,11 @@ import {
   ContentChild,
   forwardRef,
   HostBinding,
-  Inject,
+  inject,
   Input,
   TemplateRef
 } from "@angular/core";
 import {SdFormBoxControl} from "./SdFormBoxControl";
-import {SdInputValidate} from "../../utils/SdInputValidate";
 
 @Component({
   selector: "sd-form-box-item",
@@ -22,8 +21,7 @@ import {SdInputValidate} from "../../utils/SdInputValidate";
            [class.help]="labelTooltip">
       <ng-container *ngIf="!labelTemplateRef">{{ label }}</ng-container>
       <ng-container *ngIf="labelTemplateRef">
-        <ng-template [ngTemplateOutlet]="labelTemplateRef"
-                     [ngTemplateOutletContext]="{label: label}"></ng-template>
+        <ng-template [ngTemplateOutlet]="labelTemplateRef"/>
       </ng-container>
     </label>
     <div class="_content">
@@ -130,28 +128,24 @@ import {SdInputValidate} from "../../utils/SdInputValidate";
 })
 export class SdFormBoxItemControl {
   @Input()
-  @SdInputValidate(String)
-  public label?: string;
+  label?: string;
 
   @Input()
-  @SdInputValidate(String)
-  public labelTooltip?: string;
+  labelTooltip?: string;
 
   @ContentChild("label", {static: true})
-  public labelTemplateRef?: TemplateRef<{ label?: string }>;
+  labelTemplateRef?: TemplateRef<void>;
+
+  #parentFormControl: SdFormBoxControl = inject(forwardRef(() => SdFormBoxControl));
 
   @HostBinding("attr.sd-label-align")
-  public get labelAlign(): "left" | "right" | "center" | undefined {
-    return this._parentFormControl.labelAlign;
+  get labelAlign(): "left" | "right" | "center" | undefined {
+    return this.#parentFormControl.labelAlign;
   }
 
   @HostBinding("attr.sd-layout")
-  public get layout(): "cascade" | "inline" | "table" | "none" | undefined {
-    return this._parentFormControl.layout;
-  }
-
-  public get labelWidth(): string | undefined {
-    return this.layout === "table" ? this._parentFormControl.labelWidth : undefined;
+  get layout(): "cascade" | "inline" | "table" | "none" | undefined {
+    return this.#parentFormControl.layout;
   }
 
   @HostBinding("attr.sd-no-label")
@@ -159,7 +153,7 @@ export class SdFormBoxItemControl {
     return this.label == null && !this.labelTemplateRef;
   }
 
-  public constructor(@Inject(forwardRef(() => SdFormBoxControl))
-                     private readonly _parentFormControl: SdFormBoxControl) {
+  get labelWidth(): string | undefined {
+    return this.layout === "table" ? this.#parentFormControl.labelWidth : undefined;
   }
 }

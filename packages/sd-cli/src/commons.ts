@@ -27,8 +27,7 @@ export interface ISdCliBuildClusterReqMessage {
   cmd: "watch" | "build";
   projConf: ISdCliConfig;
   pkgPath: string;
-  builderKey?: "web" | "electron";
-  withLint: boolean;
+  // builderKey?: "web" | "electron";
 }
 
 export interface ISdCliBuildClusterResMessage {

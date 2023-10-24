@@ -1,10 +1,22 @@
-import {ChangeDetectionStrategy, Component, DoCheck, EventEmitter, Input, Output} from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DoCheck,
+  EventEmitter,
+  inject,
+  Injector,
+  Input,
+  Output
+} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {SdCollapseModule} from "./collapse/SdCollapseModule";
-import {faChevronRight} from "@fortawesome/pro-duotone-svg-icons";
 import {SdAnchorControl} from "./SdAnchorControl";
 import {SdCheckboxModule} from "./checkbox/SdCheckboxModule";
 import {ISdPermission} from "../utils/SdAppStructureUtil";
+import {coercionBoolean} from "../utils/commons";
+import {SdNgHelper} from "../utils/SdNgHelper";
+import {faChevronRight} from "@fortawesome/pro-duotone-svg-icons";
+import {SdTypedTemplateDirective} from "../directives/SdTypedTemplateDirective";
 
 @Component({
   selector: "sd-permission-table",
@@ -14,7 +26,8 @@ import {ISdPermission} from "../utils/SdAppStructureUtil";
     CommonModule,
     SdCollapseModule,
     SdAnchorControl,
-    SdCheckboxModule
+    SdCheckboxModule,
+    SdTypedTemplateDirective
   ],
   template: `
     <table>
@@ -27,8 +40,9 @@ import {ISdPermission} from "../utils/SdAppStructureUtil";
       </tbody>
     </table>
 
-    <ng-template #itemTemplate let-item="item" let-parentKey="parentKey" let-depth="depth" let-parent="parent">
-      <tr [attr.sd-collapse]="!!parent && getPermCollapse(parent)"
+    <ng-template #itemTemplate [typed]="itemTemplateType" let-item="item" let-parentKey="parentKey" let-depth="depth"
+                 let-parent="parent">
+      <tr [attr.sd-collapse]="!!parent && getIsPermCollapsed(parent)"
           [attr.sd-theme]="depth === 0 ? 'first' : depth % 3 === 0 ? 'success' : depth % 3 === 1 ? 'info' : 'warning'">
         <ng-container *ngFor="let _ of arr(depth + 1); let i = index; trackBy: trackByIndex">
           <td class="_before">
@@ -39,7 +53,7 @@ import {ISdPermission} from "../utils/SdAppStructureUtil";
         <td class="_title">
           <ng-container *ngIf="item.children && item.children.length > 0">
             <sd-anchor (click)="onPermCollapseToggle(item)">
-              <sd-collapse-icon [icon]="faChevronRight" [open]="getPermCollapse(item)"/>
+              <sd-collapse-icon [icon]="faChevronRight" [open]="getIsPermCollapsed(item)"/>
               {{item.title}}
             </sd-anchor>
           </ng-container>
@@ -164,8 +178,6 @@ import {ISdPermission} from "../utils/SdAppStructureUtil";
   `]
 })
 export class SdPermissionTableControl implements DoCheck {
-  faChevronRight = faChevronRight;
-
   @Input()
   items: ISdPermission[] = [];
 
@@ -175,30 +187,32 @@ export class SdPermissionTableControl implements DoCheck {
   @Output()
   valueChange = new EventEmitter<this["value"]>();
 
-  @Input()
+  @Input({transform: coercionBoolean})
   disabled = false;
 
   collapsedItems = new Set<ISdPermission>();
   depthLength = 0;
 
-  prevData: Record<string, any> = {};
-
   trackByForItem = (i: number, item: ISdPermission): string => item.codes.join(".");
-  trackByIndex = (i: number): number => i;
+  trackByIndex = <T>(i: number, item: T): number => i;
+
+  #sdNgHelper = new SdNgHelper(inject(Injector));
 
   ngDoCheck() {
-    if (this.prevData["items"] !== this.items) {
-      this.prevData["items"] = this.items;
-
-      this.depthLength = this._getDepthLength(this.items, 0);
-    }
+    this.#sdNgHelper.doCheck(run => {
+      run({
+        items: [this.items, "all"]
+      }, () => {
+        this.depthLength = this.#getDepthLength(this.items, 0);
+      });
+    });
   }
 
   arr(len: number): number[] {
     return Array(len).fill(0);
   }
 
-  getPermCollapse(item: ISdPermission): boolean {
+  getIsPermCollapsed(item: ISdPermission): boolean {
     return this.collapsedItems.has(item);
   }
 
@@ -283,14 +297,23 @@ export class SdPermissionTableControl implements DoCheck {
     }
   }
 
-  private _getDepthLength(items: ISdPermission[], depth: number): number {
+  #getDepthLength(items: ISdPermission[], depth: number): number {
     return items.max((item) => {
       if (item.children) {
-        return this._getDepthLength(item.children, depth + 1);
+        return this.#getDepthLength(item.children, depth + 1);
       }
       else {
         return depth + 1;
       }
     }) ?? depth;
   }
+
+  protected readonly itemTemplateType!: {
+    item: ISdPermission;
+    parentKey: string;
+    depth: number;
+    parent: ISdPermission | undefined;
+  };
+
+  protected readonly faChevronRight = faChevronRight;
 }

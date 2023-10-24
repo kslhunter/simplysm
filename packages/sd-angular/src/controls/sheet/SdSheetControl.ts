@@ -9,13 +9,13 @@ import {
   HostBinding,
   HostListener,
   inject,
+  Injector,
   Input,
   NgZone,
   Output,
   QueryList
 } from "@angular/core";
 import {SdSheetColumnDirective} from "./SdSheetColumnDirective";
-import {SdInputValidate} from "../../utils/SdInputValidate";
 import {SdSystemConfigProvider} from "../../providers/SdSystemConfigProvider";
 import {NumberUtil, ObjectUtil} from "@simplysm/sd-core-common";
 import {SdSheetConfigModal} from "./SdSheetConfigModal";
@@ -26,7 +26,14 @@ import {faSort} from "@fortawesome/pro-solid-svg-icons/faSort";
 import {faSortDown} from "@fortawesome/pro-solid-svg-icons/faSortDown";
 import {faSortUp} from "@fortawesome/pro-solid-svg-icons/faSortUp";
 import {faCaretRight} from "@fortawesome/pro-duotone-svg-icons/faCaretRight";
-import {SdDoCheckHelper} from "../../utils/SdDoCheckHelper";
+import {SdNgHelper} from "../../utils/SdNgHelper";
+import {
+  coercionBoolean,
+  coercionNonNullableNumber,
+  coercionNumber,
+  getSdFnCheckData,
+  TSdFnInfo
+} from "../../utils/commons";
 
 @Component({
   selector: "sd-sheet",
@@ -37,7 +44,7 @@ import {SdDoCheckHelper} from "../../utils/SdDoCheckHelper";
         <sd-dock *ngIf="(key || displayPageLength > 0) && !hideConfigBar">
           <div class="flex-row-inline flex-gap-sm">
             <sd-anchor *ngIf="key" (click)="onConfigButtonClick()">
-              <fa-icon [icon]="faCog" [fixedWidth]="true"/>
+              <sd-icon [icon]="faCog" fixedWidth/>
             </sd-anchor>
             <sd-pagination *ngIf="displayPageLength > 1"
                            [page]="page"
@@ -47,7 +54,7 @@ import {SdDoCheckHelper} from "../../utils/SdDoCheckHelper";
         </sd-dock>
 
         <sd-pane class="_sheet-container"
-                 (scroll)="onContainerScroll($event)">
+                 (scroll.outside)="onContainerScrollOutside($event)">
           <table>
             <thead>
             <ng-container
@@ -57,23 +64,23 @@ import {SdDoCheckHelper} from "../../utils/SdDoCheckHelper";
                     *ngIf="r === 0"
                     [attr.rowspan]="!hasSummaryTemplate && headerRow.length < 1 ? undefined : displayHeaderDefTable.length + (hasSummaryTemplate ? 1 : 0)"
                     [attr.c]="getChildrenFn ? -2 : -1"
-                    (sdResize)="onFixedCellResize(getChildrenFn ? -2 : -1)">
+                    (sdResize.outside)="onFixedCellResizeOutside(getChildrenFn ? -2 : -1)">
                   <ng-container *ngIf="selectMode === 'multi' && hasSelectableItem">
-                    <fa-icon [icon]="faArrowRight" [fixedWidth]="true"
+                    <sd-icon [icon]="faArrowRight" fixedWidth
                              [class.tx-theme-primary-default]="isAllItemsSelected"
-                             (click)="onAllItemsSelectIconClick()"></fa-icon>
+                             (click)="onAllItemsSelectIconClick()"/>
                   </ng-container>
                 </th>
                 <th class="_fixed _feature-cell _last-depth"
                     *ngIf="getChildrenFn && r === 0"
                     [attr.rowspan]="!hasSummaryTemplate && headerRow.length < 1 ? undefined : displayHeaderDefTable.length + (hasSummaryTemplate ? 1 : 0)"
                     [attr.c]="-1"
-                    (sdResize)="onFixedCellResize(-1)">
+                    (sdResize.outside)="onFixedCellResizeOutside(-1)">
                   <ng-container *ngIf="hasExpandableItem">
-                    <fa-icon [icon]="faCaretRight" [fixedWidth]="true"
+                    <sd-icon [icon]="faCaretRight" fixedWidth
                              [class.tx-theme-primary-default]="isAllItemsExpanded"
                              [rotate]="isAllItemsExpanded ? 90 : undefined"
-                             (click)="onAllItemsExpandIconClick()"></fa-icon>
+                             (click)="onAllItemsExpandIconClick()"/>
                   </ng-container>
                 </th>
                 <ng-container *ngFor="let headerCell of headerRow; let c = index; trackBy: trackByFnForHeaderCell">
@@ -89,7 +96,7 @@ import {SdDoCheckHelper} from "../../utils/SdDoCheckHelper";
                       [class._ordering]="headerCell.isLastDepth && headerCell.control.useOrdering && headerCell.control.key"
                       [attr.title]="headerCell.isLastDepth ? (headerCell.control.tooltip ?? headerCell.text) : undefined"
                       [class.help]="headerCell.isLastDepth && headerCell.control.tooltip"
-                      (sdResize)="onHeaderCellResize(headerCell, c)"
+                      (sdResize.outside)="onHeaderCellResizeOutside(headerCell, c)"
                       (click)="onHeaderCellClick($event, headerCell)">
                     <div class="flex-row align-items-end">
                       <div class="_contents flex-grow"
@@ -107,11 +114,11 @@ import {SdDoCheckHelper} from "../../utils/SdDoCheckHelper";
                         *ngIf="headerCell.isLastDepth && headerCell.control.useOrdering && headerCell.control.key">
                         <div class="_sort-icon">
                           <fa-layers>
-                            <fa-icon [icon]="faSort" class="tx-trans-lightest"></fa-icon>
-                            <fa-icon [icon]="faSortDown"
-                                     *ngIf="getIsColumnOrderingDesc(headerCell.control.key) === false"></fa-icon>
-                            <fa-icon [icon]="faSortUp"
-                                     *ngIf="getIsColumnOrderingDesc(headerCell.control.key) === true"></fa-icon>
+                            <sd-icon [icon]="faSort" class="tx-trans-lightest"/>
+                            <sd-icon [icon]="faSortDown"
+                                     *ngIf="getIsColumnOrderingDesc(headerCell.control.key) === false"/>
+                            <sd-icon [icon]="faSortUp"
+                                     *ngIf="getIsColumnOrderingDesc(headerCell.control.key) === true"/>
                           </fa-layers>
                           <sub *ngIf="getColumnOrderingIndexText(headerCell.control.key) as text">{{ text }}</sub>
                         </div>
@@ -120,7 +127,7 @@ import {SdDoCheckHelper} from "../../utils/SdDoCheckHelper";
 
                     <div class="_resizer"
                          *ngIf="headerCell.control.resizable && headerCell.isLastDepth"
-                         (mousedown)="onResizerMousedown($event, headerCell.control)"
+                         (mousedown.outside)="onResizerMousedownOutside($event, headerCell.control)"
                          (dblclick)="onResizerDoubleClick($event, headerCell.control)"></div>
                   </th>
                 </ng-container>
@@ -153,9 +160,9 @@ import {SdDoCheckHelper} from "../../utils/SdDoCheckHelper";
                     [attr.r]="r"
                     [attr.c]="getChildrenFn ? -2 : -1">
                   <ng-container *ngIf="selectMode && getIsItemSelectable(itemDef.item)">
-                    <fa-icon [icon]="faArrowRight" [fixedWidth]="true"
+                    <sd-icon [icon]="faArrowRight" fixedWidth
                              [class.tx-theme-primary-default]="selectedItems.includes(itemDef.item)"
-                             (click)="onItemSelectIconClick(itemDef.item)"></fa-icon>
+                             (click)="onItemSelectIconClick(itemDef.item)"/>
                   </ng-container>
                 </td>
                 <td class="_fixed _feature-cell"
@@ -166,10 +173,10 @@ import {SdDoCheckHelper} from "../../utils/SdDoCheckHelper";
                     <div class="_depth-indicator" [style.margin-left.em]="itemDef.depth - .5"></div>
                   </ng-container>
                   <ng-container *ngIf="itemDef.hasChildren">
-                    <fa-icon [icon]="faCaretRight" [fixedWidth]="true"
+                    <sd-icon [icon]="faCaretRight" fixedWidth
                              [rotate]="expandedItems.includes(itemDef.item) ? 90 : undefined"
                              [class.tx-theme-primary-default]="expandedItems.includes(itemDef.item)"
-                             (click)="onItemExpandIconClick(itemDef.item)"></fa-icon>
+                             (click)="onItemExpandIconClick(itemDef.item)"/>
                   </ng-container>
                 </td>
                 <ng-container
@@ -222,11 +229,11 @@ import {SdDoCheckHelper} from "../../utils/SdDoCheckHelper";
           border-radius: var(--border-radius-default);
         }
 
-        > sd-dock-container > ._content {
+        > sd-dock-container {
           border: 1px solid $border-color-dark;
           border-radius: var(--border-radius-default);
 
-          > sd-dock > ._content {
+          > sd-dock {
             background: white;
             border-top-left-radius: var(--border-radius-default);
             border-top-right-radius: var(--border-radius-default);
@@ -274,7 +281,7 @@ import {SdDoCheckHelper} from "../../utils/SdDoCheckHelper";
                   min-width: 2em;
                   padding: var(--sheet-pv) var(--sheet-ph);
 
-                  > fa-icon {
+                  > sd-icon {
                     cursor: pointer;
                     color: var(--text-trans-lightest);
                   }
@@ -298,7 +305,7 @@ import {SdDoCheckHelper} from "../../utils/SdDoCheckHelper";
                 > tr > th {
                   position: relative;
                   background: var(--theme-grey-lightest);
-                  vertical-align: bottom;
+                  vertical-align: middle;
 
                   &._fixed {
                     z-index: $z-index-head-fixed;
@@ -434,8 +441,7 @@ import {SdDoCheckHelper} from "../../utils/SdDoCheckHelper";
             border-radius: var(--border-radius-default);
           }
 
-          > sd-dock-container > ._content {
-
+          > sd-dock-container {
             border: none;
             border-radius: 0;
           }
@@ -465,29 +471,25 @@ export class SdSheetControl<T> implements DoCheck {
    * 시트설정 저장 키
    */
   @Input({required: true})
-  @SdInputValidate({type: String, notnull: true})
   key!: string;
 
   /**
    * 설정 및 페이징 바 표시여부
    */
-  @Input()
-  @SdInputValidate(Boolean)
-  hideConfigBar?: boolean;
+  @Input({transform: coercionBoolean})
+  hideConfigBar = false;
 
   /**
    * BORDER를 없애는등 다른 박스안에 완전히 붙임
    */
-  @Input()
-  @SdInputValidate({type: Boolean})
+  @Input({transform: coercionBoolean})
   @HostBinding("attr.sd-inset")
-  inset?: boolean;
+  inset = false;
 
   /**
    * 정렬규칙
    */
   @Input()
-  @SdInputValidate({type: Array, notnull: true})
   ordering: ISdSheetColumnOrderingVM[] = [];
 
   /**
@@ -499,8 +501,7 @@ export class SdSheetControl<T> implements DoCheck {
   /**
    * [pagination] 현재 표시 페이지
    */
-  @Input()
-  @SdInputValidate({type: Number, notnull: true})
+  @Input({transform: coercionNonNullableNumber})
   page = 0;
 
   /**
@@ -512,22 +513,19 @@ export class SdSheetControl<T> implements DoCheck {
   /**
    * [pagination] 총 페이지 길이
    */
-  @Input()
-  @SdInputValidate({type: Number, notnull: true})
+  @Input({transform: coercionNonNullableNumber})
   pageLength = 0;
 
   /**
    * [pagination] 한 페이지에 표시할 항목수 (설정된 경우, 'pageLength'가 무시되고, 자동계산 됨)
    */
-  @Input()
-  @SdInputValidate(Number)
+  @Input({transform: coercionNumber})
   pageItemCount?: number;
 
   /**
    * 항목들
    */
-  @Input({required: true})
-  @SdInputValidate({type: Array, notnull: true})
+  @Input()
   items: T[] = [];
 
   /**
@@ -536,21 +534,18 @@ export class SdSheetControl<T> implements DoCheck {
    * @param item items[index] 데이터
    */
   @Input()
-  @SdInputValidate({type: Function, notnull: true})
-  trackByFn = (index: number, item: T): any => item;
+  trackByFn: TSdFnInfo<(index: number, item: T) => any> = [(index, item) => item];
 
   /**
    * 선택모드 (single = 단일선택, multi = 다중선택)
    */
   @Input()
-  @SdInputValidate({type: String, includes: ["single", "multi"]})
   selectMode?: "single" | "multi";
 
   /**
    * 선택된 항목들
    */
   @Input()
-  @SdInputValidate({type: Array, notnull: true})
   selectedItems: T[] = [];
 
   /**
@@ -563,26 +558,22 @@ export class SdSheetControl<T> implements DoCheck {
    * 자동선택모드 (undefined = 사용안함, click = 셀 클릭시 해당 ROW 선택, focus = 셀 포커싱시 해당 ROW 선택)
    */
   @Input()
-  @SdInputValidate({type: String, includes: ["click", "focus"]})
   autoSelect?: "click" | "focus";
 
   /**
    * 항목별로 선택가능여부를 설정하는 함수
    */
   @Input()
-  @SdInputValidate(Function)
-  getIsItemSelectableFn?: (item: T) => boolean;
+  getIsItemSelectableFn?: TSdFnInfo<(item: T) => boolean>;
 
   /**
    * 확장된 항목 목록
    */
   @Input()
-  @SdInputValidate({type: Array, notnull: true})
   expandedItems: T[] = [];
 
-  @Input()
-  @SdInputValidate(Boolean)
-  busy?: boolean;
+  @Input({transform: coercionBoolean})
+  busy = false;
 
   /**
    * 확장된 항목 변경 이벤트
@@ -606,8 +597,7 @@ export class SdSheetControl<T> implements DoCheck {
    * Children 설정하는 함수
    */
   @Input()
-  @SdInputValidate(Function)
-  getChildrenFn?: (index: number, item: T) => (T[] | undefined);
+  getChildrenFn?: TSdFnInfo<(index: number, item: T) => (T[] | undefined)>;
 
   displayColumnDefs: IColumnDef<T>[] = [];
   displayHeaderDefTable: (IHeaderDef<T> | undefined)[][] = [];
@@ -619,10 +609,10 @@ export class SdSheetControl<T> implements DoCheck {
   hasExpandableItem = false;
   isAllItemsExpanded = false;
 
-  trackByFnForHeaderDefTable = (i: number, item: IHeaderDef<T>[]): number => i;
-  trackByFnForHeaderCell = (i: number, item: IHeaderDef<T>): string => item?.control.guid;
-  trackByFnForColumnDef = (i: number, item: IColumnDef<T>): string => item.control.guid;
-  trackByFnForDisplayItemDef = (i: number, item: IItemDef<T>): any => this.trackByFn(i, item.item);
+  trackByFnForHeaderDefTable = (i: number, item: (IHeaderDef<T> | undefined)[]): number => i;
+  trackByFnForHeaderCell = (i: number, item: IHeaderDef<T> | undefined): number => i;
+  trackByFnForColumnDef = (i: number, item: IColumnDef<T>): string => item.control.key;
+  trackByFnForDisplayItemDef = (i: number, item: IItemDef<T>): any => this.trackByFn[0](i, item.item);
 
   #config?: ISdSheetConfig;
 
@@ -634,20 +624,22 @@ export class SdSheetControl<T> implements DoCheck {
   orderedItems: T[] = [];
   orderedPagedItems: T[] = [];
 
+  #sdNgHelper = new SdNgHelper(inject(Injector));
+
   /**
    * 변수 변경 체크 ng Lifecycle
    */
   ngDoCheck(): void {
-    SdDoCheckHelper.use(async $ => {
+    this.#sdNgHelper.doCheck(async (run, changeData) => {
       //-- config
-      await $.run({
+      await run({
         key: [this.key]
       }, async () => {
         this.#config = await this.#sdSystemConfig.getAsync(`sd-sheet.${this.key}`);
       });
 
       //-- column/header defs
-      $.run({
+      run({
         columnControls: [this.columnControls, "one"],
         config: [this.#config],
         resizedWidths: [this.#resizedWidths, "one"]
@@ -661,7 +653,7 @@ export class SdSheetControl<T> implements DoCheck {
                 control: columnControl,
                 key: columnControl.key,
                 fixed: config?.fixed ?? columnControl.fixed,
-                width: this.#resizedWidths[columnControl.guid] ?? config?.width ?? columnControl.width,
+                width: this.#resizedWidths[columnControl.key] ?? config?.width ?? columnControl.width,
                 displayOrder: config?.displayOrder,
                 hidden: config?.hidden ?? columnControl.hidden,
                 headerStyle: columnControl.headerStyle
@@ -715,7 +707,7 @@ export class SdSheetControl<T> implements DoCheck {
               width: columnDef.width,
               fixed: columnDef.fixed ?? false,
               text: undefined,
-              useTemplate: columnDef.control.guid,
+              useTemplate: columnDef.control.key,
               style: columnDef.headerStyle
             };
           }
@@ -797,7 +789,7 @@ export class SdSheetControl<T> implements DoCheck {
       });
 
       //-- displayPageLength
-      $.run({
+      run({
         pageItemCount: [this.pageItemCount],
         itemsLength: [this.items.length],
         pageLength: [this.pageLength]
@@ -811,7 +803,7 @@ export class SdSheetControl<T> implements DoCheck {
       });
 
       //-- items: ordering
-      $.run({
+      run({
         items: [this.items, "one"],
         observedOrdering: [!this.orderingChange.observed ? this.ordering : undefined, "all"]
       }, () => {
@@ -830,7 +822,7 @@ export class SdSheetControl<T> implements DoCheck {
       });
 
       //-- items: paging
-      $.run({
+      run({
         orderedItems: [this.orderedItems],
         pageItemCount: [this.pageItemCount],
         itemsLength: [this.items.length],
@@ -844,10 +836,10 @@ export class SdSheetControl<T> implements DoCheck {
       });
 
       //-- displayItemDefs
-      $.run({
+      run({
         orderedPagedItems: [this.orderedPagedItems],
-        getChildrenFn: [this.getChildrenFn],
-        observedOrdering: [!this.orderingChange.observed ? this.ordering : undefined, "all"]
+        observedOrdering: [!this.orderingChange.observed ? this.ordering : undefined, "all"],
+        ...getSdFnCheckData("getChildrenFn", this.getChildrenFn)
       }, () => {
         let displayItemDefs: IItemDef<T>[] = this.orderedPagedItems.map((item) => ({
           item,
@@ -856,13 +848,13 @@ export class SdSheetControl<T> implements DoCheck {
           depth: 0
         }));
 
-        if (this.getChildrenFn) {
+        if (this.getChildrenFn?.[0]) {
           let fn = (arr: IItemDef<T>[]): IItemDef<T>[] => {
             let fnResult: IItemDef<T>[] = [];
             for (let i = 0; i < arr.length; i++) {
               fnResult.push(arr[i]);
 
-              const children = this.getChildrenFn!(i, arr[i].item) ?? [];
+              const children = this.getChildrenFn![0](i, arr[i].item) ?? [];
               if (children.length > 0) {
                 arr[i].hasChildren = true;
 
@@ -915,7 +907,7 @@ export class SdSheetControl<T> implements DoCheck {
       });
 
       // select props
-      $.run({
+      run({
         selectMode: [this.selectMode],
         displayItemDefs: [this.displayItemDefs],
         getIsItemSelectable: [this.getIsItemSelectable],
@@ -933,7 +925,7 @@ export class SdSheetControl<T> implements DoCheck {
       });
 
       // expand props
-      $.run({
+      run({
         getChildrenFn: [this.getChildrenFn],
         displayItemDefs: [this.displayItemDefs],
         expandedItems: [this.expandedItems, "one"]
@@ -951,7 +943,7 @@ export class SdSheetControl<T> implements DoCheck {
 
 
       //-- summary props
-      $.run({
+      run({
         columnControls: [this.columnControls, "one"]
       }, () => {
         if (this.columnControls) {
@@ -961,7 +953,7 @@ export class SdSheetControl<T> implements DoCheck {
           this.hasSummaryTemplate = false;
         }
       });
-    }, this.#cdr);
+    });
   }
 
   getIsCellEditMode(r: number, c: number): boolean {
@@ -973,7 +965,7 @@ export class SdSheetControl<T> implements DoCheck {
    * @param item
    */
   getIsItemSelectable(item: T): boolean {
-    return !this.getIsItemSelectableFn || this.getIsItemSelectableFn(item);
+    return !this.getIsItemSelectableFn?.[0] || this.getIsItemSelectableFn[0](item);
   }
 
   /**
@@ -1012,9 +1004,8 @@ export class SdSheetControl<T> implements DoCheck {
     return false;
   }
 
-
-  @HostListener("focus.capture", ["$event"])
-  onFocusCapture(event: FocusEvent): void {
+  @HostListener("focus.capture.outside", ["$event"])
+  onFocusCaptureOutside(event: FocusEvent): void {
     if (!(event.target instanceof HTMLElement)) return;
 
     const sheetContainerEl = this.#elRef.nativeElement.findFirst("._sheet-container")!;
@@ -1076,13 +1067,15 @@ export class SdSheetControl<T> implements DoCheck {
 
     const item = this.displayItemDefs[NumberUtil.parseInt(tdEl.getAttribute("r"))!].item;
     if (this.autoSelect === "focus" && this.getIsItemSelectable(item)) {
-      this.#selectItem(item);
-      this.#cdr.markForCheck();
+      this.#ngZone.run(() => {
+        this.#selectItem(item);
+        this.#cdr.markForCheck();
+      });
     }
   }
 
-  @HostListener("blur.capture", ["$event"])
-  onBlurCapture(event: FocusEvent): void {
+  @HostListener("blur.capture.outside", ["$event"])
+  onBlurCaptureOutside(event: FocusEvent): void {
     if (
       event.target instanceof HTMLTableCellElement &&
       !(
@@ -1111,13 +1104,15 @@ export class SdSheetControl<T> implements DoCheck {
         (event.target.findParent("td") ?? event.target) === event.relatedTarget.findParent("td")
       )
     ) {
-      this.#editModeCellAddr = undefined;
-      this.#cdr.markForCheck();
+      this.#ngZone.run(() => {
+        this.#editModeCellAddr = undefined;
+        this.#cdr.markForCheck();
+      });
     }
   }
 
-  @HostListener("keydown.capture", ["$event"])
-  onKeydownCapture(event: KeyboardEvent): void {
+  @HostListener("keydown.capture.outside", ["$event"])
+  onKeydownCaptureOutside(event: KeyboardEvent): void {
     if (event.target instanceof HTMLTableCellElement) {
       if (event.key === "F2") {
         event.preventDefault();
@@ -1157,7 +1152,13 @@ export class SdSheetControl<T> implements DoCheck {
       if (event.key === "Escape") {
         event.preventDefault();
         tdEl.focus();
-        this.#editModeCellAddr = undefined;
+
+        if (this.#editModeCellAddr != null) {
+          this.#ngZone.run(() => {
+            this.#editModeCellAddr = undefined;
+            this.#cdr.markForCheck();
+          });
+        }
       }
       else if (event.ctrlKey && event.key === "ArrowDown") {
         if (this.#moveCellIfExists(tdEl, 1, 0, true)) {
@@ -1182,7 +1183,7 @@ export class SdSheetControl<T> implements DoCheck {
     }
   }
 
-  onContainerScroll(event: Event): void {
+  onContainerScrollOutside(event: Event): void {
     if (!(document.activeElement instanceof HTMLTableCellElement)) return;
 
     const sheetContainerEl = event.target as HTMLElement;
@@ -1228,13 +1229,13 @@ export class SdSheetControl<T> implements DoCheck {
     }
   }
 
-  onHeaderCellResize(headerCell: IHeaderDef<T>, c: number): void {
+  onHeaderCellResizeOutside(headerCell: IHeaderDef<T>, c: number): void {
     if (headerCell.fixed && headerCell.isLastDepth) {
-      this.onFixedCellResize(c);
+      this.onFixedCellResizeOutside(c);
     }
   }
 
-  onFixedCellResize(c: number): void {
+  onFixedCellResizeOutside(c: number): void {
     const sheetContainerEl = this.#elRef.nativeElement.findFirst("._sheet-container")!;
 
     const fixedColumnLength = this.displayColumnDefs.filter((item) => item.fixed).length;
@@ -1252,7 +1253,7 @@ export class SdSheetControl<T> implements DoCheck {
     }
   }
 
-  onResizerMousedown(event: MouseEvent, columnControl: SdSheetColumnDirective<T>): void {
+  onResizerMousedownOutside(event: MouseEvent, columnControl: SdSheetColumnDirective<T>): void {
     this.#isOnResizing = true;
 
     const thEl = (event.target as HTMLElement).findParent("th")!;
@@ -1282,7 +1283,7 @@ export class SdSheetControl<T> implements DoCheck {
       resizeIndicatorEl.style.display = "none";
 
       const newWidthPx = Math.max(startWidthPx + e.clientX - startX, 5);
-      this.#resizedWidths[columnControl.guid] = newWidthPx + 1 + "px";
+      this.#resizedWidths[columnControl.key] = newWidthPx + 1 + "px";
 
       if (columnControl.key !== undefined) {
         await this.#saveColumnConfigAsync(columnControl.key, {width: newWidthPx + "px"});
@@ -1293,18 +1294,19 @@ export class SdSheetControl<T> implements DoCheck {
       });
 
       setTimeout(() => {
-        this.#isOnResizing = false;
+        this.#ngZone.run(() => {
+          this.#isOnResizing = false;
+          this.#cdr.markForCheck();
+        });
       }, 300);
     };
 
-    this.#ngZone.runOutsideAngular(() => {
-      document.documentElement.addEventListener("mousemove", doDrag, false);
-      document.documentElement.addEventListener("mouseup", stopDrag, false);
-    });
+    document.documentElement.addEventListener("mousemove", doDrag, false);
+    document.documentElement.addEventListener("mouseup", stopDrag, false);
   }
 
   async onResizerDoubleClick(event: MouseEvent, columnControl: SdSheetColumnDirective<T>): Promise<void> {
-    delete this.#resizedWidths[columnControl.guid];
+    delete this.#resizedWidths[columnControl.key];
 
     if (columnControl.key !== undefined) {
       await this.#saveColumnConfigAsync(columnControl.key, {width: undefined});

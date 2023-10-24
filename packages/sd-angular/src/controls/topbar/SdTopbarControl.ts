@@ -1,31 +1,23 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  forwardRef,
-  HostBinding,
-  HostListener,
-  Inject,
-  Injector,
-  Input
-} from "@angular/core";
+import {ChangeDetectionStrategy, Component, ElementRef, forwardRef, HostListener, inject, Input} from "@angular/core";
 import {SdTopbarContainerControl} from "./SdTopbarContainerControl";
 import {SdSidebarContainerControl} from "../sidebar/SdSidebarContainerControl";
-import {faBars} from "@fortawesome/pro-solid-svg-icons/faBars";
+import {faBars} from "@fortawesome/pro-duotone-svg-icons";
+import {ISdResizeEvent} from "../../plugins/SdResizeEventPlugin";
 
 @Component({
   selector: "sd-topbar",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <sd-anchor class="_sidebar-toggle-button" (click)="onSidebarToggleButtonClick()" style="font-size: 16px;"
-               *ngIf="sidebarContainerControl || sidebarContainer">
-      <fa-icon [icon]="icons.fasBars" [fixedWidth]="true"></fa-icon>
+               *ngIf="hasSidebar">
+      <sd-icon [icon]="faBars" fixedWidth/>
     </sd-anchor>
 
     <div class="_nav">
       <ng-content select="sd-topbar-nav"></ng-content>
     </div>
-    
-    <sd-gap width="default" *ngIf="!sidebarContainerControl && !sidebarContainer"></sd-gap>
+
+    <sd-gap width="default" *ngIf="!hasSidebar"></sd-gap>
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
     :host {
@@ -50,7 +42,7 @@ import {faBars} from "@fortawesome/pro-solid-svg-icons/faBars";
         white-space: nowrap;
         vertical-align: top;
       }
-      
+
       @each $h in (h1, h2, h3, h4, h5, h6) {
         > ::ng-deep #{$h} {
           display: inline-block;
@@ -96,33 +88,34 @@ import {faBars} from "@fortawesome/pro-solid-svg-icons/faBars";
   `]
 })
 export class SdTopbarControl {
-  public icons = {
-    fasBars: faBars
-  };
-
-  @HostBinding("attr.sd-size")
-  public get size(): "sm" | "lg" | undefined {
-    return this._topbarContainerControl.size;
-  }
+  #elRef: ElementRef<HTMLElement> = inject(ElementRef);
+  #parentSidebarContainerControl = inject(SdSidebarContainerControl, {optional: true});
+  #topbarContainerControl: SdTopbarContainerControl = inject(forwardRef(() => SdTopbarContainerControl));
 
   @Input()
-  public sidebarContainer?: SdSidebarContainerControl;
+  sidebarContainer?: SdSidebarContainerControl;
 
-  public readonly sidebarContainerControl?: SdSidebarContainerControl;
-
-  public constructor(@Inject(forwardRef(() => SdTopbarContainerControl))
-                     private readonly _topbarContainerControl: SdTopbarContainerControl,
-                     private readonly _injector: Injector) {
-    this.sidebarContainerControl = this._injector.get<SdSidebarContainerControl | null>(SdSidebarContainerControl, null) ?? undefined;
+  get hasSidebar(): boolean {
+    return !!this.sidebarContainer || !!this.#parentSidebarContainerControl;
   }
 
-  public onSidebarToggleButtonClick(): void {
-    const sidebarContainerControl = this.sidebarContainer ?? this.sidebarContainerControl;
+  onSidebarToggleButtonClick() {
+    const sidebarContainerControl = this.sidebarContainer ?? this.#parentSidebarContainerControl;
     sidebarContainerControl!.toggle = !sidebarContainerControl!.toggle;
   }
 
-  @HostListener("sdResize", ["$event"])
-  public sdResize(entry: ResizeObserverEntry): void {
-    this._topbarContainerControl.elRef.nativeElement.style.paddingTop = entry.contentRect.height + "px";
+  @HostListener("sdResize.outside", ["$event"])
+  onResizeOutside(event: ISdResizeEvent) {
+    if (!event.heightChanged) return;
+
+    this.#redrawOutside();
   }
+
+  #redrawOutside() {
+    this.#topbarContainerControl.elRef.nativeElement.style.paddingTop = this.#elRef.nativeElement.offsetHeight + "px";
+  }
+
+  protected readonly faBars = faBars;
 }
+
+// V11 LOGIC OK

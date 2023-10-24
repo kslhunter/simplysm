@@ -5,12 +5,13 @@ import {SdTopbarMenuControl} from "./SdTopbarMenuControl";
 import {SdTopbarTabControl} from "./SdTopbarTabControl";
 import {SdTopbarContainerControl} from "./SdTopbarContainerControl";
 import {SdAnchorControl} from "../SdAnchorControl";
-import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
+
 import {SdGapControl} from "../SdGapControl";
 import {SdTopbarNavControl} from "./SdTopbarNavControl";
+import {SdIconControl} from "../SdIconControl";
 
 @NgModule({
-  imports: [CommonModule, SdAnchorControl, FontAwesomeModule, SdGapControl],
+  imports: [CommonModule, SdAnchorControl, SdGapControl, SdIconControl],
   declarations: [
     SdTopbarMenuControl,
     SdTopbarControl,

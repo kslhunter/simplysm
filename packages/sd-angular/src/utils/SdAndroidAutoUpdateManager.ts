@@ -13,7 +13,7 @@ export class SdAndroidAutoUpdateManager {
 
     // 최신버전 확인
     this._logger("최신버전 확인 중...", []);
-    const lastVersion = await autoUpdateServiceClient.getLastVersionAsync(this._clientName, "android");
+    const lastVersion = await autoUpdateServiceClient.getLastVersion(this._clientName, "android");
 
     // 업데이트 할게 있으면 업데이트
     if (lastVersion !== undefined && semver.gt(lastVersion, this._currentVersion)) {

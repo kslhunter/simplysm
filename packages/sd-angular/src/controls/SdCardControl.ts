@@ -16,10 +16,11 @@ import {CommonModule} from "@angular/common";
       background: white;
       border-radius: var(--border-radius-default);
       overflow: hidden;
+      transition: box-shadow .3s ease-in-out;
       @include elevation(2);
-      transition: box-shadow .1s ease-in-out;
 
-      &:hover {
+      &:hover,
+      &:has(:focus) {
         @include elevation(6);
       }
 
@@ -32,3 +33,4 @@ import {CommonModule} from "@angular/common";
 export class SdCardControl {
 }
 
+// V11 LOGIC OK

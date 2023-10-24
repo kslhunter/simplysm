@@ -13,7 +13,7 @@ import cp from "child_process";
 import {fileURLToPath, pathToFileURL} from "url";
 import {SdCliBuildResultUtil} from "../utils/SdCliBuildResultUtil";
 import semver from "semver";
-import {NotImplementError, StringUtil, Wait} from "@simplysm/sd-core-common";
+import {NeverEntryError, StringUtil, Wait} from "@simplysm/sd-core-common";
 import {SdStorage} from "@simplysm/sd-storage";
 import {SdCliLocalUpdate} from "./SdCliLocalUpdate";
 
@@ -22,7 +22,6 @@ export class SdCliProject {
     confFileRelPath: string;
     optNames: string[];
     pkgNames: string[];
-    withLint: boolean;
   }): Promise<void> {
     const logger = Logger.get(["simplysm", "sd-cli", "SdCliProject", "watchAsync"]);
 
@@ -193,11 +192,11 @@ export class SdCliProject {
       if (pkgConf.type === "client") {
         const builderKeys = Object.keys(pkgConf.builder ?? {web: {}});
         await builderKeys.parallelAsync(async (builderKey) => {
-          await this._runCommandAsync(cluster, "watch", projConf, pkgPath, opt.withLint, builderKey);
+          await this._runCommandAsync(cluster, "watch", projConf, pkgPath, builderKey);
         });
       }
       else {
-        await this._runCommandAsync(cluster, "watch", projConf, pkgPath, opt.withLint);
+        await this._runCommandAsync(cluster, "watch", projConf, pkgPath);
       }
     });
 
@@ -212,7 +211,6 @@ export class SdCliProject {
     confFileRelPath: string;
     optNames: string[];
     pkgNames: string[];
-    withLint: boolean;
   }): Promise<void> {
     const logger = Logger.get(["simplysm", "sd-cli", "SdCliProject", "buildAsync"]);
 
@@ -245,11 +243,11 @@ export class SdCliProject {
         if (pkgConf.type === "client") {
           const builderKeys = Object.keys(pkgConf.builder ?? {web: {}});
           return (await builderKeys.parallelAsync(async (builderKey) => {
-            return await this._runCommandAsync(cluster, "build", projConf, pkgPath, opt.withLint, builderKey);
+            return await this._runCommandAsync(cluster, "build", projConf, pkgPath, builderKey);
           })).mapMany();
         }
         else {
-          return await this._runCommandAsync(cluster, "build", projConf, pkgPath, opt.withLint);
+          return await this._runCommandAsync(cluster, "build", projConf, pkgPath);
         }
       })
     ).mapMany();
@@ -265,7 +263,6 @@ export class SdCliProject {
     confFileRelPath: string;
     optNames: string[];
     pkgNames: string[];
-    withLint: boolean;
   }): Promise<void> {
     const logger = Logger.get(["simplysm", "sd-cli", "SdCliProject", "publishAsync"]);
 
@@ -314,11 +311,11 @@ export class SdCliProject {
           if (pkgConf.type === "client") {
             const builderKeys = Object.keys(pkgConf.builder ?? {web: {}});
             return (await builderKeys.parallelAsync(async (builderKey) => {
-              return await this._runCommandAsync(cluster, "build", projConf, pkgPath, opt.withLint, builderKey);
+              return await this._runCommandAsync(cluster, "build", projConf, pkgPath, builderKey);
             })).mapMany();
           }
           else {
-            return await this._runCommandAsync(cluster, "build", projConf, pkgPath, opt.withLint);
+            return await this._runCommandAsync(cluster, "build", projConf, pkgPath);
           }
         })
       ).mapMany();
@@ -392,7 +389,7 @@ export class SdCliProject {
       await ftp.closeAsync();
     }
     else {
-      throw new NotImplementError();
+      throw new NeverEntryError();
     }
   }
 
@@ -511,9 +508,9 @@ export class SdCliProject {
     });
   }
 
-  private static async _runCommandAsync(cluster: cp.ChildProcess, cmd: "watch", projConf: ISdCliConfig, pkgPath: string, withLint: boolean, builderKey?: string): Promise<void>;
-  private static async _runCommandAsync(cluster: cp.ChildProcess, cmd: "build", projConf: ISdCliConfig, pkgPath: string, withLint: boolean, builderKey?: string): Promise<ISdCliPackageBuildResult[]>;
-  private static async _runCommandAsync(cluster: cp.ChildProcess, cmd: "watch" | "build", projConf: ISdCliConfig, pkgPath: string, withLint: boolean, builderKey?: string): Promise<ISdCliPackageBuildResult[] | void> {
+  private static async _runCommandAsync(cluster: cp.ChildProcess, cmd: "watch", projConf: ISdCliConfig, pkgPath: string, builderKey?: string): Promise<void>;
+  private static async _runCommandAsync(cluster: cp.ChildProcess, cmd: "build", projConf: ISdCliConfig, pkgPath: string, builderKey?: string): Promise<ISdCliPackageBuildResult[]>;
+  private static async _runCommandAsync(cluster: cp.ChildProcess, cmd: "watch" | "build", projConf: ISdCliConfig, pkgPath: string, builderKey?: string): Promise<ISdCliPackageBuildResult[] | void> {
     return await new Promise<ISdCliPackageBuildResult[] | void>((resolve) => {
       const cb = (message: ISdCliBuildClusterResMessage): void => {
         if (cmd === "watch" && message.type === "ready" && message.req.cmd === cmd && message.req.pkgPath === pkgPath) {
@@ -531,8 +528,7 @@ export class SdCliProject {
         cmd,
         projConf,
         pkgPath,
-        builderKey,
-        withLint
+        builderKey
       } as ISdCliBuildClusterReqMessage);
     });
   }

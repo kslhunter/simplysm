@@ -1,19 +1,39 @@
 import {Injectable} from "@angular/core";
 import {EventManager} from "@angular/platform-browser";
-import {NeverEntryError} from "@simplysm/sd-core-common";
 
 @Injectable({providedIn: null})
 export class SdResizeEventPlugin {
-  public manager!: EventManager;
+  manager!: EventManager;
 
-  public addEventListener(element: HTMLElement, eventName: string, handler: (entry: ResizeObserverEntry) => void): () => void {
+  supports(eventName: string): boolean {
+    return eventName === "sdResize" || eventName === "sdResize.outside";
+  }
+
+  addEventListener(element: HTMLElement, eventName: string, handler: (entry: ISdResizeEvent) => void): () => void {
+    const outside = eventName.includes(".outside");
+
+    let prevWidth = 0;
+    let prevHeight = 0;
+
     const observer = new ResizeObserver((entries) => {
       const entry = entries.single();
       if (!entry) return;
 
-      this.manager.getZone().run(() => {
-        handler(entry);
-      });
+      const contentRect = entry.contentRect;
+
+      const heightChanged = contentRect.height !== prevHeight;
+      const widthChanged = contentRect.width !== prevWidth;
+      prevHeight = contentRect.height;
+      prevWidth = contentRect.width;
+
+      if (outside) {
+        handler({heightChanged, widthChanged, entry});
+      }
+      else {
+        this.manager.getZone().run(() => {
+          handler({heightChanged, widthChanged, entry});
+        });
+      }
     });
     observer.observe(element);
 
@@ -21,26 +41,10 @@ export class SdResizeEventPlugin {
       observer.disconnect();
     };
   }
+}
 
-  public addGlobalEventListener(element: string, eventName: string, handler: (event: Event) => void): () => void {
-    if (element === "window") {
-      const listener = (event: Event): void => {
-        this.manager.getZone().run(() => {
-          handler(event);
-        });
-      };
-
-      window.addEventListener("resize", listener);
-
-      return (): void => {
-        window.removeEventListener("resize", listener);
-      };
-    }
-
-    throw new NeverEntryError();
-  }
-
-  public supports(eventName: string): boolean {
-    return eventName === "sdResize";
-  }
+export interface ISdResizeEvent {
+  heightChanged: boolean;
+  widthChanged: boolean;
+  entry: ResizeObserverEntry;
 }

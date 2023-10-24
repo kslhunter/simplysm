@@ -12,44 +12,45 @@ import {ISdSheetConfig} from "./SdSheetControl";
   template: `
     <sd-dock-container *ngIf="param">
       <sd-pane class="p-default">
-        <sd-sheet [key]="param.sheetKey + '-config'"
+        <sd-sheet key="sd-sheet-config-modal"
+                  [key]="param.sheetKey + '-config'"
                   [items]="items"
-                  [trackByFn]="trackByKeyFn">
-          <sd-sheet-column header="Fix">
-            <ng-template #cell let-item="item">
+                  [trackByFn]="[trackByFnForItem]">
+          <sd-sheet-column key="fixed" header="Fix">
+            <ng-template [cell]="items" let-item="item">
               <div style="text-align: center">
                 <sd-checkbox size="sm" inset [(value)]="item.fixed"></sd-checkbox>
               </div>
             </ng-template>
           </sd-sheet-column>
-          <sd-sheet-column header="Order">
-            <ng-template #cell let-item="item" let-index="index">
+          <sd-sheet-column key="ordering" header="Order">
+            <ng-template [cell]="items" let-item="item" let-index="index">
               <div class="p-xs-sm" style="text-align: center">
                 <sd-anchor [disabled]="index === 0 || (!item.fixed && !!items[index - 1].fixed)"
                            (click)="onDisplayOrderUpButtonClick(item)">
-                  <fa-icon [icon]="icons.fadAngleUp" [fixedWidth]=true></fa-icon>
+                  <sd-icon [icon]="icons.fadAngleUp" fixedWidth/>
                 </sd-anchor>
                 <sd-anchor [disabled]="index === items.length - 1 || (item.fixed && !items[index + 1].fixed)"
                            (click)="onDisplayOrderDownButtonClick(item)">
-                  <fa-icon [icon]="icons.fadAngleDown" [fixedWidth]=true></fa-icon>
+                  <sd-icon [icon]="icons.fadAngleDown" fixedWidth/>
                 </sd-anchor>
               </div>
             </ng-template>
           </sd-sheet-column>
-          <sd-sheet-column header="Header" resizable>
-            <ng-template #cell let-item="item">
+          <sd-sheet-column key="header" header="Header" resizable>
+            <ng-template [cell]="items" let-item="item">
               <div class="p-xs-sm">
                 {{ item.header }}
               </div>
             </ng-template>
           </sd-sheet-column>
-          <sd-sheet-column header="Width" resizable width="60px">
-            <ng-template #cell let-item="item">
-              <sd-textfield size="sm" inset [(value)]="item.width" *ngIf="item.resizable"></sd-textfield>
+          <sd-sheet-column key="width" header="Width" resizable width="60px">
+            <ng-template [cell]="items" let-item="item">
+              <sd-textfield type="text" size="sm" inset [(value)]="item.width" *ngIf="item.resizable"></sd-textfield>
             </ng-template>
           </sd-sheet-column>
-          <sd-sheet-column header="Hidden">
-            <ng-template #cell let-item="item">
+          <sd-sheet-column key="hidden" header="Hidden">
+            <ng-template [cell]="items" let-item="item">
               <div style="text-align: center">
                 <sd-checkbox size="sm" inset [(value)]="item.hidden" [icon]="icons.fasXmark"
                              theme="danger"></sd-checkbox>
@@ -61,12 +62,12 @@ import {ISdSheetConfig} from "./SdSheetControl";
 
       <sd-dock position="bottom" class="p-sm-default pt-0">
         <div style="float: left">
-          <sd-button inline theme="warning" (click)="onInitButtonClick()" button.style="min-width: 60px;">Reset
+          <sd-button inline theme="warning" (click)="onInitButtonClick()" buttonStyle="min-width: 60px;">Reset
           </sd-button>
         </div>
-        <div class="flex-column flex-gap-sm justify-content-end">
-          <sd-button inline theme="success" (click)="onOkButtonClick()" button.style="min-width: 60px;">OK</sd-button>
-          <sd-button inline (click)="onCancelButtonClick()" button.style="min-width: 60px;">Cancel</sd-button>
+        <div class="flex-row flex-gap-sm" style="justify-content: end">
+          <sd-button inline theme="success" (click)="onOkButtonClick()" buttonStyle="min-width: 60px;">OK</sd-button>
+          <sd-button inline (click)="onCancelButtonClick()" buttonStyle="min-width: 60px;">Cancel</sd-button>
         </div>
       </sd-dock>
     </sd-dock-container>`
@@ -82,7 +83,7 @@ export class SdSheetConfigModal<T> extends SdModalBase<ISdSheetConfigModalInput<
 
   public items: IItemVM[] = [];
 
-  public trackByKeyFn = (index: number, item: any): any => item.key;
+  public trackByFnForItem = (index: number, item: IItemVM): string => item.key;
 
   public sdOnOpen(param: ISdSheetConfigModalInput<T>): void {
     this.param = param;

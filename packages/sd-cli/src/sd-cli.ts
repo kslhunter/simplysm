@@ -57,11 +57,6 @@ const argv = (
             string: true,
             array: true,
             describe: "수행할 패키지 설정"
-          },
-          withoutLint: {
-            type: "boolean",
-            default: false,
-            describe: "린트 수행 여부"
           }
         })
     )
@@ -83,11 +78,6 @@ const argv = (
             string: true,
             array: true,
             describe: "수행할 패키지 설정"
-          },
-          withoutLint: {
-            type: "boolean",
-            default: false,
-            describe: "린트 수행 여부"
           }
         })
     )
@@ -114,11 +104,6 @@ const argv = (
             type: "string",
             array: true,
             describe: "수행할 패키지 설정"
-          },
-          withoutLint: {
-            type: "boolean",
-            default: false,
-            describe: "린트 수행 여부"
           }
         })
     )
@@ -212,8 +197,7 @@ else if (argv._[0] === "watch") {
     .watchAsync({
       confFileRelPath: argv.config ?? "simplysm.cjs",
       optNames: argv.options ?? [],
-      pkgNames: argv.packages ?? [],
-      withLint: argv.withoutLint !== true
+      pkgNames: argv.packages ?? []
     });
 }
 else if (argv._[0] === "build") {
@@ -221,8 +205,7 @@ else if (argv._[0] === "build") {
     .buildAsync({
       confFileRelPath: argv.config ?? "simplysm.cjs",
       optNames: argv.options ?? [],
-      pkgNames: argv.packages ?? [],
-      withLint: argv.withoutLint !== true
+      pkgNames: argv.packages ?? []
     });
 }
 else if (argv._[0] === "publish") {
@@ -231,8 +214,7 @@ else if (argv._[0] === "publish") {
       noBuild: argv.noBuild,
       confFileRelPath: argv.config ?? "simplysm.cjs",
       optNames: argv.options ?? [],
-      pkgNames: argv.packages ?? [],
-      withLint: argv.withoutLint !== true
+      pkgNames: argv.packages ?? []
     });
 }
 else if (argv._[0] === "run-electron") {

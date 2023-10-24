@@ -27,7 +27,8 @@ export class SdServiceFactoryProvider implements OnDestroy {
 
     const reqProgressToastMap = new Map<string, ISdProgressToast | undefined>();
     client.on("request-progress", (state) => {
-      const toast = reqProgressToastMap.getOrCreate(state.uuid, this._sdToast.info("요청을 전송하는 중입니다.", true));
+
+      const toast = reqProgressToastMap.getOrCreate(state.uuid, () => this._sdToast.info("요청을 전송하는 중입니다.", true));
       toast?.progress((state.completedSize / state.fullSize) * 100);
 
       if (state.completedSize === state.fullSize) {
@@ -37,11 +38,7 @@ export class SdServiceFactoryProvider implements OnDestroy {
 
     const resProgressToastMap = new Map<string, ISdProgressToast | undefined>();
     client.on("response-progress", (state) => {
-      if (!resProgressToastMap.has(state.reqUuid)) {
-        resProgressToastMap.set(state.reqUuid, this._sdToast.info("응답을 전송받는 중입니다.", true));
-      }
-
-      const toast = resProgressToastMap.get(state.reqUuid);
+      const toast = resProgressToastMap.getOrCreate(state.reqUuid, () => this._sdToast.info("응답을 전송받는 중입니다.", true));
       toast?.progress((state.completedSize / state.fullSize) * 100);
 
       if (state.completedSize === state.fullSize) {

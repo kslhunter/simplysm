@@ -1,10 +1,9 @@
 import {ContentChild, Directive, Input, TemplateRef} from "@angular/core";
-import {SdInputValidate} from "../../utils/SdInputValidate";
-import {Uuid} from "@simplysm/sd-core-common";
 import {
   SdSheetColumnCellTemplateContext,
   SdSheetColumnCellTemplateDirective
 } from "./SdSheetColumnCellTemplateDirective";
+import {coercionBoolean} from "../../utils/commons";
 
 /*@Component({
   selector: "sd-sheet-column",
@@ -15,47 +14,35 @@ import {
   selector: "sd-sheet-column"
 })
 export class SdSheetColumnDirective<T> {
-  public guid = Uuid.new().toString();
+  @Input({required: true})
+  key!: string;
+
+  @Input({transform: coercionBoolean})
+  fixed = false;
 
   @Input()
-  @SdInputValidate(String)
-  public key?: string;
+  header?: string | string[];
 
   @Input()
-  @SdInputValidate(Boolean)
-  public fixed?: boolean;
+  headerStyle?: string;
 
   @Input()
-  @SdInputValidate([String, Array])
-  public header?: string | string[];
+  tooltip?: string;
 
   @Input()
-  @SdInputValidate(String)
-  public headerStyle?: string;
+  width?: string;
 
-  @Input()
-  @SdInputValidate(String)
-  public tooltip?: string;
+  @Input({transform: coercionBoolean})
+  useOrdering = false;
 
-  @Input()
-  @SdInputValidate(String)
-  public width?: string;
+  @Input({transform: coercionBoolean})
+  resizable = false;
 
-  @Input()
-  @SdInputValidate(Boolean)
-  public useOrdering?: boolean;
+  @Input({transform: coercionBoolean})
+  hidden = false;
 
-  @Input()
-  @SdInputValidate(Boolean)
-  public resizable?: boolean;
-
-  @Input()
-  @SdInputValidate(Boolean)
-  public hidden?: boolean;
-
-  @Input()
-  @SdInputValidate(Boolean)
-  public collapse?: boolean;
+  @Input({transform: coercionBoolean})
+  collapse = false;
 
   @ContentChild(SdSheetColumnCellTemplateDirective, {read: TemplateRef})
   public cellTemplateRef?: TemplateRef<SdSheetColumnCellTemplateContext<T>>;

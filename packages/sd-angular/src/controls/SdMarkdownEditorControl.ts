@@ -1,40 +1,38 @@
 import {
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
+  DoCheck,
   EventEmitter,
   HostBinding,
+  inject,
+  Injector,
   Input,
-  OnChanges,
   Output,
-  SimpleChanges
 } from "@angular/core";
-import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
 import * as marked1 from "marked";
-import {SdInputValidate} from "../utils/SdInputValidate";
-import {faEye} from "@fortawesome/pro-duotone-svg-icons/faEye";
-import {faPen} from "@fortawesome/pro-duotone-svg-icons/faPen";
-import {faQuestion} from "@fortawesome/pro-duotone-svg-icons/faQuestion";
 import {CommonModule} from "@angular/common";
-import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
 import {SdBusyContainerControl} from "./SdBusyContainerControl";
 import {SdAnchorControl} from "./SdAnchorControl";
+import {SdIconControl} from "./SdIconControl";
+import {faEye, faPen, faQuestion} from "@fortawesome/pro-duotone-svg-icons";
+import {coercionBoolean, coercionNonNullableNumber, getSdFnCheckData, TSdFnInfo} from "../utils/commons";
+import {SdNgHelper} from "../utils/SdNgHelper";
 
 @Component({
   selector: "sd-markdown-editor",
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, FontAwesomeModule, SdAnchorControl, SdBusyContainerControl],
+  imports: [CommonModule, SdAnchorControl, SdBusyContainerControl, SdIconControl],
   template: `
     <div class="_toolbar" *ngIf="!disabled">
       <sd-anchor (click)="viewState = 'preview'" [class._selected]="viewState === 'preview'">
-        <fa-icon [icon]="icons.fadEye"></fa-icon>
+        <sd-icon [icon]="faEye"/>
       </sd-anchor>
       <sd-anchor (click)="viewState = 'edit'" [class._selected]="viewState === 'edit'">
-        <fa-icon [icon]="icons.fadPen"></fa-icon>
+        <sd-icon [icon]="faPen"/>
       </sd-anchor>
       <sd-anchor (click)="viewState = 'help'" [class._selected]="viewState === 'help'">
-        <fa-icon [icon]="icons.fadQuestion"></fa-icon>
+        <sd-icon [icon]="faQuestion"/>
       </sd-anchor>
     </div>
 
@@ -279,70 +277,78 @@ import {SdAnchorControl} from "./SdAnchorControl";
     }
   `]
 })
-export class SdMarkdownEditorControl implements OnChanges {
-  public icons = {
-    fadEye: faEye,
-    fadPen: faPen,
-    fadQuestion: faQuestion
-  };
-
+export class SdMarkdownEditorControl implements DoCheck {
   @Input()
-  @SdInputValidate(String)
-  public value?: string;
+  value?: string;
 
   @Output()
-  public readonly valueChange = new EventEmitter<string>();
+  valueChange = new EventEmitter<string | undefined>();
 
   @Input()
-  @SdInputValidate({type: String, includes: ["preview", "edit", "help"]})
   @HostBinding("attr.view-state")
-  public viewState: "preview" | "edit" | "help" = "edit";
+  viewState: "preview" | "edit" | "help" = "edit";
 
-  @Input()
-  @SdInputValidate(Boolean)
+  @Input({transform: coercionBoolean})
   @HostBinding("attr.sd-disabled")
-  public disabled?: boolean;
+  disabled = false;
 
   @Input()
-  public previewRenderFn?: (plainText: string) => string | Promise<string>;
+  previewRenderFn?: TSdFnInfo<(plainText: string) => string | Promise<string>>;
 
   @Output()
-  public readonly dropFiles = new EventEmitter<ISdMarkdownEditorDropFilesEvent>();
-
-  public innerHTML?: SafeHtml;
-
-  @SdInputValidate(Boolean)
-  @HostBinding("attr.sd-dragover")
-  public dragover?: boolean;
+  dropFiles = new EventEmitter<ISdMarkdownEditorDropFilesEvent>();
 
   @Input()
-  @SdInputValidate({
-    type: String,
-    notnull: true,
-    includes: ["both", "horizontal", "vertical", "none"]
-  })
-  public resize = "vertical";
+  resize: "both" | "horizontal" | "vertical" | "none" = "vertical";
 
-  @Input()
-  @SdInputValidate({type: Number, notnull: true})
-  public rows = 3;
+  @Input({transform: coercionNonNullableNumber})
+  rows = 3;
 
-  @Input()
-  @SdInputValidate({type: Boolean, notnull: true})
+  @Input({transform: coercionBoolean})
   @HostBinding("attr.sd-inset")
-  public inset = false;
+  inset = false;
 
   @Input()
-  @SdInputValidate(String)
-  public placeholder?: string;
+  placeholder?: string;
 
-  public busyCount = 0;
+  innerHTML?: string;
+  busyCount = 0;
 
-  public constructor(private readonly _sanitizer: DomSanitizer,
-                     private readonly _cdr: ChangeDetectorRef) {
+  @HostBinding("attr.sd-dragover")
+  dragover = false;
+
+  #sdNgHelper = new SdNgHelper(inject(Injector));
+
+  ngDoCheck(): void {
+    this.#sdNgHelper.doCheck(async run => {
+      await run({
+        value: [this.value],
+        placeholder: [this.placeholder],
+        ...getSdFnCheckData("previewRenderFn", this.previewRenderFn)
+      }, async () => {
+        const trimValue = this.value?.trim();
+        if (trimValue != null && trimValue !== "") {
+          if (this.previewRenderFn?.[0]) {
+            this.busyCount++;
+            const value = await this.previewRenderFn[0](this.value!);
+            this.innerHTML = marked1.marked(value);
+            this.busyCount--;
+          }
+          else {
+            this.innerHTML = marked1.marked(this.value!);
+          }
+        }
+        else if (this.placeholder !== undefined && this.placeholder !== "") {
+          this.innerHTML = `<span class="tx-theme-grey-default">${this.placeholder}</span>`;
+        }
+        else {
+          this.innerHTML = "";
+        }
+      });
+    });
   }
 
-  public onTextareaInput(event: Event): void {
+  onTextareaInput(event: Event) {
     const textareaEl = event.target as HTMLTextAreaElement;
     const newValue = textareaEl.value;
     if (this.valueChange.observed) {
@@ -353,19 +359,19 @@ export class SdMarkdownEditorControl implements OnChanges {
     }
   }
 
-  public onTextareaDragover(event: DragEvent): void {
+  onTextareaDragover(event: DragEvent) {
     event.stopPropagation();
     event.preventDefault();
     this.dragover = true;
   }
 
-  public onTextareaDragLeave(event: DragEvent): void {
+  onTextareaDragLeave(event: DragEvent) {
     event.stopPropagation();
     event.preventDefault();
     this.dragover = false;
   }
 
-  public onTextareaDrop(event: DragEvent): void {
+  onTextareaDrop(event: DragEvent) {
     event.stopPropagation();
     event.preventDefault();
 
@@ -375,7 +381,7 @@ export class SdMarkdownEditorControl implements OnChanges {
     this.dragover = false;
   }
 
-  public onTextareaPaste(event: ClipboardEvent): void {
+  onTextareaPaste(event: ClipboardEvent) {
     if (!event.clipboardData) return;
 
     const files = Array.from(event.clipboardData.items)
@@ -389,31 +395,9 @@ export class SdMarkdownEditorControl implements OnChanges {
     }
   }
 
-  public async ngOnChanges(changes: SimpleChanges): Promise<void> {
-    if (Object.keys(changes).length > 0) {
-      const trimValue = this.value?.trim();
-      if (trimValue != null && trimValue !== "") {
-        if (this.previewRenderFn) {
-          this.busyCount++;
-          const value = await this.previewRenderFn(this.value!);
-          const html = marked1.marked(value);
-          this.innerHTML = this._sanitizer.bypassSecurityTrustHtml(html);
-          this.busyCount--;
-          this._cdr.markForCheck();
-        }
-        else {
-          const html = marked1.marked(this.value!);
-          this.innerHTML = this._sanitizer.bypassSecurityTrustHtml(html);
-        }
-      }
-      else if (this.placeholder !== undefined && this.placeholder !== "") {
-        this.innerHTML = this._sanitizer.bypassSecurityTrustHtml(`<span class="tx-theme-grey-default">${this.placeholder}</span>`);
-      }
-      else {
-        this.innerHTML = "";
-      }
-    }
-  }
+  protected readonly faEye = faEye;
+  protected readonly faPen = faPen;
+  protected readonly faQuestion = faQuestion;
 }
 
 export interface ISdMarkdownEditorDropFilesEvent {

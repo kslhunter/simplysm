@@ -2,14 +2,19 @@ import chokidar from "chokidar";
 import {ObjectUtil} from "@simplysm/sd-core-common";
 
 export class SdFsWatcher {
-  private readonly _watcher: chokidar.FSWatcher;
-
-  private constructor(paths: string[], options?: chokidar.WatchOptions) {
-    this._watcher = chokidar.watch(paths, ObjectUtil.merge({ignoreInitial: true, persistent: true}, options));
-  }
-
   public static watch(paths: string[], options?: chokidar.WatchOptions): SdFsWatcher {
     return new SdFsWatcher(paths, options);
+  }
+
+  private readonly _watcher: chokidar.FSWatcher;
+  private readonly _watchPathSet: Set<string>;
+
+  private constructor(paths: string[], options?: chokidar.WatchOptions) {
+    this._watchPathSet = new Set<string>(paths);
+    this._watcher = chokidar.watch(Array.from(this._watchPathSet.values()), ObjectUtil.merge({
+      ignoreInitial: true,
+      persistent: true
+    }, options));
   }
 
   public onChange(opt: { delay?: number }, cb: (changeInfos: ISdFsWatcherChangeInfo[]) => void | Promise<void>): this {
@@ -46,7 +51,20 @@ export class SdFsWatcher {
   }
 
   public add(paths: string[]): void {
-    this._watcher.add(paths);
+    const pathSet = new Set<string>(paths);
+
+    for (const path of pathSet) {
+      if (this._watchPathSet.has(path)) continue;
+      this._watchPathSet.add(path);
+      this._watcher.add(path);
+    }
+
+    for (const watchPath of this._watchPathSet) {
+      if(!pathSet.has(watchPath)){
+        this._watchPathSet.delete(watchPath);
+        this._watcher.unwatch(watchPath);
+      }
+    }
   }
 
   public async closeAsync(): Promise<void> {

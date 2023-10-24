@@ -29,7 +29,7 @@ module.exports = {
         "no-shadow": ["error"],
         "no-duplicate-imports": ["error"],
         "no-unused-expressions": ["error"],
-        "no-unused-vars": ["error"],
+        // "no-unused-vars": ["error"],
         "no-undef": ["error"],
         // "linebreak-style": ["error", "unix"]
 
@@ -104,7 +104,7 @@ module.exports = {
         //   allowDirectConstAssertionInArrowFunctions: true
         // }],
         "@typescript-eslint/no-unused-expressions": ["error"],
-        "@typescript-eslint/no-unused-vars": ["error", {args: "none"}],
+        // "@typescript-eslint/no-unused-vars": ["error", {args: "none"}],
         "@typescript-eslint/strict-boolean-expressions": ["error", {
           // allowString: true,
           // allowNumber: true,

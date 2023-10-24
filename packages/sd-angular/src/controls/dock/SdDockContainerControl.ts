@@ -1,176 +1,108 @@
 import {
-  AfterContentInit,
   ChangeDetectionStrategy,
   Component,
   ContentChildren,
+  DoCheck,
   ElementRef,
-  forwardRef,
-  HostBinding,
-  Input,
-  NgZone,
+  inject,
+  Injector,
   QueryList
 } from "@angular/core";
 import {SdDockControl} from "./SdDockControl";
-import {SdInputValidate} from "../../utils/SdInputValidate";
+import {SdNgHelper} from "../../utils/SdNgHelper";
 
 @Component({
   selector: "sd-dock-container",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="_content">
-      <ng-content></ng-content>
-    </div>
-    <div class="_backdrop" (click)="onBackdropClick()"></div>`,
+    <ng-content/>`,
   styles: [/* language=SCSS */ `
     :host {
       display: block;
+      position: relative;
       height: 100%;
-      width: 100%;
-
-      > ._content {
-        display: block;
-        position: relative;
-        height: 100%;
-        overflow: visible;
-      }
-
-      > ._backdrop {
-        display: none;
-      }
-
-      &[sd-float=true] {
-        > ._backdrop {
-          display: block;
-          position: absolute;
-          z-index: 10;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          background: black;
-          opacity: 0;
-          pointer-events: none;
-        }
-
-        &[sd-has-open-dock=true] {
-          > ._backdrop {
-            pointer-events: auto;
-            opacity: .6;
-          }
-
-          ::ng-deep > ._content > sd-dock {
-            z-index: 11;
-            transform: none;
-          }
-        }
-      }
     }
   `]
 })
-export class SdDockContainerControl implements AfterContentInit {
-  @Input()
-  @SdInputValidate({type: Boolean, notnull: true})
-  @HostBinding("attr.sd-float")
-  public float = false;
+export class SdDockContainerControl implements DoCheck {
+  #elRef: ElementRef<HTMLElement> = inject(ElementRef);
+  #sdNgHelper = new SdNgHelper(inject(Injector));
 
-  @ContentChildren(forwardRef(() => SdDockControl))
-  public dockControls?: QueryList<SdDockControl>;
+  @ContentChildren(SdDockControl)
+  dockControls!: QueryList<SdDockControl>;
 
-  @HostBinding("attr.sd-has-open-dock")
-  public get hasOpenDock(): boolean {
-    return this.dockControls?.some((item) => item.open) === true;
-  }
-
-  public constructor(private readonly _elRef: ElementRef<HTMLElement>,
-                     private readonly _zone: NgZone) {
-  }
-
-  public ngAfterContentInit(): void {
-    this._zone.runOutsideAngular(() => {
-      requestAnimationFrame(() => {
-        this.redraw();
+  ngDoCheck() {
+    this.#sdNgHelper.doCheckOutside(run => {
+      run({
+        dockControls: [this.dockControls, "one"]
+      }, () => {
+        this.redrawOutside();
       });
     });
   }
 
-  public onBackdropClick(): void {
-    if (!this.dockControls) return;
-    this.dockControls.forEach((item) => {
-      if (item.open) {
-        if (item.openChange.observed) {
-          item.openChange.emit(false);
+  redrawOutside() {
+    this.#sdNgHelper.runOutsideOnce("redraw", () => {
+      let top = 0;
+      let left = 0;
+      let bottom = 0;
+      let right = 0;
+      for (const dockControl of this.dockControls.toArray()) {
+        const dockEl = dockControl.elRef.nativeElement;
+        const position = dockControl.position;
+
+        if (position === "top") {
+          Object.assign(
+            dockEl.style,
+            {
+              top: top + "px",
+              bottom: "",
+              left: left + "px",
+              right: right + "px"
+            }
+          );
+          top += dockEl.offsetHeight;
         }
-        else {
-          item.open = false;
+        else if (position === "bottom") {
+          Object.assign(
+            dockEl.style,
+            {
+              top: "",
+              bottom: bottom + "px",
+              left: left + "px",
+              right: right + "px"
+            }
+          );
+          bottom += dockEl.offsetHeight;
+        }
+        else if (position === "left") {
+          Object.assign(
+            dockEl.style,
+            {
+              top: top + "px",
+              bottom: bottom + "px",
+              left: left + "px",
+              right: ""
+            }
+          );
+          left += dockEl.offsetWidth;
+        }
+        else { // right
+          Object.assign(
+            dockEl.style,
+            {
+              top: top + "px",
+              bottom: bottom + "px",
+              left: "",
+              right: right + "px"
+            }
+          );
+          right += dockEl.offsetWidth;
         }
       }
-    });
-  }
 
-  public redraw(): void {
-    if (!this.dockControls) return;
-
-    let top = 0;
-    let left = 0;
-    let bottom = 0;
-    let right = 0;
-    for (const dockControl of this.dockControls.toArray()) {
-      const dockEl = dockControl.elRef.nativeElement;
-      const position = dockControl.position;
-
-      if (position === "top") {
-        Object.assign(
-          dockEl.style,
-          {
-            top: top + "px",
-            bottom: "",
-            left: left + "px",
-            right: right + "px"
-          }
-        );
-        top += dockEl.offsetHeight;
-      }
-      else if (position === "bottom") {
-        Object.assign(
-          dockEl.style,
-          {
-            top: "",
-            bottom: bottom + "px",
-            left: left + "px",
-            right: right + "px"
-          }
-        );
-        bottom += dockEl.offsetHeight;
-      }
-      else if (position === "left") {
-        Object.assign(
-          dockEl.style,
-          {
-            top: top + "px",
-            bottom: bottom + "px",
-            left: left + "px",
-            right: ""
-          }
-        );
-        left += dockEl.offsetWidth;
-      }
-      else { // right
-        Object.assign(
-          dockEl.style,
-          {
-            top: top + "px",
-            bottom: bottom + "px",
-            left: "",
-            right: right + "px"
-          }
-        );
-        right += dockEl.offsetWidth;
-      }
-    }
-
-    if (!this.float) {
       Object.assign(
-        this._elRef.nativeElement.findFirst<HTMLDivElement>("> ._content")!.style,
+        this.#elRef.nativeElement.style,
         {
           paddingTop: top + "px",
           paddingBottom: bottom + "px",
@@ -178,6 +110,8 @@ export class SdDockContainerControl implements AfterContentInit {
           paddingLeft: left + "px"
         }
       );
-    }
+    });
   }
 }
+
+// V11 LOGIC OK

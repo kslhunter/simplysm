@@ -1,13 +1,12 @@
-import {ApplicationRef, ErrorHandler, Injectable, NgModuleRef} from "@angular/core";
+import {ApplicationRef, ErrorHandler, inject, Injectable, NgModuleRef} from "@angular/core";
 import {SdSystemLogProvider} from "../providers/SdSystemLogProvider";
 
 @Injectable({providedIn: null})
 export class SdGlobalErrorHandlerPlugin implements ErrorHandler {
-  public constructor(private readonly _ngModuleRef: NgModuleRef<any>,
-                     private readonly _systemLog: SdSystemLogProvider) {
-  }
+  #ngModuleRef = inject(NgModuleRef);
+  #systemLog = inject(SdSystemLogProvider);
 
-  public handleError(error: any): void {
+  handleError(error: any) {
     const err: Error = error.rejection !== undefined ? error.rejection : error;
 
     const divEl = document.createElement("div");
@@ -25,13 +24,13 @@ export class SdGlobalErrorHandlerPlugin implements ErrorHandler {
     divEl.innerHTML = `<pre style="font-size: 12px; font-family: monospace; line-height: 1.4em;">${err.stack ?? ""}</pre>`;
 
     try {
-      const appRef = this._ngModuleRef.injector.get<ApplicationRef>(ApplicationRef);
+      const appRef = this.#ngModuleRef.injector.get<ApplicationRef>(ApplicationRef);
       appRef["_views"][0]["rootNodes"][0].appendChild(divEl);
       divEl.onclick = () => {
         location.reload();
       };
 
-      this._systemLog.writeAsync("error", err.stack).catch(() => {
+      this.#systemLog.writeAsync("error", err.stack).catch(() => {
       });
     }
     catch (err1) {

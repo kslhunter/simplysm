@@ -9,12 +9,13 @@ import {SdPaneControl} from "../SdPaneControl";
 import {SdAnchorControl} from "../SdAnchorControl";
 import {SdBusyContainerControl} from "../SdBusyContainerControl";
 import {SdListModule} from "../list/SdListModule";
-import {SdSharedDataItemTemplateDirective} from "./SdSharedDataItemTemplateDirective";
+import {SdTypedTemplateDirective} from "../../directives/SdTypedTemplateDirective";
+import {SdItemOfTemplateDirective} from "../../directives/SdItemOfTemplateDirective";
 
 @NgModule({
-  imports: [CommonModule, SdSelectModule, SdDockingModule, SdTextfieldControl, SdPaneControl, SdAnchorControl, SdBusyContainerControl, SdListModule],
-  declarations: [SdSharedDataSelectControl, SdSharedDataSelectViewControl, SdSharedDataItemTemplateDirective],
-  exports: [SdSharedDataSelectControl, SdSharedDataSelectViewControl, SdSharedDataItemTemplateDirective],
+  imports: [CommonModule, SdSelectModule, SdDockingModule, SdTextfieldControl, SdPaneControl, SdAnchorControl, SdBusyContainerControl, SdListModule, SdTypedTemplateDirective, SdItemOfTemplateDirective],
+  declarations: [SdSharedDataSelectControl, SdSharedDataSelectViewControl],
+  exports: [SdSharedDataSelectControl, SdSharedDataSelectViewControl],
   providers: []
 })
 export class SdSharedDataModule {

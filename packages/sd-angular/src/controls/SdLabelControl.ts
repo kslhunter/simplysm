@@ -1,7 +1,6 @@
 import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
-import {SdInputValidate} from "../utils/SdInputValidate";
-import {sdThemes, TSdTheme} from "../commons";
 import {CommonModule} from "@angular/common";
+import {coercionBoolean} from "../utils/commons";
 
 @Component({
   selector: "sd-label",
@@ -45,25 +44,14 @@ import {CommonModule} from "@angular/common";
 })
 export class SdLabelControl {
   @Input()
-  @SdInputValidate({
-    type: String,
-    includes: sdThemes
-  })
   @HostBinding("attr.sd-theme")
-  public theme?: TSdTheme;
+  theme?: "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey";
 
   @Input()
-  @SdInputValidate({
-    type: String,
-    validator(value: string): boolean {
-      return (/^#[0-9a-fA-F]*$/).test(value);
-    }
-  })
   @HostBinding("style.background")
-  public color?: string;
+  color?: string;
 
-  @Input()
-  @SdInputValidate(Boolean)
+  @Input({transform: coercionBoolean})
   @HostBinding("attr.sd-clickable")
-  public clickable?: boolean;
+  clickable = false;
 }

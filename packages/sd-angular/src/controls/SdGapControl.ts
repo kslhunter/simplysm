@@ -1,6 +1,7 @@
-import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
-import {SdInputValidate} from "../utils/SdInputValidate";
+import {ChangeDetectionStrategy, Component, DoCheck, HostBinding, inject, Injector, Input} from "@angular/core";
 import {CommonModule} from "@angular/common";
+import {coercionNumber} from "../utils/commons";
+import {SdNgHelper} from "../utils/SdNgHelper";
 
 @Component({
   selector: "sd-gap",
@@ -24,50 +25,54 @@ import {CommonModule} from "@angular/common";
     }
   `]
 })
-export class SdGapControl {
+export class SdGapControl implements DoCheck {
   @Input()
-  @SdInputValidate({
-    type: String,
-    includes: ["xxs", "xs", "sm", "default", "lg", "xl", "xxl"]
-  })
   @HostBinding("attr.sd-height")
-  public height?: "xxs" | "xs" | "sm" | "default" | "lg" | "xl" | "xxl";
+  height?: "xxs" | "xs" | "sm" | "default" | "lg" | "xl" | "xxl";
 
-  @Input()
-  @SdInputValidate(Number)
+  @Input({transform: coercionNumber})
   @HostBinding("style.height.px")
-  public heightPx?: number;
+  heightPx?: number;
 
   @Input()
-  @SdInputValidate({
-    type: String,
-    includes: ["xxs", "xs", "sm", "default", "lg", "xl", "xxl"]
-  })
   @HostBinding("attr.sd-width")
-  public width?: "xxs" | "xs" | "sm" | "default" | "lg" | "xl" | "xxl";
+  width?: "xxs" | "xs" | "sm" | "default" | "lg" | "xl" | "xxl";
 
-  @Input()
-  @SdInputValidate(Number)
+  @Input({transform: coercionNumber})
   @HostBinding("style.width.px")
-  public widthPx?: number;
+  widthPx?: number;
 
-  @Input()
-  @SdInputValidate(Number)
+  @Input({transform: coercionNumber})
   @HostBinding("style.width.em")
-  public widthEm?: number;
+  widthEm?: number;
 
   @HostBinding("style.display")
-  public get display(): "block" | "inline-block" | "none" | undefined {
-    if (this.widthPx === 0 || this.heightPx === 0 || this.widthEm === 0) {
-      return "none";
-    }
-    else if (this.width !== undefined || this.widthPx !== undefined || this.widthEm !== undefined) {
-      return "inline-block";
-    }
-    else if (this.height !== undefined || this.heightPx !== undefined) {
-      return "block";
-    }
+  display: "block" | "inline-block" | "none" | undefined;
 
-    return undefined;
+  #sdNgHelper = new SdNgHelper(inject(Injector));
+
+  ngDoCheck() {
+    this.#sdNgHelper.doCheck(run => {
+      run({
+        height: [this.height],
+        heightPx: [this.heightPx],
+        width: [this.width],
+        widthPx: [this.widthPx],
+        widthEm: [this.widthEm]
+      }, () => {
+        if (this.widthPx === 0 || this.heightPx === 0 || this.widthEm === 0) {
+          this.display = "none";
+        }
+        else if (this.width !== undefined || this.widthPx !== undefined || this.widthEm !== undefined) {
+          this.display = "inline-block";
+        }
+        else if (this.height !== undefined || this.heightPx !== undefined) {
+          this.display = "block";
+        }
+        else {
+          this.display = undefined;
+        }
+      });
+    });
   }
 }

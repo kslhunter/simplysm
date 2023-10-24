@@ -7,8 +7,7 @@ import {
   Input,
   ViewChild
 } from "@angular/core";
-import {SdInputValidate} from "../../utils/SdInputValidate";
-import {sdThemes, TSdTheme} from "../../commons";
+import {coercionBoolean} from "../../utils/commons";
 
 @Component({
   selector: "sd-toast",
@@ -118,32 +117,25 @@ import {sdThemes, TSdTheme} from "../../commons";
   `]
 })
 export class SdToastControl {
-  @Input()
-  @SdInputValidate(Boolean)
+  @Input({transform: coercionBoolean})
   @HostBinding("attr.sd-open")
-  public open?: boolean;
+  open = false;
 
-  @Input()
-  @SdInputValidate(Boolean)
-  public useProgress?: boolean;
+  @Input({transform: coercionBoolean})
+  useProgress = false;
 
-  public set progress(val: number) {
+  set progress(val: number) {
     if (this.progressBarElRef) {
       this.progressBarElRef.nativeElement.style.width = val + "%";
     }
   }
 
-  public close = new EventEmitter<any>();
+  close = new EventEmitter<any>();
 
   @Input()
-  @SdInputValidate({
-    type: String,
-    notnull: true,
-    includes: sdThemes
-  })
   @HostBinding("attr.sd-theme")
-  public theme?: TSdTheme = "info";
+  public theme?: "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey" = "info";
 
   @ViewChild("progressBar", {static: false, read: ElementRef})
-  public progressBarElRef?: ElementRef<HTMLDivElement>;
+  progressBarElRef?: ElementRef<HTMLDivElement>;
 }

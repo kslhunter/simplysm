@@ -1,9 +1,9 @@
-import {ChangeDetectionStrategy, Component, ElementRef, Input, OnChanges, SimpleChanges} from "@angular/core";
-import {SdInputValidate} from "../utils/SdInputValidate";
-
+import {ChangeDetectionStrategy, Component, DoCheck, ElementRef, inject, Injector, Input} from "@angular/core";
 import jsbarcode from "jsbarcode";
 import qrcode from "qrcode";
 import {CommonModule} from "@angular/common";
+import {coercionNumber} from "../utils/commons";
+import {SdNgHelper} from "../utils/SdNgHelper";
 
 @Component({
   selector: "sd-barcode",
@@ -15,31 +15,35 @@ import {CommonModule} from "@angular/common";
     <svg [hidden]="!value" [style.display]="type === 'qrcode' ? 'none' : undefined"
          [style.margin-bottom]="'-5px'"></svg>`
 })
-export class SdBarcodeControl implements OnChanges {
+export class SdBarcodeControl implements DoCheck {
   @Input()
-  @SdInputValidate(String)
-  public value?: string;
-
-  @Input()
-  @SdInputValidate(String)
-  public type = "code128";
+  value?: string;
 
   @Input()
-  @SdInputValidate(Number)
-  public lineWidth = 1;
+  type = "code128";
 
-  @Input()
-  @SdInputValidate(Number)
-  public height = 58;
+  @Input({transform: coercionNumber})
+  lineWidth = 1;
 
-  public constructor(private readonly _elRef: ElementRef<HTMLElement>) {
-  }
+  @Input({transform: coercionNumber})
+  height = 58;
 
-  public async ngOnChanges(changes: SimpleChanges): Promise<void> {
-    if (Object.keys(changes).length > 0) {
-      if (this.value !== undefined) {
+  #elRef: ElementRef<HTMLElement> = inject(ElementRef);
+
+  #sdNgHelper = new SdNgHelper(inject(Injector));
+
+  ngDoCheck() {
+    this.#sdNgHelper.doCheckOutside(async run => {
+      await run({
+        value: [this.value],
+        type: [this.type],
+        lineWidth: [this.lineWidth],
+        height: [this.height]
+      }, async () => {
+        if (this.value == null) return;
+
         if (this.type === "qrcode") {
-          const canvasEl = this._elRef.nativeElement.findFirst<HTMLCanvasElement>("> canvas");
+          const canvasEl = this.#elRef.nativeElement.findFirst<HTMLCanvasElement>("> canvas");
 
           await qrcode.toCanvas(canvasEl, this.value ?? "", {
             scale: this.lineWidth
@@ -51,7 +55,7 @@ export class SdBarcodeControl implements OnChanges {
           });*/
         }
         else {
-          const svgEl = this._elRef.nativeElement.findFirst<SVGElement>("> svg");
+          const svgEl = this.#elRef.nativeElement.findFirst<SVGElement>("> svg");
 
           jsbarcode(
             svgEl,
@@ -65,7 +69,7 @@ export class SdBarcodeControl implements OnChanges {
             }
           );
         }
-      }
-    }
+      });
+    });
   }
 }

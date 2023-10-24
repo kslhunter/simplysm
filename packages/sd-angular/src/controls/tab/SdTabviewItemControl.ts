@@ -1,6 +1,5 @@
-import {ChangeDetectionStrategy, Component, forwardRef, HostBinding, Inject, Input} from "@angular/core";
+import {ChangeDetectionStrategy, Component, forwardRef, HostBinding, inject, Input} from "@angular/core";
 import {SdTabviewControl} from "./SdTabviewControl";
-import {SdInputValidate} from "../../utils/SdInputValidate";
 
 @Component({
   selector: "sd-tabview-item",
@@ -22,18 +21,15 @@ import {SdInputValidate} from "../../utils/SdInputValidate";
 })
 export class SdTabviewItemControl {
   @Input()
-  public value?: any;
+  value?: any;
 
   @Input()
-  @SdInputValidate(String)
-  public header?: string;
+  header?: string;
 
   @HostBinding("attr.sd-selected")
-  public get isSelected(): boolean {
-    return this._parentControl.value === this.value;
+  get isSelected(): boolean {
+    return this.#parentControl.value === this.value;
   }
 
-  public constructor(@Inject(forwardRef(() => SdTabviewControl))
-                     private readonly _parentControl: SdTabviewControl) {
-  }
+  #parentControl: SdTabviewControl = inject(forwardRef(() => SdTabviewControl));
 }

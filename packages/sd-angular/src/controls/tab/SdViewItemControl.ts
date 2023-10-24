@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, forwardRef, HostBinding, Inject, Input} from "@angular/core";
+import {ChangeDetectionStrategy, Component, forwardRef, HostBinding, inject, Input} from "@angular/core";
 import {SdViewControl} from "./SdViewControl";
 
 @Component({
@@ -18,14 +18,12 @@ import {SdViewControl} from "./SdViewControl";
 })
 export class SdViewItemControl {
   @Input()
-  public value?: any;
+  value?: any;
 
   @HostBinding("attr.sd-selected")
-  public get isSelected(): boolean {
-    return this._parentControl.value === this.value;
+  get isSelected(): boolean {
+    return this.#parentControl.value === this.value;
   }
 
-  public constructor(@Inject(forwardRef(() => SdViewControl))
-                     private readonly _parentControl: SdViewControl) {
-  }
+  #parentControl: SdViewControl = inject(forwardRef(() => SdViewControl));
 }

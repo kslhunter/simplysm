@@ -1,13 +1,6 @@
 import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
-import {SdInputValidate} from "../utils/SdInputValidate";
 import {CommonModule} from "@angular/common";
-
-const vars = {
-  borderColor: {
-    light: "var(--theme-blue-grey-lightest)",
-    dark: "var(--theme-grey-light)"
-  }
-};
+import {coercionBoolean} from "../utils/commons";
 
 @Component({
   selector: "sd-table",
@@ -19,6 +12,9 @@ const vars = {
       <ng-content></ng-content>
     </table>`,
   styles: [/* language=SCSS */ `
+    $border-color-light: var(--theme-blue-grey-lightest);
+    $border-color-dark: var(--theme-grey-light);
+
     :host {
       display: block;
 
@@ -26,34 +22,34 @@ const vars = {
         width: 100%;
         border-collapse: separate;
         border-spacing: 0;
-        border-right: 1px solid ${vars.borderColor.dark};
-        border-bottom: 1px solid ${vars.borderColor.dark};
+        border-right: 1px solid $border-color-dark;
+        border-bottom: 1px solid $border-color-dark;
 
         > * > tr > * {
           padding: var(--gap-xs) var(--gap-sm);
-          border-left: 1px solid ${vars.borderColor.light};
+          border-left: 1px solid $border-color-light;
 
           &:first-child {
-            border-left: 1px solid ${vars.borderColor.dark};
+            border-left: 1px solid $border-color-dark;
           }
         }
 
         > tbody > tr > td:first-child {
-          border-left: 1px solid ${vars.borderColor.dark};
+          border-left: 1px solid $border-color-dark;
         }
 
         > * > tr {
           > * {
-            border-top: 1px solid ${vars.borderColor.light};
+            border-top: 1px solid $border-color-light;
           }
 
           &:first-child > * {
-            border-top: 1px solid ${vars.borderColor.dark};
+            border-top: 1px solid $border-color-dark;
           }
         }
 
         > tbody > tr:first-child {
-          border-top: 1px solid ${vars.borderColor.dark};
+          border-top: 1px solid $border-color-dark;
         }
 
         > thead > tr > th {
@@ -107,13 +103,11 @@ const vars = {
   `]
 })
 export class SdTableControl {
-  @Input()
-  @SdInputValidate(Boolean)
+  @Input({transform: coercionBoolean})
   @HostBinding("attr.sd-inset")
-  public inset?: boolean;
+  inset = false;
 
   @Input()
-  @SdInputValidate({type: String, includes: ["vertical", "horizontal", "all"]})
   @HostBinding("attr.sd-cell-border")
-  public cellBorder: "vertical" | "horizontal" | "all" = "all";
+  cellBorder: "vertical" | "horizontal" | "all" = "all";
 }

@@ -3,10 +3,11 @@ import {NgModule} from "@angular/core";
 import {SdCheckboxControl} from "./SdCheckboxControl";
 import {SdCheckboxGroupControl} from "./SdCheckboxGroupControl";
 import {SdCheckboxGroupItemControl} from "./SdCheckboxGroupItemControl";
-import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
+import {SdIconControl} from "../SdIconControl";
+
 
 @NgModule({
-  imports: [CommonModule, FontAwesomeModule],
+  imports: [CommonModule, SdIconControl],
   declarations: [SdCheckboxControl, SdCheckboxGroupControl, SdCheckboxGroupItemControl],
   exports: [SdCheckboxControl, SdCheckboxGroupControl, SdCheckboxGroupItemControl],
   providers: []

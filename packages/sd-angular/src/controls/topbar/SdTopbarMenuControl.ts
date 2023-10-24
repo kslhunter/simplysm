@@ -1,5 +1,5 @@
 import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
-import {SdInputValidate} from "../../utils/SdInputValidate";
+import {coercionBoolean} from "../../utils/commons";
 
 @Component({
   selector: "sd-topbar-menu",
@@ -8,7 +8,7 @@ import {SdInputValidate} from "../../utils/SdInputValidate";
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
     @import "../../scss/mixins";
-    
+
     :host {
       display: inline-block;
       padding: 0 var(--gap-lg);
@@ -36,8 +36,7 @@ import {SdInputValidate} from "../../utils/SdInputValidate";
   `]
 })
 export class SdTopbarMenuControl {
-  @Input()
-  @SdInputValidate(Boolean)
+  @Input({transform: coercionBoolean})
   @HostBinding("attr.disabled")
-  public disabled?: boolean;
+  disabled = false;
 }

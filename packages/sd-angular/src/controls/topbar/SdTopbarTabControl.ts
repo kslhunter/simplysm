@@ -1,5 +1,5 @@
 import {ChangeDetectionStrategy, Component, EventEmitter, Output} from "@angular/core";
-import {faXmark} from "@fortawesome/pro-solid-svg-icons/faXmark";
+import {faXmark} from "@fortawesome/pro-solid-svg-icons";
 
 @Component({
   selector: "sd-topbar-tab",
@@ -7,7 +7,7 @@ import {faXmark} from "@fortawesome/pro-solid-svg-icons/faXmark";
   template: `
     <ng-content></ng-content>
     <sd-anchor (click)="onCloseButtonClick($event)">
-      <fa-icon [icon]="icons.fasXmark" [fixedWidth]="true"></fa-icon>
+      <sd-icon [icon]="faXmark" fixedWidth/>
     </sd-anchor>`,
   styles: [/* language=SCSS */ `
     :host {
@@ -39,17 +39,15 @@ import {faXmark} from "@fortawesome/pro-solid-svg-icons/faXmark";
   `]
 })
 export class SdTopbarTabControl {
-  public icons = {
-    fasXmark: faXmark
-  };
+  @Output()
+  clickClose = new EventEmitter<MouseEvent>();
 
-  @Output("click.close")
-  public readonly clickClose = new EventEmitter<MouseEvent>();
-
-  public onCloseButtonClick(event: MouseEvent): void {
+  onCloseButtonClick(event: MouseEvent) {
     event.preventDefault();
     event.stopPropagation();
 
     this.clickClose.emit(event);
   }
+
+  protected readonly faXmark = faXmark;
 }

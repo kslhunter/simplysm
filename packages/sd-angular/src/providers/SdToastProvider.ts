@@ -144,7 +144,7 @@ export class SdToastProvider {
     this._appRef.attachView(toastRef.hostView);
 
     toastEl.findAll<HTMLElement>("._sd-toast-message")[0].innerText = message;
-    toastRef.instance.useProgress = progress;
+    toastRef.instance.useProgress = progress ?? false;
     toastRef.instance.progress = 0;
 
     // repaint

@@ -7,7 +7,7 @@ import {
   Input,
   Output
 } from "@angular/core";
-import {SdInputValidate} from "@simplysm/sd-angular";
+import {coercionBoolean} from "@simplysm/sd-angular";
 import {CommonModule} from "@angular/common";
 
 @Component({
@@ -102,53 +102,38 @@ import {CommonModule} from "@angular/common";
   `]
 })
 export class SdSwitchControl {
-  @Input()
-  @SdInputValidate({type: Boolean, notnull: true})
+  @Input({transform: coercionBoolean})
   @HostBinding("attr.sd-on")
-  public value = false;
+  value = false;
 
   @Output()
-  public readonly valueChange = new EventEmitter<boolean>();
+  valueChange = new EventEmitter<boolean>();
 
-  @Input()
-  @SdInputValidate(Boolean)
+  @Input({transform: coercionBoolean})
   @HostBinding("attr.sd-disabled")
-  public disabled?: boolean;
+  disabled = false;
 
-  @Input()
-  @SdInputValidate({
-    type: [Boolean, String],
-    includes: [true, false, "text"]
-  })
+  @Input({transform: coercionBoolean})
   @HostBinding("attr.sd-inline")
-  public inline?: boolean | "text";
+  inline = false;
 
-  @Input()
-  @SdInputValidate(Boolean)
+  @Input({transform: coercionBoolean})
   @HostBinding("attr.sd-inset")
-  public inset?: boolean;
+  inset = false;
 
   @Input()
-  @SdInputValidate({
-    type: String,
-    includes: ["sm", "lg"]
-  })
   @HostBinding("attr.sd-size")
-  public size?: "sm" | "lg";
+  size?: "sm" | "lg";
 
   @Input()
-  @SdInputValidate({
-    type: String,
-    includes: ["primary", "secondary", "info", "warning", "danger"]
-  })
   @HostBinding("attr.sd-theme")
-  public theme?: "primary" | "secondary" | "info" | "warning" | "danger";
+  theme?: "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey";
 
   @HostBinding("attr.tabindex")
-  public tabindex = 0;
+  tabindex = 0;
 
   @HostListener("click", ["$event"])
-  public onClick(): void {
+  onClick() {
     if (this.disabled) return;
 
     if (this.valueChange.observed) {
@@ -160,7 +145,7 @@ export class SdSwitchControl {
   }
 
   @HostListener("keydown", ["$event"])
-  public onKeydown(event: KeyboardEvent): void {
+  onKeydown(event: KeyboardEvent) {
     if (this.disabled) return;
 
     if (event.key === " ") {

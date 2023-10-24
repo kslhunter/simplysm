@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, forwardRef, HostBinding, HostListener, Inject, Input} from "@angular/core";
+import {ChangeDetectionStrategy, Component, forwardRef, HostBinding, HostListener, inject, Input} from "@angular/core";
 import {SdTabControl} from "./SdTabControl";
 
 @Component({
@@ -43,19 +43,17 @@ import {SdTabControl} from "./SdTabControl";
 })
 export class SdTabItemControl {
   @Input()
-  public value?: any;
+  value?: any;
 
   @HostBinding("attr.sd-selected")
-  public get isSelected(): boolean {
-    return this._parentControl.value === this.value;
+  get isSelected(): boolean {
+    return this.#parentControl.value === this.value;
   }
 
-  public constructor(@Inject(forwardRef(() => SdTabControl))
-                     private readonly _parentControl: SdTabControl) {
-  }
+  #parentControl: SdTabControl = inject(forwardRef(() => SdTabControl));
 
   @HostListener("click")
-  public onClick(): void {
-    this._parentControl.setValue(this.value);
+  onClick() {
+    this.#parentControl.setValue(this.value);
   }
 }

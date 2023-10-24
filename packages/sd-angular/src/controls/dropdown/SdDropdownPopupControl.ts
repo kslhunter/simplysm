@@ -1,11 +1,12 @@
-import {ChangeDetectionStrategy, Component, ElementRef} from "@angular/core";
+import {ChangeDetectionStrategy, Component, ElementRef, forwardRef, inject} from "@angular/core";
+import {SdDropdownControl} from "./SdDropdownControl";
 
 // TODO: 모바일일때는 창 형식으로 표현
 @Component({
   selector: "sd-dropdown-popup",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div (sdResize)="onResize()">
+    <div (sdResize.outside)="onResizeOutside()" (keydown)="onKeyDown($event)">
       <ng-content></ng-content>
     </div>`,
   styles: [/* language=SCSS */ `
@@ -44,18 +45,22 @@ import {ChangeDetectionStrategy, Component, ElementRef} from "@angular/core";
   `]
 })
 export class SdDropdownPopupControl {
-  public constructor(private readonly _elRef: ElementRef<HTMLElement>) {
+  #parentControl: SdDropdownControl = inject(forwardRef(() => SdDropdownControl));
+  #elRef: ElementRef<HTMLElement> = inject(ElementRef);
+
+  onKeyDown(event: KeyboardEvent) {
+    this.#parentControl.onPopupKeydown(event);
   }
 
-  public onResize(): void {
-    const thisEl = this._elRef.nativeElement;
-    const divEl = this._elRef.nativeElement.firstElementChild!;
+  onResizeOutside() {
+    const el = this.#elRef.nativeElement;
+    const divEl = this.#elRef.nativeElement.firstElementChild!;
 
     if (divEl.clientHeight > 300) {
-      thisEl.style.height = "300px";
+      el.style.height = "300px";
     }
     else {
-      delete (thisEl.style as any).height;
+      delete (el.style as any).height;
     }
   }
 }

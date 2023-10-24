@@ -99,6 +99,7 @@ export class SdTsCompiler {
   }
 
   public async buildAsync(): Promise<{
+    filePaths: string[];
     affectedFilePaths: string[];
     results: ISdCliPackageBuildResult[];
   }> {
@@ -290,7 +291,11 @@ export class SdTsCompiler {
     const buildResults = diagnostics.map((item) => SdCliBuildResultUtil.convertFromTsDiag(item, this._opt.emit ? "build" : "check"));
 
     return {
-      affectedFilePaths: affectedFilePaths.filter((item) => !item.endsWith(".scss")),
+      filePaths: [
+        ...Array.from(this._styleDepsCache.keys()),
+        ...this._builder.getSourceFiles().map(item => path.resolve(item.fileName))
+      ],
+      affectedFilePaths: affectedFilePaths,
       results: buildResults
     };
   }

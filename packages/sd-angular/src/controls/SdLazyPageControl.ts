@@ -1,5 +1,4 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, Type} from "@angular/core";
-import {SdInputValidate} from "../utils/SdInputValidate";
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, Input, OnInit, Type} from "@angular/core";
 import {SdToastProvider} from "../providers/SdToastProvider";
 import {SdLazyPageLoaderProvider} from "../providers/SdLazyPageLoaderProvider";
 import {CommonModule} from "@angular/common";
@@ -13,36 +12,33 @@ import {SdBusyContainerControl} from "./SdBusyContainerControl";
   template: `
     <sd-busy-container [busy]="busyCount > 0" noFade type="bar">
       <ng-container *ngIf="componentType">
-        <ng-container *ngComponentOutlet="componentType; ngModuleFactory: moduleFactory">
-        </ng-container>
+        <ng-container *ngComponentOutlet="componentType; ngModuleFactory: moduleFactory"/>
       </ng-container>
     </sd-busy-container>`
 })
 export class SdLazyPageControl implements OnInit {
-  public busyCount = 0;
+  @Input({required: true})
+  code!: string;
 
-  @Input()
-  @SdInputValidate({type: String, notnull: true})
-  public code!: string;
+  busyCount = 0;
 
-  public componentType?: Type<any>;
-  public moduleFactory?: any;
+  componentType?: Type<any>;
+  moduleFactory?: any;
 
-  public constructor(private readonly _toast: SdToastProvider,
-                     private readonly _cdr: ChangeDetectorRef,
-                     private readonly _lazyPage: SdLazyPageLoaderProvider) {
-  }
+  #sdToast = inject(SdToastProvider);
+  #cdr = inject(ChangeDetectorRef);
+  #sdLazyPageLoader = inject(SdLazyPageLoaderProvider);
 
-  public async ngOnInit(): Promise<void> {
+  async ngOnInit() {
     this.busyCount++;
 
-    await this._toast.try(async () => {
-      const page = await this._lazyPage.loadAsync(["home"].concat(this.code).join("."));
+    await this.#sdToast.try(async () => {
+      const page = await this.#sdLazyPageLoader.loadAsync(this.code);
 
       this.componentType = page.component;
       this.moduleFactory = page.moduleFactory;
     });
     this.busyCount--;
-    this._cdr.markForCheck();
+    this.#cdr.markForCheck();
   }
 }

@@ -10,77 +10,77 @@ import {TDbConnOptions} from "@simplysm/sd-service-common";
 import {SdServiceClient} from "../../SdServiceClient";
 
 export class SdServiceDbContextExecutor implements IDbContextExecutor {
-  private _connId?: number;
+  #connId?: number;
 
-  public constructor(private readonly _client: SdServiceClient,
-                     private readonly _opt: TDbConnOptions) {
+  constructor(private readonly _client: SdServiceClient,
+              private readonly _opt: TDbConnOptions) {
   }
 
-  public async getInfoAsync(): Promise<{
+  async getInfoAsync(): Promise<{
     dialect: TDbConnectionConfig["dialect"];
     database?: string;
     schema?: string;
   }> {
-    return await this._client.sendAsync("SdOrmService", "getInfoAsync", [this._opt]);
+    return await this._client.sendAsync("SdOrmService", "getInfo", [this._opt]);
   }
 
   public async connectAsync(): Promise<void> {
-    this._connId = await this._client.sendAsync("SdOrmService", "connectAsync", [this._opt]);
+    this.#connId = await this._client.sendAsync("SdOrmService", "connect", [this._opt]);
   }
 
   public async beginTransactionAsync(isolationLevel?: ISOLATION_LEVEL): Promise<void> {
-    if (this._connId === undefined) {
+    if (this.#connId === undefined) {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
 
-    await this._client.sendAsync("SdOrmService", "beginTransactionAsync", [this._connId, isolationLevel]);
+    await this._client.sendAsync("SdOrmService", "beginTransaction", [this.#connId, isolationLevel]);
   }
 
   public async commitTransactionAsync(): Promise<void> {
-    if (this._connId === undefined) {
+    if (this.#connId === undefined) {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
 
-    await this._client.sendAsync("SdOrmService", "commitTransactionAsync", [this._connId]);
+    await this._client.sendAsync("SdOrmService", "commitTransaction", [this.#connId]);
   }
 
   public async rollbackTransactionAsync(): Promise<void> {
-    if (this._connId === undefined) {
+    if (this.#connId === undefined) {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
 
-    await this._client.sendAsync("SdOrmService", "rollbackTransactionAsync", [this._connId]);
+    await this._client.sendAsync("SdOrmService", "rollbackTransaction", [this.#connId]);
   }
 
   public async closeAsync(): Promise<void> {
-    if (this._connId === undefined) {
+    if (this.#connId === undefined) {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
 
-    await this._client.sendAsync("SdOrmService", "closeAsync", [this._connId]);
+    await this._client.sendAsync("SdOrmService", "close", [this.#connId]);
   }
 
   public async executeDefsAsync(defs: TQueryDef[], options?: (IQueryResultParseOption | undefined)[]): Promise<any[][]> {
-    if (this._connId === undefined) {
+    if (this.#connId === undefined) {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
 
-    return await this._client.sendAsync("SdOrmService", "executeDefsAsync", [this._connId, defs, options]);
+    return await this._client.sendAsync("SdOrmService", "executeDefs", [this.#connId, defs, options]);
   }
 
   public async executeAsync(queries: string[]): Promise<any[][]> {
-    if (this._connId === undefined) {
+    if (this.#connId === undefined) {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
 
-    return await this._client.sendAsync("SdOrmService", "executeAsync", [this._connId, queries]);
+    return await this._client.sendAsync("SdOrmService", "execute", [this.#connId, queries]);
   }
 
   public async bulkInsertAsync(tableName: string, columnDefs: IQueryColumnDef[], records: Record<string, any>[]): Promise<void> {
-    if (this._connId === undefined) {
+    if (this.#connId === undefined) {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
 
-    return await this._client.sendAsync("SdOrmService", "bulkInsertAsync", [this._connId, tableName, columnDefs, records]);
+    return await this._client.sendAsync("SdOrmService", "bulkInsert", [this.#connId, tableName, columnDefs, records]);
   }
 }

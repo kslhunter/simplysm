@@ -1,39 +1,41 @@
 import {
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   ContentChild,
+  ContentChildren,
   DoCheck,
   ElementRef,
   EventEmitter,
   HostBinding,
-  HostListener,
+  inject,
+  Injector,
   Input,
   Output,
+  QueryList,
   TemplateRef,
   ViewChild
 } from "@angular/core";
 import {SdSelectItemControl} from "./SdSelectItemControl";
-import {ObjectUtil, Uuid} from "@simplysm/sd-core-common";
-import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
-import {SdInputValidate} from "../../utils/SdInputValidate";
 import {SdDropdownControl} from "../dropdown/SdDropdownControl";
 import {faCaretDown} from "@fortawesome/pro-duotone-svg-icons/faCaretDown";
+import {SdItemOfTemplateContext, SdItemOfTemplateDirective} from "../../directives/SdItemOfTemplateDirective";
+import {coercionBoolean, getSdFnCheckData, TSdFnInfo} from "../../utils/commons";
+import {SdNgHelper} from "../../utils/SdNgHelper";
 
 @Component({
   selector: "sd-select",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <sd-dropdown #dropdown [disabled]="disabled" (open)="open.emit()"
+    <sd-dropdown #dropdown [disabled]="disabled"
                  [contentClass]="contentClass"
                  [contentStyle]="contentStyle">
-      <div [innerHTML]="contentSafeInnerHTML"></div>
+      <div #contentEl></div>
       <div class="_invalid-indicator"></div>
       <div class="_icon">
-        <fa-icon [icon]="icons.fadCaretDown" [fixedWidth]="true"></fa-icon>
+        <sd-icon [icon]="faCaretDown" fixedWidth/>
       </div>
 
-      <sd-dropdown-popup #dropdownPopup (keydown)="onPopupKeydown($event)">
+      <sd-dropdown-popup #dropdownPopup (keydown.outside)="onPopupKeydownOutside($event)">
         <ng-container *ngIf="!items">
           <sd-dock-container>
             <sd-dock class="bdb bdb-trans-default p-sm-default"
@@ -68,17 +70,17 @@ import {faCaretDown} from "@fortawesome/pro-duotone-svg-icons/faCaretDown";
 
             <sd-pane>
               <ng-template [ngTemplateOutlet]="beforeTemplateRef"></ng-template>
-              <ng-template #rowOfList let-items="items" let-depth="depth">
-                <ng-container *ngFor="let item of items; let index = index; trackBy: trackByItemFn">
+              <ng-template #rowOfList [typed]="rowOfListType" let-items="items" let-depth="depth">
+                <ng-container *ngFor="let item of items; let index = index; trackBy: trackByFn[0]">
                   <div class="_sd-select-item">
                     <ng-template [ngTemplateOutlet]="itemTemplateRef"
                                  [ngTemplateOutletContext]="{item: item, index: index, depth: depth}"></ng-template>
 
                     <ng-container
-                      *ngIf="getChildrenFn && getChildrenFn(index, item, depth) && getChildrenFn!(index, item, depth).length > 0">
+                      *ngIf="getChildrenFn?.[0] && getChildrenFn![0](index, item, depth) && getChildrenFn![0](index, item, depth).length > 0">
                       <div class="_children">
                         <ng-template [ngTemplateOutlet]="rowOfList"
-                                     [ngTemplateOutletContext]="{items: getChildrenFn(index, item, depth), depth: depth + 1}"></ng-template>
+                                     [ngTemplateOutletContext]="{items: getChildrenFn![0](index, item, depth), depth: depth + 1}"></ng-template>
                       </div>
                     </ng-container>
                   </div>
@@ -102,6 +104,7 @@ import {faCaretDown} from "@fortawesome/pro-duotone-svg-icons/faCaretDown";
       ::ng-deep > sd-dropdown > div {
         @include form-control-base();
 
+        position: relative;
         background: var(--theme-secondary-lightest);
         display: block;
         overflow: visible;
@@ -240,190 +243,140 @@ import {faCaretDown} from "@fortawesome/pro-duotone-svg-icons/faCaretDown";
     }
   `]
 })
-export class SdSelectControl implements DoCheck {
-  public icons = {
-    fadCaretDown: faCaretDown
-  };
-
-  public guid = Uuid.new().toString();
-
+export class SdSelectControl<T> implements DoCheck {
   @Input()
-  public value: any | any[] | undefined;
+  value!: any | any[];
 
   @Output()
-  public readonly valueChange = new EventEmitter<any | any[]>();
+  valueChange = new EventEmitter<any | any[]>();
 
-  @Input()
-  @SdInputValidate(Boolean)
-  public required?: boolean;
+  @Input({transform: coercionBoolean})
+  required = false;
 
-  @Input()
+  @Input({transform: coercionBoolean})
   @HostBinding("attr.sd-disabled")
-  @SdInputValidate(Boolean)
-  public disabled?: boolean;
+  disabled = false;
 
   @Input()
-  @SdInputValidate(String)
-  public keyProp: string | undefined;
+  keyProp?: string;
 
   @ViewChild("dropdown", {static: true})
-  public dropdownControl?: SdDropdownControl;
+  dropdownControl?: SdDropdownControl;
 
   @ViewChild("dropdownPopup", {static: true, read: ElementRef})
-  public dropdownPopupElRef?: ElementRef<HTMLElement>;
+  dropdownPopupElRef?: ElementRef<HTMLElement>;
 
-  @ContentChild("item", {static: true})
-  public itemTemplateRef?: TemplateRef<any>; // TODO: TemplateDirective로
+  @ContentChild(SdItemOfTemplateDirective, {static: true, read: TemplateRef})
+  itemTemplateRef: TemplateRef<SdItemOfTemplateContext<any>> | null = null;
 
   @ContentChild("header", {static: true})
-  public headerTemplateRef?: TemplateRef<void>;
+  headerTemplateRef: TemplateRef<void> | null = null;
 
   @ContentChild("before", {static: true})
-  public beforeTemplateRef?: TemplateRef<void>;
+  beforeTemplateRef: TemplateRef<void> | null = null;
+
+  @ContentChildren(SdSelectItemControl)
+  itemControls?: QueryList<SdSelectItemControl<T>>;
 
   @Input()
-  @SdInputValidate(Array)
-  public items?: any[];
+  items?: T[];
 
   @Input()
-  @SdInputValidate(Function)
-  public trackByFn?: (index: number, item: any) => any;
+  trackByFn: TSdFnInfo<(index: number, item: T) => any> = [(index, item) => item];
 
   @Input()
-  @SdInputValidate(Function)
-  public getChildrenFn?: (index: number, item: any, depth: number) => any;
+  getChildrenFn?: TSdFnInfo<(index: number, item: T, depth: number) => T[]>;
 
-  @Output()
-  public readonly open = new EventEmitter();
-
-  @Input()
-  @SdInputValidate(Boolean)
+  @Input({transform: coercionBoolean})
   @HostBinding("attr.sd-inline")
-  public inline?: boolean;
+  inline = false;
 
-  @Input()
-  @SdInputValidate(Boolean)
+  @Input({transform: coercionBoolean})
   @HostBinding("attr.sd-inset")
-  public inset?: boolean;
+  inset = false;
 
   @Input()
-  @SdInputValidate({
-    type: String,
-    includes: ["sm", "lg"]
-  })
   @HostBinding("attr.sd-size")
-  public size?: "sm" | "lg";
+  size?: "sm" | "lg";
 
   @Input()
-  @SdInputValidate({type: String, includes: ["single", "multi"], notnull: true})
-  public selectMode: "single" | "multi" = "single";
+  selectMode: "single" | "multi" = "single";
 
   @Input()
-  @SdInputValidate(String)
-  public contentClass?: string;
+  contentClass?: string;
 
   @Input()
-  @SdInputValidate(String)
-  public contentStyle?: string;
+  contentStyle?: string;
 
   @Input()
-  @SdInputValidate({type: String, includes: ["vertical", "horizontal"]})
-  public multiSelectionDisplayDirection?: "vertical" | "horizontal";
+  multiSelectionDisplayDirection?: "vertical" | "horizontal";
+
+  @Input({transform: coercionBoolean})
+  hideSelectAll = false;
 
   @Input()
-  @SdInputValidate(Boolean)
-  public hideSelectAll?: boolean;
-
-  @Input()
-  @SdInputValidate(String)
-  public placeholder?: string;
+  placeholder?: string;
 
   @HostBinding("attr.sd-invalid")
   public get invalid(): boolean {
-    return this.required === true && this.value === undefined;
+    return this.required && this.value === undefined;
   }
 
-  public trackByItemFn = (index: number, item: any): any => this.trackByFn?.(index, item) ?? item;
+  @ViewChild("contentEl", {static: true})
+  contentElRef!: ElementRef<HTMLElement>;
 
-  public itemControls: SdSelectItemControl[] = [];
+  #sdNgHelper = new SdNgHelper(inject(Injector));
 
-  public constructor(private readonly _domSanitizer: DomSanitizer,
-                     private readonly _cdr: ChangeDetectorRef) {
-  }
+  ngDoCheck() {
+    this.#sdNgHelper.doCheckOutside(run => {
+      run({
+        itemControls: [this.itemControls, "one"],
+        selectMode: [this.selectMode],
+        keyProp: [this.keyProp],
+        value: [this.value],
+        multiSelectionDisplayDirection: [this.multiSelectionDisplayDirection],
+        placeholder: [this.placeholder],
+        ...getSdFnCheckData("getChildrenFn", this.getChildrenFn)
+      }, () => {
+        if (!this.itemControls) {
+          this.contentElRef.nativeElement.innerHTML = `<span class='sd-text-color-grey-default'>${this.placeholder}</span>`;
+          return;
+        }
 
-  private _prevItems: any[] | undefined;
-  private _prevValue: any | any[] | undefined;
+        const selectedItemControls = this.itemControls.filter((itemControl) => this.getIsSelectedItemControl(itemControl));
+        const selectedItemEls = selectedItemControls.map((item) => item.elRef.nativeElement);
+        const innerHTML = selectedItemEls
+          .map((el) => {
+            if (this.getChildrenFn?.[0]) {
+              let cursorEl: HTMLElement | undefined = el;
+              let resultHTML = "";
+              while (true) {
+                if (!cursorEl) break;
 
-  public ngDoCheck(): void {
-    if (!ObjectUtil.equal(this._prevItems, this.items)) {
-      this._cdr.markForCheck();
-      this._prevItems = ObjectUtil.clone(this.items);
-      for (const itemControl of this.itemControls) {
-        itemControl.markForCheck();
-      }
-    }
-    if (!ObjectUtil.equal(this._prevValue, this.value)) {
-      this._cdr.markForCheck();
-      this._prevValue = ObjectUtil.clone(this.value);
-      for (const itemControl of this.itemControls) {
-        itemControl.markForCheck();
-      }
-    }
-  }
+                resultHTML = (cursorEl.findFirst("> ._content")?.innerHTML ?? "") + (resultHTML ? " / " + resultHTML : "");
+                cursorEl = cursorEl.findParent("._children")?.parentElement?.findFirst("sd-select-item");
+              }
 
-  public get contentSafeInnerHTML(): SafeHtml {
-    const selectedItemControls = this.itemControls.filter((itemControl) => this.getIsSelectedItemControl(itemControl));
-    const selectedItemEls = selectedItemControls.map((item) => item.el);
-    const innerHTML = selectedItemEls
-      .map((el) => {
-        if (this.getChildrenFn) {
-          let cursorEl: HTMLElement | undefined = el;
-          let resultHTML = "";
-          while (true) {
-            if (!cursorEl) break;
+              return resultHTML;
+            }
+            else {
+              return el.findFirst("> ._content")?.innerHTML ?? "";
+            }
+          })
+          .map((item) => `<div style="display: inline-block">${item}</div>`)
+          .join(this.multiSelectionDisplayDirection === "vertical" ? "<div class='p-sm-0'></div>" : ", ");
 
-            resultHTML = (cursorEl.findFirst("> ._content")?.innerHTML ?? "") + (resultHTML ? " / " + resultHTML : "");
-            cursorEl = cursorEl.findParent("._children")?.parentElement?.findFirst("sd-select-item");
-          }
-
-          return resultHTML;
+        if (innerHTML === "" && this.placeholder !== undefined) {
+          this.contentElRef.nativeElement.innerHTML = `<span class='sd-text-color-grey-default'>${this.placeholder}</span>`;
         }
         else {
-          return el.findFirst("> ._content")?.innerHTML ?? "";
+          this.contentElRef.nativeElement.innerHTML = innerHTML;
         }
-      })
-      .map((item) => `<div style="display: inline-block">${item}</div>`)
-      .join(this.multiSelectionDisplayDirection === "vertical" ? "<div class='p-sm-0'></div>" : ", ");
-
-    if (innerHTML === "" && this.placeholder !== undefined) {
-      return this._domSanitizer.bypassSecurityTrustHtml(`<span class='sd-text-color-grey-default'>${this.placeholder}</span>`);
-    }
-    else {
-      return this._domSanitizer.bypassSecurityTrustHtml(innerHTML);
-    }
+      });
+    });
   }
 
-  @HostListener("keydown", ["$event"])
-  public onKeydown(event: KeyboardEvent): void {
-    if (!event.ctrlKey && !event.altKey && event.key === "ArrowDown") {
-      event.preventDefault();
-      event.stopPropagation();
-
-      if (this.dropdownPopupElRef) {
-        this.dropdownPopupElRef.nativeElement.findFocusableFirst()?.focus();
-      }
-    }
-    else if (!event.ctrlKey && !event.altKey && event.key === "Escape") {
-      event.preventDefault();
-      event.stopPropagation();
-
-      if (this.dropdownControl) {
-        this.dropdownControl.closePopup();
-      }
-    }
-  }
-
-  public onPopupKeydown(event: KeyboardEvent): void {
+  onPopupKeydownOutside(event: KeyboardEvent) {
     if (
       !event.ctrlKey && !event.altKey && (
         event.key === "ArrowDown"
@@ -439,8 +392,8 @@ export class SdSelectControl implements DoCheck {
 
         if (event.key === "ArrowUp") {
           if (currIndex === 0) {
-            if (this.dropdownControl?.controlEl) {
-              this.dropdownControl.controlEl.focus();
+            if (this.dropdownControl?.contentElRef?.nativeElement) {
+              this.dropdownControl.contentElRef.nativeElement.focus();
             }
           }
           else {
@@ -454,47 +407,36 @@ export class SdSelectControl implements DoCheck {
         }
       }
     }
-    else if (!event.ctrlKey && !event.altKey && event.key === "Escape") {
-      event.preventDefault();
-      event.stopPropagation();
-
-      if (this.dropdownControl) {
-        this.dropdownControl.closePopup();
-
-        if (this.dropdownControl.controlEl) {
-          this.dropdownControl.controlEl.focus();
-        }
-      }
-    }
   }
 
-  public getIsSelectedItemControl(itemControl: SdSelectItemControl): boolean {
+  getIsSelectedItemControl(itemControl: SdSelectItemControl<T>): boolean {
     if (this.selectMode === "multi") {
-      const itemKeyValues = this.keyProp !== undefined && this.value !== undefined ? this.value.map((item) => item[this.keyProp!]) : this.value;
-      const valKeyValue = this.keyProp !== undefined && itemControl.value !== undefined ? itemControl.value[this.keyProp] : itemControl.value;
+      const itemKeyValues = this.keyProp != null && this.value instanceof Array ? this.value.map((item) => item[this.keyProp!]) : (this.value as T[]);
+      const valKeyValue = this.keyProp != null && itemControl.value != null ? itemControl.value[this.keyProp] : itemControl.value;
       return itemKeyValues?.includes(valKeyValue) ?? false;
     }
     else {
-      const itemKeyValue = this.keyProp !== undefined && this.value !== undefined ? this.value[this.keyProp] : this.value;
-      const valKeyValue = this.keyProp !== undefined && itemControl.value !== undefined ? itemControl.value[this.keyProp] : itemControl.value;
+      const itemKeyValue = this.keyProp != null && this.value != null ? this.value[this.keyProp] : this.value;
+      const valKeyValue = this.keyProp != null && itemControl.value != null ? itemControl.value[this.keyProp] : itemControl.value;
       return itemKeyValue === valKeyValue;
     }
   }
 
-  public onItemControlClick(itemControl: SdSelectItemControl, noClose?: boolean): void {
+  onItemControlClick(itemControl: SdSelectItemControl<T>, close: boolean) {
     if (this.selectMode === "multi") {
-      const value = [...(this.value ?? [])];
-      if (value.includes(itemControl.value)) {
-        value.remove(itemControl.value);
+      const currValue = [...(this.value as T[] | undefined) ?? []];
+      if (currValue.includes(itemControl.value)) {
+        currValue.remove(itemControl.value);
       }
       else {
-        value.push(itemControl.value);
+        currValue.push(itemControl.value);
       }
+
       if (this.valueChange.observed) {
-        this.valueChange.emit(value);
+        this.valueChange.emit(itemControl.value);
       }
       else {
-        this.value = value;
+        this.value = itemControl.value;
       }
     }
     else {
@@ -506,42 +448,16 @@ export class SdSelectControl implements DoCheck {
           this.value = itemControl.value;
         }
       }
-
-      if (this.dropdownControl && !noClose) {
-        this.dropdownControl.closePopup();
-
-        if (this.dropdownControl.controlEl) {
-          this.dropdownControl.controlEl.focus();
-        }
-      }
     }
-    this._cdr.markForCheck();
-  }
 
-  public onItemControlInit(itemControl: SdSelectItemControl): void {
-    if (!this.itemControls.includes(itemControl)) {
-      this.itemControls.push(itemControl);
-
-      if (this.getIsSelectedItemControl(itemControl) || this.getChildrenFn) {
-        this._cdr.detectChanges();
-      }
+    if (this.dropdownControl && close) {
+      this.dropdownControl.open = false;
     }
   }
 
-  public onItemControlDestroy(itemControl: SdSelectItemControl): void {
-    if (this.itemControls.includes(itemControl)) {
-      this.itemControls.remove(itemControl);
-      this._cdr.markForCheck();
-    }
-  }
+  onSelectAllButtonClick(check: boolean) {
+    if (!this.itemControls) return;
 
-  public onItemControlContentChanged(itemControl: SdSelectItemControl): void {
-    if (this.getIsSelectedItemControl(itemControl) || this.getChildrenFn) {
-      this._cdr.detectChanges();
-    }
-  }
-
-  public onSelectAllButtonClick(check: boolean): void {
     const value = check ? this.itemControls.map((item) => item.value) : [];
 
     if (this.valueChange.observed) {
@@ -550,8 +466,12 @@ export class SdSelectControl implements DoCheck {
     else {
       this.value = value;
     }
-    for (const itemControl of this.itemControls) {
-      itemControl.markForCheck();
-    }
   }
+
+  protected readonly rowOfListType!: {
+    items: T[];
+    depth: number;
+  };
+
+  protected readonly faCaretDown = faCaretDown;
 }

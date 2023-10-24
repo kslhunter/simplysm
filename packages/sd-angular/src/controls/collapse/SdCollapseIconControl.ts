@@ -1,12 +1,13 @@
 import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
-import {SdInputValidate} from "../../utils/SdInputValidate";
 import {IconProp} from "@fortawesome/fontawesome-svg-core";
+import {NumberUtil} from "@simplysm/sd-core-common";
+import {coercionBoolean} from "../../utils/commons";
 
 @Component({
   selector: "sd-collapse-icon",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <fa-icon class="_icon" [icon]="icon" [fixedWidth]="true"></fa-icon>`,
+    <sd-icon class="_icon" [icon]="icon" fixedWidth/>`,
   styles: [/* language=SCSS */ `
     :host {
       display: inline-block;
@@ -28,19 +29,14 @@ import {IconProp} from "@fortawesome/fontawesome-svg-core";
   `]
 })
 export class SdCollapseIconControl {
-  @Input()
-  @SdInputValidate(Boolean)
+  @Input({transform: coercionBoolean})
   @HostBinding("attr.sd-open")
-  public open?: boolean;
+  open = false;
 
-  @Input()
-  public icon?: IconProp;
+  @Input({required: true})
+  icon!: IconProp;
 
-  @Input()
-  @SdInputValidate({
-    type: Number,
-    includes: [90, 180]
-  })
+  @Input({transform: (val: "180" | "90" | 180 | 90) => NumberUtil.parseInt(val)})
   @HostBinding("attr.sd-open-rotate")
   public openRotate: 180 | 90 = 90;
 }

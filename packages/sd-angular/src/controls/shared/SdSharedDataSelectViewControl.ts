@@ -1,10 +1,11 @@
 import {
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   ContentChild,
   DoCheck,
   EventEmitter,
+  inject,
+  Injector,
   Input,
   Output,
   TemplateRef
@@ -12,10 +13,10 @@ import {
 import {StringUtil} from "@simplysm/sd-core-common";
 import {IconProp} from "@fortawesome/fontawesome-svg-core";
 import {ISharedDataBase} from "../../providers/SdSharedDataProvider";
-import {SdInputValidate} from "../../utils/SdInputValidate";
-import {SdSharedDataItemTemplateContext, SdSharedDataItemTemplateDirective} from "./SdSharedDataItemTemplateDirective";
 import {ISdSheetColumnOrderingVM} from "../sheet/SdSheetControl";
-import {SdDoCheckHelper} from "../../utils/SdDoCheckHelper";
+import {coercionBoolean, getSdFnCheckData, TSdFnInfo} from "../../utils/commons";
+import {SdItemOfTemplateContext, SdItemOfTemplateDirective} from "../../directives/SdItemOfTemplateDirective";
+import {SdNgHelper} from "../../utils/SdNgHelper";
 
 @Component({
   selector: "sd-shared-data-select-view",
@@ -29,7 +30,7 @@ import {SdDoCheckHelper} from "../../utils/SdDoCheckHelper";
           </sd-dock>
         </ng-container>
         <sd-dock class="p-default">
-          <sd-textfield placeholder="검색어" [(value)]="searchText"></sd-textfield>
+          <sd-textfield type="text" placeholder="검색어" [(value)]="searchText"></sd-textfield>
         </sd-dock>
 
         <sd-pane>
@@ -45,7 +46,7 @@ import {SdDoCheckHelper} from "../../utils/SdDoCheckHelper";
                           (click)="selectedItem === item ? onSelectedItemChange(undefined) : onSelectedItemChange(item)"
                           [selectedIcon]="selectedIcon">
               <ng-template [ngTemplateOutlet]="itemTemplateRef"
-                           [ngTemplateOutletContext]="{$implicit: item, item: item, index: index}"></ng-template>
+                           [ngTemplateOutletContext]="{item: item, index: index, depth: 0}"></ng-template>
             </sd-list-item>
           </sd-list>
         </sd-pane>
@@ -53,6 +54,9 @@ import {SdDoCheckHelper} from "../../utils/SdDoCheckHelper";
     </sd-busy-container>`
 })
 export class SdSharedDataSelectViewControl<T extends ISharedDataBase<string | number>> implements DoCheck {
+  @Input({required: true})
+  items: T[] = [];
+
   @Input()
   selectedIcon?: IconProp;
 
@@ -62,22 +66,17 @@ export class SdSharedDataSelectViewControl<T extends ISharedDataBase<string | nu
   @Output()
   readonly selectedItemChange = new EventEmitter<T>();
 
-  @Input()
-  @SdInputValidate(Boolean)
-  useUndefined?: boolean;
+  @Input({transform: coercionBoolean})
+  useUndefined = false;
 
   @Input()
-  @SdInputValidate(Function)
-  filterFn?: (index: number, item: T) => boolean;
+  filterFn?: TSdFnInfo<(index: number, item: T) => boolean>;
 
   @ContentChild("headerTemplate", {static: true})
   headerTemplateRef?: TemplateRef<void>;
 
-  @ContentChild(SdSharedDataItemTemplateDirective, {static: true, read: TemplateRef})
-  itemTemplateRef?: TemplateRef<SdSharedDataItemTemplateContext<T>>;
-
-  @Input()
-  items?: T[];
+  @ContentChild(SdItemOfTemplateDirective, {static: true, read: TemplateRef})
+  itemTemplateRef: TemplateRef<SdItemOfTemplateContext<T>> | null = null;
 
   busyCount = 0;
 
@@ -86,42 +85,47 @@ export class SdSharedDataSelectViewControl<T extends ISharedDataBase<string | nu
   searchText?: string;
   ordering: ISdSheetColumnOrderingVM[] = [];
 
-  get filteredItems(): any[] {
-    if (!this.items) return [];
+  filteredItems: any[] = [];
 
-    let result = this.items.filter((item) => !item.__isHidden);
-
-    if (!StringUtil.isNullOrEmpty(this.searchText)) {
-      result = result.filter((item) => item.__searchText.includes(this.searchText!));
-    }
-
-    if (this.filterFn) {
-      result = result.filter((item, i) => this.filterFn!(i, item));
-    }
-
-    for (const orderingItem of this.ordering.reverse()) {
-      if (orderingItem.desc) {
-        result = result.orderByDesc((item) => item[orderingItem.key]);
-      }
-      else {
-        result = result.orderBy((item) => item[orderingItem.key]);
-      }
-    }
-
-    return result;
-  }
-
-  constructor(private readonly _cdr: ChangeDetectorRef) {
-  }
+  #sdNgHelper = new SdNgHelper(inject(Injector));
 
   ngDoCheck(): void {
-    SdDoCheckHelper.use($ => {
+    this.#sdNgHelper.doCheck(run => {
 
-      $.run({value: [this.items, "one"]}, () => {
+      run({
+        items: [this.items, "all"]
+      }, () => {
         this.selectedItem = this.items?.single((item) => item.__valueKey === this.selectedItem?.__valueKey);
       });
 
-    }, this._cdr);
+      run({
+        items: [this.items, "all"],
+        searchText: [this.searchText],
+        ...getSdFnCheckData("filterFn", this.filterFn),
+        ordering: [this.ordering, "all"]
+      }, () => {
+        let result = this.items.filter((item) => !item.__isHidden);
+
+        if (!StringUtil.isNullOrEmpty(this.searchText)) {
+          result = result.filter((item) => item.__searchText.includes(this.searchText!));
+        }
+
+        if (this.filterFn?.[0]) {
+          result = result.filter((item, i) => this.filterFn![0](i, item));
+        }
+
+        for (const orderingItem of this.ordering.reverse()) {
+          if (orderingItem.desc) {
+            result = result.orderByDesc((item) => item[orderingItem.key]);
+          }
+          else {
+            result = result.orderBy((item) => item[orderingItem.key]);
+          }
+        }
+
+        this.filteredItems = result;
+      });
+    });
   }
 
   onSelectedItemChange(item: T | undefined) {

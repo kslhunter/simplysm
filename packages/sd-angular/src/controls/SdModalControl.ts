@@ -1,28 +1,29 @@
 import {
-  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
+  DoCheck,
   ElementRef,
   EventEmitter,
   HostBinding,
   HostListener,
+  inject,
+  Injector,
   Input,
-  NgZone,
-  OnChanges,
-  OnInit,
   Output,
-  SimpleChanges
+  ViewChild
 } from "@angular/core";
-import {NeverEntryError} from "@simplysm/sd-core-common";
-import {SdInputValidate} from "../utils/SdInputValidate";
-import {faXmark} from "@fortawesome/pro-solid-svg-icons/faXmark";
+import {NumberUtil} from "@simplysm/sd-core-common";
 import {SdDockingModule} from "./dock/SdDockingModule";
 import {SdAnchorControl} from "./SdAnchorControl";
-import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
 import {SdPaneControl} from "./SdPaneControl";
 import {SdSystemConfigProvider} from "../providers/SdSystemConfigProvider";
 import {CommonModule} from "@angular/common";
-import {SdResizeDirective} from "../directives/SdResizeDirective";
+import {SdIconControl} from "./SdIconControl";
+import {faXmark} from "@fortawesome/pro-solid-svg-icons/faXmark";
+import {coercionBoolean, coercionNumber} from "../utils/commons";
+import {SdNgHelper} from "../utils/SdNgHelper";
+import {ISdResizeEvent} from "../plugins/SdResizeEventPlugin";
+import {SdEventDirectiveModule} from "../directives/SdEventDirectiveModule";
 
 @Component({
   selector: "sd-modal",
@@ -32,24 +33,25 @@ import {SdResizeDirective} from "../directives/SdResizeDirective";
     CommonModule,
     SdDockingModule,
     SdAnchorControl,
-    FontAwesomeModule,
     SdPaneControl,
-    SdResizeDirective
+    SdIconControl,
+    SdEventDirectiveModule
   ],
   template: `
     <div class="_backdrop" (click)="onBackdropClick()"></div>
-    <div class="_dialog" tabindex="0"
+    <div #dialogEl
+         class="_dialog" tabindex="0"
          (keydown.escape)="onDialogEscapeKeydown()"
          [style.width.px]="(minWidthPx && (minWidthPx > (widthPx || 0))) ? minWidthPx : widthPx"
          [style.height.px]="(minHeightPx && (minHeightPx > (heightPx || 0))) ? minHeightPx : heightPx"
-         (sdResize)="onResize()">
+         (focus.outside)="onDialogFocusOutside()">
       <sd-dock-container>
-        <sd-dock class="_header" (mousedown)="onHeaderMouseDown($event)"
+        <sd-dock class="_header" (mousedown.outside)="onHeaderMouseDownOutside($event)"
                  *ngIf="!hideHeader">
           <sd-anchor class="_close-button"
                      (click)="onCloseButtonClick()"
                      *ngIf="!hideCloseButton">
-            <fa-icon [icon]="icons.fasXmark" [fixedWidth]="true"></fa-icon>
+            <sd-icon [icon]="faXmark" fixedWidth/>
           </sd-anchor>
           <h5 class="_title">{{ title }}</h5>
         </sd-dock>
@@ -60,14 +62,16 @@ import {SdResizeDirective} from "../directives/SdResizeDirective";
       </sd-dock-container>
 
       <ng-container *ngIf="resizable">
-        <div class="_left-resize-bar" (mousedown)="onResizeBarMousedown($event, 'left')"></div>
-        <div class="_right-resize-bar" (mousedown)="onResizeBarMousedown($event, 'right')"></div>
-        <div class="_top-resize-bar" (mousedown)="onResizeBarMousedown($event, 'top')"></div>
-        <div class="_top-right-resize-bar" (mousedown)="onResizeBarMousedown($event, 'top-right')"></div>
-        <div class="_top-left-resize-bar" (mousedown)="onResizeBarMousedown($event, 'top-left')"></div>
-        <div class="_bottom-resize-bar" (mousedown)="onResizeBarMousedown($event, 'bottom')"></div>
-        <div class="_bottom-right-resize-bar" (mousedown)="onResizeBarMousedown($event, 'bottom-right')"></div>
-        <div class="_bottom-left-resize-bar" (mousedown)="onResizeBarMousedown($event, 'bottom-left')"></div>
+        <div class="_left-resize-bar" (mousedown.outside)="onResizeBarMousedownOutside($event, 'left')"></div>
+        <div class="_right-resize-bar" (mousedown.outside)="onResizeBarMousedownOutside($event, 'right')"></div>
+        <div class="_top-resize-bar" (mousedown.outside)="onResizeBarMousedownOutside($event, 'top')"></div>
+        <div class="_top-right-resize-bar" (mousedown.outside)="onResizeBarMousedownOutside($event, 'top-right')"></div>
+        <div class="_top-left-resize-bar" (mousedown.outside)="onResizeBarMousedownOutside($event, 'top-left')"></div>
+        <div class="_bottom-resize-bar" (mousedown.outside)="onResizeBarMousedownOutside($event, 'bottom')"></div>
+        <div class="_bottom-right-resize-bar"
+             (mousedown.outside)="onResizeBarMousedownOutside($event, 'bottom-right')"></div>
+        <div class="_bottom-left-resize-bar"
+             (mousedown.outside)="onResizeBarMousedownOutside($event, 'bottom-left')"></div>
       </ng-container>
     </div>`,
   styles: [/* language=SCSS */ `
@@ -99,7 +103,7 @@ import {SdResizeDirective} from "../directives/SdResizeDirective";
         width: fit-content;
         min-width: 240px;
         background: white;
-        border: 1px solid var(--theme-primary-darker);
+        //border: 1px solid var(--theme-primary-darker);
         // border-radius:2 px;
         overflow: hidden;
         @include elevation(16);
@@ -110,7 +114,7 @@ import {SdResizeDirective} from "../directives/SdResizeDirective";
           outline: none;
         }
 
-        ::ng-deep > sd-dock-container > ._content {
+        ::ng-deep > sd-dock-container {
           > ._header {
             user-select: none;
 
@@ -289,7 +293,7 @@ import {SdResizeDirective} from "../directives/SdResizeDirective";
 
           border: none;
 
-          > sd-dock-container > ._content > ._header {
+          > sd-dock-container > ._header {
             background: transparent;
             color: var(--text-trans-lighter);
 
@@ -308,167 +312,135 @@ import {SdResizeDirective} from "../directives/SdResizeDirective";
     }
   `]
 })
-export class SdModalControl implements OnInit, AfterViewInit, OnChanges {
-  public icons = {
-    fasXmark: faXmark
-  };
+export class SdModalControl implements DoCheck {
+  @Input()
+  key?: string;
 
   @Input()
-  @SdInputValidate(String)
-  public key?: string;
+  title = "창";
 
-  @Input()
-  @SdInputValidate({type: String, notnull: true})
-  public title = "창";
+  @Input({transform: coercionBoolean})
+  hideHeader = false;
 
-  @Input()
-  @SdInputValidate(Boolean)
-  public hideHeader?: boolean;
+  @Input({transform: coercionBoolean})
+  hideCloseButton = false;
 
-  @Input()
-  @SdInputValidate(Boolean)
-  public hideCloseButton?: boolean;
+  @Input({transform: coercionBoolean})
+  useCloseByBackdrop = false;
 
-  @Input()
-  @SdInputValidate(Boolean)
-  public useCloseByBackdrop?: boolean;
+  @Input({transform: coercionBoolean})
+  useCloseByEscapeKey = false;
 
-  @Input()
-  @SdInputValidate(Boolean)
-  public useCloseByEscapeKey?: boolean;
-
-  @Input()
-  @SdInputValidate(Boolean)
+  @Input({transform: coercionBoolean})
   @HostBinding("attr.sd-open")
-  public open?: boolean;
+  open = false;
 
-  @Input()
-  @SdInputValidate(Boolean)
-  public resizable = false;
+  @Input({transform: coercionBoolean})
+  resizable = false;
 
   @Output()
-  public readonly openChange = new EventEmitter<boolean>();
+  openChange = new EventEmitter<boolean>();
 
-  @Input()
-  @SdInputValidate(Boolean)
+  @Input({transform: coercionBoolean})
   @HostBinding("attr.sd-float")
-  public float?: boolean;
+  float = false;
+
+  @Input({transform: coercionNumber})
+  heightPx?: number;
+
+  @Input({transform: coercionNumber})
+  widthPx?: number;
+
+  @Input({transform: coercionNumber})
+  minHeightPx?: number;
+
+  @Input({transform: coercionNumber})
+  minWidthPx?: number;
 
   @Input()
-  @SdInputValidate(Number)
-  public heightPx?: number;
-
-  @Input()
-  @SdInputValidate(Number)
-  public widthPx?: number;
-
-  @Input()
-  @SdInputValidate(Number)
-  public minHeightPx?: number;
-
-  @Input()
-  @SdInputValidate(Number)
-  public minWidthPx?: number;
-
-  @Input()
-  @SdInputValidate({
-    type: String,
-    includes: ["bottom-right", "top-right"]
-  })
   @HostBinding("attr.sd-position")
-  public position?: "bottom-right" | "top-right";
+  position?: "bottom-right" | "top-right";
 
-  private _config?: ISdModalConfigVM;
+  #elRef: ElementRef<HTMLElement> = inject(ElementRef);
+  #sdSystemConfig = inject(SdSystemConfigProvider);
 
-  private readonly _el: HTMLElement;
-  private _dialogEl?: HTMLElement;
-  private _dialogHeaderEl?: HTMLElement;
+  #config?: ISdModalConfigVM;
 
-  public initialized = false;
+  @ViewChild("dialogEl", {static: true})
+  dialogElRef!: ElementRef<HTMLElement>;
 
-  public constructor(private readonly _elRef: ElementRef,
-                     private readonly _zone: NgZone,
-                     private readonly _systemConfig: SdSystemConfigProvider) {
-    this._el = this._elRef.nativeElement;
-  }
+  #sdNgHelper = new SdNgHelper(inject(Injector));
 
-  public ngOnInit(): void {
-    this._dialogEl = this._el.findFirst("> ._dialog")!;
-    this._dialogHeaderEl = this._dialogEl.findFirst("._header")!;
-
-    this._zone.runOutsideAngular(() => {
-      if (!this._dialogEl) throw new NeverEntryError();
-
-      this._dialogEl.addEventListener("focus", () => {
-        const maxZIndex = document.body.findAll("sd-modal").max((el) => Number(getComputedStyle(el).zIndex));
-        if (maxZIndex !== undefined) {
-          this._el.style.zIndex = (maxZIndex + 1).toString();
-        }
+  ngDoCheck(): void {
+    this.#sdNgHelper.doCheckOutside(async run => {
+      await run({
+        key: [this.key],
+      }, async () => {
+        this.#config = await this.#sdSystemConfig.getAsync(`sd-modal.${this.key}`);
       });
 
-      this._dialogHeaderEl?.addEventListener("mousedown", (event) => {
-        this.onHeaderMouseDown(event);
+      run({
+        config: [this.#config],
+        open: [this.open]
+      }, () => {
+        if (this.#config) {
+          this.dialogElRef.nativeElement.style.position = this.#config.position;
+          this.dialogElRef.nativeElement.style.left = this.#config.left;
+          this.dialogElRef.nativeElement.style.top = this.#config.top;
+          this.dialogElRef.nativeElement.style.right = this.#config.right;
+          this.dialogElRef.nativeElement.style.bottom = this.#config.bottom;
+          if (this.#config.width) {
+            this.dialogElRef.nativeElement.style.width = this.#config.width;
+          }
+          if (this.#config.height) {
+            this.dialogElRef.nativeElement.style.height = this.#config.height;
+          }
+        }
+
+        this.#elRef.nativeElement.setAttribute("sd-init", "true");
+      });
+
+      run({
+        open: [this.open]
+      }, () => {
+        if (this.open) {
+          this.dialogElRef.nativeElement.focus();
+        }
       });
     });
-
-    this.initialized = true;
   }
 
-  public onResize(): void {
-    const style = getComputedStyle(this._el);
-    if (style.paddingTop !== "") {
-      if (!this._dialogEl) throw new NeverEntryError();
+  onDialogFocusOutside() {
+    const maxZIndex = document.body.findAll("sd-modal").max((el) => Number(getComputedStyle(el).zIndex));
+    if (maxZIndex !== undefined) {
+      this.#elRef.nativeElement.style.zIndex = (maxZIndex + 1).toString();
+    }
+  }
 
-      const paddingTopMatch = (/(\d*)/).exec(style.paddingTop);
-      if (!paddingTopMatch || typeof paddingTopMatch[1] === "undefined") throw new NeverEntryError();
-      const paddingTopNum = Number.parseInt(paddingTopMatch[1], 10);
-      const paddingTop = Number.isNaN(paddingTopNum) ? 0 : paddingTopNum;
+  @HostListener("sdResize.outside", ["$event"])
+  onResizeOutside(event: ISdResizeEvent) {
+    if (event.heightChanged) {
+      const style = getComputedStyle(this.#elRef.nativeElement);
+      let paddingTop = style.paddingTop === "" ? 0 : NumberUtil.parseInt(style.paddingTop) ?? 0;
 
-      if (this._dialogEl.offsetHeight > this._el.offsetHeight - paddingTop) {
-        this._dialogEl.style.maxHeight = `calc(100% - ${paddingTop * 2}px)`;
-        this._dialogEl.style.height = `calc(100% - ${paddingTop * 2}px)`;
+      if (this.dialogElRef.nativeElement.offsetHeight > this.#elRef.nativeElement.offsetHeight - paddingTop) {
+        this.dialogElRef.nativeElement.style.maxHeight = `calc(100% - ${paddingTop * 2}px)`;
+        this.dialogElRef.nativeElement.style.height = `calc(100% - ${paddingTop * 2}px)`;
       }
     }
   }
 
-  public async ngAfterViewInit(): Promise<void> {
-    if (this.key !== undefined) {
-      this._config = await this._systemConfig.getAsync(`sd-modal.${this.key}`);
-      if (this._config) {
-        if (!this._dialogEl) throw new NeverEntryError();
-
-        this._dialogEl.style.position = this._config.position;
-        this._dialogEl.style.left = this._config.left;
-        this._dialogEl.style.top = this._config.top;
-        this._dialogEl.style.right = this._config.right;
-        this._dialogEl.style.bottom = this._config.bottom;
-        if (this._config.width) {
-          this._dialogEl.style.width = this._config.width;
-        }
-        if (this._config.height) {
-          this._dialogEl.style.height = this._config.height;
-        }
-      }
+  @HostListener("window:resize.outside")
+  onWindowResizeOutside() {
+    if (this.dialogElRef.nativeElement.offsetLeft > this.#elRef.nativeElement.offsetWidth - 100) {
+      this.dialogElRef.nativeElement.style.left = (this.#elRef.nativeElement.offsetWidth - 100) + "px";
     }
-    this._el.setAttribute("sd-init", "true");
-
-    if (this.open === true) {
-      if (!this._dialogEl) throw new NeverEntryError();
-
-      this._dialogEl.focus();
+    if (this.dialogElRef.nativeElement.offsetTop > this.#elRef.nativeElement.offsetHeight - 100) {
+      this.dialogElRef.nativeElement.style.right = (this.#elRef.nativeElement.offsetHeight - 100) + "px";
     }
   }
 
-
-  public ngOnChanges(changes: SimpleChanges): void {
-    if ("open" in changes) {
-      if (this.open === true && this._dialogEl) {
-        this._dialogEl.focus();
-      }
-    }
-  }
-
-  public onCloseButtonClick(): void {
+  onCloseButtonClick() {
     if (this.hideCloseButton) {
       return;
     }
@@ -481,7 +453,7 @@ export class SdModalControl implements OnInit, AfterViewInit, OnChanges {
     }
   }
 
-  public onBackdropClick(): void {
+  onBackdropClick() {
     if (this.hideCloseButton || !this.useCloseByBackdrop) {
       return;
     }
@@ -494,7 +466,7 @@ export class SdModalControl implements OnInit, AfterViewInit, OnChanges {
     }
   }
 
-  public onDialogEscapeKeydown(): void {
+  onDialogEscapeKeydown() {
     if (this.hideCloseButton || !this.useCloseByEscapeKey) {
       return;
     }
@@ -507,153 +479,136 @@ export class SdModalControl implements OnInit, AfterViewInit, OnChanges {
     }
   }
 
-  @HostListener("window:resize", ["$event"])
-  public onWindowResize(event: Event): void {
-    if (!this._dialogEl) throw new NeverEntryError();
-
-    if (this._dialogEl.offsetLeft > this._el.offsetWidth - 100) {
-      this._dialogEl.style.left = (this._el.offsetWidth - 100) + "px";
-    }
-    if (this._dialogEl.offsetTop > this._el.offsetHeight - 100) {
-      this._dialogEl.style.right = (this._el.offsetHeight - 100) + "px";
-    }
-  }
-
-  public onResizeBarMousedown(event: MouseEvent,
+  onResizeBarMousedownOutside(event: MouseEvent,
                               direction: "left" | "right" |
                                 "top" | "top-left" | "top-right" |
-                                "bottom" | "bottom-left" | "bottom-right"): void {
-    if (!this._dialogEl) throw new NeverEntryError();
+                                "bottom" | "bottom-left" | "bottom-right") {
+    const dialogEl = this.dialogElRef.nativeElement;
 
     const startX = event.clientX;
     const startY = event.clientY;
-    const startHeight = this._dialogEl.clientHeight;
-    const startWidth = this._dialogEl.clientWidth;
-    const startTop = this._dialogEl.offsetTop;
-    const startLeft = this._dialogEl.offsetLeft;
+    const startHeight = dialogEl.clientHeight;
+    const startWidth = dialogEl.clientWidth;
+    const startTop = dialogEl.offsetTop;
+    const startLeft = dialogEl.offsetLeft;
 
     let isDoDrag = false;
 
     const doDrag = (e: MouseEvent): void => {
-      if (!this._dialogEl) throw new NeverEntryError();
-
       e.stopPropagation();
       e.preventDefault();
 
       if (direction === "top" || direction === "top-right" || direction === "top-left") {
-        if (this._dialogEl.style.position === "absolute") {
-          this._dialogEl.style.top = (startTop + (e.clientY - startY)) + "px";
-          this._dialogEl.style.bottom = "auto";
+        if (dialogEl.style.position === "absolute") {
+          dialogEl.style.top = (startTop + (e.clientY - startY)) + "px";
+          dialogEl.style.bottom = "auto";
         }
-        this._dialogEl.style.height = `${Math.max(startHeight - (e.clientY - startY), this.minHeightPx ?? 0)}px`;
+        dialogEl.style.height = `${Math.max(startHeight - (e.clientY - startY), this.minHeightPx ?? 0)}px`;
       }
       if (direction === "bottom" || direction === "bottom-right" || direction === "bottom-left") {
-        this._dialogEl.style.height = `${Math.max(startHeight + e.clientY - startY, this.minHeightPx ?? 0)}px`;
+        dialogEl.style.height = `${Math.max(startHeight + e.clientY - startY, this.minHeightPx ?? 0)}px`;
       }
       if (direction === "right" || direction === "bottom-right" || direction === "top-right") {
-        this._dialogEl.style.width = `${Math.max(startWidth + ((e.clientX - startX) * (this._dialogEl.style.position === "absolute" ? 1 : 2)), this.minWidthPx ?? 0)}px`;
+        dialogEl.style.width = `${Math.max(startWidth + ((e.clientX - startX) * (dialogEl.style.position === "absolute" ? 1 : 2)), this.minWidthPx ?? 0)}px`;
       }
       if (direction === "left" || direction === "bottom-left" || direction === "top-left") {
-        if (this._dialogEl.style.position === "absolute") {
-          this._dialogEl.style.left = (startLeft + (e.clientX - startX)) + "px";
+        if (dialogEl.style.position === "absolute") {
+          dialogEl.style.left = (startLeft + (e.clientX - startX)) + "px";
         }
-        this._dialogEl.style.width = `${Math.max(startWidth - ((e.clientX - startX) * (this._dialogEl.style.position === "absolute" ? 1 : 2)), this.minWidthPx ?? 0)}px`;
+        dialogEl.style.width = `${Math.max(startWidth - ((e.clientX - startX) * (dialogEl.style.position === "absolute" ? 1 : 2)), this.minWidthPx ?? 0)}px`;
       }
 
       isDoDrag = true;
     };
 
     const stopDrag = async (e: MouseEvent): Promise<void> => {
-      if (!this._dialogEl) throw new NeverEntryError();
-
       e.stopPropagation();
       e.preventDefault();
 
       document.documentElement.removeEventListener("mousemove", doDrag, false);
       document.documentElement.removeEventListener("mouseup", stopDrag, false);
 
-      this._config = {
-        position: this._dialogEl.style.position,
-        left: this._dialogEl.style.left,
-        top: this._dialogEl.style.top,
-        right: this._dialogEl.style.right,
-        bottom: this._dialogEl.style.bottom,
-        width: this._dialogEl.style.width,
-        height: this._dialogEl.style.height
+      this.#config = {
+        position: dialogEl.style.position,
+        left: dialogEl.style.left,
+        top: dialogEl.style.top,
+        right: dialogEl.style.right,
+        bottom: dialogEl.style.bottom,
+        width: dialogEl.style.width,
+        height: dialogEl.style.height
       };
       if (this.key !== undefined && isDoDrag) {
-        await this._systemConfig.setAsync(`sd-modal.${this.key}`, this._config);
+        await this.#sdSystemConfig.setAsync(`sd-modal.${this.key}`, this.#config);
       }
     };
+
     document.documentElement.addEventListener("mousemove", doDrag, false);
     document.documentElement.addEventListener("mouseup", stopDrag, false);
   }
 
-  public onHeaderMouseDown(event: MouseEvent): void {
-    if (!this._dialogEl) throw new NeverEntryError();
+  onHeaderMouseDownOutside(event: MouseEvent) {
+    const dialogEl = this.dialogElRef.nativeElement;
 
     const startX = event.clientX;
     const startY = event.clientY;
-    const startTop = this._dialogEl.offsetTop;
-    const startLeft = this._dialogEl.offsetLeft;
+    const startTop = dialogEl.offsetTop;
+    const startLeft = dialogEl.offsetLeft;
 
     let isDoDrag = false;
 
     const doDrag = (e: MouseEvent): void => {
-      if (!this._dialogEl) throw new NeverEntryError();
-
       e.stopPropagation();
       e.preventDefault();
 
-      this._dialogEl.style.position = "absolute";
-      this._dialogEl.style.left = `${startLeft + e.clientX - startX}px`;
-      this._dialogEl.style.top = `${startTop + e.clientY - startY}px`;
-      this._dialogEl.style.right = "auto";
-      this._dialogEl.style.bottom = "auto";
+      dialogEl.style.position = "absolute";
+      dialogEl.style.left = `${startLeft + e.clientX - startX}px`;
+      dialogEl.style.top = `${startTop + e.clientY - startY}px`;
+      dialogEl.style.right = "auto";
+      dialogEl.style.bottom = "auto";
 
-      const el = (this._elRef.nativeElement as HTMLElement);
-      if (this._dialogEl.offsetLeft > el.offsetWidth - 100) {
-        this._dialogEl.style.left = (el.offsetWidth - 100) + "px";
+      const el = this.#elRef.nativeElement;
+      if (dialogEl.offsetLeft > el.offsetWidth - 100) {
+        dialogEl.style.left = (el.offsetWidth - 100) + "px";
       }
-      if (this._dialogEl.offsetTop > el.offsetHeight - 100) {
-        this._dialogEl.style.top = (el.offsetHeight - 100) + "px";
+      if (dialogEl.offsetTop > el.offsetHeight - 100) {
+        dialogEl.style.top = (el.offsetHeight - 100) + "px";
       }
-      if (this._dialogEl.offsetTop < 0) {
-        this._dialogEl.style.top = "0";
+      if (dialogEl.offsetTop < 0) {
+        dialogEl.style.top = "0";
       }
-      if (this._dialogEl.offsetLeft < -this._dialogEl.offsetWidth + 100) {
-        this._dialogEl.style.left = (-this._dialogEl.offsetWidth + 100) + "px";
+      if (dialogEl.offsetLeft < -dialogEl.offsetWidth + 100) {
+        dialogEl.style.left = (-dialogEl.offsetWidth + 100) + "px";
       }
 
       isDoDrag = true;
     };
 
     const stopDrag = async (e: MouseEvent): Promise<void> => {
-      if (!this._dialogEl) throw new NeverEntryError();
-
       e.stopPropagation();
       e.preventDefault();
 
       document.documentElement.removeEventListener("mousemove", doDrag, false);
       document.documentElement.removeEventListener("mouseup", stopDrag, false);
 
-      this._config = {
-        position: this._dialogEl.style.position,
-        left: this._dialogEl.style.left,
-        top: this._dialogEl.style.top,
-        right: this._dialogEl.style.right,
-        bottom: this._dialogEl.style.bottom,
-        width: this._dialogEl.style.width,
-        height: this._dialogEl.style.height
+      this.#config = {
+        position: dialogEl.style.position,
+        left: dialogEl.style.left,
+        top: dialogEl.style.top,
+        right: dialogEl.style.right,
+        bottom: dialogEl.style.bottom,
+        width: dialogEl.style.width,
+        height: dialogEl.style.height
       };
       if (this.key !== undefined && isDoDrag) {
-        await this._systemConfig.setAsync(`sd-modal.${this.key}`, this._config);
+        await this.#sdSystemConfig.setAsync(`sd-modal.${this.key}`, this.#config);
       }
     };
 
     document.documentElement.addEventListener("mousemove", doDrag, false);
     document.documentElement.addEventListener("mouseup", stopDrag, false);
   }
+
+  protected readonly faXmark = faXmark;
 }
 
 export interface ISdModalConfigVM {

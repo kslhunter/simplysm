@@ -1,7 +1,6 @@
 import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
-import {SdInputValidate} from "../utils/SdInputValidate";
-import {TSdTheme} from "../commons";
 import {CommonModule} from "@angular/common";
+import {coercionBoolean} from "../utils/commons";
 
 @Component({
   selector: "sd-button",
@@ -10,10 +9,10 @@ import {CommonModule} from "@angular/common";
   imports: [CommonModule],
   template: `
     <button tabindex="0"
-            [attr.type]="type"
+            [type]="type"
             [disabled]="disabled"
-            [attr.class]="buttonClass"
-            [attr.style]="buttonStyle">
+            [class]="buttonClass"
+            [style]="buttonStyle">
       <ng-content></ng-content>
     </button>`,
   styles: [/* language=SCSS */ `
@@ -58,7 +57,7 @@ import {CommonModule} from "@angular/common";
         }
       }
 
-      &[sd-inset] > button {
+      &[sd-inset=true] > button {
         border-radius: 0;
         border: none;
         color: var(--theme-primary-default);
@@ -70,7 +69,6 @@ import {CommonModule} from "@angular/common";
         &:disabled {
           background: white;
           border-color: var(--theme-grey-lighter);
-          // color:var(--text-trans-lighter);
           color: var(--text-trans-default);
           cursor: default;
         }
@@ -142,44 +140,30 @@ import {CommonModule} from "@angular/common";
 export class SdButtonControl {
   @Input()
   @HostBinding("attr.sd-theme")
-  public theme?: TSdTheme | "link";
+  theme?: "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey" | "link";
 
-  @Input()
-  @SdInputValidate(Boolean)
+  @Input({transform: coercionBoolean})
   @HostBinding("attr.sd-inline")
-  public inline?: boolean;
+  inline = false;
 
   @Input()
-  @SdInputValidate({
-    type: String,
-    includes: ["sm", "lg"]
-  })
   @HostBinding("attr.sd-size")
-  public size?: "sm" | "lg";
+  size?: "sm" | "lg";
 
-  @Input()
-  @SdInputValidate(Boolean)
+  @Input({transform: coercionBoolean})
   @HostBinding("attr.disabled")
-  public disabled?: boolean;
+  disabled = false;
 
   @Input()
-  @SdInputValidate(String)
-  public buttonStyle?: string;
+  buttonStyle?: string;
 
   @Input()
-  @SdInputValidate(String)
-  public buttonClass?: string;
+  buttonClass?: string;
 
   @Input()
-  @SdInputValidate({
-    type: String,
-    includes: ["button", "submit"],
-    notnull: true
-  })
-  public type: "button" | "submit" = "button";
+  type: "button" | "submit" = "button";
 
-  @Input()
-  @SdInputValidate(Boolean)
+  @Input({transform: coercionBoolean})
   @HostBinding("attr.sd-inset")
-  public inset?: boolean;
+  inset = false;
 }

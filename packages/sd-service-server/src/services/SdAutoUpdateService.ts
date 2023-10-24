@@ -4,9 +4,9 @@ import {SdServiceBase} from "../commons";
 import {FsUtil} from "@simplysm/sd-core-node";
 
 export class SdAutoUpdateService extends SdServiceBase {
-  public async getLastVersionAsync(clientName: string, platform: string): Promise<string | undefined> {
+  getLastVersion(clientName: string, platform: string): string | undefined {
     try {
-      const updates = await FsUtil.readdirAsync(path.resolve(this.server.options.rootPath, "www", clientName, platform, "updates"));
+      const updates = FsUtil.readdir(path.resolve(this.server.options.rootPath, "www", clientName, platform, "updates"));
       const versions = updates.map((item) => ({
         fileName: item,
         version: path.basename(item, path.extname(item))

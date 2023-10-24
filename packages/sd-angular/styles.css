@@ -4370,6 +4370,6 @@ h6 {
   pointer-events: none;
 }
 .active-effect:active:after {
-  background: var(--trans-brightness-lighter);
+  background: var(--trans-lighter);
   transform: none;
 }

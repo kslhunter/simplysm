@@ -1,5 +1,4 @@
 import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
-import {SdInputValidate} from "../../utils/SdInputValidate";
 
 @Component({
   selector: "sd-form-box",
@@ -33,22 +32,12 @@ import {SdInputValidate} from "../../utils/SdInputValidate";
 })
 export class SdFormBoxControl {
   @Input()
-  @SdInputValidate({
-    type: String,
-    notnull: true,
-    includes: ["cascade", "inline", "table", "none"]
-  })
   @HostBinding("attr.sd-layout")
-  public layout: "cascade" | "inline" | "table" | "none" = "cascade";
+  layout: "cascade" | "inline" | "table" | "none" = "cascade";
 
   @Input()
-  @SdInputValidate(String)
-  public labelWidth?: string;
+  labelWidth?: string;
 
   @Input()
-  @SdInputValidate({
-    type: String,
-    includes: ["left", "right", "center"]
-  })
-  public labelAlign: "left" | "right" | "center" | undefined;
+  labelAlign?: "left" | "right" | "center";
 }

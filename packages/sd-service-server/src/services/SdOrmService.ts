@@ -13,29 +13,28 @@ import {
 import {Logger} from "@simplysm/sd-core-node";
 import {SdServiceBase} from "../commons";
 import {TDbConnOptions} from "@simplysm/sd-service-common";
-import {SdServiceServerConfigUtil} from "../utils/SdServiceServerConfigUtil";
 
 export class SdOrmService extends SdServiceBase {
-  private readonly _logger = Logger.get(["simplysm", "sd-service-server", this.constructor.name]);
+  #logger = Logger.get(["simplysm", "sd-service-server", this.constructor.name]);
 
-  private static readonly _connections = new Map<number, IDbConnection>();
-  private static readonly _wsConnectionCloseListenerMap = new Map<number, (code: number) => Promise<void>>();
+  static #conns = new Map<number, IDbConnection>();
+  static #wsCloseListenerMap = new Map<number, (code: number) => Promise<void>>();
 
-  public static getDbConnConfigAsync = async (rootPath: string, clientName: string | undefined, opt: TDbConnOptions): Promise<TDbConnectionConfig> => {
-    const config: TDbConnectionConfig | undefined = opt.configName !== undefined ? (await SdServiceServerConfigUtil.getConfigAsync(rootPath, clientName))["orm"]?.[opt.configName] : undefined;
+  static getConfAsync(service: SdOrmService, opt: TDbConnOptions): Promise<TDbConnectionConfig> {
+    const config: TDbConnectionConfig | undefined = opt.configName !== undefined ? (service.server.getConfig(service.request?.clientName))["orm"]?.[opt.configName] : undefined;
     if (config === undefined) {
       throw new Error("서버에서 ORM 설정을 찾을 수 없습니다.");
     }
 
-    return {...config, ...opt.config};
+    return Promise.resolve({...config, ...opt.config});
   };
 
-  public async getInfoAsync(opt: Record<string, any>): Promise<{
+  async getInfo(opt: Record<string, any>): Promise<{
     dialect: TDbContextOption["dialect"];
     database?: string;
     schema?: string;
   }> {
-    const config = await SdOrmService.getDbConnConfigAsync(this.server.options.rootPath, this.request?.clientName, opt);
+    const config = await SdOrmService.getConfAsync(this, opt);
     return {
       dialect: config.dialect,
       ...config.dialect === "sqlite" ? {} : {
@@ -45,14 +44,14 @@ export class SdOrmService extends SdServiceBase {
     };
   }
 
-  public async connectAsync(opt: Record<string, any>): Promise<number> {
-    const config = await SdOrmService.getDbConnConfigAsync(this.server.options.rootPath, this.request?.clientName, opt);
+  async connect(opt: Record<string, any>): Promise<number> {
+    const config = await SdOrmService.getConfAsync(this, opt);
 
     const dbConn = await DbConnectionFactory.createAsync(config);
 
-    const lastConnId = Array.from(SdOrmService._connections.keys()).max() ?? 0;
+    const lastConnId = Array.from(SdOrmService.#conns.keys()).max() ?? 0;
     const connId = lastConnId + 1;
-    SdOrmService._connections.set(connId, dbConn);
+    SdOrmService.#conns.set(connId, dbConn);
 
     await dbConn.connectAsync();
 
@@ -60,17 +59,17 @@ export class SdOrmService extends SdServiceBase {
       // 클라이언트 창이 닫히거나 RELOAD 될때
       if (code === 1001) {
         await dbConn.closeAsync();
-        this._logger.warn("소켓연결이 끊어져, DB 연결이 중지되었습니다.");
+        this.#logger.warn("소켓연결이 끊어져, DB 연결이 중지되었습니다.");
       }
     };
-    SdOrmService._wsConnectionCloseListenerMap.set(connId, closeEventListener);
+    SdOrmService.#wsCloseListenerMap.set(connId, closeEventListener);
     if (this.socketId !== undefined) {
       (await this.server.getWsClientAsync(this.socketId))?.on("close", closeEventListener);
     }
 
     dbConn.on("close", async () => {
-      SdOrmService._connections.delete(connId);
-      SdOrmService._wsConnectionCloseListenerMap.delete(connId);
+      SdOrmService.#conns.delete(connId);
+      SdOrmService.#wsCloseListenerMap.delete(connId);
       if (this.socketId !== undefined) {
         (await this.server.getWsClientAsync(this.socketId))?.off("close", closeEventListener);
       }
@@ -79,15 +78,15 @@ export class SdOrmService extends SdServiceBase {
     return connId;
   }
 
-  public async closeAsync(connId: number): Promise<void> {
-    const conn = SdOrmService._connections.get(connId);
+  async close(connId: number): Promise<void> {
+    const conn = SdOrmService.#conns.get(connId);
     if (conn) {
       await conn.closeAsync();
     }
   }
 
-  public async beginTransactionAsync(connId: number, isolationLevel?: ISOLATION_LEVEL): Promise<void> {
-    const conn = SdOrmService._connections.get(connId);
+  async beginTransaction(connId: number, isolationLevel?: ISOLATION_LEVEL): Promise<void> {
+    const conn = SdOrmService.#conns.get(connId);
     if (!conn) {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
@@ -95,8 +94,8 @@ export class SdOrmService extends SdServiceBase {
     await conn.beginTransactionAsync(isolationLevel);
   }
 
-  public async commitTransactionAsync(connId: number): Promise<void> {
-    const conn = SdOrmService._connections.get(connId);
+  async commitTransaction(connId: number): Promise<void> {
+    const conn = SdOrmService.#conns.get(connId);
     if (!conn) {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
@@ -104,8 +103,8 @@ export class SdOrmService extends SdServiceBase {
     await conn.commitTransactionAsync();
   }
 
-  public async rollbackTransactionAsync(connId: number): Promise<void> {
-    const conn = SdOrmService._connections.get(connId);
+  async rollbackTransaction(connId: number): Promise<void> {
+    const conn = SdOrmService.#conns.get(connId);
     if (!conn) {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
@@ -114,8 +113,8 @@ export class SdOrmService extends SdServiceBase {
   }
 
 
-  public async executeAsync(connId: number, queries: string[]): Promise<any[][]> {
-    const conn = SdOrmService._connections.get(connId);
+  async execute(connId: number, queries: string[]): Promise<any[][]> {
+    const conn = SdOrmService.#conns.get(connId);
     if (!conn) {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
@@ -123,8 +122,8 @@ export class SdOrmService extends SdServiceBase {
     return await conn.executeAsync(queries);
   }
 
-  public async executeDefsAsync(connId: number, defs: TQueryDef[], options?: (IQueryResultParseOption | undefined)[]): Promise<any[][]> {
-    const conn = SdOrmService._connections.get(connId);
+  async executeDefs(connId: number, defs: TQueryDef[], options?: (IQueryResultParseOption | undefined)[]): Promise<any[][]> {
+    const conn = SdOrmService.#conns.get(connId);
     if (!conn) {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
@@ -139,8 +138,8 @@ export class SdOrmService extends SdServiceBase {
     }
   }
 
-  public async bulkInsertAsync(connId: number, tableName: string, columnDefs: IQueryColumnDef[], records: Record<string, any>[]): Promise<void> {
-    const conn = SdOrmService._connections.get(connId);
+  async bulkInsert(connId: number, tableName: string, columnDefs: IQueryColumnDef[], records: Record<string, any>[]) {
+    const conn = SdOrmService.#conns.get(connId);
     if (!conn) {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
