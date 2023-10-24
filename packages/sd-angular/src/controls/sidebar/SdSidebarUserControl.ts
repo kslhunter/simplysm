@@ -98,7 +98,6 @@ export class SdSidebarUserControl {
   protected readonly faChevronDown = faChevronDown;
 }
 
-
 export interface ISidebarUserMenu {
   title: string;
   menus: {

@@ -33,4 +33,3 @@ import {CommonModule} from "@angular/common";
 export class SdCardControl {
 }
 
-// V11 LOGIC OK

@@ -114,4 +114,3 @@ export class SdDockContainerControl implements DoCheck {
   }
 }
 
-// V11 LOGIC OK

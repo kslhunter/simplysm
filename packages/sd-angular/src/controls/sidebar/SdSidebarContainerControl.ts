@@ -77,4 +77,3 @@ export class SdSidebarContainerControl implements OnInit {
 }
 
 
-// V11 LOGIC OK

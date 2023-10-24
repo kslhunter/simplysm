@@ -118,4 +118,3 @@ export class SdTopbarControl {
   protected readonly faBars = faBars;
 }
 
-// V11 LOGIC OK

@@ -195,4 +195,3 @@ export class SdDockControl implements OnInit {
   }
 }
 
-// V11 LOGIC OK
