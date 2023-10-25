@@ -10,19 +10,19 @@ import {
   Output,
 } from "@angular/core";
 import * as marked1 from "marked";
-import {CommonModule} from "@angular/common";
 import {SdBusyContainerControl} from "./SdBusyContainerControl";
 import {SdAnchorControl} from "./SdAnchorControl";
 import {SdIconControl} from "./SdIconControl";
 import {faEye, faPen, faQuestion} from "@fortawesome/pro-duotone-svg-icons";
 import {coercionBoolean, coercionNonNullableNumber, getSdFnCheckData, TSdFnInfo} from "../utils/commons";
 import {SdNgHelper} from "../utils/SdNgHelper";
+import {NgIf} from "@angular/common";
 
 @Component({
   selector: "sd-markdown-editor",
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, SdAnchorControl, SdBusyContainerControl, SdIconControl],
+  imports: [SdAnchorControl, SdBusyContainerControl, SdIconControl, NgIf],
   template: `
     <div class="_toolbar" *ngIf="!disabled">
       <sd-anchor (click)="viewState = 'preview'" [class._selected]="viewState === 'preview'">

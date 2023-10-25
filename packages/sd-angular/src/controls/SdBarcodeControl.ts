@@ -1,7 +1,6 @@
 import {ChangeDetectionStrategy, Component, DoCheck, ElementRef, inject, Injector, Input} from "@angular/core";
 import jsbarcode from "jsbarcode";
 import qrcode from "qrcode";
-import {CommonModule} from "@angular/common";
 import {coercionNumber} from "../utils/commons";
 import {SdNgHelper} from "../utils/SdNgHelper";
 
@@ -9,7 +8,7 @@ import {SdNgHelper} from "../utils/SdNgHelper";
   selector: "sd-barcode",
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   template: `
     <canvas [hidden]="!value" [style.display]="type !== 'qrcode' ? 'none' : undefined"></canvas>
     <svg [hidden]="!value" [style.display]="type === 'qrcode' ? 'none' : undefined"

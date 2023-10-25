@@ -51,6 +51,11 @@ export class SdServiceFactoryProvider implements OnDestroy {
     this._clientMap.set(key, client);
   }
 
+
+  public async closeAsync(key: string): Promise<void> {
+    await this._clientMap.get(key)?.closeAsync();
+  }
+
   public get(key: string): SdServiceClient {
     if (!this._clientMap.has(key)) {
       throw new Error(`연결하지 않은 클라이언트 키입니다. ${key}`);

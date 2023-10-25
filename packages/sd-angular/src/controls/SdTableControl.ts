@@ -1,12 +1,11 @@
 import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
-import {CommonModule} from "@angular/common";
 import {coercionBoolean} from "../utils/commons";
 
 @Component({
   selector: "sd-table",
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   template: `
     <table>
       <ng-content></ng-content>

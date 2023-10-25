@@ -11,16 +11,17 @@ import {
   Output,
   ViewChild
 } from "@angular/core";
-import {CommonModule} from "@angular/common";
 import {coercionBoolean, getSdFnCheckData, TSdFnInfo} from "../utils/commons";
 import {SdNgHelper} from "../utils/SdNgHelper";
-import {SdEventDirectiveModule} from "../directives/SdEventDirectiveModule";
+import {SdEventsDirective} from "../directives/SdEventsDirective";
 
 @Component({
   selector: "sd-content-editor",
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, SdEventDirectiveModule],
+  imports: [
+    SdEventsDirective
+  ],
   template: `
     <div #editorEl
          class="_editor"

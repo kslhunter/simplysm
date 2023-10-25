@@ -1,7 +1,7 @@
 import {ApplicationRef, ComponentRef, createComponent, inject, Injectable, NgZone, Type} from "@angular/core";
-import {SdToastContainerControl} from "../controls/toast/SdToastContainerControl";
+import {SdToastContainerControl} from "../controls/SdToastContainerControl";
 import {SdSystemLogProvider} from "./SdSystemLogProvider";
-import {SdToastControl} from "../controls/toast/SdToastControl";
+import {SdToastControl} from "../controls/SdToastControl";
 
 @Injectable({providedIn: "root"})
 export class SdToastProvider {

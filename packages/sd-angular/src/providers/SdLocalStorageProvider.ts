@@ -3,19 +3,19 @@ import {Injectable} from "@angular/core";
 
 @Injectable({providedIn: "root"})
 export class SdLocalStorageProvider {
-  public prefix = "simplysm";
+  prefix = "simplysm";
 
-  public set(key: string, value: any): void {
+  set(key: string, value: any) {
     localStorage.setItem(`${this.prefix}.${key}`, JsonConvert.stringify(value));
   }
 
-  public get(key: string): any {
+  get(key: string): any {
     const json = localStorage.getItem(`${this.prefix}.${key}`);
     if (json == null) return undefined;
     return JsonConvert.parse(json);
   }
 
-  public remove(key: string): void {
+  remove(key: string) {
     localStorage.removeItem(`${this.prefix}.${key}`);
   }
 }

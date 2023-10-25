@@ -11,15 +11,17 @@ import {
   Output
 } from "@angular/core";
 import {DateOnly, DateTime, NumberUtil, StringUtil, Time} from "@simplysm/sd-core-common";
-import {CommonModule} from "@angular/common";
 import {coercionBoolean, coercionNumber, getSdFnCheckData, TSdFnInfo} from "../utils/commons";
 import {SdNgHelper} from "../utils/SdNgHelper";
+import {NgIf} from "@angular/common";
 
 @Component({
   selector: "sd-textfield",
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule],
+  imports: [
+    NgIf
+  ],
   template: `
     <div [style]="inputStyle"
          [class]="['_contents', inputClass].filterExists().join(' ')"

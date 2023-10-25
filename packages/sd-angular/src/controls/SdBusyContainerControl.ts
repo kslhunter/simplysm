@@ -1,13 +1,15 @@
 import {ChangeDetectionStrategy, Component, HostBinding, HostListener, inject, Input} from "@angular/core";
 import {SdBusyProvider} from "../providers/SdBusyProvider";
-import {CommonModule} from "@angular/common";
 import {coercionBoolean, coercionNumber} from "../utils/commons";
+import {NgIf} from "@angular/common";
 
 @Component({
   selector: "sd-busy-container",
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule],
+  imports: [
+    NgIf
+  ],
   template: `
     <div class="_screen">
       <div class="_bar"></div>

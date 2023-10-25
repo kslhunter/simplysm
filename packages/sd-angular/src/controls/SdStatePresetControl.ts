@@ -12,13 +12,13 @@ import {
 import {ObjectUtil} from "@simplysm/sd-core-common";
 import {SdSystemConfigProvider} from "../providers/SdSystemConfigProvider";
 import {SdToastProvider} from "../providers/SdToastProvider";
-import {CommonModule} from "@angular/common";
 import {SdGapControl} from "./SdGapControl";
 import {SdAnchorControl} from "./SdAnchorControl";
 import {SdNgHelper} from "../utils/SdNgHelper";
 import {faSave, faStar} from "@fortawesome/pro-duotone-svg-icons";
 import {faXmark} from "@fortawesome/pro-solid-svg-icons/faXmark";
 import {SdIconControl} from "./SdIconControl";
+import {NgForOf} from "@angular/common";
 
 export interface ISdStatePresetVM {
   name: string;
@@ -29,7 +29,7 @@ export interface ISdStatePresetVM {
   selector: "sd-state-preset",
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, SdAnchorControl, SdGapControl, SdIconControl],
+  imports: [SdAnchorControl, SdGapControl, SdIconControl, NgForOf],
   template: `
     <sd-anchor (click)="onAddButtonClick()">
       <sd-icon [icon]="faStar" class="tx-theme-warning-default" fixedWidth/>

@@ -1,11 +1,10 @@
 import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
-import {CommonModule} from "@angular/common";
 
 @Component({
   selector: "sd-note",
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   template: `
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `

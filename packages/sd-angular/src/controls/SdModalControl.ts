@@ -13,7 +13,6 @@ import {
   ViewChild
 } from "@angular/core";
 import {NumberUtil} from "@simplysm/sd-core-common";
-import {SdDockingModule} from "./dock/SdDockingModule";
 import {SdAnchorControl} from "./SdAnchorControl";
 import {SdPaneControl} from "./SdPaneControl";
 import {SdSystemConfigProvider} from "../providers/SdSystemConfigProvider";
@@ -23,7 +22,9 @@ import {faXmark} from "@fortawesome/pro-solid-svg-icons/faXmark";
 import {coercionBoolean, coercionNumber} from "../utils/commons";
 import {SdNgHelper} from "../utils/SdNgHelper";
 import {ISdResizeEvent} from "../plugins/SdResizeEventPlugin";
-import {SdEventDirectiveModule} from "../directives/SdEventDirectiveModule";
+import {SdEventsDirective} from "../directives/SdEventsDirective";
+import {SdDockContainerControl} from "./SdDockContainerControl";
+import {SdDockControl} from "./SdDockControl";
 
 @Component({
   selector: "sd-modal",
@@ -31,11 +32,12 @@ import {SdEventDirectiveModule} from "../directives/SdEventDirectiveModule";
   standalone: true,
   imports: [
     CommonModule,
-    SdDockingModule,
     SdAnchorControl,
     SdPaneControl,
     SdIconControl,
-    SdEventDirectiveModule
+    SdDockContainerControl,
+    SdDockControl,
+    SdEventsDirective
   ],
   template: `
     <div class="_backdrop" (click)="onBackdropClick()"></div>

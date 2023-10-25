@@ -1,12 +1,11 @@
 import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
-import {CommonModule} from "@angular/common";
 import {coercionBoolean} from "../utils/commons";
 
 @Component({
   selector: "sd-button",
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   template: `
     <button tabindex="0"
             [type]="type"

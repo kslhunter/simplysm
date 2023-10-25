@@ -1,12 +1,11 @@
 import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
-import {CommonModule} from "@angular/common";
 import {coercionBoolean} from "../utils/commons";
 
 @Component({
   selector: "sd-anchor",
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   template: `
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `

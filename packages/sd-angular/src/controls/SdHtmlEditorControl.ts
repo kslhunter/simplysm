@@ -8,20 +8,21 @@ import {
   Output,
   ViewChild
 } from "@angular/core";
-import {CommonModule} from "@angular/common";
-import {SdDockingModule} from "./dock/SdDockingModule";
 import {SdAnchorControl} from "./SdAnchorControl";
 import {SdPaneControl} from "./SdPaneControl";
 import {SdIconControl} from "./SdIconControl";
 import {coercionBoolean, coercionNonNullableNumber} from "../utils/commons";
 import {faCode, faEye, faPen} from "@fortawesome/pro-duotone-svg-icons";
 import {faMinus, faPlus} from "@fortawesome/pro-solid-svg-icons";
+import {SdDockContainerControl} from "./SdDockContainerControl";
+import {SdDockControl} from "./SdDockControl";
+import {NgIf} from "@angular/common";
 
 @Component({
   selector: "sd-html-editor",
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, SdAnchorControl, SdDockingModule, SdPaneControl, SdIconControl],
+  imports: [SdAnchorControl, SdPaneControl, SdIconControl, SdDockContainerControl, SdDockControl, NgIf],
   template: `
     <sd-dock-container>
       <sd-dock class="_toolbar" *ngIf="!disabled">

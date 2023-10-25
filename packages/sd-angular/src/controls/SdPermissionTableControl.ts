@@ -8,26 +8,28 @@ import {
   Input,
   Output
 } from "@angular/core";
-import {CommonModule} from "@angular/common";
-import {SdCollapseModule} from "./collapse/SdCollapseModule";
 import {SdAnchorControl} from "./SdAnchorControl";
-import {SdCheckboxModule} from "./checkbox/SdCheckboxModule";
 import {ISdPermission} from "../utils/SdAppStructureUtil";
 import {coercionBoolean} from "../utils/commons";
 import {SdNgHelper} from "../utils/SdNgHelper";
 import {faChevronRight} from "@fortawesome/pro-duotone-svg-icons";
 import {SdTypedTemplateDirective} from "../directives/SdTypedTemplateDirective";
+import {NgForOf, NgIf, NgTemplateOutlet} from "@angular/common";
+import {SdCollapseIconControl} from "./SdCollapseIconControl";
+import {SdCheckboxControl} from "./SdCheckboxControl";
 
 @Component({
   selector: "sd-permission-table",
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
-    CommonModule,
-    SdCollapseModule,
     SdAnchorControl,
-    SdCheckboxModule,
-    SdTypedTemplateDirective
+    SdTypedTemplateDirective,
+    NgForOf,
+    NgTemplateOutlet,
+    SdCollapseIconControl,
+    SdCheckboxControl,
+    NgIf
   ],
   template: `
     <table>

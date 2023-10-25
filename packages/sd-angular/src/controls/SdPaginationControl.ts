@@ -8,18 +8,18 @@ import {
   Input,
   Output
 } from "@angular/core";
-import {CommonModule} from "@angular/common";
 import {SdAnchorControl} from "./SdAnchorControl";
 import {SdIconControl} from "./SdIconControl";
 import {coercionNumber} from "../utils/commons";
 import {faAngleDoubleLeft, faAngleDoubleRight, faAngleLeft, faAngleRight} from "@fortawesome/pro-duotone-svg-icons";
 import {SdNgHelper} from "../utils/SdNgHelper";
+import {NgForOf} from "@angular/common";
 
 @Component({
   selector: "sd-pagination",
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, SdAnchorControl, SdIconControl],
+  imports: [SdAnchorControl, SdIconControl, NgForOf],
   template: `
     <sd-anchor [disabled]="!hasPrev" (click)="onGoFirstClick()">
       <sd-icon [icon]="faAngleDoubleLeft" fixedWidth/>

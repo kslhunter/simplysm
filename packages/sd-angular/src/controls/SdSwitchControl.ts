@@ -8,15 +8,12 @@ import {
   Output
 } from "@angular/core";
 import {coercionBoolean} from "@simplysm/sd-angular";
-import {CommonModule} from "@angular/common";
 
 @Component({
   selector: "sd-switch",
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [
-    CommonModule
-  ],
+  imports: [],
   template: `
     <div>
       <div></div>

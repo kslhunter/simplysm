@@ -1,5 +1,4 @@
 import {ChangeDetectionStrategy, Component, DoCheck, HostBinding, inject, Injector, Input} from "@angular/core";
-import {CommonModule} from "@angular/common";
 import {coercionNumber} from "../utils/commons";
 import {SdNgHelper} from "../utils/SdNgHelper";
 
@@ -7,7 +6,7 @@ import {SdNgHelper} from "../utils/SdNgHelper";
   selector: "sd-gap",
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   template: "",
   styles: [/* language=SCSS */ `
     @import "../scss/variables";
