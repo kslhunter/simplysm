@@ -1,4 +1,4 @@
-import {ErrorHandler, inject, ModuleWithProviders, NgModule, provideZoneChangeDetection} from "@angular/core";
+import {ErrorHandler, inject, ModuleWithProviders, NgModule} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {EVENT_MANAGER_PLUGINS} from "@angular/platform-browser";
 import {SdSaveCommandEventPlugin} from "./plugins/SdSaveCommandEventPlugin";
@@ -32,10 +32,10 @@ export class SdAngularModule {
         {provide: EVENT_MANAGER_PLUGINS, useClass: SdResizeEventPlugin, multi: true},
         {provide: EVENT_MANAGER_PLUGINS, useClass: SdOptionEventPlugin, multi: true},
         {provide: ErrorHandler, useClass: SdGlobalErrorHandlerPlugin},
-        provideZoneChangeDetection({
-          eventCoalescing: true,
-          runCoalescing: true
-        }),
+        // provideZoneChangeDetection({
+        //   eventCoalescing: true,
+        //   runCoalescing: true
+        // }),
       ]
     };
   }
