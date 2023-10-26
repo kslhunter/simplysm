@@ -29,6 +29,7 @@ export class SdSharedDataProvider {
         .removeEventListenerAsync(this._listenerRecord[dataType]!);
     }
 
+    console.log("clear");
     this._infoRecord = {};
     this._dataRecord = {};
     this._listenerRecord = {};

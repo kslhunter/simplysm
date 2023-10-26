@@ -3,6 +3,7 @@ export * from "./build-tools/SdCliIndexFileGenerator";
 export * from "./build-tools/SdCliNgRoutesFileGenerator";
 export * from "./build-tools/SdLinter";
 export * from "./build-tools/SdNgBundler";
+export * from "./build-tools/SdNgBundlerContext";
 export * from "./build-tools/SdTsBundler";
 export * from "./build-tools/SdTsCompiler";
 export * from "./builders/SdCliClientBuilder";

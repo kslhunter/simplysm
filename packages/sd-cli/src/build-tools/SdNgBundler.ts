@@ -1,7 +1,7 @@
 import {createCompilerPlugin} from "@angular-devkit/build-angular/src/tools/esbuild/angular/compiler-plugin";
 import path from "path";
-import {BundlerContext, InitialFileRecord} from "@angular-devkit/build-angular/src/tools/esbuild/bundler-context";
-import esbuild from "esbuild";
+import {InitialFileRecord} from "@angular-devkit/build-angular/src/tools/esbuild/bundler-context";
+import esbuild, {Metafile} from "esbuild";
 import {FsUtil, PathUtil} from "@simplysm/sd-core-node";
 import {fileURLToPath} from "url";
 import {createVirtualModulePlugin} from "@angular-devkit/build-angular/src/tools/esbuild/virtual-module-plugin";
@@ -10,13 +10,15 @@ import {
 } from "@angular-devkit/build-angular/src/tools/esbuild/sourcemap-ignorelist-plugin";
 import nodeStdLibBrowser from "node-stdlib-browser";
 import nodeStdLibBrowserPlugin from "node-stdlib-browser/helpers/esbuild/plugin";
-import {ExecutionResult} from "@angular-devkit/build-angular/src/tools/esbuild/bundler-execution-result";
 import {INpmConfig, ISdCliPackageBuildResult} from "../commons";
 import {copyAssets} from "@angular-devkit/build-angular/src/utils/copy-assets";
 import {extractLicenses} from "@angular-devkit/build-angular/src/tools/esbuild/license-extractor";
 import {augmentAppWithServiceWorkerEsbuild} from "@angular-devkit/build-angular/src/utils/service-worker";
 import browserslist from "browserslist";
-import {transformSupportedBrowsersToTargets} from "@angular-devkit/build-angular/src/tools/esbuild/utils";
+import {
+  createOutputFileFromText,
+  transformSupportedBrowsersToTargets
+} from "@angular-devkit/build-angular/src/tools/esbuild/utils";
 import {createCssResourcePlugin} from "@angular-devkit/build-angular/src/tools/esbuild/stylesheets/css-resource-plugin";
 import {CssStylesheetLanguage} from "@angular-devkit/build-angular/src/tools/esbuild/stylesheets/css-language";
 import {SassStylesheetLanguage} from "@angular-devkit/build-angular/src/tools/esbuild/stylesheets/sass-language";
@@ -32,11 +34,12 @@ import {Entrypoint} from "@angular-devkit/build-angular/src/utils/index-file/aug
 import {CrossOrigin} from "@angular-devkit/build-angular";
 import {InlineCriticalCssProcessor} from "@angular-devkit/build-angular/src/utils/index-file/inline-critical-css";
 import {SdSourceFileCache} from "../utils/SdSourceFileCache";
+import {SdNgBundlerContext} from "./SdNgBundlerContext";
 
 export class SdNgBundler {
   private readonly _sourceFileCache = new SdSourceFileCache();
 
-  private _contexts: BundlerContext[] | undefined;
+  private _contexts: SdNgBundlerContext[] | undefined;
 
   private readonly _outputCache = new Map<string, string | number>();
 
@@ -48,8 +51,6 @@ export class SdNgBundler {
   private readonly _indexHtmlFilePath: string;
   private readonly _pkgName: string;
   private readonly _baseHref: string;
-
-  private _depsMap?: Map<string, Set<string>>;
 
   public constructor(private readonly _opt: {
     dev: boolean;
@@ -85,28 +86,10 @@ export class SdNgBundler {
     }
 
     //-- build
-    const bundlingResult = await BundlerContext.bundleAll(this._contexts);
+    const bundlingResults = await this._contexts.mapAsync(async ctx => await ctx.bundleAsync());
 
-    const results = [
-      ...bundlingResult.warnings.map((warn) => ({
-        filePath: warn.location?.file !== undefined ? path.resolve(this._opt.pkgPath, warn.location.file) : undefined,
-        line: warn.location?.line,
-        char: warn.location?.column,
-        code: undefined,
-        severity: "warning",
-        message: warn.text.replace(/^(NG|TS)[0-9]+: /, ""),
-        type: "build"
-      })),
-      ...bundlingResult.errors?.map((err) => ({
-        filePath: err.location?.file !== undefined ? path.resolve(this._opt.pkgPath, err.location.file) : undefined,
-        line: err.location?.line,
-        char: err.location?.column !== undefined ? err.location.column + 1 : undefined,
-        code: undefined,
-        severity: "error",
-        message: err.text.replace(/^[^:]*: /, ""),
-        type: "build"
-      })) ?? []
-    ] as ISdCliPackageBuildResult[];
+    const results = bundlingResults.mapMany(bundlingResult => bundlingResult.results);
+
     const watchFilePaths = [
       ...this._sourceFileCache.keys(),
       ...this._sourceFileCache.babelFileCache.keys(),
@@ -115,24 +98,18 @@ export class SdNgBundler {
 
     let affectedSourceFilePaths = watchFilePaths.filter((item) => PathUtil.isChildPath(item, this._opt.pkgPath));
 
-    if (bundlingResult.errors) {
-      // TODO: 제대로 deps를 적용해야함.. 코드 분석 필요
-      this._depsMap = this._depsMap ?? new Map<string, Set<string>>();
-    }
-    else {
-      this._depsMap = new Map<string, Set<string>>();
-      for (const entry of Object.entries(bundlingResult.metafile.inputs)) {
-        for (const imp of entry[1].imports) {
-          const deps = this._depsMap.getOrCreate(path.resolve(this._opt.pkgPath, imp.path), new Set<string>());
-          deps.add(path.resolve(this._opt.pkgPath, entry[0]));
-        }
-      }
+    const depMap = new Map<string, Set<string>>();
+    for (const bundlingResult of bundlingResults) {
+      bundlingResult.dependencyMap.forEach((v, k) => {
+        const currSet = depMap.getOrCreate(k, new Set<string>());
+        currSet.adds(...v);
+      });
     }
 
     const searchAffectedFiles = (filePath: string, prev?: Set<string>): Set<string> => {
       const result = new Set<string>(prev);
 
-      const importerPaths = this._depsMap!.get(filePath);
+      const importerPaths = depMap.get(filePath);
       if (!importerPaths) return result;
 
       for (const importerPath of importerPaths) {
@@ -153,16 +130,25 @@ export class SdNgBundler {
       affectedSourceFilePaths = Array.from(affectedFilePathSet.values()).filter((item) => PathUtil.isChildPath(item, this._opt.pkgPath));
     }
 
-    if (bundlingResult.errors) {
-      return {
-        filePaths: watchFilePaths,
-        affectedFilePaths: affectedSourceFilePaths,
-        results
-      };
-    }
+    /*const executionResult = new ExecutionResult(this._contexts, this._sourceFileCache);
+    executionResult.outputFiles.push(...bundlingResult.outputFiles);*/
 
-    const executionResult = new ExecutionResult(this._contexts, this._sourceFileCache);
-    executionResult.outputFiles.push(...bundlingResult.outputFiles);
+
+    const outputFiles = bundlingResults.mapMany(item => item.outputFiles ?? []);
+    const initialFiles = new Map<string, InitialFileRecord>();
+    const metafile: {
+      inputs: Metafile["inputs"],
+      outputs: Metafile["outputs"]
+    } = {
+      inputs: {},
+      outputs: {}
+    };
+    for (const bundlingResult of bundlingResults) {
+      bundlingResult.initialFiles.forEach((v, k) => initialFiles.set(k, v));
+      metafile.inputs = {...metafile.inputs, ...bundlingResult.metafile?.inputs};
+      metafile.outputs = {...metafile.outputs, ...bundlingResult.metafile?.outputs};
+    }
+    const assetFiles: { source: string; destination: string }[] = [];
 
     //-- Check commonjs
     // if (!this._opt.dev) {
@@ -181,10 +167,8 @@ export class SdNgBundler {
     // }
 
     //-- index
-    const genIndexHtmlResult = await this._genIndexHtmlAsync(
-      bundlingResult.outputFiles,
-      bundlingResult.initialFiles
-    );
+
+    const genIndexHtmlResult = await this._genIndexHtmlAsync(outputFiles, initialFiles);
     for (const warning of genIndexHtmlResult.warnings) {
       results.push({
         filePath: undefined,
@@ -207,25 +191,22 @@ export class SdNgBundler {
         type: "build",
       });
     }
-    executionResult.addOutputFile("index.html", genIndexHtmlResult.content);
+    outputFiles.push(createOutputFileFromText("index.html", genIndexHtmlResult.content));
 
     //-- copy assets
-    executionResult.assetFiles.push(...(await this._copyAssetsAsync()));
+    assetFiles.push(...(await this._copyAssetsAsync()));
 
     //-- extract 3rdpartylicenses
     if (!this._opt.dev) {
-      executionResult.addOutputFile('3rdpartylicenses.txt', await extractLicenses(bundlingResult.metafile, this._opt.pkgPath));
+      outputFiles.push(createOutputFileFromText('3rdpartylicenses.txt', await extractLicenses(metafile, this._opt.pkgPath)));
     }
 
     //-- service worker
     if (FsUtil.exists(this._swConfFilePath)) {
       try {
-        const serviceWorkerResult = await this._genServiceWorkerAsync(
-          executionResult.outputFiles,
-          executionResult.assetFiles
-        );
-        executionResult.addOutputFile('ngsw.json', serviceWorkerResult.manifest);
-        executionResult.assetFiles.push(...serviceWorkerResult.assetFiles);
+        const serviceWorkerResult = await this._genServiceWorkerAsync(outputFiles, assetFiles);
+        outputFiles.push(createOutputFileFromText('ngsw.json', serviceWorkerResult.manifest));
+        assetFiles.push(...serviceWorkerResult.assetFiles);
       }
       catch (err) {
         results.push({
@@ -241,7 +222,7 @@ export class SdNgBundler {
     }
 
     //-- write
-    for (const outputFile of executionResult.outputFiles) {
+    for (const outputFile of outputFiles) {
       const distFilePath = path.resolve(this._opt.outputPath, outputFile.path);
 
       const prev = this._outputCache.get(distFilePath);
@@ -250,7 +231,7 @@ export class SdNgBundler {
         this._outputCache.set(distFilePath, Buffer.from(outputFile.contents).toString("base64"));
       }
     }
-    for (const assetFile of executionResult.assetFiles) {
+    for (const assetFile of assetFiles) {
       const prev = this._outputCache.get(assetFile.source);
       const curr = FsUtil.lstat(assetFile.source).mtime.getTime();
       if (prev !== curr) {
@@ -408,122 +389,118 @@ export class SdNgBundler {
     );
   }
 
-  private async _getAppContextAsync(): Promise<BundlerContext> {
-    return new BundlerContext(
-      this._opt.pkgPath,
-      true,
-      {
-        absWorkingDir: this._opt.pkgPath,
-        bundle: true,
-        keepNames: true,
-        format: 'esm',
-        assetNames: 'media/[name]',
-        conditions: ['es2020', 'es2015', 'module'],
-        resolveExtensions: ['.ts', '.tsx', '.mjs', '.js'],
-        metafile: true,
-        legalComments: this._opt.dev ? 'eof' : 'none',
-        logLevel: 'silent',
-        minifyIdentifiers: !this._opt.dev,
-        minifySyntax: !this._opt.dev,
-        minifyWhitespace: !this._opt.dev,
-        pure: ['forwardRef'],
-        outdir: this._opt.pkgPath,
-        outExtension: undefined,
-        sourcemap: this._opt.dev,
-        splitting: true,
-        chunkNames: 'chunk-[hash]',
-        tsconfig: this._tsConfigFilePath,
-        external: [],
-        write: false,
-        preserveSymlinks: false,
-        define: {
-          ...!this._opt.dev ? {ngDevMode: 'false'} : {},
-          ngJitMode: 'false',
-          global: 'global',
-          process: 'process',
-          Buffer: 'Buffer',
-          'process.env.SD_VERSION': JSON.stringify(this._pkgNpmConf.version),
-          "process.env.NODE_ENV": JSON.stringify(this._opt.dev ? "development" : "production"),
-          ...this._opt.env ? Object.keys(this._opt.env).toObject(
-            key => `process.env.${key}`,
-            key => JSON.stringify(this._opt.env![key])
-          ) : {}
-        },
-        platform: 'browser',
-        mainFields: ['es2020', 'es2015', 'browser', 'module', 'main'],
-        entryNames: '[name]',
-        entryPoints: {
-          main: this._mainFilePath,
-          polyfills: 'angular:polyfills',
-          ...this._opt.builderType === "cordova" ? {
-            "cordova-entry": path.resolve(path.dirname(fileURLToPath(import.meta.url)), `../../lib/cordova-entry.js`)
-          } : {}
-        },
-        target: this._browserTarget,
-        supported: {'async-await': false, 'object-rest-spread': false},
-        loader: {
-          ".png": "file",
-          ".jpeg": "file",
-          ".jpg": "file",
-          ".jfif": "file",
-          ".gif": "file",
-          ".svg": "file",
-          ".woff": "file",
-          ".woff2": "file",
-          ".ttf": "file",
-          ".eot": "file",
-          ".ico": "file",
-          ".otf": "file",
-          ".csv": "file",
-          ".xlsx": "file",
-          ".xls": "file",
-          ".pptx": "file",
-          ".ppt": "file",
-          ".docx": "file",
-          ".doc": "file",
-          ".zip": "file",
-          ".pfx": "file",
-          ".pkl": "file"
-        },
-        inject: [PathUtil.posix(fileURLToPath(await import.meta.resolve!("node-stdlib-browser/helpers/esbuild/shim")))],
-        plugins: [
-          createVirtualModulePlugin({
-            namespace: "angular:polyfills",
-            loadContent: () => ({
-              contents: `import "./src/polyfills.ts";`,
-              loader: 'js',
-              resolveDir: this._opt.pkgPath
-            })
-          }) as esbuild.Plugin,
-          createSourcemapIgnorelistPlugin(),
-          createCompilerPlugin({
-            sourcemap: this._opt.dev,
-            thirdPartySourcemaps: false,
-            tsconfig: this._tsConfigFilePath,
-            jit: false,
-            advancedOptimizations: true,
-            fileReplacements: undefined,
-            sourceFileCache: this._sourceFileCache,
-            loadResultCache: this._sourceFileCache.loadResultCache
-          }, {
-            workspaceRoot: this._opt.pkgPath,
-            optimization: !this._opt.dev,
-            sourcemap: this._opt.dev ? 'inline' : false,
-            outputNames: {bundles: '[name]', media: 'media/[name]'},
-            includePaths: [],
-            externalDependencies: [],
-            target: this._browserTarget,
-            inlineStyleLanguage: 'scss',
-            preserveSymlinks: false,
-            tailwindConfiguration: undefined
-          }) as esbuild.Plugin,
-          nodeStdLibBrowserPlugin(nodeStdLibBrowser)
-        ]
-      }
-    );
+  private async _getAppContextAsync(): Promise<SdNgBundlerContext> {
+    return new SdNgBundlerContext(this._opt.pkgPath, {
+      absWorkingDir: this._opt.pkgPath,
+      bundle: true,
+      keepNames: true,
+      format: 'esm',
+      assetNames: 'media/[name]',
+      conditions: ['es2020', 'es2015', 'module'],
+      resolveExtensions: ['.ts', '.tsx', '.mjs', '.js'],
+      metafile: true,
+      legalComments: this._opt.dev ? 'eof' : 'none',
+      logLevel: 'silent',
+      minifyIdentifiers: !this._opt.dev,
+      minifySyntax: !this._opt.dev,
+      minifyWhitespace: !this._opt.dev,
+      pure: ['forwardRef'],
+      outdir: this._opt.pkgPath,
+      outExtension: undefined,
+      sourcemap: this._opt.dev,
+      splitting: true,
+      chunkNames: 'chunk-[hash]',
+      tsconfig: this._tsConfigFilePath,
+      external: [],
+      write: false,
+      preserveSymlinks: false,
+      define: {
+        ...!this._opt.dev ? {ngDevMode: 'false'} : {},
+        ngJitMode: 'false',
+        global: 'global',
+        process: 'process',
+        Buffer: 'Buffer',
+        'process.env.SD_VERSION': JSON.stringify(this._pkgNpmConf.version),
+        "process.env.NODE_ENV": JSON.stringify(this._opt.dev ? "development" : "production"),
+        ...this._opt.env ? Object.keys(this._opt.env).toObject(
+          key => `process.env.${key}`,
+          key => JSON.stringify(this._opt.env![key])
+        ) : {}
+      },
+      platform: 'browser',
+      mainFields: ['es2020', 'es2015', 'browser', 'module', 'main'],
+      entryNames: '[name]',
+      entryPoints: {
+        main: this._mainFilePath,
+        polyfills: 'angular:polyfills',
+        ...this._opt.builderType === "cordova" ? {
+          "cordova-entry": path.resolve(path.dirname(fileURLToPath(import.meta.url)), `../../lib/cordova-entry.js`)
+        } : {}
+      },
+      target: this._browserTarget,
+      supported: {'async-await': false, 'object-rest-spread': false},
+      loader: {
+        ".png": "file",
+        ".jpeg": "file",
+        ".jpg": "file",
+        ".jfif": "file",
+        ".gif": "file",
+        ".svg": "file",
+        ".woff": "file",
+        ".woff2": "file",
+        ".ttf": "file",
+        ".eot": "file",
+        ".ico": "file",
+        ".otf": "file",
+        ".csv": "file",
+        ".xlsx": "file",
+        ".xls": "file",
+        ".pptx": "file",
+        ".ppt": "file",
+        ".docx": "file",
+        ".doc": "file",
+        ".zip": "file",
+        ".pfx": "file",
+        ".pkl": "file"
+      },
+      inject: [PathUtil.posix(fileURLToPath(await import.meta.resolve!("node-stdlib-browser/helpers/esbuild/shim")))],
+      plugins: [
+        createVirtualModulePlugin({
+          namespace: "angular:polyfills",
+          loadContent: () => ({
+            contents: `import "./src/polyfills.ts";`,
+            loader: 'js',
+            resolveDir: this._opt.pkgPath
+          })
+        }) as esbuild.Plugin,
+        createSourcemapIgnorelistPlugin(),
+        createCompilerPlugin({
+          sourcemap: this._opt.dev,
+          thirdPartySourcemaps: false,
+          tsconfig: this._tsConfigFilePath,
+          jit: false,
+          advancedOptimizations: true,
+          fileReplacements: undefined,
+          sourceFileCache: this._sourceFileCache,
+          loadResultCache: this._sourceFileCache.loadResultCache
+        }, {
+          workspaceRoot: this._opt.pkgPath,
+          optimization: !this._opt.dev,
+          sourcemap: this._opt.dev ? 'inline' : false,
+          outputNames: {bundles: '[name]', media: 'media/[name]'},
+          includePaths: [],
+          externalDependencies: [],
+          target: this._browserTarget,
+          inlineStyleLanguage: 'scss',
+          preserveSymlinks: false,
+          tailwindConfiguration: undefined
+        }) as esbuild.Plugin,
+        nodeStdLibBrowserPlugin(nodeStdLibBrowser)
+      ]
+    });
   }
 
-  private _getStyleContext(): BundlerContext {
+  private _getStyleContext(): SdNgBundlerContext {
     const browserTarget = transformSupportedBrowsersToTargets(browserslist("defaults and fully supports es6-module"));
 
     const pluginFactory = new StylesheetPluginFactory(
@@ -534,44 +511,39 @@ export class SdNgBundler {
       this._sourceFileCache.loadResultCache,
     );
 
-    return new BundlerContext(
-      this._opt.pkgPath,
-      true,
-      {
-        absWorkingDir: this._opt.pkgPath,
-        bundle: true,
-        entryNames: '[name]',
-        assetNames: 'media/[name]',
-        logLevel: 'silent',
-        minify: !this._opt.dev,
-        metafile: true,
-        sourcemap: this._opt.dev,
-        outdir: this._opt.pkgPath,
-        write: false,
-        platform: 'browser',
-        target: browserTarget,
-        preserveSymlinks: false,
-        external: [],
-        conditions: ['style', 'sass'],
-        mainFields: ['style', 'sass'],
-        legalComments: !this._opt.dev ? "none" : "eof",
-        entryPoints: {styles: 'angular:styles/global;styles'},
-        plugins: [
-          createVirtualModulePlugin({
-            namespace: "angular:styles/global",
-            transformPath: (currPath) => currPath.split(';', 2)[1],
-            loadContent: () => ({
-              contents: `@import 'src/styles.scss';`,
-              loader: 'css',
-              resolveDir: this._opt.pkgPath
-            }),
+    return new SdNgBundlerContext(this._opt.pkgPath, {
+      absWorkingDir: this._opt.pkgPath,
+      bundle: true,
+      entryNames: '[name]',
+      assetNames: 'media/[name]',
+      logLevel: 'silent',
+      minify: !this._opt.dev,
+      metafile: true,
+      sourcemap: this._opt.dev,
+      outdir: this._opt.pkgPath,
+      write: false,
+      platform: 'browser',
+      target: browserTarget,
+      preserveSymlinks: false,
+      external: [],
+      conditions: ['style', 'sass'],
+      mainFields: ['style', 'sass'],
+      legalComments: !this._opt.dev ? "none" : "eof",
+      entryPoints: {styles: 'angular:styles/global;styles'},
+      plugins: [
+        createVirtualModulePlugin({
+          namespace: "angular:styles/global",
+          transformPath: (currPath) => currPath.split(';', 2)[1],
+          loadContent: () => ({
+            contents: `@import 'src/styles.scss';`,
+            loader: 'css',
+            resolveDir: this._opt.pkgPath
           }),
-          pluginFactory.create(SassStylesheetLanguage),
-          pluginFactory.create(CssStylesheetLanguage),
-          createCssResourcePlugin(this._sourceFileCache.loadResultCache),
-        ],
-      },
-      () => true
-    );
+        }),
+        pluginFactory.create(SassStylesheetLanguage),
+        pluginFactory.create(CssStylesheetLanguage),
+        createCssResourcePlugin(this._sourceFileCache.loadResultCache),
+      ],
+    });
   }
 }
