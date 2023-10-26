@@ -75,6 +75,7 @@ export * from "./plugins/SdRefreshCommandEventPlugin";
 export * from "./plugins/SdResizeEventPlugin";
 export * from "./plugins/SdSaveCommandEventPlugin";
 export * from "./providers/SdBusyProvider";
+export * from "./providers/SdDomValidatorProvider";
 export * from "./providers/SdFileDialogProvider";
 export * from "./providers/SdLazyPageLoaderProvider";
 export * from "./providers/SdLocalStorageProvider";

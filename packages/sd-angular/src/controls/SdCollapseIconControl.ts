@@ -12,11 +12,10 @@ import {SdIconControl} from "./SdIconControl";
     SdIconControl
   ],
   template: `
-    <sd-icon class="_icon" [icon]="icon" fixedWidth/>`,
+    <sd-icon [icon]="icon" fixedWidth/>`,
   styles: [/* language=SCSS */ `
     :host {
       display: inline-block;
-      vertical-align: top;
       transition: transform .1s ease-in;
 
       &[sd-open=true] {

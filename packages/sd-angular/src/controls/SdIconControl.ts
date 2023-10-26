@@ -6,7 +6,7 @@ import {coercionBoolean} from "../utils/commons";
   selector: 'sd-icon',
   standalone: true,
   imports: [],
-  template: ``,
+  template: ``
 })
 export class SdIconControl extends FaIconComponent {
   @Input({transform: coercionBoolean})

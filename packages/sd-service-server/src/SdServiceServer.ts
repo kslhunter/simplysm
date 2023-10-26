@@ -17,6 +17,7 @@ import {
 } from "@simplysm/sd-service-common";
 import mime from "mime";
 import {ApiServiceError} from "./ApiServiceError";
+import {SdServiceServerConfigUtil} from "./utils/SdServiceServerConfigUtil";
 
 export class SdServiceServer extends EventEmitter {
   public isOpen = false;
@@ -73,6 +74,7 @@ export class SdServiceServer extends EventEmitter {
   }
 
   public getConfig(clientName?: string): Record<string, any | undefined> {
+    SdServiceServerConfigUtil.getConfig(this.options.rootPath, clientName, this.pathProxy);
     let result: Record<string, any | undefined> = {};
 
     const rootFilePath = path.resolve(this.options.rootPath, ".config.json");

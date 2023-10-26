@@ -4,9 +4,16 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a5909e33-fd1f-4a18-a2ac-5581a953e90d" name="Changes" comment=".">
+    <list default="true" id="a5909e33-fd1f-4a18-a2ac-5581a953e90d" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/packages/sd-angular/src/providers/SdDomValidatorProvider.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/packages/sd-service-server/src/utils/SdServiceServerConfigUtil.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/SdAngularModule.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/SdAngularModule.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdCollapseIconControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdCollapseIconControl.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdIconControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdIconControl.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdListItemControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdListItemControl.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-service-server/src/SdServiceServer.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-service-server/src/SdServiceServer.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-service-server/src/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-service-server/src/index.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -46,7 +53,7 @@
     "WebServerToolWindowFactoryState": "false",
     "git-widget-placeholder": "master",
     "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "D:/workspaces-7.2/jemk-gojsp",
+    "last_opened_file_path": "D:/workspaces-11/kia-inout",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -63,11 +70,11 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\workspaces-11\simplysm\packages\sd-angular\src\providers" />
       <recent name="D:\workspaces-11\simplysm\.back\231025\providers" />
       <recent name="D:\workspaces-11\simplysm\.back\231025\modules" />
       <recent name="D:\workspaces-11\simplysm\.back\231025" />
       <recent name="D:\workspaces-11\simplysm\packages\sd-angular\src\controls" />
-      <recent name="D:\workspaces-11\simplysm\packages\sd-angular\src\directives" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="D:\workspaces-11\simplysm\packages\sd-angular\src\modals" />

@@ -38,9 +38,10 @@ import {SdCollapseControl} from "./SdCollapseControl";
           <ng-content></ng-content>
         </div>
 
-        <sd-collapse-icon [open]="open" *ngIf="hasChildren && layout==='accordion'"
-                          [icon]="faChevronDown"
-                          style="float: right"></sd-collapse-icon>
+        <div *ngIf="hasChildren && layout==='accordion'">
+          <sd-collapse-icon [open]="open"
+                            [icon]="faChevronDown"/>
+        </div>
       </div>
     </div>
     <sd-collapse *ngIf="hasChildren"
