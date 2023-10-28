@@ -5,102 +5,101 @@ import {Wait} from "@simplysm/sd-core-common";
 
 @Injectable({providedIn: "root"})
 export class SdSharedDataProvider {
-  private readonly _sdServiceFactory = inject(SdServiceFactoryProvider);
+  #sdServiceFactory = inject(SdServiceFactoryProvider);
 
-  private _infoRecord: Record<string, ISharedDataInfo<ISharedDataBase<string | number>> | undefined> = {};
-  private _dataRecord: Record<string, {
+  #infoRecord: Record<string, ISharedDataInfo<ISharedDataBase<string | number>> | undefined> = {};
+  #dataRecord: Record<string, {
     arr: ISharedDataBase<string | number>[];
     map: Map<string | number, ISharedDataBase<string | number>>;
   } | undefined> = {};
-  private _listenerRecord: Record<string, string | undefined> = {};
-  private readonly _isProcessingRecord: Record<string, boolean | undefined> = {};
-  private readonly _cdrRecord: Record<string, ChangeDetectorRef[] | undefined> = {};
+  #listenerRecord: Record<string, string | undefined> = {};
+  #isProcessingRecord: Record<string, boolean | undefined> = {};
+  #cdrRecord: Record<string, ChangeDetectorRef[] | undefined> = {};
 
-  public async clearAsync(): Promise<void> {
+  async clearAsync() {
     await Wait.until(() => {
-      return Object.keys(this._isProcessingRecord)
-        .every((dataType) => !this._isProcessingRecord[dataType]);
+      return Object.keys(this.#isProcessingRecord)
+        .every((dataType) => !this.#isProcessingRecord[dataType]);
     });
 
-    for (const dataType of Object.keys(this._listenerRecord)) {
+    for (const dataType of Object.keys(this.#listenerRecord)) {
       // noinspection ES6MissingAwait
-      void this._sdServiceFactory
-        .get(this._infoRecord[dataType]!.serviceKey)
-        .removeEventListenerAsync(this._listenerRecord[dataType]!);
+      void this.#sdServiceFactory
+        .get(this.#infoRecord[dataType]!.serviceKey)
+        .removeEventListenerAsync(this.#listenerRecord[dataType]!);
     }
 
-    console.log("clear");
-    this._infoRecord = {};
-    this._dataRecord = {};
-    this._listenerRecord = {};
+    this.#infoRecord = {};
+    this.#dataRecord = {};
+    this.#listenerRecord = {};
 
-    for (const dataType of Object.keys(this._cdrRecord)) {
-      for (const cdr of this._cdrRecord[dataType]!) {
+    for (const dataType of Object.keys(this.#cdrRecord)) {
+      for (const cdr of this.#cdrRecord[dataType]!) {
         cdr.markForCheck();
       }
     }
   }
 
-  public register<T extends ISharedDataBase<string | number>>(dataType: string, info: ISharedDataInfo<T>): void {
-    if (this._infoRecord[dataType]) {
+  register<T extends ISharedDataBase<string | number>>(dataType: string, info: ISharedDataInfo<T>) {
+    if (this.#infoRecord[dataType]) {
       throw new Error("SharedData 정보, 중복 등록 불가");
     }
 
     // noinspection ES6MissingAwait
-    void this._sdServiceFactory.get(info.serviceKey)
-      .removeEventListenerAsync(this._listenerRecord[dataType]!);
+    void this.#sdServiceFactory.get(info.serviceKey)
+      .removeEventListenerAsync(this.#listenerRecord[dataType]!);
 
-    this._infoRecord[dataType] = info as any;
+    this.#infoRecord[dataType] = info as any;
 
-    delete this._listenerRecord[dataType];
-    delete this._dataRecord[dataType];
+    delete this.#listenerRecord[dataType];
+    delete this.#dataRecord[dataType];
 
-    for (const cdr of this._cdrRecord[dataType] ?? []) {
+    for (const cdr of this.#cdrRecord[dataType] ?? []) {
       cdr.markForCheck();
     }
   }
 
-  public async emitAsync(dataType: string, changeKeys?: (string | number)[]): Promise<void> {
-    const info = this._infoRecord[dataType];
+  async emitAsync(dataType: string, changeKeys?: (string | number)[]) {
+    const info = this.#infoRecord[dataType];
     if (!info) throw new Error(`'${dataType}'에 대한 'SdSharedData' 로직 정보가 없습니다.`);
 
-    await this._sdServiceFactory.get(info.serviceKey).emitAsync(
+    await this.#sdServiceFactory.get(info.serviceKey).emitAsync(
       SdSharedDataChangeEvent,
       (item) => item === dataType,
       changeKeys
     );
   }
 
-  public async getDataAsync(dataType: string, cdr: ChangeDetectorRef): Promise<ISharedDataBase<string | number>[]> {
-    await this._loadDataAsync(dataType);
-    await this._addListenerAsync(dataType);
+  async getDataAsync(dataType: string, cdr: ChangeDetectorRef): Promise<ISharedDataBase<string | number>[]> {
+    await this.#loadDataAsync(dataType);
+    await this.#addListenerAsync(dataType);
 
-    this._cdrRecord[dataType] = this._cdrRecord[dataType] ?? [];
-    this._cdrRecord[dataType]!.push(cdr);
+    this.#cdrRecord[dataType] = this.#cdrRecord[dataType] ?? [];
+    this.#cdrRecord[dataType]!.push(cdr);
 
-    return this._dataRecord[dataType]!.arr;
+    return this.#dataRecord[dataType]!.arr;
   }
 
-  public async getDataMapAsync(dataType: string, cdr: ChangeDetectorRef): Promise<Map<number | string, ISharedDataBase<string | number>>> {
-    await this._loadDataAsync(dataType);
-    await this._addListenerAsync(dataType);
+  async getDataMapAsync(dataType: string, cdr: ChangeDetectorRef): Promise<Map<number | string, ISharedDataBase<string | number>>> {
+    await this.#loadDataAsync(dataType);
+    await this.#addListenerAsync(dataType);
 
-    this._cdrRecord[dataType] = this._cdrRecord[dataType] ?? [];
-    this._cdrRecord[dataType]!.push(cdr);
+    this.#cdrRecord[dataType] = this.#cdrRecord[dataType] ?? [];
+    this.#cdrRecord[dataType]!.push(cdr);
 
-    return this._dataRecord[dataType]!.map;
+    return this.#dataRecord[dataType]!.map;
   }
 
-  private async _loadDataAsync(dataType: string): Promise<void> {
-    if (this._dataRecord[dataType]) return;
+  async #loadDataAsync(dataType: string): Promise<void> {
+    if (this.#dataRecord[dataType]) return;
 
-    if (this._isProcessingRecord[dataType]) {
-      await Wait.until(() => !this._isProcessingRecord[dataType]);
+    if (this.#isProcessingRecord[dataType]) {
+      await Wait.until(() => !this.#isProcessingRecord[dataType]);
     }
-    this._isProcessingRecord[dataType] = true;
+    this.#isProcessingRecord[dataType] = true;
 
     // 정보 등록 확인
-    const info = this._infoRecord[dataType];
+    const info = this.#infoRecord[dataType];
     if (!info) throw new Error(`'${dataType}'에 대한 'SdSharedData' 로직 정보가 없습니다.`);
 
     let data = await info.getData();
@@ -109,21 +108,21 @@ export class SdSharedDataProvider {
         ? data.orderByDesc((item) => orderBy[0](item))
         : data.orderBy((item) => orderBy[0](item));
     }
-    this._dataRecord[dataType] = {
+    this.#dataRecord[dataType] = {
       arr: data,
       map: data.toMap((item) => item.__valueKey)
     };
 
-    this._isProcessingRecord[dataType] = false;
+    this.#isProcessingRecord[dataType] = false;
   }
 
-  private async _addListenerAsync(dataType: string) {
-    if (this._listenerRecord[dataType] !== undefined) return;
+  async #addListenerAsync(dataType: string) {
+    if (this.#listenerRecord[dataType] !== undefined) return;
 
-    const info = this._infoRecord[dataType];
+    const info = this.#infoRecord[dataType];
     if (!info) throw new Error(`'${dataType}'에 대한 'SdSharedData' 로직 정보가 없습니다.`);
 
-    this._listenerRecord[dataType] = await this._sdServiceFactory.get(info.serviceKey)
+    this.#listenerRecord[dataType] = await this.#sdServiceFactory.get(info.serviceKey)
       .addEventListenerAsync(
         SdSharedDataChangeEvent,
         dataType,
@@ -134,7 +133,7 @@ export class SdSharedDataProvider {
   }
 
   private async _reloadAsync(dataType: string, changeKeys?: (string | number)[]) {
-    const info = this._infoRecord[dataType];
+    const info = this.#infoRecord[dataType];
     if (!info) throw new Error(`'${dataType}'에 대한 'SdSharedData' 로직 정보가 없습니다.`);
 
     let currData = await info.getData(changeKeys);
@@ -142,24 +141,24 @@ export class SdSharedDataProvider {
     if (changeKeys) {
       // 삭제된 항목 제거 (DB에 없는 항목)
       const deleteKeys = changeKeys.filter((changeKey) => !currData.some((currItem) => currItem.__valueKey === changeKey));
-      this._dataRecord[dataType]!.arr.remove((item) => deleteKeys.includes(item.__valueKey));
+      this.#dataRecord[dataType]!.arr.remove((item) => deleteKeys.includes(item.__valueKey));
       for (const deleteKey of deleteKeys) {
-        this._dataRecord[dataType]!.map.delete(deleteKey);
+        this.#dataRecord[dataType]!.map.delete(deleteKey);
       }
 
       // 수정된 항목 변경
       for (const currItem of currData) {
         const currItemKey = currItem.__valueKey;
 
-        const currItemIndex = this._dataRecord[dataType]!.arr.findIndex((item) => item.__valueKey === currItemKey);
+        const currItemIndex = this.#dataRecord[dataType]!.arr.findIndex((item) => item.__valueKey === currItemKey);
         if (currItemIndex >= 0) {
-          this._dataRecord[dataType]!.arr[currItemIndex] = currItem;
+          this.#dataRecord[dataType]!.arr[currItemIndex] = currItem;
         }
         else {
-          this._dataRecord[dataType]!.arr.push(currItem);
+          this.#dataRecord[dataType]!.arr.push(currItem);
         }
 
-        this._dataRecord[dataType]!.map.set(currItemKey, currItem);
+        this.#dataRecord[dataType]!.map.set(currItemKey, currItem);
       }
     }
     // 모든항목 새로고침
@@ -169,15 +168,15 @@ export class SdSharedDataProvider {
           : currData.orderBy((item) => orderBy[0](item));
       }
 
-      this._dataRecord[dataType]!.arr.clear();
-      this._dataRecord[dataType]!.map.clear();
-      this._dataRecord[dataType]!.arr.push(...currData);
+      this.#dataRecord[dataType]!.arr.clear();
+      this.#dataRecord[dataType]!.map.clear();
+      this.#dataRecord[dataType]!.arr.push(...currData);
       for (const currItem of currData) {
-        this._dataRecord[dataType]!.map.set(currItem.__valueKey, currItem);
+        this.#dataRecord[dataType]!.map.set(currItem.__valueKey, currItem);
       }
     }
 
-    for (const cdr of this._cdrRecord[dataType] ?? []) {
+    for (const cdr of this.#cdrRecord[dataType] ?? []) {
       cdr.markForCheck();
     }
   }

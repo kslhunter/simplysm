@@ -98,30 +98,34 @@ export class SdNgBundler {
 
     let affectedSourceFilePaths = watchFilePaths.filter((item) => PathUtil.isChildPath(item, this._opt.pkgPath));
 
-    const depMap = new Map<string, Set<string>>();
-    for (const bundlingResult of bundlingResults) {
-      bundlingResult.dependencyMap.forEach((v, k) => {
+    if (this._sourceFileCache.modifiedFiles.size > 0) {
+      const depMap = new Map<string, Set<string>>();
+      for (const bundlingResult of bundlingResults) {
+        for(const [k, v] of bundlingResult.dependencyMap){
+          const currSet = depMap.getOrCreate(k, new Set<string>());
+          currSet.adds(...v);
+        }
+      }
+      for (const [k, v] of this._sourceFileCache.loadResultCache.fileDependencies) {
         const currSet = depMap.getOrCreate(k, new Set<string>());
-        currSet.adds(...v);
-      });
-    }
-
-    const searchAffectedFiles = (filePath: string, prev?: Set<string>): Set<string> => {
-      const result = new Set<string>(prev);
-
-      const importerPaths = depMap.get(filePath);
-      if (!importerPaths) return result;
-
-      for (const importerPath of importerPaths) {
-        if (result.has(importerPath)) continue;
-        result.adds(importerPath);
-        result.adds(...searchAffectedFiles(importerPath, result));
+        currSet.adds(...Array.from(v).map((item) => item.startsWith("file:") ? fileURLToPath(item) : undefined).filterExists());
       }
 
-      return result;
-    };
+      const searchAffectedFiles = (filePath: string, prev?: Set<string>): Set<string> => {
+        const result = new Set<string>(prev);
 
-    if (this._sourceFileCache.modifiedFiles.size > 0) {
+        const importerPaths = depMap.get(filePath);
+        if (!importerPaths) return result;
+
+        for (const importerPath of importerPaths) {
+          if (result.has(importerPath)) continue;
+          result.adds(importerPath);
+          result.adds(...searchAffectedFiles(importerPath, result));
+        }
+
+        return result;
+      };
+
       const affectedFilePathSet = new Set<string>();
       for (const modFile of this._sourceFileCache.modifiedFiles) {
         affectedFilePathSet.add(path.resolve(modFile));
@@ -129,6 +133,7 @@ export class SdNgBundler {
       }
       affectedSourceFilePaths = Array.from(affectedFilePathSet.values()).filter((item) => PathUtil.isChildPath(item, this._opt.pkgPath));
     }
+
 
     /*const executionResult = new ExecutionResult(this._contexts, this._sourceFileCache);
     executionResult.outputFiles.push(...bundlingResult.outputFiles);*/

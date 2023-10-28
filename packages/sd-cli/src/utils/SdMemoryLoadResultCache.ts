@@ -16,11 +16,7 @@ export class SdMemoryLoadResultCache extends MemoryLoadResultCache {
       for (const watchFile of result.watchFiles) {
         // Normalize the watch file path to ensure OS consistent paths
         const watchFilePath = path.resolve(watchFile);
-        let affected = this.fileDependencies.get(watchFilePath);
-        if (affected === undefined) {
-          affected = new Set();
-          this.fileDependencies.set(watchFilePath, affected);
-        }
+        let affected = this.fileDependencies.getOrCreate(watchFilePath, new Set());
         affected.add(putPath);
       }
     }

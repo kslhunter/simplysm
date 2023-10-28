@@ -97,10 +97,10 @@ export class SdNgBundlerContext {
 
     const dependencyMap = new Map<string, Set<string>>();
     if (buildResult.metafile) {
-      for (const entry of Object.entries(buildResult.metafile.inputs)) {
-        for (const imp of entry[1].imports) {
+      for (const [key, val] of Object.entries(buildResult.metafile.inputs)) {
+        for (const imp of val.imports) {
           const deps = dependencyMap.getOrCreate(path.resolve(this._pkgPath, imp.path), new Set<string>());
-          deps.add(path.resolve(this._pkgPath, entry[0]));
+          deps.add(path.resolve(this._pkgPath, key));
         }
       }
     }

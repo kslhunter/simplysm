@@ -144,7 +144,7 @@ export class QueryHelper {
   }
 
   public endsWith(source: TEntityValue<string | undefined>, target: TEntityValue<string | undefined>): TQueryBuilderValue[] {
-    return [this.getQueryValue(source), " LIKE ", "'%'", this._dialect === "sqlite" ? " || " : " + ", this.getQueryValue(target)];
+    return [this.getQueryValue(source), " LIKE ", this.getQueryValue(this.concat("%", target))/*, "'%'", this._dialect === "sqlite" ? " || " : " + ", this.getQueryValue(target)*/];
   }
 
   public notEndsWith(source: TEntityValue<string | undefined>, target: TEntityValue<string | undefined>): TQueryBuilderValue[] {
