@@ -10,7 +10,7 @@ import {
 } from "@angular-devkit/build-angular/src/tools/esbuild/sourcemap-ignorelist-plugin";
 import nodeStdLibBrowser from "node-stdlib-browser";
 import nodeStdLibBrowserPlugin from "node-stdlib-browser/helpers/esbuild/plugin";
-import {INpmConfig, ISdCliPackageBuildResult} from "../commons";
+import {INpmConfig, ISdCliClientBuilderCordovaConfig, ISdCliPackageBuildResult} from "../commons";
 import {copyAssets} from "@angular-devkit/build-angular/src/utils/copy-assets";
 import {extractLicenses} from "@angular-devkit/build-angular/src/tools/esbuild/license-extractor";
 import {augmentAppWithServiceWorkerEsbuild} from "@angular-devkit/build-angular/src/utils/service-worker";
@@ -37,7 +37,9 @@ import {SdSourceFileCache} from "../utils/SdSourceFileCache";
 import {SdNgBundlerContext} from "./SdNgBundlerContext";
 
 export class SdNgBundler {
-  private readonly _sourceFileCache = new SdSourceFileCache();
+  private readonly _sourceFileCache = new SdSourceFileCache(
+    path.resolve(this._opt.pkgPath, ".cache")
+  );
 
   private _contexts: SdNgBundlerContext[] | undefined;
 
@@ -57,8 +59,8 @@ export class SdNgBundler {
     outputPath: string;
     pkgPath: string;
     builderType: string;
-    cordovaPlatforms: string[] | undefined;
     env: Record<string, string> | undefined;
+    cordovaConfig: ISdCliClientBuilderCordovaConfig | undefined;
   }) {
     this._pkgNpmConf = FsUtil.readJson(path.resolve(this._opt.pkgPath, "package.json"));
     this._mainFilePath = path.resolve(this._opt.pkgPath, "src/main.ts");
@@ -101,7 +103,7 @@ export class SdNgBundler {
     if (this._sourceFileCache.modifiedFiles.size > 0) {
       const depMap = new Map<string, Set<string>>();
       for (const bundlingResult of bundlingResults) {
-        for(const [k, v] of bundlingResult.dependencyMap){
+        for (const [k, v] of bundlingResult.dependencyMap) {
           const currSet = depMap.getOrCreate(k, new Set<string>());
           currSet.adds(...v);
         }
@@ -181,7 +183,7 @@ export class SdNgBundler {
         char: undefined,
         code: undefined,
         severity: "warning",
-        message: warning,
+        message: `(gen-index) ${warning}`,
         type: "build",
       });
     }
@@ -192,7 +194,7 @@ export class SdNgBundler {
         char: undefined,
         code: undefined,
         severity: "error",
-        message: error,
+        message: `(gen-index) ${error}`,
         type: "build",
       });
     }
@@ -220,7 +222,7 @@ export class SdNgBundler {
           char: undefined,
           code: undefined,
           severity: "error",
-          message: err.toString(),
+          message: `(gen-sw) ${err.toString()}`,
           type: "build",
         });
       }
@@ -347,7 +349,7 @@ export class SdNgBundler {
       {input: 'src', glob: 'favicon.ico', output: ''},
       {input: 'src', glob: 'manifest.webmanifest', output: ''},
       {input: 'src/assets', glob: '**/*', output: 'assets'},
-      ...this._opt.dev && this._opt.cordovaPlatforms ? this._opt.cordovaPlatforms.mapMany((platform) => [
+      ...this._opt.dev && this._opt.builderType === "cordova" ? Object.keys(this._opt.cordovaConfig?.platform ?? {browser: {}}).mapMany((platform) => [
         {
           input: `.cordova/platforms/${platform}/platform_www/plugins`,
           glob: '**/*',
@@ -416,7 +418,9 @@ export class SdNgBundler {
       splitting: true,
       chunkNames: 'chunk-[hash]',
       tsconfig: this._tsConfigFilePath,
-      external: [],
+      external: [
+        ...this._opt.cordovaConfig?.plugins ?? []
+      ],
       write: false,
       preserveSymlinks: false,
       define: {

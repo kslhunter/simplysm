@@ -67,7 +67,7 @@ import {SdListItemControl} from "./SdListItemControl";
                           (click)="selectedItem === item ? onSelectedItemChange(undefined) : onSelectedItemChange(item)"
                           [selectedIcon]="selectedIcon">
               <ng-template [ngTemplateOutlet]="itemTemplateRef"
-                           [ngTemplateOutletContext]="{item: item, index: index, depth: 0}"></ng-template>
+                           [ngTemplateOutletContext]="{$implicit: item, item: item, index: index, depth: 0}"></ng-template>
             </sd-list-item>
           </sd-list>
         </sd-pane>

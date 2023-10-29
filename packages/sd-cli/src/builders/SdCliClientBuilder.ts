@@ -101,7 +101,6 @@ export class SdCliClientBuilder extends EventEmitter {
         dev: opt.dev,
         builderType: builderType,
         pkgPath: this._pkgPath,
-        cordovaPlatforms: builderType === "cordova" ? Object.keys(this._pkgConf.builder!.cordova!.platform ?? {browser: {}}) : undefined,
         outputPath: builderType === "web" ? path.resolve(this._pkgPath, "dist")
           : builderType === "electron" ? path.resolve(this._pkgPath, ".electron/src")
             : builderType === "cordova" && !opt.dev ? path.resolve(this._pkgPath, ".cordova/www")
@@ -109,7 +108,8 @@ export class SdCliClientBuilder extends EventEmitter {
         env: {
           ...this._pkgConf.env,
           ...this._pkgConf.builder?.[builderType]?.env
-        }
+        },
+        cordovaConfig: builderType === "cordova" ? this._pkgConf.builder!.cordova : undefined,
       }));
     }
 

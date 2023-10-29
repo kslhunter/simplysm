@@ -34,9 +34,9 @@ export class SdCliBuildResultUtil {
     if (result.filePath !== undefined) {
       str += `${result.filePath}(${result.line ?? 0}, ${result.char ?? 0}): `;
     }
-    // if (result.code !== undefined) {
-    //   str += `${result.code}: `;
-    // }
+    if (result.code !== undefined) {
+      str += `${result.code}: `;
+    }
     str += `(${result.type}) ${result.severity} ${result.message}`;
 
     return str;

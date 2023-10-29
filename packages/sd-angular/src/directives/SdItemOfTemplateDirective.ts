@@ -16,6 +16,7 @@ export class SdItemOfTemplateDirective<TItem> {
 }
 
 export interface SdItemOfTemplateContext<TItem> {
+  $implicit: TItem;
   item: TItem;
   index: number;
   depth: number;

@@ -1,6 +1,14 @@
-import {SourceFileCache} from "@angular-devkit/build-angular/src/tools/esbuild/angular/compiler-plugin";
 import {SdMemoryLoadResultCache} from "./SdMemoryLoadResultCache";
+import {SourceFileCache} from "@angular-devkit/build-angular/src/tools/esbuild/angular/compiler-plugin";
 
 export class SdSourceFileCache extends SourceFileCache {
   override readonly loadResultCache = new SdMemoryLoadResultCache();
+
+  override invalidate(files: Iterable<string>): void {
+    super.invalidate(files);
+
+    for (let file of files) {
+      this.loadResultCache.invalidate(file);
+    }
+  }
 }

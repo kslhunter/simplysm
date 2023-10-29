@@ -276,7 +276,7 @@ import {NgIf} from "@angular/common";
     }
   `]
 })
-export class SdTextfieldControl<K extends "number" | "text" | "password" | "date" | "datetime" | "datetime-sec" | "time" | "time-sec" | "month" | "year" | "color" | "email" | "format"> implements DoCheck {
+export class SdTextfieldControl<K extends TSdTextfieldType> implements DoCheck {
   @Input({required: true})
   @HostBinding("attr.sd-type")
   type!: K;
@@ -288,10 +288,10 @@ export class SdTextfieldControl<K extends "number" | "text" | "password" | "date
   title?: string;
 
   @Input()
-  value?: TValue<K>;
+  value?: TSdTextfieldValue<K>;
 
   @Output()
-  valueChange = new EventEmitter<TValue<K> | undefined>();
+  valueChange = new EventEmitter<TSdTextfieldValue<K> | undefined>();
 
   @Input({transform: coercionBoolean})
   @HostBinding("attr.sd-disabled")
@@ -305,10 +305,10 @@ export class SdTextfieldControl<K extends "number" | "text" | "password" | "date
   required = false;
 
   @Input()
-  min?: TValue<K>;
+  min?: TSdTextfieldValue<K>;
 
   @Input()
-  max?: TValue<K>;
+  max?: TSdTextfieldValue<K>;
 
   @Input({transform: coercionNumber})
   minlength?: number;
@@ -338,7 +338,7 @@ export class SdTextfieldControl<K extends "number" | "text" | "password" | "date
   size?: "sm" | "lg";
 
   @Input()
-  validatorFn?: TSdFnInfo<(value: TValue<K> | undefined) => string | undefined>;
+  validatorFn?: TSdFnInfo<(value: TSdTextfieldValue<K> | undefined) => string | undefined>;
 
   @Input()
   @HostBinding("attr.sd-theme")
@@ -364,7 +364,7 @@ export class SdTextfieldControl<K extends "number" | "text" | "password" | "date
   controlMax?: string;
   errorMessage = "";
 
-  #elRef: ElementRef<HTMLElement> = inject(ElementRef);
+  #elRef = inject<ElementRef<HTMLElement>>(ElementRef);
 
   #sdNgHelper = new SdNgHelper(inject(Injector));
 
@@ -611,7 +611,7 @@ export class SdTextfieldControl<K extends "number" | "text" | "password" | "date
     }
   }
 
-  #convertToControlValue(value: TValue<K> | undefined): string {
+  #convertToControlValue(value: TSdTextfieldValue<K> | undefined): string {
     if (value == null) {
       return "";
     }
@@ -681,7 +681,22 @@ export class SdTextfieldControl<K extends "number" | "text" | "password" | "date
   }
 }
 
-type TValue<K> = K extends "number" ? number
+export type TSdTextfieldType =
+  "number"
+  | "text"
+  | "password"
+  | "date"
+  | "datetime"
+  | "datetime-sec"
+  | "time"
+  | "time-sec"
+  | "month"
+  | "year"
+  | "color"
+  | "email"
+  | "format";
+
+export type TSdTextfieldValue<K> = K extends "number" ? number
   : K extends "text" | "password" | "color" | "email" | "format" ? string
     : K extends "date" | "month" | "year" ? DateOnly
       : K extends "datetime" | "datetime-sec" ? DateTime

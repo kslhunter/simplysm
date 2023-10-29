@@ -88,18 +88,18 @@ const __dirname = __path__.dirname(__filename);`.trim()
           filePath: warn.location?.file !== undefined ? path.resolve(warn.location.file) : undefined,
           line: warn.location?.line,
           char: warn.location?.column,
-          code: undefined,
+          code: warn.text.slice(0, warn.text.indexOf(":")),
           severity: "warning" as const,
-          message: warn.text
+          message: `(${warn.pluginName}) ${warn.text.slice(warn.text.indexOf(":") + 1)}`,
         })),
         ...result.errors.map((err) => ({
           type: "build" as const,
           filePath: err.location?.file !== undefined ? path.resolve(err.location.file) : undefined,
           line: err.location?.line,
           char: err.location?.column !== undefined ? err.location.column + 1 : undefined,
-          code: undefined,
+          code: err.text.slice(0, err.text.indexOf(":")),
           severity: "error" as const,
-          message: err.text
+          message: `(${err.pluginName}) ${err.text.slice(err.text.indexOf(":") + 1)}`,
         }))
       ]
     };

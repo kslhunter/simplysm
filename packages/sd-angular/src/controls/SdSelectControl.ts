@@ -100,7 +100,7 @@ import {SdDropdownPopupControl} from "./SdDropdownPopupControl";
                 <ng-container *ngFor="let item of items; let index = index; trackBy: trackByFn[0]">
                   <div class="_sd-select-item">
                     <ng-template [ngTemplateOutlet]="itemTemplateRef"
-                                 [ngTemplateOutletContext]="{item: item, index: index, depth: depth}"></ng-template>
+                                 [ngTemplateOutletContext]="{$implicit: item, item: item, index: index, depth: depth}"></ng-template>
 
                     <ng-container
                       *ngIf="getChildrenFn?.[0] && getChildrenFn![0](index, item, depth) && getChildrenFn![0](index, item, depth).length > 0">

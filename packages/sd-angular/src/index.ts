@@ -33,6 +33,7 @@ export * from "./controls/SdPaneControl";
 export * from "./controls/SdPermissionTableControl";
 export * from "./controls/SdProgressControl";
 export * from "./controls/SdProgressItemControl";
+export * from "./controls/SdRangeControl";
 export * from "./controls/SdSelectControl";
 export * from "./controls/SdSelectItemControl";
 export * from "./controls/SdSharedDataSelectControl";

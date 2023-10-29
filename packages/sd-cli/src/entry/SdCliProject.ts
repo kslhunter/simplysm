@@ -67,6 +67,7 @@ export class SdCliProject {
       worker?: cp.ChildProcess; // persist
       port?: number;
       hasChanges: boolean;
+      hasClientChanges: boolean;
 
       //client
       pathProxy: Record<string, string | number | undefined>; // persist
@@ -95,6 +96,7 @@ export class SdCliProject {
           const pkgName = path.basename(message.req.pkgPath);
           const serverInfo = serverInfoMap.getOrCreate(pkgName, {
             hasChanges: false,
+            hasClientChanges: false,
             pathProxy: {},
             // changeFilePaths: []
           });
@@ -108,25 +110,28 @@ export class SdCliProject {
           if (pkgConf.server !== undefined) {
             const serverInfo = serverInfoMap.getOrCreate(pkgConf.server, {
               hasChanges: false,
+              hasClientChanges: false,
               pathProxy: {},
               // changeFilePaths: []
             });
             serverInfo.pathProxy[pkgName] = path.resolve(message.req.pkgPath, "dist");
-            //message.result!.port;
             // serverInfo.changeFilePaths.push(...message.result!.affectedFilePaths);
 
-            serverInfo.worker?.send({type: "broadcastReload"});
+            serverInfo.hasClientChanges = true;
+            // serverInfo.worker?.send({type: "broadcastReload"});
           }
           else {
             const serverInfo = serverInfoMap.getOrCreate(pkgName, {
               hasChanges: false,
+              hasClientChanges: false,
               pathProxy: {},
               // changeFilePaths: []
             });
             serverInfo.port = message.result!.port;
             // serverInfo.changeFilePaths.push(...message.result!.affectedFilePaths);
 
-            serverInfo.worker?.send({type: "broadcastReload"});
+            serverInfo.hasClientChanges = true;
+            // serverInfo.worker?.send({type: "broadcastReload"});
           }
         }
 
@@ -158,6 +163,11 @@ export class SdCliProject {
                   type: "setPathProxy",
                   pathProxy: serverInfo.pathProxy
                 });
+
+                if (serverInfo.hasClientChanges) {
+                  logger.debug("클라이언트 새로고침...");
+                  serverInfo.worker.send({type: "broadcastReload"});
+                }
               }
             }
 
@@ -448,22 +458,19 @@ export class SdCliProject {
   }
 
   private static _logging(buildResults: ISdCliPackageBuildResult[], logger: Logger): void {
-    const messages = buildResults.filter((item) => item.severity === "message").distinct();
-    const suggestions = buildResults.filter((item) => item.severity === "suggestion").distinct();
-    const warnings = buildResults.filter((item) => item.severity === "warning").distinct();
-    const errors = buildResults.filter((item) => item.severity === "error").distinct();
+    const messageMap = buildResults.toSetMap(item => item.severity, item => SdCliBuildResultUtil.getMessage(item));
 
-    if (messages.length > 0) {
-      logger.log("\n" + messages.map((item) => SdCliBuildResultUtil.getMessage(item)).join("\n"));
+    if (messageMap.has("message")) {
+      logger.log(`알림\n${[...messageMap.get("message")!].join("\n")}`);
     }
-    if (suggestions.length > 0) {
-      logger.info("\n" + suggestions.map((item) => SdCliBuildResultUtil.getMessage(item)).join("\n"));
+    if (messageMap.has("suggestion")) {
+      logger.info(`제안\n${[...messageMap.get("suggestion")!].join("\n")}`);
     }
-    if (warnings.length > 0) {
-      logger.warn("\n" + warnings.map((item) => SdCliBuildResultUtil.getMessage(item)).join("\n"));
+    if (messageMap.has("warning")) {
+      logger.warn(`경고\n${[...messageMap.get("warning")!].join("\n")}`);
     }
-    if (errors.length > 0) {
-      logger.error("\n" + errors.map((item) => SdCliBuildResultUtil.getMessage(item)).join("\n"));
+    if (messageMap.has("error")) {
+      logger.error(`오류\n${[...messageMap.get("error")!].join("\n")}`);
     }
 
     logger.info("모든 빌드가 완료되었습니다.");

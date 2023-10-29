@@ -1,4 +1,5 @@
-import { SdAutoUpdateServiceClient, SdServiceClient } from "@simplysm/sd-service-client";
+import {SdAutoUpdateServiceClient, SdServiceClient} from "@simplysm/sd-service-client";
+import ApkUpdater from "cordova-plugin-apkupdater";
 import semver from "semver/preload";
 
 export class SdAndroidAutoUpdateManager {
@@ -18,7 +19,7 @@ export class SdAndroidAutoUpdateManager {
     // 업데이트 할게 있으면 업데이트
     if (lastVersion !== undefined && semver.gt(lastVersion, this._currentVersion)) {
       this._logger("최신버전 파일 다운로드중...", []);
-      await window["ApkUpdater"].download(
+      await ApkUpdater.download(
         `${this._serviceClient.serverUrl}/${this._clientName}/android/updates/${lastVersion}.apk`,
         {
           onDownloadProgress: (prog) => {
@@ -26,7 +27,7 @@ export class SdAndroidAutoUpdateManager {
           }
         }
       );
-      await window["ApkUpdater"].install();
+      await ApkUpdater.install();
       this._logger("최신버전 업데이트", []);
 
       return true;

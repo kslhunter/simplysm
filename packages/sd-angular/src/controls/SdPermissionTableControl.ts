@@ -98,7 +98,7 @@ import {SdCheckboxControl} from "./SdCheckboxControl";
       <ng-container *ngIf="item.children && item.children.length > 0">
         <ng-container *ngFor="let child of item.children; trackBy: trackByForItem">
           <ng-template [ngTemplateOutlet]="itemTemplate"
-                       [ngTemplateOutletContext]="{item: child, parentKey: parentKey + '_' + item.codes.join('.'), depth: depth + 1, parent: item}">
+                       [ngTemplateOutletContext]="{ item: child, parentKey: parentKey + '_' + item.codes.join('.'), depth: depth + 1, parent: item}">
           </ng-template>
         </ng-container>
       </ng-container>

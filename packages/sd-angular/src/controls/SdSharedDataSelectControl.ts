@@ -80,7 +80,7 @@ import {NgIf, NgTemplateOutlet} from "@angular/common";
                         [style.display]="!getItemVisible(index, item, depth) ? 'none' : undefined">
           <span [style.text-decoration]="getIsHiddenFn[0](index, item) ? 'line-through' : undefined">
             <ng-template [ngTemplateOutlet]="itemTemplateRef"
-                         [ngTemplateOutletContext]="{item: item, index: index, depth: depth}"></ng-template>
+                         [ngTemplateOutletContext]="{$implicit: item, item: item, index: index, depth: depth}"></ng-template>
           </span>
         </sd-select-item>
       </ng-template>

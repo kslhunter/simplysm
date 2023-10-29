@@ -53,6 +53,8 @@ declare global {
 
     toArrayMap<K, V>(keySelector: (item: T, index: number) => K, valueSelector: (item: T, index: number) => V): Map<K, V[]>;
 
+    toSetMap<K, V>(keySelector: (item: T, index: number) => K, valueSelector: (item: T, index: number) => V): Map<K, Set<V>>;
+
     toMapValues<K, V>(keySelector: (item: T, index: number) => K, valueSelector: (items: T[]) => V): Map<K, V>;
 
     toObject(keySelector: (item: T, index: number) => string): Record<string, T>;
@@ -316,6 +318,23 @@ declare global {
 
       const arr = result.getOrCreate(keyObj, []);
       arr.push(valueObj);
+    }
+
+    return result;
+  };
+
+
+  prototype.toSetMap = function <T, K, V>(this: T[], keySelector: (item: T, index: number) => K, valueSelector?: (item: T, index: number) => V): Map<K, Set<V | T>> {
+    const result = new Map<K, Set<V | T>>();
+
+    for (let i = 0; i < this.length; i++) {
+      const item = this[i];
+
+      const keyObj = keySelector(item, i);
+      const valueObj = valueSelector !== undefined ? valueSelector(item, i) : item;
+
+      const set = result.getOrCreate(keyObj, new Set<V | T>);
+      set.add(valueObj);
     }
 
     return result;
