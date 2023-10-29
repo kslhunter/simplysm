@@ -418,9 +418,7 @@ export class SdNgBundler {
       splitting: true,
       chunkNames: 'chunk-[hash]',
       tsconfig: this._tsConfigFilePath,
-      external: [
-        ...this._opt.cordovaConfig?.plugins ?? []
-      ],
+      external: [],
       write: false,
       preserveSymlinks: false,
       define: {
@@ -504,7 +502,22 @@ export class SdNgBundler {
           preserveSymlinks: false,
           tailwindConfiguration: undefined
         }) as esbuild.Plugin,
-        nodeStdLibBrowserPlugin(nodeStdLibBrowser)
+        nodeStdLibBrowserPlugin(nodeStdLibBrowser),
+        /*{
+          name: "cordova-external",
+          setup: ({onLoad}) => {
+            if (this._opt.cordovaConfig?.plugins) {
+              for (const plugin of this._opt.cordovaConfig?.plugins) {
+                onLoad({filter: new RegExp(plugin)}, () => {
+                  return {
+                    contents: "export default '';",
+                    loader: 'js',
+                  };
+                });
+              }
+            }
+          }
+        }*/
       ]
     });
   }
