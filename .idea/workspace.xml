@@ -6,7 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="a5909e33-fd1f-4a18-a2ac-5581a953e90d" name="Changes" comment="MYSQL 삭제시 FK무시하지 않도록 수정">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-orm-node-mysql/src/MysqlDbConnection.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-orm-node-mysql/src/MysqlDbConnection.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-orm-node-sqlite/src/SqliteDbConnection.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-orm-node-sqlite/src/SqliteDbConnection.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -116,9 +116,9 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="npm.publish" />
         <item itemvalue="npm.commit" />
         <item itemvalue="npm.watch" />
-        <item itemvalue="npm.publish" />
       </list>
     </recent_temporary>
   </component>
