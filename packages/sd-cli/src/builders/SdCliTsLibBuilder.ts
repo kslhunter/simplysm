@@ -92,6 +92,7 @@ export class SdCliTsLibBuilder extends EventEmitter {
       PathUtil.isChildPath(item, path.resolve(this._pkgPath, "../")) ||
       localUpdatePaths.some((lu) => PathUtil.isChildPath(item, lu))
     );
+
     return {
       watchFilePaths,
       affectedFilePaths: buildAndCheckResult.affectedFilePaths,

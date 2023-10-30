@@ -136,10 +136,8 @@ export class SdNgBundler {
       affectedSourceFilePaths = Array.from(affectedFilePathSet.values()).filter((item) => PathUtil.isChildPath(item, this._opt.pkgPath));
     }
 
-
     /*const executionResult = new ExecutionResult(this._contexts, this._sourceFileCache);
     executionResult.outputFiles.push(...bundlingResult.outputFiles);*/
-
 
     const outputFiles = bundlingResults.mapMany(item => item.outputFiles ?? []);
     const initialFiles = new Map<string, InitialFileRecord>();

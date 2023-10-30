@@ -4,7 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a5909e33-fd1f-4a18-a2ac-5581a953e90d" name="Changes" comment="" />
+    <list default="true" id="a5909e33-fd1f-4a18-a2ac-5581a953e90d" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdNgBundler.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdNgBundler.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdTsCompiler.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdTsCompiler.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/builders/SdCliTsLibBuilder.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/builders/SdCliTsLibBuilder.ts" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -61,6 +67,7 @@
     "npm.commit.executor": "Run",
     "npm.publish.executor": "Run",
     "npm.watch.executor": "Run",
+    "npm.watch:sd-orm-node.executor": "Run",
     "settings.editor.selected.configurable": "Errors",
     "ts.external.directory.path": "D:\\workspaces-11\\simplysm\\node_modules\\typescript\\lib",
     "vue.rearranger.settings.migration": "true"
@@ -111,11 +118,22 @@
       <envs />
       <method v="2" />
     </configuration>
+    <configuration name="watch:sd-orm-node" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="watch:sd-orm-node" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="npm.watch" />
+        <item itemvalue="npm.watch:sd-orm-node" />
         <item itemvalue="npm.publish" />
         <item itemvalue="npm.commit" />
-        <item itemvalue="npm.watch" />
       </list>
     </recent_temporary>
   </component>

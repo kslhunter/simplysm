@@ -15,7 +15,7 @@ export class SdTsCompiler {
   private readonly _writeFileCache = new Map<string, string>();
   private readonly _compilerHost: ts.CompilerHost;
   private _program?: ts.Program;
-  private _builder?: ts.SemanticDiagnosticsBuilderProgram;
+  private _builder?: ts.EmitAndSemanticDiagnosticsBuilderProgram;
 
   //-- for ng
   private readonly _isForAngular: boolean;
@@ -131,21 +131,29 @@ export class SdTsCompiler {
 
         return files;
       };
+
+      this._builder = ts.createEmitAndSemanticDiagnosticsBuilderProgram(
+        this._program,
+        this._compilerHost,
+        this._builder
+      );
     }
     else {
-      this._program = ts.createProgram(
+      /*this._program = ts.createProgram(
         srcFilePaths,
         this._parsedTsConfig.options,
         this._compilerHost,
         this._program
-      );
-    }
+      );*/
 
-    this._builder = ts.createSemanticDiagnosticsBuilderProgram(
-      this._program,
-      this._compilerHost,
-      this._builder
-    );
+      this._builder = ts.createIncrementalProgram({
+        rootNames: srcFilePaths,
+        host: this._compilerHost,
+        options: this._parsedTsConfig.options,
+        createProgram: ts.createEmitAndSemanticDiagnosticsBuilderProgram
+      });
+      this._program = this._builder.getProgram();
+    }
 
     const diagnostics: ts.Diagnostic[] = [];
     const affectedFilePaths: string[] = [];
@@ -156,7 +164,7 @@ export class SdTsCompiler {
 
     diagnostics.push(
       ...this._builder.getOptionsDiagnostics(),
-      ...this._builder.getGlobalDiagnostics(),
+      ...this._builder.getGlobalDiagnostics()
     );
 
     if (this._ngProgram) {
@@ -168,6 +176,8 @@ export class SdTsCompiler {
       let affectedSourceFile: ts.SourceFile | undefined;
 
       const semanticResult = this._builder.getSemanticDiagnosticsOfNextAffectedFile(undefined, (sourceFile) => {
+        console.log(this._opt.pkgPath, sourceFile.fileName);
+
         //-- ngtypecheck의 org파일 포함 (ngtypecheck 파일는 무시)
         if (this._ngProgram?.compiler.ignoreForDiagnostics.has(sourceFile) && sourceFile.fileName.endsWith(".ngtypecheck.ts")) {
           const orgFileName = sourceFile.fileName.slice(0, -15) + ".ts";
