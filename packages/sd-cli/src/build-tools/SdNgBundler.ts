@@ -35,6 +35,7 @@ import {CrossOrigin} from "@angular-devkit/build-angular";
 import {InlineCriticalCssProcessor} from "@angular-devkit/build-angular/src/utils/index-file/inline-critical-css";
 import {SdSourceFileCache} from "../utils/SdSourceFileCache";
 import {SdNgBundlerContext} from "./SdNgBundlerContext";
+import inlineWorkerPlugin from "esbuild-plugin-inline-worker";
 
 export class SdNgBundler {
   private readonly _sourceFileCache = new SdSourceFileCache(
@@ -477,8 +478,9 @@ export class SdNgBundler {
       },
       inject: [PathUtil.posix(fileURLToPath(await import.meta.resolve!("node-stdlib-browser/helpers/esbuild/shim")))],
       plugins: [
+        inlineWorkerPlugin(),
         ...this._opt.cordovaConfig?.plugins ? [{
-          name: "cordova:plugin",
+          name: "cordova:plugin-empty",
           setup: ({onResolve}) => {
             onResolve({filter: new RegExp("(" + this._opt.cordovaConfig!.plugins!.join("|") + ")")}, () => {
               return {
