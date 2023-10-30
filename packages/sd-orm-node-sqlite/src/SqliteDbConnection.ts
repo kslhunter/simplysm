@@ -219,8 +219,8 @@ export class SqliteDbConnection extends EventEmitter implements IDbConnection {
 
     q += "\n";
     q += "ON DUPLICATE KEY UPDATE\n";
-    for (const colName of columnDefs.filter(item => item.autoIncrement == null).map(item => item.name)) {
-      q += `${colName} = ${colName},\n`;
+    for (const colName of columnDefs.filter(item => !item.autoIncrement).map(item => item.name)) {
+      q += `${colName} = VALUES(${colName}),\n`;
     }
     q = q.slice(0, -2) + ";";
 
