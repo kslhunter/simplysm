@@ -83,4 +83,13 @@ export class SdServiceDbContextExecutor implements IDbContextExecutor {
 
     return await this._client.sendAsync("SdOrmService", "bulkInsert", [this.#connId, tableName, columnDefs, records]);
   }
+
+
+  public async bulkUpsertAsync(tableName: string, columnDefs: IQueryColumnDef[], records: Record<string, any>[]): Promise<void> {
+    if (this.#connId === undefined) {
+      throw new Error("DB에 연결되어있지 않습니다.");
+    }
+
+    return await this._client.sendAsync("SdOrmService", "bulkUpsert", [this.#connId, tableName, columnDefs, records]);
+  }
 }

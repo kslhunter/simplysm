@@ -967,7 +967,7 @@ DROP PROCEDURE ${procName};`;
       return `
 USE ${def.from.split(".")[0]};
       
-SET foreign_key_checks=0;
+/*SET foreign_key_checks=0;*/
 
 SET @cols = NULL;
 
@@ -984,7 +984,7 @@ PREPARE stmt FROM @sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 
-SET foreign_key_checks=1;`.trim();
+/*SET foreign_key_checks=1;*/`.trim();
     }
     else {
       if (this._dialect === "sqlite") {

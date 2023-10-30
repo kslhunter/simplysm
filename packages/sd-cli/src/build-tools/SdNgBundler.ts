@@ -173,6 +173,11 @@ export class SdNgBundler {
     //   }
     // }
 
+    //-- cordova empty
+    if (this._opt.cordovaConfig?.plugins) {
+      outputFiles.push(createOutputFileFromText("cordova-empty.js", "export default {};"));
+    }
+
     //-- index
 
     const genIndexHtmlResult = await this._genIndexHtmlAsync(outputFiles, initialFiles);
@@ -418,7 +423,9 @@ export class SdNgBundler {
       splitting: true,
       chunkNames: 'chunk-[hash]',
       tsconfig: this._tsConfigFilePath,
-      external: [],
+      /*external: [
+        ...this._opt.cordovaConfig?.plugins ?? []
+      ],*/
       write: false,
       preserveSymlinks: false,
       define: {
@@ -472,6 +479,17 @@ export class SdNgBundler {
       },
       inject: [PathUtil.posix(fileURLToPath(await import.meta.resolve!("node-stdlib-browser/helpers/esbuild/shim")))],
       plugins: [
+        ...this._opt.cordovaConfig?.plugins ? [{
+          name: "cordova:plugin",
+          setup: ({onResolve}) => {
+            onResolve({filter: new RegExp("(" + this._opt.cordovaConfig!.plugins!.join("|") + ")")}, () => {
+              return {
+                path: `./cordova-empty.js`,
+                external: true
+              };
+            });
+          }
+        }] : [],
         createVirtualModulePlugin({
           namespace: "angular:polyfills",
           loadContent: () => ({
@@ -502,22 +520,7 @@ export class SdNgBundler {
           preserveSymlinks: false,
           tailwindConfiguration: undefined
         }) as esbuild.Plugin,
-        nodeStdLibBrowserPlugin(nodeStdLibBrowser),
-        /*{
-          name: "cordova-external",
-          setup: ({onLoad}) => {
-            if (this._opt.cordovaConfig?.plugins) {
-              for (const plugin of this._opt.cordovaConfig?.plugins) {
-                onLoad({filter: new RegExp(plugin)}, () => {
-                  return {
-                    contents: "export default '';",
-                    loader: 'js',
-                  };
-                });
-              }
-            }
-          }
-        }*/
+        nodeStdLibBrowserPlugin(nodeStdLibBrowser)
       ]
     });
   }

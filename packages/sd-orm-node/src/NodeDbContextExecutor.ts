@@ -85,6 +85,15 @@ export class NodeDbContextExecutor implements IDbContextExecutor {
     await this._conn.bulkInsertAsync(tableName, columnDefs, records);
   }
 
+
+  public async bulkUpsertAsync(tableName: string, columnDefs: IQueryColumnDef[], records: Record<string, any>[]): Promise<void> {
+    if (!this._conn) {
+      throw new Error("DB에 연결되어있지 않습니다.");
+    }
+
+    await this._conn.bulkUpsertAsync(tableName, columnDefs, records);
+  }
+
   public async executeDefsAsync(defs: TQueryDef[], options?: (IQueryResultParseOption | undefined)[]): Promise<any[][]> {
     if (!this._conn) {
       throw new Error("DB에 연결되어있지 않습니다.");

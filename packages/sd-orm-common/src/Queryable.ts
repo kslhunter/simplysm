@@ -1033,8 +1033,7 @@ export class Queryable<D extends DbContext, T> {
     return cnt > 0;
   }
 
-  public async bulkInsertAsync(arg: TInsertObject<T> | (TInsertObject<T>[])): Promise<void> {
-    const records = arg instanceof Array ? arg : [arg];
+  public async bulkInsertAsync(records: TInsertObject<T>[]): Promise<void> {
     if (records.length === 0) return;
 
     if (typeof this.db === "undefined") {
@@ -1047,6 +1046,7 @@ export class Queryable<D extends DbContext, T> {
     }
 
     const columnDefs = this.tableDef.columns.map((col) => ({
+      primaryKey: col.primaryKey,
       name: col.name,
       dataType: this.db.qh.type(col.dataType ?? col.typeFwd()),
       autoIncrement: col.autoIncrement,
@@ -1054,6 +1054,41 @@ export class Queryable<D extends DbContext, T> {
     }));
 
     await this.db.bulkInsertAsync(this.tableName, columnDefs, records.map((item) => {
+      const result = {};
+      for (const key of Object.keys(item)) {
+        result[key] = this.db.qh.getBulkInsertQueryValue(item[key]);
+      }
+      return result;
+    }));
+  }
+
+
+  public async bulkUpsertAsync(records: TInsertObject<T>[]): Promise<void> {
+    if (records.length === 0) return;
+
+    if (typeof this.db === "undefined") {
+      throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
+    }
+
+    if (this.db.opt.dialect !== "mysql") {
+      throw new Error("'bulkUpsert'는 'MYSQL'에서만 지원됩니다.");
+    }
+
+    // DbContext.selectCache.clear();
+
+    if (!this.tableDef) {
+      throw new Error("'Wrapping'된 이후에는 테이블의 정보를 가져올 수 없습니다.");
+    }
+
+    const columnDefs = this.tableDef.columns.map((col) => ({
+      primaryKey: col.primaryKey,
+      name: col.name,
+      dataType: this.db.qh.type(col.dataType ?? col.typeFwd()),
+      autoIncrement: col.autoIncrement,
+      nullable: col.nullable
+    }));
+
+    await this.db.bulkUpsertAsync(this.tableName, columnDefs, records.map((item) => {
       const result = {};
       for (const key of Object.keys(item)) {
         result[key] = this.db.qh.getBulkInsertQueryValue(item[key]);

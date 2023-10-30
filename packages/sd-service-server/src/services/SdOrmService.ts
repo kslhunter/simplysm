@@ -146,4 +146,13 @@ export class SdOrmService extends SdServiceBase {
 
     await conn.bulkInsertAsync(tableName, columnDefs, records);
   }
+
+  async bulkUpsert(connId: number, tableName: string, columnDefs: IQueryColumnDef[], records: Record<string, any>[]) {
+    const conn = SdOrmService.#conns.get(connId);
+    if (!conn) {
+      throw new Error("DB에 연결되어있지 않습니다.");
+    }
+
+    await conn.bulkUpsertAsync(tableName, columnDefs, records);
+  }
 }

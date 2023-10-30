@@ -231,6 +231,31 @@ export class MysqlDbConnection extends EventEmitter implements IDbConnection {
     await this.executeAsync([q]);
   }
 
+
+  public async bulkUpsertAsync(tableName: string, columnDefs: IQueryColumnDef[], records: Record<string, any>[]): Promise<void> {
+    const qh = new QueryHelper("mysql");
+
+    const colNames = columnDefs.map((def) => def.name);
+
+    let q = "";
+    q += `INSERT INTO ${tableName} (${colNames.map((item) => "`" + item + "`").join(", ")})
+          VALUES`;
+    q += "\n";
+    for (const record of records) {
+      q += `(${colNames.map((colName) => qh.getQueryValue(record[colName])).join(", ")}),\n`;
+    }
+    q = q.slice(0, -2);
+
+    q += "\n";
+    q += "ON DUPLICATE KEY UPDATE\n";
+    for (const colName of columnDefs.filter(item => !item.autoIncrement).map(item => item.name)) {
+      q += `${colName} = ${colName},\n`;
+    }
+    q = q.slice(0, -2) + ";";
+
+    await this.executeAsync([q]);
+  }
+
   private _stopTimeout(): void {
     if (this._connTimeout) {
       clearTimeout(this._connTimeout);

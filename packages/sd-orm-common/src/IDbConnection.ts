@@ -19,4 +19,6 @@ export interface IDbConnection extends EventEmitter {
   executeAsync(queries: string[]): Promise<any[][]>;
 
   bulkInsertAsync(tableName: string, columnDefs: IQueryColumnDef[], records: Record<string, any>[]): Promise<void>;
+
+  bulkUpsertAsync(tableName: string, columnDefs: IQueryColumnDef[], records: Record<string, any>[]): Promise<void>;
 }

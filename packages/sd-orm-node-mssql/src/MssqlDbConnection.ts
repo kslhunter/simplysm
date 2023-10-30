@@ -298,6 +298,11 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
+  public async bulkUpsertAsync(tableName: string, columnDefs: IQueryColumnDef[], records: Record<string, any>[]): Promise<void> {
+    throw new Error("'bulk upsert'는 'MSSQL'에서 지원되지 않는 기능입니다.");
+  }
+
   private _stopTimeout(): void {
     if (this._connTimeout) {
       clearTimeout(this._connTimeout);

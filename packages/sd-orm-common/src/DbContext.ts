@@ -172,6 +172,11 @@ export abstract class DbContext {
     await this._executor.bulkInsertAsync(tableName, columnDefs, records);
   }
 
+  public async bulkUpsertAsync(tableName: string, columnDefs: IQueryColumnDef[], records: Record<string, any>[]) {
+    if (!this._executor) throw new Error("DB 실행기를 알 수 없습니다.");
+    await this._executor.bulkUpsertAsync(tableName, columnDefs, records);
+  }
+
   public async executePreparedAsync(): Promise<void> {
     if (this.prepareDefs.length < 1) return;
     await this.executeDefsAsync(this.prepareDefs);

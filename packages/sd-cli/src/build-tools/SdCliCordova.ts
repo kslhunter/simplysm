@@ -233,6 +233,10 @@ export class SdCliCordova {
       await FsUtil.mkdirsAsync(path.resolve(cordovaPath, "www"));
       await FsUtil.writeFileAsync(path.resolve(cordovaPath, "www/index.html"), `'${opt.url}'로 이동중... <script>setTimeout(function () {window.location.href = "${opt.url.replace(/\/$/, "")}/${opt.pkgName}/cordova/"}, 3000);</script>`.trim());
     }
+    /*else {
+      await FsUtil.removeAsync(path.resolve(cordovaPath, "www"));
+      await FsUtil.copyAsync(path.resolve(process.cwd(), `packages/${opt.pkgName}/dist/cordova`), path.resolve(cordovaPath, "www"));
+    }*/
 
     const binPath = path.resolve(process.cwd(), "node_modules/.bin/cordova.cmd");
     await SdProcess.spawnAsync(`${binPath} run ${opt.platform} --device`, {cwd: cordovaPath}, true);

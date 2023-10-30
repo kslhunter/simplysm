@@ -150,7 +150,7 @@ const argv = (
         })
     )
     .command(
-      "run-cordova <platform> <package> <url>",
+      "run-cordova <platform> <package> [url]",
       "변경감지중인 플랫폼을 코도바 디바이스에 앱 형태로 띄웁니다.",
       (cmd) => cmd
         .positional("platform", {

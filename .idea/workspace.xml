@@ -6,8 +6,21 @@
   <component name="ChangeListManager">
     <list default="true" id="a5909e33-fd1f-4a18-a2ac-5581a953e90d" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-angular/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdCliCordova.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdCliCordova.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdNgBundler.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdNgBundler.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdNgBundlerContext.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdNgBundlerContext.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/sd-cli.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/sd-cli.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-orm-common/src/DbContext.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-orm-common/src/DbContext.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-orm-common/src/IDbConnection.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-orm-common/src/IDbConnection.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-orm-common/src/IDbContextExecutor.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-orm-common/src/IDbContextExecutor.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-orm-common/src/QueryBuilder.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-orm-common/src/QueryBuilder.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-orm-common/src/Queryable.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-orm-common/src/Queryable.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-orm-node-mssql/src/MssqlDbConnection.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-orm-node-mssql/src/MssqlDbConnection.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-orm-node-mysql/src/MysqlDbConnection.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-orm-node-mysql/src/MysqlDbConnection.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-orm-node-sqlite/src/SqliteDbConnection.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-orm-node-sqlite/src/SqliteDbConnection.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-orm-node/src/NodeDbContextExecutor.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-orm-node/src/NodeDbContextExecutor.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-service-client/src/services/orm/SdOrmServiceDbContextExecutor.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-service-client/src/services/orm/SdOrmServiceDbContextExecutor.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-service-server/src/services/SdOrmService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-service-server/src/services/SdOrmService.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -55,7 +68,7 @@
     "WebServerToolWindowFactoryState": "false",
     "git-widget-placeholder": "master",
     "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "D:/workspaces-11/simplysm-ts",
+    "last_opened_file_path": "D:/workspaces-7.3/simplysm",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",

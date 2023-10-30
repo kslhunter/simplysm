@@ -36,7 +36,7 @@ export class SdNgBundlerContext {
         char: warn.location?.column,
         code: warn.text.slice(0, warn.text.indexOf(":")),
         severity: "warning",
-        message: `(${warn.pluginName}) ${warn.text.slice(warn.text.indexOf(":") + 1)}`,
+        message: `${warn.pluginName != null ? `(${warn.pluginName}) ` : ""} ${warn.text.slice(warn.text.indexOf(":") + 1)}`,
         type: "build"
       })),
       ...buildResult.errors?.map((err) => ({
@@ -45,7 +45,7 @@ export class SdNgBundlerContext {
         char: err.location?.column !== undefined ? err.location.column + 1 : undefined,
         code: err.text.slice(0, err.text.indexOf(":")),
         severity: "error",
-        message: `(${err.pluginName}) ${err.text.slice(err.text.indexOf(":") + 1)}`,
+        message: `${err.pluginName != null ? `(${err.pluginName}) ` : ""} ${err.text.slice(err.text.indexOf(":") + 1)}`,
         type: "build"
       }))
     ] as ISdCliPackageBuildResult[];
