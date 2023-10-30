@@ -176,8 +176,6 @@ export class SdTsCompiler {
       let affectedSourceFile: ts.SourceFile | undefined;
 
       const semanticResult = this._builder.getSemanticDiagnosticsOfNextAffectedFile(undefined, (sourceFile) => {
-        console.log(this._opt.pkgPath, sourceFile.fileName);
-
         //-- ngtypecheck의 org파일 포함 (ngtypecheck 파일는 무시)
         if (this._ngProgram?.compiler.ignoreForDiagnostics.has(sourceFile) && sourceFile.fileName.endsWith(".ngtypecheck.ts")) {
           const orgFileName = sourceFile.fileName.slice(0, -15) + ".ts";

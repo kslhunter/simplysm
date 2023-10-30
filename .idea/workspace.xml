@@ -4,12 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a5909e33-fd1f-4a18-a2ac-5581a953e90d" name="Changes" comment="">
+    <list default="true" id="a5909e33-fd1f-4a18-a2ac-5581a953e90d" name="Changes" comment=".">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdNgBundler.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdNgBundler.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdTsCompiler.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdTsCompiler.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/builders/SdCliTsLibBuilder.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/builders/SdCliTsLibBuilder.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -131,9 +128,9 @@
     <recent_temporary>
       <list>
         <item itemvalue="npm.watch" />
-        <item itemvalue="npm.watch:sd-orm-node" />
         <item itemvalue="npm.publish" />
         <item itemvalue="npm.commit" />
+        <item itemvalue="npm.watch:sd-orm-node" />
       </list>
     </recent_temporary>
   </component>
