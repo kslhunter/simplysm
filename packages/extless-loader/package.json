@@ -13,7 +13,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "engines": {
-    "node": "^20"
+    "node": "^18"
   },
   "dependencies": {
     "resolve": "^1.22.8"

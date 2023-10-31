@@ -1,4 +1,4 @@
-#!/usr/bin/env node --experimental-loader="@simplysm/extless-loader" --no-warnings
+#!/usr/bin/env node --es-module-specifier-resolution=node --no-warnings --experimental-import-meta-resolve
 
 import yargs from "yargs";
 import {hideBin} from "yargs/helpers";
