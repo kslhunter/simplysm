@@ -3,7 +3,7 @@ import path from "path";
 import {InitialFileRecord} from "@angular-devkit/build-angular/src/tools/esbuild/bundler-context";
 import esbuild, {Metafile} from "esbuild";
 import {FsUtil, PathUtil} from "@simplysm/sd-core-node";
-import {fileURLToPath} from "url";
+import {fileURLToPath, pathToFileURL} from "url";
 import {createVirtualModulePlugin} from "@angular-devkit/build-angular/src/tools/esbuild/virtual-module-plugin";
 import {
   createSourcemapIgnorelistPlugin
@@ -35,7 +35,6 @@ import {CrossOrigin} from "@angular-devkit/build-angular";
 import {InlineCriticalCssProcessor} from "@angular-devkit/build-angular/src/utils/index-file/inline-critical-css";
 import {SdSourceFileCache} from "../utils/SdSourceFileCache";
 import {SdNgBundlerContext} from "./SdNgBundlerContext";
-import inlineWorkerPlugin from "esbuild-plugin-inline-worker";
 
 export class SdNgBundler {
   private readonly _sourceFileCache = new SdSourceFileCache(
@@ -478,7 +477,69 @@ export class SdNgBundler {
       },
       inject: [PathUtil.posix(fileURLToPath(await import.meta.resolve!("node-stdlib-browser/helpers/esbuild/shim")))],
       plugins: [
-        inlineWorkerPlugin(),
+        {
+          name: "sd-worker",
+          setup: ({onLoad}) => {
+            onLoad({filter: /\.ts$/}, async args => {
+              if (args.path.endsWith(".d.ts")) return;
+
+              // ts sourefile 로 Worker사용여부 확인 (URL, import.meta.url)
+              let contents = this._sourceFileCache.typeScriptFileCache.get(pathToFileURL(args.path).toString());
+              if (typeof contents !== "string") return;
+
+              const regexp = /new Worker\(new URL\("(.*\.ts)", import\.meta\.url\)/;
+              const matches = contents.match(new RegExp(regexp, "g"));
+              if (!matches) return;
+
+              for (const match of matches) {
+                const urlPath = match.match(regexp)![1];
+
+                // 해당 URL의 파일을 esbuild로 빌드
+                const outFileName = path.basename(urlPath, path.extname(urlPath)) + ".js";
+                await esbuild.build({
+                  entryPoints: [path.resolve(path.dirname(args.path), urlPath)],
+                  outfile: path.resolve(this._opt.pkgPath, "dist", outFileName),
+                  target: this._browserTarget,
+                  format: "esm",
+                  bundle: true,
+                  keepNames: true,
+                  minifyIdentifiers: !this._opt.dev,
+                  minifySyntax: !this._opt.dev,
+                  minifyWhitespace: !this._opt.dev,
+                  sourcemap: this._opt.dev,
+                  platform: 'browser',
+                  conditions: ['es2020', 'es2015', 'module'],
+                  mainFields: ['es2020', 'es2015', 'browser', 'module', 'main'],
+                  resolveExtensions: ['.ts', '.tsx', '.mjs', '.js'],
+                  tsconfig: this._tsConfigFilePath,
+                  preserveSymlinks: false,
+                  define: {
+                    ...!this._opt.dev ? {ngDevMode: 'false'} : {},
+                    ngJitMode: 'false',
+                    global: 'global',
+                    process: 'process',
+                    Buffer: 'Buffer',
+                    'process.env.SD_VERSION': JSON.stringify(this._pkgNpmConf.version),
+                    "process.env.NODE_ENV": JSON.stringify(this._opt.dev ? "development" : "production"),
+                    ...this._opt.env ? Object.keys(this._opt.env).toObject(
+                      key => `process.env.${key}`,
+                      key => JSON.stringify(this._opt.env![key])
+                    ) : {}
+                  },
+                  inject: [PathUtil.posix(fileURLToPath(await import.meta.resolve!("node-stdlib-browser/helpers/esbuild/shim")))],
+                });
+
+                // 빌드된 파일을 가리키도록 URL변경
+                contents = contents.replace(urlPath, "./" + outFileName);
+              }
+
+              // loader = "ts" 로 파일 내보내기(return)
+              this._sourceFileCache.typeScriptFileCache.set(pathToFileURL(args.path).toString(), contents);
+
+              return undefined;
+            });
+          }
+        },
         ...this._opt.cordovaConfig?.plugins ? [{
           name: "cordova:plugin-empty",
           setup: ({onResolve}) => {
@@ -520,7 +581,7 @@ export class SdNgBundler {
           preserveSymlinks: false,
           tailwindConfiguration: undefined
         }) as esbuild.Plugin,
-        nodeStdLibBrowserPlugin(nodeStdLibBrowser)
+        nodeStdLibBrowserPlugin(nodeStdLibBrowser),
       ]
     });
   }

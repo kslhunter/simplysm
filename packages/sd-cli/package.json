@@ -32,7 +32,6 @@
     "electron": "^27.0.2",
     "electron-builder": "^24.8.0",
     "esbuild": "0.18.17",
-    "esbuild-plugin-inline-worker": "^0.1.1",
     "esbuild-plugin-tsc": "^0.4.0",
     "eslint": "^8.52.0",
     "node-stdlib-browser": "^1.2.0",
