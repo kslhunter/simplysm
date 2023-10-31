@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/extless-loader",
-  "version": "11.0.21",
+  "version": "11.0.22",
   "description": "심플리즘 패키지 - 'es-module-specifier-resolution' 기능 로더 (node)",
   "author": "김석래",
   "repository": {
