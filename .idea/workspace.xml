@@ -4,12 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a5909e33-fd1f-4a18-a2ac-5581a953e90d" name="Changes" comment=".">
-      <change beforePath="$PROJECT_DIR$/packages/extless-loader/package.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/extless-loader/src/index.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/extless-loader/tsconfig.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/simplysm.cjs" beforeDir="false" afterPath="$PROJECT_DIR$/simplysm.cjs" afterDir="false" />
-    </list>
+    <list default="true" id="a5909e33-fd1f-4a18-a2ac-5581a953e90d" name="Changes" comment="." />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
