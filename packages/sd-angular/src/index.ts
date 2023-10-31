@@ -18,6 +18,7 @@ export * from "./controls/SdDropdownControl";
 export * from "./controls/SdDropdownPopupControl";
 export * from "./controls/SdFormBoxControl";
 export * from "./controls/SdFormBoxItemControl";
+export * from "./controls/SdFormControl";
 export * from "./controls/SdGapControl";
 export * from "./controls/SdHtmlEditorControl";
 export * from "./controls/SdIconControl";

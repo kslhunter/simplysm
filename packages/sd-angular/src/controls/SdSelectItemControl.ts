@@ -94,7 +94,7 @@ export class SdSelectItemControl<T> {
   labelTemplateRef?: TemplateRef<void>;
 
   elRef: ElementRef<HTMLElement> = inject(ElementRef);
-  #selectControl: SdSelectControl<T> = inject(forwardRef(() => SdSelectControl));
+  #selectControl: SdSelectControl<any, any> = inject(forwardRef(() => SdSelectControl));
 
   @HostBinding("attr.sd-select-mode")
   public get selectMode(): "single" | "multi" {

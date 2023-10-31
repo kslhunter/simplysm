@@ -115,7 +115,8 @@ export class SdCliServerBuilder extends EventEmitter {
           ...this._pkgConf.pm2.noInterpreter ? {} : {
             "interpreter": "node@" + process.versions.node,
           },
-          "env": {
+          interpreter_args: "--openssl-legacy-provider",
+          env: {
             NODE_ENV: "production",
             TZ: "Asia/Seoul",
             SD_VERSION: npmConfig.version,

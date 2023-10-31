@@ -86,12 +86,12 @@ import {NgIf, NgTemplateOutlet} from "@angular/common";
       </ng-template>
     </sd-select>`
 })
-export class SdSharedDataSelectControl<T extends ISharedDataBase<string | number>> implements DoCheck {
+export class SdSharedDataSelectControl<M extends "single" | "multi", T extends ISharedDataBase<string | number>> implements DoCheck {
   @Input({required: true})
   items: T[] = [];
 
   @Input()
-  value?: T["__valueKey"] | T["__valueKey"][];
+  value?: M extends "multi" ? T["__valueKey"][] : T["__valueKey"];
 
   @Output()
   valueChange = new EventEmitter<(this["selectMode"] extends "multi" ? (T["__valueKey"][]) : T["__valueKey"]) | undefined>();
@@ -115,7 +115,7 @@ export class SdSharedDataSelectControl<T extends ISharedDataBase<string | number
   size?: "sm" | "lg";
 
   @Input()
-  selectMode: "single" | "multi" = "single";
+  selectMode: M = "single" as M;
 
   @Input()
   filterFn?: TSdFnInfo<(index: number, item: T) => boolean>;
@@ -210,7 +210,7 @@ export class SdSharedDataSelectControl<T extends ISharedDataBase<string | number
 
   ngDoCheck(): void {
     //-- rootDisplayItems
-    this.#sdNgHelper.doCheck(run => {
+    this.#sdNgHelper.doCheck((run, changeData) => {
       run({
         items: [this.items, "all"],
         filterFn: [this.filterFn],

@@ -31,6 +31,7 @@ import {SdGapControl} from "./SdGapControl";
 import {SdPaneControl} from "./SdPaneControl";
 import {SdTypedTemplateDirective} from "../directives/SdTypedTemplateDirective";
 import {SdDropdownPopupControl} from "./SdDropdownPopupControl";
+import {StringUtil} from "@simplysm/sd-core-common";
 
 @Component({
   selector: "sd-select",
@@ -191,16 +192,19 @@ import {SdDropdownPopupControl} from "./SdDropdownPopupControl";
         }
       }
 
-      &[sd-invalid=true] ::ng-deep > sd-dropdown > div > ._invalid-indicator {
-        display: block;
-        position: absolute;
-        background: var(--theme-danger-default);
+      &:has(:invalid), &[sd-invalid] {
+        ::ng-deep > sd-dropdown > div > ._invalid-indicator {
+          display: block;
+          position: absolute;
+          z-index: 9999;
+          background: var(--theme-danger-default);
 
-        top: var(--gap-xs);
-        left: var(--gap-xs);
-        border-radius: 100%;
-        width: var(--gap-sm);
-        height: var(--gap-sm);
+          top: var(--gap-xs);
+          left: var(--gap-xs);
+          border-radius: 100%;
+          width: var(--gap-sm);
+          height: var(--gap-sm);
+        }
       }
 
       &[sd-inline=true] {
@@ -269,12 +273,12 @@ import {SdDropdownPopupControl} from "./SdDropdownPopupControl";
     }
   `]
 })
-export class SdSelectControl<T> implements DoCheck {
+export class SdSelectControl<M extends "single" | "multi", T extends any> implements DoCheck {
   @Input()
-  value!: any | any[];
+  value?: M extends "multi" ? any[] : any;
 
   @Output()
-  valueChange = new EventEmitter<any | any[]>();
+  valueChange = new EventEmitter<M extends "multi" ? any[] : any>();
 
   @Input({transform: coercionBoolean})
   required = false;
@@ -302,7 +306,7 @@ export class SdSelectControl<T> implements DoCheck {
   beforeTemplateRef: TemplateRef<void> | null = null;
 
   @ContentChildren(SdSelectItemControl)
-  itemControls?: QueryList<SdSelectItemControl<T>>;
+  itemControls?: QueryList<SdSelectItemControl<any>>;
 
   @Input()
   items?: T[];
@@ -326,7 +330,7 @@ export class SdSelectControl<T> implements DoCheck {
   size?: "sm" | "lg";
 
   @Input()
-  selectMode: "single" | "multi" = "single";
+  selectMode: M = "single" as M;
 
   @Input()
   contentClass?: string;
@@ -343,13 +347,11 @@ export class SdSelectControl<T> implements DoCheck {
   @Input()
   placeholder?: string;
 
-  @HostBinding("attr.sd-invalid")
-  public get invalid(): boolean {
-    return this.required && this.value === undefined;
-  }
-
   @ViewChild("contentEl", {static: true})
   contentElRef!: ElementRef<HTMLElement>;
+
+  @HostBinding("attr.sd-invalid")
+  errorMessage?: string;
 
   #sdNgHelper = new SdNgHelper(inject(Injector));
 
@@ -400,6 +402,22 @@ export class SdSelectControl<T> implements DoCheck {
         }
       });
     });
+
+    this.#sdNgHelper.doCheck(run => {
+      run({
+        required: [this.required],
+        value: [this.value]
+      }, () => {
+        const errorMessages: string[] = [];
+
+        if (this.required && this.value === undefined) {
+          errorMessages.push("선택된 항목이 없습니다.");
+        }
+
+        const fullErrorMessage = errorMessages.join("\r\n");
+        this.errorMessage = !StringUtil.isNullOrEmpty(fullErrorMessage) ? fullErrorMessage : undefined;
+      });
+    });
   }
 
   onPopupKeydownOutside(event: KeyboardEvent) {
@@ -435,9 +453,9 @@ export class SdSelectControl<T> implements DoCheck {
     }
   }
 
-  getIsSelectedItemControl(itemControl: SdSelectItemControl<T>): boolean {
+  getIsSelectedItemControl(itemControl: SdSelectItemControl<any>): boolean {
     if (this.selectMode === "multi") {
-      const itemKeyValues = this.keyProp != null && this.value instanceof Array ? this.value.map((item) => item[this.keyProp!]) : (this.value as T[]);
+      const itemKeyValues = this.keyProp != null ? this.value?.map((item: any) => item[this.keyProp!]) ?? [] : (this.value as T[]);
       const valKeyValue = this.keyProp != null && itemControl.value != null ? itemControl.value[this.keyProp] : itemControl.value;
       return itemKeyValues?.includes(valKeyValue) ?? false;
     }
@@ -448,7 +466,7 @@ export class SdSelectControl<T> implements DoCheck {
     }
   }
 
-  onItemControlClick(itemControl: SdSelectItemControl<T>, close: boolean) {
+  onItemControlClick(itemControl: SdSelectItemControl<any>, close: boolean) {
     if (this.selectMode === "multi") {
       const currValue = [...(this.value as T[] | undefined) ?? []];
       if (currValue.includes(itemControl.value)) {
@@ -459,10 +477,10 @@ export class SdSelectControl<T> implements DoCheck {
       }
 
       if (this.valueChange.observed) {
-        this.valueChange.emit(itemControl.value);
+        this.valueChange.emit(currValue);
       }
       else {
-        this.value = itemControl.value;
+        this.value = currValue;
       }
     }
     else {

@@ -3,6 +3,7 @@
   "version": "11.0.19",
   "description": "심플리즘 패키지",
   "author": "김석래",
+  "packageManager": "yarn@4.0.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/kslhunter/simplysm11.git"
@@ -10,19 +11,18 @@
   "type": "module",
   "license": "MIT",
   "private": true,
-  "packageManager": "yarn@3.6.4",
   "engines": {
-    "node": "^16"
+    "node": "^20"
   },
   "workspaces": [
     "packages/*"
   ],
   "scripts": {
-    "watch": "yarn _sd-cli_ watch",
-    "watch:sd-angular": "yarn _sd-cli_ --debug watch --packages sd-angular",
-    "watch:sd-orm-node": "yarn _sd-cli_ --debug watch --packages sd-orm-common sd-orm-node",
-    "build": "yarn _sd-cli_ --debug build",
-    "publish": "yarn _sd-cli_ --debug publish",
+    "watch": "npm run _sd-cli_ watch",
+    "watch:sd-angular": "npm run _sd-cli_ --debug watch --packages sd-angular",
+    "watch:sd-orm-node": "npm run _sd-cli_ --debug watch --packages sd-orm-common sd-orm-node",
+    "build": "npm run _sd-cli_ --debug build",
+    "publish": "npm run _sd-cli_ --debug publish",
     "--": "",
     "_sd-cli_": "tsx --experimental-import-meta-resolve --tsconfig packages/sd-cli/tsconfig.json packages/sd-cli/src/sd-cli.ts",
     "commit": "git add . && git commit -m .",
@@ -31,7 +31,7 @@
   },
   "devDependencies": {
     "@simplysm/eslint-plugin": "11.0.19",
-    "@types/node": "^16.18.59",
+    "@types/node": "^16.18.60",
     "cross-env": "^7.0.3",
     "eslint": "^8.52.0",
     "tsx": "^3.14.0",

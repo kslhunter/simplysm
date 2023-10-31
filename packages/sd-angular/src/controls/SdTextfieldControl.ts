@@ -255,22 +255,27 @@ import {NgIf} from "@angular/common";
       }
 
       @media not all and (pointer: coarse) {
-        &:has(:invalid) + ._invalid-indicator {
-          display: block;
-          position: absolute;
-          background: var(--theme-danger-default);
+        &:has(:invalid), &[sd-invalid] {
+          > ._invalid-indicator {
+            display: block;
+            position: absolute;
+            background: var(--theme-danger-default);
 
-          top: var(--gap-xs);
-          left: var(--gap-xs);
-          border-radius: 100%;
-          width: var(--gap-sm);
-          height: var(--gap-sm);
+            top: var(--gap-xs);
+            left: var(--gap-xs);
+            border-radius: 100%;
+            width: var(--gap-sm);
+            height: var(--gap-sm);
+          }
         }
       }
 
       @media all and (pointer: coarse) {
-        &:has(:invalid) > input {
-          border-bottom-color: var(--theme-danger-default);
+        &:has(:invalid), &[sd-invalid] {
+          > input,
+          > ._contents {
+            border-bottom-color: var(--theme-danger-default);
+          }
         }
       }
     }
@@ -356,13 +361,15 @@ export class SdTextfieldControl<K extends TSdTextfieldType> implements DoCheck {
   @Input({transform: coercionBoolean})
   useNumberComma = true;
 
+  @HostBinding("attr.sd-invalid")
+  errorMessage?: string;
+
   controlType = "text";
   controlValue = "";
   controlValueText = "";
   controlStep: number | string = "any";
   controlMin?: string;
   controlMax?: string;
-  errorMessage = "";
 
   #elRef = inject<ElementRef<HTMLElement>>(ElementRef);
 
@@ -532,13 +539,10 @@ export class SdTextfieldControl<K extends TSdTextfieldType> implements DoCheck {
 
         const fullErrorMessage = errorMessages.join("\r\n");
 
-        if (this.errorMessage !== fullErrorMessage) {
-          this.errorMessage = fullErrorMessage;
-
-          const inputEl = this.#elRef.nativeElement.findFirst("input");
-          if (inputEl instanceof HTMLInputElement) {
-            inputEl.setCustomValidity(fullErrorMessage);
-          }
+        const inputEl = this.#elRef.nativeElement.findFirst("input");
+        if (inputEl instanceof HTMLInputElement) {
+          inputEl.setCustomValidity(fullErrorMessage);
+          this.errorMessage = StringUtil.isNullOrEmpty(fullErrorMessage) ? undefined : fullErrorMessage;
         }
       });
     });
