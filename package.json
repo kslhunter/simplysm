@@ -1,6 +1,6 @@
 {
   "name": "simplysm",
-  "version": "11.0.19",
+  "version": "11.0.20",
   "description": "심플리즘 패키지",
   "author": "김석래",
   "packageManager": "yarn@4.0.1",
@@ -30,7 +30,7 @@
     "eslint-fix": "cross-env TIMING=1 eslint --fix \"**/+(*.ts|*.tsx|*.js|*.cjs|*.mjs)\""
   },
   "devDependencies": {
-    "@simplysm/eslint-plugin": "11.0.19",
+    "@simplysm/eslint-plugin": "11.0.20",
     "@types/node": "^16.18.60",
     "cross-env": "^7.0.3",
     "eslint": "^8.52.0",
