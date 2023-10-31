@@ -65,6 +65,7 @@ export interface ISdCliLibPackageConfig {
   type: "library";
   publish?: "npm";
   polyfills?: string[];
+  noGenIndex?: boolean;
 }
 
 export interface ISdCliServerPackageConfig {

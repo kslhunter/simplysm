@@ -7,7 +7,8 @@ module.exports = () => ({
     },
     "extless-loader": {
       type: "library",
-      publish: "npm"
+      publish: "npm",
+      noGenIndex: true
     },
     "sd-angular": {
       type: "library",

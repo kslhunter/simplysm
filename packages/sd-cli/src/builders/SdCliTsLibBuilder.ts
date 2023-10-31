@@ -30,8 +30,10 @@ export class SdCliTsLibBuilder extends EventEmitter {
     this._debug("dist 초기화...");
     await FsUtil.removeAsync(path.resolve(this._pkgPath, "dist"));
 
-    this._debug("GEN index.ts...");
-    await SdCliIndexFileGenerator.runAsync(this._pkgPath, this._pkgConf.polyfills);
+    if (!this._pkgConf.noGenIndex) {
+      this._debug("GEN index.ts...");
+      await SdCliIndexFileGenerator.runAsync(this._pkgPath, this._pkgConf.polyfills);
+    }
 
     return await this._runAsync();
   }
@@ -42,8 +44,10 @@ export class SdCliTsLibBuilder extends EventEmitter {
     this._debug("dist 초기화...");
     await FsUtil.removeAsync(path.resolve(this._pkgPath, "dist"));
 
-    this._debug("WATCH GEN index.ts...");
-    await SdCliIndexFileGenerator.watchAsync(this._pkgPath, this._pkgConf.polyfills);
+    if (!this._pkgConf.noGenIndex) {
+      this._debug("WATCH GEN index.ts...");
+      await SdCliIndexFileGenerator.watchAsync(this._pkgPath, this._pkgConf.polyfills);
+    }
 
     const result = await this._runAsync();
     this.emit("complete", result);
