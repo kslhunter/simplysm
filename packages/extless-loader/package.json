@@ -1,12 +1,12 @@
 {
-  "name": "@simplysm/sd-excel",
-  "version": "11.0.20",
-  "description": "심플리즘 패키지 - 엑셀 모듈",
+  "name": "@simplysm/extless-loader",
+  "version": "11.0.19",
+  "description": "심플리즘 패키지 - 'es-module-specifier-resolution' 기능 로더 (node)",
   "author": "김석래",
   "repository": {
     "type": "git",
     "url": "https://github.com/kslhunter/simplysm11.git",
-    "directory": "packages/sd-excel"
+    "directory": "packages/extless-loader"
   },
   "license": "MIT",
   "type": "module",
@@ -16,12 +16,9 @@
     "node": "^20"
   },
   "dependencies": {
-    "@simplysm/sd-core-common": "11.0.20",
-    "jszip": "^3.10.1",
-    "xlsx": "^0.18.5",
-    "xml2js": "^0.6.2"
+    "resolve": "^1.22.8"
   },
   "devDependencies": {
-    "@types/xml2js": "^0.4.13"
+    "@types/resolve": "^1.20.4"
   }
 }

@@ -74,6 +74,7 @@ export interface ISdCliServerPackageConfig {
   configs?: Record<string, any>;
   env?: Record<string, string>;
   pm2?: {
+    legacyOpenssl?: boolean;
     ignoreWatchPaths?: string[];
     noInterpreter?: boolean;
     noStartScript?: boolean;
