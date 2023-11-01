@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component} from "@angular/core";
+import {ChangeDetectionStrategy, Component, forwardRef} from "@angular/core";
 import {SdModalBase} from "../providers/SdModalProvider";
 import {SdSheetColumnDirective} from "../directives/SdSheetColumnDirective";
 import {faAngleUp} from "@fortawesome/pro-duotone-svg-icons/faAngleUp";
@@ -23,7 +23,7 @@ import {NgIf} from "@angular/common";
   imports: [
     SdDockContainerControl,
     SdPaneControl,
-    SdSheetControl,
+    forwardRef(() => SdSheetControl),
     SdSheetColumnDirective,
     SdCheckboxControl,
     SdAnchorControl,
@@ -32,7 +32,7 @@ import {NgIf} from "@angular/common";
     SdSheetColumnCellTemplateDirective,
     SdDockControl,
     SdButtonControl,
-    NgIf,
+    NgIf
   ],
   template: `
     <sd-dock-container *ngIf="param">
@@ -51,7 +51,7 @@ import {NgIf} from "@angular/common";
           <sd-sheet-column key="ordering" header="Order">
             <ng-template [cell]="items" let-item="item" let-index="index">
               <div class="p-xs-sm" style="text-align: center">
-                <sd-anchor [disabled]="index === 0 || (!item.fixed && !!items[index - 1].fixed)"
+                <sd-anchor [disabled]="index === 0 || (!item.fixed && items[index - 1].fixed)"
                            (click)="onDisplayOrderUpButtonClick(item)">
                   <sd-icon [icon]="icons.fadAngleUp" fixedWidth/>
                 </sd-anchor>
