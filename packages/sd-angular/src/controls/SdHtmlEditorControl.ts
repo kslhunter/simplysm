@@ -4,6 +4,8 @@ import {
   ElementRef,
   EventEmitter,
   HostBinding,
+  inject,
+  Injector,
   Input,
   Output,
   ViewChild
@@ -17,6 +19,7 @@ import {faMinus, faPlus} from "@fortawesome/pro-solid-svg-icons";
 import {SdDockContainerControl} from "./SdDockContainerControl";
 import {SdDockControl} from "./SdDockControl";
 import {NgIf} from "@angular/common";
+import {SdNgHelper} from "../utils/SdNgHelper";
 
 @Component({
   selector: "sd-html-editor",
@@ -50,10 +53,9 @@ import {NgIf} from "@angular/common";
         <div #editor *ngIf="viewState !== 'code' || disabled"
              [attr.contenteditable]="viewState === 'edit' && !disabled"
              [style.min-height.px]="contentMinHeightPx"
-             (input)="onContentInput($event)"
-             [innerHTML]="value"></div>
+             (input)="onContentInput($event)"></div>
         <textarea *ngIf="viewState === 'code' && !disabled"
-                  [value]="value || ''"
+                  [value]="value ?? ''"
                   [rows]="inset ? undefined : rows"
                   [style.resize]="inset ? 'none' : resize"
                   (input)="onTextareaInput($event)"
@@ -71,23 +73,21 @@ import {NgIf} from "@angular/common";
 
       ::ng-deep > sd-dock-container {
         > ._toolbar {
-          > div {
-            user-select: none;
+          user-select: none;
 
-            > sd-anchor {
-              display: inline-block;
-              padding: var(--gap-sm) 0;
-              text-align: center;
-              width: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
+          > sd-anchor {
+            display: inline-block;
+            padding: var(--gap-sm) 0;
+            text-align: center;
+            width: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
 
-              &:hover {
-                background: rgba(0, 0, 0, .05);
-              }
+            &:hover {
+              background: rgba(0, 0, 0, .05);
+            }
 
-              &._selected {
-                background: var(--theme-primary-default);
-                color: var(--text-trans-rev-default);
-              }
+            &._selected {
+              background: var(--theme-primary-default);
+              color: var(--text-trans-rev-default);
             }
           }
         }
@@ -164,6 +164,25 @@ export class SdHtmlEditorControl {
 
   @ViewChild("editor")
   editorElRef?: ElementRef<HTMLElement>;
+
+  #sdNgHelper = new SdNgHelper(inject(Injector));
+
+  ngDoCheck() {
+    this.#sdNgHelper.doCheckOutside(run => {
+      run({
+        value: [this.value],
+        isEditorVisible: [!!this.editorElRef?.nativeElement]
+      }, () => {
+        if (this.editorElRef) {
+          const innerHTML = this.editorElRef.nativeElement.innerHTML;
+          if (innerHTML !== this.value) {
+            this.editorElRef.nativeElement.innerHTML = this.value ?? "";
+          }
+        }
+      });
+    });
+  }
+
 
   onTextareaInput(event: Event) {
     const textareaEl = event.target as HTMLTextAreaElement;
