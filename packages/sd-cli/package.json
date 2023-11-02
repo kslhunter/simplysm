@@ -17,7 +17,7 @@
     "node": "^18"
   },
   "dependencies": {
-    "@angular-devkit/build-angular": "^16.2.8",
+    "@angular-devkit/build-angular": "^16.2.9",
     "@angular/common": "^16.2.11",
     "@angular/compiler": "^16.2.11",
     "@angular/compiler-cli": "^16.2.11",
@@ -29,7 +29,7 @@
     "@simplysm/sd-storage": "11.0.27",
     "browserslist": "^4.22.1",
     "cordova": "^12.0.0",
-    "electron": "^27.0.2",
+    "electron": "^27.0.3",
     "electron-builder": "^24.8.0",
     "esbuild": "0.18.17",
     "esbuild-plugin-tsc": "^0.4.0",

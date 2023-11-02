@@ -45,6 +45,8 @@ export class SdNgBundler {
 
   private readonly _outputCache = new Map<string, string | number>();
 
+  private readonly _customDepsCache = new Map<string, Set<string>>();
+
   private readonly _pkgNpmConf: INpmConfig;
   private readonly _mainFilePath: string;
   private readonly _tsConfigFilePath: string;
@@ -73,7 +75,17 @@ export class SdNgBundler {
   }
 
   public removeCache(filePaths: string[]): void {
-    this._sourceFileCache.invalidate(filePaths);
+    for (const filePath of filePaths) {
+      const depsSet = this._customDepsCache.get(filePath);
+      if (depsSet) {
+        for (const depFile of depsSet) {
+          this._sourceFileCache.invalidate([depFile]);
+        }
+      }
+      else {
+        this._sourceFileCache.invalidate([filePath]);
+      }
+    }
   }
 
   public async bundleAsync(): Promise<{
@@ -95,7 +107,8 @@ export class SdNgBundler {
     const watchFilePaths = [
       ...this._sourceFileCache.keys(),
       ...this._sourceFileCache.babelFileCache.keys(),
-      ...this._sourceFileCache.loadResultCache.fileDependencies.keys()
+      ...this._sourceFileCache.loadResultCache.fileDependencies.keys(),
+      ...this._customDepsCache.keys()
     ].map((item) => path.resolve(item)).distinct();
 
     let affectedSourceFilePaths = watchFilePaths.filter((item) => PathUtil.isChildPath(item, this._opt.pkgPath));
@@ -111,6 +124,10 @@ export class SdNgBundler {
       for (const [k, v] of this._sourceFileCache.loadResultCache.fileDependencies) {
         const currSet = depMap.getOrCreate(k, new Set<string>());
         currSet.adds(...Array.from(v).map((item) => item.startsWith("file:") ? fileURLToPath(item) : undefined).filterExists());
+      }
+      for (const [k, v] of this._customDepsCache) {
+        const currSet = depMap.getOrCreate(k, new Set<string>());
+        currSet.adds(...v);
       }
 
       const searchAffectedFiles = (filePath: string, prev?: Set<string>): Set<string> => {
@@ -531,9 +548,11 @@ export class SdNgBundler {
 
                 // 빌드된 파일을 가리키도록 URL변경
                 contents = contents.replace(urlPath, "./" + outFileName);
+
+                const currSet = this._customDepsCache.getOrCreate(path.resolve(path.dirname(args.path), urlPath), new Set());
+                currSet.add(path.resolve(args.path));
               }
 
-              // loader = "ts" 로 파일 내보내기(return)
               this._sourceFileCache.typeScriptFileCache.set(pathToFileURL(args.path).toString(), contents);
 
               return undefined;

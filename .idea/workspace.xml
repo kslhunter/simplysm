@@ -6,7 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="a5909e33-fd1f-4a18-a2ac-5581a953e90d" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdHtmlEditorControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdHtmlEditorControl.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/utils/SdNgHelper.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/utils/SdNgHelper.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdNgBundler.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdNgBundler.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/builders/SdCliClientBuilder.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/builders/SdCliClientBuilder.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -76,7 +78,7 @@
     "npm.publish.executor": "Run",
     "npm.watch.executor": "Run",
     "npm.watch:sd-orm-node.executor": "Run",
-    "settings.editor.selected.configurable": "settings.nodejs",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
     "ts.external.directory.path": "D:\\workspaces-11\\simplysm\\node_modules\\typescript\\lib",
     "vue.rearranger.settings.migration": "true"
   }
@@ -194,6 +196,7 @@
     <MESSAGE value="MYSQL 삭제시 FK무시하지 않도록 수정" />
     <MESSAGE value="." />
     <MESSAGE value="#458" />
-    <option name="LAST_COMMIT_MESSAGE" value="#458" />
+    <MESSAGE value="#469" />
+    <option name="LAST_COMMIT_MESSAGE" value="#469" />
   </component>
 </project>

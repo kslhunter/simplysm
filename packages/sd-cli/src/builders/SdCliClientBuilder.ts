@@ -58,16 +58,22 @@ export class SdCliClientBuilder extends EventEmitter {
     this.emit("complete", result);
 
     this._debug("WATCH...");
+    let changeFiles: string[] = [];
     const fnQ = new FunctionQueue();
     const watcher = SdFsWatcher
       .watch(result.watchFilePaths)
       .onChange({delay: 100}, (changeInfos) => {
-        for (const builder of this._builders!) {
-          builder.removeCache(changeInfos.map((item) => item.path));
-        }
+        changeFiles.push(...changeInfos.map((item) => item.path));
 
         fnQ.runLast(async () => {
+          const currChangeFiles = [...changeFiles];
+          changeFiles = [];
+
           this.emit("change");
+
+          for (const builder of this._builders!) {
+            builder.removeCache(currChangeFiles);
+          }
 
           const watchResult = await this._runAsync({dev: true});
           this.emit("complete", watchResult);
