@@ -16,6 +16,7 @@ import semver from "semver";
 import {NeverEntryError, StringUtil, Wait} from "@simplysm/sd-core-common";
 import {SdStorage} from "@simplysm/sd-storage";
 import {SdCliLocalUpdate} from "./SdCliLocalUpdate";
+import xml2js from "xml2js";
 
 export class SdCliProject {
   public static async watchAsync(opt: {
@@ -454,6 +455,14 @@ export class SdCliProject {
       updateDepVersion(pkgNpmConf.peerDependencies);
 
       await FsUtil.writeJsonAsync(pkgNpmConfFilePath, pkgNpmConf, {space: 2});
+
+      if (FsUtil.exists(path.resolve(pkgPath, "plugin.xml"))) {
+        const cordovaPluginConfFilePath = path.resolve(pkgPath, "plugin.xml");
+        const cordovaPluginConfXml = await xml2js.parseStringPromise(await FsUtil.readFileAsync(cordovaPluginConfFilePath));
+        cordovaPluginConfXml.plugin.$.version = newVersion;
+
+        await FsUtil.writeFileAsync(cordovaPluginConfFilePath, new xml2js.Builder().buildObject(cordovaPluginConfXml));
+      }
     });
   }
 

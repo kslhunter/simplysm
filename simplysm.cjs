@@ -1,6 +1,10 @@
 /** @type {import('@simplysm/sd-cli').TSdCliConfigFn} */
 module.exports = () => ({
   packages: {
+    "cordova-plugin-local-baseurl": {
+      type: "library",
+      publish: "npm"
+    },
     "eslint-plugin": {
       type: "library",
       publish: "npm"

@@ -64,25 +64,29 @@ export class SdCliCordova {
       ? await FsUtil.readJsonAsync(path.resolve(this._opt.cordovaPath, "plugins/fetch.json"))
       : undefined;
     const alreadyPluginIds = pluginsFetch != undefined
-      ? Object.values(pluginsFetch)
-        .map((item: any) => (item.source.id !== undefined ? item.source.id : item.source.url))
+      ? Object.keys(pluginsFetch)
+      // Object.values(pluginsFetch).map((item: any) => item.source.id ?? item.source.url ?? item.source.path)
       : [];
     const usePlugins = ["cordova-plugin-ionic-webview", ...this._opt.config.plugins ?? []].distinct();
 
     for (const alreadyPluginId of alreadyPluginIds) {
       let hasPlugin = false;
       for (const usePlugin of usePlugins) {
-        if (
+        if (alreadyPluginId === usePlugin) {
+          hasPlugin = true;
+          break;
+        }
+        /*if (
           (usePlugin.includes("@") && alreadyPluginId === usePlugin) ||
           (!usePlugin.includes("@") && alreadyPluginId.replace(/@.*$/, "") === usePlugin)
         ) {
           hasPlugin = true;
           break;
-        }
+        }*/
       }
 
       if (!hasPlugin) {
-        await this._execAsync(`${BIN_PATH} plugin remove ${alreadyPluginId.replace(/@.*$/, "")}`, this._opt.cordovaPath);
+        await this._execAsync(`${BIN_PATH} plugin remove ${alreadyPluginId}`, this._opt.cordovaPath);
       }
     }
 

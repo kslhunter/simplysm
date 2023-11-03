@@ -1,0 +1,22 @@
+{
+  "name": "@simplysm/cordova-plugin-local-baseurl",
+  "version": "11.0.30",
+  "description": "심플리즘 패키지 - Cordova Local BaseUrl Plugin",
+  "author": "김석래",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm11.git",
+    "directory": "packages/cordova-plugin-local-baseurl"
+  },
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": "^18"
+  },
+  "cordova": {
+    "id": "@simplysm/cordova-plugin-local-baseurl",
+    "platforms": [
+      "android"
+    ]
+  }
+}
