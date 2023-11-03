@@ -1,5 +1,4 @@
 import {ErrorHandler, inject, ModuleWithProviders, NgModule} from "@angular/core";
-import {CommonModule} from "@angular/common";
 import {EVENT_MANAGER_PLUGINS} from "@angular/platform-browser";
 import {SdSaveCommandEventPlugin} from "./plugins/SdSaveCommandEventPlugin";
 import {SdRefreshCommandEventPlugin} from "./plugins/SdRefreshCommandEventPlugin";
@@ -11,15 +10,13 @@ import {faQuestionCircle} from "@fortawesome/pro-light-svg-icons/faQuestionCircl
 import {SdOptionEventPlugin} from "./plugins/SdOptionEventPlugin";
 
 @NgModule({
-  imports: [
-    CommonModule
-  ]
+  imports: []
 })
 export class SdAngularModule {
-  faConfig = inject(FaConfig);
+  #faConfig = inject(FaConfig);
 
   constructor() {
-    this.faConfig.fallbackIcon = faQuestionCircle;
+    this.#faConfig.fallbackIcon = faQuestionCircle;
   }
 
   static forRoot(): ModuleWithProviders<SdAngularModule> {

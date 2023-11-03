@@ -241,21 +241,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/common@npm:^16.2.11":
-  version: 16.2.11
-  resolution: "@angular/common@npm:16.2.11"
+"@angular/common@npm:^16.2.12":
+  version: 16.2.12
+  resolution: "@angular/common@npm:16.2.12"
   dependencies:
     tslib: "npm:^2.3.0"
   peerDependencies:
-    "@angular/core": 16.2.11
+    "@angular/core": 16.2.12
     rxjs: ^6.5.3 || ^7.4.0
-  checksum: 00d6cceac1affbe09267a782f5520fef2419b595b240c3aa26da15fb0db26a0e29fc4962d6f15cee750f23a441a89d6c6b3c0aa76dd65f35d9c68b6ca1802545
+  checksum: a5bd26a6fd41a08bfdb56b99cc362df014740736e1f8cfca690e4ab2e64572a1b6bc9a2e8bcdc94ed1346593a699e157dffebbc69def5828ff7e597d1b31de33
   languageName: node
   linkType: hard
 
-"@angular/compiler-cli@npm:^16.2.11":
-  version: 16.2.11
-  resolution: "@angular/compiler-cli@npm:16.2.11"
+"@angular/compiler-cli@npm:^16.2.12":
+  version: 16.2.12
+  resolution: "@angular/compiler-cli@npm:16.2.12"
   dependencies:
     "@babel/core": "npm:7.23.2"
     "@jridgewell/sourcemap-codec": "npm:^1.4.14"
@@ -266,69 +266,69 @@ __metadata:
     tslib: "npm:^2.3.0"
     yargs: "npm:^17.2.1"
   peerDependencies:
-    "@angular/compiler": 16.2.11
+    "@angular/compiler": 16.2.12
     typescript: ">=4.9.3 <5.2"
   bin:
     ng-xi18n: bundles/src/bin/ng_xi18n.js
     ngc: bundles/src/bin/ngc.js
     ngcc: bundles/ngcc/index.js
-  checksum: c99e232c7873de42ea74cf19b2664c8119d78571e180ad24d02f685b5e8fef3bbbe87c77f5105ea400e84e119fd829bbc4fbf45d2838c213d6f8cd590fcb0adb
+  checksum: abe11a775d7c898b585e4a773f42b4e4b0a99b11d9e16276c9cd64404ba3c32be35a7c4cb65f44b2abe58fdc4b28d2bd52f45b6a64dad414b93f52eff991ba97
   languageName: node
   linkType: hard
 
-"@angular/compiler@npm:^16.2.11":
-  version: 16.2.11
-  resolution: "@angular/compiler@npm:16.2.11"
+"@angular/compiler@npm:^16.2.12":
+  version: 16.2.12
+  resolution: "@angular/compiler@npm:16.2.12"
   dependencies:
     tslib: "npm:^2.3.0"
   peerDependencies:
-    "@angular/core": 16.2.11
+    "@angular/core": 16.2.12
   peerDependenciesMeta:
     "@angular/core":
       optional: true
-  checksum: 290fb83af30f9201bbb03485f937547fad1109b8664d230a09c52f53b3f63e93707c6d354558c9cac25d9b2237bc9be04e156cd85303f1378f901be59433ade6
+  checksum: ddc6065ec263c69320e45e65a63c9a6e310cd1eeca51242b19c58db03c987140bcde3be2fd03cb7a52f8a2590a5c8780a7a4a13a9bc7b451dd25c7b245f13df7
   languageName: node
   linkType: hard
 
-"@angular/core@npm:^16.2.11":
-  version: 16.2.11
-  resolution: "@angular/core@npm:16.2.11"
+"@angular/core@npm:^16.2.12":
+  version: 16.2.12
+  resolution: "@angular/core@npm:16.2.12"
   dependencies:
     tslib: "npm:^2.3.0"
   peerDependencies:
     rxjs: ^6.5.3 || ^7.4.0
     zone.js: ~0.13.0
-  checksum: a0d96b02841734fe431da20c43363040965274c38cf85a7e2d40a51eab9b5eff32c6a3f4708f6bf1a17a8c683cc117b242283388d2bb7c49455c74060bb33f06
+  checksum: 4a4a9fee1a160e922b28f264eed82b85f595f66aebddf2343533e0c7a5f947e11cb11b98a463f591bfd902f8846f24bfc4eceead61d35ef15922d8821e2cd5d5
   languageName: node
   linkType: hard
 
-"@angular/platform-browser@npm:^16.2.11":
-  version: 16.2.11
-  resolution: "@angular/platform-browser@npm:16.2.11"
+"@angular/platform-browser@npm:^16.2.12":
+  version: 16.2.12
+  resolution: "@angular/platform-browser@npm:16.2.12"
   dependencies:
     tslib: "npm:^2.3.0"
   peerDependencies:
-    "@angular/animations": 16.2.11
-    "@angular/common": 16.2.11
-    "@angular/core": 16.2.11
+    "@angular/animations": 16.2.12
+    "@angular/common": 16.2.12
+    "@angular/core": 16.2.12
   peerDependenciesMeta:
     "@angular/animations":
       optional: true
-  checksum: 2358b564598aa930d596c96354af79567a309bc309d071eb90d49c6afc3d94d8540b081838fbc4864ffd9e57aec5f73ef748b21316de576ccdfe753fc529bf7a
+  checksum: 076ab476c4a64cf0c60a1d71001bc79ecb0d384443312bb85fdf7deaa105cec15d3a5abc6b696fb1ffb7413581f94fd9b8e9b0e9d1652027ee15217fe7719e3e
   languageName: node
   linkType: hard
 
-"@angular/router@npm:^16.2.11":
-  version: 16.2.11
-  resolution: "@angular/router@npm:16.2.11"
+"@angular/router@npm:^16.2.12":
+  version: 16.2.12
+  resolution: "@angular/router@npm:16.2.12"
   dependencies:
     tslib: "npm:^2.3.0"
   peerDependencies:
-    "@angular/common": 16.2.11
-    "@angular/core": 16.2.11
-    "@angular/platform-browser": 16.2.11
+    "@angular/common": 16.2.12
+    "@angular/core": 16.2.12
+    "@angular/platform-browser": 16.2.12
     rxjs: ^6.5.3 || ^7.4.0
-  checksum: cf76c14156661b889699bf6e883ac65d3aeaf75976a21f5ead2ce064b928f18ae53590aae82dd8af4cc81b33b3b7e4d648871b170301f5f32de1f6aefe65ac0b
+  checksum: d9dce42f0db053a7d32d3ebefa135e45dd0e7a5e4f3c68bd585f627b81ff0b9e5af5376401e549e7d6d2fac2bcf0eb8371089a976a7e0396f4cbff4b0b5632c0
   languageName: node
   linkType: hard
 
@@ -2959,10 +2959,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-angular@workspace:packages/sd-angular"
   dependencies:
-    "@angular/common": "npm:^16.2.11"
-    "@angular/core": "npm:^16.2.11"
-    "@angular/platform-browser": "npm:^16.2.11"
-    "@angular/router": "npm:^16.2.11"
+    "@angular/common": "npm:^16.2.12"
+    "@angular/core": "npm:^16.2.12"
+    "@angular/platform-browser": "npm:^16.2.12"
+    "@angular/router": "npm:^16.2.12"
     "@fortawesome/angular-fontawesome": "npm:^0.13.0"
     "@fortawesome/fontawesome-svg-core": "npm:^6.4.2"
     "@fortawesome/pro-duotone-svg-icons": "npm:^6.4.2"
@@ -2989,10 +2989,10 @@ __metadata:
   resolution: "@simplysm/sd-cli@workspace:packages/sd-cli"
   dependencies:
     "@angular-devkit/build-angular": "npm:^16.2.9"
-    "@angular/common": "npm:^16.2.11"
-    "@angular/compiler": "npm:^16.2.11"
-    "@angular/compiler-cli": "npm:^16.2.11"
-    "@angular/core": "npm:^16.2.11"
+    "@angular/common": "npm:^16.2.12"
+    "@angular/compiler": "npm:^16.2.12"
+    "@angular/compiler-cli": "npm:^16.2.12"
+    "@angular/core": "npm:^16.2.12"
     "@electron/rebuild": "npm:^3.3.0"
     "@simplysm/sd-core-common": "npm:11.0.28"
     "@simplysm/sd-core-node": "npm:11.0.28"
