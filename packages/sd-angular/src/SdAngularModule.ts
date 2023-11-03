@@ -5,9 +5,9 @@ import {SdRefreshCommandEventPlugin} from "./plugins/SdRefreshCommandEventPlugin
 import {SdInsertCommandEventPlugin} from "./plugins/SdInsertCommandEventPlugin";
 import {SdResizeEventPlugin} from "./plugins/SdResizeEventPlugin";
 import {SdGlobalErrorHandlerPlugin} from "./plugins/SdGlobalErrorHandlerPlugin";
-import {FaConfig} from "@fortawesome/angular-fontawesome";
-import {faQuestionCircle} from "@fortawesome/pro-light-svg-icons/faQuestionCircle";
 import {SdOptionEventPlugin} from "./plugins/SdOptionEventPlugin";
+import {FaConfig} from "@fortawesome/angular-fontawesome";
+import {faQuestionCircle} from "@fortawesome/pro-duotone-svg-icons";
 
 @NgModule({
   imports: []

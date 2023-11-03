@@ -255,7 +255,8 @@ import {NgIf} from "@angular/common";
       }
 
       @media not all and (pointer: coarse) {
-        &:has(:invalid), &[sd-invalid] {
+        &:has(:invalid),
+        &[sd-invalid] {
           > ._invalid-indicator {
             display: block;
             position: absolute;
@@ -271,7 +272,8 @@ import {NgIf} from "@angular/common";
       }
 
       @media all and (pointer: coarse) {
-        &:has(:invalid), &[sd-invalid] {
+        &:has(:invalid),
+        &[sd-invalid] {
           > input,
           > ._contents {
             border-bottom-color: var(--theme-danger-default);
@@ -542,8 +544,9 @@ export class SdTextfieldControl<K extends TSdTextfieldType> implements DoCheck {
         const inputEl = this.#elRef.nativeElement.findFirst("input");
         if (inputEl instanceof HTMLInputElement) {
           inputEl.setCustomValidity(fullErrorMessage);
-          this.errorMessage = StringUtil.isNullOrEmpty(fullErrorMessage) ? undefined : fullErrorMessage;
         }
+
+        this.errorMessage = StringUtil.isNullOrEmpty(fullErrorMessage) ? undefined : fullErrorMessage;
       });
     });
   }
