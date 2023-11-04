@@ -67,7 +67,7 @@ export class SdCliCordova {
       ? Object.keys(pluginsFetch)
       // Object.values(pluginsFetch).map((item: any) => item.source.id ?? item.source.url ?? item.source.path)
       : [];
-    const usePlugins = ["cordova-plugin-ionic-webview", ...this._opt.config.plugins ?? []].distinct();
+    const usePlugins = ["cordova-plugin-ionic-webview", "cordova-plugin-splashscreen", ...this._opt.config.plugins ?? []].distinct();
 
     for (const alreadyPluginId of alreadyPluginIds) {
       let hasPlugin = false;
@@ -136,10 +136,10 @@ export class SdCliCordova {
 
     // ICON 파일 복사
     if (this._opt.config.icon !== undefined) {
-      await FsUtil.copyAsync(path.resolve(this._opt.pkgPath, "src", this._opt.config.icon), path.resolve(this._opt.cordovaPath, "res/icon", path.basename(this._opt.config.icon)));
+      await FsUtil.copyAsync(path.resolve(this._opt.pkgPath, "src", this._opt.config.icon), path.resolve(this._opt.cordovaPath, "res/icons", path.basename(this._opt.config.icon)));
     }
     else {
-      await FsUtil.removeAsync(path.resolve(this._opt.cordovaPath, "res/icon"));
+      await FsUtil.removeAsync(path.resolve(this._opt.cordovaPath, "res/icons"));
     }
 
     // CONFIG: 초기값 백업
@@ -158,8 +158,8 @@ export class SdCliCordova {
     configXml.widget.$.version = this._npmConfig.version;
 
     // CONFIG: ICON 설정
-    if (this._opt.config.icon !== undefined) {
-      configXml["widget"]["icon"] = [{"$": {"src": "res/icon/" + path.basename(this._opt.config.icon)}}];
+    if (this._opt.config.icon != null) {
+      configXml["widget"]["icon"] = [{"$": {"src": "res/icons/" + path.basename(this._opt.config.icon)}}];
     }
 
     // CONFIG: 접근허용 세팅
@@ -167,6 +167,17 @@ export class SdCliCordova {
     configXml["widget"]["allow-navigation"] = [{"$": {"href": "*"}}];
     configXml["widget"]["allow-intent"] = [{"$": {"href": "*"}}];
     configXml["widget"]["preference"] = [{"$": {"name": "MixedContentMode", "value": "0"}}];
+
+    // CONFIG: SPLASH SCREEN ICON 설정
+    if (this._opt.config.icon != null) {
+      configXml["widget"]["preference"].push({
+        "$": {
+          "name": "SplashScreen",
+          "value": "res/icons/" + path.basename(this._opt.config.icon)
+        },
+      });
+    }
+
 
     // CONFIG: ANDROID usesCleartextTraffic 설정
     if (this._opt.config.platform?.android) {

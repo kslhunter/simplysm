@@ -1,6 +1,10 @@
 /** @type {import('@simplysm/sd-cli').TSdCliConfigFn} */
 module.exports = () => ({
   packages: {
+    "cordova-util": {
+      type: "library",
+      publish: "npm"
+    },
     "cordova-plugin-local-baseurl": {
       type: "library",
       publish: "npm"

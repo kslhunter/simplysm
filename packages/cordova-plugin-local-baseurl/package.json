@@ -10,6 +10,7 @@
   },
   "license": "MIT",
   "type": "module",
+  "types": "./dist/index.d.ts",
   "engines": {
     "node": "^18"
   },
@@ -18,5 +19,8 @@
     "platforms": [
       "android"
     ]
+  },
+  "devDependencies": {
+    "@types/cordova": "^11.0.2"
   }
 }

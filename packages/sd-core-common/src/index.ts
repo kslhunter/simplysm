@@ -26,6 +26,7 @@ export * from "./utils/FunctionQueue";
 export * from "./utils/FunctionUtil";
 export * from "./utils/JsonConvert";
 export * from "./utils/MathUtil";
+export * from "./utils/NetUtil";
 export * from "./utils/NumberUtil";
 export * from "./utils/ObjectUtil";
 export * from "./utils/SdSyncEventEmitter";

@@ -1,12 +1,12 @@
 {
-  "name": "@simplysm/sd-orm-common",
+  "name": "@simplysm/cordova-util",
   "version": "11.0.31",
-  "description": "심플리즘 패키지 - ORM 모듈 (common)",
+  "description": "심플리즘 패키지 - Cordova Utilities",
   "author": "김석래",
   "repository": {
     "type": "git",
     "url": "https://github.com/kslhunter/simplysm11.git",
-    "directory": "packages/sd-orm-common"
+    "directory": "packages/cordova-util"
   },
   "license": "MIT",
   "type": "module",
@@ -17,5 +17,9 @@
   },
   "dependencies": {
     "@simplysm/sd-core-common": "11.0.31"
+  },
+  "devDependencies": {
+    "@types/cordova": "^11.0.2",
+    "cordova-plugin-file": "^8.0.0"
   }
 }
