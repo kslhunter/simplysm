@@ -68,7 +68,7 @@ export class SdCliCordova {
       ? Object.keys(pluginsFetch)
       // Object.values(pluginsFetch).map((item: any) => item.source.id ?? item.source.url ?? item.source.path)
       : [];
-    const usePlugins = ["cordova-plugin-ionic-webview", "cordova-plugin-splashscreen", ...this._opt.config.plugins ?? []].distinct();
+    const usePlugins = ["cordova-plugin-ionic-webview", ...this._opt.config.plugins ?? []].distinct();
 
     for (const alreadyPluginId of alreadyPluginIds) {
       let hasPlugin = false;
@@ -136,11 +136,24 @@ export class SdCliCordova {
     );
 
     // ICON 파일 복사
-    if (this._opt.config.icon !== undefined) {
+    if (this._opt.config.icon != null) {
       await FsUtil.copyAsync(path.resolve(this._opt.pkgPath, "src", this._opt.config.icon), path.resolve(this._opt.cordovaPath, "res/icons", path.basename(this._opt.config.icon)));
     }
     else {
       await FsUtil.removeAsync(path.resolve(this._opt.cordovaPath, "res/icons"));
+    }
+
+    // SplashScreen 파일 생성
+    if (this._opt.config.platform?.android && this._opt.config.icon != null) {
+      await FsUtil.writeFileAsync(path.resolve(this._opt.cordovaPath, "res/screen/android/splashscreen.xml"), `
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+  <item
+    android:width="48dp"
+    android:height="48dp"
+    android:drawable="@mipmap/ic_launcher"
+    android:gravity="center" />
+</layer-list>`.trim());
     }
 
     // CONFIG: 초기값 백업
@@ -169,18 +182,8 @@ export class SdCliCordova {
     configXml["widget"]["allow-intent"] = [{"$": {"href": "*"}}];
     configXml["widget"]["preference"] = [{"$": {"name": "MixedContentMode", "value": "0"}}];
 
-    // CONFIG: SPLASH SCREEN ICON 설정
-    if (this._opt.config.icon != null) {
-      configXml["widget"]["preference"].push({
-        "$": {
-          "name": "SplashScreen",
-          "value": "res/icons/" + path.basename(this._opt.config.icon)
-        },
-      });
-    }
 
-
-    // CONFIG: ANDROID usesCleartextTraffic 설정
+    // CONFIG: ANDROID usesCleartextTraffic 설정 및 splashscreen 파일 설정
     if (this._opt.config.platform?.android) {
       configXml.widget.$["xmlns:android"] = "http://schemas.android.com/apk/res/android";
 
@@ -189,6 +192,12 @@ export class SdCliCordova {
         "$": {
           "name": "android"
         },
+        "preference": [{
+          "$": {
+            "name": "AndroidWindowSplashScreenAnimatedIcon",
+            "value": "res/screen/android/splashscreen.xml"
+          }
+        }],
         "edit-config": [{
           "$": {
             "file": "app/src/main/AndroidManifest.xml",

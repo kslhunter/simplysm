@@ -6,7 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="a5909e33-fd1f-4a18-a2ac-5581a953e90d" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/cordova-util/src/CordovaAutoUpdate.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/cordova-util/src/CordovaAutoUpdate.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdCliCordova.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdCliCordova.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -142,9 +142,9 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="npm.commit" />
-        <item itemvalue="npm.publish" />
         <item itemvalue="npm.watch" />
+        <item itemvalue="npm.publish" />
+        <item itemvalue="npm.commit" />
         <item itemvalue="npm.watch:sd-orm-node" />
       </list>
     </recent_temporary>
