@@ -1,8 +1,9 @@
+/// <reference types="@simplysm/cordova-plugin-local-baseurl"/>
+
 import {CordovaAppStorage} from "./CordovaAppStorage";
 import {SdAutoUpdateServiceClient, SdServiceClient} from "@simplysm/sd-service-client";
 import {NetUtil} from "@simplysm/sd-core-common";
 import JSZip from "jszip";
-import SdLocalBaseUrl from "@simplysm/cordova-plugin-local-baseurl";
 
 export abstract class CordovaAutoUpdate {
   static async runAsync(opt: {
@@ -57,7 +58,7 @@ export abstract class CordovaAutoUpdate {
       opt.log(`최신버전 실행...`);
 
       const url = CordovaAppStorage.getFullUrl(`/files/www/index.html`);
-      await SdLocalBaseUrl.setUrl(url);
+      await window.SdLocalBaseUrl.setUrl(url);
       return;
     }
   }

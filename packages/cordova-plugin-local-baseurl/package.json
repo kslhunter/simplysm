@@ -10,7 +10,7 @@
   },
   "license": "MIT",
   "type": "module",
-  "types": "./dist/index.d.ts",
+  "types": "./types/index.d.ts",
   "engines": {
     "node": "^18"
   },

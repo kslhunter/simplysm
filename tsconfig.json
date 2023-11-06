@@ -25,7 +25,8 @@
     "baseUrl": ".",
     "paths": {
       "@simplysm/*": [
-        "./packages/*/src/index.ts"
+        "./packages/*/src/index.ts",
+        "./packages/*/types/index.d.ts"
       ]
     }
   }
