@@ -40,7 +40,8 @@
     "semver": "^7.5.4",
     "xml2js": "^0.6.2",
     "yargs": "^17.7.2",
-    "zone.js": "~0.13.3"
+    "zone.js": "~0.13.3",
+    "jszip": "^3.10.1"
   },
   "devDependencies": {
     "@types/eslint": "^8.44.6",

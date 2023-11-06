@@ -30,7 +30,6 @@
     "@simplysm/sd-core-common": "11.0.32",
     "@simplysm/sd-service-client": "11.0.32",
     "@simplysm/sd-service-common": "11.0.32",
-    "cordova-plugin-apkupdater": "^4.0.3",
     "jsbarcode": "^3.11.5",
     "marked": "^9.1.5",
     "qrcode": "^1.5.3",

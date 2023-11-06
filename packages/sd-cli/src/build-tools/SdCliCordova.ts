@@ -2,6 +2,7 @@ import {INpmConfig, ISdCliClientBuilderCordovaConfig} from "../commons";
 import * as path from "path";
 import {FsUtil, Logger, SdProcess} from "@simplysm/sd-core-node";
 import xml2js from "xml2js";
+import JSZip from "jszip";
 
 const BIN_PATH = path.resolve(process.cwd(), "node_modules/.bin/cordova.cmd");
 
@@ -218,20 +219,38 @@ export class SdCliCordova {
       await this._execAsync(`${BIN_PATH} build ${platform} --${buildType}`, this._opt.cordovaPath);
     }
 
-    // 결과물 복사: ANDROID
-    if (this._opt.config.platform?.android) {
-      const targetOutPath = path.resolve(outPath, "android");
-      const apkFileName = this._opt.config.platform.android.sign ? `app-${buildType}.apk` : `app-${buildType}-unsigned.apk`;
-      const latestDistApkFileName = path.basename(`${this._opt.config.appName}${this._opt.config.platform.android.sign ? "" : "-unsigned"}-latest.apk`);
-      await FsUtil.mkdirsAsync(targetOutPath);
-      await FsUtil.copyAsync(
-        path.resolve(this._opt.cordovaPath, "platforms/android/app/build/outputs/apk", buildType, apkFileName),
-        path.resolve(targetOutPath, latestDistApkFileName)
-      );
-      // 자동업데이트를 위한 파일 쓰기
-      await FsUtil.copyAsync(
-        path.resolve(this._opt.cordovaPath, "platforms/android/app/build/outputs/apk", buildType, apkFileName),
-        path.resolve(path.resolve(targetOutPath, "updates"), this._npmConfig.version + ".apk")
+    for (const platform of Object.keys(this._opt.config.platform ?? {})) {
+      const targetOutPath = path.resolve(outPath, platform);
+
+      // 결과물 복사: ANDROID
+      if (platform === "android") {
+        const apkFileName = this._opt.config.platform!.android!.sign ? `app-${buildType}.apk` : `app-${buildType}-unsigned.apk`;
+        const latestDistApkFileName = path.basename(`${this._opt.config.appName}${this._opt.config.platform!.android!.sign ? "" : "-unsigned"}-latest.apk`);
+        await FsUtil.mkdirsAsync(targetOutPath);
+        await FsUtil.copyAsync(
+          path.resolve(this._opt.cordovaPath, "platforms/android/app/build/outputs/apk", buildType, apkFileName),
+          path.resolve(targetOutPath, latestDistApkFileName)
+        );
+      }
+
+      // 자동업데이트를 위한 파일 쓰기 (ZIP)
+      const zip = new JSZip();
+      const wwwFiles = await FsUtil.globAsync(path.resolve(this._opt.cordovaPath, "www/**/*"), {nodir: true});
+      for (const wwwFile of wwwFiles) {
+        const relFilePath = path.relative(path.resolve(this._opt.cordovaPath, "www"), wwwFile);
+        const fileBuffer = await FsUtil.readFileBufferAsync(wwwFile);
+        zip.file(relFilePath, fileBuffer);
+      }
+      const platformWwwFiles = await FsUtil.globAsync(path.resolve(this._opt.cordovaPath, "platforms", platform, "platform_www/**/*"), {nodir: true});
+      for (const platformWwwFile of platformWwwFiles) {
+        const relFilePath = path.relative(path.resolve(this._opt.cordovaPath, "platforms", platform, "platform_www"), platformWwwFile);
+        const fileBuffer = await FsUtil.readFileBufferAsync(platformWwwFile);
+        zip.file(relFilePath, fileBuffer);
+      }
+
+      await FsUtil.writeFileAsync(
+        path.resolve(path.resolve(outPath, platform, "updates"), this._npmConfig.version + ".zip"),
+        await zip.generateAsync({type: "nodebuffer"})
       );
     }
   }

@@ -72,7 +72,7 @@ export class SdCliServerBuilder extends EventEmitter {
 
     this._debug("GEN .config.json...");
     const confDistPath = path.resolve(this._pkgPath, "dist/.config.json");
-    await FsUtil.writeFileAsync(confDistPath, JSON.stringify(this._pkgConf.configs ?? {}, undefined, 2));
+    await FsUtil.writeJsonAsync(confDistPath, this._pkgConf.configs ?? {}, {space: 2});
 
     this._debug("GEN package.json...");
     {
@@ -91,18 +91,49 @@ export class SdCliServerBuilder extends EventEmitter {
         distNpmConfig.scripts = {"start": "pm2 start pm2.json"};
       }
 
-      await FsUtil.writeFileAsync(
+      await FsUtil.writeJsonAsync(
         path.resolve(this._pkgPath, "dist/package.json"),
-        JSON.stringify(distNpmConfig, undefined, 2)
+        distNpmConfig,
+        {space: 2}
       );
     }
+
+    this._debug("GEN openssl.cnf...");
+    {
+      await FsUtil.writeFileAsync(
+        path.resolve(this._pkgPath, "dist/openssl.cnf"),
+        `
+nodejs_conf = openssl_init
+
+[openssl_init]
+providers = provider_sect
+ssl_conf = ssl_sect
+
+[provider_sect]
+default = default_sect
+legacy = legacy_sect
+
+[default_sect]
+activate = 1
+
+[legacy_sect]
+activate = 1
+
+[ssl_sect]
+system_default = system_default_sect
+
+[system_default_sect]
+Options = UnsafeLegacyRenegotiation`.trim()
+      );
+    }
+
 
     if (this._pkgConf.pm2) {
       this._debug("GEN pm2.json...");
 
-      await FsUtil.writeFileAsync(
+      await FsUtil.writeJsonAsync(
         path.resolve(this._pkgPath, "dist/pm2.json"),
-        JSON.stringify({
+        {
           name: npmConfig.name.replace(/@/g, "").replace(/\//g, "-"),
           script: "main.js",
           watch: true,
@@ -115,9 +146,7 @@ export class SdCliServerBuilder extends EventEmitter {
           ...this._pkgConf.pm2.noInterpreter ? {} : {
             "interpreter": "node@" + process.versions.node,
           },
-          ...this._pkgConf.pm2.useLegacyOpenssl ? {
-            interpreter_args: "--openssl-legacy-provider",
-          } : {},
+          interpreter_args: "--openssl-config=openssl.cnf",
           env: {
             NODE_ENV: "production",
             TZ: "Asia/Seoul",
@@ -126,7 +155,9 @@ export class SdCliServerBuilder extends EventEmitter {
           },
           arrayProcess: "concat",
           useDelTargetNull: true
-        }, undefined, 2)
+        }, {
+          space: 2
+        }
       );
     }
 
@@ -141,7 +172,7 @@ export class SdCliServerBuilder extends EventEmitter {
     <handlers>
       <add name="iisnode" path="main.js" verb="*" modules="iisnode" />
     </handlers>
-    <iisnode nodeProcessCommandLine="${serverExeFilePath}"
+    <iisnode nodeProcessCommandLine="${serverExeFilePath} --openssl-config=openssl.cnf"
              watchedFiles="web.config;*.js"
              loggingEnabled="true"
              devErrorsEnabled="true" />

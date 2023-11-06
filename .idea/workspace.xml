@@ -5,37 +5,23 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a5909e33-fd1f-4a18-a2ac-5581a953e90d" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/packages/cordova-plugin-local-baseurl/src/SdLocalBaseUrl.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/packages/cordova-plugin-local-baseurl/tsconfig.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/packages/sd-core-common/src/utils/NetUtil.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/simplysm.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/simplysm.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/packages/cordova-util/src/CordovaAutoUpdate.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/cordova-plugin-local-baseurl/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/cordova-plugin-local-baseurl/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/packages/cordova-plugin-local-baseurl/plugin.xml" beforeDir="false" afterPath="$PROJECT_DIR$/packages/cordova-plugin-local-baseurl/plugin.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/cordova-plugin-local-baseurl/src/android/SdLocalBaseUrl.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/cordova-plugin-local-baseurl/www/SdLocalBaseUrl.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/eslint-plugin/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/eslint-plugin/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/cordova-plugin-local-baseurl/src/SdLocalBaseUrl.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/cordova-plugin-local-baseurl/src/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/cordova-plugin-local-baseurl/src/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/cordova-util/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/cordova-util/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/cordova-util/src/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/cordova-util/src/index.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/packages/sd-angular/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/utils/SdAndroidAutoUpdateManager.ts" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/packages/sd-cli/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdCliCordova.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdCliCordova.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-core-browser/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-core-browser/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-core-common/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-core-common/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-core-common/src/extensions/MapExtension.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-core-common/src/extensions/MapExtension.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-core-common/src/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-core-common/src/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-core-node/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-core-node/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-excel/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-excel/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-orm-common/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-orm-common/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-orm-node-mssql/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-orm-node-mssql/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-orm-node-mysql/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-orm-node-mysql/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-orm-node-sqlite/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-orm-node-sqlite/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-orm-node/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-orm-node/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-service-client/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-service-client/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-service-common/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-service-common/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-service-server/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-service-server/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-storage/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-storage/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/builders/SdCliServerBuilder.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/builders/SdCliServerBuilder.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/commons.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/commons.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-service-client/src/services/SdAutoUpdateServiceClient.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-service-client/src/services/SdAutoUpdateServiceClient.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-service-server/src/services/SdAutoUpdateService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-service-server/src/services/SdAutoUpdateService.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/simplysm.cjs" beforeDir="false" afterPath="$PROJECT_DIR$/simplysm.cjs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yarn.lock" beforeDir="false" afterPath="$PROJECT_DIR$/yarn.lock" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -94,7 +80,7 @@
     "WebServerToolWindowFactoryState": "false",
     "git-widget-placeholder": "master",
     "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "D:/workspaces-11/simplysm-ts",
+    "last_opened_file_path": "D:/workspaces-7.3/simplysm",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.standard": "true",
     "node.js.detected.package.tslint": "true",
@@ -114,11 +100,11 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\workspaces-11\simplysm\_back\231104" />
       <recent name="D:\workspaces-11\simplysm\packages\cordova-base\src" />
       <recent name="D:\workspaces-11\simplysm\packages\cordova-base" />
       <recent name="D:\workspaces-11\simplysm\packages\cordova-plugin-local-baseurl\src" />
       <recent name="D:\workspaces-11\simplysm\packages\cordova-plugin-local-baseurl" />
-      <recent name="D:\workspaces-11\simplysm\packages\extless-loader" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="D:\workspaces-11\simplysm\packages\cordova-plugin-local-baseurl\dist" />

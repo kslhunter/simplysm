@@ -93,7 +93,6 @@ export * from "./providers/SdToastProvider";
 export * from "./SdAngularModule";
 export * from "./SdLazyPageLoaderModule";
 export * from "./utils/commons";
-export * from "./utils/SdAndroidAutoUpdateManager";
 export * from "./utils/SdAppStructureUtil";
 export * from "./utils/sdCanDeactivateGuard";
 export * from "./utils/SdNgHelper";

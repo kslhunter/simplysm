@@ -7,7 +7,8 @@ module.exports = () => ({
     },
     "cordova-plugin-local-baseurl": {
       type: "library",
-      publish: "npm"
+      publish: "npm",
+      noGenIndex: true
     },
     "eslint-plugin": {
       type: "library",
