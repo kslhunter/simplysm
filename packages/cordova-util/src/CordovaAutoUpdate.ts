@@ -11,9 +11,6 @@ export abstract class CordovaAutoUpdate {
     serviceClient: SdServiceClient
   }) {
     if (navigator.userAgent.toLowerCase().includes("android")) {
-      await CordovaAppStorage.removeAsync(`/files/last-version.json`);
-      await CordovaAppStorage.removeAsync(`/files/www`);
-
       opt.log(`보유버전 확인 중...`);
 
       // 로컬의 최종 버전 확인
