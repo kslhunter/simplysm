@@ -5,16 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a5909e33-fd1f-4a18-a2ac-5581a953e90d" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/packages/cordova-plugin-local-baseurl/types/index.d.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/cordova-plugin-local-baseurl/lib/android/SdLocalBaseUrl.java" beforeDir="false" afterPath="$PROJECT_DIR$/packages/cordova-plugin-local-baseurl/src/android/SdLocalBaseUrl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/cordova-plugin-local-baseurl/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/cordova-plugin-local-baseurl/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/cordova-plugin-local-baseurl/plugin.xml" beforeDir="false" afterPath="$PROJECT_DIR$/packages/cordova-plugin-local-baseurl/plugin.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/cordova-plugin-local-baseurl/src/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/cordova-plugin-local-baseurl/www/SdLocalBaseUrl.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/cordova-plugin-local-baseurl/tsconfig.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/cordova-plugin-local-baseurl/types/index.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/cordova-plugin-local-baseurl/types/index.d.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/packages/cordova-util/src/CordovaAutoUpdate.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/cordova-util/src/CordovaAutoUpdate.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/simplysm.cjs" beforeDir="false" afterPath="$PROJECT_DIR$/simplysm.cjs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/tsconfig.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

@@ -58,7 +58,7 @@ export abstract class CordovaAutoUpdate {
       opt.log(`최신버전 실행...`);
 
       const url = CordovaAppStorage.getFullUrl(`/files/www/index.html`);
-      await window.SdLocalBaseUrl.setUrl(url);
+      await SdLocalBaseUrl.setUrl(url);
       return;
     }
   }
