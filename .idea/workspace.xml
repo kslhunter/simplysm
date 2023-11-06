@@ -6,7 +6,12 @@
   <component name="ChangeListManager">
     <list default="true" id="a5909e33-fd1f-4a18-a2ac-5581a953e90d" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/cordova-plugin-local-baseurl/types/index.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/cordova-plugin-local-baseurl/types/index.d.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/cordova-plugin-local-baseurl/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/cordova-plugin-local-baseurl/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/cordova-plugin-local-baseurl/plugin.xml" beforeDir="false" afterPath="$PROJECT_DIR$/packages/cordova-plugin-local-baseurl/plugin.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/cordova-plugin-local-baseurl/www/SdLocalBaseUrl.js" beforeDir="false" afterPath="$PROJECT_DIR$/packages/cordova-plugin-local-baseurl/www/SdLocalBaseUrl.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/cordova-util/src/CordovaAppStorage.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/cordova-util/src/CordovaAppStorage.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-service-server/src/services/SdAutoUpdateService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-service-server/src/services/SdAutoUpdateService.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-service-server/src/utils/SdServiceServerConfigUtil.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-service-server/src/utils/SdServiceServerConfigUtil.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -142,9 +147,9 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="npm.commit" />
         <item itemvalue="npm.watch" />
         <item itemvalue="npm.publish" />
+        <item itemvalue="npm.commit" />
         <item itemvalue="npm.watch:sd-orm-node" />
       </list>
     </recent_temporary>

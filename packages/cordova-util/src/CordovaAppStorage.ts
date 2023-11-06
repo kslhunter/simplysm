@@ -1,15 +1,27 @@
 /// <reference types="cordova-plugin-file"/>
 
 import * as path from "path";
-import {JsonConvert} from "@simplysm/sd-core-common";
+import {JsonConvert, StringUtil} from "@simplysm/sd-core-common";
 
 export abstract class CordovaAppStorage {
   static async readJsonAsync(filePath: string): Promise<any> {
-    return JsonConvert.parse(await this.readFileAsync(filePath));
+    const fileStr = await this.readFileAsync(filePath);
+    return StringUtil.isNullOrEmpty(fileStr) ? undefined : JsonConvert.parse(fileStr);
   }
 
   static async readFileAsync(filePath: string): Promise<string> {
-    return await (await this.readFileObjectAsync(filePath)).text();
+    const file = await this.readFileObjectAsync(filePath);
+
+    return await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = (ev) => {
+        resolve(ev.target!.result as string);
+      };
+      reader.onerror = (ev) => {
+        reject(reader.error);
+      };
+      reader.readAsText(file);
+    });
   }
 
   static async readFileBufferAsync(filePath: string): Promise<Buffer> {

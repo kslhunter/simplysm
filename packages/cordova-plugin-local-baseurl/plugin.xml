@@ -9,7 +9,7 @@
   </js-module>
   <platform name="android">
     <source-file src="src/android/SdLocalBaseUrl.java" target-dir="src/kr/co/simplysm/cordova"/>
-    <config-file target="config.xml" parent="/*">
+    <config-file target="res/xml/config.xml" parent="/*">
       <feature name="SdLocalBaseUrl">
         <param name="android-package" value="kr.co.simplysm.cordova.SdLocalBaseUrl"/>
       </feature>

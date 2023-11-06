@@ -5,8 +5,8 @@ module.exports = {
       // eslint-disable-next-line no-undef
       cordova.exec(() => {
         resolve();
-      }, () => {
-        reject(new Error("CORDOVA: ERROR"));
+      }, (err) => {
+        reject(new Error("CORDOVA: ERROR: " + err));
       }, 'sdLocalBaseUrl', 'setUrl', [url]);
     });
   }

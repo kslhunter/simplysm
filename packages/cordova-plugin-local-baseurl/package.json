@@ -19,8 +19,5 @@
     "platforms": [
       "android"
     ]
-  },
-  "devDependencies": {
-    "@types/cordova": "^11.0.2"
   }
 }
