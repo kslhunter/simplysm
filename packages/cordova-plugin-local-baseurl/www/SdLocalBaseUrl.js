@@ -7,7 +7,7 @@ module.exports = {
         resolve();
       }, (err) => {
         reject(new Error("CORDOVA: ERROR: " + err));
-      }, 'sdLocalBaseUrl', 'setUrl', [url]);
+      }, 'SdLocalBaseUrl', 'setUrl', [url]);
     });
   }
 };

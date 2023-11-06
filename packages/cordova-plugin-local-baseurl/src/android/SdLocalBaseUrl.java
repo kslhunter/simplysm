@@ -12,12 +12,14 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 public class SdLocalBaseUrl extends CordovaPlugin {
     @Override
     public boolean execute(String action, JSONArray data, CallbackContext callbackContext) throws JSONException {
       if (action.equals("setUrl")) {
-        String url = data.toString(0);
+        String url = data.getString(0);
 
         try {
           String ionicWebViewEngineUrlPath = new URI(url).getPath();
@@ -28,31 +30,39 @@ public class SdLocalBaseUrl extends CordovaPlugin {
             final Object ionicWebViewEngine = ionicWebViewEngineClass.cast(webView.getEngine());
             final Method setServerBasePath = ionicWebViewEngineClass.getMethod("setServerBasePath", String.class);
 
-            this.cordova.getActivity().runOnUiThread(new Runnable() {
+            cordova.getActivity().runOnUiThread(new Runnable() {
               @Override
               public void run() {
                 try {
                   setServerBasePath.invoke(ionicWebViewEngine, ionicWebViewEngineServerPath);
+                  callbackContext.success();
                 } catch (IllegalAccessException e) {
-                  Log.d("SdLocalBaseUrl", "ERR: ", e);
+                  callbackContext.error(getStack(e));
                 } catch (InvocationTargetException e) {
-                  Log.d("SdLocalBaseUrl", "ERR: ", e);
+                  callbackContext.error(getStack(e));
                 }
               }
             });
           } catch (ClassNotFoundException e) {
-            Log.d("SdLocalBaseUrl", "ERR: ", e);
             webView.loadUrlIntoView(url, false);
           } catch (NoSuchMethodException e) {
-            Log.d("SdLocalBaseUrl", "ERR: ", e);
+            callbackContext.error(getStack(e));
+            return false;
           }
         } catch (URISyntaxException e) {
-          Log.d("SdLocalBaseUrl", "ERR: ", e);
+          callbackContext.error(getStack(e) + "(" + url + ")");
+          return false;
         }
 
         return true;
       } else {
         return false;
       }
+    }
+
+    public String getStack(Exception exception) {
+        StringWriter sw = new StringWriter();
+        exception.printStackTrace(new PrintWriter(sw));
+        return sw.toString().replace("\t", "  ");
     }
 }
