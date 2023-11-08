@@ -132,23 +132,30 @@ import {StringUtil} from "@simplysm/sd-core-common";
         @include form-control-base();
 
         position: relative;
-        background: var(--theme-secondary-lightest);
         display: block;
         overflow: visible;
         padding-right: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px) !important;
         min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
 
-        // border:1 px solid var(--border-color-default);
-        border: 1px solid var(--trans-light);
         transition: outline-color .1s linear;
         outline: 1px solid transparent;
         outline-offset: -1px;
         cursor: pointer;
 
-        border-radius: var(--border-radius-default);
+        @media not all and (pointer: coarse) {
+          border: 1px solid var(--trans-light);
+          border-radius: var(--border-radius-default);
+          background: var(--theme-secondary-lightest);
+        }
 
         @media all and (pointer: coarse) {
           @include active-effect(true);
+
+          border: none;
+          border-bottom: 2px solid var(--border-color-default);
+          background: transparent;
+          transition: border-color 0.3s;
+          padding: calc(var(--gap-sm) + 1px) 0 calc(var(--gap-sm) - 1px);
         }
 
         > div:first-child {
@@ -173,8 +180,16 @@ import {StringUtil} from "@simplysm/sd-core-common";
           opacity: 1;
         }
 
-        &:focus {
-          outline-color: var(--theme-primary-default);
+        @media not all and (pointer: coarse) {
+          &:focus {
+            outline-color: var(--theme-primary-default);
+          }
+        }
+
+        @media all and (pointer: coarse) {
+          &:focus {
+            border-color: var(--theme-primary-default);
+          }
         }
       }
 

@@ -34,7 +34,7 @@ import {SdListItemControl} from "./SdListItemControl";
       </div>
     </div>
     <sd-collapse [open]="menuOpen" *ngIf="userMenu?.title">
-      <sd-list class="bg-trans-default pv-sm" inset>
+      <sd-list class="pv-sm" inset>
         <sd-list-item *ngFor="let menu of userMenu?.menus; trackBy: trackByForMenu;"
                       style="text-indent: 1em"
                       (click)="menu.onClick()">
@@ -47,37 +47,55 @@ import {SdListItemControl} from "./SdListItemControl";
 
     :host {
       > ._content {
-        background-size: cover;
-        text-shadow: 0 0 1px var(--text-trans-default);
+        @media not all and (max-width: 520px) {
+          background-size: cover;
+          text-shadow: 0 0 1px var(--text-trans-default);
+        }
+
+        @media all and (max-width: 520px) {
+          background-image: none !important;
+        }
 
         > ._menu-button {
           display: block;
           padding: var(--gap-sm) var(--gap-default);
-          background: var(--trans-default);
           cursor: pointer;
           user-select: none;
 
+          @media not all and (pointer: coarse) {
+            background: var(--trans-default);
+
+            &:hover {
+              background: var(--trans-dark);
+            }
+
+            &:active {
+              background: var(--trans-darker);
+            }
+          }
+
           @media all and (pointer: coarse) {
+            background: transparent;
             @include active-effect(true);
-          }
-
-          &:hover {
-            background: var(--trans-dark);
-          }
-
-          &:active {
-            background: var(--trans-darker);
           }
         }
       }
 
-      &[sd-menu-open=true] {
-        > ._content {
-          > ._menu-button {
-            background: var(--trans-dark);
+      @media not all and (max-width: 520px) {
+        ::ng-deep > sd-collapse > ._content > sd-list {
+          background: var(--trans-default);
+        }
+      }
 
-            &:active {
-              background: var(--trans-darker);
+      @media not all and (max-width: 520px) {
+        &[sd-menu-open=true] {
+          > ._content {
+            > ._menu-button {
+              background: var(--trans-dark);
+
+              &:active {
+                background: var(--trans-darker);
+              }
             }
           }
         }

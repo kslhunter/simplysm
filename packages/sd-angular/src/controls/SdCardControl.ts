@@ -25,6 +25,11 @@ import {ChangeDetectionStrategy, Component} from "@angular/core";
 
       @media all and (pointer: coarse) {
         @include elevation(0);
+
+        &:hover,
+        &:has(:focus) {
+          @include elevation(0);
+        }
       }
     }
   `]

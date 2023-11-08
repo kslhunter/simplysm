@@ -50,8 +50,9 @@ import {NgIf, NgTemplateOutlet} from "@angular/common";
 
         @media all and (pointer: coarse) {
           margin-bottom: var(--gap-default);
+          
           > label {
-            margin-bottom: 0;
+            margin-bottom: var(gap-xxs);
           }
         }
       }

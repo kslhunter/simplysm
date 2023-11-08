@@ -21,8 +21,8 @@
     "jszip": "^3.10.1"
   },
   "devDependencies": {
+    "@simplysm/cordova-plugin-local-baseurl": "11.0.39",
     "@types/cordova": "^11.0.2",
-    "cordova-plugin-file": "^8.0.0",
-    "@simplysm/cordova-plugin-local-baseurl": "11.0.39"
+    "cordova-plugin-file": "^8.0.0"
   }
 }

@@ -287,7 +287,9 @@ hidden {
   .m-#{$key} {
     margin: var(--gap-#{$key}) !important;
   }
+}
 
+@each $key, $val in map-get($vars, gap) {
   @each $key1, $val1 in map-get($vars, gap) {
     .p-#{$key}-#{$key1} {
       padding: var(--gap-#{$key}) var(--gap-#{$key1}) !important;
@@ -297,7 +299,9 @@ hidden {
       margin: var(--gap-#{$key}) var(--gap-#{$key1}) !important;
     }
   }
+}
 
+@each $key, $val in map-get($vars, gap) {
   .pv-#{$key} {
     padding-top: var(--gap-#{$key}) !important;
     padding-bottom: var(--gap-#{$key}) !important;
@@ -317,7 +321,9 @@ hidden {
     margin-left: var(--gap-#{$key}) !important;
     margin-right: var(--gap-#{$key}) !important;
   }
+}
 
+@each $key, $val in map-get($vars, gap) {
   .sw-#{$key} {
     width: var(--gap-#{$key}) !important;
   }
@@ -325,7 +331,9 @@ hidden {
   .sh-#{$key} {
     height: var(--gap-#{$key}) !important;
   }
+}
 
+@each $key, $val in map-get($vars, gap) {
   @each $dir in (top, right, bottom, left) {
     $d: str-slice($dir, 1, 1);
 

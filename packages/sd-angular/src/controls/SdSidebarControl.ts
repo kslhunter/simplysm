@@ -19,20 +19,25 @@ import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
       left: 0;
       width: var(--sidebar-width);
       height: 100%;
-      background: var(--theme-blue-grey-darkest);
-      color: var(--text-trans-rev-default);
-      transition: transform .1s ease-out;
+      
+      @media not all and (max-width: 520px) {
+        background: var(--theme-blue-grey-darkest);
+        color: var(--text-trans-rev-default);
+        transition: transform .1s ease-out;
 
-      &[sd-toggle=true] {
-        transform: translateX(-100%);
-        transition: transform .1s ease-in;
+        &[sd-toggle=true] {
+          transform: translateX(-100%);
+          transition: transform .1s ease-in;
+        }
       }
-    }
 
-    @media all and (max-width: 520px) {
-      :host {
-        transform: translateX(-100%);
+      @media all and (max-width: 520px) {
+        background: white;
+        border-top-right-radius: var(--gap-default);
+        border-bottom-right-radius: var(--gap-default);
+        
         transition: transform .3s ease-in;
+        transform: translateX(-100%);
 
         &[sd-toggle=true] {
           transform: none;

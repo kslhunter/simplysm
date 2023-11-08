@@ -17,6 +17,7 @@
     "node": "^18"
   },
   "dependencies": {
+    "@angular/animations": "^16.2.12",
     "@angular/common": "^16.2.12",
     "@angular/core": "^16.2.12",
     "@angular/platform-browser": "^16.2.12",

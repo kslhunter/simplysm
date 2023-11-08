@@ -19,7 +19,7 @@ import {coercionBoolean} from "../utils/commons";
       &:hover {
         color: var(--theme-primary-dark);
         text-decoration: underline;
-        filter: drop-shadow(1px 1px 0 var(--text-trans-lightest));
+        //filter: drop-shadow(1px 1px 0 var(--text-trans-lightest));
       }
 
       &:active {

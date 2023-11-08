@@ -29,7 +29,10 @@ import {SdGapControl} from "./SdGapControl";
     </div>
 
     <sd-gap width="default" *ngIf="!hasSidebar"></sd-gap>
-    <ng-content></ng-content>`,
+    <ng-content></ng-content>
+    <div class="_menu" style="display: inline-block">
+      <ng-content select="sd-topbar-menu"/>
+    </div>`,
   styles: [/* language=SCSS */ `
     :host {
       display: block;
@@ -87,12 +90,32 @@ import {SdGapControl} from "./SdGapControl";
         min-width: var(--topbar-height);
         text-align: center;
         margin-right: var(--gap-default);
-        color: var(--text-trans-rev-dark);
         cursor: pointer;
+
+        @media not all and (pointer: coarse) {
+          color: var(--text-trans-rev-dark);
+        }
+
+        @media all and (pointer: coarse) {
+          color: var(--text-trans-lighter);
+        }
 
         &:hover {
           background: rgba(0, 0, 0, .2);
           color: var(--text-trans-rev-default);
+        }
+      }
+
+      > ._menu {
+        display: inline-block;
+      }
+
+      @media all and (pointer: coarse) {
+        background: var(--background-color);
+        color: var(--text-trans-lighter);
+
+        > ._menu {
+          float: right;
         }
       }
     }

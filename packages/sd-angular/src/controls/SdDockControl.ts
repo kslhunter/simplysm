@@ -37,12 +37,9 @@ import {SdEventsDirective} from "../directives/SdEventsDirective";
       &[sd-resizable=true] {
         > ._resize-bar {
           position: absolute;
-          background: var(--border-color-light);
         }
 
         &[sd-position=top] {
-          padding-bottom: 2px;
-
           > ._resize-bar {
             bottom: 0;
             left: 0;
@@ -53,8 +50,6 @@ import {SdEventsDirective} from "../directives/SdEventsDirective";
         }
 
         &[sd-position=bottom] {
-          padding-top: 2px;
-
           > ._resize-bar {
             top: 0;
             left: 0;
@@ -65,8 +60,6 @@ import {SdEventsDirective} from "../directives/SdEventsDirective";
         }
 
         &[sd-position=left] {
-          padding-right: 2px;
-
           > ._resize-bar {
             top: 0;
             right: 0;
@@ -77,8 +70,6 @@ import {SdEventsDirective} from "../directives/SdEventsDirective";
         }
 
         &[sd-position=right] {
-          padding-left: 2px;
-
           > ._resize-bar {
             top: 0;
             left: 0;
@@ -86,14 +77,6 @@ import {SdEventsDirective} from "../directives/SdEventsDirective";
             width: 2px;
             cursor: ew-resize;
           }
-        }
-      }
-
-      &[sd-hide-resize-border=true] {
-        padding: 0 !important;
-
-        > ._resize-bar {
-          background: transparent;
         }
       }
     }

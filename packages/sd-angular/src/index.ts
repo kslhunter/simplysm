@@ -96,3 +96,4 @@ export * from "./utils/commons";
 export * from "./utils/SdAppStructureUtil";
 export * from "./utils/sdCanDeactivateGuard";
 export * from "./utils/SdNgHelper";
+export * from "./utils/SdPageAnimation";

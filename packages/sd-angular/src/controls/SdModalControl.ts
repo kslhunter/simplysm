@@ -294,6 +294,7 @@ import {SdDockControl} from "./SdDockControl";
           height: 100%;
 
           border: none;
+          border-radius: 0;
 
           > sd-dock-container > ._header {
             background: transparent;

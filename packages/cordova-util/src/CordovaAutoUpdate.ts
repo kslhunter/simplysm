@@ -44,7 +44,7 @@ export abstract class CordovaAutoUpdate {
           if (!zipFile.dir) {
             const zipFileBlob = await zipFile.async("blob");
             await CordovaAppStorage.writeAsync(`/files/www/${zipFilePath.replace(/\\/g, "/")}`, zipFileBlob);
-            opt.log(`최신버전 파일 압축해제...<br/><small>${zipFilePath.replace(/\\/g, "/")}</small>`);
+            opt.log(`최신버전 파일 압축해제...`);
           }
         }
 

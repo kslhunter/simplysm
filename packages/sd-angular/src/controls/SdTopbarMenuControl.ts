@@ -21,9 +21,16 @@ import {coercionBoolean} from "../utils/commons";
         @include active-effect(true);
       }
 
-      &:hover {
-        background: var(--trans-default);
-        color: var(--text-trans-rev-default);
+      @media not all and (pointer: coarse) {
+        &:hover {
+          background: var(--trans-default);
+          color: var(--text-trans-rev-default);
+        }
+      }
+
+      @media all and (pointer: coarse) {
+        color: var(--text-trans-lighter);
+        padding: 0 var(--gap-default);
       }
 
       &[disabled=true] {

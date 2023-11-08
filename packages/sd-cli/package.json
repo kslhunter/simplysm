@@ -34,14 +34,14 @@
     "esbuild": "0.18.17",
     "esbuild-plugin-tsc": "^0.4.0",
     "eslint": "^8.53.0",
+    "jszip": "^3.10.1",
     "node-stdlib-browser": "^1.2.0",
     "rxjs": "^7.8.1",
     "sass": "^1.69.5",
     "semver": "^7.5.4",
     "xml2js": "^0.6.2",
     "yargs": "^17.7.2",
-    "zone.js": "~0.13.3",
-    "jszip": "^3.10.1"
+    "zone.js": "~0.13.3"
   },
   "devDependencies": {
     "@types/eslint": "^8.44.6",

@@ -1,7 +1,18 @@
-import {ChangeDetectionStrategy, Component, HostBinding, HostListener, inject, Input} from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DoCheck,
+  ElementRef,
+  HostBinding,
+  HostListener,
+  inject,
+  Injector,
+  Input
+} from "@angular/core";
 import {SdBusyProvider} from "../providers/SdBusyProvider";
 import {coercionBoolean, coercionNumber} from "../utils/commons";
 import {NgIf} from "@angular/common";
+import {SdNgHelper} from "../utils/SdNgHelper";
 
 @Component({
   selector: "sd-busy-container",
@@ -333,11 +344,11 @@ import {NgIf} from "@angular/common";
     }
   `]
 })
-export class SdBusyContainerControl {
+export class SdBusyContainerControl implements DoCheck {
   #sdBusy = inject(SdBusyProvider);
+  #elRef: ElementRef<HTMLElement> = inject(ElementRef);
 
   @Input({transform: coercionBoolean})
-  @HostBinding("attr.sd-busy")
   busy = false;
 
   @Input()
@@ -353,6 +364,24 @@ export class SdBusyContainerControl {
 
   @Input({transform: coercionNumber})
   progressPercent?: number;
+
+  #sdNgHelper = new SdNgHelper(inject(Injector));
+
+  ngDoCheck() {
+    this.#sdNgHelper.doCheckOutside(run => {
+      run({
+        busy: [this.busy]
+      }, () => {
+        if (this.busy) {
+          this.#elRef.nativeElement.setAttribute("sd-busy", "true");
+        }
+        else {
+          this.#elRef.nativeElement.removeAttribute("sd-busy");
+        }
+      });
+    });
+  }
+
 
   @HostListener("keydown.outside", ["$event"])
   onKeydownOutside(event: KeyboardEvent) {

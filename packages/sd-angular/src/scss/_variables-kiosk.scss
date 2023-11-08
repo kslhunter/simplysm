@@ -9,6 +9,8 @@ $vars: map-merge($vars, (
     lg: 32px,
     xl: 40px,
     xxl: 48px,
+    0: 0,
+    auto: "auto"
   ),
   font-size: (
     lg: 36px,
