@@ -47,12 +47,14 @@ import {SdListItemControl} from "./SdListItemControl";
 
     :host {
       > ._content {
-        @media not all and (max-width: 520px) {
+        body.sd-theme-compact &,
+        body.sd-theme-modern & {
           background-size: cover;
           text-shadow: 0 0 1px var(--text-trans-default);
         }
 
-        @media all and (max-width: 520px) {
+        body.sd-theme-kiosk &,
+        body.sd-theme-mobile & {
           background-image: none !important;
         }
 
@@ -62,21 +64,15 @@ import {SdListItemControl} from "./SdListItemControl";
           cursor: pointer;
           user-select: none;
 
-          @media not all and (pointer: coarse) {
+          @include active-effect(true);
+
+          body.sd-theme-compact &,
+          body.sd-theme-modern & {
             background: var(--trans-default);
 
             &:hover {
               background: var(--trans-dark);
             }
-
-            &:active {
-              background: var(--trans-darker);
-            }
-          }
-
-          @media all and (pointer: coarse) {
-            background: transparent;
-            @include active-effect(true);
           }
         }
       }

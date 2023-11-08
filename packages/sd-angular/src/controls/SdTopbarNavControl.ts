@@ -18,7 +18,9 @@ import {ChangeDetectionStrategy, Component} from "@angular/core";
       text-align: center;
       color: var(--text-trans-lighter);
 
-      @media all and (pointer: coarse) {
+      body.sd-theme-mobile &,
+      body.sd-theme-kiosk &,
+      body.sd-theme-modern {
         @include active-effect(true);
       }
     }

@@ -141,16 +141,18 @@ import {StringUtil} from "@simplysm/sd-core-common";
         outline: 1px solid transparent;
         outline-offset: -1px;
         cursor: pointer;
+        
+        @include active-effect(true);
 
-        @media not all and (pointer: coarse) {
-          border: 1px solid var(--trans-light);
+        body.sd-theme-compact &,
+        body.sd-theme-modern & {
+          border: 1px solid var(--trans-lighter);
           border-radius: var(--border-radius-default);
           background: var(--theme-secondary-lightest);
         }
 
-        @media all and (pointer: coarse) {
-          @include active-effect(true);
-
+        body.sd-theme-mobile &,
+        body.sd-theme-kiosk & {
           border: none;
           border-bottom: 2px solid var(--border-color-default);
           background: transparent;
@@ -180,13 +182,15 @@ import {StringUtil} from "@simplysm/sd-core-common";
           opacity: 1;
         }
 
-        @media not all and (pointer: coarse) {
+        body.sd-theme-compact &,
+        body.sd-theme-modern & {
           &:focus {
             outline-color: var(--theme-primary-default);
           }
         }
 
-        @media all and (pointer: coarse) {
+        body.sd-theme-mobile &,
+        body.sd-theme-kiosk & {
           &:focus {
             border-color: var(--theme-primary-default);
           }
@@ -253,32 +257,37 @@ import {StringUtil} from "@simplysm/sd-core-common";
       }
 
       &[sd-inset=true] {
-        min-width: auto;
-        border-radius: 0;
-
-        > ::ng-deep sd-dropdown > div {
-          border: none;
+        body.sd-theme-compact &,
+        body.sd-theme-modern &,
+        body.sd-theme-mobile &,
+        body.sd-theme-kiosk & {
+          min-width: auto;
           border-radius: 0;
-          min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
-        }
 
-        &[sd-size=sm] > ::ng-deep sd-dropdown > div {
-          min-height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
-        }
+          > ::ng-deep sd-dropdown > div {
+            border: none;
+            border-radius: 0;
+            min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
+          }
 
-        &[sd-size=lg] > ::ng-deep sd-dropdown > div {
-          min-height: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
-        }
+          &[sd-size=sm] > ::ng-deep sd-dropdown > div {
+            min-height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
+          }
 
-        > ::ng-deep sd-dropdown > div:focus {
-          outline: 1px solid var(--theme-primary-default);
-          outline-offset: -1px;
-        }
+          &[sd-size=lg] > ::ng-deep sd-dropdown > div {
+            min-height: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
+          }
 
-        &[sd-disabled=true] ::ng-deep > sd-dropdown > div {
-          background: white;
-          color: var(--text-trans-default);
-          cursor: default;
+          > ::ng-deep sd-dropdown > div:focus {
+            outline: 1px solid var(--theme-primary-default);
+            outline-offset: -1px;
+          }
+
+          &[sd-disabled=true] ::ng-deep > sd-dropdown > div {
+            background: white;
+            color: var(--text-trans-default);
+            cursor: default;
+          }
         }
       }
     }

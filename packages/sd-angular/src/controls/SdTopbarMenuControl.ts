@@ -17,27 +17,29 @@ import {coercionBoolean} from "../utils/commons";
       cursor: pointer;
       color: var(--text-trans-rev-dark);
 
-      @media all and (pointer: coarse) {
-        @include active-effect(true);
-      }
-
-      @media not all and (pointer: coarse) {
+      body.sd-theme-compact & {
         &:hover {
           background: var(--trans-default);
           color: var(--text-trans-rev-default);
         }
       }
 
-      @media all and (pointer: coarse) {
-        color: var(--text-trans-lighter);
+      body.sd-theme-modern &,
+      body.sd-theme-mobile &,
+      body.sd-theme-kiosk & {
+        color: var(--theme-primary-default);
         padding: 0 var(--gap-default);
+        
+        @include active-effect(true);
       }
 
       &[disabled=true] {
         pointer-events: none;
         opacity: .5;
 
-        @media all and (pointer: coarse) {
+        body.sd-theme-modern &,
+        body.sd-theme-mobile &,
+        body.sd-theme-kiosk & {
           @include active-effect(false);
         }
       }

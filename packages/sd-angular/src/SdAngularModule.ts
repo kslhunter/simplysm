@@ -8,14 +8,17 @@ import {SdGlobalErrorHandlerPlugin} from "./plugins/SdGlobalErrorHandlerPlugin";
 import {SdOptionEventPlugin} from "./plugins/SdOptionEventPlugin";
 import {FaConfig} from "@fortawesome/angular-fontawesome";
 import {faQuestionCircle} from "@fortawesome/pro-duotone-svg-icons";
+import {SdThemeProvider} from "./providers/SdThemeProvider";
 
 @NgModule({
   imports: []
 })
 export class SdAngularModule {
   #faConfig = inject(FaConfig);
+  #sdTheme = inject(SdThemeProvider);
 
   constructor() {
+    this.#sdTheme.theme = "compact";
     this.#faConfig.fallbackIcon = faQuestionCircle;
   }
 

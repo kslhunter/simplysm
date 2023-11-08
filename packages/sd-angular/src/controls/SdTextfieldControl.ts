@@ -73,13 +73,15 @@ import {NgIf} from "@angular/common";
         overflow: auto;
         width: 100%;
 
-        @media not all and (pointer: coarse) {
+        body.sd-theme-compact &,
+        body.sd-theme-modern & {
           border: 1px solid var(--trans-lighter);
           border-radius: var(--border-radius-default);
           background: var(--theme-secondary-lightest);
         }
 
-        @media all and (pointer: coarse) {
+        body.sd-theme-mobile &,
+        body.sd-theme-kiosk & {
           border: none;
           border-bottom: 2px solid var(--border-color-default);
           background: transparent;
@@ -172,65 +174,70 @@ import {NgIf} from "@angular/common";
       }
 
       &[sd-inset=true] {
-        > ._contents {
-          display: block;
-        }
+        body.sd-theme-compact &,
+        body.sd-theme-modern &,
+        body.sd-theme-mobile &,
+        body.sd-theme-kiosk & {
+          > ._contents {
+            display: block;
+          }
 
-        > input {
-          position: absolute;
-          top: 0;
-          left: 0;
-        }
+          > input {
+            position: absolute;
+            top: 0;
+            left: 0;
+          }
 
-        > input,
-        > ._contents {
-          width: 100%;
-          border: none;
-          border-radius: 0;
-          height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
-          min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
-        }
-
-        &[sd-type=month] {
           > input,
           > ._contents {
-            width: 100px;
+            width: 100%;
+            border: none;
+            border-radius: 0;
+            height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
+            min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
           }
-        }
 
-        &[sd-type=date] {
-          > input,
-          > ._contents {
-            width: 95px;
+          &[sd-type=month] {
+            > input,
+            > ._contents {
+              width: 100px;
+            }
           }
-        }
 
-        &[sd-type=datetime] {
-          > input,
-          > ._contents {
-            width: 170px;
+          &[sd-type=date] {
+            > input,
+            > ._contents {
+              width: 95px;
+            }
           }
-        }
 
-        &[sd-size=sm] {
-          > input,
-          > ._contents {
-            height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
-            min-height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
+          &[sd-type=datetime] {
+            > input,
+            > ._contents {
+              width: 170px;
+            }
           }
-        }
 
-        &[sd-size=lg] {
-          > input,
-          > ._contents {
-            height: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
-            min-height: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
+          &[sd-size=sm] {
+            > input,
+            > ._contents {
+              height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
+              min-height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
+            }
           }
-        }
 
-        > input:focus {
-          outline: 1px solid var(--theme-primary-default);
-          outline-offset: -1px;
+          &[sd-size=lg] {
+            > input,
+            > ._contents {
+              height: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
+              min-height: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
+            }
+          }
+
+          > input:focus {
+            outline: 1px solid var(--theme-primary-default);
+            outline-offset: -1px;
+          }
         }
       }
 
@@ -254,7 +261,8 @@ import {NgIf} from "@angular/common";
         display: none;
       }
 
-      @media not all and (pointer: coarse) {
+      body.sd-theme-compact &,
+      body.sd-theme-modern & {
         &:has(:invalid),
         &[sd-invalid] {
           > ._invalid-indicator {
@@ -271,7 +279,8 @@ import {NgIf} from "@angular/common";
         }
       }
 
-      @media all and (pointer: coarse) {
+      body.sd-theme-mobile &,
+      body.sd-theme-kiosk & {
         &:has(:invalid),
         &[sd-invalid] {
           > input,

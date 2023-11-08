@@ -19,8 +19,9 @@ import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
       left: 0;
       width: var(--sidebar-width);
       height: 100%;
-      
-      @media not all and (max-width: 520px) {
+
+      body.sd-theme-compact &,
+      body.sd-theme-modern & {
         background: var(--theme-blue-grey-darkest);
         color: var(--text-trans-rev-default);
         transition: transform .1s ease-out;
@@ -31,7 +32,8 @@ import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
         }
       }
 
-      @media all and (max-width: 520px) {
+      body.sd-theme-kiosk &,
+      body.sd-theme-mobile & {
         background: white;
         border-top-right-radius: var(--gap-default);
         border-bottom-right-radius: var(--gap-default);

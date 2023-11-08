@@ -277,7 +277,8 @@ import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
 
           > sd-pane._sheet-container {
             background: var(--sheet-bg);
-            border-radius: var(--border-radius-default);;
+            border-bottom-left-radius: var(--border-radius-default);
+            border-bottom-right-radius: var(--border-radius-default);
 
             > table {
               border-spacing: 0;
@@ -300,6 +301,10 @@ import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
                 overflow: hidden;
                 padding: 0;
                 position: relative;
+                
+                body.sd-theme-modern & {
+                  border-right: none;
+                }
 
                 &._feature-cell {
                   background: var(--theme-grey-lightest);

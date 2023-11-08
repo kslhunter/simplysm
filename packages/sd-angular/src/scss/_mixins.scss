@@ -2,7 +2,7 @@
   @if $value == none or $value == 0 {
     box-shadow: none;
   } @else {
-    box-shadow: 0 0 2px rgba(0, 0, 0, .05), 0 calc(#{$value} * var(--gap-xxs)) calc(#{$value} * 2 * var(--gap-xxs)) rgba(0, 0, 0, .1);
+    box-shadow: 0 0 2px rgba(0, 0, 0, .05), 0 calc(#{$value} * var(--elevation-size)) calc(#{$value} * 2 * var(--elevation-size)) rgba(0, 0, 0, .1);
   }
 }
 
@@ -45,8 +45,10 @@
       left: -10%;
       top: -100%;
       background: transparent;
-      transition: transform var(--animation-duration);
-      transform: scaleX(.5);
+      transition-property: transform;
+      transition-duration: 1s;
+      transition-timing-function: ease-out;
+      transform: scaleX(.3);
 
       pointer-events: none;
     }

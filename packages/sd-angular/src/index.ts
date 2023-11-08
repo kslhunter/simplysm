@@ -89,6 +89,7 @@ export * from "./providers/SdServiceFactoryProvider";
 export * from "./providers/SdSharedDataProvider";
 export * from "./providers/SdSystemConfigProvider";
 export * from "./providers/SdSystemLogProvider";
+export * from "./providers/SdThemeProvider";
 export * from "./providers/SdToastProvider";
 export * from "./SdAngularModule";
 export * from "./SdLazyPageLoaderModule";

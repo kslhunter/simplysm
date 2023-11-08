@@ -1,0 +1,31 @@
+$vars: map-merge($vars, (
+  gap: (
+    xxs: 2px,
+    xs: 4px,
+    sm: 6px,
+    default: 8px,
+    lg: 12px,
+    xl: 18px,
+    xxl: 24px,
+    0: 0,
+    auto: "auto"
+  ),
+  font-size: (
+    lg: 16px,
+    default: 14px,
+    sm: 12px,
+    h1: 32px,
+    h2: 24px,
+    h3: 18px,
+    h4: 16px,
+    h5: 14px,
+    h6: 12px,
+  ),
+  sidebar: (
+    width: 240px
+  ),
+  topbar: (
+    height: 48px
+  ),
+  background-color: white,
+))

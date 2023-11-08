@@ -1,5 +1,3 @@
-@import "variables";
-
 $vars: map-merge($vars, (
   gap: (
     xxs: 8px,
@@ -25,4 +23,5 @@ $vars: map-merge($vars, (
   ),
   background-color: var(--theme-grey-lighter),
   animation-duration: .3s,
+  elevation-size: 8px,
 ))

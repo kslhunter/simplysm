@@ -1,7 +1,7 @@
 import {ChangeDetectionStrategy, Component, ElementRef, forwardRef, HostListener, inject, Input} from "@angular/core";
 import {SdTopbarContainerControl} from "./SdTopbarContainerControl";
 import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
-import {faBars} from "@fortawesome/pro-duotone-svg-icons";
+import {faArrowLeft} from "@fortawesome/pro-duotone-svg-icons";
 import {ISdResizeEvent} from "../plugins/SdResizeEventPlugin";
 import {SdAnchorControl} from "./SdAnchorControl";
 import {NgIf} from "@angular/common";
@@ -19,21 +19,23 @@ import {SdGapControl} from "./SdGapControl";
     SdGapControl
   ],
   template: `
-    <sd-anchor class="_sidebar-toggle-button" (click)="onSidebarToggleButtonClick()" style="font-size: 16px;"
+    <sd-anchor class="_sidebar-toggle-button" (click)="onSidebarToggleButtonClick()"
                *ngIf="hasSidebar">
-      <sd-icon [icon]="faBars" fixedWidth/>
+      <sd-icon [icon]="faArrowLeft" fixedWidth/>
     </sd-anchor>
 
     <div class="_nav">
-      <ng-content select="sd-topbar-nav"></ng-content>
+      <ng-content select="sd-topbar-nav"/>
     </div>
 
     <sd-gap width="default" *ngIf="!hasSidebar"></sd-gap>
-    <ng-content></ng-content>
-    <div class="_menu" style="display: inline-block">
+    <ng-content/>
+    <div class="_menu">
       <ng-content select="sd-topbar-menu"/>
     </div>`,
   styles: [/* language=SCSS */ `
+    @import "../scss/mixins";
+
     :host {
       display: block;
       position: absolute;
@@ -42,13 +44,23 @@ import {SdGapControl} from "./SdGapControl";
       left: 0;
       width: 100%;
       height: var(--topbar-height);
-      background: var(--theme-primary-default);
-      color: var(--text-trans-rev-default);
       overflow-x: auto;
       overflow-y: hidden;
       white-space: nowrap;
       line-height: var(--topbar-height);
       user-select: none;
+
+      body.sd-theme-compact & {
+        background: var(--theme-primary-default);
+        color: var(--text-trans-rev-default);
+      }
+
+      body.sd-theme-mobile &,
+      body.sd-theme-kiosk &,
+      body.sd-theme-modern & {
+        background: var(--background-color);
+        color: var(--text-trans-default);
+      }
 
       > ._nav {
         display: inline-block;
@@ -87,34 +99,44 @@ import {SdGapControl} from "./SdGapControl";
       > ._sidebar-toggle-button {
         display: inline-block;
         vertical-align: top;
-        min-width: var(--topbar-height);
         text-align: center;
         margin-right: var(--gap-default);
         cursor: pointer;
 
-        @media not all and (pointer: coarse) {
+        body.sd-theme-compact & {
           color: var(--text-trans-rev-dark);
+          min-width: var(--topbar-height);
+          font-size: 16px;
+
+          &:hover {
+            background: rgba(0, 0, 0, .1);
+            color: var(--text-trans-rev-default);
+          }
         }
 
-        @media all and (pointer: coarse) {
+        body.sd-theme-modern &,
+        body.sd-theme-mobile &,
+        body.sd-theme-kiosk & {
           color: var(--text-trans-lighter);
-        }
+          font-size: 12px;
+          line-height: var(--line-height);
+          padding: var(--gap-xs) var(--gap-sm);
+          margin: var(--gap-xxs);
+          border-radius: var(--border-radius-default);
+          
+          @include active-effect(true);
 
-        &:hover {
-          background: rgba(0, 0, 0, .2);
-          color: var(--text-trans-rev-default);
+          &:hover {
+            color: var(--text-trans-light);
+          }
         }
       }
 
       > ._menu {
         display: inline-block;
-      }
 
-      @media all and (pointer: coarse) {
-        background: var(--background-color);
-        color: var(--text-trans-lighter);
-
-        > ._menu {
+        body.sd-theme-mobile &,
+        body.sd-theme-kiosk & {
           float: right;
         }
       }
@@ -149,6 +171,6 @@ export class SdTopbarControl {
     this.#topbarContainerControl.elRef.nativeElement.style.paddingTop = this.#elRef.nativeElement.offsetHeight + "px";
   }
 
-  protected readonly faBars = faBars;
+  protected readonly faArrowLeft = faArrowLeft;
 }
 
