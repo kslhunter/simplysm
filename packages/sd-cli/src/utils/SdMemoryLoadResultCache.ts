@@ -14,7 +14,6 @@ export class SdMemoryLoadResultCache extends MemoryLoadResultCache {
     this.loadResults.set(putPath, result);
     if (result.watchFiles) {
       for (const watchFile of result.watchFiles) {
-        // Normalize the watch file path to ensure OS consistent paths
         const watchFilePath = path.resolve(watchFile);
         let affected = this.fileDependencies.getOrCreate(watchFilePath, new Set());
         affected.add(putPath);
@@ -36,5 +35,9 @@ export class SdMemoryLoadResultCache extends MemoryLoadResultCache {
     found ||= this.loadResults.delete(invalidatePath);
 
     return found;
+  }
+
+  override get watchFiles(): string[] {
+    return [...this.loadResults.keys(), ...this.fileDependencies.keys()];
   }
 }

@@ -35,9 +35,9 @@ import {SdCheckboxControl} from "./SdCheckboxControl";
     <table>
       <tbody>
       <ng-container *ngFor="let item of items; trackBy: trackByForItem;">
-        <ng-template [ngTemplateOutlet]="itemTemplate"
-                     [ngTemplateOutletContext]="{item: item, parentKey: 'root', depth: 0, parent: undefined}">
-        </ng-template>
+          <ng-template [ngTemplateOutlet]="itemTemplate"
+                 [ngTemplateOutletContext]="{item: item, parentKey: 'root', depth: 0, parent: undefined}">
+          </ng-template>
       </ng-container>
       </tbody>
     </table>

@@ -53,7 +53,7 @@ export class SdNgBundlerContext {
     const initialFiles = new Map<string, InitialFileRecord>();
 
     for (const outputFile of buildResult.outputFiles ?? []) {
-      const relativeFilePath = path.relative(this._pkgPath, outputFile.path);
+      const relativeFilePath = path.isAbsolute(outputFile.path) ? path.relative(this._pkgPath, outputFile.path) : outputFile.path;
       const entryPoint = buildResult.metafile?.outputs[relativeFilePath]?.entryPoint;
 
       outputFile.path = relativeFilePath;
@@ -95,21 +95,21 @@ export class SdNgBundlerContext {
       }
     }
 
-    const dependencyMap = new Map<string, Set<string>>();
-    if (buildResult.metafile) {
-      for (const [key, val] of Object.entries(buildResult.metafile.inputs)) {
-        for (const imp of val.imports) {
-          const deps = dependencyMap.getOrCreate(path.resolve(this._pkgPath, imp.path), new Set<string>());
-          deps.add(path.resolve(this._pkgPath, key));
-        }
-      }
-    }
+    // const dependencyMap = new Map<string, Set<string>>();
+    // if (buildResult.metafile) {
+    //   for (const [key, val] of Object.entries(buildResult.metafile.inputs)) {
+    //     for (const imp of val.imports) {
+    //       const deps = dependencyMap.getOrCreate(path.resolve(this._pkgPath, imp.path), new Set<string>());
+    //       deps.add(path.resolve(this._pkgPath, key));
+    //     }
+    //   }
+    // }
 
     return {
       results,
       initialFiles,
       outputFiles: buildResult.outputFiles,
-      dependencyMap,
+      // dependencyMap,
       metafile: buildResult.metafile
     };
   }

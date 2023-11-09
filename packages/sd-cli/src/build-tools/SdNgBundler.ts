@@ -50,8 +50,6 @@ export class SdNgBundler {
 
   private readonly _outputCache = new Map<string, string | number>();
 
-  private readonly _customDepsCache = new Map<string, Set<string>>();
-
   private readonly _pkgNpmConf: INpmConfig;
   private readonly _mainFilePath: string;
   private readonly _tsConfigFilePath: string;
@@ -80,17 +78,7 @@ export class SdNgBundler {
   }
 
   public removeCache(filePaths: string[]): void {
-    for (const filePath of filePaths) {
-      const depsSet = this._customDepsCache.get(filePath);
-      if (depsSet) {
-        for (const depFile of depsSet) {
-          this._sourceFileCache.invalidate([depFile]);
-        }
-      }
-      else {
-        this._sourceFileCache.invalidate([filePath]);
-      }
-    }
+    this._sourceFileCache.invalidate(filePaths);
   }
 
   public async bundleAsync(): Promise<{
@@ -110,16 +98,21 @@ export class SdNgBundler {
     const results = bundlingResults.mapMany(bundlingResult => bundlingResult.results);
 
     const watchFilePaths = [
-      ...this._sourceFileCache.keys(),
+      ...Array.from(this._sourceFileCache.typeScriptFileCache.keys()).map(item => fileURLToPath(item)),
+      ...this._sourceFileCache.referencedFiles ?? [],
       ...this._sourceFileCache.babelFileCache.keys(),
-      ...this._sourceFileCache.loadResultCache.fileDependencies.keys(),
-      ...this._customDepsCache.keys()
+      ...this._sourceFileCache.loadResultCache.watchFiles
     ].map((item) => path.resolve(item)).distinct();
 
     let affectedSourceFilePaths = watchFilePaths.filter((item) => PathUtil.isChildPath(item, this._opt.pkgPath));
 
     if (this._sourceFileCache.modifiedFiles.size > 0) {
-      const depMap = new Map<string, Set<string>>();
+      affectedSourceFilePaths = Array.from(this._sourceFileCache.modifiedFiles)
+        .filter((item) => PathUtil.isChildPath(item, this._opt.pkgPath))
+        .map((item) => path.resolve(item))
+        .distinct();
+
+      /*const depMap = new Map<string, Set<string>>();
       for (const bundlingResult of bundlingResults) {
         for (const [k, v] of bundlingResult.dependencyMap) {
           const currSet = depMap.getOrCreate(k, new Set<string>());
@@ -129,10 +122,6 @@ export class SdNgBundler {
       for (const [k, v] of this._sourceFileCache.loadResultCache.fileDependencies) {
         const currSet = depMap.getOrCreate(k, new Set<string>());
         currSet.adds(...Array.from(v).map((item) => item.startsWith("file:") ? fileURLToPath(item) : undefined).filterExists());
-      }
-      for (const [k, v] of this._customDepsCache) {
-        const currSet = depMap.getOrCreate(k, new Set<string>());
-        currSet.adds(...v);
       }
 
       const searchAffectedFiles = (filePath: string, prev?: Set<string>): Set<string> => {
@@ -155,16 +144,13 @@ export class SdNgBundler {
         affectedFilePathSet.add(path.resolve(modFile));
         affectedFilePathSet.adds(...searchAffectedFiles(path.resolve(modFile)));
       }
-      affectedSourceFilePaths = Array.from(affectedFilePathSet.values()).filter((item) => PathUtil.isChildPath(item, this._opt.pkgPath));
+      affectedSourceFilePaths = Array.from(affectedFilePathSet.values()).filter((item) => PathUtil.isChildPath(item, this._opt.pkgPath));*/
     }
 
     /*const executionResult = new ExecutionResult(this._contexts, this._sourceFileCache);
     executionResult.outputFiles.push(...bundlingResult.outputFiles);*/
 
-    const outputFiles: BuildOutputFile[] = bundlingResults.mapMany(item => item.outputFiles?.map(file => {
-      const fileType = path.dirname(file.path) === 'media' ? BuildOutputFileType.Media : BuildOutputFileType.Browser;
-      return convertOutputFile(file, fileType);
-    }) ?? []);
+    const outputFiles: BuildOutputFile[] = bundlingResults.mapMany(item => item.outputFiles?.map(file => convertOutputFile(file, BuildOutputFileType.Root)) ?? []);
     const initialFiles = new Map<string, InitialFileRecord>();
     const metafile: {
       inputs: Metafile["inputs"],
@@ -198,7 +184,7 @@ export class SdNgBundler {
 
     //-- cordova empty
     if (this._opt.cordovaConfig?.plugins) {
-      outputFiles.push(createOutputFileFromText("cordova-empty.js", "export default {};", BuildOutputFileType.Browser));
+      outputFiles.push(createOutputFileFromText("cordova-empty.js", "export default {};", BuildOutputFileType.Root));
     }
 
     //-- index
@@ -226,7 +212,7 @@ export class SdNgBundler {
         type: "build",
       });
     }
-    outputFiles.push(createOutputFileFromText("index.html", genIndexHtmlResult.content, BuildOutputFileType.Browser));
+    outputFiles.push(createOutputFileFromText("index.html", genIndexHtmlResult.content, BuildOutputFileType.Root));
 
     //-- copy assets
     assetFiles.push(...(await this._copyAssetsAsync()));
@@ -240,7 +226,7 @@ export class SdNgBundler {
     if (FsUtil.exists(this._swConfFilePath)) {
       try {
         const serviceWorkerResult = await this._genServiceWorkerAsync(outputFiles, assetFiles);
-        outputFiles.push(createOutputFileFromText('ngsw.json', serviceWorkerResult.manifest, BuildOutputFileType.Browser));
+        outputFiles.push(createOutputFileFromText('ngsw.json', serviceWorkerResult.manifest, BuildOutputFileType.Root));
         assetFiles.push(...serviceWorkerResult.assetFiles);
       }
       catch (err) {
@@ -258,8 +244,7 @@ export class SdNgBundler {
 
     //-- write
     for (const outputFile of outputFiles) {
-      const distFilePath = path.resolve(this._opt.outputPath, outputFile.path);
-
+      const distFilePath = path.resolve(this._opt.outputPath, outputFile.fullOutputPath);
       const prev = this._outputCache.get(distFilePath);
       if (prev !== Buffer.from(outputFile.contents).toString("base64")) {
         await FsUtil.writeFileAsync(distFilePath, outputFile.contents);

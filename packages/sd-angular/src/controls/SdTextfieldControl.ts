@@ -78,15 +78,27 @@ import {NgIf} from "@angular/common";
           border: 1px solid var(--trans-lighter);
           border-radius: var(--border-radius-default);
           background: var(--theme-secondary-lightest);
+
+          &:focus {
+            outline: none;
+            border-color: var(--theme-primary-default);
+          }
         }
 
         body.sd-theme-mobile &,
         body.sd-theme-kiosk & {
-          border: none;
+          border-left: none;
+          border-right: none;
+          border-top: none;
           border-bottom: 2px solid var(--border-color-default);
           background: transparent;
           transition: border-color 0.3s;
           padding: calc(var(--gap-sm) + 1px) 0 calc(var(--gap-sm) - 1px);
+
+          &:focus {
+            outline: none;
+            border-bottom-color: var(--theme-primary-default);
+          }
         }
 
         &::-webkit-scrollbar {
@@ -106,11 +118,6 @@ import {NgIf} from "@angular/common";
         &::-webkit-calendar-picker-indicator {
           cursor: pointer;
           margin: auto;
-        }
-
-        &:focus {
-          outline: none;
-          border-color: var(--theme-primary-default);
         }
       }
 

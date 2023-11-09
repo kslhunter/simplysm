@@ -23,8 +23,8 @@
   @import "themes/variables-mobile";
   @include writeVars($vars, "");
 }
-.sd-theme-modern {
-  @import "themes/variables-modern";
+.sd-theme-kiosk {
+  @import "themes/variables-kiosk";
   @include writeVars($vars, "");
 }
 
