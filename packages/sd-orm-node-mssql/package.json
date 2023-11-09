@@ -22,6 +22,6 @@
     "tedious": "^16.6.0"
   },
   "devDependencies": {
-    "@types/tedious": "^4.0.13"
+    "@types/tedious": "^4.0.14"
   }
 }

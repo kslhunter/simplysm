@@ -1,5 +1,5 @@
 import {SdMemoryLoadResultCache} from "./SdMemoryLoadResultCache";
-import {SourceFileCache} from "@angular-devkit/build-angular/src/tools/esbuild/angular/compiler-plugin";
+import {SourceFileCache} from "@angular-devkit/build-angular/src/tools/esbuild/angular/source-file-cache";
 
 export class SdSourceFileCache extends SourceFileCache {
   override readonly loadResultCache = new SdMemoryLoadResultCache();

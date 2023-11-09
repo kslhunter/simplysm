@@ -1,9 +1,13 @@
 import {createCompilerPlugin} from "@angular-devkit/build-angular/src/tools/esbuild/angular/compiler-plugin";
 import path from "path";
-import {InitialFileRecord} from "@angular-devkit/build-angular/src/tools/esbuild/bundler-context";
+import {
+  BuildOutputFile,
+  BuildOutputFileType,
+  InitialFileRecord
+} from "@angular-devkit/build-angular/src/tools/esbuild/bundler-context";
 import esbuild, {Metafile} from "esbuild";
 import {FsUtil, PathUtil} from "@simplysm/sd-core-node";
-import {fileURLToPath, pathToFileURL} from "url";
+import {fileURLToPath} from "url";
 import {createVirtualModulePlugin} from "@angular-devkit/build-angular/src/tools/esbuild/virtual-module-plugin";
 import {
   createSourcemapIgnorelistPlugin
@@ -16,6 +20,7 @@ import {extractLicenses} from "@angular-devkit/build-angular/src/tools/esbuild/l
 import {augmentAppWithServiceWorkerEsbuild} from "@angular-devkit/build-angular/src/utils/service-worker";
 import browserslist from "browserslist";
 import {
+  convertOutputFile,
   createOutputFileFromText,
   transformSupportedBrowsersToTargets
 } from "@angular-devkit/build-angular/src/tools/esbuild/utils";
@@ -156,7 +161,10 @@ export class SdNgBundler {
     /*const executionResult = new ExecutionResult(this._contexts, this._sourceFileCache);
     executionResult.outputFiles.push(...bundlingResult.outputFiles);*/
 
-    const outputFiles = bundlingResults.mapMany(item => item.outputFiles ?? []);
+    const outputFiles: BuildOutputFile[] = bundlingResults.mapMany(item => item.outputFiles?.map(file => {
+      const fileType = path.dirname(file.path) === 'media' ? BuildOutputFileType.Media : BuildOutputFileType.Browser;
+      return convertOutputFile(file, fileType);
+    }) ?? []);
     const initialFiles = new Map<string, InitialFileRecord>();
     const metafile: {
       inputs: Metafile["inputs"],
@@ -190,7 +198,7 @@ export class SdNgBundler {
 
     //-- cordova empty
     if (this._opt.cordovaConfig?.plugins) {
-      outputFiles.push(createOutputFileFromText("cordova-empty.js", "export default {};"));
+      outputFiles.push(createOutputFileFromText("cordova-empty.js", "export default {};", BuildOutputFileType.Browser));
     }
 
     //-- index
@@ -218,21 +226,21 @@ export class SdNgBundler {
         type: "build",
       });
     }
-    outputFiles.push(createOutputFileFromText("index.html", genIndexHtmlResult.content));
+    outputFiles.push(createOutputFileFromText("index.html", genIndexHtmlResult.content, BuildOutputFileType.Browser));
 
     //-- copy assets
     assetFiles.push(...(await this._copyAssetsAsync()));
 
     //-- extract 3rdpartylicenses
     if (!this._opt.dev) {
-      outputFiles.push(createOutputFileFromText('3rdpartylicenses.txt', await extractLicenses(metafile, this._opt.pkgPath)));
+      outputFiles.push(createOutputFileFromText('3rdpartylicenses.txt', await extractLicenses(metafile, this._opt.pkgPath), BuildOutputFileType.Root));
     }
 
     //-- service worker
     if (FsUtil.exists(this._swConfFilePath)) {
       try {
         const serviceWorkerResult = await this._genServiceWorkerAsync(outputFiles, assetFiles);
-        outputFiles.push(createOutputFileFromText('ngsw.json', serviceWorkerResult.manifest));
+        outputFiles.push(createOutputFileFromText('ngsw.json', serviceWorkerResult.manifest, BuildOutputFileType.Browser));
         assetFiles.push(...serviceWorkerResult.assetFiles);
       }
       catch (err) {
@@ -395,7 +403,7 @@ export class SdNgBundler {
   }
 
   private async _genServiceWorkerAsync(
-    outputFiles: esbuild.OutputFile[],
+    outputFiles: BuildOutputFile[],
     assetFiles: {
       source: string;
       destination: string;
@@ -494,7 +502,7 @@ export class SdNgBundler {
       },
       inject: [PathUtil.posix(fileURLToPath(await import.meta.resolve!("node-stdlib-browser/helpers/esbuild/shim")))],
       plugins: [
-        {
+        /*{
           name: "sd-worker",
           setup: ({onLoad}) => {
             onLoad({filter: /\.ts$/}, async args => {
@@ -558,7 +566,7 @@ export class SdNgBundler {
               return undefined;
             });
           }
-        },
+        },*/
         ...this._opt.cordovaConfig?.plugins ? [{
           name: "cordova:plugin-empty",
           setup: ({onResolve}) => {
@@ -581,13 +589,14 @@ export class SdNgBundler {
         createSourcemapIgnorelistPlugin(),
         createCompilerPlugin({
           sourcemap: this._opt.dev,
-          thirdPartySourcemaps: false,
           tsconfig: this._tsConfigFilePath,
           jit: false,
           advancedOptimizations: true,
+          thirdPartySourcemaps: false,
           fileReplacements: undefined,
           sourceFileCache: this._sourceFileCache,
-          loadResultCache: this._sourceFileCache.loadResultCache
+          loadResultCache: this._sourceFileCache.loadResultCache,
+          incremental: this._opt.dev
         }, {
           workspaceRoot: this._opt.pkgPath,
           optimization: !this._opt.dev,

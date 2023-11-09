@@ -1,6 +1,6 @@
 {
   "name": "simplysm",
-  "version": "11.0.40",
+  "version": "11.1.0",
   "description": "심플리즘 패키지",
   "author": "김석래",
   "packageManager": "yarn@4.0.1",
@@ -31,10 +31,10 @@
   },
   "devDependencies": {
     "@simplysm/eslint-plugin": "11.0.40",
-    "@types/node": "^18.18.8",
+    "@types/node": "^18.18.9",
     "cross-env": "^7.0.3",
     "eslint": "^8.53.0",
     "tsx": "^3.14.0",
-    "typescript": "^4.9.5"
+    "typescript": "^5.2.2"
   }
 }

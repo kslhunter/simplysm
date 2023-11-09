@@ -4,25 +4,30 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a5909e33-fd1f-4a18-a2ac-5581a953e90d" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/packages/sd-angular/src/providers/SdThemeProvider.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/packages/sd-angular/src/scss/themes/_variables-modern.scss" afterDir="false" />
+    <list default="true" id="a5909e33-fd1f-4a18-a2ac-5581a953e90d" name="Changes" comment="#447 (진행중)">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/SdAngularModule.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/SdAngularModule.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSelectControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSelectControl.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSheetControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSheetControl.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSidebarControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSidebarControl.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSidebarUserControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSidebarUserControl.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdTextfieldControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdTextfieldControl.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdTopbarControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdTopbarControl.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdTopbarMenuControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdTopbarMenuControl.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdTopbarNavControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdTopbarNavControl.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/scss/_mixins.scss" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/scss/_mixins.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/scss/_styles.scss" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/scss/_styles.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/scss/_variables-kiosk.scss" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/scss/themes/_variables-kiosk.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/scss/_variables-mobile.scss" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/scss/themes/_variables-mobile.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/scss/_variables.scss" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/scss/_variables.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/cordova-plugin-local-baseurl/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/cordova-plugin-local-baseurl/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/cordova-util/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/cordova-util/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/eslint-plugin/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/eslint-plugin/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdNgBundler.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdNgBundler.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/utils/SdSourceFileCache.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/utils/SdSourceFileCache.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-core-browser/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-core-browser/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-core-common/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-core-common/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-core-node/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-core-node/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-excel/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-excel/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-orm-common/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-orm-common/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-orm-node-mssql/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-orm-node-mssql/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-orm-node-mysql/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-orm-node-mysql/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-orm-node-sqlite/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-orm-node-sqlite/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-orm-node/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-orm-node/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-service-client/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-service-client/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-service-common/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-service-common/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-service-server/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-service-server/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-storage/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-storage/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yarn.lock" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -80,7 +85,7 @@
     "WebServerToolWindowFactoryState": "false",
     "git-widget-placeholder": "master",
     "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "D:/workspaces-11/simplysm/packages/sd-angular/src/scss/themes",
+    "last_opened_file_path": "D:/workspaces-11/ng17-test",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.standard": "true",
     "node.js.detected.package.tslint": "true",
