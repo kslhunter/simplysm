@@ -4,17 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a5909e33-fd1f-4a18-a2ac-5581a953e90d" name="Changes" comment="#447 (진행중)">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdPermissionTableControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdPermissionTableControl.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSidebarMenuControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSidebarMenuControl.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdTextfieldControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdTextfieldControl.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/scss/_styles.scss" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/scss/_styles.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdNgBundler.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdNgBundler.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdNgBundlerContext.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdNgBundlerContext.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/utils/SdMemoryLoadResultCache.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/utils/SdMemoryLoadResultCache.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/utils/SdSourceFileCache.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/utils/SdSourceFileCache.ts" afterDir="false" />
-    </list>
+    <list default="true" id="a5909e33-fd1f-4a18-a2ac-5581a953e90d" name="Changes" comment="#447 (진행중)" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -148,9 +138,9 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="npm.watch" />
-        <item itemvalue="npm.commit" />
         <item itemvalue="npm.publish" />
+        <item itemvalue="npm.commit" />
+        <item itemvalue="npm.watch" />
         <item itemvalue="npm.watch:sd-orm-node" />
       </list>
     </recent_temporary>
