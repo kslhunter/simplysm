@@ -35,9 +35,9 @@ import {SdCheckboxControl} from "./SdCheckboxControl";
     <table>
       <tbody>
       <ng-container *ngFor="let item of items; trackBy: trackByForItem;">
-          <ng-template [ngTemplateOutlet]="itemTemplate"
-                 [ngTemplateOutletContext]="{item: item, parentKey: 'root', depth: 0, parent: undefined}">
-          </ng-template>
+        <ng-template [ngTemplateOutlet]="itemTemplate"
+                     [ngTemplateOutletContext]="{item: item, parentKey: 'root', depth: 0, parent: undefined}">
+        </ng-template>
       </ng-container>
       </tbody>
     </table>
@@ -56,12 +56,12 @@ import {SdCheckboxControl} from "./SdCheckboxControl";
           <ng-container *ngIf="item.children && item.children.length > 0">
             <sd-anchor (click)="onPermCollapseToggle(item)">
               <sd-collapse-icon [icon]="faChevronRight" [open]="getIsPermCollapsed(item)"/>
-              {{item.title}}
+              {{ item.title }}
             </sd-anchor>
           </ng-container>
           <ng-container *ngIf="!item.children || item.children.length === 0">
             <div style="padding-left: 14px;">
-              {{item.title}}
+              {{ item.title }}
             </div>
           </ng-container>
         </td>

@@ -2,7 +2,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   ContentChild,
-  ContentChildren,
   DoCheck,
   ElementRef,
   EventEmitter,
@@ -11,7 +10,6 @@ import {
   Injector,
   Input,
   Output,
-  QueryList,
   TemplateRef,
   ViewChild
 } from "@angular/core";
@@ -141,7 +139,7 @@ import {StringUtil} from "@simplysm/sd-core-common";
         outline: 1px solid transparent;
         outline-offset: -1px;
         cursor: pointer;
-        
+
         @include active-effect(true);
 
         body.sd-theme-compact &,
@@ -329,8 +327,7 @@ export class SdSelectControl<M extends "single" | "multi", T extends any> implem
   @ContentChild("before", {static: true})
   beforeTemplateRef: TemplateRef<void> | null = null;
 
-  @ContentChildren(SdSelectItemControl)
-  itemControls?: QueryList<SdSelectItemControl<any>>;
+  itemControls: SdSelectItemControl<any>[] = [];
 
   @Input()
   items?: T[];
@@ -390,11 +387,6 @@ export class SdSelectControl<M extends "single" | "multi", T extends any> implem
         placeholder: [this.placeholder],
         ...getSdFnCheckData("getChildrenFn", this.getChildrenFn)
       }, () => {
-        if (!this.itemControls) {
-          this.contentElRef.nativeElement.innerHTML = `<span class='sd-text-color-grey-default'>${this.placeholder}</span>`;
-          return;
-        }
-
         const selectedItemControls = this.itemControls.filter((itemControl) => this.getIsSelectedItemControl(itemControl));
         const selectedItemEls = selectedItemControls.map((item) => item.elRef.nativeElement);
         const innerHTML = selectedItemEls
@@ -524,8 +516,6 @@ export class SdSelectControl<M extends "single" | "multi", T extends any> implem
   }
 
   onSelectAllButtonClick(check: boolean) {
-    if (!this.itemControls) return;
-
     const value = check ? this.itemControls.map((item) => item.value) : [];
 
     if (this.valueChange.observed) {

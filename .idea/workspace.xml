@@ -4,7 +4,21 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a5909e33-fd1f-4a18-a2ac-5581a953e90d" name="Changes" comment="#447 (진행중)" />
+    <list default="true" id="a5909e33-fd1f-4a18-a2ac-5581a953e90d" name="Changes" comment="#447 (진행중)">
+      <change beforePath="$PROJECT_DIR$/.idea/codeStyles/Project.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/codeStyles/Project.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/codeStyles/codeStyleConfig.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/codeStyles/codeStyleConfig.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdDropdownControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdDropdownControl.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdPermissionTableControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdPermissionTableControl.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSelectControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSelectControl.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSelectItemControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSelectItemControl.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSharedDataSelectControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSharedDataSelectControl.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSheetControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSheetControl.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSidebarMenuControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSidebarMenuControl.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/scss/_variables.scss" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/scss/_variables.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-service-client/src/SdServiceClient.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-service-client/src/SdServiceClient.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-service-server/src/SdServiceServer.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-service-server/src/SdServiceServer.ts" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -74,7 +88,7 @@
     "npm.publish.executor": "Run",
     "npm.watch.executor": "Run",
     "npm.watch:sd-orm-node.executor": "Run",
-    "settings.editor.selected.configurable": "preferences.sourceCode.JavaScript",
+    "settings.editor.selected.configurable": "preferences.sourceCode.Other File Types",
     "ts.external.directory.path": "D:\\workspaces-11\\simplysm\\node_modules\\typescript\\lib",
     "vue.rearranger.settings.migration": "true"
   }
@@ -138,9 +152,9 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="npm.watch" />
         <item itemvalue="npm.publish" />
         <item itemvalue="npm.commit" />
-        <item itemvalue="npm.watch" />
         <item itemvalue="npm.watch:sd-orm-node" />
       </list>
     </recent_temporary>

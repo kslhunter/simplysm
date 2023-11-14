@@ -51,14 +51,14 @@ import {NgIf, NgTemplateOutlet} from "@angular/common";
                [inline]="inline"
                [size]="size"
                [items]="rootDisplayItems"
-               [trackByFn]="trackByFn"
+               [trackByFn]="[trackByFn]"
                [selectMode]="selectMode"
                [contentClass]="selectClass"
                [multiSelectionDisplayDirection]="multiSelectionDisplayDirection"
                [getChildrenFn]="parentKeyProp ? [getChildrenFn, [this.itemByParentKeyMap, 'all'], [this.displayOrderKeyProp]] : undefined">
       <ng-template #header>
         <sd-dock-container>
-          <sd-dock class="bdb bdb-trans-default" *ngIf="getSearchTextFn">
+          <sd-dock class="bdb bdb-trans-default">
             <sd-textfield type="text" [(value)]="searchText" placeholder="검색어" inset></sd-textfield>
           </sd-dock>
 
@@ -74,7 +74,7 @@ import {NgIf, NgTemplateOutlet} from "@angular/common";
         </sd-select-item>
       </ng-template>
 
-      <ng-template [itemOf]="items" let-item="item" let-index="index" let-depth="depth">
+      <ng-template [itemOf]="rootDisplayItems" let-item="item" let-index="index" let-depth="depth">
         <sd-select-item [value]="item.__valueKey"
                         *ngIf="getItemSelectable(index, item, depth)"
                         [style.display]="!getItemVisible(index, item, depth) ? 'none' : undefined">
@@ -139,9 +139,6 @@ export class SdSharedDataSelectControl<M extends "single" | "multi", T extends I
   multiSelectionDisplayDirection?: "vertical" | "horizontal";
 
   @Input()
-  trackByFn: TSdFnInfo<(index: number, item: T) => (string | number)> = [(index, item) => item.__valueKey];
-
-  @Input()
   getIsHiddenFn: TSdFnInfo<(index: number, item: T) => boolean> = [(index, item) => item.__isHidden];
 
   @Input()
@@ -153,6 +150,8 @@ export class SdSharedDataSelectControl<M extends "single" | "multi", T extends I
   @Input()
   displayOrderKeyProp?: string;
 
+  trackByFn = (index: number, item: T) => item.__valueKey;
+
   searchText?: string;
 
   itemByParentKeyMap?: Map<T["__valueKey"] | undefined, any>;
@@ -163,7 +162,7 @@ export class SdSharedDataSelectControl<M extends "single" | "multi", T extends I
 
   // 선택될 수 있는것들 (검색어에 의해 숨겨진것도 포함)
   getItemSelectable(index: number, item: any, depth: number): boolean {
-    return (this.parentKeyProp === undefined || depth !== 0 || item[this.parentKeyProp] === undefined);
+    return this.parentKeyProp === undefined || depth !== 0 || item[this.parentKeyProp] === undefined;
   }
 
   // 화면 목록에서 뿌려질것 (검색어에 의해 숨겨진것 제외)
@@ -172,10 +171,10 @@ export class SdSharedDataSelectControl<M extends "single" | "multi", T extends I
         this.#isIncludeSearchText(index, item, depth)
         && !this.getIsHiddenFn[0](index, item)
       )
-      || this.value === this.trackByFn[0](index, item) as any
+      || this.value === item.__valueKey
       || (
         this.value instanceof Array
-        && this.value.includes(this.trackByFn[0](index, item) as any)
+        && this.value.includes(item.__valueKey)
       );
   }
 
@@ -210,7 +209,7 @@ export class SdSharedDataSelectControl<M extends "single" | "multi", T extends I
 
   ngDoCheck(): void {
     //-- rootDisplayItems
-    this.#sdNgHelper.doCheck((run, changeData) => {
+    this.#sdNgHelper.doCheck((run) => {
       run({
         items: [this.items, "all"],
         filterFn: [this.filterFn],

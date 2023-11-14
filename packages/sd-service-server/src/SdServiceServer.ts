@@ -316,8 +316,8 @@ export class SdServiceServer extends EventEmitter {
   private async _sendAsync(arg: WebSocket | string, cmd: TSdServiceS2CMessage): Promise<void> {
     const cmdJson = JsonConvert.stringify(cmd);
 
-    if (cmd.name === "response" && cmdJson.length > 1000 * 1000) {
-      const splitSize = 1000 * 100;
+    if (cmd.name === "response" && cmdJson.length > 3 * 1000 * 1000) {
+      const splitSize = 300 * 1000;
 
       let index = 0;
       let currSize = 0;

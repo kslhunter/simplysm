@@ -11,7 +11,6 @@ import {
   Injector,
   Input,
   NgZone,
-  OnInit,
   Output,
   ViewChild
 } from "@angular/core";
@@ -36,7 +35,7 @@ import {SdNgHelper} from "../utils/SdNgHelper";
     </div>
     <ng-content select="sd-dropdown-popup"/>`
 })
-export class SdDropdownControl implements OnInit, DoCheck {
+export class SdDropdownControl implements DoCheck {
   #elRef: ElementRef<HTMLElement> = inject(ElementRef);
   #ngZone = inject(NgZone);
   #sdNgHelper = new SdNgHelper(inject(Injector));
@@ -63,72 +62,62 @@ export class SdDropdownControl implements OnInit, DoCheck {
   @ContentChild(SdDropdownPopupControl, {static: true, read: ElementRef})
   popupElRef!: ElementRef<HTMLElement>;
 
-  ngOnInit(): void {
-    this.popupElRef.nativeElement.remove();
-  }
-
   ngDoCheck() {
-    this.#sdNgHelper.doCheck(run => {
+    this.#sdNgHelper.doCheckOutside(run => {
       run({
         open: [this.open]
       }, () => {
-        this.#popupRedraw();
-      });
-    });
-  }
+        if (this.open) {
+          document.body.appendChild(this.popupElRef.nativeElement);
 
-  #popupRedraw() {
-    this.#sdNgHelper.runOutsideOnce("popupRedraw", () => {
-      if (this.open) {
-        document.body.appendChild(this.popupElRef.nativeElement);
+          requestAnimationFrame(() => {
+            const contentEl = this.contentElRef.nativeElement;
+            const popupEl = this.popupElRef.nativeElement;
 
-        requestAnimationFrame(() => {
+            const windowOffset = contentEl.getRelativeOffset(window.document.body);
+
+            const isPlaceBottom = window.innerHeight < windowOffset.top * 2;
+            const isPlaceRight = window.innerWidth < windowOffset.left * 2;
+
+            Object.assign(
+              popupEl.style,
+              {
+                top: isPlaceBottom ? "" : (windowOffset.top + contentEl.offsetHeight + 2) + "px",
+                bottom: isPlaceBottom ? (window.innerHeight - windowOffset.top) + "px" : "",
+                left: isPlaceRight ? "" : windowOffset.left + "px",
+                right: isPlaceRight ? (window.innerWidth - windowOffset.left - contentEl.offsetWidth) + "px" : "",
+                minWidth: contentEl.offsetWidth + "px",
+                opacity: "1",
+                pointerEvents: "auto",
+                transform: "none"
+              }
+            );
+          });
+        }
+        else {
           const contentEl = this.contentElRef.nativeElement;
           const popupEl = this.popupElRef.nativeElement;
 
-          const windowOffset = contentEl.getRelativeOffset(window.document.body);
-
-          const isPlaceBottom = window.innerHeight < windowOffset.top * 2;
-          const isPlaceRight = window.innerWidth < windowOffset.left * 2;
+          if (popupEl.matches(":focus, :has(*:focus)")) {
+            contentEl.focus();
+          }
 
           Object.assign(
             popupEl.style,
             {
-              top: isPlaceBottom ? "" : (windowOffset.top + contentEl.offsetHeight + 2) + "px",
-              bottom: isPlaceBottom ? (window.innerHeight - windowOffset.top) + "px" : "",
-              left: isPlaceRight ? "" : windowOffset.left + "px",
-              right: isPlaceRight ? (window.innerWidth - windowOffset.left - contentEl.offsetWidth) + "px" : "",
-              minWidth: contentEl.offsetWidth + "px",
-              opacity: "1",
-              pointerEvents: "auto",
-              transform: "none"
+              top: "",
+              bottom: "",
+              left: "",
+              right: "",
+              minWidth: "",
+              opacity: "",
+              pointerEvents: "",
+              transform: "",
             }
           );
-        });
-      }
-      else {
-        const contentEl = this.contentElRef.nativeElement;
-        const popupEl = this.popupElRef.nativeElement;
-
-        if (popupEl.matches(":focus, :has(*:focus)")) {
-          contentEl.focus();
+          popupEl.remove();
         }
-
-        Object.assign(
-          popupEl.style,
-          {
-            top: "",
-            bottom: "",
-            left: "",
-            right: "",
-            minWidth: "",
-            opacity: "",
-            pointerEvents: "",
-            transform: "",
-          }
-        );
-        popupEl.remove();
-      }
+      });
     });
   }
 

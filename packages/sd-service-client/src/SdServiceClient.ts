@@ -229,10 +229,10 @@ export class SdServiceClient extends EventEmitter {
       };
       this._ws.on(`message`, msgFn);
 
-      if (reqText.length > 1000 * 1000) {
+      if (reqText.length > 3 * 1000 * 1000) {
         this.emit("request-progress", {uuid, fullSize: reqText.length, completedSize: 0});
 
-        const splitSize = 1000 * 100;
+        const splitSize = 300 * 1000;
 
         let index = 0;
         let currSize = 0;

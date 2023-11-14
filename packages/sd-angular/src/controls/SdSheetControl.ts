@@ -566,6 +566,9 @@ export class SdSheetControl<T> implements DoCheck {
   @Input()
   trackByFn: TSdFnInfo<(index: number, item: T) => any> = [(index, item) => item];
 
+  @Input()
+  trackByKey?: keyof T;
+
   /**
    * 선택모드 (single = 단일선택, multi = 다중선택)
    */

@@ -8,6 +8,8 @@ import {
   HostListener,
   inject,
   Input,
+  OnDestroy,
+  OnInit,
   TemplateRef
 } from "@angular/core";
 import {SdSelectControl} from "./SdSelectControl";
@@ -79,7 +81,7 @@ import {SdCheckboxControl} from "./SdCheckboxControl";
     }
   `]
 })
-export class SdSelectItemControl<T> {
+export class SdSelectItemControl<T> implements OnInit, OnDestroy {
   @HostBinding("attr.tabindex")
   tabIndex = 0;
 
@@ -93,8 +95,9 @@ export class SdSelectItemControl<T> {
   @ContentChild("label", {static: true})
   labelTemplateRef?: TemplateRef<void>;
 
-  elRef: ElementRef<HTMLElement> = inject(ElementRef);
   #selectControl: SdSelectControl<any, any> = inject(forwardRef(() => SdSelectControl));
+
+  elRef: ElementRef<HTMLElement> = inject(ElementRef);
 
   @HostBinding("attr.sd-select-mode")
   public get selectMode(): "single" | "multi" {
@@ -104,6 +107,14 @@ export class SdSelectItemControl<T> {
   @HostBinding("attr.sd-selected")
   public get isSelected(): boolean {
     return this.#selectControl.getIsSelectedItemControl(this);
+  }
+
+  ngOnInit(): void {
+    this.#selectControl.itemControls.push(this);
+  }
+
+  ngOnDestroy(): void {
+    this.#selectControl.itemControls.remove(this);
   }
 
   @HostListener("click", ["$event"])

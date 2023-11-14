@@ -1,6 +1,6 @@
-import {ChangeDetectionStrategy, Component, inject, Input} from "@angular/core";
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, Input, OnInit} from "@angular/core";
 import {ISdMenu} from "../utils/SdAppStructureUtil";
-import {Router} from "@angular/router";
+import {NavigationEnd, Router} from "@angular/router";
 import {TSdFnInfo} from "../utils/commons";
 import {SdListControl} from "./SdListControl";
 import {NgForOf, NgIf, NgTemplateOutlet} from "@angular/common";
@@ -45,8 +45,9 @@ import {SdRouterLinkDirective} from "../directives/SdRouterLinkDirective";
       </ng-container>
     </ng-template>`
 })
-export class SdSidebarMenuControl {
+export class SdSidebarMenuControl implements OnInit {
   #router = inject(Router);
+  #cdr = inject(ChangeDetectorRef);
 
   @Input()
   menus: ISdMenu[] = [];
@@ -59,13 +60,25 @@ export class SdSidebarMenuControl {
 
   trackByForMenu = (i: number, menu: ISdMenu): string => menu.codeChain.join(".");
 
-  getIsMenuSelected(menu: ISdMenu): boolean {
-    const pageCode = this.#router.url.split("/").slice(2).map((item) => item.split(";").first()).join(".");
+  #pageCode = "";
 
+  ngOnInit(): void {
+    this.#pageCode = this.#router.url.split("/").slice(2).map((item) => item.split(";").first()).join(".");
+
+    this.#router.events.subscribe((event) => {
+      if (event instanceof NavigationEnd) {
+        this.#pageCode = this.#router.url.split("/").slice(2).map((item) => item.split(";").first()).join(".");
+        this.#cdr.markForCheck();
+      }
+    });
+  }
+
+  getIsMenuSelected(menu: ISdMenu): boolean {
     return this.getMenuIsSelectedFn?.[0]
       ? this.getMenuIsSelectedFn[0](menu)
-      : pageCode === menu.codeChain.join(".");
+      : this.#pageCode === menu.codeChain.join(".");
   }
+
 
   protected readonly itemTemplateType!: {
     menus: ISdMenu[];
