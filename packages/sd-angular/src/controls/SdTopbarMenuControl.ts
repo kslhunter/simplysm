@@ -13,11 +13,12 @@ import {coercionBoolean} from "../utils/commons";
 
     :host {
       display: inline-block;
-      padding: 0 var(--gap-lg);
       cursor: pointer;
-      color: var(--text-trans-rev-dark);
 
       body.sd-theme-compact & {
+        padding: 0 var(--gap-lg);
+        color: var(--text-trans-rev-dark);
+
         &:hover {
           background: var(--trans-default);
           color: var(--text-trans-rev-default);
@@ -28,9 +29,19 @@ import {coercionBoolean} from "../utils/commons";
       body.sd-theme-mobile &,
       body.sd-theme-kiosk & {
         color: var(--theme-primary-default);
-        padding: 0 var(--gap-default);
-        
+        //color: var(--text-trans-rev-default);
+        line-height: var(--line-height);
+        padding: var(--gap-sm) var(--gap-default);
+        background: var(--theme-primary-lightest);
+        border-radius: var(--border-radius-default);
+        margin: var(--gap-sm) var(--gap-default);
+        transition: background .1s linear;
+
         @include active-effect(true);
+
+        &:hover {
+          background: var(--theme-primary-lighter);
+        }
       }
 
       &[disabled=true] {

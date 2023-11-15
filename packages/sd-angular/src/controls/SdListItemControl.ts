@@ -11,11 +11,11 @@ import {
 import {SdListControl} from "./SdListControl";
 import {IconProp} from "@fortawesome/fontawesome-svg-core";
 import {coercionBoolean} from "../utils/commons";
-import {faChevronDown} from "@fortawesome/pro-light-svg-icons";
 import {SdIconControl} from "./SdIconControl";
 import {NgIf} from "@angular/common";
 import {SdCollapseIconControl} from "./SdCollapseIconControl";
 import {SdCollapseControl} from "./SdCollapseControl";
+import {faAngleDown} from "@fortawesome/pro-duotone-svg-icons/faAngleDown";
 
 @Component({
   selector: "sd-list-item",
@@ -40,7 +40,7 @@ import {SdCollapseControl} from "./SdCollapseControl";
 
         <div *ngIf="hasChildren && layout==='accordion'">
           <sd-collapse-icon [open]="open"
-                            [icon]="faChevronDown"/>
+                            [icon]="faAngleDown"/>
         </div>
       </div>
     </div>
@@ -57,8 +57,12 @@ import {SdCollapseControl} from "./SdCollapseControl";
         padding: var(--gap-sm) var(--gap-default);
         cursor: pointer;
 
-        @media all and (pointer: coarse) {
+        body.sd-theme-modern &,
+        body.sd-theme-kiosk &,
+        body.sd-theme-mobile & {
           @include active-effect(true);
+          border-radius: var(--border-radius-default);
+          margin: var(--gap-xxs) 0;
         }
 
         > .flex-row > ._selected-icon {
@@ -68,18 +72,32 @@ import {SdCollapseControl} from "./SdCollapseControl";
 
       &[sd-layout=accordion] {
         > ._content {
-          &:hover {
-            background: var(--trans-light);
+          body.sd-theme-compact & {
+            &:hover {
+              background: var(--trans-light);
+            }
+
+            &:active {
+              background: var(--trans-dark);
+            }
           }
 
-          &:active {
-            background: var(--trans-dark);
+
+          body.sd-theme-modern &,
+          body.sd-theme-kiosk &,
+          body.sd-theme-mobile & {
+            &:hover {
+              background: var(--trans-lighter);
+            }
           }
         }
 
         ::ng-deep ._child > ._content > sd-list {
           padding: var(--gap-sm) 0;
-          background: var(--trans-dark);
+
+          body.sd-theme-compact & {
+            background: var(--trans-dark);
+          }
         }
       }
 
@@ -89,7 +107,9 @@ import {SdCollapseControl} from "./SdCollapseControl";
         }
 
         &[sd-has-children=true] {
-          @media all and (pointer: coarse) {
+          body.sd-theme-modern &,
+          body.sd-theme-kiosk &,
+          body.sd-theme-mobile & {
             @include active-effect(false);
           }
 
@@ -106,12 +126,21 @@ import {SdCollapseControl} from "./SdCollapseControl";
 
       &[sd-selected=true] {
         > ._content {
-          color: var(--theme-primary-default);
-          font-weight: bold;
-
-          &:hover,
-          &:active {
+          body.sd-theme-compact & {
             color: var(--theme-primary-default);
+            font-weight: bold;
+
+            &:hover,
+            &:active {
+              color: var(--theme-primary-default);
+              font-weight: bold;
+            }
+          }
+
+          body.sd-theme-modern &,
+          body.sd-theme-kiosk &,
+          body.sd-theme-mobile & {
+            background: var(--trans-lighter);
             font-weight: bold;
           }
         }
@@ -185,5 +214,5 @@ export class SdListItemControl {
     }
   }
 
-  protected readonly faChevronDown = faChevronDown;
+  protected readonly faAngleDown = faAngleDown;
 }

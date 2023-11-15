@@ -22,8 +22,6 @@ import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
 
       body.sd-theme-compact &,
       body.sd-theme-modern & {
-        background: var(--theme-blue-grey-darkest);
-        color: var(--text-trans-rev-default);
         transition: transform .1s ease-out;
 
         &[sd-toggle=true] {
@@ -34,10 +32,6 @@ import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
 
       body.sd-theme-kiosk &,
       body.sd-theme-mobile & {
-        background: white;
-        border-top-right-radius: var(--gap-default);
-        border-bottom-right-radius: var(--gap-default);
-        
         transition: transform .3s ease-in;
         transform: translateX(-100%);
 
@@ -45,6 +39,35 @@ import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
           transform: none;
           transition: transform .3s ease-out;
           @include elevation(16);
+        }
+      }
+
+      body.sd-theme-compact & {
+        background: var(--theme-blue-grey-darkest);
+        color: var(--text-trans-rev-default);
+
+        img {
+          filter: brightness(100);
+        }
+      }
+
+      body.sd-theme-modern &,
+      body.sd-theme-kiosk &,
+      body.sd-theme-mobile & {
+        background: white;
+      }
+      
+      body.sd-theme-kiosk &,
+      body.sd-theme-mobile & {
+        border-top-right-radius: var(--gap-default);
+        border-bottom-right-radius: var(--gap-default);
+      }
+
+      body.sd-theme-modern & {
+        @include elevation(2);
+
+        &[sd-toggle=true] {
+          @include elevation(0);
         }
       }
     }

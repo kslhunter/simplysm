@@ -1,11 +1,11 @@
 import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
 import useBgJpg from "../../res/user_bg.jpg";
-import {faChevronDown} from "@fortawesome/pro-light-svg-icons";
 import {NgForOf, NgIf} from "@angular/common";
 import {SdCollapseIconControl} from "./SdCollapseIconControl";
 import {SdCollapseControl} from "./SdCollapseControl";
 import {SdListControl} from "./SdListControl";
 import {SdListItemControl} from "./SdListItemControl";
+import { faAngleDown } from "@fortawesome/pro-duotone-svg-icons";
 
 @Component({
   selector: "sd-sidebar-user",
@@ -30,7 +30,7 @@ import {SdListItemControl} from "./SdListItemControl";
       <div class="_menu-button" *ngIf="userMenu?.title" (click)="onMenuOpenButtonClick()">
         {{ userMenu?.title }}
         <sd-collapse-icon [open]="menuOpen" style="float: right;" openRotate="180"
-                          [icon]="faChevronDown"></sd-collapse-icon>
+                          [icon]="faAngleDown"></sd-collapse-icon>
       </div>
     </div>
     <sd-collapse [open]="menuOpen" *ngIf="userMenu?.title">
@@ -47,12 +47,12 @@ import {SdListItemControl} from "./SdListItemControl";
 
     :host {
       > ._content {
-        body.sd-theme-compact &,
-        body.sd-theme-modern & {
+        body.sd-theme-compact & {
           background-size: cover;
           text-shadow: 0 0 1px var(--text-trans-default);
         }
 
+        body.sd-theme-modern &,
         body.sd-theme-kiosk &,
         body.sd-theme-mobile & {
           background-image: none !important;
@@ -60,30 +60,39 @@ import {SdListItemControl} from "./SdListItemControl";
 
         > ._menu-button {
           display: block;
-          padding: var(--gap-sm) var(--gap-default);
           cursor: pointer;
           user-select: none;
 
           @include active-effect(true);
 
-          body.sd-theme-compact &,
-          body.sd-theme-modern & {
+          body.sd-theme-compact & {
+            padding: var(--gap-sm) var(--gap-default);
             background: var(--trans-default);
 
             &:hover {
               background: var(--trans-dark);
             }
           }
+
+          body.sd-theme-modern &,
+          body.sd-theme-kiosk &,
+          body.sd-theme-mobile & {
+            padding: var(--gap-sm) var(--gap-default);
+            margin: 0 var(--gap-default);
+            border-radius: var(--border-radius-default);
+            
+            &:hover {
+              background: var(--trans-lighter);
+            }
+          }
         }
       }
 
-      @media not all and (max-width: 520px) {
+      body.sd-theme-compact & {
         ::ng-deep > sd-collapse > ._content > sd-list {
           background: var(--trans-default);
         }
-      }
 
-      @media not all and (max-width: 520px) {
         &[sd-menu-open=true] {
           > ._content {
             > ._menu-button {
@@ -123,7 +132,7 @@ export class SdSidebarUserControl {
     this.menuOpen = !this.menuOpen;
   }
 
-  protected readonly faChevronDown = faChevronDown;
+  protected readonly faAngleDown = faAngleDown;
 }
 
 export interface ISidebarUserMenu {

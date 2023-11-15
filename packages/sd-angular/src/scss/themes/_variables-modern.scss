@@ -22,10 +22,10 @@ $vars: map-merge($vars, (
     h6: 12px,
   ),
   sidebar: (
-    width: 240px
+    width: 200px
   ),
   topbar: (
     height: 48px
   ),
-  background-color: white,
+  font-family: "'Noto Sans KR', sans-serif"
 ))

@@ -46,11 +46,11 @@ import {SdListItemControl} from "./SdListItemControl";
     <sd-busy-container [busy]="busyCount > 0">
       <sd-dock-container>
         <ng-container *ngIf="headerTemplateRef">
-          <sd-dock class="p-default p-bottom-0">
+          <sd-dock class="pb-default">
             <ng-template [ngTemplateOutlet]="headerTemplateRef"></ng-template>
           </sd-dock>
         </ng-container>
-        <sd-dock class="p-default">
+        <sd-dock class="pb-default">
           <sd-textfield type="text" placeholder="검색어" [(value)]="searchText"></sd-textfield>
         </sd-dock>
 

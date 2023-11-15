@@ -433,10 +433,13 @@ hidden {
 }
 
 .page-header {
-  margin-top: var(--gap-default);
   margin-bottom: var(--gap-default);
   padding-bottom: var(--gap-xxs);
-  border-bottom: 1px solid var(--border-color-default);
+
+  body.sd-theme-compact & {
+    margin-top: var(--gap-default);
+    border-bottom: 1px solid var(--border-color-default);
+  }
 }
 
 .active-effect {

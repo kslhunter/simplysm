@@ -7,7 +7,7 @@ import {ChangeDetectionStrategy, Component, ElementRef, inject} from "@angular/c
   imports: [],
   template: `
     <ng-content></ng-content>`,
-  styles: [`
+  styles: [/* language=SCSS */ `
     :host {
       display: block;
       position: relative;

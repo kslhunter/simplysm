@@ -1,7 +1,7 @@
 import {ChangeDetectionStrategy, Component, ElementRef, forwardRef, HostListener, inject, Input} from "@angular/core";
 import {SdTopbarContainerControl} from "./SdTopbarContainerControl";
 import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
-import {faArrowLeft} from "@fortawesome/pro-duotone-svg-icons";
+import {faBars} from "@fortawesome/pro-duotone-svg-icons";
 import {ISdResizeEvent} from "../plugins/SdResizeEventPlugin";
 import {SdAnchorControl} from "./SdAnchorControl";
 import {NgIf} from "@angular/common";
@@ -21,7 +21,7 @@ import {SdGapControl} from "./SdGapControl";
   template: `
     <sd-anchor class="_sidebar-toggle-button" (click)="onSidebarToggleButtonClick()"
                *ngIf="hasSidebar">
-      <sd-icon [icon]="faArrowLeft" fixedWidth/>
+      <sd-icon [icon]="faBars" fixedWidth/>
     </sd-anchor>
 
     <div class="_nav">
@@ -123,7 +123,7 @@ import {SdGapControl} from "./SdGapControl";
           padding: var(--gap-xs) var(--gap-sm);
           margin: var(--gap-xxs);
           border-radius: var(--border-radius-default);
-          
+
           @include active-effect(true);
 
           &:hover {
@@ -171,6 +171,6 @@ export class SdTopbarControl {
     this.#topbarContainerControl.elRef.nativeElement.style.paddingTop = this.#elRef.nativeElement.offsetHeight + "px";
   }
 
-  protected readonly faArrowLeft = faArrowLeft;
+  protected readonly faBars = faBars;
 }
 

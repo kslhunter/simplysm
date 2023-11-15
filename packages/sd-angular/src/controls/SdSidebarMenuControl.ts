@@ -24,6 +24,7 @@ import {SdRouterLinkDirective} from "../directives/SdRouterLinkDirective";
     SdRouterLinkDirective
   ],
   template: `
+    <h5 class="_title">MENUS</h5>
     <sd-list inset>
       <ng-template [ngTemplateOutlet]="itemTemplate"
                    [ngTemplateOutletContext]="{menus: menus, depth: 0}"></ng-template>
@@ -43,7 +44,33 @@ import {SdRouterLinkDirective} from "../directives/SdRouterLinkDirective";
           </sd-list>
         </sd-list-item>
       </ng-container>
-    </ng-template>`
+    </ng-template>`,
+  styles: [/* language=SCSS */ `
+    :host {
+      > ._title {
+        body.sd-theme-compact & {
+          display: none;
+        }
+
+        body.sd-theme-modern &,
+        body.sd-theme-kiosk &,
+        body.sd-theme-mobile & {
+          padding: var(--gap-xs) var(--gap-sm);
+          margin: 0 var(--gap-sm);
+          color: var(--text-trans-lighter);
+          font-size: var(--font-size-sm);
+        }
+      }
+
+      ::ng-deep > sd-list[sd-inset=true] {
+        body.sd-theme-modern &,
+        body.sd-theme-kiosk &,
+        body.sd-theme-mobile & {
+          padding: 0 var(--gap-default);
+        }
+      }
+    }
+  `]
 })
 export class SdSidebarMenuControl implements OnInit {
   #router = inject(Router);

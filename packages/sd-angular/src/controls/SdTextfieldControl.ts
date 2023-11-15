@@ -207,21 +207,24 @@ import {NgIf} from "@angular/common";
           &[sd-type=month] {
             > input,
             > ._contents {
-              width: 100px;
+              //width: 100px;
+              width: 9em;
             }
           }
 
           &[sd-type=date] {
             > input,
             > ._contents {
-              width: 95px;
+              //width: 95px;
+              width: 8em;
             }
           }
 
           &[sd-type=datetime] {
             > input,
             > ._contents {
-              width: 170px;
+              //width: 170px;
+              width: 14em;
             }
           }
 

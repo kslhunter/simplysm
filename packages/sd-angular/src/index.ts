@@ -11,6 +11,7 @@ export * from "./controls/SdCollapseControl";
 export * from "./controls/SdCollapseIconControl";
 export * from "./controls/SdComboboxControl";
 export * from "./controls/SdComboboxItemControl";
+export * from "./controls/SdContentBoxControl";
 export * from "./controls/SdContentEditorControl";
 export * from "./controls/SdDockContainerControl";
 export * from "./controls/SdDockControl";
