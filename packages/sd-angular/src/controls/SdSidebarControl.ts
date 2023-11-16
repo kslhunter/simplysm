@@ -20,28 +20,8 @@ import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
       width: var(--sidebar-width);
       height: 100%;
 
-      body.sd-theme-compact &,
-      body.sd-theme-modern & {
-        transition: transform .1s ease-out;
-
-        &[sd-toggle=true] {
-          transform: translateX(-100%);
-          transition: transform .1s ease-in;
-        }
-      }
-
-      body.sd-theme-kiosk &,
-      body.sd-theme-mobile & {
-        transition: transform .3s ease-in;
-        transform: translateX(-100%);
-
-        &[sd-toggle=true] {
-          transform: none;
-          transition: transform .3s ease-out;
-          @include elevation(16);
-        }
-      }
-
+      //-- 테마
+      
       body.sd-theme-compact & {
         background: var(--theme-blue-grey-darkest);
         color: var(--text-trans-rev-default);
@@ -56,7 +36,7 @@ import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
       body.sd-theme-mobile & {
         background: white;
       }
-      
+
       body.sd-theme-kiosk &,
       body.sd-theme-mobile & {
         border-top-right-radius: var(--gap-default);
@@ -68,6 +48,28 @@ import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
 
         &[sd-toggle=true] {
           @include elevation(0);
+        }
+      }
+      
+      //-- 화면 크기
+      
+      @media not all and (max-width: 520px) {
+        transition: transform .1s ease-out;
+
+        &[sd-toggle=true] {
+          transform: translateX(-100%);
+          transition: transform .1s ease-in;
+        }
+      }
+      
+      @media all and (max-width: 520px) {
+        transition: transform .3s ease-in;
+        transform: translateX(-100%);
+
+        &[sd-toggle=true] {
+          transform: none;
+          transition: transform .3s ease-out;
+          @include elevation(16);
         }
       }
     }

@@ -30,6 +30,7 @@ export * from "./controls/SdListItemControl";
 export * from "./controls/SdMarkdownEditorControl";
 export * from "./controls/SdModalControl";
 export * from "./controls/SdNoteControl";
+export * from "./controls/SdPageBaseControl";
 export * from "./controls/SdPaginationControl";
 export * from "./controls/SdPaneControl";
 export * from "./controls/SdPermissionTableControl";
