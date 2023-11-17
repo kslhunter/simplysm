@@ -20,7 +20,7 @@ import {ChangeDetectionStrategy, Component} from "@angular/core";
 
       body.sd-theme-mobile &,
       body.sd-theme-kiosk &,
-      body.sd-theme-modern {
+      body.sd-theme-modern & {
         @include active-effect(true);
       }
     }

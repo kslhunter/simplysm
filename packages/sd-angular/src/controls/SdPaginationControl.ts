@@ -39,6 +39,8 @@ import {NgForOf} from "@angular/common";
       <sd-icon [icon]="faAngleDoubleRight" fixedWidth/>
     </sd-anchor>`,
   styles: [/* language=SCSS */ `
+    @import "../scss/mixins";
+
     :host {
       display: block;
 
@@ -46,9 +48,16 @@ import {NgForOf} from "@angular/common";
         display: inline-block;
         padding: var(--gap-xs) var(--gap-sm);
         margin: var(--gap-xs);
+        border-radius: var(--border-radius-sm);
 
         &[sd-selected=true] {
           text-decoration: underline;
+        }
+
+        body.sd-theme-modern &,
+        body.sd-theme-mobile &,
+        body.sd-theme-kiosk & {
+          @include active-effect(true);
         }
 
         &:hover {

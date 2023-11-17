@@ -53,18 +53,20 @@
       left: -10%;
       top: -100%;
       background: transparent;
-      transition-property: transform;
-      transition-duration: 1s;
+      transition-property: transform, opacity;
+      transition-duration: .3s;
       transition-timing-function: ease-out;
       transform: scaleX(.3);
+      opacity: 0;
 
       pointer-events: none;
     }
 
     &:active {
       &:after {
-        background: var(--trans-lighter);
+        background: var(--trans-light);
         transform: none;
+        opacity: 1;
       }
     }
   }

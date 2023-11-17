@@ -47,21 +47,20 @@ import {coercionBoolean} from "../utils/commons";
 
         &:not([sd-fill=true]) {
           padding: 0;
+          margin: var(--gap-xl);
 
           > div {
-            margin: var(--gap-xl);
           }
         }
 
         &[sd-size=lg] {
           padding: var(--gap-xxl);
 
-
           &:not([sd-fill=true]) {
             padding: 0;
+            margin: var(--gap-xxl);
 
             > div {
-              margin: var(--gap-xxl);
             }
           }
         }

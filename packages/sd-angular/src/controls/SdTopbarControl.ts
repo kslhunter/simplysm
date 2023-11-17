@@ -117,17 +117,21 @@ import {SdGapControl} from "./SdGapControl";
         body.sd-theme-modern &,
         body.sd-theme-mobile &,
         body.sd-theme-kiosk & {
-          color: var(--text-trans-lighter);
-          font-size: 12px;
+          color: var(--theme-primary-default);
+          font-size: 14px;
           line-height: var(--line-height);
           padding: var(--gap-xs) var(--gap-sm);
-          margin: var(--gap-xxs);
-          border-radius: var(--border-radius-default);
+          background: white;
+          z-index: var(--z-index-sidebar);
+          @include elevation(2);
+          border-bottom-right-radius: var(--border-radius-default);
+          border-top-right-radius: var(--border-radius-default);
+          margin-right: var(--gap-lg);
 
           @include active-effect(true);
 
           &:hover {
-            color: var(--text-trans-light);
+            color: var(--theme-primary-darker);
           }
         }
       }

@@ -60,16 +60,23 @@ import {SdNgHelper} from "../utils/SdNgHelper";
         height: 100%;
         z-index: var(--z-index-busy);
 
-        background: rgba(0, 0, 0, .2);
         visibility: hidden;
         pointer-events: none;
-        opacity: 0;
-        transition: opacity 1s linear;
 
-        @media all and (pointer: coarse) {
+        body.sd-theme-compact & {
+          background: rgba(0, 0, 0, .2);
+          opacity: 0;
+          transition: opacity 1s linear;
+        }
+
+        body.sd-theme-modern &,
+        body.sd-theme-kiosk &,
+        body.sd-theme-mobile & {
           background: rgba(255, 255, 255, .3);
           backdrop-filter: none;
+          opacity: 0;
           transition: opacity .3s, backdrop-filter 5s;
+          transition-timing-function: linear;
         }
 
         > ._progress {
@@ -102,9 +109,15 @@ import {SdNgHelper} from "../utils/SdNgHelper";
         > ._screen {
           visibility: visible;
           pointer-events: auto;
-          opacity: 1;
 
-          @media all and (pointer: coarse) {
+          body.sd-theme-compact & {
+            opacity: 1;
+          }
+
+          body.sd-theme-modern &,
+          body.sd-theme-kiosk &,
+          body.sd-theme-mobile & {
+            opacity: 1;
             backdrop-filter: blur(10px);
           }
         }
@@ -115,7 +128,9 @@ import {SdNgHelper} from "../utils/SdNgHelper";
           background: transparent;
           transition: none;
 
-          @media all and (pointer: coarse) {
+          body.sd-theme-modern &,
+          body.sd-theme-kiosk &,
+          body.sd-theme-mobile & {
             backdrop-filter: none;
           }
         }

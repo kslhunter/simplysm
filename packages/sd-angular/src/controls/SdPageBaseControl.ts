@@ -22,16 +22,16 @@ import {SdContentBoxControl} from "./SdContentBoxControl";
     SdContentBoxControl
   ],
   template: `
-    <sd-topbar-container>
-      <sd-topbar>
-        <h4>{{ title }}</h4>
+    <sd-busy-container [busy]="busyCount > 0 || !isInitialized">
+      <sd-topbar-container>
+        <sd-topbar>
+          <h4>{{ title }}</h4>
 
-        <ng-container *ngIf="isInitialized && hasPermission">
-          <ng-template [ngTemplateOutlet]="topbarMenuTemplateRef"/>
-        </ng-container>
-      </sd-topbar>
+          <ng-container *ngIf="isInitialized && hasPermission">
+            <ng-template [ngTemplateOutlet]="topbarMenuTemplateRef"/>
+          </ng-container>
+        </sd-topbar>
 
-      <sd-busy-container [busy]="busyCount > 0 || !isInitialized">
         <ng-container *ngIf="isInitialized">
           <ng-container *ngIf="!hasPermission">
             <div class="p-xxl" style="font-size: 48px; line-height: 1.5em">
@@ -45,10 +45,8 @@ import {SdContentBoxControl} from "./SdContentBoxControl";
             <ng-content/>
           </ng-container>
         </ng-container>
-      </sd-busy-container>
-    </sd-topbar-container>`,
-  styles: [/* language=SCSS */ `
-  `]
+      </sd-topbar-container>
+    </sd-busy-container>`
 })
 export class SdPageBaseControl {
   @Input()

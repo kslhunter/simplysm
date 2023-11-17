@@ -123,30 +123,28 @@ import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
                       [class.help]="headerCell.isLastDepth && headerCell.control.tooltip"
                       (sdResize.outside)="onHeaderCellResizeOutside(headerCell, c)"
                       (click)="onHeaderCellClick($event, headerCell)">
-                    <div class="flex-row align-items-end">
-                      <div class="_contents flex-grow"
-                           [class._padding]="!headerCell.useTemplate"
-                           [attr.style]="headerCell!.style">
-                        <ng-container *ngIf="!headerCell.useTemplate">
-                          <pre>{{ headerCell.text }}</pre>
-                        </ng-container>
-                        <ng-container *ngIf="headerCell.useTemplate">
-                          <ng-template [ngTemplateOutlet]="headerCell.control.headerTemplateRef!"></ng-template>
-                        </ng-container>
+                    <ng-container
+                      *ngIf="headerCell.isLastDepth && headerCell.control.useOrdering && headerCell.control.key">
+                      <div class="_sort-icon">
+                        <fa-layers>
+                          <sd-icon [icon]="faSort" class="tx-trans-lightest"/>
+                          <sd-icon [icon]="faSortDown"
+                                   *ngIf="getIsColumnOrderingDesc(headerCell.control.key) === false"/>
+                          <sd-icon [icon]="faSortUp"
+                                   *ngIf="getIsColumnOrderingDesc(headerCell.control.key) === true"/>
+                        </fa-layers>
+                        <sub *ngIf="getColumnOrderingIndexText(headerCell.control.key) as text">{{ text }}</sub>
                       </div>
-
-                      <ng-container
-                        *ngIf="headerCell.isLastDepth && headerCell.control.useOrdering && headerCell.control.key">
-                        <div class="_sort-icon">
-                          <fa-layers>
-                            <sd-icon [icon]="faSort" class="tx-trans-lightest"/>
-                            <sd-icon [icon]="faSortDown"
-                                     *ngIf="getIsColumnOrderingDesc(headerCell.control.key) === false"/>
-                            <sd-icon [icon]="faSortUp"
-                                     *ngIf="getIsColumnOrderingDesc(headerCell.control.key) === true"/>
-                          </fa-layers>
-                          <sub *ngIf="getColumnOrderingIndexText(headerCell.control.key) as text">{{ text }}</sub>
-                        </div>
+                    </ng-container>
+                    
+                    <div class="_contents"
+                         [class._padding]="!headerCell.useTemplate"
+                         [attr.style]="headerCell!.style">
+                      <ng-container *ngIf="!headerCell.useTemplate">
+                        <pre>{{ headerCell.text }}</pre>
+                      </ng-container>
+                      <ng-container *ngIf="headerCell.useTemplate">
+                        <ng-template [ngTemplateOutlet]="headerCell.control.headerTemplateRef!"></ng-template>
                       </ng-container>
                     </div>
 
@@ -302,9 +300,9 @@ import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
                 padding: 0;
                 position: relative;
                 
-                body.sd-theme-modern & {
-                  border-right: none;
-                }
+                //body.sd-theme-modern & {
+                //  border-right: none;
+                //}
 
                 &._feature-cell {
                   background: var(--theme-grey-lightest);
@@ -357,18 +355,17 @@ import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
                     }
                   }
 
-                  > div:first-child {
-                    > ._contents {
-                      &._padding {
-                        padding: var(--sheet-pv) var(--sheet-ph);
-                      }
+                  > ._contents {
+                    &._padding {
+                      padding: var(--sheet-pv) var(--sheet-ph);
                     }
+                  }
 
-                    > ._sort-icon {
-                      display: inline-block;
-                      padding: var(--gap-xs) var(--gap-xs) var(--gap-xs) 0;
-                      background-color: var(--theme-grey-lightest);
-                    }
+                  > ._sort-icon {
+                    display: inline-block;
+                    padding: var(--gap-xs) var(--gap-xs) var(--gap-xs) 0;
+                    background-color: var(--theme-grey-lightest);
+                    float: right;
                   }
 
                   > ._resizer {
