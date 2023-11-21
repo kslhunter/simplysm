@@ -25,6 +25,8 @@ import {coercionBoolean} from "@simplysm/sd-angular";
       display: block;
       padding: var(--gap-sm) 0;
       border: 1px solid transparent;
+      vertical-align: top;
+      cursor: pointer;
 
       > div {
         height: var(--line-height);

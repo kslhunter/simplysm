@@ -36,11 +36,16 @@ import {coercionBoolean} from "../utils/commons";
           background: var(--theme-grey-lightest);
         }
 
-        &:active {
-          background: var(--theme-grey-lighter);
+        body.sd-theme-compact & {
+          &:active {
+            background: var(--theme-grey-lighter);
+          }
         }
 
-        @media all and (pointer: coarse) {
+        body.sd-theme-modern &,
+        body.sd-theme-kiosk &,
+        body.sd-theme-mobile & {
+          transition: background .1s linear;
           @include active-effect(true);
         }
 
@@ -50,7 +55,9 @@ import {coercionBoolean} from "../utils/commons";
           color: var(--text-trans-lighter);
           cursor: default;
 
-          @media all and (pointer: coarse) {
+          body.sd-theme-modern &,
+          body.sd-theme-kiosk &,
+          body.sd-theme-mobile & {
             @include active-effect(false);
           }
         }
@@ -85,10 +92,12 @@ import {coercionBoolean} from "../utils/commons";
             color: var(--text-trans-rev-default);
           }
 
-          &:active {
-            background: var(--theme-#{$key}-darker);
-            border-color: var(--theme-#{$key}-darker);
-            color: var(--text-trans-rev-default);
+          body.sd-theme-compact & {
+            &:active {
+              background: var(--theme-#{$key}-darker);
+              border-color: var(--theme-#{$key}-darker);
+              color: var(--text-trans-rev-default);
+            }
           }
 
           &:disabled {

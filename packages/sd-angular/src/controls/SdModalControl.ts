@@ -46,7 +46,8 @@ import {SdDockControl} from "./SdDockControl";
          (keydown.escape)="onDialogEscapeKeydown()"
          [style.width.px]="(minWidthPx && (minWidthPx > (widthPx || 0))) ? minWidthPx : widthPx"
          [style.height.px]="(minHeightPx && (minHeightPx > (heightPx || 0))) ? minHeightPx : heightPx"
-         (focus.outside)="onDialogFocusOutside()">
+         (focus.outside)="onDialogFocusOutside()"
+         (sdResize.outside)="onDialogResizeOutside($event)">
       <sd-dock-container>
         <sd-dock class="_header" (mousedown.outside)="onHeaderMouseDownOutside($event)"
                  *ngIf="!hideHeader">
@@ -423,13 +424,23 @@ export class SdModalControl implements DoCheck {
   @HostListener("sdResize.outside", ["$event"])
   onResizeOutside(event: ISdResizeEvent) {
     if (event.heightChanged) {
-      const style = getComputedStyle(this.#elRef.nativeElement);
-      let paddingTop = style.paddingTop === "" ? 0 : NumberUtil.parseInt(style.paddingTop) ?? 0;
+      this.#calcHeight();
+    }
+  }
 
-      if (this.dialogElRef.nativeElement.offsetHeight > this.#elRef.nativeElement.offsetHeight - paddingTop) {
-        this.dialogElRef.nativeElement.style.maxHeight = `calc(100% - ${paddingTop * 2}px)`;
-        this.dialogElRef.nativeElement.style.height = `calc(100% - ${paddingTop * 2}px)`;
-      }
+  onDialogResizeOutside(event: ISdResizeEvent) {
+    if (event.heightChanged) {
+      this.#calcHeight();
+    }
+  }
+
+  #calcHeight() {
+    const style = getComputedStyle(this.#elRef.nativeElement);
+    let paddingTop = style.paddingTop === "" ? 0 : NumberUtil.parseInt(style.paddingTop) ?? 0;
+
+    if (this.dialogElRef.nativeElement.offsetHeight > this.#elRef.nativeElement.offsetHeight - paddingTop) {
+      this.dialogElRef.nativeElement.style.maxHeight = `calc(100% - ${paddingTop * 2}px)`;
+      this.dialogElRef.nativeElement.style.height = `calc(100% - ${paddingTop * 2}px)`;
     }
   }
 
