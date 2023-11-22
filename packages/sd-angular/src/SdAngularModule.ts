@@ -7,25 +7,36 @@ import {SdResizeEventPlugin} from "./plugins/SdResizeEventPlugin";
 import {SdGlobalErrorHandlerPlugin} from "./plugins/SdGlobalErrorHandlerPlugin";
 import {SdOptionEventPlugin} from "./plugins/SdOptionEventPlugin";
 import {FaConfig} from "@fortawesome/angular-fontawesome";
-import {faQuestionCircle} from "@fortawesome/pro-duotone-svg-icons";
-import {SdThemeProvider} from "./providers/SdThemeProvider";
+import {SdAngularOptionsProvider} from "./providers/SdAngularOptionsProvider";
 
 @NgModule({
   imports: []
 })
 export class SdAngularModule {
+  #sdOptions = inject(SdAngularOptionsProvider);
   #faConfig = inject(FaConfig);
-  #sdTheme = inject(SdThemeProvider);
 
   constructor() {
-    this.#sdTheme.theme = "compact";
-    this.#faConfig.fallbackIcon = faQuestionCircle;
+    this.#faConfig.fallbackIcon = this.#sdOptions.fallbackIcon;
   }
 
-  static forRoot(): ModuleWithProviders<SdAngularModule> {
+  static forRoot(opt: {
+    clientName?: string;
+    defaultTheme?: "compact" | "modern" | "mobile" | "kiosk";
+    fallbackIcon?: any;
+  }): ModuleWithProviders<SdAngularModule> {
     return {
       ngModule: SdAngularModule,
       providers: [
+        {
+          provide: SdAngularOptionsProvider, useFactory: () => {
+            const provider = new SdAngularOptionsProvider();
+            provider.clientName = opt.clientName ?? provider.clientName;
+            provider.defaultTheme = opt.defaultTheme ?? provider.defaultTheme;
+            provider.fallbackIcon = opt.fallbackIcon ?? provider.fallbackIcon;
+            return provider;
+          }
+        },
         {provide: EVENT_MANAGER_PLUGINS, useClass: SdSaveCommandEventPlugin, multi: true},
         {provide: EVENT_MANAGER_PLUGINS, useClass: SdRefreshCommandEventPlugin, multi: true},
         {provide: EVENT_MANAGER_PLUGINS, useClass: SdInsertCommandEventPlugin, multi: true},

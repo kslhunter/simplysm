@@ -26,7 +26,7 @@ import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
         background: var(--theme-blue-grey-darkest);
         color: var(--text-trans-rev-default);
 
-        img {
+        ::ng-deep img {
           filter: brightness(100);
         }
       }

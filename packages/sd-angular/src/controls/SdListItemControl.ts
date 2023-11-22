@@ -30,7 +30,8 @@ import {faAngleDown} from "@fortawesome/pro-duotone-svg-icons/faAngleDown";
   template: `
     <div [class]="['_content', contentClass].filterExists().join(' ')"
          [style]="contentStyle"
-         (click)="onContentClick()">
+         (click)="onContentClick()"
+         tabindex="0">
       <div class="flex-row flex-gap-xs">
         <sd-icon class="_selected-icon" *ngIf="selectedIcon && !hasChildren" [icon]="selectedIcon"
                  fixedWidth/>
@@ -54,7 +55,7 @@ import {faAngleDown} from "@fortawesome/pro-duotone-svg-icons/faAngleDown";
 
     :host {
       > ._content {
-        padding: var(--gap-sm) var(--gap-default);
+        padding: var(--gap-sm);
         cursor: pointer;
 
         body.sd-theme-modern &,

@@ -184,7 +184,7 @@ import {NgIf} from "@angular/common";
         body.sd-theme-compact &,
         body.sd-theme-modern &,
         body.sd-theme-mobile &,
-        body.sd-theme-kiosk & {
+        body.sd-theme-kiosk & {          
           > ._contents {
             display: block;
           }

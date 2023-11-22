@@ -301,7 +301,7 @@ import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
                 overflow: hidden;
                 padding: 0;
                 position: relative;
-                
+
                 //body.sd-theme-modern & {
                 //  border-right: none;
                 //}
@@ -985,6 +985,14 @@ export class SdSheetControl<T> implements DoCheck {
         else {
           this.hasSummaryTemplate = false;
         }
+      });
+    });
+
+    this.#sdNgHelper.doCheckOutside((run) => {
+      run({
+        displayItemDefs: [this.displayItemDefs]
+      }, () => {
+        this.onFixedCellResizeOutside(-2);
       });
     });
   }
