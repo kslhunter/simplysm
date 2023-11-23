@@ -8,6 +8,8 @@ import {SdGlobalErrorHandlerPlugin} from "./plugins/SdGlobalErrorHandlerPlugin";
 import {SdOptionEventPlugin} from "./plugins/SdOptionEventPlugin";
 import {FaConfig} from "@fortawesome/angular-fontawesome";
 import {SdAngularOptionsProvider} from "./providers/SdAngularOptionsProvider";
+import {SdThemeProvider} from "./providers/SdThemeProvider";
+import {SdLocalStorageProvider} from "./providers/SdLocalStorageProvider";
 
 @NgModule({
   imports: []
@@ -15,9 +17,12 @@ import {SdAngularOptionsProvider} from "./providers/SdAngularOptionsProvider";
 export class SdAngularModule {
   #sdOptions = inject(SdAngularOptionsProvider);
   #faConfig = inject(FaConfig);
+  #sdTheme = inject(SdThemeProvider);
+  #sdLocalStorage = inject(SdLocalStorageProvider);
 
   constructor() {
     this.#faConfig.fallbackIcon = this.#sdOptions.fallbackIcon;
+    this.#sdTheme.theme = this.#sdLocalStorage.get("sd-theme") ?? this.#sdOptions.defaultTheme;
   }
 
   static forRoot(opt: {

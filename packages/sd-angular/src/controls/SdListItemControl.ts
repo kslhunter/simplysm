@@ -55,7 +55,7 @@ import {faAngleDown} from "@fortawesome/pro-duotone-svg-icons/faAngleDown";
 
     :host {
       > ._content {
-        padding: var(--gap-sm);
+        padding: var(--gap-sm) var(--gap-default);
         cursor: pointer;
 
         body.sd-theme-modern &,
@@ -63,7 +63,7 @@ import {faAngleDown} from "@fortawesome/pro-duotone-svg-icons/faAngleDown";
         body.sd-theme-mobile & {
           @include active-effect(true);
           border-radius: var(--border-radius-default);
-          margin: var(--gap-xxs) 0;
+          margin: var(--gap-xxs);
         }
 
         > .flex-row > ._selected-icon {

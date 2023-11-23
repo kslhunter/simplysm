@@ -26,15 +26,15 @@ import {coercionBoolean} from "../utils/commons";
         }
       }
 
-      body.sd-theme-modern &,
-      body.sd-theme-kiosk &,
-      body.sd-theme-mobile & {
-        padding: 0 var(--gap-default);
-
-        &[sd-inset=true] {
-          padding: 0;
-        }
-      }
+      //body.sd-theme-modern &,
+      //body.sd-theme-kiosk &,
+      //body.sd-theme-mobile & {
+      //  padding: 0 var(--gap-sm);
+      //
+      //  &[sd-inset=true] {
+      //    padding: 0;
+      //  }
+      //}
     }
   `]
 })
