@@ -12,10 +12,20 @@ import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/c
 
     :host {
       display: block;
-      padding: var(--gap-default);
+      padding: var(--gap-sm) var(--gap-default);
       background: var(--theme-grey-lightest);
-      border-left: var(--gap-sm) solid var(--trans-default);
 
+      body.sd-theme-compact & {
+        border-left: var(--gap-sm) solid var(--trans-default);
+      }
+
+      body.sd-theme-modern &,
+      body.sd-theme-mobile &,
+      body.sd-theme-kiosk & {
+        border: none;
+        border-radius: var(--border-radius-default);
+      }
+      
       @each $key, $val in map-get($vars, theme) {
         &[sd-theme=#{$key}] {
           background: var(--theme-#{$key}-lightest);
