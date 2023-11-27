@@ -17,11 +17,11 @@
     "node": "^18"
   },
   "dependencies": {
-    "@angular/animations": "^17.0.3",
-    "@angular/common": "^17.0.3",
-    "@angular/core": "^17.0.3",
-    "@angular/platform-browser": "^17.0.3",
-    "@angular/router": "^17.0.3",
+    "@angular/animations": "^17.0.4",
+    "@angular/common": "^17.0.4",
+    "@angular/core": "^17.0.4",
+    "@angular/platform-browser": "^17.0.4",
+    "@angular/router": "^17.0.4",
     "@fortawesome/angular-fontawesome": "^0.14.0",
     "@fortawesome/fontawesome-svg-core": "^6.4.2",
     "@fortawesome/pro-duotone-svg-icons": "^6.4.2",
@@ -41,6 +41,6 @@
   },
   "devDependencies": {
     "@types/qrcode": "^1.5.5",
-    "@types/semver": "^7.5.5"
+    "@types/semver": "^7.5.6"
   }
 }

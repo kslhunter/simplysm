@@ -38,11 +38,11 @@ import {
 import {Entrypoint} from "@angular-devkit/build-angular/src/utils/index-file/augment-index-html";
 import {CrossOrigin} from "@angular-devkit/build-angular";
 import {InlineCriticalCssProcessor} from "@angular-devkit/build-angular/src/utils/index-file/inline-critical-css";
-import {SdSourceFileCache} from "../utils/SdSourceFileCache";
 import {SdNgBundlerContext} from "./SdNgBundlerContext";
+import {SourceFileCache} from "@angular-devkit/build-angular/src/tools/esbuild/angular/source-file-cache";
 
 export class SdNgBundler {
-  private readonly _sourceFileCache = new SdSourceFileCache(
+  private readonly _sourceFileCache = new SourceFileCache(
     path.resolve(this._opt.pkgPath, ".cache")
   );
 
@@ -87,69 +87,35 @@ export class SdNgBundler {
     results: ISdCliPackageBuildResult[]
   }> {
     if (!this._contexts) {
-      this._contexts = [];
-      this._contexts.push(await this._getAppContextAsync());
-      this._contexts.push(this._getStyleContext());
+      this._contexts = [
+        await this._getAppContextAsync(),
+        this._getStyleContext()
+      ];
     }
 
     //-- build
     const bundlingResults = await this._contexts.mapAsync(async ctx => await ctx.bundleAsync());
 
+    //-- results
     const results = bundlingResults.mapMany(bundlingResult => bundlingResult.results);
 
+    //-- watchFilePaths
     const watchFilePaths = [
-      ...Array.from(this._sourceFileCache.typeScriptFileCache.keys()).map(item => fileURLToPath(item)),
+      ...this._sourceFileCache.typeScriptFileCache.keys(),
       ...this._sourceFileCache.referencedFiles ?? [],
-      ...this._sourceFileCache.babelFileCache.keys(),
       ...this._sourceFileCache.loadResultCache.watchFiles
     ].map((item) => path.resolve(item)).distinct();
 
+    //-- affectedSourceFilePaths
     let affectedSourceFilePaths = watchFilePaths.filter((item) => PathUtil.isChildPath(item, this._opt.pkgPath));
-
     if (this._sourceFileCache.modifiedFiles.size > 0) {
       affectedSourceFilePaths = Array.from(this._sourceFileCache.modifiedFiles)
         .filter((item) => PathUtil.isChildPath(item, this._opt.pkgPath))
         .map((item) => path.resolve(item))
         .distinct();
-
-      /*const depMap = new Map<string, Set<string>>();
-      for (const bundlingResult of bundlingResults) {
-        for (const [k, v] of bundlingResult.dependencyMap) {
-          const currSet = depMap.getOrCreate(k, new Set<string>());
-          currSet.adds(...v);
-        }
-      }
-      for (const [k, v] of this._sourceFileCache.loadResultCache.fileDependencies) {
-        const currSet = depMap.getOrCreate(k, new Set<string>());
-        currSet.adds(...Array.from(v).map((item) => item.startsWith("file:") ? fileURLToPath(item) : undefined).filterExists());
-      }
-
-      const searchAffectedFiles = (filePath: string, prev?: Set<string>): Set<string> => {
-        const result = new Set<string>(prev);
-
-        const importerPaths = depMap.get(filePath);
-        if (!importerPaths) return result;
-
-        for (const importerPath of importerPaths) {
-          if (result.has(importerPath)) continue;
-          result.adds(importerPath);
-          result.adds(...searchAffectedFiles(importerPath, result));
-        }
-
-        return result;
-      };
-
-      const affectedFilePathSet = new Set<string>();
-      for (const modFile of this._sourceFileCache.modifiedFiles) {
-        affectedFilePathSet.add(path.resolve(modFile));
-        affectedFilePathSet.adds(...searchAffectedFiles(path.resolve(modFile)));
-      }
-      affectedSourceFilePaths = Array.from(affectedFilePathSet.values()).filter((item) => PathUtil.isChildPath(item, this._opt.pkgPath));*/
     }
 
-    /*const executionResult = new ExecutionResult(this._contexts, this._sourceFileCache);
-    executionResult.outputFiles.push(...bundlingResult.outputFiles);*/
-
+    //-- executionResult
     const outputFiles: BuildOutputFile[] = bundlingResults.mapMany(item => item.outputFiles?.map(file => convertOutputFile(file, BuildOutputFileType.Root)) ?? []);
     const initialFiles = new Map<string, InitialFileRecord>();
     const metafile: {
@@ -165,22 +131,6 @@ export class SdNgBundler {
       metafile.outputs = {...metafile.outputs, ...bundlingResult.metafile?.outputs};
     }
     const assetFiles: { source: string; destination: string }[] = [];
-
-    //-- Check commonjs
-    // if (!this._opt.dev) {
-    //   const messages = checkCommonJSModules(bundlingResult.metafile, []);
-    //   for (const msg of messages) {
-    //     results.push({
-    //       filePath: msg.location?.file,
-    //       line: msg.location?.line,
-    //       char: msg.location?.column,
-    //       code: msg.pluginName,
-    //       severity: "warning",
-    //       message: msg.text ?? "",
-    //       type: "build"
-    //     });
-    //   }
-    // }
 
     //-- cordova empty
     if (this._opt.cordovaConfig?.plugins) {
@@ -228,8 +178,7 @@ export class SdNgBundler {
         const serviceWorkerResult = await this._genServiceWorkerAsync(outputFiles, assetFiles);
         outputFiles.push(createOutputFileFromText('ngsw.json', serviceWorkerResult.manifest, BuildOutputFileType.Root));
         assetFiles.push(...serviceWorkerResult.assetFiles);
-      }
-      catch (err) {
+      } catch (err) {
         results.push({
           filePath: undefined,
           line: undefined,
@@ -314,8 +263,7 @@ export class SdNgBundler {
 
         if (value.type === 'script') {
           hints.push({url: key, mode: 'modulepreload' as const});
-        }
-        else if (value.type === 'style') {
+        } else if (value.type === 'style') {
           hints.push({url: key, mode: 'preload' as const, as: 'style'});
         }
       }
@@ -335,8 +283,7 @@ export class SdNgBundler {
 
     if (this._opt.dev) {
       return transformResult;
-    }
-    else {
+    } else {
       const inlineCriticalCssProcessor = new InlineCriticalCssProcessor({
         minify: false,
         readAsset,
@@ -431,9 +378,6 @@ export class SdNgBundler {
       splitting: true,
       chunkNames: 'chunk-[hash]',
       tsconfig: this._tsConfigFilePath,
-      /*external: [
-        ...this._opt.cordovaConfig?.plugins ?? []
-      ],*/
       write: false,
       preserveSymlinks: false,
       define: {
@@ -487,71 +431,6 @@ export class SdNgBundler {
       },
       inject: [PathUtil.posix(fileURLToPath(await import.meta.resolve!("node-stdlib-browser/helpers/esbuild/shim")))],
       plugins: [
-        /*{
-          name: "sd-worker",
-          setup: ({onLoad}) => {
-            onLoad({filter: /\.ts$/}, async args => {
-              if (args.path.endsWith(".d.ts")) return;
-
-              // ts sourefile 로 Worker사용여부 확인 (URL, import.meta.url)
-              let contents = this._sourceFileCache.typeScriptFileCache.get(pathToFileURL(args.path).toString());
-              if (typeof contents !== "string") return;
-
-              const regexp = /new Worker\(new URL\("(.*\.ts)", import\.meta\.url\)/;
-              const matches = contents.match(new RegExp(regexp, "g"));
-              if (!matches) return;
-
-              for (const match of matches) {
-                const urlPath = match.match(regexp)![1];
-
-                // 해당 URL의 파일을 esbuild로 빌드
-                const outFileName = path.basename(urlPath, path.extname(urlPath)) + ".js";
-                await esbuild.build({
-                  entryPoints: [path.resolve(path.dirname(args.path), urlPath)],
-                  outfile: path.resolve(this._opt.pkgPath, "dist", outFileName),
-                  target: this._browserTarget,
-                  format: "esm",
-                  bundle: true,
-                  keepNames: true,
-                  minifyIdentifiers: !this._opt.dev,
-                  minifySyntax: !this._opt.dev,
-                  minifyWhitespace: !this._opt.dev,
-                  sourcemap: this._opt.dev,
-                  platform: 'browser',
-                  conditions: ['es2020', 'es2015', 'module'],
-                  mainFields: ['es2020', 'es2015', 'browser', 'module', 'main'],
-                  resolveExtensions: ['.ts', '.tsx', '.mjs', '.js'],
-                  tsconfig: this._tsConfigFilePath,
-                  preserveSymlinks: false,
-                  define: {
-                    ...!this._opt.dev ? {ngDevMode: 'false'} : {},
-                    ngJitMode: 'false',
-                    global: 'global',
-                    process: 'process',
-                    Buffer: 'Buffer',
-                    'process.env.SD_VERSION': JSON.stringify(this._pkgNpmConf.version),
-                    "process.env.NODE_ENV": JSON.stringify(this._opt.dev ? "development" : "production"),
-                    ...this._opt.env ? Object.keys(this._opt.env).toObject(
-                      key => `process.env.${key}`,
-                      key => JSON.stringify(this._opt.env![key])
-                    ) : {}
-                  },
-                  inject: [PathUtil.posix(fileURLToPath(await import.meta.resolve!("node-stdlib-browser/helpers/esbuild/shim")))],
-                });
-
-                // 빌드된 파일을 가리키도록 URL변경
-                contents = contents.replace(urlPath, "./" + outFileName);
-
-                const currSet = this._customDepsCache.getOrCreate(path.resolve(path.dirname(args.path), urlPath), new Set());
-                currSet.add(path.resolve(args.path));
-              }
-
-              this._sourceFileCache.typeScriptFileCache.set(pathToFileURL(args.path).toString(), contents);
-
-              return undefined;
-            });
-          }
-        },*/
         ...this._opt.cordovaConfig?.plugins ? [{
           name: "cordova:plugin-empty",
           setup: ({onResolve}) => {
@@ -600,8 +479,6 @@ export class SdNgBundler {
   }
 
   private _getStyleContext(): SdNgBundlerContext {
-    const browserTarget = transformSupportedBrowsersToTargets(browserslist("defaults and fully supports es6-module"));
-
     const pluginFactory = new StylesheetPluginFactory(
       {
         sourcemap: this._opt.dev,
@@ -622,7 +499,7 @@ export class SdNgBundler {
       outdir: this._opt.pkgPath,
       write: false,
       platform: 'browser',
-      target: browserTarget,
+      target: this._browserTarget,
       preserveSymlinks: false,
       external: [],
       conditions: ['style', 'sass'],
@@ -638,10 +515,10 @@ export class SdNgBundler {
             loader: 'css',
             resolveDir: this._opt.pkgPath
           }),
-        }),
-        pluginFactory.create(SassStylesheetLanguage),
-        pluginFactory.create(CssStylesheetLanguage),
-        createCssResourcePlugin(this._sourceFileCache.loadResultCache),
+        }) as esbuild.Plugin,
+        pluginFactory.create(SassStylesheetLanguage) as esbuild.Plugin,
+        pluginFactory.create(CssStylesheetLanguage) as esbuild.Plugin,
+        createCssResourcePlugin(this._sourceFileCache.loadResultCache) as esbuild.Plugin,
       ],
     });
   }

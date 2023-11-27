@@ -11,10 +11,12 @@
       <change beforePath="$PROJECT_DIR$/packages/cordova-util/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/cordova-util/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/packages/eslint-plugin/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/eslint-plugin/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/packages/sd-angular/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdNoteControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdNoteControl.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/scss/themes/_variables-modern.scss" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/scss/themes/_variables-modern.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/styles.scss" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/styles.scss" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/packages/sd-cli/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdNgBundler.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdNgBundler.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/utils/SdMemoryLoadResultCache.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/utils/SdSourceFileCache.ts" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/packages/sd-core-browser/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-core-browser/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/packages/sd-core-common/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-core-common/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/packages/sd-core-node/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-core-node/package.json" afterDir="false" />
@@ -77,40 +79,40 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "master",
-    "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "D:/workspaces-11/kia-inout",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.standard": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.standard": "",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_interpreter_path": "node",
-    "nodejs_package_manager_path": "npm",
-    "npm.commit.executor": "Run",
-    "npm.publish.executor": "Run",
-    "npm.watch.executor": "Run",
-    "npm.watch:sd-orm-node.executor": "Run",
-    "settings.editor.selected.configurable": "Errors",
-    "ts.external.directory.path": "D:\\workspaces-11\\simplysm\\node_modules\\typescript\\lib",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/workspaces-11/simplysm-ts&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.standard&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.standard&quot;: &quot;&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_interpreter_path&quot;: &quot;node&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;npm.commit.executor&quot;: &quot;Run&quot;,
+    &quot;npm.publish.executor&quot;: &quot;Run&quot;,
+    &quot;npm.watch.executor&quot;: &quot;Run&quot;,
+    &quot;npm.watch:sd-orm-node.executor&quot;: &quot;Run&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.sourceCode.Angular HTML template&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;D:\\workspaces-11\\simplysm\\node_modules\\typescript\\lib&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\workspaces-11\simplysm\_back\231123" />
       <recent name="D:\workspaces-11\simplysm\packages\sd-angular\src\scss" />
       <recent name="D:\workspaces-11\simplysm\lib" />
       <recent name="D:\workspaces-11\simplysm\packages\sd-angular\src\scss\themes" />
       <recent name="D:\workspaces-11\simplysm\_back\231104" />
-      <recent name="D:\workspaces-11\simplysm\packages\cordova-base\src" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="D:\workspaces-11\simplysm\packages\sd-angular\src\scss\themes" />
