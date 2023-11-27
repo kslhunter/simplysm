@@ -21,6 +21,8 @@ export * from "./controls/SdFormBoxControl";
 export * from "./controls/SdFormBoxItemControl";
 export * from "./controls/SdFormControl";
 export * from "./controls/SdGapControl";
+export * from "./controls/SdGridControl";
+export * from "./controls/SdGridItemControl";
 export * from "./controls/SdHtmlEditorControl";
 export * from "./controls/SdIconControl";
 export * from "./controls/SdLabelControl";

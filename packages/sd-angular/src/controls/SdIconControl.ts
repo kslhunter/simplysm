@@ -11,4 +11,7 @@ import {coercionBoolean} from "../utils/commons";
 export class SdIconControl extends FaIconComponent {
   @Input({transform: coercionBoolean})
   override fixedWidth = false;
+
+  @Input({transform: coercionBoolean})
+  override inverse = false;
 }
