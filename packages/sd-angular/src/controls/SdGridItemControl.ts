@@ -18,13 +18,13 @@ export class SdGridItemControl implements OnInit, OnDestroy {
   @Input({required: true, transform: coercionNumber})
   colSpan!: number;
 
-  @Input({alias: "colSpan.sm", transform: coercionNumber})
+  @Input({transform: coercionNumber})
   colSpanSm?: number;
 
-  @Input({alias: "colSpan.xs", transform: coercionNumber})
+  @Input({transform: coercionNumber})
   colSpanXs?: number;
 
-  @Input({alias: "colSpan.xxs", transform: coercionNumber})
+  @Input({transform: coercionNumber})
   colSpanXxs?: number;
 
   #elRef = inject<ElementRef<HTMLElement>>(ElementRef);

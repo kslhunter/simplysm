@@ -13,7 +13,6 @@ import {
 import {StringUtil} from "@simplysm/sd-core-common";
 import {IconProp} from "@fortawesome/fontawesome-svg-core";
 import {ISharedDataBase} from "../providers/SdSharedDataProvider";
-import {ISdSheetColumnOrderingVM} from "./SdSheetControl";
 import {coercionBoolean, getSdFnCheckData, TSdFnInfo} from "../utils/commons";
 import {SdItemOfTemplateContext, SdItemOfTemplateDirective} from "../directives/SdItemOfTemplateDirective";
 import {SdNgHelper} from "../utils/SdNgHelper";
@@ -50,8 +49,14 @@ import {SdListItemControl} from "./SdListItemControl";
             <ng-template [ngTemplateOutlet]="headerTemplateRef"></ng-template>
           </sd-dock>
         </ng-container>
+
         <sd-dock class="pb-default">
-          <sd-textfield type="text" placeholder="검색어" [(value)]="searchText"></sd-textfield>
+          <ng-container *ngIf="!filterTemplateRef">
+            <sd-textfield type="text" placeholder="검색어" [(value)]="searchText"></sd-textfield>
+          </ng-container>
+          <ng-container *ngIf="filterTemplateRef">
+            <ng-template [ngTemplateOutlet]="filterTemplateRef"></ng-template>
+          </ng-container>
         </sd-dock>
 
         <sd-pane>
@@ -96,6 +101,9 @@ export class SdSharedDataSelectViewControl<T extends ISharedDataBase<string | nu
   @ContentChild("headerTemplate", {static: true})
   headerTemplateRef?: TemplateRef<void>;
 
+  @ContentChild("filterTemplate", {static: true})
+  filterTemplateRef?: TemplateRef<void>;
+
   @ContentChild(SdItemOfTemplateDirective, {static: true, read: TemplateRef})
   itemTemplateRef: TemplateRef<SdItemOfTemplateContext<T>> | null = null;
 
@@ -104,7 +112,6 @@ export class SdSharedDataSelectViewControl<T extends ISharedDataBase<string | nu
   trackByFn = (index: number, item: T): (string | number) => item.__valueKey;
 
   searchText?: string;
-  ordering: ISdSheetColumnOrderingVM[] = [];
 
   filteredItems: any[] = [];
 
@@ -122,8 +129,7 @@ export class SdSharedDataSelectViewControl<T extends ISharedDataBase<string | nu
       run({
         items: [this.items, "all"],
         searchText: [this.searchText],
-        ...getSdFnCheckData("filterFn", this.filterFn),
-        ordering: [this.ordering, "all"]
+        ...getSdFnCheckData("filterFn", this.filterFn)
       }, () => {
         let result = this.items.filter((item) => !item.__isHidden);
 
@@ -133,15 +139,6 @@ export class SdSharedDataSelectViewControl<T extends ISharedDataBase<string | nu
 
         if (this.filterFn?.[0]) {
           result = result.filter((item, i) => this.filterFn![0](i, item));
-        }
-
-        for (const orderingItem of this.ordering.reverse()) {
-          if (orderingItem.desc) {
-            result = result.orderByDesc((item) => item[orderingItem.key]);
-          }
-          else {
-            result = result.orderBy((item) => item[orderingItem.key]);
-          }
         }
 
         this.filteredItems = result;
