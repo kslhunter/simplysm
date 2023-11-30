@@ -11,7 +11,7 @@ import {
   Output
 } from "@angular/core";
 import {StringUtil} from "@simplysm/sd-core-common";
-import {coercionBoolean, getSdFnCheckData, TSdFnInfo} from "../utils/commons";
+import {coercionBoolean, coercionNonNullableNumber, getSdFnCheckData, TSdFnInfo} from "../utils/commons";
 import {SdNgHelper} from "../utils/SdNgHelper";
 import {NgIf} from "@angular/common";
 
@@ -38,6 +38,7 @@ import {NgIf} from "@angular/common";
               [attr.placeholder]="placeholder"
               [required]="required"
               [attr.title]="title ?? placeholder"
+              [attr.rows]="rows"
               (input)="onInput($event)"
               [style]="inputStyle"
               [class]="inputClass"></textarea>
@@ -187,6 +188,9 @@ export class SdTextareaControl implements DoCheck {
 
   @Output()
   valueChange = new EventEmitter<string | undefined>();
+
+  @Input({transform: coercionNonNullableNumber})
+  rows = 3;
 
   @Input({transform: coercionBoolean})
   @HostBinding("attr.sd-disabled")
