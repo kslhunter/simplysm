@@ -160,6 +160,18 @@ export class SdSharedDataProvider {
 
         this.#dataRecord[dataType]!.map.set(currItemKey, currItem);
       }
+
+      // 재정렬
+      if (currData.length > 0) {
+        for (const orderBy of info.orderBy.reverse()) {
+          if (orderBy[1] === "desc") {
+            this.#dataRecord[dataType]!.arr.orderByDescThis((item) => orderBy[0](item));
+          }
+          else {
+            this.#dataRecord[dataType]!.arr.orderByThis((item) => orderBy[0](item));
+          }
+        }
+      }
     }
     // 모든항목 새로고침
     else {
