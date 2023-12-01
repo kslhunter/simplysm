@@ -1152,8 +1152,8 @@ export class SdSheetControl<T> implements DoCheck {
     }
   }
 
-  @HostListener("keydown.capture.outside", ["$event"])
-  onKeydownCaptureOutside(event: KeyboardEvent): void {
+  @HostListener("keydown.capture", ["$event"])
+  onKeydownCaptureOutside(event: KeyboardEvent) {
     if (event.target instanceof HTMLTableCellElement) {
       if (event.key === "F2") {
         event.preventDefault();
@@ -1185,6 +1185,14 @@ export class SdSheetControl<T> implements DoCheck {
         if (this.#moveCellIfExists(event.target, 0, -1, false)) {
           event.preventDefault();
         }
+      }
+      else if (event.ctrlKey && event.key === "c") {
+        event.preventDefault();
+        event.target.findFirst("sd-textfield")?.dispatchEvent(new CustomEvent("sd-sheet-cell-copy"));
+      }
+      else if (event.ctrlKey && event.key === "v") {
+        event.preventDefault();
+        event.target.findFirst("sd-textfield")?.dispatchEvent(new CustomEvent("sd-sheet-cell-paste"));
       }
     }
     else if (event.target instanceof HTMLElement) {

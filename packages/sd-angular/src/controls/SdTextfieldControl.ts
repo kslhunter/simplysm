@@ -1,16 +1,18 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   DoCheck,
   ElementRef,
   EventEmitter,
   HostBinding,
+  HostListener,
   inject,
   Injector,
   Input,
   Output
 } from "@angular/core";
-import {DateOnly, DateTime, NumberUtil, StringUtil, Time} from "@simplysm/sd-core-common";
+import {DateOnly, DateTime, JsonConvert, NumberUtil, StringUtil, Time} from "@simplysm/sd-core-common";
 import {coercionBoolean, coercionNumber, getSdFnCheckData, TSdFnInfo} from "../utils/commons";
 import {SdNgHelper} from "../utils/SdNgHelper";
 import {NgIf} from "@angular/common";
@@ -184,7 +186,7 @@ import {NgIf} from "@angular/common";
         body.sd-theme-compact &,
         body.sd-theme-modern &,
         body.sd-theme-mobile &,
-        body.sd-theme-kiosk & {          
+        body.sd-theme-kiosk & {
           > ._contents {
             display: block;
           }
@@ -393,6 +395,7 @@ export class SdTextfieldControl<K extends TSdTextfieldType> implements DoCheck {
   controlMax?: string;
 
   #elRef = inject<ElementRef<HTMLElement>>(ElementRef);
+  #cdr = inject(ChangeDetectorRef);
 
   #sdNgHelper = new SdNgHelper(inject(Injector));
 
@@ -704,6 +707,17 @@ export class SdTextfieldControl<K extends TSdTextfieldType> implements DoCheck {
 
 
     throw new Error(`'sd-textfield'에 대한 'value'가 잘못되었습니다. (입력값: ${value.toString()})`);
+  }
+
+  @HostListener("sd-sheet-cell-copy")
+  async onSdSheetCellCopy() {
+    await navigator.clipboard.writeText(JsonConvert.stringify(this.value));
+  }
+
+  @HostListener("sd-sheet-cell-paste")
+  async onSdSheetCellPaste() {
+    this.#setValue(JsonConvert.parse(await navigator.clipboard.readText()));
+    this.#cdr.markForCheck();
   }
 }
 

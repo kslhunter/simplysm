@@ -6,7 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="a5909e33-fd1f-4a18-a2ac-5581a953e90d" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/providers/SdSharedDataProvider.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/providers/SdSharedDataProvider.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSheetControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSheetControl.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdTextfieldControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdTextfieldControl.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -77,7 +78,7 @@
     "npm.publish.executor": "Run",
     "npm.watch.executor": "Run",
     "npm.watch:sd-orm-node.executor": "Run",
-    "settings.editor.selected.configurable": "preferences.sourceCode.Angular HTML template",
+    "settings.editor.selected.configurable": "settings.javascript.linters.eslint",
     "ts.external.directory.path": "D:\\workspaces-11\\simplysm\\node_modules\\typescript\\lib",
     "vue.rearranger.settings.migration": "true"
   }
@@ -204,6 +205,7 @@
     <MESSAGE value="#447 (진행중)" />
     <MESSAGE value="." />
     <MESSAGE value="#511" />
-    <option name="LAST_COMMIT_MESSAGE" value="#511" />
+    <MESSAGE value="#514" />
+    <option name="LAST_COMMIT_MESSAGE" value="#514" />
   </component>
 </project>
