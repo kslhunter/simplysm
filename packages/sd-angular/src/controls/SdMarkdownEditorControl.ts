@@ -331,11 +331,11 @@ export class SdMarkdownEditorControl implements DoCheck {
           if (this.previewRenderFn?.[0]) {
             this.busyCount++;
             const value = await this.previewRenderFn[0](this.value!);
-            this.innerHTML = marked1.marked(value);
+            this.innerHTML = await marked1.marked(value);
             this.busyCount--;
           }
           else {
-            this.innerHTML = marked1.marked(this.value!);
+            this.innerHTML = await marked1.marked(this.value!);
           }
         }
         else if (this.placeholder !== undefined && this.placeholder !== "") {
