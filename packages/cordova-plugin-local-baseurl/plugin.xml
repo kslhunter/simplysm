@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0" id="@simplysm/cordova-plugin-local-baseurl" version="11.1.16">
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0" id="@simplysm/cordova-plugin-local-baseurl" version="11.1.17">
   <name>WebView BaseUrl to LocalFile</name>
   <description>Cordova Local BaseUrl Plugin</description>
   <license>Apache 2.0</license>
