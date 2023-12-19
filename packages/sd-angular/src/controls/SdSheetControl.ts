@@ -1247,8 +1247,19 @@ export class SdSheetControl<T> implements DoCheck {
         }
       }
       else if (event.key === "Enter") {
-        event.preventDefault();
-        this.#moveCellIfExists(tdEl, 1, 0, true);
+        if (
+          event.target.tagName === "TEXTAREA" ||
+          event.target.hasAttribute("contenteditable")
+        ) {
+          if (!event.altKey) {
+            event.preventDefault();
+            this.#moveCellIfExists(tdEl, 1, 0, true);
+          }
+        }
+        else {
+          event.preventDefault();
+          this.#moveCellIfExists(tdEl, 1, 0, true);
+        }
       }
       else if (event.ctrlKey && event.key === "ArrowDown") {
         if (this.#moveCellIfExists(tdEl, 1, 0, true)) {

@@ -1,0 +1,644 @@
+Index: packages/cordova-plugin-local-baseurl/package.json
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>{\n  \"name\": \"@simplysm/cordova-plugin-local-baseurl\",\n  \"version\": \"11.1.16\",\n  \"description\": \"심플리즘 패키지 - Cordova Local BaseUrl Plugin\",\n  \"author\": \"김석래\",\n  \"repository\": {\n    \"type\": \"git\",\n    \"url\": \"https://github.com/kslhunter/simplysm11.git\",\n    \"directory\": \"packages/cordova-plugin-local-baseurl\"\n  },\n  \"license\": \"MIT\",\n  \"type\": \"module\",\n  \"types\": \"./types/index.d.ts\",\n  \"engines\": {\n    \"node\": \"^18\"\n  },\n  \"cordova\": {\n    \"id\": \"@simplysm/cordova-plugin-local-baseurl\",\n    \"platforms\": [\n      \"android\"\n    ]\n  }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/packages/cordova-plugin-local-baseurl/package.json b/packages/cordova-plugin-local-baseurl/package.json
+--- a/packages/cordova-plugin-local-baseurl/package.json	(revision 9de8ec5d0e10ba63f51f0f71ba53581daaa89b51)
++++ b/packages/cordova-plugin-local-baseurl/package.json	(date 1702980719979)
+@@ -1,6 +1,6 @@
+ {
+   "name": "@simplysm/cordova-plugin-local-baseurl",
+-  "version": "11.1.16",
++  "version": "11.1.17",
+   "description": "심플리즘 패키지 - Cordova Local BaseUrl Plugin",
+   "author": "김석래",
+   "repository": {
+@@ -20,4 +20,4 @@
+       "android"
+     ]
+   }
+-}
++}
+\ No newline at end of file
+Index: packages/cordova-plugin-local-baseurl/plugin.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<plugin xmlns=\"http://apache.org/cordova/ns/plugins/1.0\" id=\"@simplysm/cordova-plugin-local-baseurl\" version=\"11.1.16\">\n  <name>WebView BaseUrl to LocalFile</name>\n  <description>Cordova Local BaseUrl Plugin</description>\n  <license>Apache 2.0</license>\n  <keywords>cordova,plugin,redirect,local,storage,baseurl</keywords>\n  <js-module src=\"www/SdLocalBaseUrl.js\" name=\"SdLocalBaseUrl\">\n    <clobbers target=\"SdLocalBaseUrl\"/>\n  </js-module>\n  <platform name=\"android\">\n    <source-file src=\"src/android/SdLocalBaseUrl.java\" target-dir=\"src/kr/co/simplysm/cordova\"/>\n    <config-file target=\"res/xml/config.xml\" parent=\"/*\">\n      <feature name=\"SdLocalBaseUrl\">\n        <param name=\"android-package\" value=\"kr.co.simplysm.cordova.SdLocalBaseUrl\"/>\n      </feature>\n    </config-file>\n  </platform>\n</plugin>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/packages/cordova-plugin-local-baseurl/plugin.xml b/packages/cordova-plugin-local-baseurl/plugin.xml
+--- a/packages/cordova-plugin-local-baseurl/plugin.xml	(revision 9de8ec5d0e10ba63f51f0f71ba53581daaa89b51)
++++ b/packages/cordova-plugin-local-baseurl/plugin.xml	(date 1702980720012)
+@@ -1,5 +1,5 @@
+ <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+-<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0" id="@simplysm/cordova-plugin-local-baseurl" version="11.1.16">
++<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0" id="@simplysm/cordova-plugin-local-baseurl" version="11.1.17">
+   <name>WebView BaseUrl to LocalFile</name>
+   <description>Cordova Local BaseUrl Plugin</description>
+   <license>Apache 2.0</license>
+Index: package.json
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>{\n  \"name\": \"simplysm\",\n  \"version\": \"11.1.16\",\n  \"description\": \"심플리즘 패키지\",\n  \"author\": \"김석래\",\n  \"packageManager\": \"yarn@4.0.1\",\n  \"repository\": {\n    \"type\": \"git\",\n    \"url\": \"https://github.com/kslhunter/simplysm11.git\"\n  },\n  \"type\": \"module\",\n  \"license\": \"MIT\",\n  \"private\": true,\n  \"engines\": {\n    \"node\": \"^18\"\n  },\n  \"workspaces\": [\n    \"packages/*\"\n  ],\n  \"scripts\": {\n    \"watch\": \"npm run _sd-cli_ watch\",\n    \"watch:sd-angular\": \"npm run _sd-cli_ --debug watch --packages sd-angular\",\n    \"watch:sd-orm-node\": \"npm run _sd-cli_ --debug watch --packages sd-orm-common sd-orm-node\",\n    \"build\": \"npm run _sd-cli_ --debug build\",\n    \"publish\": \"npm run _sd-cli_ --debug publish\",\n    \"--\": \"\",\n    \"_sd-cli_\": \"tsx --experimental-import-meta-resolve --tsconfig packages/sd-cli/tsconfig.json packages/sd-cli/src/sd-cli.ts\",\n    \"commit\": \"git add . && git commit -m .\",\n    \"eslint-timing\": \"cross-env TIMING=1 eslint \\\"**/+(*.ts|*.tsx|*.js|*.cjs|*.mjs)\\\"\",\n    \"eslint-fix\": \"cross-env TIMING=1 eslint --fix \\\"**/+(*.ts|*.tsx|*.js|*.cjs|*.mjs)\\\"\"\n  },\n  \"devDependencies\": {\n    \"@simplysm/eslint-plugin\": \"11.1.16\",\n    \"@types/node\": \"^18.19.3\",\n    \"cross-env\": \"^7.0.3\",\n    \"eslint\": \"^8.56.0\",\n    \"tsx\": \"^4.6.2\",\n    \"typescript\": \"~5.2.2\"\n  }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/package.json b/package.json
+--- a/package.json	(revision 9de8ec5d0e10ba63f51f0f71ba53581daaa89b51)
++++ b/package.json	(date 1702980719970)
+@@ -1,6 +1,6 @@
+ {
+   "name": "simplysm",
+-  "version": "11.1.16",
++  "version": "11.1.17",
+   "description": "심플리즘 패키지",
+   "author": "김석래",
+   "packageManager": "yarn@4.0.1",
+@@ -30,11 +30,11 @@
+     "eslint-fix": "cross-env TIMING=1 eslint --fix \"**/+(*.ts|*.tsx|*.js|*.cjs|*.mjs)\""
+   },
+   "devDependencies": {
+-    "@simplysm/eslint-plugin": "11.1.16",
++    "@simplysm/eslint-plugin": "11.1.17",
+     "@types/node": "^18.19.3",
+     "cross-env": "^7.0.3",
+     "eslint": "^8.56.0",
+     "tsx": "^4.6.2",
+     "typescript": "~5.2.2"
+   }
+-}
++}
+\ No newline at end of file
+Index: packages/sd-orm-node-sqlite/package.json
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>{\n  \"name\": \"@simplysm/sd-orm-node-sqlite\",\n  \"version\": \"11.1.16\",\n  \"description\": \"심플리즘 패키지 - SQLITE ORM 모듈 (node)\",\n  \"author\": \"김석래\",\n  \"repository\": {\n    \"type\": \"git\",\n    \"url\": \"https://github.com/kslhunter/simplysm11.git\",\n    \"directory\": \"packages/sd-orm-node-sqlite\"\n  },\n  \"license\": \"MIT\",\n  \"type\": \"module\",\n  \"main\": \"./dist/index.js\",\n  \"types\": \"./dist/index.d.ts\",\n  \"engines\": {\n    \"node\": \"^18\"\n  },\n  \"dependencies\": {\n    \"@simplysm/sd-core-common\": \"11.1.16\",\n    \"@simplysm/sd-core-node\": \"11.1.16\",\n    \"@simplysm/sd-orm-common\": \"11.1.16\",\n    \"sqlite3\": \"^5.1.6\"\n  },\n  \"devDependencies\": {\n    \"@types/sqlite3\": \"^3.1.11\"\n  }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/packages/sd-orm-node-sqlite/package.json b/packages/sd-orm-node-sqlite/package.json
+--- a/packages/sd-orm-node-sqlite/package.json	(revision 9de8ec5d0e10ba63f51f0f71ba53581daaa89b51)
++++ b/packages/sd-orm-node-sqlite/package.json	(date 1702980719979)
+@@ -1,6 +1,6 @@
+ {
+   "name": "@simplysm/sd-orm-node-sqlite",
+-  "version": "11.1.16",
++  "version": "11.1.17",
+   "description": "심플리즘 패키지 - SQLITE ORM 모듈 (node)",
+   "author": "김석래",
+   "repository": {
+@@ -16,12 +16,12 @@
+     "node": "^18"
+   },
+   "dependencies": {
+-    "@simplysm/sd-core-common": "11.1.16",
+-    "@simplysm/sd-core-node": "11.1.16",
+-    "@simplysm/sd-orm-common": "11.1.16",
++    "@simplysm/sd-core-common": "11.1.17",
++    "@simplysm/sd-core-node": "11.1.17",
++    "@simplysm/sd-orm-common": "11.1.17",
+     "sqlite3": "^5.1.6"
+   },
+   "devDependencies": {
+     "@types/sqlite3": "^3.1.11"
+   }
+-}
++}
+\ No newline at end of file
+Index: packages/sd-core-browser/package.json
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>{\n  \"name\": \"@simplysm/sd-core-browser\",\n  \"version\": \"11.1.16\",\n  \"description\": \"심플리즘 패키지 - 코어 모듈 (browser)\",\n  \"author\": \"김석래\",\n  \"repository\": {\n    \"type\": \"git\",\n    \"url\": \"https://github.com/kslhunter/simplysm11.git\",\n    \"directory\": \"packages/sd-core-browser\"\n  },\n  \"license\": \"MIT\",\n  \"type\": \"module\",\n  \"main\": \"./dist/index.js\",\n  \"types\": \"./dist/index.d.ts\",\n  \"engines\": {\n    \"node\": \"^18\"\n  },\n  \"dependencies\": {\n    \"@simplysm/sd-core-common\": \"11.1.16\"\n  }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/packages/sd-core-browser/package.json b/packages/sd-core-browser/package.json
+--- a/packages/sd-core-browser/package.json	(revision 9de8ec5d0e10ba63f51f0f71ba53581daaa89b51)
++++ b/packages/sd-core-browser/package.json	(date 1702980719979)
+@@ -1,6 +1,6 @@
+ {
+   "name": "@simplysm/sd-core-browser",
+-  "version": "11.1.16",
++  "version": "11.1.17",
+   "description": "심플리즘 패키지 - 코어 모듈 (browser)",
+   "author": "김석래",
+   "repository": {
+@@ -16,6 +16,6 @@
+     "node": "^18"
+   },
+   "dependencies": {
+-    "@simplysm/sd-core-common": "11.1.16"
++    "@simplysm/sd-core-common": "11.1.17"
+   }
+-}
++}
+\ No newline at end of file
+Index: packages/sd-storage/package.json
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>{\n  \"name\": \"@simplysm/sd-storage\",\n  \"version\": \"11.1.16\",\n  \"description\": \"심플리즘 패키지 - 저장소 모듈 (node)\",\n  \"author\": \"김석래\",\n  \"repository\": {\n    \"type\": \"git\",\n    \"url\": \"https://github.com/kslhunter/simplysm11.git\",\n    \"directory\": \"packages/sd-storage\"\n  },\n  \"license\": \"MIT\",\n  \"type\": \"module\",\n  \"main\": \"./dist/index.js\",\n  \"types\": \"./dist/index.d.ts\",\n  \"engines\": {\n    \"node\": \"^18\"\n  },\n  \"dependencies\": {\n    \"basic-ftp\": \"^5.0.4\",\n    \"ssh2-sftp-client\": \"^9.1.0\"\n  },\n  \"devDependencies\": {\n    \"@types/ssh2-sftp-client\": \"^9.0.3\"\n  }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/packages/sd-storage/package.json b/packages/sd-storage/package.json
+--- a/packages/sd-storage/package.json	(revision 9de8ec5d0e10ba63f51f0f71ba53581daaa89b51)
++++ b/packages/sd-storage/package.json	(date 1702980719978)
+@@ -1,6 +1,6 @@
+ {
+   "name": "@simplysm/sd-storage",
+-  "version": "11.1.16",
++  "version": "11.1.17",
+   "description": "심플리즘 패키지 - 저장소 모듈 (node)",
+   "author": "김석래",
+   "repository": {
+@@ -22,4 +22,4 @@
+   "devDependencies": {
+     "@types/ssh2-sftp-client": "^9.0.3"
+   }
+-}
++}
+\ No newline at end of file
+Index: packages/sd-cli/package.json
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>{\n  \"name\": \"@simplysm/sd-cli\",\n  \"version\": \"11.1.16\",\n  \"description\": \"심플리즘 패키지 - CLI\",\n  \"author\": \"김석래\",\n  \"repository\": {\n    \"type\": \"git\",\n    \"url\": \"https://github.com/kslhunter/simplysm11.git\",\n    \"directory\": \"packages/sd-cli\"\n  },\n  \"license\": \"MIT\",\n  \"bin\": \"./dist/sd-cli.js\",\n  \"type\": \"module\",\n  \"main\": \"./dist/index.js\",\n  \"types\": \"./dist/index.d.ts\",\n  \"engines\": {\n    \"node\": \"^18\"\n  },\n  \"dependencies\": {\n    \"@angular-devkit/build-angular\": \"^17.0.7\",\n    \"@angular/common\": \"^17.0.7\",\n    \"@angular/compiler\": \"^17.0.7\",\n    \"@angular/compiler-cli\": \"^17.0.7\",\n    \"@angular/core\": \"^17.0.7\",\n    \"@electron/rebuild\": \"^3.4.1\",\n    \"@simplysm/sd-core-common\": \"11.1.16\",\n    \"@simplysm/sd-core-node\": \"11.1.16\",\n    \"@simplysm/sd-service-server\": \"11.1.16\",\n    \"@simplysm/sd-storage\": \"11.1.16\",\n    \"browserslist\": \"^4.22.2\",\n    \"cordova\": \"^12.0.0\",\n    \"electron\": \"^27.1.3\",\n    \"electron-builder\": \"^24.10.0\",\n    \"esbuild\": \"^0.19.10\",\n    \"esbuild-plugin-tsc\": \"^0.4.0\",\n    \"eslint\": \"^8.56.0\",\n    \"jszip\": \"^3.10.1\",\n    \"node-stdlib-browser\": \"^1.2.0\",\n    \"piscina\": \"^4.2.1\",\n    \"rxjs\": \"^7.8.1\",\n    \"sass\": \"^1.69.5\",\n    \"semver\": \"^7.5.4\",\n    \"xml2js\": \"^0.6.2\",\n    \"yargs\": \"^17.7.2\",\n    \"zone.js\": \"~0.14.2\"\n  },\n  \"devDependencies\": {\n    \"@types/eslint\": \"^8.44.9\",\n    \"@types/xml2js\": \"^0.4.14\",\n    \"@types/yargs\": \"^17.0.32\"\n  },\n  \"peerDependencies\": {\n    \"typescript\": \"~5.2.2\"\n  }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/packages/sd-cli/package.json b/packages/sd-cli/package.json
+--- a/packages/sd-cli/package.json	(revision 9de8ec5d0e10ba63f51f0f71ba53581daaa89b51)
++++ b/packages/sd-cli/package.json	(date 1702980719979)
+@@ -1,6 +1,6 @@
+ {
+   "name": "@simplysm/sd-cli",
+-  "version": "11.1.16",
++  "version": "11.1.17",
+   "description": "심플리즘 패키지 - CLI",
+   "author": "김석래",
+   "repository": {
+@@ -23,10 +23,10 @@
+     "@angular/compiler-cli": "^17.0.7",
+     "@angular/core": "^17.0.7",
+     "@electron/rebuild": "^3.4.1",
+-    "@simplysm/sd-core-common": "11.1.16",
+-    "@simplysm/sd-core-node": "11.1.16",
+-    "@simplysm/sd-service-server": "11.1.16",
+-    "@simplysm/sd-storage": "11.1.16",
++    "@simplysm/sd-core-common": "11.1.17",
++    "@simplysm/sd-core-node": "11.1.17",
++    "@simplysm/sd-service-server": "11.1.17",
++    "@simplysm/sd-storage": "11.1.17",
+     "browserslist": "^4.22.2",
+     "cordova": "^12.0.0",
+     "electron": "^27.1.3",
+@@ -52,4 +52,4 @@
+   "peerDependencies": {
+     "typescript": "~5.2.2"
+   }
+-}
++}
+\ No newline at end of file
+Index: packages/sd-orm-common/package.json
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>{\n  \"name\": \"@simplysm/sd-orm-common\",\n  \"version\": \"11.1.16\",\n  \"description\": \"심플리즘 패키지 - ORM 모듈 (common)\",\n  \"author\": \"김석래\",\n  \"repository\": {\n    \"type\": \"git\",\n    \"url\": \"https://github.com/kslhunter/simplysm11.git\",\n    \"directory\": \"packages/sd-orm-common\"\n  },\n  \"license\": \"MIT\",\n  \"type\": \"module\",\n  \"main\": \"./dist/index.js\",\n  \"types\": \"./dist/index.d.ts\",\n  \"engines\": {\n    \"node\": \"^18\"\n  },\n  \"dependencies\": {\n    \"@simplysm/sd-core-common\": \"11.1.16\"\n  }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/packages/sd-orm-common/package.json b/packages/sd-orm-common/package.json
+--- a/packages/sd-orm-common/package.json	(revision 9de8ec5d0e10ba63f51f0f71ba53581daaa89b51)
++++ b/packages/sd-orm-common/package.json	(date 1702980719979)
+@@ -1,6 +1,6 @@
+ {
+   "name": "@simplysm/sd-orm-common",
+-  "version": "11.1.16",
++  "version": "11.1.17",
+   "description": "심플리즘 패키지 - ORM 모듈 (common)",
+   "author": "김석래",
+   "repository": {
+@@ -16,6 +16,6 @@
+     "node": "^18"
+   },
+   "dependencies": {
+-    "@simplysm/sd-core-common": "11.1.16"
++    "@simplysm/sd-core-common": "11.1.17"
+   }
+-}
++}
+\ No newline at end of file
+Index: packages/sd-orm-node-mssql/package.json
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>{\n  \"name\": \"@simplysm/sd-orm-node-mssql\",\n  \"version\": \"11.1.16\",\n  \"description\": \"심플리즘 패키지 - MSSQL ORM 모듈 (node)\",\n  \"author\": \"김석래\",\n  \"repository\": {\n    \"type\": \"git\",\n    \"url\": \"https://github.com/kslhunter/simplysm11.git\",\n    \"directory\": \"packages/sd-orm-node-mssql\"\n  },\n  \"license\": \"MIT\",\n  \"type\": \"module\",\n  \"main\": \"./dist/index.js\",\n  \"types\": \"./dist/index.d.ts\",\n  \"engines\": {\n    \"node\": \"^18\"\n  },\n  \"dependencies\": {\n    \"@simplysm/sd-core-common\": \"11.1.16\",\n    \"@simplysm/sd-core-node\": \"11.1.16\",\n    \"@simplysm/sd-orm-common\": \"11.1.16\",\n    \"tedious\": \"^16.6.1\"\n  },\n  \"devDependencies\": {\n    \"@types/tedious\": \"^4.0.14\"\n  }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/packages/sd-orm-node-mssql/package.json b/packages/sd-orm-node-mssql/package.json
+--- a/packages/sd-orm-node-mssql/package.json	(revision 9de8ec5d0e10ba63f51f0f71ba53581daaa89b51)
++++ b/packages/sd-orm-node-mssql/package.json	(date 1702980719978)
+@@ -1,6 +1,6 @@
+ {
+   "name": "@simplysm/sd-orm-node-mssql",
+-  "version": "11.1.16",
++  "version": "11.1.17",
+   "description": "심플리즘 패키지 - MSSQL ORM 모듈 (node)",
+   "author": "김석래",
+   "repository": {
+@@ -16,12 +16,12 @@
+     "node": "^18"
+   },
+   "dependencies": {
+-    "@simplysm/sd-core-common": "11.1.16",
+-    "@simplysm/sd-core-node": "11.1.16",
+-    "@simplysm/sd-orm-common": "11.1.16",
++    "@simplysm/sd-core-common": "11.1.17",
++    "@simplysm/sd-core-node": "11.1.17",
++    "@simplysm/sd-orm-common": "11.1.17",
+     "tedious": "^16.6.1"
+   },
+   "devDependencies": {
+     "@types/tedious": "^4.0.14"
+   }
+-}
++}
+\ No newline at end of file
+Index: packages/sd-angular/package.json
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>{\n  \"name\": \"@simplysm/sd-angular\",\n  \"version\": \"11.1.16\",\n  \"description\": \"심플리즘 패키지 - Angular 모듈 (browser)\",\n  \"author\": \"김석래\",\n  \"repository\": {\n    \"type\": \"git\",\n    \"url\": \"https://github.com/kslhunter/simplysm11.git\",\n    \"directory\": \"packages/sd-angular\"\n  },\n  \"license\": \"MIT\",\n  \"type\": \"module\",\n  \"main\": \"./dist/index.js\",\n  \"types\": \"./dist/index.d.ts\",\n  \"style\": \"./styles.css\",\n  \"engines\": {\n    \"node\": \"^18\"\n  },\n  \"dependencies\": {\n    \"@angular/animations\": \"^17.0.7\",\n    \"@angular/common\": \"^17.0.7\",\n    \"@angular/core\": \"^17.0.7\",\n    \"@angular/platform-browser\": \"^17.0.7\",\n    \"@angular/router\": \"^17.0.7\",\n    \"@fortawesome/angular-fontawesome\": \"^0.14.0\",\n    \"@fortawesome/fontawesome-svg-core\": \"^6.5.1\",\n    \"@fortawesome/pro-duotone-svg-icons\": \"^6.5.1\",\n    \"@fortawesome/pro-light-svg-icons\": \"^6.5.1\",\n    \"@fortawesome/pro-solid-svg-icons\": \"^6.5.1\",\n    \"@simplysm/sd-core-browser\": \"11.1.16\",\n    \"@simplysm/sd-core-common\": \"11.1.16\",\n    \"@simplysm/sd-service-client\": \"11.1.16\",\n    \"@simplysm/sd-service-common\": \"11.1.16\",\n    \"jsbarcode\": \"^3.11.6\",\n    \"marked\": \"^11.1.0\",\n    \"pretendard\": \"^1.3.9\",\n    \"qrcode\": \"^1.5.3\",\n    \"rxjs\": \"^7.8.1\",\n    \"semver\": \"^7.5.4\",\n    \"zone.js\": \"~0.14.2\"\n  },\n  \"devDependencies\": {\n    \"@types/qrcode\": \"^1.5.5\",\n    \"@types/semver\": \"^7.5.6\"\n  }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/packages/sd-angular/package.json b/packages/sd-angular/package.json
+--- a/packages/sd-angular/package.json	(revision 9de8ec5d0e10ba63f51f0f71ba53581daaa89b51)
++++ b/packages/sd-angular/package.json	(date 1702980719979)
+@@ -1,6 +1,6 @@
+ {
+   "name": "@simplysm/sd-angular",
+-  "version": "11.1.16",
++  "version": "11.1.17",
+   "description": "심플리즘 패키지 - Angular 모듈 (browser)",
+   "author": "김석래",
+   "repository": {
+@@ -27,10 +27,10 @@
+     "@fortawesome/pro-duotone-svg-icons": "^6.5.1",
+     "@fortawesome/pro-light-svg-icons": "^6.5.1",
+     "@fortawesome/pro-solid-svg-icons": "^6.5.1",
+-    "@simplysm/sd-core-browser": "11.1.16",
+-    "@simplysm/sd-core-common": "11.1.16",
+-    "@simplysm/sd-service-client": "11.1.16",
+-    "@simplysm/sd-service-common": "11.1.16",
++    "@simplysm/sd-core-browser": "11.1.17",
++    "@simplysm/sd-core-common": "11.1.17",
++    "@simplysm/sd-service-client": "11.1.17",
++    "@simplysm/sd-service-common": "11.1.17",
+     "jsbarcode": "^3.11.6",
+     "marked": "^11.1.0",
+     "pretendard": "^1.3.9",
+@@ -43,4 +43,4 @@
+     "@types/qrcode": "^1.5.5",
+     "@types/semver": "^7.5.6"
+   }
+-}
++}
+\ No newline at end of file
+Index: packages/sd-orm-node/package.json
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>{\n  \"name\": \"@simplysm/sd-orm-node\",\n  \"version\": \"11.1.16\",\n  \"description\": \"심플리즘 패키지 - ORM 모듈 (node)\",\n  \"author\": \"김석래\",\n  \"repository\": {\n    \"type\": \"git\",\n    \"url\": \"https://github.com/kslhunter/simplysm11.git\",\n    \"directory\": \"packages/sd-orm-node\"\n  },\n  \"license\": \"MIT\",\n  \"type\": \"module\",\n  \"main\": \"./dist/index.js\",\n  \"types\": \"./dist/index.d.ts\",\n  \"engines\": {\n    \"node\": \"^18\"\n  },\n  \"dependencies\": {\n    \"@simplysm/sd-core-common\": \"11.1.16\",\n    \"@simplysm/sd-core-node\": \"11.1.16\",\n    \"@simplysm/sd-orm-common\": \"11.1.16\"\n  },\n  \"peerDependencies\": {\n    \"@simplysm/sd-orm-node-mssql\": \"11.1.16\",\n    \"@simplysm/sd-orm-node-mysql\": \"11.1.16\",\n    \"@simplysm/sd-orm-node-sqlite\": \"11.1.16\"\n  },\n  \"peerDependenciesMeta\": {\n    \"@simplysm/sd-orm-node-mssql\": {\n      \"optional\": true\n    },\n    \"@simplysm/sd-orm-node-mysql\": {\n      \"optional\": true\n    },\n    \"@simplysm/sd-orm-node-sqlite\": {\n      \"optional\": true\n    }\n  }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/packages/sd-orm-node/package.json b/packages/sd-orm-node/package.json
+--- a/packages/sd-orm-node/package.json	(revision 9de8ec5d0e10ba63f51f0f71ba53581daaa89b51)
++++ b/packages/sd-orm-node/package.json	(date 1702980719979)
+@@ -1,6 +1,6 @@
+ {
+   "name": "@simplysm/sd-orm-node",
+-  "version": "11.1.16",
++  "version": "11.1.17",
+   "description": "심플리즘 패키지 - ORM 모듈 (node)",
+   "author": "김석래",
+   "repository": {
+@@ -16,14 +16,14 @@
+     "node": "^18"
+   },
+   "dependencies": {
+-    "@simplysm/sd-core-common": "11.1.16",
+-    "@simplysm/sd-core-node": "11.1.16",
+-    "@simplysm/sd-orm-common": "11.1.16"
++    "@simplysm/sd-core-common": "11.1.17",
++    "@simplysm/sd-core-node": "11.1.17",
++    "@simplysm/sd-orm-common": "11.1.17"
+   },
+   "peerDependencies": {
+-    "@simplysm/sd-orm-node-mssql": "11.1.16",
+-    "@simplysm/sd-orm-node-mysql": "11.1.16",
+-    "@simplysm/sd-orm-node-sqlite": "11.1.16"
++    "@simplysm/sd-orm-node-mssql": "11.1.17",
++    "@simplysm/sd-orm-node-mysql": "11.1.17",
++    "@simplysm/sd-orm-node-sqlite": "11.1.17"
+   },
+   "peerDependenciesMeta": {
+     "@simplysm/sd-orm-node-mssql": {
+@@ -36,4 +36,4 @@
+       "optional": true
+     }
+   }
+-}
++}
+\ No newline at end of file
+Index: packages/cordova-util/package.json
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>{\n  \"name\": \"@simplysm/cordova-util\",\n  \"version\": \"11.1.16\",\n  \"description\": \"심플리즘 패키지 - Cordova Utilities\",\n  \"author\": \"김석래\",\n  \"repository\": {\n    \"type\": \"git\",\n    \"url\": \"https://github.com/kslhunter/simplysm11.git\",\n    \"directory\": \"packages/cordova-util\"\n  },\n  \"license\": \"MIT\",\n  \"type\": \"module\",\n  \"main\": \"./dist/index.js\",\n  \"types\": \"./dist/index.d.ts\",\n  \"engines\": {\n    \"node\": \"^18\"\n  },\n  \"dependencies\": {\n    \"@simplysm/sd-core-common\": \"11.1.16\",\n    \"@simplysm/sd-service-client\": \"11.1.16\",\n    \"jszip\": \"^3.10.1\"\n  },\n  \"devDependencies\": {\n    \"@simplysm/cordova-plugin-local-baseurl\": \"11.1.16\",\n    \"@types/cordova\": \"^11.0.3\",\n    \"cordova-plugin-file\": \"^8.0.1\"\n  }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/packages/cordova-util/package.json b/packages/cordova-util/package.json
+--- a/packages/cordova-util/package.json	(revision 9de8ec5d0e10ba63f51f0f71ba53581daaa89b51)
++++ b/packages/cordova-util/package.json	(date 1702980719979)
+@@ -1,6 +1,6 @@
+ {
+   "name": "@simplysm/cordova-util",
+-  "version": "11.1.16",
++  "version": "11.1.17",
+   "description": "심플리즘 패키지 - Cordova Utilities",
+   "author": "김석래",
+   "repository": {
+@@ -16,13 +16,13 @@
+     "node": "^18"
+   },
+   "dependencies": {
+-    "@simplysm/sd-core-common": "11.1.16",
+-    "@simplysm/sd-service-client": "11.1.16",
++    "@simplysm/sd-core-common": "11.1.17",
++    "@simplysm/sd-service-client": "11.1.17",
+     "jszip": "^3.10.1"
+   },
+   "devDependencies": {
+-    "@simplysm/cordova-plugin-local-baseurl": "11.1.16",
++    "@simplysm/cordova-plugin-local-baseurl": "11.1.17",
+     "@types/cordova": "^11.0.3",
+     "cordova-plugin-file": "^8.0.1"
+   }
+-}
++}
+\ No newline at end of file
+Index: packages/sd-excel/package.json
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>{\n  \"name\": \"@simplysm/sd-excel\",\n  \"version\": \"11.1.16\",\n  \"description\": \"심플리즘 패키지 - 엑셀 모듈\",\n  \"author\": \"김석래\",\n  \"repository\": {\n    \"type\": \"git\",\n    \"url\": \"https://github.com/kslhunter/simplysm11.git\",\n    \"directory\": \"packages/sd-excel\"\n  },\n  \"license\": \"MIT\",\n  \"type\": \"module\",\n  \"main\": \"./dist/index.js\",\n  \"types\": \"./dist/index.d.ts\",\n  \"engines\": {\n    \"node\": \"^18\"\n  },\n  \"dependencies\": {\n    \"@simplysm/sd-core-common\": \"11.1.16\",\n    \"jszip\": \"^3.10.1\",\n    \"xlsx\": \"^0.18.5\",\n    \"xml2js\": \"^0.6.2\"\n  },\n  \"devDependencies\": {\n    \"@types/xml2js\": \"^0.4.14\"\n  }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/packages/sd-excel/package.json b/packages/sd-excel/package.json
+--- a/packages/sd-excel/package.json	(revision 9de8ec5d0e10ba63f51f0f71ba53581daaa89b51)
++++ b/packages/sd-excel/package.json	(date 1702980719979)
+@@ -1,6 +1,6 @@
+ {
+   "name": "@simplysm/sd-excel",
+-  "version": "11.1.16",
++  "version": "11.1.17",
+   "description": "심플리즘 패키지 - 엑셀 모듈",
+   "author": "김석래",
+   "repository": {
+@@ -16,7 +16,7 @@
+     "node": "^18"
+   },
+   "dependencies": {
+-    "@simplysm/sd-core-common": "11.1.16",
++    "@simplysm/sd-core-common": "11.1.17",
+     "jszip": "^3.10.1",
+     "xlsx": "^0.18.5",
+     "xml2js": "^0.6.2"
+@@ -24,4 +24,4 @@
+   "devDependencies": {
+     "@types/xml2js": "^0.4.14"
+   }
+-}
++}
+\ No newline at end of file
+Index: packages/sd-orm-node-mysql/package.json
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>{\n  \"name\": \"@simplysm/sd-orm-node-mysql\",\n  \"version\": \"11.1.16\",\n  \"description\": \"심플리즘 패키지 - MYSQL ORM 모듈 (node)\",\n  \"author\": \"김석래\",\n  \"repository\": {\n    \"type\": \"git\",\n    \"url\": \"https://github.com/kslhunter/simplysm11.git\",\n    \"directory\": \"packages/sd-orm-node-mysql\"\n  },\n  \"license\": \"MIT\",\n  \"type\": \"module\",\n  \"main\": \"./dist/index.js\",\n  \"types\": \"./dist/index.d.ts\",\n  \"engines\": {\n    \"node\": \"^18\"\n  },\n  \"dependencies\": {\n    \"@simplysm/sd-core-common\": \"11.1.16\",\n    \"@simplysm/sd-core-node\": \"11.1.16\",\n    \"@simplysm/sd-orm-common\": \"11.1.16\",\n    \"mysql\": \"^2.18.1\"\n  },\n  \"devDependencies\": {\n    \"@types/mysql\": \"^2.15.24\"\n  }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/packages/sd-orm-node-mysql/package.json b/packages/sd-orm-node-mysql/package.json
+--- a/packages/sd-orm-node-mysql/package.json	(revision 9de8ec5d0e10ba63f51f0f71ba53581daaa89b51)
++++ b/packages/sd-orm-node-mysql/package.json	(date 1702980719979)
+@@ -1,6 +1,6 @@
+ {
+   "name": "@simplysm/sd-orm-node-mysql",
+-  "version": "11.1.16",
++  "version": "11.1.17",
+   "description": "심플리즘 패키지 - MYSQL ORM 모듈 (node)",
+   "author": "김석래",
+   "repository": {
+@@ -16,12 +16,12 @@
+     "node": "^18"
+   },
+   "dependencies": {
+-    "@simplysm/sd-core-common": "11.1.16",
+-    "@simplysm/sd-core-node": "11.1.16",
+-    "@simplysm/sd-orm-common": "11.1.16",
++    "@simplysm/sd-core-common": "11.1.17",
++    "@simplysm/sd-core-node": "11.1.17",
++    "@simplysm/sd-orm-common": "11.1.17",
+     "mysql": "^2.18.1"
+   },
+   "devDependencies": {
+     "@types/mysql": "^2.15.24"
+   }
+-}
++}
+\ No newline at end of file
+Index: packages/sd-core-node/package.json
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>{\n  \"name\": \"@simplysm/sd-core-node\",\n  \"version\": \"11.1.16\",\n  \"description\": \"심플리즘 패키지 - 코어 모듈 (node)\",\n  \"author\": \"김석래\",\n  \"repository\": {\n    \"type\": \"git\",\n    \"url\": \"https://github.com/kslhunter/simplysm11.git\",\n    \"directory\": \"packages/sd-core-node\"\n  },\n  \"license\": \"MIT\",\n  \"type\": \"module\",\n  \"main\": \"./dist/index.js\",\n  \"types\": \"./dist/index.d.ts\",\n  \"engines\": {\n    \"node\": \"^18\"\n  },\n  \"dependencies\": {\n    \"@simplysm/sd-core-common\": \"11.1.16\",\n    \"chokidar\": \"^3.5.3\",\n    \"glob\": \"^10.3.10\"\n  },\n  \"devDependencies\": {\n    \"@types/glob\": \"^8.1.0\"\n  }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/packages/sd-core-node/package.json b/packages/sd-core-node/package.json
+--- a/packages/sd-core-node/package.json	(revision 9de8ec5d0e10ba63f51f0f71ba53581daaa89b51)
++++ b/packages/sd-core-node/package.json	(date 1702980719979)
+@@ -1,6 +1,6 @@
+ {
+   "name": "@simplysm/sd-core-node",
+-  "version": "11.1.16",
++  "version": "11.1.17",
+   "description": "심플리즘 패키지 - 코어 모듈 (node)",
+   "author": "김석래",
+   "repository": {
+@@ -16,11 +16,11 @@
+     "node": "^18"
+   },
+   "dependencies": {
+-    "@simplysm/sd-core-common": "11.1.16",
++    "@simplysm/sd-core-common": "11.1.17",
+     "chokidar": "^3.5.3",
+     "glob": "^10.3.10"
+   },
+   "devDependencies": {
+     "@types/glob": "^8.1.0"
+   }
+-}
++}
+\ No newline at end of file
+Index: packages/sd-service-client/package.json
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>{\n  \"name\": \"@simplysm/sd-service-client\",\n  \"version\": \"11.1.16\",\n  \"description\": \"심플리즘 패키지 - 서비스 모듈 (client)\",\n  \"author\": \"김석래\",\n  \"repository\": {\n    \"type\": \"git\",\n    \"url\": \"https://github.com/kslhunter/simplysm11.git\",\n    \"directory\": \"packages/sd-service-client\"\n  },\n  \"license\": \"MIT\",\n  \"type\": \"module\",\n  \"main\": \"./dist/index.js\",\n  \"types\": \"./dist/index.d.ts\",\n  \"engines\": {\n    \"node\": \"^18\"\n  },\n  \"dependencies\": {\n    \"@simplysm/sd-core-common\": \"11.1.16\",\n    \"@simplysm/sd-orm-common\": \"11.1.16\",\n    \"@simplysm/sd-service-common\": \"11.1.16\",\n    \"jszip\": \"^3.10.1\"\n  }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/packages/sd-service-client/package.json b/packages/sd-service-client/package.json
+--- a/packages/sd-service-client/package.json	(revision 9de8ec5d0e10ba63f51f0f71ba53581daaa89b51)
++++ b/packages/sd-service-client/package.json	(date 1702980719978)
+@@ -1,6 +1,6 @@
+ {
+   "name": "@simplysm/sd-service-client",
+-  "version": "11.1.16",
++  "version": "11.1.17",
+   "description": "심플리즘 패키지 - 서비스 모듈 (client)",
+   "author": "김석래",
+   "repository": {
+@@ -16,9 +16,9 @@
+     "node": "^18"
+   },
+   "dependencies": {
+-    "@simplysm/sd-core-common": "11.1.16",
+-    "@simplysm/sd-orm-common": "11.1.16",
+-    "@simplysm/sd-service-common": "11.1.16",
++    "@simplysm/sd-core-common": "11.1.17",
++    "@simplysm/sd-orm-common": "11.1.17",
++    "@simplysm/sd-service-common": "11.1.17",
+     "jszip": "^3.10.1"
+   }
+-}
++}
+\ No newline at end of file
+Index: packages/sd-service-common/package.json
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>{\n  \"name\": \"@simplysm/sd-service-common\",\n  \"version\": \"11.1.16\",\n  \"description\": \"심플리즘 패키지 - 서비스 모듈 (common)\",\n  \"author\": \"김석래\",\n  \"repository\": {\n    \"type\": \"git\",\n    \"url\": \"https://github.com/kslhunter/simplysm11.git\",\n    \"directory\": \"packages/sd-service-common\"\n  },\n  \"license\": \"MIT\",\n  \"type\": \"module\",\n  \"main\": \"./dist/index.js\",\n  \"types\": \"./dist/index.d.ts\",\n  \"engines\": {\n    \"node\": \"^18\"\n  }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/packages/sd-service-common/package.json b/packages/sd-service-common/package.json
+--- a/packages/sd-service-common/package.json	(revision 9de8ec5d0e10ba63f51f0f71ba53581daaa89b51)
++++ b/packages/sd-service-common/package.json	(date 1702980719978)
+@@ -1,6 +1,6 @@
+ {
+   "name": "@simplysm/sd-service-common",
+-  "version": "11.1.16",
++  "version": "11.1.17",
+   "description": "심플리즘 패키지 - 서비스 모듈 (common)",
+   "author": "김석래",
+   "repository": {
+@@ -15,4 +15,4 @@
+   "engines": {
+     "node": "^18"
+   }
+-}
++}
+\ No newline at end of file
+Index: packages/sd-core-common/package.json
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>{\n  \"name\": \"@simplysm/sd-core-common\",\n  \"version\": \"11.1.16\",\n  \"description\": \"심플리즘 패키지 - 코어 모듈 (common)\",\n  \"author\": \"김석래\",\n  \"repository\": {\n    \"type\": \"git\",\n    \"url\": \"https://github.com/kslhunter/simplysm11.git\",\n    \"directory\": \"packages/sd-core-common\"\n  },\n  \"license\": \"MIT\",\n  \"type\": \"module\",\n  \"main\": \"./dist/index.js\",\n  \"types\": \"./dist/index.d.ts\",\n  \"engines\": {\n    \"node\": \"^18\"\n  },\n  \"dependencies\": {\n    \"reflect-metadata\": \"^0.2.1\"\n  }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/packages/sd-core-common/package.json b/packages/sd-core-common/package.json
+--- a/packages/sd-core-common/package.json	(revision 9de8ec5d0e10ba63f51f0f71ba53581daaa89b51)
++++ b/packages/sd-core-common/package.json	(date 1702980719979)
+@@ -1,6 +1,6 @@
+ {
+   "name": "@simplysm/sd-core-common",
+-  "version": "11.1.16",
++  "version": "11.1.17",
+   "description": "심플리즘 패키지 - 코어 모듈 (common)",
+   "author": "김석래",
+   "repository": {
+@@ -18,4 +18,4 @@
+   "dependencies": {
+     "reflect-metadata": "^0.2.1"
+   }
+-}
++}
+\ No newline at end of file
+Index: packages/sd-service-server/package.json
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>{\n  \"name\": \"@simplysm/sd-service-server\",\n  \"version\": \"11.1.16\",\n  \"description\": \"심플리즘 패키지 - 서비스 모듈 (서버)\",\n  \"author\": \"김석래\",\n  \"repository\": {\n    \"type\": \"git\",\n    \"url\": \"https://github.com/kslhunter/simplysm11.git\",\n    \"directory\": \"packages/sd-service-server\"\n  },\n  \"license\": \"MIT\",\n  \"type\": \"module\",\n  \"main\": \"./dist/index.js\",\n  \"types\": \"./dist/index.d.ts\",\n  \"engines\": {\n    \"node\": \"^18\"\n  },\n  \"dependencies\": {\n    \"@simplysm/sd-core-common\": \"11.1.16\",\n    \"@simplysm/sd-core-node\": \"11.1.16\",\n    \"@simplysm/sd-orm-common\": \"11.1.16\",\n    \"@simplysm/sd-orm-node\": \"11.1.16\",\n    \"@simplysm/sd-service-common\": \"11.1.16\",\n    \"@types/connect\": \"^3.4.38\",\n    \"bufferutil\": \"^4.0.8\",\n    \"connect\": \"^3.7.0\",\n    \"mime\": \"^4.0.1\",\n    \"nodemailer\": \"^6.9.7\",\n    \"semver\": \"^7.5.4\",\n    \"utf-8-validate\": \"^6.0.3\",\n    \"ws\": \"^8.15.1\"\n  },\n  \"devDependencies\": {\n    \"@types/mime\": \"^3.0.4\",\n    \"@types/nodemailer\": \"^6.4.14\",\n    \"@types/ws\": \"^8.5.10\"\n  }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/packages/sd-service-server/package.json b/packages/sd-service-server/package.json
+--- a/packages/sd-service-server/package.json	(revision 9de8ec5d0e10ba63f51f0f71ba53581daaa89b51)
++++ b/packages/sd-service-server/package.json	(date 1702980719978)
+@@ -1,6 +1,6 @@
+ {
+   "name": "@simplysm/sd-service-server",
+-  "version": "11.1.16",
++  "version": "11.1.17",
+   "description": "심플리즘 패키지 - 서비스 모듈 (서버)",
+   "author": "김석래",
+   "repository": {
+@@ -16,11 +16,11 @@
+     "node": "^18"
+   },
+   "dependencies": {
+-    "@simplysm/sd-core-common": "11.1.16",
+-    "@simplysm/sd-core-node": "11.1.16",
+-    "@simplysm/sd-orm-common": "11.1.16",
+-    "@simplysm/sd-orm-node": "11.1.16",
+-    "@simplysm/sd-service-common": "11.1.16",
++    "@simplysm/sd-core-common": "11.1.17",
++    "@simplysm/sd-core-node": "11.1.17",
++    "@simplysm/sd-orm-common": "11.1.17",
++    "@simplysm/sd-orm-node": "11.1.17",
++    "@simplysm/sd-service-common": "11.1.17",
+     "@types/connect": "^3.4.38",
+     "bufferutil": "^4.0.8",
+     "connect": "^3.7.0",
+@@ -35,4 +35,4 @@
+     "@types/nodemailer": "^6.4.14",
+     "@types/ws": "^8.5.10"
+   }
+-}
++}
+\ No newline at end of file
+Index: packages/eslint-plugin/package.json
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>{\n  \"name\": \"@simplysm/eslint-plugin\",\n  \"version\": \"11.1.16\",\n  \"description\": \"심플리즘 패키지 - ESLINT 플러그인\",\n  \"author\": \"김석래\",\n  \"repository\": {\n    \"type\": \"git\",\n    \"url\": \"https://github.com/kslhunter/simplysm11.git\",\n    \"directory\": \"packages/eslint-plugin\"\n  },\n  \"license\": \"MIT\",\n  \"type\": \"module\",\n  \"main\": \"src/index.cjs\",\n  \"engines\": {\n    \"node\": \"^18\"\n  },\n  \"dependencies\": {\n    \"@angular-eslint/eslint-plugin\": \"^17.1.1\",\n    \"@angular-eslint/eslint-plugin-template\": \"^17.1.1\",\n    \"@angular-eslint/template-parser\": \"^17.1.1\",\n    \"@typescript-eslint/eslint-plugin\": \"^6.15.0\",\n    \"@typescript-eslint/experimental-utils\": \"^5.62.0\",\n    \"@typescript-eslint/parser\": \"^6.15.0\",\n    \"eslint\": \"^8.56.0\",\n    \"eslint-import-resolver-typescript\": \"^3.6.1\",\n    \"eslint-module-utils\": \"^2.8.0\",\n    \"eslint-plugin-import\": \"^2.29.1\",\n    \"typescript\": \"~5.2.2\"\n  }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/packages/eslint-plugin/package.json b/packages/eslint-plugin/package.json
+--- a/packages/eslint-plugin/package.json	(revision 9de8ec5d0e10ba63f51f0f71ba53581daaa89b51)
++++ b/packages/eslint-plugin/package.json	(date 1702980719979)
+@@ -1,6 +1,6 @@
+ {
+   "name": "@simplysm/eslint-plugin",
+-  "version": "11.1.16",
++  "version": "11.1.17",
+   "description": "심플리즘 패키지 - ESLINT 플러그인",
+   "author": "김석래",
+   "repository": {
+@@ -27,4 +27,4 @@
+     "eslint-plugin-import": "^2.29.1",
+     "typescript": "~5.2.2"
+   }
+-}
++}
+\ No newline at end of file

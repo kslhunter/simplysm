@@ -4,12 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a5909e33-fd1f-4a18-a2ac-5581a953e90d" name="Changes" comment="#535">
+    <list default="true" id="a5909e33-fd1f-4a18-a2ac-5581a953e90d" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSheetControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSheetControl.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdNgBundler.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdNgBundler.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/builders/SdCliClientBuilder.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/builders/SdCliClientBuilder.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/bundle-plugins/sdNgPlugin.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/bundle-plugins/sdNgPlugin.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -215,6 +212,7 @@
     <MESSAGE value="#514" />
     <MESSAGE value="#510" />
     <MESSAGE value="#535" />
-    <option name="LAST_COMMIT_MESSAGE" value="#535" />
+    <MESSAGE value="#531" />
+    <option name="LAST_COMMIT_MESSAGE" value="#531" />
   </component>
 </project>
