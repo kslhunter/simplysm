@@ -132,7 +132,7 @@ export class SdCliClientBuilder extends EventEmitter {
     this._debug(`BUILD & CHECK...`);
     const buildResults = await Promise.all(this._builders.map((builder) => builder.bundleAsync()));
     const filePaths = buildResults.mapMany(item => item.filePaths).distinct();
-    // const affectedFilePaths = buildResults.mapMany(item => item.affectedFilePaths).distinct();
+    const affectedFilePaths = buildResults.mapMany(item => item.affectedFilePaths).distinct();
     const results = buildResults.mapMany((item) => item.results).distinct();
 
     this._debug(`LINT...`);
@@ -143,8 +143,8 @@ export class SdCliClientBuilder extends EventEmitter {
       options: parsedTsConfig.options,
       oldProgram: this.#program
     });
-    const pkgFilePaths = filePaths.filter(item => PathUtil.isChildPath(item, this._pkgPath));
-    const lintResults = await SdLinter.lintAsync(pkgFilePaths, this.#program);
+    // const pkgFilePaths = filePaths.filter(item => PathUtil.isChildPath(item, this._pkgPath));
+    const lintResults = await SdLinter.lintAsync(affectedFilePaths.filter(item => PathUtil.isChildPath(item, this._pkgPath)), this.#program);
 
     if (!opt.dev && this._cordova) {
       this._debug("CORDOVA BUILD...");
@@ -160,7 +160,7 @@ export class SdCliClientBuilder extends EventEmitter {
     );
     return {
       watchFilePaths: watchFilePaths,
-      affectedFilePaths: pkgFilePaths,
+      affectedFilePaths: affectedFilePaths,
       buildResults: [...results, ...lintResults]
     };
   }

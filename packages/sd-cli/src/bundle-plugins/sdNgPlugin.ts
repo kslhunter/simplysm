@@ -12,7 +12,8 @@ import browserslist from "browserslist";
 import {StringUtil} from "@simplysm/sd-core-common";
 import {NgtscProgram, OptimizeFor} from "@angular/compiler-cli";
 import {createHash} from "crypto";
-import transformJavaScript from "@angular-devkit/build-angular/src/tools/esbuild/javascript-transformer-worker";
+import {JavaScriptTransformer} from "@angular-devkit/build-angular/src/tools/esbuild/javascript-transformer";
+import os from "os";
 
 export function sdNgPlugin(conf: {
   pkgPath: string;
@@ -36,9 +37,10 @@ export function sdNgPlugin(conf: {
   let resultCache: IResultCache = {
     watchFileSet: new Set<string>(),
     affectedFileSet: new Set<string>(),
-    outputPrepareMap: new Map<string, string>(),
     additionalResultMap: new Map<string, IAdditionalResult>()
   };
+  const tscPrepareMap = new Map<string, string>();
+  const outputCacheMap = new Map<string, Uint8Array>();
 
   let stylesheetBundler: ComponentStylesheetBundler | undefined;
 
@@ -166,6 +168,14 @@ export function sdNgPlugin(conf: {
       //-- compilerHost
       const compilerHost = createCompilerHost();
 
+      //-- js babel transformer
+      const javascriptTransformer = new JavaScriptTransformer({
+        thirdPartySourcemaps: conf.dev,
+        sourcemap: conf.dev,
+        jit: false,
+        advancedOptimizations: true
+      }, os.cpus().length);
+
       //-- vars
 
       //---------------------------
@@ -175,10 +185,12 @@ export function sdNgPlugin(conf: {
         stylesheetBundler!.invalidate(conf.modifiedFileSet);
         for (const modifiedFile of conf.modifiedFileSet) {
           sourceFileCache.delete(modifiedFile);
+          outputCacheMap.delete(modifiedFile);
 
           if (referencingMap.has(modifiedFile)) {
             for (const referencingFile of referencingMap.get(modifiedFile)!) {
               sourceFileCache.delete(referencingFile);
+              outputCacheMap.delete(modifiedFile);
             }
           }
         }
@@ -189,7 +201,6 @@ export function sdNgPlugin(conf: {
         resultCache = {
           watchFileSet: new Set<string>(),
           affectedFileSet: new Set<string>(),
-          outputPrepareMap: new Map<string, string>(),
           additionalResultMap: new Map<string, IAdditionalResult>()
         };
 
@@ -232,14 +243,14 @@ export function sdNgPlugin(conf: {
         // Deps -> refMap
         builder.getSourceFiles().filter(sf => !ngCompiler.ignoreForEmit.has(sf))
           .forEach(sf => {
-            resultCache.watchFileSet.add(sf.fileName);
+            resultCache.watchFileSet.add(path.normalize(sf.fileName));
 
             const deps = ngCompiler.getResourceDependencies(sf);
             for (const dep of deps) {
               const ref = referencingMap.getOrCreate(dep, new Set<string>());
               ref.add(dep);
 
-              resultCache.watchFileSet.add(dep);
+              resultCache.watchFileSet.add(path.normalize(dep));
             }
           });
 
@@ -293,7 +304,7 @@ export function sdNgPlugin(conf: {
             }
 
             ngCompiler.incrementalCompilation.recordSuccessfulEmit(sourceFile);
-            resultCache.outputPrepareMap.set(path.normalize(sourceFile.fileName), text);
+            tscPrepareMap.set(path.normalize(sourceFile.fileName), text);
           }, undefined, undefined, ngProgram.compiler.prepareEmit().transformers);
 
           if (!affectedFileResult) {
@@ -318,23 +329,28 @@ export function sdNgPlugin(conf: {
       });
 
       build.onLoad({filter: /\.ts$/}, async (args) => {
-        const contents = resultCache.outputPrepareMap.get(path.normalize(args.path));
+        resultCache.watchFileSet.add(path.normalize(args.path));
+
+        const output = outputCacheMap.get(path.normalize(args.path));
+        if (output != null) {
+          return {contents: output, loader: "js"};
+        }
+
+        const contents = tscPrepareMap.get(path.normalize(args.path));
 
         const {sideEffects} = await build.resolve(args.path, {
           kind: 'import-statement',
           resolveDir: build.initialOptions.absWorkingDir ?? '',
         });
 
-        const newContents = await transformJavaScript["default"]({
-          filename: args.path,
-          data: contents!,
-          sourcemap: conf.dev,
-          thirdPartySourcemaps: conf.dev,
-          advancedOptimizations: true,
-          skipLinker: true,
-          sideEffects,
-          jit: false
-        });
+        const newContents = await javascriptTransformer.transformData(
+          args.path,
+          contents!,
+          true,
+          sideEffects
+        );
+
+        outputCacheMap.set(path.normalize(args.path), newContents);
 
         return {contents: newContents, loader: "js"};
       });
@@ -342,23 +358,27 @@ export function sdNgPlugin(conf: {
       build.onLoad(
         {filter: /\.[cm]?js$/},
         async (args) => {
+          resultCache.watchFileSet.add(path.normalize(args.path));
+
+          const output = outputCacheMap.get(path.normalize(args.path));
+          if (output != null) {
+            return {contents: output, loader: "js"};
+          }
+
           const {sideEffects} = await build.resolve(args.path, {
             kind: 'import-statement',
             resolveDir: build.initialOptions.absWorkingDir ?? '',
           });
 
-          const contents = await FsUtil.readFileAsync(args.path);
+          // const contents = await FsUtil.readFileAsync(args.path);
 
-          const newContents = await transformJavaScript["default"]({
-            filename: args.path,
-            data: contents!,
-            sourcemap: conf.dev,
-            thirdPartySourcemaps: conf.dev,
-            advancedOptimizations: true,
-            skipLinker: false,
-            sideEffects,
-            jit: false
-          });
+          const newContents = await javascriptTransformer.transformFile(
+            args.path,
+            false,
+            sideEffects
+          );
+
+          outputCacheMap.set(path.normalize(args.path), newContents);
 
           return {
             contents: newContents,
@@ -381,6 +401,8 @@ export function sdNgPlugin(conf: {
         conf.result.affectedFileSet = resultCache.affectedFileSet;
         conf.result.outputFiles = result.outputFiles;
         conf.result.metafile = result.metafile;
+
+        conf.modifiedFileSet.clear();
       });
     }
   };
@@ -389,7 +411,6 @@ export function sdNgPlugin(conf: {
 interface IResultCache {
   watchFileSet: Set<string>;
   affectedFileSet: Set<string>;
-  outputPrepareMap: Map<string, string>;
   additionalResultMap: Map<string, IAdditionalResult>;
 }
 
