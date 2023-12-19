@@ -1082,72 +1082,74 @@ export class SdSheetControl<T> implements DoCheck {
 
   @HostListener("focus.capture.outside", ["$event"])
   onFocusCaptureOutside(event: FocusEvent): void {
-    if (!(event.target instanceof HTMLElement)) return;
+    requestAnimationFrame(() => {
+      if (!(event.target instanceof HTMLElement)) return;
 
-    const sheetContainerEl = this.#elRef.nativeElement.findFirst("._sheet-container")!;
-    const focusRowIndicatorEl = sheetContainerEl.findFirst<HTMLDivElement>("> ._focus-row-indicator")!;
+      const sheetContainerEl = this.#elRef.nativeElement.findFirst("._sheet-container")!;
+      const focusRowIndicatorEl = sheetContainerEl.findFirst<HTMLDivElement>("> ._focus-row-indicator")!;
 
-    const theadEl = sheetContainerEl.findFirst<HTMLTableSectionElement>("> table > thead")!;
-    const fixedHeaderLastDepthEls = theadEl.findAll<HTMLTableCellElement>("> tr > th._last-depth._fixed")!;
+      const theadEl = sheetContainerEl.findFirst<HTMLTableSectionElement>("> table > thead")!;
+      const fixedHeaderLastDepthEls = theadEl.findAll<HTMLTableCellElement>("> tr > th._last-depth._fixed")!;
 
-    const focusCellIndicatorEl = focusRowIndicatorEl.firstElementChild as HTMLElement;
+      const focusCellIndicatorEl = focusRowIndicatorEl.firstElementChild as HTMLElement;
 
-    const tdEl = event.target.tagName.toLowerCase() === "td" ? event.target : event.target.findParent("td");
-    if (!(tdEl instanceof HTMLTableCellElement)) return;
+      const tdEl = event.target.tagName.toLowerCase() === "td" ? event.target : event.target.findParent("td");
+      if (!(tdEl instanceof HTMLTableCellElement)) return;
 
-    const trEl = tdEl.parentElement!;
-    const rowRect = {
-      top: trEl.offsetTop,
-      left: trEl.offsetLeft,
-      width: trEl.offsetWidth,
-      height: trEl.offsetHeight
-    };
-    const cellRect = {
-      left: tdEl.offsetLeft - (tdEl.classList.contains("_fixed") ? sheetContainerEl.scrollLeft : 0),
-      width: tdEl.offsetWidth,
-      height: tdEl.offsetHeight
-    };
-    const noneFixedPosition = {
-      top: theadEl.offsetHeight,
-      left: fixedHeaderLastDepthEls.sum((item) => item.offsetWidth)
-    };
-    const scroll = {
-      top: sheetContainerEl.scrollTop,
-      left: sheetContainerEl.scrollLeft
-    };
+      const trEl = tdEl.parentElement!;
+      const rowRect = {
+        top: trEl.offsetTop,
+        left: trEl.offsetLeft,
+        width: trEl.offsetWidth,
+        height: trEl.offsetHeight
+      };
+      const cellRect = {
+        left: tdEl.offsetLeft - (tdEl.classList.contains("_fixed") ? sheetContainerEl.scrollLeft : 0),
+        width: tdEl.offsetWidth,
+        height: tdEl.offsetHeight
+      };
+      const noneFixedPosition = {
+        top: theadEl.offsetHeight,
+        left: fixedHeaderLastDepthEls.sum((item) => item.offsetWidth)
+      };
+      const scroll = {
+        top: sheetContainerEl.scrollTop,
+        left: sheetContainerEl.scrollLeft
+      };
 
-    Object.assign(focusRowIndicatorEl.style, {
-      display: "block",
-      top: rowRect.top - 2 + "px",
-      left: rowRect.left + "px",
-      width: rowRect.width + "px",
-      height: rowRect.height + 3 + "px"
-    });
-    Object.assign(focusCellIndicatorEl.style, {
-      display: event.target.tagName.toLowerCase() === "td" ? "block" : "none",
-      position: tdEl.classList.contains("_fixed") ? "sticky" : "absolute",
-      left: cellRect.left - 2 + "px",
-      width: cellRect.width + 3 + "px",
-      height: cellRect.height + 3 + "px",
-      opacity: "1"
-    });
-
-    if (!tdEl.classList.contains("_fixed")) {
-      if (rowRect.top - scroll.top < noneFixedPosition.top) {
-        sheetContainerEl.scrollTop = rowRect.top - noneFixedPosition.top;
-      }
-      if (cellRect.left - scroll.left < noneFixedPosition.left) {
-        sheetContainerEl.scrollLeft = cellRect.left - noneFixedPosition.left;
-      }
-    }
-
-    const item = this.displayItemDefs[NumberUtil.parseInt(tdEl.getAttribute("r"))!].item;
-    if (this.autoSelect === "focus" && this.getIsItemSelectable(item)) {
-      this.#ngZone.run(() => {
-        this.#selectItem(item);
-        this.#cdr.markForCheck();
+      Object.assign(focusRowIndicatorEl.style, {
+        display: "block",
+        top: rowRect.top - 2 + "px",
+        left: rowRect.left + "px",
+        width: rowRect.width + "px",
+        height: rowRect.height + 3 + "px"
       });
-    }
+      Object.assign(focusCellIndicatorEl.style, {
+        display: event.target.tagName.toLowerCase() === "td" ? "block" : "none",
+        position: tdEl.classList.contains("_fixed") ? "sticky" : "absolute",
+        left: cellRect.left - 2 + "px",
+        width: cellRect.width + 3 + "px",
+        height: cellRect.height + 3 + "px",
+        opacity: "1"
+      });
+
+      if (!tdEl.classList.contains("_fixed")) {
+        if (rowRect.top - scroll.top < noneFixedPosition.top) {
+          sheetContainerEl.scrollTop = rowRect.top - noneFixedPosition.top;
+        }
+        if (cellRect.left - scroll.left < noneFixedPosition.left) {
+          sheetContainerEl.scrollLeft = cellRect.left - noneFixedPosition.left;
+        }
+      }
+
+      const item = this.displayItemDefs[NumberUtil.parseInt(tdEl.getAttribute("r"))!].item;
+      if (this.autoSelect === "focus" && this.getIsItemSelectable(item)) {
+        this.#ngZone.run(() => {
+          this.#selectItem(item);
+          this.#cdr.markForCheck();
+        });
+      }
+    });
   }
 
   @HostListener("blur.capture.outside", ["$event"])

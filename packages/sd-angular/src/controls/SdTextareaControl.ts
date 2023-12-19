@@ -23,7 +23,8 @@ import {NgIf} from "@angular/common";
     NgIf
   ],
   template: `
-    <div [style]="inputStyle"
+    <div  *ngIf="readonly || disabled"
+          [style]="inputStyle"
          [class]="['_contents', inputClass].filterExists().join(' ')"
          [attr.title]="title ?? placeholder">
       <ng-container *ngIf="value">
@@ -120,11 +121,11 @@ import {NgIf} from "@angular/common";
           display: block;
         }
 
-        > textarea {
-          position: absolute;
-          top: 0;
-          left: 0;
-        }
+        //> textarea {
+        //  position: absolute;
+        //  top: 0;
+        //  left: 0;
+        //}
 
         > textarea,
         > ._contents {
