@@ -401,6 +401,7 @@ export function sdNgPlugin(conf: {
         conf.result.affectedFileSet = resultCache.affectedFileSet;
         conf.result.outputFiles = result.outputFiles;
         conf.result.metafile = result.metafile;
+        conf.result.program = ngProgram!.getTsProgram();
 
         conf.modifiedFileSet.clear();
       });
@@ -426,4 +427,5 @@ export interface INgResultCache {
   affectedFileSet?: Set<string>;
   outputFiles?: esbuild.OutputFile[];
   metafile?: esbuild.Metafile;
+  program?: ts.Program;
 }

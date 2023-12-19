@@ -40,6 +40,7 @@ import {InlineCriticalCssProcessor} from "@angular-devkit/build-angular/src/util
 import {SdNgBundlerContext} from "./SdNgBundlerContext";
 import {INgResultCache, sdNgPlugin} from "../bundle-plugins/sdNgPlugin";
 import {MemoryLoadResultCache} from "@angular-devkit/build-angular/src/tools/esbuild/load-result-cache";
+import ts from "typescript";
 
 export class SdNgBundler {
   // private readonly _sourceFileCache = new SourceFileCache(
@@ -91,6 +92,7 @@ export class SdNgBundler {
   }
 
   public async bundleAsync(): Promise<{
+    program: ts.Program;
     filePaths: string[],
     affectedFilePaths: string[],
     results: ISdCliPackageBuildResult[]
@@ -208,6 +210,7 @@ export class SdNgBundler {
     logger.debug(`[${path.basename(this._opt.pkgPath)}] 번들링중 영향받은 파일`, Array.from(this.#ngResultCache.affectedFileSet!));
 
     return {
+      program: this.#ngResultCache.program!,
       filePaths: Array.from(this.#ngResultCache.watchFileSet!),
       affectedFilePaths: Array.from(this.#ngResultCache.affectedFileSet!),
       results

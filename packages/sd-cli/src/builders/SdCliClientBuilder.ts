@@ -1,19 +1,14 @@
 import {EventEmitter} from "events";
 import {FsUtil, Logger, PathUtil, SdFsWatcher} from "@simplysm/sd-core-node";
-import {
-  ISdCliBuilderResult,
-  ISdCliClientPackageConfig,
-  ISdCliConfig,
-  ISdCliPackageBuildResult,
-  ITsConfig
-} from "../commons";
+import {ISdCliBuilderResult, ISdCliClientPackageConfig, ISdCliConfig, ISdCliPackageBuildResult} from "../commons";
 import {FunctionQueue} from "@simplysm/sd-core-common";
 import path from "path";
 import {SdNgBundler} from "../build-tools/SdNgBundler";
 import {SdCliCordova} from "../build-tools/SdCliCordova";
 import {SdCliNgRoutesFileGenerator} from "../build-tools/SdCliNgRoutesFileGenerator";
 import {SdLinter} from "../build-tools/SdLinter";
-import ts from "typescript";
+
+// import ts from "typescript";
 
 export class SdCliClientBuilder extends EventEmitter {
   private readonly _logger = Logger.get(["simplysm", "sd-cli", "SdCliClientBuilder"]);
@@ -21,7 +16,7 @@ export class SdCliClientBuilder extends EventEmitter {
   private _builders?: SdNgBundler[];
   private _cordova?: SdCliCordova;
 
-  #program?: ts.Program;
+  // #program?: ts.Program;
 
   public constructor(private readonly _projConf: ISdCliConfig,
                      private readonly _pkgPath: string) {
@@ -134,17 +129,18 @@ export class SdCliClientBuilder extends EventEmitter {
     const filePaths = buildResults.mapMany(item => item.filePaths).distinct();
     const affectedFilePaths = buildResults.mapMany(item => item.affectedFilePaths).distinct();
     const results = buildResults.mapMany((item) => item.results).distinct();
+    const firstProgram = buildResults.first()?.program;
 
     this._debug(`LINT...`);
-    const tsConfig = FsUtil.readJson(path.resolve(this._pkgPath, "tsconfig.json")) as ITsConfig;
-    const parsedTsConfig = ts.parseJsonConfigFileContent(tsConfig, ts.sys, this._pkgPath);
-    this.#program = ts.createProgram({
-      rootNames: parsedTsConfig.fileNames,
-      options: parsedTsConfig.options,
-      oldProgram: this.#program
-    });
+    // const tsConfig = FsUtil.readJson(path.resolve(this._pkgPath, "tsconfig.json")) as ITsConfig;
+    // const parsedTsConfig = ts.parseJsonConfigFileContent(tsConfig, ts.sys, this._pkgPath);
+    // this.#program = ts.createProgram({
+    //   rootNames: parsedTsConfig.fileNames,
+    //   options: parsedTsConfig.options,
+    //   oldProgram: this.#program
+    // });
     // const pkgFilePaths = filePaths.filter(item => PathUtil.isChildPath(item, this._pkgPath));
-    const lintResults = await SdLinter.lintAsync(affectedFilePaths.filter(item => PathUtil.isChildPath(item, this._pkgPath)), this.#program);
+    const lintResults = await SdLinter.lintAsync(affectedFilePaths.filter(item => PathUtil.isChildPath(item, this._pkgPath)), firstProgram);
 
     if (!opt.dev && this._cordova) {
       this._debug("CORDOVA BUILD...");

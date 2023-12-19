@@ -989,10 +989,45 @@ export class SdSheetControl<T> implements DoCheck {
     });
 
     this.#sdNgHelper.doCheckOutside((run) => {
+      //-- cell sizing
       run({
         displayItemDefs: [this.displayItemDefs]
       }, () => {
         this.onFixedCellResizeOutside(-2);
+      });
+
+      //-- select indicator
+      run({
+        displayItemDefs: [this.displayItemDefs],
+        selectedItems: [this.selectedItems, "one"]
+      }, () => {
+        const sheetContainerEl = this.#elRef.nativeElement.findFirst<HTMLDivElement>("._sheet-container")!;
+        const selectRowIndicatorContainerEl = sheetContainerEl.findFirst<HTMLDivElement>("> ._select-row-indicator-container")!;
+
+        if (this.selectedItems.length > 0) {
+          const selectedTrRects = this.selectedItems.map((item) => {
+            const r = this.displayItemDefs.findIndex((item1) => item1.item === item);
+            const trEl = sheetContainerEl.findFirst<HTMLTableRowElement>(`> table > tbody > tr[r="${r}"]`);
+            if (trEl === undefined) return undefined;
+
+            return {
+              top: trEl.offsetTop,
+              width: trEl.offsetWidth,
+              height: trEl.offsetHeight
+            };
+          }).filterExists();
+
+          let html = "";
+          for (const selectedTrRect of selectedTrRects) {
+            html += `<div class='_select-row-indicator' style="top: ${selectedTrRect.top}px; height: ${selectedTrRect.height - 1}px; width: ${selectedTrRect.width - 1}px;"></div>`;
+          }
+          selectRowIndicatorContainerEl.innerHTML = html;
+          selectRowIndicatorContainerEl.style.display = "block";
+        }
+        else {
+          selectRowIndicatorContainerEl.innerHTML = "";
+          selectRowIndicatorContainerEl.style.display = "none";
+        }
       });
     });
   }
