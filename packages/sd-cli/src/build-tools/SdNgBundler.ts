@@ -5,7 +5,7 @@ import {
   InitialFileRecord
 } from "@angular-devkit/build-angular/src/tools/esbuild/bundler-context";
 import esbuild, {Metafile} from "esbuild";
-import {FsUtil, PathUtil} from "@simplysm/sd-core-node";
+import {FsUtil, Logger, PathUtil} from "@simplysm/sd-core-node";
 import {fileURLToPath} from "url";
 import {createVirtualModulePlugin} from "@angular-devkit/build-angular/src/tools/esbuild/virtual-module-plugin";
 import {
@@ -95,6 +95,8 @@ export class SdNgBundler {
     affectedFilePaths: string[],
     results: ISdCliPackageBuildResult[]
   }> {
+    const logger = Logger.get(["simplysm", "sd-cli", "SdNgBundler", "bundleAsync"]);
+
     if (!this._contexts) {
       this._contexts = [
         await this._getAppContextAsync(),
@@ -203,47 +205,9 @@ export class SdNgBundler {
       }
     }
 
-    // const filePathSet = new Set<string>([
-    //   ...this._sourceFileCache.typeScriptFileCache.keys(),
-    //   ...this._sourceFileCache.referencedFiles ?? [],
-    //   ...this._sourceFileCache.loadResultCache.watchFiles,
-    //   ...this.#loadFilePathSet
-    // ]);
-
-    //-- watchFilePaths
-    // const watchFilePaths = [
-    //   ...this._sourceFileCache.typeScriptFileCache.keys(),
-    //   ...this._sourceFileCache.referencedFiles ?? [],
-    //   ...this._sourceFileCache.loadResultCache.watchFiles
-    // ].map((item) => path.resolve(item)).distinct();
-
-    //-- affectedSourceFilePaths
-    // let affectedSourceFilePaths: string[];
-    // if (this._sourceFileCache.modifiedFiles.size > 0) {
-    //   affectedSourceFilePaths = Array.from(this._sourceFileCache.modifiedFiles)
-    //     .filter((item) => PathUtil.isChildPath(item, this._opt.pkgPath))
-    //     .map((item) => path.resolve(item))
-    //     .distinct();
-    //
-    //   // const depMap = new Map<string, Set<string>>();
-    //   // for (const bundlingResult of bundlingResults) {
-    //   //   for (const key of bundlingResult.dependencyMap.keys()) {
-    //   //     const depSet = depMap.getOrCreate(key, new Set<string>());
-    //   //     depSet.adds(...bundlingResult.dependencyMap.get(key)!);
-    //   //   }
-    //   // }
-    //   // console.log(
-    //   //   this._sourceFileCache.modifiedFiles,
-    //   //   depMap.get("D:\\workspaces-11\\simplysm-ts\\packages\\client-admin\\src\\providers\\AppDataProvider.ts")
-    //   // );
-    // }
-    // else {
-    //   affectedSourceFilePaths = Array.from(filePathSet).filter((item) => PathUtil.isChildPath(item, this._opt.pkgPath));
-    // }
+    logger.debug(`[${path.basename(this._opt.pkgPath)}] 번들링중 영향받은 파일`, Array.from(this.#ngResultCache.affectedFileSet!));
 
     return {
-      // filePaths: Array.from(filePathSet),
-      // affectedFilePaths: affectedSourceFilePaths,
       filePaths: Array.from(this.#ngResultCache.watchFileSet!),
       affectedFilePaths: Array.from(this.#ngResultCache.affectedFileSet!),
       results

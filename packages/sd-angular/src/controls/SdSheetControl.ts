@@ -1187,8 +1187,10 @@ export class SdSheetControl<T> implements DoCheck {
         }
       }
       else if (event.ctrlKey && event.key === "c") {
-        event.preventDefault();
-        event.target.findFirst("sd-textfield")?.dispatchEvent(new CustomEvent("sd-sheet-cell-copy"));
+        if (!document.getSelection()) {
+          event.preventDefault();
+          event.target.findFirst("sd-textfield")?.dispatchEvent(new CustomEvent("sd-sheet-cell-copy"));
+        }
       }
       else if (event.ctrlKey && event.key === "v") {
         event.preventDefault();

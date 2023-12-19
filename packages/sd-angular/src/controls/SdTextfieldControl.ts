@@ -711,13 +711,17 @@ export class SdTextfieldControl<K extends TSdTextfieldType> implements DoCheck {
 
   @HostListener("sd-sheet-cell-copy")
   async onSdSheetCellCopy() {
-    await navigator.clipboard.writeText(JsonConvert.stringify(this.value));
+    if ("clipboard" in navigator) {
+      await navigator.clipboard.writeText(JsonConvert.stringify(this.value));
+    }
   }
 
   @HostListener("sd-sheet-cell-paste")
   async onSdSheetCellPaste() {
-    this.#setValue(JsonConvert.parse(await navigator.clipboard.readText()));
-    this.#cdr.markForCheck();
+    if ("clipboard" in navigator) {
+      this.#setValue(JsonConvert.parse(await navigator.clipboard.readText()));
+      this.#cdr.markForCheck();
+    }
   }
 }
 
