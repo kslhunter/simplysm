@@ -1,7 +1,10 @@
 import {ISdCliPackageBuildResult} from "../commons";
 import esbuild from "esbuild";
 import path from "path";
-import esbuildPluginTsc from "esbuild-plugin-tsc";
+import ts from "typescript";
+import {FsUtil} from "@simplysm/sd-core-node";
+import {sdLoadedFilesPlugin} from "../bundle-plugins/sdLoadedFilesPlugin";
+import {sdTscPlugin} from "../bundle-plugins/sdTscPlugin";
 
 export class SdTsBundler {
   #context?: esbuild.BuildContext;
@@ -18,6 +21,8 @@ export class SdTsBundler {
     filePaths: string[];
     results: ISdCliPackageBuildResult[];
   }> {
+    const loadFilePathSet = new Set<string>();
+
     if (!this.#context) {
       this.#context = await esbuild.context({
         entryPoints: this._opt.entryPoints,
@@ -73,15 +78,30 @@ const __filename = __fileURLToPath__(import.meta.url);
 const __dirname = __path__.dirname(__filename);`.trim()
         },
         plugins: [
-          esbuildPluginTsc()
+          sdTscPlugin({
+            parsedTsconfig: ts.parseJsonConfigFileContent(
+              FsUtil.readJson(path.resolve(this._opt.pkgPath, "tsconfig.json")),
+              ts.sys,
+              this._opt.pkgPath
+            )
+          }),
+          sdLoadedFilesPlugin({
+            loadedFileSet: loadFilePathSet
+          })
         ]
       });
     }
 
-    const result = await this.#context.rebuild();
+    let result: esbuild.BuildResult | esbuild.BuildFailure;
+    try {
+      result = await this.#context.rebuild();
+    }
+    catch (err) {
+      result = err;
+    }
 
     return {
-      filePaths: Object.keys(result.metafile!.inputs).map(item => path.resolve(process.cwd(), item)),
+      filePaths: Array.from(loadFilePathSet).map(item => path.resolve(item)),
       results: [
         ...result.warnings.map((warn) => ({
           type: "build" as const,

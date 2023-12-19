@@ -125,8 +125,10 @@ import {SdNgHelper} from "../utils/SdNgHelper";
 
       &[sd-no-fade=true] {
         > ._screen {
-          background: transparent;
-          transition: none;
+          body.sd-theme-compact & {
+            background: transparent;
+            transition: none;
+          }
 
           body.sd-theme-modern &,
           body.sd-theme-kiosk &,

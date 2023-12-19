@@ -49,7 +49,7 @@ export interface ISdCliPackageBuildResult {
   code: string | undefined;
   severity: "error" | "warning" | "suggestion" | "message";
   message: string;
-  type: "build" | "lint" | "style" | undefined;
+  type: "build" | "lint" | "style" | "check" | undefined;
 }
 
 export interface ISdCliConfig {

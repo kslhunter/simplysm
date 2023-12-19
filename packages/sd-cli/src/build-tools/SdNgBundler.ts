@@ -1,4 +1,3 @@
-import {createCompilerPlugin} from "@angular-devkit/build-angular/src/tools/esbuild/angular/compiler-plugin";
 import path from "path";
 import {
   BuildOutputFile,
@@ -39,12 +38,17 @@ import {Entrypoint} from "@angular-devkit/build-angular/src/utils/index-file/aug
 import {CrossOrigin} from "@angular-devkit/build-angular";
 import {InlineCriticalCssProcessor} from "@angular-devkit/build-angular/src/utils/index-file/inline-critical-css";
 import {SdNgBundlerContext} from "./SdNgBundlerContext";
-import {SourceFileCache} from "@angular-devkit/build-angular/src/tools/esbuild/angular/source-file-cache";
+import {INgResultCache, sdNgPlugin} from "../bundle-plugins/sdNgPlugin";
+import {MemoryLoadResultCache} from "@angular-devkit/build-angular/src/tools/esbuild/load-result-cache";
 
 export class SdNgBundler {
-  private readonly _sourceFileCache = new SourceFileCache(
-    path.resolve(this._opt.pkgPath, ".cache")
-  );
+  // private readonly _sourceFileCache = new SourceFileCache(
+  //   path.resolve(this._opt.pkgPath, ".cache")
+  // );
+
+  #modifiedFileSet = new Set<string>();
+  #ngResultCache: Partial<INgResultCache> = {};
+  #styleLoadResultCache = new MemoryLoadResultCache();
 
   private _contexts: SdNgBundlerContext[] | undefined;
 
@@ -58,6 +62,8 @@ export class SdNgBundler {
   private readonly _indexHtmlFilePath: string;
   private readonly _pkgName: string;
   private readonly _baseHref: string;
+
+  // #loadFilePathSet = new Set<string>();
 
   public constructor(private readonly _opt: {
     dev: boolean;
@@ -77,8 +83,11 @@ export class SdNgBundler {
     this._baseHref = this._opt.builderType === "web" ? `/${this._pkgName}/` : this._opt.dev ? `/${this._pkgName}/${this._opt.builderType}/` : ``;
   }
 
-  public removeCache(filePaths: string[]): void {
-    this._sourceFileCache.invalidate(filePaths);
+  public markForChanges(filePaths: string[]): void {
+    for (const filePath of filePaths) {
+      this.#modifiedFileSet.add(path.normalize(filePath));
+    }
+    // this._sourceFileCache.invalidate(filePaths);
   }
 
   public async bundleAsync(): Promise<{
@@ -98,22 +107,6 @@ export class SdNgBundler {
 
     //-- results
     const results = bundlingResults.mapMany(bundlingResult => bundlingResult.results);
-
-    //-- watchFilePaths
-    const watchFilePaths = [
-      ...this._sourceFileCache.typeScriptFileCache.keys(),
-      ...this._sourceFileCache.referencedFiles ?? [],
-      ...this._sourceFileCache.loadResultCache.watchFiles
-    ].map((item) => path.resolve(item)).distinct();
-
-    //-- affectedSourceFilePaths
-    let affectedSourceFilePaths = watchFilePaths.filter((item) => PathUtil.isChildPath(item, this._opt.pkgPath));
-    if (this._sourceFileCache.modifiedFiles.size > 0) {
-      affectedSourceFilePaths = Array.from(this._sourceFileCache.modifiedFiles)
-        .filter((item) => PathUtil.isChildPath(item, this._opt.pkgPath))
-        .map((item) => path.resolve(item))
-        .distinct();
-    }
 
     //-- executionResult
     const outputFiles: BuildOutputFile[] = bundlingResults.mapMany(item => item.outputFiles?.map(file => convertOutputFile(file, BuildOutputFileType.Root)) ?? []);
@@ -178,7 +171,8 @@ export class SdNgBundler {
         const serviceWorkerResult = await this._genServiceWorkerAsync(outputFiles, assetFiles);
         outputFiles.push(createOutputFileFromText('ngsw.json', serviceWorkerResult.manifest, BuildOutputFileType.Root));
         assetFiles.push(...serviceWorkerResult.assetFiles);
-      } catch (err) {
+      }
+      catch (err) {
         results.push({
           filePath: undefined,
           line: undefined,
@@ -209,9 +203,49 @@ export class SdNgBundler {
       }
     }
 
+    // const filePathSet = new Set<string>([
+    //   ...this._sourceFileCache.typeScriptFileCache.keys(),
+    //   ...this._sourceFileCache.referencedFiles ?? [],
+    //   ...this._sourceFileCache.loadResultCache.watchFiles,
+    //   ...this.#loadFilePathSet
+    // ]);
+
+    //-- watchFilePaths
+    // const watchFilePaths = [
+    //   ...this._sourceFileCache.typeScriptFileCache.keys(),
+    //   ...this._sourceFileCache.referencedFiles ?? [],
+    //   ...this._sourceFileCache.loadResultCache.watchFiles
+    // ].map((item) => path.resolve(item)).distinct();
+
+    //-- affectedSourceFilePaths
+    // let affectedSourceFilePaths: string[];
+    // if (this._sourceFileCache.modifiedFiles.size > 0) {
+    //   affectedSourceFilePaths = Array.from(this._sourceFileCache.modifiedFiles)
+    //     .filter((item) => PathUtil.isChildPath(item, this._opt.pkgPath))
+    //     .map((item) => path.resolve(item))
+    //     .distinct();
+    //
+    //   // const depMap = new Map<string, Set<string>>();
+    //   // for (const bundlingResult of bundlingResults) {
+    //   //   for (const key of bundlingResult.dependencyMap.keys()) {
+    //   //     const depSet = depMap.getOrCreate(key, new Set<string>());
+    //   //     depSet.adds(...bundlingResult.dependencyMap.get(key)!);
+    //   //   }
+    //   // }
+    //   // console.log(
+    //   //   this._sourceFileCache.modifiedFiles,
+    //   //   depMap.get("D:\\workspaces-11\\simplysm-ts\\packages\\client-admin\\src\\providers\\AppDataProvider.ts")
+    //   // );
+    // }
+    // else {
+    //   affectedSourceFilePaths = Array.from(filePathSet).filter((item) => PathUtil.isChildPath(item, this._opt.pkgPath));
+    // }
+
     return {
-      filePaths: watchFilePaths,
-      affectedFilePaths: affectedSourceFilePaths,
+      // filePaths: Array.from(filePathSet),
+      // affectedFilePaths: affectedSourceFilePaths,
+      filePaths: Array.from(this.#ngResultCache.watchFileSet!),
+      affectedFilePaths: Array.from(this.#ngResultCache.affectedFileSet!),
       results
     };
   }
@@ -263,7 +297,8 @@ export class SdNgBundler {
 
         if (value.type === 'script') {
           hints.push({url: key, mode: 'modulepreload' as const});
-        } else if (value.type === 'style') {
+        }
+        else if (value.type === 'style') {
           hints.push({url: key, mode: 'preload' as const, as: 'style'});
         }
       }
@@ -283,7 +318,8 @@ export class SdNgBundler {
 
     if (this._opt.dev) {
       return transformResult;
-    } else {
+    }
+    else {
       const inlineCriticalCssProcessor = new InlineCriticalCssProcessor({
         minify: false,
         readAsset,
@@ -451,29 +487,44 @@ export class SdNgBundler {
           })
         }) as esbuild.Plugin,
         createSourcemapIgnorelistPlugin(),
-        createCompilerPlugin({
-          sourcemap: this._opt.dev,
-          tsconfig: this._tsConfigFilePath,
-          jit: false,
-          advancedOptimizations: true,
-          thirdPartySourcemaps: false,
-          fileReplacements: undefined,
-          sourceFileCache: this._sourceFileCache,
-          loadResultCache: this._sourceFileCache.loadResultCache,
-          incremental: this._opt.dev
-        }, {
-          workspaceRoot: this._opt.pkgPath,
-          optimization: !this._opt.dev,
-          sourcemap: this._opt.dev ? 'inline' : false,
-          outputNames: {bundles: '[name]', media: 'media/[name]'},
-          includePaths: [],
-          externalDependencies: [],
-          target: this._browserTarget,
-          inlineStyleLanguage: 'scss',
-          preserveSymlinks: false,
-          tailwindConfiguration: undefined
-        }) as esbuild.Plugin,
+        sdNgPlugin({
+          modifiedFileSet: this.#modifiedFileSet,
+          dev: this._opt.dev,
+          pkgPath: this._opt.pkgPath,
+          result: this.#ngResultCache
+        }),
+        // createCompilerPlugin({
+        //   sourcemap: this._opt.dev,
+        //   tsconfig: this._tsConfigFilePath,
+        //   jit: false,
+        //   advancedOptimizations: true,
+        //   thirdPartySourcemaps: false,
+        //   fileReplacements: undefined,
+        //   sourceFileCache: this._sourceFileCache,
+        //   loadResultCache: this._sourceFileCache.loadResultCache,
+        //   incremental: this._opt.dev
+        // }, {
+        //   workspaceRoot: this._opt.pkgPath,
+        //   optimization: !this._opt.dev,
+        //   sourcemap: this._opt.dev ? 'inline' : false,
+        //   outputNames: {bundles: '[name]', media: 'media/[name]'},
+        //   includePaths: [],
+        //   externalDependencies: [],
+        //   target: this._browserTarget,
+        //   inlineStyleLanguage: 'scss',
+        //   preserveSymlinks: false,
+        //   tailwindConfiguration: undefined
+        // }) as esbuild.Plugin,
         nodeStdLibBrowserPlugin(nodeStdLibBrowser),
+        // {
+        //   name: "sd-load-file",
+        //   setup: ({onLoad}) => {
+        //     onLoad({filter: /.*/}, (args) => {
+        //       this.#loadFilePathSet.add(args.path);
+        //       return null;
+        //     });
+        //   }
+        // }
       ]
     });
   }
@@ -484,7 +535,7 @@ export class SdNgBundler {
         sourcemap: this._opt.dev,
         includePaths: []
       },
-      this._sourceFileCache.loadResultCache,
+      this.#styleLoadResultCache,
     );
 
     return new SdNgBundlerContext(this._opt.pkgPath, {
@@ -518,7 +569,7 @@ export class SdNgBundler {
         }) as esbuild.Plugin,
         pluginFactory.create(SassStylesheetLanguage) as esbuild.Plugin,
         pluginFactory.create(CssStylesheetLanguage) as esbuild.Plugin,
-        createCssResourcePlugin(this._sourceFileCache.loadResultCache) as esbuild.Plugin,
+        createCssResourcePlugin(this.#styleLoadResultCache) as esbuild.Plugin,
       ],
     });
   }

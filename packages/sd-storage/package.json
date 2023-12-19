@@ -16,7 +16,7 @@
     "node": "^18"
   },
   "dependencies": {
-    "basic-ftp": "^5.0.3",
+    "basic-ftp": "^5.0.4",
     "ssh2-sftp-client": "^9.1.0"
   },
   "devDependencies": {

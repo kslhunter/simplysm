@@ -25,7 +25,7 @@ export class SdCliBuildResultUtil {
       code,
       severity,
       message,
-      type: "build" as const
+      type
     };
   }
 

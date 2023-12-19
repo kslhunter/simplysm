@@ -15,16 +15,16 @@ import {FunctionQueue, ObjectUtil, StringUtil} from "@simplysm/sd-core-common";
 import {SdTsBundler} from "../build-tools/SdTsBundler";
 
 export class SdCliServerBuilder extends EventEmitter {
-  private readonly _logger = Logger.get(["simplysm", "sd-cli", "SdCliServerBuilder"]);
-  private readonly _pkgConf: ISdCliServerPackageConfig;
-  private _builder?: SdTsBundler;
-  private _checker?: SdTsCompiler;
-  private _extModules?: { name: string; exists: boolean }[];
+  #logger = Logger.get(["simplysm", "sd-cli", "SdCliServerBuilder"]);
+  #pkgConf: ISdCliServerPackageConfig;
+  #builder?: SdTsBundler;
+  #checker?: SdTsCompiler;
+  #extModules?: { name: string; exists: boolean }[];
 
   public constructor(private readonly _projConf: ISdCliConfig,
                      private readonly _pkgPath: string) {
     super();
-    this._pkgConf = this._projConf.packages[path.basename(_pkgPath)] as ISdCliServerPackageConfig;
+    this.#pkgConf = this._projConf.packages[path.basename(_pkgPath)] as ISdCliServerPackageConfig;
   }
 
   public override on(event: "change", listener: () => void): this;
@@ -42,7 +42,7 @@ export class SdCliServerBuilder extends EventEmitter {
 
     this._debug("GEN .config...");
     const confDistPath = path.resolve(this._pkgPath, "dist/.config.json");
-    await FsUtil.writeFileAsync(confDistPath, JSON.stringify(this._pkgConf.configs ?? {}, undefined, 2));
+    await FsUtil.writeFileAsync(confDistPath, JSON.stringify(this.#pkgConf.configs ?? {}, undefined, 2));
 
     const result = await this._runAsync({dev: true});
     this.emit("complete", result);
@@ -72,7 +72,7 @@ export class SdCliServerBuilder extends EventEmitter {
 
     this._debug("GEN .config.json...");
     const confDistPath = path.resolve(this._pkgPath, "dist/.config.json");
-    await FsUtil.writeJsonAsync(confDistPath, this._pkgConf.configs ?? {}, {space: 2});
+    await FsUtil.writeJsonAsync(confDistPath, this.#pkgConf.configs ?? {}, {space: 2});
 
     this._debug("GEN package.json...");
     {
@@ -87,7 +87,7 @@ export class SdCliServerBuilder extends EventEmitter {
       delete distNpmConfig.devDependencies;
       delete distNpmConfig.peerDependencies;
 
-      if (this._pkgConf.pm2 && !this._pkgConf.pm2.noStartScript) {
+      if (this.#pkgConf.pm2 && !this.#pkgConf.pm2.noStartScript) {
         distNpmConfig.scripts = {"start": "pm2 start pm2.json"};
       }
 
@@ -128,7 +128,7 @@ Options = UnsafeLegacyRenegotiation`.trim()
     }
 
 
-    if (this._pkgConf.pm2) {
+    if (this.#pkgConf.pm2) {
       this._debug("GEN pm2.json...");
 
       await FsUtil.writeJsonAsync(
@@ -141,9 +141,9 @@ Options = UnsafeLegacyRenegotiation`.trim()
           ignore_watch: [
             "node_modules",
             "www",
-            ...this._pkgConf.pm2.ignoreWatchPaths ?? []
+            ...this.#pkgConf.pm2.ignoreWatchPaths ?? []
           ],
-          ...this._pkgConf.pm2.noInterpreter ? {} : {
+          ...this.#pkgConf.pm2.noInterpreter ? {} : {
             "interpreter": "node@" + process.versions.node,
           },
           interpreter_args: "--openssl-config=openssl.cnf",
@@ -151,7 +151,7 @@ Options = UnsafeLegacyRenegotiation`.trim()
             NODE_ENV: "production",
             TZ: "Asia/Seoul",
             SD_VERSION: npmConfig.version,
-            ...this._pkgConf.env
+            ...this.#pkgConf.env
           },
           arrayProcess: "concat",
           useDelTargetNull: true
@@ -161,11 +161,11 @@ Options = UnsafeLegacyRenegotiation`.trim()
       );
     }
 
-    if (this._pkgConf.iis) {
+    if (this.#pkgConf.iis) {
       this._debug("GEN web.config...");
 
       const iisDistPath = path.resolve(this._pkgPath, "dist/web.config");
-      const serverExeFilePath = this._pkgConf.iis.nodeExeFilePath ?? "C:\\Program Files\\nodejs\\node.exe";
+      const serverExeFilePath = this.#pkgConf.iis.nodeExeFilePath ?? "C:\\Program Files\\nodejs\\node.exe";
       await FsUtil.writeFileAsync(iisDistPath, `
 <configuration>
   <system.webServer>
@@ -200,47 +200,52 @@ Options = UnsafeLegacyRenegotiation`.trim()
   }> {
     this._debug(`BUILD 준비...`);
 
-    this._extModules = this._extModules ?? await this._getExternalModulesAsync();
+    this.#extModules = this.#extModules ?? await this._getExternalModulesAsync();
 
+
+    this._debug(`BUILD...`);
     const tsConfig = FsUtil.readJson(path.resolve(this._pkgPath, "tsconfig.json")) as ITsConfig;
-    this._builder = this._builder ?? new SdTsBundler({
+    this.#builder = this.#builder ?? new SdTsBundler({
       dev: opt.dev,
       pkgPath: this._pkgPath,
       entryPoints: tsConfig.files ? tsConfig.files.map((item) => path.resolve(this._pkgPath, item)) : [
         path.resolve(this._pkgPath, "src/main.ts")
       ],
-      external: this._extModules.map((item) => item.name)
+      external: this.#extModules.map((item) => item.name)
     });
+    const buildResult = await this.#builder.bundleAsync();
 
-    this._checker = this._checker ?? new SdTsCompiler({
+    this._debug("CHECK...");
+    this.#checker = this.#checker ?? new SdTsCompiler({
       pkgPath: this._pkgPath,
       emit: false,
       emitDts: false,
       globalStyle: false
     });
+    const checkResult = await this.#checker.buildAsync();
 
-    this._debug(`BUILD...`);
-    const buildResult = await this._builder.bundleAsync();
+    //-- filePaths
 
-    this._debug("CHECK...");
-    const checkResult = await this._checker.buildAsync();
+    const filePaths = [
+      ...buildResult.filePaths,
+      ...checkResult.filePaths
+    ];
+    const pkgFilePaths = filePaths.filter(item => PathUtil.isChildPath(item, this._pkgPath));
 
-    this._debug(`LINT...`);
-    const lintResults = await SdLinter.lintAsync(checkResult.affectedFilePaths, this._checker.program);
-
-    this._debug(`빌드 완료`);
     const localUpdatePaths = Object.keys(this._projConf.localUpdates ?? {})
       .mapMany((key) => FsUtil.glob(path.resolve(this._pkgPath, "../../node_modules", key)));
-    const watchFilePaths = [
-      ...buildResult.filePaths,
-      ...checkResult.filePaths,
-    ].filter(item =>
+    const watchFilePaths = filePaths.filter(item =>
       PathUtil.isChildPath(item, path.resolve(this._pkgPath, "../")) ||
       localUpdatePaths.some((lu) => PathUtil.isChildPath(item, lu))
     );
+
+    this._debug(`LINT...`);
+    const lintResults = await SdLinter.lintAsync(pkgFilePaths, this.#checker!.program);
+
+    this._debug(`빌드 완료`);
     return {
       watchFilePaths,
-      affectedFilePaths: checkResult.affectedFilePaths,
+      affectedFilePaths: pkgFilePaths, //checkResult.affectedFilePaths,
       buildResults: [...buildResult.results, ...checkResult.results, ...lintResults]
     };
   }
@@ -287,7 +292,7 @@ Options = UnsafeLegacyRenegotiation`.trim()
           });
         }
 
-        if (this._pkgConf.externals?.includes(moduleName)) {
+        if (this.#pkgConf.externals?.includes(moduleName)) {
           results.push({
             name: moduleName,
             exists: true
@@ -317,7 +322,7 @@ Options = UnsafeLegacyRenegotiation`.trim()
           });
         }
 
-        if (this._pkgConf.externals?.includes(optModuleName)) {
+        if (this.#pkgConf.externals?.includes(optModuleName)) {
           results.push({
             name: optModuleName,
             exists: true
@@ -334,6 +339,6 @@ Options = UnsafeLegacyRenegotiation`.trim()
   }
 
   private _debug(msg: string): void {
-    this._logger.debug(`[${path.basename(this._pkgPath)}] ${msg}`);
+    this.#logger.debug(`[${path.basename(this._pkgPath)}] ${msg}`);
   }
 }

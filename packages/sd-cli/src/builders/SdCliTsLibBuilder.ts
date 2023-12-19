@@ -75,15 +75,13 @@ export class SdCliTsLibBuilder extends EventEmitter {
     affectedFilePaths: string[];
     buildResults: ISdCliPackageBuildResult[];
   }> {
-    this._debug(`BUILD 준비...`);
+    this._debug(`BUILD && CHECK...`);
     this._builder = this._builder ?? new SdTsCompiler({
       pkgPath: this._pkgPath,
       emit: true,
       emitDts: true,
       globalStyle: true
     });
-
-    this._debug(`BUILD && CHECK...`);
     const buildAndCheckResult = await this._builder.buildAsync();
 
     this._debug("LINT...");

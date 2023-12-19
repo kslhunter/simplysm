@@ -1,18 +1,27 @@
 import {EventEmitter} from "events";
 import {FsUtil, Logger, PathUtil, SdFsWatcher} from "@simplysm/sd-core-node";
-import {ISdCliBuilderResult, ISdCliClientPackageConfig, ISdCliConfig, ISdCliPackageBuildResult} from "../commons";
+import {
+  ISdCliBuilderResult,
+  ISdCliClientPackageConfig,
+  ISdCliConfig,
+  ISdCliPackageBuildResult,
+  ITsConfig
+} from "../commons";
 import {FunctionQueue} from "@simplysm/sd-core-common";
 import path from "path";
 import {SdNgBundler} from "../build-tools/SdNgBundler";
-import {SdLinter} from "../build-tools/SdLinter";
 import {SdCliCordova} from "../build-tools/SdCliCordova";
 import {SdCliNgRoutesFileGenerator} from "../build-tools/SdCliNgRoutesFileGenerator";
+import {SdLinter} from "../build-tools/SdLinter";
+import ts from "typescript";
 
 export class SdCliClientBuilder extends EventEmitter {
   private readonly _logger = Logger.get(["simplysm", "sd-cli", "SdCliClientBuilder"]);
   private readonly _pkgConf: ISdCliClientPackageConfig;
   private _builders?: SdNgBundler[];
   private _cordova?: SdCliCordova;
+
+  #program?: ts.Program;
 
   public constructor(private readonly _projConf: ISdCliConfig,
                      private readonly _pkgPath: string) {
@@ -31,7 +40,7 @@ export class SdCliClientBuilder extends EventEmitter {
     this._debug("dist 초기화...");
     await FsUtil.removeAsync(path.resolve(this._pkgPath, "dist"));
 
-    this._debug(`GEN index.ts...`);
+    this._debug(`GEN routes.ts...`);
     await SdCliNgRoutesFileGenerator.runAsync(this._pkgPath);
 
     this._debug("GEN .config...");
@@ -41,13 +50,13 @@ export class SdCliClientBuilder extends EventEmitter {
     return await this._runAsync({dev: false});
   }
 
-  public async watchAsync(): Promise<void> {
+  public async watchAsync() {
     this.emit("change");
 
     this._debug("dist 초기화...");
     await FsUtil.removeAsync(path.resolve(this._pkgPath, "dist"));
 
-    this._debug(`WATCH GEN index.ts...`);
+    this._debug(`WATCH GEN routes.ts...`);
     await SdCliNgRoutesFileGenerator.watchAsync(this._pkgPath);
 
     this._debug("GEN .config...");
@@ -72,7 +81,8 @@ export class SdCliClientBuilder extends EventEmitter {
           this.emit("change");
 
           for (const builder of this._builders!) {
-            builder.removeCache(currChangeFiles);
+            // builder.removeCache(currChangeFiles);
+            builder.markForChanges(currChangeFiles);
           }
 
           const watchResult = await this._runAsync({dev: true});
@@ -122,14 +132,19 @@ export class SdCliClientBuilder extends EventEmitter {
     this._debug(`BUILD & CHECK...`);
     const buildResults = await Promise.all(this._builders.map((builder) => builder.bundleAsync()));
     const filePaths = buildResults.mapMany(item => item.filePaths).distinct();
-    const affectedFilePaths = buildResults.mapMany(item => item.affectedFilePaths).distinct();
+    // const affectedFilePaths = buildResults.mapMany(item => item.affectedFilePaths).distinct();
     const results = buildResults.mapMany((item) => item.results).distinct();
 
     this._debug(`LINT...`);
-    const lintResults = await SdLinter.lintAsync(
-      affectedFilePaths,
-      this._pkgPath
-    );
+    const tsConfig = FsUtil.readJson(path.resolve(this._pkgPath, "tsconfig.json")) as ITsConfig;
+    const parsedTsConfig = ts.parseJsonConfigFileContent(tsConfig, ts.sys, this._pkgPath);
+    this.#program = ts.createProgram({
+      rootNames: parsedTsConfig.fileNames,
+      options: parsedTsConfig.options,
+      oldProgram: this.#program
+    });
+    const pkgFilePaths = filePaths.filter(item => PathUtil.isChildPath(item, this._pkgPath));
+    const lintResults = await SdLinter.lintAsync(pkgFilePaths, this.#program);
 
     if (!opt.dev && this._cordova) {
       this._debug("CORDOVA BUILD...");
@@ -139,27 +154,13 @@ export class SdCliClientBuilder extends EventEmitter {
     this._debug(`빌드 완료`);
     const localUpdatePaths = Object.keys(this._projConf.localUpdates ?? {})
       .mapMany((key) => FsUtil.glob(path.resolve(this._pkgPath, "../../node_modules", key)));
-    /*const watchFilePaths = filePaths
-      .map((item) => {
-        if (PathUtil.isChildPath(item, path.resolve(this._pkgPath, "../"))) {
-          return path.resolve(this._pkgPath, "..", path.relative(path.resolve(this._pkgPath, "../"), item).split("\\").slice(0, 2).join("/"), "**!/!*.*");
-        }
-
-        const localUpdatePath = localUpdatePaths.single((lu) => PathUtil.isChildPath(item, lu));
-        if (localUpdatePath != null) {
-          return path.resolve(localUpdatePath, path.relative(localUpdatePath, item).split("\\").slice(0, 1).join("/"), "**!/!*.*");
-        }
-
-        return undefined;
-      }).filterExists().distinct();
-    console.log(watchFilePaths);*/
     const watchFilePaths = filePaths.filter(item =>
       PathUtil.isChildPath(item, path.resolve(this._pkgPath, "../")) ||
       localUpdatePaths.some((lu) => PathUtil.isChildPath(item, lu))
     );
     return {
       watchFilePaths: watchFilePaths,
-      affectedFilePaths: affectedFilePaths,
+      affectedFilePaths: pkgFilePaths,
       buildResults: [...results, ...lintResults]
     };
   }

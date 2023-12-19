@@ -1,10 +1,9 @@
 import {ISdCliPackageBuildResult} from "../commons";
 import {ESLint} from "eslint";
 import ts from "typescript";
-import path from "path";
 
-export class SdLinter {
-  public static async lintAsync(filePaths: string[], programOrPkgPath?: ts.Program | string): Promise<ISdCliPackageBuildResult[]> {
+export abstract class SdLinter {
+  static async lintAsync(filePaths: string[], tsProgram: ts.Program | undefined): Promise<ISdCliPackageBuildResult[]> {
     const sourceFilePaths = filePaths.filter((item) =>
       (!item.endsWith(".d.ts") && item.endsWith(".ts")) ||
       item.endsWith(".js") ||
@@ -16,30 +15,22 @@ export class SdLinter {
       return [];
     }
 
-    const linter = new ESLint(programOrPkgPath !== null ? {
+    const linter = new ESLint(tsProgram !== null ? {
+      cache: false,
       overrideConfig: {
         overrides: [
           {
             files: ["*.ts", "*.tsx"],
             parserOptions: {
-              ...typeof programOrPkgPath === "string" ? {
-                tsconfigRootDir: programOrPkgPath,
-                project: "tsconfig.json"
-              } : {
-                programs: [programOrPkgPath],
-                tsconfigRootDir: null,
-                project: null
-              }
+              programs: [tsProgram],
+              tsconfigRootDir: null,
+              project: null
             },
             settings: {
               "import/resolver": {
                 "typescript": {
-                  ...typeof programOrPkgPath === "string" ? {
-                    project: path.resolve(programOrPkgPath, "tsconfig.json")
-                  } : {
-                    programs: [programOrPkgPath],
-                    project: null
-                  }
+                  programs: [tsProgram],
+                  project: null
                 }
               }
             }
@@ -47,6 +38,7 @@ export class SdLinter {
         ]
       }
     } : undefined);
+
 
     const lintResults = await linter.lintFiles(sourceFilePaths);
 

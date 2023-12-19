@@ -70,7 +70,11 @@ import {NgIf, NgTemplateOutlet} from "@angular/common";
 
       <ng-template #before>
         <sd-select-item *ngIf="(!required && selectMode === 'single') || (useUndefined && selectMode === 'multi')">
-          <span class="tx-theme-grey-default">미지정</span>
+          @if (undefinedTemplateRef) {
+            <ng-template [ngTemplateOutlet]="undefinedTemplateRef"/>
+          } @else {
+            <span class="tx-theme-grey-default">미지정</span>
+          }
         </sd-select-item>
       </ng-template>
 
@@ -91,10 +95,10 @@ export class SdSharedDataSelectControl<M extends "single" | "multi", T extends I
   items: T[] = [];
 
   @Input()
-  value?: M extends "multi" ? T["__valueKey"][] : T["__valueKey"];
+  value?: M extends "multi" ? (T["__valueKey"] | undefined)[] : T["__valueKey"];
 
   @Output()
-  valueChange = new EventEmitter<(this["selectMode"] extends "multi" ? (T["__valueKey"][]) : T["__valueKey"]) | undefined>();
+  valueChange = new EventEmitter<(this["selectMode"] extends "multi" ? (T["__valueKey"] | undefined)[] : T["__valueKey"]) | undefined>();
 
   @Input({transform: coercionBoolean})
   disabled = false;
@@ -122,6 +126,9 @@ export class SdSharedDataSelectControl<M extends "single" | "multi", T extends I
 
   @ContentChild(SdItemOfTemplateDirective, {static: true, read: TemplateRef})
   itemTemplateRef: TemplateRef<SdItemOfTemplateContext<T>> | null = null;
+
+  @ContentChild("undefined", {static: true, read: TemplateRef})
+  undefinedTemplateRef: TemplateRef<void> | null = null;
 
   @Input()
   modalInputParam?: Record<string, ISharedDataModalInputParam>;

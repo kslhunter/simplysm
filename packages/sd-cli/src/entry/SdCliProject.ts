@@ -485,16 +485,19 @@ export class SdCliProject {
     logger.info("모든 빌드가 완료되었습니다.");
   }
 
+  // TODO: npm:piscina??
   private static async _prepareClusterAsync(): Promise<cp.ChildProcess> {
     const logger = Logger.get(["simplysm", "sd-cli", "SdCliProject", "_runBuildClusterAsync"]);
-
     return await new Promise<cp.ChildProcess>(async (resolve, reject) => {
       const cluster = cp.fork(
         fileURLToPath(await import.meta.resolve!("../build-cluster")),
         [],
         {
           stdio: ["pipe", "pipe", "pipe", "ipc"],
-          env: process.env
+          env: {
+            ...process.env,
+            // "NG_BUILD_PARALLEL_TS": "0"
+          }
         }
       );
 
