@@ -1253,7 +1253,7 @@ export class SdSheetControl<T> implements DoCheck {
           event.target.tagName === "TEXTAREA" ||
           event.target.hasAttribute("contenteditable")
         ) {
-          if (!event.altKey) {
+          if (event.ctrlKey) {
             event.preventDefault();
             this.#moveCellIfExists(tdEl, 1, 0, true);
           }
