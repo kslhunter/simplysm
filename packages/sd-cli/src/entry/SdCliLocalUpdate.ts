@@ -70,8 +70,8 @@ export class SdCliLocalUpdate {
         }
       }
 
-      const watchWatchPaths = (await updatePathInfos.mapManyAsync(async (item) => await this._getWatchPathsAsync(item.source))).distinct();
-      watcher.add(watchWatchPaths);
+      const watchFileSet = new Set(await updatePathInfos.mapManyAsync(async (item) => await this._getWatchPathsAsync(item.source)));
+      watcher.add(watchFileSet);
 
       logger.info("로컬 라이브러리 복사 완료");
     });
@@ -112,12 +112,7 @@ export class SdCliLocalUpdate {
   }
 
   private static async _getWatchPathsAsync(sourcePath: string): Promise<string[]> {
-    return await FsUtil.globAsync(path.resolve(sourcePath, "**"), /*{
-      ignore: [
-        "**!/node_modules/!**",
-        "**!/package.json"
-      ]
-    }*/);
+    return await FsUtil.globAsync(path.resolve(sourcePath, "**"));
   }
 }
 

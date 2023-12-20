@@ -6,12 +6,12 @@ export class SdFsWatcher {
     return new SdFsWatcher(paths, options);
   }
 
-  private readonly _watcher: chokidar.FSWatcher;
-  private readonly _watchPathSet: Set<string>;
+  #watcher: chokidar.FSWatcher;
+  #watchPathSet: Set<string>;
 
   private constructor(paths: string[], options?: chokidar.WatchOptions) {
-    this._watchPathSet = new Set<string>(paths);
-    this._watcher = chokidar.watch(Array.from(this._watchPathSet.values()), ObjectUtil.merge({
+    this.#watchPathSet = new Set<string>(paths);
+    this.#watcher = chokidar.watch(Array.from(this.#watchPathSet.values()), ObjectUtil.merge({
       ignoreInitial: true,
       persistent: true
     }, options));
@@ -19,7 +19,7 @@ export class SdFsWatcher {
 
   public onChange(opt: { delay?: number }, cb: (changeInfos: ISdFsWatcherChangeInfo[]) => void | Promise<void>): this {
     const changeInfoMap = new Map<string, TSdFsWatcherEvent>();
-    this._watcher
+    this.#watcher
       .on("all", (event: TSdFsWatcherEvent, filePath: string) => {
         const prevEvent = changeInfoMap.getOrCreate(filePath, event);
         if (prevEvent === "add" && event === "change") {
@@ -50,25 +50,23 @@ export class SdFsWatcher {
     return this;
   }
 
-  public add(paths: string[]): void {
-    const pathSet = new Set<string>(paths);
-
+  public add(pathSet: Set<string>): void {
     for (const path of pathSet) {
-      if (this._watchPathSet.has(path)) continue;
-      this._watchPathSet.add(path);
-      this._watcher.add(path);
+      if (this.#watchPathSet.has(path)) continue;
+      this.#watchPathSet.add(path);
+      this.#watcher.add(path);
     }
 
-    for (const watchPath of this._watchPathSet) {
+    for (const watchPath of this.#watchPathSet) {
       if(!pathSet.has(watchPath)){
-        this._watchPathSet.delete(watchPath);
-        this._watcher.unwatch(watchPath);
+        this.#watchPathSet.delete(watchPath);
+        this.#watcher.unwatch(watchPath);
       }
     }
   }
 
   public async closeAsync(): Promise<void> {
-    await this._watcher.close();
+    await this.#watcher.close();
   }
 }
 

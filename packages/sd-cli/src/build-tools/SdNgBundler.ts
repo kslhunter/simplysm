@@ -93,8 +93,8 @@ export class SdNgBundler {
 
   public async bundleAsync(): Promise<{
     program: ts.Program;
-    filePaths: string[],
-    affectedFilePaths: string[],
+    watchFileSet: Set<string>,
+    affectedFileSet: Set<string>,
     results: ISdCliPackageBuildResult[]
   }> {
     const logger = Logger.get(["simplysm", "sd-cli", "SdNgBundler", "bundleAsync"]);
@@ -211,8 +211,8 @@ export class SdNgBundler {
 
     return {
       program: this.#ngResultCache.program!,
-      filePaths: Array.from(this.#ngResultCache.watchFileSet!),
-      affectedFilePaths: Array.from(this.#ngResultCache.affectedFileSet!),
+      watchFileSet: this.#ngResultCache.watchFileSet!,
+      affectedFileSet: this.#ngResultCache.affectedFileSet!,
       results
     };
   }

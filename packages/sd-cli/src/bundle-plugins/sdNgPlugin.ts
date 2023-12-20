@@ -146,7 +146,7 @@ export function sdNgPlugin(conf: {
   }
 
   return {
-    name: "sd-ng",
+    name: "sd-ng-compiler",
     setup: (build: esbuild.PluginBuild) => {
       //-- stylesheetBundler
       const browserTarget = transformSupportedBrowsersToTargets(browserslist("defaults and fully supports es6-module"));

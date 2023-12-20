@@ -37,7 +37,6 @@ export interface ISdCliBuildClusterResMessage {
 }
 
 export interface ISdCliBuilderResult {
-  port?: number;
   affectedFilePaths: string[];
   buildResults: ISdCliPackageBuildResult[];
 }

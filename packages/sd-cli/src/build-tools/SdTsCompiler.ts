@@ -99,8 +99,8 @@ export class SdTsCompiler {
   }
 
   public async buildAsync(): Promise<{
-    filePaths: string[];
-    affectedFilePaths: string[];
+    watchFileSet: Set<string>;
+    affectedFileSet: Set<string>;
     results: ISdCliPackageBuildResult[];
   }> {
     const markedChanges = this._markedChanges;
@@ -156,7 +156,7 @@ export class SdTsCompiler {
     }
 
     const diagnostics: ts.Diagnostic[] = [];
-    const affectedFilePaths: string[] = [];
+    const affectedFileSet = new Set<string>();
 
     if (this._ngProgram) {
       diagnostics.push(...this._ngProgram.compiler.getOptionDiagnostics());
@@ -201,7 +201,7 @@ export class SdTsCompiler {
       diagnostics.push(...semanticResult.result);
 
       if ("fileName" in affectedSourceFile) {
-        affectedFilePaths.push(path.resolve(affectedSourceFile.fileName));
+        affectedFileSet.add(path.normalize(affectedSourceFile.fileName));
       }
     }
 
@@ -209,21 +209,19 @@ export class SdTsCompiler {
       for (const markedChange of markedChanges) {
         const depsSet = this._styleDepsCache.get(markedChange);
         if (depsSet) {
-          affectedFilePaths.push(...depsSet);
+          affectedFileSet.adds(...depsSet);
         }
       }
-      affectedFilePaths.distinctThis();
     }
 
     const globalStyleFilePath = path.resolve(this._opt.pkgPath, "src/styles.scss");
     if (this._opt.globalStyle && FsUtil.exists(globalStyleFilePath) && markedChanges.includes(globalStyleFilePath)) {
-      affectedFilePaths.push(globalStyleFilePath);
-      affectedFilePaths.distinctThis();
+      affectedFileSet.add(globalStyleFilePath);
     }
 
     this._logger.debug(`[${path.basename(this._opt.pkgPath)}] 영향받는 파일 ${this._opt.emit ? "EMIT" : "CHECK"}...`);
 
-    for (const affectedFilePath of affectedFilePaths) {
+    for (const affectedFilePath of affectedFileSet) {
       if (this._opt.globalStyle && affectedFilePath === globalStyleFilePath) {
         try {
           const content = await FsUtil.readFileAsync(affectedFilePath);
@@ -294,16 +292,16 @@ export class SdTsCompiler {
       }
     }
 
-    this._logger.debug(`[${path.basename(this._opt.pkgPath)}] 영향받는 파일 ${this._opt.emit ? "EMIT" : "CHECK"} 완료`, affectedFilePaths);
+    this._logger.debug(`[${path.basename(this._opt.pkgPath)}] 영향받는 파일 ${this._opt.emit ? "EMIT" : "CHECK"} 완료`, affectedFileSet);
 
     const buildResults = diagnostics.map((item) => SdCliBuildResultUtil.convertFromTsDiag(item, this._opt.emit ? "build" : "check"));
 
     return {
-      filePaths: [
+      watchFileSet: new Set([
         ...Array.from(this._styleDepsCache.keys()),
-        ...this._builder.getSourceFiles().map(item => path.resolve(item.fileName))
-      ],
-      affectedFilePaths: affectedFilePaths,
+        ...this._builder.getSourceFiles().map(item => path.normalize(item.fileName))
+      ]),
+      affectedFileSet: affectedFileSet,
       results: buildResults
     };
   }

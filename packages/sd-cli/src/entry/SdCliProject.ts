@@ -128,7 +128,7 @@ export class SdCliProject {
               pathProxy: {},
               // changeFilePaths: []
             });
-            serverInfo.port = message.result!.port;
+            // serverInfo.port = message.result!.port;
             // serverInfo.changeFilePaths.push(...message.result!.affectedFilePaths);
 
             serverInfo.hasClientChanges = true;

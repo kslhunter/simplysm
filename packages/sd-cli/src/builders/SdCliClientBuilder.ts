@@ -42,7 +42,11 @@ export class SdCliClientBuilder extends EventEmitter {
     const confDistPath = path.resolve(this._pkgPath, "dist/.config.json");
     await FsUtil.writeFileAsync(confDistPath, JSON.stringify(this._pkgConf.configs ?? {}, undefined, 2));
 
-    return await this._runAsync({dev: false});
+    const result = await this._runAsync({dev: false});
+    return {
+      affectedFilePaths: Array.from(result.affectedFileSet),
+      buildResults: result.buildResults
+    };
   }
 
   public async watchAsync() {
@@ -59,13 +63,16 @@ export class SdCliClientBuilder extends EventEmitter {
     await FsUtil.writeFileAsync(confDistPath, JSON.stringify(this._pkgConf.configs ?? {}, undefined, 2));
 
     const result = await this._runAsync({dev: true});
-    this.emit("complete", result);
+    this.emit("complete", {
+      affectedFilePaths: Array.from(result.affectedFileSet),
+      buildResults: result.buildResults
+    });
 
     this._debug("WATCH...");
     let changeFiles: string[] = [];
     const fnQ = new FunctionQueue();
     const watcher = SdFsWatcher
-      .watch(result.watchFilePaths)
+      .watch(Array.from(result.watchFileSet))
       .onChange({delay: 100}, (changeInfos) => {
         changeFiles.push(...changeInfos.map((item) => item.path));
 
@@ -81,9 +88,12 @@ export class SdCliClientBuilder extends EventEmitter {
           }
 
           const watchResult = await this._runAsync({dev: true});
-          this.emit("complete", watchResult);
+          this.emit("complete", {
+            affectedFilePaths: Array.from(watchResult.affectedFileSet),
+            buildResults: watchResult.buildResults
+          });
 
-          watcher.add(watchResult.watchFilePaths);
+          watcher.add(watchResult.watchFileSet);
         });
       });
   }
@@ -91,8 +101,8 @@ export class SdCliClientBuilder extends EventEmitter {
   private async _runAsync(opt: {
     dev: boolean;
   }): Promise<{
-    watchFilePaths: string[];
-    affectedFilePaths: string[];
+    watchFileSet: Set<string>;
+    affectedFileSet: Set<string>;
     buildResults: ISdCliPackageBuildResult[];
   }> {
     const builderTypes = (Object.keys(this._pkgConf.builder ?? {web: {}}) as ("web" | "electron" | "cordova")[]);
@@ -126,8 +136,8 @@ export class SdCliClientBuilder extends EventEmitter {
 
     this._debug(`BUILD & CHECK...`);
     const buildResults = await Promise.all(this._builders.map((builder) => builder.bundleAsync()));
-    const filePaths = buildResults.mapMany(item => item.filePaths).distinct();
-    const affectedFilePaths = buildResults.mapMany(item => item.affectedFilePaths).distinct();
+    const watchFileSet = new Set(buildResults.mapMany(item => Array.from(item.watchFileSet)));
+    const affectedFileSet = new Set(buildResults.mapMany(item => Array.from(item.affectedFileSet)));
     const results = buildResults.mapMany((item) => item.results).distinct();
     const firstProgram = buildResults.first()?.program;
 
@@ -140,7 +150,7 @@ export class SdCliClientBuilder extends EventEmitter {
     //   oldProgram: this.#program
     // });
     // const pkgFilePaths = filePaths.filter(item => PathUtil.isChildPath(item, this._pkgPath));
-    const lintResults = await SdLinter.lintAsync(affectedFilePaths.filter(item => PathUtil.isChildPath(item, this._pkgPath)), firstProgram);
+    const lintResults = await SdLinter.lintAsync(Array.from(affectedFileSet).filter(item => PathUtil.isChildPath(item, this._pkgPath)), firstProgram);
 
     if (!opt.dev && this._cordova) {
       this._debug("CORDOVA BUILD...");
@@ -150,13 +160,13 @@ export class SdCliClientBuilder extends EventEmitter {
     this._debug(`빌드 완료`);
     const localUpdatePaths = Object.keys(this._projConf.localUpdates ?? {})
       .mapMany((key) => FsUtil.glob(path.resolve(this._pkgPath, "../../node_modules", key)));
-    const watchFilePaths = filePaths.filter(item =>
+    const currWatchFileSet = new Set(Array.from(watchFileSet).filter(item =>
       PathUtil.isChildPath(item, path.resolve(this._pkgPath, "../")) ||
       localUpdatePaths.some((lu) => PathUtil.isChildPath(item, lu))
-    );
+    ));
     return {
-      watchFilePaths: watchFilePaths,
-      affectedFilePaths: affectedFilePaths,
+      watchFileSet: currWatchFileSet,
+      affectedFileSet,
       buildResults: [...results, ...lintResults]
     };
   }

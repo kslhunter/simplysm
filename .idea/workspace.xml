@@ -6,6 +6,21 @@
   <component name="ChangeListManager">
     <list default="true" id="a5909e33-fd1f-4a18-a2ac-5581a953e90d" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdLinter.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdLinter.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdNgBundler.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdNgBundler.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdTsBundler.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdServerBundler.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdTsCompiler.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdTsCompiler.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/builders/SdCliClientBuilder.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/builders/SdCliClientBuilder.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/builders/SdCliServerBuilder.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/builders/SdCliServerBuilder.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/builders/SdCliTsLibBuilder.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/builders/SdCliTsLibBuilder.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/bundle-plugins/sdLoadedFilesPlugin.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/bundle-plugins/sdNgPlugin.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/bundle-plugins/sdNgPlugin.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/bundle-plugins/sdTscPlugin.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/bundle-plugins/sdServerPlugin.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/commons.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/commons.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/entry/SdCliLocalUpdate.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/entry/SdCliLocalUpdate.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/entry/SdCliProject.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/entry/SdCliProject.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-core-node/src/utils/SdFsWatcher.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-core-node/src/utils/SdFsWatcher.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -58,41 +73,41 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
-    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;D:/workspaces-7.3/simplysm&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.standard&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.standard&quot;: &quot;&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_interpreter_path&quot;: &quot;node&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;npm.commit.executor&quot;: &quot;Run&quot;,
-    &quot;npm.publish.executor&quot;: &quot;Run&quot;,
-    &quot;npm.simplysm &gt; watch:sd-angular.executor&quot;: &quot;Run&quot;,
-    &quot;npm.watch.executor&quot;: &quot;Run&quot;,
-    &quot;npm.watch:sd-orm-node.executor&quot;: &quot;Run&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settings.ide.settings.new.ui&quot;,
-    &quot;ts.external.directory.path&quot;: &quot;D:\\workspaces-11\\simplysm\\node_modules\\typescript\\lib&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "git-widget-placeholder": "master",
+    "ignore.virus.scanning.warn.message": "true",
+    "last_opened_file_path": "D:/workspaces-11/simplysm-ts",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.standard": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.standard": "",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_interpreter_path": "node",
+    "nodejs_package_manager_path": "npm",
+    "npm.commit.executor": "Run",
+    "npm.publish.executor": "Run",
+    "npm.simplysm > watch:sd-angular.executor": "Run",
+    "npm.watch.executor": "Run",
+    "npm.watch:sd-orm-node.executor": "Run",
+    "settings.editor.selected.configurable": "reference.settings.ide.settings.new.ui",
+    "ts.external.directory.path": "D:\\workspaces-11\\simplysm\\node_modules\\typescript\\lib",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\workspaces-11\simplysm\packages\sd-cli\src\bundle-plugins" />
       <recent name="D:\workspaces-11\simplysm\packages\sd-cli\src\build-tools" />
       <recent name="D:\workspaces-11\simplysm\packages\sd-angular\src\controls" />
       <recent name="D:\workspaces-11\simplysm\_back\231123" />
       <recent name="D:\workspaces-11\simplysm\packages\sd-angular\src\scss" />
-      <recent name="D:\workspaces-11\simplysm\lib" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="D:\workspaces-11\simplysm\packages\sd-angular\src\scss\themes" />
@@ -148,8 +163,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="npm.publish" />
         <item itemvalue="npm.watch" />
+        <item itemvalue="npm.publish" />
         <item itemvalue="npm.commit" />
         <item itemvalue="npm.simplysm &gt; watch:sd-angular" />
         <item itemvalue="Node.js.notosans-maker.js" />
@@ -214,6 +229,7 @@
     <MESSAGE value="#531" />
     <MESSAGE value="#529" />
     <MESSAGE value="#530" />
-    <option name="LAST_COMMIT_MESSAGE" value="#530" />
+    <MESSAGE value="." />
+    <option name="LAST_COMMIT_MESSAGE" value="." />
   </component>
 </project>

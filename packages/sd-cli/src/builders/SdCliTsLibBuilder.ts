@@ -35,7 +35,11 @@ export class SdCliTsLibBuilder extends EventEmitter {
       await SdCliIndexFileGenerator.runAsync(this._pkgPath, this._pkgConf.polyfills);
     }
 
-    return await this._runAsync();
+    const result = await this._runAsync();
+    return {
+      affectedFilePaths: Array.from(result.affectedFileSet),
+      buildResults: result.buildResults
+    };
   }
 
   public async watchAsync(): Promise<void> {
@@ -50,12 +54,15 @@ export class SdCliTsLibBuilder extends EventEmitter {
     }
 
     const result = await this._runAsync();
-    this.emit("complete", result);
+    this.emit("complete", {
+      affectedFilePaths: Array.from(result.affectedFileSet),
+      buildResults: result.buildResults
+    });
 
     this._debug("WATCH...");
     const fnQ = new FunctionQueue();
     const watcher = SdFsWatcher
-      .watch(result.watchFilePaths)
+      .watch(Array.from(result.watchFileSet))
       .onChange({delay: 100,}, (changeInfos) => {
         this._builder!.markChanges(changeInfos.map((item) => item.path));
 
@@ -63,16 +70,19 @@ export class SdCliTsLibBuilder extends EventEmitter {
           this.emit("change");
 
           const watchResult = await this._runAsync();
-          this.emit("complete", watchResult);
+          this.emit("complete", {
+            affectedFilePaths: Array.from(watchResult.affectedFileSet),
+            buildResults: watchResult.buildResults
+          });
 
-          watcher.add(watchResult.watchFilePaths);
+          watcher.add(watchResult.watchFileSet);
         });
       });
   }
 
   private async _runAsync(): Promise<{
-    watchFilePaths: string[];
-    affectedFilePaths: string[];
+    watchFileSet: Set<string>;
+    affectedFileSet: Set<string>;
     buildResults: ISdCliPackageBuildResult[];
   }> {
     this._debug(`BUILD && CHECK...`);
@@ -82,23 +92,23 @@ export class SdCliTsLibBuilder extends EventEmitter {
       emitDts: true,
       globalStyle: true
     });
-    const buildAndCheckResult = await this._builder.buildAsync();
+    const buildResult = await this._builder.buildAsync();
 
     this._debug("LINT...");
-    const lintResults = await SdLinter.lintAsync(buildAndCheckResult.affectedFilePaths, this._builder.program);
+    const lintResults = await SdLinter.lintAsync(Array.from(buildResult.affectedFileSet).filter(item => PathUtil.isChildPath(item, this._pkgPath)), this._builder.program);
 
     this._debug(`빌드 완료`);
     const localUpdatePaths = Object.keys(this._projConf.localUpdates ?? {})
       .mapMany((key) => FsUtil.glob(path.resolve(this._pkgPath, "../../node_modules", key)));
-    const watchFilePaths = buildAndCheckResult.filePaths.filter(item =>
+    const watchFileSet = new Set(Array.from(buildResult.watchFileSet).filter(item =>
       PathUtil.isChildPath(item, path.resolve(this._pkgPath, "../")) ||
       localUpdatePaths.some((lu) => PathUtil.isChildPath(item, lu))
-    );
+    ));
 
     return {
-      watchFilePaths,
-      affectedFilePaths: buildAndCheckResult.affectedFilePaths,
-      buildResults: [...buildAndCheckResult.results, ...lintResults]
+      watchFileSet,
+      affectedFileSet: buildResult.affectedFileSet,
+      buildResults: [...buildResult.results, ...lintResults]
     };
   }
 

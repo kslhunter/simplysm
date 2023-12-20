@@ -3,8 +3,8 @@ import {ESLint} from "eslint";
 import ts from "typescript";
 
 export abstract class SdLinter {
-  static async lintAsync(filePaths: string[], tsProgram: ts.Program | undefined): Promise<ISdCliPackageBuildResult[]> {
-    const sourceFilePaths = filePaths.filter((item) =>
+  static async lintAsync(fileSet: Iterable<string>, tsProgram: ts.Program | undefined): Promise<ISdCliPackageBuildResult[]> {
+    const sourceFilePaths = Array.from(fileSet).filter((item) =>
       (!item.endsWith(".d.ts") && item.endsWith(".ts")) ||
       item.endsWith(".js") ||
       item.endsWith(".cjs") ||

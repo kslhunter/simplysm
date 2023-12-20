@@ -1,13 +1,14 @@
 import {ISdCliPackageBuildResult} from "../commons";
 import esbuild from "esbuild";
 import path from "path";
+import {IServerBundlerResultCache, sdServerPlugin} from "../bundle-plugins/sdServerPlugin";
 import ts from "typescript";
-import {FsUtil} from "@simplysm/sd-core-node";
-import {sdLoadedFilesPlugin} from "../bundle-plugins/sdLoadedFilesPlugin";
-import {sdTscPlugin} from "../bundle-plugins/sdTscPlugin";
 
-export class SdTsBundler {
+export class SdServerBundler {
   #context?: esbuild.BuildContext;
+
+  #modifiedFileSet = new Set<string>();
+  #resultCache: Partial<IServerBundlerResultCache> = {};
 
   constructor(private readonly _opt: {
     dev: boolean;
@@ -17,12 +18,18 @@ export class SdTsBundler {
   }) {
   }
 
+  public markForChanges(filePaths: string[]): void {
+    for (const filePath of filePaths) {
+      this.#modifiedFileSet.add(path.normalize(filePath));
+    }
+  }
+
   async bundleAsync(): Promise<{
-    filePaths: string[];
+    program: ts.Program;
+    watchFileSet: Set<string>;
+    affectedFileSet: Set<string>;
     results: ISdCliPackageBuildResult[];
   }> {
-    const loadFilePathSet = new Set<string>();
-
     if (!this.#context) {
       this.#context = await esbuild.context({
         entryPoints: this._opt.entryPoints,
@@ -65,7 +72,6 @@ export class SdTsBundler {
         },
         platform: "node",
         logLevel: "silent",
-        // packages: "external",
         external: this._opt.external,
         banner: {
           js: `
@@ -78,16 +84,12 @@ const __filename = __fileURLToPath__(import.meta.url);
 const __dirname = __path__.dirname(__filename);`.trim()
         },
         plugins: [
-          sdTscPlugin({
-            parsedTsconfig: ts.parseJsonConfigFileContent(
-              FsUtil.readJson(path.resolve(this._opt.pkgPath, "tsconfig.json")),
-              ts.sys,
-              this._opt.pkgPath
-            )
+          sdServerPlugin({
+            modifiedFileSet: this.#modifiedFileSet,
+            dev: this._opt.dev,
+            pkgPath: this._opt.pkgPath,
+            result: this.#resultCache
           }),
-          sdLoadedFilesPlugin({
-            loadedFileSet: loadFilePathSet
-          })
         ]
       });
     }
@@ -101,7 +103,9 @@ const __dirname = __path__.dirname(__filename);`.trim()
     }
 
     return {
-      filePaths: Array.from(loadFilePathSet).map(item => path.resolve(item)),
+      program: this.#resultCache.program!,
+      watchFileSet: this.#resultCache.watchFileSet!,
+      affectedFileSet: this.#resultCache.affectedFileSet!,
       results: [
         ...result.warnings.map((warn) => ({
           type: "build" as const,
