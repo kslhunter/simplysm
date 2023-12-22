@@ -23,15 +23,19 @@ import {NgIf} from "@angular/common";
     NgIf
   ],
   template: `
-    <div  *ngIf="readonly || disabled"
-          [style]="inputStyle"
+    <div *ngIf="readonly || disabled"
+         [style]="inputStyle"
          [class]="['_contents', inputClass].filterExists().join(' ')"
          [attr.title]="title ?? placeholder">
       <ng-container *ngIf="value">
         <pre>{{ value }}</pre>
       </ng-container>
       <ng-container *ngIf="!value">
-        <span class="tx-trans-lighter">{{ placeholder }}</span>
+        @if (placeholder) {
+          <span class="tx-trans-lighter">{{ placeholder }}</span>
+        } @else {
+          &nbsp;
+        }
       </ng-container>
     </div>
     <textarea *ngIf="!readonly && !disabled"
