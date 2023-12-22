@@ -255,6 +255,7 @@ import {SdDockControl} from "./SdDockControl";
           pointer-events: auto;
           opacity: 0;
           @include elevation(4);
+          border: 1px solid var(--theme-grey-lighter);
 
           &:focus {
             @include elevation(16);
