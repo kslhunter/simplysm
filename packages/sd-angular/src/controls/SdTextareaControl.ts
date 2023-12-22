@@ -35,7 +35,7 @@ import {NgIf} from "@angular/common";
       </ng-container>
     </div>
     <textarea *ngIf="!readonly && !disabled"
-              [value]="value"
+              [value]="value ?? ''"
               [attr.placeholder]="placeholder"
               [required]="required"
               [attr.title]="title ?? placeholder"
