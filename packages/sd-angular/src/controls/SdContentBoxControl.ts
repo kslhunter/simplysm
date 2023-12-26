@@ -42,7 +42,7 @@ import {coercionBoolean} from "../utils/commons";
 
         > div {
           border-radius: var(--border-radius-default);
-          overflow: hidden;
+          overflow: auto;
         }
 
         &:not([sd-fill=true]) {

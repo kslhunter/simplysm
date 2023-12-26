@@ -2,7 +2,7 @@ import {ChangeDetectionStrategy, Component, ElementRef, forwardRef, inject} from
 import {SdDropdownControl} from "./SdDropdownControl";
 import {SdEventsDirective} from "../directives/SdEventsDirective";
 
-// TODO: 모바일일때는 창 형식으로 표현
+// TODO: 모바일일때는 모달 형식으로 표현
 @Component({
   selector: "sd-dropdown-popup",
   changeDetection: ChangeDetectionStrategy.OnPush,
