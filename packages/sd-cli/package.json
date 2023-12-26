@@ -29,7 +29,7 @@
     "@simplysm/sd-storage": "11.1.21",
     "browserslist": "^4.22.2",
     "cordova": "^12.0.0",
-    "electron": "^27.2.0",
+    "electron": "^28.1.0",
     "electron-builder": "^24.10.0",
     "esbuild": "^0.19.10",
     "esbuild-plugin-tsc": "^0.4.0",
