@@ -524,6 +524,10 @@ export class SdSelectControl<M extends "single" | "multi", T extends any> implem
     else {
       this.value = value;
     }
+
+    for (const itemControl of this.itemControls) {
+      itemControl.markForCheck();
+    }
   }
 
   protected readonly rowOfListType!: {

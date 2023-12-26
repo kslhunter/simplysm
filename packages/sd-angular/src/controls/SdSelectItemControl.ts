@@ -1,5 +1,6 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   ContentChild,
   ElementRef,
@@ -33,10 +34,10 @@ import {SdCheckboxControl} from "./SdCheckboxControl";
 
     <div class="_content" style="display: inline-block;">
       <ng-container *ngIf="!labelTemplateRef">
-        <ng-content></ng-content>
+        <ng-content/>
       </ng-container>
       <ng-container *ngIf="labelTemplateRef">
-        <ng-template [ngTemplateOutlet]="labelTemplateRef"></ng-template>
+        <ng-template [ngTemplateOutlet]="labelTemplateRef"/>
       </ng-container>
     </div>`,
   styles: [/* language=SCSS */ `
@@ -95,6 +96,7 @@ export class SdSelectItemControl<T> implements OnInit, OnDestroy {
   @ContentChild("label", {static: true})
   labelTemplateRef?: TemplateRef<void>;
 
+  #cdr = inject(ChangeDetectorRef);
   #selectControl: SdSelectControl<any, any> = inject(forwardRef(() => SdSelectControl));
 
   elRef: ElementRef<HTMLElement> = inject(ElementRef);
@@ -142,5 +144,9 @@ export class SdSelectItemControl<T> implements OnInit, OnDestroy {
 
       this.#selectControl.onItemControlClick(this, this.selectMode === "single");
     }
+  }
+
+  markForCheck() {
+    this.#cdr.markForCheck();
   }
 }
