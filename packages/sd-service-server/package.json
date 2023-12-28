@@ -28,7 +28,7 @@
     "nodemailer": "^6.9.7",
     "semver": "^7.5.4",
     "utf-8-validate": "^6.0.3",
-    "ws": "^8.15.1"
+    "ws": "^8.16.0"
   },
   "devDependencies": {
     "@types/mime": "^3.0.4",
