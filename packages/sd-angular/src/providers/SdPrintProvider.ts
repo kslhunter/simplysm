@@ -1,4 +1,4 @@
-import {ApplicationRef, createComponent, inject, Injectable, Type, ViewContainerRef} from "@angular/core";
+import {ApplicationRef, createComponent, inject, Injectable, Type} from "@angular/core";
 
 @Injectable({providedIn: "root"})
 export class SdPrintProvider {
@@ -35,7 +35,7 @@ export class SdPrintProvider {
           compEl.remove();
           styleEl.remove();
           resolve();
-        });
+        }, 300);
       }
       catch (err) {
         reject(err);

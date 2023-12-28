@@ -4,13 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a5909e33-fd1f-4a18-a2ac-5581a953e90d" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_rebase_[Changes]/shelved.patch" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_rebase__Changes_.xml" beforeDir="false" />
+    <list default="true" id="a5909e33-fd1f-4a18-a2ac-5581a953e90d" name="Changes" comment=".">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdModalControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdModalControl.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSheetControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSheetControl.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/providers/SdModalProvider.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/providers/SdModalProvider.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/providers/SdPrintProvider.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/providers/SdPrintProvider.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -87,7 +82,7 @@
     "npm.simplysm > watch:sd-angular.executor": "Run",
     "npm.watch.executor": "Run",
     "npm.watch:sd-orm-node.executor": "Run",
-    "settings.editor.selected.configurable": "reference.settings.ide.settings.new.ui",
+    "settings.editor.selected.configurable": "preferences.sourceCode.JavaScript",
     "ts.external.directory.path": "D:\\workspaces-11\\simplysm\\node_modules\\typescript\\lib",
     "vue.rearranger.settings.migration": "true"
   }
@@ -224,6 +219,7 @@
     <MESSAGE value="#527" />
     <MESSAGE value="#543" />
     <MESSAGE value="#522" />
+    <MESSAGE value="프린트 오류 수정" />
     <MESSAGE value="." />
     <option name="LAST_COMMIT_MESSAGE" value="." />
   </component>
