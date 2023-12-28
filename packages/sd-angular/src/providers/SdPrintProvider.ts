@@ -1,23 +1,17 @@
-import {ApplicationRef, inject, Injectable, Type, ViewContainerRef} from "@angular/core";
+import {ApplicationRef, createComponent, inject, Injectable, Type, ViewContainerRef} from "@angular/core";
 
 @Injectable({providedIn: "root"})
 export class SdPrintProvider {
-  private readonly _appRef = inject(ApplicationRef);
-
-  /*public constructor(private readonly _cfr: ComponentFactoryResolver,
-                     private readonly _injector: Injector,
-                     private readonly _root: SdRootRootProvider) {
-  }*/
+  #appRef = inject(ApplicationRef);
 
   public async printAsync<I>(printType: Type<SdPrintTemplateBase<I>>,
                              param: I,
                              options?: { margin?: string; size?: string }): Promise<void> {
     await new Promise<void>(async (resolve, reject) => {
-      const vcr = this._appRef.injector.get(ViewContainerRef);
-
       try {
-        const compRef = vcr.createComponent(printType);
-        // const compRef = this._cfr.resolveComponentFactory(printType).create(this._injector);
+        const compRef = createComponent(printType, {
+          environmentInjector: this.#appRef.injector
+        });
         const compEl = compRef.location.nativeElement;
         compEl.classList.add("_sd-print-template");
         document.body.appendChild(compEl);
@@ -35,7 +29,7 @@ export class SdPrintProvider {
 
         await compRef.instance.sdOnOpen(param);
 
-        this._appRef.attachView(compRef.hostView);
+        this.#appRef.attachView(compRef.hostView);
         setTimeout(() => {
           window.print();
           compEl.remove();
