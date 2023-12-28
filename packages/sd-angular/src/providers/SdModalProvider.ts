@@ -3,7 +3,7 @@ import {SdModalControl} from "../controls/SdModalControl";
 
 @Injectable({providedIn: "root"})
 export class SdModalProvider {
-  private readonly _appRef = inject(ApplicationRef);
+  #appRef = inject(ApplicationRef);
 
   public modalCount = 0;
 
@@ -24,17 +24,17 @@ export class SdModalProvider {
     return await new Promise<T["__tOutput__"] | undefined>(async (resolve, reject) => {
       try {
         const userModalRef = createComponent(modalType, {
-          environmentInjector: this._appRef.injector
+          environmentInjector: this.#appRef.injector
         });
 
         const modalEntryRef = createComponent(SdModalControl, {
-          environmentInjector: this._appRef.injector,
+          environmentInjector: this.#appRef.injector,
           projectableNodes: [[userModalRef.location.nativeElement]]
         });
 
         const modalEntryEl = modalEntryRef.location.nativeElement as HTMLElement;
 
-        const rootComp = this._appRef.components[0];
+        const rootComp = this.#appRef.components[0];
         const rootCompEl = rootComp.location.nativeElement as HTMLElement;
         rootCompEl.appendChild(modalEntryEl);
 
@@ -73,8 +73,8 @@ export class SdModalProvider {
           }
         });
 
-        this._appRef.attachView(modalEntryRef.hostView);
-        this._appRef.attachView(userModalRef.hostView);
+        this.#appRef.attachView(modalEntryRef.hostView);
+        this.#appRef.attachView(userModalRef.hostView);
 
         this.modalCount++;
         modalEntryRef.instance.open = true;

@@ -44,8 +44,10 @@ import {SdDockControl} from "./SdDockControl";
     <div #dialogEl
          class="_dialog" tabindex="0"
          (keydown.escape)="onDialogEscapeKeydown()"
-         [style.width.px]="(minWidthPx && (minWidthPx > (widthPx || 0))) ? minWidthPx : widthPx"
-         [style.height.px]="(minHeightPx && (minHeightPx > (heightPx || 0))) ? minHeightPx : heightPx"
+         [style.min-width.px]="minWidthPx"
+         [style.min-height.px]="minHeightPx"
+         [style.width.px]="(minWidthPx && widthPx && minWidthPx > widthPx) ? minWidthPx : widthPx"
+         [style.height.px]="(minHeightPx && heightPx && minHeightPx > heightPx) ? minHeightPx : heightPx"
          (focus.outside)="onDialogFocusOutside()"
          (sdResize.outside)="onDialogResizeOutside($event)">
       <sd-dock-container>

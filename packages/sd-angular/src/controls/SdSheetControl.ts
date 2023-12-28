@@ -66,14 +66,15 @@ import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
   template: `
     <sd-busy-container [busy]="busy" type="cube">
       <sd-dock-container [hidden]="busy">
-        <sd-dock *ngIf="(key || displayPageLength > 0) && !hideConfigBar">
+        <sd-dock *ngIf="(key || currPageLength > 0) && !hideConfigBar">
           <div class="flex-row-inline flex-gap-sm">
             <sd-anchor *ngIf="key" (click)="onConfigButtonClick()">
               <sd-icon [icon]="faCog" fixedWidth/>
             </sd-anchor>
-            <sd-pagination *ngIf="displayPageLength > 1"
+            <sd-pagination *ngIf="currPageLength > 1"
                            [page]="page"
-                           [pageLength]="displayPageLength"
+                           [pageLength]="currPageLength"
+                           [displayPageLength]="displayPageLength"
                            (pageChange)="onPageChange($event)"></sd-pagination>
           </div>
         </sd-dock>
@@ -552,6 +553,9 @@ export class SdSheetControl<T> implements DoCheck {
   @Input({transform: coercionNumber})
   pageItemCount?: number;
 
+  @Input({transform: coercionNumber})
+  displayPageLength = 10;
+
   /**
    * 항목들
    */
@@ -634,7 +638,7 @@ export class SdSheetControl<T> implements DoCheck {
 
   displayColumnDefs: IColumnDef<T>[] = [];
   displayHeaderDefTable: (IHeaderDef<T> | undefined)[][] = [];
-  displayPageLength = 0;
+  currPageLength = 0;
   displayItemDefs: IItemDef<T>[] = [];
   hasSelectableItem = false;
   isAllItemsSelected = false;
@@ -828,10 +832,10 @@ export class SdSheetControl<T> implements DoCheck {
         pageLength: [this.pageLength]
       }, () => {
         if (this.pageItemCount !== undefined && this.pageItemCount !== 0 && this.items.length > 0) {
-          this.displayPageLength = Math.ceil(this.items.length / this.pageItemCount);
+          this.currPageLength = Math.ceil(this.items.length / this.pageItemCount);
         }
-        else if (this.displayPageLength !== this.pageLength) {
-          this.displayPageLength = this.pageLength;
+        else if (this.currPageLength !== this.pageLength) {
+          this.currPageLength = this.pageLength;
         }
       });
 
