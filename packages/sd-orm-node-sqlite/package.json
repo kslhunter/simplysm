@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-orm-node-sqlite",
-  "version": "11.1.23",
+  "version": "11.1.24",
   "description": "심플리즘 패키지 - SQLITE ORM 모듈 (node)",
   "author": "김석래",
   "repository": {
@@ -16,9 +16,9 @@
     "node": "^18"
   },
   "dependencies": {
-    "@simplysm/sd-core-common": "11.1.23",
-    "@simplysm/sd-core-node": "11.1.23",
-    "@simplysm/sd-orm-common": "11.1.23",
+    "@simplysm/sd-core-common": "11.1.24",
+    "@simplysm/sd-core-node": "11.1.24",
+    "@simplysm/sd-orm-common": "11.1.24",
     "sqlite3": "^5.1.7"
   },
   "devDependencies": {
