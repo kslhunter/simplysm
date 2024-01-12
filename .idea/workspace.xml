@@ -172,8 +172,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="npm.watch" />
         <item itemvalue="npm.publish" />
+        <item itemvalue="npm.watch" />
         <item itemvalue="npm.commit" />
         <item itemvalue="npm.simplysm &gt; watch:sd-angular" />
         <item itemvalue="Node.js.notosans-maker.js" />
