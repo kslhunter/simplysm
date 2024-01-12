@@ -82,7 +82,8 @@ export function sdNgPlugin(conf: {
         outputFiles: stylesheetResult.resourceFiles,
         metafile: stylesheetResult.metafile,
         errors: stylesheetResult.errors,
-        warnings: stylesheetResult.warnings
+        // warnings: stylesheetResult.warnings
+        warnings: []
       });
 
       return StringUtil.isNullOrEmpty(stylesheetResult.contents) ? null : {content: stylesheetResult.contents};

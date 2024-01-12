@@ -49,7 +49,7 @@ export class SdServiceClient extends EventEmitter {
       this._ws.on("message", async (msgJson) => {
         const msg = JsonConvert.parse(msgJson) as TSdServiceS2CMessage;
         // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-        if (location?.reload && msg.name === "client-reload") {
+        if (typeof location !== "undefined" && msg.name === "client-reload") {
           console.log("클라이언트 RELOAD 명령 수신");
           location.reload();
         }
@@ -74,10 +74,11 @@ export class SdServiceClient extends EventEmitter {
           await Wait.time(2000);
         }
 
-        if (this.isConnected || this.isManualClose) {
+        if (this.isConnected) {
           console.log("WebSocket 연결됨");
           return;
         }
+
         try {
           await this._ws.connectAsync();
           console.log("WebSocket 재연결 성공");
@@ -91,8 +92,14 @@ export class SdServiceClient extends EventEmitter {
       this._ws.on("close", async () => {
         this.isConnected = false;
 
-        console.warn("WebSocket 연결 끊김 (재연결 시도)");
-        await reconnectFn();
+        if (this.isManualClose) {
+          console.warn("WebSocket 연결 끊김");
+          this.isManualClose = false;
+        }
+        else {
+          console.warn("WebSocket 연결 끊김 (재연결 시도)");
+          await reconnectFn();
+        }
       });
 
       await this._ws.connectAsync();

@@ -19,6 +19,10 @@
     "@simplysm/sd-core-common": "11.1.23",
     "@simplysm/sd-orm-common": "11.1.23",
     "@simplysm/sd-service-common": "11.1.23",
-    "jszip": "^3.10.1"
+    "jszip": "^3.10.1",
+    "ws": "^8.16.0"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.5.10"
   }
 }

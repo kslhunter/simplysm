@@ -1,8 +1,9 @@
 import {EventEmitter} from "events";
 import {Wait} from "@simplysm/sd-core-common";
+import WsWebSocket from "ws";
 
 export class SdWebSocket extends EventEmitter {
-  private _ws?: WebSocket;
+  private _ws?: WebSocket | WsWebSocket;
 
   public override on(event: "close", listener: () => void): this;
   public override on(event: "message", listener: (data: any) => void): this;
@@ -11,7 +12,7 @@ export class SdWebSocket extends EventEmitter {
   }
 
   public get connected(): boolean {
-    return this._ws?.readyState === WebSocket.OPEN;
+    return this._ws?.readyState === WsWebSocket.OPEN;
   }
 
   public constructor(private readonly _url: string) {
@@ -19,11 +20,11 @@ export class SdWebSocket extends EventEmitter {
   }
 
   public async connectAsync(): Promise<void> {
-    if (this._ws?.readyState === WebSocket.OPEN) return;
+    if (this._ws?.readyState === WsWebSocket.OPEN) return;
 
     // await this.closeAsync();
     await new Promise<void>((resolve, reject) => {
-      this._ws = new WebSocket(this._url);
+      this._ws = typeof window === "undefined" ? new WsWebSocket(this._url) : new WebSocket(this._url);
 
       this._ws.onopen = () => {
         resolve();
@@ -46,12 +47,12 @@ export class SdWebSocket extends EventEmitter {
   public async closeAsync(): Promise<void> {
     if (
       this._ws === undefined ||
-      this._ws.readyState === WebSocket.CLOSING ||
-      this._ws.readyState === WebSocket.CLOSED
+      this._ws.readyState === WsWebSocket.CLOSING ||
+      this._ws.readyState === WsWebSocket.CLOSED
     ) return;
 
     this._ws.close();
-    await Wait.until(() => this._ws!.readyState === WebSocket.CLOSED);
+    await Wait.until(() => this._ws!.readyState === WsWebSocket.CLOSED);
     delete this._ws;
   }
 

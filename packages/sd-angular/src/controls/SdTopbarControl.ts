@@ -122,7 +122,7 @@ import {SdGapControl} from "./SdGapControl";
           line-height: var(--line-height);
           padding: var(--gap-xs) var(--gap-sm);
           background: white;
-          z-index: var(--z-index-sidebar);
+          z-index: calc(var(--z-index-sidebar) - 1);
           @include elevation(2);
           border-bottom-right-radius: var(--border-radius-default);
           border-top-right-radius: var(--border-radius-default);
