@@ -3413,7 +3413,7 @@ __metadata:
   dependencies:
     "@types/ssh2-sftp-client": "npm:^9.0.3"
     basic-ftp: "npm:^5.0.4"
-    ssh2-sftp-client: "npm:^10.0.0"
+    ssh2-sftp-client: "npm:^10.0.2"
   languageName: unknown
   linkType: soft
 
@@ -13655,14 +13655,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ssh2-sftp-client@npm:^10.0.0":
-  version: 10.0.0
-  resolution: "ssh2-sftp-client@npm:10.0.0"
+"ssh2-sftp-client@npm:^10.0.2":
+  version: 10.0.2
+  resolution: "ssh2-sftp-client@npm:10.0.2"
   dependencies:
     concat-stream: "npm:^2.0.0"
     promise-retry: "npm:^2.0.1"
     ssh2: "npm:^1.15.0"
-  checksum: 32ca576a289c6d1251746db0e41c54ed28d4e9ae26cc8fbfae9a959835c540ff31d044783cabfc7b670191e024f39b6b45e1457524a863f6be80af09a490e590
+  checksum: eda3369b41690843b6b65682d2e18eb8c306f2ab5d146b22301b7175b2c16ae87dca949c6eafada0e55de8e89f173b07dcc2dc8760dd8fb7ae25b7544f488cb3
   languageName: node
   linkType: hard
 

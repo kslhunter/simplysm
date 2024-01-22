@@ -34,11 +34,10 @@ export function sdNgPlugin(conf: {
   let ngProgram: NgtscProgram | undefined;
   let builder: ts.EmitAndSemanticDiagnosticsBuilderProgram | undefined;
 
-  let resultCache: IResultCache = {
-    watchFileSet: new Set<string>(),
-    affectedFileSet: new Set<string>(),
-    additionalResultMap: new Map<string, IAdditionalResult>()
-  };
+  // const watchFileSet = new Set<string>();
+  // const affectedFileSet = new Set<string>();
+  const additionalResultMap = new Map<string, IAdditionalResult>();
+
   const tscPrepareMap = new Map<string, string>();
   const outputCacheMap = new Map<string, Uint8Array>();
 
@@ -67,7 +66,7 @@ export function sdNgPlugin(conf: {
           "scss",
         );
 
-      resultCache.watchFileSet.add(path.normalize(context.containingFile));
+      conf.result.watchFileSet!.add(path.normalize(context.containingFile));
 
       if (stylesheetResult.referencedFiles) {
         for (const referencedFile of stylesheetResult.referencedFiles) {
@@ -75,11 +74,11 @@ export function sdNgPlugin(conf: {
           referencingMapValSet.add(path.normalize(context.containingFile));
         }
 
-        resultCache.watchFileSet.adds(...Array.from(stylesheetResult.referencedFiles.values()).map(item => path.normalize(item)));
+        conf.result.watchFileSet!.adds(...Array.from(stylesheetResult.referencedFiles.values()).map(item => path.normalize(item)));
       }
 
-      resultCache.additionalResultMap.set(path.normalize(context.resourceFile ?? context.containingFile), {
-        outputFiles: stylesheetResult.outputFiles, //resourceFiles
+      additionalResultMap.set(path.normalize(context.resourceFile ?? context.containingFile), {
+        outputFiles: stylesheetResult.outputFiles ?? [],
         metafile: stylesheetResult.metafile,
         errors: stylesheetResult.errors,
         // warnings: stylesheetResult.warnings
@@ -205,11 +204,9 @@ export function sdNgPlugin(conf: {
 
         //-- init resultCache
 
-        resultCache = {
-          watchFileSet: new Set<string>(),
-          affectedFileSet: new Set<string>(),
-          additionalResultMap: new Map<string, IAdditionalResult>()
-        };
+        conf.result.watchFileSet = new Set<string>();
+        conf.result.affectedFileSet = new Set<string>();
+        additionalResultMap.clear();
 
         //-- createBuilder
 
@@ -221,6 +218,7 @@ export function sdNgPlugin(conf: {
         );
         const ngCompiler = ngProgram.compiler;
         const program = ngProgram.getTsProgram();
+        conf.result.program = program;
 
         const baseGetSourceFiles = program.getSourceFiles;
         program.getSourceFiles = function (...parameters) {
@@ -245,25 +243,25 @@ export function sdNgPlugin(conf: {
 
         //-- affectedFilePathSet
 
-        resultCache.affectedFileSet.adds(...findAffectedFileSet());
+        conf.result.affectedFileSet.adds(...findAffectedFileSet());
 
         // Deps -> refMap
         builder.getSourceFiles().filter(sf => !ngCompiler.ignoreForEmit.has(sf))
           .forEach(sf => {
-            resultCache.watchFileSet.add(path.normalize(sf.fileName));
+            conf.result.watchFileSet!.add(path.normalize(sf.fileName));
 
             const deps = ngCompiler.getResourceDependencies(sf);
             for (const dep of deps) {
               const ref = referencingMap.getOrCreate(dep, new Set<string>());
               ref.add(dep);
 
-              resultCache.watchFileSet.add(path.normalize(dep));
+              conf.result.watchFileSet!.add(path.normalize(dep));
             }
           });
 
         // refMap, modFile -> affectedFileSet
         for (const modifiedFile of conf.modifiedFileSet) {
-          resultCache.affectedFileSet.adds(...referencingMap.get(modifiedFile) ?? []);
+          conf.result.affectedFileSet.adds(...referencingMap.get(modifiedFile) ?? []);
         }
 
         //-- diagnostics / build
@@ -277,7 +275,7 @@ export function sdNgPlugin(conf: {
           ...builder.getGlobalDiagnostics()
         );
 
-        for (const affectedFile of resultCache.affectedFileSet) {
+        for (const affectedFile of conf.result.affectedFileSet) {
           const affectedSourceFile = sourceFileCache.get(path.normalize(affectedFile));
           if (!affectedSourceFile || ngCompiler.ignoreForDiagnostics.has(affectedSourceFile)) {
             continue;
@@ -326,17 +324,17 @@ export function sdNgPlugin(conf: {
         return {
           errors: [
             ...diagnostics.filter(item => item.category === ts.DiagnosticCategory.Error).map(item => convertTypeScriptDiagnostic(ts, item)),
-            ...Array.from(resultCache.additionalResultMap.values()).flatMap(item => item.errors)
+            ...Array.from(additionalResultMap.values()).flatMap(item => item.errors)
           ].filterExists(),
           warnings: [
             ...diagnostics.filter(item => item.category !== ts.DiagnosticCategory.Error).map(item => convertTypeScriptDiagnostic(ts, item)),
-            ...Array.from(resultCache.additionalResultMap.values()).flatMap(item => item.warnings)
+            ...Array.from(additionalResultMap.values()).flatMap(item => item.warnings)
           ],
         };
       });
 
       build.onLoad({filter: /\.ts$/}, async (args) => {
-        resultCache.watchFileSet.add(path.normalize(args.path));
+        conf.result.watchFileSet!.add(path.normalize(args.path));
 
         const output = outputCacheMap.get(path.normalize(args.path));
         if (output != null) {
@@ -365,7 +363,7 @@ export function sdNgPlugin(conf: {
       build.onLoad(
         {filter: /\.[cm]?js$/},
         async (args) => {
-          resultCache.watchFileSet.add(path.normalize(args.path));
+          conf.result.watchFileSet!.add(path.normalize(args.path));
 
           const output = outputCacheMap.get(path.normalize(args.path));
           if (output != null) {
@@ -395,7 +393,7 @@ export function sdNgPlugin(conf: {
       );
 
       build.onEnd((result) => {
-        for (const {outputFiles, metafile} of resultCache.additionalResultMap.values()) {
+        for (const {outputFiles, metafile} of additionalResultMap.values()) {
           result.outputFiles?.push(...outputFiles);
 
           if (result.metafile && metafile) {
@@ -404,22 +402,16 @@ export function sdNgPlugin(conf: {
           }
         }
 
-        conf.result.watchFileSet = resultCache.watchFileSet;
-        conf.result.affectedFileSet = resultCache.affectedFileSet;
+        // conf.result.watchFileSet = resultCache.watchFileSet;
+        // conf.result.affectedFileSet = resultCache.affectedFileSet;
+        // conf.result.program = ngProgram!.getTsProgram();
         conf.result.outputFiles = result.outputFiles;
         conf.result.metafile = result.metafile;
-        conf.result.program = ngProgram!.getTsProgram();
 
         conf.modifiedFileSet.clear();
       });
     }
   };
-}
-
-interface IResultCache {
-  watchFileSet: Set<string>;
-  affectedFileSet: Set<string>;
-  additionalResultMap: Map<string, IAdditionalResult>;
 }
 
 interface IAdditionalResult {
