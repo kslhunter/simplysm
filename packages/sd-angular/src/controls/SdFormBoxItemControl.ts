@@ -37,10 +37,11 @@ import {NgIf, NgTemplateOutlet} from "@angular/common";
     :host {
       > label {
         white-space: nowrap;
+        font-weight: bold;
 
-        body.sd-theme-compact & {
+        /*body.sd-theme-compact & {
           font-weight: bold;          
-        }
+        }*/
       }
 
       &[sd-layout="cascade"] {

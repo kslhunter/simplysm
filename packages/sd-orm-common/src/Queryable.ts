@@ -1013,14 +1013,18 @@ export class Queryable<D extends DbContext, T> {
     return result[0];
   }
 
-  public async countAsync(): Promise<number> {
+  public async countAsync(): Promise<number>;
+  public async countAsync(fwd: (entity: TEntity<T>) => TEntityValue<any>): Promise<number>;
+  public async countAsync(fwd?: (entity: TEntity<T>) => TEntityValue<any>): Promise<number> {
     if (this._def.distinct) {
       throw new Error("distinct 이후엔 'countAsync'를 사용할 수 없습니다."
         + " 사용하려면 distinct와 countAsync 사이에 wrap을 먼저 사용하거나,"
         + " distinct대신 groupBy와 qh.count 로 수동으로 처리하세요.");
     }
 
-    const queryable = this.select(() => ({cnt: new QueryUnit(Number, "COUNT(*)")}));/*.lock();*/
+    const queryable = fwd
+      ? this.select(() => ({cnt: this.db.qh.count(fwd(this._entity))}))
+      : this.select(() => ({cnt: this.db.qh.count()}));
     delete queryable._def.orderBy;
     const item = await queryable.singleAsync();
 

@@ -79,7 +79,7 @@ export function sdNgPlugin(conf: {
       }
 
       resultCache.additionalResultMap.set(path.normalize(context.resourceFile ?? context.containingFile), {
-        outputFiles: stylesheetResult.resourceFiles,
+        outputFiles: stylesheetResult.outputFiles, //resourceFiles
         metafile: stylesheetResult.metafile,
         errors: stylesheetResult.errors,
         // warnings: stylesheetResult.warnings
@@ -155,13 +155,19 @@ export function sdNgPlugin(conf: {
         {
           workspaceRoot: conf.pkgPath,
           optimization: !conf.dev,
+          inlineFonts: true,
+          preserveSymlinks: false,
           sourcemap: conf.dev ? 'inline' : false,
           outputNames: {bundles: '[name]', media: 'media/[name]'},
           includePaths: [],
           externalDependencies: [],
           target: browserTarget,
-          preserveSymlinks: false,
-          tailwindConfiguration: undefined
+          tailwindConfiguration: undefined,
+          cacheOptions: {
+            enabled: true,
+            path: ".cache/angular",
+            basePath: ".cache"
+          }
         },
         conf.dev
       );

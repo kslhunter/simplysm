@@ -636,6 +636,9 @@ export class SdSheetControl<T> implements DoCheck {
   @Input()
   getChildrenFn?: TSdFnInfo<(index: number, item: T) => (T[] | undefined)>;
 
+  @Input()
+  itemRowClassFn?: TSdFnInfo<(index: number, item: T) => (string | undefined)>;
+
   displayColumnDefs: IColumnDef<T>[] = [];
   displayHeaderDefTable: (IHeaderDef<T> | undefined)[][] = [];
   currPageLength = 0;

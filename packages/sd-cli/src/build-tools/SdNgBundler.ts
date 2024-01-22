@@ -191,7 +191,7 @@ export class SdNgBundler {
 
     //-- write
     for (const outputFile of outputFiles) {
-      const distFilePath = path.resolve(this._opt.outputPath, outputFile.fullOutputPath);
+      const distFilePath = path.resolve(this._opt.outputPath, outputFile.path);
       const prev = this._outputCache.get(distFilePath);
       if (prev !== Buffer.from(outputFile.contents).toString("base64")) {
         await FsUtil.writeFileAsync(distFilePath, outputFile.contents);
