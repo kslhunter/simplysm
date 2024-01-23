@@ -3,6 +3,7 @@ import {Logger, LoggerSeverity} from "@simplysm/sd-core-node";
 import path from "path";
 import {pathToFileURL} from "url";
 import {SdServiceServer} from "@simplysm/sd-service-server";
+import {JsonConvert} from "@simplysm/sd-core-common";
 
 Error.stackTraceLimit = Infinity;
 EventEmitter.defaultMaxListeners = 0;
@@ -22,27 +23,43 @@ else {
 
 const logger = Logger.get(["simplysm", "sd-cli", "server-worker"]);
 
-const pkgPath = process.argv[2];
+const pkgPathOrOpt = JsonConvert.parse(process.argv[2]) as (string | { port: number });
 
-const mainFilePath = path.resolve(pkgPath, "dist/main.js");
+let server: SdServiceServer | undefined;
 
-const serverModule = await import(pathToFileURL(mainFilePath).href);
-
-const server = serverModule.default as SdServiceServer | undefined;
-if (server === undefined) {
-  logger.error(`${mainFilePath}(0, 0): 'SdServiceServer'를 'export'해야 합니다.`);
-  process.exit();
+if (typeof pkgPathOrOpt === "string") {
+  const mainFilePath = path.resolve(pkgPathOrOpt, "dist/main.js");
+  const serverModule = await import(pathToFileURL(mainFilePath).href);
+  server = serverModule.default as SdServiceServer | undefined;
+  if (server === undefined) {
+    logger.error(`${mainFilePath}(0, 0): 'SdServiceServer'를 'export'해야 합니다.`);
+    process.exit();
+  }
+}
+else {
+  server = new SdServiceServer({
+    rootPath: process.cwd(),
+    services: [],
+    port: pkgPathOrOpt.port
+  });
+  server.listenAsync()
+    .catch((err) => {
+      // eslint-disable-next-line no-console
+      console.error(err);
+      process.exit(1);
+    });
 }
 
+
 server.on("ready", () => {
-  process.send!({port: server.options.port});
+  process.send!({port: server!.options.port});
 });
 
 process.on("message", (message: any) => {
   if (message.type === "setPathProxy") {
-    server.pathProxy = message.pathProxy;
+    server!.pathProxy = message.pathProxy;
   }
   if (message.type === "broadcastReload") {
-    server.broadcastReload();
+    server!.broadcastReload();
   }
 });

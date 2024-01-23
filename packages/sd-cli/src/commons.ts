@@ -85,7 +85,7 @@ export interface ISdCliServerPackageConfig {
 
 export interface ISdCliClientPackageConfig {
   type: "client";
-  server?: string;
+  server?: string | { port: number };
   publish?: ISdCliLocalDirectoryPublishConfig | ISdCliFtpPublishConfig;
   env?: Record<string, string>;
   configs?: Record<string, any>;

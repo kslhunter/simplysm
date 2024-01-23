@@ -13,7 +13,7 @@ import cp from "child_process";
 import {fileURLToPath, pathToFileURL} from "url";
 import {SdCliBuildResultUtil} from "../utils/SdCliBuildResultUtil";
 import semver from "semver";
-import {NeverEntryError, StringUtil, Wait} from "@simplysm/sd-core-common";
+import {JsonConvert, NeverEntryError, StringUtil, Wait} from "@simplysm/sd-core-common";
 import {SdStorage} from "@simplysm/sd-storage";
 import {SdCliLocalUpdate} from "./SdCliLocalUpdate";
 import xml2js from "xml2js";
@@ -64,7 +64,7 @@ export class SdCliProject {
     let busyCount = 0;
     const serverInfoMap = new Map<string, {
       // server
-      pkgPath?: string; // persist
+      pkgOrOpt?: { path: string; conf: ISdCliServerPackageConfig } | { port: number }; // persist
       worker?: cp.ChildProcess; // persist
       port?: number;
       hasChanges: boolean;
@@ -96,12 +96,18 @@ export class SdCliProject {
         if (pkgConf.type === "server") {
           const pkgName = path.basename(message.req.pkgPath);
           const serverInfo = serverInfoMap.getOrCreate(pkgName, {
-            hasChanges: false,
+            hasChanges: true,
             hasClientChanges: false,
             pathProxy: {},
             // changeFilePaths: []
           });
-          serverInfo.pkgPath = message.req.pkgPath;
+
+          const serverPkgConf = projConf.packages[pkgName] as ISdCliServerPackageConfig;
+          serverInfo.pkgOrOpt = {
+            path: message.req.pkgPath,
+            conf: serverPkgConf
+          };
+
           serverInfo.hasChanges = true;
         }
 
@@ -109,12 +115,17 @@ export class SdCliProject {
           const pkgName = path.basename(message.req.pkgPath);
 
           if (pkgConf.server !== undefined) {
-            const serverInfo = serverInfoMap.getOrCreate(pkgConf.server, {
-              hasChanges: false,
+            const serverInfo = serverInfoMap.getOrCreate(typeof pkgConf.server === "string" ? pkgConf.server : pkgConf.server.port.toString(), {
+              hasChanges: true,
               hasClientChanges: false,
               pathProxy: {},
               // changeFilePaths: []
             });
+
+            if (typeof pkgConf.server !== "string") {
+              serverInfo.pkgOrOpt = pkgConf.server;
+            }
+
             serverInfo.pathProxy[pkgName] = path.resolve(message.req.pkgPath, "dist");
             // serverInfo.changeFilePaths.push(...message.result!.affectedFilePaths);
 
@@ -123,7 +134,7 @@ export class SdCliProject {
           }
           else {
             const serverInfo = serverInfoMap.getOrCreate(pkgName, {
-              hasChanges: false,
+              hasChanges: true,
               hasClientChanges: false,
               pathProxy: {},
               // changeFilePaths: []
@@ -139,14 +150,13 @@ export class SdCliProject {
         setTimeout(async () => {
           busyCount--;
           if (busyCount === 0) {
-            for (const serverPkgName of serverInfoMap.keys()) {
-              const serverInfo = serverInfoMap.get(serverPkgName)!;
-              if (serverInfo.pkgPath !== undefined && serverInfo.hasChanges) {
+            for (const serverPkgNameOrPort of serverInfoMap.keys()) {
+              const serverInfo = serverInfoMap.get(serverPkgNameOrPort)!;
+              if (serverInfo.pkgOrOpt && serverInfo.hasChanges) {
                 logger.debug("서버 재시작...");
                 try {
                   const restartServerResult = await this._restartServerAsync(
-                    serverInfo.pkgPath,
-                    projConf.packages[path.basename(serverInfo.pkgPath)] as ISdCliServerPackageConfig,
+                    serverInfo.pkgOrOpt,
                     serverInfo.worker
                   );
                   serverInfo.worker = restartServerResult.worker;
@@ -556,7 +566,9 @@ export class SdCliProject {
     cluster.kill("SIGKILL");
   }
 
-  private static async _restartServerAsync(pkgPath: string, pkgConf: ISdCliServerPackageConfig, prevServerProcess?: cp.ChildProcess): Promise<{
+  private static async _restartServerAsync(pkgOrOpt: { path: string; conf: ISdCliServerPackageConfig } | {
+    port: number
+  }, prevServerProcess?: cp.ChildProcess): Promise<{
     worker: cp.ChildProcess,
     port: number
   }> {
@@ -566,7 +578,7 @@ export class SdCliProject {
       prevServerProcess.kill("SIGKILL");
     }
 
-    const npmConf = (await FsUtil.readJsonAsync(path.resolve(pkgPath, "package.json"))) as INpmConfig;
+    const npmConf = "path" in pkgOrOpt ? (await FsUtil.readJsonAsync(path.resolve(pkgOrOpt.path, "package.json"))) as INpmConfig : undefined;
 
     return await new Promise<{
       worker: cp.ChildProcess,
@@ -574,15 +586,15 @@ export class SdCliProject {
     }>(async (resolve, reject) => {
       const worker = cp.fork(
         fileURLToPath(await import.meta.resolve!("../server-worker")),
-        [pkgPath],
+        [JsonConvert.stringify("path" in pkgOrOpt ? pkgOrOpt.path : pkgOrOpt)],
         {
           stdio: ["pipe", "pipe", "pipe", "ipc"],
           env: {
             ...process.env,
             NODE_ENV: "development",
             TZ: "Asia/Seoul",
-            SD_VERSION: npmConf.version,
-            ...pkgConf.env
+            SD_VERSION: npmConf?.version ?? "serverless",
+            ..."path" in pkgOrOpt ? pkgOrOpt.conf.env : {}
           }
         }
       );
