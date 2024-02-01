@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "basic-ftp": "^5.0.4",
-    "ssh2-sftp-client": "^10.0.2"
+    "ssh2-sftp-client": "^10.0.3"
   },
   "devDependencies": {
     "@types/ssh2-sftp-client": "^9.0.3"

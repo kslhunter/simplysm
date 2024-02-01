@@ -145,7 +145,7 @@ export interface ISdExcelXmlStyleData {
     }];
     "borders": [{
       "$": { count: string };
-      "border": {}[];
+      "border": ISdExcelXmlStyleDataBorder[];
     }];
     "cellXfs": [{
       "$": { count: string };
@@ -165,6 +165,7 @@ export interface ISdExcelXmlStyleDataXf {
     applyFont?: string;
     applyAlignment?: string;
     applyFill?: string;
+    applyBorder?: string;
   };
   alignment?: [{ "$": { horizontal?: "center" | "left" | "right"; vertical?: "center" | "top" | "bottom" } }];
 }
@@ -173,6 +174,25 @@ export interface ISdExcelXmlStyleDataFill {
   "patternFill": [{
     "$": { "patternType": "none" | "solid" | "gray125" };
     "fgColor"?: [{ "$": { "rgb": string } }];
+  }];
+}
+
+export interface ISdExcelXmlStyleDataBorder {
+  "top"?: [{
+    "$": { "style": "thin" | "medium" };
+    "color"?: [{ "$": { "rgb": string } }];
+  }];
+  "left"?: [{
+    "$": { "style": "thin" | "medium" };
+    "color"?: [{ "$": { "rgb": string } }];
+  }];
+  "right"?: [{
+    "$": { "style": "thin" | "medium" };
+    "color"?: [{ "$": { "rgb": string } }];
+  }];
+  "bottom"?: [{
+    "$": { "style": "thin" | "medium" };
+    "color"?: [{ "$": { "rgb": string } }];
   }];
 }
 

@@ -146,7 +146,7 @@ Options = UnsafeLegacyRenegotiation`.trim()
       await FsUtil.writeJsonAsync(
         path.resolve(this._pkgPath, "dist/pm2.json"),
         {
-          name: npmConfig.name.replace(/@/g, "").replace(/\//g, "-"),
+          name: this.#pkgConf.pm2.name ?? npmConfig.name.replace(/@/g, "").replace(/\//g, "-"),
           script: "main.js",
           watch: true,
           watch_delay: 2000,

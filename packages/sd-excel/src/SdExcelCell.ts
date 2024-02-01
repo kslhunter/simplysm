@@ -17,6 +17,9 @@ export class SdExcelCell {
 
       await this._setStyleAsync({background: color});
     },
+    setBorderAsync: async (directions: ("left" | "right" | "top" | "bottom")[]): Promise<void> => {
+      await this._setStyleAsync({border: directions});
+    },
     setVerticalAlignAsync: async (align: "center" | "top" | "bottom"): Promise<void> => {
       await this._setStyleAsync({verticalAlign: align});
     },

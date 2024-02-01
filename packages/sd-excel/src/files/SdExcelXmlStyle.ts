@@ -1,4 +1,10 @@
-import {ISdExcelXml, ISdExcelXmlStyleData, ISdExcelXmlStyleDataFill, ISdExcelXmlStyleDataXf} from "../commons";
+import {
+  ISdExcelXml,
+  ISdExcelXmlStyleData,
+  ISdExcelXmlStyleDataBorder,
+  ISdExcelXmlStyleDataFill,
+  ISdExcelXmlStyleDataXf
+} from "../commons";
 import {NumberUtil, ObjectUtil} from "@simplysm/sd-core-common";
 
 export class SdExcelXmlStyle implements ISdExcelXml {
@@ -57,6 +63,46 @@ export class SdExcelXmlStyle implements ISdExcelXml {
 
       newXf.$.applyFill = "1";
       newXf.$.fillId = this._getSameOrCreateFill(newFill);
+    }
+
+    if (style.border !== undefined) {
+      const newBorder: ISdExcelXmlStyleDataBorder = {
+        ...style.border.includes("left") ? {
+          "left": [
+            {
+              "$": {"style": "thin"},
+              "color": [{"$": {"rgb": "00000000"}}]
+            }
+          ]
+        } : {},
+        ...style.border.includes("right") ? {
+          "right": [
+            {
+              "$": {"style": "thin"},
+              "color": [{"$": {"rgb": "00000000"}}]
+            }
+          ]
+        } : {},
+        ...style.border.includes("top") ? {
+          "top": [
+            {
+              "$": {"style": "thin"},
+              "color": [{"$": {"rgb": "00000000"}}]
+            }
+          ]
+        } : {},
+        ...style.border.includes("bottom") ? {
+          "bottom": [
+            {
+              "$": {"style": "thin"},
+              "color": [{"$": {"rgb": "00000000"}}]
+            }
+          ]
+        } : {}
+      };
+
+      newXf.$.applyBorder = "1";
+      newXf.$.borderId = this._getSameOrCreateBorder(newBorder);
     }
 
     if (style.verticalAlign !== undefined) {
@@ -123,6 +169,132 @@ export class SdExcelXmlStyle implements ISdExcelXml {
       }
     }
 
+
+    if (style.border !== undefined) {
+      const prevBorder = cloneXf.$.borderId !== undefined
+        ? this.data.styleSheet.borders[0].border[NumberUtil.parseInt(cloneXf.$.borderId)!]
+        : undefined;
+
+
+      if (prevBorder) {
+        const cloneBorder = ObjectUtil.clone(prevBorder);
+        if (style.border.includes("left")) {
+          if (!cloneBorder.left) {
+            cloneBorder.left = [{
+              "$": {"style": "thin"},
+              "color": [{"$": {"rgb": "00000000"}}]
+            }];
+          }
+          else if (!cloneBorder.left[0].color) {
+            cloneBorder.left[0].color = [{$: {rgb: "00000000"}}];
+          }
+          else {
+            cloneBorder.left[0].color[0].$.rgb = "00000000";
+          }
+        }
+        else {
+          delete cloneBorder.left;
+        }
+
+        if (style.border.includes("right")) {
+          if (!cloneBorder.right) {
+            cloneBorder.right = [{
+              "$": {"style": "thin"},
+              "color": [{"$": {"rgb": "00000000"}}]
+            }];
+          }
+          else if (!cloneBorder.right[0].color) {
+            cloneBorder.right[0].color = [{$: {rgb: "00000000"}}];
+          }
+          else {
+            cloneBorder.right[0].color[0].$.rgb = "00000000";
+          }
+        }
+        else {
+          delete cloneBorder.right;
+        }
+
+        if (style.border.includes("top")) {
+          if (!cloneBorder.top) {
+            cloneBorder.top = [{
+              "$": {"style": "thin"},
+              "color": [{"$": {"rgb": "00000000"}}]
+            }];
+          }
+          else if (!cloneBorder.top[0].color) {
+            cloneBorder.top[0].color = [{$: {rgb: "00000000"}}];
+          }
+          else {
+            cloneBorder.top[0].color[0].$.rgb = "00000000";
+          }
+        }
+        else {
+          delete cloneBorder.top;
+        }
+
+        if (style.border.includes("bottom")) {
+          if (!cloneBorder.bottom) {
+            cloneBorder.bottom = [{
+              "$": {"style": "thin"},
+              "color": [{"$": {"rgb": "00000000"}}]
+            }];
+          }
+          else if (!cloneBorder.bottom[0].color) {
+            cloneBorder.bottom[0].color = [{$: {rgb: "00000000"}}];
+          }
+          else {
+            cloneBorder.bottom[0].color[0].$.rgb = "00000000";
+          }
+        }
+        else {
+          delete cloneBorder.bottom;
+        }
+
+        cloneXf.$.applyBorder = "1";
+        cloneXf.$.borderId = this._getSameOrCreateBorder(cloneBorder);
+        return this._getSameOrCreateXf(cloneXf);
+      }
+      else {
+        const newBorder: ISdExcelXmlStyleDataBorder = {
+          ...style.border.includes("left") ? {
+            "left": [
+              {
+                "$": {"style": "thin"},
+                "color": [{"$": {"rgb": "00000000"}}]
+              }
+            ]
+          } : {},
+          ...style.border.includes("right") ? {
+            "right": [
+              {
+                "$": {"style": "thin"},
+                "color": [{"$": {"rgb": "00000000"}}]
+              }
+            ]
+          } : {},
+          ...style.border.includes("top") ? {
+            "top": [
+              {
+                "$": {"style": "thin"},
+                "color": [{"$": {"rgb": "00000000"}}]
+              }
+            ]
+          } : {},
+          ...style.border.includes("bottom") ? {
+            "bottom": [
+              {
+                "$": {"style": "thin"},
+                "color": [{"$": {"rgb": "00000000"}}]
+              }
+            ]
+          } : {}
+        };
+        cloneXf.$.applyBorder = "1";
+        cloneXf.$.borderId = this._getSameOrCreateBorder(newBorder);
+        return this._getSameOrCreateXf(cloneXf);
+      }
+    }
+
     if (style.verticalAlign !== undefined) {
       cloneXf.$.applyAlignment = "1";
       if (!cloneXf.alignment) {
@@ -156,6 +328,25 @@ export class SdExcelXmlStyle implements ISdExcelXml {
 
       if (xf.$.fillId !== undefined) {
         result.background = this.data.styleSheet.fills[0].fill[NumberUtil.parseInt(xf.$.fillId)!].patternFill[0].fgColor?.[0].$.rgb;
+      }
+
+      if (xf.$.borderId !== undefined) {
+        const border = this.data.styleSheet.borders[0].border[NumberUtil.parseInt(xf.$.borderId)!];
+        if (border.top || border.left || border.right || border.bottom) {
+          result.border = [];
+          if (border.left) {
+            result.border.push("left");
+          }
+          if (border.right) {
+            result.border.push("right");
+          }
+          if (border.top) {
+            result.border.push("top");
+          }
+          if (border.bottom) {
+            result.border.push("bottom");
+          }
+        }
       }
 
       result.verticalAlign = xf.alignment?.[0].$.vertical;
@@ -198,10 +389,24 @@ export class SdExcelXmlStyle implements ISdExcelXml {
       return (this.data.styleSheet.fills[0].fill.length - 1).toString();
     }
   }
+
+  private _getSameOrCreateBorder(borderItem: ISdExcelXmlStyleDataBorder): string {
+    const prevSameBorder = this.data.styleSheet.borders[0].border.single((item) => ObjectUtil.equal(item, borderItem));
+
+    if (prevSameBorder) {
+      return this.data.styleSheet.borders[0].border.indexOf(prevSameBorder).toString();
+    }
+    else {
+      this.data.styleSheet.borders[0].border.push(borderItem);
+      this.data.styleSheet.borders[0].$.count = this.data.styleSheet.borders[0].border.length.toString();
+      return (this.data.styleSheet.borders[0].border.length - 1).toString();
+    }
+  }
 }
 
 export interface ISdExcelStyle {
   numFmtId?: string;
+  border?: ("left" | "right" | "top" | "bottom")[];
   background?: string;
   verticalAlign?: "center" | "top" | "bottom";
   horizontalAlign?: "center" | "left" | "right";
