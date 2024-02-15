@@ -67,6 +67,7 @@ export class SdNgBundlerContext {
             name,
             type,
             entrypoint: true,
+            serverFile: false
           });
         }
       }
@@ -84,6 +85,7 @@ export class SdNgBundlerContext {
             type: initialImport.kind === 'import-rule' ? 'style' : 'script',
             entrypoint: false,
             external: initialImport.external,
+            serverFile: false
           };
 
           initialFiles.set(initialImport.path, record);

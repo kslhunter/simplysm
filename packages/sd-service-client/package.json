@@ -20,6 +20,7 @@
     "@simplysm/sd-orm-common": "11.1.28",
     "@simplysm/sd-service-common": "11.1.28",
     "isomorphic-ws": "^5.0.0",
-    "jszip": "^3.10.1"
+    "jszip": "^3.10.1",
+    "ws": "^8.16.0"
   }
 }
