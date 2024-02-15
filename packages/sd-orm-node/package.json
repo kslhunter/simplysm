@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-orm-node",
-  "version": "11.1.28",
+  "version": "11.1.29",
   "description": "심플리즘 패키지 - ORM 모듈 (node)",
   "author": "김석래",
   "repository": {
@@ -16,14 +16,14 @@
     "node": "^18"
   },
   "dependencies": {
-    "@simplysm/sd-core-common": "11.1.28",
-    "@simplysm/sd-core-node": "11.1.28",
-    "@simplysm/sd-orm-common": "11.1.28"
+    "@simplysm/sd-core-common": "11.1.29",
+    "@simplysm/sd-core-node": "11.1.29",
+    "@simplysm/sd-orm-common": "11.1.29"
   },
   "peerDependencies": {
-    "@simplysm/sd-orm-node-mssql": "11.1.28",
-    "@simplysm/sd-orm-node-mysql": "11.1.28",
-    "@simplysm/sd-orm-node-sqlite": "11.1.28"
+    "@simplysm/sd-orm-node-mssql": "11.1.29",
+    "@simplysm/sd-orm-node-mysql": "11.1.29",
+    "@simplysm/sd-orm-node-sqlite": "11.1.29"
   },
   "peerDependenciesMeta": {
     "@simplysm/sd-orm-node-mssql": {
