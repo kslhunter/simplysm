@@ -14,8 +14,7 @@ export class SdCliCordova {
 
   public constructor(private readonly _opt: {
     pkgPath: string;
-    config: ISdCliClientBuilderCordovaConfig;
-    cordovaPath: string;
+    config: ISdCliClientBuilderCordovaConfig
   }) {
     this._platforms = Object.keys(this._opt.config.platform ?? {browser: {}});
     this._npmConfig = FsUtil.readJson(path.resolve(this._opt.pkgPath, "package.json"));
@@ -29,40 +28,42 @@ export class SdCliCordova {
   }
 
   public async initializeAsync(): Promise<void> {
-    if (FsUtil.exists(this._opt.cordovaPath)) {
+    const cordovaPath = path.resolve(this._opt.pkgPath, ".cordova");
+
+    if (FsUtil.exists(cordovaPath)) {
       this._logger.log("이미 생성되어있는 '.cordova'를 사용합니다.");
     }
     else {
       await this._execAsync(`${BIN_PATH} telemetry on`, this._opt.pkgPath);
 
       // 프로젝트 생성
-      await this._execAsync(`${BIN_PATH} create "${this._opt.cordovaPath}" "${this._opt.config.appId}" "${this._opt.config.appName}"`, process.cwd());
+      await this._execAsync(`${BIN_PATH} create "${cordovaPath}" "${this._opt.config.appId}" "${this._opt.config.appName}"`, process.cwd());
     }
 
     // platforms 폴더 혹시 없으면 생성
-    await FsUtil.mkdirsAsync(path.resolve(this._opt.cordovaPath, "platforms"));
+    await FsUtil.mkdirsAsync(path.resolve(cordovaPath, "platforms"));
 
     // www 폴더 혹시 없으면 생성
-    await FsUtil.mkdirsAsync(path.resolve(this._opt.cordovaPath, "www"));
+    await FsUtil.mkdirsAsync(path.resolve(cordovaPath, "www"));
 
     // 미설치 빌드 플랫폼 신규 생성
-    const alreadyPlatforms = await FsUtil.readdirAsync(path.resolve(this._opt.cordovaPath, "platforms"));
+    const alreadyPlatforms = await FsUtil.readdirAsync(path.resolve(cordovaPath, "platforms"));
     for (const platform of this._platforms) {
       if (!alreadyPlatforms.includes(platform)) {
-        await this._execAsync(`${BIN_PATH} platform add ${platform}`, this._opt.cordovaPath);
+        await this._execAsync(`${BIN_PATH} platform add ${platform}`, cordovaPath);
       }
     }
 
     // 설치 미빌드 플랫폼 삭제
     for (const alreadyPlatform of alreadyPlatforms) {
       if (!this._platforms.includes(alreadyPlatform)) {
-        await this._execAsync(`${BIN_PATH} platform remove ${alreadyPlatform}`, this._opt.cordovaPath);
+        await this._execAsync(`${BIN_PATH} platform remove ${alreadyPlatform}`, cordovaPath);
       }
     }
 
     // 설치된 미사용 플러그인 삭제
-    const pluginsFetch = FsUtil.exists(path.resolve(this._opt.cordovaPath, "plugins/fetch.json"))
-      ? await FsUtil.readJsonAsync(path.resolve(this._opt.cordovaPath, "plugins/fetch.json"))
+    const pluginsFetch = FsUtil.exists(path.resolve(cordovaPath, "plugins/fetch.json"))
+      ? await FsUtil.readJsonAsync(path.resolve(cordovaPath, "plugins/fetch.json"))
       : undefined;
     const alreadyPluginIds = pluginsFetch != undefined
       ? Object.keys(pluginsFetch)
@@ -87,7 +88,7 @@ export class SdCliCordova {
       }
 
       if (!hasPlugin) {
-        await this._execAsync(`${BIN_PATH} plugin remove ${alreadyPluginId}`, this._opt.cordovaPath);
+        await this._execAsync(`${BIN_PATH} plugin remove ${alreadyPluginId}`, cordovaPath);
       }
     }
 
@@ -97,7 +98,7 @@ export class SdCliCordova {
         (usePlugin.includes("@") && !alreadyPluginIds.includes(usePlugin)) ||
         (!usePlugin.includes("@") && !alreadyPluginIds.map((alreadyPluginId) => alreadyPluginId.replace(/@.*$/, "")).includes(usePlugin))
       ) {
-        await this._execAsync(`${BIN_PATH} plugin add ${usePlugin}`, this._opt.cordovaPath);
+        await this._execAsync(`${BIN_PATH} plugin add ${usePlugin}`, cordovaPath);
       }
     }
 
@@ -105,25 +106,25 @@ export class SdCliCordova {
     if (this._opt.config.platform?.android?.sign) {
       await FsUtil.copyAsync(
         path.resolve(this._opt.pkgPath, "src", this._opt.config.platform.android.sign.keystore),
-        path.resolve(this._opt.cordovaPath, "android.keystore")
+        path.resolve(cordovaPath, "android.keystore")
       );
     }
     else {
-      await FsUtil.removeAsync(path.resolve(this._opt.cordovaPath, "android.keystore"));
+      await FsUtil.removeAsync(path.resolve(cordovaPath, "android.keystore"));
       // SIGN을 안쓸경우 아래 파일이 생성되어 있으면 오류남
-      await FsUtil.removeAsync(path.resolve(this._opt.cordovaPath, "platforms/android/release-signing.properties"));
+      await FsUtil.removeAsync(path.resolve(cordovaPath, "platforms/android/release-signing.properties"));
     }
 
     // 빌드 옵션 파일 생성
     await FsUtil.writeJsonAsync(
-      path.resolve(this._opt.cordovaPath, "build.json"),
+      path.resolve(cordovaPath, "build.json"),
       {
         ...this._opt.config.platform?.android ? {
           android: {
             release: {
               packageType: this._opt.config.platform.android.bundle ? "bundle" : "apk",
               ...this._opt.config.platform.android.sign ? {
-                keystore: path.resolve(this._opt.cordovaPath, "android.keystore"),
+                keystore: path.resolve(cordovaPath, "android.keystore"),
                 storePassword: this._opt.config.platform.android.sign.storePassword,
                 alias: this._opt.config.platform.android.sign.alias,
                 password: this._opt.config.platform.android.sign.password,
@@ -137,15 +138,15 @@ export class SdCliCordova {
 
     // ICON 파일 복사
     if (this._opt.config.icon != null) {
-      await FsUtil.copyAsync(path.resolve(this._opt.pkgPath, "src", this._opt.config.icon), path.resolve(this._opt.cordovaPath, "res/icons", path.basename(this._opt.config.icon)));
+      await FsUtil.copyAsync(path.resolve(this._opt.pkgPath, "src", this._opt.config.icon), path.resolve(cordovaPath, "res/icons", path.basename(this._opt.config.icon)));
     }
     else {
-      await FsUtil.removeAsync(path.resolve(this._opt.cordovaPath, "res/icons"));
+      await FsUtil.removeAsync(path.resolve(cordovaPath, "res/icons"));
     }
 
     // SplashScreen 파일 생성
     if (this._opt.config.platform?.android && this._opt.config.icon != null) {
-      await FsUtil.writeFileAsync(path.resolve(this._opt.cordovaPath, "res/screen/android/splashscreen.xml"), `
+      await FsUtil.writeFileAsync(path.resolve(cordovaPath, "res/screen/android/splashscreen.xml"), `
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
   <item
@@ -157,8 +158,8 @@ export class SdCliCordova {
     }
 
     // CONFIG: 초기값 백업
-    const configFilePath = path.resolve(this._opt.cordovaPath, "config.xml");
-    const configBackFilePath = path.resolve(this._opt.cordovaPath, "config.xml.bak");
+    const configFilePath = path.resolve(cordovaPath, "config.xml");
+    const configBackFilePath = path.resolve(cordovaPath, "config.xml.bak");
     if (!FsUtil.exists(configBackFilePath)) {
       await FsUtil.copyAsync(configFilePath, configBackFilePath);
     }
@@ -218,14 +219,16 @@ export class SdCliCordova {
     await FsUtil.writeFileAsync(configFilePath, configResultContent);
 
     // 각 플랫폼 www 준비
-    await this._execAsync(`${BIN_PATH} prepare`, this._opt.cordovaPath);
+    await this._execAsync(`${BIN_PATH} prepare`, cordovaPath);
   }
 
   public async buildAsync(outPath: string): Promise<void> {
+    const cordovaPath = path.resolve(this._opt.pkgPath, ".cordova");
+
     // 실행
     const buildType = this._opt.config.debug ? "debug" : "release";
     for (const platform of this._platforms) {
-      await this._execAsync(`${BIN_PATH} build ${platform} --${buildType}`, this._opt.cordovaPath);
+      await this._execAsync(`${BIN_PATH} build ${platform} --${buildType}`, cordovaPath);
     }
 
     for (const platform of Object.keys(this._opt.config.platform ?? {})) {
@@ -237,22 +240,22 @@ export class SdCliCordova {
         const latestDistApkFileName = path.basename(`${this._opt.config.appName}${this._opt.config.platform!.android!.sign ? "" : "-unsigned"}-latest.apk`);
         await FsUtil.mkdirsAsync(targetOutPath);
         await FsUtil.copyAsync(
-          path.resolve(this._opt.cordovaPath, "platforms/android/app/build/outputs/apk", buildType, apkFileName),
+          path.resolve(cordovaPath, "platforms/android/app/build/outputs/apk", buildType, apkFileName),
           path.resolve(targetOutPath, latestDistApkFileName)
         );
       }
 
       // 자동업데이트를 위한 파일 쓰기 (ZIP)
       const zip = new JSZip();
-      const wwwFiles = await FsUtil.globAsync(path.resolve(this._opt.cordovaPath, "www/**/*"), {nodir: true});
+      const wwwFiles = await FsUtil.globAsync(path.resolve(cordovaPath, "www/**/*"), {nodir: true});
       for (const wwwFile of wwwFiles) {
-        const relFilePath = path.relative(path.resolve(this._opt.cordovaPath, "www"), wwwFile);
+        const relFilePath = path.relative(path.resolve(cordovaPath, "www"), wwwFile);
         const fileBuffer = await FsUtil.readFileBufferAsync(wwwFile);
         zip.file(relFilePath, fileBuffer);
       }
-      const platformWwwFiles = await FsUtil.globAsync(path.resolve(this._opt.cordovaPath, "platforms", platform, "platform_www/**/*"), {nodir: true});
+      const platformWwwFiles = await FsUtil.globAsync(path.resolve(cordovaPath, "platforms", platform, "platform_www/**/*"), {nodir: true});
       for (const platformWwwFile of platformWwwFiles) {
-        const relFilePath = path.relative(path.resolve(this._opt.cordovaPath, "platforms", platform, "platform_www"), platformWwwFile);
+        const relFilePath = path.relative(path.resolve(cordovaPath, "platforms", platform, "platform_www"), platformWwwFile);
         const fileBuffer = await FsUtil.readFileBufferAsync(platformWwwFile);
         zip.file(relFilePath, fileBuffer);
       }

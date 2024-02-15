@@ -1,7 +1,7 @@
 import {FsUtil, Logger, SdProcess} from "@simplysm/sd-core-node";
 import {pathToFileURL} from "url";
 import path from "path";
-import {INpmConfig, ISdCliConfig} from "../commons";
+import {INpmConfig, ISdCliClientBuilderElectronConfig, ISdCliConfig} from "../commons";
 import electronBuilder from "electron-builder";
 
 export class SdCliElectron {
@@ -13,7 +13,7 @@ export class SdCliElectron {
     const logger = Logger.get(["simplysm", "sd-cli", "SdCliElectron", "runAsync"]);
 
     const pkgPath = path.resolve(process.cwd(), `packages/${opt.pkgName}`);
-    const electronPath = path.resolve(pkgPath, ".electron/dev/src");
+    const electronPath = path.resolve(pkgPath, "dist/electron");
 
     logger.log("설정 가져오기...");
     const projConf = (await import(pathToFileURL(path.resolve(process.cwd(), opt.confFileRelPath)).href)).default(true, opt.optNames) as ISdCliConfig;
@@ -62,8 +62,8 @@ export class SdCliElectron {
     const logger = Logger.get(["simplysm", "sd-cli", "SdCliElectron", "buildForDevAsync"]);
 
     const pkgPath = path.resolve(process.cwd(), `packages/${opt.pkgName}`);
-    const electronPath = path.resolve(pkgPath, ".electron/dev/src");
-    const electronDistPath = path.resolve(pkgPath, ".electron/dev/dist");
+    const electronPath = path.resolve(pkgPath, "dist/electron");
+    const electronDistPath = path.resolve(pkgPath, ".electron/dist");
 
     logger.log("설정 가져오기...");
     const projConf = (await import(pathToFileURL(path.resolve(process.cwd(), opt.confFileRelPath)).href)).default(true, opt.optNames) as ISdCliConfig;
@@ -126,6 +126,72 @@ export class SdCliElectron {
     await FsUtil.copyAsync(
       path.resolve(electronDistPath, `${npmConfig.description} Setup ${npmConfig.version}.exe`),
       path.resolve(pkgPath, `dist/electron/${npmConfig.description}-dev.exe`)
+    );
+  }
+
+  public static async buildAsync(opt: {
+    pkgPath: string;
+    config: ISdCliClientBuilderElectronConfig;
+  }): Promise<void> {
+    const logger = Logger.get(["simplysm", "sd-cli", "SdCliElectron", "buildAsync"]);
+
+    const electronSrcPath = path.resolve(opt.pkgPath, ".electron/src");
+    const electronDistPath = path.resolve(opt.pkgPath, ".electron/dist");
+
+    logger.log("package.json 파일 쓰기...");
+    const npmConfig = (await FsUtil.readJsonAsync(path.resolve(opt.pkgPath, `package.json`))) as INpmConfig;
+
+    const externalPkgNames = opt.config.reinstallDependencies ?? [];
+
+    await FsUtil.writeJsonAsync(path.resolve(electronSrcPath, `package.json`), {
+      name: npmConfig.name,
+      version: npmConfig.version,
+      description: npmConfig.description,
+      main: "electron-main.js",
+      ...opt.config.postInstallScript !== undefined ? {
+        scripts: {
+          "postinstall": opt.config.postInstallScript
+        },
+      } : {},
+      dependencies: externalPkgNames.toObject((item) => item, (item) => npmConfig.dependencies![item])
+    });
+
+    logger.log("npm install...");
+    await SdProcess.spawnAsync(`npm install`, {cwd: electronSrcPath}, true);
+
+    for (const externalPkgName of externalPkgNames) {
+      if (FsUtil.exists(path.resolve(electronSrcPath, "node_modules", externalPkgName, "binding.gyp"))) {
+        logger.log(`electron rebuild (${externalPkgName})...`);
+        await SdProcess.spawnAsync(`electron-rebuild -m ./node_modules/${externalPkgName}`, {cwd: electronSrcPath}, true);
+      }
+    }
+
+    logger.log("build...");
+
+    await electronBuilder.build({
+      targets: electronBuilder.Platform.WINDOWS.createTarget(),
+      config: {
+        appId: opt.config.appId,
+        productName: npmConfig.description,
+        // asar: false,
+        win: {
+          target: "nsis"
+        },
+        nsis: {},
+        directories: {
+          app: electronSrcPath,
+          output: electronDistPath
+        },
+        ...opt.config.installerIcon !== undefined ? {
+          icon: path.resolve(opt.pkgPath, "src", opt.config.installerIcon)
+        } : {},
+        removePackageScripts: false
+      }
+    });
+
+    await FsUtil.copyAsync(
+      path.resolve(electronDistPath, `${npmConfig.description} Setup ${npmConfig.version}.exe`),
+      path.resolve(opt.pkgPath, `dist/electron/${npmConfig.description}-latest.exe`)
     );
   }
 }

@@ -116,15 +116,15 @@ export interface ISdCliClientBuilderElectronConfig {
   appId: string;
   installerIcon?: string;
   postInstallScript?: string;
-  devServerHost?: string;
-  devServerPort?: number;
+  // devServerHost?: string;
+  // devServerPort?: number;
   reinstallDependencies?: string[];
   env?: Record<string, string>;
 }
 
 export interface ISdCliClientBuilderWebConfig {
-  devServerHost?: string;
-  devServerPort?: number;
+  // devServerHost?: string;
+  // devServerPort?: number;
   env?: Record<string, string>;
 }
 

@@ -102,7 +102,10 @@ export class SdNgBundler {
     if (!this._contexts) {
       this._contexts = [
         await this._getAppContextAsync(),
-        this._getStyleContext()
+        this._getStyleContext(),
+        ...this._opt.builderType === "electron" ? [
+          this._getElectronMainContext()
+        ] : []
       ];
     }
 
@@ -130,7 +133,7 @@ export class SdNgBundler {
     const assetFiles: { source: string; destination: string }[] = [];
 
     //-- cordova empty
-    if (this._opt.cordovaConfig?.plugins) {
+    if (this._opt.builderType === "cordova" && this._opt.cordovaConfig?.plugins) {
       outputFiles.push(createOutputFileFromText("cordova-empty.js", "export default {};", BuildOutputFileType.Root));
     }
 
@@ -434,7 +437,7 @@ export class SdNgBundler {
       },
       inject: [PathUtil.posix(fileURLToPath(await import.meta.resolve!("node-stdlib-browser/helpers/esbuild/shim")))],
       plugins: [
-        ...this._opt.cordovaConfig?.plugins ? [{
+        ...this._opt.builderType === "cordova" && this._opt.cordovaConfig?.plugins ? [{
           name: "cordova:plugin-empty",
           setup: ({onResolve}) => {
             onResolve({filter: new RegExp("(" + this._opt.cordovaConfig!.plugins!.join("|") + ")")}, () => {
@@ -538,6 +541,40 @@ export class SdNgBundler {
         pluginFactory.create(CssStylesheetLanguage) as esbuild.Plugin,
         createCssResourcePlugin(this.#styleLoadResultCache) as esbuild.Plugin,
       ],
+    });
+  }
+
+  private _getElectronMainContext() {
+    return new SdNgBundlerContext(this._opt.pkgPath, {
+      absWorkingDir: this._opt.pkgPath,
+      bundle: true,
+      entryNames: '[name]',
+      assetNames: 'media/[name]',
+      conditions: ['es2020', 'es2015', 'module'],
+      resolveExtensions: ['.ts', '.tsx', '.mjs', '.js'],
+      metafile: true,
+      legalComments: this._opt.dev ? 'eof' : 'none',
+      logLevel: 'silent',
+      minify: !this._opt.dev,
+      outdir: this._opt.pkgPath,
+      sourcemap: this._opt.dev,
+      tsconfig: this._tsConfigFilePath,
+      write: false,
+      preserveSymlinks: false,
+      external: ["electron"],
+      define: {
+        ...!this._opt.dev ? {ngDevMode: 'false'} : {},
+        'process.env.SD_VERSION': JSON.stringify(this._pkgNpmConf.version),
+        "process.env.NODE_ENV": JSON.stringify(this._opt.dev ? "development" : "production"),
+        ...this._opt.env ? Object.keys(this._opt.env).toObject(
+          key => `process.env.${key}`,
+          key => JSON.stringify(this._opt.env![key])
+        ) : {}
+      },
+      platform: 'node',
+      entryPoints: {
+        "electron-main": path.resolve(this._opt.pkgPath, "src/electron-main.ts"),
+      }
     });
   }
 }

@@ -7,6 +7,7 @@ import {SdNgBundler} from "../build-tools/SdNgBundler";
 import {SdCliCordova} from "../build-tools/SdCliCordova";
 import {SdCliNgRoutesFileGenerator} from "../build-tools/SdCliNgRoutesFileGenerator";
 import {SdLinter} from "../build-tools/SdLinter";
+import {SdCliElectron} from "../entry/SdCliElectron";
 
 // import ts from "typescript";
 
@@ -110,8 +111,7 @@ export class SdCliClientBuilder extends EventEmitter {
       this._debug("CORDOVA 준비...");
       this._cordova = new SdCliCordova({
         pkgPath: this._pkgPath,
-        config: this._pkgConf.builder.cordova,
-        cordovaPath: path.resolve(this._pkgPath, ".cordova")
+        config: this._pkgConf.builder.cordova
       });
       await this._cordova.initializeAsync();
     }
@@ -123,7 +123,7 @@ export class SdCliClientBuilder extends EventEmitter {
         builderType: builderType,
         pkgPath: this._pkgPath,
         outputPath: builderType === "web" ? path.resolve(this._pkgPath, "dist")
-          : builderType === "electron" ? path.resolve(this._pkgPath, ".electron/src")
+          : builderType === "electron" && !opt.dev ? path.resolve(this._pkgPath, ".electron/src")
             : builderType === "cordova" && !opt.dev ? path.resolve(this._pkgPath, ".cordova/www")
               : path.resolve(this._pkgPath, "dist", builderType),
         env: {
@@ -155,6 +155,14 @@ export class SdCliClientBuilder extends EventEmitter {
     if (!opt.dev && this._cordova) {
       this._debug("CORDOVA BUILD...");
       await this._cordova.buildAsync(path.resolve(this._pkgPath, "dist"));
+    }
+
+    if (!opt.dev && this._pkgConf.builder?.electron) {
+      this._debug("ELECTRON BUILD...");
+      await SdCliElectron.buildAsync({
+        pkgPath: this._pkgPath,
+        config: this._pkgConf.builder.electron
+      });
     }
 
     this._debug(`빌드 완료`);
