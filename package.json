@@ -3,7 +3,7 @@
   "version": "11.1.30",
   "description": "심플리즘 패키지",
   "author": "김석래",
-  "packageManager": "yarn@4.0.1",
+  "packageManager": "yarn@4.1.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/kslhunter/simplysm11.git"
@@ -31,7 +31,7 @@
   },
   "devDependencies": {
     "@simplysm/eslint-plugin": "11.1.30",
-    "@types/node": "^18.19.15",
+    "@types/node": "^18.19.17",
     "cross-env": "^7.0.3",
     "eslint": "^8.56.0",
     "tsx": "^4.7.1",
