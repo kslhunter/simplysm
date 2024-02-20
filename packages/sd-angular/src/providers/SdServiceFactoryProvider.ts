@@ -22,7 +22,8 @@ export class SdServiceFactoryProvider implements OnDestroy {
     const client = new SdServiceClient(clientName, ObjectUtil.merge({
       port: location.port,
       host: location.hostname,
-      ssl: location.protocol.startsWith("https")
+      ssl: location.protocol.startsWith("https"),
+      useReconnect: true
     }, options));
 
     const reqProgressToastMap = new Map<string, ISdProgressToast | undefined>();

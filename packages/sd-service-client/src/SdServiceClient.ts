@@ -35,9 +35,7 @@ export class SdServiceClient extends EventEmitter {
   }
 
   public override on(event: "request-progress", listener: (state: ISdServiceClientRequestProgressState) => void): this;
-
   public override on(event: "response-progress", listener: (state: ISdServiceClientResponseProgressState) => void): this;
-
   public override on(event: string | symbol, listener: (...args: any[]) => void): this {
     return super.on(event, listener);
   }
@@ -45,7 +43,7 @@ export class SdServiceClient extends EventEmitter {
   public async connectAsync(): Promise<void> {
     if (this.isConnected) return;
 
-    await new Promise<void>(async (resolve) => {
+    await new Promise<void>(async (resolve, reject) => {
       this._ws.on("message", async (msgJson) => {
         const msg = JsonConvert.parse(msgJson) as TSdServiceS2CMessage;
         // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
@@ -66,8 +64,13 @@ export class SdServiceClient extends EventEmitter {
       const reconnectFn = async (): Promise<void> => {
         await Wait.until(() => !SdServiceClient.isOnShowAlert);
 
-        if (this.reconnectCount > 100) {
-          throw new Error("연결이 너무 오래 끊겨있습니다. 연결상태 확인 후, 화면을 새로고침하세요.");
+        if (!this.options.useReconnect) {
+          console.error("WebSocket 연결이 끊겼습니다. 연결상태를 확인하세요.");
+          return;
+        }
+        else if (this.reconnectCount > 100) {
+          console.error("연결이 너무 오래 끊겨있습니다. 연결상태 확인 후, 화면을 새로고침하세요.");
+          return;
         }
         else {
           this.reconnectCount++;
@@ -102,7 +105,12 @@ export class SdServiceClient extends EventEmitter {
         }
       });
 
-      await this._ws.connectAsync();
+      try {
+        await this._ws.connectAsync();
+      }
+      catch (err) {
+        reject(err);
+      }
     });
   }
 
