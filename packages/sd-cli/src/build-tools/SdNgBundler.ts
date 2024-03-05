@@ -7,7 +7,6 @@ import {
 import esbuild, {Metafile} from "esbuild";
 import {FsUtil, Logger, PathUtil} from "@simplysm/sd-core-node";
 import {fileURLToPath} from "url";
-import {createVirtualModulePlugin} from "@angular-devkit/build-angular/src/tools/esbuild/virtual-module-plugin";
 import {
   createSourcemapIgnorelistPlugin
 } from "@angular-devkit/build-angular/src/tools/esbuild/sourcemap-ignorelist-plugin";
@@ -87,6 +86,7 @@ export class SdNgBundler {
   public markForChanges(filePaths: string[]): void {
     for (const filePath of filePaths) {
       this.#modifiedFileSet.add(path.normalize(filePath));
+      this.#styleLoadResultCache.invalidate(path.normalize(filePath));
     }
     // this._sourceFileCache.invalidate(filePaths);
   }
@@ -214,7 +214,10 @@ export class SdNgBundler {
 
     return {
       program: this.#ngResultCache.program!,
-      watchFileSet: this.#ngResultCache.watchFileSet!,
+      watchFileSet: new Set([
+        ...this.#ngResultCache.watchFileSet!,
+        ...this.#styleLoadResultCache.watchFiles
+      ]),
       affectedFileSet: this.#ngResultCache.affectedFileSet!,
       results
     };
@@ -404,7 +407,8 @@ export class SdNgBundler {
       entryNames: '[name]',
       entryPoints: {
         main: this._mainFilePath,
-        polyfills: 'angular:polyfills',
+        // polyfills: 'angular:polyfills',
+        polyfills: path.resolve(this._opt.pkgPath, "src/polyfills.ts"),
         ...this._opt.builderType === "cordova" ? {
           "cordova-entry": path.resolve(path.dirname(fileURLToPath(import.meta.url)), `../../lib/cordova-entry.js`)
         } : {}
@@ -448,14 +452,14 @@ export class SdNgBundler {
             });
           }
         }] : [],
-        createVirtualModulePlugin({
-          namespace: "angular:polyfills",
-          loadContent: () => ({
-            contents: `import "./src/polyfills.ts";`,
-            loader: 'js',
-            resolveDir: this._opt.pkgPath
-          })
-        }) as esbuild.Plugin,
+        // createVirtualModulePlugin({
+        //   namespace: "angular:polyfills",
+        //   loadContent: () => ({
+        //     contents: `import "./src/polyfills.ts";`,
+        //     loader: 'js',
+        //     resolveDir: this._opt.pkgPath
+        //   })
+        // }) as esbuild.Plugin,
         createSourcemapIgnorelistPlugin(),
         sdNgPlugin({
           modifiedFileSet: this.#modifiedFileSet,
@@ -526,17 +530,20 @@ export class SdNgBundler {
       conditions: ['style', 'sass'],
       mainFields: ['style', 'sass'],
       legalComments: !this._opt.dev ? "none" : "eof",
-      entryPoints: {styles: 'angular:styles/global;styles'},
+      entryPoints: {
+        // styles: 'angular:styles/global;styles'
+        styles: path.resolve(this._opt.pkgPath, "src/styles.scss")
+      },
       plugins: [
-        createVirtualModulePlugin({
-          namespace: "angular:styles/global",
-          transformPath: (currPath) => currPath.split(';', 2)[1],
-          loadContent: () => ({
-            contents: `@import 'src/styles.scss';`,
-            loader: 'css',
-            resolveDir: this._opt.pkgPath
-          }),
-        }) as esbuild.Plugin,
+        // createVirtualModulePlugin({
+        //   namespace: "angular:styles/global",
+        //   transformPath: (currPath) => currPath.split(';', 2)[1],
+        //   loadContent: () => ({
+        //     contents: `@import 'src/styles.scss';`,
+        //     loader: 'css',
+        //     resolveDir: this._opt.pkgPath
+        //   }),
+        // }) as esbuild.Plugin,
         pluginFactory.create(SassStylesheetLanguage) as esbuild.Plugin,
         pluginFactory.create(CssStylesheetLanguage) as esbuild.Plugin,
         createCssResourcePlugin(this.#styleLoadResultCache) as esbuild.Plugin,

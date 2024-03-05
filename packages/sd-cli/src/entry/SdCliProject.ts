@@ -82,6 +82,7 @@ export class SdCliProject {
         busyCount++;
       }
       else if (message.type === "complete") {
+        resultCache.delete("none");
         for (const affectedFilePath of message.result!.affectedFilePaths) {
           resultCache.delete(affectedFilePath);
         }

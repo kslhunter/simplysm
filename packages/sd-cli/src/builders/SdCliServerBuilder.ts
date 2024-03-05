@@ -180,6 +180,12 @@ Options = UnsafeLegacyRenegotiation`.trim()
       const serverExeFilePath = this.#pkgConf.iis.nodeExeFilePath ?? "C:\\Program Files\\nodejs\\node.exe";
       await FsUtil.writeFileAsync(iisDistPath, `
 <configuration>
+  <appSettings>
+    <add key="NODE_ENV" value="production" />
+    <add key="TZ" value="Asia/Seoul" />
+    <add key="SD_VERSION" value="${npmConfig.version}" />
+    ${Object.keys(this.#pkgConf.env ?? {}).map(key => `<add key="${key}" value="${this.#pkgConf.env![key]}"/>`).join("\n    ")}
+  </appSettings>
   <system.webServer>
     <handlers>
       <add name="iisnode" path="main.js" verb="*" modules="iisnode" />
