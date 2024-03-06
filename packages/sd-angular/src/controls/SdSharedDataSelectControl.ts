@@ -59,7 +59,7 @@ import {NgIf, NgTemplateOutlet} from "@angular/common";
       <ng-template #header>
         <sd-dock-container>
           <sd-dock class="bdb bdb-trans-default">
-            <sd-textfield type="text" [(value)]="searchText" placeholder="검색어" inset></sd-textfield>
+            <sd-textfield type="text" [(value)]="searchText" placeholder="검색어" inset/>
           </sd-dock>
 
           <sd-pane class="p-xs-default bdb bdb-trans-default" *ngIf="modalType">

@@ -254,17 +254,22 @@ import {NgIf} from "@angular/common";
       }
 
 
-      &[sd-disabled=true] {
-        > ._contents {
-          display: block;
-          background: var(--theme-grey-lightest);
-          color: var(--text-trans-light);
-        }
-
-        &[sd-inset=true] {
+      body.sd-theme-compact &,
+      body.sd-theme-modern &,
+      body.sd-theme-mobile &,
+      body.sd-theme-kiosk & {
+        &[sd-disabled=true] {
           > ._contents {
-            background: white;
-            color: var(--text-trans-default);
+            display: block;
+            background: var(--theme-grey-lightest);
+            color: var(--text-trans-light);
+          }
+
+          &[sd-inset=true] {
+            > ._contents {
+              background: white;
+              color: var(--text-trans-default);
+            }
           }
         }
       }

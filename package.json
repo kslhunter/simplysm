@@ -3,7 +3,7 @@
   "version": "11.1.31",
   "description": "심플리즘 패키지",
   "author": "김석래",
-  "packageManager": "yarn@4.1.0",
+  "packageManager": "yarn@4.1.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/kslhunter/simplysm11.git"

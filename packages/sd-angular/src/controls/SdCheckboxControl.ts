@@ -141,9 +141,10 @@ import {NgIf} from "@angular/common";
         display: inline-block;
 
         > div {
-          padding-left: 0;
-          padding-top: 0;
-          padding-bottom: 0;
+          //padding-left: 0;
+          //padding-top: 0;
+          //padding-bottom: 0;
+          padding: 0;
         }
       }
 

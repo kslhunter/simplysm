@@ -12,7 +12,7 @@ import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/c
       &[sd-layout="cascade"] {
         display: flex;
         flex-direction: column;
-        gap: var(--gap-sm);
+        gap: var(--gap-default);
       }
 
       &[sd-layout="table"] {
