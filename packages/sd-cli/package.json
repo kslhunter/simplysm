@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-cli",
-  "version": "11.1.31",
+  "version": "11.1.32",
   "description": "심플리즘 패키지 - CLI",
   "author": "김석래",
   "repository": {
@@ -23,10 +23,10 @@
     "@angular/compiler-cli": "^17.2.3",
     "@angular/core": "^17.2.3",
     "@electron/rebuild": "^3.6.0",
-    "@simplysm/sd-core-common": "11.1.31",
-    "@simplysm/sd-core-node": "11.1.31",
-    "@simplysm/sd-service-server": "11.1.31",
-    "@simplysm/sd-storage": "11.1.31",
+    "@simplysm/sd-core-common": "11.1.32",
+    "@simplysm/sd-core-node": "11.1.32",
+    "@simplysm/sd-service-server": "11.1.32",
+    "@simplysm/sd-storage": "11.1.32",
     "browserslist": "^4.23.0",
     "cordova": "^12.0.0",
     "electron": "^29.1.0",
