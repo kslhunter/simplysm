@@ -11,7 +11,6 @@
       <change beforePath="$PROJECT_DIR$/packages/cordova-util/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/cordova-util/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/packages/eslint-plugin/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/eslint-plugin/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/packages/sd-angular/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSidebarMenuControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSidebarMenuControl.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/packages/sd-cli/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/packages/sd-core-browser/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-core-browser/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/packages/sd-core-common/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-core-common/package.json" afterDir="false" />
@@ -19,6 +18,7 @@
       <change beforePath="$PROJECT_DIR$/packages/sd-excel/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-excel/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/packages/sd-orm-common/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-orm-common/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/packages/sd-orm-node-mssql/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-orm-node-mssql/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-orm-node-mssql/src/MssqlDbConnection.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-orm-node-mssql/src/MssqlDbConnection.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/packages/sd-orm-node-mysql/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-orm-node-mysql/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/packages/sd-orm-node-sqlite/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-orm-node-sqlite/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/packages/sd-orm-node/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-orm-node/package.json" afterDir="false" />
@@ -64,6 +64,7 @@
     <dismissed value="$PROJECT_DIR$/packages/sd-angular/package.json" />
     <dismissed value="$PROJECT_DIR$/packages/sd-cli/package.json" />
     <dismissed value="$PROJECT_DIR$/packages/sd-excel/package.json" />
+    <dismissed value="$PROJECT_DIR$/packages/sd-orm-node-mssql/package.json" />
     <dismissed value="$PROJECT_DIR$/packages/sd-service-client/package.json" />
   </component>
   <component name="ProjectColorInfo">{
@@ -165,10 +166,10 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="npm.watch" />
         <item itemvalue="npm.publish" />
-        <item itemvalue="npm.simplysm &gt; watch:sd-angular" />
         <item itemvalue="npm.commit" />
+        <item itemvalue="npm.watch" />
+        <item itemvalue="npm.simplysm &gt; watch:sd-angular" />
         <item itemvalue="Node.js.notosans-maker.js" />
       </list>
     </recent_temporary>

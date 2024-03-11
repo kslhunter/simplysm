@@ -20,6 +20,7 @@ import {
   TQueryValue,
   TSdOrmDataType
 } from "@simplysm/sd-orm-common";
+import {DataType} from "tedious/lib/data-type";
 
 export class MssqlDbConnection extends EventEmitter implements IDbConnection {
   private readonly _logger = Logger.get(["simplysm", "sd-orm-node", this.constructor.name]);
@@ -152,7 +153,7 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
     const conn = this._conn;
 
     await new Promise<void>((resolve, reject) => {
-      conn.commitTransaction((err: Error | null) => {
+      conn.commitTransaction(err => {
         if (err != null) {
           reject(new Error(err.message));
           return;
@@ -173,7 +174,7 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
     const conn = this._conn;
 
     await new Promise<void>((resolve, reject) => {
-      conn.rollbackTransaction((err: Error | null) => {
+      conn.rollbackTransaction(err => {
         if (err != null) {
           reject(new Error(err.message));
           return;
@@ -202,7 +203,7 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
         await new Promise<void>((resolve, reject) => {
           let rejected = false;
           const queryRequest = new tedious
-            .Request(queryString, (err: Error | null) => {
+            .Request(queryString, err => {
               if (err != null) {
                 rejected = true;
                 this._requests.remove(queryRequest);
@@ -222,14 +223,14 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
                 }
               }
             })
-            .on("done", (rowCount, more, rows) => {
+            .on("done", (rowCount, more, rst) => {
               this._startTimeout();
 
               if (rejected) {
                 return;
               }
 
-              const result = rows.map((item: tedious.ColumnValue[]) => {
+              const result = (rst ?? []).map(item => {
                 const resultItem = {};
                 for (const col of item) {
                   resultItem[col.metadata.colName] = col.value;
@@ -280,7 +281,7 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
     const tediousColumnDefs = columnDefs.map((item) => this._convertColumnDefToTediousBulkColumnDef(item));
 
     await new Promise<void>((resolve, reject) => {
-      const bulkLoad = this._conn?.newBulkLoad(tableName, (err: Error | null) => {
+      const bulkLoad = this._conn?.newBulkLoad(tableName, err => {
         if (err != null) {
           reject(new Error(`[${err["code"] as string}] ${err.message}\n${JsonConvert.stringify(tediousColumnDefs)}\n-- query\n\n${JsonConvert.stringify(records).substring(0, 10000)}...\n--`));
           return;
@@ -293,7 +294,6 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
         bulkLoad.addColumn(tediousColumnDef.name, tediousColumnDef.type, tediousColumnDef.options);
       }
 
-      // @ts-expect-error
       this._conn?.execBulkLoad(bulkLoad, records);
     });
   }
@@ -323,8 +323,8 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
 
   private _convertColumnDefToTediousBulkColumnDef(columnDef: IQueryColumnDef): {
     name: string;
-    type: tedious.TediousType;
-    options: tedious.BulkLoadColumnOpts
+    type: DataType;
+    options: ITediousColumnOptions;
   } {
     const tediousDataType = this._convertColumnDataTypeToTediousBulkColumnType(columnDef.dataType);
     return {
@@ -340,8 +340,8 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
   }
 
   private _convertColumnDataTypeToTediousBulkColumnType(type: Type<TQueryValue> | TSdOrmDataType | string): {
-    type: tedious.TediousType;
-    length?: number | "max";
+    type: DataType;
+    length?: number;
     precision?: number;
     scale?: number
   } {
@@ -353,13 +353,16 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
         case "DECIMAL":
           return {type: tedious.TYPES.Decimal, precision: currType.precision, scale: currType.digits};
         case "STRING":
-          return {type: tedious.TYPES.NVarChar, length: currType.length === "MAX" ? "max" : (currType.length ?? 255)};
+          return {
+            type: tedious.TYPES.NVarChar,
+            length: currType.length === "MAX" ? Infinity : (currType.length ?? 255)
+          };
         case "FIXSTRING":
           return {type: tedious.TYPES.NChar, length: currType.length};
         case "BINARY":
           return {
             type: tedious.TYPES.VarBinary,
-            length: currType.length === "MAX" ? "max" : (currType.length ?? 255)
+            length: currType.length === "MAX" ? Infinity : (currType.length ?? 255)
           };
         default:
           throw new TypeError();
@@ -368,7 +371,7 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
     else if (typeof type === "string") {
       const split = type.split(/[(,)]/);
       const typeStr = split[0];
-      const length = split[1] === "MAX" ? "max" : typeof split[1] !== "undefined" ? Number.parseInt(split[1], 10) : undefined;
+      const length = split[1] === "MAX" ? Infinity : typeof split[1] !== "undefined" ? Number.parseInt(split[1], 10) : undefined;
       const digits = typeof split[2] !== "undefined" ? Number.parseInt(split[2], 10) : undefined;
 
       const typeKey = Object.keys(tedious.TYPES).single((item) => item.toLocaleLowerCase() === typeStr.toLowerCase());
@@ -378,7 +381,7 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
       const dataType = tedious.TYPES[typeKey];
 
       if (dataType === tedious.TYPES.Decimal) {
-        return {type: dataType, precision: length as number, scale: digits};
+        return {type: dataType, precision: length, scale: digits};
       }
       else {
         return {type: dataType, length};
@@ -402,10 +405,19 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
         case Uuid:
           return {type: tedious.TYPES.UniqueIdentifier};
         case Buffer:
-          return {type: tedious.TYPES.Binary, length: "max"};
+          return {type: tedious.TYPES.Binary, length: Infinity};
         default:
           throw new TypeError(typeof currType !== "undefined" ? currType.name : "undefined");
       }
     }
   }
+}
+
+interface ITediousColumnOptions {
+  output?: boolean;
+  length?: number;
+  precision?: number;
+  scale?: number;
+  objName?: string;
+  nullable?: boolean;
 }
