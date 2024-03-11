@@ -8,6 +8,7 @@ import {SdTypedTemplateDirective} from "../directives/SdTypedTemplateDirective";
 import {SdListItemControl} from "./SdListItemControl";
 import {SdIconControl} from "./SdIconControl";
 import {SdRouterLinkDirective} from "../directives/SdRouterLinkDirective";
+import {IconProp} from "@fortawesome/fontawesome-svg-core";
 
 @Component({
   selector: "sd-sidebar-menu",
@@ -33,11 +34,12 @@ import {SdRouterLinkDirective} from "../directives/SdRouterLinkDirective";
       <ng-container *ngFor="let menu of currMenus; trackBy: trackByForMenu;">
         <sd-list-item [contentClass]="depth === 0 ? 'pv-default' : ''"
                       [contentStyle]="'padding-left: ' + ((depth + 1) * 6) + 'px'"
-                      [sdRouterLink]="menu.children ? undefined: ['/home/' + menu.codeChain.join('/')]"
+                      [sdRouterLink]="(menu.children || menu.url) ? undefined: ['/home/' + menu.codeChain.join('/')]"
+                      (click)="onMenuClick(menu)"
                       [selected]="getIsMenuSelected(menu)"
                       [layout]="depth === 0 ? (layout ?? 'accordion') : 'accordion'">
           <sd-icon *ngIf="menu.icon" [icon]="menu.icon" fixedWidth/>
-          {{menu.title}}
+          {{ menu.title }}
           <sd-list *ngIf="menu.children" inset>
             <ng-template [ngTemplateOutlet]="itemTemplate"
                          [ngTemplateOutletContext]="{menus: menu.children, depth: depth + 1}"></ng-template>
@@ -77,13 +79,13 @@ export class SdSidebarMenuControl implements OnInit {
   #cdr = inject(ChangeDetectorRef);
 
   @Input()
-  menus: ISdMenu[] = [];
+  menus: ISdSidebarMenuVM[] = [];
 
   @Input()
   layout?: "accordion" | "flat";
 
   @Input()
-  getMenuIsSelectedFn?: TSdFnInfo<(menu: ISdMenu) => boolean>;
+  getMenuIsSelectedFn?: TSdFnInfo<(menu: ISdSidebarMenuVM) => boolean>;
 
   trackByForMenu = (i: number, menu: ISdMenu): string => menu.codeChain.join(".");
 
@@ -100,15 +102,29 @@ export class SdSidebarMenuControl implements OnInit {
     });
   }
 
-  getIsMenuSelected(menu: ISdMenu): boolean {
+  getIsMenuSelected(menu: ISdSidebarMenuVM): boolean {
     return this.getMenuIsSelectedFn?.[0]
       ? this.getMenuIsSelectedFn[0](menu)
       : this.#pageCode === menu.codeChain.join(".");
   }
 
+  onMenuClick(menu: ISdSidebarMenuVM): void {
+    if (menu.url != null) {
+      window.open(menu.url, "_blank");
+    }
+  }
+
 
   protected readonly itemTemplateType!: {
-    menus: ISdMenu[];
+    menus: ISdSidebarMenuVM[];
     depth: number;
   };
+}
+
+export interface ISdSidebarMenuVM {
+  title: string;
+  codeChain: string[];
+  url?: string;
+  icon?: IconProp;
+  children?: ISdSidebarMenuVM[];
 }
