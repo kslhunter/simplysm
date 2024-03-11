@@ -335,7 +335,7 @@ export class SdSelectControl<M extends "single" | "multi", T extends any> implem
   @Input()
   trackByFn: TSdFnInfo<(index: number, item: T) => any> = [(index, item) => item];
 
-  @Input()
+  @Input({})
   getChildrenFn?: TSdFnInfo<(index: number, item: T, depth: number) => T[]>;
 
   @Input({transform: coercionBoolean})

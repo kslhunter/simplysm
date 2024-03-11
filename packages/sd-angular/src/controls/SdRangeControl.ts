@@ -34,7 +34,7 @@ export class SdRangeControl<K extends TSdTextfieldType> {
   type!: K;
 
   @Input()
-  value: [TSdTextfieldValue<K> | undefined, TSdTextfieldValue<K> | undefined] = [undefined, undefined];
+  value: [TSdTextfieldValue<K>?, TSdTextfieldValue<K>?] = [];
 
   @Output()
   valueChange = new EventEmitter<[TSdTextfieldValue<K> | undefined, TSdTextfieldValue<K> | undefined]>();

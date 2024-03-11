@@ -28,12 +28,15 @@ export function coercionNonNullableNumber(value: number | string): number {
 
 // export type TSdTheme = Parameters<typeof transformTheme>[0];
 
-export type TSdFnInfo<F> = [F, ...[any, ("one" | "all")?][]];
-
+export type TSdFnInfo<F> = [F, ...[() => any, ("one" | "all")?][]];
 
 export function getSdFnCheckData(name: string, sdFn: TSdFnInfo<any> | undefined) {
   return {
     [name]: [sdFn?.[0]],
-    ...sdFn ? sdFn.slice(1).toObject((item, i) => `${name}[${i}]`) : {}
+    ...sdFn ? sdFn.slice(1).toObject((item, i) => `${name}[${i}]`, item => [item[0](), item[1]]) : {}
   };
+}
+
+export function sdFnInfo<F extends Function>(fn: F, ...params: [() => any, ("one" | "all")?][]): TSdFnInfo<F> {
+  return [fn, ...params];
 }

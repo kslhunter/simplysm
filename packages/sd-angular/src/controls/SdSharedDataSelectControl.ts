@@ -15,7 +15,7 @@ import {
 import {ISharedDataBase} from "../providers/SdSharedDataProvider";
 import {SdModalBase, SdModalProvider} from "../providers/SdModalProvider";
 import {SdNgHelper} from "../utils/SdNgHelper";
-import {coercionBoolean, TSdFnInfo} from "../utils/commons";
+import {coercionBoolean, sdFnInfo, TSdFnInfo} from "../utils/commons";
 import {SdItemOfTemplateContext, SdItemOfTemplateDirective} from "../directives/SdItemOfTemplateDirective";
 import {SdSelectControl} from "./SdSelectControl";
 import {SdDockContainerControl} from "./SdDockContainerControl";
@@ -55,7 +55,7 @@ import {NgIf, NgTemplateOutlet} from "@angular/common";
                [selectMode]="selectMode"
                [contentClass]="selectClass"
                [multiSelectionDisplayDirection]="multiSelectionDisplayDirection"
-               [getChildrenFn]="parentKeyProp ? [getChildrenFn, [this.itemByParentKeyMap, 'all'], [this.displayOrderKeyProp]] : undefined">
+               [getChildrenFn]="parentKeyProp ? getChildrenFnInfo : undefined">
       <ng-template #header>
         <sd-dock-container>
           <sd-dock class="bdb bdb-trans-default">
@@ -211,6 +211,12 @@ export class SdSharedDataSelectControl<M extends "single" | "multi", T extends I
 
     return result;
   };
+
+  getChildrenFnInfo = sdFnInfo(
+    this.getChildrenFn,
+    [() => this.itemByParentKeyMap, 'all'],
+    [() => this.displayOrderKeyProp]
+  );
 
   #sdNgHelper = new SdNgHelper(inject(Injector));
 

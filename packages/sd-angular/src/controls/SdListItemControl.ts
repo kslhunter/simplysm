@@ -63,7 +63,7 @@ import {faAngleDown} from "@fortawesome/pro-duotone-svg-icons/faAngleDown";
         body.sd-theme-mobile & {
           @include active-effect(true);
           border-radius: var(--border-radius-default);
-          margin: var(--gap-xxs);
+          margin: var(--gap-xxs) 0;
         }
 
         > .flex-row > ._selected-icon {

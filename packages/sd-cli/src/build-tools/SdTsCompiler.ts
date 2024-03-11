@@ -3,7 +3,7 @@ import ts from "typescript";
 import {SdCliBuildResultUtil} from "../utils/SdCliBuildResultUtil";
 import {FsUtil, Logger, PathUtil} from "@simplysm/sd-core-node";
 import {ISdCliPackageBuildResult, ITsConfig} from "../commons";
-import {NgtscProgram} from "@angular/compiler-cli";
+import {NgtscProgram, OptimizeFor} from "@angular/compiler-cli";
 import {createHash} from "crypto";
 import {fileURLToPath, pathToFileURL} from "url";
 import * as sass from "sass";
@@ -268,6 +268,7 @@ export class SdTsCompiler {
               }
             }
 
+            this._ngProgram?.compiler.incrementalCompilation.recordSuccessfulEmit(affectedSourceFile);
             this._writeFile(realFilePath, realData);
           },
           undefined,
@@ -286,7 +287,7 @@ export class SdTsCompiler {
           !this._ngProgram.compiler.incrementalCompilation.safeToSkipEmit(affectedSourceFile)
         ) {
           diagnostics.push(
-            ...this._ngProgram.compiler.getDiagnosticsForFile(affectedSourceFile, 1)
+            ...this._ngProgram.compiler.getDiagnosticsForFile(affectedSourceFile, OptimizeFor.WholeProgram)
           );
         }
       }

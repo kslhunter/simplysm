@@ -1,5 +1,4 @@
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, Input, OnInit} from "@angular/core";
-import {ISdMenu} from "../utils/SdAppStructureUtil";
 import {NavigationEnd, Router} from "@angular/router";
 import {TSdFnInfo} from "../utils/commons";
 import {SdListControl} from "./SdListControl";
@@ -87,7 +86,7 @@ export class SdSidebarMenuControl implements OnInit {
   @Input()
   getMenuIsSelectedFn?: TSdFnInfo<(menu: ISdSidebarMenuVM) => boolean>;
 
-  trackByForMenu = (i: number, menu: ISdMenu): string => menu.codeChain.join(".");
+  trackByForMenu = (i: number, menu: ISdSidebarMenuVM): string => menu.codeChain.join(".");
 
   #pageCode = "";
 

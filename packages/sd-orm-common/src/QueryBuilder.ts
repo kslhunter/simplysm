@@ -470,12 +470,14 @@ pragma writable_schema=0;`.trim();
       const fkName = this.wrap(`FK_${tableKey}_${def.foreignKey.name}`);
       const targetTableName = this.getTableName(def.foreignKey.targetTable);
 
+      const action = this._dialect === "mssql" ? "NO ACTION" : "CASCADE";
+
       let query = "";
       query += `ALTER TABLE ${tableName}
         ADD CONSTRAINT ${fkName} FOREIGN KEY (${def.foreignKey.fkColumns.map((columnName) => `${this.wrap(columnName)}`).join(", ")})  `;
       query += `  REFERENCES ${targetTableName} (${def.foreignKey.targetPkColumns.map((columnName) => `${this.wrap(columnName)}`).join(", ")})\n`;
-      query += "  ON DELETE NO ACTION\n";
-      query += "  ON UPDATE NO ACTION;";
+      query += `  ON DELETE ${action}\n`;
+      query += `  ON UPDATE ${action};`;
       return query.trim();
     }
   }
