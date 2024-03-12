@@ -3,7 +3,8 @@ module.exports = {
     "**/node_modules/**",
     "**/.cache/**",
     "**/dist/**",
-    "**/.*/**"
+    "**/.*/**",
+    "**/_*/**"
   ],
   env: {
     node: true,
@@ -40,9 +41,10 @@ module.exports = {
       files: ["*.ts", "*.tsx"],
       parser: "@typescript-eslint/parser",
       parserOptions: {
+        tsconfigRootDir: process.cwd(),
         project: [
-          "tsconfig.json",
-          "packages/*/tsconfig.json"
+          "./tsconfig.json",
+          "./packages/*/tsconfig.json"
         ]
       },
       plugins: [
