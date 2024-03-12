@@ -40,13 +40,12 @@ module.exports = {
     {
       files: ["*.ts", "*.tsx"],
       parser: "@typescript-eslint/parser",
-      parserOptions: {
-        tsconfigRootDir: process.cwd(),
-        project: [
-          "./tsconfig.json",
-          "./packages/*/tsconfig.json"
-        ]
-      },
+      // parserOptions: {
+      //   project: [
+      //     "./tsconfig.json",
+      //     "./packages/*/tsconfig.json"
+      //   ]
+      // },
       plugins: [
         "@typescript-eslint",
         "import",
@@ -58,11 +57,11 @@ module.exports = {
         "import/parsers": {
           "@typescript-eslint/parser": [".ts", ".tsx"]
         },
-        "import/resolver": {
-          "typescript": {
-            project: "packages/*/tsconfig.json",
-          }
-        }
+        // "import/resolver": {
+        //   "typescript": {
+        //     project: "packages/*/tsconfig.json"
+        //   }
+        // }
       },
       rules: {
         // 기본
