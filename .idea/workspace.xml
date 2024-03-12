@@ -4,27 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a5909e33-fd1f-4a18-a2ac-5581a953e90d" name="Changes" comment=".">
-      <change afterPath="$PROJECT_DIR$/packages/cordova-plugin-local-baseurl/.eslintrc.cjs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/packages/cordova-util/.eslintrc.cjs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/packages/sd-angular/.eslintrc.cjs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/packages/sd-cli/.eslintrc.cjs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/packages/sd-core-browser/.eslintrc.cjs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/packages/sd-core-common/.eslintrc.cjs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/packages/sd-core-node/.eslintrc.cjs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/packages/sd-excel/.eslintrc.cjs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/packages/sd-orm-common/.eslintrc.cjs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/packages/sd-orm-node-mssql/.eslintrc.cjs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/packages/sd-orm-node-mysql/.eslintrc.cjs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/packages/sd-orm-node-sqlite/.eslintrc.cjs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/packages/sd-orm-node/.eslintrc.cjs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/packages/sd-service-client/.eslintrc.cjs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/packages/sd-service-common/.eslintrc.cjs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/packages/sd-service-server/.eslintrc.cjs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/packages/sd-storage/.eslintrc.cjs" afterDir="false" />
+    <list default="true" id="a5909e33-fd1f-4a18-a2ac-5581a953e90d" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/eslint-plugin/src/configs/root.cjs" beforeDir="false" afterPath="$PROJECT_DIR$/packages/eslint-plugin/src/configs/root.cjs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/eslint-plugin/src/index.cjs" beforeDir="false" afterPath="$PROJECT_DIR$/packages/eslint-plugin/src/index.cjs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -165,8 +146,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="npm.watch" />
         <item itemvalue="npm.publish" />
+        <item itemvalue="npm.watch" />
         <item itemvalue="npm.simplysm &gt; watch:sd-angular" />
         <item itemvalue="npm.commit" />
         <item itemvalue="Node.js.notosans-maker.js" />
