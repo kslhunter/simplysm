@@ -45,7 +45,8 @@ import {faAngleRight} from "@fortawesome/pro-duotone-svg-icons";
     <ng-template #itemTemplate [typed]="itemTemplateType" let-item="item" let-parentKey="parentKey" let-depth="depth"
                  let-parent="parent">
       <tr [attr.sd-collapse]="!!parent && getIsPermCollapsed(parent)"
-          [attr.sd-theme]="depth === 0 ? 'first' : depth % 3 === 0 ? 'success' : depth % 3 === 1 ? 'info' : 'warning'">
+          [attr.sd-theme]="depth === 0 ? 'first' : depth % 3 === 0 ? 'success' : depth % 3 === 1 ? 'info' : 'warning'"
+          *ngIf="(item.children && item.children.length !== 0) || (item.perms && item.perms.length > 0)">
         <ng-container *ngFor="let _ of arr(depth + 1); let i = index; trackBy: trackByIndex">
           <td class="_before">
             &nbsp;
@@ -205,6 +206,7 @@ export class SdPermissionTableControl implements DoCheck {
       run({
         items: [this.items, "all"]
       }, () => {
+        console.log(this.items);
         this.depthLength = this.#getDepthLength(this.items, 0);
       });
     });

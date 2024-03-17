@@ -58,6 +58,10 @@ import {coercionBoolean} from "../utils/commons";
         > tbody > tr > th {
           background: var(--theme-grey-lightest);
         }
+
+        > tbody > tr > td {
+          vertical-align: top;
+        }
       }
 
       &[sd-inset=true] {
@@ -72,6 +76,12 @@ import {coercionBoolean} from "../utils/commons";
           > *:first-child > tr:first-child > * {
             border-top: none;
           }
+        }
+      }
+
+      &[sd-inline=true] {
+        ::ng-deep > table {
+          width: auto;
         }
       }
 
@@ -105,6 +115,10 @@ export class SdTableControl {
   @Input({transform: coercionBoolean})
   @HostBinding("attr.sd-inset")
   inset = false;
+
+  @Input({transform: coercionBoolean})
+  @HostBinding("attr.sd-inline")
+  inline = false;
 
   @Input()
   @HostBinding("attr.sd-cell-border")

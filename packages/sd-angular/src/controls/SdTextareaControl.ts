@@ -15,6 +15,9 @@ import {coercionBoolean, coercionNonNullableNumber, getSdFnCheckData, TSdFnInfo}
 import {SdNgHelper} from "../utils/SdNgHelper";
 import {NgIf} from "@angular/common";
 
+/**
+ * @deprecated use sd-content-editor
+ */
 @Component({
   selector: "sd-textarea",
   changeDetection: ChangeDetectionStrategy.OnPush,

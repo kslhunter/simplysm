@@ -345,6 +345,9 @@ export class SdModalControl implements DoCheck {
   @Input({transform: coercionBoolean})
   resizable = false;
 
+  @Input({transform: coercionBoolean})
+  movable = true;
+
   @Output()
   openChange = new EventEmitter<boolean>();
 
@@ -500,6 +503,8 @@ export class SdModalControl implements DoCheck {
                               direction: "left" | "right" |
                                 "top" | "top-left" | "top-right" |
                                 "bottom" | "bottom-left" | "bottom-right") {
+    if (!this.resizable) return;
+
     const dialogEl = this.dialogElRef.nativeElement;
 
     const startX = event.clientX;
@@ -564,6 +569,8 @@ export class SdModalControl implements DoCheck {
   }
 
   onHeaderMouseDownOutside(event: MouseEvent) {
+    if (!this.movable) return;
+
     const dialogEl = this.dialogElRef.nativeElement;
 
     const startX = event.clientX;

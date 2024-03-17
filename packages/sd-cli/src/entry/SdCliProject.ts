@@ -371,6 +371,29 @@ export class SdCliProject {
       logger.debug(`[${pkgName}] 배포 완료`);
     });
 
+    if (projConf.postPublish && projConf.postPublish.length > 0) {
+      logger.debug("배포후 작업...");
+      for (const postPublishItem of projConf.postPublish) {
+        if (postPublishItem.type === "script") {
+          const script = postPublishItem.script.replace(/%([^%]*)%/g, (item) => {
+            const envName = item.replace(/%/g, "");
+            if (!StringUtil.isNullOrEmpty(projNpmConf.version) && envName === "SD_VERSION") {
+              return projNpmConf.version;
+            }
+            if (envName === "SD_PROJECT_PATH") {
+              return process.cwd();
+            }
+            return process.env[envName] ?? item;
+          });
+          await SdProcess.spawnAsync(script);
+        }
+        else {
+          throw new NeverEntryError();
+        }
+      }
+    }
+
+
     logger.info(`모든 배포가 완료되었습니다. (v${projNpmConf.version})`);
   }
 
@@ -385,6 +408,9 @@ export class SdCliProject {
         const envName = item.replace(/%/g, "");
         if (!StringUtil.isNullOrEmpty(pkgNpmConf.version) && envName === "SD_VERSION") {
           return pkgNpmConf.version;
+        }
+        if (envName === "SD_PROJECT_PATH") {
+          return process.cwd();
         }
         return process.env[envName] ?? item;
       });

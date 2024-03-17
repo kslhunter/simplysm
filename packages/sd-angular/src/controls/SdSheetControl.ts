@@ -214,6 +214,7 @@ import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
                       [style.width]="columnDef.width"
                       [style.min-width]="columnDef.width"
                       [style.max-width]="columnDef.width"
+                      [class]="getItemCellClass?.(itemDef.item, columnDef.control.key)"
                       (click)="onItemCellClick(itemDef.item)"
                       (dblclick)="onCellDoubleClick($event)"
                       (keydown)="this.cellKeydown.emit({ item: itemDef.item, key: columnDef.control.key, event: $event })">
@@ -637,7 +638,7 @@ export class SdSheetControl<T> implements DoCheck {
   getChildrenFn?: TSdFnInfo<(index: number, item: T) => (T[] | undefined)>;
 
   @Input()
-  itemRowClassFn?: TSdFnInfo<(index: number, item: T) => (string | undefined)>;
+  getItemCellClass?: (item: T, colKey: string) => (string | undefined);
 
   displayColumnDefs: IColumnDef<T>[] = [];
   displayHeaderDefTable: (IHeaderDef<T> | undefined)[][] = [];

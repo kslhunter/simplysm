@@ -392,6 +392,14 @@ export function sdNgPlugin(conf: {
         }
       );
 
+      build.onLoad(
+        {filter: new RegExp("(" + Object.keys(build.initialOptions.loader!).map(item => "\\" + item).join("|") + ")$")},
+        (args) => {
+          conf.result.watchFileSet!.add(path.normalize(args.path));
+          return null;
+        }
+      );
+
       build.onEnd((result) => {
         for (const {outputFiles, metafile} of additionalResultMap.values()) {
           result.outputFiles?.push(...outputFiles);

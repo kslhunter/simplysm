@@ -25,7 +25,6 @@ import {SdEventsDirective} from "../directives/SdEventsDirective";
   template: `
     <div #editorEl
          class="_editor"
-         [innerHTML]="value"
          (input)="onInput()"
          [attr.contenteditable]="!disabled && !readonly"
          [title]="value"
@@ -44,7 +43,7 @@ import {SdEventsDirective} from "../directives/SdEventsDirective";
         white-space: pre-wrap;
 
         background: var(--theme-secondary-lightest);
-        border: 1px solid var(--border-color-default);
+        border: 1px solid var(--trans-lighter);
         border-radius: var(--border-radius-default);
 
         min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
@@ -178,7 +177,7 @@ export class SdContentEditorControl implements DoCheck {
   validatorFn?: TSdFnInfo<(value: string | undefined) => boolean>;
 
   @ViewChild("editorEl", {static: true})
-  editorElRef!: ElementRef<HTMLDivElement>;
+  editorElRef?: ElementRef<HTMLDivElement>;
 
   @HostBinding("attr.sd-invalid")
   isInvalid = false;
@@ -200,6 +199,19 @@ export class SdContentEditorControl implements DoCheck {
         }
         else {
           this.isInvalid = false;
+        }
+      });
+    });
+
+    this.#sdNgHelper.doCheckOutside(run => {
+      run({
+        value: [this.value]
+      }, () => {
+        if (this.editorElRef) {
+          const innerHTML = this.editorElRef.nativeElement.innerHTML;
+          if (innerHTML !== this.value) {
+            this.editorElRef.nativeElement.innerHTML = this.value ?? "";
+          }
         }
       });
     });

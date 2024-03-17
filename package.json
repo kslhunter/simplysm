@@ -27,11 +27,12 @@
     "_sd-cli_": "tsx --experimental-import-meta-resolve --tsconfig packages/sd-cli/tsconfig.json packages/sd-cli/src/sd-cli.ts",
     "commit": "git add . && git commit -m .",
     "eslint-timing": "cross-env TIMING=1 eslint \"**/+(*.ts|*.tsx|*.js|*.cjs|*.mjs)\"",
-    "eslint-fix": "cross-env TIMING=1 eslint --fix \"**/+(*.ts|*.tsx|*.js|*.cjs|*.mjs)\""
+    "eslint-fix": "cross-env TIMING=1 eslint --fix \"**/+(*.ts|*.tsx|*.js|*.cjs|*.mjs)\"",
+    "reinstall": "yarn install --refresh-lockfile"
   },
   "devDependencies": {
     "@simplysm/eslint-plugin": "11.1.37",
-    "@types/node": "^18.19.23",
+    "@types/node": "^18.19.24",
     "cross-env": "^7.0.3",
     "eslint": "^8.57.0",
     "tsx": "^4.7.1",

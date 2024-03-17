@@ -184,6 +184,14 @@ export function sdServerPlugin(conf: {
         return {contents, loader: "js"};
       });
 
+      build.onLoad(
+        {filter: new RegExp("(" + Object.keys(build.initialOptions.loader!).map(item => "\\" + item).join("|") + ")$")},
+        (args) => {
+          conf.result.watchFileSet!.add(path.normalize(args.path));
+          return null;
+        }
+      );
+
       build.onEnd((result) => {
         conf.result.watchFileSet = resultCache.watchFileSet;
         conf.result.affectedFileSet = resultCache.affectedFileSet;

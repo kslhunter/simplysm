@@ -218,7 +218,7 @@ import {NgIf} from "@angular/common";
             > input,
             > ._contents {
               //width: 95px;
-              width: 8em;
+              width: 8.25em;
             }
           }
 

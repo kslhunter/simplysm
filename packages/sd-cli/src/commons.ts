@@ -54,6 +54,7 @@ export interface ISdCliPackageBuildResult {
 export interface ISdCliConfig {
   packages: Record<string, TSdCliPackageConfig | undefined>;
   localUpdates?: Record<string, string>;
+  postPublish?: TSdCliPostPublishConfig[];
 }
 
 export type TSdCliConfigFn = (isDev: boolean, opts?: string[]) => ISdCliConfig;
@@ -148,4 +149,11 @@ export interface ISdCliClientBuilderCordovaConfig {
     }
   }
   env?: Record<string, string>;
+}
+
+export type TSdCliPostPublishConfig = ISdCliPostPublishScriptConfig;
+
+export interface ISdCliPostPublishScriptConfig {
+  type: "script";
+  script: string;
 }
