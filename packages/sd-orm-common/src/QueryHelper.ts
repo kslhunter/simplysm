@@ -309,13 +309,6 @@ export class QueryHelper {
     return new CaseWhenQueryHelper(this, arg);
   }
 
-  /*public greater<T extends number | Number | DateOnly | DateTime | Time>(source: TEntityValue<T>, target: TEntityValue<T>): QueryUnit<T> {
-    const type = SdOrmUtil.getQueryValueType(source);
-    if (!type) throw new TypeError();
-
-    return this.case(this.greaterThen(source, target), source).else(target);
-  }*/
-
   public greatest<T extends undefined | number | Number | DateOnly | DateTime | Time | string | String>(...args: TEntityValue<T>[]): QueryUnit<T> {
     let type: Type<T> | undefined;
     for (const arg of args) {
@@ -325,6 +318,17 @@ export class QueryHelper {
     if (!type) throw new TypeError();
 
     return new QueryUnit<T>(type, ["GREATEST(", ...args.mapMany((arg) => [this.getQueryValue(arg), ", "]).slice(0, -1), ")"]);
+  }
+
+  /**
+   * @deprecated
+   * MSSQL 2022이하는 GREATEST 사용이 불가하여 만든 함수
+   */
+  public greater<T extends number | Number | DateOnly | DateTime | Time>(source: TEntityValue<T>, target: TEntityValue<T>): QueryUnit<T> {
+    const type = SdOrmUtil.getQueryValueType(source);
+    if (!type) throw new TypeError();
+
+    return this.case(this.greaterThen(source, target), source).else(target);
   }
 
   public dataLength<T extends TQueryValue>(arg: TEntityValue<T>): QueryUnit<number> {
