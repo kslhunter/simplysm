@@ -3,8 +3,11 @@ import esbuild from "esbuild";
 import path from "path";
 import {IServerBundlerResultCache, sdServerPlugin} from "../bundle-plugins/sdServerPlugin";
 import ts from "typescript";
+import {Logger} from "@simplysm/sd-core-node";
 
 export class SdServerBundler {
+  readonly #logger = Logger.get(["simplysm", "sd-cli", "SdServerBundler"]);
+
   #context?: esbuild.BuildContext;
 
   #modifiedFileSet = new Set<string>();
@@ -100,6 +103,11 @@ const __dirname = __path__.dirname(__filename);`.trim()
     }
     catch (err) {
       result = err;
+      for (const e of err.errors) {
+        if (e.detail != null) {
+          this.#logger.error(e.detail);
+        }
+      }
     }
 
     return {

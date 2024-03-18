@@ -187,7 +187,7 @@ export function sdServerPlugin(conf: {
       build.onLoad(
         {filter: new RegExp("(" + Object.keys(build.initialOptions.loader!).map(item => "\\" + item).join("|") + ")$")},
         (args) => {
-          conf.result.watchFileSet!.add(path.normalize(args.path));
+          resultCache.watchFileSet!.add(path.normalize(args.path));
           return null;
         }
       );
