@@ -116,12 +116,12 @@ export class SdServiceServer extends EventEmitter {
       });
 
       this._wsServer = new WebSocketServer({server: this._httpServer});
-      this._wsServer.on("connection", async (wsClient) => {
+      this._wsServer.on("connection", async (wsClient, req) => {
         wsClient["isAlive"] = true;
         wsClient.on("pong", () => {
           wsClient["isAlive"] = true;
         });
-        await this._onWsClientConnectionAsync(wsClient);
+        await this._onWsClientConnectionAsync(wsClient, req);
       });
 
       clearInterval(this._pingInterval);
@@ -232,7 +232,7 @@ export class SdServiceServer extends EventEmitter {
     });
   }
 
-  private async _onWsClientConnectionAsync(wsClient: WebSocket): Promise<void> {
+  private async _onWsClientConnectionAsync(wsClient: WebSocket, req: http.IncomingMessage): Promise<void> {
     const wsClientId = await this._getWsClientIdAsync(wsClient);
 
     this._wsServer?.clients.forEach((client) => {
@@ -245,7 +245,7 @@ export class SdServiceServer extends EventEmitter {
     wsClient["id"] = wsClientId;
     wsClient["connectedAtDateTime"] = new DateTime();
 
-    this._logger.debug("클라이언트 연결됨: " + wsClientId + ": " + this._wsServer?.clients.size);
+    this._logger.debug("클라이언트 연결됨: " + wsClientId + ": " + req.socket.remoteAddress + ": " + this._wsServer?.clients.size);
 
     wsClient.on("close", (code) => {
       this._onWsClientClosed(wsClientId, code);

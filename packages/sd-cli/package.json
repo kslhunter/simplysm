@@ -17,11 +17,11 @@
     "node": "^18"
   },
   "dependencies": {
-    "@angular-devkit/build-angular": "^17.3.0",
-    "@angular/common": "^17.3.0",
-    "@angular/compiler": "^17.3.0",
-    "@angular/compiler-cli": "^17.3.0",
-    "@angular/core": "^17.3.0",
+    "@angular-devkit/build-angular": "^17.3.1",
+    "@angular/common": "^17.3.1",
+    "@angular/compiler": "^17.3.1",
+    "@angular/compiler-cli": "^17.3.1",
+    "@angular/core": "^17.3.1",
     "@electron/rebuild": "^3.6.0",
     "@simplysm/sd-core-common": "11.1.38",
     "@simplysm/sd-core-node": "11.1.38",
@@ -29,7 +29,7 @@
     "@simplysm/sd-storage": "11.1.38",
     "browserslist": "^4.23.0",
     "cordova": "^12.0.0",
-    "electron": "^29.1.4",
+    "electron": "^29.1.5",
     "electron-builder": "^24.13.3",
     "esbuild": "^0.20.2",
     "esbuild-plugin-tsc": "^0.4.0",
@@ -45,7 +45,7 @@
     "zone.js": "~0.14.4"
   },
   "devDependencies": {
-    "@types/eslint": "^8.56.5",
+    "@types/eslint": "^8.56.6",
     "@types/xml2js": "^0.4.14",
     "@types/yargs": "^17.0.32"
   },

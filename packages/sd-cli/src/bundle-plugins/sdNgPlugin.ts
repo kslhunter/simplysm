@@ -188,6 +188,7 @@ export function sdNgPlugin(conf: {
 
       build.onStart(async () => {
         //-- modified
+
         stylesheetBundler!.invalidate(conf.modifiedFileSet);
         for (const modifiedFile of conf.modifiedFileSet) {
           sourceFileCache.delete(modifiedFile);
@@ -265,7 +266,6 @@ export function sdNgPlugin(conf: {
         }
 
         //-- diagnostics / build
-
         const diagnostics: ts.Diagnostic[] = [];
 
         diagnostics.push(
@@ -320,7 +320,6 @@ export function sdNgPlugin(conf: {
         }
 
         //-- return err/warn
-
         return {
           errors: [
             ...diagnostics.filter(item => item.category === ts.DiagnosticCategory.Error).map(item => convertTypeScriptDiagnostic(ts, item)),
