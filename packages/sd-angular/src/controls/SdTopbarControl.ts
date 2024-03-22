@@ -1,12 +1,12 @@
 import {ChangeDetectionStrategy, Component, ElementRef, forwardRef, HostListener, inject, Input} from "@angular/core";
 import {SdTopbarContainerControl} from "./SdTopbarContainerControl";
 import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
-import {faBars} from "@fortawesome/pro-duotone-svg-icons";
 import {ISdResizeEvent} from "../plugins/SdResizeEventPlugin";
 import {SdAnchorControl} from "./SdAnchorControl";
 import {NgIf} from "@angular/common";
 import {SdIconControl} from "./SdIconControl";
 import {SdGapControl} from "./SdGapControl";
+import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 
 @Component({
   selector: "sd-topbar",
@@ -21,7 +21,7 @@ import {SdGapControl} from "./SdGapControl";
   template: `
     <sd-anchor class="_sidebar-toggle-button" (click)="onSidebarToggleButtonClick()"
                *ngIf="hasSidebar">
-      <sd-icon [icon]="faBars" fixedWidth/>
+      <sd-icon [icon]="icons.bars" fixedWidth/>
     </sd-anchor>
 
     <div class="_nav">
@@ -148,6 +148,8 @@ import {SdGapControl} from "./SdGapControl";
   `]
 })
 export class SdTopbarControl {
+  icons = inject(SdAngularOptionsProvider).icons;
+
   #elRef: ElementRef<HTMLElement> = inject(ElementRef);
   #parentSidebarContainerControl = inject(SdSidebarContainerControl, {optional: true});
   #topbarContainerControl: SdTopbarContainerControl = inject(forwardRef(() => SdTopbarContainerControl));
@@ -174,7 +176,5 @@ export class SdTopbarControl {
   #redrawOutside() {
     this.#topbarContainerControl.elRef.nativeElement.style.paddingTop = this.#elRef.nativeElement.offsetHeight + "px";
   }
-
-  protected readonly faBars = faBars;
 }
 

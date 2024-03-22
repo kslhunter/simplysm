@@ -1,9 +1,9 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, HostBinding, Input, Output} from "@angular/core";
+import {ChangeDetectionStrategy, Component, EventEmitter, HostBinding, inject, Input, Output} from "@angular/core";
 import {IconProp} from "@fortawesome/fontawesome-svg-core";
-import {faCheck} from "@fortawesome/pro-solid-svg-icons";
 import {coercionBoolean} from "../utils/commons";
 import {SdIconControl} from "./SdIconControl";
 import {NgIf} from "@angular/common";
+import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 
 @Component({
   selector: "sd-checkbox",
@@ -170,6 +170,8 @@ import {NgIf} from "@angular/common";
   `]
 })
 export class SdCheckboxControl {
+  #sdNgOpt = inject(SdAngularOptionsProvider);
+
   @Input({transform: coercionBoolean})
   @HostBinding("attr.sd-checked")
   value = false;
@@ -202,7 +204,7 @@ export class SdCheckboxControl {
   theme?: "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey";
 
   @Input()
-  icon: IconProp = faCheck;
+  icon: IconProp = this.#sdNgOpt.icons.check;
 
   @Input()
   labelStyle?: string;

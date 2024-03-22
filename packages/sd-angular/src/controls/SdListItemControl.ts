@@ -4,7 +4,7 @@ import {
   ContentChild,
   EventEmitter,
   forwardRef,
-  HostBinding,
+  HostBinding, inject,
   Input,
   Output
 } from "@angular/core";
@@ -15,7 +15,7 @@ import {SdIconControl} from "./SdIconControl";
 import {NgIf} from "@angular/common";
 import {SdCollapseIconControl} from "./SdCollapseIconControl";
 import {SdCollapseControl} from "./SdCollapseControl";
-import {faAngleDown} from "@fortawesome/pro-duotone-svg-icons/faAngleDown";
+import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 
 @Component({
   selector: "sd-list-item",
@@ -41,7 +41,7 @@ import {faAngleDown} from "@fortawesome/pro-duotone-svg-icons/faAngleDown";
 
         <div *ngIf="hasChildren && layout==='accordion'">
           <sd-collapse-icon [open]="open"
-                            [icon]="faAngleDown"/>
+                            [icon]="icons.angleDown"/>
         </div>
       </div>
     </div>
@@ -169,6 +169,8 @@ import {faAngleDown} from "@fortawesome/pro-duotone-svg-icons/faAngleDown";
   `]
 })
 export class SdListItemControl {
+  icons = inject(SdAngularOptionsProvider).icons;
+
   @Input()
   contentStyle?: string;
 
@@ -214,6 +216,4 @@ export class SdListItemControl {
       this.open = !this.open;
     }
   }
-
-  protected readonly faAngleDown = faAngleDown;
 }

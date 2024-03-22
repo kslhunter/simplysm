@@ -1,9 +1,6 @@
-import {ChangeDetectionStrategy, Component, forwardRef} from "@angular/core";
+import {ChangeDetectionStrategy, Component, forwardRef, inject} from "@angular/core";
 import {SdModalBase} from "../providers/SdModalProvider";
 import {SdSheetColumnDirective} from "../directives/SdSheetColumnDirective";
-import {faAngleUp} from "@fortawesome/pro-duotone-svg-icons/faAngleUp";
-import {faAngleDown} from "@fortawesome/pro-duotone-svg-icons/faAngleDown";
-import {faXmark} from "@fortawesome/pro-solid-svg-icons/faXmark";
 import {ISdSheetConfig, SdSheetControl} from "../controls/SdSheetControl";
 import {SdDockContainerControl} from "../controls/SdDockContainerControl";
 import {SdPaneControl} from "../controls/SdPaneControl";
@@ -15,6 +12,7 @@ import {SdSheetColumnCellTemplateDirective} from "../directives/SdSheetColumnCel
 import {SdDockControl} from "../controls/SdDockControl";
 import {SdButtonControl} from "../controls/SdButtonControl";
 import {NgIf} from "@angular/common";
+import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 
 @Component({
   selector: "sd-sheet-config-modal",
@@ -53,11 +51,11 @@ import {NgIf} from "@angular/common";
               <div class="p-xs-sm" style="text-align: center">
                 <sd-anchor [disabled]="index === 0 || (!item.fixed && items[index - 1].fixed)"
                            (click)="onDisplayOrderUpButtonClick(item)">
-                  <sd-icon [icon]="icons.fadAngleUp" fixedWidth/>
+                  <sd-icon [icon]="icons.angleUp" fixedWidth/>
                 </sd-anchor>
                 <sd-anchor [disabled]="index === items.length - 1 || (item.fixed && !items[index + 1].fixed)"
                            (click)="onDisplayOrderDownButtonClick(item)">
-                  <sd-icon [icon]="icons.fadAngleDown" fixedWidth/>
+                  <sd-icon [icon]="icons.angleDown" fixedWidth/>
                 </sd-anchor>
               </div>
             </ng-template>
@@ -77,7 +75,7 @@ import {NgIf} from "@angular/common";
           <sd-sheet-column key="hidden" header="Hidden">
             <ng-template [cell]="items" let-item="item">
               <div style="text-align: center">
-                <sd-checkbox size="sm" inset [(value)]="item.hidden" [icon]="icons.fasXmark"
+                <sd-checkbox size="sm" inset [(value)]="item.hidden" [icon]="icons.xmark"
                              theme="danger"></sd-checkbox>
               </div>
             </ng-template>
@@ -98,11 +96,7 @@ import {NgIf} from "@angular/common";
     </sd-dock-container>`
 })
 export class SdSheetConfigModal<T> extends SdModalBase<ISdSheetConfigModalInput<T>, ISdSheetConfig> {
-  public icons = {
-    fadAngleUp: faAngleUp,
-    fadAngleDown: faAngleDown,
-    fasXmark: faXmark
-  };
+  icons = inject(SdAngularOptionsProvider).icons;
 
   public param?: ISdSheetConfigModalInput<T>;
 

@@ -1,7 +1,7 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, Output} from "@angular/core";
-import {faXmark} from "@fortawesome/pro-solid-svg-icons";
+import {ChangeDetectionStrategy, Component, EventEmitter, inject, Output} from "@angular/core";
 import {SdAnchorControl} from "./SdAnchorControl";
 import {SdIconControl} from "./SdIconControl";
+import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 
 @Component({
   selector: "sd-topbar-tab",
@@ -14,7 +14,7 @@ import {SdIconControl} from "./SdIconControl";
   template: `
     <ng-content></ng-content>
     <sd-anchor (click)="onCloseButtonClick($event)">
-      <sd-icon [icon]="faXmark" fixedWidth/>
+      <sd-icon [icon]="icons.xmark" fixedWidth/>
     </sd-anchor>`,
   styles: [/* language=SCSS */ `
     :host {
@@ -46,6 +46,8 @@ import {SdIconControl} from "./SdIconControl";
   `]
 })
 export class SdTopbarTabControl {
+  icons = inject(SdAngularOptionsProvider).icons;
+
   @Output()
   clickClose = new EventEmitter<MouseEvent>();
 
@@ -55,6 +57,4 @@ export class SdTopbarTabControl {
 
     this.clickClose.emit(event);
   }
-
-  protected readonly faXmark = faXmark;
 }

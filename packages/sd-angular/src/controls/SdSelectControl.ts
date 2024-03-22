@@ -15,7 +15,6 @@ import {
 } from "@angular/core";
 import {SdSelectItemControl} from "./SdSelectItemControl";
 import {SdDropdownControl} from "./SdDropdownControl";
-import {faCaretDown} from "@fortawesome/pro-duotone-svg-icons/faCaretDown";
 import {SdItemOfTemplateContext, SdItemOfTemplateDirective} from "../directives/SdItemOfTemplateDirective";
 import {coercionBoolean, getSdFnCheckData, TSdFnInfo} from "../utils/commons";
 import {SdNgHelper} from "../utils/SdNgHelper";
@@ -30,6 +29,7 @@ import {SdPaneControl} from "./SdPaneControl";
 import {SdTypedTemplateDirective} from "../directives/SdTypedTemplateDirective";
 import {SdDropdownPopupControl} from "./SdDropdownPopupControl";
 import {StringUtil} from "@simplysm/sd-core-common";
+import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 
 @Component({
   selector: "sd-select",
@@ -57,7 +57,7 @@ import {StringUtil} from "@simplysm/sd-core-common";
       <div #contentEl></div>
       <div class="_invalid-indicator"></div>
       <div class="_icon">
-        <sd-icon [icon]="faCaretDown" fixedWidth/>
+        <sd-icon [icon]="icons.caretDown" fixedWidth/>
       </div>
 
       <sd-dropdown-popup #dropdownPopup (keydown.outside)="onPopupKeydownOutside($event)">
@@ -296,6 +296,8 @@ import {StringUtil} from "@simplysm/sd-core-common";
   `]
 })
 export class SdSelectControl<M extends "single" | "multi", T extends any> implements DoCheck {
+  icons = inject(SdAngularOptionsProvider).icons;
+
   @Input()
   value?: M extends "multi" ? any[] : any;
 
@@ -534,6 +536,4 @@ export class SdSelectControl<M extends "single" | "multi", T extends any> implem
     items: T[];
     depth: number;
   };
-
-  protected readonly faCaretDown = faCaretDown;
 }

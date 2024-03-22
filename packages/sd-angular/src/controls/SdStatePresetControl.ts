@@ -15,10 +15,9 @@ import {SdToastProvider} from "../providers/SdToastProvider";
 import {SdGapControl} from "./SdGapControl";
 import {SdAnchorControl} from "./SdAnchorControl";
 import {SdNgHelper} from "../utils/SdNgHelper";
-import {faSave, faStar} from "@fortawesome/pro-duotone-svg-icons";
-import {faXmark} from "@fortawesome/pro-solid-svg-icons/faXmark";
 import {SdIconControl} from "./SdIconControl";
 import {NgForOf} from "@angular/common";
+import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 
 export interface ISdStatePresetVM {
   name: string;
@@ -32,7 +31,7 @@ export interface ISdStatePresetVM {
   imports: [SdAnchorControl, SdGapControl, SdIconControl, NgForOf],
   template: `
     <sd-anchor (click)="onAddButtonClick()">
-      <sd-icon [icon]="faStar" class="tx-theme-warning-default" fixedWidth/>
+      <sd-icon [icon]="icons.star" class="tx-theme-warning-default" fixedWidth/>
     </sd-anchor>
     <sd-gap width="sm"></sd-gap>
     <ng-container *ngFor="let preset of presets; trackBy: trackByFnForPreset">
@@ -42,10 +41,10 @@ export interface ISdStatePresetVM {
           {{ preset.name }}
         </sd-anchor>
         <sd-anchor (click)="onSaveButtonClick(preset)">
-          <sd-icon [icon]="faSave" size="sm"/>
+          <sd-icon [icon]="icons.save" size="sm"/>
         </sd-anchor>
         <sd-anchor (click)="onRemoveButtonClick(preset)">
-          <sd-icon [icon]="faXmark" size="sm"/>
+          <sd-icon [icon]="icons.xmark" size="sm"/>
         </sd-anchor>
       </div>
       <sd-gap width="sm"></sd-gap>
@@ -100,6 +99,8 @@ export interface ISdStatePresetVM {
   `]
 })
 export class SdStatePresetControl implements DoCheck {
+  icons = inject(SdAngularOptionsProvider).icons;
+
   @Input({required: true})
   key!: string;
 
@@ -169,8 +170,4 @@ export class SdStatePresetControl implements DoCheck {
 
     this.#sdToast.info(`현재 상태가 ${preset.name}에 저장되었습니다.`);
   }
-
-  protected readonly faStar = faStar;
-  protected readonly faSave = faSave;
-  protected readonly faXmark = faXmark;
 }

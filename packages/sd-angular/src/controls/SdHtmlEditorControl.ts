@@ -14,12 +14,11 @@ import {SdAnchorControl} from "./SdAnchorControl";
 import {SdPaneControl} from "./SdPaneControl";
 import {SdIconControl} from "./SdIconControl";
 import {coercionBoolean, coercionNonNullableNumber} from "../utils/commons";
-import {faCode, faEye, faPen} from "@fortawesome/pro-duotone-svg-icons";
-import {faMinus, faPlus} from "@fortawesome/pro-solid-svg-icons";
 import {SdDockContainerControl} from "./SdDockContainerControl";
 import {SdDockControl} from "./SdDockControl";
 import {NgIf} from "@angular/common";
 import {SdNgHelper} from "../utils/SdNgHelper";
+import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 
 @Component({
   selector: "sd-html-editor",
@@ -30,21 +29,21 @@ import {SdNgHelper} from "../utils/SdNgHelper";
     <sd-dock-container>
       <sd-dock class="_toolbar" *ngIf="!disabled">
         <sd-anchor (click)="viewState = 'preview'" [class._selected]="viewState === 'preview'">
-          <sd-icon [icon]="faEye" fixedWidth/>
+          <sd-icon [icon]="icons.eye" fixedWidth/>
         </sd-anchor>
         <sd-anchor (click)="viewState = 'edit'" [class._selected]="viewState === 'edit'">
-          <sd-icon [icon]="faPen" fixedWidth/>
+          <sd-icon [icon]="icons.pen" fixedWidth/>
         </sd-anchor>
         <sd-anchor (click)="viewState = 'code'" [class._selected]="viewState === 'code'">
-          <sd-icon [icon]="faCode" fixedWidth/>
+          <sd-icon [icon]="icons.code" fixedWidth/>
         </sd-anchor>
         <ng-container *ngIf="rowsButton && !inset && viewState === 'code'">
           |
           <sd-anchor (click)="rows = rows + 1">
-            <sd-icon [icon]="faPlus" fixedWidth/>
+            <sd-icon [icon]="icons.plus" fixedWidth/>
           </sd-anchor>
           <sd-anchor (click)="rows = rows - 1" *ngIf="rows > 1">
-            <sd-icon [icon]="faMinus" fixedWidth/>
+            <sd-icon [icon]="icons.minus" fixedWidth/>
           </sd-anchor>
         </ng-container>
       </sd-dock>
@@ -132,6 +131,8 @@ import {SdNgHelper} from "../utils/SdNgHelper";
   `]
 })
 export class SdHtmlEditorControl {
+  icons = inject(SdAngularOptionsProvider).icons;
+
   @Input()
   value?: string;
 
@@ -205,10 +206,4 @@ export class SdHtmlEditorControl {
       this.value = newValue;
     }
   }
-
-  protected readonly faEye = faEye;
-  protected readonly faPen = faPen;
-  protected readonly faCode = faCode;
-  protected readonly faPlus = faPlus;
-  protected readonly faMinus = faMinus;
 }

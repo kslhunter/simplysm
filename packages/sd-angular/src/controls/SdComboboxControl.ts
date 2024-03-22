@@ -18,11 +18,11 @@ import {
 import {SdComboboxItemControl} from "./SdComboboxItemControl";
 import {NumberUtil} from "@simplysm/sd-core-common";
 import {coercionBoolean} from "../utils/commons";
-import {faCaretDown} from "@fortawesome/pro-duotone-svg-icons";
 import {SdNgHelper} from "../utils/SdNgHelper";
 import {SdTextfieldControl} from "./SdTextfieldControl";
 import {SdIconControl} from "./SdIconControl";
 import {NgIf} from "@angular/common";
+import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 
 @Component({
   selector: "sd-combobox",
@@ -44,7 +44,7 @@ import {NgIf} from "@angular/common";
                   (blur)="onChildBlur($event)">
     </sd-textfield>
     <div class="_icon" *ngIf="!disabled">
-      <sd-icon [icon]="faCaretDown" fixedWidth/>
+      <sd-icon [icon]="icons.caretDown" fixedWidth/>
     </div>
     <div class="_sd-combobox-dropdown" tabindex="0"
          (blur)="onChildBlur($event)">
@@ -92,6 +92,8 @@ import {NgIf} from "@angular/common";
   `]
 })
 export class SdComboboxControl<T> implements OnInit, OnDestroy, DoCheck {
+  icons = inject(SdAngularOptionsProvider).icons;
+
   @Input()
   value!: T;
 
@@ -373,6 +375,4 @@ export class SdComboboxControl<T> implements OnInit, OnDestroy, DoCheck {
       }
     }
   }
-
-  protected readonly faCaretDown = faCaretDown;
 }

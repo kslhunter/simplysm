@@ -7,9 +7,10 @@ import {SdResizeEventPlugin} from "./plugins/SdResizeEventPlugin";
 import {SdGlobalErrorHandlerPlugin} from "./plugins/SdGlobalErrorHandlerPlugin";
 import {SdOptionEventPlugin} from "./plugins/SdOptionEventPlugin";
 import {FaConfig} from "@fortawesome/angular-fontawesome";
-import {SdAngularOptionsProvider} from "./providers/SdAngularOptionsProvider";
+import {ISdAngularIcon, SdAngularOptionsProvider} from "./providers/SdAngularOptionsProvider";
 import {SdThemeProvider} from "./providers/SdThemeProvider";
 import {SdLocalStorageProvider} from "./providers/SdLocalStorageProvider";
+import {IconDefinition} from "@fortawesome/fontawesome-svg-core";
 
 @NgModule({
   imports: []
@@ -28,17 +29,20 @@ export class SdAngularModule {
   static forRoot(opt: {
     clientName?: string;
     defaultTheme?: "compact" | "modern" | "mobile" | "kiosk";
-    fallbackIcon?: any;
+    fallbackIcon: IconDefinition;
+    icons: ISdAngularIcon;
   }): ModuleWithProviders<SdAngularModule> {
     return {
       ngModule: SdAngularModule,
       providers: [
         {
-          provide: SdAngularOptionsProvider, useFactory: () => {
+          provide: SdAngularOptionsProvider,
+          useFactory: () => {
             const provider = new SdAngularOptionsProvider();
-            provider.clientName = opt.clientName ?? provider.clientName;
-            provider.defaultTheme = opt.defaultTheme ?? provider.defaultTheme;
-            provider.fallbackIcon = opt.fallbackIcon ?? provider.fallbackIcon;
+            provider.clientName = opt.clientName ?? "unknown";
+            provider.defaultTheme = opt.defaultTheme ?? "modern";
+            provider.fallbackIcon = opt.fallbackIcon;
+            provider.icons = opt.icons;
             return provider;
           }
         },

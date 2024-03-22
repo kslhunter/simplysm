@@ -18,13 +18,13 @@ import {SdPaneControl} from "./SdPaneControl";
 import {SdSystemConfigProvider} from "../providers/SdSystemConfigProvider";
 import {CommonModule} from "@angular/common";
 import {SdIconControl} from "./SdIconControl";
-import {faXmark} from "@fortawesome/pro-solid-svg-icons/faXmark";
 import {coercionBoolean, coercionNumber} from "../utils/commons";
 import {SdNgHelper} from "../utils/SdNgHelper";
 import {ISdResizeEvent} from "../plugins/SdResizeEventPlugin";
 import {SdEventsDirective} from "../directives/SdEventsDirective";
 import {SdDockContainerControl} from "./SdDockContainerControl";
 import {SdDockControl} from "./SdDockControl";
+import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 
 @Component({
   selector: "sd-modal",
@@ -56,7 +56,7 @@ import {SdDockControl} from "./SdDockControl";
           <sd-anchor class="_close-button"
                      (click)="onCloseButtonClick()"
                      *ngIf="!hideCloseButton">
-            <sd-icon [icon]="faXmark" fixedWidth/>
+            <sd-icon [icon]="icons.xmark" fixedWidth/>
           </sd-anchor>
           <h5 class="_title">{{ title }}</h5>
         </sd-dock>
@@ -320,6 +320,8 @@ import {SdDockControl} from "./SdDockControl";
   `]
 })
 export class SdModalControl implements DoCheck {
+  icons = inject(SdAngularOptionsProvider).icons;
+
   @Input()
   key?: string;
 
@@ -631,8 +633,6 @@ export class SdModalControl implements DoCheck {
     document.documentElement.addEventListener("mousemove", doDrag, false);
     document.documentElement.addEventListener("mouseup", stopDrag, false);
   }
-
-  protected readonly faXmark = faXmark;
 }
 
 export interface ISdModalConfigVM {

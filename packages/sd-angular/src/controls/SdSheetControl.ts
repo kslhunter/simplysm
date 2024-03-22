@@ -20,12 +20,6 @@ import {SdSystemConfigProvider} from "../providers/SdSystemConfigProvider";
 import {NumberUtil, ObjectUtil} from "@simplysm/sd-core-common";
 import {SdSheetConfigModal} from "../modals/SdSheetConfigModal";
 import {SdModalProvider} from "../providers/SdModalProvider";
-import {faCog} from "@fortawesome/pro-duotone-svg-icons/faCog";
-import {faArrowRight} from "@fortawesome/pro-duotone-svg-icons/faArrowRight";
-import {faSort} from "@fortawesome/pro-solid-svg-icons/faSort";
-import {faSortDown} from "@fortawesome/pro-solid-svg-icons/faSortDown";
-import {faSortUp} from "@fortawesome/pro-solid-svg-icons/faSortUp";
-import {faCaretRight} from "@fortawesome/pro-duotone-svg-icons/faCaretRight";
 import {SdNgHelper} from "../utils/SdNgHelper";
 import {
   coercionBoolean,
@@ -44,6 +38,7 @@ import {SdPaginationControl} from "./SdPaginationControl";
 import {SdPaneControl} from "./SdPaneControl";
 import {SdEventsDirective,} from "../directives/SdEventsDirective";
 import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
+import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 
 @Component({
   selector: "sd-sheet",
@@ -69,7 +64,7 @@ import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
         <sd-dock *ngIf="(key || currPageLength > 0) && !hideConfigBar">
           <div class="flex-row-inline flex-gap-sm">
             <sd-anchor *ngIf="key" (click)="onConfigButtonClick()">
-              <sd-icon [icon]="faCog" fixedWidth/>
+              <sd-icon [icon]="icons.cog" fixedWidth/>
             </sd-anchor>
             <sd-pagination *ngIf="currPageLength > 1"
                            [page]="page"
@@ -92,7 +87,7 @@ import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
                     [attr.c]="getChildrenFn ? -2 : -1"
                     (sdResize.outside)="onFixedCellResizeOutside(getChildrenFn ? -2 : -1)">
                   <ng-container *ngIf="selectMode === 'multi' && hasSelectableItem">
-                    <sd-icon [icon]="faArrowRight" fixedWidth
+                    <sd-icon [icon]="icons.arrowRight" fixedWidth
                              [class.tx-theme-primary-default]="isAllItemsSelected"
                              (click)="onAllItemsSelectIconClick()"/>
                   </ng-container>
@@ -103,7 +98,7 @@ import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
                     [attr.c]="-1"
                     (sdResize.outside)="onFixedCellResizeOutside(-1)">
                   <ng-container *ngIf="hasExpandableItem">
-                    <sd-icon [icon]="faCaretRight" fixedWidth
+                    <sd-icon [icon]="icons.caretRight" fixedWidth
                              [class.tx-theme-primary-default]="isAllItemsExpanded"
                              [rotate]="isAllItemsExpanded ? 90 : undefined"
                              (click)="onAllItemsExpandIconClick()"/>
@@ -140,10 +135,10 @@ import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
                         *ngIf="headerCell.isLastDepth && headerCell.control.useOrdering && headerCell.control.key">
                         <div class="_sort-icon">
                           <fa-layers>
-                            <sd-icon [icon]="faSort" class="tx-trans-lightest"/>
-                            <sd-icon [icon]="faSortDown"
+                            <sd-icon [icon]="icons.sort" class="tx-trans-lightest"/>
+                            <sd-icon [icon]="icons.sortDown"
                                      *ngIf="getIsColumnOrderingDesc(headerCell.control.key) === false"/>
-                            <sd-icon [icon]="faSortUp"
+                            <sd-icon [icon]="icons.sortUp"
                                      *ngIf="getIsColumnOrderingDesc(headerCell.control.key) === true"/>
                           </fa-layers>
                           <sub *ngIf="getColumnOrderingIndexText(headerCell.control.key) as text">{{ text }}</sub>
@@ -186,7 +181,7 @@ import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
                     [attr.r]="r"
                     [attr.c]="getChildrenFn ? -2 : -1">
                   <ng-container *ngIf="selectMode && getIsItemSelectable(itemDef.item)">
-                    <sd-icon [icon]="faArrowRight" fixedWidth
+                    <sd-icon [icon]="icons.arrowRight" fixedWidth
                              [class.tx-theme-primary-default]="selectedItems.includes(itemDef.item)"
                              (click)="onItemSelectIconClick(itemDef.item)"/>
                   </ng-container>
@@ -199,7 +194,7 @@ import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
                     <div class="_depth-indicator" [style.margin-left.em]="itemDef.depth - .5"></div>
                   </ng-container>
                   <ng-container *ngIf="itemDef.hasChildren">
-                    <sd-icon [icon]="faCaretRight" fixedWidth
+                    <sd-icon [icon]="icons.caretRight" fixedWidth
                              [rotate]="expandedItems.includes(itemDef.item) ? 90 : undefined"
                              [class.tx-theme-primary-default]="expandedItems.includes(itemDef.item)"
                              (click)="onItemExpandIconClick(itemDef.item)"/>
@@ -484,12 +479,7 @@ import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
   `]
 })
 export class SdSheetControl<T> implements DoCheck {
-  faCog = faCog;
-  faArrowRight = faArrowRight;
-  faSort = faSort;
-  faSortDown = faSortDown;
-  faSortUp = faSortUp;
-  faCaretRight = faCaretRight;
+  icons = inject(SdAngularOptionsProvider).icons;
 
   #cdr = inject(ChangeDetectorRef);
   #ngZone = inject(NgZone);

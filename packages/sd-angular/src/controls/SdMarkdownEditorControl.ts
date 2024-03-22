@@ -13,10 +13,10 @@ import * as marked1 from "marked";
 import {SdBusyContainerControl} from "./SdBusyContainerControl";
 import {SdAnchorControl} from "./SdAnchorControl";
 import {SdIconControl} from "./SdIconControl";
-import {faEye, faPen, faQuestion} from "@fortawesome/pro-duotone-svg-icons";
 import {coercionBoolean, coercionNonNullableNumber, getSdFnCheckData, TSdFnInfo} from "../utils/commons";
 import {SdNgHelper} from "../utils/SdNgHelper";
 import {NgIf} from "@angular/common";
+import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 
 @Component({
   selector: "sd-markdown-editor",
@@ -26,13 +26,13 @@ import {NgIf} from "@angular/common";
   template: `
     <div class="_toolbar" *ngIf="!disabled">
       <sd-anchor (click)="viewState = 'preview'" [class._selected]="viewState === 'preview'">
-        <sd-icon [icon]="faEye"/>
+        <sd-icon [icon]="icons.eye"/>
       </sd-anchor>
       <sd-anchor (click)="viewState = 'edit'" [class._selected]="viewState === 'edit'">
-        <sd-icon [icon]="faPen"/>
+        <sd-icon [icon]="icons.pen"/>
       </sd-anchor>
       <sd-anchor (click)="viewState = 'help'" [class._selected]="viewState === 'help'">
-        <sd-icon [icon]="faQuestion"/>
+        <sd-icon [icon]="icons.question"/>
       </sd-anchor>
     </div>
 
@@ -278,6 +278,8 @@ import {NgIf} from "@angular/common";
   `]
 })
 export class SdMarkdownEditorControl implements DoCheck {
+  icons = inject(SdAngularOptionsProvider).icons;
+
   @Input()
   value?: string;
 
@@ -394,10 +396,6 @@ export class SdMarkdownEditorControl implements DoCheck {
       this.dropFiles.emit({position, files});
     }
   }
-
-  protected readonly faEye = faEye;
-  protected readonly faPen = faPen;
-  protected readonly faQuestion = faQuestion;
 }
 
 export interface ISdMarkdownEditorDropFilesEvent {

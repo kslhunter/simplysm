@@ -1,11 +1,11 @@
-import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
+import {ChangeDetectionStrategy, Component, HostBinding, inject, Input} from "@angular/core";
 import useBgJpg from "../../res/user_bg.jpg";
 import {NgForOf, NgIf} from "@angular/common";
 import {SdCollapseIconControl} from "./SdCollapseIconControl";
 import {SdCollapseControl} from "./SdCollapseControl";
 import {SdListControl} from "./SdListControl";
 import {SdListItemControl} from "./SdListItemControl";
-import { faAngleDown } from "@fortawesome/pro-duotone-svg-icons";
+import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 
 @Component({
   selector: "sd-sidebar-user",
@@ -30,7 +30,7 @@ import { faAngleDown } from "@fortawesome/pro-duotone-svg-icons";
       <div class="_menu-button" *ngIf="userMenu?.title" (click)="onMenuOpenButtonClick()">
         {{ userMenu?.title }}
         <sd-collapse-icon [open]="menuOpen" style="float: right;" openRotate="180"
-                          [icon]="faAngleDown"></sd-collapse-icon>
+                          [icon]="icons.angleDown"/>
       </div>
     </div>
     <sd-collapse [open]="menuOpen" *ngIf="userMenu?.title">
@@ -38,7 +38,7 @@ import { faAngleDown } from "@fortawesome/pro-duotone-svg-icons";
         <sd-list-item *ngFor="let menu of userMenu?.menus; trackBy: trackByForMenu;"
                       style="text-indent: 1em"
                       (click)="menu.onClick()">
-          {{menu.title}}
+          {{ menu.title }}
         </sd-list-item>
       </sd-list>
     </sd-collapse>`,
@@ -109,6 +109,8 @@ import { faAngleDown } from "@fortawesome/pro-duotone-svg-icons";
   `]
 })
 export class SdSidebarUserControl {
+  icons = inject(SdAngularOptionsProvider).icons;
+
   backgroundImage = useBgJpg;
 
   @Input()
@@ -131,8 +133,6 @@ export class SdSidebarUserControl {
   onMenuOpenButtonClick() {
     this.menuOpen = !this.menuOpen;
   }
-
-  protected readonly faAngleDown = faAngleDown;
 }
 
 export interface ISidebarUserMenu {

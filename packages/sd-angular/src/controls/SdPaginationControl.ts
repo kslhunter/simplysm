@@ -11,9 +11,9 @@ import {
 import {SdAnchorControl} from "./SdAnchorControl";
 import {SdIconControl} from "./SdIconControl";
 import {coercionNumber} from "../utils/commons";
-import {faAngleDoubleLeft, faAngleDoubleRight, faAngleLeft, faAngleRight} from "@fortawesome/pro-duotone-svg-icons";
 import {SdNgHelper} from "../utils/SdNgHelper";
 import {NgForOf} from "@angular/common";
+import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 
 @Component({
   selector: "sd-pagination",
@@ -22,10 +22,10 @@ import {NgForOf} from "@angular/common";
   imports: [SdAnchorControl, SdIconControl, NgForOf],
   template: `
     <sd-anchor [disabled]="!hasPrev" (click)="onGoFirstClick()">
-      <sd-icon [icon]="faAngleDoubleLeft" fixedWidth/>
+      <sd-icon [icon]="icons.angleDoubleLeft" fixedWidth/>
     </sd-anchor>
     <sd-anchor [disabled]="!hasPrev" (click)="onPrevClick()">
-      <sd-icon [icon]="faAngleLeft" fixedWidth/>
+      <sd-icon [icon]="icons.angleLeft" fixedWidth/>
     </sd-anchor>
     <sd-anchor *ngFor="let displayPage of displayPages; trackBy: trackByFnForPage"
                (click)="onPageClick(displayPage)"
@@ -33,10 +33,10 @@ import {NgForOf} from "@angular/common";
       {{ displayPage + 1 }}
     </sd-anchor>
     <sd-anchor [disabled]="!hasNext" (click)="onNextClick()">
-      <sd-icon [icon]="faAngleRight" fixedWidth/>
+      <sd-icon [icon]="icons.angleRight" fixedWidth/>
     </sd-anchor>
     <sd-anchor [disabled]="!hasNext" (click)="onGoLastClick()">
-      <sd-icon [icon]="faAngleDoubleRight" fixedWidth/>
+      <sd-icon [icon]="icons.angleDoubleRight" fixedWidth/>
     </sd-anchor>`,
   styles: [/* language=SCSS */ `
     @import "../scss/mixins";
@@ -68,6 +68,8 @@ import {NgForOf} from "@angular/common";
   `]
 })
 export class SdPaginationControl implements DoCheck {
+  icons = inject(SdAngularOptionsProvider).icons;
+
   @Input({transform: coercionNumber})
   page = 0;
 
@@ -172,9 +174,4 @@ export class SdPaginationControl implements DoCheck {
       this.page = page;
     }
   }
-
-  protected readonly faAngleDoubleLeft = faAngleDoubleLeft;
-  protected readonly faAngleLeft = faAngleLeft;
-  protected readonly faAngleRight = faAngleRight;
-  protected readonly faAngleDoubleRight = faAngleDoubleRight;
 }

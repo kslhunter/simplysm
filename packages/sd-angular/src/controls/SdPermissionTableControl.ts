@@ -16,7 +16,7 @@ import {SdTypedTemplateDirective} from "../directives/SdTypedTemplateDirective";
 import {NgForOf, NgIf, NgTemplateOutlet} from "@angular/common";
 import {SdCollapseIconControl} from "./SdCollapseIconControl";
 import {SdCheckboxControl} from "./SdCheckboxControl";
-import {faAngleRight} from "@fortawesome/pro-duotone-svg-icons";
+import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 
 @Component({
   selector: "sd-permission-table",
@@ -56,7 +56,7 @@ import {faAngleRight} from "@fortawesome/pro-duotone-svg-icons";
         <td class="_title">
           <ng-container *ngIf="item.children && item.children.length > 0">
             <sd-anchor (click)="onPermCollapseToggle(item)">
-              <sd-collapse-icon [icon]="faAngleRight" [open]="getIsPermCollapsed(item)"/>
+              <sd-collapse-icon [icon]="icons.angleRight" [open]="getIsPermCollapsed(item)"/>
               {{ item.title }}
             </sd-anchor>
           </ng-container>
@@ -181,6 +181,8 @@ import {faAngleRight} from "@fortawesome/pro-duotone-svg-icons";
   `]
 })
 export class SdPermissionTableControl implements DoCheck {
+  icons = inject(SdAngularOptionsProvider).icons;
+
   @Input()
   items: ISdPermission[] = [];
 
@@ -318,5 +320,4 @@ export class SdPermissionTableControl implements DoCheck {
     depth: number;
     parent: ISdPermission | undefined;
   };
-  protected readonly faAngleRight = faAngleRight;
 }

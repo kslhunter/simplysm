@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component} from "@angular/core";
+import {ChangeDetectionStrategy, Component, inject} from "@angular/core";
 import {ObjectUtil, TFlatType} from "@simplysm/sd-core-common";
 import {SdModalBase} from "../providers/SdModalProvider";
 import {SdPaneControl} from "../controls/SdPaneControl";
@@ -7,9 +7,9 @@ import {SdAnchorControl} from "../controls/SdAnchorControl";
 import {SdButtonControl} from "../controls/SdButtonControl";
 import {CommonModule} from "@angular/common";
 import {SdIconControl} from "../controls/SdIconControl";
-import {faArrowLeft, faArrowRight} from "@fortawesome/pro-duotone-svg-icons";
 import {SdDockContainerControl} from "../controls/SdDockContainerControl";
 import {SdDockControl} from "../controls/SdDockControl";
+import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 
 @Component({
   selector: "sd-object-merge3-modal",
@@ -53,7 +53,7 @@ import {SdDockControl} from "../controls/SdDockControl";
             <td
               [class.bg-theme-success-lightest]="getIsOrgAllNotEqual(key) && !getIsNotEqual(data.theirs[key], data.origin[key])">
               <sd-anchor [disabled]="!getIsNotEqual(data.theirs[key], data.origin[key])">
-                <sd-icon fixedWidth [icon]="faArrowRight"
+                <sd-icon fixedWidth [icon]="icons.arrowRight"
                          (click)="$any(data.origin)[key] = $any(data.theirs)[key]"
                          style="pointer-events: auto"/>
               </sd-anchor>
@@ -65,7 +65,7 @@ import {SdDockControl} from "../controls/SdDockControl";
             <td
               [class.bg-theme-success-lightest]="getIsOrgAllNotEqual(key) && !getIsNotEqual(data.yours[key], data.origin[key])">
               <sd-anchor [disabled]="!getIsNotEqual(data.yours[key], data.origin[key])">
-                <sd-icon fixedWidth [icon]="faArrowLeft"
+                <sd-icon fixedWidth [icon]="icons.arrowLeft"
                          (click)="$any(data.origin)[key] = $any(data.yours)[key]"
                          style="pointer-events: auto"/>
               </sd-anchor>
@@ -87,6 +87,8 @@ import {SdDockControl} from "../controls/SdDockControl";
     </sd-dock-container>`
 })
 export class SdObjectMerge3Modal<T extends Record<string, TFlatType>> extends SdModalBase<ISdObjectMerge3ModalInput<T>, T> {
+  icons = inject(SdAngularOptionsProvider).icons;
+
   data!: Omit<ISdObjectMerge3ModalInput<T>, "displayNameRecord">;
   orgData!: Omit<ISdObjectMerge3ModalInput<T>, "displayNameRecord">;
   keys!: string[];
@@ -143,9 +145,6 @@ export class SdObjectMerge3Modal<T extends Record<string, TFlatType>> extends Sd
   onConfirmButtonClick() {
     this.close(this.data.origin);
   }
-
-  protected readonly faArrowRight = faArrowRight;
-  protected readonly faArrowLeft = faArrowLeft;
 }
 
 export interface ISdObjectMerge3ModalInput<T extends Record<string, TFlatType>> {
