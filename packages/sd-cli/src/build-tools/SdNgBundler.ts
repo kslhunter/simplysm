@@ -360,6 +360,7 @@ export class SdNgBundler {
       this._opt.pkgPath,
       this._swConfFilePath,
       this._baseHref,
+      "index.html",
       outputFiles,
       assetFiles
     );
