@@ -237,7 +237,7 @@ export class QueryHelper {
     return new QueryUnit(currType, this.getQueryValue(value));
   }
 
-  public is(where: TQueryBuilderValue[]): QueryUnit<boolean> {
+  public is(where: TQueryBuilderValue): QueryUnit<boolean> {
     return this.case<boolean>(where, true).else(false);
   }
 

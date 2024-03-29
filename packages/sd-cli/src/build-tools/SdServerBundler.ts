@@ -38,7 +38,7 @@ export class SdServerBundler {
         entryPoints: this._opt.entryPoints,
         keepNames: true,
         bundle: true,
-        sourcemap: this._opt.dev,
+        sourcemap: true, //this._opt.dev,
         target: "node16",
         mainFields: ['es2020', 'es2015', 'module', 'main'],
         conditions: ["es2020", "es2015", "module"],

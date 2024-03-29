@@ -156,7 +156,7 @@ export function sdNgPlugin(conf: {
           optimization: !conf.dev,
           inlineFonts: true,
           preserveSymlinks: false,
-          sourcemap: conf.dev ? 'inline' : false,
+          sourcemap: 'inline', //conf.dev ? 'inline' : false,
           outputNames: {bundles: '[name]', media: 'media/[name]'},
           includePaths: [],
           externalDependencies: [],
@@ -177,7 +177,7 @@ export function sdNgPlugin(conf: {
       //-- js babel transformer
       const javascriptTransformer = new JavaScriptTransformer({
         thirdPartySourcemaps: conf.dev,
-        sourcemap: conf.dev,
+        sourcemap: true, //conf.dev,
         jit: false,
         advancedOptimizations: true
       }, os.cpus().length);

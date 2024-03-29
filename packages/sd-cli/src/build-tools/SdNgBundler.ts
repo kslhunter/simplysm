@@ -384,7 +384,7 @@ export class SdNgBundler {
       pure: ['forwardRef'],
       outdir: this._opt.pkgPath,
       outExtension: undefined,
-      sourcemap: this._opt.dev,
+      sourcemap: true, //this._opt.dev,
       splitting: true,
       chunkNames: 'chunk-[hash]',
       tsconfig: this._tsConfigFilePath,
@@ -507,7 +507,7 @@ export class SdNgBundler {
   private _getStyleContext(): SdNgBundlerContext {
     const pluginFactory = new StylesheetPluginFactory(
       {
-        sourcemap: this._opt.dev,
+        sourcemap: true, //this._opt.dev,
         includePaths: []
       },
       this.#styleLoadResultCache,
@@ -521,7 +521,7 @@ export class SdNgBundler {
       logLevel: 'silent',
       minify: !this._opt.dev,
       metafile: true,
-      sourcemap: this._opt.dev,
+      sourcemap: true, //this._opt.dev,
       outdir: this._opt.pkgPath,
       write: false,
       platform: 'browser',
@@ -565,7 +565,7 @@ export class SdNgBundler {
       logLevel: 'silent',
       minify: !this._opt.dev,
       outdir: this._opt.pkgPath,
-      sourcemap: this._opt.dev,
+      sourcemap: true, //this._opt.dev,
       tsconfig: this._tsConfigFilePath,
       write: false,
       preserveSymlinks: false,
