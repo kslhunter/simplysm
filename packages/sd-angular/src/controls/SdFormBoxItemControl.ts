@@ -23,7 +23,7 @@ import {NgIf, NgTemplateOutlet} from "@angular/common";
     <label [style.width]="labelWidth"
            [hidden]="layout === 'none'"
            [style.text-align]="labelAlign"
-           [title]="labelTooltip"
+           [attr.title]="labelTooltip"
            [class.help]="labelTooltip">
       <ng-container *ngIf="!labelTemplateRef">{{ label }}</ng-container>
       <ng-container *ngIf="labelTemplateRef">
@@ -75,7 +75,7 @@ import {NgIf, NgTemplateOutlet} from "@angular/common";
 
         > ._content {
           display: table-cell;
-          vertical-align: middle;
+          vertical-align: top;
           padding-bottom: var(--gap-sm);
         }
 

@@ -27,16 +27,17 @@ import {NgIf} from "@angular/common";
   template: `
     <div [style]="inputStyle"
          [class]="['_contents', inputClass].filterExists().join(' ')"
-         [attr.title]="title ?? placeholder">
-      <div *ngIf="controlType === 'password'" class="tx-trans-light">
+         [attr.title]="title ?? placeholder"
+         [style.visibility]="!readonly && !disabled ? 'hidden' : undefined">
+      <span *ngIf="controlType === 'password'" class="tx-trans-light">
         ****
-      </div>
+      </span>
       <ng-container *ngIf="controlType !== 'password'">
         <ng-container *ngIf="controlValue">
           <pre>{{ controlValueText }}</pre>
         </ng-container>
         <ng-container *ngIf="!controlValue">
-          <span class="tx-trans-lighter">{{ placeholder }}</span>
+          <div class="tx-trans-lighter">{{ placeholder }}</div>
         </ng-container>
       </ng-container>
     </div>
@@ -209,7 +210,6 @@ import {NgIf} from "@angular/common";
           &[sd-type=month] {
             > input,
             > ._contents {
-              //width: 100px;
               width: 9em;
             }
           }
@@ -217,7 +217,6 @@ import {NgIf} from "@angular/common";
           &[sd-type=date] {
             > input,
             > ._contents {
-              //width: 95px;
               width: 8.25em;
             }
           }
@@ -225,7 +224,6 @@ import {NgIf} from "@angular/common";
           &[sd-type=datetime] {
             > input,
             > ._contents {
-              //width: 170px;
               width: 14em;
             }
           }
@@ -241,23 +239,47 @@ import {NgIf} from "@angular/common";
           &[sd-size=lg] {
             > input,
             > ._contents {
-              height: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
-              min-height: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
+              height: calc((var(--gap-default) * 2) + (var(--font-size-default) * var(--line-height-strip-unit)));
+              min-height: calc((var(--gap-default) * 2) + (var(--font-size-default) * var(--line-height-strip-unit)));
             }
           }
+        }
 
+
+        body.sd-theme-compact &,
+        body.sd-theme-modern {
           > input:focus {
             outline: 1px solid var(--theme-primary-default);
             outline-offset: -1px;
+          }
+        }
+
+        body.sd-theme-mobile &,
+        body.sd-theme-kiosk {
+          &[sd-size=sm] {
+            > input,
+            > ._contents {
+              padding: calc(var(--gap-xs) + 1px) 0 calc(var(--gap-xs) - 1px);
+            }
+          }
+
+          &[sd-size=lg] {
+            > input,
+            > ._contents {
+              padding: calc(var(--gap-default) + 1px) 0 calc(var(--gap-default) - 1px);
+            }
+          }
+          
+          > input:focus {
+            outline: none;
+            border-bottom-color: var(--theme-primary-default);
           }
         }
       }
 
 
       body.sd-theme-compact &,
-      body.sd-theme-modern &,
-      body.sd-theme-mobile &,
-      body.sd-theme-kiosk & {
+      body.sd-theme-modern & {
         &[sd-disabled=true] {
           > ._contents {
             display: block;
@@ -269,6 +291,24 @@ import {NgIf} from "@angular/common";
             > ._contents {
               background: white;
               color: var(--text-trans-default);
+            }
+          }
+        }
+      }
+
+      body.sd-theme-mobile &,
+      body.sd-theme-kiosk & {
+        &[sd-disabled=true] {
+          > ._contents {
+            display: block;
+            color: var(--text-trans-light);
+            border-color: transparent;
+          }
+
+          &[sd-inset=true] {
+            > ._contents {
+              color: var(--text-trans-default);
+              border-color: transparent;
             }
           }
         }

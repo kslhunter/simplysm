@@ -57,15 +57,25 @@ import {NgIf, NgTemplateOutlet} from "@angular/common";
                [multiSelectionDisplayDirection]="multiSelectionDisplayDirection"
                [getChildrenFn]="parentKeyProp ? getChildrenFnInfo : undefined">
       <ng-template #header>
-        <sd-dock-container>
+        <!--<sd-dock-container>
           <sd-dock class="bdb bdb-trans-default">
             <sd-textfield type="text" [(value)]="searchText" placeholder="검색어" inset/>
           </sd-dock>
-
+          
           <sd-pane class="p-xs-default bdb bdb-trans-default" *ngIf="modalType">
             <sd-anchor (click)="onDetailButtonClick()">자세히...</sd-anchor>
           </sd-pane>
-        </sd-dock-container>
+        </sd-dock-container>-->
+
+        <div class="p-default">
+          <sd-textfield type="text" [(value)]="searchText" placeholder="검색어"/>
+
+          @if (modalType) {
+            <div class="pt-xs">
+              <sd-anchor (click)="onDetailButtonClick()">자세히...</sd-anchor>
+            </div>
+          }
+        </div>
       </ng-template>
 
       <ng-template #before>

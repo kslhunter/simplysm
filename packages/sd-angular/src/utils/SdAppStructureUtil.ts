@@ -2,8 +2,8 @@ import {ObjectUtil} from "@simplysm/sd-core-common";
 import {IconProp} from "@fortawesome/fontawesome-svg-core";
 
 export class SdAppStructureUtil {
-  public static getFlatPermissions(menus: ISdAppStructureItem[], codes: string[] = [], modules: string[] = []): ISdFlatPermission[] {
-    const results: ISdFlatPermission[] = [];
+  public static getFlatPermissions<T extends string>(menus: ISdAppStructureItem<T>[], codes: string[] = [], modules: T[] = []): ISdFlatPermission<T>[] {
+    const results: ISdFlatPermission<T>[] = [];
     for (const menu of menus) {
       const currCodes = codes.concat([menu.code]);
 
@@ -40,8 +40,8 @@ export class SdAppStructureUtil {
     return results;
   }
 
-  public static getMenus(menus: ISdAppStructureItem[], codeChain: string[] = []): ISdMenu[] {
-    const resultMenus: ISdMenu[] = [];
+  public static getMenus<T extends string>(menus: ISdAppStructureItem<T>[], codeChain: string[] = []): ISdMenu<T>[] {
+    const resultMenus: ISdMenu<T>[] = [];
     for (const menu of menus) {
       if (menu.isNotMenu) {
         continue;
@@ -63,8 +63,8 @@ export class SdAppStructureUtil {
     return resultMenus;
   }
 
-  public static getFlatPages(menus: ISdAppStructureItem[], titleChain: string[] = [], codeChain: string[] = [], modulesChain: string[][] = []): ISdFlatPage[] {
-    const resultFlatMenus: ISdFlatPage[] = [];
+  public static getFlatPages<T extends string>(menus: ISdAppStructureItem<T>[], titleChain: string[] = [], codeChain: string[] = [], modulesChain: T[][] = []): ISdFlatPage<T>[] {
+    const resultFlatMenus: ISdFlatPage<T>[] = [];
     for (const menu of menus) {
       if (menu.isNotPage) {
         continue;
@@ -95,7 +95,7 @@ export class SdAppStructureUtil {
     const codes = code.split(".");
 
     const result: string[] = [];
-    let cursor: ISdAppStructureItem | undefined;
+    let cursor: ISdAppStructureItem<string> | undefined;
     let cursorChildren = menus;
     for (const currCode of codes) {
       cursor = cursorChildren.single((item) => item.code === currCode);
@@ -110,8 +110,8 @@ export class SdAppStructureUtil {
     return withoutParent ? current : ((parent ? `[${parent}] ` : "") + current);
   }
 
-  public static getPermissions(menus: ISdAppStructureItem[], codes: string[] = []): ISdPermission[] {
-    const results: ISdPermission[] = [];
+  public static getPermissions<T extends string>(menus: ISdAppStructureItem<T>[], codes: string[] = []): ISdPermission<T>[] {
+    const results: ISdPermission<T>[] = [];
     for (const menu of menus) {
       const currCodes = codes.concat([menu.code]);
 
@@ -178,62 +178,62 @@ export class SdAppStructureUtil {
   }
 }
 
-export interface ISdAppStructureItem {
+export interface ISdAppStructureItem<T extends string = string> {
   title: string;
   code: string;
-  modules?: string[];
+  modules?: T[];
   perms?: ("use" | "edit")[];
-  subPerms?: ISdAppStructureItemPermission[];
+  subPerms?: ISdAppStructureItemPermission<T>[];
   icon?: IconProp;
   isNotMenu?: boolean;
   isNotPage?: boolean;
-  children?: ISdAppStructureItem[];
+  children?: ISdAppStructureItem<T>[];
 }
 
-export interface ISdAppStructureItemPartial {
-  title?: string;
-  code: string;
-  modules?: string[];
-  perms?: ("use" | "edit")[];
-  subPerms?: ISdAppStructureItemPermission[];
-  icon?: IconProp;
-  isNotMenu?: boolean;
-  isNotPage?: boolean;
-  children?: ISdAppStructureItemPartial[];
-}
+// export interface ISdAppStructureItemPartial {
+//   title?: string;
+//   code: string;
+//   modules?: string[];
+//   perms?: ("use" | "edit")[];
+//   subPerms?: ISdAppStructureItemPermission[];
+//   icon?: IconProp;
+//   isNotMenu?: boolean;
+//   isNotPage?: boolean;
+//   children?: ISdAppStructureItemPartial[];
+// }
 
-export interface ISdAppStructureItemPermission {
+export interface ISdAppStructureItemPermission<T extends string = string> {
   title: string;
   code: string;
-  modules?: string[];
+  modules?: T[];
   perms: ("use" | "edit")[];
 }
 
-export interface ISdFlatPermission {
+export interface ISdFlatPermission<T extends string = string> {
   code: string;
-  modules: string[];
+  modules: T[];
 }
 
-export interface ISdMenu {
+export interface ISdMenu<T extends string = string> {
   title: string;
   codeChain: string[];
   hasPerms: boolean;
   icon?: IconProp;
-  modules?: string[];
-  children?: ISdMenu[];
+  modules?: T[];
+  children?: ISdMenu<T>[];
 }
 
-export interface ISdFlatPage {
+export interface ISdFlatPage<T extends string = string> {
   titleChain: string[];
   codeChain: string[];
-  modulesChain: string[][];
+  modulesChain: T[][];
   hasPerms: boolean;
 }
 
-export interface ISdPermission {
+export interface ISdPermission<T extends string = string> {
   title: string;
   codes: string[];
-  modules?: string[];
+  modules?: T[];
   perms?: ("use" | "edit")[];
-  children?: ISdPermission[];
+  children?: ISdPermission<T>[];
 }

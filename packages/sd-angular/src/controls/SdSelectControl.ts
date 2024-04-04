@@ -124,7 +124,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
     :host {
       display: block;
       width: 100%;
-      min-width: 120px;
+      min-width: 10em;
 
       ::ng-deep > sd-dropdown > div {
         @include form-control-base();

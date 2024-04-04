@@ -26,7 +26,6 @@ import {coercionBoolean} from "../utils/commons";
       }
 
       body.sd-theme-modern &,
-      body.sd-theme-mobile &,
       body.sd-theme-kiosk & {
         color: var(--theme-primary-default);
         //color: var(--text-trans-rev-default);
@@ -42,6 +41,15 @@ import {coercionBoolean} from "../utils/commons";
         &:hover {
           background: var(--theme-primary-lighter);
         }
+      }
+
+      body.sd-theme-mobile & {
+        color: var(--theme-primary-default);
+        line-height: var(--line-height);
+        padding: var(--gap-default) var(--gap-lg);
+        transition: background .1s linear;
+
+        @include active-effect(true);
       }
 
       &[disabled=true] {

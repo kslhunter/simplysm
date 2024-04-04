@@ -30,6 +30,7 @@ import {SdEventsDirective} from "../directives/SdEventsDirective";
       @include elevation(6);
       overflow: hidden;
       border-radius: var(--border-radius-default);
+      border: 1px solid var(--border-color-light);
 
       > div {
         width: 100%;
