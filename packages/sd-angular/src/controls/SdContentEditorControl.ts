@@ -14,6 +14,7 @@ import {
 import {coercionBoolean, getSdFnCheckData, TSdFnInfo} from "../utils/commons";
 import {SdNgHelper} from "../utils/SdNgHelper";
 import {SdEventsDirective} from "../directives/SdEventsDirective";
+import {StringUtil} from "@simplysm/sd-core-common";
 
 @Component({
   selector: "sd-content-editor",
@@ -174,13 +175,13 @@ export class SdContentEditorControl implements DoCheck {
   editorStyle?: string;
 
   @Input()
-  validatorFn?: TSdFnInfo<(value: string | undefined) => boolean>;
+  validatorFn?: TSdFnInfo<(value: string | undefined) => string | undefined>;
 
   @ViewChild("editorEl", {static: true})
   editorElRef?: ElementRef<HTMLDivElement>;
 
   @HostBinding("attr.sd-invalid")
-  isInvalid = false;
+  errorMessage?: string;
 
   #sdNgHelper = new SdNgHelper(inject(Injector));
 
@@ -191,15 +192,19 @@ export class SdContentEditorControl implements DoCheck {
         required: [this.required],
         ...getSdFnCheckData("validatorFn", this.validatorFn)
       }, () => {
+        const errorMessages: string[] = [];
         if (this.value == null && this.required) {
-          this.isInvalid = true;
+          errorMessages.push("값을 입력하세요.");
         }
-        else if (this.validatorFn?.[0]) {
-          this.isInvalid = !this.validatorFn[0](this.value);
+        else if (this.validatorFn) {
+          const message = this.validatorFn[0](this.value);
+          if (message !== undefined) {
+            errorMessages.push(message);
+          }
         }
-        else {
-          this.isInvalid = false;
-        }
+
+        const fullErrorMessage = errorMessages.join("\r\n");
+        this.errorMessage = StringUtil.isNullOrEmpty(fullErrorMessage) ? undefined : fullErrorMessage;
       });
     });
 
@@ -217,7 +222,7 @@ export class SdContentEditorControl implements DoCheck {
     });
   }
 
-  onEditorFocusOutside() {
+  onEditorFojcusOutside() {
     if (!this.readonly) {
       const selection = window.getSelection()!;
       selection.removeAllRanges();
