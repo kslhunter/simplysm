@@ -222,7 +222,7 @@ export class SdContentEditorControl implements DoCheck {
     });
   }
 
-  onEditorFojcusOutside() {
+  onEditorFocusOutside() {
     if (!this.readonly) {
       const selection = window.getSelection()!;
       selection.removeAllRanges();
