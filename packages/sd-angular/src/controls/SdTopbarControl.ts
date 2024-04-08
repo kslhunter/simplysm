@@ -31,7 +31,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
     <sd-gap width="default" *ngIf="!hasSidebar"></sd-gap>
     <ng-content/>
     <div class="_menu">
-      <ng-content select="sd-topbar-menu"/>
+      <ng-content select="sd-topbar-menu, .sd-topbar-menu"/>
     </div>`,
   styles: [/* language=SCSS */ `
     @import "../scss/mixins";
