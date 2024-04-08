@@ -5,18 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a5909e33-fd1f-4a18-a2ac-5581a953e90d" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdFormTableControl.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdDropdownPopupControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdDropdownPopupControl.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdFormBoxItemControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdFormBoxItemControl.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSelectControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSelectControl.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSharedDataSelectControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSharedDataSelectControl.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdTextfieldControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdTextfieldControl.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdTopbarMenuControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdTopbarMenuControl.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/scss/themes/_variables-kiosk.scss" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/scss/themes/_variables-kiosk.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/scss/themes/_variables-mobile.scss" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/scss/themes/_variables-mobile.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/utils/SdAppStructureUtil.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/utils/SdAppStructureUtil.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSidebarMenuControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSidebarMenuControl.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdViewControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdViewControl.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdViewItemControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdViewItemControl.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -45,6 +38,18 @@
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;kslhunter&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/kslhunter/simplysm11.git&quot;,
+    &quot;accountId&quot;: &quot;33cb1217-f54b-4f66-8576-38e785d7d8a5&quot;
+  }
+}</component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
@@ -165,6 +170,13 @@
       </list>
     </recent_temporary>
   </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-js-predefined-1d06a55b98c1-74d2a5396914-JavaScript-WS-241.14494.235" />
+      </set>
+    </attachedChunks>
+  </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -233,6 +245,7 @@
     <MESSAGE value="#652" />
     <MESSAGE value="#694" />
     <MESSAGE value="." />
-    <option name="LAST_COMMIT_MESSAGE" value="." />
+    <MESSAGE value="#670 관련 (invalid 구현)" />
+    <option name="LAST_COMMIT_MESSAGE" value="#670 관련 (invalid 구현)" />
   </component>
 </project>

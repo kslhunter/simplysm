@@ -67,7 +67,7 @@ import {NgIf, NgTemplateOutlet} from "@angular/common";
           </sd-pane>
         </sd-dock-container>-->
 
-        <div class="p-default">
+        <div class="p-xs">
           <sd-textfield type="text" [(value)]="searchText" placeholder="검색어"/>
 
           @if (modalType) {

@@ -15,6 +15,10 @@ import {SdViewControl} from "./SdViewControl";
       &[sd-selected=true] {
         display: block;
       }
+
+      sd-view[sd-fill=true] & {
+        height: 100%;
+      }
     }
   `]
 })

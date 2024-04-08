@@ -24,7 +24,9 @@ import {IconProp} from "@fortawesome/fontawesome-svg-core";
     SdRouterLinkDirective
   ],
   template: `
-    <h5 class="_title">MENUS</h5>
+    @if (getRootLayout() === "accordion") {
+      <h5 class="_title">MENUS</h5>
+    }
     <sd-list inset>
       <ng-template [ngTemplateOutlet]="itemTemplate"
                    [ngTemplateOutletContext]="{menus: menus, depth: 0}"></ng-template>
@@ -36,8 +38,10 @@ import {IconProp} from "@fortawesome/fontawesome-svg-core";
                       [sdRouterLink]="(menu.children || menu.url) ? undefined: ['/home/' + menu.codeChain.join('/')]"
                       (click)="onMenuClick(menu)"
                       [selected]="getIsMenuSelected(menu)"
-                      [layout]="depth === 0 ? (layout ?? 'accordion') : 'accordion'">
-          <sd-icon *ngIf="menu.icon" [icon]="menu.icon" fixedWidth/>
+                      [layout]="depth === 0 ? getRootLayout() : 'accordion'">
+          @if (menu.icon) {
+            <sd-icon [icon]="menu.icon" fixedWidth/>&nbsp;
+          }
           {{ menu.title }}
           <sd-list *ngIf="menu.children" inset>
             <ng-template [ngTemplateOutlet]="itemTemplate"
@@ -89,6 +93,10 @@ export class SdSidebarMenuControl implements OnInit {
   trackByForMenu = (i: number, menu: ISdSidebarMenuVM): string => menu.codeChain.join(".");
 
   #pageCode = "";
+
+  getRootLayout(): "flat" | "accordion" {
+    return this.layout ?? (this.menus.length <= 3 ? 'flat' : 'accordion');
+  }
 
   ngOnInit(): void {
     this.#pageCode = this.#router.url.split("/").slice(2).map((item) => item.split(";").first()).join(".");
