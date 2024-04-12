@@ -380,11 +380,16 @@ $vars: (
     darker: var(--theme-grey-dark)
   ),
   border-radius: (
-    sm: var(--gap-xs),
-    default: var(--gap-sm),
-    lg: var(--gap-default),
-    xl: var(--gap-lg),
-    xxl: var(--gap-xl)
+    //sm: var(--gap-xs),
+    //default: var(--gap-sm),
+    //lg: var(--gap-default),
+    //xl: var(--gap-lg),
+    //xxl: var(--gap-xl)
+    sm: 2px,
+    default: 6px,
+    lg: 8px,
+    xl: 12px,
+    xxl: 18px
   ),
   z-index: (
     toast: 9999,

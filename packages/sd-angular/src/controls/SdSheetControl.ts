@@ -447,7 +447,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
               height: 100%;
 
               z-index: $z-index-select-row-indicator;
-
+ 
               > ._select-row-indicator {
                 display: block;
                 left: 0;

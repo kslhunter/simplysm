@@ -19,25 +19,27 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
     SdGapControl
   ],
   template: `
-    <sd-anchor class="_sidebar-toggle-button" (click)="onSidebarToggleButtonClick()"
-               *ngIf="hasSidebar">
-      <sd-icon [icon]="icons.bars" fixedWidth/>
-    </sd-anchor>
+    @if (hasSidebar) {
+      <sd-anchor class="_sidebar-toggle-button" (click)="onSidebarToggleButtonClick()">
+        <sd-icon [icon]="icons.bars" fixedWidth/>
+      </sd-anchor>
+    } @else {
+      <sd-gap width="default"/>
+    }
 
-    <div class="_nav">
-      <ng-content select="sd-topbar-nav"/>
-    </div>
-
-    <sd-gap width="default" *ngIf="!hasSidebar"></sd-gap>
-    <ng-content/>
-    <div class="_menu">
-      <ng-content select="sd-topbar-menu, .sd-topbar-menu"/>
-    </div>`,
+    <ng-content/>`,
   styles: [/* language=SCSS */ `
     @import "../scss/mixins";
 
     :host {
-      display: block;
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      gap: var(--gap-default);
+      align-items: center;
+      justify-content: start;
+      //white-space: nowrap;
+      
       position: absolute;
       z-index: var(--z-index-topbar);
       top: 0;
@@ -46,8 +48,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
       height: var(--topbar-height);
       overflow-x: auto;
       overflow-y: hidden;
-      white-space: nowrap;
-      line-height: var(--topbar-height);
+      //line-height: var(--topbar-height);
       user-select: none;
 
       body.sd-theme-compact & {
@@ -62,19 +63,20 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
         color: var(--text-trans-default);
       }
 
-      > ._nav {
+      /*> ._nav {
         display: inline-block;
         height: var(--topbar-height);
         white-space: nowrap;
         vertical-align: top;
-      }
+      }*/
 
       @each $h in (h1, h2, h3, h4, h5, h6) {
         > ::ng-deep #{$h} {
-          display: inline-block;
-          vertical-align: top;
-          line-height: var(--topbar-height);
-          margin-right: var(--gap-xxl);
+          //display: inline-block;
+          //vertical-align: top;
+          //line-height: var(--topbar-height);
+          //margin-right: var(--gap-xxl);
+          padding-right: var(--gap-xl);
         }
       }
 
@@ -97,28 +99,29 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
       }
 
       > ._sidebar-toggle-button {
-        display: inline-block;
-        vertical-align: top;
+        //display: inline-block;
+        //vertical-align: top;
         text-align: center;
-        margin-right: var(--gap-default);
+        //margin-right: var(--gap-default);
         cursor: pointer;
+        line-height: var(--topbar-height);
 
-        body.sd-theme-compact & {
+        //body.sd-theme-compact & {
           color: var(--text-trans-rev-dark);
           min-width: var(--topbar-height);
-          font-size: 16px;
+          font-size: var(--font-size-h4);
 
           &:hover {
             background: rgba(0, 0, 0, .1);
             color: var(--text-trans-rev-default);
           }
-        }
-
+        //}
+        
         body.sd-theme-modern &,
         body.sd-theme-mobile &,
         body.sd-theme-kiosk & {
           color: var(--theme-primary-default);
-          font-size: 14px;
+          /*font-size: 14px;
           line-height: var(--line-height);
           padding: var(--gap-xs) var(--gap-sm);
           background: white;
@@ -126,24 +129,28 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
           @include elevation(2);
           border-bottom-right-radius: var(--border-radius-default);
           border-top-right-radius: var(--border-radius-default);
-          margin-right: var(--gap-lg);
+          margin-right: var(--gap-lg);*/
 
           @include active-effect(true);
 
           &:hover {
+            background: transparent;
             color: var(--theme-primary-darker);
           }
         }
       }
 
-      > ._menu {
-        display: inline-block;
+      /*> ._menu {
+        display: flex;
+        flex-wrap: nowrap;
+        flex-direction: row;
+        gap: var(--gap-sm);
 
         body.sd-theme-mobile &,
         body.sd-theme-kiosk & {
           float: right;
         }
-      }
+      }*/
     }
   `]
 })

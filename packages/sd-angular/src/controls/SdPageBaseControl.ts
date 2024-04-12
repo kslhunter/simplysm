@@ -27,24 +27,22 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
         <sd-topbar>
           <h4>{{ title }}</h4>
 
-          <ng-container *ngIf="isInitialized && hasPermission">
+          @if (isInitialized && hasPermission) {
             <ng-template [ngTemplateOutlet]="topbarMenuTemplateRef"/>
-          </ng-container>
+          }
         </sd-topbar>
 
-        <ng-container *ngIf="isInitialized">
-          <ng-container *ngIf="!hasPermission">
+        @if (isInitialized) {
+          @if (!hasPermission) {
             <div class="p-xxl" style="font-size: 48px; line-height: 1.5em">
               <sd-icon [icon]="icons.triangleExclamation" fixedWidth/>
               이 메뉴의 사용권한이 없습니다.<br/>
               시스템 관리자에게 문의하세요.
             </div>
-          </ng-container>
-
-          <ng-container *ngIf="hasPermission">
+          } @else {
             <ng-content/>
-          </ng-container>
-        </ng-container>
+          }
+        }
       </sd-topbar-container>
     </sd-busy-container>`
 })

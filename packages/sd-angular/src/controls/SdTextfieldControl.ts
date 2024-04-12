@@ -95,7 +95,7 @@ import {NgIf} from "@angular/common";
           border-top: none;
           border-bottom: 2px solid var(--border-color-default);
           background: transparent;
-          transition: border-color 0.3s;
+          //transition: border-color 0.3s;
           padding: calc(var(--gap-sm) + 1px) 0 calc(var(--gap-sm) - 1px);
 
           &:focus {
@@ -247,7 +247,7 @@ import {NgIf} from "@angular/common";
 
 
         body.sd-theme-compact &,
-        body.sd-theme-modern {
+        body.sd-theme-modern & {
           > input:focus {
             outline: 1px solid var(--theme-primary-default);
             outline-offset: -1px;
@@ -255,7 +255,7 @@ import {NgIf} from "@angular/common";
         }
 
         body.sd-theme-mobile &,
-        body.sd-theme-kiosk {
+        body.sd-theme-kiosk & {
           &[sd-size=sm] {
             > input,
             > ._contents {

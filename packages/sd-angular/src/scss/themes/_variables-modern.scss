@@ -21,11 +21,13 @@ $vars: map-merge($vars, (
     h5: 14px,
     h6: 12px,
   ),
+  line-height: 1.5em,
+  line-height-strip-unit: 1.5,
   sidebar: (
     width: 14em
   ),
   topbar: (
-    height: 48px
+    height: calc(var(--font-size-default) * 3)
   ),
   font-family: "'Pretendard Variable', sans-serif",
   sheet: (

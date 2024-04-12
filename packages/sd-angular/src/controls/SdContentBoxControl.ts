@@ -7,7 +7,7 @@ import {coercionBoolean} from "../utils/commons";
   standalone: true,
   imports: [],
   template: `
-    <div>
+    <div [class]="contentClass" [style]="contentStyle">
       <ng-content/>
     </div>`,
   styles: [/* language=SCSS */ `
@@ -48,9 +48,6 @@ import {coercionBoolean} from "../utils/commons";
         &:not([sd-fill=true]) {
           padding: 0;
           margin: var(--gap-xl);
-
-          > div {
-          }
         }
 
         &[sd-size=lg] {
@@ -78,7 +75,7 @@ import {coercionBoolean} from "../utils/commons";
         }
       }
 
-      body.sd-theme-kiosk &,
+      /*body.sd-theme-kiosk &,
       body.sd-theme-mobile & {
         > div {
           @include elevation(0);
@@ -88,7 +85,7 @@ import {coercionBoolean} from "../utils/commons";
             @include elevation(0);
           }
         }
-      }
+      }*/
     }
   `]
 })
@@ -96,6 +93,12 @@ export class SdContentBoxControl {
   @Input({transform: coercionBoolean})
   @HostBinding("attr.sd-fill")
   fill = false;
+
+  @Input()
+  contentStyle?: string;
+
+  @Input()
+  contentClass?: string;
 
   @Input()
   @HostBinding("attr.sd-size")

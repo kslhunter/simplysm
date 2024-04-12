@@ -44,10 +44,12 @@ import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
       }
 
       body.sd-theme-modern & {
-        @include elevation(2);
+        //@include elevation(2);
+        border-right: 1px solid var(--border-color-light);
 
         &[sd-toggle=true] {
-          @include elevation(0);
+          //@include elevation(0);
+          border-right: none;
         }
       }
       

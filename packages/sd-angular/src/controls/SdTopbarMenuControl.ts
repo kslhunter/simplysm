@@ -33,7 +33,7 @@ import {coercionBoolean} from "../utils/commons";
         padding: var(--gap-sm) var(--gap-default);
         background: var(--theme-primary-lightest);
         border-radius: var(--border-radius-default);
-        margin: var(--gap-sm) var(--gap-default);
+        //margin: var(--gap-sm) var(--gap-default);
         transition: background .1s linear;
 
         @include active-effect(true);

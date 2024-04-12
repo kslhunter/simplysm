@@ -4,9 +4,22 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a5909e33-fd1f-4a18-a2ac-5581a953e90d" name="Changes" comment="">
+    <list default="true" id="a5909e33-fd1f-4a18-a2ac-5581a953e90d" name="Changes" comment=".">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdCheckboxControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdCheckboxControl.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdContentBoxControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdContentBoxControl.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdFormBoxItemControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdFormBoxItemControl.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdPageBaseControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdPageBaseControl.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSelectControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSelectControl.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSheetControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSheetControl.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSidebarControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSidebarControl.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdTextfieldControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdTextfieldControl.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdTopbarControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdTopbarControl.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdTopbarMenuControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdTopbarMenuControl.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/scss/_styles.scss" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/scss/_styles.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/scss/_variables.scss" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/scss/_variables.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/scss/themes/_variables-modern.scss" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/scss/themes/_variables-modern.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-core-common/src/errors/ArgumentError.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-core-common/src/errors/ArgumentError.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -92,7 +105,7 @@
     "npm.simplysm > watch:sd-angular.executor": "Run",
     "npm.watch.executor": "Run",
     "npm.watch:sd-orm-node.executor": "Run",
-    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "settings.editor.selected.configurable": "settings.typescriptcompiler",
     "ts.external.directory.path": "D:\\workspaces-11\\simplysm\\node_modules\\typescript\\lib",
     "vue.rearranger.settings.migration": "true"
   }
@@ -100,10 +113,10 @@
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="D:\workspaces-11\simplysm\packages\sd-angular\src\controls" />
+      <recent name="D:\workspaces-11\simplysm\_back\240412" />
       <recent name="D:\workspaces-11\simplysm\packages\cordova-plugin-local-baseurl" />
       <recent name="D:\workspaces-11\simplysm\packages\cordova-util" />
       <recent name="D:\workspaces-11\simplysm\packages\eslint-plugin" />
-      <recent name="D:\workspaces-11\simplysm\packages\sd-angular" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="D:\workspaces-11\simplysm\packages\sd-angular\src\scss\themes" />
@@ -159,8 +172,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="npm.publish" />
         <item itemvalue="npm.watch" />
+        <item itemvalue="npm.publish" />
         <item itemvalue="npm.simplysm &gt; watch:sd-angular" />
         <item itemvalue="npm.commit" />
         <item itemvalue="Node.js.notosans-maker.js" />

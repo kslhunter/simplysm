@@ -433,13 +433,23 @@ hidden {
 }
 
 .page-header {
-  margin-bottom: var(--gap-default);
+  line-height: var(--line-height);
+  margin-bottom: var(--gap-sm);
   padding-bottom: var(--gap-xxs);
 
-  body.sd-theme-compact & {
-    margin-top: var(--gap-default);
+  /*body.sd-theme-kiosk &,
+  body.sd-theme-mobile &,
+  body.sd-theme-modern & {*/
+    font-size: var(--font-size-sm);
+    color: var(--theme-grey-default);
+  //}
+
+  /*body.sd-theme-compact & {
+    font-weight: bold;
+    font-size: var(--font-size-h4);
+    margin-top: var(--gap-sm);
     border-bottom: 1px solid var(--border-color-default);
-  }
+  }*/
 }
 
 .active-effect {

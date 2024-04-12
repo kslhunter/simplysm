@@ -2,7 +2,6 @@ import {ChangeDetectionStrategy, Component, EventEmitter, HostBinding, inject, I
 import {IconProp} from "@fortawesome/fontawesome-svg-core";
 import {coercionBoolean} from "../utils/commons";
 import {SdIconControl} from "./SdIconControl";
-import {NgIf} from "@angular/common";
 import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 
 @Component({
@@ -10,97 +9,63 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
-    SdIconControl,
-    NgIf
+    SdIconControl
   ],
   template: `
     <div (click)="onClick()" tabindex="0" (keydown)="onKeydown($event)" [style]="labelStyle">
-      <div class="_indicator_rect"></div>
-      <sd-icon class="_indicator" [icon]="icon" *ngIf="!radio"/>
-      <div class="_indicator" *ngIf="radio">
-        <div></div>
+      <div class="_indicator_rect">
+        <div class="_indicator">
+          @if (!radio) {
+            <sd-icon [icon]="icon"/>
+          } @else {
+            <div></div>
+          }
+        </div>
       </div>
-      <div class="_content">
-        <ng-content></ng-content>
-      </div>
+      <ng-content/>
     </div>`,
   styles: [/* language=SCSS */ `
     @import "../scss/variables";
     @import "../scss/mixins";
 
-    $checkbox-size: calc(var(--font-size-default) * var(--line-height-strip-unit) - var(--gap-sm));
-
     :host {
-      color: var(--text-trans-default);
-
       > div {
         @include form-control-base();
         color: inherit;
         cursor: pointer;
-        position: relative;
-        border-color: transparent;
+
+        display: flex;
+        flex-wrap: nowrap;
+        flex-direction: row;
+        align-items: center;
+
+        height: calc(var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-sm) * 2 + 2px);
+        gap: var(--gap-sm);
 
         > ._indicator_rect {
-          position: absolute;
           display: inline-block;
-          width: $checkbox-size;
-          height: $checkbox-size;
+
+          width: calc(var(--font-size-default) + 2px);
+          height: calc(var(--font-size-default) + 2px);
           border: 1px solid var(--trans-light);
-          vertical-align: top;
           background: var(--theme-secondary-lightest);
-          margin-top: calc(var(--gap-sm) / 2);
           border-radius: var(--border-radius-sm);
-        }
-
-        > ._indicator {
-          display: inline-block;
-          position: relative;
-          opacity: 0;
-          color: var(--text-trans-default);
-          width: $checkbox-size;
-          height: $checkbox-size;
-          vertical-align: top;
-          font-size: var(--font-size-default);
-          top: -1px;
-          text-indent: 1px;
-        }
-
-        > ._content {
-          display: inline-block;
-          vertical-align: top;
-          text-indent: var(--gap-sm);
-
-          > * {
-            text-indent: 0;
-          }
-        }
-
-        &:focus {
-          outline-color: transparent;
-
-          > ._indicator_rect {
-            border-color: var(--theme-primary-default);
-          }
-        }
-      }
-
-      &[sd-disabled=true] {
-        > div {
-          > ._indicator_rect {
-            background: var(--theme-grey-lighter) !important;
-          }
 
           > ._indicator {
-            color: var(--text-trans-lighter) !important;
+            text-align: center;
+            width: 1em;
+            line-height: 1em;
+            opacity: 0;
+
+            ::ng-deep svg {
+              width: 1em;
+              vertical-align: top;
+            }
           }
         }
-      }
 
-      &[sd-checked=true] {
-        > div {
-          > ._indicator {
-            opacity: 1;
-          }
+        &:focus > ._indicator_rect {
+          border-color: var(--theme-primary-default);
         }
       }
 
@@ -108,43 +73,65 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
         > div {
           > ._indicator_rect {
             border-radius: 100%;
-          }
 
-          > ._indicator {
-            padding: 3px;
-            margin-top: calc(var(--gap-sm) / 2);
-            top: 0;
-          }
-
-          > ._indicator > div {
-            border-radius: 100%;
-            background: var(--text-trans-default);
-            width: 100%;
-            height: 100%;
+            > ._indicator {
+              border-radius: 100%;
+              padding: 3px;
+              margin-top: calc(var(--gap-sm) / 2);
+              top: 0;
+              
+              > div {
+                border-radius: 100%;
+                background: var(--text-trans-default);
+                width: 100%;
+                height: 100%;
+              }
+            }
           }
         }
       }
 
+      &[sd-checked=true] {
+        > div > ._indicator_rect > ._indicator {
+          opacity: 1;
+        }
+      }
+
       &[sd-size=sm] > div {
+        height: calc(var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-xs) * 2 + 2px);
         padding: var(--gap-xs) var(--gap-sm);
+        gap: var(--gap-xs);
       }
 
       &[sd-size=lg] > div {
+        height: calc(var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-default) * 2 + 2px);
         padding: var(--gap-default) var(--gap-lg);
+        gap: var(--gap-default);
       }
 
-      &[sd-inset=true] > div {
-        border: none;
+      &[sd-inset=true] {
+        > div {
+          height: calc(var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-sm) * 2);
+          border: none;
+          justify-content: center;
+        }
+
+        &[sd-size=sm] > div {
+          height: calc(var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-xs) * 2);
+        }
+
+        &[sd-size=lg] > div {
+          height: calc(var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-default) * 2);
+        }
       }
 
       &[sd-inline=true] {
-        display: inline-block;
+        display: inline-flex;
 
         > div {
-          padding-left: 0;
-          padding-top: 0;
-          padding-bottom: 0;
-          //padding: 0;
+          padding: 0;
+          border: none;
+          height: auto;
         }
       }
 
@@ -152,10 +139,10 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
         &[sd-theme=#{$key}] > div {
           > ._indicator_rect {
             background: var(--theme-#{$key}-lightest);
-          }
 
-          > ._indicator {
-            color: var(--theme-#{$key}-default);
+            > ._indicator {
+              color: var(--theme-#{$key}-default);
+            }
           }
 
           &:focus {
@@ -165,8 +152,15 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
           }
         }
       }
-    }
 
+      &[sd-disabled=true] {
+        > div {
+          > ._indicator_rect {
+            background: var(--theme-grey-lighter);
+          }
+        }
+      }
+    }
   `]
 })
 export class SdCheckboxControl {

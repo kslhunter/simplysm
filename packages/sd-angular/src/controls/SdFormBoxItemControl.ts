@@ -38,6 +38,7 @@ import {NgIf, NgTemplateOutlet} from "@angular/common";
       > label {
         white-space: nowrap;
         font-weight: bold;
+        border: 1px solid transparent;
 
         /*body.sd-theme-compact & {
           font-weight: bold;          
