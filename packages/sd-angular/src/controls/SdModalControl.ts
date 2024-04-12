@@ -122,6 +122,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
         ::ng-deep > sd-dock-container {
           > ._header {
             user-select: none;
+            border-bottom: 1px solid var(--trans-lighter);
 
             ._title {
               display: inline-block;
@@ -135,13 +136,10 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
               float: right;
               cursor: pointer;
               text-align: center;
-              // padding:var(--gap-sm) var(--gap-default);
               padding: var(--gap-default) var(--gap-lg);
-              // color:var(--text-trans-rev-dark);
 
               &:hover {
-                background: rgba(0, 0, 0, .2);
-                // color:var(--text-trans-rev-default);
+                background: var(--theme-grey-lightest);
               }
 
               &:active {

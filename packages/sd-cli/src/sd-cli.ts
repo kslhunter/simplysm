@@ -1,4 +1,4 @@
-#!/usr/bin/env node --es-module-specifier-resolution=node --no-warnings --experimental-import-meta-resolve
+#!/usr/bin/env node --es-module-specifier-resolution=node --no-warnings --experimental-import-meta-resolve --max-old-space-size=8000
 
 import yargs from "yargs";
 import {hideBin} from "yargs/helpers";

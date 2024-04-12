@@ -61,8 +61,8 @@ export class SdModalProvider {
         modalEntryRef.instance.title = title;
         modalEntryRef.instance.hideHeader = options?.hideHeader ?? false;
         modalEntryRef.instance.hideCloseButton = options?.hideCloseButton ?? false;
-        modalEntryRef.instance.useCloseByBackdrop = options?.useCloseByBackdrop ?? true;
-        modalEntryRef.instance.useCloseByEscapeKey = options?.useCloseByEscapeKey ?? true;
+        modalEntryRef.instance.useCloseByBackdrop = options?.useCloseByBackdrop ?? false;
+        modalEntryRef.instance.useCloseByEscapeKey = options?.useCloseByEscapeKey ?? false;
         modalEntryRef.instance.float = options?.float ?? false;
         modalEntryRef.instance.minHeightPx = options?.minHeightPx;
         modalEntryRef.instance.minWidthPx = options?.minWidthPx;

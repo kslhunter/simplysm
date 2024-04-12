@@ -56,6 +56,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
             width: 1em;
             line-height: 1em;
             opacity: 0;
+            color: var(--text-trans-default);
 
             ::ng-deep svg {
               width: 1em;
@@ -79,7 +80,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
               padding: 3px;
               margin-top: calc(var(--gap-sm) / 2);
               top: 0;
-              
+
               > div {
                 border-radius: 100%;
                 background: var(--text-trans-default);
@@ -157,6 +158,12 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
         > div {
           > ._indicator_rect {
             background: var(--theme-grey-lighter);
+          }
+
+          &:focus {
+            > ._indicator_rect {
+              border-color: var(--theme-grey-default);
+            }
           }
         }
       }
