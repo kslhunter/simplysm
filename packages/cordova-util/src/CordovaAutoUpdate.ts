@@ -32,7 +32,7 @@ export abstract class CordovaAutoUpdate {
 
         // 서버에서 최신버전의 zip파일 다운로드
         const downloadZipBuffer = await NetUtil.downloadAsync(opt.serviceClient.serverUrl + downloadPath, progress => {
-          opt.log(`최신버전 파일 다운로드중...(${(progress.receivedLength / progress.contentLength).toFixed(2)}%)`);
+          opt.log(`최신버전 파일 다운로드중...(${(progress.receivedLength * 100 / progress.contentLength).toFixed(2)}%)`);
         });
 
         opt.log(`최신버전 파일 압축해제...`);

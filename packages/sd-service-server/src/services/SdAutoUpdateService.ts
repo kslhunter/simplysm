@@ -13,8 +13,9 @@ export class SdAutoUpdateService extends SdServiceBase {
     const updates = FsUtil.readdir(path.resolve(clientPath, platform, "updates"));
     const versions = updates.map((item) => ({
       fileName: item,
-      version: path.basename(item, path.extname(item))
-    })).filter((item) => (/^[0-9.]*$/).test(item.version));
+      version: path.basename(item, path.extname(item)),
+      extName: path.extname(item)
+    })).filter((item) => item.extName === ".zip" && (/^[0-9.]*$/).test(item.version));
 
     const version = semver.maxSatisfying(versions.map((item) => item.version), "*")!;
     const downloadPath = "/" + path.join(clientName, platform, "updates", versions.single(item => item.version === version)!.fileName);
@@ -23,5 +24,24 @@ export class SdAutoUpdateService extends SdServiceBase {
       version,
       downloadPath
     };
+  }
+
+  /**
+   * @deprecated
+   */
+  async getLastVersionAsync(clientName: string, platform: string): Promise<string | undefined> {
+    try {
+      const updates = await FsUtil.readdirAsync(path.resolve(this.server.options.rootPath, "www", clientName, platform, "updates"));
+      const versions = updates.map((item) => ({
+        fileName: item,
+        version: path.basename(item, path.extname(item)),
+        extName: path.extname(item)
+      })).filter((item) => item.extName === ".apk" && (/^[0-9.]*$/).test(item.version));
+
+      return semver.maxSatisfying(versions.map((item) => item.version), "*") ?? undefined;
+    }
+    catch (err) {
+      return undefined;
+    }
   }
 }

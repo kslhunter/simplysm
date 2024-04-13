@@ -4,12 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a5909e33-fd1f-4a18-a2ac-5581a953e90d" name="Changes" comment=".">
+    <list default="true" id="a5909e33-fd1f-4a18-a2ac-5581a953e90d" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/eslint-plugin/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/eslint-plugin/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-cli/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yarn.lock" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/cordova-util/src/CordovaAutoUpdate.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/cordova-util/src/CordovaAutoUpdate.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-service-server/src/services/SdAutoUpdateService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-service-server/src/services/SdAutoUpdateService.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -81,7 +79,7 @@
     "WebServerToolWindowFactoryState": "false",
     "git-widget-placeholder": "master",
     "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "D:/workspaces-11/simplysm/packages/sd-angular/src/controls",
+    "last_opened_file_path": "E:/백업/_back-workspaces/230124_workspaces",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.standard": "true",
     "node.js.detected.package.tslint": "true",
@@ -171,8 +169,8 @@
     <recent_temporary>
       <list>
         <item itemvalue="npm.watch" />
-        <item itemvalue="npm.simplysm &gt; reinstall" />
         <item itemvalue="npm.publish" />
+        <item itemvalue="npm.simplysm &gt; reinstall" />
         <item itemvalue="npm.simplysm &gt; watch:sd-angular" />
         <item itemvalue="npm.commit" />
       </list>
