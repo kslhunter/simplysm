@@ -78,8 +78,8 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
             > ._indicator {
               border-radius: 100%;
               padding: 3px;
-              margin-top: calc(var(--gap-sm) / 2);
-              top: 0;
+              width: 100%;
+              height: 100%;
 
               > div {
                 border-radius: 100%;
