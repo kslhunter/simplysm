@@ -61,7 +61,7 @@ export class SdCliProject {
 
     logger.debug("빌드 프로세스 이벤트 준비...");
     const resultCache = new Map<string, ISdCliPackageBuildResult[]>();
-    let busyCount = 0;
+    let busyReqCntMap = new Map<string, number>();
     const serverInfoMap = new Map<string, {
       // server
       pkgOrOpt?: { path: string; conf: ISdCliServerPackageConfig } | { port: number }; // persist
@@ -76,10 +76,13 @@ export class SdCliProject {
     }>();
     cluster.on("message", (message: ISdCliBuildClusterResMessage) => {
       if (message.type === "change") {
-        if (busyCount === 0) {
+        if (Array.from(busyReqCntMap.values()).every(v => v === 0)) {
           logger.log("빌드를 시작합니다...");
         }
-        busyCount++;
+        busyReqCntMap.set(
+          message.req.cmd + "|" + message.req.pkgPath,
+          (busyReqCntMap.get(message.req.cmd + "|" + message.req.pkgPath) ?? 0) + 1
+        );
       }
       else if (message.type === "complete") {
         resultCache.delete("none");
@@ -149,8 +152,12 @@ export class SdCliProject {
         }
 
         setTimeout(async () => {
-          busyCount--;
-          if (busyCount === 0) {
+          busyReqCntMap.set(
+            message.req.cmd + "|" + message.req.pkgPath,
+            (busyReqCntMap.get(message.req.cmd + "|" + message.req.pkgPath) ?? 0) - 1
+          );
+          logger.debug("남아있는 예약 빌드", busyReqCntMap);
+          if (Array.from(busyReqCntMap.values()).every(v => v === 0)) {
             for (const serverPkgNameOrPort of serverInfoMap.keys()) {
               const serverInfo = serverInfoMap.get(serverPkgNameOrPort)!;
               if (serverInfo.pkgOrOpt && serverInfo.hasChanges) {
@@ -206,7 +213,10 @@ export class SdCliProject {
     });
 
     logger.debug("빌드 프로세스 명령 전송...");
-    busyCount++;
+    busyReqCntMap.set(
+      "all",
+      (busyReqCntMap.get("all") ?? 0) + 1
+    );
     logger.log("빌드를 시작합니다...");
 
     await pkgPaths.parallelAsync(async (pkgPath) => {
@@ -222,8 +232,11 @@ export class SdCliProject {
       }
     });
 
-    busyCount--;
-    if (busyCount === 0) {
+    busyReqCntMap.set(
+      "all",
+      (busyReqCntMap.get("all") ?? 0) - 1
+    );
+    if (Array.from(busyReqCntMap.values()).every(v => v === 0)) {
       const buildResults = Array.from(resultCache.values()).mapMany();
       this._logging(buildResults, logger);
     }

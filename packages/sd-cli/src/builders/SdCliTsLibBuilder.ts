@@ -85,7 +85,7 @@ export class SdCliTsLibBuilder extends EventEmitter {
     affectedFileSet: Set<string>;
     buildResults: ISdCliPackageBuildResult[];
   }> {
-    this._debug(`BUILD && CHECK...`);
+    this._debug(`BUILD & CHECK...`);
     this._builder = this._builder ?? new SdTsCompiler({
       pkgPath: this._pkgPath,
       emit: true,

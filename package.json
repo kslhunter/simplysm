@@ -18,13 +18,13 @@
     "packages/*"
   ],
   "scripts": {
-    "watch": "npm run _sd-cli_ watch",
-    "watch:sd-angular": "npm run _sd-cli_ --debug watch --packages sd-angular",
-    "watch:sd-orm-node": "npm run _sd-cli_ --debug watch --packages sd-orm-common sd-orm-node",
-    "build": "npm run _sd-cli_ --debug build",
-    "publish": "npm run _sd-cli_ --debug publish",
+    "watch": "npm run _sd-cli_ -- --debug watch",
+    "watch:sd-angular": "npm run _sd-cli_ -- --debug watch --packages sd-angular",
+    "watch:sd-excel": "npm run _sd-cli_ -- --debug watch --packages sd-excel",
+    "build": "npm run _sd-cli_ -- --debug build",
+    "publish": "npm run _sd-cli_ -- --debug publish",
     "--": "",
-    "_sd-cli_": "tsx --experimental-import-meta-resolve --tsconfig packages/sd-cli/tsconfig.json packages/sd-cli/src/sd-cli.ts",
+    "_sd-cli_": "tsx --experimental-import-meta-resolve --max-old-space-size=8000 --tsconfig packages/sd-cli/tsconfig.json packages/sd-cli/src/sd-cli.ts",
     "commit": "git add . && git commit -m .",
     "eslint-timing": "cross-env TIMING=1 eslint \"**/+(*.ts|*.tsx|*.js|*.cjs|*.mjs)\"",
     "eslint-fix": "cross-env TIMING=1 eslint --fix \"**/+(*.ts|*.tsx|*.js|*.cjs|*.mjs)\"",
@@ -32,10 +32,10 @@
   },
   "devDependencies": {
     "@simplysm/eslint-plugin": "11.1.44",
-    "@types/node": "^18.19.26",
+    "@types/node": "^18.19.31",
     "cross-env": "^7.0.3",
     "eslint": "^8.57.0",
     "tsx": "^4.7.2",
-    "typescript": "~5.2.2"
+    "typescript": "~5.4.5"
   }
 }
