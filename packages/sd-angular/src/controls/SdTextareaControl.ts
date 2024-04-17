@@ -13,43 +13,33 @@ import {
 import {StringUtil} from "@simplysm/sd-core-common";
 import {coercionBoolean, coercionNonNullableNumber, getSdFnCheckData, TSdFnInfo} from "../utils/commons";
 import {SdNgHelper} from "../utils/SdNgHelper";
-import {NgIf} from "@angular/common";
 
-/**
- * @deprecated use sd-content-editor
- */
 @Component({
   selector: "sd-textarea",
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [
-    NgIf
-  ],
+  imports: [],
   template: `
-    <div *ngIf="readonly || disabled"
-         [style]="inputStyle"
+    <div [style]="inputStyle"
          [class]="['_contents', inputClass].filterExists().join(' ')"
-         [attr.title]="title ?? placeholder">
-      <ng-container *ngIf="value">
+         [attr.title]="title ?? placeholder"
+         [style.visibility]="!readonly && !disabled ? 'hidden' : undefined">
+      @if (value) {
         <pre>{{ value }}</pre>
-      </ng-container>
-      <ng-container *ngIf="!value">
-        @if (placeholder) {
-          <span class="tx-trans-lighter">{{ placeholder }}</span>
-        } @else {
-          &nbsp;
-        }
-      </ng-container>
+      } @else {
+        <span class="tx-trans-lighter">{{ placeholder }}</span>
+      }
     </div>
-    <textarea *ngIf="!readonly && !disabled"
-              [value]="value ?? ''"
-              [attr.placeholder]="placeholder"
-              [required]="required"
-              [attr.title]="title ?? placeholder"
-              [attr.rows]="rows"
-              (input)="onInput($event)"
-              [style]="inputStyle"
-              [class]="inputClass"></textarea>
+    @if (!readonly && !disabled) {
+      <textarea [value]="value ?? ''"
+                [attr.placeholder]="placeholder"
+                [required]="required"
+                [attr.title]="title ?? placeholder"
+                [attr.rows]="rows"
+                (input)="onInput($event)"
+                [style]="inputStyle"
+                [class]="inputClass"></textarea>
+    }
 
     <div class="_invalid-indicator"></div>`,
   styles: [/* language=SCSS */ `
@@ -128,11 +118,11 @@ import {NgIf} from "@angular/common";
           display: block;
         }
 
-        //> textarea {
-        //  position: absolute;
-        //  top: 0;
-        //  left: 0;
-        //}
+        > textarea {
+          position: absolute;
+          top: 0;
+          left: 0;
+        }
 
         > textarea,
         > ._contents {

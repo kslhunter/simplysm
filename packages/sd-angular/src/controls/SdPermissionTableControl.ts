@@ -208,7 +208,6 @@ export class SdPermissionTableControl implements DoCheck {
       run({
         items: [this.items, "all"]
       }, () => {
-        console.log(this.items);
         this.depthLength = this.#getDepthLength(this.items, 0);
       });
     });

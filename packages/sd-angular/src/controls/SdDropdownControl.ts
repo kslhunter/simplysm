@@ -25,8 +25,8 @@ import {SdNgHelper} from "../utils/SdNgHelper";
   imports: [],
   template: `
     <div #contentEl
-         [attr.tabindex]="disabled ? undefined : '0'"
          class="_sd-dropdown-control"
+         [attr.tabindex]="disabled ? undefined : '0'"
          [class]="contentClass"
          [style]="contentStyle"
          (click)="onContentClick()"

@@ -15,7 +15,7 @@ import {
 import {ISharedDataBase} from "../providers/SdSharedDataProvider";
 import {SdModalBase, SdModalProvider} from "../providers/SdModalProvider";
 import {SdNgHelper} from "../utils/SdNgHelper";
-import {coercionBoolean, sdFnInfo, TSdFnInfo} from "../utils/commons";
+import {coercionBoolean, getSdFnCheckData, sdFnInfo, TSdFnInfo} from "../utils/commons";
 import {SdItemOfTemplateContext, SdItemOfTemplateDirective} from "../directives/SdItemOfTemplateDirective";
 import {SdSelectControl} from "./SdSelectControl";
 import {SdDockContainerControl} from "./SdDockContainerControl";
@@ -25,6 +25,7 @@ import {SdAnchorControl} from "./SdAnchorControl";
 import {SdPaneControl} from "./SdPaneControl";
 import {SdSelectItemControl} from "./SdSelectItemControl";
 import {NgIf, NgTemplateOutlet} from "@angular/common";
+import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 
 @Component({
   selector: "sd-shared-data-select",
@@ -55,7 +56,9 @@ import {NgIf, NgTemplateOutlet} from "@angular/common";
                [selectMode]="selectMode"
                [contentClass]="selectClass"
                [multiSelectionDisplayDirection]="multiSelectionDisplayDirection"
-               [getChildrenFn]="parentKeyProp ? getChildrenFnInfo : undefined">
+               [getChildrenFn]="parentKeyProp ? getChildrenFnInfo : undefined"
+               [buttonIcon]="modalType ? icons.search : undefined"
+               (buttonClick)="onModalButtonClick()">
       <ng-template #header>
         <!--<sd-dock-container>
           <sd-dock class="bdb bdb-trans-default">
@@ -67,15 +70,10 @@ import {NgIf, NgTemplateOutlet} from "@angular/common";
           </sd-pane>
         </sd-dock-container>-->
 
-        <div class="p-xs">
-          <sd-textfield type="text" [(value)]="searchText" placeholder="검색어"/>
-
-          @if (modalType) {
-            <div class="pt-xs">
-              <sd-anchor (click)="onDetailButtonClick()">자세히...</sd-anchor>
-            </div>
-          }
-        </div>
+        <!--<div class="p-xs">
+        </div>-->
+        <sd-textfield type="text" [(value)]="searchText" placeholder="검색어" inset
+                      inputStyle="outline-offset: 0"/>
       </ng-template>
 
       <ng-template #before>
@@ -101,6 +99,8 @@ import {NgIf, NgTemplateOutlet} from "@angular/common";
     </sd-select>`
 })
 export class SdSharedDataSelectControl<M extends "single" | "multi", T extends ISharedDataBase<string | number>> implements DoCheck {
+  icons = inject(SdAngularOptionsProvider).icons;
+
   @Input({required: true})
   items: T[] = [];
 
@@ -141,7 +141,7 @@ export class SdSharedDataSelectControl<M extends "single" | "multi", T extends I
   undefinedTemplateRef: TemplateRef<void> | null = null;
 
   @Input()
-  modalInputParam?: Record<string, ISharedDataModalInputParam>;
+  modalInputParam?: Record<string, any>;
 
   @Input()
   modalType?: Type<SdModalBase<ISharedDataModalInputParam, ISharedDataModalOutputResult>>;
@@ -235,7 +235,7 @@ export class SdSharedDataSelectControl<M extends "single" | "multi", T extends I
     this.#sdNgHelper.doCheck((run) => {
       run({
         items: [this.items, "all"],
-        filterFn: [this.filterFn],
+        ...getSdFnCheckData("filterFn", this.filterFn),
         parentKeyProp: [this.parentKeyProp],
         displayOrderKeyProp: [this.displayOrderKeyProp]
       }, () => {
@@ -277,26 +277,26 @@ export class SdSharedDataSelectControl<M extends "single" | "multi", T extends I
     }
   }
 
-  async onDetailButtonClick(): Promise<void> {
-    if (this.modalType) {
-      const result = await this.#sdModal.showAsync(this.modalType, this.modalHeader ?? "자세히...", {
-        selectMode: this.selectMode,
-        selectedItemKeys: (this.selectMode === "multi" ? (this.value as any[]) : [this.value]).filterExists(),
-        ...this.modalInputParam
-      }, {key: "sd-shared-data-select-detail-modal"});
+  async onModalButtonClick(): Promise<void> {
+    if (!this.modalType) return;
 
-      if (result) {
-        const newValue = this.selectMode === "multi" ? result.selectedItemKeys : result.selectedItemKeys[0];
+    const result = await this.#sdModal.showAsync(this.modalType, this.modalHeader ?? "자세히...", {
+      selectMode: this.selectMode,
+      selectedItemKeys: (this.selectMode === "multi" ? (this.value as any[]) : [this.value]).filterExists(),
+      ...this.modalInputParam
+    });
 
-        if (this.valueChange.observed) {
-          this.valueChange.emit(newValue);
-        }
-        else {
-          this.value = newValue;
-        }
+    if (result) {
+      const newValue = this.selectMode === "multi" ? result.selectedItemKeys : result.selectedItemKeys[0];
+
+      if (this.valueChange.observed) {
+        this.valueChange.emit(newValue);
       }
-      this.#cdr.markForCheck();
+      else {
+        this.value = newValue;
+      }
     }
+    this.#cdr.markForCheck();
   }
 }
 

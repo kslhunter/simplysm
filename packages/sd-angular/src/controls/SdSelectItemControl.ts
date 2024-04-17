@@ -3,6 +3,7 @@ import {
   ChangeDetectorRef,
   Component,
   ContentChild,
+  DoCheck,
   ElementRef,
   forwardRef,
   HostBinding,
@@ -17,6 +18,7 @@ import {SdSelectControl} from "./SdSelectControl";
 import {coercionBoolean} from "../utils/commons";
 import {NgIf, NgTemplateOutlet} from "@angular/common";
 import {SdCheckboxControl} from "./SdCheckboxControl";
+import {SdGapControl} from "./SdGapControl";
 
 @Component({
   selector: "sd-select-item",
@@ -25,11 +27,13 @@ import {SdCheckboxControl} from "./SdCheckboxControl";
   imports: [
     NgIf,
     SdCheckboxControl,
-    NgTemplateOutlet
+    NgTemplateOutlet,
+    SdGapControl
   ],
   template: `
     <ng-container *ngIf="selectMode === 'multi'">
-      <sd-checkbox [value]="isSelected" inline inset></sd-checkbox>
+      <sd-checkbox [value]="isSelected" inline></sd-checkbox>
+      <sd-gap width="sm"/>
     </ng-container>
 
     <div class="_content" style="display: inline-block;">
@@ -82,7 +86,7 @@ import {SdCheckboxControl} from "./SdCheckboxControl";
     }
   `]
 })
-export class SdSelectItemControl<T> implements OnInit, OnDestroy {
+export class SdSelectItemControl<T> implements OnInit, OnDestroy, DoCheck {
   @HostBinding("attr.tabindex")
   tabIndex = 0;
 
@@ -102,17 +106,19 @@ export class SdSelectItemControl<T> implements OnInit, OnDestroy {
   elRef: ElementRef<HTMLElement> = inject(ElementRef);
 
   @HostBinding("attr.sd-select-mode")
-  public get selectMode(): "single" | "multi" {
-    return this.#selectControl.selectMode;
-  }
+  selectMode: "single" | "multi" = "single";
 
   @HostBinding("attr.sd-selected")
-  public get isSelected(): boolean {
-    return this.#selectControl.getIsSelectedItemControl(this);
-  }
+  isSelected = false;
 
   ngOnInit(): void {
     this.#selectControl.itemControls.push(this);
+  }
+
+  ngDoCheck(): void {
+    this.selectMode = this.#selectControl.selectMode;
+    this.isSelected = this.#selectControl.getIsSelectedItemControl(this);
+    this.#cdr.markForCheck();
   }
 
   ngOnDestroy(): void {

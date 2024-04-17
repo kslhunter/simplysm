@@ -71,10 +71,11 @@ import {NgIf} from "@angular/common";
       > ._contents {
         @include form-control-base();
 
-        height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
-        min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
         overflow: auto;
         width: 100%;
+        
+        height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
+        min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
 
         body.sd-theme-compact &,
         body.sd-theme-modern & {
@@ -244,7 +245,6 @@ import {NgIf} from "@angular/common";
             }
           }
         }
-
 
         body.sd-theme-compact &,
         body.sd-theme-modern & {

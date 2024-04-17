@@ -18,6 +18,7 @@ import {coercionBoolean} from "../utils/commons";
       body.sd-theme-compact & {
         padding: 0 var(--gap-lg);
         color: var(--text-trans-rev-dark);
+        line-height: var(--topbar-height);
 
         &:hover {
           background: var(--trans-default);
@@ -29,7 +30,6 @@ import {coercionBoolean} from "../utils/commons";
       body.sd-theme-kiosk & {
         color: var(--theme-primary-default);
         //color: var(--text-trans-rev-default);
-        line-height: var(--line-height);
         padding: var(--gap-sm) var(--gap-default);
         background: var(--theme-primary-lightest);
         border-radius: var(--border-radius-default);

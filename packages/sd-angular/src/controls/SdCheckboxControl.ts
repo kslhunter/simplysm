@@ -127,8 +127,8 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
       }
 
       &[sd-inline=true] {
-        display: inline-flex;
-
+        display: inline-block;
+        
         > div {
           padding: 0;
           border: none;

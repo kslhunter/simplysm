@@ -30,6 +30,8 @@ import {SdTypedTemplateDirective} from "../directives/SdTypedTemplateDirective";
 import {SdDropdownPopupControl} from "./SdDropdownPopupControl";
 import {StringUtil} from "@simplysm/sd-core-common";
 import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
+import {IconProp} from "@fortawesome/fontawesome-svg-core";
+import {SdButtonControl} from "./SdButtonControl";
 
 @Component({
   selector: "sd-select",
@@ -49,26 +51,37 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
     NgTemplateOutlet,
     SdTypedTemplateDirective,
     NgForOf,
+    SdButtonControl,
   ],
   template: `
     <sd-dropdown #dropdown [disabled]="disabled"
                  [contentClass]="contentClass"
                  [contentStyle]="contentStyle">
-      <div #contentEl></div>
-      <div class="_invalid-indicator"></div>
-      <div class="_icon">
-        <sd-icon [icon]="icons.caretDown" fixedWidth/>
+      <div class="_sd-select-control">
+        <div #contentEl class="_sd-select-control-content"></div>
+        <div class="_sd-select-control-icon">
+          <sd-icon [icon]="icons.caretDown"/>
+        </div>
+
+        <div class="_invalid-indicator"></div>
       </div>
+
+      @if (buttonIcon && !disabled) {
+        <sd-button class="_sd-select-button" inset [size]="size"
+                   (click)="onButtonClick($event)">
+          <sd-icon [icon]="buttonIcon"/>
+        </sd-button>
+      }
 
       <sd-dropdown-popup #dropdownPopup (keydown.outside)="onPopupKeydownOutside($event)">
         <ng-container *ngIf="!items">
           <sd-dock-container>
-            <sd-dock class="bdb bdb-trans-default p-sm-default"
+            <!--<sd-dock class="bdb bdb-trans-default p-sm-default"
                      *ngIf="selectMode === 'multi' && !hideSelectAll">
               <sd-anchor (click)="onSelectAllButtonClick(true)">전체선택</sd-anchor>
               <sd-gap width="sm"></sd-gap>
               <sd-anchor (click)="onSelectAllButtonClick(false)">전체해제</sd-anchor>
-            </sd-dock>
+            </sd-dock>-->
 
             <sd-dock *ngIf="headerTemplateRef">
               <ng-template [ngTemplateOutlet]="headerTemplateRef"></ng-template>
@@ -126,101 +139,89 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
       width: 100%;
       min-width: 10em;
 
-      ::ng-deep > sd-dropdown > div {
-        @include form-control-base();
+      ::ng-deep > sd-dropdown {
+        > ._sd-dropdown-control {
+          display: flex;
+          overflow: hidden;
 
-        position: relative;
-        display: block;
-        overflow: visible;
-        padding-right: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px) !important;
-        min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
-
-        //transition: outline-color .1s linear;
-        outline: 1px solid transparent;
-        outline-offset: -1px;
-        cursor: pointer;
-
-        @include active-effect(true);
-
-        body.sd-theme-compact &,
-        body.sd-theme-modern & {
           border: 1px solid var(--trans-lighter);
           border-radius: var(--border-radius-default);
           background: var(--theme-secondary-lightest);
-        }
 
-        body.sd-theme-mobile &,
-        body.sd-theme-kiosk & {
-          border: none;
-          border-bottom: 2px solid var(--border-color-default);
-          background: transparent;
-          //transition: border-color 0.3s;
-          padding: calc(var(--gap-sm) + 1px) 0 calc(var(--gap-sm) - 1px);
-        }
-
-        > div:first-child {
-          overflow: visible;
-          white-space: nowrap;
-        }
-
-        > ._icon {
-          position: absolute;
-          top: -1px;
-          right: -1px;
-          padding: var(--gap-sm) 0;
-          width: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
-          text-align: center;
-          pointer-events: none;
-          opacity: .3;
-        }
-
-        &:hover > ._icon,
-        &:focus > ._icon,
-        &:active > ._icon {
-          opacity: 1;
-        }
-
-        body.sd-theme-compact &,
-        body.sd-theme-modern & {
-          &:focus {
-            outline-color: var(--theme-primary-default);
-          }
-        }
-
-        body.sd-theme-mobile &,
-        body.sd-theme-kiosk & {
-          &:focus {
+          &:focus,
+          &:has(:focus) {
             border-color: var(--theme-primary-default);
+          }
+
+          > ._sd-select-control {
+            display: flex;
+            position: relative;
+            gap: var(--gap-default);
+            flex-grow: 1;
+            padding: var(--gap-sm) var(--gap-default);
+
+            cursor: pointer;
+            @include active-effect(true);
+
+            > ._sd-select-control-content {
+              flex-grow: 1;
+              white-space: nowrap;
+            }
+
+            > ._sd-select-control-icon {
+              opacity: .3;
+            }
+
+            &:hover > ._sd-select-control-icon,
+            &:focus > ._sd-select-control-icon,
+            &:active > ._sd-select-control-icon {
+              opacity: 1;
+            }
+
+            > ._invalid-indicator {
+              display: none;
+              //display: block;
+              position: absolute;
+              z-index: 9999;
+              background: var(--theme-danger-default);
+
+              top: var(--gap-xs);
+              left: var(--gap-xs);
+              border-radius: 100%;
+              width: var(--gap-sm);
+              height: var(--gap-sm);
+            }
+          }
+
+          > ._sd-select-button > button {
+            padding: var(--gap-sm);
+            border-top-right-radius: var(--border-radius-default);
+            border-bottom-right-radius: var(--border-radius-default);
           }
         }
       }
 
-      &[sd-disabled=true] ::ng-deep > sd-dropdown > div {
-        background: var(--theme-grey-lightest);
-        color: var(--text-trans-light);
-        cursor: default;
 
-        @media all and (pointer: coarse) {
-          @include active-effect(false);
-        }
+      &[sd-disabled=true] {
+        ::ng-deep > sd-dropdown > ._sd-dropdown-control {
+          background: var(--theme-grey-lightest);
 
-        > ._icon {
-          display: none;
+          > ._sd-select-control {
+            color: var(--text-trans-light);
+            cursor: default;
+
+            @include active-effect(false);
+
+            > ._sd-select-control-icon {
+              display: none;
+            }
+          }
         }
       }
 
       &:has(:invalid), &[sd-invalid] {
-        ::ng-deep > sd-dropdown > div > ._invalid-indicator {
+        ::ng-deep > sd-dropdown > ._sd-dropdown-control > ._sd-select-control > ._invalid-indicator {
           display: block;
-          position: absolute;
-          z-index: 9999;
-          background: var(--theme-danger-default);
-
-          top: var(--gap-xs);
-          left: var(--gap-xs);
-          border-radius: 100%;
-          width: var(--gap-sm);
-          height: var(--gap-sm);
         }
       }
 
@@ -230,68 +231,43 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
         vertical-align: top;
       }
 
-      &[sd-size=sm] ::ng-deep > sd-dropdown > div {
-        padding: var(--gap-xs) var(--gap-sm);
-        padding-right: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px) !important;
-
-        > ._icon {
-          padding: var(--gap-xs) 0;
-          width: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
+      &[sd-size=sm] {
+        ::ng-deep > sd-dropdown > ._sd-dropdown-control > ._sd-select-control {
+          padding: var(--gap-xs) var(--gap-sm);
+          gap: var(--gap-sm);
         }
-
-        min-height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
       }
 
-      &[sd-size=lg] ::ng-deep > sd-dropdown > div {
-        padding: var(--gap-default) var(--gap-lg);
-        padding-right: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px) !important;
-
-        > ._icon {
-          padding: var(--gap-default) 0;
-          width: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
+      &[sd-size=lg] {
+        ::ng-deep > sd-dropdown > ._sd-dropdown-control > ._sd-select-control {
+          padding: var(--gap-default) var(--gap-lg);
+          gap: var(--gap-lg);
         }
-
-        min-height: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
       }
 
       &[sd-inset=true] {
-        body.sd-theme-compact &,
-        body.sd-theme-modern &,
-        body.sd-theme-mobile &,
-        body.sd-theme-kiosk & {
-          min-width: auto;
+        min-width: auto;
+        border-radius: 0;
+
+        > ::ng-deep sd-dropdown > ._sd-dropdown-control {
+          border: none;
           border-radius: 0;
 
-          > ::ng-deep sd-dropdown > div {
-            border: none;
-            border-radius: 0;
-            min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
-          }
-
-          &[sd-size=sm] > ::ng-deep sd-dropdown > div {
-            min-height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
-          }
-
-          &[sd-size=lg] > ::ng-deep sd-dropdown > div {
-            min-height: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
-          }
-
-          > ::ng-deep sd-dropdown > div:focus {
+          &:focus,
+          &:has(:focus) {
             outline: 1px solid var(--theme-primary-default);
             outline-offset: -1px;
           }
+        }
 
-          &[sd-disabled=true] ::ng-deep > sd-dropdown > div {
-            background: white;
+        &[sd-disabled=true] ::ng-deep > sd-dropdown > ._sd-dropdown-control {
+          background: white;
+
+          > ._sd-select-control {
             color: var(--text-trans-default);
-            cursor: default;
           }
         }
       }
-    }
-
-    ._sd-select-item > ._children {
-      border-left: var(--gap-xl) solid var(--theme-secondary-lightest);
     }
   `]
 })
@@ -375,6 +351,12 @@ export class SdSelectControl<M extends "single" | "multi", T extends any> implem
 
   @HostBinding("attr.sd-invalid")
   errorMessage?: string;
+
+  @Input()
+  buttonIcon?: IconProp;
+
+  @Output()
+  buttonClick = new EventEmitter<MouseEvent>();
 
   #sdNgHelper = new SdNgHelper(inject(Injector));
 
@@ -530,6 +512,13 @@ export class SdSelectControl<M extends "single" | "multi", T extends any> implem
     for (const itemControl of this.itemControls) {
       itemControl.markForCheck();
     }
+  }
+
+  onButtonClick(event: MouseEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    this.buttonClick.emit(event);
   }
 
   protected readonly rowOfListType!: {
