@@ -137,7 +137,7 @@ export class SdSharedDataSelectControl<M extends "single" | "multi", T extends I
   @ContentChild(SdItemOfTemplateDirective, {static: true, read: TemplateRef})
   itemTemplateRef: TemplateRef<SdItemOfTemplateContext<T>> | null = null;
 
-  @ContentChild("undefined", {static: true, read: TemplateRef})
+  @ContentChild("undefinedTemplate", {static: true, read: TemplateRef})
   undefinedTemplateRef: TemplateRef<void> | null = null;
 
   @Input()

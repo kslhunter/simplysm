@@ -24,6 +24,7 @@ import {SdTextfieldControl} from "./SdTextfieldControl";
 import {SdListControl} from "./SdListControl";
 import {SdPaneControl} from "./SdPaneControl";
 import {SdListItemControl} from "./SdListItemControl";
+import {SdSelectItemControl} from "./SdSelectItemControl";
 
 @Component({
   selector: "sd-shared-data-select-view",
@@ -39,7 +40,8 @@ import {SdListItemControl} from "./SdListItemControl";
     SdListControl,
     SdPaneControl,
     SdListItemControl,
-    NgForOf
+    NgForOf,
+    SdSelectItemControl
   ],
   template: `
     <sd-busy-container [busy]="busyCount > 0">
@@ -65,7 +67,11 @@ import {SdListItemControl} from "./SdListItemControl";
                           [selected]="selectedItem === undefined"
                           (click)="onSelectedItemChange(undefined)"
                           [selectedIcon]="selectedIcon">
-              <span class="tx-theme-grey-default">미지정</span>
+              @if (undefinedTemplateRef) {
+                <ng-template [ngTemplateOutlet]="undefinedTemplateRef"/>
+              } @else {
+                <span class="tx-theme-grey-default">미지정</span>
+              }
             </sd-list-item>
             <sd-list-item *ngFor="let item of filteredItems; let index = index; trackBy: trackByFn"
                           [selected]="item === selectedItem"
@@ -106,6 +112,9 @@ export class SdSharedDataSelectViewControl<T extends ISharedDataBase<string | nu
 
   @ContentChild(SdItemOfTemplateDirective, {static: true, read: TemplateRef})
   itemTemplateRef: TemplateRef<SdItemOfTemplateContext<T>> | null = null;
+
+  @ContentChild("undefinedTemplate", {static: true, read: TemplateRef})
+  undefinedTemplateRef: TemplateRef<void> | null = null;
 
   busyCount = 0;
 
