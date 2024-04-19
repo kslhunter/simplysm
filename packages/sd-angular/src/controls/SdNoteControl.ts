@@ -1,4 +1,5 @@
 import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
+import {coercionBoolean} from "../utils/commons";
 
 @Component({
   selector: "sd-note",
@@ -25,7 +26,7 @@ import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/c
         border: none;
         border-radius: var(--border-radius-default);
       }
-      
+
       @each $key, $val in map-get($vars, theme) {
         &[sd-theme=#{$key}] {
           background: var(--theme-#{$key}-lightest);
@@ -41,6 +42,15 @@ import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/c
       &[sd-size=lg] {
         padding: var(--gap-default) var(--gap-lg);
       }
+
+      &[sd-inset=true] {
+        body.sd-theme-compact &,
+        body.sd-theme-modern &,
+        body.sd-theme-mobile &,
+        body.sd-theme-kiosk & {
+          border-radius: 0;
+        }
+      }
     }
   `]
 })
@@ -52,4 +62,8 @@ export class SdNoteControl {
   @Input()
   @HostBinding("attr.sd-size")
   size?: "sm" | "lg";
+
+  @Input({transform: coercionBoolean})
+  @HostBinding("attr.sd-inset")
+  inset = false;
 }

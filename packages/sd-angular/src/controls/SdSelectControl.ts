@@ -232,16 +232,28 @@ import {SdButtonControl} from "./SdButtonControl";
       }
 
       &[sd-size=sm] {
-        ::ng-deep > sd-dropdown > ._sd-dropdown-control > ._sd-select-control {
-          padding: var(--gap-xs) var(--gap-sm);
-          gap: var(--gap-sm);
+        ::ng-deep > sd-dropdown > ._sd-dropdown-control {
+          > ._sd-select-control {
+            padding: var(--gap-xs) var(--gap-sm);
+            gap: var(--gap-sm);
+          }
+
+          > ._sd-select-button > button {
+            padding: var(--gap-xs);
+          }
         }
       }
 
       &[sd-size=lg] {
-        ::ng-deep > sd-dropdown > ._sd-dropdown-control > ._sd-select-control {
-          padding: var(--gap-default) var(--gap-lg);
-          gap: var(--gap-lg);
+        ::ng-deep > sd-dropdown > ._sd-dropdown-control {
+          > ._sd-select-control {
+            padding: var(--gap-default) var(--gap-lg);
+            gap: var(--gap-lg);
+          }
+
+          > ._sd-select-button > button {
+            padding: var(--gap-default);
+          }
         }
       }
 
@@ -253,10 +265,19 @@ import {SdButtonControl} from "./SdButtonControl";
           border: none;
           border-radius: 0;
 
+          > ._sd-select-button > button {
+            border-radius: 0;
+          }
+          
           &:focus,
           &:has(:focus) {
             outline: 1px solid var(--theme-primary-default);
             outline-offset: -1px;
+            
+            > ._sd-select-button > button {
+              outline: 1px solid var(--theme-primary-default);
+              outline-offset: -1px;
+            }
           }
         }
 

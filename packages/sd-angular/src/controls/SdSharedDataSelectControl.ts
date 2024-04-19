@@ -72,7 +72,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 
         <!--<div class="p-xs">
         </div>-->
-        <sd-textfield type="text" [(value)]="searchText" placeholder="검색어" inset
+        <sd-textfield type="text" [(value)]="searchText" placeholder="검색어" inset [size]="size"
                       inputStyle="outline-offset: 0"/>
       </ng-template>
 
@@ -98,7 +98,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
       </ng-template>
     </sd-select>`
 })
-export class SdSharedDataSelectControl<M extends "single" | "multi", T extends ISharedDataBase<string | number>> implements DoCheck {
+export class SdSharedDataSelectControl<T extends ISharedDataBase<string | number>, M extends "single" | "multi" = "single"> implements DoCheck {
   icons = inject(SdAngularOptionsProvider).icons;
 
   @Input({required: true})
@@ -132,7 +132,10 @@ export class SdSharedDataSelectControl<M extends "single" | "multi", T extends I
   selectMode: M = "single" as M;
 
   @Input()
-  filterFn?: TSdFnInfo<(index: number, item: T) => boolean>;
+  filterFn?: TSdFnInfo<(index: number, item: T, ...params: any[]) => boolean>;
+
+  @Input()
+  filterFnParams?: any[];
 
   @ContentChild(SdItemOfTemplateDirective, {static: true, read: TemplateRef})
   itemTemplateRef: TemplateRef<SdItemOfTemplateContext<T>> | null = null;
@@ -236,11 +239,12 @@ export class SdSharedDataSelectControl<M extends "single" | "multi", T extends I
       run({
         items: [this.items, "all"],
         ...getSdFnCheckData("filterFn", this.filterFn),
+        filterFnParams: [this.filterFnParams, "one"],
         parentKeyProp: [this.parentKeyProp],
         displayOrderKeyProp: [this.displayOrderKeyProp]
       }, () => {
         let result = this.items.filter((item, index) => (
-          (!this.filterFn?.[0] || this.filterFn[0](index, item))
+          (!this.filterFn?.[0] || this.filterFn[0](index, item, ...this.filterFnParams ?? []))
           && (this.parentKeyProp === undefined || item[this.parentKeyProp] === undefined)
         ));
 
