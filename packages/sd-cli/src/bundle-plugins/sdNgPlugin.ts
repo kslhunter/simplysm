@@ -3,7 +3,7 @@ import ts from "typescript";
 import path from "path";
 import {JavaScriptTransformer} from "@angular-devkit/build-angular/src/tools/esbuild/javascript-transformer";
 import os from "os";
-import {ISdTsCompiler2Result, SdTsCompiler2} from "../build-tools2/SdTsCompiler2";
+import {ISdTsCompiler2Result, SdTsCompiler} from "../build-tools/SdTsCompiler";
 import {convertTypeScriptDiagnostic} from "@angular-devkit/build-angular/src/tools/esbuild/angular/diagnostics";
 
 export function sdNgPlugin(conf: {
@@ -15,7 +15,7 @@ export function sdNgPlugin(conf: {
   return {
     name: "sd-ng-compiler",
     setup: (build: esbuild.PluginBuild) => {
-      const compiler = new SdTsCompiler2(conf.pkgPath, {declaration: false}, conf.dev);
+      const compiler = new SdTsCompiler(conf.pkgPath, {declaration: false}, conf.dev);
 
       let buildResult: ISdTsCompiler2Result;
       const outputContentsCacheMap = new Map<string, Uint8Array>();

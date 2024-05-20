@@ -48,7 +48,7 @@ export class SdSmtpClientService extends SdServiceBase {
       host: config.host,
       port: config.port,
       secure: config.secure,
-      from: `"${config.senderName}" <${(config.senderEmail ?? config.user) as string}>`,
+      from: `"${config.senderName}" <${config.senderEmail ?? config.user}>`,
       ...options
     });
   }

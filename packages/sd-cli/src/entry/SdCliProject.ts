@@ -87,7 +87,9 @@ export class SdCliProject {
       else if (message.type === "complete") {
         resultCache.delete("none");
         for (const affectedFilePath of message.result!.affectedFilePaths) {
-          resultCache.delete(affectedFilePath);
+          if (PathUtil.isChildPath(affectedFilePath, message.req.pkgPath)) {
+            resultCache.delete(affectedFilePath);
+          }
         }
 
         for (const buildResult of message.result!.buildResults) {

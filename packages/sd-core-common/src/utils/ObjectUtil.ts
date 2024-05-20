@@ -136,10 +136,10 @@ export class ObjectUtil {
       const result = ObjectUtil.clone(source);
       for (const key of target.keys()) {
         if (result.has(key)) {
-          result.set(key, ObjectUtil.merge(result.get(key)!, target.get(key)!, opt));
+          result.set(key, ObjectUtil.merge(result.get(key), target.get(key), opt));
         }
         else {
-          result.set(key, target.get(key)!);
+          result.set(key, target.get(key));
         }
       }
       return result as any;

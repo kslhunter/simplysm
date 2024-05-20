@@ -4,18 +4,18 @@ import ts from "typescript";
 
 export abstract class SdLinter {
   static async lintAsync(fileSet: Iterable<string>, tsProgram: ts.Program | undefined): Promise<ISdCliPackageBuildResult[]> {
-    const sourceFilePaths = Array.from(fileSet).filter((item) =>
+    const lintFilePaths = Array.from(fileSet).filter((item) =>
       (!item.endsWith(".d.ts") && item.endsWith(".ts")) ||
       item.endsWith(".js") ||
       item.endsWith(".cjs") ||
       item.endsWith(".mjs")
     );
 
-    if (sourceFilePaths.length === 0) {
+    if (lintFilePaths.length === 0) {
       return [];
     }
 
-    const linter = new ESLint(tsProgram !== null ? {
+    const linter = new ESLint(tsProgram != null ? {
       cache: false,
       overrideConfig: {
         overrides: [
@@ -40,7 +40,7 @@ export abstract class SdLinter {
     } : undefined);
 
 
-    const lintResults = await linter.lintFiles(sourceFilePaths);
+    const lintResults = await linter.lintFiles(lintFilePaths);
 
     return lintResults.mapMany((lintResult) => lintResult.messages.map((msg) => ({
       filePath: lintResult.filePath,
