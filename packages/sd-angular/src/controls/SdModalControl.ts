@@ -52,7 +52,8 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
          (sdResize.outside)="onDialogResizeOutside($event)">
       <sd-dock-container>
         <sd-dock class="_header" (mousedown.outside)="onHeaderMouseDownOutside($event)"
-                 *ngIf="!hideHeader">
+                 *ngIf="!hideHeader"
+                 [style]="headerStyle">
           <sd-anchor class="_close-button"
                      (click)="onCloseButtonClick()"
                      *ngIf="!hideCloseButton">
@@ -122,7 +123,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
         ::ng-deep > sd-dock-container {
           > ._header {
             user-select: none;
-            border-bottom: 1px solid var(--trans-lighter);
+            border-bottom: 1px solid var(--trans-light);
 
             ._title {
               display: inline-block;
@@ -370,6 +371,9 @@ export class SdModalControl implements DoCheck {
   @Input()
   @HostBinding("attr.sd-position")
   position?: "bottom-right" | "top-right";
+
+  @Input()
+  headerStyle?: string;
 
   #elRef: ElementRef<HTMLElement> = inject(ElementRef);
   #sdSystemConfig = inject(SdSystemConfigProvider);

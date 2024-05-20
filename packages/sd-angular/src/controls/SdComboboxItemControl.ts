@@ -26,7 +26,7 @@ export class SdComboboxItemControl<T> {
   value!: T;
 
   get content(): string {
-    return (this.#elRef.nativeElement as HTMLElement).innerText.trim();
+    return this.#elRef.nativeElement.innerText.trim();
   }
 
   #comboboxControl: SdComboboxControl<T> = inject(forwardRef(() => SdComboboxControl));

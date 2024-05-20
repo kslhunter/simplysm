@@ -2,7 +2,6 @@ import path from "path";
 import {FsUtil, Logger, PathUtil, SdProcess} from "@simplysm/sd-core-node";
 import {
   INpmConfig,
-  ISdCliBuildClusterReqMessage,
   ISdCliBuildClusterResMessage,
   ISdCliConfig,
   ISdCliPackageBuildResult,
@@ -23,6 +22,7 @@ export class SdCliProject {
     confFileRelPath: string;
     optNames: string[];
     pkgNames: string[];
+    inspectNames: string[];
   }): Promise<void> {
     const logger = Logger.get(["simplysm", "sd-cli", "SdCliProject", "watchAsync"]);
 
@@ -220,16 +220,7 @@ export class SdCliProject {
     logger.log("빌드를 시작합니다...");
 
     await pkgPaths.parallelAsync(async (pkgPath) => {
-      const pkgConf = projConf.packages[path.basename(pkgPath)]!;
-      if (pkgConf.type === "client") {
-        const builderKeys = Object.keys(pkgConf.builder ?? {web: {}});
-        await builderKeys.parallelAsync(async (builderKey) => {
-          await this._runCommandAsync(cluster, "watch", projConf, pkgPath, builderKey);
-        });
-      }
-      else {
-        await this._runCommandAsync(cluster, "watch", projConf, pkgPath);
-      }
+      await this._runCommandAsync(cluster, "watch", projConf, pkgPath, opt.inspectNames.includes(path.basename(pkgPath)) ? ["--inspect"] : []);
     });
 
     busyReqCntMap.set(
@@ -274,7 +265,7 @@ export class SdCliProject {
     logger.debug("빌드 프로세스 명령 전달...");
     const results = (
       await pkgPaths.parallelAsync(async (pkgPath) => {
-        const pkgConf = projConf.packages[path.basename(pkgPath)]!;
+        /*const pkgConf = projConf.packages[path.basename(pkgPath)]!;
         if (pkgConf.type === "client") {
           const builderKeys = Object.keys(pkgConf.builder ?? {web: {}});
           return (await builderKeys.parallelAsync(async (builderKey) => {
@@ -282,8 +273,8 @@ export class SdCliProject {
           })).mapMany();
         }
         else {
-          return await this._runCommandAsync(cluster, "build", projConf, pkgPath);
-        }
+        }*/
+        return await this._runCommandAsync(cluster, "build", projConf, pkgPath);
       })
     ).mapMany();
 
@@ -342,16 +333,7 @@ export class SdCliProject {
       logger.debug("빌드 프로세스 명령 전달...");
       const results = (
         await pkgPaths.parallelAsync(async (pkgPath) => {
-          const pkgConf = projConf.packages[path.basename(pkgPath)]!;
-          if (pkgConf.type === "client") {
-            const builderKeys = Object.keys(pkgConf.builder ?? {web: {}});
-            return (await builderKeys.parallelAsync(async (builderKey) => {
-              return await this._runCommandAsync(cluster, "build", projConf, pkgPath, builderKey);
-            })).mapMany();
-          }
-          else {
-            return await this._runCommandAsync(cluster, "build", projConf, pkgPath);
-          }
+          return await this._runCommandAsync(cluster, "build", projConf, pkgPath);
         })
       ).mapMany();
 
@@ -577,9 +559,9 @@ export class SdCliProject {
     });
   }
 
-  private static async _runCommandAsync(cluster: cp.ChildProcess, cmd: "watch", projConf: ISdCliConfig, pkgPath: string, builderKey?: string): Promise<void>;
-  private static async _runCommandAsync(cluster: cp.ChildProcess, cmd: "build", projConf: ISdCliConfig, pkgPath: string, builderKey?: string): Promise<ISdCliPackageBuildResult[]>;
-  private static async _runCommandAsync(cluster: cp.ChildProcess, cmd: "watch" | "build", projConf: ISdCliConfig, pkgPath: string, builderKey?: string): Promise<ISdCliPackageBuildResult[] | void> {
+  private static async _runCommandAsync(cluster: cp.ChildProcess, cmd: "watch", projConf: ISdCliConfig, pkgPath: string, execArgs: string[]): Promise<void>;
+  private static async _runCommandAsync(cluster: cp.ChildProcess, cmd: "build", projConf: ISdCliConfig, pkgPath: string): Promise<ISdCliPackageBuildResult[]>;
+  private static async _runCommandAsync(cluster: cp.ChildProcess, cmd: "watch" | "build", projConf: ISdCliConfig, pkgPath: string, execArgs?: string[]): Promise<ISdCliPackageBuildResult[] | void> {
     return await new Promise<ISdCliPackageBuildResult[] | void>((resolve) => {
       const cb = (message: ISdCliBuildClusterResMessage): void => {
         if (cmd === "watch" && message.type === "ready" && message.req.cmd === cmd && message.req.pkgPath === pkgPath) {
@@ -597,8 +579,8 @@ export class SdCliProject {
         cmd,
         projConf,
         pkgPath,
-        builderKey
-      } as ISdCliBuildClusterReqMessage);
+        execArgs
+      });
     });
   }
 

@@ -1091,7 +1091,7 @@ export class SdSheetControl<T> implements DoCheck {
       const focusRowIndicatorEl = sheetContainerEl.findFirst<HTMLDivElement>("> ._focus-row-indicator")!;
 
       const theadEl = sheetContainerEl.findFirst<HTMLTableSectionElement>("> table > thead")!;
-      const fixedHeaderLastDepthEls = theadEl.findAll<HTMLTableCellElement>("> tr > th._last-depth._fixed")!;
+      const fixedHeaderLastDepthEls = theadEl.findAll<HTMLTableCellElement>("> tr > th._last-depth._fixed");
 
       const focusCellIndicatorEl = focusRowIndicatorEl.firstElementChild as HTMLElement;
 
@@ -1295,7 +1295,7 @@ export class SdSheetControl<T> implements DoCheck {
     const focusRowIndicatorEl = sheetContainerEl.findFirst<HTMLDivElement>("> ._focus-row-indicator")!;
 
     const theadEl = sheetContainerEl.findFirst<HTMLTableSectionElement>("> table > thead")!;
-    const fixedHeaderLastDepthEls = theadEl.findAll<HTMLTableCellElement>("> tr > th._last-depth._fixed")!;
+    const fixedHeaderLastDepthEls = theadEl.findAll<HTMLTableCellElement>("> tr > th._last-depth._fixed");
 
     const focusCellIndicatorEl = focusRowIndicatorEl.firstElementChild as HTMLElement;
 
@@ -1546,7 +1546,7 @@ export class SdSheetControl<T> implements DoCheck {
     if (!result) return;
 
     this.#config = result;
-    await this.#sdSystemConfig.setAsync(`sd-sheet.${this.key!}`, this.#config);
+    await this.#sdSystemConfig.setAsync(`sd-sheet.${this.key}`, this.#config);
     this.#cdr.markForCheck();
   }
 

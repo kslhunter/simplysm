@@ -26,6 +26,7 @@
       <excludeFolder url="file://$MODULE_DIR$/packages/extless-loader/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/cordova-plugin-local-baseurl/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/cordova-util/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-angular2/dist" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

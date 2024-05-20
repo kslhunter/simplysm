@@ -73,7 +73,7 @@ import {NgIf} from "@angular/common";
 
         overflow: auto;
         width: 100%;
-        
+
         height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
         min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
 
@@ -138,9 +138,21 @@ import {NgIf} from "@angular/common";
 
       @each $key, $val in map-get($vars, theme) {
         &[sd-theme=#{$key}] {
-          > input,
-          > ._contents {
-            background: var(--theme-#{$key}-lightest);
+          body.sd-theme-compact &,
+          body.sd-theme-modern & {
+            > input,
+            > ._contents {
+              background: var(--theme-#{$key}-lightest);
+            }
+          }
+
+          body.sd-theme-mobile &,
+          body.sd-theme-kiosk & {
+            border-bottom-color: var(--theme-#{$key}-lighter);
+            
+            &:focus {
+              border-bottom-color: var(--theme-#{$key}-default);
+            }
           }
         }
       }
@@ -269,7 +281,7 @@ import {NgIf} from "@angular/common";
               padding: calc(var(--gap-default) + 1px) 0 calc(var(--gap-default) - 1px);
             }
           }
-          
+
           > input:focus {
             outline: none;
             border-bottom-color: var(--theme-primary-default);

@@ -37,7 +37,7 @@ import {Entrypoint} from "@angular-devkit/build-angular/src/utils/index-file/aug
 import {CrossOrigin} from "@angular-devkit/build-angular";
 import {InlineCriticalCssProcessor} from "@angular-devkit/build-angular/src/utils/index-file/inline-critical-css";
 import {SdNgBundlerContext} from "./SdNgBundlerContext";
-import {INgResultCache, sdNgPlugin} from "../bundle-plugins/sdNgPlugin";
+import {INgPluginResultCache, sdNgPlugin} from "../bundle-plugins/sdNgPlugin";
 import {MemoryLoadResultCache} from "@angular-devkit/build-angular/src/tools/esbuild/load-result-cache";
 import ts from "typescript";
 
@@ -47,7 +47,10 @@ export class SdNgBundler {
   // );
 
   #modifiedFileSet = new Set<string>();
-  #ngResultCache: Partial<INgResultCache> = {};
+  #ngResultCache: INgPluginResultCache = {
+    affectedFileSet: new Set<string>(),
+    watchFileSet: new Set<string>()
+  };
   #styleLoadResultCache = new MemoryLoadResultCache();
 
   private _contexts: SdNgBundlerContext[] | undefined;
@@ -92,7 +95,7 @@ export class SdNgBundler {
   }
 
   public async bundleAsync(): Promise<{
-    program: ts.Program;
+    program?: ts.Program;
     watchFileSet: Set<string>,
     affectedFileSet: Set<string>,
     results: ISdCliPackageBuildResult[]
@@ -213,7 +216,7 @@ export class SdNgBundler {
     logger.debug(`[${path.basename(this._opt.pkgPath)}] 번들링중 영향받은 파일`, Array.from(this.#ngResultCache.affectedFileSet!));
 
     return {
-      program: this.#ngResultCache.program!,
+      program: this.#ngResultCache.program,
       watchFileSet: new Set([
         ...this.#ngResultCache.watchFileSet!,
         ...this.#styleLoadResultCache.watchFiles

@@ -21,6 +21,7 @@ export class SdModalProvider {
                                                             minWidthPx?: number;
                                                             resizable?: boolean;
                                                             movable?: boolean;
+                                                            headerStyle?: string;
                                                           }): Promise<T["__tOutput__"] | undefined> {
     return await new Promise<T["__tOutput__"] | undefined>(async (resolve, reject) => {
       try {
@@ -68,6 +69,7 @@ export class SdModalProvider {
         modalEntryRef.instance.minWidthPx = options?.minWidthPx;
         modalEntryRef.instance.resizable = options?.resizable ?? false;
         modalEntryRef.instance.movable = options?.movable ?? false;
+        modalEntryRef.instance.headerStyle = options?.headerStyle;
         modalEntryRef.instance.openChange.subscribe((value: boolean) => {
           modalEntryRef.instance.open = value;
           if (!modalEntryRef.instance.open) {

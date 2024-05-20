@@ -52,14 +52,14 @@ else {
 
 
 server.on("ready", () => {
-  process.send!({port: server!.options.port});
+  process.send!({port: server.options.port});
 });
 
 process.on("message", (message: any) => {
   if (message.type === "setPathProxy") {
-    server!.pathProxy = message.pathProxy;
+    server.pathProxy = message.pathProxy;
   }
   if (message.type === "broadcastReload") {
-    server!.broadcastReload();
+    server.broadcastReload();
   }
 });

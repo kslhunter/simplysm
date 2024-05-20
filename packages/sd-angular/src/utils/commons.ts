@@ -1,6 +1,6 @@
 import {NumberUtil} from "@simplysm/sd-core-common";
 
-export function coercionBoolean(value: boolean | string | undefined): boolean {
+export function coercionBoolean(value: boolean | "" | undefined): boolean {
   return value != null && value !== false;
 }
 

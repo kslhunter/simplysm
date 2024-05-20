@@ -2,9 +2,10 @@ import ts from "typescript";
 import os from "os";
 import path from "path";
 import {ISdCliPackageBuildResult} from "../commons";
+import {PartialMessage} from "esbuild";
 
 export class SdCliBuildResultUtil {
-  public static convertFromTsDiag(diag: ts.Diagnostic, type: "build" | "check"): ISdCliPackageBuildResult {
+  static convertFromTsDiag(diag: ts.Diagnostic, type: "build" | "check"): ISdCliPackageBuildResult {
     const severity = diag.category === ts.DiagnosticCategory.Error ? "error" as const
       : diag.category === ts.DiagnosticCategory.Warning ? "warning" as const
         : diag.category === ts.DiagnosticCategory.Suggestion ? "suggestion" as const
@@ -19,7 +20,7 @@ export class SdCliBuildResultUtil {
     const char = position ? position.character + 1 : undefined;
 
     return {
-      filePath: filePath !== undefined ? path.resolve(filePath) : undefined,
+      filePath,
       line,
       char,
       code,
@@ -29,7 +30,25 @@ export class SdCliBuildResultUtil {
     };
   }
 
-  public static getMessage(result: ISdCliPackageBuildResult): string {
+  static convertFromEsbuildResult(msg: PartialMessage, type: "build" | "check", severity: "warning" | "error") {
+    const filePath = msg.location?.file != null ? path.resolve(msg.location.file) : undefined;
+    const line = msg.location?.line;
+    const char = msg.location?.column;
+    const code = msg.text?.slice(0, msg.text.indexOf(":"));
+    const message = `${msg.pluginName != null ? `(${msg.pluginName}) ` : ""} ${msg.text?.slice(msg.text.indexOf(":") + 1)}`;
+
+    return {
+      filePath,
+      line,
+      char,
+      code,
+      severity,
+      message,
+      type
+    };
+  }
+
+  static getMessage(result: ISdCliPackageBuildResult): string {
     let str = "";
     if (result.filePath !== undefined) {
       str += `${result.filePath}(${result.line ?? 0}, ${result.char ?? 0}): `;

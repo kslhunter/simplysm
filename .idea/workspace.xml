@@ -5,10 +5,61 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a5909e33-fd1f-4a18-a2ac-5581a953e90d" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdAdditionalButtonControl.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdModalBaseControl.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/simplysm.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/simplysm.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdNoteControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdNoteControl.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSelectControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSelectControl.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/cordova-plugin-local-baseurl/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/cordova-plugin-local-baseurl/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/cordova-util/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/cordova-util/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/eslint-plugin/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/eslint-plugin/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/eslint-plugin/src/configs/root.cjs" beforeDir="false" afterPath="$PROJECT_DIR$/packages/eslint-plugin/src/configs/root.cjs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdButtonControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdButtonControl.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdCardControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdCardControl.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdComboboxControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdComboboxControl.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdComboboxItemControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdComboboxItemControl.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdDropdownControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdDropdownControl.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdModalControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdModalControl.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSharedDataSelectControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSharedDataSelectControl.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSheetControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSheetControl.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdTextfieldControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdTextfieldControl.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/modals/SdAddressSearchModal.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/modals/SdAddressSearchModal.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/providers/SdModalProvider.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/providers/SdModalProvider.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/providers/SdPrintProvider.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/providers/SdPrintProvider.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/scss/_variables.scss" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/scss/_variables.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/scss/themes/_variables-modern.scss" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/scss/themes/_variables-modern.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/utils/commons.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/utils/commons.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/styles.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/build-cluster.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/build-cluster.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdNgBundler.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdNgBundler.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdServerBundler.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdServerBundler.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdTsCompiler.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdTsCompiler.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/builders/SdCliTsLibBuilder.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/builders/SdCliTsLibBuilder.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/bundle-plugins/sdNgPlugin.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/bundle-plugins/sdNgPlugin.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/bundle-plugins/sdServerPlugin.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/bundle-plugins/sdServerPlugin.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/commons.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/commons.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/entry/SdCliProject.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/entry/SdCliProject.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/sd-cli.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/sd-cli.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/server-worker.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/server-worker.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/utils/SdCliBuildResultUtil.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/utils/SdCliBuildResultUtil.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-core-browser/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-core-browser/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-core-common/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-core-common/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-core-node/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-core-node/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-excel/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-excel/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-orm-common/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-orm-common/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-orm-node-mssql/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-orm-node-mssql/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-orm-node-mysql/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-orm-node-mysql/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-orm-node-sqlite/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-orm-node-sqlite/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-orm-node/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-orm-node/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-service-client/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-service-client/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-service-common/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-service-common/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-service-server/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-service-server/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-storage/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-storage/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yarn.lock" beforeDir="false" afterPath="$PROJECT_DIR$/yarn.lock" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -71,55 +122,59 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "master",
-    "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "D:/workspaces-legacy/jemk-ts-legacy",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.standard": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.standard": "",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_interpreter_path": "node",
-    "nodejs_package_manager_path": "npm",
-    "npm.commit.executor": "Run",
-    "npm.publish.executor": "Run",
-    "npm.simplysm > build.executor": "Run",
-    "npm.simplysm > reinstall.executor": "Run",
-    "npm.simplysm > watch:sd-angular.executor": "Run",
-    "npm.simplysm > watch:sd-excel.executor": "Run",
-    "npm.watch.executor": "Run",
-    "npm.watch:sd-orm-node.executor": "Run",
-    "settings.editor.selected.configurable": "settings.typescriptcompiler",
-    "ts.external.directory.path": "D:\\workspaces-11\\simplysm\\node_modules\\typescript\\lib",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/workspaces-11/simplysm-ts&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.standard&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.standard&quot;: &quot;&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_interpreter_path&quot;: &quot;node&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;npm.commit.executor&quot;: &quot;Run&quot;,
+    &quot;npm.publish.executor&quot;: &quot;Run&quot;,
+    &quot;npm.simplysm &gt; build.executor&quot;: &quot;Run&quot;,
+    &quot;npm.simplysm &gt; reinstall.executor&quot;: &quot;Run&quot;,
+    &quot;npm.simplysm &gt; watch:sd-angular.executor&quot;: &quot;Run&quot;,
+    &quot;npm.simplysm &gt; watch:sd-angular2:inspect.executor&quot;: &quot;Run&quot;,
+    &quot;npm.simplysm &gt; watch:sd-angular:inspect.executor&quot;: &quot;Run&quot;,
+    &quot;npm.simplysm &gt; watch:sd-core-common.executor&quot;: &quot;Run&quot;,
+    &quot;npm.simplysm &gt; watch:sd-excel.executor&quot;: &quot;Run&quot;,
+    &quot;npm.watch.executor&quot;: &quot;Run&quot;,
+    &quot;npm.watch:sd-angular.executor&quot;: &quot;Run&quot;,
+    &quot;npm.watch:sd-orm-node.executor&quot;: &quot;Run&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;settings.javascript.linters.eslint&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;D:\\workspaces-11\\simplysm\\node_modules\\typescript\\lib&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\workspaces-11\simplysm\packages\sd-cli\src\build-tools2" />
+      <recent name="D:\workspaces-11\simplysm\_back\240518" />
+      <recent name="D:\workspaces-11\simplysm\packages\sd-cli\src\utils" />
+      <recent name="D:\workspaces-11\simplysm\packages\sd-angular2" />
       <recent name="D:\workspaces-11\simplysm\packages\sd-angular\src\controls" />
-      <recent name="D:\workspaces-11\simplysm\_back\240412" />
-      <recent name="D:\workspaces-11\simplysm\packages\cordova-plugin-local-baseurl" />
-      <recent name="D:\workspaces-11\simplysm\packages\cordova-util" />
-      <recent name="D:\workspaces-11\simplysm\packages\eslint-plugin" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\workspaces-11\simplysm\packages\sd-cli\src\build-tools2" />
+      <recent name="D:\workspaces-11\simplysm\packages\sd-angular2\src" />
       <recent name="D:\workspaces-11\simplysm\packages\sd-angular\src\scss\themes" />
       <recent name="D:\workspaces-11\simplysm\packages\cordova-plugin-local-baseurl\dist" />
       <recent name="D:\workspaces-11\simplysm\_back\231031" />
-      <recent name="D:\workspaces-11\simplysm\packages\sd-angular\src\modals" />
-      <recent name="D:\workspaces-11\simplysm\packages\sd-angular\src\directives" />
     </key>
   </component>
   <component name="RunManager" selected="npm.watch">
-    <configuration name="publish" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
+    <configuration name="simplysm &gt; publish" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
       <package-json value="$PROJECT_DIR$/package.json" />
       <command value="run" />
       <scripts>
@@ -129,31 +184,31 @@
       <envs />
       <method v="2" />
     </configuration>
-    <configuration name="simplysm &gt; build" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
+    <configuration name="simplysm &gt; watch:sd-angular2:inspect" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
       <package-json value="$PROJECT_DIR$/package.json" />
       <command value="run" />
       <scripts>
-        <script value="build" />
+        <script value="watch:sd-angular2:inspect" />
       </scripts>
       <node-interpreter value="project" />
       <envs />
       <method v="2" />
     </configuration>
-    <configuration name="simplysm &gt; reinstall" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
+    <configuration name="simplysm &gt; watch:sd-angular:inspect" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
       <package-json value="$PROJECT_DIR$/package.json" />
       <command value="run" />
       <scripts>
-        <script value="reinstall" />
+        <script value="watch:sd-angular:inspect" />
       </scripts>
       <node-interpreter value="project" />
       <envs />
       <method v="2" />
     </configuration>
-    <configuration name="simplysm &gt; watch:sd-excel" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
+    <configuration name="simplysm &gt; watch:sd-core-common" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
       <package-json value="$PROJECT_DIR$/package.json" />
       <command value="run" />
       <scripts>
-        <script value="watch:sd-excel" />
+        <script value="watch:sd-core-common" />
       </scripts>
       <node-interpreter value="project" />
       <envs />
@@ -171,11 +226,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="npm.simplysm &gt; publish" />
         <item itemvalue="npm.watch" />
-        <item itemvalue="npm.publish" />
-        <item itemvalue="npm.simplysm &gt; watch:sd-excel" />
-        <item itemvalue="npm.simplysm &gt; build" />
-        <item itemvalue="npm.simplysm &gt; reinstall" />
+        <item itemvalue="npm.simplysm &gt; watch:sd-angular2:inspect" />
+        <item itemvalue="npm.simplysm &gt; watch:sd-angular:inspect" />
+        <item itemvalue="npm.simplysm &gt; watch:sd-core-common" />
       </list>
     </recent_temporary>
   </component>
@@ -211,8 +266,38 @@
     </option>
   </component>
   <component name="Vcs.Log.Tabs.Properties">
+    <option name="OPEN_GENERIC_TABS">
+      <map>
+        <entry key="6529411d-18b5-4064-97c0-d3909186d917" value="TOOL_WINDOW" />
+      </map>
+    </option>
     <option name="TAB_STATES">
       <map>
+        <entry key="6529411d-18b5-4064-97c0-d3909186d917">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="HEAD" />
+                      </list>
+                    </value>
+                  </entry>
+                  <entry key="structure">
+                    <value>
+                      <list>
+                        <option value="dir:D:/workspaces-11/simplysm/packages" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+              <option name="SHOW_ONLY_AFFECTED_CHANGES" value="true" />
+            </State>
+          </value>
+        </entry>
         <entry key="MAIN">
           <value>
             <State />

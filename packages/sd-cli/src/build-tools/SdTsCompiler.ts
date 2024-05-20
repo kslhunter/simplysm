@@ -1,15 +1,12 @@
-import path from "path";
-import ts from "typescript";
 import {SdCliBuildResultUtil} from "../utils/SdCliBuildResultUtil";
-import {FsUtil, Logger, PathUtil} from "@simplysm/sd-core-node";
-import {ISdCliPackageBuildResult, ITsConfig} from "../commons";
-import {NgtscProgram, OptimizeFor} from "@angular/compiler-cli";
-import {createHash} from "crypto";
-import {fileURLToPath, pathToFileURL} from "url";
-import * as sass from "sass";
+import {ISdCliPackageBuildResult} from "../commons";
+import {SdTsCompiler2} from "../build-tools2/SdTsCompiler2";
+import ts from "typescript";
+import path from "path";
+import {FsUtil, PathUtil} from "@simplysm/sd-core-node";
 
 export class SdTsCompiler {
-  private readonly _logger = Logger.get(["simplysm", "sd-cli", "SdTsCompiler"]);
+  /*private readonly _logger = Logger.get(["simplysm", "sd-cli", "SdTsCompiler"]);
 
   private readonly _parsedTsConfig: ts.ParsedCommandLine;
   private readonly _writeFileCache = new Map<string, string>();
@@ -21,81 +18,33 @@ export class SdTsCompiler {
   private readonly _isForAngular: boolean;
   private _ngProgram?: NgtscProgram;
   private readonly _styleDepsCache = new Map<string, Set<string>>();
-  private _markedChanges: string[] = [];
+  private _markedChanges: string[] = [];*/
 
-  public get program(): ts.Program {
+  program?: ts.Program;
+
+  readonly #compiler: SdTsCompiler2;
+
+  readonly #pkgPath: string;
+
+  /*public get program(): ts.Program {
     if (!this._program) {
       throw new Error("TS 프로그램 NULL");
     }
     return this._program;
-  }
+  }*/
 
-  public constructor(private readonly _opt: {
-    pkgPath: string,
-    emit: boolean;
-    emitDts: boolean;
-    globalStyle: boolean;
-  }) {
-    //-- tsconfig
-    const tsConfigFilePath = path.resolve(_opt.pkgPath, "tsconfig.json");
-    const tsConfig = FsUtil.readJson(tsConfigFilePath) as ITsConfig;
-    this._parsedTsConfig = ts.parseJsonConfigFileContent(
-      tsConfig,
-      ts.sys,
-      _opt.pkgPath,
-      {
-        ...tsConfig.angularCompilerOptions ?? {},
-        ..._opt.emitDts !== undefined ? {declaration: _opt.emitDts} : {}
-      }
+  public constructor(pkgPath: string, dev: boolean) {
+    this.#pkgPath = pkgPath;
+    this.#compiler = new SdTsCompiler2(
+      pkgPath,
+      {declaration: true},
+      dev,
+      path.resolve(pkgPath, "src/styles.scss")
     );
-
-    //-- vars
-    this._isForAngular = Boolean(tsConfig.angularCompilerOptions);
-
-    //-- host
-    this._compilerHost = ts.createIncrementalCompilerHost(this._parsedTsConfig.options);
-    if (tsConfig.angularCompilerOptions) {
-      this._compilerHost["readResource"] = (fileName: string) => {
-        return this._compilerHost.readFile(fileName);
-      };
-
-      this._compilerHost["transformResource"] = async (data: string, context: {
-        type: string,
-        containingFile: string,
-        resourceFile: any
-      }) => {
-        if (context.resourceFile != null || context.type !== "style") {
-          return null;
-        }
-
-        try {
-          const scssResult = await sass.compileStringAsync(data, {
-            url: new URL((context.containingFile as string) + ".scss"),
-            importer: {
-              findFileUrl: (url) => pathToFileURL(url)
-            },
-            logger: sass.Logger.silent
-          });
-
-          const styleContent = scssResult.css.toString();
-
-          const deps = scssResult.loadedUrls.slice(1).map((item) => path.resolve(fileURLToPath(item.href)));
-          for (const dep of deps) {
-            const depCache = this._styleDepsCache.getOrCreate(dep, new Set<string>());
-            depCache.add(path.resolve(context.containingFile));
-          }
-          return {content: styleContent};
-        }
-        catch (err) {
-          this._logger.error("scss 파싱 에러", err);
-          return null;
-        }
-      };
-    }
   }
 
-  public markChanges(changes: string[]): void {
-    this._markedChanges.push(...changes);
+  public markChanges(modifiedFileSet: Set<string>): void {
+    this.#compiler.invalidate(modifiedFileSet);
   }
 
   public async buildAsync(): Promise<{
@@ -103,11 +52,36 @@ export class SdTsCompiler {
     affectedFileSet: Set<string>;
     results: ISdCliPackageBuildResult[];
   }> {
-    const markedChanges = this._markedChanges;
+    const buildResult = await this.#compiler.buildAsync();
+    this.program = buildResult.program;
+
+    for (const affectedFilePath of buildResult.affectedFileSet) {
+      const emittedFiles = buildResult.emittedFilesCacheMap.get(affectedFilePath) ?? [];
+      for (const emittedFile of emittedFiles) {
+        if (emittedFile.outRelPath != null) {
+          const distPath = path.resolve(this.#pkgPath, "dist", emittedFile.outRelPath);
+          if (PathUtil.isChildPath(distPath, path.resolve(this.#pkgPath, "dist"))) {
+            await FsUtil.writeFileAsync(distPath, emittedFile.text);
+          }
+        }
+      }
+
+      const globalStylesheetResult = buildResult.stylesheetResultMap.get(affectedFilePath);
+      if (globalStylesheetResult) {
+        for (const outputFile of globalStylesheetResult.outputFiles) {
+          const distPath = path.resolve(this.#pkgPath, "dist", path.relative(this.#pkgPath, outputFile.path));
+          if (PathUtil.isChildPath(distPath, path.resolve(this.#pkgPath, "dist"))) {
+            await FsUtil.writeFileAsync(distPath, outputFile.text);
+          }
+        }
+      }
+    }
+
+    /*const markedChanges = this._markedChanges;
     this._markedChanges = [];
 
     const distPath = path.resolve(this._opt.pkgPath, "dist");
-    const srcFilePaths = await FsUtil.globAsync(path.resolve(this._opt.pkgPath, "src/**/*.{ts,tsx}"));
+    const srcFilePaths = await FsUtil.globAsync(path.resolve(this._opt.pkgPath, "src/!**!/!*.{ts,tsx}"));
     const srcFilePathSet = new Set<string>(srcFilePaths);
 
     if (this._isForAngular) {
@@ -139,12 +113,12 @@ export class SdTsCompiler {
       );
     }
     else {
-      /*this._program = ts.createProgram(
+      /!*this._program = ts.createProgram(
         srcFilePaths,
         this._parsedTsConfig.options,
         this._compilerHost,
         this._program
-      );*/
+      );*!/
 
       this._builder = ts.createIncrementalProgram({
         rootNames: srcFilePaths,
@@ -295,22 +269,18 @@ export class SdTsCompiler {
 
     this._logger.debug(`[${path.basename(this._opt.pkgPath)}] 영향받는 파일 ${this._opt.emit ? "EMIT" : "CHECK"} 완료`, affectedFileSet);
 
-    const buildResults = diagnostics.map((item) => SdCliBuildResultUtil.convertFromTsDiag(item, this._opt.emit ? "build" : "check"));
+    const buildResults = diagnostics.map((item) => SdCliBuildResultUtil.convertFromTsDiag(item, this._opt.emit ? "build" : "check"));*/
 
     return {
-      watchFileSet: new Set([
-        ...Array.from(this._styleDepsCache.keys()),
-        ...this._builder.getSourceFiles().map(item => path.normalize(item.fileName))
-      ]),
-      affectedFileSet: affectedFileSet,
-      results: buildResults
+      watchFileSet: buildResult.watchFileSet,
+      affectedFileSet: buildResult.affectedFileSet,
+      results: [
+        ...buildResult.typescriptDiagnostics.map((item) => SdCliBuildResultUtil.convertFromTsDiag(item, "build")),
+        ...Array.from(buildResult.stylesheetResultMap.values()).mapMany(item => item.errors!)
+          .map(err => SdCliBuildResultUtil.convertFromEsbuildResult(err, "build", "error")),
+        /*...Array.from(buildResult.stylesheetResultMap.values()).mapMany(item => item.warnings!)
+          .map(warn => SdCliBuildResultUtil.convertFromEsbuildResult(warn, "build", "warning"))*/
+      ]
     };
-  }
-
-  private _writeFile(filePath: string, data: string): void {
-    if (this._writeFileCache.get(filePath) !== data) {
-      this._compilerHost.writeFile(filePath, data, false);
-    }
-    this._writeFileCache.set(filePath, data);
   }
 }

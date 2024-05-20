@@ -1,178 +1,24 @@
 import esbuild from "esbuild";
-import {FsUtil} from "@simplysm/sd-core-node";
 import ts from "typescript";
 import path from "path";
-import {convertTypeScriptDiagnostic} from "@angular-devkit/build-angular/src/tools/esbuild/angular/diagnostics";
-import {AngularCompilerHost} from "@angular-devkit/build-angular/src/tools/esbuild/angular/angular-host";
-import {
-  ComponentStylesheetBundler
-} from "@angular-devkit/build-angular/src/tools/esbuild/angular/component-stylesheets";
-import {transformSupportedBrowsersToTargets} from "@angular-devkit/build-angular/src/tools/esbuild/utils";
-import browserslist from "browserslist";
-import {StringUtil} from "@simplysm/sd-core-common";
-import {NgtscProgram, OptimizeFor} from "@angular/compiler-cli";
-import {createHash} from "crypto";
 import {JavaScriptTransformer} from "@angular-devkit/build-angular/src/tools/esbuild/javascript-transformer";
 import os from "os";
+import {ISdTsCompiler2Result, SdTsCompiler2} from "../build-tools2/SdTsCompiler2";
+import {convertTypeScriptDiagnostic} from "@angular-devkit/build-angular/src/tools/esbuild/angular/diagnostics";
 
 export function sdNgPlugin(conf: {
   pkgPath: string;
   dev: boolean;
   modifiedFileSet: Set<string>;
-  result: INgResultCache;
+  result: INgPluginResultCache;
 }): esbuild.Plugin {
-  const tsConfigPath = path.resolve(conf.pkgPath, "tsconfig.json");
-  const tsConfig = FsUtil.readJson(tsConfigPath);
-  const parsedTsConfig = ts.parseJsonConfigFileContent(tsConfig, ts.sys, conf.pkgPath, {
-    ...tsConfig.angularCompilerOptions,
-    declaration: false
-  });
-
-  const sourceFileCache = new Map<string, ts.SourceFile>();
-  const referencingMap = new Map<string, Set<string>>();
-
-  let ngProgram: NgtscProgram | undefined;
-  let builder: ts.EmitAndSemanticDiagnosticsBuilderProgram | undefined;
-
-  // const watchFileSet = new Set<string>();
-  // const affectedFileSet = new Set<string>();
-  const additionalResultMap = new Map<string, IAdditionalResult>();
-
-  const tscPrepareMap = new Map<string, string>();
-  const outputCacheMap = new Map<string, Uint8Array>();
-
-  let stylesheetBundler: ComponentStylesheetBundler | undefined;
-
-  function createCompilerHost() {
-    const compilerHost: AngularCompilerHost = ts.createIncrementalCompilerHost(parsedTsConfig.options);
-    compilerHost.readResource = (fileName: string) => {
-      return compilerHost.readFile(fileName) ?? "";
-    };
-
-    compilerHost.transformResource = async (data: string, context: {
-      type: string,
-      containingFile: string,
-      resourceFile: any
-    }) => {
-      if (context.type !== "style") {
-        return null;
-      }
-
-      const stylesheetResult = context.resourceFile != null
-        ? await stylesheetBundler!.bundleFile(context.resourceFile)
-        : await stylesheetBundler!.bundleInline(
-          data,
-          context.containingFile,
-          "scss",
-        );
-
-      conf.result.watchFileSet!.add(path.normalize(context.containingFile));
-
-      if (stylesheetResult.referencedFiles) {
-        for (const referencedFile of stylesheetResult.referencedFiles) {
-          const referencingMapValSet = referencingMap.getOrCreate(path.normalize(referencedFile), new Set<string>());
-          referencingMapValSet.add(path.normalize(context.containingFile));
-        }
-
-        conf.result.watchFileSet!.adds(...Array.from(stylesheetResult.referencedFiles.values()).map(item => path.normalize(item)));
-      }
-
-      additionalResultMap.set(path.normalize(context.resourceFile ?? context.containingFile), {
-        outputFiles: stylesheetResult.outputFiles ?? [],
-        metafile: stylesheetResult.metafile,
-        errors: stylesheetResult.errors,
-        // warnings: stylesheetResult.warnings
-        warnings: []
-      });
-
-      return StringUtil.isNullOrEmpty(stylesheetResult.contents) ? null : {content: stylesheetResult.contents};
-    };
-
-    compilerHost.getModifiedResourceFiles = () => {
-      return conf.modifiedFileSet;
-    };
-
-    const baseGetSourceFile = compilerHost.getSourceFile;
-    compilerHost.getSourceFile = (fileName, languageVersionOrOptions, onError, shouldCreateNewSourceFile, ...args) => {
-      if (!shouldCreateNewSourceFile && sourceFileCache.has(path.normalize(fileName))) {
-        return sourceFileCache.get(path.normalize(fileName));
-      }
-
-      const file = baseGetSourceFile.call(
-        compilerHost,
-        fileName,
-        languageVersionOrOptions,
-        onError,
-        true,
-        ...args,
-      );
-
-      if (file) {
-        sourceFileCache.set(path.normalize(fileName), file);
-      }
-
-      return file;
-    };
-
-    return compilerHost;
-  }
-
-  function findAffectedFileSet() {
-    const affectedFileSet = new Set<string>();
-
-    while (true) {
-      const result = builder!.getSemanticDiagnosticsOfNextAffectedFile(undefined, (sourceFile) => {
-        if (ngProgram?.compiler.ignoreForDiagnostics.has(sourceFile) && sourceFile.fileName.endsWith('.ngtypecheck.ts')) {
-          const originalFilename = sourceFile.fileName.slice(0, -15) + '.ts';
-          const originalSourceFile = sourceFileCache.get(originalFilename);
-          if (originalSourceFile) {
-            affectedFileSet.add(path.normalize(originalSourceFile.fileName));
-          }
-
-          return true;
-        }
-
-        return false;
-      });
-
-      if (!result) {
-        break;
-      }
-
-      affectedFileSet.add(path.normalize((result.affected as ts.SourceFile).fileName));
-    }
-
-    return affectedFileSet;
-  }
-
   return {
     name: "sd-ng-compiler",
     setup: (build: esbuild.PluginBuild) => {
-      //-- stylesheetBundler
-      const browserTarget = transformSupportedBrowsersToTargets(browserslist("defaults and fully supports es6-module"));
-      stylesheetBundler = new ComponentStylesheetBundler(
-        {
-          workspaceRoot: conf.pkgPath,
-          optimization: !conf.dev,
-          inlineFonts: true,
-          preserveSymlinks: false,
-          sourcemap: 'inline', //conf.dev ? 'inline' : false,
-          outputNames: {bundles: '[name]', media: 'media/[name]'},
-          includePaths: [],
-          externalDependencies: [],
-          target: browserTarget,
-          tailwindConfiguration: undefined,
-          cacheOptions: {
-            enabled: true,
-            path: ".cache/angular",
-            basePath: ".cache"
-          }
-        },
-        conf.dev
-      );
+      const compiler = new SdTsCompiler2(conf.pkgPath, {declaration: false}, conf.dev);
 
-      //-- compilerHost
-      const compilerHost = createCompilerHost();
+      let buildResult: ISdTsCompiler2Result;
+      const outputContentsCacheMap = new Map<string, Uint8Array>();
 
       //-- js babel transformer
       const javascriptTransformer = new JavaScriptTransformer({
@@ -182,165 +28,36 @@ export function sdNgPlugin(conf: {
         advancedOptimizations: true
       }, os.cpus().length);
 
-      //-- vars
-
       //---------------------------
 
       build.onStart(async () => {
-        //-- modified
+        compiler.invalidate(conf.modifiedFileSet);
+        buildResult = await compiler.buildAsync();
 
-        stylesheetBundler!.invalidate(conf.modifiedFileSet);
-        for (const modifiedFile of conf.modifiedFileSet) {
-          sourceFileCache.delete(modifiedFile);
-          outputCacheMap.delete(modifiedFile);
-
-          if (referencingMap.has(modifiedFile)) {
-            for (const referencingFile of referencingMap.get(modifiedFile)!) {
-              sourceFileCache.delete(referencingFile);
-              outputCacheMap.delete(modifiedFile);
-            }
-          }
-        }
-        referencingMap.clear();
-
-        //-- init resultCache
-
-        conf.result.watchFileSet = new Set<string>();
-        conf.result.affectedFileSet = new Set<string>();
-        additionalResultMap.clear();
-
-        //-- createBuilder
-
-        ngProgram = new NgtscProgram(
-          parsedTsConfig.fileNames,
-          parsedTsConfig.options,
-          compilerHost,
-          ngProgram
-        );
-        const ngCompiler = ngProgram.compiler;
-        const program = ngProgram.getTsProgram();
-        conf.result.program = program;
-
-        const baseGetSourceFiles = program.getSourceFiles;
-        program.getSourceFiles = function (...parameters) {
-          const files: readonly (ts.SourceFile & { version?: string })[] = baseGetSourceFiles(...parameters);
-
-          for (const file of files) {
-            if (file.version === undefined) {
-              file.version = createHash("sha256").update(file.text).digest("hex");
-            }
-          }
-
-          return files;
-        };
-
-        builder = ts.createEmitAndSemanticDiagnosticsBuilderProgram(
-          program,
-          compilerHost,
-          builder
-        );
-
-        await ngCompiler.analyzeAsync();
-
-        //-- affectedFilePathSet
-
-        conf.result.affectedFileSet.adds(...findAffectedFileSet());
-
-        // Deps -> refMap
-        builder.getSourceFiles().filter(sf => !ngCompiler.ignoreForEmit.has(sf))
-          .forEach(sf => {
-            conf.result.watchFileSet!.add(path.normalize(sf.fileName));
-
-            const deps = ngCompiler.getResourceDependencies(sf);
-            for (const dep of deps) {
-              const ref = referencingMap.getOrCreate(dep, new Set<string>());
-              ref.add(dep);
-
-              conf.result.watchFileSet!.add(path.normalize(dep));
-            }
-          });
-
-        // refMap, modFile -> affectedFileSet
-        for (const modifiedFile of conf.modifiedFileSet) {
-          conf.result.affectedFileSet.adds(...referencingMap.get(modifiedFile) ?? []);
-        }
-
-        //-- diagnostics / build
-        const diagnostics: ts.Diagnostic[] = [];
-
-        diagnostics.push(
-          ...builder.getConfigFileParsingDiagnostics(),
-          ...ngCompiler.getOptionDiagnostics(),
-          ...builder.getOptionsDiagnostics(),
-          ...builder.getGlobalDiagnostics()
-        );
-
-        for (const affectedFile of conf.result.affectedFileSet) {
-          const affectedSourceFile = sourceFileCache.get(path.normalize(affectedFile));
-          if (!affectedSourceFile || ngCompiler.ignoreForDiagnostics.has(affectedSourceFile)) {
-            continue;
-          }
-
-          diagnostics.push(
-            ...builder.getSyntacticDiagnostics(affectedSourceFile),
-            ...builder.getSemanticDiagnostics(affectedSourceFile)
-          );
-
-          if (affectedSourceFile.isDeclarationFile) {
-            continue;
-          }
-
-          diagnostics.push(
-            ...ngCompiler.getDiagnosticsForFile(affectedSourceFile, OptimizeFor.WholeProgram),
-          );
-        }
-
-        //-- prepare emit cache
-        while (true) {
-          const affectedFileResult = builder.emitNextAffectedFile((fileName, text, writeByteOrderMark, onError, sourceFiles, data) => {
-            if (!sourceFiles || sourceFiles.length === 0) {
-              compilerHost.writeFile(fileName, text, writeByteOrderMark, onError, sourceFiles, data);
-              return;
-            }
-
-            const sourceFile = ts.getOriginalNode(sourceFiles[0], ts.isSourceFile);
-            if (ngCompiler.ignoreForEmit.has(sourceFile)) {
-              return;
-            }
-
-            ngCompiler.incrementalCompilation.recordSuccessfulEmit(sourceFile);
-            tscPrepareMap.set(path.normalize(sourceFile.fileName), text);
-          }, undefined, undefined, ngProgram.compiler.prepareEmit().transformers);
-
-          if (!affectedFileResult) {
-            break;
-          }
-
-          diagnostics.push(...affectedFileResult.result.diagnostics);
-        }
+        conf.result.watchFileSet = buildResult.watchFileSet;
+        conf.result.affectedFileSet = buildResult.affectedFileSet;
+        conf.result.program = buildResult.program;
 
         //-- return err/warn
         return {
           errors: [
-            ...diagnostics.filter(item => item.category === ts.DiagnosticCategory.Error).map(item => convertTypeScriptDiagnostic(ts, item)),
-            ...Array.from(additionalResultMap.values()).flatMap(item => item.errors)
+            ...buildResult.typescriptDiagnostics.filter(item => item.category === ts.DiagnosticCategory.Error).map(item => convertTypeScriptDiagnostic(ts, item)),
+            ...Array.from(buildResult.stylesheetResultMap.values()).flatMap(item => item.errors)
           ].filterExists(),
           warnings: [
-            ...diagnostics.filter(item => item.category !== ts.DiagnosticCategory.Error).map(item => convertTypeScriptDiagnostic(ts, item)),
-            ...Array.from(additionalResultMap.values()).flatMap(item => item.warnings)
+            ...buildResult.typescriptDiagnostics.filter(item => item.category !== ts.DiagnosticCategory.Error).map(item => convertTypeScriptDiagnostic(ts, item)),
+            // ...Array.from(buildResult.stylesheetResultMap.values()).flatMap(item => item.warnings)
           ],
         };
       });
 
       build.onLoad({filter: /\.ts$/}, async (args) => {
-        conf.result.watchFileSet!.add(path.normalize(args.path));
-
-        const output = outputCacheMap.get(path.normalize(args.path));
+        const output = outputContentsCacheMap.get(path.normalize(args.path));
         if (output != null) {
           return {contents: output, loader: "js"};
         }
 
-        const contents = tscPrepareMap.get(path.normalize(args.path));
+        const contents = buildResult.emittedFilesCacheMap.get(path.normalize(args.path))!.last()!.text;
 
         const {sideEffects} = await build.resolve(args.path, {
           kind: 'import-statement',
@@ -349,12 +66,12 @@ export function sdNgPlugin(conf: {
 
         const newContents = await javascriptTransformer.transformData(
           args.path,
-          contents!,
+          contents,
           true,
           sideEffects
         );
 
-        outputCacheMap.set(path.normalize(args.path), newContents);
+        outputContentsCacheMap.set(path.normalize(args.path), newContents);
 
         return {contents: newContents, loader: "js"};
       });
@@ -364,7 +81,7 @@ export function sdNgPlugin(conf: {
         async (args) => {
           conf.result.watchFileSet!.add(path.normalize(args.path));
 
-          const output = outputCacheMap.get(path.normalize(args.path));
+          const output = outputContentsCacheMap.get(path.normalize(args.path));
           if (output != null) {
             return {contents: output, loader: "js"};
           }
@@ -374,15 +91,13 @@ export function sdNgPlugin(conf: {
             resolveDir: build.initialOptions.absWorkingDir ?? '',
           });
 
-          // const contents = await FsUtil.readFileAsync(args.path);
-
           const newContents = await javascriptTransformer.transformFile(
             args.path,
             false,
             sideEffects
           );
 
-          outputCacheMap.set(path.normalize(args.path), newContents);
+          outputContentsCacheMap.set(path.normalize(args.path), newContents);
 
           return {
             contents: newContents,
@@ -400,8 +115,9 @@ export function sdNgPlugin(conf: {
       );
 
       build.onEnd((result) => {
-        for (const {outputFiles, metafile} of additionalResultMap.values()) {
-          result.outputFiles?.push(...outputFiles);
+        for (const {outputFiles, metafile} of buildResult.stylesheetResultMap.values()) {
+          result.outputFiles = result.outputFiles ?? [];
+          result.outputFiles.push(...outputFiles);
 
           if (result.metafile && metafile) {
             result.metafile.inputs = {...result.metafile.inputs, ...metafile.inputs};
@@ -409,9 +125,6 @@ export function sdNgPlugin(conf: {
           }
         }
 
-        // conf.result.watchFileSet = resultCache.watchFileSet;
-        // conf.result.affectedFileSet = resultCache.affectedFileSet;
-        // conf.result.program = ngProgram!.getTsProgram();
         conf.result.outputFiles = result.outputFiles;
         conf.result.metafile = result.metafile;
 
@@ -421,17 +134,10 @@ export function sdNgPlugin(conf: {
   };
 }
 
-interface IAdditionalResult {
-  outputFiles: esbuild.OutputFile[];
-  metafile?: esbuild.Metafile;
-  errors?: esbuild.PartialMessage[];
-  warnings: esbuild.PartialMessage[];
-}
-
-export interface INgResultCache {
+export interface INgPluginResultCache {
   watchFileSet?: Set<string>;
   affectedFileSet?: Set<string>;
+  program?: ts.Program;
   outputFiles?: esbuild.OutputFile[];
   metafile?: esbuild.Metafile;
-  program?: ts.Program;
 }

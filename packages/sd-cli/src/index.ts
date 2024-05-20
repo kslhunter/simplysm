@@ -6,6 +6,7 @@ export * from "./build-tools/SdNgBundler";
 export * from "./build-tools/SdNgBundlerContext";
 export * from "./build-tools/SdServerBundler";
 export * from "./build-tools/SdTsCompiler";
+export * from "./build-tools2/SdTsCompiler2";
 export * from "./builders/SdCliClientBuilder";
 export * from "./builders/SdCliJsLibLinter";
 export * from "./builders/SdCliServerBuilder";

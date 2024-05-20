@@ -3,7 +3,7 @@
   "version": "11.1.45",
   "description": "심플리즘 패키지",
   "author": "김석래",
-  "packageManager": "yarn@4.1.1",
+  "packageManager": "yarn@4.2.2",
   "repository": {
     "type": "git",
     "url": "https://github.com/kslhunter/simplysm11.git"
@@ -18,11 +18,12 @@
     "packages/*"
   ],
   "scripts": {
-    "watch": "npm run _sd-cli_ -- --debug watch",
-    "watch:sd-angular": "npm run _sd-cli_ -- --debug watch --packages sd-angular",
-    "watch:sd-excel": "npm run _sd-cli_ -- --debug watch --packages sd-excel",
-    "build": "npm run _sd-cli_ -- --debug build",
-    "publish": "npm run _sd-cli_ -- --debug publish",
+    "watch": "npm run _sd-cli_ -- watch",
+    "watch:sd-angular": "npm run _sd-cli_ -- watch --packages sd-angular",
+    "watch:sd-excel": "npm run _sd-cli_ -- watch --packages sd-excel",
+    "watch:sd-angular2:inspect": "npm run _sd-cli_ -- watch --packages sd-angular2 --inspects sd-angular2",
+    "build": "npm run _sd-cli_ -- build",
+    "publish": "npm run _sd-cli_ -- publish",
     "--": "",
     "_sd-cli_": "tsx --experimental-import-meta-resolve --max-old-space-size=8000 --tsconfig packages/sd-cli/tsconfig.json packages/sd-cli/src/sd-cli.ts",
     "commit": "git add . && git commit -m .",
@@ -32,10 +33,10 @@
   },
   "devDependencies": {
     "@simplysm/eslint-plugin": "11.1.45",
-    "@types/node": "^18.19.31",
+    "@types/node": "^18.19.33",
     "cross-env": "^7.0.3",
     "eslint": "^8.57.0",
-    "tsx": "^4.7.2",
+    "tsx": "^4.10.5",
     "typescript": "~5.4.5"
   }
 }

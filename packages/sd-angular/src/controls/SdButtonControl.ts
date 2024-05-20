@@ -150,6 +150,7 @@ export class SdButtonControl {
   @HostBinding("attr.sd-theme")
   theme?: "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey" | "link";
 
+
   @Input({transform: coercionBoolean})
   @HostBinding("attr.sd-inline")
   inline = false;

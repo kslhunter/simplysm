@@ -1,7 +1,7 @@
 import {ISdCliPackageBuildResult} from "../commons";
 import esbuild from "esbuild";
 import path from "path";
-import {IServerBundlerResultCache, sdServerPlugin} from "../bundle-plugins/sdServerPlugin";
+import {IServerPluginResultCache, sdServerPlugin} from "../bundle-plugins/sdServerPlugin";
 import ts from "typescript";
 import {Logger} from "@simplysm/sd-core-node";
 
@@ -11,7 +11,7 @@ export class SdServerBundler {
   #context?: esbuild.BuildContext;
 
   #modifiedFileSet = new Set<string>();
-  #resultCache: Partial<IServerBundlerResultCache> = {};
+  #resultCache: IServerPluginResultCache = {};
 
   constructor(private readonly _opt: {
     dev: boolean;

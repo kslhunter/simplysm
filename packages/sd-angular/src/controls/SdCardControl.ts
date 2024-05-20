@@ -17,7 +17,7 @@ import {ChangeDetectionStrategy, Component} from "@angular/core";
       overflow: hidden;
       transition: box-shadow .3s ease-in-out;
       @include elevation(2);
-
+      
       &:hover,
       &:has(:focus) {
         @include elevation(6);

@@ -257,7 +257,7 @@ $vars: (
   ),
   theme: (
     grey: (
-      lightest: var(--color-grey-50),
+      lightest: var(--color-grey-100),
       lighter: var(--color-grey-300),
       light: var(--color-grey-400),
       default: var(--color-grey-500),
@@ -380,16 +380,11 @@ $vars: (
     darker: var(--theme-grey-dark)
   ),
   border-radius: (
-    //sm: var(--gap-xs),
-    //default: var(--gap-sm),
-    //lg: var(--gap-default),
-    //xl: var(--gap-lg),
-    //xxl: var(--gap-xl)
-    sm: 2px,
-    default: 6px,
-    lg: 8px,
-    xl: 12px,
-    xxl: 18px
+    sm: var(--gap-xs),
+    default: var(--gap-sm),
+    lg: var(--gap-default),
+    xl: var(--gap-lg),
+    xxl: var(--gap-xl)
   ),
   z-index: (
     toast: 9999,

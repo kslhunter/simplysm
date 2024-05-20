@@ -21,10 +21,17 @@ $vars: map-merge($vars, (
     h5: 14px,
     h6: 12px,
   ),
+  /*border-radius: (
+    sm: 2px,
+    default: 6px,
+    lg: 8px,
+    xl: 12px,
+    xxl: 18px
+  ),*/
   line-height: 1.5em,
   line-height-strip-unit: 1.5,
   sidebar: (
-    width: 14em
+    width: 15em
   ),
   topbar: (
     height: calc(var(--font-size-default) * 3)

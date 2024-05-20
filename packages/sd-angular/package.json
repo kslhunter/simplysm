@@ -12,16 +12,16 @@
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "style": "./styles.css",
+  "style": "./dist/styles.css",
   "engines": {
     "node": "^18"
   },
   "dependencies": {
-    "@angular/animations": "^17.3.4",
-    "@angular/common": "^17.3.4",
-    "@angular/core": "^17.3.4",
-    "@angular/platform-browser": "^17.3.4",
-    "@angular/router": "^17.3.4",
+    "@angular/animations": "^17.3.9",
+    "@angular/common": "^17.3.9",
+    "@angular/core": "^17.3.9",
+    "@angular/platform-browser": "^17.3.9",
+    "@angular/router": "^17.3.9",
     "@fortawesome/angular-fontawesome": "^0.14.1",
     "@fortawesome/fontawesome-svg-core": "^6.5.2",
     "@simplysm/sd-core-browser": "11.1.45",
@@ -29,12 +29,12 @@
     "@simplysm/sd-service-client": "11.1.45",
     "@simplysm/sd-service-common": "11.1.45",
     "jsbarcode": "^3.11.6",
-    "marked": "^12.0.1",
+    "marked": "^12.0.2",
     "pretendard": "^1.3.9",
     "qrcode": "^1.5.3",
     "rxjs": "^7.8.1",
-    "semver": "^7.6.0",
-    "zone.js": "~0.14.4"
+    "semver": "^7.6.2",
+    "zone.js": "~0.14.6"
   },
   "devDependencies": {
     "@types/qrcode": "^1.5.5",

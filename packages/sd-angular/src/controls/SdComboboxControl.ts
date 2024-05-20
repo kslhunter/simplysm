@@ -307,7 +307,7 @@ export class SdComboboxControl<T> implements OnInit, OnDestroy, DoCheck {
     const textfieldEl = this.textfieldElRef!.nativeElement;
     const dropdownEl = this.dropdownElRef!.nativeElement;
 
-    if ((this.#elRef.nativeElement as HTMLElement).findParent(event.target as HTMLElement)) {
+    if (this.#elRef.nativeElement.findParent(event.target as HTMLElement)) {
       if (window.innerHeight < textfieldEl.getRelativeOffset(window.document.body).top * 2) {
         Object.assign(
           dropdownEl.style,

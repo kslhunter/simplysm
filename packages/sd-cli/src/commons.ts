@@ -28,6 +28,7 @@ export interface ISdCliBuildClusterReqMessage {
   projConf: ISdCliConfig;
   pkgPath: string;
   // builderKey?: "web" | "electron";
+  execArgs?: string[];
 }
 
 export interface ISdCliBuildClusterResMessage {

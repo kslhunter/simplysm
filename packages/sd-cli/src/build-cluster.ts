@@ -39,9 +39,10 @@ if (cluster.isPrimary) {
     sendMessage(message);
   });
 
-  process.on("message", (message) => {
+  process.on("message", (message: ISdCliBuildClusterReqMessage) => {
     cluster.fork({
-      "SD_CLUSTER_MESSAGE": JSON.stringify(message)
+      "SD_CLUSTER_MESSAGE": JSON.stringify(message),
+      "NODE_OPTIONS": message.execArgs?.join(" ")
     });
   });
   process.send!("ready");
@@ -67,6 +68,7 @@ else {
               result,
               req: message
             });
+            logMemory(message);
           })
           .watchAsync();
 
@@ -90,6 +92,7 @@ else {
               result,
               req: message
             });
+            logMemory(message);
           })
           .watchAsync();
         sendMessage({
@@ -112,6 +115,7 @@ else {
               result,
               req: message
             });
+            logMemory(message);
           })
           .watchAsync();
         sendMessage({
@@ -134,6 +138,7 @@ else {
               result,
               req: message
             });
+            logMemory(message);
           })
           .watchAsync();
         sendMessage({
@@ -154,6 +159,7 @@ else {
           result,
           req: message
         });
+        logMemory(message);
       }
       // [library] typescript
       else if (pkgConf.type === "library" && FsUtil.exists(path.resolve(message.pkgPath, "tsconfig.json"))) {
@@ -163,6 +169,7 @@ else {
           result,
           req: message
         });
+        logMemory(message);
       }
       // [server]
       else if (pkgConf.type === "server") {
@@ -170,8 +177,9 @@ else {
         sendMessage({
           type: "complete",
           result,
-          req: message
+          req: message,
         });
+        logMemory(message);
       }
       // [client]
       else if (pkgConf.type === "client") {
@@ -179,8 +187,9 @@ else {
         sendMessage({
           type: "complete",
           result,
-          req: message
+          req: message,
         });
+        logMemory(message);
       }
       else {
         throw new NeverEntryError();
@@ -195,4 +204,9 @@ else {
 
 function sendMessage(message: ISdCliBuildClusterResMessage): void {
   process.send!(message);
+}
+
+function logMemory(message: ISdCliBuildClusterReqMessage) {
+  /*global.gc!();
+  logger.log(`[${process.pid}:${path.basename(message.pkgPath)}] 메모리 사용량: ${Math.round(process.memoryUsage().heapUsed / 1024 / 1024)}MB`);*/
 }

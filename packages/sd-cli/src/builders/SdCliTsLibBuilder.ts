@@ -35,7 +35,7 @@ export class SdCliTsLibBuilder extends EventEmitter {
       await SdCliIndexFileGenerator.runAsync(this._pkgPath, this._pkgConf.polyfills);
     }
 
-    const result = await this._runAsync();
+    const result = await this._runAsync(false);
     return {
       affectedFilePaths: Array.from(result.affectedFileSet),
       buildResults: result.buildResults
@@ -53,7 +53,7 @@ export class SdCliTsLibBuilder extends EventEmitter {
       await SdCliIndexFileGenerator.watchAsync(this._pkgPath, this._pkgConf.polyfills);
     }
 
-    const result = await this._runAsync();
+    const result = await this._runAsync(true);
     this.emit("complete", {
       affectedFilePaths: Array.from(result.affectedFileSet),
       buildResults: result.buildResults
@@ -64,12 +64,12 @@ export class SdCliTsLibBuilder extends EventEmitter {
     const watcher = SdFsWatcher
       .watch(Array.from(result.watchFileSet))
       .onChange({delay: 100,}, (changeInfos) => {
-        this._builder!.markChanges(changeInfos.map((item) => item.path));
+        this._builder!.markChanges(new Set(changeInfos.map((item) => item.path)));
 
         fnQ.runLast(async () => {
           this.emit("change");
 
-          const watchResult = await this._runAsync();
+          const watchResult = await this._runAsync(true);
           this.emit("complete", {
             affectedFilePaths: Array.from(watchResult.affectedFileSet),
             buildResults: watchResult.buildResults
@@ -80,18 +80,13 @@ export class SdCliTsLibBuilder extends EventEmitter {
       });
   }
 
-  private async _runAsync(): Promise<{
+  private async _runAsync(dev: boolean): Promise<{
     watchFileSet: Set<string>;
     affectedFileSet: Set<string>;
     buildResults: ISdCliPackageBuildResult[];
   }> {
     this._debug(`BUILD & CHECK...`);
-    this._builder = this._builder ?? new SdTsCompiler({
-      pkgPath: this._pkgPath,
-      emit: true,
-      emitDts: true,
-      globalStyle: true
-    });
+    this._builder = this._builder ?? new SdTsCompiler(this._pkgPath, dev);
     const buildResult = await this._builder.buildAsync();
 
     this._debug("LINT...");

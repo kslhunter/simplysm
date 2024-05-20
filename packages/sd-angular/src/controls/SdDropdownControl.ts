@@ -166,7 +166,7 @@ export class SdDropdownControl implements DoCheck {
         Object.assign(
           popupEl.style,
           {
-            top: (windowOffset.top + this.contentElRef!.nativeElement.offsetHeight) + "px",
+            top: (windowOffset.top + this.contentElRef.nativeElement.offsetHeight) + "px",
             bottom: "",
             left: windowOffset.left + "px"
           }
@@ -255,8 +255,8 @@ export class SdDropdownControl implements DoCheck {
 
   @HostListener("document:blur.capture.outside", ["$event"])
   onBlurCaptureOutside(event: FocusEvent) {
-    const contentEl = this.contentElRef!.nativeElement;
-    const popupEl = this.popupElRef!.nativeElement;
+    const contentEl = this.contentElRef.nativeElement;
+    const popupEl = this.popupElRef.nativeElement;
 
     const relatedTarget = event.relatedTarget as HTMLElement | undefined;
     if (

@@ -1,4 +1,5 @@
 import "@simplysm/sd-core-browser";
+export * from "./controls/SdAdditionalButtonControl";
 export * from "./controls/SdAnchorControl";
 export * from "./controls/SdBarcodeControl";
 export * from "./controls/SdBusyContainerControl";
@@ -31,6 +32,7 @@ export * from "./controls/SdLazyPageControl";
 export * from "./controls/SdListControl";
 export * from "./controls/SdListItemControl";
 export * from "./controls/SdMarkdownEditorControl";
+export * from "./controls/SdModalBaseControl";
 export * from "./controls/SdModalControl";
 export * from "./controls/SdNoteControl";
 export * from "./controls/SdPageBaseControl";

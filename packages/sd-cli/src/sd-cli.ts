@@ -57,6 +57,11 @@ const argv = (
             string: true,
             array: true,
             describe: "수행할 패키지 설정"
+          },
+          inspects: {
+            string: true,
+            array: true,
+            describe: "크롬 inspect를 수행할 패키지 설정"
           }
         })
     )
@@ -197,7 +202,8 @@ else if (argv._[0] === "watch") {
     .watchAsync({
       confFileRelPath: argv.config ?? "simplysm.cjs",
       optNames: argv.options ?? [],
-      pkgNames: argv.packages ?? []
+      pkgNames: argv.packages ?? [],
+      inspectNames: argv.inspects ?? []
     });
 }
 else if (argv._[0] === "build") {
