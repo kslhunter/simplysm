@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/cordova-plugin-local-baseurl",
-  "version": "11.1.50",
+  "version": "11.1.51",
   "description": "심플리즘 패키지 - Cordova Local BaseUrl Plugin",
   "author": "김석래",
   "repository": {
