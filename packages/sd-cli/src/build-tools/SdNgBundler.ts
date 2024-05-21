@@ -394,7 +394,7 @@ export class SdNgBundler {
       outExtension: undefined,
       sourcemap: true, //this.#opt.dev,
       splitting: true,
-      chunkNames: 'chunks/[name]-[hash]',
+      chunkNames: '[name]-[hash]',
       tsconfig: this.#tsConfigFilePath,
       write: false,
       preserveSymlinks: false,
