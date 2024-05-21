@@ -78,7 +78,7 @@ export class SdNgBundler {
     this.#mainFilePath = path.resolve(opt.pkgPath, "src/main.ts");
     this.#tsConfigFilePath = path.resolve(opt.pkgPath, "tsconfig.json");
     this.#swConfFilePath = path.resolve(opt.pkgPath, "ngsw-config.json");
-    this.#browserTarget = transformSupportedBrowsersToTargets(browserslist("defaults and fully supports es6-module"));
+    this.#browserTarget = transformSupportedBrowsersToTargets(browserslist(["last 2 Chrome versions", "last 2 Edge versions"]));
     this.#indexHtmlFilePath = path.resolve(opt.pkgPath, "src/index.html");
     this.#pkgName = path.basename(opt.pkgPath);
     this.#baseHref = opt.builderType === "web" ? `/${this.#pkgName}/` : opt.dev ? `/${this.#pkgName}/${opt.builderType}/` : ``;
@@ -399,7 +399,7 @@ export class SdNgBundler {
       write: false,
       preserveSymlinks: false,
       define: {
-        ngDevMode: this.#opt.dev ? "true" : "false",
+        ...!this.#opt.dev ? {ngDevMode: "false"} : {},
         ngJitMode: 'false',
         global: 'global',
         process: 'process',

@@ -2,7 +2,7 @@ import esbuild from "esbuild";
 import ts from "typescript";
 import path from "path";
 import {convertTypeScriptDiagnostic} from "@angular-devkit/build-angular/src/tools/esbuild/angular/diagnostics";
-import {ISdTsCompiler2Result, SdTsCompiler} from "../build-tools/SdTsCompiler";
+import {ISdTsCompilerResult, SdTsCompiler} from "../build-tools/SdTsCompiler";
 
 export function sdServerPlugin(conf: {
   pkgPath: string;
@@ -15,7 +15,7 @@ export function sdServerPlugin(conf: {
     setup: (build: esbuild.PluginBuild) => {
       const compiler = new SdTsCompiler(conf.pkgPath, {declaration: false}, conf.dev);
 
-      let buildResult: ISdTsCompiler2Result;
+      let buildResult: ISdTsCompilerResult;
 
       build.onStart(async () => {
         compiler.invalidate(conf.modifiedFileSet);

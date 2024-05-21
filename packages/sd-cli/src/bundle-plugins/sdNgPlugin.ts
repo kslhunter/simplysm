@@ -3,7 +3,7 @@ import ts from "typescript";
 import path from "path";
 import {JavaScriptTransformer} from "@angular-devkit/build-angular/src/tools/esbuild/javascript-transformer";
 import os from "os";
-import {ISdTsCompiler2Result, SdTsCompiler} from "../build-tools/SdTsCompiler";
+import {ISdTsCompilerResult, SdTsCompiler} from "../build-tools/SdTsCompiler";
 import {convertTypeScriptDiagnostic} from "@angular-devkit/build-angular/src/tools/esbuild/angular/diagnostics";
 
 export function sdNgPlugin(conf: {
@@ -17,7 +17,7 @@ export function sdNgPlugin(conf: {
     setup: (build: esbuild.PluginBuild) => {
       const compiler = new SdTsCompiler(conf.pkgPath, {declaration: false}, conf.dev);
 
-      let buildResult: ISdTsCompiler2Result;
+      let buildResult: ISdTsCompilerResult;
       const outputContentsCacheMap = new Map<string, Uint8Array>();
 
       //-- js babel transformer
@@ -32,6 +32,10 @@ export function sdNgPlugin(conf: {
 
       build.onStart(async () => {
         compiler.invalidate(conf.modifiedFileSet);
+        for (const modifiedFile of conf.modifiedFileSet) {
+          outputContentsCacheMap.delete(modifiedFile);
+        }
+
         buildResult = await compiler.buildAsync();
 
         conf.result.watchFileSet = buildResult.watchFileSet;

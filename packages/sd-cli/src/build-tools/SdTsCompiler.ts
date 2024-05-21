@@ -202,7 +202,7 @@ export class SdTsCompiler {
     this.#modifiedFileSet.adds(...modifiedFileSet);
   }
 
-  async buildAsync(): Promise<ISdTsCompiler2Result> {
+  async buildAsync(): Promise<ISdTsCompilerResult> {
     this.#resourceDependencyCacheMap.clear();
     this.#watchFileSet.clear();
     this.#stylesheetResultMap.clear();
@@ -338,6 +338,13 @@ export class SdTsCompiler {
 
     this.#debug(`prepare emit...`);
 
+    // const transformers = this.#ngProgram?.compiler.prepareEmit().transformers;
+    // transformers.before ??= [];
+    // transformers.before.push(
+    //   replaceBootstrap(() => this.#program!.getTypeChecker()),
+    // );
+    // transformers.before.push(webWorkerTransform);
+
     while (true) {
       const affectedFileResult = this.#builder.emitNextAffectedFile((fileName, text, writeByteOrderMark, onError, sourceFiles, data) => {
         if (!sourceFiles || sourceFiles.length === 0) {
@@ -427,7 +434,7 @@ export class SdTsCompiler {
   }
 }
 
-export interface ISdTsCompiler2Result {
+export interface ISdTsCompilerResult {
   program: ts.Program,
   typescriptDiagnostics: ts.Diagnostic[],
   stylesheetResultMap: Map<string, IStylesheetResult>,
