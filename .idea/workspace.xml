@@ -203,8 +203,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="npm.watch" />
         <item itemvalue="npm.simplysm &gt; publish" />
+        <item itemvalue="npm.watch" />
         <item itemvalue="npm.simplysm &gt; build" />
         <item itemvalue="npm.simplysm &gt; watch:sd-angular2:inspect" />
         <item itemvalue="npm.simplysm &gt; watch:sd-angular:inspect" />
