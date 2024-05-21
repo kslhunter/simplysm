@@ -457,7 +457,7 @@ export class SdSelectControl<M extends "single" | "multi", T extends any> implem
 
         if (event.key === "ArrowUp") {
           if (currIndex === 0) {
-            if (this.dropdownControl?.contentElRef?.nativeElement) {
+            if (this.dropdownControl?.contentElRef.nativeElement) {
               this.dropdownControl.contentElRef.nativeElement.focus();
             }
           }

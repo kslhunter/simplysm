@@ -109,17 +109,16 @@ export class SdSheetConfigModal<T> extends SdModalBase<ISdSheetConfigModalInput<
 
     const items: IItemVM[] = [];
     for (const control of param.controls) {
-      if (control.key === undefined) continue;
       const config = param.config?.columnRecord?.[control.key];
 
       items.push({
         key: control.key,
         header: control.header instanceof Array ? control.header.join(" > ") : control.header,
-        resizable: control.resizable ?? false,
-        fixed: config?.fixed ?? control.fixed ?? false,
+        resizable: control.resizable,
+        fixed: config?.fixed ?? control.fixed,
         displayOrder: config?.displayOrder,
         width: config?.width ?? control.width,
-        hidden: config?.hidden ?? control.hidden ?? false
+        hidden: config?.hidden ?? control.hidden
       });
     }
 

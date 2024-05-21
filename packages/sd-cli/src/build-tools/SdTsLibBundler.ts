@@ -5,7 +5,7 @@ import ts from "typescript";
 import path from "path";
 import {FsUtil, PathUtil} from "@simplysm/sd-core-node";
 
-export class SdLibBundler {
+export class SdTsLibBundler {
   readonly #compiler: SdTsCompiler;
 
   readonly #pkgPath: string;

@@ -5,41 +5,27 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a5909e33-fd1f-4a18-a2ac-5581a953e90d" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdLibBundler.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/cordova-plugin-local-baseurl/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/cordova-plugin-local-baseurl/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/cordova-plugin-local-baseurl/plugin.xml" beforeDir="false" afterPath="$PROJECT_DIR$/packages/cordova-plugin-local-baseurl/plugin.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/cordova-util/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/cordova-util/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/eslint-plugin/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/eslint-plugin/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-angular/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-cli/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdLinter.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdLinter.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/eslint-plugin/src/configs/root.cjs" beforeDir="false" afterPath="$PROJECT_DIR$/packages/eslint-plugin/src/configs/root.cjs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdCheckboxGroupControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdCheckboxGroupControl.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdFormControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdFormControl.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdPermissionTableControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdPermissionTableControl.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSelectControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSelectControl.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSharedDataSelectViewControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSharedDataSelectViewControl.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSheetControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdSheetControl.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/modals/SdSheetConfigModal.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/modals/SdSheetConfigModal.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/utils/SdNgHelper.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/utils/SdNgHelper.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/utils/sdCanDeactivateGuard.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/utils/sdCanDeactivateGuard.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdLibBundler.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdTsLibBundler.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdNgBundler.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdNgBundler.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdNgBundlerContext.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdNgBundlerContext.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdTsCompiler.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdTsCompiler.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/build-tools2/SdTsCompiler2.ts" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/builders/SdCliTsLibBuilder.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/builders/SdCliTsLibBuilder.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/bundle-plugins/sdNgPlugin.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/bundle-plugins/sdNgPlugin.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/bundle-plugins/sdServerPlugin.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/bundle-plugins/sdServerPlugin.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/entry/SdCliProject.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/entry/SdCliProject.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/sd-cli.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/sd-cli.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-core-browser/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-core-browser/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-core-common/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-core-common/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-core-common/src/types/TreeMap.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-core-common/src/types/TreeMap.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/packages/sd-core-common/src/utils/ObjectUtil.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-core-common/src/utils/ObjectUtil.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-core-node/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-core-node/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-excel/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-excel/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-orm-common/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-orm-common/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-orm-node-mssql/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-orm-node-mssql/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-orm-node-mysql/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-orm-node-mysql/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-orm-node-sqlite/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-orm-node-sqlite/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-orm-node/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-orm-node/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-service-client/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-service-client/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-service-common/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-service-common/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-service-server/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-service-server/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-service-server/src/services/SdSmtpClientService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-service-server/src/services/SdSmtpClientService.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/sd-storage/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-storage/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-excel/src/SdExcelCell.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-excel/src/SdExcelCell.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/simplysm.cjs" beforeDir="false" afterPath="$PROJECT_DIR$/simplysm.cjs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -218,8 +204,8 @@
     <recent_temporary>
       <list>
         <item itemvalue="npm.watch" />
-        <item itemvalue="npm.simplysm &gt; build" />
         <item itemvalue="npm.simplysm &gt; publish" />
+        <item itemvalue="npm.simplysm &gt; build" />
         <item itemvalue="npm.simplysm &gt; watch:sd-angular2:inspect" />
         <item itemvalue="npm.simplysm &gt; watch:sd-angular:inspect" />
       </list>

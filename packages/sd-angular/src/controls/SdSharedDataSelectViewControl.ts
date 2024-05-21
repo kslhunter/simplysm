@@ -132,7 +132,7 @@ export class SdSharedDataSelectViewControl<T extends ISharedDataBase<string | nu
       run({
         items: [this.items, "all"]
       }, () => {
-        this.selectedItem = this.items?.single((item) => item.__valueKey === this.selectedItem?.__valueKey);
+        this.selectedItem = this.items.single((item) => item.__valueKey === this.selectedItem?.__valueKey);
       });
 
       run({

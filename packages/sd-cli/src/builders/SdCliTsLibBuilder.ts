@@ -2,7 +2,7 @@ import {FsUtil, Logger, PathUtil, SdFsWatcher} from "@simplysm/sd-core-node";
 import path from "path";
 import {ISdCliBuilderResult, ISdCliConfig, ISdCliLibPackageConfig, ISdCliPackageBuildResult} from "../commons";
 import {EventEmitter} from "events";
-import {SdLibBundler} from "../build-tools/SdLibBundler";
+import {SdTsLibBundler} from "../build-tools/SdTsLibBundler";
 import {SdLinter} from "../build-tools/SdLinter";
 import {FunctionQueue} from "@simplysm/sd-core-common";
 import {SdCliIndexFileGenerator} from "../build-tools/SdCliIndexFileGenerator";
@@ -14,7 +14,7 @@ export class SdCliTsLibBuilder extends EventEmitter {
   readonly #pkgPath: string;
   readonly #pkgConf: ISdCliLibPackageConfig;
 
-  #bundler?: SdLibBundler;
+  #bundler?: SdTsLibBundler;
 
   public constructor(projConf: ISdCliConfig,
                      pkgPath: string) {
@@ -92,7 +92,7 @@ export class SdCliTsLibBuilder extends EventEmitter {
     buildResults: ISdCliPackageBuildResult[];
   }> {
     this._debug(`BUILD...`);
-    this.#bundler = this.#bundler ?? new SdLibBundler(this.#pkgPath, dev);
+    this.#bundler = this.#bundler ?? new SdTsLibBundler(this.#pkgPath, dev);
     const buildResult = await this.#bundler.buildAsync();
 
     this._debug("LINT...");

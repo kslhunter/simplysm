@@ -2,8 +2,11 @@ import esbuild from "esbuild";
 import path from "path";
 import {InitialFileRecord} from "@angular-devkit/build-angular/src/tools/esbuild/bundler-context";
 import {ISdCliPackageBuildResult} from "../commons";
+import {Logger} from "@simplysm/sd-core-node";
 
 export class SdNgBundlerContext {
+  readonly #logger = Logger.get(["simplysm", "sd-cli", "SdNgBundlerContext"]);
+
   private _context?: esbuild.BuildContext;
 
   public constructor(private readonly _pkgPath: string,
@@ -18,7 +21,9 @@ export class SdNgBundlerContext {
     let buildResult: esbuild.BuildResult;
 
     try {
+      this.#debug(`rebuild...`);
       buildResult = await this._context.rebuild();
+      this.#debug(`rebuild completed`);
     }
     catch (err) {
       if ("warnings" in err || "errors" in err) {
@@ -29,6 +34,8 @@ export class SdNgBundlerContext {
       }
     }
 
+    this.#debug(`convert results...`);
+
     const results = [
       ...buildResult.warnings.map((warn) => ({
         filePath: warn.location?.file !== undefined ? path.resolve(this._pkgPath, warn.location.file) : undefined,
@@ -36,16 +43,16 @@ export class SdNgBundlerContext {
         char: warn.location?.column,
         code: warn.text.slice(0, warn.text.indexOf(":")),
         severity: "warning",
-        message: `${warn.pluginName != null ? `(${warn.pluginName}) ` : ""} ${warn.text.slice(warn.text.indexOf(":") + 1)}`,
+        message: `${warn.pluginName ? `(${warn.pluginName}) ` : ""} ${warn.text.slice(warn.text.indexOf(":") + 1)}`,
         type: "build"
       })),
-      ...buildResult.errors?.map((err) => ({
+      ...buildResult.errors.map((err) => ({
         filePath: err.location?.file !== undefined ? path.resolve(this._pkgPath, err.location.file) : undefined,
         line: err.location?.line,
         char: err.location?.column !== undefined ? err.location.column + 1 : undefined,
         code: err.text.slice(0, err.text.indexOf(":")),
         severity: "error",
-        message: `${err.pluginName != null ? `(${err.pluginName}) ` : ""} ${err.text.slice(err.text.indexOf(":") + 1)}`,
+        message: `${err.pluginName ? `(${err.pluginName}) ` : ""} ${err.text.slice(err.text.indexOf(":") + 1)}`,
         type: "build"
       }))
     ] as ISdCliPackageBuildResult[];
@@ -114,5 +121,9 @@ export class SdNgBundlerContext {
       // dependencyMap,
       metafile: buildResult.metafile
     };
+  }
+
+  #debug(...msg: any[]): void {
+    this.#logger.debug(`[${path.basename(this._pkgPath)}] (${Object.keys(this._esbuildOptions.entryPoints as Record<string, any>).join(", ")})`, ...msg);
   }
 }

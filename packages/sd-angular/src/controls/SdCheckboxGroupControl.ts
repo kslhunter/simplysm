@@ -37,9 +37,9 @@ export class SdCheckboxGroupControl<T> {
   itemControls?: QueryList<SdCheckboxGroupItemControl<T>>;
 
   getIsItemSelected(value: T): boolean {
-    const thisKeys = (this.keyProp !== undefined) ? this.value?.map((item) => item[this.keyProp!]) : this.value;
-    const itemKey = (this.keyProp !== undefined) ? value?.[this.keyProp] : value;
-    return thisKeys?.includes(itemKey) ?? false;
+    const thisKeys = (this.keyProp != null) ? this.value.map((item) => item[this.keyProp!]) : this.value;
+    const itemKey = (this.keyProp != null) ? value[this.keyProp] : value;
+    return thisKeys.includes(itemKey);
   }
 
   toggleValueItem(item: T) {

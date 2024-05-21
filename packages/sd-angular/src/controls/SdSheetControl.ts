@@ -683,7 +683,7 @@ export class SdSheetControl<T> implements DoCheck {
         if (this.columnControls) {
           this.displayColumnDefs = this.columnControls
             .map((columnControl) => {
-              const config = columnControl.key === undefined ? undefined : this.#config?.columnRecord?.[columnControl.key];
+              const config = this.#config?.columnRecord?.[columnControl.key];
               return {
                 control: columnControl,
                 key: columnControl.key,
@@ -1390,9 +1390,7 @@ export class SdSheetControl<T> implements DoCheck {
       const newWidthPx = Math.max(startWidthPx + e.clientX - startX, 5);
       this.#resizedWidths[columnControl.key] = newWidthPx + 1 + "px";
 
-      if (columnControl.key !== undefined) {
-        await this.#saveColumnConfigAsync(columnControl.key, {width: newWidthPx + "px"});
-      }
+      await this.#saveColumnConfigAsync(columnControl.key, {width: newWidthPx + "px"});
 
       this.#ngZone.run(() => {
         this.#cdr.markForCheck();
@@ -1413,10 +1411,8 @@ export class SdSheetControl<T> implements DoCheck {
   async onResizerDoubleClick(event: MouseEvent, columnControl: SdSheetColumnDirective<T>): Promise<void> {
     delete this.#resizedWidths[columnControl.key];
 
-    if (columnControl.key !== undefined) {
-      await this.#saveColumnConfigAsync(columnControl.key, {width: undefined});
-      this.#cdr.markForCheck();
-    }
+    await this.#saveColumnConfigAsync(columnControl.key, {width: undefined});
+    this.#cdr.markForCheck();
   }
 
   /**
@@ -1520,7 +1516,7 @@ export class SdSheetControl<T> implements DoCheck {
    * @param headerCell
    */
   onHeaderCellClick(event: MouseEvent, headerCell: IHeaderDef<T>): void {
-    if (headerCell.isLastDepth && headerCell.control.useOrdering && headerCell.control.key != null) {
+    if (headerCell.isLastDepth && headerCell.control.useOrdering) {
       if (this.#isOnResizing) return;
       if (event.target instanceof HTMLElement && event.target.classList.contains("_resizer")) return;
       if (event.shiftKey || event.ctrlKey) {

@@ -42,6 +42,8 @@ import {MemoryLoadResultCache} from "@angular-devkit/build-angular/src/tools/esb
 import ts from "typescript";
 
 export class SdNgBundler {
+  readonly #logger = Logger.get(["simplysm", "sd-cli", "SdNgBundler"]);
+
   // private readonly _sourceFileCache = new SourceFileCache(
   //   path.resolve(this.#opt.pkgPath, ".cache")
   // );
@@ -96,7 +98,7 @@ export class SdNgBundler {
     affectedFileSet: Set<string>,
     results: ISdCliPackageBuildResult[]
   }> {
-    const logger = Logger.get(["simplysm", "sd-cli", "SdNgBundler", "bundleAsync"]);
+    this.#debug(`get contexts...`);
 
     if (!this.#contexts) {
       this.#contexts = [
@@ -108,13 +110,15 @@ export class SdNgBundler {
       ];
     }
 
-    //-- build
-    const bundlingResults = await this.#contexts.mapAsync(async ctx => await ctx.bundleAsync());
+    this.#debug(`build...`);
+
+    const bundlingResults = await this.#contexts.mapAsync(async (ctx, i) => await ctx.bundleAsync());
 
     //-- results
     const results = bundlingResults.mapMany(bundlingResult => bundlingResult.results);
 
-    //-- executionResult
+    this.#debug(`convert result...`);
+
     const outputFiles: BuildOutputFile[] = bundlingResults.mapMany(item => item.outputFiles?.map(file => convertOutputFile(file, BuildOutputFileType.Root)) ?? []);
     const initialFiles = new Map<string, InitialFileRecord>();
     const metafile: {
@@ -136,7 +140,7 @@ export class SdNgBundler {
       outputFiles.push(createOutputFileFromText("cordova-empty.js", "export default {};", BuildOutputFileType.Root));
     }
 
-    //-- index
+    this.#debug(`create index.html...`);
 
     const genIndexHtmlResult = await this._genIndexHtmlAsync(outputFiles, initialFiles);
     for (const warning of genIndexHtmlResult.warnings) {
@@ -173,6 +177,8 @@ export class SdNgBundler {
 
     //-- service worker
     if (FsUtil.exists(this.#swConfFilePath)) {
+      this.#debug(`prepare service worker...`);
+
       try {
         const serviceWorkerResult = await this._genServiceWorkerAsync(outputFiles, assetFiles);
         outputFiles.push(createOutputFileFromText('ngsw.json', serviceWorkerResult.manifest, BuildOutputFileType.Root));
@@ -192,6 +198,8 @@ export class SdNgBundler {
     }
 
     //-- write
+    this.#debug(`write output files...(${outputFiles.length})`);
+
     for (const outputFile of outputFiles) {
       const distFilePath = path.resolve(this.#opt.outputPath, outputFile.path);
       const prev = this.#outputCache.get(distFilePath);
@@ -209,7 +217,7 @@ export class SdNgBundler {
       }
     }
 
-    logger.debug(`[${path.basename(this.#opt.pkgPath)}] 번들링중 영향받은 파일`, Array.from(this.#ngResultCache.affectedFileSet!));
+    this.#debug(`번들링중 영향받은 파일`, Array.from(this.#ngResultCache.affectedFileSet!));
 
     return {
       program: this.#ngResultCache.program,
@@ -270,6 +278,7 @@ export class SdNgBundler {
         if (value.type === 'script') {
           hints.push({url: key, mode: 'modulepreload' as const});
         }
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         else if (value.type === 'style') {
           hints.push({url: key, mode: 'preload' as const, as: 'style'});
         }
@@ -385,12 +394,12 @@ export class SdNgBundler {
       outExtension: undefined,
       sourcemap: true, //this.#opt.dev,
       splitting: true,
-      chunkNames: 'chunk-[hash]',
+      chunkNames: 'chunks/[name]-[hash]',
       tsconfig: this.#tsConfigFilePath,
       write: false,
       preserveSymlinks: false,
       define: {
-        ...!this.#opt.dev ? {ngDevMode: 'false'} : {},
+        ngDevMode: this.#opt.dev ? "true" : "false",
         ngJitMode: 'false',
         global: 'global',
         process: 'process',
@@ -583,6 +592,11 @@ export class SdNgBundler {
         "electron-main": path.resolve(this.#opt.pkgPath, "src/electron-main.ts"),
       }
     });
+  }
+
+
+  #debug(...msg: any[]): void {
+    this.#logger.debug(`[${path.basename(this.#opt.pkgPath)}]`, ...msg);
   }
 }
 

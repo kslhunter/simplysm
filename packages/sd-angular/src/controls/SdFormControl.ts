@@ -40,12 +40,14 @@ export class SdFormControl {
 
     const errorMessage = [sdInvalidMessage, invalidMessage].filterExists().join("\n");
 
-    const focusableElement = (firstInvalidEl.isFocusable() ? firstInvalidEl : firstInvalidEl.findFocusableAll()[0])
+    const focusableElement = (firstInvalidEl.isFocusable() ? firstInvalidEl : firstInvalidEl.findFocusableAll().first())
       ?? firstInvalidEl.findFocusableParent();
     // "confirm"창울 띄우는 경우에 포커싱이 안되는 현상 때문에 "requestAnimationFrame"이 필요함.
-    requestAnimationFrame(() => {
-      focusableElement.focus();
-    });
+    if (focusableElement) {
+      requestAnimationFrame(() => {
+        focusableElement.focus();
+      });
+    }
 
     this.#sdToast.info(errorMessage);
   }

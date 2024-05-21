@@ -288,7 +288,7 @@ export class ObjectUtil {
       }
 
       if (options?.ignoreArrayIndex) {
-        if (options?.onlyOneDepth) {
+        if (options.onlyOneDepth) {
           return source.every((sourceItem) => (
             target.some((targetItem) => targetItem === sourceItem)
           ));

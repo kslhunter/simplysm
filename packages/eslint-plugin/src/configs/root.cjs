@@ -83,7 +83,7 @@ module.exports = {
         "@typescript-eslint/semi": ["error"],
         "@typescript-eslint/no-shadow": ["error"],
         // "@typescript-eslint/member-delimiter-style": ["error"],
-        // "@typescript-eslint/no-unnecessary-condition": ["error", { allowConstantLoopConditions: true }],
+        "@typescript-eslint/no-unnecessary-condition": ["error", { allowConstantLoopConditions: true }],
         "@typescript-eslint/no-unnecessary-type-assertion": ["error"],
         "@typescript-eslint/non-nullable-type-assertion-style": ["error"],
         "@typescript-eslint/prefer-reduce-type-parameter": ["error"],

@@ -371,6 +371,7 @@ export class SdCliProject {
     if (projConf.postPublish && projConf.postPublish.length > 0) {
       logger.debug("배포후 작업...");
       for (const postPublishItem of projConf.postPublish) {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (postPublishItem.type === "script") {
           const script = postPublishItem.script.replace(/%([^%]*)%/g, (item) => {
             const envName = item.replace(/%/g, "");

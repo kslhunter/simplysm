@@ -245,10 +245,6 @@ export class SdPermissionTableControl implements DoCheck {
   }
 
   getIsPermChecked(item: ISdPermission, type: "use" | "edit"): boolean {
-    if (item === undefined) {
-      return true;
-    }
-
     if (item.perms) {
       const permCode = item.codes.join(".");
       return this.value[permCode + "." + type] ?? false;

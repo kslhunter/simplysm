@@ -156,6 +156,7 @@ export class SdExcelCell {
         const tick = SdExcelUtil.convertNumberToTimeTick(dateNum);
         return new DateTime(tick);
       }
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       else if (numFmt === "Time") {
         const dateNum = NumberUtil.parseFloat(cellVal)!;
         const tick = SdExcelUtil.convertNumberToTimeTick(dateNum);

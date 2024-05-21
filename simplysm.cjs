@@ -1,4 +1,4 @@
-/** @type {import('@simplysm/sd-cli').TSdCliConfigFn} */
+/** @type {import('@simplysm/sd-cli').TSdCliConfigFn.} */
 module.exports = () => ({
   packages: {
     "cordova-util": {

@@ -5,7 +5,7 @@ export class SdNgHelper {
   prevData: Record<string, any> = {};
   prevDataForOutside: Record<string, any> = {};
 
-  #reqNumRecord: Record<string, number> = {};
+  #reqNumRecord: Record<string, number | undefined> = {};
 
   #cdr: ChangeDetectorRef;
   #ngZone: NgZone;
@@ -96,7 +96,7 @@ export class SdNgHelper {
   runOutsideOnce(key: string, fn: () => void | Promise<void>): void {
     this.#ngZone.runOutsideAngular(() => {
       if (this.#reqNumRecord[key] != null) {
-        cancelAnimationFrame(this.#reqNumRecord[key]);
+        cancelAnimationFrame(this.#reqNumRecord[key]!);
       }
       this.#reqNumRecord[key] = requestAnimationFrame(async () => {
         await fn();

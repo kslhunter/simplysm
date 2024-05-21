@@ -1,6 +1,6 @@
 import ts, {CompilerOptions} from "typescript";
 import path from "path";
-import {FsUtil, PathUtil} from "@simplysm/sd-core-node";
+import {FsUtil, Logger, PathUtil} from "@simplysm/sd-core-node";
 import {transformSupportedBrowsersToTargets} from "@angular-devkit/build-angular/src/tools/esbuild/utils";
 import browserslist from "browserslist";
 import {
@@ -13,6 +13,8 @@ import {NgtscProgram, OptimizeFor} from "@angular/compiler-cli";
 import {createHash} from "crypto";
 
 export class SdTsCompiler {
+  readonly #logger = Logger.get(["simplysm", "sd-cli", "SdTsCompiler"]);
+
   readonly #parsedTsconfig: ts.ParsedCommandLine;
   readonly #isForAngular: boolean;
 
@@ -46,6 +48,9 @@ export class SdTsCompiler {
               globalStyleFilePath?: string) {
     this.#pkgPath = pkgPath;
     this.#globalStyleFilePath = globalStyleFilePath != null ? path.normalize(globalStyleFilePath) : undefined;
+
+
+    this.#debug("초기화...");
 
     //-- isForAngular / parsedTsConfig
 
@@ -140,6 +145,8 @@ export class SdTsCompiler {
   }
 
   async #bundleStylesheetAsync(data: string, containingFile: string, resourceFile: string | null = null) {
+    this.#debug(`스타일시트 번들링...(${containingFile}, ${resourceFile})`);
+
     const stylesheetResult = resourceFile != null
       ? await this.#stylesheetBundler!.bundleFile(resourceFile)
       : await this.#stylesheetBundler!.bundleInline(
@@ -166,7 +173,7 @@ export class SdTsCompiler {
     }
 
     this.#stylesheetResultMap.set(path.normalize(resourceFile ?? containingFile), {
-      outputFiles: stylesheetResult.outputFiles ?? [],
+      outputFiles: stylesheetResult.outputFiles,
       metafile: stylesheetResult.metafile,
       errors: stylesheetResult.errors,
       warnings: stylesheetResult.warnings
@@ -201,6 +208,8 @@ export class SdTsCompiler {
     this.#stylesheetResultMap.clear();
     this.#affectedFileSet.clear();
 
+    this.#debug(`create program...`);
+
     if (this.#isForAngular) {
       this.#ngProgram = new NgtscProgram(
         this.#parsedTsconfig.fileNames,
@@ -233,6 +242,8 @@ export class SdTsCompiler {
       return files;
     };
 
+    this.#debug(`create builder...`);
+
     this.#builder = ts.createEmitAndSemanticDiagnosticsBuilderProgram(
       this.#program,
       this.#compilerHost,
@@ -243,7 +254,7 @@ export class SdTsCompiler {
       await this.#ngProgram.compiler.analyzeAsync();
     }
 
-    //-- affectedFilePathSet
+    this.#debug(`get affected...`);
 
     while (true) {
       const result = this.#builder.getSemanticDiagnosticsOfNextAffectedFile(undefined, (sourceFile) => {
@@ -253,7 +264,8 @@ export class SdTsCompiler {
           && sourceFile.fileName.endsWith('.ngtypecheck.ts')
         ) {
           const originalFilename = sourceFile.fileName.slice(0, -15) + '.ts';
-          const originalSourceFile = this.#sourceFileCacheMap.get(originalFilename);
+          // const originalSourceFile = this.#sourceFileCacheMap.get(originalFilename);
+          const originalSourceFile = this.#builder!.getSourceFile(originalFilename);
           if (originalSourceFile) {
             this.#affectedFileSet.add(path.normalize(originalSourceFile.fileName));
           }
@@ -271,7 +283,7 @@ export class SdTsCompiler {
       this.#affectedFileSet.add(path.normalize((result.affected as ts.SourceFile).fileName));
     }
 
-    // Deps -> refMap
+    this.#debug(`get resource ref...`);
 
     this.#builder.getSourceFiles().filter(sf => !this.#ngProgram || !this.#ngProgram.compiler.ignoreForEmit.has(sf))
       .forEach(sf => {
@@ -288,7 +300,7 @@ export class SdTsCompiler {
         }
       });
 
-    //-- diagnostics
+    this.#debug(`get diagnostics...`);
 
     const diagnostics: ts.Diagnostic[] = [];
 
@@ -324,7 +336,7 @@ export class SdTsCompiler {
       }
     }
 
-    //-- prepare emit cache
+    this.#debug(`prepare emit...`);
 
     while (true) {
       const affectedFileResult = this.#builder.emitNextAffectedFile((fileName, text, writeByteOrderMark, onError, sourceFiles, data) => {
@@ -380,6 +392,8 @@ export class SdTsCompiler {
       && !this.#stylesheetResultMap.has(this.#globalStyleFilePath)
       && FsUtil.exists(this.#globalStyleFilePath)
     ) {
+      this.#debug(`bundle global style...`);
+
       const data = await FsUtil.readFileAsync(this.#globalStyleFilePath);
       const contents = await this.#bundleStylesheetAsync(data, this.#globalStyleFilePath, this.#globalStyleFilePath);
       const emittedFiles = this.#emittedFilesCacheMap.getOrCreate(path.normalize(this.#globalStyleFilePath), []);
@@ -394,6 +408,8 @@ export class SdTsCompiler {
 
     this.#modifiedFileSet.clear();
 
+    this.#debug(`build completed`);
+
     //-- result
 
     return {
@@ -404,6 +420,10 @@ export class SdTsCompiler {
       watchFileSet: this.#watchFileSet,
       affectedFileSet: this.#affectedFileSet
     };
+  }
+
+  #debug(...msg: any[]): void {
+    this.#logger.debug(`[${path.basename(this.#pkgPath)}]`, ...msg);
   }
 }
 
