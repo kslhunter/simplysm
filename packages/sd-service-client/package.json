@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-service-client",
-  "version": "11.1.52",
+  "version": "11.1.53",
   "description": "심플리즘 패키지 - 서비스 모듈 (client)",
   "author": "김석래",
   "repository": {
@@ -16,9 +16,9 @@
     "node": "^18"
   },
   "dependencies": {
-    "@simplysm/sd-core-common": "11.1.52",
-    "@simplysm/sd-orm-common": "11.1.52",
-    "@simplysm/sd-service-common": "11.1.52",
+    "@simplysm/sd-core-common": "11.1.53",
+    "@simplysm/sd-orm-common": "11.1.53",
+    "@simplysm/sd-service-common": "11.1.53",
     "isomorphic-ws": "^5.0.0",
     "jszip": "^3.10.1",
     "ws": "^8.17.0"
