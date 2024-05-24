@@ -17,11 +17,11 @@
     "node": "^18"
   },
   "dependencies": {
-    "@angular/animations": "^17.3.9",
-    "@angular/common": "^17.3.9",
-    "@angular/core": "^17.3.9",
-    "@angular/platform-browser": "^17.3.9",
-    "@angular/router": "^17.3.9",
+    "@angular/animations": "^17.3.10",
+    "@angular/common": "^17.3.10",
+    "@angular/core": "^17.3.10",
+    "@angular/platform-browser": "^17.3.10",
+    "@angular/router": "^17.3.10",
     "@fortawesome/angular-fontawesome": "^0.14.1",
     "@fortawesome/fontawesome-svg-core": "^6.5.2",
     "@simplysm/sd-core-browser": "11.1.53",
