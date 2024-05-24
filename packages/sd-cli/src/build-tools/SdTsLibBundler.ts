@@ -32,20 +32,22 @@ export class SdTsLibBundler {
   }> {
     const buildResult = await this.#compiler.buildAsync();
 
-    for (const affectedFilePath of buildResult.affectedFileSet) {
-      const emittedFiles = buildResult.emittedFilesCacheMap.get(affectedFilePath) ?? [];
-      for (const emittedFile of emittedFiles) {
-        if (emittedFile.outRelPath != null) {
-          const distPath = path.resolve(this.#pkgPath, "dist", emittedFile.outRelPath);
-          if (PathUtil.isChildPath(distPath, path.resolve(this.#pkgPath, "dist"))) {
-            await FsUtil.writeFileAsync(distPath, emittedFile.text);
+    for (const emitFile of buildResult.emitFileSet) {
+      const emittedFiles = buildResult.emitFilesCacheMap.get(emitFile);
+      if (emittedFiles) {
+        for (const emittedFile of emittedFiles) {
+          if (emittedFile.outRelPath != null) {
+            const distPath = path.resolve(this.#pkgPath, "dist", emittedFile.outRelPath);
+            if (PathUtil.isChildPath(distPath, path.resolve(this.#pkgPath, "dist"))) {
+              await FsUtil.writeFileAsync(distPath, emittedFile.text);
+            }
           }
         }
       }
 
-      const globalStylesheetResult = buildResult.stylesheetResultMap.get(affectedFilePath);
-      if (globalStylesheetResult) {
-        for (const outputFile of globalStylesheetResult.outputFiles) {
+      const globalStylesheetBundlingResult = buildResult.stylesheetBundlingResultMap.get(emitFile);
+      if (globalStylesheetBundlingResult) {
+        for (const outputFile of globalStylesheetBundlingResult.outputFiles) {
           const distPath = path.resolve(this.#pkgPath, "dist", path.relative(this.#pkgPath, outputFile.path));
           if (PathUtil.isChildPath(distPath, path.resolve(this.#pkgPath, "dist"))) {
             await FsUtil.writeFileAsync(distPath, outputFile.text);
@@ -60,7 +62,7 @@ export class SdTsLibBundler {
       affectedFileSet: buildResult.affectedFileSet,
       results: [
         ...buildResult.typescriptDiagnostics.map((item) => SdCliBuildResultUtil.convertFromTsDiag(item, "build")),
-        ...Array.from(buildResult.stylesheetResultMap.values()).mapMany(item => item.errors ?? [])
+        ...Array.from(buildResult.stylesheetBundlingResultMap.values()).mapMany(item => item.errors ?? [])
           .map(err => SdCliBuildResultUtil.convertFromEsbuildResult(err, "build", "error")),
         /*...Array.from(buildResult.stylesheetResultMap.values()).mapMany(item => item.warnings!)
           .map(warn => SdCliBuildResultUtil.convertFromEsbuildResult(warn, "build", "warning"))*/

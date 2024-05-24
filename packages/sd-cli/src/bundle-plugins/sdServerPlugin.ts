@@ -35,7 +35,7 @@ export function sdServerPlugin(conf: {
 
 
       build.onLoad({filter: /\.ts$/}, (args) => {
-        const contents = buildResult.emittedFilesCacheMap.get(path.normalize(args.path))!.last()!.text;
+        const contents = buildResult.emitFilesCacheMap.get(path.normalize(args.path))!.last()!.text;
         return {contents, loader: "js"};
       });
 

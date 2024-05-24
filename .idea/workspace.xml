@@ -4,34 +4,50 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a5909e33-fd1f-4a18-a2ac-5581a953e90d" name="Changes" comment="">
+    <list default="true" id="41e91034-8d1a-4ff2-998b-03e7bc4dd20e" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/codeStyles/Project.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/codeStyles/codeStyleConfig.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dictionaries/kslhunter.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/jsLibraryMappings.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/jsLinters/eslint.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/ts_external_references.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/simplysm.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/simplysm.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/cordova-plugin-local-baseurl/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/cordova-plugin-local-baseurl/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/cordova-util/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/cordova-util/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/eslint-plugin/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/eslint-plugin/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/eslint-plugin/src/configs/root.cjs" beforeDir="false" afterPath="$PROJECT_DIR$/packages/eslint-plugin/src/configs/root.cjs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdButtonControl.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-angular/src/controls/SdButtonControl.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdTsCompiler.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdTsCompiler.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdTsLibBundler.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/build-tools/SdTsLibBundler.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/bundle-plugins/sdNgPlugin.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/bundle-plugins/sdNgPlugin.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-cli/src/bundle-plugins/sdServerPlugin.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-cli/src/bundle-plugins/sdServerPlugin.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-core-browser/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-core-browser/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-core-common/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-core-common/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-core-node/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-core-node/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-excel/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-excel/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-orm-common/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-orm-common/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-orm-node-mssql/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-orm-node-mssql/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-orm-node-mysql/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-orm-node-mysql/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-orm-node-sqlite/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-orm-node-sqlite/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-orm-node/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-orm-node/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-service-client/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-service-client/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-service-common/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-service-common/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-service-server/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-service-server/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/sd-storage/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/sd-storage/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yarn.lock" beforeDir="false" afterPath="$PROJECT_DIR$/yarn.lock" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="ChangesViewManager">
-    <option name="groupingKeys">
-      <option value="directory" />
-    </option>
-  </component>
-  <component name="FileTemplateManagerImpl">
-    <option name="RECENT_TEMPLATES">
-      <list>
-        <option value="Dockerfile" />
-        <option value="TypeScript File" />
-      </list>
-    </option>
-  </component>
   <component name="Git.Settings">
-    <option name="PUSH_TAGS">
-      <GitPushTagMode>
-        <option name="argument" value="--tags" />
-        <option name="title" value="All" />
-      </GitPushTagMode>
-    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
@@ -40,132 +56,48 @@
     &quot;assignee&quot;: &quot;kslhunter&quot;
   }
 }</component>
-  <component name="GitRewordedCommitMessages">
-    <option name="commitMessagesMapping">
-      <RewordedCommitMessageMapping>
-        <option name="originalMessage" value="메모리 leak 해결등" />
-        <option name="rewordedMessage" value="메모리 leak 해결등" />
-      </RewordedCommitMessageMapping>
-    </option>
-    <option name="currentCommit" value="1" />
-    <option name="onto" value="88923cd0b1a4958e64cc125e9885e9630208d49d" />
-  </component>
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
     &quot;url&quot;: &quot;https://github.com/kslhunter/simplysm11.git&quot;,
     &quot;accountId&quot;: &quot;33cb1217-f54b-4f66-8576-38e785d7d8a5&quot;
   }
 }</component>
-  <component name="MarkdownSettingsMigration">
-    <option name="stateVersion" value="1" />
-  </component>
-  <component name="PackageJsonUpdateNotifier">
-    <dismissed value="$PROJECT_DIR$/package.json" />
-    <dismissed value="$PROJECT_DIR$/packages/cordova-util/package.json" />
-    <dismissed value="$PROJECT_DIR$/packages/eslint-plugin/package.json" />
-    <dismissed value="$PROJECT_DIR$/packages/sd-angular/package.json" />
-    <dismissed value="$PROJECT_DIR$/packages/sd-cli/package.json" />
-    <dismissed value="$PROJECT_DIR$/packages/sd-excel/package.json" />
-    <dismissed value="$PROJECT_DIR$/packages/sd-orm-node-mssql/package.json" />
-    <dismissed value="$PROJECT_DIR$/packages/sd-service-client/package.json" />
-  </component>
   <component name="ProjectColorInfo">{
   &quot;customColor&quot;: &quot;&quot;,
   &quot;associatedIndex&quot;: 8
 }</component>
-  <component name="ProjectId" id="2X6uJq9ABmNzoGrdb9MmnLflVUn" />
+  <component name="ProjectId" id="2goaxKvw9D9LjoxIpxgvEOEYAr9" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
-    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
-    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
     &quot;git-widget-placeholder&quot;: &quot;master&quot;,
     &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
     &quot;last_opened_file_path&quot;: &quot;D:/workspaces-11/simplysm-ts&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.standard&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.standard&quot;: &quot;&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_interpreter_path&quot;: &quot;node&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;npm.commit.executor&quot;: &quot;Run&quot;,
-    &quot;npm.publish.executor&quot;: &quot;Run&quot;,
-    &quot;npm.simplysm &gt; build.executor&quot;: &quot;Run&quot;,
-    &quot;npm.simplysm &gt; publish.executor&quot;: &quot;Run&quot;,
-    &quot;npm.simplysm &gt; reinstall.executor&quot;: &quot;Run&quot;,
-    &quot;npm.simplysm &gt; watch:sd-angular.executor&quot;: &quot;Run&quot;,
-    &quot;npm.simplysm &gt; watch:sd-angular2:inspect.executor&quot;: &quot;Run&quot;,
-    &quot;npm.simplysm &gt; watch:sd-angular:inspect.executor&quot;: &quot;Run&quot;,
-    &quot;npm.simplysm &gt; watch:sd-core-common.executor&quot;: &quot;Run&quot;,
-    &quot;npm.simplysm &gt; watch:sd-excel.executor&quot;: &quot;Run&quot;,
     &quot;npm.watch.executor&quot;: &quot;Run&quot;,
     &quot;npm.watch:sd-angular.executor&quot;: &quot;Run&quot;,
-    &quot;npm.watch:sd-orm-node.executor&quot;: &quot;Run&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;Runtime.Targets.Configurable&quot;,
-    &quot;ts.external.directory.path&quot;: &quot;D:\\workspaces-11\\simplysm\\node_modules\\typescript\\lib&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settings.ide.settings.new.ui&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;D:\\workspaces-11\\simplysm\\node_modules\\typescript\\lib&quot;
   }
 }</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="D:\workspaces-11\simplysm\packages\sd-cli\src\build-tools2" />
-      <recent name="D:\workspaces-11\simplysm\_back\240518" />
-      <recent name="D:\workspaces-11\simplysm\packages\sd-cli\src\utils" />
-      <recent name="D:\workspaces-11\simplysm\packages\sd-angular2" />
-      <recent name="D:\workspaces-11\simplysm\packages\sd-angular\src\controls" />
-    </key>
-    <key name="MoveFile.RECENT_KEYS">
       <recent name="D:\workspaces-11\simplysm\packages\sd-cli\src\build-tools" />
-      <recent name="D:\workspaces-11\simplysm\packages\sd-cli\src\build-tools2" />
-      <recent name="D:\workspaces-11\simplysm\packages\sd-angular2\src" />
-      <recent name="D:\workspaces-11\simplysm\packages\sd-angular\src\scss\themes" />
-      <recent name="D:\workspaces-11\simplysm\packages\cordova-plugin-local-baseurl\dist" />
     </key>
   </component>
   <component name="RunManager" selected="npm.watch">
-    <configuration name="simplysm &gt; build" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
-      <package-json value="$PROJECT_DIR$/package.json" />
-      <command value="run" />
-      <scripts>
-        <script value="build" />
-      </scripts>
-      <node-interpreter value="project" />
-      <envs />
-      <method v="2" />
-    </configuration>
-    <configuration name="simplysm &gt; publish" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
+    <configuration name="publish" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
       <package-json value="$PROJECT_DIR$/package.json" />
       <command value="run" />
       <scripts>
         <script value="publish" />
-      </scripts>
-      <node-interpreter value="project" />
-      <envs />
-      <method v="2" />
-    </configuration>
-    <configuration name="simplysm &gt; watch:sd-angular2:inspect" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
-      <package-json value="$PROJECT_DIR$/package.json" />
-      <command value="run" />
-      <scripts>
-        <script value="watch:sd-angular2:inspect" />
-      </scripts>
-      <node-interpreter value="project" />
-      <envs />
-      <method v="2" />
-    </configuration>
-    <configuration name="simplysm &gt; watch:sd-angular:inspect" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
-      <package-json value="$PROJECT_DIR$/package.json" />
-      <command value="run" />
-      <scripts>
-        <script value="watch:sd-angular:inspect" />
       </scripts>
       <node-interpreter value="project" />
       <envs />
@@ -181,13 +113,21 @@
       <envs />
       <method v="2" />
     </configuration>
+    <configuration name="watch:sd-angular" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="watch:sd-angular" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="npm.simplysm &gt; publish" />
+        <item itemvalue="npm.publish" />
         <item itemvalue="npm.watch" />
-        <item itemvalue="npm.simplysm &gt; build" />
-        <item itemvalue="npm.simplysm &gt; watch:sd-angular2:inspect" />
-        <item itemvalue="npm.simplysm &gt; watch:sd-angular:inspect" />
+        <item itemvalue="npm.watch:sd-angular" />
       </list>
     </recent_temporary>
   </component>
@@ -199,105 +139,7 @@
     </attachedChunks>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
-  <component name="TaskManager">
-    <task active="true" id="Default" summary="Default task">
-      <changelist id="a5909e33-fd1f-4a18-a2ac-5581a953e90d" name="Changes" comment="" />
-      <created>1697961782150</created>
-      <option name="number" value="Default" />
-      <option name="presentableId" value="Default" />
-      <updated>1697961782150</updated>
-      <workItem from="1697961783546" duration="325000" />
-      <workItem from="1697962119803" duration="620000" />
-      <workItem from="1697962834640" duration="14856000" />
-      <workItem from="1698041832543" duration="22648000" />
-      <workItem from="1698111550153" duration="1695000" />
-      <workItem from="1698126981757" duration="110000" />
-      <workItem from="1698127103528" duration="665000" />
-    </task>
-    <servers />
-  </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
-  </component>
-  <component name="Vcs.Log.History.Properties">
-    <option name="COLUMN_ID_ORDER">
-      <list>
-        <option value="Default.Root" />
-        <option value="Default.Author" />
-        <option value="Default.Date" />
-        <option value="Default.Subject" />
-      </list>
-    </option>
-  </component>
-  <component name="Vcs.Log.Tabs.Properties">
-    <option name="OPEN_GENERIC_TABS">
-      <map>
-        <entry key="6529411d-18b5-4064-97c0-d3909186d917" value="TOOL_WINDOW" />
-      </map>
-    </option>
-    <option name="TAB_STATES">
-      <map>
-        <entry key="6529411d-18b5-4064-97c0-d3909186d917">
-          <value>
-            <State>
-              <option name="FILTERS">
-                <map>
-                  <entry key="branch">
-                    <value>
-                      <list>
-                        <option value="HEAD" />
-                      </list>
-                    </value>
-                  </entry>
-                  <entry key="structure">
-                    <value>
-                      <list>
-                        <option value="dir:D:/workspaces-11/simplysm/packages" />
-                      </list>
-                    </value>
-                  </entry>
-                </map>
-              </option>
-              <option name="SHOW_ONLY_AFFECTED_CHANGES" value="true" />
-            </State>
-          </value>
-        </entry>
-        <entry key="MAIN">
-          <value>
-            <State />
-          </value>
-        </entry>
-      </map>
-    </option>
-  </component>
-  <component name="VcsManagerConfiguration">
-    <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
-    <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="MYSQL 삭제시 FK무시하지 않도록 수정" />
-    <MESSAGE value="#458" />
-    <MESSAGE value="#469" />
-    <MESSAGE value="#476" />
-    <MESSAGE value="#447 (진행중)" />
-    <MESSAGE value="#545, #544" />
-    <MESSAGE value="#511" />
-    <MESSAGE value="#514" />
-    <MESSAGE value="#510" />
-    <MESSAGE value="#535" />
-    <MESSAGE value="#531" />
-    <MESSAGE value="#529" />
-    <MESSAGE value="#530" />
-    <MESSAGE value="#528" />
-    <MESSAGE value="#527" />
-    <MESSAGE value="#543" />
-    <MESSAGE value="#522" />
-    <MESSAGE value="프린트 오류 수정" />
-    <MESSAGE value="프린트 불가현상 수정" />
-    <MESSAGE value="Electron 빌드 추가" />
-    <MESSAGE value="#652" />
-    <MESSAGE value="#694" />
-    <MESSAGE value="#670 관련 (invalid 구현)" />
-    <MESSAGE value="메모리 leak 해결등" />
-    <MESSAGE value="." />
-    <option name="LAST_COMMIT_MESSAGE" value="." />
   </component>
 </project>

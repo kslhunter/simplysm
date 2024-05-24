@@ -4,6 +4,8 @@
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/.tmp" />
       <excludeFolder url="file://$MODULE_DIR$/.yarn" />
+      <excludeFolder url="file://$MODULE_DIR$/_back" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/cordova-util/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-angular/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-cli/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-core-browser/dist" />
@@ -21,15 +23,8 @@
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-storage/dist" />
       <excludeFolder url="file://$MODULE_DIR$/temp" />
       <excludeFolder url="file://$MODULE_DIR$/tmp" />
-      <excludeFolder url="file://$MODULE_DIR$/_back" />
-      <excludeFolder url="file://$MODULE_DIR$/_back/231031/.yarn" />
-      <excludeFolder url="file://$MODULE_DIR$/packages/extless-loader/dist" />
-      <excludeFolder url="file://$MODULE_DIR$/packages/cordova-plugin-local-baseurl/dist" />
-      <excludeFolder url="file://$MODULE_DIR$/packages/cordova-util/dist" />
-      <excludeFolder url="file://$MODULE_DIR$/packages/sd-angular2/dist" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="ts-external-references" level="project" />
   </component>
 </module>

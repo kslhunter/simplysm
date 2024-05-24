@@ -46,7 +46,7 @@ export function sdNgPlugin(conf: {
         return {
           errors: [
             ...buildResult.typescriptDiagnostics.filter(item => item.category === ts.DiagnosticCategory.Error).map(item => convertTypeScriptDiagnostic(ts, item)),
-            ...Array.from(buildResult.stylesheetResultMap.values()).flatMap(item => item.errors)
+            ...Array.from(buildResult.stylesheetBundlingResultMap.values()).flatMap(item => item.errors)
           ].filterExists(),
           warnings: [
             ...buildResult.typescriptDiagnostics.filter(item => item.category !== ts.DiagnosticCategory.Error).map(item => convertTypeScriptDiagnostic(ts, item)),
@@ -61,7 +61,7 @@ export function sdNgPlugin(conf: {
           return {contents: output, loader: "js"};
         }
 
-        const contents = buildResult.emittedFilesCacheMap.get(path.normalize(args.path))!.last()!.text;
+        const contents = buildResult.emitFilesCacheMap.get(path.normalize(args.path))!.last()!.text;
 
         const {sideEffects} = await build.resolve(args.path, {
           kind: 'import-statement',
@@ -119,7 +119,7 @@ export function sdNgPlugin(conf: {
       );
 
       build.onEnd((result) => {
-        for (const {outputFiles, metafile} of buildResult.stylesheetResultMap.values()) {
+        for (const {outputFiles, metafile} of buildResult.stylesheetBundlingResultMap.values()) {
           result.outputFiles = result.outputFiles ?? [];
           result.outputFiles.push(...outputFiles);
 
