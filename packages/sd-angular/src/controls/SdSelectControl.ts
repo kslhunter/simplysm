@@ -51,7 +51,7 @@ import {SdButtonControl} from "./SdButtonControl";
     NgTemplateOutlet,
     SdTypedTemplateDirective,
     NgForOf,
-    SdButtonControl,
+    SdButtonControl
   ],
   template: `
     <sd-dropdown #dropdown [disabled]="disabled"

@@ -18,6 +18,7 @@ export class SdTsCompiler {
   readonly #parsedTsconfig: ts.ParsedCommandLine;
   readonly #isForAngular: boolean;
 
+  readonly #dependencyCacheMap = new Map<string, Set<string>>();
   readonly #resourceDependencyCacheMap = new Map<string, Set<string>>();
   readonly #sourceFileCacheMap = new Map<string, ts.SourceFile>();
   readonly #emittedFilesCacheMap = new Map<string, {
@@ -48,7 +49,6 @@ export class SdTsCompiler {
     this.#pkgPath = pkgPath;
     this.#globalStyleFilePath = globalStyleFilePath != null ? path.normalize(globalStyleFilePath) : undefined;
 
-
     this.#debug("초기화...");
 
     //-- isForAngular / parsedTsConfig
@@ -65,7 +65,7 @@ export class SdTsCompiler {
 
     //-- compilerHost
 
-    this.#compilerHost = ts.createIncrementalCompilerHost(this.#parsedTsconfig.options);
+    this.#compilerHost = ts.createCompilerHost(this.#parsedTsconfig.options);
 
     const baseGetSourceFile = this.#compilerHost.getSourceFile;
     this.#compilerHost.getSourceFile = (fileName, languageVersionOrOptions, onError, shouldCreateNewSourceFile, ...args) => {
@@ -184,30 +184,34 @@ export class SdTsCompiler {
   }
 
   invalidate(modifiedFileSet: Set<string>) {
-    this.#stylesheetBundler?.invalidate(modifiedFileSet);
-
-    for (const modifiedFile of modifiedFileSet) {
-      this.#sourceFileCacheMap.delete(path.normalize(modifiedFile));
-      this.#emittedFilesCacheMap.delete(path.normalize(modifiedFile));
-
-      if (this.#resourceDependencyCacheMap.has(path.normalize(modifiedFile))) {
-        for (const referencingFile of this.#resourceDependencyCacheMap.get(path.normalize(modifiedFile))!) {
-          this.#sourceFileCacheMap.delete(path.normalize(referencingFile));
-          this.#emittedFilesCacheMap.delete(path.normalize(referencingFile));
-        }
-      }
-    }
-
-    this.#modifiedFileSet.adds(...modifiedFileSet);
+    this.#modifiedFileSet.adds(...Array.from(modifiedFileSet).map(item => path.normalize(item)));
   }
 
   async buildAsync(): Promise<ISdTsCompilerResult> {
     const affectedFileSet = new Set<string>();
     const emitFileSet = new Set<string>();
 
+    this.#debug(`get affected (old deps & old res deps)...`);
+
+    for (const modifiedFile of this.#modifiedFileSet) {
+      affectedFileSet.add(modifiedFile);
+      affectedFileSet.adds(...(this.#dependencyCacheMap.get(modifiedFile) ?? []));
+      affectedFileSet.adds(...(this.#resourceDependencyCacheMap.get(modifiedFile) ?? []));
+    }
+
+    this.#debug(`invalidate & clear cache...`);
+
+    this.#stylesheetBundler?.invalidate(this.#modifiedFileSet);
+
+    for (const affectedFile of affectedFileSet) {
+      this.#sourceFileCacheMap.delete(path.normalize(affectedFile));
+      this.#emittedFilesCacheMap.delete(path.normalize(affectedFile));
+      this.#stylesheetBundlingResultMap.delete(path.normalize(affectedFile));
+      this.#watchFileSet.delete(path.normalize(affectedFile));
+    }
+
+    this.#dependencyCacheMap.clear();
     this.#resourceDependencyCacheMap.clear();
-    this.#watchFileSet.clear();
-    this.#stylesheetBundlingResultMap.clear();
 
     this.#debug(`create program...`);
 
@@ -221,7 +225,6 @@ export class SdTsCompiler {
       this.#program = this.#ngProgram.getTsProgram();
     }
     else {
-      // noinspection UnnecessaryLocalVariableJS
       this.#program = ts.createProgram(
         this.#parsedTsconfig.fileNames,
         this.#parsedTsconfig.options,
@@ -255,49 +258,57 @@ export class SdTsCompiler {
       await this.#ngProgram.compiler.analyzeAsync();
     }
 
-    this.#debug(`get affected...`);
-
-    while (true) {
-      const result = this.#builder.getSemanticDiagnosticsOfNextAffectedFile(undefined, (sourceFile) => {
-        if (
-          this.#ngProgram
-          && this.#ngProgram.compiler.ignoreForDiagnostics.has(sourceFile)
-          && sourceFile.fileName.endsWith('.ngtypecheck.ts')
-        ) {
-          const originalFilename = sourceFile.fileName.slice(0, -15) + '.ts';
-          const originalSourceFile = this.#builder!.getSourceFile(originalFilename);
-          if (originalSourceFile) {
-            affectedFileSet.add(path.normalize(originalSourceFile.fileName));
-          }
-
-          return true;
-        }
-
-        return false;
-      });
-
-      if (!result) {
-        break;
+    const getOrgSourceFile = (sf: ts.SourceFile) => {
+      if (sf.fileName.endsWith('.ngtypecheck.ts')) {
+        const orgFileName = sf.fileName.slice(0, -15) + '.ts';
+        return this.#program!.getSourceFile(orgFileName);
       }
 
-      affectedFileSet.add(path.normalize((result.affected as ts.SourceFile).fileName));
+      return sf;
+    };
+
+    this.#debug(`get affected (new deps)...`);
+
+    for (const sf of this.#program.getSourceFiles()) {
+      const orgSf = getOrgSourceFile(sf);
+      if (!orgSf) continue;
+
+      for (const dep of this.#builder.getAllDependencies(sf)) {
+        const depCache = this.#dependencyCacheMap.getOrCreate(path.normalize(dep), new Set<string>());
+        depCache.add(path.normalize(orgSf.fileName));
+        if (this.#modifiedFileSet.has(path.normalize(dep))) {
+          affectedFileSet.add(path.normalize(orgSf.fileName));
+        }
+      }
     }
 
-    this.#debug(`get resource ref...`);
+    this.#debug(`get affected (new res deps)...`);
 
     if (this.#ngProgram) {
-      this.#builder.getSourceFiles()
-        .filter(sf => !this.#ngProgram || !this.#ngProgram.compiler.ignoreForEmit.has(sf))
-        .forEach(sf => {
-          const deps = this.#ngProgram!.compiler.getResourceDependencies(sf);
-          for (const dep of deps) {
-            const ref = this.#resourceDependencyCacheMap.getOrCreate(path.normalize(dep), new Set<string>());
-            ref.add(path.normalize(sf.fileName));
-            if (this.#modifiedFileSet.has(path.normalize(dep))) {
-              affectedFileSet.add(path.normalize(sf.fileName));
-            }
+      for (const sf of this.#program.getSourceFiles()) {
+        if (this.#ngProgram.compiler.ignoreForEmit.has(sf)) {
+          continue;
+        }
+
+        for (const dep of this.#ngProgram.compiler.getResourceDependencies(sf)) {
+          const ref = this.#resourceDependencyCacheMap.getOrCreate(path.normalize(dep), new Set<string>());
+          ref.add(path.normalize(sf.fileName));
+          if (this.#modifiedFileSet.has(path.normalize(dep))) {
+            affectedFileSet.add(path.normalize(sf.fileName));
           }
-        });
+        }
+      }
+    }
+
+    this.#debug(`get affected (init)...`);
+
+    if (affectedFileSet.size === 0) {
+      for (const sf of this.#program.getSourceFiles()) {
+        const orgSf = getOrgSourceFile(sf);
+        if (!orgSf) continue;
+
+        affectedFileSet.add(path.normalize(orgSf.fileName));
+      }
     }
 
     this.#debug(`get diagnostics...`);
@@ -305,9 +316,9 @@ export class SdTsCompiler {
     const diagnostics: ts.Diagnostic[] = [];
 
     diagnostics.push(
-      ...this.#builder.getConfigFileParsingDiagnostics(),
-      ...this.#builder.getOptionsDiagnostics(),
-      ...this.#builder.getGlobalDiagnostics()
+      ...this.#program.getConfigFileParsingDiagnostics(),
+      ...this.#program.getOptionsDiagnostics(),
+      ...this.#program.getGlobalDiagnostics()
     );
 
     if (this.#ngProgram) {
@@ -315,14 +326,14 @@ export class SdTsCompiler {
     }
 
     for (const affectedFile of affectedFileSet) {
-      const affectedSourceFile = this.#sourceFileCacheMap.get(affectedFile);
+      const affectedSourceFile = this.#program.getSourceFile(affectedFile);
       if (!affectedSourceFile || (this.#ngProgram && this.#ngProgram.compiler.ignoreForDiagnostics.has(affectedSourceFile))) {
         continue;
       }
 
       diagnostics.push(
-        ...this.#builder.getSyntacticDiagnostics(affectedSourceFile),
-        ...this.#builder.getSemanticDiagnostics(affectedSourceFile)
+        ...this.#program.getSyntacticDiagnostics(affectedSourceFile),
+        ...this.#program.getSemanticDiagnostics(affectedSourceFile)
       );
 
       if (this.#ngProgram) {
@@ -338,15 +349,17 @@ export class SdTsCompiler {
 
     this.#debug(`prepare emit...`);
 
-    while (true) {
-      const affectedFileResult = this.#builder.emitNextAffectedFile((fileName, text, writeByteOrderMark, onError, sourceFiles, data) => {
+    const ngTransformers = this.#ngProgram?.compiler.prepareEmit().transformers;
+
+    for (const affectedFile of affectedFileSet) {
+      const sf = this.#program.getSourceFile(affectedFile);
+      this.#program.emit(sf, (fileName, text, writeByteOrderMark, onError, sourceFiles, data) => {
         if (!sourceFiles || sourceFiles.length === 0) {
           this.#compilerHost.writeFile(fileName, text, writeByteOrderMark, onError, sourceFiles, data);
           return;
         }
 
         const sourceFile = ts.getOriginalNode(sourceFiles[0], ts.isSourceFile);
-
         if (this.#ngProgram) {
           if (this.#ngProgram.compiler.ignoreForEmit.has(sourceFile)) {
             return;
@@ -354,7 +367,7 @@ export class SdTsCompiler {
           this.#ngProgram.compiler.incrementalCompilation.recordSuccessfulEmit(sourceFile);
         }
 
-        const emitFiles = this.#emittedFilesCacheMap.getOrCreate(path.normalize(sourceFile.fileName), []);
+        const emitFileInfoCaches = this.#emittedFilesCacheMap.getOrCreate(path.normalize(sourceFile.fileName), []);
         if (PathUtil.isChildPath(sourceFile.fileName, this.#pkgPath)) {
           let realFilePath = fileName;
           let realText = text;
@@ -369,23 +382,17 @@ export class SdTsCompiler {
             }
           }
 
-          emitFiles.push({
+          emitFileInfoCaches.push({
             outRelPath: path.relative(this.#distPath, realFilePath),
             text: realText
           });
         }
         else {
-          emitFiles.push({text});
+          emitFileInfoCaches.push({text});
         }
 
         emitFileSet.add(path.normalize(sourceFile.fileName));
-      }, undefined, undefined, this.#ngProgram?.compiler.prepareEmit().transformers);
-
-      if (!affectedFileResult) {
-        break;
-      }
-
-      diagnostics.push(...affectedFileResult.result.diagnostics);
+      }, undefined, undefined, ngTransformers);
     }
 
     //-- global style
@@ -398,8 +405,8 @@ export class SdTsCompiler {
 
       const data = await FsUtil.readFileAsync(this.#globalStyleFilePath);
       const contents = await this.#bundleStylesheetAsync(data, this.#globalStyleFilePath, this.#globalStyleFilePath);
-      const emitFiles = this.#emittedFilesCacheMap.getOrCreate(this.#globalStyleFilePath, []);
-      emitFiles.push({
+      const emitFileInfos = this.#emittedFilesCacheMap.getOrCreate(this.#globalStyleFilePath, []);
+      emitFileInfos.push({
         outRelPath: path.relative(path.resolve(this.#pkgPath, "src"), this.#globalStyleFilePath).replace(/\.scss$/, ".css"),
         text: contents
       });
@@ -410,7 +417,7 @@ export class SdTsCompiler {
 
     this.#modifiedFileSet.clear();
 
-    this.#debug(`build completed`);
+    this.#debug(`build completed`, affectedFileSet);
 
     //-- result
 

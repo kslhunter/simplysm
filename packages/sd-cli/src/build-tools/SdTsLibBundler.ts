@@ -33,13 +33,13 @@ export class SdTsLibBundler {
     const buildResult = await this.#compiler.buildAsync();
 
     for (const emitFile of buildResult.emitFileSet) {
-      const emittedFiles = buildResult.emitFilesCacheMap.get(emitFile);
-      if (emittedFiles) {
-        for (const emittedFile of emittedFiles) {
-          if (emittedFile.outRelPath != null) {
-            const distPath = path.resolve(this.#pkgPath, "dist", emittedFile.outRelPath);
+      const emitFileInfos = buildResult.emitFilesCacheMap.get(emitFile);
+      if (emitFileInfos) {
+        for (const emitFileInfo of emitFileInfos) {
+          if (emitFileInfo.outRelPath != null) {
+            const distPath = path.resolve(this.#pkgPath, "dist", emitFileInfo.outRelPath);
             if (PathUtil.isChildPath(distPath, path.resolve(this.#pkgPath, "dist"))) {
-              await FsUtil.writeFileAsync(distPath, emittedFile.text);
+              await FsUtil.writeFileAsync(distPath, emitFileInfo.text);
             }
           }
         }
