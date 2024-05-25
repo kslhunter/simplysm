@@ -273,6 +273,7 @@ export class SdTsCompiler {
       const orgSf = getOrgSourceFile(sf);
       if (!orgSf) continue;
 
+      //TODO: getDependency 직접 개발하여 속도 개선
       for (const dep of this.#builder.getAllDependencies(sf)) {
         const depCache = this.#dependencyCacheMap.getOrCreate(path.normalize(dep), new Set<string>());
         depCache.add(path.normalize(orgSf.fileName));
