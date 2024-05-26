@@ -18,7 +18,7 @@
     "packages/*"
   ],
   "scripts": {
-    "watch": "npm run _sd-cli_ -- --debug watch",
+    "watch": "npm run _sd-cli_ -- watch",
     "watch:sd-angular": "npm run _sd-cli_ -- --debug watch --packages sd-angular",
     "watch:sd-excel": "npm run _sd-cli_ -- watch --packages sd-excel",
     "build": "npm run _sd-cli_ -- build",

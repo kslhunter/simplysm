@@ -7,7 +7,7 @@ import {
   ComponentStylesheetBundler
 } from "@angular-devkit/build-angular/src/tools/esbuild/angular/component-stylesheets";
 import {AngularCompilerHost} from "@angular-devkit/build-angular/src/tools/esbuild/angular/angular-host";
-import {StringUtil} from "@simplysm/sd-core-common";
+import {NeverEntryError, StringUtil} from "@simplysm/sd-core-common";
 import esbuild from "esbuild";
 import {NgtscProgram, OptimizeFor} from "@angular/compiler-cli";
 import {createHash} from "crypto";
@@ -18,7 +18,7 @@ export class SdTsCompiler {
   readonly #parsedTsconfig: ts.ParsedCommandLine;
   readonly #isForAngular: boolean;
 
-  readonly #dependencyCacheMap = new Map<string, Set<string>>();
+  readonly #revDependencyCacheMap = new Map<string, Set<string>>();
   readonly #resourceDependencyCacheMap = new Map<string, Set<string>>();
   readonly #sourceFileCacheMap = new Map<string, ts.SourceFile>();
   readonly #emittedFilesCacheMap = new Map<string, {
@@ -31,7 +31,7 @@ export class SdTsCompiler {
 
   #ngProgram: NgtscProgram | undefined;
   #program: ts.Program | undefined;
-  #builder: ts.EmitAndSemanticDiagnosticsBuilderProgram | undefined;
+  // #builder: ts.EmitAndSemanticDiagnosticsBuilderProgram | undefined;
 
   readonly #modifiedFileSet = new Set<string>();
 
@@ -195,8 +195,10 @@ export class SdTsCompiler {
 
     for (const modifiedFile of this.#modifiedFileSet) {
       affectedFileSet.add(modifiedFile);
-      affectedFileSet.adds(...(this.#dependencyCacheMap.get(modifiedFile) ?? []));
+      affectedFileSet.adds(...(this.#revDependencyCacheMap.get(modifiedFile) ?? []));
       affectedFileSet.adds(...(this.#resourceDependencyCacheMap.get(modifiedFile) ?? []));
+
+      this.#emittedFilesCacheMap.delete(path.normalize(modifiedFile));
     }
 
     this.#debug(`invalidate & clear cache...`);
@@ -205,12 +207,11 @@ export class SdTsCompiler {
 
     for (const affectedFile of affectedFileSet) {
       this.#sourceFileCacheMap.delete(path.normalize(affectedFile));
-      this.#emittedFilesCacheMap.delete(path.normalize(affectedFile));
       this.#stylesheetBundlingResultMap.delete(path.normalize(affectedFile));
       this.#watchFileSet.delete(path.normalize(affectedFile));
     }
 
-    this.#dependencyCacheMap.clear();
+    this.#revDependencyCacheMap.clear();
     this.#resourceDependencyCacheMap.clear();
 
     this.#debug(`create program...`);
@@ -248,11 +249,11 @@ export class SdTsCompiler {
 
     this.#debug(`create builder...`);
 
-    this.#builder = ts.createEmitAndSemanticDiagnosticsBuilderProgram(
-      this.#program,
-      this.#compilerHost,
-      this.#builder
-    );
+    // this.#builder = ts.createEmitAndSemanticDiagnosticsBuilderProgram(
+    //   this.#program,
+    //   this.#compilerHost,
+    //   this.#builder
+    // );
 
     if (this.#ngProgram) {
       await this.#ngProgram.compiler.analyzeAsync();
@@ -269,13 +270,66 @@ export class SdTsCompiler {
 
     this.#debug(`get affected (new deps)...`);
 
+    const depMap = new Map<string, {
+      fileName: string;
+      importName: string;
+      exportName?: string;
+    }[]>();
     for (const sf of this.#program.getSourceFiles()) {
       const orgSf = getOrgSourceFile(sf);
       if (!orgSf) continue;
 
-      //TODO: getDependency 직접 개발하여 속도 개선
-      for (const dep of this.#builder.getAllDependencies(sf)) {
-        const depCache = this.#dependencyCacheMap.getOrCreate(path.normalize(dep), new Set<string>());
+      const refs = this.#findDeps(orgSf);
+      depMap.set(path.normalize(orgSf.fileName), refs);
+    }
+
+    const allDepMap = new Map<string, Set<string>>();
+    const getAllDeps = (fileName: string, prevSet?: Set<string>) => {
+      if (allDepMap.has(fileName)) {
+        return allDepMap.get(fileName)!;
+      }
+
+      const result = new Set<string>();
+
+      const deps = depMap.get(fileName) ?? [];
+      result.adds(...deps.map(item => item.fileName));
+
+      for (const dep of deps) {
+        const targetDeps = depMap.get(dep.fileName) ?? [];
+
+        if (dep.importName === "*") {
+          for (const targetRefItem of targetDeps.filter(item => item.exportName != null)) {
+            if (prevSet?.has(targetRefItem.fileName)) continue;
+
+            result.add(targetRefItem.fileName);
+            result.adds(...getAllDeps(targetRefItem.fileName, new Set<string>(prevSet).adds(...result)));
+          }
+        }
+        else {
+          for (const targetRefItem of targetDeps.filter(item => item.exportName === dep.importName)) {
+            if (prevSet?.has(targetRefItem.fileName)) continue;
+
+            result.add(targetRefItem.fileName);
+            result.adds(...getAllDeps(targetRefItem.fileName, new Set<string>(prevSet).adds(...result)));
+
+            // bypass
+            result.delete(dep.fileName);
+          }
+        }
+      }
+
+      return result;
+    };
+
+    for (const sf of this.#program.getSourceFiles()) {
+      const orgSf = getOrgSourceFile(sf);
+      if (!orgSf) continue;
+
+      const deps = getAllDeps(path.normalize(orgSf.fileName));
+      allDepMap.set(path.normalize(orgSf.fileName), deps);
+
+      for (const dep of getAllDeps(path.normalize(orgSf.fileName))) {
+        const depCache = this.#revDependencyCacheMap.getOrCreate(path.normalize(dep), new Set<string>());
         depCache.add(path.normalize(orgSf.fileName));
         if (this.#modifiedFileSet.has(path.normalize(dep))) {
           affectedFileSet.add(path.normalize(orgSf.fileName));
@@ -283,9 +337,22 @@ export class SdTsCompiler {
       }
     }
 
-    this.#debug(`get affected (new res deps)...`);
+    /*for (const sf of this.#program.getSourceFiles()) {
+      const orgSf = getOrgSourceFile(sf);
+      if (!orgSf) continue;
+
+      for (const dep of this.#builder.getAllDependencies(sf)) {
+        const depCache = this.#dependencyCacheMap.getOrCreate(path.normalize(dep), new Set<string>());
+        depCache.add(path.normalize(orgSf.fileName));
+        if (this.#modifiedFileSet.has(path.normalize(dep))) {
+          affectedFileSet.add(path.normalize(orgSf.fileName));
+        }
+      }
+    }*/
 
     if (this.#ngProgram) {
+      this.#debug(`get affected (new res deps)...`);
+
       for (const sf of this.#program.getSourceFiles()) {
         if (this.#ngProgram.compiler.ignoreForEmit.has(sf)) {
           continue;
@@ -301,9 +368,9 @@ export class SdTsCompiler {
       }
     }
 
-    this.#debug(`get affected (init)...`);
-
     if (affectedFileSet.size === 0) {
+      this.#debug(`get affected (init)...`);
+
       for (const sf of this.#program.getSourceFiles()) {
         const orgSf = getOrgSourceFile(sf);
         if (!orgSf) continue;
@@ -353,7 +420,15 @@ export class SdTsCompiler {
     const ngTransformers = this.#ngProgram?.compiler.prepareEmit().transformers;
 
     for (const affectedFile of affectedFileSet) {
+      if (this.#emittedFilesCacheMap.has(affectedFile)) {
+        continue;
+      }
+
       const sf = this.#program.getSourceFile(affectedFile);
+      if (!sf) {
+        continue;
+      }
+
       this.#program.emit(sf, (fileName, text, writeByteOrderMark, onError, sourceFiles, data) => {
         if (!sourceFiles || sourceFiles.length === 0) {
           this.#compilerHost.writeFile(fileName, text, writeByteOrderMark, onError, sourceFiles, data);
@@ -435,6 +510,96 @@ export class SdTsCompiler {
 
   #debug(...msg: any[]): void {
     this.#logger.debug(`[${path.basename(this.#pkgPath)}]`, ...msg);
+  }
+
+  #findDeps(sf: ts.SourceFile) {
+    const deps: {
+      fileName: string;
+      importName: string;
+      exportName?: string;
+    }[] = [];
+
+    const tc = this.#program!.getTypeChecker();
+
+    sf.forEachChild((node) => {
+      if (ts.isExportDeclaration(node)) {
+        if (node.moduleSpecifier) {
+          const moduleSymbol = tc.getSymbolAtLocation(node.moduleSpecifier);
+          if (!moduleSymbol) throw new NeverEntryError(`export moduleSymbol: ${sf.fileName}`);
+
+          const decls = moduleSymbol.getDeclarations();
+          if (!decls) throw new NeverEntryError(`export decls: ${sf.fileName}`);
+
+          const namedBindings = node.exportClause;
+          if (namedBindings && ts.isNamedExports(namedBindings)) {
+            for (const el of namedBindings.elements) {
+              for (const decl of decls) {
+                deps.push({
+                  fileName: path.normalize(decl.getSourceFile().fileName),
+                  importName: el.name.text,
+                  exportName: el.propertyName?.text ?? el.name.text
+                });
+              }
+            }
+          }
+          else {
+            if (!moduleSymbol.exports) {
+              throw new NeverEntryError("1234");
+            }
+
+            for (const decl of decls) {
+              for (const key of moduleSymbol.exports.keys()) {
+                deps.push({
+                  fileName: path.normalize(decl.getSourceFile().fileName),
+                  importName: key.toString(),
+                  exportName: key.toString()
+                });
+              }
+            }
+          }
+        }
+      }
+      else if (ts.isImportDeclaration(node)) {
+        const moduleSymbol = tc.getSymbolAtLocation(node.moduleSpecifier);
+        if (!moduleSymbol) {
+          if (ts.isStringLiteral(node.moduleSpecifier) && node.moduleSpecifier.text.startsWith("./")) {
+            deps.push({
+              fileName: path.normalize(path.resolve(path.dirname(sf.fileName), node.moduleSpecifier.text)),
+              importName: "*",
+            });
+          }
+          /*else {
+            throw new NeverEntryError(`import moduleSymbol: ${sf.fileName} ${node.moduleSpecifier["text"]}`);
+          }*/
+        }
+        else {
+          const decls = moduleSymbol.getDeclarations();
+          if (!decls) throw new NeverEntryError(`import decls: ${sf.fileName}`);
+
+          const namedBindings = node.importClause?.namedBindings;
+          if (namedBindings && ts.isNamedImports(namedBindings)) {
+            for (const el of namedBindings.elements) {
+              for (const decl of decls) {
+                deps.push({
+                  fileName: path.normalize(decl.getSourceFile().fileName),
+                  importName: el.name.text,
+                });
+              }
+            }
+          }
+          else {
+            for (const decl of decls) {
+              deps.push({
+                fileName: path.normalize(decl.getSourceFile().fileName),
+                importName: "*",
+              });
+            }
+          }
+        }
+      }
+    });
+
+    return deps;
   }
 }
 
