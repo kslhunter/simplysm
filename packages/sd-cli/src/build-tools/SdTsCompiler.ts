@@ -311,9 +311,6 @@ export class SdTsCompiler {
 
             result.add(targetRefItem.fileName);
             result.adds(...getAllDeps(targetRefItem.fileName, new Set<string>(prevSet).adds(...result)));
-
-            // bypass
-            result.delete(dep.fileName);
           }
         }
       }
