@@ -61,7 +61,7 @@ export function sdNgPlugin(conf: {
           return {contents: output, loader: "js"};
         }
 
-        const contents = buildResult.emitFilesCacheMap.get(path.normalize(args.path))!.last()!.text;
+        const contents = buildResult.emittedFilesCacheMap.get(path.normalize(args.path))!.last()!.text;
 
         const {sideEffects} = await build.resolve(args.path, {
           kind: 'import-statement',

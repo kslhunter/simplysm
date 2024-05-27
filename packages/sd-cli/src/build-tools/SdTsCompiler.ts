@@ -490,7 +490,7 @@ export class SdTsCompiler {
 
     this.#modifiedFileSet.clear();
 
-    this.#debug(`build completed`, affectedFileSet);
+    this.#debug(`build completed`, affectedFileSet, diagnostics.length);
 
     //-- result
 
@@ -498,7 +498,7 @@ export class SdTsCompiler {
       program: this.#program,
       typescriptDiagnostics: diagnostics,
       stylesheetBundlingResultMap: this.#stylesheetBundlingResultMap,
-      emitFilesCacheMap: this.#emittedFilesCacheMap,
+      emittedFilesCacheMap: this.#emittedFilesCacheMap,
       watchFileSet: this.#watchFileSet,
       affectedFileSet,
       emitFileSet
@@ -604,7 +604,7 @@ export interface ISdTsCompilerResult {
   program: ts.Program;
   typescriptDiagnostics: ts.Diagnostic[];
   stylesheetBundlingResultMap: Map<string, IStylesheetBundlingResult>;
-  emitFilesCacheMap: Map<string, { outRelPath?: string; text: string; }[]>;
+  emittedFilesCacheMap: Map<string, { outRelPath?: string; text: string; }[]>;
   watchFileSet: Set<string>;
 
   affectedFileSet: Set<string>;

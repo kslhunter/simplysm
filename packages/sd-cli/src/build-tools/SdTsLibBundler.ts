@@ -33,7 +33,7 @@ export class SdTsLibBundler {
     const buildResult = await this.#compiler.buildAsync();
 
     for (const emitFile of buildResult.emitFileSet) {
-      const emitFileInfos = buildResult.emitFilesCacheMap.get(emitFile);
+      const emitFileInfos = buildResult.emittedFilesCacheMap.get(emitFile);
       if (emitFileInfos) {
         for (const emitFileInfo of emitFileInfos) {
           if (emitFileInfo.outRelPath != null) {
