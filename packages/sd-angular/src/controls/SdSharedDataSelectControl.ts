@@ -98,7 +98,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
       </ng-template>
     </sd-select>`
 })
-export class SdSharedDataSelectControl<T extends ISharedDataBase<string | number>, M extends "single" | "multi" = "single"> implements DoCheck {
+export class SdSharedDataSelectControl<T extends ISharedDataBase<string | number>, TMODAL extends SdModalBase<ISharedDataModalInputParam, ISharedDataModalOutputResult>, M extends "single" | "multi" = "single"> implements DoCheck {
   icons = inject(SdAngularOptionsProvider).icons;
 
   @Input({required: true})
@@ -144,10 +144,10 @@ export class SdSharedDataSelectControl<T extends ISharedDataBase<string | number
   undefinedTemplateRef: TemplateRef<void> | null = null;
 
   @Input()
-  modalInputParam?: Record<string, any>;
+  modalInputParam?: TMODAL["__tInput__"];
 
   @Input()
-  modalType?: Type<SdModalBase<ISharedDataModalInputParam, ISharedDataModalOutputResult>>;
+  modalType?: Type<TMODAL>;
 
   @Input()
   modalHeader?: string;

@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, ContentChild, inject, Input, TemplateRef} from "@angular/core";
+import {ChangeDetectionStrategy, Component, contentChild, inject, input, TemplateRef} from "@angular/core";
 import {SdTopbarContainerControl} from "./SdTopbarContainerControl";
 import {SdTopbarControl} from "./SdTopbarControl";
 import {NgIf, NgTemplateOutlet} from "@angular/common";
@@ -22,26 +22,24 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
     SdContentBoxControl
   ],
   template: `
-    <sd-busy-container [busy]="busyCount > 0 || !isInitialized">
+    <sd-busy-container [busy]="busyCount() > 0">
       <sd-topbar-container>
         <sd-topbar>
-          <h4>{{ title }}</h4>
+          <h4>{{ title() }}</h4>
 
-          @if (isInitialized && hasPermission) {
-            <ng-template [ngTemplateOutlet]="topbarMenuTemplateRef"/>
+          @if (hasPermission()) {
+            <ng-template [ngTemplateOutlet]="topbarMenuTemplateRef() ?? null"/>
           }
         </sd-topbar>
 
-        @if (isInitialized) {
-          @if (!hasPermission) {
-            <div class="p-xxl" style="font-size: 48px; line-height: 1.5em">
-              <sd-icon [icon]="icons.triangleExclamation" fixedWidth/>
-              이 메뉴의 사용권한이 없습니다.<br/>
-              시스템 관리자에게 문의하세요.
-            </div>
-          } @else {
-            <ng-content/>
-          }
+        @if (!hasPermission()) {
+          <div class="p-xxl" style="font-size: 48px; line-height: 1.5em">
+            <sd-icon [icon]="icons.triangleExclamation" fixedWidth/>
+            이 메뉴의 사용권한이 없습니다.<br/>
+            시스템 관리자에게 문의하세요.
+          </div>
+        } @else {
+          <ng-content/>
         }
       </sd-topbar-container>
     </sd-busy-container>`
@@ -49,18 +47,14 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 export class SdPageBaseControl {
   icons = inject(SdAngularOptionsProvider).icons;
 
-  @Input()
-  title?: string;
+  title = input<string>();
+  busyCount = input(0, {transform: coercionNonNullableNumber});
+  hasPermission = input(false, {transform: coercionBoolean});
+  topbarMenuTemplateRef = contentChild<TemplateRef<void>>("topbarMenu");
 
-  @Input({transform: coercionBoolean})
-  isInitialized = false;
 
-  @Input({transform: coercionNonNullableNumber})
-  busyCount = 0;
-
-  @Input({transform: coercionBoolean})
-  hasPermission = false;
-
-  @ContentChild("topbarMenu", {static: true})
-  topbarMenuTemplateRef: TemplateRef<void> | null = null;
+  /**
+   * @deprecated
+   */
+  isInitialized = input(false, {transform: coercionBoolean});
 }
