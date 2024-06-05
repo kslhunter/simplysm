@@ -97,6 +97,7 @@ export * from "./providers/SdObjectMerge3Provider";
 export * from "./providers/SdPrintProvider";
 export * from "./providers/SdServiceFactoryProvider";
 export * from "./providers/SdSharedDataProvider";
+export * from "./providers/SdSharedDataSignalProvider";
 export * from "./providers/SdSystemConfigProvider";
 export * from "./providers/SdSystemLogProvider";
 export * from "./providers/SdThemeProvider";

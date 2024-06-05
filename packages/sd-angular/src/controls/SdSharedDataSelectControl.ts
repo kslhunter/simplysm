@@ -60,18 +60,6 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
                [buttonIcon]="modalType ? icons.search : undefined"
                (buttonClick)="onModalButtonClick()">
       <ng-template #header>
-        <!--<sd-dock-container>
-          <sd-dock class="bdb bdb-trans-default">
-            <sd-textfield type="text" [(value)]="searchText" placeholder="검색어" inset/>
-          </sd-dock>
-          
-          <sd-pane class="p-xs-default bdb bdb-trans-default" *ngIf="modalType">
-            <sd-anchor (click)="onDetailButtonClick()">자세히...</sd-anchor>
-          </sd-pane>
-        </sd-dock-container>-->
-
-        <!--<div class="p-xs">
-        </div>-->
         <sd-textfield type="text" [(value)]="searchText" placeholder="검색어" inset [size]="size"
                       inputStyle="outline: none"/>
       </ng-template>
@@ -144,7 +132,7 @@ export class SdSharedDataSelectControl<T extends ISharedDataBase<string | number
   undefinedTemplateRef: TemplateRef<void> | null = null;
 
   @Input()
-  modalInputParam?: TMODAL["__tInput__"];
+  modalInputParam?: Omit<TMODAL["__tInput__"], "selectedItemKeys" | "selectMode">;
 
   @Input()
   modalType?: Type<TMODAL>;
@@ -306,8 +294,8 @@ export class SdSharedDataSelectControl<T extends ISharedDataBase<string | number
 
 
 export interface ISharedDataModalInputParam {
-  selectMode?: "single" | "multi";
-  selectedItemKeys?: any[];
+  selectMode: "single" | "multi";
+  selectedItemKeys: any[];
 }
 
 export interface ISharedDataModalOutputResult {

@@ -1,11 +1,10 @@
-import {ObjectUtil} from "@simplysm/sd-core-common";
 import {IconProp} from "@fortawesome/fontawesome-svg-core";
 
 export class SdAppStructureUtil {
   public static getFlatPermissions<T extends string>(menus: ISdAppStructureItem<T>[], codes: string[] = [], modules: T[] = []): ISdFlatPermission<T>[] {
     const results: ISdFlatPermission<T>[] = [];
     for (const menu of menus) {
-      const currCodes = codes.concat([menu.code]);
+      const currCodes = [...codes, menu.code];
 
       if (menu.perms) {
         const currModules = modules.concat(menu.modules ?? []);
@@ -52,7 +51,7 @@ export class SdAppStructureUtil {
         title: menu.title,
         icon: menu.icon,
         codeChain: currCodeChain,
-        hasPerms: menu.perms !== undefined,
+        hasPerms: menu.perms != null,
         modules: menu.modules,
         ...menu.children ? {
           children: this.getMenus(menu.children, currCodeChain)
@@ -83,7 +82,7 @@ export class SdAppStructureUtil {
           titleChain: currTitleChain,
           codeChain: currCodeChain,
           modulesChain: currModulesChain,
-          hasPerms: menu.perms !== undefined
+          hasPerms: menu.perms != null,
         });
       }
     }
@@ -113,7 +112,7 @@ export class SdAppStructureUtil {
   public static getPermissions<T extends string>(menus: ISdAppStructureItem<T>[], codes: string[] = []): ISdPermission<T>[] {
     const results: ISdPermission<T>[] = [];
     for (const menu of menus) {
-      const currCodes = codes.concat([menu.code]);
+      const currCodes = [...codes, menu.code];
 
       if (menu.perms || menu.subPerms) {
         results.push({
@@ -123,7 +122,7 @@ export class SdAppStructureUtil {
           modules: menu.modules,
           children: menu.subPerms?.map((item) => ({
             title: item.title,
-            codes: currCodes.concat([item.code]),
+            codes: [...currCodes, item.code],
             perms: item.perms,
             modules: item.modules
           }))
@@ -135,7 +134,7 @@ export class SdAppStructureUtil {
           title: menu.title,
           codes: currCodes,
           modules: menu.modules,
-          children: this.getPermissions(menu.children, codes.concat([menu.code]))
+          children: this.getPermissions(menu.children, currCodes)
         });
       }
     }
@@ -143,7 +142,7 @@ export class SdAppStructureUtil {
     return results;
   }
 
-  public static getPermissionDisplayNameRecord(menus: ISdAppStructureItem[], codes: string[] = [], titles: string[] = []): Record<string, string> {
+  /*public static getPermissionDisplayNameRecord(menus: ISdAppStructureItem[], codes: string[] = [], titles: string[] = []): Record<string, string> {
     let resultRecord: Record<string, string> = {};
     for (const menu of menus) {
       const currCodes = codes.concat([menu.code]);
@@ -175,7 +174,7 @@ export class SdAppStructureUtil {
     }
 
     return resultRecord;
-  }
+  }*/
 }
 
 export interface ISdAppStructureItem<T extends string = string> {
