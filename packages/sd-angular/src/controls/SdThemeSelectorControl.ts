@@ -48,8 +48,7 @@ export class SdThemeSelectorControl {
 
   #sdTheme = inject(SdThemeProvider);
 
-  @ViewChild(SdDropdownControl, {static: true})
-  dropdownControl?: SdDropdownControl;
+  @ViewChild(SdDropdownControl, {static: true}) dropdownControl!: SdDropdownControl;
 
   get theme() {
     return this.#sdTheme.theme;
@@ -57,6 +56,6 @@ export class SdThemeSelectorControl {
 
   set theme(val) {
     this.#sdTheme.theme = val;
-    this.dropdownControl!.open = false;
+    this.dropdownControl.open = false;
   }
 }

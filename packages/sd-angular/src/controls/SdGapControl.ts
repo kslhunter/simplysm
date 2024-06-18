@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, DoCheck, HostBinding, inject, Injector, Input} from "@angular/core";
+import {ChangeDetectionStrategy, Component, DoCheck, ElementRef, inject, Injector, Input} from "@angular/core";
 import {coercionNumber} from "../utils/commons";
 import {SdNgHelper} from "../utils/SdNgHelper";
 
@@ -22,36 +22,28 @@ import {SdNgHelper} from "../utils/SdNgHelper";
         }
       }
     }
-  `]
+  `],
+  host: {
+    "[attr.sd-height]": "height",
+    "[style.height.px]": "heightPx",
+    "[attr.sd-width]": "width",
+    "[style.width.px]": "widthPx",
+    "[style.width.em]": "widthEm"
+  }
 })
 export class SdGapControl implements DoCheck {
-  @Input()
-  @HostBinding("attr.sd-height")
-  height?: "xxs" | "xs" | "sm" | "default" | "lg" | "xl" | "xxl";
+  @Input() height?: "xxs" | "xs" | "sm" | "default" | "lg" | "xl" | "xxl";
+  @Input({transform: coercionNumber}) heightPx?: number;
+  @Input() width?: "xxs" | "xs" | "sm" | "default" | "lg" | "xl" | "xxl";
+  @Input({transform: coercionNumber}) widthPx?: number;
+  @Input({transform: coercionNumber}) widthEm?: number;
 
-  @Input({transform: coercionNumber})
-  @HostBinding("style.height.px")
-  heightPx?: number;
-
-  @Input()
-  @HostBinding("attr.sd-width")
-  width?: "xxs" | "xs" | "sm" | "default" | "lg" | "xl" | "xxl";
-
-  @Input({transform: coercionNumber})
-  @HostBinding("style.width.px")
-  widthPx?: number;
-
-  @Input({transform: coercionNumber})
-  @HostBinding("style.width.em")
-  widthEm?: number;
-
-  @HostBinding("style.display")
-  display: "block" | "inline-block" | "none" | undefined;
+  #elRef = inject<ElementRef<HTMLElement>>(ElementRef);
 
   #sdNgHelper = new SdNgHelper(inject(Injector));
 
   ngDoCheck() {
-    this.#sdNgHelper.doCheck(run => {
+    this.#sdNgHelper.doCheckOutside(run => {
       run({
         height: [this.height],
         heightPx: [this.heightPx],
@@ -60,16 +52,16 @@ export class SdGapControl implements DoCheck {
         widthEm: [this.widthEm]
       }, () => {
         if (this.widthPx === 0 || this.heightPx === 0 || this.widthEm === 0) {
-          this.display = "none";
+          this.#elRef.nativeElement.style.display = "none";
         }
         else if (this.width !== undefined || this.widthPx !== undefined || this.widthEm !== undefined) {
-          this.display = "inline-block";
+          this.#elRef.nativeElement.style.display = "inline-block";
         }
         else if (this.height !== undefined || this.heightPx !== undefined) {
-          this.display = "block";
+          this.#elRef.nativeElement.style.display = "block";
         }
         else {
-          this.display = undefined;
+          this.#elRef.nativeElement.style.display = "";
         }
       });
     });

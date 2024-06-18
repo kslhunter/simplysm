@@ -822,7 +822,8 @@ export class Queryable<D extends DbContext, T> {
     });
   }
 
-  public getUpsertQueryDef<U extends TUpdateObject<T>>(updateObj: U, insertObj: TInsertObject<T> | undefined, outputColumns: (keyof T)[] | undefined): IUpsertQueryDef {
+
+  public getUpsertQueryDef<U extends TUpdateObject<T>>(updateObj: U, insertObj: TInsertObject<T> | undefined, outputColumns: (keyof T)[] | undefined, aiKeyName: string | undefined, pkColNames: string[]): IUpsertQueryDef {
     if (this._def.join !== undefined) {
       throw new Error("UPSERT 와 JOIN 를 함께 사용할 수 없습니다.");
     }
@@ -887,7 +888,9 @@ export class Queryable<D extends DbContext, T> {
       where: this._def.where,
       updateRecord,
       insertRecord,
-      output: (outputColumns as string[] | undefined)?.map((item) => this.db.qb.wrap(item))
+      output: (outputColumns as string[] | undefined)?.map((item) => this.db.qb.wrap(item)),
+      aiKeyName,
+      pkColNames
     });
   }
 
@@ -1655,19 +1658,20 @@ export class Queryable<D extends DbContext, T> {
     }
     // DbContext.selectCache.clear();
 
-    // const pkColNames = this.tableDef.columns.filter((item) => item.primaryKey !== undefined).map((item) => item.name);
+    const pkColNames = this.tableDef.columns.filter((item) => item.primaryKey !== undefined).map((item) => item.name);
     const aiColNames = this.tableDef.columns.filter((item) => item.autoIncrement).map((item) => item.name);
 
-    let dataIndex: number;
+    // let dataIndex: number;
     const defs: TQueryDef[] = [];
 
-    const queryDef = this.getUpsertQueryDef(updateRecord, insertRecord, outputColumns);
+    const aiKeyName = pkColNames.single(item => aiColNames.includes(item));
+    const queryDef = this.getUpsertQueryDef(updateRecord, insertRecord, outputColumns, aiKeyName, pkColNames);
     defs.push({
       type: "upsert" as const,
       ...queryDef
     });
 
-    if (this.db.opt.dialect === "mysql" && outputColumns) {
+    /*if (this.db.opt.dialect === "mysql" && outputColumns) {
       const selectObj = outputColumns.toObject((colName) => this.db.qb.wrap(colName as string), (colName) => this.db.qb.wrap(colName as string));
 
       // if (
@@ -1699,7 +1703,9 @@ export class Queryable<D extends DbContext, T> {
     }
     else {
       dataIndex = 0;
-    }
+    }*/
+
+    let dataIndex = 0;
 
     if (this.db.opt.dialect !== "mysql") {
       const hasSomeAIColVal = Object.keys(insertRecord).some((item) => aiColNames.includes(item));

@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, HostBinding, inject, Input, Output} from "@angular/core";
+import {ChangeDetectionStrategy, Component, EventEmitter, inject, Input, Output} from "@angular/core";
 import {IconProp} from "@fortawesome/fontawesome-svg-core";
 import {coercionBoolean} from "../utils/commons";
 import {SdIconControl} from "./SdIconControl";
@@ -128,7 +128,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 
       &[sd-inline=true] {
         display: inline-block;
-        
+
         > div {
           padding: 0;
           border: none;
@@ -168,68 +168,53 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
         }
       }
     }
-  `]
+  `],
+  host: {
+    "[attr.sd-checked]": "value",
+    "[attr.sd-disabled]": "disabled",
+    "[attr.sd-inline]": "inline",
+    "[attr.sd-inset]": "inset",
+    "[attr.sd-radio]": "radio",
+    "[attr.sd-size]": "size",
+    "[attr.sd-theme]": "theme"
+  }
 })
 export class SdCheckboxControl {
   #sdNgOpt = inject(SdAngularOptionsProvider);
 
-  @Input({transform: coercionBoolean})
-  @HostBinding("attr.sd-checked")
-  value = false;
+  @Input({transform: coercionBoolean}) value = false;
+  @Output() valueChange = new EventEmitter<boolean>();
 
-  @Input({transform: coercionBoolean})
-  @HostBinding("attr.sd-disabled")
-  disabled = false;
-
-  @Output()
-  valueChange = new EventEmitter<boolean>();
-
-  @Input({transform: coercionBoolean})
-  @HostBinding("attr.sd-inline")
-  inline = false;
-
-  @Input({transform: coercionBoolean})
-  @HostBinding("attr.sd-inset")
-  inset = false;
-
-  @Input({transform: coercionBoolean})
-  @HostBinding("attr.sd-radio")
-  radio = false;
-
-  @Input()
-  @HostBinding("attr.sd-size")
-  size?: "sm" | "lg";
-
-  @Input()
-  @HostBinding("attr.sd-theme")
-  theme?: "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey";
-
-  @Input()
-  icon: IconProp = this.#sdNgOpt.icons.check;
-
-  @Input()
-  labelStyle?: string;
+  @Input({transform: coercionBoolean}) disabled = false;
+  @Input({transform: coercionBoolean}) inline = false;
+  @Input({transform: coercionBoolean}) inset = false;
+  @Input({transform: coercionBoolean}) radio = false;
+  @Input() size?: "sm" | "lg";
+  @Input() theme?: "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey";
+  @Input() icon: IconProp = this.#sdNgOpt.icons.check;
+  @Input() labelStyle?: string;
 
   onClick(): void {
     if (this.disabled) return;
 
-    if (this.valueChange.observed) {
-      this.valueChange.emit(!this.value);
-    }
-    else {
-      this.value = !this.value;
-    }
+    this.#setValue(!this.value);
   }
 
   onKeydown(event: KeyboardEvent): void {
     if (this.disabled) return;
 
     if (event.key === " ") {
+      this.#setValue(!this.value);
+    }
+  }
+
+  #setValue(value: boolean) {
+    if (this.value !== value) {
       if (this.valueChange.observed) {
-        this.valueChange.emit(!this.value);
+        this.valueChange.emit(value);
       }
       else {
-        this.value = !this.value;
+        this.value = value;
       }
     }
   }

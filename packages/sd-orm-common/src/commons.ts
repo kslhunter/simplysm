@@ -277,6 +277,8 @@ export interface IUpsertQueryDef {
   insertRecord: Record<string, string>;
   where: TQueryBuilderValue[];
   output?: string[];
+  aiKeyName?: string;
+  pkColNames: string[];
 }
 
 export interface ITruncateTableQueryDef {

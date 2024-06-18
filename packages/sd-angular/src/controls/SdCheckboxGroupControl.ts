@@ -1,15 +1,5 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ContentChildren,
-  EventEmitter,
-  HostBinding,
-  Input,
-  Output,
-  QueryList
-} from "@angular/core";
+import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from "@angular/core";
 import {coercionBoolean} from "../utils/commons";
-import {SdCheckboxGroupItemControl} from "./SdCheckboxGroupItemControl";
 
 @Component({
   selector: "sd-checkbox-group",
@@ -17,47 +7,15 @@ import {SdCheckboxGroupItemControl} from "./SdCheckboxGroupItemControl";
   standalone: true,
   imports: [],
   template: `
-    <ng-content></ng-content>`
+    <ng-content></ng-content>`,
+  host: {
+    "[attr.sd-disabled]": "disabled"
+  }
 })
 export class SdCheckboxGroupControl<T> {
-  @Input()
-  value: T[] = [];
+  @Input() value: T[] = [];
+  @Output() valueChange = new EventEmitter<T[]>();
 
-  @Output()
-  valueChange = new EventEmitter<T[]>();
-
-  @Input({transform: coercionBoolean})
-  @HostBinding("attr.sd-disabled")
-  disabled = false;
-
-  @Input()
-  keyProp?: string;
-
-  @ContentChildren(SdCheckboxGroupItemControl, {descendants: true})
-  itemControls?: QueryList<SdCheckboxGroupItemControl<T>>;
-
-  getIsItemSelected(value: T): boolean {
-    const thisKeys = (this.keyProp != null) ? this.value.map((item) => item[this.keyProp!]) : this.value;
-    const itemKey = (this.keyProp != null) ? value[this.keyProp] : value;
-    return thisKeys.includes(itemKey);
-  }
-
-  toggleValueItem(item: T) {
-    const newValues = [...this.value];
-
-    const isSelected = this.getIsItemSelected(item);
-    if (isSelected) {
-      newValues.remove(item);
-    }
-    else {
-      newValues.push(item);
-    }
-
-    if (this.valueChange.observed) {
-      this.valueChange.emit(newValues);
-    }
-    else {
-      this.value = newValues;
-    }
-  }
+  @Input({transform: coercionBoolean}) disabled = false;
+  @Input() keyProp?: string;
 }

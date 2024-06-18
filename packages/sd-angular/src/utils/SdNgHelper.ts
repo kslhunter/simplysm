@@ -10,9 +10,9 @@ export class SdNgHelper {
   #cdr: ChangeDetectorRef;
   #ngZone: NgZone;
 
-  constructor(injector: Injector) {
-    this.#cdr = injector.get(ChangeDetectorRef);
-    this.#ngZone = injector.get(NgZone);
+  constructor(compInj: Injector) {
+    this.#cdr = compInj.get(ChangeDetectorRef);
+    this.#ngZone = compInj.get(NgZone);
   }
 
   doCheck(fn: (run: <R extends void | Promise<void>>(checkData: Record<string, [any, ("one" | "all")?]>, cb: () => R) => R | void, changeData: Record<string, any>) => void | Promise<void>) {

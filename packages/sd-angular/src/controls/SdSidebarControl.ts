@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, forwardRef, HostBinding, inject} from "@angular/core";
+import {ChangeDetectionStrategy, Component, forwardRef, inject} from "@angular/core";
 import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
 
 @Component({
@@ -21,7 +21,7 @@ import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
       height: 100%;
 
       //-- 테마
-      
+
       body.sd-theme-compact & {
         background: var(--theme-blue-grey-darkest);
         color: var(--text-trans-rev-default);
@@ -52,9 +52,9 @@ import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
           border-right: none;
         }
       }
-      
+
       //-- 화면 크기
-      
+
       @media not all and (max-width: 520px) {
         transition: transform .1s ease-out;
 
@@ -63,7 +63,7 @@ import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
           transition: transform .1s ease-in;
         }
       }
-      
+
       @media all and (max-width: 520px) {
         transition: transform .3s ease-in;
         transform: translateX(-100%);
@@ -75,13 +75,11 @@ import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
         }
       }
     }
-  `]
+  `],
+  host: {
+    "[attr.sd-toggle]": "parentControl.toggle"
+  }
 })
 export class SdSidebarControl {
-  #parentControl: SdSidebarContainerControl = inject(forwardRef(() => SdSidebarContainerControl));
-
-  @HostBinding("attr.sd-toggle")
-  get toggle(): boolean | undefined {
-    return this.#parentControl.toggle;
-  }
+  parentControl: SdSidebarContainerControl = inject(forwardRef(() => SdSidebarContainerControl));
 }

@@ -1,12 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  HostBinding,
-  HostListener,
-  Input,
-  Output
-} from "@angular/core";
+import {ChangeDetectionStrategy, Component, EventEmitter, HostListener, Input, Output} from "@angular/core";
 import {coercionBoolean} from "@simplysm/sd-angular";
 
 @Component({
@@ -98,38 +90,26 @@ import {coercionBoolean} from "@simplysm/sd-angular";
         }
       }
     }
-  `]
+  `],
+  host: {
+    "[attr.sd-on]": "value",
+    "[attr.sd-disabled]": "disabled",
+    "[attr.sd-inline]": "inline",
+    "[attr.sd-inset]": "inset",
+    "[attr.sd-size]": "size",
+    "[attr.sd-theme]": "theme",
+    "[attr.tabindex]": "'0'"
+  }
 })
 export class SdSwitchControl {
-  @Input({transform: coercionBoolean})
-  @HostBinding("attr.sd-on")
-  value = false;
+  @Input({transform: coercionBoolean}) value = false;
+  @Output() valueChange = new EventEmitter<boolean>();
 
-  @Output()
-  valueChange = new EventEmitter<boolean>();
-
-  @Input({transform: coercionBoolean})
-  @HostBinding("attr.sd-disabled")
-  disabled = false;
-
-  @Input({transform: coercionBoolean})
-  @HostBinding("attr.sd-inline")
-  inline = false;
-
-  @Input({transform: coercionBoolean})
-  @HostBinding("attr.sd-inset")
-  inset = false;
-
-  @Input()
-  @HostBinding("attr.sd-size")
-  size?: "sm" | "lg";
-
-  @Input()
-  @HostBinding("attr.sd-theme")
-  theme?: "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey";
-
-  @HostBinding("attr.tabindex")
-  tabindex = 0;
+  @Input({transform: coercionBoolean}) disabled = false;
+  @Input({transform: coercionBoolean}) inline = false;
+  @Input({transform: coercionBoolean}) inset = false;
+  @Input() size?: "sm" | "lg";
+  @Input() theme?: "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey";
 
   @HostListener("click", ["$event"])
   onClick() {

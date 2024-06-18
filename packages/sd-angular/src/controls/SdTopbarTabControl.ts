@@ -48,8 +48,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 export class SdTopbarTabControl {
   icons = inject(SdAngularOptionsProvider).icons;
 
-  @Output()
-  clickClose = new EventEmitter<MouseEvent>();
+  @Output() clickClose = new EventEmitter<MouseEvent>();
 
   onCloseButtonClick(event: MouseEvent) {
     event.preventDefault();

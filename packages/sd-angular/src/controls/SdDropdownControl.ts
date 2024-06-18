@@ -5,7 +5,6 @@ import {
   DoCheck,
   ElementRef,
   EventEmitter,
-  HostBinding,
   HostListener,
   inject,
   Injector,
@@ -33,34 +32,26 @@ import {SdNgHelper} from "../utils/SdNgHelper";
          (keydown)="onContentKeydown($event)">
       <ng-content/>
     </div>
-    <ng-content select="sd-dropdown-popup"/>`
+    <ng-content select="sd-dropdown-popup"/>`,
+  host: {
+    "[attr.sd-disabled]": "disabled"
+  }
 })
 export class SdDropdownControl implements DoCheck {
   #elRef: ElementRef<HTMLElement> = inject(ElementRef);
   #ngZone = inject(NgZone);
+
+  @Input({transform: coercionBoolean}) open = false;
+  @Output() openChange = new EventEmitter<boolean>();
+
+  @Input({transform: coercionBoolean}) disabled = false;
+  @Input() contentClass?: string;
+  @Input() contentStyle?: string;
+
+  @ViewChild("contentEl", {static: true}) contentElRef!: ElementRef<HTMLElement>;
+  @ContentChild(SdDropdownPopupControl, {static: true, read: ElementRef}) popupElRef!: ElementRef<HTMLElement>;
+
   #sdNgHelper = new SdNgHelper(inject(Injector));
-
-  @Input({transform: coercionBoolean})
-  @HostBinding("attr.sd-disabled")
-  disabled = false;
-
-  @Input({transform: coercionBoolean})
-  open = false;
-
-  @Output()
-  openChange = new EventEmitter<boolean>();
-
-  @Input()
-  contentClass?: string;
-
-  @Input()
-  contentStyle?: string;
-
-  @ViewChild("contentEl", {static: true})
-  contentElRef!: ElementRef<HTMLElement>;
-
-  @ContentChild(SdDropdownPopupControl, {static: true, read: ElementRef})
-  popupElRef!: ElementRef<HTMLElement>;
 
   ngDoCheck() {
     this.#sdNgHelper.doCheckOutside(run => {

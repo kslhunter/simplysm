@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
+import {ChangeDetectionStrategy, Component, Input} from "@angular/core";
 import {coercionBoolean} from "../utils/commons";
 
 @Component({
@@ -49,15 +49,12 @@ import {coercionBoolean} from "../utils/commons";
         }
       }
     }
-  `]
+  `],
+  host: {
+    "[attr.tabindex]": "disabled ? undefined : 0",
+    "[attr.disabled]": "disabled"
+  }
 })
 export class SdAnchorControl {
-  @HostBinding("attr.tabindex")
-  get tabIndex(): number | undefined {
-    return this.disabled ? undefined : 0;
-  }
-
-  @Input({transform: coercionBoolean})
-  @HostBinding("attr.disabled")
-  disabled = false;
+  @Input({transform: coercionBoolean}) disabled = false;
 }

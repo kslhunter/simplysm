@@ -4,7 +4,6 @@ import {
   DoCheck,
   ElementRef,
   EventEmitter,
-  HostBinding,
   inject,
   Injector,
   Input,
@@ -139,48 +138,31 @@ import {StringUtil} from "@simplysm/sd-core-common";
         }
       }
     }
-  `]
+  `],
+  host: {
+    "[attr.sd-disabled]": "disabled",
+    "[attr.sd-readonly]": "readonly",
+    "[attr.sd-inline]": "inline",
+    "[attr.sd-inset]": "inset",
+    "[attr.sd-size]": "size",
+    "[attr.sd-invalid]": "errorMessage"
+  }
 })
 export class SdContentEditorControl implements DoCheck {
-  @Input()
-  value?: string;
+  @Input() value?: string;
+  @Output() valueChange = new EventEmitter<string | undefined>();
 
-  @Output()
-  valueChange = new EventEmitter<string | undefined>();
+  @Input({transform: coercionBoolean}) disabled = false;
+  @Input({transform: coercionBoolean}) readonly = false;
+  @Input({transform: coercionBoolean}) required = false;
+  @Input({transform: coercionBoolean}) inline = false;
+  @Input({transform: coercionBoolean}) inset = false;
+  @Input() size?: "sm" | "lg";
+  @Input() editorStyle?: string;
+  @Input() validatorFn?: TSdFnInfo<(value: string | undefined) => string | undefined>;
 
-  @Input({transform: coercionBoolean})
-  @HostBinding("attr.sd-disabled")
-  disabled = false;
+  @ViewChild("editorEl", {static: true}) editorElRef!: ElementRef<HTMLDivElement>;
 
-  @Input({transform: coercionBoolean})
-  @HostBinding("attr.sd-readonly")
-  readonly = false;
-
-  @Input({transform: coercionBoolean})
-  required = false;
-
-  @Input({transform: coercionBoolean})
-  @HostBinding("attr.sd-inline")
-  inline = false;
-
-  @Input({transform: coercionBoolean})
-  @HostBinding("attr.sd-inset")
-  inset = false;
-
-  @Input()
-  @HostBinding("attr.sd-size")
-  size?: "sm" | "lg";
-
-  @Input()
-  editorStyle?: string;
-
-  @Input()
-  validatorFn?: TSdFnInfo<(value: string | undefined) => string | undefined>;
-
-  @ViewChild("editorEl", {static: true})
-  editorElRef?: ElementRef<HTMLDivElement>;
-
-  @HostBinding("attr.sd-invalid")
   errorMessage?: string;
 
   #sdNgHelper = new SdNgHelper(inject(Injector));
@@ -212,11 +194,9 @@ export class SdContentEditorControl implements DoCheck {
       run({
         value: [this.value]
       }, () => {
-        if (this.editorElRef) {
-          const innerHTML = this.editorElRef.nativeElement.innerHTML;
-          if (innerHTML !== this.value) {
-            this.editorElRef.nativeElement.innerHTML = this.value ?? "";
-          }
+        const innerHTML = this.editorElRef.nativeElement.innerHTML;
+        if (innerHTML !== this.value) {
+          this.editorElRef.nativeElement.innerHTML = this.value ?? "";
         }
       });
     });
@@ -228,14 +208,14 @@ export class SdContentEditorControl implements DoCheck {
       selection.removeAllRanges();
 
       const range = document.createRange();
-      range.selectNodeContents(this.editorElRef!.nativeElement);
+      range.selectNodeContents(this.editorElRef.nativeElement);
 
-      selection.setPosition(this.editorElRef!.nativeElement, range.endOffset);
+      selection.setPosition(this.editorElRef.nativeElement, range.endOffset);
     }
   }
 
   onInput() {
-    const editorEl = this.editorElRef!.nativeElement;
+    const editorEl = this.editorElRef.nativeElement;
 
     let value: string | undefined;
     if (editorEl.innerHTML === "") {

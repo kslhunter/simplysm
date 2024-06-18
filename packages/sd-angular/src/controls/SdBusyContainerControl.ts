@@ -1,26 +1,12 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  DoCheck,
-  ElementRef,
-  HostBinding,
-  HostListener,
-  inject,
-  Injector,
-  Input
-} from "@angular/core";
+import {ChangeDetectionStrategy, Component, HostListener, inject, Input} from "@angular/core";
 import {SdBusyProvider} from "../providers/SdBusyProvider";
 import {coercionBoolean, coercionNumber} from "../utils/commons";
-import {NgIf} from "@angular/common";
-import {SdNgHelper} from "../utils/SdNgHelper";
 
 @Component({
   selector: "sd-busy-container",
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [
-    NgIf
-  ],
+  imports: [],
   template: `
     <div class="_screen">
       <div class="_bar"></div>
@@ -31,13 +17,17 @@ import {SdNgHelper} from "../utils/SdNgHelper";
           <div class="_cube4"></div>
           <div class="_cube3"></div>
         </div>
-        <div class="_message" *ngIf="message">
-          <pre>{{ message }}</pre>
+        @if (message) {
+          <div class="_message">
+            <pre>{{ message }}</pre>
+          </div>
+        }
+      </div>
+      @if (progressPercent != null) {
+        <div class="_progress">
+          <div class="_progress-bar" [style.transform]="'scaleX(' + (progressPercent / 100) + ')'"></div>
         </div>
-      </div>
-      <div class="_progress" *ngIf="progressPercent !== undefined">
-        <div class="_progress-bar" [style.transform]="'scaleX(' + (progressPercent / 100) + ')'"></div>
-      </div>
+      }
     </div>
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
@@ -359,46 +349,21 @@ import {SdNgHelper} from "../utils/SdNgHelper";
         opacity: 0;
       }
     }
-  `]
-})
-export class SdBusyContainerControl implements DoCheck {
-  #sdBusy = inject(SdBusyProvider);
-  #elRef: ElementRef<HTMLElement> = inject(ElementRef);
-
-  @Input({transform: coercionBoolean})
-  busy = false;
-
-  @Input()
-  message?: string;
-
-  @Input()
-  @HostBinding("attr.sd-type")
-  type: "spinner" | "bar" | "cube" = this.#sdBusy.type ?? "spinner";
-
-  @Input({transform: coercionBoolean})
-  @HostBinding("attr.sd-no-fade")
-  noFade = this.#sdBusy.noFade ?? false;
-
-  @Input({transform: coercionNumber})
-  progressPercent?: number;
-
-  #sdNgHelper = new SdNgHelper(inject(Injector));
-
-  ngDoCheck() {
-    this.#sdNgHelper.doCheckOutside(run => {
-      run({
-        busy: [this.busy]
-      }, () => {
-        if (this.busy) {
-          this.#elRef.nativeElement.setAttribute("sd-busy", "true");
-        }
-        else {
-          this.#elRef.nativeElement.removeAttribute("sd-busy");
-        }
-      });
-    });
+  `],
+  host: {
+    "[attr.sd-type]": "type",
+    "[attr.sd-no-fade]": "noFade",
+    "[attr.sd-busy]": "busy"
   }
+})
+export class SdBusyContainerControl {
+  #sdBusy = inject(SdBusyProvider);
 
+  @Input({transform: coercionBoolean}) busy = false;
+  @Input() message?: string;
+  @Input() type: "spinner" | "bar" | "cube" = this.#sdBusy.type ?? "spinner";
+  @Input({transform: coercionBoolean}) noFade = this.#sdBusy.noFade ?? false;
+  @Input({transform: coercionNumber}) progressPercent?: number;
 
   @HostListener("keydown.outside", ["$event"])
   onKeydownOutside(event: KeyboardEvent) {

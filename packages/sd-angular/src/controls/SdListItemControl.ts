@@ -4,7 +4,7 @@ import {
   ContentChild,
   EventEmitter,
   forwardRef,
-  HostBinding, inject,
+  inject,
   Input,
   Output
 } from "@angular/core";
@@ -12,7 +12,6 @@ import {SdListControl} from "./SdListControl";
 import {IconProp} from "@fortawesome/fontawesome-svg-core";
 import {coercionBoolean} from "../utils/commons";
 import {SdIconControl} from "./SdIconControl";
-import {NgIf} from "@angular/common";
 import {SdCollapseIconControl} from "./SdCollapseIconControl";
 import {SdCollapseControl} from "./SdCollapseControl";
 import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
@@ -23,7 +22,6 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
   standalone: true,
   imports: [
     SdIconControl,
-    NgIf,
     SdCollapseIconControl,
     SdCollapseControl,
   ],
@@ -33,23 +31,28 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
          (click)="onContentClick()"
          tabindex="0">
       <div class="flex-row flex-gap-xs">
-        <sd-icon class="_selected-icon" *ngIf="selectedIcon && !hasChildren" [icon]="selectedIcon"
-                 fixedWidth/>
+        @if (selectedIcon && !hasChildren) {
+          <sd-icon class="_selected-icon" [icon]="selectedIcon"
+                   fixedWidth/>
+        }
         <div style="flex-grow: 1">
           <ng-content></ng-content>
         </div>
 
-        <div *ngIf="hasChildren && layout==='accordion'">
-          <sd-collapse-icon [open]="open"
-                            [icon]="icons.angleDown"/>
-        </div>
+        @if (hasChildren && layout === 'accordion') {
+          <div>
+            <sd-collapse-icon [open]="open"
+                              [icon]="icons.angleDown"/>
+          </div>
+        }
       </div>
     </div>
-    <sd-collapse *ngIf="hasChildren"
-                 class="_child"
-                 [open]="layout === 'flat' || open">
-      <ng-content select="sd-list"></ng-content>
-    </sd-collapse>`,
+    @if (hasChildren) {
+      <sd-collapse class="_child"
+                   [open]="layout === 'flat' || open">
+        <ng-content select="sd-list"></ng-content>
+      </sd-collapse>
+    }`,
   styles: [/* language=SCSS */ `
     @import "../scss/mixins";
 
@@ -166,47 +169,32 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
         }
       }
     }
-  `]
+  `],
+  host: {
+    "[attr.sd-layout]": "layout",
+    "[attr.sd-open]": "open",
+    "[attr.sd-selected]": "selected",
+    "[attr.sd-has-selected-icon]": "!!selectedIcon",
+    "[attr.sd-has-children]": "hasChildren"
+  }
 })
 export class SdListItemControl {
   icons = inject(SdAngularOptionsProvider).icons;
 
-  @Input()
-  contentStyle?: string;
+  @Input({transform: coercionBoolean}) open = false;
+  @Output() openChange = new EventEmitter<boolean>();
 
-  @Input()
-  contentClass?: string;
+  @Input() contentStyle?: string;
+  @Input() contentClass?: string;
+  @Input() layout: "accordion" | "flat" = "accordion";
+  @Input({transform: coercionBoolean}) selected = false;
+  @Input() selectedIcon?: IconProp;
 
-  @Input()
-  @HostBinding("attr.sd-layout")
-  layout: "accordion" | "flat" = "accordion";
+  @ContentChild(forwardRef(() => SdListControl)) childListControl?: SdListControl;
 
-  @Input({transform: coercionBoolean})
-  @HostBinding("attr.sd-open")
-  open = false;
-
-  @Output()
-  openChange = new EventEmitter<boolean>();
-
-  @Input({transform: coercionBoolean})
-  @HostBinding("attr.sd-selected")
-  selected = false;
-
-  @Input()
-  selectedIcon?: IconProp;
-
-  @HostBinding("attr.sd-has-selected-icon")
-  get hasSelectedIcon(): boolean {
-    return Boolean(this.selectedIcon);
-  }
-
-  @HostBinding("attr.sd-has-children")
   get hasChildren(): boolean {
     return this.childListControl !== undefined;
   }
-
-  @ContentChild(forwardRef(() => SdListControl))
-  childListControl?: SdListControl;
 
   onContentClick() {
     if (this.openChange.observed) {

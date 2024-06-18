@@ -3,7 +3,6 @@ import {SdTopbarContainerControl} from "./SdTopbarContainerControl";
 import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
 import {ISdResizeEvent} from "../plugins/SdResizeEventPlugin";
 import {SdAnchorControl} from "./SdAnchorControl";
-import {NgIf} from "@angular/common";
 import {SdIconControl} from "./SdIconControl";
 import {SdGapControl} from "./SdGapControl";
 import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
@@ -14,7 +13,6 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
   standalone: true,
   imports: [
     SdAnchorControl,
-    NgIf,
     SdIconControl,
     SdGapControl
   ],
@@ -39,7 +37,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
       align-items: center;
       justify-content: start;
       //white-space: nowrap;
-      
+
       position: absolute;
       z-index: var(--z-index-topbar);
       top: 0;
@@ -107,16 +105,17 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
         line-height: var(--topbar-height);
 
         //body.sd-theme-compact & {
-          color: var(--text-trans-rev-dark);
-          min-width: var(--topbar-height);
-          font-size: var(--font-size-h4);
+        color: var(--text-trans-rev-dark);
+        min-width: var(--topbar-height);
+        font-size: var(--font-size-h4);
 
-          &:hover {
-            background: rgba(0, 0, 0, .1);
-            color: var(--text-trans-rev-default);
-          }
+        &:hover {
+          background: rgba(0, 0, 0, .1);
+          color: var(--text-trans-rev-default);
+        }
+
         //}
-        
+
         body.sd-theme-modern &,
         body.sd-theme-mobile &,
         body.sd-theme-kiosk & {
@@ -161,8 +160,7 @@ export class SdTopbarControl {
   #parentSidebarContainerControl = inject(SdSidebarContainerControl, {optional: true});
   #topbarContainerControl: SdTopbarContainerControl = inject(forwardRef(() => SdTopbarContainerControl));
 
-  @Input()
-  sidebarContainer?: SdSidebarContainerControl;
+  @Input() sidebarContainer?: SdSidebarContainerControl;
 
   get hasSidebar(): boolean {
     return !!this.sidebarContainer || !!this.#parentSidebarContainerControl;

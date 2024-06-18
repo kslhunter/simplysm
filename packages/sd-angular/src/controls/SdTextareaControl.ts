@@ -4,7 +4,6 @@ import {
   DoCheck,
   ElementRef,
   EventEmitter,
-  HostBinding,
   inject,
   Injector,
   Input,
@@ -172,61 +171,35 @@ import {SdNgHelper} from "../utils/SdNgHelper";
         }
       }
     }
-  `]
+  `],
+  host: {
+    "[attr.sd-disabled]": "disabled",
+    "[attr.sd-readonly]": "readonly",
+    "[attr.sd-inline]": "inline",
+    "[attr.sd-inset]": "inset",
+    "[attr.sd-size]": "size",
+    "[attr.sd-theme]": "theme",
+    "[attr.sd-invalid]": "errorMessage"
+  }
 })
 export class SdTextareaControl implements DoCheck {
-  @Input()
-  placeholder?: string;
+  @Input() value?: string;
+  @Output() valueChange = new EventEmitter<string | undefined>();
 
-  @Input()
-  title?: string;
+  @Input() placeholder?: string;
+  @Input() title?: string;
+  @Input({transform: coercionNonNullableNumber}) rows = 3;
+  @Input({transform: coercionBoolean}) disabled = false;
+  @Input({transform: coercionBoolean}) readonly = false;
+  @Input({transform: coercionBoolean}) required = false;
+  @Input({transform: coercionBoolean}) inline = false;
+  @Input({transform: coercionBoolean}) inset = false;
+  @Input() size?: "sm" | "lg";
+  @Input() validatorFn?: TSdFnInfo<(value: string | undefined) => string | undefined>;
+  @Input() theme?: "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey";
+  @Input() inputStyle?: string;
+  @Input() inputClass?: string;
 
-  @Input()
-  value?: string;
-
-  @Output()
-  valueChange = new EventEmitter<string | undefined>();
-
-  @Input({transform: coercionNonNullableNumber})
-  rows = 3;
-
-  @Input({transform: coercionBoolean})
-  @HostBinding("attr.sd-disabled")
-  disabled = false;
-
-  @Input({transform: coercionBoolean})
-  @HostBinding("attr.sd-readonly")
-  readonly = false;
-
-  @Input({transform: coercionBoolean})
-  required = false;
-
-  @Input({transform: coercionBoolean})
-  @HostBinding("attr.sd-inline")
-  inline = false;
-
-  @Input({transform: coercionBoolean})
-  @HostBinding("attr.sd-inset")
-  inset = false;
-
-  @Input()
-  @HostBinding("attr.sd-size")
-  size?: "sm" | "lg";
-
-  @Input()
-  validatorFn?: TSdFnInfo<(value: string | undefined) => string | undefined>;
-
-  @Input()
-  @HostBinding("attr.sd-theme")
-  theme?: "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey";
-
-  @Input()
-  inputStyle?: string;
-
-  @Input()
-  inputClass?: string;
-
-  @HostBinding("attr.sd-invalid")
   errorMessage?: string;
 
   #elRef = inject<ElementRef<HTMLElement>>(ElementRef);

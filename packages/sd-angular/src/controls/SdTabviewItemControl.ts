@@ -21,17 +21,14 @@ import {SdTabviewControl} from "./SdTabviewControl";
     }
   `]
 })
-export class SdTabviewItemControl {
-  @Input()
-  value?: any;
+export class SdTabviewItemControl<T> {
+  @Input({required: true}) value!: T;
+  @Input() header?: string;
 
-  @Input()
-  header?: string;
+  #parentControl = inject<SdTabviewControl<T>>(forwardRef(() => SdTabviewControl));
 
   @HostBinding("attr.sd-selected")
   get isSelected(): boolean {
     return this.#parentControl.value === this.value;
   }
-
-  #parentControl: SdTabviewControl = inject(forwardRef(() => SdTabviewControl));
 }

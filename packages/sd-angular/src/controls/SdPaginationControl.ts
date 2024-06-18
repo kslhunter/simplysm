@@ -12,14 +12,16 @@ import {SdAnchorControl} from "./SdAnchorControl";
 import {SdIconControl} from "./SdIconControl";
 import {coercionNumber} from "../utils/commons";
 import {SdNgHelper} from "../utils/SdNgHelper";
-import {NgForOf} from "@angular/common";
 import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 
 @Component({
   selector: "sd-pagination",
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [SdAnchorControl, SdIconControl, NgForOf],
+  imports: [
+    SdAnchorControl,
+    SdIconControl
+  ],
   template: `
     <sd-anchor [disabled]="!hasPrev" (click)="onGoFirstClick()">
       <sd-icon [icon]="icons.angleDoubleLeft" fixedWidth/>
@@ -27,11 +29,12 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
     <sd-anchor [disabled]="!hasPrev" (click)="onPrevClick()">
       <sd-icon [icon]="icons.angleLeft" fixedWidth/>
     </sd-anchor>
-    <sd-anchor *ngFor="let displayPage of displayPages; trackBy: trackByFnForPage"
-               (click)="onPageClick(displayPage)"
-               [attr.sd-selected]="displayPage === page">
-      {{ displayPage + 1 }}
-    </sd-anchor>
+    @for (displayPage of displayPages; track displayPage) {
+      <sd-anchor (click)="onPageClick(displayPage)"
+                 [attr.sd-selected]="displayPage === page">
+        {{ displayPage + 1 }}
+      </sd-anchor>
+    }
     <sd-anchor [disabled]="!hasNext" (click)="onNextClick()">
       <sd-icon [icon]="icons.angleRight" fixedWidth/>
     </sd-anchor>
@@ -70,23 +73,21 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 export class SdPaginationControl implements DoCheck {
   icons = inject(SdAngularOptionsProvider).icons;
 
-  @Input({transform: coercionNumber})
-  page = 0;
+  @Input({transform: coercionNumber}) page = 0;
+  @Output() pageChange = new EventEmitter<number>();
 
-  @Input({transform: coercionNumber})
-  pageLength = 0;
-
-  @Input({transform: coercionNumber})
-  displayPageLength = 10;
-
-  @Output()
-  pageChange = new EventEmitter<number>();
-
-  trackByFnForPage = (index: number, item: number): any => item;
+  @Input({transform: coercionNumber}) pageLength = 0;
+  @Input({transform: coercionNumber}) displayPageLength = 10;
 
   displayPages: number[] = [];
-  hasNext = false;
-  hasPrev = false;
+
+  get hasNext() {
+    return (this.displayPages.last() ?? 0) < (this.pageLength - 1);
+  };
+
+  get hasPrev() {
+    return (this.displayPages[0] ?? 0) > 0;
+  }
 
   #sdNgHelper = new SdNgHelper(inject(Injector));
 
@@ -106,72 +107,41 @@ export class SdPaginationControl implements DoCheck {
         const to = Math.min(from + this.displayPageLength, this.pageLength);
         this.displayPages = pages.filter((item) => item >= from && item < to);
       });
-
-      run({
-        displayPages: [this.displayPages],
-        pageLength: [this.pageLength]
-      }, () => {
-        this.hasNext = (this.displayPages.last() ?? 0) < (this.pageLength - 1);
-      });
-
-      run({
-        displayPages: [this.displayPages]
-      }, () => {
-        this.hasPrev = (this.displayPages[0] ?? 0) > 0;
-      });
     });
   }
 
   onPageClick(page: number) {
-    if (this.pageChange.observed) {
-      this.pageChange.emit(page);
-    }
-    else {
-      this.page = page;
-    }
+    this.#setPage(page);
   }
 
   onNextClick() {
     const page = (this.displayPages.last() ?? 0) + 1;
-
-    if (this.pageChange.observed) {
-      this.pageChange.emit(page);
-    }
-    else {
-      this.page = page;
-    }
+    this.#setPage(page);
   }
 
   onPrevClick() {
     const page = (this.displayPages[0] ?? 0) - 1;
-
-    if (this.pageChange.observed) {
-      this.pageChange.emit(page);
-    }
-    else {
-      this.page = page;
-    }
+    this.#setPage(page);
   }
 
   onGoFirstClick() {
     const page = 0;
-
-    if (this.pageChange.observed) {
-      this.pageChange.emit(page);
-    }
-    else {
-      this.page = page;
-    }
+    this.#setPage(page);
   }
 
   onGoLastClick() {
     const page = this.pageLength - 1;
+    this.#setPage(page);
+  }
 
-    if (this.pageChange.observed) {
-      this.pageChange.emit(page);
-    }
-    else {
-      this.page = page;
+  #setPage(page: number) {
+    if (this.page !== page) {
+      if (this.pageChange.observed) {
+        this.pageChange.emit(page);
+      }
+      else {
+        this.page = page;
+      }
     }
   }
 }

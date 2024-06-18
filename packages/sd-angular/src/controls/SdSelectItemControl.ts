@@ -3,10 +3,8 @@ import {
   ChangeDetectorRef,
   Component,
   ContentChild,
-  DoCheck,
   ElementRef,
   forwardRef,
-  HostBinding,
   HostListener,
   inject,
   Input,
@@ -16,7 +14,7 @@ import {
 } from "@angular/core";
 import {SdSelectControl} from "./SdSelectControl";
 import {coercionBoolean} from "../utils/commons";
-import {NgIf, NgTemplateOutlet} from "@angular/common";
+import {NgTemplateOutlet} from "@angular/common";
 import {SdCheckboxControl} from "./SdCheckboxControl";
 import {SdGapControl} from "./SdGapControl";
 
@@ -25,24 +23,22 @@ import {SdGapControl} from "./SdGapControl";
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
-    NgIf,
     SdCheckboxControl,
     NgTemplateOutlet,
     SdGapControl
   ],
   template: `
-    <ng-container *ngIf="selectMode === 'multi'">
+    @if (selectMode === 'multi') {
       <sd-checkbox [value]="isSelected" inline></sd-checkbox>
       <sd-gap width="sm"/>
-    </ng-container>
+    }
 
     <div class="_content" style="display: inline-block;">
-      <ng-container *ngIf="!labelTemplateRef">
+      @if (!labelTemplateRef) {
         <ng-content/>
-      </ng-container>
-      <ng-container *ngIf="labelTemplateRef">
+      } @else {
         <ng-template [ngTemplateOutlet]="labelTemplateRef"/>
-      </ng-container>
+      }
     </div>`,
   styles: [/* language=SCSS */ `
     @import "../scss/mixins";
@@ -84,41 +80,34 @@ import {SdGapControl} from "./SdGapControl";
         }
       }
     }
-  `]
+  `],
+  host: {
+    "[attr.tabindex]": "'0'",
+    "[attr.sd-disabled]": "disabled",
+    "[attr.sd-select-mode]": "selectMode",
+    "[attr.sd-selected]": "isSelected"
+  }
 })
-export class SdSelectItemControl<T> implements OnInit, OnDestroy, DoCheck {
-  @HostBinding("attr.tabindex")
-  tabIndex = 0;
+export class SdSelectItemControl<T> implements OnInit, OnDestroy {
+  @Input() value!: T;
+  @Input({transform: coercionBoolean}) disabled = false;
 
-  @Input()
-  value!: T;
-
-  @Input({transform: coercionBoolean})
-  @HostBinding("attr.sd-disabled")
-  disabled = false;
-
-  @ContentChild("label", {static: true})
-  labelTemplateRef?: TemplateRef<void>;
+  @ContentChild("label", {static: true}) labelTemplateRef?: TemplateRef<void>;
 
   #cdr = inject(ChangeDetectorRef);
   #selectControl: SdSelectControl<any, any> = inject(forwardRef(() => SdSelectControl));
-
   elRef: ElementRef<HTMLElement> = inject(ElementRef);
 
-  @HostBinding("attr.sd-select-mode")
-  selectMode: "single" | "multi" = "single";
+  get selectMode() {
+    return this.#selectControl.selectMode;
+  };
 
-  @HostBinding("attr.sd-selected")
-  isSelected = false;
+  get isSelected() {
+    return this.#selectControl.getIsSelectedItemControl(this);
+  };
 
   ngOnInit(): void {
     this.#selectControl.itemControls.push(this);
-  }
-
-  ngDoCheck(): void {
-    this.selectMode = this.#selectControl.selectMode;
-    this.isSelected = this.#selectControl.getIsSelectedItemControl(this);
-    this.#cdr.markForCheck();
   }
 
   ngOnDestroy(): void {

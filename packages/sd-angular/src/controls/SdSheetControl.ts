@@ -6,7 +6,6 @@ import {
   DoCheck,
   ElementRef,
   EventEmitter,
-  HostBinding,
   HostListener,
   inject,
   Injector,
@@ -31,7 +30,7 @@ import {
 import {SdBusyContainerControl} from "./SdBusyContainerControl";
 import {SdDockContainerControl} from "./SdDockContainerControl";
 import {SdDockControl} from "./SdDockControl";
-import {NgForOf, NgIf, NgTemplateOutlet} from "@angular/common";
+import {NgTemplateOutlet} from "@angular/common";
 import {SdAnchorControl} from "./SdAnchorControl";
 import {SdIconControl} from "./SdIconControl";
 import {SdPaginationControl} from "./SdPaginationControl";
@@ -48,178 +47,185 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
     SdBusyContainerControl,
     SdDockContainerControl,
     SdDockControl,
-    NgIf,
     SdAnchorControl,
     SdIconControl,
     SdPaginationControl,
     SdPaneControl,
     SdEventsDirective,
-    NgForOf,
     NgTemplateOutlet,
     FontAwesomeModule
   ],
   template: `
     <sd-busy-container [busy]="busy" type="cube">
       <sd-dock-container [hidden]="busy">
-        <sd-dock *ngIf="(key || currPageLength > 0) && !hideConfigBar">
-          <div class="flex-row-inline flex-gap-sm">
-            <sd-anchor *ngIf="key" (click)="onConfigButtonClick()">
-              <sd-icon [icon]="icons.cog" fixedWidth/>
-            </sd-anchor>
-            <sd-pagination *ngIf="currPageLength > 1"
-                           [page]="page"
-                           [pageLength]="currPageLength"
-                           [displayPageLength]="displayPageLength"
-                           (pageChange)="onPageChange($event)"></sd-pagination>
-          </div>
-        </sd-dock>
+        @if ((key || currPageLength > 0) && !hideConfigBar) {
+          <sd-dock>
+            <div class="flex-row-inline flex-gap-sm">
+              @if (key) {
+                <sd-anchor (click)="onConfigButtonClick()">
+                  <sd-icon [icon]="icons.cog" fixedWidth/>
+                </sd-anchor>
+              }
+              @if (currPageLength > 1) {
+                <sd-pagination [page]="page"
+                               [pageLength]="currPageLength"
+                               [displayPageLength]="displayPageLength"
+                               (pageChange)="onPageChange($event)"/>
+              }
+            </div>
+          </sd-dock>
+        }
 
         <sd-pane class="_sheet-container"
                  (scroll.outside)="onContainerScrollOutside($event)">
           <table>
             <thead>
-            <ng-container
-              *ngFor="let headerRow of displayHeaderDefTable; let r = index; trackBy: trackByFnForHeaderDefTable">
-              <tr>
-                <th class="_fixed _feature-cell _last-depth"
-                    *ngIf="r === 0"
-                    [attr.rowspan]="!hasSummaryTemplate && headerRow.length < 1 ? undefined : displayHeaderDefTable.length + (hasSummaryTemplate ? 1 : 0)"
-                    [attr.c]="getChildrenFn ? -2 : -1"
-                    (sdResize.outside)="onFixedCellResizeOutside(getChildrenFn ? -2 : -1)">
-                  <ng-container *ngIf="selectMode === 'multi' && hasSelectableItem">
-                    <sd-icon [icon]="icons.arrowRight" fixedWidth
-                             [class.tx-theme-primary-default]="isAllItemsSelected"
-                             (click)="onAllItemsSelectIconClick()"/>
-                  </ng-container>
-                </th>
-                <th class="_fixed _feature-cell _last-depth"
-                    *ngIf="getChildrenFn && r === 0"
-                    [attr.rowspan]="!hasSummaryTemplate && headerRow.length < 1 ? undefined : displayHeaderDefTable.length + (hasSummaryTemplate ? 1 : 0)"
-                    [attr.c]="-1"
-                    (sdResize.outside)="onFixedCellResizeOutside(-1)">
-                  <ng-container *ngIf="hasExpandableItem">
-                    <sd-icon [icon]="icons.caretRight" fixedWidth
-                             [class.tx-theme-primary-default]="isAllItemsExpanded"
-                             [rotate]="isAllItemsExpanded ? 90 : undefined"
-                             (click)="onAllItemsExpandIconClick()"/>
-                  </ng-container>
-                </th>
-                <ng-container *ngFor="let headerCell of headerRow; let c = index; trackBy: trackByFnForHeaderCell">
-                  <th *ngIf="headerCell"
-                      [class._fixed]="headerCell.fixed"
-                      [attr.colspan]="headerCell.colspan"
-                      [attr.rowspan]="headerCell.rowspan"
-                      [class._last-depth]="headerCell.isLastDepth"
-                      [attr.c]="c"
-                      [style.width]="headerCell.isLastDepth ? headerCell.width : undefined"
-                      [style.min-width]="headerCell.isLastDepth ? headerCell.width : undefined"
-                      [style.max-width]="headerCell.isLastDepth ? headerCell.width : undefined"
-                      [class._ordering]="headerCell.isLastDepth && headerCell.control.useOrdering && headerCell.control.key"
-                      [attr.title]="headerCell.isLastDepth ? (headerCell.control.tooltip ?? headerCell.text) : undefined"
-                      [class.help]="headerCell.isLastDepth && headerCell.control.tooltip"
-                      (sdResize.outside)="onHeaderCellResizeOutside(headerCell, c)"
-                      (click)="onHeaderCellClick($event, headerCell)">
-                    <div class="flex-row align-items-end">
-                      <div class="_contents flex-grow"
-                           [class._padding]="!headerCell.useTemplate"
-                           [attr.style]="headerCell!.style">
-                        <ng-container *ngIf="!headerCell.useTemplate">
-                          <pre>{{ headerCell.text }}</pre>
-                        </ng-container>
-                        <ng-container *ngIf="headerCell.useTemplate">
-                          <ng-template [ngTemplateOutlet]="headerCell.control.headerTemplateRef!"></ng-template>
-                        </ng-container>
-                      </div>
+              @for (headerRow of displayHeaderDefTable; let r = $index; track r) {
 
-                      <ng-container
-                        *ngIf="headerCell.isLastDepth && headerCell.control.useOrdering && headerCell.control.key">
-                        <div class="_sort-icon">
-                          <fa-layers>
-                            <sd-icon [icon]="icons.sort" class="tx-trans-lightest"/>
-                            <sd-icon [icon]="icons.sortDown"
-                                     *ngIf="getIsColumnOrderingDesc(headerCell.control.key) === false"/>
-                            <sd-icon [icon]="icons.sortUp"
-                                     *ngIf="getIsColumnOrderingDesc(headerCell.control.key) === true"/>
-                          </fa-layers>
-                          <sub *ngIf="getColumnOrderingIndexText(headerCell.control.key) as text">{{ text }}</sub>
+                <tr>
+                  @if (r === 0) {
+                    <th class="_fixed _feature-cell _last-depth"
+                        [attr.rowspan]="!hasSummaryTemplate && headerRow.length < 1 ? undefined : displayHeaderDefTable.length + (hasSummaryTemplate ? 1 : 0)"
+                        [attr.c]="getChildrenFn ? -2 : -1"
+                        (sdResize.outside)="onFixedCellResizeOutside(getChildrenFn ? -2 : -1)">
+                      @if (selectMode === 'multi' && hasSelectableItem) {
+                        <sd-icon [icon]="icons.arrowRight" fixedWidth
+                                 [class.tx-theme-primary-default]="isAllItemsSelected"
+                                 (click)="onAllItemsSelectIconClick()"/>
+                      }
+                    </th>
+                  }
+                  @if (getChildrenFn && r === 0) {
+                    <th class="_fixed _feature-cell _last-depth"
+                        [attr.rowspan]="!hasSummaryTemplate && headerRow.length < 1 ? undefined : displayHeaderDefTable.length + (hasSummaryTemplate ? 1 : 0)"
+                        [attr.c]="-1"
+                        (sdResize.outside)="onFixedCellResizeOutside(-1)">
+                      @if (hasExpandableItem) {
+                        <sd-icon [icon]="icons.caretRight" fixedWidth
+                                 [class.tx-theme-primary-default]="isAllItemsExpanded"
+                                 [rotate]="isAllItemsExpanded ? 90 : undefined"
+                                 (click)="onAllItemsExpandIconClick()"/>
+                      }
+                    </th>
+                  }
+                  @for (headerCell of headerRow; let c = $index; track c) {
+                    @if (headerCell) {
+                      <th [class._fixed]="headerCell.fixed"
+                          [attr.colspan]="headerCell.colspan"
+                          [attr.rowspan]="headerCell.rowspan"
+                          [class._last-depth]="headerCell.isLastDepth"
+                          [attr.c]="c"
+                          [style.width]="headerCell.isLastDepth ? headerCell.width : undefined"
+                          [style.min-width]="headerCell.isLastDepth ? headerCell.width : undefined"
+                          [style.max-width]="headerCell.isLastDepth ? headerCell.width : undefined"
+                          [class._ordering]="headerCell.isLastDepth && headerCell.control.useOrdering && headerCell.control.key"
+                          [attr.title]="headerCell.isLastDepth ? (headerCell.control.tooltip ?? headerCell.text) : undefined"
+                          [class.help]="headerCell.isLastDepth && headerCell.control.tooltip"
+                          (sdResize.outside)="onHeaderCellResizeOutside(headerCell, c)"
+                          (click)="onHeaderCellClick($event, headerCell)">
+                        <div class="flex-row align-items-end">
+                          <div class="_contents flex-grow"
+                               [class._padding]="!headerCell.useTemplate"
+                               [attr.style]="headerCell!.style">
+                            @if (!headerCell.useTemplate) {
+                              <pre>{{ headerCell.text }}</pre>
+                            } @else {
+                              <ng-template [ngTemplateOutlet]="headerCell.control.headerTemplateRef!"/>
+                            }
+                          </div>
+
+                          @if (headerCell.isLastDepth && headerCell.control.useOrdering && headerCell.control.key) {
+                            <div class="_sort-icon">
+                              <fa-layers>
+                                <sd-icon [icon]="icons.sort" class="tx-trans-lightest"/>
+                                @if (getIsColumnOrderingDesc(headerCell.control.key) === false) {
+                                  <sd-icon [icon]="icons.sortDown"/>
+                                } @else if (getIsColumnOrderingDesc(headerCell.control.key) === true) {
+                                  <sd-icon [icon]="icons.sortUp"/>
+                                }
+                              </fa-layers>
+                              @if (getColumnOrderingIndexText(headerCell.control.key); as text) {
+                                <sub>{{ text }}</sub>
+                              }
+                            </div>
+                          }
                         </div>
-                      </ng-container>
-                    </div>
 
-                    <div class="_resizer"
-                         *ngIf="headerCell.control.resizable && headerCell.isLastDepth"
-                         (mousedown.outside)="onResizerMousedownOutside($event, headerCell.control)"
-                         (dblclick)="onResizerDoubleClick($event, headerCell.control)"></div>
-                  </th>
-                </ng-container>
-              </tr>
-            </ng-container>
+                        @if (headerCell.control.resizable && headerCell.isLastDepth) {
+                          <div class="_resizer"
+                               (mousedown.outside)="onResizerMousedownOutside($event, headerCell.control)"
+                               (dblclick)="onResizerDoubleClick($event, headerCell.control)"></div>
+                        }
+                      </th>
+                    }
+                  }
+                </tr>
+              }
 
-            <ng-container *ngIf="hasSummaryTemplate">
-              <tr class="_summary-row">
-                <ng-container
-                  *ngFor="let columnDef of displayColumnDefs; let c = index; trackBy: trackByFnForColumnDef">
-                  <th [class._fixed]="columnDef.fixed"
-                      [attr.c]="c"
-                      [style.width]="columnDef.width"
-                      [style.min-width]="columnDef.width"
-                      [style.max-width]="columnDef.width">
-                    <ng-container *ngIf="columnDef.control.summaryTemplateRef">
-                      <ng-template [ngTemplateOutlet]="columnDef.control.summaryTemplateRef"></ng-template>
-                    </ng-container>
-                  </th>
-                </ng-container>
-              </tr>
-            </ng-container>
+              @if (hasSummaryTemplate) {
+                <tr class="_summary-row">
+                  @for (columnDef of displayColumnDefs; let c = $index; track columnDef.control.key) {
+                    <th [class._fixed]="columnDef.fixed"
+                        [attr.c]="c"
+                        [style.width]="columnDef.width"
+                        [style.min-width]="columnDef.width"
+                        [style.max-width]="columnDef.width">
+                      @if (columnDef.control.summaryTemplateRef) {
+                        <ng-template [ngTemplateOutlet]="columnDef.control.summaryTemplateRef"/>
+                      }
+                    </th>
+                  }
+                </tr>
+              }
             </thead>
             <tbody>
-            <ng-container *ngFor="let itemDef of displayItemDefs; let r = index; trackBy: trackByFnForDisplayItemDef">
-              <tr [attr.r]="r"
-                  (keydown)="this.itemKeydown.emit({ item: itemDef.item, event: $event })"
-                  [hidden]="getIsHiddenItemDef(itemDef)">
-                <td class="_fixed _feature-cell"
-                    [attr.r]="r"
-                    [attr.c]="getChildrenFn ? -2 : -1">
-                  <ng-container *ngIf="selectMode && getIsItemSelectable(itemDef.item)">
-                    <sd-icon [icon]="icons.arrowRight" fixedWidth
-                             [class.tx-theme-primary-default]="selectedItems.includes(itemDef.item)"
-                             (click)="onItemSelectIconClick(itemDef.item)"/>
-                  </ng-container>
-                </td>
-                <td class="_fixed _feature-cell"
-                    *ngIf="getChildrenFn"
-                    [attr.r]="r"
-                    [attr.c]="-1">
-                  <ng-container *ngIf="itemDef.depth > 0">
-                    <div class="_depth-indicator" [style.margin-left.em]="itemDef.depth - .5"></div>
-                  </ng-container>
-                  <ng-container *ngIf="itemDef.hasChildren">
-                    <sd-icon [icon]="icons.caretRight" fixedWidth
-                             [rotate]="expandedItems.includes(itemDef.item) ? 90 : undefined"
-                             [class.tx-theme-primary-default]="expandedItems.includes(itemDef.item)"
-                             (click)="onItemExpandIconClick(itemDef.item)"/>
-                  </ng-container>
-                </td>
-                <ng-container
-                  *ngFor="let columnDef of displayColumnDefs; let c = index; trackBy: trackByFnForColumnDef">
-                  <td tabindex="0"
-                      [class._fixed]="columnDef.fixed"
+              @for (itemDef of displayItemDefs; let r = $index; track trackByFn[0](r, itemDef.item)) {
+                <tr [attr.r]="r"
+                    (keydown)="this.itemKeydown.emit({ item: itemDef.item, event: $event })"
+                    [hidden]="getIsHiddenItemDef(itemDef)">
+                  <td class="_fixed _feature-cell"
                       [attr.r]="r"
-                      [attr.c]="c"
-                      [style.width]="columnDef.width"
-                      [style.min-width]="columnDef.width"
-                      [style.max-width]="columnDef.width"
-                      [class]="getItemCellClass?.(itemDef.item, columnDef.control.key)"
-                      [style]="getItemCellStyle?.(itemDef.item, columnDef.control.key)"
-                      (click)="onItemCellClick(itemDef.item)"
-                      (dblclick)="onCellDoubleClick($event)"
-                      (keydown)="this.cellKeydown.emit({ item: itemDef.item, key: columnDef.control.key, event: $event })">
-                    <ng-template [ngTemplateOutlet]="columnDef.control.cellTemplateRef!"
-                                 [ngTemplateOutletContext]="{$implicit: itemDef.item, item: itemDef.item, index: r, depth: itemDef.depth, edit: getIsCellEditMode(r, c) }"/>
+                      [attr.c]="getChildrenFn ? -2 : -1">
+                    @if (selectMode && getIsItemSelectable(itemDef.item)) {
+                      <sd-icon [icon]="icons.arrowRight" fixedWidth
+                               [class.tx-theme-primary-default]="selectedItems.includes(itemDef.item)"
+                               (click)="onItemSelectIconClick(itemDef.item)"/>
+                    }
                   </td>
-                </ng-container>
-              </tr>
-            </ng-container>
+                  @if (getChildrenFn) {
+                    <td class="_fixed _feature-cell"
+                        [attr.r]="r"
+                        [attr.c]="-1">
+                      @if (itemDef.depth > 0) {
+                        <div class="_depth-indicator" [style.margin-left.em]="itemDef.depth - .5"></div>
+                      }
+                      @if (itemDef.hasChildren) {
+                        <sd-icon [icon]="icons.caretRight" fixedWidth
+                                 [rotate]="expandedItems.includes(itemDef.item) ? 90 : undefined"
+                                 [class.tx-theme-primary-default]="expandedItems.includes(itemDef.item)"
+                                 (click)="onItemExpandIconClick(itemDef.item)"/>
+                      }
+                    </td>
+                  }
+                  @for (columnDef of displayColumnDefs; let c = $index; track columnDef.control.key) {
+                    <td tabindex="0"
+                        [class._fixed]="columnDef.fixed"
+                        [attr.r]="r"
+                        [attr.c]="c"
+                        [style.width]="columnDef.width"
+                        [style.min-width]="columnDef.width"
+                        [style.max-width]="columnDef.width"
+                        [class]="getItemCellClass?.(itemDef.item, columnDef.control.key)"
+                        [style]="getItemCellStyle?.(itemDef.item, columnDef.control.key)"
+                        (click)="onItemCellClick(itemDef.item)"
+                        (dblclick)="onCellDoubleClick($event)"
+                        (keydown)="this.cellKeydown.emit({ item: itemDef.item, key: columnDef.control.key, event: $event })">
+                      <ng-template [ngTemplateOutlet]="columnDef.control.cellTemplateRef ?? null"
+                                   [ngTemplateOutletContext]="{$implicit: itemDef.item, item: itemDef.item, index: r, depth: itemDef.depth, edit: getIsCellEditMode(r, c) }"/>
+                    </td>
+                  }
+                </tr>
+              }
             </tbody>
           </table>
 
@@ -447,7 +453,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
               height: 100%;
 
               z-index: $z-index-select-row-indicator;
- 
+
               > ._select-row-indicator {
                 display: block;
                 left: 0;
@@ -476,7 +482,10 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
         }
       }
     }
-  `]
+  `],
+  host: {
+    "[attr.sd-inset]": "inset"
+  }
 })
 export class SdSheetControl<T> implements DoCheck {
   icons = inject(SdAngularOptionsProvider).icons;
@@ -487,152 +496,69 @@ export class SdSheetControl<T> implements DoCheck {
   #sdModal = inject(SdModalProvider);
   #elRef = inject<ElementRef<HTMLElement>>(ElementRef);
 
-  @ContentChildren(SdSheetColumnDirective)
-  columnControls?: QueryList<SdSheetColumnDirective<T>>;
+  @ContentChildren(SdSheetColumnDirective) columnControls?: QueryList<SdSheetColumnDirective<T>>;
 
-  /**
-   * 시트설정 저장 키
-   */
-  @Input({required: true})
-  key!: string;
+  /** 시트설정 저장 키 */
+  @Input({required: true}) key!: string;
+  /** 설정 및 페이징 바 표시여부 */
+  @Input({transform: coercionBoolean}) hideConfigBar = false;
+  /** BORDER를 없애는등 다른 박스안에 완전히 붙임 */
+  @Input({transform: coercionBoolean}) inset = false;
 
-  /**
-   * 설정 및 페이징 바 표시여부
-   */
-  @Input({transform: coercionBoolean})
-  hideConfigBar = false;
+  /** 정렬규칙 */
+  @Input() ordering: ISdSheetColumnOrderingVM[] = [];
+  /** 정렬규칙 변경 이벤트 */
+  @Output() orderingChange = new EventEmitter<ISdSheetColumnOrderingVM[]>();
 
-  /**
-   * BORDER를 없애는등 다른 박스안에 완전히 붙임
-   */
-  @Input({transform: coercionBoolean})
-  @HostBinding("attr.sd-inset")
-  inset = false;
+  @Input({transform: coercionNumber}) displayPageLength = 10;
+  /** [pagination] 총 페이지 길이 */
+  @Input({transform: coercionNonNullableNumber}) pageLength = 0;
+  /** [pagination] 한 페이지에 표시할 항목수 (설정된 경우, 'pageLength'가 무시되고, 자동계산 됨) */
+  @Input({transform: coercionNumber}) pageItemCount?: number;
+  /** [pagination] 현재 표시 페이지 */
+  @Input({transform: coercionNonNullableNumber}) page = 0;
+  /** [pagination] 현재 표시페이지 변화 이벤트 */
+  @Output() pageChange = new EventEmitter<number>();
 
-  /**
-   * 정렬규칙
-   */
-  @Input()
-  ordering: ISdSheetColumnOrderingVM[] = [];
-
-  /**
-   * 정렬규칙 변경 이벤트
-   */
-  @Output()
-  orderingChange = new EventEmitter<ISdSheetColumnOrderingVM[]>();
-
-  /**
-   * [pagination] 현재 표시 페이지
-   */
-  @Input({transform: coercionNonNullableNumber})
-  page = 0;
-
-  /**
-   * [pagination] 현재 표시페이지 변화 이벤트
-   */
-  @Output()
-  pageChange = new EventEmitter<number>();
-
-  /**
-   * [pagination] 총 페이지 길이
-   */
-  @Input({transform: coercionNonNullableNumber})
-  pageLength = 0;
-
-  /**
-   * [pagination] 한 페이지에 표시할 항목수 (설정된 경우, 'pageLength'가 무시되고, 자동계산 됨)
-   */
-  @Input({transform: coercionNumber})
-  pageItemCount?: number;
-
-  @Input({transform: coercionNumber})
-  displayPageLength = 10;
-
-  /**
-   * 항목들
-   */
-  @Input()
-  items: T[] = [];
+  /** 항목들 */
+  @Input() items: T[] = [];
 
   /**
    * 데이터 키를 가져오기 위한 함수 (ROW별로 반드시 하나의 값을 반환해야함)
    * @param index 'items'내의 index
    * @param item items[index] 데이터
    */
-  @Input()
-  trackByFn: TSdFnInfo<(index: number, item: T) => any> = [(index, item) => item];
+  @Input() trackByFn: TSdFnInfo<(index: number, item: T) => any> = [(index, item) => item];
+  @Input() trackByKey?: keyof T;
 
-  @Input()
-  trackByKey?: keyof T;
+  /** 선택모드 (single = 단일선택, multi = 다중선택) */
+  @Input() selectMode?: "single" | "multi";
+  /** 선택된 항목들 */
+  @Input() selectedItems: T[] = [];
+  /** 선택된 항목 변경 이벤트 */
+  @Output() selectedItemsChange = new EventEmitter<T[]>();
 
-  /**
-   * 선택모드 (single = 단일선택, multi = 다중선택)
-   */
-  @Input()
-  selectMode?: "single" | "multi";
+  /** 자동선택모드 (undefined = 사용안함, click = 셀 클릭시 해당 ROW 선택, focus = 셀 포커싱시 해당 ROW 선택) */
+  @Input() autoSelect?: "click" | "focus";
 
-  /**
-   * 선택된 항목들
-   */
-  @Input()
-  selectedItems: T[] = [];
+  /** 항목별로 선택가능여부를 설정하는 함수 */
+  @Input() getIsItemSelectableFn?: TSdFnInfo<(item: T) => boolean>;
 
-  /**
-   * 선택된 항목 변경 이벤트
-   */
-  @Output()
-  selectedItemsChange = new EventEmitter<T[]>();
+  /** 확장된 항목 목록 */
+  @Input() expandedItems: T[] = [];
+  @Input({transform: coercionBoolean}) busy = false;
 
-  /**
-   * 자동선택모드 (undefined = 사용안함, click = 셀 클릭시 해당 ROW 선택, focus = 셀 포커싱시 해당 ROW 선택)
-   */
-  @Input()
-  autoSelect?: "click" | "focus";
+  /** Children 설정하는 함수 */
+  @Input() getChildrenFn?: TSdFnInfo<(index: number, item: T) => (T[] | undefined)>;
+  @Input() getItemCellClass?: (item: T, colKey: string) => (string | undefined);
+  @Input() getItemCellStyle?: (item: T, colKey: string) => (string | undefined);
 
-  /**
-   * 항목별로 선택가능여부를 설정하는 함수
-   */
-  @Input()
-  getIsItemSelectableFn?: TSdFnInfo<(item: T) => boolean>;
-
-  /**
-   * 확장된 항목 목록
-   */
-  @Input()
-  expandedItems: T[] = [];
-
-  @Input({transform: coercionBoolean})
-  busy = false;
-
-  /**
-   * 확장된 항목 변경 이벤트
-   */
-  @Output()
-  expandedItemsChange = new EventEmitter<T[]>();
-
-  /**
-   * 항목 키 다운 이벤트
-   */
-  @Output()
-  itemKeydown = new EventEmitter<ISdSheetItemKeydownEventParam<T>>();
-
-  /**
-   * 셀 키 다운 이벤트
-   */
-  @Output()
-  cellKeydown = new EventEmitter<ISdSheetItemKeydownEventParam<T>>();
-
-  /**
-   * Children 설정하는 함수
-   */
-  @Input()
-  getChildrenFn?: TSdFnInfo<(index: number, item: T) => (T[] | undefined)>;
-
-  @Input()
-  getItemCellClass?: (item: T, colKey: string) => (string | undefined);
-
-  @Input()
-  getItemCellStyle?: (item: T, colKey: string) => (string | undefined);
+  /** 확장된 항목 변경 이벤트 */
+  @Output() expandedItemsChange = new EventEmitter<T[]>();
+  /** 항목 키 다운 이벤트 */
+  @Output() itemKeydown = new EventEmitter<ISdSheetItemKeydownEventParam<T>>();
+  /** 셀 키 다운 이벤트 */
+  @Output() cellKeydown = new EventEmitter<ISdSheetItemKeydownEventParam<T>>();
 
   displayColumnDefs: IColumnDef<T>[] = [];
   displayHeaderDefTable: (IHeaderDef<T> | undefined)[][] = [];
@@ -643,11 +569,6 @@ export class SdSheetControl<T> implements DoCheck {
   hasSummaryTemplate = false;
   hasExpandableItem = false;
   isAllItemsExpanded = false;
-
-  trackByFnForHeaderDefTable = (i: number, item: (IHeaderDef<T> | undefined)[]): number => i;
-  trackByFnForHeaderCell = (i: number, item: IHeaderDef<T> | undefined): number => i;
-  trackByFnForColumnDef = (i: number, item: IColumnDef<T>): string => item.control.key;
-  trackByFnForDisplayItemDef = (i: number, item: IItemDef<T>): any => this.trackByFn[0](i, item.item);
 
   #config?: ISdSheetConfig;
 

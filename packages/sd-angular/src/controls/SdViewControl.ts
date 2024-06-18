@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
+import {ChangeDetectionStrategy, Component, Input} from "@angular/core";
 import {coercionBoolean} from "../utils/commons";
 
 @Component({
@@ -17,13 +17,12 @@ import {coercionBoolean} from "../utils/commons";
         height: 100%;
       }
     }
-  `]
+  `],
+  host: {
+    "[attr.sd-fill]": "fill"
+  }
 })
 export class SdViewControl {
-  @Input()
-  value?: any;
-
-  @Input({transform: coercionBoolean})
-  @HostBinding("attr.sd-fill")
-  fill = false;
+  @Input() value?: any;
+  @Input({transform: coercionBoolean}) fill = false;
 }

@@ -10,42 +10,18 @@ import {coercionBoolean} from "../utils/commons";
   standalone: true
 })
 export class SdSheetColumnDirective<T> {
-  @Input({required: true})
-  key!: string;
+  @Input({required: true}) key!: string;
+  @Input({transform: coercionBoolean}) fixed = false;
+  @Input() header?: string | string[];
+  @Input() headerStyle?: string;
+  @Input() tooltip?: string;
+  @Input() width?: string;
+  @Input({transform: coercionBoolean}) useOrdering = false;
+  @Input({transform: coercionBoolean}) resizable = false;
+  @Input({transform: coercionBoolean}) hidden = false;
+  @Input({transform: coercionBoolean}) collapse = false;
 
-  @Input({transform: coercionBoolean})
-  fixed = false;
-
-  @Input()
-  header?: string | string[];
-
-  @Input()
-  headerStyle?: string;
-
-  @Input()
-  tooltip?: string;
-
-  @Input()
-  width?: string;
-
-  @Input({transform: coercionBoolean})
-  useOrdering = false;
-
-  @Input({transform: coercionBoolean})
-  resizable = false;
-
-  @Input({transform: coercionBoolean})
-  hidden = false;
-
-  @Input({transform: coercionBoolean})
-  collapse = false;
-
-  @ContentChild(SdSheetColumnCellTemplateDirective, {read: TemplateRef})
-  public cellTemplateRef?: TemplateRef<SdSheetColumnCellTemplateContext<T>>;
-
-  @ContentChild("header", {static: true})
-  public headerTemplateRef?: TemplateRef<void>;
-
-  @ContentChild("summary", {static: true})
-  public summaryTemplateRef?: TemplateRef<void>;
+  @ContentChild(SdSheetColumnCellTemplateDirective, {read: TemplateRef}) cellTemplateRef?: TemplateRef<SdSheetColumnCellTemplateContext<T>>;
+  @ContentChild("header", {static: true}) headerTemplateRef?: TemplateRef<void>;
+  @ContentChild("summary", {static: true}) summaryTemplateRef?: TemplateRef<void>;
 }

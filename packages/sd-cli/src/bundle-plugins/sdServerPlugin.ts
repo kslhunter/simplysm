@@ -35,7 +35,12 @@ export function sdServerPlugin(conf: {
 
 
       build.onLoad({filter: /\.ts$/}, (args) => {
-        const contents = buildResult.emittedFilesCacheMap.get(path.normalize(args.path))!.last()!.text;
+        const emittedJsFile = buildResult.emittedFilesCacheMap.get(path.normalize(args.path))?.last();
+        if (!emittedJsFile) {
+          throw new Error(`ts 빌더 결과 emit 파일이 존재하지 않습니다. ${args.path}`);
+        }
+
+        const contents = emittedJsFile.text;
         return {contents, loader: "js"};
       });
 

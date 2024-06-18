@@ -1,12 +1,4 @@
-import {
-  AfterContentInit,
-  ChangeDetectionStrategy,
-  Component,
-  ElementRef,
-  HostBinding,
-  inject,
-  Input
-} from "@angular/core";
+import {AfterContentInit, ChangeDetectionStrategy, Component, ElementRef, Input, ViewChild} from "@angular/core";
 import {coercionBoolean} from "../utils/commons";
 import {SdEventsDirective} from "../directives/SdEventsDirective";
 
@@ -18,9 +10,10 @@ import {SdEventsDirective} from "../directives/SdEventsDirective";
     SdEventsDirective
   ],
   template: `
-    <div class="_content"
+    <div #contentEl
+         class="_content"
          (sdResize)="onContentResize()"
-         [style.margin-top]="contentMarginTop">
+         [style.margin-top]="open ? '' : (-this.contentHeight) + 'px'">
       <ng-content></ng-content>
     </div>`,
   styles: [/* language=SCSS */ `
@@ -36,26 +29,23 @@ import {SdEventsDirective} from "../directives/SdEventsDirective";
         transition: margin-top .1s ease-out;
       }
     }
-  `]
+  `],
+  host: {
+    "[attr.sd-open]": "open"
+  }
 })
 export class SdCollapseControl implements AfterContentInit {
-  @Input({transform: coercionBoolean})
-  @HostBinding("attr.sd-open")
-  open = false;
+  @Input({transform: coercionBoolean}) open = false;
+
+  @ViewChild("contentEl", {static: true}) contentElRef!: ElementRef<HTMLElement>;
 
   contentHeight = 0;
 
-  get contentMarginTop(): string | undefined {
-    return this.open ? undefined : `${-this.contentHeight}px`;
-  }
-
-  #elRef: ElementRef<HTMLElement> = inject(ElementRef);
-
   ngAfterContentInit() {
-    this.contentHeight = this.#elRef.nativeElement.findFirst<HTMLDivElement>("> ._content")!.offsetHeight;
+    this.contentHeight = this.contentElRef.nativeElement.offsetHeight;
   }
 
   onContentResize() {
-    this.contentHeight = this.#elRef.nativeElement.findFirst<HTMLDivElement>("> ._content")!.offsetHeight;
+    this.contentHeight = this.contentElRef.nativeElement.offsetHeight;
   }
 }

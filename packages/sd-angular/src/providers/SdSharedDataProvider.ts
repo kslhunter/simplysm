@@ -127,12 +127,12 @@ export class SdSharedDataProvider {
         SdSharedDataChangeEvent,
         dataType,
         async (changeKeys) => {
-          await this._reloadAsync(dataType, changeKeys);
+          await this.#reloadAsync(dataType, changeKeys);
         }
       );
   }
 
-  private async _reloadAsync(dataType: string, changeKeys?: (string | number)[]) {
+  async #reloadAsync(dataType: string, changeKeys?: (string | number)[]) {
     const info = this.#infoRecord[dataType];
     if (!info) throw new Error(`'${dataType}'에 대한 'SdSharedData' 로직 정보가 없습니다.`);
 

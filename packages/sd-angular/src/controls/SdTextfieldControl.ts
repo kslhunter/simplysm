@@ -5,7 +5,6 @@ import {
   DoCheck,
   ElementRef,
   EventEmitter,
-  HostBinding,
   HostListener,
   inject,
   Injector,
@@ -15,48 +14,46 @@ import {
 import {DateOnly, DateTime, JsonConvert, NumberUtil, StringUtil, Time} from "@simplysm/sd-core-common";
 import {coercionBoolean, coercionNumber, getSdFnCheckData, TSdFnInfo} from "../utils/commons";
 import {SdNgHelper} from "../utils/SdNgHelper";
-import {NgIf} from "@angular/common";
 
 @Component({
   selector: "sd-textfield",
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [
-    NgIf
-  ],
+  imports: [],
   template: `
     <div [style]="inputStyle"
          [class]="['_contents', inputClass].filterExists().join(' ')"
          [attr.title]="title ?? placeholder"
          [style.visibility]="!readonly && !disabled ? 'hidden' : undefined">
-      <span *ngIf="controlType === 'password'" class="tx-trans-light">
+      @if (controlType === 'password') {
+        <span class="tx-trans-light">
         ****
       </span>
-      <ng-container *ngIf="controlType !== 'password'">
-        <ng-container *ngIf="controlValue">
+      } @else {
+        @if (controlValue) {
           <pre>{{ controlValueText }}</pre>
-        </ng-container>
-        <ng-container *ngIf="!controlValue">
+        } @else {
           <div class="tx-trans-lighter">{{ placeholder }}</div>
-        </ng-container>
-      </ng-container>
+        }
+      }
     </div>
-    <input *ngIf="!readonly && !disabled"
-           [type]="controlType"
-           [value]="controlValue"
-           [attr.placeholder]="placeholder"
-           [required]="required"
-           [attr.min]="controlMin"
-           [attr.max]="controlMax"
-           [attr.minlength]="minlength"
-           [attr.maxlength]="maxlength"
-           [attr.step]="controlStep"
-           [attr.pattern]="pattern"
-           [attr.title]="title ?? placeholder"
-           (input)="onInput($event)"
-           [attr.inputmode]="type === 'number' ? 'numeric' : undefined"
-           [style]="inputStyle"
-           [class]="inputClass"/>
+    @if (!readonly && !disabled) {
+      <input [type]="controlType"
+             [value]="controlValue"
+             [attr.placeholder]="placeholder"
+             [required]="required"
+             [attr.min]="controlMin"
+             [attr.max]="controlMax"
+             [attr.minlength]="minlength"
+             [attr.maxlength]="maxlength"
+             [attr.step]="controlStep"
+             [attr.pattern]="pattern"
+             [attr.title]="title ?? placeholder"
+             (input)="onInput($event)"
+             [attr.inputmode]="type === 'number' ? 'numeric' : undefined"
+             [style]="inputStyle"
+             [class]="inputClass"/>
+    }
 
     <div class="_invalid-indicator"></div>`,
   styles: [/* language=SCSS */ `
@@ -149,7 +146,7 @@ import {NgIf} from "@angular/common";
           body.sd-theme-mobile &,
           body.sd-theme-kiosk & {
             border-bottom-color: var(--theme-#{$key}-lighter);
-            
+
             &:focus {
               border-bottom-color: var(--theme-#{$key}-default);
             }
@@ -359,89 +356,46 @@ import {NgIf} from "@angular/common";
         }
       }
     }
-  `]
+  `],
+  host: {
+    "[attr.sd-type]": "type",
+    "[attr.sd-disabled]": "disabled",
+    "[attr.sd-readonly]": "readonly",
+    "[attr.sd-inline]": "inline",
+    "[attr.sd-inset]": "inset",
+    "[attr.sd-size]": "size",
+    "[attr.sd-theme]": "theme",
+    "[attr.sd-invalid]": "errorMessage"
+  }
 })
 export class SdTextfieldControl<K extends TSdTextfieldType> implements DoCheck {
-  @Input({required: true})
-  @HostBinding("attr.sd-type")
-  type!: K;
+  @Input() value?: TSdTextfieldValue<K>;
+  @Output() valueChange = new EventEmitter<TSdTextfieldValue<K> | undefined>();
 
-  @Input()
-  placeholder?: string;
+  @Input({required: true}) type!: K;
+  @Input() placeholder?: string;
+  @Input() title?: string;
+  @Input({transform: coercionBoolean}) disabled = false;
+  @Input({transform: coercionBoolean}) readonly = false;
+  @Input({transform: coercionBoolean}) required = false;
+  @Input() min?: TSdTextfieldValue<K>;
+  @Input() max?: TSdTextfieldValue<K>;
+  @Input({transform: coercionNumber}) minlength?: number;
+  @Input({transform: coercionNumber}) maxlength?: number;
 
-  @Input()
-  title?: string;
+  /** 10, 1, 0.1, 0.01, 0.01 방식으로 입력 */
+  @Input({transform: coercionNumber}) step?: number;
+  @Input() pattern?: string;
+  @Input({transform: coercionBoolean}) inline = false;
+  @Input({transform: coercionBoolean}) inset = false;
+  @Input() size?: "sm" | "lg";
+  @Input() validatorFn?: TSdFnInfo<(value: TSdTextfieldValue<K> | undefined) => string | undefined>;
+  @Input() theme?: "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey";
+  @Input() inputStyle?: string;
+  @Input() inputClass?: string;
+  @Input() format?: string;
+  @Input({transform: coercionBoolean}) useNumberComma = true;
 
-  @Input()
-  value?: TSdTextfieldValue<K>;
-
-  @Output()
-  valueChange = new EventEmitter<TSdTextfieldValue<K> | undefined>();
-
-  @Input({transform: coercionBoolean})
-  @HostBinding("attr.sd-disabled")
-  disabled = false;
-
-  @Input({transform: coercionBoolean})
-  @HostBinding("attr.sd-readonly")
-  readonly = false;
-
-  @Input({transform: coercionBoolean})
-  required = false;
-
-  @Input()
-  min?: TSdTextfieldValue<K>;
-
-  @Input()
-  max?: TSdTextfieldValue<K>;
-
-  @Input({transform: coercionNumber})
-  minlength?: number;
-
-  @Input({transform: coercionNumber})
-  maxlength?: number;
-
-  /**
-   * 10, 1, 0.1, 0.01, 0.01 방식으로 입력
-   */
-  @Input({transform: coercionNumber})
-  step?: number;
-
-  @Input()
-  pattern?: string;
-
-  @Input({transform: coercionBoolean})
-  @HostBinding("attr.sd-inline")
-  inline = false;
-
-  @Input({transform: coercionBoolean})
-  @HostBinding("attr.sd-inset")
-  inset = false;
-
-  @Input()
-  @HostBinding("attr.sd-size")
-  size?: "sm" | "lg";
-
-  @Input()
-  validatorFn?: TSdFnInfo<(value: TSdTextfieldValue<K> | undefined) => string | undefined>;
-
-  @Input()
-  @HostBinding("attr.sd-theme")
-  theme?: "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey";
-
-  @Input()
-  inputStyle?: string;
-
-  @Input()
-  inputClass?: string;
-
-  @Input()
-  format?: string;
-
-  @Input({transform: coercionBoolean})
-  useNumberComma = true;
-
-  @HostBinding("attr.sd-invalid")
   errorMessage?: string;
 
   controlType = "text";

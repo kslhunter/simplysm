@@ -25,11 +25,8 @@ import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from "@
   `]
 })
 export class SdTabControl {
-  @Input()
-  value?: any;
-
-  @Output()
-  valueChange = new EventEmitter<any>();
+  @Input() value?: any;
+  @Output() valueChange = new EventEmitter<any>();
 
   setValue(value: any) {
     if (this.valueChange.observed) {

@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
+import {ChangeDetectionStrategy, Component, Input} from "@angular/core";
 import {coercionBoolean} from "../utils/commons";
 
 @Component({
@@ -63,10 +63,11 @@ import {coercionBoolean} from "../utils/commons";
         }
       }
     }
-  `]
+  `],
+  host: {
+    "[attr.disabled]": "disabled"
+  }
 })
 export class SdTopbarMenuControl {
-  @Input({transform: coercionBoolean})
-  @HostBinding("attr.disabled")
-  disabled = false;
+  @Input({transform: coercionBoolean}) disabled = false;
 }

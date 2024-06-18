@@ -15,19 +15,12 @@ import {SdNgHelper} from "../utils/SdNgHelper";
          [style.margin-bottom]="'-5px'"></svg>`
 })
 export class SdBarcodeControl implements DoCheck {
-  @Input()
-  value?: string;
+  @Input() value?: string;
+  @Input() type = "code128";
+  @Input({transform: coercionNumber}) lineWidth = 1;
+  @Input({transform: coercionNumber}) height = 58;
 
-  @Input()
-  type = "code128";
-
-  @Input({transform: coercionNumber})
-  lineWidth = 1;
-
-  @Input({transform: coercionNumber})
-  height = 58;
-
-  #elRef: ElementRef<HTMLElement> = inject(ElementRef);
+  #elRef = inject<ElementRef<HTMLElement>>(ElementRef);
 
   #sdNgHelper = new SdNgHelper(inject(Injector));
 
@@ -47,11 +40,6 @@ export class SdBarcodeControl implements DoCheck {
           await qrcode.toCanvas(canvasEl, this.value ?? "", {
             scale: this.lineWidth
           });
-
-          /*svgEl.outerHTML = await qrcode.toString(this.value ?? "", {
-            type: "svg",
-            scale: this.lineWidth
-          });*/
         }
         else {
           const svgEl = this.#elRef.nativeElement.findFirst<SVGElement>("> svg");

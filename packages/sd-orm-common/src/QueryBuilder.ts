@@ -911,9 +911,21 @@ IF EXISTS (
 
 ${Object.keys(def.updateRecord).length > 0 ? this.update({...def, record: def.updateRecord}) : "LEAVE proc_label;"}
 
+${def.output ? this.select(def) + ";" : ""}
+
 ELSE
 
 ${Object.keys(def.insertRecord).length > 0 ? this.insert({...def, record: def.insertRecord}) : "LEAVE proc_label;"}
+
+${def.output ? (
+        this.select({
+          ...def,
+          where: def.pkColNames.map(pkColName => (
+            pkColName === def.aiKeyName ? [this.wrap(def.aiKeyName), " = ", "LAST_INSERT_ID()"]
+              : [this.wrap(pkColName), " = ", this.getQueryOfQueryValue(def.insertRecord[this.wrap(pkColName)])]
+          ))
+        })
+      ) + ";" : ""}
 
 END IF;
 

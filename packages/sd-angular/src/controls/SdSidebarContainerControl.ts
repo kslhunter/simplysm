@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, HostBinding, inject, OnInit} from "@angular/core";
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit} from "@angular/core";
 import {NavigationStart, Router} from "@angular/router";
 
 @Component({
@@ -53,10 +53,12 @@ import {NavigationStart, Router} from "@angular/router";
         }
       }
     }
-  `]
+  `],
+  host: {
+    "[attr.sd-toggle]": "toggle"
+  }
 })
 export class SdSidebarContainerControl implements OnInit {
-  @HostBinding("attr.sd-toggle")
   toggle = false;
 
   #router: Router | null = inject(Router, {optional: true});

@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
+import {ChangeDetectionStrategy, Component, Input} from "@angular/core";
 import {coercionBoolean} from "../utils/commons";
 
 @Component({
@@ -87,20 +87,15 @@ import {coercionBoolean} from "../utils/commons";
         }
       }*/
     }
-  `]
+  `],
+  host: {
+    "[attr.sd-fill]": "fill",
+    "[attr.sd-size]": "size"
+  }
 })
 export class SdContentBoxControl {
-  @Input({transform: coercionBoolean})
-  @HostBinding("attr.sd-fill")
-  fill = false;
-
-  @Input()
-  contentStyle?: string;
-
-  @Input()
-  contentClass?: string;
-
-  @Input()
-  @HostBinding("attr.sd-size")
-  size?: "lg";
+  @Input({transform: coercionBoolean}) fill = false;
+  @Input() contentStyle?: string;
+  @Input() contentClass?: string;
+  @Input() size?: "lg";
 }

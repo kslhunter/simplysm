@@ -3,7 +3,6 @@ import {
   Component,
   DoCheck,
   EventEmitter,
-  HostBinding,
   inject,
   Injector,
   Input,
@@ -16,25 +15,23 @@ import {SdGapControl} from "./SdGapControl";
 import {SdAnchorControl} from "./SdAnchorControl";
 import {SdNgHelper} from "../utils/SdNgHelper";
 import {SdIconControl} from "./SdIconControl";
-import {NgForOf} from "@angular/common";
 import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
-
-export interface ISdStatePresetVM {
-  name: string;
-  state: any;
-}
 
 @Component({
   selector: "sd-state-preset",
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [SdAnchorControl, SdGapControl, SdIconControl, NgForOf],
+  imports: [
+    SdAnchorControl,
+    SdGapControl,
+    SdIconControl,
+  ],
   template: `
     <sd-anchor (click)="onAddButtonClick()">
       <sd-icon [icon]="icons.star" class="tx-theme-warning-default" fixedWidth/>
     </sd-anchor>
     <sd-gap width="sm"></sd-gap>
-    <ng-container *ngFor="let preset of presets; trackBy: trackByFnForPreset">
+    @for (preset of presets; track preset.name) {
       <div>
         <sd-anchor (click)="onItemClick(preset)"
                    class="tx-trans-default">
@@ -48,7 +45,7 @@ export interface ISdStatePresetVM {
         </sd-anchor>
       </div>
       <sd-gap width="sm"></sd-gap>
-    </ng-container>
+    }
   `,
   styles: [/* language=SCSS */ `
     :host {
@@ -96,30 +93,23 @@ export interface ISdStatePresetVM {
         }
       }
     }
-  `]
+  `],
+  host: {
+    "[attr.sd-size]": "size"
+  }
 })
 export class SdStatePresetControl implements DoCheck {
-  icons = inject(SdAngularOptionsProvider).icons;
-
-  @Input({required: true})
-  key!: string;
-
-  @Input()
-  state?: any;
-
-  @Output()
-  stateChange = new EventEmitter<any>();
-
-  @Input()
-  @HostBinding("attr.sd-size")
-  size?: "sm" | "lg";
-
-  presets: ISdStatePresetVM[] = [];
-
-  trackByFnForPreset = (i: number, item: ISdStatePresetVM): string => item.name;
-
   #sdSystemConfig = inject(SdSystemConfigProvider);
   #sdToast = inject(SdToastProvider);
+  icons = inject(SdAngularOptionsProvider).icons;
+
+  @Input() state?: any;
+  @Output() stateChange = new EventEmitter<any>();
+
+  @Input({required: true}) key!: string;
+  @Input() size?: "sm" | "lg";
+
+  presets: ISdStatePresetVM[] = [];
 
   #sdNgHelper = new SdNgHelper(inject(Injector));
 
@@ -170,4 +160,9 @@ export class SdStatePresetControl implements DoCheck {
 
     this.#sdToast.info(`현재 상태가 ${preset.name}에 저장되었습니다.`);
   }
+}
+
+export interface ISdStatePresetVM {
+  name: string;
+  state: any;
 }

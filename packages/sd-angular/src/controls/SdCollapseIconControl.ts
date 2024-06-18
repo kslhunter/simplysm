@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
+import {ChangeDetectionStrategy, Component, Input} from "@angular/core";
 import {IconProp} from "@fortawesome/fontawesome-svg-core";
 import {NumberUtil} from "@simplysm/sd-core-common";
 import {coercionBoolean} from "../utils/commons";
@@ -30,17 +30,14 @@ import {SdIconControl} from "./SdIconControl";
         }
       }
     }
-  `]
+  `],
+  host: {
+    "[attr.sd-open]": "open",
+    "[attr.sd-open-rotate]": "openRotate"
+  }
 })
 export class SdCollapseIconControl {
-  @Input({transform: coercionBoolean})
-  @HostBinding("attr.sd-open")
-  open = false;
-
-  @Input({required: true})
-  icon!: IconProp;
-
-  @Input({transform: (val: "180" | "90" | 180 | 90) => NumberUtil.parseInt(val)})
-  @HostBinding("attr.sd-open-rotate")
-  public openRotate: 180 | 90 = 90;
+  @Input({transform: coercionBoolean}) open = false;
+  @Input({required: true}) icon!: IconProp;
+  @Input({transform: (val: "180" | "90" | 180 | 90) => NumberUtil.parseInt(val)}) openRotate: 180 | 90 = 90;
 }

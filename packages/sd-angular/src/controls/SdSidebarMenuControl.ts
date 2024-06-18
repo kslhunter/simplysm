@@ -2,7 +2,7 @@ import {ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, Input, On
 import {NavigationEnd, Router} from "@angular/router";
 import {TSdFnInfo} from "../utils/commons";
 import {SdListControl} from "./SdListControl";
-import {NgForOf, NgIf, NgTemplateOutlet} from "@angular/common";
+import {NgTemplateOutlet} from "@angular/common";
 import {SdTypedTemplateDirective} from "../directives/SdTypedTemplateDirective";
 import {SdListItemControl} from "./SdListItemControl";
 import {SdIconControl} from "./SdIconControl";
@@ -18,9 +18,7 @@ import {IconProp} from "@fortawesome/fontawesome-svg-core";
     NgTemplateOutlet,
     SdTypedTemplateDirective,
     SdListItemControl,
-    NgForOf,
     SdIconControl,
-    NgIf,
     SdRouterLinkDirective
   ],
   template: `
@@ -32,7 +30,7 @@ import {IconProp} from "@fortawesome/fontawesome-svg-core";
                    [ngTemplateOutletContext]="{menus: menus, depth: 0}"></ng-template>
     </sd-list>
     <ng-template #itemTemplate [typed]="itemTemplateType" let-currMenus="menus" let-depth="depth">
-      <ng-container *ngFor="let menu of currMenus; trackBy: trackByForMenu;">
+      @for (menu of currMenus; track menu.codeChain.join('.')) {
         <sd-list-item [contentClass]="depth === 0 ? 'pv-default' : ''"
                       [contentStyle]="'padding-left: ' + ((depth + 1) * 6) + 'px'"
                       [sdRouterLink]="(menu.children || menu.url) ? undefined: ['/home/' + menu.codeChain.join('/')]"
@@ -43,12 +41,14 @@ import {IconProp} from "@fortawesome/fontawesome-svg-core";
             <sd-icon [icon]="menu.icon" fixedWidth/>&nbsp;
           }
           {{ menu.title }}
-          <sd-list *ngIf="menu.children" inset>
-            <ng-template [ngTemplateOutlet]="itemTemplate"
-                         [ngTemplateOutletContext]="{menus: menu.children, depth: depth + 1}"></ng-template>
-          </sd-list>
+          @if (menu.children) {
+            <sd-list inset>
+              <ng-template [ngTemplateOutlet]="itemTemplate"
+                           [ngTemplateOutletContext]="{menus: menu.children, depth: depth + 1}"></ng-template>
+            </sd-list>
+          }
         </sd-list-item>
-      </ng-container>
+      }
     </ng-template>`,
   styles: [/* language=SCSS */ `
     :host {
@@ -81,16 +81,9 @@ export class SdSidebarMenuControl implements OnInit {
   #router = inject(Router);
   #cdr = inject(ChangeDetectorRef);
 
-  @Input()
-  menus: ISdSidebarMenuVM[] = [];
-
-  @Input()
-  layout?: "accordion" | "flat";
-
-  @Input()
-  getMenuIsSelectedFn?: TSdFnInfo<(menu: ISdSidebarMenuVM) => boolean>;
-
-  trackByForMenu = (i: number, menu: ISdSidebarMenuVM): string => menu.codeChain.join(".");
+  @Input() menus: ISdSidebarMenuVM[] = [];
+  @Input() layout?: "accordion" | "flat";
+  @Input() getMenuIsSelectedFn?: TSdFnInfo<(menu: ISdSidebarMenuVM) => boolean>;
 
   #pageCode = "";
 

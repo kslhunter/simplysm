@@ -1,18 +1,18 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
-  effect,
   ElementRef,
   forwardRef,
   HostListener,
   inject,
-  input
+  Input,
+  OnInit
 } from "@angular/core";
 import {SdDockContainerControl} from "./SdDockContainerControl";
 import {SdSystemConfigProvider} from "../providers/SdSystemConfigProvider";
 import {coercionBoolean} from "../utils/commons";
 import {ISdResizeEvent} from "../plugins/SdResizeEventPlugin";
-import {NgIf} from "@angular/common";
 import {SdEventsDirective} from "../directives/SdEventsDirective";
 
 @Component({
@@ -20,12 +20,13 @@ import {SdEventsDirective} from "../directives/SdEventsDirective";
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
-    NgIf,
     SdEventsDirective
   ],
   template: `
     <ng-content></ng-content>
-    <div class="_resize-bar" *ngIf="resizable" (mousedown.outside)="onResizeBarMousedownOutside($event)"></div>`,
+    @if (resizable) {
+      <div class="_resize-bar" (mousedown.outside)="onResizeBarMousedownOutside($event)"></div>
+    }`,
   styles: [/* language=SCSS */ `
     :host {
       display: block;
@@ -80,45 +81,48 @@ import {SdEventsDirective} from "../directives/SdEventsDirective";
     }
   `],
   host: {
-    "[attr.sd-position]": "position()",
-    "[attr.sd-resizable]": "resizable()",
-    "[attr.sd-hide-resize-border]": "hideResizeBorder()"
+    "[attr.sd-position]": "position",
+    "[attr.sd-resizable]": "resizable",
+    "[attr.sd-hide-resize-border]": "hideResizeBorder"
   }
 })
-export class SdDockControl {
-  #parentControl: SdDockContainerControl = inject(forwardRef(() => SdDockContainerControl));
+export class SdDockControl implements OnInit {
+  #cdr = inject(ChangeDetectorRef);
   #sdSystemConfig = inject(SdSystemConfigProvider);
+  #parentControl: SdDockContainerControl = inject(forwardRef(() => SdDockContainerControl));
 
   elRef: ElementRef<HTMLElement> = inject(ElementRef);
 
-  key = input<string>();
-  position = input<"top" | "right" | "bottom" | "left">("top");
-  resizable = input(false, {transform: coercionBoolean});
-  hideResizeBorder = input(false, {transform: coercionBoolean});
+  @Input() key?: string;
+  @Input() position: "top" | "right" | "bottom" | "left" = "top";
+  @Input({transform: coercionBoolean}) resizable = false;
+  @Input({transform: coercionBoolean}) hideResizeBorder = false;
 
-  constructor() {
-    effect(async () => {
-      if (this.key() != null) {
-        const config = await this.#sdSystemConfig.getAsync(`sd-dock.${this.key()}`);
+  #config?: { size?: string };
 
-        if (this.resizable() && config != null && config.size != null) {
-          if (["right", "left"].includes(this.position())) {
-            this.elRef.nativeElement.style.width = config.size;
-          }
-          if (["top", "bottom"].includes(this.position())) {
-            this.elRef.nativeElement.style.height = config.size;
-          }
+  async ngOnInit() {
+    if (this.key != null) {
+      this.#config = await this.#sdSystemConfig.getAsync(`sd-dock.${this.key}`);
+
+      if (this.resizable && this.#config && this.#config.size !== undefined) {
+        if (["right", "left"].includes(this.position)) {
+          this.elRef.nativeElement.style.width = this.#config.size;
+        }
+        if (["top", "bottom"].includes(this.position)) {
+          this.elRef.nativeElement.style.height = this.#config.size;
         }
       }
-    });
+
+      this.#cdr.markForCheck();
+    }
   }
 
   @HostListener("sdResize.outside", ["$event"])
   onResizeOutside(event: ISdResizeEvent) {
-    if (["top", "bottom"].includes(this.position()) && event.heightChanged) {
+    if (["top", "bottom"].includes(this.position) && event.heightChanged) {
       this.#parentControl.redrawOutside();
     }
-    if (["right", "left"].includes(this.position()) && event.widthChanged) {
+    if (["right", "left"].includes(this.position) && event.widthChanged) {
       this.#parentControl.redrawOutside();
     }
   }
@@ -135,13 +139,13 @@ export class SdDockControl {
       e.stopPropagation();
       e.preventDefault();
 
-      if (this.position() === "bottom") {
+      if (this.position === "bottom") {
         thisEl.style.height = `${startHeight - e.clientY + startY}px`;
       }
-      else if (this.position() === "right") {
+      else if (this.position === "right") {
         thisEl.style.width = `${startWidth - e.clientX + startX}px`;
       }
-      else if (this.position() === "top") {
+      else if (this.position === "top") {
         thisEl.style.height = `${startHeight + e.clientY - startY}px`;
       }
       else { // left
@@ -156,16 +160,16 @@ export class SdDockControl {
       document.removeEventListener("mousemove", doDrag);
       document.removeEventListener("mouseup", stopDrag);
 
-      if (this.key() != null) {
-        if (["right", "left"].includes(this.position())) {
-          await this.#sdSystemConfig.setAsync(`sd-dock.${this.key}`, {
-            size: thisEl.style.width
-          });
+      if (this.key != null) {
+        this.#config = this.#config ?? {};
+
+        if (["right", "left"].includes(this.position)) {
+          this.#config.size = thisEl.style.width;
+          await this.#sdSystemConfig.setAsync(`sd-dock.${this.key}`, this.#config);
         }
         else {
-          await this.#sdSystemConfig.setAsync(`sd-dock.${this.key}`, {
-            size: thisEl.style.width
-          });
+          this.#config.size = thisEl.style.height;
+          await this.#sdSystemConfig.setAsync(`sd-dock.${this.key}`, this.#config);
         }
       }
     };

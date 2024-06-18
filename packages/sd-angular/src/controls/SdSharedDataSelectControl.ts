@@ -24,7 +24,7 @@ import {SdTextfieldControl} from "./SdTextfieldControl";
 import {SdAnchorControl} from "./SdAnchorControl";
 import {SdPaneControl} from "./SdPaneControl";
 import {SdSelectItemControl} from "./SdSelectItemControl";
-import {NgIf, NgTemplateOutlet} from "@angular/common";
+import {NgTemplateOutlet} from "@angular/common";
 import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 
 @Component({
@@ -41,7 +41,6 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
     SdSelectItemControl,
     SdItemOfTemplateDirective,
     NgTemplateOutlet,
-    NgIf
   ],
   template: `
     <sd-select [value]="value"
@@ -52,7 +51,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
                [inline]="inline"
                [size]="size"
                [items]="rootDisplayItems"
-               [trackByFn]="[trackByFn]"
+               [trackByFn]="trackByFn"
                [selectMode]="selectMode"
                [contentClass]="selectClass"
                [multiSelectionDisplayDirection]="multiSelectionDisplayDirection"
@@ -77,100 +76,64 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
       </ng-template>
 
       <ng-template #before>
-        <sd-select-item *ngIf="(!required && selectMode === 'single') || (useUndefined && selectMode === 'multi')">
-          @if (undefinedTemplateRef) {
-            <ng-template [ngTemplateOutlet]="undefinedTemplateRef"/>
-          } @else {
-            <span class="tx-theme-grey-default">미지정</span>
-          }
-        </sd-select-item>
+        @if ((!required && selectMode === 'single') || (useUndefined && selectMode === 'multi')) {
+          <sd-select-item>
+            @if (undefinedTemplateRef) {
+              <ng-template [ngTemplateOutlet]="undefinedTemplateRef"/>
+            } @else {
+              <span class="tx-theme-grey-default">미지정</span>
+            }
+          </sd-select-item>
+        }
       </ng-template>
 
       <ng-template [itemOf]="rootDisplayItems" let-item="item" let-index="index" let-depth="depth">
-        <sd-select-item [value]="item.__valueKey"
-                        *ngIf="getItemSelectable(index, item, depth)"
-                        [style.display]="!getItemVisible(index, item, depth) ? 'none' : undefined">
+        @if (getItemSelectable(index, item, depth)) {
+          <sd-select-item [value]="item.__valueKey"
+                          [style.display]="!getItemVisible(index, item, depth) ? 'none' : undefined">
           <span [style.text-decoration]="getIsHiddenFn[0](index, item) ? 'line-through' : undefined">
-            <ng-template [ngTemplateOutlet]="itemTemplateRef"
+            <ng-template [ngTemplateOutlet]="itemTemplateRef ?? null"
                          [ngTemplateOutletContext]="{$implicit: item, item: item, index: index, depth: depth}"></ng-template>
           </span>
-        </sd-select-item>
+          </sd-select-item>
+        }
       </ng-template>
     </sd-select>`
 })
 export class SdSharedDataSelectControl<T extends ISharedDataBase<string | number>, TMODAL extends SdModalBase<ISharedDataModalInputParam, ISharedDataModalOutputResult>, M extends "single" | "multi" = "single"> implements DoCheck {
   icons = inject(SdAngularOptionsProvider).icons;
 
-  @Input({required: true})
-  items: T[] = [];
+  @Input() value?: M extends "multi" ? (T["__valueKey"] | undefined)[] : T["__valueKey"];
+  @Output() valueChange = new EventEmitter<(this["selectMode"] extends "multi" ? (T["__valueKey"] | undefined)[] : T["__valueKey"]) | undefined>();
 
-  @Input()
-  value?: M extends "multi" ? (T["__valueKey"] | undefined)[] : T["__valueKey"];
+  @Input({required: true}) items: T[] = [];
+  @Input({transform: coercionBoolean}) disabled = false;
+  @Input({transform: coercionBoolean}) required = false;
+  @Input({transform: coercionBoolean}) useUndefined = false;
+  @Input({transform: coercionBoolean}) inset = false;
+  @Input({transform: coercionBoolean}) inline = false;
 
-  @Output()
-  valueChange = new EventEmitter<(this["selectMode"] extends "multi" ? (T["__valueKey"] | undefined)[] : T["__valueKey"]) | undefined>();
+  @Input() size?: "sm" | "lg";
+  @Input() selectMode: M = "single" as M;
+  @Input() filterFn?: TSdFnInfo<(index: number, item: T, ...params: any[]) => boolean>;
+  @Input() filterFnParams?: any[];
 
-  @Input({transform: coercionBoolean})
-  disabled = false;
-
-  @Input({transform: coercionBoolean})
-  required = false;
-
-  @Input({transform: coercionBoolean})
-  useUndefined = false;
-
-  @Input({transform: coercionBoolean})
-  inset = false;
-
-  @Input({transform: coercionBoolean})
-  inline = false;
-
-  @Input()
-  size?: "sm" | "lg";
-
-  @Input()
-  selectMode: M = "single" as M;
-
-  @Input()
-  filterFn?: TSdFnInfo<(index: number, item: T, ...params: any[]) => boolean>;
-
-  @Input()
-  filterFnParams?: any[];
+  @Input() modalInputParam?: TMODAL["__tInput__"];
+  @Input() modalType?: Type<TMODAL>;
+  @Input() modalHeader?: string;
+  @Input() selectClass?: string;
+  @Input() multiSelectionDisplayDirection?: "vertical" | "horizontal";
+  @Input() getIsHiddenFn: TSdFnInfo<(index: number, item: T) => boolean> = [(index, item) => item.__isHidden];
+  @Input() getSearchTextFn: TSdFnInfo<(index: number, item: T) => string> = [(index, item) => item.__searchText];
+  @Input() parentKeyProp?: string;
+  @Input() displayOrderKeyProp?: string;
 
   @ContentChild(SdItemOfTemplateDirective, {static: true, read: TemplateRef})
-  itemTemplateRef: TemplateRef<SdItemOfTemplateContext<T>> | null = null;
+  itemTemplateRef?: TemplateRef<SdItemOfTemplateContext<T>>;
 
-  @ContentChild("undefinedTemplate", {static: true, read: TemplateRef})
-  undefinedTemplateRef: TemplateRef<void> | null = null;
+  @ContentChild("undefinedTemplate", {static: true, read: TemplateRef}) undefinedTemplateRef?: TemplateRef<void>;
 
-  @Input()
-  modalInputParam?: TMODAL["__tInput__"];
-
-  @Input()
-  modalType?: Type<TMODAL>;
-
-  @Input()
-  modalHeader?: string;
-
-  @Input()
-  selectClass?: string;
-
-  @Input()
-  multiSelectionDisplayDirection?: "vertical" | "horizontal";
-
-  @Input()
-  getIsHiddenFn: TSdFnInfo<(index: number, item: T) => boolean> = [(index, item) => item.__isHidden];
-
-  @Input()
-  getSearchTextFn: TSdFnInfo<(index: number, item: T) => string> = [(index, item) => item.__searchText];
-
-  @Input()
-  parentKeyProp?: string;
-
-  @Input()
-  displayOrderKeyProp?: string;
-
-  trackByFn = (index: number, item: T) => item.__valueKey;
+  trackByFn = sdFnInfo((index: number, item: T) => item.__valueKey);
 
   searchText?: string;
 

@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
+import {ChangeDetectionStrategy, Component, Input} from "@angular/core";
 import {coercionBoolean} from "../utils/commons";
 
 @Component({
@@ -52,18 +52,15 @@ import {coercionBoolean} from "../utils/commons";
         }
       }
     }
-  `]
+  `],
+  host: {
+    "[attr.sd-theme]": "theme",
+    "[attr.sd-size]": "size",
+    "[attr.sd-inset]": "inset",
+  }
 })
 export class SdNoteControl {
-  @Input()
-  @HostBinding("attr.sd-theme")
-  theme?: "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey";
-
-  @Input()
-  @HostBinding("attr.sd-size")
-  size?: "sm" | "lg";
-
-  @Input({transform: coercionBoolean})
-  @HostBinding("attr.sd-inset")
-  inset = false;
+  @Input() theme?: "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey";
+  @Input() size?: "sm" | "lg";
+  @Input({transform: coercionBoolean}) inset = false;
 }

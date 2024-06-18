@@ -41,9 +41,6 @@ import {coercionNumber} from "../utils/commons";
   `]
 })
 export class SdProgressControl {
-  @Input()
-  label?: string;
-
-  @Input({transform: coercionNumber})
-  maxValue?: number;
+  @Input() label?: string;
+  @Input({transform: coercionNumber}) maxValue?: number;
 }

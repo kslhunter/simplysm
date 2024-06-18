@@ -19,7 +19,7 @@ import {SdNgHelper} from "../utils/SdNgHelper";
 import {SdBusyContainerControl} from "./SdBusyContainerControl";
 import {SdDockContainerControl} from "./SdDockContainerControl";
 import {SdDockControl} from "./SdDockControl";
-import {NgForOf, NgIf, NgTemplateOutlet} from "@angular/common";
+import {NgTemplateOutlet} from "@angular/common";
 import {SdTextfieldControl} from "./SdTextfieldControl";
 import {SdListControl} from "./SdListControl";
 import {SdPaneControl} from "./SdPaneControl";
@@ -35,93 +35,76 @@ import {SdSelectItemControl} from "./SdSelectItemControl";
     SdDockContainerControl,
     SdDockControl,
     NgTemplateOutlet,
-    NgIf,
     SdTextfieldControl,
     SdListControl,
     SdPaneControl,
     SdListItemControl,
-    NgForOf,
     SdSelectItemControl
   ],
   template: `
     <sd-busy-container [busy]="busyCount > 0">
       <sd-dock-container>
-        <ng-container *ngIf="headerTemplateRef">
+        @if (headerTemplateRef) {
           <sd-dock class="pb-default">
             <ng-template [ngTemplateOutlet]="headerTemplateRef"></ng-template>
           </sd-dock>
-        </ng-container>
+        }
 
         <sd-dock class="pb-default">
-          <ng-container *ngIf="!filterTemplateRef">
-            <sd-textfield type="text" placeholder="검색어" [(value)]="searchText"></sd-textfield>
-          </ng-container>
-          <ng-container *ngIf="filterTemplateRef">
-            <ng-template [ngTemplateOutlet]="filterTemplateRef"></ng-template>
-          </ng-container>
+          @if (!filterTemplateRef) {
+            <sd-textfield type="text" placeholder="검색어" [(value)]="searchText"/>
+          } @else {
+            <ng-template [ngTemplateOutlet]="filterTemplateRef"/>
+          }
         </sd-dock>
 
         <sd-pane>
           <sd-list inset>
-            <sd-list-item *ngIf="useUndefined"
-                          [selected]="selectedItem === undefined"
-                          (click)="onSelectedItemChange(undefined)"
-                          [selectedIcon]="selectedIcon">
-              @if (undefinedTemplateRef) {
-                <ng-template [ngTemplateOutlet]="undefinedTemplateRef"/>
-              } @else {
-                <span class="tx-theme-grey-default">미지정</span>
-              }
-            </sd-list-item>
-            <sd-list-item *ngFor="let item of filteredItems; let index = index; trackBy: trackByFn"
-                          [selected]="item === selectedItem"
-                          (click)="selectedItem === item ? onSelectedItemChange(undefined) : onSelectedItemChange(item)"
-                          [selectedIcon]="selectedIcon">
-              <ng-template [ngTemplateOutlet]="itemTemplateRef"
-                           [ngTemplateOutletContext]="{$implicit: item, item: item, index: index, depth: 0}"></ng-template>
-            </sd-list-item>
+            @if (useUndefined) {
+              <sd-list-item [selected]="selectedItem === undefined"
+                            (click)="onSelectedItemChange(undefined)"
+                            [selectedIcon]="selectedIcon">
+                @if (undefinedTemplateRef) {
+                  <ng-template [ngTemplateOutlet]="undefinedTemplateRef"/>
+                } @else {
+                  <span class="tx-theme-grey-default">미지정</span>
+                }
+              </sd-list-item>
+            }
+            @for (item of filteredItems; let index = $index; track trackByFn(index, item)) {
+              <sd-list-item [selected]="item === selectedItem"
+                            (click)="selectedItem === item ? onSelectedItemChange(undefined) : onSelectedItemChange(item)"
+                            [selectedIcon]="selectedIcon">
+                <ng-template [ngTemplateOutlet]="itemTemplateRef ?? null"
+                             [ngTemplateOutletContext]="{$implicit: item, item: item, index: index, depth: 0}"></ng-template>
+              </sd-list-item>
+            }
           </sd-list>
         </sd-pane>
       </sd-dock-container>
     </sd-busy-container>`
 })
 export class SdSharedDataSelectViewControl<T extends ISharedDataBase<string | number>> implements DoCheck {
-  @Input({required: true})
-  items: T[] = [];
+  @Input() selectedItem?: T;
+  @Output() readonly selectedItemChange = new EventEmitter<T>();
 
-  @Input()
-  selectedIcon?: IconProp;
+  @Input({required: true}) items: T[] = [];
+  @Input() selectedIcon?: IconProp;
+  @Input({transform: coercionBoolean}) useUndefined = false;
+  @Input() filterFn?: TSdFnInfo<(index: number, item: T) => boolean>;
 
-  @Input()
-  selectedItem?: T;
-
-  @Output()
-  readonly selectedItemChange = new EventEmitter<T>();
-
-  @Input({transform: coercionBoolean})
-  useUndefined = false;
-
-  @Input()
-  filterFn?: TSdFnInfo<(index: number, item: T) => boolean>;
-
-  @ContentChild("headerTemplate", {static: true})
-  headerTemplateRef?: TemplateRef<void>;
-
-  @ContentChild("filterTemplate", {static: true})
-  filterTemplateRef?: TemplateRef<void>;
+  @ContentChild("headerTemplate", {static: true}) headerTemplateRef?: TemplateRef<void>;
+  @ContentChild("filterTemplate", {static: true}) filterTemplateRef?: TemplateRef<void>;
 
   @ContentChild(SdItemOfTemplateDirective, {static: true, read: TemplateRef})
-  itemTemplateRef: TemplateRef<SdItemOfTemplateContext<T>> | null = null;
+  itemTemplateRef?: TemplateRef<SdItemOfTemplateContext<T>>;
 
-  @ContentChild("undefinedTemplate", {static: true, read: TemplateRef})
-  undefinedTemplateRef: TemplateRef<void> | null = null;
-
-  busyCount = 0;
+  @ContentChild("undefinedTemplate", {static: true, read: TemplateRef}) undefinedTemplateRef?: TemplateRef<void>;
 
   trackByFn = (index: number, item: T): (string | number) => item.__valueKey;
 
+  busyCount = 0;
   searchText?: string;
-
   filteredItems: any[] = [];
 
   #sdNgHelper = new SdNgHelper(inject(Injector));

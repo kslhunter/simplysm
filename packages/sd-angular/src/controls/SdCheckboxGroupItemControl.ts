@@ -1,6 +1,7 @@
-import {ChangeDetectionStrategy, Component, forwardRef, inject, Input} from "@angular/core";
+import {ChangeDetectionStrategy, Component, DoCheck, forwardRef, inject, Injector, Input} from "@angular/core";
 import {SdCheckboxGroupControl} from "./SdCheckboxGroupControl";
 import {SdCheckboxControl} from "./SdCheckboxControl";
+import {SdNgHelper} from "../utils/SdNgHelper";
 
 @Component({
   selector: "sd-checkbox-group-item",
@@ -10,21 +11,51 @@ import {SdCheckboxControl} from "./SdCheckboxControl";
     SdCheckboxControl
   ],
   template: `
-    <sd-checkbox [value]="isSelected" (valueChange)="onValueChange()" [inline]="true">
+    <sd-checkbox [value]="isSelected" (valueChange)="onSelectedChange($event)" [inline]="true">
       <ng-content></ng-content>
     </sd-checkbox>`
 })
-export class SdCheckboxGroupItemControl<T> {
-  #parentControl = inject(forwardRef(() => SdCheckboxGroupControl));
+export class SdCheckboxGroupItemControl<T> implements DoCheck {
+  #parentControl = inject<SdCheckboxGroupControl<T>>(forwardRef(() => SdCheckboxGroupControl));
 
-  @Input()
-  value?: T;
+  @Input({required: true}) value!: T;
 
-  get isSelected(): boolean {
-    return this.#parentControl.getIsItemSelected(this.value);
+  isSelected = false;
+
+  #sdNgHelper = new SdNgHelper(inject(Injector));
+
+  ngDoCheck(): void {
+    this.#sdNgHelper.doCheck(run => {
+      run({
+        parentKeyProp: [this.#parentControl.keyProp],
+        parentValue: [this.#parentControl.value],
+        value: [this.value]
+      }, () => {
+        const thisKeys = (this.#parentControl.keyProp != null)
+          ? this.#parentControl.value.map((item) => item[this.#parentControl.keyProp!])
+          : this.#parentControl.value;
+        const itemKey = (this.#parentControl.keyProp != null) ? this.value[this.#parentControl.keyProp] : this.value;
+
+        this.isSelected = thisKeys.includes(itemKey);
+      });
+    });
   }
 
-  onValueChange(): void {
-    this.#parentControl.toggleValueItem(this.value);
+  onSelectedChange(selected: boolean): void {
+    const newValues = [...this.#parentControl.value];
+
+    if (selected) {
+      newValues.remove(this.value);
+    }
+    else {
+      newValues.push(this.value);
+    }
+
+    if (this.#parentControl.valueChange.observed) {
+      this.#parentControl.valueChange.emit(newValues);
+    }
+    else {
+      this.#parentControl.value = newValues;
+    }
   }
 }

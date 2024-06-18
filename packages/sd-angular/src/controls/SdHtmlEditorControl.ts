@@ -3,7 +3,6 @@ import {
   Component,
   ElementRef,
   EventEmitter,
-  HostBinding,
   inject,
   Injector,
   Input,
@@ -16,7 +15,6 @@ import {SdIconControl} from "./SdIconControl";
 import {coercionBoolean, coercionNonNullableNumber} from "../utils/commons";
 import {SdDockContainerControl} from "./SdDockContainerControl";
 import {SdDockControl} from "./SdDockControl";
-import {NgIf} from "@angular/common";
 import {SdNgHelper} from "../utils/SdNgHelper";
 import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 
@@ -24,41 +22,53 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
   selector: "sd-html-editor",
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [SdAnchorControl, SdPaneControl, SdIconControl, SdDockContainerControl, SdDockControl, NgIf],
+  imports: [
+    SdAnchorControl,
+    SdPaneControl,
+    SdIconControl,
+    SdDockContainerControl,
+    SdDockControl,
+  ],
   template: `
     <sd-dock-container>
-      <sd-dock class="_toolbar" *ngIf="!disabled">
-        <sd-anchor (click)="viewState = 'preview'" [class._selected]="viewState === 'preview'">
-          <sd-icon [icon]="icons.eye" fixedWidth/>
-        </sd-anchor>
-        <sd-anchor (click)="viewState = 'edit'" [class._selected]="viewState === 'edit'">
-          <sd-icon [icon]="icons.pen" fixedWidth/>
-        </sd-anchor>
-        <sd-anchor (click)="viewState = 'code'" [class._selected]="viewState === 'code'">
-          <sd-icon [icon]="icons.code" fixedWidth/>
-        </sd-anchor>
-        <ng-container *ngIf="rowsButton && !inset && viewState === 'code'">
-          |
-          <sd-anchor (click)="rows = rows + 1">
-            <sd-icon [icon]="icons.plus" fixedWidth/>
+      @if (!disabled) {
+        <sd-dock class="_toolbar">
+          <sd-anchor (click)="viewState = 'preview'" [class._selected]="viewState === 'preview'">
+            <sd-icon [icon]="icons.eye" fixedWidth/>
           </sd-anchor>
-          <sd-anchor (click)="rows = rows - 1" *ngIf="rows > 1">
-            <sd-icon [icon]="icons.minus" fixedWidth/>
+          <sd-anchor (click)="viewState = 'edit'" [class._selected]="viewState === 'edit'">
+            <sd-icon [icon]="icons.pen" fixedWidth/>
           </sd-anchor>
-        </ng-container>
-      </sd-dock>
+          <sd-anchor (click)="viewState = 'code'" [class._selected]="viewState === 'code'">
+            <sd-icon [icon]="icons.code" fixedWidth/>
+          </sd-anchor>
+          @if (rowsButton && !inset && viewState === 'code') {
+            |
+            <sd-anchor (click)="rows = rows + 1">
+              <sd-icon [icon]="icons.plus" fixedWidth/>
+            </sd-anchor>
+            @if (rows > 1) {
+              <sd-anchor (click)="rows = rows - 1">
+                <sd-icon [icon]="icons.minus" fixedWidth/>
+              </sd-anchor>
+            }
+          }
+        </sd-dock>
+      }
 
       <sd-pane>
-        <div #editor *ngIf="viewState !== 'code' || disabled"
-             [attr.contenteditable]="viewState === 'edit' && !disabled"
-             [style.min-height.px]="contentMinHeightPx"
-             (input)="onContentInput($event)"></div>
-        <textarea *ngIf="viewState === 'code' && !disabled"
-                  [value]="value ?? ''"
-                  [rows]="inset ? undefined : rows"
-                  [style.resize]="inset ? 'none' : resize"
-                  (input)="onTextareaInput($event)"
-                  wrap="off"></textarea>
+        @if (viewState !== 'code' || disabled) {
+          <div #editorEl
+               [attr.contenteditable]="viewState === 'edit' && !disabled"
+               [style.min-height.px]="contentMinHeightPx"
+               (input)="onContentInput($event)"></div>
+        } @else {
+          <textarea [value]="value ?? ''"
+                    [rows]="inset ? undefined : rows"
+                    [style.resize]="inset ? 'none' : resize"
+                    (input)="onTextareaInput($event)"
+                    wrap="off"></textarea>
+        }
       </sd-pane>
     </sd-dock-container>`,
   styles: [/* language=SCSS */ `
@@ -128,43 +138,29 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
         border: none;
       }
     }
-  `]
+  `],
+  host: {
+    "[attr.sd-view-state]": "viewState",
+    "[attr.sd-inset]": "inset",
+    "[attr.sd-disabled]": "disabled"
+  }
 })
 export class SdHtmlEditorControl {
   icons = inject(SdAngularOptionsProvider).icons;
 
-  @Input()
-  value?: string;
+  @Input() value?: string;
+  @Output() valueChange = new EventEmitter<string | undefined>();
 
-  @Output()
-  valueChange = new EventEmitter<string | undefined>();
+  @Input() viewState: "preview" | "edit" | "code" = "edit";
 
-  @Input()
-  @HostBinding("attr.sd-view-state")
-  viewState: "preview" | "edit" | "code" = "edit";
+  @Input({transform: coercionBoolean}) rowsButton = true;
+  @Input({transform: coercionNonNullableNumber}) rows = 3;
+  @Input({transform: coercionBoolean}) inset = false;
+  @Input({transform: coercionBoolean}) disabled = false;
+  @Input({transform: coercionNonNullableNumber}) contentMinHeightPx = 100;
+  @Input() resize: "both" | "horizontal" | "vertical" | "none" = "vertical";
 
-  @Input({transform: coercionBoolean})
-  rowsButton = true;
-
-  @Input({transform: coercionNonNullableNumber})
-  rows = 3;
-
-  @Input({transform: coercionBoolean})
-  @HostBinding("attr.sd-inset")
-  inset = false;
-
-  @Input({transform: coercionBoolean})
-  @HostBinding("attr.sd-disabled")
-  disabled = false;
-
-  @Input({transform: coercionNonNullableNumber})
-  public contentMinHeightPx = 100;
-
-  @Input()
-  public resize: "both" | "horizontal" | "vertical" | "none" = "vertical";
-
-  @ViewChild("editor")
-  editorElRef?: ElementRef<HTMLElement>;
+  @ViewChild("editorEl") editorElRef?: ElementRef<HTMLElement>;
 
   #sdNgHelper = new SdNgHelper(inject(Injector));
 

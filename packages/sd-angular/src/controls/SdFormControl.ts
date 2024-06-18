@@ -14,11 +14,9 @@ import {SdToastProvider} from "../providers/SdToastProvider";
 export class SdFormControl {
   #sdToast = inject(SdToastProvider);
 
-  @ViewChild("formEl")
-  formElRef!: ElementRef<HTMLFormElement>;
+  @ViewChild("formEl") formElRef!: ElementRef<HTMLFormElement>;
 
-  @Output()
-  submit = new EventEmitter();
+  @Output() submit = new EventEmitter();
 
   requestSubmit() {
     this.formElRef.nativeElement.requestSubmit();

@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
+import {ChangeDetectionStrategy, Component, Input} from "@angular/core";
 import {coercionBoolean} from "../utils/commons";
 
 @Component({
@@ -36,10 +36,11 @@ import {coercionBoolean} from "../utils/commons";
       //  }
       //}
     }
-  `]
+  `],
+  host: {
+    "[attr.sd-inset]": "inset"
+  }
 })
 export class SdListControl {
-  @Input({transform: coercionBoolean})
-  @HostBinding("attr.sd-inset")
-  inset = false;
+  @Input({transform: coercionBoolean}) inset = false;
 }

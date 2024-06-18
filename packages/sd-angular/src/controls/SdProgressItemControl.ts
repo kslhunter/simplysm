@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
+import {ChangeDetectionStrategy, Component, Input} from "@angular/core";
 
 @Component({
   selector: "sd-progress-item",
@@ -25,22 +25,17 @@ import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/c
         }
       }
     }
-  `]
+  `],
+  host: {
+    "[style.width]": "width",
+    "[style.height]": "height",
+    "[attr.sd-theme]": "theme",
+    "[style.background]": "color"
+  }
 })
 export class SdProgressItemControl {
-  @Input()
-  @HostBinding("style.width")
-  width = "100%";
-
-  @Input()
-  @HostBinding("style.height")
-  height = "30px";
-
-  @Input()
-  @HostBinding("attr.sd-theme")
-  theme?: "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey";
-
-  @Input()
-  @HostBinding("style.background")
-  color?: string;
+  @Input() width = "100%";
+  @Input() height = "30px";
+  @Input() theme?: "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey";
+  @Input() color?: string;
 }

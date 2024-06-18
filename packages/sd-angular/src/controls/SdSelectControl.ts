@@ -5,7 +5,6 @@ import {
   DoCheck,
   ElementRef,
   EventEmitter,
-  HostBinding,
   inject,
   Injector,
   Input,
@@ -21,7 +20,7 @@ import {SdNgHelper} from "../utils/SdNgHelper";
 import {SdIconControl} from "./SdIconControl";
 import {SdEventsDirective} from "../directives/SdEventsDirective";
 import {SdDockContainerControl} from "./SdDockContainerControl";
-import {NgForOf, NgIf, NgTemplateOutlet} from "@angular/common";
+import {NgTemplateOutlet} from "@angular/common";
 import {SdDockControl} from "./SdDockControl";
 import {SdAnchorControl} from "./SdAnchorControl";
 import {SdGapControl} from "./SdGapControl";
@@ -43,14 +42,12 @@ import {SdButtonControl} from "./SdButtonControl";
     SdIconControl,
     SdEventsDirective,
     SdDockContainerControl,
-    NgIf,
     SdDockControl,
     SdAnchorControl,
     SdGapControl,
     SdPaneControl,
     NgTemplateOutlet,
     SdTypedTemplateDirective,
-    NgForOf,
     SdButtonControl
   ],
   template: `
@@ -74,7 +71,7 @@ import {SdButtonControl} from "./SdButtonControl";
       }
 
       <sd-dropdown-popup #dropdownPopup (keydown.outside)="onPopupKeydownOutside($event)">
-        <ng-container *ngIf="!items">
+        @if (!items) {
           <sd-dock-container>
             <!--<sd-dock class="bdb bdb-trans-default p-sm-default"
                      *ngIf="selectMode === 'multi' && !hideSelectAll">
@@ -83,52 +80,54 @@ import {SdButtonControl} from "./SdButtonControl";
               <sd-anchor (click)="onSelectAllButtonClick(false)">전체해제</sd-anchor>
             </sd-dock>-->
 
-            <sd-dock *ngIf="headerTemplateRef">
-              <ng-template [ngTemplateOutlet]="headerTemplateRef"></ng-template>
-            </sd-dock>
+            @if (headerTemplateRef) {
+              <sd-dock>
+                <ng-template [ngTemplateOutlet]="headerTemplateRef"/>
+              </sd-dock>
+            }
 
             <sd-pane>
               <ng-content></ng-content>
             </sd-pane>
           </sd-dock-container>
-        </ng-container>
-
-        <ng-container *ngIf="items">
+        } @else {
           <sd-dock-container>
-            <sd-dock *ngIf="headerTemplateRef">
-              <ng-template [ngTemplateOutlet]="headerTemplateRef"></ng-template>
-            </sd-dock>
+            @if (headerTemplateRef) {
+              <sd-dock>
+                <ng-template [ngTemplateOutlet]="headerTemplateRef"/>
+              </sd-dock>
+            }
 
-            <sd-dock class="bdb bdb-trans-default p-sm-default"
-                     *ngIf="selectMode === 'multi' && !hideSelectAll">
-              <sd-anchor (click)="onSelectAllButtonClick(true)">전체선택</sd-anchor>
-              <sd-gap width="sm"></sd-gap>
-              <sd-anchor (click)="onSelectAllButtonClick(false)">전체해제</sd-anchor>
-            </sd-dock>
+            @if (selectMode === 'multi' && !hideSelectAll) {
+              <sd-dock class="bdb bdb-trans-default p-sm-default">
+                <sd-anchor (click)="onSelectAllButtonClick(true)">전체선택</sd-anchor>
+                <sd-gap width="sm"></sd-gap>
+                <sd-anchor (click)="onSelectAllButtonClick(false)">전체해제</sd-anchor>
+              </sd-dock>
+            }
 
             <sd-pane>
-              <ng-template [ngTemplateOutlet]="beforeTemplateRef"></ng-template>
+              <ng-template [ngTemplateOutlet]="beforeTemplateRef ?? null"/>
               <ng-template #rowOfList [typed]="rowOfListType" let-items="items" let-depth="depth">
-                <ng-container *ngFor="let item of items; let index = index; trackBy: trackByFn[0]">
+                @for (item of items; let index = $index; track trackByFn[0](index, item)) {
                   <div class="_sd-select-item">
-                    <ng-template [ngTemplateOutlet]="itemTemplateRef"
+                    <ng-template [ngTemplateOutlet]="itemTemplateRef ?? null"
                                  [ngTemplateOutletContext]="{$implicit: item, item: item, index: index, depth: depth}"></ng-template>
 
-                    <ng-container
-                      *ngIf="getChildrenFn?.[0] && getChildrenFn![0](index, item, depth) && getChildrenFn![0](index, item, depth).length > 0">
+                    @if (getChildrenFn?.[0] && getChildrenFn![0](index, item, depth) && getChildrenFn![0](index, item, depth).length > 0) {
                       <div class="_children">
                         <ng-template [ngTemplateOutlet]="rowOfList"
                                      [ngTemplateOutletContext]="{items: getChildrenFn![0](index, item, depth), depth: depth + 1}"></ng-template>
                       </div>
-                    </ng-container>
+                    }
                   </div>
-                </ng-container>
+                }
               </ng-template>
               <ng-template [ngTemplateOutlet]="rowOfList"
                            [ngTemplateOutletContext]="{items: items, depth: 0}"></ng-template>
             </sd-pane>
           </sd-dock-container>
-        </ng-container>
+        }
       </sd-dropdown-popup>
     </sd-dropdown>`,
   styles: [/* language=SCSS */ `
@@ -268,12 +267,12 @@ import {SdButtonControl} from "./SdButtonControl";
           > ._sd-select-button > button {
             border-radius: 0;
           }
-          
+
           &:focus,
           &:has(:focus) {
             outline: 1px solid var(--theme-primary-default);
             outline-offset: -1px;
-            
+
             > ._sd-select-button > button {
               outline: 1px solid var(--theme-primary-default);
               outline-offset: -1px;
@@ -290,94 +289,54 @@ import {SdButtonControl} from "./SdButtonControl";
         }
       }
     }
-  `]
+  `],
+  host: {
+    "[attr.sd-disabled]": "disabled",
+    "[attr.sd-inline]": "inline",
+    "[attr.sd-inset]": "inset",
+    "[attr.sd-size]": "size",
+    "[attr.sd-invalid]": "errorMessage"
+  }
 })
 export class SdSelectControl<M extends "single" | "multi", T extends any> implements DoCheck {
   icons = inject(SdAngularOptionsProvider).icons;
 
-  @Input()
-  value?: M extends "multi" ? any[] : any;
+  @Input() value?: M extends "multi" ? any[] : any;
+  @Output() valueChange = new EventEmitter<M extends "multi" ? any[] : any>();
 
-  @Output()
-  valueChange = new EventEmitter<M extends "multi" ? any[] : any>();
+  @Input({transform: coercionBoolean}) required = false;
+  @Input({transform: coercionBoolean}) disabled = false;
+  @Input() keyProp?: string;
 
-  @Input({transform: coercionBoolean})
-  required = false;
+  @Input() items?: T[];
+  @Input() trackByFn: TSdFnInfo<(index: number, item: T) => any> = [(index, item) => item];
+  @Input({}) getChildrenFn?: TSdFnInfo<(index: number, item: T, depth: number) => T[]>;
 
-  @Input({transform: coercionBoolean})
-  @HostBinding("attr.sd-disabled")
-  disabled = false;
+  @Input({transform: coercionBoolean}) inline = false;
+  @Input({transform: coercionBoolean}) inset = false;
+  @Input() size?: "sm" | "lg";
+  @Input() selectMode: M = "single" as M;
+  @Input() contentClass?: string;
+  @Input() contentStyle?: string;
+  @Input() multiSelectionDisplayDirection?: "vertical" | "horizontal";
+  @Input({transform: coercionBoolean}) hideSelectAll = false;
+  @Input() placeholder?: string;
 
-  @Input()
-  keyProp?: string;
+  @Input() buttonIcon?: IconProp;
+  @Output() buttonClick = new EventEmitter<MouseEvent>();
 
-  @ViewChild("dropdown", {static: true})
-  dropdownControl?: SdDropdownControl;
+  @ViewChild("contentEl", {static: true}) contentElRef!: ElementRef<HTMLElement>;
+  @ViewChild("dropdown", {static: true}) dropdownControl!: SdDropdownControl;
+  @ViewChild("dropdownPopup", {static: true, read: ElementRef}) dropdownPopupElRef!: ElementRef<HTMLElement>;
 
-  @ViewChild("dropdownPopup", {static: true, read: ElementRef})
-  dropdownPopupElRef?: ElementRef<HTMLElement>;
-
+  @ContentChild("header", {static: true}) headerTemplateRef?: TemplateRef<void>;
+  @ContentChild("before", {static: true}) beforeTemplateRef?: TemplateRef<void>;
   @ContentChild(SdItemOfTemplateDirective, {static: true, read: TemplateRef})
-  itemTemplateRef: TemplateRef<SdItemOfTemplateContext<any>> | null = null;
-
-  @ContentChild("header", {static: true})
-  headerTemplateRef: TemplateRef<void> | null = null;
-
-  @ContentChild("before", {static: true})
-  beforeTemplateRef: TemplateRef<void> | null = null;
+  itemTemplateRef?: TemplateRef<SdItemOfTemplateContext<T>>;
 
   itemControls: SdSelectItemControl<any>[] = [];
 
-  @Input()
-  items?: T[];
-
-  @Input()
-  trackByFn: TSdFnInfo<(index: number, item: T) => any> = [(index, item) => item];
-
-  @Input({})
-  getChildrenFn?: TSdFnInfo<(index: number, item: T, depth: number) => T[]>;
-
-  @Input({transform: coercionBoolean})
-  @HostBinding("attr.sd-inline")
-  inline = false;
-
-  @Input({transform: coercionBoolean})
-  @HostBinding("attr.sd-inset")
-  inset = false;
-
-  @Input()
-  @HostBinding("attr.sd-size")
-  size?: "sm" | "lg";
-
-  @Input()
-  selectMode: M = "single" as M;
-
-  @Input()
-  contentClass?: string;
-
-  @Input()
-  contentStyle?: string;
-
-  @Input()
-  multiSelectionDisplayDirection?: "vertical" | "horizontal";
-
-  @Input({transform: coercionBoolean})
-  hideSelectAll = false;
-
-  @Input()
-  placeholder?: string;
-
-  @ViewChild("contentEl", {static: true})
-  contentElRef!: ElementRef<HTMLElement>;
-
-  @HostBinding("attr.sd-invalid")
   errorMessage?: string;
-
-  @Input()
-  buttonIcon?: IconProp;
-
-  @Output()
-  buttonClick = new EventEmitter<MouseEvent>();
 
   #sdNgHelper = new SdNgHelper(inject(Injector));
 
@@ -451,15 +410,13 @@ export class SdSelectControl<M extends "single" | "multi", T extends any> implem
       event.preventDefault();
       event.stopPropagation();
 
-      if (this.dropdownPopupElRef && document.activeElement instanceof HTMLElement) {
+      if (document.activeElement instanceof HTMLElement) {
         const focusableEls = this.dropdownPopupElRef.nativeElement.findFocusableAll();
         const currIndex = focusableEls.indexOf(document.activeElement);
 
         if (event.key === "ArrowUp") {
           if (currIndex === 0) {
-            if (this.dropdownControl?.contentElRef.nativeElement) {
-              this.dropdownControl.contentElRef.nativeElement.focus();
-            }
+            this.dropdownControl.contentElRef.nativeElement.focus();
           }
           else {
             focusableEls[currIndex - 1].focus();
@@ -515,7 +472,7 @@ export class SdSelectControl<M extends "single" | "multi", T extends any> implem
       }
     }
 
-    if (this.dropdownControl && close) {
+    if (close) {
       this.dropdownControl.open = false;
     }
   }

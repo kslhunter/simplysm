@@ -30,18 +30,11 @@ import {coercionBoolean} from "../utils/commons";
   `]
 })
 export class SdRangeControl<K extends TSdTextfieldType> {
-  @Input({required: true})
-  type!: K;
+  @Input({required: true}) type!: K;
 
-  @Input()
-  value: [TSdTextfieldValue<K>?, TSdTextfieldValue<K>?] = [];
+  @Input() value: [TSdTextfieldValue<K>?, TSdTextfieldValue<K>?] = [];
+  @Output() valueChange = new EventEmitter<[TSdTextfieldValue<K> | undefined, TSdTextfieldValue<K> | undefined]>();
 
-  @Output()
-  valueChange = new EventEmitter<[TSdTextfieldValue<K> | undefined, TSdTextfieldValue<K> | undefined]>();
-
-  @Input({transform: coercionBoolean})
-  required = false;
-
-  @Input({transform: coercionBoolean})
-  disabled = false;
+  @Input({transform: coercionBoolean}) required = false;
+  @Input({transform: coercionBoolean}) disabled = false;
 }

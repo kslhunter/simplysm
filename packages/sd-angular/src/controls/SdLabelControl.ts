@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
+import {ChangeDetectionStrategy, Component, Input} from "@angular/core";
 import {coercionBoolean} from "../utils/commons";
 
 @Component({
@@ -39,18 +39,15 @@ import {coercionBoolean} from "../utils/commons";
         }
       }
     }
-  `]
+  `],
+  host: {
+    "[attr.sd-theme]": "theme",
+    "[style.background]": "color",
+    "[attr.sd-clickable]": "clickable"
+  }
 })
 export class SdLabelControl {
-  @Input()
-  @HostBinding("attr.sd-theme")
-  theme?: "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey";
-
-  @Input()
-  @HostBinding("style.background")
-  color?: string;
-
-  @Input({transform: coercionBoolean})
-  @HostBinding("attr.sd-clickable")
-  clickable = false;
+  @Input() theme?: "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey";
+  @Input() color?: string;
+  @Input({transform: coercionBoolean}) clickable = false;
 }

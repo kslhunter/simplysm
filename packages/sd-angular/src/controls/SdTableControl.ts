@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
+import {ChangeDetectionStrategy, Component, Input} from "@angular/core";
 import {coercionBoolean} from "../utils/commons";
 
 @Component({
@@ -109,18 +109,15 @@ import {coercionBoolean} from "../utils/commons";
         }
       }
     }
-  `]
+  `],
+  host: {
+    "[attr.sd-inset]": "inset",
+    "[attr.sd-inline]": "inline",
+    "[attr.sd-cell-border]": "cellBorder"
+  }
 })
 export class SdTableControl {
-  @Input({transform: coercionBoolean})
-  @HostBinding("attr.sd-inset")
-  inset = false;
-
-  @Input({transform: coercionBoolean})
-  @HostBinding("attr.sd-inline")
-  inline = false;
-
-  @Input()
-  @HostBinding("attr.sd-cell-border")
-  cellBorder: "vertical" | "horizontal" | "all" = "all";
+  @Input({transform: coercionBoolean}) inset = false;
+  @Input({transform: coercionBoolean}) inline = false;
+  @Input() cellBorder: "vertical" | "horizontal" | "all" = "all";
 }

@@ -4,7 +4,6 @@ import {
   DoCheck,
   ElementRef,
   EventEmitter,
-  HostBinding,
   HostListener,
   inject,
   Injector,
@@ -16,7 +15,6 @@ import {NumberUtil} from "@simplysm/sd-core-common";
 import {SdAnchorControl} from "./SdAnchorControl";
 import {SdPaneControl} from "./SdPaneControl";
 import {SdSystemConfigProvider} from "../providers/SdSystemConfigProvider";
-import {CommonModule} from "@angular/common";
 import {SdIconControl} from "./SdIconControl";
 import {coercionBoolean, coercionNumber} from "../utils/commons";
 import {SdNgHelper} from "../utils/SdNgHelper";
@@ -31,7 +29,6 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
-    CommonModule,
     SdAnchorControl,
     SdPaneControl,
     SdIconControl,
@@ -51,23 +48,25 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
          (focus.outside)="onDialogFocusOutside()"
          (sdResize.outside)="onDialogResizeOutside($event)">
       <sd-dock-container>
-        <sd-dock class="_header" (mousedown.outside)="onHeaderMouseDownOutside($event)"
-                 *ngIf="!hideHeader"
-                 [style]="headerStyle">
-          <sd-anchor class="_close-button"
-                     (click)="onCloseButtonClick()"
-                     *ngIf="!hideCloseButton">
-            <sd-icon [icon]="icons.xmark" fixedWidth/>
-          </sd-anchor>
-          <h5 class="_title">{{ title }}</h5>
-        </sd-dock>
+        @if (!hideHeader) {
+          <sd-dock class="_header" (mousedown.outside)="onHeaderMouseDownOutside($event)"
+                   [style]="headerStyle">
+            @if (!hideCloseButton) {
+              <sd-anchor class="_close-button"
+                         (click)="onCloseButtonClick()">
+                <sd-icon [icon]="icons.xmark" fixedWidth/>
+              </sd-anchor>
+            }
+            <h5 class="_title">{{ title }}</h5>
+          </sd-dock>
+        }
 
         <sd-pane class="_content">
           <ng-content></ng-content>
         </sd-pane>
       </sd-dock-container>
 
-      <ng-container *ngIf="resizable">
+      @if (resizable) {
         <div class="_left-resize-bar" (mousedown.outside)="onResizeBarMousedownOutside($event, 'left')"></div>
         <div class="_right-resize-bar" (mousedown.outside)="onResizeBarMousedownOutside($event, 'right')"></div>
         <div class="_top-resize-bar" (mousedown.outside)="onResizeBarMousedownOutside($event, 'top')"></div>
@@ -78,7 +77,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
              (mousedown.outside)="onResizeBarMousedownOutside($event, 'bottom-right')"></div>
         <div class="_bottom-left-resize-bar"
              (mousedown.outside)="onResizeBarMousedownOutside($event, 'bottom-left')"></div>
-      </ng-container>
+      }
     </div>`,
   styles: [/* language=SCSS */ `
     @import "../scss/mixins";
@@ -316,72 +315,41 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
         }
       }
     }
-  `]
+  `],
+  host: {
+    "[attr.sd-open]": "open",
+    "[attr.sd-float]": "float",
+    "[attr.sd-position]": "position"
+  }
 })
 export class SdModalControl implements DoCheck {
   icons = inject(SdAngularOptionsProvider).icons;
 
-  @Input()
-  key?: string;
+  @Input({transform: coercionBoolean}) open = false;
+  @Output() openChange = new EventEmitter<boolean>();
 
-  @Input()
-  title = "창";
+  @Input() key?: string;
+  @Input({required: true}) title!: string;
+  @Input({transform: coercionBoolean}) hideHeader = false;
+  @Input({transform: coercionBoolean}) hideCloseButton = false;
+  @Input({transform: coercionBoolean}) useCloseByBackdrop = false;
+  @Input({transform: coercionBoolean}) useCloseByEscapeKey = false;
+  @Input({transform: coercionBoolean}) resizable = false;
+  @Input({transform: coercionBoolean}) movable = true;
+  @Input({transform: coercionBoolean}) float = false;
+  @Input({transform: coercionNumber}) heightPx?: number;
+  @Input({transform: coercionNumber}) widthPx?: number;
+  @Input({transform: coercionNumber}) minHeightPx?: number;
+  @Input({transform: coercionNumber}) minWidthPx?: number;
+  @Input() position?: "bottom-right" | "top-right";
+  @Input() headerStyle?: string;
 
-  @Input({transform: coercionBoolean})
-  hideHeader = false;
+  @ViewChild("dialogEl", {static: true}) dialogElRef!: ElementRef<HTMLElement>;
 
-  @Input({transform: coercionBoolean})
-  hideCloseButton = false;
-
-  @Input({transform: coercionBoolean})
-  useCloseByBackdrop = false;
-
-  @Input({transform: coercionBoolean})
-  useCloseByEscapeKey = false;
-
-  @Input({transform: coercionBoolean})
-  @HostBinding("attr.sd-open")
-  open = false;
-
-  @Input({transform: coercionBoolean})
-  resizable = false;
-
-  @Input({transform: coercionBoolean})
-  movable = true;
-
-  @Output()
-  openChange = new EventEmitter<boolean>();
-
-  @Input({transform: coercionBoolean})
-  @HostBinding("attr.sd-float")
-  float = false;
-
-  @Input({transform: coercionNumber})
-  heightPx?: number;
-
-  @Input({transform: coercionNumber})
-  widthPx?: number;
-
-  @Input({transform: coercionNumber})
-  minHeightPx?: number;
-
-  @Input({transform: coercionNumber})
-  minWidthPx?: number;
-
-  @Input()
-  @HostBinding("attr.sd-position")
-  position?: "bottom-right" | "top-right";
-
-  @Input()
-  headerStyle?: string;
-
-  #elRef: ElementRef<HTMLElement> = inject(ElementRef);
+  #elRef = inject<ElementRef<HTMLElement>>(ElementRef);
   #sdSystemConfig = inject(SdSystemConfigProvider);
 
   #config?: ISdModalConfigVM;
-
-  @ViewChild("dialogEl", {static: true})
-  dialogElRef!: ElementRef<HTMLElement>;
 
   #sdNgHelper = new SdNgHelper(inject(Injector));
 

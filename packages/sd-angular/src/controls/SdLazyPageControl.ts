@@ -2,23 +2,25 @@ import {ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, Input, On
 import {SdToastProvider} from "../providers/SdToastProvider";
 import {SdLazyPageLoaderProvider} from "../providers/SdLazyPageLoaderProvider";
 import {SdBusyContainerControl} from "./SdBusyContainerControl";
-import {NgComponentOutlet, NgIf} from "@angular/common";
+import {NgComponentOutlet} from "@angular/common";
 
 @Component({
   selector: "sd-lazy-page",
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [SdBusyContainerControl, NgIf, NgComponentOutlet],
+  imports: [
+    SdBusyContainerControl,
+    NgComponentOutlet
+  ],
   template: `
     <sd-busy-container [busy]="busyCount > 0" noFade type="bar">
-      <ng-container *ngIf="componentType">
+      @if (componentType) {
         <ng-container *ngComponentOutlet="componentType; ngModuleFactory: moduleFactory"/>
-      </ng-container>
+      }
     </sd-busy-container>`
 })
 export class SdLazyPageControl implements OnInit {
-  @Input({required: true})
-  code!: string;
+  @Input({required: true}) code!: string;
 
   busyCount = 0;
 

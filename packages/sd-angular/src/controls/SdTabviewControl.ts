@@ -12,7 +12,6 @@ import {SdDockContainerControl} from "./SdDockContainerControl";
 import {SdDockControl} from "./SdDockControl";
 import {SdTabControl} from "./SdTabControl";
 import {SdTabItemControl} from "./SdTabItemControl";
-import {NgForOf} from "@angular/common";
 import {SdPaneControl} from "./SdPaneControl";
 
 @Component({
@@ -24,17 +23,17 @@ import {SdPaneControl} from "./SdPaneControl";
     SdDockControl,
     SdTabControl,
     SdTabItemControl,
-    NgForOf,
     SdPaneControl
   ],
   template: `
     <sd-dock-container>
       <sd-dock>
         <sd-tab [value]="value" (valueChange)="onValueChange($event)">
-          <sd-tab-item *ngFor="let itemControl of itemControls; trackBy: trackByFnForItemControl"
-                       [value]="itemControl.value">
-            {{ itemControl.header || itemControl.value }}
-          </sd-tab-item>
+          @for (itemControl of itemControls; track itemControl.value) {
+            <sd-tab-item [value]="itemControl.value">
+              {{ itemControl.header || itemControl.value }}
+            </sd-tab-item>
+          }
         </sd-tab>
       </sd-dock>
 
@@ -43,17 +42,11 @@ import {SdPaneControl} from "./SdPaneControl";
       </sd-pane>
     </sd-dock-container>`
 })
-export class SdTabviewControl {
-  @Input()
-  value?: any;
+export class SdTabviewControl<T> {
+  @Input() value?: T;
+  @Output() valueChange = new EventEmitter<T>();
 
-  @Output()
-  valueChange = new EventEmitter<any>();
-
-  @ContentChildren(SdTabviewItemControl)
-  itemControls?: QueryList<SdTabviewItemControl>;
-
-  trackByFnForItemControl = (i: number, item: SdTabviewItemControl): any => item.value ?? item;
+  @ContentChildren(SdTabviewItemControl) itemControls!: QueryList<SdTabviewItemControl<T>>;
 
   onValueChange(value: any) {
     if (this.valueChange.observed) {

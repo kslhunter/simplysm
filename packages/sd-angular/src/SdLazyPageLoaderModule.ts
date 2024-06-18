@@ -1,5 +1,4 @@
 import {Inject, InjectionToken, ModuleWithProviders, NgModule, Optional, Type} from "@angular/core";
-import {CommonModule} from "@angular/common";
 import {ROUTES} from "@angular/router";
 import {SdLazyPageLoaderProvider} from "./providers/SdLazyPageLoaderProvider";
 
@@ -11,9 +10,7 @@ export interface LazyComponent {
 export const LAZY_PAGES_TOKEN = new InjectionToken<LazyComponent[]>("LAZY_PAGES_TOKEN");
 
 @NgModule({
-  imports: [
-    CommonModule
-  ],
+  imports: [],
   providers: []
 })
 export class SdLazyPageLoaderModule {

@@ -1,31 +1,22 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ElementRef,
-  EventEmitter,
-  HostBinding,
-  Input,
-  ViewChild
-} from "@angular/core";
+import {ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, ViewChild} from "@angular/core";
 import {coercionBoolean} from "../utils/commons";
-import {NgIf} from "@angular/common";
 
 @Component({
   selector: "sd-toast",
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [
-    NgIf
-  ],
+  imports: [],
   template: `
     <div class="_sd-toast-block">
       <div class="_sd-toast-message">
         <ng-content></ng-content>
       </div>
-      <div class="_sd-toast-progress" *ngIf="useProgress">
-        <div #progressBar class="_sd-toast-progress-bar">
+      @if (useProgress) {
+        <div class="_sd-toast-progress">
+          <div #progressBar class="_sd-toast-progress-bar">
+          </div>
         </div>
-      </div>
+      }
     </div>`,
   styles: [/* language=SCSS */ `
     @import "../scss/mixins";
@@ -119,15 +110,18 @@ import {NgIf} from "@angular/common";
         }
       }
     }
-  `]
+  `],
+  host: {
+    "[attr.sd-open]": "open",
+    "[attr.sd-theme]": "theme"
+  }
 })
 export class SdToastControl {
-  @Input({transform: coercionBoolean})
-  @HostBinding("attr.sd-open")
-  open = false;
+  @Input({transform: coercionBoolean}) open = false;
+  @Input({transform: coercionBoolean}) useProgress = false;
+  @Input() theme?: "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey" = "info";
 
-  @Input({transform: coercionBoolean})
-  useProgress = false;
+  @ViewChild("progressBar", {static: false, read: ElementRef}) progressBarElRef?: ElementRef<HTMLDivElement>;
 
   set progress(val: number) {
     if (this.progressBarElRef) {
@@ -136,11 +130,4 @@ export class SdToastControl {
   }
 
   close = new EventEmitter<any>();
-
-  @Input()
-  @HostBinding("attr.sd-theme")
-  public theme?: "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey" = "info";
-
-  @ViewChild("progressBar", {static: false, read: ElementRef})
-  progressBarElRef?: ElementRef<HTMLDivElement>;
 }

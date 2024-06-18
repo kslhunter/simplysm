@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
+import {ChangeDetectionStrategy, Component, Input} from "@angular/core";
 import {SdButtonControl} from "./SdButtonControl";
 import {SdIconControl} from "./SdIconControl";
 import {coercionBoolean} from "../utils/commons";
@@ -65,14 +65,13 @@ import {coercionBoolean} from "../utils/commons";
         }
       }
     }
-  `]
+  `],
+  host: {
+    "[attr.sd-size]": "size",
+    "[attr.sd-inset]": "inset"
+  }
 })
 export class SdAdditionalButtonControl {
-  @Input()
-  @HostBinding("attr.sd-size")
-  size?: "sm" | "lg";
-
-  @Input({transform: coercionBoolean})
-  @HostBinding("attr.sd-inset")
-  inset = false;
+  @Input() size?: "sm" | "lg";
+  @Input({transform: coercionBoolean}) inset = false;
 }

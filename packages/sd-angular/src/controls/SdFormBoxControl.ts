@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
+import {ChangeDetectionStrategy, Component, Input} from "@angular/core";
 
 @Component({
   selector: "sd-form-box",
@@ -30,16 +30,13 @@ import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/c
         display: contents;
       }
     }
-  `]
+  `],
+  host: {
+    "[attr.sd-layout]": "layout"
+  }
 })
 export class SdFormBoxControl {
-  @Input()
-  @HostBinding("attr.sd-layout")
-  layout: "cascade" | "inline" | "table" | "none" = "cascade";
-
-  @Input()
-  labelWidth?: string;
-
-  @Input()
-  labelAlign?: "left" | "right" | "center";
+  @Input() layout: "cascade" | "inline" | "table" | "none" = "cascade";
+  @Input() labelWidth?: string;
+  @Input() labelAlign?: "left" | "right" | "center";
 }
