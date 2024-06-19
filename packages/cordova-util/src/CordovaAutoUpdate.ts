@@ -24,7 +24,7 @@ export abstract class CordovaAutoUpdate {
       const {
         version: serverVersion,
         downloadPath
-      } = await autoUpdateServiceClient.getLastVersion("client-mobile", "android");
+      } = await autoUpdateServiceClient.getLastVersion("android");
 
       // 서버와 로컬의 버전이 다르면,
       if (localVersion !== serverVersion) {

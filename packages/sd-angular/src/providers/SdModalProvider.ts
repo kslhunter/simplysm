@@ -5,24 +5,24 @@ import {SdModalControl} from "../controls/SdModalControl";
 export class SdModalProvider {
   #appRef = inject(ApplicationRef);
 
-  public modalCount = 0;
+  modalCount = 0;
 
-  public async showAsync<T extends SdModalBase<any, any>>(modalType: Type<T>,
-                                                          title: string,
-                                                          param: T["__tInput__"],
-                                                          options?: {
-                                                            key?: string;
-                                                            hideHeader?: boolean;
-                                                            hideCloseButton?: boolean;
-                                                            useCloseByBackdrop?: boolean;
-                                                            useCloseByEscapeKey?: boolean;
-                                                            float?: boolean;
-                                                            minHeightPx?: number;
-                                                            minWidthPx?: number;
-                                                            resizable?: boolean;
-                                                            movable?: boolean;
-                                                            headerStyle?: string;
-                                                          }): Promise<T["__tOutput__"] | undefined> {
+  async showAsync<T extends SdModalBase<any, any>>(modalType: Type<T>,
+                                                   title: string,
+                                                   param: T["__tInput__"],
+                                                   options?: {
+                                                     key?: string;
+                                                     hideHeader?: boolean;
+                                                     hideCloseButton?: boolean;
+                                                     useCloseByBackdrop?: boolean;
+                                                     useCloseByEscapeKey?: boolean;
+                                                     float?: boolean;
+                                                     minHeightPx?: number;
+                                                     minWidthPx?: number;
+                                                     resizable?: boolean;
+                                                     movable?: boolean;
+                                                     headerStyle?: string;
+                                                   }): Promise<T["__tOutput__"] | undefined> {
     return await new Promise<T["__tOutput__"] | undefined>(async (resolve, reject) => {
       try {
         const userModalRef = createComponent(modalType, {
@@ -94,14 +94,14 @@ export class SdModalProvider {
 }
 
 export abstract class SdModalBase<I, O> {
-  public __tInput__!: I;
-  public __tOutput__!: O;
-  public isModal = false;
-  public title!: string;
+  __tInput__!: I;
+  __tOutput__!: O;
+  isModal = false;
+  title!: string;
 
-  public abstract sdOnOpen(param: I): void | Promise<void>;
+  abstract sdOnOpen(param: I): void | Promise<void>;
 
-  public close(value?: O): void {
+  close(value?: O): void {
     throw new Error("모달이 초기화되어있지 않습니다.");
   }
 }

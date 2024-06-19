@@ -2,7 +2,7 @@ import {ObjectUtil} from "@simplysm/sd-core-common";
 import {IconProp} from "@fortawesome/fontawesome-svg-core";
 
 export class SdAppStructureUtil {
-  public static getFlatPermissions<T extends string>(menus: ISdAppStructureItem<T>[], codes: string[] = [], modules: T[] = []): ISdFlatPermission<T>[] {
+  static getFlatPermissions<T extends string>(menus: ISdAppStructureItem<T>[], codes: string[] = [], modules: T[] = []): ISdFlatPermission<T>[] {
     const results: ISdFlatPermission<T>[] = [];
     for (const menu of menus) {
       const currCodes = codes.concat([menu.code]);
@@ -40,7 +40,7 @@ export class SdAppStructureUtil {
     return results;
   }
 
-  public static getMenus<T extends string>(menus: ISdAppStructureItem<T>[], codeChain: string[] = []): ISdMenu<T>[] {
+  static getMenus<T extends string>(menus: ISdAppStructureItem<T>[], codeChain: string[] = []): ISdMenu<T>[] {
     const resultMenus: ISdMenu<T>[] = [];
     for (const menu of menus) {
       if (menu.isNotMenu) {
@@ -63,7 +63,7 @@ export class SdAppStructureUtil {
     return resultMenus;
   }
 
-  public static getFlatPages<T extends string>(menus: ISdAppStructureItem<T>[], titleChain: string[] = [], codeChain: string[] = [], modulesChain: T[][] = []): ISdFlatPage<T>[] {
+  static getFlatPages<T extends string>(menus: ISdAppStructureItem<T>[], titleChain: string[] = [], codeChain: string[] = [], modulesChain: T[][] = []): ISdFlatPage<T>[] {
     const resultFlatMenus: ISdFlatPage<T>[] = [];
     for (const menu of menus) {
       if (menu.isNotPage) {
@@ -91,7 +91,7 @@ export class SdAppStructureUtil {
     return resultFlatMenus;
   }
 
-  public static getTitleByCode(menus: ISdAppStructureItem[], code: string, withoutParent?: boolean): string {
+  static getTitleByCode(menus: ISdAppStructureItem[], code: string, withoutParent?: boolean): string {
     const codes = code.split(".");
 
     const result: string[] = [];
@@ -110,7 +110,7 @@ export class SdAppStructureUtil {
     return withoutParent ? current : ((parent ? `[${parent}] ` : "") + current);
   }
 
-  public static getPermissions<T extends string>(menus: ISdAppStructureItem<T>[], codes: string[] = []): ISdPermission<T>[] {
+  static getPermissions<T extends string>(menus: ISdAppStructureItem<T>[], codes: string[] = []): ISdPermission<T>[] {
     const results: ISdPermission<T>[] = [];
     for (const menu of menus) {
       const currCodes = codes.concat([menu.code]);
@@ -143,7 +143,7 @@ export class SdAppStructureUtil {
     return results;
   }
 
-  public static getPermissionDisplayNameRecord(menus: ISdAppStructureItem[], codes: string[] = [], titles: string[] = []): Record<string, string> {
+  static getPermissionDisplayNameRecord(menus: ISdAppStructureItem[], codes: string[] = [], titles: string[] = []): Record<string, string> {
     let resultRecord: Record<string, string> = {};
     for (const menu of menus) {
       const currCodes = codes.concat([menu.code]);

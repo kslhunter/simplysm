@@ -1,15 +1,18 @@
-import {Injectable} from "@angular/core";
-import {EventManager} from "@angular/platform-browser";
+import {inject, Injectable} from "@angular/core";
+import {EventManagerPlugin} from "@angular/platform-browser";
+import {DOCUMENT} from "@angular/common";
 
 @Injectable({providedIn: null})
-export class SdRefreshCommandEventPlugin {
-  manager!: EventManager;
+export class SdRefreshCommandEventPlugin extends EventManagerPlugin {
+  constructor() {
+    super(inject(DOCUMENT));
+  }
 
-  supports(eventName: string) {
+  override supports(eventName: string) {
     return eventName === "sdDataRefreshCommand";
   }
 
-  addEventListener(element: HTMLElement, eventName: string, handler: (event: Event) => void): () => void {
+  override addEventListener(element: HTMLElement, eventName: string, handler: (event: Event) => void): () => void {
     const listener = (event: KeyboardEvent): void => {
       if ((event.key === "l" || event.key === "L") && event.ctrlKey && event.altKey && !event.shiftKey) {
         event.preventDefault();

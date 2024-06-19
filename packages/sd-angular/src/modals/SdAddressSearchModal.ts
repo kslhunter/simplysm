@@ -13,7 +13,7 @@ export class SdAddressSearchModal extends SdModalBase<undefined, IAddress> {
   #elRef: ElementRef<HTMLElement> = inject(ElementRef);
   #ngZone = inject(NgZone);
 
-  public sdOnOpen(param: undefined): void {
+  sdOnOpen(param: undefined): void {
     this.#ngZone.runOutsideAngular(() => {
       const run = (): void => {
         const contentEl = this.#elRef.nativeElement.firstChild! as HTMLDivElement;

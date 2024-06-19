@@ -1,15 +1,18 @@
-import {Injectable} from "@angular/core";
-import {EventManager} from "@angular/platform-browser";
+import {inject, Injectable} from "@angular/core";
+import {EventManagerPlugin} from "@angular/platform-browser";
+import {DOCUMENT} from "@angular/common";
 
 @Injectable({providedIn: null})
-export class SdResizeEventPlugin {
-  manager!: EventManager;
+export class SdResizeEventPlugin extends EventManagerPlugin {
+  constructor() {
+    super(inject(DOCUMENT));
+  }
 
-  supports(eventName: string): boolean {
+  override supports(eventName: string): boolean {
     return eventName === "sdResize" || eventName === "sdResize.outside";
   }
 
-  addEventListener(element: HTMLElement, eventName: string, handler: (entry: ISdResizeEvent) => void): () => void {
+  override addEventListener(element: HTMLElement, eventName: string, handler: (entry: ISdResizeEvent) => void): () => void {
     const outside = eventName.includes(".outside");
 
     let prevWidth = 0;

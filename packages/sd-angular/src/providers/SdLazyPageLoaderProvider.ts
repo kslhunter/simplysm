@@ -1,14 +1,13 @@
-import {createNgModule, Injectable, NgModuleRef, Type} from "@angular/core";
+import {createNgModule, inject, Injectable, NgModuleRef, Type} from "@angular/core";
 import {StringUtil} from "@simplysm/sd-core-common";
 import {LazyComponent} from "../SdLazyPageLoaderModule";
 
 @Injectable({providedIn: "root"})
 export class SdLazyPageLoaderProvider {
+  #moduleRef = inject(NgModuleRef);
+
   #toLoad = new Map<string, () => Promise<Type<any>>>();
   #loading = new Map<string, ILazyComponent>();
-
-  constructor(private readonly _moduleRef: NgModuleRef<any>) {
-  }
 
   add(lazyComponent: LazyComponent) {
     if (!this.#loading.has(lazyComponent.code)) {
@@ -24,7 +23,7 @@ export class SdLazyPageLoaderProvider {
     if (this.#toLoad.has(code)) {
       const moduleLoader = this.#toLoad.get(code)!;
       const moduleType = await moduleLoader();
-      const moduleRef = createNgModule(moduleType, this._moduleRef.injector);
+      const moduleRef = createNgModule(moduleType, this.#moduleRef.injector);
 
       const pageName = StringUtil.toPascalCase(code.split(".").last()!) + "LazyPage";
       const component = moduleRef.instance[pageName];

@@ -4,9 +4,9 @@ import {ApplicationRef, createComponent, inject, Injectable, Type} from "@angula
 export class SdPrintProvider {
   #appRef = inject(ApplicationRef);
 
-  public async printAsync<I>(printType: Type<SdPrintTemplateBase<I>>,
-                             param: I,
-                             options?: { margin?: string; size?: string }): Promise<void> {
+  async printAsync<I>(printType: Type<SdPrintTemplateBase<I>>,
+                      param: I,
+                      options?: { margin?: string; size?: string }): Promise<void> {
     await new Promise<void>(async (resolve, reject) => {
       try {
         const compRef = createComponent(printType, {
@@ -47,5 +47,5 @@ export class SdPrintProvider {
 }
 
 export abstract class SdPrintTemplateBase<I> {
-  public abstract sdOnOpen(param: I): void | Promise<void>;
+  abstract sdOnOpen(param: I): void | Promise<void>;
 }

@@ -5,11 +5,11 @@ import {FsUtil} from "@simplysm/sd-core-node";
 import {SdServiceServerConfigUtil} from "../utils/SdServiceServerConfigUtil";
 
 export class SdAutoUpdateService extends SdServiceBase {
-  getLastVersion(clientName: string, platform: string): {
+  getLastVersion(platform: string): {
     version: string;
     downloadPath: string;
   } {
-    const clientPath = SdServiceServerConfigUtil.getClientPath(this.server.options.rootPath, clientName, this.server.pathProxy);
+    const clientPath = SdServiceServerConfigUtil.getClientPath(this.server.options.rootPath, this.request!.clientName, this.server.pathProxy);
     const updates = FsUtil.readdir(path.resolve(clientPath, platform, "updates"));
     const versions = updates.map((item) => ({
       fileName: item,
@@ -18,7 +18,7 @@ export class SdAutoUpdateService extends SdServiceBase {
     })).filter((item) => item.extName === ".zip" && (/^[0-9.]*$/).test(item.version));
 
     const version = semver.maxSatisfying(versions.map((item) => item.version), "*")!;
-    const downloadPath = "/" + path.join(clientName, platform, "updates", versions.single(item => item.version === version)!.fileName);
+    const downloadPath = "/" + path.join(this.request!.clientName, platform, "updates", versions.single(item => item.version === version)!.fileName);
 
     return {
       version,
@@ -26,12 +26,10 @@ export class SdAutoUpdateService extends SdServiceBase {
     };
   }
 
-  /**
-   * @deprecated
-   */
-  async getLastVersionAsync(clientName: string, platform: string): Promise<string | undefined> {
+  /** @deprecated 이전 버전용*/
+  async getLastVersionAsync(platform: string): Promise<string | undefined> {
     try {
-      const updates = await FsUtil.readdirAsync(path.resolve(this.server.options.rootPath, "www", clientName, platform, "updates"));
+      const updates = await FsUtil.readdirAsync(path.resolve(this.server.options.rootPath, "www", this.request!.clientName, platform, "updates"));
       const versions = updates.map((item) => ({
         fileName: item,
         version: path.basename(item, path.extname(item)),

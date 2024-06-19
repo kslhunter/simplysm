@@ -5,7 +5,7 @@ import {Directive, Input} from "@angular/core";
   standalone: true
 })
 export class SdItemOfTemplateDirective<TItem> {
-  @Input('itemOf') data!: TItem[];
+  @Input({required: true}) itemOf!: TItem[];
 
   static ngTemplateContextGuard<TContextItem>(
     dir: SdItemOfTemplateDirective<TContextItem>,

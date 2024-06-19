@@ -5,8 +5,7 @@ import {Directive, Input} from "@angular/core";
   standalone: true
 })
 export class SdTypedTemplateDirective<T> {
-  @Input({alias: "typed", required: true})
-  typeToken!: T;
+  @Input({required: true}) typed!: T;
 
   static ngTemplateContextGuard<TypeToken>(
     _dir: SdTypedTemplateDirective<TypeToken>,

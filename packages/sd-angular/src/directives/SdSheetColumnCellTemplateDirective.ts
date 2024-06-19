@@ -5,7 +5,7 @@ import {Directive, Input} from "@angular/core";
   standalone: true
 })
 export class SdSheetColumnCellTemplateDirective<TItem> {
-  @Input('cell') data!: TItem[];
+  @Input({required: true}) cell!: TItem[];
 
   static ngTemplateContextGuard<TContextItem>(
     dir: SdSheetColumnCellTemplateDirective<TContextItem>,

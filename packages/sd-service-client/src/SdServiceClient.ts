@@ -21,7 +21,7 @@ export class SdServiceClient extends EventEmitter {
   private readonly _id = Uuid.new().toString();
   private readonly _ws: SdWebSocket;
 
-  public constructor(private readonly _name: string,
+  public constructor(public readonly name: string,
                      public readonly options: ISdServiceClientConnectionConfig) {
     super();
 
@@ -190,7 +190,7 @@ export class SdServiceClient extends EventEmitter {
     return await new Promise<any>(async (resolve, reject) => {
       const req: TSdServiceC2SMessage = {
         name: "request",
-        clientName: this._name,
+        clientName: this.name,
         uuid,
         command,
         params

@@ -1,15 +1,18 @@
-import {Injectable} from "@angular/core";
-import {EventManager} from "@angular/platform-browser";
+import {inject, Injectable} from "@angular/core";
+import {EventManagerPlugin} from "@angular/platform-browser";
+import {DOCUMENT} from "@angular/common";
 
 @Injectable({providedIn: null})
-export class SdOptionEventPlugin {
-  manager!: EventManager;
+export class SdOptionEventPlugin extends EventManagerPlugin {
+  constructor() {
+    super(inject(DOCUMENT));
+  }
 
-  supports(eventName: string): boolean {
+  override supports(eventName: string): boolean {
     return !eventName.startsWith("sd") && (eventName.includes(".capture") || eventName.includes(".outside"));
   }
 
-  public addEventListener(element: HTMLElement, eventName: string, handler: (event: Event) => void): () => void {
+  override addEventListener(element: HTMLElement, eventName: string, handler: (event: Event) => void): () => void {
     const capture = eventName.includes(".capture");
     const outside = eventName.includes(".outside");
     const realEventName = eventName.replace(/\.capture/, "").replace(/\.outside/, "") as keyof DocumentEventMap;

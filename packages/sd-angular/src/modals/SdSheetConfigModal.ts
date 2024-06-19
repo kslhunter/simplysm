@@ -100,13 +100,13 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 export class SdSheetConfigModal<T> extends SdModalBase<ISdSheetConfigModalInput<T>, ISdSheetConfig> {
   icons = inject(SdAngularOptionsProvider).icons;
 
-  public param?: ISdSheetConfigModalInput<T>;
+  param?: ISdSheetConfigModalInput<T>;
 
-  public items: IItemVM[] = [];
+  items: IItemVM[] = [];
 
-  public trackByFnForItem = (index: number, item: IItemVM): string => item.key;
+  trackByFnForItem = (index: number, item: IItemVM): string => item.key;
 
-  public sdOnOpen(param: ISdSheetConfigModalInput<T>): void {
+  sdOnOpen(param: ISdSheetConfigModalInput<T>): void {
     this.param = param;
 
     const items: IItemVM[] = [];
@@ -127,7 +127,7 @@ export class SdSheetConfigModal<T> extends SdModalBase<ISdSheetConfigModalInput<
     this.items = items.orderBy((item) => item.displayOrder).orderBy((item) => (item.fixed ? -1 : 0));
   }
 
-  public onDisplayOrderUpButtonClick(item: IItemVM): void {
+  onDisplayOrderUpButtonClick(item: IItemVM): void {
     const index = this.items.indexOf(item);
     this.items.remove(item);
     this.items.insert(index - 1, item);
@@ -137,7 +137,7 @@ export class SdSheetConfigModal<T> extends SdModalBase<ISdSheetConfigModalInput<
     }
   }
 
-  public onDisplayOrderDownButtonClick(item: IItemVM): void {
+  onDisplayOrderDownButtonClick(item: IItemVM): void {
     const index = this.items.indexOf(item);
     this.items.remove(item);
     this.items.insert(index + 1, item);
@@ -147,7 +147,7 @@ export class SdSheetConfigModal<T> extends SdModalBase<ISdSheetConfigModalInput<
     }
   }
 
-  public onOkButtonClick(): void {
+  onOkButtonClick(): void {
     const result: ISdSheetConfig = {columnRecord: {}};
     for (const config of this.items) {
       result.columnRecord![config.key] = {
@@ -161,11 +161,11 @@ export class SdSheetConfigModal<T> extends SdModalBase<ISdSheetConfigModalInput<
     this.close(result);
   }
 
-  public onCancelButtonClick(): void {
+  onCancelButtonClick(): void {
     this.close();
   }
 
-  public onInitButtonClick(): void {
+  onInitButtonClick(): void {
     if (confirm("설정값이 모두 초기화 됩니다.")) {
       this.close({columnRecord: {}});
     }

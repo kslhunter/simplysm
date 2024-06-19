@@ -86,7 +86,7 @@ import {SdSelectItemControl} from "./SdSelectItemControl";
 })
 export class SdSharedDataSelectViewControl<T extends ISharedDataBase<string | number>> implements DoCheck {
   @Input() selectedItem?: T;
-  @Output() readonly selectedItemChange = new EventEmitter<T>();
+  @Output() selectedItemChange = new EventEmitter<T>();
 
   @Input({required: true}) items: T[] = [];
   @Input() selectedIcon?: IconProp;

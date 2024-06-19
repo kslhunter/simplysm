@@ -7,24 +7,11 @@ import {ISdResizeEvent} from "../plugins/SdResizeEventPlugin";
   standalone: true
 })
 export class SdEventsDirective {
-  @Output("sdResize")
-  public readonly resize = new EventEmitter<ISdResizeEvent>();
-
-  @Output("sdResize.outside")
-  public readonly resizeOutside = new EventEmitter<ISdResizeEvent>();
-
-  @Output("focus.outside")
-  public readonly focusOutside = new EventEmitter<FocusEvent>();
-
-  @Output("click.outside")
-  public readonly clickOutside = new EventEmitter<MouseEvent>();
-
-  @Output("mousedown.outside")
-  public readonly mousedownOutside = new EventEmitter<MouseEvent>();
-
-  @Output("keydown.outside")
-  public readonly keydownOutside = new EventEmitter<KeyboardEvent>();
-
-  @Output("scroll.outside")
-  public readonly scrollOutside = new EventEmitter<Event>();
+  @Output("sdResize") resize = new EventEmitter<ISdResizeEvent>();
+  @Output("sdResize.outside") resizeOutside = new EventEmitter<ISdResizeEvent>();
+  @Output("focus.outside") focusOutside = new EventEmitter<FocusEvent>();
+  @Output("click.outside") clickOutside = new EventEmitter<MouseEvent>();
+  @Output("mousedown.outside") mousedownOutside = new EventEmitter<MouseEvent>();
+  @Output("keydown.outside") keydownOutside = new EventEmitter<KeyboardEvent>();
+  @Output("scroll.outside") scrollOutside = new EventEmitter<Event>();
 }

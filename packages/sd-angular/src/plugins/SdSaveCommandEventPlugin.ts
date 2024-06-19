@@ -1,15 +1,18 @@
-import {Injectable} from "@angular/core";
-import {EventManager} from "@angular/platform-browser";
+import {inject, Injectable} from "@angular/core";
+import {EventManagerPlugin} from "@angular/platform-browser";
+import {DOCUMENT} from "@angular/common";
 
 @Injectable({providedIn: null})
-export class SdSaveCommandEventPlugin {
-  public manager!: EventManager;
+export class SdSaveCommandEventPlugin extends EventManagerPlugin {
+  constructor() {
+    super(inject(DOCUMENT));
+  }
 
-  supports(eventName: string) {
+  override supports(eventName: string) {
     return eventName === "sdSaveCommand";
   }
 
-  addEventListener(element: HTMLElement, eventName: string, handler: (event: Event) => void): () => void {
+  override addEventListener(element: HTMLElement, eventName: string, handler: (event: Event) => void): () => void {
     const listener = (event: KeyboardEvent): void => {
       if ((event.key === "s" || event.key === "S") && event.ctrlKey && !event.altKey && !event.shiftKey) {
         event.preventDefault();
