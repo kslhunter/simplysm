@@ -40,6 +40,7 @@
     "rxjs": "^7.8.1",
     "sass": "^1.77.6",
     "semver": "^7.6.2",
+    "typescript": "~5.4.5",
     "xml2js": "^0.6.2",
     "yargs": "^17.7.2",
     "zone.js": "~0.14.7"
@@ -48,8 +49,5 @@
     "@types/eslint": "^8.56.10",
     "@types/xml2js": "^0.4.14",
     "@types/yargs": "^17.0.32"
-  },
-  "peerDependencies": {
-    "typescript": "~5.4.5"
   }
 }
