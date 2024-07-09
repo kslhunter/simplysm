@@ -7,7 +7,7 @@ import {
   HostListener,
   inject,
   Input,
-  OnInit
+  OnInit, ViewEncapsulation
 } from "@angular/core";
 import {SdDockContainerControl} from "./SdDockContainerControl";
 import {SdSystemConfigProvider} from "../providers/SdSystemConfigProvider";
@@ -18,6 +18,7 @@ import {SdEventsDirective} from "../directives/SdEventsDirective";
 @Component({
   selector: "sd-dock",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
     SdEventsDirective
@@ -28,7 +29,7 @@ import {SdEventsDirective} from "../directives/SdEventsDirective";
       <div class="_resize-bar" (mousedown.outside)="onResizeBarMousedownOutside($event)"></div>
     }`,
   styles: [/* language=SCSS */ `
-    :host {
+    sd-dock {
       display: block;
       position: absolute;
       overflow: visible;

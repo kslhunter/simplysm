@@ -1,9 +1,10 @@
-import {ChangeDetectionStrategy, Component, forwardRef, inject} from "@angular/core";
+import {ChangeDetectionStrategy, Component, forwardRef, inject, ViewEncapsulation} from "@angular/core";
 import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
 
 @Component({
   selector: "sd-sidebar",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
   template: `
@@ -11,7 +12,7 @@ import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
   styles: [/* language=SCSS */ `
     @import "../scss/mixins";
 
-    :host {
+    sd-sidebar {
       display: block;
       position: absolute;
       z-index: var(--z-index-sidebar);
@@ -26,7 +27,7 @@ import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
         background: var(--theme-blue-grey-darkest);
         color: var(--text-trans-rev-default);
 
-        ::ng-deep img {
+         img {
           filter: brightness(100);
         }
       }
@@ -46,6 +47,8 @@ import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
       body.sd-theme-modern & {
         //@include elevation(2);
         border-right: 1px solid var(--border-color-light);
+        //background: var(--theme-grey-lightest);
+        //box-shadow: inset -2px 0 8px rgba(0, 0, 0, .05);
 
         &[sd-toggle=true] {
           //@include elevation(0);

@@ -7,7 +7,7 @@ import {
   inject,
   Injector,
   Input,
-  Output
+  Output, ViewEncapsulation
 } from "@angular/core";
 import {StringUtil} from "@simplysm/sd-core-common";
 import {coercionBoolean, coercionNonNullableNumber, getSdFnCheckData, TSdFnInfo} from "../utils/commons";
@@ -16,6 +16,7 @@ import {SdNgHelper} from "../utils/SdNgHelper";
 @Component({
   selector: "sd-textarea",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
   template: `
@@ -45,7 +46,7 @@ import {SdNgHelper} from "../utils/SdNgHelper";
     @import "../scss/variables";
     @import "../scss/mixins";
 
-    :host {
+    sd-textarea {
       display: block;
       position: relative;
 

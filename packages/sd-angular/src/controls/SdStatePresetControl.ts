@@ -6,7 +6,7 @@ import {
   inject,
   Injector,
   Input,
-  Output
+  Output, ViewEncapsulation
 } from "@angular/core";
 import {ObjectUtil} from "@simplysm/sd-core-common";
 import {SdSystemConfigProvider} from "../providers/SdSystemConfigProvider";
@@ -20,6 +20,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 @Component({
   selector: "sd-state-preset",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
     SdAnchorControl,
@@ -48,7 +49,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
     }
   `,
   styles: [/* language=SCSS */ `
-    :host {
+    sd-state-preset {
       display: inline-block;
       vertical-align: top;
 

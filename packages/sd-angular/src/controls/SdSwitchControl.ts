@@ -1,9 +1,18 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, HostListener, Input, Output} from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  HostListener,
+  Input,
+  Output,
+  ViewEncapsulation
+} from "@angular/core";
 import {coercionBoolean} from "@simplysm/sd-angular";
 
 @Component({
   selector: "sd-switch",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
   template: `
@@ -13,7 +22,7 @@ import {coercionBoolean} from "@simplysm/sd-angular";
   styles: [/* language=SCSS */ `
     @import "../scss/variables";
 
-    :host {
+    sd-switch {
       display: block;
       padding: var(--gap-sm) 0;
       border: 1px solid transparent;

@@ -1,14 +1,15 @@
-import {ChangeDetectionStrategy, Component, Input} from "@angular/core";
+import {ChangeDetectionStrategy, Component, Input, ViewEncapsulation} from "@angular/core";
 
 @Component({
   selector: "sd-form-box",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
   template: `
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
-    :host {
+    sd-form-box {
       &[sd-layout="cascade"] {
         display: flex;
         flex-direction: column;

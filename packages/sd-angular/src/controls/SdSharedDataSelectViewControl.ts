@@ -8,7 +8,7 @@ import {
   Injector,
   Input,
   Output,
-  TemplateRef
+  TemplateRef, ViewEncapsulation
 } from "@angular/core";
 import {StringUtil} from "@simplysm/sd-core-common";
 import {IconProp} from "@fortawesome/fontawesome-svg-core";
@@ -29,6 +29,7 @@ import {SdSelectItemControl} from "./SdSelectItemControl";
 @Component({
   selector: "sd-shared-data-select-view",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
     SdBusyContainerControl,

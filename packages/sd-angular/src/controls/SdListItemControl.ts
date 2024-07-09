@@ -6,7 +6,8 @@ import {
   forwardRef,
   inject,
   Input,
-  Output
+  Output,
+  ViewEncapsulation
 } from "@angular/core";
 import {SdListControl} from "./SdListControl";
 import {IconProp} from "@fortawesome/fontawesome-svg-core";
@@ -19,6 +20,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 @Component({
   selector: "sd-list-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
     SdIconControl,
@@ -56,7 +58,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
   styles: [/* language=SCSS */ `
     @import "../scss/mixins";
 
-    :host {
+    sd-list-item {
       > ._content {
         padding: var(--gap-sm) var(--gap-default);
         cursor: pointer;
@@ -66,7 +68,8 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
         body.sd-theme-mobile & {
           @include active-effect(true);
           border-radius: var(--border-radius-default);
-          margin: var(--gap-xxs) 0;
+          //margin: var(--gap-xxs) 0;
+          margin: var(--gap-xxs);
         }
 
         > .flex-row > ._selected-icon {
@@ -96,7 +99,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
           }
         }
 
-        ::ng-deep ._child > ._content > sd-list {
+        > ._child > ._content > sd-list {
           padding: var(--gap-sm) 0;
 
           body.sd-theme-compact & {

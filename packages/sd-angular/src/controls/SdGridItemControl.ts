@@ -1,15 +1,26 @@
-import {ChangeDetectionStrategy, Component, ElementRef, inject, Input, NgZone, OnDestroy, OnInit} from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  inject,
+  Input,
+  NgZone,
+  OnDestroy,
+  OnInit,
+  ViewEncapsulation
+} from "@angular/core";
 import {coercionNumber} from "../utils/commons";
 
 @Component({
   selector: "sd-grid-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
   template: `
     <ng-content/>`,
   styles: [/* language=SCSS */ `
-    :host {
+    sd-grid-item {
       height: 100%;
     }
   `]

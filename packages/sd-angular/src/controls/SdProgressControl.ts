@@ -1,9 +1,10 @@
-import {ChangeDetectionStrategy, Component, Input} from "@angular/core";
+import {ChangeDetectionStrategy, Component, Input, ViewEncapsulation} from "@angular/core";
 import {coercionNumber} from "../utils/commons";
 
 @Component({
   selector: "sd-progress",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
   template: `
@@ -13,7 +14,7 @@ import {coercionNumber} from "../utils/commons";
     <ng-content></ng-content>
   `,
   styles: [/* language=SCSS */ `
-    :host {
+    sd-progress {
       position: relative;
       display: block;
       width: 100%;
@@ -32,7 +33,7 @@ import {coercionNumber} from "../utils/commons";
 
       &._size-lg {
         > ._sd-progress-content,
-        ::ng-deep > sd-progress-item > div {
+         > sd-progress-item > div {
           padding: var(--gap-default) var(--gap-lg);
           font-size: large;
         }

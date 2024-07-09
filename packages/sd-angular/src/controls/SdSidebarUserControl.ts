@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, inject, Input} from "@angular/core";
+import {ChangeDetectionStrategy, Component, inject, Input, ViewEncapsulation} from "@angular/core";
 import useBgJpg from "../../res/user_bg.jpg";
 import {SdCollapseIconControl} from "./SdCollapseIconControl";
 import {SdCollapseControl} from "./SdCollapseControl";
@@ -9,6 +9,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 @Component({
   selector: "sd-sidebar-user",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
     SdCollapseIconControl,
@@ -48,7 +49,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
   styles: [/* language=SCSS */ `
     @import "../scss/mixins";
 
-    :host {
+    sd-sidebar-user {
       > ._content {
         body.sd-theme-compact & {
           background-size: cover;
@@ -92,7 +93,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
       }
 
       body.sd-theme-compact & {
-        ::ng-deep > sd-collapse > ._content > sd-list {
+         > sd-collapse > ._content > sd-list {
           background: var(--trans-default);
         }
 

@@ -1,9 +1,18 @@
-import {ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, ViewChild} from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  ViewChild,
+  ViewEncapsulation
+} from "@angular/core";
 import {coercionBoolean} from "../utils/commons";
 
 @Component({
   selector: "sd-toast",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
   template: `
@@ -22,7 +31,7 @@ import {coercionBoolean} from "../utils/commons";
     @import "../scss/mixins";
     @import "../scss/variables";
 
-    :host {
+    sd-toast {
       display: block;
       margin-bottom: var(--gap-sm);
       text-align: center;

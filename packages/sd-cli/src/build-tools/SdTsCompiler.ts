@@ -22,7 +22,7 @@ export class SdTsCompiler {
   readonly #resourceDependencyCacheMap = new Map<string, Set<string>>();
   readonly #sourceFileCacheMap = new Map<string, ts.SourceFile>();
   readonly #emittedFilesCacheMap = new Map<string, {
-    outRelPath?: string;
+    outAbsPath?: string;
     text: string;
   }[]>();
 
@@ -416,13 +416,19 @@ export class SdTsCompiler {
 
     const ngTransformers = this.#ngProgram?.compiler.prepareEmit().transformers;
 
-    for (const affectedFile of affectedFileSet) {
-      if (this.#emittedFilesCacheMap.has(affectedFile)) {
-        continue;
-      }
+    // affected에 새로 추가된 파일은 포함되지 않는 현상이 있어 getSourceFiles로 바꿈
 
-      const sf = this.#program.getSourceFile(affectedFile);
-      if (!sf) {
+    // for (const affectedFile of affectedFileSet) {
+    // if (this.#emittedFilesCacheMap.has(affectedFile)) {
+    //   continue;
+    // }
+    //
+    // const sf = this.#program.getSourceFile(affectedFile);
+    // if (!sf) {
+    //   continue;
+    // }
+    for (const sf of this.#program.getSourceFiles()) {
+      if (this.#emittedFilesCacheMap.has(path.normalize(sf.fileName))) {
         continue;
       }
 
@@ -456,7 +462,7 @@ export class SdTsCompiler {
           }
 
           emitFileInfoCaches.push({
-            outRelPath: path.relative(this.#distPath, realFilePath),
+            outAbsPath: realFilePath,
             text: realText
           });
         }
@@ -480,7 +486,7 @@ export class SdTsCompiler {
       const contents = await this.#bundleStylesheetAsync(data, this.#globalStyleFilePath, this.#globalStyleFilePath);
       const emitFileInfos = this.#emittedFilesCacheMap.getOrCreate(this.#globalStyleFilePath, []);
       emitFileInfos.push({
-        outRelPath: path.relative(path.resolve(this.#pkgPath, "src"), this.#globalStyleFilePath).replace(/\.scss$/, ".css"),
+        outAbsPath: path.resolve(this.#pkgPath, path.relative(path.resolve(this.#pkgPath, "src"), this.#globalStyleFilePath).replace(/\.scss$/, ".css")),
         text: contents
       });
       emitFileSet.add(this.#globalStyleFilePath);
@@ -604,7 +610,7 @@ export interface ISdTsCompilerResult {
   program: ts.Program;
   typescriptDiagnostics: ts.Diagnostic[];
   stylesheetBundlingResultMap: Map<string, IStylesheetBundlingResult>;
-  emittedFilesCacheMap: Map<string, { outRelPath?: string; text: string; }[]>;
+  emittedFilesCacheMap: Map<string, { outAbsPath?: string; text: string; }[]>;
   watchFileSet: Set<string>;
 
   affectedFileSet: Set<string>;

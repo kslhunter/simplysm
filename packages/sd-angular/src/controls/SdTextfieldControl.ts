@@ -9,7 +9,7 @@ import {
   inject,
   Injector,
   Input,
-  Output
+  Output, ViewEncapsulation
 } from "@angular/core";
 import {DateOnly, DateTime, JsonConvert, NumberUtil, StringUtil, Time} from "@simplysm/sd-core-common";
 import {coercionBoolean, coercionNumber, getSdFnCheckData, TSdFnInfo} from "../utils/commons";
@@ -18,6 +18,7 @@ import {SdNgHelper} from "../utils/SdNgHelper";
 @Component({
   selector: "sd-textfield",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
   template: `
@@ -60,7 +61,7 @@ import {SdNgHelper} from "../utils/SdNgHelper";
     @import "../scss/variables";
     @import "../scss/mixins";
 
-    :host {
+    sd-textfield {
       display: block;
       position: relative;
 

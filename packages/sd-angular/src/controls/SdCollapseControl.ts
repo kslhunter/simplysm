@@ -1,10 +1,19 @@
-import {AfterContentInit, ChangeDetectionStrategy, Component, ElementRef, Input, ViewChild} from "@angular/core";
+import {
+  AfterContentInit,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  Input,
+  ViewChild,
+  ViewEncapsulation
+} from "@angular/core";
 import {coercionBoolean} from "../utils/commons";
 import {SdEventsDirective} from "../directives/SdEventsDirective";
 
 @Component({
   selector: "sd-collapse",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
     SdEventsDirective
@@ -17,7 +26,7 @@ import {SdEventsDirective} from "../directives/SdEventsDirective";
       <ng-content></ng-content>
     </div>`,
   styles: [/* language=SCSS */ `
-    :host {
+    sd-collapse {
       display: block;
       overflow: hidden;
 

@@ -10,7 +10,7 @@ import {
   Input,
   Output,
   TemplateRef,
-  ViewChild
+  ViewChild, ViewEncapsulation
 } from "@angular/core";
 import {SdSelectItemControl} from "./SdSelectItemControl";
 import {SdDropdownControl} from "./SdDropdownControl";
@@ -35,6 +35,7 @@ import {SdButtonControl} from "./SdButtonControl";
 @Component({
   selector: "sd-select",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
     SdDropdownControl,
@@ -133,12 +134,12 @@ import {SdButtonControl} from "./SdButtonControl";
   styles: [/* language=SCSS */ `
     @import "../scss/mixins";
 
-    :host {
+    sd-select {
       display: block;
       width: 100%;
       min-width: 10em;
 
-      ::ng-deep > sd-dropdown {
+       > sd-dropdown {
         > ._sd-dropdown-control {
           display: flex;
           overflow: hidden;
@@ -202,7 +203,7 @@ import {SdButtonControl} from "./SdButtonControl";
 
 
       &[sd-disabled=true] {
-        ::ng-deep > sd-dropdown > ._sd-dropdown-control {
+         > sd-dropdown > ._sd-dropdown-control {
           background: var(--theme-grey-lightest);
 
           > ._sd-select-control {
@@ -219,7 +220,7 @@ import {SdButtonControl} from "./SdButtonControl";
       }
 
       &:has(:invalid), &[sd-invalid] {
-        ::ng-deep > sd-dropdown > ._sd-dropdown-control > ._sd-select-control > ._invalid-indicator {
+         > sd-dropdown > ._sd-dropdown-control > ._sd-select-control > ._invalid-indicator {
           display: block;
         }
       }
@@ -231,7 +232,7 @@ import {SdButtonControl} from "./SdButtonControl";
       }
 
       &[sd-size=sm] {
-        ::ng-deep > sd-dropdown > ._sd-dropdown-control {
+         > sd-dropdown > ._sd-dropdown-control {
           > ._sd-select-control {
             padding: var(--gap-xs) var(--gap-sm);
             gap: var(--gap-sm);
@@ -244,7 +245,7 @@ import {SdButtonControl} from "./SdButtonControl";
       }
 
       &[sd-size=lg] {
-        ::ng-deep > sd-dropdown > ._sd-dropdown-control {
+         > sd-dropdown > ._sd-dropdown-control {
           > ._sd-select-control {
             padding: var(--gap-default) var(--gap-lg);
             gap: var(--gap-lg);
@@ -260,7 +261,7 @@ import {SdButtonControl} from "./SdButtonControl";
         min-width: auto;
         border-radius: 0;
 
-        > ::ng-deep sd-dropdown > ._sd-dropdown-control {
+        >  sd-dropdown > ._sd-dropdown-control {
           border: none;
           border-radius: 0;
 
@@ -280,7 +281,7 @@ import {SdButtonControl} from "./SdButtonControl";
           }
         }
 
-        &[sd-disabled=true] ::ng-deep > sd-dropdown > ._sd-dropdown-control {
+        &[sd-disabled=true]  > sd-dropdown > ._sd-dropdown-control {
           background: white;
 
           > ._sd-select-control {

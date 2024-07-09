@@ -1,8 +1,9 @@
-import {ChangeDetectionStrategy, Component, Input} from "@angular/core";
+import {ChangeDetectionStrategy, Component, Input, ViewEncapsulation} from "@angular/core";
 
 @Component({
   selector: "sd-progress-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
   template: `
@@ -11,7 +12,7 @@ import {ChangeDetectionStrategy, Component, Input} from "@angular/core";
   styles: [/* language=SCSS */ `
     @import "../scss/variables";
 
-    :host {
+    sd-progress-item {
       display: block;
       float: left;
       overflow: hidden;

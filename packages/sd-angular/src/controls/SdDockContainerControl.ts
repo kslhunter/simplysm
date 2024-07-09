@@ -6,7 +6,7 @@ import {
   ElementRef,
   inject,
   Injector,
-  QueryList
+  QueryList, ViewEncapsulation
 } from "@angular/core";
 import {SdDockControl} from "./SdDockControl";
 import {SdNgHelper} from "../utils/SdNgHelper";
@@ -14,12 +14,13 @@ import {SdNgHelper} from "../utils/SdNgHelper";
 @Component({
   selector: "sd-dock-container",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
   template: `
     <ng-content/>`,
   styles: [/* language=SCSS */ `
-    :host {
+    sd-dock-container {
       display: block;
       position: relative;
       height: 100%;
@@ -27,10 +28,9 @@ import {SdNgHelper} from "../utils/SdNgHelper";
   `]
 })
 export class SdDockContainerControl implements DoCheck {
-  #elRef: ElementRef<HTMLElement> = inject(ElementRef);
+  #elRef = inject<ElementRef<HTMLElement>>(ElementRef);
 
-  @ContentChildren(SdDockControl)
-  dockControls!: QueryList<SdDockControl>;
+  @ContentChildren(SdDockControl) dockControls!: QueryList<SdDockControl>;
 
   #sdNgHelper = new SdNgHelper(inject(Injector));
 

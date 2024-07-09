@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, inject, Input} from "@angular/core";
+import {ChangeDetectionStrategy, Component, inject, Input, ViewEncapsulation} from "@angular/core";
 import {SdBusyContainerControl} from "./SdBusyContainerControl";
 import {coercionBoolean} from "../utils/commons";
 import {SdIconControl} from "./SdIconControl";
@@ -7,6 +7,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 @Component({
   selector: "sd-modal-base",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
     SdBusyContainerControl,

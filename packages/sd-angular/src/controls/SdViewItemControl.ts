@@ -1,15 +1,16 @@
-import {ChangeDetectionStrategy, Component, forwardRef, inject, Input} from "@angular/core";
+import {ChangeDetectionStrategy, Component, forwardRef, inject, Input, ViewEncapsulation} from "@angular/core";
 import {SdViewControl} from "./SdViewControl";
 
 @Component({
   selector: "sd-view-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
   template: `
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
-    :host {
+    sd-view-item {
       display: none;
 
       &[sd-selected=true] {

@@ -1,4 +1,13 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, Input, OnInit, Type} from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  Input,
+  OnInit,
+  Type,
+  ViewEncapsulation
+} from "@angular/core";
 import {SdToastProvider} from "../providers/SdToastProvider";
 import {SdLazyPageLoaderProvider} from "../providers/SdLazyPageLoaderProvider";
 import {SdBusyContainerControl} from "./SdBusyContainerControl";
@@ -7,6 +16,7 @@ import {NgComponentOutlet} from "@angular/common";
 @Component({
   selector: "sd-lazy-page",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
     SdBusyContainerControl,

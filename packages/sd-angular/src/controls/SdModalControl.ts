@@ -9,7 +9,7 @@ import {
   Injector,
   Input,
   Output,
-  ViewChild
+  ViewChild, ViewEncapsulation
 } from "@angular/core";
 import {NumberUtil} from "@simplysm/sd-core-common";
 import {SdAnchorControl} from "./SdAnchorControl";
@@ -27,6 +27,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 @Component({
   selector: "sd-modal",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
     SdAnchorControl,
@@ -82,7 +83,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
   styles: [/* language=SCSS */ `
     @import "../scss/mixins";
 
-    :host {
+    sd-modal {
       display: block;
       position: fixed;
       z-index: var(--z-index-modal);
@@ -119,7 +120,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
           outline: none;
         }
 
-        ::ng-deep > sd-dock-container {
+         > sd-dock-container {
           > ._header {
             user-select: none;
             border-bottom: 1px solid var(--trans-light);

@@ -1,9 +1,10 @@
-import {ChangeDetectionStrategy, Component, Input} from "@angular/core";
+import {ChangeDetectionStrategy, Component, Input, ViewEncapsulation} from "@angular/core";
 import {coercionBoolean} from "../utils/commons";
 
 @Component({
   selector: "sd-content-box",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
   template: `
@@ -13,7 +14,7 @@ import {coercionBoolean} from "../utils/commons";
   styles: [/* language=SCSS */ `
     @import "../scss/mixins";
 
-    :host {
+    sd-content-box {
       display: block;
 
       > div {

@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, Input} from "@angular/core";
+import {ChangeDetectionStrategy, Component, Input, ViewEncapsulation} from "@angular/core";
 import {IconProp} from "@fortawesome/fontawesome-svg-core";
 import {NumberUtil} from "@simplysm/sd-core-common";
 import {coercionBoolean} from "../utils/commons";
@@ -7,6 +7,7 @@ import {SdIconControl} from "./SdIconControl";
 @Component({
   selector: "sd-collapse-icon",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
     SdIconControl
@@ -14,7 +15,7 @@ import {SdIconControl} from "./SdIconControl";
   template: `
     <sd-icon [icon]="icon" fixedWidth/>`,
   styles: [/* language=SCSS */ `
-    :host {
+    sd-collapse-icon {
       display: inline-block;
       transition: transform .1s ease-in;
 

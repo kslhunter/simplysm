@@ -1,9 +1,10 @@
-import {ChangeDetectionStrategy, Component, Input} from "@angular/core";
+import {ChangeDetectionStrategy, Component, Input, ViewEncapsulation} from "@angular/core";
 import {coercionBoolean} from "../utils/commons";
 
 @Component({
   selector: "sd-anchor",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
   template: `
@@ -11,7 +12,7 @@ import {coercionBoolean} from "../utils/commons";
   styles: [/* language=SCSS */ `
     @import "../scss/mixins";
 
-    :host {
+    sd-anchor {
       display: inline-block;
       cursor: pointer;
       color: var(--theme-primary-default);

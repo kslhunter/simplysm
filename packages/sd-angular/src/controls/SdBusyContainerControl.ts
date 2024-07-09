@@ -1,10 +1,11 @@
-import {ChangeDetectionStrategy, Component, HostListener, inject, Input} from "@angular/core";
+import {ChangeDetectionStrategy, Component, HostListener, inject, Input, ViewEncapsulation} from "@angular/core";
 import {SdBusyProvider} from "../providers/SdBusyProvider";
 import {coercionBoolean, coercionNumber} from "../utils/commons";
 
 @Component({
   selector: "sd-busy-container",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
   template: `
@@ -31,7 +32,7 @@ import {coercionBoolean, coercionNumber} from "../utils/commons";
     </div>
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
-    :host {
+    sd-busy-container {
       display: block;
       position: relative;
       top: 0;

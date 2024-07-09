@@ -1,13 +1,14 @@
-import {ChangeDetectionStrategy, Component} from "@angular/core";
+import {ChangeDetectionStrategy, Component, ViewEncapsulation} from "@angular/core";
 
 @Component({
   selector: "sd-toast-container",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
   template: "",
   styles: [/* language=SCSS */ `
-    :host {
+    sd-toast-container {
       display: flex;
       flex-direction: column;
       position: fixed;

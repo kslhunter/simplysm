@@ -1,4 +1,12 @@
-import {ChangeDetectionStrategy, Component, ContentChild, inject, Input, TemplateRef} from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ContentChild,
+  inject,
+  Input,
+  TemplateRef,
+  ViewEncapsulation
+} from "@angular/core";
 import {SdTopbarContainerControl} from "./SdTopbarContainerControl";
 import {SdTopbarControl} from "./SdTopbarControl";
 import {NgTemplateOutlet} from "@angular/common";
@@ -11,6 +19,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 @Component({
   selector: "sd-page-base",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
     SdTopbarContainerControl,

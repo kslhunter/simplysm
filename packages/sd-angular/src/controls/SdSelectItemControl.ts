@@ -10,7 +10,7 @@ import {
   Input,
   OnDestroy,
   OnInit,
-  TemplateRef
+  TemplateRef, ViewEncapsulation
 } from "@angular/core";
 import {SdSelectControl} from "./SdSelectControl";
 import {coercionBoolean} from "../utils/commons";
@@ -21,6 +21,7 @@ import {SdGapControl} from "./SdGapControl";
 @Component({
   selector: "sd-select-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
     SdCheckboxControl,
@@ -43,7 +44,7 @@ import {SdGapControl} from "./SdGapControl";
   styles: [/* language=SCSS */ `
     @import "../scss/mixins";
 
-    :host {
+    sd-select-item {
       display: block;
       padding: var(--gap-sm) var(--gap-default);
       cursor: pointer;

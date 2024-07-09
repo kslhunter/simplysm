@@ -10,7 +10,7 @@ import {
   Input,
   Output,
   TemplateRef,
-  Type
+  Type, ViewEncapsulation
 } from "@angular/core";
 import {ISharedDataBase} from "../providers/SdSharedDataProvider";
 import {SdModalBase, SdModalProvider} from "../providers/SdModalProvider";
@@ -30,6 +30,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 @Component({
   selector: "sd-shared-data-select",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
     SdSelectControl,

@@ -1,9 +1,10 @@
-import {ChangeDetectionStrategy, Component, Input} from "@angular/core";
+import {ChangeDetectionStrategy, Component, Input, ViewEncapsulation} from "@angular/core";
 import {coercionBoolean} from "../utils/commons";
 
 @Component({
   selector: "sd-topbar-menu",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
   template: `
@@ -11,7 +12,7 @@ import {coercionBoolean} from "../utils/commons";
   styles: [/* language=SCSS */ `
     @import "../scss/mixins";
 
-    :host {
+    sd-topbar-menu {
       display: inline-block;
       cursor: pointer;
 
@@ -29,17 +30,16 @@ import {coercionBoolean} from "../utils/commons";
       body.sd-theme-modern &,
       body.sd-theme-kiosk & {
         color: var(--theme-primary-default);
-        //color: var(--text-trans-rev-default);
         padding: var(--gap-sm) var(--gap-default);
-        background: var(--theme-primary-lightest);
+        //background: var(--theme-primary-lightest);
         border-radius: var(--border-radius-default);
-        //margin: var(--gap-sm) var(--gap-default);
         transition: background .1s linear;
 
         @include active-effect(true);
 
         &:hover {
-          background: var(--theme-primary-lighter);
+          //background: var(--theme-primary-lighter);
+          background: var(--theme-primary-lightest);
         }
       }
 

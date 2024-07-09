@@ -1,9 +1,10 @@
-import {ChangeDetectionStrategy, Component, Input} from "@angular/core";
+import {ChangeDetectionStrategy, Component, Input, ViewEncapsulation} from "@angular/core";
 import {coercionBoolean} from "../utils/commons";
 
 @Component({
   selector: "sd-label",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
   template: `
@@ -11,7 +12,7 @@ import {coercionBoolean} from "../utils/commons";
   styles: [/* language=SCSS */ `
     @import "../scss/variables";
 
-    :host {
+    sd-label {
       display: inline-block;
       background: var(--theme-grey-darker);
       color: white;

@@ -1,14 +1,15 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from "@angular/core";
+import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output, ViewEncapsulation} from "@angular/core";
 
 @Component({
   selector: "sd-tab",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
   template: `
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
-    :host {
+    sd-tab {
       display: block;
       border-bottom: 2px solid var(--theme-grey-lighter);
 

@@ -1,4 +1,12 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, inject, Input, Output} from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  inject,
+  Input,
+  Output,
+  ViewEncapsulation
+} from "@angular/core";
 import {IconProp} from "@fortawesome/fontawesome-svg-core";
 import {coercionBoolean} from "../utils/commons";
 import {SdIconControl} from "./SdIconControl";
@@ -7,6 +15,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 @Component({
   selector: "sd-checkbox",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
     SdIconControl
@@ -28,7 +37,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
     @import "../scss/variables";
     @import "../scss/mixins";
 
-    :host {
+    sd-checkbox {
       > div {
         @include form-control-base();
         color: inherit;
@@ -58,7 +67,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
             opacity: 0;
             color: var(--text-trans-default);
 
-            ::ng-deep svg {
+            svg {
               width: 1em;
               vertical-align: top;
             }

@@ -1,9 +1,10 @@
-import {ChangeDetectionStrategy, Component, Input} from "@angular/core";
+import {ChangeDetectionStrategy, Component, Input, ViewEncapsulation} from "@angular/core";
 import {coercionBoolean} from "../utils/commons";
 
 @Component({
   selector: "sd-table",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
   template: `
@@ -14,10 +15,10 @@ import {coercionBoolean} from "../utils/commons";
     $border-color-light: var(--theme-blue-grey-lightest);
     $border-color-dark: var(--theme-grey-light);
 
-    :host {
+    sd-table {
       display: block;
 
-      ::ng-deep > table {
+       > table {
         width: 100%;
         border-collapse: separate;
         border-spacing: 0;
@@ -65,7 +66,7 @@ import {coercionBoolean} from "../utils/commons";
       }
 
       &[sd-inset=true] {
-        ::ng-deep > table {
+         > table {
           border-right: none;
           border-bottom: none;
 
@@ -80,13 +81,13 @@ import {coercionBoolean} from "../utils/commons";
       }
 
       &[sd-inline=true] {
-        ::ng-deep > table {
+         > table {
           width: auto;
         }
       }
 
       &[sd-cell-border=vertical] {
-        ::ng-deep > table {
+         > table {
           border-bottom: none;
 
           > * > tr > * {
@@ -96,7 +97,7 @@ import {coercionBoolean} from "../utils/commons";
       }
 
       &[sd-cell-border=horizontal] {
-        ::ng-deep > table {
+         > table {
           border-right: none;
 
           > tbody > tr > td:first-child {

@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, Input} from "@angular/core";
+import {ChangeDetectionStrategy, Component, Input, ViewEncapsulation} from "@angular/core";
 import {SdButtonControl} from "./SdButtonControl";
 import {SdIconControl} from "./SdIconControl";
 import {coercionBoolean} from "../utils/commons";
@@ -6,6 +6,7 @@ import {coercionBoolean} from "../utils/commons";
 @Component({
   selector: "sd-additional-button",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
     SdButtonControl,
@@ -19,7 +20,7 @@ import {coercionBoolean} from "../utils/commons";
   styles: [/* language=SCSS */ `
     @import "../scss/mixins";
 
-    :host {
+    sd-additional-button {
       display: flex;
       flex-wrap: nowrap;
       flex-direction: row;
@@ -34,7 +35,7 @@ import {coercionBoolean} from "../utils/commons";
         padding: var(--gap-sm) var(--gap-default);
       }
 
-      > ::ng-deep sd-button > button {
+      > sd-button > button {
         border-left: 1px solid var(--trans-light) !important;
         padding: var(--gap-sm) !important;
       }
@@ -50,7 +51,7 @@ import {coercionBoolean} from "../utils/commons";
           padding: var(--gap-xs) var(--gap-default);
         }
 
-        > ::ng-deep sd-button > button {
+        > sd-button > button {
           padding: var(--gap-xs) !important;
         }
       }
@@ -60,7 +61,7 @@ import {coercionBoolean} from "../utils/commons";
           padding: var(--gap-default) var(--gap-xl);
         }
 
-        > ::ng-deep sd-button > button {
+        > sd-button > button {
           padding: var(--gap-default) !important;
         }
       }

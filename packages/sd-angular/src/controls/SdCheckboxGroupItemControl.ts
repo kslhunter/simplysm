@@ -1,4 +1,13 @@
-import {ChangeDetectionStrategy, Component, DoCheck, forwardRef, inject, Injector, Input} from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DoCheck,
+  forwardRef,
+  inject,
+  Injector,
+  Input,
+  ViewEncapsulation
+} from "@angular/core";
 import {SdCheckboxGroupControl} from "./SdCheckboxGroupControl";
 import {SdCheckboxControl} from "./SdCheckboxControl";
 import {SdNgHelper} from "../utils/SdNgHelper";
@@ -6,12 +15,14 @@ import {SdNgHelper} from "../utils/SdNgHelper";
 @Component({
   selector: "sd-checkbox-group-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
     SdCheckboxControl
   ],
   template: `
-    <sd-checkbox [value]="isSelected" (valueChange)="onSelectedChange($event)" [inline]="true">
+    <sd-checkbox [value]="isSelected" (valueChange)="onSelectedChange($event)"
+                 [inline]="inline">
       <ng-content></ng-content>
     </sd-checkbox>`
 })
@@ -19,6 +30,7 @@ export class SdCheckboxGroupItemControl<T> implements DoCheck {
   #parentControl = inject<SdCheckboxGroupControl<T>>(forwardRef(() => SdCheckboxGroupControl));
 
   @Input({required: true}) value!: T;
+  @Input() inline = false;
 
   isSelected = false;
 
@@ -45,10 +57,10 @@ export class SdCheckboxGroupItemControl<T> implements DoCheck {
     const newValues = [...this.#parentControl.value];
 
     if (selected) {
-      newValues.remove(this.value);
+      newValues.push(this.value);
     }
     else {
-      newValues.push(this.value);
+      newValues.remove(this.value);
     }
 
     if (this.#parentControl.valueChange.observed) {

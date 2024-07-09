@@ -6,7 +6,7 @@ import {
   inject,
   Injector,
   Input,
-  Output
+  Output, ViewEncapsulation
 } from "@angular/core";
 import {SdAnchorControl} from "./SdAnchorControl";
 import {SdIconControl} from "./SdIconControl";
@@ -17,6 +17,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 @Component({
   selector: "sd-pagination",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
     SdAnchorControl,
@@ -44,7 +45,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
   styles: [/* language=SCSS */ `
     @import "../scss/mixins";
 
-    :host {
+    sd-pagination {
       display: block;
 
       > sd-anchor {

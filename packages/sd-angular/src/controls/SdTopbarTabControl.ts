@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, inject, Output} from "@angular/core";
+import {ChangeDetectionStrategy, Component, EventEmitter, inject, Output, ViewEncapsulation} from "@angular/core";
 import {SdAnchorControl} from "./SdAnchorControl";
 import {SdIconControl} from "./SdIconControl";
 import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
@@ -6,6 +6,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 @Component({
   selector: "sd-topbar-tab",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
     SdAnchorControl,
@@ -17,7 +18,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
       <sd-icon [icon]="icons.xmark" fixedWidth/>
     </sd-anchor>`,
   styles: [/* language=SCSS */ `
-    :host {
+    sd-topbar-tab {
       display: inline-block;
       padding: 0 var(--gap-lg);
       cursor: pointer;

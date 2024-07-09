@@ -11,7 +11,7 @@ import {
   Input,
   NgZone,
   Output,
-  ViewChild
+  ViewChild, ViewEncapsulation
 } from "@angular/core";
 import {coercionBoolean} from "../utils/commons";
 import {SdDropdownPopupControl} from "./SdDropdownPopupControl";
@@ -20,6 +20,7 @@ import {SdNgHelper} from "../utils/SdNgHelper";
 @Component({
   selector: "sd-dropdown",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
   template: `

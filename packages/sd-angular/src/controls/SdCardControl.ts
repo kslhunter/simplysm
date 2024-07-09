@@ -1,8 +1,9 @@
-import {ChangeDetectionStrategy, Component} from "@angular/core";
+import {ChangeDetectionStrategy, Component, ViewEncapsulation} from "@angular/core";
 
 @Component({
   selector: "sd-card",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
   template: `
@@ -10,14 +11,14 @@ import {ChangeDetectionStrategy, Component} from "@angular/core";
   styles: [/* language=SCSS */ `
     @import "../scss/mixins";
 
-    :host {
+    sd-card {
       display: block;
       background: white;
       border-radius: var(--border-radius-default);
       overflow: hidden;
       transition: box-shadow .3s ease-in-out;
       @include elevation(2);
-      
+
       &:hover,
       &:has(:focus) {
         @include elevation(6);

@@ -1,16 +1,17 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit} from "@angular/core";
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit, ViewEncapsulation} from "@angular/core";
 import {NavigationStart, Router} from "@angular/router";
 
 @Component({
   selector: "sd-sidebar-container",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
   template: `
     <ng-content></ng-content>
     <div class="_backdrop" (click)="onBackdropClick()"></div>`,
   styles: [/* language=SCSS */ `
-    :host {
+    sd-sidebar-container {
       display: block;
       position: relative;
       height: 100%;
@@ -28,7 +29,7 @@ import {NavigationStart, Router} from "@angular/router";
     }
 
     @media all and (max-width: 520px) {
-      :host {
+      sd-sidebar-container {
         padding-left: 0;
 
         > ._backdrop {
@@ -59,10 +60,10 @@ import {NavigationStart, Router} from "@angular/router";
   }
 })
 export class SdSidebarContainerControl implements OnInit {
-  toggle = false;
-
   #router: Router | null = inject(Router, {optional: true});
   #cdr = inject(ChangeDetectorRef);
+
+  toggle = false;
 
   ngOnInit(): void {
     if (this.#router) {

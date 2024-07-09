@@ -1,36 +1,3 @@
-@mixin writeVars($value, $prevKey) {
-  @if type-of($value) == map {
-    @each $key, $val in $value {
-      @if $prevKey == "" {
-        @include writeVars($val, $key);
-      } @else {
-        @include writeVars($val, $prevKey + "-" + $key);
-      }
-    }
-  } @else {
-    --#{$prevKey}: #{$value};
-  }
-}
-
-.sd-theme-compact {
-  @include writeVars($vars, "");
-}
-
-.sd-theme-modern {
-  @import "themes/variables-modern";
-  @include writeVars($vars, "");
-}
-
-.sd-theme-mobile {
-  @import "themes/variables-mobile";
-  @include writeVars($vars, "");
-}
-
-.sd-theme-kiosk {
-  @import "themes/variables-kiosk";
-  @include writeVars($vars, "");
-}
-
 *, *:after, *:before {
   box-sizing: border-box;
   outline-color: var(--theme-primary-default);

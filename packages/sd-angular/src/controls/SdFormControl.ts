@@ -1,9 +1,19 @@
-import {ChangeDetectionStrategy, Component, ElementRef, EventEmitter, inject, Output, ViewChild} from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  EventEmitter,
+  inject,
+  Output,
+  ViewChild,
+  ViewEncapsulation
+} from "@angular/core";
 import {SdToastProvider} from "../providers/SdToastProvider";
 
 @Component({
   selector: "sd-form",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
   template: `

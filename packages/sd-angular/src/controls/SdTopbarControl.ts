@@ -1,4 +1,13 @@
-import {ChangeDetectionStrategy, Component, ElementRef, forwardRef, HostListener, inject, Input} from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  forwardRef,
+  HostListener,
+  inject,
+  Input,
+  ViewEncapsulation
+} from "@angular/core";
 import {SdTopbarContainerControl} from "./SdTopbarContainerControl";
 import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
 import {ISdResizeEvent} from "../plugins/SdResizeEventPlugin";
@@ -10,6 +19,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 @Component({
   selector: "sd-topbar",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
     SdAnchorControl,
@@ -29,7 +39,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
   styles: [/* language=SCSS */ `
     @import "../scss/mixins";
 
-    :host {
+    sd-topbar {
       display: flex;
       flex-direction: row;
       flex-wrap: nowrap;
@@ -59,6 +69,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
       body.sd-theme-modern & {
         background: var(--background-color);
         color: var(--text-trans-default);
+        border-bottom: 1px solid var(--border-color-light);
       }
 
       /*> ._nav {
@@ -69,7 +80,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
       }*/
 
       @each $h in (h1, h2, h3, h4, h5, h6) {
-        > ::ng-deep #{$h} {
+        >  #{$h} {
           //display: inline-block;
           //vertical-align: top;
           //line-height: var(--topbar-height);

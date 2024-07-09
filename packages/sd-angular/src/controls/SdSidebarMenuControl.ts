@@ -1,4 +1,12 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, Input, OnInit} from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  Input,
+  OnInit,
+  ViewEncapsulation
+} from "@angular/core";
 import {NavigationEnd, Router} from "@angular/router";
 import {TSdFnInfo} from "../utils/commons";
 import {SdListControl} from "./SdListControl";
@@ -12,6 +20,7 @@ import {IconProp} from "@fortawesome/fontawesome-svg-core";
 @Component({
   selector: "sd-sidebar-menu",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
     SdListControl,
@@ -51,7 +60,7 @@ import {IconProp} from "@fortawesome/fontawesome-svg-core";
       }
     </ng-template>`,
   styles: [/* language=SCSS */ `
-    :host {
+    sd-sidebar-menu {
       > ._title {
         body.sd-theme-compact & {
           display: none;
@@ -67,7 +76,7 @@ import {IconProp} from "@fortawesome/fontawesome-svg-core";
         }
       }
 
-      ::ng-deep > sd-list[sd-inset=true] {
+       > sd-list[sd-inset=true] {
         body.sd-theme-modern &,
         body.sd-theme-kiosk &,
         body.sd-theme-mobile & {

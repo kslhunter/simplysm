@@ -1,15 +1,16 @@
-import {ChangeDetectionStrategy, Component, Input} from "@angular/core";
+import {ChangeDetectionStrategy, Component, Input, ViewEncapsulation} from "@angular/core";
 import {coercionBoolean} from "../utils/commons";
 
 @Component({
   selector: "sd-list",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
   template: `
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
-    :host {
+    sd-list {
       display: block;
       user-select: none;
       border-radius: var(--border-radius-default);
@@ -20,7 +21,7 @@ import {coercionBoolean} from "../utils/commons";
         border-radius: 0;
         background: transparent;
 
-        ::ng-deep sd-list {
+        sd-list {
           border-radius: 0;
           background: transparent;
         }

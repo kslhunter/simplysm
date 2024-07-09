@@ -8,7 +8,7 @@ import {
   Injector,
   Input,
   Output,
-  ViewChild
+  ViewChild, ViewEncapsulation
 } from "@angular/core";
 import {coercionBoolean, getSdFnCheckData, TSdFnInfo} from "../utils/commons";
 import {SdNgHelper} from "../utils/SdNgHelper";
@@ -18,6 +18,7 @@ import {StringUtil} from "@simplysm/sd-core-common";
 @Component({
   selector: "sd-content-editor",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
     SdEventsDirective
@@ -34,7 +35,7 @@ import {StringUtil} from "@simplysm/sd-core-common";
   styles: [/* language=SCSS */ `
     @import "../scss/mixins";
 
-    :host {
+    sd-content-editor {
       display: block;
       position: relative;
 

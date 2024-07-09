@@ -6,7 +6,7 @@ import {
   inject,
   Injector,
   Input,
-  Output
+  Output, ViewEncapsulation
 } from "@angular/core";
 import {SdAnchorControl} from "./SdAnchorControl";
 import {ISdPermission} from "../utils/SdAppStructureUtil";
@@ -21,6 +21,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 @Component({
   selector: "sd-permission-table",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
     SdAnchorControl,
@@ -103,7 +104,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
       }
     </ng-template>`,
   styles: [/* language=SCSS */ `
-    :host {
+    sd-permission-table {
       table {
         border-collapse: collapse;
 

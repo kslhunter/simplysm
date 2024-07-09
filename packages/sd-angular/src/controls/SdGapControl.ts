@@ -1,17 +1,27 @@
-import {ChangeDetectionStrategy, Component, DoCheck, ElementRef, inject, Injector, Input} from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DoCheck,
+  ElementRef,
+  inject,
+  Injector,
+  Input,
+  ViewEncapsulation
+} from "@angular/core";
 import {coercionNumber} from "../utils/commons";
 import {SdNgHelper} from "../utils/SdNgHelper";
 
 @Component({
   selector: "sd-gap",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
   template: "",
   styles: [/* language=SCSS */ `
     @import "../scss/variables";
 
-    :host {
+    sd-gap {
       @each $key, $val in map-get($vars, gap) {
         &[sd-height='#{$key}'] {
           height: var(--gap-#{$key});

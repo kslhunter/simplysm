@@ -5,7 +5,7 @@ import {
   EventEmitter,
   Input,
   Output,
-  QueryList
+  QueryList, ViewEncapsulation
 } from "@angular/core";
 import {SdTabviewItemControl} from "./SdTabviewItemControl";
 import {SdDockContainerControl} from "./SdDockContainerControl";
@@ -17,6 +17,7 @@ import {SdPaneControl} from "./SdPaneControl";
 @Component({
   selector: "sd-tabview",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
     SdDockContainerControl,
@@ -28,7 +29,8 @@ import {SdPaneControl} from "./SdPaneControl";
   template: `
     <sd-dock-container>
       <sd-dock>
-        <sd-tab [value]="value" (valueChange)="onValueChange($event)">
+        <sd-tab [value]="value" (valueChange)="onValueChange($event)"
+                [style]="tabStyle">
           @for (itemControl of itemControls; track itemControl.value) {
             <sd-tab-item [value]="itemControl.value">
               {{ itemControl.header || itemControl.value }}
@@ -45,6 +47,8 @@ import {SdPaneControl} from "./SdPaneControl";
 export class SdTabviewControl<T> {
   @Input() value?: T;
   @Output() valueChange = new EventEmitter<T>();
+
+  @Input() tabStyle?: string;
 
   @ContentChildren(SdTabviewItemControl) itemControls!: QueryList<SdTabviewItemControl<T>>;
 

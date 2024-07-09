@@ -12,7 +12,7 @@ import {
   Input,
   NgZone,
   Output,
-  QueryList
+  QueryList, ViewEncapsulation
 } from "@angular/core";
 import {SdSheetColumnDirective} from "../directives/SdSheetColumnDirective";
 import {SdSystemConfigProvider} from "../providers/SdSystemConfigProvider";
@@ -42,6 +42,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 @Component({
   selector: "sd-sheet",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
     SdBusyContainerControl,
@@ -250,8 +251,8 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
     $border-color: var(--theme-blue-grey-lightest);
     $border-color-dark: var(--theme-grey-light);
 
-    :host {
-      ::ng-deep > sd-busy-container {
+    sd-sheet {
+      > sd-busy-container {
         border-radius: var(--border-radius-default);
 
         > ._screen {
@@ -468,7 +469,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
       }
 
       &[sd-inset=true] {
-        ::ng-deep > sd-busy-container {
+        > sd-busy-container {
           border-radius: var(--border-radius-default);
 
           > ._screen {

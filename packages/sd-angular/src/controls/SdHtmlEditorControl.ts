@@ -7,7 +7,7 @@ import {
   Injector,
   Input,
   Output,
-  ViewChild
+  ViewChild, ViewEncapsulation
 } from "@angular/core";
 import {SdAnchorControl} from "./SdAnchorControl";
 import {SdPaneControl} from "./SdPaneControl";
@@ -21,6 +21,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 @Component({
   selector: "sd-html-editor",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
     SdAnchorControl,
@@ -74,13 +75,13 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
   styles: [/* language=SCSS */ `
     @import "../scss/mixins";
 
-    :host {
+    sd-html-editor {
       display: block;
       border: 1px solid var(--trans-default);
       border-radius: var(--border-radius-default);
       overflow: hidden;
 
-      ::ng-deep > sd-dock-container {
+       > sd-dock-container {
         > ._toolbar {
           user-select: none;
 

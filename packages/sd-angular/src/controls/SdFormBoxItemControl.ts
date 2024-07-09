@@ -1,10 +1,20 @@
-import {ChangeDetectionStrategy, Component, ContentChild, forwardRef, inject, Input, TemplateRef} from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ContentChild,
+  forwardRef,
+  inject,
+  Input,
+  TemplateRef,
+  ViewEncapsulation
+} from "@angular/core";
 import {SdFormBoxControl} from "./SdFormBoxControl";
 import {NgTemplateOutlet} from "@angular/common";
 
 @Component({
   selector: "sd-form-box-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
     NgTemplateOutlet,
@@ -24,7 +34,7 @@ import {NgTemplateOutlet} from "@angular/common";
       <ng-content></ng-content>
     </div>`,
   styles: [/* language=SCSS */ `
-    :host {
+    sd-form-box-item {
       > label {
         white-space: nowrap;
         font-weight: bold;

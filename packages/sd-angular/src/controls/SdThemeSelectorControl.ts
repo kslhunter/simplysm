@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, inject, ViewChild} from "@angular/core";
+import {ChangeDetectionStrategy, Component, inject, ViewChild, ViewEncapsulation} from "@angular/core";
 import {SdDropdownControl} from "./SdDropdownControl";
 import {SdAnchorControl} from "./SdAnchorControl";
 import {SdIconControl} from "./SdIconControl";
@@ -7,10 +7,12 @@ import {SdListItemControl} from "./SdListItemControl";
 import {SdThemeProvider} from "../providers/SdThemeProvider";
 import {SdDropdownPopupControl} from "./SdDropdownPopupControl";
 import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
+import {SdLocalStorageProvider} from "../providers/SdLocalStorageProvider";
 
 @Component({
   selector: "sd-theme-selector",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
     SdDropdownControl,
@@ -47,6 +49,7 @@ export class SdThemeSelectorControl {
   icons = inject(SdAngularOptionsProvider).icons;
 
   #sdTheme = inject(SdThemeProvider);
+  #sdLocalStorage = inject(SdLocalStorageProvider);
 
   @ViewChild(SdDropdownControl, {static: true}) dropdownControl!: SdDropdownControl;
 
@@ -57,5 +60,7 @@ export class SdThemeSelectorControl {
   set theme(val) {
     this.#sdTheme.theme = val;
     this.dropdownControl.open = false;
+
+    this.#sdLocalStorage.set("sd-theme", val);
   }
 }

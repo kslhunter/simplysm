@@ -1,14 +1,15 @@
-import {ChangeDetectionStrategy, Component, Input} from "@angular/core";
+import {ChangeDetectionStrategy, Component, Input, ViewEncapsulation} from "@angular/core";
 
 @Component({
   selector: "sd-grid",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
   template: `
     <ng-content/>`,
   styles: [/* language=SCSS */ `
-    :host {
+    sd-grid {
       display: grid;
       grid-template-columns: repeat(12, 1fr);
     }

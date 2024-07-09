@@ -1,4 +1,13 @@
-import {ChangeDetectionStrategy, Component, DoCheck, ElementRef, inject, Injector, Input} from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DoCheck,
+  ElementRef,
+  inject,
+  Injector,
+  Input,
+  ViewEncapsulation
+} from "@angular/core";
 import jsbarcode from "jsbarcode";
 import qrcode from "qrcode";
 import {coercionNumber} from "../utils/commons";
@@ -7,6 +16,7 @@ import {SdNgHelper} from "../utils/SdNgHelper";
 @Component({
   selector: "sd-barcode",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
   template: `

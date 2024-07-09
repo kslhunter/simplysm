@@ -26,10 +26,10 @@ export class SdAutoUpdateService extends SdServiceBase {
     };
   }
 
-  /** @deprecated 이전 버전용*/
-  async getLastVersionAsync(platform: string): Promise<string | undefined> {
+  /** @deprecated 이전 버전용 */
+  async getLastVersionAsync(clientName: string, platform: string): Promise<string | undefined> {
     try {
-      const updates = await FsUtil.readdirAsync(path.resolve(this.server.options.rootPath, "www", this.request!.clientName, platform, "updates"));
+      const updates = await FsUtil.readdirAsync(path.resolve(this.server.options.rootPath, "www", clientName, platform, "updates"));
       const versions = updates.map((item) => ({
         fileName: item,
         version: path.basename(item, path.extname(item)),

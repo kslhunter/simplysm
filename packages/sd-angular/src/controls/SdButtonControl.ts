@@ -1,9 +1,10 @@
-import {ChangeDetectionStrategy, Component, Input} from "@angular/core";
+import {ChangeDetectionStrategy, Component, Input, ViewEncapsulation} from "@angular/core";
 import {coercionBoolean} from "../utils/commons";
 
 @Component({
   selector: "sd-button",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
   template: `
@@ -18,7 +19,7 @@ import {coercionBoolean} from "../utils/commons";
     @import "../scss/variables";
     @import "../scss/mixins";
 
-    :host {
+    sd-button {
       > button {
         @include form-control-base();
         user-select: none;

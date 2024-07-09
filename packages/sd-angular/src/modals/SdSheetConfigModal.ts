@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, forwardRef, inject} from "@angular/core";
+import {ChangeDetectionStrategy, Component, forwardRef, inject, ViewEncapsulation} from "@angular/core";
 import {SdModalBase} from "../providers/SdModalProvider";
 import {SdSheetColumnDirective} from "../directives/SdSheetColumnDirective";
 import {ISdSheetConfig, SdSheetControl} from "../controls/SdSheetControl";
@@ -16,6 +16,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 @Component({
   selector: "sd-sheet-config-modal",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
     SdDockContainerControl,

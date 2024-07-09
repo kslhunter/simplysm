@@ -1,10 +1,11 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from "@angular/core";
+import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output, ViewEncapsulation} from "@angular/core";
 import {SdTextfieldControl, TSdTextfieldType, TSdTextfieldValue} from "./SdTextfieldControl";
 import {coercionBoolean} from "../utils/commons";
 
 @Component({
   selector: "sd-range",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
     SdTextfieldControl
@@ -21,7 +22,7 @@ import {coercionBoolean} from "../utils/commons";
                   [required]="required"
                   [disabled]="disabled"/>`,
   styles: [/* language=SCSS */ `
-    :host {
+    sd-range {
       display: flex;
       flex-direction: row;
       gap: var(--gap-sm);

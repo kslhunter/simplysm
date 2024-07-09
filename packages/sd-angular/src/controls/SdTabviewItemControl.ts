@@ -1,15 +1,24 @@
-import {ChangeDetectionStrategy, Component, forwardRef, HostBinding, inject, Input} from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  forwardRef,
+  HostBinding,
+  inject,
+  Input,
+  ViewEncapsulation
+} from "@angular/core";
 import {SdTabviewControl} from "./SdTabviewControl";
 
 @Component({
   selector: "sd-tabview-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
   template: `
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
-    :host {
+    sd-tabview-item {
       display: none;
       width: 100%;
       height: 100%;

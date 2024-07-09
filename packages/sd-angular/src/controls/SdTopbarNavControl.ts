@@ -1,8 +1,9 @@
-import {ChangeDetectionStrategy, Component} from "@angular/core";
+import {ChangeDetectionStrategy, Component, ViewEncapsulation} from "@angular/core";
 
 @Component({
   selector: "sd-topbar-nav",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
   template: `
@@ -10,7 +11,7 @@ import {ChangeDetectionStrategy, Component} from "@angular/core";
   styles: [/* language=SCSS */ `
     @import "../scss/mixins";
 
-    :host {
+    sd-topbar-nav {
       display: inline-block;
       line-height: var(--topbar-height);
       min-width: var(--topbar-height);

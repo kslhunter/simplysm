@@ -1,9 +1,10 @@
-import {ChangeDetectionStrategy, Component, ElementRef, inject, NgZone} from "@angular/core";
+import {ChangeDetectionStrategy, Component, ElementRef, inject, NgZone, ViewEncapsulation} from "@angular/core";
 import {SdModalBase} from "../providers/SdModalProvider";
 
 @Component({
   selector: "sd-address-search-modal",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
   template: `

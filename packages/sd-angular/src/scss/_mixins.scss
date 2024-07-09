@@ -1,3 +1,17 @@
+@mixin writeVars($value, $prevKey) {
+  @if type-of($value) == map {
+    @each $key, $val in $value {
+      @if $prevKey == "" {
+        @include writeVars($val, $key);
+      } @else {
+        @include writeVars($val, $prevKey + "-" + $key);
+      }
+    }
+  } @else {
+    --#{$prevKey}: #{$value};
+  }
+}
+
 @mixin elevation($value) {
   @if $value == none or $value == 0 {
     box-shadow: none;

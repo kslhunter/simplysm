@@ -21,6 +21,12 @@ $vars: map-merge($vars, (
     h5: 30px,
     h6: 24px,
   ),
+  sidebar: (
+    width: 480px
+  ),
+  topbar: (
+    height: 62px
+  ),
   font-family: "'Pretendard Variable', sans-serif",
   background-color: var(--theme-grey-lighter),
   animation-duration: .3s,

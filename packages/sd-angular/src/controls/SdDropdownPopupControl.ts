@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, ElementRef, forwardRef, inject} from "@angular/core";
+import {ChangeDetectionStrategy, Component, ElementRef, forwardRef, inject, ViewEncapsulation} from "@angular/core";
 import {SdDropdownControl} from "./SdDropdownControl";
 import {SdEventsDirective} from "../directives/SdEventsDirective";
 
@@ -6,6 +6,7 @@ import {SdEventsDirective} from "../directives/SdEventsDirective";
 @Component({
   selector: "sd-dropdown-popup",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
     SdEventsDirective,
@@ -17,7 +18,7 @@ import {SdEventsDirective} from "../directives/SdEventsDirective";
   styles: [/* language=SCSS */ `
     @import "../scss/mixins";
 
-    :host {
+    sd-dropdown-popup {
       position: fixed;
       z-index: var(--z-index-dropdown);
       opacity: 0;

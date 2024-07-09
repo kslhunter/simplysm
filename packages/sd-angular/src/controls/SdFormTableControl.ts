@@ -1,8 +1,9 @@
-import {ChangeDetectionStrategy, Component} from "@angular/core";
+import {ChangeDetectionStrategy, Component, ViewEncapsulation} from "@angular/core";
 
 @Component({
   selector: "sd-form-table",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
   template: `
@@ -12,10 +13,10 @@ import {ChangeDetectionStrategy, Component} from "@angular/core";
       </tbody>
     </table>`,
   styles: [/* language=SCSS */ `
-    :host {
+    sd-form-table {
       display: block;
 
-      ::ng-deep > table {
+       > table {
         width: 100%;
         border-collapse: separate;
         border-spacing: 0;
