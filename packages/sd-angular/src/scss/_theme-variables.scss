@@ -1,0 +1,18 @@
+.sd-theme-compact {
+  @include writeVars($vars, "");
+}
+
+.sd-theme-modern {
+  @import "themes/variables-modern";
+  @include writeVars($vars, "");
+}
+
+.sd-theme-mobile {
+  @import "themes/variables-mobile";
+  @include writeVars($vars, "");
+}
+
+.sd-theme-kiosk {
+  @import "themes/variables-kiosk";
+  @include writeVars($vars, "");
+}

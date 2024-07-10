@@ -1,0 +1,26 @@
+{
+  "name": "@simplysm/sd-core-node",
+  "version": "12.1.1",
+  "description": "심플리즘 패키지 - 코어 모듈 (node)",
+  "author": "김석래",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm12.git",
+    "directory": "packages/sd-core-node"
+  },
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "engines": {
+    "node": "18.18.2"
+  },
+  "dependencies": {
+    "@simplysm/sd-core-common": "12.1.1",
+    "chokidar": "^3.6.0",
+    "glob": "^10.4.2"
+  },
+  "devDependencies": {
+    "@types/glob": "^8.1.0"
+  }
+}

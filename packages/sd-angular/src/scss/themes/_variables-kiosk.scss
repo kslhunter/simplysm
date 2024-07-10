@@ -1,0 +1,34 @@
+$vars: map-merge($vars, (
+  gap: (
+    xxs: 8px,
+    xs: 12px,
+    sm: 16px,
+    default: 24px,
+    lg: 32px,
+    xl: 40px,
+    xxl: 48px,
+    0: 0,
+    auto: "auto"
+  ),
+  font-size: (
+    lg: 36px,
+    default: 30px,
+    sm: 24px,
+    h1: 72px,
+    h2: 60px,
+    h3: 48px,
+    h4: 36px,
+    h5: 30px,
+    h6: 24px,
+  ),
+  sidebar: (
+    width: 480px
+  ),
+  topbar: (
+    height: 62px
+  ),
+  font-family: "'Pretendard Variable', sans-serif",
+  background-color: var(--theme-grey-lighter),
+  animation-duration: .3s,
+  elevation-size: 8px,
+))

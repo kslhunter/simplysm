@@ -1,0 +1,26 @@
+{
+  "name": "@simplysm/sd-service-client",
+  "version": "12.1.1",
+  "description": "심플리즘 패키지 - 서비스 모듈 (client)",
+  "author": "김석래",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm12.git",
+    "directory": "packages/sd-service-client"
+  },
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "engines": {
+    "node": "18.18.2"
+  },
+  "dependencies": {
+    "@simplysm/sd-core-common": "12.1.1",
+    "@simplysm/sd-orm-common": "12.1.1",
+    "@simplysm/sd-service-common": "12.1.1",
+    "isomorphic-ws": "^5.0.0",
+    "jszip": "^3.10.1",
+    "ws": "^8.17.1"
+  }
+}

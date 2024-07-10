@@ -1,0 +1,45 @@
+$vars: map-merge($vars, (
+  gap: (
+    xxs: 2px,
+    xs: 4px,
+    sm: 6px,
+    default: 8px,
+    lg: 12px,
+    xl: 18px,
+    xxl: 24px,
+    0: 0,
+    auto: "auto"
+  ),
+  font-size: (
+    lg: 16px,
+    default: 14px,
+    sm: 12px,
+    h1: 32px,
+    h2: 24px,
+    h3: 18px,
+    h4: 16px,
+    h5: 14px,
+    h6: 12px,
+  ),
+  /*border-radius: (
+    sm: 2px,
+    default: 6px,
+    lg: 8px,
+    xl: 12px,
+    xxl: 18px
+  ),*/
+  line-height: 1.5em,
+  line-height-strip-unit: 1.5,
+  sidebar: (
+    width: 15em
+  ),
+  topbar: (
+    height: calc(var(--font-size-default) * 3)
+  ),
+  font-family: "'Pretendard Variable', sans-serif",
+  sheet: (
+    pv: var(--gap-xs),
+    ph: var(--gap-sm),
+    bg: var(--color-grey-100)
+  )
+))

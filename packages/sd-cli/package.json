@@ -1,0 +1,51 @@
+{
+  "name": "@simplysm/sd-cli",
+  "version": "12.1.1",
+  "description": "심플리즘 패키지 - CLI",
+  "author": "김석래",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm12.git",
+    "directory": "packages/sd-cli"
+  },
+  "license": "MIT",
+  "bin": "./dist/sd-cli.js",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "engines": {
+    "node": "18.18.2"
+  },
+  "dependencies": {
+    "@angular-devkit/build-angular": "^17.3.8",
+    "@angular/common": "^17.3.11",
+    "@angular/compiler": "^17.3.11",
+    "@angular/compiler-cli": "^17.3.11",
+    "@angular/core": "^17.3.11",
+    "@electron/rebuild": "^3.6.0",
+    "@simplysm/sd-core-common": "12.1.1",
+    "@simplysm/sd-core-node": "12.1.1",
+    "@simplysm/sd-service-server": "12.1.1",
+    "@simplysm/sd-storage": "12.1.1",
+    "browserslist": "^4.23.1",
+    "cordova": "^12.0.0",
+    "electron": "^29.4.3",
+    "electron-builder": "^24.13.3",
+    "esbuild": "^0.20.2",
+    "eslint": "^8.57.0",
+    "jszip": "^3.10.1",
+    "node-stdlib-browser": "^1.2.0",
+    "rxjs": "^7.8.1",
+    "sass": "^1.77.6",
+    "semver": "^7.6.2",
+    "typescript": "~5.4.5",
+    "xml2js": "^0.6.2",
+    "yargs": "^17.7.2",
+    "zone.js": "~0.14.7"
+  },
+  "devDependencies": {
+    "@types/eslint": "^8.56.10",
+    "@types/xml2js": "^0.4.14",
+    "@types/yargs": "^17.0.32"
+  }
+}

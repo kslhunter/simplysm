@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0" id="@simplysm/cordova-plugin-local-baseurl" version="12.1.1">
+  <name>WebView BaseUrl to LocalFile</name>
+  <description>Cordova Local BaseUrl Plugin</description>
+  <license>Apache 2.0</license>
+  <keywords>cordova,plugin,redirect,local,storage,baseurl</keywords>
+  <js-module src="www/SdLocalBaseUrl.js" name="SdLocalBaseUrl">
+    <clobbers target="SdLocalBaseUrl"/>
+  </js-module>
+  <platform name="android">
+    <source-file src="src/android/SdLocalBaseUrl.java" target-dir="src/kr/co/simplysm/cordova"/>
+    <config-file target="res/xml/config.xml" parent="/*">
+      <feature name="SdLocalBaseUrl">
+        <param name="android-package" value="kr.co.simplysm.cordova.SdLocalBaseUrl"/>
+      </feature>
+    </config-file>
+  </platform>
+</plugin>

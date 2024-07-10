@@ -1,0 +1,13 @@
+.idea/**/workspace.xml
+.idea/**/dataSources/
+.idea/**/dataSources.ids
+.idea/**/dataSources.local.xml
+
+.yarn
+
+_logs
+node_modules
+packages/*/.cache
+packages/*/.cordova
+packages/*/.electron
+packages/*/dist

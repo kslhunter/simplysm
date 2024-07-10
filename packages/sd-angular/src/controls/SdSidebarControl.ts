@@ -1,0 +1,76 @@
+import {ChangeDetectionStrategy, Component, forwardRef, inject, ViewEncapsulation} from "@angular/core";
+import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
+
+@Component({
+  selector: "sd-sidebar",
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  standalone: true,
+  imports: [],
+  template: `
+    <ng-content></ng-content>`,
+  styles: [/* language=SCSS */ `
+    @import "../scss/mixins";
+
+    sd-sidebar {
+      display: block;
+      position: absolute;
+      z-index: var(--z-index-sidebar);
+      top: 0;
+      left: 0;
+      width: var(--sidebar-width);
+      height: 100%;
+
+      //-- 테마
+
+      background: white;
+
+      body.sd-theme-kiosk &,
+      body.sd-theme-mobile & {
+        border-top-right-radius: var(--gap-default);
+        border-bottom-right-radius: var(--gap-default);
+      }
+
+      body.sd-theme-compact &,
+      body.sd-theme-modern & {
+        border-right: 1px solid var(--border-color-light);
+        
+        //box-shadow: inset -2px 0 8px rgba(0, 0, 0, .05);
+        
+        //@include elevation(16);
+
+        &[sd-toggle=true] {
+          border-right: none;
+        }
+      }
+
+      //-- 화면 크기
+
+      @media not all and (max-width: 520px) {
+        transition: transform .1s ease-out;
+
+        &[sd-toggle=true] {
+          transform: translateX(-100%);
+          transition: transform .1s ease-in;
+        }
+      }
+
+      @media all and (max-width: 520px) {
+        transition: transform .3s ease-in;
+        transform: translateX(-100%);
+
+        &[sd-toggle=true] {
+          transform: none;
+          transition: transform .3s ease-out;
+          @include elevation(16);
+        }
+      }
+    }
+  `],
+  host: {
+    "[attr.sd-toggle]": "parentControl.toggle"
+  }
+})
+export class SdSidebarControl {
+  parentControl: SdSidebarContainerControl = inject(forwardRef(() => SdSidebarContainerControl));
+}

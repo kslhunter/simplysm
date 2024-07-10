@@ -1,0 +1,12 @@
+root = true
+
+[*]
+charset = utf-8
+indent_style = space
+indent_size = 2
+ij_continuation_indent_size = 2
+end_of_line = lf
+
+ij_any_else_on_new_line = true
+ij_any_catch_on_new_line = true
+ij_any_finally_on_new_line = true
