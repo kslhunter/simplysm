@@ -36,6 +36,7 @@ export * from "./controls/SdPageBaseControl";
 export * from "./controls/SdPaginationControl";
 export * from "./controls/SdPaneControl";
 export * from "./controls/SdPermissionTableControl";
+export * from "./controls/SdPrintPageControl";
 export * from "./controls/SdProgressControl";
 export * from "./controls/SdProgressItemControl";
 export * from "./controls/SdRangeControl";

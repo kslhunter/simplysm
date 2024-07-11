@@ -1,4 +1,6 @@
 import {ApplicationRef, createComponent, inject, Injectable, Type} from "@angular/core";
+import {jsPDF} from "jspdf";
+import html2canvas from "html2canvas";
 
 @Injectable({providedIn: "root"})
 export class SdPrintProvider {
@@ -29,14 +31,87 @@ export class SdPrintProvider {
   }`;
         document.head.appendChild(styleEl);
 
+        this.#appRef.attachView(compRef.hostView);
         await compRef.instance.sdOnOpen(param);
 
-        this.#appRef.attachView(compRef.hostView);
         setTimeout(() => {
           window.print();
-          compEl.remove();
+          compRef.destroy();
           styleEl.remove();
           resolve();
+        }, 300);
+      }
+      catch (err) {
+        reject(err);
+      }
+    });
+  }
+
+  async getPdfBufferAsync<I>(printType: Type<SdPrintTemplateBase<I>>,
+                             param: I,
+                             options?: {
+                               orientation?: "p" | "portrait" | "l" | "landscape",
+                             }): Promise<Buffer> {
+    return await new Promise<Buffer>(async (resolve, reject) => {
+      try {
+        const compRef = createComponent(printType, {
+          environmentInjector: this.#appRef.injector
+        });
+        const compEl = compRef.location.nativeElement as HTMLElement;
+        compEl.classList.add("_sd-print-template");
+        document.body.appendChild(compEl);
+
+        this.#appRef.attachView(compRef.hostView);
+        await compRef.instance.sdOnOpen(param);
+
+        const styleEl = document.createElement("style");
+        styleEl.innerHTML = `html, body { overflow: hidden }`;
+        document.head.appendChild(styleEl);
+
+        setTimeout(async () => {
+          try {
+            const doc = new jsPDF(options?.orientation ?? "p", "pt", "a4");
+            doc.deletePage(1);
+
+            let els = compEl.findAll<HTMLElement>("sd-print-page");
+            els = els.length > 0 ? els : [compEl];
+
+            for (const el of els) {
+              const canvas = await html2canvas(el, {
+                foreignObjectRendering: true,
+                y: -el.offsetTop,
+                scale: 4,
+                width: el.offsetWidth,
+                height: el.offsetHeight,
+                windowWidth: el.offsetWidth,
+                windowHeight: el.offsetHeight
+              });
+
+              const orientation = el.getAttribute("sd-orientation") as "landscape" | "portrait" | undefined;
+              doc.addPage(orientation ?? "p").addImage({
+                  imageData: canvas,
+                  x: 0,
+                  y: 0,
+                  ...orientation === "landscape" ? {
+                    height: 841.89,
+                    width: 595.28
+                  } : {
+                    width: 595.28,
+                    height: 841.89
+                  }
+                });
+            }
+
+            const arrayBuffer = doc.output("arraybuffer");
+
+            compRef.destroy();
+            styleEl.remove();
+
+            resolve(Buffer.from(arrayBuffer));
+          }
+          catch (err) {
+            reject(err);
+          }
         }, 300);
       }
       catch (err) {

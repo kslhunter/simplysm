@@ -340,6 +340,15 @@ Options = UnsafeLegacyRenegotiation`.trim()
 
     await fn(this._pkgPath);
 
+    for (const external of this.#pkgConf.externals ?? []) {
+      if (!results.some(item => item.name === external)) {
+        results.push({
+          name: external,
+          exists: false
+        });
+      }
+    }
+
     return results;
   }
 
