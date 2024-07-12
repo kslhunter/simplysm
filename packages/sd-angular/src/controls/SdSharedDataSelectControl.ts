@@ -105,6 +105,9 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 export class SdSharedDataSelectControl<T extends ISharedDataBase<string | number>, TMODAL extends SdModalBase<ISharedDataModalInputParam, ISharedDataModalOutputResult>, M extends "single" | "multi" = "single"> implements DoCheck {
   icons = inject(SdAngularOptionsProvider).icons;
 
+  #cdr = inject(ChangeDetectorRef);
+  #sdModal = inject(SdModalProvider);
+
   @Input() value?: M extends "multi" ? (T["__valueKey"] | undefined)[] : T["__valueKey"];
   @Output() valueChange = new EventEmitter<(this["selectMode"] extends "multi" ? (T["__valueKey"] | undefined)[] : T["__valueKey"]) | undefined>();
 
@@ -141,9 +144,6 @@ export class SdSharedDataSelectControl<T extends ISharedDataBase<string | number
 
   itemByParentKeyMap?: Map<T["__valueKey"] | undefined, any>;
   rootDisplayItems: T[] = [];
-
-  #cdr = inject(ChangeDetectorRef);
-  #sdModal = inject(SdModalProvider);
 
   // 선택될 수 있는것들 (검색어에 의해 숨겨진것도 포함)
   getItemSelectable(index: number, item: any, depth: number): boolean {
