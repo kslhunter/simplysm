@@ -88,7 +88,7 @@ export class SdPrintProvider {
               });
 
               const orientation = el.getAttribute("sd-orientation") as "landscape" | "portrait" | undefined;
-              doc.addPage(orientation ?? "p").addImage({
+              doc.addPage("a4", orientation ?? "p").addImage({
                   imageData: canvas,
                   x: 0,
                   y: 0,

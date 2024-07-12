@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, ElementRef, inject, Input, ViewEncapsulation} from "@angular/core";
+import {ChangeDetectionStrategy, Component, Input, ViewEncapsulation} from "@angular/core";
 
 @Component({
   selector: "sd-print-page",
@@ -32,7 +32,5 @@ import {ChangeDetectionStrategy, Component, ElementRef, inject, Input, ViewEncap
   }
 })
 export class SdPrintPageControl {
-  elRef = inject<ElementRef<HTMLElement>>(ElementRef);
-
   @Input() orientation: "portrait" | "landscape" = "portrait";
 }
