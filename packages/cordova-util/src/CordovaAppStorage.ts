@@ -4,13 +4,35 @@ import * as path from "path";
 import {JsonConvert, StringUtil} from "@simplysm/sd-core-common";
 import {fileURLToPath, pathToFileURL} from "url";
 
-export abstract class CordovaAppStorage {
-  static async readJsonAsync(filePath: string): Promise<any> {
+export class CordovaAppStorage {
+  #rootDirectoryUrl: string;
+
+  constructor(rootDirectory?: string) {
+    this.#rootDirectoryUrl = rootDirectory ?? window.cordova.file.applicationStorageDirectory;
+  }
+
+  async readJsonAsync(filePath: string): Promise<any> {
     const fileStr = await this.readFileAsync(filePath);
     return StringUtil.isNullOrEmpty(fileStr) ? undefined : JsonConvert.parse(fileStr);
   }
 
-  static async readFileAsync(filePath: string): Promise<string> {
+  async readFileBufferAsync(filePath: string): Promise<Buffer> {
+    const file = await this.readFileObjectAsync(filePath);
+
+    return await new Promise<Buffer>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = (ev) => {
+        const arrayBuffer = ev.target!.result as ArrayBuffer;
+        resolve(Buffer.from(arrayBuffer));
+      };
+      reader.onerror = (ev) => {
+        reject(reader.error);
+      };
+      reader.readAsArrayBuffer(file);
+    });
+  }
+
+  async readFileAsync(filePath: string): Promise<string> {
     const file = await this.readFileObjectAsync(filePath);
 
     return await new Promise<string>((resolve, reject) => {
@@ -25,7 +47,7 @@ export abstract class CordovaAppStorage {
     });
   }
 
-  static async readFileObjectAsync(filePath: string): Promise<File> {
+  async readFileObjectAsync(filePath: string): Promise<File> {
     const fullUrl = this.getFullUrl(filePath);
     const dirUrl = path.dirname(fullUrl);
     const fileName = path.basename(fullUrl);
@@ -49,11 +71,11 @@ export abstract class CordovaAppStorage {
     });
   }
 
-  static async writeJsonAsync(filePath: string, data: any) {
+  async writeJsonAsync(filePath: string, data: any) {
     await this.writeAsync(filePath, JsonConvert.stringify(data));
   }
 
-  static async writeAsync(filePath: string, data: any) {
+  async writeAsync(filePath: string, data: any) {
     const fullUrl = this.getFullUrl(filePath);
     const dirUrl = path.dirname(fullUrl);
     const fileName = path.basename(fullUrl);
@@ -80,7 +102,7 @@ export abstract class CordovaAppStorage {
     });
   }
 
-  static async readdirAsync(dirPath: string) {
+  async readdirAsync(dirPath: string) {
     const fullUrl = this.getFullUrl(dirPath);
 
     return await new Promise<string[]>((resolve, reject) => {
@@ -99,7 +121,7 @@ export abstract class CordovaAppStorage {
     });
   }
 
-  static async removeAsync(dirOrFilePath: string) {
+  async removeAsync(dirOrFilePath: string) {
     const fullUrl = this.getFullUrl(dirOrFilePath);
 
     return await new Promise<void>((resolve, reject) => {
@@ -124,11 +146,11 @@ export abstract class CordovaAppStorage {
     });
   }
 
-  static getFullUrl(targetPath: string) {
-    return pathToFileURL(path.join(fileURLToPath(window.cordova.file.applicationStorageDirectory), targetPath.replace(/^\//, ""))).toString();
+  getFullUrl(targetPath: string) {
+    return pathToFileURL(path.join(fileURLToPath(this.#rootDirectoryUrl), targetPath.replace(/^\//, ""))).toString();
   }
 
-  static async #mkdirsAsync(targetDirPath: string) {
+  async #mkdirsAsync(targetDirPath: string) {
     const dirs = targetDirPath.replace(/^\//, "").replace(/\/$/, "").split("/");
 
     let currDir = "";
@@ -137,7 +159,7 @@ export abstract class CordovaAppStorage {
       currDir += dir;
 
       await new Promise<void>((resolve, reject) => {
-        window.resolveLocalFileSystemURL(window.cordova.file.applicationStorageDirectory, entry => {
+        window.resolveLocalFileSystemURL(this.#rootDirectoryUrl, entry => {
           const appDirEntry = entry as DirectoryEntry;
           appDirEntry.getDirectory(currDir, {create: true}, () => {
             resolve();
