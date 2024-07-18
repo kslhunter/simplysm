@@ -96,14 +96,15 @@ export class SdServiceClient extends EventEmitter {
       };
 
       this._ws.on("close", async () => {
-        this.emit("state-change", "closed");
         this.isConnected = false;
 
         if (this.isManualClose) {
+          this.emit("state-change", "closed");
           console.warn("WebSocket 연결 끊김");
           this.isManualClose = false;
         }
         else {
+          this.emit("state-change", "reconnect");
           console.warn("WebSocket 연결 끊김 (재연결 시도)");
           await reconnectFn();
         }
