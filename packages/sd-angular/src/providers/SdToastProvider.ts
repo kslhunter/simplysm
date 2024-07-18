@@ -12,6 +12,8 @@ export class SdToastProvider {
 
   #containerRef?: ComponentRef<SdToastContainerControl>;
 
+  beforeShowFn?: (theme: "info" | "success" | "warning" | "danger") => void;
+
   get containerRef(): ComponentRef<SdToastContainerControl> {
     if (this.#containerRef === undefined) {
       const compRef = createComponent(SdToastContainerControl, {
@@ -109,14 +111,12 @@ export class SdToastProvider {
   }
 
   danger<T extends boolean>(message: string, progress?: T): (T extends true ? ISdProgressToast : void) {
-    if (typeof navigator.vibrate === "function") {
-      navigator.vibrate(500);
-    }
-
     return this.#show("danger", message, progress);
   }
 
   #show<T extends boolean>(theme: "info" | "success" | "warning" | "danger", message: string, progress?: T): (T extends true ? ISdProgressToast : void) {
+    this.beforeShowFn?.(theme);
+
     if (this.alertThemes.includes(theme)) {
       alert(message);
       return undefined as any;

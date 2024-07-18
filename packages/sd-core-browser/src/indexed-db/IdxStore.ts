@@ -1,0 +1,109 @@
+import {Type} from "@simplysm/sd-core-common";
+import {IdxDbContext} from "./IdxDbContext";
+import {IdxDbStoreDefUtil} from "./IdxDbStoreDefUtil";
+
+export class IdxStore<T extends object> {
+  get def() {
+    return IdxDbStoreDefUtil.get(this._type);
+  }
+
+  constructor(private _db: IdxDbContext,
+              private _type: Type<T>) {
+  }
+
+  async get(query: IDBValidKey | IDBKeyRange, indexName?: string): Promise<T | undefined> {
+    if (!this._db.idxDb) throw new Error(`${this._db.dbName}(IndexedDB)가 연결되어있지 않습니다.`);
+    if (!this._db.idxTrans) throw new Error(`${this._db.dbName}(IndexedDB)의 transaction 설정이 되어있지 않습니다.`);
+
+    return await new Promise<T>((resolve, reject) => {
+      const store = this._db.idxTrans!.objectStore(this.def.name);
+      const index = indexName != null ? store.index(indexName) : undefined;
+
+      const req = (index ?? store).get(query);
+      req.onerror = () => {
+        reject(req.error);
+      };
+      req.onsuccess = () => {
+        resolve(req.result);
+      };
+    });
+  }
+
+  async getAll(query?: IDBValidKey | IDBKeyRange, indexName?: string): Promise<T[]> {
+    if (!this._db.idxDb) throw new Error(`${this._db.dbName}(IndexedDB)가 연결되어있지 않습니다.`);
+    if (!this._db.idxTrans) throw new Error(`${this._db.dbName}(IndexedDB)의 transaction 설정이 되어있지 않습니다.`);
+
+    return await new Promise<T[]>((resolve, reject) => {
+      const store = this._db.idxTrans!.objectStore(this.def.name);
+      const index = indexName != null ? store.index(indexName) : undefined;
+
+      const req = (index ?? store).getAll(query);
+      req.onerror = () => {
+        reject(req.error);
+      };
+      req.onsuccess = () => {
+        resolve(req.result);
+      };
+    });
+  }
+
+  async add(data: T): Promise<void> {
+    return await new Promise<void>((resolve, reject) => {
+      const req = this._db.idxTrans!.objectStore(this.def.name).add(data);
+      req.onerror = () => {
+        reject(req.error);
+      };
+      req.onsuccess = () => {
+        resolve();
+      };
+    });
+  }
+
+  async adds(...items: T[]): Promise<void> {
+    for (const item of items) {
+      await this.add(item);
+    }
+  }
+
+  async put(data: T): Promise<void> {
+    return await new Promise<void>((resolve, reject) => {
+      const req = this._db.idxTrans!.objectStore(this.def.name).put(data);
+      req.onerror = () => {
+        reject(req.error);
+      };
+      req.onsuccess = () => {
+        resolve();
+      };
+    });
+  }
+
+  async puts(...items: T[]): Promise<void> {
+    for (const item of items) {
+      await this.put(item);
+    }
+  }
+
+  async delete(query: IDBValidKey | IDBKeyRange): Promise<void> {
+    return await new Promise<void>((resolve, reject) => {
+      const req = this._db.idxTrans!.objectStore(this.def.name).delete(query);
+      req.onerror = () => {
+        reject(req.error);
+      };
+      req.onsuccess = () => {
+        resolve();
+      };
+    });
+  }
+
+  async clear(): Promise<void> {
+    return await new Promise<void>((resolve, reject) => {
+      const req = this._db.idxTrans!.objectStore(this.def.name).clear();
+      req.onerror = () => {
+        reject(req.error);
+      };
+      req.onsuccess = () => {
+        resolve();
+      };
+    });
+  }
+}

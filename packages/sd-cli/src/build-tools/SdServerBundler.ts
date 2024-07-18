@@ -71,7 +71,8 @@ export class SdServerBundler {
           ".doc": "file",
           ".zip": "file",
           ".pfx": "file",
-          ".pkl": "file"
+          ".pkl": "file",
+          ".mp3": "file"
         },
         platform: "node",
         logLevel: "silent",

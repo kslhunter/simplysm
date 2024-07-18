@@ -61,8 +61,11 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 
       background: var(--background-color);
       color: var(--text-trans-default);
-      
-      border-bottom: 1px solid var(--border-color-light);
+
+      body.sd-theme-compact &,
+      body.sd-theme-modern & {
+        border-bottom: 1px solid var(--border-color-light);
+      }
       
       //@include elevation(4);
 

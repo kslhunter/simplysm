@@ -446,7 +446,8 @@ export class SdNgBundler {
         ".doc": "file",
         ".zip": "file",
         ".pfx": "file",
-        ".pkl": "file"
+        ".pkl": "file",
+        ".mp3": "file"
       },
       inject: [PathUtil.posix(fileURLToPath(await import.meta.resolve!("node-stdlib-browser/helpers/esbuild/shim")))],
       plugins: [

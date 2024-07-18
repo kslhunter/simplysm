@@ -189,7 +189,8 @@ export class SdCliCordova {
       configXml.widget.$["xmlns:android"] = "http://schemas.android.com/apk/res/android";
 
       configXml["widget"]["platform"] = configXml["widget"]["platform"] ?? [];
-      configXml["widget"]["platform"].push({
+
+      const androidPlatform = {
         "$": {
           "name": "android"
         },
@@ -211,7 +212,51 @@ export class SdCliCordova {
             }
           }]
         }]
-      });
+      };
+
+      if (this._opt.config.platform.android.sdkVersion != null) {
+        androidPlatform.preference.push(...[{
+          "$": {
+            "name": "android-maxSdkVersion",
+            "value": `${this._opt.config.platform.android.sdkVersion}`
+          }
+        }, {
+          "$": {
+            "name": "android-minSdkVersion",
+            "value": `${this._opt.config.platform.android.sdkVersion}`
+          }
+        }, {
+          "$": {
+            "name": "android-targetSdkVersion",
+            "value": `${this._opt.config.platform.android.sdkVersion}`
+          }
+        }, {
+          "$": {
+            "name": "android-compileSdkVersion",
+            "value": `33`
+          }
+        }]);
+      }
+
+      if (this._opt.config.platform.android.permissions) {
+        androidPlatform["config-file"] = androidPlatform["config-file"] ?? [];
+        androidPlatform["config-file"].push({
+          "$": {
+            "target": "AndroidManifest.xml",
+            "parent": "/*"
+          },
+          "uses-permission": this._opt.config.platform.android.permissions.map(perm => ({
+            "$": {
+              "android:name": `android.permission.${perm.name}`,
+              ...perm.maxSdkVersion != null ? {
+                "android:maxSdkVersion": `${perm.maxSdkVersion}`
+              } : {}
+            }
+          }))
+        });
+      }
+
+      configXml["widget"]["platform"].push(androidPlatform);
     }
 
     // CONFIG: 파일 새로 쓰기

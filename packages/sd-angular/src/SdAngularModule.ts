@@ -11,6 +11,7 @@ import {ISdAngularIcon, SdAngularOptionsProvider} from "./providers/SdAngularOpt
 import {SdThemeProvider} from "./providers/SdThemeProvider";
 import {SdLocalStorageProvider} from "./providers/SdLocalStorageProvider";
 import {IconDefinition} from "@fortawesome/fontawesome-svg-core";
+import {SdBackbuttonEventPlugin} from "./plugins/SdBackbuttonEventPlugin";
 
 @NgModule({
   imports: []
@@ -51,6 +52,7 @@ export class SdAngularModule {
         {provide: EVENT_MANAGER_PLUGINS, useClass: SdInsertCommandEventPlugin, multi: true},
         {provide: EVENT_MANAGER_PLUGINS, useClass: SdResizeEventPlugin, multi: true},
         {provide: EVENT_MANAGER_PLUGINS, useClass: SdOptionEventPlugin, multi: true},
+        {provide: EVENT_MANAGER_PLUGINS, useClass: SdBackbuttonEventPlugin, multi: true},
         {provide: ErrorHandler, useClass: SdGlobalErrorHandlerPlugin},
         // provideZoneChangeDetection({
         //   eventCoalescing: true,

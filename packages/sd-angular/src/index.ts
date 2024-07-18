@@ -75,6 +75,7 @@ export * from "./directives/SdTypedTemplateDirective";
 export * from "./modals/SdAddressSearchModal";
 export * from "./modals/SdSheetConfigModal";
 export * from "./pipes/FormatPipe";
+export * from "./plugins/SdBackbuttonEventPlugin";
 export * from "./plugins/SdGlobalErrorHandlerPlugin";
 export * from "./plugins/SdInsertCommandEventPlugin";
 export * from "./plugins/SdOptionEventPlugin";

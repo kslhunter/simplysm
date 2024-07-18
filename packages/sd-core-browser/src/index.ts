@@ -3,3 +3,8 @@ import "./BlobExtension";
 import "./ElementExtension";
 import "./HTMLElementExtension";
 export * from "./HTMLElementUtil";
+export * from "./indexed-db/IdxDbContext";
+export * from "./indexed-db/IdxDbStoreDefUtil";
+export * from "./indexed-db/IdxStore";
+export * from "./indexed-db/indexed-db-commons";
+export * from "./indexed-db/indexed-db-decorators";

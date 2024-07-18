@@ -55,6 +55,34 @@ public class SdLocalBaseUrl extends CordovaPlugin {
         }
 
         return true;
+      } else if (action.equals("getUrl")) {
+        try{
+          Class ionicWebViewEngineClass = Class.forName("com.ionicframework.cordova.webview.IonicWebViewEngine");
+          final Object ionicWebViewEngine = ionicWebViewEngineClass.cast(webView.getEngine());
+          final Method getServerBasePath = ionicWebViewEngineClass.getMethod("getServerBasePath", String.class);
+
+          cordova.getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+              try {
+                String serverBasePath = getServerBasePath.invoke(ionicWebViewEngine, []);
+                callbackContext.success(serverBasePath);
+              } catch (IllegalAccessException e) {
+                callbackContext.error(getStack(e));
+              } catch (InvocationTargetException e) {
+                callbackContext.error(getStack(e));
+              }
+            }
+          });
+        } catch (ClassNotFoundException e) {
+          callbackContext.error(getStack(e));
+          return false;
+        } catch (NoSuchMethodException e) {
+          callbackContext.error(getStack(e));
+          return false;
+        }
+
+        return true;
       } else {
         return false;
       }

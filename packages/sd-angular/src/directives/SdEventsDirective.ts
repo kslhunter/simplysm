@@ -3,7 +3,7 @@ import {ISdResizeEvent} from "../plugins/SdResizeEventPlugin";
 
 
 @Directive({
-  selector: "[sdResize], [sdResize.outside], [focus.outside], [click.outside], [mousedown.outside], [keydown.outside], [scroll.outside]",
+  selector: "[sdResize], [sdResize.outside], [focus.outside], [click.outside], [mousedown.outside], [keydown.outside], [scroll.outside], [invalid.capture]",
   standalone: true
 })
 export class SdEventsDirective {
@@ -14,4 +14,6 @@ export class SdEventsDirective {
   @Output("mousedown.outside") mousedownOutside = new EventEmitter<MouseEvent>();
   @Output("keydown.outside") keydownOutside = new EventEmitter<KeyboardEvent>();
   @Output("scroll.outside") scrollOutside = new EventEmitter<Event>();
+
+  @Output("invalid.capture") invalidCapture = new EventEmitter<Event>();
 }

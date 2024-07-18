@@ -82,7 +82,7 @@ declare module "*.pfx" {
   const r: string;
   export default r;
 }
-declare module "*.pkl" {
+declare module "*.mp3" {
   const r: string;
   export default r;
 }

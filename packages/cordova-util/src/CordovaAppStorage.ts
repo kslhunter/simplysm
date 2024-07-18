@@ -1,31 +1,62 @@
 /// <reference types="cordova-plugin-file"/>
 
 import * as path from "path";
-import {JsonConvert, StringUtil} from "@simplysm/sd-core-common";
+import {JsonConvert, SdError, StringUtil} from "@simplysm/sd-core-common";
 import {fileURLToPath, pathToFileURL} from "url";
 
-export abstract class CordovaAppStorage {
-  static async readJsonAsync(filePath: string): Promise<any> {
+export class CordovaAppStorage {
+  #rootDirectoryUrl: string;
+
+  constructor(rootDirectory?: string) {
+    this.#rootDirectoryUrl = rootDirectory ?? window.cordova.file.applicationStorageDirectory;
+  }
+
+  async readJsonAsync(filePath: string): Promise<any> {
     const fileStr = await this.readFileAsync(filePath);
     return StringUtil.isNullOrEmpty(fileStr) ? undefined : JsonConvert.parse(fileStr);
   }
 
-  static async readFileAsync(filePath: string): Promise<string> {
+  async readFileBufferAsync(filePath: string): Promise<Buffer> {
+    const file = await this.readFileObjectAsync(filePath);
+    return await new Promise<Buffer>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const arrayBuffer = reader.result as ArrayBuffer;
+        resolve(Buffer.from(arrayBuffer));
+      };
+      reader.onerror = () => {
+        if (reader.error instanceof FileError) {
+          reject(new SdError(`파일 읽기 오류: ${this.#convertError(reader.error)}`));
+        }
+        else {
+          reject(reader.error);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    });
+  }
+
+  async readFileAsync(filePath: string): Promise<string> {
     const file = await this.readFileObjectAsync(filePath);
 
     return await new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
-      reader.onloadend = (ev) => {
+      reader.onload = (ev) => {
         resolve(ev.target!.result as string);
       };
-      reader.onerror = (ev) => {
-        reject(reader.error);
+      reader.onerror = () => {
+        if (reader.error instanceof FileError) {
+          reject(new SdError(`파일 읽기 오류: ${this.#convertError(reader.error)}`));
+        }
+        else {
+          reject(reader.error);
+        }
       };
       reader.readAsText(file);
     });
   }
 
-  static async readFileObjectAsync(filePath: string): Promise<File> {
+  async readFileObjectAsync(filePath: string): Promise<File> {
     const fullUrl = this.getFullUrl(filePath);
     const dirUrl = path.dirname(fullUrl);
     const fileName = path.basename(fullUrl);
@@ -49,11 +80,11 @@ export abstract class CordovaAppStorage {
     });
   }
 
-  static async writeJsonAsync(filePath: string, data: any) {
+  async writeJsonAsync(filePath: string, data: any) {
     await this.writeAsync(filePath, JsonConvert.stringify(data));
   }
 
-  static async writeAsync(filePath: string, data: any) {
+  async writeAsync(filePath: string, data: any) {
     const fullUrl = this.getFullUrl(filePath);
     const dirUrl = path.dirname(fullUrl);
     const fileName = path.basename(fullUrl);
@@ -80,7 +111,7 @@ export abstract class CordovaAppStorage {
     });
   }
 
-  static async readdirAsync(dirPath: string) {
+  async readdirAsync(dirPath: string) {
     const fullUrl = this.getFullUrl(dirPath);
 
     return await new Promise<string[]>((resolve, reject) => {
@@ -99,7 +130,7 @@ export abstract class CordovaAppStorage {
     });
   }
 
-  static async removeAsync(dirOrFilePath: string) {
+  async removeAsync(dirOrFilePath: string) {
     const fullUrl = this.getFullUrl(dirOrFilePath);
 
     return await new Promise<void>((resolve, reject) => {
@@ -124,11 +155,42 @@ export abstract class CordovaAppStorage {
     });
   }
 
-  static getFullUrl(targetPath: string) {
-    return pathToFileURL(path.join(fileURLToPath(window.cordova.file.applicationStorageDirectory), targetPath.replace(/^\//, ""))).toString();
+  getFullUrl(targetPath: string) {
+    return pathToFileURL(path.join(fileURLToPath(this.#rootDirectoryUrl), targetPath.replace(/^\//, ""))).toString();
   }
 
-  static async #mkdirsAsync(targetDirPath: string) {
+  #convertError(err: FileError) {
+    switch (err.code) {
+      case 1:
+        return "NOT_FOUND_ERR";
+      case 2:
+        return "SECURITY_ERR";
+      case 3:
+        return "ABORT_ERR";
+      case 4:
+        return "NOT_READABLE_ERR";
+      case 5:
+        return "ENCODING_ERR";
+      case 6:
+        return "NO_MODIFICATION_ALLOWED_ERR";
+      case 7:
+        return "INVALID_STATE_ERR";
+      case 8:
+        return "SYNTAX_ERR";
+      case 9:
+        return "INVALID_MODIFICATION_ERR";
+      case 10:
+        return "QUOTA_EXCEEDED_ERR";
+      case 11:
+        return "TYPE_MISMATCH_ERR";
+      case 12:
+        return "PATH_EXISTS_ERR";
+      default:
+        return "UNKNOWN_ERR";
+    }
+  }
+
+  async #mkdirsAsync(targetDirPath: string) {
     const dirs = targetDirPath.replace(/^\//, "").replace(/\/$/, "").split("/");
 
     let currDir = "";
@@ -137,7 +199,7 @@ export abstract class CordovaAppStorage {
       currDir += dir;
 
       await new Promise<void>((resolve, reject) => {
-        window.resolveLocalFileSystemURL(window.cordova.file.applicationStorageDirectory, entry => {
+        window.resolveLocalFileSystemURL(this.#rootDirectoryUrl, entry => {
           const appDirEntry = entry as DirectoryEntry;
           appDirEntry.getDirectory(currDir, {create: true}, () => {
             resolve();

@@ -26,13 +26,13 @@
     "connect": "^3.7.0",
     "mime": "^4.0.4",
     "nodemailer": "^6.9.14",
-    "semver": "^7.6.2",
+    "semver": "^7.6.3",
     "utf-8-validate": "^6.0.4",
     "ws": "^8.18.0"
   },
   "devDependencies": {
     "@types/mime": "^4.0.0",
     "@types/nodemailer": "^6.4.15",
-    "@types/ws": "^8.5.10"
+    "@types/ws": "^8.5.11"
   }
 }

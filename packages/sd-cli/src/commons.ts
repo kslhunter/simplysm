@@ -147,6 +147,11 @@ export interface ISdCliClientBuilderCordovaConfig {
         password: string;
         keystoreType: string;
       };
+      sdkVersion?: number;
+      permissions?: {
+        name: string;
+        maxSdkVersion?: number;
+      }[];
     }
   }
   env?: Record<string, string>;

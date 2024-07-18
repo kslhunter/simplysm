@@ -9,15 +9,18 @@ import {
   ViewEncapsulation
 } from "@angular/core";
 import {SdToastProvider} from "../providers/SdToastProvider";
+import {SdEventsDirective} from "../directives/SdEventsDirective";
 
 @Component({
   selector: "sd-form",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [],
+  imports: [
+    SdEventsDirective
+  ],
   template: `
-    <form #formEl (submit)="onSubmit($event)">
+    <form #formEl (submit)="onSubmit($event)" (invalid.capture)="onInvalidCapture()">
       <ng-content/>
     </form>`
 })
@@ -26,7 +29,8 @@ export class SdFormControl {
 
   @ViewChild("formEl") formElRef!: ElementRef<HTMLFormElement>;
 
-  @Output() submit = new EventEmitter();
+  @Output() submit = new EventEmitter<SubmitEvent>();
+  @Output() invalid = new EventEmitter();
 
   requestSubmit() {
     this.formElRef.nativeElement.requestSubmit();
@@ -39,7 +43,7 @@ export class SdFormControl {
     const firstInvalidEl = this.formElRef.nativeElement.findFirst<HTMLElement>("*:invalid, *[sd-invalid]");
 
     if (!firstInvalidEl) {
-      this.submit.emit();
+      this.submit.emit(event);
       return;
     }
 
@@ -58,5 +62,10 @@ export class SdFormControl {
     }
 
     this.#sdToast.info(errorMessage);
+    this.invalid.emit();
+  }
+
+  onInvalidCapture() {
+    this.invalid.emit();
   }
 }
