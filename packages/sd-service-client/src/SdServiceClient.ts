@@ -36,7 +36,7 @@ export class SdServiceClient extends EventEmitter {
 
   public override on(event: "request-progress", listener: (state: ISdServiceClientRequestProgressState) => void): this;
   public override on(event: "response-progress", listener: (state: ISdServiceClientResponseProgressState) => void): this;
-  public override on(event: "state-change", listener: (state: "connected" | "closed") => void): this;
+  public override on(event: "state-change", listener: (state: "connected" | "closed" | "reconnect") => void): this;
   public override on(event: string | symbol, listener: (...args: any[]) => void): this {
     return super.on(event, listener);
   }
