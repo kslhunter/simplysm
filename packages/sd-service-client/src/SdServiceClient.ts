@@ -36,6 +36,7 @@ export class SdServiceClient extends EventEmitter {
 
   public override on(event: "request-progress", listener: (state: ISdServiceClientRequestProgressState) => void): this;
   public override on(event: "response-progress", listener: (state: ISdServiceClientResponseProgressState) => void): this;
+  public override on(event: "state-change", listener: (state: "connected" | "closed") => void): this;
   public override on(event: string | symbol, listener: (...args: any[]) => void): this {
     return super.on(event, listener);
   }
@@ -56,6 +57,7 @@ export class SdServiceClient extends EventEmitter {
           await this._ws.sendAsync(JsonConvert.stringify(resMsg));
         }
         else if (msg.name === "connected") {
+          this.emit("state-change", "success");
           this.isConnected = true;
           resolve();
         }
@@ -87,12 +89,14 @@ export class SdServiceClient extends EventEmitter {
           console.log("WebSocket 재연결 성공");
         }
         catch (err) {
-          console.warn("WebSocket 재연결 실패, 재시도");
-          await reconnectFn();
+          console.warn("WebSocket 재연결 실패");
+          // browser에서 에러로 connect를 못한 경우에도, "close" 이벤트가 뜨므로, 아래 코드 주석처리
+          /*await reconnectFn();*/
         }
       };
 
       this._ws.on("close", async () => {
+        this.emit("state-change", "closed");
         this.isConnected = false;
 
         if (this.isManualClose) {

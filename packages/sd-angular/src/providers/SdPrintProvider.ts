@@ -11,20 +11,19 @@ export class SdPrintProvider {
                                                        options?: {
                                                          orientation?: "portrait" | "landscape"
                                                        }): Promise<void> {
-    await new Promise<void>((resolve, reject) => {
-      try {
-        //-- comp
-        const compRef = createComponent(printType, {
-          environmentInjector: this.#appRef.injector
-        });
-        compRef.instance.param = param;
+    await new Promise<void>((resolve) => {
+      //-- comp
+      const compRef = createComponent(printType, {
+        environmentInjector: this.#appRef.injector
+      });
+      compRef.instance.param = param;
 
-        const compEl = compRef.location.nativeElement as HTMLElement;
-        compEl.classList.add("_sd-print-template");
+      const compEl = compRef.location.nativeElement as HTMLElement;
+      compEl.classList.add("_sd-print-template");
 
-        //-- style
-        const styleEl = document.createElement("style");
-        styleEl.innerHTML = `   
+      //-- style
+      const styleEl = document.createElement("style");
+      styleEl.innerHTML = `   
   @page {
       size: ${options?.orientation ?? "portrait"}; margin: 0;
   }
@@ -36,22 +35,18 @@ export class SdPrintProvider {
       body > ._sd-print-template { display: block !important; }
   }`;
 
-        compRef.instance.print = () => {
-          setTimeout(() => {
-            document.body.appendChild(compEl);
-            document.head.appendChild(styleEl);
-            window.print();
-            compRef.destroy();
-            styleEl.remove();
-            resolve();
-          }, 300);
-        };
+      compRef.instance.print = () => {
+        setTimeout(() => {
+          document.body.appendChild(compEl);
+          document.head.appendChild(styleEl);
+          window.print();
+          compRef.destroy();
+          styleEl.remove();
+          resolve();
+        }, 300);
+      };
 
-        this.#appRef.attachView(compRef.hostView);
-      }
-      catch (err) {
-        reject(err);
-      }
+      this.#appRef.attachView(compRef.hostView);
     });
   }
 

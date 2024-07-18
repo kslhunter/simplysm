@@ -24,6 +24,9 @@ export class SdWebSocket extends EventEmitter {
 
     // await this.closeAsync();
     await new Promise<void>((resolve, reject) => {
+      if (this._ws) {
+        this._ws.removeAllListeners();
+      }
       this._ws = new WebSocket(this._url);
 
       this._ws.onopen = () => {
