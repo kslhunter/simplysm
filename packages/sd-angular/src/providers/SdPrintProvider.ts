@@ -1,6 +1,6 @@
 import {ApplicationRef, createComponent, inject, Injectable, Type} from "@angular/core";
-import {jsPDF} from "jspdf";
-import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
+import * as htmlToImage from "html-to-image";
 
 @Injectable({providedIn: "root"})
 export class SdPrintProvider {
@@ -77,7 +77,7 @@ export class SdPrintProvider {
             els = els.length > 0 ? els : [compEl];
 
             for (const el of els) {
-              const canvas = await html2canvas(el, {
+              /*const image = await html2canvas(el, {
                 foreignObjectRendering: true,
                 y: -el.offsetTop,
                 scale: 4,
@@ -85,21 +85,25 @@ export class SdPrintProvider {
                 height: el.offsetHeight,
                 windowWidth: el.offsetWidth,
                 windowHeight: el.offsetHeight
+              });*/
+              const image = await htmlToImage.toJpeg(el, {
+                backgroundColor: "white",
+                pixelRatio: 4,
               });
 
               const orientation = el.getAttribute("sd-orientation") as "landscape" | "portrait" | undefined;
               doc.addPage("a4", orientation ?? "p").addImage({
-                  imageData: canvas,
-                  x: 0,
-                  y: 0,
-                  ...orientation === "landscape" ? {
-                    height: 841.89,
-                    width: 595.28
-                  } : {
-                    width: 595.28,
-                    height: 841.89
-                  }
-                });
+                imageData: image, //canvas,
+                x: 0,
+                y: 0,
+                ...orientation === "landscape" ? {
+                  height: 841.89,
+                  width: 595.28
+                } : {
+                  width: 595.28,
+                  height: 841.89
+                }
+              });
             }
 
             const arrayBuffer = doc.output("arraybuffer");
@@ -107,6 +111,7 @@ export class SdPrintProvider {
             compRef.destroy();
             styleEl.remove();
 
+            // reject(new Error(`테스트`));
             resolve(Buffer.from(arrayBuffer));
           }
           catch (err) {

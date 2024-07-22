@@ -28,7 +28,7 @@
     "@simplysm/sd-core-common": "11.3.9",
     "@simplysm/sd-service-client": "11.3.9",
     "@simplysm/sd-service-common": "11.3.9",
-    "html2canvas": "^1.4.1",
+    "html-to-image": "^1.11.11",
     "jsbarcode": "^3.11.6",
     "jspdf": "^2.5.1",
     "marked": "^12.0.2",
