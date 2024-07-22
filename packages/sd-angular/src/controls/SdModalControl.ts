@@ -291,29 +291,31 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
       }
 
       @media all and (max-width: 520px) {
-        padding-top: 0;
+        &[sd-mobile-fill-disabled=false] {
+          padding-top: 0;
 
-        > ._dialog {
-          width: 100%;
-          height: 100%;
+          > ._dialog {
+            width: 100%;
+            height: 100%;
 
-          border: none;
-          border-radius: 0;
+            border: none;
+            border-radius: 0;
 
-          > sd-dock-container > ._header {
-            background: transparent;
-            color: var(--text-trans-lighter);
-
-            ._close-button,
-            ._clear-config-button {
+            > sd-dock-container > ._header {
+              background: transparent;
               color: var(--text-trans-lighter);
 
-              &:hover {
-                background: transparent;
+              ._close-button,
+              ._clear-config-button {
                 color: var(--text-trans-lighter);
+
+                &:hover {
+                  background: transparent;
+                  color: var(--text-trans-lighter);
+                }
               }
             }
-          }
+          } 
         }
       }
     }
@@ -321,7 +323,8 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
   host: {
     "[attr.sd-open]": "open",
     "[attr.sd-float]": "float",
-    "[attr.sd-position]": "position"
+    "[attr.sd-position]": "position",
+    "[attr.sd-mobile-fill-disabled]": "mobileFillDisabled"
   }
 })
 export class SdModalControl implements DoCheck {
@@ -339,6 +342,7 @@ export class SdModalControl implements DoCheck {
   @Input({transform: coercionBoolean}) resizable = false;
   @Input({transform: coercionBoolean}) movable = true;
   @Input({transform: coercionBoolean}) float = false;
+  @Input({transform: coercionBoolean}) mobileFillDisabled = false;
   @Input({transform: coercionNumber}) heightPx?: number;
   @Input({transform: coercionNumber}) widthPx?: number;
   @Input({transform: coercionNumber}) minHeightPx?: number;

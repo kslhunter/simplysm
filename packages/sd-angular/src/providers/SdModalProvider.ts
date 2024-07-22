@@ -22,6 +22,7 @@ export class SdModalProvider {
                                                      resizable?: boolean;
                                                      movable?: boolean;
                                                      headerStyle?: string;
+                                                     mobileFillDisabled?: boolean;
                                                    }): Promise<T["__tOutput__"] | undefined> {
     return await new Promise<T["__tOutput__"] | undefined>((resolve, reject) => {
       //-- component
@@ -78,6 +79,7 @@ export class SdModalProvider {
       modalRef.instance.resizable = options?.resizable ?? false;
       modalRef.instance.movable = options?.movable ?? false;
       modalRef.instance.headerStyle = options?.headerStyle;
+      modalRef.instance.mobileFillDisabled = options?.mobileFillDisabled ?? false;
       modalRef.instance.openChange.subscribe((value: boolean) => {
         modalRef.instance.open = value;
         if (!value) {

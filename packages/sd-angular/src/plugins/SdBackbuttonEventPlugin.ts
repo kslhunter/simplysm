@@ -15,6 +15,7 @@ export class SdBackbuttonEventPlugin extends EventManagerPlugin {
   override addEventListener(element: HTMLElement, eventName: string, handler: (event: Event) => void): () => void {
     const listener = (event: Event): void => {
       event.preventDefault();
+      event.stopPropagation();
 
       this.manager.getZone().run(() => {
         handler(event);

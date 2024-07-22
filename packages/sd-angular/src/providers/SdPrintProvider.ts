@@ -1,6 +1,6 @@
 import {ApplicationRef, createComponent, inject, Injectable, Input, Type} from "@angular/core";
 import {jsPDF} from "jspdf";
-import html2canvas from "html2canvas";
+import * as htmlToImage from "html-to-image";
 
 @Injectable({providedIn: "root"})
 export class SdPrintProvider {
@@ -83,7 +83,7 @@ export class SdPrintProvider {
               els = els.length > 0 ? els : [compEl];
 
               for (const el of els) {
-                const canvas = await html2canvas(el, {
+                /*const canvas = await html2canvas(el, {
                   foreignObjectRendering: true,
                   y: -el.offsetTop,
                   scale: 4,
@@ -91,6 +91,10 @@ export class SdPrintProvider {
                   height: el.offsetHeight,
                   windowWidth: el.offsetWidth,
                   windowHeight: el.offsetHeight
+                });*/
+                const canvas = await htmlToImage.toCanvas(el, {
+                  backgroundColor: "white",
+                  pixelRatio: 4
                 });
 
                 const orientation = el.getAttribute("sd-orientation") as "landscape" | "portrait" | undefined;

@@ -59,10 +59,29 @@ export class IdxStore<T extends object> {
     });
   }
 
-  async adds(...items: T[]): Promise<void> {
-    for (const item of items) {
-      await this.add(item);
-    }
+  async bulkAdds(...items: T[]) {
+    //-- "success" 이벤트를 안받아야 빨라짐.
+    return await new Promise<void>((resolve, reject) => {
+      let lastReq: IDBRequest | undefined;
+      for (const item of items) {
+        const req = this._db.idxTrans!.objectStore(this.def.name).add(item);
+        req.onerror = () => {
+          reject(req.error);
+          return;
+        };
+
+        lastReq = req;
+      }
+
+      if (lastReq) {
+        lastReq.onsuccess = () => {
+          resolve();
+        };
+      }
+      else {
+        resolve();
+      }
+    });
   }
 
   async put(data: T): Promise<void> {
@@ -77,10 +96,29 @@ export class IdxStore<T extends object> {
     });
   }
 
-  async puts(...items: T[]): Promise<void> {
-    for (const item of items) {
-      await this.put(item);
-    }
+  async bulkPuts(...items: T[]) {
+    //-- "success" 이벤트를 안받아야 빨라짐.
+    return await new Promise<void>((resolve, reject) => {
+      let lastReq: IDBRequest | undefined;
+      for (const item of items) {
+        const req = this._db.idxTrans!.objectStore(this.def.name).put(item);
+        req.onerror = () => {
+          reject(req.error);
+          return;
+        };
+
+        lastReq = req;
+      }
+
+      if (lastReq) {
+        lastReq.onsuccess = () => {
+          resolve();
+        };
+      }
+      else {
+        resolve();
+      }
+    });
   }
 
   async delete(query: IDBValidKey | IDBKeyRange): Promise<void> {
