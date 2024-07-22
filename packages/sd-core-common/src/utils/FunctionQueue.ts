@@ -1,47 +1,74 @@
+import EventEmitter from "events";
 import {Wait} from "./Wait";
 
-export class FunctionQueue {
-  private readonly _queue: (() => void | Promise<void>)[] = [];
-  private _isQueueRunning = false;
+export class FunctionQueue extends EventEmitter {
+  #queue: (() => void | Promise<void>)[] = [];
+  #isRunning = false;
 
-  public constructor(private readonly _gap?: number) {
+  #gap: number;
+
+  override on(event: "start", listener: () => void): this;
+  override on(event: "end", listener: () => void): this;
+  override on(event: "error", listener: (err: Error) => void): this;
+  override on(event: string | symbol, listener: (...args: any[]) => void): this {
+    super.on(event, listener);
+    return this;
   }
 
-  public run(fn: () => void | Promise<void>): void {
-    this._queue.push(fn);
-    if (this._isQueueRunning) return;
+  constructor(gap: number = 0) {
+    super();
+    this.#gap = gap;
+  }
+
+  run(fn: () => void | Promise<void>): void {
+    this.#queue.push(fn);
+    if (this.#isRunning) return;
 
     void (async () => {
-      this._isQueueRunning = true;
+      this.#isRunning = true;
       while (true) {
-        const runningFn = this._queue.shift();
+        const runningFn = this.#queue.shift();
         if (!runningFn) break;
-        await runningFn();
-        if (this._gap !== undefined && this._gap > 0) {
-          await Wait.time(this._gap);
+        this.emit("start");
+        try {
+          await runningFn();
+        }
+        catch (err) {
+          this.emit("error", err);
+        }
+        this.emit("end");
+        if (this.#gap > 0) {
+          await Wait.time(this.#gap);
         }
       }
-      this._isQueueRunning = false;
+      this.#isRunning = false;
     })();
   }
 
-  public runLast(fn: () => void | Promise<void>): void {
-    this._queue.push(fn);
-    if (this._isQueueRunning) return;
+  runLast(fn: () => void | Promise<void>): void {
+    this.#queue.push(fn);
+    if (this.#isRunning) return;
 
     void (async () => {
-      this._isQueueRunning = true;
+      this.#isRunning = true;
       while (true) {
-        const runningFn = this._queue.last();
-        this._queue.clear();
+        const runningFn = this.#queue.last();
+        this.#queue.clear();
 
         if (!runningFn) break;
-        await runningFn();
-        if (this._gap !== undefined && this._gap > 0) {
-          await Wait.time(this._gap);
+        this.emit("start");
+        try {
+          await runningFn();
+        }
+        catch (err) {
+          this.emit("error", err);
+        }
+        this.emit("end");
+        if (this.#gap > 0) {
+          await Wait.time(this.#gap);
         }
       }
-      this._isQueueRunning = false;
+      this.#isRunning = false;
     })();
   }
 }
