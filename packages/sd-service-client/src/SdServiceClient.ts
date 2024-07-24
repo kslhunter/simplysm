@@ -61,6 +61,11 @@ export class SdServiceClient extends EventEmitter {
         else if (msg.name === "connected") {
           this.emit("state-change", "success");
           this.isConnected = true;
+
+          for (const entry of this.#eventListenerInfoMap.entries()) {
+            await this.#sendCommandAsync("addEventListener", [entry[0], entry[1].name, entry[1].info]);
+          }
+
           resolve();
         }
       });
@@ -90,10 +95,6 @@ export class SdServiceClient extends EventEmitter {
           await this.#ws.connectAsync();
 
           console.log("WebSocket 재연결 성공");
-
-          for (const entry of this.#eventListenerInfoMap.entries()) {
-            await this.#sendCommandAsync("addEventListener", [entry[0], entry[1].name, entry[1].info]);
-          }
         }
         catch (err) {
           console.warn("WebSocket 재연결 실패");
