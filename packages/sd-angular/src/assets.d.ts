@@ -34,6 +34,10 @@ declare module "*.ttf" {
   const r: string;
   export default r;
 }
+declare module "*.ttc" {
+  const r: string;
+  export default r;
+}
 declare module "*.eot" {
   const r: string;
   export default r;

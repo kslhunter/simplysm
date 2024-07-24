@@ -59,6 +59,7 @@ export class SdServerBundler {
           ".woff": "file",
           ".woff2": "file",
           ".ttf": "file",
+          ".ttc": "file",
           ".eot": "file",
           ".ico": "file",
           ".otf": "file",
