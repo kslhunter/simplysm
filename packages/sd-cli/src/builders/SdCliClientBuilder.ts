@@ -1,6 +1,12 @@
 import {EventEmitter} from "events";
 import {FsUtil, Logger, PathUtil, SdFsWatcher} from "@simplysm/sd-core-node";
-import {ISdCliBuilderResult, ISdCliClientPackageConfig, ISdCliConfig, ISdCliPackageBuildResult} from "../commons";
+import {
+  INpmConfig,
+  ISdCliBuilderResult,
+  ISdCliClientPackageConfig,
+  ISdCliConfig,
+  ISdCliPackageBuildResult
+} from "../commons";
 import {FunctionQueue} from "@simplysm/sd-core-common";
 import path from "path";
 import {SdNgBundler} from "../build-tools/SdNgBundler";
@@ -14,6 +20,7 @@ import {SdCliElectron} from "../entry/SdCliElectron";
 export class SdCliClientBuilder extends EventEmitter {
   private readonly _logger = Logger.get(["simplysm", "sd-cli", "SdCliClientBuilder"]);
   private readonly _pkgConf: ISdCliClientPackageConfig;
+  private readonly _npmConf: INpmConfig;
   private _builders?: SdNgBundler[];
   private _cordova?: SdCliCordova;
 
@@ -23,6 +30,7 @@ export class SdCliClientBuilder extends EventEmitter {
                      private readonly _pkgPath: string) {
     super();
     this._pkgConf = this._projConf.packages[path.basename(_pkgPath)] as ISdCliClientPackageConfig;
+    this._npmConf = FsUtil.readJson(path.resolve(_pkgPath, "package.json")) as INpmConfig;
   }
 
   public override on(event: "change", listener: () => void): this;
@@ -36,8 +44,10 @@ export class SdCliClientBuilder extends EventEmitter {
     this._debug("dist 초기화...");
     await FsUtil.removeAsync(path.resolve(this._pkgPath, "dist"));
 
-    this._debug(`GEN routes.ts...`);
-    await SdCliNgRoutesFileGenerator.runAsync(this._pkgPath);
+    if (this._npmConf.dependencies && Object.keys(this._npmConf.dependencies).includes("@angular/router")) {
+      this._debug(`GEN routes.ts...`);
+      await SdCliNgRoutesFileGenerator.runAsync(this._pkgPath);
+    }
 
     this._debug("GEN .config...");
     const confDistPath = path.resolve(this._pkgPath, "dist/.config.json");
@@ -56,8 +66,10 @@ export class SdCliClientBuilder extends EventEmitter {
     this._debug("dist 초기화...");
     await FsUtil.removeAsync(path.resolve(this._pkgPath, "dist"));
 
-    this._debug(`WATCH GEN routes.ts...`);
-    await SdCliNgRoutesFileGenerator.watchAsync(this._pkgPath);
+    if (this._npmConf.dependencies && Object.keys(this._npmConf.dependencies).includes("@angular/router")) {
+      this._debug(`WATCH GEN routes.ts...`);
+      await SdCliNgRoutesFileGenerator.watchAsync(this._pkgPath);
+    }
 
     this._debug("GEN .config...");
     const confDistPath = path.resolve(this._pkgPath, "dist/.config.json");

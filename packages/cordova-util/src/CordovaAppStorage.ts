@@ -84,7 +84,7 @@ export class CordovaAppStorage {
     await this.writeAsync(filePath, JsonConvert.stringify(data));
   }
 
-  async writeAsync(filePath: string, data: any) {
+  async writeAsync(filePath: string, data: Blob | string | ArrayBuffer) {
     const fullUrl = this.getFullUrl(filePath);
     const dirUrl = path.dirname(fullUrl);
     const fileName = path.basename(fullUrl);

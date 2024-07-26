@@ -29,7 +29,7 @@
     "@simplysm/sd-storage": "12.1.6",
     "browserslist": "^4.23.2",
     "cordova": "^12.0.0",
-    "electron": "^29.4.5",
+    "electron": "^31.3.0",
     "electron-builder": "^24.13.3",
     "esbuild": "^0.20.2",
     "eslint": "^8.57.0",
@@ -44,7 +44,7 @@
     "zone.js": "~0.14.8"
   },
   "devDependencies": {
-    "@types/eslint": "^8.56.10",
+    "@types/eslint": "^8.56.11",
     "@types/xml2js": "^0.4.14",
     "@types/yargs": "^17.0.32"
   }

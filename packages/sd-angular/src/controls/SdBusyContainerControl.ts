@@ -339,8 +339,8 @@ export class SdBusyContainerControl {
   @Input({transform: coercionBoolean}) noFade = this.#sdBusy.noFade ?? false;
   @Input({transform: coercionNumber}) progressPercent?: number;
 
-  @HostListener("keydown.outside", ["$event"])
-  onKeydownOutside(event: KeyboardEvent) {
+  @HostListener("document:keydown.capture.outside", ["$event"])
+  onKeydownCaptureOutside(event: KeyboardEvent) {
     if (this.busy) {
       event.preventDefault();
       event.stopPropagation();

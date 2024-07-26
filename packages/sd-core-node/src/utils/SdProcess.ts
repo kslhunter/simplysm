@@ -1,7 +1,11 @@
 import cp from "child_process";
 
 export class SdProcess {
-  public static async spawnAsync(cmd: string, opts?: cp.SpawnOptionsWithoutStdio, showMessage?: boolean): Promise<string> {
+  public static async spawnAsync(cmd: string,
+                                 opts?: cp.SpawnOptionsWithoutStdio & {
+                                   messageConvert?: (buffer: Buffer) => string
+                                 },
+                                 showMessage?: boolean): Promise<string> {
     return await new Promise<string>((resolve, reject) => {
       const ps = cp.spawn(cmd.split(" ")[0], cmd.split(" ").slice(1), {
         shell: true,
@@ -28,11 +32,13 @@ export class SdProcess {
 
       ps.on("exit", (code) => {
         if (code !== 0) {
-          reject(new Error(`'${cmd}' 명령이 오류와 함께 닫힘 (${code})\n${messageBuffer.toString()}`));
+          const message = opts?.messageConvert ? opts.messageConvert(messageBuffer) : messageBuffer.toString();
+          reject(new Error(`'${cmd}' 명령이 오류와 함께 닫힘 (${code})\n${message}`));
           return;
         }
 
-        resolve(messageBuffer.toString());
+        const message = opts?.messageConvert ? opts.messageConvert(messageBuffer) : messageBuffer.toString();
+        resolve(message);
       });
     });
   }

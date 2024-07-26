@@ -401,9 +401,11 @@ export class SdNgBundler {
       define: {
         ...!this.#opt.dev ? {ngDevMode: "false"} : {},
         ngJitMode: 'false',
-        global: 'global',
-        process: 'process',
-        Buffer: 'Buffer',
+        ...this.#opt.builderType === "electron" ? {} : {
+          global: 'global',
+          process: 'process',
+          Buffer: 'Buffer',
+        },
         'process.env.SD_VERSION': JSON.stringify(this.#pkgNpmConf.version),
         "process.env.NODE_ENV": JSON.stringify(this.#opt.dev ? "development" : "production"),
         ...this.#opt.env ? Object.keys(this.#opt.env).toObject(
@@ -411,7 +413,7 @@ export class SdNgBundler {
           key => JSON.stringify(this.#opt.env![key])
         ) : {}
       },
-      platform: 'browser',
+      platform: this.#opt.builderType === "electron" ? "node" : 'browser',
       mainFields: ['es2020', 'es2015', 'browser', 'module', 'main'],
       entryNames: '[name]',
       entryPoints: {
@@ -422,7 +424,7 @@ export class SdNgBundler {
           "cordova-entry": path.resolve(path.dirname(fileURLToPath(import.meta.url)), `../../lib/cordova-entry.js`)
         } : {}
       },
-      target: this.#browserTarget,
+      target: this.#opt.builderType === "electron" ? "node18" : this.#browserTarget,
       supported: {'async-await': false, 'object-rest-spread': false},
       loader: {
         ".png": "file",
@@ -434,6 +436,7 @@ export class SdNgBundler {
         ".woff": "file",
         ".woff2": "file",
         ".ttf": "file",
+        ".ttc": "file",
         ".eot": "file",
         ".ico": "file",
         ".otf": "file",
@@ -449,7 +452,24 @@ export class SdNgBundler {
         ".pkl": "file",
         ".mp3": "file"
       },
-      inject: [PathUtil.posix(fileURLToPath(await import.meta.resolve!("node-stdlib-browser/helpers/esbuild/shim")))],
+      ...this.#opt.builderType === "electron" ? {} : {
+        inject: [PathUtil.posix(fileURLToPath(await import.meta.resolve!("node-stdlib-browser/helpers/esbuild/shim")))],
+      },
+      ...this.#opt.builderType === "electron" ? {
+        /*banner: {
+          js: `
+import __path__ from 'path';
+import { fileURLToPath as __fileURLToPath__ } from 'url';
+import { createRequire as __createRequire__ } from 'module';
+
+const require = __createRequire__(import.meta.url);
+const __filename = __fileURLToPath__(import.meta.url);
+const __dirname = __path__.dirname(__filename);`.trim()
+        },*/
+        external: [
+          "electron"
+        ]
+      } : {},
       plugins: [
         ...this.#opt.builderType === "cordova" && this.#opt.cordovaConfig?.plugins ? [{
           name: "cordova:plugin-empty",
@@ -499,7 +519,9 @@ export class SdNgBundler {
         //   preserveSymlinks: false,
         //   tailwindConfiguration: undefined
         // }) as esbuild.Plugin,
-        nodeStdLibBrowserPlugin(nodeStdLibBrowser),
+        ...this.#opt.builderType === "electron" ? [] : [
+          nodeStdLibBrowserPlugin(nodeStdLibBrowser)
+        ],
         // {
         //   name: "sd-load-file",
         //   setup: ({onLoad}) => {
