@@ -2,8 +2,8 @@ module.exports = {
   async getDevices() {
     return await new Promise((resolve, reject) => {
       // eslint-disable-next-line no-undef
-      cordova.exec((url) => {
-        resolve(url);
+      cordova.exec((res) => {
+        resolve(res);
       }, (err) => {
         reject(new Error("CORDOVA: ERROR: " + err));
       }, 'SdUsbStorage', 'getDevices');
@@ -12,8 +12,8 @@ module.exports = {
   async requestPermission(filter) {
     return await new Promise((resolve, reject) => {
       // eslint-disable-next-line no-undef
-      cordova.exec((url) => {
-        resolve(url);
+      cordova.exec(() => {
+        resolve();
       }, (err) => {
         reject(new Error("CORDOVA: ERROR: " + err));
       }, 'SdUsbStorage', 'requestPermission', [filter.vendorId, filter.productId]);
@@ -22,8 +22,8 @@ module.exports = {
   async readdir(filter, dirPath) {
     return await new Promise((resolve, reject) => {
       // eslint-disable-next-line no-undef
-      cordova.exec((url) => {
-        resolve(url);
+      cordova.exec((res) => {
+        resolve(res);
       }, (err) => {
         reject(new Error("CORDOVA: ERROR: " + err));
       }, 'SdUsbStorage', 'readdir', [filter.vendorId, filter.productId, dirPath]);
@@ -32,8 +32,8 @@ module.exports = {
   async read(filter, filePath) {
     return await new Promise((resolve, reject) => {
       // eslint-disable-next-line no-undef
-      cordova.exec((url) => {
-        resolve(url);
+      cordova.exec((res) => {
+        resolve(res);
       }, (err) => {
         reject(new Error("CORDOVA: ERROR: " + err));
       }, 'SdUsbStorage', 'read', [filter.vendorId, filter.productId, filePath]);

@@ -125,7 +125,11 @@ public class SdUsbStorage extends CordovaPlugin {
         UsbFile root = fs.getRootDirectory();
         UsbFile usbFile = root.search(path);
         if (usbFile == null) {
-          throw new Exception("경로를 찾을 수 없습니다.");
+          callbackContext.success();
+          return true;
+        }
+        if (usbFile.isDirectory()) {
+          throw new Exception("해당 경로는 폴더입니다.");
         }
 
         UsbFileInputStream inputStream = new UsbFileInputStream(usbFile);
