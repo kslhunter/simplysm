@@ -9,6 +9,10 @@ module.exports = () => ({
       type: "library",
       publish: "npm"
     },
+    "cordova-plugin-usb-storage": {
+      type: "library",
+      publish: "npm"
+    },
     "eslint-plugin": {
       type: "library",
       publish: "npm"

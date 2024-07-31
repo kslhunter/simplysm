@@ -116,14 +116,19 @@ export class CordovaAppStorage {
 
     return await new Promise<string[]>((resolve, reject) => {
       window.resolveLocalFileSystemURL(fullUrl, entry => {
-        const appDirEntry = entry as DirectoryEntry;
-        const reader = appDirEntry.createReader();
+        try {
+          const appDirEntry = entry as DirectoryEntry;
+          const reader = appDirEntry.createReader();
 
-        reader.readEntries((entries) => {
-          resolve(entries.map(item => item.name));
-        }, (err) => {
+          reader.readEntries((entries) => {
+            resolve(entries.map(item => item.name));
+          }, (err) => {
+            reject(err);
+          });
+        }
+        catch (err) {
           reject(err);
-        });
+        }
       }, err => {
         reject(err);
       });

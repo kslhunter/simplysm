@@ -1,0 +1,23 @@
+{
+  "name": "@simplysm/cordova-plugin-usb-storage",
+  "version": "12.1.7",
+  "description": "심플리즘 패키지 - Cordova USB Storage Plugin",
+  "author": "김석래",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm12.git",
+    "directory": "packages/cordova-plugin-usb-storage"
+  },
+  "license": "MIT",
+  "type": "module",
+  "types": "./types/index.d.ts",
+  "engines": {
+    "node": "18.18.2"
+  },
+  "cordova": {
+    "id": "@simplysm/cordova-plugin-usb-storage",
+    "platforms": [
+      "android"
+    ]
+  }
+}
