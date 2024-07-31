@@ -7,5 +7,6 @@ declare const SdUsbStorage: {
     productId: number;
   }[]>;
   requestPermission: (filter: { vendorId: number; productId: number; }) => Promise<void>;
-  readdir: (filter: { vendorId: number; productId: number; }, filePath: string) => Promise<string[]>;
+  readdir: (filter: { vendorId: number; productId: number; }, dirPath: string) => Promise<string[]>;
+  read: (filter: { vendorId: number; productId: number; }, filePath: string) => Promise<ArrayBuffer>;
 };
