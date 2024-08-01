@@ -33,6 +33,6 @@
   "devDependencies": {
     "@types/mime": "^4.0.0",
     "@types/nodemailer": "^6.4.15",
-    "@types/ws": "^8.5.11"
+    "@types/ws": "^8.5.12"
   }
 }
