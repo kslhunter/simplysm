@@ -12,11 +12,21 @@ module.exports = {
   async requestPermission(filter) {
     return await new Promise((resolve, reject) => {
       // eslint-disable-next-line no-undef
-      cordova.exec(() => {
-        resolve();
+      cordova.exec((res) => {
+        resolve(res);
       }, (err) => {
         reject(new Error("CORDOVA: ERROR: " + err));
       }, 'SdUsbStorage', 'requestPermission', [filter.vendorId, filter.productId]);
+    });
+  },
+  async hasPermission(filter) {
+    return await new Promise((resolve, reject) => {
+      // eslint-disable-next-line no-undef
+      cordova.exec((res) => {
+        resolve(res);
+      }, (err) => {
+        reject(new Error("CORDOVA: ERROR: " + err));
+      }, 'SdUsbStorage', 'hasPermission', [filter.vendorId, filter.productId]);
     });
   },
   async readdir(filter, dirPath) {

@@ -4,25 +4,29 @@
 
 package kr.co.simplysm.cordova;
 
-import org.apache.cordova.CallbackContext;
-import org.apache.cordova.CordovaPlugin;
+import android.annotation.SuppressLint;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbManager;
 
+import org.apache.cordova.CallbackContext;
+import org.apache.cordova.CordovaInterface;
+import org.apache.cordova.CordovaPlugin;
+import org.apache.cordova.CordovaWebView;
+import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.app.PendingIntent;
-import android.content.Context;
-
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Optional;
-import java.util.concurrent.TimeoutException;
-
-import android.content.Intent;
-import android.hardware.usb.UsbDevice;
-import android.hardware.usb.UsbManager;
 
 import me.jahnen.libaums.core.UsbMassStorageDevice;
 import me.jahnen.libaums.core.fs.FileSystem;
@@ -30,12 +34,21 @@ import me.jahnen.libaums.core.fs.UsbFile;
 import me.jahnen.libaums.core.fs.UsbFileInputStream;
 
 public class SdUsbStorage extends CordovaPlugin {
+  private static final String ACTION_USB_PERMISSION = "kr.co.simplysm.usb-storage.USB_PERMISSION";
+
+  public Context context;
+
+  @Override
+  public void initialize(CordovaInterface cordova, CordovaWebView webView) {
+    this.context = cordova.getActivity().getApplicationContext();
+  }
+
+  @SuppressLint("UnspecifiedRegisterReceiverFlag")
   @Override
   public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
     try {
       if (action.equals("getDevices")) {
-        Context context = cordova.getContext();
-        UsbMassStorageDevice[] devices = UsbMassStorageDevice.getMassStorageDevices(context);
+        UsbMassStorageDevice[] devices = UsbMassStorageDevice.getMassStorageDevices(this.context);
 
         JSONArray result = new JSONArray();
         for (UsbMassStorageDevice device : devices) {
@@ -58,26 +71,45 @@ public class SdUsbStorage extends CordovaPlugin {
         int vendorId = args.getInt(0);
         int productId = args.getInt(1);
 
-        Context context = cordova.getContext();
-        UsbMassStorageDevice device = this.getDevice(context, vendorId, productId);
+        UsbMassStorageDevice device = this.getDevice(vendorId, productId);
         UsbDevice usbDevice = device.getUsbDevice();
 
-        UsbManager usbManager = (UsbManager) context.getSystemService(Context.USB_SERVICE);
+        UsbManager usbManager = (UsbManager) this.context.getSystemService(Context.USB_SERVICE);
         if (!usbManager.hasPermission(usbDevice)) {
-          PendingIntent permissionIntent = PendingIntent.getBroadcast(context, 0, new Intent("kr.co.simplysm.usb-storage.USB_PERMISSION"), 0);
+          this.context.registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+              try {
+                if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
+                  callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, true));
+                }
+                else {
+                  callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, false));
+                }
+              }
+              catch (Exception e) {
+                callbackContext.error(getStack(e));
+              }
+            }
+          }, new IntentFilter(ACTION_USB_PERMISSION));
+
+          PendingIntent permissionIntent = PendingIntent.getBroadcast(this.context, 0, new Intent(ACTION_USB_PERMISSION), 0);
           usbManager.requestPermission(usbDevice, permissionIntent);
-
-          long startWaitPermissionTime = System.currentTimeMillis();
-          while (!usbManager.hasPermission(usbDevice)
-            && System.currentTimeMillis() < startWaitPermissionTime + (30 * 1000)) {
-            Thread.sleep(500);
-          }
-          if (!usbManager.hasPermission(usbDevice)) {
-            throw new TimeoutException("USB 장치에 대한 권한을 얻지 못했습니다.");
-          }
         }
+        else {
+          callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, true));
+        }
+        return true;
+      }
+      else if (action.equals("hasPermission")) {
+        int vendorId = args.getInt(0);
+        int productId = args.getInt(1);
 
-        callbackContext.success();
+        UsbMassStorageDevice device = this.getDevice(vendorId, productId);
+
+        UsbManager usbManager = (UsbManager) this.context.getSystemService(Context.USB_SERVICE);
+        boolean hasPermission = usbManager.hasPermission(device.getUsbDevice());
+        callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, hasPermission));
         return true;
       }
       else if (action.equals("readdir")) {
@@ -85,15 +117,15 @@ public class SdUsbStorage extends CordovaPlugin {
         int productId = args.getInt(1);
         String path = args.getString(2);
 
-        Context context = cordova.getContext();
-        UsbMassStorageDevice device = this.getDevice(context, vendorId, productId);
+        UsbMassStorageDevice device = this.getDevice(vendorId, productId);
 
-        UsbManager usbManager = (UsbManager) context.getSystemService(Context.USB_SERVICE);
+        UsbManager usbManager = (UsbManager) this.context.getSystemService(Context.USB_SERVICE);
         if (!usbManager.hasPermission(device.getUsbDevice())) {
           throw new Exception("USB 장치에 대한 접근 권한이 없습니다.");
         }
 
         device.init();
+
         FileSystem fs = device.getPartitions().get(0).getFileSystem();
         UsbFile root = fs.getRootDirectory();
         UsbFile dir = root.search(path);
@@ -112,15 +144,15 @@ public class SdUsbStorage extends CordovaPlugin {
         int productId = args.getInt(1);
         String path = args.getString(2);
 
-        Context context = cordova.getContext();
-        UsbMassStorageDevice device = this.getDevice(context, vendorId, productId);
+        UsbMassStorageDevice device = this.getDevice(vendorId, productId);
 
-        UsbManager usbManager = (UsbManager) context.getSystemService(Context.USB_SERVICE);
+        UsbManager usbManager = (UsbManager) this.context.getSystemService(Context.USB_SERVICE);
         if (!usbManager.hasPermission(device.getUsbDevice())) {
           throw new Exception("USB 장치에 대한 접근 권한이 없습니다.");
         }
 
         device.init();
+
         FileSystem fs = device.getPartitions().get(0).getFileSystem();
         UsbFile root = fs.getRootDirectory();
         UsbFile usbFile = root.search(path);
@@ -132,11 +164,29 @@ public class SdUsbStorage extends CordovaPlugin {
           throw new Exception("해당 경로는 폴더입니다.");
         }
 
+        device.init();
+
         UsbFileInputStream inputStream = new UsbFileInputStream(usbFile);
         byte[] buf = new byte[(int) usbFile.getLength()];
         inputStream.read(buf);
-
+        inputStream.close();
         callbackContext.success(buf);
+
+        /*ByteBuffer buffer = ByteBuffer.allocate((int) usbFile.getLength());
+
+        UsbFileInputStream inputStream = new UsbFileInputStream(usbFile);
+        byte[] tmpBuf = new byte[1000];
+        int count = 0;
+        cordova.getActivity().runOnUiThread(() -> webView.loadUrl("javascript:console.log('start')"));
+        while ((count = inputStream.read(tmpBuf)) != -1) {
+          cordova.getActivity().runOnUiThread(() -> webView.loadUrl("javascript:console.log('!!!')"));
+          buffer.put(tmpBuf, 0, count);
+        }
+        inputStream.close();*/
+
+        /*ByteBuffer buffer = ByteBuffer.allocate((int) usbFile.getLength());
+        usbFile.read(0, buffer);
+        usbFile.flush();*/
         return true;
       }
     }
@@ -152,8 +202,8 @@ public class SdUsbStorage extends CordovaPlugin {
     return sw.toString().replace("\t", "  ");
   }
 
-  private UsbMassStorageDevice getDevice(Context context, int vendorId, int productId) throws Exception {
-    UsbMassStorageDevice[] devices = UsbMassStorageDevice.getMassStorageDevices(context);
+  private UsbMassStorageDevice getDevice(int vendorId, int productId) throws Exception {
+    UsbMassStorageDevice[] devices = UsbMassStorageDevice.getMassStorageDevices(this.context);
     Optional<UsbMassStorageDevice> optDevice = Arrays.stream(devices).filter((tmpDevice) -> {
       UsbDevice tmpUsbDevice = tmpDevice.getUsbDevice();
       return tmpUsbDevice.getVendorId() == vendorId && tmpUsbDevice.getProductId() == productId;
