@@ -30,7 +30,7 @@
   },
   "devDependencies": {
     "@simplysm/eslint-plugin": "12.1.13",
-    "@types/node": "^18.19.42",
+    "@types/node": "^18.19.43",
     "cross-env": "^7.0.3",
     "eslint": "^8.57.0",
     "tsx": "4.15.7",
