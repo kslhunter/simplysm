@@ -12,6 +12,37 @@ import {SdThemeProvider} from "./providers/SdThemeProvider";
 import {SdLocalStorageProvider} from "./providers/SdLocalStorageProvider";
 import {IconDefinition} from "@fortawesome/fontawesome-svg-core";
 import {SdBackbuttonEventPlugin} from "./plugins/SdBackbuttonEventPlugin";
+import {
+  faAngleDoubleLeft,
+  faAngleDoubleRight,
+  faAngleDown,
+  faAngleLeft,
+  faAngleRight,
+  faAngleUp,
+  faArrowLeft,
+  faArrowRight,
+  faBars,
+  faCaretDown,
+  faCaretRight,
+  faCheck,
+  faCode,
+  faCog,
+  faEye,
+  faMinus,
+  faMountainSun,
+  faPen,
+  faPlus,
+  faQuestion,
+  faQuestionCircle,
+  faSave,
+  faSearch,
+  faSort,
+  faSortDown,
+  faSortUp,
+  faStar,
+  faTriangleExclamation,
+  faXmark
+} from "@fortawesome/free-solid-svg-icons";
 
 @NgModule({
   imports: []
@@ -27,11 +58,11 @@ export class SdAngularModule {
     this.#sdTheme.theme = this.#sdLocalStorage.get("sd-theme") ?? this.#sdOptions.defaultTheme;
   }
 
-  static forRoot(opt: {
+  static forRoot(opt?: {
     clientName?: string;
     defaultTheme?: "compact" | "modern" | "mobile" | "kiosk";
-    fallbackIcon: IconDefinition;
-    icons: ISdAngularIcon;
+    fallbackIcon?: IconDefinition;
+    icons?: ISdAngularIcon;
   }): ModuleWithProviders<SdAngularModule> {
     return {
       ngModule: SdAngularModule,
@@ -40,10 +71,42 @@ export class SdAngularModule {
           provide: SdAngularOptionsProvider,
           useFactory: () => {
             const provider = new SdAngularOptionsProvider();
-            provider.clientName = opt.clientName ?? "unknown";
-            provider.defaultTheme = opt.defaultTheme ?? "modern";
-            provider.fallbackIcon = opt.fallbackIcon;
-            provider.icons = opt.icons;
+            provider.clientName = opt?.clientName ?? "unknown";
+            provider.defaultTheme = opt?.defaultTheme ?? "modern";
+            provider.fallbackIcon = opt?.fallbackIcon ?? faQuestionCircle;
+            provider.icons = opt?.icons ?? {
+              caretDown: faCaretDown,
+              code: faCode,
+              eye: faEye,
+              pen: faPen,
+              angleDown: faAngleDown,
+              question: faQuestion,
+              triangleExclamation: faTriangleExclamation,
+              angleDoubleLeft: faAngleDoubleLeft,
+              angleDoubleRight: faAngleDoubleRight,
+              angleLeft: faAngleLeft,
+              angleRight: faAngleRight,
+              cog: faCog,
+              arrowLeft: faArrowLeft,
+              arrowRight: faArrowRight,
+              caretRight: faCaretRight,
+              save: faSave,
+              star: faStar,
+              mountainSun: faMountainSun,
+              bars: faBars,
+              angleUp: faAngleUp,
+              questionCircle: faQuestionCircle,
+
+              check: faCheck,
+              minus: faMinus,
+              plus: faPlus,
+              xmark: faXmark,
+              sort: faSort,
+              sortDown: faSortDown,
+              sortUp: faSortUp,
+
+              search: faSearch
+            };
             return provider;
           }
         },

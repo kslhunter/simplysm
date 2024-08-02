@@ -48,6 +48,9 @@ export class IdxStore<T extends object> {
   }
 
   async add(data: T): Promise<void> {
+    if (!this._db.idxDb) throw new Error(`${this._db.dbName}(IndexedDB)가 연결되어있지 않습니다.`);
+    if (!this._db.idxTrans) throw new Error(`${this._db.dbName}(IndexedDB)의 transaction 설정이 되어있지 않습니다.`);
+
     return await new Promise<void>((resolve, reject) => {
       const req = this._db.idxTrans!.objectStore(this.def.name).add(data);
       req.onerror = () => {
@@ -60,6 +63,9 @@ export class IdxStore<T extends object> {
   }
 
   async bulkAdds(...items: T[]) {
+    if (!this._db.idxDb) throw new Error(`${this._db.dbName}(IndexedDB)가 연결되어있지 않습니다.`);
+    if (!this._db.idxTrans) throw new Error(`${this._db.dbName}(IndexedDB)의 transaction 설정이 되어있지 않습니다.`);
+
     //-- "success" 이벤트를 안받아야 빨라짐.
     return await new Promise<void>((resolve, reject) => {
       let lastReq: IDBRequest | undefined;
@@ -85,6 +91,9 @@ export class IdxStore<T extends object> {
   }
 
   async put(data: T): Promise<void> {
+    if (!this._db.idxDb) throw new Error(`${this._db.dbName}(IndexedDB)가 연결되어있지 않습니다.`);
+    if (!this._db.idxTrans) throw new Error(`${this._db.dbName}(IndexedDB)의 transaction 설정이 되어있지 않습니다.`);
+
     return await new Promise<void>((resolve, reject) => {
       const req = this._db.idxTrans!.objectStore(this.def.name).put(data);
       req.onerror = () => {
@@ -97,6 +106,9 @@ export class IdxStore<T extends object> {
   }
 
   async bulkPuts(...items: T[]) {
+    if (!this._db.idxDb) throw new Error(`${this._db.dbName}(IndexedDB)가 연결되어있지 않습니다.`);
+    if (!this._db.idxTrans) throw new Error(`${this._db.dbName}(IndexedDB)의 transaction 설정이 되어있지 않습니다.`);
+
     //-- "success" 이벤트를 안받아야 빨라짐.
     return await new Promise<void>((resolve, reject) => {
       let lastReq: IDBRequest | undefined;
@@ -122,6 +134,9 @@ export class IdxStore<T extends object> {
   }
 
   async delete(query: IDBValidKey | IDBKeyRange): Promise<void> {
+    if (!this._db.idxDb) throw new Error(`${this._db.dbName}(IndexedDB)가 연결되어있지 않습니다.`);
+    if (!this._db.idxTrans) throw new Error(`${this._db.dbName}(IndexedDB)의 transaction 설정이 되어있지 않습니다.`);
+
     return await new Promise<void>((resolve, reject) => {
       const req = this._db.idxTrans!.objectStore(this.def.name).delete(query);
       req.onerror = () => {
@@ -134,6 +149,9 @@ export class IdxStore<T extends object> {
   }
 
   async clear(): Promise<void> {
+    if (!this._db.idxDb) throw new Error(`${this._db.dbName}(IndexedDB)가 연결되어있지 않습니다.`);
+    if (!this._db.idxTrans) throw new Error(`${this._db.dbName}(IndexedDB)의 transaction 설정이 되어있지 않습니다.`);
+
     return await new Promise<void>((resolve, reject) => {
       const req = this._db.idxTrans!.objectStore(this.def.name).clear();
       req.onerror = () => {

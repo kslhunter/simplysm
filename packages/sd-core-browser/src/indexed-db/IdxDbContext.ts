@@ -74,10 +74,14 @@ export class IdxDbContext {
       .filterExists();
 
     for (const storeDef of storeDefs) {
-      const store = this.idxDb.createObjectStore(storeDef.name, storeDef.key ? {
-        keyPath: storeDef.key.columns.orderBy(item => item.order).map(item => item.name),
-        autoIncrement: storeDef.key.autoIncrement
-      } : undefined);
+      const store = this.idxDb.createObjectStore(storeDef.name, storeDef.key ? (
+        storeDef.key.autoIncrement ? {
+          keyPath: storeDef.key.columns[0].name,
+          autoIncrement: true
+        } : {
+          keyPath: storeDef.key.columns.orderBy(item => item.order).map(item => item.name)
+        }
+      ) : undefined);
 
       for (const idx of storeDef.idxs) {
         store.createIndex(idx.name, idx.columns.orderBy(item => item.order).map(item => item.name), {

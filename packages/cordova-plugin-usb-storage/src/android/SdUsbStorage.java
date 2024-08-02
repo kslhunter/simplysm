@@ -164,27 +164,16 @@ public class SdUsbStorage extends CordovaPlugin {
           throw new Exception("해당 경로는 폴더입니다.");
         }
 
-        UsbFileInputStream inputStream = new UsbFileInputStream(usbFile);
-        byte[] buf = new byte[(int) usbFile.getLength()];
-        inputStream.read(buf);
-        inputStream.close();
-        callbackContext.success(buf);
-
-        /*ByteBuffer buffer = ByteBuffer.allocate((int) usbFile.getLength());
+        ByteBuffer buffer = ByteBuffer.allocate((int) usbFile.getLength());
 
         UsbFileInputStream inputStream = new UsbFileInputStream(usbFile);
-        byte[] tmpBuf = new byte[1000];
+        byte[] tmpBuf = new byte[fs.getChunkSize()];
         int count = 0;
-        cordova.getActivity().runOnUiThread(() -> webView.loadUrl("javascript:console.log('start')"));
         while ((count = inputStream.read(tmpBuf)) != -1) {
-          cordova.getActivity().runOnUiThread(() -> webView.loadUrl("javascript:console.log('!!!')"));
           buffer.put(tmpBuf, 0, count);
         }
-        inputStream.close();*/
-
-        /*ByteBuffer buffer = ByteBuffer.allocate((int) usbFile.getLength());
-        usbFile.read(0, buffer);
-        usbFile.flush();*/
+        inputStream.close();
+        callbackContext.success(buffer.array());
         return true;
       }
     }
