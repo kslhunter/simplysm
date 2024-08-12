@@ -27,6 +27,9 @@ export class ObjectUtil {
     if (source == null) {
       return source;
     }
+    if (source instanceof Buffer) {
+      return Buffer.from(source);
+    }
     if (source instanceof Array) {
       if (options?.onlyOneDepth) {
         return [...source];
@@ -52,9 +55,6 @@ export class ObjectUtil {
     }
     if (source instanceof Uuid) {
       return new Uuid(source.toString());
-    }
-    if (source instanceof Buffer) {
-      return Buffer.from(source.buffer);
     }
     if (typeof source === "object") {
       if (options?.onlyOneDepth) {
