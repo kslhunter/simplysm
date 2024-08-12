@@ -50,7 +50,12 @@ export class SdCliCordova {
     const alreadyPlatforms = await FsUtil.readdirAsync(path.resolve(cordovaPath, "platforms"));
     for (const platform of this._platforms) {
       if (!alreadyPlatforms.includes(platform)) {
-        await this._execAsync(`${BIN_PATH} platform add ${platform}`, cordovaPath);
+        if (platform === "android") {
+          await this._execAsync(`${BIN_PATH} platform add ${platform}@12.0.0`, cordovaPath);
+        }
+        else {
+          await this._execAsync(`${BIN_PATH} platform add ${platform}`, cordovaPath);
+        }
       }
     }
 
@@ -89,6 +94,7 @@ export class SdCliCordova {
 
       if (!hasPlugin) {
         await this._execAsync(`${BIN_PATH} plugin remove ${alreadyPluginId}`, cordovaPath);
+        // await this._execAsync(`${BIN_PATH} plugin remove ${alreadyPluginId.replace(/@.*$/, "")}`, cordovaPath);
       }
     }
 
