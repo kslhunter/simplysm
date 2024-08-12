@@ -160,8 +160,12 @@ export class CordovaAppStorage {
     });
   }
 
+  getFullPath(targetPath: string) {
+    return path.join(fileURLToPath(this.#rootDirectoryUrl), targetPath.replace(/^\//, ""));
+  }
+
   getFullUrl(targetPath: string) {
-    return pathToFileURL(path.join(fileURLToPath(this.#rootDirectoryUrl), targetPath.replace(/^\//, ""))).toString();
+    return pathToFileURL(this.getFullPath(targetPath)).toString();
   }
 
   #convertError(err: FileError) {

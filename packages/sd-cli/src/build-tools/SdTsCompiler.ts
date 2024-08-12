@@ -249,12 +249,6 @@ export class SdTsCompiler {
 
     this.#debug(`create builder...`);
 
-    // this.#builder = ts.createEmitAndSemanticDiagnosticsBuilderProgram(
-    //   this.#program,
-    //   this.#compilerHost,
-    //   this.#builder
-    // );
-
     if (this.#ngProgram) {
       await this.#ngProgram.compiler.analyzeAsync();
     }
@@ -270,17 +264,18 @@ export class SdTsCompiler {
 
     this.#debug(`get affected (new deps)...`);
 
+    const sourceFileSet = new Set(this.#program.getSourceFiles()
+      .map(sf => getOrgSourceFile(sf))
+      .filterExists());
+
     const depMap = new Map<string, {
       fileName: string;
       importName: string;
       exportName?: string;
     }[]>();
-    for (const sf of this.#program.getSourceFiles()) {
-      const orgSf = getOrgSourceFile(sf);
-      if (!orgSf) continue;
-
-      const refs = this.#findDeps(orgSf);
-      depMap.set(path.normalize(orgSf.fileName), refs);
+    for (const sf of sourceFileSet) {
+      const refs = this.#findDeps(sf);
+      depMap.set(path.normalize(sf.fileName), refs);
     }
 
     const allDepMap = new Map<string, Set<string>>();
@@ -318,39 +313,19 @@ export class SdTsCompiler {
       return result;
     };
 
-    for (const sf of this.#program.getSourceFiles()) {
-      const orgSf = getOrgSourceFile(sf);
-      if (!orgSf) continue;
+    for (const sf of sourceFileSet) {
+      const deps = getAllDeps(path.normalize(sf.fileName));
+      allDepMap.set(path.normalize(sf.fileName), deps);
 
-      const deps = getAllDeps(path.normalize(orgSf.fileName));
-      allDepMap.set(path.normalize(orgSf.fileName), deps);
-
-      for (const dep of getAllDeps(path.normalize(orgSf.fileName))) {
+      for (const dep of getAllDeps(path.normalize(sf.fileName))) {
         const depCache = this.#revDependencyCacheMap.getOrCreate(path.normalize(dep), new Set<string>());
-        depCache.add(path.normalize(orgSf.fileName));
+        depCache.add(path.normalize(sf.fileName));
         if (this.#modifiedFileSet.has(path.normalize(dep))) {
-          affectedFileSet.add(path.normalize(orgSf.fileName));
+          affectedFileSet.add(path.normalize(sf.fileName));
         }
       }
-    }
 
-    /*for (const sf of this.#program.getSourceFiles()) {
-      const orgSf = getOrgSourceFile(sf);
-      if (!orgSf) continue;
-
-      for (const dep of this.#builder.getAllDependencies(sf)) {
-        const depCache = this.#dependencyCacheMap.getOrCreate(path.normalize(dep), new Set<string>());
-        depCache.add(path.normalize(orgSf.fileName));
-        if (this.#modifiedFileSet.has(path.normalize(dep))) {
-          affectedFileSet.add(path.normalize(orgSf.fileName));
-        }
-      }
-    }*/
-
-    if (this.#ngProgram) {
-      this.#debug(`get affected (new res deps)...`);
-
-      for (const sf of this.#program.getSourceFiles()) {
+      if (this.#ngProgram) {
         if (this.#ngProgram.compiler.ignoreForEmit.has(sf)) {
           continue;
         }
@@ -417,21 +392,31 @@ export class SdTsCompiler {
     const ngTransformers = this.#ngProgram?.compiler.prepareEmit().transformers;
 
     // affected에 새로 추가된 파일은 포함되지 않는 현상이 있어 getSourceFiles로 바꿈
-    
+    // -> 너무 느려져서 다시 돌림. 포함안되는 현상은 getAllDep 문제인가?
+
     // for (const affectedFile of affectedFileSet) {
-    // if (this.#emittedFilesCacheMap.has(affectedFile)) {
-    //   continue;
-    // }
+    //   if (this.#emittedFilesCacheMap.has(affectedFile)) {
+    //     continue;
+    //   }
     //
-    // const sf = this.#program.getSourceFile(affectedFile);
-    // if (!sf) {
-    //   continue;
-    // }
-    for (const sf of this.#program.getSourceFiles()) {
+    //   const sf = this.#program.getSourceFile(affectedFile);
+    //   if (!sf) {
+    //     continue;
+    //   }
+    for (const sf of sourceFileSet) {
       if (this.#emittedFilesCacheMap.has(path.normalize(sf.fileName))) {
         continue;
       }
 
+      if (sf.isDeclarationFile) {
+        continue;
+      }
+
+      if (this.#ngProgram?.compiler.ignoreForEmit.has(sf)) {
+        continue;
+      }
+
+      this.#debug(`emit for`, sf.fileName);
       this.#program.emit(sf, (fileName, text, writeByteOrderMark, onError, sourceFiles, data) => {
         if (!sourceFiles || sourceFiles.length === 0) {
           this.#compilerHost.writeFile(fileName, text, writeByteOrderMark, onError, sourceFiles, data);

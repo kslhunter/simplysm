@@ -10,6 +10,7 @@ import {coercionBoolean} from "../utils/commons";
   template: `
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
+    @import "../scss/variables";
     @import "../scss/mixins";
 
     sd-anchor {
@@ -25,6 +26,20 @@ import {coercionBoolean} from "../utils/commons";
 
       &:active {
         color: var(--theme-primary-darker);
+      }
+
+      @each $key, $val in map-get($vars, theme) {
+        padding-left: var(--gap-xxs);
+        padding-right: var(--gap-xxs);
+        border-radius: var(--border-radius-default);
+
+        &[sd-theme=#{$key}] {
+          //background: var(--theme-#{$key}-lightest);
+
+          &:hover {
+            background: var(--theme-#{$key}-lighter);
+          }
+        }
       }
 
       @media all and (pointer: coarse) {
@@ -53,9 +68,11 @@ import {coercionBoolean} from "../utils/commons";
   `],
   host: {
     "[attr.tabindex]": "disabled ? undefined : 0",
-    "[attr.disabled]": "disabled"
+    "[attr.disabled]": "disabled",
+    "[attr.sd-theme]": "theme",
   }
 })
 export class SdAnchorControl {
   @Input({transform: coercionBoolean}) disabled = false;
+  @Input() theme?: "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey";
 }

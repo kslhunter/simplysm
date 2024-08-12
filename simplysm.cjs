@@ -5,10 +5,10 @@ module.exports = () => ({
       type: "library",
       publish: "npm"
     },
-    "cordova-plugin-local-baseurl": {
+    /*"cordova-plugin-local-baseurl": {
       type: "library",
       publish: "npm"
-    },
+    },*/
     "cordova-plugin-usb-storage": {
       type: "library",
       publish: "npm"

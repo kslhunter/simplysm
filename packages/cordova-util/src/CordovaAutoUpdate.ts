@@ -1,5 +1,3 @@
-/// <reference types="@simplysm/cordova-plugin-local-baseurl"/>
-
 import {CordovaAppStorage} from "./CordovaAppStorage";
 import {SdAutoUpdateServiceClient, SdServiceClient} from "@simplysm/sd-service-client";
 import {NetUtil} from "@simplysm/sd-core-common";
@@ -64,7 +62,8 @@ export abstract class CordovaAutoUpdate {
 
         const url = storage.getFullUrl(`/files/www/index.html`);
 
-        await SdLocalBaseUrl.setUrl(url);
+        // await SdLocalBaseUrl.setUrl(url);
+        Ionic.Webview.setServerBasePath(url);
         return;
       }
     }

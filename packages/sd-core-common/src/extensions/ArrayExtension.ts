@@ -381,7 +381,6 @@ declare global {
     return result;
   };
 
-
   prototype.toTree = function <T, K extends keyof T, P extends keyof T>(this: T[], key: K, parentKey: P): ITreeArray<T>[] {
     const fn = (items: T[]): ITreeArray<T>[] => {
       return items.map((item) => ({
@@ -391,7 +390,6 @@ declare global {
       }));
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     const rootItems = this.filter((item1) => item1[parentKey] == null);
     return fn(rootItems);
   };

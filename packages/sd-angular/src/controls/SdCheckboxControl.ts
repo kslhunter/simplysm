@@ -162,11 +162,29 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
           }
         }
       }
+      
+      &[sd-theme=white] > div {
+        > ._indicator_rect {
+          background: white;
+          border-color: var(--text-trans-lightest);
+
+          > ._indicator {
+            color: var(--text-trans-default);
+          }
+        }
+
+        &:focus {
+          > ._indicator_rect {
+            border-color: var(--text-trans-default);
+          }
+        }
+      }
 
       &[sd-disabled=true] {
         > div {
           > ._indicator_rect {
             background: var(--theme-grey-lighter);
+            border: 1px solid var(--trans-light);
           }
 
           &:focus {
@@ -199,7 +217,7 @@ export class SdCheckboxControl {
   @Input({transform: coercionBoolean}) inset = false;
   @Input({transform: coercionBoolean}) radio = false;
   @Input() size?: "sm" | "lg";
-  @Input() theme?: "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey";
+  @Input() theme?: "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey" | "white";
   @Input() icon: IconProp = this.#sdNgOpt.icons.check;
   @Input() labelStyle?: string;
 

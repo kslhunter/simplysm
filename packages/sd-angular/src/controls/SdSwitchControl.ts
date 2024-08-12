@@ -62,6 +62,8 @@ import {coercionBoolean} from "@simplysm/sd-angular";
 
       &[sd-inline=true] {
         display: inline-block;
+        padding: 0;
+        border: none;
       }
 
       &[sd-inset=true] {
@@ -121,8 +123,11 @@ export class SdSwitchControl {
   @Input() theme?: "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey";
 
   @HostListener("click", ["$event"])
-  onClick() {
+  onClick(event: Event) {
     if (this.disabled) return;
+
+    event.preventDefault();
+    event.stopPropagation();
 
     if (this.valueChange.observed) {
       this.valueChange.emit(!this.value);

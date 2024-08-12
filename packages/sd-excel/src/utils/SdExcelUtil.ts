@@ -154,7 +154,6 @@ export class SdExcelUtil {
     else if (numFmtName === "Time") {
       return 18;
     }
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     else if (numFmtName === "string") {
       return 49;
     }

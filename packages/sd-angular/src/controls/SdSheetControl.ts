@@ -38,6 +38,7 @@ import {SdPaneControl} from "./SdPaneControl";
 import {SdEventsDirective,} from "../directives/SdEventsDirective";
 import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
 import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
+import {SdCheckboxControl} from "./SdCheckboxControl";
 
 @Component({
   selector: "sd-sheet",
@@ -54,7 +55,8 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
     SdPaneControl,
     SdEventsDirective,
     NgTemplateOutlet,
-    FontAwesomeModule
+    FontAwesomeModule,
+    SdCheckboxControl
   ],
   template: `
     <sd-busy-container [busy]="busy" type="cube">
@@ -90,9 +92,12 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
                         [attr.c]="getChildrenFn ? -2 : -1"
                         (sdResize.outside)="onFixedCellResizeOutside(getChildrenFn ? -2 : -1)">
                       @if (selectMode === 'multi' && hasSelectableItem) {
-                        <sd-icon [icon]="icons.arrowRight" fixedWidth
+                        <sd-checkbox [value]="isAllItemsSelected" inline
+                                     theme="white"
+                                     (valueChange)="onAllItemsSelectIconClick()"/>
+                        <!--<sd-icon [icon]="icons.arrowRight" fixedWidth
                                  [class.tx-theme-primary-default]="isAllItemsSelected"
-                                 (click)="onAllItemsSelectIconClick()"/>
+                                 (click)="onAllItemsSelectIconClick()"/>-->
                       }
                     </th>
                   }
@@ -187,10 +192,13 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
                   <td class="_fixed _feature-cell"
                       [attr.r]="r"
                       [attr.c]="getChildrenFn ? -2 : -1">
-                    @if (selectMode && getIsItemSelectable(itemDef.item)) {
-                      <sd-icon [icon]="icons.arrowRight" fixedWidth
+                    @if (selectMode) {
+                      <sd-checkbox [value]="selectedItems.includes(itemDef.item)" inline
+                                   theme="white" [disabled]="!getIsItemSelectable(itemDef.item)"
+                                   (valueChange)="onItemSelectIconClick(itemDef.item)"/>
+                      <!--<sd-icon [icon]="icons.arrowRight" fixedWidth
                                [class.tx-theme-primary-default]="selectedItems.includes(itemDef.item)"
-                               (click)="onItemSelectIconClick(itemDef.item)"/>
+                               (click)="onItemSelectIconClick(itemDef.item)"/>-->
                     }
                   </td>
                   @if (getChildrenFn) {

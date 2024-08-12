@@ -278,7 +278,6 @@ export class SdNgBundler {
         if (value.type === 'script') {
           hints.push({url: key, mode: 'modulepreload' as const});
         }
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         else if (value.type === 'style') {
           hints.push({url: key, mode: 'preload' as const, as: 'style'});
         }
@@ -449,7 +448,8 @@ export class SdNgBundler {
         ".zip": "file",
         ".pfx": "file",
         ".pkl": "file",
-        ".mp3": "file"
+        ".mp3": "file",
+        ".ogg": "file"
       },
       inject: [PathUtil.posix(fileURLToPath(await import.meta.resolve!("node-stdlib-browser/helpers/esbuild/shim")))],
       plugins: [

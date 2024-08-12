@@ -132,20 +132,20 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
               padding: var(--gap-default) var(--gap-lg);
             }
 
-            ._close-button,
-            ._clear-config-button {
+            ._close-button {
               display: inline-block;
               float: right;
               cursor: pointer;
               text-align: center;
-              padding: var(--gap-default) var(--gap-lg);
+              padding: var(--gap-sm) var(--gap-default);
+              margin: calc(var(--gap-default) - var(--gap-sm));
 
               &:hover {
                 background: var(--theme-grey-lightest);
               }
 
               &:active {
-                background: rgba(0, 0, 0, .4);
+                background: var(--theme-grey-lighter);
               }
             }
           }
@@ -305,8 +305,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
               background: transparent;
               color: var(--text-trans-lighter);
 
-              ._close-button,
-              ._clear-config-button {
+              ._close-button {
                 color: var(--text-trans-lighter);
 
                 &:hover {

@@ -59,7 +59,6 @@ export class QueryBuilder {
 CREATE DATABASE IF NOT EXISTS ${this.wrap(def.database)};
 ALTER DATABASE ${this.wrap(def.database)} CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;`.trim();
     }
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     else if (this._dialect === "mssql-azure") {
       return `IF NOT EXISTS(SELECT * FROM sys.databases WHERE name='${def.database}') CREATE DATABASE ${this.wrap(def.database)} COLLATE Korean_Wansung_CS_AS (EDITION='Basic', SERVICE_OBJECTIVE='Basic', MAXSIZE = 2 GB)`.trim();
     }

@@ -90,3 +90,7 @@ declare module "*.mp3" {
   const r: string;
   export default r;
 }
+declare module "*.ogg" {
+  const r: string;
+  export default r;
+}
