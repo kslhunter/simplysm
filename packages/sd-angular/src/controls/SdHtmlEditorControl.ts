@@ -34,26 +34,29 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
     <sd-dock-container>
       @if (!disabled) {
         <sd-dock class="_toolbar">
-          <sd-anchor (click)="viewState = 'preview'" [class._selected]="viewState === 'preview'">
-            <sd-icon [icon]="icons.eye" fixedWidth/>
-          </sd-anchor>
-          <sd-anchor (click)="viewState = 'edit'" [class._selected]="viewState === 'edit'">
-            <sd-icon [icon]="icons.pen" fixedWidth/>
-          </sd-anchor>
-          <sd-anchor (click)="viewState = 'code'" [class._selected]="viewState === 'code'">
-            <sd-icon [icon]="icons.code" fixedWidth/>
-          </sd-anchor>
-          @if (rowsButton && !inset && viewState === 'code') {
-            |
-            <sd-anchor (click)="rows = rows + 1">
-              <sd-icon [icon]="icons.plus" fixedWidth/>
+          <div class="flex-row flex-gap-xs">
+            <sd-anchor (click)="viewState = 'preview'" [class._selected]="viewState === 'preview'">
+              <sd-icon [icon]="icons.eye" fixedWidth/>
             </sd-anchor>
-            @if (rows > 1) {
-              <sd-anchor (click)="rows = rows - 1">
-                <sd-icon [icon]="icons.minus" fixedWidth/>
+            <sd-anchor (click)="viewState = 'edit'" [class._selected]="viewState === 'edit'">
+              <sd-icon [icon]="icons.pen" fixedWidth/>
+            </sd-anchor>
+            <sd-anchor (click)="viewState = 'code'" [class._selected]="viewState === 'code'">
+              <sd-icon [icon]="icons.code" fixedWidth/>
+            </sd-anchor>            
+          </div>
+          <div class="flex-grow flex-row flex-gap-xs" style="justify-content: end">
+            @if (rowsButton && !inset && viewState === 'code') {
+              <sd-anchor (click)="rows = rows + 1" theme="info">
+                <sd-icon [icon]="icons.plus" fixedWidth/>
               </sd-anchor>
+              @if (rows > 1) {
+                <sd-anchor (click)="rows = rows - 1" theme="info">
+                  <sd-icon [icon]="icons.minus" fixedWidth/>
+                </sd-anchor>
+              }
             }
-          }
+          </div>
         </sd-dock>
       }
 
@@ -81,11 +84,16 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
       border-radius: var(--border-radius-default);
       overflow: hidden;
 
-       > sd-dock-container {
+      > sd-dock-container {
         > ._toolbar {
+          display: flex;
+          flex-direction: row;
+          //gap: var(--gap-xs);
+          padding: var(--gap-xs);
+
           user-select: none;
 
-          > sd-anchor {
+          > div > sd-anchor {
             display: inline-block;
             padding: var(--gap-sm) 0;
             text-align: center;

@@ -34,10 +34,10 @@ import {coercionBoolean} from "../utils/commons";
         border-radius: var(--border-radius-default);
 
         &[sd-theme=#{$key}] {
-          //background: var(--theme-#{$key}-lightest);
+          color: var(--theme-#{$key}-default);
 
           &:hover {
-            background: var(--theme-#{$key}-lighter);
+            color: var(--theme-#{$key}-dark);
           }
         }
       }
