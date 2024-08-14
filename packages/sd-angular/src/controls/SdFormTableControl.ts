@@ -23,7 +23,7 @@ import {ChangeDetectionStrategy, Component, ViewEncapsulation} from "@angular/co
         border: 0;
 
         > tbody > tr > * {
-          padding: 0 var(--gap-sm) var(--gap-default) 0;
+          padding: 0 var(--gap-default) var(--gap-sm) 0;
           vertical-align: middle;
 
           &:last-child {

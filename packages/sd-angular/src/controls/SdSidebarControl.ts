@@ -33,6 +33,7 @@ import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
 
       body.sd-theme-compact &,
       body.sd-theme-modern & {
+        //background: var(--theme-grey-lightest);
         border-right: 1px solid var(--border-color-light);
         
         //box-shadow: inset -2px 0 8px rgba(0, 0, 0, .05);

@@ -33,34 +33,20 @@ import {coercionBoolean} from "../utils/commons";
         text-align: center;
         cursor: pointer;
 
+        transition: background .1s linear;        
         &:hover {
           background: var(--theme-grey-lightest);
         }
 
-        body.sd-theme-compact & {
-          &:active {
-            background: var(--theme-grey-lighter);
-          }
-        }
-
-        body.sd-theme-modern &,
-        body.sd-theme-kiosk &,
-        body.sd-theme-mobile & {
-          transition: background .1s linear;
-          @include active-effect(true);
-        }
-
+        @include active-effect(true);
+        
         &:disabled {
           background: white;
           border-color: var(--theme-grey-lighter);
           color: var(--text-trans-lighter);
           cursor: default;
 
-          body.sd-theme-modern &,
-          body.sd-theme-kiosk &,
-          body.sd-theme-mobile & {
-            @include active-effect(false);
-          }
+          @include active-effect(false);
         }
       }
 
@@ -93,14 +79,6 @@ import {coercionBoolean} from "../utils/commons";
             color: var(--text-trans-rev-default);
           }
 
-          body.sd-theme-compact & {
-            &:active {
-              background: var(--theme-#{$key}-darker);
-              border-color: var(--theme-#{$key}-darker);
-              color: var(--text-trans-rev-default);
-            }
-          }
-
           &:disabled {
             background: var(--theme-grey-lighter);
             border-color: var(--theme-grey-lighter);
@@ -120,7 +98,23 @@ import {coercionBoolean} from "../utils/commons";
 
         &:disabled {
           border-color: transparent;
-          color: var(--trans-brightness-defalt);
+          color: var(--text-trans-lighter);
+        }
+      }
+      
+      @each $key, $val in map-get($vars, theme) {
+        &[sd-theme=link-#{$key}] > button {
+          border-color: transparent;
+          color: var(--theme-#{$key}-default);
+
+          &:hover {
+            color: var(--theme-#{$key}-darker);
+          }
+
+          &:disabled {
+            border-color: transparent;
+            color: var(--text-trans-lighter);
+          }
         }
       }
 
@@ -131,7 +125,7 @@ import {coercionBoolean} from "../utils/commons";
       }
 
       &[sd-size=sm] > button {
-        font-weight: normal;
+        //font-weight: normal;
         padding: var(--gap-xs) var(--gap-default);
       }
 
@@ -155,7 +149,8 @@ import {coercionBoolean} from "../utils/commons";
 })
 export class SdButtonControl {
   @Input() type: "button" | "submit" = "button";
-  @Input() theme?: "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey" | "link";
+  @Input() theme?: "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey"
+    | "link" | "link-primary" | "link-secondary" | "link-info" | "link-success" | "link-warning" | "link-danger" | "link-grey" | "link-blue-grey";
   @Input({transform: coercionBoolean}) inline = false;
   @Input() size?: "sm" | "lg";
   @Input({transform: coercionBoolean}) disabled = false;

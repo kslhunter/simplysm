@@ -28,7 +28,6 @@ import {coercionBoolean} from "../utils/commons";
         @include active-effect(true);
 
         &:hover {
-          //background: var(--theme-primary-lighter);
           background: var(--theme-primary-lightest);
         }
       }

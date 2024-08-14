@@ -23,7 +23,6 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
       padding: 0 var(--gap-lg);
       cursor: pointer;
       line-height: calc(var(--topbar-height-sm) - var(--gap-sm) - 2px);
-      vertical-align: bottom;
       border-top: 2px solid var(--theme-primary-darkest);
       border-left: 1px solid var(--theme-primary-darkest);
       border-right: 1px solid var(--theme-primary-darkest);

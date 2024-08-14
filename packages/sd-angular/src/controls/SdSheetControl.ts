@@ -12,7 +12,8 @@ import {
   Input,
   NgZone,
   Output,
-  QueryList, ViewEncapsulation
+  QueryList,
+  ViewEncapsulation
 } from "@angular/core";
 import {SdSheetColumnDirective} from "../directives/SdSheetColumnDirective";
 import {SdSystemConfigProvider} from "../providers/SdSystemConfigProvider";
@@ -192,13 +193,18 @@ import {SdCheckboxControl} from "./SdCheckboxControl";
                   <td class="_fixed _feature-cell"
                       [attr.r]="r"
                       [attr.c]="getChildrenFn ? -2 : -1">
-                    @if (selectMode) {
+                    @if (selectMode === 'multi') {
                       <sd-checkbox [value]="selectedItems.includes(itemDef.item)" inline
                                    theme="white" [disabled]="!getIsItemSelectable(itemDef.item)"
                                    (valueChange)="onItemSelectIconClick(itemDef.item)"/>
-                      <!--<sd-icon [icon]="icons.arrowRight" fixedWidth
+                    } @else if (selectMode === 'single' && !autoSelect) {
+                      <sd-checkbox radio [value]="selectedItems.includes(itemDef.item)" inline
+                                   theme="white" [disabled]="!getIsItemSelectable(itemDef.item)"
+                                   (valueChange)="onItemSelectIconClick(itemDef.item)"/>
+                    } @else if (selectMode) {
+                      <sd-icon [icon]="icons.arrowRight" fixedWidth
                                [class.tx-theme-primary-default]="selectedItems.includes(itemDef.item)"
-                               (click)="onItemSelectIconClick(itemDef.item)"/>-->
+                               (click)="onItemSelectIconClick(itemDef.item)"/>
                     }
                   </td>
                   @if (getChildrenFn) {
@@ -226,8 +232,8 @@ import {SdCheckboxControl} from "./SdCheckboxControl";
                         [style.max-width]="columnDef.width"
                         [class]="getItemCellClass?.(itemDef.item, columnDef.control.key)"
                         [style]="getItemCellStyle?.(itemDef.item, columnDef.control.key)"
-                        (click)="onItemCellClick(itemDef.item)"
-                        (dblclick)="onCellDoubleClick($event)"
+                        (click)="onItemCellClick(itemDef.item, $event)"
+                        (dblclick)="onItemCellDoubleClick(itemDef.item, $event)"
                         (keydown)="this.cellKeydown.emit({ item: itemDef.item, key: columnDef.control.key, event: $event })">
                       <ng-template [ngTemplateOutlet]="columnDef.control.cellTemplateRef ?? null"
                                    [ngTemplateOutletContext]="{$implicit: itemDef.item, item: itemDef.item, index: r, depth: itemDef.depth, edit: getIsCellEditMode(r, c) }"/>
@@ -256,8 +262,10 @@ import {SdCheckboxControl} from "./SdCheckboxControl";
     $z-index-focus-row-indicator: 6;
     $z-index-resize-indicator: 7;
 
-    $border-color: var(--theme-blue-grey-lightest);
-    $border-color-dark: var(--theme-grey-light);
+    //$border-color: var(--theme-blue-grey-lightest);
+    //$border-color-dark: var(--theme-grey-light);
+    $border-color: var(--theme-grey-lighter);
+    $border-color-dark: var(--theme-grey-lighter);
 
     sd-sheet {
       > sd-busy-container {
@@ -317,8 +325,9 @@ import {SdCheckboxControl} from "./SdCheckboxControl";
 
                 &._feature-cell {
                   background: var(--theme-grey-lightest);
-                  min-width: 2em;
+                  min-width: calc(var(--font-size-default) + 2px + var(--sheet-ph)* 2);
                   padding: var(--sheet-pv) var(--sheet-ph);
+                  text-align: left;
 
                   > sd-icon {
                     cursor: pointer;
@@ -472,6 +481,12 @@ import {SdCheckboxControl} from "./SdCheckboxControl";
         }
       }
 
+      &[sd-focus-mode=cell] {
+        > sd-busy-container > sd-dock-container > sd-pane._sheet-container > ._focus-row-indicator > ._focus-cell-indicator {
+          display: none !important;
+        }
+      }
+
       &[sd-inset=true] {
         > sd-busy-container {
           border-radius: var(--border-radius-default);
@@ -489,7 +504,8 @@ import {SdCheckboxControl} from "./SdCheckboxControl";
     }
   `],
   host: {
-    "[attr.sd-inset]": "inset"
+    "[attr.sd-inset]": "inset",
+    "[attr.sd-focus-mode]": "focusMode"
   }
 })
 export class SdSheetControl<T> implements DoCheck {
@@ -548,6 +564,8 @@ export class SdSheetControl<T> implements DoCheck {
 
   /** 항목별로 선택가능여부를 설정하는 함수 */
   @Input() getIsItemSelectableFn?: TSdFnInfo<(item: T) => boolean>;
+
+  @Input() focusMode: "row" | "cell" = "cell";
 
   /** 확장된 항목 목록 */
   @Input() expandedItems: T[] = [];
@@ -1373,14 +1391,14 @@ export class SdSheetControl<T> implements DoCheck {
     }
   }
 
-  onItemCellClick(item: T): void {
+  onItemCellClick(item: T, event: MouseEvent): void {
     if (this.autoSelect !== "click") return;
     if (!this.getIsItemSelectable(item)) return;
 
     this.#selectItem(item);
   }
 
-  onCellDoubleClick(event: MouseEvent): void {
+  onItemCellDoubleClick(item: T, event: MouseEvent): void {
     if (!(event.target instanceof HTMLElement)) return;
     const tdEl = event.target.tagName === "TD" ? event.target : event.target.findParent("td")!;
 

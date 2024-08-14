@@ -31,7 +31,9 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
           }
         </div>
       </div>
-      <ng-content/>
+      <div class="_contents">
+        <ng-content/>        
+      </div>
     </div>`,
   styles: [/* language=SCSS */ `
     @import "../scss/variables";
@@ -43,39 +45,46 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
         color: inherit;
         cursor: pointer;
 
-        display: flex;
-        flex-wrap: nowrap;
-        flex-direction: row;
-        align-items: center;
+        //display: flex;
+        //flex-wrap: nowrap;
+        //flex-direction: row;
 
         height: calc(var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-sm) * 2 + 2px);
         gap: var(--gap-sm);
 
         > ._indicator_rect {
           display: inline-block;
+          vertical-align: calc((1em - var(--line-height)) / 2);
 
           width: calc(var(--font-size-default) + 2px);
           height: calc(var(--font-size-default) + 2px);
           border: 1px solid var(--trans-light);
           background: var(--theme-secondary-lightest);
-          border-radius: var(--border-radius-sm);
+          border-radius: var(--border-radius-xs);
 
           > ._indicator {
             text-align: center;
-            width: 1em;
-            line-height: 1em;
             opacity: 0;
-            color: var(--text-trans-default);
+            color: white;
 
-            svg {
-              width: 1em;
+            > sd-icon > svg {
               vertical-align: top;
             }
           }
         }
 
+        ._contents {
+          display: inline-block;
+          vertical-align: top;
+          padding-left: var(--gap-sm);
+        }
+
+        > ._indicator_rect + ._contents:empty {
+          display: none;
+        }
+
         &:focus > ._indicator_rect {
-          border-color: var(--theme-primary-default);
+          border-color: var(--theme-primary-dark);
         }
       }
 
@@ -98,12 +107,6 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
               }
             }
           }
-        }
-      }
-
-      &[sd-checked=true] {
-        > div > ._indicator_rect > ._indicator {
-          opacity: 1;
         }
       }
 
@@ -136,46 +139,57 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
       }
 
       &[sd-inline=true] {
-        display: inline-block;
-
         > div {
+          display: inline-block;
+          vertical-align: top;
           padding: 0;
           border: none;
-          height: auto;
+          height: calc(var(--font-size-default) * var(--line-height-strip-unit));
+          width: auto;
         }
       }
 
       @each $key, $val in map-get($vars, theme) {
-        &[sd-theme=#{$key}] > div {
-          > ._indicator_rect {
-            background: var(--theme-#{$key}-lightest);
-
-            > ._indicator {
-              color: var(--theme-#{$key}-default);
-            }
-          }
-
-          &:focus {
+        &[sd-theme=#{$key}] {
+          > div {
             > ._indicator_rect {
-              border-color: var(--theme-#{$key}-default);
+              background: var(--theme-#{$key}-lightest);
+
+              > ._indicator {
+                color: var(--theme-#{$key}-default);
+              }
+            }
+
+            &:focus {
+              > ._indicator_rect {
+                border-color: var(--theme-#{$key}-default);
+              }
             }
           }
         }
       }
-      
-      &[sd-theme=white] > div {
-        > ._indicator_rect {
-          background: white;
-          border-color: var(--text-trans-lightest);
 
-          > ._indicator {
-            color: var(--text-trans-default);
+      &[sd-theme=white] {
+        > div {
+          > ._indicator_rect {
+            background: white;
+            border-color: var(--text-trans-lightest);
+          }
+
+          &:focus {
+            > ._indicator_rect {
+              border-color: var(--text-trans-default);
+            }
           }
         }
+      }
 
-        &:focus {
-          > ._indicator_rect {
-            border-color: var(--text-trans-default);
+      &[sd-checked=true] {
+        > div > ._indicator_rect {
+          background: var(--theme-primary-default);
+
+          > ._indicator {
+            opacity: 1;
           }
         }
       }

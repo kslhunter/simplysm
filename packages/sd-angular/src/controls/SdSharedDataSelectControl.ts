@@ -74,7 +74,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
         <!--<div class="p-xs">
         </div>-->
         <sd-textfield type="text" [(value)]="searchText" placeholder="검색어" inset [size]="size"
-                      inputStyle="outline: none"/>
+                      inputStyle="outline: none" class="bdb bdb-trans-default"/>
       </ng-template>
 
       <ng-template #before>

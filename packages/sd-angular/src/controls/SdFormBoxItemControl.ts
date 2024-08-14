@@ -129,6 +129,7 @@ import {NgTemplateOutlet} from "@angular/common";
           height: 0 !important;
           padding: 0 !important;
           margin: 0 !important;
+          border: none !important;
         }
       }
     }

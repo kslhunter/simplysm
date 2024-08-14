@@ -32,7 +32,7 @@ import {IconProp} from "@fortawesome/fontawesome-svg-core";
   ],
   template: `
     @if (getRootLayout() === "accordion") {
-      <h5 class="_title">MENUS</h5>
+      <h5 class="_title">MENU</h5>
     }
     <sd-list inset>
       <ng-template [ngTemplateOutlet]="itemTemplate"

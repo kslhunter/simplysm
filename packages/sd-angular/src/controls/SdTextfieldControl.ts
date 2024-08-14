@@ -83,7 +83,7 @@ import {SdNgHelper} from "../utils/SdNgHelper";
 
           &:focus {
             outline: none;
-            border-color: var(--theme-primary-default);
+            border-color: var(--theme-secondary-default);
           }
         }
 
@@ -99,7 +99,7 @@ import {SdNgHelper} from "../utils/SdNgHelper";
 
           &:focus {
             outline: none;
-            border-bottom-color: var(--theme-primary-default);
+            border-bottom-color: var(--theme-secondary-default);
           }
         }
 

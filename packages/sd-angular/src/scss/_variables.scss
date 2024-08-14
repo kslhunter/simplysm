@@ -275,13 +275,20 @@ $vars: (
       darkest: var(--color-blue-grey-900),
     ),
     primary: (
-      lightest: var(--color-indigo-50),
-      lighter: var(--color-indigo-100),
-      light: var(--color-indigo-200),
-      default: var(--color-indigo-500),
-      dark: var(--color-indigo-600),
-      darker: var(--color-indigo-700),
-      darkest: var(--color-indigo-800),
+      lightest: var(--color-light-blue-50),
+      lighter: var(--color-light-blue-100),
+      light: var(--color-light-blue-200),
+      default: var(--color-light-blue-500),
+      dark: var(--color-light-blue-600),
+      darker: var(--color-light-blue-700),
+      darkest: var(--color-light-blue-800),
+      //lightest: var(--color-indigo-50),
+      //lighter: var(--color-indigo-100),
+      //light: var(--color-indigo-200),
+      //default: var(--color-indigo-500),
+      //dark: var(--color-indigo-600),
+      //darker: var(--color-indigo-700),
+      //darkest: var(--color-indigo-800),
     ),
     secondary: (
       lightest: var(--color-blue-50),
@@ -293,22 +300,22 @@ $vars: (
       darkest: var(--color-blue-800),
     ),
     info: (
-      lightest: var(--color-teal-50),
-      lighter: var(--color-teal-100),
-      light: var(--color-teal-200),
-      default: var(--color-teal-500),
-      dark: var(--color-teal-600),
-      darker: var(--color-teal-700),
-      darkest: var(--color-teal-800),
+      lightest: var(--color-cyan-50),
+      lighter: var(--color-cyan-100),
+      light: var(--color-cyan-200),
+      default: var(--color-cyan-500),
+      dark: var(--color-cyan-600),
+      darker: var(--color-cyan-700),
+      darkest: var(--color-cyan-800),
     ),
     success: (
-      lightest: var(--color-green-50),
-      lighter: var(--color-green-100),
-      light: var(--color-green-300),
-      default: var(--color-green-500),
-      dark: var(--color-green-600),
-      darker: var(--color-green-700),
-      darkest: var(--color-green-800),
+      lightest: var(--color-light-green-50),
+      lighter: var(--color-light-green-100),
+      light: var(--color-light-green-300),
+      default: var(--color-light-green-500),
+      dark: var(--color-light-green-600),
+      darker: var(--color-light-green-700),
+      darkest: var(--color-light-green-800),
     ),
     warning: (
       lightest: var(--color-orange-50),
@@ -370,8 +377,6 @@ $vars: (
     lg: 8px,
     xl: 12px,
     xxl: 18px,
-    0: 0,
-    auto: "auto"
   ),
   border-color: (
     light: var(--theme-grey-lighter),
@@ -380,11 +385,12 @@ $vars: (
     darker: var(--theme-grey-dark)
   ),
   border-radius: (
-    sm: var(--gap-xs),
-    default: var(--gap-sm),
-    lg: var(--gap-default),
-    xl: var(--gap-lg),
-    xxl: var(--gap-xl)
+    xs: var(--gap-xs),
+    sm: var(--gap-sm),
+    default: var(--gap-default),
+    lg: var(--gap-lg),
+    xl: var(--gap-xl),
+    xxl: var(--gap-xxl)
   ),
   z-index: (
     toast: 9999,
@@ -395,24 +401,20 @@ $vars: (
   ),
   line-height: 1.5em,
   line-height-strip-unit: 1.5,
-  //font-family: "'맑은 고딕', 'Malgun Gothic', 'AppleGothicNeoSD', 'Apple SD 산돌고딕 Neo', 'Microsoft NeoGothic', 'Droid Sans', sans-serif",
-  //font-family-monospace: "'D2Coding', monospace",
-  //font-family: sans-serif,
-  font-family: "'Pretendard Variable', sans-serif",
+  font-family: sans-serif,
   font-family-monospace: monospace,
-  //background-color: var(--theme-grey-lightest),
   background-color: white,
   animation-duration: .1s,
   elevation-size: 1px,
   sidebar: (
-    width: 180px
+    width: 15em
   ),
   topbar: (
-    height: 36px
+    height: 3em
   ),
   sheet: (
     pv: var(--gap-xs),
     ph: var(--gap-sm),
-    bg: var(--color-grey-200)
+    bg: var(--color-grey-100)
   )
 );
