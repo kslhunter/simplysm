@@ -13,6 +13,10 @@ import {
 } from "@angular/core";
 import Quill from "quill";
 import {SdNgHelper} from "../utils/SdNgHelper";
+import {coercionBoolean} from "../utils/commons";
+import QuillResizeImage from 'quill-resize-image';
+
+Quill.register('modules/resize', QuillResizeImage);
 
 @Component({
   selector: "sd-quill-editor",
@@ -32,6 +36,8 @@ export class SdQuillEditorControl implements OnInit, DoCheck {
   @Input() value?: string;
   @Output() valueChange = new EventEmitter<string | undefined>();
 
+  @Input({transform: coercionBoolean}) disabled = false;
+
   #quill!: Quill;
 
   #sdNgHelper = new SdNgHelper(inject(Injector));
@@ -48,12 +54,24 @@ export class SdQuillEditorControl implements OnInit, DoCheck {
           this.#quill.root.innerHTML = this.value;
         }
       });
+
+      run({
+        disabled: [this.disabled]
+      }, () => {
+        this.#quill.enable(!this.disabled);
+        const toolbar = this.#quill.getModule("toolbar");
+        console.log(toolbar);
+      });
     });
   }
 
   ngOnInit() {
     this.#quill = new Quill(this.#elRef.nativeElement.firstElementChild as HTMLElement, {
       theme: "snow",
+      modules: {
+        toolbar: true,
+        resize: {}
+      }
     });
 
     this.#quill.root.addEventListener("input", () => {
