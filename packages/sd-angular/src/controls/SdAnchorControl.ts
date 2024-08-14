@@ -28,6 +28,19 @@ import {coercionBoolean} from "../utils/commons";
         color: var(--theme-primary-darker);
       }
 
+      @media all and (pointer: coarse) {
+        @include active-effect(true);
+
+        &:hover {
+          color: var(--theme-primary-default);
+          text-decoration: none;
+        }
+
+        &:active {
+          color: var(--theme-primary-default);
+        }
+      }
+
       @each $key, $val in map-get($vars, theme) {
         padding-left: var(--gap-xxs);
         padding-right: var(--gap-xxs);
@@ -39,19 +52,10 @@ import {coercionBoolean} from "../utils/commons";
           &:hover {
             color: var(--theme-#{$key}-dark);
           }
-        }
-      }
-
-      @media all and (pointer: coarse) {
-        @include active-effect(true);
-
-        &:hover {
-          color: var(--theme-primary-default);
-          text-decoration: none;
-        }
-
-        &:active {
-          color: var(--theme-primary-default);
+          
+          &:active {
+            color: var(--theme-#{$key}-default);
+          }
         }
       }
 
