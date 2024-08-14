@@ -10,12 +10,13 @@ import {
   Input,
   Output,
   TemplateRef,
-  ViewChild, ViewEncapsulation
+  ViewChild,
+  ViewEncapsulation
 } from "@angular/core";
 import {SdSelectItemControl} from "./SdSelectItemControl";
 import {SdDropdownControl} from "./SdDropdownControl";
 import {SdItemOfTemplateContext, SdItemOfTemplateDirective} from "../directives/SdItemOfTemplateDirective";
-import {coercionBoolean, getSdFnCheckData, TSdFnInfo} from "../utils/commons";
+import {coercionBoolean, TSdFnInfo} from "../utils/commons";
 import {SdNgHelper} from "../utils/SdNgHelper";
 import {SdIconControl} from "./SdIconControl";
 import {SdEventsDirective} from "../directives/SdEventsDirective";
@@ -139,7 +140,7 @@ import {SdButtonControl} from "./SdButtonControl";
       width: 100%;
       min-width: 10em;
 
-       > sd-dropdown {
+      > sd-dropdown {
         > ._sd-dropdown-control {
           display: flex;
           overflow: hidden;
@@ -203,7 +204,7 @@ import {SdButtonControl} from "./SdButtonControl";
 
 
       &[sd-disabled=true] {
-         > sd-dropdown > ._sd-dropdown-control {
+        > sd-dropdown > ._sd-dropdown-control {
           background: var(--theme-grey-lightest);
 
           > ._sd-select-control {
@@ -220,7 +221,7 @@ import {SdButtonControl} from "./SdButtonControl";
       }
 
       &:has(:invalid), &[sd-invalid] {
-         > sd-dropdown > ._sd-dropdown-control > ._sd-select-control > ._invalid-indicator {
+        > sd-dropdown > ._sd-dropdown-control > ._sd-select-control > ._invalid-indicator {
           display: block;
         }
       }
@@ -232,7 +233,7 @@ import {SdButtonControl} from "./SdButtonControl";
       }
 
       &[sd-size=sm] {
-         > sd-dropdown > ._sd-dropdown-control {
+        > sd-dropdown > ._sd-dropdown-control {
           > ._sd-select-control {
             padding: var(--gap-xs) var(--gap-sm);
             gap: var(--gap-sm);
@@ -245,7 +246,7 @@ import {SdButtonControl} from "./SdButtonControl";
       }
 
       &[sd-size=lg] {
-         > sd-dropdown > ._sd-dropdown-control {
+        > sd-dropdown > ._sd-dropdown-control {
           > ._sd-select-control {
             padding: var(--gap-default) var(--gap-lg);
             gap: var(--gap-lg);
@@ -261,7 +262,7 @@ import {SdButtonControl} from "./SdButtonControl";
         min-width: auto;
         border-radius: 0;
 
-        >  sd-dropdown > ._sd-dropdown-control {
+        > sd-dropdown > ._sd-dropdown-control {
           border: none;
           border-radius: 0;
 
@@ -281,7 +282,7 @@ import {SdButtonControl} from "./SdButtonControl";
           }
         }
 
-        &[sd-disabled=true]  > sd-dropdown > ._sd-dropdown-control {
+        &[sd-disabled=true] > sd-dropdown > ._sd-dropdown-control {
           background: white;
 
           > ._sd-select-control {
@@ -350,12 +351,14 @@ export class SdSelectControl<M extends "single" | "multi", T extends any> implem
         value: [this.value],
         multiSelectionDisplayDirection: [this.multiSelectionDisplayDirection],
         placeholder: [this.placeholder],
-        ...getSdFnCheckData("getChildrenFn", this.getChildrenFn)
+        innerHTML: [this.itemControls.filter(item => item.isSelected).map(item => item.elRef.nativeElement.findFirst("> ._content")?.innerHTML), "one"]
+        // ...getSdFnCheckData("getChildrenFn", this.getChildrenFn)
       }, () => {
-        const selectedItemControls = this.itemControls.filter((itemControl) => this.getIsSelectedItemControl(itemControl));
+        const selectedItemControls = this.itemControls.filter((itemControl) => itemControl.isSelected /*this.getIsSelectedItemControl(itemControl)*/);
         const selectedItemEls = selectedItemControls.map((item) => item.elRef.nativeElement);
         const innerHTML = selectedItemEls
-          .map((el) => {
+          .map((el) => el.findFirst("> ._content")?.innerHTML ?? "")
+          /*.map((el) => {
             if (this.getChildrenFn?.[0]) {
               let cursorEl: HTMLElement | undefined = el;
               let resultHTML = "";
@@ -371,7 +374,7 @@ export class SdSelectControl<M extends "single" | "multi", T extends any> implem
             else {
               return el.findFirst("> ._content")?.innerHTML ?? "";
             }
-          })
+          })*/
           .map((item) => `<div style="display: inline-block">${item}</div>`)
           .join(this.multiSelectionDisplayDirection === "vertical" ? "<div class='p-sm-0'></div>" : ", ");
 
