@@ -67,7 +67,7 @@ import {ISharedDataModalInputParam, ISharedDataModalOutputResult} from "./SdShar
               @if (modalType) {
                 <div>
                   <sd-anchor (click)="onModalButtonClick()">
-                    <sd-icon [icon]="icons.search" fixedWidth/>
+                    <sd-icon [icon]="icons.externalLink" fixedWidth/>
                   </sd-anchor>
                 </div>
               }

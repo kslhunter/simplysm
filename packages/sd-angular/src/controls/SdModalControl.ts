@@ -53,13 +53,13 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
         @if (!hideHeader) {
           <sd-dock class="_header" (mousedown.outside)="onHeaderMouseDownOutside($event)"
                    [style]="headerStyle">
+            <h5 class="_title">{{ title }}</h5>
             @if (!hideCloseButton) {
-              <sd-anchor class="_close-button"
+              <sd-anchor class="_close-button" theme="grey"
                          (click)="onCloseButtonClick()">
                 <sd-icon [icon]="icons.xmark" fixedWidth/>
               </sd-anchor>
             }
-            <h5 class="_title">{{ title }}</h5>
           </sd-dock>
         }
 
@@ -123,30 +123,35 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 
         > sd-dock-container {
           > ._header {
+            display: flex;
+            flex-direction: row;
             user-select: none;
             border-bottom: 1px solid var(--trans-light);
 
-            ._title {
-              display: inline-block;
+            > ._title {
+              // display: inline-block;
+              flex-grow: 1;
+              
               // padding:var(--gap-sm) var(--gap-default);
-              padding: var(--gap-default) var(--gap-lg);
+              //padding: var(--gap-default) var(--gap-lg);
+              padding: var(--gap-sm) var(--gap-default);
             }
 
-            ._close-button {
-              display: inline-block;
-              float: right;
-              cursor: pointer;
-              text-align: center;
+            > ._close-button {
+              //display: inline-block;
+              //float: right;
+              //cursor: pointer;
+              //text-align: center;
               padding: var(--gap-sm) var(--gap-default);
-              margin: calc(var(--gap-default) - var(--gap-sm));
+              //margin: calc(var(--gap-default) - var(--gap-sm));
 
-              &:hover {
-                background: var(--theme-grey-lightest);
-              }
-
-              &:active {
-                background: var(--theme-grey-lighter);
-              }
+              //&:hover {
+              //  background: var(--theme-grey-lightest);
+              //}
+              //
+              //&:active {
+              //  background: var(--theme-grey-lighter);
+              //}
             }
           }
         }
@@ -305,14 +310,14 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
               background: transparent;
               color: var(--text-trans-lighter);
 
-              ._close-button {
+              /*._close-button {
                 color: var(--text-trans-lighter);
 
                 &:hover {
                   background: transparent;
                   color: var(--text-trans-lighter);
                 }
-              }
+              }*/
             }
           } 
         }

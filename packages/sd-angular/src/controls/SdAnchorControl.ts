@@ -16,45 +16,31 @@ import {coercionBoolean} from "../utils/commons";
     sd-anchor {
       display: inline-block;
       cursor: pointer;
-      color: var(--theme-primary-default);
-
-      &:hover {
-        color: var(--theme-primary-dark);
-        text-decoration: underline;
-        //filter: drop-shadow(1px 1px 0 var(--text-trans-lightest));
-      }
-
-      &:active {
-        color: var(--theme-primary-darker);
-      }
-
-      @media all and (pointer: coarse) {
-        @include active-effect(true);
-
-        &:hover {
-          color: var(--theme-primary-default);
-          text-decoration: none;
-        }
-
-        &:active {
-          color: var(--theme-primary-default);
-        }
-      }
 
       @each $key, $val in map-get($vars, theme) {
-        padding-left: var(--gap-xxs);
-        padding-right: var(--gap-xxs);
-        border-radius: var(--border-radius-default);
+        //padding-left: var(--gap-xxs);
+        //padding-right: var(--gap-xxs);
+        //border-radius: var(--border-radius-default);
 
         &[sd-theme=#{$key}] {
           color: var(--theme-#{$key}-default);
 
           &:hover {
-            color: var(--theme-#{$key}-dark);
+            color: var(--theme-#{$key}-darker);
+            text-decoration: underline;
           }
-          
+
           &:active {
             color: var(--theme-#{$key}-default);
+          }
+
+          @media all and (pointer: coarse) {
+            @include active-effect(true);
+
+            &:hover {
+              color: var(--theme-#{$key}-default);
+              text-decoration: none;
+            }
           }
         }
       }
@@ -78,5 +64,5 @@ import {coercionBoolean} from "../utils/commons";
 })
 export class SdAnchorControl {
   @Input({transform: coercionBoolean}) disabled = false;
-  @Input() theme?: "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey";
+  @Input() theme: "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey" = "primary";
 }

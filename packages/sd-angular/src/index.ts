@@ -39,6 +39,7 @@ export * from "./controls/SdProgressControl";
 export * from "./controls/SdProgressItemControl";
 export * from "./controls/SdQuillEditorControl";
 export * from "./controls/SdRangeControl";
+export * from "./controls/SdSelectButtonControl";
 export * from "./controls/SdSelectControl";
 export * from "./controls/SdSelectItemControl";
 export * from "./controls/SdSharedDataSelectControl";

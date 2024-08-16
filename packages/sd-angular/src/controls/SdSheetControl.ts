@@ -286,13 +286,13 @@ import {SdCheckboxControl} from "./SdCheckboxControl";
             border-bottom: 1px solid $border-color-dark;
 
             > div > sd-anchor {
-              padding: var(--gap-xs) var(--gap-sm);
-              margin: var(--gap-xs);
-              border-radius: var(--border-radius-default);
-
-              &:hover {
-                background: var(--theme-grey-lightest);
-              }
+              padding: var(--gap-sm);
+              //  margin: var(--gap-xs);
+              //  border-radius: var(--border-radius-default);
+              //
+              //  &:hover {
+              //    background: var(--theme-grey-lightest);
+              //  }
             }
           }
 
@@ -325,7 +325,7 @@ import {SdCheckboxControl} from "./SdCheckboxControl";
 
                 &._feature-cell {
                   background: var(--theme-grey-lightest);
-                  min-width: calc(var(--font-size-default) + 2px + var(--sheet-ph)* 2);
+                  min-width: calc(var(--font-size-default) + 2px + var(--sheet-ph) * 2);
                   padding: var(--sheet-pv) var(--sheet-ph);
                   text-align: left;
 

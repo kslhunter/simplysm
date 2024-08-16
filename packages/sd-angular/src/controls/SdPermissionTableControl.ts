@@ -119,7 +119,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
             color: var(--text-trans-default);
 
             > * {
-              color: var(--text-trans-default);
+              color: var(--text-trans-default) !important;
             }
 
             &._title {
@@ -142,7 +142,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
                 color: var(--text-trans-rev-default);
 
                 > * {
-                  color: var(--text-trans-rev-default);
+                  color: var(--text-trans-rev-default) !important;
                 }
               }
             }

@@ -10,54 +10,61 @@ import {coercionBoolean} from "../utils/commons";
   template: `
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
+    @import "../scss/variables";
     @import "../scss/mixins";
 
     sd-topbar-menu {
       display: inline-block;
       cursor: pointer;
+      @include active-effect(true);
+      transition: background .1s linear;
+      font-weight: bold;
 
       body.sd-theme-compact &,
       body.sd-theme-modern &,
       body.sd-theme-kiosk & {
-        color: var(--theme-primary-default);
         padding: var(--gap-sm) var(--gap-default);
-        //background: var(--theme-primary-lightest);
         border-radius: var(--border-radius-default);
-        transition: background .1s linear;
-
-        @include active-effect(true);
 
         &:hover {
-          background: var(--theme-primary-lightest);
+          background: var(--theme-grey-lightest);
         }
       }
 
       body.sd-theme-mobile & {
-        color: var(--theme-primary-default);
         line-height: var(--line-height);
         padding: var(--gap-default) var(--gap-lg);
-        transition: background .1s linear;
+      }
 
-        @include active-effect(true);
+      @each $key, $val in map-get($vars, theme) {
+        &[sd-theme=#{$key}] {
+          color: var(--theme-#{$key}-default);
+
+          body.sd-theme-compact &,
+          body.sd-theme-modern &,
+          body.sd-theme-kiosk & {
+            color: var(--theme-#{$key}-default);
+
+            /*&:hover {
+              background: var(--theme-#{$key}-lightest);
+            }*/
+          }
+        }
       }
 
       &[disabled=true] {
         pointer-events: none;
         opacity: .5;
-
-        body.sd-theme-compact &,
-        body.sd-theme-modern &,
-        body.sd-theme-mobile &,
-        body.sd-theme-kiosk & {
-          @include active-effect(false);
-        }
+        @include active-effect(false);
       }
     }
   `],
   host: {
-    "[attr.disabled]": "disabled"
+    "[attr.disabled]": "disabled",
+    "[attr.sd-theme]": "theme",
   }
 })
 export class SdTopbarMenuControl {
   @Input({transform: coercionBoolean}) disabled = false;
+  @Input() theme: "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey" = "primary";
 }

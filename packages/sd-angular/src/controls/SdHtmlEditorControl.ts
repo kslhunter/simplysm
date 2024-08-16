@@ -18,6 +18,7 @@ import {SdDockControl} from "./SdDockControl";
 import {SdNgHelper} from "../utils/SdNgHelper";
 import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 
+/** @deprecated */
 @Component({
   selector: "sd-html-editor",
   changeDetection: ChangeDetectionStrategy.OnPush,

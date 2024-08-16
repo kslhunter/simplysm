@@ -55,6 +55,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
         > ._indicator_rect {
           display: inline-block;
           vertical-align: calc((1em - var(--line-height)) / 2);
+          user-select: none;
 
           width: calc(var(--font-size-default) + 2px);
           height: calc(var(--font-size-default) + 2px);

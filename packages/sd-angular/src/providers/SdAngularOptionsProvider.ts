@@ -40,5 +40,7 @@ export interface ISdAngularIcon {
   sortDown: IconProp,
   sortUp: IconProp,
 
-  search: IconProp
+  search: IconProp,
+  edit: IconProp,
+  externalLink: IconProp
 }

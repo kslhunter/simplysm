@@ -27,6 +27,8 @@ import {
   faCheck,
   faCode,
   faCog,
+  faEdit,
+  faExternalLink,
   faEye,
   faMinus,
   faMountainSun,
@@ -105,7 +107,9 @@ export class SdAngularModule {
               sortDown: faSortDown,
               sortUp: faSortUp,
 
-              search: faSearch
+              search: faSearch,
+              externalLink: faExternalLink,
+              edit: faEdit
             };
             return provider;
           }

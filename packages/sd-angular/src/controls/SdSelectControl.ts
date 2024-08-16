@@ -30,7 +30,6 @@ import {SdTypedTemplateDirective} from "../directives/SdTypedTemplateDirective";
 import {SdDropdownPopupControl} from "./SdDropdownPopupControl";
 import {StringUtil} from "@simplysm/sd-core-common";
 import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
-import {IconProp} from "@fortawesome/fontawesome-svg-core";
 import {SdButtonControl} from "./SdButtonControl";
 
 @Component({
@@ -65,11 +64,12 @@ import {SdButtonControl} from "./SdButtonControl";
         <div class="_invalid-indicator"></div>
       </div>
 
-      @if (buttonIcon && !disabled) {
-        <sd-button class="_sd-select-button" inset [size]="size"
+      @if (!disabled) {
+        <ng-content select="sd-select-button"/>
+        <!--<sd-button class="_sd-select-button" inset [size]="size"
                    (click)="onButtonClick($event)">
           <sd-icon [icon]="buttonIcon"/>
-        </sd-button>
+        </sd-button>-->
       }
 
       <sd-dropdown-popup #dropdownPopup (keydown.outside)="onPopupKeydownOutside($event)">
@@ -194,10 +194,14 @@ import {SdButtonControl} from "./SdButtonControl";
             }
           }
 
-          > ._sd-select-button > button {
+          > sd-select-button {
             padding: var(--gap-sm);
-            border-top-right-radius: var(--border-radius-default);
-            border-bottom-right-radius: var(--border-radius-default);
+            border-left: 1px solid var(--theme-grey-lightest);
+
+            &:last-of-type {
+              border-top-right-radius: var(--border-radius-default);
+              border-bottom-right-radius: var(--border-radius-default);
+            }
           }
         }
       }
@@ -239,7 +243,7 @@ import {SdButtonControl} from "./SdButtonControl";
             gap: var(--gap-sm);
           }
 
-          > ._sd-select-button > button {
+          > sd-select-button {
             padding: var(--gap-xs);
           }
         }
@@ -252,7 +256,7 @@ import {SdButtonControl} from "./SdButtonControl";
             gap: var(--gap-lg);
           }
 
-          > ._sd-select-button > button {
+          > sd-select-button {
             padding: var(--gap-default);
           }
         }
@@ -266,7 +270,7 @@ import {SdButtonControl} from "./SdButtonControl";
           border: none;
           border-radius: 0;
 
-          > ._sd-select-button > button {
+          > sd-select-button {
             border-radius: 0;
           }
 
@@ -275,7 +279,7 @@ import {SdButtonControl} from "./SdButtonControl";
             outline: 1px solid var(--theme-primary-default);
             outline-offset: -1px;
 
-            > ._sd-select-button > button {
+            > sd-select-button {
               outline: 1px solid var(--theme-primary-default);
               outline-offset: -1px;
             }
@@ -324,8 +328,8 @@ export class SdSelectControl<M extends "single" | "multi", T extends any> implem
   @Input({transform: coercionBoolean}) hideSelectAll = false;
   @Input() placeholder?: string;
 
-  @Input() buttonIcon?: IconProp;
-  @Output() buttonClick = new EventEmitter<MouseEvent>();
+  // @Input() buttonIcon?: IconProp;
+  // @Output() buttonClick = new EventEmitter<MouseEvent>();
 
   @ViewChild("contentEl", {static: true}) contentElRef!: ElementRef<HTMLElement>;
   @ViewChild("dropdown", {static: true}) dropdownControl!: SdDropdownControl;
@@ -496,12 +500,12 @@ export class SdSelectControl<M extends "single" | "multi", T extends any> implem
     }
   }
 
-  onButtonClick(event: MouseEvent) {
+  /*onButtonClick(event: MouseEvent) {
     event.preventDefault();
     event.stopPropagation();
 
     this.buttonClick.emit(event);
-  }
+  }*/
 
   protected readonly rowOfListType!: {
     items: T[];

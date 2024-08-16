@@ -12,8 +12,10 @@ import {coercionBoolean} from "../utils/commons";
       <ng-content></ng-content>
     </table>`,
   styles: [/* language=SCSS */ `
-    $border-color-light: var(--theme-blue-grey-lightest);
-    $border-color-dark: var(--theme-grey-light);
+    //$border-color-light: var(--theme-blue-grey-lightest);
+    //$border-color-dark: var(--theme-grey-light);
+    $border-color-light: var(--theme-grey-lighter);
+    $border-color-dark: var(--theme-grey-lighter);
 
     sd-table {
       display: block;

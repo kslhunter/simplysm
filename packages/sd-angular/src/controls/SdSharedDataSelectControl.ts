@@ -27,6 +27,8 @@ import {SdPaneControl} from "./SdPaneControl";
 import {SdSelectItemControl} from "./SdSelectItemControl";
 import {NgTemplateOutlet} from "@angular/common";
 import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
+import {SdIconControl} from "./SdIconControl";
+import {SdSelectButtonControl} from "./SdSelectButtonControl";
 
 @Component({
   selector: "sd-shared-data-select",
@@ -43,6 +45,8 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
     SdSelectItemControl,
     SdItemOfTemplateDirective,
     NgTemplateOutlet,
+    SdIconControl,
+    SdSelectButtonControl
   ],
   template: `
     <sd-select [value]="value"
@@ -57,9 +61,18 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
                [selectMode]="selectMode"
                [contentClass]="selectClass"
                [multiSelectionDisplayDirection]="multiSelectionDisplayDirection"
-               [getChildrenFn]="parentKeyProp ? getChildrenFnInfo : undefined"
-               [buttonIcon]="modalType ? icons.search : undefined"
-               (buttonClick)="onModalButtonClick()">
+               [getChildrenFn]="parentKeyProp ? getChildrenFnInfo : undefined">
+      @if (modalType) {
+        <sd-select-button (click)="onModalButtonClick($event)">
+          <sd-icon [icon]="icons.search"/>
+        </sd-select-button>
+      }
+      @if (editModal) {
+        <sd-select-button (click)="onEditModalButtonClick($event)">
+          <sd-icon [icon]="icons.edit"/>
+        </sd-select-button>
+      }
+
       <ng-template #header>
         <!--<sd-dock-container>
           <sd-dock class="bdb bdb-trans-default">
@@ -102,7 +115,7 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
       </ng-template>
     </sd-select>`
 })
-export class SdSharedDataSelectControl<T extends ISharedDataBase<string | number>, TMODAL extends SdModalBase<ISharedDataModalInputParam, ISharedDataModalOutputResult>, M extends "single" | "multi" = "single"> implements DoCheck {
+export class SdSharedDataSelectControl<T extends ISharedDataBase<string | number>, TMODAL extends SdModalBase<ISharedDataModalInputParam, ISharedDataModalOutputResult>, TEDITMODAL extends SdModalBase<any, any>, M extends "single" | "multi" = "single"> implements DoCheck {
   icons = inject(SdAngularOptionsProvider).icons;
 
   #cdr = inject(ChangeDetectorRef);
@@ -126,6 +139,8 @@ export class SdSharedDataSelectControl<T extends ISharedDataBase<string | number
   @Input() modalInputParam?: TMODAL["__tInput__"];
   @Input() modalType?: Type<TMODAL>;
   @Input() modalHeader?: string;
+  @Input() editModal?: [Type<TEDITMODAL>, string?, TEDITMODAL["__tInput__"]?];
+
   @Input() selectClass?: string;
   @Input() multiSelectionDisplayDirection?: "vertical" | "horizontal";
   @Input() getIsHiddenFn: TSdFnInfo<(index: number, item: T) => boolean> = [(index, item) => item.__isHidden];
@@ -246,7 +261,10 @@ export class SdSharedDataSelectControl<T extends ISharedDataBase<string | number
     }
   }
 
-  async onModalButtonClick(): Promise<void> {
+  async onModalButtonClick(event: MouseEvent): Promise<void> {
+    event.preventDefault();
+    event.stopPropagation();
+
     if (!this.modalType) return;
 
     const result = await this.#sdModal.showAsync(this.modalType, this.modalHeader ?? "자세히...", {
@@ -265,6 +283,20 @@ export class SdSharedDataSelectControl<T extends ISharedDataBase<string | number
         this.value = newValue;
       }
     }
+    this.#cdr.markForCheck();
+  }
+
+  async onEditModalButtonClick(event: MouseEvent): Promise<void> {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (!this.editModal) return;
+
+    const type = this.editModal[0];
+    const header = this.editModal[1] ?? "자세히...";
+    const param = this.editModal[2];
+
+    await this.#sdModal.showAsync(type, header, param);
     this.#cdr.markForCheck();
   }
 }
