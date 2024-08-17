@@ -22,6 +22,7 @@ import {SdEventsDirective} from "../directives/SdEventsDirective";
   template: `
     <form #formEl (submit)="onSubmit($event)" (invalid.capture)="onInvalidCapture()">
       <ng-content/>
+      <button hidden type="submit"></button>
     </form>`
 })
 export class SdFormControl {
