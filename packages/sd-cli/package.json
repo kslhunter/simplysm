@@ -16,6 +16,9 @@
   "engines": {
     "node": "18.18.2"
   },
+  "scripts": {
+    "postinstall": "node --experimental-import-meta-resolve lib/postinstall.js"
+  },
   "dependencies": {
     "@angular/build": "^18.2.0",
     "@angular/common": "^18.2.0",
