@@ -54,7 +54,7 @@ import {coercionBoolean, coercionNumber} from "../utils/commons";
         visibility: hidden;
         pointer-events: none;
 
-        background: rgba(255, 255, 255, .3);
+        //background: rgba(255, 255, 255, .3);
         backdrop-filter: none;
         opacity: 0;
         transition: opacity .3s, backdrop-filter 5s;
@@ -98,7 +98,7 @@ import {coercionBoolean, coercionNumber} from "../utils/commons";
 
       &[sd-no-fade=true] {
         > ._screen {
-          backdrop-filter: none;
+          backdrop-filter: none !important;
         }
       }
 
@@ -325,8 +325,8 @@ import {coercionBoolean, coercionNumber} from "../utils/commons";
     }
   `],
   host: {
-    "[attr.sd-type]": "type",
-    "[attr.sd-no-fade]": "noFade",
+    "[attr.sd-type]": "currType",
+    "[attr.sd-no-fade]": "currNoFade",
     "[attr.sd-busy]": "busy"
   }
 })
@@ -335,9 +335,18 @@ export class SdBusyContainerControl {
 
   @Input({transform: coercionBoolean}) busy = false;
   @Input() message?: string;
-  @Input() type: "spinner" | "bar" | "cube" = this.#sdBusy.type ?? "spinner";
-  @Input({transform: coercionBoolean}) noFade = this.#sdBusy.noFade ?? false;
+  @Input() type?: "spinner" | "bar" | "cube";// = this.#sdBusy.type ?? "spinner";
+  @Input({transform: coercionBoolean}) noFade?: boolean;// = this.#sdBusy.noFade ?? false;
   @Input({transform: coercionNumber}) progressPercent?: number;
+
+  get currType() {
+    return this.type ?? this.#sdBusy.type ?? "spinner";
+  }
+
+  get currNoFade() {
+    console.log(this.noFade ?? this.#sdBusy.noFade ?? false);
+    return this.noFade ?? this.#sdBusy.noFade ?? false;
+  }
 
   @HostListener("document:keydown.capture.outside", ["$event"])
   onKeydownCaptureOutside(event: KeyboardEvent) {
