@@ -27,9 +27,6 @@
       "@simplysm/*": [
         "./packages/*/src/index.ts",
         "./packages/*/types/index.d.ts"
-      ],
-      "@angular/build/src/*": [
-        "./node_modules/@angular/build/src/*"
       ]
     }
   }
