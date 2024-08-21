@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/cordova-util",
-  "version": "12.1.26",
+  "version": "12.2.1",
   "description": "심플리즘 패키지 - Cordova Utilities",
   "author": "김석래",
   "repository": {
@@ -16,8 +16,8 @@
     "node": "18.18.2"
   },
   "dependencies": {
-    "@simplysm/sd-core-common": "12.1.26",
-    "@simplysm/sd-service-client": "12.1.26",
+    "@simplysm/sd-core-common": "12.2.1",
+    "@simplysm/sd-service-client": "12.2.1",
     "jszip": "^3.10.1"
   },
   "devDependencies": {
