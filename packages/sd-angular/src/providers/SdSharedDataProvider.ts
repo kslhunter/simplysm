@@ -75,7 +75,7 @@ export class SdSharedDataProvider {
     await this.#addListenerAsync(dataType);
 
     this.#cdrRecord[dataType] = this.#cdrRecord[dataType] ?? [];
-    this.#cdrRecord[dataType]!.push(cdr);
+    this.#cdrRecord[dataType].push(cdr);
 
     return this.#dataRecord[dataType]!.arr;
   }
@@ -85,7 +85,7 @@ export class SdSharedDataProvider {
     await this.#addListenerAsync(dataType);
 
     this.#cdrRecord[dataType] = this.#cdrRecord[dataType] ?? [];
-    this.#cdrRecord[dataType]!.push(cdr);
+    this.#cdrRecord[dataType].push(cdr);
 
     return this.#dataRecord[dataType]!.map;
   }

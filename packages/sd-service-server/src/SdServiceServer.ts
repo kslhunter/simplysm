@@ -83,7 +83,7 @@ export class SdServiceServer extends EventEmitter {
 
     if (clientName !== undefined) {
       const targetPath = typeof this.pathProxy[clientName] === "string"
-        ? this.pathProxy[clientName] as string
+        ? this.pathProxy[clientName]
         : path.resolve(this.options.rootPath, "www", clientName);
 
       const filePath = path.resolve(targetPath, ".config.json");

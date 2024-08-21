@@ -1,16 +1,14 @@
 import ts, {CompilerOptions} from "typescript";
 import path from "path";
 import {FsUtil, Logger, PathUtil} from "@simplysm/sd-core-node";
-import {transformSupportedBrowsersToTargets} from "@angular-devkit/build-angular/src/tools/esbuild/utils";
 import browserslist from "browserslist";
-import {
-  ComponentStylesheetBundler
-} from "@angular-devkit/build-angular/src/tools/esbuild/angular/component-stylesheets";
-import {AngularCompilerHost} from "@angular-devkit/build-angular/src/tools/esbuild/angular/angular-host";
 import {NeverEntryError, StringUtil} from "@simplysm/sd-core-common";
 import esbuild from "esbuild";
 import {NgtscProgram, OptimizeFor} from "@angular/compiler-cli";
 import {createHash} from "crypto";
+import {ComponentStylesheetBundler} from "@ngbuild/tools/esbuild/angular/component-stylesheets";
+import {AngularCompilerHost} from "@ngbuild/tools/angular/angular-host";
+import {transformSupportedBrowsersToTargets} from "@ngbuild/tools/esbuild/utils";
 
 export class SdTsCompiler {
   readonly #logger = Logger.get(["simplysm", "sd-cli", "SdTsCompiler"]);

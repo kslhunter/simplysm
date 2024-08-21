@@ -33,7 +33,7 @@ export class SdGlobalErrorHandlerPlugin implements ErrorHandler {
       this.#systemLog.writeAsync("error", err.stack).catch(() => {
       });
     }
-    catch (err1) {
+    catch {
     }
 
     // throw err;

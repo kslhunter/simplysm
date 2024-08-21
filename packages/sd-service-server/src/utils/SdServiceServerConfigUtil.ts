@@ -25,7 +25,7 @@ export class SdServiceServerConfigUtil {
 
   static getClientPath(rootPath: string, clientName: string, pathProxy?: Record<string, string | number>) {
     return typeof pathProxy?.[clientName] === "string"
-      ? pathProxy[clientName] as string
+      ? pathProxy[clientName]
       : path.resolve(rootPath, "www", clientName);
   }
 }

@@ -619,21 +619,21 @@ export class SdTextfieldControl<K extends TSdTextfieldType> implements DoCheck {
       try {
         this.#setValue(DateOnly.parse(inputEl.value));
       }
-      catch (err) {
+      catch {
       }
     }
     else if (["datetime", "datetime-sec"].includes(this.type)) {
       try {
         this.#setValue(DateTime.parse(inputEl.value));
       }
-      catch (err) {
+      catch {
       }
     }
     else if (["time", "time-sec"].includes(this.type)) {
       try {
         this.#setValue(Time.parse(inputEl.value));
       }
-      catch (err) {
+      catch {
       }
     }
     else {

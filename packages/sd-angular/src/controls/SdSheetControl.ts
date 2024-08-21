@@ -1613,7 +1613,7 @@ export class SdSheetControl<T> implements DoCheck {
     this.#config = this.#config ?? {columnRecord: {}};
     this.#config.columnRecord = this.#config.columnRecord ?? {};
     this.#config.columnRecord[columnKey] = this.#config.columnRecord[columnKey] ?? {};
-    Object.assign(this.#config.columnRecord[columnKey]!, config);
+    Object.assign(this.#config.columnRecord[columnKey], config);
     await this.#sdSystemConfig.setAsync(`sd-sheet.${this.key}`, this.#config);
   }
 }

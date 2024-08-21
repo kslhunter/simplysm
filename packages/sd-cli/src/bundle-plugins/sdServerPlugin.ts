@@ -1,8 +1,8 @@
 import esbuild from "esbuild";
 import ts from "typescript";
 import path from "path";
-import {convertTypeScriptDiagnostic} from "@angular-devkit/build-angular/src/tools/esbuild/angular/diagnostics";
 import {ISdTsCompilerResult, SdTsCompiler} from "../build-tools/SdTsCompiler";
+import {convertTypeScriptDiagnostic} from "@ngbuild/tools/esbuild/angular/diagnostics";
 
 export function sdServerPlugin(conf: {
   pkgPath: string;

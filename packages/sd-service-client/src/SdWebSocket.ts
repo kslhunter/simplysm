@@ -63,7 +63,7 @@ export class SdWebSocket extends EventEmitter {
     try {
       await Wait.until(() => this.connected, undefined, 5000);
     }
-    catch (err) {
+    catch {
       throw new Error("서버와 연결되어있지 않습니다. 인터넷 연결을 확인하세요.");
     }
     this._ws!.send(message);

@@ -1,8 +1,8 @@
 import esbuild from "esbuild";
 import path from "path";
-import {InitialFileRecord} from "@angular-devkit/build-angular/src/tools/esbuild/bundler-context";
 import {ISdCliPackageBuildResult} from "../commons";
 import {Logger} from "@simplysm/sd-core-node";
+import {InitialFileRecord} from "@ngbuild/tools/esbuild/bundler-context";
 
 export class SdNgBundlerContext {
   readonly #logger = Logger.get(["simplysm", "sd-cli", "SdNgBundlerContext"]);
@@ -74,7 +74,8 @@ export class SdNgBundlerContext {
             name,
             type,
             entrypoint: true,
-            serverFile: false
+            serverFile: false,
+            depth: 0
           });
         }
       }
@@ -82,8 +83,14 @@ export class SdNgBundlerContext {
 
     const files = [...initialFiles.keys()];
     for (const file of files) {
+      const entryRecord = initialFiles.get(file)!;
+
       for (const initialImport of buildResult.metafile?.outputs[file]?.imports ?? []) {
-        if (initialFiles.has(initialImport.path)) {
+        const existingRecord = initialFiles.get(initialImport.path);
+        if (existingRecord) {
+          if (existingRecord.depth > entryRecord.depth + 1) {
+            existingRecord.depth = entryRecord.depth + 1;
+          }
           continue;
         }
 
@@ -92,7 +99,8 @@ export class SdNgBundlerContext {
             type: initialImport.kind === 'import-rule' ? 'style' : 'script',
             entrypoint: false,
             external: initialImport.external,
-            serverFile: false
+            serverFile: false,
+            depth: entryRecord.depth + 1
           };
 
           initialFiles.set(initialImport.path, record);

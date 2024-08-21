@@ -96,7 +96,7 @@ export class SdNgHelper {
   runOutsideOnce(key: string, fn: () => void | Promise<void>): void {
     this.#ngZone.runOutsideAngular(() => {
       if (this.#reqNumRecord[key] != null) {
-        cancelAnimationFrame(this.#reqNumRecord[key]!);
+        cancelAnimationFrame(this.#reqNumRecord[key]);
       }
       this.#reqNumRecord[key] = requestAnimationFrame(async () => {
         await fn();

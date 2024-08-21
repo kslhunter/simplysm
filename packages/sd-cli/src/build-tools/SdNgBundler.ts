@@ -1,45 +1,29 @@
 import path from "path";
-import {
-  BuildOutputFile,
-  BuildOutputFileType,
-  InitialFileRecord
-} from "@angular-devkit/build-angular/src/tools/esbuild/bundler-context";
 import esbuild, {Metafile} from "esbuild";
 import {FsUtil, Logger, PathUtil} from "@simplysm/sd-core-node";
 import {fileURLToPath} from "url";
-import {
-  createSourcemapIgnorelistPlugin
-} from "@angular-devkit/build-angular/src/tools/esbuild/sourcemap-ignorelist-plugin";
 import nodeStdLibBrowser from "node-stdlib-browser";
 import nodeStdLibBrowserPlugin from "node-stdlib-browser/helpers/esbuild/plugin";
 import {INpmConfig, ISdCliClientBuilderCordovaConfig, ISdCliPackageBuildResult} from "../commons";
-import {copyAssets} from "@angular-devkit/build-angular/src/utils/copy-assets";
-import {extractLicenses} from "@angular-devkit/build-angular/src/tools/esbuild/license-extractor";
-import {augmentAppWithServiceWorkerEsbuild} from "@angular-devkit/build-angular/src/utils/service-worker";
 import browserslist from "browserslist";
-import {
-  convertOutputFile,
-  createOutputFileFromText,
-  transformSupportedBrowsersToTargets
-} from "@angular-devkit/build-angular/src/tools/esbuild/utils";
-import {createCssResourcePlugin} from "@angular-devkit/build-angular/src/tools/esbuild/stylesheets/css-resource-plugin";
-import {CssStylesheetLanguage} from "@angular-devkit/build-angular/src/tools/esbuild/stylesheets/css-language";
-import {SassStylesheetLanguage} from "@angular-devkit/build-angular/src/tools/esbuild/stylesheets/sass-language";
-import {
-  StylesheetPluginFactory
-} from "@angular-devkit/build-angular/src/tools/esbuild/stylesheets/stylesheet-plugin-factory";
-import {
-  HintMode,
-  IndexHtmlGenerator,
-  IndexHtmlTransformResult
-} from "@angular-devkit/build-angular/src/utils/index-file/index-html-generator";
-import {Entrypoint} from "@angular-devkit/build-angular/src/utils/index-file/augment-index-html";
-import {CrossOrigin} from "@angular-devkit/build-angular";
-import {InlineCriticalCssProcessor} from "@angular-devkit/build-angular/src/utils/index-file/inline-critical-css";
 import {SdNgBundlerContext} from "./SdNgBundlerContext";
 import {INgPluginResultCache, sdNgPlugin} from "../bundle-plugins/sdNgPlugin";
-import {MemoryLoadResultCache} from "@angular-devkit/build-angular/src/tools/esbuild/load-result-cache";
 import ts from "typescript";
+import {MemoryLoadResultCache} from "@ngbuild/tools/esbuild/load-result-cache";
+import {convertOutputFile, createOutputFile, transformSupportedBrowsersToTargets} from "@ngbuild/tools/esbuild/utils";
+import {BuildOutputFile, BuildOutputFileType, InitialFileRecord} from "@ngbuild/tools/esbuild/bundler-context";
+import {extractLicenses} from "@ngbuild/tools/esbuild/license-extractor";
+import {HintMode, IndexHtmlGenerator, IndexHtmlProcessResult} from "@ngbuild/utils/index-file/index-html-generator";
+import {Entrypoint} from "@ngbuild/utils/index-file/augment-index-html";
+import {CrossOrigin} from "@ngbuild/builders/application/schema";
+import {InlineCriticalCssProcessor} from "@ngbuild/utils/index-file/inline-critical-css";
+import {augmentAppWithServiceWorkerEsbuild} from "@ngbuild/utils/service-worker";
+import {createSourcemapIgnorelistPlugin} from "@ngbuild/tools/esbuild/sourcemap-ignorelist-plugin";
+import {StylesheetPluginFactory} from "@ngbuild/tools/esbuild/stylesheets/stylesheet-plugin-factory";
+import {SassStylesheetLanguage} from "@ngbuild/tools/esbuild/stylesheets/sass-language";
+import {CssStylesheetLanguage} from "@ngbuild/tools/esbuild/stylesheets/css-language";
+import {createCssResourcePlugin} from "@ngbuild/tools/esbuild/stylesheets/css-resource-plugin";
+import {resolveAssets} from "@ngbuild/utils/resolve-assets";
 
 export class SdNgBundler {
   readonly #logger = Logger.get(["simplysm", "sd-cli", "SdNgBundler"]);
@@ -137,7 +121,7 @@ export class SdNgBundler {
 
     //-- cordova empty
     if (this.#opt.builderType === "cordova" && this.#opt.cordovaConfig?.plugins) {
-      outputFiles.push(createOutputFileFromText("cordova-empty.js", "export default {};", BuildOutputFileType.Root));
+      outputFiles.push(createOutputFile("cordova-empty.js", "export default {};", BuildOutputFileType.Root));
     }
 
     this.#debug(`create index.html...`);
@@ -165,14 +149,14 @@ export class SdNgBundler {
         type: "build",
       });
     }
-    outputFiles.push(createOutputFileFromText("index.html", genIndexHtmlResult.content, BuildOutputFileType.Root));
+    outputFiles.push(createOutputFile("index.html", genIndexHtmlResult.csrContent, BuildOutputFileType.Root));
 
     //-- copy assets
     assetFiles.push(...(await this._copyAssetsAsync()));
 
     //-- extract 3rdpartylicenses
     if (!this.#opt.dev) {
-      outputFiles.push(createOutputFileFromText('3rdpartylicenses.txt', await extractLicenses(metafile, this.#opt.pkgPath), BuildOutputFileType.Root));
+      outputFiles.push(createOutputFile('3rdpartylicenses.txt', await extractLicenses(metafile, this.#opt.pkgPath), BuildOutputFileType.Root));
     }
 
     //-- service worker
@@ -181,7 +165,7 @@ export class SdNgBundler {
 
       try {
         const serviceWorkerResult = await this._genServiceWorkerAsync(outputFiles, assetFiles);
-        outputFiles.push(createOutputFileFromText('ngsw.json', serviceWorkerResult.manifest, BuildOutputFileType.Root));
+        outputFiles.push(createOutputFile('ngsw.json', serviceWorkerResult.manifest, BuildOutputFileType.Root));
         assetFiles.push(...serviceWorkerResult.assetFiles);
       }
       catch (err) {
@@ -233,7 +217,7 @@ export class SdNgBundler {
   private async _genIndexHtmlAsync(
     outputFiles: esbuild.OutputFile[],
     initialFiles: Map<string, InitialFileRecord>,
-  ): Promise<IndexHtmlTransformResult> {
+  ): Promise<IndexHtmlProcessResult> {
     const readAsset = (filePath: string): Promise<string> => {
       const relFilePath = path.relative("/", filePath);
       const currFile = outputFiles.find((outputFile) => outputFile.path === relFilePath);
@@ -305,14 +289,14 @@ export class SdNgBundler {
         readAsset,
       });
       const {content, errors, warnings} = await inlineCriticalCssProcessor.process(
-        transformResult.content,
+        transformResult.csrContent,
         {outputPath: "/",},
       );
 
       return {
         warnings: [...transformResult.warnings, ...warnings],
         errors: [...transformResult.errors, ...errors],
-        content
+        csrContent: content
       };
     }
   }
@@ -321,7 +305,7 @@ export class SdNgBundler {
     source: string;
     destination: string;
   }[]> {
-    return await copyAssets([
+    return await resolveAssets([
       {input: 'src', glob: 'favicon.ico', output: ''},
       {input: 'src', glob: 'manifest.webmanifest', output: ''},
       {input: 'src/assets', glob: '**/*', output: 'assets'},
@@ -347,7 +331,7 @@ export class SdNgBundler {
           output: `cordova-${platform}`
         },
       ]) : []
-    ], [], this.#opt.pkgPath);
+    ], this.#opt.pkgPath);
   }
 
   private async _genServiceWorkerAsync(

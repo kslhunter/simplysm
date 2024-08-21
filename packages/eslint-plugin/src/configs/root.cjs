@@ -71,7 +71,7 @@ module.exports = {
         "@typescript-eslint/await-thenable": ["error"],
         "@typescript-eslint/return-await": ["error", "always"],
         "@typescript-eslint/no-floating-promises": ["error"],
-        "@typescript-eslint/semi": ["error"],
+        // "@typescript-eslint/semi": ["error"], // Deprecated (https://typescript-eslint.io/rules/semi/)
         "@typescript-eslint/no-shadow": ["error"],
         // "@typescript-eslint/no-unnecessary-condition": ["error", {allowConstantLoopConditions: true}],
         "@typescript-eslint/no-unnecessary-type-assertion": ["error"],

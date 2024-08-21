@@ -96,7 +96,7 @@ export class SdServiceClient extends EventEmitter {
 
           console.log("WebSocket 재연결 성공");
         }
-        catch (err) {
+        catch {
           console.warn("WebSocket 재연결 실패");
           // browser에서 에러로 connect를 못한 경우에도, "close" 이벤트가 뜨므로, 아래 코드 주석처리
           /*await reconnectFn();*/

@@ -1,10 +1,10 @@
 import esbuild from "esbuild";
 import ts from "typescript";
 import path from "path";
-import {JavaScriptTransformer} from "@angular-devkit/build-angular/src/tools/esbuild/javascript-transformer";
 import os from "os";
 import {ISdTsCompilerResult, SdTsCompiler} from "../build-tools/SdTsCompiler";
-import {convertTypeScriptDiagnostic} from "@angular-devkit/build-angular/src/tools/esbuild/angular/diagnostics";
+import {JavaScriptTransformer} from "@ngbuild/tools/esbuild/javascript-transformer";
+import {convertTypeScriptDiagnostic} from "@ngbuild/tools/esbuild/angular/diagnostics";
 
 export function sdNgPlugin(conf: {
   pkgPath: string;

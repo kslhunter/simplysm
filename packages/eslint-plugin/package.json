@@ -15,16 +15,16 @@
     "node": "18.18.2"
   },
   "dependencies": {
-    "@angular-eslint/eslint-plugin": "^17.5.2",
-    "@angular-eslint/eslint-plugin-template": "^17.5.2",
-    "@angular-eslint/template-parser": "^17.5.2",
-    "@typescript-eslint/eslint-plugin": "^7.18.0",
-    "@typescript-eslint/experimental-utils": "^5.62.0",
-    "@typescript-eslint/parser": "^7.18.0",
+    "@angular-eslint/eslint-plugin": "^18.3.0",
+    "@angular-eslint/eslint-plugin-template": "^18.3.0",
+    "@angular-eslint/template-parser": "^18.3.0",
+    "@typescript-eslint/eslint-plugin": "^8.2.0",
+    "@typescript-eslint/parser": "^8.2.0",
+    "@typescript-eslint/utils": "^8.2.0",
     "eslint": "^8.57.0",
     "eslint-import-resolver-typescript": "^3.6.1",
     "eslint-module-utils": "^2.8.1",
     "eslint-plugin-import": "^2.29.1",
-    "typescript": "~5.4.5"
+    "typescript": "~5.5.4"
   }
 }

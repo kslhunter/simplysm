@@ -38,7 +38,7 @@ export class SdAutoUpdateService extends SdServiceBase {
 
       return semver.maxSatisfying(versions.map((item) => item.version), "*") ?? undefined;
     }
-    catch (err) {
+    catch {
       return undefined;
     }
   }
