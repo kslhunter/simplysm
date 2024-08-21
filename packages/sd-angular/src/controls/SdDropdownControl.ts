@@ -117,23 +117,29 @@ export class SdDropdownControl implements DoCheck {
     if (this.open) return;
     if (this.disabled) return;
 
-    if (this.openChange.observed) {
+    this.open = true;
+    this.openChange.emit(true);
+
+    /*if (this.openChange.observed) {
       this.openChange.emit(true);
     }
     else {
       this.open = true;
-    }
+    }*/
   }
 
   #closePopup() {
     if (!this.open) return;
 
-    if (this.openChange.observed) {
+    this.open = false;
+    this.openChange.emit(false);
+
+    /*if (this.openChange.observed) {
       this.openChange.emit(false);
     }
     else {
       this.open = false;
-    }
+    }*/
   }
 
   @HostListener("document:scroll.capture.outside", ["$event"])

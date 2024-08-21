@@ -51,7 +51,7 @@ import {IconProp} from "@fortawesome/fontawesome-svg-core";
           }
           {{ menu.title }}
           @if (menu.children) {
-            <sd-list inset [style.padding-left]="((depth + 1) * 6) + 'px'">
+            <sd-list inset [style.padding-left]="((depth + 1 - (layout === 'accordion' ? 0 : 1)) * 6) + 'px'">
               <ng-template [ngTemplateOutlet]="itemTemplate"
                            [ngTemplateOutletContext]="{menus: menu.children, depth: depth + 1}"></ng-template>
             </sd-list>
@@ -60,6 +60,8 @@ import {IconProp} from "@fortawesome/fontawesome-svg-core";
       }
     </ng-template>`,
   styles: [/* language=SCSS */ `
+    @import "../scss/mixins";
+
     sd-sidebar-menu {
       > ._title {
         padding: var(--gap-xs) var(--gap-sm);
@@ -90,8 +92,17 @@ import {IconProp} from "@fortawesome/fontawesome-svg-core";
           border-bottom-left-radius: var(--border-radius-default);
         }
       }
+
+      &:not([sd-root-layout=accordion]) {
+        > sd-list[sd-inset=true] > sd-list-item > sd-collapse > ._content > sd-list {
+          background: transparent;
+        }
+      }
     }
-  `]
+  `],
+  host:{
+    "[attr.sd-root-layout]": "getRootLayout()"
+  }
 })
 export class SdSidebarMenuControl implements OnInit {
   #router = inject(Router);
@@ -104,6 +115,7 @@ export class SdSidebarMenuControl implements OnInit {
   #pageCode = "";
 
   getRootLayout(): "flat" | "accordion" {
+    // return 'accordion';
     return this.layout ?? (this.menus.length <= 3 ? 'flat' : 'accordion');
   }
 

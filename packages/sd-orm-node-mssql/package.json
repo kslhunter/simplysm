@@ -19,6 +19,6 @@
     "@simplysm/sd-core-common": "12.1.23",
     "@simplysm/sd-core-node": "12.1.23",
     "@simplysm/sd-orm-common": "12.1.23",
-    "tedious": "^18.4.2"
+    "tedious": "^18.6.2"
   }
 }

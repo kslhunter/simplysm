@@ -57,13 +57,12 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
     }`,
   styles: [/* language=SCSS */ `
     @import "../scss/mixins";
-
+    
     sd-list-item {
       > ._content {
         padding: var(--gap-sm) var(--gap-default);
         cursor: pointer;
 
-        @include active-effect(true);
         border-radius: var(--border-radius-default);
         margin: var(--gap-xxs);
 
@@ -78,6 +77,8 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 
       &[sd-layout=accordion] {
         > ._content {
+          @include active-effect(true);
+          
           &:hover {
             background: var(--trans-lighter);
           }

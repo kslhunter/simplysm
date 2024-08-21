@@ -196,10 +196,12 @@ import {SdCheckboxControl} from "./SdCheckboxControl";
                     @if (selectMode === 'multi') {
                       <sd-checkbox [value]="selectedItems.includes(itemDef.item)" inline
                                    theme="white" [disabled]="!getIsItemSelectable(itemDef.item)"
+                                   [attr.title]="getItemSelectDisabledMessage(itemDef.item)"
                                    (valueChange)="onItemSelectIconClick(itemDef.item)"/>
                     } @else if (selectMode === 'single' && !autoSelect) {
                       <sd-checkbox radio [value]="selectedItems.includes(itemDef.item)" inline
                                    theme="white" [disabled]="!getIsItemSelectable(itemDef.item)"
+                                   [attr.title]="getItemSelectDisabledMessage(itemDef.item)"
                                    (valueChange)="onItemSelectIconClick(itemDef.item)"/>
                     } @else if (selectMode) {
                       <sd-icon [icon]="icons.arrowRight" fixedWidth
@@ -562,8 +564,11 @@ export class SdSheetControl<T> implements DoCheck {
   /** 자동선택모드 (undefined = 사용안함, click = 셀 클릭시 해당 ROW 선택, focus = 셀 포커싱시 해당 ROW 선택) */
   @Input() autoSelect?: "click" | "focus";
 
-  /** 항목별로 선택가능여부를 설정하는 함수 */
-  @Input() getIsItemSelectableFn?: TSdFnInfo<(item: T) => boolean>;
+  /**
+   *  항목별로 선택가능여부를 설정하는 함수
+   *  문자열 입력시 select가 불가하도록 처리되며, hover시 해당 텍스트 표시됨
+   */
+  @Input() getIsItemSelectableFn?: TSdFnInfo<(item: T) => boolean | string>;
 
   @Input() focusMode: "row" | "cell" = "cell";
 
@@ -987,7 +992,14 @@ export class SdSheetControl<T> implements DoCheck {
    * @param item
    */
   getIsItemSelectable(item: T): boolean {
-    return !this.getIsItemSelectableFn?.[0] || this.getIsItemSelectableFn[0](item);
+    if (!this.getIsItemSelectableFn) return true;
+    return this.getIsItemSelectableFn[0](item) === true;
+  }
+
+  getItemSelectDisabledMessage(item: T): string | undefined {
+    const message = this.getIsItemSelectableFn?.[0](item);
+    if (typeof message === "boolean") return undefined;
+    return message;
   }
 
   /**
@@ -1422,7 +1434,8 @@ export class SdSheetControl<T> implements DoCheck {
       }
     }
     else {
-      const selectedItems = this.displayItemDefs.filter((item) => this.getIsItemSelectable(item.item)).map((item) => item.item);
+      const selectedItems = this.displayItemDefs
+        .filter((item) => this.getIsItemSelectable(item.item)).map((item) => item.item);
 
       if (this.selectedItemsChange.observed) {
         this.selectedItemsChange.emit(selectedItems);

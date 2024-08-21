@@ -54,7 +54,8 @@ import {SdButtonControl} from "./SdButtonControl";
   template: `
     <sd-dropdown #dropdown [disabled]="disabled"
                  [contentClass]="contentClass"
-                 [contentStyle]="contentStyle">
+                 [contentStyle]="contentStyle"
+                 (openChange)="openChange.emit($event)">
       <div class="_sd-select-control">
         <div #contentEl class="_sd-select-control-content"></div>
         <div class="_sd-select-control-icon">
@@ -309,6 +310,8 @@ export class SdSelectControl<M extends "single" | "multi", T extends any> implem
 
   @Input() value?: M extends "multi" ? any[] : any;
   @Output() valueChange = new EventEmitter<M extends "multi" ? any[] : any>();
+
+  @Output() openChange = new EventEmitter<boolean>();
 
   @Input({transform: coercionBoolean}) required = false;
   @Input({transform: coercionBoolean}) disabled = false;

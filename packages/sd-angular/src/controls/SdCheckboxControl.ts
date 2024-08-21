@@ -89,6 +89,63 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
         }
       }
 
+      &[sd-checked=true] {
+        > div > ._indicator_rect {
+          background: var(--theme-primary-default);
+
+          > ._indicator {
+            opacity: 1;
+          }
+        }
+      }
+
+      @each $key, $val in map-get($vars, theme) {
+        &[sd-theme=#{$key}] {
+          > div {
+            > ._indicator_rect {
+              background: var(--theme-#{$key}-lightest);
+
+              > ._indicator {
+                color: var(--theme-#{$key}-default);
+              }
+            }
+
+            &:focus {
+              > ._indicator_rect {
+                border-color: var(--theme-#{$key}-default);
+              }
+            }
+          }
+
+          &[sd-checked=true] {
+            > div > ._indicator_rect {
+              background: var(--theme-#{$key}-default);
+            }
+          }
+        }
+      }
+
+      &[sd-theme=white] {
+        > div {
+          > ._indicator_rect {
+            background: white;
+            border-color: var(--text-trans-lightest);
+          }
+
+          &:focus {
+            > ._indicator_rect {
+              border-color: var(--text-trans-default);
+            }
+          }
+        }
+
+        &[sd-checked=true] {
+          > div > ._indicator_rect {
+            background: var(--theme-primary-default);
+          }
+        }
+      }
+
       &[sd-radio=true] {
         > div {
           > ._indicator_rect {
@@ -107,6 +164,12 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
                 height: 100%;
               }
             }
+          }
+        }
+
+        &[sd-checked=true] {
+          > div > ._indicator_rect {
+            background: var(--theme-primary-default);
           }
         }
       }
@@ -147,51 +210,6 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
           border: none;
           height: calc(var(--font-size-default) * var(--line-height-strip-unit));
           width: auto;
-        }
-      }
-
-      @each $key, $val in map-get($vars, theme) {
-        &[sd-theme=#{$key}] {
-          > div {
-            > ._indicator_rect {
-              background: var(--theme-#{$key}-lightest);
-
-              > ._indicator {
-                color: var(--theme-#{$key}-default);
-              }
-            }
-
-            &:focus {
-              > ._indicator_rect {
-                border-color: var(--theme-#{$key}-default);
-              }
-            }
-          }
-        }
-      }
-
-      &[sd-theme=white] {
-        > div {
-          > ._indicator_rect {
-            background: white;
-            border-color: var(--text-trans-lightest);
-          }
-
-          &:focus {
-            > ._indicator_rect {
-              border-color: var(--text-trans-default);
-            }
-          }
-        }
-      }
-
-      &[sd-checked=true] {
-        > div > ._indicator_rect {
-          background: var(--theme-primary-default);
-
-          > ._indicator {
-            opacity: 1;
-          }
         }
       }
 

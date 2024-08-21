@@ -33,13 +33,14 @@ import {coercionBoolean} from "../utils/commons";
         text-align: center;
         cursor: pointer;
 
-        transition: background .1s linear;        
+        transition: background .1s linear;
+
         &:hover {
           background: var(--theme-grey-lightest);
         }
 
         @include active-effect(true);
-        
+
         &:disabled {
           background: white;
           border-color: var(--theme-grey-lighter);
@@ -101,7 +102,7 @@ import {coercionBoolean} from "../utils/commons";
           color: var(--text-trans-lighter);
         }
       }
-      
+
       @each $key, $val in map-get($vars, theme) {
         &[sd-theme=link-#{$key}] > button {
           border-color: transparent;
@@ -157,4 +158,14 @@ export class SdButtonControl {
   @Input() buttonStyle?: string;
   @Input() buttonClass?: string;
   @Input({transform: coercionBoolean}) inset = false;
+
+  // type = input<"button" | "submit">("button");
+  // theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey"
+  //   | "link" | "link-primary" | "link-secondary" | "link-info" | "link-success" | "link-warning" | "link-danger" | "link-grey" | "link-blue-grey">();
+  // inline = input(false, {transform: coercionBoolean});
+  // size = input<"sm" | "lg">();
+  // disabled = input(false, {transform: coercionBoolean});
+  // buttonStyle = input<string>();
+  // buttonClass = input<string>();
+  // inset = input(false, {transform: coercionBoolean});
 }

@@ -61,7 +61,8 @@ import {SdSelectButtonControl} from "./SdSelectButtonControl";
                [selectMode]="selectMode"
                [contentClass]="selectClass"
                [multiSelectionDisplayDirection]="multiSelectionDisplayDirection"
-               [getChildrenFn]="parentKeyProp ? getChildrenFnInfo : undefined">
+               [getChildrenFn]="parentKeyProp ? getChildrenFnInfo : undefined"
+               (openChange)="onOpenChange()">
       @if (modalType) {
         <sd-select-button (click)="onModalButtonClick($event)">
           <sd-icon [icon]="icons.search"/>
@@ -250,6 +251,10 @@ export class SdSharedDataSelectControl<T extends ISharedDataBase<string | number
         }
       });
     });
+  }
+
+  onOpenChange() {
+    this.searchText = undefined;
   }
 
   onValueChange(value: any | any[]): void {
