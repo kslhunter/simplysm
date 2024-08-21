@@ -2,7 +2,7 @@ import esbuild from "esbuild";
 import path from "path";
 import {ISdCliPackageBuildResult} from "../commons";
 import {Logger} from "@simplysm/sd-core-node";
-import {InitialFileRecord} from "@ngbuild/tools/esbuild/bundler-context";
+import {InitialFileRecord} from "@angular/build/src/tools/esbuild/bundler-context";
 
 export class SdNgBundlerContext {
   readonly #logger = Logger.get(["simplysm", "sd-cli", "SdNgBundlerContext"]);

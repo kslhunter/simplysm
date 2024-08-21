@@ -6,9 +6,9 @@ import {NeverEntryError, StringUtil} from "@simplysm/sd-core-common";
 import esbuild from "esbuild";
 import {NgtscProgram, OptimizeFor} from "@angular/compiler-cli";
 import {createHash} from "crypto";
-import {ComponentStylesheetBundler} from "@ngbuild/tools/esbuild/angular/component-stylesheets";
-import {AngularCompilerHost} from "@ngbuild/tools/angular/angular-host";
-import {transformSupportedBrowsersToTargets} from "@ngbuild/tools/esbuild/utils";
+import {ComponentStylesheetBundler} from "@angular/build/src/tools/esbuild/angular/component-stylesheets";
+import {AngularCompilerHost} from "@angular/build/src/tools/angular/angular-host";
+import {transformSupportedBrowsersToTargets} from "@angular/build/src/tools/esbuild/utils";
 
 export class SdTsCompiler {
   readonly #logger = Logger.get(["simplysm", "sd-cli", "SdTsCompiler"]);

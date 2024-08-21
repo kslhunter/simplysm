@@ -28,7 +28,7 @@
         "./packages/*/src/index.ts",
         "./packages/*/types/index.d.ts"
       ],
-      "@ngbuild/*": [
+      "@angular/build/src/*": [
         "./node_modules/@angular/build/src/*"
       ]
     }
