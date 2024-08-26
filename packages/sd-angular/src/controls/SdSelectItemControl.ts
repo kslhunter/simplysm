@@ -15,7 +15,7 @@ import {
 import {SdSelectControl} from "./SdSelectControl";
 import {coercionBoolean} from "../utils/commons";
 import {NgTemplateOutlet} from "@angular/common";
-import {SdCheckboxControl} from "./common/SdCheckboxControl";
+import {SdCheckboxControl} from "./SdCheckboxControl";
 import {SdGapControl} from "./SdGapControl";
 
 @Component({

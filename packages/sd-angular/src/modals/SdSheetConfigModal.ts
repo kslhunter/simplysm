@@ -4,13 +4,13 @@ import {SdSheetColumnDirective} from "../directives/SdSheetColumnDirective";
 import {ISdSheetConfig, SdSheetControl} from "../controls/SdSheetControl";
 import {SdDockContainerControl} from "../controls/SdDockContainerControl";
 import {SdPaneControl} from "../controls/SdPaneControl";
-import {SdCheckboxControl} from "../controls/common/SdCheckboxControl";
-import {SdAnchorControl} from "../controls/common/SdAnchorControl";
+import {SdCheckboxControl} from "../controls/SdCheckboxControl";
+import {SdAnchorControl} from "../controls/SdAnchorControl";
 import {SdIconControl} from "../controls/SdIconControl";
 import {SdTextfieldControl} from "../controls/SdTextfieldControl";
 import {SdSheetColumnCellTemplateDirective} from "../directives/SdSheetColumnCellTemplateDirective";
 import {SdDockControl} from "../controls/SdDockControl";
-import {SdButtonControl} from "../controls/common/SdButtonControl";
+import {SdButtonControl} from "../controls/SdButtonControl";
 import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 
 @Component({

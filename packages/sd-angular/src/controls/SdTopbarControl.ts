@@ -11,7 +11,7 @@ import {
 import {SdTopbarContainerControl} from "./SdTopbarContainerControl";
 import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
 import {ISdResizeEvent} from "../plugins/SdResizeEventPlugin";
-import {SdAnchorControl} from "./common/SdAnchorControl";
+import {SdAnchorControl} from "./SdAnchorControl";
 import {SdIconControl} from "./SdIconControl";
 import {SdGapControl} from "./SdGapControl";
 import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";

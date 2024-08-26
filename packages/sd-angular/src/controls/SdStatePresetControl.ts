@@ -12,7 +12,7 @@ import {ObjectUtil} from "@simplysm/sd-core-common";
 import {SdSystemConfigProvider} from "../providers/SdSystemConfigProvider";
 import {SdToastProvider} from "../providers/SdToastProvider";
 import {SdGapControl} from "./SdGapControl";
-import {SdAnchorControl} from "./common/SdAnchorControl";
+import {SdAnchorControl} from "./SdAnchorControl";
 import {SdNgHelper} from "../utils/SdNgHelper";
 import {SdIconControl} from "./SdIconControl";
 import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";

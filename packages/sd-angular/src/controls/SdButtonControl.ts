@@ -1,5 +1,5 @@
-import {ChangeDetectionStrategy, Component, input, ViewEncapsulation} from "@angular/core";
-import {coercionBoolean} from "../../utils/commons";
+import {ChangeDetectionStrategy, Component, Input, ViewEncapsulation} from "@angular/core";
+import {coercionBoolean} from "../utils/commons";
 
 @Component({
   selector: "sd-button",
@@ -9,15 +9,15 @@ import {coercionBoolean} from "../../utils/commons";
   imports: [],
   template: `
     <button tabindex="0"
-            [type]="type()"
-            [disabled]="disabled()"
-            [class]="buttonClass()"
-            [style]="buttonStyle()">
+            [type]="type"
+            [disabled]="disabled"
+            [class]="buttonClass"
+            [style]="buttonStyle">
       <ng-content></ng-content>
     </button>`,
   styles: [/* language=SCSS */ `
-    @import "../../scss/variables";
-    @import "../../scss/mixins";
+    @import "../scss/variables";
+    @import "../scss/mixins";
 
     sd-button {
       > button {
@@ -126,11 +126,13 @@ import {coercionBoolean} from "../../utils/commons";
       }
 
       &[sd-size=sm] > button {
+        //font-weight: normal;
         padding: var(--gap-xs) var(--gap-default);
       }
 
       &[sd-size=lg] > button {
         padding: var(--gap-default) var(--gap-xl);
+        // border-radius:2 px;
       }
 
       &[disabled=true] {
@@ -139,21 +141,31 @@ import {coercionBoolean} from "../../utils/commons";
     }
   `],
   host: {
-    "[attr.sd-theme]": "theme()",
-    "[attr.sd-inline]": "inline()",
-    "[attr.sd-size]": "size()",
-    "[attr.disabled]": "disabled()",
-    "[attr.sd-inset]": "inset()"
+    "[attr.sd-theme]": "theme",
+    "[attr.sd-inline]": "inline",
+    "[attr.sd-size]": "size",
+    "[attr.disabled]": "disabled",
+    "[attr.sd-inset]": "inset"
   }
 })
 export class SdButtonControl {
-  type = input<"button" | "submit">("button");
-  theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey"
-    | "link" | "link-primary" | "link-secondary" | "link-info" | "link-success" | "link-warning" | "link-danger" | "link-grey" | "link-blue-grey">();
-  inline = input(false, {transform: coercionBoolean});
-  size = input<"sm" | "lg">();
-  disabled = input(false, {transform: coercionBoolean});
-  buttonStyle = input<string>();
-  buttonClass = input<string>();
-  inset = input(false, {transform: coercionBoolean});
+  @Input() type: "button" | "submit" = "button";
+  @Input() theme?: "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey"
+    | "link" | "link-primary" | "link-secondary" | "link-info" | "link-success" | "link-warning" | "link-danger" | "link-grey" | "link-blue-grey";
+  @Input({transform: coercionBoolean}) inline = false;
+  @Input() size?: "sm" | "lg";
+  @Input({transform: coercionBoolean}) disabled = false;
+  @Input() buttonStyle?: string;
+  @Input() buttonClass?: string;
+  @Input({transform: coercionBoolean}) inset = false;
+
+  // type = input<"button" | "submit">("button");
+  // theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey"
+  //   | "link" | "link-primary" | "link-secondary" | "link-info" | "link-success" | "link-warning" | "link-danger" | "link-grey" | "link-blue-grey">();
+  // inline = input(false, {transform: coercionBoolean});
+  // size = input<"sm" | "lg">();
+  // disabled = input(false, {transform: coercionBoolean});
+  // buttonStyle = input<string>();
+  // buttonClass = input<string>();
+  // inset = input(false, {transform: coercionBoolean});
 }

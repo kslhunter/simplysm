@@ -1,9 +1,9 @@
 {
   "name": "simplysm",
-  "version": "12.3.0",
+  "version": "12.2.3",
   "description": "심플리즘 패키지",
   "author": "김석래",
-  "packageManager": "yarn@4.4.1",
+  "packageManager": "yarn@4.4.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/kslhunter/simplysm12.git"
@@ -12,7 +12,7 @@
   "license": "MIT",
   "private": true,
   "engines": {
-    "node": "20.16.0"
+    "node": "18.18.2"
   },
   "workspaces": [
     "packages/*"
@@ -22,18 +22,18 @@
     "build": "npm run _sd-cli_ -- build",
     "publish": "npm run _sd-cli_ -- publish",
     "--": "",
-    "_sd-cli_": "tsx --tsconfig packages/sd-cli/tsconfig.json packages/sd-cli/src/sd-cli.ts",
+    "_sd-cli_": "tsx --experimental-import-meta-resolve --tsconfig packages/sd-cli/tsconfig.json packages/sd-cli/src/sd-cli.ts",
     "commit": "git add . && git commit -m .",
     "eslint-timing": "cross-env TIMING=1 eslint \"**/+(*.ts|*.tsx|*.js|*.cjs|*.mjs)\"",
     "eslint-fix": "cross-env TIMING=1 eslint --fix \"**/+(*.ts|*.tsx|*.js|*.cjs|*.mjs)\"",
     "reinstall": "yarn install --refresh-lockfile"
   },
   "devDependencies": {
-    "@simplysm/eslint-plugin": "12.3.0",
-    "@types/node": "^20.16.1",
+    "@simplysm/eslint-plugin": "12.2.3",
+    "@types/node": "^18.19.45",
     "cross-env": "^7.0.3",
     "eslint": "^8.57.0",
-    "tsx": "^4.18.0",
+    "tsx": "4.15.7",
     "typescript": "~5.5.4"
   }
 }

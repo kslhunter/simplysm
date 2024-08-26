@@ -13,7 +13,7 @@ import {
   ViewEncapsulation
 } from "@angular/core";
 import {NumberUtil} from "@simplysm/sd-core-common";
-import {SdAnchorControl} from "./common/SdAnchorControl";
+import {SdAnchorControl} from "./SdAnchorControl";
 import {SdPaneControl} from "./SdPaneControl";
 import {SdSystemConfigProvider} from "../providers/SdSystemConfigProvider";
 import {SdIconControl} from "./SdIconControl";

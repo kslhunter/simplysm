@@ -8,14 +8,14 @@ import {
   Input,
   Output, ViewEncapsulation
 } from "@angular/core";
-import {SdAnchorControl} from "./common/SdAnchorControl";
+import {SdAnchorControl} from "./SdAnchorControl";
 import {ISdPermission} from "../utils/SdAppStructureUtil";
 import {coercionBoolean} from "../utils/commons";
 import {SdNgHelper} from "../utils/SdNgHelper";
 import {SdTypedTemplateDirective} from "../directives/SdTypedTemplateDirective";
 import {NgTemplateOutlet} from "@angular/common";
 import {SdCollapseIconControl} from "./SdCollapseIconControl";
-import {SdCheckboxControl} from "./common/SdCheckboxControl";
+import {SdCheckboxControl} from "./SdCheckboxControl";
 import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 
 @Component({

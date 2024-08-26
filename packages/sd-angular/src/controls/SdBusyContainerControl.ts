@@ -1,14 +1,6 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  HostListener,
-  inject,
-  input,
-  ViewEncapsulation
-} from "@angular/core";
-import {coercionBoolean, coercionNumber} from "../../utils/commons";
-import {SdBusyProvider} from "../../providers/SdBusyProvider";
+import {ChangeDetectionStrategy, Component, HostListener, inject, Input, ViewEncapsulation} from "@angular/core";
+import {SdBusyProvider} from "../providers/SdBusyProvider";
+import {coercionBoolean, coercionNumber} from "../utils/commons";
 
 @Component({
   selector: "sd-busy-container",
@@ -26,16 +18,15 @@ import {SdBusyProvider} from "../../providers/SdBusyProvider";
           <div class="_cube4"></div>
           <div class="_cube3"></div>
         </div>
-        @if (message()) {
+        @if (message) {
           <div class="_message">
-            <pre>{{ message() }}</pre>
+            <pre>{{ message }}</pre>
           </div>
         }
       </div>
-      @let _progPer = progressPercent();
-      @if (_progPer != null) {
+      @if (progressPercent != null) {
         <div class="_progress">
-          <div class="_progress-bar" [style.transform]="'scaleX(' + (_progPer / 100) + ')'"></div>
+          <div class="_progress-bar" [style.transform]="'scaleX(' + (progressPercent / 100) + ')'"></div>
         </div>
       }
     </div>
@@ -63,6 +54,7 @@ import {SdBusyProvider} from "../../providers/SdBusyProvider";
         visibility: hidden;
         pointer-events: none;
 
+        //background: rgba(255, 255, 255, .3);
         backdrop-filter: none;
         opacity: 0;
         transition: opacity .3s, backdrop-filter 5s;
@@ -333,26 +325,32 @@ import {SdBusyProvider} from "../../providers/SdBusyProvider";
     }
   `],
   host: {
-    "[attr.sd-type]": "currType()",
-    "[attr.sd-no-fade]": "currNoFade()",
-    "[attr.sd-busy]": "busy()"
+    "[attr.sd-type]": "currType",
+    "[attr.sd-no-fade]": "currNoFade",
+    "[attr.sd-busy]": "busy"
   }
 })
 export class SdBusyContainerControl {
   #sdBusy = inject(SdBusyProvider);
 
-  busy = input(false, {transform: coercionBoolean});
-  message = input(false, {transform: coercionBoolean});
-  type = input<"spinner" | "bar" | "cube">();
-  noFade = input(undefined, {transform: coercionBoolean});
-  progressPercent = input(undefined, {transform: coercionNumber});
+  @Input({transform: coercionBoolean}) busy = false;
+  @Input() message?: string;
+  @Input() type?: "spinner" | "bar" | "cube";// = this.#sdBusy.type ?? "spinner";
+  @Input({transform: coercionBoolean}) noFade?: boolean;// = this.#sdBusy.noFade ?? false;
+  @Input({transform: coercionNumber}) progressPercent?: number;
 
-  currType = computed(() => this.type() ?? this.#sdBusy.type() ?? "spinner");
-  currNoFade = computed(() => this.noFade() ?? this.#sdBusy.noFade() ?? false);
+  get currType() {
+    return this.type ?? this.#sdBusy.type ?? "spinner";
+  }
 
-  @HostListener("document:keydown.capture", ["$event"])
-  onKeydownCapture(event: KeyboardEvent) {
-    if (this.busy()) {
+  get currNoFade() {
+    console.log(this.noFade ?? this.#sdBusy.noFade ?? false);
+    return this.noFade ?? this.#sdBusy.noFade ?? false;
+  }
+
+  @HostListener("document:keydown.capture.outside", ["$event"])
+  onKeydownCaptureOutside(event: KeyboardEvent) {
+    if (this.busy) {
       event.preventDefault();
       event.stopPropagation();
     }

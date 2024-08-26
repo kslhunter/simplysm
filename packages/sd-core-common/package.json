@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-core-common",
-  "version": "12.3.0",
+  "version": "12.2.3",
   "description": "심플리즘 패키지 - 코어 모듈 (common)",
   "author": "김석래",
   "repository": {
@@ -13,7 +13,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "engines": {
-    "node": "20.16.0"
+    "node": "18.18.2"
   },
   "dependencies": {
     "reflect-metadata": "^0.2.2"
