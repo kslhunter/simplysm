@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-cli",
-  "version": "12.2.3",
+  "version": "12.4.0",
   "description": "심플리즘 패키지 - CLI",
   "author": "김석래",
   "repository": {
@@ -20,16 +20,14 @@
     "postinstall": "node --experimental-import-meta-resolve lib/postinstall.js"
   },
   "dependencies": {
-    "@angular/build": "^18.2.0",
-    "@angular/common": "^18.2.0",
-    "@angular/compiler": "^18.2.0",
-    "@angular/compiler-cli": "^18.2.0",
-    "@angular/core": "^18.2.0",
+    "@angular/build": "^18.2.1",
+    "@angular/compiler": "^18.2.1",
+    "@angular/compiler-cli": "^18.2.1",
     "@electron/rebuild": "^3.6.0",
-    "@simplysm/sd-core-common": "12.2.3",
-    "@simplysm/sd-core-node": "12.2.3",
-    "@simplysm/sd-service-server": "12.2.3",
-    "@simplysm/sd-storage": "12.2.3",
+    "@simplysm/sd-core-common": "12.4.0",
+    "@simplysm/sd-core-node": "12.4.0",
+    "@simplysm/sd-service-server": "12.4.0",
+    "@simplysm/sd-storage": "12.4.0",
     "browserslist": "^4.23.3",
     "cordova": "^12.0.0",
     "electron": "^32.0.1",
@@ -43,11 +41,10 @@
     "semver": "^7.6.3",
     "typescript": "~5.5.4",
     "xml2js": "^0.6.2",
-    "yargs": "^17.7.2",
-    "zone.js": "~0.14.10"
+    "yargs": "^17.7.2"
   },
   "devDependencies": {
-    "@types/eslint": "^8.56.11",
+    "@types/eslint": "^8.56.12",
     "@types/xml2js": "^0.4.14",
     "@types/yargs": "^17.0.33"
   }
