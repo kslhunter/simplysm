@@ -1,5 +1,5 @@
 import {ChangeDetectionStrategy, Component, inject, Input, ViewEncapsulation} from "@angular/core";
-import {SdBusyContainerControl} from "./SdBusyContainerControl";
+import {SdBusyContainerControl} from "./container/SdBusyContainerControl";
 import {coercionBoolean} from "../utils/commons";
 import {SdIconControl} from "./SdIconControl";
 import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";

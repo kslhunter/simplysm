@@ -8,7 +8,7 @@ import {
   Input,
   Output, ViewEncapsulation
 } from "@angular/core";
-import {SdAnchorControl} from "./SdAnchorControl";
+import {SdAnchorControl} from "./common/SdAnchorControl";
 import {SdIconControl} from "./SdIconControl";
 import {coercionNumber} from "../utils/commons";
 import {SdNgHelper} from "../utils/SdNgHelper";

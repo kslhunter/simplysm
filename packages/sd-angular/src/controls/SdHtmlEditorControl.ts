@@ -9,7 +9,7 @@ import {
   Output,
   ViewChild, ViewEncapsulation
 } from "@angular/core";
-import {SdAnchorControl} from "./SdAnchorControl";
+import {SdAnchorControl} from "./common/SdAnchorControl";
 import {SdPaneControl} from "./SdPaneControl";
 import {SdIconControl} from "./SdIconControl";
 import {coercionBoolean, coercionNonNullableNumber} from "../utils/commons";

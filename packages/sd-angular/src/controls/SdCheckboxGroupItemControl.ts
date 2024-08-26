@@ -9,7 +9,7 @@ import {
   ViewEncapsulation
 } from "@angular/core";
 import {SdCheckboxGroupControl} from "./SdCheckboxGroupControl";
-import {SdCheckboxControl} from "./SdCheckboxControl";
+import {SdCheckboxControl} from "./common/SdCheckboxControl";
 import {SdNgHelper} from "../utils/SdNgHelper";
 
 @Component({

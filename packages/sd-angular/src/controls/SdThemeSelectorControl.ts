@@ -1,6 +1,6 @@
 import {ChangeDetectionStrategy, Component, inject, ViewChild, ViewEncapsulation} from "@angular/core";
 import {SdDropdownControl} from "./SdDropdownControl";
-import {SdAnchorControl} from "./SdAnchorControl";
+import {SdAnchorControl} from "./common/SdAnchorControl";
 import {SdIconControl} from "./SdIconControl";
 import {SdListControl} from "./SdListControl";
 import {SdListItemControl} from "./SdListItemControl";

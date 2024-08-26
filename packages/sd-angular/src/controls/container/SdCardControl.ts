@@ -9,7 +9,7 @@ import {ChangeDetectionStrategy, Component, ViewEncapsulation} from "@angular/co
   template: `
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
-    @import "../scss/mixins";
+    @import "../../scss/mixins";
 
     sd-card {
       display: block;

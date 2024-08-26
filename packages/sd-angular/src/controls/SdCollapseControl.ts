@@ -1,10 +1,11 @@
 import {
-  AfterContentInit,
   ChangeDetectionStrategy,
   Component,
+  effect,
   ElementRef,
-  Input,
-  ViewChild,
+  input,
+  signal,
+  viewChild,
   ViewEncapsulation
 } from "@angular/core";
 import {coercionBoolean} from "../utils/commons";
@@ -22,7 +23,7 @@ import {SdEventsDirective} from "../directives/SdEventsDirective";
     <div #contentEl
          class="_content"
          (sdResize)="onContentResize()"
-         [style.margin-top]="open ? '' : (-this.contentHeight) + 'px'">
+         [style.margin-top]="open() ? '' : (-this.contentHeight()) + 'px'">
       <ng-content></ng-content>
     </div>`,
   styles: [/* language=SCSS */ `
@@ -40,21 +41,23 @@ import {SdEventsDirective} from "../directives/SdEventsDirective";
     }
   `],
   host: {
-    "[attr.sd-open]": "open"
+    "[attr.sd-open]": "open()"
   }
 })
-export class SdCollapseControl implements AfterContentInit {
-  @Input({transform: coercionBoolean}) open = false;
+export class SdCollapseControl {
+  open = input(false, {transform: coercionBoolean});
 
-  @ViewChild("contentEl", {static: true}) contentElRef!: ElementRef<HTMLElement>;
+  contentElRef = viewChild.required<any, ElementRef<HTMLDivElement>>("contentEl", {read: ElementRef});
 
-  contentHeight = 0;
+  contentHeight = signal(0);
 
-  ngAfterContentInit() {
-    this.contentHeight = this.contentElRef.nativeElement.offsetHeight;
+  constructor() {
+    effect(() => {
+      this.contentHeight.set(this.contentElRef().nativeElement.offsetHeight);
+    }, {allowSignalWrites: true});
   }
 
   onContentResize() {
-    this.contentHeight = this.contentElRef.nativeElement.offsetHeight;
+    this.contentHeight.set(this.contentElRef().nativeElement.offsetHeight);
   }
 }

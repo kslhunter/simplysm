@@ -10,7 +10,7 @@ import {
 import {SdTopbarContainerControl} from "./SdTopbarContainerControl";
 import {SdTopbarControl} from "./SdTopbarControl";
 import {NgTemplateOutlet} from "@angular/common";
-import {SdBusyContainerControl} from "./SdBusyContainerControl";
+import {SdBusyContainerControl} from "./container/SdBusyContainerControl";
 import {coercionBoolean} from "../utils/commons";
 import {SdIconControl} from "./SdIconControl";
 import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";

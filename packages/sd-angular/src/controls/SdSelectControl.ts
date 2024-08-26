@@ -23,14 +23,14 @@ import {SdEventsDirective} from "../directives/SdEventsDirective";
 import {SdDockContainerControl} from "./SdDockContainerControl";
 import {NgTemplateOutlet} from "@angular/common";
 import {SdDockControl} from "./SdDockControl";
-import {SdAnchorControl} from "./SdAnchorControl";
+import {SdAnchorControl} from "./common/SdAnchorControl";
 import {SdGapControl} from "./SdGapControl";
 import {SdPaneControl} from "./SdPaneControl";
 import {SdTypedTemplateDirective} from "../directives/SdTypedTemplateDirective";
 import {SdDropdownPopupControl} from "./SdDropdownPopupControl";
 import {StringUtil} from "@simplysm/sd-core-common";
 import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
-import {SdButtonControl} from "./SdButtonControl";
+import {SdButtonControl} from "./common/SdButtonControl";
 
 @Component({
   selector: "sd-select",

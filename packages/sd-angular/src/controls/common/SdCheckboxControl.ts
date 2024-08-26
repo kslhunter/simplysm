@@ -1,16 +1,7 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  inject,
-  Input,
-  Output,
-  ViewEncapsulation
-} from "@angular/core";
-import {IconProp} from "@fortawesome/fontawesome-svg-core";
-import {coercionBoolean} from "../utils/commons";
-import {SdIconControl} from "./SdIconControl";
-import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
+import {ChangeDetectionStrategy, Component, inject, input, model, ViewEncapsulation} from "@angular/core";
+import {coercionBoolean} from "../../utils/commons";
+import {SdIconControl} from "../SdIconControl";
+import {SdAngularOptionsProvider} from "../../providers/SdAngularOptionsProvider";
 
 @Component({
   selector: "sd-checkbox",
@@ -21,33 +12,29 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
     SdIconControl
   ],
   template: `
-    <div (click)="onClick()" tabindex="0" (keydown)="onKeydown($event)" [style]="labelStyle">
+    <div (click)="onClick()" tabindex="0" (keydown)="onKeydown($event)" [style]="labelStyle()">
       <div class="_indicator_rect">
         <div class="_indicator">
-          @if (!radio) {
-            <sd-icon [icon]="icon"/>
+          @if (!radio()) {
+            <sd-icon [icon]="icon()"/>
           } @else {
             <div></div>
           }
         </div>
       </div>
       <div class="_contents">
-        <ng-content/>        
+        <ng-content/>
       </div>
     </div>`,
   styles: [/* language=SCSS */ `
-    @import "../scss/variables";
-    @import "../scss/mixins";
+    @import "../../scss/variables";
+    @import "../../scss/mixins";
 
     sd-checkbox {
       > div {
         @include form-control-base();
         color: inherit;
         cursor: pointer;
-
-        //display: flex;
-        //flex-wrap: nowrap;
-        //flex-direction: row;
 
         height: calc(var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-sm) * 2 + 2px);
         gap: var(--gap-sm);
@@ -230,52 +217,38 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
     }
   `],
   host: {
-    "[attr.sd-checked]": "value",
-    "[attr.sd-disabled]": "disabled",
-    "[attr.sd-inline]": "inline",
-    "[attr.sd-inset]": "inset",
-    "[attr.sd-radio]": "radio",
-    "[attr.sd-size]": "size",
-    "[attr.sd-theme]": "theme"
+    "[attr.sd-checked]": "value()",
+    "[attr.sd-disabled]": "disabled()",
+    "[attr.sd-inline]": "inline()",
+    "[attr.sd-inset]": "inset()",
+    "[attr.sd-radio]": "radio()",
+    "[attr.sd-size]": "size()",
+    "[attr.sd-theme]": "theme()"
   }
 })
 export class SdCheckboxControl {
-  #sdNgOpt = inject(SdAngularOptionsProvider);
+  icons = inject(SdAngularOptionsProvider).icons;
 
-  @Input({transform: coercionBoolean}) value = false;
-  @Output() valueChange = new EventEmitter<boolean>();
+  value = model(false);
 
-  @Input({transform: coercionBoolean}) disabled = false;
-  @Input({transform: coercionBoolean}) inline = false;
-  @Input({transform: coercionBoolean}) inset = false;
-  @Input({transform: coercionBoolean}) radio = false;
-  @Input() size?: "sm" | "lg";
-  @Input() theme?: "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey" | "white";
-  @Input() icon: IconProp = this.#sdNgOpt.icons.check;
-  @Input() labelStyle?: string;
+  disabled = input(false, {transform: coercionBoolean});
+  inline = input(false, {transform: coercionBoolean});
+  inset = input(false, {transform: coercionBoolean});
+  radio = input(false, {transform: coercionBoolean});
+  size = input<"sm" | "lg">();
+  theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey" | "white">();
+  icon = input(this.icons.check);
+  labelStyle = input<string>();
 
   onClick(): void {
-    if (this.disabled) return;
-
-    this.#setValue(!this.value);
+    if (this.disabled()) return;
+    this.value.update(v => !v);
   }
 
   onKeydown(event: KeyboardEvent): void {
-    if (this.disabled) return;
-
     if (event.key === " ") {
-      this.#setValue(!this.value);
-    }
-  }
-
-  #setValue(value: boolean) {
-    if (this.value !== value) {
-      if (this.valueChange.observed) {
-        this.valueChange.emit(value);
-      }
-      else {
-        this.value = value;
-      }
+      if (this.disabled()) return;
+      this.value.update(v => !v);
     }
   }
 }

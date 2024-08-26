@@ -22,7 +22,7 @@ import {SdSelectControl} from "./SdSelectControl";
 import {SdDockContainerControl} from "./SdDockContainerControl";
 import {SdDockControl} from "./SdDockControl";
 import {SdTextfieldControl} from "./SdTextfieldControl";
-import {SdAnchorControl} from "./SdAnchorControl";
+import {SdAnchorControl} from "./common/SdAnchorControl";
 import {SdPaneControl} from "./SdPaneControl";
 import {SdSelectItemControl} from "./SdSelectItemControl";
 import {NgTemplateOutlet} from "@angular/common";

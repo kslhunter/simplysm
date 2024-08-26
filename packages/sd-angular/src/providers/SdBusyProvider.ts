@@ -1,7 +1,7 @@
-import {Injectable} from "@angular/core";
+import {Injectable, signal} from "@angular/core";
 
 @Injectable({providedIn: "root"})
 export class SdBusyProvider {
-  type?: "bar" | "spinner";
-  noFade?: boolean;
+  type = signal<"bar" | "spinner" | undefined>(undefined);
+  noFade = signal<boolean | undefined>(undefined);
 }

@@ -10,7 +10,7 @@ import {
 } from "@angular/core";
 import {SdToastProvider} from "../providers/SdToastProvider";
 import {SdLazyPageLoaderProvider} from "../providers/SdLazyPageLoaderProvider";
-import {SdBusyContainerControl} from "./SdBusyContainerControl";
+import {SdBusyContainerControl} from "./container/SdBusyContainerControl";
 import {NgComponentOutlet} from "@angular/common";
 
 @Component({

@@ -522,9 +522,9 @@ export class SdCliProject {
   // TODO: npm:piscina??
   private static async _prepareClusterAsync(): Promise<cp.ChildProcess> {
     const logger = Logger.get(["simplysm", "sd-cli", "SdCliProject", "_runBuildClusterAsync"]);
-    return await new Promise<cp.ChildProcess>(async (resolve, reject) => {
+    return await new Promise<cp.ChildProcess>((resolve, reject) => {
       const cluster = cp.fork(
-        fileURLToPath(await import.meta.resolve!("../build-cluster")),
+        fileURLToPath(import.meta.resolve("../build-cluster")),
         [],
         {
           stdio: ["pipe", "pipe", "pipe", "ipc"],
@@ -607,9 +607,9 @@ export class SdCliProject {
     return await new Promise<{
       worker: cp.ChildProcess,
       port: number
-    }>(async (resolve, reject) => {
+    }>((resolve, reject) => {
       const worker = cp.fork(
-        fileURLToPath(await import.meta.resolve!("../server-worker")),
+        fileURLToPath(import.meta.resolve("../server-worker")),
         [JsonConvert.stringify("path" in pkgOrOpt ? pkgOrOpt.path : pkgOrOpt)],
         {
           stdio: ["pipe", "pipe", "pipe", "ipc"],

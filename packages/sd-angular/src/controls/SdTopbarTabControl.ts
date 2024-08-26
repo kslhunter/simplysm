@@ -1,5 +1,5 @@
 import {ChangeDetectionStrategy, Component, EventEmitter, inject, Output, ViewEncapsulation} from "@angular/core";
-import {SdAnchorControl} from "./SdAnchorControl";
+import {SdAnchorControl} from "./common/SdAnchorControl";
 import {SdIconControl} from "./SdIconControl";
 import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
 

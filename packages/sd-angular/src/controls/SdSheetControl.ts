@@ -28,18 +28,18 @@ import {
   getSdFnCheckData,
   TSdFnInfo
 } from "../utils/commons";
-import {SdBusyContainerControl} from "./SdBusyContainerControl";
+import {SdBusyContainerControl} from "./container/SdBusyContainerControl";
 import {SdDockContainerControl} from "./SdDockContainerControl";
 import {SdDockControl} from "./SdDockControl";
 import {NgTemplateOutlet} from "@angular/common";
-import {SdAnchorControl} from "./SdAnchorControl";
+import {SdAnchorControl} from "./common/SdAnchorControl";
 import {SdIconControl} from "./SdIconControl";
 import {SdPaginationControl} from "./SdPaginationControl";
 import {SdPaneControl} from "./SdPaneControl";
 import {SdEventsDirective,} from "../directives/SdEventsDirective";
 import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
 import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
-import {SdCheckboxControl} from "./SdCheckboxControl";
+import {SdCheckboxControl} from "./common/SdCheckboxControl";
 
 @Component({
   selector: "sd-sheet",
