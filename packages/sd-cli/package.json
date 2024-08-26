@@ -17,12 +17,14 @@
     "node": "20.16.0"
   },
   "scripts": {
-    "postinstall": "node lib/postinstall.js"
+    "postinstall": "node --experimental-import-meta-resolve lib/postinstall.js"
   },
   "dependencies": {
     "@angular/build": "^18.2.1",
+    "@angular/common": "^18.2.1",
     "@angular/compiler": "^18.2.1",
     "@angular/compiler-cli": "^18.2.1",
+    "@angular/core": "^18.2.1",
     "@electron/rebuild": "^3.6.0",
     "@simplysm/sd-core-common": "12.3.1",
     "@simplysm/sd-core-node": "12.3.1",
@@ -39,7 +41,6 @@
     "rxjs": "^7.8.1",
     "sass": "^1.77.8",
     "semver": "^7.6.3",
-    "specifier-resolution-node": "^1.1.4",
     "typescript": "~5.5.4",
     "xml2js": "^0.6.2",
     "yargs": "^17.7.2",
