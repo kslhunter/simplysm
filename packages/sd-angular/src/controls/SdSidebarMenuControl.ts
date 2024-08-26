@@ -51,7 +51,7 @@ import {IconProp} from "@fortawesome/fontawesome-svg-core";
           }
           {{ menu.title }}
           @if (menu.children) {
-            <sd-list inset [style.padding-left]="((depth + 1 - (layout === 'accordion' ? 0 : 1)) * 6) + 'px'">
+            <sd-list inset [style.padding-left]="((depth + 1 - (getRootLayout() === 'accordion' ? 0 : 1)) * 6) + 'px'">
               <ng-template [ngTemplateOutlet]="itemTemplate"
                            [ngTemplateOutletContext]="{menus: menu.children, depth: depth + 1}"></ng-template>
             </sd-list>

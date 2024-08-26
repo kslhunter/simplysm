@@ -17,7 +17,7 @@
     "node": "20.16.0"
   },
   "scripts": {
-    "postinstall": "node --experimental-import-meta-resolve lib/postinstall.js"
+    "postinstall": "node lib/postinstall.js"
   },
   "dependencies": {
     "@angular/build": "^18.2.1",

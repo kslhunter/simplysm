@@ -344,7 +344,6 @@ export class SdBusyContainerControl {
   }
 
   get currNoFade() {
-    console.log(this.noFade ?? this.#sdBusy.noFade ?? false);
     return this.noFade ?? this.#sdBusy.noFade ?? false;
   }
 

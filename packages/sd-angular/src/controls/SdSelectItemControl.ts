@@ -69,7 +69,8 @@ import {SdGapControl} from "./SdGapControl";
       &[sd-selected=true] {
         color: var(--theme-primary-default);
         font-weight: bold;
-        background: var(--theme-primary-lightest);
+        //background: var(--theme-primary-lightest);
+        background: rgba(0, 0, 0, .07);
       }
 
       &[sd-disabled=true] {
