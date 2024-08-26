@@ -11466,7 +11466,7 @@ __metadata:
     "@types/node": "npm:^20.16.1"
     cross-env: "npm:^7.0.3"
     eslint: "npm:^8.57.0"
-    tsx: "npm:4.18.0"
+    tsx: "npm:^4.18.0"
     typescript: "npm:~5.5.4"
   languageName: unknown
   linkType: soft
@@ -12252,7 +12252,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tsx@npm:4.18.0":
+"tsx@npm:^4.18.0":
   version: 4.18.0
   resolution: "tsx@npm:4.18.0"
   dependencies:
