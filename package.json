@@ -1,6 +1,6 @@
 {
   "name": "simplysm",
-  "version": "12.3.2",
+  "version": "12.3.1",
   "description": "심플리즘 패키지",
   "author": "김석래",
   "packageManager": "yarn@4.4.1",
@@ -29,7 +29,7 @@
     "reinstall": "yarn install --refresh-lockfile"
   },
   "devDependencies": {
-    "@simplysm/eslint-plugin": "12.3.2",
+    "@simplysm/eslint-plugin": "12.3.1",
     "@types/node": "^20.16.1",
     "cross-env": "^7.0.3",
     "eslint": "^8.57.0",
