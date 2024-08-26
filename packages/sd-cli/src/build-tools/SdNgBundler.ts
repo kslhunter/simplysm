@@ -10,10 +10,22 @@ import {SdNgBundlerContext} from "./SdNgBundlerContext";
 import {INgPluginResultCache, sdNgPlugin} from "../bundle-plugins/sdNgPlugin";
 import ts from "typescript";
 import {MemoryLoadResultCache} from "@angular/build/src/tools/esbuild/load-result-cache";
-import {convertOutputFile, createOutputFile, transformSupportedBrowsersToTargets} from "@angular/build/src/tools/esbuild/utils";
-import {BuildOutputFile, BuildOutputFileType, InitialFileRecord} from "@angular/build/src/tools/esbuild/bundler-context";
+import {
+  convertOutputFile,
+  createOutputFile,
+  transformSupportedBrowsersToTargets
+} from "@angular/build/src/tools/esbuild/utils";
+import {
+  BuildOutputFile,
+  BuildOutputFileType,
+  InitialFileRecord
+} from "@angular/build/src/tools/esbuild/bundler-context";
 import {extractLicenses} from "@angular/build/src/tools/esbuild/license-extractor";
-import {HintMode, IndexHtmlGenerator, IndexHtmlProcessResult} from "@angular/build/src/utils/index-file/index-html-generator";
+import {
+  HintMode,
+  IndexHtmlGenerator,
+  IndexHtmlProcessResult
+} from "@angular/build/src/utils/index-file/index-html-generator";
 import {Entrypoint} from "@angular/build/src/utils/index-file/augment-index-html";
 import {CrossOrigin} from "@angular/build/src/builders/application/schema";
 import {InlineCriticalCssProcessor} from "@angular/build/src/utils/index-file/inline-critical-css";
@@ -86,7 +98,7 @@ export class SdNgBundler {
 
     if (!this.#contexts) {
       this.#contexts = [
-        await this._getAppContextAsync(),
+        this._getAppContext(),
         this._getStyleContext(),
         ...this.#opt.builderType === "electron" ? [
           this._getElectronMainContext()
@@ -357,7 +369,7 @@ export class SdNgBundler {
     );
   }
 
-  private async _getAppContextAsync(): Promise<SdNgBundlerContext> {
+  private _getAppContext() {
     return new SdNgBundlerContext(this.#opt.pkgPath, {
       absWorkingDir: this.#opt.pkgPath,
       bundle: true,
@@ -435,7 +447,7 @@ export class SdNgBundler {
         ".mp3": "file",
         ".ogg": "file"
       },
-      inject: [PathUtil.posix(fileURLToPath(await import.meta.resolve!("node-stdlib-browser/helpers/esbuild/shim")))],
+      inject: [PathUtil.posix(fileURLToPath(import.meta.resolve("node-stdlib-browser/helpers/esbuild/shim")))],
       plugins: [
         ...this.#opt.builderType === "cordova" && this.#opt.cordovaConfig?.plugins ? [{
           name: "cordova:plugin-empty",

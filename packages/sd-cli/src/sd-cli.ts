@@ -1,4 +1,4 @@
-#!/usr/bin/env node --es-module-specifier-resolution=node --no-warnings --experimental-import-meta-resolve --openssl-legacy-provider
+#!/usr/bin/env node --import=specifier-resolution-node/register
 
 import yargs from "yargs";
 import {hideBin} from "yargs/helpers";

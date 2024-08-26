@@ -14,7 +14,7 @@
   "types": "./dist/index.d.ts",
   "style": "./styles.css",
   "engines": {
-    "node": "18.18.2"
+    "node": "20.16.0"
   },
   "dependencies": {
     "@angular/animations": "^18.2.1",
