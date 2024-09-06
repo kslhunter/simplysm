@@ -17,10 +17,6 @@
   "workspaces": [
     "packages/*"
   ],
-  "prettier": {
-    "printWidth": 120,
-    "quoteProps": "consistent"
-  },
   "scripts": {
     "watch": "npm run _sd-cli_ -- watch",
     "build": "npm run _sd-cli_ -- build",
