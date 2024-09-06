@@ -22,7 +22,7 @@ export class SdCliJsLibLinter extends EventEmitter {
 
   public async buildAsync(): Promise<ISdCliBuilderResult> {
     this._debug("LINT...");
-    const srcGlobPath = path.resolve(this._pkgPath, "src/**/*.+(js|cjs|mjs)");
+    const srcGlobPath = path.resolve(this._pkgPath, "src/**/*.js");
     const srcFilePaths = await FsUtil.globAsync(srcGlobPath);
     const lintResults = await SdLinter.lintAsync(srcFilePaths, undefined);
 
@@ -36,7 +36,7 @@ export class SdCliJsLibLinter extends EventEmitter {
   public async watchAsync(): Promise<void> {
     this.emit("change");
     this._debug("LINT...");
-    const srcGlobPath = path.resolve(this._pkgPath, "src/**/*.+(js|cjs|mjs)");
+    const srcGlobPath = path.resolve(this._pkgPath, "src/**/*.js");
     const srcFilePaths = await FsUtil.globAsync(srcGlobPath);
     const lintResults = await SdLinter.lintAsync(srcFilePaths, undefined);
 

@@ -6,6 +6,10 @@
     "emitDecoratorMetadata": true,
     "module": "ESNext",
     "target": "ES2022",
+    "lib": [
+      "ES2021",
+      "DOM"
+    ],
     "strict": true,
     "moduleResolution": "Node",
     "esModuleInterop": true,

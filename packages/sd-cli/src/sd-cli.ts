@@ -30,7 +30,7 @@ const argv = (
         .options({
           config: {
             string: true,
-            describe: "simplysm.cjs 파일 경로"
+            describe: "simplysm.js 파일 경로"
           },
           options: {
             string: true,
@@ -46,7 +46,7 @@ const argv = (
         .options({
           config: {
             string: true,
-            describe: "simplysm.cjs 파일 경로"
+            describe: "simplysm.js 파일 경로"
           },
           options: {
             string: true,
@@ -72,7 +72,7 @@ const argv = (
         .options({
           config: {
             string: true,
-            describe: "simplysm.cjs 파일 경로"
+            describe: "simplysm.js 파일 경로"
           },
           options: {
             string: true,
@@ -98,7 +98,7 @@ const argv = (
           },
           config: {
             type: "string",
-            describe: "simplysm.cjs 파일 경로"
+            describe: "simplysm.js 파일 경로"
           },
           options: {
             type: "string",
@@ -124,7 +124,7 @@ const argv = (
         .options({
           config: {
             type: "string",
-            describe: "simplysm.json 파일 경로"
+            describe: "simplysm.js 파일 경로"
           },
           options: {
             type: "string",
@@ -145,7 +145,7 @@ const argv = (
         .options({
           config: {
             type: "string",
-            describe: "simplysm.json 파일 경로"
+            describe: "simplysm.js 파일 경로"
           },
           options: {
             type: "string",
@@ -193,14 +193,14 @@ else {
 
 if (argv._[0] === "local-update") {
   await SdCliLocalUpdate.runAsync({
-    confFileRelPath: argv.config ?? "simplysm.cjs",
+    confFileRelPath: argv.config ?? "simplysm.js",
     optNames: argv.options ?? [],
   });
 }
 else if (argv._[0] === "watch") {
   await SdCliProject
     .watchAsync({
-      confFileRelPath: argv.config ?? "simplysm.cjs",
+      confFileRelPath: argv.config ?? "simplysm.js",
       optNames: argv.options ?? [],
       pkgNames: argv.packages ?? [],
       inspectNames: argv.inspects ?? []
@@ -209,7 +209,7 @@ else if (argv._[0] === "watch") {
 else if (argv._[0] === "build") {
   await SdCliProject
     .buildAsync({
-      confFileRelPath: argv.config ?? "simplysm.cjs",
+      confFileRelPath: argv.config ?? "simplysm.js",
       optNames: argv.options ?? [],
       pkgNames: argv.packages ?? []
     });
@@ -218,7 +218,7 @@ else if (argv._[0] === "publish") {
   await SdCliProject
     .publishAsync({
       noBuild: argv.noBuild,
-      confFileRelPath: argv.config ?? "simplysm.cjs",
+      confFileRelPath: argv.config ?? "simplysm.js",
       optNames: argv.options ?? [],
       pkgNames: argv.packages ?? []
     });
@@ -226,7 +226,7 @@ else if (argv._[0] === "publish") {
 else if (argv._[0] === "run-electron") {
   await SdCliElectron
     .runAsync({
-      confFileRelPath: argv.config ?? "simplysm.cjs",
+      confFileRelPath: argv.config ?? "simplysm.js",
       optNames: argv.options ?? [],
       pkgName: argv.package
     });
@@ -234,7 +234,7 @@ else if (argv._[0] === "run-electron") {
 else if (argv._[0] === "build-electron-for-dev") {
   await SdCliElectron
     .buildForDevAsync({
-      confFileRelPath: argv.config ?? "simplysm.cjs",
+      confFileRelPath: argv.config ?? "simplysm.js",
       optNames: argv.options ?? [],
       pkgName: argv.package
     });

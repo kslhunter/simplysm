@@ -12,9 +12,7 @@ export abstract class SdLinter {
       .filter(
         (item) =>
           (!item.endsWith(".d.ts") && item.endsWith(".ts")) ||
-          item.endsWith(".js") ||
-          item.endsWith(".cjs") ||
-          item.endsWith(".mjs")
+          item.endsWith(".js")
       )
       .filter((item) => FsUtil.exists(item));
 
