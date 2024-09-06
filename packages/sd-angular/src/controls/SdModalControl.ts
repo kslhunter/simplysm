@@ -1,63 +1,55 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  DoCheck,
   ElementRef,
   EventEmitter,
   HostListener,
   inject,
-  Injector,
   Input,
   Output,
   ViewChild,
-  ViewEncapsulation
+  ViewEncapsulation,
 } from "@angular/core";
-import {NumberUtil} from "@simplysm/sd-core-common";
-import {SdAnchorControl} from "./SdAnchorControl";
-import {SdPaneControl} from "./SdPaneControl";
-import {SdSystemConfigProvider} from "../providers/SdSystemConfigProvider";
-import {SdIconControl} from "./SdIconControl";
-import {coercionBoolean, coercionNumber} from "../utils/commons";
-import {SdNgHelper} from "../utils/SdNgHelper";
-import {ISdResizeEvent} from "../plugins/SdResizeEventPlugin";
-import {SdEventsDirective} from "../directives/SdEventsDirective";
-import {SdDockContainerControl} from "./SdDockContainerControl";
-import {SdDockControl} from "./SdDockControl";
-import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
+import { NumberUtil } from "@simplysm/sd-core-common";
+import { SdAnchorControl } from "./SdAnchorControl";
+import { SdPaneControl } from "./SdPaneControl";
+import { SdSystemConfigProvider } from "../providers/SdSystemConfigProvider";
+import { SdIconControl } from "./SdIconControl";
+import { coercionBoolean, coercionNumber } from "../utils/commons";
+import { ISdResizeEvent } from "../plugins/SdResizeEventPlugin";
+import { SdEventsDirective } from "../directives/SdEventsDirective";
+import { SdDockContainerControl } from "./SdDockContainerControl";
+import { SdDockControl } from "./SdDockControl";
+import { SdAngularOptionsProvider } from "../providers/SdAngularOptionsProvider";
+import { sdCheck } from "../utils/hooks";
 
 @Component({
   selector: "sd-modal",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [
-    SdAnchorControl,
-    SdPaneControl,
-    SdIconControl,
-    SdDockContainerControl,
-    SdDockControl,
-    SdEventsDirective
-  ],
+  imports: [SdAnchorControl, SdPaneControl, SdIconControl, SdDockContainerControl, SdDockControl, SdEventsDirective],
   template: `
     <div class="_backdrop" (click)="onBackdropClick()"></div>
-    <div #dialogEl
-         class="_dialog" tabindex="0"
-         (keydown.escape)="onDialogEscapeKeydown()"
-         [style.min-width.px]="minWidthPx"
-         [style.min-height.px]="minHeightPx"
-         [style.width.px]="(minWidthPx && widthPx && minWidthPx > widthPx) ? minWidthPx : widthPx"
-         [style.height.px]="(minHeightPx && heightPx && minHeightPx > heightPx) ? minHeightPx : heightPx"
-         (focus.outside)="onDialogFocusOutside()"
-         (sdResize.outside)="onDialogResizeOutside($event)">
+    <div
+      #dialogEl
+      class="_dialog"
+      tabindex="0"
+      (keydown.escape)="onDialogEscapeKeydown()"
+      [style.min-width.px]="minWidthPx"
+      [style.min-height.px]="minHeightPx"
+      [style.width.px]="minWidthPx && widthPx && minWidthPx > widthPx ? minWidthPx : widthPx"
+      [style.height.px]="minHeightPx && heightPx && minHeightPx > heightPx ? minHeightPx : heightPx"
+      (focus.outside)="onDialogFocusOutside()"
+      (sdResize.outside)="onDialogResizeOutside($event)"
+    >
       <sd-dock-container>
         @if (!hideHeader) {
-          <sd-dock class="_header" (mousedown.outside)="onHeaderMouseDownOutside($event)"
-                   [style]="headerStyle">
+          <sd-dock class="_header" (mousedown.outside)="onHeaderMouseDownOutside($event)" [style]="headerStyle">
             <h5 class="_title">{{ title }}</h5>
             @if (!hideCloseButton) {
-              <sd-anchor class="_close-button" theme="grey"
-                         (click)="onCloseButtonClick()">
-                <sd-icon [icon]="icons.xmark" fixedWidth/>
+              <sd-anchor class="_close-button" theme="grey" (click)="onCloseButtonClick()">
+                <sd-icon [icon]="icons.xmark" fixedWidth />
               </sd-anchor>
             }
           </sd-dock>
@@ -75,242 +67,248 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
         <div class="_top-right-resize-bar" (mousedown.outside)="onResizeBarMousedownOutside($event, 'top-right')"></div>
         <div class="_top-left-resize-bar" (mousedown.outside)="onResizeBarMousedownOutside($event, 'top-left')"></div>
         <div class="_bottom-resize-bar" (mousedown.outside)="onResizeBarMousedownOutside($event, 'bottom')"></div>
-        <div class="_bottom-right-resize-bar"
-             (mousedown.outside)="onResizeBarMousedownOutside($event, 'bottom-right')"></div>
-        <div class="_bottom-left-resize-bar"
-             (mousedown.outside)="onResizeBarMousedownOutside($event, 'bottom-left')"></div>
+        <div
+          class="_bottom-right-resize-bar"
+          (mousedown.outside)="onResizeBarMousedownOutside($event, 'bottom-right')"
+        ></div>
+        <div
+          class="_bottom-left-resize-bar"
+          (mousedown.outside)="onResizeBarMousedownOutside($event, 'bottom-left')"
+        ></div>
       }
-    </div>`,
-  styles: [/* language=SCSS */ `
-    @import "../scss/mixins";
+    </div>
+  `,
+  styles: [
+    /* language=SCSS */ `
+      @import "../scss/mixins";
 
-    sd-modal {
-      display: block;
-      position: fixed;
-      z-index: var(--z-index-modal);
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      padding-top: calc(var(--topbar-height) + var(--gap-sm));
-
-      > ._backdrop {
+      sd-modal {
+        display: block;
         position: fixed;
+        z-index: var(--z-index-modal);
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, .6);
-      }
-
-      > ._dialog {
-        position: relative;
-        display: block;
-        margin: 0 auto;
-        width: fit-content;
-        min-width: 240px;
-        background: white;
-        //border: 1px solid var(--theme-primary-darker);
-        // border-radius:2 px;
-        overflow: hidden;
-        @include elevation(16);
-
-        border-radius: var(--border-radius-default);
-
-        &:focus {
-          outline: none;
-        }
-
-        > sd-dock-container {
-          > ._header {
-            display: flex;
-            flex-direction: row;
-            user-select: none;
-            border-bottom: 1px solid var(--trans-light);
-
-            > ._title {
-              // display: inline-block;
-              flex-grow: 1;
-              
-              // padding:var(--gap-sm) var(--gap-default);
-              //padding: var(--gap-default) var(--gap-lg);
-              padding: var(--gap-sm) var(--gap-default);
-            }
-
-            > ._close-button {
-              //display: inline-block;
-              //float: right;
-              //cursor: pointer;
-              //text-align: center;
-              padding: var(--gap-sm) var(--gap-default);
-              //margin: calc(var(--gap-default) - var(--gap-sm));
-
-              //&:hover {
-              //  background: var(--theme-grey-lightest);
-              //}
-              //
-              //&:active {
-              //  background: var(--theme-grey-lighter);
-              //}
-            }
-          }
-        }
-
-        > ._left-resize-bar {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: var(--gap-sm);
-          height: 100%;
-          cursor: ew-resize;
-        }
-
-        > ._right-resize-bar {
-          position: absolute;
-          top: 0;
-          right: 0;
-          width: var(--gap-sm);
-          height: 100%;
-          cursor: ew-resize;
-        }
-
-        > ._top-resize-bar {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: var(--gap-sm);
-          cursor: ns-resize;
-        }
-
-        > ._top-right-resize-bar {
-          position: absolute;
-          right: 0;
-          top: 0;
-          width: var(--gap-sm);
-          height: var(--gap-sm);
-          z-index: 1;
-          cursor: nesw-resize;
-        }
-
-        > ._top-left-resize-bar {
-          position: absolute;
-          left: 0;
-          top: 0;
-          width: var(--gap-sm);
-          height: var(--gap-sm);
-          cursor: nwse-resize;
-          z-index: 1;
-        }
-
-        > ._bottom-resize-bar {
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          width: 100%;
-          height: var(--gap-sm);
-          cursor: ns-resize;
-        }
-
-        > ._bottom-right-resize-bar {
-          position: absolute;
-          right: 0;
-          bottom: 0;
-          width: var(--gap-sm);
-          height: var(--gap-sm);
-          z-index: 1;
-          cursor: nwse-resize;
-        }
-
-        > ._bottom-left-resize-bar {
-          position: absolute;
-          left: 0;
-          bottom: 0;
-          width: var(--gap-sm);
-          height: var(--gap-sm);
-          cursor: nesw-resize;
-          z-index: 1;
-        }
-      }
-
-      opacity: 0;
-      transition: opacity .1s ease-in-out;
-      pointer-events: none;
-
-      > ._dialog {
-        transform: translateY(-25px);
-        transition: transform .1s ease-in-out;
-      }
-
-      &[sd-open=true][sd-init=true] {
-        opacity: 1;
-        pointer-events: auto;
-
-        > ._dialog {
-          transform: none;
-        }
-      }
-
-      &[sd-float=true] {
-        pointer-events: none;
+        padding-top: calc(var(--topbar-height) + var(--gap-sm));
 
         > ._backdrop {
-          display: none;
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.6);
         }
 
         > ._dialog {
-          pointer-events: auto;
-          opacity: 0;
-          @include elevation(4);
-          border: 1px solid var(--theme-grey-lighter);
+          position: relative;
+          display: block;
+          margin: 0 auto;
+          width: fit-content;
+          min-width: 240px;
+          background: white;
+          //border: 1px solid var(--theme-primary-darker);
+          // border-radius:2 px;
+          overflow: hidden;
+          @include elevation(16);
+
+          border-radius: var(--border-radius-default);
 
           &:focus {
-            @include elevation(16);
+            outline: none;
+          }
+
+          > sd-dock-container {
+            > ._header {
+              display: flex;
+              flex-direction: row;
+              user-select: none;
+              border-bottom: 1px solid var(--trans-light);
+
+              > ._title {
+                // display: inline-block;
+                flex-grow: 1;
+
+                // padding:var(--gap-sm) var(--gap-default);
+                //padding: var(--gap-default) var(--gap-lg);
+                padding: var(--gap-sm) var(--gap-default);
+              }
+
+              > ._close-button {
+                //display: inline-block;
+                //float: right;
+                //cursor: pointer;
+                //text-align: center;
+                padding: var(--gap-sm) var(--gap-default);
+                //margin: calc(var(--gap-default) - var(--gap-sm));
+
+                //&:hover {
+                //  background: var(--theme-grey-lightest);
+                //}
+                //
+                //&:active {
+                //  background: var(--theme-grey-lighter);
+                //}
+              }
+            }
+          }
+
+          > ._left-resize-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: var(--gap-sm);
+            height: 100%;
+            cursor: ew-resize;
+          }
+
+          > ._right-resize-bar {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: var(--gap-sm);
+            height: 100%;
+            cursor: ew-resize;
+          }
+
+          > ._top-resize-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: var(--gap-sm);
+            cursor: ns-resize;
+          }
+
+          > ._top-right-resize-bar {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: var(--gap-sm);
+            height: var(--gap-sm);
+            z-index: 1;
+            cursor: nesw-resize;
+          }
+
+          > ._top-left-resize-bar {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: var(--gap-sm);
+            height: var(--gap-sm);
+            cursor: nwse-resize;
+            z-index: 1;
+          }
+
+          > ._bottom-resize-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: var(--gap-sm);
+            cursor: ns-resize;
+          }
+
+          > ._bottom-right-resize-bar {
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            width: var(--gap-sm);
+            height: var(--gap-sm);
+            z-index: 1;
+            cursor: nwse-resize;
+          }
+
+          > ._bottom-left-resize-bar {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: var(--gap-sm);
+            height: var(--gap-sm);
+            cursor: nesw-resize;
+            z-index: 1;
           }
         }
 
-        &[sd-open=true][sd-init=true] {
+        opacity: 0;
+        transition: opacity 0.1s ease-in-out;
+        pointer-events: none;
+
+        > ._dialog {
+          transform: translateY(-25px);
+          transition: transform 0.1s ease-in-out;
+        }
+
+        &[sd-open="true"][sd-init="true"] {
+          opacity: 1;
+          pointer-events: auto;
+
+          > ._dialog {
+            transform: none;
+          }
+        }
+
+        &[sd-float="true"] {
           pointer-events: none;
+
+          > ._backdrop {
+            display: none;
+          }
 
           > ._dialog {
             pointer-events: auto;
-            opacity: 1;
+            opacity: 0;
+            @include elevation(4);
+            border: 1px solid var(--theme-grey-lighter);
+
+            &:focus {
+              @include elevation(16);
+            }
+          }
+
+          &[sd-open="true"][sd-init="true"] {
+            pointer-events: none;
+
+            > ._dialog {
+              pointer-events: auto;
+              opacity: 1;
+            }
           }
         }
-      }
 
-      &[sd-position="bottom-right"] {
-        > ._dialog {
-          position: absolute;
-          right: calc(var(--gap-xxl) * 2);
-          bottom: var(--gap-xxl);
-        }
-      }
-
-      &[sd-position="top-right"] {
-        > ._dialog {
-          position: absolute;
-          right: var(--gap-xxl);
-          top: var(--gap-xxl);
-        }
-      }
-
-      @media all and (max-width: 520px) {
-        &[sd-mobile-fill-disabled=false] {
-          padding-top: 0;
-
+        &[sd-position="bottom-right"] {
           > ._dialog {
-            width: 100%;
-            height: 100%;
+            position: absolute;
+            right: calc(var(--gap-xxl) * 2);
+            bottom: var(--gap-xxl);
+          }
+        }
 
-            border: none;
-            border-radius: 0;
+        &[sd-position="top-right"] {
+          > ._dialog {
+            position: absolute;
+            right: var(--gap-xxl);
+            top: var(--gap-xxl);
+          }
+        }
 
-            > sd-dock-container > ._header {
-              background: transparent;
-              color: var(--text-trans-lighter);
+        @media all and (max-width: 520px) {
+          &[sd-mobile-fill-disabled="false"] {
+            padding-top: 0;
 
-              /*._close-button {
+            > ._dialog {
+              width: 100%;
+              height: 100%;
+
+              border: none;
+              border-radius: 0;
+
+              > sd-dock-container > ._header {
+                background: transparent;
+                color: var(--text-trans-lighter);
+
+                /*._close-button {
                 color: var(--text-trans-lighter);
 
                 &:hover {
@@ -318,63 +316,68 @@ import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
                   color: var(--text-trans-lighter);
                 }
               }*/
+              }
             }
-          } 
+          }
         }
       }
-    }
-  `],
+    `,
+  ],
   host: {
     "[attr.sd-open]": "open",
     "[attr.sd-float]": "float",
     "[attr.sd-position]": "position",
-    "[attr.sd-mobile-fill-disabled]": "mobileFillDisabled"
-  }
+    "[attr.sd-mobile-fill-disabled]": "mobileFillDisabled",
+  },
 })
-export class SdModalControl implements DoCheck {
+export class SdModalControl {
   icons = inject(SdAngularOptionsProvider).icons;
 
-  @Input({transform: coercionBoolean}) open = false;
+  #sdSystemConfig = inject(SdSystemConfigProvider);
+  #elRef = inject<ElementRef<HTMLElement>>(ElementRef);
+
+  @Input({ transform: coercionBoolean }) open = false;
   @Output() openChange = new EventEmitter<boolean>();
 
   @Input() key?: string;
-  @Input({required: true}) title!: string;
-  @Input({transform: coercionBoolean}) hideHeader = false;
-  @Input({transform: coercionBoolean}) hideCloseButton = false;
-  @Input({transform: coercionBoolean}) useCloseByBackdrop = false;
-  @Input({transform: coercionBoolean}) useCloseByEscapeKey = false;
-  @Input({transform: coercionBoolean}) resizable = false;
-  @Input({transform: coercionBoolean}) movable = true;
-  @Input({transform: coercionBoolean}) float = false;
-  @Input({transform: coercionBoolean}) mobileFillDisabled = false;
-  @Input({transform: coercionNumber}) heightPx?: number;
-  @Input({transform: coercionNumber}) widthPx?: number;
-  @Input({transform: coercionNumber}) minHeightPx?: number;
-  @Input({transform: coercionNumber}) minWidthPx?: number;
+  @Input({ required: true }) title!: string;
+  @Input({ transform: coercionBoolean }) hideHeader = false;
+  @Input({ transform: coercionBoolean }) hideCloseButton = false;
+  @Input({ transform: coercionBoolean }) useCloseByBackdrop = false;
+  @Input({ transform: coercionBoolean }) useCloseByEscapeKey = false;
+  @Input({ transform: coercionBoolean }) resizable = false;
+  @Input({ transform: coercionBoolean }) movable = true;
+  @Input({ transform: coercionBoolean }) float = false;
+  @Input({ transform: coercionBoolean }) mobileFillDisabled = false;
+
+  @Input({ transform: coercionNumber }) heightPx?: number;
+  @Input({ transform: coercionNumber }) widthPx?: number;
+  @Input({ transform: coercionNumber }) minHeightPx?: number;
+  @Input({ transform: coercionNumber }) minWidthPx?: number;
   @Input() position?: "bottom-right" | "top-right";
+
   @Input() headerStyle?: string;
 
-  @ViewChild("dialogEl", {static: true}) dialogElRef!: ElementRef<HTMLElement>;
-
-  #elRef = inject<ElementRef<HTMLElement>>(ElementRef);
-  #sdSystemConfig = inject(SdSystemConfigProvider);
+  @ViewChild("dialogEl", { static: true }) dialogElRef!: ElementRef<HTMLElement>;
 
   #config?: ISdModalConfigVM;
 
-  #sdNgHelper = new SdNgHelper(inject(Injector));
-
-  ngDoCheck(): void {
-    this.#sdNgHelper.doCheckOutside(async run => {
-      await run({
+  constructor() {
+    sdCheck(
+      () => ({
         key: [this.key],
-      }, async () => {
+      }),
+      async () => {
         this.#config = await this.#sdSystemConfig.getAsync(`sd-modal.${this.key}`);
-      });
+      },
+    );
 
-      run({
+    sdCheck.outside(
+      () => ({
+        open: [this.open],
         config: [this.#config],
-        open: [this.open]
-      }, () => {
+      }),
+      () => {
         if (this.#config) {
           this.dialogElRef.nativeElement.style.position = this.#config.position;
           this.dialogElRef.nativeElement.style.left = this.#config.left;
@@ -390,16 +393,19 @@ export class SdModalControl implements DoCheck {
         }
 
         this.#elRef.nativeElement.setAttribute("sd-init", "true");
-      });
+      },
+    );
 
-      run({
-        open: [this.open]
-      }, () => {
+    sdCheck.outside(
+      () => ({
+        open: [this.open],
+      }),
+      () => {
         if (this.open) {
           this.dialogElRef.nativeElement.focus();
         }
-      });
-    });
+      },
+    );
   }
 
   onDialogFocusOutside() {
@@ -430,7 +436,7 @@ export class SdModalControl implements DoCheck {
 
   #calcHeight() {
     const style = getComputedStyle(this.#elRef.nativeElement);
-    let paddingTop = style.paddingTop === "" ? 0 : NumberUtil.parseInt(style.paddingTop) ?? 0;
+    let paddingTop = style.paddingTop === "" ? 0 : (NumberUtil.parseInt(style.paddingTop) ?? 0);
 
     if (this.dialogElRef.nativeElement.offsetHeight > this.#elRef.nativeElement.offsetHeight - paddingTop) {
       this.dialogElRef.nativeElement.style.maxHeight = `calc(100% - ${paddingTop * 2}px)`;
@@ -448,10 +454,10 @@ export class SdModalControl implements DoCheck {
   @HostListener("window:resize.outside")
   onWindowResizeOutside() {
     if (this.dialogElRef.nativeElement.offsetLeft > this.#elRef.nativeElement.offsetWidth - 100) {
-      this.dialogElRef.nativeElement.style.left = (this.#elRef.nativeElement.offsetWidth - 100) + "px";
+      this.dialogElRef.nativeElement.style.left = this.#elRef.nativeElement.offsetWidth - 100 + "px";
     }
     if (this.dialogElRef.nativeElement.offsetTop > this.#elRef.nativeElement.offsetHeight - 100) {
-      this.dialogElRef.nativeElement.style.right = (this.#elRef.nativeElement.offsetHeight - 100) + "px";
+      this.dialogElRef.nativeElement.style.right = this.#elRef.nativeElement.offsetHeight - 100 + "px";
     }
   }
 
@@ -460,12 +466,10 @@ export class SdModalControl implements DoCheck {
       return;
     }
 
-    if (this.openChange.observed) {
-      this.openChange.emit(false);
-    }
-    else {
-      this.open = false;
-    }
+    if (!this.open) return;
+
+    this.open = false;
+    this.openChange.emit(false);
   }
 
   onBackdropClick() {
@@ -473,11 +477,9 @@ export class SdModalControl implements DoCheck {
       return;
     }
 
-    if (this.openChange.observed) {
-      this.openChange.emit(false);
-    }
-    else {
+    if (this.open) {
       this.open = false;
+      this.openChange.emit(false);
     }
   }
 
@@ -486,18 +488,15 @@ export class SdModalControl implements DoCheck {
       return;
     }
 
-    if (this.openChange.observed) {
-      this.openChange.emit(false);
-    }
-    else {
-      this.open = false;
-    }
+    if (!this.open) return;
+    this.open = false;
+    this.openChange.emit(false);
   }
 
-  onResizeBarMousedownOutside(event: MouseEvent,
-                              direction: "left" | "right" |
-                                "top" | "top-left" | "top-right" |
-                                "bottom" | "bottom-left" | "bottom-right") {
+  onResizeBarMousedownOutside(
+    event: MouseEvent,
+    direction: "left" | "right" | "top" | "top-left" | "top-right" | "bottom" | "bottom-left" | "bottom-right",
+  ) {
     if (!this.resizable) return;
 
     const dialogEl = this.dialogElRef.nativeElement;
@@ -517,7 +516,7 @@ export class SdModalControl implements DoCheck {
 
       if (direction === "top" || direction === "top-right" || direction === "top-left") {
         if (dialogEl.style.position === "absolute") {
-          dialogEl.style.top = (startTop + (e.clientY - startY)) + "px";
+          dialogEl.style.top = startTop + (e.clientY - startY) + "px";
           dialogEl.style.bottom = "auto";
         }
         dialogEl.style.height = `${Math.max(startHeight - (e.clientY - startY), this.minHeightPx ?? 0)}px`;
@@ -526,13 +525,13 @@ export class SdModalControl implements DoCheck {
         dialogEl.style.height = `${Math.max(startHeight + e.clientY - startY, this.minHeightPx ?? 0)}px`;
       }
       if (direction === "right" || direction === "bottom-right" || direction === "top-right") {
-        dialogEl.style.width = `${Math.max(startWidth + ((e.clientX - startX) * (dialogEl.style.position === "absolute" ? 1 : 2)), this.minWidthPx ?? 0)}px`;
+        dialogEl.style.width = `${Math.max(startWidth + (e.clientX - startX) * (dialogEl.style.position === "absolute" ? 1 : 2), this.minWidthPx ?? 0)}px`;
       }
       if (direction === "left" || direction === "bottom-left" || direction === "top-left") {
         if (dialogEl.style.position === "absolute") {
-          dialogEl.style.left = (startLeft + (e.clientX - startX)) + "px";
+          dialogEl.style.left = startLeft + (e.clientX - startX) + "px";
         }
-        dialogEl.style.width = `${Math.max(startWidth - ((e.clientX - startX) * (dialogEl.style.position === "absolute" ? 1 : 2)), this.minWidthPx ?? 0)}px`;
+        dialogEl.style.width = `${Math.max(startWidth - (e.clientX - startX) * (dialogEl.style.position === "absolute" ? 1 : 2), this.minWidthPx ?? 0)}px`;
       }
 
       isDoDrag = true;
@@ -552,7 +551,7 @@ export class SdModalControl implements DoCheck {
         right: dialogEl.style.right,
         bottom: dialogEl.style.bottom,
         width: dialogEl.style.width,
-        height: dialogEl.style.height
+        height: dialogEl.style.height,
       };
       if (this.key !== undefined && isDoDrag) {
         await this.#sdSystemConfig.setAsync(`sd-modal.${this.key}`, this.#config);
@@ -587,16 +586,16 @@ export class SdModalControl implements DoCheck {
 
       const el = this.#elRef.nativeElement;
       if (dialogEl.offsetLeft > el.offsetWidth - 100) {
-        dialogEl.style.left = (el.offsetWidth - 100) + "px";
+        dialogEl.style.left = el.offsetWidth - 100 + "px";
       }
       if (dialogEl.offsetTop > el.offsetHeight - 100) {
-        dialogEl.style.top = (el.offsetHeight - 100) + "px";
+        dialogEl.style.top = el.offsetHeight - 100 + "px";
       }
       if (dialogEl.offsetTop < 0) {
         dialogEl.style.top = "0";
       }
       if (dialogEl.offsetLeft < -dialogEl.offsetWidth + 100) {
-        dialogEl.style.left = (-dialogEl.offsetWidth + 100) + "px";
+        dialogEl.style.left = -dialogEl.offsetWidth + 100 + "px";
       }
 
       isDoDrag = true;
@@ -616,7 +615,7 @@ export class SdModalControl implements DoCheck {
         right: dialogEl.style.right,
         bottom: dialogEl.style.bottom,
         width: dialogEl.style.width,
-        height: dialogEl.style.height
+        height: dialogEl.style.height,
       };
       if (this.key !== undefined && isDoDrag) {
         await this.#sdSystemConfig.setAsync(`sd-modal.${this.key}`, this.#config);

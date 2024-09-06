@@ -1,203 +1,198 @@
-import {ChangeDetectorRef, inject, Injectable} from "@angular/core";
-import {SdServiceFactoryProvider} from "./SdServiceFactoryProvider";
-import {SdServiceEventListenerBase} from "@simplysm/sd-service-common";
-import {Wait} from "@simplysm/sd-core-common";
+import { ChangeDetectorRef, inject, Injectable, ViewRef } from "@angular/core";
+import { SdServiceEventListenerBase } from "@simplysm/sd-service-common";
+import { SdServiceFactoryProvider } from "./SdServiceFactoryProvider";
+import { DateOnly, DateTime, Time } from "@simplysm/sd-core-common";
+import { sdCheck } from "../utils/hooks";
 
-@Injectable({providedIn: "root"})
-export class SdSharedDataProvider {
+export function getSharedData$<T extends Record<string, ISharedDataBase<string | number>>, K extends keyof T>(
+  name: K,
+): Promise<T[K][]> & {
+  last: T[K][];
+} {
+  const provider = inject(SdSharedDataProvider);
+  const cdr = inject(ChangeDetectorRef, { optional: true }) ?? undefined;
+
+  const promise = provider.getDataAsync(name as string, cdr);
+  promise["last"] = [];
+  sdCheck(
+    async () => ({
+      [`sharedData[${name as string}]`]: [await promise],
+    }),
+    async () => {
+      promise["last"] = await promise;
+    },
+  );
+
+  return promise as any;
+}
+
+export function getSharedDataMap$<T extends Record<string, ISharedDataBase<string | number>>, K extends keyof T>(
+  name: K,
+): Promise<Map<T[K]["__valueKey"], T[K]>> & {
+  last: Map<T[K]["__valueKey"], T[K]>;
+} {
+  const provider = inject(SdSharedDataProvider);
+  const cdr = inject(ChangeDetectorRef, { optional: true }) ?? undefined;
+
+  const promise = provider.getDataAsync(name as string, cdr).then((data) => data.toMap((item) => item.__valueKey));
+  promise["last"] = new Map();
+
+  sdCheck(
+    async () => ({
+      [`sharedDataMap[${name as string}]`]: [await promise],
+    }),
+    async () => {
+      promise["last"] = await promise;
+    },
+  );
+
+  return promise as any;
+}
+
+export async function emitSharedDataChangedAsync<
+  T extends Record<string, ISharedDataBase<string | number>>,
+  K extends keyof T,
+>(name: K, changeKeys?: T[K]["__valueKey"][]) {
+  const provider = inject(SdSharedDataProvider);
+  await provider.emitAsync(name as string, changeKeys);
+}
+
+@Injectable({ providedIn: "root" })
+export class SdSharedDataProvider<T extends Record<string, any>> {
   #sdServiceFactory = inject(SdServiceFactoryProvider);
 
-  #infoRecord: Record<string, ISharedDataInfo<ISharedDataBase<string | number>> | undefined> = {};
-  #dataRecord: Record<string, {
-    arr: ISharedDataBase<string | number>[];
-    map: Map<string | number, ISharedDataBase<string | number>>;
-  } | undefined> = {};
-  #listenerRecord: Record<string, string | undefined> = {};
-  #isProcessingRecord: Record<string, boolean | undefined> = {};
-  #cdrRecord: Record<string, ChangeDetectorRef[] | undefined> = {};
+  #infoMap = new Map<keyof T, ISharedDataInnerInfo<T[keyof T]>>();
 
   async clearAsync() {
-    await Wait.until(() => {
-      return Object.keys(this.#isProcessingRecord)
-        .every((dataType) => !this.#isProcessingRecord[dataType]);
-    });
+    for (const info of this.#infoMap.values()) {
+      info.data?.clear();
+      if (info.cdrSet) {
+        for (const cdr of info.cdrSet) {
+          cdr.markForCheck();
+        }
+      }
 
-    for (const dataType of Object.keys(this.#listenerRecord)) {
-      // noinspection ES6MissingAwait
-      void this.#sdServiceFactory
-        .get(this.#infoRecord[dataType]!.serviceKey)
-        .removeEventListenerAsync(this.#listenerRecord[dataType]!);
+      if (info.listenerKey == null) continue;
+
+      await this.#sdServiceFactory.get(info.getter.serviceKey).removeEventListenerAsync(info.listenerKey);
     }
 
-    this.#infoRecord = {};
-    this.#dataRecord = {};
-    this.#listenerRecord = {};
+    this.#infoMap.clear();
+  }
 
-    for (const dataType of Object.keys(this.#cdrRecord)) {
-      for (const cdr of this.#cdrRecord[dataType]!) {
+  register<K extends keyof T>(name: K, getter: ISharedDataInfo<T[K]>) {
+    if (this.#infoMap.has(name))
+      throw new Error(`'${name as string}'에 대한 공유데이터 정보가 이미 등록되이 있습니다.`);
+    this.#infoMap.set(name, { getter: getter as any });
+  }
+
+  async emitAsync<K extends keyof T>(name: K, changeKeys?: T[K]["__valueKey"][]) {
+    const info = this.#infoMap.get(name);
+    if (!info) throw new Error(`'${name as string}'에 대한 공유데이터 정보가 없습니다.`);
+
+    await this.#sdServiceFactory
+      .get(info.getter.serviceKey)
+      .emitAsync(SdSharedDataChangeEvent, (item) => item === name, changeKeys);
+  }
+
+  async getDataAsync<K extends keyof T>(name: K, cdr?: ChangeDetectorRef): Promise<T[K][]> {
+    const info = this.#infoMap.get(name);
+    if (!info) throw new Error(`'${name as string}'에 대한 공유데이터 정보가 없습니다.`);
+
+    //-- cdr
+    if (cdr) {
+      info.cdrSet = info.cdrSet ?? new Set();
+      if (!info.cdrSet.has(cdr)) {
+        info.cdrSet.add(cdr);
+        (cdr as ViewRef).onDestroy(() => {
+          info.cdrSet!.delete(cdr);
+        });
+      }
+    }
+
+    //-- data
+    if (!info.data) {
+      info.data = [];
+
+      await this.#loadDataAsync(name);
+    }
+
+    //-- listener
+    if (info.listenerKey == null) {
+      info.listenerKey = await this.#sdServiceFactory
+        .get(info.getter.serviceKey)
+        .addEventListenerAsync(SdSharedDataChangeEvent, name as string, async (changeKeys) => {
+          await this.#loadDataAsync(name, changeKeys);
+        });
+    }
+
+    return info.data as any;
+  }
+
+  async #loadDataAsync<K extends keyof T>(name: K, changeKeys?: T[K]["__valueKey"][]) {
+    const info = this.#infoMap.get(name);
+    if (!info) throw new Error(`'${name as string}'에 대한 공유데이터 로직 정보가 없습니다.`);
+    if (!info.data) throw new Error(`'${name as string}'에 대한 공유데이터 저장소가 없습니다.`);
+
+    const resData = await info.getter.getDataAsync(changeKeys);
+
+    if (!changeKeys) {
+      this.#orderingThis(resData, info.getter.orderBy);
+      info.data.clear();
+      info.data.push(...resData);
+    } else {
+      // 삭제된 항목 제거 (DB에 없는 항목)
+      const deleteKeys = changeKeys.filter((changeKey) => !resData.some((resItem) => resItem.__valueKey === changeKey));
+      info.data.remove((item) => deleteKeys.includes(item.__valueKey));
+
+      // 수정된 항목 변경
+      for (const resItem of resData) {
+        const currItemKey = resItem.__valueKey;
+
+        const resItemIndex = info.data.findIndex((item) => item.__valueKey === currItemKey);
+        if (resItemIndex >= 0) {
+          info.data[resItemIndex] = resItem;
+        } else {
+          info.data.push(resItem);
+        }
+      }
+
+      // 재정렬
+      this.#orderingThis(info.data as any, info.getter.orderBy);
+    }
+
+    if (info.cdrSet) {
+      for (const cdr of info.cdrSet) {
         cdr.markForCheck();
       }
     }
   }
 
-  register<T extends ISharedDataBase<string | number>>(dataType: string, info: ISharedDataInfo<T>) {
-    if (this.#infoRecord[dataType]) {
-      throw new Error("SharedData 정보, 중복 등록 불가");
-    }
-
-    // noinspection ES6MissingAwait
-    void this.#sdServiceFactory.get(info.serviceKey)
-      .removeEventListenerAsync(this.#listenerRecord[dataType]!);
-
-    this.#infoRecord[dataType] = info as any;
-
-    delete this.#listenerRecord[dataType];
-    delete this.#dataRecord[dataType];
-
-    for (const cdr of this.#cdrRecord[dataType] ?? []) {
-      cdr.markForCheck();
-    }
-  }
-
-  async emitAsync(dataType: string, changeKeys?: (string | number)[]) {
-    const info = this.#infoRecord[dataType];
-    if (!info) throw new Error(`'${dataType}'에 대한 'SdSharedData' 로직 정보가 없습니다.`);
-
-    await this.#sdServiceFactory.get(info.serviceKey).emitAsync(
-      SdSharedDataChangeEvent,
-      (item) => item === dataType,
-      changeKeys
-    );
-  }
-
-  async getDataAsync(dataType: string, cdr: ChangeDetectorRef): Promise<ISharedDataBase<string | number>[]> {
-    await this.#loadDataAsync(dataType);
-    await this.#addListenerAsync(dataType);
-
-    this.#cdrRecord[dataType] = this.#cdrRecord[dataType] ?? [];
-    this.#cdrRecord[dataType].push(cdr);
-
-    return this.#dataRecord[dataType]!.arr;
-  }
-
-  async getDataMapAsync(dataType: string, cdr: ChangeDetectorRef): Promise<Map<number | string, ISharedDataBase<string | number>>> {
-    await this.#loadDataAsync(dataType);
-    await this.#addListenerAsync(dataType);
-
-    this.#cdrRecord[dataType] = this.#cdrRecord[dataType] ?? [];
-    this.#cdrRecord[dataType].push(cdr);
-
-    return this.#dataRecord[dataType]!.map;
-  }
-
-  async #loadDataAsync(dataType: string): Promise<void> {
-    if (this.#dataRecord[dataType]) return;
-
-    if (this.#isProcessingRecord[dataType]) {
-      await Wait.until(() => !this.#isProcessingRecord[dataType]);
-    }
-    this.#isProcessingRecord[dataType] = true;
-
-    // 정보 등록 확인
-    const info = this.#infoRecord[dataType];
-    if (!info) throw new Error(`'${dataType}'에 대한 'SdSharedData' 로직 정보가 없습니다.`);
-
-    let data = await info.getData();
-    for (const orderBy of info.orderBy.reverse()) {
-      data = orderBy[1] === "desc"
-        ? data.orderByDesc((item) => orderBy[0](item))
-        : data.orderBy((item) => orderBy[0](item));
-    }
-    this.#dataRecord[dataType] = {
-      arr: data,
-      map: data.toMap((item) => item.__valueKey)
-    };
-
-    this.#isProcessingRecord[dataType] = false;
-  }
-
-  async #addListenerAsync(dataType: string) {
-    if (this.#listenerRecord[dataType] !== undefined) return;
-
-    const info = this.#infoRecord[dataType];
-    if (!info) throw new Error(`'${dataType}'에 대한 'SdSharedData' 로직 정보가 없습니다.`);
-
-    this.#listenerRecord[dataType] = await this.#sdServiceFactory.get(info.serviceKey)
-      .addEventListenerAsync(
-        SdSharedDataChangeEvent,
-        dataType,
-        async (changeKeys) => {
-          await this.#reloadAsync(dataType, changeKeys);
-        }
-      );
-  }
-
-  async #reloadAsync(dataType: string, changeKeys?: (string | number)[]) {
-    const info = this.#infoRecord[dataType];
-    if (!info) throw new Error(`'${dataType}'에 대한 'SdSharedData' 로직 정보가 없습니다.`);
-
-    let currData = await info.getData(changeKeys);
-
-    if (changeKeys) {
-      // 삭제된 항목 제거 (DB에 없는 항목)
-      const deleteKeys = changeKeys.filter((changeKey) => !currData.some((currItem) => currItem.__valueKey === changeKey));
-      this.#dataRecord[dataType]!.arr.remove((item) => deleteKeys.includes(item.__valueKey));
-      for (const deleteKey of deleteKeys) {
-        this.#dataRecord[dataType]!.map.delete(deleteKey);
+  #orderingThis<TT extends T[keyof T]>(
+    data: TT[],
+    orderByList: [(data: TT) => string | number | DateOnly | DateTime | Time | undefined, "asc" | "desc"][],
+  ): void {
+    for (const orderBy of orderByList.reverse()) {
+      if (orderBy[1] === "desc") {
+        data.orderByDescThis((item) => orderBy[0](item));
+      } else {
+        data.orderByThis((item) => orderBy[0](item));
       }
-
-      // 수정된 항목 변경
-      for (const currItem of currData) {
-        const currItemKey = currItem.__valueKey;
-
-        const currItemIndex = this.#dataRecord[dataType]!.arr.findIndex((item) => item.__valueKey === currItemKey);
-        if (currItemIndex >= 0) {
-          this.#dataRecord[dataType]!.arr[currItemIndex] = currItem;
-        }
-        else {
-          this.#dataRecord[dataType]!.arr.push(currItem);
-        }
-
-        this.#dataRecord[dataType]!.map.set(currItemKey, currItem);
-      }
-
-      // 재정렬
-      if (currData.length > 0) {
-        for (const orderBy of info.orderBy.reverse()) {
-          if (orderBy[1] === "desc") {
-            this.#dataRecord[dataType]!.arr.orderByDescThis((item) => orderBy[0](item));
-          }
-          else {
-            this.#dataRecord[dataType]!.arr.orderByThis((item) => orderBy[0](item));
-          }
-        }
-      }
-    }
-    // 모든항목 새로고침
-    else {
-      for (const orderBy of info.orderBy.reverse()) {
-        currData = orderBy[1] === "desc" ? currData.orderByDesc((item) => orderBy[0](item))
-          : currData.orderBy((item) => orderBy[0](item));
-      }
-
-      this.#dataRecord[dataType]!.arr.clear();
-      this.#dataRecord[dataType]!.map.clear();
-      this.#dataRecord[dataType]!.arr.push(...currData);
-      for (const currItem of currData) {
-        this.#dataRecord[dataType]!.map.set(currItem.__valueKey, currItem);
-      }
-    }
-
-    for (const cdr of this.#cdrRecord[dataType] ?? []) {
-      cdr.markForCheck();
     }
   }
 }
 
 export interface ISharedDataInfo<T extends ISharedDataBase<string | number>> {
   serviceKey: string;
-  getData: (changeKeys?: (T["__valueKey"])[]) => T[] | Promise<T[]>;
+  getDataAsync: (changeKeys?: T["__valueKey"][]) => Promise<T[]>;
   orderBy: [(data: T) => any, "asc" | "desc"][];
+}
+
+interface ISharedDataInnerInfo<T extends ISharedDataBase<string | number>> {
+  getter: ISharedDataInfo<T>;
+  cdrSet?: Set<ChangeDetectorRef>;
+  listenerKey?: string;
+  data?: ISharedDataBase<string | number>[];
 }
 
 export interface ISharedDataBase<VK extends string | number> {
@@ -207,5 +202,4 @@ export interface ISharedDataBase<VK extends string | number> {
   __parentKey?: VK;
 }
 
-export class SdSharedDataChangeEvent extends SdServiceEventListenerBase<string, (string | number)[] | undefined> {
-}
+export class SdSharedDataChangeEvent extends SdServiceEventListenerBase<string, (string | number)[] | undefined> {}

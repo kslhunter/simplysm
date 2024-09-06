@@ -1,7 +1,7 @@
-import {inject, Injectable} from "@angular/core";
-import {SdLocalStorageProvider} from "./SdLocalStorageProvider";
+import { inject, Injectable } from "@angular/core";
+import { SdLocalStorageProvider } from "./SdLocalStorageProvider";
 
-@Injectable({providedIn: "root"})
+@Injectable({ providedIn: "root" })
 export class SdSystemConfigProvider {
   #sdLocalStorage = inject(SdLocalStorageProvider);
 
@@ -13,8 +13,7 @@ export class SdSystemConfigProvider {
   async setAsync(key: string, data: any) {
     if (this.fn) {
       await this.fn.set(key, data);
-    }
-    else {
+    } else {
       this.#sdLocalStorage.set(key, data);
     }
   }
@@ -22,8 +21,7 @@ export class SdSystemConfigProvider {
   async getAsync(key: string) {
     if (this.fn) {
       return await this.fn.get(key);
-    }
-    else {
+    } else {
       return this.#sdLocalStorage.get(key);
     }
   }

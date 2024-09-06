@@ -1,126 +1,130 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  DoCheck,
   EventEmitter,
   inject,
-  Injector,
   Input,
-  Output, ViewEncapsulation
+  Output,
+  ViewEncapsulation,
 } from "@angular/core";
-import {SdAnchorControl} from "./SdAnchorControl";
-import {SdIconControl} from "./SdIconControl";
-import {coercionNumber} from "../utils/commons";
-import {SdNgHelper} from "../utils/SdNgHelper";
-import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
+import { SdAnchorControl } from "./SdAnchorControl";
+import { SdIconControl } from "./SdIconControl";
+import { coercionNumber } from "../utils/commons";
+import { SdAngularOptionsProvider } from "../providers/SdAngularOptionsProvider";
+import { sdGetter } from "../utils/hooks";
 
 @Component({
   selector: "sd-pagination",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [
-    SdAnchorControl,
-    SdIconControl
-  ],
+  imports: [SdAnchorControl, SdIconControl],
   template: `
-    <sd-anchor [disabled]="!hasPrev" (click)="onGoFirstClick()">
-      <sd-icon [icon]="icons.angleDoubleLeft" fixedWidth/>
+    <sd-anchor [disabled]="!getHasPrev()" (click)="onGoFirstClick()">
+      <sd-icon [icon]="icons.angleDoubleLeft" fixedWidth />
     </sd-anchor>
-    <sd-anchor [disabled]="!hasPrev" (click)="onPrevClick()">
-      <sd-icon [icon]="icons.angleLeft" fixedWidth/>
+    <sd-anchor [disabled]="!getHasPrev()" (click)="onPrevClick()">
+      <sd-icon [icon]="icons.angleLeft" fixedWidth />
     </sd-anchor>
-    @for (displayPage of displayPages; track displayPage) {
-      <sd-anchor (click)="onPageClick(displayPage)"
-                 [attr.sd-selected]="displayPage === page">
+    @for (displayPage of getDisplayPages(); track displayPage) {
+      <sd-anchor (click)="onPageClick(displayPage)" [attr.sd-selected]="displayPage === page">
         {{ displayPage + 1 }}
       </sd-anchor>
     }
-    <sd-anchor [disabled]="!hasNext" (click)="onNextClick()">
-      <sd-icon [icon]="icons.angleRight" fixedWidth/>
+    <sd-anchor [disabled]="!getHasNext()" (click)="onNextClick()">
+      <sd-icon [icon]="icons.angleRight" fixedWidth />
     </sd-anchor>
-    <sd-anchor [disabled]="!hasNext" (click)="onGoLastClick()">
-      <sd-icon [icon]="icons.angleDoubleRight" fixedWidth/>
-    </sd-anchor>`,
-  styles: [/* language=SCSS */ `
-    @import "../scss/mixins";
+    <sd-anchor [disabled]="!getHasNext()" (click)="onGoLastClick()">
+      <sd-icon [icon]="icons.angleDoubleRight" fixedWidth />
+    </sd-anchor>
+  `,
+  styles: [
+    /* language=SCSS */ `
+      @import "../scss/mixins";
 
-    sd-pagination {
-      //display: block;
-      display: flex;
-      flex-direction: row;
+      sd-pagination {
+        //display: block;
+        display: flex;
+        flex-direction: row;
 
-      > sd-anchor {
-        display: inline-block;
-        padding: var(--gap-sm);
-        //  margin: var(--gap-xs);
-        //  border-radius: var(--border-radius-sm);
-        //
-        &[sd-selected=true] {
-          text-decoration: underline;
+        > sd-anchor {
+          display: inline-block;
+          padding: var(--gap-sm);
+          //  margin: var(--gap-xs);
+          //  border-radius: var(--border-radius-sm);
+          //
+          &[sd-selected="true"] {
+            text-decoration: underline;
+          }
+
+          //
+          //  @include active-effect(true);
+          //
+          //  &:hover {
+          //    background: var(--theme-grey-lightest);
+          //  }
         }
-
-        //
-        //  @include active-effect(true);
-        //  
-        //  &:hover {
-        //    background: var(--theme-grey-lightest);
-        //  }
       }
-    }
-  `]
+    `,
+  ],
 })
-export class SdPaginationControl implements DoCheck {
+export class SdPaginationControl {
   icons = inject(SdAngularOptionsProvider).icons;
 
-  @Input({transform: coercionNumber}) page = 0;
+  @Input({ transform: coercionNumber }) page = 0;
   @Output() pageChange = new EventEmitter<number>();
 
-  @Input({transform: coercionNumber}) pageLength = 0;
-  @Input({transform: coercionNumber}) displayPageLength = 10;
+  @Input({ transform: coercionNumber }) pageLength = 0;
+  @Input({ transform: coercionNumber }) displayPageLength = 10;
 
-  displayPages: number[] = [];
+  getDisplayPages = sdGetter(
+    () => ({
+      pageLength: [this.pageLength],
+      page: [this.page],
+      displayPageLength: [this.displayPageLength],
+    }),
+    () => {
+      const pages: number[] = [];
+      for (let i = 0; i < this.pageLength; i++) {
+        pages.push(i);
+      }
 
-  get hasNext() {
-    return (this.displayPages.last() ?? 0) < (this.pageLength - 1);
-  };
+      const from = Math.floor(this.page / this.displayPageLength) * this.displayPageLength;
+      const to = Math.min(from + this.displayPageLength, this.pageLength);
+      return pages.filter((item) => item >= from && item < to);
+    },
+  );
 
-  get hasPrev() {
-    return (this.displayPages[0] ?? 0) > 0;
-  }
+  getHasNext = sdGetter(
+    () => ({
+      pageLength: [this.pageLength],
+      displayPage: [this.getDisplayPages()],
+    }),
+    () => {
+      return (this.getDisplayPages().last() ?? 0) < this.pageLength - 1;
+    },
+  );
 
-  #sdNgHelper = new SdNgHelper(inject(Injector));
-
-  ngDoCheck() {
-    this.#sdNgHelper.doCheck(run => {
-      run({
-        pageLength: [this.pageLength],
-        page: [this.page],
-        displayPageLength: [this.displayPageLength],
-      }, () => {
-        const pages: number[] = [];
-        for (let i = 0; i < this.pageLength; i++) {
-          pages.push(i);
-        }
-
-        const from = Math.floor(this.page / this.displayPageLength) * this.displayPageLength;
-        const to = Math.min(from + this.displayPageLength, this.pageLength);
-        this.displayPages = pages.filter((item) => item >= from && item < to);
-      });
-    });
-  }
+  getHasPrev = sdGetter(
+    () => ({
+      displayPage: [this.getDisplayPages()],
+    }),
+    () => {
+      return (this.getDisplayPages().first() ?? 0) > 0;
+    },
+  );
 
   onPageClick(page: number) {
     this.#setPage(page);
   }
 
   onNextClick() {
-    const page = (this.displayPages.last() ?? 0) + 1;
+    const page = (this.getDisplayPages().last() ?? 0) + 1;
     this.#setPage(page);
   }
 
   onPrevClick() {
-    const page = (this.displayPages[0] ?? 0) - 1;
+    const page = (this.getDisplayPages().first() ?? 0) - 1;
     this.#setPage(page);
   }
 
@@ -136,12 +140,8 @@ export class SdPaginationControl implements DoCheck {
 
   #setPage(page: number) {
     if (this.page !== page) {
-      if (this.pageChange.observed) {
-        this.pageChange.emit(page);
-      }
-      else {
-        this.page = page;
-      }
+      this.page = page;
+      this.pageChange.emit(page);
     }
   }
 }

@@ -1,6 +1,6 @@
-import {Injectable} from "@angular/core";
+import { Injectable } from "@angular/core";
 
-@Injectable({providedIn: "root"})
+@Injectable({ providedIn: "root" })
 export class SdNavigateWindowProvider {
   get isWindow(): boolean {
     const urlSearchParams = new URLSearchParams(location.hash.slice(location.hash.indexOf(";") + 1));
@@ -10,9 +10,9 @@ export class SdNavigateWindowProvider {
   open(navigate: string, params?: Record<string, string> | undefined, features?: string): void {
     if (this.isWindow || (features !== undefined && features !== "_blank")) {
       const newWindow = window.open(
-        `${location.pathname}#${navigate};${new URLSearchParams({...params, window: "true"}).toString()}`,
+        `${location.pathname}#${navigate};${new URLSearchParams({ ...params, window: "true" }).toString()}`,
         "",
-        features
+        features,
       );
 
       window.addEventListener("beforeunload", () => {
@@ -20,12 +20,8 @@ export class SdNavigateWindowProvider {
           newWindow.close();
         }
       });
-    }
-    else {
-      window.open(
-        `${location.pathname}#${navigate};${new URLSearchParams(params).toString()}`,
-        "_blank"
-      );
+    } else {
+      window.open(`${location.pathname}#${navigate};${new URLSearchParams(params).toString()}`, "_blank");
     }
   }
 }

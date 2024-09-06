@@ -1,5 +1,5 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output, ViewEncapsulation} from "@angular/core";
-import {coercionBoolean} from "../utils/commons";
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, ViewEncapsulation } from "@angular/core";
+import { coercionBoolean } from "../utils/commons";
 
 @Component({
   selector: "sd-checkbox-group",
@@ -8,15 +8,11 @@ import {coercionBoolean} from "../utils/commons";
   standalone: true,
   imports: [],
   template: `
-    <ng-content></ng-content>`,
-  host: {
-    "[attr.sd-disabled]": "disabled"
-  }
+    <ng-content></ng-content>
+  `,
 })
 export class SdCheckboxGroupControl<T> {
   @Input() value: T[] = [];
   @Output() valueChange = new EventEmitter<T[]>();
-
-  @Input({transform: coercionBoolean}) disabled = false;
-  @Input() keyProp?: string;
+  @Input({ transform: coercionBoolean }) disabled = false;
 }

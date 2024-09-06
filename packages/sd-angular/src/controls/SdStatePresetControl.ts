@@ -1,127 +1,123 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  DoCheck,
   EventEmitter,
   inject,
-  Injector,
   Input,
-  Output, ViewEncapsulation
+  Output,
+  ViewEncapsulation,
 } from "@angular/core";
-import {ObjectUtil} from "@simplysm/sd-core-common";
-import {SdSystemConfigProvider} from "../providers/SdSystemConfigProvider";
-import {SdToastProvider} from "../providers/SdToastProvider";
-import {SdGapControl} from "./SdGapControl";
-import {SdAnchorControl} from "./SdAnchorControl";
-import {SdNgHelper} from "../utils/SdNgHelper";
-import {SdIconControl} from "./SdIconControl";
-import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
+import { ObjectUtil } from "@simplysm/sd-core-common";
+import { SdSystemConfigProvider } from "../providers/SdSystemConfigProvider";
+import { SdToastProvider } from "../providers/SdToastProvider";
+import { SdGapControl } from "./SdGapControl";
+import { SdAnchorControl } from "./SdAnchorControl";
+import { SdIconControl } from "./SdIconControl";
+import { SdAngularOptionsProvider } from "../providers/SdAngularOptionsProvider";
+import { sdCheck } from "../utils/hooks";
 
 @Component({
   selector: "sd-state-preset",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [
-    SdAnchorControl,
-    SdGapControl,
-    SdIconControl,
-  ],
+  imports: [SdAnchorControl, SdGapControl, SdIconControl],
   template: `
     <sd-anchor (click)="onAddButtonClick()">
-      <sd-icon [icon]="icons.star" class="tx-theme-warning-default" fixedWidth/>
+      <sd-icon [icon]="icons.star" class="tx-theme-warning-default" fixedWidth />
     </sd-anchor>
     <sd-gap width="sm"></sd-gap>
     @for (preset of presets; track preset.name) {
       <div>
-        <sd-anchor (click)="onItemClick(preset)"
-                   class="tx-trans-default">
+        <sd-anchor (click)="onItemClick(preset)" class="tx-trans-default">
           {{ preset.name }}
         </sd-anchor>
         <sd-anchor (click)="onSaveButtonClick(preset)">
-          <sd-icon [icon]="icons.save" size="sm"/>
+          <sd-icon [icon]="icons.save" size="sm" />
         </sd-anchor>
         <sd-anchor (click)="onRemoveButtonClick(preset)">
-          <sd-icon [icon]="icons.xmark" size="sm"/>
+          <sd-icon [icon]="icons.xmark" size="sm" />
         </sd-anchor>
       </div>
       <sd-gap width="sm"></sd-gap>
     }
   `,
-  styles: [/* language=SCSS */ `
-    sd-state-preset {
-      display: inline-block;
-      vertical-align: top;
-
-      > sd-anchor {
+  styles: [
+    /* language=SCSS */ `
+      sd-state-preset {
         display: inline-block;
         vertical-align: top;
-        line-height: var(--line-height);
-        border: 1px solid transparent;
-        padding: var(--gap-sm) var(--gap-default);
-      }
-
-      > div {
-        display: inline-block;
-        vertical-align: top;
-        line-height: var(--line-height);
-        border: 1px solid transparent;
-        padding: var(--gap-sm) var(--gap-default);
-
-        background: var(--theme-grey-lightest);
-        border-radius: var(--border-radius-lg);
-
-        &:hover {
-          background: var(--theme-grey-lighter);
-        }
 
         > sd-anchor {
-          padding: 0 var(--gap-sm);
+          display: inline-block;
+          vertical-align: top;
+          line-height: var(--line-height);
+          border: 1px solid transparent;
+          padding: var(--gap-sm) var(--gap-default);
         }
-      }
 
-      &[sd-size=sm] {
-        > sd-anchor,
         > div {
-          padding: var(--gap-xs) var(--gap-default);
-        }
-      }
+          display: inline-block;
+          vertical-align: top;
+          line-height: var(--line-height);
+          border: 1px solid transparent;
+          padding: var(--gap-sm) var(--gap-default);
 
-      &[sd-size=lg] {
-        > sd-anchor,
-        > div {
-          padding: var(--gap-default) var(--gap-lg);
+          background: var(--theme-grey-lightest);
+          border-radius: var(--border-radius-lg);
+
+          &:hover {
+            background: var(--theme-grey-lighter);
+          }
+
+          > sd-anchor {
+            padding: 0 var(--gap-sm);
+          }
+        }
+
+        &[sd-size="sm"] {
+          > sd-anchor,
+          > div {
+            padding: var(--gap-xs) var(--gap-default);
+          }
+        }
+
+        &[sd-size="lg"] {
+          > sd-anchor,
+          > div {
+            padding: var(--gap-default) var(--gap-lg);
+          }
         }
       }
-    }
-  `],
+    `,
+  ],
   host: {
-    "[attr.sd-size]": "size"
-  }
+    "[attr.sd-size]": "size",
+  },
 })
-export class SdStatePresetControl implements DoCheck {
+export class SdStatePresetControl {
+  icons = inject(SdAngularOptionsProvider).icons;
+
   #sdSystemConfig = inject(SdSystemConfigProvider);
   #sdToast = inject(SdToastProvider);
-  icons = inject(SdAngularOptionsProvider).icons;
 
   @Input() state?: any;
   @Output() stateChange = new EventEmitter<any>();
 
-  @Input({required: true}) key!: string;
+  @Input({ required: true }) key!: string;
   @Input() size?: "sm" | "lg";
 
   presets: ISdStatePresetVM[] = [];
 
-  #sdNgHelper = new SdNgHelper(inject(Injector));
-
-  ngDoCheck(): void {
-    this.#sdNgHelper.doCheck(async run => {
-      await run({
-        key: [this.key]
-      }, async () => {
+  constructor() {
+    sdCheck(
+      () => ({
+        key: [this.key],
+      }),
+      async () => {
         this.presets = (await this.#sdSystemConfig.getAsync(`sd-state-preset.${this.key}`)) ?? [];
-      });
-    });
+      },
+    );
   }
 
   async onAddButtonClick() {
@@ -130,7 +126,7 @@ export class SdStatePresetControl implements DoCheck {
 
     this.presets.push({
       name: newName,
-      state: ObjectUtil.clone(this.state)
+      state: ObjectUtil.clone(this.state),
     });
     await this.#sdSystemConfig.setAsync(`sd-state-preset.${this.key}`, this.presets);
 
@@ -139,12 +135,8 @@ export class SdStatePresetControl implements DoCheck {
 
   onItemClick(preset: ISdStatePresetVM) {
     if (!ObjectUtil.equal(this.state, preset.state)) {
-      if (this.stateChange.observed) {
-        this.stateChange.emit(ObjectUtil.clone(preset.state));
-      }
-      else {
-        this.state = preset.state;
-      }
+      this.state = ObjectUtil.clone(preset.state);
+      this.stateChange.emit(this.state);
     }
   }
 

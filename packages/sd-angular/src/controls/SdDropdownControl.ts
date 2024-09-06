@@ -2,20 +2,19 @@ import {
   ChangeDetectionStrategy,
   Component,
   ContentChild,
-  DoCheck,
   ElementRef,
   EventEmitter,
   HostListener,
   inject,
-  Injector,
   Input,
   NgZone,
   Output,
-  ViewChild, ViewEncapsulation
+  ViewChild,
+  ViewEncapsulation,
 } from "@angular/core";
-import {coercionBoolean} from "../utils/commons";
-import {SdDropdownPopupControl} from "./SdDropdownPopupControl";
-import {SdNgHelper} from "../utils/SdNgHelper";
+import { coercionBoolean } from "../utils/commons";
+import { SdDropdownPopupControl } from "./SdDropdownPopupControl";
+import { sdCheck } from "../utils/hooks";
 
 @Component({
   selector: "sd-dropdown",
@@ -24,41 +23,45 @@ import {SdNgHelper} from "../utils/SdNgHelper";
   standalone: true,
   imports: [],
   template: `
-    <div #contentEl
-         class="_sd-dropdown-control"
-         [attr.tabindex]="disabled ? undefined : '0'"
-         [class]="contentClass"
-         [style]="contentStyle"
-         (click)="onContentClick()"
-         (keydown)="onContentKeydown($event)">
-      <ng-content/>
+    <div
+      #contentEl
+      class="_sd-dropdown-control"
+      [attr.tabindex]="disabled ? undefined : '0'"
+      [class]="contentClass"
+      [style]="contentStyle"
+      (click)="onContentClick()"
+      (keydown)="onContentKeydown($event)"
+    >
+      <ng-content />
     </div>
-    <ng-content select="sd-dropdown-popup"/>`,
+    <ng-content select="sd-dropdown-popup" />
+  `,
   host: {
-    "[attr.sd-disabled]": "disabled"
-  }
+    "[attr.sd-disabled]": "disabled",
+  },
 })
-export class SdDropdownControl implements DoCheck {
+export class SdDropdownControl {
   #elRef: ElementRef<HTMLElement> = inject(ElementRef);
   #ngZone = inject(NgZone);
 
-  @Input({transform: coercionBoolean}) open = false;
+  @Input({ transform: coercionBoolean }) open = false;
   @Output() openChange = new EventEmitter<boolean>();
 
-  @Input({transform: coercionBoolean}) disabled = false;
+  @Input({ transform: coercionBoolean }) disabled = false;
+
   @Input() contentClass?: string;
   @Input() contentStyle?: string;
 
-  @ViewChild("contentEl", {static: true}) contentElRef!: ElementRef<HTMLElement>;
-  @ContentChild(SdDropdownPopupControl, {static: true, read: ElementRef}) popupElRef!: ElementRef<HTMLElement>;
+  @ViewChild("contentEl", { static: true }) contentElRef!: ElementRef<HTMLElement>;
 
-  #sdNgHelper = new SdNgHelper(inject(Injector));
+  @ContentChild(SdDropdownPopupControl, { static: true, read: ElementRef }) popupElRef!: ElementRef<HTMLElement>;
 
-  ngDoCheck() {
-    this.#sdNgHelper.doCheckOutside(run => {
-      run({
-        open: [this.open]
-      }, () => {
+  constructor() {
+    sdCheck.outside(
+      () => ({
+        open: [this.open],
+      }),
+      () => {
         if (this.open) {
           document.body.appendChild(this.popupElRef.nativeElement);
 
@@ -71,22 +74,18 @@ export class SdDropdownControl implements DoCheck {
             const isPlaceBottom = window.innerHeight < windowOffset.top * 2;
             const isPlaceRight = window.innerWidth < windowOffset.left * 2;
 
-            Object.assign(
-              popupEl.style,
-              {
-                top: isPlaceBottom ? "" : (windowOffset.top + contentEl.offsetHeight + 2) + "px",
-                bottom: isPlaceBottom ? (window.innerHeight - windowOffset.top) + "px" : "",
-                left: isPlaceRight ? "" : windowOffset.left + "px",
-                right: isPlaceRight ? (window.innerWidth - windowOffset.left - contentEl.offsetWidth) + "px" : "",
-                minWidth: contentEl.offsetWidth + "px",
-                opacity: "1",
-                pointerEvents: "auto",
-                transform: "none"
-              }
-            );
+            Object.assign(popupEl.style, {
+              top: isPlaceBottom ? "" : windowOffset.top + contentEl.offsetHeight + 2 + "px",
+              bottom: isPlaceBottom ? window.innerHeight - windowOffset.top + "px" : "",
+              left: isPlaceRight ? "" : windowOffset.left + "px",
+              right: isPlaceRight ? window.innerWidth - windowOffset.left - contentEl.offsetWidth + "px" : "",
+              minWidth: contentEl.offsetWidth + "px",
+              opacity: "1",
+              pointerEvents: "auto",
+              transform: "none",
+            });
           });
-        }
-        else {
+        } else {
           const contentEl = this.contentElRef.nativeElement;
           const popupEl = this.popupElRef.nativeElement;
 
@@ -94,23 +93,20 @@ export class SdDropdownControl implements DoCheck {
             contentEl.focus();
           }
 
-          Object.assign(
-            popupEl.style,
-            {
-              top: "",
-              bottom: "",
-              left: "",
-              right: "",
-              minWidth: "",
-              opacity: "",
-              pointerEvents: "",
-              transform: "",
-            }
-          );
+          Object.assign(popupEl.style, {
+            top: "",
+            bottom: "",
+            left: "",
+            right: "",
+            minWidth: "",
+            opacity: "",
+            pointerEvents: "",
+            transform: "",
+          });
           popupEl.remove();
         }
-      });
-    });
+      },
+    );
   }
 
   #openPopup() {
@@ -119,13 +115,6 @@ export class SdDropdownControl implements DoCheck {
 
     this.open = true;
     this.openChange.emit(true);
-
-    /*if (this.openChange.observed) {
-      this.openChange.emit(true);
-    }
-    else {
-      this.open = true;
-    }*/
   }
 
   #closePopup() {
@@ -133,13 +122,6 @@ export class SdDropdownControl implements DoCheck {
 
     this.open = false;
     this.openChange.emit(false);
-
-    /*if (this.openChange.observed) {
-      this.openChange.emit(false);
-    }
-    else {
-      this.open = false;
-    }*/
   }
 
   @HostListener("document:scroll.capture.outside", ["$event"])
@@ -151,24 +133,17 @@ export class SdDropdownControl implements DoCheck {
       const windowOffset = contentEl.getRelativeOffset(window.document.body);
 
       if (window.innerHeight < windowOffset.top * 2) {
-        Object.assign(
-          popupEl.style,
-          {
-            top: "",
-            bottom: (window.innerHeight - windowOffset.top) + "px",
-            left: windowOffset.left + "px"
-          }
-        );
-      }
-      else {
-        Object.assign(
-          popupEl.style,
-          {
-            top: (windowOffset.top + this.contentElRef.nativeElement.offsetHeight) + "px",
-            bottom: "",
-            left: windowOffset.left + "px"
-          }
-        );
+        Object.assign(popupEl.style, {
+          top: "",
+          bottom: window.innerHeight - windowOffset.top + "px",
+          left: windowOffset.left + "px",
+        });
+      } else {
+        Object.assign(popupEl.style, {
+          top: windowOffset.top + this.contentElRef.nativeElement.offsetHeight + "px",
+          bottom: "",
+          left: windowOffset.left + "px",
+        });
       }
     }
   }
@@ -176,8 +151,7 @@ export class SdDropdownControl implements DoCheck {
   onContentClick() {
     if (this.open) {
       this.#closePopup();
-    }
-    else {
+    } else {
       this.#openPopup();
     }
   }
@@ -189,8 +163,7 @@ export class SdDropdownControl implements DoCheck {
         event.stopPropagation();
 
         this.#openPopup();
-      }
-      else {
+      } else {
         const popupEl = this.popupElRef.nativeElement;
         const focusableFirst = popupEl.findFocusableFirst();
         if (focusableFirst) {
@@ -217,8 +190,7 @@ export class SdDropdownControl implements DoCheck {
 
       if (this.open) {
         this.#closePopup();
-      }
-      else {
+      } else {
         this.#openPopup();
       }
     }
@@ -249,7 +221,7 @@ export class SdDropdownControl implements DoCheck {
   @HostListener("document:mouseover.outside", ["$event"])
   onDocumentMouseoverOutside(event: MouseEvent) {
     this.#mouseoverEl = event.target as HTMLElement;
-  };
+  }
 
   @HostListener("document:blur.capture.outside", ["$event"])
   onBlurCaptureOutside(event: FocusEvent) {
@@ -258,26 +230,24 @@ export class SdDropdownControl implements DoCheck {
 
     const relatedTarget = event.relatedTarget as HTMLElement | undefined;
     if (
-      relatedTarget != null && (
-        relatedTarget === contentEl
-        || relatedTarget === popupEl
-        || relatedTarget.findParent(contentEl)
-        || relatedTarget.findParent(popupEl)
-      )
+      relatedTarget != null &&
+      (relatedTarget === contentEl ||
+        relatedTarget === popupEl ||
+        relatedTarget.findParent(contentEl) ||
+        relatedTarget.findParent(popupEl))
     ) {
       return;
     }
 
     if (
-      relatedTarget == null
-      && this.#mouseoverEl instanceof HTMLElement
-      && (this.#mouseoverEl.findParent(contentEl) || this.#mouseoverEl.findParent(popupEl))
+      relatedTarget == null &&
+      this.#mouseoverEl instanceof HTMLElement &&
+      (this.#mouseoverEl.findParent(contentEl) || this.#mouseoverEl.findParent(popupEl))
     ) {
       const focusableFirst = popupEl.findFocusableFirst();
       if (focusableFirst) {
         popupEl.findFocusableFirst()?.focus();
-      }
-      else {
+      } else {
         contentEl.focus();
       }
     }
@@ -287,5 +257,5 @@ export class SdDropdownControl implements DoCheck {
         this.#closePopup();
       });
     }
-  };
+  }
 }

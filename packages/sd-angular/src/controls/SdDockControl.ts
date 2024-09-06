@@ -1,134 +1,147 @@
 import {
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   ElementRef,
-  forwardRef,
   HostListener,
   inject,
   Input,
-  OnInit, ViewEncapsulation
+  ViewEncapsulation,
 } from "@angular/core";
-import {SdDockContainerControl} from "./SdDockContainerControl";
-import {SdSystemConfigProvider} from "../providers/SdSystemConfigProvider";
-import {coercionBoolean} from "../utils/commons";
-import {ISdResizeEvent} from "../plugins/SdResizeEventPlugin";
-import {SdEventsDirective} from "../directives/SdEventsDirective";
+import { SdSystemConfigProvider } from "../providers/SdSystemConfigProvider";
+import { coercionBoolean } from "../utils/commons";
+import { ISdResizeEvent } from "../plugins/SdResizeEventPlugin";
+import { SdEventsDirective } from "../directives/SdEventsDirective";
+import { sdCheck } from "../utils/hooks";
 
 @Component({
   selector: "sd-dock",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [
-    SdEventsDirective
-  ],
+  imports: [SdEventsDirective],
   template: `
     <ng-content></ng-content>
     @if (resizable) {
       <div class="_resize-bar" (mousedown.outside)="onResizeBarMousedownOutside($event)"></div>
-    }`,
-  styles: [/* language=SCSS */ `
-    sd-dock {
-      display: block;
-      position: absolute;
-      overflow: visible;
+    }
+  `,
+  styles: [
+    /* language=SCSS */ `
+      sd-dock {
+        display: block;
+        position: absolute;
+        overflow: visible;
 
-      &[sd-resizable=true] {
-        > ._resize-bar {
-          position: absolute;
-          background: var(--border-color-light);
-        }
-
-        &[sd-position=top] {
+        &[sd-resizable="true"] {
           > ._resize-bar {
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            cursor: ns-resize;
+            position: absolute;
+            background: var(--border-color-light);
           }
-        }
 
-        &[sd-position=bottom] {
-          > ._resize-bar {
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            cursor: ns-resize;
+          &[sd-position="top"] {
+            > ._resize-bar {
+              bottom: 0;
+              left: 0;
+              width: 100%;
+              height: 2px;
+              cursor: ns-resize;
+            }
           }
-        }
 
-        &[sd-position=left] {
-          > ._resize-bar {
-            top: 0;
-            right: 0;
-            height: 100%;
-            width: 2px;
-            cursor: ew-resize;
+          &[sd-position="bottom"] {
+            > ._resize-bar {
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 2px;
+              cursor: ns-resize;
+            }
           }
-        }
 
-        &[sd-position=right] {
-          > ._resize-bar {
-            top: 0;
-            left: 0;
-            height: 100%;
-            width: 2px;
-            cursor: ew-resize;
+          &[sd-position="left"] {
+            > ._resize-bar {
+              top: 0;
+              right: 0;
+              height: 100%;
+              width: 2px;
+              cursor: ew-resize;
+            }
+          }
+
+          &[sd-position="right"] {
+            > ._resize-bar {
+              top: 0;
+              left: 0;
+              height: 100%;
+              width: 2px;
+              cursor: ew-resize;
+            }
           }
         }
       }
-    }
-  `],
+    `,
+  ],
   host: {
     "[attr.sd-position]": "position",
-    "[attr.sd-resizable]": "resizable"
-  }
+    "[attr.sd-resizable]": "resizable",
+  },
 })
-export class SdDockControl implements OnInit {
-  #cdr = inject(ChangeDetectorRef);
+export class SdDockControl {
   #sdSystemConfig = inject(SdSystemConfigProvider);
-  #parentControl: SdDockContainerControl = inject(forwardRef(() => SdDockContainerControl));
-
-  elRef: ElementRef<HTMLElement> = inject(ElementRef);
+  #elRef = inject<ElementRef<HTMLElement>>(ElementRef);
 
   @Input() key?: string;
   @Input() position: "top" | "right" | "bottom" | "left" = "top";
-  @Input({transform: coercionBoolean}) resizable = false;
+  @Input({ transform: coercionBoolean }) resizable = false;
+
+  size = 0;
 
   #config?: { size?: string };
 
-  async ngOnInit() {
-    if (this.key != null) {
-      this.#config = await this.#sdSystemConfig.getAsync(`sd-dock.${this.key}`);
+  constructor() {
+    sdCheck(
+      () => ({
+        key: [this.key],
+      }),
+      async () => {
+        this.#config = await this.#sdSystemConfig.getAsync(`sd-dock.${this.key}`);
+      },
+    );
 
-      if (this.resizable && this.#config && this.#config.size !== undefined) {
-        if (["right", "left"].includes(this.position)) {
-          this.elRef.nativeElement.style.width = this.#config.size;
+    sdCheck.outside(
+      () => ({
+        resizable: [this.resizable],
+        config: [this.#config],
+      }),
+      () => {
+        if (this.resizable && this.#config && this.#config.size != null) {
+          if (["right", "left"].includes(this.position)) {
+            this.#elRef.nativeElement.style.width = this.#config.size;
+          }
+          if (["top", "bottom"].includes(this.position)) {
+            this.#elRef.nativeElement.style.height = this.#config.size;
+          }
         }
-        if (["top", "bottom"].includes(this.position)) {
-          this.elRef.nativeElement.style.height = this.#config.size;
-        }
-      }
+      },
+    );
+  }
 
-      this.#cdr.markForCheck();
-    }
+  assignStyle(style: Partial<CSSStyleDeclaration>) {
+    Object.assign(this.#elRef.nativeElement.style, style);
   }
 
   @HostListener("sdResize.outside", ["$event"])
   onResizeOutside(event: ISdResizeEvent) {
     if (["top", "bottom"].includes(this.position) && event.heightChanged) {
-      this.#parentControl.redrawOutside();
+      this.size = this.#elRef.nativeElement.offsetHeight;
     }
     if (["right", "left"].includes(this.position) && event.widthChanged) {
-      this.#parentControl.redrawOutside();
+      this.size = this.#elRef.nativeElement.offsetWidth;
     }
   }
 
   onResizeBarMousedownOutside(event: MouseEvent) {
-    const thisEl = this.elRef.nativeElement;
+    const thisEl = this.#elRef.nativeElement;
 
     const startX = event.clientX;
     const startY = event.clientY;
@@ -141,14 +154,12 @@ export class SdDockControl implements OnInit {
 
       if (this.position === "bottom") {
         thisEl.style.height = `${startHeight - e.clientY + startY}px`;
-      }
-      else if (this.position === "right") {
+      } else if (this.position === "right") {
         thisEl.style.width = `${startWidth - e.clientX + startX}px`;
-      }
-      else if (this.position === "top") {
+      } else if (this.position === "top") {
         thisEl.style.height = `${startHeight + e.clientY - startY}px`;
-      }
-      else { // left
+      } else {
+        // left
         thisEl.style.width = `${startWidth + e.clientX - startX}px`;
       }
     };
@@ -165,12 +176,10 @@ export class SdDockControl implements OnInit {
 
         if (["right", "left"].includes(this.position)) {
           this.#config.size = thisEl.style.width;
-          await this.#sdSystemConfig.setAsync(`sd-dock.${this.key}`, this.#config);
-        }
-        else {
+        } else {
           this.#config.size = thisEl.style.height;
-          await this.#sdSystemConfig.setAsync(`sd-dock.${this.key}`, this.#config);
         }
+        await this.#sdSystemConfig.setAsync(`sd-dock.${this.key}`, this.#config);
       }
     };
 
@@ -178,4 +187,3 @@ export class SdDockControl implements OnInit {
     document.addEventListener("mouseup", stopDrag);
   }
 }
-

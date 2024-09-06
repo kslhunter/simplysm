@@ -6,24 +6,23 @@ import {
   inject,
   Output,
   ViewChild,
-  ViewEncapsulation
+  ViewEncapsulation,
 } from "@angular/core";
-import {SdToastProvider} from "../providers/SdToastProvider";
-import {SdEventsDirective} from "../directives/SdEventsDirective";
+import { SdToastProvider } from "../providers/SdToastProvider";
+import { SdEventsDirective } from "../directives/SdEventsDirective";
 
 @Component({
   selector: "sd-form",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [
-    SdEventsDirective
-  ],
+  imports: [SdEventsDirective],
   template: `
     <form #formEl (submit)="onSubmit($event)" (invalid.capture)="onInvalidCapture()">
-      <ng-content/>
+      <ng-content />
       <button hidden type="submit"></button>
-    </form>`
+    </form>
+  `,
 })
 export class SdFormControl {
   #sdToast = inject(SdToastProvider);
@@ -35,7 +34,7 @@ export class SdFormControl {
 
   requestSubmit() {
     this.formElRef.nativeElement.requestSubmit();
-  };
+  }
 
   onSubmit(event: SubmitEvent) {
     event.preventDefault();
@@ -53,8 +52,9 @@ export class SdFormControl {
 
     const errorMessage = [sdInvalidMessage, invalidMessage].filterExists().join("\n");
 
-    const focusableElement = (firstInvalidEl.isFocusable() ? firstInvalidEl : firstInvalidEl.findFocusableAll().first())
-      ?? firstInvalidEl.findFocusableParent();
+    const focusableElement =
+      (firstInvalidEl.isFocusable() ? firstInvalidEl : firstInvalidEl.findFocusableAll().first()) ??
+      firstInvalidEl.findFocusableParent();
     // "confirm"창울 띄우는 경우에 포커싱이 안되는 현상 때문에 "requestAnimationFrame"이 필요함.
     if (focusableElement) {
       requestAnimationFrame(() => {

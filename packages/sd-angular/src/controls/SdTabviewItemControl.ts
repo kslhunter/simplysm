@@ -5,9 +5,9 @@ import {
   HostBinding,
   inject,
   Input,
-  ViewEncapsulation
+  ViewEncapsulation,
 } from "@angular/core";
-import {SdTabviewControl} from "./SdTabviewControl";
+import { SdTabviewControl } from "./SdTabviewControl";
 
 @Component({
   selector: "sd-tabview-item",
@@ -15,23 +15,24 @@ import {SdTabviewControl} from "./SdTabviewControl";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
-  template: `
-    <ng-content></ng-content>`,
-  styles: [/* language=SCSS */ `
-    sd-tabview-item {
-      display: none;
-      width: 100%;
-      height: 100%;
-      overflow: auto;
+  template: ` <ng-content></ng-content>`,
+  styles: [
+    /* language=SCSS */ `
+      sd-tabview-item {
+        display: none;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
 
-      &[sd-selected=true] {
-        display: block;
+        &[sd-selected="true"] {
+          display: block;
+        }
       }
-    }
-  `]
+    `,
+  ],
 })
 export class SdTabviewItemControl<T> {
-  @Input({required: true}) value!: T;
+  @Input({ required: true }) value!: T;
   @Input() header?: string;
 
   #parentControl = inject<SdTabviewControl<T>>(forwardRef(() => SdTabviewControl));

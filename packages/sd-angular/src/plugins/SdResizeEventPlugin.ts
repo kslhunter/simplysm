@@ -1,8 +1,8 @@
-import {inject, Injectable} from "@angular/core";
-import {EventManagerPlugin} from "@angular/platform-browser";
-import {DOCUMENT} from "@angular/common";
+import { inject, Injectable } from "@angular/core";
+import { EventManagerPlugin } from "@angular/platform-browser";
+import { DOCUMENT } from "@angular/common";
 
-@Injectable({providedIn: null})
+@Injectable({ providedIn: null })
 export class SdResizeEventPlugin extends EventManagerPlugin {
   constructor() {
     super(inject(DOCUMENT));
@@ -12,7 +12,11 @@ export class SdResizeEventPlugin extends EventManagerPlugin {
     return eventName === "sdResize" || eventName === "sdResize.outside";
   }
 
-  override addEventListener(element: HTMLElement, eventName: string, handler: (entry: ISdResizeEvent) => void): () => void {
+  override addEventListener(
+    element: HTMLElement,
+    eventName: string,
+    handler: (entry: ISdResizeEvent) => void,
+  ): () => void {
     const outside = eventName.includes(".outside");
 
     let prevWidth = 0;
@@ -30,11 +34,10 @@ export class SdResizeEventPlugin extends EventManagerPlugin {
       prevWidth = contentRect.width;
 
       if (outside) {
-        handler({heightChanged, widthChanged, entry});
-      }
-      else {
+        handler({ heightChanged, widthChanged, entry });
+      } else {
         this.manager.getZone().run(() => {
-          handler({heightChanged, widthChanged, entry});
+          handler({ heightChanged, widthChanged, entry });
         });
       }
     });

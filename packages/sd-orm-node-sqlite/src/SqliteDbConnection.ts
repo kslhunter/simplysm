@@ -1,13 +1,13 @@
-import {EventEmitter} from "events";
-import {SdError, StringUtil} from "@simplysm/sd-core-common";
+import { EventEmitter } from "events";
+import { SdError, StringUtil } from "@simplysm/sd-core-common";
 import {
   IDbConnection,
   IQueryColumnDef,
   ISOLATION_LEVEL,
   ISqliteDbConnectionConfig,
-  QueryHelper
+  QueryHelper,
 } from "@simplysm/sd-orm-common";
-import {Logger} from "@simplysm/sd-core-node";
+import { Logger } from "@simplysm/sd-core-node";
 import sqlite3 from "sqlite3";
 
 export class SqliteDbConnection extends EventEmitter implements IDbConnection {
@@ -43,8 +43,7 @@ export class SqliteDbConnection extends EventEmitter implements IDbConnection {
       conn.on("error", (error) => {
         if (this.isConnected) {
           this.#logger.error("error: " + error.message);
-        }
-        else {
+        } else {
           reject(new Error(error.message));
         }
       });
@@ -85,7 +84,6 @@ export class SqliteDbConnection extends EventEmitter implements IDbConnection {
     });
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
   async beginTransactionAsync(isolationLevel?: ISOLATION_LEVEL) {
     if (!this.#conn || !this.isConnected) {
       throw new Error("'Connection'이 연결되어있지 않습니다.");
@@ -104,7 +102,6 @@ export class SqliteDbConnection extends EventEmitter implements IDbConnection {
     });
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
   async commitTransactionAsync() {
     if (!this.#conn || !this.isConnected) {
       throw new Error("'Connection'이 연결되어있지 않습니다.");
@@ -126,7 +123,6 @@ export class SqliteDbConnection extends EventEmitter implements IDbConnection {
     });
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
   async rollbackTransactionAsync() {
     if (!this.#conn || !this.isConnected) {
       throw new Error("'Connection'이 연결되어있지 않습니다.");
@@ -202,7 +198,6 @@ export class SqliteDbConnection extends EventEmitter implements IDbConnection {
     await this.executeAsync([q]);
   }
 
-
   async bulkUpsertAsync(tableName: string, columnDefs: IQueryColumnDef[], records: Record<string, any>[]) {
     const qh = new QueryHelper("mysql");
 
@@ -219,7 +214,7 @@ export class SqliteDbConnection extends EventEmitter implements IDbConnection {
 
     q += "\n";
     q += "ON DUPLICATE KEY UPDATE\n";
-    for (const colName of columnDefs.filter(item => !item.autoIncrement).map(item => item.name)) {
+    for (const colName of columnDefs.filter((item) => !item.autoIncrement).map((item) => item.name)) {
       q += `${colName} = VALUES(${colName}),\n`;
     }
     q = q.slice(0, -2) + ";";
@@ -237,11 +232,8 @@ export class SqliteDbConnection extends EventEmitter implements IDbConnection {
     if (this.#connTimeout) {
       clearTimeout(this.#connTimeout);
     }
-    this.#connTimeout = setTimeout(
-      async () => {
-        await this.closeAsync();
-      },
-      this.#timeout * 2
-    );
+    this.#connTimeout = setTimeout(async () => {
+      await this.closeAsync();
+    }, this.#timeout * 2);
   }
 }

@@ -1,8 +1,12 @@
-import {ObjectUtil} from "@simplysm/sd-core-common";
-import {IconProp} from "@fortawesome/fontawesome-svg-core";
+import { ObjectUtil } from "@simplysm/sd-core-common";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 export class SdAppStructureUtil {
-  static getFlatPermissions<T extends string>(menus: ISdAppStructureItem<T>[], codes: string[] = [], modules: T[] = []): ISdFlatPermission<T>[] {
+  static getFlatPermissions<T extends string>(
+    menus: ISdAppStructureItem<T>[],
+    codes: string[] = [],
+    modules: T[] = [],
+  ): ISdFlatPermission<T>[] {
     const results: ISdFlatPermission<T>[] = [];
     for (const menu of menus) {
       const currCodes = codes.concat([menu.code]);
@@ -12,7 +16,7 @@ export class SdAppStructureUtil {
         for (const perm of menu.perms) {
           results.push({
             code: `${currCodes.join(".")}.${perm}`,
-            modules: currModules
+            modules: currModules,
           });
         }
       }
@@ -23,7 +27,7 @@ export class SdAppStructureUtil {
           for (const perm of subPerm.perms) {
             results.push({
               code: `${currCodes.join(".")}.${subPerm.code}.${perm}`,
-              modules: currModules
+              modules: currModules,
             });
           }
         }
@@ -31,9 +35,7 @@ export class SdAppStructureUtil {
 
       if (menu.children) {
         const currModules = modules.concat(menu.modules ?? []);
-        results.push(
-          ...this.getFlatPermissions(menu.children, currCodes, currModules)
-        );
+        results.push(...this.getFlatPermissions(menu.children, currCodes, currModules));
       }
     }
 
@@ -54,16 +56,23 @@ export class SdAppStructureUtil {
         codeChain: currCodeChain,
         hasPerms: menu.perms !== undefined,
         modules: menu.modules,
-        ...menu.children ? {
-          children: this.getMenus(menu.children, currCodeChain)
-        } : {}
+        ...(menu.children
+          ? {
+              children: this.getMenus(menu.children, currCodeChain),
+            }
+          : {}),
       });
     }
 
     return resultMenus;
   }
 
-  static getFlatPages<T extends string>(menus: ISdAppStructureItem<T>[], titleChain: string[] = [], codeChain: string[] = [], modulesChain: T[][] = []): ISdFlatPage<T>[] {
+  static getFlatPages<T extends string>(
+    menus: ISdAppStructureItem<T>[],
+    titleChain: string[] = [],
+    codeChain: string[] = [],
+    modulesChain: T[][] = [],
+  ): ISdFlatPage<T>[] {
     const resultFlatMenus: ISdFlatPage<T>[] = [];
     for (const menu of menus) {
       if (menu.isNotPage) {
@@ -77,13 +86,12 @@ export class SdAppStructureUtil {
       if (menu.children) {
         const childrenFlatMenus = this.getFlatPages(menu.children, currTitleChain, currCodeChain, currModulesChain);
         resultFlatMenus.push(...childrenFlatMenus);
-      }
-      else {
+      } else {
         resultFlatMenus.push({
           titleChain: currTitleChain,
           codeChain: currCodeChain,
           modulesChain: currModulesChain,
-          hasPerms: menu.perms !== undefined
+          hasPerms: menu.perms !== undefined,
         });
       }
     }
@@ -107,7 +115,7 @@ export class SdAppStructureUtil {
 
     const parent = result.slice(0, -1).join(" > ");
     const current = result.last()!;
-    return withoutParent ? current : ((parent ? `[${parent}] ` : "") + current);
+    return withoutParent ? current : (parent ? `[${parent}] ` : "") + current;
   }
 
   static getPermissions<T extends string>(menus: ISdAppStructureItem<T>[], codes: string[] = []): ISdPermission<T>[] {
@@ -125,8 +133,8 @@ export class SdAppStructureUtil {
             title: item.title,
             codes: currCodes.concat([item.code]),
             perms: item.perms,
-            modules: item.modules
-          }))
+            modules: item.modules,
+          })),
         });
       }
 
@@ -135,7 +143,7 @@ export class SdAppStructureUtil {
           title: menu.title,
           codes: currCodes,
           modules: menu.modules,
-          children: this.getPermissions(menu.children, codes.concat([menu.code]))
+          children: this.getPermissions(menu.children, codes.concat([menu.code])),
         });
       }
     }
@@ -143,7 +151,11 @@ export class SdAppStructureUtil {
     return results;
   }
 
-  static getPermissionDisplayNameRecord(menus: ISdAppStructureItem[], codes: string[] = [], titles: string[] = []): Record<string, string> {
+  static getPermissionDisplayNameRecord(
+    menus: ISdAppStructureItem[],
+    codes: string[] = [],
+    titles: string[] = [],
+  ): Record<string, string> {
     let resultRecord: Record<string, string> = {};
     for (const menu of menus) {
       const currCodes = codes.concat([menu.code]);
@@ -161,16 +173,21 @@ export class SdAppStructureUtil {
       if (menu.subPerms !== undefined) {
         for (const perm of menu.subPerms) {
           if (perm.perms.includes("use")) {
-            resultRecord[currCodes.join(".") + "." + perm.code + ".use"] = currTitles.join(" > ") + " > " + perm.title + " > 조회";
+            resultRecord[currCodes.join(".") + "." + perm.code + ".use"] =
+              currTitles.join(" > ") + " > " + perm.title + " > 조회";
           }
           if (perm.perms.includes("edit")) {
-            resultRecord[currCodes.join(".") + "." + perm.code + ".edit"] = currTitles.join(" > ") + " > " + perm.title + " > 편집";
+            resultRecord[currCodes.join(".") + "." + perm.code + ".edit"] =
+              currTitles.join(" > ") + " > " + perm.title + " > 편집";
           }
         }
       }
 
       if (menu.children !== undefined) {
-        resultRecord = ObjectUtil.merge(resultRecord, this.getPermissionDisplayNameRecord(menu.children, currCodes, currTitles));
+        resultRecord = ObjectUtil.merge(
+          resultRecord,
+          this.getPermissionDisplayNameRecord(menu.children, currCodes, currTitles),
+        );
       }
     }
 

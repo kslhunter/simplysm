@@ -260,8 +260,9 @@ export class SdServiceServer extends EventEmitter {
 
   private _onWsClientClosed(wsClientId: string, code: number): void {
     this._logger.debug("클라이언트 연결 끊김: " + wsClientId + ": " + this._wsServer?.clients.size + ": " + code);
-    // 클라이언트 창이 닫히거나 RELOAD 될때
-    if (code === 1001) {
+    // 1001: 클라이언트 창이 닫히거나 RELOAD 될때
+    // 1006: 모바일앱을 강제 종료했을때
+    if (code === 1001 || code === 1006) {
       this._logger.debug("닫힌 소켓의 이벤트 리스너 비우기...");
       const disconnectedListeners = this._eventListeners.filter((item) => item.socketId === wsClientId);
       for (const disconnectedListener of disconnectedListeners) {

@@ -1,20 +1,20 @@
 import path from "path";
-import {FsUtil, Logger, PathUtil, SdProcess} from "@simplysm/sd-core-node";
+import { FsUtil, Logger, PathUtil, SdProcess } from "@simplysm/sd-core-node";
 import {
   INpmConfig,
   ISdCliBuildClusterResMessage,
   ISdCliConfig,
   ISdCliPackageBuildResult,
   ISdCliServerPackageConfig,
-  TSdCliPackageConfig
+  TSdCliPackageConfig,
 } from "../commons";
 import cp from "child_process";
-import {fileURLToPath, pathToFileURL} from "url";
-import {SdCliBuildResultUtil} from "../utils/SdCliBuildResultUtil";
+import { fileURLToPath, pathToFileURL } from "url";
+import { SdCliBuildResultUtil } from "../utils/SdCliBuildResultUtil";
 import semver from "semver";
-import {JsonConvert, NeverEntryError, StringUtil, Wait} from "@simplysm/sd-core-common";
-import {SdStorage} from "@simplysm/sd-storage";
-import {SdCliLocalUpdate} from "./SdCliLocalUpdate";
+import { JsonConvert, NeverEntryError, StringUtil, Wait } from "@simplysm/sd-core-common";
+import { SdStorage } from "@simplysm/sd-storage";
+import { SdCliLocalUpdate } from "./SdCliLocalUpdate";
 import xml2js from "xml2js";
 
 export class SdCliProject {
@@ -27,13 +27,16 @@ export class SdCliProject {
     const logger = Logger.get(["simplysm", "sd-cli", "SdCliProject", "watchAsync"]);
 
     logger.debug("프로젝트 설정 가져오기...");
-    const projConf = (await import(pathToFileURL(path.resolve(process.cwd(), opt.confFileRelPath)).href)).default(true, opt.optNames) as ISdCliConfig;
+    const projConf = (await import(pathToFileURL(path.resolve(process.cwd(), opt.confFileRelPath)).href)).default(
+      true,
+      opt.optNames,
+    ) as ISdCliConfig;
 
     if (projConf.localUpdates) {
       logger.debug("로컬 라이브러리 업데이트 변경감지 시작...");
       await SdCliLocalUpdate.watchAsync({
         confFileRelPath: opt.confFileRelPath,
-        optNames: opt.optNames
+        optNames: opt.optNames,
       });
     }
 
@@ -51,7 +54,9 @@ export class SdCliProject {
     }
 
     logger.debug("패키지 존재 확인...");
-    const notExistsPkgs = Object.keys(projConf.packages).filter((pkgConfKey) => allPkgPaths.every((pkgPath) => path.basename(pkgPath) !== pkgConfKey));
+    const notExistsPkgs = Object.keys(projConf.packages).filter((pkgConfKey) =>
+      allPkgPaths.every((pkgPath) => path.basename(pkgPath) !== pkgConfKey),
+    );
     if (notExistsPkgs.length > 0) {
       throw new Error("패키지를 찾을 수 없습니다. (" + notExistsPkgs.join(", ") + ")");
     }
@@ -62,29 +67,31 @@ export class SdCliProject {
     logger.debug("빌드 프로세스 이벤트 준비...");
     const resultCache = new Map<string, ISdCliPackageBuildResult[]>();
     let busyReqCntMap = new Map<string, number>();
-    const serverInfoMap = new Map<string, {
-      // server
-      pkgOrOpt?: { path: string; conf: ISdCliServerPackageConfig } | { port: number }; // persist
-      worker?: cp.ChildProcess; // persist
-      port?: number;
-      hasChanges: boolean;
-      hasClientChanges: boolean;
+    const serverInfoMap = new Map<
+      string,
+      {
+        // server
+        pkgOrOpt?: { path: string; conf: ISdCliServerPackageConfig } | { port: number }; // persist
+        worker?: cp.ChildProcess; // persist
+        port?: number;
+        hasChanges: boolean;
+        hasClientChanges: boolean;
 
-      //client
-      pathProxy: Record<string, string | number | undefined>; // persist
-      // changeFilePaths: string[];
-    }>();
+        //client
+        pathProxy: Record<string, string | number | undefined>; // persist
+        // changeFilePaths: string[];
+      }
+    >();
     cluster.on("message", (message: ISdCliBuildClusterResMessage) => {
       if (message.type === "change") {
-        if (Array.from(busyReqCntMap.values()).every(v => v === 0)) {
+        if (Array.from(busyReqCntMap.values()).every((v) => v === 0)) {
           logger.log("빌드를 시작합니다...");
         }
         busyReqCntMap.set(
           message.req.cmd + "|" + message.req.pkgPath,
-          (busyReqCntMap.get(message.req.cmd + "|" + message.req.pkgPath) ?? 0) + 1
+          (busyReqCntMap.get(message.req.cmd + "|" + message.req.pkgPath) ?? 0) + 1,
         );
-      }
-      else if (message.type === "complete") {
+      } else if (message.type === "complete") {
         resultCache.delete("none");
         for (const affectedFilePath of message.result!.affectedFilePaths) {
           if (PathUtil.isChildPath(affectedFilePath, message.req.pkgPath)) {
@@ -111,7 +118,7 @@ export class SdCliProject {
           const serverPkgConf = projConf.packages[pkgName] as ISdCliServerPackageConfig;
           serverInfo.pkgOrOpt = {
             path: message.req.pkgPath,
-            conf: serverPkgConf
+            conf: serverPkgConf,
           };
 
           serverInfo.hasChanges = true;
@@ -121,12 +128,15 @@ export class SdCliProject {
           const pkgName = path.basename(message.req.pkgPath);
 
           if (pkgConf.server !== undefined) {
-            const serverInfo = serverInfoMap.getOrCreate(typeof pkgConf.server === "string" ? pkgConf.server : pkgConf.server.port.toString(), {
-              hasChanges: true,
-              hasClientChanges: false,
-              pathProxy: {},
-              // changeFilePaths: []
-            });
+            const serverInfo = serverInfoMap.getOrCreate(
+              typeof pkgConf.server === "string" ? pkgConf.server : pkgConf.server.port.toString(),
+              {
+                hasChanges: true,
+                hasClientChanges: false,
+                pathProxy: {},
+                // changeFilePaths: []
+              },
+            );
 
             if (typeof pkgConf.server !== "string") {
               serverInfo.pkgOrOpt = pkgConf.server;
@@ -137,8 +147,7 @@ export class SdCliProject {
 
             serverInfo.hasClientChanges = true;
             // serverInfo.worker?.send({type: "broadcastReload"});
-          }
-          else {
+          } else {
             const serverInfo = serverInfoMap.getOrCreate(pkgName, {
               hasChanges: true,
               hasClientChanges: false,
@@ -156,24 +165,20 @@ export class SdCliProject {
         setTimeout(async () => {
           busyReqCntMap.set(
             message.req.cmd + "|" + message.req.pkgPath,
-            (busyReqCntMap.get(message.req.cmd + "|" + message.req.pkgPath) ?? 0) - 1
+            (busyReqCntMap.get(message.req.cmd + "|" + message.req.pkgPath) ?? 0) - 1,
           );
           logger.debug("남아있는 예약 빌드", busyReqCntMap);
-          if (Array.from(busyReqCntMap.values()).every(v => v === 0)) {
+          if (Array.from(busyReqCntMap.values()).every((v) => v === 0)) {
             for (const serverPkgNameOrPort of serverInfoMap.keys()) {
               const serverInfo = serverInfoMap.get(serverPkgNameOrPort)!;
               if (serverInfo.pkgOrOpt && serverInfo.hasChanges) {
                 logger.debug("서버 재시작...");
                 try {
-                  const restartServerResult = await this._restartServerAsync(
-                    serverInfo.pkgOrOpt,
-                    serverInfo.worker
-                  );
+                  const restartServerResult = await this._restartServerAsync(serverInfo.pkgOrOpt, serverInfo.worker);
                   serverInfo.worker = restartServerResult.worker;
                   serverInfo.port = restartServerResult.port;
                   serverInfo.hasChanges = false;
-                }
-                catch (err) {
+                } catch (err) {
                   logger.error(err);
                 }
               }
@@ -182,12 +187,12 @@ export class SdCliProject {
                 logger.debug("클라이언트 설정...");
                 serverInfo.worker.send({
                   type: "setPathProxy",
-                  pathProxy: serverInfo.pathProxy
+                  pathProxy: serverInfo.pathProxy,
                 });
 
                 if (serverInfo.hasClientChanges) {
                   logger.debug("클라이언트 새로고침...");
-                  serverInfo.worker.send({type: "broadcastReload"});
+                  serverInfo.worker.send({ type: "broadcastReload" });
                 }
               }
             }
@@ -198,8 +203,7 @@ export class SdCliProject {
                 for (const proxyPath of Object.keys(serverInfo.pathProxy)) {
                   clientPaths.push(`http://localhost:${serverInfo.port}/${proxyPath}/`);
                 }
-              }
-              else {
+              } else {
                 clientPaths.push(`http://localhost:${serverInfo.port}/`);
               }
             }
@@ -215,21 +219,21 @@ export class SdCliProject {
     });
 
     logger.debug("빌드 프로세스 명령 전송...");
-    busyReqCntMap.set(
-      "all",
-      (busyReqCntMap.get("all") ?? 0) + 1
-    );
+    busyReqCntMap.set("all", (busyReqCntMap.get("all") ?? 0) + 1);
     logger.log("빌드를 시작합니다...");
 
     await pkgPaths.parallelAsync(async (pkgPath) => {
-      await this._runCommandAsync(cluster, "watch", projConf, pkgPath, opt.inspectNames.includes(path.basename(pkgPath)) ? ["--inspect"] : []);
+      await this._runCommandAsync(
+        cluster,
+        "watch",
+        projConf,
+        pkgPath,
+        opt.inspectNames.includes(path.basename(pkgPath)) ? ["--inspect"] : [],
+      );
     });
 
-    busyReqCntMap.set(
-      "all",
-      (busyReqCntMap.get("all") ?? 0) - 1
-    );
-    if (Array.from(busyReqCntMap.values()).every(v => v === 0)) {
+    busyReqCntMap.set("all", (busyReqCntMap.get("all") ?? 0) - 1);
+    if (Array.from(busyReqCntMap.values()).every((v) => v === 0)) {
       const buildResults = Array.from(resultCache.values()).mapMany();
       this._logging(buildResults, logger);
     }
@@ -243,7 +247,10 @@ export class SdCliProject {
     const logger = Logger.get(["simplysm", "sd-cli", "SdCliProject", "buildAsync"]);
 
     logger.debug("프로젝트 설정 가져오기...");
-    const projConf = (await import(pathToFileURL(path.resolve(process.cwd(), opt.confFileRelPath)).href)).default(false, opt.optNames) as ISdCliConfig;
+    const projConf = (await import(pathToFileURL(path.resolve(process.cwd(), opt.confFileRelPath)).href)).default(
+      false,
+      opt.optNames,
+    ) as ISdCliConfig;
 
     logger.debug("프로젝트 package.json 가져오기...");
     const projNpmConf = (await FsUtil.readJsonAsync(path.resolve(process.cwd(), "package.json"))) as INpmConfig;
@@ -295,7 +302,10 @@ export class SdCliProject {
     const logger = Logger.get(["simplysm", "sd-cli", "SdCliProject", "publishAsync"]);
 
     logger.debug("프로젝트 설정 가져오기...");
-    const projConf = (await import(pathToFileURL(path.resolve(process.cwd(), opt.confFileRelPath)).href)).default(false, opt.optNames) as ISdCliConfig;
+    const projConf = (await import(pathToFileURL(path.resolve(process.cwd(), opt.confFileRelPath)).href)).default(
+      false,
+      opt.optNames,
+    ) as ISdCliConfig;
 
     logger.debug("프로젝트 package.json 가져오기...");
     const projNpmConf = (await FsUtil.readJsonAsync(path.resolve(process.cwd(), "package.json"))) as INpmConfig;
@@ -383,22 +393,19 @@ export class SdCliProject {
             return process.env[envName] ?? item;
           });
           await SdProcess.spawnAsync(script);
-        }
-        else {
+        } else {
           throw new NeverEntryError();
         }
       }
     }
-
 
     logger.info(`모든 배포가 완료되었습니다. (v${projNpmConf.version})`);
   }
 
   private static async _publishPkgAsync(pkgPath: string, pkgPubConf: TSdCliPackageConfig["publish"]): Promise<void> {
     if (pkgPubConf === "npm") {
-      await SdProcess.spawnAsync("yarn npm publish --access public", {cwd: pkgPath});
-    }
-    else if (pkgPubConf?.type === "local-directory") {
+      await SdProcess.spawnAsync("yarn npm publish --access public", { cwd: pkgPath });
+    } else if (pkgPubConf?.type === "local-directory") {
       const pkgNpmConf = (await FsUtil.readJsonAsync(path.resolve(pkgPath, "package.json"))) as INpmConfig;
 
       const targetRootPath = pkgPubConf.path.replace(/%([^%]*)%/g, (item) => {
@@ -414,7 +421,7 @@ export class SdCliProject {
 
       const filePaths = await FsUtil.globAsync(path.resolve(pkgPath, "dist", "**", "*"), {
         dot: true,
-        nodir: true
+        nodir: true,
       });
 
       await filePaths.parallelAsync(async (filePath) => {
@@ -422,18 +429,16 @@ export class SdCliProject {
         const targetPath = PathUtil.posix(targetRootPath, relativeFilePath);
         await FsUtil.copyAsync(filePath, targetPath);
       });
-    }
-    else if (pkgPubConf?.type === "ftp" || pkgPubConf?.type === "ftps" || pkgPubConf?.type === "sftp") {
+    } else if (pkgPubConf?.type === "ftp" || pkgPubConf?.type === "ftps" || pkgPubConf?.type === "sftp") {
       const ftp = await SdStorage.connectAsync(pkgPubConf.type, {
         host: pkgPubConf.host,
         port: pkgPubConf.port,
         user: pkgPubConf.user,
-        pass: pkgPubConf.pass
+        pass: pkgPubConf.pass,
       });
       await ftp.uploadDirAsync(path.resolve(pkgPath, "dist"), pkgPubConf.path ?? "/");
       await ftp.closeAsync();
-    }
-    else {
+    } else {
       throw new NeverEntryError();
     }
   }
@@ -475,7 +480,7 @@ export class SdCliProject {
     updateDepVersion(projNpmConf.peerDependencies);
 
     const projNpmConfFilePath = path.resolve(process.cwd(), "package.json");
-    await FsUtil.writeJsonAsync(projNpmConfFilePath, projNpmConf, {space: 2});
+    await FsUtil.writeJsonAsync(projNpmConfFilePath, projNpmConf, { space: 2 });
 
     // 각 패키지 package.json 버전 설정
     await allPkgPaths.parallelAsync(async (pkgPath) => {
@@ -488,11 +493,13 @@ export class SdCliProject {
       updateDepVersion(pkgNpmConf.devDependencies);
       updateDepVersion(pkgNpmConf.peerDependencies);
 
-      await FsUtil.writeJsonAsync(pkgNpmConfFilePath, pkgNpmConf, {space: 2});
+      await FsUtil.writeJsonAsync(pkgNpmConfFilePath, pkgNpmConf, { space: 2 });
 
       if (FsUtil.exists(path.resolve(pkgPath, "plugin.xml"))) {
         const cordovaPluginConfFilePath = path.resolve(pkgPath, "plugin.xml");
-        const cordovaPluginConfXml = await xml2js.parseStringPromise(await FsUtil.readFileAsync(cordovaPluginConfFilePath));
+        const cordovaPluginConfXml = await xml2js.parseStringPromise(
+          await FsUtil.readFileAsync(cordovaPluginConfFilePath),
+        );
         cordovaPluginConfXml.plugin.$.version = newVersion;
 
         await FsUtil.writeFileAsync(cordovaPluginConfFilePath, new xml2js.Builder().buildObject(cordovaPluginConfXml));
@@ -501,7 +508,10 @@ export class SdCliProject {
   }
 
   private static _logging(buildResults: ISdCliPackageBuildResult[], logger: Logger): void {
-    const messageMap = buildResults.toSetMap(item => item.severity, item => SdCliBuildResultUtil.getMessage(item));
+    const messageMap = buildResults.toSetMap(
+      (item) => item.severity,
+      (item) => SdCliBuildResultUtil.getMessage(item),
+    );
 
     if (messageMap.has("message")) {
       logger.log(`알림\n${[...messageMap.get("message")!].join("\n")}`);
@@ -523,17 +533,13 @@ export class SdCliProject {
   private static async _prepareClusterAsync(): Promise<cp.ChildProcess> {
     const logger = Logger.get(["simplysm", "sd-cli", "SdCliProject", "_runBuildClusterAsync"]);
     return await new Promise<cp.ChildProcess>((resolve, reject) => {
-      const cluster = cp.fork(
-        fileURLToPath(import.meta.resolve("../build-cluster")),
-        [],
-        {
-          stdio: ["pipe", "pipe", "pipe", "ipc"],
-          env: {
-            ...process.env,
-            // "NG_BUILD_PARALLEL_TS": "0"
-          }
-        }
-      );
+      const cluster = cp.fork(fileURLToPath(import.meta.resolve("../build-cluster")), [], {
+        stdio: ["pipe", "pipe", "pipe", "ipc"],
+        env: {
+          ...process.env,
+          // "NG_BUILD_PARALLEL_TS": "0"
+        },
+      });
 
       cluster.stdout!.pipe(process.stdout);
       cluster.stderr!.pipe(process.stderr);
@@ -561,16 +567,37 @@ export class SdCliProject {
     });
   }
 
-  private static async _runCommandAsync(cluster: cp.ChildProcess, cmd: "watch", projConf: ISdCliConfig, pkgPath: string, execArgs: string[]): Promise<void>;
-  private static async _runCommandAsync(cluster: cp.ChildProcess, cmd: "build", projConf: ISdCliConfig, pkgPath: string): Promise<ISdCliPackageBuildResult[]>;
-  private static async _runCommandAsync(cluster: cp.ChildProcess, cmd: "watch" | "build", projConf: ISdCliConfig, pkgPath: string, execArgs?: string[]): Promise<ISdCliPackageBuildResult[] | void> {
+  private static async _runCommandAsync(
+    cluster: cp.ChildProcess,
+    cmd: "watch",
+    projConf: ISdCliConfig,
+    pkgPath: string,
+    execArgs: string[],
+  ): Promise<void>;
+  private static async _runCommandAsync(
+    cluster: cp.ChildProcess,
+    cmd: "build",
+    projConf: ISdCliConfig,
+    pkgPath: string,
+  ): Promise<ISdCliPackageBuildResult[]>;
+  private static async _runCommandAsync(
+    cluster: cp.ChildProcess,
+    cmd: "watch" | "build",
+    projConf: ISdCliConfig,
+    pkgPath: string,
+    execArgs?: string[],
+  ): Promise<ISdCliPackageBuildResult[] | void> {
     return await new Promise<ISdCliPackageBuildResult[] | void>((resolve) => {
       const cb = (message: ISdCliBuildClusterResMessage): void => {
         if (cmd === "watch" && message.type === "ready" && message.req.cmd === cmd && message.req.pkgPath === pkgPath) {
           cluster.off("message", cb);
           resolve();
-        }
-        else if (cmd === "build" && message.type === "complete" && message.req.cmd === cmd && message.req.pkgPath === pkgPath) {
+        } else if (
+          cmd === "build" &&
+          message.type === "complete" &&
+          message.req.cmd === cmd &&
+          message.req.pkgPath === pkgPath
+        ) {
           cluster.off("message", cb);
           resolve(message.result?.buildResults);
         }
@@ -581,7 +608,7 @@ export class SdCliProject {
         cmd,
         projConf,
         pkgPath,
-        execArgs
+        execArgs,
       });
     });
   }
@@ -590,11 +617,16 @@ export class SdCliProject {
     cluster.kill("SIGKILL");
   }
 
-  private static async _restartServerAsync(pkgOrOpt: { path: string; conf: ISdCliServerPackageConfig } | {
-    port: number
-  }, prevServerProcess?: cp.ChildProcess): Promise<{
-    worker: cp.ChildProcess,
-    port: number
+  private static async _restartServerAsync(
+    pkgOrOpt:
+      | { path: string; conf: ISdCliServerPackageConfig }
+      | {
+          port: number;
+        },
+    prevServerProcess?: cp.ChildProcess,
+  ): Promise<{
+    worker: cp.ChildProcess;
+    port: number;
   }> {
     const logger = Logger.get(["simplysm", "sd-cli", "SdCliProject", "_restartServerAsync"]);
 
@@ -602,11 +634,14 @@ export class SdCliProject {
       prevServerProcess.kill("SIGKILL");
     }
 
-    const npmConf = "path" in pkgOrOpt ? (await FsUtil.readJsonAsync(path.resolve(pkgOrOpt.path, "package.json"))) as INpmConfig : undefined;
+    const npmConf =
+      "path" in pkgOrOpt
+        ? ((await FsUtil.readJsonAsync(path.resolve(pkgOrOpt.path, "package.json"))) as INpmConfig)
+        : undefined;
 
     return await new Promise<{
-      worker: cp.ChildProcess,
-      port: number
+      worker: cp.ChildProcess;
+      port: number;
     }>((resolve, reject) => {
       const worker = cp.fork(
         fileURLToPath(import.meta.resolve("../server-worker")),
@@ -618,9 +653,9 @@ export class SdCliProject {
             NODE_ENV: "development",
             TZ: "Asia/Seoul",
             SD_VERSION: npmConf?.version ?? "serverless",
-            ..."path" in pkgOrOpt ? pkgOrOpt.conf.env : {}
-          }
-        }
+            ...("path" in pkgOrOpt ? pkgOrOpt.conf.env : {}),
+          },
+        },
       );
 
       worker.stdout!.pipe(process.stdout);
@@ -645,7 +680,7 @@ export class SdCliProject {
           logger.debug("서버가 시작되었습니다.");
           resolve({
             worker,
-            port: message.port
+            port: message.port,
           });
         }
       });

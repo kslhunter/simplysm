@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, ViewEncapsulation} from "@angular/core";
+import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/core";
 
 @Component({
   selector: "sd-pane",
@@ -6,16 +6,16 @@ import {ChangeDetectionStrategy, Component, ViewEncapsulation} from "@angular/co
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
-  template: `
-    <ng-content></ng-content>`,
-  styles: [/* language=SCSS */ `
-    sd-pane {
-      display: block;
-      position: relative;
-      height: 100%;
-      overflow: auto;
-    }
-  `]
+  template: ` <ng-content></ng-content> `,
+  styles: [
+    /* language=SCSS */ `
+      sd-pane {
+        display: block;
+        position: relative;
+        height: 100%;
+        overflow: auto;
+      }
+    `,
+  ],
 })
-export class SdPaneControl {
-}
+export class SdPaneControl {}

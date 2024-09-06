@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, ViewEncapsulation} from "@angular/core";
+import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/core";
 
 @Component({
   selector: "sd-card",
@@ -7,34 +7,35 @@ import {ChangeDetectionStrategy, Component, ViewEncapsulation} from "@angular/co
   standalone: true,
   imports: [],
   template: `
-    <ng-content></ng-content>`,
-  styles: [/* language=SCSS */ `
-    @import "../scss/mixins";
+    <ng-content></ng-content>
+  `,
+  styles: [
+    /* language=SCSS */ `
+      @import "../scss/mixins";
 
-    sd-card {
-      display: block;
-      background: white;
-      border-radius: var(--border-radius-default);
-      overflow: hidden;
-      transition: box-shadow .3s ease-in-out;
-      @include elevation(2);
-
-      &:hover,
-      &:has(:focus) {
-        @include elevation(6);
-      }
-
-      @media all and (pointer: coarse) {
-        @include elevation(0);
+      sd-card {
+        display: block;
+        background: white;
+        border-radius: var(--border-radius-default);
+        overflow: hidden;
+        transition: box-shadow 0.3s ease-in-out;
+        @include elevation(2);
 
         &:hover,
         &:has(:focus) {
+          @include elevation(6);
+        }
+
+        @media all and (pointer: coarse) {
           @include elevation(0);
+
+          &:hover,
+          &:has(:focus) {
+            @include elevation(0);
+          }
         }
       }
-    }
-  `]
+    `,
+  ],
 })
-export class SdCardControl {
-}
-
+export class SdCardControl {}

@@ -17,5 +17,5 @@ import {ChangeDetectionStrategy, Component, ElementRef, inject, ViewEncapsulatio
   `]
 })
 export class SdTopbarContainerControl {
-  elRef: ElementRef<HTMLElement> = inject(ElementRef);
+  elRef = inject<ElementRef<HTMLElement>>(ElementRef);
 }

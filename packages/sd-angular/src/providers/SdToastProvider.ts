@@ -1,9 +1,9 @@
-import {ApplicationRef, ComponentRef, createComponent, inject, Injectable, Input, Type} from "@angular/core";
-import {SdToastContainerControl} from "../controls/SdToastContainerControl";
-import {SdSystemLogProvider} from "./SdSystemLogProvider";
-import {SdToastControl} from "../controls/SdToastControl";
+import { ApplicationRef, ComponentRef, createComponent, inject, Injectable, Input, Type } from "@angular/core";
+import { SdToastContainerControl } from "../controls/SdToastContainerControl";
+import { SdSystemLogProvider } from "./SdSystemLogProvider";
+import { SdToastControl } from "../controls/SdToastControl";
 
-@Injectable({providedIn: "root"})
+@Injectable({ providedIn: "root" })
 export class SdToastProvider {
   #appRef = inject(ApplicationRef);
   #systemLog = inject(SdSystemLogProvider);
@@ -17,7 +17,7 @@ export class SdToastProvider {
   get containerRef(): ComponentRef<SdToastContainerControl> {
     if (this.#containerRef === undefined) {
       const compRef = createComponent(SdToastContainerControl, {
-        environmentInjector: this.#appRef.injector
+        environmentInjector: this.#appRef.injector,
       });
       const rootComp = this.#appRef.components[0];
       const rootCompEl = rootComp.location.nativeElement as HTMLElement;
@@ -33,39 +33,39 @@ export class SdToastProvider {
   async try<R>(fn: () => Promise<R> | R, messageFn?: (err: Error) => string): Promise<R | undefined> {
     try {
       return await fn();
-    }
-    catch (err) {
+    } catch (err) {
       if (err instanceof Error) {
         if (messageFn) {
           this.danger(messageFn(err));
-        }
-        else {
+        } else {
           this.danger(err.message);
         }
 
         await this.#systemLog.writeAsync("error", err.stack);
 
         return undefined;
-      }
-      else {
+      } else {
         throw err;
       }
     }
   }
 
-  notify<T extends SdToastBase<any, any>>(toastType: Type<T>, param: T["__tInput__"], onclose: (result: T["__tOutput__"] | undefined) => void | Promise<void>): void {
+  notify<T extends SdToastBase<any, any>>(
+    toastType: Type<T>,
+    param: T["__tInput__"],
+    onclose: (result: T["__tOutput__"] | undefined) => void | Promise<void>,
+  ): void {
     const compRef = createComponent(toastType, {
-      environmentInjector: this.#appRef.injector
+      environmentInjector: this.#appRef.injector,
     });
     const containerEl = this.containerRef.location.nativeElement as HTMLElement;
 
     const toastRef = createComponent(SdToastControl, {
       environmentInjector: this.#appRef.injector,
-      projectableNodes: [[compRef.location.nativeElement]]
+      projectableNodes: [[compRef.location.nativeElement]],
     });
     const toastEl = toastRef.location.nativeElement as HTMLElement;
     containerEl.appendChild(toastEl);
-
 
     const close = async (value?: any): Promise<void> => {
       toastEl.addEventListener("transitionend", () => {
@@ -89,32 +89,33 @@ export class SdToastProvider {
 
     toastRef.instance.open = true;
 
-    window.setTimeout(
-      () => {
-        compRef.destroy();
-        toastRef.destroy();
-      },
-      5000
-    );
+    window.setTimeout(() => {
+      compRef.destroy();
+      toastRef.destroy();
+    }, 5000);
   }
 
-  info<T extends boolean>(message: string, progress?: T): (T extends true ? ISdProgressToast : void) {
+  info<T extends boolean>(message: string, progress?: T): T extends true ? ISdProgressToast : void {
     return this.#show("info", message, progress);
   }
 
-  success<T extends boolean>(message: string, progress?: T): (T extends true ? ISdProgressToast : void) {
+  success<T extends boolean>(message: string, progress?: T): T extends true ? ISdProgressToast : void {
     return this.#show("success", message, progress);
   }
 
-  warning<T extends boolean>(message: string, progress?: T): (T extends true ? ISdProgressToast : void) {
+  warning<T extends boolean>(message: string, progress?: T): T extends true ? ISdProgressToast : void {
     return this.#show("warning", message, progress);
   }
 
-  danger<T extends boolean>(message: string, progress?: T): (T extends true ? ISdProgressToast : void) {
+  danger<T extends boolean>(message: string, progress?: T): T extends true ? ISdProgressToast : void {
     return this.#show("danger", message, progress);
   }
 
-  #show<T extends boolean>(theme: "info" | "success" | "warning" | "danger", message: string, progress?: T): (T extends true ? ISdProgressToast : void) {
+  #show<T extends boolean>(
+    theme: "info" | "success" | "warning" | "danger",
+    message: string,
+    progress?: T,
+  ): T extends true ? ISdProgressToast : void {
     this.beforeShowFn?.(theme);
 
     if (this.alertThemes.includes(theme)) {
@@ -123,7 +124,7 @@ export class SdToastProvider {
     }
 
     const toastRef = createComponent(SdToastControl, {
-      environmentInjector: this.#appRef.injector
+      environmentInjector: this.#appRef.injector,
     });
     const toastEl = toastRef.location.nativeElement as HTMLElement;
 
@@ -152,10 +153,9 @@ export class SdToastProvider {
         },
         message: (msg: string) => {
           toastEl.findAll<HTMLElement>("._sd-toast-message")[0].innerText = msg;
-        }
+        },
       } as any;
-    }
-    else {
+    } else {
       this.#closeAfterTime(toastRef, 5000);
       return undefined as any;
     }
@@ -164,21 +164,17 @@ export class SdToastProvider {
   #closeAfterTime(toastRef: ComponentRef<SdToastControl>, ms: number): void {
     const toastEl = toastRef.location.nativeElement as HTMLElement;
 
-    window.setTimeout(
-      () => {
-        if (toastEl.matches(":hover")) {
-          this.#closeAfterTime(toastRef, ms);
-        }
-        else {
-          toastEl.addEventListener("transitionend", () => {
-            toastRef.destroy();
-          });
-          toastRef.instance.open = false;
-          this.#appRef.tick();
-        }
-      },
-      ms
-    );
+    window.setTimeout(() => {
+      if (toastEl.matches(":hover")) {
+        this.#closeAfterTime(toastRef, ms);
+      } else {
+        toastEl.addEventListener("transitionend", () => {
+          toastRef.destroy();
+        });
+        toastRef.instance.open = false;
+        this.#appRef.tick();
+      }
+    }, ms);
   }
 }
 
@@ -193,10 +189,9 @@ export abstract class SdToastBase<I, O> {
   __tInput__!: I;
   __tOutput__!: O;
 
-  @Input({required: true}) param!: I;
+  @Input({ required: true }) param!: I;
 
   close(value?: O): void {
     throw new Error("초기화되어있지 않습니다.");
   }
 }
-

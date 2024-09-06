@@ -1,15 +1,16 @@
-const {AST_NODE_TYPES} = require("@typescript-eslint/utils");
+import { AST_NODE_TYPES } from "@typescript-eslint/utils";
+import { getParserServices } from "@typescript-eslint/utils/eslint-utils";
 
-module.exports = {
+export default {
   meta: {
     type: "suggestion",
     docs: {
-      description: "'NotImplementError' 사용 경고"
+      description: "'NotImplementError' 사용 경고",
     },
-    schema: []
+    schema: [],
   },
   create: (context) => {
-    const parserServices = context.parserServices;
+    const parserServices = getParserServices(context);
     const program = parserServices.program;
     const checker = program.getTypeChecker();
 
@@ -45,18 +46,15 @@ module.exports = {
     }
 
     function checkThrowArgument(node) {
-      if (
-        node.type === AST_NODE_TYPES.AwaitExpression
-        || node.type === AST_NODE_TYPES.YieldExpression
-      ) {
+      if (node.type === AST_NODE_TYPES.AwaitExpression || node.type === AST_NODE_TYPES.YieldExpression) {
         return;
       }
 
       const type = tryGetThrowArgumentType(node);
       if (type && type.getSymbol() && type.getSymbol().getName() === "NotImplementError") {
         context.report({
-          node,
-          message: node.arguments.value || "구현되어있지 않습니다" //"'NotImplementError'를 'throw'하고 있습니다."
+          node: node,
+          message: node["arguments"]["value"] || "구현되어있지 않습니다", //"'NotImplementError'를 'throw'하고 있습니다."
         });
       }
     }
@@ -66,7 +64,7 @@ module.exports = {
         if (node.argument) {
           checkThrowArgument(node.argument);
         }
-      }
+      },
     };
-  }
+  },
 };

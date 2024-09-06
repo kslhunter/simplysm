@@ -1,10 +1,12 @@
 import "@simplysm/sd-core-browser";
-import {Injectable} from "@angular/core";
+import { Injectable } from "@angular/core";
 
-@Injectable({providedIn: "root"})
+@Injectable({ providedIn: "root" })
 export class SdDomValidatorProvider {
   validate(element: HTMLElement) {
-    const invalidEls = element.findAll("*:invalid, *[sd-invalid=true]").ofType(HTMLElement)
+    const invalidEls = element
+      .findAll("*:invalid, *[sd-invalid=true]")
+      .ofType(HTMLElement)
       .filter((item) => item.tagName.toLowerCase() !== "form");
 
     if (invalidEls.length > 0) {
@@ -14,8 +16,7 @@ export class SdDomValidatorProvider {
         setTimeout(() => {
           focusableElement.focus();
         });
-      }
-      else {
+      } else {
         const firstCell = invalidEls[0].findParent("._cell");
         if (firstCell) {
           // "confirm"창울 띄우는 경우에 포커싱이 안되는 현상 때문에 "setTimeout"이 필요함.

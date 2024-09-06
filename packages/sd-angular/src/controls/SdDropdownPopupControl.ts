@@ -1,6 +1,6 @@
-import {ChangeDetectionStrategy, Component, ElementRef, forwardRef, inject, ViewEncapsulation} from "@angular/core";
-import {SdDropdownControl} from "./SdDropdownControl";
-import {SdEventsDirective} from "../directives/SdEventsDirective";
+import { ChangeDetectionStrategy, Component, ElementRef, forwardRef, inject, ViewEncapsulation } from "@angular/core";
+import { SdDropdownControl } from "./SdDropdownControl";
+import { SdEventsDirective } from "../directives/SdEventsDirective";
 
 // TODO: 모바일일때는 모달 형식으로 표현
 @Component({
@@ -8,52 +8,53 @@ import {SdEventsDirective} from "../directives/SdEventsDirective";
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [
-    SdEventsDirective,
-  ],
+  imports: [SdEventsDirective],
   template: `
     <div (sdResize.outside)="onResizeOutside()" (keydown)="onKeyDown($event)">
       <ng-content></ng-content>
-    </div>`,
-  styles: [/* language=SCSS */ `
-    @import "../scss/mixins";
+    </div>
+  `,
+  styles: [
+    /* language=SCSS */ `
+      @import "../scss/mixins";
 
-    sd-dropdown-popup {
-      position: fixed;
-      z-index: var(--z-index-dropdown);
-      opacity: 0;
-      transform: translateY(-10px);
-      transition: .1s linear;
-      transition-property: transform, opacity;
-      pointer-events: none;
-      background: white;
-      min-width: 120px;
-      @include elevation(6);
-      overflow: hidden;
-      border-radius: var(--border-radius-default);
-      border: 1px solid var(--border-color-light);
+      sd-dropdown-popup {
+        position: fixed;
+        z-index: var(--z-index-dropdown);
+        opacity: 0;
+        transform: translateY(-10px);
+        transition: 0.1s linear;
+        transition-property: transform, opacity;
+        pointer-events: none;
+        background: white;
+        min-width: 120px;
+        @include elevation(6);
+        overflow: hidden;
+        border-radius: var(--border-radius-default);
+        border: 1px solid var(--border-color-light);
 
-      > div {
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-        white-space: nowrap;
+        > div {
+          width: 100%;
+          height: 100%;
+          overflow: auto;
+          white-space: nowrap;
+        }
+
+        &:focus {
+          outline: 1px solid var(--theme-primary-default);
+        }
+
+        @media all and (max-width: 520px) {
+          @include elevation(0);
+          border: 1px solid var(--border-color-default);
+        }
       }
-
-      &:focus {
-        outline: 1px solid var(--theme-primary-default);
-      }
-
-      @media all and (max-width: 520px) {
-        @include elevation(0);
-        border: 1px solid var(--border-color-default);
-      }
-    }
-  `]
+    `,
+  ],
 })
 export class SdDropdownPopupControl {
-  #parentControl: SdDropdownControl = inject(forwardRef(() => SdDropdownControl));
-  #elRef: ElementRef<HTMLElement> = inject(ElementRef);
+  #parentControl = inject<SdDropdownControl>(forwardRef(() => SdDropdownControl));
+  #elRef = inject<ElementRef<HTMLElement>>(ElementRef);
 
   onKeyDown(event: KeyboardEvent) {
     this.#parentControl.onPopupKeydown(event);
@@ -65,8 +66,7 @@ export class SdDropdownPopupControl {
 
     if (divEl.clientHeight > 300) {
       el.style.height = "300px";
-    }
-    else {
+    } else {
       delete (el.style as any).height;
     }
   }

@@ -1,18 +1,18 @@
-module.exports = {
+export default {
   meta: {
     type: "suggestion",
     docs: {
-      description: "HTML의 'TODO' 주석 경고"
+      description: "HTML의 'TODO' 주석 경고",
     },
 
-    schema: []
+    schema: [],
   },
 
   create: (context) => {
     // const parserServices = context.parserServices;
     return {
       Program(node) {
-        if (node.value) {
+        if ("value" in node && typeof node.value === "string") {
           const comments = node.value.match(/<!--(((?!-->)[\s\S])*)-->/g);
           if (!comments) return;
 
@@ -33,13 +33,13 @@ module.exports = {
             context.report({
               loc: {
                 start: { line, column },
-                end: { line: endLine, column: endColumn }
+                end: { line: endLine, column: endColumn },
               },
-              message: comment.match(/<!--(((?!-->)[\s\S])*)-->/)[1].trim()
+              message: comment.match(/<!--(((?!-->)[\s\S])*)-->/)[1].trim(),
             });
           }
         }
-      }
+      },
     };
-  }
+  },
 };

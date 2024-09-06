@@ -1,8 +1,8 @@
-import {inject, Injectable} from "@angular/core";
-import {EventManagerPlugin} from "@angular/platform-browser";
-import {DOCUMENT} from "@angular/common";
+import { inject, Injectable } from "@angular/core";
+import { EventManagerPlugin } from "@angular/platform-browser";
+import { DOCUMENT } from "@angular/common";
 
-@Injectable({providedIn: null})
+@Injectable({ providedIn: null })
 export class SdOptionEventPlugin extends EventManagerPlugin {
   constructor() {
     super(inject(DOCUMENT));
@@ -25,8 +25,7 @@ export class SdOptionEventPlugin extends EventManagerPlugin {
       this.manager.getZone().runOutsideAngular(() => {
         element.addEventListener(realEventName, listener, capture);
       });
-    }
-    else {
+    } else {
       element.addEventListener(realEventName, listener, capture);
     }
 

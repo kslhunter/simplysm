@@ -1,15 +1,15 @@
-import {Directive, Input} from "@angular/core";
+import { Directive, Input } from "@angular/core";
 
 @Directive({
-  selector: 'ng-template[itemOf]',
-  standalone: true
+  selector: "ng-template[itemOf]",
+  standalone: true,
 })
 export class SdItemOfTemplateDirective<TItem> {
-  @Input({required: true}) itemOf!: TItem[];
+  @Input({ required: true }) itemOf!: TItem[];
 
   static ngTemplateContextGuard<TContextItem>(
     dir: SdItemOfTemplateDirective<TContextItem>,
-    ctx: unknown
+    ctx: unknown,
   ): ctx is SdItemOfTemplateContext<TContextItem> {
     return true;
   }

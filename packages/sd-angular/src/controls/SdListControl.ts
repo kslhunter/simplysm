@@ -1,5 +1,5 @@
-import {ChangeDetectionStrategy, Component, Input, ViewEncapsulation} from "@angular/core";
-import {coercionBoolean} from "../utils/commons";
+import { ChangeDetectionStrategy, Component, Input, ViewEncapsulation } from "@angular/core";
+import { coercionBoolean } from "../utils/commons";
 
 @Component({
   selector: "sd-list",
@@ -33,5 +33,5 @@ import {coercionBoolean} from "../utils/commons";
   }
 })
 export class SdListControl {
-  @Input({transform: coercionBoolean}) inset = false;
+  @Input({ transform: coercionBoolean }) inset = false;
 }

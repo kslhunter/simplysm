@@ -1,20 +1,22 @@
-import {ApplicationRef, createComponent, inject, Injectable, Input, Type} from "@angular/core";
-import {jsPDF} from "jspdf";
+import { ApplicationRef, createComponent, inject, Injectable, Input, Type } from "@angular/core";
+import { jsPDF } from "jspdf";
 import * as htmlToImage from "html-to-image";
 
-@Injectable({providedIn: "root"})
+@Injectable({ providedIn: "root" })
 export class SdPrintProvider {
   #appRef = inject(ApplicationRef);
 
-  async printAsync<T extends SdPrintTemplateBase<any>>(printType: Type<T>,
-                                                       param: T["__tInput__"],
-                                                       options?: {
-                                                         orientation?: "portrait" | "landscape"
-                                                       }): Promise<void> {
+  async printAsync<T extends SdPrintTemplateBase<any>>(
+    printType: Type<T>,
+    param: T["__tInput__"],
+    options?: {
+      orientation?: "portrait" | "landscape";
+    },
+  ): Promise<void> {
     await new Promise<void>((resolve) => {
       //-- comp
       const compRef = createComponent(printType, {
-        environmentInjector: this.#appRef.injector
+        environmentInjector: this.#appRef.injector,
       });
       compRef.instance.param = param;
 
@@ -50,16 +52,18 @@ export class SdPrintProvider {
     });
   }
 
-  async getPdfBufferAsync<T extends SdPrintTemplateBase<any>>(printType: Type<T>,
-                                                              param: T["__tInput__"],
-                                                              options?: {
-                                                                orientation?: "portrait" | "landscape"
-                                                              }): Promise<Buffer> {
+  async getPdfBufferAsync<T extends SdPrintTemplateBase<any>>(
+    printType: Type<T>,
+    param: T["__tInput__"],
+    options?: {
+      orientation?: "portrait" | "landscape";
+    },
+  ): Promise<Buffer> {
     return await new Promise<Buffer>((resolve, reject) => {
       try {
         //-- comp
         const compRef = createComponent(printType, {
-          environmentInjector: this.#appRef.injector
+          environmentInjector: this.#appRef.injector,
         });
         compRef.instance.param = param;
 
@@ -85,7 +89,7 @@ export class SdPrintProvider {
               for (const el of els) {
                 const canvas = await htmlToImage.toCanvas(el, {
                   backgroundColor: "white",
-                  pixelRatio: 4
+                  pixelRatio: 4,
                 });
 
                 const orientation = el.getAttribute("sd-orientation") as "landscape" | "portrait" | undefined;
@@ -93,13 +97,15 @@ export class SdPrintProvider {
                   imageData: canvas,
                   x: 0,
                   y: 0,
-                  ...orientation === "landscape" ? {
-                    height: 841.89,
-                    width: 595.28
-                  } : {
-                    width: 595.28,
-                    height: 841.89
-                  }
+                  ...(orientation === "landscape"
+                    ? {
+                        height: 841.89,
+                        width: 595.28,
+                      }
+                    : {
+                        width: 595.28,
+                        height: 841.89,
+                      }),
                 });
               }
 
@@ -109,16 +115,14 @@ export class SdPrintProvider {
               styleEl.remove();
 
               resolve(Buffer.from(arrayBuffer));
-            }
-            catch (err) {
+            } catch (err) {
               reject(err);
             }
           }, 300);
         };
 
         this.#appRef.attachView(compRef.hostView);
-      }
-      catch (err) {
+      } catch (err) {
         reject(err);
       }
     });
@@ -129,7 +133,7 @@ export class SdPrintProvider {
 export abstract class SdPrintTemplateBase<I> {
   __tInput__!: I;
 
-  @Input({required: true}) param!: I;
+  @Input({ required: true }) param!: I;
 
   print() {
     throw new Error("템플릿이 초기화되어있지 않습니다.");

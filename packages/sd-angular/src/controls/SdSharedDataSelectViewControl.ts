@@ -1,38 +1,37 @@
 import {
-  ChangeDetectionStrategy, ChangeDetectorRef,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   ContentChild,
-  DoCheck,
   EventEmitter,
   inject,
-  Injector,
   Input,
   Output,
   TemplateRef,
   Type,
-  ViewEncapsulation
+  ViewEncapsulation,
 } from "@angular/core";
-import {StringUtil} from "@simplysm/sd-core-common";
-import {IconProp} from "@fortawesome/fontawesome-svg-core";
-import {ISharedDataBase} from "../providers/SdSharedDataProvider";
-import {coercionBoolean, getSdFnCheckData, TSdFnInfo} from "../utils/commons";
-import {SdItemOfTemplateContext, SdItemOfTemplateDirective} from "../directives/SdItemOfTemplateDirective";
-import {SdNgHelper} from "../utils/SdNgHelper";
-import {SdBusyContainerControl} from "./SdBusyContainerControl";
-import {SdDockContainerControl} from "./SdDockContainerControl";
-import {SdDockControl} from "./SdDockControl";
-import {NgTemplateOutlet} from "@angular/common";
-import {SdTextfieldControl} from "./SdTextfieldControl";
-import {SdListControl} from "./SdListControl";
-import {SdPaneControl} from "./SdPaneControl";
-import {SdListItemControl} from "./SdListItemControl";
-import {SdSelectItemControl} from "./SdSelectItemControl";
-import {SdButtonControl} from "./SdButtonControl";
-import {SdIconControl} from "./SdIconControl";
-import {SdAngularOptionsProvider} from "../providers/SdAngularOptionsProvider";
-import {SdAnchorControl} from "./SdAnchorControl";
-import {SdModalBase, SdModalProvider} from "../providers/SdModalProvider";
-import {ISharedDataModalInputParam, ISharedDataModalOutputResult} from "./SdSharedDataSelectControl";
+import { StringUtil } from "@simplysm/sd-core-common";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import { ISharedDataBase } from "../providers/SdSharedDataProvider";
+import { coercionBoolean } from "../utils/commons";
+import { SdItemOfTemplateContext, SdItemOfTemplateDirective } from "../directives/SdItemOfTemplateDirective";
+import { SdBusyContainerControl } from "./SdBusyContainerControl";
+import { SdDockContainerControl } from "./SdDockContainerControl";
+import { SdDockControl } from "./SdDockControl";
+import { NgTemplateOutlet } from "@angular/common";
+import { SdTextfieldControl } from "./SdTextfieldControl";
+import { SdListControl } from "./SdListControl";
+import { SdPaneControl } from "./SdPaneControl";
+import { SdListItemControl } from "./SdListItemControl";
+import { SdSelectItemControl } from "./SdSelectItemControl";
+import { SdButtonControl } from "./SdButtonControl";
+import { SdIconControl } from "./SdIconControl";
+import { SdAngularOptionsProvider } from "../providers/SdAngularOptionsProvider";
+import { SdAnchorControl } from "./SdAnchorControl";
+import { SdModalBase, SdModalProvider } from "../providers/SdModalProvider";
+import { ISharedDataModalInputParam, ISharedDataModalOutputResult } from "./SdSharedDataSelectControl";
+import { sdCheck, sdGetter, TSdGetter } from "../utils/hooks";
 
 @Component({
   selector: "sd-shared-data-select-view",
@@ -51,7 +50,7 @@ import {ISharedDataModalInputParam, ISharedDataModalOutputResult} from "./SdShar
     SdSelectItemControl,
     SdButtonControl,
     SdIconControl,
-    SdAnchorControl
+    SdAnchorControl,
   ],
   template: `
     <sd-busy-container [busy]="busyCount > 0">
@@ -67,7 +66,7 @@ import {ISharedDataModalInputParam, ISharedDataModalOutputResult} from "./SdShar
               @if (modalType) {
                 <div>
                   <sd-anchor (click)="onModalButtonClick()">
-                    <sd-icon [icon]="icons.externalLink" fixedWidth/>
+                    <sd-icon [icon]="icons.externalLink" fixedWidth />
                   </sd-anchor>
                 </div>
               }
@@ -77,39 +76,54 @@ import {ISharedDataModalInputParam, ISharedDataModalOutputResult} from "./SdShar
 
         <sd-dock class="pb-default">
           @if (!filterTemplateRef) {
-            <sd-textfield type="text" placeholder="검색어" [(value)]="searchText"/>
+            <sd-textfield type="text" placeholder="검색어" [(value)]="searchText" />
           } @else {
-            <ng-template [ngTemplateOutlet]="filterTemplateRef"/>
+            <ng-template [ngTemplateOutlet]="filterTemplateRef" />
           }
         </sd-dock>
 
         <sd-pane>
           <sd-list inset>
             @if (useUndefined) {
-              <sd-list-item [selected]="selectedItem === undefined"
-                            (click)="onSelectedItemChange(undefined)"
-                            [selectedIcon]="selectedIcon">
+              <sd-list-item
+                [selected]="selectedItem === undefined"
+                (click)="onSelectedItemChange(undefined)"
+                [selectedIcon]="selectedIcon"
+              >
                 @if (undefinedTemplateRef) {
-                  <ng-template [ngTemplateOutlet]="undefinedTemplateRef"/>
+                  <ng-template [ngTemplateOutlet]="undefinedTemplateRef" />
                 } @else {
                   <span class="tx-theme-grey-default">미지정</span>
                 }
               </sd-list-item>
             }
-            @for (item of filteredItems; let index = $index; track trackByFn(index, item)) {
-              <sd-list-item [selected]="item === selectedItem"
-                            (click)="selectedItem === item ? onSelectedItemChange(undefined) : onSelectedItemChange(item)"
-                            [selectedIcon]="selectedIcon">
-                <ng-template [ngTemplateOutlet]="itemTemplateRef ?? null"
-                             [ngTemplateOutletContext]="{$implicit: item, item: item, index: index, depth: 0}"></ng-template>
+            @for (item of getFilteredItems(); let index = $index; track item.__valueKey) {
+              <sd-list-item
+                [selected]="item === selectedItem"
+                (click)="selectedItem === item ? onSelectedItemChange(undefined) : onSelectedItemChange(item)"
+                [selectedIcon]="selectedIcon"
+              >
+                <ng-template
+                  [ngTemplateOutlet]="itemTemplateRef ?? null"
+                  [ngTemplateOutletContext]="{
+                    $implicit: item,
+                    item: item,
+                    index: index,
+                    depth: 0,
+                  }"
+                ></ng-template>
               </sd-list-item>
             }
           </sd-list>
         </sd-pane>
       </sd-dock-container>
-    </sd-busy-container>`
+    </sd-busy-container>
+  `,
 })
-export class SdSharedDataSelectViewControl<T extends ISharedDataBase<string | number>, TMODAL extends SdModalBase<ISharedDataModalInputParam, ISharedDataModalOutputResult>> implements DoCheck {
+export class SdSharedDataSelectViewControl<
+  T extends ISharedDataBase<string | number>,
+  TMODAL extends SdModalBase<ISharedDataModalInputParam, ISharedDataModalOutputResult>,
+> {
   icons = inject(SdAngularOptionsProvider).icons;
 
   #cdr = inject(ChangeDetectorRef);
@@ -118,66 +132,64 @@ export class SdSharedDataSelectViewControl<T extends ISharedDataBase<string | nu
   @Input() selectedItem?: T;
   @Output() selectedItemChange = new EventEmitter<T>();
 
-  @Input({required: true}) items: T[] = [];
+  @Input({ required: true }) items: T[] = [];
   @Input() selectedIcon?: IconProp;
-  @Input({transform: coercionBoolean}) useUndefined = false;
-  @Input() filterFn?: TSdFnInfo<(index: number, item: T) => boolean>;
+  @Input({ transform: coercionBoolean }) useUndefined = false;
+  @Input() filterGetter?: TSdGetter<(item: T, index: number) => boolean>;
 
   @Input() modalInputParam?: TMODAL["__tInput__"];
   @Input() modalType?: Type<TMODAL>;
   @Input() modalHeader?: string;
 
-  @ContentChild("headerTemplate", {static: true}) headerTemplateRef?: TemplateRef<void>;
-  @ContentChild("filterTemplate", {static: true}) filterTemplateRef?: TemplateRef<void>;
-
-  @ContentChild(SdItemOfTemplateDirective, {static: true, read: TemplateRef})
+  @ContentChild("headerTemplate", { static: true }) headerTemplateRef?: TemplateRef<void>;
+  @ContentChild("filterTemplate", { static: true }) filterTemplateRef?: TemplateRef<void>;
+  @ContentChild(SdItemOfTemplateDirective, { static: true, read: TemplateRef })
   itemTemplateRef?: TemplateRef<SdItemOfTemplateContext<T>>;
-
-  @ContentChild("undefinedTemplate", {static: true, read: TemplateRef}) undefinedTemplateRef?: TemplateRef<void>;
-
-  trackByFn = (index: number, item: T): (string | number) => item.__valueKey;
+  @ContentChild("undefinedTemplate", { static: true, read: TemplateRef }) undefinedTemplateRef?: TemplateRef<void>;
 
   busyCount = 0;
   searchText?: string;
-  filteredItems: any[] = [];
 
-  #sdNgHelper = new SdNgHelper(inject(Injector));
+  getFilteredItems = sdGetter(
+    async () => ({
+      items: [this.items, "all"],
+      searchText: [this.searchText],
+      ...(await this.filterGetter?.getCheckDataAsync("filterGetter")),
+    }),
+    () => {
+      let result = this.items.filter((item) => !item.__isHidden);
 
-  ngDoCheck(): void {
-    this.#sdNgHelper.doCheck(run => {
+      if (!StringUtil.isNullOrEmpty(this.searchText)) {
+        result = result.filter((item) => item.__searchText.includes(this.searchText!));
+      }
 
-      run({
-        items: [this.items, "all"]
-      }, () => {
-        this.selectedItem = this.items.single((item) => item.__valueKey === this.selectedItem?.__valueKey);
-      });
+      if (this.filterGetter) {
+        result = result.filter((item, i) => this.filterGetter!(item, i));
+      }
 
-      run({
+      return result;
+    },
+  );
+
+  constructor() {
+    sdCheck(
+      () => ({
         items: [this.items, "all"],
-        searchText: [this.searchText],
-        ...getSdFnCheckData("filterFn", this.filterFn)
-      }, () => {
-        let result = this.items.filter((item) => !item.__isHidden);
-
-        if (!StringUtil.isNullOrEmpty(this.searchText)) {
-          result = result.filter((item) => item.__searchText.includes(this.searchText!));
+      }),
+      () => {
+        const newSelectedItem = this.items.single((item) => item.__valueKey === this.selectedItem?.__valueKey);
+        if (this.selectedItem !== newSelectedItem) {
+          this.selectedItem = newSelectedItem;
+          this.selectedItemChange.emit(this.selectedItem);
         }
-
-        if (this.filterFn?.[0]) {
-          result = result.filter((item, i) => this.filterFn![0](i, item));
-        }
-
-        this.filteredItems = result;
-      });
-    });
+      },
+    );
   }
 
   onSelectedItemChange(item: T | undefined) {
-    if (this.selectedItemChange.observed) {
-      this.selectedItemChange.emit(item);
-    }
-    else {
+    if (this.selectedItem !== item) {
       this.selectedItem = item;
+      this.selectedItemChange.emit(item);
     }
   }
 
@@ -186,21 +198,18 @@ export class SdSharedDataSelectViewControl<T extends ISharedDataBase<string | nu
 
     const result = await this.#sdModal.showAsync(this.modalType, this.modalHeader ?? "자세히...", {
       selectMode: "single",
-      selectedItemKeys: [this.selectedItem].filterExists().map(item => item.__valueKey),
-      ...this.modalInputParam
+      selectedItemKeys: [this.selectedItem].filterExists().map((item) => item.__valueKey),
+      ...this.modalInputParam,
     });
 
     if (result) {
-      const newSelectedItem = this.items.single(item => item.__valueKey === result.selectedItemKeys[0]);
+      const newSelectedItem = this.items.single((item) => item.__valueKey === result.selectedItemKeys[0]);
 
-      if (this.selectedItemChange.observed) {
-        this.selectedItemChange.emit(newSelectedItem);
-      }
-      else {
+      if (this.selectedItem !== newSelectedItem) {
         this.selectedItem = newSelectedItem;
+        this.selectedItemChange.emit(newSelectedItem);
       }
     }
     this.#cdr.markForCheck();
   }
 }
-

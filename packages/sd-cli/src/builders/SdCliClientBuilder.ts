@@ -142,6 +142,7 @@ export class SdCliClientBuilder extends EventEmitter {
           ...this._pkgConf.env,
           ...this._pkgConf.builder?.[builderType]?.env
         },
+        browserslist: this._pkgConf.builder?.[builderType]?.browserslist,
         cordovaConfig: builderType === "cordova" ? this._pkgConf.builder!.cordova : undefined,
       }));
     }
@@ -187,7 +188,7 @@ export class SdCliClientBuilder extends EventEmitter {
     return {
       watchFileSet: currWatchFileSet,
       affectedFileSet,
-      buildResults: [...results, ...lintResults]
+      buildResults: [...results, ...lintResults].filter(item => item.filePath !== path.resolve(this._pkgPath, "src/routes.ts"))
     };
   }
 

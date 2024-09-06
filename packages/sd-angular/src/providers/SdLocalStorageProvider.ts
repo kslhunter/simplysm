@@ -1,8 +1,8 @@
-import {JsonConvert} from "@simplysm/sd-core-common";
-import {inject, Injectable} from "@angular/core";
-import {SdAngularOptionsProvider} from "./SdAngularOptionsProvider";
+import { JsonConvert } from "@simplysm/sd-core-common";
+import { inject, Injectable } from "@angular/core";
+import { SdAngularOptionsProvider } from "./SdAngularOptionsProvider";
 
-@Injectable({providedIn: "root"})
+@Injectable({ providedIn: "root" })
 export class SdLocalStorageProvider {
   #sdOptions = inject(SdAngularOptionsProvider);
 

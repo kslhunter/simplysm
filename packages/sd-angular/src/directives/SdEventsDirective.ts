@@ -1,10 +1,10 @@
-import {Directive, EventEmitter, Output} from "@angular/core";
-import {ISdResizeEvent} from "../plugins/SdResizeEventPlugin";
-
+import { Directive, EventEmitter, Output } from "@angular/core";
+import { ISdResizeEvent } from "../plugins/SdResizeEventPlugin";
 
 @Directive({
-  selector: "[sdResize], [sdResize.outside], [focus.outside], [click.outside], [mousedown.outside], [keydown.outside], [scroll.outside], [invalid.capture]",
-  standalone: true
+  selector:
+    "[sdResize], [sdResize.outside], [focus.outside], [click.outside], [mousedown.outside], [keydown.outside], [scroll.outside], [invalid.capture]",
+  standalone: true,
 })
 export class SdEventsDirective {
   @Output("sdResize") resize = new EventEmitter<ISdResizeEvent>();
@@ -14,6 +14,5 @@ export class SdEventsDirective {
   @Output("mousedown.outside") mousedownOutside = new EventEmitter<MouseEvent>();
   @Output("keydown.outside") keydownOutside = new EventEmitter<KeyboardEvent>();
   @Output("scroll.outside") scrollOutside = new EventEmitter<Event>();
-
   @Output("invalid.capture") invalidCapture = new EventEmitter<Event>();
 }

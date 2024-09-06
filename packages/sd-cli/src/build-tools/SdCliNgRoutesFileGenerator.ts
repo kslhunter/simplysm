@@ -67,7 +67,7 @@ import {Routes} from "@angular/router";
 export const routes: Routes = [
 ${fn(result, 2)}
 ];`.trim();
-    if (content.trim() !== cache?.trim()) {
+    if (content !== cache) {
       await FsUtil.writeFileAsync(routesFilePath, content);
     }
     return content;

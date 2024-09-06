@@ -1,8 +1,8 @@
-import {inject, Injectable} from "@angular/core";
-import {EventManagerPlugin} from "@angular/platform-browser";
-import {DOCUMENT} from "@angular/common";
+import { inject, Injectable } from "@angular/core";
+import { EventManagerPlugin } from "@angular/platform-browser";
+import { DOCUMENT } from "@angular/common";
 
-@Injectable({providedIn: null})
+@Injectable({ providedIn: null })
 export class SdInsertCommandEventPlugin extends EventManagerPlugin {
   constructor() {
     super(inject(DOCUMENT));

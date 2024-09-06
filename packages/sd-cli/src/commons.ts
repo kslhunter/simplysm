@@ -122,12 +122,14 @@ export interface ISdCliClientBuilderElectronConfig {
   // devServerPort?: number;
   reinstallDependencies?: string[];
   env?: Record<string, string>;
+  browserslist?: string[];
 }
 
 export interface ISdCliClientBuilderWebConfig {
   // devServerHost?: string;
   // devServerPort?: number;
   env?: Record<string, string>;
+  browserslist?: string[];
 }
 
 export interface ISdCliClientBuilderCordovaConfig {
@@ -153,8 +155,9 @@ export interface ISdCliClientBuilderCordovaConfig {
         maxSdkVersion?: number;
       }[];
     }
-  }
+  };
   env?: Record<string, string>;
+  browserslist?: string[];
 }
 
 export type TSdCliPostPublishConfig = ISdCliPostPublishScriptConfig;

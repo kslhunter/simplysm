@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, Input, ViewEncapsulation} from "@angular/core";
+import { ChangeDetectionStrategy, Component, Input, ViewEncapsulation } from "@angular/core";
 
 @Component({
   selector: "sd-form-box",
@@ -7,34 +7,37 @@ import {ChangeDetectionStrategy, Component, Input, ViewEncapsulation} from "@ang
   standalone: true,
   imports: [],
   template: `
-    <ng-content></ng-content>`,
-  styles: [/* language=SCSS */ `
-    sd-form-box {
-      &[sd-layout="cascade"] {
-        display: flex;
-        flex-direction: column;
-        gap: var(--gap-default);
-      }
+    <ng-content></ng-content>
+  `,
+  styles: [
+    /* language=SCSS */ `
+      sd-form-box {
+        &[sd-layout="cascade"] {
+          display: flex;
+          flex-direction: column;
+          gap: var(--gap-default);
+        }
 
-      &[sd-layout="table"] {
-        display: table;
-        width: 100%;
-      }
+        &[sd-layout="table"] {
+          display: table;
+          width: 100%;
+        }
 
-      &[sd-layout="inline"] {
-        display: inline-flex;
-        flex-wrap: wrap;
-        gap: var(--gap-sm);
-      }
+        &[sd-layout="inline"] {
+          display: inline-flex;
+          flex-wrap: wrap;
+          gap: var(--gap-sm);
+        }
 
-      &[sd-layout="none"] {
-        display: contents;
+        &[sd-layout="none"] {
+          display: contents;
+        }
       }
-    }
-  `],
+    `,
+  ],
   host: {
-    "[attr.sd-layout]": "layout"
-  }
+    "[attr.sd-layout]": "layout",
+  },
 })
 export class SdFormBoxControl {
   @Input() layout: "cascade" | "inline" | "table" | "none" = "cascade";

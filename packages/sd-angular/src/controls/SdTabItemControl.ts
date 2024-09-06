@@ -5,9 +5,9 @@ import {
   HostListener,
   inject,
   Input,
-  ViewEncapsulation
+  ViewEncapsulation,
 } from "@angular/core";
-import {SdTabControl} from "./SdTabControl";
+import { SdTabControl } from "./SdTabControl";
 
 @Component({
   selector: "sd-tab-item",
@@ -15,50 +15,51 @@ import {SdTabControl} from "./SdTabControl";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
-  template: `
-    <ng-content></ng-content>`,
-  styles: [/* language=SCSS */ `
-    sd-tab-item {
-      display: inline-block;
-      padding: var(--gap-sm) var(--gap-default);
-      cursor: pointer;
-      margin-bottom: -2px;
+  template: ` <ng-content></ng-content>`,
+  styles: [
+    /* language=SCSS */ `
+      sd-tab-item {
+        display: inline-block;
+        padding: var(--gap-sm) var(--gap-default);
+        cursor: pointer;
+        margin-bottom: -2px;
 
-      @media not all and (pointer: coarse) {
-        border-top: 2px solid transparent;
-        border-left: 1px solid transparent;
-        border-right: 1px solid transparent;
+        @media not all and (pointer: coarse) {
+          border-top: 2px solid transparent;
+          border-left: 1px solid transparent;
+          border-right: 1px solid transparent;
 
-        &:hover {
-          background: rgba(0, 0, 0, .05);
+          &:hover {
+            background: rgba(0, 0, 0, 0.05);
+          }
+
+          &[sd-selected="true"] {
+            background: white;
+            border-color: var(--theme-grey-lighter);
+          }
         }
 
-        &[sd-selected=true] {
-          background: white;
-          border-color: var(--theme-grey-lighter);
+        @media all and (pointer: coarse) {
+          border-bottom: 2px solid transparent !important;
+          font-weight: bold;
+          color: var(--theme-grey-default);
+
+          &[sd-selected="true"] {
+            border-bottom: 3px solid var(--theme-primary-default) !important;
+            color: var(--theme-primary-default);
+          }
         }
       }
-
-      @media all and (pointer: coarse) {
-        border-bottom: 2px solid transparent !important;
-        font-weight: bold;
-        color: var(--theme-grey-default);
-
-        &[sd-selected=true] {
-          border-bottom: 3px solid var(--theme-primary-default) !important;
-          color: var(--theme-primary-default);
-        }
-      }
-    }
-  `],
+    `,
+  ],
   host: {
-    "[attr.sd-selected]": "isSelected"
-  }
+    "[attr.sd-selected]": "isSelected",
+  },
 })
 export class SdTabItemControl {
-  @Input() value?: any;
+  #parentControl = inject<SdTabControl>(forwardRef(() => SdTabControl));
 
-  #parentControl: SdTabControl = inject(forwardRef(() => SdTabControl));
+  @Input() value?: any;
 
   get isSelected(): boolean {
     return this.#parentControl.value === this.value;

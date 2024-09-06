@@ -1,7 +1,7 @@
-import {Wait} from "@simplysm/sd-core-common";
-import {Injectable} from "@angular/core";
+import { Wait } from "@simplysm/sd-core-common";
+import { Injectable } from "@angular/core";
 
-@Injectable({providedIn: "root"})
+@Injectable({ providedIn: "root" })
 export class SdFileDialogProvider {
   async showAsync(multiple?: false, accept?: string): Promise<File | undefined>;
   async showAsync(multiple: true, accept?: string): Promise<File[] | undefined>;

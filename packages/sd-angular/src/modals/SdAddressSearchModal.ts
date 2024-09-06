@@ -1,5 +1,6 @@
-import {ChangeDetectionStrategy, Component, ElementRef, inject, NgZone, OnInit, ViewEncapsulation} from "@angular/core";
-import {SdModalBase} from "../providers/SdModalProvider";
+import { ChangeDetectionStrategy, Component, ElementRef, inject, ViewEncapsulation } from "@angular/core";
+import { SdModalBase } from "../providers/SdModalProvider";
+import { sdInit } from "../utils/hooks";
 
 @Component({
   selector: "sd-address-search-modal",
@@ -7,17 +8,17 @@ import {SdModalBase} from "../providers/SdModalProvider";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
-  template: `
-    <div class="_content" style="min-height: 100px;"></div>`
+  template: ` <div class="_content" style="min-height: 100px;"></div>`,
 })
-export class SdAddressSearchModal extends SdModalBase<undefined, IAddress> implements OnInit {
+export class SdAddressSearchModal extends SdModalBase<undefined, IAddress> {
   #elRef = inject<ElementRef<HTMLElement>>(ElementRef);
-  #ngZone = inject(NgZone);
 
-  async ngOnInit() {
-    await this.#ngZone.runOutsideAngular(async () => {
+  constructor() {
+    super();
+
+    sdInit.outside(async () => {
       if (!document.getElementById("daum_address")) {
-        await new Promise<void>(resolve => {
+        await new Promise<void>((resolve) => {
           const scriptEl = document.createElement("script");
           scriptEl.async = true;
           scriptEl.src = "//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js";
@@ -42,12 +43,12 @@ export class SdAddressSearchModal extends SdModalBase<undefined, IAddress> imple
 
           let extraAddr = "";
           if (data.userSelectedType === "R") {
-            if (data.bname !== "" && (/[동로가]$/g).test(data.bname)) {
+            if (data.bname !== "" && /[동로가]$/g.test(data.bname)) {
               extraAddr += data.bname;
             }
 
             if (data.buildingName !== "" && data.apartment === "Y") {
-              extraAddr += (extraAddr !== "" ? ", " + data.buildingName : data.buildingName);
+              extraAddr += extraAddr !== "" ? ", " + data.buildingName : data.buildingName;
             }
 
             if (extraAddr !== "") {
@@ -58,15 +59,15 @@ export class SdAddressSearchModal extends SdModalBase<undefined, IAddress> imple
           this.close({
             postNumber: data.zonecode,
             address: addr + extraAddr,
-            buildingName: data.buildingName
+            buildingName: data.buildingName,
           });
         },
         onresize: (size: any): void => {
           contentEl.style.height = size.height + "px";
         },
         width: "100%",
-        height: "100%"
-      }).embed(contentEl, {autoClose: false});
+        height: "100%",
+      }).embed(contentEl, { autoClose: false });
     });
   }
 }

@@ -79,4 +79,8 @@ export class StringUtil {
   public static isNullOrEmpty(str: string | null | undefined): str is ("" | undefined | null) {
     return str == null || str === "";
   }
+
+  public static insert(str: string, index: number, insertString: string) {
+    return str.substring(0, index) + insertString + str.substring(index)
+  }
 }

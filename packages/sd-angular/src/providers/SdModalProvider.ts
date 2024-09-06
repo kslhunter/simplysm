@@ -1,38 +1,40 @@
-import {ApplicationRef, createComponent, inject, Injectable, Input, Type} from "@angular/core";
-import {SdModalControl} from "../controls/SdModalControl";
+import { ApplicationRef, createComponent, inject, Injectable, Input, Type } from "@angular/core";
+import { SdModalControl } from "../controls/SdModalControl";
 
-@Injectable({providedIn: "root"})
+@Injectable({ providedIn: "root" })
 export class SdModalProvider {
   #appRef = inject(ApplicationRef);
 
   modalCount = 0;
 
-  async showAsync<T extends SdModalBase<any, any>>(modalType: Type<T>,
-                                                   title: string,
-                                                   param: T["__tInput__"],
-                                                   options?: {
-                                                     key?: string;
-                                                     hideHeader?: boolean;
-                                                     hideCloseButton?: boolean;
-                                                     useCloseByBackdrop?: boolean;
-                                                     useCloseByEscapeKey?: boolean;
-                                                     float?: boolean;
-                                                     minHeightPx?: number;
-                                                     minWidthPx?: number;
-                                                     resizable?: boolean;
-                                                     movable?: boolean;
-                                                     headerStyle?: string;
-                                                     mobileFillDisabled?: boolean;
-                                                   }): Promise<T["__tOutput__"] | undefined> {
+  async showAsync<T extends SdModalBase<any, any>>(
+    modalType: Type<T>,
+    title: string,
+    param: T["__tInput__"],
+    options?: {
+      key?: string;
+      hideHeader?: boolean;
+      hideCloseButton?: boolean;
+      useCloseByBackdrop?: boolean;
+      useCloseByEscapeKey?: boolean;
+      float?: boolean;
+      minHeightPx?: number;
+      minWidthPx?: number;
+      resizable?: boolean;
+      movable?: boolean;
+      headerStyle?: string;
+      mobileFillDisabled?: boolean;
+    },
+  ): Promise<T["__tOutput__"] | undefined> {
     return await new Promise<T["__tOutput__"] | undefined>((resolve, reject) => {
       //-- component
       const compRef = createComponent(modalType, {
-        environmentInjector: this.#appRef.injector
+        environmentInjector: this.#appRef.injector,
       });
 
       const modalRef = createComponent(SdModalControl, {
         environmentInjector: this.#appRef.injector,
-        projectableNodes: [[compRef.location.nativeElement]]
+        projectableNodes: [[compRef.location.nativeElement]],
       });
 
       const modalEl = modalRef.location.nativeElement as HTMLElement;
@@ -104,8 +106,8 @@ export abstract class SdModalBase<I, O> {
 
   isModal = false;
 
-  @Input({required: true}) title!: string;
-  @Input({required: true}) param!: I;
+  @Input({ required: true }) title!: string;
+  @Input({ required: true }) param!: I;
 
   close(value?: O): void {
     throw new Error("모달이 초기화되어있지 않습니다.");

@@ -1,6 +1,6 @@
-import {Inject, InjectionToken, ModuleWithProviders, NgModule, Optional, Type} from "@angular/core";
-import {ROUTES} from "@angular/router";
-import {SdLazyPageLoaderProvider} from "./providers/SdLazyPageLoaderProvider";
+import { inject, InjectionToken, ModuleWithProviders, NgModule, Type } from "@angular/core";
+import { ROUTES } from "@angular/router";
+import { SdLazyPageLoaderProvider } from "./providers/SdLazyPageLoaderProvider";
 
 export interface LazyComponent {
   code: string;
@@ -11,20 +11,16 @@ export const LAZY_PAGES_TOKEN = new InjectionToken<LazyComponent[]>("LAZY_PAGES_
 
 @NgModule({
   imports: [],
-  providers: []
+  providers: [],
 })
 export class SdLazyPageLoaderModule {
-  constructor(lazyPageLoader: SdLazyPageLoaderProvider,
-              @Optional() @Inject(LAZY_PAGES_TOKEN) lazyPagesList?: LazyComponent[][]) {
-    if (!window.navigator.userAgent.includes("Chrome")) {
-      throw new Error("크롬외의 브라우저는 지원 하지 않습니다.");
-    }
+  #lazyPageLoader = inject(SdLazyPageLoaderProvider);
+  #lazyPagesList = inject(LAZY_PAGES_TOKEN, { optional: true });
 
-    if (lazyPagesList) {
-      for (const lazyPages of lazyPagesList) {
-        for (const lazyPage of lazyPages) {
-          lazyPageLoader.add(lazyPage);
-        }
+  constructor() {
+    if (this.#lazyPagesList) {
+      for (const lazyPage of this.#lazyPagesList) {
+        this.#lazyPageLoader.add(lazyPage);
       }
     }
   }
@@ -33,9 +29,9 @@ export class SdLazyPageLoaderModule {
     return {
       ngModule: SdLazyPageLoaderModule,
       providers: [
-        {provide: LAZY_PAGES_TOKEN, multi: true, useValue: lazyPages},
-        {provide: ROUTES, multi: true, useValue: lazyPages}
-      ]
+        { provide: LAZY_PAGES_TOKEN, multi: true, useValue: lazyPages },
+        { provide: ROUTES, multi: true, useValue: lazyPages },
+      ],
     };
   }
 }

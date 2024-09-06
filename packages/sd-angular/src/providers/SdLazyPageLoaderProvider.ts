@@ -1,8 +1,8 @@
-import {createNgModule, inject, Injectable, NgModuleRef, Type} from "@angular/core";
-import {StringUtil} from "@simplysm/sd-core-common";
-import {LazyComponent} from "../SdLazyPageLoaderModule";
+import { createNgModule, inject, Injectable, NgModuleRef, Type } from "@angular/core";
+import { StringUtil } from "@simplysm/sd-core-common";
+import { LazyComponent } from "../SdLazyPageLoaderModule";
 
-@Injectable({providedIn: "root"})
+@Injectable({ providedIn: "root" })
 export class SdLazyPageLoaderProvider {
   #moduleRef = inject(NgModuleRef);
 
@@ -27,7 +27,7 @@ export class SdLazyPageLoaderProvider {
 
       const pageName = StringUtil.toPascalCase(code.split(".").last()!) + "LazyPage";
       const component = moduleRef.instance[pageName];
-      const result: ILazyComponent = {moduleFactory: moduleType, moduleRef, component};
+      const result: ILazyComponent = { moduleFactory: moduleType, moduleRef, component };
       this.#loading.set(code, result);
       return result;
     }
@@ -36,9 +36,7 @@ export class SdLazyPageLoaderProvider {
   }
 
   getComponentCode(component: Type<any>): string | undefined {
-    return Array.from(this.#loading.entries())
-      .single((item) => item[1].component === component)
-      ?.[0];
+    return Array.from(this.#loading.entries()).single((item) => item[1].component === component)?.[0];
   }
 }
 

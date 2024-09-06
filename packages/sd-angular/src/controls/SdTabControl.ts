@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output, ViewEncapsulation} from "@angular/core";
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, ViewEncapsulation } from "@angular/core";
 
 @Component({
   selector: "sd-tab",
@@ -6,35 +6,34 @@ import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output, ViewEnc
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
-  template: `
-    <ng-content></ng-content>`,
-  styles: [/* language=SCSS */ `
-    sd-tab {
-      display: block;
-      border-bottom: 2px solid var(--theme-grey-lighter);
+  template: ` <ng-content></ng-content>`,
+  styles: [
+    /* language=SCSS */ `
+      sd-tab {
+        display: block;
+        border-bottom: 2px solid var(--theme-grey-lighter);
 
-      @media not all and (pointer: coarse) {
-        background: var(--theme-grey-lightest);
-        padding-left: var(--gap-default);
-        padding-top: 1px;
-      }
+        @media not all and (pointer: coarse) {
+          background: var(--theme-grey-lightest);
+          padding-left: var(--gap-default);
+          padding-top: 1px;
+        }
 
-      @media all and (pointer: coarse) {
-        padding: 0 calc(var(--gap-default) + 1px) 0 calc(var(--gap-default) - 1px);
+        @media all and (pointer: coarse) {
+          padding: 0 calc(var(--gap-default) + 1px) 0 calc(var(--gap-default) - 1px);
+        }
       }
-    }
-  `]
+    `,
+  ],
 })
 export class SdTabControl {
   @Input() value?: any;
   @Output() valueChange = new EventEmitter<any>();
 
   setValue(value: any) {
-    if (this.valueChange.observed) {
-      this.valueChange.emit(value);
-    }
-    else {
+    if (this.value !== value) {
       this.value = value;
+      this.valueChange.emit(value);
     }
   }
 }

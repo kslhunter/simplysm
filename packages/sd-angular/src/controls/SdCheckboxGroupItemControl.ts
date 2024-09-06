@@ -1,73 +1,52 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  DoCheck,
-  forwardRef,
-  inject,
-  Injector,
-  Input,
-  ViewEncapsulation
-} from "@angular/core";
-import {SdCheckboxGroupControl} from "./SdCheckboxGroupControl";
-import {SdCheckboxControl} from "./SdCheckboxControl";
-import {SdNgHelper} from "../utils/SdNgHelper";
+import { ChangeDetectionStrategy, Component, forwardRef, inject, Input, ViewEncapsulation } from "@angular/core";
+import { SdCheckboxGroupControl } from "./SdCheckboxGroupControl";
+import { SdCheckboxControl } from "./SdCheckboxControl";
+import { sdGetter } from "../utils/hooks";
 
 @Component({
   selector: "sd-checkbox-group-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [
-    SdCheckboxControl
-  ],
+  imports: [SdCheckboxControl],
   template: `
-    <sd-checkbox [value]="isSelected" (valueChange)="onSelectedChange($event)"
-                 [inline]="inline">
+    <sd-checkbox
+      [value]="getIsSelected()"
+      (valueChange)="onSelectedChange($event)"
+      [inline]="inline"
+      [disabled]="disabled"
+    >
       <ng-content></ng-content>
-    </sd-checkbox>`
+    </sd-checkbox>
+  `,
 })
-export class SdCheckboxGroupItemControl<T> implements DoCheck {
+export class SdCheckboxGroupItemControl<T> {
   #parentControl = inject<SdCheckboxGroupControl<T>>(forwardRef(() => SdCheckboxGroupControl));
 
-  @Input({required: true}) value!: T;
+  @Input({ required: true }) value!: T;
   @Input() inline = false;
 
-  isSelected = false;
+  getIsSelected = sdGetter(
+    () => ({
+      parentValue: [this.#parentControl.value, "one"],
+      value: [this.value],
+    }),
+    () => {
+      return this.#parentControl.value.includes(this.value);
+    },
+  );
 
-  #sdNgHelper = new SdNgHelper(inject(Injector));
-
-  ngDoCheck(): void {
-    this.#sdNgHelper.doCheck(run => {
-      run({
-        parentKeyProp: [this.#parentControl.keyProp],
-        parentValue: [this.#parentControl.value],
-        value: [this.value]
-      }, () => {
-        const thisKeys = (this.#parentControl.keyProp != null)
-          ? this.#parentControl.value.map((item) => item[this.#parentControl.keyProp!])
-          : this.#parentControl.value;
-        const itemKey = (this.#parentControl.keyProp != null) ? this.value[this.#parentControl.keyProp] : this.value;
-
-        this.isSelected = thisKeys.includes(itemKey);
-      });
-    });
+  get disabled() {
+    return this.#parentControl.disabled;
   }
 
   onSelectedChange(selected: boolean): void {
-    const newValues = [...this.#parentControl.value];
-
     if (selected) {
-      newValues.push(this.value);
-    }
-    else {
-      newValues.remove(this.value);
+      this.#parentControl.value.push(this.value);
+    } else {
+      this.#parentControl.value.remove(this.value);
     }
 
-    if (this.#parentControl.valueChange.observed) {
-      this.#parentControl.valueChange.emit(newValues);
-    }
-    else {
-      this.#parentControl.value = newValues;
-    }
+    this.#parentControl.valueChange.emit(this.#parentControl.value);
   }
 }

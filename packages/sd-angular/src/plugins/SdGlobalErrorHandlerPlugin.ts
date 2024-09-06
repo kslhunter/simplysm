@@ -1,7 +1,7 @@
-import {ApplicationRef, ErrorHandler, inject, Injectable, NgModuleRef} from "@angular/core";
-import {SdSystemLogProvider} from "../providers/SdSystemLogProvider";
+import { ApplicationRef, ErrorHandler, inject, Injectable, NgModuleRef } from "@angular/core";
+import { SdSystemLogProvider } from "../providers/SdSystemLogProvider";
 
-@Injectable({providedIn: null})
+@Injectable({ providedIn: null })
 export class SdGlobalErrorHandlerPlugin implements ErrorHandler {
   #ngModuleRef = inject(NgModuleRef);
   #systemLog = inject(SdSystemLogProvider);
@@ -30,11 +30,8 @@ export class SdGlobalErrorHandlerPlugin implements ErrorHandler {
         location.reload();
       };
 
-      this.#systemLog.writeAsync("error", err.stack).catch(() => {
-      });
-    }
-    catch {
-    }
+      this.#systemLog.writeAsync("error", err.stack).catch(() => {});
+    } catch {}
 
     // throw err;
   }
