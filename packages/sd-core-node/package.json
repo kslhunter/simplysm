@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-core-node",
-  "version": "12.5.2",
+  "version": "12.5.3",
   "description": "심플리즘 패키지 - 코어 모듈 (node)",
   "author": "김석래",
   "repository": {
@@ -16,7 +16,7 @@
     "node": "20.16.0"
   },
   "dependencies": {
-    "@simplysm/sd-core-common": "12.5.2",
+    "@simplysm/sd-core-common": "12.5.3",
     "chokidar": "^3.6.0",
     "glob": "^11.0.0"
   },
