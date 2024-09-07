@@ -26,7 +26,7 @@ export class SdCheckboxGroupItemControl<T> {
   @Input({ required: true }) value!: T;
   @Input() inline = false;
 
-  getIsSelected = sdGetter(
+  getIsSelected = sdGetter(this,
     () => ({
       parentValue: [this.#parentControl.value, "one"],
       value: [this.value],

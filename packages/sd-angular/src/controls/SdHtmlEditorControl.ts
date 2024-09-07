@@ -174,7 +174,7 @@ export class SdHtmlEditorControl {
   @ViewChild("editorEl") editorElRef?: ElementRef<HTMLElement>;
 
   constructor() {
-    sdCheck.outside(
+    sdCheck.outside(this,
       () => ({
         value: [this.value],
         isEditorVisible: [!!this.editorElRef?.nativeElement],

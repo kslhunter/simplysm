@@ -158,9 +158,13 @@ export class SdSharedDataSelectControl<
   @Input() selectClass?: string;
   @Input() multiSelectionDisplayDirection?: "vertical" | "horizontal";
   @Input() getIsHiddenGetter: TSdGetter<(item: T, index: number) => boolean> = sdGetter(
+    this,
+    () => ({}),
     (item, index) => item.__isHidden,
   );
   @Input() getSearchTextGetter: TSdGetter<(item: T, index: number) => string> = sdGetter(
+    this,
+    () => ({}),
     (item, index) => item.__searchText,
   );
   @Input() parentKeyProp?: string;
@@ -170,11 +174,16 @@ export class SdSharedDataSelectControl<
   itemTemplateRef?: TemplateRef<SdItemOfTemplateContext<T>>;
   @ContentChild("undefinedTemplate", { static: true, read: TemplateRef }) undefinedTemplateRef?: TemplateRef<void>;
 
-  trackByGetter = sdGetter((item: T, index: number) => item.__valueKey);
+  trackByGetter = sdGetter(
+    this,
+    () => ({}),
+    (item: T, index: number) => item.__valueKey,
+  );
 
   searchText?: string;
 
   getItemByParentKeyMap = sdGetter(
+    this,
     () => ({
       items: [this.items, "all"],
       parentKeyProp: [this.parentKeyProp],
@@ -194,6 +203,7 @@ export class SdSharedDataSelectControl<
   );
 
   getRootDisplayItems = sdGetter(
+    this,
     async () => ({
       items: [this.items, "all"],
       ...(await this.filterGetter?.getCheckDataAsync("filterGetter")),
@@ -252,6 +262,7 @@ export class SdSharedDataSelectControl<
   }
 
   getChildrenGetter = sdGetter(
+    this,
     () => ({
       displayOrderKeyProp: [this.displayOrderKeyProp],
       itemByParentKeyMap: [this.getItemByParentKeyMap()],

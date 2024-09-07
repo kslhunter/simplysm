@@ -44,7 +44,7 @@ export class SdGapControl {
   @Input({ transform: coercionNumber }) widthEm?: number;
 
   constructor() {
-    sdCheck.outside(
+    sdCheck.outside(this,
       () => ({
         height: [this.height],
         heightPx: [this.heightPx],

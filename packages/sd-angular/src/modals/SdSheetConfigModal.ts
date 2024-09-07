@@ -119,12 +119,16 @@ export class SdSheetConfigModal<T> extends SdModalBase<ISdSheetConfigModalInput<
 
   items: IItemVM[] = [];
 
-  trackByGetterForItem = sdGetter((item: IItemVM, index: number): string => item.key);
+  trackByGetterForItem = sdGetter(
+    this,
+    () => ({}),
+    (item: IItemVM, index: number): string => item.key,
+  );
 
   constructor() {
     super();
 
-    sdInit(() => {
+    sdInit(this, () => {
       const items: IItemVM[] = [];
       for (const control of this.param.controls) {
         const config = this.param.config?.columnRecord?.[control.key];

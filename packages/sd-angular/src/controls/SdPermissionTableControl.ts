@@ -205,7 +205,7 @@ export class SdPermissionTableControl {
 
   collapsedItems = new Set<ISdPermission>();
 
-  getDepthLength = sdGetter(
+  getDepthLength = sdGetter(this,
     () => ({
       items: [this.items, "all"],
     }),

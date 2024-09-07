@@ -150,7 +150,7 @@ export class SdSharedDataSelectViewControl<
   busyCount = 0;
   searchText?: string;
 
-  getFilteredItems = sdGetter(
+  getFilteredItems = sdGetter(this,
     async () => ({
       items: [this.items, "all"],
       searchText: [this.searchText],
@@ -172,7 +172,7 @@ export class SdSharedDataSelectViewControl<
   );
 
   constructor() {
-    sdCheck(
+    sdCheck(this,
       () => ({
         items: [this.items, "all"],
       }),

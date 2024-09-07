@@ -22,7 +22,7 @@ export class SdBarcodeControl {
   @ViewChild("svgEl", { static: true }) svgElRef!: ElementRef<SVGElement>;
 
   constructor() {
-    sdCheck.outside(
+    sdCheck.outside(this,
       () => ({
         value: [this.value],
         type: [this.type],

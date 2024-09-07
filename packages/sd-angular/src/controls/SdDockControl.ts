@@ -100,6 +100,7 @@ export class SdDockControl {
 
   constructor() {
     sdCheck(
+      this,
       () => ({
         key: [this.key],
       }),
@@ -109,6 +110,7 @@ export class SdDockControl {
     );
 
     sdCheck.outside(
+      this,
       () => ({
         resizable: [this.resizable],
         config: [this.#config],
@@ -130,8 +132,8 @@ export class SdDockControl {
     Object.assign(this.#elRef.nativeElement.style, style);
   }
 
-  @HostListener("sdResize.outside", ["$event"])
-  onResizeOutside(event: ISdResizeEvent) {
+  @HostListener("sdResize", ["$event"])
+  onResize(event: ISdResizeEvent) {
     if (["top", "bottom"].includes(this.position) && event.heightChanged) {
       this.size = this.#elRef.nativeElement.offsetHeight;
     }

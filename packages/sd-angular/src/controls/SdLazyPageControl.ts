@@ -41,7 +41,7 @@ export class SdLazyPageControl {
   moduleFactory?: any;
 
   constructor() {
-    sdInit(async () => {
+    sdInit(this, async () => {
       this.busyCount++;
 
       await this.#sdToast.try(async () => {

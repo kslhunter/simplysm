@@ -57,7 +57,7 @@ export class SdDropdownControl {
   @ContentChild(SdDropdownPopupControl, { static: true, read: ElementRef }) popupElRef!: ElementRef<HTMLElement>;
 
   constructor() {
-    sdCheck.outside(
+    sdCheck.outside(this,
       () => ({
         open: [this.open],
       }),

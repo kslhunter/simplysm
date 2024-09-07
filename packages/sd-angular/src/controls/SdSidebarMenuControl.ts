@@ -124,7 +124,7 @@ export class SdSidebarMenuControl {
   }
 
   constructor() {
-    sdInit(() => {
+    sdInit(this, () => {
       this.#pageCode = this.#router.url
         .split("/")
         .slice(2)
@@ -144,7 +144,7 @@ export class SdSidebarMenuControl {
     });
   }
 
-  getIsMenuSelected = sdGetter(
+  getIsMenuSelected = sdGetter(this,
     async () => ({
       pageCode: [this.#pageCode],
       ...(await this.getMenuIsSelectedGetter?.getCheckDataAsync("getMenuIsSelectedGetter")),

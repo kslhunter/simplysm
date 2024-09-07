@@ -108,11 +108,11 @@ export class SdSelectItemControl {
   }
 
   constructor() {
-    sdInit(() => {
+    sdInit(this, () => {
       this.#selectControl.itemControls.push(this);
     });
 
-    sdDestroy(() => {
+    sdDestroy(this, () => {
       this.#selectControl.itemControls.remove(this);
     });
   }

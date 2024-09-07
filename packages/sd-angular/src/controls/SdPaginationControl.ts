@@ -77,7 +77,7 @@ export class SdPaginationControl {
   @Input({ transform: coercionNumber }) pageLength = 0;
   @Input({ transform: coercionNumber }) displayPageLength = 10;
 
-  getDisplayPages = sdGetter(
+  getDisplayPages = sdGetter(this,
     () => ({
       pageLength: [this.pageLength],
       page: [this.page],
@@ -95,7 +95,7 @@ export class SdPaginationControl {
     },
   );
 
-  getHasNext = sdGetter(
+  getHasNext = sdGetter(this,
     () => ({
       pageLength: [this.pageLength],
       displayPage: [this.getDisplayPages()],
@@ -105,7 +105,7 @@ export class SdPaginationControl {
     },
   );
 
-  getHasPrev = sdGetter(
+  getHasPrev = sdGetter(this,
     () => ({
       displayPage: [this.getDisplayPages()],
     }),

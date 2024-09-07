@@ -330,7 +330,7 @@ export class SdSelectControl<M extends "single" | "multi", T> {
   @Input({ transform: coercionBoolean }) disabled = false;
 
   @Input() items?: T[];
-  @Input() trackByGetter: TSdGetter<(item: T, index: number) => any> = sdGetter((item) => item);
+  @Input() trackByGetter: TSdGetter<(item: T, index: number) => any> = sdGetter(this, () => ({}), (item) => item);
   @Input() getChildrenGetter?: TSdGetter<(item: T, index: number, depth: number) => T[]>;
 
   @Input({ transform: coercionBoolean }) inline = false;
@@ -354,7 +354,7 @@ export class SdSelectControl<M extends "single" | "multi", T> {
 
   itemControls: SdSelectItemControl[] = [];
 
-  getErrorMessage = sdGetter(
+  getErrorMessage = sdGetter(this,
     () => ({
       required: [this.required],
       value: [this.value],
@@ -372,7 +372,7 @@ export class SdSelectControl<M extends "single" | "multi", T> {
   );
 
   constructor() {
-    sdCheck.outside(
+    sdCheck.outside(this,
       () => ({
         itemControls: [this.itemControls, "one"],
         selectMode: [this.selectMode],

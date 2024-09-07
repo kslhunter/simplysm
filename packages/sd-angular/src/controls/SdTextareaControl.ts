@@ -208,7 +208,7 @@ export class SdTextareaControl {
   @Input() inputStyle?: string;
   @Input() inputClass?: string;
 
-  getErrorMessage = sdGetter(
+  getErrorMessage = sdGetter(this,
     async () => ({
       value: [this.value],
       required: [this.required],

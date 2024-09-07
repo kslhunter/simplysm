@@ -610,7 +610,7 @@ export class SdSheetControl<T> {
    * @param index 'items'내의 index
    * @param item items[index] 데이터
    */
-  @Input() trackByGetter: TSdGetter<(item: T, index: number) => any> = sdGetter((item, index) => item);
+  @Input() trackByGetter: TSdGetter<(item: T, index: number) => any> = sdGetter(this, () => ({}), (item, index) => item);
   @Input() trackByKey?: keyof T;
 
   /** 선택모드 (single = 단일선택, multi = 다중선택) */
@@ -650,7 +650,7 @@ export class SdSheetControl<T> {
 
   #config?: ISdSheetConfig;
 
-  getDisplayColumnDefs = sdGetter(
+  getDisplayColumnDefs = sdGetter(this,
     () => ({
       columnControls: [this.columnControls, "one"],
       resizedWidths: [this.#resizedWidths, "one"],
@@ -684,7 +684,7 @@ export class SdSheetControl<T> {
     },
   );
 
-  getDisplayHeaderDefTable = sdGetter(
+  getDisplayHeaderDefTable = sdGetter(this,
     () => ({
       displayColumnDefs: [this.getDisplayColumnDefs()],
     }),
@@ -819,7 +819,7 @@ export class SdSheetControl<T> {
     },
   );
 
-  getCurrPageLength = sdGetter(
+  getCurrPageLength = sdGetter(this,
     () => ({
       pageItemCount: [this.pageItemCount],
       itemsLength: [this.items.length],
@@ -834,7 +834,7 @@ export class SdSheetControl<T> {
     },
   );
 
-  getOrderedItems = sdGetter(
+  getOrderedItems = sdGetter(this,
     () => ({
       items: [this.items, "one"],
       observedOrdering: [!this.orderingChange.observed ? this.ordering : undefined, "all"],
@@ -854,7 +854,7 @@ export class SdSheetControl<T> {
     },
   );
 
-  getOrderedPagedItems = sdGetter(
+  getOrderedPagedItems = sdGetter(this,
     () => ({
       orderedItems: [this.getOrderedItems()],
       pageItemCount: [this.pageItemCount],
@@ -873,7 +873,7 @@ export class SdSheetControl<T> {
     },
   );
 
-  getDisplayItemDefs = sdGetter(
+  getDisplayItemDefs = sdGetter(this,
     async () => ({
       orderedPagedItems: [this.getOrderedPagedItems()],
       observedOrdering: [!this.orderingChange.observed ? this.ordering : undefined, "all"],
@@ -931,7 +931,7 @@ export class SdSheetControl<T> {
     },
   );
 
-  getSelectableItems = sdGetter(
+  getSelectableItems = sdGetter(this,
     async () => ({
       selectMode: [this.selectMode],
       displayItemDefs: [this.getDisplayItemDefs()],
@@ -948,14 +948,14 @@ export class SdSheetControl<T> {
     },
   );
 
-  getHasSelectableItem = sdGetter(
+  getHasSelectableItem = sdGetter(this,
     () => ({
       selectableItems: [this.getSelectableItems()],
     }),
     () => this.getSelectableItems().length > 0,
   );
 
-  getIsAllItemsSelected = sdGetter(
+  getIsAllItemsSelected = sdGetter(this,
     () => ({
       selectableItems: [this.getSelectableItems()],
       selectedItems: [this.selectedItems, "one"],
@@ -965,21 +965,21 @@ export class SdSheetControl<T> {
       this.getSelectableItems().every((item) => this.selectedItems.includes(item)),
   );
 
-  getExpandableItems = sdGetter(
+  getExpandableItems = sdGetter(this,
     () => ({
       displayItemDefs: [this.getDisplayItemDefs()],
     }),
     () => this.getDisplayItemDefs().filter((item) => item.hasChildren),
   );
 
-  getHasExpandableItem = sdGetter(
+  getHasExpandableItem = sdGetter(this,
     () => ({
       expandableItems: [this.getExpandableItems()],
     }),
     () => this.getExpandableItems().length > 0,
   );
 
-  getIsAllItemsExpanded = sdGetter(
+  getIsAllItemsExpanded = sdGetter(this,
     () => ({
       expandableItems: [this.getExpandableItems()],
       expandedItems: [this.expandedItems, "one"],
@@ -989,7 +989,7 @@ export class SdSheetControl<T> {
       this.getExpandableItems().every((itemDef) => this.expandedItems.includes(itemDef.item)),
   );
 
-  getHasSummaryTemplate = sdGetter(
+  getHasSummaryTemplate = sdGetter(this,
     () => ({
       columnControls: [this.columnControls, "one"],
     }),
@@ -1008,7 +1008,7 @@ export class SdSheetControl<T> {
   #isOnResizing = false;
 
   constructor() {
-    sdCheck(
+    sdCheck(this,
       () => ({
         key: [this.key],
       }),
@@ -1018,7 +1018,7 @@ export class SdSheetControl<T> {
     );
 
     //-- cell sizing
-    sdCheck.outside(
+    sdCheck.outside(this,
       () => ({
         displayItemDefs: [this.getDisplayItemDefs()],
       }),
@@ -1028,7 +1028,7 @@ export class SdSheetControl<T> {
     );
 
     //-- select indicator
-    sdCheck.outside(
+    sdCheck.outside(this,
       () => ({
         displayItemDefs: [this.getDisplayItemDefs()],
         selectedItems: [this.selectedItems, "one"],

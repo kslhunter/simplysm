@@ -16,7 +16,7 @@ export class SdAddressSearchModal extends SdModalBase<undefined, IAddress> {
   constructor() {
     super();
 
-    sdInit.outside(async () => {
+    sdInit.outside(this, async () => {
       if (!document.getElementById("daum_address")) {
         await new Promise<void>((resolve) => {
           const scriptEl = document.createElement("script");

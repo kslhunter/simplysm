@@ -28,7 +28,7 @@ export class SdGridItemControl {
   #resizeObserver?: ResizeObserver;
 
   constructor() {
-    sdInit.outside(() => {
+    sdInit.outside(this, () => {
       const parentEl = this.#elRef.nativeElement.parentElement!;
       this.#resizeObserver = new ResizeObserver(() => {
         if (parentEl.offsetWidth < 800) {
@@ -44,7 +44,7 @@ export class SdGridItemControl {
       this.#resizeObserver.observe(parentEl);
     });
 
-    sdDestroy(() => {
+    sdDestroy(this, () => {
       this.#resizeObserver?.disconnect();
     });
   }

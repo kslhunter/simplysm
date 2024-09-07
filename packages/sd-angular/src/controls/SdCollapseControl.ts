@@ -47,7 +47,8 @@ export class SdCollapseControl {
   contentHeight = 0;
 
   constructor() {
-    sdInit(() => {
+    // TODO: sdContentInit
+    sdInit(this, () => {
       this.contentHeight = this.contentElRef.nativeElement.offsetHeight;
     });
   }

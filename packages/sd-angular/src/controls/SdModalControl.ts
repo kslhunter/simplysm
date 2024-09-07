@@ -363,7 +363,7 @@ export class SdModalControl {
   #config?: ISdModalConfigVM;
 
   constructor() {
-    sdCheck(
+    sdCheck(this,
       () => ({
         key: [this.key],
       }),
@@ -372,7 +372,7 @@ export class SdModalControl {
       },
     );
 
-    sdCheck.outside(
+    sdCheck.outside(this,
       () => ({
         open: [this.open],
         config: [this.#config],
@@ -396,7 +396,7 @@ export class SdModalControl {
       },
     );
 
-    sdCheck.outside(
+    sdCheck.outside(this,
       () => ({
         open: [this.open],
       }),

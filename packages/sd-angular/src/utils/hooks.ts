@@ -1,71 +1,64 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  ComponentRef,
-  DoCheck,
-  EventEmitter,
-  inject,
-  Injector,
-  NgZone,
-  OnInit,
-  Output,
-  ViewContainerRef,
-  ViewEncapsulation,
-  ViewRef,
-} from "@angular/core";
-import { JsonConvert, ObjectUtil } from "@simplysm/sd-core-common";
+import { ChangeDetectorRef, inject, NgZone } from "@angular/core";
+import { JsonConvert, ObjectUtil, Uuid } from "@simplysm/sd-core-common";
+import { Observable } from "rxjs";
 
-const initFn = (fn: () => void) => {
-  const config = prepare();
+const CDR = Symbol();
+const NG_ZONE = Symbol();
+const PREPARED = Symbol();
+const CONFIG = Symbol();
+
+const initFn = (comp: any, fn: () => void) => {
+  const config = prepare(comp);
   config.initFnInfos.push({ fn, outside: false });
 };
-initFn.outside = (fn: () => void) => {
-  const config = prepare();
+initFn.outside = (comp: any, fn: () => void) => {
+  const config = prepare(comp);
   config.initFnInfos.push({ fn, outside: true });
 };
 
-const checkFn = (checkDataFn: () => TCheckData | Promise<TCheckData>, fn: () => void) => {
-  const config = prepare();
+const checkFn = (comp: any, checkDataFn: () => TCheckData | Promise<TCheckData>, fn: () => void) => {
+  const config = prepare(comp);
   config.checkFnInfos.push({ checkDataFn, fn, outside: false, getter: false });
 };
-checkFn.outside = (checkDataFn: () => TCheckData | Promise<TCheckData>, fn: () => void) => {
-  const config = prepare();
+checkFn.outside = (comp: any, checkDataFn: () => TCheckData | Promise<TCheckData>, fn: () => void) => {
+  const config = prepare(comp);
   config.checkFnInfos.push({ checkDataFn, fn, outside: false, getter: false });
 };
 
 const sdInit = initFn as {
-  (fn: () => void): void;
+  (comp: any, fn: () => void): void;
   outside: {
-    (fn: () => void): void;
+    (comp: any, fn: () => void): void;
   };
 };
 
-const sdDestroy = (fn: () => void) => {
-  const config = prepare();
+const sdDestroy = (comp: any, fn: () => void) => {
+  const config = prepare(comp);
   config.destroyFns.push(fn);
 };
 
 const sdCheck = checkFn as {
-  (checkDataFn: () => TCheckData | Promise<TCheckData>, fn: () => void): void;
+  (comp: any, checkDataFn: () => TCheckData | Promise<TCheckData>, fn: () => void): void;
   outside: {
-    (checkDataFn: () => TCheckData | Promise<TCheckData>, fn: () => void): void;
+    (comp: any, checkDataFn: () => TCheckData | Promise<TCheckData>, fn: () => void): void;
   };
 };
 
-function sdGetter<F extends (...args: any[]) => any>(fn: F): TSdGetter<F>;
+// function sdGetter<F extends (...args: any[]) => any>(comp: any, fn: F): TSdGetter<F>;
 function sdGetter<F extends (...args: any[]) => any>(
+  comp: any,
   checkDataFn: () => TCheckData | Promise<TCheckData>,
   fn: F,
-): TSdGetter<F>;
+): TSdGetter<F> /*;
 function sdGetter<F extends (...args: any[]) => any>(
+  comp: any,
   arg1: F | (() => TCheckData | Promise<TCheckData>),
   arg2?: F,
-): TSdGetter<F> {
-  const checkDataFn = arg2 ? arg1 : () => ({});
-  const fn = arg2 ? arg2 : arg1;
+): TSdGetter<F>*/ {
+  // const checkDataFn = arg2 ? arg1 : () => ({});
+  // const fn = arg2 ? arg2 : arg1;
 
-  const config = prepare();
+  const config = prepare(comp);
   const checkFnInfo = { checkDataFn, fn, outside: false, getter: true };
   config.checkFnInfos.push(checkFnInfo);
 
@@ -97,26 +90,38 @@ function sdGetter<F extends (...args: any[]) => any>(
   return getter as any;
 }
 
-export { sdInit, sdCheck, sdDestroy, sdGetter };
+function toSdGetter<T>(comp: any, ob: Observable<T>, opt?: { initialValue?: T }): TSdGetter<() => T | undefined> {
+  let result: T | undefined = opt?.initialValue;
 
-function prepare(): IInjectConfig {
-  const cdr = inject(ChangeDetectorRef);
-  const ngZone = inject(NgZone);
-  const vcr = inject(ViewContainerRef);
-  const injector = inject(Injector);
+  const getter = sdGetter(
+    comp,
+    () => ({
+      [Uuid.new().toString()]: [result],
+    }),
+    () => result,
+  );
 
-  if (injector["__sd-checker.config__"] == null) {
-    const config: IInjectConfig = (injector["__sd-checker.config__"] = {
-      initFnInfos: [],
-      destroyFns: [],
-      checkFnInfos: [],
-      prevData: {},
-      resultMap: new Map(),
-      compRef: vcr.createComponent(ChangeDetectionComponent, {
-        injector: inject(Injector),
-      }),
-    });
-    config.compRef.instance.init.subscribe(async () => {
+  void ob.forEach((r) => {
+    result = r;
+  });
+
+  return getter;
+}
+
+export { sdInit, sdCheck, sdDestroy, sdGetter, toSdGetter };
+
+function prepare(comp: any): IInjectConfig {
+  if (!Boolean(comp.constructor[PREPARED])) {
+    comp.constructor[PREPARED] = true;
+
+    const prevOnInit = comp.constructor.prototype.ngOnInit;
+    comp.constructor.prototype.ngOnInit = async function (this: any) {
+      await prevOnInit?.();
+
+      const cdr = this[CDR] as ChangeDetectorRef;
+      const ngZone = this[NG_ZONE] as NgZone;
+      const config = this[CONFIG] as IInjectConfig;
+
       let changed = false;
       for (const initFnInfo of config.initFnInfos) {
         if (initFnInfo.outside) {
@@ -134,20 +139,40 @@ function prepare(): IInjectConfig {
       if (changed) {
         cdr.markForCheck();
       }
-    });
-    (cdr as ViewRef).onDestroy(async () => {
-      for (const _destroyFn of config.destroyFns) {
-        await _destroyFn();
+    };
+
+    const prevOnDestroy = comp.constructor.prototype.ngOnDestroy;
+    comp.constructor.prototype.ngOnDestroy = async function (this: any) {
+      await prevOnDestroy?.();
+
+      const cdr = this[CDR] as ChangeDetectorRef;
+      const config = this[CONFIG] as IInjectConfig;
+
+      if (config.destroyFns.length > 0) {
+        for (const destroyFn of config.destroyFns) {
+          await destroyFn();
+        }
+        cdr.markForCheck();
       }
-    });
-    config.compRef.instance.check.subscribe(async () => {
-      let changed = false;
+    };
+
+    const prevDoCheck = comp.constructor.prototype.ngDoCheck;
+    comp.constructor.prototype.ngDoCheck = async function (this: any) {
+      await prevDoCheck?.();
+
+      const cdr = this[CDR] as ChangeDetectorRef;
+      const ngZone = this[NG_ZONE] as NgZone;
+      const config = this[CONFIG] as IInjectConfig;
+
+      let useMarkForCheck = false;
+      const changedData: Record<string, any> = {};
       for (const checkFnInfo of config.checkFnInfos) {
-        const changedData: Record<string, any> = {};
+        let changed = false;
 
         const checkData = await checkFnInfo.checkDataFn();
         for (const checkKey of Object.keys(checkData)) {
           if (Object.keys(changedData).includes(checkKey)) {
+            changed = true;
             continue;
           }
 
@@ -156,6 +181,7 @@ function prepare(): IInjectConfig {
           if (method === "all") {
             if (!ObjectUtil.equal(config.prevData[checkKey], checkVal)) {
               changedData[checkKey] = ObjectUtil.clone(checkVal);
+              changed = true;
             }
           } else if (method == "one") {
             if (
@@ -166,15 +192,17 @@ function prepare(): IInjectConfig {
               changedData[checkKey] = ObjectUtil.clone(checkVal, {
                 onlyOneDepth: true,
               });
+              changed = true;
             }
           } else {
             if (config.prevData[checkKey] !== checkVal) {
               changedData[checkKey] = checkVal;
+              changed = true;
             }
           }
         }
 
-        if (Object.keys(changedData).length > 0) {
+        if (changed) {
           if (!checkFnInfo.getter) {
             if (checkFnInfo.outside) {
               ngZone.runOutsideAngular(() => {
@@ -184,24 +212,37 @@ function prepare(): IInjectConfig {
               });
             } else {
               await checkFnInfo.fn();
-              changed = true;
+              useMarkForCheck = true;
             }
           } else {
             config.resultMap.delete(checkFnInfo);
-            changed = true;
+            useMarkForCheck = true;
           }
-
-          Object.assign(config.prevData, changedData);
         }
       }
 
-      if (changed) {
+      Object.assign(config.prevData, changedData);
+
+      if (useMarkForCheck) {
         cdr.markForCheck();
       }
-    });
+    };
   }
 
-  return injector["__sd-checker.config__"] as IInjectConfig;
+  comp[CDR] = inject(ChangeDetectorRef);
+  comp[NG_ZONE] = inject(NgZone);
+
+  if (comp[CONFIG] == null) {
+    const config: IInjectConfig = {
+      initFnInfos: [],
+      destroyFns: [],
+      checkFnInfos: [],
+      prevData: {},
+      resultMap: new Map(),
+    };
+    comp[CONFIG] = config;
+  }
+  return comp[CONFIG] as IInjectConfig;
 }
 
 export type TSdGetter<F extends (...args: any[]) => any> = F & {
@@ -226,28 +267,6 @@ interface IInjectConfig {
   destroyFns: (() => void | Promise<void>)[];
   prevData: Record<string, any>;
   resultMap: Map<ICheckFnInfo, Map<string, any>>;
-  compRef: ComponentRef<ChangeDetectionComponent>;
 }
 
 type TCheckData = Record<string, [any, ("ref" | "one" | "all")?]>;
-
-@Component({
-  selector: "__sd-change-detection__",
-  changeDetection: ChangeDetectionStrategy.Default,
-  encapsulation: ViewEncapsulation.None,
-  standalone: true,
-  imports: [],
-  template: ``,
-})
-class ChangeDetectionComponent implements OnInit, DoCheck {
-  @Output() init = new EventEmitter();
-  @Output() check = new EventEmitter();
-
-  ngOnInit() {
-    this.init.emit();
-  }
-
-  ngDoCheck() {
-    this.check.emit();
-  }
-}

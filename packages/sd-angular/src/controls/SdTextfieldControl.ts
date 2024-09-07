@@ -404,6 +404,7 @@ export class SdTextfieldControl<K extends TSdTextfieldType> {
   @Input({ transform: coercionBoolean }) useNumberComma = true;
 
   getControlType = sdGetter(
+    this,
     () => ({
       type: [this.type],
     }),
@@ -423,6 +424,7 @@ export class SdTextfieldControl<K extends TSdTextfieldType> {
   );
 
   getControlValue = sdGetter(
+    this,
     () => ({
       type: [this.type],
       value: [this.value],
@@ -435,10 +437,11 @@ export class SdTextfieldControl<K extends TSdTextfieldType> {
   );
 
   getControlValueText = sdGetter(
-    () => ({
+    this,
+    async () => ({
       type: [this.type],
       value: [this.value],
-      ...this.getControlValue.getCheckDataAsync("getControlValue"),
+      ...(await this.getControlValue.getCheckDataAsync("getControlValue")),
     }),
     () => {
       if (this.type === "datetime" && this.value instanceof DateTime) {
@@ -456,6 +459,7 @@ export class SdTextfieldControl<K extends TSdTextfieldType> {
   );
 
   getControlStep = sdGetter(
+    this,
     () => ({
       type: [this.type],
       step: [this.step],
@@ -472,6 +476,7 @@ export class SdTextfieldControl<K extends TSdTextfieldType> {
   );
 
   getControlMin = sdGetter(
+    this,
     () => ({
       type: [this.type],
       min: [this.min],
@@ -488,6 +493,7 @@ export class SdTextfieldControl<K extends TSdTextfieldType> {
   );
 
   getControlMax = sdGetter(
+    this,
     () => ({
       type: [this.type],
       max: [this.max],
@@ -504,6 +510,7 @@ export class SdTextfieldControl<K extends TSdTextfieldType> {
   );
 
   getErrorMessage = sdGetter(
+    this,
     async () => ({
       type: [this.type],
       value: [this.value],
@@ -583,7 +590,7 @@ export class SdTextfieldControl<K extends TSdTextfieldType> {
     },
   );
 
-  onInput(event: Event): void {
+  onInput(event: Event) {
     const inputEl = event.target as HTMLInputElement;
 
     if (inputEl.value === "") {
@@ -622,6 +629,8 @@ export class SdTextfieldControl<K extends TSdTextfieldType> {
     } else {
       this.#setValue(inputEl.value);
     }
+
+    console.log(1, this.value);
   }
 
   #setValue(newValue: any): void {

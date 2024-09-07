@@ -35,7 +35,7 @@ export class SdDockContainerControl {
   @ContentChildren(SdDockControl) dockControls!: QueryList<SdDockControl>;
 
   constructor() {
-    sdCheck.outside(
+    sdCheck.outside(this,
       () => ({
         dockControls: [
           this.dockControls.map((item) => `${item.position}(${item.size})`),

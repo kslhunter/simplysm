@@ -68,7 +68,7 @@ export class SdSidebarContainerControl {
   toggle = false;
 
   constructor() {
-    sdInit(() => {
+    sdInit(this, () => {
       if (this.#router) {
         this.#router.events.subscribe((value) => {
           if (value instanceof NavigationStart) {

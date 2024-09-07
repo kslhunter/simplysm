@@ -92,7 +92,7 @@ export class SdQuillEditorControl {
   #quill!: Quill;
 
   constructor() {
-    sdInit(() => {
+    sdInit(this, () => {
       this.#quill = new Quill(this.#elRef.nativeElement.firstElementChild as HTMLElement, {
         theme: "snow",
         modules: {
@@ -132,6 +132,7 @@ export class SdQuillEditorControl {
     });
 
     sdCheck.outside(
+      this,
       () => ({
         value: [this.value],
       }),
@@ -145,6 +146,7 @@ export class SdQuillEditorControl {
     );
 
     sdCheck.outside(
+      this,
       () => ({
         disabled: [this.disabled],
       }),

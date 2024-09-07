@@ -167,7 +167,7 @@ export class SdContentEditorControl {
 
   @ViewChild("editorEl", { static: true }) editorElRef!: ElementRef<HTMLDivElement>;
 
-  getErrorMessage = sdGetter(
+  getErrorMessage = sdGetter(this,
     async () => ({
       value: [this.value],
       required: [this.required],
@@ -190,7 +190,7 @@ export class SdContentEditorControl {
   );
 
   constructor() {
-    sdCheck.outside(
+    sdCheck.outside(this,
       () => ({
         value: [this.value],
       }),

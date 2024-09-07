@@ -18,7 +18,7 @@ export class SdQrcodeControl {
   @ViewChild("canvasEl") canvasElRef!: ElementRef<HTMLCanvasElement>;
 
   constructor() {
-    sdCheck.outside(
+    sdCheck.outside(this,
       () => ({
         value: [this.value],
         scale: [this.scale],

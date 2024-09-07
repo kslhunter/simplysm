@@ -111,6 +111,7 @@ export class SdStatePresetControl {
 
   constructor() {
     sdCheck(
+      this,
       () => ({
         key: [this.key],
       }),
