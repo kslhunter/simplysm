@@ -167,12 +167,13 @@ export class SdContentEditorControl {
 
   @ViewChild("editorEl", { static: true }) editorElRef!: ElementRef<HTMLDivElement>;
 
-  getErrorMessage = sdGetter(this,
-    async () => ({
-      value: [this.value],
-      required: [this.required],
-      ...(await this.validatorGetter?.getCheckDataAsync("validatorGetter")),
-    }),
+  getErrorMessage = sdGetter(
+    this,
+    [
+() => [this.value],
+() => [this.required],
+() => [this.validatorGetter],
+    ],
     () => {
       const errorMessages: string[] = [];
       if (this.value == null && this.required) {
@@ -190,10 +191,11 @@ export class SdContentEditorControl {
   );
 
   constructor() {
-    sdCheck.outside(this,
-      () => ({
-        value: [this.value],
-      }),
+    sdCheck.outside(
+      this,
+      [
+() => [this.value],
+      ],
       () => {
         const innerHTML = this.editorElRef.nativeElement.innerHTML;
         if (innerHTML !== this.value) {

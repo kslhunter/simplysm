@@ -364,19 +364,19 @@ export class SdModalControl {
 
   constructor() {
     sdCheck(this,
-      () => ({
-        key: [this.key],
-      }),
+      [
+() => [this.key],
+      ],
       async () => {
         this.#config = await this.#sdSystemConfig.getAsync(`sd-modal.${this.key}`);
       },
     );
 
     sdCheck.outside(this,
-      () => ({
-        open: [this.open],
-        config: [this.#config],
-      }),
+      [
+() => [this.open],
+() => [this.#config],
+      ],
       () => {
         if (this.#config) {
           this.dialogElRef.nativeElement.style.position = this.#config.position;
@@ -397,9 +397,9 @@ export class SdModalControl {
     );
 
     sdCheck.outside(this,
-      () => ({
-        open: [this.open],
-      }),
+      [
+() => [this.open],
+      ],
       () => {
         if (this.open) {
           this.dialogElRef.nativeElement.focus();

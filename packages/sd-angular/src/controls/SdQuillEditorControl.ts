@@ -133,9 +133,9 @@ export class SdQuillEditorControl {
 
     sdCheck.outside(
       this,
-      () => ({
-        value: [this.value],
-      }),
+      [
+() => [this.value],
+      ],
       () => {
         if (this.value == null) {
           this.#quill.root.innerHTML = "";
@@ -147,9 +147,9 @@ export class SdQuillEditorControl {
 
     sdCheck.outside(
       this,
-      () => ({
-        disabled: [this.disabled],
-      }),
+      [
+() => [this.disabled],
+      ],
       () => {
         this.#quill.enable(!this.disabled);
       },

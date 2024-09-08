@@ -78,11 +78,11 @@ export class SdPaginationControl {
   @Input({ transform: coercionNumber }) displayPageLength = 10;
 
   getDisplayPages = sdGetter(this,
-    () => ({
-      pageLength: [this.pageLength],
-      page: [this.page],
-      displayPageLength: [this.displayPageLength],
-    }),
+    [
+() => [this.pageLength],
+() => [this.page],
+() => [this.displayPageLength],
+    ],
     () => {
       const pages: number[] = [];
       for (let i = 0; i < this.pageLength; i++) {
@@ -96,19 +96,19 @@ export class SdPaginationControl {
   );
 
   getHasNext = sdGetter(this,
-    () => ({
-      pageLength: [this.pageLength],
-      displayPage: [this.getDisplayPages()],
-    }),
+    [
+() => [this.pageLength],
+() => [this.getDisplayPages()],
+    ],
     () => {
       return (this.getDisplayPages().last() ?? 0) < this.pageLength - 1;
     },
   );
 
   getHasPrev = sdGetter(this,
-    () => ({
-      displayPage: [this.getDisplayPages()],
-    }),
+    [
+() => [this.getDisplayPages()],
+    ],
     () => {
       return (this.getDisplayPages().first() ?? 0) > 0;
     },

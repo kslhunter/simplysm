@@ -121,7 +121,6 @@ export class SdSheetConfigModal<T> extends SdModalBase<ISdSheetConfigModalInput<
 
   trackByGetterForItem = sdGetter(
     this,
-    () => ({}),
     (item: IItemVM, index: number): string => item.key,
   );
 

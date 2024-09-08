@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, ElementRef, Input, ViewChild, ViewEncapsulation } from "@angular/core";
 import { coercionBoolean } from "../utils/commons";
 import { SdEventsDirective } from "../directives/SdEventsDirective";
-import { sdInit } from "../utils/hooks";
+import { sdContentInit } from "../utils/hooks";
 
 @Component({
   selector: "sd-collapse",
@@ -47,8 +47,7 @@ export class SdCollapseControl {
   contentHeight = 0;
 
   constructor() {
-    // TODO: sdContentInit
-    sdInit(this, () => {
+    sdContentInit(this, () => {
       this.contentHeight = this.contentElRef.nativeElement.offsetHeight;
     });
   }

@@ -1,11 +1,13 @@
 import { ChangeDetectorRef, inject, NgZone } from "@angular/core";
-import { JsonConvert, ObjectUtil, Uuid } from "@simplysm/sd-core-common";
+import { JsonConvert, ObjectUtil } from "@simplysm/sd-core-common";
 import { Observable } from "rxjs";
 
 const CDR = Symbol();
 const NG_ZONE = Symbol();
 const PREPARED = Symbol();
 const CONFIG = Symbol();
+
+//-- destroy
 
 const initFn = (comp: any, fn: () => void) => {
   const config = prepare(comp);
@@ -16,15 +18,6 @@ initFn.outside = (comp: any, fn: () => void) => {
   config.initFnInfos.push({ fn, outside: true });
 };
 
-const checkFn = (comp: any, checkDataFn: () => TCheckData | Promise<TCheckData>, fn: () => void) => {
-  const config = prepare(comp);
-  config.checkFnInfos.push({ checkDataFn, fn, outside: false, getter: false });
-};
-checkFn.outside = (comp: any, checkDataFn: () => TCheckData | Promise<TCheckData>, fn: () => void) => {
-  const config = prepare(comp);
-  config.checkFnInfos.push({ checkDataFn, fn, outside: false, getter: false });
-};
-
 const sdInit = initFn as {
   (comp: any, fn: () => void): void;
   outside: {
@@ -32,34 +25,123 @@ const sdInit = initFn as {
   };
 };
 
-const sdDestroy = (comp: any, fn: () => void) => {
+//-- destroy
+
+const destroyFn = (comp: any, fn: () => void) => {
   const config = prepare(comp);
-  config.destroyFns.push(fn);
+  config.destroyFnInfos.push({ fn, outside: false });
+};
+destroyFn.outside = (comp: any, fn: () => void) => {
+  const config = prepare(comp);
+  config.destroyFnInfos.push({ fn, outside: true });
 };
 
-const sdCheck = checkFn as {
-  (comp: any, checkDataFn: () => TCheckData | Promise<TCheckData>, fn: () => void): void;
+const sdDestroy = destroyFn as {
+  (comp: any, fn: () => void): void;
   outside: {
-    (comp: any, checkDataFn: () => TCheckData | Promise<TCheckData>, fn: () => void): void;
+    (comp: any, fn: () => void): void;
   };
 };
 
-// function sdGetter<F extends (...args: any[]) => any>(comp: any, fn: F): TSdGetter<F>;
-function sdGetter<F extends (...args: any[]) => any>(
-  comp: any,
-  checkDataFn: () => TCheckData | Promise<TCheckData>,
-  fn: F,
-): TSdGetter<F> /*;
-function sdGetter<F extends (...args: any[]) => any>(
-  comp: any,
-  arg1: F | (() => TCheckData | Promise<TCheckData>),
-  arg2?: F,
-): TSdGetter<F>*/ {
-  // const checkDataFn = arg2 ? arg1 : () => ({});
-  // const fn = arg2 ? arg2 : arg1;
+//-- viewInit
+
+const viewInitFn = (comp: any, fn: () => void) => {
+  const config = prepare(comp);
+  config.viewInitFnInfos.push({ fn, outside: false });
+};
+viewInitFn.outside = (comp: any, fn: () => void) => {
+  const config = prepare(comp);
+  config.viewInitFnInfos.push({ fn, outside: true });
+};
+
+const sdViewInit = viewInitFn as {
+  (comp: any, fn: () => void): void;
+  outside: {
+    (comp: any, fn: () => void): void;
+  };
+};
+
+//-- viewChecked
+
+const viewCheckedFn = (comp: any, fn: () => void) => {
+  const config = prepare(comp);
+  config.viewCheckedFnInfos.push({ fn, outside: false });
+};
+viewCheckedFn.outside = (comp: any, fn: () => void) => {
+  const config = prepare(comp);
+  config.viewCheckedFnInfos.push({ fn, outside: true });
+};
+
+const sdViewChecked = viewCheckedFn as {
+  (comp: any, fn: () => void): void;
+  outside: {
+    (comp: any, fn: () => void): void;
+  };
+};
+
+//-- contentInit
+
+const contentInitFn = (comp: any, fn: () => void) => {
+  const config = prepare(comp);
+  config.contentInitFnInfos.push({ fn, outside: false });
+};
+contentInitFn.outside = (comp: any, fn: () => void) => {
+  const config = prepare(comp);
+  config.contentInitFnInfos.push({ fn, outside: true });
+};
+
+const sdContentInit = contentInitFn as {
+  (comp: any, fn: () => void): void;
+  outside: {
+    (comp: any, fn: () => void): void;
+  };
+};
+
+//-- contentChecked
+
+const contentCheckedFn = (comp: any, fn: () => void) => {
+  const config = prepare(comp);
+  config.contentCheckedFnInfos.push({ fn, outside: false });
+};
+contentCheckedFn.outside = (comp: any, fn: () => void) => {
+  const config = prepare(comp);
+  config.contentCheckedFnInfos.push({ fn, outside: true });
+};
+
+const sdContentChecked = contentCheckedFn as {
+  (comp: any, fn: () => void): void;
+  outside: {
+    (comp: any, fn: () => void): void;
+  };
+};
+
+//-- check
+
+const checkFn = (comp: any, checkList: TCheckList, fn: () => void) => {
+  const config = prepare(comp);
+  config.checkFnInfos.push({ checkList, fn, outside: false, getter: false });
+};
+checkFn.outside = (comp: any, checkList: TCheckList, fn: () => void) => {
+  const config = prepare(comp);
+  config.checkFnInfos.push({ checkList, fn, outside: false, getter: false });
+};
+
+const sdCheck = checkFn as {
+  (comp: any, checkList: TCheckList, fn: () => void): void;
+  outside: {
+    (comp: any, checkList: TCheckList, fn: () => void): void;
+  };
+};
+
+//-- getter
+function sdGetter<F extends (...args: any[]) => any>(comp: any, fn: F): TSdGetter<F>;
+function sdGetter<F extends (...args: any[]) => any>(comp: any, checkList: TCheckList, fn: F): TSdGetter<F>;
+function sdGetter<F extends (...args: any[]) => any>(comp: any, arg1: F | TCheckList, arg2?: F): TSdGetter<F> {
+  const checkList = (arg2 ? arg1 : []) as TCheckList;
+  const fn = (arg2 ? arg2 : arg1) as F;
 
   const config = prepare(comp);
-  const checkFnInfo = { checkDataFn, fn, outside: false, getter: true };
+  const checkFnInfo = { checkList, fn, outside: false, getter: true };
   config.checkFnInfos.push(checkFnInfo);
 
   const getter = (...params: Parameters<F>) => {
@@ -75,31 +157,17 @@ function sdGetter<F extends (...args: any[]) => any>(
     }
   };
 
-  getter.getCheckDataAsync = async (fnName: string) => {
-    const result: TCheckData = {
-      [fnName]: [getter],
-    };
-
-    const checkData = await checkDataFn();
-    for (const key of Object.keys(checkData)) {
-      result[`${fnName}.${key}`] = checkData[key];
-    }
-    return result;
-  };
+  getter.checkList = checkList;
 
   return getter as any;
 }
 
+//-- to getter
+
 function toSdGetter<T>(comp: any, ob: Observable<T>, opt?: { initialValue?: T }): TSdGetter<() => T | undefined> {
   let result: T | undefined = opt?.initialValue;
 
-  const getter = sdGetter(
-    comp,
-    () => ({
-      [Uuid.new().toString()]: [result],
-    }),
-    () => result,
-  );
+  const getter = sdGetter(comp, [() => [result]], () => result);
 
   void ob.forEach((r) => {
     result = r;
@@ -108,30 +176,26 @@ function toSdGetter<T>(comp: any, ob: Observable<T>, opt?: { initialValue?: T })
   return getter;
 }
 
-export { sdInit, sdCheck, sdDestroy, sdGetter, toSdGetter };
+export { sdInit, sdDestroy, sdViewInit, sdViewChecked, sdContentInit, sdContentChecked, sdCheck, sdGetter, toSdGetter };
 
 function prepare(comp: any): IInjectConfig {
   if (!Boolean(comp.constructor[PREPARED])) {
     comp.constructor[PREPARED] = true;
 
-    const prevOnInit = comp.constructor.prototype.ngOnInit;
-    comp.constructor.prototype.ngOnInit = async function (this: any) {
-      await prevOnInit?.();
-
-      const cdr = this[CDR] as ChangeDetectorRef;
-      const ngZone = this[NG_ZONE] as NgZone;
-      const config = this[CONFIG] as IInjectConfig;
+    async function run(shelf: any, fnInfos: IFnInfo[]) {
+      const cdr = shelf[CDR] as ChangeDetectorRef;
+      const ngZone = shelf[NG_ZONE] as NgZone;
 
       let changed = false;
-      for (const initFnInfo of config.initFnInfos) {
-        if (initFnInfo.outside) {
+      for (const fnInfo of fnInfos) {
+        if (fnInfo.outside) {
           ngZone.runOutsideAngular(() => {
             requestAnimationFrame(async () => {
-              await initFnInfo.fn();
+              await fnInfo.fn();
             });
           });
         } else {
-          await initFnInfo.fn();
+          await fnInfo.fn();
           changed = true;
         }
       }
@@ -139,22 +203,73 @@ function prepare(comp: any): IInjectConfig {
       if (changed) {
         cdr.markForCheck();
       }
+    }
+
+    const prevOnInit = comp.constructor.prototype.ngOnInit;
+    comp.constructor.prototype.ngOnInit = async function (this: any) {
+      await prevOnInit?.();
+
+      const config = this[CONFIG] as IInjectConfig;
+      await run(this, config.initFnInfos);
     };
 
     const prevOnDestroy = comp.constructor.prototype.ngOnDestroy;
     comp.constructor.prototype.ngOnDestroy = async function (this: any) {
       await prevOnDestroy?.();
 
-      const cdr = this[CDR] as ChangeDetectorRef;
       const config = this[CONFIG] as IInjectConfig;
-
-      if (config.destroyFns.length > 0) {
-        for (const destroyFn of config.destroyFns) {
-          await destroyFn();
-        }
-        cdr.markForCheck();
-      }
+      await run(this, config.destroyFnInfos);
     };
+
+    const prevAfterViewInit = comp.constructor.prototype.ngAfterViewInit;
+    comp.constructor.prototype.ngAfterViewInit = async function (this: any) {
+      await prevAfterViewInit?.();
+
+      const config = this[CONFIG] as IInjectConfig;
+      await run(this, config.viewInitFnInfos);
+    };
+
+    const prevAfterViewChecked = comp.constructor.prototype.ngAfterViewChecked;
+    comp.constructor.prototype.ngAfterViewChecked = async function (this: any) {
+      await prevAfterViewChecked?.();
+
+      const config = this[CONFIG] as IInjectConfig;
+      await run(this, config.viewCheckedFnInfos);
+    };
+
+    const prevAfterContentInit = comp.constructor.prototype.ngAfterContentInit;
+    comp.constructor.prototype.ngAfterContentInit = async function (this: any) {
+      await prevAfterContentInit?.();
+
+      const config = this[CONFIG] as IInjectConfig;
+      await run(this, config.contentInitFnInfos);
+    };
+
+    const prevAfterContentChecked = comp.constructor.prototype.ngAfterContentChecked;
+    comp.constructor.prototype.ngAfterContentChecked = async function (this: any) {
+      await prevAfterContentChecked?.();
+
+      const config = this[CONFIG] as IInjectConfig;
+      await run(this, config.contentCheckedFnInfos);
+    };
+
+    function getCheckDataFromList(checkList: TCheckList, keyPrefix?: string): TCheckData {
+      const result: TCheckData = {};
+
+      for (const checkListItem of checkList) {
+        const key = checkListItem.toString();
+        const checkOne = checkListItem();
+        result[(Boolean(keyPrefix) ? keyPrefix + "." : "") + key] = checkOne;
+
+        if (checkOne[0]?.checkList instanceof Array) {
+          const additionalCheckList = checkOne[0].checkList;
+          const flatCheckData = getCheckDataFromList(additionalCheckList, key);
+          Object.assign(result, flatCheckData);
+        }
+      }
+
+      return result;
+    }
 
     const prevDoCheck = comp.constructor.prototype.ngDoCheck;
     comp.constructor.prototype.ngDoCheck = async function (this: any) {
@@ -169,7 +284,8 @@ function prepare(comp: any): IInjectConfig {
       for (const checkFnInfo of config.checkFnInfos) {
         let changed = false;
 
-        const checkData = await checkFnInfo.checkDataFn();
+        const checkData = getCheckDataFromList(checkFnInfo.checkList);
+        console.log(checkData);
         for (const checkKey of Object.keys(checkData)) {
           if (Object.keys(changedData).includes(checkKey)) {
             changed = true;
@@ -235,8 +351,12 @@ function prepare(comp: any): IInjectConfig {
   if (comp[CONFIG] == null) {
     const config: IInjectConfig = {
       initFnInfos: [],
-      destroyFns: [],
       checkFnInfos: [],
+      destroyFnInfos: [],
+      viewInitFnInfos: [],
+      viewCheckedFnInfos: [],
+      contentInitFnInfos: [],
+      contentCheckedFnInfos: [],
       prevData: {},
       resultMap: new Map(),
     };
@@ -248,25 +368,32 @@ function prepare(comp: any): IInjectConfig {
 export type TSdGetter<F extends (...args: any[]) => any> = F & {
   // (...params: Parameters<F>): ReturnType<F>;
 
-  getCheckDataAsync(fnName: string): Promise<TCheckData>;
+  getCheckData(): TCheckList;
 };
 
+interface IFnInfo {
+  fn: () => void | Promise<void>;
+  outside: boolean;
+}
+
 interface ICheckFnInfo {
-  checkDataFn: () => TCheckData | Promise<TCheckData>;
+  checkList: TCheckList;
   fn: () => any | Promise<any>;
   outside: boolean;
   getter: boolean;
 }
 
 interface IInjectConfig {
-  initFnInfos: {
-    fn: () => void | Promise<void>;
-    outside: boolean;
-  }[];
+  initFnInfos: IFnInfo[];
   checkFnInfos: ICheckFnInfo[];
-  destroyFns: (() => void | Promise<void>)[];
+  destroyFnInfos: IFnInfo[];
+  viewInitFnInfos: IFnInfo[];
+  viewCheckedFnInfos: IFnInfo[];
+  contentInitFnInfos: IFnInfo[];
+  contentCheckedFnInfos: IFnInfo[];
   prevData: Record<string, any>;
   resultMap: Map<ICheckFnInfo, Map<string, any>>;
 }
 
+type TCheckList = (() => [any, ("ref" | "one" | "all")?])[];
 type TCheckData = Record<string, [any, ("ref" | "one" | "all")?]>;

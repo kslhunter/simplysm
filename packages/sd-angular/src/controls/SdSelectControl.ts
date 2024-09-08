@@ -330,7 +330,7 @@ export class SdSelectControl<M extends "single" | "multi", T> {
   @Input({ transform: coercionBoolean }) disabled = false;
 
   @Input() items?: T[];
-  @Input() trackByGetter: TSdGetter<(item: T, index: number) => any> = sdGetter(this, () => ({}), (item) => item);
+  @Input() trackByGetter: TSdGetter<(item: T, index: number) => any> = sdGetter(this, (item) => item);
   @Input() getChildrenGetter?: TSdGetter<(item: T, index: number, depth: number) => T[]>;
 
   @Input({ transform: coercionBoolean }) inline = false;
@@ -354,38 +354,33 @@ export class SdSelectControl<M extends "single" | "multi", T> {
 
   itemControls: SdSelectItemControl[] = [];
 
-  getErrorMessage = sdGetter(this,
-    () => ({
-      required: [this.required],
-      value: [this.value],
-    }),
-    () => {
-      const errorMessages: string[] = [];
+  getErrorMessage = sdGetter(this, [() => [this.required], () => [this.value]], () => {
+    const errorMessages: string[] = [];
 
-      if (this.required && this.value === undefined) {
-        errorMessages.push("선택된 항목이 없습니다.");
-      }
+    if (this.required && this.value === undefined) {
+      errorMessages.push("선택된 항목이 없습니다.");
+    }
 
-      const fullErrorMessage = errorMessages.join("\r\n");
-      return !StringUtil.isNullOrEmpty(fullErrorMessage) ? fullErrorMessage : undefined;
-    },
-  );
+    const fullErrorMessage = errorMessages.join("\r\n");
+    return !StringUtil.isNullOrEmpty(fullErrorMessage) ? fullErrorMessage : undefined;
+  });
 
   constructor() {
-    sdCheck.outside(this,
-      () => ({
-        itemControls: [this.itemControls, "one"],
-        selectMode: [this.selectMode],
-        value: [this.value],
-        multiSelectionDisplayDirection: [this.multiSelectionDisplayDirection],
-        placeholder: [this.placeholder],
-        innerHTML: [
+    sdCheck.outside(
+      this,
+      [
+        () => [this.itemControls, "one"],
+        () => [this.selectMode],
+        () => [this.value],
+        () => [this.multiSelectionDisplayDirection],
+        () => [this.placeholder],
+        () => [
           this.itemControls
             .filter((item) => item.isSelected)
             .map((item) => item.elRef.nativeElement.findFirst("> ._content")?.innerHTML),
           "one",
         ],
-      }),
+      ],
       () => {
         const selectedItemControls = this.itemControls.filter((itemControl) => itemControl.isSelected);
         const selectedItemEls = selectedItemControls.map((item) => item.elRef.nativeElement);

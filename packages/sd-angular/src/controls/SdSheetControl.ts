@@ -610,7 +610,7 @@ export class SdSheetControl<T> {
    * @param index 'items'내의 index
    * @param item items[index] 데이터
    */
-  @Input() trackByGetter: TSdGetter<(item: T, index: number) => any> = sdGetter(this, () => ({}), (item, index) => item);
+  @Input() trackByGetter: TSdGetter<(item: T, index: number) => any> = sdGetter(this, (item, index) => item);
   @Input() trackByKey?: keyof T;
 
   /** 선택모드 (single = 단일선택, multi = 다중선택) */
@@ -650,12 +650,9 @@ export class SdSheetControl<T> {
 
   #config?: ISdSheetConfig;
 
-  getDisplayColumnDefs = sdGetter(this,
-    () => ({
-      columnControls: [this.columnControls, "one"],
-      resizedWidths: [this.#resizedWidths, "one"],
-      config: [this.#config],
-    }),
+  getDisplayColumnDefs = sdGetter(
+    this,
+    [() => [this.columnControls, "one"], () => [this.#resizedWidths, "one"], () => [this.#config]],
     (): IColumnDef<T>[] => {
       if (!this.columnControls) return [];
 
@@ -684,10 +681,9 @@ export class SdSheetControl<T> {
     },
   );
 
-  getDisplayHeaderDefTable = sdGetter(this,
-    () => ({
-      displayColumnDefs: [this.getDisplayColumnDefs()],
-    }),
+  getDisplayHeaderDefTable = sdGetter(
+    this,
+    [() => [this.getDisplayColumnDefs()]],
     (): (IHeaderDef<T> | undefined)[][] => {
       //-- displayHeaderDefTable
       const tempHeaderDefTable: (
@@ -819,12 +815,9 @@ export class SdSheetControl<T> {
     },
   );
 
-  getCurrPageLength = sdGetter(this,
-    () => ({
-      pageItemCount: [this.pageItemCount],
-      itemsLength: [this.items.length],
-      pageLength: [this.pageLength],
-    }),
+  getCurrPageLength = sdGetter(
+    this,
+    [() => [this.pageItemCount], () => [this.items.length], () => [this.pageLength]],
     () => {
       if (this.pageItemCount !== undefined && this.pageItemCount !== 0 && this.items.length > 0) {
         return Math.ceil(this.items.length / this.pageItemCount);
@@ -834,11 +827,9 @@ export class SdSheetControl<T> {
     },
   );
 
-  getOrderedItems = sdGetter(this,
-    () => ({
-      items: [this.items, "one"],
-      observedOrdering: [!this.orderingChange.observed ? this.ordering : undefined, "all"],
-    }),
+  getOrderedItems = sdGetter(
+    this,
+    [() => [this.items, "one"], () => [!this.orderingChange.observed ? this.ordering : undefined, "all"]],
     () => {
       let orderedItems = [...this.items];
       if (!this.orderingChange.observed) {
@@ -854,13 +845,9 @@ export class SdSheetControl<T> {
     },
   );
 
-  getOrderedPagedItems = sdGetter(this,
-    () => ({
-      orderedItems: [this.getOrderedItems()],
-      pageItemCount: [this.pageItemCount],
-      itemsLength: [this.items.length],
-      page: [this.page],
-    }),
+  getOrderedPagedItems = sdGetter(
+    this,
+    [() => [this.getOrderedItems()], () => [this.pageItemCount], () => [this.items.length], () => [this.page]],
     () => {
       let orderedPagedItems = [...this.getOrderedItems()];
       if (this.pageItemCount !== undefined && this.pageItemCount !== 0 && this.items.length > 0) {
@@ -873,12 +860,13 @@ export class SdSheetControl<T> {
     },
   );
 
-  getDisplayItemDefs = sdGetter(this,
-    async () => ({
-      orderedPagedItems: [this.getOrderedPagedItems()],
-      observedOrdering: [!this.orderingChange.observed ? this.ordering : undefined, "all"],
-      ...(await this.getChildrenGetter?.getCheckDataAsync("getChildrenGetter")),
-    }),
+  getDisplayItemDefs = sdGetter(
+    this,
+    [
+      () => [this.getOrderedPagedItems()],
+      () => [!this.orderingChange.observed ? this.ordering : undefined, "all"],
+      () => [this.getChildrenGetter],
+    ],
     (): IItemDef<T>[] => {
       let displayItemDefs: IItemDef<T>[] = this.getOrderedPagedItems().map((item) => ({
         item,
@@ -931,12 +919,9 @@ export class SdSheetControl<T> {
     },
   );
 
-  getSelectableItems = sdGetter(this,
-    async () => ({
-      selectMode: [this.selectMode],
-      displayItemDefs: [this.getDisplayItemDefs()],
-      ...(await this.getIsItemSelectableGetter?.getCheckDataAsync("getIsItemSelectableGetter")),
-    }),
+  getSelectableItems = sdGetter(
+    this,
+    [() => [this.selectMode], () => [this.getDisplayItemDefs()], () => [this.getIsItemSelectableGetter]],
     () => {
       if (this.selectMode) {
         return this.getDisplayItemDefs()
@@ -948,59 +933,45 @@ export class SdSheetControl<T> {
     },
   );
 
-  getHasSelectableItem = sdGetter(this,
-    () => ({
-      selectableItems: [this.getSelectableItems()],
-    }),
+  getHasSelectableItem = sdGetter(
+    this,
+    [() => [this.getSelectableItems()]],
     () => this.getSelectableItems().length > 0,
   );
 
-  getIsAllItemsSelected = sdGetter(this,
-    () => ({
-      selectableItems: [this.getSelectableItems()],
-      selectedItems: [this.selectedItems, "one"],
-    }),
+  getIsAllItemsSelected = sdGetter(
+    this,
+    [() => [this.getSelectableItems()], () => [this.selectedItems, "one"]],
     () =>
       this.getSelectableItems().length <= this.selectedItems.length &&
       this.getSelectableItems().every((item) => this.selectedItems.includes(item)),
   );
 
-  getExpandableItems = sdGetter(this,
-    () => ({
-      displayItemDefs: [this.getDisplayItemDefs()],
-    }),
-    () => this.getDisplayItemDefs().filter((item) => item.hasChildren),
+  getExpandableItems = sdGetter(this, [() => [this.getDisplayItemDefs()]], () =>
+    this.getDisplayItemDefs().filter((item) => item.hasChildren),
   );
 
-  getHasExpandableItem = sdGetter(this,
-    () => ({
-      expandableItems: [this.getExpandableItems()],
-    }),
+  getHasExpandableItem = sdGetter(
+    this,
+    [() => [this.getExpandableItems()]],
     () => this.getExpandableItems().length > 0,
   );
 
-  getIsAllItemsExpanded = sdGetter(this,
-    () => ({
-      expandableItems: [this.getExpandableItems()],
-      expandedItems: [this.expandedItems, "one"],
-    }),
+  getIsAllItemsExpanded = sdGetter(
+    this,
+    [() => [this.getExpandableItems()], () => [this.expandedItems, "one"]],
     () =>
       this.getExpandableItems().length <= this.expandedItems.length &&
       this.getExpandableItems().every((itemDef) => this.expandedItems.includes(itemDef.item)),
   );
 
-  getHasSummaryTemplate = sdGetter(this,
-    () => ({
-      columnControls: [this.columnControls, "one"],
-    }),
-    () => {
-      if (this.columnControls) {
-        return this.columnControls.some((item) => item.summaryTemplateRef !== undefined);
-      } else {
-        return false;
-      }
-    },
-  );
+  getHasSummaryTemplate = sdGetter(this, [() => [this.columnControls, "one"]], () => {
+    if (this.columnControls) {
+      return this.columnControls.some((item) => item.summaryTemplateRef !== undefined);
+    } else {
+      return false;
+    }
+  });
 
   #editModeCellAddr?: { r: number; c: number };
 
@@ -1008,64 +979,48 @@ export class SdSheetControl<T> {
   #isOnResizing = false;
 
   constructor() {
-    sdCheck(this,
-      () => ({
-        key: [this.key],
-      }),
-      async () => {
-        this.#config = await this.#sdSystemConfig.getAsync(`sd-sheet.${this.key}`);
-      },
-    );
+    sdCheck(this, [() => [this.key]], async () => {
+      this.#config = await this.#sdSystemConfig.getAsync(`sd-sheet.${this.key}`);
+    });
 
     //-- cell sizing
-    sdCheck.outside(this,
-      () => ({
-        displayItemDefs: [this.getDisplayItemDefs()],
-      }),
-      () => {
-        this.onFixedCellResizeOutside(-2);
-      },
-    );
+    sdCheck.outside(this, [() => [this.getDisplayItemDefs()]], () => {
+      this.onFixedCellResizeOutside(-2);
+    });
 
     //-- select indicator
-    sdCheck.outside(this,
-      () => ({
-        displayItemDefs: [this.getDisplayItemDefs()],
-        selectedItems: [this.selectedItems, "one"],
-      }),
-      () => {
-        const sheetContainerEl = this.#elRef.nativeElement.findFirst<HTMLDivElement>("._sheet-container")!;
-        const selectRowIndicatorContainerEl = sheetContainerEl.findFirst<HTMLDivElement>(
-          "> ._select-row-indicator-container",
-        )!;
+    sdCheck.outside(this, [() => [this.getDisplayItemDefs()], () => [this.selectedItems, "one"]], () => {
+      const sheetContainerEl = this.#elRef.nativeElement.findFirst<HTMLDivElement>("._sheet-container")!;
+      const selectRowIndicatorContainerEl = sheetContainerEl.findFirst<HTMLDivElement>(
+        "> ._select-row-indicator-container",
+      )!;
 
-        if (this.selectedItems.length > 0) {
-          const selectedTrRects = this.selectedItems
-            .map((item) => {
-              const r = this.getDisplayItemDefs().findIndex((item1) => item1.item === item);
-              const trEl = sheetContainerEl.findFirst<HTMLTableRowElement>(`> table > tbody > tr[r="${r}"]`);
-              if (trEl === undefined) return undefined;
+      if (this.selectedItems.length > 0) {
+        const selectedTrRects = this.selectedItems
+          .map((item) => {
+            const r = this.getDisplayItemDefs().findIndex((item1) => item1.item === item);
+            const trEl = sheetContainerEl.findFirst<HTMLTableRowElement>(`> table > tbody > tr[r="${r}"]`);
+            if (trEl === undefined) return undefined;
 
-              return {
-                top: trEl.offsetTop,
-                width: trEl.offsetWidth,
-                height: trEl.offsetHeight,
-              };
-            })
-            .filterExists();
+            return {
+              top: trEl.offsetTop,
+              width: trEl.offsetWidth,
+              height: trEl.offsetHeight,
+            };
+          })
+          .filterExists();
 
-          let html = "";
-          for (const selectedTrRect of selectedTrRects) {
-            html += `<div class='_select-row-indicator' style="top: ${selectedTrRect.top}px; height: ${selectedTrRect.height - 1}px; width: ${selectedTrRect.width - 1}px;"></div>`;
-          }
-          selectRowIndicatorContainerEl.innerHTML = html;
-          selectRowIndicatorContainerEl.style.display = "block";
-        } else {
-          selectRowIndicatorContainerEl.innerHTML = "";
-          selectRowIndicatorContainerEl.style.display = "none";
+        let html = "";
+        for (const selectedTrRect of selectedTrRects) {
+          html += `<div class='_select-row-indicator' style="top: ${selectedTrRect.top}px; height: ${selectedTrRect.height - 1}px; width: ${selectedTrRect.width - 1}px;"></div>`;
         }
-      },
-    );
+        selectRowIndicatorContainerEl.innerHTML = html;
+        selectRowIndicatorContainerEl.style.display = "block";
+      } else {
+        selectRowIndicatorContainerEl.innerHTML = "";
+        selectRowIndicatorContainerEl.style.display = "none";
+      }
+    });
   }
 
   getIsCellEditMode(r: number, c: number): boolean {

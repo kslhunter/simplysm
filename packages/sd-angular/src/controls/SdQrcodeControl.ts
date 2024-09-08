@@ -19,10 +19,10 @@ export class SdQrcodeControl {
 
   constructor() {
     sdCheck.outside(this,
-      () => ({
-        value: [this.value],
-        scale: [this.scale],
-      }),
+      [
+() => [this.value],
+() => [this.scale],
+      ],
       async () => {
         await qrcode.toCanvas(this.canvasElRef.nativeElement, this.value ?? "", {
           scale: this.scale,

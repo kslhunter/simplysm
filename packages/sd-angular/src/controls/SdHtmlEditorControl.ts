@@ -175,10 +175,10 @@ export class SdHtmlEditorControl {
 
   constructor() {
     sdCheck.outside(this,
-      () => ({
-        value: [this.value],
-        isEditorVisible: [!!this.editorElRef?.nativeElement],
-      }),
+      [
+() => [this.value],
+() => [!!this.editorElRef?.nativeElement],
+      ],
       () => {
         if (this.editorElRef) {
           const innerHTML = this.editorElRef.nativeElement.innerHTML;

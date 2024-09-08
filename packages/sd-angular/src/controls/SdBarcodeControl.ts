@@ -23,12 +23,12 @@ export class SdBarcodeControl {
 
   constructor() {
     sdCheck.outside(this,
-      () => ({
-        value: [this.value],
-        type: [this.type],
-        lineWidth: [this.lineWidth],
-        height: [this.height],
-      }),
+      [
+() => [this.value],
+() => [this.type],
+() => [this.lineWidth],
+() => [this.height],
+      ],
       () => {
         jsbarcode(this.svgElRef.nativeElement, this.value ?? "", {
           margin: -5,

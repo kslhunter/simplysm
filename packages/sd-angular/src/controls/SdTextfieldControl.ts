@@ -405,9 +405,9 @@ export class SdTextfieldControl<K extends TSdTextfieldType> {
 
   getControlType = sdGetter(
     this,
-    () => ({
-      type: [this.type],
-    }),
+    [
+() => [this.type],
+    ],
     () => {
       return this.type === "number"
         ? "text"
@@ -425,12 +425,12 @@ export class SdTextfieldControl<K extends TSdTextfieldType> {
 
   getControlValue = sdGetter(
     this,
-    () => ({
-      type: [this.type],
-      value: [this.value],
-      useNumberComma: [this.useNumberComma],
-      format: [this.format],
-    }),
+    [
+() => [this.type],
+() => [this.value],
+() => [this.useNumberComma],
+() => [this.format],
+    ],
     () => {
       return this.#convertToControlValue(this.value);
     },
@@ -438,11 +438,11 @@ export class SdTextfieldControl<K extends TSdTextfieldType> {
 
   getControlValueText = sdGetter(
     this,
-    async () => ({
-      type: [this.type],
-      value: [this.value],
-      ...(await this.getControlValue.getCheckDataAsync("getControlValue")),
-    }),
+    [
+() => [this.type],
+() => [this.value],
+() => [this.getControlValue],
+    ],
     () => {
       if (this.type === "datetime" && this.value instanceof DateTime) {
         return this.value.toFormatString("yyyy-MM-dd tt hh:mm");
@@ -460,10 +460,10 @@ export class SdTextfieldControl<K extends TSdTextfieldType> {
 
   getControlStep = sdGetter(
     this,
-    () => ({
-      type: [this.type],
-      step: [this.step],
-    }),
+    [
+() => [this.type],
+() => [this.step],
+    ],
     () => {
       if (this.step !== undefined) {
         return this.step;
@@ -477,12 +477,12 @@ export class SdTextfieldControl<K extends TSdTextfieldType> {
 
   getControlMin = sdGetter(
     this,
-    () => ({
-      type: [this.type],
-      min: [this.min],
-      useNumberComma: [this.useNumberComma],
-      format: [this.format],
-    }),
+    [
+() => [this.type],
+() => [this.min],
+() => [this.useNumberComma],
+() => [this.format],
+    ],
     () => {
       if (this.min instanceof DateOnly) {
         return this.min.toFormatString("yyyy-MM-dd");
@@ -494,12 +494,12 @@ export class SdTextfieldControl<K extends TSdTextfieldType> {
 
   getControlMax = sdGetter(
     this,
-    () => ({
-      type: [this.type],
-      max: [this.max],
-      useNumberComma: [this.useNumberComma],
-      format: [this.format],
-    }),
+    [
+() => [this.type],
+() => [this.max],
+() => [this.useNumberComma],
+() => [this.format],
+    ],
     () => {
       if (this.max instanceof DateOnly) {
         return this.max.toFormatString("yyyy-MM-dd");
@@ -511,16 +511,16 @@ export class SdTextfieldControl<K extends TSdTextfieldType> {
 
   getErrorMessage = sdGetter(
     this,
-    async () => ({
-      type: [this.type],
-      value: [this.value],
-      required: [this.required],
-      min: [this.min],
-      max: [this.max],
-      minlength: [this.minlength],
-      maxlength: [this.maxlength],
-      ...(await this.validatorGetter?.getCheckDataAsync("validatorGetter")),
-    }),
+    [
+() => [this.type],
+() => [this.value],
+() => [this.required],
+() => [this.min],
+() => [this.max],
+() => [this.minlength],
+() => [this.maxlength],
+() => [this.validatorGetter],
+    ],
     () => {
       const errorMessages: string[] = [];
       if (this.value == null) {

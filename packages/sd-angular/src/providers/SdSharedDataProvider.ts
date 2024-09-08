@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, inject, Injectable, ViewRef } from "@angular/core";
 import { SdServiceEventListenerBase } from "@simplysm/sd-service-common";
 import { SdServiceFactoryProvider } from "./SdServiceFactoryProvider";
-import { DateOnly, DateTime, Time } from "@simplysm/sd-core-common";
+import { DateOnly, DateTime, Time, Wait } from "@simplysm/sd-core-common";
 
 export function getSharedData<T extends Record<string, ISharedDataBase<string | number>>, K extends keyof T>(
   name: K,
@@ -9,32 +9,22 @@ export function getSharedData<T extends Record<string, ISharedDataBase<string | 
   const provider = inject(SdSharedDataProvider);
   const cdr = inject(ChangeDetectorRef, { optional: true }) ?? undefined;
 
-  return provider.getData(name as string, cdr);
+  return provider.getData(name as string, cdr).arr;
 }
 
-/*export function getSharedDataMap<T extends Record<string, ISharedDataBase<string | number>>, K extends keyof T>(
+export async function waitSharedData() {
+  const provider = inject(SdSharedDataProvider);
+  await Wait.until(() => provider.loadingCount < 1);
+}
+
+export function getSharedDataMap<T extends Record<string, ISharedDataBase<string | number>>, K extends keyof T>(
   name: K,
 ): Map<T[K]["__valueKey"], T[K]> {
   const provider = inject(SdSharedDataProvider);
   const cdr = inject(ChangeDetectorRef, { optional: true }) ?? undefined;
 
-  const data = provider.getData(name as string, cdr);
-  const dataMap = data.toMap((item) => item.__valueKey);
-  sdCheck(
-    this,
-    () => ({
-      [`sharedData[${name as string}]`]: [data, "all"],
-    }),
-    () => {
-      dataMap.clear();
-      for (const item of data) {
-        dataMap.set(item.__valueKey, item);
-      }
-    },
-  );
-
-  return dataMap;
-}*/
+  return provider.getData(name as string, cdr).map;
+}
 
 export async function emitSharedDataChangedAsync<
   T extends Record<string, ISharedDataBase<string | number>>,
@@ -54,7 +44,8 @@ export class SdSharedDataProvider<T extends Record<string, any>> {
 
   async clearAsync() {
     for (const info of this.#infoMap.values()) {
-      info.data?.clear();
+      info.data?.arr.clear();
+      info.data?.map.clear();
       if (info.cdrSet) {
         for (const cdr of info.cdrSet) {
           cdr.markForCheck();
@@ -84,7 +75,13 @@ export class SdSharedDataProvider<T extends Record<string, any>> {
       .emitAsync(SdSharedDataChangeEvent, (item) => item === name, changeKeys);
   }
 
-  getData<K extends keyof T>(name: K, cdr?: ChangeDetectorRef): T[K][] {
+  getData<K extends keyof T>(
+    name: K,
+    cdr?: ChangeDetectorRef,
+  ): {
+    arr: T[K][];
+    map: Map<T[K]["__valueKey"], T[K]>;
+  } {
     const info = this.#infoMap.get(name);
     if (!info) throw new Error(`'${name as string}'에 대한 공유데이터 정보가 없습니다.`);
 
@@ -99,13 +96,6 @@ export class SdSharedDataProvider<T extends Record<string, any>> {
       }
     }
 
-    //-- data
-    if (!info.data) {
-      info.data = [];
-
-      void this.#loadDataAsync(name);
-    }
-
     //-- listener
     if (info.listenerKey == null) {
       info.listenerKey = void this.#sdServiceFactory
@@ -113,6 +103,15 @@ export class SdSharedDataProvider<T extends Record<string, any>> {
         .addEventListenerAsync(SdSharedDataChangeEvent, name as string, async (changeKeys) => {
           await this.#loadDataAsync(name, changeKeys);
         });
+    }
+
+    //-- data
+    if (!info.data) {
+      info.data = {
+        arr: [],
+        map: new Map(),
+      };
+      void this.#loadDataAsync(name);
     }
 
     return info.data as any;
@@ -129,29 +128,37 @@ export class SdSharedDataProvider<T extends Record<string, any>> {
 
       if (!changeKeys) {
         this.#orderingThis(resData, info.getter.orderBy);
-        info.data.clear();
-        info.data.push(...resData);
+        info.data.arr.clear();
+        info.data.map.clear();
+        info.data.arr.push(...resData);
+        for (const resDataItem of resData) {
+          info.data.map.set(resDataItem.__valueKey, resDataItem);
+        }
       } else {
         // 삭제된 항목 제거 (DB에 없는 항목)
         const deleteKeys = changeKeys.filter(
           (changeKey) => !resData.some((resItem) => resItem.__valueKey === changeKey),
         );
-        info.data.remove((item) => deleteKeys.includes(item.__valueKey));
+        info.data.arr.remove((item) => deleteKeys.includes(item.__valueKey));
+        for (const deleteKey of deleteKeys) {
+          info.data.map.delete(deleteKey);
+        }
 
         // 수정된 항목 변경
         for (const resItem of resData) {
           const currItemKey = resItem.__valueKey;
 
-          const resItemIndex = info.data.findIndex((item) => item.__valueKey === currItemKey);
+          const resItemIndex = info.data.arr.findIndex((item) => item.__valueKey === currItemKey);
           if (resItemIndex >= 0) {
-            info.data[resItemIndex] = resItem;
+            info.data.arr[resItemIndex] = resItem;
           } else {
-            info.data.push(resItem);
+            info.data.arr.push(resItem);
           }
+          info.data.map.set(currItemKey, resItem);
         }
 
         // 재정렬
-        this.#orderingThis(info.data as any, info.getter.orderBy);
+        this.#orderingThis(info.data.arr as any[], info.getter.orderBy);
       }
 
       if (info.cdrSet) {
@@ -189,7 +196,10 @@ interface ISharedDataInnerInfo<T extends ISharedDataBase<string | number>> {
   getter: ISharedDataInfo<T>;
   cdrSet?: Set<ChangeDetectorRef>;
   listenerKey?: string;
-  data?: ISharedDataBase<string | number>[];
+  data?: {
+    arr: ISharedDataBase<string | number>[];
+    map: Map<string | number, ISharedDataBase<string | number>>;
+  };
 }
 
 export interface ISharedDataBase<VK extends string | number> {

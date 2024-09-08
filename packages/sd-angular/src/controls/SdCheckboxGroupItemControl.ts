@@ -27,10 +27,10 @@ export class SdCheckboxGroupItemControl<T> {
   @Input() inline = false;
 
   getIsSelected = sdGetter(this,
-    () => ({
-      parentValue: [this.#parentControl.value, "one"],
-      value: [this.value],
-    }),
+    [
+() => [this.#parentControl.value, "one"],
+() => [this.value],
+    ],
     () => {
       return this.#parentControl.value.includes(this.value);
     },

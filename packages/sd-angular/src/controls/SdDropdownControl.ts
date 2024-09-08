@@ -58,9 +58,9 @@ export class SdDropdownControl {
 
   constructor() {
     sdCheck.outside(this,
-      () => ({
-        open: [this.open],
-      }),
+      [
+() => [this.open],
+      ],
       () => {
         if (this.open) {
           document.body.appendChild(this.popupElRef.nativeElement);

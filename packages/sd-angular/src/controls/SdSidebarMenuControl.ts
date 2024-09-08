@@ -144,11 +144,9 @@ export class SdSidebarMenuControl {
     });
   }
 
-  getIsMenuSelected = sdGetter(this,
-    async () => ({
-      pageCode: [this.#pageCode],
-      ...(await this.getMenuIsSelectedGetter?.getCheckDataAsync("getMenuIsSelectedGetter")),
-    }),
+  getIsMenuSelected = sdGetter(
+    this,
+    [() => [this.#pageCode], () => [this.getMenuIsSelectedGetter]],
     (menu: ISdSidebarMenuVM) => {
       return this.getMenuIsSelectedGetter
         ? this.getMenuIsSelectedGetter(menu)

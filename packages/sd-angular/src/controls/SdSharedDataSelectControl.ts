@@ -159,12 +159,10 @@ export class SdSharedDataSelectControl<
   @Input() multiSelectionDisplayDirection?: "vertical" | "horizontal";
   @Input() getIsHiddenGetter: TSdGetter<(item: T, index: number) => boolean> = sdGetter(
     this,
-    () => ({}),
     (item, index) => item.__isHidden,
   );
   @Input() getSearchTextGetter: TSdGetter<(item: T, index: number) => string> = sdGetter(
     this,
-    () => ({}),
     (item, index) => item.__searchText,
   );
   @Input() parentKeyProp?: string;
@@ -176,7 +174,6 @@ export class SdSharedDataSelectControl<
 
   trackByGetter = sdGetter(
     this,
-    () => ({}),
     (item: T, index: number) => item.__valueKey,
   );
 
@@ -184,10 +181,10 @@ export class SdSharedDataSelectControl<
 
   getItemByParentKeyMap = sdGetter(
     this,
-    () => ({
-      items: [this.items, "all"],
-      parentKeyProp: [this.parentKeyProp],
-    }),
+    [
+() => [this.items, "all"],
+() => [this.parentKeyProp],
+    ],
     () => {
       if (this.parentKeyProp !== undefined) {
         return this.items
@@ -204,13 +201,13 @@ export class SdSharedDataSelectControl<
 
   getRootDisplayItems = sdGetter(
     this,
-    async () => ({
-      items: [this.items, "all"],
-      ...(await this.filterGetter?.getCheckDataAsync("filterGetter")),
-      filterFnParams: [this.filterFnParams, "one"],
-      parentKeyProp: [this.parentKeyProp],
-      displayOrderKeyProp: [this.displayOrderKeyProp],
-    }),
+    [
+() => [this.items, "all"],
+() => [this.filterGetter],
+() => [this.filterFnParams, "one"],
+() => [this.parentKeyProp],
+() => [this.displayOrderKeyProp],
+    ],
     () => {
       let result = this.items.filter(
         (item, index) =>
@@ -263,10 +260,10 @@ export class SdSharedDataSelectControl<
 
   getChildrenGetter = sdGetter(
     this,
-    () => ({
-      displayOrderKeyProp: [this.displayOrderKeyProp],
-      itemByParentKeyMap: [this.getItemByParentKeyMap()],
-    }),
+    [
+() => [this.displayOrderKeyProp],
+() => [this.getItemByParentKeyMap()],
+    ],
     (item: ISharedDataBase<string | number>, index: number, depth: number): any[] => {
       let result = this.getItemByParentKeyMap()?.get(item.__valueKey) ?? [];
 

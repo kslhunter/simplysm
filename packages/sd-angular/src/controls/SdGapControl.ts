@@ -45,13 +45,13 @@ export class SdGapControl {
 
   constructor() {
     sdCheck.outside(this,
-      () => ({
-        height: [this.height],
-        heightPx: [this.heightPx],
-        width: [this.width],
-        widthPx: [this.widthPx],
-        widthEm: [this.widthEm],
-      }),
+      [
+() => [this.height],
+() => [this.heightPx],
+() => [this.width],
+() => [this.widthPx],
+() => [this.widthEm],
+      ],
       () => {
         if (this.widthPx === 0 || this.heightPx === 0 || this.widthEm === 0) {
           this.#elRef.nativeElement.style.display = "none";

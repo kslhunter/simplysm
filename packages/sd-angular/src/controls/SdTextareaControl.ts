@@ -208,37 +208,30 @@ export class SdTextareaControl {
   @Input() inputStyle?: string;
   @Input() inputClass?: string;
 
-  getErrorMessage = sdGetter(this,
-    async () => ({
-      value: [this.value],
-      required: [this.required],
-      ...(await this.validatorGetter?.getCheckDataAsync("validatorGetter")),
-    }),
-    () => {
-      const errorMessages: string[] = [];
-      if (this.value == null) {
-        if (this.required) {
-          errorMessages.push("값을 입력하세요.");
-        }
+  getErrorMessage = sdGetter(this, [() => [this.value], () => [this.required], () => [this.validatorGetter]], () => {
+    const errorMessages: string[] = [];
+    if (this.value == null) {
+      if (this.required) {
+        errorMessages.push("값을 입력하세요.");
       }
+    }
 
-      if (this.validatorGetter) {
-        const message = this.validatorGetter(this.value);
-        if (message !== undefined) {
-          errorMessages.push(message);
-        }
+    if (this.validatorGetter) {
+      const message = this.validatorGetter(this.value);
+      if (message !== undefined) {
+        errorMessages.push(message);
       }
+    }
 
-      const fullErrorMessage = errorMessages.join("\r\n");
+    const fullErrorMessage = errorMessages.join("\r\n");
 
-      const inputEl = this.#elRef.nativeElement.findFirst("input");
-      if (inputEl instanceof HTMLInputElement) {
-        inputEl.setCustomValidity(fullErrorMessage);
-      }
+    const inputEl = this.#elRef.nativeElement.findFirst("input");
+    if (inputEl instanceof HTMLInputElement) {
+      inputEl.setCustomValidity(fullErrorMessage);
+    }
 
-      return StringUtil.isNullOrEmpty(fullErrorMessage) ? undefined : fullErrorMessage;
-    },
-  );
+    return StringUtil.isNullOrEmpty(fullErrorMessage) ? undefined : fullErrorMessage;
+  });
 
   onInput(event: Event): void {
     const inputEl = event.target as HTMLInputElement;

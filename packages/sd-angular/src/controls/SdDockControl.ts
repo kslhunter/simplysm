@@ -101,9 +101,9 @@ export class SdDockControl {
   constructor() {
     sdCheck(
       this,
-      () => ({
-        key: [this.key],
-      }),
+      [
+() => [this.key],
+      ],
       async () => {
         this.#config = await this.#sdSystemConfig.getAsync(`sd-dock.${this.key}`);
       },
@@ -111,10 +111,10 @@ export class SdDockControl {
 
     sdCheck.outside(
       this,
-      () => ({
-        resizable: [this.resizable],
-        config: [this.#config],
-      }),
+      [
+() => [this.resizable],
+() => [this.#config],
+      ],
       () => {
         if (this.resizable && this.#config && this.#config.size != null) {
           if (["right", "left"].includes(this.position)) {

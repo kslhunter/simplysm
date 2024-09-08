@@ -150,12 +150,13 @@ export class SdSharedDataSelectViewControl<
   busyCount = 0;
   searchText?: string;
 
-  getFilteredItems = sdGetter(this,
-    async () => ({
-      items: [this.items, "all"],
-      searchText: [this.searchText],
-      ...(await this.filterGetter?.getCheckDataAsync("filterGetter")),
-    }),
+  getFilteredItems = sdGetter(
+    this,
+    [
+() => [this.items, "all"],
+() => [this.searchText],
+() => [this.filterGetter],
+    ],
     () => {
       let result = this.items.filter((item) => !item.__isHidden);
 
@@ -172,10 +173,11 @@ export class SdSharedDataSelectViewControl<
   );
 
   constructor() {
-    sdCheck(this,
-      () => ({
-        items: [this.items, "all"],
-      }),
+    sdCheck(
+      this,
+      [
+() => [this.items, "all"],
+      ],
       () => {
         const newSelectedItem = this.items.single((item) => item.__valueKey === this.selectedItem?.__valueKey);
         if (this.selectedItem !== newSelectedItem) {

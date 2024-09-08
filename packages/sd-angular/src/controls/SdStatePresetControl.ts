@@ -110,15 +110,9 @@ export class SdStatePresetControl {
   presets: ISdStatePresetVM[] = [];
 
   constructor() {
-    sdCheck(
-      this,
-      () => ({
-        key: [this.key],
-      }),
-      async () => {
-        this.presets = (await this.#sdSystemConfig.getAsync(`sd-state-preset.${this.key}`)) ?? [];
-      },
-    );
+    sdCheck(this, [() => [this.key]], async () => {
+      this.presets = (await this.#sdSystemConfig.getAsync(`sd-state-preset.${this.key}`)) ?? [];
+    });
   }
 
   async onAddButtonClick() {
