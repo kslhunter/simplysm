@@ -9,9 +9,7 @@ import { SdAngularOptionsProvider } from "../providers/SdAngularOptionsProvider"
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [SdIconControl],
-  template: `
-    <sd-icon [icon]="icon" fixedWidth />
-  `,
+  template: ` <sd-icon [icon]="icon" fixedWidth /> `,
   styles: [
     /* language=SCSS */ `
       sd-collapse-icon {

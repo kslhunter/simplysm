@@ -7,30 +7,31 @@ import { coercionBoolean } from "../utils/commons";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
-  template: `
-    <ng-content></ng-content>`,
-  styles: [/* language=SCSS */ `
-    sd-list {
-      display: block;
-      user-select: none;
-      border-radius: var(--border-radius-default);
-      overflow: hidden;
-      background: white;
+  template: ` <ng-content></ng-content>`,
+  styles: [
+    /* language=SCSS */ `
+      sd-list {
+        display: block;
+        user-select: none;
+        border-radius: var(--border-radius-default);
+        overflow: hidden;
+        background: white;
 
-      &[sd-inset=true] {
-        border-radius: 0;
-        background: transparent;
-
-        sd-list {
+        &[sd-inset="true"] {
           border-radius: 0;
           background: transparent;
+
+          sd-list {
+            border-radius: 0;
+            background: transparent;
+          }
         }
       }
-    }
-  `],
+    `,
+  ],
   host: {
-    "[attr.sd-inset]": "inset"
-  }
+    "[attr.sd-inset]": "inset",
+  },
 })
 export class SdListControl {
   @Input({ transform: coercionBoolean }) inset = false;

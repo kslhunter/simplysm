@@ -26,15 +26,9 @@ export class SdCheckboxGroupItemControl<T> {
   @Input({ required: true }) value!: T;
   @Input() inline = false;
 
-  getIsSelected = sdGetter(this,
-    [
-() => [this.#parentControl.value, "one"],
-() => [this.value],
-    ],
-    () => {
-      return this.#parentControl.value.includes(this.value);
-    },
-  );
+  getIsSelected = sdGetter(this, [() => [this.#parentControl.value, "one"], () => [this.value]], () => {
+    return this.#parentControl.value.includes(this.value);
+  });
 
   get disabled() {
     return this.#parentControl.disabled;

@@ -9,9 +9,7 @@ import { sdCheck } from "../utils/hooks";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
-  template: `
-    <svg #svgEl></svg>
-  `,
+  template: ` <svg #svgEl></svg> `,
 })
 export class SdBarcodeControl {
   @Input() value?: string;
@@ -22,22 +20,14 @@ export class SdBarcodeControl {
   @ViewChild("svgEl", { static: true }) svgElRef!: ElementRef<SVGElement>;
 
   constructor() {
-    sdCheck.outside(this,
-      [
-() => [this.value],
-() => [this.type],
-() => [this.lineWidth],
-() => [this.height],
-      ],
-      () => {
-        jsbarcode(this.svgElRef.nativeElement, this.value ?? "", {
-          margin: -5,
-          format: this.type,
-          width: this.lineWidth,
-          height: this.height,
-          displayValue: false,
-        });
-      },
-    );
+    sdCheck.outside(this, [() => [this.value], () => [this.type], () => [this.lineWidth], () => [this.height]], () => {
+      jsbarcode(this.svgElRef.nativeElement, this.value ?? "", {
+        margin: -5,
+        format: this.type,
+        width: this.lineWidth,
+        height: this.height,
+        displayValue: false,
+      });
+    });
   }
 }

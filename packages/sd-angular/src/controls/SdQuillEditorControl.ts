@@ -131,28 +131,16 @@ export class SdQuillEditorControl {
       });
     });
 
-    sdCheck.outside(
-      this,
-      [
-() => [this.value],
-      ],
-      () => {
-        if (this.value == null) {
-          this.#quill.root.innerHTML = "";
-        } else if (this.value != this.#quill.root.innerHTML) {
-          this.#quill.root.innerHTML = this.value;
-        }
-      },
-    );
+    sdCheck.outside(this, [() => [this.value]], () => {
+      if (this.value == null) {
+        this.#quill.root.innerHTML = "";
+      } else if (this.value != this.#quill.root.innerHTML) {
+        this.#quill.root.innerHTML = this.value;
+      }
+    });
 
-    sdCheck.outside(
-      this,
-      [
-() => [this.disabled],
-      ],
-      () => {
-        this.#quill.enable(!this.disabled);
-      },
-    );
+    sdCheck.outside(this, [() => [this.disabled]], () => {
+      this.#quill.enable(!this.disabled);
+    });
   }
 }

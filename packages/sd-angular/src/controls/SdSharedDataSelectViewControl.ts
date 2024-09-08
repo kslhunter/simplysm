@@ -152,11 +152,7 @@ export class SdSharedDataSelectViewControl<
 
   getFilteredItems = sdGetter(
     this,
-    [
-() => [this.items, "all"],
-() => [this.searchText],
-() => [this.filterGetter],
-    ],
+    [() => [this.items, "all"], () => [this.searchText], () => [this.filterGetter]],
     () => {
       let result = this.items.filter((item) => !item.__isHidden);
 
@@ -173,19 +169,13 @@ export class SdSharedDataSelectViewControl<
   );
 
   constructor() {
-    sdCheck(
-      this,
-      [
-() => [this.items, "all"],
-      ],
-      () => {
-        const newSelectedItem = this.items.single((item) => item.__valueKey === this.selectedItem?.__valueKey);
-        if (this.selectedItem !== newSelectedItem) {
-          this.selectedItem = newSelectedItem;
-          this.selectedItemChange.emit(this.selectedItem);
-        }
-      },
-    );
+    sdCheck(this, [() => [this.items, "all"]], () => {
+      const newSelectedItem = this.items.single((item) => item.__valueKey === this.selectedItem?.__valueKey);
+      if (this.selectedItem !== newSelectedItem) {
+        this.selectedItem = newSelectedItem;
+        this.selectedItemChange.emit(this.selectedItem);
+      }
+    });
   }
 
   onSelectedItemChange(item: T | undefined) {

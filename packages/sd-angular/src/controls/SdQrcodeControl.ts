@@ -18,16 +18,10 @@ export class SdQrcodeControl {
   @ViewChild("canvasEl") canvasElRef!: ElementRef<HTMLCanvasElement>;
 
   constructor() {
-    sdCheck.outside(this,
-      [
-() => [this.value],
-() => [this.scale],
-      ],
-      async () => {
-        await qrcode.toCanvas(this.canvasElRef.nativeElement, this.value ?? "", {
-          scale: this.scale,
-        });
-      },
-    );
+    sdCheck.outside(this, [() => [this.value], () => [this.scale]], async () => {
+      await qrcode.toCanvas(this.canvasElRef.nativeElement, this.value ?? "", {
+        scale: this.scale,
+      });
+    });
   }
 }

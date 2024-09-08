@@ -44,14 +44,9 @@ export class SdGapControl {
   @Input({ transform: coercionNumber }) widthEm?: number;
 
   constructor() {
-    sdCheck.outside(this,
-      [
-() => [this.height],
-() => [this.heightPx],
-() => [this.width],
-() => [this.widthPx],
-() => [this.widthEm],
-      ],
+    sdCheck.outside(
+      this,
+      [() => [this.height], () => [this.heightPx], () => [this.width], () => [this.widthPx], () => [this.widthEm]],
       () => {
         if (this.widthPx === 0 || this.heightPx === 0 || this.widthEm === 0) {
           this.#elRef.nativeElement.style.display = "none";

@@ -167,42 +167,28 @@ export class SdContentEditorControl {
 
   @ViewChild("editorEl", { static: true }) editorElRef!: ElementRef<HTMLDivElement>;
 
-  getErrorMessage = sdGetter(
-    this,
-    [
-() => [this.value],
-() => [this.required],
-() => [this.validatorGetter],
-    ],
-    () => {
-      const errorMessages: string[] = [];
-      if (this.value == null && this.required) {
-        errorMessages.push("값을 입력하세요.");
-      } else if (this.validatorGetter) {
-        const message = this.validatorGetter(this.value);
-        if (message !== undefined) {
-          errorMessages.push(message);
-        }
+  getErrorMessage = sdGetter(this, [() => [this.value], () => [this.required], () => [this.validatorGetter]], () => {
+    const errorMessages: string[] = [];
+    if (this.value == null && this.required) {
+      errorMessages.push("값을 입력하세요.");
+    } else if (this.validatorGetter) {
+      const message = this.validatorGetter(this.value);
+      if (message !== undefined) {
+        errorMessages.push(message);
       }
+    }
 
-      const fullErrorMessage = errorMessages.join("\r\n");
-      return StringUtil.isNullOrEmpty(fullErrorMessage) ? undefined : fullErrorMessage;
-    },
-  );
+    const fullErrorMessage = errorMessages.join("\r\n");
+    return StringUtil.isNullOrEmpty(fullErrorMessage) ? undefined : fullErrorMessage;
+  });
 
   constructor() {
-    sdCheck.outside(
-      this,
-      [
-() => [this.value],
-      ],
-      () => {
-        const innerHTML = this.editorElRef.nativeElement.innerHTML;
-        if (innerHTML !== this.value) {
-          this.editorElRef.nativeElement.innerHTML = this.value ?? "";
-        }
-      },
-    );
+    sdCheck.outside(this, [() => [this.value]], () => {
+      const innerHTML = this.editorElRef.nativeElement.innerHTML;
+      if (innerHTML !== this.value) {
+        this.editorElRef.nativeElement.innerHTML = this.value ?? "";
+      }
+    });
   }
 
   onEditorFocusOutside() {

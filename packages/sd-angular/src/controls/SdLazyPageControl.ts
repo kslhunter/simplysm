@@ -21,9 +21,7 @@ import { sdInit } from "../utils/hooks";
   imports: [SdBusyContainerControl, NgComponentOutlet],
   template: ` <sd-busy-container [busy]="busyCount > 0" noFade type="bar">
     @if (componentType) {
-      <ng-container
-        *ngComponentOutlet="componentType; ngModuleFactory: moduleFactory"
-      />
+      <ng-container *ngComponentOutlet="componentType; ngModuleFactory: moduleFactory" />
     }
   </sd-busy-container>`,
 })

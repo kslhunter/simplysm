@@ -363,49 +363,33 @@ export class SdModalControl {
   #config?: ISdModalConfigVM;
 
   constructor() {
-    sdCheck(this,
-      [
-() => [this.key],
-      ],
-      async () => {
-        this.#config = await this.#sdSystemConfig.getAsync(`sd-modal.${this.key}`);
-      },
-    );
+    sdCheck(this, [() => [this.key]], async () => {
+      this.#config = await this.#sdSystemConfig.getAsync(`sd-modal.${this.key}`);
+    });
 
-    sdCheck.outside(this,
-      [
-() => [this.open],
-() => [this.#config],
-      ],
-      () => {
-        if (this.#config) {
-          this.dialogElRef.nativeElement.style.position = this.#config.position;
-          this.dialogElRef.nativeElement.style.left = this.#config.left;
-          this.dialogElRef.nativeElement.style.top = this.#config.top;
-          this.dialogElRef.nativeElement.style.right = this.#config.right;
-          this.dialogElRef.nativeElement.style.bottom = this.#config.bottom;
-          if (this.#config.width) {
-            this.dialogElRef.nativeElement.style.width = this.#config.width;
-          }
-          if (this.#config.height) {
-            this.dialogElRef.nativeElement.style.height = this.#config.height;
-          }
+    sdCheck.outside(this, [() => [this.open], () => [this.#config]], () => {
+      if (this.#config) {
+        this.dialogElRef.nativeElement.style.position = this.#config.position;
+        this.dialogElRef.nativeElement.style.left = this.#config.left;
+        this.dialogElRef.nativeElement.style.top = this.#config.top;
+        this.dialogElRef.nativeElement.style.right = this.#config.right;
+        this.dialogElRef.nativeElement.style.bottom = this.#config.bottom;
+        if (this.#config.width) {
+          this.dialogElRef.nativeElement.style.width = this.#config.width;
         }
-
-        this.#elRef.nativeElement.setAttribute("sd-init", "true");
-      },
-    );
-
-    sdCheck.outside(this,
-      [
-() => [this.open],
-      ],
-      () => {
-        if (this.open) {
-          this.dialogElRef.nativeElement.focus();
+        if (this.#config.height) {
+          this.dialogElRef.nativeElement.style.height = this.#config.height;
         }
-      },
-    );
+      }
+
+      this.#elRef.nativeElement.setAttribute("sd-init", "true");
+    });
+
+    sdCheck.outside(this, [() => [this.open]], () => {
+      if (this.open) {
+        this.dialogElRef.nativeElement.focus();
+      }
+    });
   }
 
   onDialogFocusOutside() {

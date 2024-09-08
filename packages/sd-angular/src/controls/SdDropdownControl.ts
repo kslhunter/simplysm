@@ -57,56 +57,51 @@ export class SdDropdownControl {
   @ContentChild(SdDropdownPopupControl, { static: true, read: ElementRef }) popupElRef!: ElementRef<HTMLElement>;
 
   constructor() {
-    sdCheck.outside(this,
-      [
-() => [this.open],
-      ],
-      () => {
-        if (this.open) {
-          document.body.appendChild(this.popupElRef.nativeElement);
+    sdCheck.outside(this, [() => [this.open]], () => {
+      if (this.open) {
+        document.body.appendChild(this.popupElRef.nativeElement);
 
-          requestAnimationFrame(() => {
-            const contentEl = this.contentElRef.nativeElement;
-            const popupEl = this.popupElRef.nativeElement;
-
-            const windowOffset = contentEl.getRelativeOffset(window.document.body);
-
-            const isPlaceBottom = window.innerHeight < windowOffset.top * 2;
-            const isPlaceRight = window.innerWidth < windowOffset.left * 2;
-
-            Object.assign(popupEl.style, {
-              top: isPlaceBottom ? "" : windowOffset.top + contentEl.offsetHeight + 2 + "px",
-              bottom: isPlaceBottom ? window.innerHeight - windowOffset.top + "px" : "",
-              left: isPlaceRight ? "" : windowOffset.left + "px",
-              right: isPlaceRight ? window.innerWidth - windowOffset.left - contentEl.offsetWidth + "px" : "",
-              minWidth: contentEl.offsetWidth + "px",
-              opacity: "1",
-              pointerEvents: "auto",
-              transform: "none",
-            });
-          });
-        } else {
+        requestAnimationFrame(() => {
           const contentEl = this.contentElRef.nativeElement;
           const popupEl = this.popupElRef.nativeElement;
 
-          if (popupEl.matches(":focus, :has(*:focus)")) {
-            contentEl.focus();
-          }
+          const windowOffset = contentEl.getRelativeOffset(window.document.body);
+
+          const isPlaceBottom = window.innerHeight < windowOffset.top * 2;
+          const isPlaceRight = window.innerWidth < windowOffset.left * 2;
 
           Object.assign(popupEl.style, {
-            top: "",
-            bottom: "",
-            left: "",
-            right: "",
-            minWidth: "",
-            opacity: "",
-            pointerEvents: "",
-            transform: "",
+            top: isPlaceBottom ? "" : windowOffset.top + contentEl.offsetHeight + 2 + "px",
+            bottom: isPlaceBottom ? window.innerHeight - windowOffset.top + "px" : "",
+            left: isPlaceRight ? "" : windowOffset.left + "px",
+            right: isPlaceRight ? window.innerWidth - windowOffset.left - contentEl.offsetWidth + "px" : "",
+            minWidth: contentEl.offsetWidth + "px",
+            opacity: "1",
+            pointerEvents: "auto",
+            transform: "none",
           });
-          popupEl.remove();
+        });
+      } else {
+        const contentEl = this.contentElRef.nativeElement;
+        const popupEl = this.popupElRef.nativeElement;
+
+        if (popupEl.matches(":focus, :has(*:focus)")) {
+          contentEl.focus();
         }
-      },
-    );
+
+        Object.assign(popupEl.style, {
+          top: "",
+          bottom: "",
+          left: "",
+          right: "",
+          minWidth: "",
+          opacity: "",
+          pointerEvents: "",
+          transform: "",
+        });
+        popupEl.remove();
+      }
+    });
   }
 
   #openPopup() {

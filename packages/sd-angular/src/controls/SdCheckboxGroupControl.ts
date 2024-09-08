@@ -7,9 +7,7 @@ import { coercionBoolean } from "../utils/commons";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
-  template: `
-    <ng-content></ng-content>
-  `,
+  template: ` <ng-content></ng-content> `,
 })
 export class SdCheckboxGroupControl<T> {
   @Input() value: T[] = [];

@@ -403,86 +403,55 @@ export class SdTextfieldControl<K extends TSdTextfieldType> {
   @Input() format?: string;
   @Input({ transform: coercionBoolean }) useNumberComma = true;
 
-  getControlType = sdGetter(
-    this,
-    [
-() => [this.type],
-    ],
-    () => {
-      return this.type === "number"
+  getControlType = sdGetter(this, [() => [this.type]], () => {
+    return this.type === "number"
+      ? "text"
+      : this.type === "format"
         ? "text"
-        : this.type === "format"
-          ? "text"
-          : this.type === "datetime"
+        : this.type === "datetime"
+          ? "datetime-local"
+          : this.type === "datetime-sec"
             ? "datetime-local"
-            : this.type === "datetime-sec"
-              ? "datetime-local"
-              : this.type === "time-sec"
-                ? "time"
-                : this.type;
-    },
-  );
+            : this.type === "time-sec"
+              ? "time"
+              : this.type;
+  });
 
   getControlValue = sdGetter(
     this,
-    [
-() => [this.type],
-() => [this.value],
-() => [this.useNumberComma],
-() => [this.format],
-    ],
+    [() => [this.type], () => [this.value], () => [this.useNumberComma], () => [this.format]],
     () => {
       return this.#convertToControlValue(this.value);
     },
   );
 
-  getControlValueText = sdGetter(
-    this,
-    [
-() => [this.type],
-() => [this.value],
-() => [this.getControlValue],
-    ],
-    () => {
-      if (this.type === "datetime" && this.value instanceof DateTime) {
-        return this.value.toFormatString("yyyy-MM-dd tt hh:mm");
-      } else if (this.type === "datetime-sec" && this.value instanceof DateTime) {
-        return this.value.toFormatString("yyyy-MM-dd tt hh:mm:ss");
-      } else if (this.type === "time" && (this.value instanceof DateTime || this.value instanceof Time)) {
-        return this.value.toFormatString("tt hh:mm");
-      } else if (this.type === "time-sec" && (this.value instanceof DateTime || this.value instanceof Time)) {
-        return this.value.toFormatString("tt hh:mm:ss");
-      } else {
-        return this.getControlValue();
-      }
-    },
-  );
+  getControlValueText = sdGetter(this, [() => [this.type], () => [this.value], () => [this.getControlValue]], () => {
+    if (this.type === "datetime" && this.value instanceof DateTime) {
+      return this.value.toFormatString("yyyy-MM-dd tt hh:mm");
+    } else if (this.type === "datetime-sec" && this.value instanceof DateTime) {
+      return this.value.toFormatString("yyyy-MM-dd tt hh:mm:ss");
+    } else if (this.type === "time" && (this.value instanceof DateTime || this.value instanceof Time)) {
+      return this.value.toFormatString("tt hh:mm");
+    } else if (this.type === "time-sec" && (this.value instanceof DateTime || this.value instanceof Time)) {
+      return this.value.toFormatString("tt hh:mm:ss");
+    } else {
+      return this.getControlValue();
+    }
+  });
 
-  getControlStep = sdGetter(
-    this,
-    [
-() => [this.type],
-() => [this.step],
-    ],
-    () => {
-      if (this.step !== undefined) {
-        return this.step;
-      } else if (this.type === "datetime-sec" || this.type === "time-sec") {
-        return 1;
-      } else {
-        return "any";
-      }
-    },
-  );
+  getControlStep = sdGetter(this, [() => [this.type], () => [this.step]], () => {
+    if (this.step !== undefined) {
+      return this.step;
+    } else if (this.type === "datetime-sec" || this.type === "time-sec") {
+      return 1;
+    } else {
+      return "any";
+    }
+  });
 
   getControlMin = sdGetter(
     this,
-    [
-() => [this.type],
-() => [this.min],
-() => [this.useNumberComma],
-() => [this.format],
-    ],
+    [() => [this.type], () => [this.min], () => [this.useNumberComma], () => [this.format]],
     () => {
       if (this.min instanceof DateOnly) {
         return this.min.toFormatString("yyyy-MM-dd");
@@ -494,12 +463,7 @@ export class SdTextfieldControl<K extends TSdTextfieldType> {
 
   getControlMax = sdGetter(
     this,
-    [
-() => [this.type],
-() => [this.max],
-() => [this.useNumberComma],
-() => [this.format],
-    ],
+    [() => [this.type], () => [this.max], () => [this.useNumberComma], () => [this.format]],
     () => {
       if (this.max instanceof DateOnly) {
         return this.max.toFormatString("yyyy-MM-dd");
@@ -512,14 +476,14 @@ export class SdTextfieldControl<K extends TSdTextfieldType> {
   getErrorMessage = sdGetter(
     this,
     [
-() => [this.type],
-() => [this.value],
-() => [this.required],
-() => [this.min],
-() => [this.max],
-() => [this.minlength],
-() => [this.maxlength],
-() => [this.validatorGetter],
+      () => [this.type],
+      () => [this.value],
+      () => [this.required],
+      () => [this.min],
+      () => [this.max],
+      () => [this.minlength],
+      () => [this.maxlength],
+      () => [this.validatorGetter],
     ],
     () => {
       const errorMessages: string[] = [];

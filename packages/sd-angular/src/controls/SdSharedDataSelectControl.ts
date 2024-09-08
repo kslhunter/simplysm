@@ -172,41 +172,31 @@ export class SdSharedDataSelectControl<
   itemTemplateRef?: TemplateRef<SdItemOfTemplateContext<T>>;
   @ContentChild("undefinedTemplate", { static: true, read: TemplateRef }) undefinedTemplateRef?: TemplateRef<void>;
 
-  trackByGetter = sdGetter(
-    this,
-    (item: T, index: number) => item.__valueKey,
-  );
+  trackByGetter = sdGetter(this, (item: T, index: number) => item.__valueKey);
 
   searchText?: string;
 
-  getItemByParentKeyMap = sdGetter(
-    this,
-    [
-() => [this.items, "all"],
-() => [this.parentKeyProp],
-    ],
-    () => {
-      if (this.parentKeyProp !== undefined) {
-        return this.items
-          .groupBy((item) => item[this.parentKeyProp!])
-          .toMap(
-            (item) => item.key,
-            (item1) => item1.values,
-          ) as Map<T["__valueKey"] | undefined, any>;
-      } else {
-        return undefined;
-      }
-    },
-  );
+  getItemByParentKeyMap = sdGetter(this, [() => [this.items, "all"], () => [this.parentKeyProp]], () => {
+    if (this.parentKeyProp !== undefined) {
+      return this.items
+        .groupBy((item) => item[this.parentKeyProp!])
+        .toMap(
+          (item) => item.key,
+          (item1) => item1.values,
+        ) as Map<T["__valueKey"] | undefined, any>;
+    } else {
+      return undefined;
+    }
+  });
 
   getRootDisplayItems = sdGetter(
     this,
     [
-() => [this.items, "all"],
-() => [this.filterGetter],
-() => [this.filterFnParams, "one"],
-() => [this.parentKeyProp],
-() => [this.displayOrderKeyProp],
+      () => [this.items, "all"],
+      () => [this.filterGetter],
+      () => [this.filterFnParams, "one"],
+      () => [this.parentKeyProp],
+      () => [this.displayOrderKeyProp],
     ],
     () => {
       let result = this.items.filter(
@@ -260,10 +250,7 @@ export class SdSharedDataSelectControl<
 
   getChildrenGetter = sdGetter(
     this,
-    [
-() => [this.displayOrderKeyProp],
-() => [this.getItemByParentKeyMap()],
-    ],
+    [() => [this.displayOrderKeyProp], () => [this.getItemByParentKeyMap()]],
     (item: ISharedDataBase<string | number>, index: number, depth: number): any[] => {
       let result = this.getItemByParentKeyMap()?.get(item.__valueKey) ?? [];
 

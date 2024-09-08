@@ -77,42 +77,24 @@ export class SdPaginationControl {
   @Input({ transform: coercionNumber }) pageLength = 0;
   @Input({ transform: coercionNumber }) displayPageLength = 10;
 
-  getDisplayPages = sdGetter(this,
-    [
-() => [this.pageLength],
-() => [this.page],
-() => [this.displayPageLength],
-    ],
-    () => {
-      const pages: number[] = [];
-      for (let i = 0; i < this.pageLength; i++) {
-        pages.push(i);
-      }
+  getDisplayPages = sdGetter(this, [() => [this.pageLength], () => [this.page], () => [this.displayPageLength]], () => {
+    const pages: number[] = [];
+    for (let i = 0; i < this.pageLength; i++) {
+      pages.push(i);
+    }
 
-      const from = Math.floor(this.page / this.displayPageLength) * this.displayPageLength;
-      const to = Math.min(from + this.displayPageLength, this.pageLength);
-      return pages.filter((item) => item >= from && item < to);
-    },
-  );
+    const from = Math.floor(this.page / this.displayPageLength) * this.displayPageLength;
+    const to = Math.min(from + this.displayPageLength, this.pageLength);
+    return pages.filter((item) => item >= from && item < to);
+  });
 
-  getHasNext = sdGetter(this,
-    [
-() => [this.pageLength],
-() => [this.getDisplayPages()],
-    ],
-    () => {
-      return (this.getDisplayPages().last() ?? 0) < this.pageLength - 1;
-    },
-  );
+  getHasNext = sdGetter(this, [() => [this.pageLength], () => [this.getDisplayPages()]], () => {
+    return (this.getDisplayPages().last() ?? 0) < this.pageLength - 1;
+  });
 
-  getHasPrev = sdGetter(this,
-    [
-() => [this.getDisplayPages()],
-    ],
-    () => {
-      return (this.getDisplayPages().first() ?? 0) > 0;
-    },
-  );
+  getHasPrev = sdGetter(this, [() => [this.getDisplayPages()]], () => {
+    return (this.getDisplayPages().first() ?? 0) > 0;
+  });
 
   onPageClick(page: number) {
     this.#setPage(page);

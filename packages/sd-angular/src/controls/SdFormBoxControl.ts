@@ -6,9 +6,7 @@ import { ChangeDetectionStrategy, Component, Input, ViewEncapsulation } from "@a
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
-  template: `
-    <ng-content></ng-content>
-  `,
+  template: ` <ng-content></ng-content> `,
   styles: [
     /* language=SCSS */ `
       sd-form-box {

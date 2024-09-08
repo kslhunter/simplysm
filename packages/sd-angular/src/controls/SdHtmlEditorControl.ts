@@ -174,20 +174,14 @@ export class SdHtmlEditorControl {
   @ViewChild("editorEl") editorElRef?: ElementRef<HTMLElement>;
 
   constructor() {
-    sdCheck.outside(this,
-      [
-() => [this.value],
-() => [!!this.editorElRef?.nativeElement],
-      ],
-      () => {
-        if (this.editorElRef) {
-          const innerHTML = this.editorElRef.nativeElement.innerHTML;
-          if (innerHTML !== this.value) {
-            this.editorElRef.nativeElement.innerHTML = this.value ?? "";
-          }
+    sdCheck.outside(this, [() => [this.value], () => [!!this.editorElRef?.nativeElement]], () => {
+      if (this.editorElRef) {
+        const innerHTML = this.editorElRef.nativeElement.innerHTML;
+        if (innerHTML !== this.value) {
+          this.editorElRef.nativeElement.innerHTML = this.value ?? "";
         }
-      },
-    );
+      }
+    });
   }
 
   onTextareaInput(event: Event) {
