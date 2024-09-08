@@ -1,5 +1,4 @@
 import "@simplysm/sd-core-browser";
-
 export * from "./controls/SdAdditionalButtonControl";
 export * from "./controls/SdAnchorControl";
 export * from "./controls/SdBarcodeControl";
