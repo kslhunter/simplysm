@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/core";
+import { ChangeDetectionStrategy, Component, Input, ViewEncapsulation } from "@angular/core";
 
 @Component({
   selector: "sd-toast-container",
@@ -24,8 +24,25 @@ import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/
         @media all and (max-width: 520px) {
           flex-direction: column-reverse;
         }
+
+        &[sd-overlap=true] {
+          display: block;
+
+          > sd-toast {
+            position: absolute;
+            bottom: var(--gap-xxl);
+            left: var(--gap-xxl);
+            right: var(--gap-xxl);
+            width: auto;
+          }
+        }
       }
     `,
   ],
+  host: {
+    "[attr.sd-overlap]": "overlap",
+  },
 })
-export class SdToastContainerControl {}
+export class SdToastContainerControl {
+  @Input() overlap = false;
+}

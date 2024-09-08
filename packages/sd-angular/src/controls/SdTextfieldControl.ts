@@ -593,8 +593,6 @@ export class SdTextfieldControl<K extends TSdTextfieldType> {
     } else {
       this.#setValue(inputEl.value);
     }
-
-    console.log(1, this.value);
   }
 
   #setValue(newValue: any): void {

@@ -107,3 +107,4 @@ export * from "./utils/hooks";
 export * from "./utils/SdAppStructureUtil";
 export * from "./utils/sdCanDeactivateGuard";
 export * from "./utils/SdPageAnimation";
+export * from "./utils/waitRepaint";

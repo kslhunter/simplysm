@@ -68,25 +68,25 @@ export class IdxStore<T extends object> {
 
     //-- "success" 이벤트를 안받아야 빨라짐.
     return await new Promise<void>((resolve, reject) => {
-      let lastReq: IDBRequest | undefined;
+      // let lastReq: IDBRequest | undefined;
       for (const item of items) {
         const req = this._db.idxTrans!.objectStore(this.def.name).add(item);
         req.onerror = () => {
           reject(req.error);
-          return;
         };
 
-        lastReq = req;
+        // lastReq = req;
       }
 
-      if (lastReq) {
+      /*if (lastReq) {
         lastReq.onsuccess = () => {
           resolve();
         };
       }
       else {
         resolve();
-      }
+      }*/
+      resolve();
     });
   }
 

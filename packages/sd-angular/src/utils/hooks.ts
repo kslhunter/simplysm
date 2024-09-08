@@ -285,7 +285,6 @@ function prepare(comp: any): IInjectConfig {
         let changed = false;
 
         const checkData = getCheckDataFromList(checkFnInfo.checkList);
-        console.log(checkData);
         for (const checkKey of Object.keys(checkData)) {
           if (Object.keys(changedData).includes(checkKey)) {
             changed = true;

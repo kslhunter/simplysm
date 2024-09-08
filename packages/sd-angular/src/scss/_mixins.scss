@@ -24,7 +24,12 @@
     body.sd-theme-mobile & {
       box-shadow: 0 0 2px rgba(0, 0, 0, .05), 0 calc(#{$value} * var(--elevation-size)) calc(#{$value} * 4 * var(--elevation-size)) rgba(0, 0, 0, .05);
     }*/
-    box-shadow: 0 0 2px rgba(0, 0, 0, .05), 0 calc(#{$value} * var(--elevation-size)) calc(#{$value} * 4 * var(--elevation-size)) rgba(0, 0, 0, .05);
+    /*box-shadow:
+      0 0 2px rgba(0, 0, 0, 0.05),
+      0 calc(#{$value} * var(--elevation-size)) calc(#{$value} * 4 * var(--elevation-size)) rgba(0, 0, 0, 0.05);*/
+    box-shadow:
+      0 0 2px rgba(0, 0, 0, 0.05),
+      0 calc(#{$value} * var(--elevation-size)) calc(#{$value} * 4 * var(--elevation-size)) rgba(0, 0, 0, 0.05);
   }
 }
 
@@ -68,9 +73,9 @@
       top: -100%;
       background: transparent;
       transition-property: transform, opacity;
-      transition-duration: .3s;
+      transition-duration: 0.3s;
       transition-timing-function: ease-out;
-      transform: scaleX(.3);
+      transform: scaleX(0.3);
       opacity: 0;
 
       pointer-events: none;

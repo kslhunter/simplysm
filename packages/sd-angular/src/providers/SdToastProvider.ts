@@ -1,4 +1,13 @@
-import { ApplicationRef, ComponentRef, createComponent, inject, Injectable, Input, Type } from "@angular/core";
+import {
+  ApplicationRef,
+  ChangeDetectorRef,
+  ComponentRef,
+  createComponent,
+  inject,
+  Injectable,
+  Input,
+  Type,
+} from "@angular/core";
 import { SdToastContainerControl } from "../controls/SdToastContainerControl";
 import { SdSystemLogProvider } from "./SdSystemLogProvider";
 import { SdToastControl } from "../controls/SdToastControl";
@@ -9,6 +18,7 @@ export class SdToastProvider {
   #systemLog = inject(SdSystemLogProvider);
 
   alertThemes: ("info" | "success" | "warning" | "danger")[] = [];
+  overlap = false;
 
   #containerRef?: ComponentRef<SdToastContainerControl>;
 
@@ -19,6 +29,8 @@ export class SdToastProvider {
       const compRef = createComponent(SdToastContainerControl, {
         environmentInjector: this.#appRef.injector,
       });
+      compRef.instance.overlap = this.overlap;
+
       const rootComp = this.#appRef.components[0];
       const rootCompEl = rootComp.location.nativeElement as HTMLElement;
       rootCompEl.appendChild(compRef.location.nativeElement);
@@ -156,7 +168,7 @@ export class SdToastProvider {
         },
       } as any;
     } else {
-      this.#closeAfterTime(toastRef, 5000);
+      this.#closeAfterTime(toastRef, 3000);
       return undefined as any;
     }
   }
@@ -172,7 +184,7 @@ export class SdToastProvider {
           toastRef.destroy();
         });
         toastRef.instance.open = false;
-        this.#appRef.tick();
+        toastRef.injector.get(ChangeDetectorRef).markForCheck();
       }
     }, ms);
   }
