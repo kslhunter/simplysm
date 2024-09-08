@@ -115,6 +115,12 @@ const sdContentChecked = contentCheckedFn as {
   };
 };
 
+//-- sdCanDeactivate
+const sdCanDeactivate = (comp: any, fn: () => boolean) => {
+  const config = prepare(comp);
+  config.canDeactivateFns.push(fn);
+};
+
 //-- check
 
 const checkFn = (comp: any, checkList: TCheckList, fn: () => void) => {
@@ -134,12 +140,7 @@ const sdCheck = checkFn as {
 };
 
 //-- getter
-function sdGetter<F extends (...args: any[]) => any>(comp: any, fn: F): TSdGetter<F>;
-function sdGetter<F extends (...args: any[]) => any>(comp: any, checkList: TCheckList, fn: F): TSdGetter<F>;
-function sdGetter<F extends (...args: any[]) => any>(comp: any, arg1: F | TCheckList, arg2?: F): TSdGetter<F> {
-  const checkList = (arg2 ? arg1 : []) as TCheckList;
-  const fn = (arg2 ? arg2 : arg1) as F;
-
+function sdGetter<F extends (...args: any[]) => any>(comp: any, checkList: TCheckList, fn: F): TSdGetter<F> {
   const config = prepare(comp);
   const checkFnInfo = { checkList, fn, outside: false, getter: true };
   config.checkFnInfos.push(checkFnInfo);
@@ -151,7 +152,7 @@ function sdGetter<F extends (...args: any[]) => any>(comp: any, arg1: F | TCheck
     if (map.has(paramJson)) {
       return map.get(paramJson);
     } else {
-      const r = fn(params);
+      const r = fn(...params);
       map.set(paramJson, r);
       return r;
     }
@@ -176,7 +177,18 @@ function toSdGetter<T>(comp: any, ob: Observable<T>, opt?: { initialValue?: T })
   return getter;
 }
 
-export { sdInit, sdDestroy, sdViewInit, sdViewChecked, sdContentInit, sdContentChecked, sdCheck, sdGetter, toSdGetter };
+export {
+  sdInit,
+  sdDestroy,
+  sdViewInit,
+  sdViewChecked,
+  sdContentInit,
+  sdContentChecked,
+  sdCheck,
+  sdGetter,
+  toSdGetter,
+  sdCanDeactivate,
+};
 
 function prepare(comp: any): IInjectConfig {
   if (!Boolean(comp.constructor[PREPARED])) {
@@ -207,7 +219,7 @@ function prepare(comp: any): IInjectConfig {
 
     const prevOnInit = comp.constructor.prototype.ngOnInit;
     comp.constructor.prototype.ngOnInit = async function (this: any) {
-      await prevOnInit?.();
+      await prevOnInit?.bind(this);
 
       const config = this[CONFIG] as IInjectConfig;
       await run(this, config.initFnInfos);
@@ -215,7 +227,7 @@ function prepare(comp: any): IInjectConfig {
 
     const prevOnDestroy = comp.constructor.prototype.ngOnDestroy;
     comp.constructor.prototype.ngOnDestroy = async function (this: any) {
-      await prevOnDestroy?.();
+      await prevOnDestroy?.bind(this);
 
       const config = this[CONFIG] as IInjectConfig;
       await run(this, config.destroyFnInfos);
@@ -223,7 +235,7 @@ function prepare(comp: any): IInjectConfig {
 
     const prevAfterViewInit = comp.constructor.prototype.ngAfterViewInit;
     comp.constructor.prototype.ngAfterViewInit = async function (this: any) {
-      await prevAfterViewInit?.();
+      await prevAfterViewInit?.bind(this);
 
       const config = this[CONFIG] as IInjectConfig;
       await run(this, config.viewInitFnInfos);
@@ -231,7 +243,7 @@ function prepare(comp: any): IInjectConfig {
 
     const prevAfterViewChecked = comp.constructor.prototype.ngAfterViewChecked;
     comp.constructor.prototype.ngAfterViewChecked = async function (this: any) {
-      await prevAfterViewChecked?.();
+      await prevAfterViewChecked?.bind(this);
 
       const config = this[CONFIG] as IInjectConfig;
       await run(this, config.viewCheckedFnInfos);
@@ -239,7 +251,7 @@ function prepare(comp: any): IInjectConfig {
 
     const prevAfterContentInit = comp.constructor.prototype.ngAfterContentInit;
     comp.constructor.prototype.ngAfterContentInit = async function (this: any) {
-      await prevAfterContentInit?.();
+      await prevAfterContentInit?.bind(this);
 
       const config = this[CONFIG] as IInjectConfig;
       await run(this, config.contentInitFnInfos);
@@ -247,10 +259,24 @@ function prepare(comp: any): IInjectConfig {
 
     const prevAfterContentChecked = comp.constructor.prototype.ngAfterContentChecked;
     comp.constructor.prototype.ngAfterContentChecked = async function (this: any) {
-      await prevAfterContentChecked?.();
+      await prevAfterContentChecked?.bind(this);
 
       const config = this[CONFIG] as IInjectConfig;
       await run(this, config.contentCheckedFnInfos);
+    };
+
+    const prevCanDeactivate = comp.constructor.prototype.sdCanDeactivate;
+    comp.constructor.prototype.sdCanDeactivate = function (this: any) {
+      let result = prevCanDeactivate?.bind(this) ?? true;
+
+      const config = this[CONFIG] as IInjectConfig;
+      for (const fn of config.canDeactivateFns) {
+        if (!fn()) {
+          result = false;
+          break;
+        }
+      }
+      return result;
     };
 
     function getCheckDataFromList(checkList: TCheckList, keyPrefix?: string): TCheckData {
@@ -273,7 +299,8 @@ function prepare(comp: any): IInjectConfig {
 
     const prevDoCheck = comp.constructor.prototype.ngDoCheck;
     comp.constructor.prototype.ngDoCheck = async function (this: any) {
-      await prevDoCheck?.();
+      await prevDoCheck?.bind(this);
+      console.log(comp.constructor.name, "doCheck");
 
       const cdr = this[CDR] as ChangeDetectorRef;
       const ngZone = this[NG_ZONE] as NgZone;
@@ -293,9 +320,11 @@ function prepare(comp: any): IInjectConfig {
 
           const [checkVal, method] = checkData[checkKey];
 
+          // changed데이터가 이미 있는건 어차피 prevData랑 조회안하므로 바로바로 prevData에 값 넣기
+          // 바깥쪽에서 넣으려고 하면, 동일 로직이 여러번 돌아버릴 수 있음
           if (method === "all") {
             if (!ObjectUtil.equal(config.prevData[checkKey], checkVal)) {
-              changedData[checkKey] = ObjectUtil.clone(checkVal);
+              config.prevData[checkKey] = changedData[checkKey] = ObjectUtil.clone(checkVal);
               changed = true;
             }
           } else if (method == "one") {
@@ -304,14 +333,14 @@ function prepare(comp: any): IInjectConfig {
                 onlyOneDepth: true,
               })
             ) {
-              changedData[checkKey] = ObjectUtil.clone(checkVal, {
+              config.prevData[checkKey] = changedData[checkKey] = ObjectUtil.clone(checkVal, {
                 onlyOneDepth: true,
               });
               changed = true;
             }
           } else {
             if (config.prevData[checkKey] !== checkVal) {
-              changedData[checkKey] = checkVal;
+              config.prevData[checkKey] = changedData[checkKey] = checkVal;
               changed = true;
             }
           }
@@ -336,8 +365,6 @@ function prepare(comp: any): IInjectConfig {
         }
       }
 
-      Object.assign(config.prevData, changedData);
-
       if (useMarkForCheck) {
         cdr.markForCheck();
       }
@@ -356,6 +383,7 @@ function prepare(comp: any): IInjectConfig {
       viewCheckedFnInfos: [],
       contentInitFnInfos: [],
       contentCheckedFnInfos: [],
+      canDeactivateFns: [],
       prevData: {},
       resultMap: new Map(),
     };
@@ -390,6 +418,7 @@ interface IInjectConfig {
   viewCheckedFnInfos: IFnInfo[];
   contentInitFnInfos: IFnInfo[];
   contentCheckedFnInfos: IFnInfo[];
+  canDeactivateFns: (() => boolean)[];
   prevData: Record<string, any>;
   resultMap: Map<ICheckFnInfo, Map<string, any>>;
 }

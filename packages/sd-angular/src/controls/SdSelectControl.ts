@@ -330,7 +330,7 @@ export class SdSelectControl<M extends "single" | "multi", T> {
   @Input({ transform: coercionBoolean }) disabled = false;
 
   @Input() items?: T[];
-  @Input() trackByGetter: TSdGetter<(item: T, index: number) => any> = sdGetter(this, (item) => item);
+  @Input() trackByGetter: TSdGetter<(item: T, index: number) => any> = sdGetter(this, [], (item) => item);
   @Input() getChildrenGetter?: TSdGetter<(item: T, index: number, depth: number) => T[]>;
 
   @Input({ transform: coercionBoolean }) inline = false;

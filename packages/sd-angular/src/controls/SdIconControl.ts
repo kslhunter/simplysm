@@ -1,9 +1,10 @@
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
-import { Component, Input } from "@angular/core";
+import { ChangeDetectionStrategy, Component, Input } from "@angular/core";
 import { coercionBoolean } from "../utils/commons";
 
 @Component({
   selector: "sd-icon",
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [],
   template: ``,

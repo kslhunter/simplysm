@@ -610,7 +610,7 @@ export class SdSheetControl<T> {
    * @param index 'items'내의 index
    * @param item items[index] 데이터
    */
-  @Input() trackByGetter: TSdGetter<(item: T, index: number) => any> = sdGetter(this, (item, index) => item);
+  @Input() trackByGetter: TSdGetter<(item: T, index: number) => any> = sdGetter(this, [], (item, index) => item);
   @Input() trackByKey?: keyof T;
 
   /** 선택모드 (single = 단일선택, multi = 다중선택) */

@@ -159,10 +159,12 @@ export class SdSharedDataSelectControl<
   @Input() multiSelectionDisplayDirection?: "vertical" | "horizontal";
   @Input() getIsHiddenGetter: TSdGetter<(item: T, index: number) => boolean> = sdGetter(
     this,
+    [],
     (item, index) => item.__isHidden,
   );
   @Input() getSearchTextGetter: TSdGetter<(item: T, index: number) => string> = sdGetter(
     this,
+    [],
     (item, index) => item.__searchText,
   );
   @Input() parentKeyProp?: string;
@@ -172,7 +174,7 @@ export class SdSharedDataSelectControl<
   itemTemplateRef?: TemplateRef<SdItemOfTemplateContext<T>>;
   @ContentChild("undefinedTemplate", { static: true, read: TemplateRef }) undefinedTemplateRef?: TemplateRef<void>;
 
-  trackByGetter = sdGetter(this, (item: T, index: number) => item.__valueKey);
+  trackByGetter = sdGetter(this, [], (item: T, index: number) => item.__valueKey);
 
   searchText?: string;
 
@@ -214,18 +216,28 @@ export class SdSharedDataSelectControl<
   );
 
   // 선택될 수 있는것들 (검색어에 의해 숨겨진것도 포함)
-  getItemSelectable(item: any, index: number, depth: number): boolean {
+  getItemSelectable = sdGetter(this, [() => [this.parentKeyProp]], (item: any, index: number, depth: number) => {
     return this.parentKeyProp === undefined || depth !== 0 || item[this.parentKeyProp] === undefined;
-  }
+  });
 
   // 화면 목록에서 뿌려질것 (검색어에 의해 숨겨진것 제외)
-  getItemVisible(item: any, index: number, depth: number): boolean {
-    return (
-      (this.#isIncludeSearchText(item, index, depth) && !this.getIsHiddenGetter(item, index)) ||
-      this.value === item.__valueKey ||
-      (this.value instanceof Array && this.value.includes(item.__valueKey))
-    );
-  }
+  getItemVisible = sdGetter(
+    this,
+    [
+      () => [this.parentKeyProp],
+      () => [this.getSearchTextGetter],
+      () => [this.getIsHiddenGetter],
+      () => [this.value, "all"],
+      () => [this.getChildrenGetter],
+    ],
+    (item: any, index: number, depth: number) => {
+      return (
+        (this.#isIncludeSearchText(item, index, depth) && !this.getIsHiddenGetter(item, index)) ||
+        this.value === item.__valueKey ||
+        (this.value instanceof Array && this.value.includes(item.__valueKey))
+      );
+    },
+  );
 
   #isIncludeSearchText(item: any, index: number, depth: number): boolean {
     if (
