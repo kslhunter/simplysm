@@ -1,6 +1,6 @@
 {
   "name": "@simplysm-ts/client-react",
-  "version": "12.5.7",
+  "version": "12.5.8",
   "description": "심플리즘 패키지 - React 모듈 (browser)",
   "author": "김석래",
   "repository": {
