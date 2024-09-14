@@ -1,6 +1,6 @@
 {
   "name": "simplysm",
-  "version": "12.5.8",
+  "version": "12.5.9",
   "description": "심플리즘 패키지",
   "author": "김석래",
   "packageManager": "yarn@4.4.1",
@@ -30,7 +30,7 @@
     "migration": "node lib/migration.js"
   },
   "devDependencies": {
-    "@simplysm/eslint-plugin": "12.5.8",
+    "@simplysm/eslint-plugin": "12.5.9",
     "@types/node": "^20.16.5",
     "cross-env": "^7.0.3",
     "eslint": "^9.10.0",
