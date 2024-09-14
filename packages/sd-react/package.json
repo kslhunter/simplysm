@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-react",
-  "version": "12.5.10",
+  "version": "12.5.11",
   "description": "심플리즘 패키지 - React 모듈 (browser)",
   "author": "김석래",
   "repository": {
@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.6.0",
-    "@simplysm/ts-transformer-keys": "12.5.10",
+    "@simplysm/ts-transformer-keys": "12.5.11",
     "clsx": "^2.1.1",
     "pretendard": "^1.3.9",
     "react": "^18.3.1",
