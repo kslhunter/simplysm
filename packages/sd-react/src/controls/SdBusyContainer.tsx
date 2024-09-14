@@ -1,5 +1,7 @@
 import styled, { css, keyframes } from "styled-components";
-import { ReactNode } from "react";
+import { component } from "../utils/component";
+import { omit } from "../utils/omit";
+import { keys } from "@simplysm/ts-transformer-keys";
 
 interface IProps {
   busy?: boolean;
@@ -7,12 +9,13 @@ interface IProps {
   noFade?: boolean;
   message?: string;
   progressPercent?: number;
-  children?: ReactNode;
 }
 
-export default function SdBusyContainer(props: IProps) {
+export const SdBusyContainer = component<IProps, "div">("SdBusyContainer", (props, fwdRef) => {
   return (
     <RootDiv
+      {...omit(props, keys<IProps>())}
+      ref={fwdRef}
       $busy={props.busy}
       $type={props.type}
       $noFade={props.noFade}
@@ -46,7 +49,7 @@ export default function SdBusyContainer(props: IProps) {
       {props.children}
     </RootDiv>
   );
-}
+});
 
 const RootDiv = styled.div<{
   $busy: boolean | undefined;

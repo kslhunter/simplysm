@@ -31,6 +31,9 @@
       "@simplysm/*": [
         "./packages/*/src/index.ts",
         "./packages/*/types/index.d.ts"
+      ],
+      "@simplysm/ts-transformer-keys/transformer": [
+        "./packages/ts-transformer-keys/src/transformer.ts"
       ]
     }
   }

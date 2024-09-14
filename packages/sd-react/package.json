@@ -16,6 +16,8 @@
     "node": "20.16.0"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^6.6.0",
+    "@simplysm/ts-transformer-keys": "12.5.10",
     "clsx": "^2.1.1",
     "pretendard": "^1.3.9",
     "react": "^18.3.1",

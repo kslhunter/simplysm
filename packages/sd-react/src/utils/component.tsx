@@ -12,6 +12,7 @@ import {
 import { runEffects, SignalContext, SignalContextValue } from "./signal";
 
 function component<P extends PropsWithoutRef<any>, K extends (keyof ReactHTML & keyof HTMLElementTagNameMap)>(
+  name: string,
   fc: (props: P & ReturnType<ReactHTML[K]>["props"], fwdRef: ForwardedRef<HTMLElementTagNameMap[K]>) => ReactNode,
 ) {
   const resultFc = (props: P & ReturnType<ReactHTML[K]>["props"], fwdRef: ForwardedRef<HTMLElementTagNameMap[K]>): ReactNode => {
@@ -32,12 +33,12 @@ function component<P extends PropsWithoutRef<any>, K extends (keyof ReactHTML & 
       return fc(props1, fwdRef);
     }
 
-    tempFn.displayName = (fc["displayName"] ?? fc.name) + ".$compoment.tempFn";
+    tempFn.displayName = name + ".$compoment.tempFn";
     const tempComp = createElement(tempFn, props);
 
     return <SignalContext.Provider value={signalContextValueRef.current}>{tempComp}</SignalContext.Provider>;
   };
-  resultFc.displayName = (fc["displayName"] ?? fc.name) + ".$compoment";
+  resultFc.displayName = name + ".$compoment";
 
   return memo(forwardRef(resultFc));
 }

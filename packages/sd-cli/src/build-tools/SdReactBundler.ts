@@ -10,6 +10,7 @@ import { IReactPluginResultCache, sdReactPlugin } from "../bundle-plugins/sdReac
 import { transformSupportedBrowsersToTargets } from "@angular/build/src/tools/esbuild/utils";
 import browserslist from "browserslist";
 import { glob } from "glob";
+import { generateSW } from "workbox-build";
 
 export class SdReactBundler {
   readonly #logger = Logger.get(["simplysm", "sd-cli", "SdNgBundler"]);
@@ -89,11 +90,8 @@ export class SdReactBundler {
         '<script type="module" src="cordova-entry.js"></script>\n$1</head>',
       );
     }
-    if (outputFiles.some(item => item.relPath === "index.css")) {
-      indexHtml = indexHtml.replace(
-        /(.*)<\/head>/,
-        '<link rel="stylesheet" href="index.css">\n$1</head>',
-      );
+    if (outputFiles.some((item) => item.relPath === "index.css")) {
+      indexHtml = indexHtml.replace(/(.*)<\/head>/, '<link rel="stylesheet" href="index.css">\n$1</head>');
     }
 
     outputFiles.push({
@@ -125,7 +123,6 @@ export class SdReactBundler {
     );
 
     // TODO: extract 3rdpartylicenses
-    // TODO: service worker
 
     //-- write
     this.#debug(`write output files...(${outputFiles.length})`);
@@ -138,6 +135,23 @@ export class SdReactBundler {
         this.#outputCache.set(distFilePath, Buffer.from(outputFile.contents).toString("base64"));
       }
     }
+
+    // TODO: service worker
+    const swResult = await generateSW({
+      globDirectory: path.resolve(this.#opt.pkgPath, "dist"),
+      swDest: path.resolve(this.#opt.pkgPath, "dist", "sw.js"),
+    });
+    swResult.warnings.map((msg) => {
+      results.push({
+        filePath: undefined,
+        line: undefined,
+        char: undefined,
+        code: undefined,
+        severity: "warning",
+        message: `(gen-sw) ${msg}`,
+        type: "build",
+      });
+    });
 
     this.#debug(`번들링중 영향받은 파일`, Array.from(this.#compileResultCache.affectedFileSet!));
 

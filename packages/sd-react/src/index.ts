@@ -1,4 +1,5 @@
 import "@simplysm/sd-core-browser";
+export * from "./contexts/SdReactConfigContext";
 export * from "./contexts/SdThemeContext";
 export * from "./controls/SdBusyContainer";
 export * from "./controls/SdButton";
@@ -10,5 +11,6 @@ export * from "./style/variables-kiosk";
 export * from "./style/variables-mobile";
 export * from "./style/variables";
 export * from "./utils/component";
+export * from "./utils/omit";
 export * from "./utils/signal";
 export * from "./utils/styleProps";

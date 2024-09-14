@@ -1,7 +1,8 @@
-import { ReactNode } from "react";
 import styled, { css } from "styled-components";
-import { styleProps, TStyleProps } from "../utils/styleProps";
 import { mixins } from "../style/mixins";
+import { component } from "../utils/component";
+import { omit } from "../utils/omit";
+import { keys } from "@simplysm/ts-transformer-keys";
 
 interface IProps {
   type?: "button" | "submit";
@@ -29,17 +30,52 @@ interface IProps {
   disabled?: boolean;
 
   onClick?: () => void;
-
-  children?: ReactNode;
 }
 
-export default function SdButton(props: IProps) {
-  return <Root {...styleProps(props)} onClick={props.onClick}>{props.children}</Root>;
-}
+export const SdButton = component<IProps, "button">("SdButton", (props, fwdRef) => {
+  return (
+    <RootButton
+      {...omit(props, keys<IProps>())}
+      ref={fwdRef}
+      $theme={props.theme}
+      $inline={props.inline}
+      $inset={props.inset}
+      $size={props.size}
+      $disabled={props.disabled}
+      onClick={props.onClick}
+    >
+      {props.children}
+    </RootButton>
+  );
+});
 
-const Root = styled.button<TStyleProps<Omit<IProps, "children" | "onClick">>>`
+const RootButton = styled.button<{
+  $theme:
+    | "primary"
+    | "secondary"
+    | "info"
+    | "success"
+    | "warning"
+    | "danger"
+    | "grey"
+    | "blue-grey"
+    | "link"
+    | "link-primary"
+    | "link-secondary"
+    | "link-info"
+    | "link-success"
+    | "link-warning"
+    | "link-danger"
+    | "link-grey"
+    | "link-blue-grey"
+    | undefined;
+  $inline: boolean | undefined;
+  $inset: boolean | undefined;
+  $size: "sm" | "lg" | undefined;
+  $disabled: boolean | undefined;
+}>`
   ${(props) => [
-    css`
+  css`
       font-family: var(--font-family);
 
       display: block;
@@ -64,10 +100,12 @@ const Root = styled.button<TStyleProps<Omit<IProps, "children" | "onClick">>>`
 
       &:hover {
         background: var(--theme-grey-lightest);
-        ${props.$inset &&
-        css`
-          color: var(--theme-primary-darker);
-        `}
+        ${
+    props.$inset &&
+    css`
+            color: var(--theme-primary-darker);
+          `
+  }
       }
 
       ${mixins.activeEffect(true)}
@@ -78,11 +116,13 @@ const Root = styled.button<TStyleProps<Omit<IProps, "children" | "onClick">>>`
         cursor: default;
 
         ${mixins.activeEffect(false)}
-      },
+      }
 
-      ${props.$theme &&
-      !props.$theme.startsWith("link") &&
-      css`
+    ,
+    ${
+    props.$theme &&
+    !props.$theme.startsWith("link") &&
+    css`
         background: var(--theme-${props.$theme}-default);
         border-color: var(--theme-${props.$theme}-default);
         color: var(--text-trans-rev-default);
@@ -99,10 +139,10 @@ const Root = styled.button<TStyleProps<Omit<IProps, "children" | "onClick">>>`
           color: var(--text-trans-lighter);
           cursor: default;
         }
-      `}
-
-      ${props.$theme === "link" &&
-      css`
+      `
+  } ${
+    props.$theme === "link" &&
+    css`
         border-color: transparent;
         color: var(--theme-primary-default);
 
@@ -114,11 +154,11 @@ const Root = styled.button<TStyleProps<Omit<IProps, "children" | "onClick">>>`
           border-color: transparent;
           color: var(--text-trans-lighter);
         }
-      `}
-
-    ${props.$theme &&
-      props.$theme.startsWith("link") &&
-      css`
+      `
+  } ${
+    props.$theme &&
+    props.$theme.startsWith("link") &&
+    css`
         border-color: transparent;
         color: var(--theme-${props.$theme.substring(5)}-default);
 
@@ -130,29 +170,30 @@ const Root = styled.button<TStyleProps<Omit<IProps, "children" | "onClick">>>`
           border-color: transparent;
           color: var(--text-trans-lighter);
         }
-      `}
-
-    ${props.$inline &&
-      css`
+      `
+  } ${
+    props.$inline &&
+    css`
         display: inline-block;
         width: auto;
         vertical-align: top;
-      `}
-
-    ${props.$size === "sm" &&
-      css`
+      `
+  } ${
+    props.$size === "sm" &&
+    css`
         padding: var(--gap-xs) var(--gap-default);
-      `}
-
-    ${props.$size === "lg" &&
-      css`
+      `
+  } ${
+    props.$size === "lg" &&
+    css`
         padding: var(--gap-default) var(--gap-xl);
-      `}
-
-    ${props.$disabled &&
-      css`
+      `
+  } ${
+    props.$disabled &&
+    css`
         pointer-events: none;
-      `}
+      `
+  }
     `,
-  ]}
+]}
 `;

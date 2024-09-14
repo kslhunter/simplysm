@@ -88,5 +88,9 @@ export default () => ({
       type: "library",
       publish: "npm",
     },
+    "ts-transformer-keys":{
+      type: "library",
+      publish: "npm",
+    }
   },
 });

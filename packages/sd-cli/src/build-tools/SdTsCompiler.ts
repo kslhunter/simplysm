@@ -9,6 +9,7 @@ import { ComponentStylesheetBundler } from "@angular/build/src/tools/esbuild/ang
 import { AngularCompilerHost } from "@angular/build/src/tools/angular/angular-host";
 import { transformSupportedBrowsersToTargets } from "@angular/build/src/tools/esbuild/utils";
 import browserslist from "browserslist";
+import transformKeys from "@simplysm/ts-transformer-keys/transformer";
 
 export class SdTsCompiler {
   readonly #logger = Logger.get(["simplysm", "sd-cli", "SdTsCompiler"]);
@@ -471,7 +472,10 @@ export class SdTsCompiler {
         },
         undefined,
         undefined,
-        ngTransformers,
+        {
+          ...(ngTransformers ?? {}),
+          before: [...(ngTransformers?.before ?? []), transformKeys(this.#program)],
+        },
       );
     }
 

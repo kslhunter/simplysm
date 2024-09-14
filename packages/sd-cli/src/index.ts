@@ -13,6 +13,7 @@ export * from "./builders/SdCliClientBuilder";
 export * from "./builders/SdCliJsLibLinter";
 export * from "./builders/SdCliServerBuilder";
 export * from "./builders/SdCliTsLibBuilder";
+export * from "./bundle-plugins/KeysTransformer";
 export * from "./bundle-plugins/sdNgPlugin";
 export * from "./bundle-plugins/sdReactPlugin";
 export * from "./bundle-plugins/sdServerPlugin";
