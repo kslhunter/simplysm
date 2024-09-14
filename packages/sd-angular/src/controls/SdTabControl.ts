@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, ViewEncapsulation } from "@angular/core";
+import { ChangeDetectionStrategy, Component, model, ViewEncapsulation } from "@angular/core";
 
 @Component({
   selector: "sd-tab",
@@ -6,7 +6,6 @@ import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, ViewEn
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
-  template: ` <ng-content></ng-content>`,
   styles: [
     /* language=SCSS */ `
       sd-tab {
@@ -25,15 +24,8 @@ import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, ViewEn
       }
     `,
   ],
+  template: ` <ng-content></ng-content>`,
 })
 export class SdTabControl {
-  @Input() value?: any;
-  @Output() valueChange = new EventEmitter<any>();
-
-  setValue(value: any) {
-    if (this.value !== value) {
-      this.value = value;
-      this.valueChange.emit(value);
-    }
-  }
+  value = model<any>();
 }

@@ -1,11 +1,11 @@
-import {FsUtil, Logger, PathUtil, SdFsWatcher} from "@simplysm/sd-core-node";
+import { FsUtil, Logger, PathUtil, SdFsWatcher } from "@simplysm/sd-core-node";
 import path from "path";
-import {ISdCliBuilderResult, ISdCliConfig, ISdCliLibPackageConfig, ISdCliPackageBuildResult} from "../commons";
-import {EventEmitter} from "events";
-import {SdTsLibBundler} from "../build-tools/SdTsLibBundler";
-import {SdLinter} from "../build-tools/SdLinter";
-import {FunctionQueue} from "@simplysm/sd-core-common";
-import {SdCliIndexFileGenerator} from "../build-tools/SdCliIndexFileGenerator";
+import { ISdCliBuilderResult, ISdCliConfig, ISdCliLibPackageConfig, ISdCliPackageBuildResult } from "../commons";
+import { EventEmitter } from "events";
+import { SdTsLibBundler } from "../build-tools/SdTsLibBundler";
+import { SdLinter } from "../build-tools/SdLinter";
+import { FunctionQueue } from "@simplysm/sd-core-common";
+import { SdCliIndexFileGenerator } from "../build-tools/SdCliIndexFileGenerator";
 
 export class SdCliTsLibBuilder extends EventEmitter {
   readonly #logger = Logger.get(["simplysm", "sd-cli", "SdCliTsLibBuilder"]);
@@ -16,8 +16,7 @@ export class SdCliTsLibBuilder extends EventEmitter {
 
   #bundler?: SdTsLibBundler;
 
-  public constructor(projConf: ISdCliConfig,
-                     pkgPath: string) {
+  public constructor(projConf: ISdCliConfig, pkgPath: string) {
     super();
     this.#projConf = projConf;
     this.#pkgPath = pkgPath;
@@ -44,7 +43,7 @@ export class SdCliTsLibBuilder extends EventEmitter {
     const result = await this._runAsync(false);
     return {
       affectedFilePaths: Array.from(result.affectedFileSet),
-      buildResults: result.buildResults
+      buildResults: result.buildResults,
     };
   }
 
@@ -62,28 +61,26 @@ export class SdCliTsLibBuilder extends EventEmitter {
     const result = await this._runAsync(true);
     this.emit("complete", {
       affectedFilePaths: Array.from(result.affectedFileSet),
-      buildResults: result.buildResults
+      buildResults: result.buildResults,
     });
 
     this._debug("WATCH...");
     const fnQ = new FunctionQueue();
-    const watcher = SdFsWatcher
-      .watch(Array.from(result.watchFileSet))
-      .onChange({delay: 100,}, (changeInfos) => {
-        this.#bundler!.markChanges(new Set(changeInfos.map((item) => item.path)));
+    const watcher = SdFsWatcher.watch(Array.from(result.watchFileSet)).onChange({ delay: 100 }, (changeInfos) => {
+      this.#bundler!.markChanges(new Set(changeInfos.map((item) => item.path)));
 
-        fnQ.runLast(async () => {
-          this.emit("change");
+      fnQ.runLast(async () => {
+        this.emit("change");
 
-          const watchResult = await this._runAsync(true);
-          this.emit("complete", {
-            affectedFilePaths: Array.from(watchResult.affectedFileSet),
-            buildResults: watchResult.buildResults
-          });
-
-          watcher.add(watchResult.watchFileSet);
+        const watchResult = await this._runAsync(true);
+        this.emit("complete", {
+          affectedFilePaths: Array.from(watchResult.affectedFileSet),
+          buildResults: watchResult.buildResults,
         });
+
+        watcher.add(watchResult.watchFileSet);
       });
+    });
   }
 
   private async _runAsync(dev: boolean): Promise<{
@@ -96,21 +93,27 @@ export class SdCliTsLibBuilder extends EventEmitter {
     const buildResult = await this.#bundler.buildAsync();
 
     this._debug("LINT...");
-    const lintFilePaths = Array.from(buildResult.affectedFileSet).filter(item => PathUtil.isChildPath(item, this.#pkgPath));
+    const lintFilePaths = Array.from(buildResult.affectedFileSet).filter((item) =>
+      PathUtil.isChildPath(item, this.#pkgPath),
+    );
     const lintResults = await SdLinter.lintAsync(lintFilePaths, buildResult.program);
 
     this._debug(`빌드 완료`);
-    const localUpdatePaths = Object.keys(this.#projConf.localUpdates ?? {})
-      .mapMany((key) => FsUtil.glob(path.resolve(this.#pkgPath, "../../node_modules", key)));
-    const watchFileSet = new Set(Array.from(buildResult.watchFileSet).filter(item =>
-      PathUtil.isChildPath(item, path.resolve(this.#pkgPath, "../")) ||
-      localUpdatePaths.some((lu) => PathUtil.isChildPath(item, lu))
-    ));
+    const localUpdatePaths = Object.keys(this.#projConf.localUpdates ?? {}).mapMany((key) =>
+      FsUtil.glob(path.resolve(this.#pkgPath, "../../node_modules", key)),
+    );
+    const watchFileSet = new Set(
+      Array.from(buildResult.watchFileSet).filter(
+        (item) =>
+          PathUtil.isChildPath(item, path.resolve(this.#pkgPath, "../")) ||
+          localUpdatePaths.some((lu) => PathUtil.isChildPath(item, lu)),
+      ),
+    );
 
     return {
       watchFileSet,
       affectedFileSet: buildResult.affectedFileSet,
-      buildResults: [...buildResult.results, ...lintResults]
+      buildResults: [...buildResult.results, ...lintResults],
     };
   }
 

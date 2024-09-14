@@ -1,36 +1,28 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   ElementRef,
   forwardRef,
   HostListener,
   inject,
-  Input,
+  input,
   ViewEncapsulation,
 } from "@angular/core";
 import { SdTopbarContainerControl } from "./SdTopbarContainerControl";
 import { SdSidebarContainerControl } from "./SdSidebarContainerControl";
 import { ISdResizeEvent } from "../plugins/SdResizeEventPlugin";
 import { SdAnchorControl } from "./SdAnchorControl";
-import { SdIconControl } from "./SdIconControl";
 import { SdGapControl } from "./SdGapControl";
 import { SdAngularOptionsProvider } from "../providers/SdAngularOptionsProvider";
+import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 
 @Component({
   selector: "sd-topbar",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdAnchorControl, SdIconControl, SdGapControl],
-  template: ` @if (hasSidebar) {
-      <sd-anchor class="_sidebar-toggle-button" (click)="onSidebarToggleButtonClick()">
-        <sd-icon [icon]="icons.bars" fixedWidth />
-      </sd-anchor>
-    } @else {
-      <sd-gap width="default" />
-    }
-
-    <ng-content />`,
+  imports: [SdAnchorControl, SdGapControl, FaIconComponent],
   styles: [
     /* language=SCSS */ `
       @import "../scss/mixins";
@@ -135,6 +127,15 @@ import { SdAngularOptionsProvider } from "../providers/SdAngularOptionsProvider"
       }
     `,
   ],
+  template: ` @if (hasSidebar()) {
+      <sd-anchor class="_sidebar-toggle-button" (click)="onSidebarToggleButtonClick()">
+        <fa-icon [icon]="icons.bars" [fixedWidth]="true" />
+      </sd-anchor>
+    } @else {
+      <sd-gap width="default" />
+    }
+
+    <ng-content />`,
 })
 export class SdTopbarControl {
   icons = inject(SdAngularOptionsProvider).icons;
@@ -143,25 +144,18 @@ export class SdTopbarControl {
   #parentSidebarContainerControl = inject(SdSidebarContainerControl, { optional: true });
   #topbarContainerControl = inject<SdTopbarContainerControl>(forwardRef(() => SdTopbarContainerControl));
 
-  @Input() sidebarContainer?: SdSidebarContainerControl;
+  sidebarContainer = input<SdSidebarContainerControl>();
 
-  get hasSidebar(): boolean {
-    return !!this.sidebarContainer || !!this.#parentSidebarContainerControl;
-  }
+  hasSidebar = computed(() => !!this.sidebarContainer() || !!this.#parentSidebarContainerControl);
 
   onSidebarToggleButtonClick() {
-    const sidebarContainerControl = this.sidebarContainer ?? this.#parentSidebarContainerControl;
-    sidebarContainerControl!.toggle = !sidebarContainerControl!.toggle;
+    const sidebarContainerControl = this.sidebarContainer() ?? this.#parentSidebarContainerControl;
+    sidebarContainerControl!.toggle.update((v) => !v);
   }
 
-  @HostListener("sdResize.outside", ["$event"])
-  onResizeOutside(event: ISdResizeEvent) {
+  @HostListener("sdResize", ["$event"])
+  onResize(event: ISdResizeEvent) {
     if (!event.heightChanged) return;
-
-    this.#redrawOutside();
-  }
-
-  #redrawOutside() {
-    this.#topbarContainerControl.elRef.nativeElement.style.paddingTop = this.#elRef.nativeElement.offsetHeight + "px";
+    this.#topbarContainerControl.paddingTop.set(this.#elRef.nativeElement.offsetHeight + "px");
   }
 }

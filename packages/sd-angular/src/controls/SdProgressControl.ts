@@ -1,5 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, ViewEncapsulation } from "@angular/core";
-import { coercionNumber } from "../utils/commons";
+import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
 
 @Component({
   selector: "sd-progress",
@@ -7,12 +6,6 @@ import { coercionNumber } from "../utils/commons";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
-  template: `
-    <div class="_sd-progress-content">
-      {{ label || "&nbsp;" }}
-    </div>
-    <ng-content></ng-content>
-  `,
   styles: [
     /* language=SCSS */ `
       sd-progress {
@@ -42,8 +35,14 @@ import { coercionNumber } from "../utils/commons";
       }
     `,
   ],
+  template: `
+    <div class="_sd-progress-content">
+      {{ label() || "&nbsp;" }}
+    </div>
+    <ng-content></ng-content>
+  `,
 })
 export class SdProgressControl {
-  @Input() label?: string;
-  @Input({ transform: coercionNumber }) maxValue?: number;
+  label = input<string>();
+  maxValue = input<number>();
 }

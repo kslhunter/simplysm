@@ -1,13 +1,14 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, Input, ViewEncapsulation } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, inject, input, ViewEncapsulation } from "@angular/core";
 import { NavigationEnd, Router } from "@angular/router";
 import { SdListControl } from "./SdListControl";
 import { NgTemplateOutlet } from "@angular/common";
 import { SdTypedTemplateDirective } from "../directives/SdTypedTemplateDirective";
 import { SdListItemControl } from "./SdListItemControl";
-import { SdIconControl } from "./SdIconControl";
 import { SdRouterLinkDirective } from "../directives/SdRouterLinkDirective";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
-import { sdGetter, sdInit, TSdGetter } from "../utils/hooks";
+import { FaIconComponent } from "@fortawesome/angular-fontawesome";
+import { toSignal } from "@angular/core/rxjs-interop";
+import { filter, map } from "rxjs";
 
 @Component({
   selector: "sd-sidebar-menu",
@@ -19,49 +20,9 @@ import { sdGetter, sdInit, TSdGetter } from "../utils/hooks";
     NgTemplateOutlet,
     SdTypedTemplateDirective,
     SdListItemControl,
-    SdIconControl,
     SdRouterLinkDirective,
+    FaIconComponent,
   ],
-  template: `
-    @if (rootLayout === "accordion") {
-      <h5 class="_title">MENU</h5>
-    }
-    <sd-list inset>
-      <ng-template
-        [ngTemplateOutlet]="itemTemplate"
-        [ngTemplateOutletContext]="{ menus: menus, depth: 0 }"
-      ></ng-template>
-    </sd-list>
-    <ng-template #itemTemplate [typed]="itemTemplateType" let-currMenus="menus" let-depth="depth">
-      @for (menu of currMenus; track menu.codeChain.join(".")) {
-        <!--[contentStyle]="'padding-left: ' + ((depth + 1) * 6) + 'px'"-->
-        <sd-list-item
-          [contentClass]="depth === 0 ? 'pv-default' : ''"
-          [sdRouterLink]="menu.children || menu.url ? undefined : ['/home/' + menu.codeChain.join('/')]"
-          (click)="onMenuClick(menu)"
-          [selected]="getIsMenuSelected(menu)"
-          [layout]="depth === 0 ? rootLayout : 'accordion'"
-        >
-          @if (menu.icon) {
-            <sd-icon [icon]="menu.icon" fixedWidth />
-            &nbsp;
-          }
-          {{ menu.title }}
-          @if (menu.children) {
-            <sd-list inset [style.padding-left]="(depth + 1 - (rootLayout === 'accordion' ? 0 : 1)) * 6 + 'px'">
-              <ng-template
-                [ngTemplateOutlet]="itemTemplate"
-                [ngTemplateOutletContext]="{
-                  menus: menu.children,
-                  depth: depth + 1,
-                }"
-              ></ng-template>
-            </sd-list>
-          }
-        </sd-list-item>
-      }
-    </ng-template>
-  `,
   styles: [
     /* language=SCSS */ `
       @import "../scss/mixins";
@@ -105,54 +66,87 @@ import { sdGetter, sdInit, TSdGetter } from "../utils/hooks";
       }
     `,
   ],
+  template: `
+    @if (rootLayout() === "accordion") {
+      <h5 class="_title">MENU</h5>
+    }
+    <sd-list [inset]="true">
+      <ng-template
+        [ngTemplateOutlet]="itemTemplate"
+        [ngTemplateOutletContext]="{ menus: menus(), depth: 0 }"
+      ></ng-template>
+    </sd-list>
+    <ng-template #itemTemplate [typed]="itemTemplateType" let-currMenus="menus" let-depth="depth">
+      @for (menu of currMenus; track menu.codeChain.join(".")) {
+        <!--[contentStyle]="'padding-left: ' + ((depth + 1) * 6) + 'px'"-->
+        <sd-list-item
+          [contentClass]="depth === 0 ? 'pv-default' : ''"
+          [sdRouterLink]="menu.children || menu.url ? undefined : ['/home/' + menu.codeChain.join('/')]"
+          (click)="onMenuClick(menu)"
+          [selected]="getIsMenuSelected(menu)"
+          [layout]="depth === 0 ? rootLayout() : 'accordion'"
+        >
+          @if (menu.icon) {
+            <fa-icon [icon]="menu.icon" [fixedWidth]="true" />
+            &nbsp;
+          }
+          {{ menu.title }}
+          @if (menu.children) {
+            <sd-list
+              [inset]="true"
+              [style.padding-left]="(depth + 1 - (rootLayout() === 'accordion' ? 0 : 1)) * 6 + 'px'"
+            >
+              <ng-template
+                [ngTemplateOutlet]="itemTemplate"
+                [ngTemplateOutletContext]="{
+                  menus: menu.children,
+                  depth: depth + 1,
+                }"
+              ></ng-template>
+            </sd-list>
+          }
+        </sd-list-item>
+      }
+    </ng-template>
+  `,
   host: {
-    "[attr.sd-root-layout]": "rootLayout",
+    "[attr.sd-root-layout]": "rootLayout()",
   },
 })
 export class SdSidebarMenuControl {
   #router = inject(Router);
-  #cdr = inject(ChangeDetectorRef);
 
-  @Input() menus: ISdSidebarMenuVM[] = [];
-  @Input() layout?: "accordion" | "flat";
-  @Input() getMenuIsSelectedGetter?: TSdGetter<(menu: ISdSidebarMenuVM) => boolean>;
+  menus = input<ISdSidebarMenuVM[]>([]);
+  layout = input<"accordion" | "flat">();
+  getMenuIsSelectedFn = input<(menu: ISdSidebarMenuVM) => boolean>();
 
-  #pageCode = "";
-
-  get rootLayout(): "flat" | "accordion" {
-    return this.layout ?? (this.menus.length <= 3 ? "flat" : "accordion");
-  }
-
-  constructor() {
-    sdInit(this, () => {
-      this.#pageCode = this.#router.url
+  #pageCode = toSignal(
+    this.#router.events.pipe(
+      filter((event) => event instanceof NavigationEnd),
+      map((event) =>
+        event.url
+          .split("/")
+          .slice(2)
+          .map((item) => item.split(/[;?]/).first())
+          .join("."),
+      ),
+    ),
+    {
+      initialValue: this.#router.url
         .split("/")
         .slice(2)
-        .map((item) => item.split(";").first())
-        .join(".");
-
-      this.#router.events.subscribe((event) => {
-        if (event instanceof NavigationEnd) {
-          this.#pageCode = this.#router.url
-            .split("/")
-            .slice(2)
-            .map((item) => item.split(";").first())
-            .join(".");
-          this.#cdr.markForCheck();
-        }
-      });
-    });
-  }
-
-  getIsMenuSelected = sdGetter(
-    this,
-    [() => [this.#pageCode], () => [this.getMenuIsSelectedGetter]],
-    (menu: ISdSidebarMenuVM) => {
-      return this.getMenuIsSelectedGetter
-        ? this.getMenuIsSelectedGetter(menu)
-        : this.#pageCode === menu.codeChain.join(".");
+        .map((item) => item.split(/[;?]/).first())
+        .join("."),
     },
   );
+
+  rootLayout = computed(() => this.layout() ?? (this.menus().length <= 3 ? "flat" : "accordion"));
+
+  getIsMenuSelected(menu: ISdSidebarMenuVM) {
+    return this.getMenuIsSelectedFn()
+      ? this.getMenuIsSelectedFn()!(menu)
+      : this.#pageCode() === menu.codeChain.join(".");
+  }
 
   onMenuClick(menu: ISdSidebarMenuVM): void {
     if (menu.url != null) {

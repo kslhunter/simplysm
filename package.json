@@ -26,7 +26,8 @@
     "commit": "git add . && git commit -m .",
     "eslint-timing": "cross-env TIMING=1 eslint \"**/+(*.ts|*.js)\"",
     "eslint-fix": "cross-env TIMING=1 eslint --fix \"**/+(*.ts|*.js)\"",
-    "reinstall": "yarn install --refresh-lockfile"
+    "reinstall": "yarn install --refresh-lockfile",
+    "migration": "node lib/migration.js"
   },
   "devDependencies": {
     "@simplysm/eslint-plugin": "12.5.7",

@@ -1,11 +1,7 @@
-import { NgZone } from "@angular/core";
-
-export async function waitRepaint(ngZone: NgZone) {
-  await new Promise<void>((resolve) => {
+export function waitRepaint() {
+  return new Promise<void>((resolve) => {
     requestAnimationFrame(() => {
-      ngZone.run(() => {
-        resolve();
-      });
+      resolve();
     });
   });
 }

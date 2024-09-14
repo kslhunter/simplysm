@@ -1,6 +1,5 @@
-import { ChangeDetectionStrategy, Component, ElementRef, inject, ViewEncapsulation } from "@angular/core";
+import { ChangeDetectionStrategy, Component, effect, ElementRef, inject, ViewEncapsulation } from "@angular/core";
 import { SdModalBase } from "../providers/SdModalProvider";
-import { sdInit } from "../utils/hooks";
 
 @Component({
   selector: "sd-address-search-modal",
@@ -16,7 +15,7 @@ export class SdAddressSearchModal extends SdModalBase<undefined, IAddress> {
   constructor() {
     super();
 
-    sdInit.outside(this, async () => {
+    effect(async () => {
       if (!document.getElementById("daum_address")) {
         await new Promise<void>((resolve) => {
           const scriptEl = document.createElement("script");

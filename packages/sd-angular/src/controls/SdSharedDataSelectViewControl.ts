@@ -1,20 +1,21 @@
 import {
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
-  ContentChild,
-  EventEmitter,
+  computed,
+  contentChild,
+  effect,
   inject,
-  Input,
-  Output,
+  input,
+  model,
+  signal,
   TemplateRef,
   Type,
+  untracked,
   ViewEncapsulation,
 } from "@angular/core";
 import { StringUtil } from "@simplysm/sd-core-common";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { ISharedDataBase } from "../providers/SdSharedDataProvider";
-import { coercionBoolean } from "../utils/commons";
 import { SdItemOfTemplateContext, SdItemOfTemplateDirective } from "../directives/SdItemOfTemplateDirective";
 import { SdBusyContainerControl } from "./SdBusyContainerControl";
 import { SdDockContainerControl } from "./SdDockContainerControl";
@@ -26,12 +27,11 @@ import { SdPaneControl } from "./SdPaneControl";
 import { SdListItemControl } from "./SdListItemControl";
 import { SdSelectItemControl } from "./SdSelectItemControl";
 import { SdButtonControl } from "./SdButtonControl";
-import { SdIconControl } from "./SdIconControl";
 import { SdAngularOptionsProvider } from "../providers/SdAngularOptionsProvider";
 import { SdAnchorControl } from "./SdAnchorControl";
 import { SdModalBase, SdModalProvider } from "../providers/SdModalProvider";
 import { ISharedDataModalInputParam, ISharedDataModalOutputResult } from "./SdSharedDataSelectControl";
-import { sdCheck, sdGetter, TSdGetter } from "../utils/hooks";
+import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 
 @Component({
   selector: "sd-shared-data-select-view",
@@ -49,24 +49,24 @@ import { sdCheck, sdGetter, TSdGetter } from "../utils/hooks";
     SdListItemControl,
     SdSelectItemControl,
     SdButtonControl,
-    SdIconControl,
     SdAnchorControl,
+    FaIconComponent,
   ],
   template: `
-    <sd-busy-container [busy]="busyCount > 0">
+    <sd-busy-container [busy]="busyCount() > 0">
       <sd-dock-container>
-        @if (headerTemplateRef || modalType) {
+        @if (headerTemplateRef() || modalType()) {
           <sd-dock class="pb-default">
             <div class="flex-row">
               <div class="flex-grow">
-                @if (headerTemplateRef) {
-                  <ng-template [ngTemplateOutlet]="headerTemplateRef"></ng-template>
+                @if (headerTemplateRef()) {
+                  <ng-template [ngTemplateOutlet]="headerTemplateRef()!"></ng-template>
                 }
               </div>
-              @if (modalType) {
+              @if (modalType()) {
                 <div>
                   <sd-anchor (click)="onModalButtonClick()">
-                    <sd-icon [icon]="icons.externalLink" fixedWidth />
+                    <fa-icon [icon]="icons.externalLink" [fixedWidth]="true" />
                   </sd-anchor>
                 </div>
               }
@@ -75,36 +75,36 @@ import { sdCheck, sdGetter, TSdGetter } from "../utils/hooks";
         }
 
         <sd-dock class="pb-default">
-          @if (!filterTemplateRef) {
+          @if (!filterTemplateRef()) {
             <sd-textfield type="text" placeholder="검색어" [(value)]="searchText" />
           } @else {
-            <ng-template [ngTemplateOutlet]="filterTemplateRef" />
+            <ng-template [ngTemplateOutlet]="filterTemplateRef()!" />
           }
         </sd-dock>
 
         <sd-pane>
-          <sd-list inset>
-            @if (useUndefined) {
+          <sd-list [inset]="true">
+            @if (useUndefined()) {
               <sd-list-item
-                [selected]="selectedItem === undefined"
-                (click)="onSelectedItemChange(undefined)"
-                [selectedIcon]="selectedIcon"
+                [selected]="selectedItem() === undefined"
+                (click)="selectedItem.set(undefined)"
+                [selectedIcon]="selectedIcon()"
               >
-                @if (undefinedTemplateRef) {
-                  <ng-template [ngTemplateOutlet]="undefinedTemplateRef" />
+                @if (undefinedTemplateRef()) {
+                  <ng-template [ngTemplateOutlet]="undefinedTemplateRef()!" />
                 } @else {
                   <span class="tx-theme-grey-default">미지정</span>
                 }
               </sd-list-item>
             }
-            @for (item of getFilteredItems(); let index = $index; track item.__valueKey) {
+            @for (item of filteredItems(); let index = $index; track item.__valueKey) {
               <sd-list-item
-                [selected]="item === selectedItem"
-                (click)="selectedItem === item ? onSelectedItemChange(undefined) : onSelectedItemChange(item)"
-                [selectedIcon]="selectedIcon"
+                [selected]="selectedItem() === item"
+                (click)="selectedItem() === item ? selectedItem.set(undefined) : selectedItem.set(item)"
+                [selectedIcon]="selectedIcon()"
               >
                 <ng-template
-                  [ngTemplateOutlet]="itemTemplateRef ?? null"
+                  [ngTemplateOutlet]="itemTemplateRef() ?? null"
                   [ngTemplateOutletContext]="{
                     $implicit: item,
                     item: item,
@@ -126,82 +126,67 @@ export class SdSharedDataSelectViewControl<
 > {
   icons = inject(SdAngularOptionsProvider).icons;
 
-  #cdr = inject(ChangeDetectorRef);
   #sdModal = inject(SdModalProvider);
 
-  @Input() selectedItem?: T;
-  @Output() selectedItemChange = new EventEmitter<T>();
+  selectedItem = model<T>();
 
-  @Input({ required: true }) items: T[] = [];
-  @Input() selectedIcon?: IconProp;
-  @Input({ transform: coercionBoolean }) useUndefined = false;
-  @Input() filterGetter?: TSdGetter<(item: T, index: number) => boolean>;
+  items = input.required<T[]>();
+  selectedIcon = input<IconProp>();
+  useUndefined = input(false);
+  filterFn = input<(item: T, index: number) => boolean>();
 
-  @Input() modalInputParam?: TMODAL["__tInput__"];
-  @Input() modalType?: Type<TMODAL>;
-  @Input() modalHeader?: string;
+  modalInputParam = input<TMODAL["__tInput__"]>();
+  modalType = input<Type<TMODAL>>();
+  modalHeader = input<string>();
 
-  @ContentChild("headerTemplate", { static: true }) headerTemplateRef?: TemplateRef<void>;
-  @ContentChild("filterTemplate", { static: true }) filterTemplateRef?: TemplateRef<void>;
-  @ContentChild(SdItemOfTemplateDirective, { static: true, read: TemplateRef })
-  itemTemplateRef?: TemplateRef<SdItemOfTemplateContext<T>>;
-  @ContentChild("undefinedTemplate", { static: true, read: TemplateRef }) undefinedTemplateRef?: TemplateRef<void>;
+  headerTemplateRef = contentChild<any, TemplateRef<void>>("headerTemplate", { read: TemplateRef });
+  filterTemplateRef = contentChild<any, TemplateRef<void>>("filterTemplate", { read: TemplateRef });
+  itemTemplateRef = contentChild<any, TemplateRef<SdItemOfTemplateContext<T>>>(SdItemOfTemplateDirective, {
+    read: TemplateRef,
+  });
+  undefinedTemplateRef = contentChild<any, TemplateRef<void>>("undefinedTemplate", { read: TemplateRef });
 
-  busyCount = 0;
-  searchText?: string;
+  busyCount = signal(0);
+  searchText = signal<string | undefined>(undefined);
 
-  getFilteredItems = sdGetter(
-    this,
-    [() => [this.items, "all"], () => [this.searchText], () => [this.filterGetter]],
-    () => {
-      let result = this.items.filter((item) => !item.__isHidden);
+  filteredItems = computed(() => {
+    let result = this.items().filter((item) => !item.__isHidden);
 
-      if (!StringUtil.isNullOrEmpty(this.searchText)) {
-        result = result.filter((item) => item.__searchText.includes(this.searchText!));
-      }
+    if (!StringUtil.isNullOrEmpty(this.searchText())) {
+      result = result.filter((item) => item.__searchText.includes(this.searchText()!));
+    }
 
-      if (this.filterGetter) {
-        result = result.filter((item, i) => this.filterGetter!(item, i));
-      }
+    if (this.filterFn()) {
+      result = result.filter((item, i) => this.filterFn()!(item, i));
+    }
 
-      return result;
-    },
-  );
+    return result;
+  });
 
   constructor() {
-    sdCheck(this, [() => [this.items, "all"]], () => {
-      const newSelectedItem = this.items.single((item) => item.__valueKey === this.selectedItem?.__valueKey);
-      if (this.selectedItem !== newSelectedItem) {
-        this.selectedItem = newSelectedItem;
-        this.selectedItemChange.emit(this.selectedItem);
-      }
-    });
-  }
-
-  onSelectedItemChange(item: T | undefined) {
-    if (this.selectedItem !== item) {
-      this.selectedItem = item;
-      this.selectedItemChange.emit(item);
-    }
+    effect(
+      () => {
+        const newSelectedItem = this.items().single(
+          (item) => item.__valueKey === untracked(() => this.selectedItem())?.__valueKey,
+        );
+        this.selectedItem.set(newSelectedItem);
+      },
+      { allowSignalWrites: true },
+    );
   }
 
   async onModalButtonClick(): Promise<void> {
-    if (!this.modalType) return;
+    if (!this.modalType()) return;
 
-    const result = await this.#sdModal.showAsync(this.modalType, this.modalHeader ?? "자세히...", {
+    const result = await this.#sdModal.showAsync(this.modalType()!, this.modalHeader() ?? "자세히...", {
       selectMode: "single",
-      selectedItemKeys: [this.selectedItem].filterExists().map((item) => item.__valueKey),
-      ...this.modalInputParam,
+      selectedItemKeys: [this.selectedItem()].filterExists().map((item) => item.__valueKey),
+      ...this.modalInputParam(),
     });
 
     if (result) {
-      const newSelectedItem = this.items.single((item) => item.__valueKey === result.selectedItemKeys[0]);
-
-      if (this.selectedItem !== newSelectedItem) {
-        this.selectedItem = newSelectedItem;
-        this.selectedItemChange.emit(newSelectedItem);
-      }
+      const newSelectedItem = this.items().single((item) => item.__valueKey === result.selectedItemKeys[0]);
+      this.selectedItem.set(newSelectedItem);
     }
-    this.#cdr.markForCheck();
   }
 }

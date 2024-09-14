@@ -1,20 +1,17 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  ContentChild,
+  contentChild,
+  effect,
   ElementRef,
-  EventEmitter,
   HostListener,
   inject,
-  Input,
-  NgZone,
-  Output,
-  ViewChild,
+  input,
+  model,
+  viewChild,
   ViewEncapsulation,
 } from "@angular/core";
-import { coercionBoolean } from "../utils/commons";
 import { SdDropdownPopupControl } from "./SdDropdownPopupControl";
-import { sdCheck } from "../utils/hooks";
 
 @Component({
   selector: "sd-dropdown",
@@ -26,9 +23,9 @@ import { sdCheck } from "../utils/hooks";
     <div
       #contentEl
       class="_sd-dropdown-control"
-      [attr.tabindex]="disabled ? undefined : '0'"
-      [class]="contentClass"
-      [style]="contentStyle"
+      [attr.tabindex]="disabled() ? undefined : '0'"
+      [class]="contentClass()"
+      [style]="contentStyle()"
       (click)="onContentClick()"
       (keydown)="onContentKeydown($event)"
     >
@@ -37,33 +34,30 @@ import { sdCheck } from "../utils/hooks";
     <ng-content select="sd-dropdown-popup" />
   `,
   host: {
-    "[attr.sd-disabled]": "disabled",
+    "[attr.sd-disabled]": "disabled()",
   },
 })
 export class SdDropdownControl {
   #elRef: ElementRef<HTMLElement> = inject(ElementRef);
-  #ngZone = inject(NgZone);
 
-  @Input({ transform: coercionBoolean }) open = false;
-  @Output() openChange = new EventEmitter<boolean>();
+  open = model(false);
 
-  @Input({ transform: coercionBoolean }) disabled = false;
+  disabled = input(false);
 
-  @Input() contentClass?: string;
-  @Input() contentStyle?: string;
+  contentClass = input<string>();
+  contentStyle = input<string>();
 
-  @ViewChild("contentEl", { static: true }) contentElRef!: ElementRef<HTMLElement>;
-
-  @ContentChild(SdDropdownPopupControl, { static: true, read: ElementRef }) popupElRef!: ElementRef<HTMLElement>;
+  contentElRef = viewChild.required<any, ElementRef<HTMLElement>>("contentEl", { read: ElementRef });
+  popupElRef = contentChild.required<any, ElementRef<HTMLElement>>(SdDropdownPopupControl, { read: ElementRef });
 
   constructor() {
-    sdCheck.outside(this, [() => [this.open]], () => {
-      if (this.open) {
-        document.body.appendChild(this.popupElRef.nativeElement);
+    effect(() => {
+      if (this.open()) {
+        document.body.appendChild(this.popupElRef().nativeElement);
 
         requestAnimationFrame(() => {
-          const contentEl = this.contentElRef.nativeElement;
-          const popupEl = this.popupElRef.nativeElement;
+          const contentEl = this.contentElRef().nativeElement;
+          const popupEl = this.popupElRef().nativeElement;
 
           const windowOffset = contentEl.getRelativeOffset(window.document.body);
 
@@ -82,8 +76,8 @@ export class SdDropdownControl {
           });
         });
       } else {
-        const contentEl = this.contentElRef.nativeElement;
-        const popupEl = this.popupElRef.nativeElement;
+        const contentEl = this.contentElRef().nativeElement;
+        const popupEl = this.popupElRef().nativeElement;
 
         if (popupEl.matches(":focus, :has(*:focus)")) {
           contentEl.focus();
@@ -105,25 +99,23 @@ export class SdDropdownControl {
   }
 
   #openPopup() {
-    if (this.open) return;
-    if (this.disabled) return;
+    if (this.open()) return;
+    if (this.disabled()) return;
 
-    this.open = true;
-    this.openChange.emit(true);
+    this.open.set(true);
   }
 
   #closePopup() {
-    if (!this.open) return;
+    if (!this.open()) return;
 
-    this.open = false;
-    this.openChange.emit(false);
+    this.open.set(false);
   }
 
-  @HostListener("document:scroll.capture.outside", ["$event"])
-  onDocumentScrollCaptureOutside(event: Event) {
+  @HostListener("document:scroll.capture", ["$event"])
+  onDocumentScrollCapture(event: Event) {
     if (this.#elRef.nativeElement.findParent(event.target as Element)) {
-      const contentEl = this.contentElRef.nativeElement;
-      const popupEl = this.popupElRef.nativeElement;
+      const contentEl = this.contentElRef().nativeElement;
+      const popupEl = this.popupElRef().nativeElement;
 
       const windowOffset = contentEl.getRelativeOffset(window.document.body);
 
@@ -135,7 +127,7 @@ export class SdDropdownControl {
         });
       } else {
         Object.assign(popupEl.style, {
-          top: windowOffset.top + this.contentElRef.nativeElement.offsetHeight + "px",
+          top: windowOffset.top + this.contentElRef().nativeElement.offsetHeight + "px",
           bottom: "",
           left: windowOffset.left + "px",
         });
@@ -144,7 +136,7 @@ export class SdDropdownControl {
   }
 
   onContentClick() {
-    if (this.open) {
+    if (this.open()) {
       this.#closePopup();
     } else {
       this.#openPopup();
@@ -153,13 +145,13 @@ export class SdDropdownControl {
 
   onContentKeydown(event: KeyboardEvent) {
     if (!event.ctrlKey && !event.altKey && event.key === "ArrowDown") {
-      if (!this.open) {
+      if (!this.open()) {
         event.preventDefault();
         event.stopPropagation();
 
         this.#openPopup();
       } else {
-        const popupEl = this.popupElRef.nativeElement;
+        const popupEl = this.popupElRef().nativeElement;
         const focusableFirst = popupEl.findFocusableFirst();
         if (focusableFirst) {
           event.preventDefault();
@@ -171,7 +163,7 @@ export class SdDropdownControl {
     }
 
     if (!event.ctrlKey && !event.altKey && event.key === "ArrowUp") {
-      if (this.open) {
+      if (this.open()) {
         event.preventDefault();
         event.stopPropagation();
 
@@ -183,7 +175,7 @@ export class SdDropdownControl {
       event.preventDefault();
       event.stopPropagation();
 
-      if (this.open) {
+      if (this.open()) {
         this.#closePopup();
       } else {
         this.#openPopup();
@@ -191,7 +183,7 @@ export class SdDropdownControl {
     }
 
     if (!event.ctrlKey && !event.altKey && event.key === "Escape") {
-      if (this.open) {
+      if (this.open()) {
         event.preventDefault();
         event.stopPropagation();
 
@@ -202,7 +194,7 @@ export class SdDropdownControl {
 
   onPopupKeydown(event: KeyboardEvent) {
     if (!event.ctrlKey && !event.altKey && event.key === "Escape") {
-      if (this.open) {
+      if (this.open()) {
         event.preventDefault();
         event.stopPropagation();
 
@@ -213,15 +205,15 @@ export class SdDropdownControl {
 
   #mouseoverEl?: HTMLElement;
 
-  @HostListener("document:mouseover.outside", ["$event"])
-  onDocumentMouseoverOutside(event: MouseEvent) {
+  @HostListener("document:mouseover", ["$event"])
+  onDocumentMouseover(event: MouseEvent) {
     this.#mouseoverEl = event.target as HTMLElement;
   }
 
-  @HostListener("document:blur.capture.outside", ["$event"])
-  onBlurCaptureOutside(event: FocusEvent) {
-    const contentEl = this.contentElRef.nativeElement;
-    const popupEl = this.popupElRef.nativeElement;
+  @HostListener("document:blur.capture", ["$event"])
+  onBlurCapture(event: FocusEvent) {
+    const contentEl = this.contentElRef().nativeElement;
+    const popupEl = this.popupElRef().nativeElement;
 
     const relatedTarget = event.relatedTarget as HTMLElement | undefined;
     if (
@@ -247,10 +239,8 @@ export class SdDropdownControl {
       }
     }
 
-    if (this.open) {
-      this.#ngZone.run(() => {
-        this.#closePopup();
-      });
+    if (this.open()) {
+      this.#closePopup();
     }
   }
 }

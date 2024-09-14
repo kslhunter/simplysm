@@ -1,22 +1,21 @@
 import {
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
-  ContentChild,
+  computed,
+  contentChild,
+  effect,
   ElementRef,
   forwardRef,
   HostListener,
   inject,
-  Input,
+  input,
   TemplateRef,
   ViewEncapsulation,
 } from "@angular/core";
 import { SdSelectControl } from "./SdSelectControl";
-import { coercionBoolean } from "../utils/commons";
 import { NgTemplateOutlet } from "@angular/common";
 import { SdCheckboxControl } from "./SdCheckboxControl";
 import { SdGapControl } from "./SdGapControl";
-import { sdDestroy, sdInit } from "../utils/hooks";
 
 @Component({
   selector: "sd-select-item",
@@ -24,20 +23,6 @@ import { sdDestroy, sdInit } from "../utils/hooks";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [SdCheckboxControl, NgTemplateOutlet, SdGapControl],
-  template: `
-    @if (selectMode === "multi") {
-      <sd-checkbox [value]="isSelected" inline></sd-checkbox>
-      <sd-gap width="sm" />
-    }
-
-    <div class="_content" style="display: inline-block;">
-      @if (!labelTemplateRef) {
-        <ng-content />
-      } @else {
-        <ng-template [ngTemplateOutlet]="labelTemplateRef" />
-      }
-    </div>
-  `,
   styles: [
     /* language=SCSS */ `
       @import "../scss/mixins";
@@ -82,53 +67,64 @@ import { sdDestroy, sdInit } from "../utils/hooks";
       }
     `,
   ],
+  template: `
+    @if (selectMode() === "multi") {
+      <sd-checkbox [value]="isSelected()" [inline]="true"></sd-checkbox>
+      <sd-gap width="sm" />
+    }
+
+    <div class="_content" style="display: inline-block;">
+      @if (!labelTemplateRef()) {
+        <ng-content />
+      } @else {
+        <ng-template [ngTemplateOutlet]="labelTemplateRef()!" />
+      }
+    </div>
+  `,
   host: {
     "[attr.tabindex]": "'0'",
-    "[attr.sd-disabled]": "disabled",
-    "[attr.sd-select-mode]": "selectMode",
-    "[attr.sd-selected]": "isSelected",
+    "[attr.sd-disabled]": "disabled()",
+    "[attr.sd-select-mode]": "selectMode()",
+    "[attr.sd-selected]": "isSelected()",
   },
 })
 export class SdSelectItemControl {
-  #cdr = inject(ChangeDetectorRef);
   #selectControl: SdSelectControl<any, any> = inject(forwardRef(() => SdSelectControl));
   elRef = inject<ElementRef<HTMLElement>>(ElementRef);
 
-  @Input() value!: any;
-  @Input({ transform: coercionBoolean }) disabled = false;
+  value = input<any>();
+  disabled = input(false);
 
-  @ContentChild("label", { static: true }) labelTemplateRef?: TemplateRef<void>;
+  labelTemplateRef = contentChild<any, TemplateRef<void>>("label", { read: TemplateRef });
 
-  get selectMode() {
-    return this.#selectControl.selectMode;
-  }
-
-  get isSelected() {
-    return this.#selectControl.getIsSelectedItemControl(this);
-  }
+  selectMode = computed(() => this.#selectControl.selectMode());
+  isSelected = computed(() => this.#selectControl.getIsSelectedItemControl(this));
 
   constructor() {
-    sdInit(this, () => {
-      this.#selectControl.itemControls.push(this);
-    });
+    effect(
+      (onCleanup) => {
+        this.#selectControl.itemControls.update((v) => [...v, this]);
 
-    sdDestroy(this, () => {
-      this.#selectControl.itemControls.remove(this);
-    });
+        onCleanup(() => {
+          this.#selectControl.itemControls.update((v) => v.filter((item) => item !== this));
+        });
+      },
+      { allowSignalWrites: true },
+    );
   }
 
   @HostListener("click", ["$event"])
   onClick(event: MouseEvent) {
     event.preventDefault();
     event.stopPropagation();
-    if (this.disabled) return;
+    if (this.disabled()) return;
 
-    this.#selectControl.onItemControlClick(this, this.selectMode === "single");
+    this.#selectControl.onItemControlClick(this, this.selectMode() === "single");
   }
 
   @HostListener("keydown", ["$event"])
   onKeydown(event: KeyboardEvent) {
-    if (this.disabled) return;
+    if (this.disabled()) return;
 
     if (!event.ctrlKey && !event.altKey && event.key === " ") {
       event.preventDefault();
@@ -140,11 +136,7 @@ export class SdSelectItemControl {
       event.preventDefault();
       event.stopPropagation();
 
-      this.#selectControl.onItemControlClick(this, this.selectMode === "single");
+      this.#selectControl.onItemControlClick(this, this.selectMode() === "single");
     }
-  }
-
-  markForCheck() {
-    this.#cdr.markForCheck();
   }
 }

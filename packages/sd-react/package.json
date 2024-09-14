@@ -1,0 +1,30 @@
+{
+  "name": "@simplysm-ts/client-react",
+  "version": "12.5.7",
+  "description": "심플리즘 패키지 - React 모듈 (browser)",
+  "author": "김석래",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm12.git",
+    "directory": "packages/sd-react"
+  },
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "engines": {
+    "node": "20.16.0"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "pretendard": "^1.3.9",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.26.2",
+    "styled-components": "^6.1.13"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.24",
+    "@types/react-dom": "^18.2.8"
+  }
+}

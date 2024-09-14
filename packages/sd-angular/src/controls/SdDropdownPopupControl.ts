@@ -9,11 +9,6 @@ import { SdEventsDirective } from "../directives/SdEventsDirective";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [SdEventsDirective],
-  template: `
-    <div (sdResize.outside)="onResizeOutside()" (keydown)="onKeyDown($event)">
-      <ng-content></ng-content>
-    </div>
-  `,
   styles: [
     /* language=SCSS */ `
       @import "../scss/mixins";
@@ -51,6 +46,11 @@ import { SdEventsDirective } from "../directives/SdEventsDirective";
       }
     `,
   ],
+  template: `
+    <div (sdResize)="onResize()" (keydown)="onKeyDown($event)">
+      <ng-content></ng-content>
+    </div>
+  `,
 })
 export class SdDropdownPopupControl {
   #parentControl = inject<SdDropdownControl>(forwardRef(() => SdDropdownControl));
@@ -60,7 +60,7 @@ export class SdDropdownPopupControl {
     this.#parentControl.onPopupKeydown(event);
   }
 
-  onResizeOutside() {
+  onResize() {
     const el = this.#elRef.nativeElement;
     const divEl = this.#elRef.nativeElement.firstElementChild!;
 

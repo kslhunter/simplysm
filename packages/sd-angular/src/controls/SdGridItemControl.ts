@@ -1,6 +1,5 @@
-import { ChangeDetectionStrategy, Component, ElementRef, inject, Input, ViewEncapsulation } from "@angular/core";
-import { coercionNumber } from "../utils/commons";
-import { sdDestroy, sdInit } from "../utils/hooks";
+import { ChangeDetectionStrategy, Component, computed, inject, input, ViewEncapsulation } from "@angular/core";
+import { SdGridControl } from "./SdGridControl";
 
 @Component({
   selector: "sd-grid-item",
@@ -8,7 +7,6 @@ import { sdDestroy, sdInit } from "../utils/hooks";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
-  template: ` <ng-content /> `,
   styles: [
     /* language=SCSS */ `
       sd-grid-item {
@@ -16,36 +14,29 @@ import { sdDestroy, sdInit } from "../utils/hooks";
       }
     `,
   ],
+  template: ` <ng-content /> `,
+  host: {
+    "[style.gridColumnEnd]": "styleGridColumnEnd()",
+  },
 })
 export class SdGridItemControl {
-  @Input({ required: true, transform: coercionNumber }) colSpan!: number;
-  @Input({ transform: coercionNumber }) colSpanSm?: number;
-  @Input({ transform: coercionNumber }) colSpanXs?: number;
-  @Input({ transform: coercionNumber }) colSpanXxs?: number;
+  #parentControl = inject(SdGridControl);
 
-  #elRef = inject<ElementRef<HTMLElement>>(ElementRef);
+  colSpan = input.required<number>();
+  colSpanSm = input<number>();
+  colSpanXs = input<number>();
+  colSpanXxs = input<number>();
 
-  #resizeObserver?: ResizeObserver;
-
-  constructor() {
-    sdInit.outside(this, () => {
-      const parentEl = this.#elRef.nativeElement.parentElement!;
-      this.#resizeObserver = new ResizeObserver(() => {
-        if (parentEl.offsetWidth < 800) {
-          this.#elRef.nativeElement.style.gridColumnEnd = `span ${this.colSpanXxs ?? this.colSpanXs ?? this.colSpanSm ?? this.colSpan}`;
-        } else if (parentEl.offsetWidth < 1024) {
-          this.#elRef.nativeElement.style.gridColumnEnd = `span ${this.colSpanXs ?? this.colSpanSm ?? this.colSpan}`;
-        } else if (parentEl.offsetWidth < 1280) {
-          this.#elRef.nativeElement.style.gridColumnEnd = `span ${this.colSpanSm ?? this.colSpan}`;
-        } else {
-          this.#elRef.nativeElement.style.gridColumnEnd = `span ${this.colSpan}`;
-        }
-      });
-      this.#resizeObserver.observe(parentEl);
-    });
-
-    sdDestroy(this, () => {
-      this.#resizeObserver?.disconnect();
-    });
-  }
+  styleGridColumnEnd = computed(() => {
+    const parentWidth = this.#parentControl.offsetWidth();
+    if (parentWidth < 800) {
+      return `span ${this.colSpanXxs() ?? this.colSpanXs() ?? this.colSpanSm() ?? this.colSpan()}`;
+    } else if (parentWidth < 1024) {
+      return `span ${this.colSpanXs() ?? this.colSpanSm() ?? this.colSpan()}`;
+    } else if (parentWidth < 1280) {
+      return `span ${this.colSpanSm() ?? this.colSpan()}`;
+    } else {
+      return `span ${this.colSpan()}`;
+    }
+  });
 }

@@ -1,13 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ElementRef,
-  EventEmitter,
-  Input,
-  ViewChild,
-  ViewEncapsulation,
-} from "@angular/core";
-import { coercionBoolean } from "../utils/commons";
+import { ChangeDetectionStrategy, Component, input, output, ViewEncapsulation } from "@angular/core";
 
 @Component({
   selector: "sd-toast",
@@ -15,16 +6,6 @@ import { coercionBoolean } from "../utils/commons";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
-  template: ` <div class="_sd-toast-block">
-    <div class="_sd-toast-message">
-      <ng-content></ng-content>
-    </div>
-    @if (useProgress) {
-      <div class="_sd-toast-progress">
-        <div #progressBar class="_sd-toast-progress-bar"></div>
-      </div>
-    }
-  </div>`,
   styles: [
     /* language=SCSS */ `
       @import "../scss/mixins";
@@ -120,23 +101,27 @@ import { coercionBoolean } from "../utils/commons";
       }
     `,
   ],
+  template: ` <div class="_sd-toast-block">
+    <div class="_sd-toast-message">
+      <ng-content></ng-content>
+    </div>
+    @if (useProgress()) {
+      <div class="_sd-toast-progress">
+        <div class="_sd-toast-progress-bar" [style.width]="progress() + '%'"></div>
+      </div>
+    }
+  </div>`,
   host: {
-    "[attr.sd-open]": "open",
-    "[attr.sd-theme]": "theme",
+    "[attr.sd-open]": "open()",
+    "[attr.sd-theme]": "theme()",
   },
 })
 export class SdToastControl {
-  @Input({ transform: coercionBoolean }) open = false;
-  @Input({ transform: coercionBoolean }) useProgress = false;
-  @Input() theme?: "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey" = "info";
+  open = input(false);
+  useProgress = input(false);
+  theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey">("info");
 
-  @ViewChild("progressBar", { static: false, read: ElementRef }) progressBarElRef?: ElementRef<HTMLDivElement>;
+  progress = input<number>(0);
 
-  set progress(val: number) {
-    if (this.progressBarElRef) {
-      this.progressBarElRef.nativeElement.style.width = val + "%";
-    }
-  }
-
-  close = new EventEmitter<any>();
+  close = output();
 }

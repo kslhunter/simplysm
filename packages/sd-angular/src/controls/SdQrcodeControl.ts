@@ -1,7 +1,13 @@
-import { ChangeDetectionStrategy, Component, ElementRef, Input, ViewChild, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  ElementRef,
+  input,
+  viewChild,
+  ViewEncapsulation,
+} from "@angular/core";
 import qrcode from "qrcode";
-import { coercionNumber } from "../utils/commons";
-import { sdCheck } from "../utils/hooks";
 
 @Component({
   selector: "sd-qrcode",
@@ -12,15 +18,15 @@ import { sdCheck } from "../utils/hooks";
   template: ` <canvas #canvasEl></canvas> `,
 })
 export class SdQrcodeControl {
-  @Input() value?: string;
-  @Input({ transform: coercionNumber }) scale = 1;
+  value = input<string>();
+  scale = input(1);
 
-  @ViewChild("canvasEl") canvasElRef!: ElementRef<HTMLCanvasElement>;
+  canvasElRef = viewChild.required<any, ElementRef<HTMLCanvasElement>>("canvasEl", { read: ElementRef });
 
   constructor() {
-    sdCheck.outside(this, [() => [this.value], () => [this.scale]], async () => {
-      await qrcode.toCanvas(this.canvasElRef.nativeElement, this.value ?? "", {
-        scale: this.scale,
+    effect(async () => {
+      await qrcode.toCanvas(this.canvasElRef().nativeElement, this.value() ?? "", {
+        scale: this.scale(),
       });
     });
   }

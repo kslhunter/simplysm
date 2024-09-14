@@ -1,12 +1,12 @@
 import {
   ApplicationRef,
-  ChangeDetectorRef,
   ComponentRef,
   createComponent,
+  Directive,
   inject,
   Injectable,
-  Input,
-  Type,
+  input,
+  Type
 } from "@angular/core";
 import { SdToastContainerControl } from "../controls/SdToastContainerControl";
 import { SdSystemLogProvider } from "./SdSystemLogProvider";
@@ -29,7 +29,7 @@ export class SdToastProvider {
       const compRef = createComponent(SdToastContainerControl, {
         environmentInjector: this.#appRef.injector,
       });
-      compRef.instance.overlap = this.overlap;
+      compRef.setInput("overlap", this.overlap);
 
       const rootComp = this.#appRef.components[0];
       const rootCompEl = rootComp.location.nativeElement as HTMLElement;
@@ -84,7 +84,7 @@ export class SdToastProvider {
         compRef.destroy();
         toastRef.destroy();
       });
-      toastRef.instance.open = false;
+      toastRef.setInput("open", false);
       await onclose(value);
     };
 
@@ -93,13 +93,13 @@ export class SdToastProvider {
     });
     this.#appRef.attachView(toastRef.hostView);
 
-    compRef.instance.param = param;
+    compRef.setInput("param", param);
     compRef.instance.close = async (v) => {
       await close(v);
     };
     this.#appRef.attachView(compRef.hostView);
 
-    toastRef.instance.open = true;
+    toastRef.setInput("open", true);
 
     window.setTimeout(() => {
       compRef.destroy();
@@ -145,20 +145,20 @@ export class SdToastProvider {
     this.#appRef.attachView(toastRef.hostView);
 
     toastEl.findAll<HTMLElement>("._sd-toast-message")[0].innerText = message;
-    toastRef.instance.useProgress = progress ?? false;
-    toastRef.instance.progress = 0;
+    toastRef.setInput("useProgress", progress ?? false);
+    toastRef.setInput("progress", 0);
 
     // repaint
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     containerEl.offsetHeight;
 
-    toastRef.instance.open = true;
-    toastRef.instance.theme = theme;
+    toastRef.setInput("open", true);
+    toastRef.setInput("theme", theme);
 
     if (progress) {
       return {
         progress: (percent: number) => {
-          toastRef.instance.progress = percent;
+          toastRef.setInput("progress", percent);
           if (percent >= 100) {
             this.#closeAfterTime(toastRef, 1000);
           }
@@ -183,8 +183,7 @@ export class SdToastProvider {
         toastEl.addEventListener("transitionend", () => {
           toastRef.destroy();
         });
-        toastRef.instance.open = false;
-        toastRef.injector.get(ChangeDetectorRef).markForCheck();
+        toastRef.setInput("open", false);
       }
     }, ms);
   }
@@ -196,12 +195,12 @@ export interface ISdProgressToast {
   message(msg: string): void;
 }
 
-@Injectable()
+@Directive()
 export abstract class SdToastBase<I, O> {
   __tInput__!: I;
   __tOutput__!: O;
 
-  @Input({ required: true }) param!: I;
+  param = input.required<I>();
 
   close(value?: O): void {
     throw new Error("초기화되어있지 않습니다.");

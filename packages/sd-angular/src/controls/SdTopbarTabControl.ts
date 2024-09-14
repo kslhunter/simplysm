@@ -1,18 +1,14 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, inject, Output, ViewEncapsulation } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, output, ViewEncapsulation } from "@angular/core";
 import { SdAnchorControl } from "./SdAnchorControl";
-import { SdIconControl } from "./SdIconControl";
 import { SdAngularOptionsProvider } from "../providers/SdAngularOptionsProvider";
+import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 
 @Component({
   selector: "sd-topbar-tab",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdAnchorControl, SdIconControl],
-  template: ` <ng-content></ng-content>
-    <sd-anchor (click)="onCloseButtonClick($event)">
-      <sd-icon [icon]="icons.xmark" fixedWidth />
-    </sd-anchor>`,
+  imports: [SdAnchorControl, FaIconComponent],
   styles: [
     /* language=SCSS */ `
       sd-topbar-tab {
@@ -42,11 +38,15 @@ import { SdAngularOptionsProvider } from "../providers/SdAngularOptionsProvider"
       }
     `,
   ],
+  template: ` <ng-content></ng-content>
+    <sd-anchor (click)="onCloseButtonClick($event)">
+      <fa-icon [icon]="icons.xmark" [fixedWidth]="true" />
+    </sd-anchor>`,
 })
 export class SdTopbarTabControl {
   icons = inject(SdAngularOptionsProvider).icons;
 
-  @Output() clickClose = new EventEmitter<MouseEvent>();
+  clickClose = output<MouseEvent>();
 
   onCloseButtonClick(event: MouseEvent) {
     event.preventDefault();

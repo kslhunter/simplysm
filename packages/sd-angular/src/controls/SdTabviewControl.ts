@@ -1,13 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ContentChildren,
-  EventEmitter,
-  Input,
-  Output,
-  QueryList,
-  ViewEncapsulation,
-} from "@angular/core";
+import { ChangeDetectionStrategy, Component, contentChildren, model, ViewEncapsulation } from "@angular/core";
 import { SdTabviewItemControl } from "./SdTabviewItemControl";
 import { SdDockContainerControl } from "./SdDockContainerControl";
 import { SdDockControl } from "./SdDockControl";
@@ -23,8 +14,8 @@ import { SdPaneControl } from "./SdPaneControl";
   imports: [SdDockContainerControl, SdDockControl, SdTabControl, SdTabItemControl, SdPaneControl],
   template: ` <sd-dock-container>
     <sd-dock>
-      <sd-tab [value]="value" (valueChange)="onValueChange($event)">
-        @for (itemControl of itemControls; track itemControl.value) {
+      <sd-tab [(value)]="value">
+        @for (itemControl of itemControls(); track itemControl.value) {
           <sd-tab-item [value]="itemControl.value">
             {{ itemControl.header || itemControl.value }}
           </sd-tab-item>
@@ -38,15 +29,7 @@ import { SdPaneControl } from "./SdPaneControl";
   </sd-dock-container>`,
 })
 export class SdTabviewControl<T> {
-  @Input() value?: T;
-  @Output() valueChange = new EventEmitter<T>();
+  value = model<T>();
 
-  @ContentChildren(SdTabviewItemControl) itemControls!: QueryList<SdTabviewItemControl<T>>;
-
-  onValueChange(value: any) {
-    if (this.value !== value) {
-      this.value = value;
-      this.valueChange.emit(value);
-    }
-  }
+  itemControls = contentChildren<SdTabviewItemControl<T>>(SdTabviewItemControl);
 }

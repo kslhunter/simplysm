@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, ViewEncapsulation } from "@angular/core";
+import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
 
 @Component({
   selector: "sd-toast-container",
@@ -6,7 +6,6 @@ import { ChangeDetectionStrategy, Component, Input, ViewEncapsulation } from "@a
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
-  template: "",
   styles: [
     /* language=SCSS */ `
       sd-toast-container {
@@ -25,7 +24,7 @@ import { ChangeDetectionStrategy, Component, Input, ViewEncapsulation } from "@a
           flex-direction: column-reverse;
         }
 
-        &[sd-overlap=true] {
+        &[sd-overlap="true"] {
           display: block;
 
           > sd-toast {
@@ -39,10 +38,11 @@ import { ChangeDetectionStrategy, Component, Input, ViewEncapsulation } from "@a
       }
     `,
   ],
+  template: "",
   host: {
-    "[attr.sd-overlap]": "overlap",
+    "[attr.sd-overlap]": "overlap()",
   },
 })
 export class SdToastContainerControl {
-  @Input() overlap = false;
+  overlap = input(false);
 }

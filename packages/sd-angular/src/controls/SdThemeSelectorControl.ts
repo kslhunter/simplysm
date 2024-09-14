@@ -1,13 +1,13 @@
-import { ChangeDetectionStrategy, Component, inject, ViewChild, ViewEncapsulation } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, viewChild, ViewEncapsulation } from "@angular/core";
 import { SdDropdownControl } from "./SdDropdownControl";
 import { SdAnchorControl } from "./SdAnchorControl";
-import { SdIconControl } from "./SdIconControl";
 import { SdListControl } from "./SdListControl";
 import { SdListItemControl } from "./SdListItemControl";
 import { SdThemeProvider } from "../providers/SdThemeProvider";
 import { SdDropdownPopupControl } from "./SdDropdownPopupControl";
 import { SdAngularOptionsProvider } from "../providers/SdAngularOptionsProvider";
 import { SdLocalStorageProvider } from "../providers/SdLocalStorageProvider";
+import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 
 @Component({
   selector: "sd-theme-selector",
@@ -18,13 +18,13 @@ import { SdLocalStorageProvider } from "../providers/SdLocalStorageProvider";
     SdDropdownControl,
     SdDropdownPopupControl,
     SdAnchorControl,
-    SdIconControl,
     SdListControl,
     SdListItemControl,
+    FaIconComponent,
   ],
   template: ` <sd-dropdown>
     <sd-anchor style="color: var(--theme-grey-default)">
-      <sd-icon [icon]="icons.mountainSun" />
+      <fa-icon [icon]="icons.mountainSun" />
       {{ theme }}
     </sd-anchor>
 
@@ -46,7 +46,7 @@ export class SdThemeSelectorControl {
   #sdTheme = inject(SdThemeProvider);
   #sdLocalStorage = inject(SdLocalStorageProvider);
 
-  @ViewChild(SdDropdownControl, { static: true }) dropdownControl!: SdDropdownControl;
+  dropdownControl = viewChild.required(SdDropdownControl);
 
   get theme() {
     return this.#sdTheme.theme;
@@ -54,8 +54,7 @@ export class SdThemeSelectorControl {
 
   set theme(val) {
     this.#sdTheme.theme = val;
-    this.dropdownControl.open = false;
-
+    this.dropdownControl().open.set(false);
     this.#sdLocalStorage.set("sd-theme", val);
   }
 }

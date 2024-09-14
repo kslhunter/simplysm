@@ -17,15 +17,11 @@ export class SdInsertCommandEventPlugin extends EventManagerPlugin {
       if (event.key === "Insert" && event.ctrlKey && !event.altKey && !event.shiftKey) {
         event.preventDefault();
 
-        this.manager.getZone().run(() => {
-          handler(event);
-        });
+        handler(event);
       }
     };
 
-    this.manager.getZone().runOutsideAngular(() => {
-      document.addEventListener("keydown", listener);
-    });
+    document.addEventListener("keydown", listener);
 
     return (): void => {
       document.removeEventListener("keydown", listener);

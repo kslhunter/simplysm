@@ -17,15 +17,11 @@ export class SdSaveCommandEventPlugin extends EventManagerPlugin {
       if ((event.key === "s" || event.key === "S") && event.ctrlKey && !event.altKey && !event.shiftKey) {
         event.preventDefault();
 
-        this.manager.getZone().run(() => {
-          handler(event);
-        });
+        handler(event);
       }
     };
 
-    this.manager.getZone().runOutsideAngular(() => {
-      document.addEventListener("keydown", listener);
-    });
+    document.addEventListener("keydown", listener);
 
     return (): void => {
       document.removeEventListener("keydown", listener);

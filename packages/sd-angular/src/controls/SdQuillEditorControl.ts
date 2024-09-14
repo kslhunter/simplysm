@@ -1,17 +1,15 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  effect,
   ElementRef,
-  EventEmitter,
   inject,
-  Input,
-  Output,
+  input,
+  model,
   ViewEncapsulation,
 } from "@angular/core";
 import Quill from "quill";
-import { coercionBoolean } from "../utils/commons";
 import QuillResizeImage from "quill-resize-image";
-import { sdCheck, sdInit } from "../utils/hooks";
 
 Quill.register("modules/resize", QuillResizeImage);
 
@@ -84,15 +82,14 @@ Quill.register("modules/resize", QuillResizeImage);
 export class SdQuillEditorControl {
   #elRef = inject<ElementRef<HTMLElement>>(ElementRef);
 
-  @Input() value?: string;
-  @Output() valueChange = new EventEmitter<string | undefined>();
+  value = model<string>();
 
-  @Input({ transform: coercionBoolean }) disabled = false;
+  disabled = input(false);
 
   #quill!: Quill;
 
   constructor() {
-    sdInit(this, () => {
+    effect(() => {
       this.#quill = new Quill(this.#elRef.nativeElement.firstElementChild as HTMLElement, {
         theme: "snow",
         modules: {
@@ -116,31 +113,21 @@ export class SdQuillEditorControl {
 
       this.#quill.root.addEventListener("input", () => {
         const newValue = this.#quill.root.innerHTML;
-        if (this.value !== newValue) {
-          this.value = newValue;
-          this.valueChange.emit(newValue);
-        }
+        this.value.set(newValue === "" ? undefined : newValue);
       });
 
       this.#quill.on("text-change", () => {
         const newValue = this.#quill.root.innerHTML;
-        if (this.value !== newValue) {
-          this.value = newValue;
-          this.valueChange.emit(newValue);
-        }
+        this.value.set(newValue === "" ? undefined : newValue);
       });
     });
 
-    sdCheck.outside(this, [() => [this.value]], () => {
-      if (this.value == null) {
-        this.#quill.root.innerHTML = "";
-      } else if (this.value != this.#quill.root.innerHTML) {
-        this.#quill.root.innerHTML = this.value;
-      }
+    effect(() => {
+      this.#quill.root.innerHTML = this.value() ?? "";
     });
 
-    sdCheck.outside(this, [() => [this.disabled]], () => {
-      this.#quill.enable(!this.disabled);
+    effect(() => {
+      this.#quill.enable(!this.disabled());
     });
   }
 }

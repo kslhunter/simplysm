@@ -1,6 +1,5 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, ViewEncapsulation } from "@angular/core";
-import { SdTextfieldControl, TSdTextfieldType, TSdTextfieldValue } from "./SdTextfieldControl";
-import { coercionBoolean } from "../utils/commons";
+import { ChangeDetectionStrategy, Component, input, model, ViewEncapsulation } from "@angular/core";
+import { SdTextfieldControl, TSdTextfieldTypes } from "./SdTextfieldControl";
 
 @Component({
   selector: "sd-range",
@@ -10,9 +9,9 @@ import { coercionBoolean } from "../utils/commons";
   imports: [SdTextfieldControl],
   template: `
     <!--suppress TypeScriptValidateTypes -->
-    <sd-textfield [type]="type" [(value)]="value[0]" [required]="required" [disabled]="disabled" />
+    <sd-textfield [type]="type()" [(value)]="from" [required]="required()" [disabled]="disabled()" />
     <div>~</div>
-    <sd-textfield [type]="type" [(value)]="value[1]" [required]="required" [disabled]="disabled" />
+    <sd-textfield [type]="type()" [(value)]="to" [required]="required()" [disabled]="disabled()" />
   `,
   styles: [
     /* language=SCSS */ `
@@ -25,12 +24,12 @@ import { coercionBoolean } from "../utils/commons";
     `,
   ],
 })
-export class SdRangeControl<K extends TSdTextfieldType> {
-  @Input({ required: true }) type!: K;
+export class SdRangeControl<K extends keyof TSdTextfieldTypes> {
+  type = input.required<K>();
 
-  @Input() value: [TSdTextfieldValue<K>?, TSdTextfieldValue<K>?] = [];
-  @Output() valueChange = new EventEmitter<[TSdTextfieldValue<K> | undefined, TSdTextfieldValue<K> | undefined]>();
+  from = model<TSdTextfieldTypes[K]>();
+  to = model<TSdTextfieldTypes[K]>();
 
-  @Input({ transform: coercionBoolean }) required = false;
-  @Input({ transform: coercionBoolean }) disabled = false;
+  required = input(false);
+  disabled = input(false);
 }

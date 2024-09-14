@@ -1,5 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, ViewEncapsulation } from "@angular/core";
-import { coercionBoolean } from "../utils/commons";
+import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
 
 @Component({
   selector: "sd-note",
@@ -7,7 +6,6 @@ import { coercionBoolean } from "../utils/commons";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
-  template: ` <ng-content></ng-content> `,
   styles: [
     /* language=SCSS */ `
       @import "../scss/variables";
@@ -42,14 +40,15 @@ import { coercionBoolean } from "../utils/commons";
       }
     `,
   ],
+  template: ` <ng-content></ng-content> `,
   host: {
-    "[attr.sd-theme]": "theme",
-    "[attr.sd-size]": "size",
-    "[attr.sd-inset]": "inset",
+    "[attr.sd-theme]": "theme()",
+    "[attr.sd-size]": "size()",
+    "[attr.sd-inset]": "inset()",
   },
 })
 export class SdNoteControl {
-  @Input() theme?: "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey";
-  @Input() size?: "sm" | "lg";
-  @Input({ transform: coercionBoolean }) inset = false;
+  theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey">();
+  size = input<"sm" | "lg">();
+  inset = input(false);
 }

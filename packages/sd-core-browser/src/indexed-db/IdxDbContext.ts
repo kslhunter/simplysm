@@ -1,13 +1,14 @@
-import {IdxStore} from "./IdxStore";
+import { IdxStore } from "./IdxStore";
 
 export class IdxDbContext {
   idxDb?: IDBDatabase;
   idxTrans?: IDBTransaction;
 
-  constructor(public dbName: string,
-              private _version: number,
-              private _upgradeFn: (oldVersion: number) => void) {
-  }
+  constructor(
+    public dbName: string,
+    private _version: number,
+    private _upgradeFn: (oldVersion: number) => void,
+  ) {}
 
   async connectAsync<R>(fn: () => Promise<R>): Promise<R> {
     return await new Promise<R>((resolve, reject) => {
@@ -21,8 +22,7 @@ export class IdxDbContext {
         this.idxDb = req.result;
         try {
           resolve(await fn());
-        }
-        catch (err) {
+        } catch (err) {
           reject(err);
         }
         this.idxDb.close();
@@ -41,7 +41,10 @@ export class IdxDbContext {
 
     return await new Promise<R>(async (resolve, reject) => {
       try {
-        this.idxTrans = this.idxDb!.transaction(stores.map(item => item.def.name), mode);
+        this.idxTrans = this.idxDb!.transaction(
+          stores.map((item) => item.def.name),
+          mode,
+        );
         const result = await fn();
 
         this.idxTrans.oncomplete = () => {
@@ -51,9 +54,10 @@ export class IdxDbContext {
         this.idxTrans.onerror = () => {
           reject(this.idxTrans!.error);
         };
-      }
-      catch (err) {
-        this.idxTrans!.abort();
+      } catch (err) {
+        try {
+          this.idxTrans!.abort();
+        } catch {}
         reject(err);
       }
     });
@@ -74,20 +78,29 @@ export class IdxDbContext {
       .filterExists();
 
     for (const storeDef of storeDefs) {
-      const store = this.idxDb.createObjectStore(storeDef.name, storeDef.key ? (
-        storeDef.key.autoIncrement ? {
-          keyPath: storeDef.key.columns[0].name,
-          autoIncrement: true
-        } : {
-          keyPath: storeDef.key.columns.orderBy(item => item.order).map(item => item.name)
-        }
-      ) : undefined);
+      const store = this.idxDb.createObjectStore(
+        storeDef.name,
+        storeDef.key
+          ? storeDef.key.autoIncrement
+            ? {
+                keyPath: storeDef.key.columns[0].name,
+                autoIncrement: true,
+              }
+            : {
+                keyPath: storeDef.key.columns.orderBy((item) => item.order).map((item) => item.name),
+              }
+          : undefined,
+      );
 
       for (const idx of storeDef.idxs) {
-        store.createIndex(idx.name, idx.columns.orderBy(item => item.order).map(item => item.name), {
-          multiEntry: idx.multiEntry,
-          unique: idx.unique
-        });
+        store.createIndex(
+          idx.name,
+          idx.columns.orderBy((item) => item.order).map((item) => item.name),
+          {
+            multiEntry: idx.multiEntry,
+            unique: idx.unique,
+          },
+        );
       }
 
       /*await new Promise<void>((resolve, reject) => {
@@ -102,4 +115,3 @@ export class IdxDbContext {
     }
   }
 }
-

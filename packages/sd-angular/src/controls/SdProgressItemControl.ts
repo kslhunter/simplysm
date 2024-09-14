@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, ViewEncapsulation } from "@angular/core";
+import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
 
 @Component({
   selector: "sd-progress-item",
@@ -6,7 +6,6 @@ import { ChangeDetectionStrategy, Component, Input, ViewEncapsulation } from "@a
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
-  template: ` <ng-content></ng-content> `,
   styles: [
     /* language=SCSS */ `
       @import "../scss/variables";
@@ -26,16 +25,17 @@ import { ChangeDetectionStrategy, Component, Input, ViewEncapsulation } from "@a
       }
     `,
   ],
+  template: ` <ng-content></ng-content> `,
   host: {
-    "[style.width]": "width",
-    "[style.height]": "height",
-    "[attr.sd-theme]": "theme",
-    "[style.background]": "color",
+    "[style.width]": "width()",
+    "[style.height]": "height()",
+    "[attr.sd-theme]": "theme()",
+    "[style.background]": "color()",
   },
 })
 export class SdProgressItemControl {
-  @Input() width = "100%";
-  @Input() height = "30px";
-  @Input() theme?: "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey";
-  @Input() color?: string;
+  width = input("100%");
+  height = input("30px");
+  theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey">();
+  color = input<string>();
 }

@@ -74,7 +74,7 @@ export class SdNgBundler {
     this.#mainFilePath = path.resolve(opt.pkgPath, "src/main.ts");
     this.#tsConfigFilePath = path.resolve(opt.pkgPath, "tsconfig.json");
     this.#swConfFilePath = path.resolve(opt.pkgPath, "ngsw-config.json");
-    this.#browserTarget = transformSupportedBrowsersToTargets(browserslist(opt.browserslist ?? ["last 2 Chrome versions", "last 2 Edge versions"]));
+    this.#browserTarget = transformSupportedBrowsersToTargets(browserslist(["Chrome > 78"]));
     this.#indexHtmlFilePath = path.resolve(opt.pkgPath, "src/index.html");
     this.#pkgName = path.basename(opt.pkgPath);
     this.#baseHref = opt.builderType === "web" ? `/${this.#pkgName}/` : opt.dev ? `/${this.#pkgName}/${opt.builderType}/` : ``;
@@ -219,7 +219,8 @@ export class SdNgBundler {
       program: this.#ngResultCache.program,
       watchFileSet: new Set([
         ...this.#ngResultCache.watchFileSet!,
-        ...this.#styleLoadResultCache.watchFiles
+        ...this.#styleLoadResultCache.watchFiles,
+        this.#indexHtmlFilePath
       ]),
       affectedFileSet: this.#ngResultCache.affectedFileSet!,
       results
@@ -274,6 +275,7 @@ export class SdNgBundler {
         if (value.type === 'script') {
           hints.push({url: key, mode: 'modulepreload' as const});
         }
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         else if (value.type === 'style') {
           hints.push({url: key, mode: 'preload' as const, as: 'style'});
         }
@@ -606,5 +608,4 @@ interface IOptions {
   builderType: string;
   env: Record<string, string> | undefined;
   cordovaConfig: ISdCliClientBuilderCordovaConfig | undefined;
-  browserslist: string[] | undefined;
 }

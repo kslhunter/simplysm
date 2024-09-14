@@ -1,7 +1,13 @@
-import { ChangeDetectionStrategy, Component, ElementRef, Input, ViewChild, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  ElementRef,
+  input,
+  viewChild,
+  ViewEncapsulation,
+} from "@angular/core";
 import jsbarcode from "jsbarcode";
-import { coercionNumber } from "../utils/commons";
-import { sdCheck } from "../utils/hooks";
 
 @Component({
   selector: "sd-barcode",
@@ -12,20 +18,20 @@ import { sdCheck } from "../utils/hooks";
   template: ` <svg #svgEl></svg> `,
 })
 export class SdBarcodeControl {
-  @Input() value?: string;
-  @Input() type = "code128";
-  @Input({ transform: coercionNumber }) lineWidth = 1;
-  @Input({ transform: coercionNumber }) height = 58;
+  value = input<string>();
+  type = input("code128");
+  lineWidth = input(1);
+  height = input(58);
 
-  @ViewChild("svgEl", { static: true }) svgElRef!: ElementRef<SVGElement>;
+  svgElRef = viewChild.required<any, ElementRef<SVGElement>>("svgEl", { read: ElementRef });
 
   constructor() {
-    sdCheck.outside(this, [() => [this.value], () => [this.type], () => [this.lineWidth], () => [this.height]], () => {
-      jsbarcode(this.svgElRef.nativeElement, this.value ?? "", {
+    effect(() => {
+      jsbarcode(this.svgElRef().nativeElement, this.value() ?? "", {
         margin: -5,
-        format: this.type,
-        width: this.lineWidth,
-        height: this.height,
+        format: this.type(),
+        width: this.lineWidth(),
+        height: this.height(),
         displayValue: false,
       });
     });

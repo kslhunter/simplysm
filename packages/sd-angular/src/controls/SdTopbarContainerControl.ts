@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ElementRef, inject, ViewEncapsulation } from "@angular/core";
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from "@angular/core";
 
 @Component({
   selector: "sd-topbar-container",
@@ -6,7 +6,6 @@ import { ChangeDetectionStrategy, Component, ElementRef, inject, ViewEncapsulati
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
-  template: ` <ng-content></ng-content>`,
   styles: [
     /* language=SCSS */ `
       sd-topbar-container {
@@ -16,7 +15,11 @@ import { ChangeDetectionStrategy, Component, ElementRef, inject, ViewEncapsulati
       }
     `,
   ],
+  template: ` <ng-content></ng-content>`,
+  host: {
+    "[style.padding-top]": "paddingTop()",
+  },
 })
 export class SdTopbarContainerControl {
-  elRef = inject<ElementRef<HTMLElement>>(ElementRef);
+  paddingTop = signal<string | undefined>(undefined);
 }

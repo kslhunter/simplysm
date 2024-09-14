@@ -1,5 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, ViewEncapsulation } from "@angular/core";
-import { coercionBoolean } from "../utils/commons";
+import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
 
 @Component({
   selector: "sd-topbar-menu",
@@ -7,7 +6,6 @@ import { coercionBoolean } from "../utils/commons";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
-  template: ` <ng-content></ng-content>`,
   styles: [
     /* language=SCSS */ `
       @import "../scss/variables";
@@ -60,13 +58,13 @@ import { coercionBoolean } from "../utils/commons";
       }
     `,
   ],
+  template: ` <ng-content></ng-content>`,
   host: {
-    "[attr.disabled]": "disabled",
-    "[attr.sd-theme]": "theme",
+    "[attr.disabled]": "disabled()",
+    "[attr.sd-theme]": "theme()",
   },
 })
 export class SdTopbarMenuControl {
-  @Input({ transform: coercionBoolean }) disabled = false;
-  @Input() theme: "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey" =
-    "primary";
+  disabled = input(false);
+  theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey">("primary");
 }

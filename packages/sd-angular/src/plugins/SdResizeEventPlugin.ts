@@ -9,7 +9,7 @@ export class SdResizeEventPlugin extends EventManagerPlugin {
   }
 
   override supports(eventName: string): boolean {
-    return eventName === "sdResize" || eventName === "sdResize.outside";
+    return eventName === "sdResize";
   }
 
   override addEventListener(
@@ -17,8 +17,6 @@ export class SdResizeEventPlugin extends EventManagerPlugin {
     eventName: string,
     handler: (entry: ISdResizeEvent) => void,
   ): () => void {
-    const outside = eventName.includes(".outside");
-
     let prevWidth = 0;
     let prevHeight = 0;
 
@@ -33,13 +31,7 @@ export class SdResizeEventPlugin extends EventManagerPlugin {
       prevHeight = contentRect.height;
       prevWidth = contentRect.width;
 
-      if (outside) {
-        handler({ heightChanged, widthChanged, entry });
-      } else {
-        this.manager.getZone().run(() => {
-          handler({ heightChanged, widthChanged, entry });
-        });
-      }
+      handler({ heightChanged, widthChanged, entry });
     });
     observer.observe(element);
 

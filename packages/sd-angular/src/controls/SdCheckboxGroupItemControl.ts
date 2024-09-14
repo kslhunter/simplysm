@@ -1,7 +1,14 @@
-import { ChangeDetectionStrategy, Component, forwardRef, inject, Input, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  forwardRef,
+  inject,
+  input,
+  ViewEncapsulation,
+} from "@angular/core";
 import { SdCheckboxGroupControl } from "./SdCheckboxGroupControl";
 import { SdCheckboxControl } from "./SdCheckboxControl";
-import { sdGetter } from "../utils/hooks";
 
 @Component({
   selector: "sd-checkbox-group-item",
@@ -11,10 +18,10 @@ import { sdGetter } from "../utils/hooks";
   imports: [SdCheckboxControl],
   template: `
     <sd-checkbox
-      [value]="getIsSelected()"
+      [value]="isSelected()"
       (valueChange)="onSelectedChange($event)"
-      [inline]="inline"
-      [disabled]="disabled"
+      [inline]="inline()"
+      [disabled]="disabled()"
     >
       <ng-content></ng-content>
     </sd-checkbox>
@@ -23,24 +30,19 @@ import { sdGetter } from "../utils/hooks";
 export class SdCheckboxGroupItemControl<T> {
   #parentControl = inject<SdCheckboxGroupControl<T>>(forwardRef(() => SdCheckboxGroupControl));
 
-  @Input({ required: true }) value!: T;
-  @Input() inline = false;
+  value = input.required<T>();
+  inline = input(false);
 
-  getIsSelected = sdGetter(this, [() => [this.#parentControl.value, "one"], () => [this.value]], () => {
-    return this.#parentControl.value.includes(this.value);
-  });
-
-  get disabled() {
-    return this.#parentControl.disabled;
-  }
+  isSelected = computed(() => this.#parentControl.value().includes(this.value()));
+  disabled = computed(() => this.#parentControl.disabled());
 
   onSelectedChange(selected: boolean): void {
-    if (selected) {
-      this.#parentControl.value.push(this.value);
-    } else {
-      this.#parentControl.value.remove(this.value);
-    }
-
-    this.#parentControl.valueChange.emit(this.#parentControl.value);
+    this.#parentControl.value.update((v) => {
+      if (selected) {
+        return [...v, this.value()];
+      } else {
+        return v.filter((item) => item !== this.value());
+      }
+    });
   }
 }

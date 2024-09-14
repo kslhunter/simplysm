@@ -1,5 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, ViewEncapsulation } from "@angular/core";
-import { coercionBoolean } from "../utils/commons";
+import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
 
 @Component({
   selector: "sd-table",
@@ -7,9 +6,6 @@ import { coercionBoolean } from "../utils/commons";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
-  template: ` <table>
-    <ng-content></ng-content>
-  </table>`,
   styles: [
     /* language=SCSS */ `
       //$border-color-light: var(--theme-blue-grey-lightest);
@@ -114,14 +110,17 @@ import { coercionBoolean } from "../utils/commons";
       }
     `,
   ],
+  template: ` <table>
+    <ng-content></ng-content>
+  </table>`,
   host: {
-    "[attr.sd-inset]": "inset",
-    "[attr.sd-inline]": "inline",
-    "[attr.sd-cell-border]": "cellBorder",
+    "[attr.sd-inset]": "inset()",
+    "[attr.sd-inline]": "inline()",
+    "[attr.sd-cell-border]": "cellBorder()",
   },
 })
 export class SdTableControl {
-  @Input({ transform: coercionBoolean }) inset = false;
-  @Input({ transform: coercionBoolean }) inline = false;
-  @Input() cellBorder: "vertical" | "horizontal" | "all" = "all";
+  inset = input(false);
+  inline = input(false);
+  cellBorder = input<"vertical" | "horizontal" | "all">("all");
 }

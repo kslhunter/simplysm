@@ -1,10 +1,11 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  ContentChild,
+  computed,
+  contentChild,
   forwardRef,
   inject,
-  Input,
+  input,
   TemplateRef,
   ViewEncapsulation,
 } from "@angular/core";
@@ -17,23 +18,6 @@ import { NgTemplateOutlet } from "@angular/common";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [NgTemplateOutlet],
-  template: `
-    <label
-      [style.width]="labelWidth"
-      [hidden]="layout === 'none'"
-      [attr.title]="labelTooltip"
-      [class.help]="labelTooltip"
-    >
-      @if (!labelTemplateRef) {
-        <ng-container>{{ label }}</ng-container>
-      } @else {
-        <ng-template [ngTemplateOutlet]="labelTemplateRef" />
-      }
-    </label>
-    <div class="_content">
-      <ng-content></ng-content>
-    </div>
-  `,
   styles: [
     /* language=SCSS */ `
       sd-form-box-item {
@@ -137,29 +121,40 @@ import { NgTemplateOutlet } from "@angular/common";
       }
     `,
   ],
+  template: `
+    <label
+      [style.width]="labelWidth()"
+      [hidden]="layout() === 'none'"
+      [attr.title]="labelTooltip()"
+      [class.help]="labelTooltip()"
+    >
+      @if (!labelTemplateRef()) {
+        <ng-container>{{ label() }}</ng-container>
+      } @else {
+        <ng-template [ngTemplateOutlet]="labelTemplateRef()!" />
+      }
+    </label>
+    <div class="_content">
+      <ng-content></ng-content>
+    </div>
+  `,
   host: {
-    "[attr.sd-label-align]": "labelAlign",
-    "[attr.sd-layout]": "layout",
-    "[attr.sd-no-label]": "label == null && !labelTemplateRef",
+    "[attr.sd-label-align]": "labelAlign()",
+    "[attr.sd-layout]": "layout()",
+    "[attr.sd-no-label]": "label() == null && !labelTemplateRef()",
   },
 })
 export class SdFormBoxItemControl {
   #parentControl = inject<SdFormBoxControl>(forwardRef(() => SdFormBoxControl));
 
-  @Input() label?: string;
-  @Input() labelTooltip?: string;
+  label = input<string>();
+  labelTooltip = input<string>();
 
-  @ContentChild("label", { static: true }) labelTemplateRef?: TemplateRef<void>;
+  labelTemplateRef = contentChild<any, TemplateRef<void>>("label", { read: TemplateRef });
 
-  get labelAlign(): "left" | "right" | "center" | undefined {
-    return this.#parentControl.labelAlign;
-  }
-
-  get layout(): "cascade" | "inline" | "table" | "none" | undefined {
-    return this.#parentControl.layout;
-  }
-
-  get labelWidth(): string | undefined {
-    return this.#parentControl.layout === "table" ? this.#parentControl.labelWidth : undefined;
-  }
+  labelAlign = computed(() => this.#parentControl.labelAlign());
+  layout = computed(() => this.#parentControl.layout());
+  labelWidth = computed(() =>
+    this.#parentControl.layout() === "table" ? this.#parentControl.labelWidth() : undefined,
+  );
 }

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, ViewEncapsulation } from "@angular/core";
+import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
 
 @Component({
   selector: "sd-form-box",
@@ -34,11 +34,11 @@ import { ChangeDetectionStrategy, Component, Input, ViewEncapsulation } from "@a
     `,
   ],
   host: {
-    "[attr.sd-layout]": "layout",
+    "[attr.sd-layout]": "layout()",
   },
 })
 export class SdFormBoxControl {
-  @Input() layout: "cascade" | "inline" | "table" | "none" = "cascade";
-  @Input() labelWidth?: string;
-  @Input() labelAlign?: "left" | "right" | "center";
+  layout = input<"cascade" | "inline" | "table" | "none">("cascade");
+  labelWidth = input<string>();
+  labelAlign = input<"left" | "right" | "center">();
 }

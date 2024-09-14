@@ -1,17 +1,16 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
+  effect,
   ElementRef,
-  EventEmitter,
-  Input,
-  Output,
-  ViewChild,
+  input,
+  model,
+  viewChild,
   ViewEncapsulation,
 } from "@angular/core";
-import { coercionBoolean } from "../utils/commons";
 import { SdEventsDirective } from "../directives/SdEventsDirective";
 import { StringUtil } from "@simplysm/sd-core-common";
-import { sdCheck, sdGetter, TSdGetter } from "../utils/hooks";
 
 @Component({
   selector: "sd-content-editor",
@@ -19,18 +18,6 @@ import { sdCheck, sdGetter, TSdGetter } from "../utils/hooks";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [SdEventsDirective],
-  template: `
-    <div
-      #editorEl
-      class="_editor"
-      (input)="onInput()"
-      [attr.contenteditable]="!disabled && !readonly"
-      [title]="value"
-      [style]="editorStyle"
-      (focus.outside)="onEditorFocusOutside()"
-    ></div>
-    <div class="_invalid-indicator"></div>
-  `,
   styles: [
     /* language=SCSS */ `
       @import "../scss/mixins";
@@ -141,38 +128,49 @@ import { sdCheck, sdGetter, TSdGetter } from "../utils/hooks";
       }
     `,
   ],
+  template: `
+    <div
+      #editorEl
+      class="_editor"
+      (input)="onInput()"
+      [attr.contenteditable]="!disabled() && !readonly()"
+      [title]="value()"
+      [style]="editorStyle()"
+      (focus)="onEditorFocus()"
+    ></div>
+    <div class="_invalid-indicator"></div>
+  `,
   host: {
-    "[attr.sd-disabled]": "disabled",
-    "[attr.sd-readonly]": "readonly",
-    "[attr.sd-inline]": "inline",
-    "[attr.sd-inset]": "inset",
-    "[attr.sd-size]": "size",
-    "[attr.sd-invalid]": "getErrorMessage()",
+    "[attr.sd-disabled]": "disabled()",
+    "[attr.sd-readonly]": "readonly()",
+    "[attr.sd-inline]": "inline()",
+    "[attr.sd-inset]": "inset()",
+    "[attr.sd-size]": "size()",
+    "[attr.sd-invalid]": "errorMessage()",
   },
 })
 export class SdContentEditorControl {
-  @Input() value?: string;
-  @Output() valueChange = new EventEmitter<string | undefined>();
+  value = model<string>();
 
-  @Input({ transform: coercionBoolean }) disabled = false;
-  @Input({ transform: coercionBoolean }) readonly = false;
-  @Input({ transform: coercionBoolean }) required = false;
-  @Input() validatorGetter?: TSdGetter<(value: string | undefined) => string | undefined>;
+  disabled = input(false);
+  readonly = input(false);
+  required = input(false);
+  validatorFn = input<(value: string | undefined) => string | undefined>();
 
-  @Input({ transform: coercionBoolean }) inline = false;
-  @Input({ transform: coercionBoolean }) inset = false;
-  @Input() size?: "sm" | "lg";
+  inline = input(false);
+  inset = input(false);
+  size = input<"sm" | "lg">();
 
-  @Input() editorStyle?: string;
+  editorStyle = input<string>();
 
-  @ViewChild("editorEl", { static: true }) editorElRef!: ElementRef<HTMLDivElement>;
+  editorElRef = viewChild.required<any, ElementRef<HTMLDivElement>>("editorEl", { read: ElementRef });
 
-  getErrorMessage = sdGetter(this, [() => [this.value], () => [this.required], () => [this.validatorGetter]], () => {
+  errorMessage = computed(() => {
     const errorMessages: string[] = [];
-    if (this.value == null && this.required) {
+    if (this.value() == null && this.required()) {
       errorMessages.push("값을 입력하세요.");
-    } else if (this.validatorGetter) {
-      const message = this.validatorGetter(this.value);
+    } else if (this.validatorFn()) {
+      const message = this.validatorFn()!(this.value());
       if (message !== undefined) {
         errorMessages.push(message);
       }
@@ -183,28 +181,28 @@ export class SdContentEditorControl {
   });
 
   constructor() {
-    sdCheck.outside(this, [() => [this.value]], () => {
-      const innerHTML = this.editorElRef.nativeElement.innerHTML;
-      if (innerHTML !== this.value) {
-        this.editorElRef.nativeElement.innerHTML = this.value ?? "";
+    effect(() => {
+      const innerHTML = this.editorElRef().nativeElement.innerHTML;
+      if (innerHTML !== this.value()) {
+        this.editorElRef().nativeElement.innerHTML = this.value() ?? "";
       }
     });
   }
 
-  onEditorFocusOutside() {
-    if (!this.readonly) {
+  onEditorFocus() {
+    if (!this.readonly()) {
       const selection = window.getSelection()!;
       selection.removeAllRanges();
 
       const range = document.createRange();
-      range.selectNodeContents(this.editorElRef.nativeElement);
+      range.selectNodeContents(this.editorElRef().nativeElement);
 
-      selection.setPosition(this.editorElRef.nativeElement, range.endOffset);
+      selection.setPosition(this.editorElRef().nativeElement, range.endOffset);
     }
   }
 
   onInput() {
-    const editorEl = this.editorElRef.nativeElement;
+    const editorEl = this.editorElRef().nativeElement;
 
     let value: string | undefined;
     if (editorEl.innerHTML === "") {
@@ -213,9 +211,6 @@ export class SdContentEditorControl {
       value = editorEl.innerHTML;
     }
 
-    if (this.value !== value) {
-      this.value = value;
-      this.valueChange.emit(value);
-    }
+    this.value.set(value);
   }
 }

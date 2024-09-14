@@ -25,7 +25,7 @@
     "noPropertyAccessFromIndexSignature": true,
     "importHelpers": true,
     "useDefineForClassFields": false,
-    "noUnusedLocals": true,
+    "noUnusedLocals": false,
     "baseUrl": ".",
     "paths": {
       "@simplysm/*": [

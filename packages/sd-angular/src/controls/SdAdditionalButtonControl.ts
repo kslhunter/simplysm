@@ -1,5 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, ViewEncapsulation } from "@angular/core";
-import { coercionBoolean } from "../utils/commons";
+import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
 
 @Component({
   selector: "sd-additional-button",
@@ -7,12 +6,6 @@ import { coercionBoolean } from "../utils/commons";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
-  template: `
-    <div>
-      <ng-content />
-    </div>
-    <ng-content select="sd-button" />
-  `,
   styles: [
     /* language=SCSS */ `
       @import "../scss/mixins";
@@ -64,12 +57,18 @@ import { coercionBoolean } from "../utils/commons";
       }
     `,
   ],
+  template: `
+    <div>
+      <ng-content />
+    </div>
+    <ng-content select="sd-button" />
+  `,
   host: {
-    "[attr.sd-size]": "size",
-    "[attr.sd-inset]": "inset",
+    "[attr.sd-size]": "size()",
+    "[attr.sd-inset]": "inset()",
   },
 })
 export class SdAdditionalButtonControl {
-  @Input() size?: "sm" | "lg";
-  @Input({ transform: coercionBoolean }) inset = false;
+  size = input<"sm" | "lg">();
+  inset = input(false);
 }

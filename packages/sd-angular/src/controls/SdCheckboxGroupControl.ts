@@ -1,5 +1,4 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, ViewEncapsulation } from "@angular/core";
-import { coercionBoolean } from "../utils/commons";
+import { ChangeDetectionStrategy, Component, input, model, ViewEncapsulation } from "@angular/core";
 
 @Component({
   selector: "sd-checkbox-group",
@@ -10,7 +9,6 @@ import { coercionBoolean } from "../utils/commons";
   template: ` <ng-content></ng-content> `,
 })
 export class SdCheckboxGroupControl<T> {
-  @Input() value: T[] = [];
-  @Output() valueChange = new EventEmitter<T[]>();
-  @Input({ transform: coercionBoolean }) disabled = false;
+  value = model<T[]>([]);
+  disabled = input(false);
 }

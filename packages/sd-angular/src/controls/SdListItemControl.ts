@@ -1,56 +1,27 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  ContentChild,
-  EventEmitter,
+  computed,
+  contentChild,
   forwardRef,
   inject,
-  Input,
-  Output,
+  input,
+  model,
   ViewEncapsulation,
 } from "@angular/core";
 import { SdListControl } from "./SdListControl";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
-import { coercionBoolean } from "../utils/commons";
-import { SdIconControl } from "./SdIconControl";
 import { SdCollapseIconControl } from "./SdCollapseIconControl";
 import { SdCollapseControl } from "./SdCollapseControl";
 import { SdAngularOptionsProvider } from "../providers/SdAngularOptionsProvider";
+import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 
 @Component({
   selector: "sd-list-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdIconControl, SdCollapseIconControl, SdCollapseControl],
-  template: `
-    <div
-      [class]="['_content', contentClass].filterExists().join(' ')"
-      [style]="contentStyle"
-      (click)="onContentClick()"
-      tabindex="0"
-    >
-      <div class="flex-row flex-gap-xs">
-        @if (selectedIcon && !hasChildren) {
-          <sd-icon class="_selected-icon" [icon]="selectedIcon" fixedWidth />
-        }
-        <div style="flex-grow: 1">
-          <ng-content></ng-content>
-        </div>
-
-        @if (hasChildren && layout === "accordion") {
-          <div>
-            <sd-collapse-icon [open]="open" />
-          </div>
-        }
-      </div>
-    </div>
-    @if (hasChildren) {
-      <sd-collapse class="_child" [open]="layout === 'flat' || open">
-        <ng-content select="sd-list"></ng-content>
-      </sd-collapse>
-    }
-  `,
+  imports: [SdCollapseIconControl, SdCollapseControl, FaIconComponent],
   styles: [
     /* language=SCSS */ `
       @import "../scss/mixins";
@@ -133,35 +104,59 @@ import { SdAngularOptionsProvider } from "../providers/SdAngularOptionsProvider"
       }
     `,
   ],
+  template: `
+    <div
+      [class]="['_content', contentClass()].filterExists().join(' ')"
+      [style]="contentStyle()"
+      (click)="onContentClick()"
+      tabindex="0"
+    >
+      <div class="flex-row flex-gap-xs">
+        @if (selectedIcon() && !hasChildren()) {
+          <fa-icon class="_selected-icon" [icon]="selectedIcon()!" [fixedWidth]="true" />
+        }
+        <div style="flex-grow: 1">
+          <ng-content></ng-content>
+        </div>
+
+        @if (hasChildren() && layout() === "accordion") {
+          <div>
+            <sd-collapse-icon [open]="open()" />
+          </div>
+        }
+      </div>
+    </div>
+    @if (hasChildren()) {
+      <sd-collapse class="_child" [open]="layout() === 'flat' || open()">
+        <ng-content select="sd-list"></ng-content>
+      </sd-collapse>
+    }
+  `,
   host: {
-    "[attr.sd-layout]": "layout",
-    "[attr.sd-open]": "open",
-    "[attr.sd-selected]": "selected",
-    "[attr.sd-has-selected-icon]": "!!selectedIcon",
-    "[attr.sd-has-children]": "hasChildren",
+    "[attr.sd-layout]": "layout()",
+    "[attr.sd-open]": "open()",
+    "[attr.sd-selected]": "selected()",
+    "[attr.sd-has-selected-icon]": "!!selectedIcon()",
+    "[attr.sd-has-children]": "hasChildren()",
   },
 })
 export class SdListItemControl {
   icons = inject(SdAngularOptionsProvider).icons;
 
-  @Input({ transform: coercionBoolean }) open = false;
-  @Output() openChange = new EventEmitter<boolean>();
+  open = model(false);
 
-  @Input() selectedIcon?: IconProp;
-  @Input({ transform: coercionBoolean }) selected = false;
+  selectedIcon = input<IconProp>();
+  selected = input(false);
 
-  @Input() layout: "accordion" | "flat" = "accordion";
-  @Input() contentStyle?: string;
-  @Input() contentClass?: string;
+  layout = input<"flat" | "accordion">("accordion");
+  contentStyle = input<string>();
+  contentClass = input<string>();
 
-  @ContentChild(forwardRef(() => SdListControl)) childListControl?: SdListControl;
+  childListControl = contentChild<SdListControl>(forwardRef(() => SdListControl));
 
-  get hasChildren(): boolean {
-    return this.childListControl !== undefined;
-  }
+  hasChildren = computed(() => this.childListControl() !== undefined);
 
   onContentClick() {
-    this.open = !this.open;
-    this.openChange.emit(this.open);
+    this.open.update((v) => !v);
   }
 }

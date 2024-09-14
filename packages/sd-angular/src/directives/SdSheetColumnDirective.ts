@@ -1,28 +1,31 @@
-import { ContentChild, Directive, Input, TemplateRef } from "@angular/core";
+import { contentChild, Directive, input, TemplateRef } from "@angular/core";
 import {
   SdSheetColumnCellTemplateContext,
   SdSheetColumnCellTemplateDirective,
 } from "./SdSheetColumnCellTemplateDirective";
-import { coercionBoolean } from "../utils/commons";
 
 @Directive({
   selector: "sd-sheet-column",
   standalone: true,
 })
 export class SdSheetColumnDirective<T> {
-  @Input({ required: true }) key!: string;
-  @Input({ transform: coercionBoolean }) fixed = false;
-  @Input() header?: string | string[];
-  @Input() headerStyle?: string;
-  @Input() tooltip?: string;
-  @Input() width?: string;
-  @Input({ transform: coercionBoolean }) useOrdering = false;
-  @Input({ transform: coercionBoolean }) resizable = false;
-  @Input({ transform: coercionBoolean }) hidden = false;
-  @Input({ transform: coercionBoolean }) collapse = false;
+  key = input.required<string>();
+  fixed = input(false);
+  header = input<string | string[]>();
+  headerStyle = input<string>();
+  tooltip = input<string>();
+  width = input<string>();
+  useOrdering = input(false);
+  resizable = input(false);
+  hidden = input(false);
+  collapse = input(false);
 
-  @ContentChild(SdSheetColumnCellTemplateDirective, { read: TemplateRef })
-  cellTemplateRef?: TemplateRef<SdSheetColumnCellTemplateContext<T>>;
-  @ContentChild("header", { static: true }) headerTemplateRef?: TemplateRef<void>;
-  @ContentChild("summary", { static: true }) summaryTemplateRef?: TemplateRef<void>;
+  cellTemplateRef = contentChild<any, TemplateRef<SdSheetColumnCellTemplateContext<T>>>(
+    SdSheetColumnCellTemplateDirective,
+    {
+      read: TemplateRef,
+    },
+  );
+  headerTemplateRef = contentChild<any, TemplateRef<void>>("header", { read: TemplateRef });
+  summaryTemplateRef = contentChild<any, TemplateRef<void>>("summary", { read: TemplateRef });
 }

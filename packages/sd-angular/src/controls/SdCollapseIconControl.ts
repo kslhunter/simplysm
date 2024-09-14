@@ -1,15 +1,13 @@
-import { ChangeDetectionStrategy, Component, inject, Input, ViewEncapsulation } from "@angular/core";
-import { coercionBoolean, coercionNumber } from "../utils/commons";
-import { SdIconControl } from "./SdIconControl";
+import { ChangeDetectionStrategy, Component, computed, inject, input, ViewEncapsulation } from "@angular/core";
 import { SdAngularOptionsProvider } from "../providers/SdAngularOptionsProvider";
+import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 
 @Component({
   selector: "sd-collapse-icon",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdIconControl],
-  template: ` <sd-icon [icon]="icon" fixedWidth /> `,
+  imports: [FaIconComponent],
   styles: [
     /* language=SCSS */ `
       sd-collapse-icon {
@@ -22,15 +20,18 @@ import { SdAngularOptionsProvider } from "../providers/SdAngularOptionsProvider"
       }
     `,
   ],
+  template: ` <fa-icon [icon]="icon()" [fixedWidth]="true" /> `,
   host: {
-    "[attr.sd-open]": "open",
-    "[style.transform]": "open ? 'rotate(' + openRotate + 'deg)' : ''",
+    "[attr.sd-open]": "open()",
+    "[style.transform]": "transform()",
   },
 })
 export class SdCollapseIconControl {
   icons = inject(SdAngularOptionsProvider).icons;
 
-  @Input() icon = this.icons.angleDown;
-  @Input({ transform: coercionBoolean }) open = false;
-  @Input({ transform: coercionNumber }) openRotate = 90;
+  icon = input(this.icons.angleDown);
+  open = input(false);
+  openRotate = input(90);
+
+  transform = computed(() => (this.open() ? "rotate(" + this.openRotate() + "deg)" : ""));
 }

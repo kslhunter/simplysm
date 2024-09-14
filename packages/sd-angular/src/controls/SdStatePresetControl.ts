@@ -1,10 +1,11 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  EventEmitter,
+  effect,
   inject,
-  Input,
-  Output,
+  input,
+  model,
+  signal,
   ViewEncapsulation,
 } from "@angular/core";
 import { ObjectUtil } from "@simplysm/sd-core-common";
@@ -12,36 +13,15 @@ import { SdSystemConfigProvider } from "../providers/SdSystemConfigProvider";
 import { SdToastProvider } from "../providers/SdToastProvider";
 import { SdGapControl } from "./SdGapControl";
 import { SdAnchorControl } from "./SdAnchorControl";
-import { SdIconControl } from "./SdIconControl";
 import { SdAngularOptionsProvider } from "../providers/SdAngularOptionsProvider";
-import { sdCheck } from "../utils/hooks";
+import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 
 @Component({
   selector: "sd-state-preset",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdAnchorControl, SdGapControl, SdIconControl],
-  template: `
-    <sd-anchor (click)="onAddButtonClick()">
-      <sd-icon [icon]="icons.star" class="tx-theme-warning-default" fixedWidth />
-    </sd-anchor>
-    <sd-gap width="sm"></sd-gap>
-    @for (preset of presets; track preset.name) {
-      <div>
-        <sd-anchor (click)="onItemClick(preset)" class="tx-trans-default">
-          {{ preset.name }}
-        </sd-anchor>
-        <sd-anchor (click)="onSaveButtonClick(preset)">
-          <sd-icon [icon]="icons.save" size="sm" />
-        </sd-anchor>
-        <sd-anchor (click)="onRemoveButtonClick(preset)">
-          <sd-icon [icon]="icons.xmark" size="sm" />
-        </sd-anchor>
-      </div>
-      <sd-gap width="sm"></sd-gap>
-    }
-  `,
+  imports: [SdAnchorControl, SdGapControl, FaIconComponent],
   styles: [
     /* language=SCSS */ `
       sd-state-preset {
@@ -91,8 +71,28 @@ import { sdCheck } from "../utils/hooks";
       }
     `,
   ],
+  template: `
+    <sd-anchor (click)="onAddButtonClick()">
+      <fa-icon [icon]="icons.star" class="tx-theme-warning-default" [fixedWidth]="true" />
+    </sd-anchor>
+    <sd-gap width="sm"></sd-gap>
+    @for (preset of presets(); track preset.name) {
+      <div>
+        <sd-anchor (click)="onItemClick(preset)" class="tx-trans-default">
+          {{ preset.name }}
+        </sd-anchor>
+        <sd-anchor (click)="onSaveButtonClick(preset)">
+          <fa-icon [icon]="icons.save" size="sm" />
+        </sd-anchor>
+        <sd-anchor (click)="onRemoveButtonClick(preset)">
+          <fa-icon [icon]="icons.xmark" size="sm" />
+        </sd-anchor>
+      </div>
+      <sd-gap width="sm"></sd-gap>
+    }
+  `,
   host: {
-    "[attr.sd-size]": "size",
+    "[attr.sd-size]": "size()",
   },
 })
 export class SdStatePresetControl {
@@ -101,50 +101,54 @@ export class SdStatePresetControl {
   #sdSystemConfig = inject(SdSystemConfigProvider);
   #sdToast = inject(SdToastProvider);
 
-  @Input() state?: any;
-  @Output() stateChange = new EventEmitter<any>();
+  state = model<any>();
 
-  @Input({ required: true }) key!: string;
-  @Input() size?: "sm" | "lg";
+  key = input.required<string>();
+  size = input<"sm" | "lg">();
 
-  presets: ISdStatePresetVM[] = [];
+  presets = signal<ISdStatePresetVM[]>([]);
 
   constructor() {
-    sdCheck(this, [() => [this.key]], async () => {
-      this.presets = (await this.#sdSystemConfig.getAsync(`sd-state-preset.${this.key}`)) ?? [];
-    });
+    effect(
+      async () => {
+        this.presets.set((await this.#sdSystemConfig.getAsync(`sd-state-preset.${this.key()}`)) ?? []);
+      },
+      { allowSignalWrites: true },
+    );
   }
 
   async onAddButtonClick() {
     const newName = prompt("현재 상태를 저장합니다.");
     if (newName == null) return;
 
-    this.presets.push({
-      name: newName,
-      state: ObjectUtil.clone(this.state),
-    });
-    await this.#sdSystemConfig.setAsync(`sd-state-preset.${this.key}`, this.presets);
+    this.presets.update((v) => [
+      ...v,
+      {
+        name: newName,
+        state: ObjectUtil.clone(this.state),
+      },
+    ]);
+    await this.#sdSystemConfig.setAsync(`sd-state-preset.${this.key()}`, this.presets());
 
     this.#sdToast.info(`현재 상태가 ${newName}에 저장되었습니다.`);
   }
 
   onItemClick(preset: ISdStatePresetVM) {
-    if (!ObjectUtil.equal(this.state, preset.state)) {
-      this.state = ObjectUtil.clone(preset.state);
-      this.stateChange.emit(this.state);
+    if (!ObjectUtil.equal(this.state(), preset.state)) {
+      this.state.set(ObjectUtil.clone(preset.state));
     }
   }
 
   async onRemoveButtonClick(preset: ISdStatePresetVM) {
     if (!confirm("저장된 '" + preset.name + "'상태가 삭제됩니다.")) return;
 
-    this.presets.remove(preset);
-    await this.#sdSystemConfig.setAsync(`sd-state-preset.${this.key}`, this.presets);
+    this.presets.update((v) => v.filter((item) => item !== preset));
+    await this.#sdSystemConfig.setAsync(`sd-state-preset.${this.key()}`, this.presets());
   }
 
   async onSaveButtonClick(preset: ISdStatePresetVM) {
-    preset.state = ObjectUtil.clone(this.state);
-    await this.#sdSystemConfig.setAsync(`sd-state-preset.${this.key}`, this.presets);
+    preset.state = ObjectUtil.clone(this.state());
+    await this.#sdSystemConfig.setAsync(`sd-state-preset.${this.key()}`, this.presets());
 
     this.#sdToast.info(`현재 상태가 ${preset.name}에 저장되었습니다.`);
   }

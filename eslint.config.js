@@ -6,7 +6,7 @@ export default [
   },
   ...simplysmRoot,
   {
-    files: ["**/*.ts"],
+    files: ["**/*.ts", "**/*.tsx"],
     languageOptions: {
       parserOptions: {
         project: ["./tsconfig.json"],

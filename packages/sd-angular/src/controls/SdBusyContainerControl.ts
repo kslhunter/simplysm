@@ -1,6 +1,13 @@
-import { ChangeDetectionStrategy, Component, HostListener, inject, Input, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  HostListener,
+  inject,
+  input,
+  ViewEncapsulation,
+} from "@angular/core";
 import { SdBusyProvider } from "../providers/SdBusyProvider";
-import { coercionBoolean, coercionNumber } from "../utils/commons";
 
 @Component({
   selector: "sd-busy-container",
@@ -8,30 +15,6 @@ import { coercionBoolean, coercionNumber } from "../utils/commons";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
-  template: `
-    <div class="_screen">
-      <div class="_bar"></div>
-      <div class="_rect">
-        <div class="_indicator">
-          <div class="_cube1"></div>
-          <div class="_cube2"></div>
-          <div class="_cube4"></div>
-          <div class="_cube3"></div>
-        </div>
-        @if (message) {
-          <div class="_message">
-            <pre>{{ message }}</pre>
-          </div>
-        }
-      </div>
-      @if (progressPercent != null) {
-        <div class="_progress">
-          <div class="_progress-bar" [style.transform]="'scaleX(' + progressPercent / 100 + ')'"></div>
-        </div>
-      }
-    </div>
-    <ng-content></ng-content>
-  `,
   styles: [
     /* language=SCSS */ `
       sd-busy-container {
@@ -69,7 +52,7 @@ import { coercionBoolean, coercionNumber } from "../utils/commons";
             position: absolute;
             top: 0;
             left: 0;
-            height: 2px;
+            height: 4px;
             width: 100%;
             background-color: white;
 
@@ -79,7 +62,7 @@ import { coercionBoolean, coercionNumber } from "../utils/commons";
               left: 0;
               display: inline-block;
               content: "";
-              height: 2px;
+              height: 4px;
               width: 100%;
               transition: 0.1s ease-in;
               transition-property: transform;
@@ -147,7 +130,7 @@ import { coercionBoolean, coercionNumber } from "../utils/commons";
         }
 
         &[sd-type="bar"] {
-          min-height: 2px;
+          min-height: 4px;
 
           &[sd-busy="true"] {
             > ._screen > ._rect {
@@ -155,7 +138,7 @@ import { coercionBoolean, coercionNumber } from "../utils/commons";
                 position: absolute;
                 top: 0;
                 left: 0;
-                height: 2px;
+                height: 4px;
                 width: 100%;
                 background-color: white;
 
@@ -166,7 +149,7 @@ import { coercionBoolean, coercionNumber } from "../utils/commons";
                   left: 0;
                   display: inline-block;
                   content: "";
-                  height: 2px;
+                  height: 4px;
                   width: 100%;
 
                   transform-origin: left;
@@ -189,7 +172,7 @@ import { coercionBoolean, coercionNumber } from "../utils/commons";
 
               > ._message {
                 position: absolute;
-                top: 2px;
+                top: 4px;
                 right: 0;
                 display: inline-block;
               }
@@ -199,7 +182,7 @@ import { coercionBoolean, coercionNumber } from "../utils/commons";
 
         &[sd-type="cube"] {
           > ._screen > ._rect {
-            > ._bar {
+            /*> ._bar {
               &:before,
               &:after {
                 position: absolute;
@@ -207,7 +190,7 @@ import { coercionBoolean, coercionNumber } from "../utils/commons";
                 left: 0;
                 display: inline-block;
                 content: "";
-                height: 2px;
+                height: 4px;
                 width: 100%;
 
                 transform-origin: left;
@@ -222,7 +205,7 @@ import { coercionBoolean, coercionNumber } from "../utils/commons";
                 background-color: white;
                 animation: sd-busy-bar-indicator-after 2s infinite ease-out;
               }
-            }
+            }*/
 
             > ._indicator {
               position: absolute;
@@ -281,7 +264,7 @@ import { coercionBoolean, coercionNumber } from "../utils/commons";
 
             > ._message {
               position: absolute;
-              top: 2px;
+              top: 4px;
               right: 0;
               display: inline-block;
             }
@@ -337,32 +320,51 @@ import { coercionBoolean, coercionNumber } from "../utils/commons";
       }
     `,
   ],
+  template: `
+    <div class="_screen">
+      <div class="_rect">
+        <!--<div class="_bar"></div>-->
+        <div class="_indicator">
+          <div class="_cube1"></div>
+          <div class="_cube2"></div>
+          <div class="_cube4"></div>
+          <div class="_cube3"></div>
+        </div>
+        @if (message()) {
+          <div class="_message">
+            <pre>{{ message() }}</pre>
+          </div>
+        }
+      </div>
+      @if (progressPercent() != null) {
+        <div class="_progress">
+          <div class="_progress-bar" [style.transform]="'scaleX(' + progressPercent()! / 100 + ')'"></div>
+        </div>
+      }
+    </div>
+    <ng-content></ng-content>
+  `,
   host: {
-    "[attr.sd-busy]": "busy",
-    "[attr.sd-type]": "currType",
-    "[attr.sd-no-fade]": "currNoFade",
+    "[attr.sd-busy]": "busy()",
+    "[attr.sd-type]": "currType()",
+    "[attr.sd-no-fade]": "currNoFade()",
   },
 })
 export class SdBusyContainerControl {
   #sdBusy = inject(SdBusyProvider);
 
-  @Input({ transform: coercionBoolean }) busy = false;
-  @Input() message?: string;
-  @Input() type?: "spinner" | "bar" | "cube"; // = this.#sdBusy.type ?? "spinner";
-  @Input({ transform: coercionBoolean }) noFade?: boolean; // = this.#sdBusy.noFade ?? false;
-  @Input({ transform: coercionNumber }) progressPercent?: number;
+  busy = input(false);
+  message = input<string>();
+  type = input<"spinner" | "bar" | "cube">();
+  noFade = input<boolean>();
+  progressPercent = input<number>();
 
-  get currType() {
-    return this.type ?? this.#sdBusy.type ?? "spinner";
-  }
+  currType = computed(() => this.type() ?? this.#sdBusy.type ?? "spinner");
+  currNoFade = computed(() => this.noFade() ?? this.#sdBusy.noFade ?? false);
 
-  get currNoFade() {
-    return this.noFade ?? this.#sdBusy.noFade ?? false;
-  }
-
-  @HostListener("document:keydown.capture.outside", ["$event"])
-  onKeydownCaptureOutside(event: KeyboardEvent) {
-    if (this.busy) {
+  @HostListener("document:keydown.capture", ["$event"])
+  onKeydownCapture(event: KeyboardEvent) {
+    if (this.busy()) {
       event.preventDefault();
       event.stopPropagation();
     }

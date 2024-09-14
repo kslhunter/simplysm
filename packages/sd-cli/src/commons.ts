@@ -92,6 +92,7 @@ export interface ISdCliClientPackageConfig {
   publish?: ISdCliLocalDirectoryPublishConfig | ISdCliFtpPublishConfig;
   env?: Record<string, string>;
   configs?: Record<string, any>;
+  noLazyRoute?: boolean;
 
   builder?: {
     web?: ISdCliClientBuilderWebConfig;
@@ -122,14 +123,12 @@ export interface ISdCliClientBuilderElectronConfig {
   // devServerPort?: number;
   reinstallDependencies?: string[];
   env?: Record<string, string>;
-  browserslist?: string[];
 }
 
 export interface ISdCliClientBuilderWebConfig {
   // devServerHost?: string;
   // devServerPort?: number;
   env?: Record<string, string>;
-  browserslist?: string[];
 }
 
 export interface ISdCliClientBuilderCordovaConfig {

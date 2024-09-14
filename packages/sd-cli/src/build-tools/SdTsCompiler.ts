@@ -1,14 +1,14 @@
-import ts, {CompilerOptions} from "typescript";
+import ts, { CompilerOptions } from "typescript";
 import path from "path";
-import {FsUtil, Logger, PathUtil} from "@simplysm/sd-core-node";
-import browserslist from "browserslist";
-import {NeverEntryError, StringUtil} from "@simplysm/sd-core-common";
+import { FsUtil, Logger, PathUtil } from "@simplysm/sd-core-node";
+import { NeverEntryError, StringUtil } from "@simplysm/sd-core-common";
 import esbuild from "esbuild";
-import {NgtscProgram, OptimizeFor} from "@angular/compiler-cli";
-import {createHash} from "crypto";
-import {ComponentStylesheetBundler} from "@angular/build/src/tools/esbuild/angular/component-stylesheets";
-import {AngularCompilerHost} from "@angular/build/src/tools/angular/angular-host";
-import {transformSupportedBrowsersToTargets} from "@angular/build/src/tools/esbuild/utils";
+import { NgtscProgram, OptimizeFor } from "@angular/compiler-cli";
+import { createHash } from "crypto";
+import { ComponentStylesheetBundler } from "@angular/build/src/tools/esbuild/angular/component-stylesheets";
+import { AngularCompilerHost } from "@angular/build/src/tools/angular/angular-host";
+import { transformSupportedBrowsersToTargets } from "@angular/build/src/tools/esbuild/utils";
+import browserslist from "browserslist";
 
 export class SdTsCompiler {
   readonly #logger = Logger.get(["simplysm", "sd-cli", "SdTsCompiler"]);
@@ -19,17 +19,19 @@ export class SdTsCompiler {
   readonly #revDependencyCacheMap = new Map<string, Set<string>>();
   readonly #resourceDependencyCacheMap = new Map<string, Set<string>>();
   readonly #sourceFileCacheMap = new Map<string, ts.SourceFile>();
-  readonly #emittedFilesCacheMap = new Map<string, {
-    outAbsPath?: string;
-    text: string;
-  }[]>();
+  readonly #emittedFilesCacheMap = new Map<
+    string,
+    {
+      outAbsPath?: string;
+      text: string;
+    }[]
+  >();
 
   readonly #stylesheetBundler: ComponentStylesheetBundler | undefined;
   readonly #compilerHost: ts.CompilerHost | AngularCompilerHost;
 
   #ngProgram: NgtscProgram | undefined;
   #program: ts.Program | undefined;
-  // #builder: ts.EmitAndSemanticDiagnosticsBuilderProgram | undefined;
 
   readonly #modifiedFileSet = new Set<string>();
 
@@ -40,23 +42,20 @@ export class SdTsCompiler {
   readonly #distPath: string;
   readonly #globalStyleFilePath?: string;
 
-  constructor(pkgPath: string,
-              additionalOptions: CompilerOptions,
-              isDevMode: boolean,
-              globalStyleFilePath?: string) {
+  constructor(pkgPath: string, additionalOptions: CompilerOptions, isDevMode: boolean, globalStyleFilePath?: string) {
     this.#pkgPath = pkgPath;
     this.#globalStyleFilePath = globalStyleFilePath != null ? path.normalize(globalStyleFilePath) : undefined;
 
     this.#debug("초기화...");
 
-    //-- isForAngular / parsedTsConfig
+    //-- isForAngular / parsedTsConfig / isForReact
 
     const tsconfigPath = path.resolve(pkgPath, "tsconfig.json");
     const tsconfig = FsUtil.readJson(tsconfigPath);
     this.#isForAngular = Boolean(tsconfig.angularCompilerOptions);
     this.#parsedTsconfig = ts.parseJsonConfigFileContent(tsconfig, ts.sys, pkgPath, {
       ...tsconfig.angularCompilerOptions,
-      ...additionalOptions
+      ...additionalOptions,
     });
 
     this.#distPath = this.#parsedTsconfig.options.outDir ?? path.resolve(pkgPath, "dist");
@@ -66,24 +65,22 @@ export class SdTsCompiler {
     this.#compilerHost = ts.createCompilerHost(this.#parsedTsconfig.options);
 
     const baseGetSourceFile = this.#compilerHost.getSourceFile;
-    this.#compilerHost.getSourceFile = (fileName, languageVersionOrOptions, onError, shouldCreateNewSourceFile, ...args) => {
+    this.#compilerHost.getSourceFile = (
+      fileName,
+      languageVersionOrOptions,
+      onError,
+      shouldCreateNewSourceFile,
+      ...args
+    ) => {
       if (!shouldCreateNewSourceFile && this.#sourceFileCacheMap.has(path.normalize(fileName))) {
         return this.#sourceFileCacheMap.get(path.normalize(fileName));
       }
 
-      const sf = baseGetSourceFile.call(
-        this.#compilerHost,
-        fileName,
-        languageVersionOrOptions,
-        onError,
-        true,
-        ...args,
-      );
+      const sf = baseGetSourceFile.call(this.#compilerHost, fileName, languageVersionOrOptions, onError, true, ...args);
 
       if (sf) {
         this.#sourceFileCacheMap.set(path.normalize(fileName), sf);
-      }
-      else {
+      } else {
         this.#sourceFileCacheMap.delete(path.normalize(fileName));
       }
 
@@ -98,27 +95,28 @@ export class SdTsCompiler {
 
     if (this.#isForAngular) {
       //-- stylesheetBundler
-
-      const browserTarget = transformSupportedBrowsersToTargets(browserslist("defaults and fully supports es6-module"));
       this.#stylesheetBundler = new ComponentStylesheetBundler(
         {
           workspaceRoot: pkgPath,
           optimization: !isDevMode,
           inlineFonts: true,
           preserveSymlinks: false,
-          sourcemap: 'inline', //conf.dev ? 'inline' : false,
-          outputNames: {bundles: '[name]', media: 'media/[name]'},
+          sourcemap: "inline", //conf.dev ? 'inline' : false,
+          outputNames: { bundles: "[name]", media: "media/[name]" },
           includePaths: [],
           externalDependencies: [],
-          target: browserTarget,
+          target: transformSupportedBrowsersToTargets(browserslist(["Chrome > 78"])),
+          postcssConfiguration: {
+            plugins: [["css-has-pseudo"]],
+          },
           tailwindConfiguration: undefined,
           cacheOptions: {
             enabled: true,
             path: ".cache/angular",
-            basePath: ".cache"
-          }
+            basePath: ".cache",
+          },
         },
-        isDevMode
+        isDevMode,
       );
 
       //-- compilerHost
@@ -127,18 +125,21 @@ export class SdTsCompiler {
         return this.#compilerHost.readFile(fileName) ?? "";
       };
 
-      (this.#compilerHost as AngularCompilerHost).transformResource = async (data: string, context: {
-        type: string,
-        containingFile: string,
-        resourceFile: string | null
-      }) => {
+      (this.#compilerHost as AngularCompilerHost).transformResource = async (
+        data: string,
+        context: {
+          type: string;
+          containingFile: string;
+          resourceFile: string | null;
+        },
+      ) => {
         if (context.type !== "style") {
           return null;
         }
 
         const contents = await this.#bundleStylesheetAsync(data, context.containingFile, context.resourceFile);
 
-        return StringUtil.isNullOrEmpty(contents) ? null : {content: contents};
+        return StringUtil.isNullOrEmpty(contents) ? null : { content: contents };
       };
 
       (this.#compilerHost as AngularCompilerHost).getModifiedResourceFiles = () => {
@@ -154,35 +155,37 @@ export class SdTsCompiler {
 
     this.#debug(`스타일시트 번들링...(${containingFile}, ${resourceFile})`);
 
-    const stylesheetResult = resourceFile != null
-      ? await this.#stylesheetBundler!.bundleFile(resourceFile)
-      : await this.#stylesheetBundler!.bundleInline(
-        data,
-        containingFile,
-        "scss",
-      );
+    const stylesheetResult =
+      resourceFile != null
+        ? await this.#stylesheetBundler!.bundleFile(resourceFile)
+        : await this.#stylesheetBundler!.bundleInline(data, containingFile, "scss");
 
     if (stylesheetResult.referencedFiles) {
       for (const referencedFile of stylesheetResult.referencedFiles) {
-        const depCacheSet = this.#resourceDependencyCacheMap.getOrCreate(path.normalize(referencedFile), new Set<string>());
+        const depCacheSet = this.#resourceDependencyCacheMap.getOrCreate(
+          path.normalize(referencedFile),
+          new Set<string>(),
+        );
         depCacheSet.add(path.normalize(resourceFile ?? containingFile));
       }
 
-      this.#watchFileSet.adds(...Array.from(stylesheetResult.referencedFiles.values()).map(item => path.normalize(item)));
+      this.#watchFileSet.adds(
+        ...Array.from(stylesheetResult.referencedFiles.values()).map((item) => path.normalize(item)),
+      );
     }
 
     this.#stylesheetBundlingResultMap.set(path.normalize(resourceFile ?? containingFile), {
       outputFiles: stylesheetResult.outputFiles,
       metafile: stylesheetResult.metafile,
       errors: stylesheetResult.errors,
-      warnings: stylesheetResult.warnings
+      warnings: stylesheetResult.warnings,
     });
 
     return stylesheetResult.contents;
   }
 
   invalidate(modifiedFileSet: Set<string>) {
-    this.#modifiedFileSet.adds(...Array.from(modifiedFileSet).map(item => path.normalize(item)));
+    this.#modifiedFileSet.adds(...Array.from(modifiedFileSet).map((item) => path.normalize(item)));
   }
 
   async buildAsync(): Promise<ISdTsCompilerResult> {
@@ -219,16 +222,15 @@ export class SdTsCompiler {
         this.#parsedTsconfig.fileNames,
         this.#parsedTsconfig.options,
         this.#compilerHost,
-        this.#ngProgram
+        this.#ngProgram,
       );
       this.#program = this.#ngProgram.getTsProgram();
-    }
-    else {
+    } else {
       this.#program = ts.createProgram(
         this.#parsedTsconfig.fileNames,
         this.#parsedTsconfig.options,
         this.#compilerHost,
-        this.#program
+        this.#program,
       );
     }
 
@@ -252,8 +254,8 @@ export class SdTsCompiler {
     }
 
     const getOrgSourceFile = (sf: ts.SourceFile) => {
-      if (sf.fileName.endsWith('.ngtypecheck.ts')) {
-        const orgFileName = sf.fileName.slice(0, -15) + '.ts';
+      if (sf.fileName.endsWith(".ngtypecheck.ts")) {
+        const orgFileName = sf.fileName.slice(0, -15) + ".ts";
         return this.#program!.getSourceFile(orgFileName);
       }
 
@@ -262,15 +264,21 @@ export class SdTsCompiler {
 
     this.#debug(`get affected (new deps)...`);
 
-    const sourceFileSet = new Set(this.#program.getSourceFiles()
-      .map(sf => getOrgSourceFile(sf))
-      .filterExists());
+    const sourceFileSet = new Set(
+      this.#program
+        .getSourceFiles()
+        .map((sf) => getOrgSourceFile(sf))
+        .filterExists(),
+    );
 
-    const depMap = new Map<string, {
-      fileName: string;
-      importName: string;
-      exportName?: string;
-    }[]>();
+    const depMap = new Map<
+      string,
+      {
+        fileName: string;
+        importName: string;
+        exportName?: string;
+      }[]
+    >();
     for (const sf of sourceFileSet) {
       const refs = this.#findDeps(sf);
       depMap.set(path.normalize(sf.fileName), refs);
@@ -285,21 +293,20 @@ export class SdTsCompiler {
       const result = new Set<string>();
 
       const deps = depMap.get(fileName) ?? [];
-      result.adds(...deps.map(item => item.fileName));
+      result.adds(...deps.map((item) => item.fileName));
 
       for (const dep of deps) {
         const targetDeps = depMap.get(dep.fileName) ?? [];
 
         if (dep.importName === "*") {
-          for (const targetRefItem of targetDeps.filter(item => item.exportName != null)) {
+          for (const targetRefItem of targetDeps.filter((item) => item.exportName != null)) {
             if (prevSet?.has(targetRefItem.fileName)) continue;
 
             result.add(targetRefItem.fileName);
             result.adds(...getAllDeps(targetRefItem.fileName, new Set<string>(prevSet).adds(...result)));
           }
-        }
-        else {
-          for (const targetRefItem of targetDeps.filter(item => item.exportName === dep.importName)) {
+        } else {
+          for (const targetRefItem of targetDeps.filter((item) => item.exportName === dep.importName)) {
             if (prevSet?.has(targetRefItem.fileName)) continue;
 
             result.add(targetRefItem.fileName);
@@ -356,7 +363,7 @@ export class SdTsCompiler {
     diagnostics.push(
       ...this.#program.getConfigFileParsingDiagnostics(),
       ...this.#program.getOptionsDiagnostics(),
-      ...this.#program.getGlobalDiagnostics()
+      ...this.#program.getGlobalDiagnostics(),
     );
 
     if (this.#ngProgram) {
@@ -365,13 +372,16 @@ export class SdTsCompiler {
 
     for (const affectedFile of affectedFileSet) {
       const affectedSourceFile = this.#program.getSourceFile(affectedFile);
-      if (!affectedSourceFile || (this.#ngProgram && this.#ngProgram.compiler.ignoreForDiagnostics.has(affectedSourceFile))) {
+      if (
+        !affectedSourceFile ||
+        (this.#ngProgram && this.#ngProgram.compiler.ignoreForDiagnostics.has(affectedSourceFile))
+      ) {
         continue;
       }
 
       diagnostics.push(
         ...this.#program.getSyntacticDiagnostics(affectedSourceFile),
-        ...this.#program.getSemanticDiagnostics(affectedSourceFile)
+        ...this.#program.getSemanticDiagnostics(affectedSourceFile),
       );
 
       if (this.#ngProgram) {
@@ -415,53 +425,61 @@ export class SdTsCompiler {
       }
 
       this.#debug(`emit for`, sf.fileName);
-      this.#program.emit(sf, (fileName, text, writeByteOrderMark, onError, sourceFiles, data) => {
-        if (!sourceFiles || sourceFiles.length === 0) {
-          this.#compilerHost.writeFile(fileName, text, writeByteOrderMark, onError, sourceFiles, data);
-          return;
-        }
-
-        const sourceFile = ts.getOriginalNode(sourceFiles[0], ts.isSourceFile);
-        if (this.#ngProgram) {
-          if (this.#ngProgram.compiler.ignoreForEmit.has(sourceFile)) {
+      this.#program.emit(
+        sf,
+        (fileName, text, writeByteOrderMark, onError, sourceFiles, data) => {
+          if (!sourceFiles || sourceFiles.length === 0) {
+            this.#compilerHost.writeFile(fileName, text, writeByteOrderMark, onError, sourceFiles, data);
             return;
           }
-          this.#ngProgram.compiler.incrementalCompilation.recordSuccessfulEmit(sourceFile);
-        }
 
-        const emitFileInfoCaches = this.#emittedFilesCacheMap.getOrCreate(path.normalize(sourceFile.fileName), []);
-        if (PathUtil.isChildPath(sourceFile.fileName, this.#pkgPath)) {
-          let realFilePath = fileName;
-          let realText = text;
-          if (PathUtil.isChildPath(realFilePath, path.resolve(this.#distPath, path.basename(this.#pkgPath), "src"))) {
-            realFilePath = path.resolve(this.#distPath, path.relative(path.resolve(this.#distPath, path.basename(this.#pkgPath), "src"), realFilePath));
-
-            if (fileName.endsWith(".js.map")) {
-              const sourceMapContents = JSON.parse(realText);
-              // remove "../../"
-              sourceMapContents.sources[0] = sourceMapContents.sources[0].slice(6);
-              realText = JSON.stringify(sourceMapContents);
+          const sourceFile = ts.getOriginalNode(sourceFiles[0], ts.isSourceFile);
+          if (this.#ngProgram) {
+            if (this.#ngProgram.compiler.ignoreForEmit.has(sourceFile)) {
+              return;
             }
+            this.#ngProgram.compiler.incrementalCompilation.recordSuccessfulEmit(sourceFile);
           }
 
-          emitFileInfoCaches.push({
-            outAbsPath: realFilePath,
-            text: realText
-          });
-        }
-        else {
-          emitFileInfoCaches.push({text});
-        }
+          const emitFileInfoCaches = this.#emittedFilesCacheMap.getOrCreate(path.normalize(sourceFile.fileName), []);
+          if (PathUtil.isChildPath(sourceFile.fileName, this.#pkgPath)) {
+            let realFilePath = fileName;
+            let realText = text;
+            if (PathUtil.isChildPath(realFilePath, path.resolve(this.#distPath, path.basename(this.#pkgPath), "src"))) {
+              realFilePath = path.resolve(
+                this.#distPath,
+                path.relative(path.resolve(this.#distPath, path.basename(this.#pkgPath), "src"), realFilePath),
+              );
 
-        emitFileSet.add(path.normalize(sourceFile.fileName));
-      }, undefined, undefined, ngTransformers);
+              if (fileName.endsWith(".js.map")) {
+                const sourceMapContents = JSON.parse(realText);
+                // remove "../../"
+                sourceMapContents.sources[0] = sourceMapContents.sources[0].slice(6);
+                realText = JSON.stringify(sourceMapContents);
+              }
+            }
+
+            emitFileInfoCaches.push({
+              outAbsPath: realFilePath,
+              text: realText,
+            });
+          } else {
+            emitFileInfoCaches.push({ text });
+          }
+
+          emitFileSet.add(path.normalize(sourceFile.fileName));
+        },
+        undefined,
+        undefined,
+        ngTransformers,
+      );
     }
 
     //-- global style
     if (
-      this.#globalStyleFilePath != null
-      && FsUtil.exists(this.#globalStyleFilePath)
-      && !this.#emittedFilesCacheMap.has(this.#globalStyleFilePath)
+      this.#globalStyleFilePath != null &&
+      FsUtil.exists(this.#globalStyleFilePath) &&
+      !this.#emittedFilesCacheMap.has(this.#globalStyleFilePath)
     ) {
       this.#debug(`bundle global style...`);
 
@@ -469,8 +487,11 @@ export class SdTsCompiler {
       const contents = await this.#bundleStylesheetAsync(data, this.#globalStyleFilePath, this.#globalStyleFilePath);
       const emitFileInfos = this.#emittedFilesCacheMap.getOrCreate(this.#globalStyleFilePath, []);
       emitFileInfos.push({
-        outAbsPath: path.resolve(this.#pkgPath, path.relative(path.resolve(this.#pkgPath, "src"), this.#globalStyleFilePath).replace(/\.scss$/, ".css")),
-        text: contents
+        outAbsPath: path.resolve(
+          this.#pkgPath,
+          path.relative(path.resolve(this.#pkgPath, "src"), this.#globalStyleFilePath).replace(/\.scss$/, ".css"),
+        ),
+        text: contents,
       });
       emitFileSet.add(this.#globalStyleFilePath);
     }
@@ -490,7 +511,7 @@ export class SdTsCompiler {
       emittedFilesCacheMap: this.#emittedFilesCacheMap,
       watchFileSet: this.#watchFileSet,
       affectedFileSet,
-      emitFileSet
+      emitFileSet,
     };
   }
 
@@ -523,12 +544,11 @@ export class SdTsCompiler {
                 deps.push({
                   fileName: path.normalize(decl.getSourceFile().fileName),
                   importName: el.name.text,
-                  exportName: el.propertyName?.text ?? el.name.text
+                  exportName: el.propertyName?.text ?? el.name.text,
                 });
               }
             }
-          }
-          else {
+          } else {
             if (!moduleSymbol.exports) {
               throw new NeverEntryError("1234");
             }
@@ -538,14 +558,13 @@ export class SdTsCompiler {
                 deps.push({
                   fileName: path.normalize(decl.getSourceFile().fileName),
                   importName: key.toString(),
-                  exportName: key.toString()
+                  exportName: key.toString(),
                 });
               }
             }
           }
         }
-      }
-      else if (ts.isImportDeclaration(node)) {
+      } else if (ts.isImportDeclaration(node)) {
         const moduleSymbol = tc.getSymbolAtLocation(node.moduleSpecifier);
         if (!moduleSymbol) {
           if (ts.isStringLiteral(node.moduleSpecifier) && node.moduleSpecifier.text.startsWith("./")) {
@@ -557,8 +576,7 @@ export class SdTsCompiler {
           /*else {
             throw new NeverEntryError(`import moduleSymbol: ${sf.fileName} ${node.moduleSpecifier["text"]}`);
           }*/
-        }
-        else {
+        } else {
           const decls = moduleSymbol.getDeclarations();
           if (!decls) throw new NeverEntryError(`import decls: ${sf.fileName}`);
 
@@ -572,8 +590,7 @@ export class SdTsCompiler {
                 });
               }
             }
-          }
-          else {
+          } else {
             for (const decl of decls) {
               deps.push({
                 fileName: path.normalize(decl.getSourceFile().fileName),
@@ -593,7 +610,7 @@ export interface ISdTsCompilerResult {
   program: ts.Program;
   typescriptDiagnostics: ts.Diagnostic[];
   stylesheetBundlingResultMap: Map<string, IStylesheetBundlingResult>;
-  emittedFilesCacheMap: Map<string, { outAbsPath?: string; text: string; }[]>;
+  emittedFilesCacheMap: Map<string, { outAbsPath?: string; text: string }[]>;
   watchFileSet: Set<string>;
 
   affectedFileSet: Set<string>;

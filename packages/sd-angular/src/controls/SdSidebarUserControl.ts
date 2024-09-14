@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, Input, ViewEncapsulation } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, input, signal, ViewEncapsulation } from "@angular/core";
 import { SdCollapseIconControl } from "./SdCollapseIconControl";
 import { SdCollapseControl } from "./SdCollapseControl";
 import { SdListControl } from "./SdListControl";
@@ -11,28 +11,6 @@ import { SdAngularOptionsProvider } from "../providers/SdAngularOptionsProvider"
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [SdCollapseIconControl, SdCollapseControl, SdListControl, SdListItemControl],
-  template: ` <div class="_content" [style]="contentStyle" [class]="contentClass">
-      <div class="p-lg">
-        <ng-content></ng-content>
-      </div>
-      @if (userMenu?.title) {
-        <div class="_menu-button" (click)="onMenuOpenButtonClick()">
-          {{ userMenu?.title }}
-          <sd-collapse-icon [open]="menuOpen" style="float: right;" openRotate="180" />
-        </div>
-      }
-    </div>
-    @if (userMenu?.title) {
-      <sd-collapse [open]="menuOpen">
-        <sd-list class="pv-sm" inset>
-          @for (menu of userMenu?.menus; track menu.title) {
-            <sd-list-item (click)="menu.onClick()">
-              {{ menu.title }}
-            </sd-list-item>
-          }
-        </sd-list>
-      </sd-collapse>
-    }`,
   styles: [
     /* language=SCSS */ `
       @import "../scss/mixins";
@@ -83,22 +61,44 @@ import { SdAngularOptionsProvider } from "../providers/SdAngularOptionsProvider"
       }
     `,
   ],
+  template: ` <div class="_content" [style]="contentStyle()" [class]="contentClass()">
+      <div class="p-lg">
+        <ng-content></ng-content>
+      </div>
+      @if (userMenu()?.title) {
+        <div class="_menu-button" (click)="onMenuOpenButtonClick()">
+          {{ userMenu()?.title }}
+          <sd-collapse-icon [open]="menuOpen()" style="float: right;" [openRotate]="180" />
+        </div>
+      }
+    </div>
+    @if (userMenu()?.title) {
+      <sd-collapse [open]="menuOpen()">
+        <sd-list class="pv-sm" [inset]="true">
+          @for (menu of userMenu()?.menus; track menu.title) {
+            <sd-list-item (click)="menu.onClick()">
+              {{ menu.title }}
+            </sd-list-item>
+          }
+        </sd-list>
+      </sd-collapse>
+    }`,
   host: {
-    "[attr.sd-menu-open]": "menuOpen",
+    "[attr.sd-menu-open]": "menuOpen()",
   },
 })
 export class SdSidebarUserControl {
   icons = inject(SdAngularOptionsProvider).icons;
 
-  @Input() userMenu?: ISidebarUserMenu;
-  @Input() menuTitle?: string;
-  @Input() contentStyle?: string;
-  @Input() contentClass?: string;
+  userMenu = input<ISidebarUserMenu>();
+  menuTitle = input<string>();
+  contentStyle = input<string>();
+  contentClass = input<string>();
 
-  menuOpen = false;
+  menuOpen = signal(false);
 
   onMenuOpenButtonClick() {
-    this.menuOpen = !this.menuOpen;
+    this.menuOpen.update((v) => !v);
   }
 }
 

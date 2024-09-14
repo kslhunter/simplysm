@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, forwardRef, inject, ViewEncapsulation } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, forwardRef, inject, ViewEncapsulation } from "@angular/core";
 import { SdSidebarContainerControl } from "./SdSidebarContainerControl";
 
 @Component({
@@ -7,7 +7,6 @@ import { SdSidebarContainerControl } from "./SdSidebarContainerControl";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
-  template: ` <ng-content></ng-content>`,
   styles: [
     /* language=SCSS */ `
       @import "../scss/mixins";
@@ -69,14 +68,13 @@ import { SdSidebarContainerControl } from "./SdSidebarContainerControl";
       }
     `,
   ],
+  template: ` <ng-content></ng-content>`,
   host: {
-    "[attr.sd-toggle]": "toggle",
+    "[attr.sd-toggle]": "toggle()",
   },
 })
 export class SdSidebarControl {
   #parentControl = inject<SdSidebarContainerControl>(forwardRef(() => SdSidebarContainerControl));
 
-  get toggle() {
-    return this.#parentControl.toggle;
-  }
+  toggle = computed(() => this.#parentControl.toggle());
 }

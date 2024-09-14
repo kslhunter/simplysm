@@ -1,11 +1,11 @@
-import { ApplicationRef, createComponent, inject, Injectable, Input, Type } from "@angular/core";
+import { ApplicationRef, createComponent, Directive, inject, Injectable, input, signal, Type } from "@angular/core";
 import { SdModalControl } from "../controls/SdModalControl";
 
 @Injectable({ providedIn: "root" })
 export class SdModalProvider {
   #appRef = inject(ApplicationRef);
 
-  modalCount = 0;
+  modalCount = signal(0);
 
   async showAsync<T extends SdModalBase<any, any>>(
     modalType: Type<T>,
@@ -44,9 +44,8 @@ export class SdModalProvider {
 
       //-- attach comp
 
-      compRef.instance.isModal = true;
-      compRef.instance.title = title;
-      compRef.instance.param = param;
+      compRef.setInput("title", title);
+      compRef.setInput("param", param);
 
       const prevActiveElement = document.activeElement as HTMLElement | undefined;
       compRef.instance.close = (value?: T["__tOutput__"]): void => {
@@ -57,8 +56,8 @@ export class SdModalProvider {
           modalRef.destroy();
         });
 
-        modalRef.instance.open = false;
-        this.modalCount--;
+        modalRef.setInput("open", false);
+        this.modalCount.update((v) => v - 1);
 
         if (prevActiveElement) {
           prevActiveElement.focus();
@@ -69,21 +68,20 @@ export class SdModalProvider {
 
       //-- attach modal
 
-      modalRef.instance.key = options?.key;
-      modalRef.instance.title = title;
-      modalRef.instance.hideHeader = options?.hideHeader ?? false;
-      modalRef.instance.hideCloseButton = options?.hideCloseButton ?? false;
-      modalRef.instance.useCloseByBackdrop = options?.useCloseByBackdrop ?? false;
-      modalRef.instance.useCloseByEscapeKey = options?.useCloseByEscapeKey ?? false;
-      modalRef.instance.float = options?.float ?? false;
-      modalRef.instance.minHeightPx = options?.minHeightPx;
-      modalRef.instance.minWidthPx = options?.minWidthPx;
-      modalRef.instance.resizable = options?.resizable ?? false;
-      modalRef.instance.movable = options?.movable ?? false;
-      modalRef.instance.headerStyle = options?.headerStyle;
-      modalRef.instance.mobileFillDisabled = options?.mobileFillDisabled ?? false;
-      modalRef.instance.openChange.subscribe((value: boolean) => {
-        modalRef.instance.open = value;
+      modalRef.setInput("key", options?.key);
+      modalRef.setInput("title", title);
+      modalRef.setInput("hideHeader", options?.hideHeader ?? false);
+      modalRef.setInput("hideCloseButton", options?.hideCloseButton ?? false);
+      modalRef.setInput("useCloseByBackdrop", options?.useCloseByBackdrop ?? false);
+      modalRef.setInput("useCloseByEscapeKey", options?.useCloseByEscapeKey ?? false);
+      modalRef.setInput("float", options?.float ?? false);
+      modalRef.setInput("minHeightPx", options?.minHeightPx);
+      modalRef.setInput("minWidthPx", options?.minWidthPx);
+      modalRef.setInput("resizable", options?.resizable ?? false);
+      modalRef.setInput("movable", options?.movable ?? false);
+      modalRef.setInput("headerStyle", options?.headerStyle);
+      modalRef.setInput("mobileFillDisabled", options?.mobileFillDisabled ?? false);
+      modalRef.instance.open.subscribe((value: boolean) => {
         if (!value) {
           compRef.instance.close();
         }
@@ -92,22 +90,20 @@ export class SdModalProvider {
 
       //-- show
 
-      this.modalCount++;
-      modalRef.instance.open = true;
-      modalRef.instance.dialogElRef.nativeElement.focus();
+      this.modalCount.update((v) => v + 1);
+      modalRef.instance.open.set(true);
+      modalRef.instance.dialogElRef().nativeElement.focus();
     });
   }
 }
 
-@Injectable()
+@Directive()
 export abstract class SdModalBase<I, O> {
   __tInput__!: I;
   __tOutput__!: O;
 
-  isModal = false;
-
-  @Input({ required: true }) title!: string;
-  @Input({ required: true }) param!: I;
+  title = input.required<string>();
+  param = input.required<I>();
 
   close(value?: O): void {
     throw new Error("모달이 초기화되어있지 않습니다.");

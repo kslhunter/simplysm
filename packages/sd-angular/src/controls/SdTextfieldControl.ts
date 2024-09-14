@@ -2,17 +2,15 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  computed,
   ElementRef,
-  EventEmitter,
   HostListener,
   inject,
-  Input,
-  Output,
+  input,
+  model,
   ViewEncapsulation,
 } from "@angular/core";
 import { DateOnly, DateTime, JsonConvert, NumberUtil, StringUtil, Time } from "@simplysm/sd-core-common";
-import { coercionBoolean, coercionNumber } from "../utils/commons";
-import { sdGetter, TSdGetter } from "../utils/hooks";
 
 @Component({
   selector: "sd-textfield",
@@ -20,45 +18,6 @@ import { sdGetter, TSdGetter } from "../utils/hooks";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
-  template: `
-    <div
-      [style]="inputStyle"
-      [class]="['_contents', inputClass].filterExists().join(' ')"
-      [attr.title]="title ?? placeholder"
-      [style.visibility]="!readonly && !disabled ? 'hidden' : undefined"
-    >
-      @if (getControlType() === "password") {
-        <span class="tx-trans-light">****</span>
-      } @else {
-        @if (getControlValue()) {
-          <pre>{{ getControlValueText() }}</pre>
-        } @else {
-          <div class="tx-trans-lighter">{{ placeholder }}</div>
-        }
-      }
-    </div>
-    @if (!readonly && !disabled) {
-      <input
-        [type]="getControlType()"
-        [value]="getControlValue()"
-        [attr.placeholder]="placeholder"
-        [required]="required"
-        [attr.min]="getControlMin()"
-        [attr.max]="getControlMax()"
-        [attr.minlength]="minlength"
-        [attr.maxlength]="maxlength"
-        [attr.step]="getControlStep()"
-        [attr.pattern]="pattern"
-        [attr.title]="title ?? placeholder"
-        (input)="onInput($event)"
-        [attr.inputmode]="type === 'number' ? 'numeric' : undefined"
-        [style]="inputStyle"
-        [class]="inputClass"
-      />
-    }
-
-    <div class="_invalid-indicator"></div>
-  `,
   styles: [
     /* language=SCSS */ `
       @import "../scss/variables";
@@ -361,205 +320,231 @@ import { sdGetter, TSdGetter } from "../utils/hooks";
       }
     `,
   ],
+  template: `
+    <div
+      [style]="inputStyle()"
+      [class]="['_contents', inputClass()].filterExists().join(' ')"
+      [attr.title]="title() ?? placeholder()"
+      [style.visibility]="!readonly() && !disabled() ? 'hidden' : undefined"
+    >
+      @if (controlType() === "password") {
+        <span class="tx-trans-light">****</span>
+      } @else {
+        @if (controlValue()) {
+          <pre>{{ controlValueText() }}</pre>
+        } @else {
+          <div class="tx-trans-lighter">{{ placeholder() }}</div>
+        }
+      }
+    </div>
+    @if (!readonly() && !disabled()) {
+      <input
+        [type]="controlType()"
+        [value]="controlValue()"
+        [attr.placeholder]="placeholder()"
+        [required]="required()"
+        [attr.min]="controlMin()"
+        [attr.max]="controlMax()"
+        [attr.minlength]="minlength()"
+        [attr.maxlength]="maxlength()"
+        [attr.step]="controlStep()"
+        [attr.pattern]="pattern()"
+        [attr.title]="title() ?? placeholder()"
+        (input)="onInput($event)"
+        [attr.inputmode]="type() === 'number' ? 'numeric' : undefined"
+        [style]="inputStyle()"
+        [class]="inputClass()"
+      />
+    }
+
+    <div class="_invalid-indicator"></div>
+  `,
   host: {
-    "[attr.sd-type]": "type",
-    "[attr.sd-disabled]": "disabled",
-    "[attr.sd-readonly]": "readonly",
-    "[attr.sd-inline]": "inline",
-    "[attr.sd-inset]": "inset",
-    "[attr.sd-size]": "size",
-    "[attr.sd-theme]": "theme",
-    "[attr.sd-invalid]": "getErrorMessage()",
+    "[attr.sd-type]": "type()",
+    "[attr.sd-disabled]": "disabled()",
+    "[attr.sd-readonly]": "readonly()",
+    "[attr.sd-inline]": "inline()",
+    "[attr.sd-inset]": "inset()",
+    "[attr.sd-size]": "size()",
+    "[attr.sd-theme]": "theme()",
+    "[attr.sd-invalid]": "errorMessage()",
   },
 })
-export class SdTextfieldControl<K extends TSdTextfieldType> {
+export class SdTextfieldControl<K extends keyof TSdTextfieldTypes>{
   #elRef = inject<ElementRef<HTMLElement>>(ElementRef);
   #cdr = inject(ChangeDetectorRef);
 
-  @Input() value?: TSdTextfieldValue<K>;
-  @Output() valueChange = new EventEmitter<TSdTextfieldValue<K> | undefined>();
+  value = model<TSdTextfieldTypes[K]>();
 
-  @Input({ required: true }) type!: K;
-  @Input() placeholder?: string;
-  @Input() title?: string;
-  @Input({ transform: coercionBoolean }) disabled = false;
-  @Input({ transform: coercionBoolean }) readonly = false;
-  @Input({ transform: coercionBoolean }) required = false;
-  @Input() min?: TSdTextfieldValue<K>;
-  @Input() max?: TSdTextfieldValue<K>;
-  @Input({ transform: coercionNumber }) minlength?: number;
-  @Input({ transform: coercionNumber }) maxlength?: number;
+  type = input.required<K>();
+  placeholder = input<string>();
+  title = input<string>();
+  disabled = input(false);
+  readonly = input(false);
+  required = input(false);
+  min = input<TSdTextfieldTypes[K]>();
+  max = input<TSdTextfieldTypes[K]>();
+  minlength = input<number>();
+  maxlength = input<number>();
 
   /** 10, 1, 0.1, 0.01, 0.01 방식으로 입력 */
-  @Input({ transform: coercionNumber }) step?: number;
-  @Input() pattern?: string;
-  @Input({ transform: coercionBoolean }) inline = false;
-  @Input({ transform: coercionBoolean }) inset = false;
-  @Input() size?: "sm" | "lg";
-  @Input() validatorGetter?: TSdGetter<(value: TSdTextfieldValue<K> | undefined) => string | undefined>;
-  @Input() theme?: "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey";
-  @Input() inputStyle?: string;
-  @Input() inputClass?: string;
-  @Input() format?: string;
-  @Input({ transform: coercionBoolean }) useNumberComma = true;
+  step = input<number>();
+  pattern = input<string>();
+  inline = input(false);
+  inset = input(false);
+  size = input<"sm" | "lg">();
+  validatorFn = input<(value: TSdTextfieldTypes[K] | undefined) => string | undefined>();
+  theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey">();
+  inputStyle = input<string>();
+  inputClass = input<string>();
+  format = input<string>();
+  useNumberComma = input(true);
 
-  getControlType = sdGetter(this, [() => [this.type]], () => {
-    return this.type === "number"
+  controlType = computed(() => {
+    return this.type() === "number"
       ? "text"
-      : this.type === "format"
+      : this.type() === "format"
         ? "text"
-        : this.type === "datetime"
+        : this.type() === "datetime"
           ? "datetime-local"
-          : this.type === "datetime-sec"
+          : this.type() === "datetime-sec"
             ? "datetime-local"
-            : this.type === "time-sec"
+            : this.type() === "time-sec"
               ? "time"
-              : this.type;
+              : this.type();
   });
 
-  getControlValue = sdGetter(
-    this,
-    [() => [this.type], () => [this.value], () => [this.useNumberComma], () => [this.format]],
-    () => {
-      return this.#convertToControlValue(this.value);
-    },
-  );
+  controlValue = computed(() => {
+    return this.#convertToControlValue(this.value());
+  });
 
-  getControlValueText = sdGetter(this, [() => [this.type], () => [this.value], () => [this.getControlValue]], () => {
-    if (this.type === "datetime" && this.value instanceof DateTime) {
-      return this.value.toFormatString("yyyy-MM-dd tt hh:mm");
-    } else if (this.type === "datetime-sec" && this.value instanceof DateTime) {
-      return this.value.toFormatString("yyyy-MM-dd tt hh:mm:ss");
-    } else if (this.type === "time" && (this.value instanceof DateTime || this.value instanceof Time)) {
-      return this.value.toFormatString("tt hh:mm");
-    } else if (this.type === "time-sec" && (this.value instanceof DateTime || this.value instanceof Time)) {
-      return this.value.toFormatString("tt hh:mm:ss");
+  controlValueText = computed(() => {
+    const type = this.type();
+    const value = this.value();
+
+    if (type === "datetime" && value instanceof DateTime) {
+      return value.toFormatString("yyyy-MM-dd tt hh:mm");
+    } else if (type === "datetime-sec" && value instanceof DateTime) {
+      return value.toFormatString("yyyy-MM-dd tt hh:mm:ss");
+    } else if (type === "time" && (value instanceof DateTime || value instanceof Time)) {
+      return value.toFormatString("tt hh:mm");
+    } else if (type === "time-sec" && (value instanceof DateTime || value instanceof Time)) {
+      return value.toFormatString("tt hh:mm:ss");
     } else {
-      return this.getControlValue();
+      return this.controlValue();
     }
   });
 
-  getControlStep = sdGetter(this, [() => [this.type], () => [this.step]], () => {
-    if (this.step !== undefined) {
-      return this.step;
-    } else if (this.type === "datetime-sec" || this.type === "time-sec") {
+  controlStep = computed(() => {
+    if (this.step() !== undefined) {
+      return this.step();
+    } else if (this.type() === "datetime-sec" || this.type() === "time-sec") {
       return 1;
     } else {
       return "any";
     }
   });
 
-  getControlMin = sdGetter(
-    this,
-    [() => [this.type], () => [this.min], () => [this.useNumberComma], () => [this.format]],
-    () => {
-      if (this.min instanceof DateOnly) {
-        return this.min.toFormatString("yyyy-MM-dd");
+  controlMin = computed(() => {
+    const min = this.min();
+    if (min instanceof DateOnly) {
+      return min.toFormatString("yyyy-MM-dd");
+    } else {
+      return this.#convertToControlValue(min);
+    }
+  });
+
+  controlMax = computed(() => {
+    const max = this.max();
+    if (max instanceof DateOnly) {
+      return max.toFormatString("yyyy-MM-dd");
+    } else {
+      return this.#convertToControlValue(max);
+    }
+  });
+
+  errorMessage = computed(() => {
+    const value = this.value();
+
+    const errorMessages: string[] = [];
+    if (value == null) {
+      if (this.required()) {
+        errorMessages.push("값을 입력하세요.");
+      }
+    } else if (this.type() === "number") {
+      if (typeof value !== "number") {
+        errorMessages.push("숫자를 입력하세요");
       } else {
-        return this.#convertToControlValue(this.min);
+        const min = this.min();
+        const max = this.max();
+        if (typeof min === "number" && min > value) {
+          errorMessages.push(`${this.min}보다 크거나 같아야 합니다.`);
+        }
+        if (typeof max === "number" && max < value) {
+          errorMessages.push(`${this.max}보다 작거나 같아야 합니다.`);
+        }
       }
-    },
-  );
+    } else if (this.type() === "format" && !StringUtil.isNullOrEmpty(this.format())) {
+      const formatItems = this.format()!.split("|");
 
-  getControlMax = sdGetter(
-    this,
-    [() => [this.type], () => [this.max], () => [this.useNumberComma], () => [this.format]],
-    () => {
-      if (this.max instanceof DateOnly) {
-        return this.max.toFormatString("yyyy-MM-dd");
+      if (!formatItems.some((formatItem) => formatItem.match(/X/g)?.length === (value as string).length)) {
+        errorMessages.push(`문자의 길이가 요구되는 길이와 다릅니다.`);
+      }
+    } else if (["year", "month", "date"].includes(this.type())) {
+      if (!(value instanceof DateOnly)) {
+        errorMessages.push("날짜를 입력하세요");
       } else {
-        return this.#convertToControlValue(this.max);
-      }
-    },
-  );
-
-  getErrorMessage = sdGetter(
-    this,
-    [
-      () => [this.type],
-      () => [this.value],
-      () => [this.required],
-      () => [this.min],
-      () => [this.max],
-      () => [this.minlength],
-      () => [this.maxlength],
-      () => [this.validatorGetter],
-    ],
-    () => {
-      const errorMessages: string[] = [];
-      if (this.value == null) {
-        if (this.required) {
-          errorMessages.push("값을 입력하세요.");
+        const min = this.min();
+        const max = this.max();
+        if (min instanceof DateOnly && min.tick > value.tick) {
+          errorMessages.push(`${this.min}보다 크거나 같아야 합니다.`);
         }
-      } else if (this.type === "number") {
-        if (typeof this.value !== "number") {
-          errorMessages.push("숫자를 입력하세요");
-        } else {
-          if (typeof this.min === "number" && this.min > this.value) {
-            errorMessages.push(`${this.min}보다 크거나 같아야 합니다.`);
-          }
-          if (typeof this.max === "number" && this.max < this.value) {
-            errorMessages.push(`${this.max}보다 작거나 같아야 합니다.`);
-          }
-        }
-      } else if (this.type === "format" && !StringUtil.isNullOrEmpty(this.format)) {
-        const formatItems = this.format.split("|");
-
-        if (!formatItems.some((formatItem) => formatItem.match(/X/g)?.length === (this.value as string).length)) {
-          errorMessages.push(`문자의 길이가 요구되는 길이와 다릅니다.`);
-        }
-      } else if (["year", "month", "date"].includes(this.type)) {
-        if (!(this.value instanceof DateOnly)) {
-          errorMessages.push("날짜를 입력하세요");
-        } else {
-          if (this.min instanceof DateOnly && this.min.tick > this.value.tick) {
-            errorMessages.push(`${this.min}보다 크거나 같아야 합니다.`);
-          }
-          if (this.max instanceof DateOnly && this.max.tick < this.value.tick) {
-            errorMessages.push(`${this.max}보다 작거나 같아야 합니다.`);
-          }
-        }
-      } else if (["datetime", "datetime-sec"].includes(this.type)) {
-        if (!(this.value instanceof DateTime)) {
-          errorMessages.push("날짜 및 시간을 입력하세요");
-        }
-      } else if (["time", "time-sec"].includes(this.type)) {
-        if (!(this.value instanceof Time)) {
-          errorMessages.push("시간을 입력하세요");
-        }
-      } else if (this.type === "text") {
-        if (this.minlength !== undefined && this.minlength > (this.value as string).length) {
-          errorMessages.push(`문자의 길이가 ${this.minlength}보다 길거나 같아야 합니다.`);
-        }
-        if (this.maxlength !== undefined && this.maxlength > (this.value as string).length) {
-          errorMessages.push(`문자의 길이가 ${this.maxlength}보다 짧거나 같아야 합니다.`);
+        if (max instanceof DateOnly && max.tick < value.tick) {
+          errorMessages.push(`${this.max}보다 작거나 같아야 합니다.`);
         }
       }
-
-      if (this.validatorGetter) {
-        const message = this.validatorGetter(this.value);
-        if (message !== undefined) {
-          errorMessages.push(message);
-        }
+    } else if (["datetime", "datetime-sec"].includes(this.type())) {
+      if (!(value instanceof DateTime)) {
+        errorMessages.push("날짜 및 시간을 입력하세요");
       }
-
-      const fullErrorMessage = errorMessages.join("\r\n");
-
-      const inputEl = this.#elRef.nativeElement.findFirst("input");
-      if (inputEl instanceof HTMLInputElement) {
-        inputEl.setCustomValidity(fullErrorMessage);
+    } else if (["time", "time-sec"].includes(this.type())) {
+      if (!(value instanceof Time)) {
+        errorMessages.push("시간을 입력하세요");
       }
+    } else if (this.type() === "text") {
+      const minlength = this.minlength();
+      const maxlength = this.maxlength();
+      if (minlength !== undefined && minlength > (value as string).length) {
+        errorMessages.push(`문자의 길이가 ${this.minlength}보다 길거나 같아야 합니다.`);
+      }
+      if (maxlength !== undefined && maxlength > (value as string).length) {
+        errorMessages.push(`문자의 길이가 ${this.maxlength}보다 짧거나 같아야 합니다.`);
+      }
+    }
 
-      return StringUtil.isNullOrEmpty(fullErrorMessage) ? undefined : fullErrorMessage;
-    },
-  );
+    if (this.validatorFn()) {
+      const message = this.validatorFn()!(value);
+      if (message !== undefined) {
+        errorMessages.push(message);
+      }
+    }
+
+    const fullErrorMessage = errorMessages.join("\r\n");
+
+    const inputEl = this.#elRef.nativeElement.findFirst("input");
+    if (inputEl instanceof HTMLInputElement) {
+      inputEl.setCustomValidity(fullErrorMessage);
+    }
+
+    return StringUtil.isNullOrEmpty(fullErrorMessage) ? undefined : fullErrorMessage;
+  });
 
   onInput(event: Event) {
     const inputEl = event.target as HTMLInputElement;
 
     if (inputEl.value === "") {
       this.#setValue(undefined);
-    } else if (this.type === "number") {
+    } else if (this.type() === "number") {
       const inputValue = inputEl.value.replace(/[^0-9-.]/g, "");
       if (
         Number.isNaN(Number(inputValue)) ||
@@ -569,8 +554,8 @@ export class SdTextfieldControl<K extends TSdTextfieldType> {
       } else {
         this.#setValue(NumberUtil.parseFloat(inputValue));
       }
-    } else if (this.type === "format") {
-      const nonFormatChars = this.format?.match(/[^X]/g)?.distinct();
+    } else if (this.type() === "format") {
+      const nonFormatChars = this.format()?.match(/[^X]/g)?.distinct();
       if (nonFormatChars) {
         this.#setValue(
           inputEl.value.replace(new RegExp(`[${nonFormatChars.map((item) => "\\" + item).join("")}]`, "g"), ""),
@@ -578,15 +563,15 @@ export class SdTextfieldControl<K extends TSdTextfieldType> {
       } else {
         this.#setValue(inputEl.value);
       }
-    } else if (["year", "month", "date"].includes(this.type)) {
+    } else if (["year", "month", "date"].includes(this.type())) {
       try {
         this.#setValue(DateOnly.parse(inputEl.value));
       } catch {}
-    } else if (["datetime", "datetime-sec"].includes(this.type)) {
+    } else if (["datetime", "datetime-sec"].includes(this.type())) {
       try {
         this.#setValue(DateTime.parse(inputEl.value));
       } catch {}
-    } else if (["time", "time-sec"].includes(this.type)) {
+    } else if (["time", "time-sec"].includes(this.type())) {
       try {
         this.#setValue(Time.parse(inputEl.value));
       } catch {}
@@ -596,23 +581,22 @@ export class SdTextfieldControl<K extends TSdTextfieldType> {
   }
 
   #setValue(newValue: any): void {
-    if (this.value !== newValue) {
-      this.value = newValue;
-      this.valueChange.emit(newValue);
-    }
+    this.value.set(newValue);
   }
 
-  #convertToControlValue(value: TSdTextfieldValue<K> | undefined): string {
+  #convertToControlValue(value: TSdTextfieldTypes[K] | undefined): string {
     if (value == null) {
       return "";
     }
 
-    if (this.type === "number" && typeof value === "number") {
-      return this.useNumberComma ? value.toLocaleString(undefined, { maximumFractionDigits: 10 }) : value.toString(10);
+    if (this.type() === "number" && typeof value === "number") {
+      return this.useNumberComma()
+        ? value.toLocaleString(undefined, { maximumFractionDigits: 10 })
+        : value.toString(10);
     }
 
-    if (this.type === "format" && !StringUtil.isNullOrEmpty(this.format) && typeof value === "string") {
-      const formatItems = this.format.split("|");
+    if (this.type() === "format" && !StringUtil.isNullOrEmpty(this.format()) && typeof value === "string") {
+      const formatItems = this.format()!.split("|");
 
       for (const formatItem of formatItems) {
         const fullLength = formatItem.match(/X/g)?.length;
@@ -634,31 +618,31 @@ export class SdTextfieldControl<K extends TSdTextfieldType> {
       return value;
     }
 
-    if (this.type === "datetime" && value instanceof DateTime) {
+    if (this.type() === "datetime" && value instanceof DateTime) {
       return value.toFormatString("yyyy-MM-ddTHH:mm");
     }
 
-    if (this.type === "datetime-sec" && value instanceof DateTime) {
+    if (this.type() === "datetime-sec" && value instanceof DateTime) {
       return value.toFormatString("yyyy-MM-ddTHH:mm:ss");
     }
 
-    if (this.type === "year" && value instanceof DateOnly) {
+    if (this.type() === "year" && value instanceof DateOnly) {
       return value.toFormatString("yyyy");
     }
 
-    if (this.type === "month" && value instanceof DateOnly) {
+    if (this.type() === "month" && value instanceof DateOnly) {
       return value.toFormatString("yyyy-MM");
     }
 
-    if (this.type === "date" && value instanceof DateOnly) {
+    if (this.type() === "date" && value instanceof DateOnly) {
       return value.toFormatString("yyyy-MM-dd");
     }
 
-    if (this.type === "time" && (value instanceof DateTime || value instanceof Time)) {
+    if (this.type() === "time" && (value instanceof DateTime || value instanceof Time)) {
       return value.toFormatString("HH:mm");
     }
 
-    if (this.type === "time-sec" && (value instanceof DateTime || value instanceof Time)) {
+    if (this.type() === "time-sec" && (value instanceof DateTime || value instanceof Time)) {
       return value.toFormatString("HH:mm:ss");
     }
 
@@ -672,7 +656,7 @@ export class SdTextfieldControl<K extends TSdTextfieldType> {
   @HostListener("sd-sheet-cell-copy")
   async onSdSheetCellCopy() {
     if ("clipboard" in navigator) {
-      await navigator.clipboard.writeText(JsonConvert.stringify(this.value));
+      await navigator.clipboard.writeText(JsonConvert.stringify(this.value()));
     }
   }
 
@@ -685,7 +669,7 @@ export class SdTextfieldControl<K extends TSdTextfieldType> {
   }
 }
 
-export type TSdTextfieldType =
+/*export type TSdTextfieldType =
   | "number"
   | "text"
   | "password"
@@ -700,7 +684,7 @@ export type TSdTextfieldType =
   | "email"
   | "format";
 
-export type TSdTextfieldValue<K> = K extends "number"
+export type TSdTextfieldTypes[K] = K extends "number"
   ? number
   : K extends "text" | "password" | "color" | "email" | "format"
     ? string
@@ -710,4 +694,24 @@ export type TSdTextfieldValue<K> = K extends "number"
         ? DateTime
         : K extends "time" | "time-sec"
           ? Time
-          : never;
+          : never;*/
+
+export type TSdTextfieldTypes = {
+  "number": number;
+
+  "text": string;
+  "password": string;
+  "color": string;
+  "email": string;
+  "format": string;
+
+  "date": DateOnly;
+  "month": DateOnly;
+  "year": DateOnly;
+
+  "datetime": DateTime;
+  "datetime-sec": DateTime;
+
+  "time": Time;
+  "time-sec": Time;
+};

@@ -1,21 +1,21 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  ContentChild,
+  computed,
+  contentChild,
+  effect,
   ElementRef,
-  EventEmitter,
   inject,
-  Input,
-  Output,
+  input,
+  model,
+  signal,
   TemplateRef,
-  ViewChild,
+  viewChild,
   ViewEncapsulation,
 } from "@angular/core";
 import { SdSelectItemControl } from "./SdSelectItemControl";
 import { SdDropdownControl } from "./SdDropdownControl";
 import { SdItemOfTemplateContext, SdItemOfTemplateDirective } from "../directives/SdItemOfTemplateDirective";
-import { coercionBoolean } from "../utils/commons";
-import { SdIconControl } from "./SdIconControl";
 import { SdEventsDirective } from "../directives/SdEventsDirective";
 import { SdDockContainerControl } from "./SdDockContainerControl";
 import { NgTemplateOutlet } from "@angular/common";
@@ -28,7 +28,7 @@ import { SdDropdownPopupControl } from "./SdDropdownPopupControl";
 import { StringUtil } from "@simplysm/sd-core-common";
 import { SdAngularOptionsProvider } from "../providers/SdAngularOptionsProvider";
 import { SdButtonControl } from "./SdButtonControl";
-import { sdCheck, sdGetter, TSdGetter } from "../utils/hooks";
+import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 
 @Component({
   selector: "sd-select",
@@ -38,7 +38,6 @@ import { sdCheck, sdGetter, TSdGetter } from "../utils/hooks";
   imports: [
     SdDropdownControl,
     SdDropdownPopupControl,
-    SdIconControl,
     SdEventsDirective,
     SdDockContainerControl,
     SdDockControl,
@@ -48,101 +47,8 @@ import { sdCheck, sdGetter, TSdGetter } from "../utils/hooks";
     NgTemplateOutlet,
     SdTypedTemplateDirective,
     SdButtonControl,
+    FaIconComponent,
   ],
-  template: `
-    <sd-dropdown
-      #dropdown
-      [disabled]="disabled"
-      [contentClass]="contentClass"
-      [contentStyle]="contentStyle"
-      [open]="open"
-      (openChange)="openChange.emit($event)"
-    >
-      <div class="_sd-select-control">
-        <div #contentEl class="_sd-select-control-content"></div>
-        <div class="_sd-select-control-icon">
-          <sd-icon [icon]="icons.caretDown" />
-        </div>
-
-        <div class="_invalid-indicator"></div>
-      </div>
-
-      @if (!disabled) {
-        <ng-content select="sd-select-button" />
-      }
-
-      <sd-dropdown-popup #dropdownPopup (keydown.outside)="onPopupKeydownOutside($event)">
-        @if (!items) {
-          <sd-dock-container>
-            @if (headerTemplateRef) {
-              <sd-dock>
-                <ng-template [ngTemplateOutlet]="headerTemplateRef" />
-              </sd-dock>
-            }
-
-            <sd-pane>
-              <ng-content></ng-content>
-            </sd-pane>
-          </sd-dock-container>
-        } @else {
-          <sd-dock-container>
-            @if (headerTemplateRef) {
-              <sd-dock>
-                <ng-template [ngTemplateOutlet]="headerTemplateRef" />
-              </sd-dock>
-            }
-
-            @if (selectMode === "multi" && !hideSelectAll) {
-              <sd-dock class="bdb bdb-trans-default p-sm-default">
-                <sd-anchor (click)="onSelectAllButtonClick(true)"> 전체선택</sd-anchor>
-                <sd-gap width="sm"></sd-gap>
-                <sd-anchor (click)="onSelectAllButtonClick(false)"> 전체해제</sd-anchor>
-              </sd-dock>
-            }
-
-            <sd-pane>
-              <ng-template [ngTemplateOutlet]="beforeTemplateRef ?? null" />
-              <ng-template #rowOfList [typed]="rowOfListType" let-items="items" let-depth="depth">
-                @for (item of items; let index = $index; track trackByGetter(item, index)) {
-                  <div class="_sd-select-item">
-                    <ng-template
-                      [ngTemplateOutlet]="itemTemplateRef ?? null"
-                      [ngTemplateOutletContext]="{
-                        $implicit: item,
-                        item: item,
-                        index: index,
-                        depth: depth,
-                      }"
-                    ></ng-template>
-
-                    @if (
-                      getChildrenGetter &&
-                      getChildrenGetter(item, index, depth) &&
-                      getChildrenGetter(item, index, depth).length > 0
-                    ) {
-                      <div class="_children">
-                        <ng-template
-                          [ngTemplateOutlet]="rowOfList"
-                          [ngTemplateOutletContext]="{
-                            items: getChildrenGetter(item, index, depth),
-                            depth: depth + 1,
-                          }"
-                        ></ng-template>
-                      </div>
-                    }
-                  </div>
-                }
-              </ng-template>
-              <ng-template
-                [ngTemplateOutlet]="rowOfList"
-                [ngTemplateOutletContext]="{ items: items, depth: 0 }"
-              ></ng-template>
-            </sd-pane>
-          </sd-dock-container>
-        }
-      </sd-dropdown-popup>
-    </sd-dropdown>
-  `,
   styles: [
     /* language=SCSS */ `
       @import "../scss/mixins";
@@ -309,55 +215,146 @@ import { sdCheck, sdGetter, TSdGetter } from "../utils/hooks";
       }
     `,
   ],
+  template: `
+    <sd-dropdown
+      #dropdown
+      [disabled]="disabled()"
+      [contentClass]="contentClass()"
+      [contentStyle]="contentStyle()"
+      [(open)]="open"
+    >
+      <div class="_sd-select-control">
+        <div #contentEl class="_sd-select-control-content"></div>
+        <div class="_sd-select-control-icon">
+          <fa-icon [icon]="icons.caretDown" />
+        </div>
+
+        <div class="_invalid-indicator"></div>
+      </div>
+
+      @if (!disabled()) {
+        <ng-content select="sd-select-button" />
+      }
+
+      <sd-dropdown-popup #dropdownPopup (keydown)="onPopupKeydown($event)">
+        @if (!items()) {
+          <sd-dock-container>
+            @if (headerTemplateRef()) {
+              <sd-dock>
+                <ng-template [ngTemplateOutlet]="headerTemplateRef()!" />
+              </sd-dock>
+            }
+
+            <sd-pane>
+              <ng-content></ng-content>
+            </sd-pane>
+          </sd-dock-container>
+        } @else {
+          <sd-dock-container>
+            @if (headerTemplateRef()) {
+              <sd-dock>
+                <ng-template [ngTemplateOutlet]="headerTemplateRef()!" />
+              </sd-dock>
+            }
+
+            @if (selectMode() === "multi" && !hideSelectAll()) {
+              <sd-dock class="bdb bdb-trans-default p-sm-default">
+                <sd-anchor (click)="onSelectAllButtonClick(true)"> 전체선택</sd-anchor>
+                <sd-gap width="sm"></sd-gap>
+                <sd-anchor (click)="onSelectAllButtonClick(false)"> 전체해제</sd-anchor>
+              </sd-dock>
+            }
+
+            <sd-pane>
+              <ng-template [ngTemplateOutlet]="beforeTemplateRef() ?? null" />
+              <ng-template #rowOfList [typed]="rowOfListType" let-items="items" let-depth="depth">
+                @for (item of items; let index = $index; track trackByFn()(item, index)) {
+                  <div class="_sd-select-item">
+                    <ng-template
+                      [ngTemplateOutlet]="itemTemplateRef() ?? null"
+                      [ngTemplateOutletContext]="{
+                        $implicit: item,
+                        item: item,
+                        index: index,
+                        depth: depth,
+                      }"
+                    ></ng-template>
+
+                    @if (
+                      getChildrenFn() &&
+                      getChildrenFn()!(item, index, depth) &&
+                      getChildrenFn()!(item, index, depth).length > 0
+                    ) {
+                      <div class="_children">
+                        <ng-template
+                          [ngTemplateOutlet]="rowOfList"
+                          [ngTemplateOutletContext]="{
+                            items: getChildrenFn()!(item, index, depth),
+                            depth: depth + 1,
+                          }"
+                        ></ng-template>
+                      </div>
+                    }
+                  </div>
+                }
+              </ng-template>
+              <ng-template
+                [ngTemplateOutlet]="rowOfList"
+                [ngTemplateOutletContext]="{ items: items(), depth: 0 }"
+              ></ng-template>
+            </sd-pane>
+          </sd-dock-container>
+        }
+      </sd-dropdown-popup>
+    </sd-dropdown>
+  `,
   host: {
-    "[attr.sd-disabled]": "disabled",
-    "[attr.sd-inline]": "inline",
-    "[attr.sd-inset]": "inset",
-    "[attr.sd-size]": "size",
-    "[attr.sd-invalid]": "getErrorMessage()",
+    "[attr.sd-disabled]": "disabled()",
+    "[attr.sd-inline]": "inline()",
+    "[attr.sd-inset]": "inset()",
+    "[attr.sd-size]": "size()",
+    "[attr.sd-invalid]": "errorMessage()",
   },
 })
 export class SdSelectControl<M extends "single" | "multi", T> {
   icons = inject(SdAngularOptionsProvider).icons;
 
-  @Input() value?: M extends "multi" ? any[] : any;
-  @Output() valueChange = new EventEmitter<M extends "multi" ? any[] : any>();
+  value = model<TSelectValue<any>[M]>();
+  open = model(false);
 
-  @Input() open = false;
-  @Output() openChange = new EventEmitter<boolean>();
+  required = input(false);
+  disabled = input(false);
 
-  @Input({ transform: coercionBoolean }) required = false;
-  @Input({ transform: coercionBoolean }) disabled = false;
+  items = input<T[]>();
+  trackByFn = input<(item: T, index: number) => any>((item) => item);
+  getChildrenFn = input<(item: T, index: number, depth: number) => T[]>();
 
-  @Input() items?: T[];
-  @Input() trackByGetter: TSdGetter<(item: T, index: number) => any> = sdGetter(this, [], (item) => item);
-  @Input() getChildrenGetter?: TSdGetter<(item: T, index: number, depth: number) => T[]>;
+  inline = input(false);
+  inset = input(false);
+  size = input<"sm" | "lg">();
+  selectMode = input("single" as M);
+  contentClass = input<string>();
+  contentStyle = input<string>();
+  multiSelectionDisplayDirection = input<"vertical" | "horizontal">();
+  hideSelectAll = input(false);
+  placeholder = input<string>();
 
-  @Input({ transform: coercionBoolean }) inline = false;
-  @Input({ transform: coercionBoolean }) inset = false;
-  @Input() size?: "sm" | "lg";
-  @Input() selectMode: M = "single" as M;
-  @Input() contentClass?: string;
-  @Input() contentStyle?: string;
-  @Input() multiSelectionDisplayDirection?: "vertical" | "horizontal";
-  @Input({ transform: coercionBoolean }) hideSelectAll = false;
-  @Input() placeholder?: string;
+  contentElRef = viewChild.required<any, ElementRef<HTMLElement>>("contentEl", { read: ElementRef });
+  dropdownControl = viewChild.required<SdDropdownControl>("dropdown");
+  dropdownPopupElRef = viewChild.required<any, ElementRef<HTMLElement>>("dropdownPopup", { read: ElementRef });
 
-  @ViewChild("contentEl", { static: true }) contentElRef!: ElementRef<HTMLElement>;
-  @ViewChild("dropdown", { static: true }) dropdownControl!: SdDropdownControl;
-  @ViewChild("dropdownPopup", { static: true, read: ElementRef }) dropdownPopupElRef!: ElementRef<HTMLElement>;
+  headerTemplateRef = contentChild<any, TemplateRef<void>>("header", { read: TemplateRef });
+  beforeTemplateRef = contentChild<any, TemplateRef<void>>("before", { read: TemplateRef });
+  itemTemplateRef = contentChild<any, TemplateRef<SdItemOfTemplateContext<T>>>(SdItemOfTemplateDirective, {
+    read: TemplateRef,
+  });
 
-  @ContentChild("header", { static: true }) headerTemplateRef?: TemplateRef<void>;
-  @ContentChild("before", { static: true }) beforeTemplateRef?: TemplateRef<void>;
-  @ContentChild(SdItemOfTemplateDirective, { static: true, read: TemplateRef })
-  itemTemplateRef?: TemplateRef<SdItemOfTemplateContext<T>>;
+  itemControls = signal<SdSelectItemControl[]>([]);
 
-  itemControls: SdSelectItemControl[] = [];
-
-  getErrorMessage = sdGetter(this, [() => [this.required], () => [this.value]], () => {
+  errorMessage = computed(() => {
     const errorMessages: string[] = [];
 
-    if (this.required && this.value === undefined) {
+    if (this.required() && this.value() === undefined) {
       errorMessages.push("선택된 항목이 없습니다.");
     }
 
@@ -366,50 +363,34 @@ export class SdSelectControl<M extends "single" | "multi", T> {
   });
 
   constructor() {
-    sdCheck.outside(
-      this,
-      [
-        () => [this.itemControls, "one"],
-        () => [this.selectMode],
-        () => [this.value],
-        () => [this.multiSelectionDisplayDirection],
-        () => [this.placeholder],
-        () => [
-          this.itemControls
-            .filter((item) => item.isSelected)
-            .map((item) => item.elRef.nativeElement.findFirst("> ._content")?.innerHTML),
-          "one",
-        ],
-      ],
-      () => {
-        const selectedItemControls = this.itemControls.filter((itemControl) => itemControl.isSelected);
-        const selectedItemEls = selectedItemControls.map((item) => item.elRef.nativeElement);
-        const innerHTML = selectedItemEls
-          .map((el) => el.findFirst("> ._content")?.innerHTML ?? "")
-          .map((item) => `<div style="display: inline-block">${item}</div>`)
-          .join(this.multiSelectionDisplayDirection === "vertical" ? "<div class='p-sm-0'></div>" : ", ");
+    effect(() => {
+      const selectedItemControls = this.itemControls().filter((itemControl) => itemControl.isSelected());
+      const selectedItemEls = selectedItemControls.map((item) => item.elRef.nativeElement);
+      const innerHTML = selectedItemEls
+        .map((el) => el.findFirst("> ._content")?.innerHTML ?? "")
+        .map((item) => `<div style="display: inline-block">${item}</div>`)
+        .join(this.multiSelectionDisplayDirection() === "vertical" ? "<div class='p-sm-0'></div>" : ", ");
 
-        if (innerHTML === "" && this.placeholder !== undefined) {
-          this.contentElRef.nativeElement.innerHTML = `<span class='sd-text-color-grey-default'>${this.placeholder}</span>`;
-        } else {
-          this.contentElRef.nativeElement.innerHTML = innerHTML;
-        }
-      },
-    );
+      if (innerHTML === "" && this.placeholder() !== undefined) {
+        this.contentElRef().nativeElement.innerHTML = `<span class='sd-text-color-grey-default'>${this.placeholder()}</span>`;
+      } else {
+        this.contentElRef().nativeElement.innerHTML = innerHTML;
+      }
+    });
   }
 
-  onPopupKeydownOutside(event: KeyboardEvent) {
+  onPopupKeydown(event: KeyboardEvent) {
     if (!event.ctrlKey && !event.altKey && (event.key === "ArrowDown" || event.key === "ArrowUp")) {
       event.preventDefault();
       event.stopPropagation();
 
       if (document.activeElement instanceof HTMLElement) {
-        const focusableEls = this.dropdownPopupElRef.nativeElement.findFocusableAll();
+        const focusableEls = this.dropdownPopupElRef().nativeElement.findFocusableAll();
         const currIndex = focusableEls.indexOf(document.activeElement);
 
         if (event.key === "ArrowUp") {
           if (currIndex === 0) {
-            this.dropdownControl.contentElRef.nativeElement.focus();
+            this.dropdownControl().contentElRef().nativeElement.focus();
           } else {
             focusableEls[currIndex - 1].focus();
           }
@@ -423,49 +404,39 @@ export class SdSelectControl<M extends "single" | "multi", T> {
   }
 
   getIsSelectedItemControl(itemControl: SdSelectItemControl): boolean {
-    if (this.selectMode === "multi") {
-      const itemKeyValues = this.value as any[] | undefined;
-      return itemKeyValues?.includes(itemControl.value) ?? false;
+    if (this.selectMode() === "multi") {
+      const itemKeyValues = this.value() as any[] | undefined;
+      return itemKeyValues?.includes(itemControl.value()) ?? false;
     } else {
-      const itemKeyValue = this.value;
-      return itemKeyValue === itemControl.value;
+      const itemKeyValue = this.value();
+      return itemKeyValue === itemControl.value();
     }
   }
 
   onItemControlClick(itemControl: SdSelectItemControl, close: boolean) {
-    if (this.selectMode === "multi") {
-      const currValue = [...((this.value ?? []) as any[])];
-      if (currValue.includes(itemControl.value)) {
-        currValue.remove(itemControl.value);
-      } else {
-        currValue.push(itemControl.value);
-      }
-
-      this.valueChange.emit(currValue);
+    if (this.selectMode() === "multi") {
+      this.value.update((v) => {
+        const r = [...((v ?? []) as any[])];
+        if (r.includes(itemControl.value())) {
+          r.remove(itemControl.value());
+        } else {
+          r.push(itemControl.value());
+        }
+        return r;
+      });
     } else {
-      if (this.value !== itemControl.value) {
-        this.value = itemControl.value;
-        this.valueChange.emit(itemControl.value);
-      }
+      this.value.set(itemControl.value());
     }
 
     if (close) {
-      this.dropdownControl.open = false;
-      this.dropdownControl.openChange.emit(false);
+      this.dropdownControl().open.set(false);
     }
   }
 
   onSelectAllButtonClick(check: boolean) {
-    const value = check ? this.itemControls.map((item) => item.value) : [];
+    const value = check ? this.itemControls().map((item) => item.value()) : [];
 
-    if (this.value !== value) {
-      this.value = value;
-      this.valueChange.emit(value);
-    }
-
-    for (const itemControl of this.itemControls) {
-      itemControl.markForCheck();
-    }
+    this.value.set(value);
   }
 
   protected readonly rowOfListType!: {
@@ -473,3 +444,8 @@ export class SdSelectControl<M extends "single" | "multi", T> {
     depth: number;
   };
 }
+
+export type TSelectValue<T> = {
+  multi: T[];
+  single: T;
+};

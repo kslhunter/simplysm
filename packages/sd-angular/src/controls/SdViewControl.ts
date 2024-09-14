@@ -1,5 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, ViewEncapsulation } from "@angular/core";
-import { coercionBoolean } from "../utils/commons";
+import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
 
 @Component({
   selector: "sd-view",
@@ -7,7 +6,6 @@ import { coercionBoolean } from "../utils/commons";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
-  template: ` <ng-content></ng-content>`,
   styles: [
     /* language=SCSS */ `
       sd-view {
@@ -20,11 +18,12 @@ import { coercionBoolean } from "../utils/commons";
       }
     `,
   ],
+  template: ` <ng-content></ng-content>`,
   host: {
-    "[attr.sd-fill]": "fill",
+    "[attr.sd-fill]": "fill()",
   },
 })
 export class SdViewControl {
-  @Input() value?: any;
-  @Input({ transform: coercionBoolean }) fill = false;
+  value = input<any>();
+  fill = input(false);
 }

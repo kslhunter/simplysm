@@ -2,10 +2,9 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
-  EventEmitter,
   inject,
-  Output,
-  ViewChild,
+  output,
+  viewChild,
   ViewEncapsulation,
 } from "@angular/core";
 import { SdToastProvider } from "../providers/SdToastProvider";
@@ -27,20 +26,20 @@ import { SdEventsDirective } from "../directives/SdEventsDirective";
 export class SdFormControl {
   #sdToast = inject(SdToastProvider);
 
-  @ViewChild("formEl") formElRef!: ElementRef<HTMLFormElement>;
+  formElRef = viewChild.required<any, ElementRef<HTMLFormElement>>("formEl", { read: ElementRef });
 
-  @Output() submit = new EventEmitter<SubmitEvent>();
-  @Output() invalid = new EventEmitter();
+  submit = output<SubmitEvent>();
+  invalid = output();
 
   requestSubmit() {
-    this.formElRef.nativeElement.requestSubmit();
+    this.formElRef().nativeElement.requestSubmit();
   }
 
   onSubmit(event: SubmitEvent) {
     event.preventDefault();
     event.stopPropagation();
 
-    const firstInvalidEl = this.formElRef.nativeElement.findFirst<HTMLElement>("*:invalid, *[sd-invalid]");
+    const firstInvalidEl = this.formElRef().nativeElement.findFirst<HTMLElement>("*:invalid, *[sd-invalid]");
 
     if (!firstInvalidEl) {
       this.submit.emit(event);

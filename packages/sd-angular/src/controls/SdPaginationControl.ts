@@ -1,43 +1,14 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  inject,
-  Input,
-  Output,
-  ViewEncapsulation,
-} from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, inject, input, model, ViewEncapsulation } from "@angular/core";
 import { SdAnchorControl } from "./SdAnchorControl";
-import { SdIconControl } from "./SdIconControl";
-import { coercionNumber } from "../utils/commons";
 import { SdAngularOptionsProvider } from "../providers/SdAngularOptionsProvider";
-import { sdGetter } from "../utils/hooks";
+import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 
 @Component({
   selector: "sd-pagination",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdAnchorControl, SdIconControl],
-  template: `
-    <sd-anchor [disabled]="!getHasPrev()" (click)="onGoFirstClick()">
-      <sd-icon [icon]="icons.angleDoubleLeft" fixedWidth />
-    </sd-anchor>
-    <sd-anchor [disabled]="!getHasPrev()" (click)="onPrevClick()">
-      <sd-icon [icon]="icons.angleLeft" fixedWidth />
-    </sd-anchor>
-    @for (displayPage of getDisplayPages(); track displayPage) {
-      <sd-anchor (click)="onPageClick(displayPage)" [attr.sd-selected]="displayPage === page">
-        {{ displayPage + 1 }}
-      </sd-anchor>
-    }
-    <sd-anchor [disabled]="!getHasNext()" (click)="onNextClick()">
-      <sd-icon [icon]="icons.angleRight" fixedWidth />
-    </sd-anchor>
-    <sd-anchor [disabled]="!getHasNext()" (click)="onGoLastClick()">
-      <sd-icon [icon]="icons.angleDoubleRight" fixedWidth />
-    </sd-anchor>
-  `,
+  imports: [SdAnchorControl, FaIconComponent],
   styles: [
     /* language=SCSS */ `
       @import "../scss/mixins";
@@ -67,63 +38,74 @@ import { sdGetter } from "../utils/hooks";
       }
     `,
   ],
+  template: `
+    <sd-anchor [disabled]="!hasPrev()" (click)="onGoFirstClick()">
+      <fa-icon [icon]="icons.angleDoubleLeft" [fixedWidth]="true" />
+    </sd-anchor>
+    <sd-anchor [disabled]="!hasPrev()" (click)="onPrevClick()">
+      <fa-icon [icon]="icons.angleLeft" [fixedWidth]="true" />
+    </sd-anchor>
+    @for (displayPage of displayPages(); track displayPage) {
+      <sd-anchor (click)="onPageClick(displayPage)" [attr.sd-selected]="displayPage === page()">
+        {{ displayPage + 1 }}
+      </sd-anchor>
+    }
+    <sd-anchor [disabled]="!hasNext()" (click)="onNextClick()">
+      <fa-icon [icon]="icons.angleRight" [fixedWidth]="true" />
+    </sd-anchor>
+    <sd-anchor [disabled]="!hasNext()" (click)="onGoLastClick()">
+      <fa-icon [icon]="icons.angleDoubleRight" [fixedWidth]="true" />
+    </sd-anchor>
+  `,
 })
 export class SdPaginationControl {
   icons = inject(SdAngularOptionsProvider).icons;
 
-  @Input({ transform: coercionNumber }) page = 0;
-  @Output() pageChange = new EventEmitter<number>();
+  page = model(0);
 
-  @Input({ transform: coercionNumber }) pageLength = 0;
-  @Input({ transform: coercionNumber }) displayPageLength = 10;
+  pageLength = input(0);
+  displayPageLength = input(10);
 
-  getDisplayPages = sdGetter(this, [() => [this.pageLength], () => [this.page], () => [this.displayPageLength]], () => {
+  displayPages = computed(() => {
     const pages: number[] = [];
-    for (let i = 0; i < this.pageLength; i++) {
+    for (let i = 0; i < this.pageLength(); i++) {
       pages.push(i);
     }
 
-    const from = Math.floor(this.page / this.displayPageLength) * this.displayPageLength;
-    const to = Math.min(from + this.displayPageLength, this.pageLength);
+    const from = Math.floor(this.page() / this.displayPageLength()) * this.displayPageLength();
+    const to = Math.min(from + this.displayPageLength(), this.pageLength());
     return pages.filter((item) => item >= from && item < to);
   });
 
-  getHasNext = sdGetter(this, [() => [this.pageLength], () => [this.getDisplayPages()]], () => {
-    return (this.getDisplayPages().last() ?? 0) < this.pageLength - 1;
+  hasNext = computed(() => {
+    return (this.displayPages().last() ?? 0) < this.pageLength() - 1;
   });
 
-  getHasPrev = sdGetter(this, [() => [this.getDisplayPages()]], () => {
-    return (this.getDisplayPages().first() ?? 0) > 0;
+  hasPrev = computed(() => {
+    return (this.displayPages().first() ?? 0) > 0;
   });
 
   onPageClick(page: number) {
-    this.#setPage(page);
+    this.page.set(page);
   }
 
   onNextClick() {
-    const page = (this.getDisplayPages().last() ?? 0) + 1;
-    this.#setPage(page);
+    const page = (this.displayPages().last() ?? 0) + 1;
+    this.page.set(page);
   }
 
   onPrevClick() {
-    const page = (this.getDisplayPages().first() ?? 0) - 1;
-    this.#setPage(page);
+    const page = (this.displayPages().first() ?? 0) - 1;
+    this.page.set(page);
   }
 
   onGoFirstClick() {
     const page = 0;
-    this.#setPage(page);
+    this.page.set(page);
   }
 
   onGoLastClick() {
-    const page = this.pageLength - 1;
-    this.#setPage(page);
-  }
-
-  #setPage(page: number) {
-    if (this.page !== page) {
-      this.page = page;
-      this.pageChange.emit(page);
-    }
+    const page = this.pageLength() - 1;
+    this.page.set(page);
   }
 }

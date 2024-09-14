@@ -31,7 +31,7 @@ export default [
   },
   ...tseslint.config(
     {
-      files: ["**/*.ts"],
+      files: ["**/*.ts", "**/*.tsx"],
       plugins: {
         "@typescript-eslint": tseslint.plugin,
         "@angular-eslint": ngeslint.tsPlugin,
@@ -53,7 +53,7 @@ export default [
         "@typescript-eslint/no-floating-promises": ["error"],
         // "@typescript-eslint/semi": ["error"], // Deprecated (https://typescript-eslint.io/rules/semi/)
         "@typescript-eslint/no-shadow": ["error"],
-        // "@typescript-eslint/no-unnecessary-condition": ["error", {allowConstantLoopConditions: true}],
+        "@typescript-eslint/no-unnecessary-condition": ["error", {allowConstantLoopConditions: true}],
         "@typescript-eslint/no-unnecessary-type-assertion": ["error"],
         "@typescript-eslint/non-nullable-type-assertion-style": ["error"],
         "@typescript-eslint/prefer-reduce-type-parameter": ["error"],

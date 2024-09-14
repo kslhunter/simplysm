@@ -1,5 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, ViewEncapsulation } from "@angular/core";
-import { coercionBoolean } from "../utils/commons";
+import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
 
 @Component({
   selector: "sd-button",
@@ -7,11 +6,6 @@ import { coercionBoolean } from "../utils/commons";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
-  template: `
-    <button tabindex="0" [type]="type" [disabled]="disabled" [class]="buttonClass" [style]="buttonStyle">
-      <ng-content></ng-content>
-    </button>
-  `,
   styles: [
     /* language=SCSS */ `
       @import "../scss/variables";
@@ -139,17 +133,22 @@ import { coercionBoolean } from "../utils/commons";
       }
     `,
   ],
+  template: `
+    <button tabindex="0" [type]="type()" [disabled]="disabled()" [class]="buttonClass()" [style]="buttonStyle()">
+      <ng-content></ng-content>
+    </button>
+  `,
   host: {
-    "[attr.sd-theme]": "theme",
-    "[attr.sd-inline]": "inline",
-    "[attr.sd-size]": "size",
-    "[attr.disabled]": "disabled",
-    "[attr.sd-inset]": "inset",
+    "[attr.sd-theme]": "theme()",
+    "[attr.sd-inline]": "inline()",
+    "[attr.sd-size]": "size()",
+    "[attr.disabled]": "disabled()",
+    "[attr.sd-inset]": "inset()",
   },
 })
 export class SdButtonControl {
-  @Input() type: "button" | "submit" = "button";
-  @Input() theme?:
+  type = input<"button" | "submit">("button");
+  theme = input<
     | "primary"
     | "secondary"
     | "info"
@@ -166,14 +165,15 @@ export class SdButtonControl {
     | "link-warning"
     | "link-danger"
     | "link-grey"
-    | "link-blue-grey";
+    | "link-blue-grey"
+  >();
 
-  @Input({ transform: coercionBoolean }) inline = false;
-  @Input({ transform: coercionBoolean }) inset = false;
-  @Input() size?: "sm" | "lg";
+  inline = input(false);
+  inset = input(false);
+  size = input<"sm" | "lg">();
 
-  @Input({ transform: coercionBoolean }) disabled = false;
+  disabled = input(false);
 
-  @Input() buttonStyle?: string;
-  @Input() buttonClass?: string;
+  buttonStyle = input<string>();
+  buttonClass = input<string>();
 }

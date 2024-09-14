@@ -261,6 +261,7 @@ export class QueryHelper {
       if (code === 112) {
         return new QueryUnit(String, ["DATE_FORMAT(", this.getQueryValue(value), ", '%Y%m%d')"]) as any;
       }
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       else if (code === 120) {
         return new QueryUnit(String, ["DATE_FORMAT(", this.getQueryValue(value), ", '%Y-%m-%d %H:%i:%s')"]) as any;
       }

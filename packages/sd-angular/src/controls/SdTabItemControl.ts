@@ -1,10 +1,11 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   forwardRef,
   HostListener,
   inject,
-  Input,
+  input,
   ViewEncapsulation,
 } from "@angular/core";
 import { SdTabControl } from "./SdTabControl";
@@ -15,7 +16,6 @@ import { SdTabControl } from "./SdTabControl";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
-  template: ` <ng-content></ng-content>`,
   styles: [
     /* language=SCSS */ `
       sd-tab-item {
@@ -52,21 +52,20 @@ import { SdTabControl } from "./SdTabControl";
       }
     `,
   ],
+  template: ` <ng-content></ng-content>`,
   host: {
-    "[attr.sd-selected]": "isSelected",
+    "[attr.sd-selected]": "isSelected()",
   },
 })
 export class SdTabItemControl {
   #parentControl = inject<SdTabControl>(forwardRef(() => SdTabControl));
 
-  @Input() value?: any;
+  value = input<any>();
 
-  get isSelected(): boolean {
-    return this.#parentControl.value === this.value;
-  }
+  isSelected = computed(() => this.#parentControl.value() === this.value());
 
   @HostListener("click")
   onClick() {
-    this.#parentControl.setValue(this.value);
+    this.#parentControl.value.set(this.value());
   }
 }

@@ -1,9 +1,9 @@
-import {SdCliBuildResultUtil} from "../utils/SdCliBuildResultUtil";
-import {ISdCliPackageBuildResult} from "../commons";
-import {SdTsCompiler} from "./SdTsCompiler";
+import { SdCliBuildResultUtil } from "../utils/SdCliBuildResultUtil";
+import { ISdCliPackageBuildResult } from "../commons";
+import { SdTsCompiler } from "./SdTsCompiler";
 import ts from "typescript";
 import path from "path";
-import {FsUtil, PathUtil} from "@simplysm/sd-core-node";
+import { FsUtil, PathUtil } from "@simplysm/sd-core-node";
 
 export class SdTsLibBundler {
   readonly #compiler: SdTsCompiler;
@@ -12,12 +12,7 @@ export class SdTsLibBundler {
 
   public constructor(pkgPath: string, dev: boolean) {
     this.#pkgPath = pkgPath;
-    this.#compiler = new SdTsCompiler(
-      pkgPath,
-      {declaration: true},
-      dev,
-      path.resolve(pkgPath, "src/styles.scss")
-    );
+    this.#compiler = new SdTsCompiler(pkgPath, { declaration: true }, dev, path.resolve(pkgPath, "src/styles.scss"));
   }
 
   public markChanges(modifiedFileSet: Set<string>): void {
@@ -59,11 +54,12 @@ export class SdTsLibBundler {
       affectedFileSet: buildResult.affectedFileSet,
       results: [
         ...buildResult.typescriptDiagnostics.map((item) => SdCliBuildResultUtil.convertFromTsDiag(item, "build")),
-        ...Array.from(buildResult.stylesheetBundlingResultMap.values()).mapMany(item => item.errors ?? [])
-          .map(err => SdCliBuildResultUtil.convertFromEsbuildResult(err, "build", "error")),
+        ...Array.from(buildResult.stylesheetBundlingResultMap.values())
+          .mapMany((item) => item.errors ?? [])
+          .map((err) => SdCliBuildResultUtil.convertFromEsbuildResult(err, "build", "error")),
         /*...Array.from(buildResult.stylesheetResultMap.values()).mapMany(item => item.warnings!)
           .map(warn => SdCliBuildResultUtil.convertFromEsbuildResult(warn, "build", "warning"))*/
-      ]
+      ],
     };
   }
 }

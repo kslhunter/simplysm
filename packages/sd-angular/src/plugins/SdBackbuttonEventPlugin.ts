@@ -17,9 +17,7 @@ export class SdBackbuttonEventPlugin extends EventManagerPlugin {
       event.preventDefault();
       event.stopPropagation();
 
-      this.manager.getZone().run(() => {
-        handler(event);
-      });
+      handler(event);
     };
 
     const listener2 = (event: KeyboardEvent): void => {
@@ -27,16 +25,12 @@ export class SdBackbuttonEventPlugin extends EventManagerPlugin {
         event.preventDefault();
         event.stopPropagation();
 
-        this.manager.getZone().run(() => {
-          handler(event);
-        });
+        handler(event);
       }
     };
 
-    this.manager.getZone().runOutsideAngular(() => {
-      document.addEventListener("backbutton", listener);
-      document.addEventListener("keydown", listener2);
-    });
+    document.addEventListener("backbutton", listener);
+    document.addEventListener("keydown", listener2);
 
     return (): void => {
       document.removeEventListener("backbutton", listener);

@@ -12,6 +12,7 @@ export abstract class SdLinter {
       .filter(
         (item) =>
           (!item.endsWith(".d.ts") && item.endsWith(".ts")) ||
+          item.endsWith(".tsx") ||
           item.endsWith(".js")
       )
       .filter((item) => FsUtil.exists(item));
@@ -26,7 +27,7 @@ export abstract class SdLinter {
           cache: false,
           overrideConfig: [
             {
-              files: ["**/*.ts"],
+              files: ["**/*.ts", "**/*.tsx"],
               languageOptions: {
                 parserOptions: {
                   programs: [tsProgram],

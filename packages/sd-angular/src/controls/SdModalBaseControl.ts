@@ -1,20 +1,19 @@
-import { ChangeDetectionStrategy, Component, inject, Input, ViewEncapsulation } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, input, ViewEncapsulation } from "@angular/core";
 import { SdBusyContainerControl } from "./SdBusyContainerControl";
-import { coercionBoolean } from "../utils/commons";
-import { SdIconControl } from "./SdIconControl";
 import { SdAngularOptionsProvider } from "../providers/SdAngularOptionsProvider";
+import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 
 @Component({
   selector: "sd-modal-base",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdBusyContainerControl, SdIconControl],
+  imports: [SdBusyContainerControl, FaIconComponent],
   template: `
-    @if (!hasPerm) {
+    @if (!hasPerm()) {
       <div class="tx-theme-grey-light p-xxl" style="text-align: center">
         <br />
-        <sd-icon [icon]="icons.triangleExclamation" fixedWidth size="5x" />
+        <fa-icon [icon]="icons.triangleExclamation" [fixedWidth]="true" size="5x" />
         <br />
         <br />
         이 기능의 사용권한이 없습니다. 시스템 관리자에게 문의하세요.
@@ -27,5 +26,5 @@ import { SdAngularOptionsProvider } from "../providers/SdAngularOptionsProvider"
 export class SdModalBaseControl {
   icons = inject(SdAngularOptionsProvider).icons;
 
-  @Input({ transform: coercionBoolean }) hasPerm = false;
+  hasPerm = input(false);
 }

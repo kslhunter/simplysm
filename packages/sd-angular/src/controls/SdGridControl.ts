@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, Input, ViewEncapsulation } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, input, ViewEncapsulation } from "@angular/core";
+import { injectSize } from "../utils/injectSize";
 
 @Component({
   selector: "sd-grid",
@@ -16,9 +17,14 @@ import { ChangeDetectionStrategy, Component, Input, ViewEncapsulation } from "@a
     `,
   ],
   host: {
-    "[style.gap]": "gap != null ? 'var(--gap-' + gap + ')' : ''",
+    "[style.gap]": "styleGap()",
   },
 })
 export class SdGridControl {
-  @Input() gap?: "xxs" | "xs" | "sm" | "default" | "lg" | "xl" | "xxl";
+  #size = injectSize();
+
+  gap = input<"xxs" | "xs" | "sm" | "default" | "lg" | "xl" | "xxl">();
+
+  styleGap = computed(() => (this.gap() != null ? "var(--gap-" + this.gap() + ")" : undefined));
+  offsetWidth = computed(() => this.#size.offsetWidth());
 }

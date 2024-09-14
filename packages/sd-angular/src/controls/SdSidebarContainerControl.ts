@@ -1,6 +1,5 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, ViewEncapsulation } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, signal, ViewEncapsulation } from "@angular/core";
 import { NavigationStart, Router } from "@angular/router";
-import { sdInit } from "../utils/hooks";
 
 @Component({
   selector: "sd-sidebar-container",
@@ -8,8 +7,6 @@ import { sdInit } from "../utils/hooks";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
-  template: ` <ng-content></ng-content>
-    <div class="_backdrop" (click)="onBackdropClick()"></div>`,
   styles: [
     /* language=SCSS */ `
       sd-sidebar-container {
@@ -57,30 +54,28 @@ import { sdInit } from "../utils/hooks";
       }
     `,
   ],
+  template: ` <ng-content></ng-content>
+    <div class="_backdrop" (click)="onBackdropClick()"></div>`,
   host: {
-    "[attr.sd-toggle]": "toggle",
+    "[attr.sd-toggle]": "toggle()",
   },
 })
 export class SdSidebarContainerControl {
   #router: Router | null = inject(Router, { optional: true });
-  #cdr = inject(ChangeDetectorRef);
 
-  toggle = false;
+  toggle = signal(false);
 
   constructor() {
-    sdInit(this, () => {
-      if (this.#router) {
-        this.#router.events.subscribe((value) => {
-          if (value instanceof NavigationStart) {
-            this.toggle = false;
-            this.#cdr.markForCheck();
-          }
-        });
-      }
-    });
+    if (this.#router) {
+      this.#router.events.subscribe((value) => {
+        if (value instanceof NavigationStart) {
+          this.toggle.set(false);
+        }
+      });
+    }
   }
 
   onBackdropClick() {
-    this.toggle = !this.toggle;
+    this.toggle.update((v) => !v);
   }
 }

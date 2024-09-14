@@ -1,29 +1,41 @@
-import { ChangeDetectorRef, inject, Injectable, ViewRef } from "@angular/core";
+import { computed, inject, Injectable, Signal, signal, WritableSignal } from "@angular/core";
 import { SdServiceEventListenerBase } from "@simplysm/sd-service-common";
 import { SdServiceFactoryProvider } from "./SdServiceFactoryProvider";
 import { DateOnly, DateTime, Time, Wait } from "@simplysm/sd-core-common";
 
-export function getSharedData<T extends Record<string, ISharedDataBase<string | number>>, K extends keyof T>(
-  name: K,
-): T[K][] {
-  const provider = inject(SdSharedDataProvider);
-  const cdr = inject(ChangeDetectorRef, { optional: true }) ?? undefined;
-
-  return provider.getData(name as string, cdr).arr;
+export interface ISharedSignal<T extends ISharedDataBase<string | number>> extends Signal<T[]> {
+  get(key: T["__valueKey"] | undefined): T | undefined;
 }
 
-export async function waitSharedData() {
+export function getSharedSignal<T extends Record<string, ISharedDataBase<string | number>>, K extends keyof T>(
+  name: K,
+): ISharedSignal<T[K]> {
+  const provider = inject(SdSharedDataProvider);
+  const sig = provider.getSignal(name as string);
+
+  const mapSig = computed(() => sig().toMap((item) => item.__valueKey));
+  sig["get"] = (key: T[K]["__valueKey"]) => {
+    return mapSig().get(key);
+  };
+
+  return sig as ISharedSignal<T[K]>;
+}
+
+/*export function getSharedMapSignal<T extends Record<string, ISharedDataBase<string | number>>, K extends keyof T>(
+  name: K,
+): Signal<Map<T[K]["__valueKey"], T[K]>> {
+  const provider = inject(SdSharedDataProvider);
+
+  return computed(() =>
+    provider
+      .getSignal(name as string)()
+      .toMap((item) => item.__valueKey),
+  );
+}*/
+
+export async function waitSharedSignal() {
   const provider = inject(SdSharedDataProvider);
   await Wait.until(() => provider.loadingCount < 1);
-}
-
-export function getSharedDataMap<T extends Record<string, ISharedDataBase<string | number>>, K extends keyof T>(
-  name: K,
-): Map<T[K]["__valueKey"], T[K]> {
-  const provider = inject(SdSharedDataProvider);
-  const cdr = inject(ChangeDetectorRef, { optional: true }) ?? undefined;
-
-  return provider.getData(name as string, cdr).map;
 }
 
 export async function emitSharedDataChangedAsync<
@@ -42,24 +54,6 @@ export class SdSharedDataProvider<T extends Record<string, any>> {
 
   loadingCount = 0;
 
-  async clearAsync() {
-    for (const info of this.#infoMap.values()) {
-      info.data?.arr.clear();
-      info.data?.map.clear();
-      if (info.cdrSet) {
-        for (const cdr of info.cdrSet) {
-          cdr.markForCheck();
-        }
-      }
-
-      if (info.listenerKey == null) continue;
-
-      await this.#sdServiceFactory.get(info.getter.serviceKey).removeEventListenerAsync(info.listenerKey);
-    }
-
-    this.#infoMap.clear();
-  }
-
   register<K extends keyof T>(name: K, getter: ISharedDataInfo<T[K]>) {
     if (this.#infoMap.has(name))
       throw new Error(`'${name as string}'에 대한 공유데이터 정보가 이미 등록되이 있습니다.`);
@@ -75,26 +69,9 @@ export class SdSharedDataProvider<T extends Record<string, any>> {
       .emitAsync(SdSharedDataChangeEvent, (item) => item === name, changeKeys);
   }
 
-  getData<K extends keyof T>(
-    name: K,
-    cdr?: ChangeDetectorRef,
-  ): {
-    arr: T[K][];
-    map: Map<T[K]["__valueKey"], T[K]>;
-  } {
+  getSignal<K extends keyof T>(name: K): Signal<T[K][]> {
     const info = this.#infoMap.get(name);
     if (!info) throw new Error(`'${name as string}'에 대한 공유데이터 정보가 없습니다.`);
-
-    //-- cdr
-    if (cdr) {
-      info.cdrSet = info.cdrSet ?? new Set();
-      if (!info.cdrSet.has(cdr)) {
-        info.cdrSet.add(cdr);
-        (cdr as ViewRef).onDestroy(() => {
-          info.cdrSet!.delete(cdr);
-        });
-      }
-    }
 
     //-- listener
     if (info.listenerKey == null) {
@@ -106,15 +83,12 @@ export class SdSharedDataProvider<T extends Record<string, any>> {
     }
 
     //-- data
-    if (!info.data) {
-      info.data = {
-        arr: [],
-        map: new Map(),
-      };
+    if (!info.signal) {
+      info.signal = signal([]);
       void this.#loadDataAsync(name);
     }
 
-    return info.data as any;
+    return info.signal.asReadonly() as Signal<T[K][]>;
   }
 
   async #loadDataAsync<K extends keyof T>(name: K, changeKeys?: T[K]["__valueKey"][]) {
@@ -122,49 +96,37 @@ export class SdSharedDataProvider<T extends Record<string, any>> {
     try {
       const info = this.#infoMap.get(name);
       if (!info) throw new Error(`'${name as string}'에 대한 공유데이터 로직 정보가 없습니다.`);
-      if (!info.data) throw new Error(`'${name as string}'에 대한 공유데이터 저장소가 없습니다.`);
+      if (!info.signal) throw new Error(`'${name as string}'에 대한 공유데이터 저장소가 없습니다.`);
 
       const resData = await info.getter.getDataAsync(changeKeys);
 
       if (!changeKeys) {
-        this.#orderingThis(resData, info.getter.orderBy);
-        info.data.arr.clear();
-        info.data.map.clear();
-        info.data.arr.push(...resData);
-        for (const resDataItem of resData) {
-          info.data.map.set(resDataItem.__valueKey, resDataItem);
-        }
+        info.signal.set(this.#ordering(resData, info.getter.orderBy));
       } else {
-        // 삭제된 항목 제거 (DB에 없는 항목)
-        const deleteKeys = changeKeys.filter(
-          (changeKey) => !resData.some((resItem) => resItem.__valueKey === changeKey),
-        );
-        info.data.arr.remove((item) => deleteKeys.includes(item.__valueKey));
-        for (const deleteKey of deleteKeys) {
-          info.data.map.delete(deleteKey);
-        }
+        info.signal.update((v) => {
+          const r = [...v];
 
-        // 수정된 항목 변경
-        for (const resItem of resData) {
-          const currItemKey = resItem.__valueKey;
+          // 삭제된 항목 제거 (DB에 없는 항목)
+          const deleteKeys = changeKeys.filter(
+            (changeKey) => !resData.some((resItem) => resItem.__valueKey === changeKey),
+          );
+          r.remove((item) => deleteKeys.includes(item.__valueKey));
 
-          const resItemIndex = info.data.arr.findIndex((item) => item.__valueKey === currItemKey);
-          if (resItemIndex >= 0) {
-            info.data.arr[resItemIndex] = resItem;
-          } else {
-            info.data.arr.push(resItem);
+          // 수정된 항목 변경
+          for (const resItem of resData) {
+            const currItemKey = resItem.__valueKey;
+
+            const resItemIndex = r.findIndex((item) => item.__valueKey === currItemKey);
+            if (resItemIndex >= 0) {
+              r[resItemIndex] = resItem;
+            } else {
+              r.push(resItem);
+            }
           }
-          info.data.map.set(currItemKey, resItem);
-        }
 
-        // 재정렬
-        this.#orderingThis(info.data.arr as any[], info.getter.orderBy);
-      }
-
-      if (info.cdrSet) {
-        for (const cdr of info.cdrSet) {
-          cdr.markForCheck();
-        }
+          // 재정렬
+          return this.#ordering(r as any[], info.getter.orderBy);
+        });
       }
     } catch (err) {
       this.loadingCount--;
@@ -172,17 +134,19 @@ export class SdSharedDataProvider<T extends Record<string, any>> {
     }
   }
 
-  #orderingThis<TT extends T[keyof T]>(
+  #ordering<TT extends T[keyof T]>(
     data: TT[],
     orderByList: [(data: TT) => string | number | DateOnly | DateTime | Time | undefined, "asc" | "desc"][],
-  ): void {
+  ): TT[] {
+    let result = [...data];
     for (const orderBy of orderByList.reverse()) {
       if (orderBy[1] === "desc") {
-        data.orderByDescThis((item) => orderBy[0](item));
+        result = result.orderByDesc((item) => orderBy[0](item));
       } else {
-        data.orderByThis((item) => orderBy[0](item));
+        result = result.orderBy((item) => orderBy[0](item));
       }
     }
+    return result;
   }
 }
 
@@ -194,12 +158,8 @@ export interface ISharedDataInfo<T extends ISharedDataBase<string | number>> {
 
 interface ISharedDataInnerInfo<T extends ISharedDataBase<string | number>> {
   getter: ISharedDataInfo<T>;
-  cdrSet?: Set<ChangeDetectorRef>;
   listenerKey?: string;
-  data?: {
-    arr: ISharedDataBase<string | number>[];
-    map: Map<string | number, ISharedDataBase<string | number>>;
-  };
+  signal?: WritableSignal<ISharedDataBase<string | number>[]>;
 }
 
 export interface ISharedDataBase<VK extends string | number> {

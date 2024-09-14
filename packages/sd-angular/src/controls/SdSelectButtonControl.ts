@@ -6,7 +6,6 @@ import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
-  template: ` <ng-content></ng-content> `,
   styles: [
     /* language=SCSS */ `
       @import "../scss/mixins";
@@ -28,5 +27,6 @@ import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/
       }
     `,
   ],
+  template: ` <ng-content></ng-content> `,
 })
 export class SdSelectButtonControl {}
