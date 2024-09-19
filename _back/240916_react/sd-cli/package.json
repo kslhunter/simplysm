@@ -1,0 +1,61 @@
+{
+  "name": "@simplysm/sd-cli",
+  "version": "12.5.11",
+  "description": "심플리즘 패키지 - CLI",
+  "author": "김석래",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm12.git",
+    "directory": "packages/sd-cli"
+  },
+  "license": "MIT",
+  "bin": "./dist/sd-cli.js",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "engines": {
+    "node": "20.16.0"
+  },
+  "scripts": {
+    "postinstall": "node lib/postinstall.js"
+  },
+  "dependencies": {
+    "@angular/build": "^18.2.3",
+    "@angular/compiler": "^18.2.3",
+    "@angular/compiler-cli": "^18.2.3",
+    "@electron/rebuild": "^3.6.0",
+    "@simplysm/sd-core-common": "12.5.11",
+    "@simplysm/sd-core-node": "12.5.11",
+    "@simplysm/sd-service-server": "12.5.11",
+    "@simplysm/sd-storage": "12.5.11",
+    "@simplysm/ts-transformer-keys": "12.5.11",
+    "autoprefixer": "^10.4.20",
+    "browserslist": "^4.23.3",
+    "cordova": "^12.0.0",
+    "css-has-pseudo": "^7.0.0",
+    "electron": "^32.0.2",
+    "electron-builder": "^25.0.5",
+    "esbuild": "^0.23.1",
+    "eslint": "^9.10.0",
+    "glob": "^11.0.0",
+    "jsdom": "^25.0.0",
+    "jszip": "^3.10.1",
+    "node-stdlib-browser": "^1.2.0",
+    "postcss": "^8.4.45",
+    "postcss-url": "^10.1.3",
+    "rxjs": "^7.8.1",
+    "sass": "^1.78.0",
+    "semver": "^7.6.3",
+    "specifier-resolution-node": "^1.1.4",
+    "typescript": "~5.5.4",
+    "workbox-build": "^7.1.1",
+    "xml2js": "^0.6.2",
+    "yargs": "^17.7.2"
+  },
+  "devDependencies": {
+    "@types/eslint": "^9.6.1",
+    "@types/jsdom": "^21.1.7",
+    "@types/xml2js": "^0.4.14",
+    "@types/yargs": "^17.0.33"
+  }
+}
