@@ -1,13 +1,6 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  effect,
-  ElementRef,
-  input,
-  viewChild,
-  ViewEncapsulation,
-} from "@angular/core";
+import { ChangeDetectionStrategy, Component, ElementRef, input, viewChild, ViewEncapsulation } from "@angular/core";
 import qrcode from "qrcode";
+import { effectBy } from "../utils/hooks";
 
 @Component({
   selector: "sd-qrcode",
@@ -24,7 +17,7 @@ export class SdQrcodeControl {
   canvasElRef = viewChild.required<any, ElementRef<HTMLCanvasElement>>("canvasEl", { read: ElementRef });
 
   constructor() {
-    effect(async () => {
+    effectBy([this.canvasElRef, this.value, this.scale], async () => {
       await qrcode.toCanvas(this.canvasElRef().nativeElement, this.value() ?? "", {
         scale: this.scale(),
       });

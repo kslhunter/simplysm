@@ -93,6 +93,7 @@ export interface ISdCliClientPackageConfig {
   env?: Record<string, string>;
   configs?: Record<string, any>;
   noLazyRoute?: boolean;
+  forceProductionMode?: boolean;
 
   builder?: {
     web?: ISdCliClientBuilderWebConfig;

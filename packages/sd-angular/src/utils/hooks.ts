@@ -3,14 +3,14 @@ import {
   producerIncrementEpoch,
   producerNotifyConsumers,
   runPostSignalSetFn,
-  SIGNAL,
+  SIGNAL
 } from "@angular/core/primitives/signals";
 import { ActivatedRoute } from "@angular/router";
 
 export function afterInit(fn: () => void) {
   const injector = inject(Injector);
   (injector["_lView"][1].preOrderHooks ??= []).push(injector["_tNode"].index, -injector["_tNode"].directiveStart, () =>
-    fn(),
+    fn()
   );
 }
 

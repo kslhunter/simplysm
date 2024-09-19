@@ -15,11 +15,11 @@
     "node": "20.16.0"
   },
   "dependencies": {
-    "@typescript-eslint/utils": "^8.4.0",
-    "angular-eslint": "^18.3.0",
+    "@typescript-eslint/utils": "^8.6.0",
+    "angular-eslint": "^18.3.1",
     "eslint": "^9.10.0",
     "globals": "^15.9.0",
     "typescript": "~5.5.4",
-    "typescript-eslint": "^8.4.0"
+    "typescript-eslint": "^8.6.0"
   }
 }

@@ -1,15 +1,15 @@
-import chokidar from "chokidar";
-import {ObjectUtil} from "@simplysm/sd-core-common";
+import chokidar, { ChokidarOptions, FSWatcher } from "chokidar";
+import { ObjectUtil } from "@simplysm/sd-core-common";
 
 export class SdFsWatcher {
-  public static watch(paths: string[], options?: chokidar.WatchOptions): SdFsWatcher {
+  public static watch(paths: string[], options?: ChokidarOptions): SdFsWatcher {
     return new SdFsWatcher(paths, options);
   }
 
-  #watcher: chokidar.FSWatcher;
+  #watcher: FSWatcher;
   #watchPathSet: Set<string>;
 
-  private constructor(paths: string[], options?: chokidar.WatchOptions) {
+  private constructor(paths: string[], options?: ChokidarOptions) {
     this.#watchPathSet = new Set<string>(paths);
     this.#watcher = chokidar.watch(Array.from(this.#watchPathSet.values()), ObjectUtil.merge({
       ignoreInitial: true,
@@ -58,7 +58,7 @@ export class SdFsWatcher {
     }
 
     for (const watchPath of this.#watchPathSet) {
-      if(!pathSet.has(watchPath)){
+      if (!pathSet.has(watchPath)) {
         this.#watchPathSet.delete(watchPath);
         this.#watcher.unwatch(watchPath);
       }

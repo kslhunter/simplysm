@@ -14,7 +14,6 @@ import { SdCliCordova } from "../build-tools/SdCliCordova";
 import { SdCliNgRoutesFileGenerator } from "../build-tools/SdCliNgRoutesFileGenerator";
 import { SdLinter } from "../build-tools/SdLinter";
 import { SdCliElectron } from "../entry/SdCliElectron";
-import { SdReactBundler } from "../build-tools/SdReactBundler";
 
 // import ts from "typescript";
 
@@ -22,7 +21,7 @@ export class SdCliClientBuilder extends EventEmitter {
   private readonly _logger = Logger.get(["simplysm", "sd-cli", "SdCliClientBuilder"]);
   private readonly _pkgConf: ISdCliClientPackageConfig;
   private readonly _npmConf: INpmConfig;
-  private _builders?: (SdNgBundler | SdReactBundler)[];
+  private _builders?: SdNgBundler[];
   private _cordova?: SdCliCordova;
 
   // #program?: ts.Program;
@@ -78,7 +77,7 @@ export class SdCliClientBuilder extends EventEmitter {
     const confDistPath = path.resolve(this._pkgPath, "dist/.config.json");
     await FsUtil.writeFileAsync(confDistPath, JSON.stringify(this._pkgConf.configs ?? {}, undefined, 2));
 
-    const result = await this._runAsync({ dev: true });
+    const result = await this._runAsync({ dev: !this._pkgConf.forceProductionMode });
     this.emit("complete", {
       affectedFilePaths: Array.from(result.affectedFileSet),
       buildResults: result.buildResults,
@@ -101,7 +100,7 @@ export class SdCliClientBuilder extends EventEmitter {
           builder.markForChanges(currChangeFiles);
         }
 
-        const watchResult = await this._runAsync({ dev: true });
+        const watchResult = await this._runAsync({ dev: !this._pkgConf.forceProductionMode });
         this.emit("complete", {
           affectedFilePaths: Array.from(watchResult.affectedFileSet),
           buildResults: watchResult.buildResults,
@@ -130,51 +129,27 @@ export class SdCliClientBuilder extends EventEmitter {
     if (!this._builders) {
       this._debug(`BUILD 준비...`);
 
-      if (this._npmConf.dependencies && Object.keys(this._npmConf.dependencies).includes("react")) {
-        this._builders = builderTypes.map(
-          (builderType) =>
-            new SdReactBundler({
-              dev: opt.dev,
-              builderType: builderType,
-              pkgPath: this._pkgPath,
-              outputPath:
-                builderType === "web"
-                  ? path.resolve(this._pkgPath, "dist")
-                  : builderType === "electron" && !opt.dev
-                    ? path.resolve(this._pkgPath, ".electron/src")
-                    : builderType === "cordova" && !opt.dev
-                      ? path.resolve(this._pkgPath, ".cordova/www")
-                      : path.resolve(this._pkgPath, "dist", builderType),
-              env: {
-                ...this._pkgConf.env,
-                ...this._pkgConf.builder?.[builderType]?.env,
-              },
-              cordovaConfig: builderType === "cordova" ? this._pkgConf.builder!.cordova : undefined,
-            }),
-        );
-      } else {
-        this._builders = builderTypes.map(
-          (builderType) =>
-            new SdNgBundler({
-              dev: opt.dev,
-              builderType: builderType,
-              pkgPath: this._pkgPath,
-              outputPath:
-                builderType === "web"
-                  ? path.resolve(this._pkgPath, "dist")
-                  : builderType === "electron" && !opt.dev
-                    ? path.resolve(this._pkgPath, ".electron/src")
-                    : builderType === "cordova" && !opt.dev
-                      ? path.resolve(this._pkgPath, ".cordova/www")
-                      : path.resolve(this._pkgPath, "dist", builderType),
-              env: {
-                ...this._pkgConf.env,
-                ...this._pkgConf.builder?.[builderType]?.env,
-              },
-              cordovaConfig: builderType === "cordova" ? this._pkgConf.builder!.cordova : undefined,
-            }),
-        );
-      }
+      this._builders = builderTypes.map(
+        (builderType) =>
+          new SdNgBundler({
+            dev: opt.dev,
+            builderType: builderType,
+            pkgPath: this._pkgPath,
+            outputPath:
+              builderType === "web"
+                ? path.resolve(this._pkgPath, "dist")
+                : builderType === "electron" && !opt.dev
+                  ? path.resolve(this._pkgPath, ".electron/src")
+                  : builderType === "cordova" && !opt.dev
+                    ? path.resolve(this._pkgPath, ".cordova/www")
+                    : path.resolve(this._pkgPath, "dist", builderType),
+            env: {
+              ...this._pkgConf.env,
+              ...this._pkgConf.builder?.[builderType]?.env,
+            },
+            cordovaConfig: builderType === "cordova" ? this._pkgConf.builder!.cordova : undefined,
+          }),
+      );
     }
 
     this._debug(`BUILD & CHECK...`);

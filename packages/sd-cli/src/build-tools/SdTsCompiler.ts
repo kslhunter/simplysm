@@ -49,7 +49,7 @@ export class SdTsCompiler {
 
     this.#debug("초기화...");
 
-    //-- isForAngular / parsedTsConfig / isForReact
+    //-- isForAngular / parsedTsConfig
 
     const tsconfigPath = path.resolve(pkgPath, "tsconfig.json");
     const tsconfig = FsUtil.readJson(tsconfigPath);

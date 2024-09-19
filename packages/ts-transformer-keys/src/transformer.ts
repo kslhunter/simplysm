@@ -1,5 +1,6 @@
 import ts from "typescript";
 import path from "path";
+import { PathUtil } from "@simplysm/sd-core-node";
 
 const createArrayExpression = ts.factory.createArrayLiteralExpression;
 const createStringLiteral = ts.factory.createStringLiteral;
@@ -48,26 +49,20 @@ function visitNode(node: ts.Node, program: ts.Program): ts.Node | undefined {
   return createArrayExpression(properties.map((property) => createStringLiteral(property.name)));
 }
 
-const indexJs = path.join(import.meta.dirname, "index.js");
-
 function isKeysImportExpression(node: ts.Node): node is ts.ImportDeclaration {
   if (!ts.isImportDeclaration(node)) {
     return false;
   }
   const module = (node.moduleSpecifier as ts.StringLiteral).text;
   try {
-    return (
-      indexJs ===
-      (module.startsWith(".")
-        ? require.resolve(path.resolve(path.dirname(node.getSourceFile().fileName), module))
-        : require.resolve(module))
-    );
+    const modulePath = module.startsWith(".")
+      ? import.meta.resolve(path.resolve(path.dirname(node.getSourceFile().fileName), module))
+      : import.meta.resolve(module);
+    return PathUtil.isChildPath(modulePath, import.meta.dirname);
   } catch {
     return false;
   }
 }
-
-const indexTs = path.join(import.meta.dirname, "index.d.ts");
 
 function isKeysCallExpression(node: ts.Node, typeChecker: ts.TypeChecker): node is ts.CallExpression {
   if (!ts.isCallExpression(node)) {
@@ -78,12 +73,8 @@ function isKeysCallExpression(node: ts.Node, typeChecker: ts.TypeChecker): node 
     return false;
   }
   try {
-    // require.resolve is required to resolve symlink.
-    // https://github.com/kimamula/ts-transformer-keys/issues/4#issuecomment-643734716
-    return require.resolve(declaration.getSourceFile().fileName) === indexTs;
+    return PathUtil.isChildPath(import.meta.resolve(declaration.getSourceFile().fileName), import.meta.dirname);
   } catch {
-    // declaration.getSourceFile().fileName may not be in Node.js require stack and require.resolve may result in an error.
-    // https://github.com/kimamula/ts-transformer-keys/issues/47
     return false;
   }
 }
