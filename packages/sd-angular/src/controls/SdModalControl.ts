@@ -1,13 +1,11 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  effect,
   ElementRef,
   HostListener,
   inject,
   input,
   model,
-  signal,
   viewChild,
   ViewEncapsulation,
 } from "@angular/core";
@@ -19,8 +17,9 @@ import { ISdResizeEvent } from "../plugins/SdResizeEventPlugin";
 import { SdEventsDirective } from "../directives/SdEventsDirective";
 import { SdDockContainerControl } from "./SdDockContainerControl";
 import { SdDockControl } from "./SdDockControl";
-import { SdAngularOptionsProvider } from "../providers/SdAngularOptionsProvider";
+import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
+import { $effect, $signal } from "../utils/$hooks";
 
 @Component({
   selector: "sd-modal",
@@ -325,7 +324,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
   },
 })
 export class SdModalControl {
-  icons = inject(SdAngularOptionsProvider).icons;
+  icons = inject(SdAngularConfigProvider).icons;
 
   #sdSystemConfig = inject(SdSystemConfigProvider);
   #elRef = inject<ElementRef<HTMLElement>>(ElementRef);
@@ -353,17 +352,14 @@ export class SdModalControl {
 
   dialogElRef = viewChild.required<any, ElementRef<HTMLElement>>("dialogEl", { read: ElementRef });
 
-  #config = signal<ISdModalConfigVM | undefined>(undefined);
+  #config = $signal<ISdModalConfigVM>();
 
   constructor() {
-    effect(
-      async () => {
-        this.#config.set(await this.#sdSystemConfig.getAsync(`sd-modal.${this.key()}`));
-      },
-      { allowSignalWrites: true },
-    );
+    $effect([this.key], async () => {
+      this.#config.set(await this.#sdSystemConfig.getAsync(`sd-modal.${this.key()}`));
+    });
 
-    effect(() => {
+    $effect(() => {
       const conf = this.#config();
       if (conf) {
         this.dialogElRef().nativeElement.style.position = conf.position;
@@ -382,7 +378,7 @@ export class SdModalControl {
       this.#elRef.nativeElement.setAttribute("sd-init", "true");
     });
 
-    effect(() => {
+    $effect(() => {
       if (this.open()) {
         this.dialogElRef().nativeElement.focus();
       }

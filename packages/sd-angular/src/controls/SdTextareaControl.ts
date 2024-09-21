@@ -1,14 +1,6 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  ElementRef,
-  inject,
-  input,
-  model,
-  ViewEncapsulation,
-} from "@angular/core";
+import { ChangeDetectionStrategy, Component, ElementRef, inject, input, model, ViewEncapsulation } from "@angular/core";
 import { StringUtil } from "@simplysm/sd-core-common";
+import { $computed } from "../utils/$hooks";
 
 @Component({
   selector: "sd-textarea",
@@ -146,7 +138,7 @@ import { StringUtil } from "@simplysm/sd-core-common";
           }
         }
       }
-    `,
+    `
   ],
   template: `
     <div
@@ -183,8 +175,8 @@ import { StringUtil } from "@simplysm/sd-core-common";
     "[attr.sd-inset]": "inset()",
     "[attr.sd-size]": "size()",
     "[attr.sd-theme]": "theme()",
-    "[attr.sd-invalid]": "errorMessage()",
-  },
+    "[attr.sd-invalid]": "errorMessage()"
+  }
 })
 export class SdTextareaControl {
   #elRef = inject<ElementRef<HTMLElement>>(ElementRef);
@@ -205,7 +197,7 @@ export class SdTextareaControl {
   inputStyle = input<string>();
   inputClass = input<string>();
 
-  errorMessage = computed(() => {
+  errorMessage = $computed(() => {
     const errorMessages: string[] = [];
     if (this.value() == null) {
       if (this.required()) {

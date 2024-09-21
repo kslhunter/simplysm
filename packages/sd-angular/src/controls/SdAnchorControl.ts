@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
+import {ChangeDetectionStrategy, Component, input, ViewEncapsulation} from "@angular/core";
 
 @Component({
   selector: "sd-anchor",
@@ -6,52 +6,54 @@ import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@a
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
-  styles: [
-    /* language=SCSS */ `
-      @import "../scss/variables";
-      @import "../scss/mixins";
+  //region styles
+  styles: [/* language=SCSS */ `
+    @import "../scss/variables";
+    @import "../scss/mixins";
 
-      sd-anchor {
-        display: inline-block;
-        cursor: pointer;
+    sd-anchor {
+      display: inline-block;
+      cursor: pointer;
 
-        @each $key, $val in map-get($vars, theme) {
-          &[sd-theme="#{$key}"] {
-            color: var(--theme-#{$key}-default);
+      @each $key, $val in map-get($vars, theme) {
+        &[sd-theme="#{$key}"] {
+          color: var(--theme-#{$key}-default);
 
-            &:hover {
-              color: var(--theme-#{$key}-darker);
-              text-decoration: underline;
-            }
-
-            &:active {
-              color: var(--theme-#{$key}-default);
-            }
-
-            @media all and (pointer: coarse) {
-              @include active-effect(true);
-
-              &:hover {
-                color: var(--theme-#{$key}-default);
-                text-decoration: none;
-              }
-            }
+          &:hover {
+            color: var(--theme-#{$key}-darker);
+            text-decoration: underline;
           }
-        }
 
-        &[disabled="true"] {
-          color: var(--theme-grey-light);
-          cursor: default;
-          pointer-events: none;
+          &:active {
+            color: var(--theme-#{$key}-default);
+          }
 
           @media all and (pointer: coarse) {
-            @include active-effect(false);
+            @include active-effect(true);
+
+            &:hover {
+              color: var(--theme-#{$key}-default);
+              text-decoration: none;
+            }
           }
         }
       }
-    `,
-  ],
-  template: ` <ng-content></ng-content> `,
+
+      &[disabled="true"] {
+        color: var(--theme-grey-light);
+        cursor: default;
+        pointer-events: none;
+
+        @media all and (pointer: coarse) {
+          @include active-effect(false);
+        }
+      }
+    }
+  `],
+  //endregion
+  template: `
+    <ng-content></ng-content>
+  `,
   host: {
     "[attr.sd-theme]": "theme()",
     "[attr.disabled]": "disabled()",

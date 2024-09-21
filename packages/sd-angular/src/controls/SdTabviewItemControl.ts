@@ -1,13 +1,6 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  forwardRef,
-  inject,
-  input,
-  ViewEncapsulation
-} from "@angular/core";
+import { ChangeDetectionStrategy, Component, forwardRef, inject, input, ViewEncapsulation } from "@angular/core";
 import { SdTabviewControl } from "./SdTabviewControl";
+import { $computed } from "../utils/$hooks";
 
 @Component({
   selector: "sd-tabview-item",
@@ -27,12 +20,13 @@ import { SdTabviewControl } from "./SdTabviewControl";
           display: block;
         }
       }
-    `,
+    `
   ],
-  template: ` <ng-content></ng-content>`,
+  template: `
+    <ng-content></ng-content>`,
   host: {
-    "[attr.sd-selected]": "isSelected()",
-  },
+    "[attr.sd-selected]": "isSelected()"
+  }
 })
 export class SdTabviewItemControl<T> {
   value = input.required<T>();
@@ -40,5 +34,5 @@ export class SdTabviewItemControl<T> {
 
   #parentControl = inject<SdTabviewControl<T>>(forwardRef(() => SdTabviewControl));
 
-  isSelected = computed(() => this.#parentControl.value());
+  isSelected = $computed(() => this.#parentControl.value());
 }

@@ -5,7 +5,7 @@ import { SdListControl } from "./SdListControl";
 import { SdListItemControl } from "./SdListItemControl";
 import { SdThemeProvider } from "../providers/SdThemeProvider";
 import { SdDropdownPopupControl } from "./SdDropdownPopupControl";
-import { SdAngularOptionsProvider } from "../providers/SdAngularOptionsProvider";
+import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { SdLocalStorageProvider } from "../providers/SdLocalStorageProvider";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 
@@ -41,7 +41,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
   </sd-dropdown>`,
 })
 export class SdThemeSelectorControl {
-  icons = inject(SdAngularOptionsProvider).icons;
+  icons = inject(SdAngularConfigProvider).icons;
 
   #sdTheme = inject(SdThemeProvider);
   #sdLocalStorage = inject(SdLocalStorageProvider);

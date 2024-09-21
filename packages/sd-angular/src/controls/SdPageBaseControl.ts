@@ -11,7 +11,7 @@ import { SdTopbarContainerControl } from "./SdTopbarContainerControl";
 import { SdTopbarControl } from "./SdTopbarControl";
 import { NgTemplateOutlet } from "@angular/common";
 import { SdBusyContainerControl } from "./SdBusyContainerControl";
-import { SdAngularOptionsProvider } from "../providers/SdAngularOptionsProvider";
+import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 
 @Component({
@@ -44,7 +44,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
   `,
 })
 export class SdPageBaseControl {
-  icons = inject(SdAngularOptionsProvider).icons;
+  icons = inject(SdAngularConfigProvider).icons;
 
   title = input.required<string>();
   hasPerm = input(true);

@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component, computed, forwardRef, inject, ViewEncapsulation } from "@angular/core";
+import { ChangeDetectionStrategy, Component, forwardRef, inject, ViewEncapsulation } from "@angular/core";
 import { SdSidebarContainerControl } from "./SdSidebarContainerControl";
+import { $computed } from "../utils/$hooks";
 
 @Component({
   selector: "sd-sidebar",
@@ -66,15 +67,16 @@ import { SdSidebarContainerControl } from "./SdSidebarContainerControl";
           }
         }
       }
-    `,
+    `
   ],
-  template: ` <ng-content></ng-content>`,
+  template: `
+    <ng-content></ng-content>`,
   host: {
-    "[attr.sd-toggle]": "toggle()",
-  },
+    "[attr.sd-toggle]": "toggle()"
+  }
 })
 export class SdSidebarControl {
   #parentControl = inject<SdSidebarContainerControl>(forwardRef(() => SdSidebarContainerControl));
 
-  toggle = computed(() => this.#parentControl.toggle());
+  toggle = $computed(() => this.#parentControl.toggle());
 }

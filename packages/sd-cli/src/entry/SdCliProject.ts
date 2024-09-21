@@ -530,7 +530,7 @@ export class SdCliProject {
     logger.info("모든 빌드가 완료되었습니다.");
   }
 
-  // TODO: npm:piscina??
+  // piscina 사용시 ts파일을 못찾으므로 그냥 이렇게..
   private static async _prepareClusterAsync(): Promise<cp.ChildProcess> {
     const logger = Logger.get(["simplysm", "sd-cli", "SdCliProject", "_runBuildClusterAsync"]);
     return await new Promise<cp.ChildProcess>((resolve, reject) => {

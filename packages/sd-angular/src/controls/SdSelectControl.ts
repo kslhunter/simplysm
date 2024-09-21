@@ -1,14 +1,11 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  computed,
   contentChild,
-  effect,
   ElementRef,
   inject,
   input,
   model,
-  signal,
   TemplateRef,
   viewChild,
   ViewEncapsulation,
@@ -26,9 +23,10 @@ import { SdPaneControl } from "./SdPaneControl";
 import { SdTypedTemplateDirective } from "../directives/SdTypedTemplateDirective";
 import { SdDropdownPopupControl } from "./SdDropdownPopupControl";
 import { StringUtil } from "@simplysm/sd-core-common";
-import { SdAngularOptionsProvider } from "../providers/SdAngularOptionsProvider";
+import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { SdButtonControl } from "./SdButtonControl";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
+import { $computed, $effect, $signal } from "../utils/$hooks";
 
 @Component({
   selector: "sd-select",
@@ -259,9 +257,9 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 
             @if (selectMode() === "multi" && !hideSelectAll()) {
               <sd-dock class="bdb bdb-trans-default p-sm-default">
-                <sd-anchor (click)="onSelectAllButtonClick(true)"> 전체선택</sd-anchor>
+                <sd-anchor (click)="onSelectAllButtonClick(true)">전체선택</sd-anchor>
                 <sd-gap width="sm"></sd-gap>
-                <sd-anchor (click)="onSelectAllButtonClick(false)"> 전체해제</sd-anchor>
+                <sd-anchor (click)="onSelectAllButtonClick(false)">전체해제</sd-anchor>
               </sd-dock>
             }
 
@@ -317,7 +315,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
   },
 })
 export class SdSelectControl<M extends "single" | "multi", T> {
-  icons = inject(SdAngularOptionsProvider).icons;
+  icons = inject(SdAngularConfigProvider).icons;
 
   value = model<TSelectValue<any>[M]>();
   open = model(false);
@@ -349,9 +347,9 @@ export class SdSelectControl<M extends "single" | "multi", T> {
     read: TemplateRef,
   });
 
-  itemControls = signal<SdSelectItemControl[]>([]);
+  itemControls = $signal<SdSelectItemControl[]>([]);
 
-  errorMessage = computed(() => {
+  errorMessage = $computed(() => {
     const errorMessages: string[] = [];
 
     if (this.required() && this.value() === undefined) {
@@ -363,7 +361,7 @@ export class SdSelectControl<M extends "single" | "multi", T> {
   });
 
   constructor() {
-    effect(() => {
+    $effect(() => {
       const selectedItemControls = this.itemControls().filter((itemControl) => itemControl.isSelected());
       const selectedItemEls = selectedItemControls.map((item) => item.elRef.nativeElement);
       const innerHTML = selectedItemEls

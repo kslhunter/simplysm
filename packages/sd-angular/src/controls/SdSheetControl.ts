@@ -1,16 +1,13 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  computed,
   contentChildren,
-  effect,
   ElementRef,
   HostListener,
   inject,
   input,
   model,
   output,
-  signal,
   ViewEncapsulation,
 } from "@angular/core";
 import { SdSheetColumnDirective } from "../directives/SdSheetColumnDirective";
@@ -27,8 +24,9 @@ import { SdPaginationControl } from "./SdPaginationControl";
 import { SdPaneControl } from "./SdPaneControl";
 import { SdEventsDirective } from "../directives/SdEventsDirective";
 import { FontAwesomeModule } from "@fortawesome/angular-fontawesome";
-import { SdAngularOptionsProvider } from "../providers/SdAngularOptionsProvider";
+import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { SdCheckboxControl } from "./SdCheckboxControl";
+import { $computed, $effect, $signal } from "../utils/$hooks";
 
 @Component({
   selector: "sd-sheet",
@@ -47,6 +45,7 @@ import { SdCheckboxControl } from "./SdCheckboxControl";
     FontAwesomeModule,
     SdCheckboxControl,
   ],
+  //region styles
   styles: [
     /* language=SCSS */ `
       @import "../scss/mixins";
@@ -278,12 +277,11 @@ import { SdCheckboxControl } from "./SdCheckboxControl";
         }
 
         &[sd-focus-mode="cell"] {
-          > sd-busy-container
-            > sd-dock-container
-            > sd-pane._sheet-container
-            > ._focus-row-indicator
+          > sd-busy-container > sd-dock-container > sd-pane._sheet-container {
+            > ._focus-row-indicator,
             > ._focus-cell-indicator {
-            display: none !important;
+              display: none !important;
+            }
           }
         }
 
@@ -304,6 +302,7 @@ import { SdCheckboxControl } from "./SdCheckboxControl";
       }
     `,
   ],
+  //endregion
   template: `
     <sd-busy-container [busy]="busy()" type="cube">
       <sd-dock-container [hidden]="busy()">
@@ -564,7 +563,7 @@ import { SdCheckboxControl } from "./SdCheckboxControl";
   },
 })
 export class SdSheetControl<T> {
-  icons = inject(SdAngularOptionsProvider).icons;
+  icons = inject(SdAngularConfigProvider).icons;
 
   #sdSystemConfig = inject(SdSystemConfigProvider);
   #sdModal = inject(SdModalProvider);
@@ -632,13 +631,13 @@ export class SdSheetControl<T> {
   /** 셀 키 다운 이벤트 */
   cellKeydown = output<ISdSheetItemKeydownEventParam<T>>();
 
-  #config = signal<ISdSheetConfig | undefined>(undefined);
-  #editModeCellAddr = signal<{ r: number; c: number } | undefined>(undefined);
-  #resizedWidths = signal<Record<string, string | undefined>>({});
+  #config = $signal<ISdSheetConfig>();
+  #editModeCellAddr = $signal<{ r: number; c: number }>();
+  #resizedWidths = $signal<Record<string, string | undefined>>({});
 
   #isOnResizing = false;
 
-  displayColumnDefs = computed((): IColumnDef<T>[] => {
+  displayColumnDefs = $computed((): IColumnDef<T>[] => {
     return this.columnControls()
       .map((columnControl) => {
         const colConf = this.#config()?.columnRecord?.[columnControl.key()];
@@ -663,7 +662,7 @@ export class SdSheetControl<T> {
       }));
   });
 
-  displayHeaderDefTable = computed((): (IHeaderDef<T> | undefined)[][] => {
+  displayHeaderDefTable = $computed((): (IHeaderDef<T> | undefined)[][] => {
     //-- displayHeaderDefTable
     const tempHeaderDefTable: (
       | {
@@ -793,7 +792,7 @@ export class SdSheetControl<T> {
     return headerDefTable;
   });
 
-  currPageLength = computed(() => {
+  currPageLength = $computed(() => {
     if (this.pageItemCount() != null && this.pageItemCount() !== 0 && this.items().length > 0) {
       return Math.ceil(this.items().length / this.pageItemCount()!);
     } else {
@@ -801,7 +800,7 @@ export class SdSheetControl<T> {
     }
   });
 
-  orderedItems = computed(() => {
+  orderedItems = $computed(() => {
     let orderedItems = [...this.items()];
     if (this.pageItemCount() != null && this.pageItemCount() !== 0) {
       for (const orderingItem of this.ordering().reverse()) {
@@ -815,7 +814,7 @@ export class SdSheetControl<T> {
     return orderedItems;
   });
 
-  orderedPagedItems = computed(() => {
+  orderedPagedItems = $computed(() => {
     let orderedPagedItems = [...this.orderedItems()];
     if (this.pageItemCount() != null && this.pageItemCount() !== 0 && this.items().length > 0) {
       orderedPagedItems = orderedPagedItems.slice(
@@ -826,7 +825,7 @@ export class SdSheetControl<T> {
     return orderedPagedItems;
   });
 
-  displayItemDefs = computed((): IItemDef<T>[] => {
+  displayItemDefs = $computed((): IItemDef<T>[] => {
     let displayItemDefs: IItemDef<T>[] = this.orderedPagedItems().map((item) => ({
       item,
       parentDef: undefined,
@@ -877,7 +876,7 @@ export class SdSheetControl<T> {
     return displayItemDefs;
   });
 
-  selectableItems = computed(() => {
+  selectableItems = $computed(() => {
     if (this.selectMode()) {
       return this.displayItemDefs()
         .filter((item) => this.getIsItemSelectable(item.item))
@@ -887,41 +886,38 @@ export class SdSheetControl<T> {
     }
   });
 
-  hasSelectableItem = computed(() => this.selectableItems().length > 0);
+  hasSelectableItem = $computed(() => this.selectableItems().length > 0);
 
-  isAllItemsSelected = computed(
+  isAllItemsSelected = $computed(
     () =>
       this.selectableItems().length <= this.selectedItems().length &&
       this.selectableItems().every((item) => this.selectedItems().includes(item)),
   );
 
-  expandableItems = computed(() => this.displayItemDefs().filter((item) => item.hasChildren));
+  expandableItems = $computed(() => this.displayItemDefs().filter((item) => item.hasChildren));
 
-  hasExpandableItem = computed(() => this.expandableItems().length > 0);
+  hasExpandableItem = $computed(() => this.expandableItems().length > 0);
 
-  isAllItemsExpanded = computed(
+  isAllItemsExpanded = $computed(
     () =>
       this.expandableItems().length <= this.expandedItems().length &&
       this.expandableItems().every((itemDef) => this.expandedItems().includes(itemDef.item)),
   );
 
-  hasSummaryTemplate = computed(() => this.columnControls().some((item) => item.summaryTemplateRef() !== undefined));
+  hasSummaryTemplate = $computed(() => this.columnControls().some((item) => item.summaryTemplateRef() !== undefined));
 
   constructor() {
-    effect(
-      async () => {
-        this.#config.set(await this.#sdSystemConfig.getAsync(`sd-sheet.${this.key()}`));
-      },
-      { allowSignalWrites: true },
-    );
+    $effect([this.key], async () => {
+      this.#config.set(await this.#sdSystemConfig.getAsync(`sd-sheet.${this.key()}`));
+    });
 
     //-- cell sizing
-    effect(() => {
+    $effect(() => {
       this.onFixedCellResize(-2);
     });
 
     //-- select indicator
-    effect(() => {
+    $effect(() => {
       const sheetContainerEl = this.#elRef.nativeElement.findFirst<HTMLDivElement>("._sheet-container")!;
       const selectRowIndicatorContainerEl = sheetContainerEl.findFirst<HTMLDivElement>(
         "> ._select-row-indicator-container",

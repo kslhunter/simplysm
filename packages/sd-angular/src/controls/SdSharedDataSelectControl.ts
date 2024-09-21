@@ -1,16 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  contentChild,
-  inject,
-  input,
-  model,
-  signal,
-  TemplateRef,
-  Type,
-  ViewEncapsulation,
-} from "@angular/core";
+import { ChangeDetectionStrategy, Component, contentChild, inject, input, model, TemplateRef, Type, ViewEncapsulation } from "@angular/core";
 import { ISharedDataBase } from "../providers/SdSharedDataProvider";
 import { SdModalBase, SdModalProvider } from "../providers/SdModalProvider";
 import { SdItemOfTemplateContext, SdItemOfTemplateDirective } from "../directives/SdItemOfTemplateDirective";
@@ -22,9 +10,10 @@ import { SdAnchorControl } from "./SdAnchorControl";
 import { SdPaneControl } from "./SdPaneControl";
 import { SdSelectItemControl } from "./SdSelectItemControl";
 import { NgTemplateOutlet } from "@angular/common";
-import { SdAngularOptionsProvider } from "../providers/SdAngularOptionsProvider";
+import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { SdSelectButtonControl } from "./SdSelectButtonControl";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
+import { $computed, $signal } from "../utils/$hooks";
 
 @Component({
   selector: "sd-shared-data-select",
@@ -42,7 +31,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
     SdItemOfTemplateDirective,
     NgTemplateOutlet,
     SdSelectButtonControl,
-    FaIconComponent,
+    FaIconComponent
   ],
   template: `
     <sd-select
@@ -116,7 +105,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
         }
       </ng-template>
     </sd-select>
-  `,
+  `
 })
 export class SdSharedDataSelectControl<
   T extends ISharedDataBase<string | number>,
@@ -124,7 +113,7 @@ export class SdSharedDataSelectControl<
   TEDITMODAL extends SdModalBase<any, any>,
   M extends keyof TSelectValue<T>,
 > {
-  icons = inject(SdAngularOptionsProvider).icons;
+  icons = inject(SdAngularConfigProvider).icons;
 
   #sdModal = inject(SdModalProvider);
 
@@ -156,32 +145,33 @@ export class SdSharedDataSelectControl<
   displayOrderKeyProp = input<string>();
 
   itemTemplateRef = contentChild<any, TemplateRef<SdItemOfTemplateContext<T>>>(SdItemOfTemplateDirective, {
-    read: TemplateRef,
+    read: TemplateRef
   });
   undefinedTemplateRef = contentChild<any, TemplateRef<void>>("undefinedTemplate", { read: TemplateRef });
 
   trackByFn = (item: T, index: number) => item.__valueKey;
 
-  searchText = signal<string | undefined>(undefined);
+  searchText = $signal<string>();
 
-  itemByParentKeyMap = computed(() => {
+  itemByParentKeyMap = $computed(() => {
     if (this.parentKeyProp() !== undefined) {
       return this.items()
         .groupBy((item) => item[this.parentKeyProp()!])
         .toMap(
           (item) => item.key,
-          (item1) => item1.values,
+          (item1) => item1.values
         ) as Map<T["__valueKey"] | undefined, any>;
-    } else {
+    }
+    else {
       return undefined;
     }
   });
 
-  rootDisplayItems = computed(() => {
+  rootDisplayItems = $computed(() => {
     let result = this.items().filter(
       (item, index) =>
         (!this.filterFn() || this.filterFn()!(item, index, ...(this.filterFnParams() ?? []))) &&
-        (this.parentKeyProp() === undefined || item[this.parentKeyProp()!] === undefined),
+        (this.parentKeyProp() === undefined || item[this.parentKeyProp()!] === undefined)
     );
 
     if (this.displayOrderKeyProp() !== undefined) {
@@ -249,7 +239,7 @@ export class SdSharedDataSelectControl<
     const result = await this.#sdModal.showAsync(this.modalType()!, this.modalHeader() ?? "자세히...", {
       selectMode: this.selectMode(),
       selectedItemKeys: (this.selectMode() === "multi" ? (this.value() as any[]) : [this.value()]).filterExists(),
-      ...this.modalInputParam(),
+      ...this.modalInputParam()
     });
 
     if (result) {
@@ -266,9 +256,9 @@ export class SdSharedDataSelectControl<
 
     const type = this.editModal()![0];
     const header = this.editModal()![1] ?? "자세히...";
-    const param = this.editModal()![2];
+    const params = this.editModal()![2];
 
-    await this.#sdModal.showAsync(type, header, param);
+    await this.#sdModal.showAsync(type, header, params);
   }
 }
 

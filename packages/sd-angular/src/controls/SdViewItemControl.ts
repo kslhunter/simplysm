@@ -1,13 +1,6 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  forwardRef,
-  inject,
-  input,
-  ViewEncapsulation,
-} from "@angular/core";
+import { ChangeDetectionStrategy, Component, forwardRef, inject, input, ViewEncapsulation } from "@angular/core";
 import { SdViewControl } from "./SdViewControl";
+import { $computed } from "../utils/$hooks";
 
 @Component({
   selector: "sd-view-item",
@@ -28,17 +21,18 @@ import { SdViewControl } from "./SdViewControl";
           height: 100%;
         }
       }
-    `,
+    `
   ],
-  template: ` <ng-content></ng-content>`,
+  template: `
+    <ng-content></ng-content>`,
   host: {
-    "[attr.sd-selected]": "isSelected()",
-  },
+    "[attr.sd-selected]": "isSelected()"
+  }
 })
 export class SdViewItemControl {
   value = input<any>();
 
   #parentControl = inject<SdViewControl>(forwardRef(() => SdViewControl));
 
-  isSelected = computed(() => this.#parentControl.value() === this.value());
+  isSelected = $computed(() => this.#parentControl.value() === this.value());
 }

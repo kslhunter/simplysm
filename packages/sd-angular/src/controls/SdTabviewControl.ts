@@ -12,21 +12,22 @@ import { SdPaneControl } from "./SdPaneControl";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [SdDockContainerControl, SdDockControl, SdTabControl, SdTabItemControl, SdPaneControl],
-  template: ` <sd-dock-container>
-    <sd-dock>
-      <sd-tab [(value)]="value">
-        @for (itemControl of itemControls(); track itemControl.value) {
-          <sd-tab-item [value]="itemControl.value">
-            {{ itemControl.header || itemControl.value }}
-          </sd-tab-item>
-        }
-      </sd-tab>
-    </sd-dock>
+  template: `
+    <sd-dock-container>
+      <sd-dock>
+        <sd-tab [(value)]="value">
+          @for (itemControl of itemControls(); track itemControl.value()) {
+            <sd-tab-item [value]="itemControl.value()">
+              {{ itemControl.header() || itemControl.value() }}
+            </sd-tab-item>
+          }
+        </sd-tab>
+      </sd-dock>
 
-    <sd-pane>
-      <ng-content></ng-content>
-    </sd-pane>
-  </sd-dock-container>`,
+      <sd-pane>
+        <ng-content></ng-content>
+      </sd-pane>
+    </sd-dock-container>`
 })
 export class SdTabviewControl<T> {
   value = model<T>();

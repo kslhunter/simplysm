@@ -17,7 +17,7 @@ export class SdPrintProvider {
 
   async printAsync<T extends SdPrintTemplateBase<any>>(
     printType: Type<T>,
-    param: T["__tInput__"],
+    params: T["__tInput__"],
     options?: {
       orientation?: "portrait" | "landscape";
     },
@@ -27,7 +27,7 @@ export class SdPrintProvider {
       const compRef = createComponent(printType, {
         environmentInjector: this.#appRef.injector,
       });
-      compRef.setInput("param", param);
+      compRef.setInput("params", params);
 
       const compEl = compRef.location.nativeElement as HTMLElement;
       compEl.classList.add("_sd-print-template");
@@ -66,7 +66,7 @@ export class SdPrintProvider {
 
   async getPdfBufferAsync<T extends SdPrintTemplateBase<any>>(
     printType: Type<T>,
-    param: T["__tInput__"],
+    params: T["__tInput__"],
     options?: {
       orientation?: "portrait" | "landscape";
     },
@@ -77,7 +77,7 @@ export class SdPrintProvider {
         const compRef = createComponent(printType, {
           environmentInjector: this.#appRef.injector,
         });
-        compRef.setInput("param", param);
+        compRef.setInput("params", params);
 
         const compEl = compRef.location.nativeElement as HTMLElement;
         compEl.classList.add("_sd-print-template");
@@ -150,7 +150,7 @@ export class SdPrintProvider {
 export abstract class SdPrintTemplateBase<I> {
   __tInput__!: I;
 
-  param = input.required<I>();
+  params = input.required<I>();
 
   print() {
     throw new Error("템플릿이 초기화되어있지 않습니다.");

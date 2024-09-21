@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, output, ViewEncapsulation } from "@angular/core";
 import { SdAnchorControl } from "./SdAnchorControl";
-import { SdAngularOptionsProvider } from "../providers/SdAngularOptionsProvider";
+import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 
 @Component({
@@ -44,7 +44,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
     </sd-anchor>`,
 })
 export class SdTopbarTabControl {
-  icons = inject(SdAngularOptionsProvider).icons;
+  icons = inject(SdAngularConfigProvider).icons;
 
   clickClose = output<MouseEvent>();
 

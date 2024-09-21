@@ -1,7 +1,8 @@
-import { computed, inject, Injectable, Signal, signal, WritableSignal } from "@angular/core";
+import { inject, Injectable, Signal, WritableSignal } from "@angular/core";
 import { SdServiceEventListenerBase } from "@simplysm/sd-service-common";
 import { SdServiceFactoryProvider } from "./SdServiceFactoryProvider";
 import { DateOnly, DateTime, Time, Wait } from "@simplysm/sd-core-common";
+import { $computed, $signal } from "../utils/$hooks";
 
 export interface ISharedSignal<T extends ISharedDataBase<string | number>> extends Signal<T[]> {
   get(key: T["__valueKey"] | undefined): T | undefined;
@@ -13,7 +14,7 @@ export function getSharedSignal<T extends Record<string, ISharedDataBase<string 
   const provider = inject(SdSharedDataProvider);
   const sig = provider.getSignal(name as string);
 
-  const mapSig = computed(() => sig().toMap((item) => item.__valueKey));
+  const mapSig = $computed(() => sig().toMap((item) => item.__valueKey));
   sig["get"] = (key: T[K]["__valueKey"]) => {
     return mapSig().get(key);
   };
@@ -55,8 +56,8 @@ export class SdSharedDataProvider<T extends Record<string, any>> {
   loadingCount = 0;
 
   register<K extends keyof T>(name: K, getter: ISharedDataInfo<T[K]>) {
-    if (this.#infoMap.has(name))
-      throw new Error(`'${name as string}'에 대한 공유데이터 정보가 이미 등록되이 있습니다.`);
+    // if (this.#infoMap.has(name))
+    //   throw new Error(`'${name as string}'에 대한 공유데이터 정보가 이미 등록되이 있습니다.`);
     this.#infoMap.set(name, { getter: getter as any });
   }
 
@@ -84,7 +85,7 @@ export class SdSharedDataProvider<T extends Record<string, any>> {
 
     //-- data
     if (!info.signal) {
-      info.signal = signal([]);
+      info.signal = $signal([]);
       void this.#loadDataAsync(name);
     }
 

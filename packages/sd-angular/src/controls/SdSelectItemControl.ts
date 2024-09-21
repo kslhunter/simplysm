@@ -1,9 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  computed,
   contentChild,
-  effect,
   ElementRef,
   forwardRef,
   HostListener,
@@ -16,6 +14,7 @@ import { SdSelectControl } from "./SdSelectControl";
 import { NgTemplateOutlet } from "@angular/common";
 import { SdCheckboxControl } from "./SdCheckboxControl";
 import { SdGapControl } from "./SdGapControl";
+import { $computed, $effect } from "../utils/$hooks";
 
 @Component({
   selector: "sd-select-item",
@@ -97,20 +96,17 @@ export class SdSelectItemControl {
 
   labelTemplateRef = contentChild<any, TemplateRef<void>>("label", { read: TemplateRef });
 
-  selectMode = computed(() => this.#selectControl.selectMode());
-  isSelected = computed(() => this.#selectControl.getIsSelectedItemControl(this));
+  selectMode = $computed(() => this.#selectControl.selectMode());
+  isSelected = $computed(() => this.#selectControl.getIsSelectedItemControl(this));
 
   constructor() {
-    effect(
-      (onCleanup) => {
-        this.#selectControl.itemControls.update((v) => [...v, this]);
+    $effect((onCleanup) => {
+      this.#selectControl.itemControls.update((v) => [...v, this]);
 
-        onCleanup(() => {
-          this.#selectControl.itemControls.update((v) => v.filter((item) => item !== this));
-        });
-      },
-      { allowSignalWrites: true },
-    );
+      onCleanup(() => {
+        this.#selectControl.itemControls.update((v) => v.filter((item) => item !== this));
+      });
+    });
   }
 
   @HostListener("click", ["$event"])

@@ -13,7 +13,7 @@ import { SdResizeEventPlugin } from "./plugins/SdResizeEventPlugin";
 import { SdGlobalErrorHandlerPlugin } from "./plugins/SdGlobalErrorHandlerPlugin";
 import { SdOptionEventPlugin } from "./plugins/SdOptionEventPlugin";
 import { FaConfig } from "@fortawesome/angular-fontawesome";
-import { ISdAngularIcon, SdAngularOptionsProvider } from "./providers/SdAngularOptionsProvider";
+import { ISdAngularIcon, SdAngularConfigProvider } from "./providers/SdAngularConfigProvider";
 import { SdThemeProvider } from "./providers/SdThemeProvider";
 import { SdLocalStorageProvider } from "./providers/SdLocalStorageProvider";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
@@ -56,14 +56,14 @@ import {
   imports: [],
 })
 export class SdAngularModule {
-  #sdOptions = inject(SdAngularOptionsProvider);
+  #sdNgConf = inject(SdAngularConfigProvider);
   #faConfig = inject(FaConfig);
   #sdTheme = inject(SdThemeProvider);
   #sdLocalStorage = inject(SdLocalStorageProvider);
 
   constructor() {
-    this.#faConfig.fallbackIcon = this.#sdOptions.fallbackIcon;
-    this.#sdTheme.theme = this.#sdLocalStorage.get("sd-theme") ?? this.#sdOptions.defaultTheme;
+    this.#faConfig.fallbackIcon = this.#sdNgConf.fallbackIcon;
+    this.#sdTheme.theme = this.#sdLocalStorage.get("sd-theme") ?? this.#sdNgConf.defaultTheme;
   }
 
   static forRoot(opt?: {
@@ -76,9 +76,9 @@ export class SdAngularModule {
       ngModule: SdAngularModule,
       providers: [
         {
-          provide: SdAngularOptionsProvider,
+          provide: SdAngularConfigProvider,
           useFactory: () => {
-            const provider = new SdAngularOptionsProvider();
+            const provider = new SdAngularConfigProvider();
             provider.clientName = opt?.clientName ?? "unknown";
             provider.defaultTheme = opt?.defaultTheme ?? "modern";
             provider.fallbackIcon = opt?.fallbackIcon ?? faQuestionCircle;

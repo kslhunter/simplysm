@@ -1,13 +1,6 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  effect,
-  ElementRef,
-  input,
-  viewChild,
-  ViewEncapsulation,
-} from "@angular/core";
+import { ChangeDetectionStrategy, Component, ElementRef, input, viewChild, ViewEncapsulation } from "@angular/core";
 import jsbarcode from "jsbarcode";
+import { $effect } from "../utils/$hooks";
 
 @Component({
   selector: "sd-barcode",
@@ -15,7 +8,9 @@ import jsbarcode from "jsbarcode";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
-  template: ` <svg #svgEl></svg> `,
+  template: `
+    <svg #svgEl></svg>
+  `,
 })
 export class SdBarcodeControl {
   value = input<string>();
@@ -26,7 +21,7 @@ export class SdBarcodeControl {
   svgElRef = viewChild.required<any, ElementRef<SVGElement>>("svgEl", { read: ElementRef });
 
   constructor() {
-    effect(() => {
+    $effect(() => {
       jsbarcode(this.svgElRef().nativeElement, this.value() ?? "", {
         margin: -5,
         format: this.type(),

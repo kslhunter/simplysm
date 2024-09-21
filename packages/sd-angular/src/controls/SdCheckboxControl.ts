@@ -8,7 +8,7 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 
-import { SdAngularOptionsProvider } from "../providers/SdAngularOptionsProvider";
+import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 
 @Component({
@@ -17,6 +17,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [FaIconComponent],
+  //region styles
   styles: [
     /* language=SCSS */ `
       @import "../scss/variables";
@@ -195,6 +196,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
       }
     `,
   ],
+  //endregion
   template: `
     <div class="_indicator_rect">
       <div class="_indicator">
@@ -221,7 +223,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
   },
 })
 export class SdCheckboxControl {
-  icons = inject(SdAngularOptionsProvider).icons;
+  icons = inject(SdAngularConfigProvider).icons;
 
   value = model(false);
 

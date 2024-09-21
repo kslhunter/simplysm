@@ -64,7 +64,7 @@ export class SdToastProvider {
 
   notify<T extends SdToastBase<any, any>>(
     toastType: Type<T>,
-    param: T["__tInput__"],
+    params: T["__tInput__"],
     onclose: (result: T["__tOutput__"] | undefined) => void | Promise<void>,
   ): void {
     const compRef = createComponent(toastType, {
@@ -93,7 +93,7 @@ export class SdToastProvider {
     });
     this.#appRef.attachView(toastRef.hostView);
 
-    compRef.setInput("param", param);
+    compRef.setInput("params", params);
     compRef.instance.close = async (v) => {
       await close(v);
     };
@@ -200,7 +200,7 @@ export abstract class SdToastBase<I, O> {
   __tInput__!: I;
   __tOutput__!: O;
 
-  param = input.required<I>();
+  params = input.required<I>();
 
   close(value?: O): void {
     throw new Error("초기화되어있지 않습니다.");

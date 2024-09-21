@@ -315,6 +315,7 @@ export class SdNgBundler {
     }
   }
 
+  //TODO: index.html  파일에 manifest.json 정보 추가? manifest.webmanifest ? PWA?
   private async _copyAssetsAsync(): Promise<{
     source: string;
     destination: string;
@@ -322,6 +323,7 @@ export class SdNgBundler {
     return await resolveAssets([
       {input: 'src', glob: 'favicon.ico', output: ''},
       {input: 'src', glob: 'manifest.webmanifest', output: ''},
+      {input: 'src', glob: 'manifest.json', output: ''},
       {input: 'src/assets', glob: '**/*', output: 'assets'},
       ...this.#opt.dev && this.#opt.builderType === "cordova" ? Object.keys(this.#opt.cordovaConfig?.platform ?? {browser: {}}).mapMany((platform) => [
         {

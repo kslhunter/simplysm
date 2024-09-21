@@ -1,9 +1,10 @@
-import { ChangeDetectionStrategy, Component, inject, input, signal, ViewEncapsulation } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, input, ViewEncapsulation } from "@angular/core";
 import { SdCollapseIconControl } from "./SdCollapseIconControl";
 import { SdCollapseControl } from "./SdCollapseControl";
 import { SdListControl } from "./SdListControl";
 import { SdListItemControl } from "./SdListItemControl";
-import { SdAngularOptionsProvider } from "../providers/SdAngularOptionsProvider";
+import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
+import { $signal } from "../utils/$hooks";
 
 @Component({
   selector: "sd-sidebar-user",
@@ -59,9 +60,10 @@ import { SdAngularOptionsProvider } from "../providers/SdAngularOptionsProvider"
           }
         }
       }
-    `,
+    `
   ],
-  template: ` <div class="_content" [style]="contentStyle()" [class]="contentClass()">
+  template: `
+    <div class="_content" [style]="contentStyle()" [class]="contentClass()">
       <div class="p-lg">
         <ng-content></ng-content>
       </div>
@@ -84,18 +86,18 @@ import { SdAngularOptionsProvider } from "../providers/SdAngularOptionsProvider"
       </sd-collapse>
     }`,
   host: {
-    "[attr.sd-menu-open]": "menuOpen()",
-  },
+    "[attr.sd-menu-open]": "menuOpen()"
+  }
 })
 export class SdSidebarUserControl {
-  icons = inject(SdAngularOptionsProvider).icons;
+  icons = inject(SdAngularConfigProvider).icons;
 
   userMenu = input<ISidebarUserMenu>();
   menuTitle = input<string>();
   contentStyle = input<string>();
   contentClass = input<string>();
 
-  menuOpen = signal(false);
+  menuOpen = $signal(false);
 
   onMenuOpenButtonClick() {
     this.menuOpen.update((v) => !v);

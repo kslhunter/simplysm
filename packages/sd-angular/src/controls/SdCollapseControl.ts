@@ -1,15 +1,6 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  effect,
-  ElementRef,
-  input,
-  signal,
-  viewChild,
-  ViewEncapsulation,
-} from "@angular/core";
+import { ChangeDetectionStrategy, Component, ElementRef, input, viewChild, ViewEncapsulation } from "@angular/core";
 import { SdEventsDirective } from "../directives/SdEventsDirective";
+import { $computed, $effect, $signal } from "../utils/$hooks";
 
 @Component({
   selector: "sd-collapse",
@@ -47,17 +38,14 @@ export class SdCollapseControl {
 
   contentElRef = viewChild.required<any, ElementRef<HTMLElement>>("contentEl", { read: ElementRef });
 
-  contentHeight = signal(0);
+  contentHeight = $signal(0);
 
-  marginTop = computed(() => (this.open() ? "" : -this.contentHeight() + "px"));
+  marginTop = $computed(() => (this.open() ? "" : -this.contentHeight() + "px"));
 
   constructor() {
-    effect(
-      () => {
-        this.contentHeight.set(this.contentElRef().nativeElement.offsetHeight);
-      },
-      { allowSignalWrites: true },
-    );
+    $effect(() => {
+      this.contentHeight.set(this.contentElRef().nativeElement.offsetHeight);
+    });
   }
 
   onContentResize() {

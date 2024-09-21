@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component, inject, signal, ViewEncapsulation } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, ViewEncapsulation } from "@angular/core";
 import { NavigationStart, Router } from "@angular/router";
+import { $signal } from "../utils/$hooks";
 
 @Component({
   selector: "sd-sidebar-container",
@@ -52,18 +53,19 @@ import { NavigationStart, Router } from "@angular/router";
           }
         }
       }
-    `,
+    `
   ],
-  template: ` <ng-content></ng-content>
+  template: `
+    <ng-content></ng-content>
     <div class="_backdrop" (click)="onBackdropClick()"></div>`,
   host: {
-    "[attr.sd-toggle]": "toggle()",
-  },
+    "[attr.sd-toggle]": "toggle()"
+  }
 })
 export class SdSidebarContainerControl {
   #router: Router | null = inject(Router, { optional: true });
 
-  toggle = signal(false);
+  toggle = $signal(false);
 
   constructor() {
     if (this.#router) {

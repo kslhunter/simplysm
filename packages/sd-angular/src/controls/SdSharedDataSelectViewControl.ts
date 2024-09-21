@@ -1,20 +1,17 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  computed,
   contentChild,
-  effect,
   inject,
   input,
   model,
-  signal,
   TemplateRef,
   Type,
   untracked,
   ViewEncapsulation,
 } from "@angular/core";
 import { StringUtil } from "@simplysm/sd-core-common";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { ISharedDataBase } from "../providers/SdSharedDataProvider";
 import { SdItemOfTemplateContext, SdItemOfTemplateDirective } from "../directives/SdItemOfTemplateDirective";
 import { SdBusyContainerControl } from "./SdBusyContainerControl";
@@ -27,11 +24,12 @@ import { SdPaneControl } from "./SdPaneControl";
 import { SdListItemControl } from "./SdListItemControl";
 import { SdSelectItemControl } from "./SdSelectItemControl";
 import { SdButtonControl } from "./SdButtonControl";
-import { SdAngularOptionsProvider } from "../providers/SdAngularOptionsProvider";
+import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { SdAnchorControl } from "./SdAnchorControl";
 import { SdModalBase, SdModalProvider } from "../providers/SdModalProvider";
 import { ISharedDataModalInputParam, ISharedDataModalOutputResult } from "./SdSharedDataSelectControl";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
+import { $computed, $effect, $signal } from "../utils/$hooks";
 
 @Component({
   selector: "sd-shared-data-select-view",
@@ -124,14 +122,14 @@ export class SdSharedDataSelectViewControl<
   T extends ISharedDataBase<string | number>,
   TMODAL extends SdModalBase<ISharedDataModalInputParam, ISharedDataModalOutputResult>,
 > {
-  icons = inject(SdAngularOptionsProvider).icons;
+  icons = inject(SdAngularConfigProvider).icons;
 
   #sdModal = inject(SdModalProvider);
 
   selectedItem = model<T>();
 
   items = input.required<T[]>();
-  selectedIcon = input<IconProp>();
+  selectedIcon = input<IconDefinition>();
   useUndefined = input(false);
   filterFn = input<(item: T, index: number) => boolean>();
 
@@ -146,10 +144,10 @@ export class SdSharedDataSelectViewControl<
   });
   undefinedTemplateRef = contentChild<any, TemplateRef<void>>("undefinedTemplate", { read: TemplateRef });
 
-  busyCount = signal(0);
-  searchText = signal<string | undefined>(undefined);
+  busyCount = $signal(0);
+  searchText = $signal<string>();
 
-  filteredItems = computed(() => {
+  filteredItems = $computed(() => {
     let result = this.items().filter((item) => !item.__isHidden);
 
     if (!StringUtil.isNullOrEmpty(this.searchText())) {
@@ -164,15 +162,12 @@ export class SdSharedDataSelectViewControl<
   });
 
   constructor() {
-    effect(
-      () => {
-        const newSelectedItem = this.items().single(
-          (item) => item.__valueKey === untracked(() => this.selectedItem())?.__valueKey,
-        );
-        this.selectedItem.set(newSelectedItem);
-      },
-      { allowSignalWrites: true },
-    );
+    $effect(() => {
+      const newSelectedItem = this.items().single(
+        (item) => item.__valueKey === untracked(() => this.selectedItem())?.__valueKey,
+      );
+      this.selectedItem.set(newSelectedItem);
+    });
   }
 
   async onModalButtonClick(): Promise<void> {

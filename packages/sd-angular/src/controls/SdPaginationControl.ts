@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, model, ViewEncapsulation } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, input, model, ViewEncapsulation } from "@angular/core";
 import { SdAnchorControl } from "./SdAnchorControl";
-import { SdAngularOptionsProvider } from "../providers/SdAngularOptionsProvider";
+import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
+import { $computed } from "../utils/$hooks";
 
 @Component({
   selector: "sd-pagination",
@@ -36,7 +37,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
           //  }
         }
       }
-    `,
+    `
   ],
   template: `
     <sd-anchor [disabled]="!hasPrev()" (click)="onGoFirstClick()">
@@ -56,17 +57,17 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
     <sd-anchor [disabled]="!hasNext()" (click)="onGoLastClick()">
       <fa-icon [icon]="icons.angleDoubleRight" [fixedWidth]="true" />
     </sd-anchor>
-  `,
+  `
 })
 export class SdPaginationControl {
-  icons = inject(SdAngularOptionsProvider).icons;
+  icons = inject(SdAngularConfigProvider).icons;
 
   page = model(0);
 
   pageLength = input(0);
   displayPageLength = input(10);
 
-  displayPages = computed(() => {
+  displayPages = $computed(() => {
     const pages: number[] = [];
     for (let i = 0; i < this.pageLength(); i++) {
       pages.push(i);
@@ -77,11 +78,11 @@ export class SdPaginationControl {
     return pages.filter((item) => item >= from && item < to);
   });
 
-  hasNext = computed(() => {
+  hasNext = $computed(() => {
     return (this.displayPages().last() ?? 0) < this.pageLength() - 1;
   });
 
-  hasPrev = computed(() => {
+  hasPrev = $computed(() => {
     return (this.displayPages().first() ?? 0) > 0;
   });
 

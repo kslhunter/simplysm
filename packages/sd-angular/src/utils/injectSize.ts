@@ -1,12 +1,12 @@
-import { afterNextRender, ElementRef, inject, signal } from "@angular/core";
-import { beforeDestroy } from "./hooks";
+import { afterNextRender, ElementRef, inject } from "@angular/core";
+import { $signal, beforeDestroy } from "./$hooks";
 
 export function injectSize() {
   const elRef = inject<ElementRef<HTMLElement>>(ElementRef);
   let resizeObserver: ResizeObserver | undefined;
 
-  const offsetWidth = signal(0);
-  const offsetHeight = signal(0);
+  const offsetWidth = $signal(0);
+  const offsetHeight = $signal(0);
 
   afterNextRender(() => {
     resizeObserver = new ResizeObserver(() => {

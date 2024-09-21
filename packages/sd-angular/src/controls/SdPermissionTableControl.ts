@@ -1,20 +1,12 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  inject,
-  input,
-  model,
-  signal,
-  ViewEncapsulation,
-} from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, input, model, ViewEncapsulation } from "@angular/core";
 import { SdAnchorControl } from "./SdAnchorControl";
 import { ISdPermission } from "../utils/SdAppStructureUtil";
 import { SdTypedTemplateDirective } from "../directives/SdTypedTemplateDirective";
 import { NgTemplateOutlet } from "@angular/common";
 import { SdCollapseIconControl } from "./SdCollapseIconControl";
 import { SdCheckboxControl } from "./SdCheckboxControl";
-import { SdAngularOptionsProvider } from "../providers/SdAngularOptionsProvider";
+import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
+import { $computed, $signal } from "../utils/$hooks";
 
 @Component({
   selector: "sd-permission-table",
@@ -97,7 +89,7 @@ import { SdAngularOptionsProvider } from "../providers/SdAngularOptionsProvider"
           }
         }
       }
-    `,
+    `
   ],
   template: `
     <table>
@@ -191,19 +183,19 @@ import { SdAngularOptionsProvider } from "../providers/SdAngularOptionsProvider"
         }
       }
     </ng-template>
-  `,
+  `
 })
 export class SdPermissionTableControl {
-  icons = inject(SdAngularOptionsProvider).icons;
+  icons = inject(SdAngularConfigProvider).icons;
 
   value = model<Record<string, boolean>>({});
 
   items = input<ISdPermission[]>([]);
   disabled = input(false);
 
-  collapsedItems = signal(new Set<ISdPermission>());
+  collapsedItems = $signal(new Set<ISdPermission>());
 
-  depthLength = computed(() => {
+  depthLength = $computed(() => {
     return this.#getDepthLength(this.items(), 0);
   });
 
@@ -257,7 +249,8 @@ export class SdPermissionTableControl {
       const r = new Set(v);
       if (r.has(item)) {
         r.delete(item);
-      } else {
+      }
+      else {
         r.add(item);
         const allChildren = this.getAllChildren(item);
         for (const allChild of allChildren) {
@@ -273,10 +266,11 @@ export class SdPermissionTableControl {
       const permCode = item.codes.join(".");
 
       if (type === "edit" && val && !this.getIsPermChecked(item, "use")) {
-      } else {
+      }
+      else {
         this.value.update((v) => ({
           ...v,
-          [permCode + "." + type]: val,
+          [permCode + "." + type]: val
         }));
       }
 
@@ -284,7 +278,7 @@ export class SdPermissionTableControl {
       if (type === "use" && !val && this.getIsPermExists(item, "edit")) {
         this.value.update((v) => ({
           ...v,
-          [permCode + ".edit"]: false,
+          [permCode + ".edit"]: false
         }));
       }
     }
@@ -302,7 +296,8 @@ export class SdPermissionTableControl {
       items.max((item) => {
         if (item.children) {
           return this.#getDepthLength(item.children, depth + 1);
-        } else {
+        }
+        else {
           return depth + 1;
         }
       }) ?? depth

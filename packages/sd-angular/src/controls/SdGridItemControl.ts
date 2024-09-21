@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, ViewEncapsulation } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, input, ViewEncapsulation } from "@angular/core";
 import { SdGridControl } from "./SdGridControl";
+import { $computed } from "../utils/$hooks";
 
 @Component({
   selector: "sd-grid-item",
@@ -12,12 +13,13 @@ import { SdGridControl } from "./SdGridControl";
       sd-grid-item {
         height: 100%;
       }
-    `,
+    `
   ],
-  template: ` <ng-content /> `,
+  template: `
+    <ng-content /> `,
   host: {
-    "[style.gridColumnEnd]": "styleGridColumnEnd()",
-  },
+    "[style.gridColumnEnd]": "styleGridColumnEnd()"
+  }
 })
 export class SdGridItemControl {
   #parentControl = inject(SdGridControl);
@@ -27,15 +29,18 @@ export class SdGridItemControl {
   colSpanXs = input<number>();
   colSpanXxs = input<number>();
 
-  styleGridColumnEnd = computed(() => {
+  styleGridColumnEnd = $computed(() => {
     const parentWidth = this.#parentControl.offsetWidth();
     if (parentWidth < 800) {
       return `span ${this.colSpanXxs() ?? this.colSpanXs() ?? this.colSpanSm() ?? this.colSpan()}`;
-    } else if (parentWidth < 1024) {
+    }
+    else if (parentWidth < 1024) {
       return `span ${this.colSpanXs() ?? this.colSpanSm() ?? this.colSpan()}`;
-    } else if (parentWidth < 1280) {
+    }
+    else if (parentWidth < 1280) {
       return `span ${this.colSpanSm() ?? this.colSpan()}`;
-    } else {
+    }
+    else {
       return `span ${this.colSpan()}`;
     }
   });

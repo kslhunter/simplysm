@@ -2,7 +2,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   contentChild,
-  effect,
   ElementRef,
   HostListener,
   inject,
@@ -12,6 +11,7 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import { SdDropdownPopupControl } from "./SdDropdownPopupControl";
+import { $effect } from "../utils/$hooks";
 
 @Component({
   selector: "sd-dropdown",
@@ -51,7 +51,7 @@ export class SdDropdownControl {
   popupElRef = contentChild.required<any, ElementRef<HTMLElement>>(SdDropdownPopupControl, { read: ElementRef });
 
   constructor() {
-    effect(() => {
+    $effect(() => {
       if (this.open()) {
         document.body.appendChild(this.popupElRef().nativeElement);
 

@@ -1,8 +1,6 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  computed,
-  effect,
   ElementRef,
   input,
   model,
@@ -11,6 +9,7 @@ import {
 } from "@angular/core";
 import { SdEventsDirective } from "../directives/SdEventsDirective";
 import { StringUtil } from "@simplysm/sd-core-common";
+import { $computed, $effect } from "../utils/$hooks";
 
 @Component({
   selector: "sd-content-editor",
@@ -165,7 +164,7 @@ export class SdContentEditorControl {
 
   editorElRef = viewChild.required<any, ElementRef<HTMLDivElement>>("editorEl", { read: ElementRef });
 
-  errorMessage = computed(() => {
+  errorMessage = $computed(() => {
     const errorMessages: string[] = [];
     if (this.value() == null && this.required()) {
       errorMessages.push("값을 입력하세요.");
@@ -181,7 +180,7 @@ export class SdContentEditorControl {
   });
 
   constructor() {
-    effect(() => {
+    $effect(() => {
       const innerHTML = this.editorElRef().nativeElement.innerHTML;
       if (innerHTML !== this.value()) {
         this.editorElRef().nativeElement.innerHTML = this.value() ?? "";

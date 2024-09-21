@@ -1,16 +1,7 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  contentChild,
-  forwardRef,
-  inject,
-  input,
-  TemplateRef,
-  ViewEncapsulation,
-} from "@angular/core";
+import { ChangeDetectionStrategy, Component, contentChild, forwardRef, inject, input, TemplateRef, ViewEncapsulation } from "@angular/core";
 import { SdFormBoxControl } from "./SdFormBoxControl";
 import { NgTemplateOutlet } from "@angular/common";
+import { $computed } from "../utils/$hooks";
 
 @Component({
   selector: "sd-form-box-item",
@@ -119,7 +110,7 @@ import { NgTemplateOutlet } from "@angular/common";
           }
         }
       }
-    `,
+    `
   ],
   template: `
     <label
@@ -141,8 +132,8 @@ import { NgTemplateOutlet } from "@angular/common";
   host: {
     "[attr.sd-label-align]": "labelAlign()",
     "[attr.sd-layout]": "layout()",
-    "[attr.sd-no-label]": "label() == null && !labelTemplateRef()",
-  },
+    "[attr.sd-no-label]": "label() == null && !labelTemplateRef()"
+  }
 })
 export class SdFormBoxItemControl {
   #parentControl = inject<SdFormBoxControl>(forwardRef(() => SdFormBoxControl));
@@ -152,9 +143,9 @@ export class SdFormBoxItemControl {
 
   labelTemplateRef = contentChild<any, TemplateRef<void>>("label", { read: TemplateRef });
 
-  labelAlign = computed(() => this.#parentControl.labelAlign());
-  layout = computed(() => this.#parentControl.layout());
-  labelWidth = computed(() =>
-    this.#parentControl.layout() === "table" ? this.#parentControl.labelWidth() : undefined,
+  labelAlign = $computed(() => this.#parentControl.labelAlign());
+  layout = $computed(() => this.#parentControl.layout());
+  labelWidth = $computed(() =>
+    this.#parentControl.layout() === "table" ? this.#parentControl.labelWidth() : undefined
   );
 }

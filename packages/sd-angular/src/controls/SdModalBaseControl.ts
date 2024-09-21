@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, input, ViewEncapsulation } from "@angular/core";
 import { SdBusyContainerControl } from "./SdBusyContainerControl";
-import { SdAngularOptionsProvider } from "../providers/SdAngularOptionsProvider";
+import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 
 @Component({
@@ -24,7 +24,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
   `,
 })
 export class SdModalBaseControl {
-  icons = inject(SdAngularOptionsProvider).icons;
+  icons = inject(SdAngularConfigProvider).icons;
 
   hasPerm = input(false);
 }

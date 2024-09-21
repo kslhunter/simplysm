@@ -1,16 +1,17 @@
-import { ApplicationRef, createComponent, Directive, inject, Injectable, input, signal, Type } from "@angular/core";
+import { ApplicationRef, createComponent, Directive, inject, Injectable, input, Type } from "@angular/core";
 import { SdModalControl } from "../controls/SdModalControl";
+import { $signal } from "../utils/$hooks";
 
 @Injectable({ providedIn: "root" })
 export class SdModalProvider {
   #appRef = inject(ApplicationRef);
 
-  modalCount = signal(0);
+  modalCount = $signal(0);
 
   async showAsync<T extends SdModalBase<any, any>>(
     modalType: Type<T>,
     title: string,
-    param: T["__tInput__"],
+    params: T["__tInput__"],
     options?: {
       key?: string;
       hideHeader?: boolean;
@@ -24,17 +25,17 @@ export class SdModalProvider {
       movable?: boolean;
       headerStyle?: string;
       mobileFillDisabled?: boolean;
-    },
+    }
   ): Promise<T["__tOutput__"] | undefined> {
     return await new Promise<T["__tOutput__"] | undefined>((resolve, reject) => {
       //-- component
       const compRef = createComponent(modalType, {
-        environmentInjector: this.#appRef.injector,
+        environmentInjector: this.#appRef.injector
       });
 
       const modalRef = createComponent(SdModalControl, {
         environmentInjector: this.#appRef.injector,
-        projectableNodes: [[compRef.location.nativeElement]],
+        projectableNodes: [[compRef.location.nativeElement]]
       });
 
       const modalEl = modalRef.location.nativeElement as HTMLElement;
@@ -45,7 +46,7 @@ export class SdModalProvider {
       //-- attach comp
 
       compRef.setInput("title", title);
-      compRef.setInput("param", param);
+      compRef.setInput("params", params);
 
       const prevActiveElement = document.activeElement as HTMLElement | undefined;
       compRef.instance.close = (value?: T["__tOutput__"]): void => {
@@ -103,7 +104,7 @@ export abstract class SdModalBase<I, O> {
   __tOutput__!: O;
 
   title = input.required<string>();
-  param = input.required<I>();
+  params = input.required<I>();
 
   close(value?: O): void {
     throw new Error("모달이 초기화되어있지 않습니다.");

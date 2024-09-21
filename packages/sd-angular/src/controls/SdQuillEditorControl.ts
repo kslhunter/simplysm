@@ -1,15 +1,7 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  effect,
-  ElementRef,
-  inject,
-  input,
-  model,
-  ViewEncapsulation,
-} from "@angular/core";
+import { ChangeDetectionStrategy, Component, ElementRef, inject, input, model, ViewEncapsulation } from "@angular/core";
 import Quill from "quill";
 import QuillResizeImage from "quill-resize-image";
+import { $effect } from "../utils/$hooks";
 
 Quill.register("modules/resize", QuillResizeImage);
 
@@ -19,7 +11,9 @@ Quill.register("modules/resize", QuillResizeImage);
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
-  template: ` <div></div> `,
+  template: `
+    <div></div>
+  `,
   styles: [
     /* language=SCSS */ `
       sd-quill-editor {
@@ -89,7 +83,7 @@ export class SdQuillEditorControl {
   #quill!: Quill;
 
   constructor() {
-    effect(() => {
+    $effect(() => {
       this.#quill = new Quill(this.#elRef.nativeElement.firstElementChild as HTMLElement, {
         theme: "snow",
         modules: {
@@ -122,11 +116,11 @@ export class SdQuillEditorControl {
       });
     });
 
-    effect(() => {
+    $effect(() => {
       this.#quill.root.innerHTML = this.value() ?? "";
     });
 
-    effect(() => {
+    $effect(() => {
       this.#quill.enable(!this.disabled());
     });
   }

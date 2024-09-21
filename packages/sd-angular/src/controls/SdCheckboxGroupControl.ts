@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input, model, ViewEncapsulation } from "@angular/core";
+import {ChangeDetectionStrategy, Component, input, model, ViewEncapsulation} from "@angular/core";
 
 @Component({
   selector: "sd-checkbox-group",
@@ -6,7 +6,9 @@ import { ChangeDetectionStrategy, Component, input, model, ViewEncapsulation } f
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
-  template: ` <ng-content></ng-content> `,
+  template: `
+    <ng-content></ng-content>
+  `,
 })
 export class SdCheckboxGroupControl<T> {
   value = model<T[]>([]);

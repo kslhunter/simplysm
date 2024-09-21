@@ -1,5 +1,5 @@
 import { ObjectUtil } from "@simplysm/sd-core-common";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 
 export class SdAppStructureUtil {
   static getFlatPermissions<T extends string>(
@@ -201,7 +201,7 @@ export interface ISdAppStructureItem<T extends string = string> {
   modules?: T[];
   perms?: ("use" | "edit")[];
   subPerms?: ISdAppStructureItemPermission<T>[];
-  icon?: IconProp;
+  icon?: IconDefinition;
   isNotMenu?: boolean;
   isNotPage?: boolean;
   children?: ISdAppStructureItem<T>[];
@@ -235,7 +235,7 @@ export interface ISdMenu<T extends string = string> {
   title: string;
   codeChain: string[];
   hasPerms: boolean;
-  icon?: IconProp;
+  icon?: IconDefinition;
   modules?: T[];
   children?: ISdMenu<T>[];
 }

@@ -2,7 +2,6 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
-  computed,
   ElementRef,
   HostListener,
   inject,
@@ -11,6 +10,7 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import { DateOnly, DateTime, JsonConvert, NumberUtil, StringUtil, Time } from "@simplysm/sd-core-common";
+import { $computed } from "../utils/$hooks";
 
 @Component({
   selector: "sd-textfield",
@@ -370,7 +370,7 @@ import { DateOnly, DateTime, JsonConvert, NumberUtil, StringUtil, Time } from "@
     "[attr.sd-invalid]": "errorMessage()",
   },
 })
-export class SdTextfieldControl<K extends keyof TSdTextfieldTypes>{
+export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
   #elRef = inject<ElementRef<HTMLElement>>(ElementRef);
   #cdr = inject(ChangeDetectorRef);
 
@@ -400,7 +400,7 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes>{
   format = input<string>();
   useNumberComma = input(true);
 
-  controlType = computed(() => {
+  controlType = $computed(() => {
     return this.type() === "number"
       ? "text"
       : this.type() === "format"
@@ -414,11 +414,11 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes>{
               : this.type();
   });
 
-  controlValue = computed(() => {
+  controlValue = $computed(() => {
     return this.#convertToControlValue(this.value());
   });
 
-  controlValueText = computed(() => {
+  controlValueText = $computed(() => {
     const type = this.type();
     const value = this.value();
 
@@ -435,7 +435,7 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes>{
     }
   });
 
-  controlStep = computed(() => {
+  controlStep = $computed(() => {
     if (this.step() !== undefined) {
       return this.step();
     } else if (this.type() === "datetime-sec" || this.type() === "time-sec") {
@@ -445,7 +445,7 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes>{
     }
   });
 
-  controlMin = computed(() => {
+  controlMin = $computed(() => {
     const min = this.min();
     if (min instanceof DateOnly) {
       return min.toFormatString("yyyy-MM-dd");
@@ -454,7 +454,7 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes>{
     }
   });
 
-  controlMax = computed(() => {
+  controlMax = $computed(() => {
     const max = this.max();
     if (max instanceof DateOnly) {
       return max.toFormatString("yyyy-MM-dd");
@@ -463,7 +463,7 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes>{
     }
   });
 
-  errorMessage = computed(() => {
+  errorMessage = $computed(() => {
     const value = this.value();
 
     const errorMessages: string[] = [];

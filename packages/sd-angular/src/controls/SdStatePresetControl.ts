@@ -1,20 +1,12 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  effect,
-  inject,
-  input,
-  model,
-  signal,
-  ViewEncapsulation,
-} from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, input, model, ViewEncapsulation } from "@angular/core";
 import { ObjectUtil } from "@simplysm/sd-core-common";
 import { SdSystemConfigProvider } from "../providers/SdSystemConfigProvider";
 import { SdToastProvider } from "../providers/SdToastProvider";
 import { SdGapControl } from "./SdGapControl";
 import { SdAnchorControl } from "./SdAnchorControl";
-import { SdAngularOptionsProvider } from "../providers/SdAngularOptionsProvider";
+import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
+import { $effect, $signal } from "../utils/$hooks";
 
 @Component({
   selector: "sd-state-preset",
@@ -96,7 +88,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
   },
 })
 export class SdStatePresetControl {
-  icons = inject(SdAngularOptionsProvider).icons;
+  icons = inject(SdAngularConfigProvider).icons;
 
   #sdSystemConfig = inject(SdSystemConfigProvider);
   #sdToast = inject(SdToastProvider);
@@ -106,15 +98,12 @@ export class SdStatePresetControl {
   key = input.required<string>();
   size = input<"sm" | "lg">();
 
-  presets = signal<ISdStatePresetVM[]>([]);
+  presets = $signal<ISdStatePresetVM[]>([]);
 
   constructor() {
-    effect(
-      async () => {
-        this.presets.set((await this.#sdSystemConfig.getAsync(`sd-state-preset.${this.key()}`)) ?? []);
-      },
-      { allowSignalWrites: true },
-    );
+    $effect([this.key], async () => {
+      this.presets.set((await this.#sdSystemConfig.getAsync(`sd-state-preset.${this.key()}`)) ?? []);
+    });
   }
 
   async onAddButtonClick() {

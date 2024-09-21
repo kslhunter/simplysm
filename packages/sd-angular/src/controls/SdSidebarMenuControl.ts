@@ -1,14 +1,13 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, ViewEncapsulation } from "@angular/core";
-import { NavigationEnd, Router } from "@angular/router";
-import { SdListControl } from "./SdListControl";
-import { NgTemplateOutlet } from "@angular/common";
-import { SdTypedTemplateDirective } from "../directives/SdTypedTemplateDirective";
-import { SdListItemControl } from "./SdListItemControl";
-import { SdRouterLinkDirective } from "../directives/SdRouterLinkDirective";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
-import { FaIconComponent } from "@fortawesome/angular-fontawesome";
-import { toSignal } from "@angular/core/rxjs-interop";
-import { filter, map } from "rxjs";
+import {ChangeDetectionStrategy, Component, input, ViewEncapsulation} from "@angular/core";
+import {SdListControl} from "./SdListControl";
+import {NgTemplateOutlet} from "@angular/common";
+import {SdTypedTemplateDirective} from "../directives/SdTypedTemplateDirective";
+import {SdListItemControl} from "./SdListItemControl";
+import {SdRouterLinkDirective} from "../directives/SdRouterLinkDirective";
+import {IconDefinition} from "@fortawesome/fontawesome-svg-core";
+import {FaIconComponent} from "@fortawesome/angular-fontawesome";
+import {getPageCodeSignal} from "../utils/getPageCodeSignal";
+import {$computed} from "../utils/$hooks";
 
 @Component({
   selector: "sd-sidebar-menu",
@@ -21,7 +20,7 @@ import { filter, map } from "rxjs";
     SdTypedTemplateDirective,
     SdListItemControl,
     SdRouterLinkDirective,
-    FaIconComponent,
+    FaIconComponent
   ],
   styles: [
     /* language=SCSS */ `
@@ -64,7 +63,7 @@ import { filter, map } from "rxjs";
           }
         }
       }
-    `,
+    `
   ],
   template: `
     @if (rootLayout() === "accordion") {
@@ -87,7 +86,7 @@ import { filter, map } from "rxjs";
           [layout]="depth === 0 ? rootLayout() : 'accordion'"
         >
           @if (menu.icon) {
-            <fa-icon [icon]="menu.icon" [fixedWidth]="true" />
+            <fa-icon [icon]="menu.icon" [fixedWidth]="true"/>
             &nbsp;
           }
           {{ menu.title }}
@@ -110,42 +109,22 @@ import { filter, map } from "rxjs";
     </ng-template>
   `,
   host: {
-    "[attr.sd-root-layout]": "rootLayout()",
-  },
+    "[attr.sd-root-layout]": "rootLayout()"
+  }
 })
 export class SdSidebarMenuControl {
-  #router = inject(Router);
-
   menus = input<ISdSidebarMenuVM[]>([]);
   layout = input<"accordion" | "flat">();
   getMenuIsSelectedFn = input<(menu: ISdSidebarMenuVM) => boolean>();
 
-  #pageCode = toSignal(
-    this.#router.events.pipe(
-      filter((event) => event instanceof NavigationEnd),
-      map((event) =>
-        event.url
-          .split("/")
-          .slice(2)
-          .map((item) => item.split(/[;?]/).first())
-          .join("."),
-      ),
-    ),
-    {
-      initialValue: this.#router.url
-        .split("/")
-        .slice(2)
-        .map((item) => item.split(/[;?]/).first())
-        .join("."),
-    },
-  );
+  pageCode = getPageCodeSignal();
 
-  rootLayout = computed(() => this.layout() ?? (this.menus().length <= 3 ? "flat" : "accordion"));
+  rootLayout = $computed(() => this.layout() ?? (this.menus().length <= 3 ? "flat" : "accordion"));
 
   getIsMenuSelected(menu: ISdSidebarMenuVM) {
     return this.getMenuIsSelectedFn()
       ? this.getMenuIsSelectedFn()!(menu)
-      : this.#pageCode() === menu.codeChain.join(".");
+      : this.pageCode() === menu.codeChain.join(".");
   }
 
   onMenuClick(menu: ISdSidebarMenuVM): void {
@@ -164,6 +143,6 @@ export interface ISdSidebarMenuVM {
   title: string;
   codeChain: string[];
   url?: string;
-  icon?: IconProp;
+  icon?: IconDefinition;
   children?: ISdSidebarMenuVM[];
 }

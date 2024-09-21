@@ -1,21 +1,12 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  ElementRef,
-  forwardRef,
-  HostListener,
-  inject,
-  input,
-  ViewEncapsulation,
-} from "@angular/core";
+import { ChangeDetectionStrategy, Component, ElementRef, forwardRef, HostListener, inject, input, ViewEncapsulation } from "@angular/core";
 import { SdTopbarContainerControl } from "./SdTopbarContainerControl";
 import { SdSidebarContainerControl } from "./SdSidebarContainerControl";
 import { ISdResizeEvent } from "../plugins/SdResizeEventPlugin";
 import { SdAnchorControl } from "./SdAnchorControl";
 import { SdGapControl } from "./SdGapControl";
-import { SdAngularOptionsProvider } from "../providers/SdAngularOptionsProvider";
+import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
+import { $computed } from "../utils/$hooks";
 
 @Component({
   selector: "sd-topbar",
@@ -125,20 +116,20 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
         }
       }*/
       }
-    `,
+    `
   ],
   template: ` @if (hasSidebar()) {
-      <sd-anchor class="_sidebar-toggle-button" (click)="onSidebarToggleButtonClick()">
-        <fa-icon [icon]="icons.bars" [fixedWidth]="true" />
-      </sd-anchor>
-    } @else {
-      <sd-gap width="default" />
-    }
+    <sd-anchor class="_sidebar-toggle-button" (click)="onSidebarToggleButtonClick()">
+      <fa-icon [icon]="icons.bars" [fixedWidth]="true" />
+    </sd-anchor>
+  } @else {
+    <sd-gap width="default" />
+  }
 
-    <ng-content />`,
+  <ng-content />`
 })
 export class SdTopbarControl {
-  icons = inject(SdAngularOptionsProvider).icons;
+  icons = inject(SdAngularConfigProvider).icons;
 
   #elRef = inject<ElementRef<HTMLElement>>(ElementRef);
   #parentSidebarContainerControl = inject(SdSidebarContainerControl, { optional: true });
@@ -146,7 +137,7 @@ export class SdTopbarControl {
 
   sidebarContainer = input<SdSidebarContainerControl>();
 
-  hasSidebar = computed(() => !!this.sidebarContainer() || !!this.#parentSidebarContainerControl);
+  hasSidebar = $computed(() => !!this.sidebarContainer() || !!this.#parentSidebarContainerControl);
 
   onSidebarToggleButtonClick() {
     const sidebarContainerControl = this.sidebarContainer() ?? this.#parentSidebarContainerControl;

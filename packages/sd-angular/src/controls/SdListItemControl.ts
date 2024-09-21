@@ -1,7 +1,6 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  computed,
   contentChild,
   forwardRef,
   inject,
@@ -10,11 +9,12 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import { SdListControl } from "./SdListControl";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { SdCollapseIconControl } from "./SdCollapseIconControl";
 import { SdCollapseControl } from "./SdCollapseControl";
-import { SdAngularOptionsProvider } from "../providers/SdAngularOptionsProvider";
+import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
+import { $computed } from "../utils/$hooks";
 
 @Component({
   selector: "sd-list-item",
@@ -141,11 +141,11 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
   },
 })
 export class SdListItemControl {
-  icons = inject(SdAngularOptionsProvider).icons;
+  icons = inject(SdAngularConfigProvider).icons;
 
   open = model(false);
 
-  selectedIcon = input<IconProp>();
+  selectedIcon = input<IconDefinition>();
   selected = input(false);
 
   layout = input<"flat" | "accordion">("accordion");
@@ -154,7 +154,7 @@ export class SdListItemControl {
 
   childListControl = contentChild<SdListControl>(forwardRef(() => SdListControl));
 
-  hasChildren = computed(() => this.childListControl() !== undefined);
+  hasChildren = $computed(() => this.childListControl() !== undefined);
 
   onContentClick() {
     this.open.update((v) => !v);

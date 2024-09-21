@@ -1,17 +1,16 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  effect,
   ElementRef,
   HostListener,
   inject,
   input,
-  signal,
   ViewEncapsulation,
 } from "@angular/core";
 import { SdSystemConfigProvider } from "../providers/SdSystemConfigProvider";
 import { ISdResizeEvent } from "../plugins/SdResizeEventPlugin";
 import { SdEventsDirective } from "../directives/SdEventsDirective";
+import { $effect, $signal } from "../utils/$hooks";
 
 @Component({
   selector: "sd-dock",
@@ -94,19 +93,16 @@ export class SdDockControl {
   position = input<"top" | "bottom" | "right" | "left">("top");
   resizable = input(false);
 
-  size = signal(0);
+  size = $signal(0);
 
-  #config = signal<{ size?: string } | undefined>(undefined);
+  #config = $signal<{ size?: string }>();
 
   constructor() {
-    effect(
-      async () => {
-        this.#config.set(await this.#sdSystemConfig.getAsync(`sd-dock.${this.key()}`));
-      },
-      { allowSignalWrites: true },
-    );
+    $effect([this.key], async () => {
+      this.#config.set(await this.#sdSystemConfig.getAsync(`sd-dock.${this.key()}`));
+    });
 
-    effect(() => {
+    $effect(() => {
       const conf = this.#config();
       if (this.resizable() && conf && conf.size != null) {
         if (["right", "left"].includes(this.position())) {

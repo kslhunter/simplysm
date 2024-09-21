@@ -8,9 +8,12 @@ export interface INpmConfig {
   optionalDependencies?: Record<string, string>;
   devDependencies?: Record<string, string>;
   peerDependencies?: Record<string, string>;
-  peerDependenciesMeta?: Record<string, {
-    optional?: boolean
-  }>;
+  peerDependenciesMeta?: Record<
+    string,
+    {
+      optional?: boolean;
+    }
+  >;
 
   resolutions?: Record<string, string>;
 
@@ -18,7 +21,7 @@ export interface INpmConfig {
 }
 
 export interface ITsConfig {
-  files?: string[],
+  files?: string[];
   compilerOptions: { lib: string[] };
   angularCompilerOptions?: {};
 }
@@ -83,7 +86,7 @@ export interface ISdCliServerPackageConfig {
   };
   iis?: {
     nodeExeFilePath?: string;
-  }
+  };
 }
 
 export interface ISdCliClientPackageConfig {
@@ -99,7 +102,7 @@ export interface ISdCliClientPackageConfig {
     web?: ISdCliClientBuilderWebConfig;
     electron?: ISdCliClientBuilderElectronConfig;
     cordova?: ISdCliClientBuilderCordovaConfig;
-  }
+  };
 }
 
 export interface ISdCliLocalDirectoryPublishConfig {
@@ -154,7 +157,7 @@ export interface ISdCliClientBuilderCordovaConfig {
         name: string;
         maxSdkVersion?: number;
       }[];
-    }
+    };
   };
   env?: Record<string, string>;
   browserslist?: string[];

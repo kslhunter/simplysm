@@ -1,12 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  effect,
-  forwardRef,
-  inject,
-  signal,
-  ViewEncapsulation,
-} from "@angular/core";
+import { ChangeDetectionStrategy, Component, forwardRef, inject, ViewEncapsulation } from "@angular/core";
 import { SdModalBase } from "../providers/SdModalProvider";
 import { SdSheetColumnDirective } from "../directives/SdSheetColumnDirective";
 import { ISdSheetConfig, SdSheetControl } from "../controls/SdSheetControl";
@@ -18,9 +10,9 @@ import { SdTextfieldControl } from "../controls/SdTextfieldControl";
 import { SdSheetColumnCellTemplateDirective } from "../directives/SdSheetColumnCellTemplateDirective";
 import { SdDockControl } from "../controls/SdDockControl";
 import { SdButtonControl } from "../controls/SdButtonControl";
-import { SdAngularOptionsProvider } from "../providers/SdAngularOptionsProvider";
+import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
-import { mark } from "../utils/hooks";
+import { $effect, $signal } from "../utils/$hooks";
 
 @Component({
   selector: "sd-sheet-config-modal",
@@ -41,12 +33,12 @@ import { mark } from "../utils/hooks";
     FaIconComponent,
   ],
   template: `
-    @if (param()) {
+    @if (params()) {
       <sd-dock-container>
         <sd-pane class="p-default">
           <sd-sheet
             key="sd-sheet-config-modal"
-            [key]="param().sheetKey + '-config'"
+            [key]="params().sheetKey + '-config'"
             [items]="items()"
             [trackByFn]="trackByFn"
           >
@@ -56,8 +48,8 @@ import { mark } from "../utils/hooks";
                   <sd-checkbox
                     size="sm"
                     [inset]="true"
-                    [value]="item.fixed"
-                    (valueChange)="item.fixed = $event; mark(items)"
+                    [(value)]="item.fixed"
+                    (valueChange)="items.mark()"
                   ></sd-checkbox>
                 </div>
               </ng-template>
@@ -94,20 +86,21 @@ import { mark } from "../utils/hooks";
                     type="text"
                     size="sm"
                     [inset]="true"
-                    [value]="item.width"
-                    (valueChange)="item.width = $event; mark(items)"
+                    [(value)]="item.width"
+                    (valueChange)="items.mark()"
                   />
                 }
               </ng-template>
             </sd-sheet-column>
-            <sd-sheet-column key="hidden" header="Hidden">.
+            <sd-sheet-column key="hidden" header="Hidden">
+              .
               <ng-template [cell]="items()" let-item="item">
                 <div style="text-align: center">
                   <sd-checkbox
                     size="sm"
                     [inset]="true"
-                    [value]="item.hidden"
-                    (valueChange)="item.hidden = $event; mark(items)"
+                    [(value)]="item.hidden"
+                    (valueChange)="items.mark()"
                     [icon]="icons.xmark"
                     theme="danger"
                   ></sd-checkbox>
@@ -127,9 +120,7 @@ import { mark } from "../utils/hooks";
             <sd-button [inline]="true" theme="success" (click)="onOkButtonClick()" buttonStyle="min-width: 60px;">
               OK
             </sd-button>
-            <sd-button [inline]="true" (click)="onCancelButtonClick()" buttonStyle="min-width: 60px;">
-              Cancel
-            </sd-button>
+            <sd-button [inline]="true" (click)="onCancelButtonClick()" buttonStyle="min-width: 60px;">Cancel</sd-button>
           </div>
         </sd-dock>
       </sd-dock-container>
@@ -137,39 +128,36 @@ import { mark } from "../utils/hooks";
   `,
 })
 export class SdSheetConfigModal<T> extends SdModalBase<ISdSheetConfigModalInput<T>, ISdSheetConfig> {
-  icons = inject(SdAngularOptionsProvider).icons;
+  icons = inject(SdAngularConfigProvider).icons;
 
-  items = signal<IItemVM[]>([]);
+  items = $signal<IItemVM[]>([]);
 
   trackByFn = (item: IItemVM, index: number): string => item.key;
 
   constructor() {
     super();
 
-    effect(
-      () => {
-        const items: IItemVM[] = [];
-        for (const control of this.param().controls) {
-          const config = this.param().config?.columnRecord?.[control.key()];
+    $effect(() => {
+      const items: IItemVM[] = [];
+      for (const control of this.params().controls) {
+        const config = this.params().config?.columnRecord?.[control.key()];
 
-          items.push({
-            key: control.key(),
-            header:
-              control.header() instanceof Array
-                ? (control.header() as string[]).join(" > ")
-                : (control.header() as string),
-            resizable: control.resizable(),
-            fixed: config?.fixed ?? control.fixed(),
-            displayOrder: config?.displayOrder,
-            width: config?.width ?? control.width(),
-            hidden: config?.hidden ?? control.hidden(),
-          });
-        }
+        items.push({
+          key: control.key(),
+          header:
+            control.header() instanceof Array
+              ? (control.header() as string[]).join(" > ")
+              : (control.header() as string),
+          resizable: control.resizable(),
+          fixed: config?.fixed ?? control.fixed(),
+          displayOrder: config?.displayOrder,
+          width: config?.width ?? control.width(),
+          hidden: config?.hidden ?? control.hidden(),
+        });
+      }
 
-        this.items.set(items.orderBy((item) => item.displayOrder).orderBy((item) => (item.fixed ? -1 : 0)));
-      },
-      { allowSignalWrites: true },
-    );
+      this.items.set(items.orderBy((item) => item.displayOrder).orderBy((item) => (item.fixed ? -1 : 0)));
+    });
   }
 
   onDisplayOrderUpButtonClick(item: IItemVM): void {
@@ -223,8 +211,6 @@ export class SdSheetConfigModal<T> extends SdModalBase<ISdSheetConfigModalInput<
       this.close({ columnRecord: {} });
     }
   }
-
-  protected readonly mark = mark;
 }
 
 export interface ISdSheetConfigModalInput<T> {

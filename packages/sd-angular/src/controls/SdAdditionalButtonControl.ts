@@ -6,6 +6,7 @@ import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@a
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
+  //region styles
   styles: [
     /* language=SCSS */ `
       @import "../scss/mixins";
@@ -57,6 +58,7 @@ import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@a
       }
     `,
   ],
+  //endregion
   template: `
     <div>
       <ng-content />
