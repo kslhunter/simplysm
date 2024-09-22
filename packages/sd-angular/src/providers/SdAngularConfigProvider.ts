@@ -5,11 +5,12 @@ import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 export class SdAngularConfigProvider {
   clientName!: string;
   defaultTheme!: "compact" | "modern" | "mobile" | "kiosk";
-  fallbackIcon!: IconDefinition;
   icons!: ISdAngularIcon;
 }
 
 export interface ISdAngularIcon {
+  fallback: IconDefinition;
+
   caretDown: IconDefinition;
   code: IconDefinition;
   eye: IconDefinition;

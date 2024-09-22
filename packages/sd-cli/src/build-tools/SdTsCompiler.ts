@@ -10,6 +10,7 @@ import { AngularCompilerHost } from "@angular/build/src/tools/angular/angular-ho
 import { transformSupportedBrowsersToTargets } from "@angular/build/src/tools/esbuild/utils";
 import browserslist from "browserslist";
 import transformKeys from "@simplysm/ts-transformer-keys/transformer";
+import { replaceBootstrap } from "@angular/build/src/tools/angular/transformers/jit-bootstrap-transformer";
 
 export class SdTsCompiler {
   readonly #logger = Logger.get(["simplysm", "sd-cli", "SdTsCompiler"]);
@@ -398,21 +399,31 @@ export class SdTsCompiler {
 
     this.#debug(`prepare emit...`);
 
-    const ngTransformers = this.#ngProgram?.compiler.prepareEmit().transformers;
+    let transformers: ts.CustomTransformers = {};
+
+    if (this.#ngProgram) {
+      transformers = {
+        ...transformers,
+        ...this.#ngProgram.compiler.prepareEmit().transformers,
+      };
+      (transformers.before ??= []).push(replaceBootstrap(() => this.#program!.getTypeChecker()));
+    }
+    (transformers.before ??= []).push(transformKeys(this.#program));
 
     // affected에 새로 추가된 파일은 포함되지 않는 현상이 있어 getSourceFiles로 바꿈
     // -> 너무 느려져서 다시 돌림. 포함안되는 현상은 getAllDep 문제인가?
+    for (const affectedFile of affectedFileSet) {
+      if (this.#emittedFilesCacheMap.has(affectedFile)) {
+        continue;
+      }
 
-    // for (const affectedFile of affectedFileSet) {
-    //   if (this.#emittedFilesCacheMap.has(affectedFile)) {
-    //     continue;
-    //   }
-    //
-    //   const sf = this.#program.getSourceFile(affectedFile);
-    //   if (!sf) {
-    //     continue;
-    //   }
-    for (const sf of sourceFileSet) {
+      const sf = this.#program.getSourceFile(affectedFile);
+      if (!sf) {
+        continue;
+      }
+
+      // for (const sf of sourceFileSet) {
+
       if (this.#emittedFilesCacheMap.has(path.normalize(sf.fileName))) {
         continue;
       }
@@ -472,10 +483,7 @@ export class SdTsCompiler {
         },
         undefined,
         undefined,
-        {
-          ...(ngTransformers ?? {}),
-          before: [...(ngTransformers?.before ?? []), transformKeys(this.#program)],
-        },
+        transformers,
       );
     }
 

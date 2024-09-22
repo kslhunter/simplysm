@@ -1,6 +1,5 @@
 import {
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   ElementRef,
   HostListener,
@@ -372,7 +371,6 @@ import { $computed } from "../utils/$hooks";
 })
 export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
   #elRef = inject<ElementRef<HTMLElement>>(ElementRef);
-  #cdr = inject(ChangeDetectorRef);
 
   value = model<TSdTextfieldTypes[K]>();
 
@@ -664,7 +662,6 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
   async onSdSheetCellPaste() {
     if ("clipboard" in navigator) {
       this.#setValue(JsonConvert.parse(await navigator.clipboard.readText()));
-      this.#cdr.markForCheck();
     }
   }
 }

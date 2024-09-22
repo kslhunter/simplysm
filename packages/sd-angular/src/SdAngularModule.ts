@@ -14,9 +14,6 @@ import { SdGlobalErrorHandlerPlugin } from "./plugins/SdGlobalErrorHandlerPlugin
 import { SdOptionEventPlugin } from "./plugins/SdOptionEventPlugin";
 import { FaConfig } from "@fortawesome/angular-fontawesome";
 import { ISdAngularIcon, SdAngularConfigProvider } from "./providers/SdAngularConfigProvider";
-import { SdThemeProvider } from "./providers/SdThemeProvider";
-import { SdLocalStorageProvider } from "./providers/SdLocalStorageProvider";
-import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { SdBackbuttonEventPlugin } from "./plugins/SdBackbuttonEventPlugin";
 import {
   faAngleDoubleLeft,
@@ -58,18 +55,14 @@ import {
 export class SdAngularModule {
   #sdNgConf = inject(SdAngularConfigProvider);
   #faConfig = inject(FaConfig);
-  #sdTheme = inject(SdThemeProvider);
-  #sdLocalStorage = inject(SdLocalStorageProvider);
 
   constructor() {
-    this.#faConfig.fallbackIcon = this.#sdNgConf.fallbackIcon;
-    this.#sdTheme.theme = this.#sdLocalStorage.get("sd-theme") ?? this.#sdNgConf.defaultTheme;
+    this.#faConfig.fallbackIcon = this.#sdNgConf.icons.fallback;
   }
 
   static forRoot(opt?: {
     clientName?: string;
     defaultTheme?: "compact" | "modern" | "mobile" | "kiosk";
-    fallbackIcon?: IconDefinition;
     icons?: ISdAngularIcon;
   }): ModuleWithProviders<SdAngularModule> {
     return {
@@ -81,8 +74,9 @@ export class SdAngularModule {
             const provider = new SdAngularConfigProvider();
             provider.clientName = opt?.clientName ?? "unknown";
             provider.defaultTheme = opt?.defaultTheme ?? "modern";
-            provider.fallbackIcon = opt?.fallbackIcon ?? faQuestionCircle;
             provider.icons = opt?.icons ?? {
+              fallback: faQuestionCircle,
+
               caretDown: faCaretDown,
               code: faCode,
               eye: faEye,

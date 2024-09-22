@@ -1,10 +1,10 @@
-import {Type} from "../types/Type";
-import {WrappedType} from "../types/WrappedType";
-import {NeverEntryError} from "../errors/NeverEntryError";
-import {ObjectUtil} from "../utils/ObjectUtil";
-import {DateOnly} from "../types/DateOnly";
-import {DateTime} from "../types/DateTime";
-import {Time} from "../types/Time";
+import { Type } from "../types/Type";
+import { WrappedType } from "../types/WrappedType";
+import { NeverEntryError } from "../errors/NeverEntryError";
+import { ObjectUtil } from "../utils/ObjectUtil";
+import { DateOnly } from "../types/DateOnly";
+import { DateTime } from "../types/DateTime";
+import { Time } from "../types/Time";
 
 declare global {
   interface Array<T> {
@@ -36,9 +36,12 @@ declare global {
 
     groupBy<K>(keySelector: (item: T, index: number) => K): { key: K; values: T[] }[];
 
-    groupBy<K, V>(keySelector: (item: T, index: number) => K, valueSelector: (item: T, index: number) => V): {
+    groupBy<K, V>(
+      keySelector: (item: T, index: number) => K,
+      valueSelector: (item: T, index: number) => V,
+    ): {
       key: K;
-      values: V[]
+      values: V[];
     }[];
 
     toMap<K>(keySelector: (item: T, index: number) => K): Map<K, T>;
@@ -47,19 +50,31 @@ declare global {
 
     toMapAsync<K>(keySelector: (item: T, index: number) => Promise<K>): Promise<Map<K, T>>;
 
-    toMapAsync<K, V>(keySelector: (item: T, index: number) => Promise<K> | K, valueSelector: (item: T, index: number) => Promise<V> | V): Promise<Map<K, V>>;
+    toMapAsync<K, V>(
+      keySelector: (item: T, index: number) => Promise<K> | K,
+      valueSelector: (item: T, index: number) => Promise<V> | V,
+    ): Promise<Map<K, V>>;
 
     toArrayMap<K>(keySelector: (item: T, index: number) => K): Map<K, T[]>;
 
-    toArrayMap<K, V>(keySelector: (item: T, index: number) => K, valueSelector: (item: T, index: number) => V): Map<K, V[]>;
+    toArrayMap<K, V>(
+      keySelector: (item: T, index: number) => K,
+      valueSelector: (item: T, index: number) => V,
+    ): Map<K, V[]>;
 
-    toSetMap<K, V>(keySelector: (item: T, index: number) => K, valueSelector: (item: T, index: number) => V): Map<K, Set<V>>;
+    toSetMap<K, V>(
+      keySelector: (item: T, index: number) => K,
+      valueSelector: (item: T, index: number) => V,
+    ): Map<K, Set<V>>;
 
     toMapValues<K, V>(keySelector: (item: T, index: number) => K, valueSelector: (items: T[]) => V): Map<K, V>;
 
     toObject(keySelector: (item: T, index: number) => string): Record<string, T>;
 
-    toObject<V>(keySelector: (item: T, index: number) => string, valueSelector: (item: T, index: number) => V): Record<string, V>;
+    toObject<V>(
+      keySelector: (item: T, index: number) => string,
+      valueSelector: (item: T, index: number) => V,
+    ): Record<string, V>;
 
     toTree<K extends keyof T, P extends keyof T>(keyProp: K, parentKey: P): ITreeArray<T>[];
 
@@ -77,10 +92,15 @@ declare global {
 
     diffs<P>(target: P[], options?: { keys?: string[]; excludes?: string[] }): TArrayDiffsResult<T, P>[];
 
-    oneWayDiffs<K extends keyof T>(orgItems: T[] | Map<T[K], T>, key: K, options?: {
-      includeSame?: boolean;
-      excludes?: string[]
-    }): TArrayDiffs2Result<T>[];
+    oneWayDiffs<K extends keyof T>(
+      orgItems: T[] | Map<T[K], T>,
+      key: K,
+      options?: {
+        includeSame?: boolean;
+        excludes?: string[];
+        includes?: string[];
+      },
+    ): TArrayDiffs2Result<T>[];
 
     merge<P>(target: P[], options?: { keys?: string[]; excludes?: string[] }): (T | P | (T & P))[];
 
@@ -130,9 +150,12 @@ declare global {
 
     groupBy<K>(keySelector: (item: T, index: number) => K): { key: K; values: T[] }[];
 
-    groupBy<K, V>(keySelector: (item: T, index: number) => K, valueSelector: (item: T, index: number) => V): {
+    groupBy<K, V>(
+      keySelector: (item: T, index: number) => K,
+      valueSelector: (item: T, index: number) => V,
+    ): {
       key: K;
-      values: V[]
+      values: V[];
     }[];
 
     toMap<K>(keySelector: (item: T, index: number) => K): Map<K, T>;
@@ -141,15 +164,24 @@ declare global {
 
     toMapAsync<K>(keySelector: (item: T, index: number) => Promise<K>): Promise<Map<K, T>>;
 
-    toMapAsync<K, V>(keySelector: (item: T, index: number) => Promise<K> | K, valueSelector: (item: T, index: number) => Promise<V> | V): Promise<Map<K, V>>;
+    toMapAsync<K, V>(
+      keySelector: (item: T, index: number) => Promise<K> | K,
+      valueSelector: (item: T, index: number) => Promise<V> | V,
+    ): Promise<Map<K, V>>;
 
-    toArrayMap<K, V>(keySelector: (item: T, index: number) => K, valueSelector: (item: T, index: number) => V): Map<K, V[]>;
+    toArrayMap<K, V>(
+      keySelector: (item: T, index: number) => K,
+      valueSelector: (item: T, index: number) => V,
+    ): Map<K, V[]>;
 
     toMapValues<K, V>(keySelector: (item: T, index: number) => K, valueSelector: (items: T[]) => V): Map<K, V>;
 
     toObject(keySelector: (item: T, index: number) => string): Record<string, T>;
 
-    toObject<V>(keySelector: (item: T, index: number) => string, valueSelector: (item: T, index: number) => V): Record<string, V>;
+    toObject<V>(
+      keySelector: (item: T, index: number) => string,
+      valueSelector: (item: T, index: number) => V,
+    ): Record<string, V>;
 
     toTree<K extends keyof T, P extends keyof T>(keyProp: K, parentKey: P): ITreeArray<T>[];
 
@@ -161,10 +193,15 @@ declare global {
 
     diffs<P>(target: P[], options?: { keys?: string[]; excludes?: string[] }): TArrayDiffsResult<T, P>[];
 
-    oneWayDiffs<K extends keyof T>(orgItems: T[] | Map<T[K], T>, key: K, options?: {
-      includeSame?: boolean;
-      excludes?: string[]
-    }): TArrayDiffs2Result<T>[];
+    oneWayDiffs<K extends keyof T>(
+      orgItems: T[] | Map<T[K], T>,
+      key: K,
+      options?: {
+        includeSame?: boolean;
+        excludes?: string[];
+        includes?: string[];
+      },
+    ): TArrayDiffs2Result<T>[];
 
     merge<P>(target: P[], options?: { keys?: string[]; excludes?: string[] }): (T | P | (T & P))[];
 
@@ -193,7 +230,10 @@ declare global {
     return predicate !== undefined ? this.find(predicate) : this[0];
   };
 
-  prototype.filterAsync = async function <T>(this: T[], predicate: (item: T, index: number) => Promise<boolean>): Promise<T[]> {
+  prototype.filterAsync = async function <T>(
+    this: T[],
+    predicate: (item: T, index: number) => Promise<boolean>,
+  ): Promise<T[]> {
     const arr: T[] = [];
     for (let i = 0; i < this.length; i++) {
       if (await predicate(this[i], i)) {
@@ -212,8 +252,7 @@ declare global {
       }
 
       return undefined;
-    }
-    else {
+    } else {
       return this[this.length - 1];
     }
   };
@@ -226,7 +265,10 @@ declare global {
     return this.filter((item) => item instanceof type || (item as any)?.constructor === type) as N[];
   };
 
-  prototype.mapAsync = async function <T, R>(this: T[], selector: (item: T, index: number) => Promise<R>): Promise<R[]> {
+  prototype.mapAsync = async function <T, R>(
+    this: T[],
+    selector: (item: T, index: number) => Promise<R>,
+  ): Promise<R[]> {
     const result: R[] = [];
     for (let i = 0; i < this.length; i++) {
       result.push(await selector(this[i], i));
@@ -239,7 +281,10 @@ declare global {
     return arr.length > 0 ? arr.reduce((p, n) => (p ?? []).concat(n ?? [])) : arr;
   };
 
-  prototype.mapManyAsync = async function <T, R>(this: T[], selector?: (item: T, index: number) => Promise<R[]>): Promise<T | R[]> {
+  prototype.mapManyAsync = async function <T, R>(
+    this: T[],
+    selector?: (item: T, index: number) => Promise<R[]>,
+  ): Promise<T | R[]> {
     const arr = selector !== undefined ? await this.mapAsync(selector) : this;
     return arr.mapMany();
   };
@@ -248,9 +293,13 @@ declare global {
     return await Promise.all(this.map(async (item, index) => await fn(item, index)));
   };
 
-  prototype.groupBy = function <T, K, V>(this: T[], keySelector: (item: T, index: number) => K, valueSelector?: (item: T, index: number) => V): {
+  prototype.groupBy = function <T, K, V>(
+    this: T[],
+    keySelector: (item: T, index: number) => K,
+    valueSelector?: (item: T, index: number) => V,
+  ): {
     key: K;
-    values: (V | T)[]
+    values: (V | T)[];
   }[] {
     const result: { key: K; values: (V | T)[] }[] = [];
 
@@ -261,16 +310,19 @@ declare global {
       const existsRecord = result.single((item) => ObjectUtil.equal(item.key, keyObj));
       if (existsRecord !== undefined) {
         existsRecord.values.push(valueObj);
-      }
-      else {
-        result.push({key: keyObj, values: [valueObj]});
+      } else {
+        result.push({ key: keyObj, values: [valueObj] });
       }
     }
 
     return result;
   };
 
-  prototype.toMap = function <T, K, V>(this: T[], keySelector: (item: T, index: number) => K, valueSelector?: (item: T, index: number) => V): Map<K, V | T> {
+  prototype.toMap = function <T, K, V>(
+    this: T[],
+    keySelector: (item: T, index: number) => K,
+    valueSelector?: (item: T, index: number) => V,
+  ): Map<K, V | T> {
     const result = new Map<K, V | T>();
 
     for (let i = 0; i < this.length; i++) {
@@ -288,7 +340,11 @@ declare global {
     return result;
   };
 
-  prototype.toMapAsync = async function <T, K, V>(this: T[], keySelector: (item: T, index: number) => Promise<K> | K, valueSelector?: (item: T, index: number) => Promise<V> | V): Promise<Map<K, V | T>> {
+  prototype.toMapAsync = async function <T, K, V>(
+    this: T[],
+    keySelector: (item: T, index: number) => Promise<K> | K,
+    valueSelector?: (item: T, index: number) => Promise<V> | V,
+  ): Promise<Map<K, V | T>> {
     const result = new Map<K, V | T>();
 
     for (let i = 0; i < this.length; i++) {
@@ -306,8 +362,11 @@ declare global {
     return result;
   };
 
-
-  prototype.toArrayMap = function <T, K, V>(this: T[], keySelector: (item: T, index: number) => K, valueSelector?: (item: T, index: number) => V): Map<K, (V | T)[]> {
+  prototype.toArrayMap = function <T, K, V>(
+    this: T[],
+    keySelector: (item: T, index: number) => K,
+    valueSelector?: (item: T, index: number) => V,
+  ): Map<K, (V | T)[]> {
     const result = new Map<K, (V | T)[]>();
 
     for (let i = 0; i < this.length; i++) {
@@ -323,8 +382,11 @@ declare global {
     return result;
   };
 
-
-  prototype.toSetMap = function <T, K, V>(this: T[], keySelector: (item: T, index: number) => K, valueSelector?: (item: T, index: number) => V): Map<K, Set<V | T>> {
+  prototype.toSetMap = function <T, K, V>(
+    this: T[],
+    keySelector: (item: T, index: number) => K,
+    valueSelector?: (item: T, index: number) => V,
+  ): Map<K, Set<V | T>> {
     const result = new Map<K, Set<V | T>>();
 
     for (let i = 0; i < this.length; i++) {
@@ -333,15 +395,18 @@ declare global {
       const keyObj = keySelector(item, i);
       const valueObj = valueSelector !== undefined ? valueSelector(item, i) : item;
 
-      const set = result.getOrCreate(keyObj, new Set<V | T>);
+      const set = result.getOrCreate(keyObj, new Set<V | T>());
       set.add(valueObj);
     }
 
     return result;
   };
 
-
-  prototype.toMapValues = function <T, K, V>(this: T[], keySelector: (item: T, index: number) => K, valueSelector: (items: T[]) => V): Map<K, V | T> {
+  prototype.toMapValues = function <T, K, V>(
+    this: T[],
+    keySelector: (item: T, index: number) => K,
+    valueSelector: (items: T[]) => V,
+  ): Map<K, V | T> {
     const itemsMap = new Map<K, T[]>();
 
     for (let i = 0; i < this.length; i++) {
@@ -362,8 +427,11 @@ declare global {
     return result;
   };
 
-
-  prototype.toObject = function <T, V>(this: T[], keySelector: (item: T, index: number) => string, valueSelector?: (item: T, index: number) => V): Record<string, V | T | undefined> {
+  prototype.toObject = function <T, V>(
+    this: T[],
+    keySelector: (item: T, index: number) => string,
+    valueSelector?: (item: T, index: number) => V,
+  ): Record<string, V | T | undefined> {
     const result: Record<string, V | T | undefined> = {};
 
     for (let i = 0; i < this.length; i++) {
@@ -381,12 +449,16 @@ declare global {
     return result;
   };
 
-  prototype.toTree = function <T, K extends keyof T, P extends keyof T>(this: T[], key: K, parentKey: P): ITreeArray<T>[] {
+  prototype.toTree = function <T, K extends keyof T, P extends keyof T>(
+    this: T[],
+    key: K,
+    parentKey: P,
+  ): ITreeArray<T>[] {
     const fn = (items: T[]): ITreeArray<T>[] => {
       return items.map((item) => ({
         ...ObjectUtil.clone(item),
         // @ts-expect-error
-        children: fn(this.filter((item1) => item1[parentKey] === item[key]))
+        children: fn(this.filter((item1) => item1[parentKey] === item[key])),
       }));
     };
 
@@ -412,236 +484,227 @@ declare global {
     return this;
   };
 
-  prototype.orderBy = function <T>(this: T[], selector?: (item: T) => (string | number | DateTime | DateOnly | Time | undefined)): T[] {
+  prototype.orderBy = function <T>(
+    this: T[],
+    selector?: (item: T) => string | number | DateTime | DateOnly | Time | undefined,
+  ): T[] {
     return this.concat().sort((p, n) => {
       const pn = selector !== undefined ? selector(n) : n;
       const pp = selector !== undefined ? selector(p) : p;
 
-      const cpn = pn instanceof DateOnly ? pn.tick
-        : pn instanceof DateTime ? pn.tick
-          : pn instanceof Time ? pn.tick
-            : pn;
-      const cpp = pp instanceof DateOnly ? pp.tick
-        : pp instanceof DateTime ? pp.tick
-          : pp instanceof Time ? pp.tick
-            : pp;
+      const cpn =
+        pn instanceof DateOnly ? pn.tick : pn instanceof DateTime ? pn.tick : pn instanceof Time ? pn.tick : pn;
+      const cpp =
+        pp instanceof DateOnly ? pp.tick : pp instanceof DateTime ? pp.tick : pp instanceof Time ? pp.tick : pp;
 
       if (cpn === cpp) {
         return 0;
-      }
-      else if (typeof cpn === "string" && typeof cpp === "string") {
+      } else if (typeof cpn === "string" && typeof cpp === "string") {
         return cpp.localeCompare(cpn);
-      }
-      else if (typeof cpn === "number" && typeof cpp === "number") {
-        return (cpn > cpp ? -1 : cpn < cpp ? 1 : 0);
-      }
-      else if (typeof cpn === "boolean" && typeof cpp === "boolean") {
+      } else if (typeof cpn === "number" && typeof cpp === "number") {
+        return cpn > cpp ? -1 : cpn < cpp ? 1 : 0;
+      } else if (typeof cpn === "boolean" && typeof cpp === "boolean") {
         return cpn === cpp ? 0 : cpn ? -1 : 1;
-      }
-      else if (typeof cpp === "undefined") {
+      } else if (typeof cpp === "undefined") {
         return -1;
-      }
-      else if (typeof cpn === "undefined") {
+      } else if (typeof cpn === "undefined") {
         return 1;
-      }
-      else {
+      } else {
         throw new Error("orderBy를 사용할 수 없는 타입입니다.");
       }
     });
   };
 
-  prototype.orderByThis = function <T>(this: T[], selector?: (item: T) => (string | number | DateTime | DateOnly | Time | undefined)): T[] {
+  prototype.orderByThis = function <T>(
+    this: T[],
+    selector?: (item: T) => string | number | DateTime | DateOnly | Time | undefined,
+  ): T[] {
     return this.sort((p, n) => {
       const pn = selector !== undefined ? selector(n) : n;
       const pp = selector !== undefined ? selector(p) : p;
 
-      const cpn = pn instanceof DateOnly ? pn.tick
-        : pn instanceof DateTime ? pn.tick
-          : pn instanceof Time ? pn.tick
-            : pn;
-      const cpp = pp instanceof DateOnly ? pp.tick
-        : pp instanceof DateTime ? pp.tick
-          : pp instanceof Time ? pp.tick
-            : pp;
+      const cpn =
+        pn instanceof DateOnly ? pn.tick : pn instanceof DateTime ? pn.tick : pn instanceof Time ? pn.tick : pn;
+      const cpp =
+        pp instanceof DateOnly ? pp.tick : pp instanceof DateTime ? pp.tick : pp instanceof Time ? pp.tick : pp;
 
       if (cpn === cpp) {
         return 0;
-      }
-      else if (typeof cpn === "string" && typeof cpp === "string") {
+      } else if (typeof cpn === "string" && typeof cpp === "string") {
         return cpp.localeCompare(cpn);
-      }
-      else if (typeof cpn === "number" && typeof cpp === "number") {
-        return (cpn > cpp ? -1 : cpn < cpp ? 1 : 0);
-      }
-      else if (typeof cpn === "boolean" && typeof cpp === "boolean") {
+      } else if (typeof cpn === "number" && typeof cpp === "number") {
+        return cpn > cpp ? -1 : cpn < cpp ? 1 : 0;
+      } else if (typeof cpn === "boolean" && typeof cpp === "boolean") {
         return cpn === cpp ? 0 : cpn ? -1 : 1;
-      }
-      else if (typeof cpp === "undefined") {
+      } else if (typeof cpp === "undefined") {
         return -1;
-      }
-      else if (typeof cpn === "undefined") {
+      } else if (typeof cpn === "undefined") {
         return 1;
-      }
-      else {
+      } else {
         throw new Error("orderBy를 사용할 수 없는 타입입니다.");
       }
     });
   };
 
-  prototype.orderByDesc = function <T>(this: T[], selector?: (item: T) => (string | number | DateTime | DateOnly | Time | undefined)): T[] {
+  prototype.orderByDesc = function <T>(
+    this: T[],
+    selector?: (item: T) => string | number | DateTime | DateOnly | Time | undefined,
+  ): T[] {
     return this.concat().sort((p, n) => {
       const pn = selector !== undefined ? selector(n) : n;
       const pp = selector !== undefined ? selector(p) : p;
 
-      const cpn = pn instanceof DateOnly ? pn.tick
-        : pn instanceof DateTime ? pn.tick
-          : pn instanceof Time ? pn.tick
-            : pn;
-      const cpp = pp instanceof DateOnly ? pp.tick
-        : pp instanceof DateTime ? pp.tick
-          : pp instanceof Time ? pp.tick
-            : pp;
+      const cpn =
+        pn instanceof DateOnly ? pn.tick : pn instanceof DateTime ? pn.tick : pn instanceof Time ? pn.tick : pn;
+      const cpp =
+        pp instanceof DateOnly ? pp.tick : pp instanceof DateTime ? pp.tick : pp instanceof Time ? pp.tick : pp;
 
       if (cpn === cpp) {
         return 0;
-      }
-      else if (typeof cpn === "string" && typeof cpp === "string") {
+      } else if (typeof cpn === "string" && typeof cpp === "string") {
         return cpn.localeCompare(cpp);
-      }
-      else if (typeof cpn === "number" && typeof cpp === "number") {
-        return (cpn < cpp ? -1 : cpn > cpp ? 1 : 0);
-      }
-      else if (typeof cpn === "boolean" && typeof cpp === "boolean") {
+      } else if (typeof cpn === "number" && typeof cpp === "number") {
+        return cpn < cpp ? -1 : cpn > cpp ? 1 : 0;
+      } else if (typeof cpn === "boolean" && typeof cpp === "boolean") {
         return cpn === cpp ? 0 : cpn ? 1 : -1;
-      }
-      else if (typeof cpp === "undefined") {
+      } else if (typeof cpp === "undefined") {
         return 1;
-      }
-      else if (typeof cpn === "undefined") {
+      } else if (typeof cpn === "undefined") {
         return -1;
-      }
-      else {
+      } else {
         throw new Error("orderBy를 사용할 수 없는 타입입니다.");
       }
     });
   };
 
-  prototype.orderByDescThis = function <T>(this: T[], selector?: (item: T) => (string | number | DateTime | DateOnly | Time | undefined)): T[] {
+  prototype.orderByDescThis = function <T>(
+    this: T[],
+    selector?: (item: T) => string | number | DateTime | DateOnly | Time | undefined,
+  ): T[] {
     return this.sort((p, n) => {
       const pn = selector !== undefined ? selector(n) : n;
       const pp = selector !== undefined ? selector(p) : p;
 
-      const cpn = pn instanceof DateOnly ? pn.tick
-        : pn instanceof DateTime ? pn.tick
-          : pn instanceof Time ? pn.tick
-            : pn;
-      const cpp = pp instanceof DateOnly ? pp.tick
-        : pp instanceof DateTime ? pp.tick
-          : pp instanceof Time ? pp.tick
-            : pp;
+      const cpn =
+        pn instanceof DateOnly ? pn.tick : pn instanceof DateTime ? pn.tick : pn instanceof Time ? pn.tick : pn;
+      const cpp =
+        pp instanceof DateOnly ? pp.tick : pp instanceof DateTime ? pp.tick : pp instanceof Time ? pp.tick : pp;
 
       if (cpn === cpp) {
         return 0;
-      }
-      else if (typeof cpn === "string" && typeof cpp === "string") {
+      } else if (typeof cpn === "string" && typeof cpp === "string") {
         return cpn.localeCompare(cpp);
-      }
-      else if (typeof cpn === "number" && typeof cpp === "number") {
-        return (cpn < cpp ? -1 : cpn > cpp ? 1 : 0);
-      }
-      else if (typeof cpn === "boolean" && typeof cpp === "boolean") {
+      } else if (typeof cpn === "number" && typeof cpp === "number") {
+        return cpn < cpp ? -1 : cpn > cpp ? 1 : 0;
+      } else if (typeof cpn === "boolean" && typeof cpp === "boolean") {
         return cpn === cpp ? 0 : cpn ? 1 : -1;
-      }
-      else if (typeof cpp === "undefined") {
+      } else if (typeof cpp === "undefined") {
         return 1;
-      }
-      else if (typeof cpn === "undefined") {
+      } else if (typeof cpn === "undefined") {
         return -1;
-      }
-      else {
+      } else {
         throw new Error("orderBy를 사용할 수 없는 타입입니다.");
       }
     });
   };
 
-  prototype.diffs = function <T, P>(this: T[], target: P[], options?: {
-    keys?: string[];
-    excludes?: string[]
-  }): TArrayDiffsResult<T, P>[] {
+  prototype.diffs = function <T, P>(
+    this: T[],
+    target: P[],
+    options?: {
+      keys?: string[];
+      excludes?: string[];
+    },
+  ): TArrayDiffsResult<T, P>[] {
     const result: TArrayDiffsResult<T, P>[] = [];
 
     const uncheckedTarget = ([] as P[]).concat(target); // source 비교시, 수정으로 판단되거나 변경사항이 없는것으로 판단된 target 은 제외시킴
 
     for (const sourceItem of this) {
       //target 에 동일한 항목이 없을 때
-      const sameTarget = uncheckedTarget.single((targetItem) => (
-        ObjectUtil.equal(targetItem, sourceItem, options?.excludes !== undefined ? {excludes: options.excludes} : undefined)
-      ));
+      const sameTarget = uncheckedTarget.single((targetItem) =>
+        ObjectUtil.equal(
+          targetItem,
+          sourceItem,
+          options?.excludes !== undefined ? { excludes: options.excludes } : undefined,
+        ),
+      );
 
       if (sameTarget === undefined) {
         //키 설정시
         if (options?.keys !== undefined) {
           //target 에 동일한 항목은 아니지만, key 가 같은게 있는 경우: source => target 수정된 항목
-          const sameKeyTargetItem = uncheckedTarget.single((targetItem) => ObjectUtil.equal(targetItem, sourceItem, {includes: options.keys}));
+          const sameKeyTargetItem = uncheckedTarget.single((targetItem) =>
+            ObjectUtil.equal(targetItem, sourceItem, { includes: options.keys }),
+          );
           if (sameKeyTargetItem !== undefined) {
-            result.push({source: sourceItem, target: sameKeyTargetItem});
+            result.push({ source: sourceItem, target: sameKeyTargetItem });
             uncheckedTarget.remove(sameKeyTargetItem);
             continue;
           }
         }
 
         //기타: source 에서 삭제된 항목
-        result.push({source: sourceItem, target: undefined});
-      }
-      else {
+        result.push({ source: sourceItem, target: undefined });
+      } else {
         uncheckedTarget.remove(sameTarget);
       }
     }
 
     for (const uncheckedTargetItem of uncheckedTarget) {
       //target 에 추가된 항목
-      result.push({source: undefined, target: uncheckedTargetItem});
+      result.push({ source: undefined, target: uncheckedTargetItem });
     }
 
     return result;
   };
 
-  prototype.oneWayDiffs = function <T extends Record<string, any>, K extends keyof T>(this: T[], orgItems: T[] | Map<T[K], T>, key: K, options?: {
-    includeSame?: boolean;
-    excludes?: string[]
-  }): TArrayDiffs2Result<T>[] {
+  prototype.oneWayDiffs = function <T extends Record<string, any>, K extends keyof T>(
+    this: T[],
+    orgItems: T[] | Map<T[K], T>,
+    key: K,
+    options?: {
+      includeSame?: boolean;
+      excludes?: string[];
+      includes?: string[];
+    },
+  ): TArrayDiffs2Result<T>[] {
     const orgItemMap = orgItems instanceof Map ? orgItems : orgItems.toMap((orgItem) => orgItem[key]);
     const includeSame = options?.includeSame ?? false;
 
     const diffs: TArrayDiffs2Result<T>[] = [];
     for (const item of this) {
       if (item[key] === undefined) {
-        diffs.push({type: "create", item});
+        diffs.push({ type: "create", item });
         continue;
       }
 
       const orgItem = orgItemMap.get(item[key]);
       if (!orgItem) {
-        diffs.push({type: "create", item});
+        diffs.push({ type: "create", item });
         continue;
       }
 
-      if (ObjectUtil.equal(orgItem, item, {excludes: options?.excludes})) {
+      if (ObjectUtil.equal(orgItem, item, { excludes: options?.excludes, includes: options?.includes })) {
         if (includeSame) {
-          diffs.push({type: "same", item, orgItem});
+          diffs.push({ type: "same", item, orgItem });
         }
         continue;
       }
 
-      diffs.push({type: "update", item, orgItem});
+      diffs.push({ type: "update", item, orgItem });
     }
     return diffs;
   };
 
-  prototype.merge = function <T, P>(this: T[], target: P[], options?: {
-    keys?: string[];
-    excludes?: string[]
-  }): (T | P | (T & P))[] {
+  prototype.merge = function <T, P>(
+    this: T[],
+    target: P[],
+    options?: {
+      keys?: string[];
+      excludes?: string[];
+    },
+  ): (T | P | (T & P))[] {
     const diffs = this.diffs(target, options);
 
     const result: (T | P | (T & P))[] = ObjectUtil.clone(this);
@@ -676,7 +739,10 @@ declare global {
     return result;
   };
 
-  prototype.min = function <T>(this: T[], selector?: (item: T, index: number) => string | number): string | number | undefined {
+  prototype.min = function <T>(
+    this: T[],
+    selector?: (item: T, index: number) => string | number,
+  ): string | number | undefined {
     let result: string | number | undefined;
     for (let i = 0; i < this.length; i++) {
       const item = selector !== undefined ? selector(this[i], i) : this[i];
@@ -691,7 +757,10 @@ declare global {
     return result;
   };
 
-  prototype.max = function <T>(this: T[], selector?: (item: T, index: number) => string | number): string | number | undefined {
+  prototype.max = function <T>(
+    this: T[],
+    selector?: (item: T, index: number) => string | number,
+  ): string | number | undefined {
     let result: string | number | undefined;
     for (let i = 0; i < this.length; i++) {
       const item = selector !== undefined ? selector(this[i], i) : this[i];
@@ -727,7 +796,8 @@ declare global {
   };
 
   prototype.remove = function <T>(this: T[], itemOrSelector: T | ((item: T, index: number) => boolean)): T[] {
-    const removeItems = typeof itemOrSelector === "function" ? this.filter(itemOrSelector.bind(this)) : [itemOrSelector];
+    const removeItems =
+      typeof itemOrSelector === "function" ? this.filter(itemOrSelector.bind(this)) : [itemOrSelector];
 
     for (const removeItem of removeItems) {
       while (this.includes(removeItem)) {
@@ -744,13 +814,13 @@ declare global {
 })(Array.prototype);
 
 export type TArrayDiffsResult<T, P> =
-  { source: undefined; target: P } | // INSERT
-  { source: T; target: undefined } | // DELETE
-  { source: T; target: P }; // UPDATE
+  | { source: undefined; target: P } // INSERT
+  | { source: T; target: undefined } // DELETE
+  | { source: T; target: P }; // UPDATE
 
 export type TArrayDiffs2Result<T> =
-  { type: "create"; item: T } |
-  { type: "update"; item: T; orgItem: T } |
-  { type: "same"; item: T; orgItem: T };
+  | { type: "create"; item: T }
+  | { type: "update"; item: T; orgItem: T }
+  | { type: "same"; item: T; orgItem: T };
 
 export type ITreeArray<T> = T & { children: ITreeArray<T>[] };

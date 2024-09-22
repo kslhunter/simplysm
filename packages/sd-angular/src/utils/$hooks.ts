@@ -4,7 +4,6 @@ import {
   EffectCleanupRegisterFn,
   EffectRef,
   inject,
-  Injector,
   Signal,
   signal,
   untracked,
@@ -18,16 +17,24 @@ import {
 } from "@angular/core/primitives/signals";
 import { ActivatedRoute } from "@angular/router";
 
+/** @deprecated */
 export function afterInit(fn: () => void) {
-  const injector = inject(Injector);
+  $effect([], () => {
+    fn();
+  });
+  /*const injector = inject(Injector);
   (injector["_lView"][1].preOrderHooks ??= []).push(injector["_tNode"].index, -injector["_tNode"].directiveStart, () =>
     fn(),
-  );
+  );*/
 }
 
+/** @deprecated */
 export function beforeDestroy(fn: () => void) {
-  const injector = inject(Injector);
-  (injector["_lView"][1].destroyHooks ??= []).push(injector["_tNode"].directiveStart, () => fn());
+  $effect([], (onCleanup) => {
+    onCleanup(() => fn());
+  });
+  // const injector = inject(Injector);
+  // (injector["_lView"][1].destroyHooks ??= []).push(injector["_tNode"].directiveStart, () => fn());
 }
 
 export function canDeactivate(fn: () => boolean) {
@@ -70,11 +77,11 @@ export function canDeactivate(fn: () => boolean) {
 
 // type TSignalWrap<T extends Signal<any>> = T;
 
-export function $signal<T>(): WritableSignal<T | undefined> & { mark(): void };
-export function $signal<T>(initialValue: T): WritableSignal<T> & { mark(): void };
-export function $signal<T>(initialValue?: T): WritableSignal<T | undefined> & { mark(): void } {
+export function $signal<T>(): WritableSignal<T | undefined> & { $mark(): void };
+export function $signal<T>(initialValue: T): WritableSignal<T> & { $mark(): void };
+export function $signal<T>(initialValue?: T): WritableSignal<T | undefined> & { $mark(): void } {
   const sig = signal(initialValue);
-  sig["mark"] = () => {
+  sig["$mark"] = () => {
     const node = sig[SIGNAL] as any;
     node.version++;
     producerIncrementEpoch();
@@ -91,6 +98,33 @@ export function $signal<T>(initialValue?: T): WritableSignal<T | undefined> & { 
     enumerable: true
   });
   return sig as any;*/
+}
+
+export function $signalSet<T>(
+  initialValue?: Set<T>,
+): WritableSignal<Set<T>> & { $mark(): void; $toggle(v: T, addOrDel?: "add" | "del"): void } {
+  const sig = $signal(initialValue ?? new Set<T>());
+  sig["$toggle"] = (value: T, addOrDel?: "add" | "del") => {
+    sig.update((v) => new Set(v).toggle(value, addOrDel));
+  };
+  return sig as any;
+}
+
+export function $signalMap<K, T>(
+  initialValue?: Map<K, T>,
+): WritableSignal<Map<K, T>> & {
+  $mark(): void;
+  $set(k: K, v: T): void;
+  $update(k: K, v: (val: T | undefined) => T): void;
+} {
+  const sig = $signal(initialValue ?? new Map<K, T>());
+  sig["$set"] = (k: K, v: T) => {
+    sig.update((m) => new Map(m).set(k, v));
+  };
+  sig["$update"] = (k: K, v: (val: T | undefined) => T) => {
+    sig.update((m) => new Map(m).set(k, v(m.get(k))));
+  };
+  return sig as any;
 }
 
 export function $effect(fn: (onCleanup: EffectCleanupRegisterFn) => void): EffectRef;
@@ -121,12 +155,12 @@ export function $effect(
   }
 }
 
-export function $computed<R>(fn: () => R): Signal<R>;
-export function $computed<R>(signals: Signal<any>[], fn: () => R): Signal<R>;
 export function $computed<R>(fn: () => Promise<R>): Signal<R | undefined>;
 export function $computed<R>(fn: () => Promise<R>, opt: { initialValue?: R }): Signal<R>;
 export function $computed<R>(signals: Signal<any>[], fn: () => Promise<R>): Signal<R | undefined>;
 export function $computed<R>(signals: Signal<any>[], fn: () => Promise<R>, opt: { initialValue?: R }): Signal<R>;
+export function $computed<R>(fn: () => R): Signal<R>;
+export function $computed<R>(signals: Signal<any>[], fn: () => R): Signal<R>;
 export function $computed(...args: any): Signal<any> {
   const signals: Signal<any>[] | undefined = args[0] instanceof Array ? args[0] : undefined;
   const fn: () => any | Promise<any> = args[0] instanceof Array ? args[1] : args[0];

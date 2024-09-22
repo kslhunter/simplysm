@@ -2,15 +2,15 @@ import { inject, Injectable } from "@angular/core";
 import { SdLocalStorageProvider } from "./SdLocalStorageProvider";
 
 @Injectable({ providedIn: "root" })
-export class SdSystemConfigProvider {
-  #sdLocalStorage = inject(SdLocalStorageProvider);
+export class SdSystemConfigProvider<T> {
+  #sdLocalStorage = inject<SdLocalStorageProvider<T>>(SdLocalStorageProvider);
 
   fn?: {
-    set: (key: string, data: any) => Promise<void> | void;
-    get: (key: string) => PromiseLike<any>;
+    set<K extends keyof T & string>(key: K, data: T[K]): Promise<void> | void;
+    get(key: keyof T & string): PromiseLike<any>;
   };
 
-  async setAsync(key: string, data: any) {
+  async setAsync<K extends keyof T & string>(key: K, data: T[K]) {
     if (this.fn) {
       await this.fn.set(key, data);
     } else {
@@ -18,7 +18,7 @@ export class SdSystemConfigProvider {
     }
   }
 
-  async getAsync(key: string) {
+  async getAsync(key: keyof T & string) {
     if (this.fn) {
       return await this.fn.get(key);
     } else {

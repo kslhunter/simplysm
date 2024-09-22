@@ -1,41 +1,41 @@
 import path from "path";
-import esbuild, {Metafile} from "esbuild";
-import {FsUtil, Logger, PathUtil} from "@simplysm/sd-core-node";
-import {fileURLToPath} from "url";
+import esbuild, { Metafile } from "esbuild";
+import { FsUtil, Logger, PathUtil } from "@simplysm/sd-core-node";
+import { fileURLToPath } from "url";
 import nodeStdLibBrowser from "node-stdlib-browser";
 import nodeStdLibBrowserPlugin from "node-stdlib-browser/helpers/esbuild/plugin";
-import {INpmConfig, ISdCliClientBuilderCordovaConfig, ISdCliPackageBuildResult} from "../commons";
+import { INpmConfig, ISdCliClientBuilderCordovaConfig, ISdCliPackageBuildResult } from "../commons";
 import browserslist from "browserslist";
-import {SdNgBundlerContext} from "./SdNgBundlerContext";
-import {INgPluginResultCache, sdNgPlugin} from "../bundle-plugins/sdNgPlugin";
+import { SdNgBundlerContext } from "./SdNgBundlerContext";
+import { INgPluginResultCache, sdNgPlugin } from "../bundle-plugins/sdNgPlugin";
 import ts from "typescript";
-import {MemoryLoadResultCache} from "@angular/build/src/tools/esbuild/load-result-cache";
+import { MemoryLoadResultCache } from "@angular/build/src/tools/esbuild/load-result-cache";
 import {
   convertOutputFile,
   createOutputFile,
-  transformSupportedBrowsersToTargets
+  transformSupportedBrowsersToTargets,
 } from "@angular/build/src/tools/esbuild/utils";
 import {
   BuildOutputFile,
   BuildOutputFileType,
-  InitialFileRecord
+  InitialFileRecord,
 } from "@angular/build/src/tools/esbuild/bundler-context";
-import {extractLicenses} from "@angular/build/src/tools/esbuild/license-extractor";
+import { extractLicenses } from "@angular/build/src/tools/esbuild/license-extractor";
 import {
   HintMode,
   IndexHtmlGenerator,
-  IndexHtmlProcessResult
+  IndexHtmlProcessResult,
 } from "@angular/build/src/utils/index-file/index-html-generator";
-import {Entrypoint} from "@angular/build/src/utils/index-file/augment-index-html";
-import {CrossOrigin} from "@angular/build/src/builders/application/schema";
-import {InlineCriticalCssProcessor} from "@angular/build/src/utils/index-file/inline-critical-css";
-import {augmentAppWithServiceWorkerEsbuild} from "@angular/build/src/utils/service-worker";
-import {createSourcemapIgnorelistPlugin} from "@angular/build/src/tools/esbuild/sourcemap-ignorelist-plugin";
-import {StylesheetPluginFactory} from "@angular/build/src/tools/esbuild/stylesheets/stylesheet-plugin-factory";
-import {SassStylesheetLanguage} from "@angular/build/src/tools/esbuild/stylesheets/sass-language";
-import {CssStylesheetLanguage} from "@angular/build/src/tools/esbuild/stylesheets/css-language";
-import {createCssResourcePlugin} from "@angular/build/src/tools/esbuild/stylesheets/css-resource-plugin";
-import {resolveAssets} from "@angular/build/src/utils/resolve-assets";
+import { Entrypoint } from "@angular/build/src/utils/index-file/augment-index-html";
+import { CrossOrigin } from "@angular/build/src/builders/application/schema";
+import { InlineCriticalCssProcessor } from "@angular/build/src/utils/index-file/inline-critical-css";
+import { augmentAppWithServiceWorkerEsbuild } from "@angular/build/src/utils/service-worker";
+import { createSourcemapIgnorelistPlugin } from "@angular/build/src/tools/esbuild/sourcemap-ignorelist-plugin";
+import { StylesheetPluginFactory } from "@angular/build/src/tools/esbuild/stylesheets/stylesheet-plugin-factory";
+import { SassStylesheetLanguage } from "@angular/build/src/tools/esbuild/stylesheets/sass-language";
+import { CssStylesheetLanguage } from "@angular/build/src/tools/esbuild/stylesheets/css-language";
+import { createCssResourcePlugin } from "@angular/build/src/tools/esbuild/stylesheets/css-resource-plugin";
+import { resolveAssets } from "@angular/build/src/utils/resolve-assets";
 
 export class SdNgBundler {
   readonly #logger = Logger.get(["simplysm", "sd-cli", "SdNgBundler"]);
@@ -47,7 +47,7 @@ export class SdNgBundler {
   readonly #modifiedFileSet = new Set<string>();
   readonly #ngResultCache: INgPluginResultCache = {
     affectedFileSet: new Set<string>(),
-    watchFileSet: new Set<string>()
+    watchFileSet: new Set<string>(),
   };
   readonly #styleLoadResultCache = new MemoryLoadResultCache();
 
@@ -77,7 +77,8 @@ export class SdNgBundler {
     this.#browserTarget = transformSupportedBrowsersToTargets(browserslist(["Chrome > 78"]));
     this.#indexHtmlFilePath = path.resolve(opt.pkgPath, "src/index.html");
     this.#pkgName = path.basename(opt.pkgPath);
-    this.#baseHref = opt.builderType === "web" ? `/${this.#pkgName}/` : opt.dev ? `/${this.#pkgName}/${opt.builderType}/` : ``;
+    this.#baseHref =
+      opt.builderType === "web" ? `/${this.#pkgName}/` : opt.dev ? `/${this.#pkgName}/${opt.builderType}/` : ``;
   }
 
   public markForChanges(filePaths: string[]): void {
@@ -90,9 +91,9 @@ export class SdNgBundler {
 
   public async bundleAsync(): Promise<{
     program?: ts.Program;
-    watchFileSet: Set<string>,
-    affectedFileSet: Set<string>,
-    results: ISdCliPackageBuildResult[]
+    watchFileSet: Set<string>;
+    affectedFileSet: Set<string>;
+    results: ISdCliPackageBuildResult[];
   }> {
     this.#debug(`get contexts...`);
 
@@ -100,9 +101,7 @@ export class SdNgBundler {
       this.#contexts = [
         this._getAppContext(),
         this._getStyleContext(),
-        ...this.#opt.builderType === "electron" ? [
-          this._getElectronMainContext()
-        ] : []
+        ...(this.#opt.builderType === "electron" ? [this._getElectronMainContext()] : []),
       ];
     }
 
@@ -111,23 +110,25 @@ export class SdNgBundler {
     const bundlingResults = await this.#contexts.mapAsync(async (ctx, i) => await ctx.bundleAsync());
 
     //-- results
-    const results = bundlingResults.mapMany(bundlingResult => bundlingResult.results);
+    const results = bundlingResults.mapMany((bundlingResult) => bundlingResult.results);
 
     this.#debug(`convert result...`);
 
-    const outputFiles: BuildOutputFile[] = bundlingResults.mapMany(item => item.outputFiles?.map(file => convertOutputFile(file, BuildOutputFileType.Root)) ?? []);
+    const outputFiles: BuildOutputFile[] = bundlingResults.mapMany(
+      (item) => item.outputFiles?.map((file) => convertOutputFile(file, BuildOutputFileType.Root)) ?? [],
+    );
     const initialFiles = new Map<string, InitialFileRecord>();
     const metafile: {
-      inputs: Metafile["inputs"],
-      outputs: Metafile["outputs"]
+      inputs: Metafile["inputs"];
+      outputs: Metafile["outputs"];
     } = {
       inputs: {},
-      outputs: {}
+      outputs: {},
     };
     for (const bundlingResult of bundlingResults) {
       bundlingResult.initialFiles.forEach((v, k) => initialFiles.set(k, v));
-      metafile.inputs = {...metafile.inputs, ...bundlingResult.metafile?.inputs};
-      metafile.outputs = {...metafile.outputs, ...bundlingResult.metafile?.outputs};
+      metafile.inputs = { ...metafile.inputs, ...bundlingResult.metafile?.inputs };
+      metafile.outputs = { ...metafile.outputs, ...bundlingResult.metafile?.outputs };
     }
     const assetFiles: { source: string; destination: string }[] = [];
 
@@ -168,7 +169,13 @@ export class SdNgBundler {
 
     //-- extract 3rdpartylicenses
     if (!this.#opt.dev) {
-      outputFiles.push(createOutputFile('3rdpartylicenses.txt', await extractLicenses(metafile, this.#opt.pkgPath), BuildOutputFileType.Root));
+      outputFiles.push(
+        createOutputFile(
+          "3rdpartylicenses.txt",
+          await extractLicenses(metafile, this.#opt.pkgPath),
+          BuildOutputFileType.Root,
+        ),
+      );
     }
 
     //-- service worker
@@ -177,10 +184,9 @@ export class SdNgBundler {
 
       try {
         const serviceWorkerResult = await this._genServiceWorkerAsync(outputFiles, assetFiles);
-        outputFiles.push(createOutputFile('ngsw.json', serviceWorkerResult.manifest, BuildOutputFileType.Root));
+        outputFiles.push(createOutputFile("ngsw.json", serviceWorkerResult.manifest, BuildOutputFileType.Root));
         assetFiles.push(...serviceWorkerResult.assetFiles);
-      }
-      catch (err) {
+      } catch (err) {
         results.push({
           filePath: undefined,
           line: undefined,
@@ -220,10 +226,10 @@ export class SdNgBundler {
       watchFileSet: new Set([
         ...this.#ngResultCache.watchFileSet!,
         ...this.#styleLoadResultCache.watchFiles,
-        this.#indexHtmlFilePath
+        this.#indexHtmlFilePath,
       ]),
       affectedFileSet: this.#ngResultCache.affectedFileSet!,
-      results
+      results,
     };
   }
 
@@ -244,40 +250,38 @@ export class SdNgBundler {
     const indexHtmlGenerator = new IndexHtmlGenerator({
       indexPath: this.#indexHtmlFilePath,
       entrypoints: [
-        ['runtime', true],
-        ['polyfills', true],
-        ['styles', false],
-        ['vendor', true],
-        ['main', true],
-        ...this.#opt.builderType === "cordova" ? [
-          ["cordova-entry", true] as Entrypoint
-        ] : []
+        ["runtime", true],
+        ["polyfills", true],
+        ["styles", false],
+        ["vendor", true],
+        ["main", true],
+        ...(this.#opt.builderType === "cordova" ? [["cordova-entry", true] as Entrypoint] : []),
       ],
       optimization: {
         scripts: !this.#opt.dev,
-        fonts: {inline: !this.#opt.dev},
+        fonts: { inline: !this.#opt.dev },
         styles: {
           minify: !this.#opt.dev,
-          inlineCritical: false
+          inlineCritical: false,
         },
       },
       crossOrigin: CrossOrigin.None,
     });
     indexHtmlGenerator.readAsset = readAsset;
 
-    const hints: { url: string; mode: HintMode; as?: string; }[] = [];
+    const hints: { url: string; mode: HintMode; as?: string }[] = [];
     if (!this.#opt.dev) {
       for (const [key, value] of initialFiles) {
         if (value.entrypoint) {
           continue;
         }
 
-        if (value.type === 'script') {
-          hints.push({url: key, mode: 'modulepreload' as const});
+        if (value.type === "script") {
+          hints.push({ url: key, mode: "modulepreload" as const });
         }
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        else if (value.type === 'style') {
-          hints.push({url: key, mode: 'preload' as const, as: 'style'});
+        else if (value.type === "style") {
+          hints.push({ url: key, mode: "preload" as const, as: "style" });
         }
       }
     }
@@ -287,7 +291,7 @@ export class SdNgBundler {
       lang: undefined,
       outputPath: "/",
       files: [...initialFiles].map(([file, record]) => ({
-        name: record.name ?? '',
+        name: record.name ?? "",
         file,
         extension: path.extname(file),
       })),
@@ -296,58 +300,63 @@ export class SdNgBundler {
 
     if (this.#opt.dev) {
       return transformResult;
-    }
-    else {
+    } else {
       const inlineCriticalCssProcessor = new InlineCriticalCssProcessor({
         minify: false,
         readAsset,
       });
-      const {content, errors, warnings} = await inlineCriticalCssProcessor.process(
-        transformResult.csrContent,
-        {outputPath: "/",},
-      );
+      const { content, errors, warnings } = await inlineCriticalCssProcessor.process(transformResult.csrContent, {
+        outputPath: "/",
+      });
 
       return {
         warnings: [...transformResult.warnings, ...warnings],
         errors: [...transformResult.errors, ...errors],
-        csrContent: content
+        csrContent: content,
       };
     }
   }
 
   //TODO: index.html  파일에 manifest.json 정보 추가? manifest.webmanifest ? PWA?
-  private async _copyAssetsAsync(): Promise<{
-    source: string;
-    destination: string;
-  }[]> {
-    return await resolveAssets([
-      {input: 'src', glob: 'favicon.ico', output: ''},
-      {input: 'src', glob: 'manifest.webmanifest', output: ''},
-      {input: 'src', glob: 'manifest.json', output: ''},
-      {input: 'src/assets', glob: '**/*', output: 'assets'},
-      ...this.#opt.dev && this.#opt.builderType === "cordova" ? Object.keys(this.#opt.cordovaConfig?.platform ?? {browser: {}}).mapMany((platform) => [
-        {
-          input: `.cordova/platforms/${platform}/platform_www/plugins`,
-          glob: '**/*',
-          output: `cordova-${platform}/plugins`
-        },
-        {
-          input: `.cordova/platforms/${platform}/platform_www`,
-          glob: 'cordova.js',
-          output: `cordova-${platform}`
-        },
-        {
-          input: `.cordova/platforms/${platform}/platform_www`,
-          glob: 'cordova_plugins.js',
-          output: `cordova-${platform}`
-        },
-        {
-          input: `.cordova/platforms/${platform}/www`,
-          glob: 'config.xml',
-          output: `cordova-${platform}`
-        },
-      ]) : []
-    ], this.#opt.pkgPath);
+  private async _copyAssetsAsync(): Promise<
+    {
+      source: string;
+      destination: string;
+    }[]
+  > {
+    return await resolveAssets(
+      [
+        { input: "src", glob: "favicon.ico", output: "" },
+        { input: "src", glob: "manifest.webmanifest", output: "" },
+        { input: "src", glob: "manifest.json", output: "" },
+        { input: "src/assets", glob: "**/*", output: "assets" },
+        ...(this.#opt.dev && this.#opt.builderType === "cordova"
+          ? Object.keys(this.#opt.cordovaConfig?.platform ?? { browser: {} }).mapMany((platform) => [
+              {
+                input: `.cordova/platforms/${platform}/platform_www/plugins`,
+                glob: "**/*",
+                output: `cordova-${platform}/plugins`,
+              },
+              {
+                input: `.cordova/platforms/${platform}/platform_www`,
+                glob: "cordova.js",
+                output: `cordova-${platform}`,
+              },
+              {
+                input: `.cordova/platforms/${platform}/platform_www`,
+                glob: "cordova_plugins.js",
+                output: `cordova-${platform}`,
+              },
+              {
+                input: `.cordova/platforms/${platform}/www`,
+                glob: "config.xml",
+                output: `cordova-${platform}`,
+              },
+            ])
+          : []),
+      ],
+      this.#opt.pkgPath,
+    );
   }
 
   private async _genServiceWorkerAsync(
@@ -355,7 +364,7 @@ export class SdNgBundler {
     assetFiles: {
       source: string;
       destination: string;
-    }[]
+    }[],
   ): Promise<{
     manifest: string;
     assetFiles: {
@@ -369,61 +378,70 @@ export class SdNgBundler {
       this.#baseHref,
       "index.html",
       outputFiles,
-      assetFiles
+      assetFiles,
     );
   }
 
   private _getAppContext() {
+    const workerEntries = FsUtil.glob(path.resolve(this.#opt.pkgPath, "src/workers/*.ts")).toObject(
+      (p) => "worker/" + path.basename(p, path.extname(p)),
+    );
+
     return new SdNgBundlerContext(this.#opt.pkgPath, {
       absWorkingDir: this.#opt.pkgPath,
       bundle: true,
       keepNames: true,
-      format: 'esm',
-      assetNames: 'media/[name]',
-      conditions: ['es2020', 'es2015', 'module'],
+      format: "esm",
+      assetNames: "media/[name]",
+      conditions: ["es2020", "es2015", "module"],
       resolveExtensions: [".js", ".mjs", ".cjs", ".ts"],
       metafile: true,
-      legalComments: this.#opt.dev ? 'eof' : 'none',
-      logLevel: 'silent',
+      legalComments: this.#opt.dev ? "eof" : "none",
+      logLevel: "silent",
       minifyIdentifiers: !this.#opt.dev,
       minifySyntax: !this.#opt.dev,
       minifyWhitespace: !this.#opt.dev,
-      pure: ['forwardRef'],
+      pure: ["forwardRef"],
       outdir: this.#opt.pkgPath,
       outExtension: undefined,
       sourcemap: true, //this.#opt.dev,
       splitting: true,
-      chunkNames: '[name]-[hash]',
+      chunkNames: "[name]-[hash]",
       tsconfig: this.#tsConfigFilePath,
       write: false,
       preserveSymlinks: false,
       define: {
-        ...!this.#opt.dev ? {ngDevMode: "false"} : {},
-        ngJitMode: 'false',
-        global: 'global',
-        process: 'process',
-        Buffer: 'Buffer',
-        'process.env.SD_VERSION': JSON.stringify(this.#pkgNpmConf.version),
+        ...(!this.#opt.dev ? { ngDevMode: "false" } : {}),
+        "ngJitMode": "false",
+        "global": "global",
+        "process": "process",
+        "Buffer": "Buffer",
+        "process.env.SD_VERSION": JSON.stringify(this.#pkgNpmConf.version),
         "process.env.NODE_ENV": JSON.stringify(this.#opt.dev ? "development" : "production"),
-        ...this.#opt.env ? Object.keys(this.#opt.env).toObject(
-          key => `process.env.${key}`,
-          key => JSON.stringify(this.#opt.env![key])
-        ) : {}
+        ...(this.#opt.env
+          ? Object.keys(this.#opt.env).toObject(
+              (key) => `process.env.${key}`,
+              (key) => JSON.stringify(this.#opt.env![key]),
+            )
+          : {}),
       },
-      platform: 'browser',
-      mainFields: ['es2020', 'es2015', 'browser', 'module', 'main'],
-      entryNames: '[name]',
+      platform: "browser",
+      mainFields: ["es2020", "es2015", "browser", "module", "main"],
+      entryNames: "[name]",
       entryPoints: {
         main: this.#mainFilePath,
         // polyfills: 'angular:polyfills',
         polyfills: path.resolve(this.#opt.pkgPath, "src/polyfills.ts"),
-        ...this.#opt.builderType === "cordova" ? {
-          "cordova-entry": path.resolve(path.dirname(fileURLToPath(import.meta.url)), `../../lib/cordova-entry.js`)
-        } : {}
+        ...(this.#opt.builderType === "cordova"
+          ? {
+              "cordova-entry": path.resolve(path.dirname(fileURLToPath(import.meta.url)), `../../lib/cordova-entry.js`),
+            }
+          : {}),
+        ...workerEntries,
       },
       external: ["electron"],
       target: this.#browserTarget,
-      supported: {'async-await': false, 'object-rest-spread': false},
+      supported: { "async-await": false, "object-rest-spread": false },
       loader: {
         ".png": "file",
         ".jpeg": "file",
@@ -449,21 +467,25 @@ export class SdNgBundler {
         ".pfx": "file",
         ".pkl": "file",
         ".mp3": "file",
-        ".ogg": "file"
+        ".ogg": "file",
       },
       inject: [PathUtil.posix(fileURLToPath(import.meta.resolve("node-stdlib-browser/helpers/esbuild/shim")))],
       plugins: [
-        ...this.#opt.builderType === "cordova" && this.#opt.cordovaConfig?.plugins ? [{
-          name: "cordova:plugin-empty",
-          setup: ({onResolve}) => {
-            onResolve({filter: new RegExp("(" + this.#opt.cordovaConfig!.plugins!.join("|") + ")")}, () => {
-              return {
-                path: `./cordova-empty.js`,
-                external: true
-              };
-            });
-          }
-        }] : [],
+        ...(this.#opt.builderType === "cordova" && this.#opt.cordovaConfig?.plugins
+          ? [
+              {
+                name: "cordova:plugin-empty",
+                setup: ({ onResolve }) => {
+                  onResolve({ filter: new RegExp("(" + this.#opt.cordovaConfig!.plugins!.join("|") + ")") }, () => {
+                    return {
+                      path: `./cordova-empty.js`,
+                      external: true,
+                    };
+                  });
+                },
+              },
+            ]
+          : []),
         // createVirtualModulePlugin({
         //   namespace: "angular:polyfills",
         //   loadContent: () => ({
@@ -477,7 +499,7 @@ export class SdNgBundler {
           modifiedFileSet: this.#modifiedFileSet,
           dev: this.#opt.dev,
           pkgPath: this.#opt.pkgPath,
-          result: this.#ngResultCache
+          result: this.#ngResultCache,
         }),
         // createCompilerPlugin({
         //   sourcemap: this.#opt.dev,
@@ -501,7 +523,7 @@ export class SdNgBundler {
         //   preserveSymlinks: false,
         //   tailwindConfiguration: undefined
         // }) as esbuild.Plugin,
-        nodeStdLibBrowserPlugin(nodeStdLibBrowser)
+        nodeStdLibBrowserPlugin(nodeStdLibBrowser),
         // {
         //   name: "sd-load-file",
         //   setup: ({onLoad}) => {
@@ -511,7 +533,7 @@ export class SdNgBundler {
         //     });
         //   }
         // }
-      ]
+      ],
     });
   }
 
@@ -519,7 +541,7 @@ export class SdNgBundler {
     const pluginFactory = new StylesheetPluginFactory(
       {
         sourcemap: true, //this.#opt.dev,
-        includePaths: []
+        includePaths: [],
       },
       this.#styleLoadResultCache,
     );
@@ -527,24 +549,24 @@ export class SdNgBundler {
     return new SdNgBundlerContext(this.#opt.pkgPath, {
       absWorkingDir: this.#opt.pkgPath,
       bundle: true,
-      entryNames: '[name]',
-      assetNames: 'media/[name]',
-      logLevel: 'silent',
+      entryNames: "[name]",
+      assetNames: "media/[name]",
+      logLevel: "silent",
       minify: !this.#opt.dev,
       metafile: true,
       sourcemap: true, //this.#opt.dev,
       outdir: this.#opt.pkgPath,
       write: false,
-      platform: 'browser',
+      platform: "browser",
       target: this.#browserTarget,
       preserveSymlinks: false,
       external: [],
-      conditions: ['style', 'sass'],
-      mainFields: ['style', 'sass'],
+      conditions: ["style", "sass"],
+      mainFields: ["style", "sass"],
       legalComments: !this.#opt.dev ? "none" : "eof",
       entryPoints: {
         // styles: 'angular:styles/global;styles'
-        styles: path.resolve(this.#opt.pkgPath, "src/styles.scss")
+        styles: path.resolve(this.#opt.pkgPath, "src/styles.scss"),
       },
       plugins: [
         // createVirtualModulePlugin({
@@ -567,13 +589,13 @@ export class SdNgBundler {
     return new SdNgBundlerContext(this.#opt.pkgPath, {
       absWorkingDir: this.#opt.pkgPath,
       bundle: true,
-      entryNames: '[name]',
-      assetNames: 'media/[name]',
-      conditions: ['es2020', 'es2015', 'module'],
+      entryNames: "[name]",
+      assetNames: "media/[name]",
+      conditions: ["es2020", "es2015", "module"],
       resolveExtensions: [".js", ".mjs", ".cjs", ".ts"],
       metafile: true,
-      legalComments: this.#opt.dev ? 'eof' : 'none',
-      logLevel: 'silent',
+      legalComments: this.#opt.dev ? "eof" : "none",
+      logLevel: "silent",
       minify: !this.#opt.dev,
       outdir: this.#opt.pkgPath,
       sourcemap: true, //this.#opt.dev,
@@ -582,21 +604,22 @@ export class SdNgBundler {
       preserveSymlinks: false,
       external: ["electron"],
       define: {
-        ...!this.#opt.dev ? {ngDevMode: 'false'} : {},
-        'process.env.SD_VERSION': JSON.stringify(this.#pkgNpmConf.version),
+        ...(!this.#opt.dev ? { ngDevMode: "false" } : {}),
+        "process.env.SD_VERSION": JSON.stringify(this.#pkgNpmConf.version),
         "process.env.NODE_ENV": JSON.stringify(this.#opt.dev ? "development" : "production"),
-        ...this.#opt.env ? Object.keys(this.#opt.env).toObject(
-          key => `process.env.${key}`,
-          key => JSON.stringify(this.#opt.env![key])
-        ) : {}
+        ...(this.#opt.env
+          ? Object.keys(this.#opt.env).toObject(
+              (key) => `process.env.${key}`,
+              (key) => JSON.stringify(this.#opt.env![key]),
+            )
+          : {}),
       },
-      platform: 'node',
+      platform: "node",
       entryPoints: {
         "electron-main": path.resolve(this.#opt.pkgPath, "src/electron-main.ts"),
-      }
+      },
     });
   }
-
 
   #debug(...msg: any[]): void {
     this.#logger.debug(`[${path.basename(this.#opt.pkgPath)}]`, ...msg);

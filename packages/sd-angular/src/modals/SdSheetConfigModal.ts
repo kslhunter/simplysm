@@ -49,7 +49,7 @@ import { $effect, $signal } from "../utils/$hooks";
                     size="sm"
                     [inset]="true"
                     [(value)]="item.fixed"
-                    (valueChange)="items.mark()"
+                    (valueChange)="items.$mark()"
                   ></sd-checkbox>
                 </div>
               </ng-template>
@@ -87,7 +87,7 @@ import { $effect, $signal } from "../utils/$hooks";
                     size="sm"
                     [inset]="true"
                     [(value)]="item.width"
-                    (valueChange)="items.mark()"
+                    (valueChange)="items.$mark()"
                   />
                 }
               </ng-template>
@@ -100,7 +100,7 @@ import { $effect, $signal } from "../utils/$hooks";
                     size="sm"
                     [inset]="true"
                     [(value)]="item.hidden"
-                    (valueChange)="items.mark()"
+                    (valueChange)="items.$mark()"
                     [icon]="icons.xmark"
                     theme="danger"
                   ></sd-checkbox>
