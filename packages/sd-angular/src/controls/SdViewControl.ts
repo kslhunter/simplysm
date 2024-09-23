@@ -18,7 +18,9 @@ import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@a
       }
     `,
   ],
-  template: ` <ng-content></ng-content>`,
+  template: `
+    <ng-content></ng-content>
+  `,
   host: {
     "[attr.sd-fill]": "fill()",
   },

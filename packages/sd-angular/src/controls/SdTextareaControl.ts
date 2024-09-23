@@ -166,8 +166,7 @@ import { $computed } from "../utils/$hooks";
       ></textarea>
     }
 
-    <div class="_invalid-indicator"></div>
-  `,
+    <div class="_invalid-indicator"></div>`,
   host: {
     "[attr.sd-disabled]": "disabled()",
     "[attr.sd-readonly]": "readonly()",

@@ -21,13 +21,14 @@ import { $computed } from "../utils/$hooks";
           height: 100%;
         }
       }
-    `
+    `,
   ],
   template: `
-    <ng-content></ng-content>`,
+    <ng-content></ng-content>
+  `,
   host: {
-    "[attr.sd-selected]": "isSelected()"
-  }
+    "[attr.sd-selected]": "isSelected()",
+  },
 })
 export class SdViewItemControl {
   value = input<any>();

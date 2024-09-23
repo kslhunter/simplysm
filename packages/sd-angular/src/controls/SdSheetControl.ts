@@ -329,7 +329,7 @@ import { $computed, $effect, $signal } from "../utils/$hooks";
         <sd-pane class="_sheet-container" (scroll)="onContainerScroll($event)">
           <table>
             <thead>
-              @for (headerRow of displayHeaderDefTable(); let r = $index; track headerRow) {
+              @for (headerRow of displayHeaderDefTable(); let r = $index; track r) {
                 <tr>
                   @if (r === 0) {
                     <th
@@ -377,7 +377,7 @@ import { $computed, $effect, $signal } from "../utils/$hooks";
                       }
                     </th>
                   }
-                  @for (headerCell of headerRow; let c = $index; track headerCell) {
+                  @for (headerCell of headerRow; let c = $index; track c) {
                     @if (headerCell) {
                       <th
                         [class._fixed]="headerCell.fixed"

@@ -1,39 +1,13 @@
 import { inject, Injectable, Signal, WritableSignal } from "@angular/core";
 import { SdServiceEventListenerBase } from "@simplysm/sd-service-common";
 import { SdServiceFactoryProvider } from "./SdServiceFactoryProvider";
-import { DateOnly, DateTime, ObjectUtil, Time } from "@simplysm/sd-core-common";
-import { $signal } from "../utils/$hooks";
+import { DateOnly, DateTime, ObjectUtil, Time, Wait } from "@simplysm/sd-core-common";
+import { $computed, $signal } from "../utils/$hooks";
 
 export interface ISharedSignal<T extends ISharedDataBase<string | number>> extends Signal<T[]> {
   $get(key: T["__valueKey"] | undefined): T | undefined;
+  $wait(): Promise<void>;
 }
-//
-// export function getSharedSignal<T extends Record<string, ISharedDataBase<string | number>>, K extends keyof T & string>(
-//   name: K,
-// ): ISharedSignal<T[K]> {
-//   const provider = inject(SdSharedDataProvider);
-//   const sig = provider.getSignal(name);
-//
-//   const mapSig = $computed(() => sig().toMap((item) => item.__valueKey));
-//   sig["get"] = (key: T[K]["__valueKey"]) => {
-//     return mapSig().get(key);
-//   };
-//
-//   return sig as ISharedSignal<T[K]>;
-// }
-//
-// export async function waitSharedSignal() {
-//   const provider = inject(SdSharedDataProvider);
-//   await Wait.until(() => provider.loadingCount < 1);
-// }
-//
-// export async function emitSharedDataChangedAsync<
-//   T extends Record<string, ISharedDataBase<string | number>>,
-//   K extends keyof T & string,
-// >(name: K, changeKeys?: T[K]["__valueKey"][]) {
-//   const provider = inject(SdSharedDataProvider);
-//   await provider.emitAsync(name, changeKeys);
-// }
 
 @Injectable({ providedIn: "root" })
 export class SdSharedDataProvider<T extends Record<string, ISharedDataBase<string | number>>> {
@@ -44,8 +18,6 @@ export class SdSharedDataProvider<T extends Record<string, ISharedDataBase<strin
   loadingCount = 0;
 
   register<K extends keyof T & string>(name: K, getter: ISharedDataInfo<T[K]>) {
-    // if (this.#infoMap.has(name))
-    //   throw new Error(`'${name }'에 대한 공유데이터 정보가 이미 등록되이 있습니다.`);
     this.#infoMap.set(name, { getter });
   }
 
@@ -81,15 +53,22 @@ export class SdSharedDataProvider<T extends Record<string, ISharedDataBase<strin
     }
 
     //-- data
-    if (!info.signal || !info.signalMap) {
+    if (!info.signal) {
       info.signal = $signal([]);
-      info.signalMap = $signal(new Map());
-      void this.#loadDataAsync(name);
+
+      const computedMap = $computed(() => info.signal!().toMap((item) => item.__valueKey));
+      info.signal["$get"] = (key: T[K]["__valueKey"]) => computedMap().get(key);
+
+      let loaded = false;
+      info.signal["$wait"] = () => Wait.until(() => loaded);
+
+      void (async () => {
+        await this.#loadDataAsync(name);
+        loaded = true;
+      })();
     }
 
-    const sig = info.signal.asReadonly();
-    sig["$get"] = (key: T[K]["__valueKey"]) => info.signalMap!().get(key);
-    return sig as any;
+    return info.signal as any;
   }
 
   async #loadDataAsync<K extends keyof T & string>(name: K, changeKeys?: T[K]["__valueKey"][]) {
@@ -97,7 +76,7 @@ export class SdSharedDataProvider<T extends Record<string, ISharedDataBase<strin
     try {
       const info = this.#infoMap.get(name);
       if (!info) throw new Error(`'${name}'에 대한 공유데이터 로직 정보가 없습니다.`);
-      if (!info.signal || !info.signalMap) throw new Error(`'${name}'에 대한 공유데이터 저장소가 없습니다.`);
+      if (!info.signal) throw new Error(`'${name}'에 대한 공유데이터 저장소가 없습니다.`);
 
       const resData = await info.getter.getDataAsync(changeKeys);
 
@@ -129,7 +108,6 @@ export class SdSharedDataProvider<T extends Record<string, ISharedDataBase<strin
           return this.#ordering(r, info.getter.orderBy);
         });
       }
-      info.signalMap.set(info.signal().toMap((item) => item.__valueKey));
     } catch (err) {
       this.loadingCount--;
       throw err;
@@ -163,7 +141,6 @@ interface ISharedDataInnerInfo<T extends ISharedDataBase<string | number>> {
   getter: ISharedDataInfo<T>;
   listenerKey?: string;
   signal?: WritableSignal<T[]>;
-  signalMap?: WritableSignal<Map<T["__valueKey"], T>>;
 }
 
 export interface ISharedDataBase<VK extends string | number> {

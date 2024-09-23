@@ -22,10 +22,6 @@ export function afterInit(fn: () => void) {
   $effect([], () => {
     fn();
   });
-  /*const injector = inject(Injector);
-  (injector["_lView"][1].preOrderHooks ??= []).push(injector["_tNode"].index, -injector["_tNode"].directiveStart, () =>
-    fn(),
-  );*/
 }
 
 /** @deprecated */
@@ -33,8 +29,6 @@ export function beforeDestroy(fn: () => void) {
   $effect([], (onCleanup) => {
     onCleanup(() => fn());
   });
-  // const injector = inject(Injector);
-  // (injector["_lView"][1].destroyHooks ??= []).push(injector["_tNode"].directiveStart, () => fn());
 }
 
 export function canDeactivate(fn: () => boolean) {
@@ -42,40 +36,6 @@ export function canDeactivate(fn: () => boolean) {
 
   (activatedRoute.routeConfig!.canDeactivate ??= []).push(() => fn());
 }
-
-/*export function effectBy(signals: Signal<any>[], fn: () => void) {
-  effect(() => {
-    for (const sig of signals) {
-      sig();
-    }
-
-    untracked(() => {
-      fn();
-    });
-  });
-}*/
-
-/*export function computedBy<R>(signals: Signal<any>[], fn: () => R | Promise<R>, opt: { initialValue: R }): Signal<R> {
-  const newSignal = signal<R>(opt.initialValue);
-
-  effect(() => {
-    for (const sig of signals) {
-      sig();
-    }
-
-    void untracked(async () => {
-      newSignal.set(await fn());
-    });
-  });
-
-  return newSignal;
-}*/
-
-/*type Signal<T> = (() => T) & {
-  readonly [SIGNAL]: unknown;
-};*/
-
-// type TSignalWrap<T extends Signal<any>> = T;
 
 export function $signal<T>(): WritableSignal<T | undefined> & { $mark(): void };
 export function $signal<T>(initialValue: T): WritableSignal<T> & { $mark(): void };
@@ -89,15 +49,6 @@ export function $signal<T>(initialValue?: T): WritableSignal<T | undefined> & { 
     runPostSignalSetFn();
   };
   return sig as any;
-  /*const sig = signal(initialValue);
-  Object.defineProperty(sig, "value", {
-    get() {
-      return sig();
-    },
-    configurable: false,
-    enumerable: true
-  });
-  return sig as any;*/
 }
 
 export function $signalSet<T>(
