@@ -34,7 +34,7 @@
     "css-has-pseudo": "^7.0.0",
     "electron": "^32.1.2",
     "electron-builder": "^25.1.4",
-    "esbuild": "^0.23.1",
+    "esbuild": "^0.24.0",
     "eslint": "^9.11.0",
     "glob": "^11.0.0",
     "jszip": "^3.10.1",

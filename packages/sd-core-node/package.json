@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@simplysm/sd-core-common": "12.5.13",
-    "chokidar": "^4.0.0",
+    "chokidar": "^4.0.1",
     "glob": "^11.0.0"
   },
   "devDependencies": {
