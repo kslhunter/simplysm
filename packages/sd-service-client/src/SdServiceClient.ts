@@ -6,7 +6,7 @@ import {
   ISdServiceResponse,
   SdServiceEventListenerBase,
   TSdServiceC2SMessage,
-  TSdServiceS2CMessage
+  TSdServiceS2CMessage,
 } from "@simplysm/sd-service-common";
 import { SdWebSocket } from "./SdWebSocket";
 import { EventEmitter } from "events";
@@ -92,8 +92,8 @@ export class SdServiceClient extends EventEmitter {
           await this.#ws.connectAsync();
 
           console.log("WebSocket 재연결 성공");
-        } catch {
-          console.warn("WebSocket 재연결 실패");
+        } catch (err) {
+          console.error("WebSocket 재연결 실패", err);
           // browser에서 에러로 connect를 못한 경우에도, "close" 이벤트가 뜨므로, 아래 코드 주석처리
           /*await reconnectFn();*/
         }

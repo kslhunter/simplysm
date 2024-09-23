@@ -56,7 +56,7 @@ import { $computed, $signal } from "../utils/$hooks";
       [selectMode]="selectMode()"
       [contentClass]="selectClass()"
       [multiSelectionDisplayDirection]="multiSelectionDisplayDirection()"
-      [getChildrenFn]="parentKeyProp() ? getChildren : undefined"
+      [getChildrenFn]="parentKeyProp() ? getChildrenFn : undefined"
       (openChange)="onOpenChange()"
     >
       @if (modalType()) {
@@ -160,6 +160,8 @@ export class SdSharedDataSelectControl<
   undefinedTemplateRef = contentChild<any, TemplateRef<void>>("undefinedTemplate", { read: TemplateRef });
 
   trackByFn = (item: T, index: number) => item.__valueKey;
+  getChildrenFn = (item: ISharedDataBase<string | number>, index: number, depth: number): any[] =>
+    this.getChildren(item, index, depth);
 
   searchText = $signal<string>();
 

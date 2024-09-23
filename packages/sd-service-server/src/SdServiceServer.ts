@@ -2,22 +2,22 @@ import https from "https";
 import http from "http";
 import url from "url";
 import path from "path";
-import {FsUtil, Logger} from "@simplysm/sd-core-node";
-import {ISdServiceServerOptions, SdServiceBase} from "./commons";
-import {EventEmitter} from "events";
-import {DateTime, JsonConvert, ObjectUtil, Type, Wait} from "@simplysm/sd-core-common";
-import {WebSocket, WebSocketServer} from "ws";
+import { FsUtil, Logger } from "@simplysm/sd-core-node";
+import { ISdServiceServerOptions, SdServiceBase } from "./commons";
+import { EventEmitter } from "events";
+import { DateTime, JsonConvert, ObjectUtil, Type, Wait } from "@simplysm/sd-core-common";
+import { WebSocket, WebSocketServer } from "ws";
 import {
   ISdServiceRequest,
   ISdServiceResponse,
   ISdServiceSplitRequest,
   SdServiceEventListenerBase,
   TSdServiceC2SMessage,
-  TSdServiceS2CMessage
+  TSdServiceS2CMessage,
 } from "@simplysm/sd-service-common";
 import mime from "mime";
-import {ApiServiceError} from "./ApiServiceError";
-import {SdServiceServerConfigUtil} from "./utils/SdServiceServerConfigUtil";
+import { ApiServiceError } from "./ApiServiceError";
+import { SdServiceServerConfigUtil } from "./utils/SdServiceServerConfigUtil";
 
 export class SdServiceServer extends EventEmitter {
   public isOpen = false;
@@ -45,21 +45,36 @@ export class SdServiceServer extends EventEmitter {
 
   public async getWsClientAsync(socketId: string): Promise<TSdWebSocket | undefined> {
     try {
-      await Wait.until(() => {
-        if (!this._wsServer) return false;
+      await Wait.until(
+        () => {
+          if (!this._wsServer) return false;
 
-        const wsClients = Array.from(this._wsServer.clients).filter((item) => item.readyState === WebSocket.OPEN && item["id"] === socketId);
-        if (wsClients.length > 1) {
-          this._logger.debug("클라이언트 중복: " + socketId + ": " + wsClients.length + "\n" + wsClients.map((item) => "  - " + item["connectedAtDateTime"].toFormatString("yyyy:MM:dd HH:mm:ss.fff")).join("\n"));
-          return true;
-        }
-        else {
-          return wsClients.length === 1;
-        }
-      }, 500, 1000);
-      return Array.from(this._wsServer!.clients).single((item) => item.readyState === WebSocket.OPEN && item["id"] === socketId) as TSdWebSocket;
-    }
-    catch (err) {
+          const wsClients = Array.from(this._wsServer.clients).filter(
+            (item) => item.readyState === WebSocket.OPEN && item["id"] === socketId,
+          );
+          if (wsClients.length > 1) {
+            this._logger.debug(
+              "클라이언트 중복: " +
+                socketId +
+                ": " +
+                wsClients.length +
+                "\n" +
+                wsClients
+                  .map((item) => "  - " + item["connectedAtDateTime"].toFormatString("yyyy:MM:dd HH:mm:ss.fff"))
+                  .join("\n"),
+            );
+            return true;
+          } else {
+            return wsClients.length === 1;
+          }
+        },
+        1000,
+        3000,
+      );
+      return Array.from(this._wsServer!.clients).single(
+        (item) => item.readyState === WebSocket.OPEN && item["id"] === socketId,
+      ) as TSdWebSocket;
+    } catch (err) {
       this._logger.error("소켓요청을 처리하는 중에 클라이언트 소켓이 끊김", err);
 
       this._logger.debug("끊긴 소켓의 이벤트 리스너 비우기...");
@@ -82,9 +97,10 @@ export class SdServiceServer extends EventEmitter {
     }
 
     if (clientName !== undefined) {
-      const targetPath = typeof this.pathProxy[clientName] === "string"
-        ? this.pathProxy[clientName]
-        : path.resolve(this.options.rootPath, "www", clientName);
+      const targetPath =
+        typeof this.pathProxy[clientName] === "string"
+          ? this.pathProxy[clientName]
+          : path.resolve(this.options.rootPath, "www", clientName);
 
       const filePath = path.resolve(targetPath, ".config.json");
       if (FsUtil.exists(filePath)) {
@@ -100,13 +116,15 @@ export class SdServiceServer extends EventEmitter {
       this._logger.debug("서버 시작..." + process.env["SD_VERSION"]);
 
       if (this.options.ssl) {
-        const pfx = typeof this.options.ssl.pfxBuffer === "function" ? await this.options.ssl.pfxBuffer() : this.options.ssl.pfxBuffer;
+        const pfx =
+          typeof this.options.ssl.pfxBuffer === "function"
+            ? await this.options.ssl.pfxBuffer()
+            : this.options.ssl.pfxBuffer;
         this._httpServer = https.createServer({
           pfx,
-          passphrase: this.options.ssl.passphrase
+          passphrase: this.options.ssl.passphrase,
         });
-      }
-      else {
+      } else {
         this._httpServer = http.createServer();
       }
 
@@ -114,7 +132,7 @@ export class SdServiceServer extends EventEmitter {
         await this._onWebRequestAsync(req, res);
       });
 
-      this._wsServer = new WebSocketServer({server: this._httpServer});
+      this._wsServer = new WebSocketServer({ server: this._httpServer });
       this._wsServer.on("connection", async (wsClient, req) => {
         wsClient["isAlive"] = true;
         wsClient.on("pong", () => {
@@ -187,20 +205,20 @@ export class SdServiceServer extends EventEmitter {
   public broadcastReload(): void {
     this._logger.debug("서버내 모든 클라이언트 RELOAD 명령 전송");
     this._wsServer?.clients.forEach(async (wsClient) => {
-      await this._sendAsync(wsClient, {name: "client-reload"});
+      await this._sendAsync(wsClient, { name: "client-reload" });
     });
   }
 
-  public async emitAsync<T extends SdServiceEventListenerBase<any, any>>(eventType: Type<T>,
-                                                                         infoSelector: (item: T["info"]) => boolean,
-                                                                         data: T["data"]): Promise<void> {
+  public async emitAsync<T extends SdServiceEventListenerBase<any, any>>(
+    eventType: Type<T>,
+    infoSelector: (item: T["info"]) => boolean,
+    data: T["data"],
+  ): Promise<void> {
     const listenerInfos: { key: string; info: T["info"] }[] = this._eventListeners
       .filter((item) => item.eventName === eventType.name)
-      .map((item) => ({key: item.key, info: item.info}));
+      .map((item) => ({ key: item.key, info: item.info }));
 
-    const targetKeys = listenerInfos
-      .filter((item) => infoSelector(item.info))
-      .map((item) => item.key);
+    const targetKeys = listenerInfos.filter((item) => infoSelector(item.info)).map((item) => item.key);
 
     const listeners = this._eventListeners.filter((item) => targetKeys.includes(item.key));
     for (const listener of listeners) {
@@ -209,7 +227,7 @@ export class SdServiceServer extends EventEmitter {
         const evtMsg: TSdServiceS2CMessage = {
           name: "event",
           key: listener.key,
-          body: data
+          body: data,
         };
         wsClient.send(JsonConvert.stringify(evtMsg));
       }
@@ -227,7 +245,7 @@ export class SdServiceServer extends EventEmitter {
       };
       wsClient.on("message", msgFn);
 
-      await this._sendAsync(wsClient, {name: "client-get-id"});
+      await this._sendAsync(wsClient, { name: "client-get-id" });
     });
   }
 
@@ -236,7 +254,12 @@ export class SdServiceServer extends EventEmitter {
 
     this._wsServer?.clients.forEach((client) => {
       if (client["id"] === wsClientId) {
-        this._logger.debug("클라이언트 기존연결 끊기: " + wsClientId + ": " + client["connectedAtDateTime"].toFormatString("yyyy:MM:dd HH:mm:ss.fff"));
+        this._logger.debug(
+          "클라이언트 기존연결 끊기: " +
+            wsClientId +
+            ": " +
+            client["connectedAtDateTime"].toFormatString("yyyy:MM:dd HH:mm:ss.fff"),
+        );
         client.terminate();
       }
     });
@@ -245,7 +268,9 @@ export class SdServiceServer extends EventEmitter {
     wsClient["connectedAtDateTime"] = new DateTime();
     wsClient["remoteAddress"] = req.socket.remoteAddress;
 
-    this._logger.debug("클라이언트 연결됨: " + wsClientId + ": " + req.socket.remoteAddress + ": " + this._wsServer?.clients.size);
+    this._logger.debug(
+      "클라이언트 연결됨: " + wsClientId + ": " + req.socket.remoteAddress + ": " + this._wsServer?.clients.size,
+    );
 
     wsClient.on("close", (code) => {
       this._onWsClientClosed(wsClientId, code);
@@ -255,7 +280,7 @@ export class SdServiceServer extends EventEmitter {
       await this._onWsClientMessageAsync(wsClientId, msgJson);
     });
 
-    await this._sendAsync(wsClient, {name: "connected"});
+    await this._sendAsync(wsClient, { name: "connected" });
   }
 
   private _onWsClientClosed(wsClientId: string, code: number): void {
@@ -275,8 +300,7 @@ export class SdServiceServer extends EventEmitter {
     const msg = JsonConvert.parse(msgJson) as TSdServiceC2SMessage;
     if (msg.name === "request") {
       await this._onSocketRequestAsync(socketId, msg);
-    }
-    else if (msg.name === "request-split") {
+    } else if (msg.name === "request-split") {
       await this._onSocketRequestSplitAsync(socketId, msg);
     }
   }
@@ -293,7 +317,7 @@ export class SdServiceServer extends EventEmitter {
   private async _onSocketRequestSplitAsync(socketId: string, splitReq: ISdServiceSplitRequest): Promise<void> {
     this._logger.debug("분할요청 받음", splitReq.uuid + "(" + splitReq.index + ")");
 
-    const cacheInfo = this._splitReqCache.getOrCreate(splitReq.uuid, {completedSize: 0, data: []});
+    const cacheInfo = this._splitReqCache.getOrCreate(splitReq.uuid, { completedSize: 0, data: [] });
     cacheInfo.data[splitReq.index] = splitReq.body;
     cacheInfo.completedSize += splitReq.body.length;
 
@@ -302,7 +326,7 @@ export class SdServiceServer extends EventEmitter {
     await this._sendAsync(socketId, {
       name: "response-for-split",
       reqUuid: splitReq.uuid,
-      completedSize: cacheInfo.completedSize
+      completedSize: cacheInfo.completedSize,
     });
 
     if (isCompleted) {
@@ -329,28 +353,25 @@ export class SdServiceServer extends EventEmitter {
           reqUuid: cmd.reqUuid,
           fullSize: cmdJson.length,
           index,
-          body: splitBody
+          body: splitBody,
         };
         const splitReqJson = JsonConvert.stringify(splitReq);
 
         try {
           const wsClient = arg instanceof WebSocket ? arg : await this.getWsClientAsync(arg);
           wsClient?.send(splitReqJson);
-        }
-        catch (err) {
+        } catch (err) {
           this._logger.error("소켓요청을 처리하는 중에 클라이언트 소켓이 끊김", err);
         }
 
         currSize += splitBody.length;
         index++;
       }
-    }
-    else {
+    } else {
       try {
         const wsClient = arg instanceof WebSocket ? arg : await this.getWsClientAsync(arg);
         wsClient?.send(cmdJson);
-      }
-      catch (err) {
+      } catch (err) {
         this._logger.error("소켓요청을 처리하는 중에 클라이언트 소켓이 끊김", err);
       }
     }
@@ -362,7 +383,7 @@ export class SdServiceServer extends EventEmitter {
     serviceName: string;
     methodName: string;
     params: any[];
-    apiHeaders?: http.IncomingHttpHeaders
+    apiHeaders?: http.IncomingHttpHeaders;
   }): Promise<any> {
     // 서비스 가져오기
     const serviceClass = this.options.services.last((item) => item.name === def.serviceName);
@@ -398,7 +419,7 @@ export class SdServiceServer extends EventEmitter {
           request: req,
           serviceName,
           methodName,
-          params: req.params
+          params: req.params,
         });
 
         // 응답
@@ -406,24 +427,22 @@ export class SdServiceServer extends EventEmitter {
           name: "response",
           reqUuid: req.uuid,
           state: "success",
-          body: result
+          body: result,
         };
-      }
-      else if (req.command === "addEventListener") {
+      } else if (req.command === "addEventListener") {
         const key = req.params[0] as string;
         const eventName = req.params[1] as string;
         const info = req.params[2];
 
-        this._eventListeners.push({key, eventName, info, socketId});
+        this._eventListeners.push({ key, eventName, info, socketId });
 
         return {
           name: "response",
           reqUuid: req.uuid,
           state: "success",
-          body: undefined
+          body: undefined,
         };
-      }
-      else if (req.command === "removeEventListener") {
+      } else if (req.command === "removeEventListener") {
         const key = req.params[0] as string;
         this._eventListeners.remove((item) => item.key === key);
 
@@ -431,10 +450,9 @@ export class SdServiceServer extends EventEmitter {
           name: "response",
           reqUuid: req.uuid,
           state: "success",
-          body: undefined
+          body: undefined,
         };
-      }
-      else if (req.command === "getEventListenerInfos") {
+      } else if (req.command === "getEventListenerInfos") {
         const eventName = req.params[0] as string;
 
         return {
@@ -443,10 +461,9 @@ export class SdServiceServer extends EventEmitter {
           state: "success",
           body: this._eventListeners
             .filter((item) => item.eventName === eventName)
-            .map((item) => ({key: item.key, info: item.info}))
+            .map((item) => ({ key: item.key, info: item.info })),
         };
-      }
-      else if (req.command === "emitEvent") {
+      } else if (req.command === "emitEvent") {
         const targetKeys = req.params[0] as string[];
         const data = req.params[1];
 
@@ -457,7 +474,7 @@ export class SdServiceServer extends EventEmitter {
             const evtMsg: TSdServiceS2CMessage = {
               name: "event",
               key: listener.key,
-              body: data
+              body: data,
             };
             wsClient.send(JsonConvert.stringify(evtMsg));
           }
@@ -467,26 +484,24 @@ export class SdServiceServer extends EventEmitter {
           name: "response",
           reqUuid: req.uuid,
           state: "success",
-          body: undefined
+          body: undefined,
         };
-      }
-      else {
+      } else {
         // 에러 응답
         return {
           name: "response",
           reqUuid: req.uuid,
           state: "error",
-          body: "요청이 잘못되었습니다."
+          body: "요청이 잘못되었습니다.",
         };
       }
-    }
-    catch (err) {
+    } catch (err) {
       // 에러 응답
       return {
         name: "response",
         reqUuid: req.uuid,
         state: "error",
-        body: err.stack
+        body: err.stack,
       };
     }
   }
@@ -515,7 +530,7 @@ export class SdServiceServer extends EventEmitter {
 
       if (urlPathChain[0] === "api") {
         if (req.headers.origin?.includes("://localhost") && req.method === "OPTIONS") {
-          res.writeHead(204, {"Access-Control-Allow-Origin": "*"});
+          res.writeHead(204, { "Access-Control-Allow-Origin": "*" });
           res.end();
           return;
         }
@@ -525,16 +540,13 @@ export class SdServiceServer extends EventEmitter {
 
         let params: any[] | undefined;
         if (req.method === "GET") {
-
           if (typeof urlObj.query["json"] !== "string") throw new Error();
           if (req.headers["content-type"]?.toLowerCase().includes("json")) {
             params = JsonConvert.parse(urlObj.query["json"]);
-          }
-          else {
+          } else {
             params = [urlObj.query];
           }
-        }
-        else if (req.method === "POST") {
+        } else if (req.method === "POST") {
           const body = await new Promise<Buffer>((resolve) => {
             let tmp = Buffer.from([]);
             req.on("data", (chunk) => {
@@ -547,8 +559,7 @@ export class SdServiceServer extends EventEmitter {
 
           if (req.headers["content-type"]?.toLowerCase().includes("json")) {
             params = JsonConvert.parse(body.toString());
-          }
-          else {
+          } else {
             params = [body.toString()];
           }
         }
@@ -558,14 +569,16 @@ export class SdServiceServer extends EventEmitter {
             serviceName,
             methodName,
             params,
-            apiHeaders: req.headers
+            apiHeaders: req.headers,
           });
 
-          const result = req.headers["content-type"]?.toLowerCase().includes("json") ? JsonConvert.stringify(serviceResult) : serviceResult;
+          const result = req.headers["content-type"]?.toLowerCase().includes("json")
+            ? JsonConvert.stringify(serviceResult)
+            : serviceResult;
 
           res.writeHead(200, {
             "Content-Length": Buffer.from(result).length,
-            "Content-Type": req.headers["content-type"]?.toLowerCase()
+            "Content-Type": req.headers["content-type"]?.toLowerCase(),
           });
           res.end(result);
 
@@ -578,32 +591,38 @@ export class SdServiceServer extends EventEmitter {
         const currPathProxyFrom = Object.keys(this.pathProxy).single((from) => urlPath.startsWith(from));
         if (currPathProxyFrom !== undefined) {
           if (typeof this.pathProxy[currPathProxyFrom] === "number") {
-            const proxyReq = http.request({
-              port: this.pathProxy[currPathProxyFrom],
-              path: req.url,
-              method: req.method,
-              headers: req.headers
-            }, (proxyRes) => {
-              if (proxyRes.statusCode === 404) {
-                res.writeHead(404, {"Content-Type": "text/html"});
-                res.end("<h1>A custom 404 page</h1>");
-                return;
-              }
+            const proxyReq = http.request(
+              {
+                port: this.pathProxy[currPathProxyFrom],
+                path: req.url,
+                method: req.method,
+                headers: req.headers,
+              },
+              (proxyRes) => {
+                if (proxyRes.statusCode === 404) {
+                  res.writeHead(404, { "Content-Type": "text/html" });
+                  res.end("<h1>A custom 404 page</h1>");
+                  return;
+                }
 
-              res.writeHead(proxyRes.statusCode!, proxyRes.headers);
-              proxyRes.pipe(res, {end: true});
-            });
-            req.pipe(proxyReq, {end: true});
+                res.writeHead(proxyRes.statusCode!, proxyRes.headers);
+                proxyRes.pipe(res, { end: true });
+              },
+            );
+            req.pipe(proxyReq, { end: true });
             return;
+          } else {
+            targetFilePath = path.resolve(
+              this.pathProxy[currPathProxyFrom] + urlPath.substring(currPathProxyFrom.length),
+            );
           }
-          else {
-            targetFilePath = path.resolve(this.pathProxy[currPathProxyFrom] + urlPath.substring(currPathProxyFrom.length));
-          }
-        }
-        else {
+        } else {
           targetFilePath = path.resolve(this.options.rootPath, "www", urlPath);
         }
-        targetFilePath = FsUtil.exists(targetFilePath) && FsUtil.stat(targetFilePath).isDirectory() ? path.resolve(targetFilePath, "index.html") : targetFilePath;
+        targetFilePath =
+          FsUtil.exists(targetFilePath) && FsUtil.stat(targetFilePath).isDirectory()
+            ? path.resolve(targetFilePath, "index.html")
+            : targetFilePath;
 
         if (!FsUtil.exists(targetFilePath)) {
           const errorMessage = "파일을 찾을 수 없습니다.";
@@ -627,21 +646,18 @@ export class SdServiceServer extends EventEmitter {
         res.setHeader("Content-Type", mime.getType(targetFilePath)!);
         res.writeHead(200);
         fileStream.pipe(res);
-      }
-      else {
+      } else {
         const errorMessage = "요청이 잘못되었습니다.";
         this._responseErrorHtml(res, 405, errorMessage);
         this._logger.warn(`[405] ${errorMessage} (${req.method!.toUpperCase()})`);
         return;
       }
-    }
-    catch (err) {
+    } catch (err) {
       if (err instanceof ApiServiceError) {
         res.writeHead(err.statusCode);
         res.end(err.message);
         this._logger.error(`[${err.statusCode}]\n${err.message}`, err);
-      }
-      else {
+      } else {
         const errorMessage = "요청 처리중 오류가 발생하였습니다.";
         this._responseErrorHtml(res, 405, errorMessage);
         this._logger.error(`[405] ${errorMessage}`, err);
@@ -671,9 +687,9 @@ interface IEventListener {
   socketId: string;
 }
 
-type TSdWebSocket = (WebSocket & {
+type TSdWebSocket = WebSocket & {
   id: string;
   connectedAtDateTime: DateTime;
   remoteAddress?: string;
   isAlive?: boolean;
-});
+};

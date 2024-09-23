@@ -360,7 +360,7 @@ export class SdBusyContainerControl {
   currType = $computed(() => this.type() ?? this.#sdBusy.type());
   currNoFade = $computed(() => this.noFade() ?? this.#sdBusy.noFade());
 
-  @HostListener("document:keydown.capture", ["$event"])
+  @HostListener("keydown.capture", ["$event"])
   onKeydownCapture(event: KeyboardEvent) {
     if (this.busy()) {
       event.preventDefault();

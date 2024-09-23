@@ -1,7 +1,7 @@
 import { afterNextRender, ElementRef, inject } from "@angular/core";
-import { $signal, beforeDestroy } from "./$hooks";
+import { $effect, $signal } from "./$hooks";
 
-export function injectSize() {
+export function injectSdSize() {
   const elRef = inject<ElementRef<HTMLElement>>(ElementRef);
   let resizeObserver: ResizeObserver | undefined;
 
@@ -16,9 +16,14 @@ export function injectSize() {
     resizeObserver.observe(elRef.nativeElement);
   });
 
-  beforeDestroy(() => {
-    resizeObserver?.disconnect();
+  $effect([], (onCleanup) => {
+    onCleanup(() => {
+      resizeObserver?.disconnect();
+    });
   });
 
-  return { offsetWidth, offsetHeight };
+  return {
+    offsetWidth: offsetWidth.asReadonly(),
+    offsetHeight: offsetHeight.asReadonly(),
+  };
 }

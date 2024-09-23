@@ -34,20 +34,22 @@ export class SdKanbanBoardControl<L, T> {
 
   selectedValues = model<T[]>([]);
 
-  dragdrop = output<ISdKanbanBoardDropInfo<L, T>>();
+  drop = output<ISdKanbanBoardDropInfo<L, T>>();
 
   onDropTo(target: SdKanbanControl<L, T> | SdKanbanLaneControl<L, T>) {
     if (!this.dragKanban()) return;
 
-    this.dragdrop.emit({
+    this.drop.emit({
       sourceKanbanValue: this.dragKanban()!.value(),
       targetLaneValue: target instanceof SdKanbanControl ? target.laneValue() : target.value(),
       targetKanbanValue: target instanceof SdKanbanControl ? target.value() : undefined,
     });
+
+    this.dragKanban.set(undefined);
   }
 
   @HostListener("document:dragend")
-  onDragEnd() {
+  onDocumentDragEnd() {
     this.dragKanban.set(undefined);
   }
 }

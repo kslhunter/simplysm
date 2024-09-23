@@ -14,6 +14,7 @@ export interface ISdAngularIcon {
   caretDown: IconDefinition;
   code: IconDefinition;
   eye: IconDefinition;
+  eyeSlash: IconDefinition;
   pen: IconDefinition;
   angleDown: IconDefinition;
   question: IconDefinition;

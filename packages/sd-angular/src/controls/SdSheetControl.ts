@@ -276,12 +276,13 @@ import { $computed, $effect, $signal } from "../utils/$hooks";
           }
         }
 
-        &[sd-focus-mode="cell"] {
-          > sd-busy-container > sd-dock-container > sd-pane._sheet-container {
-            > ._focus-row-indicator,
+        &[sd-focus-mode="row"] {
+          > sd-busy-container
+            > sd-dock-container
+            > sd-pane._sheet-container
+            > ._focus-row-indicator
             > ._focus-cell-indicator {
-              display: none !important;
-            }
+            display: none !important;
           }
         }
 
@@ -617,7 +618,7 @@ export class SdSheetControl<T> {
   /** 확장된 항목 목록 */
   expandedItems = model<T[]>([]);
 
-  focusMode = input<"row" | "cell">("cell");
+  focusMode = input<"row" | "cell">("row");
   busy = input(false);
 
   /** Children 설정하는 함수 */
