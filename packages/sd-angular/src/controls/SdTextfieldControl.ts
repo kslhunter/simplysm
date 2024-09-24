@@ -476,10 +476,10 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
         const min = this.min();
         const max = this.max();
         if (typeof min === "number" && min > value) {
-          errorMessages.push(`${this.min}보다 크거나 같아야 합니다.`);
+          errorMessages.push(`${min}보다 크거나 같아야 합니다.`);
         }
         if (typeof max === "number" && max < value) {
-          errorMessages.push(`${this.max}보다 작거나 같아야 합니다.`);
+          errorMessages.push(`${max}보다 작거나 같아야 합니다.`);
         }
       }
     } else if (this.type() === "format" && !StringUtil.isNullOrEmpty(this.format())) {
@@ -495,10 +495,10 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
         const min = this.min();
         const max = this.max();
         if (min instanceof DateOnly && min.tick > value.tick) {
-          errorMessages.push(`${this.min}보다 크거나 같아야 합니다.`);
+          errorMessages.push(`${min}보다 크거나 같아야 합니다.`);
         }
         if (max instanceof DateOnly && max.tick < value.tick) {
-          errorMessages.push(`${this.max}보다 작거나 같아야 합니다.`);
+          errorMessages.push(`${max}보다 작거나 같아야 합니다.`);
         }
       }
     } else if (["datetime", "datetime-sec"].includes(this.type())) {
@@ -513,10 +513,10 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
       const minlength = this.minlength();
       const maxlength = this.maxlength();
       if (minlength !== undefined && minlength > (value as string).length) {
-        errorMessages.push(`문자의 길이가 ${this.minlength}보다 길거나 같아야 합니다.`);
+        errorMessages.push(`문자의 길이가 ${minlength}보다 길거나 같아야 합니다.`);
       }
       if (maxlength !== undefined && maxlength > (value as string).length) {
-        errorMessages.push(`문자의 길이가 ${this.maxlength}보다 짧거나 같아야 합니다.`);
+        errorMessages.push(`문자의 길이가 ${maxlength}보다 짧거나 같아야 합니다.`);
       }
     }
 

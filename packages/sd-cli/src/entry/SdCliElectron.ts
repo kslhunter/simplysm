@@ -28,7 +28,7 @@ export class SdCliElectron {
     const externalPkgNames = pkgConf.builder.electron.reinstallDependencies ?? [];
 
     await FsUtil.writeJsonAsync(path.resolve(electronPath, `package.json`), {
-      name: npmConfig.name,
+      name: npmConfig.name.replace(/^@/, "").replace(/\//, "-"),
       version: npmConfig.version,
       description: npmConfig.description,
       main: "electron-main.js",
@@ -78,7 +78,7 @@ export class SdCliElectron {
     const externalPkgNames = pkgConf.builder.electron.reinstallDependencies ?? [];
 
     await FsUtil.writeJsonAsync(path.resolve(electronPath, `package.json`), {
-      name: npmConfig.name.replace(/\//, "_"),
+      name: npmConfig.name.replace(/^@/, "").replace(/\//, "-"),
       version: npmConfig.version,
       description: npmConfig.description,
       main: "electron-main.js",
@@ -107,7 +107,7 @@ export class SdCliElectron {
       config: {
         appId: pkgConf.builder.electron.appId,
         productName: npmConfig.description,
-        // asar: false,
+        asar: false,
         win: {
           target: "nsis"
         },
@@ -144,7 +144,7 @@ export class SdCliElectron {
     const externalPkgNames = opt.config.reinstallDependencies ?? [];
 
     await FsUtil.writeJsonAsync(path.resolve(electronSrcPath, `package.json`), {
-      name: npmConfig.name,
+      name: npmConfig.name.replace(/^@/, "").replace(/\//, "-"),
       version: npmConfig.version,
       description: npmConfig.description,
       main: "electron-main.js",
@@ -173,7 +173,7 @@ export class SdCliElectron {
       config: {
         appId: opt.config.appId,
         productName: npmConfig.description,
-        // asar: false,
+        asar: false,
         win: {
           target: "nsis"
         },
