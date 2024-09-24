@@ -12,7 +12,7 @@ Quill.register("modules/resize", QuillResizeImage);
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
-  template: ` <div></div> `,
+  template: `<div></div>`,
   styles: [
     /* language=SCSS */ `
       sd-quill-editor {
