@@ -89,7 +89,7 @@ import { $computed, $signal } from "../utils/$hooks";
           }
         }
       }
-    `
+    `,
   ],
   template: `
     <table>
@@ -161,7 +161,7 @@ import { $computed, $signal } from "../utils/$hooks";
                 [inline]="true"
                 [value]="getIsPermChecked(item, 'edit')"
                 (valueChange)="onPermCheckChange(item, 'edit', $event)"
-                [disabled]="disabled() || (getIsPermExists(item, 'use') && !getIsPermChecked(item, 'use'))"
+                [disabled]="getEditDisabled(item)"
               >
                 편집
               </sd-checkbox>
@@ -183,7 +183,7 @@ import { $computed, $signal } from "../utils/$hooks";
         }
       }
     </ng-template>
-  `
+  `,
 })
 export class SdPermissionTableControl {
   icons = inject(SdAngularConfigProvider).icons;
@@ -209,6 +209,24 @@ export class SdPermissionTableControl {
 
   getAllChildren(item: ISdPermission): ISdPermission[] {
     return item.children?.mapMany((child) => [child, ...this.getAllChildren(child)]) ?? [];
+  }
+
+  getEditDisabled(item: ISdPermission) {
+    if (this.disabled()) {
+      return true;
+    }
+
+    if (item.perms) {
+      if (this.getIsPermExists(item, "use") && !this.getIsPermChecked(item, "use")) {
+        return true;
+      }
+    } else {
+      if (item.children?.every((child) => !this.getIsPermExists(child, "edit") || this.getEditDisabled(child))) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   getIsPermExists(item: ISdPermission, type: "use" | "edit"): boolean {
@@ -249,8 +267,7 @@ export class SdPermissionTableControl {
       const r = new Set(v);
       if (r.has(item)) {
         r.delete(item);
-      }
-      else {
+      } else {
         r.add(item);
         const allChildren = this.getAllChildren(item);
         for (const allChild of allChildren) {
@@ -266,19 +283,20 @@ export class SdPermissionTableControl {
       const permCode = item.codes.join(".");
 
       if (type === "edit" && val && !this.getIsPermChecked(item, "use")) {
-      }
-      else {
-        this.value.update((v) => ({
-          ...v,
-          [permCode + "." + type]: val
-        }));
+      } else {
+        if (this.getIsPermExists(item, type)) {
+          this.value.update((v) => ({
+            ...v,
+            [permCode + "." + type]: val,
+          }));
+        }
       }
 
       // USE권한 지우면 EDIT권한도 자동으로 지움
       if (type === "use" && !val && this.getIsPermExists(item, "edit")) {
         this.value.update((v) => ({
           ...v,
-          [permCode + ".edit"]: false
+          [permCode + ".edit"]: false,
         }));
       }
     }
@@ -296,8 +314,7 @@ export class SdPermissionTableControl {
       items.max((item) => {
         if (item.children) {
           return this.#getDepthLength(item.children, depth + 1);
-        }
-        else {
+        } else {
           return depth + 1;
         }
       }) ?? depth
