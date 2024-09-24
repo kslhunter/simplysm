@@ -4,7 +4,6 @@ import {
   contentChild,
   ElementRef,
   HostListener,
-  inject,
   input,
   model,
   viewChild,
@@ -12,6 +11,7 @@ import {
 } from "@angular/core";
 import { SdDropdownPopupControl } from "./SdDropdownPopupControl";
 import { $effect } from "../utils/$hooks";
+import { injectElRef } from "../utils/injectElRef";
 
 @Component({
   selector: "sd-dropdown",
@@ -38,7 +38,7 @@ import { $effect } from "../utils/$hooks";
   },
 })
 export class SdDropdownControl {
-  #elRef: ElementRef<HTMLElement> = inject(ElementRef);
+  #elRef = injectElRef<HTMLElement>();
 
   open = model(false);
 

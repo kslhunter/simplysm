@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, ElementRef, inject, input, model, ViewEncapsulation } from "@angular/core";
+import { ChangeDetectionStrategy, Component, input, model, ViewEncapsulation } from "@angular/core";
 import { StringUtil } from "@simplysm/sd-core-common";
 import { $computed } from "../utils/$hooks";
+import { injectElRef } from "../utils/injectElRef";
 
 @Component({
   selector: "sd-textarea",
@@ -178,7 +179,7 @@ import { $computed } from "../utils/$hooks";
   }
 })
 export class SdTextareaControl {
-  #elRef = inject<ElementRef<HTMLElement>>(ElementRef);
+  #elRef = injectElRef<HTMLElement>();
 
   value = model<string>();
 

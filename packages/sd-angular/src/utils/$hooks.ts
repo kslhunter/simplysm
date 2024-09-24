@@ -44,28 +44,39 @@ export function canDeactivate(fn: () => boolean) {
   });
 }
 
-export function $signal<T>(): WritableSignal<T | undefined> & { $mark(): void };
-export function $signal<T>(initialValue: T): WritableSignal<T> & { $mark(): void };
-export function $signal<T>(initialValue?: T): WritableSignal<T | undefined> & { $mark(): void } {
-  const sig = signal(initialValue);
-  sig["$mark"] = () => {
+export interface SdWritableSignal<T> extends WritableSignal<T> {
+  $mark(): void;
+}
+
+export function $signal<T>(): SdWritableSignal<T | undefined>;
+export function $signal<T>(initialValue: T): SdWritableSignal<T>;
+export function $signal<T>(initialValue?: T): SdWritableSignal<T | undefined> {
+  const sig = signal(initialValue) as SdWritableSignal<T | undefined>;
+  sig.$mark = () => {
     const node = sig[SIGNAL] as any;
     node.version++;
     producerIncrementEpoch();
     producerNotifyConsumers(node);
     runPostSignalSetFn();
   };
-  return sig as any;
+  return sig;
 }
 
-export function $signalSet<T>(
-  initialValue?: Set<T>,
-): WritableSignal<Set<T>> & { $mark(): void; $toggle(v: T, addOrDel?: "add" | "del"): void } {
-  const sig = $signal(initialValue ?? new Set<T>());
-  sig["$toggle"] = (value: T, addOrDel?: "add" | "del") => {
+export interface SdWritableSignalSet<T> extends SdWritableSignal<Set<T>> {
+  $toggle(v: T, addOrDel?: "add" | "del"): void;
+}
+
+export function $signalSet<T>(initialValue?: Set<T>): SdWritableSignalSet<T> {
+  const sig = $signal(initialValue ?? new Set<T>()) as SdWritableSignalSet<T>;
+  sig.$toggle = (value, addOrDel) => {
     sig.update((v) => new Set(v).toggle(value, addOrDel));
   };
-  return sig as any;
+  return sig;
+}
+
+export interface SdWritableSignalMap<K, T> extends SdWritableSignal<Map<K, T>> {
+  $set(k: K, v: T): void;
+  $update(k: K, v: (val: T | undefined) => T): void;
 }
 
 export function $signalMap<K, T>(
@@ -75,18 +86,18 @@ export function $signalMap<K, T>(
   $set(k: K, v: T): void;
   $update(k: K, v: (val: T | undefined) => T): void;
 } {
-  const sig = $signal(initialValue ?? new Map<K, T>());
-  sig["$set"] = (k: K, v: T) => {
+  const sig = $signal(initialValue ?? new Map<K, T>()) as SdWritableSignalMap<K, T>;
+  sig.$set = (k, v) => {
     sig.update((m) => new Map(m).set(k, v));
   };
-  sig["$update"] = (k: K, v: (val: T | undefined) => T) => {
+  sig.$update = (k, v) => {
     sig.update((m) => new Map(m).set(k, v(m.get(k))));
   };
   return sig as any;
 }
 
+export function $effect(fn: (onCleanup: EffectCleanupRegisterFn) => Promise<void>): never;
 export function $effect(fn: (onCleanup: EffectCleanupRegisterFn) => void): EffectRef;
-export function $effect<T extends never>(fn: (onCleanup: EffectCleanupRegisterFn) => Promise<void>): T;
 export function $effect(signals: Signal<any>[], fn: (onCleanup: EffectCleanupRegisterFn) => void): EffectRef;
 export function $effect(
   arg1: ((onCleanup: EffectCleanupRegisterFn) => void) | Signal<any>[],

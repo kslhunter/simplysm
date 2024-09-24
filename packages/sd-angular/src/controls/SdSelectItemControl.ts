@@ -2,7 +2,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   contentChild,
-  ElementRef,
   forwardRef,
   HostListener,
   inject,
@@ -15,6 +14,7 @@ import { NgTemplateOutlet } from "@angular/common";
 import { SdCheckboxControl } from "./SdCheckboxControl";
 import { SdGapControl } from "./SdGapControl";
 import { $computed, $effect } from "../utils/$hooks";
+import { injectElRef } from "../utils/injectElRef";
 
 @Component({
   selector: "sd-select-item",
@@ -89,7 +89,7 @@ import { $computed, $effect } from "../utils/$hooks";
 })
 export class SdSelectItemControl {
   #selectControl: SdSelectControl<any, any> = inject(forwardRef(() => SdSelectControl));
-  elRef = inject<ElementRef<HTMLElement>>(ElementRef);
+  elRef = injectElRef<HTMLElement>();
 
   value = input<any>();
   disabled = input(false);

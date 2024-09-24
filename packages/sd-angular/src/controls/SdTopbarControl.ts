@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, ElementRef, forwardRef, HostListener, inject, input, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  forwardRef,
+  HostListener,
+  inject,
+  input,
+  ViewEncapsulation,
+} from "@angular/core";
 import { SdTopbarContainerControl } from "./SdTopbarContainerControl";
 import { SdSidebarContainerControl } from "./SdSidebarContainerControl";
 import { ISdResizeEvent } from "../plugins/SdResizeEventPlugin";
@@ -7,6 +15,7 @@ import { SdGapControl } from "./SdGapControl";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { $computed } from "../utils/$hooks";
+import { injectElRef } from "../utils/injectElRef";
 
 @Component({
   selector: "sd-topbar",
@@ -116,22 +125,22 @@ import { $computed } from "../utils/$hooks";
         }
       }*/
       }
-    `
+    `,
   ],
   template: ` @if (hasSidebar()) {
-    <sd-anchor class="_sidebar-toggle-button" (click)="onSidebarToggleButtonClick()">
-      <fa-icon [icon]="icons.bars" [fixedWidth]="true" />
-    </sd-anchor>
-  } @else {
-    <sd-gap width="default" />
-  }
+      <sd-anchor class="_sidebar-toggle-button" (click)="onSidebarToggleButtonClick()">
+        <fa-icon [icon]="icons.bars" [fixedWidth]="true" />
+      </sd-anchor>
+    } @else {
+      <sd-gap width="default" />
+    }
 
-  <ng-content />`
+    <ng-content />`,
 })
 export class SdTopbarControl {
   icons = inject(SdAngularConfigProvider).icons;
 
-  #elRef = inject<ElementRef<HTMLElement>>(ElementRef);
+  #elRef = injectElRef<HTMLElement>();
   #parentSidebarContainerControl = inject(SdSidebarContainerControl, { optional: true });
   #topbarContainerControl = inject<SdTopbarContainerControl>(forwardRef(() => SdTopbarContainerControl));
 

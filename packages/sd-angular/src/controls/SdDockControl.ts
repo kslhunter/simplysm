@@ -1,23 +1,15 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ElementRef,
-  HostListener,
-  inject,
-  input,
-  ViewEncapsulation,
-} from "@angular/core";
+import { ChangeDetectionStrategy, Component, HostListener, inject, input, ViewEncapsulation } from "@angular/core";
 import { SdSystemConfigProvider } from "../providers/SdSystemConfigProvider";
 import { ISdResizeEvent } from "../plugins/SdResizeEventPlugin";
-import { SdEventsDirective } from "../directives/SdEventsDirective";
 import { $effect, $signal } from "../utils/$hooks";
+import { injectElRef } from "../utils/injectElRef";
 
 @Component({
   selector: "sd-dock",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdEventsDirective],
+  imports: [],
   styles: [
     /* language=SCSS */ `
       sd-dock {
@@ -87,7 +79,7 @@ import { $effect, $signal } from "../utils/$hooks";
 })
 export class SdDockControl {
   #sdSystemConfig = inject(SdSystemConfigProvider);
-  #elRef = inject<ElementRef<HTMLElement>>(ElementRef);
+  #elRef = injectElRef<HTMLElement>();
 
   key = input<string>();
   position = input<"top" | "bottom" | "right" | "left">("top");

@@ -86,7 +86,7 @@ import { ISdResizeEvent } from "../plugins/SdResizeEventPlugin";
     ></div>
     <div
       class="_drop-position"
-      [style.height]="dragOvered() ? (dragKanban()!.heightOnDrag() ?? 0) + 'px' : '0px'"
+      [style.height]="dragOvered() ? (dragKanban()?.heightOnDrag() ?? 0) + 'px' : '0px'"
       [style.display]="dragKanban() ? 'block' : 'none'"
     ></div>
     <sd-card

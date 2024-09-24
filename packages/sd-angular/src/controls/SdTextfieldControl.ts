@@ -1,15 +1,7 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ElementRef,
-  HostListener,
-  inject,
-  input,
-  model,
-  ViewEncapsulation,
-} from "@angular/core";
+import { ChangeDetectionStrategy, Component, HostListener, input, model, ViewEncapsulation } from "@angular/core";
 import { DateOnly, DateTime, JsonConvert, NumberUtil, StringUtil, Time } from "@simplysm/sd-core-common";
 import { $computed } from "../utils/$hooks";
+import { injectElRef } from "../utils/injectElRef";
 
 @Component({
   selector: "sd-textfield",
@@ -370,7 +362,7 @@ import { $computed } from "../utils/$hooks";
   },
 })
 export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
-  #elRef = inject<ElementRef<HTMLElement>>(ElementRef);
+  #elRef = injectElRef<HTMLElement>();
 
   value = model<TSdTextfieldTypes[K]>();
 

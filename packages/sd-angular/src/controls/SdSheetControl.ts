@@ -2,13 +2,12 @@ import {
   ChangeDetectionStrategy,
   Component,
   contentChildren,
-  ElementRef,
   HostListener,
   inject,
   input,
   model,
   output,
-  ViewEncapsulation,
+  ViewEncapsulation
 } from "@angular/core";
 import { SdSheetColumnDirective } from "../directives/SdSheetColumnDirective";
 import { SdSystemConfigProvider } from "../providers/SdSystemConfigProvider";
@@ -27,6 +26,7 @@ import { FontAwesomeModule } from "@fortawesome/angular-fontawesome";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { SdCheckboxControl } from "./SdCheckboxControl";
 import { $computed, $effect, $signal } from "../utils/$hooks";
+import { injectElRef } from "../utils/injectElRef";
 
 @Component({
   selector: "sd-sheet",
@@ -568,7 +568,7 @@ export class SdSheetControl<T> {
 
   #sdSystemConfig = inject(SdSystemConfigProvider);
   #sdModal = inject(SdModalProvider);
-  #elRef = inject<ElementRef<HTMLElement>>(ElementRef);
+  #elRef = injectElRef<HTMLElement>();
 
   columnControls = contentChildren<SdSheetColumnDirective<T>>(SdSheetColumnDirective);
 
