@@ -2,6 +2,9 @@ import globals from "globals";
 import tseslint from "typescript-eslint";
 import ngeslint from "angular-eslint";
 import plugin from "../plugin.js";
+import deprecationPlugin from "eslint-plugin-deprecation";
+import importPlugin from "eslint-plugin-import";
+import { fixupPluginRules } from "@eslint/compat";
 
 export default [
   {
@@ -16,7 +19,11 @@ export default [
   },
   {
     files: ["**/*.js"],
+    plugins: {
+      import: importPlugin
+    },
     rules: {
+      // 기본
       "no-console": ["warn"],
       "no-warning-comments": ["warn"],
 
@@ -27,6 +34,9 @@ export default [
       "no-unused-expressions": ["error"],
       "no-unused-vars": ["error"],
       "no-undef": ["error"],
+
+      // import
+      "import/no-extraneous-dependencies": ["error"], // 느림
     },
   },
   ...tseslint.config(
@@ -36,15 +46,28 @@ export default [
         "@typescript-eslint": tseslint.plugin,
         "@angular-eslint": ngeslint.tsPlugin,
         "@simplysm": plugin,
+        "deprecation": fixupPluginRules(deprecationPlugin),
+        import: importPlugin
       },
       languageOptions: {
         parser: tseslint.parser,
       },
+      /*settings: {
+        "import/parsers": {
+          "@typescript-eslint/parser": [".ts", ".tsx"]
+        },
+      },*/
       processor: ngeslint.processInlineTemplates,
       rules: {
         // 기본
         "no-console": ["warn"],
         "no-warning-comments": ["warn"],
+
+        // import
+        "import/no-extraneous-dependencies": ["error"], // 느림
+
+        // Deprecation
+        "deprecation/deprecation": ["warn"],
 
         // 타입스크립트
         "@typescript-eslint/require-await": ["error"],

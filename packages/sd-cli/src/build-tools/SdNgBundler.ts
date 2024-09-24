@@ -330,6 +330,7 @@ export class SdNgBundler {
         { input: "src", glob: "manifest.webmanifest", output: "" },
         { input: "src", glob: "manifest.json", output: "" },
         { input: "src/assets", glob: "**/*", output: "assets" },
+        ...(this.#opt.dev ? [{ input: "src/assets-dev", glob: "**/*", output: "assets-dev" }] : []),
         ...(this.#opt.dev && this.#opt.builderType === "cordova"
           ? Object.keys(this.#opt.cordovaConfig?.platform ?? { browser: {} }).mapMany((platform) => [
               {
