@@ -78,7 +78,7 @@ export class SdCliElectron {
     const externalPkgNames = pkgConf.builder.electron.reinstallDependencies ?? [];
 
     await FsUtil.writeJsonAsync(path.resolve(electronPath, `package.json`), {
-      name: npmConfig.name,
+      name: npmConfig.name.replace(/\//, "_"),
       version: npmConfig.version,
       description: npmConfig.description,
       main: "electron-main.js",

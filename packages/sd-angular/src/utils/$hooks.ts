@@ -17,24 +17,31 @@ import {
 } from "@angular/core/primitives/signals";
 import { ActivatedRoute } from "@angular/router";
 
-/** @deprecated */
-export function afterInit(fn: () => void) {
-  $effect([], () => {
-    fn();
-  });
-}
-
-/** @deprecated */
-export function beforeDestroy(fn: () => void) {
-  $effect([], (onCleanup) => {
-    onCleanup(() => fn());
-  });
-}
+// /** @deprecated */
+// export function afterInit(fn: () => void) {
+//   $effect([], () => {
+//     fn();
+//   });
+// }
+//
+// /** @deprecated */
+// export function beforeDestroy(fn: () => void) {
+//   $effect([], (onCleanup) => {
+//     onCleanup(() => fn());
+//   });
+// }
 
 export function canDeactivate(fn: () => boolean) {
   const activatedRoute = inject(ActivatedRoute);
 
-  (activatedRoute.routeConfig!.canDeactivate ??= []).push(() => fn());
+  const currFn = () => fn();
+  (activatedRoute.routeConfig!.canDeactivate ??= []).push(currFn);
+
+  $effect([], (onCleanup) => {
+    onCleanup(() => {
+      activatedRoute.routeConfig!.canDeactivate!.remove(currFn);
+    });
+  });
 }
 
 export function $signal<T>(): WritableSignal<T | undefined> & { $mark(): void };

@@ -49,20 +49,25 @@ import {
   faTriangleExclamation,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
+import { SdThemeProvider } from "./providers/SdThemeProvider";
+import { SdLocalStorageProvider } from "./providers/SdLocalStorageProvider";
 
 @NgModule({
   imports: [],
 })
 export class SdAngularModule {
   #sdNgConf = inject(SdAngularConfigProvider);
+  #sdTheme = inject(SdThemeProvider);
+  #sdLocalStorage = inject(SdLocalStorageProvider);
   #faConfig = inject(FaConfig);
 
   constructor() {
+    this.#sdTheme.theme.set(this.#sdLocalStorage.get("sd-theme") ?? this.#sdNgConf.defaultTheme);
     this.#faConfig.fallbackIcon = this.#sdNgConf.icons.fallback;
   }
 
-  static forRoot(opt?: {
-    clientName?: string;
+  static forRoot(opt: {
+    clientName: string;
     defaultTheme?: "compact" | "modern" | "mobile" | "kiosk";
     icons?: ISdAngularIcon;
   }): ModuleWithProviders<SdAngularModule> {
@@ -73,9 +78,9 @@ export class SdAngularModule {
           provide: SdAngularConfigProvider,
           useFactory: () => {
             const provider = new SdAngularConfigProvider();
-            provider.clientName = opt?.clientName ?? "unknown";
-            provider.defaultTheme = opt?.defaultTheme ?? "modern";
-            provider.icons = opt?.icons ?? {
+            provider.clientName = opt.clientName;
+            provider.defaultTheme = opt.defaultTheme ?? "modern";
+            provider.icons = opt.icons ?? {
               fallback: faQuestionCircle,
 
               caretDown: faCaretDown,
