@@ -48,7 +48,7 @@ import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
             padding: var(--gap-xl) var(--gap-lg);
             background: var(--theme-grey-lightest);
             border-radius: var(--border-radius-default);
-            overflow: hidden;
+            //overflow: hidden;
             height: 100%;
 
             > ._drop-position {
