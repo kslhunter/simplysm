@@ -1,13 +1,25 @@
-import { inject, Injectable, OnDestroy } from "@angular/core";
+import { inject, Injectable } from "@angular/core";
 import { ObjectUtil } from "@simplysm/sd-core-common";
 import { ISdServiceClientConnectionConfig, SdServiceClient } from "@simplysm/sd-service-client";
 import { ISdProgressToast, SdToastProvider } from "./SdToastProvider";
+import { $effect } from "../utils/$hooks";
 
 @Injectable({ providedIn: "root" })
-export class SdServiceFactoryProvider implements OnDestroy {
+export class SdServiceFactoryProvider {
   #sdToast = inject(SdToastProvider);
 
   #clientMap = new Map<string, SdServiceClient>();
+
+  constructor() {
+    $effect((onCleanup) => {
+      onCleanup(async () => {
+        for (const key of this.#clientMap.keys()) {
+          await this.#clientMap.get(key)!.closeAsync();
+          this.#clientMap.delete(key);
+        }
+      });
+    });
+  }
 
   async connectAsync(
     clientName: string,
@@ -75,12 +87,5 @@ export class SdServiceFactoryProvider implements OnDestroy {
     }
 
     return this.#clientMap.get(key)!;
-  }
-
-  async ngOnDestroy() {
-    for (const key of this.#clientMap.keys()) {
-      await this.#clientMap.get(key)!.closeAsync();
-      this.#clientMap.delete(key);
-    }
   }
 }

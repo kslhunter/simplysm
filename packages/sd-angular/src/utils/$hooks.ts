@@ -3,8 +3,10 @@ import {
   effect,
   EffectCleanupRegisterFn,
   EffectRef,
+  inject,
   Signal,
   signal,
+  Type,
   untracked,
   WritableSignal,
 } from "@angular/core";
@@ -14,6 +16,7 @@ import {
   runPostSignalSetFn,
   SIGNAL,
 } from "@angular/core/primitives/signals";
+import { ActivatedRoute, CanDeactivateFn, Route } from "@angular/router";
 
 // /** @deprecated */
 // export function afterInit(fn: () => void) {
@@ -29,18 +32,27 @@ import {
 //   });
 // }
 
-/*export function canDeactivate(fn: () => boolean) {
+const initializedRouteConfigSet = new Set<Route>();
+const initializedComponentSet = new Set<Type<any>>();
+
+export function canDeactivate(fn: () => boolean) {
   const activatedRoute = inject(ActivatedRoute);
 
-  const currFn = () => fn();
-  (activatedRoute.routeConfig!.canDeactivate ??= []).push(currFn);
+  if (!initializedRouteConfigSet.has(activatedRoute.routeConfig!)) {
+    initializedRouteConfigSet.add(activatedRoute.routeConfig!);
 
-  $effect([], (onCleanup) => {
-    onCleanup(() => {
-      activatedRoute.routeConfig!.canDeactivate!.remove(currFn);
-    });
-  });
-}*/
+    const canDeactivateFn: CanDeactivateFn<{ __sdCanDeactivate__(): boolean }> = (component) => {
+      return component.__sdCanDeactivate__();
+    };
+    activatedRoute.routeConfig!.canDeactivate = [canDeactivateFn];
+  }
+
+  if (!initializedComponentSet.has(activatedRoute.component!)) {
+    initializedComponentSet.add(activatedRoute.component!);
+
+    activatedRoute.component!.prototype["__sdCanDeactivate__"] = fn;
+  }
+}
 
 export interface SdWritableSignal<T> extends WritableSignal<T> {
   $mark(): void;
