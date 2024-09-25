@@ -1,17 +1,17 @@
-import {EventEmitter} from "events";
-import {FsUtil, Logger, PathUtil, SdFsWatcher} from "@simplysm/sd-core-node";
+import { EventEmitter } from "events";
+import { FsUtil, Logger, PathUtil, SdFsWatcher } from "@simplysm/sd-core-node";
 import {
   INpmConfig,
   ISdCliBuilderResult,
   ISdCliConfig,
   ISdCliPackageBuildResult,
   ISdCliServerPackageConfig,
-  ITsConfig
+  ITsConfig,
 } from "../commons";
 import path from "path";
-import {SdLinter} from "../build-tools/SdLinter";
-import {FunctionQueue, ObjectUtil, StringUtil} from "@simplysm/sd-core-common";
-import {SdServerBundler} from "../build-tools/SdServerBundler";
+import { SdLinter } from "../build-tools/SdLinter";
+import { FunctionQueue, ObjectUtil, StringUtil } from "@simplysm/sd-core-common";
+import { SdServerBundler } from "../build-tools/SdServerBundler";
 
 export class SdCliServerBuilder extends EventEmitter {
   #logger = Logger.get(["simplysm", "sd-cli", "SdCliServerBuilder"]);
@@ -19,8 +19,10 @@ export class SdCliServerBuilder extends EventEmitter {
   #builder?: SdServerBundler;
   #extModules?: { name: string; exists: boolean }[];
 
-  public constructor(private readonly _projConf: ISdCliConfig,
-                     private readonly _pkgPath: string) {
+  public constructor(
+    private readonly _projConf: ISdCliConfig,
+    private readonly _pkgPath: string,
+  ) {
     super();
     this.#pkgConf = this._projConf.packages[path.basename(_pkgPath)] as ISdCliServerPackageConfig;
   }
@@ -42,37 +44,35 @@ export class SdCliServerBuilder extends EventEmitter {
     const confDistPath = path.resolve(this._pkgPath, "dist/.config.json");
     await FsUtil.writeFileAsync(confDistPath, JSON.stringify(this.#pkgConf.configs ?? {}, undefined, 2));
 
-    const result = await this._runAsync({dev: true});
+    const result = await this._runAsync({ dev: true });
     this.emit("complete", {
       affectedFilePaths: Array.from(result.affectedFileSet),
-      buildResults: result.buildResults
+      buildResults: result.buildResults,
     });
 
     this._debug("WATCH...");
     let changeFiles: string[] = [];
     const fnQ = new FunctionQueue();
-    const watcher = SdFsWatcher
-      .watch(Array.from(result.watchFileSet))
-      .onChange({delay: 100}, (changeInfos) => {
-        changeFiles.push(...changeInfos.map((item) => item.path));
+    const watcher = SdFsWatcher.watch(Array.from(result.watchFileSet)).onChange({ delay: 100 }, (changeInfos) => {
+      changeFiles.push(...changeInfos.map((item) => item.path));
 
-        fnQ.runLast(async () => {
-          const currChangeFiles = [...changeFiles];
-          changeFiles = [];
+      fnQ.runLast(async () => {
+        const currChangeFiles = [...changeFiles];
+        changeFiles = [];
 
-          this.emit("change");
+        this.emit("change");
 
-          this.#builder!.markForChanges(currChangeFiles);
+        this.#builder!.markForChanges(currChangeFiles);
 
-          const watchResult = await this._runAsync({dev: true});
-          this.emit("complete", {
-            affectedFilePaths: Array.from(watchResult.affectedFileSet),
-            buildResults: watchResult.buildResults
-          });
-
-          watcher.add(watchResult.watchFileSet);
+        const watchResult = await this._runAsync({ dev: true });
+        this.emit("complete", {
+          affectedFilePaths: Array.from(watchResult.affectedFileSet),
+          buildResults: watchResult.buildResults,
         });
+
+        watcher.add(watchResult.watchFileSet);
       });
+    });
   }
 
   public async buildAsync(): Promise<ISdCliBuilderResult> {
@@ -84,7 +84,7 @@ export class SdCliServerBuilder extends EventEmitter {
 
     this._debug("GEN .config.json...");
     const confDistPath = path.resolve(this._pkgPath, "dist/.config.json");
-    await FsUtil.writeJsonAsync(confDistPath, this.#pkgConf.configs ?? {}, {space: 2});
+    await FsUtil.writeJsonAsync(confDistPath, this.#pkgConf.configs ?? {}, { space: 2 });
 
     this._debug("GEN package.json...");
     {
@@ -100,14 +100,10 @@ export class SdCliServerBuilder extends EventEmitter {
       delete distNpmConfig.peerDependencies;
 
       if (this.#pkgConf.pm2 && !this.#pkgConf.pm2.noStartScript) {
-        distNpmConfig.scripts = {"start": "pm2 start pm2.json"};
+        distNpmConfig.scripts = { start: "pm2 start pm2.json" };
       }
 
-      await FsUtil.writeJsonAsync(
-        path.resolve(this._pkgPath, "dist/package.json"),
-        distNpmConfig,
-        {space: 2}
-      );
+      await FsUtil.writeJsonAsync(path.resolve(this._pkgPath, "dist/package.json"), distNpmConfig, { space: 2 });
     }
 
     this._debug("GEN openssl.cnf...");
@@ -135,10 +131,9 @@ activate = 1
 system_default = system_default_sect
 
 [system_default_sect]
-Options = UnsafeLegacyRenegotiation`.trim()
+Options = UnsafeLegacyRenegotiation`.trim(),
       );
     }
-
 
     if (this.#pkgConf.pm2) {
       this._debug("GEN pm2.json...");
@@ -150,26 +145,25 @@ Options = UnsafeLegacyRenegotiation`.trim()
           script: "main.js",
           watch: true,
           watch_delay: 2000,
-          ignore_watch: [
-            "node_modules",
-            "www",
-            ...this.#pkgConf.pm2.ignoreWatchPaths ?? []
-          ],
-          ...this.#pkgConf.pm2.noInterpreter ? {} : {
-            "interpreter": "node@" + process.versions.node,
-          },
+          ignore_watch: ["node_modules", "www", ...(this.#pkgConf.pm2.ignoreWatchPaths ?? [])],
+          ...(this.#pkgConf.pm2.noInterpreter
+            ? {}
+            : {
+                interpreter: "node@" + process.versions.node,
+              }),
           interpreter_args: "--openssl-config=openssl.cnf",
           env: {
             NODE_ENV: "production",
             TZ: "Asia/Seoul",
             SD_VERSION: npmConfig.version,
-            ...this.#pkgConf.env
+            ...this.#pkgConf.env,
           },
           arrayProcess: "concat",
-          useDelTargetNull: true
-        }, {
-          space: 2
-        }
+          useDelTargetNull: true,
+        },
+        {
+          space: 2,
+        },
       );
     }
 
@@ -178,13 +172,17 @@ Options = UnsafeLegacyRenegotiation`.trim()
 
       const iisDistPath = path.resolve(this._pkgPath, "dist/web.config");
       const serverExeFilePath = this.#pkgConf.iis.nodeExeFilePath ?? "C:\\Program Files\\nodejs\\node.exe";
-      await FsUtil.writeFileAsync(iisDistPath, `
+      await FsUtil.writeFileAsync(
+        iisDistPath,
+        `
 <configuration>
   <appSettings>
     <add key="NODE_ENV" value="production" />
     <add key="TZ" value="Asia/Seoul" />
     <add key="SD_VERSION" value="${npmConfig.version}" />
-    ${Object.keys(this.#pkgConf.env ?? {}).map(key => `<add key="${key}" value="${this.#pkgConf.env![key]}"/>`).join("\n    ")}
+    ${Object.keys(this.#pkgConf.env ?? {})
+      .map((key) => `<add key="${key}" value="${this.#pkgConf.env![key]}"/>`)
+      .join("\n    ")}
   </appSettings>
   <system.webServer>
     <handlers>
@@ -205,13 +203,14 @@ Options = UnsafeLegacyRenegotiation`.trim()
   </system.webServer>
 </configuration>
 
-`.trim());
+`.trim(),
+      );
     }
 
-    const result = await this._runAsync({dev: false});
+    const result = await this._runAsync({ dev: false });
     return {
       affectedFilePaths: Array.from(result.affectedFileSet),
-      buildResults: result.buildResults
+      buildResults: result.buildResults,
     };
   }
 
@@ -222,70 +221,89 @@ Options = UnsafeLegacyRenegotiation`.trim()
   }> {
     this._debug(`BUILD 준비...`);
     const tsConfig = FsUtil.readJson(path.resolve(this._pkgPath, "tsconfig.json")) as ITsConfig;
-    this.#extModules = this.#extModules ?? await this._getExternalModulesAsync();
-    this.#builder = this.#builder ?? new SdServerBundler({
-      dev: opt.dev,
-      pkgPath: this._pkgPath,
-      entryPoints: tsConfig.files ? tsConfig.files.map((item) => path.resolve(this._pkgPath, item)) : [
-        path.resolve(this._pkgPath, "src/main.ts")
-      ],
-      external: this.#extModules.map((item) => item.name)
-    });
+    this.#extModules = this.#extModules ?? (await this._getExternalModulesAsync());
+    this.#builder =
+      this.#builder ??
+      new SdServerBundler({
+        dev: opt.dev,
+        pkgPath: this._pkgPath,
+        entryPoints: tsConfig.files
+          ? tsConfig.files.map((item) => path.resolve(this._pkgPath, item))
+          : [path.resolve(this._pkgPath, "src/main.ts")],
+        external: this.#extModules.map((item) => item.name),
+      });
 
     this._debug(`BUILD & CHECK...`);
     const buildResult = await this.#builder.bundleAsync();
 
     //-- filePaths
 
-    const localUpdatePaths = Object.keys(this._projConf.localUpdates ?? {})
-      .mapMany((key) => FsUtil.glob(path.resolve(this._pkgPath, "../../node_modules", key)));
-    const watchFileSet = new Set(Array.from(buildResult.watchFileSet).filter(item =>
-      PathUtil.isChildPath(item, path.resolve(this._pkgPath, "../")) ||
-      localUpdatePaths.some((lu) => PathUtil.isChildPath(item, lu))
-    ));
+    const localUpdatePaths = Object.keys(this._projConf.localUpdates ?? {}).mapMany((key) =>
+      FsUtil.glob(path.resolve(this._pkgPath, "../../node_modules", key)),
+    );
+    const watchFileSet = new Set(
+      Array.from(buildResult.watchFileSet).filter(
+        (item) =>
+          PathUtil.isChildPath(item, path.resolve(this._pkgPath, "../")) ||
+          localUpdatePaths.some((lu) => PathUtil.isChildPath(item, lu)),
+      ),
+    );
 
     this._debug(`LINT...`);
-    const lintResults = await SdLinter.lintAsync(Array.from(buildResult.affectedFileSet).filter(item => PathUtil.isChildPath(item, this._pkgPath)), buildResult.program);
+    const lintResults = await SdLinter.lintAsync(this._pkgPath, buildResult.affectedFileSet, buildResult.program);
 
     this._debug(`빌드 완료`);
     return {
       watchFileSet,
       affectedFileSet: buildResult.affectedFileSet,
-      buildResults: [...buildResult.results, ...lintResults]
+      buildResults: [...buildResult.results, ...lintResults],
     };
   }
 
-  private async _getExternalModulesAsync(): Promise<{
-    name: string;
-    exists: boolean
-  }[]> {
+  private async _getExternalModulesAsync(): Promise<
+    {
+      name: string;
+      exists: boolean;
+    }[]
+  > {
     const loadedModuleNames: string[] = [];
     const results: {
       name: string;
-      exists: boolean
+      exists: boolean;
     }[] = [];
 
     const npmConfigMap = new Map<string, INpmConfig>();
 
     const fn = async (currPath: string): Promise<void> => {
-      const npmConfig = npmConfigMap.getOrCreate(currPath, await FsUtil.readJsonAsync(path.resolve(currPath, "package.json")));
+      const npmConfig = npmConfigMap.getOrCreate(
+        currPath,
+        await FsUtil.readJsonAsync(path.resolve(currPath, "package.json")),
+      );
 
       const deps = {
         defaults: [
           ...Object.keys(npmConfig.dependencies ?? {}),
-          ...Object.keys(npmConfig.peerDependencies ?? {}).filter((item) => !npmConfig.peerDependenciesMeta?.[item]?.optional)
+          ...Object.keys(npmConfig.peerDependencies ?? {}).filter(
+            (item) => !npmConfig.peerDependenciesMeta?.[item]?.optional,
+          ),
         ].distinct(),
         optionals: [
           ...Object.keys(npmConfig.optionalDependencies ?? {}),
-          ...Object.keys(npmConfig.peerDependencies ?? {}).filter((item) => npmConfig.peerDependenciesMeta?.[item]?.optional)
-        ].distinct()
+          ...Object.keys(npmConfig.peerDependencies ?? {}).filter(
+            (item) => npmConfig.peerDependenciesMeta?.[item]?.optional,
+          ),
+        ].distinct(),
       };
 
       for (const moduleName of deps.defaults) {
         if (loadedModuleNames.includes(moduleName)) continue;
         loadedModuleNames.push(moduleName);
 
-        const modulePath = FsUtil.findAllParentChildPaths("node_modules/" + moduleName, currPath, path.resolve(this._pkgPath, "../../")).first();
+        const modulePath = FsUtil.findAllParentChildPaths(
+          "node_modules/" + moduleName,
+          currPath,
+          path.resolve(this._pkgPath, "../../"),
+        ).first();
         if (StringUtil.isNullOrEmpty(modulePath)) {
           continue;
         }
@@ -293,14 +311,14 @@ Options = UnsafeLegacyRenegotiation`.trim()
         if (FsUtil.glob(path.resolve(modulePath, "binding.gyp")).length > 0) {
           results.push({
             name: moduleName,
-            exists: true
+            exists: true,
           });
         }
 
         if (this.#pkgConf.externals?.includes(moduleName)) {
           results.push({
             name: moduleName,
-            exists: true
+            exists: true,
           });
         }
 
@@ -311,11 +329,15 @@ Options = UnsafeLegacyRenegotiation`.trim()
         if (loadedModuleNames.includes(optModuleName)) continue;
         loadedModuleNames.push(optModuleName);
 
-        const optModulePath = FsUtil.findAllParentChildPaths("node_modules/" + optModuleName, currPath, path.resolve(this._pkgPath, "../../")).first();
+        const optModulePath = FsUtil.findAllParentChildPaths(
+          "node_modules/" + optModuleName,
+          currPath,
+          path.resolve(this._pkgPath, "../../"),
+        ).first();
         if (StringUtil.isNullOrEmpty(optModulePath)) {
           results.push({
             name: optModuleName,
-            exists: false
+            exists: false,
           });
           continue;
         }
@@ -323,14 +345,14 @@ Options = UnsafeLegacyRenegotiation`.trim()
         if (FsUtil.glob(path.resolve(optModulePath, "binding.gyp")).length > 0) {
           results.push({
             name: optModuleName,
-            exists: true
+            exists: true,
           });
         }
 
         if (this.#pkgConf.externals?.includes(optModuleName)) {
           results.push({
             name: optModuleName,
-            exists: true
+            exists: true,
           });
         }
 
@@ -341,10 +363,10 @@ Options = UnsafeLegacyRenegotiation`.trim()
     await fn(this._pkgPath);
 
     for (const external of this.#pkgConf.externals ?? []) {
-      if (!results.some(item => item.name === external)) {
+      if (!results.some((item) => item.name === external)) {
         results.push({
           name: external,
-          exists: false
+          exists: false,
         });
       }
     }

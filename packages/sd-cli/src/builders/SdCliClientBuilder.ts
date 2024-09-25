@@ -169,7 +169,8 @@ export class SdCliClientBuilder extends EventEmitter {
     // });
     // const pkgFilePaths = filePaths.filter(item => PathUtil.isChildPath(item, this._pkgPath));
     const lintResults = await SdLinter.lintAsync(
-      Array.from(affectedFileSet).filter((item) => PathUtil.isChildPath(item, this._pkgPath)),
+      this._pkgPath,
+      affectedFileSet,
       firstProgram,
     );
 

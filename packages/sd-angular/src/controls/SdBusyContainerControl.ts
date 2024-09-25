@@ -35,12 +35,13 @@ import { $computed } from "../utils/$hooks";
           visibility: hidden;
           pointer-events: none;
 
-          //background: rgba(255, 255, 255, .3);
-          backdrop-filter: none;
+          background: rgba(255, 255, 255, 0.3);
+          //backdrop-filter: none;
           opacity: 0;
-          transition:
+          transition: opacity calc(var(--animation-duration) * 2);
+          /*transition:
             opacity 0.3s,
-            backdrop-filter 5s;
+            backdrop-filter 5s;*/
           transition-timing-function: linear;
 
           > ._progress {
@@ -75,13 +76,13 @@ import { $computed } from "../utils/$hooks";
             pointer-events: auto;
 
             opacity: 1;
-            backdrop-filter: blur(10px);
+            //backdrop-filter: blur(10px);
           }
         }
 
         &[sd-no-fade="true"] {
           > ._screen {
-            backdrop-filter: none !important;
+            //backdrop-filter: none !important;
           }
         }
 

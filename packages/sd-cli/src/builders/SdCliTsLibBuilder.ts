@@ -93,10 +93,10 @@ export class SdCliTsLibBuilder extends EventEmitter {
     const buildResult = await this.#bundler.buildAsync();
 
     this._debug("LINT...");
-    const lintFilePaths = Array.from(buildResult.affectedFileSet).filter((item) =>
+    /*const lintFilePaths = Array.from(buildResult.affectedFileSet).filter((item) =>
       PathUtil.isChildPath(item, this.#pkgPath),
-    );
-    const lintResults = await SdLinter.lintAsync(lintFilePaths, buildResult.program);
+    );*/
+    const lintResults = await SdLinter.lintAsync(this.#pkgPath, buildResult.affectedFileSet, buildResult.program);
 
     this._debug(`빌드 완료`);
     const localUpdatePaths = Object.keys(this.#projConf.localUpdates ?? {}).mapMany((key) =>

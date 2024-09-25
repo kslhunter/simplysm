@@ -1,8 +1,8 @@
 /// <reference types="cordova-plugin-file"/>
 
 import * as path from "path";
-import {JsonConvert, SdError, StringUtil} from "@simplysm/sd-core-common";
-import {fileURLToPath, pathToFileURL} from "url";
+import { JsonConvert, SdError, StringUtil } from "@simplysm/sd-core-common";
+import { fileURLToPath, pathToFileURL } from "url";
 
 export class CordovaAppStorage {
   #rootDirectoryUrl: string;
@@ -27,8 +27,7 @@ export class CordovaAppStorage {
       reader.onerror = () => {
         if (reader.error instanceof FileError) {
           reject(new SdError(`파일 읽기 오류: ${this.#convertError(reader.error)}`));
-        }
-        else {
+        } else {
           reject(reader.error);
         }
       };
@@ -47,8 +46,7 @@ export class CordovaAppStorage {
       reader.onerror = () => {
         if (reader.error instanceof FileError) {
           reject(new SdError(`파일 읽기 오류: ${this.#convertError(reader.error)}`));
-        }
-        else {
+        } else {
           reject(reader.error);
         }
       };
@@ -62,21 +60,33 @@ export class CordovaAppStorage {
     const fileName = path.basename(fullUrl);
 
     return await new Promise<File>((resolve, reject) => {
-      window.resolveLocalFileSystemURL(dirUrl, entry => {
-        const appDirEntry = entry as DirectoryEntry;
+      window.resolveLocalFileSystemURL(
+        dirUrl,
+        (entry) => {
+          const appDirEntry = entry as DirectoryEntry;
 
-        appDirEntry.getFile(fileName, {create: true}, (fileEntry) => {
-          fileEntry.file(thisFile => {
-            resolve(thisFile);
-          }, (err) => {
-            reject(err);
-          });
-        }, (err) => {
+          appDirEntry.getFile(
+            fileName,
+            { create: true },
+            (fileEntry) => {
+              fileEntry.file(
+                (thisFile) => {
+                  resolve(thisFile);
+                },
+                (err) => {
+                  reject(err);
+                },
+              );
+            },
+            (err) => {
+              reject(err);
+            },
+          );
+        },
+        (err) => {
           reject(err);
-        });
-      }, err => {
-        reject(err);
-      });
+        },
+      );
     });
   }
 
@@ -92,22 +102,34 @@ export class CordovaAppStorage {
     await this.#mkdirsAsync(path.dirname(filePath));
 
     await new Promise<void>((resolve, reject) => {
-      window.resolveLocalFileSystemURL(dirUrl, entry => {
-        const appDirEntry = entry as DirectoryEntry;
+      window.resolveLocalFileSystemURL(
+        dirUrl,
+        (entry) => {
+          const appDirEntry = entry as DirectoryEntry;
 
-        appDirEntry.getFile(fileName, {create: true}, (fileEntry) => {
-          fileEntry.createWriter(writer => {
-            writer.write(data);
-            resolve();
-          }, (err) => {
-            reject(err);
-          });
-        }, (err) => {
+          appDirEntry.getFile(
+            fileName,
+            { create: true },
+            (fileEntry) => {
+              fileEntry.createWriter(
+                (writer) => {
+                  writer.write(data);
+                  resolve();
+                },
+                (err) => {
+                  reject(err);
+                },
+              );
+            },
+            (err) => {
+              reject(err);
+            },
+          );
+        },
+        (err) => {
           reject(err);
-        });
-      }, err => {
-        reject(err);
-      });
+        },
+      );
     });
   }
 
@@ -115,23 +137,29 @@ export class CordovaAppStorage {
     const fullUrl = this.getFullUrl(dirPath);
 
     return await new Promise<string[]>((resolve, reject) => {
-      window.resolveLocalFileSystemURL(fullUrl, entry => {
-        try {
-          const appDirEntry = entry as DirectoryEntry;
-          const reader = appDirEntry.createReader();
+      window.resolveLocalFileSystemURL(
+        fullUrl,
+        (entry) => {
+          try {
+            const appDirEntry = entry as DirectoryEntry;
+            const reader = appDirEntry.createReader();
 
-          reader.readEntries((entries) => {
-            resolve(entries.map(item => item.name));
-          }, (err) => {
+            reader.readEntries(
+              (entries) => {
+                resolve(entries.map((item) => item.name));
+              },
+              (err) => {
+                reject(err);
+              },
+            );
+          } catch (err) {
             reject(err);
-          });
-        }
-        catch (err) {
+          }
+        },
+        (err) => {
           reject(err);
-        }
-      }, err => {
-        reject(err);
-      });
+        },
+      );
     });
   }
 
@@ -139,24 +167,33 @@ export class CordovaAppStorage {
     const fullUrl = this.getFullUrl(dirOrFilePath);
 
     return await new Promise<void>((resolve, reject) => {
-      window.resolveLocalFileSystemURL(fullUrl, entry => {
-        if (entry.isDirectory) {
-          (entry as DirectoryEntry).removeRecursively(() => {
-            resolve();
-          }, err => {
-            reject(err);
-          });
-        }
-        else {
-          (entry as FileEntry).remove(() => {
-            resolve();
-          }, err => {
-            reject(err);
-          });
-        }
-      }, err => {
-        reject(err);
-      });
+      window.resolveLocalFileSystemURL(
+        fullUrl,
+        (entry) => {
+          if (entry.isDirectory) {
+            (entry as DirectoryEntry).removeRecursively(
+              () => {
+                resolve();
+              },
+              (err) => {
+                reject(err);
+              },
+            );
+          } else {
+            (entry as FileEntry).remove(
+              () => {
+                resolve();
+              },
+              (err) => {
+                reject(err);
+              },
+            );
+          }
+        },
+        (err) => {
+          reject(err);
+        },
+      );
     });
   }
 
@@ -208,16 +245,25 @@ export class CordovaAppStorage {
       currDir += dir;
 
       await new Promise<void>((resolve, reject) => {
-        window.resolveLocalFileSystemURL(this.#rootDirectoryUrl, entry => {
-          const appDirEntry = entry as DirectoryEntry;
-          appDirEntry.getDirectory(currDir, {create: true}, () => {
-            resolve();
-          }, err => {
+        window.resolveLocalFileSystemURL(
+          this.#rootDirectoryUrl,
+          (entry) => {
+            const appDirEntry = entry as DirectoryEntry;
+            appDirEntry.getDirectory(
+              currDir,
+              { create: true },
+              () => {
+                resolve();
+              },
+              (err) => {
+                reject(err);
+              },
+            );
+          },
+          (err) => {
             reject(err);
-          });
-        }, err => {
-          reject(err);
-        });
+          },
+        );
       });
 
       currDir += "/";

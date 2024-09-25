@@ -29,7 +29,7 @@ export class SdCliIndexFileGenerator {
     const filePaths = await this._getFilePathsAsync(pkgPath);
     for (const filePath of filePaths.orderBy()) {
       const requirePath = PathUtil.posix(path.relative(path.dirname(indexFilePath), filePath))
-        .replace(/\.tsx?$/, "")
+        .replace(/\.ts$/, "")
         .replace(/\/index$/, "");
 
       const sourceTsFileContent = await FsUtil.readFileAsync(filePath);
@@ -53,7 +53,7 @@ export class SdCliIndexFileGenerator {
     const tsconfig = await FsUtil.readJsonAsync(path.resolve(pkgPath, "tsconfig.json"));
     const entryFilePaths: string[] = tsconfig.files?.map((item) => path.resolve(pkgPath, item)) ?? [];
 
-    return (await FsUtil.globAsync(path.resolve(pkgPath, "src/**/*{.ts,.tsx}"), { nodir: true })).filter(
+    return (await FsUtil.globAsync(path.resolve(pkgPath, "src/**/*.ts"), { nodir: true })).filter(
       (item) => !entryFilePaths.includes(item) && item !== indexFilePath && !item.endsWith(".d.ts"),
     );
   }
