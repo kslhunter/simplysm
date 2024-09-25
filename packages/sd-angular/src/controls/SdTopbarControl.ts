@@ -50,6 +50,8 @@ import { injectElRef } from "../utils/injectElRef";
         background: var(--background-color);
         color: var(--text-trans-default);
 
+        animation: sd-topbar  var(--animation-duration) ease-in;
+
         body.sd-theme-compact &,
         body.sd-theme-modern & {
           border-bottom: 1px solid var(--border-color-light);
@@ -124,6 +126,13 @@ import { injectElRef } from "../utils/injectElRef";
           float: right;
         }
       }*/
+      }
+
+      @keyframes sd-topbar {
+        from {
+          opacity: 0;
+          transform: translateY(-1em);
+        }
       }
     `,
   ],

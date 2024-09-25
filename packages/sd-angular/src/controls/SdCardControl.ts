@@ -17,6 +17,7 @@ import {ChangeDetectionStrategy, Component, ViewEncapsulation} from "@angular/co
       overflow: hidden;
       transition: box-shadow 0.3s ease-in-out;
       @include elevation(2);
+      animation: sd-card  var(--animation-duration) ease-in;
 
       &:hover,
       &:has(:focus) {
@@ -30,6 +31,13 @@ import {ChangeDetectionStrategy, Component, ViewEncapsulation} from "@angular/co
         &:has(:focus) {
           @include elevation(0);
         }
+      }
+    }
+
+    @keyframes sd-card {
+      from {
+        opacity: 0;
+        transform: translateY(-1em);
       }
     }
   `],
