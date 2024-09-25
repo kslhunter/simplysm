@@ -104,5 +104,6 @@ export * from "./utils/getPageCodeSignal";
 export * from "./utils/injectElRef";
 export * from "./utils/injectSdSize";
 export * from "./utils/SdAppStructureUtil";
+export * from "./utils/sdCanDeactivateGuard";
 export * from "./utils/SdPageAnimation";
 export * from "./utils/waitRepaint";

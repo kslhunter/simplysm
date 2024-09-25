@@ -20,6 +20,7 @@ body {
   background: var(--background-color);
   color: var(--text-trans-default);
   font-family: var(--font-family);
+  font-variant-numeric: tabular-nums;
   font-size: var(--font-size-default);
   line-height: var(--line-height);
 }
@@ -67,6 +68,7 @@ pre, code {
 
 pre {
   font-family: var(--font-family);
+  font-variant-numeric: tabular-nums;
 }
 
 code {

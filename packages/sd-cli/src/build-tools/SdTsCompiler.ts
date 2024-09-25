@@ -411,8 +411,8 @@ export class SdTsCompiler {
     (transformers.before ??= []).push(transformKeys(this.#program));
 
     // affected에 새로 추가된 파일은 포함되지 않는 현상이 있어 getSourceFiles로 바꿈
-    // -> 너무 느려져서 다시 돌림. 포함안되는 현상은 getAllDep 문제인가?
-    for (const affectedFile of affectedFileSet) {
+    // 비교해보니, 딱히 getSourceFiles라서 더 느려지는것 같지는 않음
+    /*for (const affectedFile of affectedFileSet) {
       if (this.#emittedFilesCacheMap.has(affectedFile)) {
         continue;
       }
@@ -420,10 +420,9 @@ export class SdTsCompiler {
       const sf = this.#program.getSourceFile(affectedFile);
       if (!sf) {
         continue;
-      }
+      }*/
 
-      // for (const sf of sourceFileSet) {
-
+    for (const sf of sourceFileSet) {
       if (this.#emittedFilesCacheMap.has(path.normalize(sf.fileName))) {
         continue;
       }

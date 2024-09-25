@@ -55,6 +55,7 @@ export class SdCliNgRoutesFileGenerator {
             cont +=
               indentStr +
               `  loadComponent: () => import("./app/${val.relModulePath}").then((m) => m.${path.basename(val.relModulePath)}),\n`;
+            cont += indentStr + `  canDeactivate: [sdCanDeactivateGuard],\n`;
           }
         }
         if (val.children.size > 0) {
@@ -70,6 +71,7 @@ export class SdCliNgRoutesFileGenerator {
     const routes = fn(result, 2);
 
     const content = `
+import {sdCanDeactivateGuard} from "@simplysm/sd-angular";
 import {Routes} from "@angular/router";
 ${imports.join("\n")}
 export const routes: Routes = [

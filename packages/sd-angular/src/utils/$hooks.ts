@@ -3,7 +3,6 @@ import {
   effect,
   EffectCleanupRegisterFn,
   EffectRef,
-  inject,
   Signal,
   signal,
   untracked,
@@ -15,7 +14,6 @@ import {
   runPostSignalSetFn,
   SIGNAL,
 } from "@angular/core/primitives/signals";
-import { ActivatedRoute } from "@angular/router";
 
 // /** @deprecated */
 // export function afterInit(fn: () => void) {
@@ -31,7 +29,7 @@ import { ActivatedRoute } from "@angular/router";
 //   });
 // }
 
-export function canDeactivate(fn: () => boolean) {
+/*export function canDeactivate(fn: () => boolean) {
   const activatedRoute = inject(ActivatedRoute);
 
   const currFn = () => fn();
@@ -42,7 +40,7 @@ export function canDeactivate(fn: () => boolean) {
       activatedRoute.routeConfig!.canDeactivate!.remove(currFn);
     });
   });
-}
+}*/
 
 export interface SdWritableSignal<T> extends WritableSignal<T> {
   $mark(): void;
