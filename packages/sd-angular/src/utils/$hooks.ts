@@ -6,15 +6,14 @@ import {
   inject,
   Signal,
   signal,
-  Type,
   untracked,
-  WritableSignal,
+  WritableSignal
 } from "@angular/core";
 import {
   producerIncrementEpoch,
   producerNotifyConsumers,
   runPostSignalSetFn,
-  SIGNAL,
+  SIGNAL
 } from "@angular/core/primitives/signals";
 import { ActivatedRoute, CanDeactivateFn, Route } from "@angular/router";
 
@@ -33,7 +32,6 @@ import { ActivatedRoute, CanDeactivateFn, Route } from "@angular/router";
 // }
 
 const initializedRouteConfigSet = new Set<Route>();
-const initializedComponentSet = new Set<Type<any>>();
 
 export function canDeactivate(fn: () => boolean) {
   const activatedRoute = inject(ActivatedRoute);
@@ -47,11 +45,14 @@ export function canDeactivate(fn: () => boolean) {
     activatedRoute.routeConfig!.canDeactivate = [canDeactivateFn];
   }
 
-  if (!initializedComponentSet.has(activatedRoute.component!)) {
-    initializedComponentSet.add(activatedRoute.component!);
+  const prevFn = activatedRoute.component!["__sdCanDeactivate__"] as (() => boolean) | undefined;
+  activatedRoute.component!["__sdCanDeactivate__"] = () => {
+    if (prevFn != null && !prevFn()) {
+      return false;
+    }
 
-    activatedRoute.component!.prototype["__sdCanDeactivate__"] = fn;
-  }
+    return fn();
+  };
 }
 
 export interface SdWritableSignal<T> extends WritableSignal<T> {
@@ -86,6 +87,7 @@ export function $signalSet<T>(initialValue?: Set<T>): SdWritableSignalSet<T> {
 
 export interface SdWritableSignalMap<K, T> extends SdWritableSignal<Map<K, T>> {
   $set(k: K, v: T): void;
+
   $update(k: K, v: (val: T | undefined) => T): void;
 }
 
