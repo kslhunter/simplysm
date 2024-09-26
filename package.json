@@ -30,11 +30,11 @@
     "migration": "node lib/migration.js"
   },
   "devDependencies": {
-    "@types/node": "^20.16.6",
+    "@types/node": "^20.16.9",
     "cross-env": "^7.0.3",
     "eslint": "^9.11.1",
-    "prettier": "^3.3.3",
     "glob": "^11.0.0",
+    "prettier": "^3.3.3",
     "tsx": "^4.19.1",
     "typescript": "~5.5.4"
   }

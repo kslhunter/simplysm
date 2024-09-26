@@ -17,11 +17,11 @@
     "node": "20.16.0"
   },
   "dependencies": {
-    "@angular/animations": "^18.2.5",
-    "@angular/common": "^18.2.5",
-    "@angular/core": "^18.2.5",
-    "@angular/platform-browser": "^18.2.5",
-    "@angular/router": "^18.2.5",
+    "@angular/animations": "^18.2.6",
+    "@angular/common": "^18.2.6",
+    "@angular/core": "^18.2.6",
+    "@angular/platform-browser": "^18.2.6",
+    "@angular/router": "^18.2.6",
     "@fortawesome/angular-fontawesome": "^0.15.0",
     "@fortawesome/fontawesome-svg-core": "^6.6.0",
     "@fortawesome/free-solid-svg-icons": "^6.6.0",
