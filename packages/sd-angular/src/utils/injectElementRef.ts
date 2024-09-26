@@ -1,5 +1,5 @@
 import { ElementRef, inject } from "@angular/core";
 
-export function injectElRef<T = HTMLElement>() {
+export function injectElementRef<T = HTMLElement>() {
   return inject<ElementRef<T>>(ElementRef);
 }

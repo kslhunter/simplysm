@@ -15,7 +15,7 @@ import { SdGapControl } from "./SdGapControl";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { $computed } from "../utils/$hooks";
-import { injectElRef } from "../utils/injectElRef";
+import { injectElementRef } from "../utils/injectElementRef";
 
 @Component({
   selector: "sd-topbar",
@@ -149,7 +149,7 @@ import { injectElRef } from "../utils/injectElRef";
 export class SdTopbarControl {
   icons = inject(SdAngularConfigProvider).icons;
 
-  #elRef = injectElRef<HTMLElement>();
+  #elRef = injectElementRef<HTMLElement>();
   #parentSidebarContainerControl = inject(SdSidebarContainerControl, { optional: true });
   #topbarContainerControl = inject<SdTopbarContainerControl>(forwardRef(() => SdTopbarContainerControl));
 

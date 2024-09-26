@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
 import { $effect } from "../utils/$hooks";
-import { injectElRef } from "../utils/injectElRef";
+import { injectElementRef } from "../utils/injectElementRef";
 
 @Component({
   selector: "sd-gap",
@@ -35,7 +35,7 @@ import { injectElRef } from "../utils/injectElRef";
   },
 })
 export class SdGapControl {
-  #elRef = injectElRef<HTMLElement>();
+  #elRef = injectElementRef<HTMLElement>();
 
   height = input<"xxs" | "xs" | "sm" | "default" | "lg" | "xl" | "xxl">();
   heightPx = input<number>();

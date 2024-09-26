@@ -11,7 +11,7 @@ import { SdKanbanBoardControl } from "./SdKanbanBoardControl";
 import { SdCardControl } from "./SdCardControl";
 import { $computed, $signal } from "../utils/$hooks";
 import { SdKanbanLaneControl } from "./SdKanbanLaneControl";
-import { injectElRef } from "../utils/injectElRef";
+import { injectElementRef } from "../utils/injectElementRef";
 import { SdEventsDirective } from "../directives/SdEventsDirective";
 import { ISdResizeEvent } from "../plugins/SdResizeEventPlugin";
 
@@ -107,7 +107,7 @@ import { ISdResizeEvent } from "../plugins/SdResizeEventPlugin";
 export class SdKanbanControl<L, T> {
   #boardControl = inject<SdKanbanBoardControl<L, T>>(forwardRef(() => SdKanbanBoardControl));
   #laneControl = inject<SdKanbanLaneControl<L, T>>(forwardRef(() => SdKanbanLaneControl));
-  #elRef = injectElRef();
+  #elRef = injectElementRef();
 
   value = input.required<T>();
 

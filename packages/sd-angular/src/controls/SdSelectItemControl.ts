@@ -14,7 +14,7 @@ import { NgTemplateOutlet } from "@angular/common";
 import { SdCheckboxControl } from "./SdCheckboxControl";
 import { SdGapControl } from "./SdGapControl";
 import { $computed, $effect } from "../utils/$hooks";
-import { injectElRef } from "../utils/injectElRef";
+import { injectElementRef } from "../utils/injectElementRef";
 
 @Component({
   selector: "sd-select-item",
@@ -89,7 +89,7 @@ import { injectElRef } from "../utils/injectElRef";
 })
 export class SdSelectItemControl {
   #selectControl: SdSelectControl<any, any> = inject(forwardRef(() => SdSelectControl));
-  elRef = injectElRef<HTMLElement>();
+  elRef = injectElementRef<HTMLElement>();
 
   value = input<any>();
   disabled = input(false);

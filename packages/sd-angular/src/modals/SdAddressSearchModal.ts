@@ -8,7 +8,7 @@ import { $effect } from "../utils/$hooks";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
-  template: ` <div class="_content" style="min-height: 100px;"></div> `,
+  template: `<div class="_content" style="min-height: 100px;"></div>`,
 })
 export class SdAddressSearchModal extends SdModalBase<undefined, IAddress> {
   #elRef = inject<ElementRef<HTMLElement>>(ElementRef);

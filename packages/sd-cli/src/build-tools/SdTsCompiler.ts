@@ -44,23 +44,32 @@ export class SdTsCompiler {
   readonly #distPath: string;
   readonly #globalStyleFilePath?: string;
 
-  constructor(pkgPath: string, additionalOptions: CompilerOptions, isDevMode: boolean, globalStyleFilePath?: string) {
-    this.#pkgPath = pkgPath;
-    this.#globalStyleFilePath = globalStyleFilePath != null ? path.normalize(globalStyleFilePath) : undefined;
+  readonly #isForBundle: boolean;
+
+  constructor(opt: {
+    pkgPath: string;
+    additionalOptions: CompilerOptions;
+    isForBundle: boolean;
+    isDevMode: boolean;
+    globalStyleFilePath?: string;
+  }) {
+    this.#pkgPath = opt.pkgPath;
+    this.#globalStyleFilePath = opt.globalStyleFilePath != null ? path.normalize(opt.globalStyleFilePath) : undefined;
+    this.#isForBundle = opt.isForBundle;
 
     this.#debug("초기화...");
 
     //-- isForAngular / parsedTsConfig
 
-    const tsconfigPath = path.resolve(pkgPath, "tsconfig.json");
+    const tsconfigPath = path.resolve(opt.pkgPath, "tsconfig.json");
     const tsconfig = FsUtil.readJson(tsconfigPath);
     this.#isForAngular = Boolean(tsconfig.angularCompilerOptions);
-    this.#parsedTsconfig = ts.parseJsonConfigFileContent(tsconfig, ts.sys, pkgPath, {
+    this.#parsedTsconfig = ts.parseJsonConfigFileContent(tsconfig, ts.sys, opt.pkgPath, {
       ...tsconfig.angularCompilerOptions,
-      ...additionalOptions,
+      ...opt.additionalOptions,
     });
 
-    this.#distPath = this.#parsedTsconfig.options.outDir ?? path.resolve(pkgPath, "dist");
+    this.#distPath = this.#parsedTsconfig.options.outDir ?? path.resolve(opt.pkgPath, "dist");
 
     //-- compilerHost
 
@@ -99,8 +108,8 @@ export class SdTsCompiler {
       //-- stylesheetBundler
       this.#stylesheetBundler = new ComponentStylesheetBundler(
         {
-          workspaceRoot: pkgPath,
-          optimization: !isDevMode,
+          workspaceRoot: opt.pkgPath,
+          optimization: !opt.isDevMode,
           inlineFonts: true,
           preserveSymlinks: false,
           sourcemap: "inline", //conf.dev ? 'inline' : false,
@@ -118,7 +127,7 @@ export class SdTsCompiler {
             basePath: ".cache",
           },
         },
-        isDevMode,
+        opt.isDevMode,
       );
 
       //-- compilerHost
@@ -381,6 +390,10 @@ export class SdTsCompiler {
         continue;
       }
 
+      if (!PathUtil.isChildPath(affectedFile, this.#pkgPath)) {
+        continue;
+      }
+
       diagnostics.push(
         ...this.#program.getSyntacticDiagnostics(affectedSourceFile),
         ...this.#program.getSemanticDiagnostics(affectedSourceFile),
@@ -433,6 +446,13 @@ export class SdTsCompiler {
 
       if (this.#ngProgram?.compiler.ignoreForEmit.has(sf)) {
         continue;
+      }
+
+      // esbuild를 통해 bundle로 묶어야 하는놈들은 모든 output이 있어야 함.
+      if (!this.#isForBundle) {
+        if (!PathUtil.isChildPath(sf.fileName, this.#pkgPath)) {
+          continue;
+        }
       }
 
       this.#debug(`emit for`, sf.fileName);

@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, HostListener, inject, input, ViewEn
 import { SdSystemConfigProvider } from "../providers/SdSystemConfigProvider";
 import { ISdResizeEvent } from "../plugins/SdResizeEventPlugin";
 import { $effect, $signal } from "../utils/$hooks";
-import { injectElRef } from "../utils/injectElRef";
+import { injectElementRef } from "../utils/injectElementRef";
 
 @Component({
   selector: "sd-dock",
@@ -79,7 +79,7 @@ import { injectElRef } from "../utils/injectElRef";
 })
 export class SdDockControl {
   #sdSystemConfig = inject(SdSystemConfigProvider);
-  #elRef = injectElRef<HTMLElement>();
+  #elRef = injectElementRef<HTMLElement>();
 
   key = input<string>();
   position = input<"top" | "bottom" | "right" | "left">("top");

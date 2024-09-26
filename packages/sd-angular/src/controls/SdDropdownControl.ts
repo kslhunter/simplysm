@@ -11,7 +11,7 @@ import {
 } from "@angular/core";
 import { SdDropdownPopupControl } from "./SdDropdownPopupControl";
 import { $effect } from "../utils/$hooks";
-import { injectElRef } from "../utils/injectElRef";
+import { injectElementRef } from "../utils/injectElementRef";
 
 @Component({
   selector: "sd-dropdown",
@@ -38,7 +38,7 @@ import { injectElRef } from "../utils/injectElRef";
   },
 })
 export class SdDropdownControl {
-  #elRef = injectElRef<HTMLElement>();
+  #elRef = injectElementRef<HTMLElement>();
 
   open = model(false);
 

@@ -1,7 +1,7 @@
 import { afterNextRender, ElementRef, inject } from "@angular/core";
 import { $effect, $signal } from "./$hooks";
 
-export function injectSdSize() {
+export function injectElementSize() {
   const elRef = inject<ElementRef<HTMLElement>>(ElementRef);
   let resizeObserver: ResizeObserver | undefined;
 

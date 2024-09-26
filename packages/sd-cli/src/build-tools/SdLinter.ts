@@ -22,6 +22,7 @@ export abstract class SdLinter {
     }
 
     const linter = new ESLint({
+      cwd,
       cache: false,
       ...(isTsPackage && tsProgram
         ? {

@@ -15,7 +15,12 @@ export function sdNgPlugin(conf: {
   return {
     name: "sd-ng-compiler",
     setup: (build: esbuild.PluginBuild) => {
-      const compiler = new SdTsCompiler(conf.pkgPath, { declaration: false }, conf.dev);
+      const compiler = new SdTsCompiler({
+        pkgPath: conf.pkgPath,
+        additionalOptions: { declaration: false },
+        isDevMode: conf.dev,
+        isForBundle: true,
+      });
 
       let buildResult: ISdTsCompilerResult;
       const outputContentsCacheMap = new Map<string, Uint8Array>();

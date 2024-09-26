@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, forwardRef, inject, ViewEncapsulation } from "@angular/core";
 import { SdDropdownControl } from "./SdDropdownControl";
 import { SdEventsDirective } from "../directives/SdEventsDirective";
-import { injectElRef } from "../utils/injectElRef";
+import { injectElementRef } from "../utils/injectElementRef";
 
 // TODO: 모바일일때는 모달 형식으로 표현
 @Component({
@@ -55,7 +55,7 @@ import { injectElRef } from "../utils/injectElRef";
 })
 export class SdDropdownPopupControl {
   #parentControl = inject<SdDropdownControl>(forwardRef(() => SdDropdownControl));
-  #elRef = injectElRef<HTMLElement>();
+  #elRef = injectElementRef<HTMLElement>();
 
   onKeyDown(event: KeyboardEvent) {
     this.#parentControl.onPopupKeydown(event);

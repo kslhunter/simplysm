@@ -26,7 +26,7 @@ import { FontAwesomeModule } from "@fortawesome/angular-fontawesome";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { SdCheckboxControl } from "./SdCheckboxControl";
 import { $computed, $effect, $signal } from "../utils/$hooks";
-import { injectElRef } from "../utils/injectElRef";
+import { injectElementRef } from "../utils/injectElementRef";
 
 @Component({
   selector: "sd-sheet",
@@ -568,7 +568,7 @@ export class SdSheetControl<T> {
 
   #sdSystemConfig = inject(SdSystemConfigProvider);
   #sdModal = inject(SdModalProvider);
-  #elRef = injectElRef<HTMLElement>();
+  #elRef = injectElementRef<HTMLElement>();
 
   columnControls = contentChildren<SdSheetColumnDirective<T>>(SdSheetColumnDirective);
 

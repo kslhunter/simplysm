@@ -1,8 +1,8 @@
 import esbuild from "esbuild";
 import ts from "typescript";
 import path from "path";
-import {ISdTsCompilerResult, SdTsCompiler} from "../build-tools/SdTsCompiler";
-import {convertTypeScriptDiagnostic} from "@angular/build/src/tools/esbuild/angular/diagnostics";
+import { ISdTsCompilerResult, SdTsCompiler } from "../build-tools/SdTsCompiler";
+import { convertTypeScriptDiagnostic } from "@angular/build/src/tools/esbuild/angular/diagnostics";
 
 export function sdServerPlugin(conf: {
   pkgPath: string;
@@ -13,7 +13,12 @@ export function sdServerPlugin(conf: {
   return {
     name: "sd-server-compiler",
     setup: (build: esbuild.PluginBuild) => {
-      const compiler = new SdTsCompiler(conf.pkgPath, {declaration: false}, conf.dev);
+      const compiler = new SdTsCompiler({
+        pkgPath: conf.pkgPath,
+        additionalOptions: { declaration: false },
+        isDevMode: conf.dev,
+        isForBundle: true,
+      });
 
       let buildResult: ISdTsCompilerResult;
 
@@ -28,33 +33,44 @@ export function sdServerPlugin(conf: {
         //-- return err/warn
 
         return {
-          errors: buildResult.typescriptDiagnostics.filter(item => item.category === ts.DiagnosticCategory.Error).map(item => convertTypeScriptDiagnostic(ts, item)),
-          warnings: buildResult.typescriptDiagnostics.filter(item => item.category !== ts.DiagnosticCategory.Error).map(item => convertTypeScriptDiagnostic(ts, item)),
+          errors: buildResult.typescriptDiagnostics
+            .filter((item) => item.category === ts.DiagnosticCategory.Error)
+            .map((item) => convertTypeScriptDiagnostic(ts, item)),
+          warnings: buildResult.typescriptDiagnostics
+            .filter((item) => item.category !== ts.DiagnosticCategory.Error)
+            .map((item) => convertTypeScriptDiagnostic(ts, item)),
         };
       });
 
-
-      build.onLoad({filter: /\.ts$/}, (args) => {
+      build.onLoad({ filter: /\.ts$/ }, (args) => {
         const emittedJsFile = buildResult.emittedFilesCacheMap.get(path.normalize(args.path))?.last();
         if (!emittedJsFile) {
           throw new Error(`ts 빌더 결과 emit 파일이 존재하지 않습니다. ${args.path}`);
         }
 
         const contents = emittedJsFile.text;
-        return {contents, loader: "js"};
+        return { contents, loader: "js" };
       });
 
-      build.onLoad({filter: /\.[cm]?js$/}, (args) => {
+      build.onLoad({ filter: /\.[cm]?js$/ }, (args) => {
         conf.result.watchFileSet!.add(path.normalize(args.path));
         return null;
       });
 
       build.onLoad(
-        {filter: new RegExp("(" + Object.keys(build.initialOptions.loader!).map(item => "\\" + item).join("|") + ")$")},
+        {
+          filter: new RegExp(
+            "(" +
+              Object.keys(build.initialOptions.loader!)
+                .map((item) => "\\" + item)
+                .join("|") +
+              ")$",
+          ),
+        },
         (args) => {
           conf.result.watchFileSet!.add(path.normalize(args.path));
           return null;
-        }
+        },
       );
 
       build.onEnd((result) => {
@@ -63,7 +79,7 @@ export function sdServerPlugin(conf: {
 
         conf.modifiedFileSet.clear();
       });
-    }
+    },
   };
 }
 

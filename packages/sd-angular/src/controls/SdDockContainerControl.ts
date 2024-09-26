@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, contentChildren, ViewEncapsulation } from "@angular/core";
 import { SdDockControl } from "./SdDockControl";
 import { $effect } from "../utils/$hooks";
-import { injectElRef } from "../utils/injectElRef";
+import { injectElementRef } from "../utils/injectElementRef";
 
 @Component({
   selector: "sd-dock-container",
@@ -23,7 +23,7 @@ import { injectElRef } from "../utils/injectElRef";
   `,
 })
 export class SdDockContainerControl {
-  #elRef = injectElRef<HTMLElement>();
+  #elRef = injectElementRef<HTMLElement>();
 
   dockControls = contentChildren(SdDockControl);
 

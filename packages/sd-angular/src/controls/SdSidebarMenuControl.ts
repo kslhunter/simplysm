@@ -6,7 +6,7 @@ import {SdListItemControl} from "./SdListItemControl";
 import {SdRouterLinkDirective} from "../directives/SdRouterLinkDirective";
 import {IconDefinition} from "@fortawesome/fontawesome-svg-core";
 import {FaIconComponent} from "@fortawesome/angular-fontawesome";
-import {getPageCodeSignal} from "../utils/getPageCodeSignal";
+import {injectPageCode$} from "../utils/injectPageCode$";
 import {$computed} from "../utils/$hooks";
 
 @Component({
@@ -117,7 +117,7 @@ export class SdSidebarMenuControl {
   layout = input<"accordion" | "flat">();
   getMenuIsSelectedFn = input<(menu: ISdSidebarMenuVM) => boolean>();
 
-  pageCode = getPageCodeSignal();
+  pageCode = injectPageCode$();
 
   rootLayout = $computed(() => this.layout() ?? (this.menus().length <= 3 ? "flat" : "accordion"));
 

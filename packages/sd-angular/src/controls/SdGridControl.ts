@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
-import { injectSdSize } from "../utils/injectSdSize";
+import { injectElementSize } from "../utils/injectElementSize";
 import { $computed } from "../utils/$hooks";
 
 @Component({
@@ -24,7 +24,7 @@ import { $computed } from "../utils/$hooks";
   },
 })
 export class SdGridControl {
-  #size = injectSdSize();
+  #size = injectElementSize();
 
   gap = input<"xxs" | "xs" | "sm" | "default" | "lg" | "xl" | "xxl">();
 

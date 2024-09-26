@@ -12,7 +12,13 @@ export class SdTsLibBundler {
 
   public constructor(pkgPath: string, dev: boolean) {
     this.#pkgPath = pkgPath;
-    this.#compiler = new SdTsCompiler(pkgPath, { declaration: true }, dev, path.resolve(pkgPath, "src/styles.scss"));
+    this.#compiler = new SdTsCompiler({
+      pkgPath,
+      additionalOptions: { declaration: true },
+      isDevMode: dev,
+      globalStyleFilePath: path.resolve(pkgPath, "src/styles.scss"),
+      isForBundle: false,
+    });
   }
 
   public markChanges(modifiedFileSet: Set<string>): void {

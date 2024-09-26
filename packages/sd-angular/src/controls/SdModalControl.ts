@@ -20,7 +20,7 @@ import { SdDockControl } from "./SdDockControl";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { $effect, $signal } from "../utils/$hooks";
-import { injectElRef } from "../utils/injectElRef";
+import { injectElementRef } from "../utils/injectElementRef";
 
 @Component({
   selector: "sd-modal",
@@ -328,7 +328,7 @@ export class SdModalControl {
   icons = inject(SdAngularConfigProvider).icons;
 
   #sdSystemConfig = inject(SdSystemConfigProvider);
-  #elRef = injectElRef<HTMLElement>();
+  #elRef = injectElementRef<HTMLElement>();
 
   open = model(false);
 

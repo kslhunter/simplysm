@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, input, model, ViewEncapsulation } f
 import Quill from "quill";
 import QuillResizeImage from "quill-resize-image";
 import { $effect } from "../utils/$hooks";
-import { injectElRef } from "../utils/injectElRef";
+import { injectElementRef } from "../utils/injectElementRef";
 
 Quill.register("modules/resize", QuillResizeImage);
 
@@ -73,7 +73,7 @@ Quill.register("modules/resize", QuillResizeImage);
   },
 })
 export class SdQuillEditorControl {
-  #elRef = injectElRef<HTMLElement>();
+  #elRef = injectElementRef<HTMLElement>();
 
   value = model<string>();
 
