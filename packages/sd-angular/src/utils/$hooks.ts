@@ -4,37 +4,25 @@ import {
   EffectCleanupRegisterFn,
   EffectRef,
   inject,
+  Injector,
   Signal,
   signal,
   untracked,
-  WritableSignal
+  WritableSignal,
 } from "@angular/core";
 import {
   producerIncrementEpoch,
   producerNotifyConsumers,
   runPostSignalSetFn,
-  SIGNAL
+  SIGNAL,
 } from "@angular/core/primitives/signals";
 import { ActivatedRoute, CanDeactivateFn, Route } from "@angular/router";
-
-// /** @deprecated */
-// export function afterInit(fn: () => void) {
-//   $effect([], () => {
-//     fn();
-//   });
-// }
-//
-// /** @deprecated */
-// export function beforeDestroy(fn: () => void) {
-//   $effect([], (onCleanup) => {
-//     onCleanup(() => fn());
-//   });
-// }
 
 const initializedRouteConfigSet = new Set<Route>();
 
 export function canDeactivate(fn: () => boolean) {
   const activatedRoute = inject(ActivatedRoute);
+  const injector = inject(Injector);
 
   if (!initializedRouteConfigSet.has(activatedRoute.routeConfig!)) {
     initializedRouteConfigSet.add(activatedRoute.routeConfig!);
@@ -45,14 +33,10 @@ export function canDeactivate(fn: () => boolean) {
     activatedRoute.routeConfig!.canDeactivate = [canDeactivateFn];
   }
 
-  const prevFn = activatedRoute.component!["__sdCanDeactivate__"] as (() => boolean) | undefined;
-  activatedRoute.component!["__sdCanDeactivate__"] = () => {
-    if (prevFn != null && !prevFn()) {
-      return false;
-    }
-
-    return fn();
-  };
+  requestAnimationFrame(() => {
+    const comp = injector["_lView"][8];
+    comp["__sdCanDeactivate__"] = fn;
+  });
 }
 
 export interface SdWritableSignal<T> extends WritableSignal<T> {
