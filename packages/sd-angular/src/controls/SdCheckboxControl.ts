@@ -185,6 +185,10 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
           > ._indicator_rect {
             background: var(--theme-grey-lighter);
             border: 1px solid var(--trans-light);
+
+            > ._indicator {
+              color: var(--theme-grey-default);
+            }
           }
 
           &:focus {
