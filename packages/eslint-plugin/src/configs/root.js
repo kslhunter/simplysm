@@ -1,17 +1,54 @@
+import globals from "globals";
 import tseslint from "typescript-eslint";
 import plugin from "../plugin.js";
-import javascript from "./javascript.js";
+import ngeslint from "angular-eslint";
 
 export default [
-  ...javascript,
-  ...tseslint.config({
+  {
+    ignores: ["**/node_modules/", "**/dist/", "**/.*/", "**/_*/"],
+  },
+  {
+    languageOptions: {
+      globals: {
+        ...globals.node,
+        ...globals.es2021,
+      },
+      ecmaVersion: 2021,
+      sourceType: "module",
+    },
+  },
+  {
+    files: ["**/*.js"],
+    plugins: {
+      // import: importPlugin,
+    },
+    rules: {
+      // 기본
+      "no-console": ["warn"],
+      "no-warning-comments": ["warn"],
+
+      "require-await": ["error"],
+      // "semi": ["error"],
+      "no-shadow": ["error"],
+      "no-duplicate-imports": ["error"],
+      "no-unused-expressions": ["error"],
+      "no-unused-vars": ["error"],
+      "no-undef": ["error"],
+
+      // import
+      // "import/no-extraneous-dependencies": ["error"], // 느림
+    },
+  },
+  {
     files: ["**/*.ts"],
     plugins: {
       "@typescript-eslint": tseslint.plugin,
       "@simplysm": plugin,
+      "@angular-eslint": ngeslint.tsPlugin,
       // "import": importPlugin,
       // "deprecation": fixupPluginRules(deprecationPlugin),
     },
+    processor: ngeslint.processInlineTemplates,
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
@@ -56,5 +93,19 @@ export default [
       // 심플리즘
       "@simplysm/ts-no-throw-not-implement-error": ["warn"],
     },
-  }),
+  },
+  {
+    files: ["**/*.html"],
+    languageOptions: {
+      parser: ngeslint.templateParser,
+    },
+    plugins: {
+      // "@angular-eslint/template": ngeslint.templatePlugin,
+      "@simplysm": plugin,
+    },
+    rules: {
+      "@simplysm/ng-template-no-todo-comments": "warn",
+      // "@angular-eslint/template/use-track-by-function": "error",
+    },
+  },
 ];

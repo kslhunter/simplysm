@@ -11,9 +11,6 @@
   "license": "MIT",
   "type": "module",
   "main": "src/index.js",
-  "engines": {
-    "node": "20.16.0"
-  },
   "dependencies": {
     "@eslint/compat": "^1.1.1",
     "@typescript-eslint/utils": "^8.7.0",

@@ -11,9 +11,6 @@
   "license": "MIT",
   "type": "module",
   "types": "./types/index.d.ts",
-  "engines": {
-    "node": "20.16.0"
-  },
   "cordova": {
     "id": "@simplysm/cordova-plugin-usb-storage",
     "platforms": [
