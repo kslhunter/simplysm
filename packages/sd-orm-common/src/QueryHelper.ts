@@ -489,10 +489,10 @@ export class QueryHelper {
     }
     else if (typeof value === "string") {
       if (this._dialect === "mysql" || this._dialect === "sqlite") {
-        return `'${value.replace(/'/g, "''")}'`;
+        return `'${SdOrmUtil.replaceString(value)}'`;
       }
       else {
-        return `N'${value.replace(/'/g, "''")}'`;
+        return `N'${SdOrmUtil.replaceString(value)}'`;
       }
     }
     else if (typeof value === "boolean") {

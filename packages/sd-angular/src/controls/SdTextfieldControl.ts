@@ -637,6 +637,7 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
     }
 
     if (typeof value === "string") {
+      console.log(value);
       return value;
     }
 

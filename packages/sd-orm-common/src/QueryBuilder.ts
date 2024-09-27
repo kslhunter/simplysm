@@ -40,6 +40,7 @@ import {
 import {NeverEntryError, Uuid} from "@simplysm/sd-core-common";
 import {QueryHelper} from "./QueryHelper";
 import {TDbContextOption} from "./DbContext";
+import { SdOrmUtil } from "./utils/SdOrmUtil";
 
 export class QueryBuilder {
   public qh: QueryHelper;
@@ -988,9 +989,9 @@ SELECT GROUP_CONCAT('${"`_" + def.as.slice(1)}.\`', COLUMN_NAME, '\`', ' = ', '$
 FROM INFORMATION_SCHEMA.COLUMNS
 WHERE CONCAT('\`', TABLE_SCHEMA, '\`.\`', TABLE_NAME, '\`') = '${def.from}' AND COLUMN_KEY='PRI';
 
-SET @sql = CONCAT('${`DELETE ${def.as} FROM ${def.from} as ${def.as} JOIN (
+SET @sql = CONCAT('${SdOrmUtil.replaceString(`DELETE ${def.as} FROM ${def.from} as ${def.as} JOIN (
   ${this.select(def).replace(/\n/g, "\n  ").replace("*", def.as + ".*")}
-) ${"`_" + def.as.slice(1)} ON 1 = 1 WHERE `.replace(/'/g, "''")}', @cols, ';');
+) ${"`_" + def.as.slice(1)} ON 1 = 1 WHERE `)}', @cols, ';');
 SELECT @sql;
 
 PREPARE stmt FROM @sql;
