@@ -67,6 +67,7 @@ export * from "./controls/SdTopbarNavControl";
 export * from "./controls/SdTopbarTabControl";
 export * from "./controls/SdViewControl";
 export * from "./controls/SdViewItemControl";
+export * from "./directives/SdAnimationDelayDirective";
 export * from "./directives/SdEventsDirective";
 export * from "./directives/SdItemOfTemplateDirective";
 export * from "./directives/SdRouterLinkDirective";

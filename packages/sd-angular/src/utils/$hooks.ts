@@ -12,9 +12,9 @@ import {
 } from "@angular/core";
 import {
   producerIncrementEpoch,
-  producerNotifyConsumers,
+  producerNotifyConsumers, producerUpdatesAllowed,
   runPostSignalSetFn,
-  SIGNAL,
+  SIGNAL
 } from "@angular/core/primitives/signals";
 import { ActivatedRoute, CanDeactivateFn, Route } from "@angular/router";
 
@@ -48,6 +48,10 @@ export function $signal<T>(initialValue: T): SdWritableSignal<T>;
 export function $signal<T>(initialValue?: T): SdWritableSignal<T | undefined> {
   const sig = signal(initialValue) as SdWritableSignal<T | undefined>;
   sig.$mark = () => {
+    if (!producerUpdatesAllowed()) {
+      throw new Error();
+    }
+
     const node = sig[SIGNAL] as any;
     node.version++;
     producerIncrementEpoch();

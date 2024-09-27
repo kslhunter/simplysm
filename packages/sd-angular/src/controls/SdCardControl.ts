@@ -17,7 +17,10 @@ import {ChangeDetectionStrategy, Component, ViewEncapsulation} from "@angular/co
       overflow: hidden;
       transition: box-shadow 0.3s ease-in-out;
       @include elevation(2);
-      animation: sd-card  var(--animation-duration) ease-in;
+      animation: sd-card  var(--animation-duration) ease-out;
+      opacity: 0;
+      transform: translateY(-1em);
+      animation-fill-mode: forwards;
 
       &:hover,
       &:has(:focus) {
@@ -38,6 +41,10 @@ import {ChangeDetectionStrategy, Component, ViewEncapsulation} from "@angular/co
       from {
         opacity: 0;
         transform: translateY(-1em);
+      }
+      to {
+        opacity: 1;
+        transform: none;
       }
     }
   `],

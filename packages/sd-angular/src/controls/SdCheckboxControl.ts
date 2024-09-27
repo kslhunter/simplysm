@@ -27,6 +27,8 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
         @include form-control-base();
         color: inherit;
         cursor: pointer;
+        @include active-effect(true);
+        border-radius: var(--border-radius-default);
 
         height: calc(var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-sm) * 2 + 2px);
         gap: var(--gap-sm);
@@ -123,25 +125,21 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
         &[sd-radio="true"] {
           > ._indicator_rect {
             border-radius: 100%;
+            padding: var(--gap-xs);
 
             > ._indicator {
               border-radius: 100%;
-              padding: 3px;
               width: 100%;
               height: 100%;
-
-              > div {
-                border-radius: 100%;
-                background: var(--text-trans-default);
-                width: 100%;
-                height: 100%;
-              }
+              background: var(--theme-primary-default);
             }
           }
 
           &[sd-checked="true"] {
             > ._indicator_rect {
-              background: var(--theme-primary-default);
+              background: var(--theme-secondary-lightest);
+              border-color: var(--theme-primary-dark);
+              //background: var(--theme-primary-default);
             }
           }
         }
@@ -245,14 +243,22 @@ export class SdCheckboxControl {
   @HostListener("click")
   onClick() {
     if (this.disabled()) return;
-    this.value.update((v) => !v);
+    if (this.radio()) {
+      this.value.set(true);
+    } else {
+      this.value.update((v) => !v);
+    }
   }
 
   @HostListener("keydown", ["$event"])
   onKeydown(event: KeyboardEvent): void {
     if (event.key === " ") {
       if (this.disabled()) return;
-      this.value.update((v) => !v);
+      if (this.radio()) {
+        this.value.set(true);
+      } else {
+        this.value.update((v) => !v);
+      }
     }
   }
 }

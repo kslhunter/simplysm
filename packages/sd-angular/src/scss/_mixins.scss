@@ -74,7 +74,7 @@
       top: -100%;
       background: transparent;
       transition-property: transform, opacity;
-      transition-duration: 0.3s;
+      transition-duration: var(--animation-duration);
       transition-timing-function: ease-out;
       transform: scaleX(0.3);
       opacity: 0;

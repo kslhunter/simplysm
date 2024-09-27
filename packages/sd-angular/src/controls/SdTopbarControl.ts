@@ -54,14 +54,14 @@ import { injectElementRef } from "../utils/injectElementRef";
 
         body.sd-theme-compact &,
         body.sd-theme-modern & {
-          border-bottom: 1px solid var(--border-color-light);
+          //border-bottom: 1px solid var(--border-color-light);
+          @include elevation(2);
         }
 
-        //@include elevation(4);
 
         /*> ._nav {
         display: inline-block;
-        height: var(--topbar-height);
+        height: var(--topbar-height);s
         white-space: nowrap;
         vertical-align: top;
       }*/
