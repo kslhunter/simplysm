@@ -21,7 +21,7 @@
   "scripts": {
     "watch": "npm run _sd-cli_ -- watch",
     "build": "npm run _sd-cli_ -- build",
-    "publish": "npm run _sd-cli_ -- publish",
+    "publish": "npm run _sd-cli_ -- --debug publish",
     "--": "",
     "_sd-cli_": "tsx --tsconfig packages/sd-cli/tsconfig.json packages/sd-cli/src/sd-cli.ts",
     "commit": "git add . && git commit -m .",
