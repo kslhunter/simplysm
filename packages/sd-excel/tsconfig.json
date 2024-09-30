@@ -1,10 +1,9 @@
 {
-  "extends": "../../tsconfig.json",
+  "extends": "../tsconfig.json",
   "compilerOptions": {
-    "lib": [
-      "ES2021",
-      "DOM"
-    ],
-    "outDir": "./dist"
-  }
+    "lib": ["ES2021", "DOM"],
+    "outDir": "./dist",
+    "types": ["node", "xml2js"]
+  },
+  "files": ["./src/index.ts"]
 }

@@ -25,17 +25,17 @@ export class SdModalProvider {
       movable?: boolean;
       headerStyle?: string;
       mobileFillDisabled?: boolean;
-    }
+    },
   ): Promise<T["__tOutput__"] | undefined> {
     return await new Promise<T["__tOutput__"] | undefined>((resolve, reject) => {
       //-- component
       const compRef = createComponent(modalType, {
-        environmentInjector: this.#appRef.injector
+        environmentInjector: this.#appRef.injector,
       });
 
       const modalRef = createComponent(SdModalControl, {
         environmentInjector: this.#appRef.injector,
-        projectableNodes: [[compRef.location.nativeElement]]
+        projectableNodes: [[compRef.location.nativeElement]],
       });
 
       const modalEl = modalRef.location.nativeElement as HTMLElement;
@@ -64,6 +64,10 @@ export class SdModalProvider {
           prevActiveElement.focus();
         }
       };
+      compRef.instance.open = () => {
+        modalRef.instance.open.set(true);
+        modalRef.instance.dialogElRef().nativeElement.focus();
+      };
 
       this.#appRef.attachView(compRef.hostView);
 
@@ -87,13 +91,12 @@ export class SdModalProvider {
           compRef.instance.close();
         }
       });
+
       this.#appRef.attachView(modalRef.hostView);
 
-      //-- show
-
       this.modalCount.update((v) => v + 1);
-      modalRef.instance.open.set(true);
-      modalRef.instance.dialogElRef().nativeElement.focus();
+
+      // TODO: Global Busy
     });
   }
 }
@@ -105,6 +108,10 @@ export abstract class SdModalBase<I, O> {
 
   title = input.required<string>();
   params = input.required<I>();
+
+  open() {
+    throw new Error("모달이 초기화되어있지 않습니다.");
+  }
 
   close(value?: O): void {
     throw new Error("모달이 초기화되어있지 않습니다.");

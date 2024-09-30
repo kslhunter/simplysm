@@ -6,10 +6,7 @@
     "emitDecoratorMetadata": true,
     "module": "ESNext",
     "target": "ES2022",
-    "lib": [
-      "ES2021",
-      "DOM"
-    ],
+    "lib": ["ES2021", "DOM"],
     "strict": true,
     "moduleResolution": "Node",
     "esModuleInterop": true,
@@ -28,13 +25,8 @@
     "noUnusedLocals": false,
     "baseUrl": ".",
     "paths": {
-      "@simplysm/*": [
-        "./packages/*/src/index.ts",
-        "./packages/*/types/index.d.ts"
-      ],
-      "@simplysm/ts-transformer-keys/transformer": [
-        "./packages/ts-transformer-keys/src/transformer.ts"
-      ]
+      "@simplysm/*": ["./*/src/index.ts", "./*/types/index.d.ts"],
+      "@simplysm/ts-transformer-keys/transformer": ["./ts-transformer-keys/src/transformer.ts"]
     }
   }
 }

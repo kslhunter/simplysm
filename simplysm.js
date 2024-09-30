@@ -67,6 +67,11 @@ export default () => ({
       publish: "npm",
       polyfills: ["@simplysm/sd-core-common"],
     },
+    "sd-preact": {
+      type: "library",
+      publish: "npm",
+      polyfills: ["@simplysm/sd-core-browser"],
+    },
     "sd-service-client": {
       type: "library",
       publish: "npm",

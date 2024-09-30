@@ -1,16 +1,15 @@
 {
-  "extends": "../../tsconfig.json",
+  "extends": "../tsconfig.json",
   "compilerOptions": {
-    "lib": [
-      "ES2021",
-      "DOM"
-    ],
-    "outDir": "./dist"
+    "lib": ["ES2021", "DOM"],
+    "outDir": "./dist",
+    "types": ["node", "qrcode", "semver"]
   },
+  "files": ["./src/index.ts", "./src/assets.d.ts"],
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
     "strictInjectionParameters": true,
-    "strictInputAccessModifiers": true,
+    "strictInputAccessModifiers": false,
     "strictTemplates": true
   }
 }

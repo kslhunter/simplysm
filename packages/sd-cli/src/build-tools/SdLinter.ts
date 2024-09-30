@@ -14,7 +14,13 @@ export abstract class SdLinter {
 
     const lintFilePaths = Array.from(fileSet)
       .filter((item) => PathUtil.isChildPath(item, cwd))
-      .filter((item) => (isTsPackage && !item.endsWith(".d.ts") && item.endsWith(".ts")) || item.endsWith(".js"))
+      .filter(
+        (item) =>
+          (isTsPackage && !item.endsWith(".d.ts") && item.endsWith(".ts")) ||
+          item.endsWith(".js") ||
+          item.endsWith(".tsx") ||
+          item.endsWith(".jsx"),
+      )
       .filter((item) => FsUtil.exists(item));
 
     if (lintFilePaths.length === 0) {
@@ -28,7 +34,7 @@ export abstract class SdLinter {
         ? {
             overrideConfig: [
               {
-                files: ["**/*.ts"],
+                files: ["**/*.ts", "**/*.tsx"],
                 languageOptions: {
                   parserOptions: {
                     programs: [tsProgram],

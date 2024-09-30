@@ -1,13 +1,10 @@
-import {CordovaAppStorage} from "./CordovaAppStorage";
-import {SdAutoUpdateServiceClient, SdServiceClient} from "@simplysm/sd-service-client";
-import {NetUtil} from "@simplysm/sd-core-common";
+import { CordovaAppStorage } from "./CordovaAppStorage";
+import { SdAutoUpdateServiceClient, SdServiceClient } from "@simplysm/sd-service-client";
+import { NetUtil } from "@simplysm/sd-core-common";
 import JSZip from "jszip";
 
 export abstract class CordovaAutoUpdate {
-  static async runAsync(opt: {
-    log: (messageHtml: string) => void,
-    serviceClient?: SdServiceClient
-  }) {
+  static async runAsync(opt: { log: (messageHtml: string) => void; serviceClient?: SdServiceClient }) {
     if (navigator.userAgent.toLowerCase().includes("android")) {
       opt.log(`보유버전 확인 중...`);
 
@@ -21,19 +18,21 @@ export abstract class CordovaAutoUpdate {
         // 서버의 버전 및 다운로드링크 가져오기
         const autoUpdateServiceClient = new SdAutoUpdateServiceClient(opt.serviceClient);
 
-        const {
-          version: serverVersion,
-          downloadPath
-        } = await autoUpdateServiceClient.getLastVersion("android");
+        const { version: serverVersion, downloadPath } = await autoUpdateServiceClient.getLastVersion("android");
 
         // 서버와 로컬의 버전이 다르면,
         if (localVersion !== serverVersion) {
           opt.log(`최신버전 파일 다운로드중...`);
 
           // 서버에서 최신버전의 zip파일 다운로드
-          const downloadZipBuffer = await NetUtil.downloadAsync(opt.serviceClient.serverUrl + downloadPath, progress => {
-            opt.log(`최신버전 파일 다운로드중...(${(progress.receivedLength * 100 / progress.contentLength).toFixed(2)}%)`);
-          });
+          const downloadZipBuffer = await NetUtil.downloadAsync(
+            opt.serviceClient.serverUrl + downloadPath,
+            (progress) => {
+              opt.log(
+                `최신버전 파일 다운로드중...(${((progress.receivedLength * 100) / progress.contentLength).toFixed(2)}%)`,
+              );
+            },
+          );
 
           opt.log(`최신버전 파일 압축해제...`);
 
