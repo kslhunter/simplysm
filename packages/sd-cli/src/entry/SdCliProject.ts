@@ -332,7 +332,9 @@ export class SdCliProject {
     if (!projNpmConf.workspaces) {
       throw new Error("프로젝트 package.json에 workspaces가 설정되어있지 않습니다.");
     }
-    const allPkgPaths = await projNpmConf.workspaces.mapManyAsync(async (item) => await FsUtil.globAsync(item));
+    const allPkgPaths = (
+      await projNpmConf.workspaces.mapManyAsync(async (item) => await FsUtil.globAsync(item))
+    ).filter((item) => !item.includes("."));
     let pkgPaths = allPkgPaths.filter((pkgPath) => path.basename(pkgPath) in projConf.packages);
     if (opt.pkgNames.length !== 0) {
       pkgPaths = pkgPaths.filter((pkgPath) => opt.pkgNames.includes(path.basename(pkgPath)));
