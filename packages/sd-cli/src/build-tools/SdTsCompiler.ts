@@ -9,7 +9,6 @@ import { ComponentStylesheetBundler } from "@angular/build/src/tools/esbuild/ang
 import { AngularCompilerHost } from "@angular/build/src/tools/angular/angular-host";
 import { transformSupportedBrowsersToTargets } from "@angular/build/src/tools/esbuild/utils";
 import browserslist from "browserslist";
-import transformKeys from "@simplysm/ts-transformer-keys/transformer";
 import { replaceBootstrap } from "@angular/build/src/tools/angular/transformers/jit-bootstrap-transformer";
 
 export class SdTsCompiler {
@@ -483,7 +482,7 @@ export class SdTsCompiler {
       };
       (transformers.before ??= []).push(replaceBootstrap(() => this.#program!.getTypeChecker()));
     }
-    (transformers.before ??= []).push(transformKeys(this.#program));
+    // (transformers.before ??= []).push(transformKeys(this.#program));
 
     this.#debug(`prepare emit files...`);
 
