@@ -10,10 +10,10 @@ import {$computed} from "../utils/$hooks";
   standalone: true,
   imports: [SdCheckboxControl],
   template: `
-    <sd-checkbox [value]="isSelected()"
+    <sd-checkbox [value]="isSelected$.value"
                  (valueChange)="onSelectedChange($event)"
                  [inline]="inline()"
-                 [disabled]="disabled()">
+                 [disabled]="disabled$.value">
       <ng-content></ng-content>
     </sd-checkbox>
   `
@@ -24,8 +24,8 @@ export class SdCheckboxGroupItemControl<T> {
   value = input.required<T>();
   inline = input(false);
 
-  isSelected = $computed(() => this.#parentControl.value().includes(this.value()));
-  disabled = $computed(() => this.#parentControl.disabled());
+  isSelected$ = $computed(() => this.#parentControl.value().includes(this.value()));
+  disabled$ = $computed(() => this.#parentControl.disabled());
 
   onSelectedChange(selected: boolean): void {
     this.#parentControl.value.update((v) => {

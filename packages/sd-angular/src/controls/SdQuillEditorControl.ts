@@ -3,6 +3,7 @@ import Quill from "quill";
 import QuillResizeImage from "quill-resize-image";
 import { $effect } from "../utils/$hooks";
 import { injectElementRef } from "../utils/injectElementRef";
+import { $hostBinding } from "../utils/$hostBinding";
 
 Quill.register("modules/resize", QuillResizeImage);
 
@@ -68,9 +69,6 @@ Quill.register("modules/resize", QuillResizeImage);
       }
     `,
   ],
-  host: {
-    "[attr.sd-disabled]": "disabled",
-  },
 })
 export class SdQuillEditorControl {
   #elRef = injectElementRef<HTMLElement>();
@@ -82,6 +80,8 @@ export class SdQuillEditorControl {
   #quill!: Quill;
 
   constructor() {
+    $hostBinding("attr.sd-disabled", this.disabled);
+
     $effect([], () => {
       this.#quill = new Quill(this.#elRef.nativeElement.firstElementChild as HTMLElement, {
         theme: "snow",

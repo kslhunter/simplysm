@@ -14,7 +14,7 @@ import {
 import { SdBusyContainerControl } from "./SdBusyContainerControl";
 import { SdKanbanControl } from "./SdKanbanControl";
 import { SdCheckboxControl } from "./SdCheckboxControl";
-import { $computed, $signal } from "../utils/$hooks";
+import { $computed } from "../utils/$hooks";
 import { SdKanbanBoardControl } from "./SdKanbanBoardControl";
 import { NgTemplateOutlet } from "@angular/common";
 import { SdDockContainerControl } from "./SdDockContainerControl";
@@ -23,6 +23,8 @@ import { SdPaneControl } from "./SdPaneControl";
 import { SdAnchorControl } from "./SdAnchorControl";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
+import { $reactive } from "../utils/$reactive";
+import { $hostBinding } from "../utils/$hostBinding";
 
 @Component({
   selector: "sd-kanban-lane",
@@ -101,7 +103,7 @@ import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
                   style="float: left"
                   [inline]="true"
                   theme="white"
-                  [value]="isAllSelected()"
+                  [value]="isAllSelected$.value"
                   (valueChange)="onSelectAllButtonClick($event)"
                 />
               }
@@ -115,16 +117,13 @@ import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 
           <div
             class="_drop-position"
-            [style.height]="dragOvered() ? (dragKanban()?.heightOnDrag() ?? 0) + 'px' : '0px'"
-            [style.display]="dragKanban() ? 'block' : 'none'"
+            [style.height]="dragOvered$.value ? (dragKanban$.value?.heightOnDrag$?.value ?? 0) + 'px' : '0px'"
+            [style.display]="dragKanban$.value ? 'block' : 'none'"
           ></div>
         </sd-busy-container>
       </sd-pane>
     </sd-dock-container>
   `,
-  host: {
-    "[attr.sd-drag-over]": "dragOvered()",
-  },
 })
 export class SdKanbanLaneControl<L, T> {
   icons = inject(SdAngularConfigProvider).icons;
@@ -143,11 +142,15 @@ export class SdKanbanLaneControl<L, T> {
   toolsTemplateRef = contentChild<any, TemplateRef<void>>("toolsTemplate", { read: TemplateRef });
   titleTemplateRef = contentChild<any, TemplateRef<void>>("titleTemplate", { read: TemplateRef });
 
-  isAllSelected = $computed(() => this.kanbanControls().every((ctrl) => ctrl.selected()));
+  isAllSelected$ = $computed(() => this.kanbanControls().every((ctrl) => ctrl.selected$.value));
 
-  dragKanban = $computed(() => this.#boardControl.dragKanban());
+  dragKanban$ = $computed(() => this.#boardControl.dragKanban$.value);
 
-  dragOvered = $signal(false);
+  dragOvered$ = $reactive(false);
+
+  constructor() {
+    $hostBinding("attr.sd-drag-over", this.dragOvered$);
+  }
 
   onToggleCollapseButtonClick() {
     this.collapse.update((v) => !v);
@@ -179,7 +182,7 @@ export class SdKanbanLaneControl<L, T> {
 
   @HostListener("dragover", ["$event"])
   onDragOver(event: DragEvent) {
-    if (this.#boardControl.dragKanban() == null) return;
+    if (this.#boardControl.dragKanban$.value == null) return;
 
     event.preventDefault();
     event.stopPropagation();
@@ -187,7 +190,7 @@ export class SdKanbanLaneControl<L, T> {
     if (this.#timeout != null) {
       clearTimeout(this.#timeout);
     }
-    this.dragOvered.set(true);
+    this.dragOvered$.value = true;
   }
 
   @HostListener("dragleave", ["$event"])
@@ -196,14 +199,14 @@ export class SdKanbanLaneControl<L, T> {
     event.stopPropagation();
 
     this.#timeout = setTimeout(() => {
-      this.dragOvered.set(false);
+      this.dragOvered$.value = false;
     }, 25);
   }
 
   @HostListener("drop", ["$event"])
   onDragDrop(event: DragEvent) {
-    if (this.#boardControl.dragKanban() == null) return;
-    this.dragOvered.set(false);
+    if (this.#boardControl.dragKanban$.value == null) return;
+    this.dragOvered$.value = false;
 
     event.preventDefault();
     event.stopPropagation();

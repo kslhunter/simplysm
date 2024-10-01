@@ -10,6 +10,7 @@ import {
 
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
+import { $hostBinding } from "../utils/$hostBinding";
 
 @Component({
   selector: "sd-checkbox",
@@ -213,16 +214,6 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
       <ng-content />
     </div>
   `,
-  host: {
-    "[attr.sd-checked]": "value()",
-    "[attr.sd-disabled]": "disabled()",
-    "[attr.sd-inline]": "inline()",
-    "[attr.sd-inset]": "inset()",
-    "[attr.sd-radio]": "radio()",
-    "[attr.sd-size]": "size()",
-    "[attr.sd-theme]": "theme()",
-    "[attr.tabindex]": "0",
-  },
 })
 export class SdCheckboxControl {
   icons = inject(SdAngularConfigProvider).icons;
@@ -239,6 +230,17 @@ export class SdCheckboxControl {
   theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey" | "white">();
 
   contentStyle = input<string>();
+
+  constructor() {
+    $hostBinding("attr.sd-checked", this.value);
+    $hostBinding("attr.sd-disabled", this.disabled);
+    $hostBinding("attr.sd-inline", this.inline);
+    $hostBinding("attr.sd-inset", this.inset);
+    $hostBinding("attr.sd-radio", this.radio);
+    $hostBinding("attr.sd-size", this.size);
+    $hostBinding("attr.sd-theme", this.theme);
+    $hostBinding("attr.tabindex", { value: 0 });
+  }
 
   @HostListener("click")
   onClick() {

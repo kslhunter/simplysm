@@ -1,10 +1,12 @@
-import { inject, Injectable, Signal, WritableSignal } from "@angular/core";
+import { inject, Injectable } from "@angular/core";
 import { SdServiceEventListenerBase } from "@simplysm/sd-service-common";
 import { SdServiceFactoryProvider } from "./SdServiceFactoryProvider";
 import { DateOnly, DateTime, ObjectUtil, Time, Wait } from "@simplysm/sd-core-common";
-import { $computed, $signal } from "../utils/$hooks";
+import { $computed } from "../utils/$hooks";
+import { $reactive } from "../utils/$reactive";
 
-export interface ISharedSignal<T extends ISharedDataBase<string | number>> extends Signal<T[]> {
+export interface ISharedReactive<T extends ISharedDataBase<string | number>> {
+  readonly value: T[];
   $get(key: T["__valueKey"] | undefined): T | undefined;
   $wait(): Promise<void>;
 }
@@ -34,7 +36,7 @@ export class SdSharedDataProvider<T extends Record<string, ISharedDataBase<strin
       );
   }
 
-  getSignal<K extends keyof T & string>(name: K): ISharedSignal<T[K]> {
+  get$<K extends keyof T & string>(name: K): ISharedReactive<T[K]> {
     const info = this.#infoMap.get(name);
     if (!info) throw new Error(`'${name}'에 대한 공유데이터 정보가 없습니다.`);
 
@@ -53,14 +55,14 @@ export class SdSharedDataProvider<T extends Record<string, ISharedDataBase<strin
     }
 
     //-- data
-    if (!info.signal) {
-      info.signal = $signal([]);
+    if (!info.reactive$) {
+      info.reactive$ = $reactive([]);
 
-      const computedMap = $computed(() => info.signal!().toMap((item) => item.__valueKey));
-      info.signal["$get"] = (key: T[K]["__valueKey"]) => computedMap().get(key);
+      const computedMap$ = $computed(() => info.reactive$!.value.toMap((item) => item.__valueKey));
+      info.reactive$["$get"] = (key: T[K]["__valueKey"]) => computedMap$.value.get(key);
 
       let loaded = false;
-      info.signal["$wait"] = () => Wait.until(() => loaded);
+      info.reactive$["$wait"] = () => Wait.until(() => loaded);
 
       void (async () => {
         await this.#loadDataAsync(name);
@@ -68,7 +70,7 @@ export class SdSharedDataProvider<T extends Record<string, ISharedDataBase<strin
       })();
     }
 
-    return info.signal as any;
+    return info.reactive$ as any;
   }
 
   async #loadDataAsync<K extends keyof T & string>(name: K, changeKeys?: T[K]["__valueKey"][]) {
@@ -76,37 +78,33 @@ export class SdSharedDataProvider<T extends Record<string, ISharedDataBase<strin
     try {
       const info = this.#infoMap.get(name);
       if (!info) throw new Error(`'${name}'에 대한 공유데이터 로직 정보가 없습니다.`);
-      if (!info.signal) throw new Error(`'${name}'에 대한 공유데이터 저장소가 없습니다.`);
+      if (!info.reactive$) throw new Error(`'${name}'에 대한 공유데이터 저장소가 없습니다.`);
 
       const resData = await info.getter.getDataAsync(changeKeys);
 
       if (!changeKeys) {
-        info.signal.set(this.#ordering(resData, info.getter.orderBy));
+        info.reactive$.value = this.#ordering(resData, info.getter.orderBy);
       } else {
-        info.signal.update((v) => {
-          const r = [...v];
+        // 삭제된 항목 제거 (DB에 없는 항목)
+        const deleteKeys = changeKeys.filter(
+          (changeKey) => !resData.some((resItem) => resItem.__valueKey === changeKey),
+        );
+        info.reactive$.value.remove((item) => deleteKeys.includes(item.__valueKey));
 
-          // 삭제된 항목 제거 (DB에 없는 항목)
-          const deleteKeys = changeKeys.filter(
-            (changeKey) => !resData.some((resItem) => resItem.__valueKey === changeKey),
-          );
-          r.remove((item) => deleteKeys.includes(item.__valueKey));
+        // 수정된 항목 변경
+        for (const resItem of resData) {
+          const currItemKey = resItem.__valueKey;
 
-          // 수정된 항목 변경
-          for (const resItem of resData) {
-            const currItemKey = resItem.__valueKey;
-
-            const resItemIndex = r.findIndex((item) => item.__valueKey === currItemKey);
-            if (resItemIndex >= 0) {
-              r[resItemIndex] = resItem;
-            } else {
-              r.push(resItem);
-            }
+          const resItemIndex = info.reactive$.value.findIndex((item) => item.__valueKey === currItemKey);
+          if (resItemIndex >= 0) {
+            info.reactive$.value[resItemIndex] = resItem;
+          } else {
+            info.reactive$.value.push(resItem);
           }
+        }
 
-          // 재정렬
-          return this.#ordering(r, info.getter.orderBy);
-        });
+        // 재정렬
+        info.reactive$.value = this.#ordering(info.reactive$.value, info.getter.orderBy);
       }
     } catch (err) {
       this.loadingCount--;
@@ -140,7 +138,7 @@ export interface ISharedDataInfo<T extends ISharedDataBase<string | number>> {
 interface ISharedDataInnerInfo<T extends ISharedDataBase<string | number>> {
   getter: ISharedDataInfo<T>;
   listenerKey?: string;
-  signal?: WritableSignal<T[]>;
+  reactive$?: { value: T[] };
 }
 
 export interface ISharedDataBase<VK extends string | number> {

@@ -1,17 +1,18 @@
 import { inject, Injectable } from "@angular/core";
-import { $effect, $signal } from "../utils/$hooks";
+import { $effect } from "../utils/$hooks";
 import { SdLocalStorageProvider } from "./SdLocalStorageProvider";
+import { $reactive } from "../utils/$reactive";
 
 @Injectable({ providedIn: "root" })
 export class SdThemeProvider {
   #sdLocalStorage = inject(SdLocalStorageProvider);
 
-  theme = $signal<"compact" | "modern" | "mobile" | "kiosk">("modern");
+  theme$ = $reactive<"compact" | "modern" | "mobile" | "kiosk">("modern");
 
   constructor() {
     $effect(() => {
-      document.body.className = "sd-theme-" + this.theme();
-      this.#sdLocalStorage.set("sd-theme", this.theme());
+      document.body.className = "sd-theme-" + this.theme$.value;
+      this.#sdLocalStorage.set("sd-theme", this.theme$.value);
     });
   }
 }

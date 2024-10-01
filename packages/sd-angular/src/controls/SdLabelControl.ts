@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
+import { $hostBinding } from "../utils/$hostBinding";
 
 @Component({
   selector: "sd-label",
@@ -41,14 +42,15 @@ import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@a
     `,
   ],
   template: ` <ng-content></ng-content>`,
-  host: {
-    "[attr.sd-theme]": "theme()",
-    "[style.background]": "color()",
-    "[attr.sd-clickable]": "clickable()",
-  },
 })
 export class SdLabelControl {
   theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey">();
   color = input<string>();
   clickable = input(false);
+
+  constructor() {
+    $hostBinding("attr.sd-theme", this.theme);
+    $hostBinding("style.background", this.color);
+    $hostBinding("attr.sd-clickable", this.clickable);
+  }
 }

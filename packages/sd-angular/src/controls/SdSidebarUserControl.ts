@@ -4,7 +4,8 @@ import { SdCollapseControl } from "./SdCollapseControl";
 import { SdListControl } from "./SdListControl";
 import { SdListItemControl } from "./SdListItemControl";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
-import { $signal } from "../utils/$hooks";
+import { $hostBinding } from "../utils/$hostBinding";
+import { $reactive } from "../utils/$reactive";
 
 @Component({
   selector: "sd-sidebar-user",
@@ -60,7 +61,7 @@ import { $signal } from "../utils/$hooks";
           }
         }
       }
-    `
+    `,
   ],
   template: `
     <div class="_content" [style]="contentStyle()" [class]="contentClass()">
@@ -70,12 +71,12 @@ import { $signal } from "../utils/$hooks";
       @if (userMenu()?.title) {
         <div class="_menu-button" (click)="onMenuOpenButtonClick()">
           {{ userMenu()?.title }}
-          <sd-collapse-icon [open]="menuOpen()" style="float: right;" [openRotate]="180" />
+          <sd-collapse-icon [open]="menuOpen$.value" style="float: right;" [openRotate]="180" />
         </div>
       }
     </div>
     @if (userMenu()?.title) {
-      <sd-collapse [open]="menuOpen()">
+      <sd-collapse [open]="menuOpen$.value">
         <sd-list class="pv-sm" [inset]="true">
           @for (menu of userMenu()?.menus; track menu.title) {
             <sd-list-item (click)="menu.onClick()">
@@ -85,9 +86,6 @@ import { $signal } from "../utils/$hooks";
         </sd-list>
       </sd-collapse>
     }`,
-  host: {
-    "[attr.sd-menu-open]": "menuOpen()"
-  }
 })
 export class SdSidebarUserControl {
   icons = inject(SdAngularConfigProvider).icons;
@@ -97,10 +95,14 @@ export class SdSidebarUserControl {
   contentStyle = input<string>();
   contentClass = input<string>();
 
-  menuOpen = $signal(false);
+  menuOpen$ = $reactive(false);
+
+  constructor() {
+    $hostBinding("attr.sd-menu-open", this.menuOpen$);
+  }
 
   onMenuOpenButtonClick() {
-    this.menuOpen.update((v) => !v);
+    this.menuOpen$.value = !this.menuOpen$.value;
   }
 }
 

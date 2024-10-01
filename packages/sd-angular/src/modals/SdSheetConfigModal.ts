@@ -12,7 +12,8 @@ import { SdDockControl } from "../controls/SdDockControl";
 import { SdButtonControl } from "../controls/SdButtonControl";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
-import { $effect, $signal } from "../utils/$hooks";
+import { $effect } from "../utils/$hooks";
+import { $reactive } from "../utils/$reactive";
 
 @Component({
   selector: "sd-sheet-config-modal",
@@ -39,32 +40,27 @@ import { $effect, $signal } from "../utils/$hooks";
           <sd-sheet
             key="sd-sheet-config-modal"
             [key]="params().sheetKey + '-config'"
-            [items]="items()"
+            [items]="items$.value"
             [trackByFn]="trackByFn"
           >
             <sd-sheet-column key="fixed" header="Fix">
-              <ng-template [cell]="items()" let-item="item">
+              <ng-template [cell]="items$.value" let-item="item">
                 <div style="text-align: center">
-                  <sd-checkbox
-                    size="sm"
-                    [inset]="true"
-                    [(value)]="item.fixed"
-                    (valueChange)="items.$mark()"
-                  ></sd-checkbox>
+                  <sd-checkbox size="sm" [inset]="true" [(value)]="item.fixed"></sd-checkbox>
                 </div>
               </ng-template>
             </sd-sheet-column>
             <sd-sheet-column key="ordering" header="Order">
-              <ng-template [cell]="items()" let-item="item" let-index="index">
+              <ng-template [cell]="items$.value" let-item="item" let-index="index">
                 <div class="p-xs-sm" style="text-align: center">
                   <sd-anchor
-                    [disabled]="index === 0 || (!item.fixed && items()[index - 1].fixed)"
+                    [disabled]="index === 0 || (!item.fixed && items$.value[index - 1].fixed)"
                     (click)="onDisplayOrderUpButtonClick(item)"
                   >
                     <fa-icon [icon]="icons.angleUp" [fixedWidth]="true" />
                   </sd-anchor>
                   <sd-anchor
-                    [disabled]="index === items().length - 1 || (item.fixed && !items()[index + 1].fixed)"
+                    [disabled]="index === items$.value.length - 1 || (item.fixed && !items$.value[index + 1].fixed)"
                     (click)="onDisplayOrderDownButtonClick(item)"
                   >
                     <fa-icon [icon]="icons.angleDown" [fixedWidth]="true" />
@@ -73,34 +69,27 @@ import { $effect, $signal } from "../utils/$hooks";
               </ng-template>
             </sd-sheet-column>
             <sd-sheet-column key="header" header="Header" [resizable]="true">
-              <ng-template [cell]="items()" let-item="item">
+              <ng-template [cell]="items$.value" let-item="item">
                 <div class="p-xs-sm">
                   {{ item.header }}
                 </div>
               </ng-template>
             </sd-sheet-column>
             <sd-sheet-column key="width" header="Width" [resizable]="true" width="60px">
-              <ng-template [cell]="items()" let-item="item">
+              <ng-template [cell]="items$.value" let-item="item">
                 @if (item.resizable) {
-                  <sd-textfield
-                    type="text"
-                    size="sm"
-                    [inset]="true"
-                    [(value)]="item.width"
-                    (valueChange)="items.$mark()"
-                  />
+                  <sd-textfield type="text" size="sm" [inset]="true" [(value)]="item.width" />
                 }
               </ng-template>
             </sd-sheet-column>
             <sd-sheet-column key="hidden" header="Hidden">
               .
-              <ng-template [cell]="items()" let-item="item">
+              <ng-template [cell]="items$.value" let-item="item">
                 <div style="text-align: center">
                   <sd-checkbox
                     size="sm"
                     [inset]="true"
                     [(value)]="item.hidden"
-                    (valueChange)="items.$mark()"
                     [icon]="icons.xmark"
                     theme="danger"
                   ></sd-checkbox>
@@ -130,7 +119,7 @@ import { $effect, $signal } from "../utils/$hooks";
 export class SdSheetConfigModal<T> extends SdModalBase<ISdSheetConfigModalInput<T>, ISdSheetConfig> {
   icons = inject(SdAngularConfigProvider).icons;
 
-  items = $signal<IItemVM[]>([]);
+  items$ = $reactive<IItemVM[]>([]);
 
   trackByFn = (item: IItemVM, index: number): string => item.key;
 
@@ -156,41 +145,33 @@ export class SdSheetConfigModal<T> extends SdModalBase<ISdSheetConfigModalInput<
         });
       }
 
-      this.items.set(items.orderBy((item) => item.displayOrder).orderBy((item) => (item.fixed ? -1 : 0)));
+      this.items$.value = items.orderBy((item) => item.displayOrder).orderBy((item) => (item.fixed ? -1 : 0));
     });
   }
 
   onDisplayOrderUpButtonClick(item: IItemVM): void {
-    this.items.update((v) => {
-      const r = [...v];
-      const index = r.indexOf(item);
-      r.remove(item);
-      r.insert(index - 1, item);
+    const index = this.items$.value.indexOf(item);
+    this.items$.value.remove(item);
+    this.items$.value.insert(index - 1, item);
 
-      for (let i = 0; i < r.length; i++) {
-        r[i].displayOrder = i;
-      }
-      return r;
-    });
+    for (let i = 0; i < this.items$.value.length; i++) {
+      this.items$.value[i].displayOrder = i;
+    }
   }
 
   onDisplayOrderDownButtonClick(item: IItemVM): void {
-    this.items.update((v) => {
-      const r = [...v];
-      const index = r.indexOf(item);
-      r.remove(item);
-      r.insert(index + 1, item);
+    const index = this.items$.value.indexOf(item);
+    this.items$.value.remove(item);
+    this.items$.value.insert(index + 1, item);
 
-      for (let i = 0; i < r.length; i++) {
-        r[i].displayOrder = i;
-      }
-      return r;
-    });
+    for (let i = 0; i < this.items$.value.length; i++) {
+      this.items$.value[i].displayOrder = i;
+    }
   }
 
   onOkButtonClick(): void {
     const result: ISdSheetConfig = { columnRecord: {} };
-    for (const config of this.items()) {
+    for (const config of this.items$.value) {
       result.columnRecord![config.key] = {
         fixed: config.fixed,
         width: config.width,

@@ -1,8 +1,8 @@
 import { Injectable } from "@angular/core";
-import { $signal } from "../utils/$hooks";
+import { $reactive } from "../utils/$reactive";
 
 @Injectable({ providedIn: "root" })
 export class SdBusyProvider {
-  type = $signal<"spinner" | "bar" | "cube">("spinner");
-  noFade = $signal(false);
+  type$ = $reactive<"spinner" | "bar" | "cube">("spinner");
+  noFade$ = $reactive(false);
 }

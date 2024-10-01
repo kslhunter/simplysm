@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
+import { $hostBinding } from "../utils/$hostBinding";
 
 @Component({
   selector: "sd-toast-container",
@@ -39,10 +40,11 @@ import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@a
     `,
   ],
   template: "",
-  host: {
-    "[attr.sd-overlap]": "overlap()",
-  },
 })
 export class SdToastContainerControl {
   overlap = input(false);
+
+  constructor() {
+    $hostBinding("attr.sd-overlap", this.overlap);
+  }
 }

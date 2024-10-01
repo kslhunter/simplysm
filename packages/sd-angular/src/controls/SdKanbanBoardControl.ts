@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, HostListener, model, output, ViewEncapsulation } from "@angular/core";
-import { $signal } from "../utils/$hooks";
+import { $reactive } from "../utils/$reactive";
 import { SdKanbanControl } from "./SdKanbanControl";
 import { SdKanbanLaneControl } from "./SdKanbanLaneControl";
 
@@ -28,29 +28,27 @@ import { SdKanbanLaneControl } from "./SdKanbanLaneControl";
   `,
 })
 export class SdKanbanBoardControl<L, T> {
-  dragKanban = $signal<SdKanbanControl<L, T>>();
-
-  // selectedKanbanSet = $signalSet<SdKanbanControl<T>>();
+  dragKanban$ = $reactive<SdKanbanControl<L, T>>();
 
   selectedValues = model<T[]>([]);
 
   drop = output<ISdKanbanBoardDropInfo<L, T>>();
 
   onDropTo(target: SdKanbanControl<L, T> | SdKanbanLaneControl<L, T>) {
-    if (!this.dragKanban()) return;
+    if (!this.dragKanban$.value) return;
 
     this.drop.emit({
-      sourceKanbanValue: this.dragKanban()!.value(),
-      targetLaneValue: target instanceof SdKanbanControl ? target.laneValue() : target.value(),
+      sourceKanbanValue: this.dragKanban$.value.value(),
+      targetLaneValue: target instanceof SdKanbanControl ? target.laneValue$.value : target.value(),
       targetKanbanValue: target instanceof SdKanbanControl ? target.value() : undefined,
     });
 
-    this.dragKanban.set(undefined);
+    this.dragKanban$.value = undefined;
   }
 
   @HostListener("document:dragend")
   onDocumentDragEnd() {
-    this.dragKanban.set(undefined);
+    this.dragKanban$.value = undefined;
   }
 }
 

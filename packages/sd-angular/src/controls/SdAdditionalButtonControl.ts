@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
+import { $hostBinding } from "../utils/$hostBinding";
 
 @Component({
   selector: "sd-additional-button",
@@ -65,12 +66,13 @@ import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@a
     </div>
     <ng-content select="sd-button" />
   `,
-  host: {
-    "[attr.sd-size]": "size()",
-    "[attr.sd-inset]": "inset()",
-  },
 })
 export class SdAdditionalButtonControl {
   size = input<"sm" | "lg">();
   inset = input(false);
+
+  constructor() {
+    $hostBinding("attr.sd-size", this.size);
+    $hostBinding("attr.sd-inset", this.inset);
+  }
 }

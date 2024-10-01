@@ -40,21 +40,21 @@ import { $computed } from "../utils/$hooks";
     `
   ],
   template: `
-    <sd-anchor [disabled]="!hasPrev()" (click)="onGoFirstClick()">
+    <sd-anchor [disabled]="!hasPrev$.value" (click)="onGoFirstClick()">
       <fa-icon [icon]="icons.angleDoubleLeft" [fixedWidth]="true" />
     </sd-anchor>
-    <sd-anchor [disabled]="!hasPrev()" (click)="onPrevClick()">
+    <sd-anchor [disabled]="!hasPrev$.value" (click)="onPrevClick()">
       <fa-icon [icon]="icons.angleLeft" [fixedWidth]="true" />
     </sd-anchor>
-    @for (displayPage of displayPages(); track displayPage) {
+    @for (displayPage of displayPages$.value; track displayPage) {
       <sd-anchor (click)="onPageClick(displayPage)" [attr.sd-selected]="displayPage === page()">
         {{ displayPage + 1 }}
       </sd-anchor>
     }
-    <sd-anchor [disabled]="!hasNext()" (click)="onNextClick()">
+    <sd-anchor [disabled]="!hasNext$.value" (click)="onNextClick()">
       <fa-icon [icon]="icons.angleRight" [fixedWidth]="true" />
     </sd-anchor>
-    <sd-anchor [disabled]="!hasNext()" (click)="onGoLastClick()">
+    <sd-anchor [disabled]="!hasNext$.value" (click)="onGoLastClick()">
       <fa-icon [icon]="icons.angleDoubleRight" [fixedWidth]="true" />
     </sd-anchor>
   `
@@ -67,7 +67,7 @@ export class SdPaginationControl {
   pageLength = input(0);
   displayPageLength = input(10);
 
-  displayPages = $computed(() => {
+  displayPages$ = $computed(() => {
     const pages: number[] = [];
     for (let i = 0; i < this.pageLength(); i++) {
       pages.push(i);
@@ -78,12 +78,12 @@ export class SdPaginationControl {
     return pages.filter((item) => item >= from && item < to);
   });
 
-  hasNext = $computed(() => {
-    return (this.displayPages().last() ?? 0) < this.pageLength() - 1;
+  hasNext$ = $computed(() => {
+    return (this.displayPages$.value.last() ?? 0) < this.pageLength() - 1;
   });
 
-  hasPrev = $computed(() => {
-    return (this.displayPages().first() ?? 0) > 0;
+  hasPrev$ = $computed(() => {
+    return (this.displayPages$.value.first() ?? 0) > 0;
   });
 
   onPageClick(page: number) {
@@ -91,12 +91,12 @@ export class SdPaginationControl {
   }
 
   onNextClick() {
-    const page = (this.displayPages().last() ?? 0) + 1;
+    const page = (this.displayPages$.value.last() ?? 0) + 1;
     this.page.set(page);
   }
 
   onPrevClick() {
-    const page = (this.displayPages().first() ?? 0) - 1;
+    const page = (this.displayPages$.value.first() ?? 0) - 1;
     this.page.set(page);
   }
 

@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, ElementRef, input, viewChild, ViewEncapsulation } from "@angular/core";
 import { SdEventsDirective } from "../directives/SdEventsDirective";
-import { $computed, $effect, $signal } from "../utils/$hooks";
+import { $computed, $effect } from "../utils/$hooks";
+import { $reactive } from "../utils/$reactive";
+import { $hostBinding } from "../utils/$hostBinding";
 
 @Component({
   selector: "sd-collapse",
@@ -25,30 +27,29 @@ import { $computed, $effect, $signal } from "../utils/$hooks";
     `,
   ],
   template: `
-    <div #contentEl class="_content" (sdResize)="onContentResize()" [style.margin-top]="marginTop()">
+    <div #contentEl class="_content" (sdResize)="onContentResize()" [style.margin-top]="marginTop$.value">
       <ng-content></ng-content>
     </div>
   `,
-  host: {
-    "[attr.sd-open]": "open",
-  },
 })
 export class SdCollapseControl {
   open = input(false);
 
   contentElRef = viewChild.required<any, ElementRef<HTMLElement>>("contentEl", { read: ElementRef });
 
-  contentHeight = $signal(0);
+  contentHeight$ = $reactive(0);
 
-  marginTop = $computed(() => (this.open() ? "" : -this.contentHeight() + "px"));
+  marginTop$ = $computed(() => (this.open() ? "" : -this.contentHeight$.value + "px"));
 
   constructor() {
+    $hostBinding("attr.sd-open", this.open);
+
     $effect(() => {
-      this.contentHeight.set(this.contentElRef().nativeElement.offsetHeight);
+      this.contentHeight$.value = this.contentElRef().nativeElement.offsetHeight;
     });
   }
 
   onContentResize() {
-    this.contentHeight.set(this.contentElRef().nativeElement.offsetHeight);
+    this.contentHeight$.value = this.contentElRef().nativeElement.offsetHeight;
   }
 }

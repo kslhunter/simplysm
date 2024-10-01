@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/core";
-import { $signal } from "../utils/$hooks";
+import { $reactive } from "../utils/$reactive";
+import { $hostBinding } from "../utils/$hostBinding";
 
 @Component({
   selector: "sd-topbar-container",
@@ -14,14 +15,14 @@ import { $signal } from "../utils/$hooks";
         position: relative;
         height: 100%;
       }
-    `
+    `,
   ],
-  template: `
-    <ng-content></ng-content>`,
-  host: {
-    "[style.padding-top]": "paddingTop()"
-  }
+  template: `<ng-content></ng-content>`,
 })
 export class SdTopbarContainerControl {
-  paddingTop = $signal<string>();
+  paddingTop$ = $reactive<string>();
+
+  constructor() {
+    $hostBinding("style.padding-top", this.paddingTop$);
+  }
 }

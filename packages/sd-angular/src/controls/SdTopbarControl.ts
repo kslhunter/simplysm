@@ -50,14 +50,13 @@ import { injectElementRef } from "../utils/injectElementRef";
         background: var(--background-color);
         color: var(--text-trans-default);
 
-        animation: sd-topbar  var(--animation-duration) ease-in;
+        animation: sd-topbar var(--animation-duration) ease-in;
 
         body.sd-theme-compact &,
         body.sd-theme-modern & {
           //border-bottom: 1px solid var(--border-color-light);
           @include elevation(2);
         }
-
 
         /*> ._nav {
         display: inline-block;
@@ -136,15 +135,16 @@ import { injectElementRef } from "../utils/injectElementRef";
       }
     `,
   ],
-  template: ` @if (hasSidebar()) {
+  template: `
+    @if (hasSidebar$.value) {
       <sd-anchor class="_sidebar-toggle-button" (click)="onSidebarToggleButtonClick()">
         <fa-icon [icon]="icons.bars" [fixedWidth]="true" />
       </sd-anchor>
     } @else {
       <sd-gap width="default" />
     }
-
-    <ng-content />`,
+    <ng-content />
+  `,
 })
 export class SdTopbarControl {
   icons = inject(SdAngularConfigProvider).icons;
@@ -155,16 +155,16 @@ export class SdTopbarControl {
 
   sidebarContainer = input<SdSidebarContainerControl>();
 
-  hasSidebar = $computed(() => !!this.sidebarContainer() || !!this.#parentSidebarContainerControl);
+  hasSidebar$ = $computed(() => !!this.sidebarContainer() || !!this.#parentSidebarContainerControl);
 
   onSidebarToggleButtonClick() {
     const sidebarContainerControl = this.sidebarContainer() ?? this.#parentSidebarContainerControl;
-    sidebarContainerControl!.toggle.update((v) => !v);
+    sidebarContainerControl!.toggle$.value = !sidebarContainerControl!.toggle$.value;
   }
 
   @HostListener("sdResize", ["$event"])
   onResize(event: ISdResizeEvent) {
     if (!event.heightChanged) return;
-    this.#topbarContainerControl.paddingTop.set(this.#elRef.nativeElement.offsetHeight + "px");
+    this.#topbarContainerControl.paddingTop$.value = this.#elRef.nativeElement.offsetHeight + "px";
   }
 }

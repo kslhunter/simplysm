@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
+import { $hostBinding } from "../utils/$hostBinding";
 
 @Component({
   selector: "sd-form-box",
@@ -33,12 +34,13 @@ import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@a
       }
     `,
   ],
-  host: {
-    "[attr.sd-layout]": "layout()",
-  },
 })
 export class SdFormBoxControl {
   layout = input<"cascade" | "inline" | "table" | "none">("cascade");
   labelWidth = input<string>();
   labelAlign = input<"left" | "right" | "center">();
+
+  constructor() {
+    $hostBinding("attr.sd-layout", this.layout);
+  }
 }

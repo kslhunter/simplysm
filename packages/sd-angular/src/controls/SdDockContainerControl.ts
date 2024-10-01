@@ -18,9 +18,7 @@ import { injectElementRef } from "../utils/injectElementRef";
       }
     `,
   ],
-  template: `
-    <ng-content />
-  `,
+  template: ` <ng-content /> `,
 })
 export class SdDockContainerControl {
   #elRef = injectElementRef<HTMLElement>();
@@ -43,7 +41,7 @@ export class SdDockContainerControl {
             left: left + "px",
             right: right + "px",
           });
-          top += dockControl.size();
+          top += dockControl.size$.value;
         } else if (position === "bottom") {
           dockControl.assignStyle({
             top: "",
@@ -51,7 +49,7 @@ export class SdDockContainerControl {
             left: left + "px",
             right: right + "px",
           });
-          bottom += dockControl.size();
+          bottom += dockControl.size$.value;
         } else if (position === "left") {
           dockControl.assignStyle({
             top: top + "px",
@@ -59,7 +57,7 @@ export class SdDockContainerControl {
             left: left + "px",
             right: "",
           });
-          left += dockControl.size();
+          left += dockControl.size$.value;
         } else {
           dockControl.assignStyle({
             top: top + "px",
@@ -67,7 +65,7 @@ export class SdDockContainerControl {
             left: "",
             right: right + "px",
           });
-          right += dockControl.size();
+          right += dockControl.size$.value;
         }
       }
 

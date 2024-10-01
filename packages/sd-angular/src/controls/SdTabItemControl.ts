@@ -1,6 +1,15 @@
-import { ChangeDetectionStrategy, Component, forwardRef, HostListener, inject, input, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  forwardRef,
+  HostListener,
+  inject,
+  input,
+  ViewEncapsulation,
+} from "@angular/core";
 import { SdTabControl } from "./SdTabControl";
 import { $computed } from "../utils/$hooks";
+import { $hostBinding } from "../utils/$hostBinding";
 
 @Component({
   selector: "sd-tab-item",
@@ -42,20 +51,20 @@ import { $computed } from "../utils/$hooks";
           }
         }
       }
-    `
+    `,
   ],
-  template: `
-    <ng-content></ng-content>`,
-  host: {
-    "[attr.sd-selected]": "isSelected()"
-  }
+  template: ` <ng-content></ng-content>`,
 })
 export class SdTabItemControl {
   #parentControl = inject<SdTabControl>(forwardRef(() => SdTabControl));
 
   value = input<any>();
 
-  isSelected = $computed(() => this.#parentControl.value() === this.value());
+  isSelected$ = $computed(() => this.#parentControl.value() === this.value());
+
+  constructor() {
+    $hostBinding("attr.sd-selected", this.isSelected$);
+  }
 
   @HostListener("click")
   onClick() {

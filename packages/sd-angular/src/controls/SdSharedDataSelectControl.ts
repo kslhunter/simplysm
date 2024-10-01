@@ -23,7 +23,8 @@ import { NgTemplateOutlet } from "@angular/common";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { SdSelectButtonControl } from "./SdSelectButtonControl";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
-import { $computed, $signal } from "../utils/$hooks";
+import { $computed } from "../utils/$hooks";
+import { $reactive } from "../utils/$reactive";
 
 @Component({
   selector: "sd-shared-data-select",
@@ -51,7 +52,7 @@ import { $computed, $signal } from "../utils/$hooks";
       [inset]="inset()"
       [inline]="inline()"
       [size]="size()"
-      [items]="rootDisplayItems()"
+      [items]="rootDisplayItems$.value"
       [trackByFn]="trackByFn"
       [selectMode]="selectMode()"
       [contentClass]="selectClass()"
@@ -73,7 +74,7 @@ import { $computed, $signal } from "../utils/$hooks";
       <ng-template #header>
         <sd-textfield
           type="text"
-          [(value)]="searchText"
+          [(value)]="searchText$.value"
           placeholder="검색어"
           [inset]="true"
           [size]="size()"
@@ -94,7 +95,7 @@ import { $computed, $signal } from "../utils/$hooks";
         }
       </ng-template>
 
-      <ng-template [itemOf]="rootDisplayItems()" let-item="item" let-index="index" let-depth="depth">
+      <ng-template [itemOf]="rootDisplayItems$.value" let-item="item" let-index="index" let-depth="depth">
         @if (getItemSelectable(item, index, depth)) {
           <sd-select-item
             [value]="item.__valueKey"
@@ -163,9 +164,9 @@ export class SdSharedDataSelectControl<
   getChildrenFn = (item: ISharedDataBase<string | number>, index: number, depth: number): any[] =>
     this.getChildren(item, index, depth);
 
-  searchText = $signal<string>();
+  searchText$ = $reactive<string>();
 
-  itemByParentKeyMap = $computed(() => {
+  itemByParentKeyMap$ = $computed(() => {
     if (this.parentKeyProp() !== undefined) {
       return this.items()
         .groupBy((item) => item[this.parentKeyProp()!])
@@ -178,7 +179,7 @@ export class SdSharedDataSelectControl<
     }
   });
 
-  rootDisplayItems = $computed(() => {
+  rootDisplayItems$ = $computed(() => {
     let result = this.items().filter(
       (item, index) =>
         (!this.filterFn() || this.filterFn()!(item, index, ...(this.filterFnParams() ?? []))) &&
@@ -210,7 +211,7 @@ export class SdSharedDataSelectControl<
     if (
       this.getSearchTextFn()(item, index)
         .toLowerCase()
-        .includes(this.searchText()?.toLowerCase() ?? "")
+        .includes(this.searchText$.value?.toLowerCase() ?? "")
     ) {
       return true;
     }
@@ -228,7 +229,7 @@ export class SdSharedDataSelectControl<
   }
 
   getChildren(item: ISharedDataBase<string | number>, index: number, depth: number): any[] {
-    let result = this.itemByParentKeyMap()?.get(item.__valueKey) ?? [];
+    let result = this.itemByParentKeyMap$.value?.get(item.__valueKey) ?? [];
 
     if (this.displayOrderKeyProp() !== undefined) {
       result = result.orderBy((item1) => item1[this.displayOrderKeyProp()!]);
@@ -238,7 +239,7 @@ export class SdSharedDataSelectControl<
   }
 
   onOpenChange() {
-    this.searchText.set(undefined);
+    this.searchText$.value = undefined;
   }
 
   async onModalButtonClick(event: MouseEvent): Promise<void> {

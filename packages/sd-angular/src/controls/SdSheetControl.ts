@@ -7,7 +7,7 @@ import {
   input,
   model,
   output,
-  ViewEncapsulation
+  ViewEncapsulation,
 } from "@angular/core";
 import { SdSheetColumnDirective } from "../directives/SdSheetColumnDirective";
 import { SdSystemConfigProvider } from "../providers/SdSystemConfigProvider";
@@ -25,8 +25,10 @@ import { SdEventsDirective } from "../directives/SdEventsDirective";
 import { FontAwesomeModule } from "@fortawesome/angular-fontawesome";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { SdCheckboxControl } from "./SdCheckboxControl";
-import { $computed, $effect, $signal } from "../utils/$hooks";
+import { $computed, $effect } from "../utils/$hooks";
 import { injectElementRef } from "../utils/injectElementRef";
+import { $hostBinding } from "../utils/$hostBinding";
+import { $reactive } from "../utils/$reactive";
 
 @Component({
   selector: "sd-sheet",
@@ -307,7 +309,7 @@ import { injectElementRef } from "../utils/injectElementRef";
   template: `
     <sd-busy-container [busy]="busy()" type="cube">
       <sd-dock-container [hidden]="busy()">
-        @if ((key() || currPageLength() > 0) && !hideConfigBar()) {
+        @if ((key() || currPageLength$.value > 0) && !hideConfigBar()) {
           <sd-dock>
             <div class="flex-row-inline flex-gap-sm">
               @if (key()) {
@@ -315,10 +317,10 @@ import { injectElementRef } from "../utils/injectElementRef";
                   <fa-icon [icon]="icons.cog" [fixedWidth]="true" />
                 </sd-anchor>
               }
-              @if (currPageLength() > 1) {
+              @if (currPageLength$.value > 1) {
                 <sd-pagination
                   [(page)]="page"
-                  [pageLength]="currPageLength()"
+                  [pageLength]="currPageLength$.value"
                   [displayPageLength]="displayPageLength()"
                 />
               }
@@ -329,22 +331,22 @@ import { injectElementRef } from "../utils/injectElementRef";
         <sd-pane class="_sheet-container" (scroll)="onContainerScroll($event)">
           <table>
             <thead>
-              @for (headerRow of displayHeaderDefTable(); let r = $index; track r) {
+              @for (headerRow of displayHeaderDefTable$.value; let r = $index; track r) {
                 <tr>
                   @if (r === 0) {
                     <th
                       class="_fixed _feature-cell _last-depth"
                       [attr.rowspan]="
-                        !hasSummaryTemplate() && headerRow.length < 1
+                        !hasSummaryTemplate$.value && headerRow.length < 1
                           ? undefined
-                          : displayHeaderDefTable().length + (hasSummaryTemplate() ? 1 : 0)
+                          : displayHeaderDefTable$.value.length + (hasSummaryTemplate$.value ? 1 : 0)
                       "
                       [attr.c]="getChildrenFn() ? -2 : -1"
                       (sdResize)="onFixedCellResize(getChildrenFn() ? -2 : -1)"
                     >
-                      @if (selectMode() === "multi" && hasSelectableItem()) {
+                      @if (selectMode() === "multi" && hasSelectableItem$.value) {
                         <sd-checkbox
-                          [value]="isAllItemsSelected()"
+                          [value]="isAllItemsSelected$.value"
                           [inline]="true"
                           theme="white"
                           (valueChange)="onAllItemsSelectIconClick()"
@@ -359,19 +361,19 @@ import { injectElementRef } from "../utils/injectElementRef";
                     <th
                       class="_fixed _feature-cell _last-depth"
                       [attr.rowspan]="
-                        !hasSummaryTemplate() && headerRow.length < 1
+                        !hasSummaryTemplate$.value && headerRow.length < 1
                           ? undefined
-                          : displayHeaderDefTable().length + (hasSummaryTemplate() ? 1 : 0)
+                          : displayHeaderDefTable$.value.length + (hasSummaryTemplate$.value ? 1 : 0)
                       "
                       [attr.c]="-1"
                       (sdResize)="onFixedCellResize(-1)"
                     >
-                      @if (hasExpandableItem()) {
+                      @if (hasExpandableItem$.value) {
                         <fa-icon
                           [icon]="icons.caretRight"
                           [fixedWidth]="true"
-                          [class.tx-theme-primary-default]="isAllItemsExpanded()"
-                          [rotate]="isAllItemsExpanded() ? 90 : undefined"
+                          [class.tx-theme-primary-default]="isAllItemsExpanded$.value"
+                          [rotate]="isAllItemsExpanded$.value ? 90 : undefined"
                           (click)="onAllItemsExpandIconClick()"
                         />
                       }
@@ -441,9 +443,9 @@ import { injectElementRef } from "../utils/injectElementRef";
                 </tr>
               }
 
-              @if (hasSummaryTemplate()) {
+              @if (hasSummaryTemplate$.value) {
                 <tr class="_summary-row">
-                  @for (columnDef of displayColumnDefs(); let c = $index; track columnDef.control.key()) {
+                  @for (columnDef of displayColumnDefs$.value; let c = $index; track columnDef.control.key()) {
                     <th
                       [class._fixed]="columnDef.fixed"
                       [attr.c]="c"
@@ -460,7 +462,7 @@ import { injectElementRef } from "../utils/injectElementRef";
               }
             </thead>
             <tbody>
-              @for (itemDef of displayItemDefs(); let r = $index; track trackByFn()(itemDef.item, r)) {
+              @for (itemDef of displayItemDefs$.value; let r = $index; track trackByFn()(itemDef.item, r)) {
                 <tr
                   [attr.r]="r"
                   (keydown)="itemKeydown.emit({ item: itemDef.item, event: $event })"
@@ -511,7 +513,7 @@ import { injectElementRef } from "../utils/injectElementRef";
                       }
                     </td>
                   }
-                  @for (columnDef of displayColumnDefs(); let c = $index; track columnDef.control.key()) {
+                  @for (columnDef of displayColumnDefs$.value; let c = $index; track columnDef.control.key()) {
                     <td
                       tabindex="0"
                       [class._fixed]="columnDef.fixed"
@@ -558,10 +560,6 @@ import { injectElementRef } from "../utils/injectElementRef";
       </sd-dock-container>
     </sd-busy-container>
   `,
-  host: {
-    "[attr.sd-inset]": "inset()",
-    "[attr.sd-focus-mode]": "focusMode()",
-  },
 })
 export class SdSheetControl<T> {
   icons = inject(SdAngularConfigProvider).icons;
@@ -632,21 +630,21 @@ export class SdSheetControl<T> {
   /** 셀 키 다운 이벤트 */
   cellKeydown = output<ISdSheetItemKeydownEventParam<T>>();
 
-  #config = $signal<ISdSheetConfig>();
-  #editModeCellAddr = $signal<{ r: number; c: number }>();
-  #resizedWidths = $signal<Record<string, string | undefined>>({});
+  #config$ = $reactive<ISdSheetConfig>();
+  #editModeCellAddr$ = $reactive<{ r: number; c: number }>();
+  #resizedWidths$ = $reactive<Record<string, string | undefined>>({});
 
   #isOnResizing = false;
 
-  displayColumnDefs = $computed((): IColumnDef<T>[] => {
+  displayColumnDefs$ = $computed((): IColumnDef<T>[] => {
     return this.columnControls()
       .map((columnControl) => {
-        const colConf = this.#config()?.columnRecord?.[columnControl.key()];
+        const colConf = this.#config$.value?.columnRecord?.[columnControl.key()];
         return {
           control: columnControl,
           key: columnControl.key(),
           fixed: colConf?.fixed ?? columnControl.fixed(),
-          width: this.#resizedWidths()[columnControl.key()] ?? colConf?.width ?? columnControl.width(),
+          width: this.#resizedWidths$.value[columnControl.key()] ?? colConf?.width ?? columnControl.width(),
           displayOrder: colConf?.displayOrder,
           hidden: colConf?.hidden ?? columnControl.hidden(),
           headerStyle: columnControl.headerStyle(),
@@ -663,7 +661,7 @@ export class SdSheetControl<T> {
       }));
   });
 
-  displayHeaderDefTable = $computed((): (IHeaderDef<T> | undefined)[][] => {
+  displayHeaderDefTable$ = $computed((): (IHeaderDef<T> | undefined)[][] => {
     //-- displayHeaderDefTable
     const tempHeaderDefTable: (
       | {
@@ -676,7 +674,7 @@ export class SdSheetControl<T> {
         }
       | undefined
     )[][] = [];
-    const displayColumnDefs = this.displayColumnDefs();
+    const displayColumnDefs = this.displayColumnDefs$.value;
 
     for (let c = 0; c < displayColumnDefs.length; c++) {
       const columnDef = displayColumnDefs[c];
@@ -793,7 +791,7 @@ export class SdSheetControl<T> {
     return headerDefTable;
   });
 
-  currPageLength = $computed(() => {
+  currPageLength$ = $computed(() => {
     if (this.pageItemCount() != null && this.pageItemCount() !== 0 && this.items().length > 0) {
       return Math.ceil(this.items().length / this.pageItemCount()!);
     } else {
@@ -801,7 +799,7 @@ export class SdSheetControl<T> {
     }
   });
 
-  orderedItems = $computed(() => {
+  orderedItems$ = $computed(() => {
     let orderedItems = [...this.items()];
     if (this.pageItemCount() != null && this.pageItemCount() !== 0) {
       for (const orderingItem of this.ordering().reverse()) {
@@ -815,8 +813,8 @@ export class SdSheetControl<T> {
     return orderedItems;
   });
 
-  orderedPagedItems = $computed(() => {
-    let orderedPagedItems = [...this.orderedItems()];
+  orderedPagedItems$ = $computed(() => {
+    let orderedPagedItems = [...this.orderedItems$.value];
     if (this.pageItemCount() != null && this.pageItemCount() !== 0 && this.items().length > 0) {
       orderedPagedItems = orderedPagedItems.slice(
         this.page() * this.pageItemCount()!,
@@ -826,8 +824,8 @@ export class SdSheetControl<T> {
     return orderedPagedItems;
   });
 
-  displayItemDefs = $computed((): IItemDef<T>[] => {
-    let displayItemDefs: IItemDef<T>[] = this.orderedPagedItems().map((item) => ({
+  displayItemDefs$ = $computed((): IItemDef<T>[] => {
+    let displayItemDefs: IItemDef<T>[] = this.orderedPagedItems$.value.map((item) => ({
       item,
       parentDef: undefined,
       hasChildren: false,
@@ -877,39 +875,40 @@ export class SdSheetControl<T> {
     return displayItemDefs;
   });
 
-  selectableItems = $computed(() => {
+  selectableItems$ = $computed(() => {
     if (this.selectMode()) {
-      return this.displayItemDefs()
-        .filter((item) => this.getIsItemSelectable(item.item))
-        .map((item) => item.item);
+      return this.displayItemDefs$.value.filter((item) => this.getIsItemSelectable(item.item)).map((item) => item.item);
     } else {
       return [];
     }
   });
 
-  hasSelectableItem = $computed(() => this.selectableItems().length > 0);
+  hasSelectableItem$ = $computed(() => this.selectableItems$.value.length > 0);
 
-  isAllItemsSelected = $computed(
+  isAllItemsSelected$ = $computed(
     () =>
-      this.selectableItems().length <= this.selectedItems().length &&
-      this.selectableItems().every((item) => this.selectedItems().includes(item)),
+      this.selectableItems$.value.length <= this.selectedItems().length &&
+      this.selectableItems$.value.every((item) => this.selectedItems().includes(item)),
   );
 
-  expandableItems = $computed(() => this.displayItemDefs().filter((item) => item.hasChildren));
+  expandableItems$ = $computed(() => this.displayItemDefs$.value.filter((item) => item.hasChildren));
 
-  hasExpandableItem = $computed(() => this.expandableItems().length > 0);
+  hasExpandableItem$ = $computed(() => this.expandableItems$.value.length > 0);
 
-  isAllItemsExpanded = $computed(
+  isAllItemsExpanded$ = $computed(
     () =>
-      this.expandableItems().length <= this.expandedItems().length &&
-      this.expandableItems().every((itemDef) => this.expandedItems().includes(itemDef.item)),
+      this.expandableItems$.value.length <= this.expandedItems().length &&
+      this.expandableItems$.value.every((itemDef) => this.expandedItems().includes(itemDef.item)),
   );
 
-  hasSummaryTemplate = $computed(() => this.columnControls().some((item) => item.summaryTemplateRef() !== undefined));
+  hasSummaryTemplate$ = $computed(() => this.columnControls().some((item) => item.summaryTemplateRef() !== undefined));
 
   constructor() {
+    $hostBinding("attr.sd-inset", this.inset);
+    $hostBinding("attr.sd-focus-mode", this.focusMode);
+
     $effect([this.key], async () => {
-      this.#config.set(await this.#sdSystemConfig.getAsync(`sd-sheet.${this.key()}`));
+      this.#config$.value = await this.#sdSystemConfig.getAsync(`sd-sheet.${this.key()}`);
     });
 
     //-- cell sizing
@@ -927,7 +926,7 @@ export class SdSheetControl<T> {
       if (this.selectedItems().length > 0) {
         const selectedTrRects = this.selectedItems()
           .map((item) => {
-            const r = this.displayItemDefs().findIndex((item1) => item1.item === item);
+            const r = this.displayItemDefs$.value.findIndex((item1) => item1.item === item);
             const trEl = sheetContainerEl.findFirst<HTMLTableRowElement>(`> table > tbody > tr[r="${r}"]`);
             if (trEl === undefined) return undefined;
 
@@ -953,7 +952,11 @@ export class SdSheetControl<T> {
   }
 
   getIsCellEditMode(r: number, c: number): boolean {
-    return this.#editModeCellAddr() != null && this.#editModeCellAddr()!.r === r && this.#editModeCellAddr()!.c === c;
+    return (
+      this.#editModeCellAddr$.value != null &&
+      this.#editModeCellAddr$.value.r === r &&
+      this.#editModeCellAddr$.value.c === c
+    );
   }
 
   /**
@@ -1069,7 +1072,7 @@ export class SdSheetControl<T> {
         }
       }
 
-      const item = this.displayItemDefs()[NumberUtil.parseInt(tdEl.getAttribute("r"))!].item;
+      const item = this.displayItemDefs$.value[NumberUtil.parseInt(tdEl.getAttribute("r"))!].item;
       if (this.autoSelect() === "focus" && this.getIsItemSelectable(item)) {
         this.#selectItem(item);
       }
@@ -1095,14 +1098,14 @@ export class SdSheetControl<T> {
     }
 
     if (
-      this.#editModeCellAddr() &&
+      this.#editModeCellAddr$.value &&
       !(
         event.target instanceof HTMLElement &&
         event.relatedTarget instanceof HTMLElement &&
         (event.target.findParent("td") ?? event.target) === event.relatedTarget.findParent("td")
       )
     ) {
-      this.#editModeCellAddr.set(undefined);
+      this.#editModeCellAddr$.value = undefined;
     }
   }
 
@@ -1111,10 +1114,10 @@ export class SdSheetControl<T> {
     if (event.target instanceof HTMLTableCellElement) {
       if (event.key === "F2") {
         event.preventDefault();
-        this.#editModeCellAddr.set({
+        this.#editModeCellAddr$.value = {
           r: NumberUtil.parseInt(event.target.getAttribute("r"))!,
           c: NumberUtil.parseInt(event.target.getAttribute("c"))!,
-        });
+        };
         requestAnimationFrame(() => {
           const focusableEl = (event.target as HTMLElement).findFocusableFirst();
           if (focusableEl) focusableEl.focus();
@@ -1151,7 +1154,7 @@ export class SdSheetControl<T> {
         event.preventDefault();
         tdEl.focus();
 
-        this.#editModeCellAddr.set(undefined);
+        this.#editModeCellAddr$.value = undefined;
       } else if (event.key === "Enter") {
         if (event.target.tagName === "TEXTAREA" || event.target.hasAttribute("contenteditable")) {
           if (event.ctrlKey) {
@@ -1218,7 +1221,7 @@ export class SdSheetControl<T> {
   onFixedCellResize(c: number) {
     const sheetContainerEl = this.#elRef.nativeElement.findFirst("._sheet-container")!;
 
-    const fixedColumnLength = this.displayColumnDefs().filter((item) => item.fixed).length;
+    const fixedColumnLength = this.displayColumnDefs$.value.filter((item) => item.fixed).length;
 
     const nextFixedColumnIndexes = Array(fixedColumnLength - c - 1)
       .fill(0)
@@ -1271,10 +1274,7 @@ export class SdSheetControl<T> {
       resizeIndicatorEl.style.display = "none";
 
       const newWidthPx = Math.max(startWidthPx + e.clientX - startX, 5);
-      this.#resizedWidths.update((v) => ({
-        ...v,
-        [columnControl.key()]: newWidthPx + 1 + "px",
-      }));
+      this.#resizedWidths$.value[columnControl.key()] = newWidthPx + 1 + "px";
 
       await this.#saveColumnConfigAsync(columnControl.key(), {
         width: newWidthPx + "px",
@@ -1290,12 +1290,7 @@ export class SdSheetControl<T> {
   }
 
   async onResizerDoubleClick(event: MouseEvent, columnControl: SdSheetColumnDirective<T>): Promise<void> {
-    this.#resizedWidths.update((v) => {
-      const r = { ...v };
-      delete r[columnControl.key()];
-      return r;
-    });
-
+    delete this.#resizedWidths$.value[columnControl.key()];
     await this.#saveColumnConfigAsync(columnControl.key(), { width: undefined });
   }
 
@@ -1336,10 +1331,10 @@ export class SdSheetControl<T> {
     if (!(event.target instanceof HTMLElement)) return;
     const tdEl = event.target.tagName === "TD" ? event.target : event.target.findParent("td")!;
 
-    this.#editModeCellAddr.set({
+    this.#editModeCellAddr$.value = {
       r: NumberUtil.parseInt(tdEl.getAttribute("r"))!,
       c: NumberUtil.parseInt(tdEl.getAttribute("c"))!,
-    });
+    };
     requestAnimationFrame(() => {
       const focusableEl = tdEl.findFocusableFirst();
       if (focusableEl) focusableEl.focus();
@@ -1347,10 +1342,10 @@ export class SdSheetControl<T> {
   }
 
   onAllItemsSelectIconClick(): void {
-    if (this.isAllItemsSelected()) {
+    if (this.isAllItemsSelected$.value) {
       this.selectedItems.set([]);
     } else {
-      const selectedItems = this.displayItemDefs()
+      const selectedItems = this.displayItemDefs$.value
         .filter((item) => this.getIsItemSelectable(item.item))
         .map((item) => item.item);
 
@@ -1359,12 +1354,10 @@ export class SdSheetControl<T> {
   }
 
   onAllItemsExpandIconClick(): void {
-    if (this.isAllItemsExpanded()) {
+    if (this.isAllItemsExpanded$.value) {
       this.expandedItems.set([]);
     } else {
-      const expandedItems = this.displayItemDefs()
-        .filter((item) => item.hasChildren)
-        .map((item) => item.item);
+      const expandedItems = this.displayItemDefs$.value.filter((item) => item.hasChildren).map((item) => item.item);
 
       this.expandedItems.set(expandedItems);
     }
@@ -1397,7 +1390,7 @@ export class SdSheetControl<T> {
       {
         sheetKey: this.key(),
         controls: this.columnControls(),
-        config: this.#config(),
+        config: this.#config$.value,
       },
       {
         useCloseByBackdrop: true,
@@ -1405,7 +1398,7 @@ export class SdSheetControl<T> {
     );
     if (!result) return;
 
-    this.#config.set(result);
+    this.#config$.value = result;
     await this.#sdSystemConfig.setAsync(`sd-sheet.${this.key()}`, result);
   }
 
@@ -1474,13 +1467,13 @@ export class SdSheetControl<T> {
     if (targetEl) {
       targetEl.focus();
       if (isEditMode) {
-        this.#editModeCellAddr.set({ r: targetAddr.r, c: targetAddr.c });
+        this.#editModeCellAddr$.value = { r: targetAddr.r, c: targetAddr.c };
         requestAnimationFrame(() => {
           const focusableEl = targetEl.findFocusableFirst();
           if (focusableEl) focusableEl.focus();
         });
       } else {
-        this.#editModeCellAddr.set(undefined);
+        this.#editModeCellAddr$.value = undefined;
       }
       return true;
     }
@@ -1492,17 +1485,8 @@ export class SdSheetControl<T> {
    * @private
    */
   async #saveColumnConfigAsync(columnKey: string, config: Partial<IConfigColumn>): Promise<void> {
-    this.#config.update((v) => ({
-      ...v,
-      columnRecord: {
-        ...v?.columnRecord,
-        [columnKey]: {
-          ...v?.columnRecord?.[columnKey],
-          ...config,
-        },
-      },
-    }));
-    await this.#sdSystemConfig.setAsync(`sd-sheet.${this.key()}`, this.#config());
+    Object.assign((this.#config$.value ??= { columnRecord: {} })[columnKey], config);
+    await this.#sdSystemConfig.setAsync(`sd-sheet.${this.key()}`, this.#config$.value);
   }
 }
 

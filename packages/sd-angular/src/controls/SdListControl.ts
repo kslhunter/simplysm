@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
+import { $hostBinding } from "../utils/$hostBinding";
 
 @Component({
   selector: "sd-list",
@@ -28,10 +29,11 @@ import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@a
     `,
   ],
   template: ` <ng-content></ng-content>`,
-  host: {
-    "[attr.sd-inset]": "inset()",
-  },
 })
 export class SdListControl {
   inset = input(false);
+
+  constructor() {
+    $hostBinding("attr.sd-inset", this.inset);
+  }
 }

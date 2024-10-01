@@ -1,7 +1,17 @@
-import { ChangeDetectionStrategy, Component, contentChild, forwardRef, inject, input, TemplateRef, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  contentChild,
+  forwardRef,
+  inject,
+  input,
+  TemplateRef,
+  ViewEncapsulation,
+} from "@angular/core";
 import { SdFormBoxControl } from "./SdFormBoxControl";
 import { NgTemplateOutlet } from "@angular/common";
 import { $computed } from "../utils/$hooks";
+import { $hostBinding } from "../utils/$hostBinding";
 
 @Component({
   selector: "sd-form-box-item",
@@ -110,12 +120,12 @@ import { $computed } from "../utils/$hooks";
           }
         }
       }
-    `
+    `,
   ],
   template: `
     <label
-      [style.width]="labelWidth()"
-      [hidden]="layout() === 'none'"
+      [style.width]="labelWidth$.value"
+      [hidden]="layout$.value === 'none'"
       [attr.title]="labelTooltip()"
       [class.help]="labelTooltip()"
     >
@@ -129,11 +139,6 @@ import { $computed } from "../utils/$hooks";
       <ng-content></ng-content>
     </div>
   `,
-  host: {
-    "[attr.sd-label-align]": "labelAlign()",
-    "[attr.sd-layout]": "layout()",
-    "[attr.sd-no-label]": "label() == null && !labelTemplateRef()"
-  }
 })
 export class SdFormBoxItemControl {
   #parentControl = inject<SdFormBoxControl>(forwardRef(() => SdFormBoxControl));
@@ -143,9 +148,20 @@ export class SdFormBoxItemControl {
 
   labelTemplateRef = contentChild<any, TemplateRef<void>>("label", { read: TemplateRef });
 
-  labelAlign = $computed(() => this.#parentControl.labelAlign());
-  layout = $computed(() => this.#parentControl.layout());
-  labelWidth = $computed(() =>
-    this.#parentControl.layout() === "table" ? this.#parentControl.labelWidth() : undefined
+  layout$ = $computed(() => this.#parentControl.layout());
+  labelWidth$ = $computed(() =>
+    this.#parentControl.layout() === "table" ? this.#parentControl.labelWidth() : undefined,
   );
+
+  constructor() {
+    $hostBinding("attr.sd-layout", this.layout$);
+    $hostBinding(
+      "attr.sd-label-align",
+      $computed(() => this.#parentControl.labelAlign()),
+    );
+    $hostBinding(
+      "attr.sd-no-label",
+      $computed(() => this.label() == null && !this.labelTemplateRef()),
+    );
+  }
 }

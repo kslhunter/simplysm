@@ -6,11 +6,13 @@ import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
-  template: ` <table>
-    <tbody>
-      <ng-content></ng-content>
-    </tbody>
-  </table>`,
+  template: `
+    <table>
+      <tbody>
+        <ng-content></ng-content>
+      </tbody>
+    </table>
+  `,
   styles: [
     /* language=SCSS */ `
       sd-form-table {

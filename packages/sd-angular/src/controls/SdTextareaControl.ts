@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, input, model, ViewEncapsulation } f
 import { StringUtil } from "@simplysm/sd-core-common";
 import { $computed } from "../utils/$hooks";
 import { injectElementRef } from "../utils/injectElementRef";
+import { $hostBinding } from "../utils/$hostBinding";
 
 @Component({
   selector: "sd-textarea",
@@ -139,10 +140,9 @@ import { injectElementRef } from "../utils/injectElementRef";
           }
         }
       }
-    `
+    `,
   ],
-  template: `
-    <div
+  template: ` <div
       [style]="inputStyle()"
       [class]="['_contents', inputClass()].filterExists().join(' ')"
       [attr.title]="title() ?? placeholder()"
@@ -168,15 +168,6 @@ import { injectElementRef } from "../utils/injectElementRef";
     }
 
     <div class="_invalid-indicator"></div>`,
-  host: {
-    "[attr.sd-disabled]": "disabled()",
-    "[attr.sd-readonly]": "readonly()",
-    "[attr.sd-inline]": "inline()",
-    "[attr.sd-inset]": "inset()",
-    "[attr.sd-size]": "size()",
-    "[attr.sd-theme]": "theme()",
-    "[attr.sd-invalid]": "errorMessage()"
-  }
 })
 export class SdTextareaControl {
   #elRef = injectElementRef<HTMLElement>();
@@ -197,7 +188,7 @@ export class SdTextareaControl {
   inputStyle = input<string>();
   inputClass = input<string>();
 
-  errorMessage = $computed(() => {
+  errorMessage$ = $computed(() => {
     const errorMessages: string[] = [];
     if (this.value() == null) {
       if (this.required()) {
@@ -221,6 +212,16 @@ export class SdTextareaControl {
 
     return StringUtil.isNullOrEmpty(fullErrorMessage) ? undefined : fullErrorMessage;
   });
+
+  constructor() {
+    $hostBinding("attr.sd-disabled", this.disabled);
+    $hostBinding("attr.sd-readonly", this.readonly);
+    $hostBinding("attr.sd-inline", this.inline);
+    $hostBinding("attr.sd-inset", this.inset);
+    $hostBinding("attr.sd-size", this.size);
+    $hostBinding("attr.sd-theme", this.theme);
+    $hostBinding("attr.sd-invalid", this.errorMessage$);
+  }
 
   onInput(event: Event): void {
     const inputEl = event.target as HTMLInputElement;

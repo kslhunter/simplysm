@@ -10,6 +10,7 @@ import {
 import { SdEventsDirective } from "../directives/SdEventsDirective";
 import { StringUtil } from "@simplysm/sd-core-common";
 import { $computed, $effect } from "../utils/$hooks";
+import { $hostBinding } from "../utils/$hostBinding";
 
 @Component({
   selector: "sd-content-editor",
@@ -139,14 +140,6 @@ import { $computed, $effect } from "../utils/$hooks";
     ></div>
     <div class="_invalid-indicator"></div>
   `,
-  host: {
-    "[attr.sd-disabled]": "disabled()",
-    "[attr.sd-readonly]": "readonly()",
-    "[attr.sd-inline]": "inline()",
-    "[attr.sd-inset]": "inset()",
-    "[attr.sd-size]": "size()",
-    "[attr.sd-invalid]": "errorMessage()",
-  },
 })
 export class SdContentEditorControl {
   value = model<string>();
@@ -164,22 +157,31 @@ export class SdContentEditorControl {
 
   editorElRef = viewChild.required<any, ElementRef<HTMLDivElement>>("editorEl", { read: ElementRef });
 
-  errorMessage = $computed(() => {
-    const errorMessages: string[] = [];
-    if (this.value() == null && this.required()) {
-      errorMessages.push("값을 입력하세요.");
-    } else if (this.validatorFn()) {
-      const message = this.validatorFn()!(this.value());
-      if (message !== undefined) {
-        errorMessages.push(message);
-      }
-    }
-
-    const fullErrorMessage = errorMessages.join("\r\n");
-    return StringUtil.isNullOrEmpty(fullErrorMessage) ? undefined : fullErrorMessage;
-  });
-
   constructor() {
+    $hostBinding("attr.sd-disabled", this.disabled);
+    $hostBinding("attr.sd-readonly", this.readonly);
+    $hostBinding("attr.sd-inline", this.inline);
+    $hostBinding("attr.sd-inset", this.inset);
+    $hostBinding("attr.sd-size", this.size);
+
+    $hostBinding(
+      "attr.sd-invalid",
+      $computed(() => {
+        const errorMessages: string[] = [];
+        if (this.value() == null && this.required()) {
+          errorMessages.push("값을 입력하세요.");
+        } else if (this.validatorFn()) {
+          const message = this.validatorFn()!(this.value());
+          if (message !== undefined) {
+            errorMessages.push(message);
+          }
+        }
+
+        const fullErrorMessage = errorMessages.join("\r\n");
+        return StringUtil.isNullOrEmpty(fullErrorMessage) ? undefined : fullErrorMessage;
+      }),
+    );
+
     $effect(() => {
       const innerHTML = this.editorElRef().nativeElement.innerHTML;
       if (innerHTML !== this.value()) {

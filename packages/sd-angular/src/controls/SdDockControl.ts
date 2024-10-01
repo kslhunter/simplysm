@@ -1,8 +1,10 @@
 import { ChangeDetectionStrategy, Component, HostListener, inject, input, ViewEncapsulation } from "@angular/core";
 import { SdSystemConfigProvider } from "../providers/SdSystemConfigProvider";
 import { ISdResizeEvent } from "../plugins/SdResizeEventPlugin";
-import { $effect, $signal } from "../utils/$hooks";
+import { $effect } from "../utils/$hooks";
 import { injectElementRef } from "../utils/injectElementRef";
+import { $hostBinding } from "../utils/$hostBinding";
+import { $reactive } from "../utils/$reactive";
 
 @Component({
   selector: "sd-dock",
@@ -72,10 +74,6 @@ import { injectElementRef } from "../utils/injectElementRef";
       <div class="_resize-bar" (mousedown)="onResizeBarMousedown($event)"></div>
     }
   `,
-  host: {
-    "[attr.sd-position]": "position()",
-    "[attr.sd-resizable]": "resizable()",
-  },
 })
 export class SdDockControl {
   #sdSystemConfig = inject(SdSystemConfigProvider);
@@ -85,17 +83,20 @@ export class SdDockControl {
   position = input<"top" | "bottom" | "right" | "left">("top");
   resizable = input(false);
 
-  size = $signal(0);
+  size$ = $reactive(0);
 
-  #config = $signal<{ size?: string }>();
+  #config$ = $reactive<{ size?: string }>();
 
   constructor() {
+    $hostBinding("attr.sd-position", this.position);
+    $hostBinding("attr.sd-resizable", this.resizable);
+
     $effect([this.key], async () => {
-      this.#config.set(await this.#sdSystemConfig.getAsync(`sd-dock.${this.key()}`));
+      this.#config$ = await this.#sdSystemConfig.getAsync(`sd-dock.${this.key()}`);
     });
 
     $effect(() => {
-      const conf = this.#config();
+      const conf = this.#config$.value;
       if (this.resizable() && conf && conf.size != null) {
         if (["right", "left"].includes(this.position())) {
           this.#elRef.nativeElement.style.width = conf.size;
@@ -114,10 +115,10 @@ export class SdDockControl {
   @HostListener("sdResize", ["$event"])
   onResize(event: ISdResizeEvent) {
     if (["top", "bottom"].includes(this.position()) && event.heightChanged) {
-      this.size.set(this.#elRef.nativeElement.offsetHeight);
+      this.size$.value = this.#elRef.nativeElement.offsetHeight;
     }
     if (["right", "left"].includes(this.position()) && event.widthChanged) {
-      this.size.set(this.#elRef.nativeElement.offsetWidth);
+      this.size$.value = this.#elRef.nativeElement.offsetWidth;
     }
   }
 
@@ -159,7 +160,7 @@ export class SdDockControl {
         } else {
           newConf.size = thisEl.style.height;
         }
-        this.#config.set(newConf);
+        this.#config$.value = newConf;
         await this.#sdSystemConfig.setAsync(`sd-dock.${this.key()}`, newConf);
       }
     };

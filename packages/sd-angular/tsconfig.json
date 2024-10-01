@@ -1,5 +1,5 @@
 {
-  "extends": "../tsconfig.json",
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "lib": ["ES2021", "DOM"],
     "outDir": "./dist",
@@ -9,7 +9,7 @@
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
     "strictInjectionParameters": true,
-    "strictInputAccessModifiers": false,
+    "strictInputAccessModifiers": true,
     "strictTemplates": true
   }
 }

@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, HostListener, input, model, ViewEnc
 import { DateOnly, DateTime, JsonConvert, NumberUtil, StringUtil, Time } from "@simplysm/sd-core-common";
 import { $computed } from "../utils/$hooks";
 import { injectElementRef } from "../utils/injectElementRef";
+import { $hostBinding } from "../utils/$hostBinding";
 
 @Component({
   selector: "sd-textfield",
@@ -318,11 +319,11 @@ import { injectElementRef } from "../utils/injectElementRef";
       [attr.title]="title() ?? placeholder()"
       [style.visibility]="!readonly() && !disabled() ? 'hidden' : undefined"
     >
-      @if (controlType() === "password") {
+      @if (controlType$.value === "password") {
         <span class="tx-trans-light">****</span>
       } @else {
-        @if (controlValue()) {
-          <pre>{{ controlValueText() }}</pre>
+        @if (controlValue$.value) {
+          <pre>{{ controlValueText$.value }}</pre>
         } @else {
           <div class="tx-trans-lighter">{{ placeholder() }}</div>
         }
@@ -330,15 +331,15 @@ import { injectElementRef } from "../utils/injectElementRef";
     </div>
     @if (!readonly() && !disabled()) {
       <input
-        [type]="controlType()"
-        [value]="controlValue()"
+        [type]="controlType$.value"
+        [value]="controlValue$.value"
         [attr.placeholder]="placeholder()"
         [required]="required()"
-        [attr.min]="controlMin()"
-        [attr.max]="controlMax()"
+        [attr.min]="controlMin$.value"
+        [attr.max]="controlMax$.value"
         [attr.minlength]="minlength()"
         [attr.maxlength]="maxlength()"
-        [attr.step]="controlStep()"
+        [attr.step]="controlStep$.value"
         [attr.pattern]="pattern()"
         [attr.title]="title() ?? placeholder()"
         (input)="onInput($event)"
@@ -350,16 +351,6 @@ import { injectElementRef } from "../utils/injectElementRef";
 
     <div class="_invalid-indicator"></div>
   `,
-  host: {
-    "[attr.sd-type]": "type()",
-    "[attr.sd-disabled]": "disabled()",
-    "[attr.sd-readonly]": "readonly()",
-    "[attr.sd-inline]": "inline()",
-    "[attr.sd-inset]": "inset()",
-    "[attr.sd-size]": "size()",
-    "[attr.sd-theme]": "theme()",
-    "[attr.sd-invalid]": "errorMessage()",
-  },
 })
 export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
   #elRef = injectElementRef<HTMLElement>();
@@ -390,7 +381,7 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
   format = input<string>();
   useNumberComma = input(true);
 
-  controlType = $computed(() => {
+  controlType$ = $computed(() => {
     return this.type() === "number"
       ? "text"
       : this.type() === "format"
@@ -404,11 +395,11 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
               : this.type();
   });
 
-  controlValue = $computed(() => {
+  controlValue$ = $computed(() => {
     return this.#convertToControlValue(this.value());
   });
 
-  controlValueText = $computed(() => {
+  controlValueText$ = $computed(() => {
     const type = this.type();
     const value = this.value();
 
@@ -421,11 +412,11 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
     } else if (type === "time-sec" && (value instanceof DateTime || value instanceof Time)) {
       return value.toFormatString("tt hh:mm:ss");
     } else {
-      return this.controlValue();
+      return this.controlValue$.value;
     }
   });
 
-  controlStep = $computed(() => {
+  controlStep$ = $computed(() => {
     if (this.step() !== undefined) {
       return this.step();
     } else if (this.type() === "datetime-sec" || this.type() === "time-sec") {
@@ -435,7 +426,7 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
     }
   });
 
-  controlMin = $computed(() => {
+  controlMin$ = $computed(() => {
     const min = this.min();
     if (min instanceof DateOnly) {
       return min.toFormatString("yyyy-MM-dd");
@@ -444,7 +435,7 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
     }
   });
 
-  controlMax = $computed(() => {
+  controlMax$ = $computed(() => {
     const max = this.max();
     if (max instanceof DateOnly) {
       return max.toFormatString("yyyy-MM-dd");
@@ -453,7 +444,7 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
     }
   });
 
-  errorMessage = $computed(() => {
+  errorMessage$ = $computed(() => {
     const value = this.value();
 
     const errorMessages: string[] = [];
@@ -528,6 +519,17 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
 
     return StringUtil.isNullOrEmpty(fullErrorMessage) ? undefined : fullErrorMessage;
   });
+
+  constructor() {
+    $hostBinding("attr.sd-type", this.type);
+    $hostBinding("attr.sd-disabled", this.disabled);
+    $hostBinding("attr.sd-readonly", this.readonly);
+    $hostBinding("attr.sd-inline", this.inline);
+    $hostBinding("attr.sd-inset", this.inset);
+    $hostBinding("attr.sd-size", this.size);
+    $hostBinding("attr.sd-theme", this.theme);
+    $hostBinding("attr.sd-invalid", this.errorMessage$);
+  }
 
   onInput(event: Event) {
     const inputEl = event.target as HTMLInputElement;

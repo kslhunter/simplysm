@@ -1,13 +1,14 @@
-import {ChangeDetectionStrategy, Component, input, ViewEncapsulation} from "@angular/core";
-import {SdListControl} from "./SdListControl";
-import {NgTemplateOutlet} from "@angular/common";
-import {SdTypedTemplateDirective} from "../directives/SdTypedTemplateDirective";
-import {SdListItemControl} from "./SdListItemControl";
-import {SdRouterLinkDirective} from "../directives/SdRouterLinkDirective";
-import {IconDefinition} from "@fortawesome/fontawesome-svg-core";
-import {FaIconComponent} from "@fortawesome/angular-fontawesome";
-import {injectPageCode$} from "../utils/injectPageCode$";
-import {$computed} from "../utils/$hooks";
+import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
+import { SdListControl } from "./SdListControl";
+import { NgTemplateOutlet } from "@angular/common";
+import { SdTypedTemplateDirective } from "../directives/SdTypedTemplateDirective";
+import { SdListItemControl } from "./SdListItemControl";
+import { SdRouterLinkDirective } from "../directives/SdRouterLinkDirective";
+import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
+import { FaIconComponent } from "@fortawesome/angular-fontawesome";
+import { injectPageCode$ } from "../utils/injectPageCode$";
+import { $computed } from "../utils/$hooks";
+import { $hostBinding } from "../utils/$hostBinding";
 
 @Component({
   selector: "sd-sidebar-menu",
@@ -20,7 +21,7 @@ import {$computed} from "../utils/$hooks";
     SdTypedTemplateDirective,
     SdListItemControl,
     SdRouterLinkDirective,
-    FaIconComponent
+    FaIconComponent,
   ],
   styles: [
     /* language=SCSS */ `
@@ -63,10 +64,10 @@ import {$computed} from "../utils/$hooks";
           }
         }
       }
-    `
+    `,
   ],
   template: `
-    @if (rootLayout() === "accordion") {
+    @if (rootLayout$.value === "accordion") {
       <h5 class="_title">MENU</h5>
     }
     <sd-list [inset]="true">
@@ -83,17 +84,17 @@ import {$computed} from "../utils/$hooks";
           [sdRouterLink]="menu.children || menu.url ? undefined : ['/home/' + menu.codeChain.join('/')]"
           (click)="onMenuClick(menu)"
           [selected]="getIsMenuSelected(menu)"
-          [layout]="depth === 0 ? rootLayout() : 'accordion'"
+          [layout]="depth === 0 ? rootLayout$.value : 'accordion'"
         >
           @if (menu.icon) {
-            <fa-icon [icon]="menu.icon" [fixedWidth]="true"/>
+            <fa-icon [icon]="menu.icon" [fixedWidth]="true" />
             &nbsp;
           }
           {{ menu.title }}
           @if (menu.children) {
             <sd-list
               [inset]="true"
-              [style.padding-left]="(depth + 1 - (rootLayout() === 'accordion' ? 0 : 1)) * 6 + 'px'"
+              [style.padding-left]="(depth + 1 - (rootLayout$.value === 'accordion' ? 0 : 1)) * 6 + 'px'"
             >
               <ng-template
                 [ngTemplateOutlet]="itemTemplate"
@@ -108,23 +109,24 @@ import {$computed} from "../utils/$hooks";
       }
     </ng-template>
   `,
-  host: {
-    "[attr.sd-root-layout]": "rootLayout()"
-  }
 })
 export class SdSidebarMenuControl {
   menus = input<ISdSidebarMenuVM[]>([]);
   layout = input<"accordion" | "flat">();
   getMenuIsSelectedFn = input<(menu: ISdSidebarMenuVM) => boolean>();
 
-  pageCode = injectPageCode$();
+  pageCode$ = injectPageCode$();
 
-  rootLayout = $computed(() => this.layout() ?? (this.menus().length <= 3 ? "flat" : "accordion"));
+  rootLayout$ = $computed(() => this.layout() ?? (this.menus().length <= 3 ? "flat" : "accordion"));
 
   getIsMenuSelected(menu: ISdSidebarMenuVM) {
     return this.getMenuIsSelectedFn()
       ? this.getMenuIsSelectedFn()!(menu)
-      : this.pageCode() === menu.codeChain.join(".");
+      : this.pageCode$.value === menu.codeChain.join(".");
+  }
+
+  constructor() {
+    $hostBinding("attr.sd-root-layout", this.rootLayout$);
   }
 
   onMenuClick(menu: ISdSidebarMenuVM): void {
