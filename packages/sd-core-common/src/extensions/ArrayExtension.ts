@@ -122,6 +122,8 @@ declare global {
 
     remove(selector: (item: T, index: number) => boolean): this;
 
+    toggle(item: T): this;
+
     clear(): this;
   }
 
@@ -805,6 +807,15 @@ declare global {
       }
     }
 
+    return this;
+  };
+
+  prototype.toggle = function <T>(this: T[], item: T): T[] {
+    if (this.includes(item)) {
+      this.remove(item);
+    } else {
+      this.push(item);
+    }
     return this;
   };
 

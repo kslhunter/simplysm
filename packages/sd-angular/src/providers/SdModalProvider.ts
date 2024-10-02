@@ -1,10 +1,12 @@
-import { ApplicationRef, createComponent, Directive, inject, Injectable, input, Type } from "@angular/core";
+import { ApplicationRef, createComponent, Directive, inject, Injectable, Injector, input, Type } from "@angular/core";
 import { SdModalControl } from "../controls/SdModalControl";
 import { $signal } from "../utils/$hooks";
+import { SdBusyProvider } from "./SdBusyProvider";
 
 @Injectable({ providedIn: "root" })
 export class SdModalProvider {
   #appRef = inject(ApplicationRef);
+  #sdBusy = inject(SdBusyProvider);
 
   modalCount = $signal(0);
 
@@ -27,16 +29,33 @@ export class SdModalProvider {
       mobileFillDisabled?: boolean;
     },
   ): Promise<T["__tOutput__"] | undefined> {
+    let isFirstOpen = true;
+
+    this.#sdBusy.globalBusyCount.update((v) => v + 1);
+
     return await new Promise<T["__tOutput__"] | undefined>((resolve, reject) => {
+      //-- Provider
+      const provider = new SdActivatedModalProvider();
+
       //-- component
       const compRef = createComponent(modalType, {
         environmentInjector: this.#appRef.injector,
+        elementInjector: Injector.create({
+          parent: this.#appRef.injector,
+          providers: [{ provide: SdActivatedModalProvider, useValue: provider }],
+        }),
       });
+      provider.content = compRef.instance;
 
       const modalRef = createComponent(SdModalControl, {
         environmentInjector: this.#appRef.injector,
         projectableNodes: [[compRef.location.nativeElement]],
+        elementInjector: Injector.create({
+          parent: this.#appRef.injector,
+          providers: [{ provide: SdActivatedModalProvider, useValue: provider }],
+        }),
       });
+      provider.modal = modalRef.instance;
 
       const modalEl = modalRef.location.nativeElement as HTMLElement;
 
@@ -67,6 +86,10 @@ export class SdModalProvider {
       compRef.instance.open = () => {
         modalRef.instance.open.set(true);
         modalRef.instance.dialogElRef().nativeElement.focus();
+        if (isFirstOpen) {
+          isFirstOpen = false;
+          this.#sdBusy.globalBusyCount.update((v) => v - 1);
+        }
       };
 
       this.#appRef.attachView(compRef.hostView);
@@ -96,7 +119,9 @@ export class SdModalProvider {
 
       this.modalCount.update((v) => v + 1);
 
-      // TODO: Global Busy
+      if (compRef.instance.__openPreserved__) {
+        compRef.instance.open();
+      }
     });
   }
 }
@@ -105,15 +130,22 @@ export class SdModalProvider {
 export abstract class SdModalBase<I, O> {
   __tInput__!: I;
   __tOutput__!: O;
+  __openPreserved__?: boolean;
 
   title = input.required<string>();
   params = input.required<I>();
 
   open() {
-    throw new Error("모달이 초기화되어있지 않습니다.");
+    this.__openPreserved__ = true;
   }
 
   close(value?: O): void {
     throw new Error("모달이 초기화되어있지 않습니다.");
   }
+}
+
+@Injectable()
+export class SdActivatedModalProvider {
+  modal!: SdModalControl;
+  content!: SdModalBase<any, any>;
 }

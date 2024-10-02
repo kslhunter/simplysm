@@ -10,7 +10,7 @@ export class SdTsLibBundler {
 
   readonly #pkgPath: string;
 
-  public constructor(pkgPath: string, dev: boolean) {
+  public constructor(pkgPath: string, dev: boolean, watchScopePaths: string[]) {
     this.#pkgPath = pkgPath;
     this.#compiler = new SdTsCompiler({
       pkgPath,
@@ -18,6 +18,7 @@ export class SdTsLibBundler {
       isDevMode: dev,
       globalStyleFilePath: path.resolve(pkgPath, "src/styles.scss"),
       isForBundle: false,
+      watchScopePaths: watchScopePaths,
     });
   }
 

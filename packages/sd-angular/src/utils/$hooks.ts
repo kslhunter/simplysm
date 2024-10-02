@@ -153,103 +153,19 @@ export function $computed(...args: any): Signal<any> {
 
     return resultSig;
   } else {
-    /*const sig = computed(() => fn());
-    Object.defineProperty(sig, "value", {
-      get() {
-        return sig();
-      },
-      configurable: false,
-      enumerable: true
-    });
-    return sig as any;*/
     return computed(() => fn());
   }
 }
 
-// https://github.com/angular/angular/blob/main/packages/core/primitives/signals/src/signal.ts#L105
-/*export function mark(sig: WritableSignal<any>) {
-  const node = sig[SIGNAL] as any;
-  node.version++;
-  producerIncrementEpoch();
-  producerNotifyConsumers(node);
-  runPostSignalSetFn();
-}*/
-
-// type InjectedSignals<T> = {
-//   [P in keyof T as T[P] extends Signal<any> ? P : never]: T[P] extends Signal<infer U> ? U : never;
-// }
-//
-// export function injectSignals<T extends Type<any>>(type: T, component: InstanceType<T>): InjectedSignals<InstanceType<T>> {
-//   const result = {} as any;
-//   for (const key of Object.keys(component)) {
-//     if (
-//       typeof component[key] === "function" && (
-//         (component[key].toString() as string).startsWith("[Signal: ") ||
-//         (component[key].toString() as string).startsWith("[Input Signal: ") ||
-//         (component[key].toString() as string).startsWith("[Model Signal: ") ||
-//         (component[key].toString() as string).startsWith("[Computed: ")
-//       )
-//     ) {
-//       Object.defineProperty(result, key, {
-//         get() {
-//           return component[key]();
-//         },
-//         enumerable: true,
-//         configurable: false
-//       });
-//     }
-//   }
-//
-//   return result;
-//   // const reflect = reflectComponentType(component.constructor as Type<T>);
-//
-//   // const result = {} as any;
-//   // for (const inp of reflect!.inputs) {
-//   //   Object.defineProperty(result, inp.propName, {
-//   //     get() {
-//   //       return component[inp.propName]();
-//   //     },
-//   //     enumerable: true,
-//   //     configurable: false
-//   //   });
-//   // }
-//   //
-//   // return result;
-// }
-
 /*
-export function getter<F extends (...args: any[]) => any>(fn: F): F {
-  const injector = inject(Injector);
-  const sigCaches: {
-    args: any[];
-    sig: Signal<any>;
-  }[] = [];
+export function $getter<F extends (...args: any[]) => any>(fn: F): F {
+  const sigCache = new TreeMap<{ value: any }>();
 
   return ((...args) => {
-    // JSON을 써야할듯.... 같은 object인데 내부 값이 바뀐것도 감지할 필요가 있음..
-    const sigCache = sigCaches.single((item) => {
-      if (args.length !== item.args.length) return false;
-
-      for (let i = 0; i < args.length; i++) {
-        if (args[i] !== item.args[i]) {
-          return false;
-        }
-      }
-      return true;
-    });
-
-    if (sigCache) {
-      return sigCache.sig();
-    }
-
-    return runInInjectionContext(injector, () => {
-      const newSigCache = {
-        args: args,
-        sig: computed(() => fn(...args)),
-      };
-      sigCaches.push();
-      return newSigCache.sig();
-    });
+    return sigCache.getOrCreate(
+      args,
+      $computed(() => fn(args)),
+    ).value;
   }) as F;
 }
 */

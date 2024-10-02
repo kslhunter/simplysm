@@ -157,6 +157,8 @@ export class SdSheetConfigModal<T> extends SdModalBase<ISdSheetConfigModalInput<
       }
 
       this.items.set(items.orderBy((item) => item.displayOrder).orderBy((item) => (item.fixed ? -1 : 0)));
+
+      this.open();
     });
   }
 

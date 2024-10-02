@@ -25,8 +25,8 @@
     "noUnusedLocals": false,
     "baseUrl": ".",
     "paths": {
-      "@simplysm/*": ["./*/src/index.ts", "./*/types/index.d.ts"],
-      "@simplysm/ts-transformer-keys/transformer": ["./ts-transformer-keys/src/transformer.ts"]
+      "@simplysm/*": ["./packages/*/src/index.ts", "./*/types/index.d.ts"],
+      "@simplysm/ts-transformer-keys/transformer": ["./packages/ts-transformer-keys/src/transformer.ts"]
     }
   }
 }

@@ -68,6 +68,8 @@ export class SdAddressSearchModal extends SdModalBase<undefined, IAddress> {
         width: "100%",
         height: "100%",
       }).embed(contentEl, { autoClose: false });
+
+      this.open();
     });
   }
 }

@@ -116,6 +116,10 @@ export class SdCliClientBuilder extends EventEmitter {
     affectedFileSet: Set<string>;
     buildResults: ISdCliPackageBuildResult[];
   }> {
+    const localUpdatePaths = Object.keys(this._projConf.localUpdates ?? {}).mapMany((key) =>
+      FsUtil.glob(path.resolve(this._pkgPath, "../../node_modules", key)),
+    );
+
     const builderTypes = Object.keys(this._pkgConf.builder ?? { web: {} }) as ("web" | "electron" | "cordova")[];
     if (this._pkgConf.builder?.cordova && !this._cordova) {
       this._debug("CORDOVA 준비...");
@@ -148,6 +152,7 @@ export class SdCliClientBuilder extends EventEmitter {
               ...this._pkgConf.builder?.[builderType]?.env,
             },
             cordovaConfig: builderType === "cordova" ? this._pkgConf.builder!.cordova : undefined,
+            watchScopePaths: [path.resolve(this._pkgPath, "../"), ...localUpdatePaths],
           }),
       );
     }
@@ -184,9 +189,6 @@ export class SdCliClientBuilder extends EventEmitter {
     }
 
     this._debug(`빌드 완료`);
-    const localUpdatePaths = Object.keys(this._projConf.localUpdates ?? {}).mapMany((key) =>
-      FsUtil.glob(path.resolve(this._pkgPath, "../../node_modules", key)),
-    );
     const currWatchFileSet = new Set(
       Array.from(watchFileSet).filter(
         (item) =>

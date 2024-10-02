@@ -36,7 +36,7 @@ import {ChangeDetectionStrategy, Component, ViewEncapsulation} from "@angular/co
         }
       }
     }
-
+    
     @keyframes sd-card {
       from {
         opacity: 0;

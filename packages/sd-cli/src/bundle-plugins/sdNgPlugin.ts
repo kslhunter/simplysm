@@ -5,13 +5,23 @@ import os from "os";
 import { ISdTsCompilerResult, SdTsCompiler } from "../build-tools/SdTsCompiler";
 import { JavaScriptTransformer } from "@angular/build/src/tools/esbuild/javascript-transformer";
 import { convertTypeScriptDiagnostic } from "@angular/build/src/tools/esbuild/angular/diagnostics";
+import { SdCliPerformanceTimer } from "../utils/SdCliPerformanceTime";
+import { Logger } from "@simplysm/sd-core-node";
 
 export function sdNgPlugin(conf: {
   pkgPath: string;
   dev: boolean;
   modifiedFileSet: Set<string>;
   result: INgPluginResultCache;
+  watchScopePaths: string[];
 }): esbuild.Plugin {
+  let perf: SdCliPerformanceTimer;
+  const logger = Logger.get(["simplysm", "sd-cli", "sdNgPlugin"]);
+
+  function debug(...msg: any[]): void {
+    logger.debug(`[${path.basename(conf.pkgPath)}]`, ...msg);
+  }
+
   return {
     name: "sd-ng-compiler",
     setup: (build: esbuild.PluginBuild) => {
@@ -20,6 +30,7 @@ export function sdNgPlugin(conf: {
         additionalOptions: { declaration: false },
         isDevMode: conf.dev,
         isForBundle: true,
+        watchScopePaths: conf.watchScopePaths,
       });
 
       let buildResult: ISdTsCompilerResult;
@@ -39,32 +50,39 @@ export function sdNgPlugin(conf: {
       //---------------------------
 
       build.onStart(async () => {
-        compiler.invalidate(conf.modifiedFileSet);
-        for (const modifiedFile of conf.modifiedFileSet) {
-          outputContentsCacheMap.delete(modifiedFile);
-        }
+        perf = new SdCliPerformanceTimer("esbuild");
 
-        buildResult = await compiler.buildAsync();
+        const res = await perf.run("typescript build", async () => {
+          compiler.invalidate(conf.modifiedFileSet);
+          for (const modifiedFile of conf.modifiedFileSet) {
+            outputContentsCacheMap.delete(modifiedFile);
+          }
 
-        conf.result.watchFileSet = buildResult.watchFileSet;
-        conf.result.affectedFileSet = buildResult.affectedFileSet;
-        conf.result.program = buildResult.program;
+          buildResult = await compiler.buildAsync();
 
-        //-- return err/warn
-        return {
-          errors: [
-            ...buildResult.typescriptDiagnostics
-              .filter((item) => item.category === ts.DiagnosticCategory.Error)
-              .map((item) => convertTypeScriptDiagnostic(ts, item)),
-            ...Array.from(buildResult.stylesheetBundlingResultMap.values()).flatMap((item) => item.errors),
-          ].filterExists(),
-          warnings: [
-            ...buildResult.typescriptDiagnostics
-              .filter((item) => item.category !== ts.DiagnosticCategory.Error)
-              .map((item) => convertTypeScriptDiagnostic(ts, item)),
-            // ...Array.from(buildResult.stylesheetResultMap.values()).flatMap(item => item.warnings)
-          ],
-        };
+          conf.result.watchFileSet = buildResult.watchFileSet;
+          conf.result.affectedFileSet = buildResult.affectedFileSet;
+          conf.result.program = buildResult.program;
+
+          //-- return err/warn
+          return {
+            errors: [
+              ...buildResult.typescriptDiagnostics
+                .filter((item) => item.category === ts.DiagnosticCategory.Error)
+                .map((item) => convertTypeScriptDiagnostic(ts, item)),
+              ...Array.from(buildResult.stylesheetBundlingResultMap.values()).flatMap((item) => item.errors),
+            ].filterExists(),
+            warnings: [
+              ...buildResult.typescriptDiagnostics
+                .filter((item) => item.category !== ts.DiagnosticCategory.Error)
+                .map((item) => convertTypeScriptDiagnostic(ts, item)),
+              // ...Array.from(buildResult.stylesheetResultMap.values()).flatMap(item => item.warnings)
+            ],
+          };
+        });
+
+        perf.start("transform & bundling");
+        return res;
       });
 
       build.onLoad({ filter: /\.ts$/ }, async (args) => {
@@ -132,6 +150,9 @@ export function sdNgPlugin(conf: {
       );
 
       build.onEnd((result) => {
+        perf.end("transform & bundling");
+        debug(perf.toString());
+
         for (const { outputFiles, metafile } of buildResult.stylesheetBundlingResultMap.values()) {
           result.outputFiles = result.outputFiles ?? [];
           result.outputFiles.push(...outputFiles);

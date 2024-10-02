@@ -46,6 +46,9 @@ import { ISdResizeEvent } from "../plugins/SdResizeEventPlugin";
           > ._drag-position {
             pointer-events: auto;
           }
+          > sd-card {
+            pointer-events: none;
+          }
         }
 
         > ._drop-position {
@@ -99,7 +102,7 @@ import { ISdResizeEvent } from "../plugins/SdResizeEventPlugin";
     </sd-card>
   `,
   host: {
-    "[attr.sd-dragging-this]": "dragKanban() == this",
+    "[attr.sd-dragging-this]": "dragKanban() === this",
     "[attr.sd-dragging]": "dragKanban() != null",
     "[attr.sd-drag-over]": "dragOvered()",
   },

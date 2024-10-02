@@ -9,7 +9,7 @@ import {
   input,
   model,
   TemplateRef,
-  ViewEncapsulation,
+  ViewEncapsulation
 } from "@angular/core";
 import { SdBusyContainerControl } from "./SdBusyContainerControl";
 import { SdKanbanControl } from "./SdKanbanControl";
