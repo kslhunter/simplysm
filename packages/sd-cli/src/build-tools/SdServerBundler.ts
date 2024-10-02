@@ -1,9 +1,9 @@
-import { ISdCliPackageBuildResult } from "../commons";
+import {ISdCliPackageBuildResult} from "../commons";
 import esbuild from "esbuild";
 import path from "path";
-import { IServerPluginResultCache, sdServerPlugin } from "../bundle-plugins/sdServerPlugin";
+import {IServerPluginResultCache, sdServerPlugin} from "../bundle-plugins/sdServerPlugin";
 import ts from "typescript";
-import { Logger } from "@simplysm/sd-core-node";
+import {Logger} from "@simplysm/sd-core-node";
 
 export class SdServerBundler {
   readonly #logger = Logger.get(["simplysm", "sd-cli", "SdServerBundler"]);
@@ -13,15 +13,13 @@ export class SdServerBundler {
   #modifiedFileSet = new Set<string>();
   #resultCache: IServerPluginResultCache = {};
 
-  constructor(
-    private readonly _opt: {
-      dev: boolean;
-      pkgPath: string;
-      entryPoints: string[];
-      external?: string[];
-      watchScopePaths: string[];
-    },
-  ) {}
+  constructor(private readonly _opt: {
+    dev: boolean;
+    pkgPath: string;
+    entryPoints: string[];
+    external?: string[];
+  }) {
+  }
 
   public markForChanges(filePaths: string[]): void {
     for (const filePath of filePaths) {
@@ -42,7 +40,7 @@ export class SdServerBundler {
         bundle: true,
         sourcemap: true, //this._opt.dev,
         target: "node18",
-        mainFields: ["es2020", "es2015", "module", "main"],
+        mainFields: ['es2020', 'es2015', 'module', 'main'],
         conditions: ["es2020", "es2015", "module"],
         tsconfig: path.resolve(this._opt.pkgPath, "tsconfig.json"),
         write: true,
@@ -76,7 +74,7 @@ export class SdServerBundler {
           ".pfx": "file",
           ".pkl": "file",
           ".mp3": "file",
-          ".ogg": "file",
+          ".ogg": "file"
         },
         platform: "node",
         logLevel: "silent",
@@ -89,24 +87,24 @@ import { createRequire as __createRequire__ } from 'module';
 
 const require = __createRequire__(import.meta.url);
 const __filename = __fileURLToPath__(import.meta.url);
-const __dirname = __path__.dirname(__filename);`.trim(),
+const __dirname = __path__.dirname(__filename);`.trim()
         },
         plugins: [
           sdServerPlugin({
             modifiedFileSet: this.#modifiedFileSet,
             dev: this._opt.dev,
             pkgPath: this._opt.pkgPath,
-            result: this.#resultCache,
-            watchScopePaths: this._opt.watchScopePaths,
+            result: this.#resultCache
           }),
-        ],
+        ]
       });
     }
 
     let result: esbuild.BuildResult | esbuild.BuildFailure;
     try {
       result = await this.#context.rebuild();
-    } catch (err) {
+    }
+    catch (err) {
       result = err;
       for (const e of err.errors) {
         if (e.detail != null) {
@@ -137,8 +135,8 @@ const __dirname = __path__.dirname(__filename);`.trim(),
           code: err.text.slice(0, err.text.indexOf(":")),
           severity: "error" as const,
           message: `(${err.pluginName}) ${err.text.slice(err.text.indexOf(":") + 1)}`,
-        })),
-      ],
+        }))
+      ]
     };
   }
 }

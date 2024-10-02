@@ -18,4 +18,3 @@ export * from "./entry/SdCliElectron";
 export * from "./entry/SdCliLocalUpdate";
 export * from "./entry/SdCliProject";
 export * from "./utils/SdCliBuildResultUtil";
-export * from "./utils/SdCliPerformanceTime";

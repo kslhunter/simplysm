@@ -20,7 +20,6 @@
   },
   "scripts": {
     "watch": "npm run _sd-cli_ -- watch --debug",
-    "watch:sd-angular": "npm run _sd-cli_ -- --debug watch --packages sd-angular",
     "build": "npm run _sd-cli_ -- build",
     "publish": "npm run _sd-cli_ -- publish",
     "--": "",

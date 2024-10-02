@@ -36,7 +36,6 @@ import { SassStylesheetLanguage } from "@angular/build/src/tools/esbuild/stylesh
 import { CssStylesheetLanguage } from "@angular/build/src/tools/esbuild/stylesheets/css-language";
 import { createCssResourcePlugin } from "@angular/build/src/tools/esbuild/stylesheets/css-resource-plugin";
 import { resolveAssets } from "@angular/build/src/utils/resolve-assets";
-import { SdCliPerformanceTimer } from "../utils/SdCliPerformanceTime";
 
 export class SdNgBundler {
   readonly #logger = Logger.get(["simplysm", "sd-cli", "SdNgBundler"]);
@@ -96,23 +95,19 @@ export class SdNgBundler {
     affectedFileSet: Set<string>;
     results: ISdCliPackageBuildResult[];
   }> {
-    const perf = new SdCliPerformanceTimer("ng bundle");
-
     this.#debug(`get contexts...`);
 
     if (!this.#contexts) {
-      this.#contexts = perf.run("get contexts", () => [
+      this.#contexts = [
         this._getAppContext(),
         this._getStyleContext(),
         ...(this.#opt.builderType === "electron" ? [this._getElectronMainContext()] : []),
-      ]);
+      ];
     }
 
     this.#debug(`build...`);
 
-    const bundlingResults = await perf.run("build", async () => {
-      return await this.#contexts!.mapAsync(async (ctx, i) => await ctx.bundleAsync());
-    });
+    const bundlingResults = await this.#contexts.mapAsync(async (ctx, i) => await ctx.bundleAsync());
 
     //-- results
     const results = bundlingResults.mapMany((bundlingResult) => bundlingResult.results);
@@ -143,95 +138,88 @@ export class SdNgBundler {
     }
 
     this.#debug(`create index.html...`);
-    await perf.run("create index.html", async () => {
-      const genIndexHtmlResult = await this._genIndexHtmlAsync(outputFiles, initialFiles);
-      for (const warning of genIndexHtmlResult.warnings) {
-        results.push({
-          filePath: undefined,
-          line: undefined,
-          char: undefined,
-          code: undefined,
-          severity: "warning",
-          message: `(gen-index) ${warning}`,
-          type: "build",
-        });
-      }
-      for (const error of genIndexHtmlResult.errors) {
+
+    const genIndexHtmlResult = await this._genIndexHtmlAsync(outputFiles, initialFiles);
+    for (const warning of genIndexHtmlResult.warnings) {
+      results.push({
+        filePath: undefined,
+        line: undefined,
+        char: undefined,
+        code: undefined,
+        severity: "warning",
+        message: `(gen-index) ${warning}`,
+        type: "build",
+      });
+    }
+    for (const error of genIndexHtmlResult.errors) {
+      results.push({
+        filePath: undefined,
+        line: undefined,
+        char: undefined,
+        code: undefined,
+        severity: "error",
+        message: `(gen-index) ${error}`,
+        type: "build",
+      });
+    }
+    outputFiles.push(createOutputFile("index.html", genIndexHtmlResult.csrContent, BuildOutputFileType.Root));
+
+    //-- copy assets
+    assetFiles.push(...(await this._copyAssetsAsync()));
+
+    //-- extract 3rdpartylicenses
+    if (!this.#opt.dev) {
+      outputFiles.push(
+        createOutputFile(
+          "3rdpartylicenses.txt",
+          await extractLicenses(metafile, this.#opt.pkgPath),
+          BuildOutputFileType.Root,
+        ),
+      );
+    }
+
+    //-- service worker
+    if (FsUtil.exists(this.#swConfFilePath)) {
+      this.#debug(`prepare service worker...`);
+
+      try {
+        const serviceWorkerResult = await this._genServiceWorkerAsync(outputFiles, assetFiles);
+        outputFiles.push(createOutputFile("ngsw.json", serviceWorkerResult.manifest, BuildOutputFileType.Root));
+        assetFiles.push(...serviceWorkerResult.assetFiles);
+      } catch (err) {
         results.push({
           filePath: undefined,
           line: undefined,
           char: undefined,
           code: undefined,
           severity: "error",
-          message: `(gen-index) ${error}`,
+          message: `(gen-sw) ${err.toString()}`,
           type: "build",
         });
       }
-      outputFiles.push(createOutputFile("index.html", genIndexHtmlResult.csrContent, BuildOutputFileType.Root));
-    });
-
-    await perf.run("assets", async () => {
-      //-- copy assets
-      assetFiles.push(...(await this._copyAssetsAsync()));
-
-      //-- extract 3rdpartylicenses
-      if (!this.#opt.dev) {
-        outputFiles.push(
-          createOutputFile(
-            "3rdpartylicenses.txt",
-            await extractLicenses(metafile, this.#opt.pkgPath),
-            BuildOutputFileType.Root,
-          ),
-        );
-      }
-    });
-
-    //-- service worker
-    if (FsUtil.exists(this.#swConfFilePath)) {
-      this.#debug(`prepare service worker...`);
-
-      await perf.run("prepare service worker", async () => {
-        try {
-          const serviceWorkerResult = await this._genServiceWorkerAsync(outputFiles, assetFiles);
-          outputFiles.push(createOutputFile("ngsw.json", serviceWorkerResult.manifest, BuildOutputFileType.Root));
-          assetFiles.push(...serviceWorkerResult.assetFiles);
-        } catch (err) {
-          results.push({
-            filePath: undefined,
-            line: undefined,
-            char: undefined,
-            code: undefined,
-            severity: "error",
-            message: `(gen-sw) ${err.toString()}`,
-            type: "build",
-          });
-        }
-      });
     }
 
     //-- write
     this.#debug(`write output files...(${outputFiles.length})`);
 
-    await perf.run("write output file", async () => {
-      for (const outputFile of outputFiles) {
-        const distFilePath = path.resolve(this.#opt.outputPath, outputFile.path);
-        const prev = this.#outputCache.get(distFilePath);
-        if (prev !== Buffer.from(outputFile.contents).toString("base64")) {
-          await FsUtil.writeFileAsync(distFilePath, outputFile.contents);
-          this.#outputCache.set(distFilePath, Buffer.from(outputFile.contents).toString("base64"));
-        }
+    for (const outputFile of outputFiles) {
+      const distFilePath = path.resolve(this.#opt.outputPath, outputFile.path);
+      const prev = this.#outputCache.get(distFilePath);
+      if (prev !== Buffer.from(outputFile.contents).toString("base64")) {
+        await FsUtil.writeFileAsync(distFilePath, outputFile.contents);
+        this.#outputCache.set(distFilePath, Buffer.from(outputFile.contents).toString("base64"));
       }
-      for (const assetFile of assetFiles) {
-        const prev = this.#outputCache.get(assetFile.source);
-        const curr = FsUtil.lstat(assetFile.source).mtime.getTime();
-        if (prev !== curr) {
-          await FsUtil.copyAsync(assetFile.source, path.resolve(this.#opt.outputPath, assetFile.destination));
-          this.#outputCache.set(assetFile.source, curr);
-        }
+    }
+    for (const assetFile of assetFiles) {
+      const prev = this.#outputCache.get(assetFile.source);
+      const curr = FsUtil.lstat(assetFile.source).mtime.getTime();
+      if (prev !== curr) {
+        await FsUtil.copyAsync(assetFile.source, path.resolve(this.#opt.outputPath, assetFile.destination));
+        this.#outputCache.set(assetFile.source, curr);
       }
-    });
+    }
 
-    this.#debug(perf.toString());
+    this.#debug(`번들링중 영향받은 파일`, Array.from(this.#ngResultCache.affectedFileSet!));
 
     return {
       program: this.#ngResultCache.program,
@@ -513,7 +501,6 @@ export class SdNgBundler {
           dev: this.#opt.dev,
           pkgPath: this.#opt.pkgPath,
           result: this.#ngResultCache,
-          watchScopePaths: this.#opt.watchScopePaths,
         }),
         // createCompilerPlugin({
         //   sourcemap: this.#opt.dev,
@@ -647,5 +634,4 @@ interface IOptions {
   builderType: string;
   env: Record<string, string> | undefined;
   cordovaConfig: ISdCliClientBuilderCordovaConfig | undefined;
-  watchScopePaths: string[];
 }

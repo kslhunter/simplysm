@@ -4,12 +4,12 @@ import { FsUtil, Logger, PathUtil } from "@simplysm/sd-core-node";
 import { StringUtil } from "@simplysm/sd-core-common";
 import esbuild from "esbuild";
 import { NgtscProgram, OptimizeFor } from "@angular/compiler-cli";
+import { createHash } from "crypto";
 import { ComponentStylesheetBundler } from "@angular/build/src/tools/esbuild/angular/component-stylesheets";
 import { AngularCompilerHost } from "@angular/build/src/tools/angular/angular-host";
 import { transformSupportedBrowsersToTargets } from "@angular/build/src/tools/esbuild/utils";
 import browserslist from "browserslist";
 import { replaceBootstrap } from "@angular/build/src/tools/angular/transformers/jit-bootstrap-transformer";
-import { SdCliPerformanceTimer } from "../utils/SdCliPerformanceTime";
 
 export class SdTsCompiler {
   readonly #logger = Logger.get(["simplysm", "sd-cli", "SdTsCompiler"]);
@@ -42,7 +42,6 @@ export class SdTsCompiler {
   readonly #pkgPath: string;
   readonly #distPath: string;
   readonly #globalStyleFilePath?: string;
-  readonly #watchScopePaths: string[];
 
   readonly #isForBundle: boolean;
 
@@ -51,13 +50,11 @@ export class SdTsCompiler {
     additionalOptions: CompilerOptions;
     isForBundle: boolean;
     isDevMode: boolean;
-    watchScopePaths: string[];
     globalStyleFilePath?: string;
   }) {
     this.#pkgPath = opt.pkgPath;
     this.#globalStyleFilePath = opt.globalStyleFilePath != null ? path.normalize(opt.globalStyleFilePath) : undefined;
     this.#isForBundle = opt.isForBundle;
-    this.#watchScopePaths = opt.watchScopePaths;
 
     this.#debug("초기화...");
 
@@ -202,60 +199,52 @@ export class SdTsCompiler {
   }
 
   async buildAsync(): Promise<ISdTsCompilerResult> {
-    let perf = new SdCliPerformanceTimer("esbuild");
-
     const affectedFileSet = new Set<string>();
     const emitFileSet = new Set<string>();
 
     this.#debug(`get affected (old deps & old res deps)...`);
 
-    perf.run("get affected", () => {
-      for (const modifiedFile of this.#modifiedFileSet) {
-        affectedFileSet.add(modifiedFile);
-        affectedFileSet.adds(...(this.#revDependencyCacheMap.get(modifiedFile) ?? []));
-        affectedFileSet.adds(...(this.#resourceDependencyCacheMap.get(modifiedFile) ?? []));
+    for (const modifiedFile of this.#modifiedFileSet) {
+      affectedFileSet.add(modifiedFile);
+      affectedFileSet.adds(...(this.#revDependencyCacheMap.get(modifiedFile) ?? []));
+      affectedFileSet.adds(...(this.#resourceDependencyCacheMap.get(modifiedFile) ?? []));
 
-        this.#emittedFilesCacheMap.delete(path.normalize(modifiedFile));
-      }
-    });
+      this.#emittedFilesCacheMap.delete(path.normalize(modifiedFile));
+    }
 
     this.#debug(`invalidate & clear cache...`);
 
-    perf.run("invalidate & clear cache", () => {
-      this.#stylesheetBundler?.invalidate(this.#modifiedFileSet);
+    this.#stylesheetBundler?.invalidate(this.#modifiedFileSet);
 
-      for (const affectedFile of affectedFileSet) {
-        this.#sourceFileCacheMap.delete(path.normalize(affectedFile));
-        this.#stylesheetBundlingResultMap.delete(path.normalize(affectedFile));
-        this.#watchFileSet.delete(path.normalize(affectedFile));
-      }
+    for (const affectedFile of affectedFileSet) {
+      this.#sourceFileCacheMap.delete(path.normalize(affectedFile));
+      this.#stylesheetBundlingResultMap.delete(path.normalize(affectedFile));
+      this.#watchFileSet.delete(path.normalize(affectedFile));
+    }
 
-      this.#revDependencyCacheMap.clear();
-      this.#resourceDependencyCacheMap.clear();
-    });
+    this.#revDependencyCacheMap.clear();
+    this.#resourceDependencyCacheMap.clear();
 
     this.#debug(`create program...`);
 
-    perf.run("create program", () => {
-      if (this.#isForAngular) {
-        this.#ngProgram = new NgtscProgram(
-          this.#parsedTsconfig.fileNames,
-          this.#parsedTsconfig.options,
-          this.#compilerHost,
-          this.#ngProgram,
-        );
-        this.#program = this.#ngProgram.getTsProgram();
-      } else {
-        this.#program = ts.createProgram(
-          this.#parsedTsconfig.fileNames,
-          this.#parsedTsconfig.options,
-          this.#compilerHost,
-          this.#program,
-        );
-      }
-    });
+    if (this.#isForAngular) {
+      this.#ngProgram = new NgtscProgram(
+        this.#parsedTsconfig.fileNames,
+        this.#parsedTsconfig.options,
+        this.#compilerHost,
+        this.#ngProgram,
+      );
+      this.#program = this.#ngProgram.getTsProgram();
+    } else {
+      this.#program = ts.createProgram(
+        this.#parsedTsconfig.fileNames,
+        this.#parsedTsconfig.options,
+        this.#compilerHost,
+        this.#program,
+      );
+    }
 
-    /*const baseGetSourceFiles = this.#program.getSourceFiles;
+    const baseGetSourceFiles = this.#program.getSourceFiles;
     this.#program.getSourceFiles = function (...parameters) {
       const files: readonly (ts.SourceFile & { version?: string })[] = baseGetSourceFiles(...parameters);
 
@@ -266,12 +255,12 @@ export class SdTsCompiler {
       }
 
       return files;
-    };*/
+    };
+
+    this.#debug(`create builder...`);
 
     if (this.#ngProgram) {
-      await perf.run("ng analyze", async () => {
-        await this.#ngProgram!.compiler.analyzeAsync();
-      });
+      await this.#ngProgram.compiler.analyzeAsync();
     }
 
     const getOrgSourceFile = (sf: ts.SourceFile) => {
@@ -287,279 +276,250 @@ export class SdTsCompiler {
 
     const diagnostics: ts.Diagnostic[] = [];
 
-    perf.run("get affected (deps)", () => {
-      const sourceFileSet = new Set(
-        this.#program!.getSourceFiles()
-          .map((sf) => getOrgSourceFile(sf))
-          .filterExists(),
-      );
+    const sourceFileSet = new Set(
+      this.#program
+        .getSourceFiles()
+        .map((sf) => getOrgSourceFile(sf))
+        .filterExists(),
+    );
 
-      const depMap = new Map<
-        string,
-        {
-          fileName: string;
-          importName: string;
-          exportName?: string;
-        }[]
-      >();
-      for (const sf of sourceFileSet) {
-        if (!PathUtil.isChildPath(sf.fileName, this.#pkgPath)) {
+    const depMap = new Map<
+      string,
+      {
+        fileName: string;
+        importName: string;
+        exportName?: string;
+      }[]
+    >();
+    for (const sf of sourceFileSet) {
+      const refs = this.#findDeps(sf);
+      diagnostics.push(...refs.filter((item) => "category" in item));
+      depMap.set(
+        path.normalize(sf.fileName),
+        refs.filter((item) => "fileName" in item),
+      );
+    }
+
+    const allDepMap = new Map<string, Set<string>>();
+    const getAllDeps = (fileName: string, prevSet?: Set<string>) => {
+      if (allDepMap.has(fileName)) {
+        return allDepMap.get(fileName)!;
+      }
+
+      const result = new Set<string>();
+
+      const deps = depMap.get(fileName) ?? [];
+      result.adds(...deps.map((item) => item.fileName));
+
+      for (const dep of deps) {
+        const targetDeps = depMap.get(dep.fileName) ?? [];
+
+        if (dep.importName === "*") {
+          for (const targetRefItem of targetDeps.filter((item) => item.exportName != null)) {
+            if (prevSet?.has(targetRefItem.fileName)) continue;
+
+            result.add(targetRefItem.fileName);
+            result.adds(...getAllDeps(targetRefItem.fileName, new Set<string>(prevSet).adds(...result)));
+          }
+        } else {
+          for (const targetRefItem of targetDeps.filter((item) => item.exportName === dep.importName)) {
+            if (prevSet?.has(targetRefItem.fileName)) continue;
+
+            result.add(targetRefItem.fileName);
+            result.adds(...getAllDeps(targetRefItem.fileName, new Set<string>(prevSet).adds(...result)));
+          }
+        }
+      }
+
+      return result;
+    };
+
+    for (const sf of sourceFileSet) {
+      const deps = getAllDeps(path.normalize(sf.fileName));
+      allDepMap.set(path.normalize(sf.fileName), deps);
+
+      for (const dep of getAllDeps(path.normalize(sf.fileName))) {
+        const depCache = this.#revDependencyCacheMap.getOrCreate(path.normalize(dep), new Set<string>());
+        depCache.add(path.normalize(sf.fileName));
+        if (this.#modifiedFileSet.has(path.normalize(dep))) {
+          affectedFileSet.add(path.normalize(sf.fileName));
+        }
+      }
+
+      if (this.#ngProgram) {
+        if (this.#ngProgram.compiler.ignoreForEmit.has(sf)) {
           continue;
         }
 
-        const refs = this.#findDeps(sf);
-        diagnostics.push(...refs.filter((item) => "category" in item));
-        depMap.set(
-          path.normalize(sf.fileName),
-          refs
-            .filter((item) => "fileName" in item)
-            .filter((item) =>
-              this.#watchScopePaths.some((scopePath) => PathUtil.isChildPath(item.fileName, scopePath)),
-            ),
-        );
-      }
-
-      const allDepMap = new Map<string, Set<string>>();
-      const getAllDeps = (fileName: string, prevSet?: Set<string>) => {
-        if (allDepMap.has(fileName)) {
-          return allDepMap.get(fileName)!;
-        }
-
-        const result = new Set<string>();
-
-        const deps = depMap.get(fileName) ?? [];
-        result.adds(...deps.map((item) => item.fileName));
-
-        for (const dep of deps) {
-          const targetDeps = depMap.get(dep.fileName) ?? [];
-
-          if (dep.importName === "*") {
-            for (const targetRefItem of targetDeps.filter((item) => item.exportName != null)) {
-              if (prevSet?.has(targetRefItem.fileName)) continue;
-
-              result.add(targetRefItem.fileName);
-              result.adds(...getAllDeps(targetRefItem.fileName, new Set<string>(prevSet).adds(...result)));
-            }
-          } else {
-            for (const targetRefItem of targetDeps.filter((item) => item.exportName === dep.importName)) {
-              if (prevSet?.has(targetRefItem.fileName)) continue;
-
-              result.add(targetRefItem.fileName);
-              result.adds(...getAllDeps(targetRefItem.fileName, new Set<string>(prevSet).adds(...result)));
-            }
-          }
-        }
-
-        return result;
-      };
-
-      for (const sf of sourceFileSet) {
-        const deps = getAllDeps(path.normalize(sf.fileName));
-        allDepMap.set(path.normalize(sf.fileName), deps);
-
-        for (const dep of getAllDeps(path.normalize(sf.fileName))) {
-          const depCache = this.#revDependencyCacheMap.getOrCreate(path.normalize(dep), new Set<string>());
-          depCache.add(path.normalize(sf.fileName));
+        for (const dep of this.#ngProgram.compiler.getResourceDependencies(sf)) {
+          const ref = this.#resourceDependencyCacheMap.getOrCreate(path.normalize(dep), new Set<string>());
+          ref.add(path.normalize(sf.fileName));
           if (this.#modifiedFileSet.has(path.normalize(dep))) {
             affectedFileSet.add(path.normalize(sf.fileName));
           }
         }
-
-        if (this.#ngProgram) {
-          if (this.#ngProgram.compiler.ignoreForEmit.has(sf)) {
-            continue;
-          }
-
-          for (const dep of this.#ngProgram.compiler.getResourceDependencies(sf)) {
-            const ref = this.#resourceDependencyCacheMap.getOrCreate(path.normalize(dep), new Set<string>());
-            ref.add(path.normalize(sf.fileName));
-            if (this.#modifiedFileSet.has(path.normalize(dep))) {
-              affectedFileSet.add(path.normalize(sf.fileName));
-            }
-          }
-        }
       }
-    });
+    }
 
     if (affectedFileSet.size === 0) {
       this.#debug(`get affected (init)...`);
 
-      perf.run("get affected (init)", () => {
-        for (const sf of this.#program!.getSourceFiles()) {
-          if (!this.#watchScopePaths.some((scopePath) => PathUtil.isChildPath(sf.fileName, scopePath))) {
-            continue;
-          }
+      for (const sf of this.#program.getSourceFiles()) {
+        const orgSf = getOrgSourceFile(sf);
+        if (!orgSf) continue;
 
-          const orgSf = getOrgSourceFile(sf);
-          if (!orgSf) continue;
-
-          affectedFileSet.add(path.normalize(orgSf.fileName));
-        }
-      });
+        affectedFileSet.add(path.normalize(orgSf.fileName));
+      }
     }
 
     this.#debug(`get diagnostics...`);
 
-    perf.run("get program diagnostics", () => {
-      diagnostics.push(
-        ...this.#program!.getConfigFileParsingDiagnostics(),
-        ...this.#program!.getOptionsDiagnostics(),
-        ...this.#program!.getGlobalDiagnostics(),
-      );
+    diagnostics.push(
+      ...this.#program.getConfigFileParsingDiagnostics(),
+      ...this.#program.getOptionsDiagnostics(),
+      ...this.#program.getGlobalDiagnostics(),
+    );
 
-      if (this.#ngProgram) {
-        diagnostics.push(...this.#ngProgram.compiler.getOptionDiagnostics());
-      }
-    });
+    if (this.#ngProgram) {
+      diagnostics.push(...this.#ngProgram.compiler.getOptionDiagnostics());
+    }
 
     this.#debug(`get diagnostics of files...`);
 
-    perf.run("get file diagnostics", () => {
-      for (const affectedFile of affectedFileSet) {
-        if (!PathUtil.isChildPath(affectedFile, this.#pkgPath)) {
-          continue;
-        }
-
-        const affectedSourceFile = this.#program!.getSourceFile(affectedFile);
-
-        if (
-          !affectedSourceFile ||
-          (this.#ngProgram && this.#ngProgram.compiler.ignoreForDiagnostics.has(affectedSourceFile))
-        ) {
-          continue;
-        }
-
-        // this.#debug(`get diagnostics of file ${affectedFile}...`);
-
-        diagnostics.push(
-          ...this.#program!.getSyntacticDiagnostics(affectedSourceFile),
-          ...this.#program!.getSemanticDiagnostics(affectedSourceFile),
-        );
-
-        if (this.#ngProgram) {
-          perf.run("get file diagnostics: ng", () => {
-            if (affectedSourceFile.isDeclarationFile) {
-              return;
-            }
-
-            diagnostics.push(
-              ...this.#ngProgram!.compiler.getDiagnosticsForFile(affectedSourceFile, OptimizeFor.WholeProgram),
-            );
-          });
-        }
+    for (const affectedFile of affectedFileSet) {
+      if (!PathUtil.isChildPath(affectedFile, this.#pkgPath)) {
+        continue;
       }
-    });
 
-    perf.run("emit", () => {
-      this.#debug(`prepare emit...`);
+      const affectedSourceFile = this.#program.getSourceFile(affectedFile);
 
-      let transformers: ts.CustomTransformers = {};
+      if (
+        !affectedSourceFile ||
+        (this.#ngProgram && this.#ngProgram.compiler.ignoreForDiagnostics.has(affectedSourceFile))
+      ) {
+        continue;
+      }
+
+      this.#debug(`get diagnostics of file ${affectedFile}...`);
+
+      diagnostics.push(
+        ...this.#program.getSyntacticDiagnostics(affectedSourceFile),
+        ...this.#program.getSemanticDiagnostics(affectedSourceFile),
+      );
 
       if (this.#ngProgram) {
-        transformers = {
-          ...transformers,
-          ...this.#ngProgram.compiler.prepareEmit().transformers,
-        };
-        (transformers.before ??= []).push(replaceBootstrap(() => this.#program!.getTypeChecker()));
-      }
-      // (transformers.before ??= []).push(transformKeys(this.#program));
-
-      this.#debug(`emit for files...`);
-
-      // affected에 새로 추가된 파일은 포함되지 않는 현상이 있어 getSourceFiles로 바꿈
-      // 비교해보니, 딱히 getSourceFiles라서 더 느려지는것 같지는 않음
-      // 그래도 affected로 다시 테스트
-      for (const affectedFile of affectedFileSet) {
-        if (this.#emittedFilesCacheMap.has(affectedFile)) {
+        if (affectedSourceFile.isDeclarationFile) {
           continue;
         }
 
-        const sf = this.#program!.getSourceFile(affectedFile);
-        if (!sf) {
-          continue;
-        }
-
-        // for (const sf of sourceFileSet) {
-        /*if (this.#emittedFilesCacheMap.has(path.normalize(sf.fileName))) {
-          continue;
-        }*/
-
-        if (sf.isDeclarationFile) {
-          continue;
-        }
-
-        if (this.#ngProgram?.compiler.ignoreForEmit.has(sf)) {
-          continue;
-        }
-
-        if (
-          this.#ngProgram?.compiler.incrementalCompilation.safeToSkipEmit(sf) &&
-          !affectedFileSet.has(path.normalize(sf.fileName))
-        ) {
-          continue;
-        }
-
-        // esbuild를 통해 bundle로 묶어야 하는놈들은 모든 output이 있어야 함.
-        if (!this.#isForBundle) {
-          if (!PathUtil.isChildPath(sf.fileName, this.#pkgPath)) {
-            continue;
-          }
-        }
-
-        // this.#debug(`emit for`, sf.fileName);
-        this.#program!.emit(
-          sf,
-          (fileName, text, writeByteOrderMark, onError, sourceFiles, data) => {
-            if (!sourceFiles || sourceFiles.length === 0) {
-              this.#compilerHost.writeFile(fileName, text, writeByteOrderMark, onError, sourceFiles, data);
-              return;
-            }
-
-            const sourceFile = ts.getOriginalNode(sourceFiles[0], ts.isSourceFile);
-            if (this.#ngProgram) {
-              if (this.#ngProgram.compiler.ignoreForEmit.has(sourceFile)) {
-                return;
-              }
-              this.#ngProgram.compiler.incrementalCompilation.recordSuccessfulEmit(sourceFile);
-            }
-
-            const emitFileInfoCaches = this.#emittedFilesCacheMap.getOrCreate(path.normalize(sourceFile.fileName), []);
-
-            if (PathUtil.isChildPath(sourceFile.fileName, this.#pkgPath)) {
-              let realFilePath = fileName;
-              let realText = text;
-              if (
-                PathUtil.isChildPath(realFilePath, path.resolve(this.#distPath, path.basename(this.#pkgPath), "src"))
-              ) {
-                realFilePath = path.resolve(
-                  this.#distPath,
-                  path.relative(path.resolve(this.#distPath, path.basename(this.#pkgPath), "src"), realFilePath),
-                );
-
-                if (fileName.endsWith(".js.map")) {
-                  const sourceMapContents = JSON.parse(realText);
-                  // remove "../../"
-                  sourceMapContents.sources[0] = sourceMapContents.sources[0].slice(6);
-                  realText = JSON.stringify(sourceMapContents);
-                }
-              }
-
-              emitFileInfoCaches.push({
-                outAbsPath: realFilePath,
-                text: realText,
-              });
-            } else {
-              emitFileInfoCaches.push({ text });
-            }
-
-            emitFileSet.add(path.normalize(sourceFile.fileName));
-          },
-          undefined,
-          undefined,
-          transformers,
+        diagnostics.push(
+          ...this.#ngProgram.compiler.getDiagnosticsForFile(affectedSourceFile, OptimizeFor.WholeProgram),
         );
       }
-    });
+    }
+
+    this.#debug(`prepare emit...`);
+
+    let transformers: ts.CustomTransformers = {};
+
+    if (this.#ngProgram) {
+      transformers = {
+        ...transformers,
+        ...this.#ngProgram.compiler.prepareEmit().transformers,
+      };
+      (transformers.before ??= []).push(replaceBootstrap(() => this.#program!.getTypeChecker()));
+    }
+    // (transformers.before ??= []).push(transformKeys(this.#program));
+
+    // affected에 새로 추가된 파일은 포함되지 않는 현상이 있어 getSourceFiles로 바꿈
+    // 비교해보니, 딱히 getSourceFiles라서 더 느려지는것 같지는 않음
+    /*for (const affectedFile of affectedFileSet) {
+      if (this.#emittedFilesCacheMap.has(affectedFile)) {
+        continue;
+      }
+
+      const sf = this.#program.getSourceFile(affectedFile);
+      if (!sf) {
+        continue;
+      }*/
+
+    for (const sf of sourceFileSet) {
+      if (this.#emittedFilesCacheMap.has(path.normalize(sf.fileName))) {
+        continue;
+      }
+
+      if (sf.isDeclarationFile) {
+        continue;
+      }
+
+      if (this.#ngProgram?.compiler.ignoreForEmit.has(sf)) {
+        continue;
+      }
+
+      if (
+        this.#ngProgram?.compiler.incrementalCompilation.safeToSkipEmit(sf) &&
+        !affectedFileSet.has(path.normalize(sf.fileName))
+      ) {
+        continue;
+      }
+
+      // esbuild를 통해 bundle로 묶어야 하는놈들은 모든 output이 있어야 함.
+      if (!this.#isForBundle) {
+        if (!PathUtil.isChildPath(sf.fileName, this.#pkgPath)) {
+          continue;
+        }
+      }
+
+      this.#debug(`emit for`, sf.fileName);
+      this.#program.emit(
+        sf,
+        (fileName, text, writeByteOrderMark, onError, sourceFiles, data) => {
+          if (!sourceFiles || sourceFiles.length === 0) {
+            this.#compilerHost.writeFile(fileName, text, writeByteOrderMark, onError, sourceFiles, data);
+            return;
+          }
+
+          const sourceFile = ts.getOriginalNode(sourceFiles[0], ts.isSourceFile);
+          if (this.#ngProgram) {
+            if (this.#ngProgram.compiler.ignoreForEmit.has(sourceFile)) {
+              return;
+            }
+            this.#ngProgram.compiler.incrementalCompilation.recordSuccessfulEmit(sourceFile);
+          }
+
+          const emitFileInfoCaches = this.#emittedFilesCacheMap.getOrCreate(path.normalize(sourceFile.fileName), []);
+          if (PathUtil.isChildPath(sourceFile.fileName, this.#pkgPath)) {
+            let realFilePath = fileName;
+            let realText = text;
+            if (PathUtil.isChildPath(realFilePath, path.resolve(this.#distPath, path.basename(this.#pkgPath), "src"))) {
+              realFilePath = path.resolve(
+                this.#distPath,
+                path.relative(path.resolve(this.#distPath, path.basename(this.#pkgPath), "src"), realFilePath),
+              );
+
+              if (fileName.endsWith(".js.map")) {
+                const sourceMapContents = JSON.parse(realText);
+                // remove "../../"
+                sourceMapContents.sources[0] = sourceMapContents.sources[0].slice(6);
+                realText = JSON.stringify(sourceMapContents);
+              }
+            }
+
+            emitFileInfoCaches.push({
+              outAbsPath: realFilePath,
+              text: realText,
+            });
+          } else {
+            emitFileInfoCaches.push({ text });
+          }
+
+          emitFileSet.add(path.normalize(sourceFile.fileName));
+        },
+        undefined,
+        undefined,
+        transformers,
+      );
+    }
 
     //-- global style
     if (
@@ -569,31 +529,29 @@ export class SdTsCompiler {
     ) {
       this.#debug(`bundle global style...`);
 
-      await perf.run("bundle global style", async () => {
-        const data = await FsUtil.readFileAsync(this.#globalStyleFilePath!);
-        const contents = await this.#bundleStylesheetAsync(data, this.#globalStyleFilePath!, this.#globalStyleFilePath);
-        const emitFileInfos = this.#emittedFilesCacheMap.getOrCreate(this.#globalStyleFilePath!, []);
-        emitFileInfos.push({
-          outAbsPath: path.resolve(
-            this.#pkgPath,
-            path.relative(path.resolve(this.#pkgPath, "src"), this.#globalStyleFilePath!).replace(/\.scss$/, ".css"),
-          ),
-          text: contents,
-        });
-        emitFileSet.add(this.#globalStyleFilePath!);
+      const data = await FsUtil.readFileAsync(this.#globalStyleFilePath);
+      const contents = await this.#bundleStylesheetAsync(data, this.#globalStyleFilePath, this.#globalStyleFilePath);
+      const emitFileInfos = this.#emittedFilesCacheMap.getOrCreate(this.#globalStyleFilePath, []);
+      emitFileInfos.push({
+        outAbsPath: path.resolve(
+          this.#pkgPath,
+          path.relative(path.resolve(this.#pkgPath, "src"), this.#globalStyleFilePath).replace(/\.scss$/, ".css"),
+        ),
+        text: contents,
       });
+      emitFileSet.add(this.#globalStyleFilePath);
     }
 
     //-- init
 
     this.#modifiedFileSet.clear();
 
-    this.#debug(`build completed`, perf.toString());
+    this.#debug(`build completed`, affectedFileSet, diagnostics.length);
 
     //-- result
 
     return {
-      program: this.#program!,
+      program: this.#program,
       typescriptDiagnostics: diagnostics,
       stylesheetBundlingResultMap: this.#stylesheetBundlingResultMap,
       emittedFilesCacheMap: this.#emittedFilesCacheMap,

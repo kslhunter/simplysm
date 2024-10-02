@@ -219,10 +219,6 @@ Options = UnsafeLegacyRenegotiation`.trim(),
     affectedFileSet: Set<string>;
     buildResults: ISdCliPackageBuildResult[];
   }> {
-    const localUpdatePaths = Object.keys(this._projConf.localUpdates ?? {}).mapMany((key) =>
-      FsUtil.glob(path.resolve(this._pkgPath, "../../node_modules", key)),
-    );
-
     this._debug(`BUILD 준비...`);
     const tsConfig = FsUtil.readJson(path.resolve(this._pkgPath, "tsconfig.json")) as ITsConfig;
     this.#extModules = this.#extModules ?? (await this._getExternalModulesAsync());
@@ -235,13 +231,16 @@ Options = UnsafeLegacyRenegotiation`.trim(),
           ? tsConfig.files.map((item) => path.resolve(this._pkgPath, item))
           : [path.resolve(this._pkgPath, "src/main.ts")],
         external: this.#extModules.map((item) => item.name),
-        watchScopePaths: [path.resolve(this._pkgPath, "../"), ...localUpdatePaths],
       });
 
     this._debug(`BUILD & CHECK...`);
     const buildResult = await this.#builder.bundleAsync();
 
     //-- filePaths
+
+    const localUpdatePaths = Object.keys(this._projConf.localUpdates ?? {}).mapMany((key) =>
+      FsUtil.glob(path.resolve(this._pkgPath, "../../node_modules", key)),
+    );
     const watchFileSet = new Set(
       Array.from(buildResult.watchFileSet).filter(
         (item) =>
