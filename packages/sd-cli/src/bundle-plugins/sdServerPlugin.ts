@@ -9,6 +9,7 @@ export function sdServerPlugin(conf: {
   dev: boolean;
   modifiedFileSet: Set<string>;
   result: IServerPluginResultCache;
+  watchScopePaths: string[];
 }): esbuild.Plugin {
   return {
     name: "sd-server-compiler",
@@ -18,6 +19,7 @@ export function sdServerPlugin(conf: {
         additionalOptions: { declaration: false },
         isDevMode: conf.dev,
         isForBundle: true,
+        watchScopePaths: conf.watchScopePaths
       });
 
       let buildResult: ISdTsCompilerResult;

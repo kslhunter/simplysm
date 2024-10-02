@@ -88,8 +88,14 @@ export class SdCliTsLibBuilder extends EventEmitter {
     affectedFileSet: Set<string>;
     buildResults: ISdCliPackageBuildResult[];
   }> {
+    const localUpdatePaths = Object.keys(this.#projConf.localUpdates ?? {}).mapMany((key) =>
+      FsUtil.glob(path.resolve(this.#pkgPath, "../../node_modules", key)),
+    );
+
     this._debug(`BUILD...`);
-    this.#bundler = this.#bundler ?? new SdTsLibBundler(this.#pkgPath, dev);
+    this.#bundler =
+      this.#bundler ??
+      new SdTsLibBundler(this.#pkgPath, dev, [path.resolve(this.#pkgPath, "../"), ...localUpdatePaths]);
     const buildResult = await this.#bundler.buildAsync();
 
     this._debug("LINT...");
@@ -99,9 +105,6 @@ export class SdCliTsLibBuilder extends EventEmitter {
     const lintResults = await SdLinter.lintAsync(this.#pkgPath, buildResult.affectedFileSet, buildResult.program);
 
     this._debug(`빌드 완료`);
-    const localUpdatePaths = Object.keys(this.#projConf.localUpdates ?? {}).mapMany((key) =>
-      FsUtil.glob(path.resolve(this.#pkgPath, "../../node_modules", key)),
-    );
     const watchFileSet = new Set(
       Array.from(buildResult.watchFileSet).filter(
         (item) =>
