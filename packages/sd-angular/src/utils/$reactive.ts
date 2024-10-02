@@ -168,42 +168,33 @@ function reactiveValueChange(node: ReactiveNode) {
 function getArrInstruments(target: any, node: ReactiveNode) {
   return {
     every(...args: unknown[]) {
-      producerAccessed(node);
       return target.every(...args);
     },
     filter(...args: unknown[]) {
-      producerAccessed(node);
       const res = target.filter(...args);
       return res.map((item) => reactiveObject(item, node));
     },
     find(...args: unknown[]) {
-      producerAccessed(node);
       const res = target.find(...args);
       return reactiveObject(res, node);
     },
     findIndex(...args: unknown[]) {
-      producerAccessed(node);
       return target.findIndex(...args);
     },
     findLast(...args: unknown[]) {
-      producerAccessed(node);
       const res = target.findLast(...args);
       return reactiveObject(res, node);
     },
     findLastIndex(...args: unknown[]) {
-      producerAccessed(node);
       return target.findLastIndex(...args);
     },
     includes(...args: unknown[]) {
-      producerAccessed(node);
       return target.includes(...args);
     },
     indexOf(...args: unknown[]) {
-      producerAccessed(node);
       return target.indexOf(...args);
     },
     some(...args: unknown[]) {
-      producerAccessed(node);
       return target.some(...args);
     },
   };
@@ -213,7 +204,6 @@ function getMapInstruments(target: any, node: ReactiveNode) {
   return {
     get(...args: unknown[]) {
       const res = target.get(...args);
-      producerAccessed(node);
       return reactiveObject(res, node);
     },
     set(...args: unknown[]) {
@@ -227,43 +217,33 @@ function getMapInstruments(target: any, node: ReactiveNode) {
 function getDateInstruments(target: any, node: ReactiveNode) {
   return {
     getFullYear(...args: unknown[]) {
-      producerAccessed(node);
       return target.getFullYear(...args);
     },
     getMonth(...args: unknown[]) {
-      producerAccessed(node);
       return target.getMonth(...args);
     },
     getDate(...args: unknown[]) {
-      producerAccessed(node);
       return target.getDate(...args);
     },
     getHours(...args: unknown[]) {
-      producerAccessed(node);
       return target.getHours(...args);
     },
     getMinutes(...args: unknown[]) {
-      producerAccessed(node);
       return target.getMinutes(...args);
     },
     getSeconds(...args: unknown[]) {
-      producerAccessed(node);
       return target.getSeconds(...args);
     },
     getMilliseconds(...args: unknown[]) {
-      producerAccessed(node);
       return target.getMilliseconds(...args);
     },
     getTime(...args: unknown[]) {
-      producerAccessed(node);
       return target.getTime(...args);
     },
     getDay(...args: unknown[]) {
-      producerAccessed(node);
       return target.getDay(...args);
     },
     getTimezoneOffset(...args: unknown[]) {
-      producerAccessed(node);
       return target.getTimezoneOffset(...args);
     },
   };
