@@ -4,8 +4,7 @@ import { SdCollapseControl } from "./SdCollapseControl";
 import { SdListControl } from "./SdListControl";
 import { SdListItemControl } from "./SdListItemControl";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
-import { $hostBinding } from "../utils/$hostBinding";
-import { $reactive } from "../utils/$reactive";
+import { $signal } from "../utils/$hooks";
 
 @Component({
   selector: "sd-sidebar-user",
@@ -61,7 +60,7 @@ import { $reactive } from "../utils/$reactive";
           }
         }
       }
-    `,
+    `
   ],
   template: `
     <div class="_content" [style]="contentStyle()" [class]="contentClass()">
@@ -71,12 +70,12 @@ import { $reactive } from "../utils/$reactive";
       @if (userMenu()?.title) {
         <div class="_menu-button" (click)="onMenuOpenButtonClick()">
           {{ userMenu()?.title }}
-          <sd-collapse-icon [open]="menuOpen$.value" style="float: right;" [openRotate]="180" />
+          <sd-collapse-icon [open]="menuOpen()" style="float: right;" [openRotate]="180" />
         </div>
       }
     </div>
     @if (userMenu()?.title) {
-      <sd-collapse [open]="menuOpen$.value">
+      <sd-collapse [open]="menuOpen()">
         <sd-list class="pv-sm" [inset]="true">
           @for (menu of userMenu()?.menus; track menu.title) {
             <sd-list-item (click)="menu.onClick()">
@@ -86,6 +85,9 @@ import { $reactive } from "../utils/$reactive";
         </sd-list>
       </sd-collapse>
     }`,
+  host: {
+    "[attr.sd-menu-open]": "menuOpen()"
+  }
 })
 export class SdSidebarUserControl {
   icons = inject(SdAngularConfigProvider).icons;
@@ -95,14 +97,10 @@ export class SdSidebarUserControl {
   contentStyle = input<string>();
   contentClass = input<string>();
 
-  menuOpen$ = $reactive(false);
-
-  constructor() {
-    $hostBinding("attr.sd-menu-open", this.menuOpen$);
-  }
+  menuOpen = $signal(false);
 
   onMenuOpenButtonClick() {
-    this.menuOpen$.value = !this.menuOpen$.value;
+    this.menuOpen.update((v) => !v);
   }
 }
 

@@ -62,7 +62,7 @@ export class SdAngularModule {
   #faConfig = inject(FaConfig);
 
   constructor() {
-    this.#sdTheme.theme$.value = this.#sdLocalStorage.get("sd-theme") ?? this.#sdNgConf.defaultTheme;
+    this.#sdTheme.theme.set(this.#sdLocalStorage.get("sd-theme") ?? this.#sdNgConf.defaultTheme);
     this.#faConfig.fallbackIcon = this.#sdNgConf.icons.fallback;
   }
 

@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, HostListener, inject, input, ViewEncapsulation } from "@angular/core";
 import { SdBusyProvider } from "../providers/SdBusyProvider";
 import { $computed } from "../utils/$hooks";
-import { $hostBinding } from "../utils/$hostBinding";
 
 @Component({
   selector: "sd-busy-container",
@@ -344,6 +343,11 @@ import { $hostBinding } from "../utils/$hostBinding";
     </div>
     <ng-content></ng-content>
   `,
+  host: {
+    "[attr.sd-busy]": "busy()",
+    "[attr.sd-type]": "currType()",
+    "[attr.sd-no-fade]": "currNoFade()",
+  },
 })
 export class SdBusyContainerControl {
   #sdBusy = inject(SdBusyProvider);
@@ -354,17 +358,8 @@ export class SdBusyContainerControl {
   noFade = input<boolean>();
   progressPercent = input<number>();
 
-  constructor() {
-    $hostBinding("attr.sd-busy", this.busy);
-    $hostBinding(
-      "attr.sd-type",
-      $computed(() => this.type() ?? this.#sdBusy.type$.value),
-    );
-    $hostBinding(
-      "attr.sd-no-fade",
-      $computed(() => this.noFade() ?? this.#sdBusy.noFade$.value),
-    );
-  }
+  currType = $computed(() => this.type() ?? this.#sdBusy.type());
+  currNoFade = $computed(() => this.noFade() ?? this.#sdBusy.noFade());
 
   @HostListener("keydown.capture", ["$event"])
   onKeydownCapture(event: KeyboardEvent) {

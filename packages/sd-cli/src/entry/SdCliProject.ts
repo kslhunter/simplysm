@@ -102,10 +102,10 @@ export class SdCliProject {
         }
 
         for (const buildResult of message.result!.buildResults) {
-          // if (buildResult.filePath == null || PathUtil.isChildPath(buildResult.filePath, message.req.pkgPath)) {
-          const cacheItem = resultCache.getOrCreate(buildResult.filePath ?? "none", []);
-          cacheItem.push(buildResult);
-          // }
+          if (buildResult.filePath == null || PathUtil.isChildPath(buildResult.filePath, message.req.pkgPath)) {
+            const cacheItem = resultCache.getOrCreate(buildResult.filePath ?? "none", []);
+            cacheItem.push(buildResult);
+          }
         }
 
         const pkgConf = message.req.projConf.packages[path.basename(message.req.pkgPath)]!;

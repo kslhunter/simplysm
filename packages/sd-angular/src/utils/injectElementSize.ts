@@ -1,18 +1,17 @@
 import { afterNextRender, ElementRef, inject } from "@angular/core";
-import { $effect } from "./$hooks";
-import { $reactive } from "./$reactive";
+import { $effect, $signal } from "./$hooks";
 
-export function injectElementResize() {
+export function injectElementSize() {
   const elRef = inject<ElementRef<HTMLElement>>(ElementRef);
   let resizeObserver: ResizeObserver | undefined;
 
-  const offsetWidth$ = $reactive(0);
-  const offsetHeight$ = $reactive(0);
+  const offsetWidth = $signal(0);
+  const offsetHeight = $signal(0);
 
   afterNextRender(() => {
     resizeObserver = new ResizeObserver(() => {
-      offsetWidth$.value = elRef.nativeElement.offsetWidth;
-      offsetHeight$.value = elRef.nativeElement.offsetHeight;
+      offsetWidth.set(elRef.nativeElement.offsetWidth);
+      offsetHeight.set(elRef.nativeElement.offsetHeight);
     });
     resizeObserver.observe(elRef.nativeElement);
   });
@@ -24,7 +23,7 @@ export function injectElementResize() {
   });
 
   return {
-    width: offsetWidth$,
-    height: offsetHeight$,
+    offsetWidth: offsetWidth.asReadonly(),
+    offsetHeight: offsetHeight.asReadonly(),
   };
 }

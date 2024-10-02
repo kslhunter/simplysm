@@ -12,7 +12,6 @@ import {
 import { SdDropdownPopupControl } from "./SdDropdownPopupControl";
 import { $effect } from "../utils/$hooks";
 import { injectElementRef } from "../utils/injectElementRef";
-import { $hostBinding } from "../utils/$hostBinding";
 
 @Component({
   selector: "sd-dropdown",
@@ -34,6 +33,9 @@ import { $hostBinding } from "../utils/$hostBinding";
     </div>
     <ng-content select="sd-dropdown-popup" />
   `,
+  host: {
+    "[attr.sd-disabled]": "disabled()",
+  },
 })
 export class SdDropdownControl {
   #elRef = injectElementRef<HTMLElement>();
@@ -49,8 +51,6 @@ export class SdDropdownControl {
   popupElRef = contentChild.required<any, ElementRef<HTMLElement>>(SdDropdownPopupControl, { read: ElementRef });
 
   constructor() {
-    $hostBinding("attr.sd-disabled", this.disabled);
-
     $effect(() => {
       if (this.open()) {
         document.body.appendChild(this.popupElRef().nativeElement);

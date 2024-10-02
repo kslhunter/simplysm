@@ -15,7 +15,6 @@ import { SdCollapseControl } from "./SdCollapseControl";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { $computed } from "../utils/$hooks";
-import { $hostBinding } from "../utils/$hostBinding";
 
 @Component({
   selector: "sd-list-item",
@@ -113,26 +112,33 @@ import { $hostBinding } from "../utils/$hostBinding";
       tabindex="0"
     >
       <div class="flex-row flex-gap-xs">
-        @if (selectedIcon() && !hasChildren$.value) {
+        @if (selectedIcon() && !hasChildren()) {
           <fa-icon class="_selected-icon" [icon]="selectedIcon()!" [fixedWidth]="true" />
         }
         <div style="flex-grow: 1">
           <ng-content></ng-content>
         </div>
 
-        @if (hasChildren$.value && layout() === "accordion") {
+        @if (hasChildren() && layout() === "accordion") {
           <div>
             <sd-collapse-icon [open]="open()" />
           </div>
         }
       </div>
     </div>
-    @if (hasChildren$.value) {
+    @if (hasChildren()) {
       <sd-collapse class="_child" [open]="layout() === 'flat' || open()">
         <ng-content select="sd-list"></ng-content>
       </sd-collapse>
     }
   `,
+  host: {
+    "[attr.sd-layout]": "layout()",
+    "[attr.sd-open]": "open()",
+    "[attr.sd-selected]": "selected()",
+    "[attr.sd-has-selected-icon]": "!!selectedIcon()",
+    "[attr.sd-has-children]": "hasChildren()",
+  },
 })
 export class SdListItemControl {
   icons = inject(SdAngularConfigProvider).icons;
@@ -148,18 +154,7 @@ export class SdListItemControl {
 
   childListControl = contentChild<SdListControl>(forwardRef(() => SdListControl));
 
-  hasChildren$ = $computed(() => this.childListControl() !== undefined);
-
-  constructor() {
-    $hostBinding("attr.sd-layout", this.layout);
-    $hostBinding("attr.sd-open", this.open);
-    $hostBinding("attr.sd-selected", this.selected);
-    $hostBinding(
-      "attr.sd-has-selected-icon",
-      $computed(() => !!this.selectedIcon()),
-    );
-    $hostBinding("attr.sd-has-children", this.hasChildren$);
-  }
+  hasChildren = $computed(() => this.childListControl() !== undefined);
 
   onContentClick() {
     this.open.update((v) => !v);

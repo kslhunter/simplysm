@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
 import { $effect } from "../utils/$hooks";
 import { injectElementRef } from "../utils/injectElementRef";
-import { $hostBinding } from "../utils/$hostBinding";
 
 @Component({
   selector: "sd-gap",
@@ -27,6 +26,13 @@ import { $hostBinding } from "../utils/$hostBinding";
     `,
   ],
   template: "",
+  host: {
+    "[attr.sd-height]": "height()",
+    "[style.height.px]": "heightPx()",
+    "[attr.sd-width]": "width()",
+    "[style.width.px]": "widthPx()",
+    "[style.width.em]": "widthEm()",
+  },
 })
 export class SdGapControl {
   #elRef = injectElementRef<HTMLElement>();
@@ -38,12 +44,6 @@ export class SdGapControl {
   widthEm = input<number>();
 
   constructor() {
-    $hostBinding("attr.sd-height", this.height);
-    $hostBinding("style.height.px", this.heightPx);
-    $hostBinding("attr.sd-width", this.width);
-    $hostBinding("style.width.px", this.widthPx);
-    $hostBinding("style.width.em", this.widthEm);
-
     $effect(() => {
       if (this.widthPx() === 0 || this.heightPx() === 0 || this.widthEm() === 0) {
         this.#elRef.nativeElement.style.display = "none";

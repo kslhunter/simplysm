@@ -1,10 +1,10 @@
-import { inject } from "@angular/core";
+import { inject, Signal } from "@angular/core";
 import { NavigationEnd, Router } from "@angular/router";
 import { toSignal } from "@angular/core/rxjs-interop";
 import { filter, map } from "rxjs";
 import { $computed } from "./$hooks";
 
-export function injectPageCode$(): { readonly value: string | undefined } {
+export function injectPageCode$(): Signal<string | undefined> {
   const router = inject(Router, { optional: true });
   if (!router) {
     return $computed(() => undefined);

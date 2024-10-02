@@ -1,4 +1,4 @@
-import ts, { CompilerOptions, DiagnosticCategory } from "typescript";
+import ts, { CompilerOptions } from "typescript";
 import path from "path";
 import { FsUtil, Logger, PathUtil } from "@simplysm/sd-core-node";
 import { StringUtil } from "@simplysm/sd-core-common";
@@ -17,7 +17,7 @@ export class SdTsCompiler {
   readonly #parsedTsconfig: ts.ParsedCommandLine;
   readonly #isForAngular: boolean;
 
-  readonly #revDependencyCacheMap = new Map<string, Set<string>>();
+  // readonly #revDependencyCacheMap = new Map<string, Set<string>>();
   readonly #resourceDependencyCacheMap = new Map<string, Set<string>>();
   readonly #sourceFileCacheMap = new Map<string, ts.SourceFile>();
   readonly #emittedFilesCacheMap = new Map<
@@ -33,6 +33,7 @@ export class SdTsCompiler {
 
   #ngProgram: NgtscProgram | undefined;
   #program: ts.Program | undefined;
+  #builder: ts.EmitAndSemanticDiagnosticsBuilderProgram | undefined;
 
   readonly #modifiedFileSet = new Set<string>();
 
@@ -195,34 +196,41 @@ export class SdTsCompiler {
   }
 
   invalidate(modifiedFileSet: Set<string>) {
-    this.#modifiedFileSet.adds(...Array.from(modifiedFileSet).map((item) => path.normalize(item)));
+    for (const modifiedFile of Array.from(modifiedFileSet).map((item) => path.normalize(item))) {
+      this.#modifiedFileSet.add(modifiedFile);
+      this.#modifiedFileSet.adds(...(this.#resourceDependencyCacheMap.get(modifiedFile) ?? []));
+    }
   }
 
   async buildAsync(): Promise<ISdTsCompilerResult> {
-    const affectedFileSet = new Set<string>();
+    const affectedSourceFileSet = new Set<ts.SourceFile>();
     const emitFileSet = new Set<string>();
 
     this.#debug(`get affected (old deps & old res deps)...`);
 
     for (const modifiedFile of this.#modifiedFileSet) {
-      affectedFileSet.add(modifiedFile);
-      affectedFileSet.adds(...(this.#revDependencyCacheMap.get(modifiedFile) ?? []));
-      affectedFileSet.adds(...(this.#resourceDependencyCacheMap.get(modifiedFile) ?? []));
+      // affectedFileSet.add(modifiedFile);
+      // affectedFileSet.adds(...(this.#revDependencyCacheMap.get(modifiedFile) ?? []));
+      // affectedFileSet.adds(...(this.#resourceDependencyCacheMap.get(modifiedFile) ?? []));
 
       this.#emittedFilesCacheMap.delete(path.normalize(modifiedFile));
+      this.#sourceFileCacheMap.delete(path.normalize(modifiedFile));
+      this.#stylesheetBundlingResultMap.delete(path.normalize(modifiedFile));
+      this.#watchFileSet.delete(path.normalize(modifiedFile));
     }
-
-    this.#debug(`invalidate & clear cache...`);
-
     this.#stylesheetBundler?.invalidate(this.#modifiedFileSet);
 
-    for (const affectedFile of affectedFileSet) {
-      this.#sourceFileCacheMap.delete(path.normalize(affectedFile));
-      this.#stylesheetBundlingResultMap.delete(path.normalize(affectedFile));
-      this.#watchFileSet.delete(path.normalize(affectedFile));
-    }
+    // this.#debug(`invalidate & clear cache...`);
 
-    this.#revDependencyCacheMap.clear();
+    // this.#stylesheetBundler?.invalidate(affectedFileSet);
+
+    // for (const affectedFile of affectedFileSet) {
+    //   this.#sourceFileCacheMap.delete(path.normalize(affectedFile));
+    //   this.#stylesheetBundlingResultMap.delete(path.normalize(affectedFile));
+    //   this.#watchFileSet.delete(path.normalize(affectedFile));
+    // }
+
+    // this.#revDependencyCacheMap.clear();
     this.#resourceDependencyCacheMap.clear();
 
     this.#debug(`create program...`);
@@ -244,6 +252,8 @@ export class SdTsCompiler {
       );
     }
 
+    this.#debug(`create builder...`);
+
     const baseGetSourceFiles = this.#program.getSourceFiles;
     this.#program.getSourceFiles = function (...parameters) {
       const files: readonly (ts.SourceFile & { version?: string })[] = baseGetSourceFiles(...parameters);
@@ -257,7 +267,7 @@ export class SdTsCompiler {
       return files;
     };
 
-    this.#debug(`create builder...`);
+    this.#builder = ts.createEmitAndSemanticDiagnosticsBuilderProgram(this.#program, this.#compilerHost, this.#builder);
 
     if (this.#ngProgram) {
       await this.#ngProgram.compiler.analyzeAsync();
@@ -274,111 +284,113 @@ export class SdTsCompiler {
 
     this.#debug(`get affected (new deps)...`);
 
-    const diagnostics: ts.Diagnostic[] = [];
+    // const sourceFileSet = new Set(
+    //   this.#program
+    //     .getSourceFiles()
+    //     .map((sf) => getOrgSourceFile(sf))
+    //     .filterExists(),
+    // );
 
-    const sourceFileSet = new Set(
-      this.#program
-        .getSourceFiles()
-        .map((sf) => getOrgSourceFile(sf))
-        .filterExists(),
-    );
+    // const depMap = new Map<
+    //   string,
+    //   {
+    //     fileName: string;
+    //     importName: string;
+    //     exportName?: string;
+    //   }[]
+    // >();
+    // for (const sf of sourceFileSet) {
+    //   const refs = this.#findDeps(sf);
+    //   depMap.set(path.normalize(sf.fileName), refs);
+    // }
+    //
+    // const allDepMap = new Map<string, Set<string>>();
+    // const getAllDeps = (fileName: string, prevSet?: Set<string>) => {
+    //   if (allDepMap.has(fileName)) {
+    //     return allDepMap.get(fileName)!;
+    //   }
+    //
+    //   const result = new Set<string>();
+    //
+    //   const deps = depMap.get(fileName) ?? [];
+    //   result.adds(...deps.map((item) => item.fileName));
+    //
+    //   for (const dep of deps) {
+    //     const targetDeps = depMap.get(dep.fileName) ?? [];
+    //
+    //     if (dep.importName === "*") {
+    //       for (const targetRefItem of targetDeps.filter((item) => item.exportName != null)) {
+    //         if (prevSet?.has(targetRefItem.fileName)) continue;
+    //
+    //         result.add(targetRefItem.fileName);
+    //         result.adds(...getAllDeps(targetRefItem.fileName, new Set<string>(prevSet).adds(...result)));
+    //       }
+    //     } else {
+    //       for (const targetRefItem of targetDeps.filter((item) => item.exportName === dep.importName)) {
+    //         if (prevSet?.has(targetRefItem.fileName)) continue;
+    //
+    //         result.add(targetRefItem.fileName);
+    //         result.adds(...getAllDeps(targetRefItem.fileName, new Set<string>(prevSet).adds(...result)));
+    //       }
+    //     }
+    //   }
+    //
+    //   return result;
+    // };
 
-    const depMap = new Map<
-      string,
-      {
-        fileName: string;
-        importName: string;
-        exportName?: string;
-      }[]
-    >();
-    for (const sf of sourceFileSet) {
-      const refs = this.#findDeps(sf);
-      diagnostics.push(...refs.filter((item) => "category" in item));
-      depMap.set(
-        path.normalize(sf.fileName),
-        refs.filter((item) => "fileName" in item),
-      );
-    }
+    // for (const sf of sourceFileSet) {
+    //   const deps = getAllDeps(path.normalize(sf.fileName));
+    //   allDepMap.set(path.normalize(sf.fileName), deps);
+    //
+    //   for (const dep of getAllDeps(path.normalize(sf.fileName))) {
+    //     const depCache = this.#revDependencyCacheMap.getOrCreate(path.normalize(dep), new Set<string>());
+    //     depCache.add(path.normalize(sf.fileName));
+    //     if (this.#modifiedFileSet.has(path.normalize(dep))) {
+    //       affectedFileSet.add(path.normalize(sf.fileName));
+    //     }
+    //   }
+    //
+    //   if (this.#ngProgram) {
+    //     if (this.#ngProgram.compiler.ignoreForEmit.has(sf)) {
+    //       continue;
+    //     }
+    //
+    //     for (const dep of this.#ngProgram.compiler.getResourceDependencies(sf)) {
+    //       const ref = this.#resourceDependencyCacheMap.getOrCreate(path.normalize(dep), new Set<string>());
+    //       ref.add(path.normalize(sf.fileName));
+    //       if (this.#modifiedFileSet.has(path.normalize(dep))) {
+    //         affectedFileSet.add(path.normalize(sf.fileName));
+    //       }
+    //     }
+    //   }
+    // }
 
-    const allDepMap = new Map<string, Set<string>>();
-    const getAllDeps = (fileName: string, prevSet?: Set<string>) => {
-      if (allDepMap.has(fileName)) {
-        return allDepMap.get(fileName)!;
-      }
-
-      const result = new Set<string>();
-
-      const deps = depMap.get(fileName) ?? [];
-      result.adds(...deps.map((item) => item.fileName));
-
-      for (const dep of deps) {
-        const targetDeps = depMap.get(dep.fileName) ?? [];
-
-        if (dep.importName === "*") {
-          for (const targetRefItem of targetDeps.filter((item) => item.exportName != null)) {
-            if (prevSet?.has(targetRefItem.fileName)) continue;
-
-            result.add(targetRefItem.fileName);
-            result.adds(...getAllDeps(targetRefItem.fileName, new Set<string>(prevSet).adds(...result)));
-          }
-        } else {
-          for (const targetRefItem of targetDeps.filter((item) => item.exportName === dep.importName)) {
-            if (prevSet?.has(targetRefItem.fileName)) continue;
-
-            result.add(targetRefItem.fileName);
-            result.adds(...getAllDeps(targetRefItem.fileName, new Set<string>(prevSet).adds(...result)));
-          }
-        }
-      }
-
-      return result;
-    };
-
-    for (const sf of sourceFileSet) {
-      const deps = getAllDeps(path.normalize(sf.fileName));
-      allDepMap.set(path.normalize(sf.fileName), deps);
-
-      for (const dep of getAllDeps(path.normalize(sf.fileName))) {
-        const depCache = this.#revDependencyCacheMap.getOrCreate(path.normalize(dep), new Set<string>());
-        depCache.add(path.normalize(sf.fileName));
-        if (this.#modifiedFileSet.has(path.normalize(dep))) {
-          affectedFileSet.add(path.normalize(sf.fileName));
-        }
-      }
-
-      if (this.#ngProgram) {
-        if (this.#ngProgram.compiler.ignoreForEmit.has(sf)) {
-          continue;
-        }
-
-        for (const dep of this.#ngProgram.compiler.getResourceDependencies(sf)) {
-          const ref = this.#resourceDependencyCacheMap.getOrCreate(path.normalize(dep), new Set<string>());
-          ref.add(path.normalize(sf.fileName));
-          if (this.#modifiedFileSet.has(path.normalize(dep))) {
-            affectedFileSet.add(path.normalize(sf.fileName));
-          }
-        }
-      }
-    }
-
-    if (affectedFileSet.size === 0) {
-      this.#debug(`get affected (init)...`);
-
-      for (const sf of this.#program.getSourceFiles()) {
-        const orgSf = getOrgSourceFile(sf);
-        if (!orgSf) continue;
-
-        affectedFileSet.add(path.normalize(orgSf.fileName));
-      }
-    }
+    // if (affectedFileSet.size === 0) {
+    //   this.#debug(`get affected (init)...`);
+    //
+    //   for (const sf of this.#program.getSourceFiles()) {
+    //     const orgSf = getOrgSourceFile(sf);
+    //     if (!orgSf) continue;
+    //
+    //     affectedFileSet.add(path.normalize(orgSf.fileName));
+    //   }
+    // }
 
     this.#debug(`get diagnostics...`);
 
+    const diagnostics: ts.Diagnostic[] = [];
+
     diagnostics.push(
+      ...this.#builder.getConfigFileParsingDiagnostics(),
+      ...this.#builder.getOptionsDiagnostics(),
+      ...this.#builder.getGlobalDiagnostics(),
+    );
+
+    /*diagnostics.push(
       ...this.#program.getConfigFileParsingDiagnostics(),
       ...this.#program.getOptionsDiagnostics(),
       ...this.#program.getGlobalDiagnostics(),
-    );
+    );*/
 
     if (this.#ngProgram) {
       diagnostics.push(...this.#ngProgram.compiler.getOptionDiagnostics());
@@ -386,21 +398,30 @@ export class SdTsCompiler {
 
     this.#debug(`get diagnostics of files...`);
 
-    for (const affectedFile of affectedFileSet) {
-      if (!PathUtil.isChildPath(affectedFile, this.#pkgPath)) {
-        continue;
-      }
+    while (true) {
+      const affectedFileResult = this.#builder.getSemanticDiagnosticsOfNextAffectedFile(undefined, (sf) => {
+        if (
+          this.#ngProgram &&
+          this.#ngProgram.compiler.ignoreForDiagnostics.has(sf) &&
+          sf.fileName.endsWith(".ngtypecheck.ts")
+        ) {
+          const orgSourceFile = getOrgSourceFile(sf);
+          if (orgSourceFile) {
+            affectedSourceFileSet.add(orgSourceFile);
+          }
+          return true;
+        }
+        return false;
+      });
+      if (!affectedFileResult) break;
 
-      const affectedSourceFile = this.#program.getSourceFile(affectedFile);
+      const affectedSourceFile = affectedFileResult.affected as ts.SourceFile;
 
-      if (
-        !affectedSourceFile ||
-        (this.#ngProgram && this.#ngProgram.compiler.ignoreForDiagnostics.has(affectedSourceFile))
-      ) {
-        continue;
-      }
+      affectedSourceFileSet.add(affectedSourceFile);
+    }
 
-      this.#debug(`get diagnostics of file ${affectedFile}...`);
+    for (const affectedSourceFile of affectedSourceFileSet) {
+      this.#debug(`get diagnostics of file [${affectedSourceFile.fileName}]`);
 
       diagnostics.push(
         ...this.#program.getSyntacticDiagnostics(affectedSourceFile),
@@ -418,6 +439,38 @@ export class SdTsCompiler {
       }
     }
 
+    /*
+    for (const affectedFile of affectedFileSet) {
+      if (!PathUtil.isChildPath(affectedFile, this.#pkgPath)) {
+        continue;
+      }
+
+      this.#debug(`get diagnostics of file [${affectedFile}]`);
+
+      const affectedSourceFile = this.#program.getSourceFile(affectedFile);
+      if (
+        !affectedSourceFile ||
+        (this.#ngProgram && this.#ngProgram.compiler.ignoreForDiagnostics.has(affectedSourceFile))
+      ) {
+        continue;
+      }
+
+      diagnostics.push(
+        ...this.#program.getSyntacticDiagnostics(affectedSourceFile),
+        ...this.#program.getSemanticDiagnostics(affectedSourceFile),
+      );
+
+      if (this.#ngProgram) {
+        if (affectedSourceFile.isDeclarationFile) {
+          continue;
+        }
+
+        diagnostics.push(
+          ...this.#ngProgram.compiler.getDiagnosticsForFile(affectedSourceFile, OptimizeFor.WholeProgram),
+        );
+      }
+    }*/
+
     this.#debug(`prepare emit...`);
 
     let transformers: ts.CustomTransformers = {};
@@ -431,6 +484,58 @@ export class SdTsCompiler {
     }
     // (transformers.before ??= []).push(transformKeys(this.#program));
 
+    this.#debug(`prepare emit files...`);
+
+    while (
+      this.#builder.emitNextAffectedFile(
+        (fileName, text, writeByteOrderMark, onError, sourceFiles, data) => {
+          if (!sourceFiles || sourceFiles.length === 0) {
+            this.#compilerHost.writeFile(fileName, text, writeByteOrderMark, onError, sourceFiles, data);
+            return;
+          }
+
+          const sourceFile = ts.getOriginalNode(sourceFiles[0], ts.isSourceFile);
+          if (this.#ngProgram) {
+            if (this.#ngProgram.compiler.ignoreForEmit.has(sourceFile)) {
+              return;
+            }
+            this.#ngProgram.compiler.incrementalCompilation.recordSuccessfulEmit(sourceFile);
+          }
+
+          const emitFileInfoCaches = this.#emittedFilesCacheMap.getOrCreate(path.normalize(sourceFile.fileName), []);
+          if (PathUtil.isChildPath(sourceFile.fileName, this.#pkgPath)) {
+            let realFilePath = fileName;
+            let realText = text;
+            if (PathUtil.isChildPath(realFilePath, path.resolve(this.#distPath, path.basename(this.#pkgPath), "src"))) {
+              realFilePath = path.resolve(
+                this.#distPath,
+                path.relative(path.resolve(this.#distPath, path.basename(this.#pkgPath), "src"), realFilePath),
+              );
+
+              if (fileName.endsWith(".js.map")) {
+                const sourceMapContents = JSON.parse(realText);
+                // remove "../../"
+                sourceMapContents.sources[0] = sourceMapContents.sources[0].slice(6);
+                realText = JSON.stringify(sourceMapContents);
+              }
+            }
+
+            emitFileInfoCaches.push({
+              outAbsPath: realFilePath,
+              text: realText,
+            });
+          } else {
+            emitFileInfoCaches.push({ text });
+          }
+
+          emitFileSet.add(path.normalize(sourceFile.fileName));
+        },
+        undefined,
+        undefined,
+        transformers,
+      )
+    ) {}
+
     // affected에 새로 추가된 파일은 포함되지 않는 현상이 있어 getSourceFiles로 바꿈
     // 비교해보니, 딱히 getSourceFiles라서 더 느려지는것 같지는 않음
     /*for (const affectedFile of affectedFileSet) {
@@ -443,7 +548,7 @@ export class SdTsCompiler {
         continue;
       }*/
 
-    for (const sf of sourceFileSet) {
+    /*for (const sf of sourceFileSet) {
       if (this.#emittedFilesCacheMap.has(path.normalize(sf.fileName))) {
         continue;
       }
@@ -453,13 +558,6 @@ export class SdTsCompiler {
       }
 
       if (this.#ngProgram?.compiler.ignoreForEmit.has(sf)) {
-        continue;
-      }
-
-      if (
-        this.#ngProgram?.compiler.incrementalCompilation.safeToSkipEmit(sf) &&
-        !affectedFileSet.has(path.normalize(sf.fileName))
-      ) {
         continue;
       }
 
@@ -519,7 +617,7 @@ export class SdTsCompiler {
         undefined,
         transformers,
       );
-    }
+    }*/
 
     //-- global style
     if (
@@ -546,6 +644,7 @@ export class SdTsCompiler {
 
     this.#modifiedFileSet.clear();
 
+    const affectedFileSet = new Set(Array.from(affectedSourceFileSet).map((item) => path.normalize(item.fileName)));
     this.#debug(`build completed`, affectedFileSet, diagnostics.length);
 
     //-- result
@@ -565,15 +664,12 @@ export class SdTsCompiler {
     this.#logger.debug(`[${path.basename(this.#pkgPath)}]`, ...msg);
   }
 
-  #findDeps(sf: ts.SourceFile) {
-    const deps: (
-      | {
-          fileName: string;
-          importName: string;
-          exportName?: string;
-        }
-      | ts.Diagnostic
-    )[] = [];
+  /*#findDeps(sf: ts.SourceFile) {
+    const deps: {
+      fileName: string;
+      importName: string;
+      exportName?: string;
+    }[] = [];
 
     const tc = this.#program!.getTypeChecker();
 
@@ -581,30 +677,10 @@ export class SdTsCompiler {
       if (ts.isExportDeclaration(node)) {
         if (node.moduleSpecifier) {
           const moduleSymbol = tc.getSymbolAtLocation(node.moduleSpecifier);
-          if (!moduleSymbol) {
-            deps.push({
-              category: DiagnosticCategory.Error,
-              code: -1,
-              file: sf,
-              start: node.getStart(),
-              length: node.getEnd() - node.getStart(),
-              messageText: `export moduleSymbol not found`,
-            });
-            return;
-          }
+          if (!moduleSymbol) throw new NeverEntryError(`export moduleSymbol: ${sf.fileName}`);
 
           const decls = moduleSymbol.getDeclarations();
-          if (!decls) {
-            deps.push({
-              category: DiagnosticCategory.Error,
-              code: -1,
-              file: sf,
-              start: node.getStart(),
-              length: node.getEnd() - node.getStart(),
-              messageText: `export decls not found`,
-            });
-            return;
-          }
+          if (!decls) throw new NeverEntryError(`export decls: ${sf.fileName}`);
 
           const namedBindings = node.exportClause;
           if (namedBindings && ts.isNamedExports(namedBindings)) {
@@ -619,15 +695,7 @@ export class SdTsCompiler {
             }
           } else {
             if (!moduleSymbol.exports) {
-              deps.push({
-                category: DiagnosticCategory.Error,
-                code: -1,
-                file: sf,
-                start: node.getStart(),
-                length: node.getEnd() - node.getStart(),
-                messageText: `moduleSymbol exports not found`,
-              });
-              return;
+              throw new NeverEntryError("1234");
             }
 
             for (const decl of decls) {
@@ -650,22 +718,12 @@ export class SdTsCompiler {
               importName: "*",
             });
           }
-          /*else {
+          /!*else {
             throw new NeverEntryError(`import moduleSymbol: ${sf.fileName} ${node.moduleSpecifier["text"]}`);
-          }*/
+          }*!/
         } else {
           const decls = moduleSymbol.getDeclarations();
-          if (!decls) {
-            deps.push({
-              category: DiagnosticCategory.Error,
-              code: -1,
-              file: sf,
-              start: node.getStart(),
-              length: node.getEnd() - node.getStart(),
-              messageText: `import decls not found`,
-            });
-            return;
-          }
+          if (!decls) throw new NeverEntryError(`import decls: ${sf.fileName}`);
 
           const namedBindings = node.importClause?.namedBindings;
           if (namedBindings && ts.isNamedImports(namedBindings)) {
@@ -690,7 +748,7 @@ export class SdTsCompiler {
     });
 
     return deps;
-  }
+  }*/
 }
 
 export interface ISdTsCompilerResult {

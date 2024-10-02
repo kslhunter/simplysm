@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, forwardRef, inject, input, ViewEncapsulation } from "@angular/core";
 import { SdViewControl } from "./SdViewControl";
 import { $computed } from "../utils/$hooks";
-import { $hostBinding } from "../utils/$hostBinding";
 
 @Component({
   selector: "sd-view-item",
@@ -24,16 +23,17 @@ import { $hostBinding } from "../utils/$hostBinding";
       }
     `,
   ],
-  template: ` <ng-content></ng-content> `,
+  template: `
+    <ng-content></ng-content>
+  `,
+  host: {
+    "[attr.sd-selected]": "isSelected()",
+  },
 })
 export class SdViewItemControl {
   value = input<any>();
 
   #parentControl = inject<SdViewControl>(forwardRef(() => SdViewControl));
 
-  isSelected$ = $computed(() => this.#parentControl.value() === this.value());
-
-  constructor() {
-    $hostBinding("attr.sd-selected", this.isSelected$);
-  }
+  isSelected = $computed(() => this.#parentControl.value() === this.value());
 }

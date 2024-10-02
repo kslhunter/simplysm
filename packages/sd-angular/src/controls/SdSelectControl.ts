@@ -26,9 +26,7 @@ import { StringUtil } from "@simplysm/sd-core-common";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { SdButtonControl } from "./SdButtonControl";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
-import { $computed, $effect } from "../utils/$hooks";
-import { $reactive } from "../utils/$reactive";
-import { $hostBinding } from "../utils/$hostBinding";
+import { $computed, $effect, $signal } from "../utils/$hooks";
 
 @Component({
   selector: "sd-select",
@@ -308,6 +306,13 @@ import { $hostBinding } from "../utils/$hostBinding";
       </sd-dropdown-popup>
     </sd-dropdown>
   `,
+  host: {
+    "[attr.sd-disabled]": "disabled()",
+    "[attr.sd-inline]": "inline()",
+    "[attr.sd-inset]": "inset()",
+    "[attr.sd-size]": "size()",
+    "[attr.sd-invalid]": "errorMessage()",
+  },
 })
 export class SdSelectControl<M extends "single" | "multi", T> {
   icons = inject(SdAngularConfigProvider).icons;
@@ -342,30 +347,22 @@ export class SdSelectControl<M extends "single" | "multi", T> {
     read: TemplateRef,
   });
 
-  itemControls$ = $reactive<SdSelectItemControl[]>([]);
+  itemControls = $signal<SdSelectItemControl[]>([]);
+
+  errorMessage = $computed(() => {
+    const errorMessages: string[] = [];
+
+    if (this.required() && this.value() === undefined) {
+      errorMessages.push("선택된 항목이 없습니다.");
+    }
+
+    const fullErrorMessage = errorMessages.join("\r\n");
+    return !StringUtil.isNullOrEmpty(fullErrorMessage) ? fullErrorMessage : undefined;
+  });
 
   constructor() {
-    $hostBinding("attr.sd-disabled", this.disabled);
-    $hostBinding("attr.sd-inline", this.inline);
-    $hostBinding("attr.sd-inset", this.inset);
-    $hostBinding("attr.sd-size", this.size);
-
-    $hostBinding(
-      "attr.sd-invalid",
-      $computed(() => {
-        const errorMessages: string[] = [];
-
-        if (this.required() && this.value() === undefined) {
-          errorMessages.push("선택된 항목이 없습니다.");
-        }
-
-        const fullErrorMessage = errorMessages.join("\r\n");
-        return !StringUtil.isNullOrEmpty(fullErrorMessage) ? fullErrorMessage : undefined;
-      }),
-    );
-
     $effect(() => {
-      const selectedItemControls = this.itemControls$.value.filter((itemControl) => itemControl.isSelected$.value);
+      const selectedItemControls = this.itemControls().filter((itemControl) => itemControl.isSelected());
       const selectedItemEls = selectedItemControls.map((item) => item.elRef.nativeElement);
       const innerHTML = selectedItemEls
         .map((el) => el.findFirst("> ._content")?.innerHTML ?? "")
@@ -435,7 +432,7 @@ export class SdSelectControl<M extends "single" | "multi", T> {
   }
 
   onSelectAllButtonClick(check: boolean) {
-    const value = check ? this.itemControls$.value.map((item) => item.value()) : [];
+    const value = check ? this.itemControls().map((item) => item.value()) : [];
 
     this.value.set(value);
   }

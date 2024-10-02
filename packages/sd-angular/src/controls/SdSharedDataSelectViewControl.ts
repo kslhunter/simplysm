@@ -29,8 +29,7 @@ import { SdAnchorControl } from "./SdAnchorControl";
 import { SdModalBase, SdModalProvider } from "../providers/SdModalProvider";
 import { ISharedDataModalInputParam, ISharedDataModalOutputResult } from "./SdSharedDataSelectControl";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
-import { $computed, $effect } from "../utils/$hooks";
-import { $reactive } from "../utils/$reactive";
+import { $computed, $effect, $signal } from "../utils/$hooks";
 
 @Component({
   selector: "sd-shared-data-select-view",
@@ -52,7 +51,7 @@ import { $reactive } from "../utils/$reactive";
     FaIconComponent,
   ],
   template: `
-    <sd-busy-container [busy]="busyCount$.value > 0">
+    <sd-busy-container [busy]="busyCount() > 0">
       <sd-dock-container>
         @if (headerTemplateRef() || modalType()) {
           <sd-dock class="pb-default">
@@ -75,7 +74,7 @@ import { $reactive } from "../utils/$reactive";
 
         <sd-dock class="pb-default">
           @if (!filterTemplateRef()) {
-            <sd-textfield type="text" placeholder="검색어" [(value)]="searchText$.value" />
+            <sd-textfield type="text" placeholder="검색어" [(value)]="searchText" />
           } @else {
             <ng-template [ngTemplateOutlet]="filterTemplateRef()!" />
           }
@@ -96,7 +95,7 @@ import { $reactive } from "../utils/$reactive";
                 }
               </sd-list-item>
             }
-            @for (item of filteredItems$.value; let index = $index; track item.__valueKey) {
+            @for (item of filteredItems(); let index = $index; track item.__valueKey) {
               <sd-list-item
                 [selected]="selectedItem() === item"
                 (click)="selectedItem() === item ? selectedItem.set(undefined) : selectedItem.set(item)"
@@ -145,14 +144,14 @@ export class SdSharedDataSelectViewControl<
   });
   undefinedTemplateRef = contentChild<any, TemplateRef<void>>("undefinedTemplate", { read: TemplateRef });
 
-  busyCount$ = $reactive(0);
-  searchText$ = $reactive<string>();
+  busyCount = $signal(0);
+  searchText = $signal<string>();
 
-  filteredItems$ = $computed(() => {
+  filteredItems = $computed(() => {
     let result = this.items().filter((item) => !item.__isHidden);
 
-    if (!StringUtil.isNullOrEmpty(this.searchText$.value)) {
-      result = result.filter((item) => item.__searchText.includes(this.searchText$.value!));
+    if (!StringUtil.isNullOrEmpty(this.searchText())) {
+      result = result.filter((item) => item.__searchText.includes(this.searchText()!));
     }
 
     if (this.filterFn()) {

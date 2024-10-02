@@ -15,7 +15,6 @@ import { SdCheckboxControl } from "./SdCheckboxControl";
 import { SdGapControl } from "./SdGapControl";
 import { $computed, $effect } from "../utils/$hooks";
 import { injectElementRef } from "../utils/injectElementRef";
-import { $hostBinding } from "../utils/$hostBinding";
 
 @Component({
   selector: "sd-select-item",
@@ -68,8 +67,8 @@ import { $hostBinding } from "../utils/$hostBinding";
     `,
   ],
   template: `
-    @if (selectMode$.value === "multi") {
-      <sd-checkbox [value]="isSelected$.value" [inline]="true"></sd-checkbox>
+    @if (selectMode() === "multi") {
+      <sd-checkbox [value]="isSelected()" [inline]="true"></sd-checkbox>
       <sd-gap width="sm" />
     }
 
@@ -81,6 +80,12 @@ import { $hostBinding } from "../utils/$hostBinding";
       }
     </div>
   `,
+  host: {
+    "[attr.tabindex]": "'0'",
+    "[attr.sd-disabled]": "disabled()",
+    "[attr.sd-select-mode]": "selectMode()",
+    "[attr.sd-selected]": "isSelected()",
+  },
 })
 export class SdSelectItemControl {
   #selectControl: SdSelectControl<any, any> = inject(forwardRef(() => SdSelectControl));
@@ -91,20 +96,15 @@ export class SdSelectItemControl {
 
   labelTemplateRef = contentChild<any, TemplateRef<void>>("label", { read: TemplateRef });
 
-  selectMode$ = $computed(() => this.#selectControl.selectMode());
-  isSelected$ = $computed(() => this.#selectControl.getIsSelectedItemControl(this));
+  selectMode = $computed(() => this.#selectControl.selectMode());
+  isSelected = $computed(() => this.#selectControl.getIsSelectedItemControl(this));
 
   constructor() {
-    $hostBinding("attr.tabindex", { value: 0 });
-    $hostBinding("attr.sd-disabled", this.disabled);
-    $hostBinding("attr.sd-select-mode", this.selectMode$);
-    $hostBinding("attr.sd-selected", this.isSelected$);
-
-    $effect([], (onCleanup) => {
-      this.#selectControl.itemControls$.value.push(this);
+    $effect((onCleanup) => {
+      this.#selectControl.itemControls.update((v) => [...v, this]);
 
       onCleanup(() => {
-        this.#selectControl.itemControls$.value.remove(this);
+        this.#selectControl.itemControls.update((v) => v.filter((item) => item !== this));
       });
     });
   }
@@ -115,7 +115,7 @@ export class SdSelectItemControl {
     event.stopPropagation();
     if (this.disabled()) return;
 
-    this.#selectControl.onItemControlClick(this, this.selectMode$.value === "single");
+    this.#selectControl.onItemControlClick(this, this.selectMode() === "single");
   }
 
   @HostListener("keydown", ["$event"])
@@ -132,7 +132,7 @@ export class SdSelectItemControl {
       event.preventDefault();
       event.stopPropagation();
 
-      this.#selectControl.onItemControlClick(this, this.selectMode$.value === "single");
+      this.#selectControl.onItemControlClick(this, this.selectMode() === "single");
     }
   }
 }

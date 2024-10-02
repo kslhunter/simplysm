@@ -19,7 +19,7 @@
     "yarn": "4.5.0"
   },
   "scripts": {
-    "watch": "npm run _sd-cli_ -- watch --debug",
+    "watch": "npm run _sd-cli_ -- watch",
     "build": "npm run _sd-cli_ -- build",
     "publish": "npm run _sd-cli_ -- publish",
     "--": "",

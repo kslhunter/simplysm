@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, ViewEncapsulation } from "@angular/core";
 import { NavigationStart, Router } from "@angular/router";
-import { $hostBinding } from "../utils/$hostBinding";
-import { $reactive } from "../utils/$reactive";
+import { $signal } from "../utils/$hooks";
 
 @Component({
   selector: "sd-sidebar-container",
@@ -54,31 +53,31 @@ import { $reactive } from "../utils/$reactive";
           }
         }
       }
-    `,
+    `
   ],
   template: `
     <ng-content></ng-content>
-    <div class="_backdrop" (click)="onBackdropClick()"></div>
-  `,
+    <div class="_backdrop" (click)="onBackdropClick()"></div>`,
+  host: {
+    "[attr.sd-toggle]": "toggle()"
+  }
 })
 export class SdSidebarContainerControl {
   #router: Router | null = inject(Router, { optional: true });
 
-  toggle$ = $reactive(false);
+  toggle = $signal(false);
 
   constructor() {
-    $hostBinding("attr.sd-toggle", this.toggle$);
-
     if (this.#router) {
       this.#router.events.subscribe((value) => {
         if (value instanceof NavigationStart) {
-          this.toggle$.value = false;
+          this.toggle.set(false);
         }
       });
     }
   }
 
   onBackdropClick() {
-    this.toggle$.value = !this.toggle$.value;
+    this.toggle.update((v) => !v);
   }
 }

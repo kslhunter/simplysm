@@ -1,12 +1,12 @@
 import { ApplicationRef, createComponent, Directive, inject, Injectable, input, Type } from "@angular/core";
 import { SdModalControl } from "../controls/SdModalControl";
-import { $reactive } from "../utils/$reactive";
+import { $signal } from "../utils/$hooks";
 
 @Injectable({ providedIn: "root" })
 export class SdModalProvider {
   #appRef = inject(ApplicationRef);
 
-  modalCount$ = $reactive(0);
+  modalCount = $signal(0);
 
   async showAsync<T extends SdModalBase<any, any>>(
     modalType: Type<T>,
@@ -58,7 +58,7 @@ export class SdModalProvider {
         });
 
         modalRef.setInput("open", false);
-        this.modalCount$.value--;
+        this.modalCount.update((v) => v - 1);
 
         if (prevActiveElement) {
           prevActiveElement.focus();
@@ -94,7 +94,7 @@ export class SdModalProvider {
 
       this.#appRef.attachView(modalRef.hostView);
 
-      this.modalCount$.value++;
+      this.modalCount.update((v) => v + 1);
 
       // TODO: Global Busy
     });

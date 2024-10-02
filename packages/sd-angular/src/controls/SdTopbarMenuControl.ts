@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
-import { $hostBinding } from "../utils/$hostBinding";
 
 @Component({
   selector: "sd-topbar-menu",
@@ -60,13 +59,12 @@ import { $hostBinding } from "../utils/$hostBinding";
     `,
   ],
   template: ` <ng-content></ng-content>`,
+  host: {
+    "[attr.disabled]": "disabled()",
+    "[attr.sd-theme]": "theme()",
+  },
 })
 export class SdTopbarMenuControl {
   disabled = input(false);
   theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey">("primary");
-
-  constructor() {
-    $hostBinding("attr.disabled", this.disabled);
-    $hostBinding("attr.sd-theme", this.theme);
-  }
 }

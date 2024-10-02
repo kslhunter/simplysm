@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
-import { injectElementResize } from "../utils/injectElementResize";
+import { injectElementSize } from "../utils/injectElementSize";
 import { $computed } from "../utils/$hooks";
-import { $hostBinding } from "../utils/$hostBinding";
 
 @Component({
   selector: "sd-grid",
@@ -9,7 +8,9 @@ import { $hostBinding } from "../utils/$hostBinding";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
-  template: ` <ng-content /> `,
+  template: `
+    <ng-content />
+  `,
   styles: [
     /* language=SCSS */ `
       sd-grid {
@@ -18,18 +19,15 @@ import { $hostBinding } from "../utils/$hostBinding";
       }
     `,
   ],
+  host: {
+    "[style.gap]": "styleGap()",
+  },
 })
 export class SdGridControl {
-  #size = injectElementResize();
+  #size = injectElementSize();
 
   gap = input<"xxs" | "xs" | "sm" | "default" | "lg" | "xl" | "xxl">();
 
-  offsetWidth$ = $computed(() => this.#size.width.value);
-
-  constructor() {
-    $hostBinding(
-      "style.gap",
-      $computed(() => (this.gap() != null ? "var(--gap-" + this.gap() + ")" : undefined)),
-    );
-  }
+  styleGap = $computed(() => (this.gap() != null ? "var(--gap-" + this.gap() + ")" : undefined));
+  offsetWidth = $computed(() => this.#size.offsetWidth());
 }

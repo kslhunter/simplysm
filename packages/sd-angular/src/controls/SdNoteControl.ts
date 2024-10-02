@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
-import { $hostBinding } from "../utils/$hostBinding";
 
 @Component({
   selector: "sd-note",
@@ -42,15 +41,14 @@ import { $hostBinding } from "../utils/$hostBinding";
     `,
   ],
   template: ` <ng-content></ng-content> `,
+  host: {
+    "[attr.sd-theme]": "theme()",
+    "[attr.sd-size]": "size()",
+    "[attr.sd-inset]": "inset()",
+  },
 })
 export class SdNoteControl {
   theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey">();
   size = input<"sm" | "lg">();
   inset = input(false);
-
-  constructor() {
-    $hostBinding("attr.sd-theme", this.theme);
-    $hostBinding("attr.sd-size", this.size);
-    $hostBinding("attr.sd-inset", this.inset);
-  }
 }

@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
-import { $hostBinding } from "../utils/$hostBinding";
 
 @Component({
   selector: "sd-table",
@@ -114,15 +113,14 @@ import { $hostBinding } from "../utils/$hostBinding";
   template: ` <table>
     <ng-content></ng-content>
   </table>`,
+  host: {
+    "[attr.sd-inset]": "inset()",
+    "[attr.sd-inline]": "inline()",
+    "[attr.sd-cell-border]": "cellBorder()",
+  },
 })
 export class SdTableControl {
   inset = input(false);
   inline = input(false);
   cellBorder = input<"vertical" | "horizontal" | "all">("all");
-
-  constructor() {
-    $hostBinding("attr.sd-inset", this.inset);
-    $hostBinding("attr.sd-inline", this.inline);
-    $hostBinding("attr.sd-cell-border", this.cellBorder);
-  }
 }

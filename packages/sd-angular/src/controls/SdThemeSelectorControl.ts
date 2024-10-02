@@ -26,23 +26,15 @@ import { $effect } from "../utils/$hooks";
     <sd-dropdown>
       <sd-anchor style="color: var(--theme-grey-default)">
         <fa-icon [icon]="icons.mountainSun" />
-        {{ theme.value }}
+        {{ theme() }}
       </sd-anchor>
 
       <sd-dropdown-popup>
         <sd-list>
-          <sd-list-item
-            [selected]="theme.value === 'compact'"
-            [selectedIcon]="icons.check"
-            (click)="theme.value = 'compact'"
-          >
+          <sd-list-item [selected]="theme() === 'compact'" [selectedIcon]="icons.check" (click)="theme.set('compact')">
             compact
           </sd-list-item>
-          <sd-list-item
-            [selected]="theme.value === 'modern'"
-            [selectedIcon]="icons.check"
-            (click)="theme.value = 'modern'"
-          >
+          <sd-list-item [selected]="theme() === 'modern'" [selectedIcon]="icons.check" (click)="theme.set('modern')">
             modern
           </sd-list-item>
         </sd-list>
@@ -57,7 +49,7 @@ export class SdThemeSelectorControl {
 
   dropdownControl = viewChild.required(SdDropdownControl);
 
-  theme = this.#sdTheme.theme$;
+  theme = this.#sdTheme.theme;
 
   constructor() {
     $effect([this.theme], () => {

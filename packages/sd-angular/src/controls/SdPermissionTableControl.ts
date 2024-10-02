@@ -6,8 +6,7 @@ import { NgTemplateOutlet } from "@angular/common";
 import { SdCollapseIconControl } from "./SdCollapseIconControl";
 import { SdCheckboxControl } from "./SdCheckboxControl";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
-import { $computed } from "../utils/$hooks";
-import { $reactive } from "../utils/$reactive";
+import { $computed, $signal } from "../utils/$hooks";
 
 @Component({
   selector: "sd-permission-table",
@@ -139,7 +138,7 @@ import { $reactive } from "../utils/$reactive";
             }
           </td>
 
-          @for (_ of arr(depthLength$.value - (depth + 1)); let i = $index; track i) {
+          @for (_ of arr(depthLength() - (depth + 1)); let i = $index; track i) {
             <td class="_after">&nbsp;</td>
           }
 
@@ -194,9 +193,9 @@ export class SdPermissionTableControl {
   items = input<ISdPermission[]>([]);
   disabled = input(false);
 
-  collapsedItems$ = $reactive(new Set<ISdPermission>());
+  collapsedItems = $signal(new Set<ISdPermission>());
 
-  depthLength$ = $computed(() => {
+  depthLength = $computed(() => {
     return this.#getDepthLength(this.items(), 0);
   });
 
@@ -205,7 +204,7 @@ export class SdPermissionTableControl {
   }
 
   getIsPermCollapsed(item: ISdPermission): boolean {
-    return this.collapsedItems$.value.has(item);
+    return this.collapsedItems().has(item);
   }
 
   getAllChildren(item: ISdPermission): ISdPermission[] {
@@ -264,15 +263,19 @@ export class SdPermissionTableControl {
   }
 
   onPermCollapseToggle(item: ISdPermission) {
-    if (this.collapsedItems$.value.has(item)) {
-      this.collapsedItems$.value.delete(item);
-    } else {
-      this.collapsedItems$.value.add(item);
-      const allChildren = this.getAllChildren(item);
-      for (const allChild of allChildren) {
-        this.collapsedItems$.value.add(allChild);
+    this.collapsedItems.update((v) => {
+      const r = new Set(v);
+      if (r.has(item)) {
+        r.delete(item);
+      } else {
+        r.add(item);
+        const allChildren = this.getAllChildren(item);
+        for (const allChild of allChildren) {
+          r.add(allChild);
+        }
       }
-    }
+      return r;
+    });
   }
 
   onPermCheckChange(item: ISdPermission, type: "use" | "edit", val: boolean) {

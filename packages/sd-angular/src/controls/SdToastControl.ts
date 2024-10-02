@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, input, output, ViewEncapsulation } from "@angular/core";
-import { $hostBinding } from "../utils/$hostBinding";
 
 @Component({
   selector: "sd-toast",
@@ -102,18 +101,20 @@ import { $hostBinding } from "../utils/$hostBinding";
       }
     `,
   ],
-  template: `
-    <div class="_sd-toast-block">
-      <div class="_sd-toast-message">
-        <ng-content></ng-content>
-      </div>
-      @if (useProgress()) {
-        <div class="_sd-toast-progress">
-          <div class="_sd-toast-progress-bar" [style.width]="progress() + '%'"></div>
-        </div>
-      }
+  template: ` <div class="_sd-toast-block">
+    <div class="_sd-toast-message">
+      <ng-content></ng-content>
     </div>
-  `,
+    @if (useProgress()) {
+      <div class="_sd-toast-progress">
+        <div class="_sd-toast-progress-bar" [style.width]="progress() + '%'"></div>
+      </div>
+    }
+  </div>`,
+  host: {
+    "[attr.sd-open]": "open()",
+    "[attr.sd-theme]": "theme()",
+  },
 })
 export class SdToastControl {
   open = input(false);
@@ -123,9 +124,4 @@ export class SdToastControl {
   progress = input<number>(0);
 
   close = output();
-
-  constructor() {
-    $hostBinding("attr.sd-open", this.open);
-    $hostBinding("attr.sd-theme", this.theme);
-  }
 }

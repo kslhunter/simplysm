@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, HostListener, input, model, ViewEncapsulation } from "@angular/core";
-import { $hostBinding } from "../utils/$hostBinding";
 
 @Component({
   selector: "sd-switch",
@@ -93,6 +92,15 @@ import { $hostBinding } from "../utils/$hostBinding";
   template: ` <div>
     <div></div>
   </div>`,
+  host: {
+    "[attr.sd-on]": "value()",
+    "[attr.sd-disabled]": "disabled()",
+    "[attr.sd-inline]": "inline()",
+    "[attr.sd-inset]": "inset()",
+    "[attr.sd-size]": "size()",
+    "[attr.sd-theme]": "theme()",
+    "[attr.tabindex]": "'0'",
+  },
 })
 export class SdSwitchControl {
   value = model(false);
@@ -103,16 +111,6 @@ export class SdSwitchControl {
 
   size = input<"sm" | "lg">();
   theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey">();
-
-  constructor() {
-    $hostBinding("attr.sd-on", this.value);
-    $hostBinding("attr.sd-disabled", this.disabled);
-    $hostBinding("attr.sd-inline", this.inline);
-    $hostBinding("attr.sd-inset", this.inset);
-    $hostBinding("attr.sd-size", this.size);
-    $hostBinding("attr.sd-theme", this.theme);
-    $hostBinding("attr.tabindex", { value: 0 });
-  }
 
   @HostListener("click", ["$event"])
   onClick(event: Event) {

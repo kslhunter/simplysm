@@ -1,21 +1,19 @@
 import { Directive, HostListener, inject, input } from "@angular/core";
 import { Router } from "@angular/router";
 import { SdNavigateWindowProvider } from "../providers/SdNavigateWindowProvider";
-import { $hostBinding } from "../utils/$hostBinding";
 
 @Directive({
   selector: "[sdRouterLink]",
   standalone: true,
+  host: {
+    "[style.cursor]": "'pointer'",
+  },
 })
 export class SdRouterLinkDirective {
   #router = inject(Router);
   #navWindow = inject(SdNavigateWindowProvider);
 
   sdRouterLink = input<[string, Record<string, string>?, { width?: number; height?: number }?, string?]>();
-
-  constructor() {
-    $hostBinding("style.cursor", { value: "pointer" });
-  }
 
   @HostListener("click", ["$event"])
   async onClick(event: MouseEvent): Promise<void> {

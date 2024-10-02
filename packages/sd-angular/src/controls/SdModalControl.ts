@@ -19,10 +19,8 @@ import { SdDockContainerControl } from "./SdDockContainerControl";
 import { SdDockControl } from "./SdDockControl";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
-import { $effect } from "../utils/$hooks";
+import { $effect, $signal } from "../utils/$hooks";
 import { injectElementRef } from "../utils/injectElementRef";
-import { $hostBinding } from "../utils/$hostBinding";
-import { $reactive } from "../utils/$reactive";
 
 @Component({
   selector: "sd-modal",
@@ -319,6 +317,12 @@ import { $reactive } from "../utils/$reactive";
       }
     </div>
   `,
+  host: {
+    "[attr.sd-open]": "open()",
+    "[attr.sd-float]": "float()",
+    "[attr.sd-position]": "position()",
+    "[attr.sd-mobile-fill-disabled]": "mobileFillDisabled()",
+  },
 })
 export class SdModalControl {
   icons = inject(SdAngularConfigProvider).icons;
@@ -349,20 +353,15 @@ export class SdModalControl {
 
   dialogElRef = viewChild.required<any, ElementRef<HTMLElement>>("dialogEl", { read: ElementRef });
 
-  #config$ = $reactive<ISdModalConfigVM>();
+  #config = $signal<ISdModalConfigVM>();
 
   constructor() {
-    $hostBinding("attr.sd-open", this.open);
-    $hostBinding("attr.sd-float", this.float);
-    $hostBinding("attr.sd-position", this.position);
-    $hostBinding("attr.sd-mobile-fill-disabled", this.mobileFillDisabled);
-
     $effect([this.key], async () => {
-      this.#config$.value = await this.#sdSystemConfig.getAsync(`sd-modal.${this.key()}`);
+      this.#config.set(await this.#sdSystemConfig.getAsync(`sd-modal.${this.key()}`));
     });
 
     $effect(() => {
-      const conf = this.#config$.value;
+      const conf = this.#config();
       if (conf) {
         this.dialogElRef().nativeElement.style.position = conf.position;
         this.dialogElRef().nativeElement.style.left = conf.left;
@@ -530,7 +529,7 @@ export class SdModalControl {
           width: dialogEl.style.width,
           height: dialogEl.style.height,
         };
-        this.#config$.value = newConf;
+        this.#config.set(newConf);
         await this.#sdSystemConfig.setAsync(`sd-modal.${this.key()}`, newConf);
       }
     };
@@ -595,7 +594,7 @@ export class SdModalControl {
           width: dialogEl.style.width,
           height: dialogEl.style.height,
         };
-        this.#config$.value = newConf;
+        this.#config.set(newConf);
         await this.#sdSystemConfig.setAsync(`sd-modal.${this.key()}`, newConf);
       }
     };

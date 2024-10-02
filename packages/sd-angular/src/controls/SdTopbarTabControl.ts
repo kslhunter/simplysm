@@ -38,12 +38,10 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
       }
     `,
   ],
-  template: `
-    <ng-content></ng-content>
+  template: ` <ng-content></ng-content>
     <sd-anchor (click)="onCloseButtonClick($event)">
       <fa-icon [icon]="icons.xmark" [fixedWidth]="true" />
-    </sd-anchor>
-  `,
+    </sd-anchor>`,
 })
 export class SdTopbarTabControl {
   icons = inject(SdAngularConfigProvider).icons;

@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, forwardRef, inject, ViewEncapsulation } from "@angular/core";
 import { SdSidebarContainerControl } from "./SdSidebarContainerControl";
 import { $computed } from "../utils/$hooks";
-import { $hostBinding } from "../utils/$hostBinding";
 
 @Component({
   selector: "sd-sidebar",
@@ -79,13 +78,12 @@ import { $hostBinding } from "../utils/$hostBinding";
     `,
   ],
   template: `<ng-content></ng-content>`,
+  host: {
+    "[attr.sd-toggle]": "toggle()",
+  },
 })
 export class SdSidebarControl {
   #parentControl = inject<SdSidebarContainerControl>(forwardRef(() => SdSidebarContainerControl));
 
-  toggle$ = $computed(() => this.#parentControl.toggle$.value);
-
-  constructor() {
-    $hostBinding("attr.sd-toggle", this.toggle$);
-  }
+  toggle = $computed(() => this.#parentControl.toggle());
 }

@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
-import { $hostBinding } from "../utils/$hostBinding";
 
 @Component({
   selector: "sd-view",
@@ -19,13 +18,14 @@ import { $hostBinding } from "../utils/$hostBinding";
       }
     `,
   ],
-  template: `<ng-content></ng-content>`,
+  template: `
+    <ng-content></ng-content>
+  `,
+  host: {
+    "[attr.sd-fill]": "fill()",
+  },
 })
 export class SdViewControl {
   value = input<any>();
   fill = input(false);
-
-  constructor() {
-    $hostBinding("attr.sd-fill", this.fill);
-  }
 }

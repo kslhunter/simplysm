@@ -9,13 +9,11 @@ import {
 } from "@angular/core";
 import { SdKanbanBoardControl } from "./SdKanbanBoardControl";
 import { SdCardControl } from "./SdCardControl";
-import { $computed } from "../utils/$hooks";
+import { $computed, $signal } from "../utils/$hooks";
 import { SdKanbanLaneControl } from "./SdKanbanLaneControl";
 import { injectElementRef } from "../utils/injectElementRef";
 import { SdEventsDirective } from "../directives/SdEventsDirective";
 import { ISdResizeEvent } from "../plugins/SdResizeEventPlugin";
-import { $hostBinding } from "../utils/$hostBinding";
-import { $reactive } from "../utils/$reactive";
 
 @Component({
   selector: "sd-kanban",
@@ -81,15 +79,15 @@ import { $reactive } from "../utils/$reactive";
   template: `
     <div
       class="_drag-position"
-      [style.height]="cardHeight$.value + 'px'"
+      [style.height]="cardHeight() + 'px'"
       (dragover)="onDragOver($event)"
       (dragleave)="onDragLeave($event)"
       (drop)="onDragDrop($event)"
     ></div>
     <div
       class="_drop-position"
-      [style.height]="dragOvered$.value ? (dragKanban$.value?.heightOnDrag$?.value ?? 0) + 'px' : '0px'"
-      [style.display]="dragKanban$.value ? 'block' : 'none'"
+      [style.height]="dragOvered() ? (dragKanban()?.heightOnDrag() ?? 0) + 'px' : '0px'"
+      [style.display]="dragKanban() ? 'block' : 'none'"
     ></div>
     <sd-card
       [class]="contentClass()"
@@ -100,6 +98,11 @@ import { $reactive } from "../utils/$reactive";
       <ng-content></ng-content>
     </sd-card>
   `,
+  host: {
+    "[attr.sd-dragging-this]": "dragKanban() == this",
+    "[attr.sd-dragging]": "dragKanban() != null",
+    "[attr.sd-drag-over]": "dragOvered()",
+  },
 })
 export class SdKanbanControl<L, T> {
   #boardControl = inject<SdKanbanBoardControl<L, T>>(forwardRef(() => SdKanbanBoardControl));
@@ -108,33 +111,21 @@ export class SdKanbanControl<L, T> {
 
   value = input.required<T>();
 
-  laneValue$ = $computed(() => this.#laneControl.value());
+  laneValue = $computed(() => this.#laneControl.value());
 
   selectable = input(false);
   draggable = input(false);
 
-  selected$ = $computed(() => this.#boardControl.selectedValues().includes(this.value()));
-  dragKanban$ = $computed(() => this.#boardControl.dragKanban$.value);
+  selected = $computed(() => this.#boardControl.selectedValues().includes(this.value()));
+  dragKanban = $computed(() => this.#boardControl.dragKanban());
 
   contentClass = input<string>();
 
-  dragOvered$ = $reactive(false);
+  dragOvered = $signal(false);
 
-  heightOnDrag$ = $reactive(0);
+  heightOnDrag = $signal(0);
 
-  cardHeight$ = $reactive(0);
-
-  constructor() {
-    $hostBinding(
-      "attr.sd-dragging-this",
-      $computed(() => this.dragKanban$.value == this),
-    );
-    $hostBinding(
-      "attr.sd-dragging",
-      $computed(() => this.dragKanban$.value != null),
-    );
-    $hostBinding("attr.sd-drag-over", this.dragOvered$);
-  }
+  cardHeight = $signal(0);
 
   @HostListener("click", ["$event"])
   onClick(event: MouseEvent) {
@@ -158,35 +149,35 @@ export class SdKanbanControl<L, T> {
 
   onCardResize(event: ISdResizeEvent) {
     const marginBottom = event.entry.target.computedStyleMap().get("margin-bottom") as CSSUnitValue | undefined;
-    this.cardHeight$.value = event.entry.target.clientHeight + (marginBottom?.value ?? 0);
+    this.cardHeight.set(event.entry.target.clientHeight + (marginBottom?.value ?? 0));
   }
 
   onCardDragStart() {
     if (!this.draggable()) return;
 
-    this.heightOnDrag$.value = this.#elRef.nativeElement.offsetHeight;
-    this.#boardControl.dragKanban$.value = this;
+    this.heightOnDrag.set(this.#elRef.nativeElement.offsetHeight);
+    this.#boardControl.dragKanban.set(this);
   }
 
   onDragOver(event: DragEvent) {
-    if (this.#boardControl.dragKanban$.value == null) return;
+    if (this.#boardControl.dragKanban() == null) return;
 
     event.preventDefault();
     event.stopPropagation();
 
-    this.dragOvered$.value = true;
+    this.dragOvered.set(true);
   }
 
   onDragLeave(event: DragEvent) {
     event.preventDefault();
     event.stopPropagation();
 
-    this.dragOvered$.value = false;
+    this.dragOvered.set(false);
   }
 
   onDragDrop(event: DragEvent) {
-    if (this.#boardControl.dragKanban$.value == null) return;
-    this.dragOvered$.value = false;
+    if (this.#boardControl.dragKanban() == null) return;
+    this.dragOvered.set(false);
 
     event.preventDefault();
     event.stopPropagation();
@@ -196,6 +187,6 @@ export class SdKanbanControl<L, T> {
 
   @HostListener("document:drop.capture")
   onDocumentDrop() {
-    this.dragOvered$.value = false;
+    this.dragOvered.set(false);
   }
 }
