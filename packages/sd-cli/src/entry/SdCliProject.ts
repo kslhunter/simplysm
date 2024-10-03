@@ -147,6 +147,7 @@ export class SdCliProject {
             }
 
             serverInfo.pathProxy[pkgName] = path.resolve(message.req.pkgPath, "dist");
+            serverInfo.pathProxy["node_modules"] = path.resolve(process.cwd(), "node_modules");
             // serverInfo.changeFilePaths.push(...message.result!.affectedFilePaths);
 
             serverInfo.hasClientChanges = true;
@@ -205,6 +206,7 @@ export class SdCliProject {
             for (const serverInfo of serverInfoMap.values()) {
               if (Object.keys(serverInfo.pathProxy).length > 0) {
                 for (const proxyPath of Object.keys(serverInfo.pathProxy)) {
+                  if (proxyPath === "node_modules") continue;
                   clientPaths.push(`http://localhost:${serverInfo.port}/${proxyPath}/`);
                 }
               } else {

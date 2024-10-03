@@ -34,6 +34,10 @@ export class SdSharedDataProvider<T extends Record<string, ISharedDataBase<strin
       );
   }
 
+  async wait() {
+    await Wait.until(() => this.loadingCount <= 0);
+  }
+
   getSignal<K extends keyof T & string>(name: K): ISharedSignal<T[K]> {
     const info = this.#infoMap.get(name);
     if (!info) throw new Error(`'${name}'에 대한 공유데이터 정보가 없습니다.`);
@@ -108,6 +112,7 @@ export class SdSharedDataProvider<T extends Record<string, ISharedDataBase<strin
           return this.#ordering(r, info.getter.orderBy);
         });
       }
+      this.loadingCount--;
     } catch (err) {
       this.loadingCount--;
       throw err;
