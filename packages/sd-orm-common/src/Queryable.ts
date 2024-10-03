@@ -1175,11 +1175,11 @@ export class Queryable<D extends DbContext, T> {
   }
 
   public async upsertAsync(
-    insertFwd: (entity: TEntity<T>) => (TInsertObject<T> | Promise<TInsertObject<T>>)
+    inAndUpsertFwd: (entity: TEntity<T>) => (TInsertObject<T> | Promise<TInsertObject<T>>)
   ): Promise<void>;
 
   public async upsertAsync<OK extends keyof T>(
-    insertFwd: (entity: TEntity<T>) => (TInsertObject<T> | Promise<TInsertObject<T>>),
+    inAndUpsertFwd: (entity: TEntity<T>) => (TInsertObject<T> | Promise<TInsertObject<T>>),
     outputColumns: OK[]
   ): Promise<{ [K in OK]: T[K] }[]>;
 
