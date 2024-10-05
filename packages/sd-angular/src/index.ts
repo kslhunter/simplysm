@@ -102,6 +102,7 @@ export * from "./utils/$hooks";
 export * from "./utils/injectElementRef";
 export * from "./utils/injectElementResize";
 export * from "./utils/injectPageCode$";
+export * from "./utils/injectParent";
 export * from "./utils/injectQueryParams$";
 export * from "./utils/SdAppStructureUtil";
 export * from "./utils/waitRepaint";

@@ -14,17 +14,14 @@ import { SdCliCordova } from "../build-tools/SdCliCordova";
 import { SdCliNgRoutesFileGenerator } from "../build-tools/SdCliNgRoutesFileGenerator";
 import { SdLinter } from "../build-tools/SdLinter";
 import { SdCliElectron } from "../entry/SdCliElectron";
-
-// import ts from "typescript";
+import { SdReactBundler } from "../build-tools/SdReactBundler";
 
 export class SdCliClientBuilder extends EventEmitter {
   private readonly _logger = Logger.get(["simplysm", "sd-cli", "SdCliClientBuilder"]);
   private readonly _pkgConf: ISdCliClientPackageConfig;
   private readonly _npmConf: INpmConfig;
-  private _builders?: SdNgBundler[];
+  private _builders?: (SdNgBundler | SdReactBundler)[];
   private _cordova?: SdCliCordova;
-
-  // #program?: ts.Program;
 
   public constructor(
     private readonly _projConf: ISdCliConfig,
@@ -133,28 +130,53 @@ export class SdCliClientBuilder extends EventEmitter {
     if (!this._builders) {
       this._debug(`BUILD 준비...`);
 
-      this._builders = builderTypes.map(
-        (builderType) =>
-          new SdNgBundler({
-            dev: opt.dev,
-            builderType: builderType,
-            pkgPath: this._pkgPath,
-            outputPath:
-              builderType === "web"
-                ? path.resolve(this._pkgPath, "dist")
-                : builderType === "electron" && !opt.dev
-                  ? path.resolve(this._pkgPath, ".electron/src")
-                  : builderType === "cordova" && !opt.dev
-                    ? path.resolve(this._pkgPath, ".cordova/www")
-                    : path.resolve(this._pkgPath, "dist", builderType),
-            env: {
-              ...this._pkgConf.env,
-              ...this._pkgConf.builder?.[builderType]?.env,
-            },
-            cordovaConfig: builderType === "cordova" ? this._pkgConf.builder!.cordova : undefined,
-            watchScopePaths: [path.resolve(this._pkgPath, "../"), ...localUpdatePaths],
-          }),
-      );
+      if (this._npmConf.dependencies && Object.keys(this._npmConf.dependencies).includes("react")) {
+        this._builders = builderTypes.map(
+          (builderType) =>
+            new SdReactBundler({
+              dev: opt.dev,
+              builderType: builderType,
+              pkgPath: this._pkgPath,
+              outputPath:
+                builderType === "web"
+                  ? path.resolve(this._pkgPath, "dist")
+                  : builderType === "electron" && !opt.dev
+                    ? path.resolve(this._pkgPath, ".electron/src")
+                    : builderType === "cordova" && !opt.dev
+                      ? path.resolve(this._pkgPath, ".cordova/www")
+                      : path.resolve(this._pkgPath, "dist", builderType),
+              env: {
+                ...this._pkgConf.env,
+                ...this._pkgConf.builder?.[builderType]?.env,
+              },
+              cordovaConfig: builderType === "cordova" ? this._pkgConf.builder!.cordova : undefined,
+              watchScopePaths: [path.resolve(this._pkgPath, "../"), ...localUpdatePaths],
+            }),
+        );
+      } else {
+        this._builders = builderTypes.map(
+          (builderType) =>
+            new SdNgBundler({
+              dev: opt.dev,
+              builderType: builderType,
+              pkgPath: this._pkgPath,
+              outputPath:
+                builderType === "web"
+                  ? path.resolve(this._pkgPath, "dist")
+                  : builderType === "electron" && !opt.dev
+                    ? path.resolve(this._pkgPath, ".electron/src")
+                    : builderType === "cordova" && !opt.dev
+                      ? path.resolve(this._pkgPath, ".cordova/www")
+                      : path.resolve(this._pkgPath, "dist", builderType),
+              env: {
+                ...this._pkgConf.env,
+                ...this._pkgConf.builder?.[builderType]?.env,
+              },
+              cordovaConfig: builderType === "cordova" ? this._pkgConf.builder!.cordova : undefined,
+              watchScopePaths: [path.resolve(this._pkgPath, "../"), ...localUpdatePaths],
+            }),
+        );
+      }
     }
 
     this._debug(`BUILD & CHECK...`);
