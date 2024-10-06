@@ -3,7 +3,7 @@ import { fileURLToPath } from "url";
 import { Logger } from "@simplysm/sd-core-node";
 import { EventEmitter } from "events";
 import { ISdWorkerRequest, ISdWorkerType, TSdWorkerResponse } from "./SdWorker.type";
-import { JsonConvert, Uuid } from "@simplysm/sd-core-common/src";
+import { JsonConvert, Uuid } from "@simplysm/sd-core-common";
 
 export class SdWorker<T extends ISdWorkerType> extends EventEmitter {
   #proc: cp.ChildProcess;

@@ -1,7 +1,3 @@
-import { PartialMessage } from "esbuild";
-import ts from "typescript";
-import { ESLint } from "eslint";
-
 export interface INpmConfig {
   name: string;
   description?: string;
@@ -58,7 +54,6 @@ export interface ISdBuildMessage {
   severity: "error" | "warning" | "suggestion" | "message";
   message: string;
   type: string | undefined;
-  origin: ts.Diagnostic | PartialMessage | ESLint.LintResult | undefined;
 }
 
 export interface ISdProjectConfig {

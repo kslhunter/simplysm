@@ -4,11 +4,10 @@ import os from "os";
 import { JavaScriptTransformer } from "@angular/build/src/tools/esbuild/javascript-transformer";
 import { Logger } from "@simplysm/sd-core-node";
 import { ESLint } from "eslint";
-import ts from "typescript";
-import { convertTypeScriptDiagnostic } from "@angular/build/src/tools/esbuild/angular/diagnostics";
 import { SdCliPerformanceTimer } from "../../utils/SdCliPerformanceTime";
 import { SdTsBuilder } from "../../ts-builder/SdTsBuilder";
 import { ISdTsCompilerPrepareResult, ISdTsCompilerResult } from "../../ts-builder/SdTsCompiler";
+import { SdCliConvertMessageUtil } from "../../utils/SdCliConvertMessageUtil";
 
 export function sdNgPlugin(conf: {
   pkgPath: string;
@@ -38,6 +37,7 @@ export function sdNgPlugin(conf: {
       let tsBuildResult: ISdTsCompilerResult & ISdTsCompilerPrepareResult & { lintResults: ESLint.LintResult[] };
       const outputContentsCacheMap = new Map<string, Uint8Array>();
 
+      // const cacheStore = new LmbdCacheStore(path.join(process.cwd(), "angular-compiler.db"));
       //-- js babel transformer
       const javascriptTransformer = new JavaScriptTransformer(
         {
@@ -47,6 +47,7 @@ export function sdNgPlugin(conf: {
           advancedOptimizations: true,
         },
         os.cpus().length,
+        // cacheStore.createCache("jstransformer"),
       );
 
       //---------------------------
@@ -66,12 +67,11 @@ export function sdNgPlugin(conf: {
           conf.result.watchFileSet = tsBuildResult.watchFileSet;
           conf.result.affectedFileSet = tsBuildResult.affectedFileSet;
 
+          const tsEsbuildResult = SdCliConvertMessageUtil.convertToEsbuildFromBuildMessages(tsBuildResult.messages);
           //-- return err/warn
           return {
             errors: [
-              ...tsBuildResult.typescriptDiagnostics
-                .filter((item) => item.category === ts.DiagnosticCategory.Error)
-                .map((item) => convertTypeScriptDiagnostic(ts, item)),
+              ...tsEsbuildResult.errors,
               ...Array.from(tsBuildResult.stylesheetBundlingResultMap.values())
                 .flatMap((item) => item.errors)
                 .filterExists(),
@@ -83,14 +83,11 @@ export function sdNgPlugin(conf: {
                     pluginName: "lint",
                     text: m.message,
                     location: { file: r.filePath, line: m.line, column: m.column },
-                    detail: m,
                   })),
               ),
             ].filterExists(),
             warnings: [
-              ...tsBuildResult.typescriptDiagnostics
-                .filter((item) => item.category !== ts.DiagnosticCategory.Error)
-                .map((item) => convertTypeScriptDiagnostic(ts, item)),
+              ...tsEsbuildResult.warnings,
               ...Array.from(tsBuildResult.stylesheetBundlingResultMap.values())
                 .flatMap((item) => item.warnings)
                 .filterExists(),
@@ -102,7 +99,6 @@ export function sdNgPlugin(conf: {
                     pluginName: "lint",
                     text: m.message,
                     location: { file: r.filePath, line: m.line, column: m.column },
-                    detail: m,
                   })),
               ),
             ],

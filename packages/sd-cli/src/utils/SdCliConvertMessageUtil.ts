@@ -2,7 +2,7 @@ import ts from "typescript";
 import os from "os";
 import path from "path";
 import { ISdBuildMessage } from "../commons";
-import { Message } from "esbuild";
+import { Message, PartialMessage } from "esbuild";
 import { ESLint } from "eslint";
 
 export class SdCliConvertMessageUtil {
@@ -34,9 +34,32 @@ export class SdCliConvertMessageUtil {
         severity,
         message,
         type: "compile",
-        origin: diag,
       };
     });
+  }
+
+  static convertToEsbuildFromBuildMessages(messages: ISdBuildMessage[]): {
+    errors: PartialMessage[];
+    warnings: PartialMessage[];
+  } {
+    return {
+      errors: messages
+        .filter((msg) => msg.severity === "error")
+        .map((msg) => ({
+          id: msg.code,
+          pluginName: msg.type,
+          text: msg.message,
+          location: { file: msg.filePath, line: msg.line, column: msg.char },
+        })),
+      warnings: messages
+        .filter((msg) => msg.severity !== "error")
+        .map((msg) => ({
+          id: msg.code,
+          pluginName: msg.type,
+          text: msg.message,
+          location: { file: msg.filePath, line: msg.line, column: msg.char },
+        })),
+    };
   }
 
   static convertToBuildMessagesFromEsbuild(result: { errors?: Message[]; warnings?: Message[] }): ISdBuildMessage[] {
@@ -55,7 +78,6 @@ export class SdCliConvertMessageUtil {
         severity,
         message,
         type: msg.pluginName,
-        origin: msg,
       };
     };
 
@@ -75,7 +97,6 @@ export class SdCliConvertMessageUtil {
         severity: msg.severity === 1 ? ("warning" as const) : ("error" as const),
         message: msg.message + (msg.ruleId != null ? ` (${msg.ruleId})` : ``),
         type: "lint" as const,
-        origin: result,
       })),
     );
   }

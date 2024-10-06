@@ -152,7 +152,6 @@ export class SdNgBundler {
           severity: "warning",
           message: `${warning}`,
           type: "gen-index",
-          origin: undefined,
         });
       }
       for (const error of genIndexHtmlResult.errors) {
@@ -164,7 +163,6 @@ export class SdNgBundler {
           severity: "error",
           message: `${error}`,
           type: "gen-index",
-          origin: undefined,
         });
       }
       outputFiles.push(createOutputFile("index.html", genIndexHtmlResult.csrContent, BuildOutputFileType.Root));
@@ -204,7 +202,6 @@ export class SdNgBundler {
             severity: "error",
             message: `${err.toString()}`,
             type: "gen-sw",
-            origin: undefined,
           });
         }
       });

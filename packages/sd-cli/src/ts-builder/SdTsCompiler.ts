@@ -1,4 +1,4 @@
-import ts, { CompilerOptions, DiagnosticCategory } from "typescript";
+import ts, { CompilerOptions } from "typescript";
 import path from "path";
 import { FsUtil, Logger, PathUtil } from "@simplysm/sd-core-node";
 import { StringUtil } from "@simplysm/sd-core-common";
@@ -10,6 +10,8 @@ import { transformSupportedBrowsersToTargets } from "@angular/build/src/tools/es
 import browserslist from "browserslist";
 import { replaceBootstrap } from "@angular/build/src/tools/angular/transformers/jit-bootstrap-transformer";
 import { SdCliPerformanceTimer } from "../utils/SdCliPerformanceTime";
+import { ISdBuildMessage } from "../commons";
+import { SdCliConvertMessageUtil } from "../utils/SdCliConvertMessageUtil";
 
 export class SdTsCompiler {
   readonly #logger = Logger.get(["simplysm", "sd-cli", "SdTsCompiler"]);
@@ -264,7 +266,7 @@ export class SdTsCompiler {
 
     this.#debug(`get affected (new deps)...`);
 
-    const diagnostics: ts.Diagnostic[] = [];
+    const messages: ISdBuildMessage[] = [];
 
     perf.run("get affected (deps)", () => {
       const sourceFileSet = new Set(
@@ -287,7 +289,7 @@ export class SdTsCompiler {
         }
 
         const refs = this.#findDeps(sf);
-        diagnostics.push(...refs.filter((item) => "category" in item));
+        messages.push(...refs.filter((item) => "severity" in item));
         depMap.set(
           path.normalize(sf.fileName),
           refs
@@ -370,7 +372,7 @@ export class SdTsCompiler {
       }
     });
 
-    if (affectedFileSet.size === 0) {
+    if (this.#modifiedFileSet.size === 0) {
       this.#debug(`get affected (init)...`);
 
       perf.run("get affected (init)", () => {
@@ -388,7 +390,8 @@ export class SdTsCompiler {
     }
 
     return {
-      typescriptDiagnostics: diagnostics,
+      // typescriptDiagnostics: diagnostics,
+      messages,
       watchFileSet: this.#watchFileSet,
       affectedFileSet,
     };
@@ -588,7 +591,7 @@ export class SdTsCompiler {
     //-- result
 
     return {
-      typescriptDiagnostics: diagnostics,
+      messages: SdCliConvertMessageUtil.convertToBuildMessagesFromTsDiag(diagnostics),
       stylesheetBundlingResultMap: this.#stylesheetBundlingResultMap,
       emittedFilesCacheMap: this.#emittedFilesCacheMap,
       emitFileSet,
@@ -606,7 +609,8 @@ export class SdTsCompiler {
           importName: string;
           exportName?: string;
         }
-      | ts.Diagnostic
+      // | ts.Diagnostic
+      | ISdBuildMessage
     )[] = [];
 
     const tc = this.#program!.getTypeChecker();
@@ -616,26 +620,30 @@ export class SdTsCompiler {
         if (node.moduleSpecifier) {
           const moduleSymbol = tc.getSymbolAtLocation(node.moduleSpecifier);
           if (!moduleSymbol) {
+            const pos = ts.getLineAndCharacterOfPosition(sf, node.getStart());
             deps.push({
-              category: DiagnosticCategory.Error,
-              code: -1,
-              file: sf,
-              start: node.getStart(),
-              length: node.getEnd() - node.getStart(),
-              messageText: `export moduleSymbol not found`,
+              filePath: sf.fileName,
+              line: pos.line,
+              char: pos.character,
+              code: undefined,
+              severity: "error",
+              message: "export moduleSymbol not found",
+              type: "deps",
             });
             return;
           }
 
           const decls = moduleSymbol.getDeclarations();
           if (!decls) {
+            const pos = ts.getLineAndCharacterOfPosition(sf, node.getStart());
             deps.push({
-              category: DiagnosticCategory.Error,
-              code: -1,
-              file: sf,
-              start: node.getStart(),
-              length: node.getEnd() - node.getStart(),
-              messageText: `export decls not found`,
+              filePath: sf.fileName,
+              line: pos.line,
+              char: pos.character,
+              code: undefined,
+              severity: "error",
+              message: "export decls not found",
+              type: "deps",
             });
             return;
           }
@@ -653,13 +661,15 @@ export class SdTsCompiler {
             }
           } else {
             if (!moduleSymbol.exports) {
+              const pos = ts.getLineAndCharacterOfPosition(sf, node.getStart());
               deps.push({
-                category: DiagnosticCategory.Error,
-                code: -1,
-                file: sf,
-                start: node.getStart(),
-                length: node.getEnd() - node.getStart(),
-                messageText: `moduleSymbol exports not found`,
+                filePath: sf.fileName,
+                line: pos.line,
+                char: pos.character,
+                code: undefined,
+                severity: "error",
+                message: "moduleSymbol exports not found",
+                type: "deps",
               });
               return;
             }
@@ -690,13 +700,15 @@ export class SdTsCompiler {
         } else {
           const decls = moduleSymbol.getDeclarations();
           if (!decls) {
+            const pos = ts.getLineAndCharacterOfPosition(sf, node.getStart());
             deps.push({
-              category: DiagnosticCategory.Error,
-              code: -1,
-              file: sf,
-              start: node.getStart(),
-              length: node.getEnd() - node.getStart(),
-              messageText: `import decls not found`,
+              filePath: sf.fileName,
+              line: pos.line,
+              char: pos.character,
+              code: undefined,
+              severity: "error",
+              message: "import decls not found",
+              type: "deps",
             });
             return;
           }
@@ -727,7 +739,6 @@ export class SdTsCompiler {
   }
 }
 
-
 export interface SdTsCompilerOptions {
   pkgPath: string;
   additionalOptions: CompilerOptions;
@@ -737,15 +748,16 @@ export interface SdTsCompilerOptions {
   globalStyleFilePath?: string;
 }
 
-
 export interface ISdTsCompilerPrepareResult {
-  typescriptDiagnostics: ts.Diagnostic[];
+  // typescriptDiagnostics: ts.Diagnostic[];
+  messages: ISdBuildMessage[];
   watchFileSet: Set<string>;
   affectedFileSet: Set<string>;
 }
 
 export interface ISdTsCompilerResult {
-  typescriptDiagnostics: ts.Diagnostic[];
+  // typescriptDiagnostics: ts.Diagnostic[];
+  messages: ISdBuildMessage[];
   stylesheetBundlingResultMap: Map<string, IStylesheetBundlingResult>;
   emittedFilesCacheMap: Map<string, { outAbsPath?: string; text: string }[]>;
   emitFileSet: Set<string>;

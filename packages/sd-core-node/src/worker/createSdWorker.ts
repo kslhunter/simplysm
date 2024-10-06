@@ -1,5 +1,5 @@
 import { ISdWorkerRequest, ISdWorkerType, TSdWorkerResponse } from "./SdWorker.type";
-import { JsonConvert } from "@simplysm/sd-core-common/src";
+import { JsonConvert } from "@simplysm/sd-core-common";
 
 export function createSdWorker<T extends ISdWorkerType>(methods: {
   [P in keyof T["methods"]]: (

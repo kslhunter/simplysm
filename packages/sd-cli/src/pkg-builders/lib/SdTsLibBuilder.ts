@@ -55,9 +55,7 @@ export class SdTsLibBuilder {
       }
     }
 
-    const typescriptResult = SdCliConvertMessageUtil.convertToBuildMessagesFromTsDiag(
-      tsBuildResult.typescriptDiagnostics,
-    );
+    const typescriptResult = tsBuildResult.messages;
 
     const styleResults = Array.from(tsBuildResult.stylesheetBundlingResultMap.values()).mapMany((item) =>
       SdCliConvertMessageUtil.convertToBuildMessagesFromEsbuild(item),

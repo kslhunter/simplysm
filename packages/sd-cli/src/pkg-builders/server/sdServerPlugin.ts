@@ -1,8 +1,7 @@
 import esbuild, { PartialMessage } from "esbuild";
-import ts from "typescript";
 import path from "path";
-import { convertTypeScriptDiagnostic } from "@angular/build/src/tools/esbuild/angular/diagnostics";
 import { SdTsBuilder } from "../../ts-builder/SdTsBuilder";
+import { SdCliConvertMessageUtil } from "../../utils/SdCliConvertMessageUtil";
 
 export function sdServerPlugin(conf: {
   pkgPath: string;
@@ -31,13 +30,13 @@ export function sdServerPlugin(conf: {
         conf.result.watchFileSet = tsBuildResult.watchFileSet;
         conf.result.affectedFileSet = tsBuildResult.affectedFileSet;
 
+        const tsEsbuildResult = SdCliConvertMessageUtil.convertToEsbuildFromBuildMessages(tsBuildResult.messages);
+
         //-- return err/warn
 
         return {
           errors: [
-            ...tsBuildResult.typescriptDiagnostics
-              .filter((item) => item.category === ts.DiagnosticCategory.Error)
-              .map((item) => convertTypeScriptDiagnostic(ts, item)),
+            ...tsEsbuildResult.errors,
             ...tsBuildResult.lintResults.mapMany((r) =>
               r.messages
                 .filter((m) => m.severity !== 1)
@@ -46,14 +45,11 @@ export function sdServerPlugin(conf: {
                   pluginName: "lint",
                   text: m.message,
                   location: { file: r.filePath, line: m.line, column: m.column },
-                  detail: m,
                 })),
             ),
           ].filterExists(),
           warnings: [
-            ...tsBuildResult.typescriptDiagnostics
-              .filter((item) => item.category !== ts.DiagnosticCategory.Error)
-              .map((item) => convertTypeScriptDiagnostic(ts, item)),
+            ...tsEsbuildResult.warnings,
             ...tsBuildResult.lintResults.mapMany((r) =>
               r.messages
                 .filter((m) => m.severity === 1)
@@ -62,7 +58,6 @@ export function sdServerPlugin(conf: {
                   pluginName: "lint",
                   text: m.message,
                   location: { file: r.filePath, line: m.line, column: m.column },
-                  detail: m,
                 })),
             ),
           ],
