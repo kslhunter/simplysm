@@ -1,4 +1,4 @@
-import {INpmConfig, ISdCliClientBuilderCordovaConfig} from "../commons";
+import {INpmConfig, ISdClientBuilderCordovaConfig} from "../commons";
 import * as path from "path";
 import {FsUtil, Logger, SdProcess} from "@simplysm/sd-core-node";
 import xml2js from "xml2js";
@@ -14,7 +14,7 @@ export class SdCliCordova {
 
   public constructor(private readonly _opt: {
     pkgPath: string;
-    config: ISdCliClientBuilderCordovaConfig
+    config: ISdClientBuilderCordovaConfig
   }) {
     this._platforms = Object.keys(this._opt.config.platform ?? {browser: {}});
     this._npmConfig = FsUtil.readJson(path.resolve(this._opt.pkgPath, "package.json"));
@@ -331,7 +331,7 @@ export class SdCliCordova {
     }
     /*else {
       await FsUtil.removeAsync(path.resolve(cordovaPath, "www"));
-      await FsUtil.copyAsync(path.resolve(process.cwd(), `packages/${opt.pkgName}/dist/cordova`), path.resolve(cordovaPath, "www"));
+      await FsUtil.copyAsync(path.resolve(worker.cwd(), `packages/${opt.pkgName}/dist/cordova`), path.resolve(cordovaPath, "www"));
     }*/
 
     const binPath = path.resolve(process.cwd(), "node_modules/.bin/cordova.cmd");

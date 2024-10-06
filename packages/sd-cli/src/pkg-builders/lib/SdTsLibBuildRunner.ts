@@ -1,37 +1,36 @@
 import { FsUtil, Logger, PathUtil, SdFsWatcher } from "@simplysm/sd-core-node";
 import path from "path";
-import { ISdCliBuilderResult, ISdCliConfig, ISdCliLibPackageConfig, ISdCliPackageBuildResult } from "../commons";
+import { ISdBuildMessage, ISdBuildRunnerResult, ISdLibPackageConfig, ISdProjectConfig } from "../../commons";
 import { EventEmitter } from "events";
-import { SdTsLibBundler } from "../build-tools/SdTsLibBundler";
-import { SdLinter } from "../build-tools/SdLinter";
 import { FunctionQueue } from "@simplysm/sd-core-common";
-import { SdCliIndexFileGenerator } from "../build-tools/SdCliIndexFileGenerator";
+import { SdCliIndexFileGenerator } from "./SdCliIndexFileGenerator";
+import { SdTsLibBuilder } from "./SdTsLibBuilder";
 
-export class SdCliTsLibBuilder extends EventEmitter {
+export class SdTsLibBuildRunner extends EventEmitter {
   readonly #logger = Logger.get(["simplysm", "sd-cli", "SdCliTsLibBuilder"]);
 
-  readonly #projConf: ISdCliConfig;
+  readonly #projConf: ISdProjectConfig;
   readonly #pkgPath: string;
-  readonly #pkgConf: ISdCliLibPackageConfig;
+  readonly #pkgConf: ISdLibPackageConfig;
 
-  #bundler?: SdTsLibBundler;
+  #builder?: SdTsLibBuilder;
 
-  public constructor(projConf: ISdCliConfig, pkgPath: string) {
+  public constructor(projConf: ISdProjectConfig, pkgPath: string) {
     super();
     this.#projConf = projConf;
     this.#pkgPath = pkgPath;
 
-    this.#pkgConf = projConf.packages[path.basename(pkgPath)] as ISdCliLibPackageConfig;
+    this.#pkgConf = projConf.packages[path.basename(pkgPath)] as ISdLibPackageConfig;
   }
 
   public override on(event: "change", listener: () => void): this;
-  public override on(event: "complete", listener: (result: ISdCliBuilderResult) => void): this;
+  public override on(event: "complete", listener: (result: ISdBuildRunnerResult) => void): this;
   public override on(event: string | symbol, listener: (...args: any[]) => void): this {
     super.on(event, listener);
     return this;
   }
 
-  public async buildAsync(): Promise<ISdCliBuilderResult> {
+  public async buildAsync(): Promise<ISdBuildRunnerResult> {
     this._debug("dist 초기화...");
     await FsUtil.removeAsync(path.resolve(this.#pkgPath, "dist"));
 
@@ -43,7 +42,7 @@ export class SdCliTsLibBuilder extends EventEmitter {
     const result = await this._runAsync(false);
     return {
       affectedFilePaths: Array.from(result.affectedFileSet),
-      buildResults: result.buildResults,
+      buildMessages: result.buildMessages,
     };
   }
 
@@ -61,13 +60,13 @@ export class SdCliTsLibBuilder extends EventEmitter {
     const result = await this._runAsync(true);
     this.emit("complete", {
       affectedFilePaths: Array.from(result.affectedFileSet),
-      buildResults: result.buildResults,
+      buildMessages: result.buildMessages,
     });
 
     this._debug("WATCH...");
     const fnQ = new FunctionQueue();
-    const watcher = SdFsWatcher.watch(Array.from(result.watchFileSet)).onChange({ delay: 100 }, (changeInfos) => {
-      this.#bundler!.markChanges(new Set(changeInfos.map((item) => item.path)));
+    const watcher = SdFsWatcher.watch(Array.from(result.watchFileSet)).onChange({ delay: 100 }, async (changeInfos) => {
+      await this.#builder!.markChangesAsync(new Set(changeInfos.map((item) => item.path)));
 
       fnQ.runLast(async () => {
         this.emit("change");
@@ -75,7 +74,7 @@ export class SdCliTsLibBuilder extends EventEmitter {
         const watchResult = await this._runAsync(true);
         this.emit("complete", {
           affectedFilePaths: Array.from(watchResult.affectedFileSet),
-          buildResults: watchResult.buildResults,
+          buildMessages: watchResult.buildMessages,
         });
 
         watcher.add(watchResult.watchFileSet);
@@ -86,23 +85,18 @@ export class SdCliTsLibBuilder extends EventEmitter {
   private async _runAsync(dev: boolean): Promise<{
     watchFileSet: Set<string>;
     affectedFileSet: Set<string>;
-    buildResults: ISdCliPackageBuildResult[];
+    buildMessages: ISdBuildMessage[];
   }> {
     const localUpdatePaths = Object.keys(this.#projConf.localUpdates ?? {}).mapMany((key) =>
       FsUtil.glob(path.resolve(this.#pkgPath, "../../node_modules", key)),
     );
 
     this._debug(`BUILD...`);
-    this.#bundler =
-      this.#bundler ??
-      new SdTsLibBundler(this.#pkgPath, dev, [path.resolve(this.#pkgPath, "../"), ...localUpdatePaths]);
-    const buildResult = await this.#bundler.buildAsync();
-
-    this._debug("LINT...");
-    /*const lintFilePaths = Array.from(buildResult.affectedFileSet).filter((item) =>
-      PathUtil.isChildPath(item, this.#pkgPath),
-    );*/
-    const lintResults = await SdLinter.lintAsync(this.#pkgPath, buildResult.affectedFileSet, buildResult.program);
+    this.#builder ??= await SdTsLibBuilder.new(this.#pkgPath, dev, [
+      path.resolve(this.#pkgPath, "../"),
+      ...localUpdatePaths,
+    ]);
+    const buildResult = await this.#builder.buildAsync();
 
     this._debug(`빌드 완료`);
     const watchFileSet = new Set(
@@ -116,7 +110,7 @@ export class SdCliTsLibBuilder extends EventEmitter {
     return {
       watchFileSet,
       affectedFileSet: buildResult.affectedFileSet,
-      buildResults: [...buildResult.results, ...lintResults],
+      buildMessages: buildResult.results,
     };
   }
 

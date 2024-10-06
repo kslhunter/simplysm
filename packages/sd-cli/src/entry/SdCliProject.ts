@@ -1,21 +1,14 @@
 import path from "path";
 import { FsUtil, Logger, PathUtil, SdProcess } from "@simplysm/sd-core-node";
-import {
-  INpmConfig,
-  ISdCliBuildClusterResMessage,
-  ISdCliConfig,
-  ISdCliPackageBuildResult,
-  ISdCliServerPackageConfig,
-  TSdCliPackageConfig,
-} from "../commons";
-import cp from "child_process";
-import { fileURLToPath, pathToFileURL } from "url";
-import { SdCliBuildResultUtil } from "../utils/SdCliBuildResultUtil";
+import { INpmConfig, ISdBuildMessage, ISdProjectConfig, TSdPackageConfig } from "../commons";
+import { pathToFileURL } from "url";
 import semver from "semver";
-import { JsonConvert, NeverEntryError, StringUtil, Wait } from "@simplysm/sd-core-common";
+import { NeverEntryError, StringUtil, Wait } from "@simplysm/sd-core-common";
 import { SdStorage } from "@simplysm/sd-storage";
 import { SdCliLocalUpdate } from "./SdCliLocalUpdate";
 import xml2js from "xml2js";
+import { SdMultiBuildRunner } from "../utils/SdMultiBuildRunner";
+import { SdCliConvertMessageUtil } from "../utils/SdCliConvertMessageUtil";
 
 export class SdCliProject {
   public static async watchAsync(opt: {
@@ -30,7 +23,7 @@ export class SdCliProject {
     const projConf = (await import(pathToFileURL(path.resolve(process.cwd(), opt.confFileRelPath)).href)).default(
       true,
       opt.optNames,
-    ) as ISdCliConfig;
+    ) as ISdProjectConfig;
 
     if (projConf.localUpdates) {
       logger.debug("로컬 라이브러리 업데이트 변경감지 시작...");
@@ -63,186 +56,22 @@ export class SdCliProject {
       throw new Error("패키지를 찾을 수 없습니다. (" + notExistsPkgs.join(", ") + ")");
     }
 
-    logger.debug("빌드 프로세스 준비...");
-    const cluster = await this._prepareClusterAsync();
-
-    logger.debug("빌드 프로세스 이벤트 준비...");
-    const resultCache = new Map<string, ISdCliPackageBuildResult[]>();
-    let busyReqCntMap = new Map<string, number>();
-    const serverInfoMap = new Map<
-      string,
-      {
-        // server
-        pkgOrOpt?: { path: string; conf: ISdCliServerPackageConfig } | { port: number }; // persist
-        worker?: cp.ChildProcess; // persist
-        port?: number;
-        hasChanges: boolean;
-        hasClientChanges: boolean;
-
-        //client
-        pathProxy: Record<string, string | number | undefined>; // persist
-        // changeFilePaths: string[];
-      }
-    >();
-    cluster.on("message", (message: ISdCliBuildClusterResMessage) => {
-      if (message.type === "change") {
-        if (Array.from(busyReqCntMap.values()).every((v) => v === 0)) {
-          logger.log("빌드를 시작합니다...");
-        }
-        busyReqCntMap.set(
-          message.req.cmd + "|" + message.req.pkgPath,
-          (busyReqCntMap.get(message.req.cmd + "|" + message.req.pkgPath) ?? 0) + 1,
-        );
-      } else if (message.type === "complete") {
-        resultCache.delete("none");
-        for (const affectedFilePath of message.result!.affectedFilePaths) {
-          if (PathUtil.isChildPath(affectedFilePath, message.req.pkgPath)) {
-            resultCache.delete(affectedFilePath);
-          }
-        }
-
-        for (const buildResult of message.result!.buildResults) {
-          // if (buildResult.filePath == null || PathUtil.isChildPath(buildResult.filePath, message.req.pkgPath)) {
-          const cacheItem = resultCache.getOrCreate(buildResult.filePath ?? "none", []);
-          cacheItem.push(buildResult);
-          // }
-        }
-
-        const pkgConf = message.req.projConf.packages[path.basename(message.req.pkgPath)]!;
-
-        if (pkgConf.type === "server") {
-          const pkgName = path.basename(message.req.pkgPath);
-          const serverInfo = serverInfoMap.getOrCreate(pkgName, {
-            hasChanges: true,
-            hasClientChanges: false,
-            pathProxy: {},
-            // changeFilePaths: []
-          });
-
-          const serverPkgConf = projConf.packages[pkgName] as ISdCliServerPackageConfig;
-          serverInfo.pkgOrOpt = {
-            path: message.req.pkgPath,
-            conf: serverPkgConf,
-          };
-
-          serverInfo.hasChanges = true;
-        }
-
-        if (pkgConf.type === "client") {
-          const pkgName = path.basename(message.req.pkgPath);
-
-          if (pkgConf.server !== undefined) {
-            const serverInfo = serverInfoMap.getOrCreate(
-              typeof pkgConf.server === "string" ? pkgConf.server : pkgConf.server.port.toString(),
-              {
-                hasChanges: true,
-                hasClientChanges: false,
-                pathProxy: {},
-                // changeFilePaths: []
-              },
-            );
-
-            if (typeof pkgConf.server !== "string") {
-              serverInfo.pkgOrOpt = pkgConf.server;
-            }
-
-            serverInfo.pathProxy[pkgName] = path.resolve(message.req.pkgPath, "dist");
-            serverInfo.pathProxy["node_modules"] = path.resolve(process.cwd(), "node_modules");
-            // serverInfo.changeFilePaths.push(...message.result!.affectedFilePaths);
-
-            serverInfo.hasClientChanges = true;
-            // serverInfo.worker?.send({type: "broadcastReload"});
-          } else {
-            const serverInfo = serverInfoMap.getOrCreate(pkgName, {
-              hasChanges: true,
-              hasClientChanges: false,
-              pathProxy: {},
-              // changeFilePaths: []
-            });
-            // serverInfo.port = message.result!.port;
-            // serverInfo.changeFilePaths.push(...message.result!.affectedFilePaths);
-
-            serverInfo.hasClientChanges = true;
-            // serverInfo.worker?.send({type: "broadcastReload"});
-          }
-        }
-
-        setTimeout(async () => {
-          busyReqCntMap.set(
-            message.req.cmd + "|" + message.req.pkgPath,
-            (busyReqCntMap.get(message.req.cmd + "|" + message.req.pkgPath) ?? 0) - 1,
-          );
-          logger.debug("남아있는 예약 빌드", busyReqCntMap);
-          if (Array.from(busyReqCntMap.values()).every((v) => v === 0)) {
-            for (const serverPkgNameOrPort of serverInfoMap.keys()) {
-              const serverInfo = serverInfoMap.get(serverPkgNameOrPort)!;
-              if (serverInfo.pkgOrOpt && serverInfo.hasChanges) {
-                logger.debug("서버 재시작...");
-                try {
-                  const restartServerResult = await this._restartServerAsync(serverInfo.pkgOrOpt, serverInfo.worker);
-                  serverInfo.worker = restartServerResult.worker;
-                  serverInfo.port = restartServerResult.port;
-                  serverInfo.hasChanges = false;
-                } catch (err) {
-                  logger.error(err);
-                }
-              }
-
-              if (serverInfo.worker) {
-                logger.debug("클라이언트 설정...");
-                serverInfo.worker.send({
-                  type: "setPathProxy",
-                  pathProxy: serverInfo.pathProxy,
-                });
-
-                if (serverInfo.hasClientChanges) {
-                  logger.debug("클라이언트 새로고침...");
-                  serverInfo.worker.send({ type: "broadcastReload" });
-                }
-              }
-            }
-
-            const clientPaths: string[] = [];
-            for (const serverInfo of serverInfoMap.values()) {
-              if (Object.keys(serverInfo.pathProxy).length > 0) {
-                for (const proxyPath of Object.keys(serverInfo.pathProxy)) {
-                  if (proxyPath === "node_modules") continue;
-                  clientPaths.push(`http://localhost:${serverInfo.port}/${proxyPath}/`);
-                }
-              } else {
-                clientPaths.push(`http://localhost:${serverInfo.port}/`);
-              }
-            }
-            if (clientPaths.length > 0) {
-              logger.info("클라이언트 개발 서버 접속 주소\n" + clientPaths.join("\n"));
-            }
-
-            const buildResults = Array.from(resultCache.values()).mapMany();
-            this._logging(buildResults, logger);
-          }
-        }, 300);
-      }
-    });
-
-    logger.debug("빌드 프로세스 명령 전송...");
-    busyReqCntMap.set("all", (busyReqCntMap.get("all") ?? 0) + 1);
-    logger.log("빌드를 시작합니다...");
+    logger.debug("빌드 프로세스 시작...");
+    const parallelBuildRunner = new SdMultiBuildRunner()
+      .on("change", () => {
+        logger.debug("빌드를 시작합니다...");
+      })
+      .on("complete", (messages) => {
+        this.#logging(messages, logger);
+      });
 
     await pkgPaths.parallelAsync(async (pkgPath) => {
-      await this._runCommandAsync(
-        cluster,
-        "watch",
-        projConf,
+      await parallelBuildRunner.runAsync({
+        cmd: "watch",
         pkgPath,
-        opt.inspectNames.includes(path.basename(pkgPath)) ? ["--inspect"] : [],
-      );
+        projConf: projConf,
+      });
     });
-
-    busyReqCntMap.set("all", (busyReqCntMap.get("all") ?? 0) - 1);
-    if (Array.from(busyReqCntMap.values()).every((v) => v === 0)) {
-      const buildResults = Array.from(resultCache.values()).mapMany();
-      this._logging(buildResults, logger);
-    }
   }
 
   public static async buildAsync(opt: {
@@ -256,7 +85,7 @@ export class SdCliProject {
     const projConf = (await import(pathToFileURL(path.resolve(process.cwd(), opt.confFileRelPath)).href)).default(
       false,
       opt.optNames,
-    ) as ISdCliConfig;
+    ) as ISdProjectConfig;
 
     logger.debug("프로젝트 package.json 가져오기...");
     const projNpmConf = (await FsUtil.readJsonAsync(path.resolve(process.cwd(), "package.json"))) as INpmConfig;
@@ -274,29 +103,17 @@ export class SdCliProject {
     logger.debug("프로젝트 및 패키지 버전 설정...");
     await this._upgradeVersionAsync(projNpmConf, allPkgPaths);
 
-    logger.debug("빌드 프로세스 준비...");
-    const cluster = await this._prepareClusterAsync();
+    logger.debug("빌드 프로세스 시작...");
+    const parallelBuildRunner = new SdMultiBuildRunner();
 
-    logger.debug("빌드 프로세스 명령 전달...");
-    const results = (
-      await pkgPaths.parallelAsync(async (pkgPath) => {
-        /*const pkgConf = projConf.packages[path.basename(pkgPath)]!;
-        if (pkgConf.type === "client") {
-          const builderKeys = Object.keys(pkgConf.builder ?? {web: {}});
-          return (await builderKeys.parallelAsync(async (builderKey) => {
-            return await this._runCommandAsync(cluster, "build", projConf, pkgPath, builderKey);
-          })).mapMany();
-        }
-        else {
-        }*/
-        return await this._runCommandAsync(cluster, "build", projConf, pkgPath);
-      })
-    ).mapMany();
-
-    logger.debug("빌드 프로세스 닫기...");
-    this._closeCluster(cluster);
-
-    this._logging(results, logger);
+    const messages = await pkgPaths.parallelAsync(async (pkgPath) => {
+      return await parallelBuildRunner.runAsync({
+        cmd: "build",
+        pkgPath,
+        projConf: projConf,
+      });
+    });
+    this.#logging(messages.mapMany(), logger);
   }
 
   public static async publishAsync(opt: {
@@ -311,7 +128,7 @@ export class SdCliProject {
     const projConf = (await import(pathToFileURL(path.resolve(process.cwd(), opt.confFileRelPath)).href)).default(
       false,
       opt.optNames,
-    ) as ISdCliConfig;
+    ) as ISdProjectConfig;
 
     logger.debug("프로젝트 package.json 가져오기...");
     const projNpmConf = (await FsUtil.readJsonAsync(path.resolve(process.cwd(), "package.json"))) as INpmConfig;
@@ -347,20 +164,18 @@ export class SdCliProject {
 
     // 빌드
     if (!opt.noBuild) {
-      logger.debug("빌드 프로세스 준비...");
-      const cluster = await this._prepareClusterAsync();
+      logger.debug("빌드 프로세스 시작...");
+      const parallelBuildRunner = new SdMultiBuildRunner();
 
-      logger.debug("빌드 프로세스 명령 전달...");
-      const results = (
-        await pkgPaths.parallelAsync(async (pkgPath) => {
-          return await this._runCommandAsync(cluster, "build", projConf, pkgPath);
-        })
-      ).mapMany();
+      const messages = await pkgPaths.parallelAsync(async (pkgPath) => {
+        return await parallelBuildRunner.runAsync({
+          cmd: "build",
+          pkgPath,
+          projConf: projConf,
+        });
+      });
 
-      logger.debug("빌드 프로세스 닫기...");
-      this._closeCluster(cluster);
-
-      this._logging(results, logger);
+      this.#logging(messages.mapMany(), logger);
     }
 
     // GIT 사용중일경우, 새 버전 커밋 및 TAG 생성
@@ -411,7 +226,7 @@ export class SdCliProject {
     logger.info(`모든 배포가 완료되었습니다. (v${projNpmConf.version})`);
   }
 
-  private static async _publishPkgAsync(pkgPath: string, pkgPubConf: TSdCliPackageConfig["publish"]): Promise<void> {
+  private static async _publishPkgAsync(pkgPath: string, pkgPubConf: TSdPackageConfig["publish"]): Promise<void> {
     if (pkgPubConf === "npm") {
       await SdProcess.spawnAsync("yarn npm publish --access public", { cwd: pkgPath });
     } else if (pkgPubConf?.type === "local-directory") {
@@ -516,10 +331,10 @@ export class SdCliProject {
     });
   }
 
-  private static _logging(buildResults: ISdCliPackageBuildResult[], logger: Logger): void {
+  static #logging(buildResults: ISdBuildMessage[], logger: Logger): void {
     const messageMap = buildResults.toSetMap(
       (item) => item.severity,
-      (item) => SdCliBuildResultUtil.getMessage(item),
+      (item) => SdCliConvertMessageUtil.getBuildMessageString(item),
     );
 
     if (messageMap.has("message")) {
@@ -536,163 +351,5 @@ export class SdCliProject {
     }
 
     logger.info("모든 빌드가 완료되었습니다.");
-  }
-
-  // piscina 사용시 ts파일을 못찾으므로 그냥 이렇게..
-  private static async _prepareClusterAsync(): Promise<cp.ChildProcess> {
-    const logger = Logger.get(["simplysm", "sd-cli", "SdCliProject", "_runBuildClusterAsync"]);
-    return await new Promise<cp.ChildProcess>((resolve, reject) => {
-      const cluster = cp.fork(fileURLToPath(import.meta.resolve("../build-cluster")), [], {
-        stdio: ["pipe", "pipe", "pipe", "ipc"],
-        env: {
-          ...process.env,
-          // "NG_BUILD_PARALLEL_TS": "0"
-        },
-      });
-
-      cluster.stdout!.pipe(process.stdout);
-      cluster.stderr!.pipe(process.stderr);
-
-      cluster.on("exit", (code) => {
-        if (code != null && code !== 0) {
-          const err = new Error(`오류와 함께 닫힘 (${code})`);
-          logger.error(err);
-          reject(err);
-          return;
-        }
-      });
-
-      cluster.on("error", (err) => {
-        logger.error(err);
-        reject(err);
-      });
-
-      cluster.on("message", (message) => {
-        if (message === "ready") {
-          logger.debug("빌드 클러스터 프로세스가 준비되었습니다.");
-          resolve(cluster);
-        }
-      });
-    });
-  }
-
-  private static async _runCommandAsync(
-    cluster: cp.ChildProcess,
-    cmd: "watch",
-    projConf: ISdCliConfig,
-    pkgPath: string,
-    execArgs: string[],
-  ): Promise<void>;
-  private static async _runCommandAsync(
-    cluster: cp.ChildProcess,
-    cmd: "build",
-    projConf: ISdCliConfig,
-    pkgPath: string,
-  ): Promise<ISdCliPackageBuildResult[]>;
-  private static async _runCommandAsync(
-    cluster: cp.ChildProcess,
-    cmd: "watch" | "build",
-    projConf: ISdCliConfig,
-    pkgPath: string,
-    execArgs?: string[],
-  ): Promise<ISdCliPackageBuildResult[] | void> {
-    return await new Promise<ISdCliPackageBuildResult[] | void>((resolve) => {
-      const cb = (message: ISdCliBuildClusterResMessage): void => {
-        if (cmd === "watch" && message.type === "ready" && message.req.cmd === cmd && message.req.pkgPath === pkgPath) {
-          cluster.off("message", cb);
-          resolve();
-        } else if (
-          cmd === "build" &&
-          message.type === "complete" &&
-          message.req.cmd === cmd &&
-          message.req.pkgPath === pkgPath
-        ) {
-          cluster.off("message", cb);
-          resolve(message.result?.buildResults);
-        }
-      };
-      cluster.on("message", cb);
-
-      cluster.send({
-        cmd,
-        projConf,
-        pkgPath,
-        execArgs,
-      });
-    });
-  }
-
-  private static _closeCluster(cluster: cp.ChildProcess): void {
-    cluster.kill("SIGKILL");
-  }
-
-  private static async _restartServerAsync(
-    pkgOrOpt:
-      | { path: string; conf: ISdCliServerPackageConfig }
-      | {
-          port: number;
-        },
-    prevServerProcess?: cp.ChildProcess,
-  ): Promise<{
-    worker: cp.ChildProcess;
-    port: number;
-  }> {
-    const logger = Logger.get(["simplysm", "sd-cli", "SdCliProject", "_restartServerAsync"]);
-
-    if (prevServerProcess) {
-      prevServerProcess.kill("SIGKILL");
-    }
-
-    const npmConf =
-      "path" in pkgOrOpt
-        ? ((await FsUtil.readJsonAsync(path.resolve(pkgOrOpt.path, "package.json"))) as INpmConfig)
-        : undefined;
-
-    return await new Promise<{
-      worker: cp.ChildProcess;
-      port: number;
-    }>((resolve, reject) => {
-      const worker = cp.fork(
-        fileURLToPath(import.meta.resolve("../server-worker")),
-        [JsonConvert.stringify("path" in pkgOrOpt ? pkgOrOpt.path : pkgOrOpt)],
-        {
-          stdio: ["pipe", "pipe", "pipe", "ipc"],
-          env: {
-            ...process.env,
-            NODE_ENV: "development",
-            TZ: "Asia/Seoul",
-            SD_VERSION: npmConf?.version ?? "serverless",
-            ...("path" in pkgOrOpt ? pkgOrOpt.conf.env : {}),
-          },
-        },
-      );
-
-      worker.stdout!.pipe(process.stdout);
-      worker.stderr!.pipe(process.stderr);
-
-      worker.on("exit", (code) => {
-        if (code != null && code !== 0) {
-          const err = new Error(`오류와 함께 닫힘 (${code})`);
-          logger.error(err);
-          reject(err);
-          return;
-        }
-      });
-
-      worker.on("error", (err) => {
-        logger.error(err);
-        reject(err);
-      });
-
-      worker.on("message", (message: any) => {
-        if ("port" in message) {
-          logger.debug("서버가 시작되었습니다.");
-          resolve({
-            worker,
-            port: message.port,
-          });
-        }
-      });
-    });
   }
 }

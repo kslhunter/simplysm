@@ -2,33 +2,32 @@ import { EventEmitter } from "events";
 import { FsUtil, Logger, PathUtil, SdFsWatcher } from "@simplysm/sd-core-node";
 import {
   INpmConfig,
-  ISdCliBuilderResult,
-  ISdCliConfig,
-  ISdCliPackageBuildResult,
-  ISdCliServerPackageConfig,
-  ITsConfig,
-} from "../commons";
+  ISdBuildMessage,
+  ISdBuildRunnerResult,
+  ISdProjectConfig,
+  ISdServerPackageConfig,
+  ITsConfig
+} from "../../commons";
 import path from "path";
-import { SdLinter } from "../build-tools/SdLinter";
 import { FunctionQueue, ObjectUtil, StringUtil } from "@simplysm/sd-core-common";
-import { SdServerBundler } from "../build-tools/SdServerBundler";
+import { SdServerBundler } from "./SdServerBundler";
 
-export class SdCliServerBuilder extends EventEmitter {
-  #logger = Logger.get(["simplysm", "sd-cli", "SdCliServerBuilder"]);
-  #pkgConf: ISdCliServerPackageConfig;
-  #builder?: SdServerBundler;
+export class SdServerBuildRunner extends EventEmitter {
+  #logger = Logger.get(["simplysm", "sd-cli", "SdCliServerBuildRunner"]);
+  #pkgConf: ISdServerPackageConfig;
+  #serverBundler?: SdServerBundler;
   #extModules?: { name: string; exists: boolean }[];
 
   public constructor(
-    private readonly _projConf: ISdCliConfig,
+    private readonly _projConf: ISdProjectConfig,
     private readonly _pkgPath: string,
   ) {
     super();
-    this.#pkgConf = this._projConf.packages[path.basename(_pkgPath)] as ISdCliServerPackageConfig;
+    this.#pkgConf = this._projConf.packages[path.basename(_pkgPath)] as ISdServerPackageConfig;
   }
 
   public override on(event: "change", listener: () => void): this;
-  public override on(event: "complete", listener: (result: ISdCliBuilderResult) => void): this;
+  public override on(event: "complete", listener: (result: ISdBuildRunnerResult) => void): this;
   public override on(event: string | symbol, listener: (...args: any[]) => void): this {
     super.on(event, listener);
     return this;
@@ -47,7 +46,7 @@ export class SdCliServerBuilder extends EventEmitter {
     const result = await this._runAsync({ dev: true });
     this.emit("complete", {
       affectedFilePaths: Array.from(result.affectedFileSet),
-      buildResults: result.buildResults,
+      buildMessages: result.buildMessages,
     });
 
     this._debug("WATCH...");
@@ -62,12 +61,12 @@ export class SdCliServerBuilder extends EventEmitter {
 
         this.emit("change");
 
-        this.#builder!.markForChanges(currChangeFiles);
+        this.#serverBundler!.markForChanges(currChangeFiles);
 
         const watchResult = await this._runAsync({ dev: true });
         this.emit("complete", {
           affectedFilePaths: Array.from(watchResult.affectedFileSet),
-          buildResults: watchResult.buildResults,
+          buildMessages: watchResult.buildMessages,
         });
 
         watcher.add(watchResult.watchFileSet);
@@ -75,7 +74,7 @@ export class SdCliServerBuilder extends EventEmitter {
     });
   }
 
-  public async buildAsync(): Promise<ISdCliBuilderResult> {
+  public async buildAsync(): Promise<ISdBuildRunnerResult> {
     const npmConfig = (await FsUtil.readJsonAsync(path.resolve(this._pkgPath, "package.json"))) as INpmConfig;
     const extModules = await this._getExternalModulesAsync();
 
@@ -210,14 +209,14 @@ Options = UnsafeLegacyRenegotiation`.trim(),
     const result = await this._runAsync({ dev: false });
     return {
       affectedFilePaths: Array.from(result.affectedFileSet),
-      buildResults: result.buildResults,
+      buildMessages: result.buildMessages,
     };
   }
 
   private async _runAsync(opt: { dev: boolean }): Promise<{
     watchFileSet: Set<string>;
     affectedFileSet: Set<string>;
-    buildResults: ISdCliPackageBuildResult[];
+    buildMessages: ISdBuildMessage[];
   }> {
     const localUpdatePaths = Object.keys(this._projConf.localUpdates ?? {}).mapMany((key) =>
       FsUtil.glob(path.resolve(this._pkgPath, "../../node_modules", key)),
@@ -226,8 +225,8 @@ Options = UnsafeLegacyRenegotiation`.trim(),
     this._debug(`BUILD 준비...`);
     const tsConfig = FsUtil.readJson(path.resolve(this._pkgPath, "tsconfig.json")) as ITsConfig;
     this.#extModules = this.#extModules ?? (await this._getExternalModulesAsync());
-    this.#builder =
-      this.#builder ??
+    this.#serverBundler =
+      this.#serverBundler ??
       new SdServerBundler({
         dev: opt.dev,
         pkgPath: this._pkgPath,
@@ -238,26 +237,23 @@ Options = UnsafeLegacyRenegotiation`.trim(),
         watchScopePaths: [path.resolve(this._pkgPath, "../"), ...localUpdatePaths],
       });
 
-    this._debug(`BUILD & CHECK...`);
-    const buildResult = await this.#builder.bundleAsync();
+    this._debug(`BUILD...`);
+    const bundleResult = await this.#serverBundler.bundleAsync();
 
     //-- filePaths
     const watchFileSet = new Set(
-      Array.from(buildResult.watchFileSet).filter(
+      Array.from(bundleResult.watchFileSet).filter(
         (item) =>
           PathUtil.isChildPath(item, path.resolve(this._pkgPath, "../")) ||
           localUpdatePaths.some((lu) => PathUtil.isChildPath(item, lu)),
       ),
     );
 
-    this._debug(`LINT...`);
-    const lintResults = await SdLinter.lintAsync(this._pkgPath, buildResult.affectedFileSet, buildResult.program);
-
     this._debug(`빌드 완료`);
     return {
       watchFileSet,
-      affectedFileSet: buildResult.affectedFileSet,
-      buildResults: [...buildResult.results, ...lintResults],
+      affectedFileSet: bundleResult.affectedFileSet,
+      buildMessages: bundleResult.results,
     };
   }
 

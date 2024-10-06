@@ -46,14 +46,7 @@ export class SdTsCompiler {
 
   readonly #isForBundle: boolean;
 
-  constructor(opt: {
-    pkgPath: string;
-    additionalOptions: CompilerOptions;
-    isForBundle: boolean;
-    isDevMode: boolean;
-    watchScopePaths: string[];
-    globalStyleFilePath?: string;
-  }) {
+  constructor(opt: SdTsCompilerOptions) {
     this.#pkgPath = opt.pkgPath;
     this.#globalStyleFilePath = opt.globalStyleFilePath != null ? path.normalize(opt.globalStyleFilePath) : undefined;
     this.#isForBundle = opt.isForBundle;
@@ -201,11 +194,10 @@ export class SdTsCompiler {
     this.#modifiedFileSet.adds(...Array.from(modifiedFileSet).map((item) => path.normalize(item)));
   }
 
-  async buildAsync(): Promise<ISdTsCompilerResult> {
-    let perf = new SdCliPerformanceTimer("esbuild");
+  async prepareAsync(): Promise<ISdTsCompilerPrepareResult> {
+    let perf = new SdCliPerformanceTimer("esbuild initialize");
 
     const affectedFileSet = new Set<string>();
-    const emitFileSet = new Set<string>();
 
     this.#debug(`get affected (old deps & old res deps)...`);
 
@@ -254,19 +246,6 @@ export class SdTsCompiler {
         );
       }
     });
-
-    /*const baseGetSourceFiles = this.#program.getSourceFiles;
-    this.#program.getSourceFiles = function (...parameters) {
-      const files: readonly (ts.SourceFile & { version?: string })[] = baseGetSourceFiles(...parameters);
-
-      for (const file of files) {
-        if (file.version === undefined) {
-          file.version = createHash("sha256").update(file.text).digest("hex");
-        }
-      }
-
-      return files;
-    };*/
 
     if (this.#ngProgram) {
       await perf.run("ng analyze", async () => {
@@ -363,6 +342,11 @@ export class SdTsCompiler {
           if (this.#modifiedFileSet.has(path.normalize(dep))) {
             affectedFileSet.add(path.normalize(sf.fileName));
           }
+          // dep이 emit된적이 없으면 affected에 추가해야함.
+          // dep파일이 추가된후 기존 파일에서 import하면 dep파일이 affected에 포함이 안되는 현상 때문
+          if (!this.#emittedFilesCacheMap.has(path.normalize(dep))) {
+            affectedFileSet.add(path.normalize(dep));
+          }
         }
 
         if (this.#ngProgram) {
@@ -375,6 +359,11 @@ export class SdTsCompiler {
             ref.add(path.normalize(sf.fileName));
             if (this.#modifiedFileSet.has(path.normalize(dep))) {
               affectedFileSet.add(path.normalize(sf.fileName));
+            }
+            // dep이 emit된적이 없으면 affected에 추가해야함.
+            // dep파일이 추가된후 기존 파일에서 import하면 dep파일이 affected에 포함이 안되는 현상 때문
+            if (!this.#emittedFilesCacheMap.has(path.normalize(dep))) {
+              affectedFileSet.add(path.normalize(dep));
             }
           }
         }
@@ -398,7 +387,21 @@ export class SdTsCompiler {
       });
     }
 
+    return {
+      typescriptDiagnostics: diagnostics,
+      watchFileSet: this.#watchFileSet,
+      affectedFileSet,
+    };
+  }
+
+  async buildAsync(affectedFileSet: Set<string>): Promise<ISdTsCompilerResult> {
+    let perf = new SdCliPerformanceTimer("esbuild build");
+
+    const emitFileSet = new Set<string>();
+
     this.#debug(`get diagnostics...`);
+
+    const diagnostics: ts.Diagnostic[] = [];
 
     perf.run("get program diagnostics", () => {
       diagnostics.push(
@@ -466,7 +469,7 @@ export class SdTsCompiler {
 
       this.#debug(`emit for files...`);
 
-      // affected에 새로 추가된 파일은 포함되지 않는 현상이 있어 getSourceFiles로 바꿈
+      // affected에 새로 추가된 파일은 포함되지 않는 현상이 있어 sourceFileSet으로 바꿈
       // 비교해보니, 딱히 getSourceFiles라서 더 느려지는것 같지는 않음
       // 그래도 affected로 다시 테스트
       for (const affectedFile of affectedFileSet) {
@@ -479,11 +482,6 @@ export class SdTsCompiler {
           continue;
         }
 
-        // for (const sf of sourceFileSet) {
-        /*if (this.#emittedFilesCacheMap.has(path.normalize(sf.fileName))) {
-          continue;
-        }*/
-
         if (sf.isDeclarationFile) {
           continue;
         }
@@ -492,10 +490,7 @@ export class SdTsCompiler {
           continue;
         }
 
-        if (
-          this.#ngProgram?.compiler.incrementalCompilation.safeToSkipEmit(sf) &&
-          !affectedFileSet.has(path.normalize(sf.fileName))
-        ) {
+        if (this.#ngProgram?.compiler.incrementalCompilation.safeToSkipEmit(sf)) {
           continue;
         }
 
@@ -593,12 +588,9 @@ export class SdTsCompiler {
     //-- result
 
     return {
-      program: this.#program!,
       typescriptDiagnostics: diagnostics,
       stylesheetBundlingResultMap: this.#stylesheetBundlingResultMap,
       emittedFilesCacheMap: this.#emittedFilesCacheMap,
-      watchFileSet: this.#watchFileSet,
-      affectedFileSet,
       emitFileSet,
     };
   }
@@ -735,20 +727,33 @@ export class SdTsCompiler {
   }
 }
 
+
+export interface SdTsCompilerOptions {
+  pkgPath: string;
+  additionalOptions: CompilerOptions;
+  isForBundle: boolean;
+  isDevMode: boolean;
+  watchScopePaths: string[];
+  globalStyleFilePath?: string;
+}
+
+
+export interface ISdTsCompilerPrepareResult {
+  typescriptDiagnostics: ts.Diagnostic[];
+  watchFileSet: Set<string>;
+  affectedFileSet: Set<string>;
+}
+
 export interface ISdTsCompilerResult {
-  program: ts.Program;
   typescriptDiagnostics: ts.Diagnostic[];
   stylesheetBundlingResultMap: Map<string, IStylesheetBundlingResult>;
   emittedFilesCacheMap: Map<string, { outAbsPath?: string; text: string }[]>;
-  watchFileSet: Set<string>;
-
-  affectedFileSet: Set<string>;
   emitFileSet: Set<string>;
 }
 
-interface IStylesheetBundlingResult {
+export interface IStylesheetBundlingResult {
   outputFiles: esbuild.OutputFile[];
   metafile?: esbuild.Metafile;
-  errors?: esbuild.PartialMessage[];
-  warnings?: esbuild.PartialMessage[];
+  errors?: esbuild.Message[];
+  warnings?: esbuild.Message[];
 }

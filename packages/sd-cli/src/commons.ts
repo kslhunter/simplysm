@@ -1,3 +1,7 @@
+import { PartialMessage } from "esbuild";
+import ts from "typescript";
+import { ESLint } from "eslint";
+
 export interface INpmConfig {
   name: string;
   description?: string;
@@ -26,56 +30,58 @@ export interface ITsConfig {
   angularCompilerOptions?: {};
 }
 
-export interface ISdCliBuildClusterReqMessage {
+export interface ISdBuildRunnerWorkerRequest {
   cmd: "watch" | "build";
-  projConf: ISdCliConfig;
   pkgPath: string;
-  // builderKey?: "web" | "electron";
-  execArgs?: string[];
+  projConf: ISdProjectConfig;
 }
 
-export interface ISdCliBuildClusterResMessage {
-  req: ISdCliBuildClusterReqMessage;
-  type: "change" | "complete" | "ready";
-  result?: ISdCliBuilderResult;
-}
+export type ISdBuildRunnerWorkerResponse =
+  | {
+      type: "change";
+    }
+  | {
+      type: "complete";
+      result: ISdBuildRunnerResult;
+    };
 
-export interface ISdCliBuilderResult {
+export interface ISdBuildRunnerResult {
   affectedFilePaths: string[];
-  buildResults: ISdCliPackageBuildResult[];
+  buildMessages: ISdBuildMessage[];
 }
 
-export interface ISdCliPackageBuildResult {
+export interface ISdBuildMessage {
   filePath: string | undefined;
   line: number | undefined;
   char: number | undefined;
   code: string | undefined;
   severity: "error" | "warning" | "suggestion" | "message";
   message: string;
-  type: "build" | "lint" | "style" | "check" | undefined;
+  type: string | undefined;
+  origin: ts.Diagnostic | PartialMessage | ESLint.LintResult | undefined;
 }
 
-export interface ISdCliConfig {
-  packages: Record<string, TSdCliPackageConfig | undefined>;
+export interface ISdProjectConfig {
+  packages: Record<string, TSdPackageConfig | undefined>;
   localUpdates?: Record<string, string>;
-  postPublish?: TSdCliPostPublishConfig[];
+  postPublish?: TSdPostPublishConfig[];
 }
 
-export type TSdCliConfigFn = (isDev: boolean, opts?: string[]) => ISdCliConfig;
+export type TSdProjectConfigFn = (isDev: boolean, opts?: string[]) => ISdProjectConfig;
 
-export type TSdCliPackageConfig = ISdCliLibPackageConfig | ISdCliServerPackageConfig | ISdCliClientPackageConfig;
+export type TSdPackageConfig = ISdLibPackageConfig | ISdServerPackageConfig | ISdClientPackageConfig;
 
-export interface ISdCliLibPackageConfig {
+export interface ISdLibPackageConfig {
   type: "library";
   publish?: "npm";
   polyfills?: string[];
   noGenIndex?: boolean;
 }
 
-export interface ISdCliServerPackageConfig {
+export interface ISdServerPackageConfig {
   type: "server";
   externals?: string[];
-  publish?: ISdCliLocalDirectoryPublishConfig | ISdCliFtpPublishConfig;
+  publish?: ISdLocalDirectoryPublishConfig | ISdFtpPublishConfig;
   configs?: Record<string, any>;
   env?: Record<string, string>;
   pm2?: {
@@ -89,28 +95,28 @@ export interface ISdCliServerPackageConfig {
   };
 }
 
-export interface ISdCliClientPackageConfig {
+export interface ISdClientPackageConfig {
   type: "client";
   server?: string | { port: number };
-  publish?: ISdCliLocalDirectoryPublishConfig | ISdCliFtpPublishConfig;
+  publish?: ISdLocalDirectoryPublishConfig | ISdFtpPublishConfig;
   env?: Record<string, string>;
   configs?: Record<string, any>;
   noLazyRoute?: boolean;
   forceProductionMode?: boolean;
 
   builder?: {
-    web?: ISdCliClientBuilderWebConfig;
-    electron?: ISdCliClientBuilderElectronConfig;
-    cordova?: ISdCliClientBuilderCordovaConfig;
+    web?: ISdClientBuilderWebConfig;
+    electron?: ISdClientBuilderElectronConfig;
+    cordova?: ISdClientBuilderCordovaConfig;
   };
 }
 
-export interface ISdCliLocalDirectoryPublishConfig {
+export interface ISdLocalDirectoryPublishConfig {
   type: "local-directory";
   path: string;
 }
 
-export interface ISdCliFtpPublishConfig {
+export interface ISdFtpPublishConfig {
   type: "ftp" | "ftps" | "sftp";
   host: string;
   port?: number;
@@ -119,7 +125,7 @@ export interface ISdCliFtpPublishConfig {
   pass?: string;
 }
 
-export interface ISdCliClientBuilderElectronConfig {
+export interface ISdClientBuilderElectronConfig {
   appId: string;
   installerIcon?: string;
   postInstallScript?: string;
@@ -129,13 +135,13 @@ export interface ISdCliClientBuilderElectronConfig {
   env?: Record<string, string>;
 }
 
-export interface ISdCliClientBuilderWebConfig {
+export interface ISdClientBuilderWebConfig {
   // devServerHost?: string;
   // devServerPort?: number;
   env?: Record<string, string>;
 }
 
-export interface ISdCliClientBuilderCordovaConfig {
+export interface ISdClientBuilderCordovaConfig {
   appId: string;
   appName: string;
   plugins?: string[];
@@ -163,9 +169,9 @@ export interface ISdCliClientBuilderCordovaConfig {
   browserslist?: string[];
 }
 
-export type TSdCliPostPublishConfig = ISdCliPostPublishScriptConfig;
+export type TSdPostPublishConfig = ISdPostPublishScriptConfig;
 
-export interface ISdCliPostPublishScriptConfig {
+export interface ISdPostPublishScriptConfig {
   type: "script";
   script: string;
 }

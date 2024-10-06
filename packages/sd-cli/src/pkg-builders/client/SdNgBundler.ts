@@ -4,11 +4,8 @@ import { FsUtil, Logger, PathUtil } from "@simplysm/sd-core-node";
 import { fileURLToPath } from "url";
 import nodeStdLibBrowser from "node-stdlib-browser";
 import nodeStdLibBrowserPlugin from "node-stdlib-browser/helpers/esbuild/plugin";
-import { INpmConfig, ISdCliClientBuilderCordovaConfig, ISdCliPackageBuildResult } from "../commons";
 import browserslist from "browserslist";
 import { SdNgBundlerContext } from "./SdNgBundlerContext";
-import { INgPluginResultCache, sdNgPlugin } from "../bundle-plugins/sdNgPlugin";
-import ts from "typescript";
 import { MemoryLoadResultCache } from "@angular/build/src/tools/esbuild/load-result-cache";
 import {
   convertOutputFile,
@@ -36,7 +33,9 @@ import { SassStylesheetLanguage } from "@angular/build/src/tools/esbuild/stylesh
 import { CssStylesheetLanguage } from "@angular/build/src/tools/esbuild/stylesheets/css-language";
 import { createCssResourcePlugin } from "@angular/build/src/tools/esbuild/stylesheets/css-resource-plugin";
 import { resolveAssets } from "@angular/build/src/utils/resolve-assets";
-import { SdCliPerformanceTimer } from "../utils/SdCliPerformanceTime";
+import { INgPluginResultCache, sdNgPlugin } from "./sdNgPlugin";
+import { INpmConfig, ISdBuildMessage, ISdClientBuilderCordovaConfig } from "../../commons";
+import { SdCliPerformanceTimer } from "../../utils/SdCliPerformanceTime";
 
 export class SdNgBundler {
   readonly #logger = Logger.get(["simplysm", "sd-cli", "SdNgBundler"]);
@@ -91,10 +90,9 @@ export class SdNgBundler {
   }
 
   public async bundleAsync(): Promise<{
-    program?: ts.Program;
     watchFileSet: Set<string>;
     affectedFileSet: Set<string>;
-    results: ISdCliPackageBuildResult[];
+    results: ISdBuildMessage[];
   }> {
     const perf = new SdCliPerformanceTimer("ng bundle");
 
@@ -152,8 +150,9 @@ export class SdNgBundler {
           char: undefined,
           code: undefined,
           severity: "warning",
-          message: `(gen-index) ${warning}`,
-          type: "build",
+          message: `${warning}`,
+          type: "gen-index",
+          origin: undefined,
         });
       }
       for (const error of genIndexHtmlResult.errors) {
@@ -163,8 +162,9 @@ export class SdNgBundler {
           char: undefined,
           code: undefined,
           severity: "error",
-          message: `(gen-index) ${error}`,
-          type: "build",
+          message: `${error}`,
+          type: "gen-index",
+          origin: undefined,
         });
       }
       outputFiles.push(createOutputFile("index.html", genIndexHtmlResult.csrContent, BuildOutputFileType.Root));
@@ -202,8 +202,9 @@ export class SdNgBundler {
             char: undefined,
             code: undefined,
             severity: "error",
-            message: `(gen-sw) ${err.toString()}`,
-            type: "build",
+            message: `${err.toString()}`,
+            type: "gen-sw",
+            origin: undefined,
           });
         }
       });
@@ -234,7 +235,6 @@ export class SdNgBundler {
     this.#debug(perf.toString());
 
     return {
-      program: this.#ngResultCache.program,
       watchFileSet: new Set([
         ...this.#ngResultCache.watchFileSet!,
         ...this.#styleLoadResultCache.watchFiles,
@@ -646,6 +646,6 @@ interface IOptions {
   pkgPath: string;
   builderType: string;
   env: Record<string, string> | undefined;
-  cordovaConfig: ISdCliClientBuilderCordovaConfig | undefined;
+  cordovaConfig: ISdClientBuilderCordovaConfig | undefined;
   watchScopePaths: string[];
 }

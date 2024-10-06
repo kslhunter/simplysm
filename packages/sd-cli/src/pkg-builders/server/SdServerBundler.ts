@@ -1,9 +1,9 @@
-import { ISdCliPackageBuildResult } from "../commons";
 import esbuild from "esbuild";
 import path from "path";
-import { IServerPluginResultCache, sdServerPlugin } from "../bundle-plugins/sdServerPlugin";
-import ts from "typescript";
 import { Logger } from "@simplysm/sd-core-node";
+import { IServerPluginResultCache, sdServerPlugin } from "./sdServerPlugin";
+import { SdCliConvertMessageUtil } from "../../utils/SdCliConvertMessageUtil";
+import { ISdBuildMessage } from "../../commons";
 
 export class SdServerBundler {
   readonly #logger = Logger.get(["simplysm", "sd-cli", "SdServerBundler"]);
@@ -30,10 +30,9 @@ export class SdServerBundler {
   }
 
   async bundleAsync(): Promise<{
-    program: ts.Program;
     watchFileSet: Set<string>;
     affectedFileSet: Set<string>;
-    results: ISdCliPackageBuildResult[];
+    results: ISdBuildMessage[];
   }> {
     if (!this.#context) {
       this.#context = await esbuild.context({
@@ -116,29 +115,9 @@ const __dirname = __path__.dirname(__filename);`.trim(),
     }
 
     return {
-      program: this.#resultCache.program!,
       watchFileSet: this.#resultCache.watchFileSet!,
       affectedFileSet: this.#resultCache.affectedFileSet!,
-      results: [
-        ...result.warnings.map((warn) => ({
-          type: "build" as const,
-          filePath: warn.location?.file !== undefined ? path.resolve(warn.location.file) : undefined,
-          line: warn.location?.line,
-          char: warn.location?.column,
-          code: warn.text.slice(0, warn.text.indexOf(":")),
-          severity: "warning" as const,
-          message: `(${warn.pluginName}) ${warn.text.slice(warn.text.indexOf(":") + 1)}`,
-        })),
-        ...result.errors.map((err) => ({
-          type: "build" as const,
-          filePath: err.location?.file !== undefined ? path.resolve(err.location.file) : undefined,
-          line: err.location?.line,
-          char: err.location?.column !== undefined ? err.location.column + 1 : undefined,
-          code: err.text.slice(0, err.text.indexOf(":")),
-          severity: "error" as const,
-          message: `(${err.pluginName}) ${err.text.slice(err.text.indexOf(":") + 1)}`,
-        })),
-      ],
+      results: SdCliConvertMessageUtil.convertToBuildMessagesFromEsbuild(result),
     };
   }
 }
