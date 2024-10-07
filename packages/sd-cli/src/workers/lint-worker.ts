@@ -2,7 +2,7 @@ import { createSdWorker, FsUtil, Logger, LoggerSeverity, PathUtil } from "@simpl
 import path from "path";
 import { ESLint } from "eslint";
 import { EventEmitter } from "events";
-import { TSdLintWorkerType } from "./lint-worker.type";
+import { TSdLintWorkerType } from "../types/workers.type";
 
 Error.stackTraceLimit = Infinity;
 EventEmitter.defaultMaxListeners = 0;

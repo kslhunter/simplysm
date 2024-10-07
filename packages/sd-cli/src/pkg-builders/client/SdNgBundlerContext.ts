@@ -35,7 +35,7 @@ export class SdNgBundlerContext {
 
     this.#debug(`convert results...`);
 
-    const results = SdCliConvertMessageUtil.convertToBuildMessagesFromEsbuild(esbuildResult);
+    const results = SdCliConvertMessageUtil.convertToBuildMessagesFromEsbuild(esbuildResult, this._pkgPath);
 
     const initialFiles = new Map<string, InitialFileRecord>();
 

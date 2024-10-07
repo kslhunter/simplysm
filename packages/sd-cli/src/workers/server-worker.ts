@@ -1,9 +1,9 @@
 import path from "path";
 import { pathToFileURL } from "url";
 import { SdServiceServer } from "@simplysm/sd-service-server";
-import { TServerWorkerType } from "./server-worker.type";
 import { createSdWorker, Logger, LoggerSeverity } from "@simplysm/sd-core-node";
 import { EventEmitter } from "events";
+import { TServerWorkerType } from "../types/workers.type";
 
 Error.stackTraceLimit = Infinity;
 EventEmitter.defaultMaxListeners = 0;
@@ -46,7 +46,7 @@ createSdWorker<TServerWorkerType>({
   setPathProxy(pathProxy: Record<string, string | number>) {
     server.pathProxy = pathProxy;
   },
-  broadcastReload() {
-    server.broadcastReload();
+  broadcastReload(changedFileSet: Set<string>) {
+    server.broadcastReload(changedFileSet);
   },
 });

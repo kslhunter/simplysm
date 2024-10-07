@@ -150,7 +150,7 @@ export class FsUtil {
 
         const relativeChildPath = path.relative(sourcePath, childPath);
         const childTargetPath = path.resolve(targetPath, relativeChildPath);
-        await FsUtil.copyAsync(childPath, childTargetPath);
+        await FsUtil.copyAsync(childPath, childTargetPath, filter);
       });
     }
     else {
@@ -194,12 +194,12 @@ export class FsUtil {
 
       for (const childPath of children) {
         if (filter && !filter(childPath)) {
-          return;
+          continue;
         }
 
         const relativeChildPath = path.relative(sourcePath, childPath);
         const childTargetPath = path.resolve(targetPath, relativeChildPath);
-        FsUtil.copy(childPath, childTargetPath);
+        FsUtil.copy(childPath, childTargetPath, filter);
       }
     }
     else {

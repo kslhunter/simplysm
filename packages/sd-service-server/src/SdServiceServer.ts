@@ -202,10 +202,10 @@ export class SdServiceServer extends EventEmitter {
     this.emit("close");
   }
 
-  public broadcastReload(): void {
+  public broadcastReload(changedFileSet: Set<string>): void {
     this._logger.debug("서버내 모든 클라이언트 RELOAD 명령 전송");
     this._wsServer?.clients.forEach(async (wsClient) => {
-      await this._sendAsync(wsClient, { name: "client-reload" });
+      await this._sendAsync(wsClient, { name: "client-reload", changedFileSet });
     });
   }
 

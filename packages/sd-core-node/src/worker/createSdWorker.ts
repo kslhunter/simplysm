@@ -30,4 +30,15 @@ export function createSdWorker<T extends ISdWorkerType>(methods: {
       }
     }
   });
+
+  return {
+    send<K extends keyof T["events"] & string>(event: K, body?: T["events"][K]) {
+      const response: TSdWorkerResponse<T, any> = {
+        type: "event",
+        event,
+        body,
+      };
+      process.send!(JsonConvert.stringify(response));
+    },
+  };
 }

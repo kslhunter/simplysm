@@ -1,9 +1,10 @@
 import ts from "typescript";
 import os from "os";
 import path from "path";
-import { ISdBuildMessage } from "../commons";
-import { Message, PartialMessage } from "esbuild";
+import { PartialMessage } from "esbuild";
 import { ESLint } from "eslint";
+import { ISdBuildMessage } from "../types/build.type";
+import { PathUtil } from "@simplysm/sd-core-node";
 
 export class SdCliConvertMessageUtil {
   static convertToBuildMessagesFromTsDiag(diags: ts.Diagnostic[]): ISdBuildMessage[] {
@@ -20,7 +21,7 @@ export class SdCliConvertMessageUtil {
       const code = `TS${diag.code}`;
       const message = ts.flattenDiagnosticMessageText(diag.messageText, os.EOL);
 
-      const filePath = diag.file ? path.resolve(diag.file.fileName) : undefined;
+      const filePath = diag.file ? PathUtil.norm(path.resolve(diag.file.fileName)) : undefined;
       const position =
         diag.file && diag.start !== undefined ? diag.file.getLineAndCharacterOfPosition(diag.start) : undefined;
       const line = position ? position.line + 1 : undefined;
@@ -38,37 +39,19 @@ export class SdCliConvertMessageUtil {
     });
   }
 
-  static convertToEsbuildFromBuildMessages(messages: ISdBuildMessage[]): {
-    errors: PartialMessage[];
-    warnings: PartialMessage[];
-  } {
-    return {
-      errors: messages
-        .filter((msg) => msg.severity === "error")
-        .map((msg) => ({
-          id: msg.code,
-          pluginName: msg.type,
-          text: msg.message,
-          location: { file: msg.filePath, line: msg.line, column: msg.char },
-        })),
-      warnings: messages
-        .filter((msg) => msg.severity !== "error")
-        .map((msg) => ({
-          id: msg.code,
-          pluginName: msg.type,
-          text: msg.message,
-          location: { file: msg.filePath, line: msg.line, column: msg.char },
-        })),
-    };
-  }
-
-  static convertToBuildMessagesFromEsbuild(result: { errors?: Message[]; warnings?: Message[] }): ISdBuildMessage[] {
-    const convertFn = (msg: Message, severity: "error" | "warning") => {
-      const filePath = msg.location?.file != null ? path.resolve(msg.location.file) : undefined;
+  static convertToBuildMessagesFromEsbuild(
+    result: {
+      errors?: PartialMessage[];
+      warnings?: PartialMessage[];
+    },
+    orgPath: string,
+  ): ISdBuildMessage[] {
+    const convertFn = (msg: PartialMessage, severity: "error" | "warning") => {
+      const filePath = msg.location?.file != null ? PathUtil.norm(orgPath, msg.location.file) : undefined;
       const line = msg.location?.line;
       const char = msg.location?.column;
-      const code = msg.text.slice(0, msg.text.indexOf(":"));
-      const message = `(${msg.id}) ${msg.text.slice(msg.text.indexOf(":") + 1)}`;
+      const code = msg.text!.slice(0, msg.text!.indexOf(":"));
+      const message = `${msg.text!.slice(msg.text!.indexOf(":") + 1)}${Boolean(msg.id) ? ` (${msg.id})` : ``}`;
 
       return {
         filePath,
@@ -90,15 +73,91 @@ export class SdCliConvertMessageUtil {
   static convertToBuildMessagesFromEslint(results: ESLint.LintResult[]): ISdBuildMessage[] {
     return results.mapMany((result) =>
       result.messages.map((msg) => ({
-        filePath: result.filePath,
+        filePath: PathUtil.norm(result.filePath),
         line: msg.line,
         char: msg.column,
         code: msg.messageId,
         severity: msg.severity === 1 ? ("warning" as const) : ("error" as const),
-        message: msg.message + (msg.ruleId != null ? ` (${msg.ruleId})` : ``),
+        message: msg.message + (Boolean(msg.ruleId) ? ` (${msg.ruleId})` : ``),
         type: "lint" as const,
       })),
     );
+  }
+
+  static convertToEsbuildFromBuildMessages(
+    messages: ISdBuildMessage[],
+    orgPath: string,
+  ): {
+    errors: PartialMessage[];
+    warnings: PartialMessage[];
+  } {
+    return {
+      errors: messages
+        .filter((msg) => msg.severity === "error")
+        .map((msg) => ({
+          id: msg.code,
+          pluginName: msg.type,
+          text: msg.message,
+          location: {
+            file: Boolean(msg.filePath) ? path.relative(orgPath, msg.filePath!) : undefined,
+            line: msg.line,
+            column: msg.char,
+          },
+        })),
+      warnings: messages
+        .filter((msg) => msg.severity !== "error")
+        .map((msg) => ({
+          id: msg.code,
+          pluginName: msg.type,
+          text: msg.message,
+          location: {
+            file: Boolean(msg.filePath) ? path.relative(orgPath, msg.filePath!) : undefined,
+            line: msg.line,
+            column: msg.char,
+          },
+        })),
+    };
+  }
+
+  static convertToEsbuildFromEslint(
+    results: ESLint.LintResult[],
+    orgPath: string,
+  ): {
+    errors: PartialMessage[];
+    warnings: PartialMessage[];
+  } {
+    return {
+      errors: results.mapMany((r) =>
+        r.messages
+          .filter((m) => m.severity === 2)
+          .map((m) => {
+            return {
+              pluginName: "lint",
+              text: m.messageId + ": " + m.message + (Boolean(m.ruleId) ? ` (${m.ruleId})` : ``),
+              location: {
+                file: path.relative(orgPath, r.filePath),
+                line: m.line,
+                column: m.column,
+              },
+            };
+          }),
+      ),
+      warnings: results.mapMany((r) =>
+        r.messages
+          .filter((m) => m.severity !== 2)
+          .map((m) => {
+            return {
+              pluginName: "lint",
+              text: m.messageId + ": " + m.message + (Boolean(m.ruleId) ? ` (${m.ruleId})` : ``),
+              location: {
+                file: path.relative(orgPath, r.filePath),
+                line: m.line,
+                column: m.column,
+              },
+            };
+          }),
+      ),
+    };
   }
 
   static getBuildMessageString(result: ISdBuildMessage): string {
@@ -106,10 +165,12 @@ export class SdCliConvertMessageUtil {
     if (result.filePath !== undefined) {
       str += `${result.filePath}(${result.line ?? 0}, ${result.char ?? 0}): `;
     }
+    str += `[${result.type}] `;
+    str += `${result.severity} `;
     if (result.code !== undefined) {
-      str += `${result.code}: `;
+      str += `${result.code} `;
     }
-    str += `(${result.type}) ${result.severity} ${result.message}`;
+    str += `: ${result.message}`;
 
     return str;
   }

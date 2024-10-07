@@ -38,7 +38,7 @@ export class SdWorker<T extends ISdWorkerType> extends EventEmitter {
     });
   }
 
-  override on<K extends keyof T["events"] & string>(event: K, listener: (...args: T["events"][K]) => void): this;
+  override on<K extends keyof T["events"] & string>(event: K, listener: (args: T["events"][K]) => void): this;
   override on(event: string | symbol, listener: (...args: any[]) => void): this {
     super.on(event, listener);
     return this;
@@ -52,14 +52,18 @@ export class SdWorker<T extends ISdWorkerType> extends EventEmitter {
       const request: ISdWorkerRequest<T, K> = { id: Uuid.new().toString(), method, params };
       const callback = (responseJson: string) => {
         const response: TSdWorkerResponse<T, K> = JsonConvert.parse(responseJson);
-        if (response.request.id === request.id) {
-          if (response.type === "return") {
+        if (response.type === "return") {
+          if (response.request.id === request.id) {
             this.#proc.off("message", callback);
             resolve(response.body);
-          } else if (response.type === "error") {
+          }
+        } else if (response.type === "error") {
+          if (response.request.id === request.id) {
             this.#proc.off("message", callback);
             reject(response.body);
           }
+        } else {
+          this.emit(response.event, response.body);
         }
       };
 

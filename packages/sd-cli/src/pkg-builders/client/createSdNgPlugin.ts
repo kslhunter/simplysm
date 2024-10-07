@@ -1,23 +1,23 @@
-import esbuild, { PartialMessage } from "esbuild";
+import esbuild from "esbuild";
 import path from "path";
 import os from "os";
 import { JavaScriptTransformer } from "@angular/build/src/tools/esbuild/javascript-transformer";
-import { Logger } from "@simplysm/sd-core-node";
-import { ESLint } from "eslint";
+import { Logger, PathUtil, TNormPath } from "@simplysm/sd-core-node";
 import { SdCliPerformanceTimer } from "../../utils/SdCliPerformanceTime";
-import { SdTsBuilder } from "../../ts-builder/SdTsBuilder";
-import { ISdTsCompilerPrepareResult, ISdTsCompilerResult } from "../../ts-builder/SdTsCompiler";
 import { SdCliConvertMessageUtil } from "../../utils/SdCliConvertMessageUtil";
+import { ISdCliNgPluginResultCache } from "../../types/build-plugin.type";
+import { ISdTsCompilerResult } from "../../types/ts-compiler.type";
+import { SdTsCompileWorker } from "../../ts-builder/SdTsCompileWorker";
 
-export function sdNgPlugin(conf: {
-  pkgPath: string;
+export function createSdNgPlugin(conf: {
+  pkgPath: TNormPath;
   dev: boolean;
-  modifiedFileSet: Set<string>;
-  result: INgPluginResultCache;
-  watchScopePaths: string[];
+  modifiedFileSet: Set<TNormPath>;
+  result: ISdCliNgPluginResultCache;
+  watchScopePaths: TNormPath[];
 }): esbuild.Plugin {
   let perf: SdCliPerformanceTimer;
-  const logger = Logger.get(["simplysm", "sd-cli", "sdNgPlugin"]);
+  const logger = Logger.get(["simplysm", "sd-cli", "createSdNgPlugin"]);
 
   function debug(...msg: any[]): void {
     logger.debug(`[${path.basename(conf.pkgPath)}]`, ...msg);
@@ -26,7 +26,7 @@ export function sdNgPlugin(conf: {
   return {
     name: "sd-ng-compile",
     setup: async (build: esbuild.PluginBuild) => {
-      const tsBuilder = await SdTsBuilder.new({
+      const tsCompiler = await SdTsCompileWorker.new({
         pkgPath: conf.pkgPath,
         additionalOptions: { declaration: false },
         isDevMode: conf.dev,
@@ -34,8 +34,8 @@ export function sdNgPlugin(conf: {
         watchScopePaths: conf.watchScopePaths,
       });
 
-      let tsBuildResult: ISdTsCompilerResult & ISdTsCompilerPrepareResult & { lintResults: ESLint.LintResult[] };
-      const outputContentsCacheMap = new Map<string, Uint8Array>();
+      let tsCompileResult: ISdTsCompilerResult;
+      const outputContentsCacheMap = new Map<TNormPath, Uint8Array>();
 
       // const cacheStore = new LmbdCacheStore(path.join(process.cwd(), "angular-compiler.db"));
       //-- js babel transformer
@@ -56,51 +56,32 @@ export function sdNgPlugin(conf: {
         perf = new SdCliPerformanceTimer("esbuild");
 
         const res = await perf.run("typescript build", async () => {
-          await tsBuilder.invalidateAsync(conf.modifiedFileSet);
-
           for (const modifiedFile of conf.modifiedFileSet) {
             outputContentsCacheMap.delete(modifiedFile);
           }
 
-          tsBuildResult = await tsBuilder.buildAsync();
+          tsCompileResult = await tsCompiler.compileAsync(conf.modifiedFileSet);
 
-          conf.result.watchFileSet = tsBuildResult.watchFileSet;
-          conf.result.affectedFileSet = tsBuildResult.affectedFileSet;
+          conf.result.watchFileSet = tsCompileResult.watchFileSet;
+          conf.result.affectedFileSet = tsCompileResult.affectedFileSet;
 
-          const tsEsbuildResult = SdCliConvertMessageUtil.convertToEsbuildFromBuildMessages(tsBuildResult.messages);
+          const tsEsbuildResult = SdCliConvertMessageUtil.convertToEsbuildFromBuildMessages(
+            tsCompileResult.messages,
+            conf.pkgPath,
+          );
           //-- return err/warn
           return {
             errors: [
               ...tsEsbuildResult.errors,
-              ...Array.from(tsBuildResult.stylesheetBundlingResultMap.values())
+              ...Array.from(tsCompileResult.stylesheetBundlingResultMap.values())
                 .flatMap((item) => item.errors)
                 .filterExists(),
-              ...tsBuildResult.lintResults.mapMany((r) =>
-                r.messages
-                  .filter((m) => m.severity !== 1)
-                  .map<PartialMessage>((m) => ({
-                    id: m.ruleId ?? undefined,
-                    pluginName: "lint",
-                    text: m.message,
-                    location: { file: r.filePath, line: m.line, column: m.column },
-                  })),
-              ),
             ].filterExists(),
             warnings: [
               ...tsEsbuildResult.warnings,
-              ...Array.from(tsBuildResult.stylesheetBundlingResultMap.values())
+              ...Array.from(tsCompileResult.stylesheetBundlingResultMap.values())
                 .flatMap((item) => item.warnings)
                 .filterExists(),
-              ...tsBuildResult.lintResults.mapMany((r) =>
-                r.messages
-                  .filter((m) => m.severity === 1)
-                  .map<PartialMessage>((m) => ({
-                    id: m.ruleId ?? undefined,
-                    pluginName: "lint",
-                    text: m.message,
-                    location: { file: r.filePath, line: m.line, column: m.column },
-                  })),
-              ),
             ],
           };
         });
@@ -110,12 +91,12 @@ export function sdNgPlugin(conf: {
       });
 
       build.onLoad({ filter: /\.ts$/ }, async (args) => {
-        const output = outputContentsCacheMap.get(path.normalize(args.path));
+        const output = outputContentsCacheMap.get(PathUtil.norm(args.path));
         if (output != null) {
           return { contents: output, loader: "js" };
         }
 
-        const emittedJsFile = tsBuildResult.emittedFilesCacheMap.get(path.normalize(args.path))?.last();
+        const emittedJsFile = tsCompileResult.emittedFilesCacheMap.get(PathUtil.norm(args.path))?.last();
         if (!emittedJsFile) {
           throw new Error(`ts 빌더 결과 emit 파일이 존재하지 않습니다. ${args.path}`);
         }
@@ -129,15 +110,15 @@ export function sdNgPlugin(conf: {
 
         const newContents = await javascriptTransformer.transformData(args.path, contents, true, sideEffects);
 
-        outputContentsCacheMap.set(path.normalize(args.path), newContents);
+        outputContentsCacheMap.set(PathUtil.norm(args.path), newContents);
 
         return { contents: newContents, loader: "js" };
       });
 
       build.onLoad({ filter: /\.[cm]?js$/ }, async (args) => {
-        conf.result.watchFileSet!.add(path.normalize(args.path));
+        conf.result.watchFileSet!.add(PathUtil.norm(args.path));
 
-        const output = outputContentsCacheMap.get(path.normalize(args.path));
+        const output = outputContentsCacheMap.get(PathUtil.norm(args.path));
         if (output != null) {
           return { contents: output, loader: "js" };
         }
@@ -149,7 +130,7 @@ export function sdNgPlugin(conf: {
 
         const newContents = await javascriptTransformer.transformFile(args.path, false, sideEffects);
 
-        outputContentsCacheMap.set(path.normalize(args.path), newContents);
+        outputContentsCacheMap.set(PathUtil.norm(args.path), newContents);
 
         return {
           contents: newContents,
@@ -168,7 +149,7 @@ export function sdNgPlugin(conf: {
           ),
         },
         (args) => {
-          conf.result.watchFileSet!.add(path.normalize(args.path));
+          conf.result.watchFileSet!.add(PathUtil.norm(args.path));
           return null;
         },
       );
@@ -177,7 +158,7 @@ export function sdNgPlugin(conf: {
         perf.end("transform & bundling");
         debug(perf.toString());
 
-        for (const { outputFiles, metafile } of tsBuildResult.stylesheetBundlingResultMap.values()) {
+        for (const { outputFiles, metafile } of tsCompileResult.stylesheetBundlingResultMap.values()) {
           result.outputFiles = result.outputFiles ?? [];
           result.outputFiles.push(...outputFiles);
 
@@ -194,11 +175,4 @@ export function sdNgPlugin(conf: {
       });
     },
   };
-}
-
-export interface INgPluginResultCache {
-  watchFileSet?: Set<string>;
-  affectedFileSet?: Set<string>;
-  outputFiles?: esbuild.OutputFile[];
-  metafile?: esbuild.Metafile;
 }

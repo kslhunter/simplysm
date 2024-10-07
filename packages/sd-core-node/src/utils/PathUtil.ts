@@ -26,4 +26,13 @@ export class PathUtil {
     const relativePath = path.relative(parentPath, childPath);
     return Boolean(relativePath) && !relativePath.startsWith("..") && !path.isAbsolute(relativePath);
   }
+
+  static norm(...paths: string[]): TNormPath {
+    return path.resolve(...paths) as TNormPath;
+  }
 }
+
+const NORM = Symbol();
+export type TNormPath = string & {
+  [NORM]: never;
+};

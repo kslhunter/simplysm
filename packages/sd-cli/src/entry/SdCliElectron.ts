@@ -1,11 +1,12 @@
 import { FsUtil, Logger, SdProcess } from "@simplysm/sd-core-node";
 import { pathToFileURL } from "url";
 import path from "path";
-import { INpmConfig, ISdClientBuilderElectronConfig, ISdProjectConfig } from "../commons";
 import electronBuilder from "electron-builder";
+import { ISdClientBuilderElectronConfig, ISdProjectConfig } from "../types/sd-configs.type";
+import { INpmConfig } from "../types/common-configs.type";
 
 export class SdCliElectron {
-  public static async runAsync(opt: { confFileRelPath: string; optNames: string[]; pkgName: string }): Promise<void> {
+  static async runAsync(opt: { confFileRelPath: string; optNames: string[]; pkgName: string }): Promise<void> {
     const logger = Logger.get(["simplysm", "sd-cli", "SdCliElectron", "runAsync"]);
 
     const pkgPath = path.resolve(process.cwd(), `packages/${opt.pkgName}`);
@@ -22,11 +23,11 @@ export class SdCliElectron {
     }
 
     logger.log("package.json 파일 쓰기...");
-    const npmConfig = (await FsUtil.readJsonAsync(path.resolve(pkgPath, `package.json`))) as INpmConfig;
+    const npmConfig = FsUtil.readJson(path.resolve(pkgPath, `package.json`)) as INpmConfig;
 
     const externalPkgNames = pkgConf.builder.electron.reinstallDependencies ?? [];
 
-    await FsUtil.writeJsonAsync(path.resolve(electronPath, `package.json`), {
+    FsUtil.writeJson(path.resolve(electronPath, `package.json`), {
       name: npmConfig.name.replace(/^@/, "").replace(/\//, "-"),
       version: npmConfig.version,
       description: npmConfig.description,
@@ -62,11 +63,7 @@ export class SdCliElectron {
     await SdProcess.spawnAsync(`electron .`, { cwd: electronPath }, true);
   }
 
-  public static async buildForDevAsync(opt: {
-    confFileRelPath: string;
-    optNames: string[];
-    pkgName: string;
-  }): Promise<void> {
+  static async buildForDevAsync(opt: { confFileRelPath: string; optNames: string[]; pkgName: string }): Promise<void> {
     const logger = Logger.get(["simplysm", "sd-cli", "SdCliElectron", "buildForDevAsync"]);
 
     const pkgPath = path.resolve(process.cwd(), `packages/${opt.pkgName}`);
@@ -84,11 +81,11 @@ export class SdCliElectron {
     }
 
     logger.log("package.json 파일 쓰기...");
-    const npmConfig = (await FsUtil.readJsonAsync(path.resolve(pkgPath, `package.json`))) as INpmConfig;
+    const npmConfig = FsUtil.readJson(path.resolve(pkgPath, `package.json`)) as INpmConfig;
 
     const externalPkgNames = pkgConf.builder.electron.reinstallDependencies ?? [];
 
-    await FsUtil.writeJsonAsync(path.resolve(electronPath, `package.json`), {
+    FsUtil.writeJson(path.resolve(electronPath, `package.json`), {
       name: npmConfig.name.replace(/^@/, "").replace(/\//, "-"),
       version: npmConfig.version,
       description: npmConfig.description,
@@ -145,24 +142,24 @@ export class SdCliElectron {
       },
     });
 
-    await FsUtil.copyAsync(
+    FsUtil.copy(
       path.resolve(electronDistPath, `${npmConfig.description} Setup ${npmConfig.version}.exe`),
       path.resolve(pkgPath, `dist/electron/${npmConfig.description}-dev.exe`),
     );
   }
 
-  public static async buildAsync(opt: { pkgPath: string; config: ISdClientBuilderElectronConfig }): Promise<void> {
+  static async buildAsync(opt: { pkgPath: string; config: ISdClientBuilderElectronConfig }): Promise<void> {
     const logger = Logger.get(["simplysm", "sd-cli", "SdCliElectron", "buildAsync"]);
 
     const electronSrcPath = path.resolve(opt.pkgPath, ".electron/src");
     const electronDistPath = path.resolve(opt.pkgPath, ".electron/dist");
 
     logger.log("package.json 파일 쓰기...");
-    const npmConfig = (await FsUtil.readJsonAsync(path.resolve(opt.pkgPath, `package.json`))) as INpmConfig;
+    const npmConfig = FsUtil.readJson(path.resolve(opt.pkgPath, `package.json`)) as INpmConfig;
 
     const externalPkgNames = opt.config.reinstallDependencies ?? [];
 
-    await FsUtil.writeJsonAsync(path.resolve(electronSrcPath, `package.json`), {
+    FsUtil.writeJson(path.resolve(electronSrcPath, `package.json`), {
       name: npmConfig.name.replace(/^@/, "").replace(/\//, "-"),
       version: npmConfig.version,
       description: npmConfig.description,
@@ -219,7 +216,7 @@ export class SdCliElectron {
       },
     });
 
-    await FsUtil.copyAsync(
+    FsUtil.copy(
       path.resolve(electronDistPath, `${npmConfig.description} Setup ${npmConfig.version}.exe`),
       path.resolve(opt.pkgPath, `dist/electron/${npmConfig.description}-latest.exe`),
     );

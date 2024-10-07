@@ -1,10 +1,10 @@
-import { FsUtil, Logger, PathUtil, SdFsWatcher } from "@simplysm/sd-core-node";
+import { FsUtil, Logger, PathUtil, SdFsWatcher, TNormPath } from "@simplysm/sd-core-node";
 import path from "path";
-import { ISdBuildMessage, ISdBuildRunnerResult, ISdLibPackageConfig, ISdProjectConfig } from "../../commons";
 import { EventEmitter } from "events";
-import { FunctionQueue } from "@simplysm/sd-core-common";
 import { SdCliIndexFileGenerator } from "./SdCliIndexFileGenerator";
 import { SdTsLibBuilder } from "./SdTsLibBuilder";
+import { ISdLibPackageConfig, ISdProjectConfig } from "../../types/sd-configs.type";
+import { ISdBuildMessage, ISdBuildRunnerResult } from "../../types/build.type";
 
 export class SdTsLibBuildRunner extends EventEmitter {
   readonly #logger = Logger.get(["simplysm", "sd-cli", "SdCliTsLibBuilder"]);
@@ -32,17 +32,18 @@ export class SdTsLibBuildRunner extends EventEmitter {
 
   public async buildAsync(): Promise<ISdBuildRunnerResult> {
     this._debug("dist 초기화...");
-    await FsUtil.removeAsync(path.resolve(this.#pkgPath, "dist"));
+    FsUtil.remove(path.resolve(this.#pkgPath, "dist"));
 
     if (!this.#pkgConf.noGenIndex) {
       this._debug("GEN index.ts...");
-      await SdCliIndexFileGenerator.runAsync(this.#pkgPath, this.#pkgConf.polyfills);
+      SdCliIndexFileGenerator.run(this.#pkgPath, this.#pkgConf.polyfills);
     }
 
     const result = await this._runAsync(false);
     return {
-      affectedFilePaths: Array.from(result.affectedFileSet),
+      affectedFilePathSet: result.affectedFileSet,
       buildMessages: result.buildMessages,
+      emitFileSet: result.emitFileSet,
     };
   }
 
@@ -50,53 +51,59 @@ export class SdTsLibBuildRunner extends EventEmitter {
     this.emit("change");
 
     this._debug("dist 초기화...");
-    await FsUtil.removeAsync(path.resolve(this.#pkgPath, "dist"));
+    FsUtil.remove(path.resolve(this.#pkgPath, "dist"));
 
     if (!this.#pkgConf.noGenIndex) {
       this._debug("WATCH GEN index.ts...");
-      await SdCliIndexFileGenerator.watchAsync(this.#pkgPath, this.#pkgConf.polyfills);
+      SdCliIndexFileGenerator.watch(this.#pkgPath, this.#pkgConf.polyfills);
     }
 
     const result = await this._runAsync(true);
-    this.emit("complete", {
-      affectedFilePaths: Array.from(result.affectedFileSet),
+    const res: ISdBuildRunnerResult = {
+      affectedFilePathSet: result.affectedFileSet,
       buildMessages: result.buildMessages,
-    });
+      emitFileSet: result.emitFileSet,
+    };
+    this.emit("complete", res);
 
     this._debug("WATCH...");
-    const fnQ = new FunctionQueue();
-    const watcher = SdFsWatcher.watch(Array.from(result.watchFileSet)).onChange({ delay: 100 }, async (changeInfos) => {
-      await this.#builder!.markChangesAsync(new Set(changeInfos.map((item) => item.path)));
+    const watcher = SdFsWatcher.watch(Array.from(result.watchFileSet)).onChange({ delay: 300 }, async (changeInfos) => {
+      this.emit("change");
 
-      fnQ.runLast(async () => {
-        this.emit("change");
+      const changeFileSet = new Set(changeInfos.map((item) => PathUtil.norm(item.path)));
 
-        const watchResult = await this._runAsync(true);
-        this.emit("complete", {
-          affectedFilePaths: Array.from(watchResult.affectedFileSet),
-          buildMessages: watchResult.buildMessages,
-        });
+      const watchResult = await this._runAsync(true, changeFileSet);
+      const watchRes: ISdBuildRunnerResult = {
+        affectedFilePathSet: watchResult.affectedFileSet,
+        buildMessages: watchResult.buildMessages,
+        emitFileSet: watchResult.emitFileSet,
+      };
 
-        watcher.add(watchResult.watchFileSet);
-      });
+      this.emit("complete", watchRes);
+
+      watcher.replaceWatchPaths(watchResult.watchFileSet);
     });
   }
 
-  private async _runAsync(dev: boolean): Promise<{
-    watchFileSet: Set<string>;
-    affectedFileSet: Set<string>;
+  private async _runAsync(
+    dev: boolean,
+    modifiedFileSet?: Set<TNormPath>,
+  ): Promise<{
+    watchFileSet: Set<TNormPath>;
+    affectedFileSet: Set<TNormPath>;
     buildMessages: ISdBuildMessage[];
+    emitFileSet: Set<TNormPath>;
   }> {
-    const localUpdatePaths = Object.keys(this.#projConf.localUpdates ?? {}).mapMany((key) =>
-      FsUtil.glob(path.resolve(this.#pkgPath, "../../node_modules", key)),
-    );
+    const localUpdatePaths = Object.keys(this.#projConf.localUpdates ?? {})
+      .mapMany((key) => FsUtil.glob(path.resolve(this.#pkgPath, "../../node_modules", key)))
+      .map((item) => PathUtil.norm(item));
 
     this._debug(`BUILD...`);
-    this.#builder ??= await SdTsLibBuilder.new(this.#pkgPath, dev, [
-      path.resolve(this.#pkgPath, "../"),
+    this.#builder ??= await SdTsLibBuilder.new(PathUtil.norm(this.#pkgPath), dev, [
+      PathUtil.norm(this.#pkgPath, "../"),
       ...localUpdatePaths,
     ]);
-    const buildResult = await this.#builder.buildAsync();
+    const buildResult = await this.#builder.buildAsync(modifiedFileSet);
 
     this._debug(`빌드 완료`);
     const watchFileSet = new Set(
@@ -111,6 +118,7 @@ export class SdTsLibBuildRunner extends EventEmitter {
       watchFileSet,
       affectedFileSet: buildResult.affectedFileSet,
       buildMessages: buildResult.results,
+      emitFileSet: buildResult.emitFileSet,
     };
   }
 

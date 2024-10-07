@@ -6,7 +6,7 @@ export interface ISdWorkerType {
       returnType: any;
     }
   >;
-  events: Record<string, any[]>;
+  events: Record<string, any>;
 }
 
 export interface ISdWorkerRequest<T extends ISdWorkerType, K extends keyof T["methods"]> {
@@ -19,7 +19,7 @@ export type TSdWorkerResponse<T extends ISdWorkerType, K extends keyof T["method
   | {
       request: ISdWorkerRequest<T, K>;
       type: "return";
-      body: T["methods"][K]["returnType"];
+      body?: T["methods"][K]["returnType"];
     }
   | {
       request: ISdWorkerRequest<T, K>;
@@ -27,8 +27,7 @@ export type TSdWorkerResponse<T extends ISdWorkerType, K extends keyof T["method
       body: Error;
     }
   | {
-      request: ISdWorkerRequest<T, K>;
       type: "event";
       event: string;
-      body: any;
+      body?: any;
     };

@@ -13,6 +13,7 @@ export type TSdServiceC2SMessage = ISdServiceClientGetIdResponse
 
 interface ISdServiceClientReloadCommand {
   name: "client-reload";
+  changedFileSet: Set<string>;
 }
 
 interface ISdServiceClientGetIdCommand {

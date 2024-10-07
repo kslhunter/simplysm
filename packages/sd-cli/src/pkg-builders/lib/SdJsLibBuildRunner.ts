@@ -1,9 +1,10 @@
-import { FsUtil, Logger, SdFsWatcher, SdWorker } from "@simplysm/sd-core-node";
+import { FsUtil, Logger, PathUtil, SdFsWatcher, SdWorker } from "@simplysm/sd-core-node";
 import path from "path";
 import { EventEmitter } from "events";
-import { ISdBuildRunnerResult, ISdProjectConfig } from "../../commons";
 import { SdCliConvertMessageUtil } from "../../utils/SdCliConvertMessageUtil";
-import { TSdLintWorkerType } from "../../workers/lint/lint-worker.type";
+import { TSdLintWorkerType } from "../../types/workers.type";
+import { ISdProjectConfig } from "../../types/sd-configs.type";
+import { ISdBuildRunnerResult } from "../../types/build.type";
 
 export class SdJsLibBuildRunner extends EventEmitter {
   private readonly _logger = Logger.get(["simplysm", "sd-cli", "SdJsLibBuildRunner"]);
@@ -17,7 +18,7 @@ export class SdJsLibBuildRunner extends EventEmitter {
     super();
     this._pkgName = path.basename(_pkgPath);
 
-    this._lintWorker = new SdWorker(import.meta.resolve("../../workers/lint/lint-worker"));
+    this._lintWorker = new SdWorker(import.meta.resolve("../../workers/lint-worker"));
   }
 
   public override on(event: "change", listener: () => void): this;
@@ -30,7 +31,7 @@ export class SdJsLibBuildRunner extends EventEmitter {
   public async buildAsync(): Promise<ISdBuildRunnerResult> {
     this._debug("LINT...");
     const srcGlobPath = path.resolve(this._pkgPath, "src/**/*.js");
-    const srcFilePaths = await FsUtil.globAsync(srcGlobPath);
+    const srcFilePaths = FsUtil.glob(srcGlobPath);
 
     const lintResults = await this._lintWorker.run("lint", [
       {
@@ -42,8 +43,9 @@ export class SdJsLibBuildRunner extends EventEmitter {
 
     this._debug(`LINT 완료`);
     return {
-      affectedFilePaths: srcFilePaths,
+      affectedFilePathSet: new Set(srcFilePaths.map((item) => PathUtil.norm(item))),
       buildMessages: messages,
+      emitFileSet: new Set(),
     };
   }
 
@@ -51,7 +53,7 @@ export class SdJsLibBuildRunner extends EventEmitter {
     this.emit("change");
     this._debug("LINT...");
     const srcGlobPath = path.resolve(this._pkgPath, "src/**/*.js");
-    const srcFilePaths = await FsUtil.globAsync(srcGlobPath);
+    const srcFilePaths = FsUtil.glob(srcGlobPath);
 
     const lintResults = await this._lintWorker.run("lint", [
       {
@@ -62,36 +64,39 @@ export class SdJsLibBuildRunner extends EventEmitter {
     const messages = SdCliConvertMessageUtil.convertToBuildMessagesFromEslint(lintResults);
 
     this._debug(`LINT 완료`);
-    this.emit("complete", {
-      affectedFilePaths: srcFilePaths,
+    const res: ISdBuildRunnerResult = {
+      affectedFilePathSet: new Set(srcFilePaths.map((item) => PathUtil.norm(item))),
       buildMessages: messages,
+      emitFileSet: new Set(),
+    };
+    this.emit("complete", res);
+
+    SdFsWatcher.watch([srcGlobPath]).onChange({ delay: 300 }, async (changeInfos) => {
+      const watchFilePaths = changeInfos.filter((item) => FsUtil.exists(item.path)).map((item) => item.path);
+      if (watchFilePaths.length < 1) return;
+
+      this.emit("change");
+
+      this._debug("LINT...");
+
+      const watchLintResults = await this._lintWorker.run("lint", [
+        {
+          cwd: this._pkgPath,
+          fileSet: new Set(watchFilePaths),
+        },
+      ]);
+      const watchMessages = SdCliConvertMessageUtil.convertToBuildMessagesFromEslint(watchLintResults);
+
+      this._debug(`LINT 완료`);
+
+      const watchRes: ISdBuildRunnerResult = {
+        affectedFilePathSet: new Set(changeInfos.map((item) => PathUtil.norm(item.path))),
+        buildMessages: watchMessages,
+        emitFileSet: new Set(),
+      };
+
+      this.emit("complete", watchRes);
     });
-
-    SdFsWatcher.watch([srcGlobPath]).onChange(
-      {
-        delay: 100,
-      },
-      async (changeInfos) => {
-        const watchFilePaths = changeInfos.filter((item) => FsUtil.exists(item.path)).map((item) => item.path);
-        if (watchFilePaths.length < 1) return;
-
-        this.emit("change");
-        this._debug("LINT...");
-        const watchLintResults = await this._lintWorker.run("lint", [
-          {
-            cwd: this._pkgPath,
-            fileSet: new Set(watchFilePaths),
-          },
-        ]);
-        const watchMessages = SdCliConvertMessageUtil.convertToBuildMessagesFromEslint(watchLintResults);
-
-        this._debug(`LINT 완료`);
-        this.emit("complete", {
-          affectedFilePaths: changeInfos.map((item) => item.path),
-          buildMessages: watchMessages,
-        });
-      },
-    );
   }
 
   private _debug(msg: string): void {

@@ -1,17 +1,19 @@
 import path from "path";
 import { FsUtil, Logger, PathUtil, SdProcess } from "@simplysm/sd-core-node";
-import { INpmConfig, ISdBuildMessage, ISdProjectConfig, TSdPackageConfig } from "../commons";
 import { pathToFileURL } from "url";
 import semver from "semver";
 import { NeverEntryError, StringUtil, Wait } from "@simplysm/sd-core-common";
 import { SdStorage } from "@simplysm/sd-storage";
 import { SdCliLocalUpdate } from "./SdCliLocalUpdate";
 import xml2js from "xml2js";
-import { SdMultiBuildRunner } from "../utils/SdMultiBuildRunner";
+import { SdMultiBuildRunner } from "../pkg-builders/SdMultiBuildRunner";
 import { SdCliConvertMessageUtil } from "../utils/SdCliConvertMessageUtil";
+import { ISdProjectConfig, TSdPackageConfig } from "../types/sd-configs.type";
+import { INpmConfig } from "../types/common-configs.type";
+import { ISdBuildMessage } from "../types/build.type";
 
 export class SdCliProject {
-  public static async watchAsync(opt: {
+  static async watchAsync(opt: {
     confFileRelPath: string;
     optNames: string[];
     pkgNames: string[];
@@ -34,15 +36,16 @@ export class SdCliProject {
     }
 
     logger.debug("프로젝트 package.json 가져오기...");
-    const projNpmConf = (await FsUtil.readJsonAsync(path.resolve(process.cwd(), "package.json"))) as INpmConfig;
+    const projNpmConf = FsUtil.readJson(path.resolve(process.cwd(), "package.json")) as INpmConfig;
 
     logger.debug("패키지 목록 구성...");
     if (!projNpmConf.workspaces) {
       throw new Error("프로젝트 package.json에 workspaces가 설정되어있지 않습니다.");
     }
-    const allPkgPaths = (
-      await projNpmConf.workspaces.mapManyAsync(async (item) => await FsUtil.globAsync(item))
-    ).filter((item) => !item.includes("."));
+    const allPkgPaths = projNpmConf.workspaces
+      .mapMany((item) => FsUtil.glob(item))
+      .filter((item) => !item.includes("."))
+      .map((item) => PathUtil.norm(item));
     let pkgPaths = allPkgPaths.filter((pkgPath) => path.basename(pkgPath) in projConf.packages);
     if (opt.pkgNames.length !== 0) {
       pkgPaths = pkgPaths.filter((pkgPath) => opt.pkgNames.includes(path.basename(pkgPath)));
@@ -57,7 +60,7 @@ export class SdCliProject {
     }
 
     logger.debug("빌드 프로세스 시작...");
-    const parallelBuildRunner = new SdMultiBuildRunner()
+    const multiBuildRunner = new SdMultiBuildRunner()
       .on("change", () => {
         logger.debug("빌드를 시작합니다...");
       })
@@ -66,7 +69,7 @@ export class SdCliProject {
       });
 
     await pkgPaths.parallelAsync(async (pkgPath) => {
-      await parallelBuildRunner.runAsync({
+      await multiBuildRunner.runAsync({
         cmd: "watch",
         pkgPath,
         projConf: projConf,
@@ -74,11 +77,7 @@ export class SdCliProject {
     });
   }
 
-  public static async buildAsync(opt: {
-    confFileRelPath: string;
-    optNames: string[];
-    pkgNames: string[];
-  }): Promise<void> {
+  static async buildAsync(opt: { confFileRelPath: string; optNames: string[]; pkgNames: string[] }): Promise<void> {
     const logger = Logger.get(["simplysm", "sd-cli", "SdCliProject", "buildAsync"]);
 
     logger.debug("프로젝트 설정 가져오기...");
@@ -88,13 +87,13 @@ export class SdCliProject {
     ) as ISdProjectConfig;
 
     logger.debug("프로젝트 package.json 가져오기...");
-    const projNpmConf = (await FsUtil.readJsonAsync(path.resolve(process.cwd(), "package.json"))) as INpmConfig;
+    const projNpmConf = FsUtil.readJson(path.resolve(process.cwd(), "package.json")) as INpmConfig;
 
     logger.debug("패키지 목록 구성...");
     if (!projNpmConf.workspaces) {
       throw new Error("프로젝트 package.json에 workspaces가 설정되어있지 않습니다.");
     }
-    const allPkgPaths = await projNpmConf.workspaces.mapManyAsync(async (item) => await FsUtil.globAsync(item));
+    const allPkgPaths = projNpmConf.workspaces.mapMany((item) => FsUtil.glob(item)).map((item) => PathUtil.norm(item));
     let pkgPaths = allPkgPaths.filter((pkgPath) => path.basename(pkgPath) in projConf.packages);
     if (opt.pkgNames.length !== 0) {
       pkgPaths = pkgPaths.filter((pkgPath) => opt.pkgNames.includes(path.basename(pkgPath)));
@@ -131,7 +130,7 @@ export class SdCliProject {
     ) as ISdProjectConfig;
 
     logger.debug("프로젝트 package.json 가져오기...");
-    const projNpmConf = (await FsUtil.readJsonAsync(path.resolve(process.cwd(), "package.json"))) as INpmConfig;
+    const projNpmConf = FsUtil.readJson(path.resolve(process.cwd(), "package.json")) as INpmConfig;
 
     if (opt.noBuild) {
       logger.warn("빌드하지 않고, 배포하는것은 상당히 위험합니다.");
@@ -151,9 +150,10 @@ export class SdCliProject {
     if (!projNpmConf.workspaces) {
       throw new Error("프로젝트 package.json에 workspaces가 설정되어있지 않습니다.");
     }
-    const allPkgPaths = (
-      await projNpmConf.workspaces.mapManyAsync(async (item) => await FsUtil.globAsync(item))
-    ).filter((item) => !item.includes("."));
+    const allPkgPaths = projNpmConf.workspaces
+      .mapMany((item) => FsUtil.glob(item))
+      .filter((item) => !item.includes("."))
+      .map((item) => PathUtil.norm(item));
     let pkgPaths = allPkgPaths.filter((pkgPath) => path.basename(pkgPath) in projConf.packages);
     if (opt.pkgNames.length !== 0) {
       pkgPaths = pkgPaths.filter((pkgPath) => opt.pkgNames.includes(path.basename(pkgPath)));
@@ -230,7 +230,7 @@ export class SdCliProject {
     if (pkgPubConf === "npm") {
       await SdProcess.spawnAsync("yarn npm publish --access public", { cwd: pkgPath });
     } else if (pkgPubConf?.type === "local-directory") {
-      const pkgNpmConf = (await FsUtil.readJsonAsync(path.resolve(pkgPath, "package.json"))) as INpmConfig;
+      const pkgNpmConf = FsUtil.readJson(path.resolve(pkgPath, "package.json")) as INpmConfig;
 
       const targetRootPath = pkgPubConf.path.replace(/%([^%]*)%/g, (item) => {
         const envName = item.replace(/%/g, "");
@@ -243,16 +243,16 @@ export class SdCliProject {
         return process.env[envName] ?? item;
       });
 
-      const filePaths = await FsUtil.globAsync(path.resolve(pkgPath, "dist", "**", "*"), {
+      const filePaths = FsUtil.glob(path.resolve(pkgPath, "dist", "**", "*"), {
         dot: true,
         nodir: true,
       });
 
-      await filePaths.parallelAsync(async (filePath) => {
+      for (const filePath of filePaths) {
         const relativeFilePath = path.relative(path.resolve(pkgPath, "dist"), filePath);
         const targetPath = PathUtil.posix(targetRootPath, relativeFilePath);
-        await FsUtil.copyAsync(filePath, targetPath);
-      });
+        FsUtil.copy(filePath, targetPath);
+      }
     } else if (pkgPubConf?.type === "ftp" || pkgPubConf?.type === "ftps" || pkgPubConf?.type === "sftp") {
       const ftp = await SdStorage.connectAsync(pkgPubConf.type, {
         host: pkgPubConf.host,
@@ -285,8 +285,8 @@ export class SdCliProject {
     const newVersion = semver.inc(projNpmConf.version, "patch")!;
     projNpmConf.version = newVersion;
 
-    const pkgNames = await allPkgPaths.mapAsync(async (pkgPath) => {
-      const pkgNpmConf = await FsUtil.readJsonAsync(path.resolve(pkgPath, "package.json"));
+    const pkgNames = allPkgPaths.map((pkgPath) => {
+      const pkgNpmConf = FsUtil.readJson(path.resolve(pkgPath, "package.json"));
       return pkgNpmConf.name;
     });
 
@@ -304,12 +304,12 @@ export class SdCliProject {
     updateDepVersion(projNpmConf.peerDependencies);
 
     const projNpmConfFilePath = path.resolve(process.cwd(), "package.json");
-    await FsUtil.writeJsonAsync(projNpmConfFilePath, projNpmConf, { space: 2 });
+    FsUtil.writeJson(projNpmConfFilePath, projNpmConf, { space: 2 });
 
     // 각 패키지 package.json 버전 설정
     await allPkgPaths.parallelAsync(async (pkgPath) => {
       const pkgNpmConfFilePath = path.resolve(pkgPath, "package.json");
-      const pkgNpmConf = await FsUtil.readJsonAsync(pkgNpmConfFilePath);
+      const pkgNpmConf = FsUtil.readJson(pkgNpmConfFilePath);
       pkgNpmConf.version = newVersion;
 
       updateDepVersion(pkgNpmConf.dependencies);
@@ -317,16 +317,14 @@ export class SdCliProject {
       updateDepVersion(pkgNpmConf.devDependencies);
       updateDepVersion(pkgNpmConf.peerDependencies);
 
-      await FsUtil.writeJsonAsync(pkgNpmConfFilePath, pkgNpmConf, { space: 2 });
+      FsUtil.writeJson(pkgNpmConfFilePath, pkgNpmConf, { space: 2 });
 
       if (FsUtil.exists(path.resolve(pkgPath, "plugin.xml"))) {
         const cordovaPluginConfFilePath = path.resolve(pkgPath, "plugin.xml");
-        const cordovaPluginConfXml = await xml2js.parseStringPromise(
-          await FsUtil.readFileAsync(cordovaPluginConfFilePath),
-        );
+        const cordovaPluginConfXml = await xml2js.parseStringPromise(FsUtil.readFile(cordovaPluginConfFilePath));
         cordovaPluginConfXml.plugin.$.version = newVersion;
 
-        await FsUtil.writeFileAsync(cordovaPluginConfFilePath, new xml2js.Builder().buildObject(cordovaPluginConfXml));
+        FsUtil.writeFile(cordovaPluginConfFilePath, new xml2js.Builder().buildObject(cordovaPluginConfXml));
       }
     });
   }

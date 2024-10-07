@@ -1,16 +1,11 @@
 import { EventEmitter } from "events";
-import { FsUtil, Logger, PathUtil, SdFsWatcher } from "@simplysm/sd-core-node";
-import {
-  INpmConfig,
-  ISdBuildMessage,
-  ISdBuildRunnerResult,
-  ISdProjectConfig,
-  ISdServerPackageConfig,
-  ITsConfig
-} from "../../commons";
+import { FsUtil, Logger, PathUtil, SdFsWatcher, TNormPath } from "@simplysm/sd-core-node";
 import path from "path";
-import { FunctionQueue, ObjectUtil, StringUtil } from "@simplysm/sd-core-common";
+import { ObjectUtil, StringUtil } from "@simplysm/sd-core-common";
 import { SdServerBundler } from "./SdServerBundler";
+import { ISdProjectConfig, ISdServerPackageConfig } from "../../types/sd-configs.type";
+import { ISdBuildMessage, ISdBuildRunnerResult } from "../../types/build.type";
+import { INpmConfig, ITsConfig } from "../../types/common-configs.type";
 
 export class SdServerBuildRunner extends EventEmitter {
   #logger = Logger.get(["simplysm", "sd-cli", "SdCliServerBuildRunner"]);
@@ -20,7 +15,7 @@ export class SdServerBuildRunner extends EventEmitter {
 
   public constructor(
     private readonly _projConf: ISdProjectConfig,
-    private readonly _pkgPath: string,
+    private readonly _pkgPath: TNormPath,
   ) {
     super();
     this.#pkgConf = this._projConf.packages[path.basename(_pkgPath)] as ISdServerPackageConfig;
@@ -37,53 +32,47 @@ export class SdServerBuildRunner extends EventEmitter {
     this.emit("change");
 
     this._debug("dist 초기화...");
-    await FsUtil.removeAsync(path.resolve(this._pkgPath, "dist"));
+    FsUtil.remove(path.resolve(this._pkgPath, "dist"));
 
     this._debug("GEN .config...");
     const confDistPath = path.resolve(this._pkgPath, "dist/.config.json");
-    await FsUtil.writeFileAsync(confDistPath, JSON.stringify(this.#pkgConf.configs ?? {}, undefined, 2));
+    FsUtil.writeFile(confDistPath, JSON.stringify(this.#pkgConf.configs ?? {}, undefined, 2));
 
-    const result = await this._runAsync({ dev: true });
-    this.emit("complete", {
-      affectedFilePaths: Array.from(result.affectedFileSet),
+    const result = await this._runAsync(true);
+    const res: ISdBuildRunnerResult = {
+      affectedFilePathSet: result.affectedFileSet,
       buildMessages: result.buildMessages,
-    });
+      emitFileSet: result.emitFileSet,
+    };
+    this.emit("complete", res);
 
     this._debug("WATCH...");
-    let changeFiles: string[] = [];
-    const fnQ = new FunctionQueue();
-    const watcher = SdFsWatcher.watch(Array.from(result.watchFileSet)).onChange({ delay: 100 }, (changeInfos) => {
-      changeFiles.push(...changeInfos.map((item) => item.path));
+    const watcher = SdFsWatcher.watch(Array.from(result.watchFileSet)).onChange({ delay: 300 }, async (changeInfos) => {
+      this.emit("change");
 
-      fnQ.runLast(async () => {
-        const currChangeFiles = [...changeFiles];
-        changeFiles = [];
+      const watchResult = await this._runAsync(true, new Set(changeInfos.map((item) => PathUtil.norm(item.path))));
+      const watchRes: ISdBuildRunnerResult = {
+        affectedFilePathSet: watchResult.affectedFileSet,
+        buildMessages: watchResult.buildMessages,
+        emitFileSet: watchResult.emitFileSet,
+      };
 
-        this.emit("change");
+      this.emit("complete", watchRes);
 
-        this.#serverBundler!.markForChanges(currChangeFiles);
-
-        const watchResult = await this._runAsync({ dev: true });
-        this.emit("complete", {
-          affectedFilePaths: Array.from(watchResult.affectedFileSet),
-          buildMessages: watchResult.buildMessages,
-        });
-
-        watcher.add(watchResult.watchFileSet);
-      });
+      watcher.replaceWatchPaths(watchResult.watchFileSet);
     });
   }
 
   public async buildAsync(): Promise<ISdBuildRunnerResult> {
-    const npmConfig = (await FsUtil.readJsonAsync(path.resolve(this._pkgPath, "package.json"))) as INpmConfig;
+    const npmConfig = FsUtil.readJson(path.resolve(this._pkgPath, "package.json")) as INpmConfig;
     const extModules = await this._getExternalModulesAsync();
 
     this._debug("dist 초기화...");
-    await FsUtil.removeAsync(path.resolve(this._pkgPath, "dist"));
+    FsUtil.remove(path.resolve(this._pkgPath, "dist"));
 
     this._debug("GEN .config.json...");
     const confDistPath = path.resolve(this._pkgPath, "dist/.config.json");
-    await FsUtil.writeJsonAsync(confDistPath, this.#pkgConf.configs ?? {}, { space: 2 });
+    FsUtil.writeJson(confDistPath, this.#pkgConf.configs ?? {}, { space: 2 });
 
     this._debug("GEN package.json...");
     {
@@ -102,12 +91,12 @@ export class SdServerBuildRunner extends EventEmitter {
         distNpmConfig.scripts = { start: "pm2 start pm2.json" };
       }
 
-      await FsUtil.writeJsonAsync(path.resolve(this._pkgPath, "dist/package.json"), distNpmConfig, { space: 2 });
+      FsUtil.writeJson(path.resolve(this._pkgPath, "dist/package.json"), distNpmConfig, { space: 2 });
     }
 
     this._debug("GEN openssl.cnf...");
     {
-      await FsUtil.writeFileAsync(
+      FsUtil.writeFile(
         path.resolve(this._pkgPath, "dist/openssl.cnf"),
         `
 nodejs_conf = openssl_init
@@ -137,7 +126,7 @@ Options = UnsafeLegacyRenegotiation`.trim(),
     if (this.#pkgConf.pm2) {
       this._debug("GEN pm2.json...");
 
-      await FsUtil.writeJsonAsync(
+      FsUtil.writeJson(
         path.resolve(this._pkgPath, "dist/pm2.json"),
         {
           name: this.#pkgConf.pm2.name ?? npmConfig.name.replace(/@/g, "").replace(/\//g, "-"),
@@ -171,7 +160,7 @@ Options = UnsafeLegacyRenegotiation`.trim(),
 
       const iisDistPath = path.resolve(this._pkgPath, "dist/web.config");
       const serverExeFilePath = this.#pkgConf.iis.nodeExeFilePath ?? "C:\\Program Files\\nodejs\\node.exe";
-      await FsUtil.writeFileAsync(
+      FsUtil.writeFile(
         iisDistPath,
         `
 <configuration>
@@ -206,17 +195,22 @@ Options = UnsafeLegacyRenegotiation`.trim(),
       );
     }
 
-    const result = await this._runAsync({ dev: false });
+    const result = await this._runAsync(false);
     return {
-      affectedFilePaths: Array.from(result.affectedFileSet),
+      affectedFilePathSet: result.affectedFileSet,
       buildMessages: result.buildMessages,
+      emitFileSet: result.emitFileSet,
     };
   }
 
-  private async _runAsync(opt: { dev: boolean }): Promise<{
-    watchFileSet: Set<string>;
-    affectedFileSet: Set<string>;
+  private async _runAsync(
+    dev: boolean,
+    modifiedFileSet?: Set<TNormPath>,
+  ): Promise<{
+    watchFileSet: Set<TNormPath>;
+    affectedFileSet: Set<TNormPath>;
     buildMessages: ISdBuildMessage[];
+    emitFileSet: Set<TNormPath>;
   }> {
     const localUpdatePaths = Object.keys(this._projConf.localUpdates ?? {}).mapMany((key) =>
       FsUtil.glob(path.resolve(this._pkgPath, "../../node_modules", key)),
@@ -228,17 +222,17 @@ Options = UnsafeLegacyRenegotiation`.trim(),
     this.#serverBundler =
       this.#serverBundler ??
       new SdServerBundler({
-        dev: opt.dev,
+        dev,
         pkgPath: this._pkgPath,
         entryPoints: tsConfig.files
           ? tsConfig.files.map((item) => path.resolve(this._pkgPath, item))
           : [path.resolve(this._pkgPath, "src/main.ts")],
         external: this.#extModules.map((item) => item.name),
-        watchScopePaths: [path.resolve(this._pkgPath, "../"), ...localUpdatePaths],
+        watchScopePaths: [path.resolve(this._pkgPath, "../"), ...localUpdatePaths].map((item) => PathUtil.norm(item)),
       });
 
     this._debug(`BUILD...`);
-    const bundleResult = await this.#serverBundler.bundleAsync();
+    const bundleResult = await this.#serverBundler.bundleAsync(modifiedFileSet);
 
     //-- filePaths
     const watchFileSet = new Set(
@@ -254,6 +248,7 @@ Options = UnsafeLegacyRenegotiation`.trim(),
       watchFileSet,
       affectedFileSet: bundleResult.affectedFileSet,
       buildMessages: bundleResult.results,
+      emitFileSet: bundleResult.emitFileSet,
     };
   }
 
@@ -272,10 +267,7 @@ Options = UnsafeLegacyRenegotiation`.trim(),
     const npmConfigMap = new Map<string, INpmConfig>();
 
     const fn = async (currPath: string): Promise<void> => {
-      const npmConfig = npmConfigMap.getOrCreate(
-        currPath,
-        await FsUtil.readJsonAsync(path.resolve(currPath, "package.json")),
-      );
+      const npmConfig = npmConfigMap.getOrCreate(currPath, FsUtil.readJson(path.resolve(currPath, "package.json")));
 
       const deps = {
         defaults: [

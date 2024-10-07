@@ -3,24 +3,24 @@ import { FsUtil, PathUtil, SdFsWatcher } from "@simplysm/sd-core-node";
 import { StringUtil } from "@simplysm/sd-core-common";
 
 export class SdCliNgRoutesFileGenerator {
-  public static async watchAsync(pkgPath: string, noLazyRoute?: boolean): Promise<void> {
+  static watch(pkgPath: string, noLazyRoute?: boolean) {
     const routesFilePath = path.resolve(pkgPath, "src/routes.ts");
     let cache = FsUtil.exists(routesFilePath) ? FsUtil.readFile(routesFilePath) : undefined;
 
-    SdFsWatcher.watch([path.resolve(pkgPath, "src")]).onChange({}, async () => {
-      cache = await this.runAsync(pkgPath, cache, noLazyRoute);
+    SdFsWatcher.watch([path.resolve(pkgPath, "src")]).onChange({ delay: 100 }, () => {
+      cache = this.run(pkgPath, cache, noLazyRoute);
     });
 
-    cache = await this.runAsync(pkgPath, cache, noLazyRoute);
+    cache = this.run(pkgPath, cache, noLazyRoute);
   }
 
-  public static async runAsync(pkgPath: string, cache?: string, noLazyRoute?: boolean): Promise<string> {
+  static run(pkgPath: string, cache?: string, noLazyRoute?: boolean): string {
     const appDirPath = path.resolve(pkgPath, "src/app");
     const routesFilePath = path.resolve(pkgPath, "src/routes.ts");
 
     // 내부 파일들 import
     const result: TInfo = new Map();
-    const filePaths = await FsUtil.globAsync(path.resolve(appDirPath, "**/*Page.ts"));
+    const filePaths = FsUtil.glob(path.resolve(appDirPath, "**/*Page.ts"));
     for (const filePath of filePaths.orderBy()) {
       const relModulePath = PathUtil.posix(path.relative(appDirPath, filePath)).slice(0, -3);
       const codes = relModulePath
@@ -76,7 +76,7 @@ export const routes: Routes = [
 ${routes}
 ];`.trim();
     if (content !== cache) {
-      await FsUtil.writeFileAsync(routesFilePath, content);
+      FsUtil.writeFile(routesFilePath, content);
     }
     return content;
   }

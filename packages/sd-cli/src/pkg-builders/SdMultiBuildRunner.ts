@@ -1,25 +1,21 @@
-import {
-  INpmConfig,
-  ISdBuildMessage,
-  ISdBuildRunnerWorkerRequest,
-  ISdBuildRunnerWorkerResponse,
-  ISdServerPackageConfig,
-} from "../commons";
-import { FsUtil, Logger, PathUtil, SdWorker } from "@simplysm/sd-core-node";
+import { FsUtil, Logger, PathUtil, SdWorker, TNormPath } from "@simplysm/sd-core-node";
 import path from "path";
 import { EventEmitter } from "events";
-import { SdServerBuildRunner } from "../pkg-builders/server/SdServerBuildRunner";
-import { SdClientBuildRunner } from "../pkg-builders/client/SdClientBuildRunner";
-import { SdTsLibBuildRunner } from "../pkg-builders/lib/SdTsLibBuildRunner";
-import { SdJsLibBuildRunner } from "../pkg-builders/lib/SdJsLibBuildRunner";
-import { TServerWorkerType } from "../workers/server/server-worker.type";
+import { SdServerBuildRunner } from "./server/SdServerBuildRunner";
+import { SdClientBuildRunner } from "./client/SdClientBuildRunner";
+import { SdTsLibBuildRunner } from "./lib/SdTsLibBuildRunner";
+import { SdJsLibBuildRunner } from "./lib/SdJsLibBuildRunner";
+import { ISdProjectConfig, ISdServerPackageConfig } from "../types/sd-configs.type";
+import { ISdBuildMessage, ISdBuildRunnerResult } from "../types/build.type";
+import { TServerWorkerType } from "../types/workers.type";
+import { INpmConfig } from "../types/common-configs.type";
 
 export class SdMultiBuildRunner extends EventEmitter {
   #logger = Logger.get(["simplysm", "sd-cli", "SdMultiBuildRunner"]);
 
   #busyCount = 0;
 
-  #resultCache = new Map<string, ISdBuildMessage[]>();
+  #resultCache = new Map<TNormPath, ISdBuildMessage[]>();
   #serverInfoMap = new Map<
     string,
     {
@@ -27,7 +23,7 @@ export class SdMultiBuildRunner extends EventEmitter {
       worker?: SdWorker<TServerWorkerType>; // persist
       port?: number; // run server result
       hasChanges: boolean;
-      hasClientChanges: boolean;
+      clientChangedFileSet: Set<string>;
 
       // from client
       clients: Record<
@@ -47,9 +43,9 @@ export class SdMultiBuildRunner extends EventEmitter {
     return this;
   }
 
-  async runAsync(req: ISdBuildRunnerWorkerRequest & { cmd: "watch" }): Promise<void>;
-  async runAsync(req: ISdBuildRunnerWorkerRequest & { cmd: "build" }): Promise<ISdBuildMessage[]>;
-  async runAsync(req: ISdBuildRunnerWorkerRequest): Promise<ISdBuildMessage[] | void> {
+  async runAsync(req: IRequest & { cmd: "watch" }): Promise<void>;
+  async runAsync(req: IRequest & { cmd: "build" }): Promise<ISdBuildMessage[]>;
+  async runAsync(req: IRequest): Promise<ISdBuildMessage[] | void> {
     const pkgConf = req.projConf.packages[path.basename(req.pkgPath)]!;
 
     const buildRunnerType =
@@ -74,22 +70,22 @@ export class SdMultiBuildRunner extends EventEmitter {
     }
   }
 
-  #onMessage(req: ISdBuildRunnerWorkerRequest, res: ISdBuildRunnerWorkerResponse) {
+  #onMessage(req: IRequest, res: TResponse) {
     if (res.type === "change") {
       if (this.#busyCount === 0) {
         this.emit("change");
       }
       this.#busyCount++;
     } else {
-      this.#resultCache.delete("none");
-      for (const affectedFilePath of res.result.affectedFilePaths) {
+      this.#resultCache.delete(req.pkgPath);
+      for (const affectedFilePath of res.result.affectedFilePathSet) {
         if (PathUtil.isChildPath(affectedFilePath, req.pkgPath)) {
           this.#resultCache.delete(affectedFilePath);
         }
       }
 
       for (const buildMessage of res.result.buildMessages) {
-        const cacheItem = this.#resultCache.getOrCreate(buildMessage.filePath ?? "none", []);
+        const cacheItem = this.#resultCache.getOrCreate(buildMessage.filePath ?? req.pkgPath, []);
         cacheItem.push(buildMessage);
       }
 
@@ -99,7 +95,7 @@ export class SdMultiBuildRunner extends EventEmitter {
         const pkgName = path.basename(req.pkgPath);
         const serverInfo = this.#serverInfoMap.getOrCreate(pkgName, {
           hasChanges: true,
-          hasClientChanges: false,
+          clientChangedFileSet: new Set(),
           clients: {},
         });
 
@@ -118,7 +114,7 @@ export class SdMultiBuildRunner extends EventEmitter {
             typeof pkgConf.server === "string" ? pkgConf.server : pkgConf.server.port.toString(),
             {
               hasChanges: true,
-              hasClientChanges: false,
+              clientChangedFileSet: new Set(),
               clients: {},
             },
           );
@@ -132,15 +128,15 @@ export class SdMultiBuildRunner extends EventEmitter {
             buildTypes: (pkgConf.builder ? Object.keys(pkgConf.builder) : ["web"]) as any,
           };
 
-          serverInfo.hasClientChanges = true;
+          serverInfo.clientChangedFileSet.adds(...res.result.emitFileSet);
         } else {
           const serverInfo = this.#serverInfoMap.getOrCreate(pkgName, {
             hasChanges: true,
-            hasClientChanges: false,
+            clientChangedFileSet: new Set(),
             clients: {},
           });
 
-          serverInfo.hasClientChanges = true;
+          serverInfo.clientChangedFileSet.adds(...res.result.emitFileSet);
         }
       }
 
@@ -173,9 +169,9 @@ export class SdMultiBuildRunner extends EventEmitter {
                 },
               ]);
 
-              if (serverInfo.hasClientChanges) {
+              if (serverInfo.clientChangedFileSet.size > 0) {
                 this.#logger.debug("클라이언트 새로고침...");
-                await serverInfo.worker.run("broadcastReload", []);
+                await serverInfo.worker.run("broadcastReload", [serverInfo.clientChangedFileSet]);
               }
             }
           }
@@ -221,11 +217,9 @@ export class SdMultiBuildRunner extends EventEmitter {
     }
 
     const npmConf =
-      "path" in pkgInfo
-        ? ((await FsUtil.readJsonAsync(path.resolve(pkgInfo.path, "package.json"))) as INpmConfig)
-        : undefined;
+      "path" in pkgInfo ? (FsUtil.readJson(path.resolve(pkgInfo.path, "package.json")) as INpmConfig) : undefined;
 
-    const worker = new SdWorker<TServerWorkerType>(import.meta.resolve("../workers/server/server-worker"), {
+    const worker = new SdWorker<TServerWorkerType>(import.meta.resolve("../workers/server-worker"), {
       env: {
         NODE_ENV: "development",
         TZ: "Asia/Seoul",
@@ -239,3 +233,18 @@ export class SdMultiBuildRunner extends EventEmitter {
     return { worker, port };
   }
 }
+
+interface IRequest {
+  cmd: "watch" | "build";
+  pkgPath: TNormPath;
+  projConf: ISdProjectConfig;
+}
+
+type TResponse =
+  | {
+      type: "change";
+    }
+  | {
+      type: "complete";
+      result: ISdBuildRunnerResult;
+    };

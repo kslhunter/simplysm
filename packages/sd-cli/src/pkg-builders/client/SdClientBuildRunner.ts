@@ -1,18 +1,13 @@
 import { EventEmitter } from "events";
-import { FsUtil, Logger, PathUtil, SdFsWatcher } from "@simplysm/sd-core-node";
-import { FunctionQueue } from "@simplysm/sd-core-common";
+import { FsUtil, Logger, PathUtil, SdFsWatcher, TNormPath } from "@simplysm/sd-core-node";
 import path from "path";
 import { SdNgBundler } from "./SdNgBundler";
 import { SdCliNgRoutesFileGenerator } from "./SdCliNgRoutesFileGenerator";
-import {
-  INpmConfig,
-  ISdBuildMessage,
-  ISdBuildRunnerResult,
-  ISdClientPackageConfig,
-  ISdProjectConfig,
-} from "../../commons";
 import { SdCliCordova } from "../../entry/SdCliCordova";
 import { SdCliElectron } from "../../entry/SdCliElectron";
+import { ISdClientPackageConfig, ISdProjectConfig } from "../../types/sd-configs.type";
+import { INpmConfig } from "../../types/common-configs.type";
+import { ISdBuildMessage, ISdBuildRunnerResult } from "../../types/build.type";
 
 export class SdClientBuildRunner extends EventEmitter {
   private readonly _logger = Logger.get(["simplysm", "sd-cli", "SdClientBuildRunner"]);
@@ -23,7 +18,7 @@ export class SdClientBuildRunner extends EventEmitter {
 
   public constructor(
     private readonly _projConf: ISdProjectConfig,
-    private readonly _pkgPath: string,
+    private readonly _pkgPath: TNormPath,
   ) {
     super();
     this._pkgConf = this._projConf.packages[path.basename(_pkgPath)] as ISdClientPackageConfig;
@@ -39,21 +34,22 @@ export class SdClientBuildRunner extends EventEmitter {
 
   public async buildAsync(): Promise<ISdBuildRunnerResult> {
     this._debug("dist 초기화...");
-    await FsUtil.removeAsync(path.resolve(this._pkgPath, "dist"));
+    FsUtil.remove(path.resolve(this._pkgPath, "dist"));
 
     if (this._npmConf.dependencies && Object.keys(this._npmConf.dependencies).includes("@angular/router")) {
       this._debug(`GEN routes.ts...`);
-      await SdCliNgRoutesFileGenerator.runAsync(this._pkgPath, undefined, this._pkgConf.noLazyRoute);
+      SdCliNgRoutesFileGenerator.run(this._pkgPath, undefined, this._pkgConf.noLazyRoute);
     }
 
     this._debug("GEN .config...");
     const confDistPath = path.resolve(this._pkgPath, "dist/.config.json");
-    await FsUtil.writeFileAsync(confDistPath, JSON.stringify(this._pkgConf.configs ?? {}, undefined, 2));
+    FsUtil.writeFile(confDistPath, JSON.stringify(this._pkgConf.configs ?? {}, undefined, 2));
 
     const result = await this._runAsync({ dev: false });
     return {
-      affectedFilePaths: Array.from(result.affectedFileSet),
+      affectedFilePathSet: result.affectedFileSet,
       buildMessages: result.buildMessages,
+      emitFileSet: result.emitFileSet,
     };
   }
 
@@ -61,55 +57,50 @@ export class SdClientBuildRunner extends EventEmitter {
     this.emit("change");
 
     this._debug("dist 초기화...");
-    await FsUtil.removeAsync(path.resolve(this._pkgPath, "dist"));
+    FsUtil.remove(path.resolve(this._pkgPath, "dist"));
 
     if (this._npmConf.dependencies && Object.keys(this._npmConf.dependencies).includes("@angular/router")) {
       this._debug(`WATCH GEN routes.ts...`);
-      await SdCliNgRoutesFileGenerator.watchAsync(this._pkgPath, this._pkgConf.noLazyRoute);
+      SdCliNgRoutesFileGenerator.watch(this._pkgPath, this._pkgConf.noLazyRoute);
     }
 
     this._debug("GEN .config...");
     const confDistPath = path.resolve(this._pkgPath, "dist/.config.json");
-    await FsUtil.writeFileAsync(confDistPath, JSON.stringify(this._pkgConf.configs ?? {}, undefined, 2));
+    FsUtil.writeFile(confDistPath, JSON.stringify(this._pkgConf.configs ?? {}, undefined, 2));
 
     const result = await this._runAsync({ dev: !this._pkgConf.forceProductionMode });
-    this.emit("complete", {
-      affectedFilePaths: Array.from(result.affectedFileSet),
+    const res: ISdBuildRunnerResult = {
+      affectedFilePathSet: result.affectedFileSet,
       buildMessages: result.buildMessages,
-    });
+      emitFileSet: result.emitFileSet,
+    };
+    this.emit("complete", res);
 
     this._debug("WATCH...");
-    let changeFiles: string[] = [];
-    const fnQ = new FunctionQueue();
-    const watcher = SdFsWatcher.watch(Array.from(result.watchFileSet)).onChange({ delay: 100 }, (changeInfos) => {
-      changeFiles.push(...changeInfos.map((item) => item.path));
+    const watcher = SdFsWatcher.watch(Array.from(result.watchFileSet)).onChange({ delay: 300 }, async (changeInfos) => {
+      this.emit("change");
 
-      fnQ.runLast(async () => {
-        const currChangeFiles = [...changeFiles];
-        changeFiles = [];
+      for (const ngBundler of this._ngBundlers!) {
+        ngBundler.markForChanges(changeInfos.map((item) => item.path));
+      }
 
-        this.emit("change");
+      const watchResult = await this._runAsync({ dev: !this._pkgConf.forceProductionMode });
+      const watchRes: ISdBuildRunnerResult = {
+        affectedFilePathSet: watchResult.affectedFileSet,
+        buildMessages: watchResult.buildMessages,
+        emitFileSet: watchResult.emitFileSet,
+      };
+      this.emit("complete", watchRes);
 
-        for (const ngBundler of this._ngBundlers!) {
-          // builder.removeCache(currChangeFiles);
-          ngBundler.markForChanges(currChangeFiles);
-        }
-
-        const watchResult = await this._runAsync({ dev: !this._pkgConf.forceProductionMode });
-        this.emit("complete", {
-          affectedFilePaths: Array.from(watchResult.affectedFileSet),
-          buildMessages: watchResult.buildMessages,
-        });
-
-        watcher.add(watchResult.watchFileSet);
-      });
+      watcher.replaceWatchPaths(watchResult.watchFileSet);
     });
   }
 
   private async _runAsync(opt: { dev: boolean }): Promise<{
-    watchFileSet: Set<string>;
-    affectedFileSet: Set<string>;
+    watchFileSet: Set<TNormPath>;
+    affectedFileSet: Set<TNormPath>;
     buildMessages: ISdBuildMessage[];
+    emitFileSet: Set<TNormPath>;
   }> {
     const localUpdatePaths = Object.keys(this._projConf.localUpdates ?? {}).mapMany((key) =>
       FsUtil.glob(path.resolve(this._pkgPath, "../../node_modules", key)),
@@ -140,18 +131,20 @@ export class SdClientBuildRunner extends EventEmitter {
             pkgPath: this._pkgPath,
             outputPath:
               ngBundlerBuilderType === "web"
-                ? path.resolve(this._pkgPath, "dist")
+                ? PathUtil.norm(this._pkgPath, "dist")
                 : ngBundlerBuilderType === "electron" && !opt.dev
-                  ? path.resolve(this._pkgPath, ".electron/src")
+                  ? PathUtil.norm(this._pkgPath, ".electron/src")
                   : ngBundlerBuilderType === "cordova" && !opt.dev
-                    ? path.resolve(this._pkgPath, ".cordova/www")
-                    : path.resolve(this._pkgPath, "dist", ngBundlerBuilderType),
+                    ? PathUtil.norm(this._pkgPath, ".cordova/www")
+                    : PathUtil.norm(this._pkgPath, "dist", ngBundlerBuilderType),
             env: {
               ...this._pkgConf.env,
               ...this._pkgConf.builder?.[ngBundlerBuilderType]?.env,
             },
             cordovaConfig: ngBundlerBuilderType === "cordova" ? this._pkgConf.builder!.cordova : undefined,
-            watchScopePaths: [path.resolve(this._pkgPath, "../"), ...localUpdatePaths],
+            watchScopePaths: [path.resolve(this._pkgPath, "../"), ...localUpdatePaths].map((item) =>
+              PathUtil.norm(item),
+            ),
           }),
       );
     }
@@ -160,6 +153,7 @@ export class SdClientBuildRunner extends EventEmitter {
     const buildResults = await Promise.all(this._ngBundlers.map((builder) => builder.bundleAsync()));
     const watchFileSet = new Set(buildResults.mapMany((item) => Array.from(item.watchFileSet)));
     const affectedFileSet = new Set(buildResults.mapMany((item) => Array.from(item.affectedFileSet)));
+    const emitFileSet = new Set(buildResults.mapMany((item) => Array.from(item.emitFileSet)));
     const results = buildResults.mapMany((item) => item.results).distinct();
 
     if (!opt.dev && this._cordova) {
@@ -187,6 +181,7 @@ export class SdClientBuildRunner extends EventEmitter {
       watchFileSet: currWatchFileSet,
       affectedFileSet,
       buildMessages: results, //.filter((item) => item.filePath !== path.resolve(this._pkgPath, "src/routes.ts")),
+      emitFileSet,
     };
   }
 
