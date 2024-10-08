@@ -213,7 +213,7 @@ export class SdMultiBuildRunner extends EventEmitter {
     const logger = Logger.get(["simplysm", "sd-cli", "SdMultiBuildRunner", "#restartServerAsync"]);
 
     if (prevWorker) {
-      prevWorker.kill();
+      await prevWorker.killAsync();
     }
 
     const npmConf =

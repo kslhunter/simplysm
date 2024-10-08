@@ -72,7 +72,12 @@ export class SdWorker<T extends ISdWorkerType> extends EventEmitter {
     });
   }
 
-  kill() {
-    this.#proc.kill("SIGKILL");
+  async killAsync() {
+    await new Promise<void>((resolve) => {
+      this.#proc.on("exit", () => {
+        resolve();
+      });
+      this.#proc.kill("SIGKILL");
+    });
   }
 }

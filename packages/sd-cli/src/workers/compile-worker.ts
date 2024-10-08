@@ -25,7 +25,7 @@ createSdWorker<TSdTsCompileWorkerType>({
   initialize(opt: SdTsCompilerOptions) {
     compiler = new SdTsCompiler(opt);
   },
-  async compile(modifiedFileSet?: Set<TNormPath>) {
+  async compile(modifiedFileSet: Set<TNormPath>) {
     return await compiler.compileAsync(modifiedFileSet);
   },
 });

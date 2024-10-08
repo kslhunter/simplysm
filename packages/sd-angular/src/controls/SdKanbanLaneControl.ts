@@ -52,6 +52,7 @@ import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
             height: 100%;
 
             > ._drop-position {
+              pointer-events: none;
               border-radius: var(--border-radius-default);
               background: var(--trans-light);
 
@@ -175,7 +176,7 @@ export class SdKanbanLaneControl<L, T> {
     }
   }
 
-  #timeout?: NodeJS.Timeout;
+  // #timeout?: NodeJS.Timeout;
 
   @HostListener("dragover", ["$event"])
   onDragOver(event: DragEvent) {
@@ -184,9 +185,9 @@ export class SdKanbanLaneControl<L, T> {
     event.preventDefault();
     event.stopPropagation();
 
-    if (this.#timeout != null) {
-      clearTimeout(this.#timeout);
-    }
+    // if (this.#timeout != null) {
+    //   clearTimeout(this.#timeout);
+    // }
     this.dragOvered.set(true);
   }
 
@@ -195,9 +196,11 @@ export class SdKanbanLaneControl<L, T> {
     event.preventDefault();
     event.stopPropagation();
 
-    this.#timeout = setTimeout(() => {
-      this.dragOvered.set(false);
-    }, 25);
+    // this.#timeout = setTimeout(() => {
+    //   this.dragOvered.set(false);
+    // }, 25);
+
+    this.dragOvered.set(false);
   }
 
   @HostListener("drop", ["$event"])

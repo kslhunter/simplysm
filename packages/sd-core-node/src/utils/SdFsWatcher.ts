@@ -17,6 +17,11 @@ export class SdFsWatcher {
         {
           ignoreInitial: true,
           persistent: true,
+          awaitWriteFinish: {
+            stabilityThreshold: 500,
+            pollInterval: 200,
+          },
+          atomic: true,
         },
         options,
       ),
@@ -24,7 +29,7 @@ export class SdFsWatcher {
   }
 
   onChange(opt: { delay?: number }, cb: (changeInfos: ISdFsWatcherChangeInfo[]) => void | Promise<void>): this {
-    const fnQ = new FunctionQueue(opt.delay);
+    const fnQ = new FunctionQueue();
 
     let changeInfoMap = new Map<string, TSdFsWatcherEvent>();
 
@@ -38,17 +43,19 @@ export class SdFsWatcher {
         changeInfoMap.set(filePath, event);
       }
 
-      fnQ.runLast(async () => {
-        if (changeInfoMap.size === 0) return;
-        const currentChangeInfoMap = changeInfoMap;
-        changeInfoMap = new Map<string, TSdFsWatcherEvent>();
+      setTimeout(() => {
+        fnQ.runLast(async () => {
+          if (changeInfoMap.size === 0) return;
+          const currentChangeInfoMap = changeInfoMap;
+          changeInfoMap = new Map<string, TSdFsWatcherEvent>();
 
-        const changeInfos = Array.from(currentChangeInfoMap.entries()).map((en) => ({
-          path: en[0],
-          event: en[1],
-        }));
-        await cb(changeInfos);
-      });
+          const changeInfos = Array.from(currentChangeInfoMap.entries()).map((en) => ({
+            path: en[0],
+            event: en[1],
+          }));
+          await cb(changeInfos);
+        });
+      }, opt.delay);
     });
 
     return this;

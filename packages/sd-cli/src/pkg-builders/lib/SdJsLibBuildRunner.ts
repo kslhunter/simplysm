@@ -71,7 +71,7 @@ export class SdJsLibBuildRunner extends EventEmitter {
     };
     this.emit("complete", res);
 
-    SdFsWatcher.watch([srcGlobPath]).onChange({ delay: 300 }, async (changeInfos) => {
+    SdFsWatcher.watch([srcGlobPath]).onChange({ delay: 100 }, async (changeInfos) => {
       const watchFilePaths = changeInfos.filter((item) => FsUtil.exists(item.path)).map((item) => item.path);
       if (watchFilePaths.length < 1) return;
 

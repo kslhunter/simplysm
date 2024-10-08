@@ -23,7 +23,7 @@ export class SdTsLibBuilder {
     private _pkgPath: string,
   ) {}
 
-  public async buildAsync(modifiedFileSet?: Set<TNormPath>): Promise<{
+  public async buildAsync(modifiedFileSet: Set<TNormPath>): Promise<{
     watchFileSet: Set<TNormPath>;
     affectedFileSet: Set<TNormPath>;
     results: ISdBuildMessage[];

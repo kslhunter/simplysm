@@ -4,7 +4,7 @@ export class FunctionQueue {
   private readonly _queue: (() => void | Promise<void>)[] = [];
   private _isQueueRunning = false;
 
-  public constructor(private readonly _delay?: number) {
+  public constructor(private readonly _gap?: number) {
   }
 
   public run(fn: () => void | Promise<void>): void {
@@ -17,8 +17,8 @@ export class FunctionQueue {
         const runningFn = this._queue.shift();
         if (!runningFn) break;
         await runningFn();
-        if (this._delay !== undefined && this._delay > 0) {
-          await Wait.time(this._delay);
+        if (this._gap !== undefined && this._gap > 0) {
+          await Wait.time(this._gap);
         }
       }
       this._isQueueRunning = false;
@@ -37,8 +37,8 @@ export class FunctionQueue {
 
         if (!runningFn) break;
         await runningFn();
-        if (this._delay !== undefined && this._delay > 0) {
-          await Wait.time(this._delay);
+        if (this._gap !== undefined && this._gap > 0) {
+          await Wait.time(this._gap);
         }
       }
       this._isQueueRunning = false;

@@ -69,7 +69,7 @@ export class SdServiceServer extends EventEmitter {
           }
         },
         1000,
-        3000,
+        3500,
       );
       return Array.from(this._wsServer!.clients).single(
         (item) => item.readyState === WebSocket.OPEN && item["id"] === socketId,

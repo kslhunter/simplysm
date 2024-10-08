@@ -15,7 +15,7 @@ export class SdTsCompileWorker {
     private _pkgPath: string,
   ) {}
 
-  public async compileAsync(modifiedFileSet?: Set<TNormPath>) {
+  public async compileAsync(modifiedFileSet: Set<TNormPath>) {
     return await this._compileProc.run("compile", [modifiedFileSet]);
   }
 }

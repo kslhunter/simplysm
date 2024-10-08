@@ -77,7 +77,7 @@ export class SdClientBuildRunner extends EventEmitter {
     this.emit("complete", res);
 
     this._debug("WATCH...");
-    const watcher = SdFsWatcher.watch(Array.from(result.watchFileSet)).onChange({ delay: 300 }, async (changeInfos) => {
+    const watcher = SdFsWatcher.watch(Array.from(result.watchFileSet)).onChange({ delay: 100 }, async (changeInfos) => {
       this.emit("change");
 
       for (const ngBundler of this._ngBundlers!) {

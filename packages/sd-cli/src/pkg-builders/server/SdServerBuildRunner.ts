@@ -47,7 +47,7 @@ export class SdServerBuildRunner extends EventEmitter {
     this.emit("complete", res);
 
     this._debug("WATCH...");
-    const watcher = SdFsWatcher.watch(Array.from(result.watchFileSet)).onChange({ delay: 300 }, async (changeInfos) => {
+    const watcher = SdFsWatcher.watch(Array.from(result.watchFileSet)).onChange({ delay: 100 }, async (changeInfos) => {
       this.emit("change");
 
       const watchResult = await this._runAsync(true, new Set(changeInfos.map((item) => PathUtil.norm(item.path))));

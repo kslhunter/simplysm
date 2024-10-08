@@ -6,7 +6,7 @@ export class SdCliIndexFileGenerator {
     const indexFilePath = path.resolve(pkgPath, "src/index.ts");
     let cache = FsUtil.exists(indexFilePath) ? FsUtil.readFile(indexFilePath) : undefined;
 
-    SdFsWatcher.watch([path.resolve(pkgPath, "src")]).onChange({ delay: 100 }, () => {
+    SdFsWatcher.watch([path.resolve(pkgPath, "src")]).onChange({ delay: 50 }, () => {
       cache = this.run(pkgPath, polyfills, cache);
     });
 

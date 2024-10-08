@@ -48,7 +48,7 @@ export class SdCliLocalUpdate {
     const watchPaths = updatePathInfos.mapMany((item) => this.#getWatchPaths(item.source)).distinct();
 
     const watcher = SdFsWatcher.watch(watchPaths);
-    watcher.onChange({ delay: 1000 }, (changedInfos) => {
+    watcher.onChange({ delay: 500 }, (changedInfos) => {
       const changedFileInfos = changedInfos.filter((item) => ["add", "change", "unlink"].includes(item.event));
       if (changedFileInfos.length === 0) return;
 

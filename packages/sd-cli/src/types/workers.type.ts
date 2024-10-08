@@ -21,7 +21,7 @@ export interface TSdLintWorkerType {
 export interface TSdTsCompileWorkerType {
   methods: {
     initialize: { params: [SdTsCompilerOptions]; returnType: void };
-    compile: { params: [Set<TNormPath>?]; returnType: ISdTsCompilerResult };
+    compile: { params: [Set<TNormPath>]; returnType: ISdTsCompilerResult };
   };
   events: {};
 }

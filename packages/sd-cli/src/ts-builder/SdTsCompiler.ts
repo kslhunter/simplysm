@@ -159,7 +159,7 @@ export class SdTsCompiler {
       };
 
       (this.#compilerHost as AngularCompilerHost).getModifiedResourceFiles = () => {
-        return this.#modifiedFileSet;
+        return new Set(Array.from(this.#modifiedFileSet).map((item) => PathUtil.posix(item)));
       };
     }
   }
@@ -200,38 +200,40 @@ export class SdTsCompiler {
     return stylesheetResult.contents;
   }
 
-  async compileAsync(modifiedFileSet?: Set<TNormPath>): Promise<ISdTsCompilerResult> {
+  async compileAsync(modifiedFileSet: Set<TNormPath>): Promise<ISdTsCompilerResult> {
     let perf = new SdCliPerformanceTimer("esbuild compile");
 
-    this.#modifiedFileSet = modifiedFileSet ?? new Set<TNormPath>();
+    this.#modifiedFileSet = new Set(modifiedFileSet);
     this.#affectedFileSet = new Set<TNormPath>();
 
-    this.#debug(`get affected (old deps & old res deps)...`);
+    if (modifiedFileSet.size !== 0) {
+      this.#debug(`get affected (old deps & old res deps)...`);
 
-    perf.run("get affected", () => {
-      for (const modifiedFile of this.#modifiedFileSet) {
-        this.#affectedFileSet.add(modifiedFile);
-        this.#affectedFileSet.adds(...(this.#revDependencyCacheMap.get(modifiedFile) ?? []));
-        this.#affectedFileSet.adds(...(this.#resourceDependencyCacheMap.get(modifiedFile) ?? []));
+      perf.run("get affected", () => {
+        for (const modifiedFile of modifiedFileSet) {
+          this.#affectedFileSet.add(modifiedFile);
+          this.#affectedFileSet.adds(...(this.#revDependencyCacheMap.get(modifiedFile) ?? []));
+          this.#affectedFileSet.adds(...(this.#resourceDependencyCacheMap.get(modifiedFile) ?? []));
 
-        this.#emittedFilesCacheMap.delete(modifiedFile);
-      }
-    });
+          this.#emittedFilesCacheMap.delete(modifiedFile);
+        }
+      });
 
-    this.#debug(`invalidate & clear cache...`);
+      this.#debug(`invalidate & clear cache...`);
 
-    perf.run("invalidate & clear cache", () => {
-      this.#stylesheetBundler?.invalidate(this.#modifiedFileSet);
+      perf.run("invalidate & clear cache", () => {
+        this.#stylesheetBundler?.invalidate(modifiedFileSet);
 
-      for (const affectedFile of this.#affectedFileSet) {
-        this.#sourceFileCacheMap.delete(affectedFile);
-        this.#stylesheetBundlingResultMap.delete(affectedFile);
-        this.#watchFileSet.delete(affectedFile);
-      }
+        for (const affectedFile of this.#affectedFileSet) {
+          this.#sourceFileCacheMap.delete(affectedFile);
+          this.#stylesheetBundlingResultMap.delete(affectedFile);
+          this.#watchFileSet.delete(affectedFile);
+        }
 
-      this.#revDependencyCacheMap.clear();
-      this.#resourceDependencyCacheMap.clear();
-    });
+        this.#revDependencyCacheMap.clear();
+        this.#resourceDependencyCacheMap.clear();
+      });
+    }
 
     this.#debug(`create program...`);
 
@@ -269,17 +271,17 @@ export class SdTsCompiler {
       return sf;
     };
 
-    this.#debug(`get affected (new deps)...`);
+    const sourceFileSet = new Set(
+      this.#program!.getSourceFiles()
+        .map((sf) => getOrgSourceFile(sf))
+        .filterExists(),
+    );
+
+    this.#debug(`get new deps...`);
 
     const messages: ISdBuildMessage[] = [];
 
-    perf.run("get affected (deps)", () => {
-      const sourceFileSet = new Set(
-        this.#program!.getSourceFiles()
-          .map((sf) => getOrgSourceFile(sf))
-          .filterExists(),
-      );
-
+    perf.run("get new deps", () => {
       const depMap = new Map<
         TNormPath,
         {
@@ -346,14 +348,6 @@ export class SdTsCompiler {
         for (const dep of getAllDeps(PathUtil.norm(sf.fileName))) {
           const depCache = this.#revDependencyCacheMap.getOrCreate(dep, new Set<TNormPath>());
           depCache.add(PathUtil.norm(sf.fileName));
-          if (this.#modifiedFileSet.has(dep)) {
-            this.#affectedFileSet.add(PathUtil.norm(sf.fileName));
-          }
-          // dep이 emit된적이 없으면 affected에 추가해야함.
-          // dep파일이 추가된후 기존 파일에서 import하면 dep파일이 affected에 포함이 안되는 현상 때문
-          if (!this.#emittedFilesCacheMap.has(dep)) {
-            this.#affectedFileSet.add(dep);
-          }
         }
 
         if (this.#ngProgram) {
@@ -364,34 +358,49 @@ export class SdTsCompiler {
           for (const dep of this.#ngProgram.compiler.getResourceDependencies(sf)) {
             const ref = this.#resourceDependencyCacheMap.getOrCreate(PathUtil.norm(dep), new Set<TNormPath>());
             ref.add(PathUtil.norm(sf.fileName));
-            if (this.#modifiedFileSet.has(PathUtil.norm(dep))) {
-              this.#affectedFileSet.add(PathUtil.norm(sf.fileName));
-            }
-            // dep이 emit된적이 없으면 affected에 추가해야함.
-            // dep파일이 추가된후 기존 파일에서 import하면 dep파일이 affected에 포함이 안되는 현상 때문
-            if (!this.#emittedFilesCacheMap.has(PathUtil.norm(dep))) {
-              this.#affectedFileSet.add(PathUtil.norm(dep));
-            }
           }
         }
       }
     });
 
-    if (this.#modifiedFileSet.size === 0) {
+    if (modifiedFileSet.size === 0) {
       this.#debug(`get affected (init)...`);
 
       perf.run("get affected (init)", () => {
-        for (const sf of this.#program!.getSourceFiles()) {
+        for (const sf of sourceFileSet) {
           if (!this.#watchScopePaths.some((scopePath) => PathUtil.isChildPath(sf.fileName, scopePath))) {
             continue;
           }
 
-          const orgSf = getOrgSourceFile(sf);
-          if (!orgSf) continue;
-
-          this.#affectedFileSet.add(PathUtil.norm(orgSf.fileName));
+          this.#affectedFileSet.add(PathUtil.norm(sf.fileName));
         }
       });
+    }
+
+    for (const dep of this.#revDependencyCacheMap.keys()) {
+      if (this.#modifiedFileSet.has(dep)) {
+        this.#affectedFileSet.adds(...this.#revDependencyCacheMap.get(dep)!);
+      }
+
+      // dep이 emit된적이 없으면 affected에 추가해야함.
+      // dep파일이 추가된후 기존 파일에서 import하면 dep파일이 affected에 포함이 안되는 현상 때문
+      if (!this.#emittedFilesCacheMap.has(dep)) {
+        this.#affectedFileSet.add(dep);
+      }
+    }
+
+    if (this.#ngProgram) {
+      for (const dep of this.#resourceDependencyCacheMap.keys()) {
+        if (this.#modifiedFileSet.has(dep)) {
+          this.#affectedFileSet.adds(...this.#resourceDependencyCacheMap.get(dep)!);
+        }
+
+        // dep이 emit된적이 없으면 affected에 추가해야함.
+        // dep파일이 추가된후 기존 파일에서 import하면 dep파일이 affected에 포함이 안되는 현상 때문
+        if (!this.#emittedFilesCacheMap.has(dep)) {
+          this.#affectedFileSet.add(dep);
+        }
+      }
     }
 
     const emitFileSet = new Set<TNormPath>();

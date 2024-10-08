@@ -39,7 +39,7 @@ export class SdTsLibBuildRunner extends EventEmitter {
       SdCliIndexFileGenerator.run(this.#pkgPath, this.#pkgConf.polyfills);
     }
 
-    const result = await this._runAsync(false);
+    const result = await this._runAsync(false, new Set<TNormPath>());
     return {
       affectedFilePathSet: result.affectedFileSet,
       buildMessages: result.buildMessages,
@@ -58,7 +58,7 @@ export class SdTsLibBuildRunner extends EventEmitter {
       SdCliIndexFileGenerator.watch(this.#pkgPath, this.#pkgConf.polyfills);
     }
 
-    const result = await this._runAsync(true);
+    const result = await this._runAsync(true, new Set<TNormPath>());
     const res: ISdBuildRunnerResult = {
       affectedFilePathSet: result.affectedFileSet,
       buildMessages: result.buildMessages,
@@ -67,7 +67,7 @@ export class SdTsLibBuildRunner extends EventEmitter {
     this.emit("complete", res);
 
     this._debug("WATCH...");
-    const watcher = SdFsWatcher.watch(Array.from(result.watchFileSet)).onChange({ delay: 300 }, async (changeInfos) => {
+    const watcher = SdFsWatcher.watch(Array.from(result.watchFileSet)).onChange({ delay: 100 }, async (changeInfos) => {
       this.emit("change");
 
       const changeFileSet = new Set(changeInfos.map((item) => PathUtil.norm(item.path)));
@@ -87,7 +87,7 @@ export class SdTsLibBuildRunner extends EventEmitter {
 
   private async _runAsync(
     dev: boolean,
-    modifiedFileSet?: Set<TNormPath>,
+    modifiedFileSet: Set<TNormPath>,
   ): Promise<{
     watchFileSet: Set<TNormPath>;
     affectedFileSet: Set<TNormPath>;
