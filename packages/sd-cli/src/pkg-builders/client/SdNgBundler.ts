@@ -461,7 +461,7 @@ export class SdNgBundler {
         polyfills: path.resolve(this._opt.pkgPath, "src/polyfills.ts"),
         ...(this._opt.builderType === "cordova"
           ? {
-              "cordova-entry": path.resolve(path.dirname(fileURLToPath(import.meta.url)), `../../lib/cordova-entry.js`),
+              "cordova-entry": path.resolve(path.dirname(fileURLToPath(import.meta.url)), `../../../lib/cordova-entry.js`),
             }
           : {}),
         ...workerEntries,
