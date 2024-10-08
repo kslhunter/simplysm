@@ -16,12 +16,12 @@ export class SdFsWatcher {
       ObjectUtil.merge(
         {
           ignoreInitial: true,
-          persistent: true,
+          persistent: true /*,
           awaitWriteFinish: {
             stabilityThreshold: 500,
             pollInterval: 200,
           },
-          atomic: true,
+          atomic: true,*/,
         },
         options,
       ),

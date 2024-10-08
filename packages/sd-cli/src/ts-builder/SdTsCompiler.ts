@@ -379,7 +379,15 @@ export class SdTsCompiler {
 
     for (const dep of this.#revDependencyCacheMap.keys()) {
       if (this.#modifiedFileSet.has(dep)) {
-        this.#affectedFileSet.adds(...this.#revDependencyCacheMap.get(dep)!);
+        this.#affectedFileSet.adds(
+          ...Array.from(this.#revDependencyCacheMap.get(dep)!).mapMany((item) =>
+            [
+              item,
+              // .d.ts면 .js파일도 affected에 추가
+              item.endsWith(".d.ts") ? PathUtil.norm(item.replace(/\.d\.ts$/, ".js")) : undefined,
+            ].filterExists(),
+          ),
+        );
       }
 
       // dep이 emit된적이 없으면 affected에 추가해야함.
