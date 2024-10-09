@@ -20,7 +20,7 @@
     "@angular/build": "^18.2.7",
     "@angular/compiler": "^18.2.7",
     "@angular/compiler-cli": "^18.2.7",
-    "@electron/rebuild": "^3.6.2",
+    "@electron/rebuild": "^3.7.0",
     "@simplysm/sd-core-common": "12.5.22",
     "@simplysm/sd-core-node": "12.5.22",
     "@simplysm/sd-service-server": "12.5.22",
