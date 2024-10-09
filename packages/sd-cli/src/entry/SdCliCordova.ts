@@ -111,7 +111,7 @@ export class SdCliCordova {
     // ANDROID SIGN 파일 복사
     if (this._opt.config.platform?.android?.sign) {
       FsUtil.copy(
-        path.resolve(this._opt.pkgPath, "src", this._opt.config.platform.android.sign.keystore),
+        path.resolve(this._opt.pkgPath, this._opt.config.platform.android.sign.keystore),
         path.resolve(cordovaPath, "android.keystore"),
       );
     } else {
@@ -145,7 +145,7 @@ export class SdCliCordova {
     // ICON 파일 복사
     if (this._opt.config.icon != null) {
       FsUtil.copy(
-        path.resolve(this._opt.pkgPath, "src", this._opt.config.icon),
+        path.resolve(this._opt.pkgPath, this._opt.config.icon),
         path.resolve(cordovaPath, "res/icons", path.basename(this._opt.config.icon)),
       );
     } else {

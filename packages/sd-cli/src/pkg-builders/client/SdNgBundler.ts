@@ -18,14 +18,9 @@ import {
   InitialFileRecord,
 } from "@angular/build/src/tools/esbuild/bundler-context";
 import { extractLicenses } from "@angular/build/src/tools/esbuild/license-extractor";
-import {
-  HintMode,
-  IndexHtmlGenerator,
-  IndexHtmlProcessResult,
-} from "@angular/build/src/utils/index-file/index-html-generator";
+import { IndexHtmlGenerator, IndexHtmlProcessResult } from "@angular/build/src/utils/index-file/index-html-generator";
 import { Entrypoint } from "@angular/build/src/utils/index-file/augment-index-html";
 import { CrossOrigin } from "@angular/build/src/builders/application/schema";
-import { InlineCriticalCssProcessor } from "@angular/build/src/utils/index-file/inline-critical-css";
 import { augmentAppWithServiceWorkerEsbuild } from "@angular/build/src/utils/service-worker";
 import { createSourcemapIgnorelistPlugin } from "@angular/build/src/tools/esbuild/sourcemap-ignorelist-plugin";
 import { StylesheetPluginFactory } from "@angular/build/src/tools/esbuild/stylesheets/stylesheet-plugin-factory";
@@ -42,10 +37,6 @@ import { ISdBuildMessage } from "../../types/build.type";
 
 export class SdNgBundler {
   readonly #logger = Logger.get(["simplysm", "sd-cli", "SdNgBundler"]);
-
-  // private readonly _sourceFileCache = new SourceFileCache(
-  //   path.resolve(this._opt.pkgPath, ".cache")
-  // );
 
   readonly #modifiedFileSet = new Set<TNormPath>();
   readonly #ngResultCache: ISdCliNgPluginResultCache = {
@@ -155,7 +146,7 @@ export class SdNgBundler {
 
     this.#debug(`create index.html...`);
     await perf.run("create index.html", async () => {
-      const genIndexHtmlResult = await this._genIndexHtmlAsync(outputFiles, initialFiles);
+      const genIndexHtmlResult = await this._genIndexHtmlAsync(initialFiles);
       for (const warning of genIndexHtmlResult.warnings) {
         results.push({
           filePath: undefined,
@@ -259,60 +250,30 @@ export class SdNgBundler {
     };
   }
 
-  private async _genIndexHtmlAsync(
-    outputFiles: esbuild.OutputFile[],
-    initialFiles: Map<string, InitialFileRecord>,
-  ): Promise<IndexHtmlProcessResult> {
-    const readAsset = (filePath: string): Promise<string> => {
-      const relFilePath = path.relative("/", filePath);
-      const currFile = outputFiles.find((outputFile) => outputFile.path === relFilePath);
-      if (currFile) {
-        return Promise.resolve(currFile.text);
-      }
-
-      throw new Error(`Output file does not exist: ${relFilePath}`);
-    };
-
+  private async _genIndexHtmlAsync(initialFiles: Map<string, InitialFileRecord>): Promise<IndexHtmlProcessResult> {
     const indexHtmlGenerator = new IndexHtmlGenerator({
       indexPath: this.#indexHtmlFilePath,
       entrypoints: [
-        ["runtime", true],
         ["polyfills", true],
         ["styles", false],
-        ["vendor", true],
         ["main", true],
         ...(this._opt.builderType === "cordova" ? [["cordova-entry", true] as Entrypoint] : []),
       ],
+      sri: false,
       optimization: {
         scripts: !this._opt.dev,
-        fonts: { inline: !this._opt.dev },
         styles: {
           minify: !this._opt.dev,
-          inlineCritical: false,
+          inlineCritical: !this._opt.dev,
+          removeSpecialComments: !this._opt.dev,
         },
+        fonts: { inline: !this._opt.dev },
       },
       crossOrigin: CrossOrigin.None,
+      generateDedicatedSSRContent: false,
     });
-    indexHtmlGenerator.readAsset = readAsset;
 
-    const hints: { url: string; mode: HintMode; as?: string }[] = [];
-    if (!this._opt.dev) {
-      for (const [key, value] of initialFiles) {
-        if (value.entrypoint) {
-          continue;
-        }
-
-        if (value.type === "script") {
-          hints.push({ url: key, mode: "modulepreload" as const });
-        }
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        else if (value.type === "style") {
-          hints.push({ url: key, mode: "preload" as const, as: "style" });
-        }
-      }
-    }
-
-    const transformResult = await indexHtmlGenerator.process({
+    return await indexHtmlGenerator.process({
       baseHref: this.#baseHref,
       lang: undefined,
       outputPath: "/",
@@ -321,29 +282,9 @@ export class SdNgBundler {
         file,
         extension: path.extname(file),
       })),
-      hints,
     });
-
-    if (this._opt.dev) {
-      return transformResult;
-    } else {
-      const inlineCriticalCssProcessor = new InlineCriticalCssProcessor({
-        minify: false,
-        readAsset,
-      });
-      const { content, errors, warnings } = await inlineCriticalCssProcessor.process(transformResult.csrContent, {
-        outputPath: "/",
-      });
-
-      return {
-        warnings: [...transformResult.warnings, ...warnings],
-        errors: [...transformResult.errors, ...errors],
-        csrContent: content,
-      };
-    }
   }
 
-  //TODO: index.html  파일에 manifest.json 정보 추가? manifest.webmanifest ? PWA?
   private async _copyAssetsAsync(): Promise<
     {
       source: string;
@@ -352,11 +293,8 @@ export class SdNgBundler {
   > {
     return await resolveAssets(
       [
-        { input: "src", glob: "favicon.ico", output: "" },
-        { input: "src", glob: "manifest.webmanifest", output: "" },
-        { input: "src", glob: "manifest.json", output: "" },
-        { input: "src/assets", glob: "**/*", output: "assets" },
-        ...(this._opt.dev ? [{ input: "src/assets-dev", glob: "**/*", output: "assets-dev" }] : []),
+        { input: "public", glob: "**/*", output: "." },
+        ...(this._opt.dev ? [{ input: "public-dev", glob: "**/*", output: "." }] : []),
         ...(this._opt.dev && this._opt.builderType === "cordova"
           ? Object.keys(this._opt.cordovaConfig?.platform ?? { browser: {} }).mapMany((platform) => [
               {
@@ -461,7 +399,10 @@ export class SdNgBundler {
         polyfills: path.resolve(this._opt.pkgPath, "src/polyfills.ts"),
         ...(this._opt.builderType === "cordova"
           ? {
-              "cordova-entry": path.resolve(path.dirname(fileURLToPath(import.meta.url)), `../../../lib/cordova-entry.js`),
+              "cordova-entry": path.resolve(
+                path.dirname(fileURLToPath(import.meta.url)),
+                `../../../lib/cordova-entry.js`,
+              ),
             }
           : {}),
         ...workerEntries,

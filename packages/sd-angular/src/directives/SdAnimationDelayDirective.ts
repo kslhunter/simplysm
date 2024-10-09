@@ -4,7 +4,7 @@ import { Directive, input } from "@angular/core";
   selector: "[sdAnimationDelay]",
   standalone: true,
   host: {
-    "[style.animation-delay]": "'calc(var(--animation-duration) * ' + sdAnimationDelay() + ')'",
+    "[style.animation-delay]": "sdAnimationDelay() + 'ms'",
   },
 })
 export class SdAnimationDelayDirective {

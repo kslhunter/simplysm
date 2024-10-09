@@ -50,14 +50,12 @@ import { injectElementRef } from "../utils/injectElementRef";
         background: var(--background-color);
         color: var(--text-trans-default);
 
-        animation: sd-topbar  var(--animation-duration) ease-in;
-
         body.sd-theme-compact &,
         body.sd-theme-modern & {
           //border-bottom: 1px solid var(--border-color-light);
           @include elevation(2);
+          animation: sd-topbar var(--animation-duration) ease-in;
         }
-
 
         /*> ._nav {
         display: inline-block;
@@ -136,7 +134,8 @@ import { injectElementRef } from "../utils/injectElementRef";
       }
     `,
   ],
-  template: ` @if (hasSidebar()) {
+  template: `
+    @if (hasSidebar()) {
       <sd-anchor class="_sidebar-toggle-button" (click)="onSidebarToggleButtonClick()">
         <fa-icon [icon]="icons.bars" [fixedWidth]="true" />
       </sd-anchor>
@@ -144,7 +143,8 @@ import { injectElementRef } from "../utils/injectElementRef";
       <sd-gap width="default" />
     }
 
-    <ng-content />`,
+    <ng-content />
+  `,
 })
 export class SdTopbarControl {
   icons = inject(SdAngularConfigProvider).icons;
