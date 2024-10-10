@@ -36,6 +36,13 @@ export class SdWorker<T extends ISdWorkerType> extends EventEmitter {
     this.#proc.on("error", (err) => {
       logger.error(err);
     });
+
+    this.#proc.on("message", (responseJson: string) => {
+      const response: TSdWorkerResponse<T, string> = JsonConvert.parse(responseJson);
+      if (response.type === "event") {
+        this.emit(response.event, response.body);
+      }
+    });
   }
 
   override on<K extends keyof T["events"] & string>(event: K, listener: (args: T["events"][K]) => void): this;
@@ -62,8 +69,6 @@ export class SdWorker<T extends ISdWorkerType> extends EventEmitter {
             this.#proc.off("message", callback);
             reject(response.body);
           }
-        } else {
-          this.emit(response.event, response.body);
         }
       };
 

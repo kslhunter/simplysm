@@ -38,8 +38,12 @@ const worker = createSdWorker<TSdBuildRunnerWorkerType>({
             : SdJsLibBuildRunner;
 
     const builder = new buildRunnerType(req.projConf, req.pkgPath)
-      .on("change", () => worker.send("change"))
-      .on("complete", (result) => worker.send("complete", result));
+      .on("change", () => {
+        worker.send("change");
+      })
+      .on("complete", (result) => {
+        worker.send("complete", result)
+      });
 
     if (req.cmd === "build") {
       const res = await builder.buildAsync();
