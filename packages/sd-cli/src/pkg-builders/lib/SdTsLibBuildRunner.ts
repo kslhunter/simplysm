@@ -7,20 +7,28 @@ import { ISdLibPackageConfig, ISdProjectConfig } from "../../types/sd-configs.ty
 import { ISdBuildMessage, ISdBuildRunnerResult } from "../../types/build.type";
 
 export class SdTsLibBuildRunner extends EventEmitter {
-  readonly #logger = Logger.get(["simplysm", "sd-cli", "SdCliTsLibBuilder"]);
+  private _logger = Logger.get(["simplysm", "sd-cli", "SdCliTsLibBuilder"]);
 
-  readonly #projConf: ISdProjectConfig;
-  readonly #pkgPath: string;
-  readonly #pkgConf: ISdLibPackageConfig;
+  private _projConf: ISdProjectConfig;
+  private _pkgPath: string;
+  private _pkgConf: ISdLibPackageConfig;
+  private _watchScopePathSet: Set<TNormPath>;
 
-  #builder?: SdTsLibBuilder;
+  private _builder?: SdTsLibBuilder;
 
   public constructor(projConf: ISdProjectConfig, pkgPath: string) {
     super();
-    this.#projConf = projConf;
-    this.#pkgPath = pkgPath;
+    this._projConf = projConf;
+    this._pkgPath = pkgPath;
 
-    this.#pkgConf = projConf.packages[path.basename(pkgPath)] as ISdLibPackageConfig;
+    this._pkgConf = projConf.packages[path.basename(pkgPath)] as ISdLibPackageConfig;
+
+    const localUpdatePaths = Object.keys(this._projConf.localUpdates ?? {}).mapMany((key) =>
+      FsUtil.glob(path.resolve(this._pkgPath, "../../node_modules", key)),
+    );
+    this._watchScopePathSet = new Set(
+      [path.resolve(this._pkgPath, "../"), ...localUpdatePaths].map((item) => PathUtil.norm(item)),
+    );
   }
 
   public override on(event: "change", listener: () => void): this;
@@ -32,11 +40,11 @@ export class SdTsLibBuildRunner extends EventEmitter {
 
   public async buildAsync(): Promise<ISdBuildRunnerResult> {
     this._debug("dist 초기화...");
-    FsUtil.remove(path.resolve(this.#pkgPath, "dist"));
+    FsUtil.remove(path.resolve(this._pkgPath, "dist"));
 
-    if (!this.#pkgConf.noGenIndex) {
+    if (!this._pkgConf.noGenIndex) {
       this._debug("GEN index.ts...");
-      SdCliIndexFileGenerator.run(this.#pkgPath, this.#pkgConf.polyfills);
+      SdCliIndexFileGenerator.run(this._pkgPath, this._pkgConf.polyfills);
     }
 
     const result = await this._runAsync(false, new Set<TNormPath>());
@@ -51,11 +59,11 @@ export class SdTsLibBuildRunner extends EventEmitter {
     this.emit("change");
 
     this._debug("dist 초기화...");
-    FsUtil.remove(path.resolve(this.#pkgPath, "dist"));
+    FsUtil.remove(path.resolve(this._pkgPath, "dist"));
 
-    if (!this.#pkgConf.noGenIndex) {
+    if (!this._pkgConf.noGenIndex) {
       this._debug("WATCH GEN index.ts...");
-      SdCliIndexFileGenerator.watch(this.#pkgPath, this.#pkgConf.polyfills);
+      SdCliIndexFileGenerator.watch(this._pkgPath, this._pkgConf.polyfills);
     }
 
     const result = await this._runAsync(true, new Set<TNormPath>());
@@ -67,10 +75,14 @@ export class SdTsLibBuildRunner extends EventEmitter {
     this.emit("complete", res);
 
     this._debug("WATCH...");
-    const watcher = SdFsWatcher.watch(Array.from(result.watchFileSet)).onChange({ delay: 100 }, async (changeInfos) => {
+    let lastWatchFileSet = result.watchFileSet;
+    SdFsWatcher.watch(Array.from(this._watchScopePathSet)).onChange({ delay: 100 }, async (changeInfos) => {
+      const currentChangeInfos = changeInfos.filter((item) => lastWatchFileSet.has(item.path));
+      if (currentChangeInfos.length < 1) return;
+
       this.emit("change");
 
-      const changeFileSet = new Set(changeInfos.map((item) => PathUtil.norm(item.path)));
+      const changeFileSet = new Set(currentChangeInfos.map((item) => PathUtil.norm(item.path)));
 
       const watchResult = await this._runAsync(true, changeFileSet);
       const watchRes: ISdBuildRunnerResult = {
@@ -81,7 +93,7 @@ export class SdTsLibBuildRunner extends EventEmitter {
 
       this.emit("complete", watchRes);
 
-      watcher.replaceWatchPaths(watchResult.watchFileSet);
+      lastWatchFileSet = watchResult.watchFileSet;
     });
   }
 
@@ -94,22 +106,22 @@ export class SdTsLibBuildRunner extends EventEmitter {
     buildMessages: ISdBuildMessage[];
     emitFileSet: Set<TNormPath>;
   }> {
-    const localUpdatePaths = Object.keys(this.#projConf.localUpdates ?? {})
-      .mapMany((key) => FsUtil.glob(path.resolve(this.#pkgPath, "../../node_modules", key)))
+    const localUpdatePaths = Object.keys(this._projConf.localUpdates ?? {})
+      .mapMany((key) => FsUtil.glob(path.resolve(this._pkgPath, "../../node_modules", key)))
       .map((item) => PathUtil.norm(item));
 
     this._debug(`BUILD...`);
-    this.#builder ??= await SdTsLibBuilder.new(PathUtil.norm(this.#pkgPath), dev, [
-      PathUtil.norm(this.#pkgPath, "../"),
+    this._builder ??= await SdTsLibBuilder.new(PathUtil.norm(this._pkgPath), dev, [
+      PathUtil.norm(this._pkgPath, "../"),
       ...localUpdatePaths,
     ]);
-    const buildResult = await this.#builder.buildAsync(modifiedFileSet);
+    const buildResult = await this._builder.buildAsync(modifiedFileSet);
 
     this._debug(`빌드 완료`);
     const watchFileSet = new Set(
       Array.from(buildResult.watchFileSet).filter(
         (item) =>
-          PathUtil.isChildPath(item, path.resolve(this.#pkgPath, "../")) ||
+          PathUtil.isChildPath(item, path.resolve(this._pkgPath, "../")) ||
           localUpdatePaths.some((lu) => PathUtil.isChildPath(item, lu)),
       ),
     );
@@ -123,6 +135,6 @@ export class SdTsLibBuildRunner extends EventEmitter {
   }
 
   private _debug(msg: string): void {
-    this.#logger.debug(`[${path.basename(this.#pkgPath)}] ${msg}`);
+    this._logger.debug(`[${path.basename(this._pkgPath)}] ${msg}`);
   }
 }

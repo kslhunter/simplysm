@@ -103,10 +103,10 @@ export class SdCliProject {
     await this._upgradeVersionAsync(projNpmConf, allPkgPaths);
 
     logger.debug("빌드 프로세스 시작...");
-    const parallelBuildRunner = new SdMultiBuildRunner();
+    const multiBuildRunner = new SdMultiBuildRunner();
 
     const messages = await pkgPaths.parallelAsync(async (pkgPath) => {
-      return await parallelBuildRunner.runAsync({
+      return await multiBuildRunner.runAsync({
         cmd: "build",
         pkgPath,
         projConf: projConf,
@@ -165,10 +165,10 @@ export class SdCliProject {
     // 빌드
     if (!opt.noBuild) {
       logger.debug("빌드 프로세스 시작...");
-      const parallelBuildRunner = new SdMultiBuildRunner();
+      const multiBuildRunner = new SdMultiBuildRunner();
 
       const messages = await pkgPaths.parallelAsync(async (pkgPath) => {
-        return await parallelBuildRunner.runAsync({
+        return await multiBuildRunner.runAsync({
           cmd: "build",
           pkgPath,
           projConf: projConf,

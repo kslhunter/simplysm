@@ -242,6 +242,7 @@ export class SdNgBundler {
       watchFileSet: new Set([
         ...this.#ngResultCache.watchFileSet!,
         ...this.#styleLoadResultCache.watchFiles.map((item) => PathUtil.norm(item)),
+        ...assetFiles.map((item) => PathUtil.norm(item.source)),
         PathUtil.norm(this.#indexHtmlFilePath),
       ]),
       affectedFileSet: this.#ngResultCache.affectedFileSet!,

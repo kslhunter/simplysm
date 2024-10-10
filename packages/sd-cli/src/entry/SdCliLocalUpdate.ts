@@ -45,9 +45,9 @@ export class SdCliLocalUpdate {
     const updatePathInfos = this.#getUpdatePathInfos(projConf.localUpdates);
     logger.debug("로컬 업데이트 구성");
 
-    const watchPaths = updatePathInfos.mapMany((item) => this.#getWatchPaths(item.source)).distinct();
+    // const watchPaths = updatePathInfos.mapMany((item) => this.#getWatchPaths(item.source)).distinct();
 
-    const watcher = SdFsWatcher.watch(watchPaths);
+    const watcher = SdFsWatcher.watch(updatePathInfos.map((item) => item.source));
     watcher.onChange({ delay: 500 }, (changedInfos) => {
       const changedFileInfos = changedInfos.filter((item) => ["add", "change", "unlink"].includes(item.event));
       if (changedFileInfos.length === 0) return;
@@ -71,9 +71,9 @@ export class SdCliLocalUpdate {
         }
       }
 
-      const watchFileSet = new Set(updatePathInfos.mapMany((item) => this.#getWatchPaths(item.source)));
-
-      watcher.replaceWatchPaths(watchFileSet);
+      // const watchFileSet = new Set(updatePathInfos.mapMany((item) => this.#getWatchPaths(item.source)));
+      //
+      // watcher.replaceWatchPaths(watchFileSet);
 
       logger.info("로컬 라이브러리 복사 완료");
     });
@@ -110,9 +110,9 @@ export class SdCliLocalUpdate {
     return result;
   }
 
-  static #getWatchPaths(sourcePath: string): string[] {
+  /*static #getWatchPaths(sourcePath: string): string[] {
     return FsUtil.glob(path.resolve(sourcePath, "**"));
-  }
+  }*/
 }
 
 interface IUpdatePathInfo {

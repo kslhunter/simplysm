@@ -8,17 +8,25 @@ import { ISdBuildMessage, ISdBuildRunnerResult } from "../../types/build.type";
 import { INpmConfig, ITsConfig } from "../../types/common-configs.type";
 
 export class SdServerBuildRunner extends EventEmitter {
-  #logger = Logger.get(["simplysm", "sd-cli", "SdCliServerBuildRunner"]);
-  #pkgConf: ISdServerPackageConfig;
-  #serverBundler?: SdServerBundler;
-  #extModules?: { name: string; exists: boolean }[];
+  private _logger = Logger.get(["simplysm", "sd-cli", "SdCliServerBuildRunner"]);
+  private _pkgConf: ISdServerPackageConfig;
+  private _serverBundler?: SdServerBundler;
+  private _extModules?: { name: string; exists: boolean }[];
+  private _watchScopePathSet: Set<TNormPath>;
 
   public constructor(
     private readonly _projConf: ISdProjectConfig,
     private readonly _pkgPath: TNormPath,
   ) {
     super();
-    this.#pkgConf = this._projConf.packages[path.basename(_pkgPath)] as ISdServerPackageConfig;
+    this._pkgConf = this._projConf.packages[path.basename(_pkgPath)] as ISdServerPackageConfig;
+
+    const localUpdatePaths = Object.keys(this._projConf.localUpdates ?? {}).mapMany((key) =>
+      FsUtil.glob(path.resolve(this._pkgPath, "../../node_modules", key)),
+    );
+    this._watchScopePathSet = new Set(
+      [path.resolve(this._pkgPath, "../"), ...localUpdatePaths].map((item) => PathUtil.norm(item)),
+    );
   }
 
   public override on(event: "change", listener: () => void): this;
@@ -36,7 +44,7 @@ export class SdServerBuildRunner extends EventEmitter {
 
     this._debug("GEN .config...");
     const confDistPath = path.resolve(this._pkgPath, "dist/.config.json");
-    FsUtil.writeFile(confDistPath, JSON.stringify(this.#pkgConf.configs ?? {}, undefined, 2));
+    FsUtil.writeFile(confDistPath, JSON.stringify(this._pkgConf.configs ?? {}, undefined, 2));
 
     const result = await this._runAsync(true);
     const res: ISdBuildRunnerResult = {
@@ -47,10 +55,17 @@ export class SdServerBuildRunner extends EventEmitter {
     this.emit("complete", res);
 
     this._debug("WATCH...");
-    const watcher = SdFsWatcher.watch(Array.from(result.watchFileSet)).onChange({ delay: 100 }, async (changeInfos) => {
+    let lastWatchFileSet = result.watchFileSet;
+    SdFsWatcher.watch(Array.from(this._watchScopePathSet)).onChange({ delay: 100 }, async (changeInfos) => {
+      const currentChangeInfos = changeInfos.filter((item) => lastWatchFileSet.has(item.path));
+      if (currentChangeInfos.length < 1) return;
+
       this.emit("change");
 
-      const watchResult = await this._runAsync(true, new Set(changeInfos.map((item) => PathUtil.norm(item.path))));
+      const watchResult = await this._runAsync(
+        true,
+        new Set(currentChangeInfos.map((item) => PathUtil.norm(item.path))),
+      );
       const watchRes: ISdBuildRunnerResult = {
         affectedFilePathSet: watchResult.affectedFileSet,
         buildMessages: watchResult.buildMessages,
@@ -59,7 +74,7 @@ export class SdServerBuildRunner extends EventEmitter {
 
       this.emit("complete", watchRes);
 
-      watcher.replaceWatchPaths(watchResult.watchFileSet);
+      lastWatchFileSet = watchResult.watchFileSet;
     });
   }
 
@@ -72,7 +87,7 @@ export class SdServerBuildRunner extends EventEmitter {
 
     this._debug("GEN .config.json...");
     const confDistPath = path.resolve(this._pkgPath, "dist/.config.json");
-    FsUtil.writeJson(confDistPath, this.#pkgConf.configs ?? {}, { space: 2 });
+    FsUtil.writeJson(confDistPath, this._pkgConf.configs ?? {}, { space: 2 });
 
     this._debug("GEN package.json...");
     {
@@ -87,7 +102,7 @@ export class SdServerBuildRunner extends EventEmitter {
       delete distNpmConfig.devDependencies;
       delete distNpmConfig.peerDependencies;
 
-      if (this.#pkgConf.pm2 && !this.#pkgConf.pm2.noStartScript) {
+      if (this._pkgConf.pm2 && !this._pkgConf.pm2.noStartScript) {
         distNpmConfig.scripts = { start: "pm2 start pm2.json" };
       }
 
@@ -123,18 +138,18 @@ Options = UnsafeLegacyRenegotiation`.trim(),
       );
     }
 
-    if (this.#pkgConf.pm2) {
+    if (this._pkgConf.pm2) {
       this._debug("GEN pm2.json...");
 
       FsUtil.writeJson(
         path.resolve(this._pkgPath, "dist/pm2.json"),
         {
-          name: this.#pkgConf.pm2.name ?? npmConfig.name.replace(/@/g, "").replace(/\//g, "-"),
+          name: this._pkgConf.pm2.name ?? npmConfig.name.replace(/@/g, "").replace(/\//g, "-"),
           script: "main.js",
           watch: true,
           watch_delay: 2000,
-          ignore_watch: ["node_modules", "www", ...(this.#pkgConf.pm2.ignoreWatchPaths ?? [])],
-          ...(this.#pkgConf.pm2.noInterpreter
+          ignore_watch: ["node_modules", "www", ...(this._pkgConf.pm2.ignoreWatchPaths ?? [])],
+          ...(this._pkgConf.pm2.noInterpreter
             ? {}
             : {
                 interpreter: "node@" + process.versions.node,
@@ -144,7 +159,7 @@ Options = UnsafeLegacyRenegotiation`.trim(),
             NODE_ENV: "production",
             TZ: "Asia/Seoul",
             SD_VERSION: npmConfig.version,
-            ...this.#pkgConf.env,
+            ...this._pkgConf.env,
           },
           arrayProcess: "concat",
           useDelTargetNull: true,
@@ -155,11 +170,11 @@ Options = UnsafeLegacyRenegotiation`.trim(),
       );
     }
 
-    if (this.#pkgConf.iis) {
+    if (this._pkgConf.iis) {
       this._debug("GEN web.config...");
 
       const iisDistPath = path.resolve(this._pkgPath, "dist/web.config");
-      const serverExeFilePath = this.#pkgConf.iis.nodeExeFilePath ?? "C:\\Program Files\\nodejs\\node.exe";
+      const serverExeFilePath = this._pkgConf.iis.nodeExeFilePath ?? "C:\\Program Files\\nodejs\\node.exe";
       FsUtil.writeFile(
         iisDistPath,
         `
@@ -168,8 +183,8 @@ Options = UnsafeLegacyRenegotiation`.trim(),
     <add key="NODE_ENV" value="production" />
     <add key="TZ" value="Asia/Seoul" />
     <add key="SD_VERSION" value="${npmConfig.version}" />
-    ${Object.keys(this.#pkgConf.env ?? {})
-      .map((key) => `<add key="${key}" value="${this.#pkgConf.env![key]}"/>`)
+    ${Object.keys(this._pkgConf.env ?? {})
+      .map((key) => `<add key="${key}" value="${this._pkgConf.env![key]}"/>`)
       .join("\n    ")}
   </appSettings>
   <system.webServer>
@@ -218,21 +233,21 @@ Options = UnsafeLegacyRenegotiation`.trim(),
 
     this._debug(`BUILD 준비...`);
     const tsConfig = FsUtil.readJson(path.resolve(this._pkgPath, "tsconfig.json")) as ITsConfig;
-    this.#extModules = this.#extModules ?? (await this._getExternalModulesAsync());
-    this.#serverBundler =
-      this.#serverBundler ??
+    this._extModules = this._extModules ?? (await this._getExternalModulesAsync());
+    this._serverBundler =
+      this._serverBundler ??
       new SdServerBundler({
         dev,
         pkgPath: this._pkgPath,
         entryPoints: tsConfig.files
           ? tsConfig.files.map((item) => path.resolve(this._pkgPath, item))
           : [path.resolve(this._pkgPath, "src/main.ts")],
-        external: this.#extModules.map((item) => item.name),
+        external: this._extModules.map((item) => item.name),
         watchScopePaths: [path.resolve(this._pkgPath, "../"), ...localUpdatePaths].map((item) => PathUtil.norm(item)),
       });
 
     this._debug(`BUILD...`);
-    const bundleResult = await this.#serverBundler.bundleAsync(modifiedFileSet);
+    const bundleResult = await this._serverBundler.bundleAsync(modifiedFileSet);
 
     //-- filePaths
     const watchFileSet = new Set(
@@ -304,7 +319,7 @@ Options = UnsafeLegacyRenegotiation`.trim(),
           });
         }
 
-        if (this.#pkgConf.externals?.includes(moduleName)) {
+        if (this._pkgConf.externals?.includes(moduleName)) {
           results.push({
             name: moduleName,
             exists: true,
@@ -338,7 +353,7 @@ Options = UnsafeLegacyRenegotiation`.trim(),
           });
         }
 
-        if (this.#pkgConf.externals?.includes(optModuleName)) {
+        if (this._pkgConf.externals?.includes(optModuleName)) {
           results.push({
             name: optModuleName,
             exists: true,
@@ -351,7 +366,7 @@ Options = UnsafeLegacyRenegotiation`.trim(),
 
     await fn(this._pkgPath);
 
-    for (const external of this.#pkgConf.externals ?? []) {
+    for (const external of this._pkgConf.externals ?? []) {
       if (!results.some((item) => item.name === external)) {
         results.push({
           name: external,
@@ -364,6 +379,6 @@ Options = UnsafeLegacyRenegotiation`.trim(),
   }
 
   private _debug(msg: string): void {
-    this.#logger.debug(`[${path.basename(this._pkgPath)}] ${msg}`);
+    this._logger.debug(`[${path.basename(this._pkgPath)}] ${msg}`);
   }
 }

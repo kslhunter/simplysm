@@ -10,19 +10,27 @@ import { INpmConfig } from "../../types/common-configs.type";
 import { ISdBuildMessage, ISdBuildRunnerResult } from "../../types/build.type";
 
 export class SdClientBuildRunner extends EventEmitter {
-  private readonly _logger = Logger.get(["simplysm", "sd-cli", "SdClientBuildRunner"]);
-  private readonly _pkgConf: ISdClientPackageConfig;
-  private readonly _npmConf: INpmConfig;
+  private _logger = Logger.get(["simplysm", "sd-cli", "SdClientBuildRunner"]);
+  private _pkgConf: ISdClientPackageConfig;
+  private _npmConf: INpmConfig;
   private _ngBundlers?: SdNgBundler[];
   private _cordova?: SdCliCordova;
+  private _watchScopePathSet: Set<TNormPath>;
 
   public constructor(
-    private readonly _projConf: ISdProjectConfig,
-    private readonly _pkgPath: TNormPath,
+    private _projConf: ISdProjectConfig,
+    private _pkgPath: TNormPath,
   ) {
     super();
     this._pkgConf = this._projConf.packages[path.basename(_pkgPath)] as ISdClientPackageConfig;
     this._npmConf = FsUtil.readJson(path.resolve(_pkgPath, "package.json")) as INpmConfig;
+
+    const localUpdatePaths = Object.keys(this._projConf.localUpdates ?? {}).mapMany((key) =>
+      FsUtil.glob(path.resolve(this._pkgPath, "../../node_modules", key)),
+    );
+    this._watchScopePathSet = new Set(
+      [path.resolve(this._pkgPath, "../"), ...localUpdatePaths].map((item) => PathUtil.norm(item)),
+    );
   }
 
   public override on(event: "change", listener: () => void): this;
@@ -77,11 +85,15 @@ export class SdClientBuildRunner extends EventEmitter {
     this.emit("complete", res);
 
     this._debug("WATCH...");
-    const watcher = SdFsWatcher.watch(Array.from(result.watchFileSet)).onChange({ delay: 100 }, async (changeInfos) => {
+    let lastWatchFileSet = result.watchFileSet;
+    SdFsWatcher.watch(Array.from(this._watchScopePathSet)).onChange({ delay: 100 }, async (changeInfos) => {
+      const currentChangeInfos = changeInfos.filter((item) => lastWatchFileSet.has(item.path));
+      if (currentChangeInfos.length < 1) return;
+
       this.emit("change");
 
       for (const ngBundler of this._ngBundlers!) {
-        ngBundler.markForChanges(changeInfos.map((item) => item.path));
+        ngBundler.markForChanges(currentChangeInfos.map((item) => item.path));
       }
 
       const watchResult = await this._runAsync({ dev: !this._pkgConf.forceProductionMode });
@@ -92,7 +104,7 @@ export class SdClientBuildRunner extends EventEmitter {
       };
       this.emit("complete", watchRes);
 
-      watcher.replaceWatchPaths(watchResult.watchFileSet);
+      lastWatchFileSet = watchResult.watchFileSet;
     });
   }
 
@@ -102,10 +114,6 @@ export class SdClientBuildRunner extends EventEmitter {
     buildMessages: ISdBuildMessage[];
     emitFileSet: Set<TNormPath>;
   }> {
-    const localUpdatePaths = Object.keys(this._projConf.localUpdates ?? {}).mapMany((key) =>
-      FsUtil.glob(path.resolve(this._pkgPath, "../../node_modules", key)),
-    );
-
     const ngBundlerBuilderTypes = Object.keys(this._pkgConf.builder ?? { web: {} }) as (
       | "web"
       | "electron"
@@ -142,9 +150,7 @@ export class SdClientBuildRunner extends EventEmitter {
               ...this._pkgConf.builder?.[ngBundlerBuilderType]?.env,
             },
             cordovaConfig: ngBundlerBuilderType === "cordova" ? this._pkgConf.builder!.cordova : undefined,
-            watchScopePaths: [path.resolve(this._pkgPath, "../"), ...localUpdatePaths].map((item) =>
-              PathUtil.norm(item),
-            ),
+            watchScopePaths: Array.from(this._watchScopePathSet),
           }),
       );
     }
@@ -170,15 +176,13 @@ export class SdClientBuildRunner extends EventEmitter {
     }
 
     this._debug(`빌드 완료`);
-    const currWatchFileSet = new Set(
-      Array.from(watchFileSet).filter(
-        (item) =>
-          PathUtil.isChildPath(item, path.resolve(this._pkgPath, "../")) ||
-          localUpdatePaths.some((lu) => PathUtil.isChildPath(item, lu)),
+    /*const currWatchFileSet = new Set(
+      Array.from(watchFileSet).filter((item) =>
+        Array.from(this._watchScopePathSet).some((scope) => PathUtil.isChildPath(item, scope)),
       ),
-    );
+    );*/
     return {
-      watchFileSet: currWatchFileSet,
+      watchFileSet,
       affectedFileSet,
       buildMessages: results, //.filter((item) => item.filePath !== path.resolve(this._pkgPath, "src/routes.ts")),
       emitFileSet,
