@@ -2,26 +2,25 @@ import path from "path";
 import { SdCliConvertMessageUtil } from "../../utils/SdCliConvertMessageUtil";
 import { FsUtil, PathUtil, TNormPath } from "@simplysm/sd-core-node";
 import { ISdBuildMessage } from "../../types/build.type";
-import { SdTsCompileWorker } from "../../ts-builder/SdTsCompileWorker";
+import { SdTsCompiler } from "../../ts-builder/SdTsCompiler";
 
 export class SdTsLibBuilder {
-  static async new(pkgPath: TNormPath, dev: boolean, watchScopePaths: TNormPath[]) {
-    const tsCompiler = await SdTsCompileWorker.new({
-      pkgPath,
+  private _tsCompiler: SdTsCompiler;
+
+  constructor(
+    private _pkgPath: TNormPath,
+    dev: boolean,
+    watchScopePaths: TNormPath[],
+  ) {
+    this._tsCompiler = new SdTsCompiler({
+      pkgPath: this._pkgPath,
       additionalOptions: { declaration: true },
       isDevMode: dev,
-      globalStyleFilePath: PathUtil.norm(pkgPath, "src/styles.scss"),
+      globalStyleFilePath: PathUtil.norm(this._pkgPath, "src/styles.scss"),
       isForBundle: false,
       watchScopePaths: watchScopePaths,
     });
-
-    return new SdTsLibBuilder(tsCompiler, pkgPath);
   }
-
-  private constructor(
-    private _compiler: SdTsCompileWorker,
-    private _pkgPath: string,
-  ) {}
 
   public async buildAsync(modifiedFileSet: Set<TNormPath>): Promise<{
     watchFileSet: Set<TNormPath>;
@@ -29,7 +28,7 @@ export class SdTsLibBuilder {
     results: ISdBuildMessage[];
     emitFileSet: Set<TNormPath>;
   }> {
-    const tsCompileResult = await this._compiler.compileAsync(modifiedFileSet);
+    const tsCompileResult = await this._tsCompiler.compileAsync(modifiedFileSet);
 
     const emitFileSet = new Set<TNormPath>();
     for (const emitFile of tsCompileResult.emitFileSet) {

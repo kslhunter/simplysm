@@ -2,8 +2,8 @@ import esbuild from "esbuild";
 import { SdCliConvertMessageUtil } from "../../utils/SdCliConvertMessageUtil";
 import { ISdCliServerPluginResultCache } from "../../types/build-plugin.type";
 import { PathUtil, TNormPath } from "@simplysm/sd-core-node";
-import { SdTsCompileWorker } from "../../ts-builder/SdTsCompileWorker";
 import { ISdTsCompilerResult } from "../../types/ts-compiler.type";
+import { SdTsCompiler } from "../../ts-builder/SdTsCompiler";
 
 export function createSdServerPlugin(conf: {
   pkgPath: TNormPath;
@@ -14,8 +14,8 @@ export function createSdServerPlugin(conf: {
 }): esbuild.Plugin {
   return {
     name: "sd-server-compile",
-    setup: async (build: esbuild.PluginBuild) => {
-      const tsCompiler = await SdTsCompileWorker.new({
+    setup: (build: esbuild.PluginBuild) => {
+      const tsCompiler = new SdTsCompiler({
         pkgPath: conf.pkgPath,
         additionalOptions: { declaration: false },
         isDevMode: conf.dev,

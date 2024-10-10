@@ -135,7 +135,7 @@ export class SdCliElectron {
         },
         ...(pkgConf.builder.electron.installerIcon !== undefined
           ? {
-              icon: path.resolve(pkgPath, "src", pkgConf.builder.electron.installerIcon),
+              icon: path.resolve(pkgPath, pkgConf.builder.electron.installerIcon),
             }
           : {}),
         removePackageScripts: false,
@@ -209,7 +209,7 @@ export class SdCliElectron {
         },
         ...(opt.config.installerIcon !== undefined
           ? {
-              icon: path.resolve(opt.pkgPath, "src", opt.config.installerIcon),
+              icon: path.resolve(opt.pkgPath, opt.config.installerIcon),
             }
           : {}),
         removePackageScripts: false,

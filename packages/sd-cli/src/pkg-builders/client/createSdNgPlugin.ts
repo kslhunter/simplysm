@@ -7,7 +7,7 @@ import { SdCliPerformanceTimer } from "../../utils/SdCliPerformanceTime";
 import { SdCliConvertMessageUtil } from "../../utils/SdCliConvertMessageUtil";
 import { ISdCliNgPluginResultCache } from "../../types/build-plugin.type";
 import { ISdTsCompilerResult } from "../../types/ts-compiler.type";
-import { SdTsCompileWorker } from "../../ts-builder/SdTsCompileWorker";
+import { SdTsCompiler } from "../../ts-builder/SdTsCompiler";
 
 export function createSdNgPlugin(conf: {
   pkgPath: TNormPath;
@@ -25,8 +25,8 @@ export function createSdNgPlugin(conf: {
 
   return {
     name: "sd-ng-compile",
-    setup: async (build: esbuild.PluginBuild) => {
-      const tsCompiler = await SdTsCompileWorker.new({
+    setup: (build: esbuild.PluginBuild) => {
+      const tsCompiler = new SdTsCompiler({
         pkgPath: conf.pkgPath,
         additionalOptions: { declaration: false },
         isDevMode: conf.dev,

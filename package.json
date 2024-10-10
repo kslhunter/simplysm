@@ -10,7 +10,6 @@
   "type": "module",
   "license": "MIT",
   "private": true,
-  "engines": {},
   "workspaces": [
     "packages/*"
   ],

@@ -111,10 +111,11 @@ export class SdTsLibBuildRunner extends EventEmitter {
       .map((item) => PathUtil.norm(item));
 
     this._debug(`BUILD...`);
-    this._builder ??= await SdTsLibBuilder.new(PathUtil.norm(this._pkgPath), dev, [
-      PathUtil.norm(this._pkgPath, "../"),
-      ...localUpdatePaths,
-    ]);
+    this._builder ??= new SdTsLibBuilder(
+      PathUtil.norm(this._pkgPath),
+      dev,
+      [PathUtil.norm(this._pkgPath, "../"), ...localUpdatePaths].map((item) => PathUtil.norm(item)),
+    );
     const buildResult = await this._builder.buildAsync(modifiedFileSet);
 
     this._debug(`빌드 완료`);

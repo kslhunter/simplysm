@@ -8,7 +8,7 @@
   "files": [
     "./src/index.ts",
     "./src/sd-cli.ts",
-    "./src/workers/compile-worker.ts",
+    "./src/workers/build-runner-worker.ts",
     "./src/workers/lint-worker.ts",
     "./src/workers/server-worker.ts"
   ]
