@@ -65,7 +65,7 @@ import { ChangeDetectionStrategy, Component, input, output, ViewEncapsulation } 
         &[sd-open="true"] {
           > ._sd-toast-block {
             transform: none;
-            transition: 0.1s ease-out;
+            transition: var(--animation-duration) ease-out;
             transition-property: transform, opacity;
             opacity: 1;
           }
@@ -74,7 +74,7 @@ import { ChangeDetectionStrategy, Component, input, output, ViewEncapsulation } 
         &[sd-open="false"] {
           > ._sd-toast-block {
             transform: translateY(-100%);
-            transition: 0.1s ease-in;
+            transition: var(--animation-duration) ease-in;
             transition-property: transform, opacity;
             opacity: 0;
           }
@@ -101,16 +101,18 @@ import { ChangeDetectionStrategy, Component, input, output, ViewEncapsulation } 
       }
     `,
   ],
-  template: ` <div class="_sd-toast-block">
-    <div class="_sd-toast-message">
-      <ng-content></ng-content>
-    </div>
-    @if (useProgress()) {
-      <div class="_sd-toast-progress">
-        <div class="_sd-toast-progress-bar" [style.width]="progress() + '%'"></div>
+  template: `
+    <div class="_sd-toast-block">
+      <div class="_sd-toast-message">
+        <ng-content></ng-content>
       </div>
-    }
-  </div>`,
+      @if (useProgress()) {
+        <div class="_sd-toast-progress">
+          <div class="_sd-toast-progress-bar" [style.width]="progress() + '%'"></div>
+        </div>
+      }
+    </div>
+  `,
   host: {
     "[attr.sd-open]": "open()",
     "[attr.sd-theme]": "theme()",

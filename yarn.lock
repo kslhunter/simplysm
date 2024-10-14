@@ -22,24 +22,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular-devkit/architect@npm:0.1802.7":
-  version: 0.1802.7
-  resolution: "@angular-devkit/architect@npm:0.1802.7"
+"@angular-devkit/architect@npm:0.1802.8":
+  version: 0.1802.8
+  resolution: "@angular-devkit/architect@npm:0.1802.8"
   dependencies:
-    "@angular-devkit/core": "npm:18.2.7"
+    "@angular-devkit/core": "npm:18.2.8"
     rxjs: "npm:7.8.1"
   dependenciesMeta:
     esbuild:
       built: true
     puppeteer:
       built: true
-  checksum: 10c0/98d3b5c218d501bedd1ad1e41c2c9c26d7b3079f5e0f55f048e662483c023e0a40988cf46c14e9ed29a72b0cbfbee82e4b0461a7a9f0437daf9eb75d68209a62
+  checksum: 10c0/3c4606b99bc119fa31546d6093c7077fc65255c169c168670c6c7b45d6898255f891027a664d5479c63cfe085c2ca9c4f232cc6c66b157c93fe2de7da37d06fb
   languageName: node
   linkType: hard
 
-"@angular-devkit/core@npm:18.2.7":
-  version: 18.2.7
-  resolution: "@angular-devkit/core@npm:18.2.7"
+"@angular-devkit/core@npm:18.2.8":
+  version: 18.2.8
+  resolution: "@angular-devkit/core@npm:18.2.8"
   dependencies:
     ajv: "npm:8.17.1"
     ajv-formats: "npm:3.0.1"
@@ -57,7 +57,7 @@ __metadata:
   peerDependenciesMeta:
     chokidar:
       optional: true
-  checksum: 10c0/50ac4f06bef5a5bd955864e16eda9bd61dee6f91746390bf3a78a0e39309a1b9a72619150c1a8ed0169dc3b1db275f67cf10a746c3d7dea4e2e19a02dcb93867
+  checksum: 10c0/c75d01857c21b6db80c92254b8651322d2a185119074761b00ae24e68f1ac4ba137861951de44233e54ea894c3f640324064b061d23c6ce0321f142f33b6b062
   languageName: node
   linkType: hard
 
@@ -150,23 +150,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/animations@npm:^18.2.7":
-  version: 18.2.7
-  resolution: "@angular/animations@npm:18.2.7"
+"@angular/animations@npm:^18.2.8":
+  version: 18.2.8
+  resolution: "@angular/animations@npm:18.2.8"
   dependencies:
     tslib: "npm:^2.3.0"
   peerDependencies:
-    "@angular/core": 18.2.7
-  checksum: 10c0/d36b955bc507c344f2b6e01000950a85c2c9160fe15cdb02f72e742da6a7510bb0d5730bbc14cefe76420a4a31845b2e4aaa54a9340221b8ca731368751f259c
+    "@angular/core": 18.2.8
+  checksum: 10c0/7cd56f1c7a9c3c6d7c700422da31a150af03af27c26ed0616e4d04ba5a6ecc03d3f7180ebd242cbd49da2957e33064d83cbdd9ecb162f34132180382573a0f01
   languageName: node
   linkType: hard
 
-"@angular/build@npm:^18.2.7":
-  version: 18.2.7
-  resolution: "@angular/build@npm:18.2.7"
+"@angular/build@npm:^18.2.8":
+  version: 18.2.8
+  resolution: "@angular/build@npm:18.2.8"
   dependencies:
     "@ampproject/remapping": "npm:2.3.0"
-    "@angular-devkit/architect": "npm:0.1802.7"
+    "@angular-devkit/architect": "npm:0.1802.8"
     "@babel/core": "npm:7.25.2"
     "@babel/helper-annotate-as-pure": "npm:7.24.7"
     "@babel/helper-split-export-declaration": "npm:7.24.7"
@@ -217,98 +217,98 @@ __metadata:
       optional: true
     tailwindcss:
       optional: true
-  checksum: 10c0/f893374519d65c3d6fa4fd3dee87d8f6dbcf64a422b2978c9222f0fa0796e18b00160071a40d3b149df70e5496893c97694a2b127ea4b5dfc1fc49da6afd4556
+  checksum: 10c0/a7eba735e0ca514043dfe15e2cfa726aed6d6e1b5b69506d8f05ac94cef9975f528d56fe4a56087cfd2596348746e483f193d9f8f39864b0d96fd4b9cc8cc07f
   languageName: node
   linkType: hard
 
-"@angular/common@npm:^18.2.7":
-  version: 18.2.7
-  resolution: "@angular/common@npm:18.2.7"
+"@angular/common@npm:^18.2.8":
+  version: 18.2.8
+  resolution: "@angular/common@npm:18.2.8"
   dependencies:
     tslib: "npm:^2.3.0"
   peerDependencies:
-    "@angular/core": 18.2.7
+    "@angular/core": 18.2.8
     rxjs: ^6.5.3 || ^7.4.0
-  checksum: 10c0/e552a7680ff59612f7e0fa7e307fbf8f7674cdf0f83d5a325c15f90ee0c4075ded6676003ed89ac8be94804d9d776fb4e97953a8f10aefedf3746a84baf5245b
+  checksum: 10c0/0d6e9b5313fae935e372f83b12e08ff25b1807cf863dd9885d94255ae44a72a24cd8a549f6f0bdb7b8971903e44ebaf97163499637c0688a02b9cced884b1705
   languageName: node
   linkType: hard
 
-"@angular/compiler-cli@npm:^18.2.7":
-  version: 18.2.7
-  resolution: "@angular/compiler-cli@npm:18.2.7"
+"@angular/compiler-cli@npm:^18.2.8":
+  version: 18.2.8
+  resolution: "@angular/compiler-cli@npm:18.2.8"
   dependencies:
     "@babel/core": "npm:7.25.2"
     "@jridgewell/sourcemap-codec": "npm:^1.4.14"
-    chokidar: "npm:^3.0.0"
+    chokidar: "npm:^4.0.0"
     convert-source-map: "npm:^1.5.1"
     reflect-metadata: "npm:^0.2.0"
     semver: "npm:^7.0.0"
     tslib: "npm:^2.3.0"
     yargs: "npm:^17.2.1"
   peerDependencies:
-    "@angular/compiler": 18.2.7
+    "@angular/compiler": 18.2.8
     typescript: ">=5.4 <5.6"
   bin:
     ng-xi18n: bundles/src/bin/ng_xi18n.js
     ngc: bundles/src/bin/ngc.js
     ngcc: bundles/ngcc/index.js
-  checksum: 10c0/494a7fab7a9c0f9ecb57efb93b6c781bfd6454a7b478b3b8f8cc75dfbefc63a3739d325caf21f21fe3b8372d0d2bc392e8c7857787890aaa6cbf6ef3e7f254a6
+  checksum: 10c0/d1b9d4fdf1d3638561f30d9741782a76ced8a7b0050d2b6917bb067d24111ff4d12bd7583ad0f977a6c6821f8d1770629f59aef52263fe29c56e3e036518eaa0
   languageName: node
   linkType: hard
 
-"@angular/compiler@npm:^18.2.7":
-  version: 18.2.7
-  resolution: "@angular/compiler@npm:18.2.7"
+"@angular/compiler@npm:^18.2.8":
+  version: 18.2.8
+  resolution: "@angular/compiler@npm:18.2.8"
   dependencies:
     tslib: "npm:^2.3.0"
   peerDependencies:
-    "@angular/core": 18.2.7
+    "@angular/core": 18.2.8
   peerDependenciesMeta:
     "@angular/core":
       optional: true
-  checksum: 10c0/87312d07cd8f0506903bc5e98ce64cbecb6a158b0e9799343aa44e6dc2d3f92498d65571863412dde4a83c5e1eae150346992dfb050b8b6348910634a16ba46a
+  checksum: 10c0/106084277ea4b31cc217c349d71af66edfae6c8d526406383f6c390854db01f89012ffd619b67af3a63b6d9808d5d2c19546797def59742c6c80ddf7ad4600d1
   languageName: node
   linkType: hard
 
-"@angular/core@npm:^18.2.7":
-  version: 18.2.7
-  resolution: "@angular/core@npm:18.2.7"
+"@angular/core@npm:^18.2.8":
+  version: 18.2.8
+  resolution: "@angular/core@npm:18.2.8"
   dependencies:
     tslib: "npm:^2.3.0"
   peerDependencies:
     rxjs: ^6.5.3 || ^7.4.0
     zone.js: ~0.14.10
-  checksum: 10c0/e51fc5d52e345706da9ba10f54269a347dd52cbea72847d45f1221c9da93aecc05e21bc19ef71d45f1ab6f662f8f66ccff8309976b86d986c06fbe1a8999827a
+  checksum: 10c0/2ace1083ff4095689f6b1e2e200ebf60a36242fad6c6ec90bd5a0d57fed20f3cb0422467758a7b77597c74e5294ff4941e16ecfd1f9972f514069d56415bcdd0
   languageName: node
   linkType: hard
 
-"@angular/platform-browser@npm:^18.2.7":
-  version: 18.2.7
-  resolution: "@angular/platform-browser@npm:18.2.7"
+"@angular/platform-browser@npm:^18.2.8":
+  version: 18.2.8
+  resolution: "@angular/platform-browser@npm:18.2.8"
   dependencies:
     tslib: "npm:^2.3.0"
   peerDependencies:
-    "@angular/animations": 18.2.7
-    "@angular/common": 18.2.7
-    "@angular/core": 18.2.7
+    "@angular/animations": 18.2.8
+    "@angular/common": 18.2.8
+    "@angular/core": 18.2.8
   peerDependenciesMeta:
     "@angular/animations":
       optional: true
-  checksum: 10c0/59faa493fc3faddc9bf0743f0ac1da4d4105cf2ca2e9f37a706595237d41164ee5aa133523f1e6c86f926dad31fa346635c1d01e3f9a607a927a56b8512b0b93
+  checksum: 10c0/78ff208bd662990ac7754b2c7881e96460ec0a30b16049fc020387ac51c57ab004f44482ea77a8fb73d8d2776bfca8d3351df7ed02bf1ef207bfec1bc55f0a7f
   languageName: node
   linkType: hard
 
-"@angular/router@npm:^18.2.7":
-  version: 18.2.7
-  resolution: "@angular/router@npm:18.2.7"
+"@angular/router@npm:^18.2.8":
+  version: 18.2.8
+  resolution: "@angular/router@npm:18.2.8"
   dependencies:
     tslib: "npm:^2.3.0"
   peerDependencies:
-    "@angular/common": 18.2.7
-    "@angular/core": 18.2.7
-    "@angular/platform-browser": 18.2.7
+    "@angular/common": 18.2.8
+    "@angular/core": 18.2.8
+    "@angular/platform-browser": 18.2.8
     rxjs: ^6.5.3 || ^7.4.0
-  checksum: 10c0/85ea724bbaa3580213dc6683c2c7747ca2f446b36f2a48f375e432e5960021be86492f537248a0bf2c968ac2174d7736b167cc8bc77f55bf46720bf51f6f2041
+  checksum: 10c0/f4565a4c263d1ebe7f5dff80597dfcad1361da8cd3b8932651ef47c6273effcc991b2ce735fe65ae8902647cd3727515eb782cf5af21d884ac0ca9730f7a9d5d
   languageName: node
   linkType: hard
 
@@ -2210,6 +2210,140 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@parcel/watcher-android-arm64@npm:2.4.1":
+  version: 2.4.1
+  resolution: "@parcel/watcher-android-arm64@npm:2.4.1"
+  conditions: os=android & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@parcel/watcher-darwin-arm64@npm:2.4.1":
+  version: 2.4.1
+  resolution: "@parcel/watcher-darwin-arm64@npm:2.4.1"
+  conditions: os=darwin & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@parcel/watcher-darwin-x64@npm:2.4.1":
+  version: 2.4.1
+  resolution: "@parcel/watcher-darwin-x64@npm:2.4.1"
+  conditions: os=darwin & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@parcel/watcher-freebsd-x64@npm:2.4.1":
+  version: 2.4.1
+  resolution: "@parcel/watcher-freebsd-x64@npm:2.4.1"
+  conditions: os=freebsd & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@parcel/watcher-linux-arm-glibc@npm:2.4.1":
+  version: 2.4.1
+  resolution: "@parcel/watcher-linux-arm-glibc@npm:2.4.1"
+  conditions: os=linux & cpu=arm & libc=glibc
+  languageName: node
+  linkType: hard
+
+"@parcel/watcher-linux-arm64-glibc@npm:2.4.1":
+  version: 2.4.1
+  resolution: "@parcel/watcher-linux-arm64-glibc@npm:2.4.1"
+  conditions: os=linux & cpu=arm64 & libc=glibc
+  languageName: node
+  linkType: hard
+
+"@parcel/watcher-linux-arm64-musl@npm:2.4.1":
+  version: 2.4.1
+  resolution: "@parcel/watcher-linux-arm64-musl@npm:2.4.1"
+  conditions: os=linux & cpu=arm64 & libc=musl
+  languageName: node
+  linkType: hard
+
+"@parcel/watcher-linux-x64-glibc@npm:2.4.1":
+  version: 2.4.1
+  resolution: "@parcel/watcher-linux-x64-glibc@npm:2.4.1"
+  conditions: os=linux & cpu=x64 & libc=glibc
+  languageName: node
+  linkType: hard
+
+"@parcel/watcher-linux-x64-musl@npm:2.4.1":
+  version: 2.4.1
+  resolution: "@parcel/watcher-linux-x64-musl@npm:2.4.1"
+  conditions: os=linux & cpu=x64 & libc=musl
+  languageName: node
+  linkType: hard
+
+"@parcel/watcher-win32-arm64@npm:2.4.1":
+  version: 2.4.1
+  resolution: "@parcel/watcher-win32-arm64@npm:2.4.1"
+  conditions: os=win32 & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@parcel/watcher-win32-ia32@npm:2.4.1":
+  version: 2.4.1
+  resolution: "@parcel/watcher-win32-ia32@npm:2.4.1"
+  conditions: os=win32 & cpu=ia32
+  languageName: node
+  linkType: hard
+
+"@parcel/watcher-win32-x64@npm:2.4.1":
+  version: 2.4.1
+  resolution: "@parcel/watcher-win32-x64@npm:2.4.1"
+  conditions: os=win32 & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@parcel/watcher@npm:^2.4.1":
+  version: 2.4.1
+  resolution: "@parcel/watcher@npm:2.4.1"
+  dependencies:
+    "@parcel/watcher-android-arm64": "npm:2.4.1"
+    "@parcel/watcher-darwin-arm64": "npm:2.4.1"
+    "@parcel/watcher-darwin-x64": "npm:2.4.1"
+    "@parcel/watcher-freebsd-x64": "npm:2.4.1"
+    "@parcel/watcher-linux-arm-glibc": "npm:2.4.1"
+    "@parcel/watcher-linux-arm64-glibc": "npm:2.4.1"
+    "@parcel/watcher-linux-arm64-musl": "npm:2.4.1"
+    "@parcel/watcher-linux-x64-glibc": "npm:2.4.1"
+    "@parcel/watcher-linux-x64-musl": "npm:2.4.1"
+    "@parcel/watcher-win32-arm64": "npm:2.4.1"
+    "@parcel/watcher-win32-ia32": "npm:2.4.1"
+    "@parcel/watcher-win32-x64": "npm:2.4.1"
+    detect-libc: "npm:^1.0.3"
+    is-glob: "npm:^4.0.3"
+    micromatch: "npm:^4.0.5"
+    node-addon-api: "npm:^7.0.0"
+    node-gyp: "npm:latest"
+  dependenciesMeta:
+    "@parcel/watcher-android-arm64":
+      optional: true
+    "@parcel/watcher-darwin-arm64":
+      optional: true
+    "@parcel/watcher-darwin-x64":
+      optional: true
+    "@parcel/watcher-freebsd-x64":
+      optional: true
+    "@parcel/watcher-linux-arm-glibc":
+      optional: true
+    "@parcel/watcher-linux-arm64-glibc":
+      optional: true
+    "@parcel/watcher-linux-arm64-musl":
+      optional: true
+    "@parcel/watcher-linux-x64-glibc":
+      optional: true
+    "@parcel/watcher-linux-x64-musl":
+      optional: true
+    "@parcel/watcher-win32-arm64":
+      optional: true
+    "@parcel/watcher-win32-ia32":
+      optional: true
+    "@parcel/watcher-win32-x64":
+      optional: true
+  checksum: 10c0/33b7112094b9eb46c234d824953967435b628d3d93a0553255e9910829b84cab3da870153c3a870c31db186dc58f3b2db81382fcaee3451438aeec4d786a6211
+  languageName: node
+  linkType: hard
+
 "@pkgjs/parseargs@npm:^0.11.0":
   version: 0.11.0
   resolution: "@pkgjs/parseargs@npm:0.11.0"
@@ -2495,8 +2629,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@simplysm/cordova-util@workspace:packages/cordova-util"
   dependencies:
-    "@simplysm/sd-core-common": "npm:12.5.23"
-    "@simplysm/sd-service-client": "npm:12.5.23"
+    "@simplysm/sd-core-common": "npm:12.5.24"
+    "@simplysm/sd-service-client": "npm:12.5.24"
     "@types/cordova": "npm:^11.0.3"
     cordova-plugin-file: "npm:^8.1.0"
     jszip: "npm:^3.10.1"
@@ -2523,18 +2657,18 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-angular@workspace:packages/sd-angular"
   dependencies:
-    "@angular/animations": "npm:^18.2.7"
-    "@angular/common": "npm:^18.2.7"
-    "@angular/core": "npm:^18.2.7"
-    "@angular/platform-browser": "npm:^18.2.7"
-    "@angular/router": "npm:^18.2.7"
+    "@angular/animations": "npm:^18.2.8"
+    "@angular/common": "npm:^18.2.8"
+    "@angular/core": "npm:^18.2.8"
+    "@angular/platform-browser": "npm:^18.2.8"
+    "@angular/router": "npm:^18.2.8"
     "@fortawesome/angular-fontawesome": "npm:^0.15.0"
     "@fortawesome/fontawesome-svg-core": "npm:^6.6.0"
     "@fortawesome/free-solid-svg-icons": "npm:^6.6.0"
-    "@simplysm/sd-core-browser": "npm:12.5.23"
-    "@simplysm/sd-core-common": "npm:12.5.23"
-    "@simplysm/sd-service-client": "npm:12.5.23"
-    "@simplysm/sd-service-common": "npm:12.5.23"
+    "@simplysm/sd-core-browser": "npm:12.5.24"
+    "@simplysm/sd-core-common": "npm:12.5.24"
+    "@simplysm/sd-service-client": "npm:12.5.24"
+    "@simplysm/sd-service-common": "npm:12.5.24"
     "@types/qrcode": "npm:^1.5.5"
     "@types/semver": "npm:^7.5.8"
     html-to-image: "npm:^1.11.11"
@@ -2555,21 +2689,21 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-cli@workspace:packages/sd-cli"
   dependencies:
-    "@angular/build": "npm:^18.2.7"
-    "@angular/compiler": "npm:^18.2.7"
-    "@angular/compiler-cli": "npm:^18.2.7"
+    "@angular/build": "npm:^18.2.8"
+    "@angular/compiler": "npm:^18.2.8"
+    "@angular/compiler-cli": "npm:^18.2.8"
     "@electron/rebuild": "npm:^3.7.0"
-    "@simplysm/sd-core-common": "npm:12.5.23"
-    "@simplysm/sd-core-node": "npm:12.5.23"
-    "@simplysm/sd-service-server": "npm:12.5.23"
-    "@simplysm/sd-storage": "npm:12.5.23"
+    "@simplysm/sd-core-common": "npm:12.5.24"
+    "@simplysm/sd-core-node": "npm:12.5.24"
+    "@simplysm/sd-service-server": "npm:12.5.24"
+    "@simplysm/sd-storage": "npm:12.5.24"
     "@types/eslint": "npm:^9.6.1"
     "@types/xml2js": "npm:^0.4.14"
     "@types/yargs": "npm:^17.0.33"
     browserslist: "npm:^4.24.0"
     cordova: "npm:^12.0.0"
     css-has-pseudo: "npm:^7.0.0"
-    electron: "npm:^32.1.2"
+    electron: "npm:^32.2.0"
     electron-builder: "npm:^25.1.8"
     esbuild: "npm:^0.24.0"
     eslint: "npm:^9.12.0"
@@ -2577,8 +2711,9 @@ __metadata:
     jszip: "npm:^3.10.1"
     node-stdlib-browser: "npm:^1.2.1"
     postcss: "npm:^8.4.47"
+    postcss-position: "npm:^1.1.0"
     rxjs: "npm:^7.8.1"
-    sass: "npm:^1.79.4"
+    sass: "npm:^1.79.5"
     semver: "npm:^7.6.3"
     specifier-resolution-node: "npm:^1.1.4"
     typescript: "npm:~5.5.4"
@@ -2589,15 +2724,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-core-browser@npm:12.5.23, @simplysm/sd-core-browser@workspace:packages/sd-core-browser":
+"@simplysm/sd-core-browser@npm:12.5.24, @simplysm/sd-core-browser@workspace:packages/sd-core-browser":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-core-browser@workspace:packages/sd-core-browser"
   dependencies:
-    "@simplysm/sd-core-common": "npm:12.5.23"
+    "@simplysm/sd-core-common": "npm:12.5.24"
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-core-common@npm:12.5.23, @simplysm/sd-core-common@workspace:packages/sd-core-common":
+"@simplysm/sd-core-common@npm:12.5.24, @simplysm/sd-core-common@workspace:packages/sd-core-common":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-core-common@workspace:packages/sd-core-common"
   dependencies:
@@ -2605,11 +2740,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-core-node@npm:12.5.23, @simplysm/sd-core-node@workspace:packages/sd-core-node":
+"@simplysm/sd-core-node@npm:12.5.24, @simplysm/sd-core-node@workspace:packages/sd-core-node":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-core-node@workspace:packages/sd-core-node"
   dependencies:
-    "@simplysm/sd-core-common": "npm:12.5.23"
+    "@simplysm/sd-core-common": "npm:12.5.24"
     "@types/glob": "npm:^8.1.0"
     glob: "npm:^11.0.0"
     watcher: "npm:^2.3.1"
@@ -2620,7 +2755,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-excel@workspace:packages/sd-excel"
   dependencies:
-    "@simplysm/sd-core-common": "npm:12.5.23"
+    "@simplysm/sd-core-common": "npm:12.5.24"
     "@types/xml2js": "npm:^0.4.14"
     jszip: "npm:^3.10.1"
     xlsx: "npm:^0.18.5"
@@ -2628,11 +2763,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-orm-common@npm:12.5.23, @simplysm/sd-orm-common@workspace:packages/sd-orm-common":
+"@simplysm/sd-orm-common@npm:12.5.24, @simplysm/sd-orm-common@workspace:packages/sd-orm-common":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-orm-common@workspace:packages/sd-orm-common"
   dependencies:
-    "@simplysm/sd-core-common": "npm:12.5.23"
+    "@simplysm/sd-core-common": "npm:12.5.24"
   languageName: unknown
   linkType: soft
 
@@ -2640,9 +2775,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-orm-node-mssql@workspace:packages/sd-orm-node-mssql"
   dependencies:
-    "@simplysm/sd-core-common": "npm:12.5.23"
-    "@simplysm/sd-core-node": "npm:12.5.23"
-    "@simplysm/sd-orm-common": "npm:12.5.23"
+    "@simplysm/sd-core-common": "npm:12.5.24"
+    "@simplysm/sd-core-node": "npm:12.5.24"
+    "@simplysm/sd-orm-common": "npm:12.5.24"
     tedious: "npm:^18.6.2"
   languageName: unknown
   linkType: soft
@@ -2651,9 +2786,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-orm-node-mysql@workspace:packages/sd-orm-node-mysql"
   dependencies:
-    "@simplysm/sd-core-common": "npm:12.5.23"
-    "@simplysm/sd-core-node": "npm:12.5.23"
-    "@simplysm/sd-orm-common": "npm:12.5.23"
+    "@simplysm/sd-core-common": "npm:12.5.24"
+    "@simplysm/sd-core-node": "npm:12.5.24"
+    "@simplysm/sd-orm-common": "npm:12.5.24"
     "@types/mysql": "npm:^2.15.26"
     mysql: "npm:^2.18.1"
   languageName: unknown
@@ -2663,25 +2798,25 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-orm-node-sqlite@workspace:packages/sd-orm-node-sqlite"
   dependencies:
-    "@simplysm/sd-core-common": "npm:12.5.23"
-    "@simplysm/sd-core-node": "npm:12.5.23"
-    "@simplysm/sd-orm-common": "npm:12.5.23"
+    "@simplysm/sd-core-common": "npm:12.5.24"
+    "@simplysm/sd-core-node": "npm:12.5.24"
+    "@simplysm/sd-orm-common": "npm:12.5.24"
     "@types/sqlite3": "npm:^3.1.11"
     sqlite3: "npm:^5.1.7"
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-orm-node@npm:12.5.23, @simplysm/sd-orm-node@workspace:packages/sd-orm-node":
+"@simplysm/sd-orm-node@npm:12.5.24, @simplysm/sd-orm-node@workspace:packages/sd-orm-node":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-orm-node@workspace:packages/sd-orm-node"
   dependencies:
-    "@simplysm/sd-core-common": "npm:12.5.23"
-    "@simplysm/sd-core-node": "npm:12.5.23"
-    "@simplysm/sd-orm-common": "npm:12.5.23"
+    "@simplysm/sd-core-common": "npm:12.5.24"
+    "@simplysm/sd-core-node": "npm:12.5.24"
+    "@simplysm/sd-orm-common": "npm:12.5.24"
   peerDependencies:
-    "@simplysm/sd-orm-node-mssql": 12.5.23
-    "@simplysm/sd-orm-node-mysql": 12.5.23
-    "@simplysm/sd-orm-node-sqlite": 12.5.23
+    "@simplysm/sd-orm-node-mssql": 12.5.24
+    "@simplysm/sd-orm-node-mysql": 12.5.24
+    "@simplysm/sd-orm-node-sqlite": 12.5.24
   peerDependenciesMeta:
     "@simplysm/sd-orm-node-mssql":
       optional: true
@@ -2692,34 +2827,34 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-service-client@npm:12.5.23, @simplysm/sd-service-client@workspace:packages/sd-service-client":
+"@simplysm/sd-service-client@npm:12.5.24, @simplysm/sd-service-client@workspace:packages/sd-service-client":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-service-client@workspace:packages/sd-service-client"
   dependencies:
-    "@simplysm/sd-core-common": "npm:12.5.23"
-    "@simplysm/sd-orm-common": "npm:12.5.23"
-    "@simplysm/sd-service-common": "npm:12.5.23"
+    "@simplysm/sd-core-common": "npm:12.5.24"
+    "@simplysm/sd-orm-common": "npm:12.5.24"
+    "@simplysm/sd-service-common": "npm:12.5.24"
     isomorphic-ws: "npm:^5.0.0"
     jszip: "npm:^3.10.1"
     ws: "npm:^8.18.0"
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-service-common@npm:12.5.23, @simplysm/sd-service-common@workspace:packages/sd-service-common":
+"@simplysm/sd-service-common@npm:12.5.24, @simplysm/sd-service-common@workspace:packages/sd-service-common":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-service-common@workspace:packages/sd-service-common"
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-service-server@npm:12.5.23, @simplysm/sd-service-server@workspace:packages/sd-service-server":
+"@simplysm/sd-service-server@npm:12.5.24, @simplysm/sd-service-server@workspace:packages/sd-service-server":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-service-server@workspace:packages/sd-service-server"
   dependencies:
-    "@simplysm/sd-core-common": "npm:12.5.23"
-    "@simplysm/sd-core-node": "npm:12.5.23"
-    "@simplysm/sd-orm-common": "npm:12.5.23"
-    "@simplysm/sd-orm-node": "npm:12.5.23"
-    "@simplysm/sd-service-common": "npm:12.5.23"
+    "@simplysm/sd-core-common": "npm:12.5.24"
+    "@simplysm/sd-core-node": "npm:12.5.24"
+    "@simplysm/sd-orm-common": "npm:12.5.24"
+    "@simplysm/sd-orm-node": "npm:12.5.24"
+    "@simplysm/sd-service-common": "npm:12.5.24"
     "@types/connect": "npm:^3.4.38"
     "@types/mime": "npm:^4.0.0"
     "@types/nodemailer": "npm:^6.4.16"
@@ -2734,7 +2869,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-storage@npm:12.5.23, @simplysm/sd-storage@workspace:packages/sd-storage":
+"@simplysm/sd-storage@npm:12.5.24, @simplysm/sd-storage@workspace:packages/sd-storage":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-storage@workspace:packages/sd-storage"
   dependencies:
@@ -2748,7 +2883,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@simplysm/ts-transformer-keys@workspace:packages/ts-transformer-keys"
   dependencies:
-    "@simplysm/sd-core-node": "npm:12.5.23"
+    "@simplysm/sd-core-node": "npm:12.5.24"
     typescript: "npm:~5.5.4"
   languageName: unknown
   linkType: soft
@@ -4549,7 +4684,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chalk@npm:^2.4.2":
+"chalk@npm:^2.4.1, chalk@npm:^2.4.2":
   version: 2.4.2
   resolution: "chalk@npm:2.4.2"
   dependencies:
@@ -4587,7 +4722,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chokidar@npm:>=3.0.0 <4.0.0, chokidar@npm:^3.0.0":
+"chokidar@npm:>=3.0.0 <4.0.0":
   version: 3.6.0
   resolution: "chokidar@npm:3.6.0"
   dependencies:
@@ -5597,6 +5732,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"detect-libc@npm:^1.0.3":
+  version: 1.0.3
+  resolution: "detect-libc@npm:1.0.3"
+  bin:
+    detect-libc: ./bin/detect-libc.js
+  checksum: 10c0/4da0deae9f69e13bc37a0902d78bf7169480004b1fed3c19722d56cff578d16f0e11633b7fbf5fb6249181236c72e90024cbd68f0b9558ae06e281f47326d50d
+  languageName: node
+  linkType: hard
+
 "detect-libc@npm:^2.0.0, detect-libc@npm:^2.0.1":
   version: 2.0.3
   resolution: "detect-libc@npm:2.0.3"
@@ -5894,16 +6038,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"electron@npm:^32.1.2":
-  version: 32.1.2
-  resolution: "electron@npm:32.1.2"
+"electron@npm:^32.2.0":
+  version: 32.2.0
+  resolution: "electron@npm:32.2.0"
   dependencies:
     "@electron/get": "npm:^2.0.0"
     "@types/node": "npm:^20.9.0"
     extract-zip: "npm:^2.0.1"
   bin:
     electron: cli.js
-  checksum: 10c0/9e453e046e024b1454fb212e977d622feba3b6d24ff922a360c06177ec8bcbe58e729e105260285e79c0a203dfcb42d3d795844030bba8681016ab50b7d4bb87
+  checksum: 10c0/28d988a9d05c89e93d70cc790bd53ecc97135cc3fa9efe3617f10b87cdf85ada468d383afd7858bcf8f064aa189ea7f8987e32c7ebaac70bda64e8f9f85621e8
   languageName: node
   linkType: hard
 
@@ -9282,7 +9426,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"micromatch@npm:^4.0.4":
+"micromatch@npm:^4.0.4, micromatch@npm:^4.0.5":
   version: 4.0.8
   resolution: "micromatch@npm:4.0.8"
   dependencies:
@@ -10747,6 +10891,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"postcss-position@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "postcss-position@npm:1.1.0"
+  dependencies:
+    postcss: "npm:^6.0.7"
+  checksum: 10c0/0c1950f2f0be55474e8d65b61f871a212ec3f2d483247bdeb199384a73842250c2f3e71d3d178b0fb09c9a42579be3d94c61edda4e800e0c36f568ad3895fcfb
+  languageName: node
+  linkType: hard
+
 "postcss-selector-parser@npm:^6.0.10, postcss-selector-parser@npm:^6.1.0":
   version: 6.1.2
   resolution: "postcss-selector-parser@npm:6.1.2"
@@ -10761,6 +10914,17 @@ __metadata:
   version: 4.2.0
   resolution: "postcss-value-parser@npm:4.2.0"
   checksum: 10c0/f4142a4f56565f77c1831168e04e3effd9ffcc5aebaf0f538eee4b2d465adfd4b85a44257bb48418202a63806a7da7fe9f56c330aebb3cac898e46b4cbf49161
+  languageName: node
+  linkType: hard
+
+"postcss@npm:^6.0.7":
+  version: 6.0.23
+  resolution: "postcss@npm:6.0.23"
+  dependencies:
+    chalk: "npm:^2.4.1"
+    source-map: "npm:^0.6.1"
+    supports-color: "npm:^5.4.0"
+  checksum: 10c0/45d45184ffbb9d510e7585d9441af9a1a771a56b7553b1d598544e54acdfd31df439a95d5f00a6dc57b85b76d0c8925fec18614b1cc795887c845c3965e32e63
   languageName: node
   linkType: hard
 
@@ -11759,16 +11923,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sass@npm:^1.79.4":
-  version: 1.79.4
-  resolution: "sass@npm:1.79.4"
+"sass@npm:^1.79.5":
+  version: 1.79.5
+  resolution: "sass@npm:1.79.5"
   dependencies:
+    "@parcel/watcher": "npm:^2.4.1"
     chokidar: "npm:^4.0.0"
     immutable: "npm:^4.0.0"
     source-map-js: "npm:>=0.6.2 <2.0.0"
   bin:
     sass: sass.js
-  checksum: 10c0/505ff0d9267d0fb990971e617acfeabf7c060c55d4cef68fe8a4bc693e7ea88ae7d7caeca3975e4b453459ba4a707b6e5b6979fc9395a7e08f0a43ca6aed06b8
+  checksum: 10c0/7331865fd1d0c03e6e180a4fe0e175ac1bf1214f6c77f0d99ad72fbe2ed9ede3fab8a64c0c41471cb8a358a9d11624ec59a49283f9b6070eb99c522b34b814bf
   languageName: node
   linkType: hard
 
@@ -12129,7 +12294,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"source-map@npm:^0.6.0":
+"source-map@npm:^0.6.0, source-map@npm:^0.6.1":
   version: 0.6.1
   resolution: "source-map@npm:0.6.1"
   checksum: 10c0/ab55398007c5e5532957cb0beee2368529618ac0ab372d789806f5718123cc4367d57de3904b4e6a4170eb5a0b0f41373066d02ca0735a0c4d75c7d328d3e011
@@ -12545,7 +12710,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"supports-color@npm:^5.3.0":
+"supports-color@npm:^5.3.0, supports-color@npm:^5.4.0":
   version: 5.5.0
   resolution: "supports-color@npm:5.5.0"
   dependencies:

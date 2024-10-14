@@ -25,8 +25,8 @@ import { injectElementRef } from "../utils/injectElementRef";
           overflow: auto;
           width: 100%;
 
-          height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
-          min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
+          //height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
+          //min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
 
           body.sd-theme-compact &,
           body.sd-theme-modern & {
@@ -112,8 +112,8 @@ import { injectElementRef } from "../utils/injectElementRef";
           > input,
           > ._contents {
             padding: var(--gap-xs) var(--gap-sm);
-            height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
-            min-height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
+            //height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
+            //min-height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
 
             &[type="color"] {
               padding-top: 1px;
@@ -126,8 +126,8 @@ import { injectElementRef } from "../utils/injectElementRef";
           > input,
           > ._contents {
             padding: var(--gap-default) var(--gap-lg);
-            height: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
-            min-height: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
+            //height: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
+            //min-height: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
 
             &[type="color"] {
               padding-top: 1px;
@@ -167,8 +167,8 @@ import { injectElementRef } from "../utils/injectElementRef";
               width: 100%;
               border: none;
               border-radius: 0;
-              height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
-              min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
+              //height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
+              //min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
             }
 
             &[sd-type="month"] {
@@ -195,16 +195,16 @@ import { injectElementRef } from "../utils/injectElementRef";
             &[sd-size="sm"] {
               > input,
               > ._contents {
-                height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
-                min-height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
+                //height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
+                //min-height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
               }
             }
 
             &[sd-size="lg"] {
               > input,
               > ._contents {
-                height: calc((var(--gap-default) * 2) + (var(--font-size-default) * var(--line-height-strip-unit)));
-                min-height: calc((var(--gap-default) * 2) + (var(--font-size-default) * var(--line-height-strip-unit)));
+                //height: calc((var(--gap-default) * 2) + (var(--font-size-default) * var(--line-height-strip-unit)));
+                //min-height: calc((var(--gap-default) * 2) + (var(--font-size-default) * var(--line-height-strip-unit)));
               }
             }
           }
@@ -256,6 +256,13 @@ import { injectElementRef } from "../utils/injectElementRef";
               }
             }
           }
+
+          &[sd-readonly="true"] {
+            > ._contents {
+              display: block;
+              background: white;
+            }
+          }
         }
 
         body.sd-theme-mobile &,
@@ -272,6 +279,13 @@ import { injectElementRef } from "../utils/injectElementRef";
                 color: var(--text-trans-default);
                 border-color: transparent;
               }
+            }
+          }
+
+          &[sd-readonly="true"] {
+            > ._contents {
+              display: block;
+              border-color: transparent !important;
             }
           }
         }
@@ -322,9 +336,11 @@ import { injectElementRef } from "../utils/injectElementRef";
         <span class="tx-trans-light">****</span>
       } @else {
         @if (controlValue()) {
-          <pre>{{ controlValueText() }}</pre>
+          <span>{{ controlValueText() }}</span>
+        } @else if (placeholder()) {
+          <span class="tx-trans-lighter">{{ placeholder() }}</span>
         } @else {
-          <div class="tx-trans-lighter">{{ placeholder() }}</div>
+          <span>&nbsp;</span>
         }
       }
     </div>

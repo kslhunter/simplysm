@@ -182,12 +182,12 @@ import { injectElementRef } from "../utils/injectElementRef";
         }
 
         opacity: 0;
-        transition: opacity 0.1s ease-in-out;
+        transition: opacity var(--animation-duration) ease-in-out;
         pointer-events: none;
 
         > ._dialog {
           transform: translateY(-25px);
-          transition: transform 0.1s ease-in-out;
+          transition: transform var(--animation-duration) ease-in-out;
         }
 
         &[sd-open="true"][sd-init="true"] {

@@ -6,7 +6,7 @@ import { SdBusyContainerControl } from "../controls/SdBusyContainerControl";
 export class SdBusyProvider {
   #appRef = inject(ApplicationRef);
 
-  type = $signal<"spinner" | "bar" | "cube">("spinner");
+  type = $signal<"spinner" | "bar" | "cube">("bar");
   noFade = $signal(false);
 
   globalBusyCount = $signal(0);

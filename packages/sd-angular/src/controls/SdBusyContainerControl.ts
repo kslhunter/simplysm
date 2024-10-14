@@ -82,6 +82,7 @@ import { $computed } from "../utils/$hooks";
 
         &[sd-no-fade="true"] {
           > ._screen {
+            background: rgba(255, 255, 255, 0);
             //backdrop-filter: none !important;
           }
         }

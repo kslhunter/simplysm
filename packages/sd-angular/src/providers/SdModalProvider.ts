@@ -1,4 +1,14 @@
-import { ApplicationRef, createComponent, Directive, inject, Injectable, Injector, input, Type } from "@angular/core";
+import {
+  afterNextRender,
+  ApplicationRef,
+  createComponent,
+  Directive,
+  inject,
+  Injectable,
+  Injector,
+  input,
+  Type,
+} from "@angular/core";
 import { SdModalControl } from "../controls/SdModalControl";
 import { $signal } from "../utils/$hooks";
 import { SdBusyProvider } from "./SdBusyProvider";
@@ -85,11 +95,18 @@ export class SdModalProvider {
       };
       compRef.instance.open = () => {
         modalRef.instance.open.set(true);
-        modalRef.instance.dialogElRef().nativeElement.focus();
+
         if (isFirstOpen) {
           isFirstOpen = false;
           this.#sdBusy.globalBusyCount.update((v) => v - 1);
         }
+
+        afterNextRender(
+          () => {
+            modalRef.instance.dialogElRef().nativeElement.focus();
+          },
+          { injector: compRef.injector },
+        );
       };
 
       this.#appRef.attachView(compRef.hostView);
