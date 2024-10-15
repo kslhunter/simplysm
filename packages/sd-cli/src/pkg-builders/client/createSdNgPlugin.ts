@@ -26,6 +26,8 @@ export function createSdNgPlugin(conf: {
     }
   >();
 
+  // let workerRevDepMap = new Map<TNormPath, Set<TNormPath>>();
+
   let perf: SdCliPerformanceTimer;
   const logger = Logger.get(["simplysm", "sd-cli", "createSdNgPlugin"]);
 
@@ -42,7 +44,7 @@ export function createSdNgPlugin(conf: {
         isDevMode: conf.dev,
         isForBundle: true,
         watchScopePaths: conf.watchScopePaths,
-        processWebWorker: (workerFile, containingFile) => {
+        /*processWebWorker: (workerFile, containingFile) => {
           const fullWorkerPath = path.join(path.dirname(containingFile), workerFile);
           const workerResult = build.esbuild.buildSync({
             ...build.initialOptions,
@@ -55,6 +57,7 @@ export function createSdNgPlugin(conf: {
             entryPoints: [fullWorkerPath],
             supported: undefined,
             plugins: undefined,
+            // plugins: build.initialOptions.plugins?.filter((item) => item.name !== "sd-ng-compile"),
           });
 
           const dependencySet = new Set<TNormPath>();
@@ -74,6 +77,11 @@ export function createSdNgPlugin(conf: {
             );
           }
 
+          for (const dep of dependencySet) {
+            const depCache = workerRevDepMap.getOrCreate(dep, new Set<TNormPath>());
+            depCache.add(PathUtil.norm(containingFile));
+          }
+
           webWorkerResultMap.set(PathUtil.norm(fullWorkerPath), {
             outputFiles: workerResult.outputFiles,
             metafile: workerResult.metafile,
@@ -84,16 +92,10 @@ export function createSdNgPlugin(conf: {
           const workerCodeFile = workerResult.outputFiles.single((file) =>
             /^worker-[A-Z0-9]{8}.[cm]?js$/.test(path.basename(file.path)),
           )!;
-          const workerCodePath = path.relative(
-            build.initialOptions.outdir ?? '',
-            workerCodeFile.path,
-          );
+          const workerCodePath = path.relative(build.initialOptions.outdir ?? "", workerCodeFile.path);
 
-          return {
-            outputFileRelPath: workerCodePath.replaceAll('\\', '/'),
-            dependencySet: dependencySet,
-          };
-        },
+          return workerCodePath.replaceAll("\\", "/");
+        },*/
       });
 
       let tsCompileResult: ISdTsCompilerResult;
@@ -120,6 +122,13 @@ export function createSdNgPlugin(conf: {
         const res = await perf.run("typescript build", async () => {
           for (const modifiedFile of conf.modifiedFileSet) {
             outputContentsCacheMap.delete(modifiedFile);
+
+            /*if (workerRevDepMap.has(modifiedFile)) {
+              for (const workerContainingFile of workerRevDepMap.get(modifiedFile)!) {
+                outputContentsCacheMap.delete(workerContainingFile);
+                conf.modifiedFileSet.add(workerContainingFile);
+              }
+            }*/
           }
 
           tsCompileResult = await tsCompiler.compileAsync(conf.modifiedFileSet);

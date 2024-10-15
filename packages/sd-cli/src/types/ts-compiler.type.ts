@@ -10,13 +10,10 @@ export interface SdTsCompilerOptions {
   isDevMode: boolean;
   watchScopePaths: TNormPath[];
   globalStyleFilePath?: TNormPath;
-  processWebWorker?: (
+  /*processWebWorker?: (
     workerFile: string,
     containingFile: string,
-  ) => {
-    outputFileRelPath: string;
-    dependencySet: Set<TNormPath>;
-  };
+  ) => string;*/
 }
 
 export interface ISdTsCompilerResult {

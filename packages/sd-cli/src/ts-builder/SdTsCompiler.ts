@@ -21,6 +21,7 @@ export class SdTsCompiler {
   readonly #parsedTsconfig: ts.ParsedCommandLine;
   readonly #isForAngular: boolean;
 
+  readonly #workerRevDependencyCacheMap = new Map<TNormPath, Set<TNormPath>>();
   readonly #revDependencyCacheMap = new Map<TNormPath, Set<TNormPath>>();
   readonly #resourceDependencyCacheMap = new Map<TNormPath, Set<TNormPath>>();
   readonly #sourceFileCacheMap = new Map<TNormPath, ts.SourceFile>();
@@ -55,20 +56,14 @@ export class SdTsCompiler {
 
   #perf!: SdCliPerformanceTimer;
 
-  #processWebWorker?: (
-    workerFile: string,
-    containingFile: string,
-  ) => {
-    outputFileRelPath: string;
-    dependencySet: Set<TNormPath>;
-  };
+  // #processWebWorker?: (workerFile: string, containingFile: string) => string;
 
   constructor(opt: SdTsCompilerOptions) {
     this.#pkgPath = opt.pkgPath;
     this.#globalStyleFilePath = opt.globalStyleFilePath;
     this.#isForBundle = opt.isForBundle;
     this.#watchScopePaths = opt.watchScopePaths;
-    this.#processWebWorker = opt.processWebWorker;
+    // this.#processWebWorker = opt.processWebWorker;
 
     this.#debug("초기화...");
 
@@ -217,8 +212,17 @@ export class SdTsCompiler {
   async compileAsync(modifiedFileSet: Set<TNormPath>): Promise<ISdTsCompilerResult> {
     this.#perf = new SdCliPerformanceTimer("esbuild compile");
 
-    this.#modifiedFileSet = new Set(modifiedFileSet);
+    this.#modifiedFileSet = new Set<TNormPath>();
     this.#affectedFileSet = new Set<TNormPath>();
+
+    for (const mod of modifiedFileSet) {
+      const workerImporters = this.#workerRevDependencyCacheMap.get(mod);
+      if (workerImporters) {
+        this.#modifiedFileSet.adds(...workerImporters);
+      } else {
+        this.#modifiedFileSet.add(mod);
+      }
+    }
 
     const prepareResult = await this.#prepareAsync();
 
@@ -527,25 +531,13 @@ export class SdTsCompiler {
           ...this.#ngProgram.compiler.prepareEmit().transformers,
         };
         (transformers.before ??= []).push(replaceBootstrap(() => this.#program!.getTypeChecker()));
-        if (this.#processWebWorker) {
-          (transformers.before ??= []).push(
-            createWorkerTransformer((file, importer) => {
-              const r = this.#processWebWorker!(file, importer);
-
-              for (const dep of r.dependencySet) {
-                const depCache = this.#revDependencyCacheMap.getOrCreate(dep, new Set<TNormPath>());
-                depCache.add(PathUtil.norm(importer));
-              }
-
-              this.#watchFileSet.adds(
-                PathUtil.norm(path.dirname(importer), file),
-                ...Array.from(r.dependencySet),
-              );
-
-              return r.outputFileRelPath;
-            }),
-          );
-        }
+        (transformers.before ??= []).push(
+          createWorkerTransformer((file, importer) => {
+            const fullPath = path.resolve(path.dirname(importer), file);
+            const relPath = path.relative(path.resolve(this.#pkgPath, "src"), fullPath);
+            return relPath.replace(/\.ts$/, "").replaceAll("\\", "/") + ".js";
+          }),
+        );
       }
       // (transformers.before ??= []).push(transformKeys(this.#program));
 
@@ -553,7 +545,7 @@ export class SdTsCompiler {
 
       // affected에 새로 추가된 파일은 포함되지 않는 현상이 있어 sourceFileSet으로 바꿈
       // 비교해보니, 딱히 getSourceFiles라서 더 느려지는것 같지는 않음
-      // 그래도 affected로 다시 테스트
+      // 그래도 affected로 다시 테스트 (조금이라도 더 빠르게)
       for (const affectedFile of this.#affectedFileSet) {
         if (this.#emittedFilesCacheMap.has(affectedFile)) {
           continue;

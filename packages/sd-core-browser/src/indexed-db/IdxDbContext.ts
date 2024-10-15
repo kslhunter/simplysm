@@ -12,7 +12,7 @@ export class IdxDbContext {
 
   async connectAsync<R>(fn: () => Promise<R>): Promise<R> {
     return await new Promise<R>((resolve, reject) => {
-      const req = window.indexedDB.open(this.dbName, this._version);
+      const req = indexedDB.open(this.dbName, this._version);
 
       req.onerror = () => {
         reject(req.error);

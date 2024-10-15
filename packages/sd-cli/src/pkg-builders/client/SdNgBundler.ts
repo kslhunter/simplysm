@@ -349,9 +349,9 @@ export class SdNgBundler {
   }
 
   private _getAppContext() {
-    // const workerEntries = FsUtil.glob(path.resolve(this._opt.pkgPath, "src/workers/*.ts")).toObject(
-    //   (p) => path.basename(p, path.extname(p)),
-    // );
+    const workerEntries = FsUtil.glob(path.resolve(this._opt.pkgPath, "src/workers/*.ts")).toObject(
+      (p) => "workers/" + path.basename(p, path.extname(p)),
+    );
 
     return new SdNgBundlerContext(this._opt.pkgPath, {
       absWorkingDir: this._opt.pkgPath,
@@ -393,7 +393,7 @@ export class SdNgBundler {
       },
       platform: "browser",
       mainFields: ["es2020", "es2015", "browser", "module", "main"],
-      entryNames: "[name]",
+      entryNames: "[dir]/[name]",
       entryPoints: {
         main: this.#mainFilePath,
         // polyfills: 'angular:polyfills',
@@ -406,7 +406,7 @@ export class SdNgBundler {
               ),
             }
           : {}),
-        // ...workerEntries,
+        ...workerEntries,
       },
       external: ["electron"],
       target: this.#browserTarget,
