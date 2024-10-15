@@ -21,7 +21,7 @@ export class SdTsCompiler {
   readonly #parsedTsconfig: ts.ParsedCommandLine;
   readonly #isForAngular: boolean;
 
-  readonly #workerRevDependencyCacheMap = new Map<TNormPath, Set<TNormPath>>();
+  // readonly #workerRevDependencyCacheMap = new Map<TNormPath, Set<TNormPath>>();
   readonly #revDependencyCacheMap = new Map<TNormPath, Set<TNormPath>>();
   readonly #resourceDependencyCacheMap = new Map<TNormPath, Set<TNormPath>>();
   readonly #sourceFileCacheMap = new Map<TNormPath, ts.SourceFile>();
@@ -212,17 +212,17 @@ export class SdTsCompiler {
   async compileAsync(modifiedFileSet: Set<TNormPath>): Promise<ISdTsCompilerResult> {
     this.#perf = new SdCliPerformanceTimer("esbuild compile");
 
-    this.#modifiedFileSet = new Set<TNormPath>();
+    this.#modifiedFileSet = new Set(modifiedFileSet);
     this.#affectedFileSet = new Set<TNormPath>();
 
-    for (const mod of modifiedFileSet) {
+    /*for (const mod of modifiedFileSet) {
       const workerImporters = this.#workerRevDependencyCacheMap.get(mod);
       if (workerImporters) {
         this.#modifiedFileSet.adds(...workerImporters);
       } else {
         this.#modifiedFileSet.add(mod);
       }
-    }
+    }*/
 
     const prepareResult = await this.#prepareAsync();
 

@@ -39,12 +39,15 @@ export class SdCliCordova {
         process.cwd(),
       );
 
+      // volta
+      await this._execAsync(`volta pin node@18`, cordovaPath);
+
       // package.json 수정
-      const npmConfig = FsUtil.readJson(path.resolve(cordovaPath, "package.json"));
+      /*const npmConfig = FsUtil.readJson(path.resolve(cordovaPath, "package.json"));
       npmConfig.volta = {
         node: process.version.substring(1)
       };
-      FsUtil.writeJson(path.resolve(cordovaPath, "package.json"), npmConfig);
+      FsUtil.writeJson(path.resolve(cordovaPath, "package.json"), npmConfig);*/
     }
 
     // platforms 폴더 혹시 없으면 생성
