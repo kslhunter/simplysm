@@ -16,6 +16,16 @@ export function createSdNgPlugin(conf: {
   result: ISdCliNgPluginResultCache;
   watchScopePaths: TNormPath[];
 }): esbuild.Plugin {
+  let webWorkerResultMap = new Map<
+    TNormPath,
+    {
+      outputFiles: esbuild.OutputFile[];
+      metafile?: esbuild.Metafile;
+      errors?: esbuild.Message[];
+      warnings?: esbuild.Message[];
+    }
+  >();
+
   let perf: SdCliPerformanceTimer;
   const logger = Logger.get(["simplysm", "sd-cli", "createSdNgPlugin"]);
 
@@ -32,6 +42,58 @@ export function createSdNgPlugin(conf: {
         isDevMode: conf.dev,
         isForBundle: true,
         watchScopePaths: conf.watchScopePaths,
+        processWebWorker: (workerFile, containingFile) => {
+          const fullWorkerPath = path.join(path.dirname(containingFile), workerFile);
+          const workerResult = build.esbuild.buildSync({
+            ...build.initialOptions,
+            platform: "browser",
+            write: false,
+            bundle: true,
+            metafile: true,
+            format: "esm",
+            entryNames: "worker-[hash]",
+            entryPoints: [fullWorkerPath],
+            supported: undefined,
+            plugins: undefined,
+          });
+
+          const dependencySet = new Set<TNormPath>();
+
+          if (workerResult.errors.length > 0) {
+            dependencySet.adds(
+              ...workerResult.errors
+                .map((error) => error.location?.file)
+                .filterExists()
+                .map((file) => PathUtil.norm(build.initialOptions.absWorkingDir ?? "", file)),
+            );
+          } else {
+            dependencySet.adds(
+              ...Object.keys(workerResult.metafile.inputs).map((input) =>
+                PathUtil.norm(build.initialOptions.absWorkingDir ?? "", input),
+              ),
+            );
+          }
+
+          webWorkerResultMap.set(PathUtil.norm(fullWorkerPath), {
+            outputFiles: workerResult.outputFiles,
+            metafile: workerResult.metafile,
+            warnings: workerResult.warnings,
+            errors: workerResult.errors,
+          });
+
+          const workerCodeFile = workerResult.outputFiles.single((file) =>
+            /^worker-[A-Z0-9]{8}.[cm]?js$/.test(path.basename(file.path)),
+          )!;
+          const workerCodePath = path.relative(
+            build.initialOptions.outdir ?? '',
+            workerCodeFile.path,
+          );
+
+          return {
+            outputFileRelPath: workerCodePath.replaceAll('\\', '/'),
+            dependencySet: dependencySet,
+          };
+        },
       });
 
       let tsCompileResult: ISdTsCompilerResult;
@@ -76,10 +138,16 @@ export function createSdNgPlugin(conf: {
               ...Array.from(tsCompileResult.stylesheetBundlingResultMap.values())
                 .flatMap((item) => item.errors)
                 .filterExists(),
+              ...Array.from(webWorkerResultMap.values())
+                .flatMap((item) => item.errors)
+                .filterExists(),
             ].filterExists(),
             warnings: [
               ...tsEsbuildResult.warnings,
               ...Array.from(tsCompileResult.stylesheetBundlingResultMap.values())
+                .flatMap((item) => item.warnings)
+                .filterExists(),
+              ...Array.from(webWorkerResultMap.values())
                 .flatMap((item) => item.warnings)
                 .filterExists(),
             ],
@@ -159,7 +227,17 @@ export function createSdNgPlugin(conf: {
         debug(perf.toString());
 
         for (const { outputFiles, metafile } of tsCompileResult.stylesheetBundlingResultMap.values()) {
-          result.outputFiles = result.outputFiles ?? [];
+          result.outputFiles ??= [];
+          result.outputFiles.push(...outputFiles);
+
+          if (result.metafile && metafile) {
+            result.metafile.inputs = { ...result.metafile.inputs, ...metafile.inputs };
+            result.metafile.outputs = { ...result.metafile.outputs, ...metafile.outputs };
+          }
+        }
+
+        for (const { outputFiles, metafile } of webWorkerResultMap.values()) {
+          result.outputFiles ??= [];
           result.outputFiles.push(...outputFiles);
 
           if (result.metafile && metafile) {

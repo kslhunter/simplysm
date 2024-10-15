@@ -13,6 +13,7 @@ import { SdCliConvertMessageUtil } from "../utils/SdCliConvertMessageUtil";
 import { ISdTsCompilerResult, IStylesheetBundlingResult, SdTsCompilerOptions } from "../types/ts-compiler.type";
 import { ISdBuildMessage } from "../types/build.type";
 import { TSdLintWorkerType } from "../types/workers.type";
+import { createWorkerTransformer } from "@angular/build/src/tools/angular/transformers/web-worker-transformer";
 
 export class SdTsCompiler {
   readonly #logger = Logger.get(["simplysm", "sd-cli", "SdTsCompiler"]);
@@ -54,11 +55,20 @@ export class SdTsCompiler {
 
   #perf!: SdCliPerformanceTimer;
 
+  #processWebWorker?: (
+    workerFile: string,
+    containingFile: string,
+  ) => {
+    outputFileRelPath: string;
+    dependencySet: Set<TNormPath>;
+  };
+
   constructor(opt: SdTsCompilerOptions) {
     this.#pkgPath = opt.pkgPath;
     this.#globalStyleFilePath = opt.globalStyleFilePath;
     this.#isForBundle = opt.isForBundle;
     this.#watchScopePaths = opt.watchScopePaths;
+    this.#processWebWorker = opt.processWebWorker;
 
     this.#debug("초기화...");
 
@@ -517,6 +527,25 @@ export class SdTsCompiler {
           ...this.#ngProgram.compiler.prepareEmit().transformers,
         };
         (transformers.before ??= []).push(replaceBootstrap(() => this.#program!.getTypeChecker()));
+        if (this.#processWebWorker) {
+          (transformers.before ??= []).push(
+            createWorkerTransformer((file, importer) => {
+              const r = this.#processWebWorker!(file, importer);
+
+              for (const dep of r.dependencySet) {
+                const depCache = this.#revDependencyCacheMap.getOrCreate(dep, new Set<TNormPath>());
+                depCache.add(PathUtil.norm(importer));
+              }
+
+              this.#watchFileSet.adds(
+                PathUtil.norm(path.dirname(importer), file),
+                ...Array.from(r.dependencySet),
+              );
+
+              return r.outputFileRelPath;
+            }),
+          );
+        }
       }
       // (transformers.before ??= []).push(transformKeys(this.#program));
 

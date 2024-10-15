@@ -38,6 +38,13 @@ export class SdCliCordova {
         `${BIN_PATH} create "${cordovaPath}" "${this._opt.config.appId}" "${this._opt.config.appName}"`,
         process.cwd(),
       );
+
+      // package.json 수정
+      const npmConfig = FsUtil.readJson(path.resolve(cordovaPath, "package.json"));
+      npmConfig.volta = {
+        node: process.version.substring(1)
+      };
+      FsUtil.writeJson(path.resolve(cordovaPath, "package.json"), npmConfig);
     }
 
     // platforms 폴더 혹시 없으면 생성

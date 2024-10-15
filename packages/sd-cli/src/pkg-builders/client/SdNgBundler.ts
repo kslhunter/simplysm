@@ -349,9 +349,9 @@ export class SdNgBundler {
   }
 
   private _getAppContext() {
-    const workerEntries = FsUtil.glob(path.resolve(this._opt.pkgPath, "src/workers/*.ts")).toObject(
-      (p) => "worker/" + path.basename(p, path.extname(p)),
-    );
+    // const workerEntries = FsUtil.glob(path.resolve(this._opt.pkgPath, "src/workers/*.ts")).toObject(
+    //   (p) => path.basename(p, path.extname(p)),
+    // );
 
     return new SdNgBundlerContext(this._opt.pkgPath, {
       absWorkingDir: this._opt.pkgPath,
@@ -406,7 +406,7 @@ export class SdNgBundler {
               ),
             }
           : {}),
-        ...workerEntries,
+        // ...workerEntries,
       },
       external: ["electron"],
       target: this.#browserTarget,
