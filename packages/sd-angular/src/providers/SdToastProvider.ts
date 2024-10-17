@@ -6,7 +6,7 @@ import {
   inject,
   Injectable,
   input,
-  Type
+  Type,
 } from "@angular/core";
 import { SdToastContainerControl } from "../controls/SdToastContainerControl";
 import { SdSystemLogProvider } from "./SdSystemLogProvider";
@@ -141,6 +141,11 @@ export class SdToastProvider {
     const toastEl = toastRef.location.nativeElement as HTMLElement;
 
     const containerEl = this.containerRef.location.nativeElement as HTMLElement;
+    if (this.overlap) {
+      for (const child of Array.from(containerEl.children)) {
+        containerEl.removeChild(child);
+      }
+    }
     containerEl.appendChild(toastEl);
     this.#appRef.attachView(toastRef.hostView);
 

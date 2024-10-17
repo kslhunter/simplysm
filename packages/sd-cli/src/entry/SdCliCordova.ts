@@ -40,7 +40,7 @@ export class SdCliCordova {
       );
 
       // volta
-      await this._execAsync(`volta pin node@18`, cordovaPath);
+      // await this._execAsync(`volta pin node@18`, cordovaPath);
 
       // package.json 수정
       /*const npmConfig = FsUtil.readJson(path.resolve(cordovaPath, "package.json"));
@@ -80,41 +80,37 @@ export class SdCliCordova {
     const pluginsFetch = FsUtil.exists(path.resolve(cordovaPath, "plugins/fetch.json"))
       ? FsUtil.readJson(path.resolve(cordovaPath, "plugins/fetch.json"))
       : undefined;
-    const alreadyPluginIds =
-      pluginsFetch != undefined
-        ? Object.keys(pluginsFetch)
-        : // Object.values(pluginsFetch).map((item: any) => item.source.id ?? item.source.url ?? item.source.path)
-          [];
-    const usePlugins = ["cordova-plugin-ionic-webview", ...(this._opt.config.plugins ?? [])].distinct();
 
-    for (const alreadyPluginId of alreadyPluginIds) {
+    const alreadyPlugins: { name: string; id: string }[] = [];
+
+    if (pluginsFetch != null) {
+      for (const key of Object.keys(pluginsFetch)) {
+        alreadyPlugins.push({
+          name: key,
+          id: pluginsFetch[key].source.id,
+        });
+      }
+    }
+
+    const usePlugins = (this._opt.config.plugins ?? []).distinct();
+
+    for (const alreadyPlugin of alreadyPlugins) {
       let hasPlugin = false;
       for (const usePlugin of usePlugins) {
-        if (alreadyPluginId === usePlugin) {
+        if (alreadyPlugin.name === usePlugin || alreadyPlugin.id === usePlugin) {
           hasPlugin = true;
           break;
         }
-        /*if (
-          (usePlugin.includes("@") && alreadyPluginId === usePlugin) ||
-          (!usePlugin.includes("@") && alreadyPluginId.replace(/@.*$/, "") === usePlugin)
-        ) {
-          hasPlugin = true;
-          break;
-        }*/
       }
 
       if (!hasPlugin) {
-        await this._execAsync(`${BIN_PATH} plugin remove ${alreadyPluginId}`, cordovaPath);
+        await this._execAsync(`${BIN_PATH} plugin remove ${alreadyPlugin.name}`, cordovaPath);
       }
     }
 
     // 미설치 플러그인들 설치
     for (const usePlugin of usePlugins) {
-      if (
-        (usePlugin.includes("@") && !alreadyPluginIds.includes(usePlugin)) ||
-        (!usePlugin.includes("@") &&
-          !alreadyPluginIds.map((alreadyPluginId) => alreadyPluginId.replace(/@.*$/, "")).includes(usePlugin))
-      ) {
+      if (!alreadyPlugins.some((item) => usePlugin === item.id || usePlugin === item.name)) {
         await this._execAsync(`${BIN_PATH} plugin add ${usePlugin}`, cordovaPath);
       }
     }
@@ -297,6 +293,16 @@ export class SdCliCordova {
     // CONFIG: 파일 새로 쓰기
     const configResultContent = new xml2js.Builder().buildObject(configXml);
     FsUtil.writeFile(configFilePath, configResultContent);
+
+    //android.json의 undefined 문제 해결
+    /*const androidJsonFilePath = path.resolve(cordovaPath, "platforms/android/android.json");
+    if (FsUtil.exists(androidJsonFilePath)) {
+      const androidConf = FsUtil.readJson(androidJsonFilePath);
+      if (androidConf.config_munge.files["undefined"] != null) {
+        delete androidConf.config_munge.files["undefined"];
+      }
+      FsUtil.writeJson(androidJsonFilePath, androidConf, { space: 2 });
+    }*/
 
     // 각 플랫폼 www 준비
     await this._execAsync(`${BIN_PATH} prepare`, cordovaPath);

@@ -312,6 +312,29 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@awesome-cordova-plugins/core@npm:^6.9.0":
+  version: 6.9.0
+  resolution: "@awesome-cordova-plugins/core@npm:6.9.0"
+  dependencies:
+    "@types/cordova": "npm:latest"
+  peerDependencies:
+    rxjs: ^5.5.0 || ^6.5.0 || ^7.3.0
+  checksum: 10c0/2def83c7ec878d6bee33ed009534603efa348f850f6339b05f17d00bbd1db358965cf913c206331b9030c1470918b9f40488035ad9a0b9a0a0b84ad1f50cbe54
+  languageName: node
+  linkType: hard
+
+"@awesome-cordova-plugins/file@npm:^6.9.0":
+  version: 6.9.0
+  resolution: "@awesome-cordova-plugins/file@npm:6.9.0"
+  dependencies:
+    "@types/cordova": "npm:latest"
+  peerDependencies:
+    "@awesome-cordova-plugins/core": ^6.0.1
+    rxjs: ^5.5.0 || ^6.5.0 || ^7.3.0
+  checksum: 10c0/f6e8c4e8a0a7b3be2b8c2d75ea209b36a70b6d24fc5e6f3c6cca05d8eb0a06f4c910cc5965ede118305627ac7f5f3daecb6078c34b0d6d0aa99596c5aee1c66c
+  languageName: node
+  linkType: hard
+
 "@azure/abort-controller@npm:^1.0.0":
   version: 1.1.0
   resolution: "@azure/abort-controller@npm:1.1.0"
@@ -2629,10 +2652,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@simplysm/cordova-util@workspace:packages/cordova-util"
   dependencies:
+    "@awesome-cordova-plugins/core": "npm:^6.9.0"
+    "@awesome-cordova-plugins/file": "npm:^6.9.0"
     "@simplysm/sd-core-common": "npm:12.5.27"
     "@simplysm/sd-service-client": "npm:12.5.27"
     "@types/cordova": "npm:^11.0.3"
-    cordova-plugin-file: "npm:^8.1.0"
     jszip: "npm:^3.10.1"
   languageName: unknown
   linkType: soft
@@ -2955,7 +2979,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/cordova@npm:^11.0.3":
+"@types/cordova@npm:^11.0.3, @types/cordova@npm:latest":
   version: 11.0.3
   resolution: "@types/cordova@npm:11.0.3"
   checksum: 10c0/18add442a8178d1f1909e201bace6e2f5b25980d5f233ec46be4bf5ce74d69858651661558d4b2de3cee32ee892c33e1626d6d50947dd3c5158c1bb69d517b02
@@ -5244,13 +5268,6 @@ __metadata:
     stringify-package: "npm:^1.0.1"
     write-file-atomic: "npm:^5.0.0"
   checksum: 10c0/d3985358833f360c020eadc4bcdee368389e76ae4df51c2ad8edd1f0e137ab29ee4ea78a545a018537cc4891114b046b0e7703141c3cdb9f1d15f4b838466d99
-  languageName: node
-  linkType: hard
-
-"cordova-plugin-file@npm:^8.1.0":
-  version: 8.1.0
-  resolution: "cordova-plugin-file@npm:8.1.0"
-  checksum: 10c0/3c2a0a21352e7eca835cf29350151b17ae5d51aac3703c22e3343b9e1bef3346b014de26671bf5db7b67d96253eafc83e8d7a55013177bf77254aa29941bebb8
   languageName: node
   linkType: hard
 

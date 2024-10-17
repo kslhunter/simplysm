@@ -1,5 +1,6 @@
 import { IdxStore } from "./IdxStore";
 
+// TODO: WORKER를 위해 IdxDb 패키지 분리
 export class IdxDbContext {
   idxDb?: IDBDatabase;
   idxTrans?: IDBTransaction;

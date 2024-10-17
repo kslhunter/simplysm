@@ -1,15 +1,16 @@
-import {Type} from "@simplysm/sd-core-common";
-import {IdxDbContext} from "./IdxDbContext";
-import {IdxDbStoreDefUtil} from "./IdxDbStoreDefUtil";
+import { Type } from "@simplysm/sd-core-common";
+import { IdxDbContext } from "./IdxDbContext";
+import { IdxDbStoreDefUtil } from "./IdxDbStoreDefUtil";
 
 export class IdxStore<T extends object> {
   get def() {
     return IdxDbStoreDefUtil.get(this._type);
   }
 
-  constructor(private _db: IdxDbContext,
-              private _type: Type<T>) {
-  }
+  constructor(
+    private _db: IdxDbContext,
+    private _type: Type<T>,
+  ) {}
 
   async get(query: IDBValidKey | IDBKeyRange, indexName?: string): Promise<T | undefined> {
     if (!this._db.idxDb) throw new Error(`${this._db.dbName}(IndexedDB)가 연결되어있지 않습니다.`);
@@ -66,8 +67,10 @@ export class IdxStore<T extends object> {
     if (!this._db.idxDb) throw new Error(`${this._db.dbName}(IndexedDB)가 연결되어있지 않습니다.`);
     if (!this._db.idxTrans) throw new Error(`${this._db.dbName}(IndexedDB)의 transaction 설정이 되어있지 않습니다.`);
 
+    await Promise.all(items.map((item) => this.add(item)));
+
     //-- "success" 이벤트를 안받아야 빨라짐.
-    return await new Promise<void>((resolve, reject) => {
+    /*return await new Promise<void>((resolve, reject) => {
       let lastReq: IDBRequest | undefined;
       for (const item of items) {
         const req = this._db.idxTrans!.objectStore(this.def.name).add(item);
@@ -87,7 +90,7 @@ export class IdxStore<T extends object> {
         resolve();
       }
       resolve();
-    });
+    });*/
   }
 
   async put(data: T): Promise<void> {
@@ -126,8 +129,7 @@ export class IdxStore<T extends object> {
         lastReq.onsuccess = () => {
           resolve();
         };
-      }
-      else {
+      } else {
         resolve();
       }
     });
