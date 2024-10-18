@@ -140,9 +140,9 @@ export class SdNgBundler {
     const assetFiles: { source: string; destination: string }[] = [];
 
     //-- cordova empty
-    if (this._opt.builderType === "cordova" && this._opt.cordovaConfig?.plugins) {
+    /*if (this._opt.builderType === "cordova" && this._opt.cordovaConfig?.plugins) {
       outputFiles.push(createOutputFile("cordova-empty.js", "export default {};", BuildOutputFileType.Root));
-    }
+    }*/
 
     this.#debug(`create index.html...`);
     await perf.run("create index.html", async () => {
@@ -440,7 +440,7 @@ export class SdNgBundler {
       },
       inject: [PathUtil.posix(fileURLToPath(import.meta.resolve("node-stdlib-browser/helpers/esbuild/shim")))],
       plugins: [
-        ...(this._opt.builderType === "cordova" && this._opt.cordovaConfig?.plugins
+        /*...(this._opt.builderType === "cordova" && this._opt.cordovaConfig?.plugins
           ? [
               {
                 name: "cordova:plugin-empty",
@@ -454,7 +454,7 @@ export class SdNgBundler {
                 },
               },
             ]
-          : []),
+          : []),*/
         // createVirtualModulePlugin({
         //   namespace: "angular:polyfills",
         //   loadContent: () => ({

@@ -1,5 +1,13 @@
 export abstract class SdUsbStorage {
-  static async getDevices() {
+  static async getDevices(): Promise<
+    {
+      deviceName: string;
+      manufacturerName: string;
+      productName: string;
+      vendorId: number;
+      productId: number;
+    }[]
+  > {
     return await new Promise((resolve, reject) => {
       cordova.exec(
         (res) => {
@@ -13,7 +21,7 @@ export abstract class SdUsbStorage {
       );
     });
   }
-  static async requestPermission(filter) {
+  static async requestPermission(filter: { vendorId: number; productId: number }): Promise<boolean> {
     return await new Promise((resolve, reject) => {
       cordova.exec(
         (res) => {
@@ -28,7 +36,7 @@ export abstract class SdUsbStorage {
       );
     });
   }
-  static async hasPermission(filter) {
+  static async hasPermission(filter: { vendorId: number; productId: number }): Promise<boolean> {
     return await new Promise((resolve, reject) => {
       cordova.exec(
         (res) => {
@@ -43,7 +51,7 @@ export abstract class SdUsbStorage {
       );
     });
   }
-  static async readdir(filter, dirPath) {
+  static async readdir(filter: { vendorId: number; productId: number }, dirPath: string): Promise<string[]> {
     return await new Promise((resolve, reject) => {
       cordova.exec(
         (res) => {
@@ -58,7 +66,10 @@ export abstract class SdUsbStorage {
       );
     });
   }
-  static async read(filter, filePath) {
+  static async read(
+    filter: { vendorId: number; productId: number },
+    filePath: string,
+  ): Promise<ArrayBuffer | undefined> {
     return await new Promise((resolve, reject) => {
       cordova.exec(
         (res) => {

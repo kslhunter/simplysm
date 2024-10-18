@@ -3,6 +3,8 @@ import { JsonConvert, StringUtil } from "@simplysm/sd-core-common";
 import { File } from "@awesome-cordova-plugins/file";
 
 export class CordovaAppStorage {
+  static raw = File;
+
   #rootDirectoryUrl: string;
 
   constructor(rootDirectory?: string) {
@@ -18,6 +20,7 @@ export class CordovaAppStorage {
     const fullUrl = this.getFullUrl(filePath);
     const dirUrl = path.dirname(fullUrl);
     const fileName = path.basename(fullUrl);
+    console.log(fullUrl);
 
     return Buffer.from(await File.readAsArrayBuffer(dirUrl, fileName));
   }

@@ -70,11 +70,11 @@ export class SdCliCordova {
     }
 
     // 설치 미빌드 플랫폼 삭제
-    for (const alreadyPlatform of alreadyPlatforms) {
+    /*for (const alreadyPlatform of alreadyPlatforms) {
       if (!this._platforms.includes(alreadyPlatform)) {
         await this._execAsync(`${BIN_PATH} platform remove ${alreadyPlatform}`, cordovaPath);
       }
-    }
+    }*/
 
     // 설치된 미사용 플러그인 삭제
     const pluginsFetch = FsUtil.exists(path.resolve(cordovaPath, "plugins/fetch.json"))
@@ -94,7 +94,8 @@ export class SdCliCordova {
 
     const usePlugins = (this._opt.config.plugins ?? []).distinct();
 
-    for (const alreadyPlugin of alreadyPlugins) {
+    // TODO: Dependency에 의해 설치된 플러그인 삭제되면 안됨 android.json의 installed_plugin으로 변경하면 될지도?
+    /*for (const alreadyPlugin of alreadyPlugins) {
       let hasPlugin = false;
       for (const usePlugin of usePlugins) {
         if (alreadyPlugin.name === usePlugin || alreadyPlugin.id === usePlugin) {
@@ -106,7 +107,7 @@ export class SdCliCordova {
       if (!hasPlugin) {
         await this._execAsync(`${BIN_PATH} plugin remove ${alreadyPlugin.name}`, cordovaPath);
       }
-    }
+    }*/
 
     // 미설치 플러그인들 설치
     for (const usePlugin of usePlugins) {

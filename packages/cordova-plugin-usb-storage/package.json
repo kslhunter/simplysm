@@ -10,7 +10,8 @@
   },
   "license": "MIT",
   "type": "module",
-  "types": "./types/index.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "cordova": {
     "id": "@simplysm/cordova-plugin-usb-storage",
     "platforms": [
