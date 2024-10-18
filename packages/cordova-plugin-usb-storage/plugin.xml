@@ -4,11 +4,11 @@
   <description>Cordova USB Storage Plugin</description>
   <license>Apache 2.0</license>
   <keywords>cordova,plugin,usb,storage</keywords>
-  <js-module src="www/SdUsbStorage.js" name="SdUsbStorage">
+  <!--<js-module src="dist/SdUsbStorage.js" name="SdUsbStorage">
     <clobbers target="SdUsbStorage"/>
-  </js-module>
+  </js-module>-->
   <platform name="android">
-    <source-file src="src/android/SdUsbStorage.java" target-dir="src/kr/co/simplysm/cordova"/>
+    <source-file src="android/SdUsbStorage.java" target-dir="src/kr/co/simplysm/cordova"/>
     <config-file target="res/xml/config.xml" parent="/*">
       <feature name="SdUsbStorage">
         <param name="android-package" value="kr.co.simplysm.cordova.SdUsbStorage"/>

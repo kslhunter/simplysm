@@ -2,7 +2,6 @@ import * as path from "path";
 import { JsonConvert, StringUtil } from "@simplysm/sd-core-common";
 import { File } from "@awesome-cordova-plugins/file";
 
-// TODO: Storage 와 AutoUpdate의 패키지 분리
 export class CordovaAppStorage {
   #rootDirectoryUrl: string;
 

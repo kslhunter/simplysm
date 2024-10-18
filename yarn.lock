@@ -2642,22 +2642,39 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@simplysm/cordova-plugin-usb-storage@workspace:packages/cordova-plugin-usb-storage":
+"@simplysm-types/cordova-plugin-ionic-webview@npm:12.5.27, @simplysm-types/cordova-plugin-ionic-webview@workspace:types/cordova-plugin-ionic-webview":
   version: 0.0.0-use.local
-  resolution: "@simplysm/cordova-plugin-usb-storage@workspace:packages/cordova-plugin-usb-storage"
+  resolution: "@simplysm-types/cordova-plugin-ionic-webview@workspace:types/cordova-plugin-ionic-webview"
   languageName: unknown
   linkType: soft
 
-"@simplysm/cordova-util@workspace:packages/cordova-util":
+"@simplysm/cordova-plugin-app-storage@npm:12.5.27, @simplysm/cordova-plugin-app-storage@workspace:packages/cordova-plugin-app-storage":
   version: 0.0.0-use.local
-  resolution: "@simplysm/cordova-util@workspace:packages/cordova-util"
+  resolution: "@simplysm/cordova-plugin-app-storage@workspace:packages/cordova-plugin-app-storage"
   dependencies:
     "@awesome-cordova-plugins/core": "npm:^6.9.0"
     "@awesome-cordova-plugins/file": "npm:^6.9.0"
     "@simplysm/sd-core-common": "npm:12.5.27"
-    "@simplysm/sd-service-client": "npm:12.5.27"
+    rxjs: "npm:^7.8.1"
+  languageName: unknown
+  linkType: soft
+
+"@simplysm/cordova-plugin-auto-update@workspace:packages/cordova-plugin-auto-update":
+  version: 0.0.0-use.local
+  resolution: "@simplysm/cordova-plugin-auto-update@workspace:packages/cordova-plugin-auto-update"
+  dependencies:
+    "@simplysm-types/cordova-plugin-ionic-webview": "npm:12.5.27"
+    "@simplysm/cordova-plugin-app-storage": "npm:12.5.27"
+    "@simplysm/sd-core-common": "npm:12.5.27"
+    rxjs: "npm:^7.8.1"
+  languageName: unknown
+  linkType: soft
+
+"@simplysm/cordova-plugin-usb-storage@workspace:packages/cordova-plugin-usb-storage":
+  version: 0.0.0-use.local
+  resolution: "@simplysm/cordova-plugin-usb-storage@workspace:packages/cordova-plugin-usb-storage"
+  dependencies:
     "@types/cordova": "npm:^11.0.3"
-    jszip: "npm:^3.10.1"
   languageName: unknown
   linkType: soft
 

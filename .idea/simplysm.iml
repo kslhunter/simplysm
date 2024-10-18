@@ -27,6 +27,9 @@
       <excludeFolder url="file://$MODULE_DIR$/packages/ts-transformer-keys/dist" />
       <excludeFolder url="file://$MODULE_DIR$/.idea" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-preact/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/cordova-plugin-app-storage/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/cordova-plugin-auto-update/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/cordova-plugin-usb-storage/dist" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

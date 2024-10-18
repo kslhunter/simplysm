@@ -11,7 +11,8 @@
   "license": "MIT",
   "private": true,
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "types/*"
   ],
   "volta": {
     "node": "20.18.0",

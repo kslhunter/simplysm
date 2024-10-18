@@ -1,0 +1,27 @@
+{
+  "name": "@simplysm/cordova-plugin-auto-update",
+  "version": "12.5.27",
+  "description": "심플리즘 패키지 - Cordova Plugin Auto Update",
+  "author": "김석래",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm12.git",
+    "directory": "packages/cordova-plugin-auto-update"
+  },
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "cordova": {
+    "id": "@simplysm/cordova-plugin-auto-update",
+    "platforms": [
+      "android"
+    ]
+  },
+  "dependencies": {
+    "@simplysm-types/cordova-plugin-ionic-webview": "12.5.27",
+    "@simplysm/cordova-plugin-app-storage": "12.5.27",
+    "@simplysm/sd-core-common": "12.5.27",
+    "rxjs": "^7.8.1"
+  }
+}

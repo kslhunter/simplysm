@@ -1,25 +1,27 @@
 {
-  "name": "@simplysm/cordova-util",
+  "name": "@simplysm/cordova-plugin-app-storage",
   "version": "12.5.27",
-  "description": "심플리즘 패키지 - Cordova Utilities",
+  "description": "심플리즘 패키지 - Cordova Plugin App Storage",
   "author": "김석래",
   "repository": {
     "type": "git",
     "url": "https://github.com/kslhunter/simplysm12.git",
-    "directory": "packages/cordova-util"
+    "directory": "packages/cordova-plugin-app-storage"
   },
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "cordova": {
+    "id": "@simplysm/cordova-plugin-app-storage",
+    "platforms": [
+      "android"
+    ]
+  },
   "dependencies": {
     "@awesome-cordova-plugins/core": "^6.9.0",
     "@awesome-cordova-plugins/file": "^6.9.0",
     "@simplysm/sd-core-common": "12.5.27",
-    "@simplysm/sd-service-client": "12.5.27",
-    "jszip": "^3.10.1"
-  },
-  "devDependencies": {
-    "@types/cordova": "^11.0.3"
+    "rxjs": "^7.8.1"
   }
 }

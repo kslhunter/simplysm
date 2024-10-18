@@ -1,9 +1,9 @@
-/// <reference types="./ionic-webview.d.ts"/>
+/// <reference types="@simplysm-types/cordova-plugin-ionic-webview"/>
 
 import { SdAutoUpdateServiceClient, SdServiceClient } from "@simplysm/sd-service-client";
 import { NetUtil } from "@simplysm/sd-core-common";
 import JSZip from "jszip";
-import { CordovaAppStorage } from "./CordovaAppStorage";
+import { CordovaAppStorage } from "@simplysm/cordova-plugin-app-storage";
 
 export abstract class CordovaAutoUpdate {
   static async runAsync(opt: { log: (messageHtml: string) => void; serviceClient?: SdServiceClient }) {

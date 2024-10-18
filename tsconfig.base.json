@@ -26,6 +26,7 @@
     "baseUrl": ".",
     "paths": {
       "@simplysm/*": ["./packages/*/src/index.ts", "./*/types/index.d.ts"],
+      "@simplysm-types/*": ["./types/*/index.d.ts"],
       "@simplysm/ts-transformer-keys/transformer": ["./packages/ts-transformer-keys/src/transformer.ts"]
     }
   }
