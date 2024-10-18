@@ -91,10 +91,10 @@ export default () => ({
       type: "library",
       publish: "npm",
     },
-  },
-  types: {
-    "cordova-plugin-ionic-webview": {
+    "types-cordova-plugin-ionic-webview": {
+      type: "library",
       publish: "npm",
+      noGenIndex: true,
     },
   },
 });

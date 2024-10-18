@@ -4,5 +4,5 @@ declare const Ionic: {
     setServerBasePath: (path: string) => void;
     getServerBasePath: (callback: (r: string) => void) => void;
     persistServerBasePath: () => void;
-  }
+  };
 };

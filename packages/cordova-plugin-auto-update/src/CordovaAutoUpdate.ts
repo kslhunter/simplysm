@@ -1,4 +1,4 @@
-/// <reference types="@simplysm-types/cordova-plugin-ionic-webview"/>
+/// <reference types="@simplysm/types-cordova-plugin-ionic-webview"/>
 
 import { SdAutoUpdateServiceClient, SdServiceClient } from "@simplysm/sd-service-client";
 import { NetUtil } from "@simplysm/sd-core-common";

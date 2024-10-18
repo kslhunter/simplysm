@@ -1,5 +1,6 @@
 export interface ISdProjectConfig {
   packages: Record<string, TSdPackageConfig | undefined>;
+  types: Record<string, TSdPackageConfig | undefined>;
   localUpdates?: Record<string, string>;
   postPublish?: TSdPostPublishConfig[];
 }

@@ -19,9 +19,9 @@
     ]
   },
   "dependencies": {
-    "@simplysm-types/cordova-plugin-ionic-webview": "12.5.28",
     "@simplysm/cordova-plugin-app-storage": "12.5.28",
     "@simplysm/sd-core-common": "12.5.28",
+    "@simplysm/types-cordova-plugin-ionic-webview": "12.5.28",
     "rxjs": "^7.8.1"
   }
 }
