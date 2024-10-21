@@ -44,7 +44,8 @@ export class DateOnly {
       this.date = new Date(arg1 as number, arg2 - 1, arg3);
     }
     else if (arg1 instanceof Date) {
-      this.date = arg1;
+      const date = arg1;
+      this.date = new Date(date.getFullYear(), date.getMonth(), date.getDate());
     }
     else {
       const date = new Date(arg1);
