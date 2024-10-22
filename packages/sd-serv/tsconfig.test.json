@@ -3,7 +3,7 @@
   "compilerOptions": {
     "lib": ["ES2021"],
     "outDir": "./dist",
-    "types": ["node", "yargs"]
+    "types": ["node", "mocha"]
   },
-  "files": ["./src/index.ts", "./src/sd-serv.ts"]
+  "include": ["src", "test"]
 }
