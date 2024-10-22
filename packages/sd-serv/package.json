@@ -1,24 +1,27 @@
 {
-  "name": "@simplysm/sd-orm-node-sqlite",
+  "name": "@simplysm/sd-serv",
   "version": "12.5.29",
-  "description": "심플리즘 패키지 - SQLITE ORM 모듈 (node)",
+  "description": "심플리즘 패키지 - 서버 컨테이너",
   "author": "김석래",
   "repository": {
     "type": "git",
     "url": "https://github.com/kslhunter/simplysm12.git",
-    "directory": "packages/sd-orm-node-sqlite"
+    "directory": "packages/sd-serv"
   },
   "license": "MIT",
+  "bin": "./dist/sd-cli.js",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@simplysm/sd-core-common": "12.5.29",
     "@simplysm/sd-core-node": "12.5.29",
-    "@simplysm/sd-orm-common": "12.5.29",
-    "sqlite3": "^5.1.7"
+    "pm2": "^5.4.2",
+    "yargs": "^17.7.2"
   },
   "devDependencies": {
-    "@types/sqlite3": "^3.1.11"
+    "@types/mocha": "^10.0.9",
+    "@types/yargs": "^17.0.33",
+    "mocha": "^10.7.3",
+    "tsx": "^4.19.1"
   }
 }

@@ -1,7 +1,7 @@
 import { EventEmitter } from "events";
 import { FsUtil, Logger, PathUtil, SdFsWatcher, TNormPath } from "@simplysm/sd-core-node";
 import path from "path";
-import { ObjectUtil, StringUtil } from "@simplysm/sd-core-common";
+import { StringUtil } from "@simplysm/sd-core-common";
 import { SdServerBundler } from "./SdServerBundler";
 import { ISdProjectConfig, ISdServerPackageConfig } from "../../types/sd-configs.type";
 import { ISdBuildMessage, ISdBuildRunnerResult } from "../../types/build.type";
@@ -93,18 +93,20 @@ export class SdServerBuildRunner extends EventEmitter {
     {
       const deps = extModules.filter((item) => item.exists).map((item) => item.name);
 
-      const distNpmConfig = ObjectUtil.clone(npmConfig);
+      const distNpmConfig: INpmConfig = {
+        name: npmConfig.name,
+        version: npmConfig.version,
+        type: npmConfig.type,
+      };
       distNpmConfig.dependencies = {};
       for (const dep of deps) {
         distNpmConfig.dependencies[dep] = "*";
       }
-      delete distNpmConfig.optionalDependencies;
-      delete distNpmConfig.devDependencies;
-      delete distNpmConfig.peerDependencies;
 
-      if (this._pkgConf.pm2 && !this._pkgConf.pm2.noStartScript) {
-        distNpmConfig.scripts = { start: "pm2 start pm2.json" };
-      }
+      // distNpmConfig.scripts = {};
+      // if (this._pkgConf.pm2 && !this._pkgConf.pm2.noStartScript) {
+      //   distNpmConfig.scripts["start"] = "pm2 start pm2.json";
+      // }
 
       FsUtil.writeJson(path.resolve(this._pkgPath, "dist/package.json"), distNpmConfig, { space: 2 });
     }
@@ -138,7 +140,7 @@ Options = UnsafeLegacyRenegotiation`.trim(),
       );
     }
 
-    if (this._pkgConf.pm2) {
+    /*if (this._pkgConf.pm2) {
       this._debug("GEN pm2.json...");
 
       FsUtil.writeJson(
@@ -163,6 +165,21 @@ Options = UnsafeLegacyRenegotiation`.trim(),
           },
           arrayProcess: "concat",
           useDelTargetNull: true,
+        },
+        {
+          space: 2,
+        },
+      );
+    }*/
+    if (this._pkgConf.serv) {
+      this._debug("GEN sd-serv.json...");
+
+      FsUtil.writeJson(
+        path.resolve(this._pkgPath, "dist/sd-serv.json"),
+        {
+          name: this._pkgConf.serv.name,
+          ignoreWatchPaths: this._pkgConf.serv.ignoreWatchPaths,
+          env: this._pkgConf.env,
         },
         {
           space: 2,

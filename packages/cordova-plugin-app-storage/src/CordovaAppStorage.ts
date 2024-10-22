@@ -20,7 +20,6 @@ export class CordovaAppStorage {
     const fullUrl = this.getFullUrl(filePath);
     const dirUrl = path.dirname(fullUrl);
     const fileName = path.basename(fullUrl);
-    console.log(fullUrl);
 
     return Buffer.from(await File.readAsArrayBuffer(dirUrl, fileName));
   }
@@ -61,15 +60,15 @@ export class CordovaAppStorage {
     const dirUrl = path.dirname(fullUrl);
     const dirOrFileName = path.basename(fullUrl);
 
-    const list = await File.listDir(path.dirname(dirUrl), path.basename(dirUrl));
+    /*const list = await File.listDir(path.dirname(dirUrl), path.basename(dirUrl));
     const single = list.single((item) => item.name === dirOrFileName);
-    if (!single) return;
+    if (!single) return;*/
 
-    if (single.isDirectory) {
-      await File.removeDir(dirUrl, dirOrFileName);
+    await File.removeRecursively(dirUrl, dirOrFileName);
+    /*if (single.isDirectory) {
     } else {
       await File.removeFile(dirUrl, dirOrFileName);
-    }
+    }*/
   }
 
   getFullUrl(targetPath: string) {
@@ -81,7 +80,7 @@ export class CordovaAppStorage {
     const dirUrl = path.dirname(fullUrl);
     const dirName = path.basename(fullUrl);
 
-    await File.createDir(dirUrl, dirName, false);
+    await File.createDir(dirUrl, dirName, true);
   }
 
   async #mkdirsAsync(dirPath: string) {

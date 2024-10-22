@@ -22,11 +22,11 @@ export interface ISdServerPackageConfig {
   publish?: ISdLocalDirectoryPublishConfig | ISdFtpPublishConfig;
   configs?: Record<string, any>;
   env?: Record<string, string>;
-  pm2?: {
+  serv?: {
     name?: string;
     ignoreWatchPaths?: string[];
-    noInterpreter?: boolean;
-    noStartScript?: boolean;
+    // noInterpreter?: boolean;
+    // noStartScript?: boolean;
   };
   iis?: {
     nodeExeFilePath?: string;

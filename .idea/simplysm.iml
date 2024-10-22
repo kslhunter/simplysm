@@ -30,6 +30,8 @@
       <excludeFolder url="file://$MODULE_DIR$/packages/cordova-plugin-app-storage/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/cordova-plugin-auto-update/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/cordova-plugin-usb-storage/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-serv/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-serv/test/serv/_logs" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

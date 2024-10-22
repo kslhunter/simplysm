@@ -71,6 +71,10 @@ export default () => ({
       publish: "npm",
       polyfills: ["@simplysm/sd-core-common"],
     },
+    "sd-serv": {
+      type: "library",
+      publish: "npm",
+    },
     "sd-service-client": {
       type: "library",
       publish: "npm",

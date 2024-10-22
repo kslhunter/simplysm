@@ -25,7 +25,7 @@ export class SdCliElectron {
     logger.log("package.json 파일 쓰기...");
     const npmConfig = FsUtil.readJson(path.resolve(pkgPath, `package.json`)) as INpmConfig;
 
-    const externalPkgNames = pkgConf.builder.electron.reinstallDependencies ?? [];
+    const reinstallPkgNames = pkgConf.builder.electron.reinstallDependencies ?? [];
 
     FsUtil.writeJson(path.resolve(electronPath, `package.json`), {
       name: npmConfig.name.replace(/^@/, "").replace(/\//, "-"),
@@ -39,7 +39,7 @@ export class SdCliElectron {
             },
           }
         : {}),
-      dependencies: externalPkgNames.toObject(
+      dependencies: reinstallPkgNames.toObject(
         (item) => item,
         (item) => npmConfig.dependencies![item],
       ),
@@ -48,16 +48,19 @@ export class SdCliElectron {
     logger.log("npm install...");
     await SdProcess.spawnAsync(`npm install`, { cwd: electronPath }, true);
 
-    for (const externalPkgName of externalPkgNames) {
-      if (FsUtil.exists(path.resolve(electronPath, "node_modules", externalPkgName, "binding.gyp"))) {
-        logger.log(`electron rebuild (${externalPkgName})...`);
+    logger.log(`electron rebuild`);
+    await SdProcess.spawnAsync(`electron-rebuild`, { cwd: electronPath }, true);
+
+    /*for (const reinstallPkgName of reinstallPkgNames) {
+      if (FsUtil.exists(path.resolve(electronPath, "node_modules", reinstallPkgName, "binding.gyp"))) {
+        logger.log(`electron rebuild (${reinstallPkgName})...`);
         await SdProcess.spawnAsync(
-          `electron-rebuild -m ./node_modules/${externalPkgName}`,
+          `electron-rebuild -m ./node_modules/${reinstallPkgName}`,
           { cwd: electronPath },
           true,
         );
       }
-    }
+    }*/
 
     logger.log("electron...");
     await SdProcess.spawnAsync(`electron .`, { cwd: electronPath }, true);
@@ -83,7 +86,7 @@ export class SdCliElectron {
     logger.log("package.json 파일 쓰기...");
     const npmConfig = FsUtil.readJson(path.resolve(pkgPath, `package.json`)) as INpmConfig;
 
-    const externalPkgNames = pkgConf.builder.electron.reinstallDependencies ?? [];
+    const reinstallPkgNames = pkgConf.builder.electron.reinstallDependencies ?? [];
 
     FsUtil.writeJson(path.resolve(electronPath, `package.json`), {
       name: npmConfig.name.replace(/^@/, "").replace(/\//, "-"),
@@ -97,7 +100,7 @@ export class SdCliElectron {
             },
           }
         : {}),
-      dependencies: externalPkgNames.toObject(
+      dependencies: reinstallPkgNames.toObject(
         (item) => item,
         (item) => npmConfig.dependencies![item],
       ),
@@ -106,11 +109,11 @@ export class SdCliElectron {
     logger.log("npm install...");
     await SdProcess.spawnAsync(`npm install`, { cwd: electronPath }, true);
 
-    for (const externalPkgName of externalPkgNames) {
-      if (FsUtil.exists(path.resolve(electronPath, "node_modules", externalPkgName, "binding.gyp"))) {
-        logger.log(`electron rebuild (${externalPkgName})...`);
+    for (const reinstallPkgName of reinstallPkgNames) {
+      if (FsUtil.exists(path.resolve(electronPath, "node_modules", reinstallPkgName, "binding.gyp"))) {
+        logger.log(`electron rebuild (${reinstallPkgName})...`);
         await SdProcess.spawnAsync(
-          `electron-rebuild -m ./node_modules/${externalPkgName}`,
+          `electron-rebuild -m ./node_modules/${reinstallPkgName}`,
           { cwd: electronPath },
           true,
         );
@@ -157,7 +160,7 @@ export class SdCliElectron {
     logger.log("package.json 파일 쓰기...");
     const npmConfig = FsUtil.readJson(path.resolve(opt.pkgPath, `package.json`)) as INpmConfig;
 
-    const externalPkgNames = opt.config.reinstallDependencies ?? [];
+    const reinstallPkgNames = opt.config.reinstallDependencies ?? [];
 
     FsUtil.writeJson(path.resolve(electronSrcPath, `package.json`), {
       name: npmConfig.name.replace(/^@/, "").replace(/\//, "-"),
@@ -171,7 +174,7 @@ export class SdCliElectron {
             },
           }
         : {}),
-      dependencies: externalPkgNames.toObject(
+      dependencies: reinstallPkgNames.toObject(
         (item) => item,
         (item) => npmConfig.dependencies![item],
       ),
@@ -180,11 +183,11 @@ export class SdCliElectron {
     logger.log("npm install...");
     await SdProcess.spawnAsync(`npm install`, { cwd: electronSrcPath }, true);
 
-    for (const externalPkgName of externalPkgNames) {
-      if (FsUtil.exists(path.resolve(electronSrcPath, "node_modules", externalPkgName, "binding.gyp"))) {
-        logger.log(`electron rebuild (${externalPkgName})...`);
+    for (const reinstallPkgName of reinstallPkgNames) {
+      if (FsUtil.exists(path.resolve(electronSrcPath, "node_modules", reinstallPkgName, "binding.gyp"))) {
+        logger.log(`electron rebuild (${reinstallPkgName})...`);
         await SdProcess.spawnAsync(
-          `electron-rebuild -m ./node_modules/${externalPkgName}`,
+          `electron-rebuild -m ./node_modules/${reinstallPkgName}`,
           { cwd: electronSrcPath },
           true,
         );

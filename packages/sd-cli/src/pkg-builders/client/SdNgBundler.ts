@@ -34,6 +34,7 @@ import { INpmConfig } from "../../types/common-configs.type";
 import { ISdClientBuilderCordovaConfig } from "../../types/sd-configs.type";
 import { ISdCliNgPluginResultCache } from "../../types/build-plugin.type";
 import { ISdBuildMessage } from "../../types/build.type";
+import nodeModule from "node:module";
 
 export class SdNgBundler {
   readonly #logger = Logger.get(["simplysm", "sd-cli", "SdNgBundler"]);
@@ -65,6 +66,7 @@ export class SdNgBundler {
       pkgPath: TNormPath;
       builderType: string;
       env: Record<string, string> | undefined;
+      external: string[];
       cordovaConfig: ISdClientBuilderCordovaConfig | undefined;
       watchScopePaths: TNormPath[];
     },
@@ -357,7 +359,6 @@ export class SdNgBundler {
       absWorkingDir: this._opt.pkgPath,
       bundle: true,
       keepNames: true,
-      format: "esm",
       assetNames: "media/[name]",
       conditions: ["es2020", "es2015", "module"],
       resolveExtensions: [".js", ".mjs", ".cjs", ".ts"],
@@ -371,7 +372,6 @@ export class SdNgBundler {
       outdir: this._opt.pkgPath,
       outExtension: undefined,
       sourcemap: true, //this._opt.dev,
-      splitting: true,
       chunkNames: "[name]-[hash]",
       tsconfig: this.#tsConfigFilePath,
       write: false,
@@ -391,7 +391,6 @@ export class SdNgBundler {
             )
           : {}),
       },
-      platform: "browser",
       mainFields: ["es2020", "es2015", "browser", "module", "main"],
       entryNames: "[dir]/[name]",
       entryPoints: {
@@ -408,8 +407,6 @@ export class SdNgBundler {
           : {}),
         ...workerEntries,
       },
-      external: ["electron"],
-      target: this.#browserTarget,
       supported: { "async-await": false, "object-rest-spread": false },
       loader: {
         ".png": "file",
@@ -438,7 +435,19 @@ export class SdNgBundler {
         ".mp3": "file",
         ".ogg": "file",
       },
-      inject: [PathUtil.posix(fileURLToPath(import.meta.resolve("node-stdlib-browser/helpers/esbuild/shim")))],
+      ...(this._opt.builderType === "electron"
+        ? {
+            platform: "node",
+            target: "node20",
+            external: ["electron", ...nodeModule.builtinModules, ...this._opt.external],
+          }
+        : {
+            platform: "browser",
+            target: this.#browserTarget,
+            format: "esm",
+            splitting: true,
+            inject: [PathUtil.posix(fileURLToPath(import.meta.resolve("node-stdlib-browser/helpers/esbuild/shim")))],
+          }),
       plugins: [
         /*...(this._opt.builderType === "cordova" && this._opt.cordovaConfig?.plugins
           ? [
@@ -493,7 +502,7 @@ export class SdNgBundler {
         //   preserveSymlinks: false,
         //   tailwindConfiguration: undefined
         // }) as esbuild.Plugin,
-        nodeStdLibBrowserPlugin(nodeStdLibBrowser),
+        ...(this._opt.builderType === "electron" ? [] : [nodeStdLibBrowserPlugin(nodeStdLibBrowser)]),
         // {
         //   name: "sd-load-file",
         //   setup: ({onLoad}) => {

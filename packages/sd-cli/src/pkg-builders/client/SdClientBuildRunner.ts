@@ -149,6 +149,7 @@ export class SdClientBuildRunner extends EventEmitter {
               ...this._pkgConf.env,
               ...this._pkgConf.builder?.[ngBundlerBuilderType]?.env,
             },
+            external: ngBundlerBuilderType === "electron" ? this._pkgConf.builder?.electron?.reinstallDependencies ?? [] : [],
             cordovaConfig: ngBundlerBuilderType === "cordova" ? this._pkgConf.builder!.cordova : undefined,
             watchScopePaths: Array.from(this._watchScopePathSet),
           }),

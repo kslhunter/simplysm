@@ -1,0 +1,9 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2021"],
+    "outDir": "./dist",
+    "types": ["node", "yargs", "mocha"]
+  },
+  "include": ["src", "test"]
+}

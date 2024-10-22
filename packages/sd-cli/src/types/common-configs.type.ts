@@ -2,7 +2,10 @@ export interface INpmConfig {
   name: string;
   description?: string;
   version: string;
+  type: "module" | "commonjs";
   workspaces?: string[];
+
+  // volta?: Record<string, string>;
 
   dependencies?: Record<string, string>;
   optionalDependencies?: Record<string, string>;
