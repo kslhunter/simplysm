@@ -1,3 +1,5 @@
+#!/usr/bin/env node --import=specifier-resolution-node/register
+
 /* eslint-disable no-console */
 
 import yargs from "yargs";

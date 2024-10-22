@@ -16,7 +16,8 @@
   "dependencies": {
     "@simplysm/sd-core-node": "12.5.40",
     "pm2": "^5.4.2",
-    "yargs": "^17.7.2"
+    "yargs": "^17.7.2",
+    "specifier-resolution-node": "^1.1.4"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.9",
