@@ -15,7 +15,7 @@
   ],
   "volta": {
     "node": "20.18.0",
-    "yarn": "4.5.0"
+    "yarn": "4.5.1"
   },
   "scripts": {
     "watch": "npm run _sd-cli_ -- --debug watch",
