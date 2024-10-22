@@ -80,16 +80,16 @@ if (argv._[0] === "kill") {
   );
 } else if (argv._[0] === "start") {
   const proc = await SdServerContainer.startAsync(argv.id);
-  console.log(`${proc.pm_id}:${proc.name}`);
+  console.log(`${proc.pm_id}:${proc.name} started`);
 } else if (argv._[0] === "stop") {
   const proc = await SdServerContainer.stopAsync(argv.id);
-  console.log(`${proc.pm_id}:${proc.name}`);
+  console.log(`${proc.pm_id}:${proc.name} stopped`);
 } else if (argv._[0] === "restart") {
   const proc = await SdServerContainer.restartAsync(argv.id);
-  console.log(`${proc.pm_id}:${proc.name}`);
+  console.log(`${proc.pm_id}:${proc.name} restarted`);
 } else if (argv._[0] === "delete") {
   const proc = await SdServerContainer.deleteAsync(argv.id);
-  console.log(`${proc.pm_id}:${proc.name}`);
+  console.log(`${proc.pm_id}:${proc.name} deleted`);
 } else {
   throw new Error(`명령어가 잘못 되었습니다.\n\t${argv._[0]}\n`);
 }
