@@ -144,7 +144,7 @@ Options = UnsafeLegacyRenegotiation`.trim(),
     }
 
     if (this._pkgConf.pm2) {
-      this._debug("GEN pm2.json...");
+      this._debug("GEN pm2.conf.js...");
 
       const pm2Conf = JSON.stringify({
         name: this._pkgConf.pm2.name ?? npmConfig.name.replace(/@/g, "").replace(/\//g, "-"),
