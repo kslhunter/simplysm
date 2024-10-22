@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-serv",
-  "version": "12.5.39",
+  "version": "12.5.40",
   "description": "심플리즘 패키지 - 서버 컨테이너",
   "author": "김석래",
   "repository": {
@@ -14,7 +14,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@simplysm/sd-core-node": "12.5.39",
+    "@simplysm/sd-core-node": "12.5.40",
     "pm2": "^5.4.2",
     "yargs": "^17.7.2"
   },
