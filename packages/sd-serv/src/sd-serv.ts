@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 #!/usr/bin/env node --import=specifier-resolution-node/register
 
 import yargs from "yargs";
@@ -57,16 +58,37 @@ if (Boolean(argv.debug)) {
 
 if (argv._[0] === "kill") {
   await SdServerContainer.killAsync();
+
+  console.log("killed");
 } else if (argv._[0] === "list") {
-  await SdServerContainer.listAsync();
+  const list = await SdServerContainer.listAsync();
+
+  console.log(
+    list
+      .map((item) =>
+        [
+          `[${item.pm_id}:${item.name}]`,
+          `[STATUS:${item.pm2_env?.status}]`,
+          `[RESTART:${item.pm2_env?.restart_time}]`,
+          `[PID:${item.pid}]`,
+          `[CPU:${item.monit?.cpu?.toLocaleString()}]`,
+          `[MEM:${Math.round((item.monit?.memory ?? 0) / 1024 / 1024).toLocaleString()}MB]`,
+        ].join(" "),
+      )
+      .join("\n"),
+  );
 } else if (argv._[0] === "start") {
-  await SdServerContainer.startAsync(argv.id);
+  const proc  = await SdServerContainer.startAsync(argv.id);
+  console.log(`${proc.pm_id}:${proc.name}`);
 } else if (argv._[0] === "stop") {
-  await SdServerContainer.stopAsync(argv.id);
+  const proc= await SdServerContainer.stopAsync(argv.id);
+  console.log(`${proc.pm_id}:${proc.name}`);
 } else if (argv._[0] === "restart") {
-  await SdServerContainer.restartAsync(argv.id);
+  const proc= await SdServerContainer.restartAsync(argv.id);
+  console.log(`${proc.pm_id}:${proc.name}`);
 } else if (argv._[0] === "delete") {
-  await SdServerContainer.deleteAsync(argv.id);
+  const proc= await SdServerContainer.deleteAsync(argv.id);
+  console.log(`${proc.pm_id}:${proc.name}`);
 } else {
   throw new Error(`명령어가 잘못 되었습니다.\n\t${argv._[0]}\n`);
 }
