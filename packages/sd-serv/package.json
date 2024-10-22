@@ -10,7 +10,6 @@
   },
   "license": "MIT",
   "bin": "./dist/sd-serv.js",
-  "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
