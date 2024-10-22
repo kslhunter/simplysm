@@ -153,33 +153,32 @@ Options = UnsafeLegacyRenegotiation`.trim(),
 
       const str = /* language=javascript */ `
         module.exports = {
-          apps: [{
-            name: "${this._pkgConf.pm2.name ?? npmConfig.name.replace(/@/g, "").replace(/\//g, "-")}",
-            script: "main.js",
-            watch: true,
-            watch_delay: 2000,
-            ignore_watch: [
-              "node_modules",
-              "www",
-              ...${JSON.stringify(this._pkgConf.pm2.ignoreWatchPaths ?? [])}
-            ],
-            ${
-              this._pkgConf.pm2.noInterpreter
-                ? ""
-                : `interpreter: require("child_process").execSync("volta which node").toString().trim()`
-            },
-            interpreter_args: "--openssl-config=openssl.cnf",
-            env: {
-              NODE_ENV: "production",
-              TZ: "Asia/Seoul",
-              SD_VERSION: "${npmConfig.version}",
-              ${this._pkgConf.env ? "..." + JSON.stringify(this._pkgConf.env) + "," : ""}
-            },
-            arrayProcess: "concat",
-            useDelTargetNull: true
-          }]
-        };
-      `.replaceAll("\n        ", "\n").trim();
+          name: "${this._pkgConf.pm2.name ?? npmConfig.name.replace(/@/g, "").replace(/\//g, "-")}",
+          script: "main.js",
+          watch: true,
+          watch_delay: 2000,
+          ignore_watch: [
+            "node_modules",
+            "www",
+            ...${JSON.stringify(this._pkgConf.pm2.ignoreWatchPaths ?? [])}
+          ],
+          ${
+            this._pkgConf.pm2.noInterpreter
+              ? ""
+              : `interpreter: require("child_process").execSync("volta which node").toString().trim()`
+          },
+          interpreter_args: "--openssl-config=openssl.cnf",
+          env: {
+            NODE_ENV: "production",
+            TZ: "Asia/Seoul",
+            SD_VERSION: "${npmConfig.version}",
+            ${this._pkgConf.env ? "..." + JSON.stringify(this._pkgConf.env) + "," : ""}
+          },
+          arrayProcess: "concat",
+          useDelTargetNull: true
+        };`
+        .replaceAll("\n        ", "\n")
+        .trim();
 
       FsUtil.writeFile(path.resolve(this._pkgPath, "dist/pm2.config.cjs"), str);
     }
