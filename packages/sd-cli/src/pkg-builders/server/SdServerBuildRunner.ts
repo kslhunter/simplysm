@@ -103,10 +103,10 @@ export class SdServerBuildRunner extends EventEmitter {
         distNpmConfig.dependencies[dep] = "*";
       }
 
-      // distNpmConfig.scripts = {};
-      // if (this._pkgConf.pm2 && !this._pkgConf.pm2.noStartScript) {
-      //   distNpmConfig.scripts["start"] = "pm2 start pm2.json";
-      // }
+      distNpmConfig.scripts = {};
+      if (this._pkgConf.pm2 && !this._pkgConf.pm2.noStartScript) {
+        distNpmConfig.scripts["start"] = "pm2 start pm2.json";
+      }
 
       FsUtil.writeJson(path.resolve(this._pkgPath, "dist/package.json"), distNpmConfig, { space: 2 });
     }
@@ -140,7 +140,7 @@ Options = UnsafeLegacyRenegotiation`.trim(),
       );
     }
 
-    /*if (this._pkgConf.pm2) {
+    if (this._pkgConf.pm2) {
       this._debug("GEN pm2.json...");
 
       FsUtil.writeJson(
@@ -165,21 +165,6 @@ Options = UnsafeLegacyRenegotiation`.trim(),
           },
           arrayProcess: "concat",
           useDelTargetNull: true,
-        },
-        {
-          space: 2,
-        },
-      );
-    }*/
-    if (this._pkgConf.serv) {
-      this._debug("GEN sd-serv.json...");
-
-      FsUtil.writeJson(
-        path.resolve(this._pkgPath, "dist/sd-serv.json"),
-        {
-          name: this._pkgConf.serv.name,
-          ignoreWatchPaths: this._pkgConf.serv.ignoreWatchPaths,
-          env: this._pkgConf.env,
         },
         {
           space: 2,
