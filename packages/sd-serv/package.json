@@ -9,7 +9,7 @@
     "directory": "packages/sd-serv"
   },
   "license": "MIT",
-  "bin": "./dist/sd-cli.js",
+  "bin": "./dist/sd-serv.js",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
