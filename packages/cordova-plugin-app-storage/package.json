@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/cordova-plugin-app-storage",
-  "version": "12.5.43",
+  "version": "12.5.44",
   "description": "심플리즘 패키지 - Cordova Plugin App Storage",
   "author": "김석래",
   "repository": {
@@ -21,7 +21,7 @@
   "dependencies": {
     "@awesome-cordova-plugins/core": "^6.9.0",
     "@awesome-cordova-plugins/file": "^6.9.0",
-    "@simplysm/sd-core-common": "12.5.43",
+    "@simplysm/sd-core-common": "12.5.44",
     "rxjs": "^7.8.1"
   }
 }
