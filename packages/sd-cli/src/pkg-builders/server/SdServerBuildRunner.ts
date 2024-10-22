@@ -79,6 +79,7 @@ export class SdServerBuildRunner extends EventEmitter {
   }
 
   public async buildAsync(): Promise<ISdBuildRunnerResult> {
+    const projNpmConfig = FsUtil.readJson(path.resolve(process.cwd(), "package.json")) as INpmConfig;
     const npmConfig = FsUtil.readJson(path.resolve(this._pkgPath, "package.json")) as INpmConfig;
     const extModules = await this._getExternalModulesAsync();
 
@@ -105,8 +106,10 @@ export class SdServerBuildRunner extends EventEmitter {
 
       distNpmConfig.scripts = {};
       if (this._pkgConf.pm2 && !this._pkgConf.pm2.noStartScript) {
-        distNpmConfig.scripts["start"] = "pm2 start pm2.json";
+        distNpmConfig.scripts["start"] = "pm2 start pm2.conf.js";
       }
+
+      distNpmConfig.volta = projNpmConfig.volta;
 
       FsUtil.writeJson(path.resolve(this._pkgPath, "dist/package.json"), distNpmConfig, { space: 2 });
     }
@@ -143,7 +146,32 @@ Options = UnsafeLegacyRenegotiation`.trim(),
     if (this._pkgConf.pm2) {
       this._debug("GEN pm2.json...");
 
-      FsUtil.writeJson(
+      const pm2Conf = JSON.stringify({
+        name: this._pkgConf.pm2.name ?? npmConfig.name.replace(/@/g, "").replace(/\//g, "-"),
+        script: "main.js",
+        watch: true,
+        watch_delay: 2000,
+        ignore_watch: ["node_modules", "www", ...(this._pkgConf.pm2.ignoreWatchPaths ?? [])],
+        ...(this._pkgConf.pm2.noInterpreter
+          ? {}
+          : {
+              interpreter: "node@" + process.versions.node,
+            }),
+        interpreter_args: "--openssl-config=openssl.cnf",
+        env: {
+          NODE_ENV: "production",
+          TZ: "Asia/Seoul",
+          SD_VERSION: npmConfig.version,
+          ...this._pkgConf.env,
+        },
+        arrayProcess: "concat",
+        useDelTargetNull: true,
+      });
+      const str = `module.exports = { apps: [${pm2Conf}] };`;
+
+      FsUtil.writeFile(path.resolve(this._pkgPath, "dist/pm2.conf.js"), str);
+
+      /*FsUtil.writeJson(
         path.resolve(this._pkgPath, "dist/pm2.json"),
         {
           name: this._pkgConf.pm2.name ?? npmConfig.name.replace(/@/g, "").replace(/\//g, "-"),
@@ -169,7 +197,7 @@ Options = UnsafeLegacyRenegotiation`.trim(),
         {
           space: 2,
         },
-      );
+      );*/
     }
 
     if (this._pkgConf.iis) {
