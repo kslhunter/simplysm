@@ -106,12 +106,17 @@ export class SdServerBuildRunner extends EventEmitter {
 
       distNpmConfig.scripts = {};
       if (this._pkgConf.pm2 && !this._pkgConf.pm2.noStartScript) {
-        distNpmConfig.scripts["start"] = "pm2 start pm2.conf.js";
+        distNpmConfig.scripts["start"] = "pm2 start pm2.config.cjs";
       }
 
       distNpmConfig.volta = projNpmConfig.volta;
 
       FsUtil.writeJson(path.resolve(this._pkgPath, "dist/package.json"), distNpmConfig, { space: 2 });
+    }
+
+    this._debug("GEN .yarnrc.yml...");
+    {
+      FsUtil.writeFile(path.resolve(this._pkgPath, "dist/.yarnrc.yml"), "nodeLinker: node-modules");
     }
 
     this._debug("GEN openssl.cnf...");
@@ -144,60 +149,39 @@ Options = UnsafeLegacyRenegotiation`.trim(),
     }
 
     if (this._pkgConf.pm2) {
-      this._debug("GEN pm2.conf.js...");
+      this._debug("GEN pm2.config.cjs...");
 
-      const pm2Conf = JSON.stringify({
-        name: this._pkgConf.pm2.name ?? npmConfig.name.replace(/@/g, "").replace(/\//g, "-"),
-        script: "main.js",
-        watch: true,
-        watch_delay: 2000,
-        ignore_watch: ["node_modules", "www", ...(this._pkgConf.pm2.ignoreWatchPaths ?? [])],
-        ...(this._pkgConf.pm2.noInterpreter
-          ? {}
-          : {
-              interpreter: "node@" + process.versions.node,
-            }),
-        interpreter_args: "--openssl-config=openssl.cnf",
-        env: {
-          NODE_ENV: "production",
-          TZ: "Asia/Seoul",
-          SD_VERSION: npmConfig.version,
-          ...this._pkgConf.env,
-        },
-        arrayProcess: "concat",
-        useDelTargetNull: true,
-      });
-      const str = `module.exports = { apps: [${pm2Conf}] };`;
+      const str = /* language=javascript */ `
+        module.exports = {
+          apps: [{
+            name: "${this._pkgConf.pm2.name ?? npmConfig.name.replace(/@/g, "").replace(/\//g, "-")}",
+            script: "main.js",
+            watch: true,
+            watch_delay: 2000,
+            ignore_watch: [
+              "node_modules",
+              "www",
+              ...${JSON.stringify(this._pkgConf.pm2.ignoreWatchPaths ?? [])}
+            ],
+            ${
+              this._pkgConf.pm2.noInterpreter
+                ? ""
+                : `interpreter: require("child_process").execSync("volta which node").toString().trim()`
+            },
+            interpreter_args: "--openssl-config=openssl.cnf",
+            env: {
+              NODE_ENV: "production",
+              TZ: "Asia/Seoul",
+              SD_VERSION: "${npmConfig.version}",
+              ${this._pkgConf.env ? "..." + JSON.stringify(this._pkgConf.env) + "," : ""}
+            },
+            arrayProcess: "concat",
+            useDelTargetNull: true
+          }]
+        };
+      `.replaceAll("\n        ", "\n").trim();
 
-      FsUtil.writeFile(path.resolve(this._pkgPath, "dist/pm2.conf.js"), str);
-
-      /*FsUtil.writeJson(
-        path.resolve(this._pkgPath, "dist/pm2.json"),
-        {
-          name: this._pkgConf.pm2.name ?? npmConfig.name.replace(/@/g, "").replace(/\//g, "-"),
-          script: "main.js",
-          watch: true,
-          watch_delay: 2000,
-          ignore_watch: ["node_modules", "www", ...(this._pkgConf.pm2.ignoreWatchPaths ?? [])],
-          ...(this._pkgConf.pm2.noInterpreter
-            ? {}
-            : {
-                interpreter: "node@" + process.versions.node,
-              }),
-          interpreter_args: "--openssl-config=openssl.cnf",
-          env: {
-            NODE_ENV: "production",
-            TZ: "Asia/Seoul",
-            SD_VERSION: npmConfig.version,
-            ...this._pkgConf.env,
-          },
-          arrayProcess: "concat",
-          useDelTargetNull: true,
-        },
-        {
-          space: 2,
-        },
-      );*/
+      FsUtil.writeFile(path.resolve(this._pkgPath, "dist/pm2.config.cjs"), str);
     }
 
     if (this._pkgConf.iis) {
