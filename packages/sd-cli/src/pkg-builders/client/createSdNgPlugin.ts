@@ -106,7 +106,7 @@ export function createSdNgPlugin(conf: {
       const javascriptTransformer = new JavaScriptTransformer(
         {
           thirdPartySourcemaps: conf.dev,
-          sourcemap: true, //conf.dev,
+          sourcemap: conf.dev,
           jit: false,
           advancedOptimizations: true,
         },

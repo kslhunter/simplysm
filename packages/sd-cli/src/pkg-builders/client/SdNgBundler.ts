@@ -18,7 +18,11 @@ import {
   InitialFileRecord,
 } from "@angular/build/src/tools/esbuild/bundler-context";
 import { extractLicenses } from "@angular/build/src/tools/esbuild/license-extractor";
-import { IndexHtmlGenerator, IndexHtmlProcessResult } from "@angular/build/src/utils/index-file/index-html-generator";
+import {
+  HintMode,
+  IndexHtmlGenerator,
+  IndexHtmlProcessResult,
+} from "@angular/build/src/utils/index-file/index-html-generator";
 import { Entrypoint } from "@angular/build/src/utils/index-file/augment-index-html";
 import { CrossOrigin } from "@angular/build/src/builders/application/schema";
 import { augmentAppWithServiceWorkerEsbuild } from "@angular/build/src/utils/service-worker";
@@ -148,7 +152,7 @@ export class SdNgBundler {
 
     this.#debug(`create index.html...`);
     await perf.run("create index.html", async () => {
-      const genIndexHtmlResult = await this._genIndexHtmlAsync(initialFiles);
+      const genIndexHtmlResult = await this._genIndexHtmlAsync(outputFiles, initialFiles);
       for (const warning of genIndexHtmlResult.warnings) {
         results.push({
           filePath: undefined,
@@ -253,7 +257,20 @@ export class SdNgBundler {
     };
   }
 
-  private async _genIndexHtmlAsync(initialFiles: Map<string, InitialFileRecord>): Promise<IndexHtmlProcessResult> {
+  private async _genIndexHtmlAsync(
+    outputFiles: esbuild.OutputFile[],
+    initialFiles: Map<string, InitialFileRecord>,
+  ): Promise<IndexHtmlProcessResult> {
+    const readAsset = (filePath: string): Promise<string> => {
+      const relFilePath = path.relative("/", filePath);
+      const currFile = outputFiles.find((outputFile) => outputFile.path === relFilePath);
+      if (currFile) {
+        return Promise.resolve(currFile.text);
+      }
+
+      throw new Error(`Output file does not exist: ${relFilePath}`);
+    };
+
     const indexHtmlGenerator = new IndexHtmlGenerator({
       indexPath: this.#indexHtmlFilePath,
       entrypoints: [
@@ -275,6 +292,27 @@ export class SdNgBundler {
       crossOrigin: CrossOrigin.None,
       generateDedicatedSSRContent: false,
     });
+    indexHtmlGenerator.readAsset = readAsset;
+
+    const modulePreloads: { url: string; mode: HintMode; depth: number }[] = [];
+    const hints: { url: string; mode: HintMode; as?: string }[] = [];
+    if (!this._opt.dev) {
+      for (const [key, value] of initialFiles) {
+        if (value.entrypoint || value.serverFile) {
+          continue;
+        }
+
+        if (value.type === "script") {
+          modulePreloads.push({ url: key, mode: "modulepreload" as const, depth: value.depth });
+        }
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        else if (value.type === "style") {
+          hints.push({ url: key, mode: "preload" as const, as: "style" });
+        }
+      }
+      modulePreloads.sort((a, b) => a.depth - b.depth);
+      hints.push(...modulePreloads.slice(0, 10));
+    }
 
     return await indexHtmlGenerator.process({
       baseHref: this.#baseHref,
@@ -285,6 +323,7 @@ export class SdNgBundler {
         file,
         extension: path.extname(file),
       })),
+      hints,
     });
   }
 
@@ -371,7 +410,7 @@ export class SdNgBundler {
       pure: ["forwardRef"],
       outdir: this._opt.pkgPath,
       outExtension: undefined,
-      sourcemap: true, //this._opt.dev,
+      sourcemap: this._opt.dev,
       chunkNames: "[name]-[hash]",
       tsconfig: this.#tsConfigFilePath,
       write: false,
@@ -396,6 +435,7 @@ export class SdNgBundler {
       entryPoints: {
         main: this.#mainFilePath,
         // polyfills: 'angular:polyfills',
+        // TODO: Polyfills Bundler 분리
         polyfills: path.resolve(this._opt.pkgPath, "src/polyfills.ts"),
         ...(this._opt.builderType === "cordova"
           ? {
@@ -405,6 +445,8 @@ export class SdNgBundler {
               ),
             }
           : {}),
+
+        // TODO: Workers Bundler 분리
         ...workerEntries,
       },
       supported: { "async-await": false, "object-rest-spread": false },
@@ -519,7 +561,7 @@ export class SdNgBundler {
   private _getStyleContext(): SdNgBundlerContext {
     const pluginFactory = new StylesheetPluginFactory(
       {
-        sourcemap: true, //this._opt.dev,
+        sourcemap: this._opt.dev,
         includePaths: [],
       },
       this.#styleLoadResultCache,
@@ -533,7 +575,7 @@ export class SdNgBundler {
       logLevel: "silent",
       minify: !this._opt.dev,
       metafile: true,
-      sourcemap: true, //this._opt.dev,
+      sourcemap: this._opt.dev,
       outdir: this._opt.pkgPath,
       write: false,
       platform: "browser",
@@ -577,7 +619,7 @@ export class SdNgBundler {
       logLevel: "silent",
       minify: !this._opt.dev,
       outdir: this._opt.pkgPath,
-      sourcemap: true, //this._opt.dev,
+      sourcemap: this._opt.dev,
       tsconfig: this.#tsConfigFilePath,
       write: false,
       preserveSymlinks: false,

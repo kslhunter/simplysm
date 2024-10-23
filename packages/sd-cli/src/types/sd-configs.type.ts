@@ -27,6 +27,7 @@ export interface ISdServerPackageConfig {
     ignoreWatchPaths?: string[];
     noInterpreter?: boolean;
     noStartScript?: boolean;
+    instances?: number | "max";
   };
   iis?: {
     nodeExeFilePath?: string;

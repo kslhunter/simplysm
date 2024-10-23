@@ -120,7 +120,7 @@ export class SdTsCompiler {
           optimization: !opt.isDevMode,
           inlineFonts: true,
           preserveSymlinks: false,
-          sourcemap: "inline", //conf.dev ? 'inline' : false,
+          sourcemap: opt.isDevMode ? 'inline' : false,
           outputNames: { bundles: "[name]", media: "media/[name]" },
           includePaths: [],
           externalDependencies: [],

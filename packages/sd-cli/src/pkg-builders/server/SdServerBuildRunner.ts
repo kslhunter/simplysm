@@ -153,31 +153,36 @@ Options = UnsafeLegacyRenegotiation`.trim(),
     if (this._pkgConf.pm2) {
       this._debug("GEN pm2.config.cjs...");
 
-      const str = /* language=javascript */ `
+      const str = /* language=cjs */ `
+        const cp = require("child_process");
+
+        const npmConf = require("./package.json");
+
+        const pm2Conf = ${JSON.stringify(this._pkgConf.pm2)};
+        const env = ${JSON.stringify(this._pkgConf.env)};
+
         module.exports = {
-          name: "${this._pkgConf.pm2.name ?? npmConfig.name.replace(/@/g, "").replace(/\//g, "-")}",
+          name: pm2Conf.name ?? npmConf.name.replace(/@/g, "").replace(/\\//g, "-"),
           script: "main.js",
           watch: true,
           watch_delay: 2000,
           ignore_watch: [
             "node_modules",
             "www",
-            ...${JSON.stringify(this._pkgConf.pm2.ignoreWatchPaths ?? [])}
+            ...pm2Conf.ignoreWatchPaths ?? []
           ],
-          ${
-            this._pkgConf.pm2.noInterpreter
-              ? ""
-              : `interpreter: require("child_process").execSync("volta which node").toString().trim()`
-          },
+          ...pm2Conf.noInterpreter ? {} : {interpreter: cp.execSync("volta which node").toString().trim()},
           interpreter_args: "--openssl-config=openssl.cnf",
           env: {
             NODE_ENV: "production",
             TZ: "Asia/Seoul",
-            SD_VERSION: "${npmConfig.version}",
-            ${this._pkgConf.env ? "..." + JSON.stringify(this._pkgConf.env) + "," : ""}
+            SD_VERSION: npmConf.version,
+            ...env ?? {}
           },
           arrayProcess: "concat",
-          useDelTargetNull: true
+          useDelTargetNull: true,
+          exec_mode: pm2Conf.instances != null ? "cluster" : "fork",
+          instances: pm2Conf.instances ?? 1
         };`
         .replaceAll("\n        ", "\n")
         .trim();
