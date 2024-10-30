@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
+import { transformBoolean } from "../utils/tramsforms";
 
 @Component({
   selector: "sd-note",
@@ -50,5 +51,5 @@ import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@a
 export class SdNoteControl {
   theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey">();
   size = input<"sm" | "lg">();
-  inset = input(false);
+  inset = input(false, { transform: transformBoolean });
 }

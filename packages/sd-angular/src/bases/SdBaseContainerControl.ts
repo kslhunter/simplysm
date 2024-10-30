@@ -20,6 +20,7 @@ import { $computed, $effect } from "../utils/$hooks";
 import { ActivatedRoute } from "@angular/router";
 import { injectParent } from "../utils/injectParent";
 import { SdActivatedModalProvider } from "../providers/SdModalProvider";
+import { transformBoolean } from "../utils/tramsforms";
 
 @Component({
   selector: "sd-base-container",
@@ -87,9 +88,9 @@ export class SdBaseContainerControl {
       : this.#sdAppStructure.getTitleByCode(this.pageCode()!),
   );
 
-  busy = input(false);
-  initialized = input(true);
-  denied = input(false);
+  busy = input(false, { transform: transformBoolean });
+  initialized = input(true, { transform: transformBoolean });
+  denied = input(false, { transform: transformBoolean });
 
   topbarTemplateRef = contentChild("topbarTemplate", { read: TemplateRef });
   contentTemplateRef = contentChild("contentTemplate", { read: TemplateRef });

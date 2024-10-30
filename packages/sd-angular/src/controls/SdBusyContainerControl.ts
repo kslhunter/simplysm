@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, HostListener, inject, input, ViewEncapsulation } from "@angular/core";
 import { SdBusyProvider } from "../providers/SdBusyProvider";
 import { $computed } from "../utils/$hooks";
+import { transformBoolean } from "../utils/tramsforms";
 
 @Component({
   selector: "sd-busy-container",
@@ -353,7 +354,7 @@ import { $computed } from "../utils/$hooks";
 export class SdBusyContainerControl {
   #sdBusy = inject(SdBusyProvider);
 
-  busy = input(false);
+  busy = input(false, { transform: transformBoolean });
   message = input<string>();
   type = input<"spinner" | "bar" | "cube">();
   noFade = input<boolean>();

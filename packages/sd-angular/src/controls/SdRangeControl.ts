@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, input, model, ViewEncapsulation } from "@angular/core";
 import { SdTextfieldControl, TSdTextfieldTypes } from "./SdTextfieldControl";
+import { transformBoolean } from "../utils/tramsforms";
 
 @Component({
   selector: "sd-range",
@@ -30,6 +31,6 @@ export class SdRangeControl<K extends keyof TSdTextfieldTypes> {
   from = model<TSdTextfieldTypes[K]>();
   to = model<TSdTextfieldTypes[K]>();
 
-  required = input(false);
-  disabled = input(false);
+  required = input(false, { transform: transformBoolean });
+  disabled = input(false, { transform: transformBoolean });
 }

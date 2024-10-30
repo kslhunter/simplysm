@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, HostListener, input, model, ViewEncapsulation } from "@angular/core";
+import { transformBoolean } from "../utils/tramsforms";
 
 @Component({
   selector: "sd-switch",
@@ -105,9 +106,9 @@ import { ChangeDetectionStrategy, Component, HostListener, input, model, ViewEnc
 export class SdSwitchControl {
   value = model(false);
 
-  disabled = input(false);
-  inline = input(false);
-  inset = input(false);
+  disabled = input(false, { transform: transformBoolean });
+  inline = input(false, { transform: transformBoolean });
+  inset = input(false, { transform: transformBoolean });
 
   size = input<"sm" | "lg">();
   theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey">();

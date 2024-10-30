@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, output, ViewEncapsulation } from "@angular/core";
+import { transformBoolean } from "../utils/tramsforms";
 
 @Component({
   selector: "sd-toast",
@@ -119,8 +120,8 @@ import { ChangeDetectionStrategy, Component, input, output, ViewEncapsulation } 
   },
 })
 export class SdToastControl {
-  open = input(false);
-  useProgress = input(false);
+  open = input(false, { transform: transformBoolean });
+  useProgress = input(false, { transform: transformBoolean });
   theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey">("info");
 
   progress = input<number>(0);

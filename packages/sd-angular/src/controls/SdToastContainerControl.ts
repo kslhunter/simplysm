@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
+import { transformBoolean } from "../utils/tramsforms";
 
 @Component({
   selector: "sd-toast-container",
@@ -44,5 +45,5 @@ import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@a
   },
 })
 export class SdToastContainerControl {
-  overlap = input(false);
+  overlap = input(false, { transform: transformBoolean });
 }

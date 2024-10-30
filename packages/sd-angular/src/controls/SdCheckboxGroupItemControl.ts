@@ -2,6 +2,7 @@ import {ChangeDetectionStrategy, Component, forwardRef, inject, input, ViewEncap
 import {SdCheckboxGroupControl} from "./SdCheckboxGroupControl";
 import {SdCheckboxControl} from "./SdCheckboxControl";
 import {$computed} from "../utils/$hooks";
+import { transformBoolean } from "../utils/tramsforms";
 
 @Component({
   selector: "sd-checkbox-group-item",
@@ -22,7 +23,7 @@ export class SdCheckboxGroupItemControl<T> {
   #parentControl = inject<SdCheckboxGroupControl<T>>(forwardRef(() => SdCheckboxGroupControl));
 
   value = input.required<T>();
-  inline = input(false);
+  inline = input(false, { transform: transformBoolean });
 
   isSelected = $computed(() => this.#parentControl.value().includes(this.value()));
   disabled = $computed(() => this.#parentControl.disabled());

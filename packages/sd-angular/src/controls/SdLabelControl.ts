@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
+import { transformBoolean } from "../utils/tramsforms";
 
 @Component({
   selector: "sd-label",
@@ -50,5 +51,5 @@ import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@a
 export class SdLabelControl {
   theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey">();
   color = input<string>();
-  clickable = input(false);
+  clickable = input(false, { transform: transformBoolean });
 }

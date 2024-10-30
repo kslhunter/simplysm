@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, ElementRef, input, viewChild, ViewEncapsulation } from "@angular/core";
 import { SdEventsDirective } from "../directives/SdEventsDirective";
 import { $computed, $effect, $signal } from "../utils/$hooks";
+import { transformBoolean } from "../utils/tramsforms";
 
 @Component({
   selector: "sd-collapse",
@@ -34,7 +35,7 @@ import { $computed, $effect, $signal } from "../utils/$hooks";
   },
 })
 export class SdCollapseControl {
-  open = input(false);
+  open = input(false, { transform: transformBoolean });
 
   contentElRef = viewChild.required<any, ElementRef<HTMLElement>>("contentEl", { read: ElementRef });
 

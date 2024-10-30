@@ -1,4 +1,5 @@
 import {ChangeDetectionStrategy, Component, input, model, ViewEncapsulation} from "@angular/core";
+import { transformBoolean } from "../utils/tramsforms";
 
 @Component({
   selector: "sd-checkbox-group",
@@ -12,5 +13,5 @@ import {ChangeDetectionStrategy, Component, input, model, ViewEncapsulation} fro
 })
 export class SdCheckboxGroupControl<T> {
   value = model<T[]>([]);
-  disabled = input(false);
+  disabled = input(false, { transform: transformBoolean });
 }

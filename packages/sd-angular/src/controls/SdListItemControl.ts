@@ -16,6 +16,7 @@ import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { $computed } from "../utils/$hooks";
 import { SdUseRippleDirective } from "../directives/SdUseRippleDirective";
+import { transformBoolean } from "../utils/tramsforms";
 
 @Component({
   selector: "sd-list-item",
@@ -144,7 +145,7 @@ export class SdListItemControl {
   open = model(false);
 
   selectedIcon = input<IconDefinition>();
-  selected = input(false);
+  selected = input(false, { transform: transformBoolean });
 
   layout = input<"flat" | "accordion">("accordion");
   contentStyle = input<string>();

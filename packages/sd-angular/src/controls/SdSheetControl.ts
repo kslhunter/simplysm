@@ -27,6 +27,7 @@ import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { SdCheckboxControl } from "./SdCheckboxControl";
 import { $computed, $effect, $signal } from "../utils/$hooks";
 import { injectElementRef } from "../utils/injectElementRef";
+import { transformBoolean } from "../utils/tramsforms";
 
 @Component({
   selector: "sd-sheet",
@@ -575,9 +576,9 @@ export class SdSheetControl<T> {
   /** 시트설정 저장 키 */
   key = input.required<string>();
   /** 설정 및 페이징 바 표시여부 */
-  hideConfigBar = input(false);
+  hideConfigBar = input(false, { transform: transformBoolean });
   /** BORDER를 없애는등 다른 박스안에 완전히 붙임 */
-  inset = input(false);
+  inset = input(false, { transform: transformBoolean });
 
   /** 정렬규칙 */
   ordering = model<ISdSheetColumnOrderingVM[]>([]);
@@ -619,7 +620,7 @@ export class SdSheetControl<T> {
   expandedItems = model<T[]>([]);
 
   focusMode = input<"row" | "cell">("cell");
-  busy = input(false);
+  busy = input(false, { transform: transformBoolean });
 
   /** Children 설정하는 함수 */
   getChildrenFn = input<(item: T, index: number) => T[] | undefined>();

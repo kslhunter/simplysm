@@ -3,6 +3,7 @@ import Quill from "quill";
 import QuillResizeImage from "quill-resize-image";
 import { $effect } from "../utils/$hooks";
 import { injectElementRef } from "../utils/injectElementRef";
+import { transformBoolean } from "../utils/tramsforms";
 
 Quill.register("modules/resize", QuillResizeImage);
 
@@ -77,7 +78,7 @@ export class SdQuillEditorControl {
 
   value = model<string>();
 
-  disabled = input(false);
+  disabled = input(false, { transform: transformBoolean });
 
   #quill!: Quill;
 

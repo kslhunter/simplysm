@@ -1,6 +1,6 @@
-import {Logger} from "@simplysm/sd-core-node";
+import { Logger } from "@simplysm/sd-core-node";
 import tedious from "tedious";
-import {EventEmitter} from "events";
+import { EventEmitter } from "events";
 import {
   DateOnly,
   DateTime,
@@ -10,7 +10,7 @@ import {
   Time,
   Type,
   Uuid,
-  Wait
+  Wait,
 } from "@simplysm/sd-core-common";
 import {
   IDbConnection,
@@ -18,13 +18,12 @@ import {
   IQueryColumnDef,
   ISOLATION_LEVEL,
   TQueryValue,
-  TSdOrmDataType
+  TSdOrmDataType,
 } from "@simplysm/sd-orm-common";
-import {DataType} from "tedious/lib/data-type";
+import { DataType } from "tedious/lib/data-type";
 
 export class MssqlDbConnection extends EventEmitter implements IDbConnection {
   private readonly _logger = Logger.get(["simplysm", "sd-orm-node", this.constructor.name]);
-
 
   private readonly _timeout = 3 * 60 * 1000;
 
@@ -50,8 +49,8 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
         type: "default",
         options: {
           userName: this.config.username,
-          password: this.config.password
-        }
+          password: this.config.password,
+        },
       },
       options: {
         database: this.config.database,
@@ -62,8 +61,8 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
         requestTimeout: this._timeout,
         trustServerCertificate: true,
         // validateBulkLoadParameters: false,
-        connectTimeout: this._timeout * 5
-      } as any
+        connectTimeout: this._timeout * 5,
+      } as any,
     });
 
     conn.on("infoMessage", (info) => {
@@ -132,15 +131,19 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
     const conn = this._conn;
 
     await new Promise<void>((resolve, reject) => {
-      conn.beginTransaction((err) => {
-        if (err) {
-          reject(new Error(err.message));
-          return;
-        }
+      conn.beginTransaction(
+        (err) => {
+          if (err) {
+            reject(new Error(err.message));
+            return;
+          }
 
-        this.isOnTransaction = true;
-        resolve();
-      }, "", tedious.ISOLATION_LEVEL[isolationLevel ?? this.config.defaultIsolationLevel ?? "READ_COMMITTED"]);
+          this.isOnTransaction = true;
+          resolve();
+        },
+        "",
+        tedious.ISOLATION_LEVEL[isolationLevel ?? this.config.defaultIsolationLevel ?? "READ_COMMITTED"],
+      );
     });
   }
 
@@ -153,7 +156,7 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
     const conn = this._conn;
 
     await new Promise<void>((resolve, reject) => {
-      conn.commitTransaction(err => {
+      conn.commitTransaction((err) => {
         if (err != null) {
           reject(new Error(err.message));
           return;
@@ -174,7 +177,7 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
     const conn = this._conn;
 
     await new Promise<void>((resolve, reject) => {
-      conn.rollbackTransaction(err => {
+      conn.rollbackTransaction((err) => {
         if (err != null) {
           reject(new Error(err.message));
           return;
@@ -202,27 +205,26 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
         this._logger.debug("쿼리 실행:\n" + queryString);
         await new Promise<void>((resolve, reject) => {
           let rejected = false;
-          const queryRequest = new tedious
-            .Request(queryString, err => {
-              if (err != null) {
-                rejected = true;
-                this._requests.remove(queryRequest);
+          const queryRequest = new tedious.Request(queryString, (err) => {
+            if (err != null) {
+              rejected = true;
+              this._requests.remove(queryRequest);
 
-                if (err["code"] === "ECANCEL") {
-                  reject(new Error("쿼리가 취소되었습니다."));
-                }
-                else {
-                  if (err["lineNumber"] > 0) {
-                    const splitQuery = queryString.split("\n");
-                    splitQuery[err["lineNumber"] - 1] = "==> " + splitQuery[err["lineNumber"] - 1];
-                    reject(new Error(`[${err["code"] as string}] ${err.message}\n-- query\n${splitQuery.join("\n")}\n--`));
-                  }
-                  else {
-                    reject(new Error(`[${err["code"] as string}] ${err.message}\n-- query\n${queryString}\n--`));
-                  }
+              if (err["code"] === "ECANCEL") {
+                reject(new Error("쿼리가 취소되었습니다."));
+              } else {
+                if (err["lineNumber"] > 0) {
+                  const splitQuery = queryString.split("\n");
+                  splitQuery[err["lineNumber"] - 1] = "==> " + splitQuery[err["lineNumber"] - 1];
+                  reject(
+                    new Error(`[${err["code"] as string}] ${err.message}\n-- query\n${splitQuery.join("\n")}\n--`),
+                  );
+                } else {
+                  reject(new Error(`[${err["code"] as string}] ${err.message}\n-- query\n${queryString}\n--`));
                 }
               }
-            })
+            }
+          })
             .on("done", (rowCount, more, rst) => {
               this._startTimeout();
 
@@ -230,7 +232,24 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
                 return;
               }
 
-              const result = (rst ?? []).map(item => {
+              const result = (rst ?? []).map((item) => {
+                const resultItem = {};
+                for (const col of item) {
+                  resultItem[col.metadata.colName] = col.value;
+                }
+                return resultItem;
+              });
+
+              results.push(result);
+            })
+            .on("doneInProc", (rowCount, more, rst) => {
+              this._startTimeout();
+
+              if (rejected) {
+                return;
+              }
+
+              const result = (rst ?? []).map((item) => {
                 const resultItem = {};
                 for (const col of item) {
                   resultItem[col.metadata.colName] = col.value;
@@ -272,7 +291,11 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
     return results;
   }
 
-  public async bulkInsertAsync(tableName: string, columnDefs: IQueryColumnDef[], records: Record<string, any>[]): Promise<void> {
+  public async bulkInsertAsync(
+    tableName: string,
+    columnDefs: IQueryColumnDef[],
+    records: Record<string, any>[],
+  ): Promise<void> {
     if (this._conn === undefined || !this.isConnected) {
       throw new Error("'Connection'이 연결되어있지 않습니다.");
     }
@@ -281,9 +304,13 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
     const tediousColumnDefs = columnDefs.map((item) => this._convertColumnDefToTediousBulkColumnDef(item));
 
     await new Promise<void>((resolve, reject) => {
-      const bulkLoad = this._conn?.newBulkLoad(tableName, err => {
+      const bulkLoad = this._conn?.newBulkLoad(tableName, (err) => {
         if (err != null) {
-          reject(new Error(`[${err["code"] as string}] ${err.message}\n${JsonConvert.stringify(tediousColumnDefs)}\n-- query\n\n${JsonConvert.stringify(records).substring(0, 10000)}...\n--`));
+          reject(
+            new Error(
+              `[${err["code"] as string}] ${err.message}\n${JsonConvert.stringify(tediousColumnDefs)}\n-- query\n\n${JsonConvert.stringify(records).substring(0, 10000)}...\n--`,
+            ),
+          );
           return;
         }
         resolve();
@@ -299,7 +326,11 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await
-  public async bulkUpsertAsync(tableName: string, columnDefs: IQueryColumnDef[], records: Record<string, any>[]): Promise<void> {
+  public async bulkUpsertAsync(
+    tableName: string,
+    columnDefs: IQueryColumnDef[],
+    records: Record<string, any>[],
+  ): Promise<void> {
     throw new Error("'bulk upsert'는 'MSSQL'에서 지원되지 않는 기능입니다.");
   }
 
@@ -313,12 +344,9 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
     if (this._connTimeout) {
       clearTimeout(this._connTimeout);
     }
-    this._connTimeout = setTimeout(
-      async () => {
-        await this.closeAsync();
-      },
-      this._timeout * 2
-    );
+    this._connTimeout = setTimeout(async () => {
+      await this.closeAsync();
+    }, this._timeout * 2);
   }
 
   private _convertColumnDefToTediousBulkColumnDef(columnDef: IQueryColumnDef): {
@@ -334,8 +362,8 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
         length: tediousDataType.length,
         nullable: columnDef.nullable ?? false,
         precision: tediousDataType.precision,
-        scale: tediousDataType.scale
-      }
+        scale: tediousDataType.scale,
+      },
     };
   }
 
@@ -343,35 +371,35 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
     type: DataType;
     length?: number;
     precision?: number;
-    scale?: number
+    scale?: number;
   } {
     if (type["type"] !== undefined) {
       const currType = type as TSdOrmDataType;
       switch (currType.type) {
         case "TEXT":
-          return {type: tedious.TYPES.NText};
+          return { type: tedious.TYPES.NText };
         case "DECIMAL":
-          return {type: tedious.TYPES.Decimal, precision: currType.precision, scale: currType.digits};
+          return { type: tedious.TYPES.Decimal, precision: currType.precision, scale: currType.digits };
         case "STRING":
           return {
             type: tedious.TYPES.NVarChar,
-            length: currType.length === "MAX" ? Infinity : (currType.length ?? 255)
+            length: currType.length === "MAX" ? Infinity : (currType.length ?? 255),
           };
         case "FIXSTRING":
-          return {type: tedious.TYPES.NChar, length: currType.length};
+          return { type: tedious.TYPES.NChar, length: currType.length };
         case "BINARY":
           return {
             type: tedious.TYPES.VarBinary,
-            length: currType.length === "MAX" ? Infinity : (currType.length ?? 255)
+            length: currType.length === "MAX" ? Infinity : (currType.length ?? 255),
           };
         default:
           throw new TypeError();
       }
-    }
-    else if (typeof type === "string") {
+    } else if (typeof type === "string") {
       const split = type.split(/[(,)]/);
       const typeStr = split[0];
-      const length = split[1] === "MAX" ? Infinity : typeof split[1] !== "undefined" ? Number.parseInt(split[1], 10) : undefined;
+      const length =
+        split[1] === "MAX" ? Infinity : typeof split[1] !== "undefined" ? Number.parseInt(split[1], 10) : undefined;
       const digits = typeof split[2] !== "undefined" ? Number.parseInt(split[2], 10) : undefined;
 
       const typeKey = Object.keys(tedious.TYPES).single((item) => item.toLocaleLowerCase() === typeStr.toLowerCase());
@@ -381,31 +409,29 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
       const dataType = tedious.TYPES[typeKey];
 
       if (dataType === tedious.TYPES.Decimal) {
-        return {type: dataType, precision: length, scale: digits};
+        return { type: dataType, precision: length, scale: digits };
+      } else {
+        return { type: dataType, length };
       }
-      else {
-        return {type: dataType, length};
-      }
-    }
-    else {
+    } else {
       const currType = type as Type<TQueryValue>;
       switch (currType) {
         case String:
-          return {type: tedious.TYPES.NVarChar, length: 255};
+          return { type: tedious.TYPES.NVarChar, length: 255 };
         case Number:
-          return {type: tedious.TYPES.BigInt};
+          return { type: tedious.TYPES.BigInt };
         case Boolean:
-          return {type: tedious.TYPES.Bit};
+          return { type: tedious.TYPES.Bit };
         case DateTime:
-          return {type: tedious.TYPES.DateTime2};
+          return { type: tedious.TYPES.DateTime2 };
         case DateOnly:
-          return {type: tedious.TYPES.Date};
+          return { type: tedious.TYPES.Date };
         case Time:
-          return {type: tedious.TYPES.Time};
+          return { type: tedious.TYPES.Time };
         case Uuid:
-          return {type: tedious.TYPES.UniqueIdentifier};
+          return { type: tedious.TYPES.UniqueIdentifier };
         case Buffer:
-          return {type: tedious.TYPES.Binary, length: Infinity};
+          return { type: tedious.TYPES.Binary, length: Infinity };
         default:
           throw new TypeError(typeof currType !== "undefined" ? currType.name : "undefined");
       }

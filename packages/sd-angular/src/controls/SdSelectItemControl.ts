@@ -16,6 +16,7 @@ import { SdGapControl } from "./SdGapControl";
 import { $computed, $effect } from "../utils/$hooks";
 import { injectElementRef } from "../utils/injectElementRef";
 import { useRipple } from "../utils/useRipple";
+import { transformBoolean } from "../utils/tramsforms";
 
 @Component({
   selector: "sd-select-item",
@@ -85,7 +86,7 @@ export class SdSelectItemControl {
   elRef = injectElementRef<HTMLElement>();
 
   value = input<any>();
-  disabled = input(false);
+  disabled = input(false, { transform: transformBoolean });
 
   labelTemplateRef = contentChild<any, TemplateRef<void>>("label", { read: TemplateRef });
 

@@ -2,6 +2,7 @@ import {ChangeDetectionStrategy, Component, inject, input, ViewEncapsulation} fr
 import {SdAngularConfigProvider} from "../providers/SdAngularConfigProvider";
 import {FaIconComponent} from "@fortawesome/angular-fontawesome";
 import {$computed} from "../utils/$hooks";
+import { transformBoolean } from "../utils/tramsforms";
 
 @Component({
   selector: "sd-collapse-icon",
@@ -31,7 +32,7 @@ export class SdCollapseIconControl {
   icons = inject(SdAngularConfigProvider).icons;
 
   icon = input(this.icons.angleDown);
-  open = input(false);
+  open = input(false, { transform: transformBoolean });
   openRotate = input(90);
 
   transform = $computed(() => (this.open() ? "rotate(" + this.openRotate() + "deg)" : ""));

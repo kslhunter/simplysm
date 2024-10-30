@@ -60,15 +60,15 @@ export class CordovaAppStorage {
     const dirUrl = path.dirname(fullUrl);
     const dirOrFileName = path.basename(fullUrl);
 
-    /*const list = await File.listDir(path.dirname(dirUrl), path.basename(dirUrl));
+    const list = await File.listDir(path.dirname(dirUrl), path.basename(dirUrl));
     const single = list.single((item) => item.name === dirOrFileName);
-    if (!single) return;*/
+    if (!single) return;
 
-    await File.removeRecursively(dirUrl, dirOrFileName);
-    /*if (single.isDirectory) {
+    if (single.isDirectory) {
+      await File.removeRecursively(dirUrl, dirOrFileName);
     } else {
       await File.removeFile(dirUrl, dirOrFileName);
-    }*/
+    }
   }
 
   getFullUrl(targetPath: string) {

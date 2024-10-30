@@ -10,6 +10,7 @@ import {
 import { SdEventsDirective } from "../directives/SdEventsDirective";
 import { StringUtil } from "@simplysm/sd-core-common";
 import { $computed, $effect } from "../utils/$hooks";
+import { transformBoolean } from "../utils/tramsforms";
 
 @Component({
   selector: "sd-content-editor",
@@ -151,13 +152,13 @@ import { $computed, $effect } from "../utils/$hooks";
 export class SdContentEditorControl {
   value = model<string>();
 
-  disabled = input(false);
-  readonly = input(false);
-  required = input(false);
+  disabled = input(false, { transform: transformBoolean });
+  readonly = input(false, { transform: transformBoolean });
+  required = input(false, { transform: transformBoolean });
   validatorFn = input<(value: string | undefined) => string | undefined>();
 
-  inline = input(false);
-  inset = input(false);
+  inline = input(false, { transform: transformBoolean });
+  inset = input(false, { transform: transformBoolean });
   size = input<"sm" | "lg">();
 
   editorStyle = input<string>();

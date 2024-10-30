@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
+import { transformBoolean } from "../utils/tramsforms";
 
 @Component({
   selector: "sd-view",
@@ -27,5 +28,5 @@ import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@a
 })
 export class SdViewControl {
   value = input<any>();
-  fill = input(false);
+  fill = input(false, { transform: transformBoolean });
 }

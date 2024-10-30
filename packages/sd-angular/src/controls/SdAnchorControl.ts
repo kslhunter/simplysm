@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
+import { transformBoolean } from "../utils/tramsforms";
 
 @Component({
   selector: "sd-anchor",
@@ -55,7 +56,7 @@ import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@a
   },
 })
 export class SdAnchorControl {
-  disabled = input(false);
+  disabled = input(false, { transform: transformBoolean });
   theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey">("primary");
 
   constructor() {

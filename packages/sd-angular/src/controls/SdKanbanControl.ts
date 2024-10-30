@@ -15,6 +15,7 @@ import { injectElementRef } from "../utils/injectElementRef";
 import { SdEventsDirective } from "../directives/SdEventsDirective";
 import { ISdResizeEvent } from "../plugins/SdResizeEventPlugin";
 import { NumberUtil } from "@simplysm/sd-core-common";
+import { transformBoolean } from "../utils/tramsforms";
 
 @Component({
   selector: "sd-kanban",
@@ -117,8 +118,8 @@ export class SdKanbanControl<L, T> {
 
   laneValue = $computed(() => this.#laneControl.value());
 
-  selectable = input(false);
-  draggable = input(false);
+  selectable = input(false, { transform: transformBoolean });
+  draggable = input(false, { transform: transformBoolean });
 
   selected = $computed(() => this.#boardControl.selectedValues().includes(this.value()));
   dragKanban = $computed(() => this.#boardControl.dragKanban());

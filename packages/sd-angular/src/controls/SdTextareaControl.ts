@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, input, model, ViewEncapsulation } f
 import { StringUtil } from "@simplysm/sd-core-common";
 import { $computed } from "../utils/$hooks";
 import { injectElementRef } from "../utils/injectElementRef";
+import { transformBoolean } from "../utils/tramsforms";
 
 @Component({
   selector: "sd-textarea",
@@ -186,11 +187,11 @@ export class SdTextareaControl {
   placeholder = input<string>();
   title = input<string>();
   rows = input(3);
-  disabled = input(false);
-  readonly = input(false);
-  required = input(false);
-  inline = input(false);
-  inset = input(false);
+  disabled = input(false, { transform: transformBoolean });
+  readonly = input(false, { transform: transformBoolean });
+  required = input(false, { transform: transformBoolean });
+  inline = input(false, { transform: transformBoolean });
+  inset = input(false, { transform: transformBoolean });
   size = input<"sm" | "lg">();
   validatorFn = input<(value: string | undefined) => string | undefined>();
   theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey">();

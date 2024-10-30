@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
 import { SdUseRippleDirective } from "../directives/SdUseRippleDirective";
+import { transformBoolean } from "../utils/tramsforms";
 
 @Component({
   selector: "sd-button",
@@ -174,11 +175,11 @@ export class SdButtonControl {
     | "link-blue-grey"
   >();
 
-  inline = input(false);
-  inset = input(false);
+  inline = input(false, { transform: transformBoolean });
+  inset = input(false, { transform: transformBoolean });
   size = input<"sm" | "lg">();
 
-  disabled = input(false);
+  disabled = input(false, { transform: transformBoolean });
 
   buttonStyle = input<string>();
   buttonClass = input<string>();

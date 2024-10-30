@@ -21,6 +21,7 @@ import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { $effect, $signal } from "../utils/$hooks";
 import { injectElementRef } from "../utils/injectElementRef";
+import { transformBoolean } from "../utils/tramsforms";
 
 @Component({
   selector: "sd-modal",
@@ -334,14 +335,14 @@ export class SdModalControl {
 
   key = input<string>();
   title = input.required<string>();
-  hideHeader = input(false);
-  hideCloseButton = input(false);
-  useCloseByBackdrop = input(false);
-  useCloseByEscapeKey = input(false);
-  resizable = input(false);
-  movable = input(true);
-  float = input(false);
-  mobileFillDisabled = input(false);
+  hideHeader = input(false, { transform: transformBoolean });
+  hideCloseButton = input(false, { transform: transformBoolean });
+  useCloseByBackdrop = input(false, { transform: transformBoolean });
+  useCloseByEscapeKey = input(false, { transform: transformBoolean });
+  resizable = input(false, { transform: transformBoolean });
+  movable = input(true, { transform: transformBoolean });
+  float = input(false, { transform: transformBoolean });
+  mobileFillDisabled = input(false, { transform: transformBoolean });
 
   heightPx = input<number>();
   widthPx = input<number>();

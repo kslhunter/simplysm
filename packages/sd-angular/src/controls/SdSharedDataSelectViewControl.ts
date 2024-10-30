@@ -30,6 +30,7 @@ import { SD_MODAL_INPUT, SdModalBase, SdModalProvider } from "../providers/SdMod
 import { ISharedDataModalInputParam, ISharedDataModalOutputResult } from "./SdSharedDataSelectControl";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { $computed, $effect, $signal } from "../utils/$hooks";
+import { transformBoolean } from "../utils/tramsforms";
 
 @Component({
   selector: "sd-shared-data-select-view",
@@ -130,7 +131,7 @@ export class SdSharedDataSelectViewControl<
 
   items = input.required<T[]>();
   selectedIcon = input<IconDefinition>();
-  useUndefined = input(false);
+  useUndefined = input(false, { transform: transformBoolean });
   filterFn = input<(item: T, index: number) => boolean>();
 
   modalInputParam = input<TMODAL[typeof SD_MODAL_INPUT]>();

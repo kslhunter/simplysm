@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
+import { transformBoolean } from "../utils/tramsforms";
 
 @Component({
   selector: "sd-additional-button",
@@ -72,5 +73,5 @@ import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@a
 })
 export class SdAdditionalButtonControl {
   size = input<"sm" | "lg">();
-  inset = input(false);
+  inset = input(false, { transform: transformBoolean });
 }

@@ -7,6 +7,7 @@ import { SdCollapseIconControl } from "./SdCollapseIconControl";
 import { SdCheckboxControl } from "./SdCheckboxControl";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { $computed, $signal } from "../utils/$hooks";
+import { transformBoolean } from "../utils/tramsforms";
 
 @Component({
   selector: "sd-permission-table",
@@ -191,7 +192,7 @@ export class SdPermissionTableControl {
   value = model<Record<string, boolean>>({});
 
   items = input<ISdPermission[]>([]);
-  disabled = input(false);
+  disabled = input(false, { transform: transformBoolean });
 
   collapsedItems = $signal(new Set<ISdPermission>());
 

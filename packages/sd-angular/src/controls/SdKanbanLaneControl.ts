@@ -23,6 +23,7 @@ import { SdPaneControl } from "./SdPaneControl";
 import { SdAnchorControl } from "./SdAnchorControl";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
+import { transformBoolean } from "../utils/tramsforms";
 
 @Component({
   selector: "sd-kanban-lane",
@@ -132,9 +133,9 @@ export class SdKanbanLaneControl<L, T> {
 
   #boardControl = inject<SdKanbanBoardControl<L, T>>(forwardRef(() => SdKanbanBoardControl));
 
-  busy = input(false);
+  busy = input(false, { transform: transformBoolean });
 
-  useCollapse = input(false);
+  useCollapse = input(false, { transform: transformBoolean });
   collapse = model(false);
 
   value = input.required<L>();

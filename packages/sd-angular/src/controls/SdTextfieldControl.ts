@@ -407,7 +407,7 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
   inputStyle = input<string>();
   inputClass = input<string>();
   format = input<string>();
-  useNumberComma = input(true);
+  useNumberComma = input(true, { transform: transformBoolean });
 
   controlType = $computed(() => {
     return this.type() === "number"
