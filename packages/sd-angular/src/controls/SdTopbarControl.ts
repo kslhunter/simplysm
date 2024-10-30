@@ -16,13 +16,14 @@ import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { $computed } from "../utils/$hooks";
 import { injectElementRef } from "../utils/injectElementRef";
+import { SdUseRippleDirective } from "../directives/SdUseRippleDirective";
 
 @Component({
   selector: "sd-topbar",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdAnchorControl, SdGapControl, FaIconComponent],
+  imports: [SdAnchorControl, SdGapControl, FaIconComponent, SdUseRippleDirective],
   styles: [
     /* language=SCSS */ `
       @import "../scss/mixins";
@@ -50,12 +51,12 @@ import { injectElementRef } from "../utils/injectElementRef";
         background: var(--background-color);
         color: var(--text-trans-default);
 
-        body.sd-theme-compact &,
-        body.sd-theme-modern & {
-          //border-bottom: 1px solid var(--border-color-light);
-          @include elevation(2);
-          animation: sd-topbar var(--animation-duration) ease-in;
-        }
+        //body.sd-theme-compact &,
+        //body.sd-theme-modern & {
+        //  border-bottom: 1px solid var(--border-color-light);
+        //  @include elevation(2);
+        //  animation: sd-topbar var(--animation-duration) ease-in;
+        //}
 
         /*> ._nav {
         display: inline-block;
@@ -105,8 +106,6 @@ import { injectElementRef } from "../utils/injectElementRef";
 
           color: var(--theme-primary-default);
 
-          @include active-effect(true);
-
           &:hover {
             background: transparent;
             color: var(--theme-primary-darker);
@@ -126,17 +125,17 @@ import { injectElementRef } from "../utils/injectElementRef";
       }*/
       }
 
-      @keyframes sd-topbar {
+      /*@keyframes sd-topbar {
         from {
           opacity: 0;
           transform: translateY(-1em);
         }
-      }
+      }*/
     `,
   ],
   template: `
     @if (hasSidebar()) {
-      <sd-anchor class="_sidebar-toggle-button" (click)="onSidebarToggleButtonClick()">
+      <sd-anchor class="_sidebar-toggle-button" (click)="onSidebarToggleButtonClick()" sdUseRipple>
         <fa-icon [icon]="icons.bars" [fixedWidth]="true" />
       </sd-anchor>
     } @else {

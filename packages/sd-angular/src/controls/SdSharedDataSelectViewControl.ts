@@ -26,7 +26,7 @@ import { SdSelectItemControl } from "./SdSelectItemControl";
 import { SdButtonControl } from "./SdButtonControl";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { SdAnchorControl } from "./SdAnchorControl";
-import { SdModalBase, SdModalProvider } from "../providers/SdModalProvider";
+import { SD_MODAL_INPUT, SdModalBase, SdModalProvider } from "../providers/SdModalProvider";
 import { ISharedDataModalInputParam, ISharedDataModalOutputResult } from "./SdSharedDataSelectControl";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { $computed, $effect, $signal } from "../utils/$hooks";
@@ -133,7 +133,7 @@ export class SdSharedDataSelectViewControl<
   useUndefined = input(false);
   filterFn = input<(item: T, index: number) => boolean>();
 
-  modalInputParam = input<TMODAL["__tInput__"]>();
+  modalInputParam = input<TMODAL[typeof SD_MODAL_INPUT]>();
   modalType = input<Type<TMODAL>>();
   modalHeader = input<string>();
 

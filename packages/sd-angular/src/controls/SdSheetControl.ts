@@ -618,7 +618,7 @@ export class SdSheetControl<T> {
   /** 확장된 항목 목록 */
   expandedItems = model<T[]>([]);
 
-  focusMode = input<"row" | "cell">("row");
+  focusMode = input<"row" | "cell">("cell");
   busy = input(false);
 
   /** Children 설정하는 함수 */

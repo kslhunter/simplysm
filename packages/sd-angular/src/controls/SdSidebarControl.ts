@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, forwardRef, inject, ViewEncapsulati
 import { SdSidebarContainerControl } from "./SdSidebarContainerControl";
 import { $computed } from "../utils/$hooks";
 
+
 @Component({
   selector: "sd-sidebar",
   changeDetection: ChangeDetectionStrategy.OnPush,

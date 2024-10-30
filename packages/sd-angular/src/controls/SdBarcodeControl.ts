@@ -8,9 +8,7 @@ import { $effect } from "../utils/$hooks";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
-  template: `
-    <svg #svgEl></svg>
-  `,
+  template: ` <svg #svgEl></svg> `,
 })
 export class SdBarcodeControl {
   value = input<string>();
@@ -23,7 +21,8 @@ export class SdBarcodeControl {
   constructor() {
     $effect(() => {
       jsbarcode(this.svgElRef().nativeElement, this.value() ?? "", {
-        margin: -5,
+        marginTop: -5,
+        marginBottom: -5,
         format: this.type(),
         width: this.lineWidth(),
         height: this.height(),

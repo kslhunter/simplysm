@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/core";
+import { useRipple } from "../utils/useRipple";
 
 @Component({
   selector: "sd-topbar-nav",
@@ -17,11 +18,13 @@ import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/
         padding: 0 var(--gap-default);
         text-align: center;
         color: var(--text-trans-lighter);
-
-        @include active-effect(true);
       }
     `,
   ],
   template: ` <ng-content></ng-content>`,
 })
-export class SdTopbarNavControl {}
+export class SdTopbarNavControl {
+  constructor() {
+    useRipple();
+  }
+}

@@ -6,7 +6,7 @@ import { $computed, $signal } from "../utils/$hooks";
 
 export interface ISharedSignal<T extends ISharedDataBase<string | number>> extends Signal<T[]> {
   $get(key: T["__valueKey"] | undefined): T | undefined;
-  $wait(): Promise<void>;
+  // $wait(): Promise<void>;
 }
 
 @Injectable({ providedIn: "root" })
@@ -63,12 +63,12 @@ export class SdSharedDataProvider<T extends Record<string, ISharedDataBase<strin
       const computedMap = $computed(() => info.signal!().toMap((item) => item.__valueKey));
       info.signal["$get"] = (key: T[K]["__valueKey"]) => computedMap().get(key);
 
-      let loaded = false;
-      info.signal["$wait"] = () => Wait.until(() => loaded);
+      // let loaded = false;
+      // info.signal["$wait"] = () => Wait.until(() => loaded);
 
       void (async () => {
         await this.#loadDataAsync(name);
-        loaded = true;
+        // loaded = true;
       })();
     }
 

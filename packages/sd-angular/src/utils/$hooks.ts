@@ -12,11 +12,13 @@ import {
 } from "@angular/core";
 import {
   producerIncrementEpoch,
-  producerNotifyConsumers, producerUpdatesAllowed,
+  producerNotifyConsumers,
+  producerUpdatesAllowed,
   runPostSignalSetFn,
-  SIGNAL
+  SIGNAL,
 } from "@angular/core/primitives/signals";
 import { ActivatedRoute, CanDeactivateFn, Route } from "@angular/router";
+import { ObjectUtil } from "@simplysm/sd-core-common";
 
 const initializedRouteConfigSet = new Set<Route>();
 
@@ -47,17 +49,7 @@ export function $signal<T>(): SdWritableSignal<T | undefined>;
 export function $signal<T>(initialValue: T): SdWritableSignal<T>;
 export function $signal<T>(initialValue?: T): SdWritableSignal<T | undefined> {
   const sig = signal(initialValue) as SdWritableSignal<T | undefined>;
-  sig.$mark = () => {
-    if (!producerUpdatesAllowed()) {
-      throw new Error();
-    }
-
-    const node = sig[SIGNAL] as any;
-    node.version++;
-    producerIncrementEpoch();
-    producerNotifyConsumers(node);
-    runPostSignalSetFn();
-  };
+  sig.$mark = () => $mark(sig);
   return sig;
 }
 
@@ -169,3 +161,79 @@ export function $getter<F extends (...args: any[]) => any>(fn: F): F {
   }) as F;
 }
 */
+
+export type TEffFn<FN extends Function> = FN & {
+  signals: Signal<any>[];
+};
+export function effFn<FN extends Function>(signals: Signal<any>[], fn: FN): TEffFn<FN> {
+  fn["signals"] = signals;
+  return fn as TEffFn<FN>;
+}
+
+export function $mark(sig: WritableSignal<any>) {
+  if (!producerUpdatesAllowed()) {
+    throw new Error();
+  }
+
+  const node = sig[SIGNAL] as any;
+  node.version++;
+  producerIncrementEpoch();
+  producerNotifyConsumers(node);
+  runPostSignalSetFn();
+}
+
+export function $arr<T>(sig: WritableSignal<T[]>) {
+  return {
+    insert(i: number, item: T) {
+      sig.update((v) => {
+        const r = [...v];
+        r.insert(i, item);
+        return r;
+      });
+    },
+    remove(itemOrFn: T | ((item: T, i: number) => boolean)) {
+      sig.update((v) => {
+        const r = [...v];
+        r.remove(itemOrFn as any);
+        return r;
+      });
+    },
+    snapshot(keyPropName: keyof T) {
+      sig[ORIGIN_SNAPSHOT] = {
+        keyPropName,
+        snapshot: ObjectUtil.clone(sig()).toMap((item) => item[keyPropName]),
+      };
+    },
+    changed(item: T) {
+      if (sig[ORIGIN_SNAPSHOT] == null) return false;
+      const orgItemMap = sig[ORIGIN_SNAPSHOT].snapshot as Map<any, any>;
+      const keyPropName = sig[ORIGIN_SNAPSHOT].keyPropName as keyof T;
+
+      if (item[keyPropName] == null) return true;
+
+      const orgItem = orgItemMap.get(item[keyPropName]);
+      return !ObjectUtil.equal(orgItem, item);
+    },
+    diffs() {
+      if (sig[ORIGIN_SNAPSHOT] == null) return [];
+      const orgItemMap = sig[ORIGIN_SNAPSHOT].snapshot as Map<any, any>;
+      const keyPropName = sig[ORIGIN_SNAPSHOT].keyPropName as keyof T;
+
+      return sig().oneWayDiffs(orgItemMap, keyPropName);
+    },
+  };
+}
+
+export function $data<T>(sig: WritableSignal<T>) {
+  return {
+    snapshot() {
+      sig[ORIGIN_SNAPSHOT] = ObjectUtil.clone(sig());
+    },
+    changed() {
+      const orgData = sig[ORIGIN_SNAPSHOT];
+      return !ObjectUtil.equal(orgData, sig());
+    },
+  };
+}
+
+const ORIGIN_SNAPSHOT = Symbol();

@@ -15,13 +15,14 @@ import { SdCollapseControl } from "./SdCollapseControl";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { $computed } from "../utils/$hooks";
+import { SdUseRippleDirective } from "../directives/SdUseRippleDirective";
 
 @Component({
   selector: "sd-list-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdCollapseIconControl, SdCollapseControl, FaIconComponent],
+  imports: [SdCollapseIconControl, SdCollapseControl, FaIconComponent, SdUseRippleDirective],
   styles: [
     /* language=SCSS */ `
       @import "../scss/mixins";
@@ -45,8 +46,6 @@ import { $computed } from "../utils/$hooks";
 
         &[sd-layout="accordion"] {
           > ._content {
-            @include active-effect(true);
-
             &:hover {
               background: var(--trans-lighter);
             }
@@ -63,8 +62,6 @@ import { $computed } from "../utils/$hooks";
           }
 
           &[sd-has-children="true"] {
-            @include active-effect(false);
-
             > ._content {
               display: block;
               background: transparent;
@@ -93,12 +90,12 @@ import { $computed } from "../utils/$hooks";
             }
 
             &:hover {
-              background: var(--trans-light);
+              background: var(--trans-lighter);
             }
 
-            &:active {
+            /*&:active {
               background: var(--trans-dark);
-            }
+            }*/
           }
         }
       }
@@ -110,6 +107,7 @@ import { $computed } from "../utils/$hooks";
       [style]="contentStyle()"
       (click)="onContentClick()"
       tabindex="0"
+      [sdUseRipple]="!(layout() === 'flat' && hasChildren())"
     >
       <div class="flex-row flex-gap-xs">
         @if (selectedIcon() && !hasChildren()) {

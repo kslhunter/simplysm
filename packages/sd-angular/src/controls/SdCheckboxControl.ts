@@ -10,6 +10,8 @@ import {
 
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
+import { transformBoolean } from "../utils/tramsforms";
+import { useRipple } from "../utils/useRipple";
 
 @Component({
   selector: "sd-checkbox",
@@ -27,7 +29,6 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
         @include form-control-base();
         color: inherit;
         cursor: pointer;
-        @include active-effect(true);
         border-radius: var(--border-radius-default);
 
         height: calc(var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-sm) * 2 + 2px);
@@ -98,6 +99,10 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
             &[sd-checked="true"] {
               > ._indicator_rect {
                 background: var(--theme-#{$key}-default);
+
+                > ._indicator {
+                  color: white;
+                }
               }
             }
           }
@@ -230,15 +235,19 @@ export class SdCheckboxControl {
   value = model(false);
 
   icon = input(this.icons.check);
-  radio = input(false);
-  disabled = input(false);
+  radio = input(false, { transform: transformBoolean });
+  disabled = input(false, { transform: transformBoolean });
 
   size = input<"sm" | "lg">();
-  inline = input(false);
-  inset = input(false);
+  inline = input(false, { transform: transformBoolean });
+  inset = input(false, { transform: transformBoolean });
   theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey" | "white">();
 
   contentStyle = input<string>();
+
+  constructor() {
+    useRipple(() => !this.disabled());
+  }
 
   @HostListener("click")
   onClick() {

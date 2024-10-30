@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, HostListener, input, model, ViewEnc
 import { DateOnly, DateTime, JsonConvert, NumberUtil, StringUtil, Time } from "@simplysm/sd-core-common";
 import { $computed } from "../utils/$hooks";
 import { injectElementRef } from "../utils/injectElementRef";
+import { transformBoolean } from "../utils/tramsforms";
 
 @Component({
   selector: "sd-textfield",
@@ -357,6 +358,7 @@ import { injectElementRef } from "../utils/injectElementRef";
         [attr.step]="controlStep()"
         [attr.pattern]="pattern()"
         [attr.title]="title() ?? placeholder()"
+        [attr.autocomplete]="autocomplete()"
         (input)="onInput($event)"
         [attr.inputmode]="type() === 'number' ? 'numeric' : undefined"
         [style]="inputStyle()"
@@ -385,19 +387,20 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
   type = input.required<K>();
   placeholder = input<string>();
   title = input<string>();
-  disabled = input(false);
-  readonly = input(false);
-  required = input(false);
+  disabled = input(false, { transform: transformBoolean });
+  readonly = input(false, { transform: transformBoolean });
+  required = input(false, { transform: transformBoolean });
   min = input<TSdTextfieldTypes[K]>();
   max = input<TSdTextfieldTypes[K]>();
   minlength = input<number>();
   maxlength = input<number>();
+  autocomplete = input<string>();
 
   /** 10, 1, 0.1, 0.01, 0.01 방식으로 입력 */
   step = input<number>();
   pattern = input<string>();
-  inline = input(false);
-  inset = input(false);
+  inline = input(false, { transform: transformBoolean });
+  inset = input(false, { transform: transformBoolean });
   size = input<"sm" | "lg">();
   validatorFn = input<(value: TSdTextfieldTypes[K] | undefined) => string | undefined>();
   theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey">();

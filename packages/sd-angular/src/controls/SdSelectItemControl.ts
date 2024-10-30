@@ -15,6 +15,7 @@ import { SdCheckboxControl } from "./SdCheckboxControl";
 import { SdGapControl } from "./SdGapControl";
 import { $computed, $effect } from "../utils/$hooks";
 import { injectElementRef } from "../utils/injectElementRef";
+import { useRipple } from "../utils/useRipple";
 
 @Component({
   selector: "sd-select-item",
@@ -32,10 +33,6 @@ import { injectElementRef } from "../utils/injectElementRef";
         cursor: pointer;
         transition: background 0.1s ease-in;
         background: white;
-
-        @media all and (pointer: coarse) {
-          @include active-effect(true);
-        }
 
         &:hover {
           transition: background 0.1s ease-out;
@@ -58,10 +55,6 @@ import { injectElementRef } from "../utils/injectElementRef";
         &[sd-disabled="true"] {
           background: var(--theme-grey-default);
           opacity: 0.3;
-
-          @media all and (pointer: coarse) {
-            @include active-effect(false);
-          }
         }
       }
     `,
@@ -100,6 +93,8 @@ export class SdSelectItemControl {
   isSelected = $computed(() => this.#selectControl.getIsSelectedItemControl(this));
 
   constructor() {
+    useRipple(() => !this.disabled());
+
     $effect((onCleanup) => {
       this.#selectControl.itemControls.update((v) => [...v, this]);
 

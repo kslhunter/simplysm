@@ -15,26 +15,16 @@ import { $computed } from "../utils/$hooks";
       @import "../scss/mixins";
 
       sd-pagination {
-        //display: block;
         display: flex;
         flex-direction: row;
 
         > sd-anchor {
           display: inline-block;
           padding: var(--gap-sm);
-          //  margin: var(--gap-xs);
-          //  border-radius: var(--border-radius-sm);
-          //
+          
           &[sd-selected="true"] {
             text-decoration: underline;
           }
-
-          //
-          //  @include active-effect(true);
-          //
-          //  &:hover {
-          //    background: var(--theme-grey-lightest);
-          //  }
         }
       }
     `

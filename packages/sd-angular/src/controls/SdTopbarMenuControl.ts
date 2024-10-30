@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
+import { useRipple } from "../utils/useRipple";
 
 @Component({
   selector: "sd-topbar-menu",
@@ -14,7 +15,6 @@ import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@a
       sd-topbar-menu {
         display: inline-block;
         cursor: pointer;
-        @include active-effect(true);
         transition: background 0.1s linear;
         font-weight: bold;
 
@@ -53,7 +53,6 @@ import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@a
         &[disabled="true"] {
           pointer-events: none;
           opacity: 0.5;
-          @include active-effect(false);
         }
       }
     `,
@@ -67,4 +66,8 @@ import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@a
 export class SdTopbarMenuControl {
   disabled = input(false);
   theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey">("primary");
+
+  constructor() {
+    useRipple(() => !this.disabled());
+  }
 }

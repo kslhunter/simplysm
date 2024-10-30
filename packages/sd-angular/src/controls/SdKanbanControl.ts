@@ -14,6 +14,7 @@ import { SdKanbanLaneControl } from "./SdKanbanLaneControl";
 import { injectElementRef } from "../utils/injectElementRef";
 import { SdEventsDirective } from "../directives/SdEventsDirective";
 import { ISdResizeEvent } from "../plugins/SdResizeEventPlugin";
+import { NumberUtil } from "@simplysm/sd-core-common";
 
 @Component({
   selector: "sd-kanban",
@@ -151,8 +152,8 @@ export class SdKanbanControl<L, T> {
   }
 
   onCardResize(event: ISdResizeEvent) {
-    const marginBottom = event.entry.target.computedStyleMap().get("margin-bottom") as CSSUnitValue | undefined;
-    this.cardHeight.set(event.entry.target.clientHeight + (marginBottom?.value ?? 0));
+    const marginBottom = getComputedStyle(event.entry.target).marginBottom;
+    this.cardHeight.set(event.entry.target.clientHeight + (NumberUtil.parseInt(marginBottom) ?? 0));
   }
 
   onCardDragStart() {

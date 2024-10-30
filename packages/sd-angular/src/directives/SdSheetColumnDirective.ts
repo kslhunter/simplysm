@@ -3,6 +3,7 @@ import {
   SdSheetColumnCellTemplateContext,
   SdSheetColumnCellTemplateDirective,
 } from "./SdSheetColumnCellTemplateDirective";
+import { transformBoolean } from "../utils/tramsforms";
 
 @Directive({
   selector: "sd-sheet-column",
@@ -10,15 +11,15 @@ import {
 })
 export class SdSheetColumnDirective<T> {
   key = input.required<string>();
-  fixed = input(false);
+  fixed = input(false, { transform: transformBoolean });
   header = input<string | string[]>();
   headerStyle = input<string>();
   tooltip = input<string>();
   width = input<string>();
-  useOrdering = input(false);
-  resizable = input(false);
-  hidden = input(false);
-  collapse = input(false);
+  useOrdering = input(false, { transform: transformBoolean });
+  resizable = input(false, { transform: transformBoolean });
+  hidden = input(false, { transform: transformBoolean });
+  collapse = input(false, { transform: transformBoolean });
 
   cellTemplateRef = contentChild<any, TemplateRef<SdSheetColumnCellTemplateContext<T>>>(
     SdSheetColumnCellTemplateDirective,

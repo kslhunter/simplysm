@@ -27,6 +27,8 @@ import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { SdButtonControl } from "./SdButtonControl";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { $computed, $effect, $signal } from "../utils/$hooks";
+import { transformBoolean } from "../utils/tramsforms";
+import { SdUseRippleDirective } from "../directives/SdUseRippleDirective";
 
 @Component({
   selector: "sd-select",
@@ -46,6 +48,7 @@ import { $computed, $effect, $signal } from "../utils/$hooks";
     SdTypedTemplateDirective,
     SdButtonControl,
     FaIconComponent,
+    SdUseRippleDirective,
   ],
   styles: [
     /* language=SCSS */ `
@@ -78,7 +81,6 @@ import { $computed, $effect, $signal } from "../utils/$hooks";
               padding: var(--gap-sm) var(--gap-default);
 
               cursor: pointer;
-              @include active-effect(true);
 
               > ._sd-select-control-content {
                 flex-grow: 1;
@@ -129,8 +131,6 @@ import { $computed, $effect, $signal } from "../utils/$hooks";
             > ._sd-select-control {
               color: var(--text-trans-light);
               cursor: default;
-
-              @include active-effect(false);
 
               > ._sd-select-control-icon {
                 display: none;
@@ -221,7 +221,7 @@ import { $computed, $effect, $signal } from "../utils/$hooks";
       [contentStyle]="contentStyle()"
       [(open)]="open"
     >
-      <div class="_sd-select-control">
+      <div class="_sd-select-control" [sdUseRipple]="!disabled()">
         <div #contentEl class="_sd-select-control-content"></div>
         <div class="_sd-select-control-icon">
           <fa-icon [icon]="icons.caretDown" />
@@ -320,21 +320,21 @@ export class SdSelectControl<M extends "single" | "multi", T> {
   value = model<TSelectValue<any>[M]>();
   open = model(false);
 
-  required = input(false);
-  disabled = input(false);
+  required = input(false, { transform: transformBoolean });
+  disabled = input(false, { transform: transformBoolean });
 
   items = input<T[]>();
   trackByFn = input<(item: T, index: number) => any>((item) => item);
   getChildrenFn = input<(item: T, index: number, depth: number) => T[]>();
 
-  inline = input(false);
-  inset = input(false);
+  inline = input(false, { transform: transformBoolean });
+  inset = input(false, { transform: transformBoolean });
   size = input<"sm" | "lg">();
   selectMode = input("single" as M);
   contentClass = input<string>();
   contentStyle = input<string>();
   multiSelectionDisplayDirection = input<"vertical" | "horizontal">();
-  hideSelectAll = input(false);
+  hideSelectAll = input(false, { transform: transformBoolean });
   placeholder = input<string>();
 
   contentElRef = viewChild.required<any, ElementRef<HTMLElement>>("contentEl", { read: ElementRef });

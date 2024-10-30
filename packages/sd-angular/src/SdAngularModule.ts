@@ -51,6 +51,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { SdThemeProvider } from "./providers/SdThemeProvider";
 import { SdLocalStorageProvider } from "./providers/SdLocalStorageProvider";
+import { ISdAppStructureItem } from "./utils/SdAppStructureUtil";
 
 @NgModule({
   imports: [],
@@ -68,6 +69,7 @@ export class SdAngularModule {
 
   static forRoot(opt: {
     clientName: string;
+    appStructure: ISdAppStructureItem[];
     defaultTheme?: "compact" | "modern" | "mobile" | "kiosk";
     icons?: ISdAngularIcon;
   }): ModuleWithProviders<SdAngularModule> {
@@ -79,6 +81,7 @@ export class SdAngularModule {
           useFactory: () => {
             const provider = new SdAngularConfigProvider();
             provider.clientName = opt.clientName;
+            provider.appStructure = opt.appStructure;
             provider.defaultTheme = opt.defaultTheme ?? "modern";
             provider.icons = opt.icons ?? {
               fallback: faQuestionCircle,
@@ -113,6 +116,12 @@ export class SdAngularModule {
               sort: faSort,
               sortDown: faSortDown,
               sortUp: faSortUp,
+
+              /*plusCircle: faPlusCircle,
+              eraser: faEraser,
+              redo: faRedo,
+              upload: faUpload,
+              fileExcel: faFileExcel,*/
 
               search: faSearch,
               externalLink: faExternalLink,

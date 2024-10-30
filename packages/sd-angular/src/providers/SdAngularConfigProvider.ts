@@ -1,9 +1,11 @@
 import { Injectable } from "@angular/core";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
+import { ISdAppStructureItem } from "../utils/SdAppStructureUtil";
 
 @Injectable({ providedIn: "root" })
 export class SdAngularConfigProvider {
   clientName!: string;
+  appStructure!: ISdAppStructureItem[];
   defaultTheme!: "compact" | "modern" | "mobile" | "kiosk";
   icons!: ISdAngularIcon;
 }
@@ -41,6 +43,12 @@ export interface ISdAngularIcon {
   sort: IconDefinition;
   sortDown: IconDefinition;
   sortUp: IconDefinition;
+
+  /*plusCircle: IconDefinition;
+  eraser: IconDefinition;
+  redo: IconDefinition;
+  upload: IconDefinition;
+  fileExcel: IconDefinition;*/
 
   search: IconDefinition;
   edit: IconDefinition;

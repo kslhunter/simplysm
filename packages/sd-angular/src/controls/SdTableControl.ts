@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
+import { transformBoolean } from "../utils/tramsforms";
 
 @Component({
   selector: "sd-table",
@@ -120,7 +121,7 @@ import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@a
   },
 })
 export class SdTableControl {
-  inset = input(false);
-  inline = input(false);
+  inset = input(false, { transform: transformBoolean });
+  inline = input(false, { transform: transformBoolean });
   cellBorder = input<"vertical" | "horizontal" | "all">("all");
 }

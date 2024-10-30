@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/core";
+import { useRipple } from "../utils/useRipple";
 
 @Component({
   selector: "sd-select-button",
@@ -17,7 +18,6 @@ import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/
         cursor: pointer;
         color: var(--theme-primary-default);
 
-        @include active-effect(true);
         transition: background 0.1s linear;
 
         &:hover {
@@ -29,4 +29,8 @@ import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/
   ],
   template: ` <ng-content></ng-content> `,
 })
-export class SdSelectButtonControl {}
+export class SdSelectButtonControl {
+  constructor() {
+    useRipple();
+  }
+}

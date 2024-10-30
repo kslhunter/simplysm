@@ -3,6 +3,7 @@ import { SdSystemConfigProvider } from "../providers/SdSystemConfigProvider";
 import { ISdResizeEvent } from "../plugins/SdResizeEventPlugin";
 import { $effect, $signal } from "../utils/$hooks";
 import { injectElementRef } from "../utils/injectElementRef";
+import { transformBoolean } from "../utils/tramsforms";
 
 @Component({
   selector: "sd-dock",
@@ -83,7 +84,7 @@ export class SdDockControl {
 
   key = input<string>();
   position = input<"top" | "bottom" | "right" | "left">("top");
-  resizable = input(false);
+  resizable = input(false, { transform: transformBoolean });
 
   size = $signal(0);
 

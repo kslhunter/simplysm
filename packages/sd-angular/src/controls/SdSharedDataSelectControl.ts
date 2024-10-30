@@ -10,7 +10,7 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import { ISharedDataBase } from "../providers/SdSharedDataProvider";
-import { SdModalBase, SdModalProvider } from "../providers/SdModalProvider";
+import { SD_MODAL_INPUT, SdModalBase, SdModalProvider } from "../providers/SdModalProvider";
 import { SdItemOfTemplateContext, SdItemOfTemplateDirective } from "../directives/SdItemOfTemplateDirective";
 import { SdSelectControl, TSelectValue } from "./SdSelectControl";
 import { SdDockContainerControl } from "./SdDockContainerControl";
@@ -24,6 +24,7 @@ import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { SdSelectButtonControl } from "./SdSelectButtonControl";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { $computed, $signal } from "../utils/$hooks";
+import { transformBoolean } from "../utils/tramsforms";
 
 @Component({
   selector: "sd-shared-data-select",
@@ -131,21 +132,21 @@ export class SdSharedDataSelectControl<
 
   items = input.required<T[]>();
 
-  disabled = input(false);
-  required = input(false);
-  useUndefined = input(false);
-  inset = input(false);
-  inline = input(false);
+  disabled = input(false, { transform: transformBoolean });
+  required = input(false, { transform: transformBoolean });
+  useUndefined = input(false, { transform: transformBoolean });
+  inset = input(false, { transform: transformBoolean });
+  inline = input(false, { transform: transformBoolean });
 
   size = input<"sm" | "lg">();
   selectMode = input("single" as M);
   filterFn = input<(item: T, index: number, ...params: any[]) => boolean>();
   filterFnParams = input<any[]>();
 
-  modalInputParam = input<TMODAL["__tInput__"]>();
+  modalInputParam = input<TMODAL[typeof SD_MODAL_INPUT]>();
   modalType = input<Type<TMODAL>>();
   modalHeader = input<string>();
-  editModal = input<[Type<TEDITMODAL>, string?, TEDITMODAL["__tInput__"]?]>();
+  editModal = input<[Type<TEDITMODAL>, string?, TEDITMODAL[typeof SD_MODAL_INPUT]?]>();
 
   selectClass = input<string>();
   multiSelectionDisplayDirection = input<"vertical" | "horizontal">();

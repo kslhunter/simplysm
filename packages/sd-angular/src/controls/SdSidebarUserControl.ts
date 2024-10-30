@@ -5,13 +5,14 @@ import { SdListControl } from "./SdListControl";
 import { SdListItemControl } from "./SdListItemControl";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { $signal } from "../utils/$hooks";
+import { SdUseRippleDirective } from "../directives/SdUseRippleDirective";
 
 @Component({
   selector: "sd-sidebar-user",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdCollapseIconControl, SdCollapseControl, SdListControl, SdListItemControl],
+  imports: [SdCollapseIconControl, SdCollapseControl, SdListControl, SdListItemControl, SdUseRippleDirective],
   styles: [
     /* language=SCSS */ `
       @import "../scss/mixins";
@@ -24,8 +25,6 @@ import { $signal } from "../utils/$hooks";
             display: block;
             cursor: pointer;
             user-select: none;
-
-            @include active-effect(true);
 
             padding: var(--gap-default);
             //margin: 0 var(--gap-default);
@@ -60,7 +59,7 @@ import { $signal } from "../utils/$hooks";
           }
         }
       }
-    `
+    `,
   ],
   template: `
     <div class="_content" [style]="contentStyle()" [class]="contentClass()">
@@ -68,7 +67,7 @@ import { $signal } from "../utils/$hooks";
         <ng-content></ng-content>
       </div>
       @if (userMenu()?.title) {
-        <div class="_menu-button" (click)="onMenuOpenButtonClick()">
+        <div class="_menu-button" (click)="onMenuOpenButtonClick()" sdUseRipple>
           {{ userMenu()?.title }}
           <sd-collapse-icon [open]="menuOpen()" style="float: right;" [openRotate]="180" />
         </div>
@@ -84,10 +83,11 @@ import { $signal } from "../utils/$hooks";
           }
         </sd-list>
       </sd-collapse>
-    }`,
+    }
+  `,
   host: {
-    "[attr.sd-menu-open]": "menuOpen()"
-  }
+    "[attr.sd-menu-open]": "menuOpen()",
+  },
 })
 export class SdSidebarUserControl {
   icons = inject(SdAngularConfigProvider).icons;
