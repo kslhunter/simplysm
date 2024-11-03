@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, HostListener, inject, input, ViewEncapsulation } from "@angular/core";
 import { SdBusyProvider } from "../providers/SdBusyProvider";
 import { $computed } from "../utils/$hooks";
-import { transformBoolean } from "../utils/tramsforms";
+import { transformBoolean, transformNullableBoolean } from "../utils/tramsforms";
 
 @Component({
   selector: "sd-busy-container",
@@ -357,7 +357,7 @@ export class SdBusyContainerControl {
   busy = input(false, { transform: transformBoolean });
   message = input<string>();
   type = input<"spinner" | "bar" | "cube">();
-  noFade = input<boolean>();
+  noFade = input(undefined, { transform: transformNullableBoolean });
   progressPercent = input<number>();
 
   currType = $computed(() => this.type() ?? this.#sdBusy.type());

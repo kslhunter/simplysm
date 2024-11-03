@@ -53,41 +53,6 @@ export function $signal<T>(initialValue?: T): SdWritableSignal<T | undefined> {
   return sig;
 }
 
-export interface SdWritableSignalSet<T> extends SdWritableSignal<Set<T>> {
-  $toggle(v: T, addOrDel?: "add" | "del"): void;
-}
-
-export function $signalSet<T>(initialValue?: Set<T>): SdWritableSignalSet<T> {
-  const sig = $signal(initialValue ?? new Set<T>()) as SdWritableSignalSet<T>;
-  sig.$toggle = (value, addOrDel) => {
-    sig.update((v) => new Set(v).toggle(value, addOrDel));
-  };
-  return sig;
-}
-
-export interface SdWritableSignalMap<K, T> extends SdWritableSignal<Map<K, T>> {
-  $set(k: K, v: T): void;
-
-  $update(k: K, v: (val: T | undefined) => T): void;
-}
-
-export function $signalMap<K, T>(
-  initialValue?: Map<K, T>,
-): WritableSignal<Map<K, T>> & {
-  $mark(): void;
-  $set(k: K, v: T): void;
-  $update(k: K, v: (val: T | undefined) => T): void;
-} {
-  const sig = $signal(initialValue ?? new Map<K, T>()) as SdWritableSignalMap<K, T>;
-  sig.$set = (k, v) => {
-    sig.update((m) => new Map(m).set(k, v));
-  };
-  sig.$update = (k, v) => {
-    sig.update((m) => new Map(m).set(k, v(m.get(k))));
-  };
-  return sig as any;
-}
-
 export function $effect(fn: (onCleanup: EffectCleanupRegisterFn) => Promise<void>): never;
 export function $effect(fn: (onCleanup: EffectCleanupRegisterFn) => void): EffectRef;
 export function $effect(signals: Signal<any>[], fn: (onCleanup: EffectCleanupRegisterFn) => void): EffectRef;
@@ -149,19 +114,6 @@ export function $computed(...args: any): Signal<any> {
   }
 }
 
-/*
-export function $getter<F extends (...args: any[]) => any>(fn: F): F {
-  const sigCache = new TreeMap<{ value: any }>();
-
-  return ((...args) => {
-    return sigCache.getOrCreate(
-      args,
-      $computed(() => fn(args)),
-    ).value;
-  }) as F;
-}
-*/
-
 export type TEffFn<FN extends Function> = FN & {
   signals: Signal<any>[];
 };
@@ -181,6 +133,8 @@ export function $mark(sig: WritableSignal<any>) {
   producerNotifyConsumers(node);
   runPostSignalSetFn();
 }
+
+const ORIGIN_SNAPSHOT = Symbol();
 
 export function $arr<T>(sig: WritableSignal<T[]>) {
   return {
@@ -236,4 +190,21 @@ export function $data<T>(sig: WritableSignal<T>) {
   };
 }
 
-const ORIGIN_SNAPSHOT = Symbol();
+export function $set<T>(sig: WritableSignal<Set<T>>) {
+  return {
+    toggle(value: T, addOrDel?: "add" | "del") {
+      sig.update((v) => new Set(v).toggle(value, addOrDel));
+    },
+  };
+}
+
+export function $map<K, T>(sig: WritableSignal<Map<K, T>>) {
+  return {
+    set(key: K, value: T) {
+      sig.update((m) => new Map(m).set(key, value));
+    },
+    update(key: K, value: (val: T | undefined) => T) {
+      sig.update((m) => new Map(m).set(key, value(m.get(key))));
+    },
+  };
+}

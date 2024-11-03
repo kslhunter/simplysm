@@ -36,35 +36,44 @@ import { transformBoolean } from "../utils/tramsforms";
     NgTemplateOutlet,
   ],
   template: `
-    <sd-busy-container [busy]="busy()">
-      @if (initialized()) {
-        @if (denied()) {
-          <sd-pane class="tx-theme-grey-light p-xxl tx-center" [class.show-effect]="containerType !== 'modal'">
-            <br />
-            <fa-icon [icon]="faTriangleExclamation" [fixedWidth]="true" size="5x" />
-            <br />
-            <br />
-            {{ title() }}에 대한 사용권한이 없습니다. 시스템 관리자에게 문의하세요.
-          </sd-pane>
-        } @else if (containerType) {
-          <sd-topbar-container>
-            <sd-topbar>
-              <h4>{{ title() }}</h4>
+    @if (denied()) {
+      <sd-pane
+        class="tx-theme-grey-light p-xxl tx-center"
+        [class.show-effect]="!noEffect() && containerType !== 'modal'"
+      >
+        <br />
+        <fa-icon [icon]="faTriangleExclamation" [fixedWidth]="true" size="5x" />
+        <br />
+        <br />
+        {{ title() }}에 대한 사용권한이 없습니다. 시스템 관리자에게 문의하세요.
+      </sd-pane>
+    } @else if (containerType === "page") {
+      <sd-topbar-container>
+        <sd-topbar>
+          <h4>{{ title() }}</h4>
 
-              <ng-template [ngTemplateOutlet]="topbarTemplateRef() ?? null" />
-            </sd-topbar>
+          @if (initialized()) {
+            <ng-template [ngTemplateOutlet]="topbarTemplateRef() ?? null" />
+          }
+        </sd-topbar>
 
-            <sd-pane class="show-effect">
+        <sd-busy-container [busy]="busy()">
+          @if (initialized()) {
+            <sd-pane [class.show-effect]="!noEffect()">
               <ng-template [ngTemplateOutlet]="contentTemplateRef() ?? null" />
             </sd-pane>
-          </sd-topbar-container>
-        } @else {
-          <sd-pane [class.show-effect]="containerType !== 'modal'">
+          }
+        </sd-busy-container>
+      </sd-topbar-container>
+    } @else {
+      <sd-busy-container [busy]="busy()">
+        @if (initialized()) {
+          <sd-pane [class.show-effect]="!noEffect() && containerType !== 'modal'">
             <ng-template [ngTemplateOutlet]="contentTemplateRef() ?? null" />
           </sd-pane>
         }
-      }
-    </sd-busy-container>
+      </sd-busy-container>
+    }
   `,
 })
 export class SdBaseContainerControl {
@@ -85,12 +94,14 @@ export class SdBaseContainerControl {
   title = $computed(() =>
     this.#sdActivatedModal
       ? this.#sdActivatedModal.modal.title()
-      : this.#sdAppStructure.getTitleByCode(this.pageCode()!),
+      : this.#sdAppStructure.getTitleByCode(this.pageCode()),
   );
 
   busy = input(false, { transform: transformBoolean });
   initialized = input(true, { transform: transformBoolean });
   denied = input(false, { transform: transformBoolean });
+  noEffect = input(false, { transform: transformBoolean });
+  background = input<string>();
 
   topbarTemplateRef = contentChild("topbarTemplate", { read: TemplateRef });
   contentTemplateRef = contentChild("contentTemplate", { read: TemplateRef });
@@ -103,6 +114,14 @@ export class SdBaseContainerControl {
         }
       });
     }
+
+    $effect((onCleanup) => {
+      document.body.style.background = this.background() ?? "";
+
+      onCleanup(() => {
+        document.body.style.background = "";
+      });
+    });
   }
 
   protected readonly faTriangleExclamation = faTriangleExclamation;

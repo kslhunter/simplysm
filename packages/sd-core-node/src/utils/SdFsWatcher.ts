@@ -1,7 +1,6 @@
 import { FunctionQueue } from "@simplysm/sd-core-common";
 import Watcher from "watcher";
 import type { WatcherOptions } from "watcher/dist/types";
-import type { TargetEvent } from "watcher/dist/enums";
 import { PathUtil, TNormPath } from "./PathUtil";
 
 export class SdFsWatcher {
@@ -25,12 +24,12 @@ export class SdFsWatcher {
   onChange(opt: { delay?: number }, cb: (changeInfos: ISdFsWatcherChangeInfo[]) => void | Promise<void>): this {
     const fnQ = new FunctionQueue();
 
-    let changeInfoMap = new Map<string, TargetEvent>();
+    let changeInfoMap = new Map<string, TTargetEvent>();
 
-    this.#watcher.on("all", (event: TargetEvent, filePath: string) => {
+    this.#watcher.on("all", (event: TTargetEvent, filePath: string) => {
       const prevEvent = changeInfoMap.getOrCreate(filePath, event);
       if (prevEvent === "add" && event === "change") {
-        changeInfoMap.set(filePath, "add" as TargetEvent);
+        changeInfoMap.set(filePath, "add" as TTargetEvent);
       } else if ((prevEvent === "add" && event === "unlink") || (prevEvent === "addDir" && event === "unlinkDir")) {
         changeInfoMap.delete(filePath);
       } else {
@@ -41,7 +40,7 @@ export class SdFsWatcher {
         fnQ.runLast(async () => {
           if (changeInfoMap.size === 0) return;
           const currentChangeInfoMap = changeInfoMap;
-          changeInfoMap = new Map<string, TargetEvent>();
+          changeInfoMap = new Map<string, TTargetEvent>();
 
           const changeInfos = Array.from(currentChangeInfoMap.entries()).map((en) => ({
             path: PathUtil.norm(en[0]),
@@ -61,6 +60,8 @@ export class SdFsWatcher {
 }
 
 export interface ISdFsWatcherChangeInfo {
-  event: TargetEvent;
+  event: TTargetEvent;
   path: TNormPath;
 }
+
+type TTargetEvent = "add" | "addDir" | "change" | "rename" | "renameDir" | "unlink" | "unlinkDir";

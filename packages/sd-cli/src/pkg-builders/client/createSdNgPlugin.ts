@@ -175,7 +175,13 @@ export function createSdNgPlugin(conf: {
 
         const emittedJsFile = tsCompileResult.emittedFilesCacheMap.get(PathUtil.norm(args.path))?.last();
         if (!emittedJsFile) {
-          throw new Error(`ts 빌더 결과 emit 파일이 존재하지 않습니다. ${args.path}`);
+          return {
+            errors: [
+              {
+                text: `ts 빌더 결과 emit 파일이 존재하지 않습니다. ${args.path}`,
+              },
+            ],
+          };
         }
 
         const contents = emittedJsFile.text;

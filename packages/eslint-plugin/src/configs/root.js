@@ -2,6 +2,7 @@ import globals from "globals";
 import tseslint from "typescript-eslint";
 import plugin from "../plugin.js";
 import ngeslint from "angular-eslint";
+import importPlugin from "eslint-plugin-import";
 
 export default [
   {
@@ -20,7 +21,7 @@ export default [
   {
     files: ["**/*.js", "**/*.jsx"],
     plugins: {
-      // import: importPlugin,
+      import: importPlugin,
     },
     rules: {
       // 기본
@@ -36,7 +37,7 @@ export default [
       "no-undef": ["error"],
 
       // import
-      // "import/no-extraneous-dependencies": ["error"], // 느림
+      "import/no-extraneous-dependencies": ["error"], // 느림
     },
   },
   {
@@ -45,7 +46,7 @@ export default [
       "@typescript-eslint": tseslint.plugin,
       "@simplysm": plugin,
       "@angular-eslint": ngeslint.tsPlugin,
-      // "import": importPlugin,
+      "import": importPlugin,
       // "deprecation": fixupPluginRules(deprecationPlugin),
     },
     processor: ngeslint.processInlineTemplates,
@@ -85,7 +86,7 @@ export default [
       "@typescript-eslint/prefer-ts-expect-error": ["error"],
 
       // import
-      // "import/no-extraneous-dependencies": ["error"], // 느림
+      "import/no-extraneous-dependencies": ["error"], // 느림
 
       // Deprecation
       // "deprecation/deprecation": ["warn"], // 느림

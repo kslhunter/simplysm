@@ -31,7 +31,7 @@ export class SdAppStructureProvider<T extends string> {
   getCurrentPerms<K extends string>(viewCodes: string[], keys: K[]) {
     const result: Record<string, boolean> = {};
     for (const key of keys) {
-      result[key] = viewCodes.some((viewCode) => this.#permissionRecord![viewCode + "." + key]);
+      result[key] = viewCodes.some((viewCode) => Boolean(this.#permissionRecord?.[viewCode + "." + key]));
     }
 
     return result;

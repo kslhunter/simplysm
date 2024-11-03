@@ -22,14 +22,14 @@
     "bufferutil": "^4.0.8",
     "connect": "^3.7.0",
     "mime": "^4.0.4",
-    "nodemailer": "^6.9.15",
+    "nodemailer": "^6.9.16",
     "semver": "^7.6.3",
-    "utf-8-validate": "^6.0.4",
+    "utf-8-validate": "^6.0.5",
     "ws": "^8.18.0"
   },
   "devDependencies": {
     "@types/mime": "^4.0.0",
     "@types/nodemailer": "^6.4.16",
-    "@types/ws": "^8.5.12"
+    "@types/ws": "^8.5.13"
   }
 }

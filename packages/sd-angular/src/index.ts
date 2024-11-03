@@ -107,6 +107,7 @@ export * from "./utils/injectElementResize";
 export * from "./utils/injectPageCode$";
 export * from "./utils/injectParamMap$";
 export * from "./utils/injectParent";
+export * from "./utils/injectPerms";
 export * from "./utils/injectQueryParamMap$";
 export * from "./utils/SdAppStructureUtil";
 export * from "./utils/tramsforms";

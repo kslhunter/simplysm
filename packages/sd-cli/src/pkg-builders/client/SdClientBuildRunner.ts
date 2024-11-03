@@ -44,14 +44,14 @@ export class SdClientBuildRunner extends EventEmitter {
     this._debug("dist 초기화...");
     FsUtil.remove(path.resolve(this._pkgPath, "dist"));
 
+    this._debug("GEN .config...");
+    const confDistPath = path.resolve(this._pkgPath, "dist/.config.json");
+    FsUtil.writeFile(confDistPath, JSON.stringify(this._pkgConf.configs ?? {}, undefined, 2));
+
     if (this._npmConf.dependencies && Object.keys(this._npmConf.dependencies).includes("@angular/router")) {
       this._debug(`GEN routes.ts...`);
       SdCliNgRoutesFileGenerator.run(this._pkgPath, undefined, this._pkgConf.noLazyRoute);
     }
-
-    this._debug("GEN .config...");
-    const confDistPath = path.resolve(this._pkgPath, "dist/.config.json");
-    FsUtil.writeFile(confDistPath, JSON.stringify(this._pkgConf.configs ?? {}, undefined, 2));
 
     const result = await this._runAsync({ dev: false });
     return {
@@ -149,7 +149,8 @@ export class SdClientBuildRunner extends EventEmitter {
               ...this._pkgConf.env,
               ...this._pkgConf.builder?.[ngBundlerBuilderType]?.env,
             },
-            external: ngBundlerBuilderType === "electron" ? this._pkgConf.builder?.electron?.reinstallDependencies ?? [] : [],
+            external:
+              ngBundlerBuilderType === "electron" ? (this._pkgConf.builder?.electron?.reinstallDependencies ?? []) : [],
             cordovaConfig: ngBundlerBuilderType === "cordova" ? this._pkgConf.builder!.cordova : undefined,
             watchScopePaths: Array.from(this._watchScopePathSet),
           }),

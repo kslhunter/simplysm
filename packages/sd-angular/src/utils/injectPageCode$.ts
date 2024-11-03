@@ -4,11 +4,8 @@ import { toSignal } from "@angular/core/rxjs-interop";
 import { filter, map } from "rxjs";
 import { $computed } from "./$hooks";
 
-export function injectPageCode$(): Signal<string | undefined> {
-  const router = inject(Router, { optional: true });
-  if (!router) {
-    return $computed(() => undefined);
-  }
+export function injectPageCode$(): Signal<string> {
+  const router = inject(Router);
 
   const url = toSignal(
     router.events.pipe(
