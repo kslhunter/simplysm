@@ -101,7 +101,7 @@ export class SdBaseContainerControl {
   initialized = input(true, { transform: transformBoolean });
   denied = input(false, { transform: transformBoolean });
   noEffect = input(false, { transform: transformBoolean });
-  background = input<string>();
+  bgGrey = input(false, { transform: transformBoolean });
 
   topbarTemplateRef = contentChild("topbarTemplate", { read: TemplateRef });
   contentTemplateRef = contentChild("contentTemplate", { read: TemplateRef });
@@ -116,7 +116,7 @@ export class SdBaseContainerControl {
     }
 
     $effect((onCleanup) => {
-      document.body.style.background = this.background() ?? "";
+      document.body.style.background = this.bgGrey() ? "var(--theme-grey-lightest)" : "";
 
       onCleanup(() => {
         document.body.style.background = "";

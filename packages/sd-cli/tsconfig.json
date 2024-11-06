@@ -2,14 +2,6 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "lib": ["ES2021"],
-    "outDir": "./dist",
-    "types": ["node", "eslint", "yargs"]
-  },
-  "files": [
-    "./src/index.ts",
-    "./src/sd-cli.ts",
-    "./src/workers/build-runner-worker.ts",
-    "./src/workers/lint-worker.ts",
-    "./src/workers/server-worker.ts"
-  ]
+    "outDir": "./dist"
+  }
 }

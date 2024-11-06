@@ -178,7 +178,7 @@ export function $arr<T>(sig: WritableSignal<T[]>) {
   };
 }
 
-export function $data<T>(sig: WritableSignal<T>) {
+export function $obj<T>(sig: WritableSignal<T>) {
   return {
     snapshot() {
       sig[ORIGIN_SNAPSHOT] = ObjectUtil.clone(sig());

@@ -2,8 +2,6 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "lib": ["ES2021"],
-    "outDir": "./dist",
-    "types": ["node"]
-  },
-  "files": ["./src/index.ts", "./src/transformer.ts"]
+    "outDir": "./dist"
+  }
 }

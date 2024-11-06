@@ -2,10 +2,8 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "lib": ["ES2021", "DOM"],
-    "outDir": "./dist",
-    "types": ["node", "qrcode", "semver"]
+    "outDir": "./dist"
   },
-  "files": ["./src/index.ts", "./src/assets.d.ts"],
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
     "strictInjectionParameters": true,

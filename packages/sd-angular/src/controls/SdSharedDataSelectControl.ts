@@ -7,7 +7,7 @@ import {
   model,
   TemplateRef,
   Type,
-  ViewEncapsulation,
+  ViewEncapsulation
 } from "@angular/core";
 import { ISharedDataBase } from "../providers/SdSharedDataProvider";
 import { SD_MODAL_INPUT, SdModalBase, SdModalProvider } from "../providers/SdModalProvider";
@@ -42,7 +42,7 @@ import { transformBoolean } from "../utils/tramsforms";
     SdItemOfTemplateDirective,
     NgTemplateOutlet,
     SdSelectButtonControl,
-    FaIconComponent,
+    FaIconComponent
   ],
   template: `
     <sd-select
@@ -116,7 +116,7 @@ import { transformBoolean } from "../utils/tramsforms";
         }
       </ng-template>
     </sd-select>
-  `,
+  `
 })
 export class SdSharedDataSelectControl<
   T extends ISharedDataBase<string | number>,
@@ -156,7 +156,7 @@ export class SdSharedDataSelectControl<
   displayOrderKeyProp = input<string>();
 
   itemTemplateRef = contentChild<any, TemplateRef<SdItemOfTemplateContext<T>>>(SdItemOfTemplateDirective, {
-    read: TemplateRef,
+    read: TemplateRef
   });
   undefinedTemplateRef = contentChild<any, TemplateRef<void>>("undefinedTemplate", { read: TemplateRef });
 
@@ -172,9 +172,10 @@ export class SdSharedDataSelectControl<
         .groupBy((item) => item[this.parentKeyProp()!])
         .toMap(
           (item) => item.key,
-          (item1) => item1.values,
+          (item1) => item1.values
         ) as Map<T["__valueKey"] | undefined, any>;
-    } else {
+    }
+    else {
       return undefined;
     }
   });
@@ -183,7 +184,7 @@ export class SdSharedDataSelectControl<
     let result = this.items().filter(
       (item, index) =>
         (!this.filterFn() || this.filterFn()!(item, index, ...(this.filterFnParams() ?? []))) &&
-        (this.parentKeyProp() === undefined || item[this.parentKeyProp()!] === undefined),
+        (this.parentKeyProp() === undefined || item[this.parentKeyProp()!] === undefined)
     );
 
     if (this.displayOrderKeyProp() !== undefined) {
@@ -251,7 +252,7 @@ export class SdSharedDataSelectControl<
     const result = await this.#sdModal.showAsync(this.modalType()!, this.modalHeader() ?? "자세히...", {
       selectMode: this.selectMode(),
       selectedItemKeys: (this.selectMode() === "multi" ? (this.value() as any[]) : [this.value()]).filterExists(),
-      ...this.modalInputParam(),
+      ...this.modalInputParam()
     });
 
     if (result) {
