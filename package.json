@@ -10,7 +10,9 @@
   "type": "module",
   "license": "MIT",
   "private": true,
-  "workspaces": ["packages/*"],
+  "workspaces": [
+    "packages/*"
+  ],
   "volta": {
     "node": "20.18.0",
     "yarn": "4.5.1"

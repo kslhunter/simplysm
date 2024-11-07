@@ -1,14 +1,4 @@
-import {
-  afterNextRender,
-  ApplicationRef,
-  createComponent,
-  Directive,
-  inject,
-  Injectable,
-  Injector,
-  input,
-  Type,
-} from "@angular/core";
+import { ApplicationRef, createComponent, Directive, inject, Injectable, Injector, input, Type, } from "@angular/core";
 import { SdModalControl } from "../controls/SdModalControl";
 import { $signal } from "../utils/$hooks";
 import { SdBusyProvider } from "./SdBusyProvider";
@@ -107,11 +97,15 @@ export class SdModalProvider {
             this.#sdBusy.globalBusyCount.update((v) => v - 1);
           }
 
-          afterNextRender(
+          requestAnimationFrame(
             () => {
-              modalRef.instance.dialogElRef().nativeElement.focus();
+              console.log(compRef.location.nativeElement.findFocusableFirst());
+              (
+                (compRef.location.nativeElement as HTMLElement).findFocusableFirst()
+                ?? modalRef.instance.dialogElRef().nativeElement
+              ).focus();
             },
-            { injector: compRef.injector },
+            // { injector: compRef.injector },
           );
         };
 
@@ -145,7 +139,8 @@ export class SdModalProvider {
         if (compRef.instance[OPEN_PRESERVED]) {
           compRef.instance.open();
         }
-      } catch (err) {
+      }
+      catch (err) {
         reject(err);
       }
     });

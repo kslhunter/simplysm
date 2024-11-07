@@ -7,6 +7,7 @@ import { ISdBuildMessage } from "../../types/build.type";
 import { createSdServerPlugin } from "./createSdServerPlugin";
 import { BuildOutputFile, BuildOutputFileType } from "@angular/build/src/tools/esbuild/bundler-context";
 import { convertOutputFile } from "@angular/build/src/tools/esbuild/utils";
+import { resolveAssets } from "@angular/build/src/utils/resolve-assets";
 
 export class SdServerBundler {
   readonly #logger = Logger.get(["simplysm", "sd-cli", "SdServerBundler"]);
@@ -26,7 +27,8 @@ export class SdServerBundler {
       external?: string[];
       watchScopePaths: TNormPath[];
     },
-  ) {}
+  ) {
+  }
 
   async bundleAsync(modifiedFileSet?: Set<TNormPath>): Promise<{
     watchFileSet: Set<TNormPath>;
@@ -124,7 +126,27 @@ const __dirname = __path__.dirname(__filename);`.trim(),
           emitFileSet.add(distFilePath);
         }
       }
-    } catch (err) {
+
+      //-- copy assets
+      const assetFiles = await resolveAssets(
+        [
+          { input: "public", glob: "**/*", output: "." },
+          ...(this._opt.dev ? [{ input: "public-dev", glob: "**/*", output: "." }] : []),
+        ],
+        this._opt.pkgPath,
+      );
+
+      for (const assetFile of assetFiles) {
+        const prev = this.#outputCache.get(PathUtil.norm(assetFile.source));
+        const curr = FsUtil.lstat(assetFile.source).mtime.getTime();
+        if (prev !== curr) {
+          FsUtil.copy(assetFile.source, path.resolve(this._opt.pkgPath, "dist", assetFile.destination));
+          this.#outputCache.set(PathUtil.norm(assetFile.source), curr);
+          emitFileSet.add(PathUtil.norm(assetFile.destination));
+        }
+      }
+    }
+    catch (err) {
       result = err;
       for (const e of err.errors) {
         if (e.detail != null) {

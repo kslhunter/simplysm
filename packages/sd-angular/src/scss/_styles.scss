@@ -417,7 +417,8 @@ hidden {
   /*body.sd-theme-kiosk &,
   body.sd-theme-mobile &,
   body.sd-theme-modern & {*/
-  font-size: var(--font-size-sm);
+  //font-size: var(--font-size-sm);
+  font-size: smaller;
   color: var(--theme-grey-default);
   //}
 

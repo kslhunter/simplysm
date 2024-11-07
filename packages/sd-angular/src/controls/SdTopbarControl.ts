@@ -112,25 +112,19 @@ import { SdUseRippleDirective } from "../directives/SdUseRippleDirective";
           }
         }
 
-        /*> ._menu {
-        display: flex;
-        flex-wrap: nowrap;
-        flex-direction: row;
-        gap: var(--gap-sm);
+        > ._menu {
+          display: flex;
+          flex-wrap: nowrap;
+          flex-direction: row;
+          flex-grow: 1;
+          gap: var(--gap-sm);
+          padding-right: var(--gap-default);
 
-        body.sd-theme-mobile &,
-        body.sd-theme-kiosk & {
-          float: right;
+          body.sd-theme-mobile & {
+            justify-content: end;
+          }
         }
-      }*/
       }
-
-      /*@keyframes sd-topbar {
-        from {
-          opacity: 0;
-          transform: translateY(-1em);
-        }
-      }*/
     `,
   ],
   template: `
@@ -143,6 +137,10 @@ import { SdUseRippleDirective } from "../directives/SdUseRippleDirective";
     }
 
     <ng-content />
+
+    <div class="_menu">
+      <ng-content select="sd-topbar-menu"></ng-content>
+    </div>
   `,
 })
 export class SdTopbarControl {

@@ -1,4 +1,4 @@
-import {ISdStorage, ISdStorageConnectionConfig} from "../commons";
+import { ISdStorage, ISdStorageConnectionConfig } from "../commons";
 import SFtpClient from "ssh2-sftp-client";
 
 export class SdSFtpStorage implements ISdStorage {
@@ -20,6 +20,18 @@ export class SdSFtpStorage implements ISdStorage {
 
   public async renameAsync(fromPath: string, toPath: string): Promise<void> {
     await this._sftp!.rename(fromPath, toPath);
+  }
+
+  public async existsAsync(filePath: string): Promise<boolean> {
+    return Boolean(await this._sftp!.exists(filePath));
+  }
+
+  public async readdirAsync(filePath: string): Promise<string[]> {
+    return (await this._sftp!.list(filePath)).map(item => item.name);
+  }
+
+  public async readFileAsync(filePath: string): Promise<any> {
+    return await this._sftp!.get(filePath);
   }
 
   public async putAsync(localPathOrBuffer: string | Buffer, storageFilePath: string): Promise<void> {

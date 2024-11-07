@@ -48,7 +48,8 @@ import { transformBoolean } from "../utils/tramsforms";
     `,
   ],
   //endregion
-  template: ` <ng-content></ng-content> `,
+  template: `
+    <ng-content></ng-content> `,
   host: {
     "[attr.sd-theme]": "theme()",
     "[attr.disabled]": "disabled()",

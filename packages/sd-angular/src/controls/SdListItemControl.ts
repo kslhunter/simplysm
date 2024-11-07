@@ -6,6 +6,7 @@ import {
   inject,
   input,
   model,
+  TemplateRef,
   ViewEncapsulation,
 } from "@angular/core";
 import { SdListControl } from "./SdListControl";
@@ -17,13 +18,14 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { $computed } from "../utils/$hooks";
 import { SdUseRippleDirective } from "../directives/SdUseRippleDirective";
 import { transformBoolean } from "../utils/tramsforms";
+import { NgTemplateOutlet } from "@angular/common";
 
 @Component({
   selector: "sd-list-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdCollapseIconControl, SdCollapseControl, FaIconComponent, SdUseRippleDirective],
+  imports: [SdCollapseIconControl, SdCollapseControl, FaIconComponent, SdUseRippleDirective, NgTemplateOutlet],
   styles: [
     /* language=SCSS */ `
       @import "../scss/mixins";
@@ -31,7 +33,6 @@ import { transformBoolean } from "../utils/tramsforms";
       sd-list-item {
         > ._content {
           padding: var(--gap-sm) var(--gap-default);
-          cursor: pointer;
 
           border-radius: var(--border-radius-default);
           margin: var(--gap-xxs);
@@ -41,14 +42,22 @@ import { transformBoolean } from "../utils/tramsforms";
           }
         }
 
+        &:not([sd-readonly="true"]) {
+          > ._content {
+            cursor: pointer;
+          }
+        }
+
         > ._child {
           margin: var(--gap-xxs);
         }
 
         &[sd-layout="accordion"] {
-          > ._content {
-            &:hover {
-              background: var(--trans-lighter);
+          &:not([sd-readonly="true"]) {
+            > ._content {
+              &:hover {
+                background: var(--trans-lighter);
+              }
             }
           }
 
@@ -108,7 +117,7 @@ import { transformBoolean } from "../utils/tramsforms";
       [style]="contentStyle()"
       (click)="onContentClick()"
       tabindex="0"
-      [sdUseRipple]="!(layout() === 'flat' && hasChildren())"
+      [sdUseRipple]="!readonly() && !(layout() === 'flat' && hasChildren())"
     >
       <div class="flex-row flex-gap-xs">
         @if (selectedIcon() && !hasChildren()) {
@@ -117,6 +126,12 @@ import { transformBoolean } from "../utils/tramsforms";
         <div style="flex-grow: 1">
           <ng-content></ng-content>
         </div>
+
+        @if (toolsTemplateRef()) {
+          <div>
+            <ng-template [ngTemplateOutlet]="toolsTemplateRef()!" />
+          </div>
+        }
 
         @if (hasChildren() && layout() === "accordion") {
           <div>
@@ -135,6 +150,7 @@ import { transformBoolean } from "../utils/tramsforms";
     "[attr.sd-layout]": "layout()",
     "[attr.sd-open]": "open()",
     "[attr.sd-selected]": "selected()",
+    "[attr.sd-readonly]": "readonly()",
     "[attr.sd-has-selected-icon]": "!!selectedIcon()",
     "[attr.sd-has-children]": "hasChildren()",
   },
@@ -151,6 +167,9 @@ export class SdListItemControl {
   contentStyle = input<string>();
   contentClass = input<string>();
 
+  readonly = input(false, { transform: transformBoolean });
+
+  toolsTemplateRef = contentChild("toolsTemplate", { read: TemplateRef });
   childListControl = contentChild<SdListControl>(forwardRef(() => SdListControl));
 
   hasChildren = $computed(() => this.childListControl() !== undefined);

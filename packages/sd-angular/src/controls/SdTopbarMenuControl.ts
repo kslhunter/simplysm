@@ -18,36 +18,20 @@ import { transformBoolean } from "../utils/tramsforms";
         cursor: pointer;
         transition: background 0.1s linear;
         font-weight: bold;
+        padding: var(--gap-sm) var(--gap-default);
+        border-radius: var(--border-radius-default);
 
-        body.sd-theme-compact &,
-        body.sd-theme-modern &,
-        body.sd-theme-kiosk & {
-          padding: var(--gap-sm) var(--gap-default);
-          border-radius: var(--border-radius-default);
-
-          &:hover {
-            background: var(--theme-grey-lightest);
-          }
-        }
-
-        body.sd-theme-mobile & {
-          line-height: var(--line-height);
-          padding: var(--gap-default) var(--gap-lg);
+        &:hover {
+          background: var(--theme-grey-lightest);
         }
 
         @each $key, $val in map-get($vars, theme) {
           &[sd-theme="#{$key}"] {
             color: var(--theme-#{$key}-default);
 
-            body.sd-theme-compact &,
-            body.sd-theme-modern &,
-            body.sd-theme-kiosk & {
-              color: var(--theme-#{$key}-default);
-
-              /*&:hover {
-              background: var(--theme-#{$key}-lightest);
-            }*/
-            }
+            /*&:hover {
+            background: var(--theme-#{$key}-lightest);
+          }*/
           }
         }
 

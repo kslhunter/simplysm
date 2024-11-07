@@ -28,7 +28,9 @@ import { transformBoolean } from "../utils/tramsforms";
       }
     `,
   ],
-  template: ` <ng-content></ng-content>`,
+  template: `
+    <ng-content></ng-content>
+  `,
   host: {
     "[attr.sd-inset]": "inset()",
   },

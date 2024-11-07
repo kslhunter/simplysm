@@ -1,4 +1,4 @@
-/** @type {import("@simplysm/sd-cli").TSdCliConfigFn} */
+/** @type {import("@simplysm/sd-cli").TSdProjectConfigFn} */
 export default () => ({
   packages: {
     "cordova-plugin-app-storage": {

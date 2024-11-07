@@ -100,6 +100,7 @@ export * from "./providers/SdSystemConfigProvider";
 export * from "./providers/SdSystemLogProvider";
 export * from "./providers/SdThemeProvider";
 export * from "./providers/SdToastProvider";
+export * from "./provideSdAngular";
 export * from "./SdAngularModule";
 export * from "./utils/$hooks";
 export * from "./utils/injectElementRef";

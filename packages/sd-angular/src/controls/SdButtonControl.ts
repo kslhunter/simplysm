@@ -127,7 +127,9 @@ import { transformBoolean } from "../utils/tramsforms";
         }
 
         &[disabled="true"] {
-          pointer-events: none;
+          &:active {
+            pointer-events: none;
+          }
         }
       }
     `,
