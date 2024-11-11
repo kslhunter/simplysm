@@ -57,7 +57,7 @@ export function $effect(fn: (onCleanup: EffectCleanupRegisterFn) => Promise<void
 export function $effect(fn: (onCleanup: EffectCleanupRegisterFn) => void): EffectRef;
 export function $effect(
   signals: Signal<any>[],
-  fn: (onCleanup: EffectCleanupRegisterFn) => void | Promise<void>
+  fn: (onCleanup: EffectCleanupRegisterFn) => void | Promise<void>,
 ): EffectRef;
 export function $effect(
   arg1: ((onCleanup: EffectCleanupRegisterFn) => void) | Signal<any>[],

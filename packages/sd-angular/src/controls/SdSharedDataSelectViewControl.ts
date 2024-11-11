@@ -4,7 +4,7 @@ import {
   contentChild,
   inject,
   input,
-  output,
+  model,
   TemplateRef,
   Type,
   untracked,
@@ -46,7 +46,6 @@ import { SdIconControl } from "./SdIconControl";
     SdListItemControl,
     SdAnchorControl,
     SdIconControl,
-
   ],
   template: `
     <sd-busy-container [busy]="busyCount() > 0">
@@ -83,7 +82,7 @@ import { SdIconControl } from "./SdIconControl";
             @if (useUndefined()) {
               <sd-list-item
                 [selected]="selectedItem() === undefined"
-                (click)="selectedItemChange.emit(undefined)"
+                (click)="selectedItem.set(undefined)"
                 [selectedIcon]="selectedIcon()"
               >
                 @if (undefinedTemplateRef()) {
@@ -96,7 +95,7 @@ import { SdIconControl } from "./SdIconControl";
             @for (item of filteredItems(); let index = $index; track item.__valueKey) {
               <sd-list-item
                 [selected]="selectedItem() === item"
-                (click)="selectedItem() === item ? selectedItemChange.emit(undefined) : selectedItemChange.emit(item)"
+                (click)="selectedItem() === item ? selectedItem.set(undefined) : selectedItem.set(item)"
                 [selectedIcon]="selectedIcon()"
               >
                 <ng-template
@@ -124,8 +123,7 @@ export class SdSharedDataSelectViewControl<
 
   #sdModal = inject(SdModalProvider);
 
-  selectedItem = input<T>();
-  selectedItemChange = output<T | undefined>();
+  selectedItem = model<T>();
 
   items = input.required<T[]>();
   selectedIcon = input<IconDefinition>();
@@ -165,7 +163,7 @@ export class SdSharedDataSelectViewControl<
       const newSelectedItem = this.items().single(
         (item) => item.__valueKey === untracked(() => this.selectedItem())?.__valueKey,
       );
-      this.selectedItemChange.emit(newSelectedItem);
+      this.selectedItem.set(newSelectedItem);
     });
   }
 
@@ -180,7 +178,7 @@ export class SdSharedDataSelectViewControl<
 
     if (result) {
       const newSelectedItem = this.items().single((item) => item.__valueKey === result.selectedItemKeys[0]);
-      this.selectedItemChange.emit(newSelectedItem);
+      this.selectedItem.set(newSelectedItem);
     }
   }
 }

@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, ElementRef, inject, ViewEncapsulation } from "@angular/core";
+import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/core";
 import { SdModalBase } from "../providers/SdModalProvider";
 import { $effect } from "../utils/$hooks";
+import { injectElementRef } from "../utils/injectElementRef";
 
 @Component({
   selector: "sd-address-search-modal",
@@ -12,7 +13,7 @@ import { $effect } from "../utils/$hooks";
     <div class="_content" style="min-height: 100px;"></div>`,
 })
 export class SdAddressSearchModal extends SdModalBase<undefined, IAddress> {
-  #elRef = inject<ElementRef<HTMLElement>>(ElementRef);
+  #elRef = injectElementRef();
 
   constructor() {
     super();
