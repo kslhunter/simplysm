@@ -6,6 +6,7 @@ import { $computed, $signal } from "../utils/$hooks";
 
 export interface ISharedSignal<T extends ISharedDataBase<string | number>> extends Signal<T[]> {
   $get(key: T["__valueKey"] | undefined): T | undefined;
+
   // $wait(): Promise<void>;
 }
 
@@ -86,7 +87,8 @@ export class SdSharedDataProvider<T extends Record<string, ISharedDataBase<strin
 
       if (!changeKeys) {
         info.signal.set(this.#ordering(resData, info.getter.orderBy));
-      } else {
+      }
+      else {
         info.signal.update((v) => {
           const r = [...v];
 
@@ -103,7 +105,8 @@ export class SdSharedDataProvider<T extends Record<string, ISharedDataBase<strin
             const resItemIndex = r.findIndex((item) => item.__valueKey === currItemKey);
             if (resItemIndex >= 0) {
               r[resItemIndex] = resItem;
-            } else {
+            }
+            else {
               r.push(resItem);
             }
           }
@@ -113,7 +116,8 @@ export class SdSharedDataProvider<T extends Record<string, ISharedDataBase<strin
         });
       }
       this.loadingCount--;
-    } catch (err) {
+    }
+    catch (err) {
       this.loadingCount--;
       throw err;
     }
@@ -127,7 +131,8 @@ export class SdSharedDataProvider<T extends Record<string, ISharedDataBase<strin
     for (const orderBy of orderByList.reverse()) {
       if (orderBy[1] === "desc") {
         result = result.orderByDesc((item) => orderBy[0](item));
-      } else {
+      }
+      else {
         result = result.orderBy((item) => orderBy[0](item));
       }
     }
@@ -158,4 +163,5 @@ export interface ISharedDataBase<VK extends string | number> {
 export class SdSharedDataChangeEvent extends SdServiceEventListenerBase<
   { name: string; filter: any },
   (string | number)[] | undefined
-> {}
+> {
+}

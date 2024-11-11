@@ -5,15 +5,15 @@ import { SdToastProvider } from "../providers/SdToastProvider";
 import { SdGapControl } from "./SdGapControl";
 import { SdAnchorControl } from "./SdAnchorControl";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
-import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { $effect, $signal } from "../utils/$hooks";
+import { SdIconControl } from "./SdIconControl";
 
 @Component({
   selector: "sd-state-preset",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdAnchorControl, SdGapControl, FaIconComponent],
+  imports: [SdAnchorControl, SdGapControl, SdIconControl],
   styles: [
     /* language=SCSS */ `
       sd-state-preset {
@@ -65,7 +65,7 @@ import { $effect, $signal } from "../utils/$hooks";
   ],
   template: `
     <sd-anchor (click)="onAddButtonClick()">
-      <fa-icon [icon]="icons.star" class="tx-theme-warning-default" [fixedWidth]="true" />
+      <sd-icon [icon]="icons.star" class="tx-theme-warning-default" fixedWidth />
     </sd-anchor>
     <sd-gap width="sm"></sd-gap>
     @for (preset of presets(); track preset.name) {
@@ -74,10 +74,10 @@ import { $effect, $signal } from "../utils/$hooks";
           {{ preset.name }}
         </sd-anchor>
         <sd-anchor (click)="onSaveButtonClick(preset)">
-          <fa-icon [icon]="icons.save" size="sm" />
+          <sd-icon [icon]="icons.save" size="sm" />
         </sd-anchor>
         <sd-anchor (click)="onRemoveButtonClick(preset)">
-          <fa-icon [icon]="icons.xmark" size="sm" />
+          <sd-icon [icon]="icons.xmark" size="sm" />
         </sd-anchor>
       </div>
       <sd-gap width="sm"></sd-gap>

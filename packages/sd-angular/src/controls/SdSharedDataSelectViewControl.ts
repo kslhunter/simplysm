@@ -26,9 +26,9 @@ import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { SdAnchorControl } from "./SdAnchorControl";
 import { SD_MODAL_INPUT, SdModalBase, SdModalProvider } from "../providers/SdModalProvider";
 import { ISharedDataModalInputParam, ISharedDataModalOutputResult } from "./SdSharedDataSelectControl";
-import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { $computed, $effect, $signal } from "../utils/$hooks";
 import { transformBoolean } from "../utils/tramsforms";
+import { SdIconControl } from "./SdIconControl";
 
 @Component({
   selector: "sd-shared-data-select-view",
@@ -45,7 +45,8 @@ import { transformBoolean } from "../utils/tramsforms";
     SdPaneControl,
     SdListItemControl,
     SdAnchorControl,
-    FaIconComponent,
+    SdIconControl,
+
   ],
   template: `
     <sd-busy-container [busy]="busyCount() > 0">
@@ -61,7 +62,7 @@ import { transformBoolean } from "../utils/tramsforms";
               @if (modalType()) {
                 <div>
                   <sd-anchor (click)="onModalButtonClick()">
-                    <fa-icon [icon]="icons.externalLink" [fixedWidth]="true" />
+                    <sd-icon [icon]="icons.externalLink" fixedWidth />
                   </sd-anchor>
                 </div>
               }

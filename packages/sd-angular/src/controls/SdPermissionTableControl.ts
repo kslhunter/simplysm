@@ -221,7 +221,8 @@ export class SdPermissionTableControl {
       if (this.getIsPermExists(item, "use") && !this.getIsPermChecked(item, "use")) {
         return true;
       }
-    } else {
+    }
+    else {
       if (item.children?.every((child) => !this.getIsPermExists(child, "edit") || this.getEditDisabled(child))) {
         return true;
       }
@@ -268,7 +269,8 @@ export class SdPermissionTableControl {
       const r = new Set(v);
       if (r.has(item)) {
         r.delete(item);
-      } else {
+      }
+      else {
         r.add(item);
         const allChildren = this.getAllChildren(item);
         for (const allChild of allChildren) {
@@ -284,7 +286,8 @@ export class SdPermissionTableControl {
       const permCode = item.codes.join(".");
 
       if (type === "edit" && val && !this.getIsPermChecked(item, "use")) {
-      } else {
+      }
+      else {
         if (this.getIsPermExists(item, type)) {
           this.value.update((v) => ({
             ...v,
@@ -315,7 +318,8 @@ export class SdPermissionTableControl {
       items.max((item) => {
         if (item.children) {
           return this.#getDepthLength(item.children, depth + 1);
-        } else {
+        }
+        else {
           return depth + 1;
         }
       }) ?? depth

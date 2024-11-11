@@ -76,7 +76,8 @@ export class SdDropdownControl {
             transform: "none",
           });
         });
-      } else {
+      }
+      else {
         const contentEl = this.contentElRef().nativeElement;
         const popupEl = this.popupElRef().nativeElement;
 
@@ -126,7 +127,8 @@ export class SdDropdownControl {
           bottom: window.innerHeight - windowOffset.top + "px",
           left: windowOffset.left + "px",
         });
-      } else {
+      }
+      else {
         Object.assign(popupEl.style, {
           top: windowOffset.top + this.contentElRef().nativeElement.offsetHeight + "px",
           bottom: "",
@@ -139,7 +141,8 @@ export class SdDropdownControl {
   onContentClick() {
     if (this.open()) {
       this.#closePopup();
-    } else {
+    }
+    else {
       this.#openPopup();
     }
   }
@@ -151,7 +154,8 @@ export class SdDropdownControl {
         event.stopPropagation();
 
         this.#openPopup();
-      } else {
+      }
+      else {
         const popupEl = this.popupElRef().nativeElement;
         const focusableFirst = popupEl.findFocusableFirst();
         if (focusableFirst) {
@@ -178,7 +182,8 @@ export class SdDropdownControl {
 
       if (this.open()) {
         this.#closePopup();
-      } else {
+      }
+      else {
         this.#openPopup();
       }
     }
@@ -235,7 +240,8 @@ export class SdDropdownControl {
       const focusableFirst = popupEl.findFocusableFirst();
       if (focusableFirst) {
         popupEl.findFocusableFirst()?.focus();
-      } else {
+      }
+      else {
         contentEl.focus();
       }
     }

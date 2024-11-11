@@ -9,7 +9,6 @@ import {
 } from "@angular/core";
 import { SdBusyContainerControl } from "../controls/SdBusyContainerControl";
 import { SdPaneControl } from "../controls/SdPaneControl";
-import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
 import { SdAppStructureProvider } from "../providers/SdAppStructureProvider";
 import { SdTopbarContainerControl } from "../controls/SdTopbarContainerControl";
@@ -21,6 +20,7 @@ import { ActivatedRoute } from "@angular/router";
 import { injectParent } from "../utils/injectParent";
 import { SdActivatedModalProvider } from "../providers/SdModalProvider";
 import { transformBoolean } from "../utils/tramsforms";
+import { SdIconControl } from "../controls/SdIconControl";
 
 @Component({
   selector: "sd-base-container",
@@ -30,10 +30,10 @@ import { transformBoolean } from "../utils/tramsforms";
   imports: [
     SdBusyContainerControl,
     SdPaneControl,
-    FaIconComponent,
     SdTopbarContainerControl,
     SdTopbarControl,
     NgTemplateOutlet,
+    SdIconControl,
   ],
   template: `
     @if (denied()) {
@@ -42,7 +42,7 @@ import { transformBoolean } from "../utils/tramsforms";
         [class.show-effect]="!noEffect() && containerType !== 'modal'"
       >
         <br />
-        <fa-icon [icon]="faTriangleExclamation" [fixedWidth]="true" size="5x" />
+        <sd-icon [icon]="faTriangleExclamation" fixedWidth size="5x" />
         <br />
         <br />
         {{ title() }}에 대한 사용권한이 없습니다. 시스템 관리자에게 문의하세요.

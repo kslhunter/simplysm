@@ -7,7 +7,6 @@ import {
   viewChild,
   ViewEncapsulation,
 } from "@angular/core";
-import { SdEventsDirective } from "../directives/SdEventsDirective";
 import { StringUtil } from "@simplysm/sd-core-common";
 import { $computed, $effect } from "../utils/$hooks";
 import { transformBoolean } from "../utils/tramsforms";
@@ -17,7 +16,7 @@ import { transformBoolean } from "../utils/tramsforms";
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdEventsDirective],
+  imports: [],
   styles: [
     /* language=SCSS */ `
       @import "../scss/mixins";
@@ -169,7 +168,8 @@ export class SdContentEditorControl {
     const errorMessages: string[] = [];
     if (this.value() == null && this.required()) {
       errorMessages.push("값을 입력하세요.");
-    } else if (this.validatorFn()) {
+    }
+    else if (this.validatorFn()) {
       const message = this.validatorFn()!(this.value());
       if (message !== undefined) {
         errorMessages.push(message);
@@ -207,7 +207,8 @@ export class SdContentEditorControl {
     let value: string | undefined;
     if (editorEl.innerHTML === "") {
       value = undefined;
-    } else {
+    }
+    else {
       value = editorEl.innerHTML;
     }
 

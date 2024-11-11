@@ -11,8 +11,8 @@ import { SdSheetColumnCellTemplateDirective } from "../directives/SdSheetColumnC
 import { SdDockControl } from "../controls/SdDockControl";
 import { SdButtonControl } from "../controls/SdButtonControl";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
-import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { $effect, $signal } from "../utils/$hooks";
+import { SdIconControl } from "../controls/SdIconControl";
 
 @Component({
   selector: "sd-sheet-config-modal",
@@ -30,7 +30,8 @@ import { $effect, $signal } from "../utils/$hooks";
     SdSheetColumnCellTemplateDirective,
     SdDockControl,
     SdButtonControl,
-    FaIconComponent,
+    SdIconControl,
+
   ],
   template: `
     @if (params()) {
@@ -61,13 +62,13 @@ import { $effect, $signal } from "../utils/$hooks";
                     [disabled]="index === 0 || (!item.fixed && items()[index - 1].fixed)"
                     (click)="onDisplayOrderUpButtonClick(item)"
                   >
-                    <fa-icon [icon]="icons.angleUp" [fixedWidth]="true" />
+                    <sd-icon [icon]="icons.angleUp" fixedWidth />
                   </sd-anchor>
                   <sd-anchor
                     [disabled]="index === items().length - 1 || (item.fixed && !items()[index + 1].fixed)"
                     (click)="onDisplayOrderDownButtonClick(item)"
                   >
-                    <fa-icon [icon]="icons.angleDown" [fixedWidth]="true" />
+                    <sd-icon [icon]="icons.angleDown" fixedWidth />
                   </sd-anchor>
                 </div>
               </ng-template>

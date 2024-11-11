@@ -21,10 +21,10 @@ export class SdRefreshCommandEventPlugin extends EventManagerPlugin {
       }
     };
 
-    document.addEventListener("keydown", listener);
+    element.addEventListener("keydown", listener);
 
     return (): void => {
-      document.removeEventListener("keydown", listener);
+      element.removeEventListener("keydown", listener);
     };
   }
 }

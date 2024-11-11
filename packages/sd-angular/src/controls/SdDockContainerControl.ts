@@ -44,7 +44,8 @@ export class SdDockContainerControl {
             right: right + "px",
           });
           top += dockControl.size();
-        } else if (position === "bottom") {
+        }
+        else if (position === "bottom") {
           dockControl.assignStyle({
             top: "",
             bottom: bottom + "px",
@@ -52,7 +53,8 @@ export class SdDockContainerControl {
             right: right + "px",
           });
           bottom += dockControl.size();
-        } else if (position === "left") {
+        }
+        else if (position === "left") {
           dockControl.assignStyle({
             top: top + "px",
             bottom: bottom + "px",
@@ -60,7 +62,8 @@ export class SdDockContainerControl {
             right: "",
           });
           left += dockControl.size();
-        } else {
+        }
+        else {
           dockControl.assignStyle({
             top: top + "px",
             bottom: bottom + "px",

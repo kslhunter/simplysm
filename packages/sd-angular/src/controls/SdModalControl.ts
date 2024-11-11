@@ -18,17 +18,17 @@ import { SdEventsDirective } from "../directives/SdEventsDirective";
 import { SdDockContainerControl } from "./SdDockContainerControl";
 import { SdDockControl } from "./SdDockControl";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
-import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { $effect, $signal } from "../utils/$hooks";
 import { injectElementRef } from "../utils/injectElementRef";
 import { transformBoolean } from "../utils/tramsforms";
+import { SdIconControl } from "./SdIconControl";
 
 @Component({
   selector: "sd-modal",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdAnchorControl, SdPaneControl, SdDockContainerControl, SdDockControl, SdEventsDirective, FaIconComponent],
+  imports: [SdAnchorControl, SdPaneControl, SdDockContainerControl, SdDockControl, SdEventsDirective, SdIconControl],
   styles: [
     /* language=SCSS */ `
       @import "../scss/mixins";
@@ -295,7 +295,7 @@ import { transformBoolean } from "../utils/tramsforms";
             <h5 class="_title">{{ title() }}</h5>
             @if (!hideCloseButton()) {
               <sd-anchor class="_close-button" theme="grey" (click)="onCloseButtonClick()">
-                <fa-icon [icon]="icons.xmark" [fixedWidth]="true" />
+                <sd-icon [icon]="icons.xmark" fixedWidth />
               </sd-anchor>
             }
           </sd-dock>
@@ -501,13 +501,17 @@ export class SdModalControl {
         dialogEl.style.height = `${Math.max(startHeight + e.clientY - startY, this.minHeightPx() ?? 0)}px`;
       }
       if (direction === "right" || direction === "bottom-right" || direction === "top-right") {
-        dialogEl.style.width = `${Math.max(startWidth + (e.clientX - startX) * (dialogEl.style.position === "absolute" ? 1 : 2), this.minWidthPx() ?? 0)}px`;
+        dialogEl.style.width = `${Math.max(startWidth + (e.clientX - startX) * (dialogEl.style.position === "absolute"
+          ? 1
+          : 2), this.minWidthPx() ?? 0)}px`;
       }
       if (direction === "left" || direction === "bottom-left" || direction === "top-left") {
         if (dialogEl.style.position === "absolute") {
           dialogEl.style.left = startLeft + (e.clientX - startX) + "px";
         }
-        dialogEl.style.width = `${Math.max(startWidth - (e.clientX - startX) * (dialogEl.style.position === "absolute" ? 1 : 2), this.minWidthPx() ?? 0)}px`;
+        dialogEl.style.width = `${Math.max(startWidth - (e.clientX - startX) * (dialogEl.style.position === "absolute"
+          ? 1
+          : 2), this.minWidthPx() ?? 0)}px`;
       }
 
       isDoDrag = true;

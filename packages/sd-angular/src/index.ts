@@ -23,6 +23,8 @@ export * from "./controls/SdFormTableControl";
 export * from "./controls/SdGapControl";
 export * from "./controls/SdGridControl";
 export * from "./controls/SdGridItemControl";
+export * from "./controls/SdIconControl";
+export * from "./controls/SdIconLayersControl";
 export * from "./controls/SdKanbanBoardControl";
 export * from "./controls/SdKanbanControl";
 export * from "./controls/SdKanbanLaneControl";

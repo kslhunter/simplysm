@@ -13,7 +13,6 @@ import {
 import { SdSelectItemControl } from "./SdSelectItemControl";
 import { SdDropdownControl } from "./SdDropdownControl";
 import { SdItemOfTemplateContext, SdItemOfTemplateDirective } from "../directives/SdItemOfTemplateDirective";
-import { SdEventsDirective } from "../directives/SdEventsDirective";
 import { SdDockContainerControl } from "./SdDockContainerControl";
 import { NgTemplateOutlet } from "@angular/common";
 import { SdDockControl } from "./SdDockControl";
@@ -24,11 +23,10 @@ import { SdTypedTemplateDirective } from "../directives/SdTypedTemplateDirective
 import { SdDropdownPopupControl } from "./SdDropdownPopupControl";
 import { StringUtil } from "@simplysm/sd-core-common";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
-import { SdButtonControl } from "./SdButtonControl";
-import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { $computed, $effect, $signal } from "../utils/$hooks";
 import { transformBoolean } from "../utils/tramsforms";
 import { SdUseRippleDirective } from "../directives/SdUseRippleDirective";
+import { SdIconControl } from "./SdIconControl";
 
 @Component({
   selector: "sd-select",
@@ -38,7 +36,6 @@ import { SdUseRippleDirective } from "../directives/SdUseRippleDirective";
   imports: [
     SdDropdownControl,
     SdDropdownPopupControl,
-    SdEventsDirective,
     SdDockContainerControl,
     SdDockControl,
     SdAnchorControl,
@@ -46,9 +43,8 @@ import { SdUseRippleDirective } from "../directives/SdUseRippleDirective";
     SdPaneControl,
     NgTemplateOutlet,
     SdTypedTemplateDirective,
-    SdButtonControl,
-    FaIconComponent,
     SdUseRippleDirective,
+    SdIconControl,
   ],
   styles: [
     /* language=SCSS */ `
@@ -224,7 +220,7 @@ import { SdUseRippleDirective } from "../directives/SdUseRippleDirective";
       <div class="_sd-select-control" [sdUseRipple]="!disabled()">
         <div #contentEl class="_sd-select-control-content"></div>
         <div class="_sd-select-control-icon">
-          <fa-icon [icon]="icons.caretDown" />
+          <sd-icon [icon]="icons.caretDown" />
         </div>
 
         <div class="_invalid-indicator"></div>
@@ -278,11 +274,9 @@ import { SdUseRippleDirective } from "../directives/SdUseRippleDirective";
                       }"
                     ></ng-template>
 
-                    @if (
-                      getChildrenFn() &&
-                      getChildrenFn()!(item, index, depth) &&
-                      getChildrenFn()!(item, index, depth).length > 0
-                    ) {
+                    @if (getChildrenFn() &&
+                    getChildrenFn()!(item, index, depth) &&
+                    getChildrenFn()!(item, index, depth).length > 0) {
                       <div class="_children">
                         <ng-template
                           [ngTemplateOutlet]="rowOfList"
@@ -371,7 +365,8 @@ export class SdSelectControl<M extends "single" | "multi", T> {
 
       if (innerHTML === "" && this.placeholder() !== undefined) {
         this.contentElRef().nativeElement.innerHTML = `<span class='sd-text-color-grey-default'>${this.placeholder()}</span>`;
-      } else {
+      }
+      else {
         this.contentElRef().nativeElement.innerHTML = innerHTML;
       }
     });
@@ -389,10 +384,12 @@ export class SdSelectControl<M extends "single" | "multi", T> {
         if (event.key === "ArrowUp") {
           if (currIndex === 0) {
             this.dropdownControl().contentElRef().nativeElement.focus();
-          } else {
+          }
+          else {
             focusableEls[currIndex - 1].focus();
           }
-        } else {
+        }
+        else {
           if (typeof focusableEls[currIndex + 1] !== "undefined") {
             focusableEls[currIndex + 1].focus();
           }
@@ -405,7 +402,8 @@ export class SdSelectControl<M extends "single" | "multi", T> {
     if (this.selectMode() === "multi") {
       const itemKeyValues = this.value() as any[] | undefined;
       return itemKeyValues?.includes(itemControl.value()) ?? false;
-    } else {
+    }
+    else {
       const itemKeyValue = this.value();
       return itemKeyValue === itemControl.value();
     }
@@ -417,12 +415,14 @@ export class SdSelectControl<M extends "single" | "multi", T> {
         const r = [...((v ?? []) as any[])];
         if (r.includes(itemControl.value())) {
           r.remove(itemControl.value());
-        } else {
+        }
+        else {
           r.push(itemControl.value());
         }
         return r;
       });
-    } else {
+    }
+    else {
       this.value.set(itemControl.value());
     }
 

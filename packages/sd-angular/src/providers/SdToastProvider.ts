@@ -45,18 +45,21 @@ export class SdToastProvider {
   async try<R>(fn: () => Promise<R> | R, messageFn?: (err: Error) => string): Promise<R | undefined> {
     try {
       return await fn();
-    } catch (err) {
+    }
+    catch (err) {
       if (err instanceof Error) {
         if (messageFn) {
           this.danger(messageFn(err));
-        } else {
+        }
+        else {
           this.danger(err.message);
         }
 
         await this.#systemLog.writeAsync("error", err.stack);
 
         return undefined;
-      } else {
+      }
+      else {
         throw err;
       }
     }
@@ -172,7 +175,8 @@ export class SdToastProvider {
           toastEl.findAll<HTMLElement>("._sd-toast-message")[0].innerText = msg;
         },
       } as any;
-    } else {
+    }
+    else {
       this.#closeAfterTime(toastRef, 3000);
       return undefined as any;
     }
@@ -184,7 +188,8 @@ export class SdToastProvider {
     window.setTimeout(() => {
       if (toastEl.matches(":hover")) {
         this.#closeAfterTime(toastRef, ms);
-      } else {
+      }
+      else {
         toastEl.addEventListener("transitionend", () => {
           toastRef.destroy();
         });

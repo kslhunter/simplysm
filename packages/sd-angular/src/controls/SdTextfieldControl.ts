@@ -433,13 +433,17 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
 
     if (type === "datetime" && value instanceof DateTime) {
       return value.toFormatString("yyyy-MM-dd tt hh:mm");
-    } else if (type === "datetime-sec" && value instanceof DateTime) {
+    }
+    else if (type === "datetime-sec" && value instanceof DateTime) {
       return value.toFormatString("yyyy-MM-dd tt hh:mm:ss");
-    } else if (type === "time" && (value instanceof DateTime || value instanceof Time)) {
+    }
+    else if (type === "time" && (value instanceof DateTime || value instanceof Time)) {
       return value.toFormatString("tt hh:mm");
-    } else if (type === "time-sec" && (value instanceof DateTime || value instanceof Time)) {
+    }
+    else if (type === "time-sec" && (value instanceof DateTime || value instanceof Time)) {
       return value.toFormatString("tt hh:mm:ss");
-    } else {
+    }
+    else {
       return this.controlValue();
     }
   });
@@ -447,9 +451,11 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
   controlStep = $computed(() => {
     if (this.step() !== undefined) {
       return this.step();
-    } else if (this.type() === "datetime-sec" || this.type() === "time-sec") {
+    }
+    else if (this.type() === "datetime-sec" || this.type() === "time-sec") {
       return 1;
-    } else {
+    }
+    else {
       return "any";
     }
   });
@@ -458,7 +464,8 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
     const min = this.min();
     if (min instanceof DateOnly) {
       return min.toFormatString("yyyy-MM-dd");
-    } else {
+    }
+    else {
       return this.#convertToControlValue(min);
     }
   });
@@ -467,7 +474,8 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
     const max = this.max();
     if (max instanceof DateOnly) {
       return max.toFormatString("yyyy-MM-dd");
-    } else {
+    }
+    else {
       return this.#convertToControlValue(max);
     }
   });
@@ -480,10 +488,12 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
       if (this.required()) {
         errorMessages.push("값을 입력하세요.");
       }
-    } else if (this.type() === "number") {
+    }
+    else if (this.type() === "number") {
       if (typeof value !== "number") {
         errorMessages.push("숫자를 입력하세요");
-      } else {
+      }
+      else {
         const min = this.min();
         const max = this.max();
         if (typeof min === "number" && min > value) {
@@ -493,16 +503,19 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
           errorMessages.push(`${max}보다 작거나 같아야 합니다.`);
         }
       }
-    } else if (this.type() === "format" && !StringUtil.isNullOrEmpty(this.format())) {
+    }
+    else if (this.type() === "format" && !StringUtil.isNullOrEmpty(this.format())) {
       const formatItems = this.format()!.split("|");
 
       if (!formatItems.some((formatItem) => formatItem.match(/X/g)?.length === (value as string).length)) {
         errorMessages.push(`문자의 길이가 요구되는 길이와 다릅니다.`);
       }
-    } else if (["year", "month", "date"].includes(this.type())) {
+    }
+    else if (["year", "month", "date"].includes(this.type())) {
       if (!(value instanceof DateOnly)) {
         errorMessages.push("날짜를 입력하세요");
-      } else {
+      }
+      else {
         const min = this.min();
         const max = this.max();
         if (min instanceof DateOnly && min.tick > value.tick) {
@@ -512,15 +525,18 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
           errorMessages.push(`${max}보다 작거나 같아야 합니다.`);
         }
       }
-    } else if (["datetime", "datetime-sec"].includes(this.type())) {
+    }
+    else if (["datetime", "datetime-sec"].includes(this.type())) {
       if (!(value instanceof DateTime)) {
         errorMessages.push("날짜 및 시간을 입력하세요");
       }
-    } else if (["time", "time-sec"].includes(this.type())) {
+    }
+    else if (["time", "time-sec"].includes(this.type())) {
       if (!(value instanceof Time)) {
         errorMessages.push("시간을 입력하세요");
       }
-    } else if (this.type() === "text") {
+    }
+    else if (this.type() === "text") {
       const minlength = this.minlength();
       const maxlength = this.maxlength();
       if (minlength !== undefined && minlength > (value as string).length) {
@@ -553,38 +569,52 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
 
     if (inputEl.value === "") {
       this.#setValue(undefined);
-    } else if (this.type() === "number") {
+    }
+    else if (this.type() === "number") {
       const inputValue = inputEl.value.replace(/[^0-9-.]/g, "");
       if (
         Number.isNaN(Number(inputValue)) ||
         inputValue.endsWith(".") ||
         (inputValue.includes(".") && Number(inputValue) === 0)
       ) {
-      } else {
+      }
+      else {
         this.#setValue(NumberUtil.parseFloat(inputValue));
       }
-    } else if (this.type() === "format") {
+    }
+    else if (this.type() === "format") {
       const nonFormatChars = this.format()?.match(/[^X]/g)?.distinct();
       if (nonFormatChars) {
         this.#setValue(
           inputEl.value.replace(new RegExp(`[${nonFormatChars.map((item) => "\\" + item).join("")}]`, "g"), ""),
         );
-      } else {
+      }
+      else {
         this.#setValue(inputEl.value);
       }
-    } else if (["year", "month", "date"].includes(this.type())) {
+    }
+    else if (["year", "month", "date"].includes(this.type())) {
       try {
         this.#setValue(DateOnly.parse(inputEl.value));
-      } catch {}
-    } else if (["datetime", "datetime-sec"].includes(this.type())) {
+      }
+      catch {
+      }
+    }
+    else if (["datetime", "datetime-sec"].includes(this.type())) {
       try {
         this.#setValue(DateTime.parse(inputEl.value));
-      } catch {}
-    } else if (["time", "time-sec"].includes(this.type())) {
+      }
+      catch {
+      }
+    }
+    else if (["time", "time-sec"].includes(this.type())) {
       try {
         this.#setValue(Time.parse(inputEl.value));
-      } catch {}
-    } else {
+      }
+      catch {
+      }
+    }
+    else {
       this.#setValue(inputEl.value);
     }
   }
@@ -616,7 +646,8 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
             if (formatItemChar === "X") {
               result += value[valCur];
               valCur++;
-            } else {
+            }
+            else {
               result += formatItemChar;
             }
           }

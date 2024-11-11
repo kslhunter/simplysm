@@ -58,8 +58,8 @@ export class SdAppStructureUtil {
         modules: menu.modules,
         ...(menu.children
           ? {
-              children: this.getMenus(menu.children, currCodeChain),
-            }
+            children: this.getMenus(menu.children, currCodeChain),
+          }
           : {}),
       });
     }
@@ -86,7 +86,8 @@ export class SdAppStructureUtil {
       if (menu.children) {
         const childrenFlatMenus = this.getFlatPages(menu.children, currTitleChain, currCodeChain, currModulesChain);
         resultFlatMenus.push(...childrenFlatMenus);
-      } else {
+      }
+      else {
         resultFlatMenus.push({
           titleChain: currTitleChain,
           codeChain: currCodeChain,

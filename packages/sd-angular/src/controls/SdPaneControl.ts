@@ -16,6 +16,8 @@ import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/
       }
     `,
   ],
-  template: ` <ng-content></ng-content> `,
+  template: `
+    <ng-content></ng-content> `,
 })
-export class SdPaneControl {}
+export class SdPaneControl {
+}

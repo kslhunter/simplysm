@@ -29,7 +29,8 @@ export class SdServiceFactoryProvider {
     if (this.#clientMap.has(key)) {
       if (!this.#clientMap.get(key)!.connected) {
         throw new Error("이미 연결이 끊긴 클라이언트와 같은 키로 연결을 시도하였습니다.");
-      } else {
+      }
+      else {
         throw new Error("이미 연결된 클라이언트와 같은 키로 연결을 시도하였습니다.");
       }
     }

@@ -22,12 +22,13 @@ import { SdAnchorControl } from "./SdAnchorControl";
 import { SdPaginationControl } from "./SdPaginationControl";
 import { SdPaneControl } from "./SdPaneControl";
 import { SdEventsDirective } from "../directives/SdEventsDirective";
-import { FontAwesomeModule } from "@fortawesome/angular-fontawesome";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { SdCheckboxControl } from "./SdCheckboxControl";
 import { $computed, $effect, $signal } from "../utils/$hooks";
 import { injectElementRef } from "../utils/injectElementRef";
 import { transformBoolean } from "../utils/tramsforms";
+import { SdIconControl } from "./SdIconControl";
+import { SdIconLayersControl } from "./SdIconLayersControl";
 
 @Component({
   selector: "sd-sheet",
@@ -43,8 +44,9 @@ import { transformBoolean } from "../utils/tramsforms";
     SdPaneControl,
     SdEventsDirective,
     NgTemplateOutlet,
-    FontAwesomeModule,
     SdCheckboxControl,
+    SdIconControl,
+    SdIconLayersControl,
   ],
   //region styles
   styles: [
@@ -125,7 +127,7 @@ import { transformBoolean } from "../utils/tramsforms";
                     padding: var(--sheet-pv) var(--sheet-ph);
                     text-align: left;
 
-                    > fa-icon {
+                    > sd-icon {
                       cursor: pointer;
                       color: var(--text-trans-lightest);
                     }
@@ -313,7 +315,7 @@ import { transformBoolean } from "../utils/tramsforms";
             <div class="flex-row-inline flex-gap-sm">
               @if (key()) {
                 <sd-anchor (click)="onConfigButtonClick()">
-                  <fa-icon [icon]="icons.cog" [fixedWidth]="true" />
+                  <sd-icon [icon]="icons.cog" fixedWidth />
                 </sd-anchor>
               }
               @if (currPageLength() > 1) {
@@ -350,7 +352,7 @@ import { transformBoolean } from "../utils/tramsforms";
                           theme="white"
                           (valueChange)="onAllItemsSelectIconClick()"
                         />
-                        <!--<fa-icon [icon]="icons.arrowRight" [fixedWidth]="true"
+                        <!--<sd-icon [icon]="icons.arrowRight" fixedWidth
                                  [class.tx-theme-primary-default]="isAllItemsSelected"
                                  (click)="onAllItemsSelectIconClick()"/>-->
                       }
@@ -368,9 +370,9 @@ import { transformBoolean } from "../utils/tramsforms";
                       (sdResize)="onFixedCellResize(-1)"
                     >
                       @if (hasExpandableItem()) {
-                        <fa-icon
+                        <sd-icon
                           [icon]="icons.caretRight"
-                          [fixedWidth]="true"
+                          fixedWidth
                           [class.tx-theme-primary-default]="isAllItemsExpanded()"
                           [rotate]="isAllItemsExpanded() ? 90 : undefined"
                           (click)="onAllItemsExpandIconClick()"
@@ -414,14 +416,14 @@ import { transformBoolean } from "../utils/tramsforms";
 
                           @if (headerCell.isLastDepth && headerCell.control.useOrdering() && headerCell.control.key()) {
                             <div class="_sort-icon">
-                              <fa-layers>
-                                <fa-icon [icon]="icons.sort" class="tx-trans-lightest" />
+                              <sd-icon-layers>
+                                <sd-icon [icon]="icons.sort" class="tx-trans-lightest" />
                                 @if (getIsColumnOrderingDesc(headerCell.control.key()) === false) {
-                                  <fa-icon [icon]="icons.sortDown" />
+                                  <sd-icon [icon]="icons.sortDown" />
                                 } @else if (getIsColumnOrderingDesc(headerCell.control.key()) === true) {
-                                  <fa-icon [icon]="icons.sortUp" />
+                                  <sd-icon [icon]="icons.sortUp" />
                                 }
-                              </fa-layers>
+                              </sd-icon-layers>
                               @if (getColumnOrderingIndexText(headerCell.control.key()); as text) {
                                 <sub>{{ text }}</sub>
                               }
@@ -488,9 +490,9 @@ import { transformBoolean } from "../utils/tramsforms";
                         (valueChange)="onItemSelectIconClick(itemDef.item)"
                       />
                     } @else if (selectMode()) {
-                      <fa-icon
+                      <sd-icon
                         [icon]="icons.arrowRight"
-                        [fixedWidth]="true"
+                        fixedWidth
                         [class.tx-theme-primary-default]="selectedItems().includes(itemDef.item)"
                         (click)="onItemSelectIconClick(itemDef.item)"
                       />
@@ -502,9 +504,9 @@ import { transformBoolean } from "../utils/tramsforms";
                         <div class="_depth-indicator" [style.margin-left.em]="itemDef.depth - 0.5"></div>
                       }
                       @if (itemDef.hasChildren) {
-                        <fa-icon
+                        <sd-icon
                           [icon]="icons.caretRight"
-                          [fixedWidth]="true"
+                          fixedWidth
                           [rotate]="expandedItems().includes(itemDef.item) ? 90 : undefined"
                           [class.tx-theme-primary-default]="expandedItems().includes(itemDef.item)"
                           (click)="onItemExpandIconClick(itemDef.item)"

@@ -13,17 +13,17 @@ import { ISdResizeEvent } from "../plugins/SdResizeEventPlugin";
 import { SdAnchorControl } from "./SdAnchorControl";
 import { SdGapControl } from "./SdGapControl";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
-import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { $computed } from "../utils/$hooks";
 import { injectElementRef } from "../utils/injectElementRef";
 import { SdUseRippleDirective } from "../directives/SdUseRippleDirective";
+import { SdIconControl } from "./SdIconControl";
 
 @Component({
   selector: "sd-topbar",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdAnchorControl, SdGapControl, FaIconComponent, SdUseRippleDirective],
+  imports: [SdAnchorControl, SdGapControl, SdUseRippleDirective, SdIconControl],
   styles: [
     /* language=SCSS */ `
       @import "../scss/mixins";
@@ -130,7 +130,7 @@ import { SdUseRippleDirective } from "../directives/SdUseRippleDirective";
   template: `
     @if (hasSidebar()) {
       <sd-anchor class="_sidebar-toggle-button" (click)="onSidebarToggleButtonClick()" sdUseRipple>
-        <fa-icon [icon]="icons.bars" [fixedWidth]="true" />
+        <sd-icon [icon]="icons.bars" fixedWidth />
       </sd-anchor>
     } @else {
       <sd-gap width="sm" />

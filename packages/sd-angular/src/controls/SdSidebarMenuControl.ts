@@ -1,13 +1,13 @@
-import {ChangeDetectionStrategy, Component, input, ViewEncapsulation} from "@angular/core";
-import {SdListControl} from "./SdListControl";
-import {NgTemplateOutlet} from "@angular/common";
-import {SdTypedTemplateDirective} from "../directives/SdTypedTemplateDirective";
-import {SdListItemControl} from "./SdListItemControl";
-import {SdRouterLinkDirective} from "../directives/SdRouterLinkDirective";
-import {IconDefinition} from "@fortawesome/fontawesome-svg-core";
-import {FaIconComponent} from "@fortawesome/angular-fontawesome";
-import {injectPageCode$} from "../utils/injectPageCode$";
-import {$computed} from "../utils/$hooks";
+import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
+import { SdListControl } from "./SdListControl";
+import { NgTemplateOutlet } from "@angular/common";
+import { SdTypedTemplateDirective } from "../directives/SdTypedTemplateDirective";
+import { SdListItemControl } from "./SdListItemControl";
+import { SdRouterLinkDirective } from "../directives/SdRouterLinkDirective";
+import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
+import { injectPageCode$ } from "../utils/injectPageCode$";
+import { $computed } from "../utils/$hooks";
+import { SdIconControl } from "./SdIconControl";
 
 // TODO: 메뉴가 열릴때 애니메이션 안됨
 @Component({
@@ -21,7 +21,7 @@ import {$computed} from "../utils/$hooks";
     SdTypedTemplateDirective,
     SdListItemControl,
     SdRouterLinkDirective,
-    FaIconComponent
+    SdIconControl
   ],
   styles: [
     /* language=SCSS */ `
@@ -87,7 +87,7 @@ import {$computed} from "../utils/$hooks";
           [layout]="depth === 0 ? rootLayout() : 'accordion'"
         >
           @if (menu.icon) {
-            <fa-icon [icon]="menu.icon" [fixedWidth]="true"/>
+            <sd-icon [icon]="menu.icon" fixedWidth />
             &nbsp;
           }
           {{ menu.title }}

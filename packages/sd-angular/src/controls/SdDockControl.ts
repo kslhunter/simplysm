@@ -136,11 +136,14 @@ export class SdDockControl {
 
       if (this.position() === "bottom") {
         thisEl.style.height = `${startHeight - e.clientY + startY}px`;
-      } else if (this.position() === "right") {
+      }
+      else if (this.position() === "right") {
         thisEl.style.width = `${startWidth - e.clientX + startX}px`;
-      } else if (this.position() === "top") {
+      }
+      else if (this.position() === "top") {
         thisEl.style.height = `${startHeight + e.clientY - startY}px`;
-      } else {
+      }
+      else {
         // left
         thisEl.style.width = `${startWidth + e.clientX - startX}px`;
       }
@@ -157,7 +160,8 @@ export class SdDockControl {
         const newConf: { size?: string } = {};
         if (["right", "left"].includes(this.position())) {
           newConf.size = thisEl.style.width;
-        } else {
+        }
+        else {
           newConf.size = thisEl.style.height;
         }
         this.#config.set(newConf);

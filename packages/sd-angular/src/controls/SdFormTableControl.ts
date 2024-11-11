@@ -46,4 +46,5 @@ import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/
     `,
   ],
 })
-export class SdFormTableControl {}
+export class SdFormTableControl {
+}

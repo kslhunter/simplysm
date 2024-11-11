@@ -1,7 +1,7 @@
-import {ChangeDetectionStrategy, Component, forwardRef, inject, input, ViewEncapsulation} from "@angular/core";
-import {SdCheckboxGroupControl} from "./SdCheckboxGroupControl";
-import {SdCheckboxControl} from "./SdCheckboxControl";
-import {$computed} from "../utils/$hooks";
+import { ChangeDetectionStrategy, Component, forwardRef, inject, input, ViewEncapsulation } from "@angular/core";
+import { SdCheckboxGroupControl } from "./SdCheckboxGroupControl";
+import { SdCheckboxControl } from "./SdCheckboxControl";
+import { $computed } from "../utils/$hooks";
 import { transformBoolean } from "../utils/tramsforms";
 
 @Component({

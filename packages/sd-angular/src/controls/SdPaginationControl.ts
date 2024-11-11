@@ -1,15 +1,15 @@
 import { ChangeDetectionStrategy, Component, inject, input, model, ViewEncapsulation } from "@angular/core";
 import { SdAnchorControl } from "./SdAnchorControl";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
-import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { $computed } from "../utils/$hooks";
+import { SdIconControl } from "./SdIconControl";
 
 @Component({
   selector: "sd-pagination",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdAnchorControl, FaIconComponent],
+  imports: [SdAnchorControl, SdIconControl],
   styles: [
     /* language=SCSS */ `
       @import "../scss/mixins";
@@ -21,7 +21,7 @@ import { $computed } from "../utils/$hooks";
         > sd-anchor {
           display: inline-block;
           padding: var(--gap-sm);
-          
+
           &[sd-selected="true"] {
             text-decoration: underline;
           }
@@ -31,10 +31,10 @@ import { $computed } from "../utils/$hooks";
   ],
   template: `
     <sd-anchor [disabled]="!hasPrev()" (click)="onGoFirstClick()">
-      <fa-icon [icon]="icons.angleDoubleLeft" [fixedWidth]="true" />
+      <sd-icon [icon]="icons.angleDoubleLeft" fixedWidth />
     </sd-anchor>
     <sd-anchor [disabled]="!hasPrev()" (click)="onPrevClick()">
-      <fa-icon [icon]="icons.angleLeft" [fixedWidth]="true" />
+      <sd-icon [icon]="icons.angleLeft" fixedWidth />
     </sd-anchor>
     @for (displayPage of displayPages(); track displayPage) {
       <sd-anchor (click)="onPageClick(displayPage)" [attr.sd-selected]="displayPage === page()">
@@ -42,10 +42,10 @@ import { $computed } from "../utils/$hooks";
       </sd-anchor>
     }
     <sd-anchor [disabled]="!hasNext()" (click)="onNextClick()">
-      <fa-icon [icon]="icons.angleRight" [fixedWidth]="true" />
+      <sd-icon [icon]="icons.angleRight" fixedWidth />
     </sd-anchor>
     <sd-anchor [disabled]="!hasNext()" (click)="onGoLastClick()">
-      <fa-icon [icon]="icons.angleDoubleRight" [fixedWidth]="true" />
+      <sd-icon [icon]="icons.angleDoubleRight" fixedWidth />
     </sd-anchor>
   `
 })

@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, ViewEncapsulation} from "@angular/core";
+import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/core";
 
 @Component({
   selector: "sd-card",
@@ -47,7 +47,8 @@ import {ChangeDetectionStrategy, Component, ViewEncapsulation} from "@angular/co
         transform: none;
       }
     }
-  `],
+  `
+  ],
   //endregion
   template: `
     <ng-content></ng-content>

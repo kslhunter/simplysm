@@ -1,14 +1,14 @@
 import { ChangeDetectionStrategy, Component, inject, output, ViewEncapsulation } from "@angular/core";
 import { SdAnchorControl } from "./SdAnchorControl";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
-import { FaIconComponent } from "@fortawesome/angular-fontawesome";
+import { SdIconControl } from "./SdIconControl";
 
 @Component({
   selector: "sd-topbar-tab",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdAnchorControl, FaIconComponent],
+  imports: [SdAnchorControl, SdIconControl],
   styles: [
     /* language=SCSS */ `
       sd-topbar-tab {
@@ -38,9 +38,10 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
       }
     `,
   ],
-  template: ` <ng-content></ng-content>
+  template: `
+    <ng-content></ng-content>
     <sd-anchor (click)="onCloseButtonClick($event)">
-      <fa-icon [icon]="icons.xmark" [fixedWidth]="true" />
+      <sd-icon [icon]="icons.xmark" fixedWidth />
     </sd-anchor>`,
 })
 export class SdTopbarTabControl {

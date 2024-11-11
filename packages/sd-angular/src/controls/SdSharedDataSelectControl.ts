@@ -18,9 +18,9 @@ import { SdSelectItemControl } from "./SdSelectItemControl";
 import { NgTemplateOutlet } from "@angular/common";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { SdSelectButtonControl } from "./SdSelectButtonControl";
-import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { $computed, $signal } from "../utils/$hooks";
 import { transformBoolean } from "../utils/tramsforms";
+import { SdIconControl } from "./SdIconControl";
 
 @Component({
   selector: "sd-shared-data-select",
@@ -34,7 +34,7 @@ import { transformBoolean } from "../utils/tramsforms";
     SdItemOfTemplateDirective,
     NgTemplateOutlet,
     SdSelectButtonControl,
-    FaIconComponent
+    SdIconControl
   ],
   template: `
     <sd-select
@@ -54,12 +54,12 @@ import { transformBoolean } from "../utils/tramsforms";
     >
       @if (modalType()) {
         <sd-select-button (click)="onModalButtonClick($event)">
-          <fa-icon [icon]="icons.search" />
+          <sd-icon [icon]="icons.search" />
         </sd-select-button>
       }
       @if (editModal()) {
         <sd-select-button (click)="onEditModalButtonClick($event)">
-          <fa-icon [icon]="icons.edit" />
+          <sd-icon [icon]="icons.edit" />
         </sd-select-button>
       }
 

@@ -113,13 +113,13 @@ export class SdPrintProvider {
                       y: 0,
                       ...(orientation === "landscape"
                         ? {
-                            height: 841.89,
-                            width: 595.28,
-                          }
+                          height: 841.89,
+                          width: 595.28,
+                        }
                         : {
-                            width: 595.28,
-                            height: 841.89,
-                          }),
+                          width: 595.28,
+                          height: 841.89,
+                        }),
                     });
                   }
 
@@ -129,7 +129,8 @@ export class SdPrintProvider {
                   styleEl.remove();
 
                   resolve(Buffer.from(arrayBuffer));
-                } catch (err) {
+                }
+                catch (err) {
                   reject(err);
                 }
               },
@@ -139,7 +140,8 @@ export class SdPrintProvider {
         };
 
         this.#appRef.attachView(compRef.hostView);
-      } catch (err) {
+      }
+      catch (err) {
         reject(err);
       }
     });

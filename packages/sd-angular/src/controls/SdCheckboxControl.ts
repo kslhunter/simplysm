@@ -9,16 +9,18 @@ import {
 } from "@angular/core";
 
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
-import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { transformBoolean } from "../utils/tramsforms";
 import { useRipple } from "../utils/useRipple";
+import { SdIconControl } from "./SdIconControl";
 
 @Component({
   selector: "sd-checkbox",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [FaIconComponent],
+  imports: [
+    SdIconControl
+  ],
   //region styles
   styles: [
     /* language=SCSS */ `
@@ -50,7 +52,7 @@ import { useRipple } from "../utils/useRipple";
             opacity: 0;
             color: white;
 
-            > fa-icon > svg {
+            > sd-icon > svg {
               vertical-align: top;
             }
           }
@@ -208,7 +210,7 @@ import { useRipple } from "../utils/useRipple";
     <div class="_indicator_rect">
       <div class="_indicator">
         @if (!radio()) {
-          <fa-icon [icon]="icon()" />
+          <sd-icon [icon]="icon()" />
         } @else {
           <div></div>
         }
@@ -254,7 +256,8 @@ export class SdCheckboxControl {
     if (this.disabled()) return;
     if (this.radio()) {
       this.value.set(true);
-    } else {
+    }
+    else {
       this.value.update((v) => !v);
     }
   }
@@ -265,7 +268,8 @@ export class SdCheckboxControl {
       if (this.disabled()) return;
       if (this.radio()) {
         this.value.set(true);
-      } else {
+      }
+      else {
         this.value.update((v) => !v);
       }
     }

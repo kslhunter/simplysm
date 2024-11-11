@@ -144,7 +144,8 @@ export class SdKanbanControl<L, T> {
         const r = [...v];
         if (v.includes(this.value())) {
           r.remove(this.value());
-        } else {
+        }
+        else {
           r.push(this.value());
         }
         return r;

@@ -9,9 +9,11 @@ export class FormatPipe implements PipeTransform {
   transform(value: string | DateTime | DateOnly | undefined, format: string): string {
     if (value == null) {
       return "";
-    } else if (value instanceof DateTime || value instanceof DateOnly) {
+    }
+    else if (value instanceof DateTime || value instanceof DateOnly) {
       return value.toFormatString(format);
-    } else {
+    }
+    else {
       const formatItems = format.split("|");
 
       for (const formatItem of formatItems) {
@@ -23,7 +25,8 @@ export class FormatPipe implements PipeTransform {
             if (formatItemChar === "X") {
               result += value[valCur];
               valCur++;
-            } else {
+            }
+            else {
               result += formatItemChar;
             }
           }

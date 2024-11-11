@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, forwardRef, HostListener, inject, input, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  forwardRef,
+  HostListener,
+  inject,
+  input,
+  ViewEncapsulation
+} from "@angular/core";
 import { SdTabControl } from "./SdTabControl";
 import { $computed } from "../utils/$hooks";
 

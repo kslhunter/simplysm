@@ -52,7 +52,6 @@ import { SdBackbuttonEventPlugin } from "./plugins/SdBackbuttonEventPlugin";
 import { SdGlobalErrorHandlerPlugin } from "./plugins/SdGlobalErrorHandlerPlugin";
 import { SdThemeProvider } from "./providers/SdThemeProvider";
 import { SdLocalStorageProvider } from "./providers/SdLocalStorageProvider";
-import { FaConfig } from "@fortawesome/angular-fontawesome";
 
 export function provideSdAngular(opt: {
   clientName: string;
@@ -67,11 +66,9 @@ export function provideSdAngular(opt: {
         const _sdNgConf = inject(SdAngularConfigProvider);
         const _sdTheme = inject(SdThemeProvider);
         const _sdLocalStorage = inject(SdLocalStorageProvider);
-        const _faConfig = inject(FaConfig);
 
         return () => {
           _sdTheme.theme.set(_sdLocalStorage.get("sd-theme") ?? _sdNgConf.defaultTheme);
-          _faConfig.fallbackIcon = _sdNgConf.icons.fallback;
         };
       },
       multi: true

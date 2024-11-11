@@ -30,18 +30,22 @@ export class SdRouterLinkDirective {
       const width = routerLink[2]?.width ?? 800;
       const height = routerLink[2]?.height ?? 800;
       this.#navWindow.open(routerLink[0], obj, `width=${width},height=${height}`);
-    } else if (event.ctrlKey || event.altKey) {
+    }
+    else if (event.ctrlKey || event.altKey) {
       // 알트키: 새탭
       // 컨트롤키: 새탭 (새탭이 포커싱되지 않음)
       this.#navWindow.open(routerLink[0], obj, "_blank");
-    } else if (event.shiftKey) {
+    }
+    else if (event.shiftKey) {
       // 쉬프트키: 새창
       const width = routerLink[2]?.width ?? 800;
       const height = routerLink[2]?.height ?? 800;
       this.#navWindow.open(routerLink[0], obj, `width=${width},height=${height}`);
-    } else if (routerLink[3] === undefined) {
+    }
+    else if (routerLink[3] === undefined) {
       await this.#router.navigate([`${routerLink[0]}`, ...(obj ? [obj] : [])]);
-    } else {
+    }
+    else {
       await this.#router.navigate([{ outlets: { [routerLink[3]]: routerLink[0] } }, ...(obj ? [obj] : [])]);
     }
   }

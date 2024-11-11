@@ -47,11 +47,14 @@ export class SdGapControl {
     $effect(() => {
       if (this.widthPx() === 0 || this.heightPx() === 0 || this.widthEm() === 0) {
         this.#elRef.nativeElement.style.display = "none";
-      } else if (this.width() !== undefined || this.widthPx() !== undefined || this.widthEm() !== undefined) {
+      }
+      else if (this.width() !== undefined || this.widthPx() !== undefined || this.widthEm() !== undefined) {
         this.#elRef.nativeElement.style.display = "inline-block";
-      } else if (this.height() !== undefined || this.heightPx() !== undefined) {
+      }
+      else if (this.height() !== undefined || this.heightPx() !== undefined) {
         this.#elRef.nativeElement.style.display = "block";
-      } else {
+      }
+      else {
         this.#elRef.nativeElement.style.display = "";
       }
     });

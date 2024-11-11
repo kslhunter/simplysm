@@ -1,15 +1,17 @@
-import {ChangeDetectionStrategy, Component, inject, input, ViewEncapsulation} from "@angular/core";
-import {SdAngularConfigProvider} from "../providers/SdAngularConfigProvider";
-import {FaIconComponent} from "@fortawesome/angular-fontawesome";
-import {$computed} from "../utils/$hooks";
+import { ChangeDetectionStrategy, Component, inject, input, ViewEncapsulation } from "@angular/core";
+import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
+import { $computed } from "../utils/$hooks";
 import { transformBoolean } from "../utils/tramsforms";
+import { SdIconControl } from "./SdIconControl";
 
 @Component({
   selector: "sd-collapse-icon",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [FaIconComponent],
+  imports: [
+    SdIconControl
+  ],
   styles: [/* language=SCSS */ `
     sd-collapse-icon {
       display: inline-block;
@@ -19,9 +21,10 @@ import { transformBoolean } from "../utils/tramsforms";
         transition: transform 0.1s ease-out;
       }
     }
-  `],
+  `
+  ],
   template: `
-    <fa-icon [icon]="icon()" [fixedWidth]="true"/>
+    <sd-icon [icon]="icon()" fixedWidth />
   `,
   host: {
     "[attr.sd-open]": "open()",

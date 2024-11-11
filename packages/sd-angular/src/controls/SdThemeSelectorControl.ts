@@ -6,8 +6,8 @@ import { SdListItemControl } from "./SdListItemControl";
 import { SdThemeProvider } from "../providers/SdThemeProvider";
 import { SdDropdownPopupControl } from "./SdDropdownPopupControl";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
-import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { $effect } from "../utils/$hooks";
+import { SdIconControl } from "./SdIconControl";
 
 @Component({
   selector: "sd-theme-selector",
@@ -20,12 +20,12 @@ import { $effect } from "../utils/$hooks";
     SdAnchorControl,
     SdListControl,
     SdListItemControl,
-    FaIconComponent,
+    SdIconControl,
   ],
   template: `
     <sd-dropdown>
       <sd-anchor style="color: var(--theme-grey-default)">
-        <fa-icon [icon]="icons.mountainSun" />
+        <sd-icon [icon]="icons.mountainSun" />
         {{ theme() }}
       </sd-anchor>
 

@@ -67,7 +67,8 @@ export class SdDropdownPopupControl {
 
     if (divEl.clientHeight > 300) {
       el.style.height = "300px";
-    } else {
+    }
+    else {
       delete (el.style as any).height;
     }
   }

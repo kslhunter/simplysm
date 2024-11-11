@@ -14,18 +14,18 @@ import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { SdCollapseIconControl } from "./SdCollapseIconControl";
 import { SdCollapseControl } from "./SdCollapseControl";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
-import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { $computed } from "../utils/$hooks";
 import { SdUseRippleDirective } from "../directives/SdUseRippleDirective";
 import { transformBoolean } from "../utils/tramsforms";
 import { NgTemplateOutlet } from "@angular/common";
+import { SdIconControl } from "./SdIconControl";
 
 @Component({
   selector: "sd-list-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdCollapseIconControl, SdCollapseControl, FaIconComponent, SdUseRippleDirective, NgTemplateOutlet],
+  imports: [SdCollapseIconControl, SdCollapseControl, SdUseRippleDirective, NgTemplateOutlet, SdIconControl],
   styles: [
     /* language=SCSS */ `
       @import "../scss/mixins";
@@ -121,7 +121,7 @@ import { NgTemplateOutlet } from "@angular/common";
     >
       <div class="flex-row flex-gap-xs">
         @if (selectedIcon() && !hasChildren()) {
-          <fa-icon class="_selected-icon" [icon]="selectedIcon()!" [fixedWidth]="true" />
+          <sd-icon class="_selected-icon" [icon]="selectedIcon()!" fixedWidth />
         }
         <div style="flex-grow: 1">
           <ng-content></ng-content>

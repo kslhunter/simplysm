@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, input, model, ViewEncapsulation} from "@angular/core";
+import { ChangeDetectionStrategy, Component, input, model, ViewEncapsulation } from "@angular/core";
 import { transformBoolean } from "../utils/tramsforms";
 
 @Component({

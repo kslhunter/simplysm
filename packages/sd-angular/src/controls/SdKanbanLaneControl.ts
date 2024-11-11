@@ -21,9 +21,9 @@ import { SdDockContainerControl } from "./SdDockContainerControl";
 import { SdDockControl } from "./SdDockControl";
 import { SdPaneControl } from "./SdPaneControl";
 import { SdAnchorControl } from "./SdAnchorControl";
-import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { transformBoolean } from "../utils/tramsforms";
+import { SdIconControl } from "./SdIconControl";
 
 @Component({
   selector: "sd-kanban-lane",
@@ -38,7 +38,8 @@ import { transformBoolean } from "../utils/tramsforms";
     SdDockControl,
     SdPaneControl,
     SdAnchorControl,
-    FaIconComponent,
+    SdIconControl,
+
   ],
   //region styles
   styles: [
@@ -82,7 +83,7 @@ import { transformBoolean } from "../utils/tramsforms";
         <sd-dock class="p-default pb-0">
           @if (useCollapse()) {
             <sd-anchor theme="info" (click)="onToggleCollapseButtonClick()">
-              <fa-icon [icon]="collapse() ? icons.eyeSlash : icons.eye" [fixedWidth]="true" />
+              <sd-icon [icon]="collapse() ? icons.eyeSlash : icons.eye" fixedWidth />
             </sd-anchor>
           }
 
@@ -165,7 +166,8 @@ export class SdKanbanLaneControl<L, T> {
           return v;
         });
       }
-    } else {
+    }
+    else {
       for (const ctrl of this.kanbanControls()) {
         this.#boardControl.selectedValues.update((v) => {
           if (v.includes(ctrl.value())) {
