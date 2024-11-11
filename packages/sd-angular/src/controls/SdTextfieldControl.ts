@@ -261,7 +261,7 @@ import { transformBoolean } from "../utils/tramsforms";
           &[sd-readonly="true"] {
             > ._contents {
               display: block;
-              background: white;
+              //background: white;
             }
           }
         }

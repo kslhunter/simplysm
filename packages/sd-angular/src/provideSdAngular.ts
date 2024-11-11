@@ -1,8 +1,10 @@
 import { ISdAppStructureItem } from "./utils/SdAppStructureUtil";
 import { ISdAngularIcon, SdAngularConfigProvider } from "./providers/SdAngularConfigProvider";
 import {
+  ENVIRONMENT_INITIALIZER,
   EnvironmentProviders,
   ErrorHandler,
+  inject,
   makeEnvironmentProviders,
   provideExperimentalZonelessChangeDetection
 } from "@angular/core";
@@ -48,6 +50,9 @@ import { SdResizeEventPlugin } from "./plugins/SdResizeEventPlugin";
 import { SdOptionEventPlugin } from "./plugins/SdOptionEventPlugin";
 import { SdBackbuttonEventPlugin } from "./plugins/SdBackbuttonEventPlugin";
 import { SdGlobalErrorHandlerPlugin } from "./plugins/SdGlobalErrorHandlerPlugin";
+import { SdThemeProvider } from "./providers/SdThemeProvider";
+import { SdLocalStorageProvider } from "./providers/SdLocalStorageProvider";
+import { FaConfig } from "@fortawesome/angular-fontawesome";
 
 export function provideSdAngular(opt: {
   clientName: string;
@@ -56,6 +61,21 @@ export function provideSdAngular(opt: {
   icons?: ISdAngularIcon;
 }): EnvironmentProviders {
   return makeEnvironmentProviders([
+    {
+      provide: ENVIRONMENT_INITIALIZER,
+      useFactory: () => {
+        const _sdNgConf = inject(SdAngularConfigProvider);
+        const _sdTheme = inject(SdThemeProvider);
+        const _sdLocalStorage = inject(SdLocalStorageProvider);
+        const _faConfig = inject(FaConfig);
+
+        return () => {
+          _sdTheme.theme.set(_sdLocalStorage.get("sd-theme") ?? _sdNgConf.defaultTheme);
+          _faConfig.fallbackIcon = _sdNgConf.icons.fallback;
+        };
+      },
+      multi: true
+    },
     {
       provide: SdAngularConfigProvider,
       useFactory: () => {

@@ -1,9 +1,9 @@
 import cp, { ForkOptions } from "child_process";
 import { fileURLToPath } from "url";
-import { Logger } from "@simplysm/sd-core-node";
 import { EventEmitter } from "events";
 import { ISdWorkerRequest, ISdWorkerType, TSdWorkerResponse } from "./SdWorker.type";
 import { JsonConvert, Uuid } from "@simplysm/sd-core-common";
+import { Logger } from "../utils/Logger";
 
 export class SdWorker<T extends ISdWorkerType> extends EventEmitter {
   #proc: cp.ChildProcess;
@@ -64,7 +64,8 @@ export class SdWorker<T extends ISdWorkerType> extends EventEmitter {
             this.#proc.off("message", callback);
             resolve(response.body);
           }
-        } else if (response.type === "error") {
+        }
+        else if (response.type === "error") {
           if (response.request.id === request.id) {
             this.#proc.off("message", callback);
             reject(response.body);

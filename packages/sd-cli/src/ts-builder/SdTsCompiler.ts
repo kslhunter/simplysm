@@ -721,8 +721,6 @@ export class SdTsCompiler {
                 });
               }
             }
-
-            return;
           }
           else {
             if (!moduleSymbol.exports) {
@@ -748,7 +746,6 @@ export class SdTsCompiler {
                 });
               }
             }
-            return;
           }
         }
       }
@@ -764,7 +761,6 @@ export class SdTsCompiler {
           /*else {
             throw new NeverEntryError(`import moduleSymbol: ${sf.fileName} ${node.moduleSpecifier["text"]}`);
           }*/
-          return;
         }
         else {
           const decls = moduleSymbol.getDeclarations();
@@ -792,7 +788,6 @@ export class SdTsCompiler {
                 });
               }
             }
-            return;
           }
           else {
             for (const decl of decls) {
@@ -801,7 +796,6 @@ export class SdTsCompiler {
                 importName: "*"
               });
             }
-            return;
           }
         }
       }
@@ -812,7 +806,6 @@ export class SdTsCompiler {
             fileName: PathUtil.norm(path.resolve(path.dirname(sf.fileName), node.arguments[0].text)),
             importName: "*"
           });
-          return;
         }
       }
 

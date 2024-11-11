@@ -1,7 +1,5 @@
-.idea/**/workspace.xml
-.idea/**/dataSources/
-.idea/**/dataSources.ids
-.idea/**/dataSources.local.xml
+.idea/dataSources
+.idea/dataSources.*
 
 .yarn
 
@@ -11,3 +9,6 @@ packages/*/.cache
 packages/*/.cordova
 packages/*/.electron
 packages/*/dist
+
+signCert.der
+signPri.key

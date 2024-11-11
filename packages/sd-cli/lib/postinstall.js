@@ -15,3 +15,16 @@ import fs from "node:fs";
   contents = contents.replace("console.error(err.message);", "console.error(err);");
   fs.writeFileSync(filePath, contents);
 }
+
+{
+  const filePath = fileURLToPath(import.meta.resolve("@angular/core"));
+  let contents = fs.readFileSync(filePath).toString();
+  contents = contents.replace(`
+            signalSetFn$1(node, newValue);
+            emitterRef.emit(newValue);`, `
+            if(emitterRef.listeners?.[0] == null){
+              signalSetFn$1(node, newValue);
+            }
+            emitterRef.emit(newValue);`);
+  fs.writeFileSync(filePath, contents);
+}

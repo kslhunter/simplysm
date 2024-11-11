@@ -203,7 +203,8 @@ export class SdNgBundler {
           const serviceWorkerResult = await this._genServiceWorkerAsync(outputFiles, assetFiles);
           outputFiles.push(createOutputFile("ngsw.json", serviceWorkerResult.manifest, BuildOutputFileType.Root));
           assetFiles.push(...serviceWorkerResult.assetFiles);
-        } catch (err) {
+        }
+        catch (err) {
           results.push({
             filePath: undefined,
             line: undefined,
@@ -339,27 +340,27 @@ export class SdNgBundler {
         ...(this._opt.dev ? [{ input: "public-dev", glob: "**/*", output: "." }] : []),
         ...(this._opt.dev && this._opt.builderType === "cordova"
           ? Object.keys(this._opt.cordovaConfig?.platform ?? { browser: {} }).mapMany((platform) => [
-              {
-                input: `.cordova/platforms/${platform}/platform_www/plugins`,
-                glob: "**/*",
-                output: `cordova-${platform}/plugins`,
-              },
-              {
-                input: `.cordova/platforms/${platform}/platform_www`,
-                glob: "cordova.js",
-                output: `cordova-${platform}`,
-              },
-              {
-                input: `.cordova/platforms/${platform}/platform_www`,
-                glob: "cordova_plugins.js",
-                output: `cordova-${platform}`,
-              },
-              {
-                input: `.cordova/platforms/${platform}/www`,
-                glob: "config.xml",
-                output: `cordova-${platform}`,
-              },
-            ])
+            {
+              input: `.cordova/platforms/${platform}/platform_www/plugins`,
+              glob: "**/*",
+              output: `cordova-${platform}/plugins`,
+            },
+            {
+              input: `.cordova/platforms/${platform}/platform_www`,
+              glob: "cordova.js",
+              output: `cordova-${platform}`,
+            },
+            {
+              input: `.cordova/platforms/${platform}/platform_www`,
+              glob: "cordova_plugins.js",
+              output: `cordova-${platform}`,
+            },
+            {
+              input: `.cordova/platforms/${platform}/www`,
+              glob: "config.xml",
+              output: `cordova-${platform}`,
+            },
+          ])
           : []),
       ],
       this._opt.pkgPath,
@@ -425,9 +426,9 @@ export class SdNgBundler {
         "process.env.NODE_ENV": JSON.stringify(this._opt.dev ? "development" : "production"),
         ...(this._opt.env
           ? Object.keys(this._opt.env).toObject(
-              (key) => `process.env.${key}`,
-              (key) => JSON.stringify(this._opt.env![key]),
-            )
+            (key) => `process.env.${key}`,
+            (key) => JSON.stringify(this._opt.env![key]),
+          )
           : {}),
       },
       mainFields: ["es2020", "es2015", "browser", "module", "main"],
@@ -439,11 +440,11 @@ export class SdNgBundler {
         polyfills: path.resolve(this._opt.pkgPath, "src/polyfills.ts"),
         ...(this._opt.builderType === "cordova"
           ? {
-              "cordova-entry": path.resolve(
-                path.dirname(fileURLToPath(import.meta.url)),
-                `../../../lib/cordova-entry.js`,
-              ),
-            }
+            "cordova-entry": path.resolve(
+              path.dirname(fileURLToPath(import.meta.url)),
+              `../../../lib/cordova-entry.js`,
+            ),
+          }
           : {}),
 
         // TODO: Workers Bundler 분리
@@ -479,17 +480,17 @@ export class SdNgBundler {
       },
       ...(this._opt.builderType === "electron"
         ? {
-            platform: "node",
-            target: "node20",
-            external: ["electron", ...nodeModule.builtinModules, ...this._opt.external],
-          }
+          platform: "node",
+          target: "node20",
+          external: ["electron", ...nodeModule.builtinModules, ...this._opt.external],
+        }
         : {
-            platform: "browser",
-            target: this.#browserTarget,
-            format: "esm",
-            splitting: true,
-            inject: [PathUtil.posix(fileURLToPath(import.meta.resolve("node-stdlib-browser/helpers/esbuild/shim")))],
-          }),
+          platform: "browser",
+          target: this.#browserTarget,
+          format: "esm",
+          splitting: true,
+          inject: [PathUtil.posix(fileURLToPath(import.meta.resolve("node-stdlib-browser/helpers/esbuild/shim")))],
+        }),
       plugins: [
         /*...(this._opt.builderType === "cordova" && this._opt.cordovaConfig?.plugins
           ? [
@@ -630,9 +631,9 @@ export class SdNgBundler {
         "process.env.NODE_ENV": JSON.stringify(this._opt.dev ? "development" : "production"),
         ...(this._opt.env
           ? Object.keys(this._opt.env).toObject(
-              (key) => `process.env.${key}`,
-              (key) => JSON.stringify(this._opt.env![key]),
-            )
+            (key) => `process.env.${key}`,
+            (key) => JSON.stringify(this._opt.env![key]),
+          )
           : {}),
       },
       platform: "node",

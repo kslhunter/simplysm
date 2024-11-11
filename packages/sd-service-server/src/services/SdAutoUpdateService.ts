@@ -11,7 +11,7 @@ export class SdAutoUpdateService extends SdServiceBase {
   getLastVersion(arg1: string, arg2?: string): {
     version: string;
     downloadPath: string;
-  } {
+  } | undefined {
     const clientName = arg2 == null ? this.request!.clientName : arg1;
     const platform = arg2 == null ? arg1 : arg2;
 
@@ -20,12 +20,21 @@ export class SdAutoUpdateService extends SdServiceBase {
       clientName,
       this.server.pathProxy
     );
+    if (!FsUtil.exists(path.resolve(clientPath, platform, "updates"))) return undefined;
+
     const updates = FsUtil.readdir(path.resolve(clientPath, platform, "updates"));
     const versions = updates.map((item) => ({
       fileName: item,
       version: path.basename(item, path.extname(item)),
       extName: path.extname(item)
-    })).filter((item) => item.extName === ".zip" && (/^[0-9.]*$/).test(item.version));
+    })).filter((item) => {
+      if (platform === "android") {
+        return item.extName === ".zip" && (/^[0-9.]*$/).test(item.version);
+      }
+      else {
+        return item.extName === ".exe" && (/^[0-9.]*$/).test(item.version);
+      }
+    });
 
     const version = semver.maxSatisfying(versions.map((item) => item.version), "*")!;
     const downloadPath = "/" + path.join(

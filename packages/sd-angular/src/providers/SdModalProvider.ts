@@ -99,13 +99,11 @@ export class SdModalProvider {
 
           requestAnimationFrame(
             () => {
-              console.log(compRef.location.nativeElement.findFocusableFirst());
               (
                 (compRef.location.nativeElement as HTMLElement).findFocusableFirst()
                 ?? modalRef.instance.dialogElRef().nativeElement
               ).focus();
             },
-            // { injector: compRef.injector },
           );
         };
 

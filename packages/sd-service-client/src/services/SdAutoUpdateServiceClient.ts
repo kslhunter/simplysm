@@ -1,4 +1,4 @@
-import {SdServiceClient} from "../SdServiceClient";
+import { SdServiceClient } from "../SdServiceClient";
 
 export class SdAutoUpdateServiceClient {
   constructor(private readonly _client: SdServiceClient) {
@@ -7,7 +7,7 @@ export class SdAutoUpdateServiceClient {
   async getLastVersion(platform: string): Promise<{
     version: string;
     downloadPath: string;
-  }> {
+  } | undefined> {
     return await this._client.sendAsync("SdAutoUpdateService", "getLastVersion", [platform]);
   }
 }

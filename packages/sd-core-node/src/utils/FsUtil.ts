@@ -53,10 +53,12 @@ export class FsUtil {
   public static async readdirAsync(targetPath: string): Promise<string[]> {
     try {
       return await fs.promises.readdir(targetPath);
-    } catch (err) {
+    }
+    catch (err) {
       if (err instanceof Error) {
         throw new SdError(err, targetPath);
-      } else {
+      }
+      else {
         throw err;
       }
     }
@@ -65,10 +67,12 @@ export class FsUtil {
   public static readdir(targetPath: string): string[] {
     try {
       return fs.readdirSync(targetPath);
-    } catch (err) {
+    }
+    catch (err) {
       if (err instanceof Error) {
         throw new SdError(err, targetPath);
-      } else {
+      }
+      else {
         throw err;
       }
     }
@@ -77,10 +81,12 @@ export class FsUtil {
   public static exists(targetPath: string): boolean {
     try {
       return fs.existsSync(targetPath);
-    } catch (err) {
+    }
+    catch (err) {
       if (err instanceof Error) {
         throw new SdError(err, targetPath);
-      } else {
+      }
+      else {
         throw err;
       }
     }
@@ -89,10 +95,12 @@ export class FsUtil {
   public static async removeAsync(targetPath: string): Promise<void> {
     try {
       await fs.promises.rm(targetPath, { recursive: true, force: true, retryDelay: 500, maxRetries: 6 });
-    } catch (err) {
+    }
+    catch (err) {
       if (err instanceof Error) {
         throw new SdError(err, targetPath);
-      } else {
+      }
+      else {
         throw err;
       }
     }
@@ -101,10 +109,12 @@ export class FsUtil {
   public static remove(targetPath: string): void {
     try {
       fs.rmSync(targetPath, { recursive: true, force: true });
-    } catch (err) {
+    }
+    catch (err) {
       if (err instanceof Error) {
         throw new SdError(err, targetPath);
-      } else {
+      }
+      else {
         throw err;
       }
     }
@@ -122,10 +132,12 @@ export class FsUtil {
     let lstat: fs.Stats;
     try {
       lstat = await fs.promises.lstat(sourcePath);
-    } catch (err) {
+    }
+    catch (err) {
       if (err instanceof Error) {
         throw new SdError(err, targetPath);
-      } else {
+      }
+      else {
         throw err;
       }
     }
@@ -144,15 +156,18 @@ export class FsUtil {
         const childTargetPath = path.resolve(targetPath, relativeChildPath);
         await FsUtil.copyAsync(childPath, childTargetPath, filter);
       });
-    } else {
+    }
+    else {
       await FsUtil.mkdirsAsync(path.resolve(targetPath, ".."));
 
       try {
         await fs.promises.copyFile(sourcePath, targetPath);
-      } catch (err) {
+      }
+      catch (err) {
         if (err instanceof Error) {
           throw new SdError(err, targetPath);
-        } else {
+        }
+        else {
           throw err;
         }
       }
@@ -167,10 +182,12 @@ export class FsUtil {
     let lstat: fs.Stats;
     try {
       lstat = fs.lstatSync(sourcePath);
-    } catch (err) {
+    }
+    catch (err) {
       if (err instanceof Error) {
         throw new SdError(err, targetPath);
-      } else {
+      }
+      else {
         throw err;
       }
     }
@@ -188,15 +205,18 @@ export class FsUtil {
         const childTargetPath = path.resolve(targetPath, relativeChildPath);
         FsUtil.copy(childPath, childTargetPath, filter);
       }
-    } else {
+    }
+    else {
       FsUtil.mkdirs(path.resolve(targetPath, ".."));
 
       try {
         fs.copyFileSync(sourcePath, targetPath);
-      } catch (err) {
+      }
+      catch (err) {
         if (err instanceof Error) {
           throw new SdError(err, targetPath);
-        } else {
+        }
+        else {
           throw err;
         }
       }
@@ -208,22 +228,28 @@ export class FsUtil {
 
     try {
       await fs.promises.mkdir(targetPath, { recursive: true });
-    } catch (err) {
+    }
+    catch (err) {
       if (err instanceof Error) {
         throw new SdError(err, targetPath);
-      } else {
+      }
+      else {
         throw err;
       }
     }
   }
 
   public static mkdirs(targetPath: string): void {
+    if (FsUtil.exists(targetPath)) return;
+
     try {
       fs.mkdirSync(targetPath, { recursive: true });
-    } catch (err) {
+    }
+    catch (err) {
       if (err instanceof Error) {
         throw new SdError(err, targetPath);
-      } else {
+      }
+      else {
         throw err;
       }
     }
@@ -258,28 +284,33 @@ export class FsUtil {
 
     try {
       await fs.promises.writeFile(targetPath, data);
-    } catch (err) {
+    }
+    catch (err) {
       if (err instanceof Error) {
         throw new SdError(
           err,
           targetPath + (typeof data === "object" ? ((data.constructor?.name ?? "object") as string) : typeof data),
         );
-      } else {
+      }
+      else {
         throw err;
       }
     }
   }
 
   public static writeFile(targetPath: string, data: any): void {
-    FsUtil.mkdirs(path.resolve(targetPath, ".."));
+    FsUtil.mkdirs(path.dirname(targetPath));
+
     try {
       fs.writeFileSync(targetPath, data, {
         flush: true,
       });
-    } catch (err) {
+    }
+    catch (err) {
       if (err instanceof Error) {
         throw new SdError(err, targetPath);
-      } else {
+      }
+      else {
         throw err;
       }
     }
@@ -288,10 +319,12 @@ export class FsUtil {
   public static readFile(targetPath: string): string {
     try {
       return fs.readFileSync(targetPath, "utf-8");
-    } catch (err) {
+    }
+    catch (err) {
       if (err instanceof Error) {
         throw new SdError(err, targetPath);
-      } else {
+      }
+      else {
         throw err;
       }
     }
@@ -304,10 +337,12 @@ export class FsUtil {
 
     try {
       return await fs.promises.readFile(targetPath, "utf-8");
-    } catch (err) {
+    }
+    catch (err) {
       if (err instanceof Error) {
         throw new SdError(err, targetPath);
-      } else {
+      }
+      else {
         throw err;
       }
     }
@@ -316,10 +351,12 @@ export class FsUtil {
   public static readFileBuffer(targetPath: string): Buffer {
     try {
       return fs.readFileSync(targetPath);
-    } catch (err) {
+    }
+    catch (err) {
       if (err instanceof Error) {
         throw new SdError(err, targetPath);
-      } else {
+      }
+      else {
         throw err;
       }
     }
@@ -328,10 +365,12 @@ export class FsUtil {
   public static async readFileBufferAsync(targetPath: string): Promise<Buffer> {
     try {
       return await fs.promises.readFile(targetPath);
-    } catch (err) {
+    }
+    catch (err) {
       if (err instanceof Error) {
         throw new SdError(err, targetPath);
-      } else {
+      }
+      else {
         throw err;
       }
     }
@@ -346,10 +385,12 @@ export class FsUtil {
     const contents = await FsUtil.readFileAsync(targetPath);
     try {
       return JsonConvert.parse(contents);
-    } catch (err) {
+    }
+    catch (err) {
       if (err instanceof Error) {
         throw new SdError(err, targetPath + os.EOL + contents);
-      } else {
+      }
+      else {
         throw err;
       }
     }
@@ -358,10 +399,12 @@ export class FsUtil {
   public static lstat(targetPath: string): fs.Stats {
     try {
       return fs.lstatSync(targetPath);
-    } catch (err) {
+    }
+    catch (err) {
       if (err instanceof Error) {
         throw new SdError(err, targetPath);
-      } else {
+      }
+      else {
         throw err;
       }
     }
@@ -370,10 +413,12 @@ export class FsUtil {
   public static async lstatAsync(targetPath: string): Promise<fs.Stats> {
     try {
       return await fs.promises.lstat(targetPath);
-    } catch (err) {
+    }
+    catch (err) {
       if (err instanceof Error) {
         throw new SdError(err, targetPath);
-      } else {
+      }
+      else {
         throw err;
       }
     }
@@ -382,10 +427,12 @@ export class FsUtil {
   public static stat(targetPath: string): fs.Stats {
     try {
       return fs.statSync(targetPath);
-    } catch (err) {
+    }
+    catch (err) {
       if (err instanceof Error) {
         throw new SdError(err, targetPath);
-      } else {
+      }
+      else {
         throw err;
       }
     }
@@ -394,10 +441,12 @@ export class FsUtil {
   public static async statAsync(targetPath: string): Promise<fs.Stats> {
     try {
       return await fs.promises.stat(targetPath);
-    } catch (err) {
+    }
+    catch (err) {
       if (err instanceof Error) {
         throw new SdError(err, targetPath);
-      } else {
+      }
+      else {
         throw err;
       }
     }
@@ -406,10 +455,12 @@ export class FsUtil {
   public static appendFile(targetPath: string, data: any): void {
     try {
       fs.appendFileSync(targetPath, data, "utf8");
-    } catch (err) {
+    }
+    catch (err) {
       if (err instanceof Error) {
         throw new SdError(err, targetPath);
-      } else {
+      }
+      else {
         throw err;
       }
     }
@@ -418,10 +469,12 @@ export class FsUtil {
   public static open(targetPath: string, flags: string | number): number {
     try {
       return fs.openSync(targetPath, flags);
-    } catch (err) {
+    }
+    catch (err) {
       if (err instanceof Error) {
         throw new SdError(err, targetPath);
-      } else {
+      }
+      else {
         throw err;
       }
     }
@@ -430,10 +483,12 @@ export class FsUtil {
   public static async openAsync(targetPath: string, flags: string | number): Promise<fs.promises.FileHandle> {
     try {
       return await fs.promises.open(targetPath, flags);
-    } catch (err) {
+    }
+    catch (err) {
       if (err instanceof Error) {
         throw new SdError(err, targetPath);
-      } else {
+      }
+      else {
         throw err;
       }
     }
@@ -442,10 +497,12 @@ export class FsUtil {
   public static createReadStream(sourcePath: string): fs.ReadStream {
     try {
       return fs.createReadStream(sourcePath);
-    } catch (err) {
+    }
+    catch (err) {
       if (err instanceof Error) {
         throw new SdError(err, sourcePath);
-      } else {
+      }
+      else {
         throw err;
       }
     }
@@ -454,10 +511,12 @@ export class FsUtil {
   public static createWriteStream(targetPath: string): fs.WriteStream {
     try {
       return fs.createWriteStream(targetPath);
-    } catch (err) {
+    }
+    catch (err) {
       if (err instanceof Error) {
         throw new SdError(err, targetPath);
-      } else {
+      }
+      else {
         throw err;
       }
     }

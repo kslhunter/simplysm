@@ -52,6 +52,7 @@ import { $computed } from "../utils/$hooks";
 export class SdPaginationControl {
   icons = inject(SdAngularConfigProvider).icons;
 
+  //TODO: 모델 쓰지 말기?
   page = model(0);
 
   pageLength = input(0);

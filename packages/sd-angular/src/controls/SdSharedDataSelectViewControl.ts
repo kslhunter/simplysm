@@ -4,7 +4,7 @@ import {
   contentChild,
   inject,
   input,
-  model,
+  output,
   TemplateRef,
   Type,
   untracked,
@@ -22,8 +22,6 @@ import { SdTextfieldControl } from "./SdTextfieldControl";
 import { SdListControl } from "./SdListControl";
 import { SdPaneControl } from "./SdPaneControl";
 import { SdListItemControl } from "./SdListItemControl";
-import { SdSelectItemControl } from "./SdSelectItemControl";
-import { SdButtonControl } from "./SdButtonControl";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { SdAnchorControl } from "./SdAnchorControl";
 import { SD_MODAL_INPUT, SdModalBase, SdModalProvider } from "../providers/SdModalProvider";
@@ -46,8 +44,6 @@ import { transformBoolean } from "../utils/tramsforms";
     SdListControl,
     SdPaneControl,
     SdListItemControl,
-    SdSelectItemControl,
-    SdButtonControl,
     SdAnchorControl,
     FaIconComponent,
   ],
@@ -86,7 +82,7 @@ import { transformBoolean } from "../utils/tramsforms";
             @if (useUndefined()) {
               <sd-list-item
                 [selected]="selectedItem() === undefined"
-                (click)="selectedItem.set(undefined)"
+                (click)="selectedItemChange.emit(undefined)"
                 [selectedIcon]="selectedIcon()"
               >
                 @if (undefinedTemplateRef()) {
@@ -99,7 +95,7 @@ import { transformBoolean } from "../utils/tramsforms";
             @for (item of filteredItems(); let index = $index; track item.__valueKey) {
               <sd-list-item
                 [selected]="selectedItem() === item"
-                (click)="selectedItem() === item ? selectedItem.set(undefined) : selectedItem.set(item)"
+                (click)="selectedItem() === item ? selectedItemChange.emit(undefined) : selectedItemChange.emit(item)"
                 [selectedIcon]="selectedIcon()"
               >
                 <ng-template
@@ -127,7 +123,8 @@ export class SdSharedDataSelectViewControl<
 
   #sdModal = inject(SdModalProvider);
 
-  selectedItem = model<T>();
+  selectedItem = input<T>();
+  selectedItemChange = output<T | undefined>();
 
   items = input.required<T[]>();
   selectedIcon = input<IconDefinition>();
@@ -167,7 +164,7 @@ export class SdSharedDataSelectViewControl<
       const newSelectedItem = this.items().single(
         (item) => item.__valueKey === untracked(() => this.selectedItem())?.__valueKey,
       );
-      this.selectedItem.set(newSelectedItem);
+      this.selectedItemChange.emit(newSelectedItem);
     });
   }
 
@@ -182,7 +179,7 @@ export class SdSharedDataSelectViewControl<
 
     if (result) {
       const newSelectedItem = this.items().single((item) => item.__valueKey === result.selectedItemKeys[0]);
-      this.selectedItem.set(newSelectedItem);
+      this.selectedItemChange.emit(newSelectedItem);
     }
   }
 }

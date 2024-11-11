@@ -34,10 +34,10 @@ export class SdCliElectron {
       main: "electron-main.js",
       ...(pkgConf.builder.electron.postInstallScript !== undefined
         ? {
-            scripts: {
-              postinstall: pkgConf.builder.electron.postInstallScript,
-            },
-          }
+          scripts: {
+            postinstall: pkgConf.builder.electron.postInstallScript,
+          },
+        }
         : {}),
       dependencies: reinstallPkgNames.toObject(
         (item) => item,
@@ -95,10 +95,10 @@ export class SdCliElectron {
       main: "electron-main.js",
       ...(pkgConf.builder.electron.postInstallScript !== undefined
         ? {
-            scripts: {
-              postinstall: pkgConf.builder.electron.postInstallScript,
-            },
-          }
+          scripts: {
+            postinstall: pkgConf.builder.electron.postInstallScript,
+          },
+        }
         : {}),
       dependencies: reinstallPkgNames.toObject(
         (item) => item,
@@ -138,8 +138,8 @@ export class SdCliElectron {
         },
         ...(pkgConf.builder.electron.installerIcon !== undefined
           ? {
-              icon: path.resolve(pkgPath, pkgConf.builder.electron.installerIcon),
-            }
+            icon: path.resolve(pkgPath, pkgConf.builder.electron.installerIcon),
+          }
           : {}),
         removePackageScripts: false,
       },
@@ -169,10 +169,10 @@ export class SdCliElectron {
       main: "electron-main.js",
       ...(opt.config.postInstallScript !== undefined
         ? {
-            scripts: {
-              postinstall: opt.config.postInstallScript,
-            },
-          }
+          scripts: {
+            postinstall: opt.config.postInstallScript,
+          },
+        }
         : {}),
       dependencies: reinstallPkgNames.toObject(
         (item) => item,
@@ -212,8 +212,8 @@ export class SdCliElectron {
         },
         ...(opt.config.installerIcon !== undefined
           ? {
-              icon: path.resolve(opt.pkgPath, opt.config.installerIcon),
-            }
+            icon: path.resolve(opt.pkgPath, opt.config.installerIcon),
+          }
           : {}),
         removePackageScripts: false,
       },
@@ -222,6 +222,11 @@ export class SdCliElectron {
     FsUtil.copy(
       path.resolve(electronDistPath, `${npmConfig.description} Setup ${npmConfig.version}.exe`),
       path.resolve(opt.pkgPath, `dist/electron/${npmConfig.description}-latest.exe`),
+    );
+
+    FsUtil.copy(
+      path.resolve(electronDistPath, `${npmConfig.description} Setup ${npmConfig.version}.exe`),
+      path.resolve(opt.pkgPath, `dist/electron/updates/${npmConfig.version}.exe`),
     );
   }
 }

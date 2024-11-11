@@ -29,7 +29,10 @@ export class SdClientBuildRunner extends EventEmitter {
       FsUtil.glob(path.resolve(this._pkgPath, "../../node_modules", key)),
     );
     this._watchScopePathSet = new Set(
-      [path.resolve(this._pkgPath, "../"), ...localUpdatePaths].map((item) => PathUtil.norm(item)),
+      [
+        path.resolve(this._pkgPath, "../"),
+        ...localUpdatePaths
+      ].map((item) => PathUtil.norm(item)),
     );
   }
 
@@ -118,7 +121,7 @@ export class SdClientBuildRunner extends EventEmitter {
       | "web"
       | "electron"
       | "cordova"
-    )[];
+      )[];
     if (this._pkgConf.builder?.cordova && !this._cordova) {
       this._debug("CORDOVA 준비...");
       this._cordova = new SdCliCordova({

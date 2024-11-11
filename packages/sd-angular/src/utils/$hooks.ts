@@ -55,28 +55,32 @@ export function $signal<T>(initialValue?: T): SdWritableSignal<T | undefined> {
 
 export function $effect(fn: (onCleanup: EffectCleanupRegisterFn) => Promise<void>): never;
 export function $effect(fn: (onCleanup: EffectCleanupRegisterFn) => void): EffectRef;
-export function $effect(signals: Signal<any>[], fn: (onCleanup: EffectCleanupRegisterFn) => void): EffectRef;
+export function $effect(
+  signals: Signal<any>[],
+  fn: (onCleanup: EffectCleanupRegisterFn) => void | Promise<void>
+): EffectRef;
 export function $effect(
   arg1: ((onCleanup: EffectCleanupRegisterFn) => void) | Signal<any>[],
   arg2?: (onCleanup: EffectCleanupRegisterFn) => void,
 ): EffectRef {
   const sigs = (arg2 ? arg1 : undefined) as Signal<any>[] | undefined;
-  const fn = (arg2 ? arg2 : arg1) as (onCleanup: EffectCleanupRegisterFn) => void;
+  const fn = (arg2 ? arg2 : arg1) as (onCleanup: EffectCleanupRegisterFn) => void | Promise<void>;
 
   if (sigs) {
     return effect(
-      (onCleanup) => {
+      async (onCleanup) => {
         for (const sig of sigs) {
           sig();
         }
 
-        untracked(() => {
-          fn(onCleanup);
+        await untracked(async () => {
+          await fn(onCleanup);
         });
       },
       { allowSignalWrites: true },
     );
-  } else {
+  }
+  else {
     return effect((onCleanup) => fn(onCleanup), { allowSignalWrites: true });
   }
 }
@@ -109,7 +113,8 @@ export function $computed(...args: any): Signal<any> {
     );
 
     return resultSig;
-  } else {
+  }
+  else {
     return computed(() => fn());
   }
 }
@@ -117,6 +122,7 @@ export function $computed(...args: any): Signal<any> {
 export type TEffFn<FN extends Function> = FN & {
   signals: Signal<any>[];
 };
+
 export function effFn<FN extends Function>(signals: Signal<any>[], fn: FN): TEffFn<FN> {
   fn["signals"] = signals;
   return fn as TEffFn<FN>;

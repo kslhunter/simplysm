@@ -15,6 +15,7 @@ import { transformBoolean } from "../utils/tramsforms";
         border-radius: var(--border-radius-default);
         overflow: hidden;
         background: white;
+        width: 100%;
 
         &[sd-inset="true"] {
           border-radius: 0;

@@ -133,7 +133,7 @@ import { SdUseRippleDirective } from "../directives/SdUseRippleDirective";
         <fa-icon [icon]="icons.bars" [fixedWidth]="true" />
       </sd-anchor>
     } @else {
-      <sd-gap width="default" />
+      <sd-gap width="sm" />
     }
 
     <ng-content />

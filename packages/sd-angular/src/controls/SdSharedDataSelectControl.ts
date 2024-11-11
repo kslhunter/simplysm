@@ -13,11 +13,7 @@ import { ISharedDataBase } from "../providers/SdSharedDataProvider";
 import { SD_MODAL_INPUT, SdModalBase, SdModalProvider } from "../providers/SdModalProvider";
 import { SdItemOfTemplateContext, SdItemOfTemplateDirective } from "../directives/SdItemOfTemplateDirective";
 import { SdSelectControl, TSelectValue } from "./SdSelectControl";
-import { SdDockContainerControl } from "./SdDockContainerControl";
-import { SdDockControl } from "./SdDockControl";
 import { SdTextfieldControl } from "./SdTextfieldControl";
-import { SdAnchorControl } from "./SdAnchorControl";
-import { SdPaneControl } from "./SdPaneControl";
 import { SdSelectItemControl } from "./SdSelectItemControl";
 import { NgTemplateOutlet } from "@angular/common";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
@@ -33,11 +29,7 @@ import { transformBoolean } from "../utils/tramsforms";
   standalone: true,
   imports: [
     SdSelectControl,
-    SdDockContainerControl,
-    SdDockControl,
     SdTextfieldControl,
-    SdAnchorControl,
-    SdPaneControl,
     SdSelectItemControl,
     SdItemOfTemplateDirective,
     NgTemplateOutlet,

@@ -279,10 +279,10 @@ import { transformBoolean } from "../utils/tramsforms";
 
         &[sd-focus-mode="row"] {
           > sd-busy-container
-            > sd-dock-container
-            > sd-pane._sheet-container
-            > ._focus-row-indicator
-            > ._focus-cell-indicator {
+          > sd-dock-container
+          > sd-pane._sheet-container
+          > ._focus-row-indicator
+          > ._focus-cell-indicator {
             display: none !important;
           }
         }
@@ -605,6 +605,9 @@ export class SdSheetControl<T> {
   /** 선택모드 (single = 단일선택, multi = 다중선택) */
   selectMode = input<"single" | "multi">();
   /** 선택된 항목들 */
+    // _selectedItems = input<T[]>([], { alias: "selectedItems" });
+    // _selectedItemsChange = output<T[]>({ alias: "selectedItemsChange" });
+    // selectedItems = model(this._selectedItems, this._selectedItemsChange);
   selectedItems = model<T[]>([]);
 
   /** 자동선택모드 (undefined = 사용안함, click = 셀 클릭시 해당 ROW 선택, focus = 셀 포커싱시 해당 ROW 선택) */
@@ -668,15 +671,15 @@ export class SdSheetControl<T> {
     //-- displayHeaderDefTable
     const tempHeaderDefTable: (
       | {
-          control: SdSheetColumnDirective<T>;
-          width: string | undefined;
-          fixed: boolean;
-          text: string | undefined;
-          useTemplate: string | undefined;
-          style: string | undefined;
-        }
+      control: SdSheetColumnDirective<T>;
+      width: string | undefined;
+      fixed: boolean;
+      text: string | undefined;
+      useTemplate: string | undefined;
+      style: string | undefined;
+    }
       | undefined
-    )[][] = [];
+      )[][] = [];
     const displayColumnDefs = this.displayColumnDefs();
 
     for (let c = 0; c < displayColumnDefs.length; c++) {
@@ -764,7 +767,8 @@ export class SdSheetControl<T> {
 
         if (r + rowspan === tempHeaderDefTable.length) {
           headerDefTable[r][c]!.isLastDepth = true;
-        } else {
+        }
+        else {
           // colspan
 
           let colspan = 1;
@@ -797,7 +801,8 @@ export class SdSheetControl<T> {
   currPageLength = $computed(() => {
     if (this.pageItemCount() != null && this.pageItemCount() !== 0 && this.items().length > 0) {
       return Math.ceil(this.items().length / this.pageItemCount()!);
-    } else {
+    }
+    else {
       return this.pageLength();
     }
   });
@@ -808,7 +813,8 @@ export class SdSheetControl<T> {
       for (const orderingItem of this.ordering().reverse()) {
         if (orderingItem.desc) {
           orderedItems = orderedItems.orderByDesc((item) => item[orderingItem.key]);
-        } else {
+        }
+        else {
           orderedItems = orderedItems.orderBy((item) => item[orderingItem.key]);
         }
       }
@@ -850,7 +856,8 @@ export class SdSheetControl<T> {
               for (const orderingItem of this.ordering().reverse()) {
                 if (orderingItem.desc) {
                   displayChildren = displayChildren.orderByDesc((item) => item[orderingItem.key]);
-                } else {
+                }
+                else {
                   displayChildren = displayChildren.orderBy((item) => item[orderingItem.key]);
                 }
               }
@@ -883,7 +890,8 @@ export class SdSheetControl<T> {
       return this.displayItemDefs()
         .filter((item) => this.getIsItemSelectable(item.item))
         .map((item) => item.item);
-    } else {
+    }
+    else {
       return [];
     }
   });
@@ -942,11 +950,13 @@ export class SdSheetControl<T> {
 
         let html = "";
         for (const selectedTrRect of selectedTrRects) {
-          html += `<div class='_select-row-indicator' style="top: ${selectedTrRect.top}px; height: ${selectedTrRect.height - 1}px; width: ${selectedTrRect.width - 1}px;"></div>`;
+          html += `<div class='_select-row-indicator' style="top: ${selectedTrRect.top}px; height: ${selectedTrRect.height
+          - 1}px; width: ${selectedTrRect.width - 1}px;"></div>`;
         }
         selectRowIndicatorContainerEl.innerHTML = html;
         selectRowIndicatorContainerEl.style.display = "block";
-      } else {
+      }
+      else {
         selectRowIndicatorContainerEl.innerHTML = "";
         selectRowIndicatorContainerEl.style.display = "none";
       }
@@ -1120,32 +1130,39 @@ export class SdSheetControl<T> {
           const focusableEl = (event.target as HTMLElement).findFocusableFirst();
           if (focusableEl) focusableEl.focus();
         });
-      } else if (event.key === "ArrowDown") {
+      }
+      else if (event.key === "ArrowDown") {
         if (this.#moveCellIfExists(event.target, 1, 0, false)) {
           event.preventDefault();
         }
-      } else if (event.key === "ArrowUp") {
+      }
+      else if (event.key === "ArrowUp") {
         if (this.#moveCellIfExists(event.target, -1, 0, false)) {
           event.preventDefault();
         }
-      } else if (event.key === "ArrowRight") {
+      }
+      else if (event.key === "ArrowRight") {
         if (this.#moveCellIfExists(event.target, 0, 1, false)) {
           event.preventDefault();
         }
-      } else if (event.key === "ArrowLeft") {
+      }
+      else if (event.key === "ArrowLeft") {
         if (this.#moveCellIfExists(event.target, 0, -1, false)) {
           event.preventDefault();
         }
-      } else if (event.ctrlKey && event.key === "c") {
+      }
+      else if (event.ctrlKey && event.key === "c") {
         if (!document.getSelection()) {
           event.preventDefault();
           event.target.findFirst("sd-textfield")?.dispatchEvent(new CustomEvent("sd-sheet-cell-copy"));
         }
-      } else if (event.ctrlKey && event.key === "v") {
+      }
+      else if (event.ctrlKey && event.key === "v") {
         event.preventDefault();
         event.target.findFirst("sd-textfield")?.dispatchEvent(new CustomEvent("sd-sheet-cell-paste"));
       }
-    } else if (event.target instanceof HTMLElement) {
+    }
+    else if (event.target instanceof HTMLElement) {
       const tdEl = event.target.findParent("td") as HTMLTableCellElement | undefined;
       if (!tdEl) return;
       if (event.key === "Escape") {
@@ -1153,29 +1170,35 @@ export class SdSheetControl<T> {
         tdEl.focus();
 
         this.#editModeCellAddr.set(undefined);
-      } else if (event.key === "Enter") {
+      }
+      else if (event.key === "Enter") {
         if (event.target.tagName === "TEXTAREA" || event.target.hasAttribute("contenteditable")) {
           if (event.ctrlKey) {
             event.preventDefault();
             this.#moveCellIfExists(tdEl, 1, 0, true);
           }
-        } else {
+        }
+        else {
           event.preventDefault();
           this.#moveCellIfExists(tdEl, 1, 0, true);
         }
-      } else if (event.ctrlKey && event.key === "ArrowDown") {
+      }
+      else if (event.ctrlKey && event.key === "ArrowDown") {
         if (this.#moveCellIfExists(tdEl, 1, 0, true)) {
           event.preventDefault();
         }
-      } else if (event.ctrlKey && event.key === "ArrowUp") {
+      }
+      else if (event.ctrlKey && event.key === "ArrowUp") {
         if (this.#moveCellIfExists(tdEl, -1, 0, true)) {
           event.preventDefault();
         }
-      } else if (event.ctrlKey && event.key === "ArrowRight") {
+      }
+      else if (event.ctrlKey && event.key === "ArrowRight") {
         if (this.#moveCellIfExists(tdEl, 0, 1, true)) {
           event.preventDefault();
         }
-      } else if (event.ctrlKey && event.key === "ArrowLeft") {
+      }
+      else if (event.ctrlKey && event.key === "ArrowLeft") {
         if (this.#moveCellIfExists(tdEl, 0, -1, true)) {
           event.preventDefault();
         }
@@ -1205,7 +1228,8 @@ export class SdSheetControl<T> {
 
     if (indicatorPosition.top < noneFixedPosition.top || indicatorPosition.left < noneFixedPosition.left) {
       focusCellIndicatorEl.style.opacity = ".3";
-    } else {
+    }
+    else {
       focusCellIndicatorEl.style.opacity = "1";
     }
   }
@@ -1309,7 +1333,8 @@ export class SdSheetControl<T> {
 
     if (this.selectedItems().includes(item)) {
       this.#unselectItem(item);
-    } else {
+    }
+    else {
       this.#selectItem(item);
     }
   }
@@ -1319,7 +1344,8 @@ export class SdSheetControl<T> {
       const r = [...v];
       if (r.includes(item)) {
         r.remove(item);
-      } else {
+      }
+      else {
         r.push(item);
       }
       return r;
@@ -1350,7 +1376,8 @@ export class SdSheetControl<T> {
   onAllItemsSelectIconClick(): void {
     if (this.isAllItemsSelected()) {
       this.selectedItems.set([]);
-    } else {
+    }
+    else {
       const selectedItems = this.displayItemDefs()
         .filter((item) => this.getIsItemSelectable(item.item))
         .map((item) => item.item);
@@ -1362,7 +1389,8 @@ export class SdSheetControl<T> {
   onAllItemsExpandIconClick(): void {
     if (this.isAllItemsExpanded()) {
       this.expandedItems.set([]);
-    } else {
+    }
+    else {
       const expandedItems = this.displayItemDefs()
         .filter((item) => item.hasChildren)
         .map((item) => item.item);
@@ -1382,7 +1410,8 @@ export class SdSheetControl<T> {
       if (event.target instanceof HTMLElement && event.target.classList.contains("_resizer")) return;
       if (event.shiftKey || event.ctrlKey) {
         this.#toggleOrdering(headerCell.control.key(), true);
-      } else {
+      }
+      else {
         this.#toggleOrdering(headerCell.control.key(), false);
       }
     }
@@ -1423,13 +1452,16 @@ export class SdSheetControl<T> {
       if (ordItem) {
         if (ordItem.desc) {
           r.remove(ordItem);
-        } else {
+        }
+        else {
           ordItem.desc = !ordItem.desc;
         }
-      } else {
+      }
+      else {
         if (multiple) {
           r.push({ key, desc: false });
-        } else {
+        }
+        else {
           r = [{ key, desc: false }];
         }
       }
@@ -1448,8 +1480,9 @@ export class SdSheetControl<T> {
 
     if (this.selectMode() === "single") {
       this.selectedItems.set([item]);
-    } else {
-      this.selectedItems.update((v) => [...v, item]);
+    }
+    else {
+      this.selectedItems.update(v => [...v, item]);
     }
   }
 
@@ -1461,7 +1494,7 @@ export class SdSheetControl<T> {
   #unselectItem(item: T): void {
     if (!this.selectedItems().includes(item)) return;
 
-    this.selectedItems.update((v) => v.filter((item1) => item1 !== item));
+    this.selectedItems.update(v => v.filter(item1 => item1 !== item));
   }
 
   #moveCellIfExists(el: HTMLTableCellElement, offsetR: number, offsetC: number, isEditMode: boolean): boolean {
@@ -1480,7 +1513,8 @@ export class SdSheetControl<T> {
           const focusableEl = targetEl.findFocusableFirst();
           if (focusableEl) focusableEl.focus();
         });
-      } else {
+      }
+      else {
         this.#editModeCellAddr.set(undefined);
       }
       return true;

@@ -20,40 +20,41 @@ export abstract class CordovaAutoUpdate {
         // 서버의 버전 및 다운로드링크 가져오기
         const autoUpdateServiceClient = new SdAutoUpdateServiceClient(opt.serviceClient);
 
-        const { version: serverVersion, downloadPath } = await autoUpdateServiceClient.getLastVersion("android");
+        const serverVersionInfo = await autoUpdateServiceClient.getLastVersion("android");
+        if (serverVersionInfo) {
+          // 서버와 로컬의 버전이 다르면,
+          if (localVersion !== serverVersionInfo.version) {
+            opt.log(`최신버전 파일 다운로드중...`);
 
-        // 서버와 로컬의 버전이 다르면,
-        if (localVersion !== serverVersion) {
-          opt.log(`최신버전 파일 다운로드중...`);
+            // 서버에서 최신버전의 zip파일 다운로드
+            const downloadZipBuffer = await NetUtil.downloadAsync(
+              opt.serviceClient.serverUrl + serverVersionInfo.downloadPath,
+              (progress) => {
+                opt.log(
+                  `최신버전 파일 다운로드중...(${((progress.receivedLength * 100) / progress.contentLength).toFixed(2)}%)`,
+                );
+              },
+            );
 
-          // 서버에서 최신버전의 zip파일 다운로드
-          const downloadZipBuffer = await NetUtil.downloadAsync(
-            opt.serviceClient.serverUrl + downloadPath,
-            (progress) => {
-              opt.log(
-                `최신버전 파일 다운로드중...(${((progress.receivedLength * 100) / progress.contentLength).toFixed(2)}%)`,
-              );
-            },
-          );
+            opt.log(`최신버전 파일 압축해제...`);
 
-          opt.log(`최신버전 파일 압축해제...`);
-
-          // 다운로드한 최신버전파일 APP폴더에 압축풀기
-          const zip = await JSZip.loadAsync(downloadZipBuffer);
-          for (const zipFilePath of Object.keys(zip.files)) {
-            const zipFile = zip.files[zipFilePath];
-            if (!zipFile.dir) {
-              const zipFileBlob = await zipFile.async("blob");
-              await storage.writeAsync(`/files/www/${zipFilePath.replace(/\\/g, "/")}`, zipFileBlob);
-              opt.log(`최신버전 파일 압축해제...`);
+            // 다운로드한 최신버전파일 APP폴더에 압축풀기
+            const zip = await JSZip.loadAsync(downloadZipBuffer);
+            for (const zipFilePath of Object.keys(zip.files)) {
+              const zipFile = zip.files[zipFilePath];
+              if (!zipFile.dir) {
+                const zipFileBlob = await zipFile.async("blob");
+                await storage.writeAsync(`/files/www/${zipFilePath.replace(/\\/g, "/")}`, zipFileBlob);
+                opt.log(`최신버전 파일 압축해제...`);
+              }
             }
+
+            opt.log(`최신버전 설치 완료...`);
+
+            // 로컬의 최종버전값 변경
+            await storage.writeJsonAsync(`/files/last-version.json`, serverVersionInfo.version);
+            localVersion = serverVersionInfo.version;
           }
-
-          opt.log(`최신버전 설치 완료...`);
-
-          // 로컬의 최종버전값 변경
-          await storage.writeJsonAsync(`/files/last-version.json`, serverVersion);
-          localVersion = serverVersion;
         }
       }
 
