@@ -607,9 +607,6 @@ export class SdSheetControl<T> {
   /** 선택모드 (single = 단일선택, multi = 다중선택) */
   selectMode = input<"single" | "multi">();
   /** 선택된 항목들 */
-    // _selectedItems = input<T[]>([], { alias: "selectedItems" });
-    // _selectedItemsChange = output<T[]>({ alias: "selectedItemsChange" });
-    // selectedItems = model(this._selectedItems, this._selectedItemsChange);
   selectedItems = model<T[]>([]);
 
   /** 자동선택모드 (undefined = 사용안함, click = 셀 클릭시 해당 ROW 선택, focus = 셀 포커싱시 해당 ROW 선택) */
