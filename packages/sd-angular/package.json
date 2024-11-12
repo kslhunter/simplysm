@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-angular",
-  "version": "12.5.54",
+  "version": "12.5.55",
   "description": "심플리즘 패키지 - Angular 모듈 (browser)",
   "author": "김석래",
   "repository": {
@@ -21,10 +21,10 @@
     "@angular/router": "^18.2.11",
     "@fortawesome/fontawesome-svg-core": "^6.6.0",
     "@fortawesome/free-solid-svg-icons": "^6.6.0",
-    "@simplysm/sd-core-browser": "12.5.54",
-    "@simplysm/sd-core-common": "12.5.54",
-    "@simplysm/sd-service-client": "12.5.54",
-    "@simplysm/sd-service-common": "12.5.54",
+    "@simplysm/sd-core-browser": "12.5.55",
+    "@simplysm/sd-core-common": "12.5.55",
+    "@simplysm/sd-service-client": "12.5.55",
+    "@simplysm/sd-service-common": "12.5.55",
     "echarts": "^5.5.1",
     "html-to-image": "^1.11.11",
     "jsbarcode": "^3.11.6",
