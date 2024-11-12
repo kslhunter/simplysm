@@ -1,11 +1,11 @@
-import { ChangeDetectionStrategy, Component, inject, input, model, ViewEncapsulation } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, input, output, ViewEncapsulation } from "@angular/core";
 import { ObjectUtil } from "@simplysm/sd-core-common";
 import { SdSystemConfigProvider } from "../providers/SdSystemConfigProvider";
 import { SdToastProvider } from "../providers/SdToastProvider";
 import { SdGapControl } from "./SdGapControl";
 import { SdAnchorControl } from "./SdAnchorControl";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
-import { $effect, $signal } from "../utils/$hooks";
+import { $effect, $model, $signal } from "../utils/$hooks";
 import { SdIconControl } from "./SdIconControl";
 
 @Component({
@@ -93,7 +93,9 @@ export class SdStatePresetControl {
   #sdSystemConfig = inject(SdSystemConfigProvider);
   #sdToast = inject(SdToastProvider);
 
-  state = model<any>();
+  _state = input<any>(undefined, { alias: "state" });
+  _stateChange = output<any>({ alias: "stateChange" });
+  state = $model(this._state, this._stateChange);
 
   key = input.required<string>();
   size = input<"sm" | "lg">();

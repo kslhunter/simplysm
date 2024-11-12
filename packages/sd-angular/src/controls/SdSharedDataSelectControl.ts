@@ -4,10 +4,10 @@ import {
   contentChild,
   inject,
   input,
-  model,
+  output,
   TemplateRef,
   Type,
-  ViewEncapsulation
+  ViewEncapsulation,
 } from "@angular/core";
 import { ISharedDataBase } from "../providers/SdSharedDataProvider";
 import { SD_MODAL_INPUT, SdModalBase, SdModalProvider } from "../providers/SdModalProvider";
@@ -18,7 +18,7 @@ import { SdSelectItemControl } from "./SdSelectItemControl";
 import { NgTemplateOutlet } from "@angular/common";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { SdSelectButtonControl } from "./SdSelectButtonControl";
-import { $computed, $signal } from "../utils/$hooks";
+import { $computed, $model, $signal } from "../utils/$hooks";
 import { transformBoolean } from "../utils/tramsforms";
 import { SdIconControl } from "./SdIconControl";
 
@@ -34,7 +34,7 @@ import { SdIconControl } from "./SdIconControl";
     SdItemOfTemplateDirective,
     NgTemplateOutlet,
     SdSelectButtonControl,
-    SdIconControl
+    SdIconControl,
   ],
   template: `
     <sd-select
@@ -49,7 +49,7 @@ import { SdIconControl } from "./SdIconControl";
       [selectMode]="selectMode()"
       [contentClass]="selectClass()"
       [multiSelectionDisplayDirection]="multiSelectionDisplayDirection()"
-      [getChildrenFn]="parentKeyProp() ? getChildrenFn : undefined"
+      [getChildrenFn]="parentKeyProp() ? getChildren : undefined"
       (openChange)="onOpenChange()"
     >
       @if (modalType()) {
@@ -108,7 +108,7 @@ import { SdIconControl } from "./SdIconControl";
         }
       </ng-template>
     </sd-select>
-  `
+  `,
 })
 export class SdSharedDataSelectControl<
   T extends ISharedDataBase<string | number>,
@@ -120,7 +120,10 @@ export class SdSharedDataSelectControl<
 
   #sdModal = inject(SdModalProvider);
 
-  value = model<TSelectValue<T["__valueKey"] | undefined>[M]>();
+  _value = input<TSelectValue<T["__valueKey"] | undefined>[M] | undefined>(undefined, { alias: "value" });
+  _valueChange = output<TSelectValue<T["__valueKey"] | undefined>[M] | undefined>({ alias: "valueChange" });
+  value = $model(this._value, this._valueChange);
+
 
   items = input.required<T[]>();
 
@@ -148,13 +151,11 @@ export class SdSharedDataSelectControl<
   displayOrderKeyProp = input<string>();
 
   itemTemplateRef = contentChild<any, TemplateRef<SdItemOfTemplateContext<T>>>(SdItemOfTemplateDirective, {
-    read: TemplateRef
+    read: TemplateRef,
   });
   undefinedTemplateRef = contentChild<any, TemplateRef<void>>("undefinedTemplate", { read: TemplateRef });
 
   trackByFn = (item: T, index: number) => item.__valueKey;
-  getChildrenFn = (item: ISharedDataBase<string | number>, index: number, depth: number): any[] =>
-    this.getChildren(item, index, depth);
 
   searchText = $signal<string>();
 
@@ -164,7 +165,7 @@ export class SdSharedDataSelectControl<
         .groupBy((item) => item[this.parentKeyProp()!])
         .toMap(
           (item) => item.key,
-          (item1) => item1.values
+          (item1) => item1.values,
         ) as Map<T["__valueKey"] | undefined, any>;
     }
     else {
@@ -176,7 +177,7 @@ export class SdSharedDataSelectControl<
     let result = this.items().filter(
       (item, index) =>
         (!this.filterFn() || this.filterFn()!(item, index, ...(this.filterFnParams() ?? []))) &&
-        (this.parentKeyProp() === undefined || item[this.parentKeyProp()!] === undefined)
+        (this.parentKeyProp() === undefined || item[this.parentKeyProp()!] === undefined),
     );
 
     if (this.displayOrderKeyProp() !== undefined) {
@@ -194,13 +195,13 @@ export class SdSharedDataSelectControl<
   // 화면 목록에서 뿌려질것 (검색어에 의해 숨겨진것 제외)
   getItemVisible(item: any, index: number, depth: number) {
     return (
-      (this.#isIncludeSearchText(item, index, depth) && !this.getIsHiddenFn()(item, index)) ||
+      (this.isIncludeSearchText(item, index, depth) && !this.getIsHiddenFn()(item, index)) ||
       this.value() === item.__valueKey ||
       (this.value() instanceof Array && (this.value() as any[]).includes(item.__valueKey))
     );
   }
 
-  #isIncludeSearchText(item: any, index: number, depth: number): boolean {
+  isIncludeSearchText(item: any, index: number, depth: number): boolean {
     if (
       this.getSearchTextFn()(item, index)
         .toLowerCase()
@@ -212,7 +213,7 @@ export class SdSharedDataSelectControl<
     if (this.parentKeyProp() !== undefined) {
       const children = this.getChildren(item, index, item.depth);
       for (let i = 0; i < children.length; i++) {
-        if (this.#isIncludeSearchText(children[i], i, item.depth + 1)) {
+        if (this.isIncludeSearchText(children[i], i, item.depth + 1)) {
           return true;
         }
       }
@@ -244,7 +245,7 @@ export class SdSharedDataSelectControl<
     const result = await this.#sdModal.showAsync(this.modalType()!, this.modalHeader() ?? "자세히...", {
       selectMode: this.selectMode(),
       selectedItemKeys: (this.selectMode() === "multi" ? (this.value() as any[]) : [this.value()]).filterExists(),
-      ...this.modalInputParam()
+      ...this.modalInputParam(),
     });
 
     if (result) {

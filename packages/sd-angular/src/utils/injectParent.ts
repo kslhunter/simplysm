@@ -1,6 +1,6 @@
 import { AbstractType, inject, Injector, ViewContainerRef } from "@angular/core";
 
-export function injectParent<T>(type?: AbstractType<T>): T {
+export function injectParent<T = any>(type?: AbstractType<T>): T {
   let currentInjector: Injector | null = inject(ViewContainerRef).injector;
   while (true) {
     if (!currentInjector) {

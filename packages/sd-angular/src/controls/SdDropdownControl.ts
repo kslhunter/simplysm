@@ -5,12 +5,12 @@ import {
   ElementRef,
   HostListener,
   input,
-  model,
+  output,
   viewChild,
   ViewEncapsulation,
 } from "@angular/core";
 import { SdDropdownPopupControl } from "./SdDropdownPopupControl";
-import { $effect } from "../utils/$hooks";
+import { $effect, $model } from "../utils/$hooks";
 import { injectElementRef } from "../utils/injectElementRef";
 import { transformBoolean } from "../utils/tramsforms";
 
@@ -41,13 +41,15 @@ import { transformBoolean } from "../utils/tramsforms";
 export class SdDropdownControl {
   #elRef = injectElementRef<HTMLElement>();
 
-  open = model(false);
+  _open = input(false, { alias: "open", transform: transformBoolean });
+  _openChange = output<boolean>({ alias: "openChange" });
+  open = $model(this._open, this._openChange);
 
   disabled = input(false, { transform: transformBoolean });
 
   contentClass = input<string>();
   contentStyle = input<string>();
-
+  
   contentElRef = viewChild.required<any, ElementRef<HTMLElement>>("contentEl", { read: ElementRef });
   popupElRef = contentChild.required<any, ElementRef<HTMLElement>>(SdDropdownPopupControl, { read: ElementRef });
 

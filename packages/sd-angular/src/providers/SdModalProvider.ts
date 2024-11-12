@@ -1,4 +1,4 @@
-import { ApplicationRef, createComponent, Directive, inject, Injectable, Injector, input, Type, } from "@angular/core";
+import { ApplicationRef, createComponent, Directive, inject, Injectable, Injector, input, Type } from "@angular/core";
 import { SdModalControl } from "../controls/SdModalControl";
 import { $signal } from "../utils/$hooks";
 import { SdBusyProvider } from "./SdBusyProvider";
@@ -90,7 +90,7 @@ export class SdModalProvider {
           }
         };
         compRef.instance.open = () => {
-          modalRef.instance.open.set(true);
+          modalRef.setInput("open", true);
 
           if (isFirstOpen) {
             isFirstOpen = false;
@@ -124,7 +124,8 @@ export class SdModalProvider {
         modalRef.setInput("movable", options?.movable ?? false);
         modalRef.setInput("headerStyle", options?.headerStyle);
         modalRef.setInput("mobileFillDisabled", options?.mobileFillDisabled ?? false);
-        modalRef.instance.open.subscribe((value: boolean) => {
+        modalRef.instance._openChange.subscribe((value: boolean) => {
+          modalRef.setInput("open", value);
           if (!value) {
             compRef.instance.close();
           }

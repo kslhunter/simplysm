@@ -22,6 +22,7 @@ export class SdIconControl {
   size = input<SizeProp>();
   rotate = input<RotateProp>();
   fixedWidth = input(false, { transform: transformBoolean });
+  stackItemSize = input<"1x" | "2x">();
 
   constructor() {
     $effect(() => {
@@ -31,6 +32,7 @@ export class SdIconControl {
           this.fixedWidth() ? "fa-fw" : undefined,
           this.size() != null ? `fa-${this.size()}` : undefined,
           this.rotate() != null ? `fa-rotate-${this.rotate()}` : undefined,
+          this.stackItemSize() != null ? `fa-stack-${this.stackItemSize()}` : undefined,
         ].filterExists(),
       });
 

@@ -8,7 +8,9 @@ import { $effect } from "../utils/$hooks";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
-  template: ` <svg #svgEl></svg> `,
+  template: `
+    <svg #svgEl></svg>
+  `,
 })
 export class SdBarcodeControl {
   value = input<string>();

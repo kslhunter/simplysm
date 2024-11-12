@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component, HostListener, input, model, ViewEncapsulation } from "@angular/core";
+import { ChangeDetectionStrategy, Component, HostListener, input, output, ViewEncapsulation } from "@angular/core";
 import { DateOnly, DateTime, JsonConvert, NumberUtil, StringUtil, Time } from "@simplysm/sd-core-common";
-import { $computed } from "../utils/$hooks";
+import { $computed, $model } from "../utils/$hooks";
 import { injectElementRef } from "../utils/injectElementRef";
 import { transformBoolean } from "../utils/tramsforms";
 
@@ -382,7 +382,9 @@ import { transformBoolean } from "../utils/tramsforms";
 export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
   #elRef = injectElementRef<HTMLElement>();
 
-  value = model<TSdTextfieldTypes[K]>();
+  _value = input<TSdTextfieldTypes[K] | undefined>(undefined, { alias: "value" });
+  _valueChange = output<TSdTextfieldTypes[K] | undefined>({ alias: "valueChange" });
+  value = $model(this._value, this._valueChange);
 
   type = input.required<K>();
   placeholder = input<string>();

@@ -9,6 +9,30 @@ import { transformBoolean, transformNullableBoolean } from "../utils/tramsforms"
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
+  template: `
+    <div class="_screen">
+      <div class="_rect">
+        <!--<div class="_bar"></div>-->
+        <div class="_indicator">
+          <div class="_cube1"></div>
+          <div class="_cube2"></div>
+          <div class="_cube4"></div>
+          <div class="_cube3"></div>
+        </div>
+        @if (message()) {
+          <div class="_message">
+            <pre>{{ message() }}</pre>
+          </div>
+        }
+      </div>
+      @if (progressPercent() != null) {
+        <div class="_progress">
+          <div class="_progress-bar" [style.transform]="'scaleX(' + progressPercent()! / 100 + ')'"></div>
+        </div>
+      }
+    </div>
+    <ng-content></ng-content>
+  `,
   //region styles
   styles: [
     /* language=SCSS */ `
@@ -321,30 +345,6 @@ import { transformBoolean, transformNullableBoolean } from "../utils/tramsforms"
     `,
   ],
   //endregion
-  template: `
-    <div class="_screen">
-      <div class="_rect">
-        <!--<div class="_bar"></div>-->
-        <div class="_indicator">
-          <div class="_cube1"></div>
-          <div class="_cube2"></div>
-          <div class="_cube4"></div>
-          <div class="_cube3"></div>
-        </div>
-        @if (message()) {
-          <div class="_message">
-            <pre>{{ message() }}</pre>
-          </div>
-        }
-      </div>
-      @if (progressPercent() != null) {
-        <div class="_progress">
-          <div class="_progress-bar" [style.transform]="'scaleX(' + progressPercent()! / 100 + ')'"></div>
-        </div>
-      }
-    </div>
-    <ng-content></ng-content>
-  `,
   host: {
     "[attr.sd-busy]": "busy()",
     "[attr.sd-type]": "currType()",

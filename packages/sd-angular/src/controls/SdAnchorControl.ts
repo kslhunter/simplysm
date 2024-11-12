@@ -7,6 +7,9 @@ import { transformBoolean } from "../utils/tramsforms";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
+  template: `
+    <ng-content></ng-content>
+  `,
   //region styles
   styles: [
     /* language=SCSS */ `
@@ -48,8 +51,6 @@ import { transformBoolean } from "../utils/tramsforms";
     `,
   ],
   //endregion
-  template: `
-    <ng-content></ng-content> `,
   host: {
     "[attr.sd-theme]": "theme()",
     "[attr.disabled]": "disabled()",
@@ -59,8 +60,4 @@ import { transformBoolean } from "../utils/tramsforms";
 export class SdAnchorControl {
   disabled = input(false, { transform: transformBoolean });
   theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey">("primary");
-
-  constructor() {
-    // useRipple(() => !this.disabled());
-  }
 }

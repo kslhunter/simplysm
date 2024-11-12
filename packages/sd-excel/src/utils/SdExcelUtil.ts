@@ -81,7 +81,7 @@ export class SdExcelUtil {
       (/hh/i.test(numFmtCode) || /ss/i.test(numFmtCode))
     ) {
       return "DateOnly";
-    } else if (/^[0.#,_;()-]*$/.test(numFmtCode)) {
+    } else if (/^[0.#,_;()\-\\ @*"]*$/.test(numFmtCode)) {
     /*else if (numFmtCode.includes("0_")) {
       return "number";
     }

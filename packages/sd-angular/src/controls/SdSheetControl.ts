@@ -5,9 +5,8 @@ import {
   HostListener,
   inject,
   input,
-  model,
   output,
-  ViewEncapsulation
+  ViewEncapsulation,
 } from "@angular/core";
 import { SdSheetColumnDirective } from "../directives/SdSheetColumnDirective";
 import { SdSystemConfigProvider } from "../providers/SdSystemConfigProvider";
@@ -24,7 +23,7 @@ import { SdPaneControl } from "./SdPaneControl";
 import { SdEventsDirective } from "../directives/SdEventsDirective";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { SdCheckboxControl } from "./SdCheckboxControl";
-import { $computed, $effect, $signal } from "../utils/$hooks";
+import { $computed, $effect, $model, $signal } from "../utils/$hooks";
 import { injectElementRef } from "../utils/injectElementRef";
 import { transformBoolean } from "../utils/tramsforms";
 import { SdIconControl } from "./SdIconControl";
@@ -583,7 +582,10 @@ export class SdSheetControl<T> {
   inset = input(false, { transform: transformBoolean });
 
   /** 정렬규칙 */
-  ordering = model<ISdSheetColumnOrderingVM[]>([]);
+  _ordering = input<ISdSheetColumnOrderingVM[]>([], { alias: "ordering" });
+  _orderingChange = output<ISdSheetColumnOrderingVM[]>({ alias: "orderingChange" });
+  ordering = $model(this._ordering, this._orderingChange);
+
 
   displayPageLength = input(10);
   /** [pagination] 총 페이지 길이 */
@@ -591,7 +593,10 @@ export class SdSheetControl<T> {
   /** [pagination] 한 페이지에 표시할 항목수 (설정된 경우, 'pageLength'가 무시되고, 자동계산 됨) */
   pageItemCount = input<number>();
   /** [pagination] 현재 표시 페이지 */
-  page = model(0);
+  _page = input<number>(0, { alias: "page" });
+  _pageChange = output<number>({ alias: "pageChange" });
+  page = $model(this._page, this._pageChange);
+
 
   /** 항목들 */
   items = input<T[]>([]);
@@ -607,7 +612,10 @@ export class SdSheetControl<T> {
   /** 선택모드 (single = 단일선택, multi = 다중선택) */
   selectMode = input<"single" | "multi">();
   /** 선택된 항목들 */
-  selectedItems = model<T[]>([]);
+  _selectedItems = input<T[]>([], { alias: "selectedItems" });
+  _selectedItemsChange = output<T[]>({ alias: "selectedItemsChange" });
+  selectedItems = $model(this._selectedItems, this._selectedItemsChange);
+
 
   /** 자동선택모드 (undefined = 사용안함, click = 셀 클릭시 해당 ROW 선택, focus = 셀 포커싱시 해당 ROW 선택) */
   autoSelect = input<"click" | "focus">();
@@ -619,7 +627,9 @@ export class SdSheetControl<T> {
   getIsItemSelectableFn = input<(item: T) => boolean | string>();
 
   /** 확장된 항목 목록 */
-  expandedItems = model<T[]>([]);
+  _expandedItems = input<T[]>([], { alias: "expandedItems" });
+  _expandedItemsChange = output<T[]>({ alias: "expandedItemsChange" });
+  expandedItems = $model(this._expandedItems, this._expandedItemsChange);
 
   focusMode = input<"row" | "cell">("cell");
   busy = input(false, { transform: transformBoolean });
@@ -1380,7 +1390,6 @@ export class SdSheetControl<T> {
       const selectedItems = this.displayItemDefs()
         .filter((item) => this.getIsItemSelectable(item.item))
         .map((item) => item.item);
-
       this.selectedItems.set(selectedItems);
     }
   }

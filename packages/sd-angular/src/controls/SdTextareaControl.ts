@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component, input, model, ViewEncapsulation } from "@angular/core";
+import { ChangeDetectionStrategy, Component, input, output, ViewEncapsulation } from "@angular/core";
 import { StringUtil } from "@simplysm/sd-core-common";
-import { $computed } from "../utils/$hooks";
+import { $computed, $model } from "../utils/$hooks";
 import { injectElementRef } from "../utils/injectElementRef";
 import { transformBoolean } from "../utils/tramsforms";
 
@@ -140,7 +140,7 @@ import { transformBoolean } from "../utils/tramsforms";
           }
         }
       }
-    `
+    `,
   ],
   template: `
     <div
@@ -176,13 +176,15 @@ import { transformBoolean } from "../utils/tramsforms";
     "[attr.sd-inset]": "inset()",
     "[attr.sd-size]": "size()",
     "[attr.sd-theme]": "theme()",
-    "[attr.sd-invalid]": "errorMessage()"
-  }
+    "[attr.sd-invalid]": "errorMessage()",
+  },
 })
 export class SdTextareaControl {
   #elRef = injectElementRef<HTMLElement>();
 
-  value = model<string>();
+  _value = input<string | undefined>(undefined, { alias: "value" });
+  _valueChange = output<string | undefined>({ alias: "valueChange" });
+  value = $model(this._value, this._valueChange);
 
   placeholder = input<string>();
   title = input<string>();

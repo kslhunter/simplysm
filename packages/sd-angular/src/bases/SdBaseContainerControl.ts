@@ -47,7 +47,7 @@ import { SdIconControl } from "../controls/SdIconControl";
         <br />
         {{ title() }}에 대한 사용권한이 없습니다. 시스템 관리자에게 문의하세요.
       </sd-pane>
-    } @else if (containerType === "page") {
+    } @else if (containerType === "page" && title() != null && isLastPage()) {
       <sd-topbar-container>
         <sd-topbar>
           <h4>{{ title() }}</h4>
@@ -84,11 +84,15 @@ export class SdBaseContainerControl {
   #parent = injectParent();
 
   containerType =
-    this.#activatedRoute.component === (this.#parent as any).constructor
+    this.#activatedRoute.component === this.#parent.constructor
       ? "page"
-      : this.#sdActivatedModal?.content === this.#parent
+      : this.#sdActivatedModal
         ? "modal"
         : "control";
+
+  isLastPage = $computed(() =>
+    this.#activatedRoute.pathFromRoot.slice(2).map(item => item.snapshot.url).join("/") === this.pageCode(),
+  );
 
   pageCode = injectPageCode$();
   title = $computed(() =>

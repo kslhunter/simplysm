@@ -8,6 +8,18 @@ import { transformBoolean } from "../utils/tramsforms";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [SdUseRippleDirective],
+  template: `
+    <button
+      tabindex="0"
+      [type]="type()"
+      [disabled]="disabled()"
+      [class]="buttonClass()"
+      [style]="buttonStyle()"
+      [sdUseRipple]="!disabled()"
+    >
+      <ng-content></ng-content>
+    </button>
+  `,
   //region styles
   styles: [
     /* language=SCSS */ `
@@ -135,18 +147,6 @@ import { transformBoolean } from "../utils/tramsforms";
     `,
   ],
   //endregion
-  template: `
-    <button
-      tabindex="0"
-      [type]="type()"
-      [disabled]="disabled()"
-      [class]="buttonClass()"
-      [style]="buttonStyle()"
-      [sdUseRipple]="!disabled()"
-    >
-      <ng-content></ng-content>
-    </button>
-  `,
   host: {
     "[attr.sd-theme]": "theme()",
     "[attr.sd-inline]": "inline()",

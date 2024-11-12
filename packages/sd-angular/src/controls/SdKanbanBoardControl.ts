@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, HostListener, model, output, ViewEncapsulation } from "@angular/core";
-import { $signal } from "../utils/$hooks";
+import { ChangeDetectionStrategy, Component, HostListener, input, output, ViewEncapsulation } from "@angular/core";
+import { $model, $signal } from "../utils/$hooks";
 import { SdKanbanControl } from "./SdKanbanControl";
 import { SdKanbanLaneControl } from "./SdKanbanLaneControl";
 
@@ -32,7 +32,10 @@ export class SdKanbanBoardControl<L, T> {
 
   // selectedKanbanSet = $signalSet<SdKanbanControl<T>>();
 
-  selectedValues = model<T[]>([]);
+  _selectedValues = input<T[]>([], { alias: "selectedValues" });
+  _selectedValuesChange = output<T[]>({ alias: "selectedValuesChange" });
+  selectedValues = $model(this._selectedValues, this._selectedValuesChange);
+
 
   drop = output<ISdKanbanBoardDropInfo<L, T>>();
 

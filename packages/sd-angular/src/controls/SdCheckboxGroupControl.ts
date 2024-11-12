@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component, input, model, ViewEncapsulation } from "@angular/core";
+import { ChangeDetectionStrategy, Component, input, output, ViewEncapsulation } from "@angular/core";
 import { transformBoolean } from "../utils/tramsforms";
+import { $model } from "../utils/$hooks";
 
 @Component({
   selector: "sd-checkbox-group",
@@ -12,6 +13,10 @@ import { transformBoolean } from "../utils/tramsforms";
   `,
 })
 export class SdCheckboxGroupControl<T> {
-  value = model<T[]>([]);
+  _value = input<T[]>([], { alias: "value" });
+  _valueChange = output<T[]>({ alias: "valueChange" });
+  value = $model(this._value, this._valueChange);
+
+
   disabled = input(false, { transform: transformBoolean });
 }

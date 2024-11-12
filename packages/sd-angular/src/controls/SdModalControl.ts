@@ -5,7 +5,7 @@ import {
   HostListener,
   inject,
   input,
-  model,
+  output,
   viewChild,
   ViewEncapsulation,
 } from "@angular/core";
@@ -18,7 +18,7 @@ import { SdEventsDirective } from "../directives/SdEventsDirective";
 import { SdDockContainerControl } from "./SdDockContainerControl";
 import { SdDockControl } from "./SdDockControl";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
-import { $effect, $signal } from "../utils/$hooks";
+import { $effect, $model, $signal } from "../utils/$hooks";
 import { injectElementRef } from "../utils/injectElementRef";
 import { transformBoolean } from "../utils/tramsforms";
 import { SdIconControl } from "./SdIconControl";
@@ -331,7 +331,9 @@ export class SdModalControl {
   #sdSystemConfig = inject(SdSystemConfigProvider);
   #elRef = injectElementRef<HTMLElement>();
 
-  open = model(false);
+  _open = input(false, { alias: "open", transform: transformBoolean });
+  _openChange = output<boolean>({ alias: "openChange" });
+  open = $model(this._open, this._openChange);
 
   key = input<string>();
   title = input.required<string>();
@@ -445,8 +447,6 @@ export class SdModalControl {
       return;
     }
 
-    if (!this.open()) return;
-
     this.open.set(false);
   }
 
@@ -455,9 +455,7 @@ export class SdModalControl {
       return;
     }
 
-    if (this.open()) {
-      this.open.set(false);
-    }
+    this.open.set(false);
   }
 
   onDialogEscapeKeydown() {
@@ -465,7 +463,6 @@ export class SdModalControl {
       return;
     }
 
-    if (!this.open()) return;
     this.open.set(false);
   }
 

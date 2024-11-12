@@ -5,7 +5,7 @@ import {
   forwardRef,
   inject,
   input,
-  model,
+  output,
   TemplateRef,
   ViewEncapsulation,
 } from "@angular/core";
@@ -14,7 +14,7 @@ import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { SdCollapseIconControl } from "./SdCollapseIconControl";
 import { SdCollapseControl } from "./SdCollapseControl";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
-import { $computed } from "../utils/$hooks";
+import { $computed, $model } from "../utils/$hooks";
 import { SdUseRippleDirective } from "../directives/SdUseRippleDirective";
 import { transformBoolean } from "../utils/tramsforms";
 import { NgTemplateOutlet } from "@angular/common";
@@ -158,7 +158,9 @@ import { SdIconControl } from "./SdIconControl";
 export class SdListItemControl {
   icons = inject(SdAngularConfigProvider).icons;
 
-  open = model(false);
+  _open = input(false, { alias: "open", transform: transformBoolean });
+  _openChange = output<boolean>({ alias: "openChange" });
+  open = $model(this._open, this._openChange);
 
   selectedIcon = input<IconDefinition>();
   selected = input(false, { transform: transformBoolean });

@@ -7,14 +7,14 @@ import {
   HostListener,
   inject,
   input,
-  model,
+  output,
   TemplateRef,
-  ViewEncapsulation
+  ViewEncapsulation,
 } from "@angular/core";
 import { SdBusyContainerControl } from "./SdBusyContainerControl";
 import { SdKanbanControl } from "./SdKanbanControl";
 import { SdCheckboxControl } from "./SdCheckboxControl";
-import { $computed, $signal } from "../utils/$hooks";
+import { $computed, $model, $signal } from "../utils/$hooks";
 import { SdKanbanBoardControl } from "./SdKanbanBoardControl";
 import { NgTemplateOutlet } from "@angular/common";
 import { SdDockContainerControl } from "./SdDockContainerControl";
@@ -137,7 +137,10 @@ export class SdKanbanLaneControl<L, T> {
   busy = input(false, { transform: transformBoolean });
 
   useCollapse = input(false, { transform: transformBoolean });
-  collapse = model(false);
+
+  _collapse = input(false, { alias: "collapse", transform: transformBoolean });
+  _collapseChange = output<boolean>({ alias: "collapseChange" });
+  collapse = $model(this._collapse, this._collapseChange);
 
   value = input.required<L>();
 

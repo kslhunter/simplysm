@@ -20,19 +20,19 @@ import { $computed } from "../utils/$hooks";
           display: block;
         }
       }
-    `
+    `,
   ],
   template: `
     <ng-content></ng-content>`,
   host: {
-    "[attr.sd-selected]": "isSelected()"
-  }
+    "[attr.sd-selected]": "isSelected()",
+  },
 })
 export class SdTabviewItemControl<T> {
   value = input.required<T>();
   header = input<string>();
 
-  #parentControl = inject<SdTabviewControl<T>>(forwardRef(() => SdTabviewControl));
+  parentControl = inject<SdTabviewControl<T>>(forwardRef(() => SdTabviewControl));
 
-  isSelected = $computed(() => this.#parentControl.value());
+  isSelected = $computed(() => this.parentControl.value());
 }

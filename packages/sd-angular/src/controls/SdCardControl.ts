@@ -6,6 +6,9 @@ import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
+  template: `
+    <ng-content></ng-content>
+  `,
   //region styles
   styles: [/* language=SCSS */ `
     @import "../scss/mixins";
@@ -50,9 +53,6 @@ import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/
   `
   ],
   //endregion
-  template: `
-    <ng-content></ng-content>
-  `,
 })
 export class SdCardControl {
 }

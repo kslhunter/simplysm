@@ -4,7 +4,7 @@ import {
   contentChild,
   inject,
   input,
-  model,
+  output,
   TemplateRef,
   Type,
   untracked,
@@ -26,7 +26,7 @@ import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { SdAnchorControl } from "./SdAnchorControl";
 import { SD_MODAL_INPUT, SdModalBase, SdModalProvider } from "../providers/SdModalProvider";
 import { ISharedDataModalInputParam, ISharedDataModalOutputResult } from "./SdSharedDataSelectControl";
-import { $computed, $effect, $signal } from "../utils/$hooks";
+import { $computed, $effect, $model, $signal } from "../utils/$hooks";
 import { transformBoolean } from "../utils/tramsforms";
 import { SdIconControl } from "./SdIconControl";
 
@@ -123,7 +123,9 @@ export class SdSharedDataSelectViewControl<
 
   #sdModal = inject(SdModalProvider);
 
-  selectedItem = model<T>();
+  _selectedItem = input<T | undefined>(undefined, { alias: "selectedItem" });
+  _selectedItemChange = output<T | undefined>({ alias: "selectedItemChange" });
+  selectedItem = $model(this._selectedItem, this._selectedItemChange);
 
   items = input.required<T[]>();
   selectedIcon = input<IconDefinition>();

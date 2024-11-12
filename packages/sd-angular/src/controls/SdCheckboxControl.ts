@@ -4,7 +4,7 @@ import {
   HostListener,
   inject,
   input,
-  model,
+  output,
   ViewEncapsulation,
 } from "@angular/core";
 
@@ -12,6 +12,7 @@ import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { transformBoolean } from "../utils/tramsforms";
 import { useRipple } from "../utils/useRipple";
 import { SdIconControl } from "./SdIconControl";
+import { $model } from "../utils/$hooks";
 
 @Component({
   selector: "sd-checkbox",
@@ -19,8 +20,23 @@ import { SdIconControl } from "./SdIconControl";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
-    SdIconControl
+    SdIconControl,
   ],
+  template: `
+    <div class="_indicator_rect">
+      <div class="_indicator">
+        @if (!radio()) {
+          <sd-icon [icon]="icon()" />
+        } @else {
+          <div></div>
+        }
+      </div>
+      2
+    </div>
+    <div class="_contents" [style]="contentStyle()">
+      <ng-content />
+    </div>
+  `,
   //region styles
   styles: [
     /* language=SCSS */ `
@@ -206,20 +222,6 @@ import { SdIconControl } from "./SdIconControl";
     `,
   ],
   //endregion
-  template: `
-    <div class="_indicator_rect">
-      <div class="_indicator">
-        @if (!radio()) {
-          <sd-icon [icon]="icon()" />
-        } @else {
-          <div></div>
-        }
-      </div>
-    </div>
-    <div class="_contents" [style]="contentStyle()">
-      <ng-content />
-    </div>
-  `,
   host: {
     "[attr.sd-checked]": "value()",
     "[attr.sd-disabled]": "disabled()",
@@ -234,7 +236,9 @@ import { SdIconControl } from "./SdIconControl";
 export class SdCheckboxControl {
   icons = inject(SdAngularConfigProvider).icons;
 
-  value = model(false);
+  _value = input(false, { alias: "value", transform: transformBoolean });
+  _valueChange = output<boolean>({ alias: "valueChange" });
+  value = $model(this._value, this._valueChange);
 
   icon = input(this.icons.check);
   radio = input(false, { transform: transformBoolean });

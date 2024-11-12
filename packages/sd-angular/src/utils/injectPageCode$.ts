@@ -8,20 +8,9 @@ export function injectPageCode$(): Signal<string> {
   const router = inject(Router);
 
   const url = toSignal(
-    router.events.pipe(
-      filter((event) => event instanceof NavigationEnd),
-      map((event) => event.url),
-    ),
-    {
-      initialValue: router.url,
-    },
+    router.events.pipe(filter((event) => event instanceof NavigationEnd), map((event) => event.url)),
+    { initialValue: router.url },
   );
 
-  return $computed(() =>
-    url()
-      .split("/")
-      .slice(2)
-      .map((item) => item.split(/[;?]/).first())
-      .join("."),
-  );
+  return $computed(() => url().split("/").slice(2).map((item) => item.split(/[;?]/).first()).join("."));
 }

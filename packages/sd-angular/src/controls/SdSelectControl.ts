@@ -5,7 +5,7 @@ import {
   ElementRef,
   inject,
   input,
-  model,
+  output,
   TemplateRef,
   viewChild,
   ViewEncapsulation,
@@ -23,7 +23,7 @@ import { SdTypedTemplateDirective } from "../directives/SdTypedTemplateDirective
 import { SdDropdownPopupControl } from "./SdDropdownPopupControl";
 import { StringUtil } from "@simplysm/sd-core-common";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
-import { $computed, $effect, $signal } from "../utils/$hooks";
+import { $computed, $effect, $model, $signal } from "../utils/$hooks";
 import { transformBoolean } from "../utils/tramsforms";
 import { SdUseRippleDirective } from "../directives/SdUseRippleDirective";
 import { SdIconControl } from "./SdIconControl";
@@ -311,8 +311,13 @@ import { SdIconControl } from "./SdIconControl";
 export class SdSelectControl<M extends "single" | "multi", T> {
   icons = inject(SdAngularConfigProvider).icons;
 
-  value = model<TSelectValue<any>[M]>();
-  open = model(false);
+  _value = input<TSelectValue<any>[M] | undefined>(undefined, { alias: "value" });
+  _valueChange = output<TSelectValue<any>[M] | undefined>({ alias: "valueChange" });
+  value = $model(this._value, this._valueChange);
+
+  _open = input(false, { alias: "open", transform: transformBoolean });
+  _openChange = output<boolean>({ alias: "openChange" });
+  open = $model(this._open, this._openChange);
 
   required = input(false, { transform: transformBoolean });
   disabled = input(false, { transform: transformBoolean });

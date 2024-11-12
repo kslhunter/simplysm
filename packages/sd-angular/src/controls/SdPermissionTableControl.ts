@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, input, model, ViewEncapsulation } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, input, output, ViewEncapsulation } from "@angular/core";
 import { SdAnchorControl } from "./SdAnchorControl";
 import { ISdPermission } from "../utils/SdAppStructureUtil";
 import { SdTypedTemplateDirective } from "../directives/SdTypedTemplateDirective";
@@ -6,7 +6,7 @@ import { NgTemplateOutlet } from "@angular/common";
 import { SdCollapseIconControl } from "./SdCollapseIconControl";
 import { SdCheckboxControl } from "./SdCheckboxControl";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
-import { $computed, $signal } from "../utils/$hooks";
+import { $computed, $model, $signal } from "../utils/$hooks";
 import { transformBoolean } from "../utils/tramsforms";
 
 @Component({
@@ -189,7 +189,9 @@ import { transformBoolean } from "../utils/tramsforms";
 export class SdPermissionTableControl {
   icons = inject(SdAngularConfigProvider).icons;
 
-  value = model<Record<string, boolean>>({});
+  _value = input<Record<string, boolean>>({}, { alias: "value" });
+  _valueChange = output<Record<string, boolean>>({ alias: "valueChange" });
+  value = $model(this._value, this._valueChange);
 
   items = input<ISdPermission[]>([]);
   disabled = input(false, { transform: transformBoolean });

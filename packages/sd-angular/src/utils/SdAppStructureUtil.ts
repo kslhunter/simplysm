@@ -100,7 +100,7 @@ export class SdAppStructureUtil {
     return resultFlatMenus;
   }
 
-  static getTitleByCode(menus: ISdAppStructureItem[], code: string, withoutParent?: boolean): string {
+  static getTitleByCode(menus: ISdAppStructureItem[], code: string, withoutParent?: boolean): string | undefined {
     const codes = code.split(".");
 
     const result: string[] = [];
@@ -116,7 +116,7 @@ export class SdAppStructureUtil {
 
     const parent = result.slice(0, -1).join(" > ");
     const current = result.last()!;
-    return withoutParent ? current : (parent ? `[${parent}] ` : "") + current;
+    return current ? withoutParent ? current : (parent ? `[${parent}] ` : "") + current : undefined;
   }
 
   static getPermissions<T extends string>(menus: ISdAppStructureItem<T>[], codes: string[] = []): ISdPermission<T>[] {

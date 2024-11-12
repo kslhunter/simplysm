@@ -7,6 +7,12 @@ import { transformBoolean } from "../utils/tramsforms";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
+  template: `
+    <div>
+      <ng-content />
+    </div>
+    <ng-content select="sd-button" />
+  `,
   //region styles
   styles: [
     /* language=SCSS */ `
@@ -60,12 +66,6 @@ import { transformBoolean } from "../utils/tramsforms";
     `,
   ],
   //endregion
-  template: `
-    <div>
-      <ng-content />
-    </div>
-    <ng-content select="sd-button" />
-  `,
   host: {
     "[attr.sd-size]": "size()",
     "[attr.sd-inset]": "inset()",

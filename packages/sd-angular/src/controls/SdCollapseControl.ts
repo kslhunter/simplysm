@@ -31,7 +31,7 @@ import { transformBoolean } from "../utils/tramsforms";
     </div>
   `,
   host: {
-    "[attr.sd-open]": "open",
+    "[attr.sd-open]": "open()",
   },
 })
 export class SdCollapseControl {

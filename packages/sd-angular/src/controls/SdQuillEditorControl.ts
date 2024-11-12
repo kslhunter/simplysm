@@ -1,7 +1,7 @@
-import { ChangeDetectionStrategy, Component, input, model, ViewEncapsulation } from "@angular/core";
+import { ChangeDetectionStrategy, Component, input, output, ViewEncapsulation } from "@angular/core";
 import Quill from "quill";
 import QuillResizeImage from "quill-resize-image";
-import { $effect } from "../utils/$hooks";
+import { $effect, $model } from "../utils/$hooks";
 import { injectElementRef } from "../utils/injectElementRef";
 import { transformBoolean } from "../utils/tramsforms";
 
@@ -13,7 +13,8 @@ Quill.register("modules/resize", QuillResizeImage);
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
-  template: `<div></div>`,
+  template: `
+    <div></div>`,
   styles: [
     /* language=SCSS */ `
       sd-quill-editor {
@@ -70,13 +71,15 @@ Quill.register("modules/resize", QuillResizeImage);
     `,
   ],
   host: {
-    "[attr.sd-disabled]": "disabled",
+    "[attr.sd-disabled]": "disabled()",
   },
 })
 export class SdQuillEditorControl {
   #elRef = injectElementRef<HTMLElement>();
 
-  value = model<string>();
+  _value = input<string | undefined>(undefined, { alias: "value" });
+  _valueChange = output<string | undefined>({ alias: "valueChange" });
+  value = $model(this._value, this._valueChange);
 
   disabled = input(false, { transform: transformBoolean });
 

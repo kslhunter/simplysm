@@ -1,7 +1,7 @@
-import { ChangeDetectionStrategy, Component, inject, input, model, ViewEncapsulation } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, input, output, ViewEncapsulation } from "@angular/core";
 import { SdAnchorControl } from "./SdAnchorControl";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
-import { $computed } from "../utils/$hooks";
+import { $computed, $model } from "../utils/$hooks";
 import { SdIconControl } from "./SdIconControl";
 
 @Component({
@@ -27,7 +27,7 @@ import { SdIconControl } from "./SdIconControl";
           }
         }
       }
-    `
+    `,
   ],
   template: `
     <sd-anchor [disabled]="!hasPrev()" (click)="onGoFirstClick()">
@@ -47,13 +47,15 @@ import { SdIconControl } from "./SdIconControl";
     <sd-anchor [disabled]="!hasNext()" (click)="onGoLastClick()">
       <sd-icon [icon]="icons.angleDoubleRight" fixedWidth />
     </sd-anchor>
-  `
+  `,
 })
 export class SdPaginationControl {
   icons = inject(SdAngularConfigProvider).icons;
 
-  //TODO: 모델 쓰지 말기?
-  page = model(0);
+  _page = input<number>(0, { alias: "page" });
+  _pageChange = output<number>({ alias: "pageChange" });
+  page = $model(this._page, this._pageChange);
+
 
   pageLength = input(0);
   displayPageLength = input(10);

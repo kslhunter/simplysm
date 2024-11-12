@@ -11,13 +11,15 @@ import { transformBoolean } from "../utils/tramsforms";
   standalone: true,
   imports: [SdCheckboxControl],
   template: `
-    <sd-checkbox [value]="isSelected()"
-                 (valueChange)="onSelectedChange($event)"
-                 [inline]="inline()"
-                 [disabled]="disabled()">
+    <sd-checkbox
+      [value]="isSelected()"
+      (valueChange)="onSelectedChange($event)"
+      [inline]="inline()"
+      [disabled]="disabled()"
+    >
       <ng-content></ng-content>
     </sd-checkbox>
-  `
+  `,
 })
 export class SdCheckboxGroupItemControl<T> {
   #parentControl = inject<SdCheckboxGroupControl<T>>(forwardRef(() => SdCheckboxGroupControl));

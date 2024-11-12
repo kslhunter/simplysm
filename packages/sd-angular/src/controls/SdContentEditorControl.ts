@@ -3,12 +3,12 @@ import {
   Component,
   ElementRef,
   input,
-  model,
+  output,
   viewChild,
   ViewEncapsulation,
 } from "@angular/core";
 import { StringUtil } from "@simplysm/sd-core-common";
-import { $computed, $effect } from "../utils/$hooks";
+import { $computed, $effect, $model } from "../utils/$hooks";
 import { transformBoolean } from "../utils/tramsforms";
 
 @Component({
@@ -149,7 +149,9 @@ import { transformBoolean } from "../utils/tramsforms";
   },
 })
 export class SdContentEditorControl {
-  value = model<string>();
+  _value = input<string | undefined>(undefined, { alias: "value" });
+  _valueChange = output<string | undefined>({ alias: "valueChange" });
+  value = $model(this._value, this._valueChange);
 
   disabled = input(false, { transform: transformBoolean });
   readonly = input(false, { transform: transformBoolean });
