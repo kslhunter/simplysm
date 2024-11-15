@@ -21,6 +21,7 @@ import { injectParent } from "../utils/injectParent";
 import { SdActivatedModalProvider } from "../providers/SdModalProvider";
 import { transformBoolean } from "../utils/tramsforms";
 import { SdIconControl } from "../controls/SdIconControl";
+import { SdBackgroundProvider } from "../providers/SdBackgroundProvider";
 
 @Component({
   selector: "sd-base-container",
@@ -80,6 +81,7 @@ export class SdBaseContainerControl {
   #activatedRoute = inject(ActivatedRoute);
   #sdActivatedModal = inject(SdActivatedModalProvider, { optional: true });
   #sdAppStructure = inject(SdAppStructureProvider);
+  #sdBackground = inject(SdBackgroundProvider);
 
   #parent = injectParent();
 
@@ -91,7 +93,7 @@ export class SdBaseContainerControl {
         : "control";
 
   isLastPage = $computed(() =>
-    this.#activatedRoute.pathFromRoot.slice(2).map(item => item.snapshot.url).join("/") === this.pageCode(),
+    this.#activatedRoute.pathFromRoot.slice(2).map(item => item.snapshot.url).join(".") === this.pageCode(),
   );
 
   pageCode = injectPageCode$();
@@ -111,20 +113,16 @@ export class SdBaseContainerControl {
   contentTemplateRef = contentChild("contentTemplate", { read: TemplateRef });
 
   constructor() {
-    if (this.containerType === "modal") {
-      $effect([this.initialized], () => {
+    $effect([this.initialized], () => {
+      if (this.containerType === "modal") {
         if (this.initialized()) {
           this.#sdActivatedModal!.content.open();
         }
-      });
-    }
+      }
+    });
 
-    $effect((onCleanup) => {
-      document.body.style.background = this.bgGrey() ? "var(--theme-grey-lightest)" : "";
-
-      onCleanup(() => {
-        document.body.style.background = "";
-      });
+    $effect([this.bgGrey], () => {
+      this.#sdBackground.theme.set(this.bgGrey() ? "grey" : undefined);
     });
   }
 

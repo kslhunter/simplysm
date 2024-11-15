@@ -92,6 +92,7 @@ export * from "./plugins/SdResizeEventPlugin";
 export * from "./plugins/SdSaveCommandEventPlugin";
 export * from "./providers/SdAngularConfigProvider";
 export * from "./providers/SdAppStructureProvider";
+export * from "./providers/SdBackgroundProvider";
 export * from "./providers/SdBusyProvider";
 export * from "./providers/SdFileDialogProvider";
 export * from "./providers/SdLocalStorageProvider";

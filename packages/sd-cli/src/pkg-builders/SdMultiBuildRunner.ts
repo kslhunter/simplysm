@@ -107,7 +107,8 @@ export class SdMultiBuildRunner extends EventEmitter {
       };
 
       serverInfo.hasChanges = true;
-    } else if (pkgConf.type === "client") {
+    }
+    else if (pkgConf.type === "client") {
       const pkgName = path.basename(req.pkgPath);
 
       if (pkgConf.server !== undefined) {
@@ -130,7 +131,8 @@ export class SdMultiBuildRunner extends EventEmitter {
         };
 
         serverInfo.clientChangedFileSet.adds(...result.emitFileSet);
-      } else {
+      }
+      else {
         const serverInfo = this.#serverInfoMap.getOrCreate(pkgName, {
           hasChanges: true,
           clientChangedFileSet: new Set(),
@@ -153,7 +155,8 @@ export class SdMultiBuildRunner extends EventEmitter {
               serverInfo.worker = restartServerResult.worker;
               serverInfo.port = restartServerResult.port;
               serverInfo.hasChanges = false;
-            } catch (err) {
+            }
+            catch (err) {
               this.#logger.error(err);
             }
           }
@@ -184,12 +187,14 @@ export class SdMultiBuildRunner extends EventEmitter {
               for (const buildType of serverInfo.clients[clientPkgName].buildTypes) {
                 if (buildType === "web") {
                   clientPaths.push(`http://localhost:${serverInfo.port}/${clientPkgName}/`);
-                } else {
+                }
+                else {
                   clientPaths.push(`http://localhost:${serverInfo.port}/${clientPkgName}/${buildType}/`);
                 }
               }
             }
-          } else {
+          }
+          else {
             clientPaths.push(`http://localhost:${serverInfo.port}/`);
           }
         }

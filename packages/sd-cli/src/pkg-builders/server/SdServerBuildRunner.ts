@@ -204,8 +204,8 @@ Options = UnsafeLegacyRenegotiation`.trim(),
     <add key="TZ" value="Asia/Seoul" />
     <add key="SD_VERSION" value="${npmConfig.version}" />
     ${Object.keys(this._pkgConf.env ?? {})
-      .map((key) => `<add key="${key}" value="${this._pkgConf.env![key]}"/>`)
-      .join("\n    ")}
+          .map((key) => `<add key="${key}" value="${this._pkgConf.env![key]}"/>`)
+          .join("\n    ")}
   </appSettings>
   <system.webServer>
     <handlers>
@@ -261,7 +261,10 @@ Options = UnsafeLegacyRenegotiation`.trim(),
         pkgPath: this._pkgPath,
         entryPoints: tsConfig.files
           ? tsConfig.files.map((item) => path.resolve(this._pkgPath, item))
-          : [path.resolve(this._pkgPath, "src/main.ts")],
+          : [
+            path.resolve(this._pkgPath, "src/main.ts"),
+            ...FsUtil.glob(path.resolve(this._pkgPath, "src/workers/*.ts")),
+          ],
         external: this._extModules.map((item) => item.name),
         watchScopePaths: [path.resolve(this._pkgPath, "../"), ...localUpdatePaths].map((item) => PathUtil.norm(item)),
       });

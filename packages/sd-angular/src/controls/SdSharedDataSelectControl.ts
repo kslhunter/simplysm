@@ -50,6 +50,7 @@ import { SdIconControl } from "./SdIconControl";
       [contentClass]="selectClass()"
       [multiSelectionDisplayDirection]="multiSelectionDisplayDirection()"
       [getChildrenFn]="parentKeyProp() ? getChildren : undefined"
+      [(open)]="open"
       (openChange)="onOpenChange()"
     >
       @if (modalType()) {
@@ -156,6 +157,8 @@ export class SdSharedDataSelectControl<
   undefinedTemplateRef = contentChild<any, TemplateRef<void>>("undefinedTemplate", { read: TemplateRef });
 
   trackByFn = (item: T, index: number) => item.__valueKey;
+
+  open = $signal(false);
 
   searchText = $signal<string>();
 

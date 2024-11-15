@@ -12,20 +12,30 @@ import { $effect } from "../utils/$hooks";
   template: `
     <ng-content></ng-content>
   `,
+  styles: [
+    /* language=SCSS */ `
+      sd-echarts {
+        display: block;
+      }
+    `,
+  ],
 })
 export class SdEChartsControl {
   #elRef = injectElementRef();
 
-  #chart: echarts.EChartsType;
+  #chart!: echarts.EChartsType;
 
-  options = input.required<echarts.EChartsOption>();
+  option = input.required<echarts.EChartsOption>();
+  height = input.required<string>();
   loading = input(false);
 
   constructor() {
-    this.#chart = echarts.init(this.#elRef.nativeElement, null, { renderer: "svg" });
+    $effect([], () => {
+      this.#chart = echarts.init(this.#elRef.nativeElement, null, { renderer: "svg", height: this.height() });
+    });
 
     $effect(() => {
-      this.#chart.setOption(this.options());
+      this.#chart.setOption(this.option());
     });
 
     $effect(() => {
