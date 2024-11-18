@@ -254,7 +254,8 @@ declare global {
       }
 
       return undefined;
-    } else {
+    }
+    else {
       return this[this.length - 1];
     }
   };
@@ -312,7 +313,8 @@ declare global {
       const existsRecord = result.single((item) => ObjectUtil.equal(item.key, keyObj));
       if (existsRecord !== undefined) {
         existsRecord.values.push(valueObj);
-      } else {
+      }
+      else {
         result.push({ key: keyObj, values: [valueObj] });
       }
     }
@@ -501,17 +503,23 @@ declare global {
 
       if (cpn === cpp) {
         return 0;
-      } else if (typeof cpn === "string" && typeof cpp === "string") {
+      }
+      else if (typeof cpn === "string" && typeof cpp === "string") {
         return cpp.localeCompare(cpn);
-      } else if (typeof cpn === "number" && typeof cpp === "number") {
+      }
+      else if (typeof cpn === "number" && typeof cpp === "number") {
         return cpn > cpp ? -1 : cpn < cpp ? 1 : 0;
-      } else if (typeof cpn === "boolean" && typeof cpp === "boolean") {
+      }
+      else if (typeof cpn === "boolean" && typeof cpp === "boolean") {
         return cpn === cpp ? 0 : cpn ? -1 : 1;
-      } else if (typeof cpp === "undefined") {
+      }
+      else if (typeof cpp === "undefined") {
         return -1;
-      } else if (typeof cpn === "undefined") {
+      }
+      else if (typeof cpn === "undefined") {
         return 1;
-      } else {
+      }
+      else {
         throw new Error("orderBy를 사용할 수 없는 타입입니다.");
       }
     });
@@ -532,17 +540,23 @@ declare global {
 
       if (cpn === cpp) {
         return 0;
-      } else if (typeof cpn === "string" && typeof cpp === "string") {
+      }
+      else if (typeof cpn === "string" && typeof cpp === "string") {
         return cpp.localeCompare(cpn);
-      } else if (typeof cpn === "number" && typeof cpp === "number") {
+      }
+      else if (typeof cpn === "number" && typeof cpp === "number") {
         return cpn > cpp ? -1 : cpn < cpp ? 1 : 0;
-      } else if (typeof cpn === "boolean" && typeof cpp === "boolean") {
+      }
+      else if (typeof cpn === "boolean" && typeof cpp === "boolean") {
         return cpn === cpp ? 0 : cpn ? -1 : 1;
-      } else if (typeof cpp === "undefined") {
+      }
+      else if (typeof cpp === "undefined") {
         return -1;
-      } else if (typeof cpn === "undefined") {
+      }
+      else if (typeof cpn === "undefined") {
         return 1;
-      } else {
+      }
+      else {
         throw new Error("orderBy를 사용할 수 없는 타입입니다.");
       }
     });
@@ -563,17 +577,23 @@ declare global {
 
       if (cpn === cpp) {
         return 0;
-      } else if (typeof cpn === "string" && typeof cpp === "string") {
+      }
+      else if (typeof cpn === "string" && typeof cpp === "string") {
         return cpn.localeCompare(cpp);
-      } else if (typeof cpn === "number" && typeof cpp === "number") {
+      }
+      else if (typeof cpn === "number" && typeof cpp === "number") {
         return cpn < cpp ? -1 : cpn > cpp ? 1 : 0;
-      } else if (typeof cpn === "boolean" && typeof cpp === "boolean") {
+      }
+      else if (typeof cpn === "boolean" && typeof cpp === "boolean") {
         return cpn === cpp ? 0 : cpn ? 1 : -1;
-      } else if (typeof cpp === "undefined") {
+      }
+      else if (typeof cpp === "undefined") {
         return 1;
-      } else if (typeof cpn === "undefined") {
+      }
+      else if (typeof cpn === "undefined") {
         return -1;
-      } else {
+      }
+      else {
         throw new Error("orderBy를 사용할 수 없는 타입입니다.");
       }
     });
@@ -594,17 +614,23 @@ declare global {
 
       if (cpn === cpp) {
         return 0;
-      } else if (typeof cpn === "string" && typeof cpp === "string") {
+      }
+      else if (typeof cpn === "string" && typeof cpp === "string") {
         return cpn.localeCompare(cpp);
-      } else if (typeof cpn === "number" && typeof cpp === "number") {
+      }
+      else if (typeof cpn === "number" && typeof cpp === "number") {
         return cpn < cpp ? -1 : cpn > cpp ? 1 : 0;
-      } else if (typeof cpn === "boolean" && typeof cpp === "boolean") {
+      }
+      else if (typeof cpn === "boolean" && typeof cpp === "boolean") {
         return cpn === cpp ? 0 : cpn ? 1 : -1;
-      } else if (typeof cpp === "undefined") {
+      }
+      else if (typeof cpp === "undefined") {
         return 1;
-      } else if (typeof cpn === "undefined") {
+      }
+      else if (typeof cpn === "undefined") {
         return -1;
-      } else {
+      }
+      else {
         throw new Error("orderBy를 사용할 수 없는 타입입니다.");
       }
     });
@@ -648,7 +674,8 @@ declare global {
 
         //기타: source 에서 삭제된 항목
         result.push({ source: sourceItem, target: undefined });
-      } else {
+      }
+      else {
         uncheckedTarget.remove(sameTarget);
       }
     }
@@ -677,13 +704,13 @@ declare global {
     const diffs: TArrayDiffs2Result<T>[] = [];
     for (const item of this) {
       if (item[key] === undefined) {
-        diffs.push({ type: "create", item });
+        diffs.push({ type: "create", item, orgItem: undefined });
         continue;
       }
 
       const orgItem = orgItemMap.get(item[key]);
       if (!orgItem) {
-        diffs.push({ type: "create", item });
+        diffs.push({ type: "create", item, orgItem: undefined });
         continue;
       }
 
@@ -813,7 +840,8 @@ declare global {
   prototype.toggle = function <T>(this: T[], item: T): T[] {
     if (this.includes(item)) {
       this.remove(item);
-    } else {
+    }
+    else {
       this.push(item);
     }
     return this;
@@ -830,7 +858,7 @@ export type TArrayDiffsResult<T, P> =
   | { source: T; target: P }; // UPDATE
 
 export type TArrayDiffs2Result<T> =
-  | { type: "create"; item: T }
+  | { type: "create"; item: T; orgItem: undefined }
   | { type: "update"; item: T; orgItem: T }
   | { type: "same"; item: T; orgItem: T };
 

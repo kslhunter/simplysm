@@ -116,9 +116,13 @@ import { transformBoolean } from "../utils/tramsforms";
             //height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
             //min-height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
 
-            &[type="color"] {
-              padding-top: 1px;
-              padding-bottom: 1px;
+            //&[type="color"] {
+            //  padding-top: 1px;
+            //  padding-bottom: 1px;
+            //}
+            &[type="date"] {
+              padding-top: calc(var(--gap-xs) - 1px);
+              padding-bottom: calc(var(--gap-xs) - 1px);
             }
           }
         }
@@ -130,10 +134,10 @@ import { transformBoolean } from "../utils/tramsforms";
             //height: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
             //min-height: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
 
-            &[type="color"] {
-              padding-top: 1px;
-              padding-bottom: 1px;
-            }
+            //&[type="color"] {
+            //  padding-top: 1px;
+            //  padding-bottom: 1px;
+            //}
           }
         }
 

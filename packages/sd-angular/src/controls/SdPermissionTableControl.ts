@@ -8,6 +8,7 @@ import { SdCheckboxControl } from "./SdCheckboxControl";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { $computed, $model, $signal } from "../utils/$hooks";
 import { transformBoolean } from "../utils/tramsforms";
+import { ObjectUtil } from "@simplysm/sd-core-common";
 
 @Component({
   selector: "sd-permission-table",
@@ -284,35 +285,46 @@ export class SdPermissionTableControl {
   }
 
   onPermCheckChange(item: ISdPermission, type: "use" | "edit", val: boolean) {
+    const value = ObjectUtil.clone(this.value());
+    const changed = this.#changePermCheck(value, item, type, val);
+    if (changed) {
+      this.value.set(value);
+    }
+  }
+
+  #changePermCheck(value: Record<string, boolean>, item: ISdPermission, type: "use" | "edit", val: boolean) {
+    let changed = false;
+
     if (item.perms) {
       const permCode = item.codes.join(".");
 
       if (type === "edit" && val && !this.getIsPermChecked(item, "use")) {
       }
       else {
-        if (this.getIsPermExists(item, type)) {
-          this.value.update((v) => ({
-            ...v,
-            [permCode + "." + type]: val,
-          }));
+        if (this.getIsPermExists(item, type) && value[permCode + "." + type] !== val) {
+          value[permCode + "." + type] = val;
+          changed = true;
         }
       }
 
       // USE권한 지우면 EDIT권한도 자동으로 지움
-      if (type === "use" && !val && this.getIsPermExists(item, "edit")) {
-        this.value.update((v) => ({
-          ...v,
-          [permCode + ".edit"]: false,
-        }));
+      if (type === "use" && !val && this.getIsPermExists(item, "edit") && !value[permCode + ".edit"]) {
+        value[permCode + ".edit"] = false;
+        changed = true;
       }
     }
 
     // 하위 권한을 함께 변경함
     if (item.children) {
       for (const child of item.children) {
-        this.onPermCheckChange(child, type, val);
+        const childChanged = this.#changePermCheck(value, child, type, val);
+        if (childChanged) {
+          changed = true;
+        }
       }
     }
+
+    return changed;
   }
 
   #getDepthLength(items: ISdPermission[], depth: number): number {

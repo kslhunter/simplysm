@@ -47,14 +47,15 @@ import { $model } from "../utils/$hooks";
         @include form-control-base();
         color: inherit;
         cursor: pointer;
-        border-radius: var(--border-radius-default);
+        border-radius: var(--border-radius-xs);
 
         height: calc(var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-sm) * 2 + 2px);
         gap: var(--gap-sm);
 
         > ._indicator_rect {
           display: inline-block;
-          vertical-align: calc((1em - var(--line-height)) / 2);
+          //vertical-align: calc((1em - var(--line-height)) / 2);
+          vertical-align: middle;
           user-select: none;
 
           width: calc(var(--font-size-default) + 2px);

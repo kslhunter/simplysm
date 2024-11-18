@@ -5,7 +5,7 @@ import {
   ISdFlatPage,
   ISdMenu,
   ISdPermission,
-  SdAppStructureUtil
+  SdAppStructureUtil,
 } from "../utils/SdAppStructureUtil";
 
 @Injectable({ providedIn: "root" })
@@ -33,13 +33,22 @@ export class SdAppStructureProvider<T extends string> {
     return result;
   }
 
+  getModules(keys: T[]) {
+    const result: Record<string, boolean> = {};
+    for (const key of keys) {
+      result[key] = Boolean(this.#usableModules?.includes(key));
+    }
+
+    return result;
+  }
+
   getFlatPages() {
     if (!this.#usableModules || !this.#permissionRecord) return [];
 
     return SdAppStructureUtil.getFlatPages(this.#items).filter(
       (item) =>
         (!item.hasPerms || Boolean(this.#permissionRecord?.[item.codeChain.join(".") + ".use"])) &&
-        this.#isUsableModulePage(item)
+        this.#isUsableModulePage(item),
     );
   }
 
@@ -49,22 +58,34 @@ export class SdAppStructureProvider<T extends string> {
     return this.#getDisplayMenus();
   }
 
-  getPermsByModule(modules: T[]) {
+  getPerms() {
     if (!this.#usableModules || !this.#permissionRecord) return [];
 
-    return this.#getPermsByModule(modules, SdAppStructureUtil.getPermissions(this.#items));
+    return this.#getPermsByModule(SdAppStructureUtil.getPermissions(this.#items));
   }
 
-  #getPermsByModule(modules: T[], perms: ISdPermission<T>[]): ISdPermission<T>[] {
+  getExtPermRoot(params: {
+    appStructure: ISdAppStructureItem<T>[];
+    title: string;
+    codes: string[];
+  }): ISdPermission {
+    return {
+      children: this.#getPermsByModule(SdAppStructureUtil.getPermissions(params.appStructure, params.codes)),
+      title: params.title,
+      codes: params.codes,
+    };
+  }
+
+  #getPermsByModule(perms: ISdPermission<T>[]): ISdPermission<T>[] {
     const realPerms: ISdPermission<T>[] = [];
     for (const perm of perms) {
       if (perm.children) {
-        if (this.#isModulesEnabled(modules, perm.modules)) {
+        if (this.#isModulesEnabled(perm.modules)) {
           if (perm.children.length < 1) {
             realPerms.push(perm);
           }
           else {
-            const permChildren = this.#getPermsByModule(modules, perm.children);
+            const permChildren = this.#getPermsByModule(perm.children);
             if (permChildren.length > 0 || perm.perms) {
               realPerms.push({ ...perm, children: permChildren });
             }
@@ -72,7 +93,7 @@ export class SdAppStructureProvider<T extends string> {
         }
       }
       else {
-        if (this.#isModulesEnabled(modules, perm.modules)) {
+        if (this.#isModulesEnabled(perm.modules)) {
           realPerms.push(perm);
         }
       }
@@ -85,7 +106,7 @@ export class SdAppStructureProvider<T extends string> {
 
     for (const menu of menus ?? SdAppStructureUtil.getMenus(this.#items)) {
       if ("children" in menu) {
-        if (this.#isModulesEnabled(this.#usableModules!, menu.modules)) {
+        if (this.#isModulesEnabled(menu.modules)) {
           const children = this.#getDisplayMenus(menu.children);
           if (children.length > 0) {
             result.push({ ...menu, children });
@@ -95,7 +116,7 @@ export class SdAppStructureProvider<T extends string> {
       else {
         const code = menu.codeChain.join(".");
         if ((!menu.hasPerms || this.#permissionRecord![code + ".use"] === true)
-          && this.#isModulesEnabled(this.#usableModules!, menu.modules)) {
+          && this.#isModulesEnabled(menu.modules)) {
           result.push(menu);
         }
       }
@@ -106,7 +127,7 @@ export class SdAppStructureProvider<T extends string> {
 
   #isUsableModulePage(page: ISdFlatPage<T>): boolean {
     for (const modules of page.modulesChain) {
-      if (!this.#isModulesEnabled(this.#usableModules!, modules)) {
+      if (!this.#isModulesEnabled(modules)) {
         return false;
       }
     }
@@ -114,9 +135,9 @@ export class SdAppStructureProvider<T extends string> {
     return true;
   }
 
-  #isModulesEnabled(currentModules: T[], needModules: T[] | undefined): boolean {
+  #isModulesEnabled(needModules: T[] | undefined): boolean {
     return needModules == null
       || needModules.length === 0
-      || !needModules.every((needModule) => !currentModules.includes(needModule));
+      || !needModules.every((needModule) => !this.#usableModules!.includes(needModule));
   }
 }

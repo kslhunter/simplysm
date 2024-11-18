@@ -48,7 +48,7 @@ import { SdBackgroundProvider } from "../providers/SdBackgroundProvider";
         <br />
         {{ title() }}에 대한 사용권한이 없습니다. 시스템 관리자에게 문의하세요.
       </sd-pane>
-    } @else if (containerType === "page" && isLastPage()) {
+    } @else if (containerType === "page" && isLastPage() && title() != "undefined") {
       <sd-topbar-container>
         <sd-topbar>
           <h4>{{ title() }}</h4>
