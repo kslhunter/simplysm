@@ -16,20 +16,30 @@ export class CordovaAppStorage {
     return StringUtil.isNullOrEmpty(fileStr) ? undefined : JsonConvert.parse(fileStr);
   }
 
-  async readFileBufferAsync(filePath: string): Promise<Buffer> {
+  async readFileBufferAsync(filePath: string): Promise<Buffer | undefined> {
     const fullUrl = this.getFullUrl(filePath);
     const dirUrl = path.dirname(fullUrl);
     const fileName = path.basename(fullUrl);
 
-    return Buffer.from(await File.readAsArrayBuffer(dirUrl, fileName));
+    if (await File.checkFile(dirUrl, fileName)) {
+      return Buffer.from(await File.readAsArrayBuffer(dirUrl, fileName));
+    }
+    else {
+      return undefined;
+    }
   }
 
-  async readFileAsync(filePath: string): Promise<string> {
+  async readFileAsync(filePath: string): Promise<string | undefined> {
     const fullUrl = this.getFullUrl(filePath);
     const dirUrl = path.dirname(fullUrl);
     const fileName = path.basename(fullUrl);
 
-    return await File.readAsText(dirUrl, fileName);
+    if (await File.checkFile(dirUrl, fileName)) {
+      return await File.readAsText(dirUrl, fileName);
+    }
+    else {
+      return undefined;
+    }
   }
 
   async writeJsonAsync(filePath: string, data: any) {
@@ -66,7 +76,8 @@ export class CordovaAppStorage {
 
     if (single.isDirectory) {
       await File.removeRecursively(dirUrl, dirOrFileName);
-    } else {
+    }
+    else {
       await File.removeFile(dirUrl, dirOrFileName);
     }
   }
