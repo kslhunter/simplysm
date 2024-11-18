@@ -3,7 +3,7 @@ import { JsonConvert, StringUtil } from "@simplysm/sd-core-common";
 import { File } from "@awesome-cordova-plugins/file";
 
 export class CordovaAppStorage {
-  static raw = File;
+  // static raw = File;
 
   #rootDirectoryUrl: string;
 
@@ -21,7 +21,7 @@ export class CordovaAppStorage {
     const dirUrl = path.dirname(fullUrl);
     const fileName = path.basename(fullUrl);
 
-    if (await File.checkFile(dirUrl, fileName)) {
+    if (await this.exists(fullUrl)) {
       return Buffer.from(await File.readAsArrayBuffer(dirUrl, fileName));
     }
     else {
@@ -34,7 +34,7 @@ export class CordovaAppStorage {
     const dirUrl = path.dirname(fullUrl);
     const fileName = path.basename(fullUrl);
 
-    if (await File.checkFile(dirUrl, fileName)) {
+    if (await this.exists(fullUrl)) {
       return await File.readAsText(dirUrl, fileName);
     }
     else {
@@ -63,6 +63,20 @@ export class CordovaAppStorage {
 
     const entries = await File.listDir(dirUrl, dirName);
     return entries.map((item) => item.name);
+  }
+
+  async exists(targetPath: string) {
+    const fullUrl = this.getFullUrl(targetPath);
+    const dirUrl = path.dirname(fullUrl);
+    const dirOrFileName = path.basename(fullUrl);
+
+    try {
+      const list = await File.listDir(path.dirname(dirUrl), path.basename(dirUrl));
+      return list.some((item) => item.name === dirOrFileName);
+    }
+    catch {
+      return false;
+    }
   }
 
   async removeAsync(dirOrFilePath: string) {
