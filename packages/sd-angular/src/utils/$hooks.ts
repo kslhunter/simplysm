@@ -29,13 +29,15 @@ export function canDeactivate(fn: () => boolean) {
   const activatedRoute = inject(ActivatedRoute);
   const injector = inject(Injector);
 
-  if (!initializedRouteConfigSet.has(activatedRoute.routeConfig!)) {
-    initializedRouteConfigSet.add(activatedRoute.routeConfig!);
+  if (!activatedRoute.routeConfig) return;
+
+  if (!initializedRouteConfigSet.has(activatedRoute.routeConfig)) {
+    initializedRouteConfigSet.add(activatedRoute.routeConfig);
 
     const canDeactivateFn: CanDeactivateFn<{ __sdCanDeactivate__(): boolean }> = (component) => {
       return component.__sdCanDeactivate__();
     };
-    activatedRoute.routeConfig!.canDeactivate = [canDeactivateFn];
+    activatedRoute.routeConfig.canDeactivate = [canDeactivateFn];
   }
 
   requestAnimationFrame(() => {
