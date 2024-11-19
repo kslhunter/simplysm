@@ -5,10 +5,6 @@ export function injectPerms<K extends string>(viewCodes: string[], keys: K[]): R
   return inject(SdAppStructureProvider).getViewPerms(viewCodes, keys);
 }
 
-export function injectModules<K extends string>(keys: K[]): Record<K, boolean> {
-  return inject(SdAppStructureProvider).getModules(keys);
-}
-
 export function injectTitle(viewCode: string): string {
   return inject(SdAppStructureProvider).getTitleByCode(viewCode);
 }

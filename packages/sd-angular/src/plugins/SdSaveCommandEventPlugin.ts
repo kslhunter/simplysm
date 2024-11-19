@@ -1,9 +1,12 @@
 import { inject, Injectable } from "@angular/core";
 import { EventManagerPlugin } from "@angular/platform-browser";
 import { DOCUMENT } from "@angular/common";
+import { SdModalProvider } from "../providers/SdModalProvider";
 
 @Injectable({ providedIn: null })
 export class SdSaveCommandEventPlugin extends EventManagerPlugin {
+  #sdModal = inject(SdModalProvider);
+
   constructor() {
     super(inject(DOCUMENT));
   }
@@ -18,16 +21,27 @@ export class SdSaveCommandEventPlugin extends EventManagerPlugin {
 
     const listener = (event: KeyboardEvent): void => {
       if ((event.key === "s" || event.key === "S") && event.ctrlKey && !event.altKey && !event.shiftKey) {
-        event.preventDefault();
+        if (this.#sdModal.modalCount() > 0) {
+          if ((event.target as Element).findParent("sd-modal") === element.findParent("sd-modal")) {
+            event.preventDefault();
+            event.stopPropagation();
 
-        handler(event);
+            handler(event);
+          }
+        }
+        else {
+          event.preventDefault();
+          event.stopPropagation();
+
+          handler(event);
+        }
       }
     };
 
-    element.addEventListener("keydown", listener);
+    document.addEventListener("keydown", listener);
 
     return (): void => {
-      element.removeEventListener("keydown", listener);
+      document.removeEventListener("keydown", listener);
     };
   }
 }

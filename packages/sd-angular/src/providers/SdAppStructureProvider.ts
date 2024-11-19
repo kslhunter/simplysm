@@ -13,11 +13,14 @@ export class SdAppStructureProvider<T extends string> {
   #items = inject(SdAngularConfigProvider).appStructure as ISdAppStructureItem<T>[];
 
   #usableModules?: T[];
-  #permissionRecord?: Record<string, boolean | undefined>;
+  #permRecord?: Record<string, boolean | undefined>;
 
-  initialize(usableModules?: T[], permissionRecord?: Record<string, boolean | undefined>) {
+  initialize(
+    usableModules?: T[],
+    permRecord?: Record<string, boolean | undefined>,
+  ) {
     this.#usableModules = usableModules ?? [];
-    this.#permissionRecord = permissionRecord ?? {};
+    this.#permRecord = permRecord ?? {};
   }
 
   getTitleByCode(pageCode: string) {
@@ -25,41 +28,55 @@ export class SdAppStructureProvider<T extends string> {
   }
 
   getViewPerms<K extends string>(viewCodes: string[], keys: K[]) {
-    const result: Record<string, boolean> = {};
-    for (const key of keys) {
-      result[key] = viewCodes.some((viewCode) => Boolean(this.#permissionRecord?.[viewCode + "." + key]));
+    //check
+    for (const viewCode of viewCodes) {
+      let cursor: ISdAppStructureItem<T> | undefined;
+      let cursorChildren = this.#items;
+      for (const code of viewCode.split(".")) {
+        cursor = cursorChildren.single((item) => item.code === code);
+        cursorChildren = cursor?.children ?? [];
+      }
+      for (const key of keys) {
+        if (key === "use" || key === "edit") {
+          if (!cursor?.perms?.includes(key as "use" | "edit")) {
+            throw new Error(`정의되지 않은 권한 (${viewCode}, ${keys})`);
+          }
+        }
+        else {
+          const subPerm = cursor?.subPerms?.single(item => item.code === key.split(".")[0]);
+          if (!subPerm?.perms.includes(key.split(".")[1] as "use" | "edit")) {
+            throw new Error(`정의되지 않은 권한 (${viewCode}, ${keys}})`);
+          }
+        }
+      }
     }
 
-    return result;
-  }
-
-  getModules(keys: T[]) {
     const result: Record<string, boolean> = {};
     for (const key of keys) {
-      result[key] = Boolean(this.#usableModules?.includes(key));
+      result[key] = viewCodes.some((viewCode) => Boolean(this.#permRecord?.[viewCode + "." + key]));
     }
 
     return result;
   }
 
   getFlatPages() {
-    if (!this.#usableModules || !this.#permissionRecord) return [];
+    if (!this.#usableModules || !this.#permRecord) return [];
 
     return SdAppStructureUtil.getFlatPages(this.#items).filter(
       (item) =>
-        (!item.hasPerms || Boolean(this.#permissionRecord?.[item.codeChain.join(".") + ".use"])) &&
+        (!item.hasPerms || Boolean(this.#permRecord?.[item.codeChain.join(".") + ".use"])) &&
         this.#isUsableModulePage(item),
     );
   }
 
   getMenus() {
-    if (!this.#usableModules || !this.#permissionRecord) return [];
+    if (!this.#usableModules || !this.#permRecord) return [];
 
     return this.#getDisplayMenus();
   }
 
   getPerms() {
-    if (!this.#usableModules || !this.#permissionRecord) return [];
+    if (!this.#usableModules || !this.#permRecord) return [];
 
     return this.#getPermsByModule(SdAppStructureUtil.getPermissions(this.#items));
   }
@@ -115,7 +132,7 @@ export class SdAppStructureProvider<T extends string> {
       }
       else {
         const code = menu.codeChain.join(".");
-        if ((!menu.hasPerms || this.#permissionRecord![code + ".use"] === true)
+        if ((!menu.hasPerms || this.#permRecord![code + ".use"] === true)
           && this.#isModulesEnabled(menu.modules)) {
           result.push(menu);
         }

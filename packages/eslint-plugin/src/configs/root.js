@@ -74,7 +74,7 @@ export default [
       "@typescript-eslint/prefer-reduce-type-parameter": ["error"],
       "@typescript-eslint/prefer-return-this-type": ["error"],
       "@typescript-eslint/typedef": ["error"],
-      // "@typescript-eslint/no-unused-expressions": ["error"], // TODO: 9.15.0 알려진 오류로 잠시 닫음 (https://github.com/typescript-eslint/typescript-eslint/issues/10338)
+      "@typescript-eslint/no-unused-expressions": ["error"],
       "@typescript-eslint/no-unused-vars": ["error", { args: "none" }],
       "@typescript-eslint/strict-boolean-expressions": [
         "error",
