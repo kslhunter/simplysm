@@ -1,5 +1,17 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
 
+/**
+ * 프로그레스 컨트롤 컴포넌트
+ * 
+ * 진행 상태를 시각적으로 표시하는 컴포넌트입니다.
+ * 
+ * @example
+ * ```html
+ * <sd-progress [label]="'진행률'" [maxValue]="100">
+ *   <sd-progress-item [value]="50"></sd-progress-item>
+ * </sd-progress>
+ * ```
+ */
 @Component({
   selector: "sd-progress",
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -43,6 +55,9 @@ import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@a
   `,
 })
 export class SdProgressControl {
+  /** 프로그레스 바의 레이블 텍스트 */
   label = input<string>();
+
+  /** 프로그레스 바의 최대값 */
   maxValue = input<number>();
 }

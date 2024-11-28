@@ -1,5 +1,5 @@
 import { Directive, input } from "@angular/core";
-import { transformBoolean } from "../utils/tramsforms";
+import { transformBoolean } from "../utils/transforms";
 import { useRipple } from "../utils/useRipple";
 
 @Directive({

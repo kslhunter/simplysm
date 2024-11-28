@@ -16,7 +16,7 @@ import { SdCollapseControl } from "./SdCollapseControl";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { $computed, $model } from "../utils/$hooks";
 import { SdUseRippleDirective } from "../directives/SdUseRippleDirective";
-import { transformBoolean } from "../utils/tramsforms";
+import { transformBoolean } from "../utils/transforms";
 import { NgTemplateOutlet } from "@angular/common";
 import { SdIconControl } from "./SdIconControl";
 

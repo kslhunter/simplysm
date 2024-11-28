@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, input, output, ViewEncapsulation } 
 import { StringUtil } from "@simplysm/sd-core-common";
 import { $computed, $model } from "../utils/$hooks";
 import { injectElementRef } from "../utils/injectElementRef";
-import { transformBoolean } from "../utils/tramsforms";
+import { transformBoolean } from "../utils/transforms";
 
 @Component({
   selector: "sd-textarea",

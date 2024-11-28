@@ -27,7 +27,7 @@ import { SdAnchorControl } from "./SdAnchorControl";
 import { SD_MODAL_INPUT, SdModalBase, SdModalProvider } from "../providers/SdModalProvider";
 import { ISharedDataModalInputParam, ISharedDataModalOutputResult } from "./SdSharedDataSelectControl";
 import { $computed, $effect, $model, $signal } from "../utils/$hooks";
-import { transformBoolean } from "../utils/tramsforms";
+import { transformBoolean } from "../utils/transforms";
 import { SdIconControl } from "./SdIconControl";
 
 @Component({

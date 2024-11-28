@@ -24,7 +24,7 @@ import { SdDropdownPopupControl } from "./SdDropdownPopupControl";
 import { StringUtil } from "@simplysm/sd-core-common";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { $computed, $effect, $model, $signal } from "../utils/$hooks";
-import { transformBoolean } from "../utils/tramsforms";
+import { transformBoolean } from "../utils/transforms";
 import { SdUseRippleDirective } from "../directives/SdUseRippleDirective";
 import { SdIconControl } from "./SdIconControl";
 

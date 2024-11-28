@@ -1,6 +1,26 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
-import { transformBoolean } from "../utils/tramsforms";
+import { transformBoolean } from "../utils/transforms";
 
+/**
+ * 리스트 컨트롤
+ * 
+ * 리스트 형태의 컨텐츠를 표시하는 컴포넌트입니다.
+ * 
+ * @example
+ * ```html
+ * <!-- 기본 사용법 -->
+ * <sd-list>
+ *   <sd-list-item>항목 1</sd-list-item>
+ *   <sd-list-item>항목 2</sd-list-item>
+ * </sd-list>
+ * 
+ * <!-- 들여쓰기 적용 -->
+ * <sd-list [inset]="true">
+ *   <sd-list-item>들여쓰기된 항목 1</sd-list-item>
+ *   <sd-list-item>들여쓰기된 항목 2</sd-list-item>
+ * </sd-list>
+ * ```
+ */
 @Component({
   selector: "sd-list",
   changeDetection: ChangeDetectionStrategy.OnPush,

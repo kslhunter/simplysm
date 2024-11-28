@@ -3,7 +3,7 @@ import Quill from "quill";
 import QuillResizeImage from "quill-resize-image";
 import { $effect, $model } from "../utils/$hooks";
 import { injectElementRef } from "../utils/injectElementRef";
-import { transformBoolean } from "../utils/tramsforms";
+import { transformBoolean } from "../utils/transforms";
 
 Quill.register("modules/resize", QuillResizeImage);
 

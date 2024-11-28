@@ -12,7 +12,7 @@ import {
 import { SdDropdownPopupControl } from "./SdDropdownPopupControl";
 import { $effect, $model } from "../utils/$hooks";
 import { injectElementRef } from "../utils/injectElementRef";
-import { transformBoolean } from "../utils/tramsforms";
+import { transformBoolean } from "../utils/transforms";
 
 @Component({
   selector: "sd-dropdown",
@@ -49,7 +49,7 @@ export class SdDropdownControl {
 
   contentClass = input<string>();
   contentStyle = input<string>();
-  
+
   contentElRef = viewChild.required<any, ElementRef<HTMLElement>>("contentEl", { read: ElementRef });
   popupElRef = contentChild.required<any, ElementRef<HTMLElement>>(SdDropdownPopupControl, { read: ElementRef });
 

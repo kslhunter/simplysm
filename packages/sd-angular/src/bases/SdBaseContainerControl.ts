@@ -19,7 +19,7 @@ import { $computed, $effect } from "../utils/$hooks";
 import { ActivatedRoute } from "@angular/router";
 import { injectParent } from "../utils/injectParent";
 import { SdActivatedModalProvider } from "../providers/SdModalProvider";
-import { transformBoolean } from "../utils/tramsforms";
+import { transformBoolean } from "../utils/transforms";
 import { SdIconControl } from "../controls/SdIconControl";
 import { SdBackgroundProvider } from "../providers/SdBackgroundProvider";
 

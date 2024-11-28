@@ -1,8 +1,24 @@
 import { ChangeDetectionStrategy, Component, HostListener, inject, input, ViewEncapsulation } from "@angular/core";
 import { SdBusyProvider } from "../providers/SdBusyProvider";
 import { $computed } from "../utils/$hooks";
-import { transformBoolean, transformNullableBoolean } from "../utils/tramsforms";
+import { transformBoolean, transformNullableBoolean } from "../utils/transforms";
 
+/**
+ * `SdBusyContainerControl`은 로딩 상태를 표시하는 컨테이너 컴포넌트입니다.
+ * 
+ * 이 컴포넌트는 다음과 같은 기능을 제공합니다:
+ * - 다양한 로딩 인디케이터 타입 (spinner, bar, cube)
+ * - 로딩 메시지 표시
+ * - 진행률 표시
+ * - 페이드 효과 설정
+ * 
+ * @example
+ * ```html
+ * <sd-busy-container [busy]="isLoading" type="spinner" message="로딩 중...">
+ *   <div>컨텐츠</div>
+ * </sd-busy-container>
+ * ```
+ */
 @Component({
   selector: "sd-busy-container",
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -354,10 +370,24 @@ import { transformBoolean, transformNullableBoolean } from "../utils/tramsforms"
 export class SdBusyContainerControl {
   #sdBusy = inject(SdBusyProvider);
 
+  /** 로딩 상태 여부 */
   busy = input(false, { transform: transformBoolean });
+
+  /** 로딩 중 표시할 메시지 */
   message = input<string>();
+
+  /** 
+   * 로딩 인디케이터 타입
+   * - spinner: 회전하는 스피너 
+   * - bar: 진행 바
+   * - cube: 3D 큐브 애니메이션
+   */
   type = input<"spinner" | "bar" | "cube">();
+
+  /** 페이드 효과 비활성화 여부 */
   noFade = input(undefined, { transform: transformNullableBoolean });
+
+  /** 진행률 표시 (0-100) */
   progressPercent = input<number>();
 
   currType = $computed(() => this.type() ?? this.#sdBusy.type());

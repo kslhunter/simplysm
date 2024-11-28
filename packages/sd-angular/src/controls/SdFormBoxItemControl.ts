@@ -12,6 +12,23 @@ import { SdFormBoxControl } from "./SdFormBoxControl";
 import { NgTemplateOutlet } from "@angular/common";
 import { $computed } from "../utils/$hooks";
 
+/**
+ * 폼 박스 아이템 컨트롤 컴포넌트
+ * 
+ * 폼 박스 내부의 개별 입력 필드를 관리하는 컴포넌트입니다.
+ * 
+ * 주요 기능:
+ * - 라벨과 입력 필드의 레이아웃 관리
+ * - 부모 폼 박스의 레이아웃 스타일 상속
+ * - 반응형 디자인 지원
+ * 
+ * @example
+ * ```html
+ * <sd-form-box-item label="이름">
+ *   <input type="text">
+ * </sd-form-box-item>
+ * ```
+ */
 @Component({
   selector: "sd-form-box-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -145,16 +162,31 @@ import { $computed } from "../utils/$hooks";
   },
 })
 export class SdFormBoxItemControl {
+  /** 부모 폼 박스 컨트롤에 대한 참조 */
   #parentControl = inject<SdFormBoxControl>(forwardRef(() => SdFormBoxControl));
 
+  /** 폼 아이템의 라벨 텍스트 */
   label = input<string>();
+
+  /** 라벨에 표시될 툴팁 텍스트 */
   labelTooltip = input<string>();
 
+  /** 라벨의 커스텀 템플릿 참조 */
   labelTemplateRef = contentChild<any, TemplateRef<void>>("label", { read: TemplateRef });
 
+  /** 부모로부터 상속받은 라벨 정렬 방식 */
   labelAlign = $computed(() => this.#parentControl.labelAlign());
+
+  /** 부모로부터 상속받은 레이아웃 스타일 */
   layout = $computed(() => this.#parentControl.layout());
-  labelWidth = $computed(() =>
-    this.#parentControl.layout() === "table" ? this.#parentControl.labelWidth() : undefined,
-  );
+
+  /** 
+   * 라벨의 너비를 계산
+   * - table 레이아웃일 경우 부모의 labelWidth 값을 사용
+   * - 그 외의 경우 undefined 반환
+   */
+  labelWidth = $computed(() => {
+    const layout = this.#parentControl.layout();
+    return layout === "table" ? this.#parentControl.labelWidth() : undefined;
+  });
 }

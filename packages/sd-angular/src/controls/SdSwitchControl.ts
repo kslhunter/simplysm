@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, HostListener, input, output, ViewEncapsulation } from "@angular/core";
-import { transformBoolean } from "../utils/tramsforms";
+import { transformBoolean } from "../utils/transforms";
 import { $model } from "../utils/$hooks";
 
 @Component({

@@ -16,7 +16,7 @@ import { SdGapControl } from "./SdGapControl";
 import { $computed, $effect } from "../utils/$hooks";
 import { injectElementRef } from "../utils/injectElementRef";
 import { useRipple } from "../utils/useRipple";
-import { transformBoolean } from "../utils/tramsforms";
+import { transformBoolean } from "../utils/transforms";
 
 @Component({
   selector: "sd-select-item",
