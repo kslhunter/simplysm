@@ -7,6 +7,19 @@ import { transformBoolean } from "../utils/transforms";
 
 Quill.register("modules/resize", QuillResizeImage);
 
+/**
+ * 퀼 에디터 컨트롤 컴포넌트
+ * 
+ * 리치 텍스트 편집을 위한 Quill 에디터 컴포넌트입니다.
+ * 
+ * @example
+ * ```html
+ * <sd-quill-editor 
+ *   [(value)]="content"
+ *   [disabled]="false">
+ * </sd-quill-editor>
+ * ```
+ */
 @Component({
   selector: "sd-quill-editor",
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -75,18 +88,25 @@ Quill.register("modules/resize", QuillResizeImage);
   },
 })
 export class SdQuillEditorControl {
+  /** HTML 엘리먼트 참조 */
   #elRef = injectElementRef<HTMLElement>();
 
+  /** 에디터의 현재 값 */
   _value = input<string | undefined>(undefined, { alias: "value" });
+  /** 에디터 값 변경 이벤트 */
   _valueChange = output<string | undefined>({ alias: "valueChange" });
+  /** 양방향 바인딩을 위한 모델 */
   value = $model(this._value, this._valueChange);
 
+  /** 에디터 비활성화 여부 */
   disabled = input(false, { transform: transformBoolean });
 
+  /** Quill 에디터 인스턴스 */
   #quill!: Quill;
 
   constructor() {
     $effect([], () => {
+      // Quill 에디터 초기화
       this.#quill = new Quill(this.#elRef.nativeElement.firstElementChild as HTMLElement, {
         theme: "snow",
         modules: {
@@ -108,23 +128,27 @@ export class SdQuillEditorControl {
         },
       });
 
+      // 입력 이벤트 핸들러
       this.#quill.root.addEventListener("input", () => {
         const newValue = this.#quill.root.innerHTML;
         this.value.set(newValue === "" ? undefined : newValue);
       });
 
+      // 텍스트 변경 이벤트 핸들러
       this.#quill.on("text-change", () => {
         const newValue = this.#quill.root.innerHTML;
         this.value.set(newValue === "" ? undefined : newValue);
       });
     });
 
+    // 외부 값 변경 시 에디터 내용 동기화
     $effect(() => {
       if (this.#quill.root.innerHTML !== (this.value() ?? "")) {
         this.#quill.root.innerHTML = this.value() ?? "";
       }
     });
 
+    // 비활성화 상태 변경 시 에디터 활성화/비활성화
     $effect(() => {
       this.#quill.enable(!this.disabled());
     });
