@@ -574,15 +574,15 @@ export class SdSheetControl<T> {
 
   columnControls = contentChildren<SdSheetColumnDirective<T>>(SdSheetColumnDirective);
 
-  /** 시트설정 저장 키 */
   key = input.required<string>();
   /** 설정 및 페이징 바 표시여부 */
   hideConfigBar = input(false, { transform: transformBoolean });
   /** BORDER를 없애는등 다른 박스안에 완전히 붙임 */
   inset = input(false, { transform: transformBoolean });
 
-  /** 정렬규칙 */
+  /** 시트 컬럼의 정렬 설정 목록 */
   _ordering = input<ISdSheetColumnOrderingVM[]>([], { alias: "ordering" });
+  /** 시트 컬럼의 정렬 설정 변경 이벤트 */
   _orderingChange = output<ISdSheetColumnOrderingVM[]>({ alias: "orderingChange" });
   ordering = $model(this._ordering, this._orderingChange);
 
@@ -680,15 +680,15 @@ export class SdSheetControl<T> {
     //-- displayHeaderDefTable
     const tempHeaderDefTable: (
       | {
-      control: SdSheetColumnDirective<T>;
-      width: string | undefined;
-      fixed: boolean;
-      text: string | undefined;
-      useTemplate: string | undefined;
-      style: string | undefined;
-    }
+        control: SdSheetColumnDirective<T>;
+        width: string | undefined;
+        fixed: boolean;
+        text: string | undefined;
+        useTemplate: string | undefined;
+        style: string | undefined;
+      }
       | undefined
-      )[][] = [];
+    )[][] = [];
     const displayColumnDefs = this.displayColumnDefs();
 
     for (let c = 0; c < displayColumnDefs.length; c++) {
@@ -960,7 +960,7 @@ export class SdSheetControl<T> {
         let html = "";
         for (const selectedTrRect of selectedTrRects) {
           html += `<div class='_select-row-indicator' style="top: ${selectedTrRect.top}px; height: ${selectedTrRect.height
-          - 1}px; width: ${selectedTrRect.width - 1}px;"></div>`;
+            - 1}px; width: ${selectedTrRect.width - 1}px;"></div>`;
         }
         selectRowIndicatorContainerEl.innerHTML = html;
         selectRowIndicatorContainerEl.style.display = "block";
@@ -1549,10 +1549,27 @@ export class SdSheetControl<T> {
   }
 }
 
+/**
+ * Interface representing the configuration for a sheet.
+ *
+ * @interface ISdSheetConfig
+ *
+ * @property {Record<string, IConfigColumn | undefined> | undefined} columnRecord -
+ *            A record object where the keys are column identifiers and the values are
+ *            either IConfigColumn instances or undefined.
+ */
 export interface ISdSheetConfig {
   columnRecord: Record<string, IConfigColumn | undefined> | undefined;
 }
 
+/**
+ * Interface representing a configuration for a table column.
+ *
+ * @property {boolean} [fixed] - Indicates whether the column is fixed in place; true if fixed, false otherwise.
+ * @property {string} [width] - Specifies the width of the column, typically in pixels or percentage.
+ * @property {number} [displayOrder] - Determines the display order of the column among other columns.
+ * @property {boolean} [hidden] - Indicates whether the column is hidden; true if hidden, false otherwise.
+ */
 interface IConfigColumn {
   fixed?: boolean;
   width?: string;
@@ -1560,6 +1577,16 @@ interface IConfigColumn {
   hidden?: boolean;
 }
 
+/**
+ * Interface representing the definition of a column in a sheet.
+ *
+ * @template T - The data type of the items in the column.
+ *
+ * @property control - The directive controlling the sheet column.
+ * @property fixed - Indicates if the column is fixed.
+ * @property width - Represents the width of the column.
+ * @property headerStyle - Represents the style applied to the header of the column.
+ */
 interface IColumnDef<T> {
   control: SdSheetColumnDirective<T>;
   fixed: boolean | undefined;
@@ -1567,6 +1594,11 @@ interface IColumnDef<T> {
   headerStyle: string | undefined;
 }
 
+/**
+ * Interface representing the definition of a table header.
+ *
+ * @template T - The type parameter.
+ */
 interface IHeaderDef<T> {
   control: SdSheetColumnDirective<T>;
   width: string | undefined;
@@ -1580,6 +1612,17 @@ interface IHeaderDef<T> {
   style: string | undefined;
 }
 
+/**
+ * Represents a definition of an item with hierarchical relationships.
+ *
+ * @template T The type of the item.
+ * @interface IItemDef
+ *
+ * @property {T} item - The item contained within this definition.
+ * @property {IItemDef<T> | undefined} parentDef - The parent item definition, if any.
+ * @property {boolean} hasChildren - Indicates if the item has child items.
+ * @property {number} depth - The depth of the item within the hierarchy.
+ */
 interface IItemDef<T> {
   item: T;
   parentDef: IItemDef<T> | undefined;
@@ -1587,11 +1630,32 @@ interface IItemDef<T> {
   depth: number;
 }
 
+/**
+ * Interface representing the view model for sheet column ordering.
+ *
+ * This interface is used to define the key and sort order for a sheet
+ * column, where 'key' represents the column identifier and 'desc'
+ * indicates the sort direction.
+ *
+ * Properties:
+ * - `key`: A string that represents the unique identifier of the column.
+ * - `desc`: A boolean that specifies the sort order. If true, the column
+ *   is sorted in descending order; if false, in ascending order.
+ */
 export interface ISdSheetColumnOrderingVM {
   key: string;
   desc: boolean;
 }
 
+/**
+ * Represents the parameters for the keydown event on a sheet item.
+ *
+ * @template T The type of the item associated with the keydown event.
+ * @interface
+ * @property {T} item - The item associated with the keydown event.
+ * @property {string} [key] - The key that was pressed, if available.
+ * @property {KeyboardEvent} event - The keyboard event object.
+ */
 export interface ISdSheetItemKeydownEventParam<T> {
   item: T;
   key?: string;
