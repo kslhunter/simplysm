@@ -4,36 +4,6 @@ import { SdKanbanControl } from "./SdKanbanControl";
 import { SdKanbanLaneControl } from "./SdKanbanLaneControl";
 
 
-/**
- * 칸반 보드 컨트롤
- * 
- * 칸반 보드를 구성하는 컨테이너 컴포넌트입니다.
- * 
- * @template L 레인 값의 타입
- * @template T 칸반 아이템 값의 타입
- * 
- * @example
- * ```html
- * <sd-kanban-board
- *   [(selectedValues)]="selectedItems"
- *   (drop)="onKanbanDrop($event)">
- *   <sd-kanban-lane [value]="'todo'" title="할 일">
- *     <sd-kanban *ngFor="let item of todoItems"
- *                [value]="item"
- *                [laneValue]="'todo'">
- *       {{item.title}}
- *     </sd-kanban>
- *   </sd-kanban-lane>
- *   <sd-kanban-lane [value]="'doing'" title="진행 중">
- *     <sd-kanban *ngFor="let item of doingItems"
- *                [value]="item"
- *                [laneValue]="'doing'">
- *       {{item.title}}
- *     </sd-kanban>
- *   </sd-kanban-lane>
- * </sd-kanban-board>
- * ```
- */
 @Component({
   selector: "sd-kanban-board",
   changeDetection: ChangeDetectionStrategy.OnPush,

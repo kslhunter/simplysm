@@ -6,18 +6,13 @@ import { injectElementRef } from "../utils/injectElementRef";
 // TODO: 모바일일때는 모달 형식으로 표현
 
 /**
- * 드롭다운 팝업 컨트롤 컴포넌트
+ * 드롭다운 팝업 컴포넌트
  * 
- * 드롭다운 메뉴나 팝업을 표시하는 컴포넌트입니다.
- * 
- * 주요 기능:
- * - 드롭다운 메뉴 표시
- * - 자동 위치 조정
- * - 키보드 네비게이션 지원
- * - 반응형 디자인 (모바일에서는 다른 스타일 적용)
+ * 드롭다운 컨트롤에서 사용되는 팝업 메뉴를 구현하는 컴포넌트입니다.
  * 
  * @example
  * ```html
+ * <!-- 기본 사용법 -->
  * <sd-dropdown>
  *   <button>메뉴 열기</button>
  *   <sd-dropdown-popup>
@@ -26,6 +21,16 @@ import { injectElementRef } from "../utils/injectElementRef";
  *   </sd-dropdown-popup>
  * </sd-dropdown>
  * ```
+ * 
+ * @remarks
+ * - 드롭다운 컨트롤과 함께 사용됩니다
+ * - 자동으로 위치가 조정됩니다
+ * - 애니메이션 효과를 제공합니다
+ * - 키보드 탐색을 지원합니다
+ * - 스크롤이 가능한 메뉴를 제공합니다
+ * - 반응형 디자인을 지원합니다
+ * - 모바일에서는 모달 형태로 표시됩니다
+ * - 접근성을 고려한 포커스 관리를 제공합니다
  */
 @Component({
   selector: "sd-dropdown-popup",

@@ -12,17 +12,31 @@ import { $computed, $effect, $model } from "../utils/$hooks";
 import { transformBoolean } from "../utils/transforms";
 
 /**
- * 콘텐츠 편집기 컨트롤
+ * 콘텐츠 에디터 컴포넌트
  * 
- * 예제:
+ * 사용자가 텍스트 콘텐츠를 편집할 수 있는 에디터를 제공하는 컴포넌트입니다.
+ * 
+ * @example
  * ```html
- * <sd-content-editor [(value)]="content" />
+ * <!-- 기본 사용법 -->
+ * <sd-content-editor [(value)]="content"></sd-content-editor>
+ * 
+ * <!-- 크기 조절 -->
+ * <sd-content-editor size="sm">작은 에디터</sd-content-editor>
+ * <sd-content-editor size="lg">큰 에디터</sd-content-editor>
+ * 
+ * <!-- 비활성화 -->
+ * <sd-content-editor [disabled]="true">비활성화된 에디터</sd-content-editor>
  * ```
  * 
- * @property value - 편집기의 내용
- * @property size - 크기 설정 ("sm" | "lg") (기본값: undefined)
- * @property disabled - 비활성화 여부 (기본값: false)
- * @property valueChange - 내용이 변경될 때 발생하는 이벤트
+ * @remarks
+ * - 멀티라인 텍스트 편집을 지원합니다
+ * - 자동 높이 조절 기능을 제공합니다
+ * - 다양한 크기 옵션을 지원합니다 (sm, md, lg)
+ * - 비활성화 상태를 지원합니다
+ * - 양방향 바인딩을 지원합니다
+ * - 포커스 및 블러 이벤트를 처리합니다
+ * - 사용자 정의 스타일링이 가능합니다
  */
 @Component({
   selector: "sd-content-editor",

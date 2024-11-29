@@ -5,23 +5,31 @@ import { $computed } from "../utils/$hooks";
 import { transformBoolean } from "../utils/transforms";
 
 /**
- * `SdCheckboxGroupItemControl`은 체크박스 그룹 내의 개별 체크박스 항목을 관리하는 Angular 컴포넌트입니다.
+ * 체크박스 그룹의 개별 항목 컴포넌트
  * 
- * 이 컴포넌트는 다음과 같은 기능을 제공합니다:
- * - 부모 체크박스 그룹과의 연동
- * - 개별 체크박스의 선택 상태 관리
- * - 인라인 스타일 지원
+ * 체크박스 그룹 내에서 사용되는 개별 체크박스 항목을 구현하는 컴포넌트입니다.
  * 
  * @example
  * ```html
+ * <!-- 기본 사용법 -->
  * <sd-checkbox-group [(value)]="selectedItems">
  *   <sd-checkbox-group-item [value]="item1">항목 1</sd-checkbox-group-item>
- *   <sd-checkbox-group-item [value]="item2" [inline]="true">항목 2</sd-checkbox-group-item>
+ *   <sd-checkbox-group-item [value]="item2">항목 2</sd-checkbox-group-item>
+ * </sd-checkbox-group>
+ * 
+ * <!-- 인라인 스타일 적용 -->
+ * <sd-checkbox-group [(value)]="selectedItems">
+ *   <sd-checkbox-group-item [value]="item1" [inline]="true">인라인 항목 1</sd-checkbox-group-item>
+ *   <sd-checkbox-group-item [value]="item2" [inline]="true">인라인 항목 2</sd-checkbox-group-item>
  * </sd-checkbox-group>
  * ```
  * 
- * @property value - 체크박스 항목의 값 (필수)
- * @property inline - 인라인 스타일 적용 여부 (기본값: false)
+ * @remarks
+ * - 체크박스 그룹 내에서만 사용할 수 있습니다
+ * - 부모 그룹의 value 배열에 자동으로 추가/제거됩니다
+ * - 부모 그룹의 비활성화 상태를 상속받습니다
+ * - 인라인 스타일을 지원합니다
+ * - 제네릭을 통해 다양한 타입의 값을 처리할 수 있습니다
  */
 @Component({
   selector: "sd-checkbox-group-item",

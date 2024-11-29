@@ -4,24 +4,32 @@ import * as echarts from 'echarts';
 import { $effect } from "../utils/$hooks";
 
 /**
- * ECharts 컨트롤 컴포넌트
+ * ECharts 컴포넌트
  * 
- * Apache ECharts 라이브러리를 Angular에서 사용할 수 있게 해주는 래퍼 컴포넌트입니다.
- * 
- * 이 컴포넌트는 다음과 같은 기능을 제공합니다:
- * - ECharts 차트 렌더링
- * - 차트 옵션 설정
- * - 차트 높이 조절
- * - 로딩 상태 표시
+ * Apache ECharts 차트 라이브러리를 Angular에서 사용할 수 있게 해주는 래퍼 컴포넌트입니다.
  * 
  * @example
  * ```html
+ * <!-- 기본 사용법 -->
+ * <sd-echarts [option]="chartOption" height="300px">
+ * </sd-echarts>
+ * 
+ * <!-- 로딩 상태 표시 -->
  * <sd-echarts 
- *   [option]="chartOptions" 
- *   height="400px"
+ *   [option]="chartOption" 
+ *   height="300px"
  *   [loading]="isLoading">
  * </sd-echarts>
  * ```
+ * 
+ * @remarks
+ * - ECharts 옵션을 직접 설정할 수 있습니다
+ * - 차트의 높이를 지정할 수 있습니다
+ * - 로딩 상태를 표시할 수 있습니다
+ * - SVG 렌더러를 사용합니다
+ * - 반응형 디자인을 지원합니다
+ * - 옵션이 변경되면 자동으로 차트가 업데이트됩니다
+ * - 윈도우 크기가 변경되면 자동으로 리사이즈됩니다
  */
 @Component({
   selector: "sd-echarts",

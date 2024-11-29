@@ -3,23 +3,32 @@ import { transformBoolean } from "../utils/transforms";
 import { $model } from "../utils/$hooks";
 
 /**
- * `SdCheckboxGroupControl`은 체크박스 그룹을 관리하는 Angular 컴포넌트입니다.
+ * 체크박스 그룹 컴포넌트
  * 
- * 이 컴포넌트는 다음과 같은 기능을 제공합니다:
- * - 다중 체크박스 선택 관리
- * - 양방향 데이터 바인딩
- * - 비활성화 상태 지원
+ * 여러 개의 체크박스를 그룹으로 관리하는 컴포넌트입니다.
  * 
  * @example
  * ```html
+ * <!-- 기본 사용법 -->
  * <sd-checkbox-group [(value)]="selectedItems">
  *   <sd-checkbox [value]="item1">항목 1</sd-checkbox>
  *   <sd-checkbox [value]="item2">항목 2</sd-checkbox>
+ *   <sd-checkbox [value]="item3">항목 3</sd-checkbox>
+ * </sd-checkbox-group>
+ * 
+ * <!-- 비활성화된 그룹 -->
+ * <sd-checkbox-group [disabled]="true">
+ *   <sd-checkbox>비활성화된 항목 1</sd-checkbox>
+ *   <sd-checkbox>비활성화된 항목 2</sd-checkbox>
  * </sd-checkbox-group>
  * ```
  * 
- * @property value - 선택된 항목들의 배열
- * @property disabled - 그룹 전체 비활성화 상태 여부
+ * @remarks
+ * - 여러 체크박스를 하나의 그룹으로 관리합니다
+ * - 선택된 항목들의 배열을 value로 관리합니다
+ * - 양방향 바인딩을 지원합니다
+ * - 그룹 전체의 비활성화를 지원합니다
+ * - 제네릭을 통해 다양한 타입의 값을 처리할 수 있습니다
  */
 @Component({
   selector: "sd-checkbox-group",

@@ -3,14 +3,32 @@ import jsbarcode from "jsbarcode";
 import { $effect } from "../utils/$hooks";
 
 /**
- * 바코드 컨트롤 컴포넌트
- *
- * 바코드를 생성하고 표시하는 컴포넌트입니다.
- *
+ * 바코드 컴포넌트
+ * 
+ * 텍스트를 바코드로 변환하여 표시하는 컴포넌트입니다.
+ * 
  * @example
  * ```html
- * <sd-barcode [value]="'123456'"></sd-barcode>
+ * <!-- 기본 사용법 -->
+ * <sd-barcode value="1234567890"></sd-barcode>
+ * 
+ * <!-- 바코드 타입 지정 -->
+ * <sd-barcode value="1234567890" type="EAN13"></sd-barcode>
+ * 
+ * <!-- 크기 조절 -->
+ * <sd-barcode 
+ *   value="1234567890"
+ *   [lineWidth]="2"
+ *   [height]="100">
+ * </sd-barcode>
  * ```
+ * 
+ * @remarks
+ * - 다양한 바코드 형식을 지원합니다 (CODE128, EAN13, CODE39 등)
+ * - SVG 형식으로 렌더링되어 선명한 바코드를 표시합니다
+ * - 바코드의 선 두께와 높이를 조절할 수 있습니다
+ * - jsbarcode 라이브러리를 사용하여 바코드를 생성합니다
+ * - 입력값이 변경되면 자동으로 바코드가 업데이트됩니다
  */
 @Component({
   selector: "sd-barcode",

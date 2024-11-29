@@ -4,20 +4,39 @@ import { $computed } from "../utils/$hooks";
 import { transformBoolean, transformNullableBoolean } from "../utils/transforms";
 
 /**
- * `SdBusyContainerControl`은 로딩 상태를 표시하는 컨테이너 컴포넌트입니다.
+ * 로딩 컨테이너 컴포넌트
  * 
- * 이 컴포넌트는 다음과 같은 기능을 제공합니다:
- * - 다양한 로딩 인디케이터 타입 (spinner, bar, cube)
- * - 로딩 메시지 표시
- * - 진행률 표시
- * - 페이드 효과 설정
+ * 콘텐츠 영역에 로딩 상태를 표시하는 컴포넌트입니다.
  * 
  * @example
  * ```html
- * <sd-busy-container [busy]="isLoading" type="spinner" message="로딩 중...">
- *   <div>컨텐츠</div>
+ * <!-- 기본 사용법 -->
+ * <sd-busy-container [busy]="isLoading">
+ *   콘텐츠 영역
+ * </sd-busy-container>
+ * 
+ * <!-- 로딩 메시지 표시 -->
+ * <sd-busy-container 
+ *   [busy]="isLoading"
+ *   message="데이터를 불러오는 중...">
+ *   콘텐츠 영역
+ * </sd-busy-container>
+ * 
+ * <!-- 진행률 표시 -->
+ * <sd-busy-container
+ *   [busy]="isLoading"
+ *   [progressPercent]="loadingProgress">
+ *   콘텐츠 영역
  * </sd-busy-container>
  * ```
+ * 
+ * @remarks
+ * - 콘텐츠 영역 위에 반투명 오버레이를 표시합니다
+ * - 로딩 인디케이터 애니메이션을 제공합니다
+ * - 선택적으로 로딩 메시지를 표시할 수 있습니다
+ * - 진행률 표시 기능을 지원합니다
+ * - 로딩 상태가 아닐 때는 오버레이가 표시되지 않습니다
+ * - 최소 70x70px의 크기가 필요합니다
  */
 @Component({
   selector: "sd-busy-container",

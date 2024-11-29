@@ -4,21 +4,28 @@ import { $computed, $effect, $signal } from "../utils/$hooks";
 import { transformBoolean } from "../utils/transforms";
 
 /**
- * `SdCollapseControl`은 콘텐츠를 접었다 펼 수 있는 Angular 컴포넌트입니다.
+ * 접을 수 있는 콘텐츠를 제공하는 컴포넌트
  * 
- * 이 컴포넌트는 다음과 같은 기능을 제공합니다:
- * - 콘텐츠의 부드러운 접기/펼치기 애니메이션
- * - 콘텐츠 크기 변경 감지 및 대응
- * - 상태에 따른 스타일 변경
+ * 콘텐츠를 접었다 펼 수 있는 애니메이션 효과를 제공하는 컴포넌트입니다.
  * 
  * @example
  * ```html
+ * <!-- 기본 사용법 -->
  * <sd-collapse [(open)]="isOpen">
  *   <div>접었다 펼칠 수 있는 콘텐츠</div>
  * </sd-collapse>
+ * 
+ * <!-- 초기 상태를 펼침으로 설정 -->
+ * <sd-collapse [open]="true">
+ *   <div>처음부터 펼쳐진 콘텐츠</div>
+ * </sd-collapse>
  * ```
  * 
- * @property open - 콘텐츠의 펼침 상태 (기본값: false)
+ * @remarks
+ * - 부드러운 애니메이션 효과로 콘텐츠를 접고 펼칠 수 있습니다
+ * - 콘텐츠의 높이를 자동으로 계산하여 적용합니다
+ * - 콘텐츠 크기가 변경될 때 자동으로 높이를 조정합니다
+ * - 양방향 바인딩을 지원합니다
  */
 @Component({
   selector: "sd-collapse",

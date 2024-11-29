@@ -6,16 +6,35 @@ import { injectElementRef } from "../utils/injectElementRef";
 import { transformBoolean } from "../utils/transforms";
 
 /**
- * 도킹 컨트롤
- *
- * 화면의 상/하/좌/우에 도킹할 수 있는 컨트롤
- *
+ * 도킹 패널 컴포넌트
+ * 
+ * 도킹 컨테이너 내에서 특정 위치에 고정되는 패널을 구현하는 컴포넌트입니다.
+ * 
  * @example
- *
- * <sd-dock sd-position="top" [sd-height]="100">
- *   상단 도킹 패널
+ * ```html
+ * <!-- 기본 사용법 -->
+ * <sd-dock position="left" [width]="200">
+ *   좌측 패널 내용
  * </sd-dock>
- *
+ * 
+ * <!-- 크기 조절 가능한 패널 -->
+ * <sd-dock position="right" [width]="300" [resizable]="true">
+ *   우측 크기조절 패널
+ * </sd-dock>
+ * 
+ * <!-- 상/하단 패널 -->
+ * <sd-dock position="top" [height]="100">상단 패널</sd-dock>
+ * <sd-dock position="bottom" [height]="150">하단 패널</sd-dock>
+ * ```
+ * 
+ * @remarks
+ * - 도킹 컨테이너 내에서만 사용할 수 있습니다
+ * - top, bottom, left, right 위치를 지원합니다
+ * - 크기 조절이 가능한 패널을 구현할 수 있습니다
+ * - 패널의 너비/높이를 지정할 수 있습니다
+ * - 크기 조절 시 최소/최대 크기를 설정할 수 있습니다
+ * - 크기 조절 시 부드러운 리사이즈 효과를 제공합니다
+ * - 시스템 설정에 따라 크기 조절 동작을 커스터마이즈할 수 있습니다
  */
 @Component({
   selector: "sd-dock",

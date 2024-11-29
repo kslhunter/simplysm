@@ -4,18 +4,29 @@ import { $computed } from "../utils/$hooks";
 import { transformBoolean } from "../utils/transforms";
 import { SdIconControl } from "./SdIconControl";
 
-
 /**
- * 접기/펼치기 아이콘 컨트롤
+ * 접기/펼치기 아이콘 컴포넌트
+ * 
+ * 콘텐츠의 접기/펼치기 상태를 나타내는 회전 가능한 아이콘을 제공하는 컴포넌트입니다.
  * 
  * @example
  * ```html
- * <sd-collapse-icon [open]="isOpen" />
+ * <!-- 기본 사용법 -->
+ * <sd-collapse-icon [(open)]="isOpen"></sd-collapse-icon>
+ * 
+ * <!-- 다른 아이콘 사용 -->
+ * <sd-collapse-icon [icon]="'chevronDown'" [(open)]="isOpen"></sd-collapse-icon>
+ * 
+ * <!-- 회전 각도 변경 -->
+ * <sd-collapse-icon [openRotate]="180" [(open)]="isOpen"></sd-collapse-icon>
  * ```
  * 
- * @property icon - 표시할 아이콘 (기본값: angleDown)
- * @property open - 펼침 상태 여부 (기본값: false)
- * @property openRotate - 펼침 상태일 때 회전할 각도 (기본값: 90)
+ * @remarks
+ * - 펼침 상태에 따라 자동으로 회전하는 아이콘을 제공합니다
+ * - 기본적으로 90도 회전하며, 회전 각도를 사용자 정의할 수 있습니다
+ * - 부드러운 회전 애니메이션 효과를 포함합니다
+ * - 다양한 아이콘을 지원합니다
+ * - 고정된 너비로 정렬을 유지합니다
  */
 @Component({
   selector: "sd-collapse-icon",

@@ -28,6 +28,27 @@ import { transformBoolean } from "../utils/transforms";
 import { SdUseRippleDirective } from "../directives/SdUseRippleDirective";
 import { SdIconControl } from "./SdIconControl";
 
+
+/**
+ * 선택 컴포넌트
+ * 
+ * 드롭다운 형태의 선택 컴포넌트입니다.
+ * 
+ * @example
+ * ```html
+ * <sd-select [(value)]="selectedValue">
+ *   <sd-select-item [value]="1">항목 1</sd-select-item>
+ *   <sd-select-item [value]="2">항목 2</sd-select-item>
+ * </sd-select>
+ * ```
+ * 
+ * @remarks
+ * - 드롭다운 형태로 항목을 선택할 수 있습니다
+ * - 단일 선택과 다중 선택을 지원합니다
+ * - 검색 기능을 제공합니다
+ * - 커스텀 템플릿을 지원합니다
+ * - 키보드 네비게이션을 지원합니다
+ */
 @Component({
   selector: "sd-select",
   changeDetection: ChangeDetectionStrategy.OnPush,
