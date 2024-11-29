@@ -5,22 +5,23 @@ import { $computed, $model } from "../utils/$hooks";
 import { SdIconControl } from "./SdIconControl";
 
 /**
- * `SdPaginationControl`은 페이지네이션 기능을 제공하는 Angular 컴포넌트입니다.
- * 
- * 이 컴포넌트는 다음과 같은 기능을 제공합니다:
- * - 페이지 번호 표시 및 이동
- * - 이전/다음 페이지 이동
- * - 첫 페이지/마지막 페이지 이동
- * - 현재 페이지 하이라이트
- * 
+ * 페이지네이션 컨트롤
+ *
+ * 데이터 목록의 페이지를 이동할 수 있는 컨트롤을 제공합니다.
+ *
  * @example
- * ```html
- * <sd-pagination 
- *   [(page)]="currentPage"
- *   [pageCount]="totalPages"
- *   [displayPageCount]="5">
+ *
+ * <sd-pagination [page]="currentPage"
+ *                [pageLength]="totalPages"
+ *                [displayPageLength]="5"
+ *                (pageChange)="onPageChange($event)">
  * </sd-pagination>
- * ```
+ *
+ *
+ * @remarks
+ * - 첫 페이지, 이전 페이지, 다음 페이지, 마지막 페이지로 이동할 수 있는 버튼을 제공합니다.
+ * - 현재 페이지를 중심으로 지정된 개수만큼의 페이지 번호를 표시합니다.
+ * - 페이지 번호는 0부터 시작합니다.
  */
 @Component({
   selector: "sd-pagination",
@@ -68,16 +69,22 @@ import { SdIconControl } from "./SdIconControl";
   `,
 })
 export class SdPaginationControl {
+  /** 아이콘 설정 */
   icons = inject(SdAngularConfigProvider).icons;
 
+  /** 현재 페이지 번호 */
   _page = input<number>(0, { alias: "page" });
+  /** 페이지 변경 이벤트 */
   _pageChange = output<number>({ alias: "pageChange" });
+  /** 현재 페이지 모델 */
   page = $model(this._page, this._pageChange);
 
-
+  /** 전체 페이지 수 */
   pageLength = input(0);
+  /** 한번에 표시할 페이지 번호 개수 */
   displayPageLength = input(10);
 
+  /** 화면에 표시할 페이지 번호 목록 */
   displayPages = $computed(() => {
     const pages: number[] = [];
     for (let i = 0; i < this.pageLength(); i++) {
@@ -89,33 +96,40 @@ export class SdPaginationControl {
     return pages.filter((item) => item >= from && item < to);
   });
 
+  /** 다음 페이지가 있는지 여부 */
   hasNext = $computed(() => {
     return (this.displayPages().last() ?? 0) < this.pageLength() - 1;
   });
 
+  /** 이전 페이지가 있는지 여부 */
   hasPrev = $computed(() => {
     return (this.displayPages().first() ?? 0) > 0;
   });
 
+  /** 특정 페이지로 이동 */
   onPageClick(page: number) {
     this.page.set(page);
   }
 
+  /** 다음 페이지로 이동 */
   onNextClick() {
     const page = (this.displayPages().last() ?? 0) + 1;
     this.page.set(page);
   }
 
+  /** 이전 페이지로 이동 */
   onPrevClick() {
     const page = (this.displayPages().first() ?? 0) - 1;
     this.page.set(page);
   }
 
+  /** 첫 페이지로 이동 */
   onGoFirstClick() {
     const page = 0;
     this.page.set(page);
   }
 
+  /** 마지막 페이지로 이동 */
   onGoLastClick() {
     const page = this.pageLength() - 1;
     this.page.set(page);

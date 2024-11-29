@@ -23,6 +23,32 @@ import { injectElementRef } from "../utils/injectElementRef";
 import { transformBoolean } from "../utils/transforms";
 import { SdIconControl } from "./SdIconControl";
 
+/**
+ * 모달 컨트롤
+ *
+ * 화면 위에 떠있는 대화상자를 표시하는 컨트롤
+ *
+ * @example
+ *
+ * <sd-modal [header]="'제목'" [(isOpen)]="isModalOpen">
+ *   <sd-dock-container>
+ *     <sd-dock>
+ *       모달 내용
+ *     </sd-dock>
+ *     <sd-dock [position]="'bottom'" [align]="'right'">
+ *       <sd-button (click)="isModalOpen = false">닫기</sd-button>
+ *     </sd-dock>
+ *   </sd-dock-container>
+ * </sd-modal>
+ *
+ *
+ * @remarks
+ * - 모달은 화면 최상단에 표시되며 백드롭으로 뒷 배경이 어둡게 처리됩니다
+ * - 헤더에는 제목과 닫기 버튼이 표시됩니다
+ * - 모달 내부는 sd-dock-container를 사용하여 레이아웃을 구성할 수 있습니다
+ * - ESC 키를 누르거나 백드롭을 클릭하면 모달이 닫힙니다
+ * - isOpen 바인딩을 통해 모달의 표시 여부를 제어할 수 있습니다
+ */
 @Component({
   selector: "sd-modal",
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -326,34 +352,68 @@ import { SdIconControl } from "./SdIconControl";
   },
 })
 export class SdModalControl {
+  /** 아이콘 설정 */
   icons = inject(SdAngularConfigProvider).icons;
 
   #sdSystemConfig = inject(SdSystemConfigProvider);
   #elRef = injectElementRef<HTMLElement>();
 
+  /** 모달 열림 상태 */
   _open = input(false, { alias: "open", transform: transformBoolean });
+  /** 모달 열림 상태 변경 이벤트 */
   _openChange = output<boolean>({ alias: "openChange" });
+  /** 모달 열림 상태 */
   open = $model(this._open, this._openChange);
 
+  /** 모달 설정 키 */
   key = input<string>();
+
+  /** 모달 제목 */
   title = input.required<string>();
+
+  /** 헤더 숨김 여부 */
   hideHeader = input(false, { transform: transformBoolean });
+
+  /** 닫기 버튼 숨김 여부 */
   hideCloseButton = input(false, { transform: transformBoolean });
+
+  /** 배경 클릭으로 닫기 사용 여부 */
   useCloseByBackdrop = input(false, { transform: transformBoolean });
+
+  /** ESC 키로 닫기 사용 여부 */
   useCloseByEscapeKey = input(false, { transform: transformBoolean });
+
+  /** 크기 조절 가능 여부 */
   resizable = input(false, { transform: transformBoolean });
+
+  /** 이동 가능 여부 */
   movable = input(true, { transform: transformBoolean });
+
+  /** 플로팅 여부 */
   float = input(false, { transform: transformBoolean });
+
+  /** 모바일에서 전체 채우기 비활성화 여부 */
   mobileFillDisabled = input(false, { transform: transformBoolean });
 
+  /** 높이 (픽셀) */
   heightPx = input<number>();
+
+  /** 너비 (픽셀) */
   widthPx = input<number>();
+
+  /** 최소 높이 (픽셀) */
   minHeightPx = input<number>();
+
+  /** 최소 너비 (픽셀) */
   minWidthPx = input<number>();
+
+  /** 위치 */
   position = input<"bottom-right" | "top-right">();
 
+  /** 헤더 스타일 */
   headerStyle = input<string>();
 
+  /** 다이얼로그 요소 참조 */
   dialogElRef = viewChild.required<any, ElementRef<HTMLElement>>("dialogEl", { read: ElementRef });
 
   #config = $signal<ISdModalConfigVM>();
@@ -389,6 +449,9 @@ export class SdModalControl {
     });
   }
 
+  /**
+   * 다이얼로그 포커스 이벤트 처리
+   */
   onDialogFocus() {
     const maxZIndex = document.body.findAll("sd-modal").max((el) => Number(getComputedStyle(el).zIndex));
     if (maxZIndex !== undefined) {
@@ -396,6 +459,9 @@ export class SdModalControl {
     }
   }
 
+  /**
+   * 크기 조절 이벤트 처리
+   */
   @HostListener("sdResize", ["$event"])
   onResize(event: ISdResizeEvent) {
     if (event.heightChanged) {
@@ -406,6 +472,9 @@ export class SdModalControl {
     }
   }
 
+  /**
+   * 다이얼로그 크기 조절 이벤트 처리
+   */
   onDialogResize(event: ISdResizeEvent) {
     if (event.heightChanged) {
       this.#calcHeight();
@@ -415,6 +484,9 @@ export class SdModalControl {
     }
   }
 
+  /**
+   * 높이 계산
+   */
   #calcHeight() {
     const style = getComputedStyle(this.#elRef.nativeElement);
     let paddingTop = style.paddingTop === "" ? 0 : (NumberUtil.parseInt(style.paddingTop) ?? 0);
@@ -425,6 +497,9 @@ export class SdModalControl {
     }
   }
 
+  /**
+   * 너비 계산
+   */
   #calcWidth() {
     if (this.dialogElRef().nativeElement.offsetWidth > this.#elRef.nativeElement.offsetWidth) {
       this.dialogElRef().nativeElement.style.maxWidth = `100%`;
@@ -432,6 +507,9 @@ export class SdModalControl {
     }
   }
 
+  /**
+   * 윈도우 크기 조절 이벤트 처리
+   */
   @HostListener("window:resize")
   onWindowResize() {
     if (this.dialogElRef().nativeElement.offsetLeft > this.#elRef.nativeElement.offsetWidth - 100) {
@@ -442,6 +520,9 @@ export class SdModalControl {
     }
   }
 
+  /**
+   * 닫기 버튼 클릭 이벤트 처리
+   */
   onCloseButtonClick() {
     if (this.hideCloseButton()) {
       return;
@@ -450,6 +531,9 @@ export class SdModalControl {
     this.open.set(false);
   }
 
+  /**
+   * 배경 클릭 이벤트 처리
+   */
   onBackdropClick() {
     if (this.hideCloseButton() || !this.useCloseByBackdrop()) {
       return;
@@ -458,6 +542,9 @@ export class SdModalControl {
     this.open.set(false);
   }
 
+  /**
+   * 다이얼로그 ESC 키 이벤트 처리
+   */
   onDialogEscapeKeydown() {
     if (this.hideCloseButton() || !this.useCloseByEscapeKey()) {
       return;
@@ -466,6 +553,9 @@ export class SdModalControl {
     this.open.set(false);
   }
 
+  /**
+   * 크기 조절 바 마우스 다운 이벤트 처리
+   */
   onResizeBarMousedown(
     event: MouseEvent,
     direction: "left" | "right" | "top" | "top-left" | "top-right" | "bottom" | "bottom-left" | "bottom-right",
@@ -540,6 +630,9 @@ export class SdModalControl {
     document.documentElement.addEventListener("mouseup", stopDrag, false);
   }
 
+  /**
+   * 헤더 마우스 다운 이벤트 처리
+   */
   onHeaderMouseDown(event: MouseEvent) {
     if (!this.movable()) return;
 

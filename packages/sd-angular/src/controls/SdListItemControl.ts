@@ -20,6 +20,35 @@ import { transformBoolean } from "../utils/transforms";
 import { NgTemplateOutlet } from "@angular/common";
 import { SdIconControl } from "./SdIconControl";
 
+/**
+ * 리스트 아이템 컨트롤
+ *
+ * 계층형 리스트를 구성하는 아이템 컴포넌트입니다.
+ *
+ * @example
+ *
+ * <sd-list>
+ *   <sd-list-item>
+ *     <div>아이템 1</div>
+ *   </sd-list-item>
+ *   <sd-list-item [collapse]="true">
+ *     <div>아이템 2</div>
+ *     <sd-list>
+ *       <sd-list-item>
+ *         <div>하위 아이템 1</div>
+ *       </sd-list-item>
+ *     </sd-list>
+ *   </sd-list-item>
+ * </sd-list>
+ *
+ *
+ * @remarks
+ * - 아코디언 또는 플랫 레이아웃을 지원합니다
+ * - collapse 속성을 통해 하위 아이템을 접을 수 있습니다
+ * - readonly 속성으로 클릭 이벤트를 비활성화할 수 있습니다
+ * - 리플 이펙트가 기본으로 적용됩니다
+ * - 선택 상태를 아이콘으로 표시할 수 있습니다
+ */
 @Component({
   selector: "sd-list-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
