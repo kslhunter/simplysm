@@ -4,20 +4,20 @@ import { transformBoolean } from "../utils/transforms";
 import { $model } from "../utils/$hooks";
 
 /**
- * 범위 컨트롤 컴포넌트
- * 
- * 시작값과 종료값을 입력받을 수 있는 범위 입력 컴포넌트입니다.
- * 
+ * 범위 입력 컨트롤
+ *
+ * 시작값과 종료값을 입력받을 수 있는 범위 선택 컴포넌트입니다.
+ *
  * @example
- * ```html
- * <sd-range 
- *   type="number"
- *   [(from)]="startValue" 
- *   [(to)]="endValue"
- *   [required]="true"
- *   [disabled]="false">
- * </sd-range>
- * ```
+ *
+ * <sd-range type="number" [(from)]="startValue" [(to)]="endValue" [required]="true"></sd-range>
+ *
+ *
+ * @remarks
+ * - 시작값과 종료값을 입력할 수 있는 두 개의 텍스트필드로 구성됩니다.
+ * - 텍스트필드 사이에 '~' 구분자가 표시됩니다.
+ * - number, text 등 다양한 타입을 지원합니다.
+ * - 양방향 바인딩을 통해 값을 쉽게 관리할 수 있습니다.
  */
 @Component({
   selector: "sd-range",
