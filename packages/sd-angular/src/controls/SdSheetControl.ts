@@ -29,30 +29,6 @@ import { transformBoolean } from "../utils/transforms";
 import { SdIconControl } from "./SdIconControl";
 import { SdIconLayersControl } from "./SdIconLayersControl";
 
-/**
- * 시트 컴포넌트
- * 
- * 데이터를 표 형태로 표시하고 편집할 수 있는 컴포넌트입니다.
- * 
- * @example
- * ```html
- * <sd-sheet [(items)]="dataItems"
- *          [trackByFn]="trackByFn">
- *   <sd-sheet-column [header]="'이름'" [field]="'name'"></sd-sheet-column>
- *   <sd-sheet-column [header]="'나이'" [field]="'age'"></sd-sheet-column>
- * </sd-sheet>
- * ```
- * 
- * @remarks
- * - 데이터를 표 형태로 표시하고 편집할 수 있습니다
- * - 열 고정, 정렬, 필터링 기능을 제공합니다
- * - 행 선택 기능을 제공합니다
- * - 페이징 기능을 제공합니다
- * - 열 너비 조절이 가능합니다
- * - 커스텀 셀 템플릿을 지원합니다
- * - 키보드 네비게이션을 지원합니다
- * - 엑셀과 유사한 편집 기능을 제공합니다
- */
 @Component({
   selector: "sd-sheet",
   changeDetection: ChangeDetectionStrategy.OnPush,
