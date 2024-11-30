@@ -22,6 +22,7 @@ import { $computed, $model, $signal } from "../utils/$hooks";
 import { transformBoolean } from "../utils/transforms";
 import { SdIconControl } from "./SdIconControl";
 
+
 @Component({
   selector: "sd-shared-data-select",
   changeDetection: ChangeDetectionStrategy.OnPush,

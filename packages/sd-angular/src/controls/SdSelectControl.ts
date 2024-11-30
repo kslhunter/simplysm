@@ -31,9 +31,9 @@ import { SdIconControl } from "./SdIconControl";
 
 /**
  * 선택 컴포넌트
- * 
+ *
  * 드롭다운 형태의 선택 컴포넌트입니다.
- * 
+ *
  * @example
  * ```html
  * <sd-select [(value)]="selectedValue">
@@ -41,7 +41,7 @@ import { SdIconControl } from "./SdIconControl";
  *   <sd-select-item [value]="2">항목 2</sd-select-item>
  * </sd-select>
  * ```
- * 
+ *
  * @remarks
  * - 드롭다운 형태로 항목을 선택할 수 있습니다
  * - 단일 선택과 다중 선택을 지원합니다
@@ -330,45 +330,74 @@ import { SdIconControl } from "./SdIconControl";
   },
 })
 export class SdSelectControl<M extends "single" | "multi", T> {
+  /** 아이콘 설정 */
   icons = inject(SdAngularConfigProvider).icons;
 
+  /** 현재 선택된 값 */
   _value = input<TSelectValue<any>[M] | undefined>(undefined, { alias: "value" });
+  /** 값 변경 이벤트 */
   _valueChange = output<TSelectValue<any>[M] | undefined>({ alias: "valueChange" });
+  /** 양방향 바인딩을 위한 값 모델 */
   value = $model(this._value, this._valueChange);
 
+  /** 드롭다운 열림 상태 */
   _open = input(false, { alias: "open", transform: transformBoolean });
+  /** 드롭다운 열림 상태 변경 이벤트 */
   _openChange = output<boolean>({ alias: "openChange" });
+  /** 드롭다운 열림 상태 양방향 바인딩 */
   open = $model(this._open, this._openChange);
 
+  /** 필수 입력 여부 */
   required = input(false, { transform: transformBoolean });
+  /** 비활성화 여부 */
   disabled = input(false, { transform: transformBoolean });
 
+  /** 선택 가능한 항목 목록 */
   items = input<T[]>();
+  /** 항목 추적 함수 */
   trackByFn = input<(item: T, index: number) => any>((item) => item);
+  /** 자식 항목을 가져오는 함수 */
   getChildrenFn = input<(item: T, index: number, depth: number) => T[]>();
 
+  /** 인라인 표시 여부 */
   inline = input(false, { transform: transformBoolean });
+  /** 인셋 스타일 적용 여부 */
   inset = input(false, { transform: transformBoolean });
+  /** 크기 설정 */
   size = input<"sm" | "lg">();
+  /** 선택 모드 (단일/다중) */
   selectMode = input("single" as M);
+  /** 컨텐츠 CSS 클래스 */
   contentClass = input<string>();
+  /** 컨텐츠 스타일 */
   contentStyle = input<string>();
+  /** 다중 선택시 표시 방향 */
   multiSelectionDisplayDirection = input<"vertical" | "horizontal">();
+  /** 전체 선택 버튼 숨김 여부 */
   hideSelectAll = input(false, { transform: transformBoolean });
+  /** 플레이스홀더 텍스트 */
   placeholder = input<string>();
 
+  /** 컨텐츠 요소 참조 */
   contentElRef = viewChild.required<any, ElementRef<HTMLElement>>("contentEl", { read: ElementRef });
+  /** 드롭다운 컨트롤 참조 */
   dropdownControl = viewChild.required<SdDropdownControl>("dropdown");
+  /** 드롭다운 팝업 요소 참조 */
   dropdownPopupElRef = viewChild.required<any, ElementRef<HTMLElement>>("dropdownPopup", { read: ElementRef });
 
+  /** 헤더 템플릿 참조 */
   headerTemplateRef = contentChild<any, TemplateRef<void>>("header", { read: TemplateRef });
+  /** 이전 템플릿 참조 */
   beforeTemplateRef = contentChild<any, TemplateRef<void>>("before", { read: TemplateRef });
+  /** 항목 템플릿 참조 */
   itemTemplateRef = contentChild<any, TemplateRef<SdItemOfTemplateContext<T>>>(SdItemOfTemplateDirective, {
     read: TemplateRef,
   });
 
+  /** 항목 컨트롤 목록 */
   itemControls = $signal<SdSelectItemControl[]>([]);
 
+  /** 에러 메시지 계산 */
   errorMessage = $computed(() => {
     const errorMessages: string[] = [];
 
@@ -398,6 +427,7 @@ export class SdSelectControl<M extends "single" | "multi", T> {
     });
   }
 
+  /** 팝업 키보드 이벤트 처리 */
   onPopupKeydown(event: KeyboardEvent) {
     if (!event.ctrlKey && !event.altKey && (event.key === "ArrowDown" || event.key === "ArrowUp")) {
       event.preventDefault();
@@ -424,6 +454,7 @@ export class SdSelectControl<M extends "single" | "multi", T> {
     }
   }
 
+  /** 항목 선택 여부 확인 */
   getIsSelectedItemControl(itemControl: SdSelectItemControl): boolean {
     if (this.selectMode() === "multi") {
       const itemKeyValues = this.value() as any[] | undefined;
@@ -435,6 +466,7 @@ export class SdSelectControl<M extends "single" | "multi", T> {
     }
   }
 
+  /** 항목 클릭 이벤트 처리 */
   onItemControlClick(itemControl: SdSelectItemControl, close: boolean) {
     if (this.selectMode() === "multi") {
       this.value.update((v) => {
@@ -457,12 +489,14 @@ export class SdSelectControl<M extends "single" | "multi", T> {
     }
   }
 
+  /** 전체 선택 버튼 클릭 이벤트 처리 */
   onSelectAllButtonClick(check: boolean) {
     const value = check ? this.itemControls().map((item) => item.value()) : [];
 
     this.value.set(value);
   }
 
+  /** 목록 행 템플릿 타입 */
   protected readonly rowOfListType!: {
     items: T[];
     depth: number;
