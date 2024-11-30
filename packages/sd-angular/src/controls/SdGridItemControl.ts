@@ -3,30 +3,24 @@ import { SdGridControl } from "./SdGridControl";
 import { $computed } from "../utils/$hooks";
 
 /**
- * 그리드 아이템 컴포넌트
+ * 그리드 아이템 컨트롤
  * 
- * 그리드 컴포넌트(sd-grid) 내부에서 사용되는 그리드 아이템 컴포넌트입니다.
+ * 그리드 내부의 각 아이템을 제어하는 컴포넌트입니다.
  * 
  * @example
  * ```html
- * <sd-grid>
+ * <sd-grid gap="sm">
  *   <sd-grid-item [colSpan]="6">
- *     절반 너비 아이템
+ *     <!-- 6칸을 차지하는 아이템 -->
  *   </sd-grid-item>
- *   <sd-grid-item [colSpan]="3" [colSpanSm]="6">
- *     작은 화면에서 절반, 큰 화면에서 1/4 너비 아이템
+ *   <sd-grid-item [colSpan]="6">
+ *     <!-- 6칸을 차지하는 아이템 -->
+ *   </sd-grid-item>
+ *   <sd-grid-item [colSpan]="12" [colSpanSm]="6">
+ *     <!-- 기본 12칸, 작은 화면에서 6칸을 차지하는 아이템 -->
  *   </sd-grid-item>
  * </sd-grid>
  * ```
- * 
- * @remarks
- * - 12열 그리드 시스템을 사용합니다
- * - 반응형 레이아웃을 지원합니다
- * - 화면 크기별로 다른 열 너비를 지정할 수 있습니다
- *   - 기본: 1280px 이상
- *   - sm: 1024px ~ 1280px
- *   - xs: 800px ~ 1024px 
- *   - xxs: 800px 미만
  */
 @Component({
   selector: "sd-grid-item",

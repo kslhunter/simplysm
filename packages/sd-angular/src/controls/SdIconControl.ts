@@ -7,7 +7,7 @@ import { $effect } from "../utils/$hooks";
 import { transformBoolean } from "../utils/transforms";
 
 /**
- * 아이콘 컴포넌트
+ * 아이콘 컨트롤
  * 
  * Font Awesome 아이콘을 표시하는 컴포넌트입니다.
  * 
@@ -25,12 +25,6 @@ import { transformBoolean } from "../utils/transforms";
  * <!-- 고정 너비 -->
  * <sd-icon [icon]="faUser" [fixedWidth]="true"></sd-icon>
  * ```
- * 
- * @remarks
- * - Font Awesome 아이콘을 SVG 형태로 렌더링합니다
- * - 아이콘 크기, 회전, 고정 너비 등의 설정이 가능합니다
- * - 스택 아이콘 구성을 지원합니다
- * - 설정된 기본 아이콘이 없을 경우 fallback 아이콘을 표시합니다
  */
 @Component({
   selector: "sd-icon",

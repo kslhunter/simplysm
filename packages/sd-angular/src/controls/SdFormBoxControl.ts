@@ -1,48 +1,29 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
 
 /**
- * 폼 박스 컴포넌트
+ * 폼 박스 컨트롤 컴포넌트
  * 
  * 폼 요소들을 그룹화하고 레이아웃을 관리하는 컨테이너 컴포넌트입니다.
  * 
+ * 주요 기능:
+ * - 다양한 레이아웃 지원 (cascade, inline, table, none)
+ * - 라벨 너비 및 정렬 설정
+ * - 반응형 디자인
+ * 
  * @example
  * ```html
- * <!-- 기본 사용법 (cascade 레이아웃) -->
- * <sd-form-box>
+ * <sd-form-box 
+ *   layout="cascade"
+ *   labelWidth="120px"
+ *   labelAlign="right">
  *   <sd-form-item label="이름">
- *     <sd-textfield></sd-textfield>
+ *     <input type="text">
  *   </sd-form-item>
  *   <sd-form-item label="이메일">
- *     <sd-textfield></sd-textfield>
- *   </sd-form-item>
- * </sd-form-box>
- * 
- * <!-- 인라인 레이아웃 -->
- * <sd-form-box layout="inline">
- *   <sd-form-item label="검색어">
- *     <sd-textfield></sd-textfield>
- *   </sd-form-item>
- *   <sd-button>검색</sd-button>
- * </sd-form-box>
- * 
- * <!-- 테이블 레이아웃 -->
- * <sd-form-box layout="table" labelWidth="120px">
- *   <sd-form-item label="제목">
- *     <sd-textfield></sd-textfield>
- *   </sd-form-item>
- *   <sd-form-item label="내용">
- *     <sd-textarea></sd-textarea>
+ *     <input type="email">
  *   </sd-form-item>
  * </sd-form-box>
  * ```
- * 
- * @remarks
- * - 다양한 레이아웃 스타일을 지원합니다 (cascade, inline, table, none)
- * - 라벨의 너비를 일괄적으로 설정할 수 있습니다
- * - 폼 아이템 간의 간격을 자동으로 조정합니다
- * - 반응형 디자인을 지원합니다
- * - 중첩된 폼 구조를 구성할 수 있습니다
- * - 폼 요소들의 정렬과 배치를 일관되게 관리합니다
  */
 @Component({
   selector: "sd-form-box",

@@ -23,37 +23,6 @@ import { transformBoolean } from "../utils/transforms";
 import { SdIconControl } from "../controls/SdIconControl";
 import { SdBackgroundProvider } from "../providers/SdBackgroundProvider";
 
-/**
- * 기본 컨테이너 컴포넌트
- * 
- * 페이지나 모달의 기본 레이아웃을 제공하는 컨테이너 컴포넌트입니다.
- * 
- * @example
- * ```html
- * <!-- 페이지 컨테이너로 사용 -->
- * <sd-base-container [title]="'페이지 제목'">
- *   <ng-template #content>
- *     페이지 내용
- *   </ng-template>
- * </sd-base-container>
- * 
- * <!-- 모달 컨테이너로 사용 -->
- * <sd-base-container containerType="modal">
- *   <ng-template #content>
- *     모달 내용
- *   </ng-template>
- * </sd-base-container>
- * ```
- * 
- * @remarks
- * - 페이지와 모달에서 공통으로 사용되는 기본 레이아웃을 제공합니다
- * - 로딩 상태 표시를 지원합니다
- * - 권한 체크 및 접근 제어를 지원합니다
- * - 상단바(topbar)를 포함한 레이아웃을 제공합니다
- * - 애니메이션 효과를 지원합니다
- * - 페이지 타이틀을 표시합니다
- * - 사용자 정의 템플릿을 지원합니다
- */
 @Component({
   selector: "sd-base-container",
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -109,19 +78,13 @@ import { SdBackgroundProvider } from "../providers/SdBackgroundProvider";
   `,
 })
 export class SdBaseContainerControl {
-  /** 현재 활성화된 라우트 */
   #activatedRoute = inject(ActivatedRoute);
-  /** 활성화된 모달 프로바이더 */
   #sdActivatedModal = inject(SdActivatedModalProvider, { optional: true });
-  /** 앱 구조 프로바이더 */
   #sdAppStructure = inject(SdAppStructureProvider);
-  /** 배경 프로바이더 */
   #sdBackground = inject(SdBackgroundProvider);
 
-  /** 부모 컴포넌트 */
   #parent = injectParent();
 
-  /** 컨테이너 타입 (page, modal, control) */
   containerType =
     this.#activatedRoute.component === this.#parent.constructor
       ? "page"
@@ -129,34 +92,24 @@ export class SdBaseContainerControl {
         ? "modal"
         : "control";
 
-  /** 현재 페이지가 마지막 페이지인지 여부 */
   isLastPage = $computed(() =>
     this.#activatedRoute.pathFromRoot.slice(2).map(item => item.snapshot.url).join(".") === this.pageCode(),
   );
 
-  /** 페이지 코드 */
   pageCode = injectPageCode$();
-  /** 컨테이너 제목 */
   title = $computed(() =>
     this.#sdActivatedModal
       ? this.#sdActivatedModal.modal.title()
       : this.#sdAppStructure.getTitleByCode(this.pageCode()),
   );
 
-  /** 로딩 상태 여부 */
   busy = input(false, { transform: transformBoolean });
-  /** 초기화 완료 여부 */
   initialized = input(true, { transform: transformBoolean });
-  /** 접근 거부 여부 */
   denied = input(false, { transform: transformBoolean });
-  /** 효과 비활성화 여부 */
   noEffect = input(false, { transform: transformBoolean });
-  /** 회색 배경 사용 여부 */
   bgGrey = input(false, { transform: transformBoolean });
 
-  /** 상단바 템플릿 참조 */
   topbarTemplateRef = contentChild("topbarTemplate", { read: TemplateRef });
-  /** 컨텐츠 템플릿 참조 */
   contentTemplateRef = contentChild("contentTemplate", { read: TemplateRef });
 
   constructor() {
@@ -173,6 +126,5 @@ export class SdBaseContainerControl {
     });
   }
 
-  /** 경고 아이콘 */
   protected readonly faTriangleExclamation = faTriangleExclamation;
 }

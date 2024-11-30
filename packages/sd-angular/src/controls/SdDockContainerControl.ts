@@ -4,27 +4,21 @@ import { $effect } from "../utils/$hooks";
 import { injectElementRef } from "../utils/injectElementRef";
 
 /**
- * 도킹 컨테이너 컴포넌트
+ * 도킹 컨테이너 컨트롤 컴포넌트
  * 
  * 도킹 패널들을 포함하고 관리하는 컨테이너 컴포넌트입니다.
+ * 각 도킹 패널의 위치와 크기를 자동으로 계산하여 배치합니다.
  * 
  * @example
  * ```html
- * <!-- 기본 사용법 -->
  * <sd-dock-container>
- *   <sd-dock position="top">상단 패널</sd-dock>
- *   <sd-dock position="left">좌측 패널</sd-dock>
- *   <sd-dock position="right">우측 패널</sd-dock>
- *   <sd-dock position="bottom">하단 패널</sd-dock>
+ *   <sd-dock position="top" [size]="50">상단 패널</sd-dock>
+ *   <sd-dock position="left" [size]="200">좌측 패널</sd-dock>
+ *   <sd-dock position="right" [size]="200">우측 패널</sd-dock>
+ *   <sd-dock position="bottom" [size]="50">하단 패널</sd-dock>
+ *   <div>메인 컨텐츠</div>
  * </sd-dock-container>
  * ```
- * 
- * @remarks
- * - 도킹 패널들의 위치와 크기를 자동으로 계산합니다
- * - top, bottom, left, right 위치에 패널을 배치할 수 있습니다
- * - 각 패널의 크기에 맞춰 컨테이너의 패딩이 자동 조정됩니다
- * - 중첩된 도킹 레이아웃을 구성할 수 있습니다
- * - 컨테이너는 부모 요소의 전체 높이를 사용합니다
  */
 @Component({
   selector: "sd-dock-container",

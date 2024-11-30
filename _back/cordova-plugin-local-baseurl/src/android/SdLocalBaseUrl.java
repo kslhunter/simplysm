@@ -15,7 +15,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-
 public class SdLocalBaseUrl extends CordovaPlugin {
     @Override
     public boolean execute(String action, JSONArray data, CallbackContext callbackContext) throws JSONException {

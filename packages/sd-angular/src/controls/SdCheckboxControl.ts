@@ -15,40 +15,24 @@ import { SdIconControl } from "./SdIconControl";
 import { $model } from "../utils/$hooks";
 
 /**
- * 체크박스 컴포넌트
+ * 체크박스 컨트롤
  * 
- * 사용자가 선택할 수 있는 체크박스를 제공하는 컴포넌트입니다.
- * 
- * @example
+ * 예제:
  * ```html
- * <!-- 기본 사용법 -->
  * <sd-checkbox [(value)]="checked">체크박스</sd-checkbox>
- * 
- * <!-- 라디오 모드 -->
- * <sd-checkbox [(value)]="selected" [radio]="true">라디오</sd-checkbox>
- * 
- * <!-- 비활성화 -->
- * <sd-checkbox [disabled]="true">비활성화된 체크박스</sd-checkbox>
- * 
- * <!-- 크기 조절 -->
- * <sd-checkbox size="sm">작은 체크박스</sd-checkbox>
- * <sd-checkbox size="lg">큰 체크박스</sd-checkbox>
- * 
- * <!-- 테마 적용 -->
- * <sd-checkbox theme="primary">기본 테마</sd-checkbox>
- * <sd-checkbox theme="info">정보 테마</sd-checkbox>
  * ```
  * 
- * @remarks
- * - 체크박스와 라디오 모드를 모두 지원합니다
- * - 키보드 탐색 및 접근성을 지원합니다 (Space 키로 토글)
- * - 클릭 시 물결 효과(ripple)가 표시됩니다
+ * 체크박스 컨트롤은 사용자가 선택할 수 있는 체크박스를 제공합니다.
+ * - 체크박스와 라디오 모드를 지원합니다
+ * - 키보드 접근성을 지원합니다
+ * - 리플 효과가 적용됩니다
  * - 비활성화 상태를 지원합니다
- * - 다양한 크기 옵션을 제공합니다 (sm, md, lg)
- * - 여러 테마 색상을 지원합니다
- * - 인라인 및 내부 삽입 모드를 지원합니다
- * - 양방향 바인딩을 지원합니다
- * - 커스텀 아이콘을 설정할 수 있습니다
+ * 
+ * @property value - 체크박스 값 (기본값: false)
+ * @property valueChange - 체크박스 값 변경 이벤트
+ * @property radio - 라디오 모드 여부 (기본값: false)
+ * @property disabled - 비활성화 여부 (기본값: false)
+ * @property contentStyle - 내용 영역에 적용할 스타일
  */
 @Component({
   selector: "sd-checkbox",

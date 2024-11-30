@@ -12,7 +12,23 @@ import { SdFormBoxControl } from "./SdFormBoxControl";
 import { NgTemplateOutlet } from "@angular/common";
 import { $computed } from "../utils/$hooks";
 
-
+/**
+ * 폼 박스 아이템 컨트롤 컴포넌트
+ * 
+ * 폼 박스 내부의 개별 입력 필드를 관리하는 컴포넌트입니다.
+ * 
+ * 주요 기능:
+ * - 라벨과 입력 필드의 레이아웃 관리
+ * - 부모 폼 박스의 레이아웃 스타일 상속
+ * - 반응형 디자인 지원
+ * 
+ * @example
+ * ```html
+ * <sd-form-box-item label="이름">
+ *   <input type="text">
+ * </sd-form-box-item>
+ * ```
+ */
 @Component({
   selector: "sd-form-box-item",
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -3,35 +3,16 @@ import { SdUseRippleDirective } from "../directives/SdUseRippleDirective";
 import { transformBoolean } from "../utils/transforms";
 
 /**
- * 버튼 컴포넌트
+ * 버튼 컨트롤 컴포넌트
  * 
- * 클릭 가능한 버튼을 표시하는 컴포넌트입니다.
+ * 기본적인 버튼 기능을 제공하는 컴포넌트입니다.
+ * 리플 효과와 함께 클릭 가능한 버튼을 표시합니다.
  * 
  * @example
  * ```html
- * <!-- 기본 사용법 -->
  * <sd-button>버튼</sd-button>
- * 
- * <!-- 테마 적용 -->
- * <sd-button theme="primary">기본 테마</sd-button>
- * <sd-button theme="info">정보 테마</sd-button>
- * 
- * <!-- 크기 조절 -->
- * <sd-button size="sm">작은 버튼</sd-button>
- * <sd-button size="lg">큰 버튼</sd-button>
- * 
- * <!-- 비활성화 -->
  * <sd-button [disabled]="true">비활성화된 버튼</sd-button>
  * ```
- * 
- * @remarks
- * - 클릭 가능한 버튼을 표시합니다
- * - 다양한 테마 색상을 지원합니다 (primary, info, success 등)
- * - 여러 크기 옵션을 제공합니다 (sm, md, lg)
- * - 클릭 시 물결 효과(ripple)가 표시됩니다
- * - disabled 상태를 지원합니다
- * - hover 시 배경색이 변경됩니다
- * - 키보드 탐색 및 접근성을 지원합니다
  */
 @Component({
   selector: "sd-button",
@@ -185,21 +166,28 @@ import { transformBoolean } from "../utils/transforms";
   },
 })
 export class SdButtonControl {
-  /** 버튼의 타입 (기본값: "button") */
+  /** 버튼의 타입 ("button" | "submit") (기본값: "button") */
   type = input<"button" | "submit">("button");
 
   /** 
-   * 버튼의 테마
-   * - primary: 기본 강조 테마
-   * - secondary: 보조 강조 테마
-   * - info: 정보 표시 테마
-   * - success: 성공 표시 테마
-   * - warning: 경고 표시 테마
-   * - danger: 위험 표시 테마
-   * - grey: 회색 테마
-   * - blue-grey: 청회색 테마
-   * - link: 링크 스타일 테마
-   * - link-*: 각 테마의 링크 스타일 버전
+   * 버튼의 테마 색상
+   * - primary: 기본 색상
+   * - secondary: 보조 색상
+   * - info: 정보 색상 
+   * - success: 성공 색상
+   * - warning: 경고 색상
+   * - danger: 위험 색상
+   * - grey: 회색
+   * - blue-grey: 청회색
+   * - link: 링크 스타일
+   * - link-primary: 기본 색상 링크
+   * - link-secondary: 보조 색상 링크
+   * - link-info: 정보 색상 링크
+   * - link-success: 성공 색상 링크 
+   * - link-warning: 경고 색상 링크
+   * - link-danger: 위험 색상 링크
+   * - link-grey: 회색 링크
+   * - link-blue-grey: 청회색 링크
    */
   theme = input<
     | "primary"
@@ -221,25 +209,21 @@ export class SdButtonControl {
     | "link-blue-grey"
   >();
 
-  /** 인라인 표시 여부 (기본값: false) */
+  /** 인라인 스타일 적용 여부 (기본값: false) */
   inline = input(false, { transform: transformBoolean });
 
-  /** 버튼을 안쪽으로 들어가 보이게 할지 여부 (기본값: false) */
+  /** 내부 삽입 모드 여부 (기본값: false) */
   inset = input(false, { transform: transformBoolean });
 
-  /** 
-   * 버튼의 크기
-   * - sm: 작은 크기
-   * - lg: 큰 크기
-   */
+  /** 버튼의 크기 ("sm" | "lg") */
   size = input<"sm" | "lg">();
 
-  /** 버튼 비활성화 여부 (기본값: false) */
+  /** 비활성화 여부 (기본값: false) */
   disabled = input(false, { transform: transformBoolean });
 
-  /** 버튼에 적용할 추가 스타일 */
+  /** 버튼에 적용할 스타일 */
   buttonStyle = input<string>();
 
-  /** 버튼에 적용할 추가 클래스 */
+  /** 버튼에 적용할 CSS 클래스 */
   buttonClass = input<string>();
 }
