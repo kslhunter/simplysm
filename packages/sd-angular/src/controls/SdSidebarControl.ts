@@ -2,7 +2,28 @@ import { ChangeDetectionStrategy, Component, forwardRef, inject, ViewEncapsulati
 import { SdSidebarContainerControl } from "./SdSidebarContainerControl";
 import { $computed } from "../utils/$hooks";
 
-
+/**
+ * 사이드바 컨트롤
+ *
+ * 사이드바 컨테이너 내에서 사용되는 사이드바 컴포넌트입니다.
+ *
+ * @example
+ *
+ * <sd-sidebar-container>
+ *   <sd-sidebar>
+ *     <!-- 사이드바 내용 -->
+ *   </sd-sidebar>
+ *   <sd-sidebar-content>
+ *     <!-- 메인 콘텐츠 -->
+ *   </sd-sidebar-content>
+ * </sd-sidebar-container>
+ *
+ *
+ * @remarks
+ * - 사이드바는 항상 sd-sidebar-container 내부에서 사용되어야 합니다.
+ * - 화면 크기에 따라 자동으로 반응형으로 동작합니다.
+ * - 테마에 따라 다른 스타일이 적용됩니다.
+ */
 @Component({
   selector: "sd-sidebar",
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -84,7 +105,9 @@ import { $computed } from "../utils/$hooks";
   },
 })
 export class SdSidebarControl {
+  /** 부모 컨테이너 컨트롤 참조를 위한 의존성 주입 */
   #parentControl = inject<SdSidebarContainerControl>(forwardRef(() => SdSidebarContainerControl));
 
+  /** 부모 컨테이너의 토글 상태를 반환하는 계산된 속성 */
   toggle = $computed(() => this.#parentControl.toggle());
 }
