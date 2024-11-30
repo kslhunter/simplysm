@@ -20,7 +20,7 @@ import { SdDockControl } from "./SdDockControl";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { $effect, $model, $signal } from "../utils/$hooks";
 import { injectElementRef } from "../utils/injectElementRef";
-import { transformBoolean } from "../utils/transforms";
+import { transformBoolean } from "../utils/tramsforms";
 import { SdIconControl } from "./SdIconControl";
 
 @Component({

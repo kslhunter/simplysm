@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
-import { transformBoolean } from "../utils/transforms";
+import { transformBoolean } from "../utils/tramsforms";
 
 @Component({
   selector: "sd-table",

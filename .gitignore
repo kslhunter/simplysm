@@ -9,7 +9,6 @@ packages/*/.cache
 packages/*/.cordova
 packages/*/.electron
 packages/*/dist
-packages/*/styles.css
 
 signCert.der
 signPri.key

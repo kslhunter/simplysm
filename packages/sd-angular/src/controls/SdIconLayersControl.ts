@@ -1,28 +1,8 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
 import { $computed } from "../utils/$hooks";
 import { SizeProp } from "@fortawesome/fontawesome-svg-core";
-import { transformBoolean } from "../utils/transforms";
+import { transformBoolean } from "../utils/tramsforms";
 
-/**
- * 아이콘 레이어 컨트롤
- * 
- * 여러 Font Awesome 아이콘을 겹쳐서 표시할 수 있는 컨테이너 컴포넌트입니다.
- * 
- * @example
- * ```html
- * <!-- 기본 사용법 -->
- * <sd-icon-layers>
- *   <sd-icon [icon]="faCircle"></sd-icon>
- *   <sd-icon [icon]="faCheck"></sd-icon>
- * </sd-icon-layers>
- * 
- * <!-- 크기 조절 -->
- * <sd-icon-layers size="2x">
- *   <sd-icon [icon]="faSquare"></sd-icon>
- *   <sd-icon [icon]="faHeart"></sd-icon>
- * </sd-icon-layers>
- * ```
- */
 @Component({
   selector: "sd-icon-layers",
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -37,18 +17,9 @@ import { transformBoolean } from "../utils/transforms";
   },
 })
 export class SdIconLayersControl {
-  /** 아이콘 레이어의 크기 (xs, sm, lg, 2x 등) */
   size = input<SizeProp>();
-
-  /** 고정 너비 사용 여부 */
   fixedWidth = input(false, { transform: transformBoolean });
 
-  /** 
-   * 현재 적용되어야 할 클래스 목록을 계산
-   * - fa-layers: 기본 레이어 클래스
-   * - fa-{size}: 크기 클래스 (size 값이 있을 때)
-   * - fa-fw: 고정 너비 클래스 (fixedWidth가 true일 때)
-   */
   currentClass = $computed(() => [
     "fa-layers",
     this.size() != null ? `fa-${this.size()}` : undefined,

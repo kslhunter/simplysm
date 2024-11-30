@@ -7,17 +7,9 @@ import { SdCollapseIconControl } from "./SdCollapseIconControl";
 import { SdCheckboxControl } from "./SdCheckboxControl";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { $computed, $model, $signal } from "../utils/$hooks";
-import { transformBoolean } from "../utils/transforms";
+import { transformBoolean } from "../utils/tramsforms";
 import { ObjectUtil } from "@simplysm/sd-core-common";
 
-/**
- * 권한 테이블 컨트롤 컴포넌트
- * 
- * @example
- * ```html
- * <sd-permission-table></sd-permission-table>
- * ```
- */
 @Component({
   selector: "sd-permission-table",
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -196,45 +188,33 @@ import { ObjectUtil } from "@simplysm/sd-core-common";
   `,
 })
 export class SdPermissionTableControl {
-  /** 아이콘 설정 */
   icons = inject(SdAngularConfigProvider).icons;
 
-  /** 권한 설정 값 */
   _value = input<Record<string, boolean>>({}, { alias: "value" });
-  /** 권한 설정 값 변경 이벤트 */
   _valueChange = output<Record<string, boolean>>({ alias: "valueChange" });
-  /** 권한 설정 값 모델 */
   value = $model(this._value, this._valueChange);
 
-  /** 권한 목록 */
   items = input<ISdPermission[]>([]);
-  /** 비활성화 여부 */
   disabled = input(false, { transform: transformBoolean });
 
-  /** 접힌 아이템 목록 */
   collapsedItems = $signal(new Set<ISdPermission>());
 
-  /** 최대 깊이 */
   depthLength = $computed(() => {
     return this.#getDepthLength(this.items(), 0);
   });
 
-  /** 배열 생성 */
   arr(len: number): number[] {
     return Array(len).fill(0);
   }
 
-  /** 아이템이 접혀있는지 여부 */
   getIsPermCollapsed(item: ISdPermission): boolean {
     return this.collapsedItems().has(item);
   }
 
-  /** 모든 하위 아이템 가져오기 */
   getAllChildren(item: ISdPermission): ISdPermission[] {
     return item.children?.mapMany((child) => [child, ...this.getAllChildren(child)]) ?? [];
   }
 
-  /** 편집 비활성화 여부 */
   getEditDisabled(item: ISdPermission) {
     if (this.disabled()) {
       return true;
@@ -254,7 +234,6 @@ export class SdPermissionTableControl {
     return false;
   }
 
-  /** 권한이 존재하는지 여부 */
   getIsPermExists(item: ISdPermission, type: "use" | "edit"): boolean {
     if (item.perms) {
       return item.perms.includes(type);
@@ -271,7 +250,6 @@ export class SdPermissionTableControl {
     return false;
   }
 
-  /** 권한이 체크되어있는지 여부 */
   getIsPermChecked(item: ISdPermission, type: "use" | "edit"): boolean {
     if (item.perms) {
       const permCode = item.codes.join(".");
@@ -289,7 +267,6 @@ export class SdPermissionTableControl {
     return false;
   }
 
-  /** 권한 접기/펼치기 토글 */
   onPermCollapseToggle(item: ISdPermission) {
     this.collapsedItems.update((v) => {
       const r = new Set(v);
@@ -307,7 +284,6 @@ export class SdPermissionTableControl {
     });
   }
 
-  /** 권한 체크 변경 */
   onPermCheckChange(item: ISdPermission, type: "use" | "edit", val: boolean) {
     const value = ObjectUtil.clone(this.value());
     const changed = this.#changePermCheck(value, item, type, val);
@@ -316,7 +292,6 @@ export class SdPermissionTableControl {
     }
   }
 
-  /** 권한 체크 변경 처리 */
   #changePermCheck(value: Record<string, boolean>, item: ISdPermission, type: "use" | "edit", val: boolean) {
     let changed = false;
 
@@ -352,7 +327,6 @@ export class SdPermissionTableControl {
     return changed;
   }
 
-  /** 최대 깊이 계산 */
   #getDepthLength(items: ISdPermission[], depth: number): number {
     return (
       items.max((item) => {
@@ -366,7 +340,6 @@ export class SdPermissionTableControl {
     );
   }
 
-  /** 아이템 템플릿 타입 */
   protected readonly itemTemplateType!: {
     item: ISdPermission;
     parentKey: string;

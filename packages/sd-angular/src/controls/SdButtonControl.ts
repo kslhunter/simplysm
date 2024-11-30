@@ -1,19 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
 import { SdUseRippleDirective } from "../directives/SdUseRippleDirective";
-import { transformBoolean } from "../utils/transforms";
+import { transformBoolean } from "../utils/tramsforms";
 
-/**
- * 버튼 컨트롤 컴포넌트
- * 
- * 기본적인 버튼 기능을 제공하는 컴포넌트입니다.
- * 리플 효과와 함께 클릭 가능한 버튼을 표시합니다.
- * 
- * @example
- * ```html
- * <sd-button>버튼</sd-button>
- * <sd-button [disabled]="true">비활성화된 버튼</sd-button>
- * ```
- */
 @Component({
   selector: "sd-button",
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -32,6 +20,7 @@ import { transformBoolean } from "../utils/transforms";
       <ng-content></ng-content>
     </button>
   `,
+  //region styles
   styles: [
     /* language=SCSS */ `
       @import "../scss/variables";
@@ -157,6 +146,7 @@ import { transformBoolean } from "../utils/transforms";
       }
     `,
   ],
+  //endregion
   host: {
     "[attr.sd-theme]": "theme()",
     "[attr.sd-inline]": "inline()",
@@ -166,32 +156,10 @@ import { transformBoolean } from "../utils/transforms";
   },
 })
 export class SdButtonControl {
-  /** 버튼의 타입 ("button" | "submit") (기본값: "button") */
   type = input<"button" | "submit">("button");
-
-  /** 
-   * 버튼의 테마 색상
-   * - primary: 기본 색상
-   * - secondary: 보조 색상
-   * - info: 정보 색상 
-   * - success: 성공 색상
-   * - warning: 경고 색상
-   * - danger: 위험 색상
-   * - grey: 회색
-   * - blue-grey: 청회색
-   * - link: 링크 스타일
-   * - link-primary: 기본 색상 링크
-   * - link-secondary: 보조 색상 링크
-   * - link-info: 정보 색상 링크
-   * - link-success: 성공 색상 링크 
-   * - link-warning: 경고 색상 링크
-   * - link-danger: 위험 색상 링크
-   * - link-grey: 회색 링크
-   * - link-blue-grey: 청회색 링크
-   */
   theme = input<
     | "primary"
-    | "secondary" 
+    | "secondary"
     | "info"
     | "success"
     | "warning"
@@ -209,21 +177,12 @@ export class SdButtonControl {
     | "link-blue-grey"
   >();
 
-  /** 인라인 스타일 적용 여부 (기본값: false) */
   inline = input(false, { transform: transformBoolean });
-
-  /** 내부 삽입 모드 여부 (기본값: false) */
   inset = input(false, { transform: transformBoolean });
-
-  /** 버튼의 크기 ("sm" | "lg") */
   size = input<"sm" | "lg">();
 
-  /** 비활성화 여부 (기본값: false) */
   disabled = input(false, { transform: transformBoolean });
 
-  /** 버튼에 적용할 스타일 */
   buttonStyle = input<string>();
-
-  /** 버튼에 적용할 CSS 클래스 */
   buttonClass = input<string>();
 }

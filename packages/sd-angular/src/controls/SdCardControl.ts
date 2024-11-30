@@ -1,21 +1,5 @@
 import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/core";
 
-/**
- * 카드 컨트롤
- * 
- * 예제:
- * ```html
- * <sd-card>
- *   카드 내용
- * </sd-card>
- * ```
- * 
- * 카드 컨트롤은 콘텐츠를 담을 수 있는 컨테이너 컴포넌트입니다.
- * - 흰색 배경과 그림자 효과가 적용됩니다
- * - hover 시 그림자가 강조됩니다
- * - 모바일 환경에서는 그림자 효과가 제거됩니다
- * - 페이드인 애니메이션이 적용됩니다
- */
 @Component({
   selector: "sd-card",
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -25,6 +9,7 @@ import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/
   template: `
     <ng-content></ng-content>
   `,
+  //region styles
   styles: [/* language=SCSS */ `
     @import "../scss/mixins";
 
@@ -67,6 +52,7 @@ import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/
     }
   `
   ],
+  //endregion
 })
 export class SdCardControl {
 }

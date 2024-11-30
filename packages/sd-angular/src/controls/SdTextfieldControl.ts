@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, HostListener, input, output, ViewEn
 import { DateOnly, DateTime, JsonConvert, NumberUtil, StringUtil, Time } from "@simplysm/sd-core-common";
 import { $computed, $model } from "../utils/$hooks";
 import { injectElementRef } from "../utils/injectElementRef";
-import { transformBoolean } from "../utils/transforms";
+import { transformBoolean } from "../utils/tramsforms";
 
 @Component({
   selector: "sd-textfield",

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input, output, ViewEncapsulation } from "@angular/core";
 import { SdTextfieldControl, TSdTextfieldTypes } from "./SdTextfieldControl";
-import { transformBoolean } from "../utils/transforms";
+import { transformBoolean } from "../utils/tramsforms";
 import { $model } from "../utils/$hooks";
 
 @Component({

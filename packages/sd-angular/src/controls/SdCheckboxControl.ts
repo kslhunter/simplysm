@@ -9,31 +9,11 @@ import {
 } from "@angular/core";
 
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
-import { transformBoolean } from "../utils/transforms";
+import { transformBoolean } from "../utils/tramsforms";
 import { useRipple } from "../utils/useRipple";
 import { SdIconControl } from "./SdIconControl";
 import { $model } from "../utils/$hooks";
 
-/**
- * 체크박스 컨트롤
- * 
- * 예제:
- * ```html
- * <sd-checkbox [(value)]="checked">체크박스</sd-checkbox>
- * ```
- * 
- * 체크박스 컨트롤은 사용자가 선택할 수 있는 체크박스를 제공합니다.
- * - 체크박스와 라디오 모드를 지원합니다
- * - 키보드 접근성을 지원합니다
- * - 리플 효과가 적용됩니다
- * - 비활성화 상태를 지원합니다
- * 
- * @property value - 체크박스 값 (기본값: false)
- * @property valueChange - 체크박스 값 변경 이벤트
- * @property radio - 라디오 모드 여부 (기본값: false)
- * @property disabled - 비활성화 여부 (기본값: false)
- * @property contentStyle - 내용 영역에 적용할 스타일
- */
 @Component({
   selector: "sd-checkbox",
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -57,6 +37,7 @@ import { $model } from "../utils/$hooks";
       <ng-content />
     </div>
   `,
+  //region styles
   styles: [
     /* language=SCSS */ `
       @import "../scss/variables";
@@ -241,6 +222,7 @@ import { $model } from "../utils/$hooks";
       }
     `,
   ],
+  //endregion
   host: {
     "[attr.sd-checked]": "value()",
     "[attr.sd-disabled]": "disabled()",
@@ -253,39 +235,27 @@ import { $model } from "../utils/$hooks";
   },
 })
 export class SdCheckboxControl {
-  /** 아이콘 설정 */
   icons = inject(SdAngularConfigProvider).icons;
 
-  /** 체크박스 값 */
   _value = input(false, { alias: "value", transform: transformBoolean });
-  /** 체크박스 값 변경 이벤트 */
   _valueChange = output<boolean>({ alias: "valueChange" });
-  /** 체크박스 값 모델 */
   value = $model(this._value, this._valueChange);
 
-  /** 체크 아이콘 */
   icon = input(this.icons.check);
-  /** 라디오 모드 여부 (기본값: false) */
   radio = input(false, { transform: transformBoolean });
-  /** 비활성화 여부 (기본값: false) */
   disabled = input(false, { transform: transformBoolean });
-  /** 크기 설정 ("sm" | "lg") */
+
   size = input<"sm" | "lg">();
-  /** 인라인 스타일 적용 여부 (기본값: false) */
   inline = input(false, { transform: transformBoolean });
-  /** 내부 삽입 모드 여부 (기본값: false) */
   inset = input(false, { transform: transformBoolean });
-  /** 테마 설정 */
   theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey" | "white">();
-  /** 내용 영역에 적용할 스타일 */
+
   contentStyle = input<string>();
 
-  /** 생성자 */
   constructor() {
     useRipple(() => !this.disabled());
   }
 
-  /** 클릭 이벤트 핸들러 */
   @HostListener("click")
   onClick() {
     if (this.disabled()) return;
@@ -297,7 +267,6 @@ export class SdCheckboxControl {
     }
   }
 
-  /** 키보드 이벤트 핸들러 */
   @HostListener("keydown", ["$event"])
   onKeydown(event: KeyboardEvent): void {
     if (event.key === " ") {

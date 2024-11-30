@@ -25,7 +25,7 @@ import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { SdCheckboxControl } from "./SdCheckboxControl";
 import { $computed, $effect, $model, $signal } from "../utils/$hooks";
 import { injectElementRef } from "../utils/injectElementRef";
-import { transformBoolean } from "../utils/transforms";
+import { transformBoolean } from "../utils/tramsforms";
 import { SdIconControl } from "./SdIconControl";
 import { SdIconLayersControl } from "./SdIconLayersControl";
 
@@ -574,52 +574,48 @@ export class SdSheetControl<T> {
 
   columnControls = contentChildren<SdSheetColumnDirective<T>>(SdSheetColumnDirective);
 
-  /** 시트의 고유 식별자 */
   key = input.required<string>();
-
   /** 설정 및 페이징 바 표시여부 */
   hideConfigBar = input(false, { transform: transformBoolean });
-  
-  /** 시트의 내부 여백 여부 */
+  /** BORDER를 없애는등 다른 박스안에 완전히 붙임 */
   inset = input(false, { transform: transformBoolean });
 
-  /** 컬럼 정렬 설정 */
+  /** 시트 컬럼의 정렬 설정 목록 */
   _ordering = input<ISdSheetColumnOrderingVM[]>([], { alias: "ordering" });
-  /** 컬럼 정렬 설정 변경 이벤트 */
+  /** 시트 컬럼의 정렬 설정 변경 이벤트 */
   _orderingChange = output<ISdSheetColumnOrderingVM[]>({ alias: "orderingChange" });
-  /** 컬럼 정렬 설정 */
   ordering = $model(this._ordering, this._orderingChange);
 
 
-  /** 한 페이지에 표시할 항목 수 */
   displayPageLength = input(10);
-  /** 총 페이지 수 */
+  /** [pagination] 총 페이지 길이 */
   pageLength = input(0);
-  /** 한 페이지에 표시할 항목 수 (설정된 경우, 'pageLength'가 무시되고, 자동계산 됨) */
+  /** [pagination] 한 페이지에 표시할 항목수 (설정된 경우, 'pageLength'가 무시되고, 자동계산 됨) */
   pageItemCount = input<number>();
-  /** 현재 표시 페이지 번호 */
+  /** [pagination] 현재 표시 페이지 */
   _page = input<number>(0, { alias: "page" });
-  /** 현재 표시 페이지 번호 변경 이벤트 */
   _pageChange = output<number>({ alias: "pageChange" });
-  /** 현재 표시 페이지 번호 */
   page = $model(this._page, this._pageChange);
+
 
   /** 항목들 */
   items = input<T[]>([]);
 
-  /** 항목 식별자 함수 */
+  /**
+   * 데이터 키를 가져오기 위한 함수 (ROW별로 반드시 하나의 값을 반환해야함)
+   * @param index 'items'내의 index
+   * @param item items[index] 데이터
+   */
   trackByFn = input<(item: T, index: number) => any>((item) => item);
-  /** 항목 식별자 키 */
   trackByKey = input<keyof T>();
 
-  /** 선택 모드 ("single": 단일 선택, "multi": 다중 선택) */
+  /** 선택모드 (single = 단일선택, multi = 다중선택) */
   selectMode = input<"single" | "multi">();
-  /** 선택된 항목 목록 */
+  /** 선택된 항목들 */
   _selectedItems = input<T[]>([], { alias: "selectedItems" });
-  /** 선택된 항목 목록 변경 이벤트 */
   _selectedItemsChange = output<T[]>({ alias: "selectedItemsChange" });
-  /** 선택된 항목 목록 */
   selectedItems = $model(this._selectedItems, this._selectedItemsChange);
+
 
   /** 자동선택모드 (undefined = 사용안함, click = 셀 클릭시 해당 ROW 선택, focus = 셀 포커싱시 해당 ROW 선택) */
   autoSelect = input<"click" | "focus">();

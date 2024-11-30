@@ -115,6 +115,6 @@ export * from "./utils/injectParent";
 export * from "./utils/injectPerms";
 export * from "./utils/injectQueryParamMap$";
 export * from "./utils/SdAppStructureUtil";
-export * from "./utils/transforms";
+export * from "./utils/tramsforms";
 export * from "./utils/useRipple";
 export * from "./utils/waitRepaint";

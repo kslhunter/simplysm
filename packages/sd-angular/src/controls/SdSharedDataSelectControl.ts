@@ -19,7 +19,7 @@ import { NgTemplateOutlet } from "@angular/common";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { SdSelectButtonControl } from "./SdSelectButtonControl";
 import { $computed, $model, $signal } from "../utils/$hooks";
-import { transformBoolean } from "../utils/transforms";
+import { transformBoolean } from "../utils/tramsforms";
 import { SdIconControl } from "./SdIconControl";
 
 @Component({

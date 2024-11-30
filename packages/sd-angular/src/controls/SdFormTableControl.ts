@@ -1,24 +1,5 @@
 import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/core";
 
-/**
- * 폼 테이블 컨트롤
- * 
- * 폼 내부의 입력 필드들을 테이블 형태로 정렬하는 컴포넌트입니다.
- * 
- * @example
- * ```html
- * <sd-form-table>
- *   <tr>
- *     <th>이름</th>
- *     <td><input type="text"></td>
- *   </tr>
- *   <tr>
- *     <th>이메일</th>
- *     <td><input type="email"></td>
- *   </tr>
- * </sd-form-table>
- * ```
- */
 @Component({
   selector: "sd-form-table",
   changeDetection: ChangeDetectionStrategy.OnPush,

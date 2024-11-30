@@ -4,24 +4,6 @@ import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { $computed, $model } from "../utils/$hooks";
 import { SdIconControl } from "./SdIconControl";
 
-/**
- * `SdPaginationControl`은 페이지네이션 기능을 제공하는 Angular 컴포넌트입니다.
- * 
- * 이 컴포넌트는 다음과 같은 기능을 제공합니다:
- * - 페이지 번호 표시 및 이동
- * - 이전/다음 페이지 이동
- * - 첫 페이지/마지막 페이지 이동
- * - 현재 페이지 하이라이트
- * 
- * @example
- * ```html
- * <sd-pagination 
- *   [(page)]="currentPage"
- *   [pageCount]="totalPages"
- *   [displayPageCount]="5">
- * </sd-pagination>
- * ```
- */
 @Component({
   selector: "sd-pagination",
   changeDetection: ChangeDetectionStrategy.OnPush,

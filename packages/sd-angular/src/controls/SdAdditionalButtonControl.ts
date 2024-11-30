@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
-import { transformBoolean } from "../utils/transforms";
+import { transformBoolean } from "../utils/tramsforms";
 
 @Component({
   selector: "sd-additional-button",
@@ -13,6 +13,7 @@ import { transformBoolean } from "../utils/transforms";
     </div>
     <ng-content select="sd-button" />
   `,
+  //region styles
   styles: [
     /* language=SCSS */ `
       @import "../scss/mixins";
@@ -64,15 +65,13 @@ import { transformBoolean } from "../utils/transforms";
       }
     `,
   ],
+  //endregion
   host: {
     "[attr.sd-size]": "size()",
     "[attr.sd-inset]": "inset()",
   },
 })
 export class SdAdditionalButtonControl {
-  /** 컨트롤의 크기 ("sm" | "lg") */
   size = input<"sm" | "lg">();
-
-  /** 내부 삽입 모드 여부 (기본값: false) */
   inset = input(false, { transform: transformBoolean });
 }

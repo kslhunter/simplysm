@@ -1,13 +1,5 @@
 import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/core";
 
-/**
- * 팬 컨트롤 컴포넌트
- * 
- * @example
- * ```html
- * <sd-pane></sd-pane>
- * ```
- */
 @Component({
   selector: "sd-pane",
   changeDetection: ChangeDetectionStrategy.OnPush,
