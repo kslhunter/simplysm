@@ -180,7 +180,7 @@ export class CordovaAppStorage {
    * @returns 전체 파일시스템 경로
    */
   getFullPath(targetPath: string) {
-    return this.getFullUrl(targetPath).replace(/^file:/, "");
+    return this.getFullUrl(targetPath).replace(/^file:\/\//, "");
   }
 
   /**
