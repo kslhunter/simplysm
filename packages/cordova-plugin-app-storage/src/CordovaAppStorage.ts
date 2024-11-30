@@ -21,7 +21,7 @@ export class CordovaAppStorage {
     const dirUrl = path.dirname(fullUrl);
     const fileName = path.basename(fullUrl);
 
-    if (await this.exists(fullUrl)) {
+    if (await this.exists(filePath)) {
       return Buffer.from(await File.readAsArrayBuffer(dirUrl, fileName));
     }
     else {
@@ -34,7 +34,7 @@ export class CordovaAppStorage {
     const dirUrl = path.dirname(fullUrl);
     const fileName = path.basename(fullUrl);
 
-    if (await this.exists(fullUrl)) {
+    if (await this.exists(filePath)) {
       return await File.readAsText(dirUrl, fileName);
     }
     else {
