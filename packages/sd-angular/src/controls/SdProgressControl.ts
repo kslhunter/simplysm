@@ -1,21 +1,16 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
 
 /**
- * 프로그레스 컨트롤
- *
- * 진행 상태를 표시하는 프로그레스 바 컴포넌트
- *
+ * 프로그레스 컨트롤 컴포넌트
+ * 
+ * 진행 상태를 시각적으로 표시하는 컴포넌트입니다.
+ * 
  * @example
- *
+ * ```html
  * <sd-progress [label]="'진행률'" [maxValue]="100">
  *   <sd-progress-item [value]="50"></sd-progress-item>
  * </sd-progress>
- *
- *
- * @remarks
- * - 프로그레스 바의 레이블과 최대값을 설정할 수 있습니다
- * - 내부에 sd-progress-item을 통해 진행 상태를 표시할 수 있습니다
- * - 테마 색상과 크기 조절이 가능합니다
+ * ```
  */
 @Component({
   selector: "sd-progress",

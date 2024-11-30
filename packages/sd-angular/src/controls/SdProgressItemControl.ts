@@ -1,28 +1,18 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
 
 /**
- * 프로그레스 아이템 컨트롤
- *
- * 프로그레스바의 개별 아이템을 표시하는 컴포넌트입니다.
- *
+ * 프로그레스 아이템 컨트롤 컴포넌트
+ * 
+ * 프로그레스 바 내부에서 진행 상태를 표시하는 개별 아이템 컴포넌트입니다.
+ * 
  * @example
- *
- * <sd-progress-item width="30%" theme="primary">
- *   진행률 30%
+ * ```html
+ * <sd-progress-item 
+ *   [width]="'50%'"
+ *   [height]="'30px'" 
+ *   [theme]="'primary'">
  * </sd-progress-item>
- *
- *
- * @example
- *
- * <sd-progress-item width="50%" color="#ff0000" height="40px">
- *   커스텀 색상 및 높이
- * </sd-progress-item>
- *
- *
- * @remarks
- * - 너비와 높이를 지정하여 크기를 조절할 수 있습니다.
- * - 테마를 지정하거나 직접 색상을 지정할 수 있습니다.
- * - 여러 개의 프로그레스 아이템을 연속해서 배치할 수 있습니다.
+ * ```
  */
 @Component({
   selector: "sd-progress-item",

@@ -11,27 +11,12 @@ import { transformBoolean } from "../utils/transforms";
 import { ObjectUtil } from "@simplysm/sd-core-common";
 
 /**
- * 권한 테이블 컨트롤
- *
- * 계층형 권한 구조를 테이블 형태로 표시하고 관리하는 컴포넌트
- *
+ * 권한 테이블 컨트롤 컴포넌트
+ * 
  * @example
- *
- * <sd-permission-table
- *   [items]="permissions"
- *   [(value)]="selectedPermissions"
- *   [disabled]="isDisabled">
- *   <ng-template #titleTemplate let-item="item">
- *     {{ item.title }}
- *   </ng-template>
- * </sd-permission-table>
- *
- *
- * @remarks
- * - 계층형 구조의 권한을 표시하고 관리할 수 있습니다
- * - 체크박스를 통해 권한을 선택/해제할 수 있습니다
- * - 상위 권한 선택 시 하위 권한이 자동으로 선택됩니다
- * - 접기/펼치기 기능을 통해 하위 권한을 숨기거나 표시할 수 있습니다
+ * ```html
+ * <sd-permission-table></sd-permission-table>
+ * ```
  */
 @Component({
   selector: "sd-permission-table",

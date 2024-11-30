@@ -8,21 +8,17 @@ import { transformBoolean } from "../utils/transforms";
 Quill.register("modules/resize", QuillResizeImage);
 
 /**
- * Quill 에디터 컨트롤
- *
- * 텍스트 에디터 기능을 제공하는 컴포넌트입니다.
- *
+ * 퀼 에디터 컨트롤 컴포넌트
+ * 
+ * 리치 텍스트 편집을 위한 Quill 에디터 컴포넌트입니다.
+ * 
  * @example
- *
- * <sd-quill-editor [(value)]="content"
- *                  [disabled]="false">
+ * ```html
+ * <sd-quill-editor 
+ *   [(value)]="content"
+ *   [disabled]="false">
  * </sd-quill-editor>
- *
- *
- * @remarks
- * - 이미지 리사이즈 기능을 지원합니다
- * - 기본적인 텍스트 서식 도구를 제공합니다
- * - 테마 스타일이 적용된 UI를 제공합니다
+ * ```
  */
 @Component({
   selector: "sd-quill-editor",
