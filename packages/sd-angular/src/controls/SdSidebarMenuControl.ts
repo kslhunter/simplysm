@@ -25,7 +25,7 @@ import { SdIconControl } from "./SdIconControl";
   ],
   styles: [
     /* language=SCSS */ `
-      @import "../scss/mixins";
+      @use "../scss/mixins";
 
       sd-sidebar-menu {
         > ._title {

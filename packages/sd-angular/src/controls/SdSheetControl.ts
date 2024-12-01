@@ -50,7 +50,7 @@ import { SdIconLayersControl } from "./SdIconLayersControl";
   //region styles
   styles: [
     /* language=SCSS */ `
-      @import "../scss/mixins";
+      @use "../scss/mixins";
 
       $z-index-fixed: 2;
       $z-index-head: 3;

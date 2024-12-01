@@ -11,7 +11,7 @@ import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/
   `,
   //region styles
   styles: [/* language=SCSS */ `
-    @import "../scss/mixins";
+    @use "../scss/mixins";
 
     sd-card {
       display: block;
@@ -19,7 +19,7 @@ import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/
       border-radius: var(--border-radius-default);
       overflow: hidden;
       transition: box-shadow 0.3s ease-in-out;
-      @include elevation(2);
+      @include mixins.elevation(2);
       animation: sd-card  var(--animation-duration) ease-out;
       opacity: 0;
       transform: translateY(-1em);
@@ -27,15 +27,15 @@ import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/
 
       &:hover,
       &:has(:focus) {
-        @include elevation(6);
+        @include mixins.elevation(6);
       }
 
       @media all and (pointer: coarse) {
-        @include elevation(0);
+        @include mixins.elevation(0);
 
         &:hover,
         &:has(:focus) {
-          @include elevation(0);
+          @include mixins.elevation(0);
         }
       }
     }

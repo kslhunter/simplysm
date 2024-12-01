@@ -47,7 +47,6 @@ export default [
       "@simplysm": plugin,
       "@angular-eslint": ngeslint.tsPlugin,
       "import": importPlugin,
-      // "deprecation": fixupPluginRules(deprecationPlugin),
     },
     processor: ngeslint.processInlineTemplates,
     languageOptions: {
@@ -87,9 +86,6 @@ export default [
 
       // import
       "import/no-extraneous-dependencies": ["error"], // 느림
-
-      // Deprecation
-      // "deprecation/deprecation": ["warn"], // 느림
 
       // 심플리즘
       "@simplysm/ts-no-throw-not-implement-error": ["warn"],

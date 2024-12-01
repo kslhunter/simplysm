@@ -12,8 +12,10 @@ import { transformBoolean } from "../utils/tramsforms";
   imports: [],
   styles: [
     /* language=SCSS */ `
-      @import "../scss/variables";
-      @import "../scss/mixins";
+      @use "sass:map";
+      
+      @use "../scss/variables";
+      @use "../scss/mixins";
 
       sd-textfield {
         display: block;
@@ -21,7 +23,7 @@ import { transformBoolean } from "../utils/tramsforms";
 
         > input,
         > ._contents {
-          @include form-control-base();
+          @include mixins.form-control-base();
 
           overflow: auto;
           width: 100%;
@@ -88,7 +90,7 @@ import { transformBoolean } from "../utils/tramsforms";
           }
         }
 
-        @each $key, $val in map-get($vars, theme) {
+        @each $key, $val in map.get(variables.$vars, theme) {
           &[sd-theme="#{$key}"] {
             body.sd-theme-compact &,
             body.sd-theme-modern & {

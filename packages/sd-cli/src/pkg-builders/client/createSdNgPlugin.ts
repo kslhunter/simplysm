@@ -243,7 +243,7 @@ export function createSdNgPlugin(conf: {
 
         for (const { outputFiles, metafile } of tsCompileResult.stylesheetBundlingResultMap.values()) {
           result.outputFiles ??= [];
-          result.outputFiles.push(...outputFiles);
+          result.outputFiles.push(...outputFiles ?? []);
 
           if (result.metafile && metafile) {
             result.metafile.inputs = { ...result.metafile.inputs, ...metafile.inputs };

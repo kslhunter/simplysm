@@ -23,12 +23,14 @@ import { transformBoolean } from "../utils/tramsforms";
   //region styles
   styles: [
     /* language=SCSS */ `
-      @import "../scss/variables";
-      @import "../scss/mixins";
+      @use "sass:map";
+      
+      @use "../scss/variables";
+      @use "../scss/mixins";      
 
       sd-button {
         > button {
-          @include form-control-base();
+          @include mixins.form-control-base();
           user-select: none;
           padding: var(--gap-sm) var(--gap-lg);
 
@@ -71,7 +73,7 @@ import { transformBoolean } from "../utils/tramsforms";
           }
         }
 
-        @each $key, $val in map-get($vars, theme) {
+        @each $key, $val in map.get(variables.$vars, theme) {
           &[sd-theme="#{$key}"] > button {
             background: var(--theme-#{$key}-default);
             border-color: var(--theme-#{$key}-default);
@@ -106,7 +108,7 @@ import { transformBoolean } from "../utils/tramsforms";
           }
         }
 
-        @each $key, $val in map-get($vars, theme) {
+        @each $key, $val in map.get(variables.$vars, theme) {
           &[sd-theme="link-#{$key}"] > button {
             border-color: transparent;
             color: var(--theme-#{$key}-default);

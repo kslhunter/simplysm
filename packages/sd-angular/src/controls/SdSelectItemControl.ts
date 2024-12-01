@@ -26,7 +26,7 @@ import { transformBoolean } from "../utils/tramsforms";
   imports: [SdCheckboxControl, NgTemplateOutlet, SdGapControl],
   styles: [
     /* language=SCSS */ `
-      @import "../scss/mixins";
+      @use "../scss/mixins";
 
       sd-select-item {
         display: block;

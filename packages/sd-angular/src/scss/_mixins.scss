@@ -1,5 +1,7 @@
+@use "sass:meta";
+
 @mixin writeVars($value, $prevKey) {
-  @if type-of($value) == map {
+  @if meta.type-of($value) == map {
     @each $key, $val in $value {
       @if $prevKey == "" {
         @include writeVars($val, $key);
@@ -16,17 +18,6 @@
   @if $value == none or $value == 0 {
     box-shadow: none;
   } @else {
-    /*body.sd-theme-compact & {
-      box-shadow: 0 0 2px rgba(0, 0, 0, .05), 0 calc(#{$value} * var(--elevation-size)) calc(#{$value} * 2 * var(--elevation-size)) rgba(0, 0, 0, .1);
-    }
-    body.sd-theme-modern &,
-    body.sd-theme-kiosk &,
-    body.sd-theme-mobile & {
-      box-shadow: 0 0 2px rgba(0, 0, 0, .05), 0 calc(#{$value} * var(--elevation-size)) calc(#{$value} * 4 * var(--elevation-size)) rgba(0, 0, 0, .05);
-    }*/
-    /*box-shadow:
-      0 0 2px rgba(0, 0, 0, 0.05),
-      0 calc(#{$value} * var(--elevation-size)) calc(#{$value} * 4 * var(--elevation-size)) rgba(0, 0, 0, 0.05);*/
     box-shadow: 0 0 2px rgba(0, 0, 0, 0.05),
     0 calc(#{$value} * var(--elevation-size)) calc(#{$value} * 4 * var(--elevation-size)) rgba(0, 0, 0, 0.05);
   }
@@ -51,44 +42,3 @@
   text-decoration-style: dotted;
   cursor: help;
 }
-
-/*
-@mixin active-effect($use) {
-  @if $use == false {
-    &:after {
-      display: none;
-    }
-  } @else {
-    position: relative;
-    overflow: hidden;
-    vertical-align: top;
-
-    &:after {
-      content: "";
-      display: block;
-      position: absolute;
-      width: 120%;
-      height: 300%;
-      border-radius: 100%;
-      left: -10%;
-      top: -100%;
-      background: transparent;
-      transition-property: transform, opacity;
-      transition-duration: var(--animation-duration);
-      transition-timing-function: ease-out;
-      transform: scaleX(0.3);
-      opacity: 0;
-
-      pointer-events: none;
-    }
-
-    &:active {
-      &:after {
-        background: var(--trans-light);
-        transform: none;
-        opacity: 1;
-      }
-    }
-  }
-}
-*/

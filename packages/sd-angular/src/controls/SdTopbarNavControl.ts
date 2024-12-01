@@ -9,7 +9,7 @@ import { useRipple } from "../utils/useRipple";
   imports: [],
   styles: [
     /* language=SCSS */ `
-      @import "../scss/mixins";
+      @use "../scss/mixins";
 
       sd-topbar-nav {
         display: inline-block;

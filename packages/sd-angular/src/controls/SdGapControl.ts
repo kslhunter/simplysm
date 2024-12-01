@@ -10,10 +10,12 @@ import { injectElementRef } from "../utils/injectElementRef";
   imports: [],
   styles: [
     /* language=SCSS */ `
-      @import "../scss/variables";
+      @use "sass:map";
+      
+      @use "../scss/variables";
 
       sd-gap {
-        @each $key, $val in map-get($vars, gap) {
+        @each $key, $val in map.get(variables.$vars, gap) {
           &[sd-height="#{$key}"] {
             height: var(--gap-#{$key});
           }

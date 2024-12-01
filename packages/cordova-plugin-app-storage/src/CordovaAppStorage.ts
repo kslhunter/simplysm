@@ -3,7 +3,7 @@ import { JsonConvert, StringUtil } from "@simplysm/sd-core-common";
 import { File } from "@awesome-cordova-plugins/file";
 
 export class CordovaAppStorage {
-  // static raw = File;
+  static raw = File;
 
   #rootDirectoryUrl: string;
 

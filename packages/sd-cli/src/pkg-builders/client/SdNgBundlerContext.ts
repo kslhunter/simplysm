@@ -1,8 +1,18 @@
 import esbuild from "esbuild";
 import path from "path";
 import { Logger } from "@simplysm/sd-core-node";
-import { InitialFileRecord } from "@angular/build/src/tools/esbuild/bundler-context";
 import { SdCliConvertMessageUtil } from "../../utils/SdCliConvertMessageUtil";
+
+// import { InitialFileRecord } from "@angular/build/src/tools/esbuild/bundler-context";
+
+interface InitialFileRecord {
+  entrypoint: boolean;
+  name?: string;
+  type: 'script' | 'style';
+  external?: boolean;
+  serverFile: boolean;
+  depth: number;
+}
 
 export class SdNgBundlerContext {
   readonly #logger = Logger.get(["simplysm", "sd-cli", "SdNgBundlerContext"]);
@@ -12,7 +22,8 @@ export class SdNgBundlerContext {
   public constructor(
     private readonly _pkgPath: string,
     private readonly _esbuildOptions: esbuild.BuildOptions,
-  ) {}
+  ) {
+  }
 
   public async bundleAsync() {
     if (this._context == null) {
@@ -25,10 +36,12 @@ export class SdNgBundlerContext {
       this.#debug(`rebuild...`);
       esbuildResult = await this._context.rebuild();
       this.#debug(`rebuild completed`);
-    } catch (err) {
+    }
+    catch (err) {
       if ("warnings" in err || "errors" in err) {
         esbuildResult = err;
-      } else {
+      }
+      else {
         throw err;
       }
     }
@@ -104,7 +117,8 @@ export class SdNgBundlerContext {
 
   #debug(...msg: any[]): void {
     this.#logger.debug(
-      `[${path.basename(this._pkgPath)}] (${Object.keys(this._esbuildOptions.entryPoints as Record<string, any>).join(", ")})`,
+      `[${path.basename(this._pkgPath)}] (${Object.keys(this._esbuildOptions.entryPoints as Record<string, any>)
+        .join(", ")})`,
       ...msg,
     );
   }

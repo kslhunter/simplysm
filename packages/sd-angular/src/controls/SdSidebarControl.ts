@@ -11,7 +11,7 @@ import { $computed } from "../utils/$hooks";
   imports: [],
   styles: [
     /* language=SCSS */ `
-      @import "../scss/mixins";
+      @use "../scss/mixins";
 
       sd-sidebar {
         display: block;
@@ -40,7 +40,7 @@ import { $computed } from "../utils/$hooks";
 
           //box-shadow: inset -2px 0 8px rgba(0, 0, 0, .05);
 
-          //@include elevation(16);
+          //@include mixins.elevation(16);
 
           &[sd-toggle="true"] {
             border-right: none;
@@ -65,7 +65,7 @@ import { $computed } from "../utils/$hooks";
           &[sd-toggle="true"] {
             transform: none;
             transition: transform 0.3s ease-out;
-            @include elevation(16);
+            @include mixins.elevation(16);
           }
         }
       }

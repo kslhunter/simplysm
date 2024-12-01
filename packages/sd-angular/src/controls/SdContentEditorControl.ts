@@ -19,14 +19,14 @@ import { transformBoolean } from "../utils/tramsforms";
   imports: [],
   styles: [
     /* language=SCSS */ `
-      @import "../scss/mixins";
+      @use "../scss/mixins";
 
       sd-content-editor {
         display: block;
         position: relative;
 
         > ._editor {
-          @include form-control-base();
+          @include mixins.form-control-base();
           white-space: pre-wrap;
 
           background: var(--theme-secondary-lightest);

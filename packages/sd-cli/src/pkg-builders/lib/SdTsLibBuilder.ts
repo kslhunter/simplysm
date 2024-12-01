@@ -44,7 +44,7 @@ export class SdTsLibBuilder {
 
       const globalStylesheetBundlingResult = tsCompileResult.stylesheetBundlingResultMap.get(emitFile);
       if (globalStylesheetBundlingResult) {
-        for (const outputFile of globalStylesheetBundlingResult.outputFiles) {
+        for (const outputFile of globalStylesheetBundlingResult.outputFiles ?? []) {
           const distPath = PathUtil.norm(this._pkgPath, "dist", path.relative(this._pkgPath, outputFile.path));
           if (PathUtil.isChildPath(distPath, path.resolve(this._pkgPath, "dist"))) {
             FsUtil.writeFile(distPath, outputFile.text);

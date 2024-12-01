@@ -1,4 +1,8 @@
-$vars: map-merge($vars, (
+@use "sass:map";
+
+@use "../variables";
+
+$vars: map.merge(variables.$vars, (
   gap: (
     xxs: 4px,
     xs: 6px,

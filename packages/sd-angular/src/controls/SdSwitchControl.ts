@@ -10,7 +10,9 @@ import { $model } from "../utils/$hooks";
   imports: [],
   styles: [
     /* language=SCSS */ `
-      @import "../scss/variables";
+      @use "sass:map";
+      
+      @use "../scss/variables";
 
       sd-switch {
         display: block;
@@ -69,7 +71,7 @@ import { $model } from "../utils/$hooks";
           padding: var(--gap-default) 0;
         }
 
-        @each $key, $val in map-get($vars, theme) {
+        @each $key, $val in map.get(variables.$vars, theme) {
           &[sd-theme="#{$key}"] {
             &[sd-on="true"] {
               > div {

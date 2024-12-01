@@ -16,7 +16,7 @@ import { transformBoolean } from "../utils/tramsforms";
   //region styles
   styles: [
     /* language=SCSS */ `
-      @import "../scss/mixins";
+      @use "../scss/mixins";
 
       sd-additional-button {
         display: flex;

@@ -74,7 +74,7 @@ export class SdTsCompiler {
     this.#isForAngular = Boolean(tsconfig.angularCompilerOptions);
     this.#parsedTsconfig = ts.parseJsonConfigFileContent(tsconfig, ts.sys, opt.pkgPath, {
       ...tsconfig.angularCompilerOptions,
-      ...opt.additionalOptions
+      ...opt.additionalOptions,
     });
 
     this.#distPath = PathUtil.norm(this.#parsedTsconfig.options.outDir ?? path.resolve(opt.pkgPath, "dist"));
@@ -85,17 +85,24 @@ export class SdTsCompiler {
 
     const baseGetSourceFile = this.#compilerHost.getSourceFile;
     this.#compilerHost.getSourceFile = (
-      fileName,
-      languageVersionOrOptions,
-      onError,
-      shouldCreateNewSourceFile,
+      fileName: string,
+      languageVersionOrOptions: ts.ScriptTarget | ts.CreateSourceFileOptions,
+      onError?: ((message: string) => void) | undefined,
+      shouldCreateNewSourceFile?: boolean,
       ...args
-    ) => {
+    ): ts.SourceFile | undefined => {
       if (!shouldCreateNewSourceFile && this.#sourceFileCacheMap.has(PathUtil.norm(fileName))) {
         return this.#sourceFileCacheMap.get(PathUtil.norm(fileName));
       }
 
-      const sf = baseGetSourceFile.call(this.#compilerHost, fileName, languageVersionOrOptions, onError, true, ...args);
+      const sf: ts.SourceFile | undefined = baseGetSourceFile.call(
+        this.#compilerHost,
+        fileName,
+        languageVersionOrOptions,
+        onError,
+        true,
+        ...args,
+      );
 
       if (sf) {
         this.#sourceFileCacheMap.set(PathUtil.norm(fileName), sf);
@@ -127,16 +134,17 @@ export class SdTsCompiler {
           externalDependencies: [],
           target: transformSupportedBrowsersToTargets(browserslist(["Chrome > 78"])),
           postcssConfiguration: {
-            plugins: [["css-has-pseudo"]]
+            plugins: [["css-has-pseudo"]],
           },
           tailwindConfiguration: undefined,
           cacheOptions: {
             enabled: true,
             path: ".cache/angular",
-            basePath: ".cache"
-          }
+            basePath: ".cache",
+          },
         },
-        opt.isDevMode
+        "scss",
+        opt.isDevMode,
       );
 
       //-- compilerHost
@@ -151,7 +159,7 @@ export class SdTsCompiler {
           type: string;
           containingFile: string;
           resourceFile: string | null;
-        }
+        },
       ) => {
         if (context.type !== "style") {
           return null;
@@ -160,7 +168,7 @@ export class SdTsCompiler {
         const contents = await this.#bundleStylesheetAsync(
           data,
           PathUtil.norm(context.containingFile),
-          context.resourceFile != null ? PathUtil.norm(context.resourceFile) : undefined
+          context.resourceFile != null ? PathUtil.norm(context.resourceFile) : undefined,
         );
 
         return StringUtil.isNullOrEmpty(contents) ? null : { content: contents };
@@ -189,21 +197,21 @@ export class SdTsCompiler {
         for (const referencedFile of stylesheetResult.referencedFiles) {
           const depCacheSet = this.#resourceDependencyCacheMap.getOrCreate(
             PathUtil.norm(referencedFile),
-            new Set<TNormPath>()
+            new Set<TNormPath>(),
           );
           depCacheSet.add(resourceFile ?? containingFile);
         }
 
         this.#watchFileSet.adds(
-          ...Array.from(stylesheetResult.referencedFiles.values()).map((item) => PathUtil.norm(item))
+          ...Array.from(stylesheetResult.referencedFiles.values()).map((item) => PathUtil.norm(item)),
         );
       }
 
       this.#stylesheetBundlingResultMap.set(PathUtil.norm(resourceFile ?? containingFile), {
-        outputFiles: stylesheetResult.outputFiles,
-        metafile: stylesheetResult.metafile,
+        outputFiles: stylesheetResult.errors == null ? stylesheetResult.outputFiles : undefined,
+        metafile: stylesheetResult.errors == null ? stylesheetResult.metafile : undefined,
         errors: stylesheetResult.errors,
-        warnings: stylesheetResult.warnings
+        warnings: stylesheetResult.warnings,
       });
 
       return stylesheetResult.contents;
@@ -235,13 +243,13 @@ export class SdTsCompiler {
       messages: [
         ...prepareResult.messages,
         ...SdCliConvertMessageUtil.convertToBuildMessagesFromTsDiag(buildResult.diagnostics),
-        ...SdCliConvertMessageUtil.convertToBuildMessagesFromEslint(lintResults)
+        ...SdCliConvertMessageUtil.convertToBuildMessagesFromEslint(lintResults),
       ],
       watchFileSet: this.#watchFileSet,
       affectedFileSet: this.#affectedFileSet,
       stylesheetBundlingResultMap: this.#stylesheetBundlingResultMap,
       emittedFilesCacheMap: this.#emittedFilesCacheMap,
-      emitFileSet: buildResult.emitFileSet
+      emitFileSet: buildResult.emitFileSet,
     };
   }
 
@@ -283,7 +291,7 @@ export class SdTsCompiler {
           this.#parsedTsconfig.fileNames,
           this.#parsedTsconfig.options,
           this.#compilerHost,
-          this.#ngProgram
+          this.#ngProgram,
         );
         this.#program = this.#ngProgram.getTsProgram();
       }
@@ -292,7 +300,7 @@ export class SdTsCompiler {
           this.#parsedTsconfig.fileNames,
           this.#parsedTsconfig.options,
           this.#compilerHost,
-          this.#program
+          this.#program,
         );
       }
     });
@@ -315,7 +323,7 @@ export class SdTsCompiler {
     const sourceFileSet = new Set(
       this.#program!.getSourceFiles()
         .map((sf) => getOrgSourceFile(sf))
-        .filterExists()
+        .filterExists(),
     );
 
     this.#debug(`get new deps...`);
@@ -343,8 +351,8 @@ export class SdTsCompiler {
           refs
             .filter((item) => "fileName" in item)
             .filter((item) =>
-              this.#watchScopePaths.some((scopePath) => PathUtil.isChildPath(item.fileName, scopePath))
-            )
+              this.#watchScopePaths.some((scopePath) => PathUtil.isChildPath(item.fileName, scopePath)),
+            ),
         );
       }
 
@@ -426,9 +434,9 @@ export class SdTsCompiler {
             [
               item,
               // .d.ts면 .js파일도 affected에 추가
-              item.endsWith(".d.ts") ? PathUtil.norm(item.replace(/\.d\.ts$/, ".js")) : undefined
-            ].filterExists()
-          )
+              item.endsWith(".d.ts") ? PathUtil.norm(item.replace(/\.d\.ts$/, ".js")) : undefined,
+            ].filterExists(),
+          ),
         );
       }
 
@@ -454,7 +462,7 @@ export class SdTsCompiler {
     }
 
     return {
-      messages
+      messages,
     };
   }
 
@@ -462,8 +470,8 @@ export class SdTsCompiler {
     return await this.#lintWorker.run("lint", [
       {
         cwd: this.#pkgPath,
-        fileSet: this.#affectedFileSet
-      }
+        fileSet: this.#affectedFileSet,
+      },
     ]);
   }
 
@@ -477,7 +485,7 @@ export class SdTsCompiler {
       diagnostics.push(
         ...this.#program!.getConfigFileParsingDiagnostics(),
         ...this.#program!.getOptionsDiagnostics(),
-        ...this.#program!.getGlobalDiagnostics()
+        ...this.#program!.getGlobalDiagnostics(),
       );
 
       if (this.#ngProgram) {
@@ -506,7 +514,7 @@ export class SdTsCompiler {
       this.#perf.run("get file diagnostics", () => {
         diagnostics.push(
           ...this.#program!.getSyntacticDiagnostics(affectedSourceFile),
-          ...this.#program!.getSemanticDiagnostics(affectedSourceFile)
+          ...this.#program!.getSemanticDiagnostics(affectedSourceFile),
         );
       });
 
@@ -517,7 +525,7 @@ export class SdTsCompiler {
           }
 
           diagnostics.push(
-            ...this.#ngProgram!.compiler.getDiagnosticsForFile(affectedSourceFile, OptimizeFor.WholeProgram)
+            ...this.#ngProgram!.compiler.getDiagnosticsForFile(affectedSourceFile, OptimizeFor.WholeProgram),
           );
         });
       }
@@ -531,7 +539,7 @@ export class SdTsCompiler {
       if (this.#ngProgram) {
         transformers = {
           ...transformers,
-          ...this.#ngProgram.compiler.prepareEmit().transformers
+          ...this.#ngProgram.compiler.prepareEmit().transformers,
         };
         (transformers.before ??= []).push(replaceBootstrap(() => this.#program!.getTypeChecker()));
         (transformers.before ??= []).push(
@@ -539,7 +547,7 @@ export class SdTsCompiler {
             const fullPath = path.resolve(path.dirname(importer), file);
             const relPath = path.relative(path.resolve(this.#pkgPath, "src"), fullPath);
             return relPath.replace(/\.ts$/, "").replaceAll("\\", "/") + ".js";
-          })
+          }),
         );
       }
       // (transformers.before ??= []).push(transformKeys(this.#program));
@@ -604,7 +612,7 @@ export class SdTsCompiler {
               ) {
                 realFilePath = PathUtil.norm(
                   this.#distPath,
-                  path.relative(path.resolve(this.#distPath, path.basename(this.#pkgPath), "src"), realFilePath)
+                  path.relative(path.resolve(this.#distPath, path.basename(this.#pkgPath), "src"), realFilePath),
                 );
 
                 if (fileName.endsWith(".js.map")) {
@@ -617,7 +625,7 @@ export class SdTsCompiler {
 
               emitFileInfoCaches.push({
                 outAbsPath: realFilePath,
-                text: realText
+                text: realText,
               });
             }
             else {
@@ -628,7 +636,7 @@ export class SdTsCompiler {
           },
           undefined,
           undefined,
-          transformers
+          transformers,
         );
       }
     });
@@ -648,9 +656,9 @@ export class SdTsCompiler {
         emitFileInfos.push({
           outAbsPath: PathUtil.norm(
             this.#pkgPath,
-            path.relative(path.resolve(this.#pkgPath, "src"), this.#globalStyleFilePath!).replace(/\.scss$/, ".css")
+            path.relative(path.resolve(this.#pkgPath, "src"), this.#globalStyleFilePath!).replace(/\.scss$/, ".css"),
           ),
-          text: contents
+          text: contents,
         });
         emitFileSet.add(this.#globalStyleFilePath!);
       });
@@ -658,7 +666,7 @@ export class SdTsCompiler {
 
     return {
       emitFileSet,
-      diagnostics
+      diagnostics,
     };
   }
 
@@ -690,7 +698,7 @@ export class SdTsCompiler {
               code: undefined,
               severity: "error",
               message: "export moduleSymbol not found",
-              type: "deps"
+              type: "deps",
             });
             return;
           }
@@ -705,7 +713,7 @@ export class SdTsCompiler {
               code: undefined,
               severity: "error",
               message: "export decls not found",
-              type: "deps"
+              type: "deps",
             });
             return;
           }
@@ -717,7 +725,7 @@ export class SdTsCompiler {
                 deps.push({
                   fileName: PathUtil.norm(decl.getSourceFile().fileName),
                   importName: el.name.text,
-                  exportName: el.propertyName?.text ?? el.name.text
+                  exportName: el.propertyName?.text ?? el.name.text,
                 });
               }
             }
@@ -732,7 +740,7 @@ export class SdTsCompiler {
                 code: undefined,
                 severity: "error",
                 message: "moduleSymbol exports not found",
-                type: "deps"
+                type: "deps",
               });
               return;
             }
@@ -742,7 +750,7 @@ export class SdTsCompiler {
                 deps.push({
                   fileName: PathUtil.norm(decl.getSourceFile().fileName),
                   importName: key.toString(),
-                  exportName: key.toString()
+                  exportName: key.toString(),
                 });
               }
             }
@@ -755,7 +763,7 @@ export class SdTsCompiler {
           if (ts.isStringLiteral(node.moduleSpecifier) && node.moduleSpecifier.text.startsWith("./")) {
             deps.push({
               fileName: PathUtil.norm(path.resolve(path.dirname(sf.fileName), node.moduleSpecifier.text)),
-              importName: "*"
+              importName: "*",
             });
           }
           /*else {
@@ -773,7 +781,7 @@ export class SdTsCompiler {
               code: undefined,
               severity: "error",
               message: "import decls not found",
-              type: "deps"
+              type: "deps",
             });
             return;
           }
@@ -784,7 +792,7 @@ export class SdTsCompiler {
               for (const decl of decls) {
                 deps.push({
                   fileName: PathUtil.norm(decl.getSourceFile().fileName),
-                  importName: el.name.text
+                  importName: el.name.text,
                 });
               }
             }
@@ -793,7 +801,7 @@ export class SdTsCompiler {
             for (const decl of decls) {
               deps.push({
                 fileName: PathUtil.norm(decl.getSourceFile().fileName),
-                importName: "*"
+                importName: "*",
               });
             }
           }
@@ -804,7 +812,7 @@ export class SdTsCompiler {
         if (ts.isStringLiteral(node.arguments[0]) && node.arguments[0].text.startsWith("./")) {
           deps.push({
             fileName: PathUtil.norm(path.resolve(path.dirname(sf.fileName), node.arguments[0].text)),
-            importName: "*"
+            importName: "*",
           });
         }
       }

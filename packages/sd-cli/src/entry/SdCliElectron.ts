@@ -129,7 +129,7 @@ export class SdCliElectron {
         productName: npmConfig.description,
         asar: false,
         win: {
-          target: "nsis",
+          target: pkgConf.builder.electron.portable ? "portable" : "nsis",
         },
         nsis: {},
         directories: {
@@ -146,8 +146,8 @@ export class SdCliElectron {
     });
 
     FsUtil.copy(
-      path.resolve(electronDistPath, `${npmConfig.description} Setup ${npmConfig.version}.exe`),
-      path.resolve(pkgPath, `dist/electron/${npmConfig.description}-dev.exe`),
+      path.resolve(electronDistPath, `${npmConfig.description} ${pkgConf.builder.electron.portable ? "" : "Setup "}${npmConfig.version}.exe`),
+      path.resolve(pkgPath, `dist/electron/${npmConfig.description}${pkgConf.builder.electron.portable ? "-portable" : ""}-dev.exe`),
     );
   }
 
@@ -203,7 +203,7 @@ export class SdCliElectron {
         productName: npmConfig.description,
         asar: false,
         win: {
-          target: "nsis",
+          target: opt.config.portable ? "portable" : "nsis",
         },
         nsis: {},
         directories: {
@@ -220,12 +220,12 @@ export class SdCliElectron {
     });
 
     FsUtil.copy(
-      path.resolve(electronDistPath, `${npmConfig.description} Setup ${npmConfig.version}.exe`),
-      path.resolve(opt.pkgPath, `dist/electron/${npmConfig.description}-latest.exe`),
+      path.resolve(electronDistPath, `${npmConfig.description} ${opt.config.portable ? "" : "Setup "}${npmConfig.version}.exe`),
+      path.resolve(opt.pkgPath, `dist/electron/${npmConfig.description}${opt.config.portable ? "-portable" : ""}-latest.exe`),
     );
 
     FsUtil.copy(
-      path.resolve(electronDistPath, `${npmConfig.description} Setup ${npmConfig.version}.exe`),
+      path.resolve(electronDistPath, `${npmConfig.description} ${opt.config.portable ? "" : "Setup "}${npmConfig.version}.exe`),
       path.resolve(opt.pkgPath, `dist/electron/updates/${npmConfig.version}.exe`),
     );
   }

@@ -10,17 +10,18 @@ import { transformBoolean } from "../utils/tramsforms";
   template: `
     <ng-content></ng-content>
   `,
-  //region styles
   styles: [
     /* language=SCSS */ `
-      @import "../scss/variables";
-      @import "../scss/mixins";
+      @use "sass:map";
+
+      @use "../scss/variables";
+      @use "../scss/mixins";
 
       sd-anchor {
         display: inline-block;
         cursor: pointer;
 
-        @each $key, $val in map-get($vars, theme) {
+        @each $key, $val in map.get(variables.$vars, theme) {
           &[sd-theme="#{$key}"] {
             color: var(--theme-#{$key}-default);
 
@@ -50,7 +51,6 @@ import { transformBoolean } from "../utils/tramsforms";
       }
     `,
   ],
-  //endregion
   host: {
     "[attr.sd-theme]": "theme()",
     "[attr.disabled]": "disabled()",

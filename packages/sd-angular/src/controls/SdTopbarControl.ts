@@ -26,7 +26,7 @@ import { SdIconControl } from "./SdIconControl";
   imports: [SdAnchorControl, SdGapControl, SdUseRippleDirective, SdIconControl],
   styles: [
     /* language=SCSS */ `
-      @import "../scss/mixins";
+      @use "../scss/mixins";
 
       sd-topbar {
         display: flex;
@@ -54,7 +54,7 @@ import { SdIconControl } from "./SdIconControl";
         //body.sd-theme-compact &,
         //body.sd-theme-modern & {
         //  border-bottom: 1px solid var(--border-color-light);
-        //  @include elevation(2);
+        //  @include mixins.elevation(2);
         //  animation: sd-topbar var(--animation-duration) ease-in;
         //}
 

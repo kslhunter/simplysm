@@ -26,7 +26,7 @@ export interface ISdTsCompilerResult {
 }
 
 export interface IStylesheetBundlingResult {
-  outputFiles: esbuild.OutputFile[];
+  outputFiles?: esbuild.OutputFile[];
   metafile?: esbuild.Metafile;
   errors?: esbuild.Message[];
   warnings?: esbuild.Message[];

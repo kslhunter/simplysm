@@ -37,14 +37,15 @@ import { $model } from "../utils/$hooks";
       <ng-content />
     </div>
   `,
-  //region styles
   styles: [
     /* language=SCSS */ `
-      @import "../scss/variables";
-      @import "../scss/mixins";
+      @use "sass:map";
+      
+      @use "../scss/variables";
+      @use "../scss/mixins";
 
       sd-checkbox {
-        @include form-control-base();
+        @include mixins.form-control-base();
         color: inherit;
         cursor: pointer;
         border-radius: var(--border-radius-xs);
@@ -99,7 +100,7 @@ import { $model } from "../utils/$hooks";
           }
         }
 
-        @each $key, $val in map-get($vars, theme) {
+        @each $key, $val in map.get(variables.$vars, theme) {
           &[sd-theme="#{$key}"] {
             > ._indicator_rect {
               background: var(--theme-#{$key}-lightest);
@@ -222,7 +223,6 @@ import { $model } from "../utils/$hooks";
       }
     `,
   ],
-  //endregion
   host: {
     "[attr.sd-checked]": "value()",
     "[attr.sd-disabled]": "disabled()",

@@ -9,7 +9,9 @@ import { transformBoolean } from "../utils/tramsforms";
   imports: [],
   styles: [
     /* language=SCSS */ `
-      @import "../scss/variables";
+      @use "sass:map";
+      
+      @use "../scss/variables";
 
       sd-label {
         display: inline-block;
@@ -19,7 +21,7 @@ import { transformBoolean } from "../utils/tramsforms";
         border-radius: var(--border-radius-default);
         text-indent: 0;
 
-        @each $key, $val in map-get($vars, theme) {
+        @each $key, $val in map.get(variables.$vars, theme) {
           &[sd-theme="#{$key}"] {
             background: var(--theme-#{$key}-default);
           }
@@ -31,7 +33,7 @@ import { transformBoolean } from "../utils/tramsforms";
           &:hover {
             background: var(--theme-grey-dark);
 
-            @each $key, $val in map-get($vars, theme) {
+            @each $key, $val in map.get(variables.$vars, theme) {
               &[sd-theme="#{$key}"] {
                 background: var(--theme-#{$key}-dark);
               }

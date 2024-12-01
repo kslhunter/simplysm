@@ -1,3 +1,7 @@
+@use "sass:map";
+@use "variables";
+@use "mixins";
+
 *,
 *:after,
 *:before {
@@ -108,7 +112,7 @@ hidden {
   }
 }
 
-@each $key, $val in map-get($vars, font-size) {
+@each $key, $val in map.get(variables.$vars, font-size) {
   .ft-size-#{$key} {
     font-size: var(--font-size-#{$key}) !important;
     line-height: var(--line-height) !important;
@@ -117,7 +121,7 @@ hidden {
 
 //-- BACKGROUND COLOR
 
-@each $key, $val in map-get($vars, theme) {
+@each $key, $val in map.get(variables.$vars, theme) {
   @each $key1, $val1 in $val {
     .bg-theme-#{$key}-#{$key1} {
       background: var(--theme-#{$key}-#{$key1}) !important;
@@ -125,7 +129,7 @@ hidden {
   }
 }
 
-@each $key, $val in map-get($vars, trans) {
+@each $key, $val in map.get(variables.$vars, trans) {
   .bg-trans-#{$key} {
     background: var(--trans-#{$key}) !important;
   }
@@ -141,7 +145,7 @@ hidden {
 
 //-- TEXT COLOR
 
-@each $key, $val in map-get($vars, theme) {
+@each $key, $val in map.get(variables.$vars, theme) {
   @each $key1, $val1 in $val {
     .tx-theme-#{$key}-#{$key1} {
       color: var(--theme-#{$key}-#{$key1}) !important;
@@ -149,7 +153,7 @@ hidden {
   }
 }
 
-@each $key, $val in map-get($vars, text-trans) {
+@each $key, $val in map.get(variables.$vars, text-trans) {
   .tx-trans-#{$key} {
     color: var(--text-trans-#{$key}) !important;
   }
@@ -161,7 +165,7 @@ hidden {
   border: 1px solid !important;
 }
 
-@each $key, $val in map-get($vars, theme) {
+@each $key, $val in map.get(variables.$vars, theme) {
   @each $key1, $val1 in $val {
     .bd-theme-#{$key}-#{$key1} {
       border-color: var(--theme-#{$key}-#{$key1}) !important;
@@ -169,13 +173,13 @@ hidden {
   }
 }
 
-@each $key, $val in map-get($vars, trans) {
+@each $key, $val in map.get(variables.$vars, trans) {
   .bd-trans-#{$key} {
     border-color: var(--trans-#{$key}) !important;
   }
 }
 
-@each $key, $val in map-get($vars, border-color) {
+@each $key, $val in map.get(variables.$vars, border-color) {
   .bd-color-#{$key} {
     border-color: var(--border-color-#{$key}) !important;
   }
@@ -195,7 +199,7 @@ hidden {
     border-#{$dir}: 1px solid !important;
   }
 
-  @each $key, $val in map-get($vars, theme) {
+  @each $key, $val in map.get(variables.$vars, theme) {
     @each $key1, $val1 in $val {
       .bd#{$d}-theme-#{$key}-#{$key1} {
         border-#{$dir}-color: var(--theme-#{$key}-#{$key1}) !important;
@@ -203,13 +207,13 @@ hidden {
     }
   }
 
-  @each $key, $val in map-get($vars, trans) {
+  @each $key, $val in map.get(variables.$vars, trans) {
     .bd#{$d}-trans-#{$key} {
       border-#{$dir}-color: var(--trans-#{$key}) !important;
     }
   }
 
-  @each $key, $val in map-get($vars, border-color) {
+  @each $key, $val in map.get(variables.$vars, border-color) {
     .bd#{$d}-color-#{$key} {
       border-#{$dir}-color: var(--border-color-#{$key}) !important;
     }
@@ -225,7 +229,7 @@ hidden {
 }
 
 //-- BORDER WIDTH
-@each $key, $val in map-get($vars, gap) {
+@each $key, $val in map.get(variables.$vars, gap) {
   .bd-width-#{$key} {
     border-width: var(--gap-#{$key}) !important;
   }
@@ -240,7 +244,7 @@ hidden {
 
 //-- BORDER RADIUS
 
-@each $key, $val in map-get($vars, border-radius) {
+@each $key, $val in map.get(variables.$vars, border-radius) {
   .bd-radius-#{$key} {
     border-radius: var(--border-radius-#{$key}) !important;
   }
@@ -268,7 +272,7 @@ hidden {
 
 //-- PADDING, MARGIN
 
-@each $key, $val in map-get($vars, gap) {
+@each $key, $val in map.get(variables.$vars, gap) {
   .p-#{$key} {
     padding: var(--gap-#{$key}) !important;
   }
@@ -278,8 +282,8 @@ hidden {
   }
 }
 
-@each $key, $val in map-get($vars, gap) {
-  @each $key1, $val1 in map-get($vars, gap) {
+@each $key, $val in map.get(variables.$vars, gap) {
+  @each $key1, $val1 in map.get(variables.$vars, gap) {
     .p-#{$key}-#{$key1} {
       padding: var(--gap-#{$key}) var(--gap-#{$key1}) !important;
     }
@@ -290,7 +294,7 @@ hidden {
   }
 }
 
-@each $key, $val in map-get($vars, gap) {
+@each $key, $val in map.get(variables.$vars, gap) {
   .pv-#{$key} {
     padding-top: var(--gap-#{$key}) !important;
     padding-bottom: var(--gap-#{$key}) !important;
@@ -312,7 +316,7 @@ hidden {
   }
 }
 
-@each $key, $val in map-get($vars, gap) {
+@each $key, $val in map.get(variables.$vars, gap) {
   .sw-#{$key} {
     width: var(--gap-#{$key}) !important;
   }
@@ -322,7 +326,7 @@ hidden {
   }
 }
 
-@each $key, $val in map-get($vars, gap) {
+@each $key, $val in map.get(variables.$vars, gap) {
   @each $dir in (top, right, bottom, left) {
     $d: str-slice($dir, 1, 1);
 
@@ -376,7 +380,7 @@ hidden {
   white-space: nowrap;
 }
 
-@each $key, $val in map-get($vars, gap) {
+@each $key, $val in map.get(variables.$vars, gap) {
   .flex-gap-#{$key} {
     gap: var(--gap-#{$key}) !important;
   }
@@ -402,11 +406,11 @@ hidden {
 }
 
 .form-control {
-  @include form-control-base();
+  @include mixins.form-control-base();
 }
 
 .help {
-  @include help();
+  @include mixins.help();
 }
 
 .page-header {

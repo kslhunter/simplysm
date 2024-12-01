@@ -12,7 +12,7 @@ import { injectElementRef } from "../utils/injectElementRef";
   imports: [SdEventsDirective],
   styles: [
     /* language=SCSS */ `
-      @import "../scss/mixins";
+      @use "../scss/mixins";
 
       sd-dropdown-popup {
         position: fixed;
@@ -24,7 +24,7 @@ import { injectElementRef } from "../utils/injectElementRef";
         pointer-events: none;
         background: white;
         min-width: 120px;
-        @include elevation(6);
+        @include mixins.elevation(6);
         overflow: hidden;
         border-radius: var(--border-radius-default);
         border: 1px solid var(--border-color-light);
@@ -41,7 +41,7 @@ import { injectElementRef } from "../utils/injectElementRef";
         }
 
         @media all and (max-width: 520px) {
-          @include elevation(0);
+          @include mixins.elevation(0);
           border: 1px solid var(--border-color-default);
         }
       }

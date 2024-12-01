@@ -9,7 +9,9 @@ import { transformBoolean } from "../utils/tramsforms";
   imports: [],
   styles: [
     /* language=SCSS */ `
-      @import "../scss/variables";
+      @use "sass:map";
+      
+      @use "../scss/variables";
 
       sd-note {
         display: block;
@@ -19,7 +21,7 @@ import { transformBoolean } from "../utils/tramsforms";
         border: none;
         border-radius: var(--border-radius-default);
 
-        @each $key, $val in map-get($vars, theme) {
+        @each $key, $val in map.get(variables.$vars, theme) {
           &[sd-theme="#{$key}"] {
             background: var(--theme-#{$key}-lightest);
             border-color: var(--theme-#{$key}-light);

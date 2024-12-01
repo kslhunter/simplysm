@@ -1,8 +1,5 @@
-@import "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css";
-@import 'quill/dist/quill.snow.css';
+@use "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css";
+@use 'quill/dist/quill.snow.css';
 
-@import "scss/variables";
-@import "scss/mixins";
-
-@import "scss/theme-variables";
-@import "scss/styles";
+@use "scss/theme-variables";
+@use "scss/styles";

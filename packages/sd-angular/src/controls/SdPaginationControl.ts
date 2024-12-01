@@ -12,7 +12,7 @@ import { SdIconControl } from "./SdIconControl";
   imports: [SdAnchorControl, SdIconControl],
   styles: [
     /* language=SCSS */ `
-      @import "../scss/mixins";
+      @use "../scss/mixins";
 
       sd-pagination {
         display: flex;

@@ -67,6 +67,7 @@ export interface ISdFtpPublishConfig {
 export interface ISdClientBuilderElectronConfig {
   appId: string;
   installerIcon?: string;
+  portable?: boolean;
   postInstallScript?: string;
   // devServerHost?: string;
   // devServerPort?: number;

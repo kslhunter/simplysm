@@ -8,7 +8,9 @@ import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@a
   imports: [],
   styles: [
     /* language=SCSS */ `
-      @import "../scss/variables";
+      @use "sass:map";
+      
+      @use "../scss/variables";
 
       sd-progress-item {
         display: block;
@@ -16,7 +18,7 @@ import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@a
         overflow: hidden;
         padding: var(--gap-sm) var(--gap-default);
 
-        @each $key, $val in map-get($vars, theme) {
+        @each $key, $val in map.get(variables.$vars, theme) {
           &[sd-theme="#{$key}"] {
             background: var(--theme-#{$key}-default);
             color: var(--text-trans-default);

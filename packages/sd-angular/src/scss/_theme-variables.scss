@@ -1,18 +1,22 @@
+@use "mixins";
+
+@use "variables" as compact;
+@use "themes/variables-modern" as modern;
+@use "themes/variables-mobile" as mobile;
+@use "themes/variables-kiosk" as kiosk;
+
 .sd-theme-compact {
-  @include writeVars($vars, "");
+  @include mixins.writeVars(compact.$vars, "");
 }
 
 .sd-theme-modern {
-  @import "themes/variables-modern";
-  @include writeVars($vars, "");
+  @include mixins.writeVars(modern.$vars, "");
 }
 
 .sd-theme-mobile {
-  @import "themes/variables-mobile";
-  @include writeVars($vars, "");
+  @include mixins.writeVars(mobile.$vars, "");
 }
 
 .sd-theme-kiosk {
-  @import "themes/variables-kiosk";
-  @include writeVars($vars, "");
+  @include mixins.writeVars(kiosk.$vars, "");
 }

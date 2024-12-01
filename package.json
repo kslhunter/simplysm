@@ -1,6 +1,6 @@
 {
   "name": "simplysm",
-  "version": "12.5.60",
+  "version": "12.6.1",
   "description": "심플리즘 패키지",
   "author": "김석래",
   "repository": {
@@ -14,8 +14,8 @@
     "packages/*"
   ],
   "volta": {
-    "node": "20.18.0",
-    "yarn": "4.5.1"
+    "node": "22.11.0",
+    "yarn": "4.5.3"
   },
   "scripts": {
     "watch": "npm run _sd-cli_ -- --debug watch",
@@ -27,15 +27,14 @@
     "commit": "git add . && git commit -m .",
     "eslint-timing": "cross-env TIMING=1 eslint \"**/+(*.ts|*.js|*.html)\"",
     "eslint-fix": "cross-env TIMING=1 eslint --fix \"**/+(*.ts|*.js|*.html)\"",
-    "reinstall": "yarn install --refresh-lockfile",
-    "migration": "node lib/migration.js"
+    "reinstall": "yarn install --refresh-lockfile"
   },
   "devDependencies": {
-    "@types/node": "^20.17.6",
+    "@types/node": "^22.10.1",
     "cross-env": "^7.0.3",
-    "eslint": "^9.15.0",
+    "eslint": "^9.16.0",
     "glob": "^11.0.0",
     "tsx": "^4.19.2",
-    "typescript": "~5.5.4"
+    "typescript": "~5.6.3"
   }
 }

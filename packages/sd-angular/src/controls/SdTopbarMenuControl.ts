@@ -10,8 +10,10 @@ import { transformBoolean } from "../utils/tramsforms";
   imports: [],
   styles: [
     /* language=SCSS */ `
-      @import "../scss/variables";
-      @import "../scss/mixins";
+      @use "sass:map";
+      
+      @use "../scss/variables";
+      @use "../scss/mixins";
 
       sd-topbar-menu {
         display: inline-block;
@@ -25,7 +27,7 @@ import { transformBoolean } from "../utils/tramsforms";
           background: var(--theme-grey-lightest);
         }
 
-        @each $key, $val in map-get($vars, theme) {
+        @each $key, $val in map.get(variables.$vars, theme) {
           &[sd-theme="#{$key}"] {
             color: var(--theme-#{$key}-default);
 

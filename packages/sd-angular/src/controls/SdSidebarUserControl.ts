@@ -15,7 +15,7 @@ import { SdUseRippleDirective } from "../directives/SdUseRippleDirective";
   imports: [SdCollapseIconControl, SdCollapseControl, SdListControl, SdListItemControl, SdUseRippleDirective],
   styles: [
     /* language=SCSS */ `
-      @import "../scss/mixins";
+      @use "../scss/mixins";
 
       sd-sidebar-user {
         > ._content {

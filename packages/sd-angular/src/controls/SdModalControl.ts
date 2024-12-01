@@ -31,7 +31,7 @@ import { SdIconControl } from "./SdIconControl";
   imports: [SdAnchorControl, SdPaneControl, SdDockContainerControl, SdDockControl, SdEventsDirective, SdIconControl],
   styles: [
     /* language=SCSS */ `
-      @import "../scss/mixins";
+      @use "../scss/mixins";
 
       sd-modal {
         display: block;
@@ -62,7 +62,7 @@ import { SdIconControl } from "./SdIconControl";
           //border: 1px solid var(--theme-primary-darker);
           // border-radius:2 px;
           overflow: hidden;
-          @include elevation(16);
+          @include mixins.elevation(16);
 
           border-radius: var(--border-radius-default);
 
@@ -210,11 +210,11 @@ import { SdIconControl } from "./SdIconControl";
           > ._dialog {
             pointer-events: auto;
             opacity: 0;
-            @include elevation(4);
+            @include mixins.elevation(4);
             border: 1px solid var(--theme-grey-lighter);
 
             &:focus {
-              @include elevation(16);
+              @include mixins.elevation(16);
             }
           }
 

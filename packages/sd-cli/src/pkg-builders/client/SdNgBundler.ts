@@ -600,9 +600,9 @@ export class SdNgBundler {
         //     resolveDir: this._opt.pkgPath
         //   }),
         // }) as esbuild.Plugin,
-        pluginFactory.create(SassStylesheetLanguage) as esbuild.Plugin,
-        pluginFactory.create(CssStylesheetLanguage) as esbuild.Plugin,
-        createCssResourcePlugin(this.#styleLoadResultCache) as esbuild.Plugin,
+        pluginFactory.create(SassStylesheetLanguage),
+        pluginFactory.create(CssStylesheetLanguage),
+        createCssResourcePlugin(this.#styleLoadResultCache),
       ],
     });
   }

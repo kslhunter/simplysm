@@ -28,7 +28,7 @@ import { SdIconControl } from "./SdIconControl";
   imports: [SdCollapseIconControl, SdCollapseControl, SdUseRippleDirective, NgTemplateOutlet, SdIconControl],
   styles: [
     /* language=SCSS */ `
-      @import "../scss/mixins";
+      @use "../scss/mixins";
 
       sd-list-item {
         > ._content {

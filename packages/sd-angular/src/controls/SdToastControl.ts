@@ -9,8 +9,10 @@ import { transformBoolean } from "../utils/tramsforms";
   imports: [],
   styles: [
     /* language=SCSS */ `
-      @import "../scss/mixins";
-      @import "../scss/variables";
+      @use "sass:map";
+      
+      @use "../scss/mixins";
+      @use "../scss/variables";
 
       sd-toast {
         display: block;
@@ -26,7 +28,7 @@ import { transformBoolean } from "../utils/tramsforms";
           transform: translateY(-100%);
           border-radius: var(--border-radius-lg);
           opacity: 0;
-          @include elevation(12);
+          @include mixins.elevation(12);
           pointer-events: auto;
 
           > ._sd-toast-message {
@@ -47,7 +49,7 @@ import { transformBoolean } from "../utils/tramsforms";
           }
         }
 
-        @each $key, $val in map-get($vars, theme) {
+        @each $key, $val in map.get(variables.$vars, theme) {
           &[sd-theme="#{$key}"] {
             > ._sd-toast-block {
               background: var(--theme-#{$key}-default);
@@ -83,7 +85,7 @@ import { transformBoolean } from "../utils/tramsforms";
 
         @media all and (max-width: 520px) {
           > ._sd-toast-block {
-            //@include elevation(0);
+            //@include mixins.elevation(0);
             border-radius: calc(var(--line-height) / 2);
 
             transform: translateY(100%);
