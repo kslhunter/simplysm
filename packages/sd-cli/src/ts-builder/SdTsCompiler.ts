@@ -1,6 +1,6 @@
 import ts from "typescript";
 import path from "path";
-import { FsUtil, Logger, PathUtil, SdWorker, TNormPath } from "@simplysm/sd-core-node";
+import { FsUtil, Logger, PathUtil, TNormPath } from "@simplysm/sd-core-node";
 import { StringUtil } from "@simplysm/sd-core-common";
 import { NgtscProgram, OptimizeFor } from "@angular/compiler-cli";
 import { ComponentStylesheetBundler } from "@angular/build/src/tools/esbuild/angular/component-stylesheets";
@@ -12,8 +12,8 @@ import { SdCliPerformanceTimer } from "../utils/SdCliPerformanceTime";
 import { SdCliConvertMessageUtil } from "../utils/SdCliConvertMessageUtil";
 import { ISdTsCompilerResult, IStylesheetBundlingResult, SdTsCompilerOptions } from "../types/ts-compiler.type";
 import { ISdBuildMessage } from "../types/build.type";
-import { TSdLintWorkerType } from "../types/workers.type";
 import { createWorkerTransformer } from "@angular/build/src/tools/angular/transformers/web-worker-transformer";
+import { ESLint } from "eslint";
 
 export class SdTsCompiler {
   readonly #logger = Logger.get(["simplysm", "sd-cli", "SdTsCompiler"]);
@@ -52,7 +52,7 @@ export class SdTsCompiler {
 
   readonly #isForBundle: boolean;
 
-  readonly #lintWorker = new SdWorker<TSdLintWorkerType>(import.meta.resolve("../workers/lint-worker"));
+  // readonly #lintWorker = new SdWorker<TSdLintWorkerType>(import.meta.resolve("../workers/lint-worker"));
 
   #perf!: SdCliPerformanceTimer;
 
@@ -340,7 +340,7 @@ export class SdTsCompiler {
         }[]
       >();
       for (const sf of sourceFileSet) {
-        if (!PathUtil.isChildPath(sf.fileName, this.#pkgPath)) {
+        if (!this.#watchScopePaths.some((scopePath) => PathUtil.isChildPath(sf.fileName, scopePath))) {
           continue;
         }
 
@@ -467,12 +467,39 @@ export class SdTsCompiler {
   }
 
   async #lintAsync() {
-    return await this.#lintWorker.run("lint", [
-      {
-        cwd: this.#pkgPath,
-        fileSet: this.#affectedFileSet,
+    const lintFilePaths = Array.from(this.#affectedFileSet)
+      .filter((item) => PathUtil.isChildPath(item, this.#pkgPath))
+      .filter((item) => (
+        (!item.endsWith(".d.ts") && item.endsWith(".ts")) ||
+        item.endsWith(".js")
+      ))
+      .filter((item) => FsUtil.exists(item));
+
+    if (lintFilePaths.length === 0) {
+      return [];
+    }
+
+    const linter = new ESLint({
+      cwd: this.#pkgPath,
+      cache: false,
+      overrideConfig: {
+        languageOptions: {
+          parserOptions: {
+            // parser: tseslint.parser,
+            project: null,
+            programs: [this.#program],
+          },
+        },
       },
-    ]);
+    });
+    return await linter.lintFiles(lintFilePaths);
+
+    // return await this.#lintWorker.run("lint", [
+    //   {
+    //     cwd: this.#pkgPath,
+    //     fileSet: this.#affectedFileSet,
+    //   },
+    // ]);
   }
 
   async #buildAsync() {
@@ -675,13 +702,11 @@ export class SdTsCompiler {
   }
 
   #findDeps(sf: ts.SourceFile) {
-    const deps: (
-      {
-        fileName: TNormPath;
-        importName: string;
-        exportName?: string;
-      } | ISdBuildMessage
-      )[] = [];
+    const deps: ({
+      fileName: TNormPath;
+      importName: string;
+      exportName?: string;
+    } | ISdBuildMessage)[] = [];
 
     const tc = this.#program!.getTypeChecker();
 
@@ -762,10 +787,23 @@ export class SdTsCompiler {
         if (!moduleSymbol) {
           if (ts.isStringLiteral(node.moduleSpecifier) && node.moduleSpecifier.text.startsWith("./")) {
             deps.push({
-              fileName: PathUtil.norm(path.resolve(path.dirname(sf.fileName), node.moduleSpecifier.text)),
+              fileName: PathUtil.norm(path.resolve(path.dirname(sf.fileName), node.moduleSpecifier.text + ".ts")),
               importName: "*",
             });
+
+            // const pos = ts.getLineAndCharacterOfPosition(sf, node.getStart());
+            // deps.push({
+            //   filePath: PathUtil.norm(sf.fileName),
+            //   line: pos.line,
+            //   char: pos.character,
+            //   code: undefined,
+            //   severity: "error",
+            //   message: `import moduleSymbol not found (${node.moduleSpecifier.text})`,
+            //   type: "deps",
+            // });
+            // return;
           }
+
           /*else {
             throw new NeverEntryError(`import moduleSymbol: ${sf.fileName} ${node.moduleSpecifier["text"]}`);
           }*/
@@ -780,7 +818,7 @@ export class SdTsCompiler {
               char: pos.character,
               code: undefined,
               severity: "error",
-              message: "import decls not found",
+              message: `import decls not found (${moduleSymbol.name})`,
               type: "deps",
             });
             return;
@@ -810,10 +848,49 @@ export class SdTsCompiler {
 
       if (ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword) {
         if (ts.isStringLiteral(node.arguments[0]) && node.arguments[0].text.startsWith("./")) {
-          deps.push({
-            fileName: PathUtil.norm(path.resolve(path.dirname(sf.fileName), node.arguments[0].text)),
-            importName: "*",
-          });
+
+          const moduleSymbol = tc.getSymbolAtLocation(node.arguments[0]);
+          if (!moduleSymbol) {
+            deps.push({
+              fileName: PathUtil.norm(path.resolve(path.dirname(sf.fileName), node.arguments[0].text + ".ts")),
+              importName: "*",
+            });
+
+            // const pos = ts.getLineAndCharacterOfPosition(sf, node.getStart());
+            // deps.push({
+            //   filePath: PathUtil.norm(sf.fileName),
+            //   line: pos.line,
+            //   char: pos.character,
+            //   code: undefined,
+            //   severity: "error",
+            //   message: `import() moduleSymbol not found (${node.arguments[0].text})`,
+            //   type: "deps",
+            // });
+            // return;
+          }
+          else {
+            const decls = moduleSymbol.getDeclarations();
+            if (!decls) {
+              const pos = ts.getLineAndCharacterOfPosition(sf, node.getStart());
+              deps.push({
+                filePath: PathUtil.norm(sf.fileName),
+                line: pos.line,
+                char: pos.character,
+                code: undefined,
+                severity: "error",
+                message: `import() decls not found (${node.arguments[0].text})`,
+                type: "deps",
+              });
+              return;
+            }
+
+            for (const decl of decls) {
+              deps.push({
+                fileName: PathUtil.norm(decl.getSourceFile().fileName),
+                importName: "*",
+              });
+            }
+          }
         }
       }
 

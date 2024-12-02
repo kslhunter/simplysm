@@ -27,5 +27,4 @@ export * from "./types/workers.type";
 export * from "./utils/SdCliConvertMessageUtil";
 export * from "./utils/SdCliPerformanceTime";
 import "./workers/build-runner-worker";
-import "./workers/lint-worker";
 import "./workers/server-worker";

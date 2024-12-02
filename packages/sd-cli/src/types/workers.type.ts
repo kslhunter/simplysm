@@ -1,6 +1,3 @@
-import { ESLint } from "eslint";
-import { ISdTsCompilerResult, SdTsCompilerOptions } from "./ts-compiler.type";
-import { TNormPath } from "@simplysm/sd-core-node";
 import { ISdBuildRunnerWorkerRequest } from "./build-runner.type";
 import { ISdBuildMessage, ISdBuildRunnerResult } from "./build.type";
 
@@ -13,21 +10,20 @@ export interface TServerWorkerType {
   events: {};
 }
 
-export interface TSdLintWorkerType {
-  methods: {
-    lint: { params: [{ cwd: string; fileSet: Set<string> }]; returnType: ESLint.LintResult[] };
-  };
-  events: {};
-}
+// export interface TSdLintWorkerType {
+//   methods: {
+//     lint: { params: [{ cwd: string; fileSet: Set<string> }]; returnType: ESLint.LintResult[] };
+//   };
+//   events: {};
+// }
 
-export interface TSdTsCompileWorkerType {
-  methods: {
-    initialize: { params: [SdTsCompilerOptions]; returnType: void };
-    compile: { params: [Set<TNormPath>]; returnType: ISdTsCompilerResult };
-  };
-  events: {};
-}
-
+// export interface TSdTsCompileWorkerType {
+//   methods: {
+//     initialize: { params: [SdTsCompilerOptions]; returnType: void };
+//     compile: { params: [Set<TNormPath>]; returnType: ISdTsCompilerResult };
+//   };
+//   events: {};
+// }
 
 export interface TSdBuildRunnerWorkerType {
   methods: {

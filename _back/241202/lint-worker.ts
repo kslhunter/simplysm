@@ -13,7 +13,8 @@ if (process.env["SD_DEBUG"] != null) {
       level: LoggerSeverity.debug,
     },
   });
-} else {
+}
+else {
   Logger.setConfig({
     dot: true,
   });

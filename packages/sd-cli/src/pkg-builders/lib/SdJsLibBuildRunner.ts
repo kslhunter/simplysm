@@ -1,15 +1,17 @@
-import { FsUtil, Logger, PathUtil, SdFsWatcher, SdWorker } from "@simplysm/sd-core-node";
+import { FsUtil, Logger, PathUtil, SdFsWatcher } from "@simplysm/sd-core-node";
 import path from "path";
 import { EventEmitter } from "events";
 import { SdCliConvertMessageUtil } from "../../utils/SdCliConvertMessageUtil";
-import { TSdLintWorkerType } from "../../types/workers.type";
+// import { TSdLintWorkerType } from "../../types/workers.type";
 import { ISdProjectConfig } from "../../types/sd-configs.type";
 import { ISdBuildRunnerResult } from "../../types/build.type";
+import { ESLint } from "eslint";
 
 export class SdJsLibBuildRunner extends EventEmitter {
   private readonly _logger = Logger.get(["simplysm", "sd-cli", "SdJsLibBuildRunner"]);
   private readonly _pkgName: string;
-  private readonly _lintWorker: SdWorker<TSdLintWorkerType>;
+
+  // private readonly _lintWorker: SdWorker<TSdLintWorkerType>;
 
   public constructor(
     private readonly _projConf: ISdProjectConfig,
@@ -18,7 +20,7 @@ export class SdJsLibBuildRunner extends EventEmitter {
     super();
     this._pkgName = path.basename(_pkgPath);
 
-    this._lintWorker = new SdWorker(import.meta.resolve("../../workers/lint-worker"));
+    // this._lintWorker = new SdWorker(import.meta.resolve("../../workers/lint-worker"));
   }
 
   public override on(event: "change", listener: () => void): this;
@@ -33,12 +35,7 @@ export class SdJsLibBuildRunner extends EventEmitter {
     const srcGlobPath = path.resolve(this._pkgPath, "src/**/*.js");
     const srcFilePaths = FsUtil.glob(srcGlobPath);
 
-    const lintResults = await this._lintWorker.run("lint", [
-      {
-        cwd: this._pkgPath,
-        fileSet: new Set(srcFilePaths),
-      },
-    ]);
+    const lintResults = await this.#lintAsync(new Set(srcFilePaths));
     const messages = SdCliConvertMessageUtil.convertToBuildMessagesFromEslint(lintResults);
 
     this._debug(`LINT 완료`);
@@ -55,12 +52,7 @@ export class SdJsLibBuildRunner extends EventEmitter {
     const srcGlobPath = path.resolve(this._pkgPath, "src/**/*.js");
     const srcFilePaths = FsUtil.glob(srcGlobPath);
 
-    const lintResults = await this._lintWorker.run("lint", [
-      {
-        cwd: this._pkgPath,
-        fileSet: new Set(srcFilePaths),
-      },
-    ]);
+    const lintResults = await this.#lintAsync(new Set(srcFilePaths));
     const messages = SdCliConvertMessageUtil.convertToBuildMessagesFromEslint(lintResults);
 
     this._debug(`LINT 완료`);
@@ -79,12 +71,7 @@ export class SdJsLibBuildRunner extends EventEmitter {
 
       this._debug("LINT...");
 
-      const watchLintResults = await this._lintWorker.run("lint", [
-        {
-          cwd: this._pkgPath,
-          fileSet: new Set(watchFilePaths),
-        },
-      ]);
+      const watchLintResults = await this.#lintAsync(new Set(watchFilePaths));
       const watchMessages = SdCliConvertMessageUtil.convertToBuildMessagesFromEslint(watchLintResults);
 
       this._debug(`LINT 완료`);
@@ -97,6 +84,20 @@ export class SdJsLibBuildRunner extends EventEmitter {
 
       this.emit("complete", watchRes);
     });
+  }
+
+  async #lintAsync(fileSet: Set<string>) {
+    const lintFilePaths = Array.from(fileSet)
+      .filter((item) => PathUtil.isChildPath(item, this._pkgPath))
+      .filter((item) => item.endsWith(".js"))
+      .filter((item) => FsUtil.exists(item));
+
+    if (lintFilePaths.length === 0) {
+      return [];
+    }
+
+    const linter = new ESLint({ cwd: this._pkgPath, cache: false });
+    return await linter.lintFiles(lintFilePaths);
   }
 
   private _debug(msg: string): void {

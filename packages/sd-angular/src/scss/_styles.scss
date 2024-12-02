@@ -1,4 +1,6 @@
 @use "sass:map";
+@use "sass:string";
+
 @use "variables";
 @use "mixins";
 
@@ -194,7 +196,7 @@ hidden {
 }
 
 @each $dir in (top, right, bottom, left) {
-  $d: str-slice($dir, 1, 1);
+  $d: string.slice($dir, 1, 1);
   .bd#{$d} {
     border-#{$dir}: 1px solid !important;
   }
@@ -235,7 +237,7 @@ hidden {
   }
 
   @each $dir in (top, right, bottom, left) {
-    $d: str-slice($dir, 1, 1);
+    $d: string.slice($dir, 1, 1);
     .bd#{$d}-width-#{$key} {
       border-#{$dir}-width: var(--gap-#{$key}) !important;
     }
@@ -328,7 +330,7 @@ hidden {
 
 @each $key, $val in map.get(variables.$vars, gap) {
   @each $dir in (top, right, bottom, left) {
-    $d: str-slice($dir, 1, 1);
+    $d: string.slice($dir, 1, 1);
 
     .p#{$d}-#{$key} {
       padding-#{$dir}: var(--gap-#{$key}) !important;

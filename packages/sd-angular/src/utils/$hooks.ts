@@ -4,10 +4,10 @@ import {
   EffectCleanupRegisterFn,
   EffectRef,
   inject,
-  Injector,
   InputSignal,
   InputSignalWithTransform,
   OutputEmitterRef,
+  reflectComponentType,
   Signal,
   signal,
   untracked,
@@ -22,28 +22,37 @@ import {
 } from "@angular/core/primitives/signals";
 import { ActivatedRoute, CanDeactivateFn, Route } from "@angular/router";
 import { ObjectUtil } from "@simplysm/sd-core-common";
+import { injectElementRef } from "./injectElementRef";
 
 const initializedRouteConfigSet = new Set<Route>();
 
 export function canDeactivate(fn: () => boolean) {
   const activatedRoute = inject(ActivatedRoute);
-  const injector = inject(Injector);
+  const elRef = injectElementRef();
+  // const injector = inject(Injector);
 
   if (!activatedRoute.routeConfig) return;
+  if (
+    reflectComponentType(activatedRoute.component as any)?.selector !==
+    elRef.nativeElement.tagName.toLowerCase()
+  ) {
+    return;
+  }
 
   if (!initializedRouteConfigSet.has(activatedRoute.routeConfig)) {
     initializedRouteConfigSet.add(activatedRoute.routeConfig);
 
     const canDeactivateFn: CanDeactivateFn<{ __sdCanDeactivate__(): boolean }> = (component) => {
-      return component.__sdCanDeactivate__();
+      return fn();
+      // return component.__sdCanDeactivate__();
     };
     activatedRoute.routeConfig.canDeactivate = [canDeactivateFn];
   }
 
-  requestAnimationFrame(() => {
-    const comp = injector["_lView"][8];
-    comp["__sdCanDeactivate__"] = fn;
-  });
+  // requestAnimationFrame(() => {
+  //   const comp = injector["_lView"][8];
+  //   comp["__sdCanDeactivate__"] = fn;
+  // });
 }
 
 export interface SdWritableSignal<T> extends WritableSignal<T> {
@@ -82,11 +91,10 @@ export function $effect(
           await fn(onCleanup);
         });
       },
-      { allowSignalWrites: true },
     );
   }
   else {
-    return effect((onCleanup) => fn(onCleanup), { allowSignalWrites: true });
+    return effect((onCleanup) => fn(onCleanup));
   }
 }
 
@@ -114,7 +122,6 @@ export function $computed(...args: any): Signal<any> {
           resultSig.set(await fn());
         });
       },
-      { allowSignalWrites: true },
     );
 
     return resultSig;
@@ -181,7 +188,7 @@ export function $mark(sig: WritableSignal<any>) {
 
 const ORIGIN_SNAPSHOT = Symbol();
 
-export function $arr<T>(sig: WritableSignal<T[]>) {
+export function $arr<T>(sig: WritableSignal<T[]>) { // 다
   return {
     insert(i: number, item: T) {
       sig.update((v) => {
@@ -231,6 +238,9 @@ export function $obj<T>(sig: WritableSignal<T>) {
     changed() {
       const orgData = sig[ORIGIN_SNAPSHOT];
       return !ObjectUtil.equal(orgData, sig());
+    },
+    get origin(): T {
+      return sig[ORIGIN_SNAPSHOT];
     },
   };
 }

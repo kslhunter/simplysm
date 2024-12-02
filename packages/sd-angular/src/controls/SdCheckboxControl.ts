@@ -31,7 +31,6 @@ import { $model } from "../utils/$hooks";
           <div></div>
         }
       </div>
-      2
     </div>
     <div class="_contents" [style]="contentStyle()">
       <ng-content />
