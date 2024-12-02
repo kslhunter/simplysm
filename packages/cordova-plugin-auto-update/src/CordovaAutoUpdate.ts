@@ -62,8 +62,10 @@ export abstract class CordovaAutoUpdate {
       if (localVersion != null && process.env["SD_VERSION"] !== localVersion) {
         opt.log(`최신버전 실행...`);
 
-        const baseUrl = storage.getFullUrl(`/files/www`);
-        const basePath = Ionic.WebView.convertFileSrc(baseUrl);
+        // const baseUrl = storage.getFullUrl(`/files/www`);
+        // const basePath = Ionic.WebView.convertFileSrc(baseUrl);
+
+        const basePath = storage.getFullPath(`/files/www`);
 
         // await SdLocalBaseUrl.setUrl(url);
         Ionic.WebView.setServerBasePath(basePath);

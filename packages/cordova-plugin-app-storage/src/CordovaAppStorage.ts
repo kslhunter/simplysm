@@ -100,6 +100,10 @@ export class CordovaAppStorage {
     return path.join(this.#rootDirectoryUrl, targetPath);
   }
 
+  getFullPath(targetPath: string) {
+    return path.join(this.#rootDirectoryUrl, targetPath).replace(/^file:/, "");
+  }
+
   async #mkdirAsync(dirPath: string) {
     const fullUrl = this.getFullUrl(dirPath);
     const dirUrl = path.dirname(fullUrl);
