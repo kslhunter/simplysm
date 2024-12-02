@@ -22,12 +22,16 @@ export class SdBusyProvider {
       compRef.setInput("noFade", this.noFade());
       (compRef.location.nativeElement as HTMLElement).style.position = "absolute";
 
-      const rootComp = this.#appRef.components[0];
-      const rootCompEl = rootComp.location.nativeElement as HTMLElement;
-      rootCompEl.appendChild(compRef.location.nativeElement);
       this.#appRef.attachView(compRef.hostView);
       this.#containerRef = compRef;
     }
+
+    if (this.#appRef.components.length > 0 && this.#containerRef.location.nativeElement.parentElement == null) {
+      const rootComp = this.#appRef.components[0];
+      const rootCompEl = rootComp.location.nativeElement as HTMLElement;
+      rootCompEl.appendChild(this.#containerRef.location.nativeElement);
+    }
+
     return this.#containerRef;
   }
 
