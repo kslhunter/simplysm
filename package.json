@@ -30,7 +30,7 @@
     "reinstall": "yarn install --refresh-lockfile"
   },
   "devDependencies": {
-    "@types/node": "^22.10.1",
+    "@types/node": "^20.17.9",
     "cross-env": "^7.0.3",
     "eslint": "^9.16.0",
     "glob": "^11.0.0",
