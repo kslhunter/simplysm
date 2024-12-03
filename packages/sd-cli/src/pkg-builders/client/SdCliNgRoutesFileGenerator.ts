@@ -52,8 +52,8 @@ export class SdCliNgRoutesFileGenerator {
         cont += indentStr + `  path: "${key}",\n`;
         if (val.relModulePath != null) {
           if (noLazyRoute) {
-            cont += indentStr + `  component: ${path.basename(val.relModulePath)},\n`;
-            imports.push(`import { ${path.basename(val.relModulePath)} } from "./app/${val.relModulePath}";`);
+            cont += indentStr + `  component: ${StringUtil.toPascalCase(path.basename(val.relModulePath))},\n`;
+            imports.push(`import { ${StringUtil.toPascalCase(path.basename(val.relModulePath))} } from "./app/${val.relModulePath}";`);
           }
           else {
             cont +=
