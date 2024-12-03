@@ -91,10 +91,14 @@ export function $effect(
           await fn(onCleanup);
         });
       },
+      { allowSignalWrites: true },
     );
   }
   else {
-    return effect((onCleanup) => fn(onCleanup));
+    return effect(
+      (onCleanup) => fn(onCleanup),
+      { allowSignalWrites: true },
+    );
   }
 }
 
@@ -122,6 +126,7 @@ export function $computed(...args: any): Signal<any> {
           resultSig.set(await fn());
         });
       },
+      { allowSignalWrites: true },
     );
 
     return resultSig;
