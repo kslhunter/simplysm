@@ -1,10 +1,11 @@
 import { ISdAppStructureItem } from "./utils/SdAppStructureUtil";
 import { ISdAngularIcon, SdAngularConfigProvider } from "./providers/sd-angular-config.provider";
 import {
+  ENVIRONMENT_INITIALIZER,
   EnvironmentProviders,
   ErrorHandler,
   inject,
-  makeEnvironmentProviders, provideEnvironmentInitializer,
+  makeEnvironmentProviders,
   provideExperimentalZonelessChangeDetection,
 } from "@angular/core";
 import {
@@ -39,7 +40,7 @@ import {
   faSortUp,
   faStar,
   faTriangleExclamation,
-  faXmark
+  faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import { EVENT_MANAGER_PLUGINS } from "@angular/platform-browser";
 import { SdSaveCommandEventPlugin } from "./plugins/commands/sd-save-command.event-plugin";
@@ -59,7 +60,7 @@ export function provideSdAngular(opt: {
   icons?: ISdAngularIcon;
 }): EnvironmentProviders {
   return makeEnvironmentProviders([
-    provideEnvironmentInitializer(() => {
+    /*provideEnvironmentInitializer(() => {
       const _sdNgConf = inject(SdAngularConfigProvider);
       const _sdTheme = inject(SdThemeProvider);
       const _sdLocalStorage = inject(SdLocalStorageProvider);
@@ -67,7 +68,20 @@ export function provideSdAngular(opt: {
       return () => {
         _sdTheme.theme.set(_sdLocalStorage.get("sd-theme") ?? _sdNgConf.defaultTheme);
       };
-    }),
+    }),*/
+    {
+      provide: ENVIRONMENT_INITIALIZER,
+      useFactory: () => {
+        const _sdNgConf = inject(SdAngularConfigProvider);
+        const _sdTheme = inject(SdThemeProvider);
+        const _sdLocalStorage = inject(SdLocalStorageProvider);
+
+        return () => {
+          _sdTheme.theme.set(_sdLocalStorage.get("sd-theme") ?? _sdNgConf.defaultTheme);
+        };
+      },
+      multi: true
+    },
     {
       provide: SdAngularConfigProvider,
       useFactory: () => {
