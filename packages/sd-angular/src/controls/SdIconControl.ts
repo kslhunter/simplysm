@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, input, ViewEncapsulation } from "@angular/core";
 import { IconDefinition } from "@fortawesome/fontawesome-common-types";
-import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
+import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { icon, RotateProp, SizeProp } from "@fortawesome/fontawesome-svg-core";
 import { injectElementRef } from "../utils/injectElementRef";
 import { $effect } from "../utils/$hooks";

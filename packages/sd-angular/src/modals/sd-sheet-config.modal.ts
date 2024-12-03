@@ -1,16 +1,16 @@
 import { ChangeDetectionStrategy, Component, forwardRef, inject, ViewEncapsulation } from "@angular/core";
-import { SdModalBase } from "../providers/SdModalProvider";
-import { SdSheetColumnDirective } from "../directives/SdSheetColumnDirective";
+import { SdModalBase } from "../providers/sd-modal.provider";
+import { SdSheetColumnDirective } from "../directives/sd-sheet-column.directive";
 import { ISdSheetConfig, SdSheetControl } from "../controls/SdSheetControl";
 import { SdDockContainerControl } from "../controls/SdDockContainerControl";
 import { SdPaneControl } from "../controls/SdPaneControl";
 import { SdCheckboxControl } from "../controls/SdCheckboxControl";
 import { SdAnchorControl } from "../controls/SdAnchorControl";
 import { SdTextfieldControl } from "../controls/SdTextfieldControl";
-import { SdSheetColumnCellTemplateDirective } from "../directives/SdSheetColumnCellTemplateDirective";
+import { SdSheetColumnCellTemplateDirective } from "../directives/sd-sheet-column-cell.template-directive";
 import { SdDockControl } from "../controls/SdDockControl";
 import { SdButtonControl } from "../controls/SdButtonControl";
-import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
+import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { $effect, $signal } from "../utils/$hooks";
 import { SdIconControl } from "../controls/SdIconControl";
 

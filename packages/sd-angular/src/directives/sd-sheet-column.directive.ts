@@ -2,7 +2,7 @@ import { contentChild, Directive, input, TemplateRef } from "@angular/core";
 import {
   SdSheetColumnCellTemplateContext,
   SdSheetColumnCellTemplateDirective,
-} from "./SdSheetColumnCellTemplateDirective";
+} from "./sd-sheet-column-cell.template-directive";
 import { transformBoolean } from "../utils/tramsforms";
 
 @Directive({

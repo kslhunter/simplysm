@@ -1,5 +1,5 @@
 import { inject } from "@angular/core";
-import { SdAppStructureProvider } from "../providers/SdAppStructureProvider";
+import { SdAppStructureProvider } from "../providers/sd-app-structure.provider";
 
 export function injectPerms<K extends string>(viewCodes: string[], keys: K[]): Record<K, boolean> {
   return inject(SdAppStructureProvider).getViewPerms(viewCodes, keys);

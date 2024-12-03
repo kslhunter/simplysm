@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
 import { SdListControl } from "./SdListControl";
 import { NgTemplateOutlet } from "@angular/common";
-import { SdTypedTemplateDirective } from "../directives/SdTypedTemplateDirective";
+import { SdTypedTemplateDirective } from "../directives/sd-typed.template-directive";
 import { SdListItemControl } from "./SdListItemControl";
-import { SdRouterLinkDirective } from "../directives/SdRouterLinkDirective";
+import { SdRouterLinkDirective } from "../directives/sd-router-link.directive";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { injectPageCode$ } from "../utils/injectPageCode$";
 import { $computed } from "../utils/$hooks";

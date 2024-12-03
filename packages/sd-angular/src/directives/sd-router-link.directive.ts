@@ -1,6 +1,6 @@
 import { Directive, HostListener, inject, input } from "@angular/core";
 import { Router } from "@angular/router";
-import { SdNavigateWindowProvider } from "../providers/SdNavigateWindowProvider";
+import { SdNavigateWindowProvider } from "../providers/sd-navigate-window.provider";
 
 @Directive({
   selector: "[sdRouterLink]",

@@ -1,5 +1,5 @@
 import { Directive, output } from "@angular/core";
-import { ISdResizeEvent } from "../plugins/SdResizeEventPlugin";
+import { ISdResizeEvent } from "../plugins/sd-resize.event-plugin";
 
 @Directive({
   selector: "[sdResize], [invalid.capture], [keydown.capture]",

@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, inject, input, output, ViewEncapsulation } from "@angular/core";
 import { ObjectUtil } from "@simplysm/sd-core-common";
-import { SdSystemConfigProvider } from "../providers/SdSystemConfigProvider";
-import { SdToastProvider } from "../providers/SdToastProvider";
+import { SdSystemConfigProvider } from "../providers/sd-system-config.provider";
+import { SdToastProvider } from "../providers/sd-toast.provider";
 import { SdGapControl } from "./SdGapControl";
 import { SdAnchorControl } from "./SdAnchorControl";
-import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
+import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { $effect, $model, $signal } from "../utils/$hooks";
 import { SdIconControl } from "./SdIconControl";
 

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, HostListener, inject, input, ViewEncapsulation } from "@angular/core";
-import { SdSystemConfigProvider } from "../providers/SdSystemConfigProvider";
-import { ISdResizeEvent } from "../plugins/SdResizeEventPlugin";
+import { SdSystemConfigProvider } from "../providers/sd-system-config.provider";
+import { ISdResizeEvent } from "../plugins/sd-resize.event-plugin";
 import { $effect, $signal } from "../utils/$hooks";
 import { injectElementRef } from "../utils/injectElementRef";
 import { transformBoolean } from "../utils/tramsforms";

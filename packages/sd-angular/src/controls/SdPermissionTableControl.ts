@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component, inject, input, output, ViewEncapsulation } from "@angular/core";
 import { SdAnchorControl } from "./SdAnchorControl";
 import { ISdPermission } from "../utils/SdAppStructureUtil";
-import { SdTypedTemplateDirective } from "../directives/SdTypedTemplateDirective";
+import { SdTypedTemplateDirective } from "../directives/sd-typed.template-directive";
 import { NgTemplateOutlet } from "@angular/common";
 import { SdCollapseIconControl } from "./SdCollapseIconControl";
 import { SdCheckboxControl } from "./SdCheckboxControl";
-import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
+import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { $computed, $model, $signal } from "../utils/$hooks";
 import { transformBoolean } from "../utils/tramsforms";
 import { ObjectUtil } from "@simplysm/sd-core-common";

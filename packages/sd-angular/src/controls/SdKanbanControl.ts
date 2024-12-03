@@ -12,8 +12,8 @@ import { SdCardControl } from "./SdCardControl";
 import { $computed, $signal } from "../utils/$hooks";
 import { SdKanbanLaneControl } from "./SdKanbanLaneControl";
 import { injectElementRef } from "../utils/injectElementRef";
-import { SdEventsDirective } from "../directives/SdEventsDirective";
-import { ISdResizeEvent } from "../plugins/SdResizeEventPlugin";
+import { SdEventsDirective } from "../directives/sd-events.directive";
+import { ISdResizeEvent } from "../plugins/sd-resize.event-plugin";
 import { NumberUtil } from "@simplysm/sd-core-common";
 import { transformBoolean } from "../utils/tramsforms";
 

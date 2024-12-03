@@ -9,14 +9,14 @@ import {
   Type,
   ViewEncapsulation,
 } from "@angular/core";
-import { ISharedDataBase } from "../providers/SdSharedDataProvider";
-import { SD_MODAL_INPUT, SdModalBase, SdModalProvider } from "../providers/SdModalProvider";
-import { SdItemOfTemplateContext, SdItemOfTemplateDirective } from "../directives/SdItemOfTemplateDirective";
+import { ISharedDataBase } from "../providers/sd-shared-data.provider";
+import { SD_MODAL_INPUT, SdModalBase, SdModalProvider } from "../providers/sd-modal.provider";
+import { SdItemOfTemplateContext, SdItemOfTemplateDirective } from "../directives/sd-item-of.template-directive";
 import { SdSelectControl, TSelectValue } from "./SdSelectControl";
 import { SdTextfieldControl } from "./SdTextfieldControl";
 import { SdSelectItemControl } from "./SdSelectItemControl";
 import { NgTemplateOutlet } from "@angular/common";
-import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
+import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { SdSelectButtonControl } from "./SdSelectButtonControl";
 import { $computed, $model, $signal } from "../utils/$hooks";
 import { transformBoolean } from "../utils/tramsforms";

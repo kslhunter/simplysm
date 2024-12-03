@@ -8,11 +8,11 @@ import {
   output,
   ViewEncapsulation,
 } from "@angular/core";
-import { SdSheetColumnDirective } from "../directives/SdSheetColumnDirective";
-import { SdSystemConfigProvider } from "../providers/SdSystemConfigProvider";
+import { SdSheetColumnDirective } from "../directives/sd-sheet-column.directive";
+import { SdSystemConfigProvider } from "../providers/sd-system-config.provider";
 import { NumberUtil, ObjectUtil } from "@simplysm/sd-core-common";
-import { SdSheetConfigModal } from "../modals/SdSheetConfigModal";
-import { SdModalProvider } from "../providers/SdModalProvider";
+import { SdSheetConfigModal } from "../modals/sd-sheet-config.modal";
+import { SdModalProvider } from "../providers/sd-modal.provider";
 import { SdBusyContainerControl } from "./SdBusyContainerControl";
 import { SdDockContainerControl } from "./SdDockContainerControl";
 import { SdDockControl } from "./SdDockControl";
@@ -20,8 +20,8 @@ import { NgTemplateOutlet } from "@angular/common";
 import { SdAnchorControl } from "./SdAnchorControl";
 import { SdPaginationControl } from "./SdPaginationControl";
 import { SdPaneControl } from "./SdPaneControl";
-import { SdEventsDirective } from "../directives/SdEventsDirective";
-import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
+import { SdEventsDirective } from "../directives/sd-events.directive";
+import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { SdCheckboxControl } from "./SdCheckboxControl";
 import { $computed, $effect, $model, $signal } from "../utils/$hooks";
 import { injectElementRef } from "../utils/injectElementRef";

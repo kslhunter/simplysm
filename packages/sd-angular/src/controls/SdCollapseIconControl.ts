@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, input, ViewEncapsulation } from "@angular/core";
-import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
+import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { $computed } from "../utils/$hooks";
 import { transformBoolean } from "../utils/tramsforms";
 import { SdIconControl } from "./SdIconControl";

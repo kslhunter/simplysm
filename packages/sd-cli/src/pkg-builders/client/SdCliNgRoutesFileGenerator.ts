@@ -20,19 +20,22 @@ export class SdCliNgRoutesFileGenerator {
 
     // 내부 파일들 import
     const result: TInfo = new Map();
-    const filePaths = FsUtil.glob(path.resolve(appDirPath, "**/*Page.ts"));
+    const filePaths = FsUtil.glob(path.resolve(appDirPath, "**/*{P,.p}age.ts"));
     for (const filePath of filePaths.orderBy()) {
       const relModulePath = PathUtil.posix(path.relative(appDirPath, filePath)).slice(0, -3);
       const codes = relModulePath
-        .slice(0, -4)
-        .split("/")
-        .map((item) => StringUtil.toKebabCase(item));
+        .replace(/\.page$/, "")
+        .replace(/Page$/, "")
+        .split("/");
+      // .map((item) => StringUtil.toKebabCase(item));
 
       let cursorItem!: { relModulePath?: string; children: TInfo };
       let cursor = result;
 
-      for (const code of codes) {
-        cursorItem = cursor.getOrCreate(code, { children: new Map() });
+      for (let i = 0; i < codes.length; i++) {
+        if (i === codes.length - 2) continue; // 마지막 모음 폴더 무시.
+        const code = codes[i];
+        cursorItem = cursor.getOrCreate(StringUtil.toKebabCase(code), { children: new Map() });
         cursor = cursorItem.children;
       }
 
@@ -51,10 +54,12 @@ export class SdCliNgRoutesFileGenerator {
           if (noLazyRoute) {
             cont += indentStr + `  component: ${path.basename(val.relModulePath)},\n`;
             imports.push(`import { ${path.basename(val.relModulePath)} } from "./app/${val.relModulePath}";`);
-          } else {
+          }
+          else {
             cont +=
               indentStr +
-              `  loadComponent: () => import("./app/${val.relModulePath}").then((m) => m.${path.basename(val.relModulePath)}),\n`;
+              `  loadComponent: () => import("./app/${val.relModulePath}").then((m) => m.${StringUtil.toPascalCase(path.basename(
+                val.relModulePath))}),\n`;
           }
         }
         if (val.children.size > 0) {

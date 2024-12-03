@@ -12,20 +12,20 @@ import {
 } from "@angular/core";
 import { SdSelectItemControl } from "./SdSelectItemControl";
 import { SdDropdownControl } from "./SdDropdownControl";
-import { SdItemOfTemplateContext, SdItemOfTemplateDirective } from "../directives/SdItemOfTemplateDirective";
+import { SdItemOfTemplateContext, SdItemOfTemplateDirective } from "../directives/sd-item-of.template-directive";
 import { SdDockContainerControl } from "./SdDockContainerControl";
 import { NgTemplateOutlet } from "@angular/common";
 import { SdDockControl } from "./SdDockControl";
 import { SdAnchorControl } from "./SdAnchorControl";
 import { SdGapControl } from "./SdGapControl";
 import { SdPaneControl } from "./SdPaneControl";
-import { SdTypedTemplateDirective } from "../directives/SdTypedTemplateDirective";
+import { SdTypedTemplateDirective } from "../directives/sd-typed.template-directive";
 import { SdDropdownPopupControl } from "./SdDropdownPopupControl";
 import { StringUtil } from "@simplysm/sd-core-common";
-import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
+import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { $computed, $effect, $model, $signal } from "../utils/$hooks";
 import { transformBoolean } from "../utils/tramsforms";
-import { SdUseRippleDirective } from "../directives/SdUseRippleDirective";
+import { SdUseRippleDirective } from "../directives/sd-use-ripple.directive";
 import { SdIconControl } from "./SdIconControl";
 
 @Component({

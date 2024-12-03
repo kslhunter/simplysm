@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, HostListener, inject, input, ViewEncapsulation } from "@angular/core";
-import { SdBusyProvider } from "../providers/SdBusyProvider";
+import { SdBusyProvider } from "../providers/sd-busy.provider";
 import { $computed } from "../utils/$hooks";
 import { transformBoolean, transformNullableBoolean } from "../utils/tramsforms";
 

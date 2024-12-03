@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, output, ViewEncapsulation } from "@angular/core";
 import { SdAnchorControl } from "./SdAnchorControl";
-import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
+import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { SdIconControl } from "./SdIconControl";
 
 @Component({

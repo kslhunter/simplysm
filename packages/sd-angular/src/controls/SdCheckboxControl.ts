@@ -8,7 +8,7 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 
-import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
+import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { transformBoolean } from "../utils/tramsforms";
 import { useRipple } from "../utils/useRipple";
 import { SdIconControl } from "./SdIconControl";

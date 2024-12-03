@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
-import { SdUseRippleDirective } from "../directives/SdUseRippleDirective";
+import { SdUseRippleDirective } from "../directives/sd-use-ripple.directive";
 import { transformBoolean } from "../utils/tramsforms";
 
 @Component({

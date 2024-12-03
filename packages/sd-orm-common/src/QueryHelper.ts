@@ -176,9 +176,13 @@ export class QueryHelper {
     return [
       this.getQueryValue(source),
       " LIKE ",
-      this.getQueryValue(target),
-      this._dialect === "sqlite" ? " || " : " + ",
-      "'%'",
+      ...this._dialect === 'mysql' ? [
+        this.getQueryValue(this.concat(target, '%'))
+      ] : [
+        this.getQueryValue(target),
+        this._dialect === "sqlite" ? " || " : " + ",
+        "'%'",
+      ],
     ];
   }
 

@@ -12,12 +12,12 @@ import {
 import { NumberUtil } from "@simplysm/sd-core-common";
 import { SdAnchorControl } from "./SdAnchorControl";
 import { SdPaneControl } from "./SdPaneControl";
-import { SdSystemConfigProvider } from "../providers/SdSystemConfigProvider";
-import { ISdResizeEvent } from "../plugins/SdResizeEventPlugin";
-import { SdEventsDirective } from "../directives/SdEventsDirective";
+import { SdSystemConfigProvider } from "../providers/sd-system-config.provider";
+import { ISdResizeEvent } from "../plugins/sd-resize.event-plugin";
+import { SdEventsDirective } from "../directives/sd-events.directive";
 import { SdDockContainerControl } from "./SdDockContainerControl";
 import { SdDockControl } from "./SdDockControl";
-import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
+import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { $effect, $model, $signal } from "../utils/$hooks";
 import { injectElementRef } from "../utils/injectElementRef";
 import { transformBoolean } from "../utils/tramsforms";

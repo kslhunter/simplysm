@@ -3,9 +3,9 @@ import { SdDropdownControl } from "./SdDropdownControl";
 import { SdAnchorControl } from "./SdAnchorControl";
 import { SdListControl } from "./SdListControl";
 import { SdListItemControl } from "./SdListItemControl";
-import { SdThemeProvider } from "../providers/SdThemeProvider";
+import { SdThemeProvider } from "../providers/sd-theme.provider";
 import { SdDropdownPopupControl } from "./SdDropdownPopupControl";
-import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
+import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { $effect } from "../utils/$hooks";
 import { SdIconControl } from "./SdIconControl";
 

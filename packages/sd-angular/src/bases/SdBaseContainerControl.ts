@@ -10,7 +10,7 @@ import {
 import { SdBusyContainerControl } from "../controls/SdBusyContainerControl";
 import { SdPaneControl } from "../controls/SdPaneControl";
 import { faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
-import { SdAppStructureProvider } from "../providers/SdAppStructureProvider";
+import { SdAppStructureProvider } from "../providers/sd-app-structure.provider";
 import { SdTopbarContainerControl } from "../controls/SdTopbarContainerControl";
 import { SdTopbarControl } from "../controls/SdTopbarControl";
 import { NgTemplateOutlet } from "@angular/common";
@@ -18,10 +18,10 @@ import { injectPageCode$ } from "../utils/injectPageCode$";
 import { $computed, $effect } from "../utils/$hooks";
 import { ActivatedRoute } from "@angular/router";
 import { injectParent } from "../utils/injectParent";
-import { SdActivatedModalProvider } from "../providers/SdModalProvider";
+import { SdActivatedModalProvider } from "../providers/sd-modal.provider";
 import { transformBoolean } from "../utils/tramsforms";
 import { SdIconControl } from "../controls/SdIconControl";
-import { SdBackgroundProvider } from "../providers/SdBackgroundProvider";
+import { SdBackgroundProvider } from "../providers/sd-background.provider";
 
 @Component({
   selector: "sd-base-container",

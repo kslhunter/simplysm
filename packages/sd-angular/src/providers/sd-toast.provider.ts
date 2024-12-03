@@ -9,7 +9,7 @@ import {
   Type,
 } from "@angular/core";
 import { SdToastContainerControl } from "../controls/SdToastContainerControl";
-import { SdSystemLogProvider } from "./SdSystemLogProvider";
+import { SdSystemLogProvider } from "./sd-system-log.provider";
 import { SdToastControl } from "../controls/SdToastControl";
 
 @Injectable({ providedIn: "root" })

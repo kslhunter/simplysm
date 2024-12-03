@@ -9,13 +9,13 @@ import {
 } from "@angular/core";
 import { SdTopbarContainerControl } from "./SdTopbarContainerControl";
 import { SdSidebarContainerControl } from "./SdSidebarContainerControl";
-import { ISdResizeEvent } from "../plugins/SdResizeEventPlugin";
+import { ISdResizeEvent } from "../plugins/sd-resize.event-plugin";
 import { SdAnchorControl } from "./SdAnchorControl";
 import { SdGapControl } from "./SdGapControl";
-import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
+import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { $computed } from "../utils/$hooks";
 import { injectElementRef } from "../utils/injectElementRef";
-import { SdUseRippleDirective } from "../directives/SdUseRippleDirective";
+import { SdUseRippleDirective } from "../directives/sd-use-ripple.directive";
 import { SdIconControl } from "./SdIconControl";
 
 @Component({

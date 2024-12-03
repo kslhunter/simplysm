@@ -1,7 +1,7 @@
 import { ApplicationRef, createComponent, Directive, inject, Injectable, Injector, input, Type } from "@angular/core";
 import { SdModalControl } from "../controls/SdModalControl";
 import { $signal } from "../utils/$hooks";
-import { SdBusyProvider } from "./SdBusyProvider";
+import { SdBusyProvider } from "./sd-busy.provider";
 
 export const SD_MODAL_INPUT = Symbol();
 export const SD_MODEL_OUTPUT = Symbol();

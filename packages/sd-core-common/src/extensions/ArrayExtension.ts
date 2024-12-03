@@ -1,3 +1,4 @@
+import "./MapExtension";
 import { Type } from "../types/Type";
 import { WrappedType } from "../types/WrappedType";
 import { NeverEntryError } from "../errors/NeverEntryError";
@@ -261,7 +262,7 @@ declare global {
   };
 
   prototype.filterExists = function <T>(this: T[]): NonNullable<T>[] {
-    return this.filter((item) => item !== undefined) as NonNullable<T>[];
+    return this.filter((item) => item != null)/* as NonNullable<T>[]*/;
   };
 
   prototype.ofType = function <T, N extends T>(this: T[], type: Type<WrappedType<N>>): N[] {

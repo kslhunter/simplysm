@@ -3,9 +3,9 @@ import { SdCollapseIconControl } from "./SdCollapseIconControl";
 import { SdCollapseControl } from "./SdCollapseControl";
 import { SdListControl } from "./SdListControl";
 import { SdListItemControl } from "./SdListItemControl";
-import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
+import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { $signal } from "../utils/$hooks";
-import { SdUseRippleDirective } from "../directives/SdUseRippleDirective";
+import { SdUseRippleDirective } from "../directives/sd-use-ripple.directive";
 
 @Component({
   selector: "sd-sidebar-user",

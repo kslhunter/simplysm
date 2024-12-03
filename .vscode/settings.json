@@ -1,0 +1,12 @@
+{
+    "files.exclude": {
+        "_back": true,
+        ".idea": true,
+        "_logs": true,
+        ".yarn": true,
+        "packages/*/.cache": true,
+        "packages/*/.cordova": true,
+        "packages/*/.electron": true,
+        "packages/*/dist": true
+    }
+}

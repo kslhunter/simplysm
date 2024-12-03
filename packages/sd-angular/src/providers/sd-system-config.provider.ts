@@ -1,5 +1,5 @@
 import { inject, Injectable } from "@angular/core";
-import { SdLocalStorageProvider } from "./SdLocalStorageProvider";
+import { SdLocalStorageProvider } from "./sd-local-storage.provider";
 
 @Injectable({ providedIn: "root" })
 export class SdSystemConfigProvider<T> {

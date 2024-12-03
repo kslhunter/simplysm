@@ -7,8 +7,8 @@ import {
   viewChild,
   ViewEncapsulation,
 } from "@angular/core";
-import { SdToastProvider } from "../providers/SdToastProvider";
-import { SdEventsDirective } from "../directives/SdEventsDirective";
+import { SdToastProvider } from "../providers/sd-toast.provider";
+import { SdEventsDirective } from "../directives/sd-events.directive";
 
 @Component({
   selector: "sd-form",

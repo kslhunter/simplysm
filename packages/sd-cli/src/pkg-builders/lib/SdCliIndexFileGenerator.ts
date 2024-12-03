@@ -53,7 +53,7 @@ export class SdCliIndexFileGenerator {
     const tsconfig = FsUtil.readJson(path.resolve(pkgPath, "tsconfig.json"));
     const entryFilePaths: string[] = tsconfig.files?.map((item) => path.resolve(pkgPath, item)) ?? [];
 
-    return FsUtil.glob(path.resolve(pkgPath, "src/**/*{.ts,.tsx}"), { nodir: true }).filter(
+    return FsUtil.glob(path.resolve(pkgPath, "src/**/*{.ts,.tsx}"), { nodir: true, ignore: tsconfig.excludes }).filter(
       (item) => !entryFilePaths.includes(item) && item !== indexFilePath && !item.endsWith(".d.ts"),
     );
   }

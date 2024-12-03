@@ -1,5 +1,5 @@
 import { inject, Injectable } from "@angular/core";
-import { SdAngularConfigProvider } from "./SdAngularConfigProvider";
+import { SdAngularConfigProvider } from "./sd-angular-config.provider";
 import {
   ISdAppStructureItem,
   ISdFlatPage,
