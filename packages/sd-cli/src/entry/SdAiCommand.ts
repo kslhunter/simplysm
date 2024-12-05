@@ -68,7 +68,17 @@ Git diff 내용:\n\n${diff}
 
     await this.#waitInputEnterKey();
 
+    logger.log("커밋 중...");
     await SdProcess.spawnAsync(`git commit -m "${parts[1].trim()}"`, { cwd: process.cwd() });
+
+    process.stdout.write("푸쉬 하려면 ENTER를 입력하세요. (취소: CTRL+C)\n\n");
+    process.stdout.write(parts[1].trim() + "\n----\n");
+
+    logger.log("푸쉬 중...");
+    await SdProcess.spawnAsync("git push", { cwd: process.cwd() });
+    await SdProcess.spawnAsync("git push --tags", { cwd: process.cwd() });
+
+    process.exit(0);
   }
 
   static async #waitInputEnterKey(): Promise<void> {
