@@ -1,27 +1,25 @@
-import { Logger, SdProcess } from "@simplysm/sd-core-node";
+import { SdProcess } from "@simplysm/sd-core-node";
 import { NeverEntryError, StringUtil } from "@simplysm/sd-core-common";
 import Anthropic from "@anthropic-ai/sdk";
 
 export class SdAiCommand {
   static async commitAsync(): Promise<void> {
-    const logger = Logger.get(["simplysm", "sd-cli", "SdAiCommand", "commitAsync"]);
-
     if (StringUtil.isNullOrEmpty(process.env['ANTHROPIC_API_KEY'])) {
       throw new Error("ANTHROPIC_API_KEY 환경변수가 설정되어 있지 않습니다.");
     }
 
-    logger.debug("$ git add .");
+    process.stdout.write("실행중: git add .\n");
     await SdProcess.spawnAsync("git add .", { cwd: process.cwd() });
 
-    logger.debug(`$ git diff --staged -- . ":(exclude).*/" ":(exclude)_*/"`);
+    process.stdout.write(`실행중: git diff --staged -- . ":(exclude).*/" ":(exclude)_*/ ":(exclude)yarn.lock" ":(exclude)packages/*/styles.css"\n`);
     const diff = await SdProcess.spawnAsync(
-      `git diff --staged -- . ":(exclude).*" ":(exclude)_*"`,
+      `git diff --staged -- . ":(exclude).*" ":(exclude)_*" ":(exclude)yarn.lock" ":(exclude)packages/*/styles.css"`,
       { cwd: process.cwd() },
     );
 
     const client = new Anthropic({ apiKey: process.env['ANTHROPIC_API_KEY'] });
 
-    logger.log("AI를 통해 문제점 파악 및 커밋 메시지 생성중...");
+    process.stdout.write("AI를 통해 문제점 파악 및 커밋 메시지 생성중...\n");
     const message = await client.messages.create({
       model: 'claude-3-5-sonnet-latest',
       max_tokens: 1024,
@@ -68,17 +66,17 @@ Git diff 내용:\n\n${diff}
     process.stdout.write("커밋 하려면 ENTER를 입력하세요. (취소: CTRL+C)\n\n");
     await this.#waitInputEnterKey();
 
-    logger.log("커밋 중...");
+    process.stdout.write("커밋 중...\n");
     await SdProcess.spawnAsync(`git commit -m "${parts[1].trim()}"`, { cwd: process.cwd() });
 
     process.stdout.write("커밋되었습니다. 푸쉬 하려면 ENTER를 입력하세요. (취소: CTRL+C)\n\n");
     await this.#waitInputEnterKey();
 
-    logger.log("푸쉬 중...");
+    process.stdout.write("푸쉬 중...\n");
     await SdProcess.spawnAsync("git push", { cwd: process.cwd() });
     await SdProcess.spawnAsync("git push --tags", { cwd: process.cwd() });
 
-    logger.info("완료");
+    process.stdout.write("완료\n");
     process.exit(0);
   }
 
