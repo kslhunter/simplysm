@@ -8,6 +8,7 @@ import { EventEmitter } from "events";
 import { SdCliElectron } from "./entry/SdCliElectron";
 import { SdCliLocalUpdate } from "./entry/SdCliLocalUpdate";
 import { SdCliCordova } from "./entry/SdCliCordova";
+import { SdAiCommand } from "./entry/SdAiCommand";
 
 Error.stackTraceLimit = Infinity;
 EventEmitter.defaultMaxListeners = 0;
@@ -174,6 +175,10 @@ const argv = (await yargs(hideBin(process.argv))
           demandOption: true,
         }),
   )
+  .command(
+    "commit",
+    "AI를 통해 변경사항에 대한 문제점을 파악하고, 커밋 메시지를 작성하여, 커밋을 수행합니다.",
+  )
   .parseAsync()) as any;
 
 if (Boolean(argv.debug)) {
@@ -183,7 +188,8 @@ if (Boolean(argv.debug)) {
       level: LoggerSeverity.debug,
     },
   });
-} else {
+}
+else {
   Logger.setConfig({
     dot: true,
   });
@@ -194,44 +200,54 @@ if (argv._[0] === "local-update") {
     confFileRelPath: argv.config ?? "simplysm.js",
     optNames: argv.options ?? [],
   });
-} else if (argv._[0] === "watch") {
+}
+else if (argv._[0] === "watch") {
   await SdCliProject.watchAsync({
     confFileRelPath: argv.config ?? "simplysm.js",
     optNames: argv.options ?? [],
     pkgNames: argv.packages ?? [],
     inspectNames: argv.inspects ?? [],
   });
-} else if (argv._[0] === "build") {
+}
+else if (argv._[0] === "build") {
   await SdCliProject.buildAsync({
     confFileRelPath: argv.config ?? "simplysm.js",
     optNames: argv.options ?? [],
     pkgNames: argv.packages ?? [],
   });
-} else if (argv._[0] === "publish") {
+}
+else if (argv._[0] === "publish") {
   await SdCliProject.publishAsync({
     noBuild: argv.noBuild,
     confFileRelPath: argv.config ?? "simplysm.js",
     optNames: argv.options ?? [],
     pkgNames: argv.packages ?? [],
   });
-} else if (argv._[0] === "run-electron") {
+}
+else if (argv._[0] === "run-electron") {
   await SdCliElectron.runAsync({
     confFileRelPath: argv.config ?? "simplysm.js",
     optNames: argv.options ?? [],
     pkgName: argv.package,
   });
-} else if (argv._[0] === "build-electron-for-dev") {
+}
+else if (argv._[0] === "build-electron-for-dev") {
   await SdCliElectron.buildForDevAsync({
     confFileRelPath: argv.config ?? "simplysm.js",
     optNames: argv.options ?? [],
     pkgName: argv.package,
   });
-} else if (argv._[0] === "run-cordova") {
+}
+else if (argv._[0] === "run-cordova") {
   await SdCliCordova.runWebviewOnDeviceAsync({
     platform: argv.platform,
     pkgName: argv.package,
     url: argv.url,
   });
-} else {
+}
+else if (argv._[0] === "commit") {
+  await SdAiCommand.commitAsync();
+}
+else {
   throw new Error(`명령어가 잘못 되었습니다.\n\t${argv._[0]}\n`);
 }

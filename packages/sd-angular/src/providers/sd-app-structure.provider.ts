@@ -7,20 +7,21 @@ import {
   ISdPermission,
   SdAppStructureUtil,
 } from "../utils/SdAppStructureUtil";
+import { $signal } from "../utils/$hooks";
 
 @Injectable({ providedIn: "root" })
 export class SdAppStructureProvider<T extends string> {
   #items = inject(SdAngularConfigProvider).appStructure as ISdAppStructureItem<T>[];
 
-  #usableModules?: T[];
-  #permRecord?: Record<string, boolean | undefined>;
+  #usableModules = $signal<T[]>();
+  #permRecord = $signal<Record<string, boolean | undefined>>();
 
   initialize(
     usableModules?: T[],
     permRecord?: Record<string, boolean | undefined>,
   ) {
-    this.#usableModules = usableModules ?? [];
-    this.#permRecord = permRecord ?? {};
+    this.#usableModules.set(usableModules ?? []);
+    this.#permRecord.set(permRecord ?? {});
   }
 
   getTitleByCode(pageCode: string) {
@@ -53,30 +54,30 @@ export class SdAppStructureProvider<T extends string> {
 
     const result: Record<string, boolean> = {};
     for (const key of keys) {
-      result[key] = viewCodes.some((viewCode) => Boolean(this.#permRecord?.[viewCode + "." + key]));
+      result[key] = viewCodes.some((viewCode) => Boolean(this.#permRecord()?.[viewCode + "." + key]));
     }
 
     return result;
   }
 
   getFlatPages() {
-    if (!this.#usableModules || !this.#permRecord) return [];
+    if (!this.#usableModules() || !this.#permRecord()) return [];
 
     return SdAppStructureUtil.getFlatPages(this.#items).filter(
       (item) =>
-        (!item.hasPerms || Boolean(this.#permRecord?.[item.codeChain.join(".") + ".use"])) &&
+        (!item.hasPerms || Boolean(this.#permRecord()?.[item.codeChain.join(".") + ".use"])) &&
         this.#isUsableModulePage(item),
     );
   }
 
   getMenus() {
-    if (!this.#usableModules || !this.#permRecord) return [];
+    if (!this.#usableModules() || !this.#permRecord()) return [];
 
     return this.#getDisplayMenus();
   }
 
   getPerms() {
-    if (!this.#usableModules || !this.#permRecord) return [];
+    if (!this.#usableModules() || !this.#permRecord()) return [];
 
     return this.#getPermsByModule(SdAppStructureUtil.getPermissions(this.#items));
   }
@@ -132,7 +133,7 @@ export class SdAppStructureProvider<T extends string> {
       }
       else {
         const code = menu.codeChain.join(".");
-        if ((!menu.hasPerms || this.#permRecord![code + ".use"] === true)
+        if ((!menu.hasPerms || this.#permRecord()![code + ".use"] === true)
           && this.#isModulesEnabled(menu.modules)) {
           result.push(menu);
         }
@@ -155,6 +156,6 @@ export class SdAppStructureProvider<T extends string> {
   #isModulesEnabled(needModules: T[] | undefined): boolean {
     return needModules == null
       || needModules.length === 0
-      || !needModules.every((needModule) => !this.#usableModules!.includes(needModule));
+      || !needModules.every((needModule) => !this.#usableModules()!.includes(needModule));
   }
 }

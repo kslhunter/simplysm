@@ -1,3 +1,4 @@
+export * from "./entry/SdAiCommand";
 export * from "./entry/SdCliCordova";
 export * from "./entry/SdCliElectron";
 export * from "./entry/SdCliLocalUpdate";

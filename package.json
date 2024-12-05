@@ -24,7 +24,7 @@
     "publish": "npm run _sd-cli_ -- publish",
     "--": "",
     "_sd-cli_": "tsx --tsconfig packages/sd-cli/tsconfig.json packages/sd-cli/src/sd-cli.ts",
-    "commit": "git add . && git commit -m .",
+    "commit": "npm run _sd-cli_ -- commit",
     "eslint-timing": "cross-env TIMING=1 eslint \"**/+(*.ts|*.js|*.html)\"",
     "eslint-fix": "cross-env TIMING=1 eslint --fix \"**/+(*.ts|*.js|*.html)\"",
     "reinstall": "yarn install --refresh-lockfile"

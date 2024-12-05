@@ -193,9 +193,11 @@ export function $mark(sig: WritableSignal<any>) {
 
 const ORIGIN_SNAPSHOT = Symbol();
 
-export function $arr<T>(sig: WritableSignal<T[]>) { // 다
+export function $arr<T>(sig: Signal<T[]> | WritableSignal<T[]>) { // 다
   return {
     insert(i: number, item: T) {
+      if (!("update" in sig)) throw new Error("Readonly signal does not support updates.");
+
       sig.update((v) => {
         const r = [...v];
         r.insert(i, item);
@@ -203,6 +205,8 @@ export function $arr<T>(sig: WritableSignal<T[]>) { // 다
       });
     },
     remove(itemOrFn: T | ((item: T, i: number) => boolean)) {
+      if (!("update" in sig)) throw new Error("Readonly signal does not support remove.");
+
       sig.update((v) => {
         const r = [...v];
         r.remove(itemOrFn as any);
@@ -232,10 +236,13 @@ export function $arr<T>(sig: WritableSignal<T[]>) { // 다
 
       return sig().oneWayDiffs(orgItemMap, keyPropName);
     },
+    get origin(): Map<any, T> {
+      return sig[ORIGIN_SNAPSHOT]?.snapshot ?? new Map<any, T>();
+    },
   };
 }
 
-export function $obj<T>(sig: WritableSignal<T>) {
+export function $obj<T>(sig: Signal<T>) {
   return {
     snapshot() {
       sig[ORIGIN_SNAPSHOT] = ObjectUtil.clone(sig());
@@ -245,7 +252,7 @@ export function $obj<T>(sig: WritableSignal<T>) {
       return !ObjectUtil.equal(orgData, sig());
     },
     get origin(): T {
-      return sig[ORIGIN_SNAPSHOT];
+      return sig[ORIGIN_SNAPSHOT] ?? ObjectUtil.clone(sig());
     },
   };
 }
