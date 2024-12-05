@@ -3,7 +3,6 @@ export interface ISdProjectConfig {
   // types: Record<string, TSdPackageConfig | undefined>;
   localUpdates?: Record<string, string>;
   postPublish?: TSdPostPublishConfig[];
-  anthropicApiKey?: string;
 }
 
 export type TSdProjectConfigFn = (isDev: boolean, opts?: string[]) => ISdProjectConfig;
