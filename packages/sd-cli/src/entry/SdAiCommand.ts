@@ -71,14 +71,14 @@ Git diff 내용:\n\n${diff}
     logger.log("커밋 중...");
     await SdProcess.spawnAsync(`git commit -m "${parts[1].trim()}"`, { cwd: process.cwd() });
 
-    process.stdout.write("푸쉬 하려면 ENTER를 입력하세요. (취소: CTRL+C)\n\n");
+    process.stdout.write("커밋되었습니다. 푸쉬 하려면 ENTER를 입력하세요. (취소: CTRL+C)\n\n");
     await this.#waitInputEnterKey();
 
     logger.log("푸쉬 중...");
     await SdProcess.spawnAsync("git push", { cwd: process.cwd() });
     await SdProcess.spawnAsync("git push --tags", { cwd: process.cwd() });
 
-    logger.info("작업 완료");
+    logger.info("완료");
     process.exit(0);
   }
 
