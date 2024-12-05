@@ -58,26 +58,27 @@ Git diff 내용:\n\n${diff}
 
     process.stdout.write("문제점 및 개선점:\n----\n");
     process.stdout.write(parts[0].trim() + "\n----\n");
-    process.stdout.write("커밋 메시지를 확인하려면 ENTER를 입력하세요. (취소: CTRL+C)\n\n");
 
+    process.stdout.write("커밋 메시지를 확인하려면 ENTER를 입력하세요. (취소: CTRL+C)\n\n");
     await this.#waitInputEnterKey();
 
     process.stdout.write("커밋 메시지:\n----\n");
     process.stdout.write(parts[1].trim() + "\n----\n");
-    process.stdout.write("커밋 하려면 ENTER를 입력하세요. (취소: CTRL+C)\n\n");
 
+    process.stdout.write("커밋 하려면 ENTER를 입력하세요. (취소: CTRL+C)\n\n");
     await this.#waitInputEnterKey();
 
     logger.log("커밋 중...");
     await SdProcess.spawnAsync(`git commit -m "${parts[1].trim()}"`, { cwd: process.cwd() });
 
     process.stdout.write("푸쉬 하려면 ENTER를 입력하세요. (취소: CTRL+C)\n\n");
-    process.stdout.write(parts[1].trim() + "\n----\n");
+    await this.#waitInputEnterKey();
 
     logger.log("푸쉬 중...");
     await SdProcess.spawnAsync("git push", { cwd: process.cwd() });
     await SdProcess.spawnAsync("git push --tags", { cwd: process.cwd() });
 
+    logger.info("작업 완료");
     process.exit(0);
   }
 
