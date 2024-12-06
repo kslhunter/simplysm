@@ -2,6 +2,20 @@ import { SdProcess } from "@simplysm/sd-core-node";
 import { NeverEntryError, StringUtil } from "@simplysm/sd-core-common";
 import Anthropic from "@anthropic-ai/sdk";
 
+/**
+ * AI를 활용한 Git 커밋 관련 기능을 제공하는 클래스입니다.
+ *
+ * @example
+ * ```ts
+ * // Git 변경사항을 분석하고 커밋 메시지를 자동 생성
+ * await SdAiCommand.commitAsync();
+ * ```
+ *
+ * @remarks
+ * - 실행을 위해서는 ANTHROPIC_API_KEY 환경변수가 설정되어 있어야 합니다.
+ * - Claude AI를 활용하여 코드 변경사항을 분석하고 Conventional Commits 규약에 맞는 커밋 메시지를 생성합니다.
+ * - 분석 결과에는 코드 품질, 잠재적 버그, 성능 이슈 등이 포함됩니다.
+ */
 export class SdAiCommand {
   static async commitAsync(): Promise<void> {
     if (StringUtil.isNullOrEmpty(process.env['ANTHROPIC_API_KEY'])) {
@@ -23,11 +37,8 @@ export class SdAiCommand {
     const message = await client.messages.create({
       model: 'claude-3-5-sonnet-latest',
       max_tokens: 1024,
+      system: "당신은 코드 리뷰 전문가입니다. Git diff를 분석하고 문제점과 커밋 메시지를 동시에 생성하세요.",
       messages: [
-        {
-          role: "assistant",
-          content: "당신은 코드 리뷰 전문가입니다. Git diff를 분석하고 문제점과 커밋 메시지를 동시에 생성하세요.",
-        },
         {
           role: "user",
           content: `
@@ -54,7 +65,7 @@ Git diff 내용:\n\n${diff}
     const messageText = message.content[0].text;
     const parts = messageText.split('----');
 
-    process.stdout.write("문제점 및 개선점:\n----\n");
+    process.stdout.write("문제점 및 개선점 (참고):\n----\n");
     process.stdout.write(parts[0].trim() + "\n----\n");
 
     process.stdout.write("커밋 메시지를 확인하려면 ENTER를 입력하세요. (취소: CTRL+C)\n\n");
