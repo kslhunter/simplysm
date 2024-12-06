@@ -41,25 +41,26 @@ export class SdAiCommand {
     const message = await client.messages.create({
       model: 'claude-3-5-haiku-latest',
       max_tokens: 1024,
-      system: "당신은 코드 리뷰 전문가입니다. Git diff를 분석하고 문제점과 커밋 메시지를 동시에 생성하세요.",
+      system: "당신은 코드 리뷰 전문가입니다",
       messages: [
         {
           role: "user",
           content: `
 다음 Git diff를 분석하고 두 가지를 한글로 작성해 주세요:
-1. 코드 변경의 문제점
-2. Conventional Commits 규약에 따른 명확한 커밋 메시지
+
+1. [문제점] 섹션:
+- 코드 품질, 잠재적 버그, 성능 이슈, 보안 취약점에 대한 수정 제안사항
+
+2. [커밋메시지] 섹션:
+- 형식: <type>(<scope>): <description>
+- 변경사항을 명확하고 간결하게 설명
+- 한글로 작성
+- 수동적인 표현 대신 능동적 표현 사용
 
 Git diff 내용:\n\n${diff}
 
-분석결과 생성 가이드:
-- 코드 품질, 잠재적 버그, 성능 이슈 확인
-
-커밋 메시지 생성 가이드:
-- 변경 타입(feat, fix, refactor 등) 명시
-- 변경사항의 본질을 간결하게 요약
-
-분석결과와 커밋메시지 사이에 "----"로 구분하기만 하고, 요청한 제목은 제외하고 답변하세요.`.trim(),
+추가정보:
+- 문제점과 커밋메시지를 위의 섹션 제목으로 구분하세요.`.trim(),
         },
       ],
     });
@@ -67,16 +68,16 @@ Git diff 내용:\n\n${diff}
       throw new NeverEntryError();
     }
     const messageText = message.content[0].text;
-    const parts = messageText.split('----');
+    const parts = messageText.split(/\[문제점]:?|\[커밋메시지]:?/);
 
-    process.stdout.write("문제점 및 개선점 (참고):\n----\n");
-    process.stdout.write(parts[0].trim() + "\n----\n");
+    process.stdout.write("코드 변경의 문제점:\n----\n");
+    process.stdout.write((parts[1]?.trim() || "문제점 없음") + "\n----\n");
 
     process.stdout.write("커밋 메시지를 확인하려면 ENTER를 입력하세요. (취소: CTRL+C)\n\n");
     await this.#waitInputEnterKey();
 
     process.stdout.write("커밋 메시지:\n----\n");
-    process.stdout.write(parts[1].trim() + "\n----\n");
+    process.stdout.write((parts[2]?.trim() || "커밋 메시지 없음") + "\n----\n");
 
     process.stdout.write("커밋 하려면 ENTER를 입력하세요. (취소: CTRL+C)\n\n");
     await this.#waitInputEnterKey();
