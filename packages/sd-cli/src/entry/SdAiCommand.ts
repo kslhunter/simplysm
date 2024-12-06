@@ -35,7 +35,7 @@ export class SdAiCommand {
 
     process.stdout.write("AI를 통해 문제점 파악 및 커밋 메시지 생성중...\n");
     const message = await client.messages.create({
-      model: 'claude-3-5-sonnet-latest',
+      model: 'claude-3-5-haiku-latest',
       max_tokens: 1024,
       system: "당신은 코드 리뷰 전문가입니다. Git diff를 분석하고 문제점과 커밋 메시지를 동시에 생성하세요.",
       messages: [
