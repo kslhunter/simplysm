@@ -47,7 +47,7 @@ export class SdAiCommand {
           role: "user",
           content: `
 다음 Git diff를 분석하고 두 가지를 한글로 작성해 주세요:
-1. 코드 변경의 문제점 및 개선점
+1. 코드 변경의 문제점
 2. Conventional Commits 규약에 따른 명확한 커밋 메시지
 
 Git diff 내용:\n\n${diff}
