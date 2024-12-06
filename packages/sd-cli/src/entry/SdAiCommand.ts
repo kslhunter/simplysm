@@ -31,6 +31,10 @@ export class SdAiCommand {
       { cwd: process.cwd() },
     );
 
+    if (StringUtil.isNullOrEmpty(diff.trim())) {
+      throw new Error("변경사항이 없습니다.");
+    }
+
     const client = new Anthropic({ apiKey: process.env['ANTHROPIC_API_KEY'] });
 
     process.stdout.write("AI를 통해 문제점 파악 및 커밋 메시지 생성중...\n");
