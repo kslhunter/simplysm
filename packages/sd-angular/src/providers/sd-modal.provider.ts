@@ -32,6 +32,7 @@ export class SdModalProvider {
       movable?: boolean;
       headerStyle?: string;
       mobileFillDisabled?: boolean;
+      noFirstControlFocusing?: boolean;
     },
   ): Promise<T[typeof SD_MODEL_OUTPUT] | undefined> {
     let isFirstOpen = true;
@@ -99,10 +100,15 @@ export class SdModalProvider {
 
           requestAnimationFrame(
             () => {
-              (
-                (compRef.location.nativeElement as HTMLElement).findFocusableFirst()
-                ?? modalRef.instance.dialogElRef().nativeElement
-              ).focus();
+              if (options?.noFirstControlFocusing) {
+                modalRef.instance.dialogElRef().nativeElement.focus();
+              }
+              else {
+                (
+                  (compRef.location.nativeElement as HTMLElement).findFocusableFirst()
+                  ?? modalRef.instance.dialogElRef().nativeElement
+                ).focus();
+              }
             },
           );
         };

@@ -225,7 +225,7 @@ export class SdSharedDataSelectControl<
     return false;
   }
 
-  getChildren(item: ISharedDataBase<string | number>, index: number, depth: number): any[] {
+  getChildren = (item: ISharedDataBase<string | number>, index: number, depth: number): any[] => {
     let result = this.itemByParentKeyMap()?.get(item.__valueKey) ?? [];
 
     if (this.displayOrderKeyProp() !== undefined) {
