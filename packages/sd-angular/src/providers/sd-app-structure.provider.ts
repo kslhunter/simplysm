@@ -28,7 +28,8 @@ export class SdAppStructureProvider<T extends string> {
     return SdAppStructureUtil.getTitleByCode(this.#items, pageCode);
   }
 
-  getViewPerms<K extends string>(viewCodes: string[], keys: K[]) {
+  /** @deprecated 대신 getViewPerms2 함수를 사용하세요. */
+  getViewPerms<K extends string>(viewCodes: string[], keys: K[]): Record<K, boolean> {
     //check
     for (const viewCode of viewCodes) {
       let cursor: ISdAppStructureItem<T> | undefined;
@@ -55,6 +56,17 @@ export class SdAppStructureProvider<T extends string> {
     const result: Record<string, boolean> = {};
     for (const key of keys) {
       result[key] = viewCodes.some((viewCode) => Boolean(this.#permRecord()?.[viewCode + "." + key]));
+    }
+
+    return result;
+  }
+
+  getViewPerms2<K extends string>(viewCodes: string[], keys: K[]): K[] {
+    const result = [] as K[];
+    for (const key of keys) {
+      if (viewCodes.some((viewCode) => Boolean(this.#permRecord()?.[viewCode + "." + key]))) {
+        result.push(key);
+      }
     }
 
     return result;

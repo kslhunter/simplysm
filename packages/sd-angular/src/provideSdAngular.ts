@@ -24,15 +24,19 @@ import {
   faCode,
   faCog,
   faEdit,
+  faEraser,
   faExternalLink,
   faEye,
   faEyeSlash,
+  faFileExcel,
   faMinus,
   faMountainSun,
   faPen,
   faPlus,
+  faPlusCircle,
   faQuestion,
   faQuestionCircle,
+  faRedo,
   faSave,
   faSearch,
   faSort,
@@ -40,17 +44,18 @@ import {
   faSortUp,
   faStar,
   faTriangleExclamation,
+  faUpload,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import { EVENT_MANAGER_PLUGINS } from "@angular/platform-browser";
 import { SdSaveCommandEventPlugin } from "./plugins/commands/sd-save-command.event-plugin";
 import { SdRefreshCommandEventPlugin } from "./plugins/commands/sd-refresh-command.event-plugin";
 import { SdInsertCommandEventPlugin } from "./plugins/commands/sd-insert-command.event-plugin";
-import { SdResizeEventPlugin } from "./plugins/sd-resize.event-plugin";
-import { SdOptionEventPlugin } from "./plugins/sd-option.event-plugin";
-import { SdBackbuttonEventPlugin } from "./plugins/sd-backbutton.event-plugin";
+import { SdResizeEventPlugin } from "./plugins/events/sd-resize.event-plugin";
+import { SdOptionEventPlugin } from "./plugins/events/sd-option.event-plugin";
+import { SdBackbuttonEventPlugin } from "./plugins/events/sd-backbutton.event-plugin";
 import { SdGlobalErrorHandlerPlugin } from "./plugins/sd-global-error-handler.plugin";
-import { SdThemeProvider } from "./providers/sd-theme.provider";
+import { SdThemeProvider } from "./controls/theme/sd-theme.provider";
 import { SdLocalStorageProvider } from "./providers/sd-local-storage.provider";
 
 export function provideSdAngular(opt: {
@@ -80,7 +85,7 @@ export function provideSdAngular(opt: {
           _sdTheme.theme.set(_sdLocalStorage.get("sd-theme") ?? _sdNgConf.defaultTheme);
         };
       },
-      multi: true
+      multi: true,
     },
     {
       provide: SdAngularConfigProvider,
@@ -123,11 +128,11 @@ export function provideSdAngular(opt: {
           sortDown: faSortDown,
           sortUp: faSortUp,
 
-          /*plusCircle: faPlusCircle,
-           eraser: faEraser,
+          plusCircle: faPlusCircle,
+          eraser: faEraser,
           redo: faRedo,
           upload: faUpload,
-          fileExcel: faFileExcel,*/
+          fileExcel: faFileExcel,
 
           search: faSearch,
           externalLink: faExternalLink,

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/core";
-import { SdModalBase } from "../providers/sd-modal.provider";
+import { SdModalBase } from "../controls/modal/sd-modal.provider";
 import { $effect } from "../utils/$hooks";
 import { injectElementRef } from "../utils/injectElementRef";
 

@@ -44,11 +44,11 @@ export interface ISdAngularIcon {
   sortDown: IconDefinition;
   sortUp: IconDefinition;
 
-  /*plusCircle: IconDefinition;
+  plusCircle: IconDefinition;
   eraser: IconDefinition;
   redo: IconDefinition;
   upload: IconDefinition;
-  fileExcel: IconDefinition;*/
+  fileExcel: IconDefinition;
 
   search: IconDefinition;
   edit: IconDefinition;

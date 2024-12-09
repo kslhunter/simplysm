@@ -1,0 +1,10 @@
+# Add directories or file patterns to ignore during indexing (e.g. foo/ or *.csv)
+_back
+.idea
+.yarn
+_logs
+node_modules
+dist
+.cache
+.cordova
+.electron
