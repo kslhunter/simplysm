@@ -1,11 +1,11 @@
-import {TFlatType, Type} from "../types/Type";
-import {DateTime} from "../types/DateTime";
-import {DateOnly} from "../types/DateOnly";
-import {Time} from "../types/Time";
-import {Uuid} from "../types/Uuid";
-import {WrappedType} from "../types/WrappedType";
-import {NeverEntryError} from "../errors/NeverEntryError";
-import {UnwrappedType} from "../types/UnwrappedType";
+import { TFlatType, Type } from "../types/Type";
+import { DateTime } from "../types/DateTime";
+import { DateOnly } from "../types/DateOnly";
+import { Time } from "../types/Time";
+import { Uuid } from "../types/Uuid";
+import { WrappedType } from "../types/WrappedType";
+import { NeverEntryError } from "../errors/NeverEntryError";
+import { UnwrappedType } from "../types/UnwrappedType";
 
 export class ObjectUtil {
   public static clone<T>(source: T, options?: {
@@ -39,7 +39,8 @@ export class ObjectUtil {
       }
     }
     if (source instanceof Map) {
-      return Array.from(source.keys()).toMap((key) => ObjectUtil._clone(key, options), (key) => ObjectUtil._clone(source.get(key), options));
+      return Array.from(source.keys())
+        .toMap((key) => ObjectUtil._clone(key, options), (key) => ObjectUtil._clone(source.get(key), options));
     }
     if (source instanceof Date) {
       return new Date(source.getTime());
@@ -58,7 +59,7 @@ export class ObjectUtil {
     }
     if (typeof source === "object") {
       if (options?.onlyOneDepth) {
-        return {...source};
+        return { ...source };
       }
       else {
         const result: Record<string, any> = {};
@@ -66,7 +67,7 @@ export class ObjectUtil {
         const currPrevClones = prevClones ?? [];
         currPrevClones.push({
           source,
-          clone: result
+          clone: result,
         });
         for (const key of Object.keys(source).filter((sourceKey) => options?.excludes?.includes(sourceKey) !== true)) {
           if (source[key] === undefined) {
@@ -81,7 +82,7 @@ export class ObjectUtil {
               result[key] = matchedPrevClone.clone;
             }
             else {
-              result[key] = ObjectUtil._clone(source[key], {useRefTypes: options?.useRefTypes}, currPrevClones);
+              result[key] = ObjectUtil._clone(source[key], { useRefTypes: options?.useRefTypes }, currPrevClones);
             }
           }
         }
@@ -172,7 +173,7 @@ export class ObjectUtil {
       keys?: string[];
       excludes?: string[];
       ignoreArrayIndex?: boolean
-    }>
+    }>,
   ): {
     conflict: boolean;
     result: O & S & T
@@ -196,7 +197,7 @@ export class ObjectUtil {
 
     return {
       conflict,
-      result: result as (O & S & T)
+      result: result as (O & S & T),
     };
   }
 
@@ -228,7 +229,10 @@ export class ObjectUtil {
     return result;
   }
 
-  public static pickByType<T extends Record<string, any>, A extends TFlatType>(item: T, type: Type<A>): { [K in keyof T]: WrappedType<T[K]> extends WrappedType<A> ? T[K] : never } {
+  public static pickByType<T extends Record<string, any>, A extends TFlatType>(
+    item: T,
+    type: Type<A>,
+  ): { [K in keyof T]: WrappedType<T[K]> extends WrappedType<A> ? T[K] : never } {
     const result: any = {};
     for (const key of Object.keys(result)) {
       const typeCast = type as Type<TFlatType>;
@@ -323,9 +327,15 @@ export class ObjectUtil {
 
     if (source instanceof Map && target instanceof Map) {
       const sourceKeys = Array.from(source.keys())
-        .filter((key) => (options?.includes === undefined || options.includes.includes(key)) && (!options?.excludes?.includes(key)) && source[key] !== undefined);
+        .filter((key) => (options?.includes === undefined || options.includes.includes(key))
+          && (!options?.excludes?.includes(key))
+          && source[key]
+          !== undefined);
       const targetKeys = Array.from(target.keys())
-        .filter((key) => (options?.includes === undefined || options.includes.includes(key)) && (!options?.excludes?.includes(key)) && target[key] !== undefined);
+        .filter((key) => (options?.includes === undefined || options.includes.includes(key))
+          && (!options?.excludes?.includes(key))
+          && target[key]
+          !== undefined);
 
       if (sourceKeys.length !== targetKeys.length) {
         return false;
@@ -338,7 +348,7 @@ export class ObjectUtil {
           }
         }
         else {
-          if (!ObjectUtil.equal(source.get(key), target.get(key), {ignoreArrayIndex: options?.ignoreArrayIndex})) {
+          if (!ObjectUtil.equal(source.get(key), target.get(key), { ignoreArrayIndex: options?.ignoreArrayIndex })) {
             return false;
           }
         }
@@ -349,9 +359,15 @@ export class ObjectUtil {
 
     if (typeof source === "object" && typeof target === "object") {
       const sourceKeys = Object.keys(source)
-        .filter((key) => (options?.includes === undefined || options.includes.includes(key)) && (!options?.excludes?.includes(key)) && source[key] !== undefined);
+        .filter((key) => (options?.includes === undefined || options.includes.includes(key))
+          && (!options?.excludes?.includes(key))
+          && source[key]
+          !== undefined);
       const targetKeys = Object.keys(target)
-        .filter((key) => (options?.includes === undefined || options.includes.includes(key)) && (!options?.excludes?.includes(key)) && target[key] !== undefined);
+        .filter((key) => (options?.includes === undefined || options.includes.includes(key))
+          && (!options?.excludes?.includes(key))
+          && target[key]
+          !== undefined);
 
       if (sourceKeys.length !== targetKeys.length) {
         return false;
@@ -364,7 +380,7 @@ export class ObjectUtil {
           }
         }
         else {
-          if (!ObjectUtil.equal(source[key], target[key], {ignoreArrayIndex: options?.ignoreArrayIndex})) {
+          if (!ObjectUtil.equal(source[key], target[key], { ignoreArrayIndex: options?.ignoreArrayIndex })) {
             return false;
           }
         }
@@ -382,18 +398,18 @@ export class ObjectUtil {
     };
     if (def instanceof Array) { //Type<T>[]
       currDef = {
-        type: def
+        type: def,
       };
     }
     else if (typeof def === "function") { //Type<T>
       currDef = {
-        type: [def]
+        type: [def],
       };
     }
     else { //IValidateDef<T>
       currDef = {
         ...def,
-        type: def.type !== undefined ? def.type instanceof Array ? def.type : [def.type] : undefined
+        type: def.type !== undefined ? def.type instanceof Array ? def.type : [def.type] : undefined,
       };
     }
 
@@ -439,7 +455,7 @@ export class ObjectUtil {
       return {
         value,
         invalidateDef,
-        message
+        message,
       };
     }
 
@@ -487,7 +503,10 @@ export class ObjectUtil {
     }
   }
 
-  public static validateArray<T>(arr: T[], def: ((item: T) => TValidateObjectDef<T>) | TValidateObjectDef<T>): IValidateArrayResult<T>[] {
+  public static validateArray<T>(
+    arr: T[],
+    def: ((item: T) => TValidateObjectDef<T>) | TValidateObjectDef<T>,
+  ): IValidateArrayResult<T>[] {
     const result: IValidateArrayResult<T>[] = [];
     for (let i = 0; i < arr.length; i++) {
       const item = arr[i];
@@ -496,7 +515,7 @@ export class ObjectUtil {
         result.push({
           index: i,
           item,
-          result: validateObjectResult
+          result: validateObjectResult,
         });
       }
     }
@@ -504,7 +523,11 @@ export class ObjectUtil {
     return result;
   }
 
-  public static validateArrayWithThrow<T>(displayName: string, arr: T[], def: ((item: T) => TValidateObjectDefWithName<T>) | TValidateObjectDefWithName<T>): void {
+  public static validateArrayWithThrow<T>(
+    displayName: string,
+    arr: T[],
+    def: ((item: T) => TValidateObjectDefWithName<T>) | TValidateObjectDefWithName<T>,
+  ): void {
     const validateResults = ObjectUtil.validateArray(arr, def);
     if (validateResults.length > 0) {
       const errMessages: string[] = [];
@@ -537,9 +560,19 @@ export class ObjectUtil {
     }
   }
 
-  public static getChainValueByDepth<T, K extends keyof T>(obj: T, key: K, depth: number, optional: true): T[K] | undefined;
+  public static getChainValueByDepth<T, K extends keyof T>(
+    obj: T,
+    key: K,
+    depth: number,
+    optional: true,
+  ): T[K] | undefined;
   public static getChainValueByDepth<T, K extends keyof T>(obj: T, key: K, depth: number): T[K];
-  public static getChainValueByDepth<T, K extends keyof T>(obj: T, key: K, depth: number, optional?: true): T[K] | undefined {
+  public static getChainValueByDepth<T, K extends keyof T>(
+    obj: T,
+    key: K,
+    depth: number,
+    optional?: true,
+  ): T[K] | undefined {
     let result: any = obj;
     for (let i = 0; i < depth; i++) {
       if (optional) {
@@ -688,14 +721,14 @@ export interface IValidateResult<T> {
   message?: string;
 }
 
-type TValidateObjectDef<T> = Partial<Record<keyof T, TValidateDef<any>>>;
-type TValidateObjectResult<T> = Partial<Record<keyof T, IValidateResult<any>>>;
+type TValidateObjectDef<T> = { [K in keyof T]?: TValidateDef<T[K]> };
+type TValidateObjectResult<T> = { [K in keyof T]?: IValidateResult<T[K]> };
 
 export interface IValidateDefWithName<T> extends IValidateDef<T> {
   displayName: string;
 }
 
-type TValidateObjectDefWithName<T> = Partial<Record<keyof T, IValidateDefWithName<any>>>;
+export type TValidateObjectDefWithName<T> = { [K in keyof T]?: IValidateDefWithName<T[K]> };
 
 interface IValidateArrayResult<T> {
   index: number;

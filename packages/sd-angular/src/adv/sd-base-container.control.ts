@@ -23,7 +23,6 @@ import { transformBoolean } from "../utils/tramsforms";
 import { SdIconControl } from "../controls/icon/sd-icon.control";
 import { SdBackgroundProvider } from "../providers/sd-background.provider";
 
-
 /** @deprecated sd-page-base, sd-modal-base 컴포넌트로 대체되었습니다. */
 @Component({
   selector: "sd-base-container",

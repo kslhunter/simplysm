@@ -616,7 +616,6 @@ export class SdSheetControl<T> {
   _selectedItemsChange = output<T[]>({ alias: "selectedItemsChange" });
   selectedItems = $model(this._selectedItems, this._selectedItemsChange);
 
-
   /** 자동선택모드 (undefined = 사용안함, click = 셀 클릭시 해당 ROW 선택, focus = 셀 포커싱시 해당 ROW 선택) */
   autoSelect = input<"click" | "focus">();
 
@@ -1384,13 +1383,13 @@ export class SdSheetControl<T> {
 
   onAllItemsSelectIconClick(): void {
     if (this.isAllItemsSelected()) {
-      this.selectedItems.set([]);
+      this.selectedItems.update(v => v.filter(item => this.selectableItems().includes(item)));
     }
     else {
       const selectedItems = this.displayItemDefs()
         .filter((item) => this.getIsItemSelectable(item.item))
         .map((item) => item.item);
-      this.selectedItems.set(selectedItems);
+      this.selectedItems.update(v => [...v, ...selectedItems].distinct());
     }
   }
 
@@ -1490,7 +1489,7 @@ export class SdSheetControl<T> {
       this.selectedItems.set([item]);
     }
     else {
-      this.selectedItems.update(v => [...v, item]);
+      this.selectedItems.update(v => [...v, item].distinct());
     }
   }
 
