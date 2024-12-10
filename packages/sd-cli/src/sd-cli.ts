@@ -177,7 +177,7 @@ const argv = (await yargs(hideBin(process.argv))
   )
   .command(
     "commit",
-    "AI를 통해 변경사항에 대한 문제점을 파악하고, 커밋 메시지를 작성하여, 커밋을 수행합니다.",
+    "AI를 통해 변경사항에 대한 커밋 메시지를 작성하여, 커밋 및 푸쉬를 수행합니다.",
   )
   .parseAsync()) as any;
 

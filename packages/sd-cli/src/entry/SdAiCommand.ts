@@ -23,7 +23,7 @@ export class SdAiCommand {
 
     const client = new Anthropic({ apiKey: process.env['ANTHROPIC_API_KEY'] });
 
-    process.stdout.write("AI를 통해 문제점 파악 및 커밋 메시지 생성중...\n");
+    process.stdout.write("AI를 통해 커밋 메시지 생성중...\n");
     const message = await client.messages.create({
       model: 'claude-3-5-haiku-latest',
       max_tokens: 1024,
@@ -44,7 +44,7 @@ ${diff}
 - 한글로 작성
 - 수동적인 표현 대신 능동적 표현 사용
 - packages폴더내 패키지별로 작성
-- 커밋메시지외에 다른 설명은 하지 마세요.`.trim(),
+- 설명없이 커밋메시지만으로 답변`.trim(),
         },
       ],
     });
