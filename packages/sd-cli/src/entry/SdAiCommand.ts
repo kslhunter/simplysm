@@ -43,15 +43,18 @@ ${diff}
 - 변경사항을 명확하고 간결하게 설명
 - 한글로 작성
 - 수동적인 표현 대신 능동적 표현 사용
-- packages폴더내 패키지별로 작성
-- 커밋메시지 텍스트만으로 답변`.trim(),
+- 하나의 커밋메시지로 작성
+- 답변에 대한 설명은 하지 말것`.trim(),
         },
       ],
     });
     if (message.content[0].type !== "text") {
       throw new NeverEntryError();
     }
-    const messageText = message.content[0].text;
+    let messageText = message.content[0].text;
+    if (messageText.includes("```")) {
+      messageText = messageText.match(/```(.*)```/s)![1];
+    }
 
     process.stdout.write("커밋 메시지:\n----\n");
     process.stdout.write(messageText + "\n----\n");
