@@ -62,7 +62,7 @@ export function provideSdAngular(opt: {
   clientName: string;
   appStructure?: ISdAppStructureItem[];
   defaultTheme?: "compact" | "modern" | "mobile" | "kiosk";
-  icons?: ISdAngularIcon;
+  icons?: Partial<ISdAngularIcon>;
 }): EnvironmentProviders {
   return makeEnvironmentProviders([
     /*provideEnvironmentInitializer(() => {
@@ -94,7 +94,7 @@ export function provideSdAngular(opt: {
         provider.clientName = opt.clientName;
         provider.appStructure = opt.appStructure ?? [];
         provider.defaultTheme = opt.defaultTheme ?? "modern";
-        provider.icons = opt.icons ?? {
+        provider.icons = {
           fallback: faQuestionCircle,
 
           caretDown: faCaretDown,
@@ -137,6 +137,8 @@ export function provideSdAngular(opt: {
           search: faSearch,
           externalLink: faExternalLink,
           edit: faEdit,
+
+          ...opt.icons,
         };
         return provider;
       },

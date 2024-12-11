@@ -1,16 +1,17 @@
 import { Directive, inject, input, model, output } from "@angular/core";
 import { SdToastProvider } from "../../../controls/toast/sd-toast.provider";
 import { SdFileDialogProvider } from "../../../providers/sd-file-dialog.provider";
-import { SdModalProvider, TSdModalConfig } from "../../../controls/modal/sd-modal.provider";
+import { SdModalBase, SdModalProvider, TSdModalConfig } from "../../../controls/modal/sd-modal.provider";
 import { $computed, $effect, $model, $signal } from "../../../utils/$hooks";
 import { ObjectUtil } from "@simplysm/sd-core-common";
 import { ISdSheetColumnOrderingVM } from "../../../controls/sheet/sd-sheet.control";
 import { SdExcelWorkbook } from "@simplysm/sd-excel";
-import { SdDetailModalAbstract } from "../detail-modal/sd-detail-modal.abstract";
 import { SD_VM_SHEET_FILTER, SD_VM_SHEET_ITEM, SdViewModelAbstract } from "../sd-view-model.abstract";
 
 @Directive()
-export abstract class SdSheetViewAbstract<VM extends SdViewModelAbstract, MODAL extends SdDetailModalAbstract<VM, any>> {
+export abstract class SdSheetViewAbstract<VM extends SdViewModelAbstract, MODAL extends SdModalBase<{
+  itemId?: number
+}, boolean>> {
   #sdToast = inject(SdToastProvider);
   #sdFileDialog = inject(SdFileDialogProvider);
   #sdModal = inject(SdModalProvider);
