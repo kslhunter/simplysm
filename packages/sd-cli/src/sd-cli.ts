@@ -246,7 +246,7 @@ else if (argv._[0] === "run-cordova") {
   });
 }
 else if (argv._[0] === "commit") {
-  await SdAiCommand.commitAsync();
+  await SdAiCommand.commitMessageAsync();
 }
 else {
   throw new Error(`명령어가 잘못 되었습니다.\n\t${argv._[0]}\n`);
