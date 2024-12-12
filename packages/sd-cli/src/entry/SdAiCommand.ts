@@ -40,20 +40,6 @@ export class SdAiCommand {
 - 수동적인 표현 대신 능동적 표현 사용
 
 ${diff}`,
-          // 커밋메시지들과 그에 따른 파일목록을 추출할 수 있도록아래와 같이 JSON형태로 표현해 주
-          // 답변에 JSON외에 다른 설명을 필요없습니다.
-          // 답변에서 JSON을 추출할 수 있도록 JSON 시작과 끝에 "-----"를 포함시키세요.
-          // JSON형태중 "커밋메시지"는 여러줄의  커밋메시지를 모두 포함시키세요
-          // JSON형태:
-          //   [
-          //     {
-          //       message: "<커밋메시지>",
-          //       files: [
-          //         "<파일경로>",
-          //         "<파일경로>",
-          //       ]
-          //     }
-          //   ]
         },
       ],
     });
@@ -61,26 +47,5 @@ ${diff}`,
       throw new NeverEntryError();
     }
     process.stdout.write(message.content[0].text);
-
-    // const commits = JSON.parse(message.content[0].text.trim().split("-----")[1].trim());
-    //
-    // process.stdout.write("\n");
-    // for (let i = 0; i < commits.length; i++) {
-    //   const commit = commits[i];
-    //   process.stdout.write(`${i + 1}. ${commit.files.join(", ")}\n\n`);
-    //   process.stdout.write(commit.message.trim() + "\n");
-    //   process.stdout.write("\n\n");
-    // }
   }
-
-  // static async #waitInputEnterKey(): Promise<void> {
-  //   await new Promise<void>((resolve, reject) => {
-  //     process.stdin.setRawMode(true);
-  //     process.stdin.once("data", (key) => {
-  //       process.stdin.setRawMode(false);
-  //       if (key.toString() === "\r" || key.toString() === "\n") resolve();
-  //       else reject(new Error("취소되었습니다."));
-  //     });
-  //   });
-  // }
 }
