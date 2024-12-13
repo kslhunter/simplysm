@@ -31,7 +31,7 @@ export class SdAiCommand {
         {
           role: "user",
           content: `
-다음 Git diff를 분석하고, "packages/*"별로 종합하여 각각 하나의 적절한 커밋메시지를 작성해줘. 
+다음 Git diff를 분석하고, packages의 서브디렉토리명으로 종합하여 각각 하나의 적절한 커밋메시지를 작성해줘. 
 커밋메시지는 코드블록으로 감싸서 답변해줘.
 
 각 커밋메시지를 작성하는 방법:
