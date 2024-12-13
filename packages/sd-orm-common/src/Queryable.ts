@@ -140,9 +140,9 @@ export class Queryable<D extends DbContext, T> {
       ...(this.db.opt.dialect === "sqlite"
         ? {}
         : {
-            database: this.tableDef.database ?? this.db.opt.database,
-            schema: this.tableDef.schema ?? this.db.opt.schema,
-          }),
+          database: this.tableDef.database ?? this.db.opt.database,
+          schema: this.tableDef.schema ?? this.db.opt.schema,
+        }),
       name: this.tableDef.name,
     };
   }
@@ -160,9 +160,11 @@ export class Queryable<D extends DbContext, T> {
             SdOrmUtil.getQueryValueType(orgEntityValue),
             `${cqrs[0].db.qb.wrap(`TBL${as !== undefined ? "." + as : ""}`)}.${cqrs[0].db.qb.wrap(orgEntityKey)}`,
           );
-        } else if (orgEntityValue instanceof Array) {
+        }
+        else if (orgEntityValue instanceof Array) {
           resultEntity[orgEntityKey] = [getNewEntity(orgEntityValue[0])];
-        } else {
+        }
+        else {
           resultEntity[orgEntityKey] = getNewEntity(orgEntityValue);
         }
       }
@@ -327,18 +329,21 @@ export class Queryable<D extends DbContext, T> {
               `)`,
             ]),
           );
-        } else {
+        }
+        else {
           throw new Error("미구현");
         }
       }
-    } else {
+    }
+    else {
       for (const pivotKey of pivotKeys) {
         if (valueColumn instanceof QueryUnit) {
           entity[pivotKey] = new QueryUnit<V>(
             valueColumn.type,
             `${this.db.qb.wrap(`TBL${this._as !== undefined ? `.${this._as}` : ""}`)}.${this.db.qb.wrap(pivotKey)}`,
           );
-        } else {
+        }
+        else {
           throw new Error("미구현");
         }
       }
@@ -358,7 +363,8 @@ export class Queryable<D extends DbContext, T> {
             )
             .map(([k, v]) => v) as any,
       );
-    } else {
+    }
+    else {
       result._def.pivot = {
         valueColumn: this.db.qh.getQueryValue(valueDupFwd(valueColumn)),
         pivotColumn: this.db.qh.getQueryValue(pivotColumn),
@@ -379,7 +385,8 @@ export class Queryable<D extends DbContext, T> {
 
     if (this.db.opt.dialect === "mysql") {
       throw new Error("MYSQL 미구현");
-    } else {
+    }
+    else {
       if (entity[pivotKeys[0]] instanceof QueryUnit) {
         entity[valueColumn] = new QueryUnit<any>(
           entity[pivotKeys[0]].type,
@@ -393,7 +400,8 @@ export class Queryable<D extends DbContext, T> {
         for (const pivotKey of pivotKeys) {
           delete entity[pivotKey];
         }
-      } else {
+      }
+      else {
         throw new Error("미구현");
       }
     }
@@ -437,7 +445,8 @@ export class Queryable<D extends DbContext, T> {
     let joinTableQueryable: Queryable<D, J>;
     if (joinTypeOrQrs instanceof Array) {
       joinTableQueryable = Queryable.union(joinTypeOrQrs, realAs);
-    } else {
+    }
+    else {
       joinTableQueryable = new Queryable(this.db, joinTypeOrQrs, realAs);
     }
     const joinQueryable = fwd(joinTableQueryable, this._entity);
@@ -473,7 +482,8 @@ export class Queryable<D extends DbContext, T> {
     let joinTableQueryable: Queryable<D, J>;
     if (joinTypeOrQrs instanceof Array) {
       joinTableQueryable = Queryable.union(joinTypeOrQrs, realAs);
-    } else {
+    }
+    else {
       joinTableQueryable = new Queryable(this.db, joinTypeOrQrs, realAs);
     }
     const joinQueryable = fwd(joinTableQueryable, this._entity);
@@ -537,7 +547,8 @@ export class Queryable<D extends DbContext, T> {
               splitSearchTextWhereArr.push(
                 this.db.qh.notLike(this.db.qh.toLowerCase(field), text.substring(2).replace(/\*/g, "%").toLowerCase()),
               );
-            } else {
+            }
+            else {
               splitSearchTextWhereArr.push(
                 this.db.qh.notIncludes(this.db.qh.toLowerCase(field), text.substring(2).toLowerCase()),
               );
@@ -548,7 +559,8 @@ export class Queryable<D extends DbContext, T> {
 
         return [this.db.qh.and(fieldOrArr)];
       });
-    } else {
+    }
+    else {
       result = result[whereFnName]((item) => {
         const fieldOrArr: TQueryBuilderValue[] = [];
 
@@ -560,7 +572,8 @@ export class Queryable<D extends DbContext, T> {
               splitSearchTextWhereArr.push(
                 this.db.qh.like(this.db.qh.toLowerCase(field), text.replace(/\*/g, "%").toLowerCase()),
               );
-            } else {
+            }
+            else {
               splitSearchTextWhereArr.push(this.db.qh.includes(this.db.qh.toLowerCase(field), text.toLowerCase()));
             }
           }
@@ -590,7 +603,8 @@ export class Queryable<D extends DbContext, T> {
       }
       clone = new Queryable(this.db, this as any, cloneEntity);
       clone._def.distinct = true;
-    } else {
+    }
+    else {
       clone = new Queryable(this.db, this);
     }
 
@@ -643,17 +657,20 @@ export class Queryable<D extends DbContext, T> {
       if (SdOrmUtil.canConvertToQueryValue(value)) {
         if (typeof result.select === "undefined") throw new NeverEntryError();
         result.select[`${this.db.qb.wrap(key)}`] = this.db.qh.getQueryValue(value);
-      } else if (value instanceof Array) {
+      }
+      else if (value instanceof Array) {
         if (value.some((item) => SdOrmUtil.canConvertToQueryValue(item))) {
           throw new Error(
             "SELECT 에 입력할 수 없는 정보가 입력되었습니다. (qh.equal 등은 qh.is 로 wrapping 해 주어야 사용할 수 있습니다.)",
           );
-        } else {
+        }
+        else {
           for (const subKey of Object.keys(value[0]).orderBy()) {
             addSelectValue(`${key}.${subKey}`, value[0][subKey]);
           }
         }
-      } else {
+      }
+      else {
         for (const subKey of Object.keys(value).orderBy()) {
           addSelectValue(`${key}.${subKey}`, value[subKey]);
         }
@@ -920,7 +937,8 @@ export class Queryable<D extends DbContext, T> {
       for (const key of Object.keys(insertObj)) {
         insertRecord[this.db.qb.wrap(`${key}`)] = this.db.qh.getQueryValue(insertObj[key]);
       }
-    } else {
+    }
+    else {
       insertRecord = ObjectUtil.clone(updateRecord);
     }
 
@@ -1000,9 +1018,9 @@ export class Queryable<D extends DbContext, T> {
       ...(this.db.opt.dialect === "sqlite"
         ? {}
         : {
-            database: targetTableDef.database ?? this.db.opt.database,
-            schema: targetTableDef.schema ?? this.db.opt.schema,
-          }),
+          database: targetTableDef.database ?? this.db.opt.database,
+          schema: targetTableDef.schema ?? this.db.opt.schema,
+        }),
       name: targetTableDef.name,
     });
 
@@ -1068,8 +1086,8 @@ export class Queryable<D extends DbContext, T> {
     if (this._def.distinct) {
       throw new Error(
         "distinct 이후엔 'countAsync'를 사용할 수 없습니다." +
-          " 사용하려면 distinct와 countAsync 사이에 wrap을 먼저 사용하거나," +
-          " distinct대신 groupBy와 qh.count 로 수동으로 처리하세요.",
+        " 사용하려면 distinct와 countAsync 사이에 wrap을 먼저 사용하거나," +
+        " distinct대신 groupBy와 qh.count 로 수동으로 처리하세요.",
       );
     }
 
@@ -1386,7 +1404,8 @@ export class Queryable<D extends DbContext, T> {
                   " = ",
                   columnPropertyValue,
                 ]);
-              } else {
+              }
+              else {
                 whereQuery.push(
                   ...[
                     this.db.qh.isNotNull(lastEn[columnPropertyKey]),
@@ -1439,7 +1458,8 @@ export class Queryable<D extends DbContext, T> {
                   " = ",
                   columnPropertyValue,
                 ]);
-              } else {
+              }
+              else {
                 whereQuery.push(
                   ...[
                     this.db.qh.isNotNull(lastEn[tableDef.columns[i].propertyKey]),
@@ -1471,14 +1491,16 @@ export class Queryable<D extends DbContext, T> {
         result[key] = new QueryUnit(
           SdOrmUtil.getQueryValueType(entityValue),
           this.db.qb.wrap("TBL" + (rootAs !== undefined ? "." + rootAs : "")) +
-            "." +
-            this.db.qb.wrap((parentAs !== undefined ? `${parentAs}.` : "") + key),
+          "." +
+          this.db.qb.wrap((parentAs !== undefined ? `${parentAs}.` : "") + key),
         );
-      } else if (entityValue instanceof Array) {
+      }
+      else if (entityValue instanceof Array) {
         result[key] = [
           this._getParentEntity(entityValue[0], rootAs, (parentAs !== undefined ? parentAs + "." : "") + key),
         ] as any;
-      } else {
+      }
+      else {
         result[key] = this._getParentEntity(entityValue, rootAs, (parentAs !== undefined ? parentAs + "." : "") + key);
       }
     }
@@ -1564,7 +1586,8 @@ export class Queryable<D extends DbContext, T> {
             select: selectObj,
             where: [[this.db.qb.wrap(pkColName), " = ", "LAST_INSERT_ID()"]],
           });
-        } else {
+        }
+        else {
           defs.push({
             type: "select" as const,
             from: this._def.from,
@@ -1575,7 +1598,8 @@ export class Queryable<D extends DbContext, T> {
           });
         }
         dataIndexes.push(i * 2 + 1);
-      } else if (outputColumns) {
+      }
+      else if (outputColumns) {
         dataIndexes.push(i);
       }
     }
@@ -1662,7 +1686,8 @@ export class Queryable<D extends DbContext, T> {
         select: selectObj,
       });
       dataIndex = 1;
-    } else {
+    }
+    else {
       dataIndex = 0;
     }
 
@@ -1884,18 +1909,22 @@ export class Queryable<D extends DbContext, T> {
         try {
           if (typeof entity[key] !== "undefined" && SdOrmUtil.canConvertToQueryValue(entity[key])) {
             result.columns![fullKey] = { dataType: SdOrmUtil.getQueryValueType(entity[key])!.name };
-          } else if (entity[key] instanceof Array) {
+          }
+          else if (entity[key] instanceof Array) {
             result.joins![fullKey] = { isSingle: false };
             configuration(entity[key][0], fullKeyArr);
-          } else {
+          }
+          else {
             result.joins![fullKey] = { isSingle: true };
             configuration(entity[key] as TEntity<any>, fullKeyArr);
           }
-        } catch (err) {
+        }
+        catch (err) {
           if (err instanceof Error) {
             err.message += `\n==> [${key}]`;
             throw err;
-          } else {
+          }
+          else {
             throw err;
           }
         }
@@ -1912,7 +1941,8 @@ export class Queryable<D extends DbContext, T> {
     for (const splitItem of split.slice(0, -1)) {
       if (curr[splitItem] instanceof Array) {
         curr = curr[splitItem][0];
-      } else {
+      }
+      else {
         curr = curr[splitItem];
       }
     }
@@ -1932,7 +1962,8 @@ export class Queryable<D extends DbContext, T> {
     for (const splitItem of split) {
       if (optional && result === undefined) {
         result = undefined;
-      } else {
+      }
+      else {
         result = result[splitItem];
       }
       if (result instanceof Array) {
