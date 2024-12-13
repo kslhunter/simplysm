@@ -1,12 +1,20 @@
 import { Directive, inject, input, model, output } from "@angular/core";
 import { SdToastProvider } from "../../../controls/toast/sd-toast.provider";
 import { SdFileDialogProvider } from "../../../providers/sd-file-dialog.provider";
-import { SdModalBase, SdModalProvider, TSdModalConfig } from "../../../controls/modal/sd-modal.provider";
+import {
+  SdModalBase,
+  SdModalProvider,
+  TSdModalConfig,
+} from "../../../controls/modal/sd-modal.provider";
 import { $computed, $effect, $model, $signal } from "../../../utils/$hooks";
 import { ObjectUtil } from "@simplysm/sd-core-common";
 import { ISdSheetColumnOrderingVM } from "../../../controls/sheet/sd-sheet.control";
 import { SdExcelWorkbook } from "@simplysm/sd-excel";
-import { SD_VM_SHEET_FILTER, SD_VM_SHEET_ITEM, SdViewModelAbstract } from "../sd-view-model.abstract";
+import {
+  SD_VM_SHEET_FILTER,
+  SD_VM_SHEET_ITEM,
+  SdViewModelAbstract,
+} from "../sd-view-model.abstract";
 
 @Directive()
 export abstract class SdSheetViewAbstract<VM extends SdViewModelAbstract, MODAL extends SdModalBase<{
@@ -26,6 +34,7 @@ export abstract class SdSheetViewAbstract<VM extends SdViewModelAbstract, MODAL 
   selectedItemIds = $model(this._selectedItemIds, this._selectedItemIdsChange);
 
   items = $signal<VM[typeof SD_VM_SHEET_ITEM][]>([]);
+  summaryData = $signal<Partial<VM[typeof SD_VM_SHEET_ITEM]>>();
 
   filter = $signal<VM[typeof SD_VM_SHEET_FILTER]>(this.getDefaultFilter());
   lastFilter = $signal(ObjectUtil.clone(this.filter()));
@@ -38,7 +47,8 @@ export abstract class SdSheetViewAbstract<VM extends SdViewModelAbstract, MODAL 
   busyCount = $signal(0);
 
   isSelectedItemsHasDeleted = $computed(() => this.selectedItems().some((item) => item.isDeleted));
-  isSelectedItemsHasNotDeleted = $computed(() => this.selectedItems().some((item) => !item.isDeleted));
+  isSelectedItemsHasNotDeleted = $computed(() => this.selectedItems()
+    .some((item) => !item.isDeleted));
 
   getItemCellStyleFn = (item: VM[typeof SD_VM_SHEET_ITEM]) => (item.isDeleted
     ? "text-decoration: line-through;"
@@ -57,14 +67,15 @@ export abstract class SdSheetViewAbstract<VM extends SdViewModelAbstract, MODAL 
 
       this.busyCount.update((v) => v + 1);
       await this.#sdToast.try(async () => {
-        await this.#search();
+        await this.search();
       });
       this.busyCount.update((v) => v - 1);
       this.initialized.set(true);
     });
 
     $effect([this.items, this.selectedItemIds], () => {
-      const newSelectedItems = this.items().filter((item) => this.selectedItemIds().includes(item.id));
+      const newSelectedItems = this.items()
+        .filter((item) => this.selectedItemIds().includes(item.id));
       if (!ObjectUtil.equal(this.selectedItems(), newSelectedItems, { onlyOneDepth: true })) {
         this.selectedItems.set(newSelectedItems);
       }
@@ -116,12 +127,14 @@ export abstract class SdSheetViewAbstract<VM extends SdViewModelAbstract, MODAL 
     this.busyCount.update((v) => v - 1);
   }
 
-  async #search() {
+  async search() {
     const result = await this.vm.searchAsync(this.lastFilter(), this.ordering(), this.page());
     this.items.set(result.items);
     this.pageLength.set(result.pageLength);
+    this.summaryData.set(result.summary);
 
-    this.selectedItems.set(this.items().filter(item => this.selectedItems().some(sel => sel.id === item.id)));
+    this.selectedItems.set(this.items()
+      .filter(item => this.selectedItems().some(sel => sel.id === item.id)));
   }
 
   async onItemClick(item: VM[typeof SD_VM_SHEET_ITEM], event: MouseEvent) {
@@ -132,15 +145,19 @@ export abstract class SdSheetViewAbstract<VM extends SdViewModelAbstract, MODAL 
 
     const defaultModalConfig = this.getDetailModalConfig();
 
-    const result = await this.#sdModal.showAsync(defaultModalConfig.type, `${this.vm.name}수정(#${item.id})`, {
-      itemId: item.id,
-      ...defaultModalConfig.params,
-    });
+    const result = await this.#sdModal.showAsync(
+      defaultModalConfig.type,
+      `${this.vm.name}수정(#${item.id})`,
+      {
+        itemId: item.id,
+        ...defaultModalConfig.params,
+      },
+    );
     if (!result) return;
 
     this.busyCount.update((v) => v + 1);
     await this.#sdToast.try(async () => {
-      await this.#search();
+      await this.search();
     });
     this.busyCount.update((v) => v - 1);
   }
@@ -157,7 +174,7 @@ export abstract class SdSheetViewAbstract<VM extends SdViewModelAbstract, MODAL 
 
     this.busyCount.update((v) => v + 1);
     await this.#sdToast.try(async () => {
-      await this.#search();
+      await this.search();
     });
     this.busyCount.update((v) => v - 1);
   }
@@ -169,7 +186,7 @@ export abstract class SdSheetViewAbstract<VM extends SdViewModelAbstract, MODAL 
       const inputIds = this.selectedItems().map((item) => item.id);
       await this.vm.changeDeleteStatesAsync(inputIds, true);
 
-      await this.#search();
+      await this.search();
 
       this.#sdToast.success("삭제 되었습니다.");
     });
@@ -183,7 +200,7 @@ export abstract class SdSheetViewAbstract<VM extends SdViewModelAbstract, MODAL 
       const inputIds = this.selectedItems().map((item) => item.id);
       await this.vm.changeDeleteStatesAsync(inputIds, false);
 
-      await this.#search();
+      await this.search();
 
       this.#sdToast.success("복구 되었습니다.");
     });
@@ -209,7 +226,7 @@ export abstract class SdSheetViewAbstract<VM extends SdViewModelAbstract, MODAL 
 
       await this.vm.uploadExcelDataTable(wsName, wsdt);
 
-      await this.#search();
+      await this.search();
 
       this.#sdToast.success("엑셀 업로드가 완료 되었습니다.");
     });

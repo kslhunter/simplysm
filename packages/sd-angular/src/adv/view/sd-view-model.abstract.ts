@@ -24,19 +24,26 @@ export abstract class SdViewModelAbstract<
 
   abstract getDetailAsync(id: number): Promise<DD>;
 
-  abstract getExcelDataMatrixAsync(filter: SF, ordering: ISdSheetColumnOrderingVM[]): Promise<TSdExcelValueType[][]>;
+  abstract getExcelDataMatrixAsync(
+    filter: SF,
+    ordering: ISdSheetColumnOrderingVM[],
+  ): Promise<TSdExcelValueType[][]>;
 
   abstract searchAsync(filter: SF, ordering: ISdSheetColumnOrderingVM[]): Promise<{
-    items: SI[]
+    items: SI[];
   }>;
   abstract searchAsync(filter: SF, ordering: ISdSheetColumnOrderingVM[], page: number): Promise<{
-    items: SI[],
-    pageLength: number
+    items: SI[];
+    pageLength: number;
+    summary?: Partial<SI>;
   }>;
 
   abstract changeDeleteStatesAsync(ids: number[], del: boolean): Promise<void>;
 
-  abstract uploadExcelDataTable(wsName: string, wsdt: Record<string, TSdExcelValueType>[]): Promise<void>;
+  abstract uploadExcelDataTable(
+    wsName: string,
+    wsdt: Record<string, TSdExcelValueType>[],
+  ): Promise<void>;
 
   abstract upsertAsync(data: DD): Promise<void>;
 }
