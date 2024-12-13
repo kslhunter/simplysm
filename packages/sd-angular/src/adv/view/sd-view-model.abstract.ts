@@ -26,6 +26,9 @@ export abstract class SdViewModelAbstract<
 
   abstract getExcelDataMatrixAsync(filter: SF, ordering: ISdSheetColumnOrderingVM[]): Promise<TSdExcelValueType[][]>;
 
+  abstract searchAsync(filter: SF, ordering: ISdSheetColumnOrderingVM[]): Promise<{
+    items: SI[]
+  }>;
   abstract searchAsync(filter: SF, ordering: ISdSheetColumnOrderingVM[], page: number): Promise<{
     items: SI[],
     pageLength: number
