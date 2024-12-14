@@ -1,8 +1,8 @@
-import {TFlatType, Type, UnwrappedType, WrappedType} from "@simplysm/sd-core-common";
-import {QueryUnit} from "./QueryUnit";
-import {DbContext} from "./DbContext";
-import {Queryable} from "./Queryable";
-import {TSdOrmDataType} from "./SdOrmDataType";
+import { TFlatType, Type, UnwrappedType, WrappedType } from "@simplysm/sd-core-common";
+import { QueryUnit } from "./QueryUnit";
+import { DbContext } from "./DbContext";
+import { Queryable } from "./Queryable";
+import { TSdOrmDataType } from "./SdOrmDataType";
 
 
 // region QueryBuilder COMMONS
@@ -388,7 +388,9 @@ export interface IReferenceKeyTargetDef {
 // region Queryable
 
 export type TEntityValue<T extends TQueryValue> = T | QueryUnit<T>;
-export type TEntityValueOrQueryable<D extends DbContext, T extends TQueryValue> = TEntityValue<T> | Queryable<D, T>;
+export type TEntityValueOrQueryable<D extends DbContext, T extends TQueryValue> =
+  TEntityValue<T>
+  | Queryable<D, T>;
 export type TEntityValueOrQueryableOrArray<D extends DbContext, T extends TQueryValue> =
   TEntityValueOrQueryable<D, T> | TEntityValueOrQueryableOrArray<D, T>[];
 
@@ -405,9 +407,10 @@ export type TSelectEntity<T> = {
 };
 
 export type TEntityUnwrap<T> = {
-  [K in keyof T]: T[K] extends QueryUnit<any> ? T[K]["T"]
+  [K in keyof T]: T[K] extends QueryUnit<infer A> ? A
     : T[K] extends (infer A)[] ? TEntityUnwrap<A>[]
-      : TEntityUnwrap<T[K]>;
+      : T[K] extends TQueryValue ? T[K]
+        : (TEntityUnwrap<T[K]> | undefined);
 };
 
 export type TIncludeEntity<T> = {
@@ -440,8 +443,16 @@ export interface IQueryableDef {
   sample?: number;
 }
 
-export type TQueryValuePropertyNames<T> = { [K in keyof T]: undefined extends T[K] ? never : T[K] extends TQueryValue ? K : never }[keyof T];
-export type TUndefinedPropertyNames<T> = { [K in keyof T]: undefined extends T[K] ? K : never }[keyof T];
+export type TQueryValuePropertyNames<T> = {
+  [K in keyof T]: undefined extends T[K]
+    ? never
+    : T[K] extends TQueryValue ? K : never
+}[keyof T];
+export type TUndefinedPropertyNames<T> = {
+  [K in keyof T]: undefined extends T[K]
+    ? K
+    : never
+}[keyof T];
 
 export type TOnlyQueryValueProperty<T> =
   Pick<T, TQueryValuePropertyNames<T>>
@@ -472,4 +483,8 @@ export interface ISqliteDbConnectionConfig {
   filePath: string;
 }
 
-export type ISOLATION_LEVEL = "READ_UNCOMMITTED" | "READ_COMMITTED" | "REPEATABLE_READ" | "SERIALIZABLE";
+export type ISOLATION_LEVEL =
+  "READ_UNCOMMITTED"
+  | "READ_COMMITTED"
+  | "REPEATABLE_READ"
+  | "SERIALIZABLE";
