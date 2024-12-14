@@ -236,7 +236,7 @@ export class SdSheetView2BaseControl<VM extends ISdViewModel> {
   summaryData = $signal<Partial<TSdViewModelGenericTypes<VM>["SI"]>>();
 
   filter = model.required<TSdViewModelGenericTypes<VM>["SF"]>();
-  lastFilter = $signal(ObjectUtil.clone(this.filter()));
+  lastFilter = $signal<TSdViewModelGenericTypes<VM>["SF"]>();
 
   page = $signal(0);
   pageLength = $signal(0);
@@ -258,6 +258,10 @@ export class SdSheetView2BaseControl<VM extends ISdViewModel> {
   detailModalConfig = input.required<TSdModalConfig<SdModalBase<{ itemId?: number }, boolean>>>();
 
   constructor() {
+    $effect([], () => {
+      this.lastFilter.set(ObjectUtil.clone(this.filter()));
+    });
+
     $effect([this.page, this.lastFilter, this.ordering], async () => {
       if (!this.vm().perms().includes("use")) {
         this.initialized.set(true);
@@ -321,7 +325,7 @@ export class SdSheetView2BaseControl<VM extends ISdViewModel> {
       const ws = await wb.createWorksheetAsync(this.vm().name);
 
       const dataMatrix = await this.vm()
-        .getExcelDataMatrixAsync(this.lastFilter(), this.ordering());
+        .getExcelDataMatrixAsync(this.lastFilter()!, this.ordering());
       await ws.setDataMatrixAsync(dataMatrix);
 
       const blob = await wb.getBlobAsync();
@@ -331,7 +335,7 @@ export class SdSheetView2BaseControl<VM extends ISdViewModel> {
   }
 
   async search() {
-    const result = await this.vm().searchAsync(this.lastFilter(), this.ordering(), this.page());
+    const result = await this.vm().searchAsync(this.lastFilter()!, this.ordering(), this.page());
     this.items.set(result.items);
     this.pageLength.set(result.pageLength);
     this.summaryData.set(result.summary);
