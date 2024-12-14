@@ -1,6 +1,7 @@
-import { SdProcess } from "@simplysm/sd-core-node";
+import { FsUtil, SdProcess } from "@simplysm/sd-core-node";
 import { NeverEntryError, StringUtil } from "@simplysm/sd-core-common";
 import Anthropic from "@anthropic-ai/sdk";
+import path from "path";
 
 export class SdAiCommand {
   static async commitMessageAsync(): Promise<void> {
@@ -31,8 +32,11 @@ export class SdAiCommand {
         {
           role: "user",
           content: `
-다음 Git diff를 분석하고, packages의 서브디렉토리명으로 종합하여 각각 하나의 적절한 커밋메시지를 작성해줘. 
-커밋메시지는 코드블록으로 감싸서 답변해줘.
+다음 Git diff의 내용을 "packages"의 "서브디렉토리명"별로 분석하고, 각각에 대한 적절한 커밋메시지를 작성해줘
+- "packages"의 "서브디렉토리명"별로 변경사항을 종합해서 각각 하나의 적절한 커밋메시지를 작성해줘.
+- "packages"폴더의 내용이 아닌 변경사항이 있는경우, 해당 변경사항은 "프로젝트"로 적절한 커밋메시지를 작성해줘.
+- "packages"폴더의 내용이 아닌 변경사항이 없는경우, "프로젝트" 커밋메시지는 필요 없어
+- 각각의 커밋메시지는 코드블록으로 감싸서 답변해줘.
 
 각 커밋메시지를 작성하는 방법:
 - 한국어로 작성
