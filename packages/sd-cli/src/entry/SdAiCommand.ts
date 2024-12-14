@@ -1,7 +1,6 @@
-import { FsUtil, SdProcess } from "@simplysm/sd-core-node";
+import { SdProcess } from "@simplysm/sd-core-node";
 import { NeverEntryError, StringUtil } from "@simplysm/sd-core-common";
 import Anthropic from "@anthropic-ai/sdk";
-import path from "path";
 
 export class SdAiCommand {
   static async commitMessageAsync(): Promise<void> {

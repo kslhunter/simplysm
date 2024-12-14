@@ -13,6 +13,7 @@ export * from "./adv/view/sheet-view/sd-sheet-view-base.control";
 export * from "./adv/view/sheet-view/sd-sheet-view-column.template-directive";
 export * from "./adv/view/sheet-view/sd-sheet-view-filter.template-directive";
 export * from "./adv/view/sheet-view/sd-sheet-view.abstract";
+export * from "./adv/view/sheet-view2/sd-sheet-view2-base.control";
 export * from "./controls/barcode/sd-barcode.control";
 export * from "./controls/barcode/sd-qrcode.control";
 export * from "./controls/busy/sd-busy-container.control";
