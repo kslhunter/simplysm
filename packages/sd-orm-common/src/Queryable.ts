@@ -1,5 +1,11 @@
 import { DbContext } from "./DbContext";
-import { FunctionUtil, NeverEntryError, ObjectUtil, Type, UnwrappedType } from "@simplysm/sd-core-common";
+import {
+  FunctionUtil,
+  NeverEntryError,
+  ObjectUtil,
+  Type,
+  UnwrappedType,
+} from "@simplysm/sd-core-common";
 import {
   IDeleteQueryDef,
   IInsertIfNotExistsQueryDef,
@@ -94,7 +100,9 @@ export class Queryable<D extends DbContext, T> {
       for (const colDef of this.tableDef.columns) {
         this._entity[colDef.propertyKey] = new QueryUnit(
           colDef.typeFwd(),
-          `${this.db.qb.wrap(`TBL${this._as !== undefined ? `.${this._as}` : ""}`)}.${this.db.qb.wrap(colDef.name)}`,
+          `${this.db.qb.wrap(`TBL${this._as !== undefined
+            ? `.${this._as}`
+            : ""}`)}.${this.db.qb.wrap(colDef.name)}`,
         );
       }
 
@@ -147,7 +155,10 @@ export class Queryable<D extends DbContext, T> {
     };
   }
 
-  public static union<ND extends DbContext, NT>(qrs: Queryable<ND, NT>[], as?: string): Queryable<ND, NT> {
+  public static union<ND extends DbContext, NT>(
+    qrs: Queryable<ND, NT>[],
+    as?: string,
+  ): Queryable<ND, NT> {
     const db = qrs[0].db;
     const cqrs = qrs.map((item) => new Queryable<ND, NT>(db, item).wrap().clearOrderBy());
 
@@ -158,7 +169,8 @@ export class Queryable<D extends DbContext, T> {
         if (SdOrmUtil.canConvertToQueryValue(orgEntityValue)) {
           resultEntity[orgEntityKey] = new QueryUnit(
             SdOrmUtil.getQueryValueType(orgEntityValue),
-            `${cqrs[0].db.qb.wrap(`TBL${as !== undefined ? "." + as : ""}`)}.${cqrs[0].db.qb.wrap(orgEntityKey)}`,
+            `${cqrs[0].db.qb.wrap(`TBL${as !== undefined ? "." + as : ""}`)}.${cqrs[0].db.qb.wrap(
+              orgEntityKey)}`,
           );
         }
         else if (orgEntityValue instanceof Array) {
@@ -247,7 +259,10 @@ export class Queryable<D extends DbContext, T> {
     return result;
   }
 
-  public orderBy(arg1: ((entity: TEntity<T>) => TEntityValue<TQueryValue>) | string, desc?: boolean): Queryable<D, T> {
+  public orderBy(
+    arg1: ((entity: TEntity<T>) => TEntityValue<TQueryValue>) | string,
+    desc?: boolean,
+  ): Queryable<D, T> {
     let result = new Queryable(this.db, this);
 
     let selectedColumn;
@@ -340,7 +355,9 @@ export class Queryable<D extends DbContext, T> {
         if (valueColumn instanceof QueryUnit) {
           entity[pivotKey] = new QueryUnit<V>(
             valueColumn.type,
-            `${this.db.qb.wrap(`TBL${this._as !== undefined ? `.${this._as}` : ""}`)}.${this.db.qb.wrap(pivotKey)}`,
+            `${this.db.qb.wrap(`TBL${this._as !== undefined
+              ? `.${this._as}`
+              : ""}`)}.${this.db.qb.wrap(pivotKey)}`,
           );
         }
         else {
@@ -390,11 +407,15 @@ export class Queryable<D extends DbContext, T> {
       if (entity[pivotKeys[0]] instanceof QueryUnit) {
         entity[valueColumn] = new QueryUnit<any>(
           entity[pivotKeys[0]].type,
-          `${this.db.qb.wrap(`TBL${this._as !== undefined ? `.${this._as}` : ""}`)}.${this.db.qb.wrap(valueColumn)}`,
+          `${this.db.qb.wrap(`TBL${this._as !== undefined
+            ? `.${this._as}`
+            : ""}`)}.${this.db.qb.wrap(valueColumn)}`,
         );
         entity[pivotColumn] = new QueryUnit<any>(
           String,
-          `${this.db.qb.wrap(`TBL${this._as !== undefined ? `.${this._as}` : ""}`)}.${this.db.qb.wrap(pivotColumn)}`,
+          `${this.db.qb.wrap(`TBL${this._as !== undefined
+            ? `.${this._as}`
+            : ""}`)}.${this.db.qb.wrap(pivotColumn)}`,
         );
 
         for (const pivotKey of pivotKeys) {
@@ -533,7 +554,9 @@ export class Queryable<D extends DbContext, T> {
       .filter((item) => Boolean(item));
 
     // WHERE
-    const whereFnName: "having" | "where" = result._def.groupBy && result._def.groupBy.length > 0 ? "having" : "where";
+    const whereFnName: "having" | "where" = result._def.groupBy && result._def.groupBy.length > 0
+      ? "having"
+      : "where";
 
     if (searchText.startsWith("<>")) {
       result = result[whereFnName]((item) => {
@@ -545,12 +568,18 @@ export class Queryable<D extends DbContext, T> {
           for (const text of splitSearchText) {
             if (text.includes("*")) {
               splitSearchTextWhereArr.push(
-                this.db.qh.notLike(this.db.qh.toLowerCase(field), text.substring(2).replace(/\*/g, "%").toLowerCase()),
+                this.db.qh.notLike(
+                  this.db.qh.toLowerCase(field),
+                  text.substring(2).replace(/\*/g, "%").toLowerCase(),
+                ),
               );
             }
             else {
               splitSearchTextWhereArr.push(
-                this.db.qh.notIncludes(this.db.qh.toLowerCase(field), text.substring(2).toLowerCase()),
+                this.db.qh.notIncludes(
+                  this.db.qh.toLowerCase(field),
+                  text.substring(2).toLowerCase(),
+                ),
               );
             }
           }
@@ -570,11 +599,17 @@ export class Queryable<D extends DbContext, T> {
           for (const text of splitSearchText) {
             if (text.includes("*")) {
               splitSearchTextWhereArr.push(
-                this.db.qh.like(this.db.qh.toLowerCase(field), text.replace(/\*/g, "%").toLowerCase()),
+                this.db.qh.like(
+                  this.db.qh.toLowerCase(field),
+                  text.replace(/\*/g, "%").toLowerCase(),
+                ),
               );
             }
             else {
-              splitSearchTextWhereArr.push(this.db.qh.includes(this.db.qh.toLowerCase(field), text.toLowerCase()));
+              splitSearchTextWhereArr.push(this.db.qh.includes(
+                this.db.qh.toLowerCase(field),
+                text.toLowerCase(),
+              ));
             }
           }
           fieldOrArr.push(this.db.qh.and(splitSearchTextWhereArr));
@@ -621,7 +656,13 @@ export class Queryable<D extends DbContext, T> {
 
     const currEntity = this._getParentEntity(clone._entity, this._as, undefined);
 
-    const result = new Queryable<D, any>(this.db, tableType, this._as, currEntity, { from: subFrom });
+    const result = new Queryable<D, any>(
+      this.db,
+      tableType,
+      this._as,
+      currEntity,
+      { from: subFrom },
+    );
 
     if (this.db.opt.dialect === "mssql" || this.db.opt.dialect === "mssql-azure") {
       if (subFrom.orderBy && subFrom.orderBy.length > 0) {
@@ -653,7 +694,10 @@ export class Queryable<D extends DbContext, T> {
     // SELECT 필드 구성
     result.select = {};
 
-    const addSelectValue = (key: string, value: QueryUnit<any> | TEntity<any> | TEntity<any>[]): void => {
+    const addSelectValue = (
+      key: string,
+      value: QueryUnit<any> | TEntity<any> | TEntity<any>[],
+    ): void => {
       if (SdOrmUtil.canConvertToQueryValue(value)) {
         if (typeof result.select === "undefined") throw new NeverEntryError();
         result.select[`${this.db.qb.wrap(key)}`] = this.db.qh.getQueryValue(value);
@@ -717,7 +761,10 @@ export class Queryable<D extends DbContext, T> {
     return ObjectUtil.clearUndefined(result);
   }
 
-  public getInsertQueryDef(obj: TInsertObject<T>, outputColumns: (keyof T)[] | undefined): IInsertQueryDef {
+  public getInsertQueryDef(
+    obj: TInsertObject<T>,
+    outputColumns: (keyof T)[] | undefined,
+  ): IInsertQueryDef {
     if (typeof this._def.from !== "string") {
       throw new Error("INSERT 할 TABLE 을 정확히 지정해야 합니다.");
     }
@@ -770,7 +817,10 @@ export class Queryable<D extends DbContext, T> {
     });
   }
 
-  public getUpdateQueryDef(obj: TUpdateObject<T>, outputColumns: (keyof T)[] | undefined): IUpdateQueryDef {
+  public getUpdateQueryDef(
+    obj: TUpdateObject<T>,
+    outputColumns: (keyof T)[] | undefined,
+  ): IUpdateQueryDef {
     if (typeof this._def.from !== "string") {
       throw new Error("UPDATE 할 TABLE 을 정확히 지정해야 합니다.");
     }
@@ -1061,7 +1111,10 @@ export class Queryable<D extends DbContext, T> {
     // }
     // DbContext.selectCache.set(cacheKey, undefined);
 
-    const results = await this.db.executeDefsAsync([{ type: "select", ...def }], [this._getParseOption(undefined)]);
+    const results = await this.db.executeDefsAsync(
+      [{ type: "select", ...def }],
+      [this._getParseOption(undefined)],
+    );
 
     // const timeout = setTimeout(() => {
     //   DbContext.selectCache.delete(cacheKey);
@@ -1074,6 +1127,9 @@ export class Queryable<D extends DbContext, T> {
   public async singleAsync(): Promise<T | undefined> {
     const result = await this.resultAsync();
     if (result.length > 1) {
+      if (process.env["NODE_ENV"] !== "development") {
+        console.error(result);
+      }
       throw new Error("복수의 쿼리결과가 있습니다.");
     }
 
@@ -1315,7 +1371,9 @@ export class Queryable<D extends DbContext, T> {
     updateObjOrFwd: U | ((entity: TEntity<T>) => U),
     insertObjOrFwd?: TInsertObject<T> | ((updateRecord: U) => TInsertObject<T>),
   ): void {
-    const updateRecord = typeof updateObjOrFwd === "function" ? updateObjOrFwd(this._entity) : updateObjOrFwd;
+    const updateRecord = typeof updateObjOrFwd === "function"
+      ? updateObjOrFwd(this._entity)
+      : updateObjOrFwd;
     const insertRecord = (
       insertObjOrFwd
         ? typeof insertObjOrFwd === "function"
@@ -1409,7 +1467,10 @@ export class Queryable<D extends DbContext, T> {
                 whereQuery.push(
                   ...[
                     this.db.qh.isNotNull(lastEn[columnPropertyKey]),
-                    this.db.qh.equal(item[fkTargetTableDef.columns[i].propertyKey], lastEn[columnPropertyKey]),
+                    this.db.qh.equal(
+                      item[fkTargetTableDef.columns[i].propertyKey],
+                      lastEn[columnPropertyKey],
+                    ),
                   ],
                 );
               }
@@ -1425,8 +1486,10 @@ export class Queryable<D extends DbContext, T> {
         const fktSourceType = fktDef.sourceTypeFwd();
         const fktSourceTableDef = DbDefinitionUtil.getTableDef(fktSourceType);
         const fktSourceFkDef =
-          fktSourceTableDef.foreignKeys.single((item) => item.propertyKey === fktDef.sourceKeyPropertyKey) ??
-          fktSourceTableDef.referenceKeys.single((item) => item.propertyKey === fktDef.sourceKeyPropertyKey);
+          fktSourceTableDef.foreignKeys.single((item) => item.propertyKey
+            === fktDef.sourceKeyPropertyKey) ??
+          fktSourceTableDef.referenceKeys.single((item) => item.propertyKey
+            === fktDef.sourceKeyPropertyKey);
         if (!fktSourceFkDef) {
           throw new Error(
             `'${fktSourceTableDef.name}.${fktDef.sourceKeyPropertyKey}'에 '@ForeignKey()'가 지정되지 않았습니다.`,
@@ -1463,7 +1526,10 @@ export class Queryable<D extends DbContext, T> {
                 whereQuery.push(
                   ...[
                     this.db.qh.isNotNull(lastEn[tableDef.columns[i].propertyKey]),
-                    this.db.qh.equal(item[columnPropertyKey], lastEn[tableDef.columns[i].propertyKey]),
+                    this.db.qh.equal(
+                      item[columnPropertyKey],
+                      lastEn[tableDef.columns[i].propertyKey],
+                    ),
                   ],
                 );
               }
@@ -1497,11 +1563,19 @@ export class Queryable<D extends DbContext, T> {
       }
       else if (entityValue instanceof Array) {
         result[key] = [
-          this._getParentEntity(entityValue[0], rootAs, (parentAs !== undefined ? parentAs + "." : "") + key),
+          this._getParentEntity(
+            entityValue[0],
+            rootAs,
+            (parentAs !== undefined ? parentAs + "." : "") + key,
+          ),
         ] as any;
       }
       else {
-        result[key] = this._getParentEntity(entityValue, rootAs, (parentAs !== undefined ? parentAs + "." : "") + key);
+        result[key] = this._getParentEntity(
+          entityValue,
+          rootAs,
+          (parentAs !== undefined ? parentAs + "." : "") + key,
+        );
       }
     }
     return result;
@@ -1554,8 +1628,10 @@ export class Queryable<D extends DbContext, T> {
     }
     // DbContext.selectCache.clear();
 
-    const pkColNames = this.tableDef.columns.filter((item) => item.primaryKey !== undefined).map((item) => item.name);
-    const aiColNames = this.tableDef.columns.filter((item) => item.autoIncrement).map((item) => item.name);
+    const pkColNames = this.tableDef.columns.filter((item) => item.primaryKey !== undefined)
+      .map((item) => item.name);
+    const aiColNames = this.tableDef.columns.filter((item) => item.autoIncrement)
+      .map((item) => item.name);
 
     const dataIndexes: number[] = [];
     const defs: TQueryDef[] = [];
@@ -1622,7 +1698,8 @@ export class Queryable<D extends DbContext, T> {
     }
 
     if (this.db.opt.dialect === "mssql" || this.db.opt.dialect === "mssql-azure") {
-      const hasSomeAIColVal = records.some((record) => Object.keys(record).some((item) => aiColNames.includes(item)));
+      const hasSomeAIColVal = records.some((record) => Object.keys(record)
+        .some((item) => aiColNames.includes(item)));
       if (hasSomeAIColVal) {
         defs.insert(0, {
           type: "configIdentityInsert" as const,
@@ -1817,14 +1894,22 @@ export class Queryable<D extends DbContext, T> {
     }
     // DbContext.selectCache.clear();
 
-    const pkColNames = this.tableDef.columns.filter((item) => item.primaryKey !== undefined).map((item) => item.name);
-    const aiColNames = this.tableDef.columns.filter((item) => item.autoIncrement).map((item) => item.name);
+    const pkColNames = this.tableDef.columns.filter((item) => item.primaryKey !== undefined)
+      .map((item) => item.name);
+    const aiColNames = this.tableDef.columns.filter((item) => item.autoIncrement)
+      .map((item) => item.name);
 
     // let dataIndex: number;
     const defs: TQueryDef[] = [];
 
     const aiKeyName = pkColNames.single((item) => aiColNames.includes(item));
-    const queryDef = this.getUpsertQueryDef(updateRecord, insertRecord, outputColumns, aiKeyName, pkColNames);
+    const queryDef = this.getUpsertQueryDef(
+      updateRecord,
+      insertRecord,
+      outputColumns,
+      aiKeyName,
+      pkColNames,
+    );
     defs.push({
       type: "upsert" as const,
       ...queryDef,

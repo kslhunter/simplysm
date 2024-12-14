@@ -11,14 +11,16 @@ import { NgTemplateOutlet } from "@angular/common";
 import { SdPaneControl } from "../../../controls/layout/sd-pane.control";
 import { SdSheetControl } from "../../../controls/sheet/sd-sheet.control";
 import { SdSheetColumnDirective } from "../../../controls/sheet/sd-sheet-column.directive";
-import { SdSheetColumnCellTemplateDirective } from "../../../controls/sheet/sd-sheet-column-cell.template-directive";
+import {
+  SdSheetColumnCellTemplateDirective,
+} from "../../../controls/sheet/sd-sheet-column-cell.template-directive";
 import { SdAnchorControl } from "../../../controls/button/sd-anchor.control";
 import { FormatPipe } from "../../../pipes/format.pipe";
 import { SdAngularConfigProvider } from "../../../providers/sd-angular-config.provider";
 import { injectParent } from "../../../utils/injectParent";
 import { SdSheetViewAbstract } from "./sd-sheet-view.abstract";
-import { SdSheetViewFilterTemplateDirective } from "./sd-sheet-view-filter.template-directive";
-import { SdSheetViewColumnTemplateDirective } from "./sd-sheet-view-column.template-directive";
+import { SdSheetViewFilterDirective } from "./sd-sheet-view-filter.directive";
+import { SdSheetViewColumnDirective } from "./sd-sheet-view-column.directive";
 
 @Component({
   selector: "sd-sheet-view-base",
@@ -56,8 +58,16 @@ import { SdSheetViewColumnTemplateDirective } from "./sd-sheet-view-column.templ
                 </sd-form-box-item>
 
                 @for (filterControl of filterControls(); track filterControl) {
-                  <sd-form-box-item [label]="filterControl.label()">
-                    <ng-template [ngTemplateOutlet]="filterControl.templateRef" />
+                  <sd-form-box-item
+                    [label]="filterControl.label()"
+                    [labelTooltip]="filterControl.labelTooltip()"
+                  >
+                    @if (filterControl.labelTemplateRef()) {
+                      <ng-template #label>
+                        <ng-template [ngTemplateOutlet]="filterControl.labelTemplateRef()!" />
+                      </ng-template>
+                    }
+                    <ng-template [ngTemplateOutlet]="filterControl.contentTemplateRef()" />
                   </sd-form-box-item>
                 }
               </sd-form-box>
@@ -83,7 +93,11 @@ import { SdSheetViewColumnTemplateDirective } from "./sd-sheet-view-column.templ
                     선택 삭제
                   </sd-button>
                   @if ($.isSelectedItemsHasDeleted()) {
-                    <sd-button size="sm" theme="link-warning" (click)="$.onRestoreSelectedItemsButtonClick()">
+                    <sd-button
+                      size="sm"
+                      theme="link-warning"
+                      (click)="$.onRestoreSelectedItemsButtonClick()"
+                    >
                       <sd-icon [icon]="icons.redo" [fixedWidth]="true" />
                       선택 복구
                     </sd-button>
@@ -139,32 +153,68 @@ import { SdSheetViewColumnTemplateDirective } from "./sd-sheet-view-column.templ
 
               @for (columnControl of columnControls(); track columnControl.key()) {
                 <sd-sheet-column
-                  [header]="columnControl.header()"
-                  resizable
-                  useOrdering
                   [key]="columnControl.key()"
+                  [fixed]="columnControl.fixed()"
+                  [header]="columnControl.header()"
+                  [headerStyle]="columnControl.headerStyle()"
+                  [tooltip]="columnControl.tooltip()"
+                  [width]="columnControl.width()"
+                  [useOrdering]="columnControl.useOrdering()"
+                  [resizable]="columnControl.resizable()"
+                  [hidden]="columnControl.hidden()"
+                  [collapse]="columnControl.collapse()"
                 >
-                  <ng-template [cell]="$.items()" let-item>
-                    <ng-template
-                      [ngTemplateOutlet]="columnControl.templateRef"
-                      [ngTemplateOutletContext]="{ 
-                        $implicit: item,
-                        item: item
-                      }"
-                    >
+                  @if (columnControl.headerTemplateRef()) {
+                    <ng-template #header>
+                      <ng-template [ngTemplateOutlet]="columnControl.headerTemplateRef()!" />
                     </ng-template>
+                  }
+
+                  @if (columnControl.summaryTemplateRef()) {
+                    <ng-template #summary>
+                      <ng-template [ngTemplateOutlet]="columnControl.summaryTemplateRef()!" />
+                    </ng-template>
+                  }
+
+                  <ng-template
+                    [cell]="$.items()"
+                    let-item
+                    let-index="index"
+                    let-depth="depth"
+                    let-edit="edit"
+                  >
+                    <ng-template
+                      [ngTemplateOutlet]="columnControl.cellTemplateRef() ?? null"
+                      [ngTemplateOutletContext]="{
+                        $implicit: item,
+                        item: item,
+                        index: index,
+                        depth: depth,
+                        edit: edit,
+                      }"
+                    />
                   </ng-template>
                 </sd-sheet-column>
               }
 
-              <sd-sheet-column [header]="['최종수정', '일시']" resizable useOrdering key="lastModifyDateTime">
+              <sd-sheet-column
+                [header]="['최종수정', '일시']"
+                resizable
+                useOrdering
+                key="lastModifyDateTime"
+              >
                 <ng-template [cell]="$.items()" let-item>
                   <div class="p-xs-sm tx-center">
                     {{ item.lastModifyDateTime | format: "yyyy-MM-dd HH:mm" }}
                   </div>
                 </ng-template>
               </sd-sheet-column>
-              <sd-sheet-column [header]="['최종수정', '이름']" resizable useOrdering key="lastModifierName">
+              <sd-sheet-column
+                [header]="['최종수정', '이름']"
+                resizable
+                useOrdering
+                key="lastModifierName"
+              >
                 <ng-template [cell]="$.items()" let-item>
                   <div class="p-xs-sm tx-center">
                     {{ item.lastModifierName }}
@@ -183,6 +233,6 @@ export class SdSheetViewBaseControl {
 
   $ = injectParent(SdSheetViewAbstract);
 
-  filterControls = contentChildren(SdSheetViewFilterTemplateDirective);
-  columnControls = contentChildren(SdSheetViewColumnTemplateDirective);
+  filterControls = contentChildren(SdSheetViewFilterDirective);
+  columnControls = contentChildren(SdSheetViewColumnDirective);
 }

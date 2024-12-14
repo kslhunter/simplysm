@@ -27,8 +27,8 @@ yarn install @simplysm/sd-angular
 | view/ISdViewModel.ts | 뷰 모델 인터페이스 | |
 | view/sheet-view/sd-sheet-view.abstract.ts | 시트 뷰의 추상 클래스 | |
 | view/sheet-view/sd-sheet-view-base.control.ts | 시트 뷰의 기본 구조를 제공하는 컨트롤 | |
-| view/sheet-view/sd-sheet-view-column.template-directive.ts | 시트 뷰 컬럼 템플릿 디렉티브 | |
-| view/sheet-view/sd-sheet-view-filter.template-directive.ts | 시트 뷰 필터 템플릿 디렉티브 | |
+| view/sheet-view/sd-sheet-view-column.directive.ts | 시트 뷰 컬럼 템플릿 디렉티브 | |
+| view/sheet-view/sd-sheet-view-filter.directive.ts | 시트 뷰 필터 템플릿 디렉티브 | |
 
 ### 기본 컨트롤 (controls/)
 | 파일명 | 설명 | [⚠️](#Deprecated) |
@@ -48,7 +48,7 @@ yarn install @simplysm/sd-angular
 | collapse/sd-collapse-icon.control.ts | 접기/펼치기 아이콘 컨트롤 | |
 | dropdown/sd-dropdown.control.ts | 드롭다운 컨트롤 | |
 | dropdown/sd-dropdown-popup.control.ts | 드롭다운 팝업 컨트롤 | |
-| echarts/sd-echarts.control.ts | ECharts 컨트 컨트롤 | |
+| echarts/sd-echarts.control.ts | ECharts 컨트롤 | |
 | editor/sd-content-editor.control.ts | 컨텐츠 에디터 컨트롤 | |
 | editor/sd-quill-editor.control.ts | Quill 에디터 컨트롤 | |
 | form/sd-form.control.ts | 폼 유효성 검사 및 제출 컨트롤 | |
@@ -73,7 +73,7 @@ yarn install @simplysm/sd-angular
 | layout/sd-pane.control.ts | 기본 패널 컨트롤 | |
 | list/sd-list.control.ts | 리스트 컨트롤 | |
 | list/sd-list-item.control.ts | 리스트 아이템 컨트롤 | |
-| modal/sd-modal.control.ts | 모달 컨 컨트롤 | |
+| modal/sd-modal.control.ts | 모달 컨트롤 | |
 | modal/sd-modal.provider.ts | 모달 관리 프로바이더 | |
 | note/sd-note.control.ts | 노트 표시 컨트롤 | |
 | pagination/sd-pagination.control.ts | 페이지네이션 컨트롤 | |
@@ -142,7 +142,7 @@ yarn install @simplysm/sd-angular
 | sd-global-error-handler.plugin.ts | 전역 에러 핸들러 플러그인 | |
 
 ### 프로바이더 (providers/)
-| 파���명 | 설명 | [⚠️](#Deprecated) |
+| 파일명 | 설명 | [⚠️](#Deprecated) |
 |----------|------|:------------:|
 | sd-angular-config.provider.ts | Angular 설정 프로바이더 | |
 | sd-app-structure.provider.ts | 앱 구조 관리 프로바이더 | |

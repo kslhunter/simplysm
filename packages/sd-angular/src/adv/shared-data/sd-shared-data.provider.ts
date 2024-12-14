@@ -64,13 +64,7 @@ export class SdSharedDataProvider<T extends Record<string, ISharedDataBase<strin
       const computedMap = $computed(() => info.signal!().toMap((item) => item.__valueKey));
       info.signal["$get"] = (key: T[K]["__valueKey"]) => computedMap().get(key);
 
-      // let loaded = false;
-      // info.signal["$wait"] = () => Wait.until(() => loaded);
-
-      void (async () => {
-        await this.#loadDataAsync(name);
-        // loaded = true;
-      })();
+      void this.#loadDataAsync(name);
     }
 
     return info.signal as any;

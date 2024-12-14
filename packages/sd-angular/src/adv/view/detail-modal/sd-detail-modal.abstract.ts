@@ -3,12 +3,14 @@ import { ISdViewModel, TSdViewModelGenericTypes } from "../ISdViewModel";
 import { SD_MODAL_INPUT, SdModalBase } from "../../../controls/modal/sd-modal.provider";
 import { SdToastProvider } from "../../../controls/toast/sd-toast.provider";
 import { $effect, $obj, $signal } from "../../../utils/$hooks";
+import { SdSharedDataProvider } from "../../shared-data/sd-shared-data.provider";
 
 @Directive()
 export abstract class SdDetailModalAbstract<
   VM extends ISdViewModel,
   P extends { itemId?: number }
 > extends SdModalBase<P, boolean> {
+  #sdSharedData = inject(SdSharedDataProvider);
   #sdToast = inject(SdToastProvider);
 
   abstract vm: ISdViewModel;
@@ -32,6 +34,7 @@ export abstract class SdDetailModalAbstract<
 
       this.busyCount.update((v) => v + 1);
       await this.#sdToast.try(async () => {
+        await this.#sdSharedData.wait();
         await this.#refresh();
       });
       this.busyCount.update((v) => v - 1);
