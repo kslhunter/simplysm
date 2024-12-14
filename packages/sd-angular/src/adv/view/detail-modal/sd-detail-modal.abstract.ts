@@ -1,30 +1,30 @@
 import { Directive, inject } from "@angular/core";
-import { SD_VM_DETAIL_DATA, SdViewModelAbstract } from "../sd-view-model.abstract";
+import { ISdViewModel, TSdViewModelGenericTypes } from "../ISdViewModel";
 import { SD_MODAL_INPUT, SdModalBase } from "../../../controls/modal/sd-modal.provider";
 import { SdToastProvider } from "../../../controls/toast/sd-toast.provider";
 import { $effect, $obj, $signal } from "../../../utils/$hooks";
 
 @Directive()
 export abstract class SdDetailModalAbstract<
-  VM extends SdViewModelAbstract,
+  VM extends ISdViewModel,
   P extends { itemId?: number }
 > extends SdModalBase<P, boolean> {
   #sdToast = inject(SdToastProvider);
 
-  abstract vm: SdViewModelAbstract;
+  abstract vm: ISdViewModel;
 
   initialized = $signal(false);
   busyCount = $signal(0);
 
-  data = $signal<VM[typeof SD_VM_DETAIL_DATA]>(this.getDefaultDetailData());
+  data = $signal<TSdViewModelGenericTypes<VM>["DD"]>(this.getDefaultDetailData());
 
-  abstract getDefaultDetailData(params?: this[typeof SD_MODAL_INPUT]): VM[typeof SD_VM_DETAIL_DATA];
+  abstract getDefaultDetailData(params?: this[typeof SD_MODAL_INPUT]): TSdViewModelGenericTypes<VM>["DD"];
 
   constructor() {
     super();
 
     $effect([this.params], async () => {
-      if (!this.vm.perms().includes('use')) {
+      if (!this.vm.perms().includes("use")) {
         this.initialized.set(true);
         this.open();
         return;

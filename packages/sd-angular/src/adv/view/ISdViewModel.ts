@@ -3,49 +3,41 @@ import { DateTime } from "@simplysm/sd-core-common";
 import { ISdSheetColumnOrderingVM } from "../../controls/sheet/sd-sheet.control";
 import { TSdExcelValueType } from "@simplysm/sd-excel";
 
-export const SD_VM_DETAIL_DATA = Symbol();
-export const SD_VM_SHEET_FILTER = Symbol();
-export const SD_VM_SHEET_ITEM = Symbol();
-
-export abstract class SdViewModelAbstract<
+export interface ISdViewModel<
   DD extends ISdViewModelDetailData = ISdViewModelDetailData,
   SF extends Record<string, any> = Record<string, any>,
   SI extends ISdViewModelSheetItem = ISdViewModelSheetItem,
 > {
-  [SD_VM_DETAIL_DATA]!: DD;
-  [SD_VM_SHEET_FILTER]!: SF;
-  [SD_VM_SHEET_ITEM]!: SI;
+  key: string;
+  name: string;
 
-  abstract key: string;
-  abstract name: string;
+  viewCodes: string[];
+  perms: Signal<string[]>;
 
-  abstract viewCodes: string[];
-  abstract perms: Signal<string[]>;
+  getDetailAsync(id: number): Promise<DD>;
 
-  abstract getDetailAsync(id: number): Promise<DD>;
-
-  abstract getExcelDataMatrixAsync(
+  getExcelDataMatrixAsync(
     filter: SF,
     ordering: ISdSheetColumnOrderingVM[],
   ): Promise<TSdExcelValueType[][]>;
 
-  abstract searchAsync(filter: SF, ordering: ISdSheetColumnOrderingVM[]): Promise<{
+  searchAsync(filter: SF, ordering: ISdSheetColumnOrderingVM[]): Promise<{
     items: SI[];
   }>;
-  abstract searchAsync(filter: SF, ordering: ISdSheetColumnOrderingVM[], page: number): Promise<{
+  searchAsync(filter: SF, ordering: ISdSheetColumnOrderingVM[], page: number): Promise<{
     items: SI[];
     pageLength: number;
     summary?: Partial<SI>;
   }>;
 
-  abstract changeDeleteStatesAsync(ids: number[], del: boolean): Promise<void>;
+  changeDeleteStatesAsync(ids: number[], del: boolean): Promise<void>;
 
-  abstract uploadExcelDataTable(
+  uploadExcelDataTable(
     wsName: string,
     wsdt: Record<string, TSdExcelValueType>[],
   ): Promise<void>;
 
-  abstract upsertAsync(data: DD): Promise<void>;
+  upsertAsync(data: DD): Promise<void>;
 }
 
 export interface ISdViewModelDetailData {
@@ -61,3 +53,7 @@ export interface ISdViewModelSheetItem {
   lastModifyDateTime?: DateTime;
   lastModifierName?: string;
 }
+
+export type TSdViewModelGenericTypes<VM extends ISdViewModel> = VM extends ISdViewModel<infer A, infer B, infer C>
+  ? { DD: A, SF: B, SI: C }
+  : never;

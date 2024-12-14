@@ -8,7 +8,7 @@ export * from "./adv/shared-data/sd-shared-data-select.control";
 export * from "./adv/shared-data/sd-shared-data.provider";
 export * from "./adv/view/detail-modal/sd-detail-modal-base.control";
 export * from "./adv/view/detail-modal/sd-detail-modal.abstract";
-export * from "./adv/view/sd-view-model.abstract";
+export * from "./adv/view/ISdViewModel";
 export * from "./adv/view/sheet-view/sd-sheet-view-base.control";
 export * from "./adv/view/sheet-view/sd-sheet-view-column.template-directive";
 export * from "./adv/view/sheet-view/sd-sheet-view-filter.template-directive";

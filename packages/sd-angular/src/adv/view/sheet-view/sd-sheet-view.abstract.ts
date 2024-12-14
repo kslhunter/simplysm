@@ -10,33 +10,31 @@ import { $computed, $effect, $model, $signal } from "../../../utils/$hooks";
 import { ObjectUtil } from "@simplysm/sd-core-common";
 import { ISdSheetColumnOrderingVM } from "../../../controls/sheet/sd-sheet.control";
 import { SdExcelWorkbook } from "@simplysm/sd-excel";
-import {
-  SD_VM_SHEET_FILTER,
-  SD_VM_SHEET_ITEM,
-  SdViewModelAbstract,
-} from "../sd-view-model.abstract";
+import { SdSharedDataProvider } from "../../shared-data/sd-shared-data.provider";
+import { ISdViewModel, TSdViewModelGenericTypes } from "../ISdViewModel";
 
 @Directive()
-export abstract class SdSheetViewAbstract<VM extends SdViewModelAbstract, MODAL extends SdModalBase<{
+export abstract class SdSheetViewAbstract<VM extends ISdViewModel, MODAL extends SdModalBase<{
   itemId?: number
 }, boolean>> {
+  #sdSharedData = inject(SdSharedDataProvider);
   #sdToast = inject(SdToastProvider);
   #sdFileDialog = inject(SdFileDialogProvider);
   #sdModal = inject(SdModalProvider);
 
-  abstract vm: SdViewModelAbstract;
+  abstract vm: ISdViewModel;
 
   selectMode = input<"single" | "multi">();
-  selectedItems = $signal<VM[typeof SD_VM_SHEET_ITEM][]>([]);
+  selectedItems = $signal<TSdViewModelGenericTypes<VM>["SI"][]>([]);
 
   _selectedItemIds = input<number[]>([], { alias: "selectedItemIds" });
   _selectedItemIdsChange = output<number[]>({ alias: "selectedItemIdsChange" });
   selectedItemIds = $model(this._selectedItemIds, this._selectedItemIdsChange);
 
-  items = $signal<VM[typeof SD_VM_SHEET_ITEM][]>([]);
-  summaryData = $signal<Partial<VM[typeof SD_VM_SHEET_ITEM]>>();
+  items = $signal<TSdViewModelGenericTypes<VM>["SI"][]>([]);
+  summaryData = $signal<Partial<TSdViewModelGenericTypes<VM>["SI"]>>();
 
-  filter = $signal<VM[typeof SD_VM_SHEET_FILTER]>(this.getDefaultFilter());
+  filter = $signal<TSdViewModelGenericTypes<VM>["SF"]>(this.getDefaultFilter());
   lastFilter = $signal(ObjectUtil.clone(this.filter()));
 
   page = $signal(0);
@@ -50,11 +48,11 @@ export abstract class SdSheetViewAbstract<VM extends SdViewModelAbstract, MODAL 
   isSelectedItemsHasNotDeleted = $computed(() => this.selectedItems()
     .some((item) => !item.isDeleted));
 
-  getItemCellStyleFn = (item: VM[typeof SD_VM_SHEET_ITEM]) => (item.isDeleted
+  getItemCellStyleFn = (item: TSdViewModelGenericTypes<VM>["SI"]) => (item.isDeleted
     ? "text-decoration: line-through;"
     : undefined);
 
-  abstract getDefaultFilter(): VM[typeof SD_VM_SHEET_FILTER];
+  abstract getDefaultFilter(): TSdViewModelGenericTypes<VM>["SF"];
 
   abstract getDetailModalConfig(): TSdModalConfig<MODAL>;
 
@@ -67,6 +65,7 @@ export abstract class SdSheetViewAbstract<VM extends SdViewModelAbstract, MODAL 
 
       this.busyCount.update((v) => v + 1);
       await this.#sdToast.try(async () => {
+        await this.#sdSharedData.wait();
         await this.search();
       });
       this.busyCount.update((v) => v - 1);
@@ -82,7 +81,7 @@ export abstract class SdSheetViewAbstract<VM extends SdViewModelAbstract, MODAL 
     });
   }
 
-  onSelectedItemsChange(selectedItems: VM[typeof SD_VM_SHEET_ITEM][]) {
+  onSelectedItemsChange(selectedItems: TSdViewModelGenericTypes<VM>["SI"][]) {
     if (this.selectMode() === "single") {
       this.selectedItemIds.set(selectedItems.map((item) => item.id));
     }
@@ -137,7 +136,7 @@ export abstract class SdSheetViewAbstract<VM extends SdViewModelAbstract, MODAL 
       .filter(item => this.selectedItems().some(sel => sel.id === item.id)));
   }
 
-  async onItemClick(item: VM[typeof SD_VM_SHEET_ITEM], event: MouseEvent) {
+  async onItemClick(item: TSdViewModelGenericTypes<VM>["SI"], event: MouseEvent) {
     if (!this.vm.perms().includes("edit")) return;
 
     event.preventDefault();
