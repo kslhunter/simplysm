@@ -45,7 +45,7 @@ import { SdIconControl } from "../icon/sd-icon.control";
   styles: [
     /* language=SCSS */ `
       sd-kanban-lane {
-        > sd-dock-container > sd-pane {
+        > sd-dock-container > ._content > sd-pane {
           > sd-busy-container {
             padding: var(--gap-xl) var(--gap-lg);
             background: var(--theme-grey-lightest);
@@ -68,7 +68,7 @@ import { SdIconControl } from "../icon/sd-icon.control";
         }
 
         &[sd-drag-over="true"] {
-          > sd-dock-container > sd-pane > sd-busy-container > ._drop-position {
+          > sd-dock-container > ._content > sd-pane > sd-busy-container > ._drop-position {
             margin-bottom: var(--gap-lg);
             visibility: visible;
           }

@@ -92,7 +92,7 @@ export abstract class SdDetailModalAbstract<
 
     this.busyCount.update((v) => v + 1);
     await this.#sdToast.try(async () => {
-      await this.vm.upsertAsync(this.data());
+      await this.vm.upsertAsync(this.data(), $obj(this.data).origin);
 
       this.#sdToast.success("저장되었습니다.");
       this.close(true);

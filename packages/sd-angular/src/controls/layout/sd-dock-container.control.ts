@@ -1,7 +1,13 @@
-import { ChangeDetectionStrategy, Component, contentChildren, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  contentChildren,
+  ElementRef,
+  viewChild,
+  ViewEncapsulation,
+} from "@angular/core";
 import { SdDockControl } from "./sd-dock.control";
 import { $effect } from "../../utils/$hooks";
-import { injectElementRef } from "../../utils/injectElementRef";
 
 @Component({
   selector: "sd-dock-container",
@@ -13,19 +19,28 @@ import { injectElementRef } from "../../utils/injectElementRef";
     /* language=SCSS */ `
       sd-dock-container {
         display: block;
-        position: relative;
         height: 100%;
+
+        > ._content {
+          position: relative;
+          height: 100%;
+        }
       }
     `,
   ],
   template: `
-    <ng-content />
+    <div #content class="_content">
+      <ng-content />
+    </div>
   `,
 })
 export class SdDockContainerControl {
-  #elRef = injectElementRef<HTMLElement>();
-
   dockControls = contentChildren(SdDockControl);
+
+  contentElRef = viewChild.required<any, ElementRef<HTMLDivElement>>(
+    "content",
+    { read: ElementRef },
+  );
 
   constructor() {
     $effect(() => {
@@ -74,7 +89,7 @@ export class SdDockContainerControl {
         }
       }
 
-      Object.assign(this.#elRef.nativeElement.style, {
+      Object.assign(this.contentElRef().nativeElement.style, {
         paddingTop: top + "px",
         paddingBottom: bottom + "px",
         paddingRight: right + "px",

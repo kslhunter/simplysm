@@ -72,7 +72,7 @@ import { SdIconLayersControl } from "../icon/sd-icon-layers.control";
             border-radius: var(--border-radius-default);
           }
 
-          > sd-dock-container {
+          > sd-dock-container > ._content {
             border: 1px solid $border-color-dark;
             border-radius: var(--border-radius-default);
 
@@ -279,11 +279,7 @@ import { SdIconLayersControl } from "../icon/sd-icon-layers.control";
         }
 
         &[sd-focus-mode="row"] {
-          > sd-busy-container
-          > sd-dock-container
-          > sd-pane._sheet-container
-          > ._focus-row-indicator
-          > ._focus-cell-indicator {
+          > sd-busy-container > sd-dock-container > ._content > sd-pane._sheet-container > ._focus-row-indicator > ._focus-cell-indicator {
             display: none !important;
           }
         }
@@ -296,7 +292,7 @@ import { SdIconLayersControl } from "../icon/sd-icon-layers.control";
               border-radius: var(--border-radius-default);
             }
 
-            > sd-dock-container {
+            > sd-dock-container > ._content {
               border: none;
               border-radius: 0;
             }
@@ -413,13 +409,16 @@ import { SdIconLayersControl } from "../icon/sd-icon-layers.control";
                             }
                           </div>
 
-                          @if (headerCell.isLastDepth && headerCell.control.useOrdering() && headerCell.control.key()) {
+                          @if (headerCell.isLastDepth
+                          && headerCell.control.useOrdering()
+                          && headerCell.control.key()) {
                             <div class="_sort-icon">
                               <sd-icon-layers>
                                 <sd-icon [icon]="icons.sort" class="tx-trans-lightest" />
                                 @if (getIsColumnOrderingDesc(headerCell.control.key()) === false) {
                                   <sd-icon [icon]="icons.sortDown" />
-                                } @else if (getIsColumnOrderingDesc(headerCell.control.key()) === true) {
+                                } @else if (getIsColumnOrderingDesc(headerCell.control.key())
+                                === true) {
                                   <sd-icon [icon]="icons.sortUp" />
                                 }
                               </sd-icon-layers>
@@ -462,13 +461,20 @@ import { SdIconLayersControl } from "../icon/sd-icon-layers.control";
               }
             </thead>
             <tbody>
-              @for (itemDef of displayItemDefs(); let r = $index; track trackByFn()(itemDef.item, r)) {
+              @for (itemDef of displayItemDefs(); let r = $index; track trackByFn()(
+                itemDef.item,
+                r
+              )) {
                 <tr
                   [attr.r]="r"
                   (keydown)="itemKeydown.emit({ item: itemDef.item, event: $event })"
                   [hidden]="getIsHiddenItemDef(itemDef)"
                 >
-                  <td class="_fixed _feature-cell" [attr.r]="r" [attr.c]="getChildrenFn() ? -2 : -1">
+                  <td
+                    class="_fixed _feature-cell"
+                    [attr.r]="r"
+                    [attr.c]="getChildrenFn() ? -2 : -1"
+                  >
                     @if (selectMode() === "multi") {
                       <sd-checkbox
                         [value]="selectedItems().includes(itemDef.item)"
@@ -500,7 +506,10 @@ import { SdIconLayersControl } from "../icon/sd-icon-layers.control";
                   @if (getChildrenFn()) {
                     <td class="_fixed _feature-cell" [attr.r]="r" [attr.c]="-1">
                       @if (itemDef.depth > 0) {
-                        <div class="_depth-indicator" [style.margin-left.em]="itemDef.depth - 0.5"></div>
+                        <div
+                          class="_depth-indicator"
+                          [style.margin-left.em]="itemDef.depth - 0.5"
+                        ></div>
                       }
                       @if (itemDef.hasChildren) {
                         <sd-icon
@@ -658,7 +667,9 @@ export class SdSheetControl<T> {
           control: columnControl,
           key: columnControl.key(),
           fixed: colConf?.fixed ?? columnControl.fixed(),
-          width: this.#resizedWidths()[columnControl.key()] ?? colConf?.width ?? columnControl.width(),
+          width: this.#resizedWidths()[columnControl.key()]
+            ?? colConf?.width
+            ?? columnControl.width(),
           displayOrder: colConf?.displayOrder,
           hidden: colConf?.hidden ?? columnControl.hidden(),
           headerStyle: columnControl.headerStyle(),
@@ -922,7 +933,8 @@ export class SdSheetControl<T> {
       this.expandableItems().every((itemDef) => this.expandedItems().includes(itemDef.item)),
   );
 
-  hasSummaryTemplate = $computed(() => this.columnControls().some((item) => item.summaryTemplateRef() !== undefined));
+  hasSummaryTemplate = $computed(() => this.columnControls()
+    .some((item) => item.summaryTemplateRef() !== undefined));
 
   constructor() {
     $effect([this.key], async () => {
@@ -936,7 +948,8 @@ export class SdSheetControl<T> {
 
     //-- select indicator
     $effect(() => {
-      const sheetContainerEl = this.#elRef.nativeElement.findFirst<HTMLDivElement>("._sheet-container")!;
+      const sheetContainerEl = this.#elRef.nativeElement.findFirst<HTMLDivElement>(
+        "._sheet-container")!;
       const selectRowIndicatorContainerEl = sheetContainerEl.findFirst<HTMLDivElement>(
         "> ._select-row-indicator-container",
       )!;
@@ -972,7 +985,12 @@ export class SdSheetControl<T> {
   }
 
   getIsCellEditMode(r: number, c: number): boolean {
-    return this.#editModeCellAddr() != null && this.#editModeCellAddr()!.r === r && this.#editModeCellAddr()!.c === c;
+    return this.#editModeCellAddr()
+      != null
+      && this.#editModeCellAddr()!.r
+      === r
+      && this.#editModeCellAddr()!.c
+      === c;
   }
 
   /**
@@ -1032,14 +1050,18 @@ export class SdSheetControl<T> {
       if (!(event.target instanceof HTMLElement)) return;
 
       const sheetContainerEl = this.#elRef.nativeElement.findFirst("._sheet-container")!;
-      const focusRowIndicatorEl = sheetContainerEl.findFirst<HTMLDivElement>("> ._focus-row-indicator")!;
+      const focusRowIndicatorEl = sheetContainerEl.findFirst<HTMLDivElement>(
+        "> ._focus-row-indicator")!;
 
       const theadEl = sheetContainerEl.findFirst<HTMLTableSectionElement>("> table > thead")!;
-      const fixedHeaderLastDepthEls = theadEl.findAll<HTMLTableCellElement>("> tr > th._last-depth._fixed");
+      const fixedHeaderLastDepthEls = theadEl.findAll<HTMLTableCellElement>(
+        "> tr > th._last-depth._fixed");
 
       const focusCellIndicatorEl = focusRowIndicatorEl.firstElementChild as HTMLElement;
 
-      const tdEl = event.target.tagName.toLowerCase() === "td" ? event.target : event.target.findParent("td");
+      const tdEl = event.target.tagName.toLowerCase() === "td"
+        ? event.target
+        : event.target.findParent("td");
       if (!(tdEl instanceof HTMLTableCellElement)) return;
 
       const trEl = tdEl.parentElement!;
@@ -1050,7 +1072,9 @@ export class SdSheetControl<T> {
         height: trEl.offsetHeight,
       };
       const cellRect = {
-        left: tdEl.offsetLeft - (tdEl.classList.contains("_fixed") ? sheetContainerEl.scrollLeft : 0),
+        left: tdEl.offsetLeft - (tdEl.classList.contains("_fixed")
+          ? sheetContainerEl.scrollLeft
+          : 0),
         width: tdEl.offsetWidth,
         height: tdEl.offsetHeight,
       };
@@ -1100,15 +1124,19 @@ export class SdSheetControl<T> {
     if (
       event.target instanceof HTMLTableCellElement &&
       !(
-        event.relatedTarget instanceof HTMLTableCellElement && event.relatedTarget.findParent(this.#elRef.nativeElement)
+        event.relatedTarget
+        instanceof HTMLTableCellElement
+        && event.relatedTarget.findParent(this.#elRef.nativeElement)
       )
     ) {
-      const focusRowIndicatorEl = this.#elRef.nativeElement.findFirst<HTMLDivElement>("._focus-row-indicator")!;
+      const focusRowIndicatorEl = this.#elRef.nativeElement.findFirst<HTMLDivElement>(
+        "._focus-row-indicator")!;
       const focusCellIndicatorEl = focusRowIndicatorEl.firstElementChild as HTMLElement;
 
       focusCellIndicatorEl.style.display = "none";
 
-      if (!(event.relatedTarget instanceof HTMLElement) || !event.relatedTarget.findParent(event.target)) {
+      if (!(event.relatedTarget instanceof HTMLElement)
+        || !event.relatedTarget.findParent(event.target)) {
         focusRowIndicatorEl.style.display = "none";
       }
     }
@@ -1162,12 +1190,14 @@ export class SdSheetControl<T> {
       else if (event.ctrlKey && event.key === "c") {
         if (!document.getSelection()) {
           event.preventDefault();
-          event.target.findFirst("sd-textfield")?.dispatchEvent(new CustomEvent("sd-sheet-cell-copy"));
+          event.target.findFirst("sd-textfield")
+            ?.dispatchEvent(new CustomEvent("sd-sheet-cell-copy"));
         }
       }
       else if (event.ctrlKey && event.key === "v") {
         event.preventDefault();
-        event.target.findFirst("sd-textfield")?.dispatchEvent(new CustomEvent("sd-sheet-cell-paste"));
+        event.target.findFirst("sd-textfield")
+          ?.dispatchEvent(new CustomEvent("sd-sheet-cell-paste"));
       }
     }
     else if (event.target instanceof HTMLElement) {
@@ -1221,7 +1251,8 @@ export class SdSheetControl<T> {
     const focusRowIndicatorEl = sheetContainerEl.findFirst<HTMLDivElement>("> ._focus-row-indicator")!;
 
     const theadEl = sheetContainerEl.findFirst<HTMLTableSectionElement>("> table > thead")!;
-    const fixedHeaderLastDepthEls = theadEl.findAll<HTMLTableCellElement>("> tr > th._last-depth._fixed");
+    const fixedHeaderLastDepthEls = theadEl.findAll<HTMLTableCellElement>(
+      "> tr > th._last-depth._fixed");
 
     const focusCellIndicatorEl = focusRowIndicatorEl.firstElementChild as HTMLElement;
 
@@ -1234,7 +1265,10 @@ export class SdSheetControl<T> {
       left: focusCellIndicatorEl.offsetLeft - sheetContainerEl.scrollLeft + 2,
     };
 
-    if (indicatorPosition.top < noneFixedPosition.top || indicatorPosition.left < noneFixedPosition.left) {
+    if (indicatorPosition.top
+      < noneFixedPosition.top
+      || indicatorPosition.left
+      < noneFixedPosition.left) {
       focusCellIndicatorEl.style.opacity = ".3";
     }
     else {
@@ -1322,7 +1356,10 @@ export class SdSheetControl<T> {
     document.documentElement.addEventListener("mouseup", stopDrag, false);
   }
 
-  async onResizerDoubleClick(event: MouseEvent, columnControl: SdSheetColumnDirective<T>): Promise<void> {
+  async onResizerDoubleClick(
+    event: MouseEvent,
+    columnControl: SdSheetColumnDirective<T>,
+  ): Promise<void> {
     this.#resizedWidths.update((v) => {
       const r = { ...v };
       delete r[columnControl.key()];
@@ -1414,7 +1451,9 @@ export class SdSheetControl<T> {
   onHeaderCellClick(event: MouseEvent, headerCell: IHeaderDef<T>): void {
     if (headerCell.isLastDepth && headerCell.control.useOrdering()) {
       if (this.#isOnResizing) return;
-      if (event.target instanceof HTMLElement && event.target.classList.contains("_resizer")) return;
+      if (event.target
+        instanceof HTMLElement
+        && event.target.classList.contains("_resizer")) return;
       if (event.shiftKey || event.ctrlKey) {
         this.#toggleOrdering(headerCell.control.key(), true);
       }
@@ -1504,7 +1543,12 @@ export class SdSheetControl<T> {
     this.selectedItems.update(v => v.filter(item1 => item1 !== item));
   }
 
-  #moveCellIfExists(el: HTMLTableCellElement, offsetR: number, offsetC: number, isEditMode: boolean): boolean {
+  #moveCellIfExists(
+    el: HTMLTableCellElement,
+    offsetR: number,
+    offsetC: number,
+    isEditMode: boolean,
+  ): boolean {
     const targetAddr = {
       r: NumberUtil.parseInt(el.getAttribute("r"))! + offsetR,
       c: NumberUtil.parseInt(el.getAttribute("c"))! + offsetC,

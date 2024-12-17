@@ -95,6 +95,7 @@ export * from "./directives/sd-item-of.template-directive";
 export * from "./directives/sd-router-link.directive";
 export * from "./directives/sd-typed.template-directive";
 export * from "./directives/sd-use-ripple.directive";
+export * from "./directives/template-target.directive";
 export * from "./modals/sd-address-search.modal";
 export * from "./pipes/format.pipe";
 export * from "./plugins/commands/sd-insert-command.event-plugin";

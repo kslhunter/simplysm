@@ -3,7 +3,7 @@ import { NeverEntryError, StringUtil } from "@simplysm/sd-core-common";
 import Anthropic from "@anthropic-ai/sdk";
 
 export class SdAiCommand {
-  static async commitMessageAsync(): Promise<void> {
+  static async commitAsync(): Promise<void> {
     if (StringUtil.isNullOrEmpty(process.env["ANTHROPIC_API_KEY"])) {
       throw new Error("ANTHROPIC_API_KEY 환경변수가 설정되어 있지 않습니다.");
     }
@@ -11,9 +11,9 @@ export class SdAiCommand {
     process.stdout.write("실행중: git add .\n");
     await SdProcess.spawnAsync("git add .", { cwd: process.cwd() });
 
-    process.stdout.write(`실행중: git diff --staged -- . ":(exclude).*/" ":(exclude)_*/ ":(exclude)yarn.lock" ":(exclude)packages/*/styles.css"\n`);
+    process.stdout.write(`실행중: git diff --staged -- . ":(exclude).*!/" ":(exclude)_*/ ":(exclude)yarn.lock" ":(exclude)packages/*/styles.css"\n`);
     const diff = await SdProcess.spawnAsync(
-      `git diff --staged -- . ":(exclude).*" ":(exclude)_*" ":(exclude)yarn.lock" ":(exclude)packages/*/styles.css"`,
+      `git diff --text --staged -- . ":(exclude).*" ":(exclude)_*" ":(exclude)yarn.lock" ":(exclude)packages/*/styles.css"`,
       { cwd: process.cwd() },
     );
 
@@ -52,6 +52,16 @@ ${diff}`,
     if (message.content[0].type !== "text") {
       throw new NeverEntryError();
     }
-    process.stdout.write(message.content[0].text);
+    // process.stdout.write(message.content[0].text);
+
+    const messages = message.content[0].text.matchAll(/```([^`]*)```/g);
+    const commitMessage = Array.from(messages).map(item => item[1].trim()).join("\n\n\n");
+
+    await SdProcess.spawnAsync(
+      `git commit -m "${commitMessage.replaceAll(/"/g, "\\\"")}"`,
+      { cwd: process.cwd() },
+    );
+    process.stdout.write("커밋이 완료되었습니다.\n\n커밋메시지:\n");
+    process.stdout.write(commitMessage + "\n");
   }
 }

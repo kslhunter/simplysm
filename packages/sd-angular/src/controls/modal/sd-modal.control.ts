@@ -70,7 +70,7 @@ import { SdIconControl } from "../icon/sd-icon.control";
             outline: none;
           }
 
-          > sd-dock-container {
+          > sd-dock-container > ._content {
             > ._header {
               display: flex;
               flex-direction: row;
@@ -255,7 +255,7 @@ import { SdIconControl } from "../icon/sd-icon.control";
               border: none;
               border-radius: 0;
 
-              > sd-dock-container > ._header {
+              > sd-dock-container > ._content > ._header {
                 background: transparent;
                 color: var(--text-trans-lighter);
 

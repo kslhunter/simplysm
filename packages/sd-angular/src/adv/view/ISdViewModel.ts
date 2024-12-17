@@ -24,6 +24,7 @@ export interface ISdViewModel<
   searchAsync(filter: SF, ordering: ISdSheetColumnOrderingVM[]): Promise<{
     items: SI[];
   }>;
+
   searchAsync(filter: SF, ordering: ISdSheetColumnOrderingVM[], page: number): Promise<{
     items: SI[];
     pageLength: number;
@@ -37,7 +38,7 @@ export interface ISdViewModel<
     wsdt: Record<string, TSdExcelValueType>[],
   ): Promise<void>;
 
-  upsertAsync(data: DD): Promise<void>;
+  upsertAsync(data: DD, orgData: DD): Promise<void>;
 }
 
 export interface ISdViewModelDetailData {
