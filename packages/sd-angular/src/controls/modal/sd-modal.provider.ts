@@ -52,6 +52,10 @@ export class SdModalProvider {
             providers: [{ provide: SdActivatedModalProvider, useValue: provider }],
           }),
         });
+
+        compRef.setInput("title", title);
+        compRef.setInput("params", params);
+
         provider.content = compRef.instance;
 
         const modalRef = createComponent(SdModalControl, {
@@ -70,9 +74,6 @@ export class SdModalProvider {
         rootEl.appendChild(modalEl);
 
         //-- attach comp
-
-        compRef.setInput("title", title);
-        compRef.setInput("params", params);
 
         const prevActiveElement = document.activeElement as HTMLElement | undefined;
         compRef.instance.close = (value?: T[typeof SD_MODEL_OUTPUT]): void => {

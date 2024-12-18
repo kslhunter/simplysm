@@ -61,7 +61,7 @@ ${diff}`,
       `git commit -m "${commitMessage.replaceAll(/"/g, "\\\"")}"`,
       { cwd: process.cwd() },
     );
-    process.stdout.write("커밋이 완료되었습니다.\n\n커밋메시지:\n");
-    process.stdout.write(commitMessage + "\n");
+    process.stdout.write("\n\n" + commitMessage + "\n\n");
+    process.stdout.write("커밋이 완료되었습니다. 위 커밋메시지가 맘에들지 않을경우, 직접 커밋을 취소하세요.\n");
   }
 }

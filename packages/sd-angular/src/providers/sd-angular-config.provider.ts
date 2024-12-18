@@ -44,6 +44,7 @@ export interface ISdAngularIcon {
   sortDown: IconDefinition;
   sortUp: IconDefinition;
 
+  refresh: IconDefinition;
   plusCircle: IconDefinition;
   eraser: IconDefinition;
   redo: IconDefinition;

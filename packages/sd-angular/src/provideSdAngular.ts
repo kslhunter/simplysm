@@ -36,7 +36,7 @@ import {
   faPlusCircle,
   faQuestion,
   faQuestionCircle,
-  faRedo,
+  faRedo, faRefresh,
   faSave,
   faSearch,
   faSort,
@@ -128,6 +128,7 @@ export function provideSdAngular(opt: {
           sortDown: faSortDown,
           sortUp: faSortUp,
 
+          refresh: faRefresh,
           plusCircle: faPlusCircle,
           eraser: faEraser,
           redo: faRedo,

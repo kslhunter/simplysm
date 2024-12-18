@@ -55,7 +55,9 @@ export class SdAppStructureProvider<T extends string> {
 
     const result: Record<string, boolean> = {};
     for (const key of keys) {
-      result[key] = viewCodes.some((viewCode) => Boolean(this.#permRecord()?.[viewCode + "." + key]));
+      result[key] = viewCodes.some((viewCode) => Boolean(this.#permRecord()?.[viewCode
+      + "."
+      + key]));
     }
 
     return result;
@@ -66,6 +68,17 @@ export class SdAppStructureProvider<T extends string> {
     for (const key of keys) {
       if (viewCodes.some((viewCode) => Boolean(this.#permRecord()?.[viewCode + "." + key]))) {
         result.push(key);
+      }
+      else {
+        if (
+          viewCodes.every(viewCode => (
+            SdAppStructureUtil.getFlatPages(this.#items)
+              .single(item => item.codeChain.join(".") === viewCode)
+              ?.hasPerms === false
+          ))
+        ) {
+          result.push(key);
+        }
       }
     }
 
@@ -100,7 +113,10 @@ export class SdAppStructureProvider<T extends string> {
     codes: string[];
   }): ISdPermission {
     return {
-      children: this.#getPermsByModule(SdAppStructureUtil.getPermissions(params.appStructure, params.codes)),
+      children: this.#getPermsByModule(SdAppStructureUtil.getPermissions(
+        params.appStructure,
+        params.codes,
+      )),
       title: params.title,
       codes: params.codes,
     };
