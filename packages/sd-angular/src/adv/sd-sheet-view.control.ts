@@ -30,7 +30,7 @@ import { NgTemplateOutlet } from "@angular/common";
 import { transformBoolean } from "../utils/tramsforms";
 import { ObjectUtil } from "@simplysm/sd-core-common";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
-import { $computed, $effect, $signal } from "../utils/$hooks";
+import { $computed, $effect } from "../utils/$hooks";
 import { ISdViewModel, TSdViewModelGenericTypes } from "./ISdViewModel";
 import { SD_MODAL_INPUT, SdModalBase, SdModalProvider } from "../controls/modal/sd-modal.provider";
 import { SdToastProvider } from "../controls/toast/sd-toast.provider";
@@ -278,6 +278,7 @@ export class SdSheetViewControl<VM extends ISdViewModel, TMODAL extends SdModalB
   vm = input.required<VM>();
 
   items = model.required<TSdViewModelGenericTypes<VM>["SI"][]>();
+  summaryData = model<TSdViewModelGenericTypes<VM>["SS"]>();
 
   selectedItems = model<TSdViewModelGenericTypes<VM>["SI"][]>([]);
   selectMode = input<"single" | "multi">();
@@ -287,7 +288,7 @@ export class SdSheetViewControl<VM extends ISdViewModel, TMODAL extends SdModalB
   busyCount = model(0);
 
   filter = model.required<TSdViewModelGenericTypes<VM>["SF"]>();
-  lastFilter = $signal<TSdViewModelGenericTypes<VM>["SF"]>();
+  lastFilter = model<TSdViewModelGenericTypes<VM>["SF"]>();
 
   page = model(0);
   pageLength = model(0);
@@ -306,7 +307,9 @@ export class SdSheetViewControl<VM extends ISdViewModel, TMODAL extends SdModalB
 
   constructor() {
     $effect([], () => {
-      this.lastFilter.set(ObjectUtil.clone(this.filter()));
+      if (!this.lastFilter()) {
+        this.lastFilter.set(ObjectUtil.clone(this.filter()));
+      }
     });
 
     $effect([this.page, this.lastFilter, this.ordering], async () => {
@@ -383,6 +386,7 @@ export class SdSheetViewControl<VM extends ISdViewModel, TMODAL extends SdModalB
     const result = await this.vm().searchAsync(this.lastFilter()!, this.ordering(), this.page());
     this.items.set(result.items);
     this.pageLength.set(result.pageLength);
+    this.summaryData.set(result.summary);
 
     this.selectedItems.set(this.items()
       .filter(item => this.selectedItems().some(sel => sel.id === item.id)));
