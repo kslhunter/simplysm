@@ -8,19 +8,19 @@ import {
   NeverEntryError,
   StringUtil,
   Time,
-  Type,
+  type Type,
   Uuid,
   Wait,
 } from "@simplysm/sd-core-common";
 import {
-  IDbConnection,
-  IDefaultDbConnectionConfig,
-  IQueryColumnDef,
-  ISOLATION_LEVEL,
-  TQueryValue,
-  TSdOrmDataType,
+  type IDbConnection,
+  type IDefaultDbConnectionConfig,
+  type IQueryColumnDef,
+  type ISOLATION_LEVEL,
+  type TQueryValue,
+  type TSdOrmDataType,
 } from "@simplysm/sd-orm-common";
-import { DataType } from "tedious/lib/data-type";
+import { type DataType } from "tedious/lib/data-type";
 
 export class MssqlDbConnection extends EventEmitter implements IDbConnection {
   private readonly _logger = Logger.get(["simplysm", "sd-orm-node", this.constructor.name]);

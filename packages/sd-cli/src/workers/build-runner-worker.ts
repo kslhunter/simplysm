@@ -1,12 +1,12 @@
 import { createSdWorker, FsUtil, Logger, LoggerSeverity } from "@simplysm/sd-core-node";
-import { ISdBuildMessage } from "../types/build.type";
+import { type ISdBuildMessage } from "../types/build.type";
 import path from "path";
 import { SdServerBuildRunner } from "../pkg-builders/server/SdServerBuildRunner";
 import { SdClientBuildRunner } from "../pkg-builders/client/SdClientBuildRunner";
 import { SdTsLibBuildRunner } from "../pkg-builders/lib/SdTsLibBuildRunner";
 import { SdJsLibBuildRunner } from "../pkg-builders/lib/SdJsLibBuildRunner";
-import { TSdBuildRunnerWorkerType } from "../types/workers.type";
-import { ISdBuildRunnerWorkerRequest } from "../types/build-runner.type";
+import { type TSdBuildRunnerWorkerType } from "../types/workers.type";
+import { type ISdBuildRunnerWorkerRequest } from "../types/build-runner.type";
 import { EventEmitter } from "events";
 
 Error.stackTraceLimit = Infinity;

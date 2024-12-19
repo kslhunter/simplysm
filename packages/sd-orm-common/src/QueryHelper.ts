@@ -1,19 +1,19 @@
 import {
-  ISelectQueryDef,
-  TDbDateSeparator,
-  TEntityValue,
-  TEntityValueOrQueryableOrArray,
-  TQueryBuilderValue,
-  TQueryValue,
+  type ISelectQueryDef,
+  type TDbDateSeparator,
+  type TEntityValue,
+  type TEntityValueOrQueryableOrArray,
+  type TQueryBuilderValue,
+  type TQueryValue,
 } from "./commons";
 import { QueryUnit } from "./QueryUnit";
-import { DateOnly, DateTime, NotImplementError, Time, Type, Uuid, WrappedType } from "@simplysm/sd-core-common";
+import { DateOnly, DateTime, NotImplementError, Time, type Type, Uuid, type WrappedType } from "@simplysm/sd-core-common";
 import { Queryable } from "./Queryable";
 import { SdOrmUtil } from "./utils/SdOrmUtil";
-import { TSdOrmDataType } from "./SdOrmDataType";
+import { type TSdOrmDataType } from "./SdOrmDataType";
 import { CaseWhenQueryHelper } from "./CaseWhenQueryHelper";
 import { CaseQueryHelper } from "./CaseQueryHelper";
-import { TDbContextOption } from "./DbContext";
+import { type TDbContextOption } from "./DbContext";
 
 export class QueryHelper {
   public constructor(private readonly _dialect: TDbContextOption["dialect"]) {

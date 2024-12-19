@@ -1,4 +1,4 @@
-import {Type, WrappedType} from "@simplysm/sd-core-common";
+import {type Type, type WrappedType} from "@simplysm/sd-core-common";
 
 export class QueryUnit<T> {
   public constructor(public readonly type: Type<T | WrappedType<T>> | undefined,

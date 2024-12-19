@@ -1,10 +1,10 @@
 import { inject, Injectable } from "@angular/core";
 import { SdAngularConfigProvider } from "./sd-angular-config.provider";
 import {
-  ISdAppStructureItem,
-  ISdFlatPage,
-  ISdMenu,
-  ISdPermission,
+  type ISdAppStructureItem,
+  type ISdFlatPage,
+  type ISdMenu,
+  type ISdPermission,
   SdAppStructureUtil,
 } from "../utils/SdAppStructureUtil";
 import { $signal } from "../utils/$hooks";

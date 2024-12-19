@@ -1,4 +1,4 @@
-import { Type } from "@simplysm/sd-core-common";
+import { type Type } from "@simplysm/sd-core-common";
 import { IdxDbContext } from "./IdxDbContext";
 import { IdxDbStoreDefUtil } from "./IdxDbStoreDefUtil";
 

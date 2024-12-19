@@ -1,5 +1,5 @@
 import {EventEmitter} from "events";
-import {IQueryColumnDef, ISOLATION_LEVEL, TDbConnectionConfig} from "./commons";
+import {type IQueryColumnDef, type ISOLATION_LEVEL, type TDbConnectionConfig} from "./commons";
 
 export interface IDbConnection extends EventEmitter {
   config: TDbConnectionConfig;

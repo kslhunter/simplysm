@@ -1,7 +1,7 @@
-import cp, { ForkOptions } from "child_process";
+import cp, { type ForkOptions } from "child_process";
 import { fileURLToPath } from "url";
 import { EventEmitter } from "events";
-import { ISdWorkerRequest, ISdWorkerType, TSdWorkerResponse } from "./SdWorker.type";
+import { type ISdWorkerRequest, type ISdWorkerType, type TSdWorkerResponse } from "./SdWorker.type";
 import { JsonConvert, Uuid } from "@simplysm/sd-core-common";
 import { Logger } from "../utils/Logger";
 
@@ -45,7 +45,10 @@ export class SdWorker<T extends ISdWorkerType> extends EventEmitter {
     });
   }
 
-  override on<K extends keyof T["events"] & string>(event: K, listener: (args: T["events"][K]) => void): this;
+  override on<K extends keyof T["events"] & string>(
+    event: K,
+    listener: (args: T["events"][K]) => void,
+  ): this;
   override on(event: string | symbol, listener: (...args: any[]) => void): this {
     super.on(event, listener);
     return this;

@@ -1,17 +1,17 @@
 import {
   computed,
   effect,
-  EffectCleanupRegisterFn,
-  EffectRef,
+  type EffectCleanupRegisterFn,
+  type EffectRef,
   inject,
-  InputSignal,
-  InputSignalWithTransform,
+  type InputSignal,
+  type InputSignalWithTransform,
   OutputEmitterRef,
   reflectComponentType,
-  Signal,
+  type Signal,
   signal,
   untracked,
-  WritableSignal,
+  type WritableSignal,
 } from "@angular/core";
 import {
   producerIncrementEpoch,
@@ -20,7 +20,7 @@ import {
   runPostSignalSetFn,
   SIGNAL,
 } from "@angular/core/primitives/signals";
-import { ActivatedRoute, CanDeactivateFn, Route } from "@angular/router";
+import { ActivatedRoute, type CanDeactivateFn, type Route } from "@angular/router";
 import { ObjectUtil } from "@simplysm/sd-core-common";
 import { injectElementRef } from "./injectElementRef";
 

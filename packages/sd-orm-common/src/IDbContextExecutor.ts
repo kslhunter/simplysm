@@ -1,5 +1,5 @@
-import {IQueryColumnDef, IQueryResultParseOption, ISOLATION_LEVEL, TQueryDef} from "./commons";
-import {TDbContextOption} from "./DbContext";
+import {type IQueryColumnDef, type IQueryResultParseOption, type ISOLATION_LEVEL, type TQueryDef} from "./commons";
+import {type TDbContextOption} from "./DbContext";
 
 export interface IDbContextExecutor {
   getInfoAsync(): Promise<{

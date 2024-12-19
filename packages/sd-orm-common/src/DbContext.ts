@@ -1,16 +1,16 @@
 import {QueryBuilder} from "./QueryBuilder";
-import {IDbContextExecutor} from "./IDbContextExecutor";
+import {type IDbContextExecutor} from "./IDbContextExecutor";
 import {QueryHelper} from "./QueryHelper";
 import {
-  IQueryColumnDef,
-  IQueryResultParseOption,
-  IQueryTableNameDef,
-  ISOLATION_LEVEL,
-  ITableDef,
-  TQueryDef
+  type IQueryColumnDef,
+  type IQueryResultParseOption,
+  type IQueryTableNameDef,
+  type ISOLATION_LEVEL,
+  type ITableDef,
+  type TQueryDef
 } from "./commons";
-import {DateTime, NeverEntryError, ObjectUtil, SdError, Type} from "@simplysm/sd-core-common";
-import {IDbMigration} from "./IDbMigration";
+import {DateTime, NeverEntryError, ObjectUtil, SdError, type Type} from "@simplysm/sd-core-common";
+import {type IDbMigration} from "./IDbMigration";
 import {Queryable} from "./Queryable";
 import {SystemMigration} from "./models/SystemMigration";
 import {DbDefinitionUtil} from "./utils/DbDefinitionUtil";

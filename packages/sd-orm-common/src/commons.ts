@@ -1,8 +1,8 @@
-import { TFlatType, Type, UnwrappedType, WrappedType } from "@simplysm/sd-core-common";
+import { type TFlatType, type Type, type UnwrappedType, type WrappedType } from "@simplysm/sd-core-common";
 import { QueryUnit } from "./QueryUnit";
 import { DbContext } from "./DbContext";
 import { Queryable } from "./Queryable";
-import { TSdOrmDataType } from "./SdOrmDataType";
+import { type TSdOrmDataType } from "./SdOrmDataType";
 
 
 // region QueryBuilder COMMONS

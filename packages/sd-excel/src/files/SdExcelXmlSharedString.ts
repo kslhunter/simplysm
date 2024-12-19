@@ -1,8 +1,8 @@
 import {
-  ISdExcelXml,
-  ISdExcelXmlSharedStringData,
-  TSdExcelXmlSharedStringData,
-  TSdExcelXmlSharedStringDataSi
+  type ISdExcelXml,
+  type ISdExcelXmlSharedStringData,
+  type TSdExcelXmlSharedStringData,
+  type TSdExcelXmlSharedStringDataSi
 } from "../commons";
 
 export class SdExcelXmlSharedString implements ISdExcelXml {

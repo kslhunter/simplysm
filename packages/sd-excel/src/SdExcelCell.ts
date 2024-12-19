@@ -1,11 +1,11 @@
 import {SdExcelXmlWorksheet} from "./files/SdExcelXmlWorksheet";
 import {DateOnly, DateTime, NumberUtil, StringUtil, Time} from "@simplysm/sd-core-common";
-import {TSdExcelNumberFormat, TSdExcelValueType} from "./commons";
+import {type TSdExcelNumberFormat, type TSdExcelValueType} from "./commons";
 import {SdExcelXmlSharedString} from "./files/SdExcelXmlSharedString";
 import {SdExcelZipCache} from "./utils/SdExcelZipCache";
 import {SdExcelXmlContentType} from "./files/SdExcelXmlContentType";
 import {SdExcelXmlRelationship} from "./files/SdExcelXmlRelationship";
-import {ISdExcelStyle, SdExcelXmlStyle} from "./files/SdExcelXmlStyle";
+import {type ISdExcelStyle, SdExcelXmlStyle} from "./files/SdExcelXmlStyle";
 import {SdExcelUtil} from "./utils/SdExcelUtil";
 
 export class SdExcelCell {

@@ -1,6 +1,6 @@
 import "./MapExtension";
-import { Type } from "../types/Type";
-import { WrappedType } from "../types/WrappedType";
+import { type Type } from "../types/Type";
+import { type WrappedType } from "../types/WrappedType";
 import { NeverEntryError } from "../errors/NeverEntryError";
 import { ObjectUtil } from "../utils/ObjectUtil";
 import { DateOnly } from "../types/DateOnly";

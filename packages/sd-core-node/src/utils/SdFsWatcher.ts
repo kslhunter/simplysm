@@ -1,7 +1,7 @@
 import { FunctionQueue } from "@simplysm/sd-core-common";
 import Watcher from "watcher";
 import type { WatcherOptions } from "watcher/dist/types";
-import { PathUtil, TNormPath } from "./PathUtil";
+import { PathUtil, type TNormPath } from "./PathUtil";
 
 export class SdFsWatcher {
   public static watch(paths: string[], options?: WatcherOptions): SdFsWatcher {

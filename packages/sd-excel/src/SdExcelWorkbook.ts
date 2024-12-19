@@ -5,7 +5,7 @@ import {SdExcelXmlWorkbook} from "./files/SdExcelXmlWorkbook";
 import {SdExcelXmlContentType} from "./files/SdExcelXmlContentType";
 import {SdExcelXmlWorksheet} from "./files/SdExcelXmlWorksheet";
 import {SdExcelZipCache} from "./utils/SdExcelZipCache";
-import {ISdExcelXml} from "./commons";
+import {type ISdExcelXml} from "./commons";
 import * as path from "path";
 
 export class SdExcelWorkbook {

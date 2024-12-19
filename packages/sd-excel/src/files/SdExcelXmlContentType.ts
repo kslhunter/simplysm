@@ -1,4 +1,4 @@
-import {ISdExcelXml, ISdExcelXmlContentTypeData} from "../commons";
+import {type ISdExcelXml, type ISdExcelXmlContentTypeData} from "../commons";
 
 export class SdExcelXmlContentType implements ISdExcelXml {
   public readonly data: ISdExcelXmlContentTypeData;

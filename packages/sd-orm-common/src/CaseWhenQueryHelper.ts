@@ -1,5 +1,5 @@
-import {TEntityValue, TQueryValue} from "./commons";
-import {Type} from "@simplysm/sd-core-common";
+import {type TEntityValue, type TQueryValue} from "./commons";
+import {type Type} from "@simplysm/sd-core-common";
 import {SdOrmUtil} from "./utils/SdOrmUtil";
 import {QueryUnit} from "./QueryUnit";
 import {QueryHelper} from "./QueryHelper";

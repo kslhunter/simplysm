@@ -1,4 +1,4 @@
-import { FsUtil, Logger, PathUtil, SdWorker, TNormPath } from "@simplysm/sd-core-node";
+import { FsUtil, Logger, PathUtil, SdWorker, type TNormPath } from "@simplysm/sd-core-node";
 import path from "path";
 import { EventEmitter } from "events";
 import { type ISdServerPackageConfig } from "../types/sd-configs.type";

@@ -1,8 +1,8 @@
 import nodemailer from "nodemailer";
 import {
-  ISmtpClientDefaultConfig,
-  ISmtpClientSendByDefaultOption,
-  ISmtpClientSendOption
+  type ISmtpClientDefaultConfig,
+  type ISmtpClientSendByDefaultOption,
+  type ISmtpClientSendOption
 } from "@simplysm/sd-service-common";
 import {SdServiceBase} from "../commons";
 

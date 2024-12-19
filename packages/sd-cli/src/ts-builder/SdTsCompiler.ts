@@ -1,18 +1,28 @@
 import ts from "typescript";
 import path from "path";
-import { FsUtil, Logger, PathUtil, TNormPath } from "@simplysm/sd-core-node";
+import { FsUtil, Logger, PathUtil, type TNormPath } from "@simplysm/sd-core-node";
 import { StringUtil } from "@simplysm/sd-core-common";
 import { NgtscProgram, OptimizeFor } from "@angular/compiler-cli";
-import { ComponentStylesheetBundler } from "@angular/build/src/tools/esbuild/angular/component-stylesheets";
-import { AngularCompilerHost } from "@angular/build/src/tools/angular/angular-host";
+import {
+  ComponentStylesheetBundler,
+} from "@angular/build/src/tools/esbuild/angular/component-stylesheets";
+import { type AngularCompilerHost } from "@angular/build/src/tools/angular/angular-host";
 import { transformSupportedBrowsersToTargets } from "@angular/build/src/tools/esbuild/utils";
 import browserslist from "browserslist";
-import { replaceBootstrap } from "@angular/build/src/tools/angular/transformers/jit-bootstrap-transformer";
+import {
+  replaceBootstrap,
+} from "@angular/build/src/tools/angular/transformers/jit-bootstrap-transformer";
 import { SdCliPerformanceTimer } from "../utils/SdCliPerformanceTime";
 import { SdCliConvertMessageUtil } from "../utils/SdCliConvertMessageUtil";
-import { ISdTsCompilerResult, IStylesheetBundlingResult, SdTsCompilerOptions } from "../types/ts-compiler.type";
-import { ISdBuildMessage } from "../types/build.type";
-import { createWorkerTransformer } from "@angular/build/src/tools/angular/transformers/web-worker-transformer";
+import {
+  type ISdTsCompilerResult,
+  type IStylesheetBundlingResult,
+  type SdTsCompilerOptions,
+} from "../types/ts-compiler.type";
+import { type ISdBuildMessage } from "../types/build.type";
+import {
+  createWorkerTransformer,
+} from "@angular/build/src/tools/angular/transformers/web-worker-transformer";
 import { ESLint } from "eslint";
 
 export class SdTsCompiler {
@@ -77,7 +87,10 @@ export class SdTsCompiler {
       ...opt.additionalOptions,
     });
 
-    this.#distPath = PathUtil.norm(this.#parsedTsconfig.options.outDir ?? path.resolve(opt.pkgPath, "dist"));
+    this.#distPath = PathUtil.norm(this.#parsedTsconfig.options.outDir ?? path.resolve(
+      opt.pkgPath,
+      "dist",
+    ));
 
     //-- compilerHost
 
@@ -180,7 +193,11 @@ export class SdTsCompiler {
     }
   }
 
-  async #bundleStylesheetAsync(data: string, containingFile: TNormPath, resourceFile: TNormPath | null = null) {
+  async #bundleStylesheetAsync(
+    data: string,
+    containingFile: TNormPath,
+    resourceFile: TNormPath | null = null,
+  ) {
     // containingFile: 포함된 파일 (.ts)
     // resourceFile: 외부 리소스 파일 (styleUrls로 입력하지 않고 styles에 직접 입력한 경우 null)
     // referencedFiles: import한 외부 scss 파일 혹은 woff파일등 외부 파일
@@ -203,7 +220,8 @@ export class SdTsCompiler {
         }
 
         this.#watchFileSet.adds(
-          ...Array.from(stylesheetResult.referencedFiles.values()).map((item) => PathUtil.norm(item)),
+          ...Array.from(stylesheetResult.referencedFiles.values())
+            .map((item) => PathUtil.norm(item)),
         );
       }
 
@@ -340,7 +358,10 @@ export class SdTsCompiler {
         }[]
       >();
       for (const sf of sourceFileSet) {
-        if (!this.#watchScopePaths.some((scopePath) => PathUtil.isChildPath(sf.fileName, scopePath))) {
+        if (!this.#watchScopePaths.some((scopePath) => PathUtil.isChildPath(
+          sf.fileName,
+          scopePath,
+        ))) {
           continue;
         }
 
@@ -351,7 +372,10 @@ export class SdTsCompiler {
           refs
             .filter((item) => "fileName" in item)
             .filter((item) =>
-              this.#watchScopePaths.some((scopePath) => PathUtil.isChildPath(item.fileName, scopePath)),
+              this.#watchScopePaths.some((scopePath) => PathUtil.isChildPath(
+                item.fileName,
+                scopePath,
+              )),
             ),
         );
       }
@@ -375,15 +399,22 @@ export class SdTsCompiler {
               if (prevSet?.has(targetRefItem.fileName)) continue;
 
               result.add(targetRefItem.fileName);
-              result.adds(...getAllDeps(targetRefItem.fileName, new Set<TNormPath>(prevSet).adds(...result)));
+              result.adds(...getAllDeps(
+                targetRefItem.fileName,
+                new Set<TNormPath>(prevSet).adds(...result),
+              ));
             }
           }
           else {
-            for (const targetRefItem of targetDeps.filter((item) => item.exportName === dep.importName)) {
+            for (const targetRefItem of targetDeps.filter((item) => item.exportName
+              === dep.importName)) {
               if (prevSet?.has(targetRefItem.fileName)) continue;
 
               result.add(targetRefItem.fileName);
-              result.adds(...getAllDeps(targetRefItem.fileName, new Set<TNormPath>(prevSet).adds(...result)));
+              result.adds(...getAllDeps(
+                targetRefItem.fileName,
+                new Set<TNormPath>(prevSet).adds(...result),
+              ));
             }
           }
         }
@@ -406,7 +437,10 @@ export class SdTsCompiler {
           }
 
           for (const dep of this.#ngProgram.compiler.getResourceDependencies(sf)) {
-            const ref = this.#resourceDependencyCacheMap.getOrCreate(PathUtil.norm(dep), new Set<TNormPath>());
+            const ref = this.#resourceDependencyCacheMap.getOrCreate(
+              PathUtil.norm(dep),
+              new Set<TNormPath>(),
+            );
             ref.add(PathUtil.norm(sf.fileName));
           }
         }
@@ -418,7 +452,10 @@ export class SdTsCompiler {
 
       this.#perf.run("get affected (init)", () => {
         for (const sf of sourceFileSet) {
-          if (!this.#watchScopePaths.some((scopePath) => PathUtil.isChildPath(sf.fileName, scopePath))) {
+          if (!this.#watchScopePaths.some((scopePath) => PathUtil.isChildPath(
+            sf.fileName,
+            scopePath,
+          ))) {
             continue;
           }
 
@@ -552,7 +589,10 @@ export class SdTsCompiler {
           }
 
           diagnostics.push(
-            ...this.#ngProgram!.compiler.getDiagnosticsForFile(affectedSourceFile, OptimizeFor.WholeProgram),
+            ...this.#ngProgram!.compiler.getDiagnosticsForFile(
+              affectedSourceFile,
+              OptimizeFor.WholeProgram,
+            ),
           );
         });
       }
@@ -617,7 +657,14 @@ export class SdTsCompiler {
           sf,
           (fileName, text, writeByteOrderMark, onError, sourceFiles, data) => {
             if (!sourceFiles || sourceFiles.length === 0) {
-              this.#compilerHost.writeFile(fileName, text, writeByteOrderMark, onError, sourceFiles, data);
+              this.#compilerHost.writeFile(
+                fileName,
+                text,
+                writeByteOrderMark,
+                onError,
+                sourceFiles,
+                data,
+              );
               return;
             }
 
@@ -629,17 +676,24 @@ export class SdTsCompiler {
               this.#ngProgram.compiler.incrementalCompilation.recordSuccessfulEmit(sourceFile);
             }
 
-            const emitFileInfoCaches = this.#emittedFilesCacheMap.getOrCreate(PathUtil.norm(sourceFile.fileName), []);
+            const emitFileInfoCaches = this.#emittedFilesCacheMap.getOrCreate(PathUtil.norm(
+              sourceFile.fileName), []);
 
             if (PathUtil.isChildPath(sourceFile.fileName, this.#pkgPath)) {
               let realFilePath = PathUtil.norm(fileName);
               let realText = text;
               if (
-                PathUtil.isChildPath(realFilePath, path.resolve(this.#distPath, path.basename(this.#pkgPath), "src"))
+                PathUtil.isChildPath(
+                  realFilePath,
+                  path.resolve(this.#distPath, path.basename(this.#pkgPath), "src"),
+                )
               ) {
                 realFilePath = PathUtil.norm(
                   this.#distPath,
-                  path.relative(path.resolve(this.#distPath, path.basename(this.#pkgPath), "src"), realFilePath),
+                  path.relative(
+                    path.resolve(this.#distPath, path.basename(this.#pkgPath), "src"),
+                    realFilePath,
+                  ),
                 );
 
                 if (fileName.endsWith(".js.map")) {
@@ -678,12 +732,20 @@ export class SdTsCompiler {
 
       await this.#perf.run("bundle global style", async () => {
         const data = FsUtil.readFile(this.#globalStyleFilePath!);
-        const contents = await this.#bundleStylesheetAsync(data, this.#globalStyleFilePath!, this.#globalStyleFilePath);
-        const emitFileInfos = this.#emittedFilesCacheMap.getOrCreate(this.#globalStyleFilePath!, []);
+        const contents = await this.#bundleStylesheetAsync(
+          data,
+          this.#globalStyleFilePath!,
+          this.#globalStyleFilePath,
+        );
+        const emitFileInfos = this.#emittedFilesCacheMap.getOrCreate(
+          this.#globalStyleFilePath!,
+          [],
+        );
         emitFileInfos.push({
           outAbsPath: PathUtil.norm(
             this.#pkgPath,
-            path.relative(path.resolve(this.#pkgPath, "src"), this.#globalStyleFilePath!).replace(/\.scss$/, ".css"),
+            path.relative(path.resolve(this.#pkgPath, "src"), this.#globalStyleFilePath!)
+              .replace(/\.scss$/, ".css"),
           ),
           text: contents,
         });
@@ -785,9 +847,13 @@ export class SdTsCompiler {
       else if (ts.isImportDeclaration(node)) {
         const moduleSymbol = tc.getSymbolAtLocation(node.moduleSpecifier);
         if (!moduleSymbol) {
-          if (ts.isStringLiteral(node.moduleSpecifier) && node.moduleSpecifier.text.startsWith("./")) {
+          if (ts.isStringLiteral(node.moduleSpecifier)
+            && node.moduleSpecifier.text.startsWith("./")) {
             deps.push({
-              fileName: PathUtil.norm(path.resolve(path.dirname(sf.fileName), node.moduleSpecifier.text + ".ts")),
+              fileName: PathUtil.norm(path.resolve(
+                path.dirname(sf.fileName),
+                node.moduleSpecifier.text + ".ts",
+              )),
               importName: "*",
             });
 
@@ -852,7 +918,10 @@ export class SdTsCompiler {
           const moduleSymbol = tc.getSymbolAtLocation(node.arguments[0]);
           if (!moduleSymbol) {
             deps.push({
-              fileName: PathUtil.norm(path.resolve(path.dirname(sf.fileName), node.arguments[0].text + ".ts")),
+              fileName: PathUtil.norm(path.resolve(
+                path.dirname(sf.fileName),
+                node.arguments[0].text + ".ts",
+              )),
               importName: "*",
             });
 

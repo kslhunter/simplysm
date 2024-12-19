@@ -52,14 +52,16 @@ export class SdCliNgRoutesFileGenerator {
         cont += indentStr + `  path: "${key}",\n`;
         if (val.relModulePath != null) {
           if (noLazyRoute) {
-            cont += indentStr + `  component: ${StringUtil.toPascalCase(path.basename(val.relModulePath))},\n`;
+            cont += indentStr
+              + `  component: ${StringUtil.toPascalCase(path.basename(val.relModulePath))},\n`;
             imports.push(`import { ${StringUtil.toPascalCase(path.basename(val.relModulePath))} } from "./app/${val.relModulePath}";`);
           }
           else {
             cont +=
               indentStr +
-              `  loadComponent: () => import("./app/${val.relModulePath}").then((m) => m.${StringUtil.toPascalCase(path.basename(
-                val.relModulePath))}),\n`;
+              `  loadComponent: () => import("./app/${val.relModulePath}").then((m) => m.${StringUtil.toPascalCase(
+                path.basename(
+                  val.relModulePath))}),\n`;
           }
         }
         if (val.children.size > 0) {
@@ -75,7 +77,7 @@ export class SdCliNgRoutesFileGenerator {
     const routes = fn(result, 2);
 
     const content = `
-import {Routes} from "@angular/router";
+import { type Routes } from "@angular/router";
 ${imports.join("\n")}
 export const routes: Routes = [
 ${routes}

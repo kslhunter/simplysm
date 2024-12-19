@@ -8,9 +8,9 @@ import { SdCliLocalUpdate } from "./SdCliLocalUpdate";
 import xml2js from "xml2js";
 import { SdMultiBuildRunner } from "../pkg-builders/SdMultiBuildRunner";
 import { SdCliConvertMessageUtil } from "../utils/SdCliConvertMessageUtil";
-import { ISdProjectConfig, TSdPackageConfig } from "../types/sd-configs.type";
-import { INpmConfig } from "../types/common-configs.type";
-import { ISdBuildMessage } from "../types/build.type";
+import { type ISdProjectConfig, type TSdPackageConfig } from "../types/sd-configs.type";
+import { type INpmConfig } from "../types/common-configs.type";
+import { type ISdBuildMessage } from "../types/build.type";
 
 export class SdCliProject {
   static async watchAsync(opt: {

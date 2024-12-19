@@ -1,4 +1,4 @@
-import {ISdStorage, ISdStorageConnectionConfig} from "./commons";
+import {type ISdStorage, type ISdStorageConnectionConfig} from "./commons";
 import {SdSFtpStorage} from "./storages/SdSFtpStorage";
 import {SdFtpStorage} from "./storages/SdFtpStorage";
 

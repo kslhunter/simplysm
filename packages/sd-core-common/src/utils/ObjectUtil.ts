@@ -1,11 +1,11 @@
-import { TFlatType, Type } from "../types/Type";
+import { type TFlatType, type Type } from "../types/Type";
 import { DateTime } from "../types/DateTime";
 import { DateOnly } from "../types/DateOnly";
 import { Time } from "../types/Time";
 import { Uuid } from "../types/Uuid";
-import { WrappedType } from "../types/WrappedType";
+import { type WrappedType } from "../types/WrappedType";
 import { NeverEntryError } from "../errors/NeverEntryError";
-import { UnwrappedType } from "../types/UnwrappedType";
+import { type UnwrappedType } from "../types/UnwrappedType";
 
 export class ObjectUtil {
   public static clone<T>(source: T, options?: {

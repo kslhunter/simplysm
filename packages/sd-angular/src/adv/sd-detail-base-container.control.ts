@@ -15,7 +15,7 @@ import { SdActivatedModalProvider } from "../controls/modal/sd-modal.provider";
 import { $computed, $effect, $obj, $signal, canDeactivate } from "../utils/$hooks";
 import { SdBaseContainerControl } from "./sd-base-container.control";
 import { TemplateTargetDirective } from "../directives/template-target.directive";
-import { ISdViewModel, TSdViewModelGenericTypes } from "./ISdViewModel";
+import { type ISdViewModel, type TSdViewModelGenericTypes } from "./ISdViewModel";
 import { SdToastProvider } from "../controls/toast/sd-toast.provider";
 import { ObjectUtil } from "@simplysm/sd-core-common";
 import { SdTopbarMenuControl } from "../controls/topbar/sd-topbar-menu.control";

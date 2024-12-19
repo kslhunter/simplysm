@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, input, output, ViewEncapsulation } from "@angular/core";
 import { SdAnchorControl } from "../controls/button/sd-anchor.control";
-import { ISdPermission } from "../utils/SdAppStructureUtil";
+import { type ISdPermission } from "../utils/SdAppStructureUtil";
 import { SdTypedTemplateDirective } from "../directives/sd-typed.template-directive";
 import { NgTemplateOutlet } from "@angular/common";
 import { SdCollapseIconControl } from "../controls/collapse/sd-collapse-icon.control";

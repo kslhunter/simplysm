@@ -1,45 +1,45 @@
 import {
-  IAddColumnQueryDef,
-  IAddForeignKeyQueryDef,
-  IAddPrimaryKeyQueryDef,
-  IClearDatabaseIfExistsQueryDef,
-  IConfigForeignKeyCheckQueryDef,
-  IConfigIdentityInsertQueryDef,
-  ICreateDatabaseIfNotExistsQueryDef,
-  ICreateIndexQueryDef,
-  ICreateTableQueryDef,
-  ICreateViewQueryDef,
-  IDeleteQueryDef,
-  IDropIndexQueryDef,
-  IDropPrimaryKeyQueryDef,
-  IDropTableQueryDef,
-  IGetDatabaseInfoDef,
-  IGetTableColumnInfosDef,
-  IGetTableForeignKeysDef,
-  IGetTableIndexesDef,
-  IGetTableInfoDef,
-  IGetTableInfosDef,
-  IGetTablePrimaryKeysDef,
-  IInsertIfNotExistsQueryDef,
-  IInsertIntoQueryDef,
-  IInsertQueryDef,
-  IJoinQueryDef,
-  IModifyColumnQueryDef,
-  IQueryColumnDef,
-  IQueryTableNameDef,
-  IRemoveColumnQueryDef,
-  IRemoveForeignKeyQueryDef,
-  IRenameColumnQueryDef,
-  ISelectQueryDef,
-  ITruncateTableQueryDef,
-  IUpdateQueryDef,
-  IUpsertQueryDef,
-  TQueryBuilderValue,
-  TQueryDef
+  type IAddColumnQueryDef,
+  type IAddForeignKeyQueryDef,
+  type IAddPrimaryKeyQueryDef,
+  type IClearDatabaseIfExistsQueryDef,
+  type IConfigForeignKeyCheckQueryDef,
+  type IConfigIdentityInsertQueryDef,
+  type ICreateDatabaseIfNotExistsQueryDef,
+  type ICreateIndexQueryDef,
+  type ICreateTableQueryDef,
+  type ICreateViewQueryDef,
+  type IDeleteQueryDef,
+  type IDropIndexQueryDef,
+  type IDropPrimaryKeyQueryDef,
+  type IDropTableQueryDef,
+  type IGetDatabaseInfoDef,
+  type IGetTableColumnInfosDef,
+  type IGetTableForeignKeysDef,
+  type IGetTableIndexesDef,
+  type IGetTableInfoDef,
+  type IGetTableInfosDef,
+  type IGetTablePrimaryKeysDef,
+  type IInsertIfNotExistsQueryDef,
+  type IInsertIntoQueryDef,
+  type IInsertQueryDef,
+  type IJoinQueryDef,
+  type IModifyColumnQueryDef,
+  type IQueryColumnDef,
+  type IQueryTableNameDef,
+  type IRemoveColumnQueryDef,
+  type IRemoveForeignKeyQueryDef,
+  type IRenameColumnQueryDef,
+  type ISelectQueryDef,
+  type ITruncateTableQueryDef,
+  type IUpdateQueryDef,
+  type IUpsertQueryDef,
+  type TQueryBuilderValue,
+  type TQueryDef,
 } from "./commons";
-import {NeverEntryError, Uuid} from "@simplysm/sd-core-common";
-import {QueryHelper} from "./QueryHelper";
-import {TDbContextOption} from "./DbContext";
+import { NeverEntryError, Uuid } from "@simplysm/sd-core-common";
+import { QueryHelper } from "./QueryHelper";
+import { type TDbContextOption } from "./DbContext";
 import { SdOrmUtil } from "./utils/SdOrmUtil";
 
 export class QueryBuilder {
@@ -61,10 +61,12 @@ CREATE DATABASE IF NOT EXISTS ${this.wrap(def.database)};
 ALTER DATABASE ${this.wrap(def.database)} CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;`.trim();
     }
     else if (this._dialect === "mssql-azure") {
-      return `IF NOT EXISTS(SELECT * FROM sys.databases WHERE name='${def.database}') CREATE DATABASE ${this.wrap(def.database)} COLLATE Korean_Wansung_CS_AS (EDITION='Basic', SERVICE_OBJECTIVE='Basic', MAXSIZE = 2 GB)`.trim();
+      return `IF NOT EXISTS(SELECT * FROM sys.databases WHERE name='${def.database}') CREATE DATABASE ${this.wrap(
+        def.database)} COLLATE Korean_Wansung_CS_AS (EDITION='Basic', SERVICE_OBJECTIVE='Basic', MAXSIZE = 2 GB)`.trim();
     }
     else {
-      return `IF NOT EXISTS(SELECT * FROM sys.databases WHERE name = '${def.database}') CREATE DATABASE ${this.wrap(def.database)} COLLATE Korean_Wansung_CS_AS`;
+      return `IF NOT EXISTS(SELECT * FROM sys.databases WHERE name = '${def.database}') CREATE DATABASE ${this.wrap(
+        def.database)} COLLATE Korean_Wansung_CS_AS`;
     }
   }
 
@@ -173,11 +175,14 @@ END`.trim();
       return `SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='${def.database}'`.trim();
     }
     else if (this._dialect === "mssql-azure") {
-      return `SELECT * FROM [INFORMATION_SCHEMA].[TABLES]${def?.schema !== undefined ? ` WHERE TABLE_SCHEMA='${def.schema}'` : ""}`.trim();
+      return `SELECT * FROM [INFORMATION_SCHEMA].[TABLES]${def?.schema !== undefined
+        ? ` WHERE TABLE_SCHEMA='${def.schema}'`
+        : ""}`.trim();
     }
     else {
       if (def?.database === undefined) throw new NeverEntryError();
-      return `SELECT * FROM ${this.wrap(def.database)}.[INFORMATION_SCHEMA].[TABLES]${def.schema !== undefined ? ` WHERE TABLE_SCHEMA='${def.schema}'` : ""}`.trim();
+      return `SELECT * FROM ${this.wrap(def.database)}.[INFORMATION_SCHEMA].[TABLES]${def.schema
+      !== undefined ? ` WHERE TABLE_SCHEMA='${def.schema}'` : ""}`.trim();
     }
   }
 
@@ -196,7 +201,10 @@ END`.trim();
       return `SELECT * FROM [INFORMATION_SCHEMA].[TABLES] WHERE TABLE_SCHEMA='${def.table.schema}' AND TABLE_NAME='${def.table.name}'`.trim();
     }
     else {
-      if (def.table.database === undefined || def.table.schema === undefined) throw new NeverEntryError();
+      if (def.table.database
+        === undefined
+        || def.table.schema
+        === undefined) throw new NeverEntryError();
 
       return `SELECT * FROM ${this.wrap(def.table.database)}.[INFORMATION_SCHEMA].[TABLES] WHERE TABLE_SCHEMA='${def.table.schema}' AND TABLE_NAME='${def.table.name}'`.trim();
     }
@@ -300,7 +308,7 @@ ORDER BY i.index_id, ic.key_ordinal;
               (  `;
     const colDefs = def.columns.map((colDef) => ({
       ...colDef,
-      pkOrderBy: def.primaryKeys.single((pk) => pk.columnName === colDef.name)?.orderBy
+      pkOrderBy: def.primaryKeys.single((pk) => pk.columnName === colDef.name)?.orderBy,
     }));
 
     query += colDefs.map((colDef) => "  " + this._getQueryOfColDef(colDef)).join(",\n");
@@ -309,11 +317,13 @@ ORDER BY i.index_id, ic.key_ordinal;
     else if (def.primaryKeys.length > 0) {
       query += ",\n";
       if (this._dialect === "mysql") {
-        query += `  PRIMARY KEY (${def.primaryKeys.map((item) => `${this.wrap(item.columnName) + (item.orderBy === "ASC" ? "" : ` ${item.orderBy}`)}`).join(", ")})\n`;
+        query += `  PRIMARY KEY (${def.primaryKeys.map((item) => `${this.wrap(item.columnName)
+        + (item.orderBy === "ASC" ? "" : ` ${item.orderBy}`)}`).join(", ")})\n`;
       }
       else {
         const pkName = this.wrap(`PK_${def.table.name}`);
-        query += `  CONSTRAINT ${pkName} PRIMARY KEY (${def.primaryKeys.map((item) => (this.wrap(item.columnName) + (item.orderBy === "ASC" ? "" : ` ${item.orderBy}`))).join(", ")})\n`;
+        query += `  CONSTRAINT ${pkName} PRIMARY KEY (${def.primaryKeys.map((item) => (this.wrap(
+          item.columnName) + (item.orderBy === "ASC" ? "" : ` ${item.orderBy}`))).join(", ")})\n`;
       }
     }
     else {
@@ -325,7 +335,7 @@ ORDER BY i.index_id, ic.key_ordinal;
 
   public createView(def: ICreateViewQueryDef): string {
     const tableName = this.getTableNameWithoutDatabase(def.table);
-    return `CREATE VIEW ${tableName} AS\n${this.query({type: "select", ...def.queryDef})}`.trim();
+    return `CREATE VIEW ${tableName} AS\n${this.query({ type: "select", ...def.queryDef })}`.trim();
   }
 
   public dropTable(def: IDropTableQueryDef): string {
@@ -339,17 +349,17 @@ ORDER BY i.index_id, ic.key_ordinal;
     const queries: string[] = [];
     if (!def.column.nullable && def.column.defaultValue !== undefined) {
       queries.push(`ALTER TABLE ${tableName}
-        ADD ${this._getQueryOfColDef({
-        ...def.column,
-        nullable: true
-      })}`);
+          ADD ${this._getQueryOfColDef({
+              ...def.column,
+              nullable: true,
+          })}`);
       queries.push(`UPDATE ${tableName}
                     SET ${this.wrap(def.column.name)} = ${this.getQueryOfQueryValue(def.column.defaultValue)}`);
       queries.push(`ALTER TABLE ${tableName} ALTER COLUMN ${this._getQueryOfColDef(def.column)}`);
     }
     else {
       queries.push(`ALTER TABLE ${tableName}
-        ADD ${this._getQueryOfColDef(def.column)}`);
+          ADD ${this._getQueryOfColDef(def.column)}`);
     }
 
     return queries;
@@ -367,13 +377,13 @@ ORDER BY i.index_id, ic.key_ordinal;
       const queries: string[] = [];
       if (!def.column.nullable && def.column.defaultValue !== undefined) {
         queries.push(`ALTER TABLE ${tableName} MODIFY COLUMN ${this._getQueryOfColDef({
-          ...def.column,
-          nullable: true
+            ...def.column,
+            nullable: true,
         })}`);
         queries.push(
           `UPDATE ${tableName}
            SET ${this.wrap(def.column.name)} = ${this.getQueryOfQueryValue(def.column.defaultValue)}
-           WHERE ${this.wrap(def.column.name)} IS NULL`
+           WHERE ${this.wrap(def.column.name)} IS NULL`,
         );
       }
       queries.push(`ALTER TABLE ${tableName} MODIFY COLUMN ${this._getQueryOfColDef(def.column)}`);
@@ -385,8 +395,8 @@ ORDER BY i.index_id, ic.key_ordinal;
       const queries: string[] = [];
       if (!def.column.nullable && def.column.defaultValue !== undefined) {
         queries.push(`ALTER TABLE ${tableName} ALTER COLUMN ${this._getQueryOfColDef({
-          ...def.column,
-          nullable: true
+            ...def.column,
+            nullable: true,
         })}`);
         queries.push(`UPDATE ${tableName}
                       SET ${this.wrap(def.column.name)} = ${this.getQueryOfQueryValue(def.column.defaultValue)}
@@ -407,8 +417,12 @@ ORDER BY i.index_id, ic.key_ordinal;
       return `EXECUTE sp_rename N'${def.table.schema}.${def.table.name}.${this.wrap(def.prevName)}', N'${def.nextName}', 'COLUMN'`;
     }
     else {
-      if (def.table.database === undefined || def.table.schema === undefined) throw new NeverEntryError();
-      return `EXECUTE ${def.table.database}..sp_rename N'${def.table.schema}.${def.table.name}.${this.wrap(def.prevName)}', N'${def.nextName}', 'COLUMN'`;
+      if (def.table.database
+        === undefined
+        || def.table.schema
+        === undefined) throw new NeverEntryError();
+      return `EXECUTE ${def.table.database}..sp_rename N'${def.table.schema}.${def.table.name}.${this.wrap(
+        def.prevName)}', N'${def.nextName}', 'COLUMN'`;
     }
   }
 
@@ -432,7 +446,8 @@ ORDER BY i.index_id, ic.key_ordinal;
       const databaseDot = def.table.database !== undefined ? def.table.database + "." : "";
       const schemaDot = def.table.schema !== undefined ? def.table.schema + "." : "";
 
-      return `ALTER TABLE ${databaseDot}${schemaDot}${def.table.name} ADD CONSTRAINT PK_${def.table.name} PRIMARY KEY (${def.columns.map((item) => this.wrap(item)).join(", ")})`;
+      return `ALTER TABLE ${databaseDot}${schemaDot}${def.table.name} ADD CONSTRAINT PK_${def.table.name} PRIMARY KEY (${def.columns.map(
+              (item) => this.wrap(item)).join(", ")})`;
     }
   }
 
@@ -451,8 +466,10 @@ ORDER BY i.index_id, ic.key_ordinal;
 pragma writable_schema=1;
 UPDATE sqlite_master
 SET sql = SUBSTR(sql, 1, LENGTH(sql) - 1) || ',
-  CONSTRAINT ${fkName} FOREIGN KEY (${def.foreignKey.fkColumns.map((columnName) => `${this.wrap(columnName)}`).join(", ")})
-    REFERENCES ${targetTableName}(${def.foreignKey.targetPkColumns.map((columnName) => `${this.wrap(columnName)}`).join(", ")})
+  CONSTRAINT ${fkName} FOREIGN KEY (${def.foreignKey.fkColumns.map((columnName) => `${this.wrap(
+        columnName)}`).join(", ")})
+    REFERENCES ${targetTableName}(${def.foreignKey.targetPkColumns.map((columnName) => `${this.wrap(
+        columnName)}`).join(", ")})
     ON UPDATE RESTRICT
     ON DELETE RESTRICT
 )'
@@ -474,8 +491,10 @@ pragma writable_schema=0;`.trim();
 
       let query = "";
       query += `ALTER TABLE ${tableName}
-        ADD CONSTRAINT ${fkName} FOREIGN KEY (${def.foreignKey.fkColumns.map((columnName) => `${this.wrap(columnName)}`).join(", ")})  `;
-      query += `  REFERENCES ${targetTableName} (${def.foreignKey.targetPkColumns.map((columnName) => `${this.wrap(columnName)}`).join(", ")})\n`;
+          ADD CONSTRAINT ${fkName} FOREIGN KEY (${def.foreignKey.fkColumns.map((columnName) => `${this.wrap(
+                  columnName)}`).join(", ")})  `;
+      query += `  REFERENCES ${targetTableName} (${def.foreignKey.targetPkColumns.map((columnName) => `${this.wrap(
+        columnName)}`).join(", ")})\n`;
       query += `  ON DELETE ${action}\n`;
       query += `  ON UPDATE ${action};`;
       return query.trim();
@@ -496,7 +515,9 @@ pragma writable_schema=0;`.trim();
 
   public createIndex(def: ICreateIndexQueryDef): string {
     const tableName = this.getTableName(def.table);
-    const tableNameChain = this._dialect === "mysql" ? this.getTableNameChain(def.table) : this.getTableNameChain(def.table).slice(-2);
+    const tableNameChain = this._dialect === "mysql"
+      ? this.getTableNameChain(def.table)
+      : this.getTableNameChain(def.table).slice(-2);
     const tableKey = this._dialect === "mysql" && tableNameChain.join("_").length > 30
       ? tableNameChain.join("_").replace(/[a-z]/g, "")
       : tableNameChain.join("_");
@@ -516,7 +537,9 @@ pragma writable_schema=0;`.trim();
 
   public dropIndex(def: IDropIndexQueryDef): string {
     const tableName = this.getTableName(def.table);
-    const tableNameChain = this._dialect === "mysql" ? this.getTableNameChain(def.table) : this.getTableNameChain(def.table).slice(-2);
+    const tableNameChain = this._dialect === "mysql"
+      ? this.getTableNameChain(def.table)
+      : this.getTableNameChain(def.table).slice(-2);
     const tableKey = this._dialect === "mysql" && tableNameChain.join("_").length > 30
       ? tableNameChain.join("_").replace(/[a-z]/g, "")
       : tableNameChain.join("_");
@@ -626,9 +649,12 @@ pragma writable_schema=0;`.trim();
     if (this._dialect !== "mysql") {
       if (def.pivot) {
         let valueCol = this.getQueryOfQueryValue(def.pivot.valueColumn);
-        valueCol = valueCol.startsWith("(") && valueCol.endsWith(")") ? valueCol.slice(1, -1) : valueCol;
+        valueCol = valueCol.startsWith("(") && valueCol.endsWith(")")
+          ? valueCol.slice(1, -1)
+          : valueCol;
         q += `PIVOT (${valueCol} FOR ${this.getQueryOfQueryValue(def.pivot.pivotColumn)}`;
-        q += ` IN (${def.pivot.pivotKeys.map((key) => this.wrap(key)).join(", ")}))${def.as !== undefined ? ` as ${def.as}` : ""}`;
+        q += ` IN (${def.pivot.pivotKeys.map((key) => this.wrap(key)).join(", ")}))${def.as
+        !== undefined ? ` as ${def.as}` : ""}`;
         q += "\n";
       }
     }
@@ -637,9 +663,12 @@ pragma writable_schema=0;`.trim();
 
     if (def.unpivot) {
       let valueCol = this.getQueryOfQueryValue(def.unpivot.valueColumn);
-      valueCol = valueCol.startsWith("(") && valueCol.endsWith(")") ? valueCol.slice(1, -1) : valueCol;
+      valueCol = valueCol.startsWith("(") && valueCol.endsWith(")")
+        ? valueCol.slice(1, -1)
+        : valueCol;
       q += `UNPIVOT (${valueCol} FOR ${this.getQueryOfQueryValue(def.unpivot.pivotColumn)}`;
-      q += ` IN (${def.unpivot.pivotKeys.map((key) => this.wrap(key)).join(", ")}))${def.as !== undefined ? ` as ${def.as}` : ""}`;
+      q += ` IN (${def.unpivot.pivotKeys.map((key) => this.wrap(key)).join(", ")}))${def.as
+      !== undefined ? ` as ${def.as}` : ""}`;
       q += "\n";
     }
 
@@ -680,7 +709,8 @@ pragma writable_schema=0;`.trim();
     // ORDER BY
 
     if (def.orderBy && def.orderBy.length > 0) {
-      q += `ORDER BY ${def.orderBy.map((item) => this.getQueryOfQueryValue(item[0]) + " " + item[1]).join(", ")}`;
+      q += `ORDER BY ${def.orderBy.map((item) => this.getQueryOfQueryValue(item[0]) + " " + item[1])
+        .join(", ")}`;
       q += "\n";
     }
 
@@ -745,7 +775,9 @@ pragma writable_schema=0;`.trim();
       }
     }
 
-    q += `VALUES (${Object.values(def.record).map((val) => this.getQueryOfQueryValue(val)).join(", ")})`;
+    q += `VALUES (${Object.values(def.record)
+      .map((val) => this.getQueryOfQueryValue(val))
+      .join(", ")})`;
     q += "\n";
 
     if (this._dialect === "sqlite") {
@@ -805,7 +837,10 @@ pragma writable_schema=0;`.trim();
     }
 
     // FIELD = VALUE
-    q += Object.keys(def.record).map((key) => `  ${this._dialect === "sqlite" ? "" : def.as! + "."}${key} = ${this.getQueryOfQueryValue(def.record[key])}`).join(",\n");
+    q += Object.keys(def.record)
+      .map((key) => `  ${this._dialect === "sqlite" ? "" : def.as!
+        + "."}${key} = ${this.getQueryOfQueryValue(def.record[key])}`)
+      .join(",\n");
     q += "\n";
 
     // OUTPUT
@@ -874,7 +909,9 @@ pragma writable_schema=0;`.trim();
       // INSERT
       q += "WHEN NOT MATCHED THEN\n";
       q += `  INSERT (${Object.keys(def.insertRecord).join(", ")})\n`;
-      q += `  VALUES (${Object.values(def.insertRecord).map((val) => this.getQueryOfQueryValue(val)).join(", ")})`;
+      q += `  VALUES (${Object.values(def.insertRecord)
+        .map((val) => this.getQueryOfQueryValue(val))
+        .join(", ")})`;
       q += "\n";
 
       if (def.output) {
@@ -909,21 +946,29 @@ IF EXISTS (
   ${this.select(def).replace(/\n/g, "\n  ")}
 ) THEN
 
-${Object.keys(def.updateRecord).length > 0 ? this.update({...def, record: def.updateRecord}) : "LEAVE proc_label;"}
+${Object.keys(def.updateRecord).length > 0
+        ? this.update({ ...def, record: def.updateRecord })
+        : "LEAVE proc_label;"}
 
 ${def.output ? this.select(def) + ";" : ""}
 
 ELSE
 
-${Object.keys(def.insertRecord).length > 0 ? this.insert({...def, record: def.insertRecord}) : "LEAVE proc_label;"}
+${Object.keys(def.insertRecord).length > 0
+        ? this.insert({ ...def, record: def.insertRecord })
+        : "LEAVE proc_label;"}
 
 ${def.output ? (
         this.select({
           ...def,
           where: def.pkColNames.map(pkColName => (
             pkColName === def.aiKeyName ? [this.wrap(def.aiKeyName), " = ", "LAST_INSERT_ID()"]
-              : [this.wrap(pkColName), " = ", this.getQueryOfQueryValue(def.insertRecord[this.wrap(pkColName)])]
-          ))
+              : [
+                this.wrap(pkColName),
+                " = ",
+                this.getQueryOfQueryValue(def.insertRecord[this.wrap(pkColName)]),
+              ]
+          )),
         })
       ) + ";" : ""}
 
@@ -954,14 +999,18 @@ DROP PROCEDURE ${procName};`;
       if (typeof def.updateRecord !== "undefined" && Object.keys(def.updateRecord).length > 0) {
         q += "WHEN MATCHED THEN\n";
         q += "  UPDATE SET\n";
-        q += Object.keys(def.updateRecord).map((key) => `    ${key} = ${this.getQueryOfQueryValue(def.updateRecord[key])}`).join(",\n");
+        q += Object.keys(def.updateRecord)
+          .map((key) => `    ${key} = ${this.getQueryOfQueryValue(def.updateRecord[key])}`)
+          .join(",\n");
         q += "\n";
       }
 
       // INSERT
       q += "WHEN NOT MATCHED THEN\n";
       q += `  INSERT (${Object.keys(def.insertRecord).join(", ")})\n`;
-      q += `  VALUES (${Object.values(def.insertRecord).map((val) => this.getQueryOfQueryValue(val)).join(", ")})`;
+      q += `  VALUES (${Object.values(def.insertRecord)
+        .map((val) => this.getQueryOfQueryValue(val))
+        .join(", ")})`;
       q += "\n";
 
       if (def.output) {
@@ -989,9 +1038,21 @@ SELECT GROUP_CONCAT('${"`_" + def.as.slice(1)}.\`', COLUMN_NAME, '\`', ' = ', '$
 FROM INFORMATION_SCHEMA.COLUMNS
 WHERE CONCAT('\`', TABLE_SCHEMA, '\`.\`', TABLE_NAME, '\`') = '${def.from}' AND COLUMN_KEY='PRI';
 
-SET @sql = CONCAT('${SdOrmUtil.replaceString(`DELETE ${def.as} FROM ${def.from} as ${def.as} JOIN (
-  ${this.select(def).replace(/\n/g, "\n  ").replace("*", def.as + ".*")}
-) ${"`_" + def.as.slice(1)} ON 1 = 1 WHERE `)}', @cols, ';');
+SET @sql = CONCAT('${SdOrmUtil.replaceString(`DELETE
+      ${def.as} FROM
+      ${def.from}
+      as
+      ${def.as}
+      JOIN
+      (
+      ${this.select(def).replace(/\n/g, "\n  ").replace("*", def.as + ".*")}
+      )
+      ${"`_" + def.as.slice(1)}
+      ON
+      1
+      =
+      1
+      WHERE `)}', @cols, ';');
 SELECT @sql;
 
 PREPARE stmt FROM @sql;
@@ -1143,19 +1204,25 @@ DEALLOCATE PREPARE stmt;
       q += this.wrap(colDef.name) + " ";
       q += this.qh.type(colDef.dataType) + " ";
       q += colDef.pkOrderBy ? `PRIMARY KEY ${colDef.pkOrderBy} ` : "";
-      q += colDef.autoIncrement ? this.qh.type(colDef.dataType) === "UNIQUEIDENTIFIER" ? "default NEWID() " : "AUTOINCREMENT " : "";
+      q += colDef.autoIncrement ? this.qh.type(colDef.dataType) === "UNIQUEIDENTIFIER"
+        ? "default NEWID() "
+        : "AUTOINCREMENT " : "";
       q += colDef.autoIncrement ? "" : colDef.nullable ? "NULL " : "NOT NULL ";
     }
     else if (this._dialect === "mysql") {
       q += this.wrap(colDef.name) + " ";
       q += this.qh.type(colDef.dataType) + " ";
       q += colDef.nullable ? "NULL " : "NOT NULL ";
-      q += colDef.autoIncrement ? this.qh.type(colDef.dataType) === "CHAR(38)" ? "default (REPLACE(UUID(), '-', '')) " : "AUTO_INCREMENT" : "";
+      q += colDef.autoIncrement ? this.qh.type(colDef.dataType) === "CHAR(38)"
+        ? "default (REPLACE(UUID(), '-', '')) "
+        : "AUTO_INCREMENT" : "";
     }
     else {
       q += this.wrap(colDef.name) + " ";
       q += this.qh.type(colDef.dataType) + " ";
-      q += colDef.autoIncrement ? this.qh.type(colDef.dataType) === "UNIQUEIDENTIFIER" ? "default NEWID() " : "IDENTITY(1,1) " : "";
+      q += colDef.autoIncrement ? this.qh.type(colDef.dataType) === "UNIQUEIDENTIFIER"
+        ? "default NEWID() "
+        : "IDENTITY(1,1) " : "";
       q += colDef.nullable ? "NULL" : "NOT NULL";
     }
     return q.trim();
@@ -1164,7 +1231,14 @@ DEALLOCATE PREPARE stmt;
   private _getQueryOfJoinDef(def: IJoinQueryDef): string {
     let q = "";
 
-    if (Object.keys(def).every((key) => def[key] === undefined || (["from", "as", "where", "select", "isCustomSelect"].includes(key))) && !def.isCustomSelect) {
+    if (Object.keys(def)
+      .every((key) => def[key] === undefined || ([
+        "from",
+        "as",
+        "where",
+        "select",
+        "isCustomSelect",
+      ].includes(key))) && !def.isCustomSelect) {
       q += "LEFT OUTER JOIN ";
       if (def.from instanceof Array) {
         if (def.as === undefined) throw new NeverEntryError();

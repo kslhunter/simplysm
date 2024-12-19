@@ -2,11 +2,11 @@ import esbuild from "esbuild";
 import path from "path";
 import os from "os";
 import { JavaScriptTransformer } from "@angular/build/src/tools/esbuild/javascript-transformer";
-import { Logger, PathUtil, TNormPath } from "@simplysm/sd-core-node";
+import { Logger, PathUtil, type TNormPath } from "@simplysm/sd-core-node";
 import { SdCliPerformanceTimer } from "../../utils/SdCliPerformanceTime";
 import { SdCliConvertMessageUtil } from "../../utils/SdCliConvertMessageUtil";
-import { ISdCliNgPluginResultCache } from "../../types/build-plugin.type";
-import { ISdTsCompilerResult } from "../../types/ts-compiler.type";
+import { type ISdCliNgPluginResultCache } from "../../types/build-plugin.type";
+import { type ISdTsCompilerResult } from "../../types/ts-compiler.type";
 import { SdTsCompiler } from "../../ts-builder/SdTsCompiler";
 
 export function createSdNgPlugin(conf: {

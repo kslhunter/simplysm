@@ -1,8 +1,8 @@
-import { ISdAppStructureItem } from "./utils/SdAppStructureUtil";
-import { ISdAngularIcon, SdAngularConfigProvider } from "./providers/sd-angular-config.provider";
+import { type ISdAppStructureItem } from "./utils/SdAppStructureUtil";
+import { type ISdAngularIcon, SdAngularConfigProvider } from "./providers/sd-angular-config.provider";
 import {
   ENVIRONMENT_INITIALIZER,
-  EnvironmentProviders,
+  type EnvironmentProviders,
   ErrorHandler,
   inject,
   makeEnvironmentProviders,

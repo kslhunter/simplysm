@@ -1,7 +1,7 @@
-import { CompilerOptions } from "typescript";
+import { type CompilerOptions } from "typescript";
 import esbuild from "esbuild";
-import { ISdBuildMessage } from "./build.type";
-import { TNormPath } from "@simplysm/sd-core-node";
+import { type ISdBuildMessage } from "./build.type";
+import { type TNormPath } from "@simplysm/sd-core-node";
 
 export interface SdTsCompilerOptions {
   pkgPath: TNormPath;

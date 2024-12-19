@@ -1,4 +1,4 @@
-import {Type} from "../types/Type";
+import { type Type } from "../types/Type";
 
 /**
  * 속성용 Decorator 함수의 Return 타입
@@ -6,7 +6,11 @@ import {Type} from "../types/Type";
  * @template T 포함된 클래스 타입
  * @template N 속성명 (string)
  */
-export type TPropertyDecoratorReturn<T, N = string> = (target: T, propertyName: N, inputDescriptor?: PropertyDescriptor) => void;
+export type TPropertyDecoratorReturn<T, N = string> = (
+  target: T,
+  propertyName: N,
+  inputDescriptor?: PropertyDescriptor,
+) => void;
 
 /**
  * 클래스용 Decorator 함수의 Return 타입

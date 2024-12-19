@@ -3,7 +3,7 @@ import { pathToFileURL } from "url";
 import { SdServiceServer } from "@simplysm/sd-service-server";
 import { createSdWorker, Logger, LoggerSeverity } from "@simplysm/sd-core-node";
 import { EventEmitter } from "events";
-import { TServerWorkerType } from "../types/workers.type";
+import { type TServerWorkerType } from "../types/workers.type";
 
 Error.stackTraceLimit = Infinity;
 EventEmitter.defaultMaxListeners = 0;

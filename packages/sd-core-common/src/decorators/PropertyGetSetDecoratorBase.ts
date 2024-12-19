@@ -1,4 +1,4 @@
-import {TPropertyDecoratorReturn} from "./decorator-return-types";
+import { type TPropertyDecoratorReturn } from "./decorator-return-types";
 
 const symbol = "sd-type-validate";
 
@@ -58,7 +58,7 @@ export function PropertyGetSetDecoratorBase<O extends object, K extends keyof O>
         get: getter,
         set: setter,
         enumerable: true,
-        configurable: true
+        configurable: true,
       });
     }
   };

@@ -1,4 +1,4 @@
-import {ISdExcelXml} from "../commons";
+import {type ISdExcelXml} from "../commons";
 import {XmlConvert} from "./XmlConvert";
 import JSZip from "jszip";
 import {SdExcelXmlRelationship} from "../files/SdExcelXmlRelationship";

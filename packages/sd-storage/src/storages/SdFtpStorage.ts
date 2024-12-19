@@ -1,5 +1,5 @@
 import ftp from "basic-ftp";
-import {ISdStorage, ISdStorageConnectionConfig} from "../commons";
+import {type ISdStorage, type ISdStorageConnectionConfig} from "../commons";
 import {PassThrough, Readable} from "stream";
 
 export class SdFtpStorage implements ISdStorage {

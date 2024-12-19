@@ -1,18 +1,18 @@
 import {DbConnectionFactory} from "@simplysm/sd-orm-node";
 import {
-  IDbConnection,
-  IQueryColumnDef,
-  IQueryResultParseOption,
-  ISOLATION_LEVEL,
+  type IDbConnection,
+  type IQueryColumnDef,
+  type IQueryResultParseOption,
+  type ISOLATION_LEVEL,
   QueryBuilder,
   SdOrmUtil,
-  TDbConnectionConfig,
-  TDbContextOption,
-  TQueryDef
+  type TDbConnectionConfig,
+  type TDbContextOption,
+  type TQueryDef
 } from "@simplysm/sd-orm-common";
 import {Logger} from "@simplysm/sd-core-node";
 import {SdServiceBase} from "../commons";
-import {TDbConnOptions} from "@simplysm/sd-service-common";
+import {type TDbConnOptions} from "@simplysm/sd-service-common";
 
 export class SdOrmService extends SdServiceBase {
   #logger = Logger.get(["simplysm", "sd-service-server", this.constructor.name]);

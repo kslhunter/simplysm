@@ -1,4 +1,4 @@
-import { AbstractType, inject, Injector, ViewContainerRef } from "@angular/core";
+import { type AbstractType, inject, Injector, ViewContainerRef } from "@angular/core";
 
 export function injectParent<T = any>(type?: AbstractType<T>): T;
 export function injectParent<T = any>(

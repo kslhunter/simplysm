@@ -1,12 +1,12 @@
 /* eslint-disable no-console */
 
-import { ISdServiceClientConnectionConfig } from "./ISdServiceClientConnectionConfig";
-import { JsonConvert, Type, Uuid, Wait } from "@simplysm/sd-core-common";
+import { type ISdServiceClientConnectionConfig } from "./ISdServiceClientConnectionConfig";
+import { JsonConvert, type Type, Uuid, Wait } from "@simplysm/sd-core-common";
 import {
-  ISdServiceResponse,
+  type ISdServiceResponse,
   SdServiceEventListenerBase,
-  TSdServiceC2SMessage,
-  TSdServiceS2CMessage,
+  type TSdServiceC2SMessage,
+  type TSdServiceS2CMessage,
 } from "@simplysm/sd-service-common";
 import { SdWebSocket } from "./SdWebSocket";
 import { EventEmitter } from "events";

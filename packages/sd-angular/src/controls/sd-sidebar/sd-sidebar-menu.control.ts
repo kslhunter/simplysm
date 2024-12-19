@@ -4,7 +4,7 @@ import { NgTemplateOutlet } from "@angular/common";
 import { SdTypedTemplateDirective } from "../../directives/sd-typed.template-directive";
 import { SdListItemControl } from "../list/sd-list-item.control";
 import { SdRouterLinkDirective } from "../../directives/sd-router-link.directive";
-import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
+import { type IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { injectPageCode$ } from "../../utils/injectPageCode$";
 import { $computed } from "../../utils/$hooks";
 import { SdIconControl } from "../icon/sd-icon.control";

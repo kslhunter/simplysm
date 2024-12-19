@@ -3,17 +3,17 @@ import http from "http";
 import url from "url";
 import path from "path";
 import { FsUtil, Logger } from "@simplysm/sd-core-node";
-import { ISdServiceServerOptions, SdServiceBase } from "./commons";
+import { type ISdServiceServerOptions, SdServiceBase } from "./commons";
 import { EventEmitter } from "events";
-import { DateTime, JsonConvert, ObjectUtil, Type, Wait } from "@simplysm/sd-core-common";
+import { DateTime, JsonConvert, ObjectUtil, type Type, Wait } from "@simplysm/sd-core-common";
 import { WebSocket, WebSocketServer } from "ws";
 import {
-  ISdServiceRequest,
-  ISdServiceResponse,
-  ISdServiceSplitRequest,
+  type ISdServiceRequest,
+  type ISdServiceResponse,
+  type ISdServiceSplitRequest,
   SdServiceEventListenerBase,
-  TSdServiceC2SMessage,
-  TSdServiceS2CMessage,
+  type TSdServiceC2SMessage,
+  type TSdServiceS2CMessage,
 } from "@simplysm/sd-service-common";
 import mime from "mime";
 import { ApiServiceError } from "./ApiServiceError";

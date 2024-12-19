@@ -23,9 +23,7 @@
     "importHelpers": true,
     "useDefineForClassFields": false,
     "noUnusedLocals": false,
-    "incremental": true,
     "verbatimModuleSyntax": true,
-    "allowImportingTsExtensions": true,
     "isolatedModules": true,
     "baseUrl": ".",
     "paths": {

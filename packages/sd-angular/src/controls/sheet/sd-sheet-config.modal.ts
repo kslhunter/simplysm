@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, forwardRef, inject, ViewEncapsulation } from "@angular/core";
 import { SdModalBase } from "../modal/sd-modal.provider";
 import { SdSheetColumnDirective } from "./sd-sheet-column.directive";
-import { ISdSheetConfig, SdSheetControl } from "./sd-sheet.control";
+import { type ISdSheetConfig, SdSheetControl } from "./sd-sheet.control";
 import { SdDockContainerControl } from "../layout/sd-dock-container.control";
 import { SdPaneControl } from "../layout/sd-pane.control";
 import { SdCheckboxControl } from "../checkbox/sd-checkbox.control";

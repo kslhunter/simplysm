@@ -1,14 +1,14 @@
 import {
-  IDbConnection,
-  IDbContextExecutor,
-  IQueryColumnDef,
-  IQueryResultParseOption,
-  ISOLATION_LEVEL,
+  type IDbConnection,
+  type IDbContextExecutor,
+  type IQueryColumnDef,
+  type IQueryResultParseOption,
+  type ISOLATION_LEVEL,
   QueryBuilder,
   SdOrmUtil,
-  TDbConnectionConfig,
-  TDbContextOption,
-  TQueryDef
+  type TDbConnectionConfig,
+  type TDbContextOption,
+  type TQueryDef
 } from "@simplysm/sd-orm-common";
 import {DbConnectionFactory} from "./DbConnectionFactory";
 

@@ -9,7 +9,7 @@ import {
 } from "@angular/core";
 import { SdTopbarContainerControl } from "./sd-topbar-container.control";
 import { SdSidebarContainerControl } from "../sd-sidebar/sd-sidebar-container.control";
-import { ISdResizeEvent } from "../../plugins/events/sd-resize.event-plugin";
+import { type ISdResizeEvent } from "../../plugins/events/sd-resize.event-plugin";
 import { SdAnchorControl } from "../button/sd-anchor.control";
 import { SdGapControl } from "../layout/sd-gap.control";
 import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";

@@ -1,11 +1,11 @@
 import esbuild from "esbuild";
 import path from "path";
-import { FsUtil, Logger, PathUtil, TNormPath } from "@simplysm/sd-core-node";
+import { FsUtil, Logger, PathUtil, type TNormPath } from "@simplysm/sd-core-node";
 import { SdCliConvertMessageUtil } from "../../utils/SdCliConvertMessageUtil";
-import { ISdCliServerPluginResultCache } from "../../types/build-plugin.type";
-import { ISdBuildMessage } from "../../types/build.type";
+import { type ISdCliServerPluginResultCache } from "../../types/build-plugin.type";
+import { type ISdBuildMessage } from "../../types/build.type";
 import { createSdServerPlugin } from "./createSdServerPlugin";
-import { BuildOutputFile, BuildOutputFileType } from "@angular/build/src/tools/esbuild/bundler-context";
+import { type BuildOutputFile, BuildOutputFileType } from "@angular/build/src/tools/esbuild/bundler-context";
 import { convertOutputFile } from "@angular/build/src/tools/esbuild/utils";
 import { resolveAssets } from "@angular/build/src/utils/resolve-assets";
 

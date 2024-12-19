@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
 import { $computed } from "../../utils/$hooks";
-import { SizeProp } from "@fortawesome/fontawesome-svg-core";
+import { type SizeProp } from "@fortawesome/fontawesome-svg-core";
 
 @Component({
   selector: "sd-icon-stack",

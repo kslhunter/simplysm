@@ -1,10 +1,10 @@
 import { EventEmitter } from "events";
 import { SdError, StringUtil } from "@simplysm/sd-core-common";
 import {
-  IDbConnection,
-  IQueryColumnDef,
-  ISOLATION_LEVEL,
-  ISqliteDbConnectionConfig,
+  type IDbConnection,
+  type IQueryColumnDef,
+  type ISOLATION_LEVEL,
+  type ISqliteDbConnectionConfig,
   QueryHelper,
 } from "@simplysm/sd-orm-common";
 import { Logger } from "@simplysm/sd-core-node";

@@ -1,5 +1,5 @@
-import { IQueryResultParseOption, TEntity, TEntityValue, TQueryValue } from "../commons";
-import { DateOnly, DateTime, JsonConvert, Time, Type, Uuid } from "@simplysm/sd-core-common";
+import { type IQueryResultParseOption, type TEntity, type TEntityValue, type TQueryValue } from "../commons";
+import { DateOnly, DateTime, JsonConvert, Time, type Type, Uuid } from "@simplysm/sd-core-common";
 import { QueryUnit } from "../QueryUnit";
 
 export class SdOrmUtil {

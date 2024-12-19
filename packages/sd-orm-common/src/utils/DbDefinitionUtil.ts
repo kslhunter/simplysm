@@ -1,12 +1,12 @@
-import {ObjectUtil, Type} from "@simplysm/sd-core-common";
+import {ObjectUtil, type Type} from "@simplysm/sd-core-common";
 import {
-  IColumnDef,
-  IForeignKeyDef,
-  IForeignKeyTargetDef,
-  IIndexDef,
-  IReferenceKeyDef,
-  IReferenceKeyTargetDef,
-  ITableDef
+  type IColumnDef,
+  type IForeignKeyDef,
+  type IForeignKeyTargetDef,
+  type IIndexDef,
+  type IReferenceKeyDef,
+  type IReferenceKeyTargetDef,
+  type ITableDef
 } from "../commons";
 
 export class DbDefinitionUtil {

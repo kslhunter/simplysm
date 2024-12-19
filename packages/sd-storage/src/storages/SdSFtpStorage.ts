@@ -1,4 +1,4 @@
-import { ISdStorage, ISdStorageConnectionConfig } from "../commons";
+import { type ISdStorage, type ISdStorageConnectionConfig } from "../commons";
 import SFtpClient from "ssh2-sftp-client";
 
 export class SdSFtpStorage implements ISdStorage {

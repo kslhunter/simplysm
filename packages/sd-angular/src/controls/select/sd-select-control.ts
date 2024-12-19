@@ -12,7 +12,7 @@ import {
 } from "@angular/core";
 import { SdSelectItemControl } from "./sd-select-item.control";
 import { SdDropdownControl } from "../dropdown/sd-dropdown.control";
-import { SdItemOfTemplateContext, SdItemOfTemplateDirective } from "../../directives/sd-item-of.template-directive";
+import { type SdItemOfTemplateContext, SdItemOfTemplateDirective } from "../../directives/sd-item-of.template-directive";
 import { SdDockContainerControl } from "../layout/sd-dock-container.control";
 import { NgTemplateOutlet } from "@angular/common";
 import { SdDockControl } from "../layout/sd-dock.control";

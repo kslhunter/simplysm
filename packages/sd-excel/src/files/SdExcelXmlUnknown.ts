@@ -1,4 +1,4 @@
-import {ISdExcelXml} from "../commons";
+import {type ISdExcelXml} from "../commons";
 
 export class SdExcelXmlUnknown implements ISdExcelXml {
   public readonly data: Record<string, any>;

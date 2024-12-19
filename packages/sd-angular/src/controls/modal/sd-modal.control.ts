@@ -13,7 +13,7 @@ import { NumberUtil } from "@simplysm/sd-core-common";
 import { SdAnchorControl } from "../button/sd-anchor.control";
 import { SdPaneControl } from "../layout/sd-pane.control";
 import { SdSystemConfigProvider } from "../../providers/sd-system-config.provider";
-import { ISdResizeEvent } from "../../plugins/events/sd-resize.event-plugin";
+import { type ISdResizeEvent } from "../../plugins/events/sd-resize.event-plugin";
 import { SdEventsDirective } from "../../directives/sd-events.directive";
 import { SdDockContainerControl } from "../layout/sd-dock-container.control";
 import { SdDockControl } from "../layout/sd-dock.control";
