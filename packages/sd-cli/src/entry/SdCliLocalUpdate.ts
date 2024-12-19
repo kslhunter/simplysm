@@ -1,7 +1,7 @@
 import { FsUtil, Logger, PathUtil, SdFsWatcher } from "@simplysm/sd-core-node";
 import path from "path";
 import { pathToFileURL } from "url";
-import { ISdProjectConfig } from "../types/sd-configs.type";
+import { type ISdProjectConfig } from "../types/sd-configs.type";
 
 export class SdCliLocalUpdate {
   static async runAsync(opt: { confFileRelPath: string; optNames: string[] }): Promise<void> {

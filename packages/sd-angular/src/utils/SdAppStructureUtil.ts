@@ -1,5 +1,5 @@
 import { ObjectUtil } from "@simplysm/sd-core-common";
-import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
+import { type IconDefinition } from "@fortawesome/fontawesome-svg-core";
 
 export class SdAppStructureUtil {
   static getFlatPermissions<T extends string>(
@@ -42,7 +42,10 @@ export class SdAppStructureUtil {
     return results;
   }
 
-  static getMenus<T extends string>(menus: ISdAppStructureItem<T>[], codeChain: string[] = []): ISdMenu<T>[] {
+  static getMenus<T extends string>(
+    menus: ISdAppStructureItem<T>[],
+    codeChain: string[] = [],
+  ): ISdMenu<T>[] {
     const resultMenus: ISdMenu<T>[] = [];
     for (const menu of menus) {
       if (menu.isNotMenu) {
@@ -84,7 +87,12 @@ export class SdAppStructureUtil {
       const currModulesChain = menu.modules ? modulesChain.concat([menu.modules]) : modulesChain;
 
       if (menu.children) {
-        const childrenFlatMenus = this.getFlatPages(menu.children, currTitleChain, currCodeChain, currModulesChain);
+        const childrenFlatMenus = this.getFlatPages(
+          menu.children,
+          currTitleChain,
+          currCodeChain,
+          currModulesChain,
+        );
         resultFlatMenus.push(...childrenFlatMenus);
       }
       else {
@@ -100,7 +108,11 @@ export class SdAppStructureUtil {
     return resultFlatMenus;
   }
 
-  static getTitleByCode(menus: ISdAppStructureItem[], code: string, withoutParent?: boolean): string {
+  static getTitleByCode(
+    menus: ISdAppStructureItem[],
+    code: string,
+    withoutParent?: boolean,
+  ): string {
     const codes = code.split(".");
 
     const result: string[] = [];
@@ -119,7 +131,10 @@ export class SdAppStructureUtil {
     return withoutParent ? current : (parent ? `[${parent}] ` : "") + current;
   }
 
-  static getPermissions<T extends string>(menus: ISdAppStructureItem<T>[], codes: string[] = []): ISdPermission<T>[] {
+  static getPermissions<T extends string>(
+    menus: ISdAppStructureItem<T>[],
+    codes: string[] = [],
+  ): ISdPermission<T>[] {
     const results: ISdPermission<T>[] = [];
     for (const menu of menus) {
       const currCodes = codes.concat([menu.code]);

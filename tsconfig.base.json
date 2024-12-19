@@ -23,10 +23,16 @@
     "importHelpers": true,
     "useDefineForClassFields": false,
     "noUnusedLocals": false,
+    "incremental": true,
+    "verbatimModuleSyntax": true,
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
     "baseUrl": ".",
     "paths": {
       "@simplysm/*": ["./packages/*/src/index.ts"],
-      "@simplysm/ts-transformer-keys/transformer": ["./packages/ts-transformer-keys/src/transformer.ts"]
+      "@simplysm/ts-transformer-keys/transformer": [
+        "./packages/ts-transformer-keys/src/transformer.ts"
+      ]
     }
   }
 }

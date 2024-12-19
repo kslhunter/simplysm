@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, HostListener, inject, input, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  HostListener,
+  inject,
+  input,
+  ViewEncapsulation,
+} from "@angular/core";
 import { SdBusyProvider } from "./sd-busy.provider";
 import { $computed } from "../../utils/$hooks";
 import { transformBoolean, transformNullableBoolean } from "../../utils/tramsforms";
@@ -11,24 +18,29 @@ import { transformBoolean, transformNullableBoolean } from "../../utils/tramsfor
   imports: [],
   template: `
     <div class="_screen">
-      <div class="_rect">
-        <!--<div class="_bar"></div>-->
-        <div class="_indicator">
-          <div class="_cube1"></div>
-          <div class="_cube2"></div>
-          <div class="_cube4"></div>
-          <div class="_cube3"></div>
+      @if (!noIndicator()) {
+        <div class="_rect">
+          <!--<div class="_bar"></div>-->
+          <div class="_indicator">
+            <div class="_cube1"></div>
+            <div class="_cube2"></div>
+            <div class="_cube4"></div>
+            <div class="_cube3"></div>
+          </div>
+          @if (message()) {
+            <div class="_message">
+              <pre>{{ message() }}</pre>
+            </div>
+          }
         </div>
-        @if (message()) {
-          <div class="_message">
-            <pre>{{ message() }}</pre>
+        @if (progressPercent() != null) {
+          <div class="_progress">
+            <div
+              class="_progress-bar"
+              [style.transform]="'scaleX(' + progressPercent()! / 100 + ')'"
+            ></div>
           </div>
         }
-      </div>
-      @if (progressPercent() != null) {
-        <div class="_progress">
-          <div class="_progress-bar" [style.transform]="'scaleX(' + progressPercent()! / 100 + ')'"></div>
-        </div>
       }
     </div>
     <ng-content></ng-content>
@@ -358,6 +370,7 @@ export class SdBusyContainerControl {
   message = input<string>();
   type = input<"spinner" | "bar" | "cube">();
   noFade = input(undefined, { transform: transformNullableBoolean });
+  noIndicator = input(false, { transform: transformBoolean });
   progressPercent = input<number>();
 
   currType = $computed(() => this.type() ?? this.#sdBusy.type());

@@ -1,5 +1,5 @@
-import { ISdBuildRunnerWorkerRequest } from "./build-runner.type";
-import { ISdBuildMessage, ISdBuildRunnerResult } from "./build.type";
+import { type ISdBuildRunnerWorkerRequest } from "./build-runner.type";
+import { type ISdBuildMessage, type ISdBuildRunnerResult } from "./build.type";
 
 export interface TServerWorkerType {
   methods: {

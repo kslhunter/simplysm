@@ -1,4 +1,4 @@
-import { TNormPath } from "@simplysm/sd-core-node";
+import { type TNormPath } from "@simplysm/sd-core-node";
 
 export interface ISdBuildRunnerResult {
   affectedFilePathSet: Set<TNormPath>;

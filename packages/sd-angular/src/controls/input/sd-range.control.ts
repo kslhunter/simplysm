@@ -1,5 +1,11 @@
-import { ChangeDetectionStrategy, Component, input, output, ViewEncapsulation } from "@angular/core";
-import { SdTextfieldControl, TSdTextfieldTypes } from "./sd-textfield.control";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  output,
+  ViewEncapsulation,
+} from "@angular/core";
+import { SdTextfieldControl, type TSdTextfieldTypes } from "./sd-textfield.control";
 import { transformBoolean } from "../../utils/tramsforms";
 import { $model } from "../../utils/$hooks";
 
@@ -10,10 +16,21 @@ import { $model } from "../../utils/$hooks";
   standalone: true,
   imports: [SdTextfieldControl],
   template: `
-    <!--suppress TypeScriptValidateTypes -->
-    <sd-textfield [type]="type()" [(value)]="from" [required]="required()" [disabled]="disabled()" />
+    <sd-textfield
+      [type]="type()"
+      [(value)]="from"
+      [required]="required()"
+      [disabled]="disabled()"
+      [inputStyle]="inputStyle()"
+    />
     <div>~</div>
-    <sd-textfield [type]="type()" [(value)]="to" [required]="required()" [disabled]="disabled()" />
+    <sd-textfield
+      [type]="type()"
+      [(value)]="to"
+      [required]="required()"
+      [disabled]="disabled()"
+      [inputStyle]="inputStyle()"
+    />
   `,
   styles: [
     /* language=SCSS */ `
@@ -36,6 +53,8 @@ export class SdRangeControl<K extends keyof TSdTextfieldTypes> {
   _to = input<TSdTextfieldTypes[K] | undefined>(undefined, { alias: "to" });
   _toChange = output<TSdTextfieldTypes[K] | undefined>({ alias: "toChange" });
   to = $model(this._to, this._toChange);
+
+  inputStyle = input<string>();
 
   required = input(false, { transform: transformBoolean });
   disabled = input(false, { transform: transformBoolean });

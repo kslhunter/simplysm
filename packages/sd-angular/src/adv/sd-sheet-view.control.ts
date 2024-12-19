@@ -25,13 +25,13 @@ import {
   SdSheetColumnCellTemplateDirective,
 } from "../controls/sheet/sd-sheet-column-cell.template-directive";
 import { SdSheetColumnDirective } from "../controls/sheet/sd-sheet-column.directive";
-import { ISdSheetColumnOrderingVM, SdSheetControl } from "../controls/sheet/sd-sheet.control";
+import { type ISdSheetColumnOrderingVM, SdSheetControl } from "../controls/sheet/sd-sheet.control";
 import { NgTemplateOutlet } from "@angular/common";
 import { transformBoolean } from "../utils/tramsforms";
 import { ObjectUtil } from "@simplysm/sd-core-common";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { $computed, $effect } from "../utils/$hooks";
-import { ISdViewModel, TSdViewModelGenericTypes } from "./ISdViewModel";
+import { type ISdViewModel, type TSdViewModelGenericTypes } from "./ISdViewModel";
 import { SD_MODAL_INPUT, SdModalBase, SdModalProvider } from "../controls/modal/sd-modal.provider";
 import { SdToastProvider } from "../controls/toast/sd-toast.provider";
 import { SdFileDialogProvider } from "../providers/sd-file-dialog.provider";
@@ -62,7 +62,7 @@ import { SdBusyContainerControl } from "../controls/busy/sd-busy-container.contr
     SdBusyContainerControl,
   ],
   template: `
-    <sd-busy-container [busy]="busyCount() > 0">
+    <sd-busy-container [busy]="busyCount() > 0" type="spinner">
       @if (initialized()) {
         <sd-dock-container class="show-effect">
           <sd-dock class="pb-lg">
@@ -214,12 +214,12 @@ import { SdBusyContainerControl } from "../controls/busy/sd-busy-container.contr
                     <ng-template
                       [ngTemplateOutlet]="columnControl.cellTemplateRef() ?? null"
                       [ngTemplateOutletContext]="{
-                    $implicit: item,
-                    item: item,
-                    index: index,
-                    depth: depth,
-                    edit: edit,
-                  }"
+                        $implicit: item,
+                        item: item,
+                        index: index,
+                        depth: depth,
+                        edit: edit,
+                      }"
                     />
                   </ng-template>
                 </sd-sheet-column>

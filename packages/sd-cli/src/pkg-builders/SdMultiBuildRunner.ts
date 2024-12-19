@@ -1,11 +1,11 @@
 import { FsUtil, Logger, PathUtil, SdWorker, TNormPath } from "@simplysm/sd-core-node";
 import path from "path";
 import { EventEmitter } from "events";
-import { ISdServerPackageConfig } from "../types/sd-configs.type";
-import { ISdBuildMessage, ISdBuildRunnerResult } from "../types/build.type";
-import { TSdBuildRunnerWorkerType, TServerWorkerType } from "../types/workers.type";
-import { INpmConfig } from "../types/common-configs.type";
-import { ISdBuildRunnerWorkerRequest } from "../types/build-runner.type";
+import { type ISdServerPackageConfig } from "../types/sd-configs.type";
+import { type ISdBuildMessage, type ISdBuildRunnerResult } from "../types/build.type";
+import { type TSdBuildRunnerWorkerType, type TServerWorkerType } from "../types/workers.type";
+import { type INpmConfig } from "../types/common-configs.type";
+import { type ISdBuildRunnerWorkerRequest } from "../types/build-runner.type";
 
 export class SdMultiBuildRunner extends EventEmitter {
   #logger = Logger.get(["simplysm", "sd-cli", "SdMultiBuildRunner"]);

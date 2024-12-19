@@ -1,7 +1,7 @@
-import { Signal } from "@angular/core";
-import { ISdSheetColumnOrderingVM } from "../controls/sheet/sd-sheet.control";
+import { type Signal } from "@angular/core";
+import { type ISdSheetColumnOrderingVM } from "../controls/sheet/sd-sheet.control";
 import { DateTime } from "@simplysm/sd-core-common";
-import { TSdExcelValueType } from "@simplysm/sd-excel";
+import { type TSdExcelValueType } from "@simplysm/sd-excel";
 
 export interface ISdViewModel<
   DD extends ISdViewModelDetailData = ISdViewModelDetailData,
