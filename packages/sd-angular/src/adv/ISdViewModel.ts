@@ -34,16 +34,6 @@ export interface ISdViewModel<
     summary?: SS
   }>;
 
-  /*searchAsync(
-    filter: SF,
-    ordering: ISdSheetColumnOrderingVM[],
-    page?: number,
-  ): Promise<{
-    items: SI[],
-    pageLength: number,
-    summary?: SS
-  }>;*/
-
   getExcelDataMatrixAsync?(
     filter: SF,
     ordering: ISdSheetColumnOrderingVM[],

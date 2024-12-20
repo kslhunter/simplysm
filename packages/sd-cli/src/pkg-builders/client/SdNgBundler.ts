@@ -435,7 +435,6 @@ export class SdNgBundler {
       entryNames: "[dir]/[name]",
       entryPoints: {
         main: this.#mainFilePath,
-        // polyfills: 'angular:polyfills',
         // TODO: Polyfills Bundler 분리
         polyfills: path.resolve(this._opt.pkgPath, "src/polyfills.ts"),
         ...(this._opt.builderType === "cordova"
@@ -492,29 +491,6 @@ export class SdNgBundler {
           inject: [PathUtil.posix(fileURLToPath(import.meta.resolve("node-stdlib-browser/helpers/esbuild/shim")))],
         }),
       plugins: [
-        /*...(this._opt.builderType === "cordova" && this._opt.cordovaConfig?.plugins
-          ? [
-              {
-                name: "cordova:plugin-empty",
-                setup: ({ onResolve }) => {
-                  onResolve({ filter: new RegExp("(" + this._opt.cordovaConfig!.plugins!.join("|") + ")") }, () => {
-                    return {
-                      path: `./cordova-empty.js`,
-                      external: true,
-                    };
-                  });
-                },
-              },
-            ]
-          : []),*/
-        // createVirtualModulePlugin({
-        //   namespace: "angular:polyfills",
-        //   loadContent: () => ({
-        //     contents: `import "./src/polyfills.ts";`,
-        //     loader: 'js',
-        //     resolveDir: this._opt.pkgPath
-        //   })
-        // }) as esbuild.Plugin,
         createSourcemapIgnorelistPlugin(),
         createSdNgPlugin({
           modifiedFileSet: this.#modifiedFileSet,
@@ -523,38 +499,7 @@ export class SdNgBundler {
           result: this.#ngResultCache,
           watchScopePaths: this._opt.watchScopePaths,
         }),
-        // createCompilerPlugin({
-        //   sourcemap: this._opt.dev,
-        //   tsconfig: this._tsConfigFilePath,
-        //   jit: false,
-        //   advancedOptimizations: true,
-        //   thirdPartySourcemaps: false,
-        //   fileReplacements: undefined,
-        //   sourceFileCache: this._sourceFileCache,
-        //   loadResultCache: this._sourceFileCache.loadResultCache,
-        //   incremental: this._opt.dev
-        // }, {
-        //   workspaceRoot: this._opt.pkgPath,
-        //   optimization: !this._opt.dev,
-        //   sourcemap: this._opt.dev ? 'inline' : false,
-        //   outputNames: {bundles: '[name]', media: 'media/[name]'},
-        //   includePaths: [],
-        //   externalDependencies: [],
-        //   target: this._browserTarget,
-        //   inlineStyleLanguage: 'scss',
-        //   preserveSymlinks: false,
-        //   tailwindConfiguration: undefined
-        // }) as esbuild.Plugin,
         ...(this._opt.builderType === "electron" ? [] : [nodeStdLibBrowserPlugin(nodeStdLibBrowser)]),
-        // {
-        //   name: "sd-load-file",
-        //   setup: ({onLoad}) => {
-        //     onLoad({filter: /.*/}, (args) => {
-        //       this.#loadFilePathSet.add(args.path);
-        //       return null;
-        //     });
-        //   }
-        // }
       ],
     });
   }
@@ -587,19 +532,9 @@ export class SdNgBundler {
       mainFields: ["style", "sass"],
       legalComments: !this._opt.dev ? "none" : "eof",
       entryPoints: {
-        // styles: 'angular:styles/global;styles'
         styles: path.resolve(this._opt.pkgPath, "src/styles.scss"),
       },
       plugins: [
-        // createVirtualModulePlugin({
-        //   namespace: "angular:styles/global",
-        //   transformPath: (currPath) => currPath.split(';', 2)[1],
-        //   loadContent: () => ({
-        //     contents: `@import 'src/styles.scss';`,
-        //     loader: 'css',
-        //     resolveDir: this._opt.pkgPath
-        //   }),
-        // }) as esbuild.Plugin,
         pluginFactory.create(SassStylesheetLanguage),
         pluginFactory.create(CssStylesheetLanguage),
         createCssResourcePlugin(this.#styleLoadResultCache),

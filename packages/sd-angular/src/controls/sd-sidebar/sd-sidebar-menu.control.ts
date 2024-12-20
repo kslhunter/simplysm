@@ -9,7 +9,6 @@ import { injectPageCode$ } from "../../utils/injectPageCode$";
 import { $computed } from "../../utils/$hooks";
 import { SdIconControl } from "../icon/sd-icon.control";
 
-// TODO: 메뉴가 열릴때 애니메이션 안됨
 @Component({
   selector: "sd-sidebar-menu",
   changeDetection: ChangeDetectionStrategy.OnPush,

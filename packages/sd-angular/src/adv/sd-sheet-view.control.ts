@@ -154,7 +154,7 @@ import { SdBusyContainerControl } from "../controls/busy/sd-busy-container.contr
               [(page)]="page"
               [pageLength]="pageLength()"
               [(ordering)]="ordering"
-              [getItemCellStyleFn]="getItemCellStyleFn"
+              [getItemCellStyleFn]="currentGetItemCellStyleFn"
               [selectMode]="selectMode() ?? 'multi'"
               [autoSelect]="selectMode() === 'single' ? 'click' : undefined"
               [(selectedItems)]="selectedItems"
@@ -310,8 +310,14 @@ export class SdSheetViewControl<VM extends ISdViewModel, TMODAL extends SdModalB
     this.selectedItems().some((item) => !item.isDeleted),
   );
 
-  getItemCellStyleFn = (item: TSdViewModelGenericTypes<VM>["SI"]) => (
-    item.isDeleted ? "text-decoration: line-through;" : undefined
+  getItemCellStyleFn = input<(
+    item: TSdViewModelGenericTypes<VM>["SI"],
+    colKey: string,
+  ) => string | undefined>();
+
+  currentGetItemCellStyleFn = (item: TSdViewModelGenericTypes<VM>["SI"], colKey: string) => (
+    this.getItemCellStyleFn()?.(item, colKey)
+    ?? (item.isDeleted ? "text-decoration: line-through;" : undefined)
   );
 
   constructor() {

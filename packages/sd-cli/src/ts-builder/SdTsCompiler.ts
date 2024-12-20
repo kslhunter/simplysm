@@ -280,8 +280,10 @@ export class SdTsCompiler {
           this.#affectedFileSet.add(modifiedFile);
           this.#affectedFileSet.adds(...(this.#revDependencyCacheMap.get(modifiedFile) ?? []));
           this.#affectedFileSet.adds(...(this.#resourceDependencyCacheMap.get(modifiedFile) ?? []));
+        }
 
-          this.#emittedFilesCacheMap.delete(modifiedFile);
+        for(const affectedFile of this.#affectedFileSet){
+          this.#emittedFilesCacheMap.delete(affectedFile);
         }
       });
 

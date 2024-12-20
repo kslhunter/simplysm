@@ -4,6 +4,7 @@
     "lib": ["ES2021", "DOM"],
     "outDir": "./dist"
   },
+  "exclude": ["dist", "node_modules"],
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
     "strictInjectionParameters": true,

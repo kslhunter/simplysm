@@ -32,5 +32,6 @@
         "./packages/ts-transformer-keys/src/transformer.ts"
       ]
     }
-  }
+  },
+  "exclude": ["dist", "node_modules"]
 }
