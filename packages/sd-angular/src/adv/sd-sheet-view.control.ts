@@ -96,7 +96,7 @@ import { SdBusyContainerControl } from "../controls/busy/sd-busy-container.contr
           <sd-dock class="pb-xs">
             <div class="flex-row flex-gap-sm">
               @if (vm().perms().includes('edit')) {
-                @if (this.detailModalType()) {
+                @if (detailModalType()) {
                   <sd-button size="sm" theme="link-primary" (click)="onCreateItemButtonClick()">
                     <sd-icon [icon]="icons.plusCircle" fixedWidth />
                     등록 <small>(CTRL+INSERT)</small>
@@ -104,37 +104,43 @@ import { SdBusyContainerControl } from "../controls/busy/sd-busy-container.contr
                 }
 
                 @if (!selectMode()) {
-                  <sd-button
-                    size="sm"
-                    theme="link-danger"
-                    (click)="onToggleDeletesButtonClick(true)"
-                    [disabled]="!isSelectedItemsHasNotDeleted()"
-                  >
-                    <sd-icon [icon]="icons.eraser" [fixedWidth]="true" />
-                    선택 삭제
-                  </sd-button>
-                  @if (isSelectedItemsHasDeleted()) {
+                  @if (vm().toggleDeletesAsync) {
                     <sd-button
                       size="sm"
-                      theme="link-warning"
-                      (click)="onToggleDeletesButtonClick(false)"
+                      theme="link-danger"
+                      (click)="onToggleDeletesButtonClick(true)"
+                      [disabled]="!isSelectedItemsHasNotDeleted()"
                     >
-                      <sd-icon [icon]="icons.redo" [fixedWidth]="true" />
-                      선택 복구
+                      <sd-icon [icon]="icons.eraser" [fixedWidth]="true" />
+                      선택 삭제
                     </sd-button>
+                    @if (isSelectedItemsHasDeleted()) {
+                      <sd-button
+                        size="sm"
+                        theme="link-warning"
+                        (click)="onToggleDeletesButtonClick(false)"
+                      >
+                        <sd-icon [icon]="icons.redo" [fixedWidth]="true" />
+                        선택 복구
+                      </sd-button>
+                    }
                   }
                 }
 
-                <sd-button size="sm" theme="link-success" (click)="onUploadExcelButtonClick()">
-                  <sd-icon [icon]="icons.upload" fixedWidth />
-                  엑셀 업로드
-                </sd-button>
+                @if (vm().uploadExcelDataTableAsync) {
+                  <sd-button size="sm" theme="link-success" (click)="onUploadExcelButtonClick()">
+                    <sd-icon [icon]="icons.upload" fixedWidth />
+                    엑셀 업로드
+                  </sd-button>
+                }
               }
 
-              <sd-button size="sm" theme="link-success" (click)="onDownloadExcelButtonClick()">
-                <sd-icon [icon]="icons.fileExcel" fixedWidth />
-                엑셀 다운로드
-              </sd-button>
+              @if (vm().getExcelDataMatrixAsync) {
+                <sd-button size="sm" theme="link-success" (click)="onDownloadExcelButtonClick()">
+                  <sd-icon [icon]="icons.fileExcel" fixedWidth />
+                  엑셀 다운로드
+                </sd-button>
+              }
 
               <!-- buttons -->
               <ng-content />
@@ -157,7 +163,9 @@ import { SdBusyContainerControl } from "../controls/busy/sd-busy-container.contr
               <sd-sheet-column fixed header="#" resizable useOrdering key="id">
                 <ng-template [cell]="items()" let-item>
                   <div class="p-xs-sm">
-                    @if (vm().perms().includes('edit') && this.detailModalType()) {
+                    @if (vm().perms().includes('edit')
+                    && detailModalType()
+                    && vm().getDetailAsync) {
                       <sd-anchor
                         (click)="onItemClick(item, $event)"
                         class="flex-row flex-gap-sm"
@@ -298,8 +306,9 @@ export class SdSheetViewControl<VM extends ISdViewModel, TMODAL extends SdModalB
   detailModalType = input<Type<TMODAL>>();
 
   isSelectedItemsHasDeleted = $computed(() => this.selectedItems().some((item) => item.isDeleted));
-  isSelectedItemsHasNotDeleted = $computed(() => this.selectedItems()
-    .some((item) => !item.isDeleted));
+  isSelectedItemsHasNotDeleted = $computed(() =>
+    this.selectedItems().some((item) => !item.isDeleted),
+  );
 
   getItemCellStyleFn = (item: TSdViewModelGenericTypes<VM>["SI"]) => (
     item.isDeleted ? "text-decoration: line-through;" : undefined
@@ -367,13 +376,15 @@ export class SdSheetViewControl<VM extends ISdViewModel, TMODAL extends SdModalB
   }
 
   async onDownloadExcelButtonClick() {
+    if (!this.vm().getExcelDataMatrixAsync) return;
+
     this.busyCount.update((v) => v + 1);
     await this.#sdToast.try(async () => {
       const wb = SdExcelWorkbook.create();
       const ws = await wb.createWorksheetAsync(this.vm().name);
 
-      const dataMatrix = await this.vm()
-        .getExcelDataMatrixAsync(this.lastFilter()!, this.ordering());
+      const dataMatrix =
+        await this.vm().getExcelDataMatrixAsync!(this.lastFilter()!, this.ordering());
       await ws.setDataMatrixAsync(dataMatrix);
 
       const blob = await wb.getBlobAsync();
@@ -383,7 +394,9 @@ export class SdSheetViewControl<VM extends ISdViewModel, TMODAL extends SdModalB
   }
 
   async #refresh() {
-    const result = await this.vm().searchAsync(this.lastFilter()!, this.ordering(), this.page());
+    if (!this.vm().searchAsync) return;
+
+    const result = await this.vm().searchAsync!(this.lastFilter()!, this.ordering(), this.page());
     this.items.set(result.items);
     this.pageLength.set(result.pageLength);
     this.summaryData.set(result.summary);
@@ -429,12 +442,13 @@ export class SdSheetViewControl<VM extends ISdViewModel, TMODAL extends SdModalB
 
   async onToggleDeletesButtonClick(del: boolean) {
     if (!this.vm().perms().includes("edit")) return;
+    if (!this.vm().toggleDeletesAsync) return;
 
     this.busyCount.update((v) => v + 1);
 
     await this.#sdToast.try(async () => {
       const inputIds = this.selectedItems().map((item) => item.id);
-      await this.vm().toggleDeletesAsync(inputIds, del);
+      await this.vm().toggleDeletesAsync!(inputIds, del);
 
       await this.#refresh();
 
@@ -446,6 +460,7 @@ export class SdSheetViewControl<VM extends ISdViewModel, TMODAL extends SdModalB
 
   async onUploadExcelButtonClick() {
     if (!this.vm().perms().includes("edit")) return;
+    if (!this.vm().uploadExcelDataTableAsync) return;
 
     const file = await this.#sdFileDialog.showAsync(
       false,
@@ -461,7 +476,7 @@ export class SdSheetViewControl<VM extends ISdViewModel, TMODAL extends SdModalB
       const wsName = await ws.getNameAsync();
       const wsdt = await ws.getDataTableAsync();
 
-      await this.vm().uploadExcelDataTableAsync(wsName, wsdt);
+      await this.vm().uploadExcelDataTableAsync!(wsName, wsdt);
 
       await this.#refresh();
 

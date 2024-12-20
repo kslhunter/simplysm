@@ -49,10 +49,12 @@ import { injectActivatedPageCode$, injectPageCode$ } from "../utils/injectPageCo
     >
       <ng-template target="topbar">
         @if (vm().perms().includes("edit")) {
-          <sd-topbar-menu (click)="onSubmitButtonClick()">
-            <sd-icon [icon]="icons.save" fixedWidth />
-            저장 <small>(CTRL+S)</small>
-          </sd-topbar-menu>
+          @if (this.vm().upsertsAsync) {
+            <sd-topbar-menu (click)="onSubmitButtonClick()">
+              <sd-icon [icon]="icons.save" fixedWidth />
+              저장 <small>(CTRL+S)</small>
+            </sd-topbar-menu>
+          }
         }
         <sd-topbar-menu theme="info" (click)="onRefreshButtonClick()">
           <sd-icon [icon]="icons.refresh" fixedWidth />
@@ -78,25 +80,27 @@ import { injectActivatedPageCode$, injectPageCode$ } from "../utils/injectPageCo
         <ng-template target="bottom">
           <div class="p-sm-default bdt bdt-trans-light flex-row">
             @if (data().id != null) {
-              <div>
-                @if (!data().isDeleted) {
-                  <sd-button
-                    theme="danger"
-                    inline
-                    (click)="onToggleDeleteButtonClick(true)"
-                  >
-                    삭제
-                  </sd-button>
-                } @else {
-                  <sd-button
-                    theme="warning"
-                    inline
-                    (click)="onToggleDeleteButtonClick(false)"
-                  >
-                    복구
-                  </sd-button>
-                }
-              </div>
+              @if (vm().toggleDeletesAsync) {
+                <div>
+                  @if (!data().isDeleted) {
+                    <sd-button
+                      theme="danger"
+                      inline
+                      (click)="onToggleDeleteButtonClick(true)"
+                    >
+                      삭제
+                    </sd-button>
+                  } @else {
+                    <sd-button
+                      theme="warning"
+                      inline
+                      (click)="onToggleDeleteButtonClick(false)"
+                    >
+                      복구
+                    </sd-button>
+                  }
+                </div>
+              }
             }
 
             <div class="flex-grow tx-right">
@@ -192,7 +196,7 @@ export class SdDetailBaseContainerControl<VM extends ISdViewModel> {
       this.data.set(ObjectUtil.clone(this.defaultData()));
     }
     else {
-      this.data.set(await this.vm().getDetailAsync(this.dataId()!));
+      this.data.set(await this.vm().getDetailAsync!(this.dataId()!));
     }
     $obj(this.data).snapshot();
   }
@@ -200,10 +204,11 @@ export class SdDetailBaseContainerControl<VM extends ISdViewModel> {
   async onToggleDeleteButtonClick(del: boolean) {
     if (this.busyCount() > 0) return;
     if (!this.vm().perms().includes("edit")) return;
+    if (!this.vm().toggleDeletesAsync) return;
 
     this.busyCount.update((v) => v + 1);
     await this.#sdToast.try(async () => {
-      await this.vm().toggleDeletesAsync([this.data().id!], del);
+      await this.vm().toggleDeletesAsync!([this.data().id!], del);
 
       await this.#refresh();
 
@@ -221,6 +226,7 @@ export class SdDetailBaseContainerControl<VM extends ISdViewModel> {
   async onSubmit() {
     if (this.busyCount() > 0) return;
     if (!this.vm().perms().includes("edit")) return;
+    if (!this.vm().upsertsAsync) return;
 
     if (!$obj(this.data).changed()) {
       this.#sdToast.info("변경사항이 없습니다.");
@@ -229,7 +235,7 @@ export class SdDetailBaseContainerControl<VM extends ISdViewModel> {
 
     this.busyCount.update((v) => v + 1);
     await this.#sdToast.try(async () => {
-      await this.vm().upsertsAsync([
+      await this.vm().upsertsAsync!([
         {
           data: this.data(),
           orgData: $obj(this.data).origin,

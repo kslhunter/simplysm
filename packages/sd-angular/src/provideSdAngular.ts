@@ -1,5 +1,8 @@
 import { type ISdAppStructureItem } from "./utils/SdAppStructureUtil";
-import { type ISdAngularIcon, SdAngularConfigProvider } from "./providers/sd-angular-config.provider";
+import {
+  type ISdAngularIcon,
+  SdAngularConfigProvider,
+} from "./providers/sd-angular-config.provider";
 import {
   ENVIRONMENT_INITIALIZER,
   type EnvironmentProviders,
@@ -36,7 +39,8 @@ import {
   faPlusCircle,
   faQuestion,
   faQuestionCircle,
-  faRedo, faRefresh,
+  faRedo,
+  faRefresh,
   faSave,
   faSearch,
   faSort,
@@ -150,7 +154,9 @@ export function provideSdAngular(opt: {
     { provide: EVENT_MANAGER_PLUGINS, useClass: SdResizeEventPlugin, multi: true },
     { provide: EVENT_MANAGER_PLUGINS, useClass: SdOptionEventPlugin, multi: true },
     { provide: EVENT_MANAGER_PLUGINS, useClass: SdBackbuttonEventPlugin, multi: true },
-    { provide: ErrorHandler, useClass: SdGlobalErrorHandlerPlugin },
+    ...process.env["NODE_ENV"] === "development" ? [] : [
+      { provide: ErrorHandler, useClass: SdGlobalErrorHandlerPlugin },
+    ],
     provideExperimentalZonelessChangeDetection(),
-  ])
+  ]);
 }

@@ -15,16 +15,16 @@ export interface ISdViewModel<
   viewCodes: string[];
   perms: Signal<string[]>;
 
-  getDetailAsync(id: number): Promise<DD>;
+  getDetailAsync?(id: number): Promise<DD>;
 
-  searchAsync(
+  searchAsync?(
     filter: SF,
     ordering: ISdSheetColumnOrderingVM[],
   ): Promise<{
     items: SI[]
   }>;
 
-  searchAsync(
+  searchAsync?(
     filter: SF,
     ordering: ISdSheetColumnOrderingVM[],
     page: number,
@@ -34,7 +34,7 @@ export interface ISdViewModel<
     summary?: SS
   }>;
 
-  searchAsync(
+  /*searchAsync(
     filter: SF,
     ordering: ISdSheetColumnOrderingVM[],
     page?: number,
@@ -42,18 +42,18 @@ export interface ISdViewModel<
     items: SI[],
     pageLength: number,
     summary?: SS
-  }>;
+  }>;*/
 
-  getExcelDataMatrixAsync(
+  getExcelDataMatrixAsync?(
     filter: SF,
     ordering: ISdSheetColumnOrderingVM[],
   ): Promise<TSdExcelValueType[][]>;
 
-  upsertsAsync(changes: { data: DD, orgData?: DD }[], logTypeText?: string): Promise<void>;
+  upsertsAsync?(changes: { data: DD, orgData?: DD }[], logTypeText?: string): Promise<void>;
 
-  toggleDeletesAsync(ids: number[], del: boolean): Promise<void>;
+  toggleDeletesAsync?(ids: number[], del: boolean): Promise<void>;
 
-  uploadExcelDataTableAsync(
+  uploadExcelDataTableAsync?(
     wsName: string,
     wsdt: Record<string, TSdExcelValueType>[],
   ): Promise<void>;
