@@ -281,18 +281,15 @@ export class SdTsCompiler {
           this.#affectedFileSet.adds(...(this.#revDependencyCacheMap.get(modifiedFile) ?? []));
           this.#affectedFileSet.adds(...(this.#resourceDependencyCacheMap.get(modifiedFile) ?? []));
         }
-
-        for(const affectedFile of this.#affectedFileSet){
-          this.#emittedFilesCacheMap.delete(affectedFile);
-        }
       });
 
       this.#debug(`invalidate & clear cache...`);
 
       this.#perf.run("invalidate & clear cache", () => {
-        this.#stylesheetBundler?.invalidate(this.#modifiedFileSet);
+        this.#stylesheetBundler?.invalidate(this.#affectedFileSet);
 
         for (const affectedFile of this.#affectedFileSet) {
+          this.#emittedFilesCacheMap.delete(affectedFile);
           this.#sourceFileCacheMap.delete(affectedFile);
           this.#stylesheetBundlingResultMap.delete(affectedFile);
           this.#watchFileSet.delete(affectedFile);

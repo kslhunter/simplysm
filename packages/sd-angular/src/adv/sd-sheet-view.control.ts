@@ -32,7 +32,12 @@ import { ObjectUtil } from "@simplysm/sd-core-common";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { $computed, $effect } from "../utils/$hooks";
 import { type ISdViewModel, type TSdViewModelGenericTypes } from "./ISdViewModel";
-import { SD_MODAL_INPUT, SdModalBase, SdModalProvider } from "../controls/modal/sd-modal.provider";
+import {
+  SD_MODAL_INPUT,
+  SdActivatedModalProvider,
+  SdModalBase,
+  SdModalProvider,
+} from "../controls/modal/sd-modal.provider";
 import { SdToastProvider } from "../controls/toast/sd-toast.provider";
 import { SdFileDialogProvider } from "../providers/sd-file-dialog.provider";
 import { SdSharedDataProvider } from "./shared-data/sd-shared-data.provider";
@@ -64,7 +69,7 @@ import { SdBusyContainerControl } from "../controls/busy/sd-busy-container.contr
   template: `
     <sd-busy-container [busy]="busyCount() > 0" type="spinner">
       @if (initialized()) {
-        <sd-dock-container class="show-effect">
+        <sd-dock-container [class.show-effect]="!isModal()">
           <sd-dock class="pb-lg">
             <sd-form (submit)="onFilterSubmit()">
               <sd-form-box layout="inline">
@@ -279,6 +284,9 @@ export class SdSheetViewControl<VM extends ISdViewModel, TMODAL extends SdModalB
   #sdModal = inject(SdModalProvider);
   #sdFileDialog = inject(SdFileDialogProvider);
   #sdSharedData = inject(SdSharedDataProvider);
+  #sdActivatedModal = inject(SdActivatedModalProvider, { optional: true });
+
+  isModal = $computed(() => Boolean(this.#sdActivatedModal));
 
   filterControls = contentChildren(SdSheetViewFilterDirective);
   columnControls = contentChildren(SdSheetViewColumnDirective);

@@ -139,7 +139,7 @@ export class SdBaseContainerControl {
   );
 
   busy = input(false, { transform: transformBoolean });
-  initialized = input(true, { transform: transformBoolean });
+  initialized = input.required({ transform: transformBoolean });
 
   constructor() {
     $effect([this.initialized], () => {
