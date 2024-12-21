@@ -77,7 +77,7 @@ export class SdCliNgRoutesFileGenerator {
     const routes = fn(result, 2);
 
     const content = `
-import { type Routes } from "@angular/router";
+import type { Routes } from "@angular/router";
 ${imports.join("\n")}
 export const routes: Routes = [
 ${routes}

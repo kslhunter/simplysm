@@ -403,7 +403,6 @@ export class SdServiceServer extends EventEmitter {
     }
 
     // 실행
-    // eslint-disable-next-line @typescript-eslint/return-await
     return await method.apply(service, def.params);
   }
 

@@ -1128,6 +1128,7 @@ export class Queryable<D extends DbContext, T> {
     const result = await this.resultAsync();
     if (result.length > 1) {
       if (process.env["NODE_ENV"] !== "development") {
+        // eslint-disable-next-line no-console
         console.error(result);
       }
       throw new Error("복수의 쿼리결과가 있습니다.");
