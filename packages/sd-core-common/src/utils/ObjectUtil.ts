@@ -40,7 +40,10 @@ export class ObjectUtil {
     }
     if (source instanceof Map) {
       return Array.from(source.keys())
-        .toMap((key) => ObjectUtil._clone(key, options), (key) => ObjectUtil._clone(source.get(key), options));
+        .toMap(
+          (key) => ObjectUtil._clone(key, options),
+          (key) => ObjectUtil._clone(source.get(key), options),
+        );
     }
     if (source instanceof Date) {
       return new Date(source.getTime());
@@ -69,7 +72,8 @@ export class ObjectUtil {
           source,
           clone: result,
         });
-        for (const key of Object.keys(source).filter((sourceKey) => options?.excludes?.includes(sourceKey) !== true)) {
+        for (const key of Object.keys(source)
+          .filter((sourceKey) => options?.excludes?.includes(sourceKey) !== true)) {
           if (source[key] === undefined) {
             result[key] = undefined;
           }
@@ -82,7 +86,11 @@ export class ObjectUtil {
               result[key] = matchedPrevClone.clone;
             }
             else {
-              result[key] = ObjectUtil._clone(source[key], { useRefTypes: options?.useRefTypes }, currPrevClones);
+              result[key] = ObjectUtil._clone(
+                source[key],
+                { useRefTypes: options?.useRefTypes },
+                currPrevClones,
+              );
             }
           }
         }
@@ -201,7 +209,10 @@ export class ObjectUtil {
     };
   }
 
-  public static omit<T extends Record<string, any>, K extends keyof T>(item: T, omitKeys: K[]): Omit<T, K> {
+  public static omit<T extends Record<string, any>, K extends keyof T>(
+    item: T,
+    omitKeys: K[],
+  ): Omit<T, K> {
     const result: any = {};
     for (const key of Object.keys(item) as K[]) {
       if (!omitKeys.includes(key)) {
@@ -211,7 +222,10 @@ export class ObjectUtil {
     return result;
   }
 
-  public static omitByFilter<T extends Record<string, any>>(item: T, omitKeyFn: (key: keyof T) => boolean): T {
+  public static omitByFilter<T extends Record<string, any>>(
+    item: T,
+    omitKeyFn: (key: keyof T) => boolean,
+  ): T {
     const result: any = {};
     for (const key of Object.keys(item)) {
       if (!omitKeyFn(key)) {
@@ -221,7 +235,10 @@ export class ObjectUtil {
     return result;
   }
 
-  public static pick<T extends Record<string, any>, K extends keyof T>(item: T, keys: K[]): Pick<T, K> {
+  public static pick<T extends Record<string, any>, K extends keyof T>(
+    item: T,
+    keys: K[],
+  ): Pick<T, K> {
     const result: any = {};
     for (const key of keys) {
       result[key] = item[key];
@@ -348,7 +365,11 @@ export class ObjectUtil {
           }
         }
         else {
-          if (!ObjectUtil.equal(source.get(key), target.get(key), { ignoreArrayIndex: options?.ignoreArrayIndex })) {
+          if (!ObjectUtil.equal(
+            source.get(key),
+            target.get(key),
+            { ignoreArrayIndex: options?.ignoreArrayIndex },
+          )) {
             return false;
           }
         }
@@ -380,7 +401,11 @@ export class ObjectUtil {
           }
         }
         else {
-          if (!ObjectUtil.equal(source[key], target[key], { ignoreArrayIndex: options?.ignoreArrayIndex })) {
+          if (!ObjectUtil.equal(
+            source[key],
+            target[key],
+            { ignoreArrayIndex: options?.ignoreArrayIndex },
+          )) {
             return false;
           }
         }
@@ -409,7 +434,9 @@ export class ObjectUtil {
     else { //IValidateDef<T>
       currDef = {
         ...def,
-        type: def.type !== undefined ? def.type instanceof Array ? def.type : [def.type] : undefined,
+        type: def.type !== undefined
+          ? def.type instanceof Array ? def.type : [def.type]
+          : undefined,
       };
     }
 
@@ -474,7 +501,11 @@ export class ObjectUtil {
     return result;
   }
 
-  public static validateObjectWithThrow<T>(displayName: string, obj: T, def: TValidateObjectDefWithName<T>): void {
+  public static validateObjectWithThrow<T>(
+    displayName: string,
+    obj: T,
+    def: TValidateObjectDefWithName<T>,
+  ): void {
     const validateResult = ObjectUtil.validateObject(obj, def);
     if (Object.keys(validateResult).length > 0) {
       const errMessages: string[] = [];
@@ -510,7 +541,10 @@ export class ObjectUtil {
     const result: IValidateArrayResult<T>[] = [];
     for (let i = 0; i < arr.length; i++) {
       const item = arr[i];
-      const validateObjectResult = ObjectUtil.validateObject(item, typeof def === "function" ? def(item) : def);
+      const validateObjectResult = ObjectUtil.validateObject(
+        item,
+        typeof def === "function" ? def(item) : def,
+      );
       if (Object.keys(validateObjectResult).length > 0) {
         result.push({
           index: i,
@@ -701,6 +735,10 @@ export class ObjectUtil {
 
     return obj;
   }
+
+  public static optToUndef<T>(obj: TOptionalUndef<T>): T {
+    return obj as T;
+  }
 }
 
 export type TValidateDef<T> = Type<WrappedType<T>> | Type<WrappedType<T>>[] | IValidateDef<T>;
@@ -735,3 +773,9 @@ interface IValidateArrayResult<T> {
   item: T;
   result: TValidateObjectResult<T>;
 }
+
+type TOptionalUndef<T> = {
+  [K in keyof T as undefined extends T[K] ? K : never]?: T[K]
+} & {
+  [K in keyof T as undefined extends T[K] ? never : K]: T[K]
+};

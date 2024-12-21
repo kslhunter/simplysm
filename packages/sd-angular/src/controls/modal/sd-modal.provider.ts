@@ -1,4 +1,13 @@
-import { ApplicationRef, createComponent, Directive, inject, Injectable, Injector, input, Type } from "@angular/core";
+import {
+  ApplicationRef,
+  createComponent,
+  Directive,
+  inject,
+  Injectable,
+  Injector,
+  input,
+  Type,
+} from "@angular/core";
 import { SdModalControl } from "./sd-modal.control";
 import { $signal } from "../../utils/$hooks";
 import { SdBusyProvider } from "../busy/sd-busy.provider";

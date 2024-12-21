@@ -31,7 +31,7 @@ export class SdClientBuildRunner extends EventEmitter {
     this._watchScopePathSet = new Set(
       [
         path.resolve(this._pkgPath, "../"),
-        ...localUpdatePaths
+        ...localUpdatePaths,
       ].map((item) => PathUtil.norm(item)),
     );
   }
@@ -51,7 +51,8 @@ export class SdClientBuildRunner extends EventEmitter {
     const confDistPath = path.resolve(this._pkgPath, "dist/.config.json");
     FsUtil.writeFile(confDistPath, JSON.stringify(this._pkgConf.configs ?? {}, undefined, 2));
 
-    if (this._npmConf.dependencies && Object.keys(this._npmConf.dependencies).includes("@angular/router")) {
+    if (this._npmConf.dependencies && Object.keys(this._npmConf.dependencies)
+      .includes("@angular/router")) {
       this._debug(`GEN routes.ts...`);
       SdCliNgRoutesFileGenerator.run(this._pkgPath, undefined, this._pkgConf.noLazyRoute);
     }
@@ -70,7 +71,8 @@ export class SdClientBuildRunner extends EventEmitter {
     this._debug("dist 초기화...");
     FsUtil.remove(path.resolve(this._pkgPath, "dist"));
 
-    if (this._npmConf.dependencies && Object.keys(this._npmConf.dependencies).includes("@angular/router")) {
+    if (this._npmConf.dependencies && Object.keys(this._npmConf.dependencies)
+      .includes("@angular/router")) {
       this._debug(`WATCH GEN routes.ts...`);
       SdCliNgRoutesFileGenerator.watch(this._pkgPath, this._pkgConf.noLazyRoute);
     }
@@ -89,26 +91,27 @@ export class SdClientBuildRunner extends EventEmitter {
 
     this._debug("WATCH...");
     let lastWatchFileSet = result.watchFileSet;
-    SdFsWatcher.watch(Array.from(this._watchScopePathSet)).onChange({ delay: 100 }, async (changeInfos) => {
-      const currentChangeInfos = changeInfos.filter((item) => lastWatchFileSet.has(item.path));
-      if (currentChangeInfos.length < 1) return;
+    SdFsWatcher.watch(Array.from(this._watchScopePathSet))
+      .onChange({ delay: 100 }, async (changeInfos) => {
+        const currentChangeInfos = changeInfos.filter((item) => lastWatchFileSet.has(item.path));
+        if (currentChangeInfos.length < 1) return;
 
-      this.emit("change");
+        this.emit("change");
 
-      for (const ngBundler of this._ngBundlers!) {
-        ngBundler.markForChanges(currentChangeInfos.map((item) => item.path));
-      }
+        for (const ngBundler of this._ngBundlers!) {
+          ngBundler.markForChanges(currentChangeInfos.map((item) => item.path));
+        }
 
-      const watchResult = await this._runAsync({ dev: !this._pkgConf.forceProductionMode });
-      const watchRes: ISdBuildRunnerResult = {
-        affectedFilePathSet: watchResult.affectedFileSet,
-        buildMessages: watchResult.buildMessages,
-        emitFileSet: watchResult.emitFileSet,
-      };
-      this.emit("complete", watchRes);
+        const watchResult = await this._runAsync({ dev: !this._pkgConf.forceProductionMode });
+        const watchRes: ISdBuildRunnerResult = {
+          affectedFilePathSet: watchResult.affectedFileSet,
+          buildMessages: watchResult.buildMessages,
+          emitFileSet: watchResult.emitFileSet,
+        };
+        this.emit("complete", watchRes);
 
-      lastWatchFileSet = watchResult.watchFileSet;
-    });
+        lastWatchFileSet = watchResult.watchFileSet;
+      });
   }
 
   private async _runAsync(opt: { dev: boolean }): Promise<{
@@ -153,8 +156,12 @@ export class SdClientBuildRunner extends EventEmitter {
               ...this._pkgConf.builder?.[ngBundlerBuilderType]?.env,
             },
             external:
-              ngBundlerBuilderType === "electron" ? (this._pkgConf.builder?.electron?.reinstallDependencies ?? []) : [],
-            cordovaConfig: ngBundlerBuilderType === "cordova" ? this._pkgConf.builder!.cordova : undefined,
+              ngBundlerBuilderType === "electron"
+                ? (this._pkgConf.builder?.electron?.reinstallDependencies ?? [])
+                : [],
+            cordovaConfig: ngBundlerBuilderType === "cordova"
+              ? this._pkgConf.builder!.cordova
+              : undefined,
             watchScopePaths: Array.from(this._watchScopePathSet),
           }),
       );

@@ -21,7 +21,7 @@ import {
   SIGNAL,
 } from "@angular/core/primitives/signals";
 import { ActivatedRoute, type CanDeactivateFn, type Route } from "@angular/router";
-import { ObjectUtil } from "@simplysm/sd-core-common";
+import { ObjectUtil, type TArrayDiffs2Result } from "@simplysm/sd-core-common";
 import { injectElementRef } from "./injectElementRef";
 
 const initializedRouteConfigSet = new Set<Route>();
@@ -229,7 +229,7 @@ export function $arr<T>(sig: Signal<T[]> | WritableSignal<T[]>) { // 다
       const orgItem = orgItemMap.get(item[keyPropName]);
       return !ObjectUtil.equal(orgItem, item);
     },
-    diffs() {
+    diffs(): TArrayDiffs2Result<T>[] {
       if (sig[ORIGIN_SNAPSHOT] == null) return [];
       const orgItemMap = sig[ORIGIN_SNAPSHOT].snapshot as Map<any, any>;
       const keyPropName = sig[ORIGIN_SNAPSHOT].keyPropName as keyof T;

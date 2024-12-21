@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  contentChildren,
   HostListener,
   inject,
   input,
@@ -12,7 +13,7 @@ import { SdPaneControl } from "../controls/layout/sd-pane.control";
 import { SdFormControl } from "../controls/form/sd-form.control";
 import { SdButtonControl } from "../controls/button/sd-button.control";
 import { SdActivatedModalProvider } from "../controls/modal/sd-modal.provider";
-import { $computed, $effect, $obj, $signal, canDeactivate } from "../utils/$hooks";
+import { $computed, $effect, $obj, $signal } from "../utils/$hooks";
 import { SdBaseContainerControl } from "./sd-base-container.control";
 import { TemplateTargetDirective } from "../directives/template-target.directive";
 import { type ISdViewModel, type TSdViewModelGenericTypes } from "./ISdViewModel";
@@ -21,11 +22,12 @@ import { ObjectUtil } from "@simplysm/sd-core-common";
 import { SdTopbarMenuControl } from "../controls/topbar/sd-topbar-menu.control";
 import { SdIconControl } from "../controls/icon/sd-icon.control";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
-import { TXT_CHANGE_IGNORE_CONFIRM } from "./commons";
 import { SdSharedDataProvider } from "./shared-data/sd-shared-data.provider";
 import { ActivatedRoute } from "@angular/router";
 import { injectParent } from "../utils/injectParent";
 import { injectActivatedPageCode$, injectPageCode$ } from "../utils/injectPageCode$";
+import { TXT_CHANGE_IGNORE_CONFIRM } from "./commons";
+import { NgTemplateOutlet } from "@angular/common";
 
 @Component({
   selector: "sd-detail-base-container",
@@ -40,6 +42,7 @@ import { injectActivatedPageCode$, injectPageCode$ } from "../utils/injectPageCo
     TemplateTargetDirective,
     SdTopbarMenuControl,
     SdIconControl,
+    NgTemplateOutlet,
   ],
   template: `
     <sd-base-container
@@ -67,6 +70,8 @@ import { injectActivatedPageCode$, injectPageCode$ } from "../utils/injectPageCo
           <sd-form #formCtrl (submit)="onSubmit()">
             <ng-content />
           </sd-form>
+
+          <ng-template [ngTemplateOutlet]="getTemplateRef('next')" />
 
           @if (data().lastModifyDateTime) {
             최종수정:
@@ -128,10 +133,15 @@ export class SdDetailBaseContainerControl<VM extends ISdViewModel> {
 
   formCtrlControl = viewChild<SdFormControl>("formCtrl");
 
+  templateDirectives = contentChildren(TemplateTargetDirective);
+  getTemplateRef = (target: "next") => {
+    return this.templateDirectives().single(item => item.target() === target)?.templateRef ?? null;
+  };
+
   vm = input.required<VM>();
 
   initialized = $signal(false);
-  busyCount = $signal(0);
+  busyCount = model(0);
 
   data = model.required<TSdViewModelGenericTypes<VM>["DD"]>();
   defaultData = input.required<TSdViewModelGenericTypes<VM>["DD"]>();
@@ -166,8 +176,6 @@ export class SdDetailBaseContainerControl<VM extends ISdViewModel> {
       await this.refresh();
       this.initialized.set(true);
     });
-
-    canDeactivate(() => this.checkIgnoreChanges());
   }
 
   checkIgnoreChanges() {
