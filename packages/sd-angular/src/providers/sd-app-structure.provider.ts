@@ -5,9 +5,9 @@ import {
   type ISdFlatPage,
   type ISdMenu,
   type ISdPermission,
-  SdAppStructureUtil,
-} from "../utils/SdAppStructureUtil";
-import { $signal } from "../utils/$hooks";
+  SdAppStructureUtils,
+} from "../utils/sd-app-structure.utils";
+import { $signal } from "../utils/hooks";
 
 @Injectable({ providedIn: "root" })
 export class SdAppStructureProvider<T extends string> {
@@ -25,7 +25,7 @@ export class SdAppStructureProvider<T extends string> {
   }
 
   getTitleByCode(pageCode: string) {
-    return SdAppStructureUtil.getTitleByCode(this.#items, pageCode);
+    return SdAppStructureUtils.getTitleByCode(this.#items, pageCode);
   }
 
   /** @deprecated 대신 getViewPerms2 함수를 사용하세요. */
@@ -72,7 +72,7 @@ export class SdAppStructureProvider<T extends string> {
       else {
         if (
           viewCodes.every(viewCode => (
-            SdAppStructureUtil.getFlatPages(this.#items)
+            SdAppStructureUtils.getFlatPages(this.#items)
               .single(item => item.codeChain.join(".") === viewCode)
               ?.hasPerms === false
           ))
@@ -88,7 +88,7 @@ export class SdAppStructureProvider<T extends string> {
   getFlatPages() {
     if (!this.#usableModules() || !this.#permRecord()) return [];
 
-    return SdAppStructureUtil.getFlatPages(this.#items).filter(
+    return SdAppStructureUtils.getFlatPages(this.#items).filter(
       (item) =>
         (!item.hasPerms || Boolean(this.#permRecord()?.[item.codeChain.join(".") + ".use"])) &&
         this.#isUsableModulePage(item),
@@ -104,7 +104,7 @@ export class SdAppStructureProvider<T extends string> {
   getPerms() {
     if (!this.#usableModules() || !this.#permRecord()) return [];
 
-    return this.#getPermsByModule(SdAppStructureUtil.getPermissions(this.#items));
+    return this.#getPermsByModule(SdAppStructureUtils.getPermissions(this.#items));
   }
 
   getExtPermRoot(params: {
@@ -113,7 +113,7 @@ export class SdAppStructureProvider<T extends string> {
     codes: string[];
   }): ISdPermission {
     return {
-      children: this.#getPermsByModule(SdAppStructureUtil.getPermissions(
+      children: this.#getPermsByModule(SdAppStructureUtils.getPermissions(
         params.appStructure,
         params.codes,
       )),
@@ -150,7 +150,7 @@ export class SdAppStructureProvider<T extends string> {
   #getDisplayMenus(menus?: ISdMenu<T>[]): ISdMenu<T>[] {
     const result: ISdMenu<T>[] = [];
 
-    for (const menu of menus ?? SdAppStructureUtil.getMenus(this.#items)) {
+    for (const menu of menus ?? SdAppStructureUtils.getMenus(this.#items)) {
       if ("children" in menu) {
         if (this.#isModulesEnabled(menu.modules)) {
           const children = this.#getDisplayMenus(menu.children);

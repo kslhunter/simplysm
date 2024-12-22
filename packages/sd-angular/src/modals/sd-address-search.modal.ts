@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/core";
-import { SdModalBase } from "../controls/modal/sd-modal.provider";
-import { $effect } from "../utils/$hooks";
-import { injectElementRef } from "../utils/injectElementRef";
+import { SdModalBase } from "../providers/sd-modal.provider";
+import { $effect } from "../utils/hooks";
+import { injectElementRef } from "../utils/dom-injects";
 
 @Component({
   selector: "sd-address-search-modal",

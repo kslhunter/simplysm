@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { type IconDefinition } from "@fortawesome/fontawesome-svg-core";
-import { type ISdAppStructureItem } from "../utils/SdAppStructureUtil";
+import { type ISdAppStructureItem } from "../utils/sd-app-structure.utils";
 
 @Injectable({ providedIn: "root" })
 export class SdAngularConfigProvider {

@@ -1,12 +1,16 @@
 import ts from "typescript";
 import path from "path";
-import { PathUtil } from "@simplysm/sd-core-node";
+import { PathUtils } from "@simplysm/sd-core-node";
 
 const createArrayExpression = ts.factory.createArrayLiteralExpression;
 const createStringLiteral = ts.factory.createStringLiteral;
 
 export default function transformer(program: ts.Program): ts.TransformerFactory<ts.SourceFile> {
-  return (context: ts.TransformationContext) => (file: ts.SourceFile) => visitNodeAndChildren(file, program, context);
+  return (context: ts.TransformationContext) => (file: ts.SourceFile) => visitNodeAndChildren(
+    file,
+    program,
+    context,
+  );
 }
 
 function visitNodeAndChildren(
@@ -58,13 +62,17 @@ function isKeysImportExpression(node: ts.Node): node is ts.ImportDeclaration {
     const modulePath = module.startsWith(".")
       ? import.meta.resolve(path.resolve(path.dirname(node.getSourceFile().fileName), module))
       : import.meta.resolve(module);
-    return PathUtil.isChildPath(modulePath, import.meta.dirname);
-  } catch {
+    return PathUtils.isChildPath(modulePath, import.meta.dirname);
+  }
+  catch {
     return false;
   }
 }
 
-function isKeysCallExpression(node: ts.Node, typeChecker: ts.TypeChecker): node is ts.CallExpression {
+function isKeysCallExpression(
+  node: ts.Node,
+  typeChecker: ts.TypeChecker,
+): node is ts.CallExpression {
   if (!ts.isCallExpression(node)) {
     return false;
   }
@@ -73,8 +81,12 @@ function isKeysCallExpression(node: ts.Node, typeChecker: ts.TypeChecker): node 
     return false;
   }
   try {
-    return PathUtil.isChildPath(import.meta.resolve(declaration.getSourceFile().fileName), import.meta.dirname);
-  } catch {
+    return PathUtils.isChildPath(
+      import.meta.resolve(declaration.getSourceFile().fileName),
+      import.meta.dirname,
+    );
+  }
+  catch {
     return false;
   }
 }

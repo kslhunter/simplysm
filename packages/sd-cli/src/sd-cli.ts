@@ -2,13 +2,13 @@
 
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
-import { SdCliProject } from "./entry/SdCliProject";
-import { Logger, LoggerSeverity } from "@simplysm/sd-core-node";
+import { SdCliProject } from "./entry/sd-cli-project";
+import { SdLogger, SdLoggerSeverity } from "@simplysm/sd-core-node";
 import { EventEmitter } from "events";
-import { SdCliElectron } from "./entry/SdCliElectron";
-import { SdCliLocalUpdate } from "./entry/SdCliLocalUpdate";
-import { SdCliCordova } from "./entry/SdCliCordova";
-import { SdAiCommand } from "./entry/SdAiCommand";
+import { SdCliElectron } from "./entry/sd-cli-electron";
+import { SdCliLocalUpdate } from "./entry/sd-cli-local-update";
+import { SdCliCordova } from "./entry/sd-cli-cordova";
+import { SdCliAiCommand } from "./entry/sd-cli-ai-command";
 
 Error.stackTraceLimit = Infinity;
 EventEmitter.defaultMaxListeners = 0;
@@ -183,14 +183,14 @@ const argv = (await yargs(hideBin(process.argv))
 
 if (Boolean(argv.debug)) {
   process.env["SD_DEBUG"] = "true";
-  Logger.setConfig({
+  SdLogger.setConfig({
     console: {
-      level: LoggerSeverity.debug,
+      level: SdLoggerSeverity.debug,
     },
   });
 }
 else {
-  Logger.setConfig({
+  SdLogger.setConfig({
     dot: true,
   });
 }
@@ -246,7 +246,7 @@ else if (argv._[0] === "run-cordova") {
   });
 }
 else if (argv._[0] === "commit") {
-  await SdAiCommand.commitAsync();
+  await SdCliAiCommand.commitAsync();
 }
 else {
   throw new Error(`명령어가 잘못 되었습니다.\n\t${argv._[0]}\n`);

@@ -33,7 +33,7 @@ import me.jahnen.libaums.core.fs.FileSystem;
 import me.jahnen.libaums.core.fs.UsbFile;
 import me.jahnen.libaums.core.fs.UsbFileInputStream;
 
-public class SdUsbStorage extends CordovaPlugin {
+public class CordovaUsbStorage extends CordovaPlugin {
   private static final String ACTION_USB_PERMISSION = "kr.co.simplysm.usb-storage.USB_PERMISSION";
 
   public Context context;

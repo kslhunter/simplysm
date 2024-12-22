@@ -1,2 +1,2 @@
 import "@simplysm/sd-core-common";
-export * from "./MysqlDbConnection";
+export * from "./mysql.db-conn";

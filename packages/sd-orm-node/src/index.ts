@@ -1,4 +1,4 @@
 import "@simplysm/sd-core-common";
-export * from "./DbConnectionFactory";
-export * from "./NodeDbContextExecutor";
-export * from "./SdOrm";
+export * from "./db-conn.factory";
+export * from "./node.db-context-executor";
+export * from "./sd-orm";

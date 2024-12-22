@@ -24,7 +24,7 @@ yarn install @simplysm/sd-angular
 | shared-data/sd-shared-data-select-view.control.ts | 공유 데이터 선택 뷰 컨트롤 | |
 | view/detail-modal/sd-detail-modal.abstract.ts | 상세 모달의 추상 클래스 | |
 | view/detail-modal/sd-detail-modal-base.control.ts | 상세 모달의 기본 구조를 제공하는 컨트롤 | |
-| view/ISdViewModel.ts | 뷰 모델 인터페이스 | |
+| view/sd-data-provider.types.ts | 뷰 모델 인터페이스 | |
 | view/sheet-view/sd-sheet-view.abstract.ts | 시트 뷰의 추상 클래스 | |
 | view/sheet-view/sd-sheet-view-base.control.ts | 시트 뷰의 기본 구조를 제공하는 컨트롤 | |
 | view/sheet-view/sd-sheet-view-column.directive.ts | 시트 뷰 컬럼 템플릿 디렉티브 | |
@@ -118,7 +118,7 @@ yarn install @simplysm/sd-angular
 | sd-item-of.template-directive.ts | 아이템 반복 처리 템플릿 디렉티브 | |
 | sd-router-link.directive.ts | 라우터 링크 디렉티브 | |
 | sd-typed.template-directive.ts | 타입 지정 템플릿 디렉티브 | |
-| sd-use-ripple.directive.ts | 리플 효과 디렉티브 | |
+| sd-ripple.directive.ts | 리플 효과 디렉티브 | |
 
 ### 모달 (modals/)
 | 파일명 | 설명 | [⚠️](#Deprecated) |
@@ -146,23 +146,23 @@ yarn install @simplysm/sd-angular
 |----------|------|:------------:|
 | sd-angular-config.provider.ts | Angular 설정 프로바이더 | |
 | sd-app-structure.provider.ts | 앱 구조 관리 프로바이더 | |
-| sd-background.provider.ts | 배경 관리 프로바이더 | |
+| use-bg-theme.ts | 배경 관리 프로바이더 | |
 | sd-file-dialog.provider.ts | 파일 다이얼로그 프로바이더 | |
 
 ### 유틸리티 (utils/)
 | 파일명 | 설명 | [⚠️](#Deprecated) |
 |----------|------|:------------:|
 | injectPerms.ts | 권한 주입 유틸리티 | ⚠️ |
-| $hooks.ts | 리액티브 프로그래밍 훅 유틸리티 | |
-| SdAppStructureUtil.ts | 앱 구조 관련 유틸리티 | |
-| tramsforms.ts | 데이터 변환 유틸리티 | |
+| hooks.ts | 리액티브 프로그래밍 훅 유틸리티 | |
+| sd-app-structure.utils.ts | 앱 구조 관련 유틸리티 | |
+| type-tramsforms.ts | 데이터 변환 유틸리티 | |
 | injectPageCode$.ts | 페이지 코드 주입 유틸리티 | |
 | injectParent.ts | 부모 컴포넌트 주입 유틸리티 | |
 | injectElementResize.ts | 요소 크기 조정 감지 유틸리티 | |
-| useRipple.ts | 리플 효과 사용 유틸리티 | |
+| use-ripple.ts | 리플 효과 사용 유틸리티 | |
 | injectParamMap$.ts | 라우터 파라미터 맵 주입 유틸리티 | |
 | injectQueryParamMap$.ts | 쿼리 파라미터 맵 주입 유틸리티 | |
-| injectElementRef.ts | 요소 참조 주입 유틸리티 | |
+| dom-injects.ts | 요소 참조 주입 유틸리티 | |
 | waitRepaint.ts | 리페인트 대기 유틸리티 | |
 
 ## 의존성

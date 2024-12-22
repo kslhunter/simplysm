@@ -1,8 +1,8 @@
 import {type TClassDecoratorReturn, type TPropertyDecoratorReturn, type Type} from "@simplysm/sd-core-common";
-import {DbDefinitionUtil} from "./utils/DbDefinitionUtil";
-import {type TSdOrmDataType} from "./SdOrmDataType";
-import {DbContext} from "./DbContext";
-import {Queryable} from "./Queryable";
+import {DbDefUtils} from "./utils/db-def.utils";
+import {DbContext} from "./db-context";
+import {Queryable} from "./query/queryable";
+import type { TSdOrmDataType } from "./types";
 
 export function Table<T>(def: {
   description: string;
@@ -12,7 +12,7 @@ export function Table<T>(def: {
   view?: (db: any) => Queryable<DbContext, any>;
 }): TClassDecoratorReturn<T> {
   return (classType: Type<T>): void => {
-    DbDefinitionUtil.mergeTableDef(classType, {
+    DbDefUtils.mergeTableDef(classType, {
       name: classType.name,
       ...def
     });
@@ -30,7 +30,7 @@ export function Column<T extends object>(columnDef: {
   return (object: T, propertyKey: string): void => {
     const classType = object.constructor as Type<T>;
 
-    DbDefinitionUtil.addColumnDef(classType, {
+    DbDefUtils.addColumnDef(classType, {
       propertyKey,
       name: columnDef.name ?? propertyKey,
       dataType: columnDef.dataType,
@@ -52,7 +52,7 @@ export function ForeignKey<T>(
   return (object: Partial<T>, propertyKey: string): void => {
     const classType = object.constructor as Type<T>;
 
-    DbDefinitionUtil.addForeignKeyDef(classType, {
+    DbDefUtils.addForeignKeyDef(classType, {
       propertyKey,
       name: propertyKey,
       columnPropertyKeys: columnNames as string[],
@@ -70,7 +70,7 @@ export function ForeignKeyTarget<T extends object, P>(
   return (object: T, propertyKey: string): void => {
     const classType = object.constructor as Type<T>;
 
-    DbDefinitionUtil.addForeignKeyTargetDef(classType, {
+    DbDefUtils.addForeignKeyTargetDef(classType, {
       propertyKey,
       name: propertyKey,
       sourceTypeFwd,
@@ -89,7 +89,7 @@ export function Index<T extends object>(def?: {
   return (object, propertyKey) => {
     const classType = object.constructor as Type<T>;
 
-    DbDefinitionUtil.addIndexDef(classType, {
+    DbDefUtils.addIndexDef(classType, {
       name: def?.name ?? propertyKey,
       columns: [
         {
@@ -111,7 +111,7 @@ export function ReferenceKey<T>(
   return (object: Partial<T>, propertyKey: string): void => {
     const classType = object.constructor as Type<T>;
 
-    DbDefinitionUtil.addReferenceKeyDef(classType, {
+    DbDefUtils.addReferenceKeyDef(classType, {
       propertyKey,
       name: propertyKey,
       columnPropertyKeys: columnNames as string[],
@@ -129,7 +129,7 @@ export function ReferenceKeyTarget<T extends object, P>(
   return (object: T, propertyKey: string): void => {
     const classType = object.constructor as Type<T>;
 
-    DbDefinitionUtil.addReferenceKeyTargetDef(classType, {
+    DbDefUtils.addReferenceKeyTargetDef(classType, {
       propertyKey,
       name: propertyKey,
       sourceTypeFwd,

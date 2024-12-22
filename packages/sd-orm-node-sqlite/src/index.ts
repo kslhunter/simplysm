@@ -1,2 +1,2 @@
 import "@simplysm/sd-core-common";
-export * from "./SqliteDbConnection";
+export * from "./sqlite-db.conn";

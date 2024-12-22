@@ -1,1 +1,1 @@
-export * from "./SdUsbStorage";
+export * from "./cordova-usb-storage";

@@ -1,1 +1,1 @@
-export * from "./CordovaAppStorage";
+export * from "./cordova-app-storage";

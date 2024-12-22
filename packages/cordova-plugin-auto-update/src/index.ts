@@ -1,1 +1,1 @@
-export * from "./CordovaAutoUpdate";
+export * from "./cordova-auto-update";

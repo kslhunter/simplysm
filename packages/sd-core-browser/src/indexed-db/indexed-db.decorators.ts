@@ -1,0 +1,45 @@
+import {type TClassDecoratorReturn, type TPropertyDecoratorReturn, type Type} from "@simplysm/sd-core-common";
+import {IndexedDbStoreDefUtils} from "./indexed-db-store-def.utils";
+
+
+export function IdxDbStore<T>(): TClassDecoratorReturn<T> {
+  return (classType: Type<T>): void => {
+    IndexedDbStoreDefUtils.setName(classType, {
+      name: classType.name
+    });
+  };
+}
+
+export function IdxDbKey<T extends object>(def?: {
+  order?: number;
+  autoIncrement?: boolean;
+}): TPropertyDecoratorReturn<T> {
+  return (object: T, propertyKey: string): void => {
+    const classType = object.constructor as Type<T>;
+
+    IndexedDbStoreDefUtils.addKey(classType, {
+      colName: propertyKey,
+      order: def?.order,
+      autoIncrement: def?.autoIncrement,
+    });
+  };
+}
+
+export function IdxDbIdx<T extends object>(def?: {
+  name?: string;
+  order?: number;
+  multiEntry?: boolean;
+  unique?: boolean;
+}): TPropertyDecoratorReturn<T> {
+  return (object: T, propertyKey: string): void => {
+    const classType = object.constructor as Type<T>;
+
+    IndexedDbStoreDefUtils.addIdx(classType, {
+      colName: propertyKey,
+      order: def?.order,
+      name: def?.name ?? propertyKey,
+      multiEntry: def?.multiEntry,
+      unique: def?.unique,
+    });
+  };
+}
