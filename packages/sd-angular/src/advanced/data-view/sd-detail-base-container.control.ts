@@ -50,8 +50,8 @@ import { injectActivatedPageCode$, injectPageCode$, injectParent } from "../../u
       [containerType]="realContainerType()"
     >
       <ng-template target="topbar">
-        @if (vm().perms().includes("edit")) {
-          @if (this.vm().upsertsAsync) {
+        @if (dp().perms().includes("edit")) {
+          @if (this.dp().upsertsAsync) {
             <sd-topbar-menu (click)="onSubmitButtonClick()">
               <sd-icon [icon]="icons.save" fixedWidth />
               저장 <small>(CTRL+S)</small>
@@ -80,11 +80,11 @@ import { injectActivatedPageCode$, injectPageCode$, injectParent } from "../../u
         </sd-pane>
       </ng-template>
 
-      @if (vm().perms().includes('edit')) {
+      @if (dp().perms().includes('edit')) {
         <ng-template target="bottom">
           <div class="p-sm-default bdt bdt-trans-light flex-row">
             @if (data().id != null) {
-              @if (vm().toggleDeletesAsync) {
+              @if (dp().toggleDeletesAsync) {
                 <div>
                   @if (!data().isDeleted) {
                     <sd-button
@@ -137,7 +137,7 @@ export class SdDetailBaseContainerControl<VM extends ISdDataProvider> {
     return this.templateDirectives().single(item => item.target() === target)?.templateRef ?? null;
   };
 
-  vm = input.required<VM>();
+  dp = input.required<VM>();
 
   initialized = $signal(false);
   busyCount = model(0);
@@ -167,7 +167,7 @@ export class SdDetailBaseContainerControl<VM extends ISdDataProvider> {
 
   constructor() {
     $effect([this.dataId, this.defaultData], async () => {
-      if (!this.vm().perms().includes("use")) {
+      if (!this.dp().perms().includes("use")) {
         this.initialized.set(true);
         return;
       }
@@ -203,19 +203,19 @@ export class SdDetailBaseContainerControl<VM extends ISdDataProvider> {
       this.data.set(ObjectUtils.clone(this.defaultData()));
     }
     else {
-      this.data.set(await this.vm().getDetailAsync!(this.dataId()!));
+      this.data.set(await this.dp().getDetailAsync!(this.dataId()!));
     }
     $obj(this.data).snapshot();
   }
 
   async onToggleDeleteButtonClick(del: boolean) {
     if (this.busyCount() > 0) return;
-    if (!this.vm().perms().includes("edit")) return;
-    if (!this.vm().toggleDeletesAsync) return;
+    if (!this.dp().perms().includes("edit")) return;
+    if (!this.dp().toggleDeletesAsync) return;
 
     this.busyCount.update((v) => v + 1);
     await this.#sdToast.try(async () => {
-      await this.vm().toggleDeletesAsync!([this.data().id!], del);
+      await this.dp().toggleDeletesAsync!([this.data().id!], del);
 
       await this.#refresh();
 
@@ -232,8 +232,8 @@ export class SdDetailBaseContainerControl<VM extends ISdDataProvider> {
 
   async onSubmit() {
     if (this.busyCount() > 0) return;
-    if (!this.vm().perms().includes("edit")) return;
-    if (!this.vm().upsertsAsync) return;
+    if (!this.dp().perms().includes("edit")) return;
+    if (!this.dp().upsertsAsync) return;
 
     if (!$obj(this.data).changed()) {
       this.#sdToast.info("변경사항이 없습니다.");
@@ -242,7 +242,7 @@ export class SdDetailBaseContainerControl<VM extends ISdDataProvider> {
 
     this.busyCount.update((v) => v + 1);
     await this.#sdToast.try(async () => {
-      await this.vm().upsertsAsync!([
+      await this.dp().upsertsAsync!([
         {
           data: this.data(),
           orgData: $obj(this.data).origin,

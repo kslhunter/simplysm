@@ -1,11 +1,11 @@
-import { SdClient } from "../sd-client";
+import { SdServiceClient } from "../sd-service-client";
 import {
   type ISmtpClientSendByDefaultOption,
   type ISmtpClientSendOption,
 } from "@simplysm/sd-service-common";
 
 export class SdSmtpClientServiceClient {
-  constructor(private readonly _client: SdClient) {
+  constructor(private readonly _client: SdServiceClient) {
   }
 
   async send(options: ISmtpClientSendOption): Promise<void> {

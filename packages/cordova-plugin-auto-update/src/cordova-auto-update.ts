@@ -1,12 +1,12 @@
 /// <reference types="@simplysm/types-cordova-plugin-ionic-webview"/>
 
-import { SdAutoUpdateServiceClient, SdClient } from "@simplysm/sd-service-client";
+import { SdAutoUpdateServiceClient, SdServiceClient } from "@simplysm/sd-service-client";
 import { NetUtils } from "@simplysm/sd-core-common";
 import JSZip from "jszip";
 import { CordovaAppStorage } from "@simplysm/cordova-plugin-app-storage";
 
 export abstract class CordovaAutoUpdate {
-  static async runAsync(opt: { log: (messageHtml: string) => void; sdClient?: SdClient }) {
+  static async runAsync(opt: { log: (messageHtml: string) => void; serviceClient?: SdServiceClient }) {
     if (navigator.userAgent.toLowerCase().includes("android")) {
       opt.log(`보유버전 확인 중...`);
 
@@ -14,11 +14,11 @@ export abstract class CordovaAutoUpdate {
       const storage = new CordovaAppStorage();
       let localVersion = await storage.readJsonAsync(`/files/last-version.json`);
 
-      if (opt.sdClient) {
+      if (opt.serviceClient) {
         opt.log(`최신버전 확인 중...`);
 
         // 서버의 버전 및 다운로드링크 가져오기
-        const autoUpdateServiceClient = new SdAutoUpdateServiceClient(opt.sdClient);
+        const autoUpdateServiceClient = new SdAutoUpdateServiceClient(opt.serviceClient);
 
         const serverVersionInfo = await autoUpdateServiceClient.getLastVersion("android");
         if (serverVersionInfo) {
@@ -28,7 +28,7 @@ export abstract class CordovaAutoUpdate {
 
             // 서버에서 최신버전의 zip파일 다운로드
             const downloadZipBuffer = await NetUtils.downloadAsync(
-              opt.sdClient.serverUrl + serverVersionInfo.downloadPath,
+              opt.serviceClient.serverUrl + serverVersionInfo.downloadPath,
               (progress) => {
                 opt.log(
                   `최신버전 파일 다운로드중...(${((progress.receivedLength * 100) / progress.contentLength).toFixed(2)}%)`,

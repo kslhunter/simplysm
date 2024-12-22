@@ -7,13 +7,13 @@ import {
   type TQueryDef,
 } from "@simplysm/sd-orm-common";
 import { type TDbConnOptions } from "@simplysm/sd-service-common";
-import { SdClient } from "../../sd-client";
+import { SdServiceClient } from "../../sd-service-client";
 
 export class SdOrmServiceClientDbContextExecutor implements IDbContextExecutor {
   #connId?: number;
 
   constructor(
-    private readonly _client: SdClient,
+    private readonly _client: SdServiceClient,
     private readonly _opt: TDbConnOptions,
   ) {
   }

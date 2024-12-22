@@ -1,5 +1,5 @@
 export * from "./interfaces";
-export * from "./sd-client";
+export * from "./sd-service-client";
 export * from "./sd-web-socket";
 export * from "./service-clients/orm/sd-orm.service-client.connector";
 export * from "./service-clients/orm/sd-orm.service-client.db-context-executor";

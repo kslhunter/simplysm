@@ -1,7 +1,7 @@
-import {SdClient} from "../sd-client";
+import {SdServiceClient} from "../sd-service-client";
 
 export class SdCryptoServiceClient {
-  public constructor(private readonly _client: SdClient) {
+  public constructor(private readonly _client: SdServiceClient) {
   }
 
   public async encrypt(data: string | Buffer): Promise<string> {

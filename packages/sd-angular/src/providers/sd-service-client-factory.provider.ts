@@ -1,6 +1,6 @@
 import { inject, Injectable } from "@angular/core";
 import { ObjectUtils } from "@simplysm/sd-core-common";
-import { type ISdServiceClientConnectionConfig, SdClient } from "@simplysm/sd-service-client";
+import { type ISdServiceClientConnectionConfig, SdServiceClient } from "@simplysm/sd-service-client";
 import { type ISdProgressToast, SdToastProvider } from "./sd-toast.provider";
 import { $effect } from "../utils/hooks";
 
@@ -8,7 +8,7 @@ import { $effect } from "../utils/hooks";
 export class SdServiceClientFactoryProvider {
   #sdToast = inject(SdToastProvider);
 
-  #clientMap = new Map<string, SdClient>();
+  #clientMap = new Map<string, SdServiceClient>();
 
   constructor() {
     $effect((onCleanup) => {
@@ -35,7 +35,7 @@ export class SdServiceClientFactoryProvider {
       }
     }
 
-    const client = new SdClient(
+    const client = new SdServiceClient(
       clientName,
       ObjectUtils.merge(
         {
@@ -82,7 +82,7 @@ export class SdServiceClientFactoryProvider {
     this.#clientMap.delete(key);
   }
 
-  get(key: string): SdClient {
+  get(key: string): SdServiceClient {
     if (!this.#clientMap.has(key)) {
       throw new Error(`연결하지 않은 클라이언트 키입니다. ${key}`);
     }

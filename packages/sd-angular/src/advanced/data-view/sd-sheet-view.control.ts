@@ -100,7 +100,7 @@ import { SdBusyContainerControl } from "../../controls/sd-busy-container.control
 
           <sd-dock class="pb-xs">
             <div class="flex-row flex-gap-sm">
-              @if (vm().perms().includes('edit')) {
+              @if (dp().perms().includes('edit')) {
                 @if (detailModalType()) {
                   <sd-button size="sm" theme="link-primary" (click)="onCreateItemButtonClick()">
                     <sd-icon [icon]="icons.plusCircle" fixedWidth />
@@ -109,7 +109,7 @@ import { SdBusyContainerControl } from "../../controls/sd-busy-container.control
                 }
 
                 @if (!selectMode()) {
-                  @if (vm().toggleDeletesAsync) {
+                  @if (dp().toggleDeletesAsync) {
                     <sd-button
                       size="sm"
                       theme="link-danger"
@@ -132,7 +132,7 @@ import { SdBusyContainerControl } from "../../controls/sd-busy-container.control
                   }
                 }
 
-                @if (vm().uploadExcelDataTableAsync) {
+                @if (dp().uploadExcelDataTableAsync) {
                   <sd-button size="sm" theme="link-success" (click)="onUploadExcelButtonClick()">
                     <sd-icon [icon]="icons.upload" fixedWidth />
                     엑셀 업로드
@@ -140,7 +140,7 @@ import { SdBusyContainerControl } from "../../controls/sd-busy-container.control
                 }
               }
 
-              @if (vm().getExcelDataMatrixAsync) {
+              @if (dp().getExcelDataMatrixAsync) {
                 <sd-button size="sm" theme="link-success" (click)="onDownloadExcelButtonClick()">
                   <sd-icon [icon]="icons.fileExcel" fixedWidth />
                   엑셀 다운로드
@@ -154,7 +154,7 @@ import { SdBusyContainerControl } from "../../controls/sd-busy-container.control
 
           <sd-pane>
             <sd-sheet
-              [key]="vm().key + '-sheet'"
+              [key]="dp().key + '-sheet'"
               [items]="items()"
               [(page)]="page"
               [pageLength]="pageLength()"
@@ -168,9 +168,9 @@ import { SdBusyContainerControl } from "../../controls/sd-busy-container.control
               <sd-sheet-column fixed header="#" resizable useOrdering key="id">
                 <ng-template [cell]="items()" let-item>
                   <div class="p-xs-sm">
-                    @if (vm().perms().includes('edit')
+                    @if (dp().perms().includes('edit')
                     && detailModalType()
-                    && vm().getDetailAsync) {
+                    && dp().getDetailAsync) {
                       <sd-anchor
                         (click)="onItemClick(item, $event)"
                         class="flex-row flex-gap-sm"
@@ -291,7 +291,7 @@ export class SdSheetViewControl<VM extends ISdDataProvider, TMODAL extends SdMod
   filterControls = contentChildren(SdSheetViewFilterDirective);
   columnControls = contentChildren(SdSheetViewColumnDirective);
 
-  vm = input.required<VM>();
+  dp = input.required<VM>();
 
   items = model.required<TSdDataProviderGenericTypes<VM>["SI"][]>();
   summaryData = model<TSdDataProviderGenericTypes<VM>["SS"]>();
@@ -336,7 +336,7 @@ export class SdSheetViewControl<VM extends ISdDataProvider, TMODAL extends SdMod
     });
 
     $effect([this.page, this.lastFilter, this.ordering], async () => {
-      if (!this.vm().perms().includes("use")) {
+      if (!this.dp().perms().includes("use")) {
         this.initialized.set(true);
         return;
       }
@@ -390,27 +390,27 @@ export class SdSheetViewControl<VM extends ISdDataProvider, TMODAL extends SdMod
   }
 
   async onDownloadExcelButtonClick() {
-    if (!this.vm().getExcelDataMatrixAsync) return;
+    if (!this.dp().getExcelDataMatrixAsync) return;
 
     this.busyCount.update((v) => v + 1);
     await this.#sdToast.try(async () => {
       const wb = SdExcelWorkbook.create();
-      const ws = await wb.createWorksheetAsync(this.vm().name);
+      const ws = await wb.createWorksheetAsync(this.dp().name);
 
       const dataMatrix =
-        await this.vm().getExcelDataMatrixAsync!(this.lastFilter()!, this.ordering());
+        await this.dp().getExcelDataMatrixAsync!(this.lastFilter()!, this.ordering());
       await ws.setDataMatrixAsync(dataMatrix);
 
       const blob = await wb.getBlobAsync();
-      blob.download(`${this.vm().name}.xlsx`);
+      blob.download(`${this.dp().name}.xlsx`);
     });
     this.busyCount.update((v) => v - 1);
   }
 
   async #refresh() {
-    if (!this.vm().searchAsync) return;
+    if (!this.dp().searchAsync) return;
 
-    const result = await this.vm().searchAsync!(this.lastFilter()!, this.ordering(), this.page());
+    const result = await this.dp().searchAsync!(this.lastFilter()!, this.ordering(), this.page());
     this.items.set(result.items);
     this.pageLength.set(result.pageLength);
     this.summaryData.set(result.summary);
@@ -420,13 +420,13 @@ export class SdSheetViewControl<VM extends ISdDataProvider, TMODAL extends SdMod
   }
 
   async onCreateItemButtonClick() {
-    if (!this.vm().perms().includes("edit")) return;
+    if (!this.dp().perms().includes("edit")) return;
 
     await this.#editItem();
   }
 
   async onItemClick(item: TSdDataProviderGenericTypes<VM>["SI"], event: MouseEvent) {
-    if (!this.vm().perms().includes("edit")) return;
+    if (!this.dp().perms().includes("edit")) return;
 
     event.preventDefault();
     event.stopPropagation();
@@ -439,7 +439,7 @@ export class SdSheetViewControl<VM extends ISdDataProvider, TMODAL extends SdMod
 
     const result = await this.#sdModal.showAsync(
       this.detailModalType()!,
-      itemId != null ? `${this.vm().name}수정(#${itemId})` : `${this.vm().name}등록`,
+      itemId != null ? `${this.dp().name}수정(#${itemId})` : `${this.dp().name}등록`,
       {
         itemId: itemId,
         ...this.detailModalParams(),
@@ -455,14 +455,14 @@ export class SdSheetViewControl<VM extends ISdDataProvider, TMODAL extends SdMod
   }
 
   async onToggleDeletesButtonClick(del: boolean) {
-    if (!this.vm().perms().includes("edit")) return;
-    if (!this.vm().toggleDeletesAsync) return;
+    if (!this.dp().perms().includes("edit")) return;
+    if (!this.dp().toggleDeletesAsync) return;
 
     this.busyCount.update((v) => v + 1);
 
     await this.#sdToast.try(async () => {
       const inputIds = this.selectedItems().map((item) => item.id);
-      await this.vm().toggleDeletesAsync!(inputIds, del);
+      await this.dp().toggleDeletesAsync!(inputIds, del);
 
       await this.#refresh();
 
@@ -473,8 +473,8 @@ export class SdSheetViewControl<VM extends ISdDataProvider, TMODAL extends SdMod
 
 
   async onUploadExcelButtonClick() {
-    if (!this.vm().perms().includes("edit")) return;
-    if (!this.vm().uploadExcelDataTableAsync) return;
+    if (!this.dp().perms().includes("edit")) return;
+    if (!this.dp().uploadExcelDataTableAsync) return;
 
     const file = await this.#sdFileDialog.showAsync(
       false,
@@ -490,7 +490,7 @@ export class SdSheetViewControl<VM extends ISdDataProvider, TMODAL extends SdMod
       const wsName = await ws.getNameAsync();
       const wsdt = await ws.getDataTableAsync();
 
-      await this.vm().uploadExcelDataTableAsync!(wsName, wsdt);
+      await this.dp().uploadExcelDataTableAsync!(wsName, wsdt);
 
       await this.#refresh();
 

@@ -1,15 +1,15 @@
 import {SdOrmServiceClientDbContextExecutor} from "./sd-orm.service-client.db-context-executor";
 import {type ISdOrmServiceConnectConfig} from "./sd-orm.service-client.interfaces";
 import {DbContext} from "@simplysm/sd-orm-common";
-import {SdClient} from "../../sd-client";
+import {SdServiceClient} from "../../sd-service-client";
 
 export class SdOrmServiceClientConnector {
-  public constructor(private readonly _sdClient: SdClient) {
+  public constructor(private readonly _serviceClient: SdServiceClient) {
   }
 
   public async connectAsync<T extends DbContext, R>(config: ISdOrmServiceConnectConfig<T>,
                                                     callback: (conn: T) => Promise<R> | R): Promise<R> {
-    const executor = new SdOrmServiceClientDbContextExecutor(this._sdClient, config.connOpt);
+    const executor = new SdOrmServiceClientDbContextExecutor(this._serviceClient, config.connOpt);
     const info = await executor.getInfoAsync();
     const db = new config.dbContextType(executor, {
       dialect: info.dialect,
@@ -21,7 +21,7 @@ export class SdOrmServiceClientConnector {
 
   public async connectWithoutTransactionAsync<T extends DbContext, R>(config: ISdOrmServiceConnectConfig<T>,
                                                                       callback: (conn: T) => Promise<R> | R): Promise<R> {
-    const executor = new SdOrmServiceClientDbContextExecutor(this._sdClient, config.connOpt);
+    const executor = new SdOrmServiceClientDbContextExecutor(this._serviceClient, config.connOpt);
     const info = await executor.getInfoAsync();
     const db = new config.dbContextType(executor, {
       dialect: info.dialect,

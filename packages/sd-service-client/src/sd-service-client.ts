@@ -11,7 +11,7 @@ import {
 import { SdWebSocket } from "./sd-web-socket";
 import { EventEmitter } from "events";
 
-export class SdClient extends EventEmitter {
+export class SdServiceClient extends EventEmitter {
   static isOnShowAlert = false;
 
   isManualClose = false;
@@ -70,7 +70,7 @@ export class SdClient extends EventEmitter {
       });
 
       const reconnectFn = async (): Promise<void> => {
-        await Wait.until(() => !SdClient.isOnShowAlert);
+        await Wait.until(() => !SdServiceClient.isOnShowAlert);
 
         if (!this.options.useReconnect) {
           console.error("WebSocket 연결이 끊겼습니다. 연결상태를 확인하세요.");
