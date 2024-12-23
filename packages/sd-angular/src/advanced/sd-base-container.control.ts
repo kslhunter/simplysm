@@ -19,7 +19,7 @@ import { ActivatedRoute } from "@angular/router";
 import { SdActivatedModalProvider } from "../providers/sd-modal.provider";
 import { SdAppStructureProvider } from "../providers/sd-app-structure.provider";
 import { TemplateTargetDirective } from "../directives/template-target.directive";
-import { $computed, $effect } from "../utils/hooks";
+import { $computed } from "../utils/hooks";
 import { transformBoolean } from "../utils/type-tramsforms";
 import { injectActivatedPageCode$, injectPageCode$, injectParent } from "../utils/route-injects";
 
@@ -41,7 +41,7 @@ import { injectActivatedPageCode$, injectPageCode$, injectParent } from "../util
   template: `
     <sd-busy-container [busy]="busy()">
       @if (!perms().includes("use")) {
-        @if (realContainerType() === 'modal' || initialized()) {
+        @if (realContainerType() === 'modal') {
           <sd-pane
             class="tx-theme-grey-light p-xxl tx-center"
             [class.show-effect]="realContainerType() !== 'modal'"
@@ -58,16 +58,10 @@ import { injectActivatedPageCode$, injectPageCode$, injectParent } from "../util
           <sd-topbar>
             <h4>{{ title() }}</h4>
 
-            @if (initialized()) {
-              <ng-template [ngTemplateOutlet]="getTemplateRef('topbar')" />
-            }
+            <ng-template [ngTemplateOutlet]="getTemplateRef('topbar')" />
           </sd-topbar>
 
-          @if (initialized()) {
-            <sd-pane class="show-effect">
-              <ng-template [ngTemplateOutlet]="getTemplateRef('content')" />
-            </sd-pane>
-          }
+          <ng-template [ngTemplateOutlet]="getTemplateRef('content')" />
         </sd-topbar-container>
       } @else if (realContainerType() === 'modal') {
         <sd-dock-container>
@@ -80,12 +74,7 @@ import { injectActivatedPageCode$, injectPageCode$, injectParent } from "../util
           }
         </sd-dock-container>
       } @else {
-        @if (initialized()) {
-          <sd-pane class="show-effect">
-            <ng-content />
-            <ng-template [ngTemplateOutlet]="getTemplateRef('content')" />
-          </sd-pane>
-        }
+        <ng-template [ngTemplateOutlet]="getTemplateRef('content')" />
       }
     </sd-busy-container>
   `,
@@ -138,13 +127,4 @@ export class SdBaseContainerControl {
   );
 
   busy = input(false, { transform: transformBoolean });
-  initialized = input.required({ transform: transformBoolean });
-
-  constructor() {
-    $effect([this.initialized], () => {
-      if (this.#sdActivatedModal && this.initialized()) {
-        this.#sdActivatedModal.content.open();
-      }
-    });
-  }
 }

@@ -1,21 +1,17 @@
 import {type Type} from "@simplysm/sd-core-common";
-import {type IIdxDbStoreDef} from "./indexed-db.types";
+import {type IIndexedDbStoreDef} from "./indexed-db.types";
 
 export class IndexedDbStoreDefUtils {
   static METADATA_KEY = "sd-indexed-db-store-def";
 
-  static get(type: Type<any>): IIdxDbStoreDef {
+  static get(type: Type<any>): IIndexedDbStoreDef {
     const storeDef = Reflect.getMetadata(this.METADATA_KEY, type);
     if (storeDef?.name == null) {
-      throw new Error(`'${type.name}'에 '@IdxDbStore()'가 지정되지 않았습니다.`);
+      throw new Error(`'${type.name}'에 '@IndexedDbStore()'가 지정되지 않았습니다.`);
     }
 
     return storeDef;
   }
-
-  /*static #set(type: Type<any>, def: IIdxDbStoreDef) {
-    Reflect.defineMetadata(this.METADATA_KEY, def, type);
-  }*/
 
   static setName(type: Type<any>, params: { name: string }) {
     const prevDef = Reflect.getMetadata(this.METADATA_KEY, type);
@@ -28,7 +24,7 @@ export class IndexedDbStoreDefUtils {
     else {
       Reflect.defineMetadata(this.METADATA_KEY, {
         name: params.name,
-        idx: []
+        index: []
       }, type);
     }
   }
@@ -58,7 +54,7 @@ export class IndexedDbStoreDefUtils {
     }
     else {
       Reflect.defineMetadata(this.METADATA_KEY, {
-        idxs: [],
+        indexes: [],
         key: {
           columns: [{name: params.colName, order: params.order}],
           autoIncrement: params.autoIncrement
@@ -67,7 +63,7 @@ export class IndexedDbStoreDefUtils {
     }
   }
 
-  static addIdx(type: Type<any>, params: {
+  static addIndex(type: Type<any>, params: {
     colName: string;
     order?: number;
     name: string;
@@ -76,7 +72,7 @@ export class IndexedDbStoreDefUtils {
   }) {
     const prevDef = Reflect.getMetadata(this.METADATA_KEY, type);
     if (prevDef != null) {
-      const prevIdxDef = prevDef.idxs.single(item => item.name === params.name);
+      const prevIdxDef = prevDef.indexes.single(item => item.name === params.name);
       if (prevIdxDef != null) {
         if (
           prevIdxDef.multiEntry !== params.multiEntry ||
@@ -91,7 +87,7 @@ export class IndexedDbStoreDefUtils {
         });
       }
       else {
-        prevDef.idxs.push({
+        prevDef.indexes.push({
           name: params.name,
           multiEntry: params.multiEntry,
           unique: params.unique,
@@ -107,7 +103,7 @@ export class IndexedDbStoreDefUtils {
     }
     else {
       Reflect.defineMetadata(this.METADATA_KEY, {
-        idxs: [{
+        indexes: [{
           name: params.name,
           multiEntry: params.multiEntry,
           unique: params.unique,

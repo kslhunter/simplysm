@@ -1,15 +1,15 @@
-export interface IIdxDbStoreDef {
+export interface IIndexedDbStoreDef {
   name: string;
-  key?: IIdxDbStoreKeyDef;
-  idxs: IIdxDbStoreIdxDef[];
+  key?: IIndexedDbStoreKeyDef;
+  indexes: IIndexedDbStoreIdxDef[];
 }
 
-export interface IIdxDbStoreKeyDef {
+export interface IIndexedDbStoreKeyDef {
   columns: { name: string, order?: number }[];
   autoIncrement?: boolean;
 }
 
-export interface IIdxDbStoreIdxDef {
+export interface IIndexedDbStoreIdxDef {
   name: string;
   multiEntry?: boolean;
   unique?: boolean;

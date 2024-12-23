@@ -43,7 +43,7 @@ import { SdIconControl } from "../controls/sd-icon.control";
             [items]="items()"
             [trackByFn]="trackByFn"
           >
-            <sd-sheet-column key="fixed" header="Fix">
+            <sd-sheet-column key="fixed" header="Fix" disableOrdering disableResizing>
               <ng-template [cell]="items()" let-item="item">
                 <div style="text-align: center">
                   <sd-checkbox
@@ -55,7 +55,7 @@ import { SdIconControl } from "../controls/sd-icon.control";
                 </div>
               </ng-template>
             </sd-sheet-column>
-            <sd-sheet-column key="ordering" header="Order">
+            <sd-sheet-column key="ordering" header="Order" disableOrdering disableResizing>
               <ng-template [cell]="items()" let-item="item" let-index="index">
                 <div class="p-xs-sm" style="text-align: center">
                   <sd-anchor
@@ -73,16 +73,16 @@ import { SdIconControl } from "../controls/sd-icon.control";
                 </div>
               </ng-template>
             </sd-sheet-column>
-            <sd-sheet-column key="header" header="Header" [resizable]="true">
+            <sd-sheet-column key="header" header="Header" disableOrdering>
               <ng-template [cell]="items()" let-item="item">
                 <div class="p-xs-sm">
                   {{ item.header }}
                 </div>
               </ng-template>
             </sd-sheet-column>
-            <sd-sheet-column key="width" header="Width" [resizable]="true" width="60px">
+            <sd-sheet-column key="width" header="Width" disableOrdering width="60px">
               <ng-template [cell]="items()" let-item="item">
-                @if (item.resizable) {
+                @if (!item.disableResizing) {
                   <sd-textfield
                     type="text"
                     size="sm"
@@ -93,7 +93,7 @@ import { SdIconControl } from "../controls/sd-icon.control";
                 }
               </ng-template>
             </sd-sheet-column>
-            <sd-sheet-column key="hidden" header="Hidden">
+            <sd-sheet-column key="hidden" header="Hidden" disableOrdering disableResizing>
               .
               <ng-template [cell]="items()" let-item="item">
                 <div style="text-align: center">
@@ -149,7 +149,7 @@ export class SdSheetConfigModal<T> extends SdModalBase<ISdSheetConfigModalInput<
             control.header() instanceof Array
               ? (control.header() as string[]).join(" > ")
               : (control.header() as string),
-          resizable: control.resizable(),
+          disableResizing: control.disableResizing(),
           fixed: config?.fixed ?? control.fixed(),
           displayOrder: config?.displayOrder,
           width: config?.width ?? control.width(),
@@ -225,7 +225,7 @@ export interface ISdSheetConfigModalInput<T> {
 interface IItemVM {
   key: string;
   header: string | undefined;
-  resizable: boolean;
+  disableResizing: boolean;
   fixed: boolean;
   width?: string;
   displayOrder?: number;

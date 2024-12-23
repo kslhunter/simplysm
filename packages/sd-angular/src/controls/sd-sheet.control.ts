@@ -387,7 +387,7 @@ import { SdIconLayersControl } from "./sd-icon-layers.control";
                         [style.min-width]="headerCell.isLastDepth ? headerCell.width : undefined"
                         [style.max-width]="headerCell.isLastDepth ? headerCell.width : undefined"
                         [class._ordering]="
-                          headerCell.isLastDepth && headerCell.control.useOrdering() && headerCell.control.key()
+                          headerCell.isLastDepth && !headerCell.control.disableOrdering() && headerCell.control.key()
                         "
                         [attr.title]="
                           headerCell.isLastDepth ? (headerCell.control.tooltip() ?? headerCell.text) : undefined
@@ -410,7 +410,7 @@ import { SdIconLayersControl } from "./sd-icon-layers.control";
                           </div>
 
                           @if (headerCell.isLastDepth
-                          && headerCell.control.useOrdering()
+                          && !headerCell.control.disableOrdering()
                           && headerCell.control.key()) {
                             <div class="_sort-icon">
                               <sd-icon-layers>
@@ -429,7 +429,7 @@ import { SdIconLayersControl } from "./sd-icon-layers.control";
                           }
                         </div>
 
-                        @if (headerCell.control.resizable() && headerCell.isLastDepth) {
+                        @if (!headerCell.control.disableResizing() && headerCell.isLastDepth) {
                           <div
                             class="_resizer"
                             (mousedown)="onResizerMousedown($event, headerCell.control)"
@@ -1449,7 +1449,7 @@ export class SdSheetControl<T> {
    * @param headerCell
    */
   onHeaderCellClick(event: MouseEvent, headerCell: IHeaderDef<T>): void {
-    if (headerCell.isLastDepth && headerCell.control.useOrdering()) {
+    if (headerCell.isLastDepth && !headerCell.control.disableOrdering()) {
       if (this.#isOnResizing) return;
       if (event.target
         instanceof HTMLElement

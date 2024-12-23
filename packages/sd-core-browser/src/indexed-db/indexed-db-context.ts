@@ -1,9 +1,9 @@
-import { IndexedDbStore } from "./indexed-db-store";
+import { IndexedStore } from "./indexed-store";
 
-// TODO: WORKER를 위해 IdxDb 패키지 분리
+// TODO: WORKER를 위해 IndexedDb 패키지 분리
 export class IndexedDbContext {
-  idxDb?: IDBDatabase;
-  idxTrans?: IDBTransaction;
+  indexedDb?: IDBDatabase;
+  indexedTrans?: IDBTransaction;
 
   constructor(
     public dbName: string,
@@ -20,44 +20,44 @@ export class IndexedDbContext {
       };
 
       req.onsuccess = async () => {
-        this.idxDb = req.result;
+        this.indexedDb = req.result;
         try {
           resolve(await fn());
         } catch (err) {
           reject(err);
         }
-        this.idxDb.close();
-        this.idxDb = undefined;
+        this.indexedDb.close();
+        this.indexedDb = undefined;
       };
 
       req.onupgradeneeded = (e) => {
-        this.idxDb = req.result;
+        this.indexedDb = req.result;
         this._upgradeFn(e.oldVersion);
       };
     });
   }
 
-  async transAsync<R>(stores: IndexedDbStore<any>[], mode: IDBTransactionMode, fn: () => Promise<R>): Promise<R> {
-    if (!this.idxDb) throw new Error(`${this.dbName}(IndexedDB)가 연결되어있지 않습니다.`);
+  async transAsync<R>(stores: IndexedStore<any>[], mode: IDBTransactionMode, fn: () => Promise<R>): Promise<R> {
+    if (!this.indexedDb) throw new Error(`${this.dbName}(IndexedDB)가 연결되어있지 않습니다.`);
 
     return await new Promise<R>(async (resolve, reject) => {
       try {
-        this.idxTrans = this.idxDb!.transaction(
+        this.indexedTrans = this.indexedDb!.transaction(
           stores.map((item) => item.def.name),
           mode,
         );
         const result = await fn();
 
-        this.idxTrans.oncomplete = () => {
+        this.indexedTrans.oncomplete = () => {
           resolve(result);
         };
 
-        this.idxTrans.onerror = () => {
-          reject(this.idxTrans!.error);
+        this.indexedTrans.onerror = () => {
+          reject(this.indexedTrans!.error);
         };
       } catch (err) {
         try {
-          this.idxTrans!.abort();
+          this.indexedTrans!.abort();
         } catch {}
         reject(err);
       }
@@ -65,21 +65,21 @@ export class IndexedDbContext {
   }
 
   forceInit() {
-    if (!this.idxDb) throw new Error(`${this.dbName}(IndexedDB)가 연결되어있지 않습니다.`);
+    if (!this.indexedDb) throw new Error(`${this.dbName}(IndexedDB)가 연결되어있지 않습니다.`);
 
-    for (const objectStoreName of Array.from(this.idxDb.objectStoreNames)) {
-      this.idxDb.deleteObjectStore(objectStoreName);
+    for (const objectStoreName of Array.from(this.indexedDb.objectStoreNames)) {
+      this.indexedDb.deleteObjectStore(objectStoreName);
     }
 
     const storeDefs = Object.keys(this)
       .filter((key) => !key.startsWith("_"))
       .map((key) => this[key])
-      .ofType<IndexedDbStore<any>>(IndexedDbStore)
+      .ofType<IndexedStore<any>>(IndexedStore)
       .map((store) => store.def)
       .filterExists();
 
     for (const storeDef of storeDefs) {
-      const store = this.idxDb.createObjectStore(
+      const store = this.indexedDb.createObjectStore(
         storeDef.name,
         storeDef.key
           ? storeDef.key.autoIncrement
@@ -93,13 +93,13 @@ export class IndexedDbContext {
           : undefined,
       );
 
-      for (const idx of storeDef.idxs) {
+      for (const index of storeDef.indexes) {
         store.createIndex(
-          idx.name,
-          idx.columns.orderBy((item) => item.order).map((item) => item.name),
+          index.name,
+          index.columns.orderBy((item) => item.order).map((item) => item.name),
           {
-            multiEntry: idx.multiEntry,
-            unique: idx.unique,
+            multiEntry: index.multiEntry,
+            unique: index.unique,
           },
         );
       }

@@ -86,6 +86,8 @@ export class SdModalProvider {
 
         const prevActiveElement = document.activeElement as HTMLElement | undefined;
         compRef.instance.close = (value?: T[typeof SD_MODEL_OUTPUT]): void => {
+          if (!provider.canDeactivefn()) return;
+
           resolve(value);
 
           modalEl.addEventListener("transitionend", () => {
@@ -141,9 +143,14 @@ export class SdModalProvider {
         modalRef.setInput("headerStyle", options?.headerStyle);
         modalRef.setInput("mobileFillDisabled", options?.mobileFillDisabled ?? false);
         modalRef.instance._openChange.subscribe((value: boolean) => {
-          modalRef.setInput("open", value);
           if (!value) {
+            if (!provider.canDeactivefn()) return;
+
+            modalRef.setInput("open", value);
             compRef.instance.close();
+          }
+          else {
+            modalRef.setInput("open", value);
           }
         });
 
@@ -184,6 +191,7 @@ export abstract class SdModalBase<I, O> {
 export class SdActivatedModalProvider {
   modal!: SdModalControl;
   content!: SdModalBase<any, any>;
+  canDeactivefn = () => true;
 }
 
 export type TSdModalConfig<T extends SdModalBase<any, any>> = {

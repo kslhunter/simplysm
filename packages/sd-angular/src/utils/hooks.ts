@@ -23,30 +23,37 @@ import {
 import { ActivatedRoute, type CanDeactivateFn, type Route } from "@angular/router";
 import { ObjectUtils, type TArrayDiffs2Result } from "@simplysm/sd-core-common";
 import { injectElementRef } from "./dom-injects";
+import { SdActivatedModalProvider } from "../providers/sd-modal.provider";
 
 const initializedRouteConfigSet = new Set<Route>();
 
 export function canDeactivate(fn: () => boolean) {
-  const activatedRoute = inject(ActivatedRoute);
+  const activatedRoute = inject(ActivatedRoute, { optional: true });
+  const activatedModal = inject(SdActivatedModalProvider, { optional: true });
   const elRef = injectElementRef();
   // const injector = inject(Injector);
 
-  if (!activatedRoute.routeConfig) return;
-  if (
-    reflectComponentType(activatedRoute.component as any)?.selector !==
-    elRef.nativeElement.tagName.toLowerCase()
-  ) {
-    return;
+  if (activatedModal) {
+    activatedModal.canDeactivefn = fn;
   }
+  else if (activatedRoute) {
+    if (!activatedRoute.routeConfig) return;
+    if (
+      reflectComponentType(activatedRoute.component as any)?.selector !==
+      elRef.nativeElement.tagName.toLowerCase()
+    ) {
+      return;
+    }
 
-  if (!initializedRouteConfigSet.has(activatedRoute.routeConfig)) {
-    initializedRouteConfigSet.add(activatedRoute.routeConfig);
+    if (!initializedRouteConfigSet.has(activatedRoute.routeConfig)) {
+      initializedRouteConfigSet.add(activatedRoute.routeConfig);
 
-    const canDeactivateFn: CanDeactivateFn<{ __sdCanDeactivate__(): boolean }> = (component) => {
-      return fn();
-      // return component.__sdCanDeactivate__();
-    };
-    activatedRoute.routeConfig.canDeactivate = [canDeactivateFn];
+      const canDeactivateFn: CanDeactivateFn<{ __sdCanDeactivate__(): boolean }> = (component) => {
+        return fn();
+        // return component.__sdCanDeactivate__();
+      };
+      activatedRoute.routeConfig.canDeactivate = [canDeactivateFn];
+    }
   }
 
   // requestAnimationFrame(() => {
@@ -105,7 +112,11 @@ export function $effect(
 export function $computed<R>(fn: () => Promise<R>): Signal<R | undefined>;
 export function $computed<R>(fn: () => Promise<R>, opt: { initialValue?: R }): Signal<R>;
 export function $computed<R>(signals: Signal<any>[], fn: () => Promise<R>): Signal<R | undefined>;
-export function $computed<R>(signals: Signal<any>[], fn: () => Promise<R>, opt: { initialValue?: R }): Signal<R>;
+export function $computed<R>(
+  signals: Signal<any>[],
+  fn: () => Promise<R>,
+  opt: { initialValue?: R },
+): Signal<R>;
 export function $computed<R>(fn: () => R): Signal<R>;
 export function $computed<R>(signals: Signal<any>[], fn: () => R): Signal<R>;
 export function $computed(...args: any): Signal<any> {

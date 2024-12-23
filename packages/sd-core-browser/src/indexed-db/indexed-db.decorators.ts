@@ -2,7 +2,7 @@ import {type TClassDecoratorReturn, type TPropertyDecoratorReturn, type Type} fr
 import {IndexedDbStoreDefUtils} from "./indexed-db-store-def.utils";
 
 
-export function IdxDbStore<T>(): TClassDecoratorReturn<T> {
+export function IndexedDbStore<T>(): TClassDecoratorReturn<T> {
   return (classType: Type<T>): void => {
     IndexedDbStoreDefUtils.setName(classType, {
       name: classType.name
@@ -10,7 +10,7 @@ export function IdxDbStore<T>(): TClassDecoratorReturn<T> {
   };
 }
 
-export function IdxDbKey<T extends object>(def?: {
+export function IndexedDbKey<T extends object>(def?: {
   order?: number;
   autoIncrement?: boolean;
 }): TPropertyDecoratorReturn<T> {
@@ -25,7 +25,7 @@ export function IdxDbKey<T extends object>(def?: {
   };
 }
 
-export function IdxDbIdx<T extends object>(def?: {
+export function IndexedDbIdx<T extends object>(def?: {
   name?: string;
   order?: number;
   multiEntry?: boolean;
@@ -34,7 +34,7 @@ export function IdxDbIdx<T extends object>(def?: {
   return (object: T, propertyKey: string): void => {
     const classType = object.constructor as Type<T>;
 
-    IndexedDbStoreDefUtils.addIdx(classType, {
+    IndexedDbStoreDefUtils.addIndex(classType, {
       colName: propertyKey,
       order: def?.order,
       name: def?.name ?? propertyKey,
