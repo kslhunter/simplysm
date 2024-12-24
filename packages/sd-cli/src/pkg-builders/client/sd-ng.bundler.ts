@@ -1,6 +1,6 @@
 import path from "path";
 import esbuild, { type Metafile } from "esbuild";
-import { FsUtils, SdLogger, PathUtils, type TNormPath } from "@simplysm/sd-core-node";
+import { FsUtils, PathUtils, SdLogger, type TNormPath } from "@simplysm/sd-core-node";
 import { fileURLToPath } from "url";
 import nodeStdLibBrowser from "node-stdlib-browser";
 import nodeStdLibBrowserPlugin from "node-stdlib-browser/helpers/esbuild/plugin";
@@ -26,11 +26,17 @@ import {
 import { type Entrypoint } from "@angular/build/src/utils/index-file/augment-index-html";
 import { CrossOrigin } from "@angular/build/src/builders/application/schema";
 import { augmentAppWithServiceWorkerEsbuild } from "@angular/build/src/utils/service-worker";
-import { createSourcemapIgnorelistPlugin } from "@angular/build/src/tools/esbuild/sourcemap-ignorelist-plugin";
-import { StylesheetPluginFactory } from "@angular/build/src/tools/esbuild/stylesheets/stylesheet-plugin-factory";
+import {
+  createSourcemapIgnorelistPlugin,
+} from "@angular/build/src/tools/esbuild/sourcemap-ignorelist-plugin";
+import {
+  StylesheetPluginFactory,
+} from "@angular/build/src/tools/esbuild/stylesheets/stylesheet-plugin-factory";
 import { SassStylesheetLanguage } from "@angular/build/src/tools/esbuild/stylesheets/sass-language";
 import { CssStylesheetLanguage } from "@angular/build/src/tools/esbuild/stylesheets/css-language";
-import { createCssResourcePlugin } from "@angular/build/src/tools/esbuild/stylesheets/css-resource-plugin";
+import {
+  createCssResourcePlugin,
+} from "@angular/build/src/tools/esbuild/stylesheets/css-resource-plugin";
 import { resolveAssets } from "@angular/build/src/utils/resolve-assets";
 import { createSdNgPlugin } from "./sd-ng.plugin-creator";
 import { SdCliPerformanceTimer } from "../../utils/sd-cli-performance-time";
@@ -128,7 +134,8 @@ export class SdNgBundler {
     this.#debug(`convert result...`);
 
     const outputFiles: BuildOutputFile[] = bundlingResults.mapMany(
-      (item) => item.outputFiles?.map((file) => convertOutputFile(file, BuildOutputFileType.Root)) ?? [],
+      (item) => item.outputFiles?.map((file) => convertOutputFile(file, BuildOutputFileType.Root))
+        ?? [],
     );
     const initialFiles = new Map<string, InitialFileRecord>();
     const metafile: {
@@ -175,7 +182,11 @@ export class SdNgBundler {
           type: "gen-index",
         });
       }
-      outputFiles.push(createOutputFile("index.html", genIndexHtmlResult.csrContent, BuildOutputFileType.Root));
+      outputFiles.push(createOutputFile(
+        "index.html",
+        genIndexHtmlResult.csrContent,
+        BuildOutputFileType.Root,
+      ));
     });
 
     await perf.run("assets", async () => {
@@ -201,7 +212,11 @@ export class SdNgBundler {
       await perf.run("prepare service worker", async () => {
         try {
           const serviceWorkerResult = await this._genServiceWorkerAsync(outputFiles, assetFiles);
-          outputFiles.push(createOutputFile("ngsw.json", serviceWorkerResult.manifest, BuildOutputFileType.Root));
+          outputFiles.push(createOutputFile(
+            "ngsw.json",
+            serviceWorkerResult.manifest,
+            BuildOutputFileType.Root,
+          ));
           assetFiles.push(...serviceWorkerResult.assetFiles);
         }
         catch (err) {
@@ -339,28 +354,29 @@ export class SdNgBundler {
         { input: "public", glob: "**/*", output: "." },
         ...(this._opt.dev ? [{ input: "public-dev", glob: "**/*", output: "." }] : []),
         ...(this._opt.dev && this._opt.builderType === "cordova"
-          ? Object.keys(this._opt.cordovaConfig?.platform ?? { browser: {} }).mapMany((platform) => [
-            {
-              input: `.cordova/platforms/${platform}/platform_www/plugins`,
-              glob: "**/*",
-              output: `cordova-${platform}/plugins`,
-            },
-            {
-              input: `.cordova/platforms/${platform}/platform_www`,
-              glob: "cordova.js",
-              output: `cordova-${platform}`,
-            },
-            {
-              input: `.cordova/platforms/${platform}/platform_www`,
-              glob: "cordova_plugins.js",
-              output: `cordova-${platform}`,
-            },
-            {
-              input: `.cordova/platforms/${platform}/www`,
-              glob: "config.xml",
-              output: `cordova-${platform}`,
-            },
-          ])
+          ? Object.keys(this._opt.cordovaConfig?.platform ?? { browser: {} })
+            .mapMany((platform) => [
+              {
+                input: `.cordova/platforms/${platform}/platform_www/plugins`,
+                glob: "**/*",
+                output: `cordova-${platform}/plugins`,
+              },
+              {
+                input: `.cordova/platforms/${platform}/platform_www`,
+                glob: "cordova.js",
+                output: `cordova-${platform}`,
+              },
+              {
+                input: `.cordova/platforms/${platform}/platform_www`,
+                glob: "cordova_plugins.js",
+                output: `cordova-${platform}`,
+              },
+              {
+                input: `.cordova/platforms/${platform}/www`,
+                glob: "config.xml",
+                output: `cordova-${platform}`,
+              },
+            ])
           : []),
       ],
       this._opt.pkgPath,
@@ -391,9 +407,10 @@ export class SdNgBundler {
   }
 
   private _getAppContext() {
-    const workerEntries = FsUtils.glob(path.resolve(this._opt.pkgPath, "src/workers/*.ts")).toObject(
-      (p) => "workers/" + path.basename(p, path.extname(p)),
-    );
+    const workerEntries = FsUtils.glob(path.resolve(this._opt.pkgPath, "src/workers/*.ts"))
+      .toObject(
+        (p) => "workers/" + path.basename(p, path.extname(p)),
+      );
 
     return new SdNgBundlerContext(this._opt.pkgPath, {
       absWorkingDir: this._opt.pkgPath,
@@ -411,7 +428,7 @@ export class SdNgBundler {
       pure: ["forwardRef"],
       outdir: this._opt.pkgPath,
       outExtension: undefined,
-      sourcemap: this._opt.dev,
+      sourcemap: false, //this._opt.dev,
       chunkNames: "[name]-[hash]",
       tsconfig: this.#tsConfigFilePath,
       write: false,
@@ -488,7 +505,10 @@ export class SdNgBundler {
           target: this.#browserTarget,
           format: "esm",
           splitting: true,
-          inject: [PathUtils.posix(fileURLToPath(import.meta.resolve("node-stdlib-browser/helpers/esbuild/shim")))],
+          inject: [
+            PathUtils.posix(fileURLToPath(import.meta.resolve(
+              "node-stdlib-browser/helpers/esbuild/shim"))),
+          ],
         }),
       plugins: [
         createSourcemapIgnorelistPlugin(),
@@ -499,7 +519,20 @@ export class SdNgBundler {
           result: this.#ngResultCache,
           watchScopePaths: this._opt.watchScopePaths,
         }),
-        ...(this._opt.builderType === "electron" ? [] : [nodeStdLibBrowserPlugin(nodeStdLibBrowser)]),
+        ...(this._opt.builderType === "electron"
+          ? []
+          : [nodeStdLibBrowserPlugin(nodeStdLibBrowser)]),
+        // {
+        //   name: "log-circular",
+        //   setup(build) {
+        //     build.onEnd(result => {
+        //       if (result.metafile) {
+        //         const analysis = esbuild.analyzeMetafile(result.metafile);
+        //         console.log(analysis);
+        //       }
+        //     });
+        //   },
+        // },
       ],
     });
   }
@@ -507,7 +540,7 @@ export class SdNgBundler {
   private _getStyleContext(): SdNgBundlerContext {
     const pluginFactory = new StylesheetPluginFactory(
       {
-        sourcemap: this._opt.dev,
+        sourcemap: false,//this._opt.dev,
         includePaths: [],
       },
       this.#styleLoadResultCache,
@@ -521,7 +554,7 @@ export class SdNgBundler {
       logLevel: "silent",
       minify: !this._opt.dev,
       metafile: true,
-      sourcemap: this._opt.dev,
+      sourcemap: false,//this._opt.dev,
       outdir: this._opt.pkgPath,
       write: false,
       platform: "browser",
@@ -555,7 +588,7 @@ export class SdNgBundler {
       logLevel: "silent",
       minify: !this._opt.dev,
       outdir: this._opt.pkgPath,
-      sourcemap: this._opt.dev,
+      sourcemap: false,//this._opt.dev,
       tsconfig: this.#tsConfigFilePath,
       write: false,
       preserveSymlinks: false,

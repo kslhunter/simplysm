@@ -61,28 +61,48 @@ export class SdModalProvider {
             providers: [{ provide: SdActivatedModalProvider, useValue: provider }],
           }),
         });
-
         compRef.setInput("title", title);
         compRef.setInput("params", params);
 
         provider.content = compRef.instance;
+        const compEl = compRef.location.nativeElement as HTMLElement;
 
+        //-- modal
         const modalRef = createComponent(SdModalControl, {
           environmentInjector: this.#appRef.injector,
-          projectableNodes: [[compRef.location.nativeElement]],
           elementInjector: Injector.create({
             parent: this.#appRef.injector,
             providers: [{ provide: SdActivatedModalProvider, useValue: provider }],
           }),
         });
-        provider.modal = modalRef.instance;
+        modalRef.setInput("key", options?.key);
+        modalRef.setInput("title", title);
+        modalRef.setInput("hideHeader", options?.hideHeader ?? false);
+        modalRef.setInput("hideCloseButton", options?.hideCloseButton ?? false);
+        modalRef.setInput("useCloseByBackdrop", options?.useCloseByBackdrop ?? false);
+        modalRef.setInput("useCloseByEscapeKey", options?.useCloseByEscapeKey ?? false);
+        modalRef.setInput("float", options?.float ?? false);
+        modalRef.setInput("minHeightPx", options?.minHeightPx);
+        modalRef.setInput("minWidthPx", options?.minWidthPx);
+        modalRef.setInput("resizable", options?.resizable ?? false);
+        modalRef.setInput("movable", options?.movable ?? false);
+        modalRef.setInput("headerStyle", options?.headerStyle);
+        modalRef.setInput("mobileFillDisabled", options?.mobileFillDisabled ?? false);
 
+        provider.modal = modalRef.instance;
         const modalEl = modalRef.location.nativeElement as HTMLElement;
 
-        const rootEl = this.#appRef.components[0].location.nativeElement as HTMLElement;
-        rootEl.appendChild(modalEl);
+        modalRef.instance._openChange.subscribe((value: boolean) => {
+          if (!value) {
+            if (!provider.canDeactivefn()) return;
 
-        //-- attach comp
+            modalRef.setInput("open", value);
+            compRef.instance.close();
+          }
+          else {
+            modalRef.setInput("open", value);
+          }
+        });
 
         const prevActiveElement = document.activeElement as HTMLElement | undefined;
         compRef.instance.close = (value?: T[typeof SD_MODEL_OUTPUT]): void => {
@@ -125,35 +145,11 @@ export class SdModalProvider {
           );
         };
 
+        const rootEl = this.#appRef.components[0].location.nativeElement as HTMLElement;
+        rootEl.appendChild(modalEl);
+        modalEl.appendChild(compEl);
+
         this.#appRef.attachView(compRef.hostView);
-
-        //-- attach modal
-
-        modalRef.setInput("key", options?.key);
-        modalRef.setInput("title", title);
-        modalRef.setInput("hideHeader", options?.hideHeader ?? false);
-        modalRef.setInput("hideCloseButton", options?.hideCloseButton ?? false);
-        modalRef.setInput("useCloseByBackdrop", options?.useCloseByBackdrop ?? false);
-        modalRef.setInput("useCloseByEscapeKey", options?.useCloseByEscapeKey ?? false);
-        modalRef.setInput("float", options?.float ?? false);
-        modalRef.setInput("minHeightPx", options?.minHeightPx);
-        modalRef.setInput("minWidthPx", options?.minWidthPx);
-        modalRef.setInput("resizable", options?.resizable ?? false);
-        modalRef.setInput("movable", options?.movable ?? false);
-        modalRef.setInput("headerStyle", options?.headerStyle);
-        modalRef.setInput("mobileFillDisabled", options?.mobileFillDisabled ?? false);
-        modalRef.instance._openChange.subscribe((value: boolean) => {
-          if (!value) {
-            if (!provider.canDeactivefn()) return;
-
-            modalRef.setInput("open", value);
-            compRef.instance.close();
-          }
-          else {
-            modalRef.setInput("open", value);
-          }
-        });
-
         this.#appRef.attachView(modalRef.hostView);
 
         this.modalCount.update((v) => v + 1);
@@ -192,9 +188,4 @@ export class SdActivatedModalProvider {
   modal!: SdModalControl;
   content!: SdModalBase<any, any>;
   canDeactivefn = () => true;
-}
-
-export type TSdModalConfig<T extends SdModalBase<any, any>> = {
-  type: Type<T>;
-  params: T[typeof SD_MODAL_INPUT];
 }

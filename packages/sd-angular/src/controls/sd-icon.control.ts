@@ -5,9 +5,14 @@ import {
   input,
   ViewEncapsulation,
 } from "@angular/core";
-import { type IconDefinition } from "@fortawesome/fontawesome-svg-core";
+import {
+  icon,
+  type IconDefinition,
+  parse,
+  type RotateProp,
+  type SizeProp,
+} from "@fortawesome/fontawesome-svg-core";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
-import { icon, type RotateProp, type SizeProp } from "@fortawesome/fontawesome-svg-core";
 import { injectElementRef } from "../utils/dom-injects";
 import { $effect } from "../utils/hooks";
 import { transformBoolean } from "../utils/type-tramsforms";
@@ -29,11 +34,13 @@ export class SdIconControl {
   rotate = input<RotateProp>();
   fixedWidth = input(false, { transform: transformBoolean });
   stackItemSize = input<"1x" | "2x">();
+  transform = input<string>();
 
   constructor() {
     $effect(() => {
       const iconDef = this.icon() ?? this.#sdNgConf.icons.fallback;
       const renderedIcon = icon(iconDef, {
+        transform: this.transform() != null ? parse.transform(this.transform()!) : undefined,
         classes: [
           this.fixedWidth() ? "fa-fw" : undefined,
           this.size() != null ? `fa-${this.size()}` : undefined,
