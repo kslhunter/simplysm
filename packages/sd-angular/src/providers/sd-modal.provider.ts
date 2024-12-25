@@ -95,8 +95,6 @@ export class SdModalProvider {
 
         modalRef.instance._openChange.subscribe((value: boolean) => {
           if (!value) {
-            if (!provider.canDeactivefn()) return;
-
             modalRef.setInput("open", value);
             compRef.instance.close();
           }
