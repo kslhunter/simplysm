@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, HostListener, input, output, ViewEncapsulation } from "@angular/core";
 import { DateOnly, DateTime, JsonConvert, NumberUtils, StringUtils, Time } from "@simplysm/sd-core-common";
 import { $computed, $model } from "../utils/hooks";
-import { injectElementRef } from "../utils/dom-injects";
+import { injectElementRef } from "../utils/dom/element-ref.injector";
 import { transformBoolean } from "../utils/type-tramsforms";
 
 @Component({

@@ -70,6 +70,7 @@ export class SdModalProvider {
         //-- modal
         const modalRef = createComponent(SdModalControl, {
           environmentInjector: this.#appRef.injector,
+          projectableNodes: [[compEl]],
           elementInjector: Injector.create({
             parent: this.#appRef.injector,
             providers: [{ provide: SdActivatedModalProvider, useValue: provider }],
@@ -147,7 +148,6 @@ export class SdModalProvider {
 
         const rootEl = this.#appRef.components[0].location.nativeElement as HTMLElement;
         rootEl.appendChild(modalEl);
-        modalEl.appendChild(compEl);
 
         this.#appRef.attachView(compRef.hostView);
         this.#appRef.attachView(modalRef.hostView);

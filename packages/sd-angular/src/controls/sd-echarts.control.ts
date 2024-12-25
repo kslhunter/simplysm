@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, HostListener, input, ViewEncapsulation } from "@angular/core";
-import { injectElementRef } from "../utils/dom-injects";
+import { injectElementRef } from "../utils/dom/element-ref.injector";
 import * as echarts from 'echarts';
 import { $effect } from "../utils/hooks";
 

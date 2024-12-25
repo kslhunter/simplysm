@@ -22,7 +22,7 @@ import {
 } from "@angular/core/primitives/signals";
 import { ActivatedRoute, type CanDeactivateFn, type Route } from "@angular/router";
 import { ObjectUtils, type TArrayDiffs2Result } from "@simplysm/sd-core-common";
-import { injectElementRef } from "./dom-injects";
+import { injectElementRef } from "./dom/element-ref.injector";
 import { SdActivatedModalProvider } from "../providers/sd-modal.provider";
 
 const initializedRouteConfigSet = new Set<Route>();

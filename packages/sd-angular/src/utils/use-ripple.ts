@@ -1,4 +1,4 @@
-import { injectElementRef } from "./dom-injects";
+import { injectElementRef } from "./dom/element-ref.injector";
 import { $effect } from "./hooks";
 
 export function useRipple(enableFn?: () => boolean) {

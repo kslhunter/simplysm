@@ -21,7 +21,9 @@ import { SdAppStructureProvider } from "../providers/sd-app-structure.provider";
 import { TemplateTargetDirective } from "../directives/template-target.directive";
 import { $computed } from "../utils/hooks";
 import { transformBoolean } from "../utils/type-tramsforms";
-import { injectActivatedPageCode$, injectPageCode$, injectParent } from "../utils/route-injects";
+import { injectParent } from "../utils/route/parent.injector";
+import { injectPageCode$ } from "../utils/route/page-code.signal-injector";
+import { injectActivatedPageCode$ } from "../utils/route/activate-page-code.signal-injector";
 
 @Component({
   selector: "sd-base-container",

@@ -11,7 +11,7 @@ import {
 } from "@angular/core";
 import { SdDropdownPopupControl } from "./sd-dropdown-popup.control";
 import { $effect, $model } from "../utils/hooks";
-import { injectElementRef } from "../utils/dom-injects";
+import { injectElementRef } from "../utils/dom/element-ref.injector";
 import { transformBoolean } from "../utils/type-tramsforms";
 
 @Component({

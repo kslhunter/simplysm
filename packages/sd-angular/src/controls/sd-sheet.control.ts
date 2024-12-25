@@ -24,7 +24,7 @@ import { SdEventsDirective } from "../directives/sd-events.directive";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { SdCheckboxControl } from "./sd-checkbox.control";
 import { $computed, $effect, $model, $signal } from "../utils/hooks";
-import { injectElementRef } from "../utils/dom-injects";
+import { injectElementRef } from "../utils/dom/element-ref.injector";
 import { transformBoolean } from "../utils/type-tramsforms";
 import { SdIconControl } from "./sd-icon.control";
 import { SdIconLayersControl } from "./sd-icon-layers.control";

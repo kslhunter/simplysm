@@ -5,17 +5,18 @@ import {
   input,
   ViewEncapsulation,
 } from "@angular/core";
+import { injectElementRef } from "../utils/dom/element-ref.injector";
+import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import {
   icon,
   type IconDefinition,
   parse,
   type RotateProp,
   type SizeProp,
+  type Transform,
 } from "@fortawesome/fontawesome-svg-core";
-import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
-import { injectElementRef } from "../utils/dom-injects";
-import { $effect } from "../utils/hooks";
 import { transformBoolean } from "../utils/type-tramsforms";
+import { $effect } from "../utils/hooks";
 
 @Component({
   selector: "sd-icon",
@@ -26,21 +27,24 @@ import { transformBoolean } from "../utils/type-tramsforms";
   template: ``,
 })
 export class SdIconControl {
-  #elRef = injectElementRef();
   #sdNgConf = inject(SdAngularConfigProvider);
+
+  #elRef = injectElementRef();
 
   icon = input<IconDefinition>();
   size = input<SizeProp>();
   rotate = input<RotateProp>();
   fixedWidth = input(false, { transform: transformBoolean });
   stackItemSize = input<"1x" | "2x">();
-  transform = input<string>();
+  transform = input<string | Transform>();
 
   constructor() {
     $effect(() => {
       const iconDef = this.icon() ?? this.#sdNgConf.icons.fallback;
       const renderedIcon = icon(iconDef, {
-        transform: this.transform() != null ? parse.transform(this.transform()!) : undefined,
+        transform: typeof this.transform() === "string"
+          ? parse.transform(this.transform() as string)
+          : this.transform() as Transform | undefined,
         classes: [
           this.fixedWidth() ? "fa-fw" : undefined,
           this.size() != null ? `fa-${this.size()}` : undefined,

@@ -7,7 +7,7 @@ import { SdRouterLinkDirective } from "../directives/sd-router-link.directive";
 import { type IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { $computed } from "../utils/hooks";
 import { SdIconControl } from "./sd-icon.control";
-import { injectPageCode$ } from "../utils/route-injects";
+import { injectPageCode$ } from "../utils/route/page-code.signal-injector";
 
 @Component({
   selector: "sd-sidebar-menu",

@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, input, output, ViewEncapsulation } 
 import Quill from "quill";
 import QuillResizeImage from "quill-resize-image";
 import { $effect, $model } from "../utils/hooks";
-import { injectElementRef } from "../utils/dom-injects";
+import { injectElementRef } from "../utils/dom/element-ref.injector";
 import { transformBoolean } from "../utils/type-tramsforms";
 
 Quill.register("modules/resize", QuillResizeImage);

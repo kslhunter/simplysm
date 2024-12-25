@@ -14,7 +14,7 @@ import { NgTemplateOutlet } from "@angular/common";
 import { SdCheckboxControl } from "./sd-checkbox.control";
 import { SdGapControl } from "./sd-gap.control";
 import { $computed, $effect } from "../utils/hooks";
-import { injectElementRef } from "../utils/dom-injects";
+import { injectElementRef } from "../utils/dom/element-ref.injector";
 import { useRipple } from "../utils/use-ripple";
 import { transformBoolean } from "../utils/type-tramsforms";
 

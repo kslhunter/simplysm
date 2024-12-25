@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
 import { $computed } from "../utils/hooks";
-import { injectSizeSignals } from "../utils/dom-injects";
+import { injectSizeSignals } from "../utils/dom/size-signals.injector";
 
 @Component({
   selector: "sd-grid",

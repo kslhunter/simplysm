@@ -14,7 +14,7 @@ import { SdAnchorControl } from "./sd-anchor.control";
 import { SdGapControl } from "./sd-gap.control";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { $computed } from "../utils/hooks";
-import { injectElementRef } from "../utils/dom-injects";
+import { injectElementRef } from "../utils/dom/element-ref.injector";
 import { SdRippleDirective } from "../directives/sd-ripple.directive";
 import { SdIconControl } from "./sd-icon.control";
 

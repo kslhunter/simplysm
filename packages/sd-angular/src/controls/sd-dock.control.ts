@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, HostListener, inject, input, ViewEn
 import { SdSystemConfigProvider } from "../providers/sd-system-config.provider";
 import { type ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
 import { $effect, $signal } from "../utils/hooks";
-import { injectElementRef } from "../utils/dom-injects";
+import { injectElementRef } from "../utils/dom/element-ref.injector";
 import { transformBoolean } from "../utils/type-tramsforms";
 
 @Component({
