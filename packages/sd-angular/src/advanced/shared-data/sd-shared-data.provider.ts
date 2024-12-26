@@ -84,26 +84,11 @@ export class SdSharedDataProvider<T extends Record<string, ISharedDataBase<strin
       }
       else {
         info.signal.update((v) => {
-          const r = [...v];
+          // changeKeys에 있는것 전부 삭제
+          const r = v.filter(item => !changeKeys.includes(item.__valueKey));
 
-          // 삭제된 항목 제거 (DB에 없는 항목)
-          const deleteKeys = changeKeys.filter(
-            (changeKey) => !resData.some((resItem) => resItem.__valueKey === changeKey),
-          );
-          r.remove((item) => deleteKeys.includes(item.__valueKey));
-
-          // 수정된 항목 변경
-          for (const resItem of resData) {
-            const currItemKey = resItem.__valueKey;
-
-            const resItemIndex = r.findIndex((item) => item.__valueKey === currItemKey);
-            if (resItemIndex >= 0) {
-              r[resItemIndex] = resItem;
-            }
-            else {
-              r.push(resItem);
-            }
-          }
+          // changeKeys로 검색한 결과물인, resData를 다시 입력
+          r.push(...resData);
 
           // 재정렬
           return this.#ordering(r, info.getter.orderBy);

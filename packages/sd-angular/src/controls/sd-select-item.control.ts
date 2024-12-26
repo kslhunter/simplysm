@@ -1,19 +1,17 @@
 import {
+  afterRender,
   ChangeDetectionStrategy,
   Component,
-  contentChild,
   forwardRef,
   HostListener,
   inject,
   input,
-  TemplateRef,
   ViewEncapsulation,
 } from "@angular/core";
 import { SdSelectControl } from "./sd-select-control";
-import { NgTemplateOutlet } from "@angular/common";
 import { SdCheckboxControl } from "./sd-checkbox.control";
 import { SdGapControl } from "./sd-gap.control";
-import { $computed, $effect } from "../utils/hooks";
+import { $computed, $effect, $signal } from "../utils/hooks";
 import { injectElementRef } from "../utils/dom/element-ref.injector";
 import { useRipple } from "../utils/use-ripple";
 import { transformBoolean } from "../utils/type-tramsforms";
@@ -23,7 +21,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdCheckboxControl, NgTemplateOutlet, SdGapControl],
+  imports: [SdCheckboxControl, SdGapControl],
   styles: [
     /* language=SCSS */ `
       @use "../scss/mixins";
@@ -67,11 +65,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
     }
 
     <div class="_content" style="display: inline-block;">
-      @if (!labelTemplateRef()) {
-        <ng-content />
-      } @else {
-        <ng-template [ngTemplateOutlet]="labelTemplateRef()!" />
-      }
+      <ng-content />
     </div>
   `,
   host: {
@@ -88,10 +82,10 @@ export class SdSelectItemControl {
   value = input<any>();
   disabled = input(false, { transform: transformBoolean });
 
-  labelTemplateRef = contentChild<any, TemplateRef<void>>("label", { read: TemplateRef });
-
   selectMode = $computed(() => this.#selectControl.selectMode());
   isSelected = $computed(() => this.#selectControl.getIsSelectedItemControl(this));
+
+  contentHTML = $signal<string>("");
 
   constructor() {
     useRipple(() => !this.disabled());
@@ -102,6 +96,13 @@ export class SdSelectItemControl {
       onCleanup(() => {
         this.#selectControl.itemControls.update((v) => v.filter((item) => item !== this));
       });
+    });
+
+    afterRender(() => {
+      const html = this.elRef.nativeElement.findFirst("> ._content")!.innerHTML;
+      if (this.contentHTML() !== html.trim()) {
+        this.contentHTML.set(html.trim());
+      }
     });
   }
 

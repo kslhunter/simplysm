@@ -161,24 +161,26 @@ export class SdKanbanLaneControl<L, T> {
 
   onSelectAllButtonClick(val: boolean) {
     if (val) {
-      for (const ctrl of this.kanbanControls()) {
-        this.#boardControl.selectedValues.update((v) => {
+      this.#boardControl.selectedValues.update((v) => {
+        const r = [...v];
+        for (const ctrl of this.kanbanControls()) {
           if (!v.includes(ctrl.value())) {
-            return [...v, ctrl.value()];
+            r.push(ctrl.value());
           }
-          return v;
-        });
-      }
+        }
+        return r.length === v.length ? v : r;
+      });
     }
     else {
-      for (const ctrl of this.kanbanControls()) {
-        this.#boardControl.selectedValues.update((v) => {
+      this.#boardControl.selectedValues.update((v) => {
+        const r = [...v];
+        for (const ctrl of this.kanbanControls()) {
           if (v.includes(ctrl.value())) {
-            return v.filter((item) => item !== ctrl.value());
+            r.remove((item) => item === ctrl.value());
           }
-          return v;
-        });
-      }
+        }
+        return r.length === v.length ? v : r;
+      });
     }
   }
 

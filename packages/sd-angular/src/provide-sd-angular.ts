@@ -126,13 +126,6 @@ export function provideSdAngular(opt: {
           sortDown: faSortDown,
           sortUp: faSortUp,
 
-          // refresh: faRefresh,
-          // plusCircle: faPlusCircle,
-          // eraser: faEraser,
-          // redo: faRedo,
-          // upload: faUpload,
-          // fileExcel: faFileExcel,
-
           search: faSearch,
           externalLink: faExternalLink,
           edit: faEdit,

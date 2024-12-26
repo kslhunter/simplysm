@@ -12,7 +12,10 @@ import {
 } from "@angular/core";
 import { SdSelectItemControl } from "./sd-select-item.control";
 import { SdDropdownControl } from "./sd-dropdown.control";
-import { type SdItemOfTemplateContext, SdItemOfTemplateDirective } from "../directives/sd-item-of.template-directive";
+import {
+  type SdItemOfTemplateContext,
+  SdItemOfTemplateDirective,
+} from "../directives/sd-item-of.template-directive";
 import { SdDockContainerControl } from "./sd-dock-container.control";
 import { NgTemplateOutlet } from "@angular/common";
 import { SdDockControl } from "./sd-dock.control";
@@ -336,15 +339,24 @@ export class SdSelectControl<M extends "single" | "multi", T> {
   hideSelectAll = input(false, { transform: transformBoolean });
   placeholder = input<string>();
 
-  contentElRef = viewChild.required<any, ElementRef<HTMLElement>>("contentEl", { read: ElementRef });
+  contentElRef = viewChild.required<any, ElementRef<HTMLElement>>(
+    "contentEl",
+    { read: ElementRef },
+  );
   dropdownControl = viewChild.required<SdDropdownControl>("dropdown");
-  dropdownPopupElRef = viewChild.required<any, ElementRef<HTMLElement>>("dropdownPopup", { read: ElementRef });
+  dropdownPopupElRef = viewChild.required<any, ElementRef<HTMLElement>>(
+    "dropdownPopup",
+    { read: ElementRef },
+  );
 
   headerTemplateRef = contentChild<any, TemplateRef<void>>("header", { read: TemplateRef });
   beforeTemplateRef = contentChild<any, TemplateRef<void>>("before", { read: TemplateRef });
-  itemTemplateRef = contentChild<any, TemplateRef<SdItemOfTemplateContext<T>>>(SdItemOfTemplateDirective, {
-    read: TemplateRef,
-  });
+  itemTemplateRef = contentChild<any, TemplateRef<SdItemOfTemplateContext<T>>>(
+    SdItemOfTemplateDirective,
+    {
+      read: TemplateRef,
+    },
+  );
 
   itemControls = $signal<SdSelectItemControl[]>([]);
 
@@ -361,12 +373,19 @@ export class SdSelectControl<M extends "single" | "multi", T> {
 
   constructor() {
     $effect(() => {
-      const selectedItemControls = this.itemControls().filter((itemControl) => itemControl.isSelected());
-      const selectedItemEls = selectedItemControls.map((item) => item.elRef.nativeElement);
-      const innerHTML = selectedItemEls
-        .map((el) => el.findFirst("> ._content")?.innerHTML ?? "")
+      const selectedItemControls = this.itemControls()
+        .filter((itemControl) => itemControl.isSelected());
+      // const selectedItemEls = selectedItemControls.map((item) => item.elRef.nativeElement);
+      // const innerHTML = selectedItemEls
+      //   .map((el) => el.findFirst("> ._content")?.innerHTML ?? "")
+      //   .map((item) => `<div style="display: inline-block">${item}</div>`)
+      //   .join(this.multiSelectionDisplayDirection() === "vertical" ? "<div class='p-sm-0'></div>" : ", ");
+      const innerHTML = selectedItemControls
+        .map(ctl => ctl.contentHTML())
         .map((item) => `<div style="display: inline-block">${item}</div>`)
-        .join(this.multiSelectionDisplayDirection() === "vertical" ? "<div class='p-sm-0'></div>" : ", ");
+        .join(this.multiSelectionDisplayDirection() === "vertical"
+          ? "<div class='p-sm-0'></div>"
+          : ", ");
 
       if (innerHTML === "" && this.placeholder() !== undefined) {
         this.contentElRef().nativeElement.innerHTML = `<span class='sd-text-color-grey-default'>${this.placeholder()}</span>`;
