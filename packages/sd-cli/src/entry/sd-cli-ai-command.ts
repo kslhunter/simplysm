@@ -61,7 +61,7 @@ ${diff}`,
       /*`git commit ${commitMessage.split("\n")
         .map(item => `-m "${item.replaceAll(/"/g, "\\\"")}"`)
         .join(" ")}`*/
-      `git commit -m $"${commitMessage.replaceAll(/"/g, "\\\"")}}"`,
+      `git commit -m $"${commitMessage.replaceAll(/"/g, "\\\"").replaceAll(/\n/g, "\\n")}}"`,
       { cwd: process.cwd() },
     );
     process.stdout.write("\n\n" + commitMessage + "\n\n");
