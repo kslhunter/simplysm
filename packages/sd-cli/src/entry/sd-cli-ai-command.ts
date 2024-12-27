@@ -1,6 +1,5 @@
 import { SdProcess } from "@simplysm/sd-core-node";
-import { NeverEntryError, StringUtils } from "@simplysm/sd-core-common";
-import Anthropic from "@anthropic-ai/sdk";
+import { StringUtils } from "@simplysm/sd-core-common";
 
 export class SdCliAiCommand {
   static async commitAsync(): Promise<void> {
@@ -23,7 +22,7 @@ export class SdCliAiCommand {
         ":(exclude).*",
         ":(exclude)_*",
         ":(exclude)yarn.lock",
-        ":(exclude)packages/*/styles.css"
+        ":(exclude)packages/*/styles.css",
       ],
       { cwd: process.cwd() },
     );
@@ -32,7 +31,7 @@ export class SdCliAiCommand {
       throw new Error("변경사항이 없습니다.");
     }
 
-    const client = new Anthropic({ apiKey: process.env["ANTHROPIC_API_KEY"] });
+    /*const client = new Anthropic({ apiKey: process.env["ANTHROPIC_API_KEY"] });
 
     process.stdout.write("AI를 통해 커밋 메시지 생성중...\n");
     const message = await client.messages.create({
@@ -62,9 +61,14 @@ ${diff}`,
     });
     if (message.content[0].type !== "text") {
       throw new NeverEntryError();
-    }
+    }*/
     // process.stdout.write(message.content[0].text);
 
+    const message = {
+      content: [{
+        text: "```adsfasdf\nasdfasdfbbb```"
+      }]
+    };
     const messages = message.content[0].text.matchAll(/```([^`]*)```/g);
     const commitMessage = Array.from(messages).map(item => item[1].trim()).join("\n\n\n");
 
