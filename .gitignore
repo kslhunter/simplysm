@@ -1,10 +1,4 @@
-.idea/*
-!.idea/*.iml
-!.idea/vcs.xml
-!.idea/webResources.xml
-!.idea/inspectionProfiles/
-.idea/inspectionProfiles/*
-!.idea/inspectionProfiles/profiles_settings.xml
+.idea/workspace.xml
 
 .yarn
 

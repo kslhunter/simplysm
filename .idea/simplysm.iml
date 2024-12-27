@@ -2,29 +2,11 @@
 <module type="WEB_MODULE" version="4">
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
+      <excludeFolder url="file://$MODULE_DIR$/.idea" />
       <excludeFolder url="file://$MODULE_DIR$/.tmp" />
       <excludeFolder url="file://$MODULE_DIR$/.yarn" />
-      <excludeFolder url="file://$MODULE_DIR$/_back" />
-      <excludeFolder url="file://$MODULE_DIR$/packages/sd-angular/dist" />
-      <excludeFolder url="file://$MODULE_DIR$/packages/sd-cli/dist" />
-      <excludeFolder url="file://$MODULE_DIR$/packages/sd-core-browser/dist" />
-      <excludeFolder url="file://$MODULE_DIR$/packages/sd-core-common/dist" />
-      <excludeFolder url="file://$MODULE_DIR$/packages/sd-core-node/dist" />
-      <excludeFolder url="file://$MODULE_DIR$/packages/sd-excel/dist" />
-      <excludeFolder url="file://$MODULE_DIR$/packages/sd-orm-common/dist" />
-      <excludeFolder url="file://$MODULE_DIR$/packages/sd-orm-node-mssql/dist" />
-      <excludeFolder url="file://$MODULE_DIR$/packages/sd-orm-node-mysql/dist" />
-      <excludeFolder url="file://$MODULE_DIR$/packages/sd-orm-node-sqlite/dist" />
-      <excludeFolder url="file://$MODULE_DIR$/packages/sd-orm-node/dist" />
-      <excludeFolder url="file://$MODULE_DIR$/packages/sd-service-client/dist" />
-      <excludeFolder url="file://$MODULE_DIR$/packages/sd-service-common/dist" />
-      <excludeFolder url="file://$MODULE_DIR$/packages/sd-service-server/dist" />
-      <excludeFolder url="file://$MODULE_DIR$/packages/sd-storage/dist" />
-      <excludeFolder url="file://$MODULE_DIR$/packages/ts-transformer-keys/dist" />
-      <excludeFolder url="file://$MODULE_DIR$/.idea" />
-      <excludeFolder url="file://$MODULE_DIR$/packages/cordova-plugin-app-storage/dist" />
-      <excludeFolder url="file://$MODULE_DIR$/packages/cordova-plugin-auto-update/dist" />
-      <excludeFolder url="file://$MODULE_DIR$/packages/cordova-plugin-usb-storage/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/temp" />
+      <excludeFolder url="file://$MODULE_DIR$/tmp" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
