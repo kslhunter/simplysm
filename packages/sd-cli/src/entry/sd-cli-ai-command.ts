@@ -63,10 +63,8 @@ ${diff}`,
     if (message.content[0].type !== "text") {
       throw new NeverEntryError();
     }
-    // process.stdout.write(message.content[0].text);
-    console.log(message.content[0].text);
 
-    const messages = message.content[0].text.matchAll(/```([^`]*)```/g);
+    const messages = message.content[0].text.matchAll(/```(?:\w*\n)?([\s\S]*?)```/g);
     const commitMessage = Array.from(messages).map(item => item[1].trim()).join("\n\n\n");
 
     await SdProcess.spawnAsync(`git commit -m "${commitMessage}"`);
