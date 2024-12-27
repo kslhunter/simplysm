@@ -118,4 +118,5 @@ export * from "./utils/route/query-param-map.signal-injector";
 export * from "./utils/sd-app-structure.utils";
 export * from "./utils/type-tramsforms";
 export * from "./utils/use-bg-theme";
+export * from "./utils/use-cumulate-selected-keys";
 export * from "./utils/use-ripple";

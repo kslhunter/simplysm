@@ -63,15 +63,6 @@ export function provideSdAngular(opt: {
   icons?: Partial<ISdAngularIcon>;
 }): EnvironmentProviders {
   return makeEnvironmentProviders([
-    /*provideEnvironmentInitializer(() => {
-      const _sdNgConf = inject(SdAngularConfigProvider);
-      const _sdTheme = inject(SdThemeProvider);
-      const _sdLocalStorage = inject(SdLocalStorageProvider);
-
-      return () => {
-        _sdTheme.theme.set(_sdLocalStorage.get("sd-theme") ?? _sdNgConf.defaultTheme);
-      };
-    }),*/
     {
       provide: ENVIRONMENT_INITIALIZER,
       useFactory: () => {
