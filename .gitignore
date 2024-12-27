@@ -2,6 +2,7 @@
 !.idea/*.iml
 !.idea/vcs.xml
 !.idea/webResources.xml
+!.idea/inspectionProfiles/profiles_settings.xml
 
 .yarn
 
