@@ -10,7 +10,7 @@ export class SdProcess {
   ): Promise<string> {
     return await new Promise<string>((resolve, reject) => {
 
-      const ps = cp.spawn(cmd.split(" ")[0], [cmd.split(" ").slice(1).join(" ")], {
+      const ps = cp.spawn(cmd, []/*[cmd.split(" ").slice(1).join(" ")]*/, {
         shell: true,
         stdio: "pipe",
         ...opts
