@@ -59,7 +59,7 @@ ${diff}`,
 
     await SdProcess.spawnAsync(
       `git commit ${commitMessage.split("\n")
-        .map(item => `-m "${item.replaceAll(/"/g, "\\\"")}"`)
+        .map(item => `-m "${item.replaceAll(/"/g, "\\\"")}" -m ""`)
         .join(" ")}`,
       { cwd: process.cwd() },
     );
