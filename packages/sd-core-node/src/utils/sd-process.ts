@@ -1,18 +1,21 @@
 import cp from "child_process";
 
 export class SdProcess {
-  public static async spawnAsync(
+  static async spawnAsync(
     cmd: string,
-    args: string[],
     opts?: cp.SpawnOptionsWithoutStdio & {
       messageConvert?: (buffer: Buffer) => string;
     },
     showMessage?: boolean,
   ): Promise<string> {
-    return await new Promise<string>((resolve, reject) => {
+    const splitCmd = this.#splitCommand(cmd);
+    if (!splitCmd) {
+      throw new Error(`커맨드(${cmd}) 파싱 실패`);
+    }
 
-      const ps = cp.spawn(cmd, args, {
-        stdio: "pipe",
+    return await new Promise<string>((resolve, reject) => {
+      const ps = cp.spawn(splitCmd[0], splitCmd.slice(1), {
+        cwd: process.cwd(),
         ...opts,
       });
 
@@ -48,6 +51,17 @@ export class SdProcess {
           : messageBuffer.toString();
         resolve(message);
       });
+    });
+  }
+
+  static #splitCommand(cmd: string) {
+    const regex = /[^\s"]+|"([^"\\]*(?:\\.[^"\\]*)*)"/g;
+    const matches = cmd.match(regex);
+    return matches?.map(match => {
+      if (match.startsWith("\"")) {
+        return match.slice(1, -1).replace(/\\"/g, "\"");
+      }
+      return match;
     });
   }
 }
