@@ -12,7 +12,6 @@ export class SdProcess {
     return await new Promise<string>((resolve, reject) => {
 
       const ps = cp.spawn(cmd, args, {
-        shell: true,
         stdio: "pipe",
         ...opts,
       });
