@@ -1,9 +1,0 @@
-{
-  "extends": "../../tsconfig.base.json",
-  "compilerOptions": {
-    "lib": ["ES2021", "DOM"],
-    "outDir": "./dist",
-    "types": ["node", "cordova"]
-  },
-  "files": ["./src/index.ts", "./src/ionic-webview.d.ts"]
-}
