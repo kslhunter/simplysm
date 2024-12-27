@@ -9,11 +9,12 @@ export class SdCliAiCommand {
     }
 
     process.stdout.write("실행중: git add .\n");
-    await SdProcess.spawnAsync("git add .", { cwd: process.cwd() });
+    await SdProcess.spawnAsync("git add .", [], { cwd: process.cwd() });
 
     process.stdout.write(`실행중: git diff --staged -- . ":(exclude).*!/" ":(exclude)_*/ ":(exclude)yarn.lock" ":(exclude)packages/*/styles.css"\n`);
     const diff = await SdProcess.spawnAsync(
       `git diff --text --staged -- . ":(exclude).*" ":(exclude)_*" ":(exclude)yarn.lock" ":(exclude)packages/*/styles.css"`,
+      [],
       { cwd: process.cwd() },
     );
 
@@ -61,7 +62,11 @@ ${diff}`,
       /*`git commit ${commitMessage.split("\n")
         .map(item => `-m "${item.replaceAll(/"/g, "\\\"")}"`)
         .join(" ")}`*/
-      `git commit -m $"${commitMessage.replaceAll(/"/g, "\\\"").replaceAll(/\n/g, "\\n")}}"`,
+      `git`,
+      [
+        "commit",
+        `-m`, `"${commitMessage}"`,
+      ],
       { cwd: process.cwd() },
     );
     process.stdout.write("\n\n" + commitMessage + "\n\n");

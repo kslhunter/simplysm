@@ -3,6 +3,7 @@ import cp from "child_process";
 export class SdProcess {
   public static async spawnAsync(
     cmd: string,
+    args: string[],
     opts?: cp.SpawnOptionsWithoutStdio & {
       messageConvert?: (buffer: Buffer) => string;
     },
@@ -10,7 +11,7 @@ export class SdProcess {
   ): Promise<string> {
     return await new Promise<string>((resolve, reject) => {
 
-      const ps = cp.spawn(cmd, {
+      const ps = cp.spawn(cmd, args, {
         shell: true,
         stdio: "pipe",
         ...opts,
