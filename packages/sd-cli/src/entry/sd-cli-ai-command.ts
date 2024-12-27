@@ -8,10 +8,10 @@ export class SdCliAiCommand {
       throw new Error("ANTHROPIC_API_KEY 환경변수가 설정되어 있지 않습니다.");
     }
 
-    process.stdout.write("실행중: git add .\n");
+    process.stdout.write("add 실행\n");
     await SdProcess.spawnAsync("git", ["add", "."], { cwd: process.cwd() });
 
-    process.stdout.write(`실행중: git diff --staged -- . ":(exclude).*!/" ":(exclude)_*/ ":(exclude)yarn.lock" ":(exclude)packages/*/styles.css"\n`);
+    process.stdout.write(`diff 실행\n`);
     const diff = await SdProcess.spawnAsync(
       `git`,
       [
