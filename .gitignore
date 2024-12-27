@@ -1,5 +1,7 @@
-.idea/dataSources
-.idea/dataSources.*
+.idea
+!.idea/*.iml
+!.idea/vcs.xml
+!.idea/webResources.xml
 
 .yarn
 
