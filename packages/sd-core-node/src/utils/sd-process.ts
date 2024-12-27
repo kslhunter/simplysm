@@ -6,14 +6,14 @@ export class SdProcess {
     opts?: cp.SpawnOptionsWithoutStdio & {
       messageConvert?: (buffer: Buffer) => string;
     },
-    showMessage?: boolean
+    showMessage?: boolean,
   ): Promise<string> {
     return await new Promise<string>((resolve, reject) => {
 
-      const ps = cp.spawn(cmd, []/*[cmd.split(" ").slice(1).join(" ")]*/, {
+      const ps = cp.spawn(cmd, {
         shell: true,
         stdio: "pipe",
-        ...opts
+        ...opts,
       });
 
       ps.on("error", (err) => {
@@ -36,12 +36,16 @@ export class SdProcess {
 
       ps.on("exit", (code) => {
         if (code !== 0) {
-          const message = opts?.messageConvert ? opts.messageConvert(messageBuffer) : messageBuffer.toString();
+          const message = opts?.messageConvert
+            ? opts.messageConvert(messageBuffer)
+            : messageBuffer.toString();
           reject(new Error(`'${cmd}' 명령이 오류와 함께 닫힘 (${code})\n${message}`));
           return;
         }
 
-        const message = opts?.messageConvert ? opts.messageConvert(messageBuffer) : messageBuffer.toString();
+        const message = opts?.messageConvert
+          ? opts.messageConvert(messageBuffer)
+          : messageBuffer.toString();
         resolve(message);
       });
     });
