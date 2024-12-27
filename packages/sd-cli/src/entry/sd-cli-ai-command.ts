@@ -58,7 +58,9 @@ ${diff}`,
     const commitMessage = Array.from(messages).map(item => item[1].trim()).join("\n\n\n");
 
     await SdProcess.spawnAsync(
-      `git commit ${commitMessage.split("\n").map(item => `-m "${item.replaceAll(/"/g, "\\\"")}"`).join(" ")}`,
+      `git commit ${commitMessage.split("\n")
+        .map(item => `-m "${item.replaceAll(/"/g, "\\\"")}"`)
+        .join(" ")}`,
       { cwd: process.cwd() },
     );
     process.stdout.write("\n\n" + commitMessage + "\n\n");
