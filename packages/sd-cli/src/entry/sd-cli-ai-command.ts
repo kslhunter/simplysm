@@ -59,10 +59,13 @@ ${diff}`,
 
     await SdProcess.spawnAsync(
       `git commit ${commitMessage.split("\n")
-        .map(item => `-m "${item.replaceAll(/"/g, "\\\"")}" -m ""`)
+        .map(item => `-m "${item.replaceAll(/"/g, "\\\"")}"`)
         .join(" ")}`,
       { cwd: process.cwd() },
     );
+    console.log(`git commit ${commitMessage.split("\n")
+      .map(item => `-m "${item.replaceAll(/"/g, "\\\"")}"`)
+      .join(" ")}`);
     process.stdout.write("\n\n" + commitMessage + "\n\n");
     process.stdout.write("커밋이 완료되었습니다. 위 커밋메시지가 맘에들지 않을경우, 직접 커밋을 취소하세요.\n");
   }
