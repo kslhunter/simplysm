@@ -6,7 +6,10 @@ import JSZip from "jszip";
 import { CordovaAppStorage } from "@simplysm/cordova-plugin-app-storage";
 
 export abstract class CordovaAutoUpdate {
-  static async runAsync(opt: { log: (messageHtml: string) => void; serviceClient?: SdServiceClient }) {
+  static async runAsync(opt: {
+    log: (messageHtml: string) => void;
+    serviceClient?: SdServiceClient
+  }) {
     if (navigator.userAgent.toLowerCase().includes("android")) {
       opt.log(`보유버전 확인 중...`);
 
@@ -31,7 +34,8 @@ export abstract class CordovaAutoUpdate {
               opt.serviceClient.serverUrl + serverVersionInfo.downloadPath,
               (progress) => {
                 opt.log(
-                  `최신버전 파일 다운로드중...(${((progress.receivedLength * 100) / progress.contentLength).toFixed(2)}%)`,
+                  `최신버전 파일 다운로드중...(${((progress.receivedLength * 100)
+                    / progress.contentLength).toFixed(2)}%)`,
                 );
               },
             );
@@ -44,7 +48,10 @@ export abstract class CordovaAutoUpdate {
               const zipFile = zip.files[zipFilePath];
               if (!zipFile.dir) {
                 const zipFileBlob = await zipFile.async("blob");
-                await storage.writeAsync(`/files/www/${zipFilePath.replace(/\\/g, "/")}`, zipFileBlob);
+                await storage.writeAsync(
+                  `/files/www/${zipFilePath.replace(/\\/g, "/")}`,
+                  zipFileBlob,
+                );
                 opt.log(`최신버전 파일 압축해제...`);
               }
             }

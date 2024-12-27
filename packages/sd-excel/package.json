@@ -5,7 +5,7 @@
   "author": "김석래",
   "repository": {
     "type": "git",
-    "url": "https://github.com/kslhunter/simplysm12.git",
+    "url": "https://github.com/kslhunter/simplysm.git",
     "directory": "packages/sd-excel"
   },
   "license": "MIT",
