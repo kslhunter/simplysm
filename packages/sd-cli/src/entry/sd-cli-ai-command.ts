@@ -46,16 +46,16 @@ export class SdCliAiCommand {
 
 ${diff}`*/
             `
-다음 Git diff의 내용을 분석하고, 수정된 기능들에 대한 적절한 커밋메시지를 작성해줘
+다음 "git diff"을 통해 변경된 사항들을 분석하고, 변경된 기능들에 대한 적절한 커밋메시지를 작성해줘
 - 한국어로 작성 해줘
-- 첫줄은 수정된 사항 모두를 아우를 수 있는 100자 이하의 하나의 메시지로 작성해줘
+- 첫줄은 변경사항 모두를 아우를 수 있는 하나의 메시지로 작성해줘
 - 커밋메시지는 반드시 "\`\`\`"코드블록으로 감싸서 답변해줘.
 - 첫줄 아래 한줄을 비우고, 자세한 기능 목록을 "-"로 구분하여 작성해줘.
-- 자세한 내용에는 모든 수정사항에 대한 설명이 누락 없이 표현되어야해
+- 자세한 내용에는 모든 변경사항에 대한 설명이 누락 없이 표현되어야해
 - 변경사항을 명확하고 간결하게 설명해야해
 - 수동적인 표현 대신 능동적 표현을 사용해
 
-DIFF 내용:
+"git diff" 내용:
 ${diff}`,
         },
       ],
@@ -64,11 +64,16 @@ ${diff}`,
       throw new NeverEntryError();
     }
 
+    process.stdout.write(
+      "\n\n-------------------------\n" +
+      message.content[0].text +
+      "\n-------------------------\n\n",
+    );
+
     const messages = message.content[0].text.matchAll(/```(?:\w*\n)?([\s\S]*?)```/g);
     const commitMessage = Array.from(messages).map(item => item[1].trim()).join("\n\n\n");
 
     await SdProcess.spawnAsync(`git commit -m "${commitMessage}"`);
-    process.stdout.write("\n\n```\n" + commitMessage + "\n```\n\n");
     process.stdout.write("커밋이 완료되었습니다. 위 커밋메시지가 맘에들지 않을경우, 직접 커밋을 취소하세요.\n");
   }
 }
