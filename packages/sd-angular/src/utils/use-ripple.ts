@@ -5,6 +5,11 @@ export function useRipple(enableFn?: () => boolean) {
   const _elRef = injectElementRef<HTMLElement>();
 
   $effect([], (onCleanup) => {
+    Object.assign(_elRef.nativeElement.style, {
+      position: "relative",
+      overflow: "hidden",
+    });
+
     const onMouseDown = (event: MouseEvent) => {
       if (enableFn && !enableFn()) return;
 
@@ -44,10 +49,6 @@ export function useRipple(enableFn?: () => boolean) {
       };
     };
 
-    Object.assign(_elRef.nativeElement.style, {
-      position: "relative",
-      overflow: "hidden",
-    });
     _elRef.nativeElement.addEventListener("mousedown", onMouseDown);
 
     onCleanup(() => {

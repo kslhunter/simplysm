@@ -11,24 +11,58 @@ HTMLElement.prototype.repaint = function (this: HTMLElement): void {
   this.offsetHeight;
 };
 
-HTMLElement.prototype.getRelativeOffset = function (parent: HTMLElement | string): { top: number; left: number } {
-  const parentEl = typeof parent === "string" ? this.findParent(parent) : parent;
+HTMLElement.prototype.getRelativeOffset = function (parent: HTMLElement | string): {
+  top: number;
+  left: number
+} {
+  // 1. parent 요소 찾기
+  const parentEl = typeof parent === "string"
+    ? this.closest(parent) // findParent 대신 더 신뢰할 수 있는 closest 사용
+    : parent;
 
-  let cursor = this;
-  let top = cursor.offsetTop;
-  let left = cursor.offsetLeft;
-  while (cursor.offsetParent && cursor.offsetParent !== parentEl) {
-    cursor = cursor.offsetParent as HTMLElement;
-    top += cursor.offsetTop;
-    left += cursor.offsetLeft;
+  if (!(parentEl instanceof HTMLElement)) {
+    throw new Error("Parent element not found");
   }
 
-  cursor = this;
-  while (cursor.parentElement && cursor !== parentEl) {
-    cursor = cursor.parentElement;
-    top -= cursor.scrollTop;
-    left -= cursor.scrollLeft;
+  // 2. getBoundingClientRect()를 사용하여 더 정확한 위치 계산
+  const elementRect = this.getBoundingClientRect();
+  const parentRect = parentEl.getBoundingClientRect();
+
+  // 3. 스크롤 위치 고려
+  const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+  const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+  // 4. 부모 요소와의 상대적 위치 계산 (스크롤 위치 반영)
+  const relativeOffset = {
+    top: elementRect.top - parentRect.top + scrollTop + (parentEl.scrollTop || 0),
+    left: elementRect.left - parentRect.left + scrollLeft + (parentEl.scrollLeft || 0)
+  };
+
+  // 5. 부모 요소들의 border와 padding 고려
+  let currentEl = this.parentElement;
+  while (currentEl && currentEl !== parentEl) {
+    const style = window.getComputedStyle(currentEl);
+    relativeOffset.top += parseFloat(style.borderTopWidth) || 0;
+    relativeOffset.left += parseFloat(style.borderLeftWidth) || 0;
+
+    currentEl = currentEl.parentElement;
   }
 
-  return {top, left};
+  // 6. transform, rotation 등의 CSS 변환 고려
+  if (this.style.transform || parentEl.style.transform) {
+    const elementMatrix = new DOMMatrix(window.getComputedStyle(this).transform);
+    const parentMatrix = new DOMMatrix(window.getComputedStyle(parentEl).transform);
+
+    // transform이 적용된 경우 매트릭스 연산으로 보정
+    if (!elementMatrix.isIdentity || !parentMatrix.isIdentity) {
+      const transformedPoint = parentMatrix.inverse()
+        .multiply(elementMatrix)
+        .transformPoint(new DOMPoint(relativeOffset.left, relativeOffset.top));
+
+      relativeOffset.left = transformedPoint.x;
+      relativeOffset.top = transformedPoint.y;
+    }
+  }
+
+  return relativeOffset;
 };

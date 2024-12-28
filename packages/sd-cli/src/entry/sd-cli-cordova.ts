@@ -5,7 +5,7 @@ import JSZip from "jszip";
 import { type INpmConfig } from "../types/common-configs.types";
 import { type ISdClientBuilderCordovaConfig } from "../types/config.types";
 
-const BIN_PATH = path.resolve(process.cwd(), "node_modules/.bin/cordova.cmd");
+// const BIN_PATH = path.resolve(process.cwd(), "node_modules/.bin/cordova.cmd");
 
 export class SdCliCordova {
   private _logger = SdLogger.get(["simplysm", "sd-cli", "SdCliCordova"]);
@@ -31,11 +31,11 @@ export class SdCliCordova {
     if (FsUtils.exists(cordovaPath)) {
       this._logger.log("이미 생성되어있는 '.cordova'를 사용합니다.");
     } else {
-      await this._execAsync(`${BIN_PATH} telemetry on`, this._opt.pkgPath);
+      await this._execAsync(`npx cordova telemetry on`, this._opt.pkgPath);
 
       // 프로젝트 생성
       await this._execAsync(
-        `${BIN_PATH} create "${cordovaPath}" "${this._opt.config.appId}" "${this._opt.config.appName}"`,
+        `npx cordova create "${cordovaPath}" "${this._opt.config.appId}" "${this._opt.config.appName}"`,
         process.cwd(),
       );
 
@@ -62,9 +62,9 @@ export class SdCliCordova {
       if (!alreadyPlatforms.includes(platform)) {
         // await this._execAsync(`${BIN_PATH} platform add ${platform}`, cordovaPath);
         if (platform === "android") {
-          await this._execAsync(`${BIN_PATH} platform add ${platform}@12.0.0`, cordovaPath);
+          await this._execAsync(`npx cordova platform add ${platform}@12.0.0`, cordovaPath);
         } else {
-          await this._execAsync(`${BIN_PATH} platform add ${platform}`, cordovaPath);
+          await this._execAsync(`npx cordova platform add ${platform}`, cordovaPath);
         }
       }
     }
@@ -112,7 +112,7 @@ export class SdCliCordova {
     // 미설치 플러그인들 설치
     for (const usePlugin of usePlugins) {
       if (!alreadyPlugins.some((item) => usePlugin === item.id || usePlugin === item.name)) {
-        await this._execAsync(`${BIN_PATH} plugin add ${usePlugin}`, cordovaPath);
+        await this._execAsync(`npx cordova plugin add ${usePlugin}`, cordovaPath);
       }
     }
 
@@ -306,7 +306,7 @@ export class SdCliCordova {
     }*/
 
     // 각 플랫폼 www 준비
-    await this._execAsync(`${BIN_PATH} prepare`, cordovaPath);
+    await this._execAsync(`npx cordova prepare`, cordovaPath);
   }
 
   public async buildAsync(outPath: string): Promise<void> {
@@ -315,7 +315,7 @@ export class SdCliCordova {
     // 실행
     const buildType = this._opt.config.debug ? "debug" : "release";
     for (const platform of this._platforms) {
-      await this._execAsync(`${BIN_PATH} build ${platform} --${buildType}`, cordovaPath);
+      await this._execAsync(`npx cordova build ${platform} --${buildType}`, cordovaPath);
     }
 
     for (const platform of Object.keys(this._opt.config.platform ?? {})) {

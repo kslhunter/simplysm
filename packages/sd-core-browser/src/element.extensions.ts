@@ -28,6 +28,7 @@ if (typeof Element.prototype.matches === "undefined") {
   Element.prototype.matches = Element.prototype["msMatchesSelector"];
 }
 
+/** @deprecated 대신 브라우저 내장의 'closest'를 사용하세요. **/
 Element.prototype.findParent = function (arg: string | Element): HTMLElement | undefined {
   let cursor = this.parentElement;
   while (cursor) {

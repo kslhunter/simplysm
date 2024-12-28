@@ -49,7 +49,7 @@ export class SdCliElectron {
     await SdProcess.spawnAsync(`npm install`, { cwd: electronPath }, true);
 
     logger.log(`electron rebuild`);
-    await SdProcess.spawnAsync(`electron-rebuild`, { cwd: electronPath }, true);
+    await SdProcess.spawnAsync(`npx electron-rebuild`, { cwd: electronPath }, true);
 
     /*for (const reinstallPkgName of reinstallPkgNames) {
       if (FsUtil.exists(path.resolve(electronPath, "node_modules", reinstallPkgName, "binding.gyp"))) {
@@ -63,7 +63,7 @@ export class SdCliElectron {
     }*/
 
     logger.log("electron...");
-    await SdProcess.spawnAsync(`electron .`, { cwd: electronPath }, true);
+    await SdProcess.spawnAsync(`npx electron .`, { cwd: electronPath }, true);
   }
 
   static async buildForDevAsync(opt: { confFileRelPath: string; optNames: string[]; pkgName: string }): Promise<void> {
