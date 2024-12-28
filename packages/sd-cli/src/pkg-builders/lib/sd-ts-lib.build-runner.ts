@@ -1,10 +1,10 @@
-import { FsUtils, SdLogger, PathUtils, SdFsWatcher, type TNormPath } from "@simplysm/sd-core-node";
+import { FsUtils, SdLogger, PathUtils, SdFsWatcher, TNormPath } from "@simplysm/sd-core-node";
 import path from "path";
 import { EventEmitter } from "events";
 import { SdCliIndexFileGenerator } from "./sd-cli-index.file-generator";
 import { SdTsLibBuilder } from "./sd-ts-lib.builder";
-import { type ISdLibPackageConfig, type ISdProjectConfig } from "../../types/config.types";
-import { type ISdBuildMessage, type ISdBuildRunnerResult } from "../../types/build.types";
+import { ISdLibPackageConfig, ISdProjectConfig } from "../../types/config.types";
+import { ISdBuildMessage, ISdBuildRunnerResult } from "../../types/build.types";
 
 export class SdTsLibBuildRunner extends EventEmitter {
   private _logger = SdLogger.get(["simplysm", "sd-cli", "SdCliTsLibBuilder"]);

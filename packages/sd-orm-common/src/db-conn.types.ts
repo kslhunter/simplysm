@@ -1,5 +1,5 @@
 import { EventEmitter } from "events";
-import type { IQueryColumnDef } from "./query/query-builder.types";
+import { IQueryColumnDef } from "./query/query-builder.types";
 
 export interface IDbConn extends EventEmitter {
   config: TDbConnConf;

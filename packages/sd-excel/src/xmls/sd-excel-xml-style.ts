@@ -1,9 +1,9 @@
 import {
-  type ISdExcelXml,
-  type ISdExcelXmlStyleData,
-  type ISdExcelXmlStyleDataBorder,
-  type ISdExcelXmlStyleDataFill,
-  type ISdExcelXmlStyleDataXf
+  ISdExcelXml,
+  ISdExcelXmlStyleData,
+  ISdExcelXmlStyleDataBorder,
+  ISdExcelXmlStyleDataFill,
+  ISdExcelXmlStyleDataXf
 } from "../types";
 import {NumberUtils, ObjectUtils} from "@simplysm/sd-core-common";
 

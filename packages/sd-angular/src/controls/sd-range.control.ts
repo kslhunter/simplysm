@@ -5,7 +5,7 @@ import {
   output,
   ViewEncapsulation,
 } from "@angular/core";
-import { SdTextfieldControl, type TSdTextfieldTypes } from "./sd-textfield.control";
+import { SdTextfieldControl, TSdTextfieldTypes } from "./sd-textfield.control";
 import { transformBoolean } from "../utils/type-tramsforms";
 import { $model } from "../utils/hooks";
 

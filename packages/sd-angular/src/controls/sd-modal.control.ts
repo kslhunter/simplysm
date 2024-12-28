@@ -13,7 +13,6 @@ import { NumberUtils } from "@simplysm/sd-core-common";
 import { SdAnchorControl } from "./sd-anchor.control";
 import { SdPaneControl } from "./sd-pane.control";
 import { SdSystemConfigProvider } from "../providers/sd-system-config.provider";
-import { type ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
 import { SdEventsDirective } from "../directives/sd-events.directive";
 import { SdDockContainerControl } from "./sd-dock-container.control";
 import { SdDockControl } from "./sd-dock.control";
@@ -22,6 +21,7 @@ import { $effect, $model, $signal } from "../utils/hooks";
 import { injectElementRef } from "../utils/dom/element-ref.injector";
 import { transformBoolean } from "../utils/type-tramsforms";
 import { SdIconControl } from "./sd-icon.control";
+import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
 
 @Component({
   selector: "sd-modal",

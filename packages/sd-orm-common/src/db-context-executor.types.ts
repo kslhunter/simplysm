@@ -1,6 +1,6 @@
-import {type TDbContextOption} from "./db-context";
-import type { ISOLATION_LEVEL } from "./db-conn.types";
-import type { IQueryColumnDef, TQueryDef } from "./query/query-builder.types";
+import {TDbContextOption} from "./db-context";
+import { ISOLATION_LEVEL } from "./db-conn.types";
+import { IQueryColumnDef, TQueryDef } from "./query/query-builder.types";
 
 export interface IDbContextExecutor {
   getInfoAsync(): Promise<{

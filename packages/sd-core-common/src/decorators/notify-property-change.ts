@@ -1,5 +1,5 @@
 import {PropertyGetSetDecoratorBase} from "./property-get-set.decorator-base";
-import {type TPropertyDecoratorReturn} from "./decorator-return.types";
+import {TPropertyDecoratorReturn} from "./decorator-return.types";
 
 /**
  * 속성에 설정하여, 동일 클래스의 {@link INotifyPropertyChange.onPropertyChange} 호출

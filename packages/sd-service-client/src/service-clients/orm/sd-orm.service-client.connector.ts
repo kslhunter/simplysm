@@ -1,5 +1,5 @@
 import {SdOrmServiceClientDbContextExecutor} from "./sd-orm.service-client.db-context-executor";
-import {type ISdOrmServiceConnectConfig} from "./sd-orm.service-client.interfaces";
+import {ISdOrmServiceConnectConfig} from "./sd-orm.service-client.interfaces";
 import {DbContext} from "@simplysm/sd-orm-common";
 import {SdServiceClient} from "../../sd-service-client";
 

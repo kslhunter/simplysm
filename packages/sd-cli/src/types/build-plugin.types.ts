@@ -1,5 +1,5 @@
 import esbuild from "esbuild";
-import { type TNormPath } from "@simplysm/sd-core-node";
+import { TNormPath } from "@simplysm/sd-core-node";
 
 export interface ISdCliServerPluginResultCache {
   watchFileSet?: Set<TNormPath>;

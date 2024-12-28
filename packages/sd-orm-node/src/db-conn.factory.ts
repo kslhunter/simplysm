@@ -1,4 +1,4 @@
-import {type IDbConn, type TDbConnConf} from "@simplysm/sd-orm-common";
+import {IDbConn, TDbConnConf} from "@simplysm/sd-orm-common";
 
 export class DbConnFactory {
   public static async createAsync(config: TDbConnConf): Promise<IDbConn> {

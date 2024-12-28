@@ -9,11 +9,11 @@ import { injectElementRef } from "../utils/dom/element-ref.injector";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import {
   icon,
-  type IconDefinition,
+  IconDefinition,
   parse,
-  type RotateProp,
-  type SizeProp,
-  type Transform,
+  RotateProp,
+  SizeProp,
+  Transform,
 } from "@fortawesome/fontawesome-svg-core";
 import { transformBoolean } from "../utils/type-tramsforms";
 import { $effect } from "../utils/hooks";

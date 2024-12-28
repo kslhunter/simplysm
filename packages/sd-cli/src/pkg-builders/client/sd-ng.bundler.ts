@@ -1,6 +1,6 @@
 import path from "path";
-import esbuild, { type Metafile } from "esbuild";
-import { FsUtils, PathUtils, SdLogger, type TNormPath } from "@simplysm/sd-core-node";
+import esbuild, { Metafile } from "esbuild";
+import { FsUtils, PathUtils, SdLogger, TNormPath } from "@simplysm/sd-core-node";
 import { fileURLToPath } from "url";
 import nodeStdLibBrowser from "node-stdlib-browser";
 import nodeStdLibBrowserPlugin from "node-stdlib-browser/helpers/esbuild/plugin";
@@ -13,17 +13,17 @@ import {
   transformSupportedBrowsersToTargets,
 } from "@angular/build/src/tools/esbuild/utils";
 import {
-  type BuildOutputFile,
+  BuildOutputFile,
   BuildOutputFileType,
-  type InitialFileRecord,
+  InitialFileRecord,
 } from "@angular/build/src/tools/esbuild/bundler-context";
 import { extractLicenses } from "@angular/build/src/tools/esbuild/license-extractor";
 import {
-  type HintMode,
+  HintMode,
   IndexHtmlGenerator,
-  type IndexHtmlProcessResult,
+  IndexHtmlProcessResult,
 } from "@angular/build/src/utils/index-file/index-html-generator";
-import { type Entrypoint } from "@angular/build/src/utils/index-file/augment-index-html";
+import { Entrypoint } from "@angular/build/src/utils/index-file/augment-index-html";
 import { CrossOrigin } from "@angular/build/src/builders/application/schema";
 import { augmentAppWithServiceWorkerEsbuild } from "@angular/build/src/utils/service-worker";
 import {
@@ -40,10 +40,10 @@ import {
 import { resolveAssets } from "@angular/build/src/utils/resolve-assets";
 import { createSdNgPlugin } from "./sd-ng.plugin-creator";
 import { SdCliPerformanceTimer } from "../../utils/sd-cli-performance-time";
-import { type INpmConfig } from "../../types/common-configs.types";
-import { type ISdClientBuilderCordovaConfig } from "../../types/config.types";
-import { type ISdCliNgPluginResultCache } from "../../types/build-plugin.types";
-import { type ISdBuildMessage } from "../../types/build.types";
+import { INpmConfig } from "../../types/common-configs.types";
+import { ISdClientBuilderCordovaConfig } from "../../types/config.types";
+import { ISdCliNgPluginResultCache } from "../../types/build-plugin.types";
+import { ISdBuildMessage } from "../../types/build.types";
 import nodeModule from "node:module";
 
 export class SdNgBundler {

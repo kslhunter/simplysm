@@ -1,13 +1,13 @@
 import { EventEmitter } from "events";
-import { FsUtils, SdLogger, PathUtils, SdFsWatcher, type TNormPath } from "@simplysm/sd-core-node";
+import { FsUtils, SdLogger, PathUtils, SdFsWatcher, TNormPath } from "@simplysm/sd-core-node";
 import path from "path";
 import { SdNgBundler } from "./sd-ng.bundler";
 import { SdCliNgRoutesFileGenerator } from "./sd-cli-ng-routes.file-generator";
 import { SdCliCordova } from "../../entry/sd-cli-cordova";
 import { SdCliElectron } from "../../entry/sd-cli-electron";
-import { type ISdClientPackageConfig, type ISdProjectConfig } from "../../types/config.types";
-import { type INpmConfig } from "../../types/common-configs.types";
-import { type ISdBuildMessage, type ISdBuildRunnerResult } from "../../types/build.types";
+import { ISdClientPackageConfig, ISdProjectConfig } from "../../types/config.types";
+import { INpmConfig } from "../../types/common-configs.types";
+import { ISdBuildMessage, ISdBuildRunnerResult } from "../../types/build.types";
 
 export class SdClientBuildRunner extends EventEmitter {
   private _logger = SdLogger.get(["simplysm", "sd-cli", "SdClientBuildRunner"]);

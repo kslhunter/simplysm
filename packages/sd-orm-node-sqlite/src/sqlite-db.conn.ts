@@ -1,10 +1,10 @@
 import { EventEmitter } from "events";
 import { SdError, StringUtils } from "@simplysm/sd-core-common";
 import {
-  type IDbConn,
-  type IQueryColumnDef,
-  type ISOLATION_LEVEL,
-  type ISqliteDbConnConf,
+  IDbConn,
+  IQueryColumnDef,
+  ISOLATION_LEVEL,
+  ISqliteDbConnConf,
   QueryHelper,
 } from "@simplysm/sd-orm-common";
 import { SdLogger } from "@simplysm/sd-core-node";
@@ -43,7 +43,8 @@ export class SqliteDbConn extends EventEmitter implements IDbConn {
       conn.on("error", (error) => {
         if (this.isConnected) {
           this.#logger.error("error: " + error.message);
-        } else {
+        }
+        else {
           reject(new Error(error.message));
         }
       });
@@ -181,7 +182,11 @@ export class SqliteDbConn extends EventEmitter implements IDbConn {
     return results;
   }
 
-  async bulkInsertAsync(tableName: string, columnDefs: IQueryColumnDef[], records: Record<string, any>[]) {
+  async bulkInsertAsync(
+    tableName: string,
+    columnDefs: IQueryColumnDef[],
+    records: Record<string, any>[],
+  ) {
     const qh = new QueryHelper("sqlite");
 
     const colNames = columnDefs.map((def) => def.name);
@@ -198,7 +203,11 @@ export class SqliteDbConn extends EventEmitter implements IDbConn {
     await this.executeAsync([q]);
   }
 
-  async bulkUpsertAsync(tableName: string, columnDefs: IQueryColumnDef[], records: Record<string, any>[]) {
+  async bulkUpsertAsync(
+    tableName: string,
+    columnDefs: IQueryColumnDef[],
+    records: Record<string, any>[],
+  ) {
     const qh = new QueryHelper("mysql");
 
     const colNames = columnDefs.map((def) => def.name);
@@ -214,7 +223,8 @@ export class SqliteDbConn extends EventEmitter implements IDbConn {
 
     q += "\n";
     q += "ON DUPLICATE KEY UPDATE\n";
-    for (const colName of columnDefs.filter((item) => !item.autoIncrement).map((item) => item.name)) {
+    for (const colName of columnDefs.filter((item) => !item.autoIncrement)
+      .map((item) => item.name)) {
       q += `${colName} = VALUES(${colName}),\n`;
     }
     q = q.slice(0, -2) + ";";

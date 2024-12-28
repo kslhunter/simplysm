@@ -1,8 +1,8 @@
-import { DateOnly, DateTime, JsonConvert, Time, type Type, Uuid } from "@simplysm/sd-core-common";
+import { DateOnly, DateTime, JsonConvert, Time, Type, Uuid } from "@simplysm/sd-core-common";
 import { QueryUnit } from "../query/query-unit";
-import type { TEntity, TEntityValue } from "../query/queryable.types";
-import type { TQueryValue } from "../types";
-import type { IQueryResultParseOption } from "../db-context-executor.types";
+import { TEntity, TEntityValue } from "../query/queryable.types";
+import { TQueryValue } from "../types";
+import { IQueryResultParseOption } from "../db-context-executor.types";
 
 export class SdOrmUtils {
   public static replaceString(str: string) {

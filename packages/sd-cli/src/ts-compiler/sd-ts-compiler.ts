@@ -1,12 +1,12 @@
 import ts from "typescript";
 import path from "path";
-import { FsUtils, SdLogger, PathUtils, type TNormPath } from "@simplysm/sd-core-node";
+import { FsUtils, SdLogger, PathUtils, TNormPath } from "@simplysm/sd-core-node";
 import { StringUtils } from "@simplysm/sd-core-common";
 import { NgtscProgram, OptimizeFor } from "@angular/compiler-cli";
 import {
   ComponentStylesheetBundler,
 } from "@angular/build/src/tools/esbuild/angular/component-stylesheets";
-import { type AngularCompilerHost } from "@angular/build/src/tools/angular/angular-host";
+import { AngularCompilerHost } from "@angular/build/src/tools/angular/angular-host";
 import { transformSupportedBrowsersToTargets } from "@angular/build/src/tools/esbuild/utils";
 import browserslist from "browserslist";
 import {
@@ -15,11 +15,11 @@ import {
 import { SdCliPerformanceTimer } from "../utils/sd-cli-performance-time";
 import { SdCliConvertMessageUtils } from "../utils/sd-cli-convert-message.utils";
 import {
-  type ISdTsCompilerResult,
-  type IStylesheetBundlingResult,
-  type SdTsCompilerOptions,
+  ISdTsCompilerResult,
+  IStylesheetBundlingResult,
+  SdTsCompilerOptions,
 } from "../types/ts-compiler.types";
-import { type ISdBuildMessage } from "../types/build.types";
+import { ISdBuildMessage } from "../types/build.types";
 import {
   createWorkerTransformer,
 } from "@angular/build/src/tools/angular/transformers/web-worker-transformer";

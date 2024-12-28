@@ -3,26 +3,26 @@ import {
   FnUtils,
   NeverEntryError,
   ObjectUtils,
-  type Type,
-  type UnwrappedType,
+  Type,
+  UnwrappedType,
 } from "@simplysm/sd-core-common";
 import {
-  type IDeleteQueryDef,
-  type IInsertIfNotExistsQueryDef,
-  type IInsertQueryDef,
-  type IJoinQueryDef,
-  type IQueryTableNameDef,
-  type ISelectQueryDef,
-  type IUpdateQueryDef,
-  type IUpsertQueryDef,
-  type TQueryBuilderValue,
-  type TQueryDef,
+  IDeleteQueryDef,
+  IInsertIfNotExistsQueryDef,
+  IInsertQueryDef,
+  IJoinQueryDef,
+  IQueryTableNameDef,
+  ISelectQueryDef,
+  IUpdateQueryDef,
+  IUpsertQueryDef,
+  TQueryBuilderValue,
+  TQueryDef,
 } from "./query-builder.types";
 import { DbDefUtils } from "../utils/db-def.utils";
 import { QueryUnit } from "./query-unit";
 import { SdOrmUtils } from "../utils/sd-orm.utils";
-import type { ITableDef, TQueryValue } from "../types";
-import type {
+import { ITableDef, TQueryValue } from "../types";
+import {
   IQueryableDef,
   TEntity,
   TEntityUnwrap,
@@ -33,7 +33,7 @@ import type {
   TSelectEntity,
   TUpdateObject,
 } from "./queryable.types";
-import type { IQueryResultParseOption } from "../db-context-executor.types";
+import { IQueryResultParseOption } from "../db-context-executor.types";
 
 export class Queryable<D extends DbContext, T> {
   public T?: T;

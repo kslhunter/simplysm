@@ -1,5 +1,5 @@
-import {type Type} from "@simplysm/sd-core-common";
-import {type IIndexedDbStoreDef} from "./indexed-db.types";
+import {Type} from "@simplysm/sd-core-common";
+import {IIndexedDbStoreDef} from "./indexed-db.types";
 
 export class IndexedDbStoreDefUtils {
   static METADATA_KEY = "sd-indexed-db-store-def";

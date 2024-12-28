@@ -1,10 +1,10 @@
 import { inject, Injectable } from "@angular/core";
 import { SdAngularConfigProvider } from "./sd-angular-config.provider";
 import {
-  type ISdAppStructureItem,
-  type ISdFlatPage,
-  type ISdMenu,
-  type ISdPermission,
+  ISdAppStructureItem,
+  ISdFlatPage,
+  ISdMenu,
+  ISdPermission,
   SdAppStructureUtils,
 } from "../utils/sd-app-structure.utils";
 import { $signal } from "../utils/hooks";
@@ -74,7 +74,7 @@ export class SdAppStructureProvider<T extends string> {
           viewCodes.every(viewCode => (
             SdAppStructureUtils.getFlatPages(this.#items)
               .single(item => item.codeChain.join(".") === viewCode)
-              ?.hasPerms === false
+              ?.hasPerms !== true
           ))
         ) {
           result.push(key);

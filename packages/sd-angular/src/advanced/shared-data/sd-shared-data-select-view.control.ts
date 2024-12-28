@@ -11,9 +11,9 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import { StringUtils } from "@simplysm/sd-core-common";
-import { type IconDefinition } from "@fortawesome/fontawesome-svg-core";
-import { type ISharedDataBase } from "./sd-shared-data.provider";
-import { type SdItemOfTemplateContext, SdItemOfTemplateDirective } from "../../directives/sd-item-of.template-directive";
+import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
+import { ISharedDataBase } from "./sd-shared-data.provider";
+import { SdItemOfTemplateContext, SdItemOfTemplateDirective } from "../../directives/sd-item-of.template-directive";
 import { SdBusyContainerControl } from "../../controls/sd-busy-container.control";
 import { SdDockContainerControl } from "../../controls/sd-dock-container.control";
 import { SdDockControl } from "../../controls/sd-dock.control";
@@ -25,7 +25,7 @@ import { SdListItemControl } from "../../controls/sd-list-item.control";
 import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
 import { SdAnchorControl } from "../../controls/sd-anchor.control";
 import { SD_MODAL_INPUT, SdModalBase, SdModalProvider } from "../../providers/sd-modal.provider";
-import { type ISharedDataModalInputParam, type ISharedDataModalOutputResult } from "./sd-shared-data-select.control";
+import { ISharedDataModalInputParam, ISharedDataModalOutputResult } from "./sd-shared-data-select.control";
 import { $computed, $effect, $model, $signal } from "../../utils/hooks";
 import { transformBoolean } from "../../utils/type-tramsforms";
 import { SdIconControl } from "../../controls/sd-icon.control";

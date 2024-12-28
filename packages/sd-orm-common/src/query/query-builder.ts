@@ -1,8 +1,8 @@
 import { NeverEntryError, Uuid } from "@simplysm/sd-core-common";
 import { QueryHelper } from "./query-helper";
-import { type TDbContextOption } from "../db-context";
+import { TDbContextOption } from "../db-context";
 import { SdOrmUtils } from "../utils/sd-orm.utils";
-import type {
+import {
   IAddColumnQueryDef,
   IAddForeignKeyQueryDef,
   IAddPrimaryKeyQueryDef,

@@ -1,4 +1,4 @@
-import type { Signal, WritableSignal } from "@angular/core";
+import { Signal, WritableSignal } from "@angular/core";
 import { ObjectUtils } from "@simplysm/sd-core-common";
 import { $effect } from "./hooks";
 

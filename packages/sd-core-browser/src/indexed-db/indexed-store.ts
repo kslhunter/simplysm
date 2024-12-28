@@ -1,4 +1,4 @@
-import { type Type } from "@simplysm/sd-core-common";
+import { Type } from "@simplysm/sd-core-common";
 import { IndexedDbContext } from "./indexed-db-context";
 import { IndexedDbStoreDefUtils } from "./indexed-db-store-def.utils";
 

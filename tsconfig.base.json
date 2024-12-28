@@ -23,8 +23,6 @@
     "importHelpers": true,
     "useDefineForClassFields": false,
     "noUnusedLocals": false,
-    "verbatimModuleSyntax": true,
-    "isolatedModules": true,
     "baseUrl": ".",
     "paths": {
       "@simplysm/*": ["./packages/*/src/index.ts"],

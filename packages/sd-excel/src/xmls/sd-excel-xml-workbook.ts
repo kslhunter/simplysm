@@ -1,5 +1,5 @@
 import {NumberUtils} from "@simplysm/sd-core-common";
-import {type ISdExcelXml, type ISdExcelXmlWorkbookData} from "../types";
+import {ISdExcelXml, ISdExcelXmlWorkbookData} from "../types";
 
 export class SdExcelXmlWorkbook implements ISdExcelXml {
   public readonly data: ISdExcelXmlWorkbookData;

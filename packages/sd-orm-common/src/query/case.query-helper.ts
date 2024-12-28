@@ -1,10 +1,10 @@
-import { type TQueryValue } from "../types";
-import { type Type } from "@simplysm/sd-core-common";
+import { TQueryValue } from "../types";
+import { Type } from "@simplysm/sd-core-common";
 import { SdOrmUtils } from "../utils/sd-orm.utils";
 import { QueryUnit } from "./query-unit";
 import { QueryHelper } from "./query-helper";
-import type { TEntityValue } from "./queryable.types";
-import type { TQueryBuilderValue } from "./query-builder.types";
+import { TEntityValue } from "./queryable.types";
+import { TQueryBuilderValue } from "./query-builder.types";
 
 export class CaseQueryHelper<T extends TQueryValue> {
   private readonly _cases: any[] = [];

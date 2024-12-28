@@ -1,4 +1,4 @@
-import { type TFlatType } from "./type";
+import { TFlatType } from "./type";
 
 export type DeepPartial<T> = Partial<{
   [K in keyof T]: T[K] extends TFlatType

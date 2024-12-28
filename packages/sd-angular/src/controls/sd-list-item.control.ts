@@ -10,7 +10,7 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import { SdListControl } from "./sd-list.control";
-import { type IconDefinition } from "@fortawesome/fontawesome-svg-core";
+import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { SdCollapseIconControl } from "./sd-collapse-icon.control";
 import { SdCollapseControl } from "./sd-collapse.control";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";

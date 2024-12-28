@@ -3,8 +3,8 @@ import path from "path";
 import { EventEmitter } from "events";
 import { SdCliConvertMessageUtils } from "../../utils/sd-cli-convert-message.utils";
 // import { TSdLintWorkerType } from "../../types/workers.type";
-import { type ISdProjectConfig } from "../../types/config.types";
-import { type ISdBuildRunnerResult } from "../../types/build.types";
+import { ISdProjectConfig } from "../../types/config.types";
+import { ISdBuildRunnerResult } from "../../types/build.types";
 import { ESLint } from "eslint";
 
 export class SdJsLibBuildRunner extends EventEmitter {

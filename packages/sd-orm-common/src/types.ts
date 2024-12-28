@@ -1,4 +1,4 @@
-import { type TFlatType, type Type, type UnwrappedType } from "@simplysm/sd-core-common";
+import { TFlatType, Type, UnwrappedType } from "@simplysm/sd-core-common";
 import { DbContext } from "./db-context";
 import { Queryable } from "./query/queryable";
 

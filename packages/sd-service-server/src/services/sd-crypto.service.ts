@@ -1,6 +1,6 @@
 import crypto from "crypto";
 import { SdServiceBase } from "../types";
-import { type ICryptoConfig } from "@simplysm/sd-service-common";
+import { ICryptoConfig } from "@simplysm/sd-service-common";
 
 export class SdCryptoService extends SdServiceBase {
   encrypt(data: string | Buffer): string {

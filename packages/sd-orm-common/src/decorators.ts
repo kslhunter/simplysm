@@ -1,8 +1,8 @@
-import {type TClassDecoratorReturn, type TPropertyDecoratorReturn, type Type} from "@simplysm/sd-core-common";
+import {TClassDecoratorReturn, TPropertyDecoratorReturn, Type} from "@simplysm/sd-core-common";
 import {DbDefUtils} from "./utils/db-def.utils";
 import {DbContext} from "./db-context";
 import {Queryable} from "./query/queryable";
-import type { TSdOrmDataType } from "./types";
+import { TSdOrmDataType } from "./types";
 
 export function Table<T>(def: {
   description: string;

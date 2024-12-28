@@ -3,10 +3,10 @@ import mysql from "mysql";
 import {EventEmitter} from "events";
 import {SdError, StringUtils} from "@simplysm/sd-core-common";
 import {
-  type IDbConn,
-  type IDefaultDbConnConf,
-  type IQueryColumnDef,
-  type ISOLATION_LEVEL,
+  IDbConn,
+  IDefaultDbConnConf,
+  IQueryColumnDef,
+  ISOLATION_LEVEL,
   QueryHelper
 } from "@simplysm/sd-orm-common";
 

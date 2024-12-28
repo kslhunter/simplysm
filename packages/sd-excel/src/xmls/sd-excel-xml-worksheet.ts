@@ -1,9 +1,9 @@
 import {
-  type ISdExcelAddressRangePoint,
-  type ISdExcelCellData,
-  type ISdExcelRowData,
-  type ISdExcelXml,
-  type ISdExcelXmlWorksheetData
+  ISdExcelAddressRangePoint,
+  ISdExcelCellData,
+  ISdExcelRowData,
+  ISdExcelXml,
+  ISdExcelXmlWorksheetData
 } from "../types";
 import {SdExcelUtils} from "../utils/sd-excel.utils";
 import {NumberUtils} from "@simplysm/sd-core-common";

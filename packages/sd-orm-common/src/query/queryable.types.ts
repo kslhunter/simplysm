@@ -1,9 +1,9 @@
 import { QueryUnit } from "./query-unit";
 import { DbContext } from "../db-context";
 import { Queryable } from "./queryable";
-import type { WrappedType } from "@simplysm/sd-core-common";
-import type { TQueryValue } from "../types";
-import type { IJoinQueryDef, ISelectQueryDef, TQueryBuilderValue } from "./query-builder.types";
+import { WrappedType } from "@simplysm/sd-core-common";
+import { TQueryValue } from "../types";
+import { IJoinQueryDef, ISelectQueryDef, TQueryBuilderValue } from "./query-builder.types";
 
 export type TEntityValue<T extends TQueryValue> = T | QueryUnit<T>;
 export type TEntityValueOrQueryable<D extends DbContext, T extends TQueryValue> =

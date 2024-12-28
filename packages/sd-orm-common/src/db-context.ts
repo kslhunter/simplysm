@@ -1,19 +1,19 @@
 import { QueryBuilder } from "./query/query-builder";
-import { type IDbContextExecutor, type IQueryResultParseOption } from "./db-context-executor.types";
+import { IDbContextExecutor, IQueryResultParseOption } from "./db-context-executor.types";
 import { QueryHelper } from "./query/query-helper";
 import {
   DateTime,
   NeverEntryError,
   ObjectUtils,
   SdError,
-  type Type,
+  Type,
 } from "@simplysm/sd-core-common";
 import { Queryable } from "./query/queryable";
 import { SystemMigration } from "./models/system-migration";
 import { DbDefUtils } from "./utils/db-def.utils";
-import type { IQueryColumnDef, IQueryTableNameDef, TQueryDef } from "./query/query-builder.types";
-import type { IDbMigration, ITableDef } from "./types";
-import type { ISOLATION_LEVEL } from "./db-conn.types";
+import { IQueryColumnDef, IQueryTableNameDef, TQueryDef } from "./query/query-builder.types";
+import { IDbMigration, ITableDef } from "./types";
+import { ISOLATION_LEVEL } from "./db-conn.types";
 
 export abstract class DbContext {
   // static readonly SELECT_CACHE_TIMEOUT = 1000;
@@ -538,12 +538,19 @@ export abstract class DbContext {
       return {
         type: "createTable",
         table: this.getTableNameDef(tableDef),
-        columns: tableDef.columns.map((col) => ObjectUtils.clearUndefined({
-          name: col.name,
-          dataType: this.qh.type(col.dataType ?? col.typeFwd()),
-          autoIncrement: col.autoIncrement,
-          nullable: col.nullable,
-        })),
+        columns: tableDef.columns.map((col) => {
+          try{
+            return ObjectUtils.clearUndefined({
+              name: col.name,
+              dataType: this.qh.type(col.dataType ?? col.typeFwd()),
+              autoIncrement: col.autoIncrement,
+              nullable: col.nullable,
+            });
+          }
+          catch(err){
+            throw new SdError(err, `컬럼 정의 변환 오류: ${JSON.stringify(col)}`.trim());
+          }
+        }),
         primaryKeys: tableDef.columns
           .filter((item) => item.primaryKey !== undefined)
           .orderBy((item) => item.primaryKey!)

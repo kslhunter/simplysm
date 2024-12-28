@@ -1,7 +1,7 @@
 import path from "path";
 import {FsUtils} from "./fs.utils";
 import os from "os";
-import {DateTime, type DeepPartial, MathUtils, ObjectUtils} from "@simplysm/sd-core-common";
+import {DateTime, DeepPartial, MathUtils, ObjectUtils} from "@simplysm/sd-core-common";
 
 export enum SdLoggerStyle {
   clear = "\x1b[0m",

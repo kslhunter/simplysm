@@ -43,18 +43,16 @@ import { injectActivatedPageCode$ } from "../utils/route/activate-page-code.sign
   template: `
     <sd-busy-container [busy]="busy()">
       @if (!perms().includes("use")) {
-        @if (realContainerType() === 'modal') {
-          <sd-pane
-            class="tx-theme-grey-light p-xxl tx-center"
-            [class.show-effect]="realContainerType() !== 'modal'"
-          >
-            <br />
-            <sd-icon [icon]="icons.triangleExclamation" fixedWidth size="5x" />
-            <br />
-            <br />
-            {{ title() }}에 대한 사용권한이 없습니다. 시스템 관리자에게 문의하세요.
-          </sd-pane>
-        }
+        <sd-pane
+          class="tx-theme-grey-light p-xxl tx-center"
+          [class.show-effect]="realContainerType() !== 'modal'"
+        >
+          <br />
+          <sd-icon [icon]="icons.triangleExclamation" fixedWidth size="5x" />
+          <br />
+          <br />
+          {{ title() }}에 대한 사용권한이 없습니다. 시스템 관리자에게 문의하세요.
+        </sd-pane>
       } @else if (realContainerType() === "page") {
         <sd-topbar-container>
           <sd-topbar>

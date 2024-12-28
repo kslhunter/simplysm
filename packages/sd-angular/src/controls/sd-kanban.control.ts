@@ -13,7 +13,7 @@ import { $computed, $signal } from "../utils/hooks";
 import { SdKanbanLaneControl } from "./sd-kanban-lane.control";
 import { injectElementRef } from "../utils/dom/element-ref.injector";
 import { SdEventsDirective } from "../directives/sd-events.directive";
-import { type ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
+import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
 import { NumberUtils } from "@simplysm/sd-core-common";
 import { transformBoolean } from "../utils/type-tramsforms";
 

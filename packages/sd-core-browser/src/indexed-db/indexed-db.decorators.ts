@@ -1,4 +1,4 @@
-import {type TClassDecoratorReturn, type TPropertyDecoratorReturn, type Type} from "@simplysm/sd-core-common";
+import {TClassDecoratorReturn, TPropertyDecoratorReturn, Type} from "@simplysm/sd-core-common";
 import {IndexedDbStoreDefUtils} from "./indexed-db-store-def.utils";
 
 

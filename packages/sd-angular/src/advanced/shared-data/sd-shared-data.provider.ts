@@ -1,4 +1,4 @@
-import { inject, Injectable, type Signal, type WritableSignal } from "@angular/core";
+import { inject, Injectable, Signal, WritableSignal } from "@angular/core";
 import { SdServiceEventListenerBase } from "@simplysm/sd-service-common";
 import { SdServiceClientFactoryProvider } from "../../providers/sd-service-client-factory.provider";
 import { DateOnly, DateTime, ObjectUtils, Time, Wait } from "@simplysm/sd-core-common";

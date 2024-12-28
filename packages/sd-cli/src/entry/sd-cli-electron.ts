@@ -2,8 +2,8 @@ import { FsUtils, SdLogger, SdProcess } from "@simplysm/sd-core-node";
 import { pathToFileURL } from "url";
 import path from "path";
 import electronBuilder from "electron-builder";
-import { type ISdClientBuilderElectronConfig, type ISdProjectConfig } from "../types/config.types";
-import { type INpmConfig } from "../types/common-configs.types";
+import { ISdClientBuilderElectronConfig, ISdProjectConfig } from "../types/config.types";
+import { INpmConfig } from "../types/common-configs.types";
 
 export class SdCliElectron {
   static async runAsync(opt: { confFileRelPath: string; optNames: string[]; pkgName: string }): Promise<void> {

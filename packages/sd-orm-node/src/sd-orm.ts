@@ -1,5 +1,5 @@
-import {DbContext, type ISOLATION_LEVEL, type TDbConnConf, type TDbContextOption} from "@simplysm/sd-orm-common";
-import {type Type} from "@simplysm/sd-core-common";
+import {DbContext, ISOLATION_LEVEL, TDbConnConf, TDbContextOption} from "@simplysm/sd-orm-common";
+import {Type} from "@simplysm/sd-core-common";
 import {NodeDbContextExecutor} from "./node.db-context-executor";
 
 export class SdOrm<T extends DbContext> {

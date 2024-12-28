@@ -1,9 +1,9 @@
 import ts from "typescript";
 import os from "os";
 import path from "path";
-import { type PartialMessage } from "esbuild";
+import { PartialMessage } from "esbuild";
 import { ESLint } from "eslint";
-import { type ISdBuildMessage } from "../types/build.types";
+import { ISdBuildMessage } from "../types/build.types";
 import { PathUtils } from "@simplysm/sd-core-node";
 
 export class SdCliConvertMessageUtils {

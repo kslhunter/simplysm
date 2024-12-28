@@ -1,4 +1,4 @@
-import {type ISdExcelXml} from "../types";
+import {ISdExcelXml} from "../types";
 
 export class SdExcelXmlUnknown implements ISdExcelXml {
   public readonly data: Record<string, any>;

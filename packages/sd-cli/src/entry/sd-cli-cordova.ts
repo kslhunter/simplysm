@@ -2,8 +2,8 @@ import * as path from "path";
 import { FsUtils, SdLogger, SdProcess } from "@simplysm/sd-core-node";
 import xml2js from "xml2js";
 import JSZip from "jszip";
-import { type INpmConfig } from "../types/common-configs.types";
-import { type ISdClientBuilderCordovaConfig } from "../types/config.types";
+import { INpmConfig } from "../types/common-configs.types";
+import { ISdClientBuilderCordovaConfig } from "../types/config.types";
 
 // const BIN_PATH = path.resolve(process.cwd(), "node_modules/.bin/cordova.cmd");
 

@@ -9,13 +9,12 @@ import {
 } from "@angular/core";
 import { SdTopbarContainerControl } from "./sd-topbar-container.control";
 import { SdSidebarContainerControl } from "./sd-sidebar-container.control";
-import { type ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
+import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
 import { SdAnchorControl } from "./sd-anchor.control";
 import { SdGapControl } from "./sd-gap.control";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { $computed } from "../utils/hooks";
 import { injectElementRef } from "../utils/dom/element-ref.injector";
-import { SdRippleDirective } from "../directives/sd-ripple.directive";
 import { SdIconControl } from "./sd-icon.control";
 
 @Component({
@@ -23,7 +22,7 @@ import { SdIconControl } from "./sd-icon.control";
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdAnchorControl, SdGapControl, SdRippleDirective, SdIconControl],
+  imports: [SdAnchorControl, SdGapControl, SdIconControl],
   styles: [
     /* language=SCSS */ `
       @use "../scss/mixins";

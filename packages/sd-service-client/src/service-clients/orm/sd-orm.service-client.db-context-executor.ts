@@ -1,12 +1,12 @@
 import {
-  type IDbContextExecutor,
-  type IQueryColumnDef,
-  type IQueryResultParseOption,
-  type ISOLATION_LEVEL,
-  type TDbConnConf,
-  type TQueryDef,
+  IDbContextExecutor,
+  IQueryColumnDef,
+  IQueryResultParseOption,
+  ISOLATION_LEVEL,
+  TDbConnConf,
+   TQueryDef,
 } from "@simplysm/sd-orm-common";
-import { type TDbConnOptions } from "@simplysm/sd-service-common";
+import { TDbConnOptions } from "@simplysm/sd-service-common";
 import { SdServiceClient } from "../../sd-service-client";
 
 export class SdOrmServiceClientDbContextExecutor implements IDbContextExecutor {

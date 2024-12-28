@@ -9,10 +9,10 @@ import {
   Type,
   ViewEncapsulation,
 } from "@angular/core";
-import { type ISharedDataBase } from "./sd-shared-data.provider";
+import { ISharedDataBase } from "./sd-shared-data.provider";
 import { SD_MODAL_INPUT, SdModalBase, SdModalProvider } from "../../providers/sd-modal.provider";
-import { type SdItemOfTemplateContext, SdItemOfTemplateDirective } from "../../directives/sd-item-of.template-directive";
-import { SdSelectControl, type TSelectValue } from "../../controls/sd-select-control";
+import { SdItemOfTemplateContext, SdItemOfTemplateDirective } from "../../directives/sd-item-of.template-directive";
+import { SdSelectControl, TSelectValue } from "../../controls/sd-select-control";
 import { SdTextfieldControl } from "../../controls/sd-textfield.control";
 import { SdSelectItemControl } from "../../controls/sd-select-item.control";
 import { NgTemplateOutlet } from "@angular/common";

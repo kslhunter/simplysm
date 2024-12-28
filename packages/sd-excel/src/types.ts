@@ -1,4 +1,4 @@
-import {DateOnly, DateTime, Time} from "@simplysm/sd-core-common";
+import { DateOnly, DateTime, Time } from "@simplysm/sd-core-common";
 
 export interface ISdExcelXmlContentTypeData {
   "Types": {
@@ -43,46 +43,56 @@ export interface ISdExcelXmlWorkbookData {
       "xmlns": string;
       "xmlns:r"?: string;
     };
-    "sheets"?: [{
-      "sheet": {
-        "$": {
-          "name": string;
-          "sheetId": string;
-          "r:id": string;
-        };
-      }[];
-    }];
+    "sheets"?: [
+      {
+        "sheet": {
+          "$": {
+            "name": string;
+            "sheetId": string;
+            "r:id": string;
+          };
+        }[];
+      }
+    ];
   };
 }
 
 export interface ISdExcelXmlWorksheetData {
   "worksheet": {
     "$": { "xmlns": string };
-    "dimension"?: [{
-      "$": {
-        "ref": string;
-      };
-    }];
-    "cols"?: [{
-      "col": {
+    "dimension"?: [
+      {
         "$": {
-          "min": string;
-          "max": string;
-          "width"?: string;
-          "bestFit"?: string;
-          "customWidth"?: string;
+          "ref": string;
         };
-      }[];
-    }];
-    "sheetData": [{
-      "row"?: ISdExcelRowData[];
-    }];
-    "mergeCells"?: [{
-      "$": { count: string };
-      "mergeCell": {
-        "$": { "ref": string };
-      }[];
-    }];
+      }
+    ];
+    "cols"?: [
+      {
+        "col": {
+          "$": {
+            "min": string;
+            "max": string;
+            "width"?: string;
+            "bestFit"?: string;
+            "customWidth"?: string;
+          };
+        }[];
+      }
+    ];
+    "sheetData": [
+      {
+        "row"?: ISdExcelRowData[];
+      }
+    ];
+    "mergeCells"?: [
+      {
+        "$": { count: string };
+        "mergeCell": {
+          "$": { "ref": string };
+        }[];
+      }
+    ];
   };
 }
 
@@ -120,37 +130,52 @@ export type TSdExcelXmlSharedStringDataSi =
     }[];
   };
 
-export type TSdExcelXmlSharedStringData = [string | { "$": { "space"?: "preserve" }; "_"?: string }];
+export type TSdExcelXmlSharedStringData = [
+    string | {
+    "$": { "space"?: "preserve" };
+    "_"?: string
+  }
+];
 
 
 export interface ISdExcelXmlStyleData {
   "styleSheet": {
     "$": { "xmlns": string };
-    "numFmts"?: [{
-      "$": { count: string };
-      "numFmt"?: {
-        "$": {
-          numFmtId: string;
-          formatCode: string;
-        };
-      }[];
-    }];
-    "fonts": [{
-      "$": { count: string };
-      "font": {}[];
-    }];
-    "fills": [{
-      "$": { count: string };
-      "fill": ISdExcelXmlStyleDataFill[];
-    }];
-    "borders": [{
-      "$": { count: string };
-      "border": ISdExcelXmlStyleDataBorder[];
-    }];
-    "cellXfs": [{
-      "$": { count: string };
-      "xf": ISdExcelXmlStyleDataXf[];
-    }];
+    "numFmts"?: [
+      {
+        "$": { count: string };
+        "numFmt"?: {
+          "$": {
+            numFmtId: string;
+            formatCode: string;
+          };
+        }[];
+      }
+    ];
+    "fonts": [
+      {
+        "$": { count: string };
+        "font": {}[];
+      }
+    ];
+    "fills": [
+      {
+        "$": { count: string };
+        "fill": ISdExcelXmlStyleDataFill[];
+      }
+    ];
+    "borders": [
+      {
+        "$": { count: string };
+        "border": ISdExcelXmlStyleDataBorder[];
+      }
+    ];
+    "cellXfs": [
+      {
+        "$": { count: string };
+        "xf": ISdExcelXmlStyleDataXf[];
+      }
+    ];
   };
 }
 
@@ -167,38 +192,58 @@ export interface ISdExcelXmlStyleDataXf {
     applyFill?: string;
     applyBorder?: string;
   };
-  alignment?: [{ "$": { horizontal?: "center" | "left" | "right"; vertical?: "center" | "top" | "bottom" } }];
+  alignment?: [
+    {
+      "$": { horizontal?: "center" | "left" | "right"; vertical?: "center" | "top" | "bottom" }
+    }
+  ];
 }
 
 export interface ISdExcelXmlStyleDataFill {
-  "patternFill": [{
-    "$": { "patternType": "none" | "solid" | "gray125" };
-    "fgColor"?: [{ "$": { "rgb": string } }];
-  }];
+  "patternFill": [
+    {
+      "$": { "patternType": "none" | "solid" | "gray125" };
+      "fgColor"?: [{ "$": { "rgb": string } }];
+    }
+  ];
 }
 
 export interface ISdExcelXmlStyleDataBorder {
-  "top"?: [{
-    "$": { "style": "thin" | "medium" };
-    "color"?: [{ "$": { "rgb": string } }];
-  }];
-  "left"?: [{
-    "$": { "style": "thin" | "medium" };
-    "color"?: [{ "$": { "rgb": string } }];
-  }];
-  "right"?: [{
-    "$": { "style": "thin" | "medium" };
-    "color"?: [{ "$": { "rgb": string } }];
-  }];
-  "bottom"?: [{
-    "$": { "style": "thin" | "medium" };
-    "color"?: [{ "$": { "rgb": string } }];
-  }];
+  "top"?: [
+    {
+      "$": { "style": "thin" | "medium" };
+      "color"?: [{ "$": { "rgb": string } }];
+    }
+  ];
+  "left"?: [
+    {
+      "$": { "style": "thin" | "medium" };
+      "color"?: [{ "$": { "rgb": string } }];
+    }
+  ];
+  "right"?: [
+    {
+      "$": { "style": "thin" | "medium" };
+      "color"?: [{ "$": { "rgb": string } }];
+    }
+  ];
+  "bottom"?: [
+    {
+      "$": { "style": "thin" | "medium" };
+      "color"?: [{ "$": { "rgb": string } }];
+    }
+  ];
 }
 
 export type TSdExcelValueType = number | string | DateOnly | DateTime | Time | boolean | undefined;
 export type TSdExcelNumberFormat = "number" | "string" | "DateOnly" | "DateTime" | "Time";
-export const sdExcelNumberFormats: TSdExcelNumberFormat[] = ["number", "string", "DateOnly", "DateTime", "Time"];
+export const sdExcelNumberFormats: TSdExcelNumberFormat[] = [
+  "number",
+  "string",
+  "DateOnly",
+  "DateTime",
+  "Time",
+];
 
 export interface ISdExcelXml {
   readonly data: any;

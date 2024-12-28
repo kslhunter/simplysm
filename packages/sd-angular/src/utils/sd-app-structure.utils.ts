@@ -1,5 +1,5 @@
 import { ObjectUtils } from "@simplysm/sd-core-common";
-import { type IconDefinition } from "@fortawesome/fontawesome-svg-core";
+import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 
 export class SdAppStructureUtils {
   static getFlatPermissions<T extends string>(

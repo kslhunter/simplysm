@@ -1,7 +1,7 @@
 import { inject, Injectable } from "@angular/core";
 import { ObjectUtils } from "@simplysm/sd-core-common";
-import { type ISdServiceClientConnectionConfig, SdServiceClient } from "@simplysm/sd-service-client";
-import { type ISdProgressToast, SdToastProvider } from "./sd-toast.provider";
+import { ISdServiceClientConnectionConfig, SdServiceClient } from "@simplysm/sd-service-client";
+import { ISdProgressToast, SdToastProvider } from "./sd-toast.provider";
 import { $effect } from "../utils/hooks";
 
 @Injectable({ providedIn: "root" })

@@ -1,4 +1,4 @@
-import {type Type} from "@simplysm/sd-core-common";
+import {Type} from "@simplysm/sd-core-common";
 
 export interface ISdOrmServiceConnectConfig<T> {
   dbContextType: Type<T>;

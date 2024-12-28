@@ -1,5 +1,5 @@
 import { NumberUtils } from "@simplysm/sd-core-common";
-import { type TSdExcelNumberFormat } from "../types";
+import { TSdExcelNumberFormat } from "../types";
 
 export class SdExcelUtils {
   public static stringifyAddr(point: { r: number; c: number }): string {

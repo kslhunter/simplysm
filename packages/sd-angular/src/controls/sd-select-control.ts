@@ -13,7 +13,7 @@ import {
 import { SdSelectItemControl } from "./sd-select-item.control";
 import { SdDropdownControl } from "./sd-dropdown.control";
 import {
-  type SdItemOfTemplateContext,
+  SdItemOfTemplateContext,
   SdItemOfTemplateDirective,
 } from "../directives/sd-item-of.template-directive";
 import { SdDockContainerControl } from "./sd-dock-container.control";

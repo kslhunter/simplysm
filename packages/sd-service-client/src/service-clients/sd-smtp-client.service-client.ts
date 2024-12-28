@@ -1,7 +1,7 @@
 import { SdServiceClient } from "../sd-service-client";
 import {
-  type ISmtpClientSendByDefaultOption,
-  type ISmtpClientSendOption,
+  ISmtpClientSendByDefaultOption,
+  ISmtpClientSendOption,
 } from "@simplysm/sd-service-common";
 
 export class SdSmtpClientServiceClient {

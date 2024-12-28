@@ -1,7 +1,7 @@
-import { type Type } from "@simplysm/sd-core-common";
-import { type NextHandleFunction } from "connect";
+import { Type } from "@simplysm/sd-core-common";
+import { NextHandleFunction } from "connect";
 import { SdServiceServer } from "./sd-service-server";
-import { type ISdServiceRequest } from "@simplysm/sd-service-common";
+import { ISdServiceRequest } from "@simplysm/sd-service-common";
 import * as http from "http";
 
 export interface ISdServiceServerOptions {

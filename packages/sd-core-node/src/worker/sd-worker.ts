@@ -1,7 +1,7 @@
-import cp, { type ForkOptions } from "child_process";
+import cp, { ForkOptions } from "child_process";
 import { fileURLToPath } from "url";
 import { EventEmitter } from "events";
-import { type ISdWorkerRequest, type ISdWorkerType, type TSdWorkerResponse } from "./sd-worker.types";
+import { ISdWorkerRequest, ISdWorkerType, TSdWorkerResponse } from "./sd-worker.types";
 import { JsonConvert, Uuid } from "@simplysm/sd-core-common";
 import { SdLogger } from "../utils/sd-logger";
 

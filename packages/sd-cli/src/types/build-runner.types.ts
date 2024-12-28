@@ -1,5 +1,5 @@
-import { type TNormPath } from "@simplysm/sd-core-node";
-import { type ISdProjectConfig } from "./config.types";
+import { TNormPath } from "@simplysm/sd-core-node";
+import { ISdProjectConfig } from "./config.types";
 
 export interface ISdBuildRunnerWorkerRequest {
   cmd: "watch" | "build";

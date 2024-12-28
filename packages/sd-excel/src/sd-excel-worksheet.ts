@@ -1,6 +1,6 @@
 import {SdExcelXmlWorksheet} from "./xmls/sd-excel-xml-worksheet";
 import {ZipCache} from "./utils/zip-cache";
-import {type ISdExcelAddressRangePoint, type TSdExcelValueType} from "./types";
+import {ISdExcelAddressRangePoint, TSdExcelValueType} from "./types";
 import {SdExcelRow} from "./sd-excel-row";
 import {SdExcelCell} from "./sd-excel-cell";
 import {SdExcelXmlWorkbook} from "./xmls/sd-excel-xml-workbook";

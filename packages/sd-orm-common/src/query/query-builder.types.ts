@@ -1,7 +1,7 @@
 // region COMMONS
 
-import type { Type } from "@simplysm/sd-core-common";
-import type { TQueryValue, TSdOrmDataType } from "../types";
+import { Type } from "@simplysm/sd-core-common";
+import { TQueryValue, TSdOrmDataType } from "../types";
 
 export type TQueryBuilderValue = string | ISelectQueryDef | TQueryBuilderValue[];
 

@@ -1,8 +1,8 @@
 import esbuild from "esbuild";
 import { SdCliConvertMessageUtils } from "../../utils/sd-cli-convert-message.utils";
-import { type ISdCliServerPluginResultCache } from "../../types/build-plugin.types";
-import { PathUtils, type TNormPath } from "@simplysm/sd-core-node";
-import { type ISdTsCompilerResult } from "../../types/ts-compiler.types";
+import { ISdCliServerPluginResultCache } from "../../types/build-plugin.types";
+import { PathUtils, TNormPath } from "@simplysm/sd-core-node";
+import { ISdTsCompilerResult } from "../../types/ts-compiler.types";
 import { SdTsCompiler } from "../../ts-compiler/sd-ts-compiler";
 
 export function createSdServerPlugin(conf: {

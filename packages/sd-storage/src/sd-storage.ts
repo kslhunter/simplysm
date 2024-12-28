@@ -1,4 +1,4 @@
-import {type ISdStorage, type ISdStorageConnectionConfig} from "./interfaces";
+import {ISdStorage, ISdStorageConnectionConfig} from "./interfaces";
 import {SdSftpStorage} from "./storages/sd-sftp.storage";
 import {SdFtpStorage} from "./storages/sd-ftp.storage";
 
