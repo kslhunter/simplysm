@@ -662,7 +662,7 @@ export class ${name_pascal}Page {
         ).map((item) => item.id!);
 
         for (const changedId of changedIds) {
-          await db.bankAccountLogMapAccount.insertDataLogAsync({
+          await db.${data_name_camel}.insertDataLogAsync({
             type: "삭제",
             itemId: changedId,
             valueJson: undefined,

@@ -42,8 +42,8 @@ import { ${name_pascal}Page } from "./${name_kebab}.page";
             [selectMode]="params().selectMode"
             [(selectedItemIds)]="selectedItemIds"
             #if(${fix_name_kebab} != "")
-            [isFix${fix_name_pascal}]="this.params().isFix${fix_name_pascal}"
-            [${fix_name_camel}Id]="this.params().${fix_name_camel}Id"
+            [isFix${fix_name_pascal}]="params().isFix${fix_name_pascal}"
+            [${fix_name_camel}Id]="params().${fix_name_camel}Id"
             #end
           />
 
