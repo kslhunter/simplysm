@@ -1,5 +1,5 @@
 import { EventEmitter } from "events";
-import { FsUtils, SdLogger, PathUtils, SdFsWatcher, TNormPath } from "@simplysm/sd-core-node";
+import { FsUtils, PathUtils, SdFsWatcher, SdLogger, TNormPath } from "@simplysm/sd-core-node";
 import path from "path";
 import { StringUtils } from "@simplysm/sd-core-common";
 import { SdServerBundler } from "./sd-server.bundler";
@@ -56,30 +56,34 @@ export class SdServerBuildRunner extends EventEmitter {
 
     this._debug("WATCH...");
     let lastWatchFileSet = result.watchFileSet;
-    SdFsWatcher.watch(Array.from(this._watchScopePathSet)).onChange({ delay: 100 }, async (changeInfos) => {
-      const currentChangeInfos = changeInfos.filter((item) => lastWatchFileSet.has(item.path));
-      if (currentChangeInfos.length < 1) return;
+    SdFsWatcher.watch(Array.from(this._watchScopePathSet))
+      .onChange({ delay: 100 }, async (changeInfos) => {
+        const currentChangeInfos = changeInfos.filter((item) => lastWatchFileSet.has(item.path));
+        if (currentChangeInfos.length < 1) return;
 
-      this.emit("change");
+        this.emit("change");
 
-      const watchResult = await this._runAsync(
-        true,
-        new Set(currentChangeInfos.map((item) => PathUtils.norm(item.path))),
-      );
-      const watchRes: ISdBuildRunnerResult = {
-        affectedFilePathSet: watchResult.affectedFileSet,
-        buildMessages: watchResult.buildMessages,
-        emitFileSet: watchResult.emitFileSet,
-      };
+        const watchResult = await this._runAsync(
+          true,
+          new Set(currentChangeInfos.map((item) => PathUtils.norm(item.path))),
+        );
+        const watchRes: ISdBuildRunnerResult = {
+          affectedFilePathSet: watchResult.affectedFileSet,
+          buildMessages: watchResult.buildMessages,
+          emitFileSet: watchResult.emitFileSet,
+        };
 
-      this.emit("complete", watchRes);
+        this.emit("complete", watchRes);
 
-      lastWatchFileSet = watchResult.watchFileSet;
-    });
+        lastWatchFileSet = watchResult.watchFileSet;
+      });
   }
 
   public async buildAsync(): Promise<ISdBuildRunnerResult> {
-    const projNpmConfig = FsUtils.readJson(path.resolve(process.cwd(), "package.json")) as INpmConfig;
+    const projNpmConfig = FsUtils.readJson(path.resolve(
+      process.cwd(),
+      "package.json",
+    )) as INpmConfig;
     const npmConfig = FsUtils.readJson(path.resolve(this._pkgPath, "package.json")) as INpmConfig;
     const extModules = await this._getExternalModulesAsync();
 
@@ -113,12 +117,19 @@ export class SdServerBuildRunner extends EventEmitter {
 
       distNpmConfig.volta = projNpmConfig.volta;
 
-      FsUtils.writeJson(path.resolve(this._pkgPath, "dist/package.json"), distNpmConfig, { space: 2 });
+      FsUtils.writeJson(
+        path.resolve(this._pkgPath, "dist/package.json"),
+        distNpmConfig,
+        { space: 2 },
+      );
     }
 
     this._debug("GEN .yarnrc.yml...");
     {
-      FsUtils.writeFile(path.resolve(this._pkgPath, "dist/.yarnrc.yml"), "nodeLinker: node-modules");
+      FsUtils.writeFile(
+        path.resolve(this._pkgPath, "dist/.yarnrc.yml"),
+        "nodeLinker: node-modules",
+      );
     }
 
     this._debug("GEN openssl.cnf...");
@@ -194,18 +205,19 @@ Options = UnsafeLegacyRenegotiation`.trim(),
       this._debug("GEN web.config...");
 
       const iisDistPath = path.resolve(this._pkgPath, "dist/web.config");
-      const serverExeFilePath = this._pkgConf.iis.nodeExeFilePath ?? "C:\\Program Files\\Volta\\volta.exe which node";
-      FsUtils.writeFile(
-        iisDistPath,
-        `
+      const nodeVersion = process.versions.node.substring(1);
+      const serverExeFilePath = this._pkgConf.iis.nodeExeFilePath
+        ?? `%HOMEDRIVE%%HOMEPATH%\\AppData\\Local\\Volta\\tools\\image\\node\\${nodeVersion}\\node.exe`;
+
+      FsUtils.writeFile(iisDistPath, `
 <configuration>
   <appSettings>
     <add key="NODE_ENV" value="production" />
     <add key="TZ" value="Asia/Seoul" />
     <add key="SD_VERSION" value="${npmConfig.version}" />
     ${Object.keys(this._pkgConf.env ?? {})
-          .map((key) => `<add key="${key}" value="${this._pkgConf.env![key]}"/>`)
-          .join("\n    ")}
+        .map((key) => `<add key="${key}" value="${this._pkgConf.env![key]}"/>`)
+        .join("\n    ")}
   </appSettings>
   <system.webServer>
     <handlers>
@@ -225,9 +237,7 @@ Options = UnsafeLegacyRenegotiation`.trim(),
     <httpErrors errorMode="Detailed" />
   </system.webServer>
 </configuration>
-
-`.trim(),
-      );
+`.trim());
     }
 
     const result = await this._runAsync(false);
@@ -266,7 +276,10 @@ Options = UnsafeLegacyRenegotiation`.trim(),
             ...FsUtils.glob(path.resolve(this._pkgPath, "src/workers/*.ts")),
           ],
         external: this._extModules.map((item) => item.name),
-        watchScopePaths: [path.resolve(this._pkgPath, "../"), ...localUpdatePaths].map((item) => PathUtils.norm(item)),
+        watchScopePaths: [
+          path.resolve(this._pkgPath, "../"),
+          ...localUpdatePaths,
+        ].map((item) => PathUtils.norm(item)),
       });
 
     this._debug(`BUILD...`);
@@ -305,7 +318,10 @@ Options = UnsafeLegacyRenegotiation`.trim(),
     const npmConfigMap = new Map<string, INpmConfig>();
 
     const fn = async (currPath: string): Promise<void> => {
-      const npmConfig = npmConfigMap.getOrCreate(currPath, FsUtils.readJson(path.resolve(currPath, "package.json")));
+      const npmConfig = npmConfigMap.getOrCreate(
+        currPath,
+        FsUtils.readJson(path.resolve(currPath, "package.json")),
+      );
 
       const deps = {
         defaults: [
