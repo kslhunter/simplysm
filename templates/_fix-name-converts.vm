@@ -1,0 +1,9 @@
+## fix names
+#if($fix_name_kebab != "")
+#set($fix_name_pascal = "")
+#foreach($fix_str in $fix_name_kebab.split("-"))
+  #set($fix_str = $fix_str.substring(0,1).toUpperCase() + $fix_str.substring(1))
+  #set($fix_name_pascal = $fix_name_pascal + $fix_str)
+#end
+#set($fix_name_camel = $fix_name_pascal.substring(0, 1).toLowerCase() + $fix_name_pascal.substring(1))
+#end

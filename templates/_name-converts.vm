@@ -1,0 +1,7 @@
+## names
+#set($name_pascal = "")
+#foreach($str in $name_kebab.split("-"))
+  #set($str = $str.substring(0,1).toUpperCase() + $str.substring(1))
+  #set($name_pascal = $name_pascal + $str)
+#end
+#set($name_camel = $name_pascal.substring(0, 1).toLowerCase() + $name_pascal.substring(1))

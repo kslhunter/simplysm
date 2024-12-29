@@ -1,0 +1,389 @@
+#if(${name_kebab}) #end
+#if(${name_kor}) #end
+#if(${useIsDeletedFlagYN}) #end
+#if(${useSharedEmitYN}) #end
+#if(${data_name_pascal}) #end
+#if(${fix_name_kebab}) #end
+#parse('_name-converts')
+#parse('_code-converts')
+#parse('_data-name-converts')
+#parse('_fix-name-converts')
+import {
+  ChangeDetectionStrategy,
+  Component,
+  HostListener,
+  inject,
+  viewChild,
+  ViewEncapsulation,
+} from "@angular/core";
+import {
+  ${DS}computed,
+  ${DS}effect,
+  ${DS}obj,
+  ${DS}signal,
+  canDeactivate,
+  SdAppStructureProvider,
+  SdBaseContainerControl,
+  SdButtonControl,
+  SdFormBoxControl,
+  SdFormBoxItemControl,
+  SdFormControl,
+  SdModalBase,
+  SdPaneControl,
+  SdTextfieldControl,
+  SdToastProvider,
+  TemplateTargetDirective,
+  TXT_CHANGE_IGNORE_CONFIRM,
+} from "@simplysm/sd-angular";
+import { ArgumentError, DateTime } from "@simplysm/sd-core-common";
+import { AppDataProvider, AppOrmProvider, AppSharedDataProvider } from "@${PROJECT_NAME}/client-common";
+
+@Component({
+  selector: "app-${name_kebab}-detail-modal",
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  standalone: true,
+  imports: [
+    SdFormBoxControl,
+    SdFormBoxItemControl,
+    SdTextfieldControl,
+    SdBaseContainerControl,
+    TemplateTargetDirective,
+    SdPaneControl,
+    SdFormControl,
+    SdButtonControl,
+  ],
+  template: `
+    <sd-base-container [busy]="busyCount() > 0">
+      <ng-template target="content">
+        <sd-pane class="p-lg">
+          <sd-form #[[#]]#formCtrl (submit)="onSubmit()">
+            <div style="display: inline-block;">
+              <header class="page-header">기본정보</header>
+
+              <sd-form-box layout="table">
+                <sd-form-box-item label="${name_kor}명">
+                  <sd-textfield
+                    type="text"
+                    required
+                    [disabled]="!perms().includes('edit')"
+                    [(value)]="data().name"
+                    (valueChange)="data.${DS}mark()"
+                  />
+                </sd-form-box-item>
+              </sd-form-box>
+            </div>
+            <br />
+            <br />
+          </sd-form>
+
+          @if (data().lastModifyDateTime) {
+            최종수정:
+            {{ data().lastModifyDateTime!.toFormatString("yyyy-MM-dd HH:mm") }}
+            ({{ data().lastModifyEmployeeName }})
+          }
+        </sd-pane>
+      </ng-template>
+
+      @if (perms().includes('edit')) {
+        <ng-template target="bottom">
+          <div class="p-sm-default bdt bdt-trans-light flex-row">
+            @if (data().id != null) {
+              <div>
+                #if(${useIsDeletedFlagYN} == "Y")
+                @if (!data().isDeleted) {
+                #end
+                  <sd-button
+                    theme="danger"
+                    inline
+                    #if(${useIsDeletedFlagYN} == "Y")
+                    (click)="onToggleDeleteButtonClick(true)"
+                    #else
+                    (click)="onDeleteButtonClick()"
+                    #end
+                  >
+                    삭제
+                  </sd-button>
+                #if(${useIsDeletedFlagYN} == "Y")
+                } @else {
+                  <sd-button
+                    theme="warning"
+                    inline
+                    (click)="onToggleDeleteButtonClick(false)"
+                  >
+                    복구
+                  </sd-button>
+                }
+                #end
+              </div>
+            }
+
+            <div class="flex-grow tx-right">
+              <sd-button theme="primary" inline (click)="onSubmitButtonClick()">
+                확인
+              </sd-button>
+            </div>
+          </div>
+        </ng-template>
+      }
+    </sd-base-container>
+  `,
+})
+export class ${name_pascal}DetailModal extends SdModalBase<IModalParam, boolean> {
+  #[[#]]#sdToast = inject(SdToastProvider);
+  #[[#]]#sdAppStructure = inject(SdAppStructureProvider);
+  #[[#]]#appSharedData = inject(AppSharedDataProvider);
+  #[[#]]#appOrm = inject(AppOrmProvider);
+  #[[#]]#appData = inject(AppDataProvider);
+
+  viewCodes = ["${code}"];
+  perms = ${DS}computed(() => this.#[[#]]#sdAppStructure.getViewPerms2(
+    this.viewCodes,
+    ["use", "edit"],
+  ));
+
+  initialized = ${DS}signal(false);
+  busyCount = ${DS}signal(0);
+
+  data = ${DS}signal<IDataVM>({
+    #if(${useIsDeletedFlagYN} == "Y")
+    isDeleted: false,
+    #end
+  });
+
+  formCtrl = viewChild<SdFormControl>("formCtrl");
+
+  constructor() {
+    super();
+
+    ${DS}effect([this.params], async () => {
+      if (!this.perms().includes("use")) {
+        this.initialized.set(true);
+        this.open();
+        return;
+      }
+
+      this.busyCount.update((v) => v + 1);
+      await this.#[[#]]#sdToast.try(async () => {
+        await this.#[[#]]#appSharedData.wait();
+        await this.#[[#]]#refresh();
+      });
+      this.busyCount.update((v) => v - 1);
+      this.initialized.set(true);
+      this.open();
+    });
+
+    canDeactivate(() => this.checkIgnoreChanges());
+  }
+
+  checkIgnoreChanges() {
+    return !${DS}obj(this.data).changed() || confirm(TXT_CHANGE_IGNORE_CONFIRM);
+  }
+
+  @HostListener("sdRefreshCommand")
+  async onRefreshButtonClick() {
+    if (this.busyCount() > 0) return;
+    if (!this.checkIgnoreChanges()) return;
+
+    this.busyCount.update((v) => v + 1);
+    await this.#[[#]]#sdToast.try(async () => {
+      await this.#[[#]]#refresh();
+    });
+    this.busyCount.update((v) => v - 1);
+  }
+
+  async #[[#]]#refresh() {
+    if (this.params().itemId == null) {
+      this.data.set({
+        #if(${fix_name_kebab} != "")
+        ${fix_name_camel}Id: this.params().${fix_name_camel}Id,
+        #end
+        #if(${useIsDeletedFlagYN} == "Y")
+        isDeleted: false,
+        #end
+      });
+    }
+    else {
+      await this.#[[#]]#appOrm.connectAsync(async (db) => {
+        this.data.set(
+          (await db.${data_name_camel}
+          .where((item) => [db.qh.equal(item.id, this.params().itemId)])
+          .joinLastDataLog()
+          .select((item) => ({
+            id: item.id,
+            name: item.name,
+            #if(${useIsDeletedFlagYN} == "Y")
+            isDeleted: item.isDeleted,
+            #end
+            lastModifyDateTime: item.lastDataLog.doneDateTime,
+            lastModifyEmployeeName: item.lastDataLog.doneEmployeeName,
+          }))
+          .singleAsync())!
+        );
+      });
+    }
+    ${DS}obj(this.data).snapshot();
+  }
+
+  #if(${useIsDeletedFlagYN} == "Y")
+  async onToggleDeleteButtonClick(del: boolean) {
+    if (this.busyCount() > 0) return;
+    if (!this.perms().includes("edit")) return;
+
+    this.busyCount.update((v) => v + 1);
+    await this.#[[#]]#sdToast.try(async () => {
+      await this.#[[#]]#appOrm.connectAsync(async (db) => {
+        await db.${data_name_camel}
+          .where((item) => [db.qh.equal(item.id, this.data().id)])
+          .updateAsync(() => ({ isDeleted: del }));
+
+        await db.${data_name_camel}.insertDataLogAsync({
+          type: del ? "삭제" : "복구",
+          itemId: this.data().id!,
+          valueJson: undefined,
+          doneEmployeeId: this.#[[#]]#appData.authInfo()!.employee.id,
+        });
+      });
+
+      #if(${useSharedEmitYN} == "Y")
+      await this.#[[#]]#appSharedData.emitAsync("${name_kor}", [this.data().id!]);
+      #end
+
+      await this.#[[#]]#refresh();
+
+      this.#[[#]]#sdToast.success(`${DS}{del ? "삭제" : "복구"}되었습니다.`);
+
+      this.close(true);
+    });
+    this.busyCount.update((v) => v - 1);
+  }
+  #else
+  async onDeleteButtonClick() {
+      if (this.busyCount() > 0) return;
+      if (!this.perms().includes("edit")) return;
+      if (!confirm("삭제한 자료는 복구할 수 없습니다. 정말 삭제하시겠습니까?")) return;
+
+      this.busyCount.update((v) => v + 1);
+      await this.#sdToast.try(async () => {
+        await this.#appOrm.connectAsync(async (db) => {
+          await db.${data_name_camel}
+            .where((item) => [db.qh.equal(item.id, this.data().id)])
+            .deleteAsync();
+
+          await db.${data_name_camel}.insertDataLogAsync({
+            type: "삭제",
+            itemId: this.data().id!,
+            valueJson: undefined,
+            doneEmployeeId: this.#appData.authInfo()!.employee.id,
+          });
+        });
+
+        #if(${useSharedEmitYN} == "Y")
+        await this.#[[#]]#appSharedData.emitAsync("${name_kor}", [this.data().id!]);
+        #end
+
+        await this.#refresh();
+
+        this.#sdToast.success(`삭제되었습니다.`);
+
+        this.close(true);
+      });
+      this.busyCount.update((v) => v - 1);
+    }
+  #end
+
+  @HostListener("sdSaveCommand")
+  onSubmitButtonClick() {
+    if (this.busyCount() > 0) return;
+
+    this.formCtrl()?.requestSubmit();
+  }
+
+  async onSubmit() {
+    if (this.busyCount() > 0) return;
+    if (!this.perms().includes("edit")) return;
+
+    if (!${DS}obj(this.data).changed()) {
+      this.#[[#]]#sdToast.info("변경사항이 없습니다.");
+      return;
+    }
+
+    this.busyCount.update((v) => v + 1);
+    await this.#[[#]]#sdToast.try(async () => {
+      const data = this.data();
+
+      #if(${useSharedEmitYN} == "Y")
+      const upsertId1 =
+      #end
+      await this.#[[#]]#appOrm.connectAsync(async (db) => {
+        if (
+          #if(${useIsDeletedFlagYN} == "Y")
+          !data.isDeleted &&
+          #end
+          (await db.${data_name_camel}
+            .where((item) => [
+              db.qh.equal(item.name, data.name),
+              db.qh.notEqual(item.id, data.id),
+              #if(${useIsDeletedFlagYN} == "Y")
+              db.qh.isFalse(item.isDeleted),
+              #end
+            ])
+            .existsAsync())
+        ) {
+          throw new ArgumentError("동일한 ${name_kor}명이 이미 등록되어 있습니다.", {
+            ${name_kor}명: data.name,
+          });
+        }
+
+        const upsertId = (
+          await db.${data_name_camel}
+            .where((item) => [db.qh.equal(item.id, data.id)])
+            .upsertAsync(() => ({
+              name: data.name!,
+              #if(${useIsDeletedFlagYN} == "Y")
+              isDeleted: false,
+              #end
+            }), ["id"])
+        ).single()!.id!;
+
+        await db.${data_name_camel}.insertDataLogAsync({
+          type: data.id == null ? "등록" : "수정",
+          itemId: upsertId,
+          valueJson: undefined,
+          doneEmployeeId: this.#[[#]]#appData.authInfo()!.employee.id,
+        });
+
+        return upsertId;
+      });
+
+      #if(${useSharedEmitYN} == "Y")
+      await this.#[[#]]#appSharedData.emitAsync("${name_kor}", [upsertId1]);
+      #end
+
+      await this.#[[#]]#refresh();
+
+      this.#[[#]]#sdToast.success("저장되었습니다.");
+      this.close(true);
+    });
+    this.busyCount.update((v) => v - 1);
+  }
+}
+
+interface IModalParam {
+  itemId?: number;
+
+  #if(${fix_name_kebab} != "")
+  isFix${fix_name_pascal}?: boolean;
+  ${fix_name_camel}Id?: number;
+  #end
+}
+
+interface IDataVM {
+  id?: number;
+  name?: string;
+  #if(${useIsDeletedFlagYN} == "Y")
+  isDeleted: boolean;
+  #end
+  lastModifyDateTime?: DateTime;
+  lastModifyEmployeeName?: string;
+}
