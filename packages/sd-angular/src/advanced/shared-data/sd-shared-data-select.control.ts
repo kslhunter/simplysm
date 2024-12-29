@@ -75,7 +75,7 @@ import { SdIconControl } from "../../controls/sd-icon.control";
           class="bdb bdb-trans-default"
         />
       </ng-template>
-
+      
       <ng-template #before>
         @if ((!required() && selectMode() === "single") || (useUndefined() && selectMode() === "multi")) {
           <sd-select-item>

@@ -194,7 +194,7 @@ Options = UnsafeLegacyRenegotiation`.trim(),
       this._debug("GEN web.config...");
 
       const iisDistPath = path.resolve(this._pkgPath, "dist/web.config");
-      const serverExeFilePath = this._pkgConf.iis.nodeExeFilePath ?? "C:\\Program Files\\nodejs\\node.exe";
+      const serverExeFilePath = this._pkgConf.iis.nodeExeFilePath ?? "C:\\Program Files\\Volta\\volta.exe which node";
       FsUtils.writeFile(
         iisDistPath,
         `

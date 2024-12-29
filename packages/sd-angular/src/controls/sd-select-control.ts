@@ -255,14 +255,14 @@ import { SdIconControl } from "./sd-icon.control";
             }
 
             @if (selectMode() === "multi" && !hideSelectAll()) {
-              <sd-dock class="bdb bdb-trans-default p-sm-default">
+              <sd-dock class="p-sm-default">
                 <sd-anchor (click)="onSelectAllButtonClick(true)">전체선택</sd-anchor>
                 <sd-gap width="sm"></sd-gap>
                 <sd-anchor (click)="onSelectAllButtonClick(false)">전체해제</sd-anchor>
               </sd-dock>
             }
 
-            <sd-pane>
+            <sd-pane class="bdt bdt-trans-default">
               <ng-template [ngTemplateOutlet]="beforeTemplateRef() ?? null" />
               <ng-template #rowOfList [typed]="rowOfListType" let-items="items" let-depth="depth">
                 @for (item of items; let index = $index; track trackByFn()(item, index)) {
