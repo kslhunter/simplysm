@@ -21,20 +21,18 @@ export function useCumulateSelectedKeys<T extends object, K>(
   $effect([selectedItems], () => {
     let newSelectedItemKeys: K[];
 
-    if (selectMode() === "single") {
-      newSelectedItemKeys = selectedItems().map((item) => keySelectorFn(item));
-      selectedItemKeys.set(selectedItems().map((item) => keySelectorFn(item)));
-    }
-    else {
-      newSelectedItemKeys = [...selectedItemKeys()];
-      for (const item of items()) {
-        if (selectedItems().includes(item)) {
-          newSelectedItemKeys = [...newSelectedItemKeys, keySelectorFn(item)].distinct();
-        }
-        else {
-          newSelectedItemKeys = newSelectedItemKeys.filter(v1 => v1 !== keySelectorFn(item));
-        }
+    newSelectedItemKeys = [...selectedItemKeys()];
+    for (const item of items()) {
+      if (selectedItems().includes(item)) {
+        newSelectedItemKeys = [...newSelectedItemKeys, keySelectorFn(item)].distinct();
       }
+      else {
+        newSelectedItemKeys = newSelectedItemKeys.filter(v1 => v1 !== keySelectorFn(item));
+      }
+    }
+
+    if (selectMode() === "single" && newSelectedItemKeys.length > 1) {
+      newSelectedItemKeys = [newSelectedItemKeys.last()!];
     }
 
     if (!ObjectUtils.equal(newSelectedItemKeys, selectedItemKeys(), { onlyOneDepth: true })) {

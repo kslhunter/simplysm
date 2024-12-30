@@ -22,6 +22,7 @@ import { $computed, $model, $signal } from "../../utils/hooks";
 import { transformBoolean } from "../../utils/type-tramsforms";
 import { SdIconControl } from "../../controls/sd-icon.control";
 
+// TODO: sd-select-modal-button을 사용하는식으로 바꿀 수 있나? 검토 필요
 @Component({
   selector: "sd-shared-data-select",
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -124,7 +125,6 @@ export class SdSharedDataSelectControl<
   _value = input<TSelectValue<T["__valueKey"] | undefined>[M] | undefined>(undefined, { alias: "value" });
   _valueChange = output<TSelectValue<T["__valueKey"] | undefined>[M] | undefined>({ alias: "valueChange" });
   value = $model(this._value, this._valueChange);
-
 
   items = input.required<T[]>();
 

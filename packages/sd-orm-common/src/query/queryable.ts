@@ -2,6 +2,7 @@ import { DbContext } from "../db-context";
 import {
   FnUtils,
   NeverEntryError,
+  NotImplementError,
   ObjectUtils,
   Type,
   UnwrappedType,
@@ -1053,7 +1054,7 @@ export class Queryable<D extends DbContext, T> {
     });
   }
 
-  public async insertIntoAsync(tableType: Type<T>): Promise<void> {
+  public async insertIntoAsync(tableType: Type<T>, stopAutoIdentity?: boolean): Promise<void> {
     if (typeof this.db === "undefined") {
       throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
     }
@@ -1075,13 +1076,38 @@ export class Queryable<D extends DbContext, T> {
       name: targetTableDef.name,
     });
 
-    await this.db.executeDefsAsync([
+    const defs: TQueryDef[] = [
       {
         type: "insertInto",
         ...def,
         target: targetTableName,
       },
-    ]);
+    ];
+
+    if (stopAutoIdentity) {
+      if (this.db.opt.dialect === "mssql" || this.db.opt.dialect === "mssql-azure") {
+        defs.insert(0, {
+          type: "configIdentityInsert" as const,
+          ...{
+            table: targetTableDef,
+            state: "on" as const,
+          },
+        });
+
+        defs.push({
+          type: "configIdentityInsert" as const,
+          ...{
+            table: targetTableDef,
+            state: "off" as const,
+          },
+        });
+      }
+      else {
+        throw new NotImplementError("mssql only");
+      }
+    }
+
+    await this.db.executeDefsAsync(defs);
   }
 
   public async resultAsync(): Promise<T[]> {

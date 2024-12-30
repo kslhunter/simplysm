@@ -1,6 +1,7 @@
 import "@simplysm/sd-core-browser";
 export * from "./advanced/sd-base-container.control";
 export * from "./advanced/sd-permission-table.control";
+export * from "./advanced/sd-select-modal-button.control";
 export * from "./advanced/shared-data/sd-shared-data-select-view.control";
 export * from "./advanced/shared-data/sd-shared-data-select.control";
 export * from "./advanced/shared-data/sd-shared-data.provider";
