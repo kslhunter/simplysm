@@ -31,18 +31,23 @@ import { SdButtonControl } from "../controls/sd-button.control";
       <ng-content />
       <div class="_invalid-indicator"></div>
 
-      <sd-button
-        (click)="onModalButtonClick($event)"
-        [disabled]="disabled()"
-        inset
-      >
-        <sd-icon [icon]="icons.search" />
-      </sd-button>
+      @if (!disabled()) {
+        <sd-button
+          (click)="onModalButtonClick($event)"
+          inset
+        >
+          <sd-icon [icon]="icons.search" />
+        </sd-button>
+      }
     </sd-additional-button>
   `,
   styles: [
     /* language=SCSS */ `
       sd-select-modal-button {
+        display: block;
+        width: 100%;
+        min-width: 10em;
+        
         > sd-additional-button > div {
           position: relative;
 
