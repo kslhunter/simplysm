@@ -95,7 +95,7 @@ import { SdPaginationControl } from "../../controls/sd-pagination.control";
         }
 
         <sd-pane>
-          <sd-list [inset]="true">
+          <sd-list inset>
             @if (useUndefined()) {
               <sd-list-item
                 [selected]="selectedItem() === undefined"

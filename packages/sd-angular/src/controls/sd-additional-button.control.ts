@@ -8,10 +8,13 @@ import { transformBoolean } from "../utils/type-tramsforms";
   standalone: true,
   imports: [],
   template: `
-    <div>
+    <div class="_content">
       <ng-content />
     </div>
-    <ng-content select="sd-button" />
+    <div class="_button">
+      <ng-content select="sd-anchor" />
+      <ng-content select="sd-button" />      
+    </div>
   `,
   styles: [
     /* language=SCSS */ `
@@ -26,15 +29,25 @@ import { transformBoolean } from "../utils/type-tramsforms";
         border-radius: var(--border-radius-default);
         overflow: hidden;
 
-        > div {
+        > ._content {
           flex-grow: 1;
           overflow: auto;
           padding: var(--gap-sm) var(--gap-default);
         }
 
-        > sd-button > button {
-          border-left: 1px solid var(--trans-light) !important;
-          padding: var(--gap-sm) !important;
+        > ._button {
+          display: flex;
+          flex-wrap: nowrap;
+          flex-direction: row;
+
+          > sd-anchor {
+            padding: var(--gap-sm) !important;
+          }
+
+          > sd-button > button {
+            border-left: 1px solid var(--trans-light) !important;
+            padding: var(--gap-sm) !important;
+          }
         }
 
         &[sd-inset="true"] {
@@ -43,22 +56,34 @@ import { transformBoolean } from "../utils/type-tramsforms";
         }
 
         &[sd-size="sm"] {
-          > div {
+          > ._content {
             padding: var(--gap-xs) var(--gap-default);
           }
 
-          > sd-button > button {
-            padding: var(--gap-xs) !important;
+          > ._button {
+            > sd-anchor {
+              padding: var(--gap-xs) !important;
+            }
+
+            > sd-button > button {
+              padding: var(--gap-xs) !important;
+            }
           }
         }
 
         &[sd-size="lg"] {
-          > div {
+          > ._content {
             padding: var(--gap-default) var(--gap-xl);
           }
 
-          > sd-button > button {
-            padding: var(--gap-default) !important;
+          > ._button {
+            > sd-anchor {
+              padding: var(--gap-default) !important;
+            }
+
+            > sd-button > button {
+              padding: var(--gap-default) !important;
+            }
           }
         }
       }

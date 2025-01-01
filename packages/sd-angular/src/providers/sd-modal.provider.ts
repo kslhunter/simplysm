@@ -85,8 +85,8 @@ export class SdModalProvider {
         modalRef.setInput("float", options?.float ?? false);
         modalRef.setInput("minHeightPx", options?.minHeightPx);
         modalRef.setInput("minWidthPx", options?.minWidthPx);
-        modalRef.setInput("resizable", options?.resizable ?? false);
-        modalRef.setInput("movable", options?.movable ?? false);
+        modalRef.setInput("resizable", options?.resizable ?? true);
+        modalRef.setInput("movable", options?.movable ?? true);
         modalRef.setInput("headerStyle", options?.headerStyle);
         modalRef.setInput("mobileFillDisabled", options?.mobileFillDisabled ?? false);
 
@@ -94,9 +94,11 @@ export class SdModalProvider {
         const modalEl = modalRef.location.nativeElement as HTMLElement;
 
         modalRef.instance._openChange.subscribe((value: boolean) => {
+          if (!provider.canDeactivefn()) return;
+
           if (!value) {
             modalRef.setInput("open", value);
-            compRef.instance.close();
+            compRef.instance.close(undefined, true);
           }
           else {
             modalRef.setInput("open", value);
@@ -104,8 +106,8 @@ export class SdModalProvider {
         });
 
         const prevActiveElement = document.activeElement as HTMLElement | undefined;
-        compRef.instance.close = (value?: T[typeof SD_MODEL_OUTPUT]): void => {
-          if (!provider.canDeactivefn()) return;
+        compRef.instance.close = (value?: T[typeof SD_MODEL_OUTPUT], noCheckCanDeactive?: boolean): void => {
+          if(!noCheckCanDeactive && !provider.canDeactivefn()) return;
 
           resolve(value);
 
@@ -176,7 +178,7 @@ export abstract class SdModalBase<I, O> {
     this[OPEN_PRESERVED] = true;
   }
 
-  close(value?: O): void {
+  close(value?: O, noCheckCanDeactive?: boolean): void {
     throw new Error("모달이 초기화되어있지 않습니다.");
   }
 }

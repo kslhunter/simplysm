@@ -505,6 +505,10 @@ export class ${name_pascal}Page {
         qr1 = qr1.search((item) => [item.name], filter.searchText);
       }
 
+      if (filter.include${fix_name_pascal}Ids.length > 0) {
+        qr1 = qr1.where(item => [db.qh.in(item.${fix_name_kebab}Id, filter.include${fix_name_pascal}Ids)]);
+      }
+
       #if(${useIsDeletedFlagYN} == "Y")
       if (!filter.isIncludeDeleted) {
         qr1 = qr1.where((item) => [db.qh.equal(item.isDeleted, false)]);

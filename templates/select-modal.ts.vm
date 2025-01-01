@@ -47,13 +47,20 @@ import { ${name_pascal}Page } from "./${name_kebab}.page";
             #end
           />
 
-          @if (params().selectMode === "multi") {
-            <sd-dock position="bottom" class="p-sm-default bdt bdt-trans-light tx-right">
+          <sd-dock
+            position="bottom" class="p-sm-default bdt bdt-trans-light flex-row flex-gap-sm"
+            style="justify-content: right"
+          >
+            <sd-button theme="danger" inline (click)="onCancelButtonClick()">
+              {{ params().selectMode === "multi" ? "모두" : "선택" }}
+              해제
+            </sd-button>
+            @if (params().selectMode === "multi") {
               <sd-button theme="primary" inline (click)="onConfirmButtonClick()">
                 확인({{ this.selectedItemIds().length }})
               </sd-button>
-            </sd-dock>
-          }
+            }
+          </sd-dock>
         </sd-dock-container>
       </ng-template>
     </sd-base-container>
@@ -88,6 +95,10 @@ export class ${name_pascal}SelectModal extends SdModalBase<IModalParam, ISharedD
 
   onConfirmButtonClick() {
     this.close({ selectedItemKeys: this.selectedItemIds() });
+  }
+
+  onCancelButtonClick() {
+    this.close({ selectedItemKeys: [] });
   }
 }
 

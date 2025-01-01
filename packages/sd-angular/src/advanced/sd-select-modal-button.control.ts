@@ -15,6 +15,7 @@ import { TSelectValue } from "../controls/sd-select-control";
 import { SdAdditionalButtonControl } from "../controls/sd-additional-button.control";
 import { SdIconControl } from "../controls/sd-icon.control";
 import { SdButtonControl } from "../controls/sd-button.control";
+import { SdAnchorControl } from "../controls/sd-anchor.control";
 
 @Component({
   selector: "sd-select-modal-button",
@@ -25,6 +26,7 @@ import { SdButtonControl } from "../controls/sd-button.control";
     SdAdditionalButtonControl,
     SdIconControl,
     SdButtonControl,
+    SdAnchorControl,
   ],
   template: `
     <sd-additional-button [inset]="inset()" [size]="size()">
@@ -32,10 +34,13 @@ import { SdButtonControl } from "../controls/sd-button.control";
       <div class="_invalid-indicator"></div>
 
       @if (!disabled()) {
-        <sd-button
-          (click)="onModalButtonClick($event)"
-          inset
-        >
+        <sd-anchor (click)="onCancelButtonClick()" theme="danger">
+          <sd-icon [icon]="icons.xmark" />
+        </sd-anchor>
+      }
+
+      @if (!disabled()) {
+        <sd-button (click)="onModalButtonClick($event)" inset>
           <sd-icon [icon]="icons.search" />
         </sd-button>
       }
@@ -47,8 +52,8 @@ import { SdButtonControl } from "../controls/sd-button.control";
         display: block;
         width: 100%;
         min-width: 10em;
-        
-        > sd-additional-button > div {
+
+        > sd-additional-button > ._content {
           position: relative;
 
           > ._invalid-indicator {
@@ -65,9 +70,9 @@ import { SdButtonControl } from "../controls/sd-button.control";
             height: var(--gap-sm);
           }
         }
-        
+
         &[sd-invalid=true] {
-          > sd-additional-button > div > ._invalid-indicator {
+          > sd-additional-button > ._content > ._invalid-indicator {
             display: block;
           }
         }
@@ -75,8 +80,8 @@ import { SdButtonControl } from "../controls/sd-button.control";
     `,
   ],
   host: {
-    "[attr.sd-invalid]": "required() && !_value()"
-  }
+    "[attr.sd-invalid]": "required() && !_value() ? '필수값이 입력되지 않았습니다.' : undefined",
+  },
 })
 export class SdSelectModalButtonControl<
   TMODAL extends SdModalBase<ISelectModalInputParam, ISelectModalOutputResult>,
@@ -125,6 +130,12 @@ export class SdSelectModalButtonControl<
         : result.selectedItemKeys[0];
       this.value.set(newValue);
     }
+  }
+
+  onCancelButtonClick() {
+    this.value.set((
+      this.selectMode() === "multi" ? [] : undefined
+    ) as TSelectValue<number | undefined>[M] | undefined);
   }
 }
 
