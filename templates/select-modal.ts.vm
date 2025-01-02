@@ -47,20 +47,22 @@ import { ${name_pascal}Page } from "./${name_kebab}.page";
             #end
           />
 
-          <sd-dock
-            position="bottom" class="p-sm-default bdt bdt-trans-light flex-row flex-gap-sm"
-            style="justify-content: right"
-          >
-            <sd-button theme="danger" inline (click)="onCancelButtonClick()">
-              {{ params().selectMode === "multi" ? "모두" : "선택" }}
-              해제
-            </sd-button>
-            @if (params().selectMode === "multi") {
-              <sd-button theme="primary" inline (click)="onConfirmButtonClick()">
-                확인({{ this.selectedItemIds().length }})
+          @if (params().selectMode) {
+            <sd-dock
+              position="bottom" class="p-sm-default bdt bdt-trans-light flex-row flex-gap-sm"
+              style="justify-content: right"
+            >
+              <sd-button theme="danger" inline (click)="onCancelButtonClick()">
+                {{ params().selectMode === "multi" ? "모두" : "선택" }}
+                해제
               </sd-button>
-            }
-          </sd-dock>
+              @if (params().selectMode === "multi") {
+                <sd-button theme="primary" inline (click)="onConfirmButtonClick()">
+                  확인({{ this.selectedItemIds().length }})
+                </sd-button>
+              }
+            </sd-dock>
+          }
         </sd-dock-container>
       </ng-template>
     </sd-base-container>
