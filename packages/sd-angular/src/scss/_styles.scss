@@ -430,7 +430,7 @@ hidden {
   body.sd-theme-mobile &,
   body.sd-theme-modern & {*/
   //font-size: var(--font-size-sm);
-  font-size: smaller;
+  font-size: var(--font-size-sm);
   color: var(--theme-grey-default);
   //}
 
@@ -481,7 +481,7 @@ hidden {
 
 @keyframes sd-active-effect {
   from {
-    transform: scaleX(0.1);
+    transform: scale(0.1);
   }
   to {
     transform: none;

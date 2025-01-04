@@ -40,7 +40,7 @@ export class SdModalProvider {
       resizable?: boolean;
       movable?: boolean;
       headerStyle?: string;
-      mobileFillDisabled?: boolean;
+      fill?: boolean;
       noFirstControlFocusing?: boolean;
     },
   ): Promise<T[typeof SD_MODEL_OUTPUT] | undefined> {
@@ -88,7 +88,7 @@ export class SdModalProvider {
         modalRef.setInput("resizable", options?.resizable ?? true);
         modalRef.setInput("movable", options?.movable ?? true);
         modalRef.setInput("headerStyle", options?.headerStyle);
-        modalRef.setInput("mobileFillDisabled", options?.mobileFillDisabled ?? false);
+        modalRef.setInput("fill", options?.fill ?? false);
 
         provider.modal = modalRef.instance;
         const modalEl = modalRef.location.nativeElement as HTMLElement;

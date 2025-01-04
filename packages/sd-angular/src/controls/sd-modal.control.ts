@@ -251,30 +251,28 @@ import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
           }
         }
 
-        @media all and (max-width: 520px) {
-          &[sd-mobile-fill-disabled="false"] {
-            padding-top: 0;
+        &[sd-fill="true"] {
+          padding-top: 0;
 
-            > ._dialog {
-              width: 100%;
-              height: 100%;
+          > ._dialog {
+            width: 100%;
+            height: 100%;
 
-              border: none;
-              border-radius: 0;
+            border: none;
+            border-radius: 0;
 
-              > sd-dock-container > ._content > ._header {
+            > sd-dock-container > ._content > ._header {
+              background: transparent;
+              color: var(--text-trans-lighter);
+
+              /*._close-button {
+              color: var(--text-trans-lighter);
+
+              &:hover {
                 background: transparent;
                 color: var(--text-trans-lighter);
-
-                /*._close-button {
-                color: var(--text-trans-lighter);
-
-                &:hover {
-                  background: transparent;
-                  color: var(--text-trans-lighter);
-                }
-              }*/
               }
+            }*/
             }
           }
         }
@@ -341,7 +339,7 @@ import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
     "[attr.sd-open]": "open()",
     "[attr.sd-float]": "float()",
     "[attr.sd-position]": "position()",
-    "[attr.sd-mobile-fill-disabled]": "mobileFillDisabled()",
+    "[attr.sd-fill]": "fill()",
   },
 })
 export class SdModalControl {
@@ -363,7 +361,7 @@ export class SdModalControl {
   resizable = input(false, { transform: transformBoolean });
   movable = input(true, { transform: transformBoolean });
   float = input(false, { transform: transformBoolean });
-  mobileFillDisabled = input(false, { transform: transformBoolean });
+  fill = input(false, { transform: transformBoolean });
 
   heightPx = input<number>();
   widthPx = input<number>();

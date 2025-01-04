@@ -4,26 +4,26 @@
 
 $vars: map.merge(variables.$vars, (
   gap: (
-    xxs: 8px,
-    xs: 12px,
-    sm: 16px,
-    default: 24px,
-    lg: 32px,
-    xl: 40px,
-    xxl: 48px,
+    xxs: 6px,
+    xs: 8px,
+    sm: 12px,
+    default: 16px,
+    lg: 24px,
+    xl: 32px,
+    xxl: 40px,
     0: 0,
     auto: "auto"
   ),
   font-size: (
-    lg: 36px,
-    default: 30px,
-    sm: 24px,
-    h1: 72px,
-    h2: 60px,
-    h3: 48px,
-    h4: 36px,
-    h5: 30px,
-    h6: 24px,
+    lg: 30px,
+    default: 24px,
+    sm: 20px,
+    h1: 60px,
+    h2: 48px,
+    h3: 36px,
+    h4: 30px,
+    h5: 24px,
+    h6: 20px,
   ),
   sidebar: (
     width: 480px
@@ -32,7 +32,7 @@ $vars: map.merge(variables.$vars, (
     height: 62px
   ),
   //font-family: "'Pretendard Variable', sans-serif",
-  background-color: var(--theme-grey-lighter),
+  //background-color: var(--theme-grey-lighter),
   animation-duration: .3s,
   elevation-size: 8px,
 ))
