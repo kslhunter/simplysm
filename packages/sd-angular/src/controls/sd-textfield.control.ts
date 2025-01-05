@@ -1,5 +1,19 @@
-import { ChangeDetectionStrategy, Component, HostListener, input, output, ViewEncapsulation } from "@angular/core";
-import { DateOnly, DateTime, JsonConvert, NumberUtils, StringUtils, Time } from "@simplysm/sd-core-common";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  HostListener,
+  input,
+  output,
+  ViewEncapsulation,
+} from "@angular/core";
+import {
+  DateOnly,
+  DateTime,
+  JsonConvert,
+  NumberUtils,
+  StringUtils,
+  Time,
+} from "@simplysm/sd-core-common";
 import { $computed, $model } from "../utils/hooks";
 import { injectElementRef } from "../utils/dom/element-ref.injector";
 import { transformBoolean } from "../utils/type-tramsforms";
@@ -31,33 +45,34 @@ import { transformBoolean } from "../utils/type-tramsforms";
           //height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
           //min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
 
-          body.sd-theme-compact &,
-          body.sd-theme-modern & {
-            border: 1px solid var(--trans-lighter);
-            border-radius: var(--border-radius-default);
-            background: var(--theme-secondary-lightest);
+          //body.sd-theme-compact &,
+          //body.sd-theme-modern & {
+          border: 1px solid var(--trans-lighter);
+          border-radius: var(--border-radius-default);
+          background: var(--theme-secondary-lightest);
 
-            &:focus {
-              outline: none;
-              border-color: var(--theme-secondary-default);
-            }
+          &:focus {
+            outline: none;
+            border-color: var(--theme-secondary-default);
           }
 
-          body.sd-theme-mobile &,
-          body.sd-theme-kiosk & {
-            border-left: none;
-            border-right: none;
-            border-top: none;
-            border-bottom: 2px solid var(--border-color-default);
-            background: transparent;
-            //transition: border-color 0.3s;
-            padding: calc(var(--gap-sm) + 1px) 0 calc(var(--gap-sm) - 1px);
+          //}
 
-            &:focus {
-              outline: none;
-              border-bottom-color: var(--theme-secondary-default);
-            }
-          }
+          //body.sd-theme-mobile &,
+          //body.sd-theme-kiosk & {
+          //  border-left: none;
+          //  border-right: none;
+          //  border-top: none;
+          //  border-bottom: 2px solid var(--border-color-default);
+          //  background: transparent;
+          //  //transition: border-color 0.3s;
+          //  padding: calc(var(--gap-sm) + 1px) 0 calc(var(--gap-sm) - 1px);
+          //
+          //  &:focus {
+          //    outline: none;
+          //    border-bottom-color: var(--theme-secondary-default);
+          //  }
+          //}
 
           &::-webkit-scrollbar {
             display: none;
@@ -92,22 +107,23 @@ import { transformBoolean } from "../utils/type-tramsforms";
 
         @each $key, $val in map.get(variables.$vars, theme) {
           &[sd-theme="#{$key}"] {
-            body.sd-theme-compact &,
-            body.sd-theme-modern & {
-              > input,
-              > ._contents {
-                background: var(--theme-#{$key}-lightest);
-              }
+            //body.sd-theme-compact &,
+            //body.sd-theme-modern & {
+            > input,
+            > ._contents {
+              background: var(--theme-#{$key}-lightest);
             }
 
-            body.sd-theme-mobile &,
-            body.sd-theme-kiosk & {
-              border-bottom-color: var(--theme-#{$key}-lighter);
+            //}
 
-              &:focus {
-                border-bottom-color: var(--theme-#{$key}-default);
-              }
-            }
+            //body.sd-theme-mobile &,
+            //body.sd-theme-kiosk & {
+            //  border-bottom-color: var(--theme-#{$key}-lighter);
+            //
+            //  &:focus {
+            //    border-bottom-color: var(--theme-#{$key}-default);
+            //  }
+            //}
           }
         }
 
@@ -155,100 +171,102 @@ import { transformBoolean } from "../utils/type-tramsforms";
         }
 
         &[sd-inset="true"] {
-          body.sd-theme-compact &,
-          body.sd-theme-modern &,
-          body.sd-theme-mobile &,
-          body.sd-theme-kiosk & {
-            > ._contents {
-              display: block;
-            }
+          //body.sd-theme-compact &,
+          //body.sd-theme-modern &,
+          //body.sd-theme-mobile &,
+          //body.sd-theme-kiosk & {
+          > ._contents {
+            display: block;
+          }
 
-            > input {
-              position: absolute;
-              top: 0;
-              left: 0;
-            }
+          > input {
+            position: absolute;
+            top: 0;
+            left: 0;
+          }
 
+          > input,
+          > ._contents {
+            width: 100%;
+            border: none;
+            border-radius: 0;
+            //height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
+            //min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
+          }
+
+          &[sd-type="month"] {
             > input,
             > ._contents {
-              width: 100%;
-              border: none;
-              border-radius: 0;
-              //height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
-              //min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
-            }
-
-            &[sd-type="month"] {
-              > input,
-              > ._contents {
-                width: 9em;
-              }
-            }
-
-            &[sd-type="date"] {
-              > input,
-              > ._contents {
-                width: 8.25em;
-              }
-            }
-
-            &[sd-type="datetime"] {
-              > input,
-              > ._contents {
-                width: 14em;
-              }
-            }
-
-            &[sd-size="sm"] {
-              > input,
-              > ._contents {
-                //height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
-                //min-height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
-              }
-            }
-
-            &[sd-size="lg"] {
-              > input,
-              > ._contents {
-                //height: calc((var(--gap-default) * 2) + (var(--font-size-default) * var(--line-height-strip-unit)));
-                //min-height: calc((var(--gap-default) * 2) + (var(--font-size-default) * var(--line-height-strip-unit)));
-              }
+              width: 9em;
             }
           }
 
-          body.sd-theme-compact &,
-          body.sd-theme-modern & {
-            > input:focus {
-              outline: 1px solid var(--theme-primary-default);
-              outline-offset: -1px;
+          &[sd-type="date"] {
+            > input,
+            > ._contents {
+              width: 8.25em;
             }
           }
 
-          body.sd-theme-mobile &,
-          body.sd-theme-kiosk & {
-            &[sd-size="sm"] {
-              > input,
-              > ._contents {
-                padding: calc(var(--gap-xs) + 1px) 0 calc(var(--gap-xs) - 1px);
-              }
-            }
-
-            &[sd-size="lg"] {
-              > input,
-              > ._contents {
-                padding: calc(var(--gap-default) + 1px) 0 calc(var(--gap-default) - 1px);
-              }
-            }
-
-            > input:focus {
-              outline: none;
-              border-bottom-color: var(--theme-primary-default);
+          &[sd-type="datetime"] {
+            > input,
+            > ._contents {
+              width: 14em;
             }
           }
-        }
 
-        body.sd-theme-compact &,
-        body.sd-theme-modern & {
+          &[sd-size="sm"] {
+            > input,
+            > ._contents {
+              //height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
+              //min-height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
+            }
+          }
+
+          &[sd-size="lg"] {
+            > input,
+            > ._contents {
+              //height: calc((var(--gap-default) * 2) + (var(--font-size-default) * var(--line-height-strip-unit)));
+              //min-height: calc((var(--gap-default) * 2) + (var(--font-size-default) * var(--line-height-strip-unit)));
+            }
+          }
+
+          //}
+
+          //body.sd-theme-compact &,
+          //body.sd-theme-modern & {
+          > input:focus {
+            outline: 1px solid var(--theme-primary-default);
+            outline-offset: -1px;
+          }
+
+          //}
+
+          //  body.sd-theme-mobile &,
+          //  body.sd-theme-kiosk & {
+          //    &[sd-size="sm"] {
+          //      > input,
+          //      > ._contents {
+          //        padding: calc(var(--gap-xs) + 1px) 0 calc(var(--gap-xs) - 1px);
+          //      }
+          //    }
+          //
+          //    &[sd-size="lg"] {
+          //      > input,
+          //      > ._contents {
+          //        padding: calc(var(--gap-default) + 1px) 0 calc(var(--gap-default) - 1px);
+          //      }
+          //    }
+          //
+          //    > input:focus {
+          //      outline: none;
+          //      border-bottom-color: var(--theme-primary-default);
+          //    }
+          //  }
+          //}
+
+          //body.sd-theme-compact &,
+          //body.sd-theme-modern & {
           &[sd-disabled="true"] {
             > ._contents {
               display: block;
@@ -270,39 +288,40 @@ import { transformBoolean } from "../utils/type-tramsforms";
               //background: white;
             }
           }
-        }
 
-        body.sd-theme-mobile &,
-        body.sd-theme-kiosk & {
-          &[sd-disabled="true"] {
-            > ._contents {
-              display: block;
-              color: var(--text-trans-light);
-              border-color: transparent;
-            }
+          //}
 
-            &[sd-inset="true"] {
-              > ._contents {
-                color: var(--text-trans-default);
-                border-color: transparent;
-              }
-            }
+          //body.sd-theme-mobile &,
+          //body.sd-theme-kiosk & {
+          //  &[sd-disabled="true"] {
+          //    > ._contents {
+          //      display: block;
+          //      color: var(--text-trans-light);
+          //      border-color: transparent;
+          //    }
+          //
+          //    &[sd-inset="true"] {
+          //      > ._contents {
+          //        color: var(--text-trans-default);
+          //        border-color: transparent;
+          //      }
+          //    }
+          //  }
+          //
+          //  &[sd-readonly="true"] {
+          //    > ._contents {
+          //      display: block;
+          //      border-color: transparent !important;
+          //    }
+          //  }
+          //}
+
+          > ._invalid-indicator {
+            display: none;
           }
 
-          &[sd-readonly="true"] {
-            > ._contents {
-              display: block;
-              border-color: transparent !important;
-            }
-          }
-        }
-
-        > ._invalid-indicator {
-          display: none;
-        }
-
-        body.sd-theme-compact &,
-        body.sd-theme-modern & {
+          //body.sd-theme-compact &,
+          //body.sd-theme-modern & {
           &:has(:invalid),
           &[sd-invalid] {
             > ._invalid-indicator {
@@ -317,17 +336,19 @@ import { transformBoolean } from "../utils/type-tramsforms";
               height: var(--gap-sm);
             }
           }
-        }
 
-        body.sd-theme-mobile &,
-        body.sd-theme-kiosk & {
-          &:has(:invalid),
-          &[sd-invalid] {
-            > input,
-            > ._contents {
-              border-bottom-color: var(--theme-danger-default);
+          //}
+
+          /*body.sd-theme-mobile &,
+          body.sd-theme-kiosk & {
+            &:has(:invalid),
+            &[sd-invalid] {
+              > input,
+              > ._contents {
+                border-bottom-color: var(--theme-danger-default);
+              }
             }
-          }
+          }*/
         }
       }
     `,
@@ -515,7 +536,8 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
     else if (this.type() === "format" && !StringUtils.isNullOrEmpty(this.format())) {
       const formatItems = this.format()!.split("|");
 
-      if (!formatItems.some((formatItem) => formatItem.match(/X/g)?.length === (value as string).length)) {
+      if (!formatItems.some((formatItem) => formatItem.match(/X/g)?.length
+        === (value as string).length)) {
         errorMessages.push(`문자의 길이가 요구되는 길이와 다릅니다.`);
       }
     }
@@ -594,7 +616,8 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
       const nonFormatChars = this.format()?.match(/[^X]/g)?.distinct();
       if (nonFormatChars) {
         this.#setValue(
-          inputEl.value.replace(new RegExp(`[${nonFormatChars.map((item) => "\\" + item).join("")}]`, "g"), ""),
+          inputEl.value.replace(new RegExp(
+            `[${nonFormatChars.map((item) => "\\" + item).join("")}]`, "g"), ""),
         );
       }
       else {
@@ -642,7 +665,11 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
         : value.toString(10);
     }
 
-    if (this.type() === "format" && !StringUtils.isNullOrEmpty(this.format()) && typeof value === "string") {
+    if (this.type()
+      === "format"
+      && !StringUtils.isNullOrEmpty(this.format())
+      && typeof value
+      === "string") {
       const formatItems = this.format()!.split("|");
 
       for (const formatItem of formatItems) {

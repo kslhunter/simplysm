@@ -16,7 +16,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
       sd-dock {
         display: block;
         position: absolute;
-        overflow: visible;
+        overflow: auto;
 
         &[sd-resizable="true"] {
           > ._resize-bar {

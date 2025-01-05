@@ -42,7 +42,8 @@ import { transformBoolean } from "../utils/type-tramsforms";
           text-align: center;
           cursor: pointer;
 
-          transition: background 0.1s linear;
+          transition: 0.1s linear;
+          transition-property: border,background;
 
           &:hover {
             background: var(--theme-grey-lightest);

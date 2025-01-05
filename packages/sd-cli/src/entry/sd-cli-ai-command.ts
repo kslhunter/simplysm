@@ -15,7 +15,6 @@ export class SdCliAiCommand {
     const diff = await SdProcess.spawnAsync(
       `git diff --text --staged -- . ":(exclude).*" ":(exclude)_*" ":(exclude)yarn.lock" ":(exclude)packages/*/styles.css"`,
     );
-    console.log(diff.length);
 
     if (StringUtils.isNullOrEmpty(diff.trim())) {
       throw new Error("변경사항이 없습니다.");

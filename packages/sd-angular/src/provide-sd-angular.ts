@@ -1,8 +1,5 @@
 import { ISdAppStructureItem } from "./utils/sd-app-structure.utils";
-import {
-  ISdAngularIcon,
-  SdAngularConfigProvider,
-} from "./providers/sd-angular-config.provider";
+import { ISdAngularIcon, SdAngularConfigProvider } from "./providers/sd-angular-config.provider";
 import {
   ENVIRONMENT_INITIALIZER,
   EnvironmentProviders,
@@ -19,6 +16,7 @@ import {
   faAngleRight,
   faAngleUp,
   faArrowLeft,
+  faArrowLeftLong,
   faArrowRight,
   faBars,
   faCaretDown,
@@ -27,6 +25,7 @@ import {
   faCode,
   faCog,
   faEdit,
+  faEraser,
   faExternalLink,
   faEye,
   faEyeSlash,
@@ -117,6 +116,9 @@ export function provideSdAngular(opt: {
           sortDown: faSortDown,
           sortUp: faSortUp,
 
+          eraser: faEraser,
+          arrowLeftLong: faArrowLeftLong,
+
           search: faSearch,
           externalLink: faExternalLink,
           edit: faEdit,
@@ -132,9 +134,7 @@ export function provideSdAngular(opt: {
     { provide: EVENT_MANAGER_PLUGINS, useClass: SdResizeEventPlugin, multi: true },
     { provide: EVENT_MANAGER_PLUGINS, useClass: SdOptionEventPlugin, multi: true },
     { provide: EVENT_MANAGER_PLUGINS, useClass: SdBackbuttonEventPlugin, multi: true },
-    ...process.env["NODE_ENV"] === "development" ? [] : [
-      { provide: ErrorHandler, useClass: SdGlobalErrorHandlerPlugin },
-    ],
+    { provide: ErrorHandler, useClass: SdGlobalErrorHandlerPlugin },
     provideExperimentalZonelessChangeDetection(),
   ]);
 }
