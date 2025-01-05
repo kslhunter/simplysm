@@ -13,7 +13,6 @@ import { transformBoolean } from "../utils/type-tramsforms";
         display: block;
         user-select: none;
         border-radius: var(--border-radius-default);
-        overflow: hidden;
         background: white;
         width: 100%;
 
