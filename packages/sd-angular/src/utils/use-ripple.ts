@@ -20,7 +20,7 @@ export function useRipple(enableFn?: () => boolean) {
         if (!cursorEl) {
           break;
         }
-        else if (cursorEl instanceof HTMLElement) {
+        else if (cursorEl  instanceof HTMLElement && cursorEl.isOffsetElement()) {
           break;
         }
         else {

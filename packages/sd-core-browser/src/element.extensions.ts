@@ -22,6 +22,8 @@ declare interface Element {
   findFocusableParent(): TFocusableElement | undefined;
 
   findFocusableFirst(): TFocusableElement | undefined;
+
+  isOffsetElement(): boolean;
 }
 
 if (typeof Element.prototype.matches === "undefined") {
@@ -63,12 +65,13 @@ Element.prototype.prependChild = function <T extends Element>(newChild: T): T {
 
 Element.prototype.findAll = function (selector: string): Element[] {
   return Array.from(
-    this.querySelectorAll(selector.split(",").map((item) => `:scope ${item}`).join(","))
+    this.querySelectorAll(selector.split(",").map((item) => `:scope ${item}`).join(",")),
   ).ofType(Element);
 };
 
 Element.prototype.findFirst = function (selector: string): Element | undefined {
-  return this.querySelector(selector.split(",").map((item) => `:scope ${item}`).join(",")) ?? undefined;
+  return this.querySelector(selector.split(",").map((item) => `:scope ${item}`).join(","))
+    ?? undefined;
 };
 
 const focusableSelectorList = [
@@ -82,7 +85,7 @@ const focusableSelectorList = [
   "object:not([hidden])",
   "embed:not([hidden])",
   "*[tabindex]:not([hidden])",
-  "*[contenteditable]:not([hidden])"
+  "*[contenteditable]:not([hidden])",
 ];
 
 Element.prototype.isFocusable = function (): boolean {
@@ -91,7 +94,7 @@ Element.prototype.isFocusable = function (): boolean {
 
 Element.prototype.findFocusableAll = function (): TFocusableElement[] {
   return Array.from(
-    this.querySelectorAll(focusableSelectorList.map((item) => `:scope ${item}`).join(","))
+    this.querySelectorAll(focusableSelectorList.map((item) => `:scope ${item}`).join(",")),
   ).ofType(Element) as TFocusableElement[];
 };
 
@@ -111,6 +114,12 @@ Element.prototype.findFocusableParent = function (): TFocusableElement | undefin
   }
 
   return undefined;
+};
+
+Element.prototype.isOffsetElement = function (): boolean {
+  return [
+    "relative", "absolute", "fixed", "sticky",
+  ].includes(getComputedStyle(this).position);
 };
 
 type TFocusableElement = Element & HTMLOrSVGElement;

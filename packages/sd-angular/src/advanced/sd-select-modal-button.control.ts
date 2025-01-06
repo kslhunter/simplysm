@@ -33,15 +33,15 @@ import { SdAnchorControl } from "../controls/sd-anchor.control";
       <ng-content />
       <div class="_invalid-indicator"></div>
 
-      @if (!disabled()) {
+      @if (!disabled() && value() != null) {
         <sd-anchor (click)="onCancelButtonClick()" theme="danger">
-          <sd-icon [icon]="icons.xmark" />
+          <sd-icon [icon]="icons.xmark" fixedWidth/>
         </sd-anchor>
       }
 
       @if (!disabled()) {
         <sd-button (click)="onModalButtonClick($event)" inset>
-          <sd-icon [icon]="icons.search" />
+          <sd-icon [icon]="icons.search" fixedWidth/>
         </sd-button>
       }
     </sd-additional-button>
@@ -71,7 +71,7 @@ import { SdAnchorControl } from "../controls/sd-anchor.control";
           }
         }
 
-        &[sd-invalid=true] {
+        &[sd-invalid] {
           > sd-additional-button > ._content > ._invalid-indicator {
             display: block;
           }

@@ -62,14 +62,10 @@ export interface IQueryableDef {
 }
 
 export type TQueryValuePropertyNames<T> = {
-  [K in keyof T]: undefined extends T[K]
-    ? never
-    : T[K] extends TQueryValue ? K : never
+  [K in keyof T]: undefined extends T[K] ? never : T[K] extends TQueryValue ? K : never
 }[keyof T];
 export type TUndefinedPropertyNames<T> = {
-  [K in keyof T]: undefined extends T[K]
-    ? K
-    : never
+  [K in keyof T]: undefined extends T[K] ? K : never
 }[keyof T];
 
 export type TOnlyQueryValueProperty<T> =

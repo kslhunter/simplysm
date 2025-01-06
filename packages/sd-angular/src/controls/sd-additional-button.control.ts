@@ -62,11 +62,11 @@ import { transformBoolean } from "../utils/type-tramsforms";
 
           > ._button {
             > sd-anchor {
-              padding: var(--gap-xs) !important;
+              padding: var(--gap-xs) var(--gap-sm) !important;
             }
 
             > sd-button > button {
-              padding: var(--gap-xs) !important;
+              padding: var(--gap-xs) var(--gap-sm) !important;
             }
           }
         }
