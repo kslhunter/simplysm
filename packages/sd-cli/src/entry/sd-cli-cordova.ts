@@ -30,7 +30,8 @@ export class SdCliCordova {
 
     if (FsUtils.exists(cordovaPath)) {
       this._logger.log("이미 생성되어있는 '.cordova'를 사용합니다.");
-    } else {
+    }
+    else {
       await this._execAsync(`npx cordova telemetry on`, this._opt.pkgPath);
 
       // 프로젝트 생성
@@ -63,7 +64,8 @@ export class SdCliCordova {
         // await this._execAsync(`${BIN_PATH} platform add ${platform}`, cordovaPath);
         if (platform === "android") {
           await this._execAsync(`npx cordova platform add ${platform}@12.0.0`, cordovaPath);
-        } else {
+        }
+        else {
           await this._execAsync(`npx cordova platform add ${platform}`, cordovaPath);
         }
       }
@@ -122,7 +124,8 @@ export class SdCliCordova {
         path.resolve(this._opt.pkgPath, this._opt.config.platform.android.sign.keystore),
         path.resolve(cordovaPath, "android.keystore"),
       );
-    } else {
+    }
+    else {
       FsUtils.remove(path.resolve(cordovaPath, "android.keystore"));
       // SIGN을 안쓸경우 아래 파일이 생성되어 있으면 오류남
       FsUtils.remove(path.resolve(cordovaPath, "platforms/android/release-signing.properties"));
@@ -132,21 +135,21 @@ export class SdCliCordova {
     FsUtils.writeJson(path.resolve(cordovaPath, "build.json"), {
       ...(this._opt.config.platform?.android
         ? {
-            android: {
-              release: {
-                packageType: this._opt.config.platform.android.bundle ? "bundle" : "apk",
-                ...(this._opt.config.platform.android.sign
-                  ? {
-                      keystore: path.resolve(cordovaPath, "android.keystore"),
-                      storePassword: this._opt.config.platform.android.sign.storePassword,
-                      alias: this._opt.config.platform.android.sign.alias,
-                      password: this._opt.config.platform.android.sign.password,
-                      keystoreType: this._opt.config.platform.android.sign.keystoreType,
-                    }
-                  : {}),
-              },
+          android: {
+            release: {
+              packageType: this._opt.config.platform.android.bundle ? "bundle" : "apk",
+              ...(this._opt.config.platform.android.sign
+                ? {
+                  keystore: path.resolve(cordovaPath, "android.keystore"),
+                  storePassword: this._opt.config.platform.android.sign.storePassword,
+                  alias: this._opt.config.platform.android.sign.alias,
+                  password: this._opt.config.platform.android.sign.password,
+                  keystoreType: this._opt.config.platform.android.sign.keystoreType,
+                }
+                : {}),
             },
-          }
+          },
+        }
         : {}),
     });
 
@@ -156,7 +159,8 @@ export class SdCliCordova {
         path.resolve(this._opt.pkgPath, this._opt.config.icon),
         path.resolve(cordovaPath, "res/icons", path.basename(this._opt.config.icon)),
       );
-    } else {
+    }
+    else {
       FsUtils.remove(path.resolve(cordovaPath, "res/icons"));
     }
 
@@ -192,7 +196,14 @@ export class SdCliCordova {
 
     // CONFIG: ICON 설정
     if (this._opt.config.icon != null) {
-      configXml["widget"]["icon"] = [{ $: { src: "res/icons/" + path.basename(this._opt.config.icon) } }];
+      configXml["widget"]["icon"] = [
+        {
+          $: {
+            src: "res/icons/"
+              + path.basename(this._opt.config.icon),
+          },
+        },
+      ];
     }
 
     // CONFIG: 접근허용 세팅
@@ -280,8 +291,8 @@ export class SdCliCordova {
               "android:name": `android.permission.${perm.name}`,
               ...(perm.maxSdkVersion != null
                 ? {
-                    "android:maxSdkVersion": `${perm.maxSdkVersion}`,
-                  }
+                  "android:maxSdkVersion": `${perm.maxSdkVersion}`,
+                }
                 : {}),
             },
           })),
@@ -327,11 +338,18 @@ export class SdCliCordova {
           ? `app-${buildType}.apk`
           : `app-${buildType}-unsigned.apk`;
         const latestDistApkFileName = path.basename(
-          `${this._opt.config.appName}${this._opt.config.platform!.android!.sign ? "" : "-unsigned"}-latest.apk`,
+          `${this._opt.config.appName}${this._opt.config.platform!.android!.sign
+            ? ""
+            : "-unsigned"}-latest.apk`,
         );
         FsUtils.mkdirs(targetOutPath);
         FsUtils.copy(
-          path.resolve(cordovaPath, "platforms/android/app/build/outputs/apk", buildType, apkFileName),
+          path.resolve(
+            cordovaPath,
+            "platforms/android/app/build/outputs/apk",
+            buildType,
+            apkFileName,
+          ),
           path.resolve(targetOutPath, latestDistApkFileName),
         );
       }
@@ -344,7 +362,12 @@ export class SdCliCordova {
         const fileBuffer = FsUtils.readFileBuffer(wwwFile);
         zip.file(relFilePath, fileBuffer);
       }
-      const platformWwwFiles = FsUtils.glob(path.resolve(cordovaPath, "platforms", platform, "platform_www/**/*"), {
+      const platformWwwFiles = FsUtils.glob(path.resolve(
+        cordovaPath,
+        "platforms",
+        platform,
+        "platform_www/**/*",
+      ), {
         nodir: true,
       });
       for (const platformWwwFile of platformWwwFiles) {
@@ -363,7 +386,11 @@ export class SdCliCordova {
     }
   }
 
-  public static async runWebviewOnDeviceAsync(opt: { platform: string; pkgName: string; url?: string }): Promise<void> {
+  public static async runWebviewOnDeviceAsync(opt: {
+    platform: string;
+    pkgName: string;
+    url?: string
+  }): Promise<void> {
     const cordovaPath = path.resolve(process.cwd(), `packages/${opt.pkgName}/.cordova/`);
 
     if (opt.url !== undefined) {
@@ -371,11 +398,14 @@ export class SdCliCordova {
       FsUtils.mkdirs(path.resolve(cordovaPath, "www"));
       FsUtils.writeFile(
         path.resolve(cordovaPath, "www/index.html"),
-        `'${opt.url}'로 이동중... <script>setTimeout(function () {window.location.href = "${opt.url.replace(/\/$/, "")}/${opt.pkgName}/cordova/"}, 3000);</script>`.trim(),
+        `'${opt.url}'로 이동중... <script>setTimeout(function () {window.location.href = "${opt.url.replace(
+          /\/$/,
+          "",
+        )}/${opt.pkgName}/cordova/"}, 3000);</script>`.trim(),
       );
     }
 
     const binPath = path.resolve(process.cwd(), "node_modules/.bin/cordova.cmd");
-    await SdProcess.spawnAsync(`${binPath} run ${opt.platform} --device`, { cwd: cordovaPath }, true);
+    await SdProcess.spawnAsync(`${binPath} run ${opt.platform} --device`, { cwd: cordovaPath });
   }
 }
