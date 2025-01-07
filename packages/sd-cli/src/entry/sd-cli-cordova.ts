@@ -405,7 +405,6 @@ export class SdCliCordova {
       );
     }
 
-    const binPath = path.resolve(process.cwd(), "node_modules/.bin/cordova.cmd");
-    await SdProcess.spawnAsync(`${binPath} run ${opt.platform} --device`, { cwd: cordovaPath });
+    await SdProcess.spawnAsync(`npx cordova run ${opt.platform} --device`, { cwd: cordovaPath });
   }
 }
