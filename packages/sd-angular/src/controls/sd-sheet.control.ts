@@ -324,7 +324,11 @@ import { SdIconLayersControl } from "./sd-icon-layers.control";
           </sd-dock>
         }
 
-        <sd-pane class="_sheet-container" (scroll)="onContainerScroll($event)">
+        <sd-pane
+          class="_sheet-container"
+          (scroll)="onContainerScroll($event)"
+          [style]="contentStyle()"
+        >
           <table>
             <thead>
               @for (headerRow of displayHeaderDefTable(); let r = $index; track r) {
@@ -589,6 +593,8 @@ export class SdSheetControl<T> {
   hideConfigBar = input(false, { transform: transformBoolean });
   /** BORDER를 없애는등 다른 박스안에 완전히 붙임 */
   inset = input(false, { transform: transformBoolean });
+
+  contentStyle = input<string>();
 
   /** 정렬규칙 */
   _ordering = input<ISdSheetColumnOrderingVM[]>([], { alias: "ordering" });
