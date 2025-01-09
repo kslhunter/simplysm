@@ -333,7 +333,7 @@ Options = UnsafeLegacyRenegotiation`.trim(),
         optionals: [
           ...Object.keys(npmConfig.optionalDependencies ?? {}),
           ...Object.keys(npmConfig.peerDependencies ?? {}).filter(
-            (item) => npmConfig.peerDependenciesMeta?.[item]?.optional,
+            (item) => npmConfig.peerDependenciesMeta?.[item]?.optional ?? false,
           ),
         ].distinct(),
       };

@@ -1291,7 +1291,7 @@ export class SdSheetControl<T> {
   onFixedCellResize(c: number) {
     const sheetContainerEl = this.#elRef.nativeElement.findFirst("._sheet-container")!;
 
-    const fixedColumnLength = this.displayColumnDefs().filter((item) => item.fixed).length;
+    const fixedColumnLength = this.displayColumnDefs().filter((item) => !!item.fixed).length;
 
     const nextFixedColumnIndexes = Array(fixedColumnLength - c - 1)
       .fill(0)

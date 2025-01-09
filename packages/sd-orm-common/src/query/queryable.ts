@@ -1658,7 +1658,7 @@ export class Queryable<D extends DbContext, T> {
 
     const pkColNames = this.tableDef.columns.filter((item) => item.primaryKey !== undefined)
       .map((item) => item.name);
-    const aiColNames = this.tableDef.columns.filter((item) => item.autoIncrement)
+    const aiColNames = this.tableDef.columns.filter((item) => !!item.autoIncrement)
       .map((item) => item.name);
 
     const dataIndexes: number[] = [];
@@ -1924,7 +1924,7 @@ export class Queryable<D extends DbContext, T> {
 
     const pkColNames = this.tableDef.columns.filter((item) => item.primaryKey !== undefined)
       .map((item) => item.name);
-    const aiColNames = this.tableDef.columns.filter((item) => item.autoIncrement)
+    const aiColNames = this.tableDef.columns.filter((item) => !!item.autoIncrement)
       .map((item) => item.name);
 
     // let dataIndex: number;
