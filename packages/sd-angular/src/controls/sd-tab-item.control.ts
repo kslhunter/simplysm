@@ -34,7 +34,7 @@ import { $computed } from "../utils/hooks";
           }
 
           &[sd-selected="true"] {
-            background: white;
+            background: var(--background-color);
             border-color: var(--theme-grey-lighter);
           }
         }

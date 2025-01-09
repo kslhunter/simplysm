@@ -39,14 +39,14 @@ export class SdFormControl {
     event.preventDefault();
     event.stopPropagation();
 
-    const firstInvalidEl = this.formElRef().nativeElement.findFirst<HTMLElement>("*:invalid, *[sd-invalid]");
+    const firstInvalidEl = this.formElRef().nativeElement.findFirst<HTMLElement>("*:invalid, *[sd-invalid-message]");
 
     if (!firstInvalidEl) {
       this.submit.emit(event);
       return;
     }
 
-    const sdInvalidMessage = firstInvalidEl.getAttribute("sd-invalid");
+    const sdInvalidMessage = firstInvalidEl.getAttribute("sd-invalid-message");
     const invalidMessage = "validationMessage" in firstInvalidEl ? firstInvalidEl.validationMessage : "";
 
     const errorMessage = [sdInvalidMessage, invalidMessage].filterExists().join("\n");

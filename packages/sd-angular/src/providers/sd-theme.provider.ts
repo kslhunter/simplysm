@@ -6,12 +6,17 @@ import { SdLocalStorageProvider } from "./sd-local-storage.provider";
 export class SdThemeProvider {
   #sdLocalStorage = inject(SdLocalStorageProvider);
 
-  theme = $signal<"compact" | "modern" | "mobile" | "kiosk">("modern");
+  theme = $signal<TSdTheme>("modern");
+  dark = $signal<boolean>(false);
 
   constructor() {
     $effect(() => {
-      document.body.className = "sd-theme-" + this.theme();
+      document.body.className = "sd-theme-" + this.theme() + (this.dark() ? " sd-theme-dark" : "");
       this.#sdLocalStorage.set("sd-theme", this.theme());
+      this.#sdLocalStorage.set("sd-theme-dark", this.dark());
     });
   }
 }
+
+
+export type TSdTheme = "compact" | "modern" | "mobile" | "kiosk";

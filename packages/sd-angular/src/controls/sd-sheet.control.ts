@@ -77,7 +77,7 @@ import { SdIconLayersControl } from "./sd-icon-layers.control";
             border-radius: var(--border-radius-default);
 
             > sd-dock {
-              background: white;
+              background: var(--background-color);
               border-top-left-radius: var(--border-radius-default);
               border-top-right-radius: var(--border-radius-default);
               border-bottom: 1px solid $border-color-dark;
@@ -210,7 +210,7 @@ import { SdIconLayersControl } from "./sd-icon-layers.control";
                 }
 
                 > tbody > tr > td {
-                  background: white;
+                  background: var(--background-color);
                   vertical-align: top;
 
                   &._fixed {

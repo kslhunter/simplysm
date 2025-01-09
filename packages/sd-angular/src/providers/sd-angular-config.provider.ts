@@ -1,12 +1,14 @@
 import { Injectable } from "@angular/core";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { ISdAppStructureItem } from "../utils/sd-app-structure.utils";
+import { TSdTheme } from "./sd-theme.provider";
 
 @Injectable({ providedIn: "root" })
 export class SdAngularConfigProvider {
   clientName!: string;
   appStructure!: ISdAppStructureItem[];
-  defaultTheme!: "compact" | "modern" | "mobile" | "kiosk";
+  defaultTheme!: TSdTheme;
+  defaultDark!: boolean;
   icons!: ISdAngularIcon;
 }
 

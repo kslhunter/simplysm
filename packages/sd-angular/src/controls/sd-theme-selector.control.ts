@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, inject, viewChild, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  viewChild,
+  ViewEncapsulation,
+} from "@angular/core";
 import { SdDropdownControl } from "./sd-dropdown.control";
 import { SdAnchorControl } from "./sd-anchor.control";
 import { SdListControl } from "./sd-list.control";
@@ -31,12 +37,34 @@ import { SdIconControl } from "./sd-icon.control";
 
       <sd-dropdown-popup>
         <sd-list>
-          <sd-list-item [selected]="theme() === 'compact'" [selectedIcon]="icons.check" (click)="theme.set('compact')">
+          <sd-list-item
+            [selected]="theme() === 'compact' && !dark()"
+            [selectedIcon]="icons.check"
+            (click)="theme.set('compact'); dark.set(false)"
+          >
             compact
           </sd-list-item>
-          <sd-list-item [selected]="theme() === 'modern'" [selectedIcon]="icons.check" (click)="theme.set('modern')">
+          <sd-list-item
+            [selected]="theme() === 'modern' && !dark()"
+            [selectedIcon]="icons.check"
+            (click)="theme.set('modern'); dark.set(false)"
+          >
             modern
           </sd-list-item>
+          <!--<sd-list-item
+            [selected]="theme() === 'compact' && dark()"
+            [selectedIcon]="icons.check"
+            (click)="theme.set('compact'); dark.set(true)"
+          >
+            compact-dark
+          </sd-list-item>
+          <sd-list-item
+            [selected]="theme() === 'modern' && dark()"
+            [selectedIcon]="icons.check"
+            (click)="theme.set('modern'); dark.set(true)"
+          >
+            modern-dark
+          </sd-list-item>-->
         </sd-list>
       </sd-dropdown-popup>
     </sd-dropdown>
@@ -50,6 +78,7 @@ export class SdThemeSelectorControl {
   dropdownControl = viewChild.required(SdDropdownControl);
 
   theme = this.#sdTheme.theme;
+  dark = this.#sdTheme.dark;
 
   constructor() {
     $effect([this.theme], () => {

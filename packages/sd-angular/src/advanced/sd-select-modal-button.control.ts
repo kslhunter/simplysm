@@ -9,13 +9,14 @@ import {
 } from "@angular/core";
 import { SD_MODAL_INPUT, SdModalBase, SdModalProvider } from "../providers/sd-modal.provider";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
-import { $model } from "../utils/hooks";
+import { $computed, $model } from "../utils/hooks";
 import { transformBoolean } from "../utils/type-tramsforms";
 import { TSelectValue } from "../controls/sd-select-control";
 import { SdAdditionalButtonControl } from "../controls/sd-additional-button.control";
 import { SdIconControl } from "../controls/sd-icon.control";
 import { SdButtonControl } from "../controls/sd-button.control";
 import { SdAnchorControl } from "../controls/sd-anchor.control";
+import { SdInvalidDirective } from "../directives/sd-invalid.directive";
 
 @Component({
   selector: "sd-select-modal-button",
@@ -27,21 +28,24 @@ import { SdAnchorControl } from "../controls/sd-anchor.control";
     SdIconControl,
     SdButtonControl,
     SdAnchorControl,
+    SdInvalidDirective,
   ],
   template: `
-    <sd-additional-button [inset]="inset()" [size]="size()">
+    <sd-additional-button
+      [inset]="inset()" [size]="size()"
+      [sd-invalid]="required() && !_value() ? '값을 입력하세요.' : undefined"
+    >
       <ng-content />
-      <div class="_invalid-indicator"></div>
 
-      @if (!disabled() && value() != null) {
+      @if (!disabled() && !isNoValue()) {
         <sd-anchor (click)="onCancelButtonClick()" theme="danger">
-          <sd-icon [icon]="icons.xmark" fixedWidth/>
+          <sd-icon [icon]="icons.xmark" fixedWidth />
         </sd-anchor>
       }
 
       @if (!disabled()) {
         <sd-button (click)="onModalButtonClick($event)" inset>
-          <sd-icon [icon]="icons.search" fixedWidth/>
+          <sd-icon [icon]="icons.search" fixedWidth />
         </sd-button>
       }
     </sd-additional-button>
@@ -52,36 +56,9 @@ import { SdAnchorControl } from "../controls/sd-anchor.control";
         display: block;
         width: 100%;
         min-width: 10em;
-
-        > sd-additional-button > ._content {
-          position: relative;
-
-          > ._invalid-indicator {
-            display: none;
-            //display: block;
-            position: absolute;
-            z-index: 9999;
-            background: var(--theme-danger-default);
-
-            top: var(--gap-xs);
-            left: var(--gap-xs);
-            border-radius: 100%;
-            width: var(--gap-sm);
-            height: var(--gap-sm);
-          }
-        }
-
-        &[sd-invalid] {
-          > sd-additional-button > ._content > ._invalid-indicator {
-            display: block;
-          }
-        }
       }
     `,
   ],
-  host: {
-    "[attr.sd-invalid]": "required() && !_value() ? '필수값이 입력되지 않았습니다.' : undefined",
-  },
 })
 export class SdSelectModalButtonControl<
   TMODAL extends SdModalBase<ISelectModalInputParam, ISelectModalOutputResult>,
@@ -105,6 +82,11 @@ export class SdSelectModalButtonControl<
   modalInputParam = input<TMODAL[typeof SD_MODAL_INPUT]>();
   modalType = input<Type<TMODAL>>();
   modalHeader = input<string>();
+
+  isNoValue = $computed(() => {
+    return this.value() == null
+      || (this.selectMode() === "multi" && (this.value() as any[]).length === 0);
+  });
 
   async onModalButtonClick(event: MouseEvent): Promise<void> {
     event.preventDefault();

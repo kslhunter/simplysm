@@ -2,7 +2,7 @@
 
 @use "../variables";
 
-$vars: map.merge(variables.$vars, (
+$vars: (
   gap: (
     xxs: 6px,
     xs: 8px,
@@ -35,4 +35,4 @@ $vars: map.merge(variables.$vars, (
   //background-color: var(--theme-grey-lighter),
   animation-duration: .3s,
   elevation-size: 8px,
-))
+)

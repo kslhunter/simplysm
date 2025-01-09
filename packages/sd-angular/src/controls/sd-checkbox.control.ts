@@ -129,7 +129,7 @@ import { $model } from "../utils/hooks";
 
         &[sd-theme="white"] {
           > ._indicator_rect {
-            background: white;
+            background: var(--background-color);
             border-color: var(--text-trans-lightest);
           }
 

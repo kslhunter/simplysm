@@ -39,7 +39,7 @@ import { $signal } from "../utils/hooks";
             left: 0;
             width: 100%;
             height: 100%;
-            background: black;
+            background: var(--background-rev-color);
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.3s ease-in-out;

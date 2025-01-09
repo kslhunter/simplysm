@@ -2,7 +2,7 @@
 
 @use "../variables";
 
-$vars: map.merge(variables.$vars, (
+$vars: (
   gap: (
     xxs: 4px,
     xs: 6px,
@@ -26,19 +26,19 @@ $vars: map.merge(variables.$vars, (
     h6: 14px,
   ),
   //background-color: var(--color-grey-50),
-  border-color: (
+  /*border-color: (
     light: var(--theme-grey-lightest),
     default: var(--theme-grey-lighter),
     dark: var(--theme-grey-default),
     darker: var(--theme-grey-dark)
-  ),
+  ),*/
   sidebar: (
     width: 240px
   ),
   topbar: (
     height: 48px
   ),
-  text-trans: (
+  /*text-trans: (
     dark: black,
     default: rgba(0, 0, 0, .87),
     light: rgba(0, 0, 0, .60),
@@ -47,8 +47,8 @@ $vars: map.merge(variables.$vars, (
     rev-default: rgba(255, 255, 255, .7),
     rev-dark: rgba(255, 255, 255, .5),
     rev-darker: rgba(255, 255, 255, .3),
-  ),
+  ),*/
   //font-family: "'Pretendard Variable', sans-serif",
   animation-duration: .3s,
   elevation-size: 4px,
-))
+)

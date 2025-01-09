@@ -2,7 +2,7 @@
 
 @use "../variables";
 
-$vars: map.merge(variables.$vars, (
+$vars: (
   gap: (
     xxs: 2px,
     xs: 3px,
@@ -25,11 +25,11 @@ $vars: map.merge(variables.$vars, (
     h5: 14px,
     h6: 12px,
   ),
-  line-height: 1.5em,
-  line-height-strip-unit: 1.5,
-  topbar: (
-    height: 3em
-  ),
-  animation-duration: .2s,
-  font-family: "'Pretendard Variable', sans-serif",
-))
+  //line-height: 1.5em,
+  //line-height-strip-unit: 1.5,
+  //topbar: (
+  //  height: 3em
+  //),
+  //animation-duration: .2s,
+  //font-family: "'Pretendard Variable', sans-serif",
+)

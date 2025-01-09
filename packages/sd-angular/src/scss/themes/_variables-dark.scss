@@ -1,0 +1,113 @@
+@use "sass:map";
+
+@use "../variables";
+
+$vars: (
+  theme: (
+    "grey": (
+      lightest: darken(map.get(variables.$vars, color, grey-500), 55%), //var(--color-grey-800),
+      lighter: darken(map.get(variables.$vars, color, grey-500), 50%),
+      light: var(--color-grey-600),
+      default: var(--color-grey-500),
+      dark: var(--color-grey-400),
+      darker: var(--color-grey-200),
+      darkest: var(--color-grey-100),
+    ),
+    blue-grey: (
+      lightest: var(--color-blue-grey-900),
+      lighter: var(--color-blue-grey-800),
+      light: var(--color-blue-grey-600),
+      default: var(--color-blue-grey-500),
+      dark: var(--color-blue-grey-400),
+      darker: var(--color-blue-grey-300),
+      darkest: var(--color-blue-grey-100),
+    ),
+    primary: (
+      lightest: darken(map.get(variables.$vars, color, blue-500), 30%), // var(--color-blue-800),
+      lighter: var(--color-blue-700),
+      light: var(--color-blue-600),
+      default: var(--color-blue-500),
+      dark: var(--color-blue-200),
+      darker: var(--color-blue-100),
+      darkest: darken(map.get(variables.$vars, color, blue-500), 30%), // var(--color-blue-50),
+    ),
+    secondary: (
+      lightest: darken(map.get(variables.$vars, color, blue-500), 45%), //var(--color-blue-800),
+      lighter: var(--color-blue-700),
+      light: var(--color-blue-600),
+      default: var(--color-blue-500),
+      dark: var(--color-blue-200),
+      darker: var(--color-blue-100),
+      darkest: var(--color-blue-50),
+    ),
+    info: (
+      lightest: var(--color-cyan-800),
+      lighter: var(--color-cyan-700),
+      light: var(--color-cyan-600),
+      default: var(--color-cyan-500),
+      dark: var(--color-cyan-200),
+      darker: var(--color-cyan-100),
+      darkest: var(--color-cyan-50),
+    ),
+    success: (
+      lightest: var(--color-green-800),
+      lighter: var(--color-green-700),
+      light: var(--color-green-600),
+      default: var(--color-green-500),
+      dark: var(--color-green-300),
+      darker: var(--color-green-100),
+      darkest: var(--color-green-50),
+    ),
+    warning: (
+      lightest: var(--color-orange-900),
+      lighter: var(--color-orange-800),
+      light: var(--color-orange-700),
+      default: var(--color-orange-600),
+      dark: var(--color-orange-200),
+      darker: var(--color-orange-100),
+      darkest: var(--color-orange-50),
+    ),
+    danger: (
+      lightest: var(--color-red-900),
+      lighter: var(--color-red-800),
+      light: var(--color-red-700),
+      default: var(--color-red-500),
+      dark: var(--color-red-200),
+      darker: var(--color-red-100),
+      darkest: var(--color-red-50),
+    )
+  ),
+  trans: (
+    darkest: rgba(255, 255, 255, .5),
+    darker: rgba(255, 255, 255, .4),
+    dark: rgba(255, 255, 255, .3),
+    default: rgba(255, 255, 255, .2),
+    light: rgba(255, 255, 255, .1),
+    lighter: rgba(255, 255, 255, .03),
+    rev-default: rgba(0, 0, 0, .1),
+    rev-light: rgba(0, 0, 0, .2),
+    rev-lighter: rgba(0, 0, 0, .3),
+    rev-lightest: rgba(0, 0, 0, .4),
+  ),
+  text-trans: (
+    dark: white,
+    default: rgba(255, 255, 255, .87),
+    light: rgba(255, 255, 255, .60),
+    lighter: rgba(255, 255, 255, .38),
+    lightest: rgba(255, 255, 255, .2),
+    rev-default: black,
+    rev-dark: rgba(0, 0, 0, .7),
+    rev-darker: rgba(0, 0, 0, .5),
+  ),
+  border-color: (
+    light: var(--theme-grey-lighter),
+    default: var(--theme-grey-light),
+    dark: var(--theme-grey-default),
+    darker: var(--theme-grey-dark)
+  ),
+  background-color: black,
+  background-rev-color: white,
+  sheet: (
+    bg: var(--theme-grey-lighter)
+  )
+)

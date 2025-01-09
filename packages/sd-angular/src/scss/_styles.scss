@@ -138,7 +138,7 @@ hidden {
 }
 
 .bg-white {
-  background: white !important;
+  background: var(--background-color) !important;
 }
 
 .bg-default {
@@ -486,4 +486,18 @@ hidden {
   to {
     transform: none;
   }
+}
+
+
+.sd-invalid-indicator {
+  display: block;
+  position: absolute;
+  z-index: 9999;
+  background: var(--theme-danger-default);
+
+  top: var(--gap-xs);
+  left: var(--gap-xs);
+  border-radius: 100%;
+  width: var(--gap-sm);
+  height: var(--gap-sm);
 }

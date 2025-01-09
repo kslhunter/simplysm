@@ -22,7 +22,7 @@ import { injectElementRef } from "../utils/dom/element-ref.injector";
         transition: 0.1s linear;
         transition-property: transform, opacity;
         pointer-events: none;
-        background: white;
+        background: var(--background-color);
         min-width: 120px;
         @include mixins.elevation(6);
         overflow: hidden;

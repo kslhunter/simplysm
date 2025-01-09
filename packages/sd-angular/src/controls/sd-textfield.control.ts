@@ -258,7 +258,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
 
             &[sd-inset="true"] {
               > ._contents {
-                background: white;
+                background: var(--background-color);
                 color: var(--text-trans-default);
               }
             }
@@ -267,7 +267,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
           &[sd-readonly="true"] {
             > ._contents {
               display: block;
-              //background: white;
+              //background: var(--background-color);
             }
           }
         }
@@ -304,7 +304,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
         body.sd-theme-compact &,
         body.sd-theme-modern & {
           &:has(:invalid),
-          &[sd-invalid] {
+          &[sd-invalid-message] {
             > ._invalid-indicator {
               display: block;
               position: absolute;
@@ -322,7 +322,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
         body.sd-theme-mobile &,
         body.sd-theme-kiosk & {
           &:has(:invalid),
-          &[sd-invalid] {
+          &[sd-invalid-message] {
             > input,
             > ._contents {
               border-bottom-color: var(--theme-danger-default);
@@ -382,7 +382,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
     "[attr.sd-inset]": "inset()",
     "[attr.sd-size]": "size()",
     "[attr.sd-theme]": "theme()",
-    "[attr.sd-invalid]": "errorMessage()",
+    "[attr.sd-invalid-message]": "errorMessage()",
   },
 })
 export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {

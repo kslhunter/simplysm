@@ -92,7 +92,7 @@ import { SdIconControl } from "./sd-icon.control";
 
         &[sd-has-selected-icon="true"][sd-selected="true"] {
           > ._content {
-            background: transparent;
+            //background: transparent;
             color: var(--text-trans-default);
 
             > .flex-row > ._selected-icon {

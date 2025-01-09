@@ -52,13 +52,14 @@ import { SdResizeEventPlugin } from "./plugins/events/sd-resize.event-plugin";
 import { SdOptionEventPlugin } from "./plugins/events/sd-option.event-plugin";
 import { SdBackbuttonEventPlugin } from "./plugins/events/sd-backbutton.event-plugin";
 import { SdGlobalErrorHandlerPlugin } from "./plugins/sd-global-error-handler.plugin";
-import { SdThemeProvider } from "./providers/sd-theme.provider";
+import { SdThemeProvider, TSdTheme } from "./providers/sd-theme.provider";
 import { SdLocalStorageProvider } from "./providers/sd-local-storage.provider";
 
 export function provideSdAngular(opt: {
   clientName: string;
   appStructure?: ISdAppStructureItem[];
-  defaultTheme?: "compact" | "modern" | "mobile" | "kiosk";
+  defaultTheme?: TSdTheme;
+  defaultDark?: boolean;
   icons?: Partial<ISdAngularIcon>;
 }): EnvironmentProviders {
   return makeEnvironmentProviders([
@@ -71,6 +72,7 @@ export function provideSdAngular(opt: {
 
         return () => {
           _sdTheme.theme.set(_sdLocalStorage.get("sd-theme") ?? _sdNgConf.defaultTheme);
+          _sdTheme.dark.set(_sdLocalStorage.get("sd-theme-dark") ?? _sdNgConf.defaultDark);
         };
       },
       multi: true,
@@ -82,6 +84,7 @@ export function provideSdAngular(opt: {
         provider.clientName = opt.clientName;
         provider.appStructure = opt.appStructure ?? [];
         provider.defaultTheme = opt.defaultTheme ?? "modern";
+        provider.defaultDark = opt.defaultDark ?? false;
         provider.icons = {
           fallback: faQuestionCircle,
 

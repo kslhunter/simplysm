@@ -65,7 +65,7 @@ import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
           margin: 0 auto;
           width: fit-content;
           min-width: 240px;
-          background: white;
+          background: var(--background-color);
           //border: 1px solid var(--theme-primary-darker);
           // border-radius:2 px;
           overflow: hidden;

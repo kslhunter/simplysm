@@ -1,12 +1,15 @@
+@use "sass:map";
+
 @use "mixins";
 
-@use "variables" as compact;
+@use "variables";
 @use "themes/variables-modern" as modern;
 @use "themes/variables-mobile" as mobile;
 @use "themes/variables-kiosk" as kiosk;
+@use "themes/variables-dark" as dark;
 
-.sd-theme-compact {
-  @include mixins.writeVars(compact.$vars, "");
+:root {
+  @include mixins.writeVars(variables.$vars, "");
 }
 
 .sd-theme-modern {
@@ -19,4 +22,8 @@
 
 .sd-theme-kiosk {
   @include mixins.writeVars(kiosk.$vars, "");
+}
+
+.sd-theme-dark {
+  @include mixins.writeVars(dark.$vars, "");
 }

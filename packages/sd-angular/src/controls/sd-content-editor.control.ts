@@ -10,13 +10,16 @@ import {
 import { StringUtils } from "@simplysm/sd-core-common";
 import { $computed, $effect, $model } from "../utils/hooks";
 import { transformBoolean } from "../utils/type-tramsforms";
+import { SdInvalidDirective } from "../directives/sd-invalid.directive";
 
 @Component({
   selector: "sd-content-editor",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [],
+  imports: [
+    SdInvalidDirective,
+  ],
   styles: [
     /* language=SCSS */ `
       @use "../scss/mixins";
@@ -80,7 +83,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
 
           &[sd-disabled="true"] {
             > ._editor {
-              background: white !important;
+              background: var(--background-color) !important;
               color: var(--text-trans-default);
             }
           }
@@ -106,24 +109,6 @@ import { transformBoolean } from "../utils/type-tramsforms";
             outline-offset: -1px;
           }
         }
-
-        > ._invalid-indicator {
-          display: none;
-        }
-
-        &[sd-invalid="true"] {
-          > ._invalid-indicator {
-            display: block;
-            position: absolute;
-            background: var(--theme-danger-default);
-
-            top: var(--gap-xs);
-            left: var(--gap-xs);
-            border-radius: 100%;
-            width: var(--gap-sm);
-            height: var(--gap-sm);
-          }
-        }
       }
     `,
   ],
@@ -136,8 +121,8 @@ import { transformBoolean } from "../utils/type-tramsforms";
       [title]="value()"
       [style]="editorStyle()"
       (focus)="onEditorFocus()"
+      [sd-invalid]="errorMessage()"
     ></div>
-    <div class="_invalid-indicator"></div>
   `,
   host: {
     "[attr.sd-disabled]": "disabled()",
@@ -145,7 +130,6 @@ import { transformBoolean } from "../utils/type-tramsforms";
     "[attr.sd-inline]": "inline()",
     "[attr.sd-inset]": "inset()",
     "[attr.sd-size]": "size()",
-    "[attr.sd-invalid]": "errorMessage()",
   },
 })
 export class SdContentEditorControl {
@@ -164,7 +148,10 @@ export class SdContentEditorControl {
 
   editorStyle = input<string>();
 
-  editorElRef = viewChild.required<any, ElementRef<HTMLDivElement>>("editorEl", { read: ElementRef });
+  editorElRef = viewChild.required<any, ElementRef<HTMLDivElement>>(
+    "editorEl",
+    { read: ElementRef },
+  );
 
   errorMessage = $computed(() => {
     const errorMessages: string[] = [];

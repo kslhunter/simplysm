@@ -32,7 +32,7 @@ import { SdIconControl } from "./sd-icon.control";
         }
 
         &._selected {
-          background: white;
+          background: var(--background-color);
           font-weight: bold;
         }
       }

@@ -139,7 +139,7 @@ import { SdIconControl } from "./sd-icon.control";
         }
 
         &:has(:invalid),
-        &[sd-invalid] {
+        &[sd-invalid-message] {
           > sd-dropdown > ._sd-dropdown-control > ._sd-select-control > ._invalid-indicator {
             display: block;
           }
@@ -202,7 +202,7 @@ import { SdIconControl } from "./sd-icon.control";
           }
 
           &[sd-disabled="true"] > sd-dropdown > ._sd-dropdown-control {
-            background: white;
+            background: var(--background-color);
 
             > ._sd-select-control {
               color: var(--text-trans-default);
@@ -308,7 +308,7 @@ import { SdIconControl } from "./sd-icon.control";
     "[attr.sd-inline]": "inline()",
     "[attr.sd-inset]": "inset()",
     "[attr.sd-size]": "size()",
-    "[attr.sd-invalid]": "errorMessage()",
+    "[attr.sd-invalid-message]": "errorMessage()",
   },
 })
 export class SdSelectControl<M extends "single" | "multi", T> {
