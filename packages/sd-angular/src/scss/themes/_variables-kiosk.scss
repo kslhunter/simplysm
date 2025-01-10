@@ -35,4 +35,13 @@ $vars: (
   //background-color: var(--theme-grey-lighter),
   animation-duration: .3s,
   elevation-size: 8px,
+
+  border-radius: (
+    xs: var(--gap-xs),
+    sm: var(--gap-sm),
+    default: var(--gap-default),
+    lg: var(--gap-lg),
+    xl: var(--gap-xl),
+    xxl: var(--gap-xxl)
+  ),
 )
