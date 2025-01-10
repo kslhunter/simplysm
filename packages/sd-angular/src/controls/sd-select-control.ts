@@ -202,7 +202,7 @@ import { SdIconControl } from "./sd-icon.control";
           }
 
           &[sd-disabled="true"] > sd-dropdown > ._sd-dropdown-control {
-            background: var(--background-color);
+            background: var(--control-color);
 
             > ._sd-select-control {
               color: var(--text-trans-default);

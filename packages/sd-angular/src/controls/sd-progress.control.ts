@@ -13,7 +13,7 @@ import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@a
         display: block;
         width: 100%;
         white-space: nowrap;
-        background: var(--background-color);
+        //background: var(--control-color);
         background: var(--theme-grey-lighter);
         border-radius: var(--border-radius-default);
         overflow: hidden;
@@ -21,7 +21,7 @@ import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@a
         > ._sd-progress-content {
           font-weight: bold;
           font-size: 13pt;
-          background: var(--background-color);
+          background: var(--control-color);
           padding: var(--gap-lg) var(--gap-default);
         }
 

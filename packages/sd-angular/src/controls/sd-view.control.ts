@@ -11,7 +11,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
     /* language=SCSS */ `
       sd-view {
         display: block;
-        background: var(--background-color);
+        background: var(--control-color);
 
         &[sd-fill="true"] {
           height: 100%;

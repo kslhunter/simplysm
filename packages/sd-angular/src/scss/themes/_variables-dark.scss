@@ -75,7 +75,7 @@ $vars: (
       dark: var(--color-red-200),
       darker: var(--color-red-100),
       darkest: var(--color-red-50),
-    )
+    ),
   ),
   trans: (
     darkest: rgba(255, 255, 255, .5),
@@ -107,6 +107,7 @@ $vars: (
   ),
   background-color: black,
   background-rev-color: white,
+  control-color: black,
   sheet: (
     bg: var(--theme-grey-lighter)
   )

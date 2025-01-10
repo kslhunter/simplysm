@@ -117,7 +117,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
 
           &[sd-inset="true"] {
             > ._contents {
-              background: var(--background-color);
+              background: var(--control-color);
               color: var(--text-trans-default);
             }
           }

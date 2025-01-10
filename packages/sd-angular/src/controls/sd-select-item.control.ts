@@ -31,7 +31,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
         padding: var(--gap-sm) var(--gap-default);
         cursor: pointer;
         transition: background 0.1s ease-in;
-        background: var(--background-color);
+        background: var(--control-color);
 
         &:hover {
           transition: background 0.1s ease-out;

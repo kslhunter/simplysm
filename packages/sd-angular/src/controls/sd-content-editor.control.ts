@@ -83,7 +83,7 @@ import { SdInvalidDirective } from "../directives/sd-invalid.directive";
 
           &[sd-disabled="true"] {
             > ._editor {
-              background: var(--background-color) !important;
+              background: var(--control-color) !important;
               color: var(--text-trans-default);
             }
           }

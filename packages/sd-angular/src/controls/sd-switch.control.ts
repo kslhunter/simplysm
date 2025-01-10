@@ -36,7 +36,7 @@ import { $model } from "../utils/hooks";
             height: calc(var(--line-height) - var(--gap-xs));
             border-radius: 100%;
 
-            background: var(--background-color);
+            background: var(--control-color);
 
             transition: transform var(--animation-duration);
           }

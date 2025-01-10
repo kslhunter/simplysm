@@ -34,7 +34,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
           user-select: none;
           padding: var(--gap-sm) var(--gap-lg);
 
-          background: var(--background-color);
+          background: var(--control-color);
           border-color: var(--border-color-default);
           border-radius: var(--border-radius-default);
 
@@ -50,7 +50,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
           }
 
           &:disabled {
-            background: var(--background-color);
+            background: var(--control-color);
             border-color: var(--theme-grey-lighter);
             color: var(--text-trans-lighter);
             cursor: default;
@@ -67,7 +67,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
           }
 
           &:disabled {
-            background: var(--background-color);
+            background: var(--control-color);
             border-color: var(--theme-grey-lighter);
             color: var(--text-trans-default);
             cursor: default;

@@ -13,7 +13,7 @@ import { useRipple } from "../utils/use-ripple";
 
       sd-select-button {
         display: block;
-        background: var(--background-color);
+        background: var(--control-color);
         font-weight: bold;
         cursor: pointer;
         color: var(--theme-primary-default);

@@ -13,7 +13,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
         display: block;
         user-select: none;
         border-radius: var(--border-radius-default);
-        background: var(--background-color);
+        background: var(--control-color);
         width: 100%;
 
         &[sd-inset="true"] {

@@ -25,7 +25,7 @@ import { $computed } from "../utils/hooks";
 
         //-- 테마
 
-        background: var(--background-color);
+        background: var(--control-color);
 
         body.sd-theme-kiosk &,
         body.sd-theme-mobile & {

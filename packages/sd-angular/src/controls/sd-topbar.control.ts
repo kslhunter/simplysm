@@ -47,7 +47,7 @@ import { SdIconControl } from "./sd-icon.control";
         //line-height: var(--topbar-height);
         user-select: none;
 
-        background: var(--background-color);
+        background: var(--control-color);
         color: var(--text-trans-default);
 
         //body.sd-theme-compact &,

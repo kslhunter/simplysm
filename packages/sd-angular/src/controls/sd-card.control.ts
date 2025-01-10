@@ -15,7 +15,7 @@ import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/
 
     sd-card {
       display: block;
-      background: var(--background-color);
+      background: var(--control-color);
       border-radius: var(--border-radius-default);
       overflow: hidden;
       transition: box-shadow 0.3s ease-in-out;
