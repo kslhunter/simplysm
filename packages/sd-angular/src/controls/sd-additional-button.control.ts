@@ -45,7 +45,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
           }
 
           > sd-button > button {
-            border-left: 1px solid var(--trans-light) !important;
+            border-left: 1px solid var(--trans-lighter) !important;
             padding: var(--gap-sm) !important;
             height: 100%;
           }

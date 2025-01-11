@@ -39,13 +39,13 @@ import { SdInvalidDirective } from "../directives/sd-invalid.directive";
 
       @if (!disabled() && !isNoValue()) {
         <sd-anchor (click)="onCancelButtonClick()" theme="danger">
-          <sd-icon [icon]="icons.xmark" fixedWidth />
+          <sd-icon [icon]="icons.xmark" />
         </sd-anchor>
       }
 
       @if (!disabled()) {
         <sd-button (click)="onModalButtonClick($event)" inset>
-          <sd-icon [icon]="icons.search" fixedWidth />
+          <sd-icon [icon]="icons.search" />
         </sd-button>
       }
     </sd-additional-button>

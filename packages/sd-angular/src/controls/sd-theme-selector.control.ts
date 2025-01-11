@@ -51,20 +51,22 @@ import { SdIconControl } from "./sd-icon.control";
           >
             modern
           </sd-list-item>
-          <!--<sd-list-item
-            [selected]="theme() === 'compact' && dark()"
-            [selectedIcon]="icons.check"
-            (click)="theme.set('compact'); dark.set(true)"
-          >
-            compact-dark
-          </sd-list-item>
-          <sd-list-item
-            [selected]="theme() === 'modern' && dark()"
-            [selectedIcon]="icons.check"
-            (click)="theme.set('modern'); dark.set(true)"
-          >
-            modern-dark
-          </sd-list-item>-->
+          @if (isDev) {
+            <sd-list-item
+              [selected]="theme() === 'compact' && dark()"
+              [selectedIcon]="icons.check"
+              (click)="theme.set('compact'); dark.set(true)"
+            >
+              compact-dark
+            </sd-list-item>
+            <sd-list-item
+              [selected]="theme() === 'modern' && dark()"
+              [selectedIcon]="icons.check"
+              (click)="theme.set('modern'); dark.set(true)"
+            >
+              modern-dark
+            </sd-list-item>
+          }
         </sd-list>
       </sd-dropdown-popup>
     </sd-dropdown>
@@ -79,6 +81,8 @@ export class SdThemeSelectorControl {
 
   theme = this.#sdTheme.theme;
   dark = this.#sdTheme.dark;
+
+  isDev = process.env["NODE_ENV"] === "development";
 
   constructor() {
     $effect([this.theme], () => {

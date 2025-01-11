@@ -5,7 +5,7 @@
 $vars: (
   theme: (
     "grey": (
-      lightest: darken(map.get(variables.$vars, color, grey-500), 55%), //var(--color-grey-800),
+      lightest: darken(map.get(variables.$vars, color, grey-500), 55%),
       lighter: darken(map.get(variables.$vars, color, grey-500), 50%),
       light: var(--color-grey-600),
       default: var(--color-grey-500),
@@ -23,16 +23,16 @@ $vars: (
       darkest: var(--color-blue-grey-100),
     ),
     primary: (
-      lightest: darken(map.get(variables.$vars, color, blue-500), 30%), // var(--color-blue-800),
+      lightest: darken(map.get(variables.$vars, color, blue-500), 30%),
       lighter: var(--color-blue-700),
       light: var(--color-blue-600),
       default: var(--color-blue-500),
       dark: var(--color-blue-200),
       darker: var(--color-blue-100),
-      darkest: darken(map.get(variables.$vars, color, blue-500), 30%), // var(--color-blue-50),
+      darkest: lighten(map.get(variables.$vars, color, blue-500), 30%),
     ),
     secondary: (
-      lightest: darken(map.get(variables.$vars, color, blue-500), 45%), //var(--color-blue-800),
+      lightest: rgba(map.get(variables.$vars, color, blue-500), .1),
       lighter: var(--color-blue-700),
       light: var(--color-blue-600),
       default: var(--color-blue-500),
@@ -107,7 +107,7 @@ $vars: (
   ),
   background-color: black,
   background-rev-color: white,
-  control-color: black,
+  control-color: var(--theme-grey-lighter),
   sheet: (
     bg: var(--theme-grey-lighter)
   )
