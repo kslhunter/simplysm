@@ -239,7 +239,7 @@ export class SdOrmUtils {
               const childJoinValue = doing(joinValue, childJoinInfos);
               if (joinInfo.isSingle) {
                 if (childJoinValue.length > 1) {
-                  throw new Error("중복");
+                  throw new Error("중복" + JSON.stringify(joinValue));
                 } else {
                   resultItem[joinInfo.key] = childJoinValue[0];
                 }
@@ -249,7 +249,7 @@ export class SdOrmUtils {
             } else {
               if (joinInfo.isSingle) {
                 if (joinValue.length > 1) {
-                  throw new Error("중복");
+                  throw new Error("중복: " + JSON.stringify(joinValue));
                 } else {
                   resultItem[joinInfo.key] = joinValue[0];
                 }

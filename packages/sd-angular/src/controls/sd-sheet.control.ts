@@ -28,6 +28,7 @@ import { injectElementRef } from "../utils/dom/element-ref.injector";
 import { transformBoolean } from "../utils/type-tramsforms";
 import { SdIconControl } from "./sd-icon.control";
 import { SdIconLayersControl } from "./sd-icon-layers.control";
+import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
 
 @Component({
   selector: "sd-sheet",
@@ -329,7 +330,7 @@ import { SdIconLayersControl } from "./sd-icon-layers.control";
           (scroll)="onContainerScroll($event)"
           [style]="contentStyle()"
         >
-          <table>
+          <table (sdResize)="onSheetResize($event)">
             <thead>
               @for (headerRow of displayHeaderDefTable(); let r = $index; track r) {
                 <tr>
@@ -1250,6 +1251,16 @@ export class SdSheetControl<T> {
     }
   }
 
+  onSheetResize(event: ISdResizeEvent): void {
+    const sheetContainerEl = this.#elRef.nativeElement.findFirst("._sheet-container")!;
+    const focusRowIndicatorEl = sheetContainerEl
+      .findFirst<HTMLDivElement>("> ._focus-row-indicator")!;
+
+    Object.assign(focusRowIndicatorEl.style, {
+      width: event.entry.contentRect.width + "px",
+    });
+  }
+
   onContainerScroll(event: Event): void {
     if (!(document.activeElement instanceof HTMLTableCellElement)) return;
 
@@ -1271,10 +1282,8 @@ export class SdSheetControl<T> {
       left: focusCellIndicatorEl.offsetLeft - sheetContainerEl.scrollLeft + 2,
     };
 
-    if (indicatorPosition.top
-      < noneFixedPosition.top
-      || indicatorPosition.left
-      < noneFixedPosition.left) {
+    if (indicatorPosition.top < noneFixedPosition.top
+      || indicatorPosition.left < noneFixedPosition.left) {
       focusCellIndicatorEl.style.opacity = ".3";
     }
     else {
