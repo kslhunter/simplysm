@@ -369,6 +369,7 @@ export class SdBusyContainerControl {
   busy = input(false, { transform: transformBoolean });
   message = input<string>();
   type = input<"spinner" | "bar" | "cube">();
+  /** @deprecated */
   noFade = input(undefined, { transform: transformNullableBoolean });
   noIndicator = input(false, { transform: transformBoolean });
   progressPercent = input<number>();

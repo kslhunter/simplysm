@@ -1,6 +1,13 @@
-import { ChangeDetectionStrategy, Component, forwardRef, inject, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  forwardRef,
+  inject,
+  ViewEncapsulation,
+} from "@angular/core";
 import { SdSidebarContainerControl } from "./sd-sidebar-container.control";
 import { $computed } from "../utils/hooks";
+import { useShowEffect } from "../utils/use-show-effect";
 
 
 @Component({
@@ -21,7 +28,6 @@ import { $computed } from "../utils/hooks";
         left: 0;
         width: var(--sidebar-width);
         height: 100%;
-        animation: sd-sidebar var(--animation-duration) ease-in;
 
         //-- 테마
 
@@ -69,16 +75,10 @@ import { $computed } from "../utils/hooks";
           }
         }
       }
-
-      @keyframes sd-sidebar {
-        from {
-          opacity: 0;
-          transform: translateX(-1em);
-        }
-      }
     `,
   ],
-  template: `<ng-content></ng-content>`,
+  template: `
+    <ng-content></ng-content>`,
   host: {
     "[attr.sd-toggle]": "toggle()",
   },
@@ -87,4 +87,8 @@ export class SdSidebarControl {
   #parentControl = inject<SdSidebarContainerControl>(forwardRef(() => SdSidebarContainerControl));
 
   toggle = $computed(() => this.#parentControl.toggle());
+
+  constructor() {
+    useShowEffect(() => ({ type: "l2r", enabled: true }));
+  }
 }

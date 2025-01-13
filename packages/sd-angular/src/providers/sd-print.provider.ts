@@ -41,7 +41,7 @@ export class SdPrintProvider {
   body > ._sd-print-template { display: none; }
   @media print
   {
-      html, body { -webkit-print-color-adjust: exact; background: var(--control-color); }
+      html, body { -webkit-print-color-adjust: exact; background: white; }
       body > * { display: none !important; }
       body > ._sd-print-template { display: block !important; }
   }`;

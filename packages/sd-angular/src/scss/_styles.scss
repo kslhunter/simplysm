@@ -447,24 +447,6 @@ hidden {
   @include active-effect(true);
 }*/
 
-.show-effect {
-  animation: show-effect var(--animation-duration) ease-out;
-  opacity: 0;
-  transform: translateY(-1em);
-  animation-fill-mode: forwards;
-}
-
-@keyframes show-effect {
-  from {
-    opacity: 0;
-    transform: translateY(-1em);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
 .sd-active-effect-indicator {
   pointer-events: none;
   position: absolute;

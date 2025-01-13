@@ -24,6 +24,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
 import { injectParent } from "../utils/route/parent.injector";
 import { injectPageCode$ } from "../utils/route/page-code.signal-injector";
 import { injectActivatedPageCode$ } from "../utils/route/activate-page-code.signal-injector";
+import { SdShowEffectDirective } from "../directives/sd-show-effect.directive";
 
 @Component({
   selector: "sd-base-container",
@@ -39,13 +40,14 @@ import { injectActivatedPageCode$ } from "../utils/route/activate-page-code.sign
     NgTemplateOutlet,
     SdDockContainerControl,
     SdDockControl,
+    SdShowEffectDirective,
   ],
   template: `
     <sd-busy-container [busy]="busy()">
       @if (!perms().includes("use")) {
         <sd-pane
           class="tx-theme-grey-light p-xxl tx-center"
-          [class.show-effect]="realContainerType() !== 'modal'"
+          [sd-show-effect]="realContainerType() !== 'modal'"
         >
           <br />
           <sd-icon [icon]="icons.triangleExclamation" fixedWidth size="5x" />
