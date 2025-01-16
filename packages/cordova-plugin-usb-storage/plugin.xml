@@ -5,10 +5,10 @@
   <license>Apache 2.0</license>
   <keywords>cordova,plugin,usb,storage</keywords>
   <platform name="android">
-    <source-file src="android/CordovaUsbStorage.java" target-dir="src/kr/co/simplysm/cordova"/>
+    <source-file src="android/SdUsbStorage.java" target-dir="src/kr/co/simplysm/cordova"/>
     <config-file target="res/xml/config.xml" parent="/*">
-      <feature name="CordovaUsbStorage">
-        <param name="android-package" value="kr.co.simplysm.cordova.CordovaUsbStorage"/>
+      <feature name="SdUsbStorage">
+        <param name="android-package" value="kr.co.simplysm.cordova.SdUsbStorage"/>
       </feature>
     </config-file>
     <framework src="me.jahnen.libaums:core:0.9.1"/>
