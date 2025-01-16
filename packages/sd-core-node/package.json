@@ -14,7 +14,7 @@
   "types": "./dist/index.d.ts",
   "dependencies": {
     "@simplysm/sd-core-common": "12.7.12",
-    "glob": "^11.0.0",
+    "glob": "^11.0.1",
     "watcher": "^2.3.1"
   },
   "devDependencies": {
