@@ -1435,7 +1435,7 @@ export class SdSheetControl<T> {
 
   onAllItemsSelectIconClick(): void {
     if (this.isAllItemsSelected()) {
-      this.selectedItems.update(v => v.filter(item => this.selectableItems().includes(item)));
+      this.selectedItems.update(v => v.filter(item => !this.items().includes(item)));
     }
     else {
       const selectedItems = this.displayItemDefs()
