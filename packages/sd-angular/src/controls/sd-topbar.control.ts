@@ -123,6 +123,10 @@ import { SdIconControl } from "./sd-icon.control";
             justify-content: end;
           }
         }
+
+        body.sd-theme-mobile & {
+          background: var(--background-color);
+        }
       }
     `,
   ],
