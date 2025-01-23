@@ -278,7 +278,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
             > ._contents {
               display: block;
               color: var(--text-trans-light);
-              border-color: transparent;
+              //border-color: transparent;
             }
 
             &[sd-inset="true"] {

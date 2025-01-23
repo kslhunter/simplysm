@@ -489,3 +489,9 @@ hidden {
     filter: invert(1) hue-rotate(180deg);
   }
 }
+
+.sd-sticky-top {
+  position: sticky !important;
+  top: 0;
+  z-index: 1;
+}

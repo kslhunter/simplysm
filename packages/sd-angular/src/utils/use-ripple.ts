@@ -13,7 +13,9 @@ export function useRipple(enableFn?: () => boolean) {
     const onMouseDown = (event: MouseEvent) => {
       if (enableFn && !enableFn()) return;
 
-      const size = Math.max(_elRef.nativeElement.offsetWidth, _elRef.nativeElement.offsetHeight);
+      const rect = _elRef.nativeElement.getBoundingClientRect();
+      const size = Math.max(rect.width, rect.height);
+      // const size = Math.max(_elRef.nativeElement.offsetWidth, _elRef.nativeElement.offsetHeight);
 
       let cursorEl = event.target as Element | null;
       while (true) {
@@ -28,16 +30,20 @@ export function useRipple(enableFn?: () => boolean) {
         }
       }
 
-      const offsetY = cursorEl?.getRelativeOffset(_elRef.nativeElement).top ?? 0;
-      const offsetX = cursorEl?.getRelativeOffset(_elRef.nativeElement).left ?? 0;
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+      // const offsetY = cursorEl?.getRelativeOffset(_elRef.nativeElement).top ?? 0;
+      // const offsetX = cursorEl?.getRelativeOffset(_elRef.nativeElement).left ?? 0;
 
       const indicatorEl = document.createElement("div");
       indicatorEl.className = "sd-active-effect-indicator";
       Object.assign(indicatorEl.style, {
         width: size * 2 + "px",
         height: size * 2 + "px",
-        top: offsetY + event.offsetY - size + "px",
-        left: offsetX + event.offsetX - size + "px",
+        top: y - size + "px",
+        left: x - size + "px",
+        // top: offsetY + event.offsetY - size + "px",
+        // left: offsetX + event.offsetX - size + "px",
       });
 
       _elRef.nativeElement.appendChild(indicatorEl);

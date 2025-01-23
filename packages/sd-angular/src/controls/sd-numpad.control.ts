@@ -3,7 +3,7 @@ import {
   Component,
   inject,
   input,
-  model,
+  model, output,
   ViewEncapsulation,
 } from "@angular/core";
 import { SdTextfieldControl } from "./sd-textfield.control";
@@ -12,7 +12,6 @@ import { SdButtonControl } from "./sd-button.control";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { SdIconControl } from "./sd-icon.control";
 import { NumberUtils, StringUtils } from "@simplysm/sd-core-common";
-import { injectElementRef } from "../utils/dom/element-ref.injector";
 import { transformBoolean } from "../utils/type-tramsforms";
 
 @Component({
@@ -29,15 +28,28 @@ import { transformBoolean } from "../utils/type-tramsforms";
     <table>
       <thead>
         <tr>
-          <td colspan="3">
+          <td [attr.colspan]="useEnterButton() ? 2 : 3">
             <sd-textfield
               type="text"
-              inputClass="tx-right"
+              inputClass="tx-right ft-size-h3"
               [placeholder]="placeholder()"
               [required]="required()"
+              [disabled]="inputDisabled()"
               [(value)]="text"
             />
           </td>
+          @if (useEnterButton()) {
+            <td>
+              <sd-button
+                size="lg"
+                theme="primary"
+                [disabled]="required() && value() == null"
+                (click)="onButtonClick('ENT')"
+              >
+                ENT
+              </sd-button>
+            </td>
+          }
         </tr>
       </thead>
       <tbody>
@@ -45,7 +57,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
           <td colspan="2">
             <sd-button
               size="lg"
-              theme="danger"
+              buttonClass="tx-theme-danger-default"
               (click)="onButtonClick('C')"
             >
               <sd-icon [icon]="icons.eraser" />
@@ -54,7 +66,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
           <td>
             <sd-button
               size="lg"
-              theme="warning"
+              buttonClass="tx-theme-warning-default"
               (click)="onButtonClick('BS')"
             >
               <sd-icon [icon]="icons.arrowLeftLong" />
@@ -108,13 +120,15 @@ import { transformBoolean } from "../utils/type-tramsforms";
 export class SdNumpadControl {
   icons = inject(SdAngularConfigProvider).icons;
 
-  #elRef = injectElementRef<HTMLElement>();
-
   text = $signal<string>();
 
   placeholder = input<string>();
   value = model<number>();
   required = input(false, { transform: transformBoolean });
+  inputDisabled = input(false, { transform: transformBoolean });
+  useEnterButton = input(false, { transform: transformBoolean });
+
+  enterButtonClick = output();
 
   constructor() {
     $effect([this.text], () => {
@@ -141,6 +155,9 @@ export class SdNumpadControl {
         const str = v?.slice(0, -1);
         return StringUtils.isNullOrEmpty(str) ? undefined : str;
       });
+    }
+    else if (key === "ENT") {
+      this.enterButtonClick.emit();
     }
     else {
       this.text.update(v => (v ?? "") + key);
