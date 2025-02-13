@@ -525,6 +525,19 @@ export class QueryHelper {
     );
   }
 
+  public padStart(
+    src: TEntityValue<string | String | undefined>,
+    length: number,
+    fillString: string
+  ): QueryUnit<string> {
+    const str = new Array<string>(length).fill(fillString).join("");
+
+    return new QueryUnit<string>(
+      String,
+      [`RIGHT('${str}' + `, this.getQueryValue(src), `, ${length})`],
+    );
+  }
+
   public right(
     src: TEntityValue<string | String | undefined>,
     num: TEntityValue<number | Number>,
@@ -633,14 +646,14 @@ export class QueryHelper {
     return new QueryUnit<number>(Number, ["FLOOR(", this.getQueryValue(arg), ")"]);
   }
 
-  public max<T extends undefined | number | Number | string | String | DateOnly | DateTime | Time>(unit: TEntityValue<T>): QueryUnit<T> {
+  public max<T extends undefined | number | Number | string | String | DateOnly | DateTime | Time | boolean>(unit: TEntityValue<T>): QueryUnit<T> {
     const type = SdOrmUtils.getQueryValueType(unit);
     if (!type) throw new TypeError();
 
     return new QueryUnit(type, ["MAX(", this.getQueryValue(unit), ")"]);
   }
 
-  public min<T extends undefined | number | Number | string | String | DateOnly | DateTime | Time>(unit: TEntityValue<T>): QueryUnit<T> {
+  public min<T extends undefined | number | Number | string | String | DateOnly | DateTime | Time | boolean>(unit: TEntityValue<T>): QueryUnit<T> {
     const type = SdOrmUtils.getQueryValueType(unit);
     if (!type) throw new TypeError();
 
