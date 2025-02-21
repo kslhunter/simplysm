@@ -16,7 +16,7 @@ export abstract class CordovaUsbStorage {
         (err) => {
           reject(new Error("CORDOVA: ERROR: " + err));
         },
-        "SdUsbStorage",
+        "CordovaUsbStorage",
         "getDevices",
       );
     });
@@ -30,7 +30,7 @@ export abstract class CordovaUsbStorage {
         (err) => {
           reject(new Error("CORDOVA: ERROR: " + err));
         },
-        "SdUsbStorage",
+        "CordovaUsbStorage",
         "requestPermission",
         [filter.vendorId, filter.productId],
       );
@@ -45,7 +45,7 @@ export abstract class CordovaUsbStorage {
         (err) => {
           reject(new Error("CORDOVA: ERROR: " + err));
         },
-        "SdUsbStorage",
+        "CordovaUsbStorage",
         "hasPermission",
         [filter.vendorId, filter.productId],
       );
@@ -60,7 +60,7 @@ export abstract class CordovaUsbStorage {
         (err) => {
           reject(new Error("CORDOVA: ERROR: " + err));
         },
-        "SdUsbStorage",
+        "CordovaUsbStorage",
         "readdir",
         [filter.vendorId, filter.productId, dirPath],
       );
@@ -78,7 +78,7 @@ export abstract class CordovaUsbStorage {
         (err) => {
           reject(new Error("CORDOVA: ERROR: " + err));
         },
-        "SdUsbStorage",
+        "CordovaUsbStorage",
         "read",
         [filter.vendorId, filter.productId, filePath],
       );
