@@ -3,7 +3,8 @@ import {
   Component,
   inject,
   input,
-  model, output,
+  model,
+  output,
   ViewEncapsulation,
 } from "@angular/core";
 import { SdTextfieldControl } from "./sd-textfield.control";
@@ -54,7 +55,17 @@ import { transformBoolean } from "../utils/type-tramsforms";
       </thead>
       <tbody>
         <tr>
-          <td colspan="2">
+          @if (useMinusButton()) {
+            <td>
+              <sd-button
+                size="lg"
+                (click)="onButtonClick('Minus')"
+              >
+                -
+              </sd-button>
+            </td>
+          }
+          <td [attr.colspan]="useMinusButton() ? 1 : 2">
             <sd-button
               size="lg"
               buttonClass="tx-theme-danger-default"
@@ -127,6 +138,7 @@ export class SdNumpadControl {
   required = input(false, { transform: transformBoolean });
   inputDisabled = input(false, { transform: transformBoolean });
   useEnterButton = input(false, { transform: transformBoolean });
+  useMinusButton = input(false, { transform: transformBoolean });
 
   enterButtonClick = output();
 
@@ -158,6 +170,16 @@ export class SdNumpadControl {
     }
     else if (key === "ENT") {
       this.enterButtonClick.emit();
+    }
+    else if (key === "Minus") {
+      this.text.update(v => {
+        if (v != null && v[0] === "-") {
+          return v.slice(1);
+        }
+        else {
+          return "-" + (v ?? "");
+        }
+      });
     }
     else {
       this.text.update(v => (v ?? "") + key);

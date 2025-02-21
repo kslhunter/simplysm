@@ -43,7 +43,7 @@ import { SdShowEffectDirective } from "../directives/sd-show-effect.directive";
     SdShowEffectDirective,
   ],
   template: `
-    <sd-busy-container [busy]="busy()">
+    <sd-busy-container [busy]="busy()" [message]="busyMessage()">
       @if (!perms().includes("use")) {
         <sd-pane
           class="tx-theme-grey-light p-xxl tx-center"
@@ -129,4 +129,5 @@ export class SdBaseContainerControl {
   );
 
   busy = input(false, { transform: transformBoolean });
+  busyMessage = input<string>();
 }

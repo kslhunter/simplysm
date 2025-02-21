@@ -25,7 +25,7 @@ import { DataType } from "tedious/lib/data-type";
 export class MssqlDbConn extends EventEmitter implements IDbConn {
   private readonly _logger = SdLogger.get(["simplysm", "sd-orm-node", this.constructor.name]);
 
-  private readonly _timeout = 3 * 60 * 1000;
+  private readonly _timeout = 10 * 60 * 1000;
 
   private _conn?: tedious.Connection;
   private _connTimeout?: NodeJS.Timeout;

@@ -15,8 +15,6 @@ import { SdAnchorControl } from "./sd-anchor.control";
 import { SdPaneControl } from "./sd-pane.control";
 import { SdSystemConfigProvider } from "../providers/sd-system-config.provider";
 import { SdEventsDirective } from "../directives/sd-events.directive";
-import { SdDockContainerControl } from "./sd-dock-container.control";
-import { SdDockControl } from "./sd-dock.control";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { $effect, $model, $signal } from "../utils/hooks";
 import { injectElementRef } from "../utils/dom/element-ref.injector";
@@ -32,11 +30,80 @@ import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
   imports: [
     SdAnchorControl,
     SdPaneControl,
-    SdDockContainerControl,
-    SdDockControl,
     SdEventsDirective,
     forwardRef(() => SdIconControl),
   ],
+  template: `
+    <div class="_backdrop" (click)="onBackdropClick()"></div>
+
+    <div
+      #dialogEl
+      class="_dialog"
+      tabindex="0"
+      (keydown.escape)="onDialogEscapeKeydown()"
+      [style.min-width.px]="minWidthPx()"
+      [style.min-height.px]="minHeightPx()"
+      [style.width.px]="minWidthPx() && widthPx() && minWidthPx()! > widthPx()! ? minWidthPx() : widthPx()"
+      [style.height.px]="minHeightPx() && heightPx() && minHeightPx()! > heightPx()! ? minHeightPx() : heightPx()"
+      (focus)="onDialogFocus()"
+    >
+      <div class="_content">
+        <div class="_header" (mousedown)="onHeaderMouseDown($event)" [style]="headerStyle()">
+          <h5 class="_title">{{ title() }}</h5>
+          @if (!hideCloseButton()) {
+            <sd-anchor class="_close-button" theme="grey" (click)="onCloseButtonClick()">
+              <sd-icon [icon]="icons.xmark" fixedWidth />
+            </sd-anchor>
+          }
+
+        </div>
+        <div class="_content">
+          <div class="_content" (sdResize)="onDialogContentResize($event)">
+            <ng-content></ng-content>
+          </div>
+        </div>
+      </div>
+      <!--<sd-dock-container>
+        @if (!hideHeader()) {
+          <sd-dock class="_header" (mousedown)="onHeaderMouseDown($event)" [style]="headerStyle()">
+            <h5 class="_title">{{ title() }}</h5>
+            @if (!hideCloseButton()) {
+              <sd-anchor class="_close-button" theme="grey" (click)="onCloseButtonClick()">
+                <sd-icon [icon]="icons.xmark" fixedWidth />
+              </sd-anchor>
+            }
+          </sd-dock>
+        }
+
+        <sd-pane class="_content">
+          <ng-content></ng-content>
+        </sd-pane>
+      </sd-dock-container>-->
+
+      @if (resizable()) {
+        <div class="_left-resize-bar" (mousedown)="onResizeBarMousedown($event, 'left')"></div>
+        <div class="_right-resize-bar" (mousedown)="onResizeBarMousedown($event, 'right')"></div>
+        <div class="_top-resize-bar" (mousedown)="onResizeBarMousedown($event, 'top')"></div>
+        <div
+          class="_top-right-resize-bar"
+          (mousedown)="onResizeBarMousedown($event, 'top-right')"
+        ></div>
+        <div
+          class="_top-left-resize-bar"
+          (mousedown)="onResizeBarMousedown($event, 'top-left')"
+        ></div>
+        <div class="_bottom-resize-bar" (mousedown)="onResizeBarMousedown($event, 'bottom')"></div>
+        <div
+          class="_bottom-right-resize-bar"
+          (mousedown)="onResizeBarMousedown($event, 'bottom-right')"
+        ></div>
+        <div
+          class="_bottom-left-resize-bar"
+          (mousedown)="onResizeBarMousedown($event, 'bottom-left')"
+        ></div>
+      }
+    </div>
+  `,
   styles: [
     /* language=SCSS */ `
       @use "../scss/mixins";
@@ -78,7 +145,11 @@ import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
             outline: none;
           }
 
-          > sd-dock-container > ._content {
+          > ._content {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+
             > ._header {
               display: flex;
               flex-direction: row;
@@ -110,6 +181,11 @@ import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
                 //  background: var(--theme-grey-lighter);
                 //}
               }
+            }
+
+            > ._content {
+              overflow: auto;
+              height: 100%;
             }
           }
 
@@ -262,7 +338,7 @@ import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
             border: none;
             border-radius: 0;
 
-            > sd-dock-container > ._content > ._header {
+            > ._content > ._header {
               background: transparent;
               color: var(--text-trans-lighter);
 
@@ -280,62 +356,6 @@ import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
       }
     `,
   ],
-  template: `
-    <div class="_backdrop" (click)="onBackdropClick()"></div>
-
-    <div
-      #dialogEl
-      class="_dialog"
-      tabindex="0"
-      (keydown.escape)="onDialogEscapeKeydown()"
-      [style.min-width.px]="minWidthPx()"
-      [style.min-height.px]="minHeightPx()"
-      [style.width.px]="minWidthPx() && widthPx() && minWidthPx()! > widthPx()! ? minWidthPx() : widthPx()"
-      [style.height.px]="minHeightPx() && heightPx() && minHeightPx()! > heightPx()! ? minHeightPx() : heightPx()"
-      (focus)="onDialogFocus()"
-      (sdResize)="onDialogResize($event)"
-    >
-      <sd-dock-container>
-        @if (!hideHeader()) {
-          <sd-dock class="_header" (mousedown)="onHeaderMouseDown($event)" [style]="headerStyle()">
-            <h5 class="_title">{{ title() }}</h5>
-            @if (!hideCloseButton()) {
-              <sd-anchor class="_close-button" theme="grey" (click)="onCloseButtonClick()">
-                <sd-icon [icon]="icons.xmark" fixedWidth />
-              </sd-anchor>
-            }
-          </sd-dock>
-        }
-
-        <sd-pane class="_content">
-          <ng-content></ng-content>
-        </sd-pane>
-      </sd-dock-container>
-
-      @if (resizable()) {
-        <div class="_left-resize-bar" (mousedown)="onResizeBarMousedown($event, 'left')"></div>
-        <div class="_right-resize-bar" (mousedown)="onResizeBarMousedown($event, 'right')"></div>
-        <div class="_top-resize-bar" (mousedown)="onResizeBarMousedown($event, 'top')"></div>
-        <div
-          class="_top-right-resize-bar"
-          (mousedown)="onResizeBarMousedown($event, 'top-right')"
-        ></div>
-        <div
-          class="_top-left-resize-bar"
-          (mousedown)="onResizeBarMousedown($event, 'top-left')"
-        ></div>
-        <div class="_bottom-resize-bar" (mousedown)="onResizeBarMousedown($event, 'bottom')"></div>
-        <div
-          class="_bottom-right-resize-bar"
-          (mousedown)="onResizeBarMousedown($event, 'bottom-right')"
-        ></div>
-        <div
-          class="_bottom-left-resize-bar"
-          (mousedown)="onResizeBarMousedown($event, 'bottom-left')"
-        ></div>
-      }
-    </div>
-  `,
   host: {
     "[attr.sd-open]": "open()",
     "[attr.sd-float]": "float()",
@@ -425,7 +445,7 @@ export class SdModalControl {
     }
   }
 
-  onDialogResize(event: ISdResizeEvent) {
+  onDialogContentResize(event: ISdResizeEvent) {
     if (event.heightChanged) {
       this.#calcHeight();
     }
@@ -435,14 +455,23 @@ export class SdModalControl {
   }
 
   #calcHeight() {
-    const style = getComputedStyle(this.#elRef.nativeElement);
-    let paddingTop = style.paddingTop === "" ? 0 : (NumberUtils.parseInt(style.paddingTop) ?? 0);
+    const dialogEl = this.dialogElRef().nativeElement;
+    const dialogHeaderEl = this.dialogElRef().nativeElement.findFirst<HTMLElement>("> ._content > ._header")!;
+    const dialogContentEl = this.dialogElRef().nativeElement.findFirst<HTMLElement>("> ._content > ._content > ._content")!;
+    const containerEl = this.#elRef.nativeElement;
 
-    if (this.dialogElRef().nativeElement.offsetHeight
-      > this.#elRef.nativeElement.offsetHeight
-      - paddingTop) {
-      this.dialogElRef().nativeElement.style.maxHeight = `100%`; // `calc(100% - ${paddingTop}px)`;
-      this.dialogElRef().nativeElement.style.height = `100%`; // `calc(100% - ${paddingTop}px)`;
+    const style = getComputedStyle(containerEl);
+    let containerElPaddingTop = style.paddingTop === ""
+      ? 0
+      : (NumberUtils.parseInt(style.paddingTop) ?? 0);
+
+    if (dialogHeaderEl.offsetHeight + dialogContentEl.offsetHeight >= containerEl.offsetHeight - containerElPaddingTop) {
+      dialogEl.style.maxHeight = `100%`;
+      dialogEl.style.height = `100%`;
+    }
+    else {
+      dialogEl.style.maxHeight = "";
+      dialogEl.style.height = "";
     }
   }
 
