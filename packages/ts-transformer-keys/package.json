@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/ts-transformer-keys",
-  "version": "12.7.14",
+  "version": "12.7.15",
   "description": "심플리즘 패키지 - key 변환 (duo)",
   "author": "김석래",
   "repository": {
@@ -22,7 +22,7 @@
     "./package.json": "./package.json"
   },
   "devDependencies": {
-    "@simplysm/sd-core-node": "12.7.14",
+    "@simplysm/sd-core-node": "12.7.15",
     "typescript": "~5.5.4"
   }
 }
