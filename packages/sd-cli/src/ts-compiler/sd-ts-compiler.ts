@@ -156,7 +156,7 @@ export class SdTsCompiler {
             basePath: ".cache",
           },
         },
-        // "scss",
+        "scss",
         opt.isDevMode,
       );
 

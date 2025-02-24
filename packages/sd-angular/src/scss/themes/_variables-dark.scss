@@ -1,12 +1,13 @@
 @use "sass:map";
+@use "sass:color";
 
 @use "../variables";
 
 $vars: (
   theme: (
     "grey": (
-      lightest: darken(map.get(variables.$vars, color, grey-500), 55%),
-      lighter: darken(map.get(variables.$vars, color, grey-500), 50%),
+      lightest: color.adjust(map.get(variables.$vars, color, grey-500), $lightness: -55%),
+      lighter: color.adjust(map.get(variables.$vars, color, grey-500), $lightness: -50%),
       light: var(--color-grey-600),
       default: var(--color-grey-500),
       dark: var(--color-grey-400),
@@ -23,13 +24,13 @@ $vars: (
       darkest: var(--color-blue-grey-100),
     ),
     primary: (
-      lightest: darken(map.get(variables.$vars, color, blue-500), 30%),
+      lightest: color.adjust(map.get(variables.$vars, color, blue-500), $lightness: -30%),
       lighter: var(--color-blue-700),
       light: var(--color-blue-600),
       default: var(--color-blue-500),
       dark: var(--color-blue-200),
       darker: var(--color-blue-100),
-      darkest: lighten(map.get(variables.$vars, color, blue-500), 30%),
+      darkest: color.adjust(map.get(variables.$vars, color, blue-500), $lightness: 30%),
     ),
     secondary: (
       lightest: rgba(map.get(variables.$vars, color, blue-500), .1),

@@ -1,18 +1,28 @@
-import { ChangeDetectionStrategy, Component, inject, input, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  input,
+  ViewEncapsulation,
+} from "@angular/core";
 import { SdCollapseIconControl } from "./sd-collapse-icon.control";
 import { SdCollapseControl } from "./sd-collapse.control";
 import { SdListControl } from "./sd-list.control";
 import { SdListItemControl } from "./sd-list-item.control";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { $signal } from "../utils/hooks";
-import { SdRippleDirective } from "../directives/sd-ripple.directive";
 
 @Component({
   selector: "sd-sidebar-user",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdCollapseIconControl, SdCollapseControl, SdListControl, SdListItemControl, SdRippleDirective],
+  imports: [
+    SdCollapseIconControl,
+    SdCollapseControl,
+    SdListControl,
+    SdListItemControl,
+  ],
   styles: [
     /* language=SCSS */ `
       @use "../scss/mixins";

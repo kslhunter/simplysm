@@ -14,7 +14,7 @@
     "packages/*"
   ],
   "volta": {
-    "node": "20.18.1",
+    "node": "22.14.0",
     "yarn": "4.6.0"
   },
   "scripts": {
@@ -31,11 +31,11 @@
     "reinstall": "yarn install --refresh-lockfile"
   },
   "devDependencies": {
-    "@types/node": "^20.17.19",
+    "@types/node": "^22.13.5",
     "cross-env": "^7.0.3",
-    "eslint": "^9.20.1",
+    "eslint": "^9.21.0",
     "glob": "^11.0.1",
     "tsx": "^4.19.3",
-    "typescript": "~5.5.4"
+    "typescript": "~5.7.3"
   }
 }

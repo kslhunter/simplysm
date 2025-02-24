@@ -22,6 +22,6 @@
     "@awesome-cordova-plugins/core": "^6.14.0",
     "@awesome-cordova-plugins/file": "^6.14.0",
     "@simplysm/sd-core-common": "12.7.15",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.2"
   }
 }

@@ -18,6 +18,6 @@
     "@simplysm/sd-service-common": "12.7.15",
     "isomorphic-ws": "^5.0.0",
     "jszip": "^3.10.1",
-    "ws": "^8.18.0"
+    "ws": "^8.18.1"
   }
 }

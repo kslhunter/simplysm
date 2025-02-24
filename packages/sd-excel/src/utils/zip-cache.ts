@@ -1,13 +1,13 @@
-import {ISdExcelXml} from "../types";
-import {XmlConvert} from "./xml-convert";
+import { ISdExcelXml } from "../types";
+import { XmlConvert } from "./xml-convert";
 import JSZip from "jszip";
-import {SdExcelXmlRelationShip} from "../xmls/sd-excel-xml-relation-ship";
-import {SdExcelXmlContentType} from "../xmls/sd-excel-xml-content-type";
-import {SdExcelXmlWorkbook} from "../xmls/sd-excel-xml-workbook";
-import {SdExcelXmlWorksheet} from "../xmls/sd-excel-xml-worksheet";
-import {SdExcelXmlSharedString} from "../xmls/sd-excel-xml-shared-string";
-import {SdExcelXmlUnknown} from "../xmls/sd-excel-xml-unknown";
-import {SdExcelXmlStyle} from "../xmls/sd-excel-xml-style";
+import { SdExcelXmlRelationShip } from "../xmls/sd-excel-xml-relation-ship";
+import { SdExcelXmlContentType } from "../xmls/sd-excel-xml-content-type";
+import { SdExcelXmlWorkbook } from "../xmls/sd-excel-xml-workbook";
+import { SdExcelXmlWorksheet } from "../xmls/sd-excel-xml-worksheet";
+import { SdExcelXmlSharedString } from "../xmls/sd-excel-xml-shared-string";
+import { SdExcelXmlUnknown } from "../xmls/sd-excel-xml-unknown";
+import { SdExcelXmlStyle } from "../xmls/sd-excel-xml-style";
 
 export class ZipCache {
   private readonly _cache = new Map<string, ISdExcelXml | Buffer>();
@@ -30,7 +30,7 @@ export class ZipCache {
     }
 
     if (filePath.endsWith(".xml") || filePath.endsWith(".rels")) {
-      const xml = await XmlConvert.parseAsync(await file.async("text"), {stripPrefix: true});
+      const xml = await XmlConvert.parseAsync(await file.async("text"), { stripPrefix: true });
       if (filePath.endsWith(".rels")) {
         this._cache.set(filePath, new SdExcelXmlRelationShip(xml));
       }
@@ -68,12 +68,12 @@ export class ZipCache {
   public getZip(): JSZip {
     for (const filePath of this._cache.keys()) {
       const content = this._cache.get(filePath)!;
-      if (content instanceof Buffer) {
-        this._zip.file(filePath, content);
-      }
-      else {
+      if ("cleanup" in content) {
         content.cleanup();
         this._zip.file(filePath, XmlConvert.stringify(content.data));
+      }
+      else {
+        this._zip.file(filePath, content);
       }
     }
 
