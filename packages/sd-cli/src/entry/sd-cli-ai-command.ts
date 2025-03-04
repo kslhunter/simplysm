@@ -13,7 +13,7 @@ export class SdCliAiCommand {
 
     process.stdout.write(`diff 실행\n`);
     const diff = await SdProcess.spawnAsync(
-      `git diff --text --staged -- . ":(exclude).*" ":(exclude)_*" ":(exclude)yarn.lock" ":(exclude)packages/*/styles.css"`,
+      `git diff --no-textconv --staged -- . ":(exclude).*" ":(exclude)_*" ":(exclude)yarn.lock" ":(exclude)packages/*/styles.css"`,
     );
 
     if (StringUtils.isNullOrEmpty(diff.trim())) {

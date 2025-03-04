@@ -93,7 +93,7 @@ import { SdIconControl } from "../../controls/sd-icon.control";
         @if (getItemSelectable(item, index, depth)) {
           <sd-select-item
             [value]="item.__valueKey"
-            [style.display]="!getItemVisible(item, index, depth) ? 'none' : undefined"
+            [hidden]="!getItemVisible(item, index, depth)"
           >
             <span [style.text-decoration]="getIsHiddenFn()(item, index) ? 'line-through' : undefined">
               <ng-template

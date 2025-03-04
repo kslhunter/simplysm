@@ -456,7 +456,11 @@ export class SdSelectControl<M extends "single" | "multi", T> {
   }
 
   onSelectAllButtonClick(check: boolean) {
-    const value = check ? this.itemControls().map((item) => item.value()) : [];
+    const value = check
+      ? this.itemControls()
+        .filter(item => !item.hidden() && !item.disabled())
+        .map((item) => item.value())
+      : [];
 
     this.value.set(value);
   }

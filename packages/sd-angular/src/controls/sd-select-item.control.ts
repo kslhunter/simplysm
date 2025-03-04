@@ -55,6 +55,10 @@ import { transformBoolean } from "../utils/type-tramsforms";
           background: var(--theme-grey-default);
           opacity: 0.3;
         }
+
+        &[sd-hidden="true"] {
+          display: none;
+        }
       }
     `,
   ],
@@ -73,6 +77,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
     "[attr.sd-disabled]": "disabled()",
     "[attr.sd-select-mode]": "selectMode()",
     "[attr.sd-selected]": "isSelected()",
+    "[attr.sd-hidden]": "hidden()",
   },
 })
 export class SdSelectItemControl {
@@ -81,6 +86,7 @@ export class SdSelectItemControl {
 
   value = input<any>();
   disabled = input(false, { transform: transformBoolean });
+  hidden = input(false, { transform: transformBoolean });
 
   selectMode = $computed(() => this.#selectControl.selectMode());
   isSelected = $computed(() => this.#selectControl.getIsSelectedItemControl(this));

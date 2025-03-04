@@ -29,7 +29,7 @@ export class QueryHelper {
     source: TEntityValue<T>,
     target: TEntityValue<T | undefined>,
   ): TQueryBuilderValue {
-    if (target === undefined) {
+    if (target == null) {
       return this.isNull(source);
     }
 
@@ -53,7 +53,7 @@ export class QueryHelper {
     source: TEntityValue<T>,
     target: TEntityValue<T | undefined>,
   ): TQueryBuilderValue[] {
-    if (target === undefined) {
+    if (target == null) {
       return this.isNotNull(source);
     }
     else if (source instanceof QueryUnit && target instanceof QueryUnit) {
@@ -233,7 +233,7 @@ export class QueryHelper {
       return ["1", " = ", "0"];
     }
     else {
-      if (target.every((item) => item === undefined)) {
+      if (target.every((item) => item == null)) {
         return this.isNull(src);
       }
 
@@ -242,7 +242,7 @@ export class QueryHelper {
         " IN ",
         target.filterExists().mapMany((item) => [this.getQueryValue(item), ", "]).slice(0, -1),
       ];
-      if (target.includes(undefined)) {
+      if (target.some(item => item == null)) {
         return this.or([
           result,
           this.isNull(src),
@@ -261,7 +261,7 @@ export class QueryHelper {
       return ["1", " = ", "1"];
     }
     else {
-      if (target.every((item) => item === undefined)) {
+      if (target.every((item) => item == null)) {
         return this.isNull(src);
       }
 
@@ -270,7 +270,7 @@ export class QueryHelper {
         " NOT IN ",
         target.filterExists().mapMany((item) => [this.getQueryValue(item), ", "]).slice(0, -1),
       ];
-      if (!target.includes(undefined)) {
+      if (!target.some(item => item == null)) {
         return this.or([
           result,
           this.isNull(src),
@@ -528,7 +528,7 @@ export class QueryHelper {
   public padStart(
     src: TEntityValue<string | String | undefined>,
     length: number,
-    fillString: string
+    fillString: string,
   ): QueryUnit<string> {
     const str = new Array<string>(length).fill(fillString).join("");
 
@@ -580,7 +580,7 @@ export class QueryHelper {
     if (this._dialect === "mysql") {
       return new QueryUnit<string>(String, [
         "CONCAT(",
-        ...args.mapMany((arg) => [arg !== undefined ? this.ifNull(arg, "").query : "", ", "])
+        ...args.mapMany((arg) => [arg != null ? this.ifNull(arg, "").query : "", ", "])
           .slice(0, -1),
         ")",
       ]);
@@ -588,7 +588,7 @@ export class QueryHelper {
     else {
       return new QueryUnit<string>(String, [
         ...args.mapMany((arg) => [
-          arg instanceof QueryUnit ? this.ifNull(arg, "").query : arg !== undefined
+          arg instanceof QueryUnit ? this.ifNull(arg, "").query : arg != null
             ? this.getQueryValue(arg)
             : "", this._dialect === "sqlite" ? " || " : " + ",
         ]).slice(0, -1),
@@ -616,7 +616,7 @@ export class QueryHelper {
   // region GROUPING FIELD
 
   public count<T extends TQueryValue>(arg?: TEntityValue<T>): QueryUnit<number> {
-    if (arg !== undefined) {
+    if (arg != null) {
       return new QueryUnit<number>(Number, ["COUNT(DISTINCT(", this.getQueryValue(arg), "))"]);
     }
     else {
@@ -849,10 +849,10 @@ export class QueryHelper {
   }
 
   public type(type: Type<TQueryValue> | TSdOrmDataType | string | undefined): string {
-    if (typeof type === "string") {
+    if (typeof type === "string") {ㄴ
       return type;
     }
-    else if (type?.["type"] !== undefined) {
+    else if (type?.["type"] != null) {
       const currType = type as TSdOrmDataType;
       switch (currType.type) {
         case "TEXT":
@@ -909,7 +909,7 @@ export class QueryHelper {
         case Buffer:
           return this.type({ type: "BINARY", length: "MAX" });
         default:
-          throw new TypeError(currType !== undefined ? currType.name : "undefined");
+          throw new TypeError(currType != null ? currType.name : "undefined");
       }
     }
   }
