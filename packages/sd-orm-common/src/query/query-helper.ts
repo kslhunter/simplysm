@@ -849,7 +849,7 @@ export class QueryHelper {
   }
 
   public type(type: Type<TQueryValue> | TSdOrmDataType | string | undefined): string {
-    if (typeof type === "string") {ㄴ
+    if (typeof type === "string") {
       return type;
     }
     else if (type?.["type"] != null) {
