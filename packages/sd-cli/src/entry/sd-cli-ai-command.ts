@@ -22,7 +22,7 @@ export class SdCliAiCommand {
 
     const client = new Anthropic({ apiKey: process.env["ANTHROPIC_API_KEY"] });
 
-    process.stdout.write("AI를 통해 커밋 메시지 생성중...\n");
+    process.stdout.write(`AI를 통해 커밋 메시지 생성중...(${diff.length.toLocaleString()})\n`);
     const message = await client.messages.create({
       model: "claude-3-5-haiku-latest",
       max_tokens: 1024,

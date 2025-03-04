@@ -23,7 +23,7 @@ import { SdPaneControl } from "./sd-pane.control";
 import { SdEventsDirective } from "../directives/sd-events.directive";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { SdCheckboxControl } from "./sd-checkbox.control";
-import { $computed, $effect, $model, $signal } from "../utils/hooks";
+import { $afterRenderComputed, $computed, $effect, $model, $signal } from "../utils/hooks";
 import { injectElementRef } from "../utils/dom/element-ref.injector";
 import { transformBoolean } from "../utils/type-tramsforms";
 import { SdIconControl } from "./sd-icon.control";
@@ -666,7 +666,7 @@ export class SdSheetControl<T> {
 
   #isOnResizing = false;
 
-  displayColumnDefs = $computed((): IColumnDef<T>[] => {
+  displayColumnDefs = $afterRenderComputed((): IColumnDef<T>[] => {
     return this.columnControls()
       .map((columnControl) => {
         const colConf = this.#config()?.columnRecord?.[columnControl.key()];
@@ -691,7 +691,7 @@ export class SdSheetControl<T> {
         width: item.width,
         headerStyle: item.headerStyle,
       }));
-  });
+  }, { initialValue: [] });
 
   displayHeaderDefTable = $computed((): (IHeaderDef<T> | undefined)[][] => {
     //-- displayHeaderDefTable

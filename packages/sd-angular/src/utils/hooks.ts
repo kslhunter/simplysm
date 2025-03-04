@@ -1,4 +1,5 @@
 import {
+  afterRenderEffect,
   computed,
   effect,
   EffectCleanupRegisterFn,
@@ -140,6 +141,21 @@ export function $computed(...args: any): Signal<any> {
   else {
     return computed(() => fn());
   }
+}
+
+export function $afterRenderComputed<R>(fn: () => R, opt: { initialValue: R }): Signal<R>;
+export function $afterRenderComputed<R>(
+  fn: () => R,
+  opt?: { initialValue?: R },
+): Signal<R | undefined>;
+export function $afterRenderComputed<R>(fn: () => R, opt?: { initialValue?: R }): Signal<R | undefined> {
+  const resultSig = signal<R | undefined>(opt?.initialValue);
+
+  afterRenderEffect(() => {
+    resultSig.set(fn());
+  });
+
+  return resultSig;
 }
 
 export type TEffFn<FN extends Function> = FN & {
