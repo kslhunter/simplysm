@@ -84,6 +84,7 @@ export interface IForeignKeyTargetDef {
   propertyKey: string;
   name: string;
   sourceKeyPropertyKey: string;
+  isSingle: boolean;
 
   sourceTypeFwd: () => Type<any>;
 }
@@ -113,6 +114,7 @@ export interface IReferenceKeyTargetDef {
   propertyKey: string;
   name: string;
   sourceKeyPropertyKey: string;
+  isSingle: boolean;
 
   sourceTypeFwd: () => Type<any>;
 }

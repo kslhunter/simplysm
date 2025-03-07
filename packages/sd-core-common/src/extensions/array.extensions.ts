@@ -827,7 +827,7 @@ declare global {
 
   prototype.remove = function <T>(this: T[], itemOrSelector: T | ((item: T, index: number) => boolean)): T[] {
     const removeItems =
-      typeof itemOrSelector === "function" ? this.filter(itemOrSelector.bind(this)) : [itemOrSelector];
+      typeof itemOrSelector === "function" ? this.filter((itemOrSelector as (item: T, index: number) => boolean).bind(this)) : [itemOrSelector];
 
     for (const removeItem of removeItems) {
       while (this.includes(removeItem)) {

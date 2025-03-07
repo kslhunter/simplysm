@@ -525,6 +525,7 @@ export class QueryHelper {
     );
   }
 
+
   public padStart(
     src: TEntityValue<string | String | undefined>,
     length: number,
@@ -547,6 +548,16 @@ export class QueryHelper {
       ["RIGHT(", this.getQueryValue(src), ", ", this.getQueryValue(num), ")"],
     );
   }
+
+  public trim(
+    src: TEntityValue<string | String | undefined>,
+  ): QueryUnit<string> {
+    return new QueryUnit<string>(
+      String,
+      ["RTRIM(LTRIM(", this.getQueryValue(src), "))"],
+    );
+  }
+
 
   public replace(
     src: TEntityValue<string | String | undefined>,

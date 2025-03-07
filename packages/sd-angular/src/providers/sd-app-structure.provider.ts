@@ -29,7 +29,7 @@ export class SdAppStructureProvider<T extends string> {
   }
 
   /** @deprecated 대신 getViewPerms2 함수를 사용하세요. */
-  getViewPerms<K extends string>(viewCodes: string[], keys: K[]): Record<K, boolean> {
+  /*getViewPerms<K extends string>(viewCodes: string[], keys: K[]): Record<K, boolean> {
     //check
     for (const viewCode of viewCodes) {
       let cursor: ISdAppStructureItem<T> | undefined;
@@ -61,9 +61,9 @@ export class SdAppStructureProvider<T extends string> {
     }
 
     return result;
-  }
+  }*/
 
-  getViewPerms2<K extends string>(viewCodes: string[], keys: K[]): K[] {
+  getViewPerms<K extends string>(viewCodes: string[], keys: K[]): K[] {
     const result = [] as K[];
     for (const key of keys) {
       if (viewCodes.some((viewCode) => Boolean(this.#permRecord()?.[viewCode + "." + key]))) {

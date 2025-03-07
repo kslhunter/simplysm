@@ -1,7 +1,7 @@
-import {TClassDecoratorReturn, TPropertyDecoratorReturn, Type} from "@simplysm/sd-core-common";
-import {DbDefUtils} from "./utils/db-def.utils";
-import {DbContext} from "./db-context";
-import {Queryable} from "./query/queryable";
+import { TClassDecoratorReturn, TPropertyDecoratorReturn, Type } from "@simplysm/sd-core-common";
+import { DbDefUtils } from "./utils/db-def.utils";
+import { DbContext } from "./db-context";
+import { Queryable } from "./query/queryable";
 import { TSdOrmDataType } from "./types";
 
 export function Table<T>(def: {
@@ -14,7 +14,7 @@ export function Table<T>(def: {
   return (classType: Type<T>): void => {
     DbDefUtils.mergeTableDef(classType, {
       name: classType.name,
-      ...def
+      ...def,
     });
   };
 }
@@ -39,7 +39,7 @@ export function Column<T extends object>(columnDef: {
       primaryKey: columnDef.primaryKey,
       description: columnDef.description,
 
-      typeFwd: () => Reflect.getMetadata("design:type", object, propertyKey)
+      typeFwd: () => Reflect.getMetadata("design:type", object, propertyKey),
     });
   };
 }
@@ -47,7 +47,7 @@ export function Column<T extends object>(columnDef: {
 export function ForeignKey<T>(
   columnNames: (keyof T)[],
   targetTypeFwd: () => Type<any>,
-  description: string
+  description: string,
 ): TPropertyDecoratorReturn<Partial<T>> {
   return (object: Partial<T>, propertyKey: string): void => {
     const classType = object.constructor as Type<T>;
@@ -57,7 +57,7 @@ export function ForeignKey<T>(
       name: propertyKey,
       columnPropertyKeys: columnNames as string[],
       description,
-      targetTypeFwd
+      targetTypeFwd,
     });
   };
 }
@@ -65,7 +65,8 @@ export function ForeignKey<T>(
 export function ForeignKeyTarget<T extends object, P>(
   sourceTypeFwd: () => Type<P>,
   foreignKeyPropertyKey: keyof P,
-  description: string
+  description: string,
+  multiplicity?: "single",
 ): TPropertyDecoratorReturn<T> {
   return (object: T, propertyKey: string): void => {
     const classType = object.constructor as Type<T>;
@@ -75,7 +76,8 @@ export function ForeignKeyTarget<T extends object, P>(
       name: propertyKey,
       sourceTypeFwd,
       description,
-      sourceKeyPropertyKey: foreignKeyPropertyKey as string
+      sourceKeyPropertyKey: foreignKeyPropertyKey as string,
+      isSingle: multiplicity === "single",
     });
   };
 }
@@ -96,9 +98,9 @@ export function Index<T extends object>(def?: {
           columnPropertyKey: propertyKey,
           order: def?.order ?? 1,
           orderBy: def?.orderBy ?? "ASC",
-          unique: def?.unique ?? false
-        }
-      ]
+          unique: def?.unique ?? false,
+        },
+      ],
     });
   };
 }
@@ -106,7 +108,7 @@ export function Index<T extends object>(def?: {
 export function ReferenceKey<T>(
   columnNames: (keyof T)[],
   targetTypeFwd: () => Type<any>,
-  description: string
+  description: string,
 ): TPropertyDecoratorReturn<Partial<T>> {
   return (object: Partial<T>, propertyKey: string): void => {
     const classType = object.constructor as Type<T>;
@@ -116,7 +118,7 @@ export function ReferenceKey<T>(
       name: propertyKey,
       columnPropertyKeys: columnNames as string[],
       description,
-      targetTypeFwd
+      targetTypeFwd,
     });
   };
 }
@@ -124,7 +126,8 @@ export function ReferenceKey<T>(
 export function ReferenceKeyTarget<T extends object, P>(
   sourceTypeFwd: () => Type<P>,
   referenceKeyPropertyKey: keyof P,
-  description: string
+  description: string,
+  multiplicity?: "single",
 ): TPropertyDecoratorReturn<T> {
   return (object: T, propertyKey: string): void => {
     const classType = object.constructor as Type<T>;
@@ -134,7 +137,8 @@ export function ReferenceKeyTarget<T extends object, P>(
       name: propertyKey,
       sourceTypeFwd,
       description,
-      sourceKeyPropertyKey: referenceKeyPropertyKey as string
+      sourceKeyPropertyKey: referenceKeyPropertyKey as string,
+      isSingle: multiplicity === "single",
     });
   };
 }

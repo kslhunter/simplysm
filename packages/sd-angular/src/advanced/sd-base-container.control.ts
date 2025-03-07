@@ -98,7 +98,7 @@ export class SdBaseContainerControl {
     return this.templateDirectives().single(item => item.target() === target)?.templateRef ?? null;
   };
 
-  perms = $computed(() => this.#sdAppStructure.getViewPerms2(
+  perms = $computed(() => this.#sdAppStructure.getViewPerms(
     [this.#pageCode()],
     ["use"],
   ));

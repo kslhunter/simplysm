@@ -1534,7 +1534,7 @@ export class Queryable<D extends DbContext, T> {
         }
 
         // JOIN 실행
-        result = result.join(fktSourceType, as, (q, en) =>
+        result = result[fktDef.isSingle ? "joinSingle" : "join"](fktSourceType, as, (q, en) =>
           q.where((item) => {
             const lastEn = this._getEntityChainValue(en, prevAs);
 
