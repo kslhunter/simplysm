@@ -26,7 +26,7 @@ import { SdTypedTemplateDirective } from "../directives/sd-typed.template-direct
 import { SdDropdownPopupControl } from "./sd-dropdown-popup.control";
 import { StringUtils } from "@simplysm/sd-core-common";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
-import { $computed, $effect, $model, $signal } from "../utils/hooks";
+import { $afterRenderEffect, $computed, $model, $signal } from "../utils/hooks";
 import { transformBoolean } from "../utils/type-tramsforms";
 import { SdRippleDirective } from "../directives/sd-ripple.directive";
 import { SdIconControl } from "./sd-icon.control";
@@ -372,7 +372,7 @@ export class SdSelectControl<M extends "single" | "multi", T> {
   });
 
   constructor() {
-    $effect(() => {
+    $afterRenderEffect(() => {
       const selectedItemControls = this.itemControls()
         .filter((itemControl) => itemControl.isSelected());
       // const selectedItemEls = selectedItemControls.map((item) => item.elRef.nativeElement);

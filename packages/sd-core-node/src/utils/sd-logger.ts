@@ -1,7 +1,7 @@
 import path from "path";
-import {FsUtils} from "./fs.utils";
+import { FsUtils } from "./fs.utils";
 import os from "os";
-import {DateTime, DeepPartial, MathUtils, ObjectUtils} from "@simplysm/sd-core-common";
+import { DateTime, DeepPartial, MathUtils, ObjectUtils } from "@simplysm/sd-core-common";
 
 export enum SdLoggerStyle {
   clear = "\x1b[0m",
@@ -76,7 +76,10 @@ export class SdLogger {
 
   public static setConfig(group: string[], config: DeepPartial<ISdLoggerConfig>): void;
   public static setConfig(config: DeepPartial<ISdLoggerConfig>): void;
-  public static setConfig(arg1: string[] | DeepPartial<ISdLoggerConfig>, arg2?: DeepPartial<ISdLoggerConfig>): void {
+  public static setConfig(
+    arg1: string[] | DeepPartial<ISdLoggerConfig>,
+    arg2?: DeepPartial<ISdLoggerConfig>,
+  ): void {
     const group = (arg2 !== undefined ? arg1 : []) as string[];
     const config = (arg2 !== undefined ? arg2 : arg1) as DeepPartial<ISdLoggerConfig>;
 
@@ -141,7 +144,9 @@ export class SdLogger {
       headMessage += loggerStyle;
       headMessage += severity.toUpperCase().padStart(5, " ");
 
-      const logMessages = logs.map((log) => ((log instanceof Error && log.stack !== undefined) ? log.stack : log));
+      const logMessages = logs.map((log) => ((log instanceof Error && log.stack !== undefined)
+        ? log.stack
+        : log));
       const tailMessage = SdLoggerStyle.clear;
 
       // eslint-disable-next-line no-console
@@ -161,7 +166,10 @@ export class SdLogger {
 
         // 색상빼기
         if (typeof log === "string") {
-          logString = log.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, "");
+          logString = log.replace(
+            /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g,
+            "",
+          );
         }
         else if (typeof log.toString === "function" && !(/^\[.*]$/).test(log.toString())) {
           logString = log.toString();
@@ -194,12 +202,19 @@ export class SdLogger {
           logFileName = lastFileSeq.toString() + ".log";
         }
       }
-      const logFilePath = path.resolve(outPath, logFileName);
-      if (FsUtils.exists(logFilePath)) {
-        FsUtils.appendFile(logFilePath, text);
+
+      try {
+        const logFilePath = path.resolve(outPath, logFileName);
+        if (FsUtils.exists(logFilePath)) {
+          FsUtils.appendFile(logFilePath, text);
+        }
+        else {
+          FsUtils.writeFile(logFilePath, text);
+        }
       }
-      else {
-        FsUtils.writeFile(logFilePath, text);
+      catch (err) {
+        // eslint-disable-next-line no-console
+        console.log("파일쓰기실패", err.message);
       }
     }
 
@@ -208,7 +223,7 @@ export class SdLogger {
         datetime: now,
         group: this._group,
         severity,
-        logs
+        logs,
       });
 
       while (SdLogger.history.length > SdLogger._historyLength) {
@@ -229,15 +244,15 @@ export class SdLogger {
           log: SdLoggerStyle.clear,
           info: SdLoggerStyle.fgCyan,
           warn: SdLoggerStyle.fgYellow,
-          error: SdLoggerStyle.fgRed
-        }
+          error: SdLoggerStyle.fgRed,
+        },
       },
 
       file: {
         level: SdLoggerSeverity.none,
         outDir: path.resolve(process.cwd(), "_logs"),
-        maxBytes: 300 * 1000
-      }
+        maxBytes: 300 * 1000,
+      },
     };
 
     const currGroup: string[] = [];

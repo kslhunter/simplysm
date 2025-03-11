@@ -11,7 +11,10 @@ import {
 } from "@angular/core";
 import { ISharedDataBase } from "./sd-shared-data.provider";
 import { SD_MODAL_INPUT, SdModalBase, SdModalProvider } from "../../providers/sd-modal.provider";
-import { SdItemOfTemplateContext, SdItemOfTemplateDirective } from "../../directives/sd-item-of.template-directive";
+import {
+  SdItemOfTemplateContext,
+  SdItemOfTemplateDirective,
+} from "../../directives/sd-item-of.template-directive";
 import { SdSelectControl, TSelectValue } from "../../controls/sd-select-control";
 import { SdTextfieldControl } from "../../controls/sd-textfield.control";
 import { SdSelectItemControl } from "../../controls/sd-select-item.control";
@@ -76,9 +79,11 @@ import { SdIconControl } from "../../controls/sd-icon.control";
           class="bdb bdb-trans-default"
         />
       </ng-template>
-      
+
       <ng-template #before>
-        @if ((!required() && selectMode() === "single") || (useUndefined() && selectMode() === "multi")) {
+        @if ((!required() && selectMode() === "single") || (useUndefined()
+          && selectMode()
+          === "multi")) {
           <sd-select-item>
             @if (undefinedTemplateRef()) {
               <ng-template [ngTemplateOutlet]="undefinedTemplateRef()!" />
@@ -89,7 +94,12 @@ import { SdIconControl } from "../../controls/sd-icon.control";
         }
       </ng-template>
 
-      <ng-template [itemOf]="rootDisplayItems()" let-item="item" let-index="index" let-depth="depth">
+      <ng-template
+        [itemOf]="rootDisplayItems()"
+        let-item="item"
+        let-index="index"
+        let-depth="depth"
+      >
         @if (getItemSelectable(item, index, depth)) {
           <sd-select-item
             [value]="item.__valueKey"
@@ -122,7 +132,10 @@ export class SdSharedDataSelectControl<
 
   #sdModal = inject(SdModalProvider);
 
-  _value = input<TSelectValue<T["__valueKey"] | undefined>[M] | undefined>(undefined, { alias: "value" });
+  _value = input<TSelectValue<T["__valueKey"] | undefined>[M] | undefined>(
+    undefined,
+    { alias: "value" },
+  );
   _valueChange = output<TSelectValue<T["__valueKey"] | undefined>[M] | undefined>({ alias: "valueChange" });
   value = $model(this._value, this._valueChange);
 
@@ -151,10 +164,16 @@ export class SdSharedDataSelectControl<
   parentKeyProp = input<string>();
   displayOrderKeyProp = input<string>();
 
-  itemTemplateRef = contentChild<any, TemplateRef<SdItemOfTemplateContext<T>>>(SdItemOfTemplateDirective, {
-    read: TemplateRef,
-  });
-  undefinedTemplateRef = contentChild<any, TemplateRef<void>>("undefinedTemplate", { read: TemplateRef });
+  itemTemplateRef = contentChild<any, TemplateRef<SdItemOfTemplateContext<T>>>(
+    SdItemOfTemplateDirective,
+    {
+      read: TemplateRef,
+    },
+  );
+  undefinedTemplateRef = contentChild<any, TemplateRef<void>>(
+    "undefinedTemplate",
+    { read: TemplateRef },
+  );
 
   trackByFn = (item: T, index: number) => item.__valueKey;
 
@@ -192,7 +211,12 @@ export class SdSharedDataSelectControl<
 
   // 선택될 수 있는것들 (검색어에 의해 숨겨진것도 포함)
   getItemSelectable(item: any, index: number, depth: number) {
-    return this.parentKeyProp() === undefined || depth !== 0 || item[this.parentKeyProp()!] === undefined;
+    return this.parentKeyProp()
+      === undefined
+      || depth
+      !== 0
+      || item[this.parentKeyProp()!]
+      === undefined;
   }
 
   // 화면 목록에서 뿌려질것 (검색어에 의해 숨겨진것 제외)
@@ -205,13 +229,25 @@ export class SdSharedDataSelectControl<
   }
 
   isIncludeSearchText(item: any, index: number, depth: number): boolean {
-    if (
+    const splitSearchTexts = this.searchText()?.trim()
+      .split(" ")
+      .map((item1) => item1.trim())
+      .filter((item1) => Boolean(item1)) ?? [];
+
+    const itemText = this.getSearchTextFn()(item, index);
+    for (const splitSearchText of splitSearchTexts) {
+      if (!itemText.toLowerCase().includes(splitSearchText.toLowerCase())) {
+        return false;
+      }
+    }
+
+    /*if (
       this.getSearchTextFn()(item, index)
         .toLowerCase()
         .includes(this.searchText()?.toLowerCase() ?? "")
     ) {
       return true;
-    }
+    }*/
 
     if (this.parentKeyProp() !== undefined) {
       const children = this.getChildren(item, index, item.depth);
@@ -222,7 +258,7 @@ export class SdSharedDataSelectControl<
       }
     }
 
-    return false;
+    return true;
   }
 
   getChildren = (item: ISharedDataBase<string | number>, index: number, depth: number): any[] => {
@@ -233,7 +269,7 @@ export class SdSharedDataSelectControl<
     }
 
     return result;
-  }
+  };
 
   onOpenChange() {
     this.searchText.set(undefined);
@@ -245,14 +281,22 @@ export class SdSharedDataSelectControl<
 
     if (!this.modalType()) return;
 
-    const result = await this.#sdModal.showAsync(this.modalType()!, this.modalHeader() ?? "자세히...", {
-      selectMode: this.selectMode(),
-      selectedItemKeys: (this.selectMode() === "multi" ? (this.value() as any[]) : [this.value()]).filterExists(),
-      ...this.modalInputParam(),
-    });
+    const result = await this.#sdModal.showAsync(
+      this.modalType()!,
+      this.modalHeader() ?? "자세히...",
+      {
+        selectMode: this.selectMode(),
+        selectedItemKeys: (this.selectMode() === "multi"
+          ? (this.value() as any[])
+          : [this.value()]).filterExists(),
+        ...this.modalInputParam(),
+      },
+    );
 
     if (result) {
-      const newValue = this.selectMode() === "multi" ? result.selectedItemKeys : result.selectedItemKeys[0];
+      const newValue = this.selectMode() === "multi"
+        ? result.selectedItemKeys
+        : result.selectedItemKeys[0];
       this.value.set(newValue);
     }
   }
