@@ -250,10 +250,10 @@ export function $mark(sig: WritableSignal<any>) {
 
 const ORIGIN_SNAPSHOT = Symbol();
 
-export function $arr<T>(sig: Signal<T[]> | WritableSignal<T[]>) { // 다
+export function $arr<T>(sig: Signal<T[]> | WritableSignal<T[]>) {
   return {
     insert(i: number, item: T) {
-      if (!("update" in sig)) throw new Error("Readonly signal does not support updates.");
+      if (!("update" in sig)) throw new Error("Readonly signal does not support insert.");
 
       sig.update((v) => {
         const r = [...v];
@@ -268,6 +268,20 @@ export function $arr<T>(sig: Signal<T[]> | WritableSignal<T[]>) { // 다
         const r = [...v];
         r.remove(itemOrFn as any);
         return r;
+      });
+    },
+    toggle(value: T) {
+      if (!("update" in sig)) throw new Error("Readonly signal does not support toggle.");
+
+      sig.update((v) => {
+        if (v.includes(value)) {
+          return v.filter(item => item !== value);
+        }
+        else {
+          return [...v, value];
+        }
+
+        return v;
       });
     },
     snapshot(keyPropName: keyof T) {

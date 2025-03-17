@@ -27,30 +27,43 @@ export class SdOrmUtils {
   public static getQueryValueType<T extends TQueryValue>(value: TEntityValue<T>): Type<T> | undefined {
     if (value instanceof QueryUnit) {
       return value.type as any;
-    } else if (value instanceof Number || typeof value === "number") {
+    }
+    else if (value instanceof Number || typeof value === "number") {
       return Number as any;
-    } else if (value instanceof String || typeof value === "string") {
+    }
+    else if (value instanceof String || typeof value === "string") {
       return String as any;
-    } else if (value instanceof Boolean || typeof value === "boolean") {
+    }
+    else if (value instanceof Boolean || typeof value === "boolean") {
       return Boolean as any;
-    } else if (value instanceof DateOnly) {
+    }
+    else if (value instanceof DateOnly) {
       return DateOnly as any;
-    } else if (value instanceof DateTime) {
+    }
+    else if (value instanceof DateTime) {
       return DateTime as any;
-    } else if (value instanceof Time) {
+    }
+    else if (value instanceof Time) {
       return Time as any;
-    } else if (value instanceof Uuid) {
+    }
+    else if (value instanceof Uuid) {
       return Uuid as any;
-    } else if (value instanceof Buffer) {
+    }
+    else if (value instanceof Buffer) {
       return Buffer as any;
-    } else if (value === undefined) {
+    }
+    else if (value === undefined) {
       return undefined;
-    } else {
+    }
+    else {
       throw new Error(`QueryValue 를 추출할 수 있는 타입이 아닙니다: ${JSON.stringify(value)}`);
     }
   }
 
-  public static getQueryValueFields<T>(entity: TEntity<T>, availableDepth?: number): TEntityValue<any>[] {
+  public static getQueryValueFields<T>(
+    entity: TEntity<T>,
+    availableDepth?: number,
+  ): TEntityValue<any>[] {
     if (availableDepth !== undefined && availableDepth < 1) return [];
 
     return Object.values(entity).mapMany((item: any) => {
@@ -58,7 +71,10 @@ export class SdOrmUtils {
         return [item];
       }
 
-      return SdOrmUtils.getQueryValueFields(item, availableDepth !== undefined ? availableDepth - 1 : undefined);
+      return SdOrmUtils.getQueryValueFields(
+        item,
+        availableDepth !== undefined ? availableDepth - 1 : undefined,
+      );
     });
   }
 
@@ -71,19 +87,26 @@ export class SdOrmUtils {
         for (const key of Object.keys(item)) {
           if (item[key] == null) {
             obj[key] = undefined;
-          } else if (option?.columns?.[key]?.dataType === "DateTime") {
+          }
+          else if (option?.columns?.[key]?.dataType === "DateTime") {
             obj[key] = DateTime.parse(item[key]);
-          } else if (option?.columns?.[key]?.dataType === "DateOnly") {
+          }
+          else if (option?.columns?.[key]?.dataType === "DateOnly") {
             obj[key] = DateOnly.parse(item[key]);
-          } else if (option?.columns?.[key]?.dataType === "Time") {
+          }
+          else if (option?.columns?.[key]?.dataType === "Time") {
             obj[key] = Time.parse(item[key]);
-          } else if (option?.columns?.[key]?.dataType === "Uuid") {
+          }
+          else if (option?.columns?.[key]?.dataType === "Uuid") {
             obj[key] = new Uuid(item[key]);
-          } else if (option?.columns?.[key]?.dataType === "Boolean") {
+          }
+          else if (option?.columns?.[key]?.dataType === "Boolean") {
             obj[key] = Boolean(item[key]);
-          } else if (option?.columns?.[key]?.dataType === "Number") {
+          }
+          else if (option?.columns?.[key]?.dataType === "Number") {
             obj[key] = Number.parseFloat(item[key]);
-          } else {
+          }
+          else {
             obj[key] = item[key];
           }
         }
@@ -96,9 +119,9 @@ export class SdOrmUtils {
     // JOIN 에 따른 데이터 구조 설정
     const allJoinInfos = option?.joins
       ? Object.keys(option.joins).map((key) => ({
-          key,
-          isSingle: option.joins![key].isSingle,
-        }))
+        key,
+        isSingle: option.joins![key].isSingle,
+      }))
       : [];
     const rootJoinInfos = allJoinInfos.filter((item) => !item.key.includes("."));
     if (rootJoinInfos.length > 0) {
@@ -118,17 +141,22 @@ export class SdOrmUtils {
             sourceItemValue instanceof Buffer
           ) {
             result.push(sourceItemKey + ":" + JsonConvert.stringify(sourceItemValue));
-          } else {
+          }
+          else {
             result.push(sourceItemKey + ":" + getObjKeyString(sourceItemValue));
           }
         }
         return "(" + result.join("|") + ")";
       };
 
-      const getKeyObj = (sourceItem: Record<string, any>, joinKeys: string[]): Record<string, any> => {
+      const getKeyObj = (
+        sourceItem: Record<string, any>,
+        joinKeys: string[],
+      ): Record<string, any> => {
         const result: Record<string, any> = {};
         for (const sourceItemKey of Object.keys(sourceItem)) {
-          if (joinKeys.some((joinKey) => sourceItemKey === joinKey || sourceItemKey.startsWith(joinKey + ".")))
+          if (joinKeys.some((joinKey) => sourceItemKey === joinKey || sourceItemKey.startsWith(
+            joinKey + ".")))
             continue;
           result[sourceItemKey] = sourceItem[sourceItemKey];
         }
@@ -137,9 +165,9 @@ export class SdOrmUtils {
 
       const getObjOrUndefined = (sourceItem: Record<string, any> | undefined): Record<string, any> | undefined => {
         return sourceItem === undefined ||
-          Object.keys(sourceItem).every(
-            (key) =>
-              sourceItem[key] === undefined /* ||
+        Object.keys(sourceItem).every(
+          (key) =>
+            sourceItem[key] === undefined /* ||
           (sourceItem[key] instanceof Array && sourceItem[key].length === 0) ||
           (
             !(
@@ -155,12 +183,15 @@ export class SdOrmUtils {
             ) &&
             getObjOrUndefined(sourceItem[key]) === undefined
           )*/,
-          )
+        )
           ? undefined
           : sourceItem;
       };
 
-      const joinToObj = (source: Record<string, any>[], joinKeys: string[]): Record<string, any>[] => {
+      const joinToObj = (
+        source: Record<string, any>[],
+        joinKeys: string[],
+      ): Record<string, any>[] => {
         const result: Record<string, any>[] = [];
         for (const sourceItem of source) {
           const resultItem: Record<string, any> = {};
@@ -168,8 +199,10 @@ export class SdOrmUtils {
             for (const joinKey of joinKeys) {
               if (sourceItemKey.startsWith(joinKey + ".")) {
                 resultItem[joinKey] = resultItem[joinKey] ?? {};
-                resultItem[joinKey][sourceItemKey.slice(joinKey.length + 1)] = sourceItem[sourceItemKey];
-              } else {
+                resultItem[joinKey][sourceItemKey.slice(joinKey.length
+                  + 1)] = sourceItem[sourceItemKey];
+              }
+              else {
                 resultItem[sourceItemKey] = sourceItem[sourceItemKey];
               }
             }
@@ -180,7 +213,10 @@ export class SdOrmUtils {
         return result;
       };
 
-      const grouping = (source: Record<string, any>[], joinKeys: string[]): Record<string, any>[] => {
+      const grouping = (
+        source: Record<string, any>[],
+        joinKeys: string[],
+      ): Record<string, any>[] => {
         const result = new Map<string, Record<string, any>>();
         for (const sourceItem of source) {
           const groupedKeyObj = getKeyObj(sourceItem, joinKeys);
@@ -193,7 +229,8 @@ export class SdOrmUtils {
                 groupedItem[joinKey].push(sourceItemValue);
               }
             }
-          } else {
+          }
+          else {
             const newGroupedItem: Record<string, any> = { ...groupedKeyObj };
             for (const joinKey of joinKeys) {
               const sourceItemValue = getObjOrUndefined(sourceItem[joinKey]);
@@ -228,7 +265,8 @@ export class SdOrmUtils {
             const childJoinInfos = allJoinInfos
               .filter(
                 (item) =>
-                  item.key.startsWith(fullJoinKey + ".") && !item.key.slice(fullJoinKey.length + 1).includes("."),
+                  item.key.startsWith(fullJoinKey + ".") && !item.key.slice(fullJoinKey.length + 1)
+                    .includes("."),
               )
               .map((item) => ({
                 key: item.key.slice(fullJoinKey.length + 1),
@@ -239,21 +277,26 @@ export class SdOrmUtils {
               const childJoinValue = doing(joinValue, childJoinInfos);
               if (joinInfo.isSingle) {
                 if (childJoinValue.length > 1) {
-                  throw new Error("중복" + JSON.stringify(joinValue));
-                } else {
+                  throw new Error("중복" + JSON.stringify({ joinValue, childJoinValue }));
+                }
+                else {
                   resultItem[joinInfo.key] = childJoinValue[0];
                 }
-              } else {
+              }
+              else {
                 resultItem[joinInfo.key] = childJoinValue;
               }
-            } else {
+            }
+            else {
               if (joinInfo.isSingle) {
                 if (joinValue.length > 1) {
-                  throw new Error("중복: " + JSON.stringify(joinValue));
-                } else {
+                  throw new Error("중복: " + JSON.stringify({ joinInfo, resultItem, joinValue }));
+                }
+                else {
                   resultItem[joinInfo.key] = joinValue[0];
                 }
-              } else {
+              }
+              else {
                 resultItem[joinInfo.key] = joinValue;
               }
             }
