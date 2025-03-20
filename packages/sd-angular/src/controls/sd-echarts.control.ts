@@ -26,12 +26,12 @@ export class SdEchartsControl {
   #chart!: echarts.EChartsType;
 
   option = input.required<echarts.EChartsOption>();
-  height = input.required<string>();
+  /*height = input.required<string>();*/
   loading = input(false);
 
   constructor() {
     $effect([], () => {
-      this.#chart = echarts.init(this.#elRef.nativeElement, null, { renderer: "svg", height: this.height() });
+      this.#chart = echarts.init(this.#elRef.nativeElement, null, { renderer: "svg" });
     });
 
     $effect(() => {
