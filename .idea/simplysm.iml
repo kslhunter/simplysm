@@ -5,9 +5,10 @@
       <excludeFolder url="file://$MODULE_DIR$/.idea" />
       <excludeFolder url="file://$MODULE_DIR$/.tmp" />
       <excludeFolder url="file://$MODULE_DIR$/.yarn" />
+      <excludeFolder url="file://$MODULE_DIR$/_back" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/cordova-plugin-usb-storage/android" />
       <excludeFolder url="file://$MODULE_DIR$/temp" />
       <excludeFolder url="file://$MODULE_DIR$/tmp" />
-      <excludeFolder url="file://$MODULE_DIR$/_back" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

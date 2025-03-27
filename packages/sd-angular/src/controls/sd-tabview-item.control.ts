@@ -34,5 +34,5 @@ export class SdTabviewItemControl<T> {
 
   parentControl = inject<SdTabviewControl<T>>(forwardRef(() => SdTabviewControl));
 
-  isSelected = $computed(() => this.parentControl.value());
+  isSelected = $computed(() => this.parentControl.value() === this.value());
 }

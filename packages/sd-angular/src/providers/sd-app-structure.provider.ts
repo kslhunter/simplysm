@@ -28,7 +28,6 @@ export class SdAppStructureProvider<T extends string> {
     return SdAppStructureUtils.getTitleByCode(this.#items, pageCode);
   }
 
-  /** @deprecated 대신 getViewPerms2 함수를 사용하세요. */
   /*getViewPerms<K extends string>(viewCodes: string[], keys: K[]): Record<K, boolean> {
     //check
     for (const viewCode of viewCodes) {
