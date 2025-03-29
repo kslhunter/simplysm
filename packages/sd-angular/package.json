@@ -14,11 +14,11 @@
   "types": "./dist/index.d.ts",
   "style": "./styles.css",
   "dependencies": {
-    "@angular/animations": "^19.2.3",
-    "@angular/common": "^19.2.3",
-    "@angular/core": "^19.2.3",
-    "@angular/platform-browser": "^19.2.3",
-    "@angular/router": "^19.2.3",
+    "@angular/animations": "^19.2.4",
+    "@angular/common": "^19.2.4",
+    "@angular/core": "^19.2.4",
+    "@angular/platform-browser": "^19.2.4",
+    "@angular/router": "^19.2.4",
     "@fortawesome/fontawesome-svg-core": "^6.7.2",
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
     "@simplysm/sd-core-browser": "12.7.23",
@@ -41,6 +41,6 @@
   },
   "devDependencies": {
     "@types/qrcode": "^1.5.5",
-    "@types/semver": "^7.5.8"
+    "@types/semver": "^7.7.0"
   }
 }

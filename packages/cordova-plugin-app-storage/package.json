@@ -19,8 +19,8 @@
     ]
   },
   "dependencies": {
-    "@awesome-cordova-plugins/core": "^6.15.0",
-    "@awesome-cordova-plugins/file": "^6.15.0",
+    "@awesome-cordova-plugins/core": "^6.16.0",
+    "@awesome-cordova-plugins/file": "^6.16.0",
     "@simplysm/sd-core-common": "12.7.23",
     "rxjs": "^7.8.2"
   }
