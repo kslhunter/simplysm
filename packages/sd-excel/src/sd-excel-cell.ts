@@ -1,12 +1,12 @@
-import {SdExcelXmlWorksheet} from "./xmls/sd-excel-xml-worksheet";
-import {DateOnly, DateTime, NumberUtils, StringUtils, Time} from "@simplysm/sd-core-common";
-import {TSdExcelNumberFormat, TSdExcelValueType} from "./types";
-import {SdExcelXmlSharedString} from "./xmls/sd-excel-xml-shared-string";
-import {ZipCache} from "./utils/zip-cache";
-import {SdExcelXmlContentType} from "./xmls/sd-excel-xml-content-type";
-import {SdExcelXmlRelationShip} from "./xmls/sd-excel-xml-relation-ship";
-import {ISdExcelStyle, SdExcelXmlStyle} from "./xmls/sd-excel-xml-style";
-import {SdExcelUtils} from "./utils/sd-excel.utils";
+import { SdExcelXmlWorksheet } from "./xmls/sd-excel-xml-worksheet";
+import { DateOnly, DateTime, NumberUtils, StringUtils, Time } from "@simplysm/sd-core-common";
+import { TSdExcelNumberFormat, TSdExcelValueType } from "./types";
+import { SdExcelXmlSharedString } from "./xmls/sd-excel-xml-shared-string";
+import { ZipCache } from "./utils/zip-cache";
+import { SdExcelXmlContentType } from "./xmls/sd-excel-xml-content-type";
+import { SdExcelXmlRelationShip } from "./xmls/sd-excel-xml-relation-ship";
+import { ISdExcelStyle, SdExcelXmlStyle } from "./xmls/sd-excel-xml-style";
+import { SdExcelUtils } from "./utils/sd-excel.utils";
 
 export class SdExcelCell {
   public style = {
@@ -15,33 +15,50 @@ export class SdExcelCell {
         throw new Error("색상 형식이 잘못되었습니다. (형식: FFFFFFFF: alpha+rgb)");
       }
 
-      await this._setStyleAsync({background: color});
+      await this._setStyleAsync({ background: color });
     },
     setBorderAsync: async (directions: ("left" | "right" | "top" | "bottom")[]): Promise<void> => {
-      await this._setStyleAsync({border: directions});
+      await this._setStyleAsync({ border: directions });
     },
     setVerticalAlignAsync: async (align: "center" | "top" | "bottom"): Promise<void> => {
-      await this._setStyleAsync({verticalAlign: align});
+      await this._setStyleAsync({ verticalAlign: align });
     },
     setHorizontalAlignAsync: async (align: "center" | "left" | "right"): Promise<void> => {
-      await this._setStyleAsync({horizontalAlign: align});
+      await this._setStyleAsync({ horizontalAlign: align });
     },
     setFormatPresetAsync: async (format: TSdExcelNumberFormat | "ThousandsSeparator"): Promise<void> => {
       if (format === "ThousandsSeparator") {
-        await this._setStyleAsync({numFmtId: "41"});
+        await this._setStyleAsync({ numFmtId: "41" });
       }
       else {
-        await this._setStyleAsync({numFmtId: SdExcelUtils.convertNumFmtNameToId(format).toString()});
+        await this._setStyleAsync({
+          numFmtId: SdExcelUtils.convertNumFmtNameToId(format)
+            .toString(),
+        });
       }
-    }
+    },
   };
   private readonly _addr: string;
 
-  public constructor(private readonly _zipCache: ZipCache,
-                     private readonly _targetFileName: string,
-                     private readonly _r: number,
-                     private readonly _c: number) {
-    this._addr = SdExcelUtils.stringifyAddr({r: this._r, c: this._c});
+  public constructor(
+    private readonly _zipCache: ZipCache,
+    private readonly _targetFileName: string,
+    private readonly _r: number,
+    private readonly _c: number,
+  ) {
+    this._addr = SdExcelUtils.stringifyAddr({ r: this._r, c: this._c });
+  }
+
+  public async setFormulaAsync(val: string | undefined): Promise<void> {
+    if (val === undefined) {
+      await this._deleteAddrAsync(this._addr);
+    }
+    else {
+      const wsData = await this._getWsDataAsync();
+      wsData.setCellType(this._addr, "str");
+      wsData.setCellVal(this._addr, undefined);
+      wsData.setCellFormula(this._addr, val);
+    }
   }
 
   public async setValAsync(val: TSdExcelValueType): Promise<void> {
@@ -78,21 +95,30 @@ export class SdExcelCell {
       wsData.setCellType(this._addr, undefined);
       wsData.setCellVal(this._addr, SdExcelUtils.convertTimeTickToNumber(val.tick).toString());
 
-      await this._setStyleAsync({numFmtId: SdExcelUtils.convertNumFmtNameToId("DateOnly").toString()});
+      await this._setStyleAsync({
+        numFmtId: SdExcelUtils.convertNumFmtNameToId("DateOnly")
+          .toString(),
+      });
     }
     else if (val instanceof DateTime) {
       const wsData = await this._getWsDataAsync();
       wsData.setCellType(this._addr, undefined);
       wsData.setCellVal(this._addr, SdExcelUtils.convertTimeTickToNumber(val.tick).toString());
 
-      await this._setStyleAsync({numFmtId: SdExcelUtils.convertNumFmtNameToId("DateTime").toString()});
+      await this._setStyleAsync({
+        numFmtId: SdExcelUtils.convertNumFmtNameToId("DateTime")
+          .toString(),
+      });
     }
     else if (val instanceof Time) {
       const wsData = await this._getWsDataAsync();
       wsData.setCellType(this._addr, undefined);
       wsData.setCellVal(this._addr, SdExcelUtils.convertTimeTickToNumber(val.tick).toString());
 
-      await this._setStyleAsync({numFmtId: SdExcelUtils.convertNumFmtNameToId("Time").toString()});
+      await this._setStyleAsync({
+        numFmtId: SdExcelUtils.convertNumFmtNameToId("Time")
+          .toString(),
+      });
     }
     else {
       throw new Error(`[${this._addr}] 지원되지 않는 타입입니다: ${val}`);
@@ -175,12 +201,12 @@ export class SdExcelCell {
     // TODO: 기존 머지와 겹치는게 있으면 오류 처리
 
     const wsData = await this._getWsDataAsync();
-    wsData.setMergeCells(this._addr, SdExcelUtils.stringifyAddr({r, c}));
+    wsData.setMergeCells(this._addr, SdExcelUtils.stringifyAddr({ r, c }));
 
     // 현재셀 외의 머지된 모든셀 지우기
     for (let cr = this._r + 1; cr <= r; cr++) {
       for (let cc = this._c + 1; cc <= c; cc++) {
-        const addr = SdExcelUtils.stringifyAddr({r: cr, c: cc});
+        const addr = SdExcelUtils.stringifyAddr({ r: cr, c: cc });
         await this._deleteAddrAsync(addr);
       }
     }
@@ -224,14 +250,14 @@ export class SdExcelCell {
       const typeData = await this._getTypeDataAsync();
       typeData.add(
         "/xl/sharedStrings.xml",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml"
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml",
       );
 
       //-- Workbook Rel
       const wbRelData = await this._getWbRelAsync();
       wbRelData.add(
         `sharedStrings.xml`,
-        `http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings`
+        `http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings`,
       );
     }
 
@@ -249,14 +275,14 @@ export class SdExcelCell {
       const typeData = await this._getTypeDataAsync();
       typeData.add(
         "/xl/styles.xml",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml",
       );
 
       //-- Workbook Rel
       const wbRelData = await this._getWbRelAsync();
       wbRelData.add(
         `styles.xml`,
-        `http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles`
+        `http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles`,
       );
     }
 

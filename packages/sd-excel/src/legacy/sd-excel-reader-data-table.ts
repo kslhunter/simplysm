@@ -10,7 +10,7 @@ export class SdExcelReaderDataTable {
       const v = this._sws.val(this._range.s.r, c);
       if (typeof v === "string") {
         if (this._headerColMap.has(v)) {
-          throw new Error("컬럼중복");
+          throw new Error(`컬럼중복(${v})`);
         }
         else {
           this._headerColMap.set(v, c);

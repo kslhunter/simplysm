@@ -3,10 +3,10 @@ import {
   ISdExcelCellData,
   ISdExcelRowData,
   ISdExcelXml,
-  ISdExcelXmlWorksheetData
+  ISdExcelXmlWorksheetData,
 } from "../types";
-import {SdExcelUtils} from "../utils/sd-excel.utils";
-import {NumberUtils} from "@simplysm/sd-core-common";
+import { SdExcelUtils } from "../utils/sd-excel.utils";
+import { NumberUtils } from "@simplysm/sd-core-common";
 
 export class SdExcelXmlWorksheet implements ISdExcelXml {
   public readonly data: ISdExcelXmlWorksheetData;
@@ -21,15 +21,17 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
       this.data = {
         "worksheet": {
           "$": {
-            "xmlns": "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+            "xmlns": "http://schemas.openxmlformats.org/spreadsheetml/2006/main",
           },
-          "dimension": [{
-            "$": {
-              "ref": "A1"
-            }
-          }],
-          "sheetData": [{}]
-        }
+          "dimension": [
+            {
+              "$": {
+                "ref": "A1",
+              },
+            },
+          ],
+          "sheetData": [{}],
+        },
       };
     }
     else {
@@ -54,7 +56,7 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
     }
   }
 
-  public setCellType(addr: string, type: "s" | "b" | undefined): void {
+  public setCellType(addr: string, type: "s" | "b" | "str" | undefined): void {
     const cellData = this._getOrCreateCellData(addr);
     if (type) {
       cellData.$.t = type;
@@ -68,13 +70,33 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
     return this._getCellData(addr)?.$.t;
   }
 
-  public setCellVal(addr: string, val: string): void {
+  public setCellVal(addr: string, val: string | undefined): void {
     const cellData = this._getOrCreateCellData(addr);
-    cellData.v = [val];
+    if (val === undefined) {
+      delete cellData.v;
+    }
+    else {
+      cellData.v = [val];
+    }
   }
 
   public getCellVal(addr: string): string | undefined {
     const val = this._getCellData(addr)?.v?.[0];
+    return typeof val === "string" ? val : undefined;
+  }
+
+  public setCellFormula(addr: string, val: string | undefined): void {
+    const cellData = this._getOrCreateCellData(addr);
+    if (val === undefined) {
+      delete cellData.f;
+    }
+    else {
+      cellData.f = [val];
+    }
+  }
+
+  public getCellFormula(addr: string): string | undefined {
+    const val = this._getCellData(addr)?.f?.[0];
     return typeof val === "string" ? val : undefined;
   }
 
@@ -118,12 +140,14 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
   }
 
   public setMergeCells(startAddr: string, endAddr: string): void {
-    const mergeCells = this.data.worksheet.mergeCells = this.data.worksheet.mergeCells ?? [{
-      "$": {count: "0"},
-      "mergeCell": []
-    }];
+    const mergeCells = this.data.worksheet.mergeCells = this.data.worksheet.mergeCells ?? [
+      {
+        "$": { count: "0" },
+        "mergeCell": [],
+      },
+    ];
 
-    mergeCells[0].mergeCell.push({"$": {"ref": `${startAddr}:${endAddr}`}});
+    mergeCells[0].mergeCell.push({ "$": { "ref": `${startAddr}:${endAddr}` } });
     mergeCells[0].$.count = mergeCells[0].mergeCell.length.toString();
 
     // RANGE 새로고침
@@ -133,18 +157,21 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
     this.range = {
       s: {
         r: Math.min(startPoint.r, endPoint.r, this.range.s.r),
-        c: Math.min(startPoint.c, endPoint.c, this.range.s.c)
+        c: Math.min(startPoint.c, endPoint.c, this.range.s.c),
       },
       e: {
         r: Math.max(startPoint.r, endPoint.r, this.range.e.r),
-        c: Math.max(startPoint.c, endPoint.c, this.range.e.c)
-      }
+        c: Math.max(startPoint.c, endPoint.c, this.range.e.c),
+      },
     };
   }
 
   public setColWidth(colIndex: string, width: string): void {
     const colIndexNumber = NumberUtils.parseInt(colIndex)!;
-    const col = this.data.worksheet.cols?.[0].col.single((item) => NumberUtils.parseInt(item.$.min)! <= colIndexNumber && NumberUtils.parseInt(item.$.max)! >= colIndexNumber);
+    const col = this.data.worksheet.cols?.[0].col.single((item) => NumberUtils.parseInt(item.$.min)!
+      <= colIndexNumber
+      && NumberUtils.parseInt(item.$.max)!
+      >= colIndexNumber);
     if (col) {
       if (col.$.min === col.$.max) {
         col.$.bestFit = "1";
@@ -164,8 +191,8 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
               "max": (colIndexNumber - 1).toString(),
               "bestFit": "1",
               "customWidth": "1",
-              "width": width
-            }
+              "width": width,
+            },
           });
           insertIndex++;
         }
@@ -176,8 +203,8 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
             "max": colIndex,
             "bestFit": "1",
             "customWidth": "1",
-            "width": width
-          }
+            "width": width,
+          },
         });
         insertIndex++;
 
@@ -188,8 +215,8 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
               "max": col.$.max,
               "bestFit": "1",
               "customWidth": "1",
-              "width": width
-            }
+              "width": width,
+            },
           });
         }
 
@@ -197,22 +224,22 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
       }
     }
     else {
-      this.data.worksheet.cols = this.data.worksheet.cols ?? [{col: []}];
+      this.data.worksheet.cols = this.data.worksheet.cols ?? [{ col: [] }];
       this.data.worksheet.cols[0].col.push({
         "$": {
           "min": colIndex,
           "max": colIndex,
           "bestFit": "1",
           "customWidth": "1",
-          "width": width
-        }
+          "width": width,
+        },
       });
     }
   }
 
   public cleanup(): void {
     //-- 순서 정렬
-    const wsData = {worksheet: {}} as ISdExcelXmlWorksheetData;
+    const wsData = { worksheet: {} } as ISdExcelXmlWorksheetData;
     const keys = Object.keys(this.data.worksheet);
     for (let i = 0; i < keys.length; i++) {
       if (keys[i] === "mergeCells") continue;
@@ -239,7 +266,8 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
     this.data.worksheet = wsData.worksheet;
 
     // ROW 정렬
-    const rowsData = this.data.worksheet.sheetData[0].row = this.data.worksheet.sheetData[0].row ?? [];
+    const rowsData = this.data.worksheet.sheetData[0].row = this.data.worksheet.sheetData[0].row
+      ?? [];
     rowsData.orderByThis((item) => NumberUtils.parseInt(item.$.r));
 
     // CELL 정렬
@@ -254,7 +282,7 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
       this.data.worksheet.dimension[0].$.ref = SdExcelUtils.stringifyRangeAddr(this.range);
     }
     else {
-      this.data.worksheet.dimension = [{"$": {"ref": SdExcelUtils.stringifyRangeAddr(this.range)}}];
+      this.data.worksheet.dimension = [{ "$": { "ref": SdExcelUtils.stringifyRangeAddr(this.range) } }];
     }
   }
 
@@ -267,9 +295,10 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
     const rowAddr = (/\d*$/).exec(addr)![0];
     let rowData = this._rowDataMap.get(rowAddr);
     if (rowData === undefined) {
-      const rowsData = this.data.worksheet.sheetData[0].row = this.data.worksheet.sheetData[0].row ?? [];
+      const rowsData = this.data.worksheet.sheetData[0].row = this.data.worksheet.sheetData[0].row
+        ?? [];
 
-      rowData = {"$": {"r": rowAddr}, c: []};
+      rowData = { "$": { "r": rowAddr }, c: [] };
       rowsData.push(rowData);
       this._rowDataMap.set(rowAddr, rowData);
     }
@@ -280,7 +309,7 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
       rowData.c = rowData.c ?? [];
       const cellsData = rowData.c;
 
-      cellData = {"$": {"r": addr}, "v": [""]};
+      cellData = { "$": { "r": addr }, "v": [""] };
       cellsData.push(cellData);
       this._cellDataMap.set(addr, cellData);
 
@@ -288,8 +317,8 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
 
       // RANGE 새로고침
       this.range = {
-        s: {r: Math.min(point.r, this.range.s.r), c: Math.min(point.c, this.range.s.c)},
-        e: {r: Math.max(point.r, this.range.e.r), c: Math.max(point.c, this.range.e.c)}
+        s: { r: Math.min(point.r, this.range.s.r), c: Math.min(point.c, this.range.s.c) },
+        e: { r: Math.max(point.r, this.range.e.r), c: Math.max(point.c, this.range.e.c) },
       };
     }
 
@@ -299,22 +328,22 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
   private _refreshDimension(): void {
     if (this._cellDataMap.size === 0) {
       this.range = {
-        s: {r: 0, c: 0},
-        e: {r: 0, c: 0}
+        s: { r: 0, c: 0 },
+        e: { r: 0, c: 0 },
       };
     }
     else {
       this.range = {
-        s: {r: Number.MAX_VALUE, c: Number.MAX_VALUE},
-        e: {r: 0, c: 0}
+        s: { r: Number.MAX_VALUE, c: Number.MAX_VALUE },
+        e: { r: 0, c: 0 },
       };
 
       for (const addr of this._cellDataMap.keys()) {
         const point = SdExcelUtils.parseAddr(addr);
 
         this.range = {
-          s: {r: Math.min(point.r, this.range.s.r), c: Math.min(point.c, this.range.s.c)},
-          e: {r: Math.max(point.r, this.range.e.r), c: Math.max(point.c, this.range.e.c)}
+          s: { r: Math.min(point.r, this.range.s.r), c: Math.min(point.c, this.range.s.c) },
+          e: { r: Math.max(point.r, this.range.e.r), c: Math.max(point.c, this.range.e.c) },
         };
       }
     }

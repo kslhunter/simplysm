@@ -110,6 +110,7 @@ export interface ISdExcelCellData {
     "t"?: string;  // type: s(sharedString)
   };
   "v"?: [string];
+  "f"?: [string];
 }
 
 export interface ISdExcelXmlSharedStringData {

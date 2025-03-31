@@ -1,18 +1,21 @@
-import {SdExcelXmlWorksheet} from "./xmls/sd-excel-xml-worksheet";
-import {ZipCache} from "./utils/zip-cache";
-import {ISdExcelAddressRangePoint, TSdExcelValueType} from "./types";
-import {SdExcelRow} from "./sd-excel-row";
-import {SdExcelCell} from "./sd-excel-cell";
-import {SdExcelXmlWorkbook} from "./xmls/sd-excel-xml-workbook";
-import {SdExcelCol} from "./sd-excel-col";
-import {StringUtils} from "@simplysm/sd-core-common";
+import { SdExcelXmlWorksheet } from "./xmls/sd-excel-xml-worksheet";
+import { ZipCache } from "./utils/zip-cache";
+import { ISdExcelAddressRangePoint, TSdExcelValueType } from "./types";
+import { SdExcelRow } from "./sd-excel-row";
+import { SdExcelCell } from "./sd-excel-cell";
+import { SdExcelXmlWorkbook } from "./xmls/sd-excel-xml-workbook";
+import { SdExcelCol } from "./sd-excel-col";
+import { StringUtils } from "@simplysm/sd-core-common";
+import { SdExcelUtils } from "./utils/sd-excel.utils";
 
 export class SdExcelWorksheet {
   private readonly _rowMap = new Map<number, SdExcelRow>();
 
-  public constructor(private readonly _zipCache: ZipCache,
-                     private readonly _relId: number,
-                     private readonly _targetFileName: string) {
+  public constructor(
+    private readonly _zipCache: ZipCache,
+    private readonly _relId: number,
+    private readonly _targetFileName: string,
+  ) {
   }
 
   public async getNameAsync(): Promise<string> {
@@ -30,6 +33,20 @@ export class SdExcelWorksheet {
 
   public col(c: number): SdExcelCol {
     return new SdExcelCol(this._zipCache, this._targetFileName, c);
+  }
+
+  public async copyRowStyleAsync(srcR: number, targetR: number): Promise<void> {
+    const range = await this.getRangeAsync();
+
+    const wsData = await this._getDataAsync();
+    for (let c = range.s.c; c <= range.e.c; c++) {
+      const srcAddr = SdExcelUtils.stringifyAddr({ r: srcR, c: c });
+      const targetAddr = SdExcelUtils.stringifyAddr({ r: targetR, c: c });
+      const styleId = wsData.getCellStyleId(srcAddr);
+      if (styleId != null) {
+        wsData.setCellStyleId(targetAddr, styleId);
+      }
+    }
   }
 
   public async getRangeAsync(): Promise<ISdExcelAddressRangePoint> {
@@ -72,7 +89,8 @@ export class SdExcelWorksheet {
     }
 
     for (let r = (opt?.headerRowIndex ?? range.s.r) + 1; r <= range.e.r; r++) {
-      if (opt?.checkEndColIndex !== undefined && await this.cell(r, opt.checkEndColIndex).getValAsync() === undefined) {
+      if (opt?.checkEndColIndex !== undefined && await this.cell(r, opt.checkEndColIndex)
+        .getValAsync() === undefined) {
         break;
       }
 
@@ -98,7 +116,9 @@ export class SdExcelWorksheet {
   }
 
   public async setRecords(record: Record<string, any>[]): Promise<void> {
-    const headers = record.mapMany((item) => Object.keys(item)).distinct().filter((item) => !StringUtils.isNullOrEmpty(item));
+    const headers = record.mapMany((item) => Object.keys(item))
+      .distinct()
+      .filter((item) => !StringUtils.isNullOrEmpty(item));
 
     for (let c = 0; c < headers.length; c++) {
       await this.cell(0, c).setValAsync(headers[c]);

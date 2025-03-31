@@ -387,8 +387,13 @@ export class SdSelectControl<M extends "single" | "multi", T> {
           ? "<div class='p-sm-0'></div>"
           : ", ");
 
-      if (innerHTML === "" && this.placeholder() !== undefined) {
-        this.contentElRef().nativeElement.innerHTML = `<span class='sd-text-color-grey-default'>${this.placeholder()}</span>`;
+      if (innerHTML === "") {
+        if (this.placeholder() !== undefined) {
+          this.contentElRef().nativeElement.innerHTML = `<span class='sd-text-color-grey-default'>${this.placeholder()}</span>`;
+        }
+        else {
+          this.contentElRef().nativeElement.innerHTML = `&nbsp;`;
+        }
       }
       else {
         this.contentElRef().nativeElement.innerHTML = innerHTML;

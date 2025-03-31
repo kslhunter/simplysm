@@ -1,5 +1,5 @@
-import {ArgumentError} from "../errors/argument.error";
-import {DateTimeFormatUtils} from "../utils/date-time-format.utils";
+import { ArgumentError } from "../errors/argument.error";
+import { DateTimeFormatUtils } from "../utils/date-time-format.utils";
 
 /**
  * 날짜 클래스 (시간제외: yyyy-MM-dd)
@@ -73,62 +73,69 @@ export class DateOnly {
       return new DateOnly(
         Number(str.substring(0, 4)),
         Number(str.substring(4, 6)),
-        Number(str.substring(6, 8))
+        Number(str.substring(6, 8)),
       );
     }
 
-    throw new ArgumentError({str});
+    throw new ArgumentError({ str });
   }
 
   /**
-   * `offsetWeek`요일을 기준으로 `month`월의 `weekSeq`주차를 구하고,
+   * `offsetWeek`요일을 기준으로 월의 `weekSeq`주차를 구하고,
    * 해당 주차의 `startWeek`요일의 날짜를 가져오기
    *
-   * @param month 월
    * @param weekSeq 가져올 주차 (1주차\~)
    * @param offsetWeek 주차구분 기준 요일 (일\~토: 0\~6)
    * @param startWeek 시작 요일 (일\~토: 0\~6)
    */
-  private static _getByMonthWeekFirstDate(month: DateOnly, weekSeq: number, offsetWeek: number = 4, startWeek: number = 1): DateOnly {
+  getMonthFirstWeekStartDate(
+    // month: DateOnly,
+    weekSeq: number,
+    offsetWeek: number = 4,
+    startWeek: number = 1,
+  ): DateOnly {
     // 이달 1일
-    const monthFirstDate = month.setDay(1);
+    const monthFirstDate = this.setDay(1);
 
     // 이달 1일의 요일
     const monthFirstDayWeek = monthFirstDate.week;
 
     // 이달의 주차가 시작되는 날짜
-    const monthWeekNumStartDate = monthFirstDayWeek <= offsetWeek ? monthFirstDate : monthFirstDate.setDay(7 - monthFirstDayWeek + 1 + startWeek);
+    const monthWeekNumStartDate = monthFirstDayWeek <= offsetWeek
+      ? monthFirstDate
+      : monthFirstDate.setDay(7 - monthFirstDayWeek + 1 + startWeek);
     return monthWeekNumStartDate.addDays(7 * (weekSeq > 0 ? weekSeq - 1 : weekSeq));
   }
 
   /**
-   * 날짜 `date`가 몇주차인지 가져오기
+   * 날짜 `date`가 해당월 내의 몇주차인지 가져오기
    *
-   * @param date 확인날짜
    * @param offsetWeek 주차구분 기준 요일 (일~토: 0~6)
    * @param startWeek 시작 요일 (일~토: 0~6)
    *
    * @returns 주차
    */
-  public static getWeekSeqOfMonth(date: DateOnly, offsetWeek: number = 4, startWeek: number = 1): IWeekSeqOfMonth {
+  public getWeekSeqOfMonth(offsetWeek: number = 4, startWeek: number = 1): IWeekSeqOfMonth {
     // 일: 0, 월: 1, 화: 2, 수: 3, 목: 4, 금: 5, 토: 6
 
     // 이번달의 주차가 시작되는 날짜
-    const monthWeekNumStartDate = DateOnly._getByMonthWeekFirstDate(date.setDay(1), 1, offsetWeek, startWeek);
+    const monthWeekNumStartDate = this.setDay(1)
+      .getMonthFirstWeekStartDate(1, offsetWeek, startWeek);
 
     // 다음달의 주차가 시작되는 날짜
-    const nextMonthWeekNumStartDate = DateOnly._getByMonthWeekFirstDate(date.setDay(1).addMonths(1), 1, offsetWeek, startWeek);
+    const nextMonthWeekNumStartDate = this.setDay(1).addMonths(1)
+      .getMonthFirstWeekStartDate(1, offsetWeek, startWeek);
 
     // 이번달의 주차가 끝나는 날짜
     const monthWeekNumEndDate = nextMonthWeekNumStartDate.day !== 1
-      ? date.addMonths(1).addDays(-1)
+      ? this.addMonths(1).addDays(-1)
       : nextMonthWeekNumStartDate.addDays(-nextMonthWeekNumStartDate.week - 1 + startWeek);
 
-    if (date.tick < monthWeekNumStartDate.tick) {
-      return DateOnly.getWeekSeqOfMonth(date.setDay(1).addDays(-1), offsetWeek, startWeek);
+    if (this.tick < monthWeekNumStartDate.tick) {
+      return this.setDay(1).addDays(-1).getWeekSeqOfMonth(offsetWeek, startWeek);
     }
-    else if (date.tick > monthWeekNumEndDate.tick) {
-      return DateOnly.getWeekSeqOfMonth(date.addMonths(1).setDay(1), offsetWeek, startWeek);
+    else if (this.tick > monthWeekNumEndDate.tick) {
+      return this.addMonths(1).setDay(1).getWeekSeqOfMonth(offsetWeek, startWeek);
     }
     else {
       // 1주차의 첫날짜 (전달일 수 있음)
@@ -136,17 +143,103 @@ export class DateOnly {
 
       // 1주차 첫날짜에서 지난 날수
       const spanDayFromWeekStartDate = Math.floor(
-        ((date.tick - firstWeekNumFirstDate.tick) / (24 * 60 * 60 * 1000))
+        ((this.tick - firstWeekNumFirstDate.tick) / (24 * 60 * 60 * 1000)),
       );
 
       // 1주차 첫날짜에서 지난 주차수
       const spanWeekFromWeekStartDate = Math.floor(spanDayFromWeekStartDate / 7);
       return {
-        year: date.year,
-        month: date.month,
-        weekSeq: spanWeekFromWeekStartDate + 1
+        year: this.year,
+        month: this.month,
+        weekSeq: spanWeekFromWeekStartDate + 1,
       };
     }
+  }
+
+
+  /**
+   * 내부 공통 함수: 특정 연도의 첫 주차 시작일 계산
+   */
+  static getFirstWeekStartDate(
+    year: number,
+    weekStartDay: number,
+    anchorDay: number,
+    minDaysInFirstWeek: number
+  ): Date {
+    const jan1 = new Date(year, 0, 1);
+    jan1.setHours(0, 0, 0, 0);
+    const jan1Day = jan1.getDay();
+
+    const jan1WeekStart = new Date(jan1);
+    jan1WeekStart.setDate(jan1.getDate() - ((jan1Day + 7 - weekStartDay) % 7));
+
+    const anchorOffset = (anchorDay + 7 - weekStartDay) % 7;
+    const anchorDate = new Date(jan1WeekStart);
+    anchorDate.setDate(jan1WeekStart.getDate() + anchorOffset);
+
+    const daysInFirstWeek = 7 - ((jan1.getDay() + 7 - weekStartDay) % 7);
+    if (daysInFirstWeek < minDaysInFirstWeek) {
+      jan1WeekStart.setDate(jan1WeekStart.getDate() + 7);
+    }
+
+    return jan1WeekStart;
+  }
+
+  /**
+   * 날짜를 연도/주차로 변환
+   */
+  getWeekSeqOfYear(
+    weekStartDay = 1,
+    anchorDay = 4,
+    minDaysInFirstWeek = 4
+  ): { year: number; weekSeq: number } {
+    const date = new Date(this.tick);
+    date.setHours(0, 0, 0, 0);
+
+    const dayOfWeek = (date.getDay() + 7 - weekStartDay) % 7;
+    const weekStart = new Date(date);
+    weekStart.setDate(date.getDate() - dayOfWeek);
+
+    const anchorOffset = (anchorDay + 7 - weekStartDay) % 7;
+    const anchorDate = new Date(weekStart);
+    anchorDate.setDate(weekStart.getDate() + anchorOffset);
+
+    const weekYear = anchorDate.getFullYear();
+    const firstWeekStart = DateOnly.getFirstWeekStartDate(
+      weekYear,
+      weekStartDay,
+      anchorDay,
+      minDaysInFirstWeek
+    );
+
+    const diffInDays = Math.floor(
+      (weekStart.getTime() - firstWeekStart.getTime()) / 86400000
+    );
+    const weekNumber = 1 + Math.floor(diffInDays / 7);
+
+    return { year: weekYear, weekSeq: weekNumber };
+  }
+
+  /**
+   * 연도/주차 → 주 시작일(DateOnly)
+   */
+  static getWeekStartDateFromYearWeek(
+    year: number,
+    weekSeq: number,
+    weekStartDay = 1,
+    anchorDay = 4,
+    minDaysInFirstWeek = 4
+  ): DateOnly {
+    const firstWeekStart = DateOnly.getFirstWeekStartDate(
+      year,
+      weekStartDay,
+      anchorDay,
+      minDaysInFirstWeek
+    );
+
+    const result = new Date(firstWeekStart);
+    result.setDate(firstWeekStart.getDate() + (weekSeq - 1) * 7);
+    return new DateOnly(result);
   }
 
   /**
@@ -276,7 +369,7 @@ export class DateOnly {
     return DateTimeFormatUtils.format(format, {
       year: this.year,
       month: this.month,
-      day: this.day
+      day: this.day,
     });
   }
 

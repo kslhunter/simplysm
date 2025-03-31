@@ -364,15 +364,39 @@ export class QueryHelper {
 
   public dateAdd<T extends DateTime | DateOnly | Time>(
     separator: TDbDateSeparator,
-    from: TEntityValue<T | 0>,
+    from: TEntityValue<T | undefined>,
     value: TEntityValue<number>,
   ): QueryUnit<T> {
     const type = SdOrmUtils.getQueryValueType(from);
 
-    return new QueryUnit(
-      type,
-      ["DATEADD(", separator, ", ", this.getQueryValue(value), ", ", this.getQueryValue(from), ")"],
-    ) as any;
+    if (this._dialect === "mysql") {
+      return new QueryUnit(
+        type,
+        [
+          "DATE_ADD(",
+          this.getQueryValue(from),
+          ", INTERVAL ",
+          this.getQueryValue(value),
+          " ",
+          separator.toUpperCase(),
+          ")",
+        ],
+      ) as any;
+    }
+    else {
+      return new QueryUnit(
+        type,
+        [
+          "DATEADD(",
+          separator,
+          ", ",
+          this.getQueryValue(value),
+          ", ",
+          this.getQueryValue(from),
+          ")",
+        ],
+      ) as any;
+    }
   }
 
   /**
@@ -661,14 +685,30 @@ export class QueryHelper {
     const type = SdOrmUtils.getQueryValueType(unit);
     if (!type) throw new TypeError();
 
-    return new QueryUnit(type, ["MAX(", this.getQueryValue(unit), ")"]);
+    if (type.name === "Boolean") {
+      return this.cast<any>(new QueryUnit(
+        type,
+        ["MAX(", this.getQueryValue(this.cast(unit, Number)), ")"],
+      ), Boolean);
+    }
+    else {
+      return new QueryUnit(type, ["MAX(", this.getQueryValue(unit), ")"]);
+    }
   }
 
   public min<T extends undefined | number | Number | string | String | DateOnly | DateTime | Time | boolean>(unit: TEntityValue<T>): QueryUnit<T> {
     const type = SdOrmUtils.getQueryValueType(unit);
     if (!type) throw new TypeError();
 
-    return new QueryUnit(type, ["MIN(", this.getQueryValue(unit), ")"]);
+    if (type.name === "Boolean") {
+      return this.cast<any>(new QueryUnit(
+        type,
+        ["MIN(", this.getQueryValue(this.cast(unit, Number)), ")"],
+      ), Boolean);
+    }
+    else {
+      return new QueryUnit(type, ["MIN(", this.getQueryValue(unit), ")"]);
+    }
   }
 
   public exists<T extends TQueryValue>(arg: TEntityValue<T>): QueryUnit<boolean> {
