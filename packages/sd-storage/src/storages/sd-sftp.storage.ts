@@ -10,7 +10,7 @@ export class SdSftpStorage implements ISdStorage {
       host: connectionConfig.host,
       port: connectionConfig.port,
       username: connectionConfig.user,
-      password: connectionConfig.pass
+      password: connectionConfig.pass,
     });
   }
 
@@ -34,7 +34,10 @@ export class SdSftpStorage implements ISdStorage {
     return await this._sftp!.get(filePath);
   }
 
-  public async putAsync(localPathOrBuffer: string | Buffer, storageFilePath: string): Promise<void> {
+  public async putAsync(
+    localPathOrBuffer: string | Buffer,
+    storageFilePath: string,
+  ): Promise<void> {
     if (typeof localPathOrBuffer === "string") {
       await this._sftp!.fastPut(localPathOrBuffer, storageFilePath);
     }

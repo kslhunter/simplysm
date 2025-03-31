@@ -150,13 +150,14 @@ export class SdCliProject {
       logger.warn("빌드하지 않고, 배포하는것은 상당히 위험합니다.");
       await this._waitSecMessageAsync("프로세스를 중지하려면, 'CTRL+C'를 누르세요.", 5);
     }
-
-    // GIT 사용중일 경우, 커밋되지 않은 수정사항이 있는지 확인
-    if (FsUtils.exists(path.resolve(process.cwd(), ".git"))) {
-      logger.debug("GIT 커밋여부 확인...");
-      const gitStatusResult = await SdProcess.spawnAsync("git status");
-      if (gitStatusResult.includes("Changes") || gitStatusResult.includes("Untracked")) {
-        throw new Error("커밋되지 않은 정보가 있습니다.\n" + gitStatusResult);
+    else {
+      // GIT 사용중일 경우, 커밋되지 않은 수정사항이 있는지 확인
+      if (FsUtils.exists(path.resolve(process.cwd(), ".git"))) {
+        logger.debug("GIT 커밋여부 확인...");
+        const gitStatusResult = await SdProcess.spawnAsync("git status");
+        if (gitStatusResult.includes("Changes") || gitStatusResult.includes("Untracked")) {
+          throw new Error("커밋되지 않은 정보가 있습니다.\n" + gitStatusResult);
+        }
       }
     }
 
@@ -173,12 +174,12 @@ export class SdCliProject {
       pkgPaths = pkgPaths.filter((pkgPath) => opt.pkgNames.includes(path.basename(pkgPath)));
     }
 
-    logger.debug("프로젝트 및 패키지 버전 설정...");
-    await this._upgradeVersionAsync(projNpmConf, allPkgPaths);
+    if (!opt.noBuild) {
+      logger.debug("프로젝트 및 패키지 버전 설정...");
+      await this._upgradeVersionAsync(projNpmConf, allPkgPaths);
 
-    // 빌드
-    try {
-      if (!opt.noBuild) {
+      // 빌드
+      try {
         logger.debug("빌드 프로세스 시작...");
         const multiBuildRunner = new SdMultiBuildRunner();
 
@@ -192,22 +193,22 @@ export class SdCliProject {
 
         this.#logging(messages.mapMany(), logger);
       }
-    }
-    catch (err) {
-      await SdProcess.spawnAsync("git checkout .");
-      throw err;
-    }
+      catch (err) {
+        await SdProcess.spawnAsync("git checkout .");
+        throw err;
+      }
 
-    // GIT 사용중일경우, 새 버전 커밋 및 TAG 생성
-    if (FsUtils.exists(path.resolve(process.cwd(), ".git"))) {
-      logger.debug("새 버전 커밋 및 TAG 생성...");
-      await SdProcess.spawnAsync("git add .");
-      await SdProcess.spawnAsync(`git commit -m "v${projNpmConf.version}"`);
-      await SdProcess.spawnAsync(`git tag -a "v${projNpmConf.version}" -m "v${projNpmConf.version}"`);
+      // GIT 사용중일경우, 새 버전 커밋 및 TAG 생성
+      if (FsUtils.exists(path.resolve(process.cwd(), ".git"))) {
+        logger.debug("새 버전 커밋 및 TAG 생성...");
+        await SdProcess.spawnAsync("git add .");
+        await SdProcess.spawnAsync(`git commit -m "v${projNpmConf.version}"`);
+        await SdProcess.spawnAsync(`git tag -a "v${projNpmConf.version}" -m "v${projNpmConf.version}"`);
 
-      logger.debug("새 버전 푸쉬...");
-      await SdProcess.spawnAsync("git push");
-      await SdProcess.spawnAsync("git push --tags");
+        logger.debug("새 버전 푸쉬...");
+        await SdProcess.spawnAsync("git push");
+        await SdProcess.spawnAsync("git push --tags");
+      }
     }
 
     logger.debug("배포 시작...");
@@ -279,20 +280,19 @@ export class SdCliProject {
         FsUtils.copy(filePath, targetPath);
       }
     }
-    else if (pkgPubConf?.type
-      === "ftp"
-      || pkgPubConf?.type
-      === "ftps"
-      || pkgPubConf?.type
-      === "sftp") {
-      const ftp = await SdStorage.connectAsync(pkgPubConf.type, {
+    else if (
+      pkgPubConf?.type === "ftp" ||
+      pkgPubConf?.type === "ftps" ||
+      pkgPubConf?.type === "sftp"
+    ) {
+      await SdStorage.connectAsync(pkgPubConf.type, {
         host: pkgPubConf.host,
         port: pkgPubConf.port,
         user: pkgPubConf.user,
         pass: pkgPubConf.pass,
+      }, async storage => {
+        await storage.uploadDirAsync(path.resolve(pkgPath, "dist"), pkgPubConf.path ?? "/");
       });
-      await ftp.uploadDirAsync(path.resolve(pkgPath, "dist"), pkgPubConf.path ?? "/");
-      await ftp.closeAsync();
     }
     else {
       throw new NeverEntryError();
