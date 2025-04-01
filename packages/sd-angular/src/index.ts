@@ -12,6 +12,7 @@ export * from "./controls/sd-anchor.control";
 export * from "./controls/sd-barcode.control";
 export * from "./controls/sd-busy-container.control";
 export * from "./controls/sd-button.control";
+export * from "./controls/sd-calendar.control";
 export * from "./controls/sd-card.control";
 export * from "./controls/sd-checkbox-group-item.control";
 export * from "./controls/sd-checkbox-group.control";

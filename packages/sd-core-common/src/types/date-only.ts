@@ -80,166 +80,152 @@ export class DateOnly {
     throw new ArgumentError({ str });
   }
 
-  /**
-   * `offsetWeek`요일을 기준으로 월의 `weekSeq`주차를 구하고,
-   * 해당 주차의 `startWeek`요일의 날짜를 가져오기
-   *
-   * @param weekSeq 가져올 주차 (1주차\~)
-   * @param offsetWeek 주차구분 기준 요일 (일\~토: 0\~6)
-   * @param startWeek 시작 요일 (일\~토: 0\~6)
-   */
-  getMonthFirstWeekStartDate(
-    // month: DateOnly,
-    weekSeq: number,
-    offsetWeek: number = 4,
-    startWeek: number = 1,
-  ): DateOnly {
-    // 이달 1일
-    const monthFirstDate = this.setDay(1);
-
-    // 이달 1일의 요일
-    const monthFirstDayWeek = monthFirstDate.week;
-
-    // 이달의 주차가 시작되는 날짜
-    const monthWeekNumStartDate = monthFirstDayWeek <= offsetWeek
-      ? monthFirstDate
-      : monthFirstDate.setDay(7 - monthFirstDayWeek + 1 + startWeek);
-    return monthWeekNumStartDate.addDays(7 * (weekSeq > 0 ? weekSeq - 1 : weekSeq));
-  }
 
   /**
-   * 날짜 `date`가 해당월 내의 몇주차인지 가져오기
+   * 기준 연도와 월을 주차 정보를 기반으로 반환
    *
-   * @param offsetWeek 주차구분 기준 요일 (일~토: 0~6)
-   * @param startWeek 시작 요일 (일~토: 0~6)
+   * 주의 기준 시작 요일(`weekStartDay`)와 특정 연도의 최소 첫 번째 주의 일수(`minDaysInFirstWeek`)를 참고하여,
+   * 현재 날짜가 속하는 기준의 연도와 월을 반환합니다.
    *
-   * @returns 주차
+   * 주차 계산 규칙:
+   * 1. 현재 주의 남은 날짜(`daysInWeek`)가 최소 첫 번째 주의 일수보다 적다면, 이전 주에 속합니다.
+   * 2. 만약 다음 달의 날짜가 포함되어 실제 남은 기간(`realDaysInWeek`)이 최소 일수보다 작다면, 다음 주에 속합니다.
+   * 3. 그 외의 경우, 해당 날짜는 이번 주에 속합니다.
+   *
+   * @param weekStartDay - 주 시작 요일 (0~6: 일~토)
+   * @param minDaysInFirstWeek - 첫 번째 주를 정의하는 최소 일수
+   * @returns `{ year: number; month: number }` 기준 연도와 월
    */
-  public getWeekSeqOfMonth(offsetWeek: number = 4, startWeek: number = 1): IWeekSeqOfMonth {
-    // 일: 0, 월: 1, 화: 2, 수: 3, 목: 4, 금: 5, 토: 6
+  getBaseYearMonthForWeekSeq(
+    weekStartDay: number,
+    minDaysInFirstWeek: number,
+  ) {
+    const dayOfWeek = (this.week + 7 - weekStartDay) % 7; // 주차시작요일 기준, 몇번째 일자인가?
+    const daysInWeek = 7 - dayOfWeek; // 주차내 해당일 및 그 이후의 일수 (다음달 포함)
 
-    // 이번달의 주차가 시작되는 날짜
-    const monthWeekNumStartDate = this.setDay(1)
-      .getMonthFirstWeekStartDate(1, offsetWeek, startWeek);
-
-    // 다음달의 주차가 시작되는 날짜
-    const nextMonthWeekNumStartDate = this.setDay(1).addMonths(1)
-      .getMonthFirstWeekStartDate(1, offsetWeek, startWeek);
-
-    // 이번달의 주차가 끝나는 날짜
-    const monthWeekNumEndDate = nextMonthWeekNumStartDate.day !== 1
-      ? this.addMonths(1).addDays(-1)
-      : nextMonthWeekNumStartDate.addDays(-nextMonthWeekNumStartDate.week - 1 + startWeek);
-
-    if (this.tick < monthWeekNumStartDate.tick) {
-      return this.setDay(1).addDays(-1).getWeekSeqOfMonth(offsetWeek, startWeek);
-    }
-    else if (this.tick > monthWeekNumEndDate.tick) {
-      return this.addMonths(1).setDay(1).getWeekSeqOfMonth(offsetWeek, startWeek);
+    if (daysInWeek < minDaysInFirstWeek) {
+      // 전주의 주차임
+      return { year: this.addDays(-7).year, month: this.addDays(-7).month };
     }
     else {
-      // 1주차의 첫날짜 (전달일 수 있음)
-      const firstWeekNumFirstDate = monthWeekNumStartDate.addDays(-monthWeekNumStartDate.week + 1);
+      const nextMonthDate = this.addMonths(1).setDay(1);
+      const remainedDays = (nextMonthDate.tick - this.tick) / (24 * 60 * 60 * 1000);
 
-      // 1주차 첫날짜에서 지난 날수
-      const spanDayFromWeekStartDate = Math.floor(
-        ((this.tick - firstWeekNumFirstDate.tick) / (24 * 60 * 60 * 1000)),
-      );
-
-      // 1주차 첫날짜에서 지난 주차수
-      const spanWeekFromWeekStartDate = Math.floor(spanDayFromWeekStartDate / 7);
-      return {
-        year: this.year,
-        month: this.month,
-        weekSeq: spanWeekFromWeekStartDate + 1,
-      };
+      const realDaysInWeek = Math.min(daysInWeek, remainedDays); // 주차내 해당일 이후의 일수 (다음달 미포함)
+      if (realDaysInWeek < minDaysInFirstWeek) {
+        // 다음주의 주차임
+        return { year: this.addDays(7).year, month: this.addDays(7).month };
+      }
+      else {
+        // 이번주의 주차임
+        return { year: this.year, month: this.month };
+      }
     }
   }
 
-
+  
   /**
-   * 내부 공통 함수: 특정 연도의 첫 주차 시작일 계산
+   * 주차 정보를 기반으로 해당 주의 시작 날짜 계산
+   *
+   * 주차가 시작하는 요일(`weekStartDay`)과 특정 연도의 최소 첫 번째 주 기준(`minDaysInFirstWeek`)에 따라,
+   * 현재 날짜로부터 해당 주의 시작 날짜를 반환합니다.
+   *
+   * @param weekStartDay - 주 시작 요일 (0~6: 일~토)
+   * @param minDaysInFirstWeek - 첫 번째 주를 정의하는 최소 일수
+   * @returns `{ year: number; month: number }` 주차 기준 연도와 월 
    */
-  static getFirstWeekStartDate(
-    year: number,
+  getWeekSeqStartDate(
     weekStartDay: number,
-    anchorDay: number,
-    minDaysInFirstWeek: number
-  ): Date {
-    const jan1 = new Date(year, 0, 1);
-    jan1.setHours(0, 0, 0, 0);
-    const jan1Day = jan1.getDay();
+    minDaysInFirstWeek: number,
+  ) {
+    const dayOfWeek = (this.week + 7 - weekStartDay) % 7; // 주차시작요일 기준, 몇번째 일자인가?
+    const daysInFirstWeek = 7 - dayOfWeek; // 주차내 해당일 이후의 일수 (다음달 포함)
 
-    const jan1WeekStart = new Date(jan1);
-    jan1WeekStart.setDate(jan1.getDate() - ((jan1Day + 7 - weekStartDay) % 7));
-
-    const anchorOffset = (anchorDay + 7 - weekStartDay) % 7;
-    const anchorDate = new Date(jan1WeekStart);
-    anchorDate.setDate(jan1WeekStart.getDate() + anchorOffset);
-
-    const daysInFirstWeek = 7 - ((jan1.getDay() + 7 - weekStartDay) % 7);
     if (daysInFirstWeek < minDaysInFirstWeek) {
-      jan1WeekStart.setDate(jan1WeekStart.getDate() + 7);
+      return this.addDays(-dayOfWeek + 7);
     }
-
-    return jan1WeekStart;
+    else {
+      return this.addDays(-dayOfWeek);
+    }
   }
 
   /**
-   * 날짜를 연도/주차로 변환
+   * 연도 및 주차 순서 정보를 반환
+   *
+   * @param weekStartDay - 각 주의 시작 요일 (0~6: 일~토)
+   * @param minDaysInFirstWeek - 첫 번째 주로 간주되기 위한 최소 일수
+   * @returns 해당 날짜의 연도 및 주차 정보를 담은 객체:
+   *    - `year`: 해당 날짜가 속하는 연도
+   *    - `weekSeq`: 연도 기준 주차 순서 (1부터 시작)
    */
   getWeekSeqOfYear(
-    weekStartDay = 1,
-    anchorDay = 4,
-    minDaysInFirstWeek = 4
+    weekStartDay: number,
+    minDaysInFirstWeek: number,
   ): { year: number; weekSeq: number } {
-    const date = new Date(this.tick);
-    date.setHours(0, 0, 0, 0);
+    const base = this.getBaseYearMonthForWeekSeq(weekStartDay, minDaysInFirstWeek);
 
-    const dayOfWeek = (date.getDay() + 7 - weekStartDay) % 7;
-    const weekStart = new Date(date);
-    weekStart.setDate(date.getDate() - dayOfWeek);
-
-    const anchorOffset = (anchorDay + 7 - weekStartDay) % 7;
-    const anchorDate = new Date(weekStart);
-    anchorDate.setDate(weekStart.getDate() + anchorOffset);
-
-    const weekYear = anchorDate.getFullYear();
-    const firstWeekStart = DateOnly.getFirstWeekStartDate(
-      weekYear,
+    const firstWeekStart = new DateOnly(base.year, 1, 1).getWeekSeqStartDate(
       weekStartDay,
-      anchorDay,
-      minDaysInFirstWeek
+      minDaysInFirstWeek,
     );
 
-    const diffInDays = Math.floor(
-      (weekStart.getTime() - firstWeekStart.getTime()) / 86400000
-    );
-    const weekNumber = 1 + Math.floor(diffInDays / 7);
-
-    return { year: weekYear, weekSeq: weekNumber };
+    const diffDays = (this.tick - firstWeekStart.tick) / (24 * 60 * 60 * 1000);
+    return {
+      year: base.year,
+      weekSeq: Math.floor(diffDays / 7) + 1,
+    };
   }
 
   /**
-   * 연도/주차 → 주 시작일(DateOnly)
+   * 해당 날짜의 연도 및 주차(weekSeq) 정보를 반환
+   *
+   * @param weekStartDay - 주가 시작되는 요일 (0~6: 일~토)
+   * @param minDaysInFirstWeek - 첫 번째 주로 간주되기 위한 최소 일수
+   * @returns 연도 및 주차 순서를 포함한 객체:
+   *    - `year`: 연도
+   *    - `weekSeq`: 해당 연도 기준 주차 순서 (1부터 시작)
    */
-  static getWeekStartDateFromYearWeek(
-    year: number,
-    weekSeq: number,
-    weekStartDay = 1,
-    anchorDay = 4,
-    minDaysInFirstWeek = 4
-  ): DateOnly {
-    const firstWeekStart = DateOnly.getFirstWeekStartDate(
-      year,
+  getWeekSeqOfMonth(
+    weekStartDay: number,
+    minDaysInFirstWeek: number,
+  ): { year: number; month: number; weekSeq: number } {
+    const base = this.getBaseYearMonthForWeekSeq(weekStartDay, minDaysInFirstWeek);
+
+    const firstWeekStart = new DateOnly(base.year, base.month, 1).getWeekSeqStartDate(
       weekStartDay,
-      anchorDay,
-      minDaysInFirstWeek
+      minDaysInFirstWeek,
     );
 
-    const result = new Date(firstWeekStart);
-    result.setDate(firstWeekStart.getDate() + (weekSeq - 1) * 7);
-    return new DateOnly(result);
+    const diffDays = (this.tick - firstWeekStart.tick) / (24 * 60 * 60 * 1000);
+    return {
+      year: base.year,
+      month: base.month,
+      weekSeq: Math.floor(diffDays / 7) + 1,
+    };
+  }
+
+
+  /**
+   * 주차 정보를 기반으로 해당 주의 시작 날짜 가져오기
+   *
+   * @param arg - 대상 연도, 선택적 월, 주차 순서를 포함한 객체:
+   *    - `year`: 대상 연도.
+   *    - `month`: (선택 사항) 대상 월. 지정하지 않으면 연도 기준으로 계산됩니다.
+   *    - `weekSeq`: 1부터 시작하는 주차 순서.
+   *
+   * @param weekStartDay - 한 주가 시작되는 요일을 지정합니다. (달력 표시상 첫 요일) (0~6: 일~토)   *
+   * @param minDaysInFirstWeek - 첫 번째 주로 간주되기 위한 최소 일수 (주에 포함되어있어야할 일수)
+   * @returns 계산된 주차의 시작 날짜를 나타내는 `DateOnly` 객체.
+   */
+  static getDateByYearWeekSeq(
+    arg: { year: number, month?: number, weekSeq: number },
+    weekStartDay: number,
+    minDaysInFirstWeek: number,
+  ) {
+    return new DateOnly(arg.year, arg.month ?? 1, (arg.weekSeq - 1) * 7).getWeekSeqStartDate(
+      weekStartDay,
+      minDaysInFirstWeek,
+    );
   }
 
   /**
@@ -379,10 +365,4 @@ export class DateOnly {
   public toString(): string {
     return this.toFormatString("yyyy-MM-dd");
   }
-}
-
-interface IWeekSeqOfMonth {
-  year: number;
-  month: number;
-  weekSeq: number;
 }
