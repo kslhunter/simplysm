@@ -656,6 +656,7 @@ export class ObjectUtils {
     const splits = this._getChainSplits(chain);
     let curr = obj;
     for (const splitItem of splits.slice(0, -1)) {
+      curr[splitItem] = curr[splitItem] ?? {};
       curr = curr[splitItem];
     }
 
