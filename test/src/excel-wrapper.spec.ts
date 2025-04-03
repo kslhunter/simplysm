@@ -3,7 +3,7 @@ import { DateOnly } from "@simplysm/sd-core-common";
 import { FsUtils } from "@simplysm/sd-core-node";
 import * as path from "node:path";
 
-describe("sd-excel-wrapper", () => {
+describe("SdExcelWrapper", () => {
   it("read/write", async () => {
     const excelWrapper = new SdExcelWrapper<{
       id: number;

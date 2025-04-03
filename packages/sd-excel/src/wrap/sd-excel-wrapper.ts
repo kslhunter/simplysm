@@ -53,8 +53,7 @@ export class SdExcelWrapper<T extends Record<string, any>> {
           fieldConf[key]!.notnull
         ) {
           ObjectUtils.setChainValue(
-            obj,
-            key,
+            obj, key,
             item[fieldConf[key]!.displayName] ?? false,
           );
         }
@@ -65,8 +64,7 @@ export class SdExcelWrapper<T extends Record<string, any>> {
           typeof item[fieldConf[key]!.displayName] !== "string"
         ) {
           ObjectUtils.setChainValue(
-            obj,
-            key,
+            obj, key,
             item[fieldConf[key]!.displayName]?.toString(),
           );
         }
@@ -77,8 +75,7 @@ export class SdExcelWrapper<T extends Record<string, any>> {
           typeof item[fieldConf[key]!.displayName] !== "number"
         ) {
           ObjectUtils.setChainValue(
-            obj,
-            key,
+            obj, key,
             NumberUtils.parseInt(item[fieldConf[key]!.displayName]),
           );
         }
@@ -89,8 +86,7 @@ export class SdExcelWrapper<T extends Record<string, any>> {
           !(item[fieldConf[key]!.displayName] instanceof DateOnly)
         ) {
           ObjectUtils.setChainValue(
-            obj,
-            key,
+            obj, key,
             item[fieldConf[key]!.displayName] == null ? undefined
               : DateOnly.parse(item[fieldConf[key]!.displayName]!.toString()),
           );
@@ -102,16 +98,14 @@ export class SdExcelWrapper<T extends Record<string, any>> {
           !(item[fieldConf[key]!.displayName] instanceof DateTime)
         ) {
           ObjectUtils.setChainValue(
-            obj,
-            key,
+            obj, key,
             item[fieldConf[key]!.displayName] == null ? undefined
               : DateTime.parse(item[fieldConf[key]!.displayName]!.toString()),
           );
         }
         else {
           ObjectUtils.setChainValue(
-            obj,
-            key,
+            obj, key,
             item[fieldConf[key]!.displayName],
           );
         }

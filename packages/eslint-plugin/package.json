@@ -12,13 +12,13 @@
   "type": "module",
   "main": "src/index.js",
   "dependencies": {
-    "@eslint/compat": "^1.2.7",
-    "@typescript-eslint/utils": "^8.28.0",
+    "@eslint/compat": "^1.2.8",
+    "@typescript-eslint/utils": "^8.29.0",
     "angular-eslint": "^19.3.0",
     "eslint": "^9.23.0",
     "eslint-plugin-import": "^2.31.0",
     "globals": "^16.0.0",
     "typescript": "~5.7.3",
-    "typescript-eslint": "^8.28.0"
+    "typescript-eslint": "^8.29.0"
   }
 }

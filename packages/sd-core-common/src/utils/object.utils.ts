@@ -491,7 +491,7 @@ export class ObjectUtils {
   public static validateObject<T>(obj: T, def: TValidateObjectDef<T>): TValidateObjectResult<T> {
     const result: TValidateObjectResult<T> = {};
     for (const defKey of Object.keys(def)) {
-      const validateResult = ObjectUtils.validate(obj[defKey], def[defKey]);
+      const validateResult = ObjectUtils.validate(this.getChainValue(obj, defKey), def[defKey]);
       if (validateResult !== undefined) {
         result[defKey] = validateResult;
       }
