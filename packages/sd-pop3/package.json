@@ -1,18 +1,22 @@
 {
-  "name": "@simplysm/sd-core-browser",
+  "name": "@simplysm/sd-pop3",
   "version": "12.7.27",
-  "description": "심플리즘 패키지 - 코어 모듈 (browser)",
+  "description": "심플리즘 패키지 - POP3 클라이언트",
   "author": "김석래",
   "repository": {
     "type": "git",
     "url": "https://github.com/kslhunter/simplysm.git",
-    "directory": "packages/sd-core-browser"
+    "directory": "packages/sd-pop3"
   },
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@simplysm/sd-core-common": "12.7.27"
+    "@simplysm/sd-core-common": "12.7.27",
+    "mailparser": "^3.7.2"
+  },
+  "devDependencies": {
+    "@types/mailparser": "^3.4.5"
   }
 }

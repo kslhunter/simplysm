@@ -160,8 +160,10 @@ export class SdAppStructureProvider<T extends string> {
       }
       else {
         const code = menu.codeChain.join(".");
-        if ((!menu.hasPerms || this.#permRecord()![code + ".use"] === true)
-          && this.#isModulesEnabled(menu.modules)) {
+        if (
+          (!menu.hasPerms || this.#permRecord()![code + ".use"] === true)
+          && this.#isModulesEnabled(menu.modules)
+        ) {
           result.push(menu);
         }
       }
