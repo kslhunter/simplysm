@@ -139,6 +139,9 @@ export class SdExcelCell {
     else if (cellType === "str") {
       return cellVal;
     }
+    else if (cellType === "inlineStr") {
+      return cellVal;
+    }
     else if (cellType === "b") {
       return cellVal === "1";
     }

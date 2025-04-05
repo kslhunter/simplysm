@@ -36,7 +36,8 @@ export class MysqlDbConn extends EventEmitter implements IDbConn {
       user: this.config.username,
       password: this.config.password,
       database: this.config.username === "root" ? undefined : this.config.database,
-      multipleStatements: true
+      multipleStatements: true,
+      charset: "utf8mb4"
     });
 
     conn.on("end", () => {

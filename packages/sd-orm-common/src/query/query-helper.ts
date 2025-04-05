@@ -915,8 +915,13 @@ export class QueryHelper {
             === 0) ? "" : (", "
             + currType.digits)) + ")";
         case "STRING":
-          if (this._dialect === "mysql" && currType.length === "MAX") {
-            return "LONGTEXT";
+          if (this._dialect === "mysql") {
+            if (currType.length === "MAX") {
+              return "LONGTEXT";
+            }
+            else {
+              return "VARCHAR(" + (currType.length ?? "255") + ")";
+            }
           }
           else {
             return "NVARCHAR(" + (currType.length ?? "255") + ")";
@@ -944,7 +949,12 @@ export class QueryHelper {
       const currType = type as Type<TQueryValue> | undefined;
       switch (currType) {
         case String:
-          return "NVARCHAR(255)";
+          if (this._dialect === "mysql") {
+            return "VARCHAR(255)";
+          }
+          else {
+            return "NVARCHAR(255)";
+          }
         case Number:
           return this._dialect === "sqlite" ? "INTEGER" : "BIGINT";
         case Boolean:

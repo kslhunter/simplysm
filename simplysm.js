@@ -51,6 +51,11 @@ export default () => ({
       publish: "npm",
       polyfills: ["@simplysm/sd-core-common"],
     },
+    "sd-orm-common-ext": {
+      type: "library",
+      publish: "npm",
+      polyfills: ["@simplysm/sd-core-common"],
+    },
     "sd-orm-node": {
       type: "library",
       publish: "npm",

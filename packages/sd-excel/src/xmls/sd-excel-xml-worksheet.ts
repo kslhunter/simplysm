@@ -81,7 +81,9 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
   }
 
   public getCellVal(addr: string): string | undefined {
-    const val = this._getCellData(addr)?.v?.[0];
+    const cellData = this._getCellData(addr);
+    const val = cellData?.v?.[0]
+      ?? cellData?.is?.[0]?.t?.[0]?._;
     return typeof val === "string" ? val : undefined;
   }
 

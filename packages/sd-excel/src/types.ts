@@ -111,6 +111,11 @@ export interface ISdExcelCellData {
   };
   "v"?: [string];
   "f"?: [string];
+  "is"?: {
+    t?: {
+      "_"?: string
+    }[]
+  }[];
 }
 
 export interface ISdExcelXmlSharedStringData {

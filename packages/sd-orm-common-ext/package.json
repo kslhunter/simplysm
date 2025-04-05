@@ -1,12 +1,12 @@
 {
-  "name": "@simplysm/sd-excel",
+  "name": "@simplysm/sd-orm-common-ext",
   "version": "12.7.28",
-  "description": "심플리즘 패키지 - 엑셀 모듈",
+  "description": "심플리즘 패키지 - ORM 확장 모듈 (common)",
   "author": "김석래",
   "repository": {
     "type": "git",
     "url": "https://github.com/kslhunter/simplysm.git",
-    "directory": "packages/sd-excel"
+    "directory": "packages/sd-orm-common-ext"
   },
   "license": "MIT",
   "type": "module",
@@ -14,11 +14,6 @@
   "types": "./dist/index.d.ts",
   "dependencies": {
     "@simplysm/sd-core-common": "12.7.28",
-    "jszip": "^3.10.1",
-    "xlsx": "^0.18.5",
-    "xml2js": "^0.6.2"
-  },
-  "devDependencies": {
-    "@types/xml2js": "^0.4.14"
+    "@simplysm/sd-orm-common": "12.7.28"
   }
 }

@@ -1,6 +1,6 @@
 import * as tls from "node:tls";
 import { simpleParser } from "mailparser";
-import { DateOnly, NumberUtils } from "@simplysm/sd-core-common";
+import { DateTime, NumberUtils } from "@simplysm/sd-core-common";
 
 export class SdPop3Client {
   static async connectAsync<R>(
@@ -88,8 +88,8 @@ export class SdPop3Client {
     const res = await this._fns.sendAsync("STAT");
 
     return {
-      lastId: NumberUtils.parseInt(res.split(" ")[1]),
-      totalBytes: NumberUtils.parseInt(res.split(" ")[2]),
+      lastId: NumberUtils.parseInt(res.split(" ")[1])!,
+      totalBytes: NumberUtils.parseInt(res.split(" ")[2])!,
     };
   }
 
@@ -97,8 +97,8 @@ export class SdPop3Client {
     const res = await this._fns.sendAsync("LIST");
 
     return res.split("\r\n").slice(1, -1).map(item => ({
-      id: NumberUtils.parseInt(item.split(" ")[0]),
-      bytes: NumberUtils.parseInt(item.split(" ")[1]),
+      id: NumberUtils.parseInt(item.split(" ")[0])!,
+      bytes: NumberUtils.parseInt(item.split(" ")[1])!,
     }));
   }
 
@@ -107,7 +107,9 @@ export class SdPop3Client {
     const parsed = await simpleParser(res);
     return {
       subject: parsed.subject,
-      date: parsed.date != null ? new DateOnly(parsed.date) : undefined,
+      dateTime: parsed.date != null
+        ? new DateTime(parsed.date)
+        : undefined,
       to: parsed.to != null && "value" in parsed.to
         ? parsed.to.value.map(item => item.address).filterExists()
         : parsed.to?.mapMany(item => item.value.map(item1 => item1.address).filterExists()) ?? [],
@@ -116,6 +118,7 @@ export class SdPop3Client {
         ? parsed.cc.value.map(item => item.address).filterExists()
         : parsed.cc?.mapMany(item => item.value.map(item1 => item1.address).filterExists()) ?? [],
       replyTo: parsed.replyTo?.value.map(item => item.address).filterExists() ?? [],
+      hasAttachments: parsed.headers.get("content-type")?.["value"] === "multipart/mixed",
     };
   }
 
@@ -133,7 +136,9 @@ export class SdPop3Client {
         })),
       html: parsed.html === false ? undefined : parsed.html,
       subject: parsed.subject,
-      date: parsed.date != null ? new DateOnly(parsed.date) : undefined,
+      dateTime: parsed.date != null
+        ? new DateTime(parsed.date)
+        : undefined,
       to: parsed.to != null && "value" in parsed.to
         ? parsed.to.value.map(item => item.address).filterExists()
         : parsed.to?.mapMany(item => item.value.map(item1 => item1.address).filterExists()) ?? [],
@@ -142,17 +147,19 @@ export class SdPop3Client {
         ? parsed.cc.value.map(item => item.address).filterExists()
         : parsed.cc?.mapMany(item => item.value.map(item1 => item1.address).filterExists()) ?? [],
       replyTo: parsed.replyTo?.value.map(item => item.address).filterExists() ?? [],
+      hasAttachments: parsed.headers.get("content-type")?.["value"] === "multipart/mixed",
     };
   }
 }
 
 interface IMailTopInfo {
   subject?: string;
-  date?: DateOnly;
+  dateTime?: DateTime;
   to: string[];
   from: string[];
   cc: string[];
   replyTo: string[];
+  hasAttachments: boolean;
 }
 
 interface IMailInfo extends IMailTopInfo {

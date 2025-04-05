@@ -1,13 +1,7 @@
 import { QueryBuilder } from "./query/query-builder";
 import { IDbContextExecutor, IQueryResultParseOption } from "./db-context-executor.types";
 import { QueryHelper } from "./query/query-helper";
-import {
-  DateTime,
-  NeverEntryError,
-  ObjectUtils,
-  SdError,
-  Type,
-} from "@simplysm/sd-core-common";
+import { DateTime, NeverEntryError, ObjectUtils, SdError, Type } from "@simplysm/sd-core-common";
 import { Queryable } from "./query/queryable";
 import { SystemMigration } from "./models/system-migration";
 import { DbDefUtils } from "./utils/db-def.utils";
@@ -27,10 +21,10 @@ export abstract class DbContext {
 
   abstract get migrations(): Type<IDbMigration>[];
 
-  readonly qb = new QueryBuilder(this.opt.dialect);
-  readonly qh = new QueryHelper(this.opt.dialect);
+  qb = new QueryBuilder(this.opt.dialect);
+  qh = new QueryHelper(this.opt.dialect);
 
-  readonly systemMigration = new Queryable(this, SystemMigration);
+  systemMigration = new Queryable(this, SystemMigration);
 
   getTableDefinitions(): ITableDef[] {
     return Object.values(this)
@@ -41,8 +35,8 @@ export abstract class DbContext {
 
   // noinspection TypeScriptAbstractClassConstructorCanBeMadeProtected
   constructor(
-    private readonly _executor: IDbContextExecutor | undefined,
-    readonly opt: TDbContextOption,
+    private _executor: IDbContextExecutor | undefined,
+    public opt: TDbContextOption,
   ) {
   }
 
@@ -539,7 +533,7 @@ export abstract class DbContext {
         type: "createTable",
         table: this.getTableNameDef(tableDef),
         columns: tableDef.columns.map((col) => {
-          try{
+          try {
             return ObjectUtils.clearUndefined({
               name: col.name,
               dataType: this.qh.type(col.dataType ?? col.typeFwd()),
@@ -547,7 +541,7 @@ export abstract class DbContext {
               nullable: col.nullable,
             });
           }
-          catch(err){
+          catch (err) {
             throw new SdError(err, `컬럼 정의 변환 오류: ${JSON.stringify(col)}`.trim());
           }
         }),
@@ -804,7 +798,6 @@ export abstract class DbContext {
       index: indexName,
     };
   }
-
 
   getTableNameDef(tableDef: ITableDef): IQueryTableNameDef {
     return {
