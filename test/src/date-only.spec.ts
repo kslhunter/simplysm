@@ -95,23 +95,23 @@ describe("DateOnly", () => {
 
   it("특정일자가 몇년도에 있는 주차인지 알아보기", () => {
     assert.deepEqual(
-      new DateOnly(2024, 12, 29).getBaseYearMonthForWeekSeq(0, 4),
+      new DateOnly(2024, 12, 29).getBaseYearMonthSeqForWeekSeq(0, 4),
       { year: 2025, month: 1 },
     );
     assert.deepEqual(
-      new DateOnly(2025, 1, 8).getBaseYearMonthForWeekSeq(0, 4),
+      new DateOnly(2025, 1, 8).getBaseYearMonthSeqForWeekSeq(0, 4),
       { year: 2025, month: 1 },
     );
     assert.deepEqual(
-      new DateOnly(2025, 1, 11).getBaseYearMonthForWeekSeq(0, 4),
+      new DateOnly(2025, 1, 11).getBaseYearMonthSeqForWeekSeq(0, 4),
       { year: 2025, month: 1 },
     );
     assert.deepEqual(
-      new DateOnly(2025, 12, 28).getBaseYearMonthForWeekSeq(0, 4),
+      new DateOnly(2025, 12, 28).getBaseYearMonthSeqForWeekSeq(0, 4),
       { year: 2025, month: 12 },
     );
     assert.deepEqual(
-      new DateOnly(2026, 1, 1).getBaseYearMonthForWeekSeq(0, 4),
+      new DateOnly(2026, 1, 1).getBaseYearMonthSeqForWeekSeq(0, 4),
       { year: 2025, month: 12 },
     );
   });
@@ -180,6 +180,14 @@ describe("DateOnly", () => {
     assert.deepEqual(
       DateOnly.getDateByYearWeekSeq({ year: 2025, month: 2, weekSeq: 2 }, 0, 4),
       new DateOnly(2025, 2, 9),
+    );
+    assert.deepEqual(
+      DateOnly.getDateByYearWeekSeq({ year: 2025, month: 8, weekSeq: 1 }, 0, 4),
+      new DateOnly(2025, 8, 3),
+    );
+    assert.deepEqual(
+      DateOnly.getDateByYearWeekSeq({ year: 2025, month: 8, weekSeq: 1 }, 1, 4),
+      new DateOnly(2025, 8, 4),
     );
   });
 });

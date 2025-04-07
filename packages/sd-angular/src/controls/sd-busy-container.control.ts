@@ -72,12 +72,12 @@ import { transformBoolean, transformNullableBoolean } from "../utils/type-tramsf
           visibility: hidden;
           pointer-events: none;
 
-          //backdrop-filter: none;
-          //transition: backdrop-filter calc(var(--animation-duration) * 10);
+          backdrop-filter: none;
+          transition: backdrop-filter calc(var(--animation-duration) * 10);
           
           //background: rgba(255, 255, 255, 0.1);
-          opacity: 0;
-          transition: opacity calc(var(--animation-duration) * 2);
+          //opacity: 0;
+          //transition: opacity calc(var(--animation-duration) * 2);
           
           transition-timing-function: linear;
 
@@ -113,14 +113,14 @@ import { transformBoolean, transformNullableBoolean } from "../utils/type-tramsf
             pointer-events: auto;
 
             opacity: 1;
-            //backdrop-filter: blur(2px);
+            backdrop-filter: blur(2px);
           }
         }
 
         &[sd-no-fade="true"] {
           > ._screen {
             //background: rgba(255, 255, 255, 0);
-            //backdrop-filter: none !important;
+            backdrop-filter: none !important;
           }
         }
 

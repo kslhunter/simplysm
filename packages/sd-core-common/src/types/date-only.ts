@@ -96,16 +96,16 @@ export class DateOnly {
    * @param minDaysInFirstWeek - 첫 번째 주를 정의하는 최소 일수
    * @returns `{ year: number; month: number }` 기준 연도와 월
    */
-  getBaseYearMonthForWeekSeq(
-    weekStartDay: number,
-    minDaysInFirstWeek: number,
+  getBaseYearMonthSeqForWeekSeq(
+    weekStartDay: number = 1,
+    minDaysInFirstWeek: number = 4,
   ) {
     const dayOfWeek = (this.week + 7 - weekStartDay) % 7; // 주차시작요일 기준, 몇번째 일자인가?
     const daysInWeek = 7 - dayOfWeek; // 주차내 해당일 및 그 이후의 일수 (다음달 포함)
 
     if (daysInWeek < minDaysInFirstWeek) {
       // 전주의 주차임
-      return { year: this.addDays(-7).year, month: this.addDays(-7).month };
+      return { year: this.addDays(-7).year, monthSeq: this.addDays(-7).month };
     }
     else {
       const nextMonthDate = this.addMonths(1).setDay(1);
@@ -114,11 +114,11 @@ export class DateOnly {
       const realDaysInWeek = Math.min(daysInWeek, remainedDays); // 주차내 해당일 이후의 일수 (다음달 미포함)
       if (realDaysInWeek < minDaysInFirstWeek) {
         // 다음주의 주차임
-        return { year: this.addDays(7).year, month: this.addDays(7).month };
+        return { year: this.addDays(7).year, monthSeq: this.addDays(7).month };
       }
       else {
         // 이번주의 주차임
-        return { year: this.year, month: this.month };
+        return { year: this.year, monthSeq: this.month };
       }
     }
   }
@@ -135,8 +135,8 @@ export class DateOnly {
    * @returns `{ year: number; month: number }` 주차 기준 연도와 월 
    */
   getWeekSeqStartDate(
-    weekStartDay: number,
-    minDaysInFirstWeek: number,
+    weekStartDay: number = 1,
+    minDaysInFirstWeek: number = 4,
   ) {
     const dayOfWeek = (this.week + 7 - weekStartDay) % 7; // 주차시작요일 기준, 몇번째 일자인가?
     const daysInFirstWeek = 7 - dayOfWeek; // 주차내 해당일 이후의 일수 (다음달 포함)
@@ -159,10 +159,10 @@ export class DateOnly {
    *    - `weekSeq`: 연도 기준 주차 순서 (1부터 시작)
    */
   getWeekSeqOfYear(
-    weekStartDay: number,
-    minDaysInFirstWeek: number,
+    weekStartDay: number = 1,
+    minDaysInFirstWeek: number = 4,
   ): { year: number; weekSeq: number } {
-    const base = this.getBaseYearMonthForWeekSeq(weekStartDay, minDaysInFirstWeek);
+    const base = this.getBaseYearMonthSeqForWeekSeq(weekStartDay, minDaysInFirstWeek);
 
     const firstWeekStart = new DateOnly(base.year, 1, 1).getWeekSeqStartDate(
       weekStartDay,
@@ -186,12 +186,12 @@ export class DateOnly {
    *    - `weekSeq`: 해당 연도 기준 주차 순서 (1부터 시작)
    */
   getWeekSeqOfMonth(
-    weekStartDay: number,
-    minDaysInFirstWeek: number,
-  ): { year: number; month: number; weekSeq: number } {
-    const base = this.getBaseYearMonthForWeekSeq(weekStartDay, minDaysInFirstWeek);
+    weekStartDay: number = 1,
+    minDaysInFirstWeek: number = 4,
+  ): { year: number; monthSeq: number; weekSeq: number } {
+    const base = this.getBaseYearMonthSeqForWeekSeq(weekStartDay, minDaysInFirstWeek);
 
-    const firstWeekStart = new DateOnly(base.year, base.month, 1).getWeekSeqStartDate(
+    const firstWeekStart = new DateOnly(base.year, base.monthSeq, 1).getWeekSeqStartDate(
       weekStartDay,
       minDaysInFirstWeek,
     );
@@ -199,7 +199,7 @@ export class DateOnly {
     const diffDays = (this.tick - firstWeekStart.tick) / (24 * 60 * 60 * 1000);
     return {
       year: base.year,
-      month: base.month,
+      monthSeq: base.monthSeq,
       weekSeq: Math.floor(diffDays / 7) + 1,
     };
   }
@@ -219,10 +219,10 @@ export class DateOnly {
    */
   static getDateByYearWeekSeq(
     arg: { year: number, month?: number, weekSeq: number },
-    weekStartDay: number,
-    minDaysInFirstWeek: number,
+    weekStartDay: number = 1,
+    minDaysInFirstWeek: number = 4,
   ) {
-    return new DateOnly(arg.year, arg.month ?? 1, (arg.weekSeq - 1) * 7).getWeekSeqStartDate(
+    return new DateOnly(arg.year, arg.month ?? 1, (arg.weekSeq - 1) * 7 + 1).getWeekSeqStartDate(
       weekStartDay,
       minDaysInFirstWeek,
     );

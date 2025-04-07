@@ -11,6 +11,9 @@ export class User {
   @Column({ description: "이름" })
   name!: string;
 
+  @Column({ description: "이메일", nullable: true })
+  email?: string;
+
   @Index()
   @Column({ description: "로그인아이디", nullable: true })
   loginId?: string;

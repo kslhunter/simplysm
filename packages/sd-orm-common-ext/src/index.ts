@@ -1,5 +1,5 @@
 import "@simplysm/sd-core-common";
-import "./extensions/db-context.extension";
+export * from "./extensions/db-context-ext";
 export * from "./extensions/queryable.extensions";
 export * from "./models/authentication";
 export * from "./models/system-data-log";

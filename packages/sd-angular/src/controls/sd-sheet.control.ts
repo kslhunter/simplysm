@@ -836,12 +836,19 @@ export class SdSheetControl<T> {
   orderedItems = $computed(() => {
     let orderedItems = [...this.items()];
     if (this.pageItemCount() != null && this.pageItemCount() !== 0) {
-      for (const orderingItem of this.ordering().reverse()) {
+      for (const orderingItem of [...this.ordering()].reverse()) {
         if (orderingItem.desc) {
-          orderedItems = orderedItems.orderByDesc((item) => item[orderingItem.key]);
+          orderedItems = orderedItems.orderByDesc((item) => ObjectUtils.getChainValue(item, orderingItem.key));
         }
         else {
-          orderedItems = orderedItems.orderBy((item) => item[orderingItem.key]);
+          orderedItems = orderedItems.orderBy((item) => {
+            console.log(
+              item,
+              orderingItem.key,
+              ObjectUtils.getChainValue(item, orderingItem.key)
+            );
+            return ObjectUtils.getChainValue(item, orderingItem.key);
+          });
         }
       }
     }

@@ -8,6 +8,7 @@ export * from "./pkg-builders/client/sd-client.build-runner";
 export * from "./pkg-builders/client/sd-ng.bundler-context";
 export * from "./pkg-builders/client/sd-ng.bundler";
 export * from "./pkg-builders/client/sd-ng.plugin-creator";
+export * from "./pkg-builders/lib/sd-cli-db-context.file-generator";
 export * from "./pkg-builders/lib/sd-cli-index.file-generator";
 export * from "./pkg-builders/lib/sd-js-lib.build-runner";
 export * from "./pkg-builders/lib/sd-ts-lib.build-runner";

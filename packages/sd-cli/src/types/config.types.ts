@@ -14,6 +14,7 @@ export interface ISdLibPackageConfig {
   publish?: "npm";
   polyfills?: string[];
   noGenIndex?: boolean;
+  dbContext?: string;
 }
 
 export interface ISdServerPackageConfig {

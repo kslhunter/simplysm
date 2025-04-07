@@ -362,9 +362,9 @@ export class QueryHelper {
     }
   }
 
-  public dateAdd<T extends DateTime | DateOnly | Time>(
+  public dateAdd<T extends DateTime | DateOnly | Time | undefined>(
     separator: TDbDateSeparator,
-    from: TEntityValue<T | undefined>,
+    from: TEntityValue<T>,
     value: TEntityValue<number>,
   ): QueryUnit<T> {
     const type = SdOrmUtils.getQueryValueType(from);
@@ -445,6 +445,10 @@ export class QueryHelper {
 
   public month<T extends DateTime | DateOnly>(value: TEntityValue<T>): QueryUnit<number> {
     return new QueryUnit<number>(Number, ["MONTH(", this.getQueryValue(value), ")"]);
+  }
+
+  public day<T extends DateTime | DateOnly>(value: TEntityValue<T>): QueryUnit<number> {
+    return new QueryUnit<number>(Number, ["DAY(", this.getQueryValue(value), ")"]);
   }
 
   public ifNull<S extends TQueryValue, T extends TQueryValue>(
@@ -559,7 +563,7 @@ export class QueryHelper {
 
     return new QueryUnit<string>(
       String,
-      [`RIGHT('${str}' + `, this.getQueryValue(src), `, ${length})`],
+      [`RIGHT(`, this.concat(str, src), `, ${length})`],
     );
   }
 

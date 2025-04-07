@@ -24,7 +24,7 @@ import { $computed } from "../utils/hooks";
         cursor: pointer;
         margin-bottom: -2px;
 
-        @media not all and (pointer: coarse) {
+        /*@media not all and (pointer: coarse) {
           border-top: 2px solid transparent;
           border-left: 1px solid transparent;
           border-right: 1px solid transparent;
@@ -43,11 +43,20 @@ import { $computed } from "../utils/hooks";
           border-bottom: 2px solid transparent !important;
           font-weight: bold;
           color: var(--theme-grey-default);
-
+  
           &[sd-selected="true"] {
             border-bottom: 3px solid var(--theme-primary-default) !important;
             color: var(--theme-primary-default);
           }
+        }*/
+
+        border-bottom: 2px solid transparent !important;
+        font-weight: bold;
+        color: var(--theme-grey-default);
+
+        &[sd-selected="true"] {
+          border-bottom: 3px solid var(--theme-primary-default) !important;
+          color: var(--theme-primary-default);
         }
       }
     `

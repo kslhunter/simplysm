@@ -13,7 +13,7 @@ import { $model } from "../utils/hooks";
         display: block;
         border-bottom: 2px solid var(--theme-grey-lighter);
 
-        @media not all and (pointer: coarse) {
+        /*@media not all and (pointer: coarse) {
           background: var(--theme-grey-lightest);
           padding-left: var(--gap-default);
           padding-top: 1px;
@@ -21,7 +21,9 @@ import { $model } from "../utils/hooks";
 
         @media all and (pointer: coarse) {
           padding: 0 calc(var(--gap-default) + 1px) 0 calc(var(--gap-default) - 1px);
-        }
+        }*/
+        
+        padding: 0 calc(var(--gap-default) + 1px) 0 calc(var(--gap-default) - 1px);
       }
     `,
   ],

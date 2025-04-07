@@ -624,9 +624,8 @@ export class ObjectUtils {
       .filter((item) => Boolean(item));
     const result: (string | number)[] = [];
     for (const splitItem of split) {
-      const splitItemNumber = Number.parseInt(splitItem);
-      if (!Number.isNaN(splitItemNumber)) {
-        result.push(splitItemNumber);
+      if (/^[0-9]*$/.test(splitItem)) {
+        result.push(Number.parseInt(splitItem));
       }
       else {
         result.push(splitItem);

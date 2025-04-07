@@ -88,7 +88,7 @@ export class SdPop3Client {
     const res = await this._fns.sendAsync("STAT");
 
     return {
-      lastId: NumberUtils.parseInt(res.split(" ")[1])!,
+      lastSeq: NumberUtils.parseInt(res.split(" ")[1])!,
       totalBytes: NumberUtils.parseInt(res.split(" ")[2])!,
     };
   }
@@ -97,13 +97,13 @@ export class SdPop3Client {
     const res = await this._fns.sendAsync("LIST");
 
     return res.split("\r\n").slice(1, -1).map(item => ({
-      id: NumberUtils.parseInt(item.split(" ")[0])!,
+      seq: NumberUtils.parseInt(item.split(" ")[0])!,
       bytes: NumberUtils.parseInt(item.split(" ")[1])!,
     }));
   }
 
-  async topAsync(id: number): Promise<IMailTopInfo> {
-    const res = await this._fns.sendAsync(`TOP ${id} 0`);
+  async topAsync(seq: number): Promise<IMailTopInfo> {
+    const res = await this._fns.sendAsync(`TOP ${seq} 0`);
     const parsed = await simpleParser(res);
     return {
       subject: parsed.subject,
@@ -123,8 +123,8 @@ export class SdPop3Client {
   }
 
 
-  async retrAsync(id: number): Promise<IMailInfo> {
-    const res = await this._fns.sendAsync(`RETR ${id}`);
+  async retrAsync(seq: number): Promise<IMailInfo> {
+    const res = await this._fns.sendAsync(`RETR ${seq}`);
     const parsed = await simpleParser(res);
     return {
       attachments: parsed.attachments
