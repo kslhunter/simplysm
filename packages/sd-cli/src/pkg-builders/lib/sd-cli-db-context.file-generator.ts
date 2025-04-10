@@ -21,10 +21,7 @@ export class SdCliDbContextFileGenerator {
 
     const targetFilePath = path.resolve(pkgPath, `src/${kebabName}.ts`);
 
-    const importTexts: string[] = [
-      "import { IDbMigration, Queryable } from \"@simplysm/sd-orm-common\";",
-      "import { Type } from \"@simplysm/sd-core-common\";",
-    ];
+    const importTexts: string[] = [];
 
     if (useExt) {
       importTexts.push("import { DbContextExt } from \"@simplysm/sd-orm-common-ext\";");
@@ -45,10 +42,10 @@ export class SdCliDbContextFileGenerator {
         const requirePath = PathUtils.posix(path.relative(path.dirname(targetFilePath), filePath))
           .replace(/\.tsx?$/, "")
           .replace(/\/index$/, "");
-        const className = StringUtils.toPascalCase(path.basename(
-          filePath,
-          path.extname(filePath),
-        ));
+        const fileName = path.basename(filePath, path.extname(filePath));
+
+        const className = fileName.includes("_") ? fileName : StringUtils.toPascalCase(fileName);
+
         importTexts.push(`import { ${className} } from "./${requirePath}";`);
         migTexts.push(className + ",");
       }
@@ -66,18 +63,68 @@ export class SdCliDbContextFileGenerator {
         const requirePath = PathUtils.posix(path.relative(path.dirname(targetFilePath), filePath))
           .replace(/\.tsx?$/, "")
           .replace(/\/index$/, "");
-        const varName = StringUtils.toCamelCase(path.basename(
-          filePath,
-          path.extname(filePath),
-        ));
-        const className = StringUtils.toPascalCase(path.basename(
-          filePath,
-          path.extname(filePath),
-        ));
+        const fileName = path.basename(filePath, path.extname(filePath));
+
+        const varName = fileName.includes("_") ? fileName : StringUtils.toCamelCase(fileName);
+        const className = fileName.includes("_") ? fileName : StringUtils.toPascalCase(fileName);
+
         importTexts.push(`import { ${className} } from "./${requirePath}";`);
         modelTexts.push(`${varName} = new Queryable(this, ${className})`);
       }
     }
+
+    // Views
+    const viewTexts: string[] = [];
+    {
+      const filePaths = FsUtils.glob(
+        path.resolve(pkgPath, "src/views/**/*.ts"),
+        { nodir: true },
+      );
+
+      for (const filePath of filePaths.orderBy()) {
+        const requirePath = PathUtils.posix(path.relative(path.dirname(targetFilePath), filePath))
+          .replace(/\.tsx?$/, "")
+          .replace(/\/index$/, "");
+        const fileName = path.basename(filePath, path.extname(filePath));
+
+        const varName = fileName.includes("_") ? fileName : StringUtils.toCamelCase(fileName);
+        const className = fileName.includes("_") ? fileName : StringUtils.toPascalCase(fileName);
+
+        importTexts.push(`import { ${className} } from "./${requirePath}";`);
+        viewTexts.push(`${varName} = new Queryable(this, ${className})`);
+      }
+    }
+
+    // Stored Procedures
+    const spTexts: string[] = [];
+    {
+      const filePaths = FsUtils.glob(
+        path.resolve(pkgPath, "src/stored-procedures/**/*.ts"),
+        { nodir: true },
+      );
+
+      for (const filePath of filePaths.orderBy()) {
+        const requirePath = PathUtils.posix(path.relative(path.dirname(targetFilePath), filePath))
+          .replace(/\.tsx?$/, "")
+          .replace(/\/index$/, "");
+        const fileName = path.basename(filePath, path.extname(filePath));
+
+        const varName = fileName.includes("_") ? fileName : StringUtils.toCamelCase(fileName);
+        const className = fileName.includes("_") ? fileName : StringUtils.toPascalCase(fileName);
+
+        importTexts.push(`import { ${className} } from "./${requirePath}";`);
+        spTexts.push(`${varName} = new StoredProcedure(this, ${className})`);
+      }
+    }
+
+    importTexts.push(...[
+      `import { IDbMigration${modelTexts.length > 0 || viewTexts.length > 0
+        ? ", Queryable"
+        : ""}${spTexts.length > 0
+        ? ", StoredProcedure"
+        : ""} } from "@simplysm/sd-orm-common";`,
+      "import { Type } from \"@simplysm/sd-core-common\";",
+    ]);
 
     const content = `
 ${importTexts.join("\n")}
@@ -88,8 +135,9 @@ export class MainDbContext extends DbContext${useExt ? "Ext" : ""} {
 ${migTexts.map(item => "    " + item).join("\n")}
     ];
   }
-
-${modelTexts.map(item => "  " + item).join("\n")}
+${(modelTexts.length > 0 ? "\n  // Models\n" + modelTexts.map(item => "  " + item).join("\n") : "")}
+${(viewTexts.length > 0 ? "\n  // Views\n" + viewTexts.map(item => "  " + item).join("\n") : "")}
+${spTexts.length > 0 ? "\n  // StoredProcedures\n" + spTexts.map(item => "  " + item).join("\n") : ""}
 }
 `.trim();
     if (content.trim() !== cache?.trim()) {

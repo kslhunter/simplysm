@@ -117,7 +117,9 @@ export class SdNgBundler {
     if (!this.#contexts) {
       this.#contexts = perf.run("get contexts", () => [
         this._getAppContext(),
-        this._getStyleContext(),
+        ...FsUtils.exists(path.resolve(this._opt.pkgPath, "src/styles.scss")) ? [
+          this._getStyleContext(),
+        ] : [],
         ...(this._opt.builderType === "electron" ? [this._getElectronMainContext()] : []),
       ]);
     }
@@ -453,7 +455,10 @@ export class SdNgBundler {
       entryPoints: {
         main: this.#mainFilePath,
         // TODO: Polyfills Bundler 분리
-        polyfills: path.resolve(this._opt.pkgPath, "src/polyfills.ts"),
+        ...FsUtils.exists(path.resolve(this._opt.pkgPath, "src/polyfills.ts")) ? {
+          polyfills: path.resolve(this._opt.pkgPath, "src/polyfills.ts"),
+        } : {},
+
         ...(this._opt.builderType === "cordova"
           ? {
             "cordova-entry": path.resolve(

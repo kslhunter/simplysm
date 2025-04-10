@@ -11,6 +11,7 @@ import {
   IConfigIdentityInsertQueryDef,
   ICreateDatabaseIfNotExistsQueryDef,
   ICreateIndexQueryDef,
+  ICreateProcedureQueryDef,
   ICreateTableQueryDef,
   ICreateViewQueryDef,
   IDeleteQueryDef,
@@ -124,7 +125,7 @@ BEGIN
   SET @sql = N'';
     
   -- 프록시저 초기화
-  SELECT @sql = @sql + 'DROP PROCEDURE ${this.wrap(def.database)}.' + QUOTENAME(sch.name) + '.' + QUOTENAME(o.name) +';' + CHAR(13) + CHAR(10)
+  SELECT @sql = @sql + 'DROP PROCEDURE ' + QUOTENAME(sch.name) + '.' + QUOTENAME(o.name) +';' + CHAR(13) + CHAR(10)
   FROM ${this.wrap(def.database)}.sys.sql_modules m
   INNER JOIN ${this.wrap(def.database)}.sys.objects o ON m.object_id=o.object_id
   INNER JOIN ${this.wrap(def.database)}.sys.schemas sch ON sch.schema_id = [o].schema_id
@@ -336,6 +337,27 @@ ORDER BY i.index_id, ic.key_ordinal;
   public createView(def: ICreateViewQueryDef): string {
     const tableName = this.getTableNameWithoutDatabase(def.table);
     return `CREATE VIEW ${tableName} AS\n${this.query({ type: "select", ...def.queryDef })}`.trim();
+  }
+
+  public createProcedure(def: ICreateProcedureQueryDef): string {
+    const tableName = this.getTableNameWithoutDatabase(def.table);
+
+    let query = "";
+    query += `CREATE PROCEDURE ${tableName}\n`;
+    query += def.columns.map((colDef) => "  " + this._getQueryOfProcedureColDef(colDef)).join(",\n")
+      + "\n";
+    query += "AS\n";
+    query += "BEGIN\n";
+    query += "SET NOCOUNT ON;\n";
+    query += "BEGIN TRY\n\n";
+    query += def.procedure + "\n\n";
+    query += "END TRY\n";
+    query += "BEGIN CATCH\n";
+    query += "  DECLARE @ErrMsg NVARCHAR(4000) = ERROR_MESSAGE();\n";
+    query += "  THROW 50000, @ErrMsg, 1;\n";
+    query += "END CATCH\n";
+    query += "END\n";
+    return query.trim();
   }
 
   public dropTable(def: IDropTableQueryDef): string {
@@ -1224,6 +1246,17 @@ DEALLOCATE PREPARE stmt;
         ? "default NEWID() "
         : "IDENTITY(1,1) " : "";
       q += colDef.nullable ? "NULL" : "NOT NULL";
+    }
+    return q.trim();
+  }
+
+  private _getQueryOfProcedureColDef(colDef: IQueryColumnDef): string {
+    let q = "";
+
+    q += "@" + colDef.name + " ";
+    q += this.qh.type(colDef.dataType) + " ";
+    if (colDef.nullable) {
+      q += "= NULL";
     }
     return q.trim();
   }

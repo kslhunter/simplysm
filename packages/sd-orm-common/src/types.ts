@@ -56,6 +56,7 @@ export interface ITableDef extends ITableNameDef {
   referenceKeys: IReferenceKeyDef[];
   referenceKeyTargets: IReferenceKeyTargetDef[];
   view?: (db: any) => Queryable<DbContext, any>;
+  procedure?: string;
 }
 
 export interface IColumnDef {

@@ -550,18 +550,62 @@ export class Queryable<D extends DbContext, T> {
   ): Queryable<D, T> {
     let result: Queryable<D, T> = new Queryable(this.db, this);
 
-    const splitSearchText = searchText
-      .trim()
-      .split(" ")
-      .map((item) => item.trim())
-      .filter((item) => Boolean(item));
-
     // WHERE
     const whereFnName: "having" | "where" = result.#def.groupBy && result.#def.groupBy.length > 0
       ? "having"
       : "where";
 
-    if (searchText.startsWith("<>")) {
+    result = result[whereFnName]((item) => {
+      const fieldOrArr: TQueryBuilderValue[] = [];
+      const fields = fwd(item);
+      for (const field of fields) {
+        if (searchText.startsWith("==") || searchText.startsWith("<>")) {
+          const searchStr = searchText
+            .substring(2)
+            .replace(/%/g, "!%")
+            .replace(/!/g, "!!")
+            .replace(/_/g, "!_")
+            .replace(/\*/g, "%")
+            .toLowerCase();
+
+          if (searchText.startsWith("<>")) {
+            fieldOrArr.push(this.db.qh.notLike(this.db.qh.toLowerCase(field), searchStr));
+          }
+          else {
+            fieldOrArr.push(this.db.qh.like(this.db.qh.toLowerCase(field), searchStr));
+          }
+        }
+        else {
+          const splitSearchText = searchText
+            .trim()
+            .split(" ")
+            .map((item1) => item1.trim())
+            .filter((item1) => Boolean(item1));
+
+          const splitSearchTextWhereArr: TQueryBuilderValue[] = [];
+          for (const text of splitSearchText) {
+            if (text.startsWith("<>")) {
+              splitSearchTextWhereArr.push(this.db.qh.notIncludes(
+                this.db.qh.toLowerCase(field),
+                text.toLowerCase(),
+              ));
+            }
+            else {
+              splitSearchTextWhereArr.push(this.db.qh.includes(
+                this.db.qh.toLowerCase(field),
+                text.toLowerCase(),
+              ));
+            }
+          }
+          fieldOrArr.push(this.db.qh.and(splitSearchTextWhereArr));
+        }
+      }
+
+      return [this.db.qh.or(fieldOrArr)];
+    });
+
+
+    /*if (searchText.startsWith("<>")) {
       result = result[whereFnName]((item) => {
         const fieldOrArr: TQueryBuilderValue[] = [];
 
@@ -573,7 +617,7 @@ export class Queryable<D extends DbContext, T> {
               splitSearchTextWhereArr.push(
                 this.db.qh.notLike(
                   this.db.qh.toLowerCase(field),
-                  text.substring(2).replace(/\*/g, "%").toLowerCase(),
+                  text.substring(2).replace(/\*!/g, "%").toLowerCase(),
                 ),
               );
             }
@@ -604,7 +648,7 @@ export class Queryable<D extends DbContext, T> {
               splitSearchTextWhereArr.push(
                 this.db.qh.like(
                   this.db.qh.toLowerCase(field),
-                  text.replace(/\*/g, "%").toLowerCase(),
+                  text.replace(/\*!/g, "%").toLowerCase(),
                 ),
               );
             }
@@ -620,7 +664,7 @@ export class Queryable<D extends DbContext, T> {
 
         return [this.db.qh.or(fieldOrArr)];
       });
-    }
+    }*/
     return result;
   }
 

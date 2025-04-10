@@ -171,6 +171,23 @@ export class QueryHelper {
     ]);
   }
 
+  public regexp(
+    source: TEntityValue<string | undefined>,
+    target: TEntityValue<string | undefined>,
+  ): TQueryBuilderValue[] {
+    return [this.getQueryValue(source), " REGEXP ", this.getQueryValue(target)];
+  }
+
+  public notRegexp(
+    source: TEntityValue<string | undefined>,
+    target: TEntityValue<string | undefined>,
+  ): TQueryBuilderValue[] {
+    return this.or([
+      this.isNull(source),
+      [this.getQueryValue(source), " NOT REGEXP ", this.getQueryValue(target)],
+    ]);
+  }
+
   public startsWith(
     source: TEntityValue<string | undefined>,
     target: TEntityValue<string | undefined>,

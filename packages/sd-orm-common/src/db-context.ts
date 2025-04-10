@@ -8,6 +8,7 @@ import { DbDefUtils } from "./utils/db-def.utils";
 import { IQueryColumnDef, IQueryTableNameDef, TQueryDef } from "./query/query-builder.types";
 import { IDbMigration, ITableDef } from "./types";
 import { ISOLATION_LEVEL } from "./db-conn.types";
+import { StoredProcedure } from "./query/stored-procedure";
 
 export abstract class DbContext {
   // static readonly SELECT_CACHE_TIMEOUT = 1000;
@@ -222,10 +223,16 @@ export abstract class DbContext {
   }
 
   get tableDefs(): ITableDef[] {
-    return Object.keys(this)
-      .filter((key) => !key.startsWith("_"))
-      .map((key) => this[key])
-      .ofType<Queryable<any, any>>(Queryable)
+    return [
+      ...Object.keys(this)
+        .filter((key) => !key.startsWith("_"))
+        .map((key) => this[key])
+        .ofType<Queryable<any, any>>(Queryable),
+      ...Object.keys(this)
+        .filter((key) => !key.startsWith("_"))
+        .map((key) => this[key])
+        .ofType<StoredProcedure<any, any>>(StoredProcedure),
+    ]
       .map((qr) => DbDefUtils.getTableDef(qr.tableType!))
       .filterExists();
   }
@@ -528,7 +535,33 @@ export abstract class DbContext {
       throw new Error(`'${tableDef.name}'의 컬럼 설정이 잘못되었습니다.`);
     }
 
-    if (!tableDef.view) {
+    if (tableDef.view) {
+      return {
+        type: "createView",
+        table: this.getTableNameDef(tableDef),
+        queryDef: tableDef.view(this).getSelectQueryDef(),
+      };
+    }
+    else if (tableDef.procedure != null) {
+      return {
+        type: "createProcedure",
+        table: this.getTableNameDef(tableDef),
+        columns: tableDef.columns.map((col) => {
+          try {
+            return ObjectUtils.clearUndefined({
+              name: col.name,
+              dataType: this.qh.type(col.dataType ?? col.typeFwd()),
+              nullable: col.nullable,
+            });
+          }
+          catch (err) {
+            throw new SdError(err, `컬럼 정의 변환 오류: ${JSON.stringify(col)}`.trim());
+          }
+        }),
+        procedure: tableDef.procedure,
+      };
+    }
+    else {
       return {
         type: "createTable",
         table: this.getTableNameDef(tableDef),
@@ -552,13 +585,6 @@ export abstract class DbContext {
             columnName: item.name,
             orderBy: "ASC",
           })),
-      };
-    }
-    else {
-      return {
-        type: "createView",
-        table: this.getTableNameDef(tableDef),
-        queryDef: tableDef.view(this).getSelectQueryDef(),
       };
     }
   }

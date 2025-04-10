@@ -10,6 +10,7 @@ export function Table<T>(def: {
   schema?: string;
   name?: string;
   view?: (db: any) => Queryable<DbContext, any>;
+  procedure?: string;
 }): TClassDecoratorReturn<T> {
   return (classType: Type<T>): void => {
     DbDefUtils.mergeTableDef(classType, {

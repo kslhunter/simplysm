@@ -25,6 +25,7 @@ export type TQueryDef = (
   (IGetTableIndexesDef & { type: "getTableIndexes" }) |
   (ICreateTableQueryDef & { type: "createTable" }) |
   (ICreateViewQueryDef & { type: "createView" }) |
+  (ICreateProcedureQueryDef & { type: "createProcedure" }) |
   (IDropTableQueryDef & { type: "dropTable" }) |
   (IAddColumnQueryDef & { type: "addColumn" }) |
   (IRemoveColumnQueryDef & { type: "removeColumn" }) |
@@ -84,6 +85,12 @@ export interface ICreateTableQueryDef {
 export interface ICreateViewQueryDef {
   table: IQueryTableNameDef;
   queryDef: ISelectQueryDef;
+}
+
+export interface ICreateProcedureQueryDef {
+  table: IQueryTableNameDef;
+  columns: IQueryColumnDef[];
+  procedure: string;
 }
 
 export interface ICreateDatabaseIfNotExistsQueryDef {

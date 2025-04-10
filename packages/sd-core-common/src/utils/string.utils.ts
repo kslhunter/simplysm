@@ -60,13 +60,13 @@ export class StringUtils {
 
   public static toPascalCase(str: string): string {
     return str
-      .replace(/[-_.][a-z]/g, (m) => m[1].toUpperCase())
+      .replace(/[-.][a-z]/g, (m) => m[1].toUpperCase())
       .replace(/^[a-z]/, (m) => m.toUpperCase());
   }
 
   public static toCamelCase(str: string): string {
     return str
-      .replace(/[-_.][a-z]/g, (m) => m[1].toUpperCase())
+      .replace(/[-.][a-z]/g, (m) => m[1].toUpperCase())
       .replace(/^[A-Z]/, (m) => m.toLowerCase());
   }
 

@@ -12,6 +12,7 @@ export * from "./query/query-helper";
 export * from "./query/query-unit";
 export * from "./query/queryable";
 export * from "./query/queryable.types";
+export * from "./query/stored-procedure";
 export * from "./types";
 export * from "./utils/db-def.utils";
 export * from "./utils/sd-orm.utils";
