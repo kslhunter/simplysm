@@ -3,9 +3,9 @@ import {
   ISdExcelXmlStyleData,
   ISdExcelXmlStyleDataBorder,
   ISdExcelXmlStyleDataFill,
-  ISdExcelXmlStyleDataXf
+  ISdExcelXmlStyleDataXf,
 } from "../types";
-import {NumberUtils, ObjectUtils} from "@simplysm/sd-core-common";
+import { NumberUtils, ObjectUtils } from "@simplysm/sd-core-common";
 
 export class SdExcelXmlStyle implements ISdExcelXml {
   public readonly data: ISdExcelXmlStyleData;
@@ -15,28 +15,36 @@ export class SdExcelXmlStyle implements ISdExcelXml {
       this.data = {
         "styleSheet": {
           "$": {
-            "xmlns": "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+            "xmlns": "http://schemas.openxmlformats.org/spreadsheetml/2006/main",
           },
-          "fonts": [{
-            "$": {count: "1"},
-            "font": [{}]
-          }],
-          "fills": [{
-            "$": {count: "1"},
-            "fill": [
-              {patternFill: [{$: {patternType: "none"}}]},
-              {patternFill: [{$: {patternType: "gray125"}}]}
-            ]
-          }],
-          "borders": [{
-            "$": {count: "1"},
-            "border": [{}]
-          }],
-          "cellXfs": [{
-            "$": {count: "1"},
-            "xf": [{"$": {numFmtId: "0"}}]
-          }]
-        }
+          "fonts": [
+            {
+              "$": { count: "1" },
+              "font": [{}],
+            },
+          ],
+          "fills": [
+            {
+              "$": { count: "1" },
+              "fill": [
+                { patternFill: [{ $: { patternType: "none" } }] },
+                { patternFill: [{ $: { patternType: "gray125" } }] },
+              ],
+            },
+          ],
+          "borders": [
+            {
+              "$": { count: "1" },
+              "border": [{}],
+            },
+          ],
+          "cellXfs": [
+            {
+              "$": { count: "1" },
+              "xf": [{ "$": { numFmtId: "0" } }],
+            },
+          ],
+        },
       };
     }
     else {
@@ -45,7 +53,7 @@ export class SdExcelXmlStyle implements ISdExcelXml {
   }
 
   public add(style: ISdExcelStyle): string {
-    const newXf: ISdExcelXmlStyleDataXf = {"$": {}};
+    const newXf: ISdExcelXmlStyleDataXf = { "$": {} };
 
     if (style.numFmtId !== undefined) {
       newXf.$.numFmtId = style.numFmtId;
@@ -55,10 +63,10 @@ export class SdExcelXmlStyle implements ISdExcelXml {
       const newFill: ISdExcelXmlStyleDataFill = {
         "patternFill": [
           {
-            "$": {"patternType": "solid"},
-            "fgColor": [{"$": {"rgb": style.background.toUpperCase()}}]
-          }
-        ]
+            "$": { "patternType": "solid" },
+            "fgColor": [{ "$": { "rgb": style.background.toUpperCase() } }],
+          },
+        ],
       };
 
       newXf.$.applyFill = "1";
@@ -70,35 +78,35 @@ export class SdExcelXmlStyle implements ISdExcelXml {
         ...style.border.includes("left") ? {
           "left": [
             {
-              "$": {"style": "thin"},
-              "color": [{"$": {"rgb": "00000000"}}]
-            }
-          ]
+              "$": { "style": "thin" },
+              "color": [{ "$": { "rgb": "00000000" } }],
+            },
+          ],
         } : {},
         ...style.border.includes("right") ? {
           "right": [
             {
-              "$": {"style": "thin"},
-              "color": [{"$": {"rgb": "00000000"}}]
-            }
-          ]
+              "$": { "style": "thin" },
+              "color": [{ "$": { "rgb": "00000000" } }],
+            },
+          ],
         } : {},
         ...style.border.includes("top") ? {
           "top": [
             {
-              "$": {"style": "thin"},
-              "color": [{"$": {"rgb": "00000000"}}]
-            }
-          ]
+              "$": { "style": "thin" },
+              "color": [{ "$": { "rgb": "00000000" } }],
+            },
+          ],
         } : {},
         ...style.border.includes("bottom") ? {
           "bottom": [
             {
-              "$": {"style": "thin"},
-              "color": [{"$": {"rgb": "00000000"}}]
-            }
-          ]
-        } : {}
+              "$": { "style": "thin" },
+              "color": [{ "$": { "rgb": "00000000" } }],
+            },
+          ],
+        } : {},
       };
 
       newXf.$.applyBorder = "1";
@@ -108,7 +116,7 @@ export class SdExcelXmlStyle implements ISdExcelXml {
     if (style.verticalAlign !== undefined) {
       newXf.$.applyAlignment = "1";
       if (!newXf.alignment) {
-        newXf.alignment = [{"$": {vertical: style.verticalAlign}}];
+        newXf.alignment = [{ "$": { vertical: style.verticalAlign } }];
       }
       else {
         newXf.alignment[0].$.vertical = style.verticalAlign;
@@ -118,7 +126,7 @@ export class SdExcelXmlStyle implements ISdExcelXml {
     if (style.horizontalAlign !== undefined) {
       newXf.$.applyAlignment = "1";
       if (!newXf.alignment) {
-        newXf.alignment = [{"$": {horizontal: style.horizontalAlign}}];
+        newXf.alignment = [{ "$": { horizontal: style.horizontalAlign } }];
       }
       else {
         newXf.alignment[0].$.horizontal = style.horizontalAlign;
@@ -143,8 +151,11 @@ export class SdExcelXmlStyle implements ISdExcelXml {
 
       if (prevFill) {
         const cloneFill = ObjectUtils.clone(prevFill);
+
+        cloneFill.patternFill[0].$.patternType = "solid";
+
         if (!cloneFill.patternFill[0].fgColor) {
-          cloneFill.patternFill[0].fgColor = [{$: {rgb: style.background}}];
+          cloneFill.patternFill[0].fgColor = [{ $: { rgb: style.background } }];
         }
         else {
           cloneFill.patternFill[0].fgColor[0].$.rgb = style.background;
@@ -158,10 +169,10 @@ export class SdExcelXmlStyle implements ISdExcelXml {
         const newFill: ISdExcelXmlStyleDataFill = {
           "patternFill": [
             {
-              "$": {"patternType": "solid"},
-              "fgColor": [{"$": {"rgb": style.background.toUpperCase()}}]
-            }
-          ]
+              "$": { "patternType": "solid" },
+              "fgColor": [{ "$": { "rgb": style.background.toUpperCase() } }],
+            },
+          ],
         };
         cloneXf.$.applyFill = "1";
         cloneXf.$.fillId = this._getSameOrCreateFill(newFill);
@@ -180,13 +191,15 @@ export class SdExcelXmlStyle implements ISdExcelXml {
         const cloneBorder = ObjectUtils.clone(prevBorder);
         if (style.border.includes("left")) {
           if (!cloneBorder.left) {
-            cloneBorder.left = [{
-              "$": {"style": "thin"},
-              "color": [{"$": {"rgb": "00000000"}}]
-            }];
+            cloneBorder.left = [
+              {
+                "$": { "style": "thin" },
+                "color": [{ "$": { "rgb": "00000000" } }],
+              },
+            ];
           }
           else if (!cloneBorder.left[0].color) {
-            cloneBorder.left[0].color = [{$: {rgb: "00000000"}}];
+            cloneBorder.left[0].color = [{ $: { rgb: "00000000" } }];
           }
           else {
             cloneBorder.left[0].color[0].$.rgb = "00000000";
@@ -198,13 +211,15 @@ export class SdExcelXmlStyle implements ISdExcelXml {
 
         if (style.border.includes("right")) {
           if (!cloneBorder.right) {
-            cloneBorder.right = [{
-              "$": {"style": "thin"},
-              "color": [{"$": {"rgb": "00000000"}}]
-            }];
+            cloneBorder.right = [
+              {
+                "$": { "style": "thin" },
+                "color": [{ "$": { "rgb": "00000000" } }],
+              },
+            ];
           }
           else if (!cloneBorder.right[0].color) {
-            cloneBorder.right[0].color = [{$: {rgb: "00000000"}}];
+            cloneBorder.right[0].color = [{ $: { rgb: "00000000" } }];
           }
           else {
             cloneBorder.right[0].color[0].$.rgb = "00000000";
@@ -216,13 +231,15 @@ export class SdExcelXmlStyle implements ISdExcelXml {
 
         if (style.border.includes("top")) {
           if (!cloneBorder.top) {
-            cloneBorder.top = [{
-              "$": {"style": "thin"},
-              "color": [{"$": {"rgb": "00000000"}}]
-            }];
+            cloneBorder.top = [
+              {
+                "$": { "style": "thin" },
+                "color": [{ "$": { "rgb": "00000000" } }],
+              },
+            ];
           }
           else if (!cloneBorder.top[0].color) {
-            cloneBorder.top[0].color = [{$: {rgb: "00000000"}}];
+            cloneBorder.top[0].color = [{ $: { rgb: "00000000" } }];
           }
           else {
             cloneBorder.top[0].color[0].$.rgb = "00000000";
@@ -234,13 +251,21 @@ export class SdExcelXmlStyle implements ISdExcelXml {
 
         if (style.border.includes("bottom")) {
           if (!cloneBorder.bottom) {
-            cloneBorder.bottom = [{
-              "$": {"style": "thin"},
-              "color": [{"$": {"rgb": "00000000"}}]
-            }];
+            cloneBorder.bottom = [
+              {
+                "$": { "style": "thin" },
+                "color": [{ "$": { "rgb": "00000000" } }],
+              },
+            ];
+          }
+          else if (!Boolean(cloneBorder.bottom[0])) {
+            cloneBorder.bottom[0] = {
+              "$": { "style": "thin" },
+              "color": [{ $: { rgb: "00000000" } }],
+            };
           }
           else if (!cloneBorder.bottom[0].color) {
-            cloneBorder.bottom[0].color = [{$: {rgb: "00000000"}}];
+            cloneBorder.bottom[0].color = [{ $: { rgb: "00000000" } }];
           }
           else {
             cloneBorder.bottom[0].color[0].$.rgb = "00000000";
@@ -259,35 +284,35 @@ export class SdExcelXmlStyle implements ISdExcelXml {
           ...style.border.includes("left") ? {
             "left": [
               {
-                "$": {"style": "thin"},
-                "color": [{"$": {"rgb": "00000000"}}]
-              }
-            ]
+                "$": { "style": "thin" },
+                "color": [{ "$": { "rgb": "00000000" } }],
+              },
+            ],
           } : {},
           ...style.border.includes("right") ? {
             "right": [
               {
-                "$": {"style": "thin"},
-                "color": [{"$": {"rgb": "00000000"}}]
-              }
-            ]
+                "$": { "style": "thin" },
+                "color": [{ "$": { "rgb": "00000000" } }],
+              },
+            ],
           } : {},
           ...style.border.includes("top") ? {
             "top": [
               {
-                "$": {"style": "thin"},
-                "color": [{"$": {"rgb": "00000000"}}]
-              }
-            ]
+                "$": { "style": "thin" },
+                "color": [{ "$": { "rgb": "00000000" } }],
+              },
+            ],
           } : {},
           ...style.border.includes("bottom") ? {
             "bottom": [
               {
-                "$": {"style": "thin"},
-                "color": [{"$": {"rgb": "00000000"}}]
-              }
-            ]
-          } : {}
+                "$": { "style": "thin" },
+                "color": [{ "$": { "rgb": "00000000" } }],
+              },
+            ],
+          } : {},
         };
         cloneXf.$.applyBorder = "1";
         cloneXf.$.borderId = this._getSameOrCreateBorder(newBorder);
@@ -298,7 +323,7 @@ export class SdExcelXmlStyle implements ISdExcelXml {
     if (style.verticalAlign !== undefined) {
       cloneXf.$.applyAlignment = "1";
       if (!cloneXf.alignment) {
-        cloneXf.alignment = [{"$": {vertical: style.verticalAlign}}];
+        cloneXf.alignment = [{ "$": { vertical: style.verticalAlign } }];
       }
       else {
         cloneXf.alignment[0].$.vertical = style.verticalAlign;
@@ -308,7 +333,7 @@ export class SdExcelXmlStyle implements ISdExcelXml {
     if (style.horizontalAlign !== undefined) {
       cloneXf.$.applyAlignment = "1";
       if (!cloneXf.alignment) {
-        cloneXf.alignment = [{"$": {horizontal: style.horizontalAlign}}];
+        cloneXf.alignment = [{ "$": { horizontal: style.horizontalAlign } }];
       }
       else {
         cloneXf.alignment[0].$.horizontal = style.horizontalAlign;
@@ -357,14 +382,18 @@ export class SdExcelXmlStyle implements ISdExcelXml {
   }
 
   public getNumFmtCode(numFmtId: string): string | undefined {
-    return this.data.styleSheet.numFmts?.[0].numFmt?.single((item) => item.$.numFmtId === numFmtId)?.$.formatCode;
+    return this.data.styleSheet.numFmts?.[0].numFmt?.single((item) => item.$.numFmtId
+      === numFmtId)?.$.formatCode;
   }
 
   public cleanup(): void {
   }
 
   private _getSameOrCreateXf(xfItem: ISdExcelXmlStyleDataXf): string {
-    const prevSameXf = this.data.styleSheet.cellXfs[0].xf.single((item) => ObjectUtils.equal(item, xfItem));
+    const prevSameXf = this.data.styleSheet.cellXfs[0].xf.single((item) => ObjectUtils.equal(
+      item,
+      xfItem,
+    ));
 
     if (prevSameXf) {
       return this.data.styleSheet.cellXfs[0].xf.indexOf(prevSameXf).toString();
@@ -378,7 +407,10 @@ export class SdExcelXmlStyle implements ISdExcelXml {
 
 
   private _getSameOrCreateFill(fillItem: ISdExcelXmlStyleDataFill): string {
-    const prevSameFill = this.data.styleSheet.fills[0].fill.single((item) => ObjectUtils.equal(item, fillItem));
+    const prevSameFill = this.data.styleSheet.fills[0].fill.single((item) => ObjectUtils.equal(
+      item,
+      fillItem,
+    ));
 
     if (prevSameFill) {
       return this.data.styleSheet.fills[0].fill.indexOf(prevSameFill).toString();
@@ -391,7 +423,10 @@ export class SdExcelXmlStyle implements ISdExcelXml {
   }
 
   private _getSameOrCreateBorder(borderItem: ISdExcelXmlStyleDataBorder): string {
-    const prevSameBorder = this.data.styleSheet.borders[0].border.single((item) => ObjectUtils.equal(item, borderItem));
+    const prevSameBorder = this.data.styleSheet.borders[0].border.single((item) => ObjectUtils.equal(
+      item,
+      borderItem,
+    ));
 
     if (prevSameBorder) {
       return this.data.styleSheet.borders[0].border.indexOf(prevSameBorder).toString();

@@ -38,14 +38,22 @@ export class SdExcelWorksheet {
   public async copyRowStyleAsync(srcR: number, targetR: number): Promise<void> {
     const range = await this.getRangeAsync();
 
-    const wsData = await this._getDataAsync();
     for (let c = range.s.c; c <= range.e.c; c++) {
-      const srcAddr = SdExcelUtils.stringifyAddr({ r: srcR, c: c });
-      const targetAddr = SdExcelUtils.stringifyAddr({ r: targetR, c: c });
-      const styleId = wsData.getCellStyleId(srcAddr);
-      if (styleId != null) {
-        wsData.setCellStyleId(targetAddr, styleId);
-      }
+      await this.copyCellStyleAsync({ r: srcR, c: c }, { r: targetR, c: c });
+    }
+  }
+
+  public async copyCellStyleAsync(
+    srcPoint: { r: number; c: number },
+    targetPoint: { r: number; c: number },
+  ): Promise<void> {
+    const wsData = await this._getDataAsync();
+
+    const srcAddr = SdExcelUtils.stringifyAddr(srcPoint);
+    const targetAddr = SdExcelUtils.stringifyAddr(targetPoint);
+    const styleId = wsData.getCellStyleId(srcAddr);
+    if (styleId != null) {
+      wsData.setCellStyleId(targetAddr, styleId);
     }
   }
 

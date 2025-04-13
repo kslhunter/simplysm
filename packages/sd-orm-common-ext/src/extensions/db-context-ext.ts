@@ -117,13 +117,13 @@ export abstract class DbContextExt extends DbContext {
   }
 }
 
-export interface IAuthInfo {
+export interface IAuthInfo<T extends Record<string, any> = Record<string, any>> {
   key: Uuid;
   user: {
     id: number;
     name: string;
     email?: string;
     permissionRecord: Record<string, any>;
-    configRecord: Record<string, any>;
+    configRecord: T;
   };
 }

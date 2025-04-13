@@ -464,8 +464,40 @@ export class QueryHelper {
     return new QueryUnit<number>(Number, ["MONTH(", this.getQueryValue(value), ")"]);
   }
 
-  public day<T extends DateTime | DateOnly>(value: TEntityValue<T>): QueryUnit<number> {
+  public day<T extends DateTime | DateOnly | undefined>(value: TEntityValue<T>): QueryUnit<number> {
     return new QueryUnit<number>(Number, ["DAY(", this.getQueryValue(value), ")"]);
+  }
+
+  public isoWeek<T extends DateOnly | undefined>(value: TEntityValue<T>): QueryUnit<number> {
+    if (this._dialect === "mysql") {
+      return new QueryUnit<number>(
+        Number,
+        ["WEEKDAY(", this.getQueryValue(value), ")"],
+      );
+    }
+    else {
+      return new QueryUnit<number>(
+        Number,
+        ["(DATEPART(WEEKDAY, ", this.getQueryValue(value), ") + @@DATEFIRST - 2) % 7 + 1"],
+      );
+    }
+  }
+
+  public isoWeekStartDate<T extends DateOnly | undefined>(value: TEntityValue<T>): QueryUnit<T> {
+    return this.dateAdd("day", value, new QueryUnit<number>(
+      Number,
+      ["-(", this.isoWeek(value), " - 1)"],
+    ));
+  }
+
+  public isoYearMonth<T extends DateOnly | undefined>(value: TEntityValue<T>): QueryUnit<T> {
+    const isoWeekYearMonthBaseDate = this.dateAdd("day", this.isoWeekStartDate(value), 3);
+
+    return this.dateAdd(
+      "day",
+      isoWeekYearMonthBaseDate,
+      this.query<number>(Number, ["1-", this.day(isoWeekYearMonthBaseDate)]),
+    );
   }
 
   public ifNull<S extends TQueryValue, T extends TQueryValue>(

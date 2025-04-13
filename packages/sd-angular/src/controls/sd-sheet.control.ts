@@ -842,11 +842,6 @@ export class SdSheetControl<T> {
         }
         else {
           orderedItems = orderedItems.orderBy((item) => {
-            console.log(
-              item,
-              orderingItem.key,
-              ObjectUtils.getChainValue(item, orderingItem.key)
-            );
             return ObjectUtils.getChainValue(item, orderingItem.key);
           });
         }

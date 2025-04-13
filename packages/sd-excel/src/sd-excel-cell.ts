@@ -12,7 +12,7 @@ export class SdExcelCell {
   public style = {
     setBackgroundAsync: async (color: string): Promise<void> => {
       if (!(/^[0-9A-F]{8}/).test(color.toUpperCase())) {
-        throw new Error("색상 형식이 잘못되었습니다. (형식: FFFFFFFF: alpha+rgb)");
+        throw new Error("색상 형식이 잘못되었습니다. (형식: 00000000: alpha(역)+rgb)");
       }
 
       await this._setStyleAsync({ background: color });
@@ -37,8 +37,13 @@ export class SdExcelCell {
         });
       }
     },
+    setNumFormatIdAsync: async (numFmtId: string): Promise<void> => {
+      await this._setStyleAsync({ numFmtId: numFmtId });
+    },
   };
-  private readonly _addr: string;
+
+  public readonly addr: string;
+  public readonly point: { r: number, c: number };
 
   public constructor(
     private readonly _zipCache: ZipCache,
@@ -46,24 +51,25 @@ export class SdExcelCell {
     private readonly _r: number,
     private readonly _c: number,
   ) {
-    this._addr = SdExcelUtils.stringifyAddr({ r: this._r, c: this._c });
+    this.point = { r: this._r, c: this._c };
+    this.addr = SdExcelUtils.stringifyAddr(this.point);
   }
 
   public async setFormulaAsync(val: string | undefined): Promise<void> {
     if (val === undefined) {
-      await this._deleteAddrAsync(this._addr);
+      await this._deleteAddrAsync(this.addr);
     }
     else {
       const wsData = await this._getWsDataAsync();
-      wsData.setCellType(this._addr, "str");
-      wsData.setCellVal(this._addr, undefined);
-      wsData.setCellFormula(this._addr, val);
+      wsData.setCellType(this.addr, "str");
+      wsData.setCellVal(this.addr, undefined);
+      wsData.setCellFormula(this.addr, val);
     }
   }
 
   public async setValAsync(val: TSdExcelValueType): Promise<void> {
     if (val === undefined) {
-      await this._deleteAddrAsync(this._addr);
+      await this._deleteAddrAsync(this.addr);
     }
     else if (typeof val === "string") {
       const wsData = await this._getWsDataAsync();
@@ -71,29 +77,29 @@ export class SdExcelCell {
       const ssData = await this._getOrCreateSsDataAsync();
       const ssId = ssData.getIdByString(val);
       if (ssId !== undefined) {
-        wsData.setCellType(this._addr, "s");
-        wsData.setCellVal(this._addr, ssId.toString());
+        wsData.setCellType(this.addr, "s");
+        wsData.setCellVal(this.addr, ssId.toString());
       }
       else {
         const newSsId = ssData.add(val);
-        wsData.setCellType(this._addr, "s");
-        wsData.setCellVal(this._addr, newSsId.toString());
+        wsData.setCellType(this.addr, "s");
+        wsData.setCellVal(this.addr, newSsId.toString());
       }
     }
     else if (typeof val === "boolean") {
       const wsData = await this._getWsDataAsync();
-      wsData.setCellType(this._addr, "b");
-      wsData.setCellVal(this._addr, val ? "1" : "0");
+      wsData.setCellType(this.addr, "b");
+      wsData.setCellVal(this.addr, val ? "1" : "0");
     }
     else if (typeof val === "number") {
       const wsData = await this._getWsDataAsync();
-      wsData.setCellType(this._addr, undefined);
-      wsData.setCellVal(this._addr, val.toString());
+      wsData.setCellType(this.addr, undefined);
+      wsData.setCellVal(this.addr, val.toString());
     }
     else if (val instanceof DateOnly) {
       const wsData = await this._getWsDataAsync();
-      wsData.setCellType(this._addr, undefined);
-      wsData.setCellVal(this._addr, SdExcelUtils.convertTimeTickToNumber(val.tick).toString());
+      wsData.setCellType(this.addr, undefined);
+      wsData.setCellVal(this.addr, SdExcelUtils.convertTimeTickToNumber(val.tick).toString());
 
       await this._setStyleAsync({
         numFmtId: SdExcelUtils.convertNumFmtNameToId("DateOnly")
@@ -102,8 +108,8 @@ export class SdExcelCell {
     }
     else if (val instanceof DateTime) {
       const wsData = await this._getWsDataAsync();
-      wsData.setCellType(this._addr, undefined);
-      wsData.setCellVal(this._addr, SdExcelUtils.convertTimeTickToNumber(val.tick).toString());
+      wsData.setCellType(this.addr, undefined);
+      wsData.setCellVal(this.addr, SdExcelUtils.convertTimeTickToNumber(val.tick).toString());
 
       await this._setStyleAsync({
         numFmtId: SdExcelUtils.convertNumFmtNameToId("DateTime")
@@ -112,8 +118,8 @@ export class SdExcelCell {
     }
     else if (val instanceof Time) {
       const wsData = await this._getWsDataAsync();
-      wsData.setCellType(this._addr, undefined);
-      wsData.setCellVal(this._addr, SdExcelUtils.convertTimeTickToNumber(val.tick).toString());
+      wsData.setCellType(this.addr, undefined);
+      wsData.setCellVal(this.addr, SdExcelUtils.convertTimeTickToNumber(val.tick).toString());
 
       await this._setStyleAsync({
         numFmtId: SdExcelUtils.convertNumFmtNameToId("Time")
@@ -121,17 +127,17 @@ export class SdExcelCell {
       });
     }
     else {
-      throw new Error(`[${this._addr}] 지원되지 않는 타입입니다: ${val}`);
+      throw new Error(`[${this.addr}] 지원되지 않는 타입입니다: ${val}`);
     }
   }
 
   public async getValAsync(): Promise<TSdExcelValueType> {
     const wsData = await this._getWsDataAsync();
-    const cellVal = wsData.getCellVal(this._addr);
+    const cellVal = wsData.getCellVal(this.addr);
     if (cellVal === undefined || StringUtils.isNullOrEmpty(cellVal)) {
       return undefined;
     }
-    const cellType = wsData.getCellType(this._addr);
+    const cellType = wsData.getCellType(this.addr);
     if (cellType === "s") {
       const ssData = await this._getOrCreateSsDataAsync();
       return ssData.getStringById(NumberUtils.parseInt(cellVal)!);
@@ -149,10 +155,10 @@ export class SdExcelCell {
       return NumberUtils.parseFloat(cellVal);
     }
     else if (cellType === "e") {
-      throw new Error(`[${this._addr}] 타입분석 실패\n- 셀 내용에서, 에러가 감지되었습니다.(${cellVal})`);
+      throw new Error(`[${this.addr}] 타입분석 실패\n- 셀 내용에서, 에러가 감지되었습니다.(${cellVal})`);
     }
     else if (cellType === undefined) {
-      const cellStyleId = wsData.getCellStyleId(this._addr);
+      const cellStyleId = wsData.getCellStyleId(this.addr);
       if (cellStyleId === undefined) {
         return NumberUtils.parseFloat(cellVal);
       }
@@ -160,7 +166,7 @@ export class SdExcelCell {
       const styleData = (await this._getStyleDataAsync())!;
       const numFmtId = styleData.get(cellStyleId).numFmtId;
       if (numFmtId === undefined) {
-        throw new Error(`[${this._addr}] 타입분석 실패\n- [numFmtId: ${numFmtId}]에 대한 형식을 알 수 없습니다.`);
+        throw new Error(`[${this.addr}] 타입분석 실패\n- [numFmtId: ${numFmtId}]에 대한 형식을 알 수 없습니다.`);
       }
 
       const numFmtCode = styleData.getNumFmtCode(numFmtId);
@@ -192,11 +198,11 @@ export class SdExcelCell {
         return new Time(tick);
       }
       else {
-        throw new Error(`[${this._addr}] 타입분석 실패 (${numFmt})`);
+        throw new Error(`[${this.addr}] 타입분석 실패 (${numFmt})`);
       }
     }
     else {
-      throw new Error(`[${this._addr}] 지원되지 않는 타입입니다: ${cellType}`);
+      throw new Error(`[${this.addr}] 지원되지 않는 타입입니다: ${cellType}`);
     }
   }
 
@@ -204,7 +210,7 @@ export class SdExcelCell {
     // TODO: 기존 머지와 겹치는게 있으면 오류 처리
 
     const wsData = await this._getWsDataAsync();
-    wsData.setMergeCells(this._addr, SdExcelUtils.stringifyAddr({ r, c }));
+    wsData.setMergeCells(this.addr, SdExcelUtils.stringifyAddr({ r, c }));
 
     // 현재셀 외의 머지된 모든셀 지우기
     for (let cr = this._r + 1; cr <= r; cr++) {
@@ -295,13 +301,23 @@ export class SdExcelCell {
   private async _setStyleAsync(style: ISdExcelStyle): Promise<void> {
     const wsData = await this._getWsDataAsync();
     const styleData = await this._getOrCreateStyleDataAsync();
-    let styleId = wsData.getCellStyleId(this._addr);
+    let styleId = wsData.getCellStyleId(this.addr);
     if (styleId === undefined) {
       styleId = styleData.add(style);
     }
     else {
       styleId = styleData.addWithClone(styleId, style);
     }
-    wsData.setCellStyleId(this._addr, styleId);
+    wsData.setCellStyleId(this.addr, styleId);
+  }
+
+  async getStyleIdAsync() {
+    const wsData = await this._getWsDataAsync();
+    return wsData.getCellStyleId(this.addr);
+  }
+
+  async setStyleIdAsync(styleId: string) {
+    const wsData = await this._getWsDataAsync();
+    wsData.setCellStyleId(this.addr, styleId);
   }
 }

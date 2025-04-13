@@ -111,6 +111,7 @@ export class SdCliElectron {
 
     logger.log(`electron rebuild`);
     await SdProcess.spawnAsync(`npx electron-rebuild`, { cwd: electronPath }, true);
+
     /*for (const reinstallPkgName of reinstallPkgNames) {
       if (FsUtils.exists(path.resolve(electronPath, "node_modules", reinstallPkgName, "binding.gyp"))) {
         logger.log(`electron rebuild (${reinstallPkgName})...`);
