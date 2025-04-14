@@ -18,6 +18,7 @@ import {
   IDropIndexQueryDef,
   IDropPrimaryKeyQueryDef,
   IDropTableQueryDef,
+  IExecuteProcedureQueryDef,
   IGetDatabaseInfoDef,
   IGetTableColumnInfosDef,
   IGetTableForeignKeysDef,
@@ -345,7 +346,7 @@ CREATE VIEW ${tableName} AS\n${this.query({ type: "select", ...def.queryDef }).r
 
 ';
 
-EXEC(@sql);`
+EXEC(@sql);`;
     return query.trim();
   }
 
@@ -375,21 +376,18 @@ END
 
 EXEC(@sql);
 `;
+    return query.trim();
+  }
 
-    /*query += `CREATE PROCEDURE ${tableName}\n`;
-    query += def.columns.map((colDef) => "  " + this._getQueryOfProcedureColDef(colDef)).join(",\n")
-      + "\n";
-    query += "AS\n";
-    query += "BEGIN\n";
-    query += "SET NOCOUNT ON;\n";
-    query += "BEGIN TRY\n\n";
-    query += def.procedure + "\n\n";
-    query += "END TRY\n";
-    query += "BEGIN CATCH\n";
-    query += "  DECLARE @ErrMsg NVARCHAR(4000) = ERROR_MESSAGE();\n";
-    query += "  THROW 50000, @ErrMsg, 1;\n";
-    query += "END CATCH\n";
-    query += "END\n";*/
+  public executeProcedure(def: IExecuteProcedureQueryDef): string {
+    const procedureName = this.getTableName(def.procedure);
+
+    let query = `
+    
+EXEC ${procedureName}
+  ${Object.keys(def.record).map(key => `@${key} = ${def.record[key]}`).join(", ")};
+
+`;
     return query.trim();
   }
 

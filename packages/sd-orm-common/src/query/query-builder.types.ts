@@ -38,7 +38,8 @@ export type TQueryDef = (
   (ICreateIndexQueryDef & { type: "createIndex" }) |
   (IDropIndexQueryDef & { type: "dropIndex" }) |
   (IConfigIdentityInsertQueryDef & { type: "configIdentityInsert" }) |
-  (IConfigForeignKeyCheckQueryDef & { type: "configForeignKeyCheck" })
+  (IConfigForeignKeyCheckQueryDef & { type: "configForeignKeyCheck" }) |
+  (IExecuteProcedureQueryDef & { type: "executeProcedure" })
   );
 
 export type TDbDateSeparator =
@@ -91,6 +92,11 @@ export interface ICreateProcedureQueryDef {
   table: IQueryTableNameDef;
   columns: IQueryColumnDef[];
   procedure: string;
+}
+
+export interface IExecuteProcedureQueryDef {
+  procedure: IQueryTableNameDef;
+  record: Record<string, string>;
 }
 
 export interface ICreateDatabaseIfNotExistsQueryDef {
