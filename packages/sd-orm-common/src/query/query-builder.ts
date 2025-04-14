@@ -336,14 +336,47 @@ ORDER BY i.index_id, ic.key_ordinal;
 
   public createView(def: ICreateViewQueryDef): string {
     const tableName = this.getTableNameWithoutDatabase(def.table);
-    return `CREATE VIEW ${tableName} AS\n${this.query({ type: "select", ...def.queryDef })}`.trim();
+    const query = `
+USE ${def.table.database};
+    
+DECLARE @sql NVARCHAR(MAX) = N'
+
+CREATE VIEW ${tableName} AS\n${this.query({ type: "select", ...def.queryDef }).replace(/'/g, "''")}
+
+';
+
+EXEC(@sql);`
+    return query.trim();
   }
 
   public createProcedure(def: ICreateProcedureQueryDef): string {
     const tableName = this.getTableNameWithoutDatabase(def.table);
 
-    let query = "";
-    query += `CREATE PROCEDURE ${tableName}\n`;
+    let query = `
+USE ${def.table.database};
+    
+DECLARE @sql NVARCHAR(MAX) = N'
+
+CREATE PROCEDURE ${tableName}
+  ${def.columns.map((colDef) => "  " + this._getQueryOfProcedureColDef(colDef)).join(",\r\n")}
+AS
+BEGIN
+SET NOCOUNT ON
+BEGIN TRY
+  ${def.procedure.replace(/'/g, "''")}
+END TRY
+BEGIN CATCH
+  DECLARE @ErrMsg NVARCHAR(4000) = ERROR_MESSAGE();
+  THROW 50000, @ErrMsg, 1;
+END CATCH
+END
+
+';
+
+EXEC(@sql);
+`;
+
+    /*query += `CREATE PROCEDURE ${tableName}\n`;
     query += def.columns.map((colDef) => "  " + this._getQueryOfProcedureColDef(colDef)).join(",\n")
       + "\n";
     query += "AS\n";
@@ -356,7 +389,7 @@ ORDER BY i.index_id, ic.key_ordinal;
     query += "  DECLARE @ErrMsg NVARCHAR(4000) = ERROR_MESSAGE();\n";
     query += "  THROW 50000, @ErrMsg, 1;\n";
     query += "END CATCH\n";
-    query += "END\n";
+    query += "END\n";*/
     return query.trim();
   }
 

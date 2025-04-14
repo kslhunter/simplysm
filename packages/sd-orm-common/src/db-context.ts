@@ -438,7 +438,10 @@ export abstract class DbContext {
 
     // 강제 혹은 첫 수행
 
-    let tableDefs: ITableDef[];
+    const tableDefInfos: {
+      database?: string,
+      tableDefs: ITableDef[]
+    }[] = [];
 
     if (this.opt.dialect !== "sqlite") {
       const dbNames = dbs ?? (this.opt.database !== undefined ? [this.opt.database] : []);
@@ -467,16 +470,29 @@ export abstract class DbContext {
       await this.executeQueriesAsync([`USE ${this.opt.database};`]);
 
       // TABLE 초기화: 생성/PK 설정
-      tableDefs = this.tableDefs
-        .filter((item) => item.database === undefined || dbNames.includes(item.database))
-        .filterExists();
+      for (const dbName of dbNames) {
+        tableDefInfos.push({
+          database: dbName,
+          tableDefs: this.tableDefs
+            .filter((item) =>
+              (item.database == null && dbName === this.opt["database"]) ||
+              dbName === item.database,
+            )
+            .filterExists(),
+        });
+      }
     }
     else {
-      tableDefs = this.tableDefs.filterExists();
+      tableDefInfos.push({
+        tableDefs: this.tableDefs.filterExists(),
+      });
     }
 
     const queryDefsList: TQueryDef[][] = [];
-    queryDefsList.push(...this.getCreateTablesFullQueryDefsFromTableDef(tableDefs));
+
+    for (const tableDefInfo of tableDefInfos) {
+      queryDefsList.push(...this.getCreateTablesFullQueryDefsFromTableDef(tableDefInfo.tableDefs));
+    }
 
     // Migration 데이터 저장 등록
     const migrationInsertQueryDefs: TQueryDef[] = [];
