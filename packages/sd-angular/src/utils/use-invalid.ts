@@ -16,11 +16,11 @@ export function useInvalid(invalidMessageSignal: Signal<string | undefined>) {
 
   $effect([invalidMessageSignal], () => {
     if (!StringUtils.isNullOrEmpty(invalidMessageSignal())) {
-      _elRef.nativeElement.setAttribute("sd-invalid-messsage", invalidMessageSignal()!);
+      _elRef.nativeElement.setAttribute("sd-invalid-message", invalidMessageSignal()!);
       _elRef.nativeElement.prependChild(indicatorEl);
     }
     else {
-      _elRef.nativeElement.removeAttribute("sd-invalid-messsage");
+      _elRef.nativeElement.removeAttribute("sd-invalid-message");
       indicatorEl.remove();
       /*if ("removeChild" in _elRef.nativeElement) {
         _elRef.nativeElement.removeChild(indicatorEl);
