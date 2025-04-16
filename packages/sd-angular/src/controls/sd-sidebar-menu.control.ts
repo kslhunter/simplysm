@@ -8,6 +8,7 @@ import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { $computed } from "../utils/hooks";
 import { SdIconControl } from "./sd-icon.control";
 import { injectPageCode$ } from "../utils/route/page-code.signal-injector";
+import * as querystring from "node:querystring";
 
 @Component({
   selector: "sd-sidebar-menu",
@@ -20,8 +21,51 @@ import { injectPageCode$ } from "../utils/route/page-code.signal-injector";
     SdTypedTemplateDirective,
     SdListItemControl,
     SdRouterLinkDirective,
-    SdIconControl
+    SdIconControl,
   ],
+  template: `
+    @if (rootLayout() === "accordion") {
+      <h5 class="_title">MENU</h5>
+    }
+    <sd-list [inset]="true">
+      <ng-template
+        [ngTemplateOutlet]="itemTemplate"
+        [ngTemplateOutletContext]="{ menus: menus(), depth: 0 }"
+      ></ng-template>
+    </sd-list>
+    <ng-template #itemTemplate [typed]="itemTemplateType" let-currMenus="menus" let-depth="depth">
+      @for (menu of currMenus; track menu.codeChain.join(".")) {
+        <!--[contentStyle]="'padding-left: ' + ((depth + 1) * 6) + 'px'"-->
+        <sd-list-item
+          [contentClass]="depth === 0 ? 'pv-default' : ''"
+          [sd-router-link]="getMenuRouterLinkOption(menu)"
+          (click)="onMenuClick(menu)"
+          [selected]="getIsMenuSelected(menu)"
+          [layout]="depth === 0 ? rootLayout() : 'accordion'"
+        >
+          @if (menu.icon) {
+            <sd-icon [icon]="menu.icon" fixedWidth />
+            &nbsp;
+          }
+          {{ menu.title }}
+          @if (menu.children) {
+            <sd-list
+              [inset]="true"
+              [style.padding-left]="(depth + 1 - (rootLayout() === 'accordion' ? 0 : 1)) * 6 + 'px'"
+            >
+              <ng-template
+                [ngTemplateOutlet]="itemTemplate"
+                [ngTemplateOutletContext]="{
+                  menus: menu.children,
+                  depth: depth + 1,
+                }"
+              ></ng-template>
+            </sd-list>
+          }
+        </sd-list-item>
+      }
+    </ng-template>
+  `,
   styles: [
     /* language=SCSS */ `
       @use "../scss/mixins";
@@ -63,54 +107,11 @@ import { injectPageCode$ } from "../utils/route/page-code.signal-injector";
           }
         }
       }
-    `
+    `,
   ],
-  template: `
-    @if (rootLayout() === "accordion") {
-      <h5 class="_title">MENU</h5>
-    }
-    <sd-list [inset]="true">
-      <ng-template
-        [ngTemplateOutlet]="itemTemplate"
-        [ngTemplateOutletContext]="{ menus: menus(), depth: 0 }"
-      ></ng-template>
-    </sd-list>
-    <ng-template #itemTemplate [typed]="itemTemplateType" let-currMenus="menus" let-depth="depth">
-      @for (menu of currMenus; track menu.codeChain.join(".")) {
-        <!--[contentStyle]="'padding-left: ' + ((depth + 1) * 6) + 'px'"-->
-        <sd-list-item
-          [contentClass]="depth === 0 ? 'pv-default' : ''"
-          [sd-router-link]="menu.children || menu.url ? undefined : ['/home/' + menu.codeChain.join('/')]"
-          (click)="onMenuClick(menu)"
-          [selected]="getIsMenuSelected(menu)"
-          [layout]="depth === 0 ? rootLayout() : 'accordion'"
-        >
-          @if (menu.icon) {
-            <sd-icon [icon]="menu.icon" fixedWidth />
-            &nbsp;
-          }
-          {{ menu.title }}
-          @if (menu.children) {
-            <sd-list
-              [inset]="true"
-              [style.padding-left]="(depth + 1 - (rootLayout() === 'accordion' ? 0 : 1)) * 6 + 'px'"
-            >
-              <ng-template
-                [ngTemplateOutlet]="itemTemplate"
-                [ngTemplateOutletContext]="{
-                  menus: menu.children,
-                  depth: depth + 1,
-                }"
-              ></ng-template>
-            </sd-list>
-          }
-        </sd-list-item>
-      }
-    </ng-template>
-  `,
   host: {
-    "[attr.sd-root-layout]": "rootLayout()"
-  }
+    "[attr.sd-root-layout]": "rootLayout()",
+  },
 })
 export class SdSidebarMenuControl {
   menus = input<ISdSidebarMenuVM[]>([]);
@@ -120,6 +121,22 @@ export class SdSidebarMenuControl {
   pageCode = injectPageCode$();
 
   rootLayout = $computed(() => this.layout() ?? (this.menus().length <= 3 ? "flat" : "accordion"));
+
+  getMenuRouterLinkOption(menu: ISdSidebarMenuVM) {
+    if (menu.children || menu.url != null) {
+      return undefined;
+    }
+
+    const relNav = menu.codeChain.join("/");
+    const n = relNav.split("?")[0];
+    const q = relNav.split("?")[1] as string | undefined;
+    const qp = q == null ? undefined : querystring.parse(q);
+
+    return {
+      link: "/home/" + n,
+      queryParams: qp,
+    };
+  }
 
   getIsMenuSelected(menu: ISdSidebarMenuVM) {
     return this.getMenuIsSelectedFn()

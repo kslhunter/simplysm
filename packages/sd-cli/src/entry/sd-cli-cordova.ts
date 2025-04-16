@@ -215,6 +215,7 @@ export class SdCliCordova {
     // CONFIG: ANDROID usesCleartextTraffic 설정 및 splashscreen 파일 설정
     if (this._opt.config.platform?.android) {
       configXml.widget.$["xmlns:android"] = "http://schemas.android.com/apk/res/android";
+      configXml.widget.$["xmlns:tools"] = "http://schemas.android.com/tools";
 
       configXml["widget"]["platform"] = configXml["widget"]["platform"] ?? [];
 
@@ -235,12 +236,33 @@ export class SdCliCordova {
             $: {
               file: "app/src/main/AndroidManifest.xml",
               mode: "merge",
+              target: "/manifest",
+            },
+            manifest: [
+              {
+                $: {
+                  "xmlns:tools": "http://schemas.android.com/tools",
+                },
+              },
+            ],
+          },
+          {
+            $: {
+              file: "app/src/main/AndroidManifest.xml",
+              mode: "merge",
               target: "/manifest/application",
             },
             application: [
               {
                 $: {
                   "android:usesCleartextTraffic": "true",
+                  ...this._opt.config.platform.android.config
+                    ? Object.keys(this._opt.config.platform.android.config)
+                      .toObject(
+                        key => "android:" + key,
+                        key => this._opt.config.platform!.android!.config![key],
+                      )
+                    : {},
                 },
               },
             ],
@@ -292,6 +314,11 @@ export class SdCliCordova {
               ...(perm.maxSdkVersion != null
                 ? {
                   "android:maxSdkVersion": `${perm.maxSdkVersion}`,
+                }
+                : {}),
+              ...(perm.ignore != null
+                ? {
+                  "tools:ignore": `${perm.ignore}`,
                 }
                 : {}),
             },

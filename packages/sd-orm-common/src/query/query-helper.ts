@@ -571,7 +571,12 @@ export class QueryHelper {
   }
 
   public stringLength(arg: TEntityValue<String | string>): QueryUnit<number> {
-    return new QueryUnit<number>(Number, ["LEN(", this.getQueryValue(arg), ")"]);
+    if (this._dialect === "mysql") {
+      return new QueryUnit<number>(Number, ["CHAR_LENGTH(", this.getQueryValue(arg), ")"]);
+    }
+    else {
+      return new QueryUnit<number>(Number, ["LEN(", this.getQueryValue(arg), ")"]);
+    }
   }
 
   public cast<T extends TQueryValue>(

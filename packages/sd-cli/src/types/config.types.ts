@@ -91,6 +91,7 @@ export interface ISdClientBuilderCordovaConfig {
   platform?: {
     browser?: {};
     android?: {
+      config?: Record<string, string>;
       bundle?: boolean;
       sign?: {
         keystore: string;
@@ -103,6 +104,7 @@ export interface ISdClientBuilderCordovaConfig {
       permissions?: {
         name: string;
         maxSdkVersion?: number;
+        ignore?: string;
       }[];
     };
   };
