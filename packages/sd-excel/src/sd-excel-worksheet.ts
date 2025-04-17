@@ -5,7 +5,15 @@ import { SdExcelRow } from "./sd-excel-row";
 import { SdExcelCell } from "./sd-excel-cell";
 import { SdExcelXmlWorkbook } from "./xmls/sd-excel-xml-workbook";
 import { SdExcelCol } from "./sd-excel-col";
-import { StringUtils } from "@simplysm/sd-core-common";
+import {
+  DateOnly,
+  DateTime,
+  NumberUtils,
+  ObjectUtils,
+  StringUtils,
+  TValidateObjectDefWithName,
+  UnwrappedType,
+} from "@simplysm/sd-core-common";
 import { SdExcelUtils } from "./utils/sd-excel.utils";
 
 export class SdExcelWorksheet {
@@ -137,6 +145,103 @@ export class SdExcelWorksheet {
         await this.cell(r, c).setValAsync(record[r - 1][headers[c]]);
       }
     }
+  }
+
+  async getRecordsAsync<T extends Record<string, any>>(def: ((item: T) => TValidateObjectDefWithName<T>) | TValidateObjectDefWithName<T>): Promise<{ [P in keyof T]: UnwrappedType<T[P]> }[]> {
+    const wsName = await this.getNameAsync();
+
+    const wsdt: any[] = typeof def === "function"
+      ? await this.getDataTableAsync()
+      : await this.getDataTableAsync({
+        usableHeaderNameFn: headerName => Object.keys(def)
+          .map(key => def[key]!.displayName)
+          .includes(headerName),
+      });
+
+    const excelItems: T[] = [];
+    for (const item of wsdt) {
+      const fieldConf: TValidateObjectDefWithName<T> = typeof def === "function" ? def(item) : def;
+
+      const firstNotNullFieldKey = Object.keys(fieldConf)
+        .first(key => fieldConf[key]?.notnull ?? false);
+      if (firstNotNullFieldKey == null) throw new Error("Not Null 필드가 없습니다.");
+      const firstNotNullFieldDisplayName = fieldConf[firstNotNullFieldKey]!.displayName;
+
+      if (item[firstNotNullFieldDisplayName] == null) continue;
+
+      const obj = {} as any;
+      for (const key of Object.keys(fieldConf)) {
+        if (
+          fieldConf[key]!.type &&
+          "name" in fieldConf[key]!.type &&
+          fieldConf[key]!.type.name === "Boolean" &&
+          fieldConf[key]!.notnull
+        ) {
+          ObjectUtils.setChainValue(
+            obj, key,
+            item[fieldConf[key]!.displayName] ?? false,
+          );
+        }
+        else if (
+          fieldConf[key]!.type &&
+          "name" in fieldConf[key]!.type &&
+          fieldConf[key]!.type.name === "String" &&
+          typeof item[fieldConf[key]!.displayName] !== "string"
+        ) {
+          ObjectUtils.setChainValue(
+            obj, key,
+            item[fieldConf[key]!.displayName]?.toString(),
+          );
+        }
+        else if (
+          fieldConf[key]!.type &&
+          "name" in fieldConf[key]!.type &&
+          fieldConf[key]!.type.name === "Number" &&
+          typeof item[fieldConf[key]!.displayName] !== "number"
+        ) {
+          ObjectUtils.setChainValue(
+            obj, key,
+            NumberUtils.parseInt(item[fieldConf[key]!.displayName]),
+          );
+        }
+        else if (
+          fieldConf[key]!.type &&
+          "name" in fieldConf[key]!.type &&
+          fieldConf[key]!.type.name === "DateOnly" &&
+          !(item[fieldConf[key]!.displayName] instanceof DateOnly)
+        ) {
+          ObjectUtils.setChainValue(
+            obj, key,
+            item[fieldConf[key]!.displayName] == null ? undefined
+              : DateOnly.parse(item[fieldConf[key]!.displayName]!.toString()),
+          );
+        }
+        else if (
+          fieldConf[key]!.type &&
+          "name" in fieldConf[key]!.type &&
+          fieldConf[key]!.type.name === "DateTime" &&
+          !(item[fieldConf[key]!.displayName] instanceof DateTime)
+        ) {
+          ObjectUtils.setChainValue(
+            obj, key,
+            item[fieldConf[key]!.displayName] == null ? undefined
+              : DateTime.parse(item[fieldConf[key]!.displayName]!.toString()),
+          );
+        }
+        else {
+          ObjectUtils.setChainValue(
+            obj, key,
+            item[fieldConf[key]!.displayName],
+          );
+        }
+      }
+      excelItems.push(obj);
+    }
+    if (excelItems.length === 0) throw Error("엑셀파일에서 데이터를 찾을 수 없습니다.");
+
+    ObjectUtils.validateArrayWithThrow(wsName, excelItems, def);
+
+    return excelItems;
   }
 
   private async _getDataAsync(): Promise<SdExcelXmlWorksheet> {
