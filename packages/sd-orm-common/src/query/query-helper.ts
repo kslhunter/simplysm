@@ -689,11 +689,20 @@ export class QueryHelper {
     }
   }
 
-  public rowIndex(orderBy: [TEntityValue<TQueryValue>, "asc" | "desc"][]): QueryUnit<number> {
+  public rowIndex(
+    orderBy: [TEntityValue<TQueryValue>, "asc" | "desc"][],
+    groupBy?: TEntityValue<TQueryValue>[],
+  ): QueryUnit<number> {
     return new QueryUnit<number>(
       Number,
       [
-        "ROW_NUMBER() OVER(ORDER BY ",
+        "ROW_NUMBER() OVER(",
+        ...groupBy ? [
+          "PARTITION BY ",
+          ...groupBy.mapMany(item => [", ", this.getQueryValue(item)]).slice(1),
+          " "
+        ] : [],
+        "ORDER BY ",
         orderBy.map((item) => this.getQueryValue(item[0]) + " " + item[1].toUpperCase()).join(" "),
         ")",
       ],
