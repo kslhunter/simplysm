@@ -1,17 +1,35 @@
-import {
-  DateOnly,
-  DateTime,
-  NumberUtils,
-  ObjectUtils,
-  TValidateObjectDefWithName,
-} from "@simplysm/sd-core-common";
+import { DateOnly, DateTime, NumberUtils, ObjectUtils, Type } from "@simplysm/sd-core-common";
 import { SdExcelWorkbook } from "../sd-excel-workbook";
 
-export class SdExcelWrapper<T extends Record<string, any>> {
-  constructor(private _fieldConf: (item?: T) => TValidateObjectDefWithName<T>) {
+type TValidFieldSpec<T extends Type<any>> = {
+  displayName: string;
+  type: T;
+  notnull?: boolean;
+};
+
+type TValidObject = Record<string, TValidFieldSpec<any>>;
+
+type TInferField<T extends Type<any>> =
+  T extends StringConstructor ? string :
+    T extends NumberConstructor ? number :
+      T extends BooleanConstructor ? boolean :
+        T extends DateConstructor ? Date :
+          InstanceType<T>;
+
+type TValidateObjectRecord<VT extends TValidObject> = {
+  [P in keyof VT as VT[P]["notnull"] extends true ? P : never]: TInferField<VT[P]["type"]>
+} & {
+  [P in keyof VT as VT[P]["notnull"] extends true ? never : P]?: TInferField<VT[P]["type"]>
+};
+
+export class SdExcelWrapper<VT extends TValidObject> {
+  constructor(private _fieldConf: (item?: TValidateObjectRecord<VT>) => VT) {
   }
 
-  async writeAsync(wsName: string, items: T[]): Promise<SdExcelWorkbook> {
+  async writeAsync(
+    wsName: string,
+    items: TValidateObjectRecord<VT>[],
+  ): Promise<SdExcelWorkbook> {
     const wb = SdExcelWorkbook.create();
     const ws = await wb.createWorksheetAsync(wsName);
 
@@ -27,86 +45,90 @@ export class SdExcelWrapper<T extends Record<string, any>> {
     return wb;
   }
 
-  async readAsync(file: Buffer | Blob, wsNameOrIndex: string | number = 0): Promise<T[]> {
+  async readAsync(
+    file: Buffer | Blob,
+    wsNameOrIndex: string | number = 0,
+  ): Promise<TValidateObjectRecord<VT>[]> {
     const wb = await SdExcelWorkbook.loadAsync(file);
     const ws = await wb.getWorksheetAsync(wsNameOrIndex);
     const wsName = await ws.getNameAsync();
-    const wsdt = await ws.getDataTableAsync() as any[];
 
-    const excelItems: T[] = [];
+    const defaultFieldConf = this._fieldConf();
+    const headers = Object.keys(defaultFieldConf).map(key => defaultFieldConf[key].displayName);
+
+    const wsdt = await ws.getDataTableAsync({
+      usableHeaderNameFn: headerName => headers.includes(headerName),
+    }) as any[];
+
+    const excelItems: TValidateObjectRecord<VT>[] = [];
     for (const item of wsdt) {
       const fieldConf = this._fieldConf(item);
 
       const firstNotNullFieldKey = Object.keys(fieldConf)
-        .first(key => fieldConf[key]?.notnull ?? false);
+        .first(key => fieldConf[key].notnull ?? false);
       if (firstNotNullFieldKey == null) throw new Error("Not Null 필드가 없습니다.");
-      const firstNotNullFieldDisplayName = fieldConf[firstNotNullFieldKey]!.displayName;
+      const firstNotNullFieldDisplayName = fieldConf[firstNotNullFieldKey].displayName;
 
       if (item[firstNotNullFieldDisplayName] == null) continue;
 
       const obj = {} as any;
       for (const key of Object.keys(fieldConf)) {
         if (
-          fieldConf[key]!.type &&
-          "name" in fieldConf[key]!.type &&
-          fieldConf[key]!.type.name === "Boolean" &&
-          fieldConf[key]!.notnull
+          "name" in fieldConf[key].type &&
+          fieldConf[key].type.name === "Boolean" &&
+          fieldConf[key].notnull
         ) {
           ObjectUtils.setChainValue(
             obj, key,
-            item[fieldConf[key]!.displayName] ?? false,
+            item[fieldConf[key].displayName] ?? false,
           );
         }
         else if (
-          fieldConf[key]!.type &&
-          "name" in fieldConf[key]!.type &&
-          fieldConf[key]!.type.name === "String" &&
-          typeof item[fieldConf[key]!.displayName] !== "string"
+          "name" in fieldConf[key].type &&
+          fieldConf[key].type.name === "String" &&
+          typeof item[fieldConf[key].displayName] !== "string"
         ) {
           ObjectUtils.setChainValue(
             obj, key,
-            item[fieldConf[key]!.displayName]?.toString(),
+            item[fieldConf[key].displayName]?.toString(),
           );
         }
         else if (
-          fieldConf[key]!.type &&
-          "name" in fieldConf[key]!.type &&
-          fieldConf[key]!.type.name === "Number" &&
-          typeof item[fieldConf[key]!.displayName] !== "number"
+          "name" in fieldConf[key].type &&
+          fieldConf[key].type.name === "Number" &&
+          typeof item[fieldConf[key].displayName] !== "number"
         ) {
           ObjectUtils.setChainValue(
             obj, key,
-            NumberUtils.parseInt(item[fieldConf[key]!.displayName]),
+            NumberUtils.parseInt(item[fieldConf[key].displayName]),
           );
         }
         else if (
-          fieldConf[key]!.type &&
-          "name" in fieldConf[key]!.type &&
-          fieldConf[key]!.type.name === "DateOnly" &&
-          !(item[fieldConf[key]!.displayName] instanceof DateOnly)
+          "name" in fieldConf[key].type &&
+          fieldConf[key].type.name === "DateOnly" &&
+          !(item[fieldConf[key].displayName] instanceof DateOnly)
         ) {
           ObjectUtils.setChainValue(
             obj, key,
-            item[fieldConf[key]!.displayName] == null ? undefined
-              : DateOnly.parse(item[fieldConf[key]!.displayName]!.toString()),
+            item[fieldConf[key].displayName] == null ? undefined
+              : DateOnly.parse(item[fieldConf[key].displayName]!.toString()),
           );
         }
         else if (
-          fieldConf[key]!.type &&
-          "name" in fieldConf[key]!.type &&
-          fieldConf[key]!.type.name === "DateTime" &&
-          !(item[fieldConf[key]!.displayName] instanceof DateTime)
+          "name" in fieldConf[key].type &&
+          fieldConf[key].type.name === "DateTime" &&
+          !(item[fieldConf[key].displayName] instanceof DateTime)
         ) {
           ObjectUtils.setChainValue(
             obj, key,
-            item[fieldConf[key]!.displayName] == null ? undefined
-              : DateTime.parse(item[fieldConf[key]!.displayName]!.toString()),
+            item[fieldConf[key].displayName] == null ? undefined
+              : DateTime.parse(item[fieldConf[key].displayName]!.toString()),
           );
         }
         else {
           ObjectUtils.setChainValue(
             obj, key,
-            item[fieldConf[key]!.displayName],
+            item[fieldConf[key].displayName],
           );
         }
       }

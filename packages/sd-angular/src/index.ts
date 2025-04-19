@@ -10,6 +10,7 @@ export * from "./commons";
 export * from "./controls/sd-additional-button.control";
 export * from "./controls/sd-anchor.control";
 export * from "./controls/sd-barcode.control";
+export * from "./controls/sd-barcode2.control";
 export * from "./controls/sd-busy-container.control";
 export * from "./controls/sd-button.control";
 export * from "./controls/sd-calendar.control";

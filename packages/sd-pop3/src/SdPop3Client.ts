@@ -38,6 +38,13 @@ export class SdPop3Client {
       client.on("data", async (chunk) => {
         buffer += chunk;
 
+        if (buffer.toString().startsWith("-ERR")) {
+          reject(new Error(buffer.toString()));
+          await sendAsync(`QUIT`);
+          client.end();
+          return;
+        }
+
         if (
           (
             ["LIST", "RETR", "UIDL", "TOP"].includes(lastInfo?.cmd.split(" ")[0] ?? "") &&
@@ -60,19 +67,14 @@ export class SdPop3Client {
               await sendAsync(`QUIT`);
               client.end();
             }
-            else if (res.startsWith("-ERR")) {
-              await sendAsync(`QUIT`);
-              client.end();
-              reject(new Error(res));
-            }
             else {
               lastInfo?.resolve(res);
             }
           }
           catch (err) {
             await sendAsync(`QUIT`);
-            client.end();
             reject(err);
+            client.end();
           }
         }
       });

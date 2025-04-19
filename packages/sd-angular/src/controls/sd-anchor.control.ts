@@ -1,6 +1,10 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
 import { transformBoolean } from "../utils/type-tramsforms";
 
+/**
+ * 앵커 컨트롤 컴포넌트
+ * 클릭 가능한 앵커 링크를 표시하는 컴포넌트
+ */
 @Component({
   selector: "sd-anchor",
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -43,7 +47,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
           }
         }
 
-        &[disabled="true"] {
+        &[sd-disabled="true"] {
           color: var(--theme-grey-light);
           cursor: default;
           pointer-events: none;
@@ -53,11 +57,15 @@ import { transformBoolean } from "../utils/type-tramsforms";
   ],
   host: {
     "[attr.sd-theme]": "theme()",
-    "[attr.disabled]": "disabled()",
+    "[attr.sd-disabled]": "disabled()",
     "[attr.tabindex]": "disabled() ? undefined : 0",
   },
 })
 export class SdAnchorControl {
+  /** 비활성화 여부 */
   disabled = input(false, { transform: transformBoolean });
-  theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey">("primary");
+
+  /** 테마 - 컴포넌트의 색상 테마를 설정 */
+  theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey">(
+    "primary");
 }
