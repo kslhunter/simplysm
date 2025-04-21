@@ -19,7 +19,8 @@ export class SdPrintProvider {
     printType: Type<T>,
     params: T["__tInput__"],
     options?: {
-      orientation?: "portrait" | "landscape";
+      size?: string;
+      margin?: string;
     },
   ): Promise<void> {
     await new Promise<void>((resolve) => {
@@ -36,7 +37,8 @@ export class SdPrintProvider {
       const styleEl = document.createElement("style");
       styleEl.innerHTML = `   
   @page {
-      size: ${options?.orientation ?? "portrait"}; margin: 0;
+      size: ${options?.size ?? "A4 auto"}; 
+      margin: ${options?.margin ?? "0"};
   }
   body > ._sd-print-template { display: none; }
   @media print
@@ -51,10 +53,12 @@ export class SdPrintProvider {
           () => {
             document.body.appendChild(compEl);
             document.head.appendChild(styleEl);
-            window.print();
-            compRef.destroy();
-            styleEl.remove();
-            resolve();
+            requestAnimationFrame(() => {
+              window.print();
+              compRef.destroy();
+              styleEl.remove();
+              resolve();
+            });
           },
           { injector: compRef.injector },
         );

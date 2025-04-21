@@ -5,15 +5,7 @@ import { SdExcelRow } from "./sd-excel-row";
 import { SdExcelCell } from "./sd-excel-cell";
 import { SdExcelXmlWorkbook } from "./xmls/sd-excel-xml-workbook";
 import { SdExcelCol } from "./sd-excel-col";
-import {
-  DateOnly,
-  DateTime,
-  NumberUtils,
-  ObjectUtils,
-  StringUtils,
-  TValidateObjectDefWithName,
-  UnwrappedType,
-} from "@simplysm/sd-core-common";
+import { StringUtils } from "@simplysm/sd-core-common";
 import { SdExcelUtils } from "./utils/sd-excel.utils";
 
 export class SdExcelWorksheet {
@@ -147,7 +139,7 @@ export class SdExcelWorksheet {
     }
   }
 
-  async getRecordsAsync<T extends Record<string, any>>(def: ((item: T) => TValidateObjectDefWithName<T>) | TValidateObjectDefWithName<T>): Promise<{ [P in keyof T]: UnwrappedType<T[P]> }[]> {
+  /*async getRecordsAsync<T extends Record<string, any>>(def: ((item: T) => TValidateObjectDefWithName<T>) | TValidateObjectDefWithName<T>): Promise<{ [P in keyof T]: UnwrappedType<T[P]> }[]> {
     const wsName = await this.getNameAsync();
 
     const wsdt: any[] = typeof def === "function"
@@ -242,7 +234,7 @@ export class SdExcelWorksheet {
     ObjectUtils.validateArrayWithThrow(wsName, excelItems, def);
 
     return excelItems;
-  }
+  }*/
 
   private async _getDataAsync(): Promise<SdExcelXmlWorksheet> {
     return await this._zipCache.getAsync(`xl/worksheets/${this._targetFileName}`) as SdExcelXmlWorksheet;
