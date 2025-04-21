@@ -16,30 +16,20 @@ export class CordovaAppStorage {
     return StringUtils.isNullOrEmpty(fileStr) ? undefined : JsonConvert.parse(fileStr);
   }
 
-  async readFileBufferAsync(filePath: string): Promise<Buffer | undefined> {
+  async readFileBufferAsync(filePath: string): Promise<Buffer> {
     const fullUrl = this.getFullUrl(filePath);
     const dirUrl = path.dirname(fullUrl);
     const fileName = path.basename(fullUrl);
 
-    if (await this.exists(filePath)) {
-      return Buffer.from(await File.readAsArrayBuffer(dirUrl, fileName));
-    }
-    else {
-      return undefined;
-    }
+    return Buffer.from(await File.readAsArrayBuffer(dirUrl, fileName));
   }
 
-  async readFileAsync(filePath: string): Promise<string | undefined> {
+  async readFileAsync(filePath: string): Promise<string> {
     const fullUrl = this.getFullUrl(filePath);
     const dirUrl = path.dirname(fullUrl);
     const fileName = path.basename(fullUrl);
 
-    if (await this.exists(filePath)) {
-      return await File.readAsText(dirUrl, fileName);
-    }
-    else {
-      return undefined;
-    }
+    return await File.readAsText(dirUrl, fileName);
   }
 
   async writeJsonAsync(filePath: string, data: any) {
@@ -56,28 +46,31 @@ export class CordovaAppStorage {
     await File.writeFile(dirUrl, fileName, data, { replace: true });
   }
 
-  async readdirAsync(dirPath: string) {
+  // Android SDK >= 33 에 권한 오류발생
+  /*async readdirAsync(dirPath: string) {
     const fullUrl = this.getFullUrl(dirPath);
     const dirUrl = path.dirname(fullUrl);
     const dirName = path.basename(fullUrl);
 
     const entries = await File.listDir(dirUrl, dirName);
     return entries.map((item) => item.name);
-  }
+  }*/
 
-  async exists(targetPath: string) {
+  // Android SDK >= 33 에 권한 오류발생
+  /*async exists(targetPath: string) {
     const fullUrl = this.getFullUrl(targetPath);
     const dirUrl = path.dirname(fullUrl);
     const dirOrFileName = path.basename(fullUrl);
 
     try {
-      const list = await File.listDir(path.dirname(dirUrl), path.basename(dirUrl));
+      console.log(path.dirname(dirUrl), path.basename(dirUrl));
+      const list = await File.listDir(path.dirname(dirUrl) + "/", path.basename(dirUrl));
       return list.some((item) => item.name === dirOrFileName);
     }
-    catch {
-      return false;
+    catch (err) {
+      throw new SdError(err, "CordovaAppStorage Error: exists");
     }
-  }
+  }*/
 
   async removeAsync(dirOrFilePath: string) {
     const fullUrl = this.getFullUrl(dirOrFilePath);
@@ -97,11 +90,13 @@ export class CordovaAppStorage {
   }
 
   getFullUrl(targetPath: string) {
-    return path.join(this.#rootDirectoryUrl, targetPath);
+    return this.#rootDirectoryUrl + (targetPath.startsWith("/")
+      ? targetPath.substring(1)
+      : targetPath);
   }
 
   getFullPath(targetPath: string) {
-    return path.join(this.#rootDirectoryUrl, targetPath).replace(/^file:/, "");
+    return "/" + this.getFullUrl(targetPath).replace(/^file:\/*/, "");
   }
 
   async #mkdirAsync(dirPath: string) {

@@ -5,6 +5,7 @@ type TValidFieldSpec<T extends Type<any>> = {
   displayName: string;
   type: T;
   notnull?: boolean;
+  includes?: InstanceType<T>[];
 };
 
 type TValidObject = Record<string, TValidFieldSpec<any>>;
@@ -16,10 +17,14 @@ type TInferField<T extends Type<any>> =
         T extends DateConstructor ? Date :
           InstanceType<T>;
 
+type TFieldValue<T extends TValidFieldSpec<any>> = T["includes"] extends Array<infer U>
+  ? U
+  : TInferField<T["type"]>;
+
 type TValidateObjectRecord<VT extends TValidObject> = {
-  [P in keyof VT as VT[P]["notnull"] extends true ? P : never]: TInferField<VT[P]["type"]>
+  [P in keyof VT as VT[P]["notnull"] extends true ? P : never]: TFieldValue<VT[P]>
 } & {
-  [P in keyof VT as VT[P]["notnull"] extends true ? never : P]?: TInferField<VT[P]["type"]>
+  [P in keyof VT as VT[P]["notnull"] extends true ? never : P]?: TFieldValue<VT[P]>
 };
 
 export class SdExcelWrapper<VT extends TValidObject> {
