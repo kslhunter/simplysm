@@ -111,19 +111,6 @@ import { SdIconControl } from "./sd-icon.control";
           }
         }
 
-        > ._menu {
-          display: flex;
-          flex-wrap: nowrap;
-          flex-direction: row;
-          flex-grow: 1;
-          gap: var(--gap-sm);
-          padding-right: var(--gap-default);
-
-          body.sd-theme-mobile & {
-            justify-content: end;
-          }
-        }
-
         body.sd-theme-mobile & {
           background: var(--background-color);
         }
@@ -141,9 +128,7 @@ import { SdIconControl } from "./sd-icon.control";
 
     <ng-content />
 
-    <div class="_menu">
-      <ng-content select="sd-topbar-menu"></ng-content>
-    </div>
+    <ng-content select="sd-topbar-menu"></ng-content>
   `,
 })
 export class SdTopbarControl {

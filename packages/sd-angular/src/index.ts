@@ -73,6 +73,7 @@ export * from "./controls/sd-theme-selector.control";
 export * from "./controls/sd-toast-container.control";
 export * from "./controls/sd-toast.control";
 export * from "./controls/sd-topbar-container.control";
+export * from "./controls/sd-topbar-menu-item.control";
 export * from "./controls/sd-topbar-menu.control";
 export * from "./controls/sd-topbar-nav.control";
 export * from "./controls/sd-topbar-tab.control";

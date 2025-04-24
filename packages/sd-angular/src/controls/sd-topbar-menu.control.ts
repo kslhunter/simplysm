@@ -1,6 +1,4 @@
-import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
-import { useRipple } from "../utils/use-ripple";
-import { transformBoolean } from "../utils/type-tramsforms";
+import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/core";
 
 @Component({
   selector: "sd-topbar-menu",
@@ -16,45 +14,21 @@ import { transformBoolean } from "../utils/type-tramsforms";
       @use "../scss/mixins";
 
       sd-topbar-menu {
-        display: inline-block;
-        cursor: pointer;
-        transition: background 0.1s linear;
-        font-weight: bold;
-        padding: var(--gap-sm) var(--gap-default);
-        border-radius: var(--border-radius-default);
+        display: flex;
+        flex-wrap: nowrap;
+        flex-direction: row;
+        flex-grow: 1;
+        gap: var(--gap-sm);
+        padding-right: var(--gap-default);
 
-        &:hover {
-          background: var(--theme-grey-lightest);
-        }
-
-        @each $key, $val in map.get(variables.$vars, theme) {
-          &[sd-theme="#{$key}"] {
-            color: var(--theme-#{$key}-default);
-
-            /*&:hover {
-            background: var(--theme-#{$key}-lightest);
-          }*/
-          }
-        }
-
-        &[disabled="true"] {
-          pointer-events: none;
-          opacity: 0.5;
+        body.sd-theme-mobile & {
+          justify-content: end;
         }
       }
     `,
   ],
-  template: ` <ng-content></ng-content>`,
-  host: {
-    "[attr.disabled]": "disabled()",
-    "[attr.sd-theme]": "theme()",
-  },
+  template: `
+    <ng-content></ng-content>`,
 })
 export class SdTopbarMenuControl {
-  disabled = input(false, { transform: transformBoolean });
-  theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey">("primary");
-
-  constructor() {
-    useRipple(() => !this.disabled());
-  }
 }
