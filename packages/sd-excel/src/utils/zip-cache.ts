@@ -10,6 +10,7 @@ import { SdExcelXmlStyle } from "../xmls/sd-excel-xml-style";
 import {
   BlobReader,
   BlobWriter,
+  Entry,
   TextReader,
   Uint8ArrayReader,
   Uint8ArrayWriter,
@@ -20,14 +21,18 @@ import {
 export class ZipCache {
   private readonly _cache = new Map<string, ISdExcelXml | Buffer>();
 
-  constructor(private readonly _reader?: ZipReader<unknown>) {
+  constructor(private readonly _entries?: Entry[]) {
   }
 
-  static from(arg: Blob | Buffer) {
-    const reader = new ZipReader(
-      arg instanceof Blob ? new BlobReader(arg) : new Uint8ArrayReader(arg),
-    );
-    return new ZipCache(reader);
+  static async fromAsync(arg: Blob | Buffer) {
+    if (Buffer.isBuffer(arg)) {
+      const reader = new ZipReader(new Uint8ArrayReader(new Uint8Array(arg)));
+      return new ZipCache(await reader.getEntries());
+    }
+    else {
+      const reader = new ZipReader(new BlobReader(arg));
+      return new ZipCache(await reader.getEntries());
+    }
   }
 
   /*keys(): IterableIterator<string> {
@@ -39,11 +44,11 @@ export class ZipCache {
       return this._cache.get(filePath)!;
     }
 
-    if (!this._reader) {
+    if (!this._entries) {
       return undefined;
     }
 
-    const entry = (await this._reader.getEntries()).single(item => item.filename === filePath);
+    const entry = this._entries.single(item => item.filename === filePath);
     if (!entry) {
       return undefined;
     }
@@ -89,12 +94,15 @@ export class ZipCache {
   async toBufferAsync(): Promise<Buffer> {
     const writer = new ZipWriter(new Uint8ArrayWriter());
 
-    if (this._reader) {
-      const entries = await this._reader.getEntries();
-
-      for (const entry of entries) {
+    if (this._entries) {
+      const cacheKeys = Array.from(this._cache.keys());
+      for (const entry of this._entries) {
         if (entry.directory) {
           // 디렉토리는 추가하지 않아도 된다 (ZipWriter가 알아서 생성)
+          continue;
+        }
+        if (cacheKeys.includes(entry.filename)) {
+          // 캐시에 있는건 캐시데이터 사용
           continue;
         }
 

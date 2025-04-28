@@ -18,16 +18,8 @@ export class SdExcelWorkbook {
   }
 
   static async loadAsync(arg: Buffer | Blob): Promise<SdExcelWorkbook> {
-    if (Buffer.isBuffer(arg)) {
-      const fileCache = ZipCache.from(arg);
-      return new SdExcelWorkbook(fileCache);
-    }
-    else {
-      const arrayBuffer = await arg.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-      const fileCache = ZipCache.from(buffer);
-      return new SdExcelWorkbook(fileCache);
-    }
+    const fileCache = await ZipCache.fromAsync(arg);
+    return new SdExcelWorkbook(fileCache);
   }
 
   static create(): SdExcelWorkbook {
