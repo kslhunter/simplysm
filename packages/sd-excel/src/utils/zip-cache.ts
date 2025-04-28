@@ -7,41 +7,48 @@ import { SdExcelXmlWorksheet } from "../xmls/sd-excel-xml-worksheet";
 import { SdExcelXmlSharedString } from "../xmls/sd-excel-xml-shared-string";
 import { SdExcelXmlUnknown } from "../xmls/sd-excel-xml-unknown";
 import { SdExcelXmlStyle } from "../xmls/sd-excel-xml-style";
-import * as fflate from "fflate";
+import {
+  BlobReader,
+  BlobWriter,
+  TextReader,
+  Uint8ArrayReader,
+  Uint8ArrayWriter,
+  ZipReader,
+  ZipWriter,
+} from "@zip.js/zip.js";
 
 export class ZipCache {
   private readonly _cache = new Map<string, ISdExcelXml | Buffer>();
 
-  constructor(private readonly _files: fflate.Unzipped = {}) {
+  constructor(private readonly _reader?: ZipReader<unknown>) {
   }
 
-  static fromBufferAsync(arg: Buffer) {
-    return new Promise<ZipCache>((resolve, reject) => {
-      fflate.unzip(arg, (err: fflate.FlateError | null, data: fflate.Unzipped) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-
-        resolve(new ZipCache(data));
-      });
-    });
+  static from(arg: Blob | Buffer) {
+    const reader = new ZipReader(
+      arg instanceof Blob ? new BlobReader(arg) : new Uint8ArrayReader(arg),
+    );
+    return new ZipCache(reader);
   }
 
   /*keys(): IterableIterator<string> {
     return this._cache.keys();
   }*/
 
-  get(filePath: string): ISdExcelXml | Buffer | undefined {
+  async getAsync(filePath: string): Promise<ISdExcelXml | Buffer | undefined> {
     if (this._cache.has(filePath)) {
       return this._cache.get(filePath)!;
     }
 
-    if (!(filePath in this._files)) {
+    if (!this._reader) {
       return undefined;
     }
 
-    const fileData = this._files[filePath];
+    const entry = (await this._reader.getEntries()).single(item => item.filename === filePath);
+    if (!entry) {
+      return undefined;
+    }
+
+    const fileData = await entry.getData!(new Uint8ArrayWriter());
 
     if (filePath.endsWith(".xml") || filePath.endsWith(".rels")) {
       const fileText = new TextDecoder().decode(fileData);
@@ -80,26 +87,33 @@ export class ZipCache {
   }
 
   async toBufferAsync(): Promise<Buffer> {
+    const writer = new ZipWriter(new Uint8ArrayWriter());
+
+    if (this._reader) {
+      const entries = await this._reader.getEntries();
+
+      for (const entry of entries) {
+        if (entry.directory) {
+          // 디렉토리는 추가하지 않아도 된다 (ZipWriter가 알아서 생성)
+          continue;
+        }
+
+        const fileData = await entry.getData!(new BlobWriter());
+        await writer.add(entry.filename, new BlobReader(fileData));
+      }
+    }
+
     for (const filePath of this._cache.keys()) {
       const content = this._cache.get(filePath)!;
       if ("cleanup" in content) {
         content.cleanup();
-        this._files[filePath] = new TextEncoder().encode(XmlConvert.stringify(content.data));
+        await writer.add(filePath, new TextReader(XmlConvert.stringify(content.data)));
       }
       else {
-        this._files[filePath] = content;
+        await writer.add(filePath, new Uint8ArrayReader(content));
       }
     }
 
-    return await new Promise<Buffer>((resolve, reject) => {
-      fflate.zip(this._files, (err: fflate.FlateError | null, data: Uint8Array) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-
-        resolve(Buffer.from(data));
-      });
-    });
+    return Buffer.from(await writer.close());
   }
 }
