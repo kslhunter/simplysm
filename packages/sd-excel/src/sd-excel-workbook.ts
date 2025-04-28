@@ -1,31 +1,36 @@
-import JSZip from "jszip";
 import { SdExcelWorksheet } from "./sd-excel-worksheet";
 import { SdExcelXmlRelationShip } from "./xmls/sd-excel-xml-relation-ship";
 import { SdExcelXmlWorkbook } from "./xmls/sd-excel-xml-workbook";
 import { SdExcelXmlContentType } from "./xmls/sd-excel-xml-content-type";
 import { SdExcelXmlWorksheet } from "./xmls/sd-excel-xml-worksheet";
 import { ZipCache } from "./utils/zip-cache";
-import { ISdExcelXml } from "./types";
 import * as path from "path";
 
 export class SdExcelWorkbook {
-  public async getWorksheetNamesAsync(): Promise<string[]> {
-    const wbData = await this.zipCache.getAsync("xl/workbook.xml") as SdExcelXmlWorkbook;
-    return wbData.worksheetNames;
+  get sheetNames(): string[] {
+    const wbData = this.zipCache.get("xl/workbook.xml") as SdExcelXmlWorkbook;
+    return wbData.sheetNames;
   }
 
-  private readonly _wsMap = new Map<number, SdExcelWorksheet>();
+  #wsMap = new Map<number, SdExcelWorksheet>();
 
-  private constructor(public readonly zipCache: ZipCache) {
+  private constructor(public zipCache: ZipCache) {
   }
 
-  public static async loadAsync(arg: Buffer | Blob): Promise<SdExcelWorkbook> {
-    const zip = await new JSZip().loadAsync(arg);
-    const fileCache = new ZipCache(zip);
-    return new SdExcelWorkbook(fileCache);
+  static async loadAsync(arg: Buffer | Blob): Promise<SdExcelWorkbook> {
+    if (Buffer.isBuffer(arg)) {
+      const fileCache = ZipCache.fromBuffer(arg);
+      return new SdExcelWorkbook(fileCache);
+    }
+    else {
+      const arrayBuffer = await arg.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      const fileCache = ZipCache.fromBuffer(buffer);
+      return new SdExcelWorkbook(fileCache);
+    }
   }
 
-  public static create(): SdExcelWorkbook {
+  static create(): SdExcelWorkbook {
     const fileCache = new ZipCache();
 
     //-- Global ContentTypes
@@ -53,20 +58,20 @@ export class SdExcelWorkbook {
     return new SdExcelWorkbook(fileCache);
   }
 
-  public async createWorksheetAsync(name: string): Promise<SdExcelWorksheet> {
+  createWorksheet(name: string): SdExcelWorksheet {
     //-- Workbook
-    const wbXml = await this.zipCache.getAsync("xl/workbook.xml") as SdExcelXmlWorkbook;
+    const wbXml = this.zipCache.get("xl/workbook.xml") as SdExcelXmlWorkbook;
     const newWsRelId = wbXml.addWorksheet(name).lastWsRelId!;
 
     //-- Content Types
-    const typeXml = await this.zipCache.getAsync("[Content_Types].xml") as SdExcelXmlContentType;
+    const typeXml = this.zipCache.get("[Content_Types].xml") as SdExcelXmlContentType;
     typeXml.add(
       `/xl/worksheets/sheet${newWsRelId}.xml`,
       "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml",
     );
 
     //-- Workbook Rels
-    const wbRelXml = await this.zipCache.getAsync("xl/_rels/workbook.xml.rels") as SdExcelXmlRelationShip;
+    const wbRelXml = this.zipCache.get("xl/_rels/workbook.xml.rels") as SdExcelXmlRelationShip;
     wbRelXml.insert(
       newWsRelId,
       `worksheets/sheet${newWsRelId}.xml`,
@@ -78,12 +83,12 @@ export class SdExcelWorkbook {
     this.zipCache.set(`xl/worksheets/sheet${newWsRelId}.xml`, wsXml);
 
     const ws = new SdExcelWorksheet(this.zipCache, newWsRelId, `sheet${newWsRelId}.xml`);
-    this._wsMap.set(newWsRelId, ws);
+    this.#wsMap.set(newWsRelId, ws);
     return ws;
   }
 
-  public async getWorksheetAsync(nameOrIndex: string | number): Promise<SdExcelWorksheet> {
-    const wbData = await this.zipCache.getAsync("xl/workbook.xml") as SdExcelXmlWorkbook;
+  getWorksheet(nameOrIndex: string | number): SdExcelWorksheet {
+    const wbData = this.zipCache.get("xl/workbook.xml") as SdExcelXmlWorkbook;
     const wsId = typeof nameOrIndex === "string"
       ? wbData.getWsRelIdByName(nameOrIndex)
       : wbData.getWsRelIdByIndex(nameOrIndex);
@@ -95,27 +100,32 @@ export class SdExcelWorkbook {
         throw new Error(`'${nameOrIndex}'번째 시트를 찾을 수 없습니다.`);
       }
     }
-    if (this._wsMap.has(wsId)) {
-      return this._wsMap.get(wsId)!;
+    if (this.#wsMap.has(wsId)) {
+      return this.#wsMap.get(wsId)!;
     }
 
-    const relData = await this.zipCache.getAsync("xl/_rels/workbook.xml.rels") as SdExcelXmlRelationShip;
+    const relData = this.zipCache.get("xl/_rels/workbook.xml.rels") as SdExcelXmlRelationShip;
     const targetFilePath = relData.getTargetByRelId(wsId)!;
 
     const ws = new SdExcelWorksheet(this.zipCache, wsId, path.basename(targetFilePath));
-    this._wsMap.set(wsId, ws);
+    this.#wsMap.set(wsId, ws);
     return ws;
   }
 
-  public async getCustomFileDataAsync(filePath: string): Promise<ISdExcelXml | Buffer | undefined> {
+  /*public async getCustomFileDataAsync(filePath: string): Promise<ISdExcelXml | Buffer | undefined> {
     return await this.zipCache.getAsync(filePath);
+  }*/
+
+  getBuffer(): Buffer {
+    return this.zipCache.toBuffer();
   }
 
-  public async getBufferAsync(): Promise<Buffer> {
-    return await this.zipCache.getZip().generateAsync({ type: "nodebuffer" });
-  }
-
-  public async getBlobAsync(): Promise<Blob> {
-    return await this.zipCache.getZip().generateAsync({ type: "blob" });
+  getBlob(): Blob {
+    const buffer = this.zipCache.toBuffer();
+    const uint8Array = new Uint8Array(buffer);
+    return new Blob(
+      [uint8Array],
+      { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" },
+    );
   }
 }

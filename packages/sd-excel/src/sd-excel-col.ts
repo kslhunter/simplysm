@@ -19,10 +19,10 @@ export class SdExcelCol {
     );
   }
 
-  async getCellsAsync(): Promise<SdExcelCell[]> {
+  getCells(): SdExcelCell[] {
     const result: SdExcelCell[] = [];
 
-    const wsData = await this.#getWsDataAsync();
+    const wsData = this.#getWsData();
 
     const range = wsData.range;
     for (let r = range.s.r; r <= range.e.r; r++) {
@@ -32,12 +32,12 @@ export class SdExcelCol {
     return result;
   }
 
-  async setWidth(size: number): Promise<void> {
-    const wsData = await this.#getWsDataAsync();
+  setWidth(size: number) {
+    const wsData = this.#getWsData();
     wsData.setColWidth((this._c + 1).toString(), size.toString());
   }
 
-  async #getWsDataAsync(): Promise<SdExcelXmlWorksheet> {
-    return await this._zipCache.getAsync(`xl/worksheets/${this._targetFileName}`) as SdExcelXmlWorksheet;
+  #getWsData(): SdExcelXmlWorksheet {
+    return this._zipCache.get(`xl/worksheets/${this._targetFileName}`) as SdExcelXmlWorksheet;
   }
 }

@@ -39,35 +39,35 @@ export class SdExcelWrapper<VT extends TValidObject> {
   ) {
   }
 
-  async writeAsync(
+  write(
     wsName: string,
     items: TValidateObjectRecord<VT>[],
-  ): Promise<SdExcelWorkbook> {
+  ): SdExcelWorkbook {
     const wb = SdExcelWorkbook.create();
-    const ws = await wb.createWorksheetAsync(wsName);
+    const ws = wb.createWorksheet(wsName);
 
     const keys = Object.keys(this._fieldConf);
     const headers = Object.values(this._fieldConf).map(val => val.displayName);
 
-    await ws.setDataMatrixAsync([
+    ws.setDataMatrix([
       headers,
       ...items.map((item) => keys.map(key => ObjectUtils.getChainValue(item, key))),
     ]);
 
     for (let r = 0; r < items.length + 1; r++) {
       for (let c = 0; c < keys.length; c++) {
-        await ws.cell(r, c).style.setBorderAsync(["left", "right", "top", "bottom"]);
+        ws.cell(r, c).style.setBorder(["left", "right", "top", "bottom"]);
       }
     }
 
     for (let c = 0; c < keys.length; c++) {
       if (this._fieldConf[keys[c]].notnull) {
-        await ws.cell(0, c).style.setBackgroundAsync("00FFFF00");
+        ws.cell(0, c).style.setBackground("00FFFF00");
       }
     }
 
-    await ws.setZoomAsync(85);
-    await ws.setFixAsync({ r: 0 });
+    ws.setZoom(85);
+    ws.setFix({ r: 0 });
 
     return wb;
   }
@@ -77,13 +77,12 @@ export class SdExcelWrapper<VT extends TValidObject> {
     wsNameOrIndex: string | number = 0,
   ): Promise<TValidateObjectRecord<VT>[]> {
     const wb = await SdExcelWorkbook.loadAsync(file);
-    const ws = await wb.getWorksheetAsync(wsNameOrIndex);
-    const wsName = await ws.getNameAsync();
+    const ws = wb.getWorksheet(wsNameOrIndex);
 
     // const defaultFieldConf = this._fieldConf();
     const headers = Object.keys(this._fieldConf).map(key => this._fieldConf[key].displayName);
 
-    const wsdt = await ws.getDataTableAsync({
+    const wsdt = ws.getDataTable({
       usableHeaderNameFn: headerName => headers.includes(headerName),
     }) as any[];
 
@@ -165,7 +164,7 @@ export class SdExcelWrapper<VT extends TValidObject> {
     }
     if (excelItems.length === 0) throw Error("엑셀파일에서 데이터를 찾을 수 없습니다.");
 
-    ObjectUtils.validateArrayWithThrow(wsName, excelItems, item => {
+    ObjectUtils.validateArrayWithThrow(ws.name, excelItems, item => {
       return this._additionalFieldConf
         ? ObjectUtils.merge(this._fieldConf, this._additionalFieldConf(item))
         : this._fieldConf;

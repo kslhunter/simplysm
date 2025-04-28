@@ -19,7 +19,7 @@ export class SdExcelReader {
   public getWorkSheet(index: number): SdExcelReaderWorksheet;
   public getWorkSheet(arg: string | number): SdExcelReaderWorksheet {
     if (typeof arg === "number") {
-      if (!this._wb.SheetNames[arg]) {
+      if (!Boolean(this._wb.SheetNames[arg])) {
         throw new Error(`${arg + 1}번째 시트를 찾을 수 없습니다.`);
       }
       return new SdExcelReaderWorksheet(this._wb.Sheets[this._wb.SheetNames[0]]);

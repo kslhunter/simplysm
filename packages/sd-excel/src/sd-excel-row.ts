@@ -19,10 +19,10 @@ export class SdExcelRow {
     );
   }
 
-  async getCellsAsync(): Promise<SdExcelCell[]> {
+  getCells(): SdExcelCell[] {
     const result: SdExcelCell[] = [];
 
-    const wsData = await this.#getWsDataAsync();
+    const wsData = this.#getWsData();
 
     const range = wsData.range;
     for (let c = range.s.c; c <= range.e.c; c++) {
@@ -32,7 +32,7 @@ export class SdExcelRow {
     return result;
   }
 
-  async #getWsDataAsync(): Promise<SdExcelXmlWorksheet> {
-    return await this._zipCache.getAsync(`xl/worksheets/${this._targetFileName}`) as SdExcelXmlWorksheet;
+  #getWsData(): SdExcelXmlWorksheet {
+    return this._zipCache.get(`xl/worksheets/${this._targetFileName}`) as SdExcelXmlWorksheet;
   }
 }

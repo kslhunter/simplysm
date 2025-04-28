@@ -1,6 +1,5 @@
 import { ISdExcelXml } from "../types";
 import { XmlConvert } from "./xml-convert";
-import JSZip from "jszip";
 import { SdExcelXmlRelationShip } from "../xmls/sd-excel-xml-relation-ship";
 import { SdExcelXmlContentType } from "../xmls/sd-excel-xml-content-type";
 import { SdExcelXmlWorkbook } from "../xmls/sd-excel-xml-workbook";
@@ -8,29 +7,37 @@ import { SdExcelXmlWorksheet } from "../xmls/sd-excel-xml-worksheet";
 import { SdExcelXmlSharedString } from "../xmls/sd-excel-xml-shared-string";
 import { SdExcelXmlUnknown } from "../xmls/sd-excel-xml-unknown";
 import { SdExcelXmlStyle } from "../xmls/sd-excel-xml-style";
+import * as fflate from "fflate";
+import { zipSync } from "fflate";
 
 export class ZipCache {
   private readonly _cache = new Map<string, ISdExcelXml | Buffer>();
 
-  constructor(private readonly _zip: JSZip = new JSZip()) {
+  constructor(private readonly _files: fflate.Unzipped = {}) {
   }
 
-  public keys(): IterableIterator<string> {
+  static fromBuffer(arg: Buffer) {
+    return new ZipCache(fflate.unzipSync(arg));
+  }
+
+  /*keys(): IterableIterator<string> {
     return this._cache.keys();
-  }
+  }*/
 
-  public async getAsync(filePath: string): Promise<ISdExcelXml | Buffer | undefined> {
+  get(filePath: string): ISdExcelXml | Buffer | undefined {
     if (this._cache.has(filePath)) {
       return this._cache.get(filePath)!;
     }
 
-    const file = this._zip.file(filePath);
-    if (!file) {
+    if (!(filePath in this._files)) {
       return undefined;
     }
 
+    const fileData = this._files[filePath];
+
     if (filePath.endsWith(".xml") || filePath.endsWith(".rels")) {
-      const xml = XmlConvert.parse(await file.async("text"), { stripTagPrefix: true });
+      const fileText = new TextDecoder().decode(fileData);
+      const xml = XmlConvert.parse(fileText, { stripTagPrefix: true });
       if (filePath.endsWith(".rels")) {
         this._cache.set(filePath, new SdExcelXmlRelationShip(xml));
       }
@@ -54,29 +61,28 @@ export class ZipCache {
       }
     }
     else {
-      const buffer = await file.async("nodebuffer");
-      this._cache.set(filePath, buffer);
+      this._cache.set(filePath, Buffer.from(fileData));
     }
 
     return this._cache.get(filePath);
   }
 
-  public set(filePath: string, content: ISdExcelXml | Buffer): void {
+  set(filePath: string, content: ISdExcelXml | Buffer): void {
     this._cache.set(filePath, content);
   }
 
-  public getZip(): JSZip {
+  toBuffer(): Buffer {
     for (const filePath of this._cache.keys()) {
       const content = this._cache.get(filePath)!;
       if ("cleanup" in content) {
         content.cleanup();
-        this._zip.file(filePath, XmlConvert.stringify(content.data));
+        this._files[filePath] = new TextEncoder().encode(XmlConvert.stringify(content.data));
       }
       else {
-        this._zip.file(filePath, content);
+        this._files[filePath] = content;
       }
     }
 
-    return this._zip;
+    return Buffer.from(zipSync(this._files));
   }
 }

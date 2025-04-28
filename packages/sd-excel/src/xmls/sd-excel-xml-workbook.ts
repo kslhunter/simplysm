@@ -24,7 +24,7 @@ export class SdExcelXmlWorkbook implements ISdExcelXml {
     return this.data.workbook.sheets?.[0].sheet.max((sheet) => NumberUtils.parseInt(sheet.$["r:id"])!);
   }
 
-  get worksheetNames(): string[] {
+  get sheetNames(): string[] {
     return this.data.workbook.sheets?.[0].sheet.map((item) => item.$.name) ?? [];
   }
 
