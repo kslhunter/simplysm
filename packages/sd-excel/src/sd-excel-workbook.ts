@@ -19,13 +19,13 @@ export class SdExcelWorkbook {
 
   static async loadAsync(arg: Buffer | Blob): Promise<SdExcelWorkbook> {
     if (Buffer.isBuffer(arg)) {
-      const fileCache = ZipCache.fromBuffer(arg);
+      const fileCache = await ZipCache.fromBufferAsync(arg);
       return new SdExcelWorkbook(fileCache);
     }
     else {
       const arrayBuffer = await arg.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
-      const fileCache = ZipCache.fromBuffer(buffer);
+      const fileCache = await ZipCache.fromBufferAsync(buffer);
       return new SdExcelWorkbook(fileCache);
     }
   }
@@ -116,12 +116,12 @@ export class SdExcelWorkbook {
     return await this.zipCache.getAsync(filePath);
   }*/
 
-  getBuffer(): Buffer {
-    return this.zipCache.toBuffer();
+  async getBufferAsync(): Promise<Buffer> {
+    return await this.zipCache.toBufferAsync();
   }
 
-  getBlob(): Blob {
-    const buffer = this.zipCache.toBuffer();
+  async getBlobAsync(): Promise<Blob> {
+    const buffer = await this.zipCache.toBufferAsync();
     const uint8Array = new Uint8Array(buffer);
     return new Blob(
       [uint8Array],

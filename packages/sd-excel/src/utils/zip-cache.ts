@@ -8,7 +8,6 @@ import { SdExcelXmlSharedString } from "../xmls/sd-excel-xml-shared-string";
 import { SdExcelXmlUnknown } from "../xmls/sd-excel-xml-unknown";
 import { SdExcelXmlStyle } from "../xmls/sd-excel-xml-style";
 import * as fflate from "fflate";
-import { zipSync } from "fflate";
 
 export class ZipCache {
   private readonly _cache = new Map<string, ISdExcelXml | Buffer>();
@@ -16,8 +15,17 @@ export class ZipCache {
   constructor(private readonly _files: fflate.Unzipped = {}) {
   }
 
-  static fromBuffer(arg: Buffer) {
-    return new ZipCache(fflate.unzipSync(arg));
+  static fromBufferAsync(arg: Buffer) {
+    return new Promise<ZipCache>((resolve, reject) => {
+      fflate.unzip(arg, (err: fflate.FlateError | null, data: fflate.Unzipped) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+
+        resolve(new ZipCache(data));
+      });
+    });
   }
 
   /*keys(): IterableIterator<string> {
@@ -71,7 +79,7 @@ export class ZipCache {
     this._cache.set(filePath, content);
   }
 
-  toBuffer(): Buffer {
+  async toBufferAsync(): Promise<Buffer> {
     for (const filePath of this._cache.keys()) {
       const content = this._cache.get(filePath)!;
       if ("cleanup" in content) {
@@ -83,6 +91,15 @@ export class ZipCache {
       }
     }
 
-    return Buffer.from(zipSync(this._files));
+    return await new Promise<Buffer>((resolve, reject) => {
+      fflate.zip(this._files, (err: fflate.FlateError | null, data: Uint8Array) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+
+        resolve(Buffer.from(data));
+      });
+    });
   }
 }
