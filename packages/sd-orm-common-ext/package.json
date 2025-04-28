@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-orm-common-ext",
-  "version": "12.8.6",
+  "version": "12.8.7",
   "description": "심플리즘 패키지 - ORM 확장 모듈 (common)",
   "author": "김석래",
   "repository": {
@@ -13,7 +13,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@simplysm/sd-core-common": "12.8.6",
-    "@simplysm/sd-orm-common": "12.8.6"
+    "@simplysm/sd-core-common": "12.8.7",
+    "@simplysm/sd-orm-common": "12.8.7"
   }
 }
