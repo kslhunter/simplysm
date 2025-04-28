@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0" id="@simplysm/cordova-plugin-app-storage" version="12.8.5">
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0" id="@simplysm/cordova-plugin-app-storage" version="12.8.6">
   <name>App Storage</name>
   <description>Cordova App Storage Plugin</description>
   <license>Apache 2.0</license>
