@@ -14,11 +14,8 @@
   "types": "./dist/index.d.ts",
   "dependencies": {
     "@simplysm/sd-core-common": "12.8.2",
+    "fast-xml-parser": "^5.2.1",
     "jszip": "^3.10.1",
-    "xlsx": "^0.18.5",
-    "xml2js": "^0.6.2"
-  },
-  "devDependencies": {
-    "@types/xml2js": "^0.4.14"
+    "xlsx": "^0.18.5"
   }
 }

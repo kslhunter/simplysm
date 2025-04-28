@@ -12,7 +12,7 @@ import { SdExcelXmlStyle } from "../xmls/sd-excel-xml-style";
 export class ZipCache {
   private readonly _cache = new Map<string, ISdExcelXml | Buffer>();
 
-  public constructor(private readonly _zip: JSZip = new JSZip()) {
+  constructor(private readonly _zip: JSZip = new JSZip()) {
   }
 
   public keys(): IterableIterator<string> {
@@ -30,7 +30,7 @@ export class ZipCache {
     }
 
     if (filePath.endsWith(".xml") || filePath.endsWith(".rels")) {
-      const xml = await XmlConvert.parseAsync(await file.async("text"), { stripPrefix: true });
+      const xml = XmlConvert.parse(await file.async("text"), { stripTagPrefix: true });
       if (filePath.endsWith(".rels")) {
         this._cache.set(filePath, new SdExcelXmlRelationShip(xml));
       }
