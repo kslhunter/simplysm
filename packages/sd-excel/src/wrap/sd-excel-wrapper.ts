@@ -28,7 +28,15 @@ type TValidateObjectRecord<VT extends TValidObject> = {
 };
 
 export class SdExcelWrapper<VT extends TValidObject> {
-  constructor(private _fieldConf: (item?: TValidateObjectRecord<VT>) => VT) {
+  constructor(
+    private _fieldConf: VT,
+    private _additionalFieldConf?: (item: TValidateObjectRecord<VT>) => {
+      [P in keyof VT]?: {
+        notnull?: boolean;
+        includes?: InstanceType<VT[P]["type"]>[];
+      }
+    },
+  ) {
   }
 
   async writeAsync(
@@ -38,14 +46,28 @@ export class SdExcelWrapper<VT extends TValidObject> {
     const wb = SdExcelWorkbook.create();
     const ws = await wb.createWorksheetAsync(wsName);
 
-    const fieldConf = this._fieldConf();
-    const keys = Object.keys(fieldConf);
-    const headers = Object.values(fieldConf).map(val => val.displayName);
+    const keys = Object.keys(this._fieldConf);
+    const headers = Object.values(this._fieldConf).map(val => val.displayName);
 
     await ws.setDataMatrixAsync([
       headers,
       ...items.map((item) => keys.map(key => ObjectUtils.getChainValue(item, key))),
     ]);
+
+    for (let r = 0; r < items.length + 1; r++) {
+      for (let c = 0; c < keys.length; c++) {
+        await ws.cell(r, c).style.setBorderAsync(["left", "right", "top", "bottom"]);
+      }
+    }
+
+    for (let c = 0; c < keys.length; c++) {
+      if (this._fieldConf[keys[c]].notnull) {
+        await ws.cell(0, c).style.setBackgroundAsync("00FFFF00");
+      }
+    }
+
+    await ws.setZoomAsync(85);
+    await ws.setFixAsync({ r: 0 });
 
     return wb;
   }
@@ -58,8 +80,8 @@ export class SdExcelWrapper<VT extends TValidObject> {
     const ws = await wb.getWorksheetAsync(wsNameOrIndex);
     const wsName = await ws.getNameAsync();
 
-    const defaultFieldConf = this._fieldConf();
-    const headers = Object.keys(defaultFieldConf).map(key => defaultFieldConf[key].displayName);
+    // const defaultFieldConf = this._fieldConf();
+    const headers = Object.keys(this._fieldConf).map(key => this._fieldConf[key].displayName);
 
     const wsdt = await ws.getDataTableAsync({
       usableHeaderNameFn: headerName => headers.includes(headerName),
@@ -67,7 +89,9 @@ export class SdExcelWrapper<VT extends TValidObject> {
 
     const excelItems: TValidateObjectRecord<VT>[] = [];
     for (const item of wsdt) {
-      const fieldConf = this._fieldConf(item);
+      const fieldConf = this._additionalFieldConf
+        ? ObjectUtils.merge(this._fieldConf, this._additionalFieldConf(item))
+        : this._fieldConf;
 
       const firstNotNullFieldKey = Object.keys(fieldConf)
         .first(key => fieldConf[key].notnull ?? false);
@@ -141,7 +165,11 @@ export class SdExcelWrapper<VT extends TValidObject> {
     }
     if (excelItems.length === 0) throw Error("엑셀파일에서 데이터를 찾을 수 없습니다.");
 
-    ObjectUtils.validateArrayWithThrow(wsName, excelItems, this._fieldConf);
+    ObjectUtils.validateArrayWithThrow(wsName, excelItems, item => {
+      return this._additionalFieldConf
+        ? ObjectUtils.merge(this._fieldConf, this._additionalFieldConf(item))
+        : this._fieldConf;
+    });
 
     return excelItems;
   }

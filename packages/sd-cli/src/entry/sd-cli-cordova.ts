@@ -207,10 +207,13 @@ export class SdCliCordova {
     }
 
     // CONFIG: 접근허용 세팅
+    // configXml["widget"]["content"] = [{ $: { src: "index.html" } }];
+    configXml["widget"]["content"] = [{ $: { src: "http://localhost/index.html" } }];
     configXml["widget"]["access"] = [{ $: { origin: "*" } }];
     configXml["widget"]["allow-navigation"] = [{ $: { href: "*" } }];
     configXml["widget"]["allow-intent"] = [{ $: { href: "*" } }];
-    configXml["widget"]["preference"] = [{ $: { name: "MixedContentMode", value: "0" } }];
+    // configXml["widget"]["preference"] = [{ $: { name: "Scheme", value: "http" } }];
+    configXml["widget"]["preference"] = [{ $: { name: "MixedContentMode", value: "1" } }];
 
     // CONFIG: ANDROID usesCleartextTraffic 설정 및 splashscreen 파일 설정
     if (this._opt.config.platform?.android) {

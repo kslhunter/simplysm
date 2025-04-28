@@ -43,6 +43,11 @@ export interface ISdExcelXmlWorkbookData {
       "xmlns": string;
       "xmlns:r"?: string;
     };
+    "bookViews"?: [
+      {
+        "workbookView": [{}];
+      }
+    ];
     "sheets"?: [
       {
         "sheet": {
@@ -64,6 +69,34 @@ export interface ISdExcelXmlWorksheetData {
       {
         "$": {
           "ref": string;
+        };
+      }
+    ];
+    "sheetViews"?: [
+      {
+        "sheetView": {
+          "$": {
+            "workbookViewId": string;
+            "zoomScale"?: string;
+          };
+          "pane"?: [
+            {
+              "$": {
+                "xSplit"?: string;
+                "ySplit"?: string;
+                "topLeftCell"?: string;
+                "activePane"?: string;
+                "state"?: string;
+              }
+            }
+          ]
+        }[];
+      }
+    ];
+    "sheetFormatPr"?: [
+      {
+        "$": {
+          "defaultRowHeight": string;
         };
       }
     ];

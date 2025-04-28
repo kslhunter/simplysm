@@ -295,7 +295,9 @@ export class SdNgBundler {
         ["polyfills", true],
         ["styles", false],
         ["main", true],
-        ...(this._opt.builderType === "cordova" ? [["cordova-entry", true] as Entrypoint] : []),
+        ...(this._opt.builderType === "cordova" ? [
+          ["cordova-entry", true] as Entrypoint,
+        ] : []),
       ],
       sri: false,
       optimization: {

@@ -16,14 +16,12 @@ export class SdBarcode2Control {
 
   type = input.required<TBarcodeType>();
   value = input<string>();
-  scale = input<number>();
 
   constructor() {
     $effect(() => {
       this.#elRef.nativeElement.innerHTML = bwipjs.toSVG({
         bcid: this.type(),
         text: this.value() ?? "",
-        scale: this.scale(),
       });
     });
   }

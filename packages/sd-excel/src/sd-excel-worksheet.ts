@@ -5,7 +5,6 @@ import { SdExcelRow } from "./sd-excel-row";
 import { SdExcelCell } from "./sd-excel-cell";
 import { SdExcelXmlWorkbook } from "./xmls/sd-excel-xml-workbook";
 import { SdExcelCol } from "./sd-excel-col";
-import { StringUtils } from "@simplysm/sd-core-common";
 import { SdExcelUtils } from "./utils/sd-excel.utils";
 
 export class SdExcelWorksheet {
@@ -55,6 +54,31 @@ export class SdExcelWorksheet {
     if (styleId != null) {
       wsData.setCellStyleId(targetAddr, styleId);
     }
+  }
+
+  async copyRowAsync(srcR: number, targetR: number): Promise<void> {
+    const wsData = await this._getDataAsync();
+    wsData.copyRow(srcR, targetR);
+  }
+
+  async copyCellAsync(
+    srcPoint: { r: number; c: number },
+    targetPoint: { r: number; c: number },
+  ): Promise<void> {
+    const wsData = await this._getDataAsync();
+    const srcAddr = SdExcelUtils.stringifyAddr(srcPoint);
+    const targetAddr = SdExcelUtils.stringifyAddr(targetPoint);
+    wsData.copyCell(srcAddr, targetAddr);
+  }
+
+  async insertCopyRowAsync(srcR: number, targetR: number): Promise<void> {
+    const range = await this.getRangeAsync();
+
+    for (let r = range.e.r; r >= targetR; r--) {
+      await this.copyRowAsync(r, r + 1);
+    }
+
+    await this.copyRowAsync(srcR, targetR);
   }
 
   public async getRangeAsync(): Promise<ISdExcelAddressRangePoint> {
@@ -123,7 +147,7 @@ export class SdExcelWorksheet {
     }
   }
 
-  public async setRecords(record: Record<string, any>[]): Promise<void> {
+  /*public async setRecords(record: Record<string, any>[]): Promise<void> {
     const headers = record.mapMany((item) => Object.keys(item))
       .distinct()
       .filter((item) => !StringUtils.isNullOrEmpty(item));
@@ -137,6 +161,22 @@ export class SdExcelWorksheet {
         await this.cell(r, c).setValAsync(record[r - 1][headers[c]]);
       }
     }
+  }*/
+
+  public async setZoomAsync(percent: number): Promise<void> {
+    const wbXml = await this._getWbDataAsync();
+    wbXml.initializeView();
+
+    const wsXml = await this._getDataAsync();
+    wsXml.setZoom(percent);
+  }
+
+  public async setFixAsync(point: { r?: number, c?: number }): Promise<void> {
+    const wbXml = await this._getWbDataAsync();
+    wbXml.initializeView();
+
+    const wsXml = await this._getDataAsync();
+    wsXml.setFix(point);
   }
 
   /*async getRecordsAsync<T extends Record<string, any>>(def: ((item: T) => TValidateObjectDefWithName<T>) | TValidateObjectDefWithName<T>): Promise<{ [P in keyof T]: UnwrappedType<T[P]> }[]> {

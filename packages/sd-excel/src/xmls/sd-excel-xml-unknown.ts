@@ -1,12 +1,9 @@
-import {ISdExcelXml} from "../types";
+import { ISdExcelXml } from "../types";
 
 export class SdExcelXmlUnknown implements ISdExcelXml {
-  public readonly data: Record<string, any>;
-
-  public constructor(data: Record<string, any>) {
-    this.data = data;
+  constructor(public data: Record<string, any>) {
   }
 
-  public cleanup(): void {
+  cleanup(): void {
   }
 }

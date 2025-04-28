@@ -8,9 +8,9 @@ import {
 import { NumberUtils, ObjectUtils } from "@simplysm/sd-core-common";
 
 export class SdExcelXmlStyle implements ISdExcelXml {
-  public readonly data: ISdExcelXmlStyleData;
+  data: ISdExcelXmlStyleData;
 
-  public constructor(data?: ISdExcelXmlStyleData) {
+  constructor(data?: ISdExcelXmlStyleData) {
     if (data === undefined) {
       this.data = {
         "styleSheet": {
@@ -52,7 +52,7 @@ export class SdExcelXmlStyle implements ISdExcelXml {
     }
   }
 
-  public add(style: ISdExcelStyle): string {
+  add(style: ISdExcelStyle): string {
     const newXf: ISdExcelXmlStyleDataXf = { "$": {} };
 
     if (style.numFmtId !== undefined) {
@@ -70,7 +70,7 @@ export class SdExcelXmlStyle implements ISdExcelXml {
       };
 
       newXf.$.applyFill = "1";
-      newXf.$.fillId = this._getSameOrCreateFill(newFill);
+      newXf.$.fillId = this.#getSameOrCreateFill(newFill);
     }
 
     if (style.border !== undefined) {
@@ -110,7 +110,7 @@ export class SdExcelXmlStyle implements ISdExcelXml {
       };
 
       newXf.$.applyBorder = "1";
-      newXf.$.borderId = this._getSameOrCreateBorder(newBorder);
+      newXf.$.borderId = this.#getSameOrCreateBorder(newBorder);
     }
 
     if (style.verticalAlign !== undefined) {
@@ -133,10 +133,10 @@ export class SdExcelXmlStyle implements ISdExcelXml {
       }
     }
 
-    return this._getSameOrCreateXf(newXf);
+    return this.#getSameOrCreateXf(newXf);
   }
 
-  public addWithClone(id: string, style: ISdExcelStyle): string {
+  addWithClone(id: string, style: ISdExcelStyle): string {
     const prevXf = this.data.styleSheet.cellXfs[0].xf[NumberUtils.parseInt(id)!];
     const cloneXf = ObjectUtils.clone(prevXf);
 
@@ -162,8 +162,8 @@ export class SdExcelXmlStyle implements ISdExcelXml {
         }
 
         cloneXf.$.applyFill = "1";
-        cloneXf.$.fillId = this._getSameOrCreateFill(cloneFill);
-        return this._getSameOrCreateXf(cloneXf);
+        cloneXf.$.fillId = this.#getSameOrCreateFill(cloneFill);
+        return this.#getSameOrCreateXf(cloneXf);
       }
       else {
         const newFill: ISdExcelXmlStyleDataFill = {
@@ -175,8 +175,8 @@ export class SdExcelXmlStyle implements ISdExcelXml {
           ],
         };
         cloneXf.$.applyFill = "1";
-        cloneXf.$.fillId = this._getSameOrCreateFill(newFill);
-        return this._getSameOrCreateXf(cloneXf);
+        cloneXf.$.fillId = this.#getSameOrCreateFill(newFill);
+        return this.#getSameOrCreateXf(cloneXf);
       }
     }
 
@@ -276,8 +276,8 @@ export class SdExcelXmlStyle implements ISdExcelXml {
         }
 
         cloneXf.$.applyBorder = "1";
-        cloneXf.$.borderId = this._getSameOrCreateBorder(cloneBorder);
-        return this._getSameOrCreateXf(cloneXf);
+        cloneXf.$.borderId = this.#getSameOrCreateBorder(cloneBorder);
+        return this.#getSameOrCreateXf(cloneXf);
       }
       else {
         const newBorder: ISdExcelXmlStyleDataBorder = {
@@ -315,8 +315,8 @@ export class SdExcelXmlStyle implements ISdExcelXml {
           } : {},
         };
         cloneXf.$.applyBorder = "1";
-        cloneXf.$.borderId = this._getSameOrCreateBorder(newBorder);
-        return this._getSameOrCreateXf(cloneXf);
+        cloneXf.$.borderId = this.#getSameOrCreateBorder(newBorder);
+        return this.#getSameOrCreateXf(cloneXf);
       }
     }
 
@@ -340,10 +340,10 @@ export class SdExcelXmlStyle implements ISdExcelXml {
       }
     }
 
-    return this._getSameOrCreateXf(cloneXf);
+    return this.#getSameOrCreateXf(cloneXf);
   }
 
-  public get(id: string): ISdExcelStyle {
+  get(id: string): ISdExcelStyle {
     const xf = this.data.styleSheet.cellXfs[0].xf[NumberUtils.parseInt(id)!] as ISdExcelXmlStyleDataXf | undefined;
 
     const result: ISdExcelStyle = {};
@@ -381,15 +381,15 @@ export class SdExcelXmlStyle implements ISdExcelXml {
     return result;
   }
 
-  public getNumFmtCode(numFmtId: string): string | undefined {
+  getNumFmtCode(numFmtId: string): string | undefined {
     return this.data.styleSheet.numFmts?.[0].numFmt?.single((item) => item.$.numFmtId
       === numFmtId)?.$.formatCode;
   }
 
-  public cleanup(): void {
+  cleanup(): void {
   }
 
-  private _getSameOrCreateXf(xfItem: ISdExcelXmlStyleDataXf): string {
+  #getSameOrCreateXf(xfItem: ISdExcelXmlStyleDataXf): string {
     const prevSameXf = this.data.styleSheet.cellXfs[0].xf.single((item) => ObjectUtils.equal(
       item,
       xfItem,
@@ -405,8 +405,7 @@ export class SdExcelXmlStyle implements ISdExcelXml {
     }
   }
 
-
-  private _getSameOrCreateFill(fillItem: ISdExcelXmlStyleDataFill): string {
+  #getSameOrCreateFill(fillItem: ISdExcelXmlStyleDataFill): string {
     const prevSameFill = this.data.styleSheet.fills[0].fill.single((item) => ObjectUtils.equal(
       item,
       fillItem,
@@ -422,7 +421,7 @@ export class SdExcelXmlStyle implements ISdExcelXml {
     }
   }
 
-  private _getSameOrCreateBorder(borderItem: ISdExcelXmlStyleDataBorder): string {
+  #getSameOrCreateBorder(borderItem: ISdExcelXmlStyleDataBorder): string {
     const prevSameBorder = this.data.styleSheet.borders[0].border.single((item) => ObjectUtils.equal(
       item,
       borderItem,

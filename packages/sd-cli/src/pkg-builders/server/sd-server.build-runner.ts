@@ -111,8 +111,8 @@ export class SdServerBuildRunner extends EventEmitter {
       distNpmConfig.scripts = {};
       if (this._pkgConf.pm2 && !this._pkgConf.pm2.noStartScript) {
         distNpmConfig.scripts["start"] = "pm2 start pm2.config.cjs";
-        distNpmConfig.scripts["stop"] = "pm2 stop ssipec-petrochem-server";
-        distNpmConfig.scripts["delete"] = "pm2 delete ssipec-petrochem-server";
+        // distNpmConfig.scripts["stop"] = "pm2 stop ssipec-petrochem-server";
+        // distNpmConfig.scripts["delete"] = "pm2 delete ssipec-petrochem-server";
       }
 
       distNpmConfig.volta = projNpmConfig.volta;

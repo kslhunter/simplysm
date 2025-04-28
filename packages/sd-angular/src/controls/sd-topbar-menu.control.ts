@@ -23,6 +23,7 @@ import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/
 
         body.sd-theme-mobile & {
           justify-content: end;
+          padding-right: 0;
         }
       }
     `,
