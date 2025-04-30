@@ -3,17 +3,12 @@
 @use "mixins";
 
 @use "variables";
-@use "themes/variables-modern" as modern;
 @use "themes/variables-mobile" as mobile;
 @use "themes/variables-kiosk" as kiosk;
 @use "themes/variables-dark" as dark;
 
 :root {
   @include mixins.writeVars(variables.$vars, "");
-}
-
-.sd-theme-modern {
-  @include mixins.writeVars(modern.$vars, "");
 }
 
 .sd-theme-mobile {

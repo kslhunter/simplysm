@@ -83,7 +83,7 @@ export function provideSdAngular(opt: {
         const provider = new SdAngularConfigProvider();
         provider.clientName = opt.clientName;
         provider.appStructure = opt.appStructure ?? [];
-        provider.defaultTheme = opt.defaultTheme ?? "modern";
+        provider.defaultTheme = opt.defaultTheme ?? "compact";
         provider.defaultDark = opt.defaultDark ?? false;
         provider.icons = {
           fallback: faQuestionCircle,

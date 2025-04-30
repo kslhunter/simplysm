@@ -50,8 +50,7 @@ import { SdIconControl } from "./sd-icon.control";
         background: var(--control-color);
         color: var(--text-trans-default);
 
-        //body.sd-theme-compact &,
-        //body.sd-theme-modern & {
+        //body.sd-theme-compact & {
         //  border-bottom: 1px solid var(--border-color-light);
         //  @include mixins.elevation(2);
         //  animation: sd-topbar var(--animation-duration) ease-in;

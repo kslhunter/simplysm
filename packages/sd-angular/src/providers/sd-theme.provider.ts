@@ -6,7 +6,7 @@ import { SdLocalStorageProvider } from "./sd-local-storage.provider";
 export class SdThemeProvider {
   #sdLocalStorage = inject(SdLocalStorageProvider);
 
-  theme = $signal<TSdTheme>("modern");
+  theme = $signal<TSdTheme>("compact");
   dark = $signal<boolean>(false);
 
   constructor() {
@@ -19,4 +19,4 @@ export class SdThemeProvider {
 }
 
 
-export type TSdTheme = "compact" | "modern" | "mobile" | "kiosk";
+export type TSdTheme = "compact" | "mobile" | "kiosk";

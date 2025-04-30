@@ -1,4 +1,5 @@
 import {
+  afterRender,
   ChangeDetectionStrategy,
   Component,
   contentChildren,
@@ -449,7 +450,8 @@ import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
 
               @if (hasSummaryTemplate()) {
                 <tr class="_summary-row">
-                  @for (columnDef of displayColumnDefs(); let c = $index; track columnDef.control.key()) {
+                  @for (columnDef of displayColumnDefs(); let
+                    c = $index; track columnDef.control.key()) {
                     <th
                       [class._fixed]="columnDef.fixed"
                       [attr.c]="c"
@@ -527,7 +529,8 @@ import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
                       }
                     </td>
                   }
-                  @for (columnDef of displayColumnDefs(); let c = $index; track columnDef.control.key()) {
+                  @for (columnDef of displayColumnDefs(); let
+                    c = $index; track columnDef.control.key()) {
                     <td
                       tabindex="0"
                       [class._fixed]="columnDef.fixed"
@@ -838,7 +841,10 @@ export class SdSheetControl<T> {
     if (this.pageItemCount() != null && this.pageItemCount() !== 0) {
       for (const orderingItem of [...this.ordering()].reverse()) {
         if (orderingItem.desc) {
-          orderedItems = orderedItems.orderByDesc((item) => ObjectUtils.getChainValue(item, orderingItem.key));
+          orderedItems = orderedItems.orderByDesc((item) => ObjectUtils.getChainValue(
+            item,
+            orderingItem.key,
+          ));
         }
         else {
           orderedItems = orderedItems.orderBy((item) => {
@@ -951,7 +957,7 @@ export class SdSheetControl<T> {
     });
 
     //-- cell sizing
-    $effect(() => {
+    afterRender(() => {
       this.onFixedCellResize(-2);
     });
 
@@ -994,12 +1000,9 @@ export class SdSheetControl<T> {
   }
 
   getIsCellEditMode(r: number, c: number): boolean {
-    return this.#editModeCellAddr()
-      != null
-      && this.#editModeCellAddr()!.r
-      === r
-      && this.#editModeCellAddr()!.c
-      === c;
+    return this.#editModeCellAddr() != null
+      && this.#editModeCellAddr()!.r === r
+      && this.#editModeCellAddr()!.c === c;
   }
 
   /**
@@ -1299,14 +1302,14 @@ export class SdSheetControl<T> {
     }
   }
 
-  onFixedCellResize(c: number) {
+  onFixedCellResize(firstC: number) {
     const sheetContainerEl = this.#elRef.nativeElement.findFirst("._sheet-container")!;
 
     const fixedColumnLength = this.displayColumnDefs().filter((item) => !!item.fixed).length;
 
-    const nextFixedColumnIndexes = Array(fixedColumnLength - c - 1)
+    const nextFixedColumnIndexes = Array(fixedColumnLength - firstC - 1)
       .fill(0)
-      .map((a, b) => b + c + 1);
+      .map((_, b) => b + firstC + 1);
 
     const scrollLeft = sheetContainerEl.scrollLeft;
     for (const nextFixedColumnIndex of nextFixedColumnIndexes) {
@@ -1314,6 +1317,7 @@ export class SdSheetControl<T> {
         `> table > thead > tr > th._last-depth[c='${nextFixedColumnIndex - 1}']`,
       );
       const nextLeft = thEl ? thEl.offsetLeft + thEl.offsetWidth - scrollLeft : 0;
+
       const nextEls = sheetContainerEl.findAll<HTMLTableCellElement>(
         `> table > * > tr > *[c='${nextFixedColumnIndex}']`,
       );

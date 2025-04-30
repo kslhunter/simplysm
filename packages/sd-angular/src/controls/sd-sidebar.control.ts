@@ -33,8 +33,7 @@ import { $computed } from "../utils/hooks";
           border-bottom-right-radius: var(--gap-default);
         }
 
-        body.sd-theme-compact &,
-        body.sd-theme-modern & {
+        body.sd-theme-compact & {
           //background: var(--theme-grey-lightest);
           border-right: 1px solid var(--border-color-light);
 

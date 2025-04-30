@@ -46,7 +46,7 @@ export class CordovaAppStorage {
     await File.writeFile(dirUrl, fileName, data, { replace: true });
   }
 
-  // Android SDK >= 33 에 권한 오류발생
+  // Android SDK >= 33 에 External접근 시 권한 오류발생 (다른폴더접근시에도 발생하는진 모르겠음)
   /*async readdirAsync(dirPath: string) {
     const fullUrl = this.getFullUrl(dirPath);
     const dirUrl = path.dirname(fullUrl);
@@ -56,7 +56,7 @@ export class CordovaAppStorage {
     return entries.map((item) => item.name);
   }*/
 
-  // Android SDK >= 33 에 권한 오류발생
+  // Android SDK >= 33 에 External접근 시 권한 오류발생 (다른폴더접근시에도 발생하는진 모르겠음)
   /*async exists(targetPath: string) {
     const fullUrl = this.getFullUrl(targetPath);
     const dirUrl = path.dirname(fullUrl);

@@ -44,13 +44,6 @@ import { SdIconControl } from "./sd-icon.control";
           >
             compact
           </sd-list-item>
-          <sd-list-item
-            [selected]="theme() === 'modern' && !dark()"
-            [selectedIcon]="icons.check"
-            (click)="theme.set('modern'); dark.set(false)"
-          >
-            modern
-          </sd-list-item>
           @if (isDev) {
             <sd-list-item
               [selected]="theme() === 'compact' && dark()"
@@ -58,13 +51,6 @@ import { SdIconControl } from "./sd-icon.control";
               (click)="theme.set('compact'); dark.set(true)"
             >
               compact-dark
-            </sd-list-item>
-            <sd-list-item
-              [selected]="theme() === 'modern' && dark()"
-              [selectedIcon]="icons.check"
-              (click)="theme.set('modern'); dark.set(true)"
-            >
-              modern-dark
             </sd-list-item>
           }
         </sd-list>

@@ -31,8 +31,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
           //height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
           //min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
 
-          body.sd-theme-compact &,
-          body.sd-theme-modern & {
+          body.sd-theme-compact & {
             border: 1px solid var(--trans-lighter);
             border-radius: var(--border-radius-default);
             background: var(--theme-secondary-lightest);
@@ -92,8 +91,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
 
         @each $key, $val in map.get(variables.$vars, theme) {
           &[sd-theme="#{$key}"] {
-            body.sd-theme-compact &,
-            body.sd-theme-modern & {
+            body.sd-theme-compact & {
               > input,
               > ._contents {
                 background: var(--theme-#{$key}-lightest);
@@ -156,7 +154,6 @@ import { transformBoolean } from "../utils/type-tramsforms";
 
         &[sd-inset="true"] {
           body.sd-theme-compact &,
-          body.sd-theme-modern &,
           body.sd-theme-mobile &,
           body.sd-theme-kiosk & {
             > ._contents {
@@ -216,8 +213,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
             }
           }
 
-          body.sd-theme-compact &,
-          body.sd-theme-modern & {
+          body.sd-theme-compact & {
             > input:focus {
               outline: 1px solid var(--theme-primary-default);
               outline-offset: -1px;
@@ -247,8 +243,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
           }
         }
 
-        body.sd-theme-compact &,
-        body.sd-theme-modern & {
+        body.sd-theme-compact & {
           &[sd-disabled="true"] {
             > ._contents {
               display: block;
@@ -301,8 +296,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
           display: none;
         }
 
-        body.sd-theme-compact &,
-        body.sd-theme-modern & {
+        body.sd-theme-compact & {
           &:has(:invalid),
           &[sd-invalid-message] {
             > ._invalid-indicator {

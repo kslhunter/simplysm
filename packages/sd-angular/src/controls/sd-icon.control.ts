@@ -32,6 +32,19 @@ export class SdIconControl {
   #elRef = injectElementRef();
 
   icon = input<IconDefinition>();
+
+  animation = input<
+    | "beat"
+    | "fade"
+    | "beat-fade"
+    | "bounce"
+    | "flip"
+    | "shake"
+    | "spin"
+    | "spin-reverse"
+    | "spin-pulse"
+    | "spin-pulse-reverse">();
+
   size = input<SizeProp>();
   rotate = input<RotateProp>();
   fixedWidth = input(false, { transform: transformBoolean });
@@ -50,6 +63,17 @@ export class SdIconControl {
           this.size() != null ? `fa-${this.size()}` : undefined,
           this.rotate() != null ? `fa-rotate-${this.rotate()}` : undefined,
           this.stackItemSize() != null ? `fa-stack-${this.stackItemSize()}` : undefined,
+          ...this.animation() != null ? [
+            !this.animation()!.startsWith("spin") ? `fa-${this.animation()}` : undefined,
+            ["spin", "spin-reverse"].includes(this.animation()!) ? "fa-spin" : undefined,
+            ["spin-reverse", "spin-pulse-reverse"].includes(this.animation()!)
+              ? "fa-spin-reverse"
+              : undefined,
+            ...["spin-pulse", "spin-pulse-reverse"].includes(this.animation()!) ? [
+              "fa-pulse",
+              "fa-spin-pulse",
+            ] : [],
+          ] : [],
         ].filterExists(),
       });
 
