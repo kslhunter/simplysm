@@ -31,7 +31,7 @@ export class SdResizeEventPlugin extends EventManagerPlugin {
       prevHeight = contentRect.height;
       prevWidth = contentRect.width;
 
-      handler({ heightChanged, widthChanged, entry });
+      handler({ heightChanged, widthChanged, target: element, entry });
     });
     observer.observe(element);
 
@@ -44,5 +44,6 @@ export class SdResizeEventPlugin extends EventManagerPlugin {
 export interface ISdResizeEvent {
   heightChanged: boolean;
   widthChanged: boolean;
-  entry: ResizeObserverEntry;
+  target: HTMLElement,
+  entry?: ResizeObserverEntry;
 }

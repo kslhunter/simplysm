@@ -1,12 +1,13 @@
 import {
-  afterRender,
   ChangeDetectionStrategy,
   Component,
   contentChildren,
+  ElementRef,
   HostListener,
   inject,
   input,
   output,
+  viewChild,
   ViewEncapsulation,
 } from "@angular/core";
 import { SdSheetColumnDirective } from "../directives/sd-sheet-column.directive";
@@ -327,6 +328,7 @@ import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
         }
 
         <sd-pane
+          #sheetContainerEl
           class="_sheet-container"
           (scroll)="onContainerScroll($event)"
           [style]="contentStyle()"
@@ -344,7 +346,8 @@ import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
                           : displayHeaderDefTable().length + (hasSummaryTemplate() ? 1 : 0)
                       "
                       [attr.c]="getChildrenFn() ? -2 : -1"
-                      (sdResize)="onFixedCellResize(getChildrenFn() ? -2 : -1)"
+                      (sdResize)="redrawNextFixedCells(getChildrenFn() ? -2 : -1)"
+                      [style.left.px]="this.fixedCellLefts()[getChildrenFn() ? -2 : -1]"
                     >
                       @if (selectMode() === "multi" && hasSelectableItem()) {
                         <sd-checkbox
@@ -368,7 +371,8 @@ import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
                           : displayHeaderDefTable().length + (hasSummaryTemplate() ? 1 : 0)
                       "
                       [attr.c]="-1"
-                      (sdResize)="onFixedCellResize(-1)"
+                      (sdResize)="redrawNextFixedCells(-1)"
+                      [style.left.px]="this.fixedCellLefts()[-1]"
                     >
                       @if (hasExpandableItem()) {
                         <sd-icon
@@ -392,6 +396,7 @@ import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
                         [style.width]="headerCell.isLastDepth ? headerCell.width : undefined"
                         [style.min-width]="headerCell.isLastDepth ? headerCell.width : undefined"
                         [style.max-width]="headerCell.isLastDepth ? headerCell.width : undefined"
+                        [style.left.px]="this.fixedCellLefts()[c]"
                         [class._ordering]="
                           headerCell.isLastDepth && !headerCell.control.disableOrdering() && headerCell.control.key()
                         "
@@ -458,6 +463,7 @@ import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
                       [style.width]="columnDef.width"
                       [style.min-width]="columnDef.width"
                       [style.max-width]="columnDef.width"
+                      [style.left.px]="this.fixedCellLefts()[c]"
                     >
                       @if (columnDef.control.summaryTemplateRef()) {
                         <ng-template [ngTemplateOutlet]="columnDef.control.summaryTemplateRef()!" />
@@ -481,6 +487,7 @@ import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
                     class="_fixed _feature-cell"
                     [attr.r]="r"
                     [attr.c]="getChildrenFn() ? -2 : -1"
+                    [style.left.px]="this.fixedCellLefts()[getChildrenFn() ? -2 : -1]"
                   >
                     @if (selectMode() === "multi") {
                       <sd-checkbox
@@ -511,7 +518,12 @@ import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
                     }
                   </td>
                   @if (getChildrenFn()) {
-                    <td class="_fixed _feature-cell" [attr.r]="r" [attr.c]="-1">
+                    <td
+                      class="_fixed _feature-cell"
+                      [attr.r]="r"
+                      [attr.c]="-1"
+                      [style.left.px]="this.fixedCellLefts()[-1]"
+                    >
                       @if (itemDef.depth > 0) {
                         <div
                           class="_depth-indicator"
@@ -539,6 +551,7 @@ import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
                       [style.width]="columnDef.width"
                       [style.min-width]="columnDef.width"
                       [style.max-width]="columnDef.width"
+                      [style.left.px]="this.fixedCellLefts()[c]"
                       [class]="getItemCellClassFn()?.(itemDef.item, columnDef.control.key())"
                       [style]="getItemCellStyleFn()?.(itemDef.item, columnDef.control.key())"
                       (click)="onItemCellClick(itemDef.item, $event)"
@@ -588,6 +601,11 @@ export class SdSheetControl<T> {
   #sdSystemConfig = inject(SdSystemConfigProvider);
   #sdModal = inject(SdModalProvider);
   #elRef = injectElementRef<HTMLElement>();
+
+  sheetContainerElRef = viewChild.required<any, ElementRef<HTMLElement>>(
+    "sheetContainerEl",
+    { read: ElementRef },
+  );
 
   columnControls = contentChildren<SdSheetColumnDirective<T>>(SdSheetColumnDirective);
 
@@ -668,6 +686,8 @@ export class SdSheetControl<T> {
   #resizedWidths = $signal<Record<string, string | undefined>>({});
 
   #isOnResizing = false;
+
+  fixedCellLefts = $signal<Record<number, number>>({});
 
   displayColumnDefs = $afterRenderComputed((): IColumnDef<T>[] => {
     return this.columnControls()
@@ -956,9 +976,8 @@ export class SdSheetControl<T> {
       this.#config.set(await this.#sdSystemConfig.getAsync(`sd-sheet.${this.key()}`));
     });
 
-    //-- cell sizing
-    afterRender(() => {
-      this.onFixedCellResize(-2);
+    $effect(() => {
+      this.redrawNextFixedCells(-2);
     });
 
     //-- select indicator
@@ -1262,7 +1281,7 @@ export class SdSheetControl<T> {
       .findFirst<HTMLDivElement>("> ._focus-row-indicator")!;
 
     Object.assign(focusRowIndicatorEl.style, {
-      width: event.entry.contentRect.width + "px",
+      width: event.target.offsetWidth + "px",
     });
   }
 
@@ -1298,31 +1317,36 @@ export class SdSheetControl<T> {
 
   onHeaderCellResize(headerCell: IHeaderDef<T>, c: number) {
     if (headerCell.fixed && headerCell.isLastDepth) {
-      this.onFixedCellResize(c);
+      this.redrawNextFixedCells(c);
     }
   }
 
-  onFixedCellResize(firstC: number) {
-    const sheetContainerEl = this.#elRef.nativeElement.findFirst("._sheet-container")!;
+  redrawNextFixedCells(fromC: number) {
+    const sheetContainerEl = this.sheetContainerElRef().nativeElement;
 
-    const fixedColumnLength = this.displayColumnDefs().filter((item) => !!item.fixed).length;
+    for (let c = fromC; c < this.displayColumnDefs().length; c++) {
+      if (
+        (c < 0 || this.displayColumnDefs()[c].fixed) &&
+        (c + 1 < 0 || this.displayColumnDefs()[c + 1]?.fixed)
+      ) {
+        const thEl = sheetContainerEl.findFirst<HTMLTableCellElement>(
+          `> table > thead > tr > th._last-depth[c='${c}']`,
+        );
 
-    const nextFixedColumnIndexes = Array(fixedColumnLength - firstC - 1)
-      .fill(0)
-      .map((_, b) => b + firstC + 1);
+        const nextLeft = thEl ? thEl.offsetLeft + thEl.offsetWidth : 0;
 
-    const scrollLeft = sheetContainerEl.scrollLeft;
-    for (const nextFixedColumnIndex of nextFixedColumnIndexes) {
-      const thEl = sheetContainerEl.findFirst<HTMLTableCellElement>(
-        `> table > thead > tr > th._last-depth[c='${nextFixedColumnIndex - 1}']`,
-      );
-      const nextLeft = thEl ? thEl.offsetLeft + thEl.offsetWidth - scrollLeft : 0;
-
-      const nextEls = sheetContainerEl.findAll<HTMLTableCellElement>(
-        `> table > * > tr > *[c='${nextFixedColumnIndex}']`,
-      );
-      for (const nextEl of nextEls) {
-        nextEl.style.left = nextLeft + "px";
+        this.fixedCellLefts.update(v => {
+          const r = { ...v };
+          r[c + 1] = nextLeft;
+          return r;
+        });
+      }
+      else {
+        this.fixedCellLefts.update(v => {
+          const r = { ...v };
+          delete r[c + 1];
+          return r;
+        });
       }
     }
   }
