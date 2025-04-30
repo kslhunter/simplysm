@@ -1451,12 +1451,13 @@ export class SdSheetControl<T> {
 
   onItemCellDoubleClick(item: T, event: MouseEvent): void {
     if (!(event.target instanceof HTMLElement)) return;
-    const tdEl = event.target.tagName === "TD" ? event.target : event.target.findParent("td")!;
+    const tdEl = (event.target.tagName === "TD"
+      ? event.target
+      : event.target.findParent("td")!) as HTMLTableCellElement;
 
-    this.#editModeCellAddr.set({
-      r: NumberUtils.parseInt(tdEl.getAttribute("r"))!,
-      c: NumberUtils.parseInt(tdEl.getAttribute("c"))!,
-    });
+    const tdAddr = this.#getCellAddr(tdEl);
+    this.#editModeCellAddr.set(tdAddr);
+
     requestAnimationFrame(() => {
       const focusableEl = tdEl.findFocusableFirst();
       if (focusableEl) focusableEl.focus();
@@ -1483,7 +1484,6 @@ export class SdSheetControl<T> {
       const expandedItems = this.displayItemDefs()
         .filter((item) => item.hasChildren)
         .map((item) => item.item);
-
       this.expandedItems.set(expandedItems);
     }
   }
@@ -1494,17 +1494,20 @@ export class SdSheetControl<T> {
    * @param headerCell
    */
   onHeaderCellClick(event: MouseEvent, headerCell: IHeaderDef<T>): void {
-    if (headerCell.isLastDepth && !headerCell.control.disableOrdering()) {
-      if (this.#isOnResizing) return;
-      if (event.target
-        instanceof HTMLElement
-        && event.target.classList.contains("_resizer")) return;
-      if (event.shiftKey || event.ctrlKey) {
-        this.#toggleOrdering(headerCell.control.key(), true);
-      }
-      else {
-        this.#toggleOrdering(headerCell.control.key(), false);
-      }
+    if (!headerCell.isLastDepth) return;
+    if (headerCell.control.disableOrdering()) return;
+    if (this.#isOnResizing) return;
+
+    if (
+      event.target instanceof HTMLElement
+      && event.target.classList.contains("_resizer")
+    ) return;
+
+    if (event.shiftKey || event.ctrlKey) {
+      this.#toggleOrdering(headerCell.control.key(), true);
+    }
+    else {
+      this.#toggleOrdering(headerCell.control.key(), false);
     }
   }
 
@@ -1594,28 +1597,37 @@ export class SdSheetControl<T> {
     offsetC: number,
     isEditMode: boolean,
   ): boolean {
-    const targetAddr = {
-      r: NumberUtils.parseInt(el.getAttribute("r"))! + offsetR,
-      c: NumberUtils.parseInt(el.getAttribute("c"))! + offsetC,
-    };
-    const targetEl = this.#elRef.nativeElement.findFirst<HTMLTableCellElement>(
-      `._sheet-container > table > tbody > tr > td[r='${targetAddr.r}'][c='${targetAddr.c}']`,
-    );
-    if (targetEl) {
-      targetEl.focus();
-      if (isEditMode) {
-        this.#editModeCellAddr.set({ r: targetAddr.r, c: targetAddr.c });
-        requestAnimationFrame(() => {
-          const focusableEl = targetEl.findFocusableFirst();
-          if (focusableEl) focusableEl.focus();
-        });
-      }
-      else {
-        this.#editModeCellAddr.set(undefined);
-      }
-      return true;
+    const elAddr = this.#getCellAddr(el);
+    const targetAddr = { r: elAddr.r + offsetR, c: elAddr.c + offsetC };
+
+    const targetEl = this.#getCellEl(targetAddr);
+    if (!targetEl) return false;
+
+    targetEl.focus();
+    if (isEditMode) {
+      this.#editModeCellAddr.set(targetAddr);
+      queueMicrotask(() => {
+        const focusableEl = targetEl.findFocusableFirst();
+        if (focusableEl) focusableEl.focus();
+      });
     }
-    return false;
+    else {
+      this.#editModeCellAddr.set(undefined);
+    }
+    return true;
+  }
+
+  #getCellEl(addr: { r: number, c: number }) {
+    return this.#elRef.nativeElement.findFirst<HTMLTableCellElement>(
+      `._sheet-container > table > tbody > tr > td[r='${addr.r}'][c='${addr.c}']`,
+    );
+  }
+
+  #getCellAddr(el: HTMLTableCellElement) {
+    return {
+      r: NumberUtils.parseInt(el.getAttribute("r"))!,
+      c: NumberUtils.parseInt(el.getAttribute("c"))!,
+    };
   }
 
   /**
