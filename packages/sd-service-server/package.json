@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-service-server",
-  "version": "12.8.19",
+  "version": "12.8.20",
   "description": "심플리즘 패키지 - 서비스 모듈 (서버)",
   "author": "김석래",
   "repository": {
@@ -13,11 +13,11 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@simplysm/sd-core-common": "12.8.19",
-    "@simplysm/sd-core-node": "12.8.19",
-    "@simplysm/sd-orm-common": "12.8.19",
-    "@simplysm/sd-orm-node": "12.8.19",
-    "@simplysm/sd-service-common": "12.8.19",
+    "@simplysm/sd-core-common": "12.8.20",
+    "@simplysm/sd-core-node": "12.8.20",
+    "@simplysm/sd-orm-common": "12.8.20",
+    "@simplysm/sd-orm-node": "12.8.20",
+    "@simplysm/sd-service-common": "12.8.20",
     "@types/connect": "^3.4.38",
     "bufferutil": "^4.0.9",
     "connect": "^3.7.0",
