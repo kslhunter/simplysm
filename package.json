@@ -1,6 +1,6 @@
 {
   "name": "simplysm",
-  "version": "12.8.18",
+  "version": "12.8.19",
   "description": "심플리즘 패키지",
   "author": "김석래",
   "repository": {
@@ -28,7 +28,8 @@
     "commit": "yarn run _sd-cli_ -- commit",
     "eslint-timing": "cross-env TIMING=1 eslint \"**/+(*.ts|*.js|*.html)\"",
     "eslint-fix": "cross-env TIMING=1 eslint --fix \"**/+(*.ts|*.js|*.html)\"",
-    "reinstall": "yarn install --refresh-lockfile"
+    "reinstall": "yarn install --refresh-lockfile",
+    "postinstall": "yarn run _sd-cli_ -- postinstall"
   },
   "devDependencies": {
     "@types/node": "^22.15.3",
