@@ -6,6 +6,7 @@ type TValidFieldSpec<T extends Type<any>> = {
   type: T;
   notnull?: boolean;
   includes?: InstanceType<T>[];
+  hidden?: boolean;
 };
 
 type TValidObject = Record<string, TValidFieldSpec<any>>;
@@ -31,10 +32,7 @@ export class SdExcelWrapper<VT extends TValidObject> {
   constructor(
     private _fieldConf: VT,
     private _additionalFieldConf?: (item: TValidateObjectRecord<VT>) => {
-      [P in keyof VT]?: {
-        notnull?: boolean;
-        includes?: InstanceType<VT[P]["type"]>[];
-      }
+      [P in keyof VT]?: Partial<TValidFieldSpec<VT[P]["type"]>>
     },
   ) {
   }
@@ -88,9 +86,7 @@ export class SdExcelWrapper<VT extends TValidObject> {
 
     const excelItems: TValidateObjectRecord<VT>[] = [];
     for (const item of wsdt) {
-      const fieldConf = this._additionalFieldConf
-        ? ObjectUtils.merge(this._fieldConf, this._additionalFieldConf(item))
-        : this._fieldConf;
+      const fieldConf = this.#getFieldConf(item);
 
       const firstNotNullFieldKey = Object.keys(fieldConf)
         .first(key => fieldConf[key].notnull ?? false);
@@ -164,12 +160,21 @@ export class SdExcelWrapper<VT extends TValidObject> {
     }
     if (excelItems.length === 0) throw Error("엑셀파일에서 데이터를 찾을 수 없습니다.");
 
-    ObjectUtils.validateArrayWithThrow(wsName, excelItems, item => {
-      return this._additionalFieldConf
-        ? ObjectUtils.merge(this._fieldConf, this._additionalFieldConf(item))
-        : this._fieldConf;
-    });
+    ObjectUtils.validateArrayWithThrow(wsName, excelItems, item => this.#getFieldConf(item));
 
     return excelItems;
+  }
+
+  #getFieldConf(item: TValidateObjectRecord<VT>) {
+    const result = this._additionalFieldConf
+      ? ObjectUtils.merge(this._fieldConf, this._additionalFieldConf(item))
+      : this._fieldConf;
+
+    const hiddenKeys = Object.keys(result).filter(key => result[key].hidden);
+    for (const hiddenKey of hiddenKeys) {
+      delete result[hiddenKey];
+    }
+
+    return result;
   }
 }

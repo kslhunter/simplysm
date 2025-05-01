@@ -18,14 +18,14 @@
     "yarn": "4.9.1"
   },
   "scripts": {
-    "watch": "npm run _sd-cli_ -- --debug watch",
-    "watch:sd-core-common": "npm run _sd-cli_ -- --debug watch --packages sd-core-common",
-    "watch:sd-angular": "npm run _sd-cli_ -- --debug watch --packages sd-angular",
-    "build": "npm run _sd-cli_ -- build",
-    "publish": "npm run _sd-cli_ -- publish",
+    "watch": "yarn run _sd-cli_ -- --debug watch",
+    "watch:sd-core-common": "yarn run _sd-cli_ -- --debug watch --packages sd-core-common",
+    "watch:sd-angular": "yarn run _sd-cli_ -- --debug watch --packages sd-angular",
+    "build": "yarn run _sd-cli_ -- build",
+    "publish": "yarn run _sd-cli_ -- publish",
     "--": "",
     "_sd-cli_": "tsx --tsconfig packages/sd-cli/tsconfig.json packages/sd-cli/src/sd-cli.ts",
-    "commit": "npm run _sd-cli_ -- commit",
+    "commit": "yarn run _sd-cli_ -- commit",
     "eslint-timing": "cross-env TIMING=1 eslint \"**/+(*.ts|*.js|*.html)\"",
     "eslint-fix": "cross-env TIMING=1 eslint --fix \"**/+(*.ts|*.js|*.html)\"",
     "reinstall": "yarn install --refresh-lockfile"
