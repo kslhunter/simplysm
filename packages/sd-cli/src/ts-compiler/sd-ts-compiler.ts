@@ -1,6 +1,6 @@
 import ts from "typescript";
 import path from "path";
-import { FsUtils, SdLogger, PathUtils, TNormPath } from "@simplysm/sd-core-node";
+import { FsUtils, PathUtils, SdLogger, TNormPath } from "@simplysm/sd-core-node";
 import { StringUtils } from "@simplysm/sd-core-common";
 import { NgtscProgram, OptimizeFor } from "@angular/compiler-cli";
 import {
@@ -617,6 +617,90 @@ export class SdTsCompiler {
         );
       }
       // (transformers.before ??= []).push(transformKeys(this.#program));
+
+      const fixImportTransformer: ts.TransformerFactory<ts.SourceFile> = (context) => {
+        return (sf) => {
+          const shouldAppendJs = (importText: string): string | undefined => {
+            if (!importText.startsWith(".")) return undefined;
+
+            const resolved = ts.resolveModuleName(
+              importText,
+              sf.fileName,
+              this.#program!.getCompilerOptions(),
+              ts.sys,
+            );
+
+            const resolvedFileName = resolved.resolvedModule?.resolvedFileName;
+            if (resolvedFileName == null) return undefined;
+
+            const isTsFile = resolvedFileName.endsWith(".ts") || resolvedFileName.endsWith(".tsx");
+            if (!isTsFile) return undefined;
+
+            return importText + ".js";
+          };
+
+          const visitor: ts.Visitor = (node): ts.Node => {
+            // import { x } from "./foo"
+            if (
+              ts.isImportDeclaration(node) &&
+              ts.isStringLiteral(node.moduleSpecifier)
+            ) {
+              const newPath = shouldAppendJs(node.moduleSpecifier.text);
+              if (newPath != null) {
+                return ts.factory.updateImportDeclaration(
+                  node,
+                  node.modifiers,
+                  node.importClause,
+                  ts.factory.createStringLiteral(newPath),
+                  undefined,
+                );
+              }
+            }
+
+            // export * from "./bar"
+            if (
+              ts.isExportDeclaration(node) &&
+              node.moduleSpecifier &&
+              ts.isStringLiteral(node.moduleSpecifier)
+            ) {
+              const newPath = shouldAppendJs(node.moduleSpecifier.text);
+              if (newPath != null) {
+                return ts.factory.updateExportDeclaration(
+                  node,
+                  node.modifiers,
+                  node.isTypeOnly,
+                  node.exportClause,
+                  ts.factory.createStringLiteral(newPath),
+                  undefined,
+                );
+              }
+            }
+
+            // dynamic import("./baz")
+            if (
+              ts.isCallExpression(node) &&
+              node.expression.kind === ts.SyntaxKind.ImportKeyword &&
+              node.arguments.length === 1 &&
+              ts.isStringLiteral(node.arguments[0])
+            ) {
+              const newPath = shouldAppendJs(node.arguments[0].text);
+              if (newPath != null) {
+                return ts.factory.updateCallExpression(
+                  node,
+                  node.expression,
+                  undefined,
+                  [ts.factory.createStringLiteral(newPath)],
+                );
+              }
+            }
+
+            return ts.visitEachChild(node, visitor, context);
+          };
+
+          return ts.visitNode(sf, visitor) as ts.SourceFile;
+        };
+      };
+      (transformers.before ??= []).push(fixImportTransformer);
 
       this.#debug(`emit for files...`);
 

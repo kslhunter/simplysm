@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import { SdCliProject } from "./entry/sd-cli-project";
@@ -7,7 +9,7 @@ import { SdCliElectron } from "./entry/sd-cli-electron";
 import { SdCliLocalUpdate } from "./entry/sd-cli-local-update";
 import { SdCliCordova } from "./entry/sd-cli-cordova";
 import { SdCliAiCommand } from "./entry/sd-cli-ai-command";
-import { SdCliPostinstall } from "./entry/sd-cli-postinstall";
+import { SdCliPostinstall } from "./entry/sd-cli-postinstall.js";
 
 Error.stackTraceLimit = Infinity;
 EventEmitter.defaultMaxListeners = 0;
