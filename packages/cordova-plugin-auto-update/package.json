@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/cordova-plugin-auto-update",
-  "version": "12.8.17",
+  "version": "12.8.18",
   "description": "심플리즘 패키지 - Cordova Plugin Auto Update",
   "author": "김석래",
   "repository": {
@@ -19,10 +19,10 @@
     ]
   },
   "dependencies": {
-    "@simplysm/cordova-plugin-app-storage": "12.8.17",
-    "@simplysm/sd-core-common": "12.8.17",
-    "@simplysm/sd-service-client": "12.8.17",
-    "@simplysm/types-cordova-plugin-ionic-webview": "12.8.17",
+    "@simplysm/cordova-plugin-app-storage": "12.8.18",
+    "@simplysm/sd-core-common": "12.8.18",
+    "@simplysm/sd-service-client": "12.8.18",
+    "@simplysm/types-cordova-plugin-ionic-webview": "12.8.18",
     "jszip": "^3.10.1",
     "rxjs": "^7.8.2"
   }
