@@ -313,7 +313,7 @@ export function $arr<T>(sig: Signal<T[]> | WritableSignal<T[]>) {
   };
 }
 
-export function $obj<T>(sig: Signal<T>) {
+export function $obj<T extends Record<any, any>>(sig: Signal<T> | WritableSignal<T>) {
   return {
     snapshot() {
       sig[ORIGIN_SNAPSHOT] = ObjectUtils.clone(sig());
@@ -324,6 +324,27 @@ export function $obj<T>(sig: Signal<T>) {
     },
     get origin(): T {
       return sig[ORIGIN_SNAPSHOT] ?? ObjectUtils.clone(sig());
+    },
+    updateField<K extends keyof T>(key: K, val: T[K]) {
+      if (!("update" in sig)) throw new Error("Readonly signal does not support remove.");
+
+      if (sig()[key] === val) return;
+
+      sig.update(v => ({
+        ...v,
+        [key]: val,
+      }));
+    },
+    deleteField<K extends keyof T>(key: K) {
+      if (!("update" in sig)) throw new Error("Readonly signal does not support remove.");
+
+      if (!(key in sig())) return;
+
+      sig.update(v => {
+        const r = { ...v };
+        delete v[key];
+        return r;
+      });
     },
   };
 }

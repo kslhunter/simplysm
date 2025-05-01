@@ -98,6 +98,7 @@ export * from "./plugins/commands/sd-insert-command.event-plugin";
 export * from "./plugins/commands/sd-refresh-command.event-plugin";
 export * from "./plugins/commands/sd-save-command.event-plugin";
 export * from "./plugins/events/sd-backbutton.event-plugin";
+export * from "./plugins/events/sd-intersection.event-plugin";
 export * from "./plugins/events/sd-option.event-plugin";
 export * from "./plugins/events/sd-resize.event-plugin";
 export * from "./plugins/sd-global-error-handler.plugin";

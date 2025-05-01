@@ -25,7 +25,15 @@ import { SdPaneControl } from "./sd-pane.control";
 import { SdEventsDirective } from "../directives/sd-events.directive";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { SdCheckboxControl } from "./sd-checkbox.control";
-import { $afterRenderComputed, $computed, $effect, $model, $signal } from "../utils/hooks";
+import {
+  $afterRenderComputed,
+  $afterRenderEffect,
+  $computed,
+  $effect,
+  $model,
+  $obj,
+  $signal,
+} from "../utils/hooks";
 import { injectElementRef } from "../utils/dom/element-ref.injector";
 import { transformBoolean } from "../utils/type-tramsforms";
 import { SdIconControl } from "./sd-icon.control";
@@ -976,7 +984,7 @@ export class SdSheetControl<T> {
       this.#config.set(await this.#sdSystemConfig.getAsync(`sd-sheet.${this.key()}`));
     });
 
-    $effect(() => {
+    $afterRenderEffect(() => {
       this.redrawNextFixedCells(-2);
     });
 
@@ -1005,8 +1013,12 @@ export class SdSheetControl<T> {
 
         let html = "";
         for (const selectedTrRect of selectedTrRects) {
-          html += `<div class='_select-row-indicator' style="top: ${selectedTrRect.top}px; height: ${selectedTrRect.height
-          - 1}px; width: ${selectedTrRect.width - 1}px;"></div>`;
+          html += /* language="HTML" */ `
+            <div
+              class='_select-row-indicator'
+              style="top: ${selectedTrRect.top}px; height: ${selectedTrRect.height
+              - 1}px; width: ${selectedTrRect.width - 1}px;"
+            ></div>`;
         }
         selectRowIndicatorContainerEl.innerHTML = html;
         selectRowIndicatorContainerEl.style.display = "block";
@@ -1281,7 +1293,7 @@ export class SdSheetControl<T> {
       .findFirst<HTMLDivElement>("> ._focus-row-indicator")!;
 
     Object.assign(focusRowIndicatorEl.style, {
-      width: event.target.offsetWidth + "px",
+      width: event.entry.contentRect.width + "px",
     });
   }
 
@@ -1316,9 +1328,8 @@ export class SdSheetControl<T> {
   }
 
   onHeaderCellResize(headerCell: IHeaderDef<T>, c: number) {
-    if (headerCell.fixed && headerCell.isLastDepth) {
-      this.redrawNextFixedCells(c);
-    }
+    if (!headerCell.fixed || !headerCell.isLastDepth) return;
+    this.redrawNextFixedCells(c);
   }
 
   redrawNextFixedCells(fromC: number) {
@@ -1335,18 +1346,10 @@ export class SdSheetControl<T> {
 
         const nextLeft = thEl ? thEl.offsetLeft + thEl.offsetWidth : 0;
 
-        this.fixedCellLefts.update(v => {
-          const r = { ...v };
-          r[c + 1] = nextLeft;
-          return r;
-        });
+        $obj(this.fixedCellLefts).updateField(c + 1, nextLeft);
       }
       else {
-        this.fixedCellLefts.update(v => {
-          const r = { ...v };
-          delete r[c + 1];
-          return r;
-        });
+        $obj(this.fixedCellLefts).deleteField(c + 1);
       }
     }
   }
@@ -1606,7 +1609,7 @@ export class SdSheetControl<T> {
     targetEl.focus();
     if (isEditMode) {
       this.#editModeCellAddr.set(targetAddr);
-      queueMicrotask(() => {
+      requestAnimationFrame(() => {
         const focusableEl = targetEl.findFocusableFirst();
         if (focusableEl) focusableEl.focus();
       });

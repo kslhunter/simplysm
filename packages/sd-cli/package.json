@@ -9,13 +9,10 @@
     "directory": "packages/sd-cli"
   },
   "license": "MIT",
-  "bin": "./dist/sd-cli.js",
+  "bin": "./lib/sd-cli.cjs",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "scripts": {
-    "postinstall": "node lib/postinstall.js"
-  },
   "dependencies": {
     "@angular/build": "^19.2.9",
     "@angular/compiler": "^19.2.8",

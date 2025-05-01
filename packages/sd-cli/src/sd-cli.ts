@@ -1,5 +1,3 @@
-#!/usr/bin/env node --import=specifier-resolution-node/register
-
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import { SdCliProject } from "./entry/sd-cli-project";
@@ -9,6 +7,7 @@ import { SdCliElectron } from "./entry/sd-cli-electron";
 import { SdCliLocalUpdate } from "./entry/sd-cli-local-update";
 import { SdCliCordova } from "./entry/sd-cli-cordova";
 import { SdCliAiCommand } from "./entry/sd-cli-ai-command";
+import { SdCliPostinstall } from "./entry/sd-cli-postinstall";
 
 Error.stackTraceLimit = Infinity;
 EventEmitter.defaultMaxListeners = 0;
@@ -179,6 +178,10 @@ const argv = (await yargs(hideBin(process.argv))
     "commit",
     "AI를 통해 변경사항에 대한 커밋 메시지를 작성하여, 커밋 및 푸쉬를 수행합니다.",
   )
+  .command(
+    "postinstall",
+    "설치후 자동실행할 작업",
+  )
   .parseAsync()) as any;
 
 if (Boolean(argv.debug)) {
@@ -247,6 +250,9 @@ else if (argv._[0] === "run-cordova") {
 }
 else if (argv._[0] === "commit") {
   await SdCliAiCommand.commitAsync();
+}
+else if (argv._[0] === "postinstall") {
+  SdCliPostinstall.run();
 }
 else {
   throw new Error(`명령어가 잘못 되었습니다.\n\t${argv._[0]}\n`);

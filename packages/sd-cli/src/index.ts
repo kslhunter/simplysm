@@ -2,6 +2,7 @@ export * from "./entry/sd-cli-ai-command";
 export * from "./entry/sd-cli-cordova";
 export * from "./entry/sd-cli-electron";
 export * from "./entry/sd-cli-local-update";
+export * from "./entry/sd-cli-postinstall";
 export * from "./entry/sd-cli-project";
 export * from "./pkg-builders/client/sd-cli-ng-routes.file-generator";
 export * from "./pkg-builders/client/sd-client.build-runner";
