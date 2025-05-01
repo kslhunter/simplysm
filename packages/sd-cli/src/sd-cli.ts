@@ -1,5 +1,3 @@
-#!/usr/bin/env node --import=specifier-resolution-node/register
-
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import { SdCliProject } from "./entry/sd-cli-project";

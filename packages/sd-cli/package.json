@@ -9,7 +9,9 @@
     "directory": "packages/sd-cli"
   },
   "license": "MIT",
-  "bin": "./dist/sd-cli.js",
+  "bin": {
+    "sd-cli": "./bin/sd-cli"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
