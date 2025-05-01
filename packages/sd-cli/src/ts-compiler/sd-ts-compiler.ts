@@ -618,7 +618,7 @@ export class SdTsCompiler {
       }
       // (transformers.before ??= []).push(transformKeys(this.#program));
 
-      const fixImportTransformer: ts.TransformerFactory<ts.SourceFile> = (context) => {
+      /*const fixImportTransformer: ts.TransformerFactory<ts.SourceFile> = (context) => {
         return (sf) => {
           const shouldAppendJs = (importText: string): string | undefined => {
             const resolved = ts.resolveModuleName(
@@ -641,7 +641,8 @@ export class SdTsCompiler {
 
             // 3. import 경로의 마지막 부분이 파일명(확장자 제외)과 같으면 → .js 붙여야 함
             const importLastName = importText.split("/").pop();
-            const resolvedFileNameOnly = path.basename(resolvedFileName).replace(/\.(d\.ts|ts|tsx|js|jsx)$/, "");
+            const resolvedFileNameOnly = path.basename(resolvedFileName)
+              .replace(/\.(d\.ts|ts|tsx|js|jsx)$/, "");
 
             if (importLastName === resolvedFileNameOnly) {
               return importText + ".js";
@@ -712,7 +713,7 @@ export class SdTsCompiler {
           return ts.visitNode(sf, visitor) as ts.SourceFile;
         };
       };
-      (transformers.before ??= []).push(fixImportTransformer);
+      (transformers.before ??= []).push(fixImportTransformer);*/
 
       this.#debug(`emit for files...`);
 
