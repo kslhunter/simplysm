@@ -621,8 +621,6 @@ export class SdTsCompiler {
       const fixImportTransformer: ts.TransformerFactory<ts.SourceFile> = (context) => {
         return (sf) => {
           const shouldAppendJs = (importText: string): string | undefined => {
-            if (!importText.startsWith(".")) return undefined;
-
             const resolved = ts.resolveModuleName(
               importText,
               sf.fileName,
@@ -630,13 +628,27 @@ export class SdTsCompiler {
               ts.sys,
             );
 
-            const resolvedFileName = resolved.resolvedModule?.resolvedFileName;
-            if (resolvedFileName == null) return undefined;
+            const resolvedInfo = resolved.resolvedModule;
+            if (!resolvedInfo) return undefined;
 
-            const isTsFile = resolvedFileName.endsWith(".ts") || resolvedFileName.endsWith(".tsx");
-            if (!isTsFile) return undefined;
+            const resolvedFileName = resolvedInfo.resolvedFileName;
 
-            return importText + ".js";
+            // ① .ts / .tsx / .js / .jsx 만 대상
+            if (!/\.(d\.ts|ts|tsx|js|jsx)$/i.test(resolvedFileName)) return undefined;
+
+            // ② 사용자가 .js, .mjs, .json 등 명시한 경우 무시
+            if (/\.[mc]?js$|\.json$/i.test(importText)) return undefined;
+
+            // 3. import 경로의 마지막 부분이 파일명(확장자 제외)과 같으면 → .js 붙여야 함
+            const importLastName = importText.split("/").pop();
+            const resolvedFileNameOnly = path.basename(resolvedFileName).replace(/\.(d\.ts|ts|tsx|js|jsx)$/, "");
+
+            if (importLastName === resolvedFileNameOnly) {
+              return importText + ".js";
+            }
+
+            // 4. 그렇지 않으면 → index.ts 같은 루트 패키지 import → .js 붙이지 않음
+            return undefined;
           };
 
           const visitor: ts.Visitor = (node): ts.Node => {
