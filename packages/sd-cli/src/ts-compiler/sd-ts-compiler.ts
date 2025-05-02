@@ -31,6 +31,7 @@ export class SdTsCompiler {
 
   private _isForAngular: boolean;
 
+  private _allDepCacheMap = new Map<TNormPath, Set<TNormPath>>();
   private _revDepCacheMap = new Map<TNormPath, Set<TNormPath>>();
   private _sourceFileCacheMap = new Map<TNormPath, ts.SourceFile>();
   private _emittedFilesCacheMap = new Map<
@@ -320,24 +321,36 @@ export class SdTsCompiler {
       this._perf.run("캐시 무효화 및 초기화", () => {
         this._stylesheetBundler?.invalidate(this._affectedFileSet);
 
-        for (const affectedFile of this._affectedFileSet) {
-          this._emittedFilesCacheMap.delete(affectedFile);
-          this._sourceFileCacheMap.delete(affectedFile);
-          this._stylesheetBundlingResultMap.delete(affectedFile);
-          this._watchFileSet.delete(affectedFile);
+        const toDeleteSet = new Set<TNormPath>();
 
-          for (const [key, deps] of this._revDepCacheMap.entries()) {
-            if (key === affectedFile) {
-              this._revDepCacheMap.delete(key);
-              continue;
-            }
+        // 초기: 명시적으로 수정된 파일들
+        for (const file of this._affectedFileSet) {
+          toDeleteSet.add(file);
 
-            if (deps.has(affectedFile)) {
-              deps.delete(affectedFile);
-              if (deps.size === 0) {
-                this._revDepCacheMap.delete(key);
-              }
+          // 역방향으로 영향을 받는 파일들도 포함
+          const dependents = this._revDepCacheMap.get(file);
+          if (dependents) {
+            for (const dep of dependents) {
+              toDeleteSet.add(dep);
             }
+          }
+        }
+
+        for (const toDeleteFile of toDeleteSet) {
+          this._emittedFilesCacheMap.delete(toDeleteFile);
+          this._sourceFileCacheMap.delete(toDeleteFile);
+          this._stylesheetBundlingResultMap.delete(toDeleteFile);
+          this._watchFileSet.delete(toDeleteFile);
+          this._allDepCacheMap.delete(toDeleteFile);
+          this._revDepCacheMap.delete(toDeleteFile);
+        }
+
+        for (const [key, deps] of this._revDepCacheMap) {
+          for (const file of toDeleteSet) {
+            deps.delete(file);
+          }
+          if (deps.size === 0) {
+            this._revDepCacheMap.delete(key);
           }
         }
       });
@@ -374,24 +387,27 @@ export class SdTsCompiler {
     this._debug(`새 의존성 분석 중...`);
 
     const messages: ISdBuildMessage[] = [];
-    const analysed1 = this._perf.run("새 의존성 분석", () => {
+    this._perf.run("새 의존성 분석", () => {
       const analysed = SdTsDependencyAnalyzer.analyze(
         this._program!,
         tsconf.compilerHost,
         this._opt.watchScopePaths,
+        this._allDepCacheMap,
       );
-      messages.push(...analysed.messages);
+      messages.push(...analysed);
 
-      for (const sf of analysed.sourceFileSet) {
-        const filePath = PathUtils.norm(sf.fileName);
-        const deps = analysed.allDepMap.get(filePath) ?? new Set<TNormPath>();
+      for (const fileNPath of this._allDepCacheMap.keys()) {
+        // const filePath = PathUtils.norm(sf.fileName);
+        const deps = this._allDepCacheMap.get(fileNPath)!;
 
         for (const dep of deps) {
           const depCache = this._revDepCacheMap.getOrCreate(dep, new Set<TNormPath>());
-          depCache.add(filePath);
+          depCache.add(fileNPath);
         }
 
         if (this._ngProgram) {
+          const sf = this._program!.getSourceFile(fileNPath)!;
+
           if (this._ngProgram.compiler.ignoreForEmit.has(sf)) {
             continue;
           }
@@ -401,29 +417,59 @@ export class SdTsCompiler {
               PathUtils.norm(dep),
               new Set<TNormPath>(),
             );
-            ref.add(filePath);
+            ref.add(fileNPath);
           }
         }
       }
-
-      return analysed;
     });
 
     if (this._modifiedFileSet.size === 0) {
       this._debug(`영향 받은 파일 추가 중... (새 의존성)`);
 
       this._perf.run("영향 받은 파일 추가 중 (새 의존성)", () => {
-        for (const sf of analysed1.sourceFileSet) {
+        for (const fileNPath of this._allDepCacheMap.keys()) {
           if (!this._opt.watchScopePaths.some((scopePath) => PathUtils.isChildPath(
-            sf.fileName,
+            fileNPath,
             scopePath,
           ))) {
             continue;
           }
 
-          this._affectedFileSet.add(PathUtils.norm(sf.fileName));
+          this._affectedFileSet.add(fileNPath);
         }
       });
+    }
+
+    /**
+     * AI가 넣으라고해서 넣었지만 이유는 잘 모르겠음.
+     * AI측의 설명은 아래와 같음:
+     *
+     * 변경된 파일이 .d.ts일 경우, 타입 정보만을 가져다 쓰는 다수의 .ts 파일들이
+     * 직접적으로 import하고 있어도 revDepMap에는 기록되지 않을 수 있음.
+     *
+     * 따라서 .d.ts 파일을 참조하는 모든 파일을 allDepCacheMap에서 역추적하여
+     * 간접 영향 파일들을 정확하게 affectedFileSet에 포함시켜야 함.
+     *
+     * 이 블록은 정확도 보완을 위한 보증 로직이며, 특히 초기 빌드 또는 watch 시 의존성 누락을 방지함.
+     */
+    for (const modifiedFile of this._modifiedFileSet) {
+      // 신규 추가된 파일이 누락되지 않도록 추가하라고 하여 넣음
+      if (
+        !this._revDepCacheMap.has(modifiedFile) &&
+        !this._allDepCacheMap.has(modifiedFile) &&
+        this._program!.getSourceFile(modifiedFile)
+      ) {
+        this._affectedFileSet.add(modifiedFile);
+      }
+
+      // AI가 넣으라 한부분에 대한 설명은 여기서부터임
+      if (!modifiedFile.endsWith(".d.ts")) continue;
+
+      for (const [importer, deps] of this._allDepCacheMap) {
+        if (deps.has(modifiedFile)) {
+          this._affectedFileSet.add(importer);
+        }
+      }
     }
 
     for (const dep of this._revDepCacheMap.keys()) {

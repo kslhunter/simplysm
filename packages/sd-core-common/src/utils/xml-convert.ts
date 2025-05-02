@@ -1,4 +1,4 @@
-import { XMLBuilder, XMLParser } from "fast-xml-parser";
+import { XMLBuilder, XmlBuilderOptions, XMLParser } from "fast-xml-parser";
 
 export class XmlConvert {
   static parse(str: string, options?: { stripTagPrefix?: boolean }) {
@@ -15,11 +15,13 @@ export class XmlConvert {
     return options?.stripTagPrefix ? this.#stripTagPrefix(result) : result;
   }
 
-  static stringify(obj: any) {
+  static stringify(obj: any, options?: XmlBuilderOptions) {
     return new XMLBuilder({
       ignoreAttributes: false,
       attributeNamePrefix: "",
       attributesGroupName: "$",
+      suppressBooleanAttributes: false,
+      ...options,
     }).build(obj);
   }
 

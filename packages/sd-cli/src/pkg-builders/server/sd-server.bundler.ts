@@ -1,11 +1,14 @@
 import esbuild from "esbuild";
 import path from "path";
-import { FsUtils, SdLogger, PathUtils, TNormPath } from "@simplysm/sd-core-node";
+import { FsUtils, HashUtils, PathUtils, SdLogger, TNormPath } from "@simplysm/sd-core-node";
 import { SdCliConvertMessageUtils } from "../../utils/sd-cli-convert-message.utils";
 import { ISdCliServerPluginResultCache } from "../../types/build-plugin.types";
 import { ISdBuildMessage } from "../../types/build.types";
 import { createSdServerPlugin } from "./sd-server.plugin-creator";
-import { BuildOutputFile, BuildOutputFileType } from "@angular/build/src/tools/esbuild/bundler-context";
+import {
+  BuildOutputFile,
+  BuildOutputFileType,
+} from "@angular/build/src/tools/esbuild/bundler-context";
 import { convertOutputFile } from "@angular/build/src/tools/esbuild/utils";
 import { resolveAssets } from "@angular/build/src/utils/resolve-assets";
 
@@ -17,7 +20,7 @@ export class SdServerBundler {
   readonly #modifiedFileSet = new Set<TNormPath>();
   readonly #resultCache: ISdCliServerPluginResultCache = {};
 
-  readonly #outputCache = new Map<TNormPath, string | number>();
+  readonly #outputHashCache = new Map<TNormPath, string>();
 
   constructor(
     private readonly _opt: {
@@ -123,10 +126,11 @@ const __dirname = __path__.dirname(__filename);`.trim(),
 
       for (const outputFile of outputFiles) {
         const distFilePath = PathUtils.norm(this._opt.pkgPath, outputFile.path);
-        const prev = this.#outputCache.get(distFilePath);
-        if (prev !== Buffer.from(outputFile.contents).toString("base64")) {
+        const prevHash = this.#outputHashCache.get(distFilePath);
+        const currHash = HashUtils.get(outputFile.contents);
+        if (prevHash !== currHash) {
           FsUtils.writeFile(distFilePath, outputFile.contents);
-          this.#outputCache.set(distFilePath, Buffer.from(outputFile.contents).toString("base64"));
+          this.#outputHashCache.set(distFilePath, currHash);
           emitFileSet.add(distFilePath);
         }
       }
@@ -141,11 +145,14 @@ const __dirname = __path__.dirname(__filename);`.trim(),
       );
 
       for (const assetFile of assetFiles) {
-        const prev = this.#outputCache.get(PathUtils.norm(assetFile.source));
-        const curr = FsUtils.lstat(assetFile.source).mtime.getTime();
-        if (prev !== curr) {
-          FsUtils.copy(assetFile.source, path.resolve(this._opt.pkgPath, "dist", assetFile.destination));
-          this.#outputCache.set(PathUtils.norm(assetFile.source), curr);
+        const prevHash = this.#outputHashCache.get(PathUtils.norm(assetFile.source));
+        const currHash = FsUtils.hash(assetFile.source);
+        if (prevHash !== currHash) {
+          FsUtils.copy(
+            assetFile.source,
+            path.resolve(this._opt.pkgPath, "dist", assetFile.destination),
+          );
+          this.#outputHashCache.set(PathUtils.norm(assetFile.source), currHash);
           emitFileSet.add(PathUtils.norm(assetFile.destination));
         }
       }
@@ -162,7 +169,10 @@ const __dirname = __path__.dirname(__filename);`.trim(),
     return {
       watchFileSet: this.#resultCache.watchFileSet!,
       affectedFileSet: this.#resultCache.affectedFileSet!,
-      results: SdCliConvertMessageUtils.convertToBuildMessagesFromEsbuild(result, this._opt.pkgPath),
+      results: SdCliConvertMessageUtils.convertToBuildMessagesFromEsbuild(
+        result,
+        this._opt.pkgPath,
+      ),
       emitFileSet: emitFileSet,
     };
   }

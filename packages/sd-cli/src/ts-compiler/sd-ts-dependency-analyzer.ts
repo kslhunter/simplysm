@@ -9,9 +9,9 @@ export class SdTsDependencyAnalyzer {
     program: ts.Program,
     compilerHost: ts.CompilerHost,
     scopePaths: TNormPath[],
+    allDepCacheMap: Map<TNormPath, Set<TNormPath>>,
   ) {
     const compilerOpts = program.getCompilerOptions();
-    const allDepMap = new Map<TNormPath, Set<TNormPath>>();
     const visited = new Set<TNormPath>();
     const messages: ISdBuildMessage[] = [];
 
@@ -32,7 +32,20 @@ export class SdTsDependencyAnalyzer {
       resolvedFileName: string,
       isFallback: boolean
     } | undefined => {
-      const res = ts.resolveModuleName(text, base, compilerOpts, compilerHost);
+      /*const moduleResolutionHost: ts.ModuleResolutionHost = {
+        ...compilerHost,
+        realpath: fs.realpathSync,  // 필요 시
+        directoryExists: fs.existsSync,
+        getCurrentDirectory: () => process.cwd(),
+      };*/
+      const res = ts.resolveModuleName(
+        text,
+        base,
+        compilerOpts,
+        compilerHost,
+        /*moduleResolutionHost*/
+      );
+
       if (res.resolvedModule) {
         return { resolvedFileName: res.resolvedModule.resolvedFileName, isFallback: false };
       }
@@ -71,8 +84,9 @@ export class SdTsDependencyAnalyzer {
       }
     };
 
-    const collectDeps = (sf: ts.SourceFile, fromFile: TNormPath) => {
-      if (allDepMap.has(fromFile)) return;
+    const collectDeps = (sf: ts.SourceFile) => {
+      const sfNPath = PathUtils.norm(sf.fileName);
+      if (allDepCacheMap.has(sfNPath)) return;
       const deps = new Set<TNormPath>();
 
       const pushDep = (raw: string, node: ts.Node) => {
@@ -86,13 +100,13 @@ export class SdTsDependencyAnalyzer {
 
         if (!inScope(resolved.resolvedFileName)) return;
 
-        const norm = PathUtils.norm(resolved.resolvedFileName);
-        deps.add(norm);
+        const resolvedNPath = PathUtils.norm(resolved.resolvedFileName);
+        deps.add(resolvedNPath);
 
-        if (!visited.has(norm) && !resolved.isFallback) {
-          visited.add(norm);
-          const targetSf = program.getSourceFile(norm);
-          if (!targetSf) {
+        if (!visited.has(resolvedNPath) && !resolved.isFallback) {
+          visited.add(resolvedNPath);
+          const resolvedSf = program.getSourceFile(resolvedNPath);
+          if (!resolvedSf) {
             error(
               sf,
               node,
@@ -101,7 +115,7 @@ export class SdTsDependencyAnalyzer {
             return;
           }
 
-          collectDeps(targetSf, norm);
+          collectDeps(resolvedSf);
         }
       };
 
@@ -152,25 +166,20 @@ export class SdTsDependencyAnalyzer {
       };
 
       ts.forEachChild(sf, visit);
-      allDepMap.set(fromFile, deps);
+      allDepCacheMap.set(sfNPath, deps);
     };
 
     const sourceFileSet = new Set(
       program.getSourceFiles()
         .map((sf) => getOrgSourceFile(sf))
-        .filterExists()
+        .filterExists(),
     );
 
     for (const sf of sourceFileSet) {
       if (!inScope(sf.fileName)) continue;
-      const normFile = PathUtils.norm(sf.fileName);
-      collectDeps(sf, normFile);
+      collectDeps(sf);
     }
 
-    return {
-      allDepMap,
-      sourceFileSet,
-      messages,
-    };
+    return messages;
   }
 }

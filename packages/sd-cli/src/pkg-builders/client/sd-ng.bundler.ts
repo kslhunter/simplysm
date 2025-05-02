@@ -246,10 +246,7 @@ export class SdNgBundler {
         const currHash = HashUtils.get(outputFile.contents);
         if (prevHash !== currHash) {
           FsUtils.writeFile(distFilePath, outputFile.contents);
-          this._outputHashCache.set(
-            distFilePath,
-            Buffer.from(outputFile.contents).toString("base64"),
-          );
+          this._outputHashCache.set(distFilePath, currHash);
           emitFileSet.add(PathUtils.norm(outputFile.path));
         }
       }

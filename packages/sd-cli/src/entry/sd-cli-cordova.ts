@@ -100,22 +100,20 @@ export class SdCliCordova {
   private async _managePlatformsAsync(cordovaPath: string): Promise<void> {
     const alreadyPlatforms = FsUtils.readdir(path.resolve(cordovaPath, this.PLATFORMS_DIR_NAME));
 
-    // 미설치 빌드 플랫폼 신규 생성 - 병렬 처리
-    const platformInstallPromises = this._platforms
-      .filter(platform => !alreadyPlatforms.includes(platform))
-      .map(platform => {
-        if (platform === "android") {
-          return this._execAsync(
-            `npx cordova platform add ${platform}@${this.ANDROID_PLATFORM_VERSION}`,
-            cordovaPath,
-          );
-        }
-        else {
-          return this._execAsync(`npx cordova platform add ${platform}`, cordovaPath);
-        }
-      });
+    // 미설치 빌드 플랫폼 신규 생성
+    for (const platform of this._platforms) {
+      if (alreadyPlatforms.includes(platform)) continue;
 
-    await Promise.all(platformInstallPromises);
+      if (platform === "android") {
+        await this._execAsync(
+          `npx cordova platform add ${platform}@${this.ANDROID_PLATFORM_VERSION}`,
+          cordovaPath,
+        );
+      }
+      else {
+        await this._execAsync(`npx cordova platform add ${platform}`, cordovaPath);
+      }
+    }
   }
 
   // 3. 플러그인 관리
@@ -290,7 +288,9 @@ export class SdCliCordova {
     }
 
     // CONFIG: 파일 새로 쓰기
-    const configResultContent = XmlConvert.stringify(configXml);
+    const configResultContent = XmlConvert.stringify(configXml, {
+      format: true
+    });
     FsUtils.writeFile(configFilePath, configResultContent);
   }
 
