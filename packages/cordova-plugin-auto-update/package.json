@@ -23,7 +23,6 @@
     "@simplysm/sd-core-common": "12.8.20",
     "@simplysm/sd-service-client": "12.8.20",
     "@simplysm/types-cordova-plugin-ionic-webview": "12.8.20",
-    "jszip": "^3.10.1",
     "rxjs": "^7.8.2"
   }
 }

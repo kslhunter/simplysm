@@ -4,6 +4,7 @@ import os from "os";
 import fs from "fs";
 import crypto from "crypto";
 import { JsonConvert, SdError } from "@simplysm/sd-core-common";
+import { HashUtils } from "./hash.utils";
 
 export class FsUtils {
   public static getParentPaths(currentPath: string): string[] {
@@ -34,7 +35,8 @@ export class FsUtils {
   public static async globAsync(pattern: string): Promise<string[]>;
   public static async globAsync(pattern: string, options: glob.GlobOptions): Promise<string[]>;
   public static async globAsync(pattern: string, options?: glob.GlobOptions): Promise<string[]> {
-    return (await glob.glob(pattern.replace(/\\/g, "/"), options ?? {})).map((item) => path.resolve(item));
+    return (await glob.glob(pattern.replace(/\\/g, "/"), options ?? {})).map((item) => path.resolve(
+      item));
     /*return await new Promise<string[]>((resolve, reject) => {
       glob(pattern.replace(/\\/g, "/"), options ?? {}, (err: (Error | null), matches) => {
         if (err) {
@@ -47,7 +49,8 @@ export class FsUtils {
   }
 
   public static glob(pattern: string, options?: glob.GlobOptions): string[] {
-    return glob.globSync(pattern.replace(/\\/g, "/"), options ?? {}).map((item) => path.resolve(item));
+    return glob.globSync(pattern.replace(/\\/g, "/"), options ?? {})
+      .map((item) => path.resolve(item));
   }
 
   public static async readdirAsync(targetPath: string): Promise<string[]> {
@@ -94,7 +97,10 @@ export class FsUtils {
 
   public static async removeAsync(targetPath: string): Promise<void> {
     try {
-      await fs.promises.rm(targetPath, { recursive: true, force: true, retryDelay: 500, maxRetries: 6 });
+      await fs.promises.rm(
+        targetPath,
+        { recursive: true, force: true, retryDelay: 500, maxRetries: 6 },
+      );
     }
     catch (err) {
       if (err instanceof Error) {
@@ -174,7 +180,11 @@ export class FsUtils {
     }
   }
 
-  public static copy(sourcePath: string, targetPath: string, filter?: (subPath: string) => boolean): void {
+  public static copy(
+    sourcePath: string,
+    targetPath: string,
+    filter?: (subPath: string) => boolean,
+  ): void {
     if (!FsUtils.exists(sourcePath)) {
       return;
     }
@@ -289,7 +299,9 @@ export class FsUtils {
       if (err instanceof Error) {
         throw new SdError(
           err,
-          targetPath + (typeof data === "object" ? ((data.constructor?.name ?? "object") as string) : typeof data),
+          targetPath + (typeof data === "object"
+            ? ((data.constructor?.name ?? "object") as string)
+            : typeof data),
         );
       }
       else {
@@ -480,7 +492,10 @@ export class FsUtils {
     }
   }
 
-  public static async openAsync(targetPath: string, flags: string | number): Promise<fs.promises.FileHandle> {
+  public static async openAsync(
+    targetPath: string,
+    flags: string | number,
+  ): Promise<fs.promises.FileHandle> {
     try {
       return await fs.promises.open(targetPath, flags);
     }
@@ -546,7 +561,11 @@ export class FsUtils {
     }
   }
 
-  public static findAllParentChildPaths(childGlob: string, fromPath: string, rootPath?: string): string[] {
+  public static findAllParentChildPaths(
+    childGlob: string,
+    fromPath: string,
+    rootPath?: string,
+  ): string[] {
     const resultPaths: string[] = [];
 
     let current = fromPath;
@@ -567,5 +586,9 @@ export class FsUtils {
     }
 
     return resultPaths;
+  }
+
+  static hash(filePath: string) {
+    return HashUtils.get(this.readFile(filePath));
   }
 }

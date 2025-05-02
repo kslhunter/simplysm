@@ -1,8 +1,7 @@
 /// <reference types="@simplysm/types-cordova-plugin-ionic-webview"/>
 
 import { SdAutoUpdateServiceClient, SdServiceClient } from "@simplysm/sd-service-client";
-import { NetUtils } from "@simplysm/sd-core-common";
-import JSZip from "jszip";
+import { NetUtils, SdZip } from "@simplysm/sd-core-common";
 import { CordovaAppStorage } from "@simplysm/cordova-plugin-app-storage";
 
 export abstract class CordovaAutoUpdate {
@@ -30,30 +29,33 @@ export abstract class CordovaAutoUpdate {
             opt.log(`최신버전 파일 다운로드중...`);
 
             // 서버에서 최신버전의 zip파일 다운로드
-            const downloadZipBuffer = await NetUtils.downloadAsync(
+            const downloadZipBytes = await NetUtils.downloadBytesAsync(
               opt.serviceClient.serverUrl + serverVersionInfo.downloadPath,
               (progress) => {
-                opt.log(
-                  `최신버전 파일 다운로드중...(${((progress.receivedLength * 100)
-                    / progress.contentLength).toFixed(2)}%)`,
-                );
+                const progressText = ((progress.receivedLength * 100) / progress.contentLength)
+                  .toFixed(2);
+                opt.log(`최신버전 파일 다운로드중...(${progressText}%)`);
               },
             );
 
-            opt.log(`최신버전 파일 압축해제...`);
+            opt.log(`최신버전 파일 압축해제중...`);
 
             // 다운로드한 최신버전파일 APP폴더에 압축풀기
-            const zip = await JSZip.loadAsync(downloadZipBuffer);
-            for (const zipFilePath of Object.keys(zip.files)) {
-              const zipFile = zip.files[zipFilePath];
-              if (!zipFile.dir) {
-                const zipFileBlob = await zipFile.async("blob");
-                await storage.writeAsync(
-                  `/files/www/${zipFilePath.replace(/\\/g, "/")}`,
-                  zipFileBlob,
-                );
-                opt.log(`최신버전 파일 압축해제...`);
-              }
+            const zip = new SdZip(downloadZipBytes);
+            const extractedFileMap = await zip.extractAllAsync(progress => {
+              const progressText = ((progress.extractedSize * 100) / progress.totalSize)
+                .toFixed(2);
+              opt.log(`최신버전 파일 압축해제중...(${progressText}%)`);
+            });
+            await zip.closeAsync();
+
+            opt.log(`최신버전 파일 설치중...`);
+
+            for (const extractedFileName of extractedFileMap.keys()) {
+              await storage.writeAsync(
+                `/files/www/${extractedFileName.replace(/\\/g, "/")}`,
+                extractedFileMap.get(extractedFileName)!,
+              );
             }
 
             opt.log(`최신버전 설치 완료...`);

@@ -16,26 +16,24 @@ import { SdCliPerformanceTimer } from "../utils/sd-cli-performance-time";
 import { SdCliConvertMessageUtils } from "../utils/sd-cli-convert-message.utils";
 import {
   ISdTsCompilerResult,
-  IStylesheetBundlingResult,
   SdTsCompilerOptions,
+  TStylesheetBundlingResult,
 } from "../types/ts-compiler.types";
 import { ISdBuildMessage } from "../types/build.types";
 import {
   createWorkerTransformer,
 } from "@angular/build/src/tools/angular/transformers/web-worker-transformer";
 import { ESLint } from "eslint";
+import { SdTsDependencyAnalyzer } from "./sd-ts-dependency-analyzer";
 
 export class SdTsCompiler {
-  readonly #logger = SdLogger.get(["simplysm", "sd-cli", "SdTsCompiler"]);
+  private _logger = SdLogger.get(["simplysm", "sd-cli", "SdTsCompiler"]);
 
-  readonly #parsedTsconfig: ts.ParsedCommandLine;
-  readonly #isForAngular: boolean;
+  private _isForAngular: boolean;
 
-  // readonly #workerRevDependencyCacheMap = new Map<TNormPath, Set<TNormPath>>();
-  readonly #revDependencyCacheMap = new Map<TNormPath, Set<TNormPath>>();
-  readonly #resourceDependencyCacheMap = new Map<TNormPath, Set<TNormPath>>();
-  readonly #sourceFileCacheMap = new Map<TNormPath, ts.SourceFile>();
-  readonly #emittedFilesCacheMap = new Map<
+  private _revDepCacheMap = new Map<TNormPath, Set<TNormPath>>();
+  private _sourceFileCacheMap = new Map<TNormPath, ts.SourceFile>();
+  private _emittedFilesCacheMap = new Map<
     TNormPath,
     {
       outAbsPath?: TNormPath;
@@ -43,105 +41,35 @@ export class SdTsCompiler {
     }[]
   >();
 
-  readonly #stylesheetBundler: ComponentStylesheetBundler | undefined;
-  readonly #compilerHost: ts.CompilerHost | AngularCompilerHost;
+  private _stylesheetBundler: ComponentStylesheetBundler | undefined;
 
-  #ngProgram: NgtscProgram | undefined;
-  #program: ts.Program | undefined;
+  private _ngProgram: NgtscProgram | undefined;
+  private _program: ts.Program | undefined;
 
-  #modifiedFileSet = new Set<TNormPath>();
-  #affectedFileSet = new Set<TNormPath>();
+  private _modifiedFileSet = new Set<TNormPath>();
+  private _affectedFileSet = new Set<TNormPath>();
 
-  readonly #watchFileSet = new Set<TNormPath>();
-  readonly #stylesheetBundlingResultMap = new Map<TNormPath, IStylesheetBundlingResult>();
+  private _watchFileSet = new Set<TNormPath>();
+  private _stylesheetBundlingResultMap = new Map<TNormPath, TStylesheetBundlingResult>();
 
-  readonly #pkgPath: TNormPath;
-  readonly #distPath: TNormPath;
-  readonly #globalStyleFilePath?: TNormPath;
-  readonly #watchScopePaths: TNormPath[];
+  private _perf!: SdCliPerformanceTimer;
 
-  readonly #isForBundle: boolean;
+  constructor(private readonly _opt: SdTsCompilerOptions) {
+    this._debug("초기화 중...");
 
-  // readonly #lintWorker = new SdWorker<TSdLintWorkerType>(import.meta.resolve("../workers/lint-worker"));
-
-  #perf!: SdCliPerformanceTimer;
-
-  // #processWebWorker?: (workerFile: string, containingFile: string) => string;
-
-  constructor(opt: SdTsCompilerOptions) {
-    this.#pkgPath = opt.pkgPath;
-    this.#globalStyleFilePath = opt.globalStyleFilePath;
-    this.#isForBundle = opt.isForBundle;
-    this.#watchScopePaths = opt.watchScopePaths;
-    // this.#processWebWorker = opt.processWebWorker;
-
-    this.#debug("초기화...");
-
-    //-- isForAngular / parsedTsConfig
-
-    const tsconfigPath = path.resolve(opt.pkgPath, "tsconfig.json");
+    const tsconfigPath = path.resolve(this._opt.pkgPath, "tsconfig.json");
     const tsconfig = FsUtils.readJson(tsconfigPath);
-    this.#isForAngular = Boolean(tsconfig.angularCompilerOptions);
-    this.#parsedTsconfig = ts.parseJsonConfigFileContent(tsconfig, ts.sys, opt.pkgPath, {
-      ...tsconfig.angularCompilerOptions,
-      ...opt.additionalOptions,
-    });
+    this._isForAngular = Boolean(tsconfig.angularCompilerOptions);
 
-    this.#distPath = PathUtils.norm(this.#parsedTsconfig.options.outDir ?? path.resolve(
-      opt.pkgPath,
-      "dist",
-    ));
-
-    //-- compilerHost
-
-    this.#compilerHost = ts.createCompilerHost(this.#parsedTsconfig.options);
-
-    const baseGetSourceFile = this.#compilerHost.getSourceFile;
-    this.#compilerHost.getSourceFile = (
-      fileName: string,
-      languageVersionOrOptions: ts.ScriptTarget | ts.CreateSourceFileOptions,
-      onError?: ((message: string) => void) | undefined,
-      shouldCreateNewSourceFile?: boolean,
-      ...args
-    ): ts.SourceFile | undefined => {
-      if (!shouldCreateNewSourceFile && this.#sourceFileCacheMap.has(PathUtils.norm(fileName))) {
-        return this.#sourceFileCacheMap.get(PathUtils.norm(fileName));
-      }
-
-      const sf: ts.SourceFile | undefined = baseGetSourceFile.call(
-        this.#compilerHost,
-        fileName,
-        languageVersionOrOptions,
-        onError,
-        true,
-        ...args,
-      );
-
-      if (sf) {
-        this.#sourceFileCacheMap.set(PathUtils.norm(fileName), sf);
-      }
-      else {
-        this.#sourceFileCacheMap.delete(PathUtils.norm(fileName));
-      }
-
-      return sf;
-    };
-
-    const baseReadFile = this.#compilerHost.readFile;
-    this.#compilerHost.readFile = (fileName) => {
-      this.#watchFileSet.add(PathUtils.norm(fileName));
-      return baseReadFile.call(this.#compilerHost, fileName);
-    };
-
-    if (this.#isForAngular) {
+    if (this._isForAngular) {
       //-- stylesheetBundler
-      this.#stylesheetBundler = new ComponentStylesheetBundler(
+      this._stylesheetBundler = new ComponentStylesheetBundler(
         {
-          workspaceRoot: opt.pkgPath,
-          optimization: !opt.isDevMode,
+          workspaceRoot: this._opt.pkgPath,
+          optimization: !this._opt.isDevMode,
           inlineFonts: true,
           preserveSymlinks: false,
-          sourcemap: opt.isDevMode ? "inline" : false,
+          sourcemap: this._opt.isDevMode ? "inline" : false,
           outputNames: { bundles: "[name]", media: "media/[name]" },
           includePaths: [],
           externalDependencies: [],
@@ -157,16 +85,88 @@ export class SdTsCompiler {
           },
         },
         "scss",
-        opt.isDevMode,
+        this._opt.isDevMode,
+      );
+    }
+  }
+
+  private _parseTsConfig(): ITsConfigInfo {
+    const config = this._loadTsConfig();
+    const compilerHost = this._createCompilerHost(config.options);
+    return {
+      ...config,
+      compilerHost,
+    };
+  }
+
+  private _loadTsConfig() {
+    const tsconfigPath = path.resolve(this._opt.pkgPath, "tsconfig.json");
+    const tsconfig = FsUtils.readJson(tsconfigPath);
+    const parsedTsconfig = ts.parseJsonConfigFileContent(tsconfig, ts.sys, this._opt.pkgPath, {
+      ...tsconfig.angularCompilerOptions,
+      ...this._opt.additionalOptions,
+    });
+
+    const distPath = PathUtils.norm(parsedTsconfig.options.outDir ?? path.resolve(
+      this._opt.pkgPath,
+      "dist",
+    ));
+
+    return {
+      fileNames: parsedTsconfig.fileNames,
+      options: parsedTsconfig.options,
+      distPath: distPath,
+    };
+  }
+
+  private _createCompilerHost(compilerOptions: ts.CompilerOptions) {
+    const compilerHost = ts.createCompilerHost(compilerOptions);
+
+    const baseGetSourceFile = compilerHost.getSourceFile;
+    compilerHost.getSourceFile = (
+      fileName: string,
+      languageVersionOrOptions: ts.ScriptTarget | ts.CreateSourceFileOptions,
+      onError?: ((message: string) => void) | undefined,
+      shouldCreateNewSourceFile?: boolean,
+      ...args
+    ): ts.SourceFile | undefined => {
+      const fileNPath = PathUtils.norm(fileName);
+
+      if (!shouldCreateNewSourceFile && this._sourceFileCacheMap.has(fileNPath)) {
+        return this._sourceFileCacheMap.get(fileNPath);
+      }
+
+      const sf: ts.SourceFile | undefined = baseGetSourceFile.call(
+        compilerHost,
+        fileName,
+        languageVersionOrOptions,
+        onError,
+        true,
+        ...args,
       );
 
-      //-- compilerHost
+      if (sf) {
+        this._sourceFileCacheMap.set(fileNPath, sf);
+      }
+      else {
+        this._sourceFileCacheMap.delete(fileNPath);
+      }
 
-      (this.#compilerHost as AngularCompilerHost).readResource = (fileName: string) => {
-        return this.#compilerHost.readFile(fileName) ?? "";
+      return sf;
+    };
+
+    const baseReadFile = compilerHost.readFile;
+    compilerHost.readFile = (fileName) => {
+      this._watchFileSet.add(PathUtils.norm(fileName));
+      return baseReadFile.call(compilerHost, fileName);
+    };
+
+    if (this._isForAngular) {
+      (compilerHost as AngularCompilerHost).readResource = (fileName: string) => {
+        return compilerHost.readFile(fileName) ?? "";
       };
 
-      (this.#compilerHost as AngularCompilerHost).transformResource = async (
+      (compilerHost as AngularCompilerHost).transformResource = async (
         data: string,
         context: {
           type: string;
@@ -178,69 +178,88 @@ export class SdTsCompiler {
           return null;
         }
 
-        const contents = await this.#bundleStylesheetAsync(
+        const stylesheetBundlingResult = await this._bundleStylesheetAsync(
           data,
           PathUtils.norm(context.containingFile),
           context.resourceFile != null ? PathUtils.norm(context.resourceFile) : undefined,
         );
 
-        return StringUtils.isNullOrEmpty(contents) ? null : { content: contents };
+        return StringUtils.isNullOrEmpty(stylesheetBundlingResult.contents)
+          ? null
+          : { content: stylesheetBundlingResult.contents };
       };
 
-      (this.#compilerHost as AngularCompilerHost).getModifiedResourceFiles = () => {
-        return new Set(Array.from(this.#modifiedFileSet).map((item) => PathUtils.posix(item)));
+      (compilerHost as AngularCompilerHost).getModifiedResourceFiles = () => {
+        return new Set(Array.from(this._modifiedFileSet).map((item) => PathUtils.posix(item)));
       };
     }
+
+    return compilerHost;
   }
 
-  async #bundleStylesheetAsync(
+  private async _bundleStylesheetAsync(
     data: string,
     containingFile: TNormPath,
     resourceFile: TNormPath | null = null,
-  ) {
+  ): Promise<TStylesheetBundlingResult> {
     // containingFile: 포함된 파일 (.ts)
     // resourceFile: 외부 리소스 파일 (styleUrls로 입력하지 않고 styles에 직접 입력한 경우 null)
     // referencedFiles: import한 외부 scss 파일 혹은 woff파일등 외부 파일
 
     // this.#debug(`bundle stylesheet...(${containingFile}, ${resourceFile})`);
 
-    return await this.#perf.run("bundle style", async () => {
-      const stylesheetResult =
-        resourceFile != null
-          ? await this.#stylesheetBundler!.bundleFile(resourceFile)
-          : await this.#stylesheetBundler!.bundleInline(data, containingFile, "scss");
-
-      if (stylesheetResult.referencedFiles) {
-        for (const referencedFile of stylesheetResult.referencedFiles) {
-          const depCacheSet = this.#resourceDependencyCacheMap.getOrCreate(
-            PathUtils.norm(referencedFile),
-            new Set<TNormPath>(),
-          );
-          depCacheSet.add(resourceFile ?? containingFile);
-        }
-
-        this.#watchFileSet.adds(
-          ...Array.from(stylesheetResult.referencedFiles.values())
-            .map((item) => PathUtils.norm(item)),
-        );
+    return await this._perf.run("스타일 번들링", async () => {
+      const fileNPath = PathUtils.norm(resourceFile ?? containingFile);
+      if (this._stylesheetBundlingResultMap.has(fileNPath)) {
+        return this._stylesheetBundlingResultMap.get(fileNPath)!;
       }
 
-      this.#stylesheetBundlingResultMap.set(PathUtils.norm(resourceFile ?? containingFile), {
-        outputFiles: stylesheetResult.errors == null ? stylesheetResult.outputFiles : undefined,
-        metafile: stylesheetResult.errors == null ? stylesheetResult.metafile : undefined,
-        errors: stylesheetResult.errors,
-        warnings: stylesheetResult.warnings,
-      });
+      try {
+        const result =
+          resourceFile != null
+            ? await this._stylesheetBundler!.bundleFile(resourceFile)
+            : await this._stylesheetBundler!.bundleInline(data, containingFile, "scss");
 
-      return stylesheetResult.contents;
+        if (result.referencedFiles) {
+          for (const referencedFile of result.referencedFiles) {
+            const depCacheSet = this._revDepCacheMap.getOrCreate(
+              PathUtils.norm(referencedFile),
+              new Set<TNormPath>(),
+            );
+            depCacheSet.add(fileNPath);
+          }
+
+          this._watchFileSet.adds(
+            ...Array.from(result.referencedFiles.values())
+              .map((item) => PathUtils.norm(item)),
+          );
+        }
+
+        this._stylesheetBundlingResultMap.set(fileNPath, result);
+
+        return result;
+      }
+      catch (err) {
+        const result = {
+          errors: [
+            {
+              text: `스타일 번들링 실패: ${err.message ?? "알 수 없는 오류"}`,
+              location: { file: containingFile },
+            },
+          ],
+          warnings: [],
+        };
+        this._stylesheetBundlingResultMap.set(fileNPath, result);
+        return result;
+      }
     });
   }
 
-  async compileAsync(modifiedFileSet: Set<TNormPath>): Promise<ISdTsCompilerResult> {
-    this.#perf = new SdCliPerformanceTimer("esbuild compile");
+  public async compileAsync(modifiedFileSet: Set<TNormPath>): Promise<ISdTsCompilerResult> {
+    this._perf = new SdCliPerformanceTimer("esbuild compile");
 
-    this.#modifiedFileSet = new Set(modifiedFileSet);
-    this.#affectedFileSet = new Set<TNormPath>();
+    this._modifiedFileSet = new Set(modifiedFileSet);
+    this._affectedFileSet = new Set<TNormPath>();
 
     /*for (const mod of modifiedFileSet) {
       const workerImporters = this.#workerRevDependencyCacheMap.get(mod);
@@ -251,11 +270,18 @@ export class SdTsCompiler {
       }
     }*/
 
-    const prepareResult = await this.#prepareAsync();
+    const tsconf = this._parseTsConfig();
 
-    const [buildResult, lintResults] = await Promise.all([this.#buildAsync(), this.#lintAsync()]);
+    const prepareResult = await this._prepareAsync(tsconf);
 
-    this.#debug(`build completed`, this.#perf.toString());
+    const [buildResult, lintResults] = await Promise.all([
+      this._buildAsync(tsconf),
+      this._lintAsync(),
+    ]);
+
+    this._debug(`빌드 완료됨`, this._perf.toString());
+    this._debug(`영향 받은 파일: ${this._affectedFileSet.size}개`);
+    this._debug(`감시 중인 파일: ${this._watchFileSet.size}개`);
 
     return {
       messages: [
@@ -263,210 +289,147 @@ export class SdTsCompiler {
         ...SdCliConvertMessageUtils.convertToBuildMessagesFromTsDiag(buildResult.diagnostics),
         ...SdCliConvertMessageUtils.convertToBuildMessagesFromEslint(lintResults),
       ],
-      watchFileSet: this.#watchFileSet,
-      affectedFileSet: this.#affectedFileSet,
-      stylesheetBundlingResultMap: this.#stylesheetBundlingResultMap,
-      emittedFilesCacheMap: this.#emittedFilesCacheMap,
+      watchFileSet: this._watchFileSet,
+      affectedFileSet: this._affectedFileSet,
+      stylesheetBundlingResultMap: this._stylesheetBundlingResultMap,
+      emittedFilesCacheMap: this._emittedFilesCacheMap,
       emitFileSet: buildResult.emitFileSet,
     };
   }
 
-  async #prepareAsync() {
-    if (this.#modifiedFileSet.size !== 0) {
-      this.#debug(`get affected (old deps & old res deps)...`);
+  private async _prepareAsync(tsconf: ITsConfigInfo) {
+    if (this._modifiedFileSet.size !== 0) {
+      this._debug(`영향 받은 파일 추적 중... (구 의존성)`);
 
-      this.#perf.run("get affected", () => {
-        for (const modifiedFile of this.#modifiedFileSet) {
-          this.#affectedFileSet.add(modifiedFile);
-          this.#affectedFileSet.adds(...(this.#revDependencyCacheMap.get(modifiedFile) ?? []));
-          this.#affectedFileSet.adds(...(this.#resourceDependencyCacheMap.get(modifiedFile) ?? []));
+      this._perf.run("영향 받은 파일 추적", () => {
+        for (const modifiedFile of this._modifiedFileSet) {
+          this._affectedFileSet.add(modifiedFile);
+
+          this._affectedFileSet.adds(...(this._revDepCacheMap.get(modifiedFile) ?? []));
+
+          // .d.ts → .js 대응
+          if (modifiedFile.endsWith(".d.ts")) {
+            const jsEquivalent = PathUtils.norm(modifiedFile.replace(/\.d\.ts$/, ".js"));
+            this._affectedFileSet.add(jsEquivalent);
+          }
         }
       });
 
-      this.#debug(`invalidate & clear cache...`);
+      this._debug(`캐시 무효화 및 초기화 중...`);
 
-      this.#perf.run("invalidate & clear cache", () => {
-        this.#stylesheetBundler?.invalidate(this.#affectedFileSet);
+      this._perf.run("캐시 무효화 및 초기화", () => {
+        this._stylesheetBundler?.invalidate(this._affectedFileSet);
 
-        for (const affectedFile of this.#affectedFileSet) {
-          this.#emittedFilesCacheMap.delete(affectedFile);
-          this.#sourceFileCacheMap.delete(affectedFile);
-          this.#stylesheetBundlingResultMap.delete(affectedFile);
-          this.#watchFileSet.delete(affectedFile);
+        for (const affectedFile of this._affectedFileSet) {
+          this._emittedFilesCacheMap.delete(affectedFile);
+          this._sourceFileCacheMap.delete(affectedFile);
+          this._stylesheetBundlingResultMap.delete(affectedFile);
+          this._watchFileSet.delete(affectedFile);
+
+          for (const [key, deps] of this._revDepCacheMap.entries()) {
+            if (key === affectedFile) {
+              this._revDepCacheMap.delete(key);
+              continue;
+            }
+
+            if (deps.has(affectedFile)) {
+              deps.delete(affectedFile);
+              if (deps.size === 0) {
+                this._revDepCacheMap.delete(key);
+              }
+            }
+          }
         }
-
-        this.#revDependencyCacheMap.clear();
-        this.#resourceDependencyCacheMap.clear();
       });
     }
 
-    this.#debug(`create program...`);
+    this._debug(`ts.Program 생성 중...`);
 
-    this.#perf.run("create program", () => {
-      if (this.#isForAngular) {
-        this.#ngProgram = new NgtscProgram(
-          this.#parsedTsconfig.fileNames,
-          this.#parsedTsconfig.options,
-          this.#compilerHost,
-          this.#ngProgram,
+    this._perf.run("ts.Program 생성", () => {
+      if (this._isForAngular) {
+        this._ngProgram = new NgtscProgram(
+          tsconf.fileNames,
+          tsconf.options,
+          tsconf.compilerHost,
+          this._ngProgram,
         );
-        this.#program = this.#ngProgram.getTsProgram();
+        this._program = this._ngProgram.getTsProgram();
       }
       else {
-        this.#program = ts.createProgram(
-          this.#parsedTsconfig.fileNames,
-          this.#parsedTsconfig.options,
-          this.#compilerHost,
-          this.#program,
+        this._program = ts.createProgram(
+          tsconf.fileNames,
+          tsconf.options,
+          tsconf.compilerHost,
+          this._program,
         );
       }
     });
 
-    if (this.#ngProgram) {
-      await this.#perf.run("ng analyze", async () => {
-        await this.#ngProgram!.compiler.analyzeAsync();
+    if (this._ngProgram) {
+      await this._perf.run("Angular 템플릿 분석", async () => {
+        await this._ngProgram!.compiler.analyzeAsync();
       });
     }
 
-    const getOrgSourceFile = (sf: ts.SourceFile) => {
-      if (sf.fileName.endsWith(".ngtypecheck.ts")) {
-        const orgFileName = sf.fileName.slice(0, -15) + ".ts";
-        return this.#program!.getSourceFile(orgFileName);
-      }
-
-      return sf;
-    };
-
-    const sourceFileSet = new Set(
-      this.#program!.getSourceFiles()
-        .map((sf) => getOrgSourceFile(sf))
-        .filterExists(),
-    );
-
-    this.#debug(`get new deps...`);
+    this._debug(`새 의존성 분석 중...`);
 
     const messages: ISdBuildMessage[] = [];
+    const analysed1 = this._perf.run("새 의존성 분석", () => {
+      const analysed = SdTsDependencyAnalyzer.analyze(
+        this._program!,
+        tsconf.compilerHost,
+        this._opt.watchScopePaths,
+      );
+      messages.push(...analysed.messages);
 
-    this.#perf.run("get new deps", () => {
-      const depMap = new Map<
-        TNormPath,
-        {
-          fileName: TNormPath;
-          importName: string;
-          exportName?: string;
-        }[]
-      >();
-      for (const sf of sourceFileSet) {
-        if (!this.#watchScopePaths.some((scopePath) => PathUtils.isChildPath(
-          sf.fileName,
-          scopePath,
-        ))) {
-          continue;
-        }
-
-        const refs = this.#findDeps(sf);
-        messages.push(...refs.filter((item) => "severity" in item));
-        depMap.set(
-          PathUtils.norm(sf.fileName),
-          refs
-            .filter((item) => "fileName" in item)
-            .filter((item) =>
-              this.#watchScopePaths.some((scopePath) => PathUtils.isChildPath(
-                item.fileName,
-                scopePath,
-              )),
-            ),
-        );
-      }
-
-      const allDepMap = new Map<TNormPath, Set<TNormPath>>();
-      const getAllDeps = (fileName: TNormPath, prevSet?: Set<TNormPath>) => {
-        if (allDepMap.has(fileName)) {
-          return allDepMap.get(fileName)!;
-        }
-
-        const result = new Set<TNormPath>();
-
-        const deps = depMap.get(fileName) ?? [];
-        result.adds(...deps.map((item) => item.fileName));
+      for (const sf of analysed.sourceFileSet) {
+        const filePath = PathUtils.norm(sf.fileName);
+        const deps = analysed.allDepMap.get(filePath) ?? new Set<TNormPath>();
 
         for (const dep of deps) {
-          const targetDeps = depMap.get(dep.fileName) ?? [];
-
-          if (dep.importName === "*") {
-            for (const targetRefItem of targetDeps.filter((item) => item.exportName != null)) {
-              if (prevSet?.has(targetRefItem.fileName)) continue;
-
-              result.add(targetRefItem.fileName);
-              result.adds(...getAllDeps(
-                targetRefItem.fileName,
-                new Set<TNormPath>(prevSet).adds(...result),
-              ));
-            }
-          }
-          else {
-            for (const targetRefItem of targetDeps.filter((item) => item.exportName
-              === dep.importName)) {
-              if (prevSet?.has(targetRefItem.fileName)) continue;
-
-              result.add(targetRefItem.fileName);
-              result.adds(...getAllDeps(
-                targetRefItem.fileName,
-                new Set<TNormPath>(prevSet).adds(...result),
-              ));
-            }
-          }
+          const depCache = this._revDepCacheMap.getOrCreate(dep, new Set<TNormPath>());
+          depCache.add(filePath);
         }
 
-        return result;
-      };
-
-      for (const sf of sourceFileSet) {
-        const deps = getAllDeps(PathUtils.norm(sf.fileName));
-        allDepMap.set(PathUtils.norm(sf.fileName), deps);
-
-        for (const dep of getAllDeps(PathUtils.norm(sf.fileName))) {
-          const depCache = this.#revDependencyCacheMap.getOrCreate(dep, new Set<TNormPath>());
-          depCache.add(PathUtils.norm(sf.fileName));
-        }
-
-        if (this.#ngProgram) {
-          if (this.#ngProgram.compiler.ignoreForEmit.has(sf)) {
+        if (this._ngProgram) {
+          if (this._ngProgram.compiler.ignoreForEmit.has(sf)) {
             continue;
           }
 
-          for (const dep of this.#ngProgram.compiler.getResourceDependencies(sf)) {
-            const ref = this.#resourceDependencyCacheMap.getOrCreate(
+          for (const dep of this._ngProgram.compiler.getResourceDependencies(sf)) {
+            const ref = this._revDepCacheMap.getOrCreate(
               PathUtils.norm(dep),
               new Set<TNormPath>(),
             );
-            ref.add(PathUtils.norm(sf.fileName));
+            ref.add(filePath);
           }
         }
       }
+
+      return analysed;
     });
 
-    if (this.#modifiedFileSet.size === 0) {
-      this.#debug(`get affected (init)...`);
+    if (this._modifiedFileSet.size === 0) {
+      this._debug(`영향 받은 파일 추가 중... (새 의존성)`);
 
-      this.#perf.run("get affected (init)", () => {
-        for (const sf of sourceFileSet) {
-          if (!this.#watchScopePaths.some((scopePath) => PathUtils.isChildPath(
+      this._perf.run("영향 받은 파일 추가 중 (새 의존성)", () => {
+        for (const sf of analysed1.sourceFileSet) {
+          if (!this._opt.watchScopePaths.some((scopePath) => PathUtils.isChildPath(
             sf.fileName,
             scopePath,
           ))) {
             continue;
           }
 
-          this.#affectedFileSet.add(PathUtils.norm(sf.fileName));
+          this._affectedFileSet.add(PathUtils.norm(sf.fileName));
         }
       });
     }
 
-    for (const dep of this.#revDependencyCacheMap.keys()) {
-      if (this.#modifiedFileSet.has(dep)) {
-        this.#affectedFileSet.adds(
-          ...Array.from(this.#revDependencyCacheMap.get(dep)!).mapMany((item) =>
+    for (const dep of this._revDepCacheMap.keys()) {
+      if (this._modifiedFileSet.has(dep)) {
+        this._affectedFileSet.adds(
+          ...Array.from(this._revDepCacheMap.get(dep)!).mapMany((item) =>
             [
               item,
               // .d.ts면 .js파일도 affected에 추가
@@ -478,22 +441,8 @@ export class SdTsCompiler {
 
       // dep이 emit된적이 없으면 affected에 추가해야함.
       // dep파일이 추가된후 기존 파일에서 import하면 dep파일이 affected에 포함이 안되는 현상 때문
-      if (!this.#emittedFilesCacheMap.has(dep)) {
-        this.#affectedFileSet.add(dep);
-      }
-    }
-
-    if (this.#ngProgram) {
-      for (const dep of this.#resourceDependencyCacheMap.keys()) {
-        if (this.#modifiedFileSet.has(dep)) {
-          this.#affectedFileSet.adds(...this.#resourceDependencyCacheMap.get(dep)!);
-        }
-
-        // dep이 emit된적이 없으면 affected에 추가해야함.
-        // dep파일이 추가된후 기존 파일에서 import하면 dep파일이 affected에 포함이 안되는 현상 때문
-        if (!this.#emittedFilesCacheMap.has(dep)) {
-          this.#affectedFileSet.add(dep);
-        }
+      if (!this._emittedFilesCacheMap.has(dep)) {
+        this._affectedFileSet.add(dep);
       }
     }
 
@@ -502,9 +451,9 @@ export class SdTsCompiler {
     };
   }
 
-  async #lintAsync() {
-    const lintFilePaths = Array.from(this.#affectedFileSet)
-      .filter((item) => PathUtils.isChildPath(item, this.#pkgPath))
+  private async _lintAsync() {
+    const lintFilePaths = Array.from(this._affectedFileSet)
+      .filter((item) => PathUtils.isChildPath(item, this._opt.pkgPath))
       .filter((item) => (
         (!item.endsWith(".d.ts") && item.endsWith(".ts")) ||
         item.endsWith(".js")
@@ -516,14 +465,14 @@ export class SdTsCompiler {
     }
 
     const linter = new ESLint({
-      cwd: this.#pkgPath,
+      cwd: this._opt.pkgPath,
       cache: false,
       overrideConfig: {
         languageOptions: {
           parserOptions: {
             // parser: tseslint.parser,
             project: null,
-            programs: [this.#program],
+            programs: [this._program],
           },
         },
       },
@@ -538,57 +487,52 @@ export class SdTsCompiler {
     // ]);
   }
 
-  async #buildAsync() {
+  private async _buildAsync(tsconf: ITsConfigInfo) {
     const emitFileSet = new Set<TNormPath>();
     const diagnostics: ts.Diagnostic[] = [];
 
-    this.#debug(`get diagnostics...`);
+    this._debug(`프로그램 진단 수집 중...`);
 
-    this.#perf.run("get program diagnostics", () => {
+    this._perf.run("프로그램 진단 수집", () => {
       diagnostics.push(
-        ...this.#program!.getConfigFileParsingDiagnostics(),
-        ...this.#program!.getOptionsDiagnostics(),
-        ...this.#program!.getGlobalDiagnostics(),
+        ...this._program!.getConfigFileParsingDiagnostics(),
+        ...this._program!.getOptionsDiagnostics(),
+        ...this._program!.getGlobalDiagnostics(),
       );
 
-      if (this.#ngProgram) {
-        diagnostics.push(...this.#ngProgram.compiler.getOptionDiagnostics());
+      if (this._ngProgram) {
+        diagnostics.push(...this._ngProgram.compiler.getOptionDiagnostics());
       }
     });
 
-    this.#debug(`get diagnostics of files...`);
+    this._debug(`개별 파일 진단 수집 중...`);
 
-    for (const affectedFile of this.#affectedFileSet) {
-      if (!PathUtils.isChildPath(affectedFile, this.#pkgPath)) {
-        continue;
-      }
+    for (const affectedFile of this._affectedFileSet) {
+      if (!PathUtils.isChildPath(affectedFile, this._opt.pkgPath)) continue;
 
-      const affectedSourceFile = this.#program!.getSourceFile(affectedFile);
-
+      const affectedSourceFile = this._program!.getSourceFile(affectedFile);
       if (
         !affectedSourceFile ||
-        (this.#ngProgram && this.#ngProgram.compiler.ignoreForDiagnostics.has(affectedSourceFile))
+        (this._ngProgram && this._ngProgram.compiler.ignoreForDiagnostics.has(affectedSourceFile))
       ) {
         continue;
       }
 
       // this.#debug(`get diagnostics of file ${affectedFile}...`);
 
-      this.#perf.run("get file diagnostics", () => {
+      this._perf.run("개별 파일 진단 수집", () => {
         diagnostics.push(
-          ...this.#program!.getSyntacticDiagnostics(affectedSourceFile),
-          ...this.#program!.getSemanticDiagnostics(affectedSourceFile),
+          ...this._program!.getSyntacticDiagnostics(affectedSourceFile),
+          ...this._program!.getSemanticDiagnostics(affectedSourceFile),
         );
       });
 
-      if (this.#ngProgram) {
-        this.#perf.run("get file diagnostics: ng", () => {
-          if (affectedSourceFile.isDeclarationFile) {
-            return;
-          }
+      if (this._ngProgram) {
+        this._perf.run("개별 파일 진단 수집(Angular)", () => {
+          if (affectedSourceFile.isDeclarationFile) return;
 
           diagnostics.push(
-            ...this.#ngProgram!.compiler.getDiagnosticsForFile(
+            ...this._ngProgram!.compiler.getDiagnosticsForFile(
               affectedSourceFile,
               OptimizeFor.WholeProgram,
             ),
@@ -597,163 +541,50 @@ export class SdTsCompiler {
       }
     }
 
-    this.#perf.run("emit", () => {
-      this.#debug(`prepare emit...`);
+    this._perf.run("파일 출력 (emit)", () => {
+      this._debug(`파일 출력 준비 중...`);
 
       let transformers: ts.CustomTransformers = {};
 
-      if (this.#ngProgram) {
+      if (this._ngProgram) {
         transformers = {
           ...transformers,
-          ...this.#ngProgram.compiler.prepareEmit().transformers,
+          ...this._ngProgram.compiler.prepareEmit().transformers,
         };
-        (transformers.before ??= []).push(replaceBootstrap(() => this.#program!.getTypeChecker()));
+        (transformers.before ??= []).push(replaceBootstrap(() => this._program!.getTypeChecker()));
         (transformers.before ??= []).push(
           createWorkerTransformer((file, importer) => {
             const fullPath = path.resolve(path.dirname(importer), file);
-            const relPath = path.relative(path.resolve(this.#pkgPath, "src"), fullPath);
+            const relPath = path.relative(path.resolve(this._opt.pkgPath, "src"), fullPath);
             return relPath.replace(/\.ts$/, "").replaceAll("\\", "/") + ".js";
           }),
         );
       }
-      // (transformers.before ??= []).push(transformKeys(this.#program));
 
-      /*const fixImportTransformer: ts.TransformerFactory<ts.SourceFile> = (context) => {
-        return (sf) => {
-          const shouldAppendJs = (importText: string): string | undefined => {
-            const resolved = ts.resolveModuleName(
-              importText,
-              sf.fileName,
-              this.#program!.getCompilerOptions(),
-              ts.sys,
-            );
-
-            const resolvedInfo = resolved.resolvedModule;
-            if (!resolvedInfo) return undefined;
-
-            const resolvedFileName = resolvedInfo.resolvedFileName;
-
-            // ① .ts / .tsx / .js / .jsx 만 대상
-            if (!/\.(d\.ts|ts|tsx|js|jsx)$/i.test(resolvedFileName)) return undefined;
-
-            // ② 사용자가 .js, .mjs, .json 등 명시한 경우 무시
-            if (/\.[mc]?js$|\.json$/i.test(importText)) return undefined;
-
-            // 3. import 경로의 마지막 부분이 파일명(확장자 제외)과 같으면 → .js 붙여야 함
-            const importLastName = importText.split("/").pop();
-            const resolvedFileNameOnly = path.basename(resolvedFileName)
-              .replace(/\.(d\.ts|ts|tsx|js|jsx)$/, "");
-
-            if (importLastName === resolvedFileNameOnly) {
-              return importText + ".js";
-            }
-
-            // 4. 그렇지 않으면 → index.ts 같은 루트 패키지 import → .js 붙이지 않음
-            return undefined;
-          };
-
-          const visitor: ts.Visitor = (node): ts.Node => {
-            // import { x } from "./foo"
-            if (
-              ts.isImportDeclaration(node) &&
-              ts.isStringLiteral(node.moduleSpecifier)
-            ) {
-              const newPath = shouldAppendJs(node.moduleSpecifier.text);
-              if (newPath != null) {
-                return ts.factory.updateImportDeclaration(
-                  node,
-                  node.modifiers,
-                  node.importClause,
-                  ts.factory.createStringLiteral(newPath),
-                  undefined,
-                );
-              }
-            }
-
-            // export * from "./bar"
-            if (
-              ts.isExportDeclaration(node) &&
-              node.moduleSpecifier &&
-              ts.isStringLiteral(node.moduleSpecifier)
-            ) {
-              const newPath = shouldAppendJs(node.moduleSpecifier.text);
-              if (newPath != null) {
-                return ts.factory.updateExportDeclaration(
-                  node,
-                  node.modifiers,
-                  node.isTypeOnly,
-                  node.exportClause,
-                  ts.factory.createStringLiteral(newPath),
-                  undefined,
-                );
-              }
-            }
-
-            // dynamic import("./baz")
-            if (
-              ts.isCallExpression(node) &&
-              node.expression.kind === ts.SyntaxKind.ImportKeyword &&
-              node.arguments.length === 1 &&
-              ts.isStringLiteral(node.arguments[0])
-            ) {
-              const newPath = shouldAppendJs(node.arguments[0].text);
-              if (newPath != null) {
-                return ts.factory.updateCallExpression(
-                  node,
-                  node.expression,
-                  undefined,
-                  [ts.factory.createStringLiteral(newPath)],
-                );
-              }
-            }
-
-            return ts.visitEachChild(node, visitor, context);
-          };
-
-          return ts.visitNode(sf, visitor) as ts.SourceFile;
-        };
-      };
-      (transformers.before ??= []).push(fixImportTransformer);*/
-
-      this.#debug(`emit for files...`);
+      this._debug(`파일 출력 중...`);
 
       // affected에 새로 추가된 파일은 포함되지 않는 현상이 있어 sourceFileSet으로 바꿈
       // 비교해보니, 딱히 getSourceFiles라서 더 느려지는것 같지는 않음
       // 그래도 affected로 다시 테스트 (조금이라도 더 빠르게)
-      for (const affectedFile of this.#affectedFileSet) {
-        if (this.#emittedFilesCacheMap.has(affectedFile)) {
+      for (const affectedFile of this._affectedFileSet) {
+        if (this._emittedFilesCacheMap.has(affectedFile)) continue;
+
+        const sf = this._program!.getSourceFile(affectedFile);
+        if (!sf || sf.isDeclarationFile) continue;
+        if (this._ngProgram?.compiler.ignoreForEmit.has(sf)) continue;
+        if (this._ngProgram?.compiler.incrementalCompilation.safeToSkipEmit(sf)) continue;
+
+        // 번들이 아닌 외부패키지는 보통 emit안해도 됨
+        // but esbuild를 통해 bundle로 묶어야 하는놈들은 모든 output이 있어야 함.
+        if (!this._opt.isForBundle && !PathUtils.isChildPath(sf.fileName, this._opt.pkgPath)) {
           continue;
         }
 
-        const sf = this.#program!.getSourceFile(affectedFile);
-        if (!sf) {
-          continue;
-        }
-
-        if (sf.isDeclarationFile) {
-          continue;
-        }
-
-        if (this.#ngProgram?.compiler.ignoreForEmit.has(sf)) {
-          continue;
-        }
-
-        if (this.#ngProgram?.compiler.incrementalCompilation.safeToSkipEmit(sf)) {
-          continue;
-        }
-
-        // esbuild를 통해 bundle로 묶어야 하는놈들은 모든 output이 있어야 함.
-        if (!this.#isForBundle) {
-          if (!PathUtils.isChildPath(sf.fileName, this.#pkgPath)) {
-            continue;
-          }
-        }
-
-        this.#program!.emit(
+        this._program!.emit(
           sf,
           (fileName, text, writeByteOrderMark, onError, sourceFiles, data) => {
             if (!sourceFiles || sourceFiles.length === 0) {
-              this.#compilerHost.writeFile(
+              tsconf.compilerHost.writeFile(
                 fileName,
                 text,
                 writeByteOrderMark,
@@ -765,44 +596,22 @@ export class SdTsCompiler {
             }
 
             const sourceFile = ts.getOriginalNode(sourceFiles[0], ts.isSourceFile);
-            if (this.#ngProgram) {
-              if (this.#ngProgram.compiler.ignoreForEmit.has(sourceFile)) {
-                return;
-              }
-              this.#ngProgram.compiler.incrementalCompilation.recordSuccessfulEmit(sourceFile);
+            if (this._ngProgram) {
+              if (this._ngProgram.compiler.ignoreForEmit.has(sourceFile)) return;
+              this._ngProgram.compiler.incrementalCompilation.recordSuccessfulEmit(sourceFile);
             }
 
-            const emitFileInfoCaches = this.#emittedFilesCacheMap.getOrCreate(PathUtils.norm(
-              sourceFile.fileName), []);
+            const emitFileInfoCaches = this._emittedFilesCacheMap.getOrCreate(
+              PathUtils.norm(sourceFile.fileName),
+              [],
+            );
 
-            if (PathUtils.isChildPath(sourceFile.fileName, this.#pkgPath)) {
-              let realFilePath = PathUtils.norm(fileName);
-              let realText = text;
-              if (
-                PathUtils.isChildPath(
-                  realFilePath,
-                  path.resolve(this.#distPath, path.basename(this.#pkgPath), "src"),
-                )
-              ) {
-                realFilePath = PathUtils.norm(
-                  this.#distPath,
-                  path.relative(
-                    path.resolve(this.#distPath, path.basename(this.#pkgPath), "src"),
-                    realFilePath,
-                  ),
-                );
-
-                if (fileName.endsWith(".js.map")) {
-                  const sourceMapContents = JSON.parse(realText);
-                  // remove "../../"
-                  sourceMapContents.sources[0] = sourceMapContents.sources[0].slice(6);
-                  realText = JSON.stringify(sourceMapContents);
-                }
-              }
+            if (PathUtils.isChildPath(sourceFile.fileName, this._opt.pkgPath)) {
+              const real = this._convertOutputToReal(fileName, tsconf.distPath, text);
 
               emitFileInfoCaches.push({
-                outAbsPath: realFilePath,
-                text: realText,
+                outAbsPath: real.filePath,
+                text: real.text,
               });
             }
             else {
@@ -820,32 +629,32 @@ export class SdTsCompiler {
 
     //-- global style
     if (
-      this.#globalStyleFilePath != null &&
-      FsUtils.exists(this.#globalStyleFilePath) &&
-      !this.#emittedFilesCacheMap.has(this.#globalStyleFilePath)
+      this._opt.globalStyleFilePath != null &&
+      FsUtils.exists(this._opt.globalStyleFilePath) &&
+      !this._emittedFilesCacheMap.has(this._opt.globalStyleFilePath)
     ) {
-      this.#debug(`bundle global style...`);
+      this._debug(`전역 스타일 번들링 중...`);
 
-      await this.#perf.run("bundle global style", async () => {
-        const data = FsUtils.readFile(this.#globalStyleFilePath!);
-        const contents = await this.#bundleStylesheetAsync(
+      await this._perf.run("전역 스타일 번들링", async () => {
+        const data = FsUtils.readFile(this._opt.globalStyleFilePath!);
+        const stylesheetBundlingResult = await this._bundleStylesheetAsync(
           data,
-          this.#globalStyleFilePath!,
-          this.#globalStyleFilePath,
+          this._opt.globalStyleFilePath!,
+          this._opt.globalStyleFilePath,
         );
-        const emitFileInfos = this.#emittedFilesCacheMap.getOrCreate(
-          this.#globalStyleFilePath!,
+        const emitFileInfos = this._emittedFilesCacheMap.getOrCreate(
+          this._opt.globalStyleFilePath!,
           [],
         );
         emitFileInfos.push({
           outAbsPath: PathUtils.norm(
-            this.#pkgPath,
-            path.relative(path.resolve(this.#pkgPath, "src"), this.#globalStyleFilePath!)
+            this._opt.pkgPath,
+            path.relative(path.resolve(this._opt.pkgPath, "src"), this._opt.globalStyleFilePath!)
               .replace(/\.scss$/, ".css"),
           ),
-          text: contents,
+          text: stylesheetBundlingResult.contents ?? "",
         });
-        emitFileSet.add(this.#globalStyleFilePath!);
+        emitFileSet.add(this._opt.globalStyleFilePath!);
       });
     }
 
@@ -855,215 +664,35 @@ export class SdTsCompiler {
     };
   }
 
-  #debug(...msg: any[]): void {
-    this.#logger.debug(`[${path.basename(this.#pkgPath)}]`, ...msg);
+  private _convertOutputToReal(filePath: string, distPath: string, text: string) {
+    let realFilePath = PathUtils.norm(filePath);
+    let realText = text;
+
+    const srcRelBasePath = path.resolve(distPath, path.basename(this._opt.pkgPath), "src");
+
+    if (PathUtils.isChildPath(realFilePath, srcRelBasePath)) {
+      realFilePath = PathUtils.norm(distPath, path.relative(srcRelBasePath, realFilePath));
+
+      // source map 위치 정확히 찾아가기
+      if (filePath.endsWith(".js.map")) {
+        const sourceMapContents = JSON.parse(realText);
+        sourceMapContents.sources[0] = sourceMapContents.sources[0].slice(6); // remove "../../"
+        realText = JSON.stringify(sourceMapContents);
+      }
+    }
+
+    return { filePath: realFilePath, text: realText };
   }
 
-  #findDeps(sf: ts.SourceFile) {
-    const deps: ({
-      fileName: TNormPath;
-      importName: string;
-      exportName?: string;
-    } | ISdBuildMessage)[] = [];
-
-    const tc = this.#program!.getTypeChecker();
-
-    const visit = (node: ts.Node) => {
-      if (ts.isExportDeclaration(node)) {
-        if (node.moduleSpecifier) {
-          const moduleSymbol = tc.getSymbolAtLocation(node.moduleSpecifier);
-          if (!moduleSymbol) {
-            const pos = ts.getLineAndCharacterOfPosition(sf, node.getStart());
-            deps.push({
-              filePath: PathUtils.norm(sf.fileName),
-              line: pos.line,
-              char: pos.character,
-              code: undefined,
-              severity: "error",
-              message: "export moduleSymbol not found",
-              type: "deps",
-            });
-            return;
-          }
-
-          const decls = moduleSymbol.getDeclarations();
-          if (!decls) {
-            const pos = ts.getLineAndCharacterOfPosition(sf, node.getStart());
-            deps.push({
-              filePath: PathUtils.norm(sf.fileName),
-              line: pos.line,
-              char: pos.character,
-              code: undefined,
-              severity: "error",
-              message: "export decls not found",
-              type: "deps",
-            });
-            return;
-          }
-
-          const namedBindings = node.exportClause;
-          if (namedBindings && ts.isNamedExports(namedBindings)) {
-            for (const el of namedBindings.elements) {
-              for (const decl of decls) {
-                deps.push({
-                  fileName: PathUtils.norm(decl.getSourceFile().fileName),
-                  importName: el.name.text,
-                  exportName: el.propertyName?.text ?? el.name.text,
-                });
-              }
-            }
-          }
-          else {
-            if (!moduleSymbol.exports) {
-              const pos = ts.getLineAndCharacterOfPosition(sf, node.getStart());
-              deps.push({
-                filePath: PathUtils.norm(sf.fileName),
-                line: pos.line,
-                char: pos.character,
-                code: undefined,
-                severity: "error",
-                message: "moduleSymbol exports not found",
-                type: "deps",
-              });
-              return;
-            }
-
-            for (const decl of decls) {
-              for (const key of moduleSymbol.exports.keys()) {
-                deps.push({
-                  fileName: PathUtils.norm(decl.getSourceFile().fileName),
-                  importName: key.toString(),
-                  exportName: key.toString(),
-                });
-              }
-            }
-          }
-        }
-      }
-      else if (ts.isImportDeclaration(node)) {
-        const moduleSymbol = tc.getSymbolAtLocation(node.moduleSpecifier);
-        if (!moduleSymbol) {
-          if (ts.isStringLiteral(node.moduleSpecifier)
-            && node.moduleSpecifier.text.startsWith("./")) {
-            deps.push({
-              fileName: PathUtils.norm(path.resolve(
-                path.dirname(sf.fileName),
-                node.moduleSpecifier.text + ".ts",
-              )),
-              importName: "*",
-            });
-
-            // const pos = ts.getLineAndCharacterOfPosition(sf, node.getStart());
-            // deps.push({
-            //   filePath: PathUtil.norm(sf.fileName),
-            //   line: pos.line,
-            //   char: pos.character,
-            //   code: undefined,
-            //   severity: "error",
-            //   message: `import moduleSymbol not found (${node.moduleSpecifier.text})`,
-            //   type: "deps",
-            // });
-            // return;
-          }
-
-          /*else {
-            throw new NeverEntryError(`import moduleSymbol: ${sf.fileName} ${node.moduleSpecifier["text"]}`);
-          }*/
-        }
-        else {
-          const decls = moduleSymbol.getDeclarations();
-          if (!decls) {
-            const pos = ts.getLineAndCharacterOfPosition(sf, node.getStart());
-            deps.push({
-              filePath: PathUtils.norm(sf.fileName),
-              line: pos.line,
-              char: pos.character,
-              code: undefined,
-              severity: "error",
-              message: `import decls not found (${moduleSymbol.name})`,
-              type: "deps",
-            });
-            return;
-          }
-
-          const namedBindings = node.importClause?.namedBindings;
-          if (namedBindings && ts.isNamedImports(namedBindings)) {
-            for (const el of namedBindings.elements) {
-              for (const decl of decls) {
-                deps.push({
-                  fileName: PathUtils.norm(decl.getSourceFile().fileName),
-                  importName: el.name.text,
-                });
-              }
-            }
-          }
-          else {
-            for (const decl of decls) {
-              deps.push({
-                fileName: PathUtils.norm(decl.getSourceFile().fileName),
-                importName: "*",
-              });
-            }
-          }
-        }
-      }
-
-      if (ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword) {
-        if (ts.isStringLiteral(node.arguments[0]) && node.arguments[0].text.startsWith("./")) {
-
-          const moduleSymbol = tc.getSymbolAtLocation(node.arguments[0]);
-          if (!moduleSymbol) {
-            deps.push({
-              fileName: PathUtils.norm(path.resolve(
-                path.dirname(sf.fileName),
-                node.arguments[0].text + ".ts",
-              )),
-              importName: "*",
-            });
-
-            // const pos = ts.getLineAndCharacterOfPosition(sf, node.getStart());
-            // deps.push({
-            //   filePath: PathUtil.norm(sf.fileName),
-            //   line: pos.line,
-            //   char: pos.character,
-            //   code: undefined,
-            //   severity: "error",
-            //   message: `import() moduleSymbol not found (${node.arguments[0].text})`,
-            //   type: "deps",
-            // });
-            // return;
-          }
-          else {
-            const decls = moduleSymbol.getDeclarations();
-            if (!decls) {
-              const pos = ts.getLineAndCharacterOfPosition(sf, node.getStart());
-              deps.push({
-                filePath: PathUtils.norm(sf.fileName),
-                line: pos.line,
-                char: pos.character,
-                code: undefined,
-                severity: "error",
-                message: `import() decls not found (${node.arguments[0].text})`,
-                type: "deps",
-              });
-              return;
-            }
-
-            for (const decl of decls) {
-              deps.push({
-                fileName: PathUtils.norm(decl.getSourceFile().fileName),
-                importName: "*",
-              });
-            }
-          }
-        }
-      }
-
-      node.forEachChild(visit);
-    };
-
-    sf.forEachChild(visit);
-
-    return deps;
+  private _debug(...msg: any[]): void {
+    this._logger.debug(`[${path.basename(this._opt.pkgPath)}]`, ...msg);
   }
+}
+
+
+interface ITsConfigInfo {
+  fileNames: string[];
+  options: ts.CompilerOptions;
+  compilerHost: ts.CompilerHost;
+  distPath: string;
 }

@@ -9,7 +9,6 @@ export * from "./sd-excel-workbook";
 export * from "./sd-excel-worksheet";
 export * from "./types";
 export * from "./utils/sd-excel.utils";
-export * from "./utils/xml-convert";
 export * from "./utils/zip-cache";
 export * from "./wrap/sd-excel-wrapper";
 export * from "./xmls/sd-excel-xml-content-type";

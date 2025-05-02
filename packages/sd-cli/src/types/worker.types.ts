@@ -1,5 +1,6 @@
 import { ISdBuildRunnerWorkerRequest } from "./build-runner.types";
 import { ISdBuildMessage, ISdBuildRunnerResult } from "./build.types";
+import { ESLint } from "eslint";
 
 export interface TServerWorkerType {
   methods: {
@@ -10,12 +11,12 @@ export interface TServerWorkerType {
   events: {};
 }
 
-// export interface TSdLintWorkerType {
-//   methods: {
-//     lint: { params: [{ cwd: string; fileSet: Set<string> }]; returnType: ESLint.LintResult[] };
-//   };
-//   events: {};
-// }
+export interface TSdLintWorkerType {
+  methods: {
+    lint: { params: [{ cwd: string; fileSet: Set<string> }]; returnType: ESLint.LintResult[] };
+  };
+  events: {};
+}
 
 // export interface TSdTsCompileWorkerType {
 //   methods: {

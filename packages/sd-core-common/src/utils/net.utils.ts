@@ -1,31 +1,38 @@
-import {NumberUtils} from "./number.utils";
+import { NumberUtils } from "./number.utils";
 
 export abstract class NetUtils {
-  static async downloadAsync(url: string, progressCallback?: (progress: INetDownloadProgress) => void) {
-    const res = await fetch(url, {method: "GET"});
+  static async downloadBytesAsync(
+    url: string,
+    progressCallback?: (progress: INetDownloadProgress) => void,
+  ) {
+    const res = await fetch(url, { method: "GET" });
     const reader = res.body!.getReader();
 
-    const contentLength = NumberUtils.parseInt(res.headers.get('Content-Length'))!;
+    const contentLength = NumberUtils.parseInt(res.headers.get("Content-Length")) ?? -1;
 
-    let buffer = Buffer.from([]);
+    const chunks: Uint8Array[] = [];
+    let receivedLength = 0;
+
     while (true) {
-      const {done, value} = await reader.read();
+      const { done, value } = await reader.read();
+      if (done) break;
 
-      if (done) {
-        break;
-      }
+      chunks.push(value);
+      receivedLength += value.length;
 
-      buffer = Buffer.concat([buffer, value]);
-
-      if (progressCallback) {
-        progressCallback({
-          contentLength,
-          receivedLength: buffer.length
-        });
+      if (progressCallback && contentLength > 0) {
+        progressCallback({ contentLength, receivedLength });
       }
     }
 
-    return buffer;
+    const result = new Uint8Array(receivedLength);
+    let offset = 0;
+    for (const chunk of chunks) {
+      result.set(chunk, offset);
+      offset += chunk.length;
+    }
+
+    return result;
   }
 }
 

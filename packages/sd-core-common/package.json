@@ -13,6 +13,8 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
+    "@zip.js/zip.js": "^2.7.60",
+    "fast-xml-parser": "^5.2.1",
     "reflect-metadata": "^0.2.2"
   }
 }

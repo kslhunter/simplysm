@@ -20,6 +20,7 @@ export * from "./pkg-builders/server/sd-server.bundler";
 export * from "./pkg-builders/server/sd-server.plugin-creator";
 import "./sd-cli";
 export * from "./ts-compiler/sd-ts-compiler";
+export * from "./ts-compiler/sd-ts-dependency-analyzer";
 export * from "./types/build-plugin.types";
 export * from "./types/build-runner.types";
 export * from "./types/build.types";

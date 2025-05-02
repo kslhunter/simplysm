@@ -2,7 +2,7 @@ import esbuild from "esbuild";
 import path from "path";
 import os from "os";
 import { JavaScriptTransformer } from "@angular/build/src/tools/esbuild/javascript-transformer";
-import { SdLogger, PathUtils, TNormPath } from "@simplysm/sd-core-node";
+import { PathUtils, SdLogger, TNormPath } from "@simplysm/sd-core-node";
 import { SdCliPerformanceTimer } from "../../utils/sd-cli-performance-time";
 import { SdCliConvertMessageUtils } from "../../utils/sd-cli-convert-message.utils";
 import { ISdCliNgPluginResultCache } from "../../types/build-plugin.types";
@@ -16,7 +16,7 @@ export function createSdNgPlugin(conf: {
   result: ISdCliNgPluginResultCache;
   watchScopePaths: TNormPath[];
 }): esbuild.Plugin {
-  let webWorkerResultMap = new Map<
+  /*let webWorkerResultMap = new Map<
     TNormPath,
     {
       outputFiles: esbuild.OutputFile[];
@@ -24,7 +24,7 @@ export function createSdNgPlugin(conf: {
       errors?: esbuild.Message[];
       warnings?: esbuild.Message[];
     }
-  >();
+  >();*/
 
   // let workerRevDepMap = new Map<TNormPath, Set<TNormPath>>();
 
@@ -147,18 +147,18 @@ export function createSdNgPlugin(conf: {
               ...Array.from(tsCompileResult.stylesheetBundlingResultMap.values())
                 .flatMap((item) => item.errors)
                 .filterExists(),
-              ...Array.from(webWorkerResultMap.values())
+              /*...Array.from(webWorkerResultMap.values())
                 .flatMap((item) => item.errors)
-                .filterExists(),
+                .filterExists(),*/
             ].filterExists(),
             warnings: [
               ...tsEsbuildResult.warnings,
               ...Array.from(tsCompileResult.stylesheetBundlingResultMap.values())
                 .flatMap((item) => item.warnings)
                 .filterExists(),
-              ...Array.from(webWorkerResultMap.values())
+              /*...Array.from(webWorkerResultMap.values())
                 .flatMap((item) => item.warnings)
-                .filterExists(),
+                .filterExists(),*/
             ],
           };
         });
@@ -173,7 +173,8 @@ export function createSdNgPlugin(conf: {
           return { contents: output, loader: "js" };
         }
 
-        const emittedJsFile = tsCompileResult.emittedFilesCacheMap.get(PathUtils.norm(args.path))?.last();
+        const emittedJsFile = tsCompileResult.emittedFilesCacheMap.get(PathUtils.norm(args.path))
+          ?.last();
         if (!emittedJsFile) {
           return {
             errors: [
@@ -191,7 +192,12 @@ export function createSdNgPlugin(conf: {
           resolveDir: build.initialOptions.absWorkingDir ?? "",
         });
 
-        const newContents = await javascriptTransformer.transformData(args.path, contents, true, sideEffects);
+        const newContents = await javascriptTransformer.transformData(
+          args.path,
+          contents,
+          true,
+          sideEffects,
+        );
 
         outputContentsCacheMap.set(PathUtils.norm(args.path), newContents);
 
@@ -211,24 +217,36 @@ export function createSdNgPlugin(conf: {
           resolveDir: build.initialOptions.absWorkingDir ?? "",
         });
 
-        const newContents = await javascriptTransformer.transformFile(args.path, false, sideEffects);
+        try {
+          const newContents = await javascriptTransformer.transformFile(
+            args.path,
+            false,
+            sideEffects,
+          );
 
-        outputContentsCacheMap.set(PathUtils.norm(args.path), newContents);
+          outputContentsCacheMap.set(PathUtils.norm(args.path), newContents);
 
-        return {
-          contents: newContents,
-          loader: "js",
-        };
+          return {
+            contents: newContents,
+            loader: "js",
+          };
+        }
+        catch (err) {
+          return {
+            contents: `console.error(${JSON.stringify(err.message)});`,
+            loader: "js",
+          };
+        }
       });
 
       build.onLoad(
         {
           filter: new RegExp(
             "(" +
-              Object.keys(build.initialOptions.loader!)
-                .map((item) => "\\" + item)
-                .join("|") +
-              ")$",
+            Object.keys(build.initialOptions.loader!)
+              .map((item) => "\\" + item)
+              .join("|") +
+            ")$",
           ),
         },
         (args) => {
@@ -241,17 +259,19 @@ export function createSdNgPlugin(conf: {
         perf.end("transform & bundling");
         debug(perf.toString());
 
-        for (const { outputFiles, metafile } of tsCompileResult.stylesheetBundlingResultMap.values()) {
-          result.outputFiles ??= [];
-          result.outputFiles.push(...outputFiles ?? []);
+        for (const stylesheetBundlingResult of tsCompileResult.stylesheetBundlingResultMap.values()) {
+          if ("outputFiles" in stylesheetBundlingResult) {
+            result.outputFiles ??= [];
+            result.outputFiles.push(...stylesheetBundlingResult.outputFiles);
 
-          if (result.metafile && metafile) {
-            result.metafile.inputs = { ...result.metafile.inputs, ...metafile.inputs };
-            result.metafile.outputs = { ...result.metafile.outputs, ...metafile.outputs };
+            if (result.metafile) {
+              result.metafile.inputs = { ...result.metafile.inputs, ...stylesheetBundlingResult.metafile.inputs };
+              result.metafile.outputs = { ...result.metafile.outputs, ...stylesheetBundlingResult.metafile.outputs };
+            }
           }
         }
 
-        for (const { outputFiles, metafile } of webWorkerResultMap.values()) {
+        /*for (const { outputFiles, metafile } of webWorkerResultMap.values()) {
           result.outputFiles ??= [];
           result.outputFiles.push(...outputFiles);
 
@@ -259,7 +279,7 @@ export function createSdNgPlugin(conf: {
             result.metafile.inputs = { ...result.metafile.inputs, ...metafile.inputs };
             result.metafile.outputs = { ...result.metafile.outputs, ...metafile.outputs };
           }
-        }
+        }*/
 
         conf.result.outputFiles = result.outputFiles;
         conf.result.metafile = result.metafile;

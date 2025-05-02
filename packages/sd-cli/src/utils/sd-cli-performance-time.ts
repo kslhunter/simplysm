@@ -32,7 +32,7 @@ export class SdCliPerformanceTimer {
   }
 
   toString() {
-    return `${this._name} performance report
+    return `${this._name} 성능 보고서
 ------------------------------------
 ${Array.from(this.#resultMap.entries())
   .map((en) => `${en[0]}: ${en[1].toLocaleString()}ms`)

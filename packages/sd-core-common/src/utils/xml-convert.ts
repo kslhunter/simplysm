@@ -1,7 +1,7 @@
 import { XMLBuilder, XMLParser } from "fast-xml-parser";
 
 export class XmlConvert {
-  public static parse(str: string, options?: { stripTagPrefix?: boolean }) {
+  static parse(str: string, options?: { stripTagPrefix?: boolean }) {
     const result = new XMLParser({
       ignoreAttributes: false,
       attributeNamePrefix: "",
@@ -12,10 +12,10 @@ export class XmlConvert {
         return !isAttribute && jPath.split(".").length > 1;
       },
     }).parse(str);
-    return options?.stripTagPrefix ? this._stripTagPrefix(result) : result;
+    return options?.stripTagPrefix ? this.#stripTagPrefix(result) : result;
   }
 
-  public static stringify(obj: any) {
+  static stringify(obj: any) {
     return new XMLBuilder({
       ignoreAttributes: false,
       attributeNamePrefix: "",
@@ -23,9 +23,9 @@ export class XmlConvert {
     }).build(obj);
   }
 
-  private static _stripTagPrefix(obj: any): any {
+  static #stripTagPrefix(obj: any): any {
     if (Array.isArray(obj)) {
-      return obj.map(item => this._stripTagPrefix(item));
+      return obj.map(item => this.#stripTagPrefix(item));
     }
     else if (typeof obj === "object" && obj !== null) {
       const newObj: any = {};
@@ -40,7 +40,7 @@ export class XmlConvert {
         else {
           // 태그 이름에서만 ":"을 기준으로 prefix 제거
           const cleanKey = key.includes(":") ? key.split(":")[1] : key;
-          newObj[cleanKey] = this._stripTagPrefix(value);
+          newObj[cleanKey] = this.#stripTagPrefix(value);
         }
       }
 
@@ -51,16 +51,3 @@ export class XmlConvert {
     }
   }
 }
-
-/*import xml2js from "xml2js";
-
-export class XmlConvert {
-  public static async parseAsync(str: string, options?: { stripPrefix?: boolean }): Promise<any> {
-    return await xml2js.parseStringPromise(str, options?.stripPrefix ? {tagNameProcessors: [xml2js.processors.stripPrefix]} : {});
-  }
-
-  public static stringify(obj: any): string {
-    const builder = new xml2js.Builder({renderOpts: {pretty: false}});
-    return builder.buildObject(obj);
-  }
-}*/

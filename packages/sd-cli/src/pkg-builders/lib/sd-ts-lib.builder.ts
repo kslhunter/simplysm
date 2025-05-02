@@ -42,10 +42,16 @@ export class SdTsLibBuilder {
         }
       }
 
-      const globalStylesheetBundlingResult = tsCompileResult.stylesheetBundlingResultMap.get(emitFile);
-      if (globalStylesheetBundlingResult) {
-        for (const outputFile of globalStylesheetBundlingResult.outputFiles ?? []) {
-          const distPath = PathUtils.norm(this._pkgPath, "dist", path.relative(this._pkgPath, outputFile.path));
+      const globalStylesheetBundlingResult = tsCompileResult
+        .stylesheetBundlingResultMap
+        .get(emitFile);
+      if (globalStylesheetBundlingResult && "outputFiles" in globalStylesheetBundlingResult) {
+        for (const outputFile of globalStylesheetBundlingResult.outputFiles) {
+          const distPath = PathUtils.norm(
+            this._pkgPath,
+            "dist",
+            path.relative(this._pkgPath, outputFile.path),
+          );
           if (PathUtils.isChildPath(distPath, path.resolve(this._pkgPath, "dist"))) {
             FsUtils.writeFile(distPath, outputFile.text);
             emitFileSet.add(distPath);
@@ -54,9 +60,10 @@ export class SdTsLibBuilder {
       }
     }
 
-    const styleResults = Array.from(tsCompileResult.stylesheetBundlingResultMap.values()).mapMany((item) =>
-      SdCliConvertMessageUtils.convertToBuildMessagesFromEsbuild(item, this._pkgPath),
-    );
+    const styleResults = Array.from(tsCompileResult.stylesheetBundlingResultMap.values())
+      .mapMany((item) =>
+        SdCliConvertMessageUtils.convertToBuildMessagesFromEsbuild(item, this._pkgPath),
+      );
 
     return {
       watchFileSet: tsCompileResult.watchFileSet,

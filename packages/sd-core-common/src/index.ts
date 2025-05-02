@@ -30,3 +30,5 @@ export * from "./utils/number.utils";
 export * from "./utils/object.utils";
 export * from "./utils/string.utils";
 export * from "./utils/wait";
+export * from "./utils/xml-convert";
+export * from "./zip/sd-zip";

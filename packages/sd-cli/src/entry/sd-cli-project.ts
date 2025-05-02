@@ -2,10 +2,9 @@ import path from "path";
 import { FsUtils, PathUtils, SdLogger, SdProcess } from "@simplysm/sd-core-node";
 import { pathToFileURL } from "url";
 import semver from "semver";
-import { NeverEntryError, StringUtils, Wait } from "@simplysm/sd-core-common";
+import { NeverEntryError, StringUtils, Wait, XmlConvert } from "@simplysm/sd-core-common";
 import { SdStorage } from "@simplysm/sd-storage";
 import { SdCliLocalUpdate } from "./sd-cli-local-update";
-import xml2js from "xml2js";
 import { SdMultiBuildRunner } from "../pkg-builders/sd-multi.build-runner";
 import { SdCliConvertMessageUtils } from "../utils/sd-cli-convert-message.utils";
 import { ISdProjectConfig, TSdPackageConfig } from "../types/config.types";
@@ -22,13 +21,9 @@ export class SdCliProject {
     const logger = SdLogger.get(["simplysm", "sd-cli", "SdCliProject", "watchAsync"]);
 
     logger.debug("프로젝트 설정 가져오기...");
-    const projConf = (await import(pathToFileURL(path.resolve(
-      process.cwd(),
-      opt.confFileRelPath,
-    )).href)).default(
-      true,
-      opt.optNames,
-    ) as ISdProjectConfig;
+    const projConf = (
+      await import(pathToFileURL(path.resolve(process.cwd(), opt.confFileRelPath)).href)
+    ).default(true, opt.optNames) as ISdProjectConfig;
 
     if (projConf.localUpdates) {
       logger.debug("로컬 라이브러리 업데이트 변경감지 시작...");
@@ -111,7 +106,7 @@ export class SdCliProject {
     }
 
     logger.debug("프로젝트 및 패키지 버전 설정...");
-    await this._upgradeVersionAsync(projNpmConf, allPkgPaths);
+    this._upgradeVersion(projNpmConf, allPkgPaths);
 
     logger.debug("빌드 프로세스 시작...");
     const multiBuildRunner = new SdMultiBuildRunner();
@@ -176,7 +171,7 @@ export class SdCliProject {
 
     if (!opt.noBuild) {
       logger.debug("프로젝트 및 패키지 버전 설정...");
-      await this._upgradeVersionAsync(projNpmConf, allPkgPaths);
+      this._upgradeVersion(projNpmConf, allPkgPaths);
 
       // 빌드
       try {
@@ -312,10 +307,7 @@ export class SdCliProject {
     process.stdout.clearLine(0);
   }
 
-  private static async _upgradeVersionAsync(
-    projNpmConf: INpmConfig,
-    allPkgPaths: string[],
-  ): Promise<void> {
+  private static _upgradeVersion(projNpmConf: INpmConfig, allPkgPaths: string[]) {
     // 작업공간 package.json 버전 설정
     const newVersion = semver.inc(projNpmConf.version, "patch")!;
     projNpmConf.version = newVersion;
@@ -342,7 +334,7 @@ export class SdCliProject {
     FsUtils.writeJson(projNpmConfFilePath, projNpmConf, { space: 2 });
 
     // 각 패키지 package.json 버전 설정
-    await allPkgPaths.parallelAsync(async (pkgPath) => {
+    for (const pkgPath of allPkgPaths) {
       const pkgNpmConfFilePath = path.resolve(pkgPath, "package.json");
       const pkgNpmConf = FsUtils.readJson(pkgNpmConfFilePath);
       pkgNpmConf.version = newVersion;
@@ -356,16 +348,12 @@ export class SdCliProject {
 
       if (FsUtils.exists(path.resolve(pkgPath, "plugin.xml"))) {
         const cordovaPluginConfFilePath = path.resolve(pkgPath, "plugin.xml");
-        const cordovaPluginConfXml = await xml2js.parseStringPromise(FsUtils.readFile(
-          cordovaPluginConfFilePath));
+        const cordovaPluginConfXml = XmlConvert.parse(FsUtils.readFile(cordovaPluginConfFilePath));
         cordovaPluginConfXml.plugin.$.version = newVersion;
 
-        FsUtils.writeFile(
-          cordovaPluginConfFilePath,
-          new xml2js.Builder().buildObject(cordovaPluginConfXml),
-        );
+        FsUtils.writeFile(cordovaPluginConfFilePath, XmlConvert.stringify(cordovaPluginConfXml));
       }
-    });
+    }
   }
 
   static #logging(buildResults: ISdBuildMessage[], logger: SdLogger): void {

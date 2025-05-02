@@ -18,16 +18,21 @@ export interface SdTsCompilerOptions {
 
 export interface ISdTsCompilerResult {
   messages: ISdBuildMessage[];
-  stylesheetBundlingResultMap: Map<TNormPath, IStylesheetBundlingResult>;
+  stylesheetBundlingResultMap: Map<TNormPath, TStylesheetBundlingResult>;
   emittedFilesCacheMap: Map<TNormPath, { outAbsPath?: TNormPath; text: string }[]>;
   emitFileSet: Set<TNormPath>;
   watchFileSet: Set<TNormPath>;
   affectedFileSet: Set<TNormPath>;
 }
 
-export interface IStylesheetBundlingResult {
-  outputFiles?: esbuild.OutputFile[];
-  metafile?: esbuild.Metafile;
-  errors?: esbuild.Message[];
-  warnings?: esbuild.Message[];
+export type TStylesheetBundlingResult = {
+  errors: esbuild.PartialMessage[];
+  warnings: esbuild.PartialMessage[];
+  contents?: string;
+} | {
+  errors: undefined;
+  warnings: esbuild.PartialMessage[];
+  metafile: esbuild.Metafile;
+  outputFiles: esbuild.OutputFile[];
+  contents: string;
 }

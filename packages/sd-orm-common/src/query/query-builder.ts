@@ -1079,8 +1079,24 @@ DROP PROCEDURE ${procName};`;
     if (def.as === undefined) throw new NeverEntryError();
 
     if (this._dialect === "mysql") {
-      // TODO: 일반적인 경우엔 그냥 DELETE 쿼리 사용
-      return `
+      if (!def.output && !def.join && !def.limit && def.top === undefined) {
+        // Simple delete query for basic cases
+        let q = `DELETE
+                 FROM ${def.from}`;
+        if (def.where) {
+          q += `\nWHERE ${def.where.map((item) => this.getQueryOfQueryValue(item)).join("")}`;
+        }
+        return q.trim() + ";";
+      }
+      else {
+        const selectQ = this.select(def).replace(/\n/g, "\n  ").replace("*", def.as + ".*");
+        const deleteQ = SdOrmUtils.replaceString(/* language=mysql*/ `
+            DELETE ${def.as}
+            FROM ${def.from} as ${def.as}
+                     JOIN (${selectQ}) ${"`_" + def.as.slice(1)} ON 1 = 1
+            WHERE `);
+
+        return `
 USE ${def.from.split(".")[0]};
       
 /*SET foreign_key_checks=0;*/
@@ -1091,21 +1107,7 @@ SELECT GROUP_CONCAT('${"`_" + def.as.slice(1)}.\`', COLUMN_NAME, '\`', ' = ', '$
 FROM INFORMATION_SCHEMA.COLUMNS
 WHERE CONCAT('\`', TABLE_SCHEMA, '\`.\`', TABLE_NAME, '\`') = '${def.from}' AND COLUMN_KEY='PRI';
 
-SET @sql = CONCAT('${SdOrmUtils.replaceString(`DELETE
-      ${def.as} FROM
-      ${def.from}
-      as
-      ${def.as}
-      JOIN
-      (
-      ${this.select(def).replace(/\n/g, "\n  ").replace("*", def.as + ".*")}
-      )
-      ${"`_" + def.as.slice(1)}
-      ON
-      1
-      =
-      1
-      WHERE `)}', @cols, ';');
+SET @sql = CONCAT('${deleteQ}', @cols, ';');
 SELECT @sql;
 
 PREPARE stmt FROM @sql;
@@ -1113,6 +1115,7 @@ EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 
 /*SET foreign_key_checks=1;*/`.trim();
+      }
     }
     else {
       if (this._dialect === "sqlite") {

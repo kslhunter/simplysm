@@ -41,7 +41,7 @@ export class SdExcelWrapper<VT extends TValidObject> {
     wsName: string,
     items: TValidateObjectRecord<VT>[],
   ): Promise<SdExcelWorkbook> {
-    const wb = SdExcelWorkbook.create();
+    const wb = new SdExcelWorkbook();
     const ws = await wb.createWorksheetAsync(wsName);
 
     const keys = Object.keys(this._fieldConf);
@@ -71,10 +71,10 @@ export class SdExcelWrapper<VT extends TValidObject> {
   }
 
   async readAsync(
-    file: Buffer | Blob,
+    file: Uint8Array | Blob,
     wsNameOrIndex: string | number = 0,
   ): Promise<TValidateObjectRecord<VT>[]> {
-    const wb = await SdExcelWorkbook.loadAsync(file);
+    const wb = new SdExcelWorkbook(file);
     const ws = await wb.getWorksheetAsync(wsNameOrIndex);
     const wsName = await ws.getNameAsync();
 

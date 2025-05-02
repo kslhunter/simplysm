@@ -1,5 +1,6 @@
 import "@simplysm/sd-core-common";
 export * from "./utils/fs.utils";
+export * from "./utils/hash.utils";
 export * from "./utils/path.utils";
 export * from "./utils/sd-fs-watcher";
 export * from "./utils/sd-logger";
