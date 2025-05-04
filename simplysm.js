@@ -24,6 +24,7 @@ export default () => ({
     },
     "sd-cli": {
       type: "library",
+      noGenIndex: true,
       publish: "npm",
     },
     "sd-core-browser": {

@@ -4,5 +4,5 @@
     "lib": ["ES2021"],
     "outDir": "./dist"
   },
-  "exclude": ["dist", "node_modules", "tests"]
+  "exclude": ["dist", "node_modules"]
 }

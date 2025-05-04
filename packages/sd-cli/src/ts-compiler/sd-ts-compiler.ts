@@ -19,20 +19,25 @@ import {
   SdTsCompilerOptions,
   TStylesheetBundlingResult,
 } from "../types/ts-compiler.types";
-import { ISdBuildMessage } from "../types/build.types";
 import {
   createWorkerTransformer,
 } from "@angular/build/src/tools/angular/transformers/web-worker-transformer";
 import { ESLint } from "eslint";
-import { SdTsDependencyAnalyzer } from "./sd-ts-dependency-analyzer";
+import { SdDependencyCache } from "./sd-dependency-cache";
+import { SdDependencyAnalyzer } from "./sd-dependency-analyzer";
 
 export class SdTsCompiler {
   private _logger = SdLogger.get(["simplysm", "sd-cli", "SdTsCompiler"]);
 
   private _isForAngular: boolean;
 
-  private _allDepCacheMap = new Map<TNormPath, Set<TNormPath>>();
-  private _revDepCacheMap = new Map<TNormPath, Set<TNormPath>>();
+  private _stylesheetBundler: ComponentStylesheetBundler | undefined;
+
+  private _ngProgram: NgtscProgram | undefined;
+  private _program: ts.Program | undefined;
+
+  // 빌드정보 캐싱
+  private _depCache = new SdDependencyCache();
   private _sourceFileCacheMap = new Map<TNormPath, ts.SourceFile>();
   private _emittedFilesCacheMap = new Map<
     TNormPath,
@@ -42,15 +47,7 @@ export class SdTsCompiler {
     }[]
   >();
 
-  private _stylesheetBundler: ComponentStylesheetBundler | undefined;
-
-  private _ngProgram: NgtscProgram | undefined;
-  private _program: ts.Program | undefined;
-
-  private _modifiedFileSet = new Set<TNormPath>();
-  private _affectedFileSet = new Set<TNormPath>();
-
-  private _watchFileSet = new Set<TNormPath>();
+  // 빌드결과 캐싱
   private _stylesheetBundlingResultMap = new Map<TNormPath, TStylesheetBundlingResult>();
 
   private _perf!: SdCliPerformanceTimer;
@@ -91,16 +88,7 @@ export class SdTsCompiler {
     }
   }
 
-  private _parseTsConfig(): ITsConfigInfo {
-    const config = this._loadTsConfig();
-    const compilerHost = this._createCompilerHost(config.options);
-    return {
-      ...config,
-      compilerHost,
-    };
-  }
-
-  private _loadTsConfig() {
+  private _parseTsConfig() {
     const tsconfigPath = path.resolve(this._opt.pkgPath, "tsconfig.json");
     const tsconfig = FsUtils.readJson(tsconfigPath);
     const parsedTsconfig = ts.parseJsonConfigFileContent(tsconfig, ts.sys, this._opt.pkgPath, {
@@ -120,7 +108,10 @@ export class SdTsCompiler {
     };
   }
 
-  private _createCompilerHost(compilerOptions: ts.CompilerOptions) {
+  private _createCompilerHost(
+    compilerOptions: ts.CompilerOptions,
+    modifiedFileSet: Set<TNormPath>,
+  ) {
     const compilerHost = ts.createCompilerHost(compilerOptions);
 
     const baseGetSourceFile = compilerHost.getSourceFile;
@@ -156,12 +147,6 @@ export class SdTsCompiler {
       return sf;
     };
 
-    const baseReadFile = compilerHost.readFile;
-    compilerHost.readFile = (fileName) => {
-      this._watchFileSet.add(PathUtils.norm(fileName));
-      return baseReadFile.call(compilerHost, fileName);
-    };
-
     if (this._isForAngular) {
       (compilerHost as AngularCompilerHost).readResource = (fileName: string) => {
         return compilerHost.readFile(fileName) ?? "";
@@ -191,7 +176,7 @@ export class SdTsCompiler {
       };
 
       (compilerHost as AngularCompilerHost).getModifiedResourceFiles = () => {
-        return new Set(Array.from(this._modifiedFileSet).map((item) => PathUtils.posix(item)));
+        return new Set(Array.from(modifiedFileSet).map((item) => PathUtils.posix(item)));
       };
     }
 
@@ -216,24 +201,13 @@ export class SdTsCompiler {
       }
 
       try {
-        const result =
-          resourceFile != null
-            ? await this._stylesheetBundler!.bundleFile(resourceFile)
-            : await this._stylesheetBundler!.bundleInline(data, containingFile, "scss");
+        const result = resourceFile != null
+          ? await this._stylesheetBundler!.bundleFile(resourceFile)
+          : await this._stylesheetBundler!.bundleInline(data, containingFile, "scss");
 
-        if (result.referencedFiles) {
-          for (const referencedFile of result.referencedFiles) {
-            const depCacheSet = this._revDepCacheMap.getOrCreate(
-              PathUtils.norm(referencedFile),
-              new Set<TNormPath>(),
-            );
-            depCacheSet.add(fileNPath);
-          }
-
-          this._watchFileSet.adds(
-            ...Array.from(result.referencedFiles.values())
-              .map((item) => PathUtils.norm(item)),
-          );
+        for (const referencedFile of result.referencedFiles ?? []) {
+          // 참조하는 파일과 참조된 파일 사이의 의존성 관계 추가
+          this._depCache.addImport(fileNPath, PathUtils.norm(referencedFile), 0);
         }
 
         this._stylesheetBundlingResultMap.set(fileNPath, result);
@@ -259,120 +233,78 @@ export class SdTsCompiler {
   public async compileAsync(modifiedFileSet: Set<TNormPath>): Promise<ISdTsCompilerResult> {
     this._perf = new SdCliPerformanceTimer("esbuild compile");
 
-    this._modifiedFileSet = new Set(modifiedFileSet);
-    this._affectedFileSet = new Set<TNormPath>();
-
-    /*for (const mod of modifiedFileSet) {
-      const workerImporters = this.#workerRevDependencyCacheMap.get(mod);
-      if (workerImporters) {
-        this.#modifiedFileSet.adds(...workerImporters);
-      } else {
-        this.#modifiedFileSet.add(mod);
-      }
-    }*/
-
-    const tsconf = this._parseTsConfig();
-
-    const prepareResult = await this._prepareAsync(tsconf);
+    const prepareResult = await this._prepareAsync(modifiedFileSet);
 
     const [buildResult, lintResults] = await Promise.all([
-      this._buildAsync(tsconf),
-      this._lintAsync(),
+      this._buildAsync(prepareResult),
+      this._lintAsync(prepareResult),
     ]);
 
     this._debug(`빌드 완료됨`, this._perf.toString());
-    this._debug(`영향 받은 파일: ${this._affectedFileSet.size}개`);
-    this._debug(`감시 중인 파일: ${this._watchFileSet.size}개`);
+    this._debug(`
+영향 받은 파일: ${prepareResult.affectedFileSet.size}개
+${Array.from(prepareResult.affectedFileSet).map(item => item).join("\n")}`.trim());
+    this._debug(`감시 중인 파일: ${prepareResult.watchFileSet.size}개`);
 
     return {
       messages: [
-        ...prepareResult.messages,
         ...SdCliConvertMessageUtils.convertToBuildMessagesFromTsDiag(buildResult.diagnostics),
         ...SdCliConvertMessageUtils.convertToBuildMessagesFromEslint(lintResults),
       ],
-      watchFileSet: this._watchFileSet,
-      affectedFileSet: this._affectedFileSet,
+      affectedFileSet: prepareResult.affectedFileSet,
+      watchFileSet: prepareResult.watchFileSet,
       stylesheetBundlingResultMap: this._stylesheetBundlingResultMap,
       emittedFilesCacheMap: this._emittedFilesCacheMap,
       emitFileSet: buildResult.emitFileSet,
     };
   }
 
-  private async _prepareAsync(tsconf: ITsConfigInfo) {
-    if (this._modifiedFileSet.size !== 0) {
-      this._debug(`영향 받은 파일 추적 중... (구 의존성)`);
+  private async _prepareAsync(modifiedFileSet: Set<TNormPath>): Promise<IPrepareResult> {
+    const tsconfig = this._parseTsConfig();
 
-      this._perf.run("영향 받은 파일 추적", () => {
-        for (const modifiedFile of this._modifiedFileSet) {
-          this._affectedFileSet.add(modifiedFile);
-
-          this._affectedFileSet.adds(...(this._revDepCacheMap.get(modifiedFile) ?? []));
-
-          // .d.ts → .js 대응
-          if (modifiedFile.endsWith(".d.ts")) {
-            const jsEquivalent = PathUtils.norm(modifiedFile.replace(/\.d\.ts$/, ".js"));
-            this._affectedFileSet.add(jsEquivalent);
-          }
-        }
-      });
-
+    if (modifiedFileSet.size !== 0) {
       this._debug(`캐시 무효화 및 초기화 중...`);
 
       this._perf.run("캐시 무효화 및 초기화", () => {
-        this._stylesheetBundler?.invalidate(this._affectedFileSet);
+        // 기존 의존성에 의해 영향받는 파일들 계산
+        const affectedFileSet = this._depCache.getAffectedFileSet(modifiedFileSet);
 
-        const toDeleteSet = new Set<TNormPath>();
+        // 스타일 번들러에서 영향받은 파일 관련 항목 무효화
+        this._stylesheetBundler?.invalidate(affectedFileSet);
 
-        // 초기: 명시적으로 수정된 파일들
-        for (const file of this._affectedFileSet) {
-          toDeleteSet.add(file);
+        // 의존성 캐시에서 영향받은 파일 관련 항목 무효화
+        this._depCache.invalidates(affectedFileSet);
 
-          // 역방향으로 영향을 받는 파일들도 포함
-          const dependents = this._revDepCacheMap.get(file);
-          if (dependents) {
-            for (const dep of dependents) {
-              toDeleteSet.add(dep);
-            }
-          }
-        }
-
-        for (const toDeleteFile of toDeleteSet) {
-          this._emittedFilesCacheMap.delete(toDeleteFile);
-          this._sourceFileCacheMap.delete(toDeleteFile);
-          this._stylesheetBundlingResultMap.delete(toDeleteFile);
-          this._watchFileSet.delete(toDeleteFile);
-          this._allDepCacheMap.delete(toDeleteFile);
-          this._revDepCacheMap.delete(toDeleteFile);
-        }
-
-        for (const [key, deps] of this._revDepCacheMap) {
-          for (const file of toDeleteSet) {
-            deps.delete(file);
-          }
-          if (deps.size === 0) {
-            this._revDepCacheMap.delete(key);
-          }
+        // 내부 캐시에서 영향받은 파일 관련 항목 무효화
+        for (const affectedFile of affectedFileSet) {
+          this._emittedFilesCacheMap.delete(affectedFile);
+          this._sourceFileCacheMap.delete(affectedFile);
+          this._stylesheetBundlingResultMap.delete(affectedFile);
         }
       });
     }
 
     this._debug(`ts.Program 생성 중...`);
 
+    const compilerHost = this._perf.run("ts.CompilerHost 생성", () => {
+      return this._createCompilerHost(tsconfig.options, modifiedFileSet);
+    });
+
     this._perf.run("ts.Program 생성", () => {
       if (this._isForAngular) {
         this._ngProgram = new NgtscProgram(
-          tsconf.fileNames,
-          tsconf.options,
-          tsconf.compilerHost,
+          tsconfig.fileNames,
+          tsconfig.options,
+          compilerHost,
           this._ngProgram,
         );
         this._program = this._ngProgram.getTsProgram();
       }
       else {
         this._program = ts.createProgram(
-          tsconf.fileNames,
-          tsconf.options,
-          tsconf.compilerHost,
+          tsconfig.fileNames,
+          tsconfig.options,
+          compilerHost,
           this._program,
         );
       }
@@ -386,119 +318,40 @@ export class SdTsCompiler {
 
     this._debug(`새 의존성 분석 중...`);
 
-    const messages: ISdBuildMessage[] = [];
     this._perf.run("새 의존성 분석", () => {
-      const analysed = SdTsDependencyAnalyzer.analyze(
+      // SdTsDependencyAnalyzer를 통해 의존성 분석 및 SdDepCache 업데이트
+      SdDependencyAnalyzer.analyze(
         this._program!,
-        tsconf.compilerHost,
+        compilerHost,
         this._opt.watchScopePaths,
-        this._allDepCacheMap,
+        this._depCache,
       );
-      messages.push(...analysed);
 
-      for (const fileNPath of this._allDepCacheMap.keys()) {
-        // const filePath = PathUtils.norm(sf.fileName);
-        const deps = this._allDepCacheMap.get(fileNPath)!;
-
-        for (const dep of deps) {
-          const depCache = this._revDepCacheMap.getOrCreate(dep, new Set<TNormPath>());
-          depCache.add(fileNPath);
-        }
-
-        if (this._ngProgram) {
-          const sf = this._program!.getSourceFile(fileNPath)!;
-
-          if (this._ngProgram.compiler.ignoreForEmit.has(sf)) {
-            continue;
-          }
-
-          for (const dep of this._ngProgram.compiler.getResourceDependencies(sf)) {
-            const ref = this._revDepCacheMap.getOrCreate(
-              PathUtils.norm(dep),
-              new Set<TNormPath>(),
-            );
-            ref.add(fileNPath);
-          }
-        }
+      // Angular 리소스 의존성 추가
+      if (this._ngProgram) {
+        SdDependencyAnalyzer.analyzeAngularResources(
+          this._ngProgram,
+          this._opt.watchScopePaths,
+          this._depCache,
+        );
       }
     });
 
-    if (this._modifiedFileSet.size === 0) {
-      this._debug(`영향 받은 파일 추가 중... (새 의존성)`);
-
-      this._perf.run("영향 받은 파일 추가 중 (새 의존성)", () => {
-        for (const fileNPath of this._allDepCacheMap.keys()) {
-          if (!this._opt.watchScopePaths.some((scopePath) => PathUtils.isChildPath(
-            fileNPath,
-            scopePath,
-          ))) {
-            continue;
-          }
-
-          this._affectedFileSet.add(fileNPath);
-        }
-      });
-    }
-
-    /**
-     * AI가 넣으라고해서 넣었지만 이유는 잘 모르겠음.
-     * AI측의 설명은 아래와 같음:
-     *
-     * 변경된 파일이 .d.ts일 경우, 타입 정보만을 가져다 쓰는 다수의 .ts 파일들이
-     * 직접적으로 import하고 있어도 revDepMap에는 기록되지 않을 수 있음.
-     *
-     * 따라서 .d.ts 파일을 참조하는 모든 파일을 allDepCacheMap에서 역추적하여
-     * 간접 영향 파일들을 정확하게 affectedFileSet에 포함시켜야 함.
-     *
-     * 이 블록은 정확도 보완을 위한 보증 로직이며, 특히 초기 빌드 또는 watch 시 의존성 누락을 방지함.
-     */
-    for (const modifiedFile of this._modifiedFileSet) {
-      // 신규 추가된 파일이 누락되지 않도록 추가하라고 하여 넣음
-      if (
-        !this._revDepCacheMap.has(modifiedFile) &&
-        !this._allDepCacheMap.has(modifiedFile) &&
-        this._program!.getSourceFile(modifiedFile)
-      ) {
-        this._affectedFileSet.add(modifiedFile);
-      }
-
-      // AI가 넣으라 한부분에 대한 설명은 여기서부터임
-      if (!modifiedFile.endsWith(".d.ts")) continue;
-
-      for (const [importer, deps] of this._allDepCacheMap) {
-        if (deps.has(modifiedFile)) {
-          this._affectedFileSet.add(importer);
-        }
-      }
-    }
-
-    for (const dep of this._revDepCacheMap.keys()) {
-      if (this._modifiedFileSet.has(dep)) {
-        this._affectedFileSet.adds(
-          ...Array.from(this._revDepCacheMap.get(dep)!).mapMany((item) =>
-            [
-              item,
-              // .d.ts면 .js파일도 affected에 추가
-              item.endsWith(".d.ts") ? PathUtils.norm(item.replace(/\.d\.ts$/, ".js")) : undefined,
-            ].filterExists(),
-          ),
-        );
-      }
-
-      // dep이 emit된적이 없으면 affected에 추가해야함.
-      // dep파일이 추가된후 기존 파일에서 import하면 dep파일이 affected에 포함이 안되는 현상 때문
-      if (!this._emittedFilesCacheMap.has(dep)) {
-        this._affectedFileSet.add(dep);
-      }
-    }
+    const affectedFileSet = modifiedFileSet.size === 0
+      ? this._depCache.getFiles()
+      : this._depCache.getAffectedFileSet(modifiedFileSet);
+    const watchFileSet = this._depCache.getFiles();
 
     return {
-      messages,
+      tsconfig,
+      compilerHost,
+      affectedFileSet,
+      watchFileSet,
     };
   }
 
-  private async _lintAsync() {
-    const lintFilePaths = Array.from(this._affectedFileSet)
+  private async _lintAsync(prepareResult: IPrepareResult) {
+    const lintFilePaths = Array.from(prepareResult.affectedFileSet)
       .filter((item) => PathUtils.isChildPath(item, this._opt.pkgPath))
       .filter((item) => (
         (!item.endsWith(".d.ts") && item.endsWith(".ts")) ||
@@ -516,7 +369,6 @@ export class SdTsCompiler {
       overrideConfig: {
         languageOptions: {
           parserOptions: {
-            // parser: tseslint.parser,
             project: null,
             programs: [this._program],
           },
@@ -524,16 +376,9 @@ export class SdTsCompiler {
       },
     });
     return await linter.lintFiles(lintFilePaths);
-
-    // return await this.#lintWorker.run("lint", [
-    //   {
-    //     cwd: this.#pkgPath,
-    //     fileSet: this.#affectedFileSet,
-    //   },
-    // ]);
   }
 
-  private async _buildAsync(tsconf: ITsConfigInfo) {
+  private async _buildAsync(prepareResult: IPrepareResult) {
     const emitFileSet = new Set<TNormPath>();
     const diagnostics: ts.Diagnostic[] = [];
 
@@ -553,7 +398,7 @@ export class SdTsCompiler {
 
     this._debug(`개별 파일 진단 수집 중...`);
 
-    for (const affectedFile of this._affectedFileSet) {
+    for (const affectedFile of prepareResult.affectedFileSet) {
       if (!PathUtils.isChildPath(affectedFile, this._opt.pkgPath)) continue;
 
       const affectedSourceFile = this._program!.getSourceFile(affectedFile);
@@ -612,7 +457,7 @@ export class SdTsCompiler {
       // affected에 새로 추가된 파일은 포함되지 않는 현상이 있어 sourceFileSet으로 바꿈
       // 비교해보니, 딱히 getSourceFiles라서 더 느려지는것 같지는 않음
       // 그래도 affected로 다시 테스트 (조금이라도 더 빠르게)
-      for (const affectedFile of this._affectedFileSet) {
+      for (const affectedFile of prepareResult.affectedFileSet) {
         if (this._emittedFilesCacheMap.has(affectedFile)) continue;
 
         const sf = this._program!.getSourceFile(affectedFile);
@@ -630,7 +475,7 @@ export class SdTsCompiler {
           sf,
           (fileName, text, writeByteOrderMark, onError, sourceFiles, data) => {
             if (!sourceFiles || sourceFiles.length === 0) {
-              tsconf.compilerHost.writeFile(
+              prepareResult.compilerHost.writeFile(
                 fileName,
                 text,
                 writeByteOrderMark,
@@ -653,7 +498,11 @@ export class SdTsCompiler {
             );
 
             if (PathUtils.isChildPath(sourceFile.fileName, this._opt.pkgPath)) {
-              const real = this._convertOutputToReal(fileName, tsconf.distPath, text);
+              const real = this._convertOutputToReal(
+                fileName,
+                prepareResult.tsconfig.distPath,
+                text,
+              );
 
               emitFileInfoCaches.push({
                 outAbsPath: real.filePath,
@@ -739,6 +588,12 @@ export class SdTsCompiler {
 interface ITsConfigInfo {
   fileNames: string[];
   options: ts.CompilerOptions;
-  compilerHost: ts.CompilerHost;
   distPath: string;
+}
+
+interface IPrepareResult {
+  tsconfig: ITsConfigInfo;
+  compilerHost: ts.CompilerHost;
+  affectedFileSet: Set<TNormPath>;
+  watchFileSet: Set<TNormPath>;
 }

@@ -31,5 +31,8 @@
       ]
     }
   },
-  "exclude": ["dist", "node_modules"]
+  "exclude": ["dist", "node_modules", "tests"],
+  "ts-node": {
+    "esm": true
+  }
 }

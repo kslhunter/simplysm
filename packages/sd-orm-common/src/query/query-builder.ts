@@ -1081,8 +1081,7 @@ DROP PROCEDURE ${procName};`;
     if (this._dialect === "mysql") {
       if (!def.output && !def.join && !def.limit && def.top === undefined) {
         // Simple delete query for basic cases
-        let q = `DELETE
-                 FROM ${def.from}`;
+        let q = `DELETE FROM ${def.from} as ${def.as}`;
         if (def.where) {
           q += `\nWHERE ${def.where.map((item) => this.getQueryOfQueryValue(item)).join("")}`;
         }
