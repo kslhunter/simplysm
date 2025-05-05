@@ -9,7 +9,7 @@
     "directory": "packages/sd-cli"
   },
   "license": "MIT",
-  "bin": "./bin/sd-cli.js",
+  "bin": "./dist/sd-cli.js",
   "type": "module",
   "dependencies": {
     "@angular/build": "^19.2.10",

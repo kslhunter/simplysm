@@ -107,14 +107,14 @@ export default [
           "accessibility": "no-public",
         },
       ],
-      "@typescript-eslint/prefer-nullish-coalescing": [
+      /*"@typescript-eslint/prefer-nullish-coalescing": [
         "error",
         {
           "ignoreIfStatements": true,
           // "ignoreConditionalTests": true,
           // "ignoreTernaryTests": true,
         },
-      ],
+      ],*/
 
       // import
       "import/no-extraneous-dependencies": ["error"], // 느림
