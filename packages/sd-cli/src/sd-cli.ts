@@ -30,7 +30,6 @@ let child: ChildProcess;
 const cliPath = fileURLToPath(import.meta.resolve("./sd-cli-entry"));
 
 if (path.extname(cliPath) === ".ts") {
-  console.log(process.env["PATH"]);
   child = spawn(
     "yarn",
     ["tsx", cliPath, ...process.argv.slice(2)],
