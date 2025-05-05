@@ -25,7 +25,7 @@ const affinityMask = "0x" + affinityMaskDecimal.toString(16).toUpperCase();
 // console.log(`Affinity Mask (전체 - 1): ${affinityMask}`);
 
 // CLI 실행
-const cliPath = fileURLToPath(import.meta.resolve("./sd-cli-entry"));
+const cliPath = import.meta.resolve("./sd-cli-entry");
 
 if (path.extname(cliPath) === ".ts") {
   const pid = process.pid;
@@ -43,7 +43,7 @@ if (path.extname(cliPath) === ".ts") {
 else {
   const child = spawn(
     "node",
-    ["--import=specifier-resolution-node/register", cliPath, ...process.argv.slice(2)],
+    ["--import=specifier-resolution-node/register", fileURLToPath(cliPath), ...process.argv.slice(2)],
   );
 
   child.on("spawn", () => {
