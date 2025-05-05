@@ -132,7 +132,6 @@ export class SdCliProject {
       // GIT 사용중일 경우, 커밋되지 않은 수정사항이 있는지 확인
       if (FsUtils.exists(path.resolve(process.cwd(), ".git"))) {
         logger.debug("GIT 커밋여부 확인...");
-        console.log(process.env["PATH"]);
         const gitStatusResult = await SdProcess.spawnAsync("git status");
         if (gitStatusResult.includes("Changes") || gitStatusResult.includes("Untracked")) {
           throw new Error("커밋되지 않은 정보가 있습니다.\n" + gitStatusResult);
@@ -232,6 +231,7 @@ export class SdCliProject {
     pkgPubConf: TSdPackageConfig["publish"],
   ): Promise<void> {
     if (pkgPubConf === "npm") {
+      console.log(process.env["PATH"]);
       await SdProcess.spawnAsync("yarn npm publish --access public", { cwd: pkgPath });
     }
     else if (pkgPubConf?.type === "local-directory") {
