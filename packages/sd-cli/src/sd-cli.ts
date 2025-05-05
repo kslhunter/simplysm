@@ -47,6 +47,10 @@ else {
   );
 }
 
+child.on("error", (err) => {
+  console.error(err);
+});
+
 
 child.on("spawn", () => {
   const pid = child.pid;
