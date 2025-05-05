@@ -2,7 +2,7 @@ import esbuild from "esbuild";
 import path from "path";
 import os from "os";
 import { JavaScriptTransformer } from "@angular/build/src/tools/esbuild/javascript-transformer";
-import { PathUtils, SdLogger, SdLoggerSeverity, TNormPath } from "@simplysm/sd-core-node";
+import { PathUtils, SdLogger, TNormPath } from "@simplysm/sd-core-node";
 import { SdCliPerformanceTimer } from "../../utils/sd-cli-performance-time";
 import { SdCliConvertMessageUtils } from "../../utils/sd-cli-convert-message.utils";
 import { ISdCliNgPluginResultCache } from "../../types/build-plugin.types";
@@ -19,8 +19,8 @@ export function createSdNgPlugin(conf: {
   let perf: SdCliPerformanceTimer;
   const logger = SdLogger.get(["simplysm", "sd-cli", "createSdNgPlugin"]);
 
-  const log = (severity: Exclude<keyof typeof SdLoggerSeverity, "none">, ...msg: any[]) => {
-    logger[severity](`[${path.basename(conf.pkgPath)}]`, ...msg);
+  const log = (...msg: any[]) => {
+    logger.log(`[${path.basename(conf.pkgPath)}]`, ...msg);
   };
 
   return {
@@ -178,7 +178,7 @@ export function createSdNgPlugin(conf: {
 
       build.onEnd((result) => {
         perf.end("transform & bundling");
-        log("log", perf.toString());
+        log(perf.toString());
 
         for (const stylesheetBundlingResult of tsCompileResult.stylesheetBundlingResultMap.values()) {
           if ("outputFiles" in stylesheetBundlingResult) {
