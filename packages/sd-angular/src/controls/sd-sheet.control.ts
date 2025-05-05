@@ -33,7 +33,7 @@ import {
   $model,
   $obj,
   $signal,
-} from "../utils/hooks";
+} from "../utils/hooks/hooks";
 import { injectElementRef } from "../utils/dom/element-ref.injector";
 import { transformBoolean } from "../utils/type-tramsforms";
 import { SdIconControl } from "./sd-icon.control";
@@ -604,11 +604,11 @@ import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
   },
 })
 export class SdSheetControl<T> {
-  icons = inject(SdAngularConfigProvider).icons;
+  protected icons = inject(SdAngularConfigProvider).icons;
 
-  #sdSystemConfig = inject(SdSystemConfigProvider);
-  #sdModal = inject(SdModalProvider);
-  #elRef = injectElementRef<HTMLElement>();
+  private _sdSystemConfig = inject(SdSystemConfigProvider);
+  private _sdModal = inject(SdModalProvider);
+  private _elRef = injectElementRef<HTMLElement>();
 
   sheetContainerElRef = viewChild.required<any, ElementRef<HTMLElement>>(
     "sheetContainerEl",
@@ -627,9 +627,9 @@ export class SdSheetControl<T> {
   contentStyle = input<string>();
 
   /** 정렬규칙 */
-  _ordering = input<ISdSheetColumnOrderingVM[]>([], { alias: "ordering" });
-  _orderingChange = output<ISdSheetColumnOrderingVM[]>({ alias: "orderingChange" });
-  ordering = $model(this._ordering, this._orderingChange);
+  __ordering = input<ISdSheetColumnOrderingVM[]>([], { alias: "ordering" });
+  __orderingChange = output<ISdSheetColumnOrderingVM[]>({ alias: "orderingChange" });
+  ordering = $model(this.__ordering, this.__orderingChange);
 
 
   displayPageLength = input(10);
@@ -638,9 +638,9 @@ export class SdSheetControl<T> {
   /** [pagination] 한 페이지에 표시할 항목수 (설정된 경우, 'pageLength'가 무시되고, 자동계산 됨) */
   pageItemCount = input<number>();
   /** [pagination] 현재 표시 페이지 */
-  _page = input<number>(0, { alias: "page" });
-  _pageChange = output<number>({ alias: "pageChange" });
-  page = $model(this._page, this._pageChange);
+  __page = input<number>(0, { alias: "page" });
+  __pageChange = output<number>({ alias: "pageChange" });
+  page = $model(this.__page, this.__pageChange);
 
 
   /** 항목들 */
@@ -657,9 +657,9 @@ export class SdSheetControl<T> {
   /** 선택모드 (single = 단일선택, multi = 다중선택) */
   selectMode = input<"single" | "multi">();
   /** 선택된 항목들 */
-  _selectedItems = input<T[]>([], { alias: "selectedItems" });
-  _selectedItemsChange = output<T[]>({ alias: "selectedItemsChange" });
-  selectedItems = $model(this._selectedItems, this._selectedItemsChange);
+  __selectedItems = input<T[]>([], { alias: "selectedItems" });
+  __selectedItemsChange = output<T[]>({ alias: "selectedItemsChange" });
+  selectedItems = $model(this.__selectedItems, this.__selectedItemsChange);
 
   /** 자동선택모드 (undefined = 사용안함, click = 셀 클릭시 해당 ROW 선택, focus = 셀 포커싱시 해당 ROW 선택) */
   autoSelect = input<"click" | "focus">();
@@ -671,9 +671,9 @@ export class SdSheetControl<T> {
   getIsItemSelectableFn = input<(item: T) => boolean | string>();
 
   /** 확장된 항목 목록 */
-  _expandedItems = input<T[]>([], { alias: "expandedItems" });
-  _expandedItemsChange = output<T[]>({ alias: "expandedItemsChange" });
-  expandedItems = $model(this._expandedItems, this._expandedItemsChange);
+  __expandedItems = input<T[]>([], { alias: "expandedItems" });
+  __expandedItemsChange = output<T[]>({ alias: "expandedItemsChange" });
+  expandedItems = $model(this.__expandedItems, this.__expandedItemsChange);
 
   focusMode = input<"row" | "cell">("cell");
   busy = input(false, { transform: transformBoolean });
@@ -689,23 +689,23 @@ export class SdSheetControl<T> {
   /** 셀 키 다운 이벤트 */
   cellKeydown = output<ISdSheetItemKeydownEventParam<T>>();
 
-  #config = $signal<ISdSheetConfig>();
-  #editModeCellAddr = $signal<{ r: number; c: number }>();
-  #resizedWidths = $signal<Record<string, string | undefined>>({});
+  private _config = $signal<ISdSheetConfig>();
+  private _editModeCellAddr = $signal<{ r: number; c: number }>();
+  private _resizedWidths = $signal<Record<string, string | undefined>>({});
 
-  #isOnResizing = false;
+  private _isOnResizing = false;
 
   fixedCellLefts = $signal<Record<number, number>>({});
 
   displayColumnDefs = $afterRenderComputed((): IColumnDef<T>[] => {
     return this.columnControls()
       .map((columnControl) => {
-        const colConf = this.#config()?.columnRecord?.[columnControl.key()];
+        const colConf = this._config()?.columnRecord?.[columnControl.key()];
         return {
           control: columnControl,
           key: columnControl.key(),
           fixed: colConf?.fixed ?? columnControl.fixed(),
-          width: this.#resizedWidths()[columnControl.key()]
+          width: this._resizedWidths()[columnControl.key()]
             ?? colConf?.width
             ?? columnControl.width(),
           displayOrder: colConf?.displayOrder,
@@ -981,7 +981,7 @@ export class SdSheetControl<T> {
 
   constructor() {
     $effect([this.key], async () => {
-      this.#config.set(await this.#sdSystemConfig.getAsync(`sd-sheet.${this.key()}`));
+      this._config.set(await this._sdSystemConfig.getAsync(`sd-sheet.${this.key()}`));
     });
 
     $afterRenderEffect(() => {
@@ -990,7 +990,7 @@ export class SdSheetControl<T> {
 
     //-- select indicator
     $effect(() => {
-      const sheetContainerEl = this.#elRef.nativeElement.findFirst<HTMLDivElement>(
+      const sheetContainerEl = this._elRef.nativeElement.findFirst<HTMLDivElement>(
         "._sheet-container")!;
       const selectRowIndicatorContainerEl = sheetContainerEl.findFirst<HTMLDivElement>(
         "> ._select-row-indicator-container",
@@ -1031,9 +1031,9 @@ export class SdSheetControl<T> {
   }
 
   getIsCellEditMode(r: number, c: number): boolean {
-    return this.#editModeCellAddr() != null
-      && this.#editModeCellAddr()!.r === r
-      && this.#editModeCellAddr()!.c === c;
+    return this._editModeCellAddr() != null
+      && this._editModeCellAddr()!.r === r
+      && this._editModeCellAddr()!.c === c;
   }
 
   /**
@@ -1092,7 +1092,7 @@ export class SdSheetControl<T> {
     requestAnimationFrame(() => {
       if (!(event.target instanceof HTMLElement)) return;
 
-      const sheetContainerEl = this.#elRef.nativeElement.findFirst("._sheet-container")!;
+      const sheetContainerEl = this._elRef.nativeElement.findFirst("._sheet-container")!;
       const focusRowIndicatorEl = sheetContainerEl.findFirst<HTMLDivElement>(
         "> ._focus-row-indicator")!;
 
@@ -1169,10 +1169,10 @@ export class SdSheetControl<T> {
       !(
         event.relatedTarget
         instanceof HTMLTableCellElement
-        && event.relatedTarget.findParent(this.#elRef.nativeElement)
+        && event.relatedTarget.findParent(this._elRef.nativeElement)
       )
     ) {
-      const focusRowIndicatorEl = this.#elRef.nativeElement.findFirst<HTMLDivElement>(
+      const focusRowIndicatorEl = this._elRef.nativeElement.findFirst<HTMLDivElement>(
         "._focus-row-indicator")!;
       const focusCellIndicatorEl = focusRowIndicatorEl.firstElementChild as HTMLElement;
 
@@ -1185,14 +1185,14 @@ export class SdSheetControl<T> {
     }
 
     if (
-      this.#editModeCellAddr() &&
+      this._editModeCellAddr() &&
       !(
         event.target instanceof HTMLElement &&
         event.relatedTarget instanceof HTMLElement &&
         (event.target.findParent("td") ?? event.target) === event.relatedTarget.findParent("td")
       )
     ) {
-      this.#editModeCellAddr.set(undefined);
+      this._editModeCellAddr.set(undefined);
     }
   }
 
@@ -1201,7 +1201,7 @@ export class SdSheetControl<T> {
     if (event.target instanceof HTMLTableCellElement) {
       if (event.key === "F2") {
         event.preventDefault();
-        this.#editModeCellAddr.set({
+        this._editModeCellAddr.set({
           r: NumberUtils.parseInt(event.target.getAttribute("r"))!,
           c: NumberUtils.parseInt(event.target.getAttribute("c"))!,
         });
@@ -1250,7 +1250,7 @@ export class SdSheetControl<T> {
         event.preventDefault();
         tdEl.focus();
 
-        this.#editModeCellAddr.set(undefined);
+        this._editModeCellAddr.set(undefined);
       }
       else if (event.key === "Enter") {
         if (event.target.tagName === "TEXTAREA" || event.target.hasAttribute("contenteditable")) {
@@ -1288,7 +1288,7 @@ export class SdSheetControl<T> {
   }
 
   onSheetResize(event: ISdResizeEvent): void {
-    const sheetContainerEl = this.#elRef.nativeElement.findFirst("._sheet-container")!;
+    const sheetContainerEl = this._elRef.nativeElement.findFirst("._sheet-container")!;
     const focusRowIndicatorEl = sheetContainerEl
       .findFirst<HTMLDivElement>("> ._focus-row-indicator")!;
 
@@ -1355,10 +1355,10 @@ export class SdSheetControl<T> {
   }
 
   onResizerMousedown(event: MouseEvent, columnControl: SdSheetColumnDirective<T>): void {
-    this.#isOnResizing = true;
+    this._isOnResizing = true;
 
     const thEl = (event.target as HTMLElement).findParent("th")!;
-    const resizeIndicatorEl = this.#elRef.nativeElement.findFirst<HTMLDivElement>(
+    const resizeIndicatorEl = this._elRef.nativeElement.findFirst<HTMLDivElement>(
       "._sheet-container > ._resize-indicator",
     )!;
 
@@ -1386,7 +1386,7 @@ export class SdSheetControl<T> {
       resizeIndicatorEl.style.display = "none";
 
       const newWidthPx = Math.max(startWidthPx + e.clientX - startX, 5);
-      this.#resizedWidths.update((v) => ({
+      this._resizedWidths.update((v) => ({
         ...v,
         [columnControl.key()]: newWidthPx + 1 + "px",
       }));
@@ -1396,7 +1396,7 @@ export class SdSheetControl<T> {
       });
 
       setTimeout(() => {
-        this.#isOnResizing = false;
+        this._isOnResizing = false;
       }, 300);
     };
 
@@ -1408,7 +1408,7 @@ export class SdSheetControl<T> {
     event: MouseEvent,
     columnControl: SdSheetColumnDirective<T>,
   ): Promise<void> {
-    this.#resizedWidths.update((v) => {
+    this._resizedWidths.update((v) => {
       const r = { ...v };
       delete r[columnControl.key()];
       return r;
@@ -1459,7 +1459,7 @@ export class SdSheetControl<T> {
       : event.target.findParent("td")!) as HTMLTableCellElement;
 
     const tdAddr = this.#getCellAddr(tdEl);
-    this.#editModeCellAddr.set(tdAddr);
+    this._editModeCellAddr.set(tdAddr);
 
     requestAnimationFrame(() => {
       const focusableEl = tdEl.findFocusableFirst();
@@ -1499,7 +1499,7 @@ export class SdSheetControl<T> {
   onHeaderCellClick(event: MouseEvent, headerCell: IHeaderDef<T>): void {
     if (!headerCell.isLastDepth) return;
     if (headerCell.control.disableOrdering()) return;
-    if (this.#isOnResizing) return;
+    if (this._isOnResizing) return;
 
     if (
       event.target instanceof HTMLElement
@@ -1518,13 +1518,13 @@ export class SdSheetControl<T> {
    * 시트 설정창 보기 버튼 클릭시 이벤트
    */
   async onConfigButtonClick(): Promise<void> {
-    const result = await this.#sdModal.showAsync(
+    const result = await this._sdModal.showAsync(
       SdSheetConfigModal,
       "시트 설정창",
       {
         sheetKey: this.key(),
         controls: this.columnControls(),
-        config: this.#config(),
+        config: this._config(),
       },
       {
         useCloseByBackdrop: true,
@@ -1532,8 +1532,8 @@ export class SdSheetControl<T> {
     );
     if (!result) return;
 
-    this.#config.set(result);
-    await this.#sdSystemConfig.setAsync(`sd-sheet.${this.key()}`, result);
+    this._config.set(result);
+    await this._sdSystemConfig.setAsync(`sd-sheet.${this.key()}`, result);
   }
 
   /**
@@ -1608,20 +1608,20 @@ export class SdSheetControl<T> {
 
     targetEl.focus();
     if (isEditMode) {
-      this.#editModeCellAddr.set(targetAddr);
+      this._editModeCellAddr.set(targetAddr);
       requestAnimationFrame(() => {
         const focusableEl = targetEl.findFocusableFirst();
         if (focusableEl) focusableEl.focus();
       });
     }
     else {
-      this.#editModeCellAddr.set(undefined);
+      this._editModeCellAddr.set(undefined);
     }
     return true;
   }
 
   #getCellEl(addr: { r: number, c: number }) {
-    return this.#elRef.nativeElement.findFirst<HTMLTableCellElement>(
+    return this._elRef.nativeElement.findFirst<HTMLTableCellElement>(
       `._sheet-container > table > tbody > tr > td[r='${addr.r}'][c='${addr.c}']`,
     );
   }
@@ -1638,7 +1638,7 @@ export class SdSheetControl<T> {
    * @private
    */
   async #saveColumnConfigAsync(columnKey: string, config: Partial<IConfigColumn>): Promise<void> {
-    this.#config.update((v) => ({
+    this._config.update((v) => ({
       ...v,
       columnRecord: {
         ...v?.columnRecord,
@@ -1648,7 +1648,7 @@ export class SdSheetControl<T> {
         },
       },
     }));
-    await this.#sdSystemConfig.setAsync(`sd-sheet.${this.key()}`, this.#config());
+    await this._sdSystemConfig.setAsync(`sd-sheet.${this.key()}`, this._config());
   }
 }
 

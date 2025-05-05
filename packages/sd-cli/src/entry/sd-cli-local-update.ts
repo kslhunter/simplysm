@@ -1,20 +1,16 @@
-import { FsUtils, SdLogger, PathUtils, SdFsWatcher } from "@simplysm/sd-core-node";
+import { FsUtils, PathUtils, SdFsWatcher, SdLogger } from "@simplysm/sd-core-node";
 import path from "path";
-import { pathToFileURL } from "url";
-import { ISdProjectConfig } from "../types/config.types";
+import { loadProjConfAsync } from "./utils/loadProjConfAsync";
 
 export class SdCliLocalUpdate {
-  static async runAsync(opt: { confFileRelPath: string; optNames: string[] }): Promise<void> {
+  static async runAsync(opt: { config?: string; options?: string[] }): Promise<void> {
     const logger = SdLogger.get(["simplysm", "sd-cli", "SdCliLocalUpdate", "runAsync"]);
 
     logger.debug("프로젝트 설정 가져오기...");
-    const projConf = (await import(pathToFileURL(path.resolve(process.cwd(), opt.confFileRelPath)).href)).default(
-      true,
-      opt.optNames,
-    ) as ISdProjectConfig;
+    const projConf = await loadProjConfAsync(process.cwd(), true, opt);
     if (!projConf.localUpdates) return;
 
-    const updatePathInfos = this.#getUpdatePathInfos(projConf.localUpdates);
+    const updatePathInfos = this._getUpdatePathInfos(projConf.localUpdates);
     logger.debug("로컬 업데이트 구성", updatePathInfos);
 
     logger.log("로컬 라이브러리 업데이트 시작...");
@@ -32,24 +28,20 @@ export class SdCliLocalUpdate {
     logger.info("로컬 라이브러리 업데이트 완료");
   }
 
-  static async watchAsync(opt: { confFileRelPath: string; optNames: string[] }): Promise<void> {
+  static async watchAsync(opt: { config?: string; options?: string[] }): Promise<void> {
     const logger = SdLogger.get(["simplysm", "sd-cli", "SdCliLocalUpdate", "watchAsync"]);
 
     logger.debug("프로젝트 설정 가져오기...");
-    const projConf = (await import(pathToFileURL(path.resolve(process.cwd(), opt.confFileRelPath)).href)).default(
-      true,
-      opt.optNames,
-    ) as ISdProjectConfig;
+    const projConf = await loadProjConfAsync(process.cwd(), true, opt);
     if (!projConf.localUpdates) return;
 
-    const updatePathInfos = this.#getUpdatePathInfos(projConf.localUpdates);
-    logger.debug("로컬 업데이트 구성");
-
-    // const watchPaths = updatePathInfos.mapMany((item) => this.#getWatchPaths(item.source)).distinct();
+    const updatePathInfos = this._getUpdatePathInfos(projConf.localUpdates);
+    logger.debug("로컬 업데이트 구성", updatePathInfos);
 
     const watcher = SdFsWatcher.watch(updatePathInfos.map((item) => item.source));
     watcher.onChange({ delay: 500 }, (changedInfos) => {
-      const changedFileInfos = changedInfos.filter((item) => ["add", "change", "unlink"].includes(item.event));
+      const changedFileInfos = changedInfos.filter((item) => ["add", "change", "unlink"].includes(
+        item.event));
       if (changedFileInfos.length === 0) return;
 
       logger.log("로컬 라이브러리 변경감지...");
@@ -64,22 +56,19 @@ export class SdCliLocalUpdate {
           if (changedFileInfo.event === "unlink") {
             logger.debug(`변경파일감지(삭제): ${targetFilePath}`);
             FsUtils.remove(targetFilePath);
-          } else {
+          }
+          else {
             logger.debug(`변경파일감지(복사): ${changedFileInfo.path} => ${targetFilePath}`);
             FsUtils.copy(changedFileInfo.path, targetFilePath);
           }
         }
       }
 
-      // const watchFileSet = new Set(updatePathInfos.mapMany((item) => this.#getWatchPaths(item.source)));
-      //
-      // watcher.replaceWatchPaths(watchFileSet);
-
       logger.info("로컬 라이브러리 복사 완료");
     });
   }
 
-  static #getUpdatePathInfos(record: Record<string, string>): IUpdatePathInfo[] {
+  private static _getUpdatePathInfos(record: Record<string, string>): IUpdatePathInfo[] {
     const result: IUpdatePathInfo[] = [];
     for (const pkgGlobPath of Object.keys(record)) {
       // "node_modules'에서 로컬업데이트 설정에 맞는 패키지를 "glob"하여 대상 패키지경로 목록 가져오기
@@ -109,10 +98,6 @@ export class SdCliLocalUpdate {
 
     return result;
   }
-
-  /*static #getWatchPaths(sourcePath: string): string[] {
-    return FsUtil.glob(path.resolve(sourcePath, "**"));
-  }*/
 }
 
 interface IUpdatePathInfo {

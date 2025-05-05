@@ -2,20 +2,20 @@ import { inject, Injectable } from "@angular/core";
 import { ObjectUtils } from "@simplysm/sd-core-common";
 import { ISdServiceClientConnectionConfig, SdServiceClient } from "@simplysm/sd-service-client";
 import { ISdProgressToast, SdToastProvider } from "./sd-toast.provider";
-import { $effect } from "../utils/hooks";
+import { $effect } from "../utils/hooks/hooks";
 
 @Injectable({ providedIn: "root" })
 export class SdServiceClientFactoryProvider {
-  #sdToast = inject(SdToastProvider);
+  private _sdToast = inject(SdToastProvider);
 
-  #clientMap = new Map<string, SdServiceClient>();
+  private _clientMap = new Map<string, SdServiceClient>();
 
   constructor() {
     $effect((onCleanup) => {
       onCleanup(async () => {
-        for (const key of this.#clientMap.keys()) {
-          await this.#clientMap.get(key)!.closeAsync();
-          this.#clientMap.delete(key);
+        for (const key of this._clientMap.keys()) {
+          await this._clientMap.get(key)!.closeAsync();
+          this._clientMap.delete(key);
         }
       });
     });
@@ -26,8 +26,8 @@ export class SdServiceClientFactoryProvider {
     key: string,
     options: Partial<ISdServiceClientConnectionConfig> = {},
   ): Promise<void> {
-    if (this.#clientMap.has(key)) {
-      if (!this.#clientMap.get(key)!.connected) {
+    if (this._clientMap.has(key)) {
+      if (!this._clientMap.get(key)!.connected) {
         throw new Error("이미 연결이 끊긴 클라이언트와 같은 키로 연결을 시도하였습니다.");
       }
       else {
@@ -51,7 +51,7 @@ export class SdServiceClientFactoryProvider {
     const reqProgressToastMap = new Map<string, ISdProgressToast | undefined>();
     client.on("request-progress", (state) => {
       const toast = reqProgressToastMap.getOrCreate(state.uuid, () =>
-        this.#sdToast.info("요청을 전송하는 중입니다.", true),
+        this._sdToast.info("요청을 전송하는 중입니다.", true),
       );
       toast?.progress((state.completedSize / state.fullSize) * 100);
 
@@ -63,7 +63,7 @@ export class SdServiceClientFactoryProvider {
     const resProgressToastMap = new Map<string, ISdProgressToast | undefined>();
     client.on("response-progress", (state) => {
       const toast = resProgressToastMap.getOrCreate(state.reqUuid, () =>
-        this.#sdToast.info("응답을 전송받는 중입니다.", true),
+        this._sdToast.info("응답을 전송받는 중입니다.", true),
       );
       toast?.progress((state.completedSize / state.fullSize) * 100);
 
@@ -74,19 +74,19 @@ export class SdServiceClientFactoryProvider {
 
     await client.connectAsync();
 
-    this.#clientMap.set(key, client);
+    this._clientMap.set(key, client);
   }
 
   async closeAsync(key: string): Promise<void> {
-    await this.#clientMap.get(key)?.closeAsync();
-    this.#clientMap.delete(key);
+    await this._clientMap.get(key)?.closeAsync();
+    this._clientMap.delete(key);
   }
 
   get(key: string): SdServiceClient {
-    if (!this.#clientMap.has(key)) {
+    if (!this._clientMap.has(key)) {
       throw new Error(`연결하지 않은 클라이언트 키입니다. ${key}`);
     }
 
-    return this.#clientMap.get(key)!;
+    return this._clientMap.get(key)!;
   }
 }

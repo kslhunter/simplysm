@@ -13,7 +13,7 @@ export class SdJsLibBuildRunner extends EventEmitter {
 
   // private readonly _lintWorker: SdWorker<TSdLintWorkerType>;
 
-  public constructor(
+  constructor(
     private readonly _projConf: ISdProjectConfig,
     private readonly _pkgPath: string,
   ) {
@@ -23,14 +23,14 @@ export class SdJsLibBuildRunner extends EventEmitter {
     // this._lintWorker = new SdWorker(import.meta.resolve("../../workers/lint-worker"));
   }
 
-  public override on(event: "change", listener: () => void): this;
-  public override on(event: "complete", listener: (result: ISdBuildRunnerResult) => void): this;
-  public override on(event: string | symbol, listener: (...args: any[]) => void): this {
+  override on(event: "change", listener: () => void): this;
+  override on(event: "complete", listener: (result: ISdBuildRunnerResult) => void): this;
+  override on(event: string | symbol, listener: (...args: any[]) => void): this {
     super.on(event, listener);
     return this;
   }
 
-  public async buildAsync(): Promise<ISdBuildRunnerResult> {
+  async buildAsync(): Promise<ISdBuildRunnerResult> {
     this._debug("LINT...");
     const srcGlobPath = path.resolve(this._pkgPath, "src/**/*.js");
     const srcFilePaths = FsUtils.glob(srcGlobPath);
@@ -46,7 +46,7 @@ export class SdJsLibBuildRunner extends EventEmitter {
     };
   }
 
-  public async watchAsync(): Promise<void> {
+  async watchAsync(): Promise<void> {
     this.emit("change");
     this._debug("LINT...");
     const srcGlobPath = path.resolve(this._pkgPath, "src/**/*.js");

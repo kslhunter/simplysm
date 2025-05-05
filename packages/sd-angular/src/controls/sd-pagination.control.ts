@@ -1,7 +1,14 @@
-import { ChangeDetectionStrategy, Component, inject, input, output, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  input,
+  output,
+  ViewEncapsulation,
+} from "@angular/core";
 import { SdAnchorControl } from "./sd-anchor.control";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
-import { $computed, $model } from "../utils/hooks";
+import { $computed, $model } from "../utils/hooks/hooks";
 import { SdIconControl } from "./sd-icon.control";
 
 @Component({
@@ -50,11 +57,11 @@ import { SdIconControl } from "./sd-icon.control";
   `,
 })
 export class SdPaginationControl {
-  icons = inject(SdAngularConfigProvider).icons;
+  protected icons = inject(SdAngularConfigProvider).icons;
 
-  _page = input<number>(0, { alias: "page" });
-  _pageChange = output<number>({ alias: "pageChange" });
-  page = $model(this._page, this._pageChange);
+  __page = input<number>(0, { alias: "page" });
+  __pageChange = output<number>({ alias: "pageChange" });
+  page = $model(this.__page, this.__pageChange);
 
 
   pageLength = input(0);

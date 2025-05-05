@@ -18,7 +18,7 @@ import { SdEventsDirective } from "../directives/sd-events.directive";
 import { SdDockContainerControl } from "./sd-dock-container.control";
 import { SdDockControl } from "./sd-dock.control";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
-import { $effect, $model, $signal } from "../utils/hooks";
+import { $effect, $model, $signal } from "../utils/hooks/hooks";
 import { injectElementRef } from "../utils/dom/element-ref.injector";
 import { transformBoolean } from "../utils/type-tramsforms";
 import { SdIconControl } from "./sd-icon.control";
@@ -344,14 +344,14 @@ import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
   },
 })
 export class SdModalControl {
-  icons = inject(SdAngularConfigProvider).icons;
+  protected icons = inject(SdAngularConfigProvider).icons;
 
-  #sdSystemConfig = inject(SdSystemConfigProvider);
-  #elRef = injectElementRef<HTMLElement>();
+  private _sdSystemConfig = inject(SdSystemConfigProvider);
+  private _elRef = injectElementRef<HTMLElement>();
 
-  _open = input(false, { alias: "open", transform: transformBoolean });
-  _openChange = output<boolean>({ alias: "openChange" });
-  open = $model(this._open, this._openChange);
+  __open = input(false, { alias: "open", transform: transformBoolean });
+  __openChange = output<boolean>({ alias: "openChange" });
+  open = $model(this.__open, this.__openChange);
 
   key = input<string>();
   title = input.required<string>();
@@ -374,15 +374,15 @@ export class SdModalControl {
 
   dialogElRef = viewChild.required<any, ElementRef<HTMLElement>>("dialogEl", { read: ElementRef });
 
-  #config = $signal<ISdModalConfigVM>();
+  private _config = $signal<ISdModalConfigVM>();
 
   constructor() {
     $effect([this.key], async () => {
-      this.#config.set(await this.#sdSystemConfig.getAsync(`sd-modal.${this.key()}`));
+      this._config.set(await this._sdSystemConfig.getAsync(`sd-modal.${this.key()}`));
     });
 
     $effect(() => {
-      const conf = this.#config();
+      const conf = this._config();
       if (conf) {
         this.dialogElRef().nativeElement.style.position = conf.position;
         this.dialogElRef().nativeElement.style.left = conf.left;
@@ -397,7 +397,7 @@ export class SdModalControl {
         }
       }
 
-      this.#elRef.nativeElement.setAttribute("sd-init", "true");
+      this._elRef.nativeElement.setAttribute("sd-init", "true");
     });
 
     $effect(() => {
@@ -411,7 +411,7 @@ export class SdModalControl {
     const maxZIndex = document.body.findAll("sd-modal")
       .max((el) => Number(getComputedStyle(el).zIndex));
     if (maxZIndex !== undefined) {
-      this.#elRef.nativeElement.style.zIndex = (maxZIndex + 1).toString();
+      this._elRef.nativeElement.style.zIndex = (maxZIndex + 1).toString();
     }
   }
 
@@ -435,11 +435,11 @@ export class SdModalControl {
   }
 
   #calcHeight() {
-    const style = getComputedStyle(this.#elRef.nativeElement);
+    const style = getComputedStyle(this._elRef.nativeElement);
     let paddingTop = style.paddingTop === "" ? 0 : (NumberUtils.parseInt(style.paddingTop) ?? 0);
 
     if (this.dialogElRef().nativeElement.offsetHeight
-      > this.#elRef.nativeElement.offsetHeight
+      > this._elRef.nativeElement.offsetHeight
       - paddingTop) {
       this.dialogElRef().nativeElement.style.maxHeight = `100%`; // `calc(100% - ${paddingTop}px)`;
       this.dialogElRef().nativeElement.style.height = `100%`; // `calc(100% - ${paddingTop}px)`;
@@ -447,7 +447,7 @@ export class SdModalControl {
   }
 
   #calcWidth() {
-    if (this.dialogElRef().nativeElement.offsetWidth > this.#elRef.nativeElement.offsetWidth) {
+    if (this.dialogElRef().nativeElement.offsetWidth > this._elRef.nativeElement.offsetWidth) {
       this.dialogElRef().nativeElement.style.maxWidth = `100%`;
       this.dialogElRef().nativeElement.style.width = `100%`;
     }
@@ -455,13 +455,13 @@ export class SdModalControl {
 
   @HostListener("window:resize")
   onWindowResize() {
-    if (this.dialogElRef().nativeElement.offsetLeft > this.#elRef.nativeElement.offsetWidth - 100) {
-      this.dialogElRef().nativeElement.style.left = this.#elRef.nativeElement.offsetWidth
+    if (this.dialogElRef().nativeElement.offsetLeft > this._elRef.nativeElement.offsetWidth - 100) {
+      this.dialogElRef().nativeElement.style.left = this._elRef.nativeElement.offsetWidth
         - 100
         + "px";
     }
-    if (this.dialogElRef().nativeElement.offsetTop > this.#elRef.nativeElement.offsetHeight - 100) {
-      this.dialogElRef().nativeElement.style.right = this.#elRef.nativeElement.offsetHeight
+    if (this.dialogElRef().nativeElement.offsetTop > this._elRef.nativeElement.offsetHeight - 100) {
+      this.dialogElRef().nativeElement.style.right = this._elRef.nativeElement.offsetHeight
         - 100
         + "px";
     }
@@ -566,8 +566,8 @@ export class SdModalControl {
           width: dialogEl.style.width,
           height: dialogEl.style.height,
         };
-        this.#config.set(newConf);
-        await this.#sdSystemConfig.setAsync(`sd-modal.${this.key()}`, newConf);
+        this._config.set(newConf);
+        await this._sdSystemConfig.setAsync(`sd-modal.${this.key()}`, newConf);
       }
     };
 
@@ -597,7 +597,7 @@ export class SdModalControl {
       dialogEl.style.right = "auto";
       dialogEl.style.bottom = "auto";
 
-      const el = this.#elRef.nativeElement;
+      const el = this._elRef.nativeElement;
       if (dialogEl.offsetLeft > el.offsetWidth - 100) {
         dialogEl.style.left = el.offsetWidth - 100 + "px";
       }
@@ -631,8 +631,8 @@ export class SdModalControl {
           width: dialogEl.style.width,
           height: dialogEl.style.height,
         };
-        this.#config.set(newConf);
-        await this.#sdSystemConfig.setAsync(`sd-modal.${this.key()}`, newConf);
+        this._config.set(newConf);
+        await this._sdSystemConfig.setAsync(`sd-modal.${this.key()}`, newConf);
       }
     };
 

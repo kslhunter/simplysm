@@ -8,12 +8,12 @@ export class DateOnly {
   /**
    * 기본 {@link Date}
    */
-  public readonly date: Date;
+  readonly date: Date;
 
   /**
    * 현재시간
    */
-  public constructor();
+  constructor();
 
   /**
    * 연월일로 초기화
@@ -21,20 +21,20 @@ export class DateOnly {
    * @param month 월
    * @param day 일
    */
-  public constructor(year: number, month: number, day: number);
+  constructor(year: number, month: number, day: number);
 
   /**
    * {@link Date} 타입의 tick 으로 생성 (millisecond)
    * @param tick {@link Date.tick}
    */
-  public constructor(tick: number);
+  constructor(tick: number);
 
   /**
    * {@link Date} 타입으로 생성
    * @param date {@link Date}
    */
-  public constructor(date: Date);
-  public constructor(arg1?: number | Date, arg2?: number, arg3?: number) {
+  constructor(date: Date);
+  constructor(arg1?: number | Date, arg2?: number, arg3?: number) {
     if (arg1 === undefined) {
       const tick = Date.now();
       const date = new Date(tick);
@@ -61,7 +61,7 @@ export class DateOnly {
    *
    * @param str 파싱할 날짜 형식의 문자
    */
-  public static parse(str: string): DateOnly {
+  static parse(str: string): DateOnly {
     const offsetMinutes = new Date().getTimezoneOffset();
     const parsedTick = Date.parse(str) - (offsetMinutes * 60 * 1000);
     if (!Number.isNaN(parsedTick)) {
@@ -231,7 +231,7 @@ export class DateOnly {
   /**
    * 날짜 세팅이 제대로 되었는지 여부 (NaN등의 문제 확인)
    */
-  public get isValidDate(): boolean {
+  get isValidDate(): boolean {
     // noinspection SuspiciousTypeOfGuard
     return this.date instanceof Date && !isNaN(this.date as any);
   }
@@ -239,51 +239,51 @@ export class DateOnly {
   /**
    * 연
    */
-  public get year(): number {
+  get year(): number {
     return this.date.getFullYear();
   }
 
-  public set year(value: number) {
+  set year(value: number) {
     this.date.setFullYear(value);
   }
 
   /**
    * 월
    */
-  public get month(): number {
+  get month(): number {
     return this.date.getMonth() + 1;
   }
 
-  public set month(value: number) {
+  set month(value: number) {
     this.date.setMonth(value - 1);
   }
 
   /**
    * 일
    */
-  public get day(): number {
+  get day(): number {
     return this.date.getDate();
   }
 
-  public set day(value: number) {
+  set day(value: number) {
     this.date.setDate(value);
   }
 
   /**
    * 전체 millisecond {@link Date.tick}
    */
-  public get tick(): number {
+  get tick(): number {
     return this.date.getTime();
   }
 
-  public set tick(tick: number) {
+  set tick(tick: number) {
     this.date.setTime(tick - (tick % (24 * 60 * 60 * 1000)));
   }
 
   /**
    * 요일 (일\~토: 0\~6)
    */
-  public get week(): number {
+  get week(): number {
     return this.date.getDay();
   }
 
@@ -291,7 +291,7 @@ export class DateOnly {
    * 연도 설정
    * @param year 연
    */
-  public setYear(year: number): DateOnly {
+  setYear(year: number): DateOnly {
     return new DateOnly(new Date(this.tick).setFullYear(year));
   }
 
@@ -299,7 +299,7 @@ export class DateOnly {
    * 월 설정
    * @param month 월
    */
-  public setMonth(month: number): DateOnly {
+  setMonth(month: number): DateOnly {
     const date = new Date(this.tick);
     date.setDate(1);
     date.setMonth(month);
@@ -316,7 +316,7 @@ export class DateOnly {
    * 일자를 변경 후 반환 (현재 객체의 일자는 변하지 않음)
    * @param day 일
    */
-  public setDay(day: number): DateOnly {
+  setDay(day: number): DateOnly {
     return new DateOnly(new Date(this.tick).setDate(day));
   }
 
@@ -324,7 +324,7 @@ export class DateOnly {
    * `years`년후로 이동후 반환 (현재 객체의 일자는 변하지 않음)
    * @param years 연
    */
-  public addYears(years: number): DateOnly {
+  addYears(years: number): DateOnly {
     return this.setYear(this.year + years);
   }
 
@@ -332,7 +332,7 @@ export class DateOnly {
    * `months`개월 후로 이동후 반환 (현재 객체의 일자는 변하지 않음)
    * @param months 월
    */
-  public addMonths(months: number): DateOnly {
+  addMonths(months: number): DateOnly {
     return this.setMonth(this.month + months);
   }
 
@@ -340,7 +340,7 @@ export class DateOnly {
    * `days`일 후로 이동후 반환 (현재 객체의 일자는 변하지 않음)
    * @param days 일
    */
-  public addDays(days: number): DateOnly {
+  addDays(days: number): DateOnly {
     return this.setDay(this.day + days);
   }
 
@@ -351,7 +351,7 @@ export class DateOnly {
    *
    * @param format
    */
-  public toFormatString(format: string): string {
+  toFormatString(format: string): string {
     return DateTimeFormatUtils.format(format, {
       year: this.year,
       month: this.month,
@@ -362,7 +362,7 @@ export class DateOnly {
   /**
    * 문자열 형식으로 변환 (yyyy-MM-dd)
    */
-  public toString(): string {
+  toString(): string {
     return this.toFormatString("yyyy-MM-dd");
   }
 }

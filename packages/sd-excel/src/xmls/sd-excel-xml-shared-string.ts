@@ -8,7 +8,7 @@ import {
 export class SdExcelXmlSharedString implements ISdExcelXml {
   data: ISdExcelXmlSharedStringData;
 
-  #stringIndexesMap: Map<string, number[]>;
+  private _stringIndexesMap: Map<string, number[]>;
 
   constructor(data?: ISdExcelXmlSharedStringData) {
     if (data === undefined) {
@@ -24,7 +24,7 @@ export class SdExcelXmlSharedString implements ISdExcelXml {
       this.data = data;
     }
 
-    this.#stringIndexesMap = this.data.sst.si
+    this._stringIndexesMap = this.data.sst.si
       ?.map((tag, id) => ({ id, tag }))
       .filter((item) => !this.#getHasInnerStyleOnSiTag(item.tag))
       .toArrayMap(
@@ -34,7 +34,7 @@ export class SdExcelXmlSharedString implements ISdExcelXml {
   }
 
   getIdByString(str: string): number | undefined {
-    return this.#stringIndexesMap.get(str)?.[0];
+    return this._stringIndexesMap.get(str)?.[0];
   }
 
   getStringById(id: number): string | undefined {
@@ -45,7 +45,7 @@ export class SdExcelXmlSharedString implements ISdExcelXml {
   add(str: string): number {
     this.data.sst.si = this.data.sst.si ?? [];
     const newLength = this.data.sst.si.push({ t: [str] });
-    const arr = this.#stringIndexesMap.getOrCreate(str, []);
+    const arr = this._stringIndexesMap.getOrCreate(str, []);
     arr.push(newLength - 1);
     return newLength - 1;
   }

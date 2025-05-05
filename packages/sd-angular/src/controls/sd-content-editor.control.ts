@@ -8,7 +8,7 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import { StringUtils } from "@simplysm/sd-core-common";
-import { $computed, $effect, $model } from "../utils/hooks";
+import { $computed, $effect, $model } from "../utils/hooks/hooks";
 import { transformBoolean } from "../utils/type-tramsforms";
 import { SdInvalidDirective } from "../directives/sd-invalid.directive";
 
@@ -133,9 +133,9 @@ import { SdInvalidDirective } from "../directives/sd-invalid.directive";
   },
 })
 export class SdContentEditorControl {
-  _value = input<string | undefined>(undefined, { alias: "value" });
-  _valueChange = output<string | undefined>({ alias: "valueChange" });
-  value = $model(this._value, this._valueChange);
+  __value = input<string | undefined>(undefined, { alias: "value" });
+  __valueChange = output<string | undefined>({ alias: "valueChange" });
+  value = $model(this.__value, this.__valueChange);
 
   disabled = input(false, { transform: transformBoolean });
   readonly = input(false, { transform: transformBoolean });

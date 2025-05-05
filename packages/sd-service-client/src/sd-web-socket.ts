@@ -5,21 +5,21 @@ import WebSocket from "isomorphic-ws";
 export class SdWebSocket extends EventEmitter {
   private _ws?: WebSocket;
 
-  public override on(event: "close", listener: () => void): this;
-  public override on(event: "message", listener: (data: any) => void): this;
-  public override on(event: string | symbol, listener: (...args: any[]) => void): this {
+  override on(event: "close", listener: () => void): this;
+  override on(event: "message", listener: (data: any) => void): this;
+  override on(event: string | symbol, listener: (...args: any[]) => void): this {
     return super.on(event, listener);
   }
 
-  public get connected(): boolean {
+  get connected(): boolean {
     return this._ws?.readyState === WebSocket.OPEN;
   }
 
-  public constructor(private readonly _url: string) {
+  constructor(private readonly _url: string) {
     super();
   }
 
-  public async connectAsync(): Promise<void> {
+  async connectAsync(): Promise<void> {
     if (this._ws?.readyState === WebSocket.OPEN) return;
 
     // await this.closeAsync();
@@ -47,7 +47,7 @@ export class SdWebSocket extends EventEmitter {
     });
   }
 
-  public async closeAsync(): Promise<void> {
+  async closeAsync(): Promise<void> {
     if (
       this._ws === undefined ||
       this._ws.readyState === WebSocket.CLOSING ||
@@ -59,7 +59,7 @@ export class SdWebSocket extends EventEmitter {
     delete this._ws;
   }
 
-  public async sendAsync(message: string): Promise<void> {
+  async sendAsync(message: string): Promise<void> {
     try {
       await Wait.until(() => this.connected, undefined, 5000);
     }

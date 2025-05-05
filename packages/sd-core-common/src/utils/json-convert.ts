@@ -6,7 +6,7 @@ import { ObjectUtils } from "./object.utils";
 import { SdError } from "../errors/sd-error";
 
 export class JsonConvert {
-  public static stringify(
+  static stringify(
     obj: any,
     options?: {
       space?: string | number;
@@ -56,7 +56,7 @@ export class JsonConvert {
     return result1;
   }
 
-  public static parse(json: string): any {
+  static parse(json: string): any {
     try {
       return ObjectUtils.nullToUndefined(
         JSON.parse(json, (key, value) => {

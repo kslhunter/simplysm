@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input, output, ViewEncapsulation } from "@angular/core";
 import { StringUtils } from "@simplysm/sd-core-common";
-import { $computed, $model } from "../utils/hooks";
+import { $computed, $model } from "../utils/hooks/hooks";
 import { injectElementRef } from "../utils/dom/element-ref.injector";
 import { transformBoolean } from "../utils/type-tramsforms";
 
@@ -182,11 +182,11 @@ import { transformBoolean } from "../utils/type-tramsforms";
   },
 })
 export class SdTextareaControl {
-  #elRef = injectElementRef<HTMLElement>();
+  private _elRef = injectElementRef<HTMLElement>();
 
-  _value = input<string | undefined>(undefined, { alias: "value" });
-  _valueChange = output<string | undefined>({ alias: "valueChange" });
-  value = $model(this._value, this._valueChange);
+  __value = input<string | undefined>(undefined, { alias: "value" });
+  __valueChange = output<string | undefined>({ alias: "valueChange" });
+  value = $model(this.__value, this.__valueChange);
 
   placeholder = input<string>();
   title = input<string>();
@@ -219,7 +219,7 @@ export class SdTextareaControl {
 
     const fullErrorMessage = errorMessages.join("\r\n");
 
-    const inputEl = this.#elRef.nativeElement.findFirst("input");
+    const inputEl = this._elRef.nativeElement.findFirst("input");
     if (inputEl instanceof HTMLInputElement) {
       inputEl.setCustomValidity(fullErrorMessage);
     }

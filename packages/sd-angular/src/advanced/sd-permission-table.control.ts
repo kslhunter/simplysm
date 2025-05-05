@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, inject, input, output, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  input,
+  output,
+  ViewEncapsulation,
+} from "@angular/core";
 import { SdAnchorControl } from "../controls/sd-anchor.control";
 import { ISdPermission } from "../utils/sd-app-structure.utils";
 import { SdTypedTemplateDirective } from "../directives/sd-typed.template-directive";
@@ -6,7 +13,7 @@ import { NgTemplateOutlet } from "@angular/common";
 import { SdCollapseIconControl } from "../controls/sd-collapse-icon.control";
 import { SdCheckboxControl } from "../controls/sd-checkbox.control";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
-import { $computed, $model, $signal } from "../utils/hooks";
+import { $computed, $model, $signal } from "../utils/hooks/hooks";
 import { transformBoolean } from "../utils/type-tramsforms";
 import { ObjectUtils } from "@simplysm/sd-core-common";
 
@@ -30,7 +37,13 @@ import { ObjectUtils } from "@simplysm/sd-core-common";
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdAnchorControl, SdTypedTemplateDirective, NgTemplateOutlet, SdCollapseIconControl, SdCheckboxControl],
+  imports: [
+    SdAnchorControl,
+    SdTypedTemplateDirective,
+    NgTemplateOutlet,
+    SdCollapseIconControl,
+    SdCheckboxControl,
+  ],
   styles: [
     /* language=SCSS */ `
       sd-permission-table {
@@ -203,11 +216,11 @@ import { ObjectUtils } from "@simplysm/sd-core-common";
   `,
 })
 export class SdPermissionTableControl {
-  icons = inject(SdAngularConfigProvider).icons;
+  protected icons = inject(SdAngularConfigProvider).icons;
 
-  _value = input<Record<string, boolean>>({}, { alias: "value" });
-  _valueChange = output<Record<string, boolean>>({ alias: "valueChange" });
-  value = $model(this._value, this._valueChange);
+  __value = input<Record<string, boolean>>({}, { alias: "value" });
+  __valueChange = output<Record<string, boolean>>({ alias: "valueChange" });
+  value = $model(this.__value, this.__valueChange);
 
   items = input<ISdPermission[]>([]);
   disabled = input(false, { transform: transformBoolean });
@@ -241,7 +254,8 @@ export class SdPermissionTableControl {
       }
     }
     else {
-      if (item.children?.every((child) => !this.getIsPermExists(child, "edit") || this.getEditDisabled(child))) {
+      if (item.children?.every((child) => !this.getIsPermExists(child, "edit")
+        || this.getEditDisabled(child))) {
         return true;
       }
     }
@@ -307,7 +321,12 @@ export class SdPermissionTableControl {
     }
   }
 
-  #changePermCheck(value: Record<string, boolean>, item: ISdPermission, type: "use" | "edit", val: boolean) {
+  #changePermCheck(
+    value: Record<string, boolean>,
+    item: ISdPermission,
+    type: "use" | "edit",
+    val: boolean,
+  ) {
     let changed = false;
 
     if (item.perms) {
@@ -323,7 +342,8 @@ export class SdPermissionTableControl {
       }
 
       // USE권한 지우면 EDIT권한도 자동으로 지움
-      if (type === "use" && !val && this.getIsPermExists(item, "edit") && !value[permCode + ".edit"]) {
+      if (type === "use" && !val && this.getIsPermExists(item, "edit") && !value[permCode
+      + ".edit"]) {
         value[permCode + ".edit"] = false;
         changed = true;
       }

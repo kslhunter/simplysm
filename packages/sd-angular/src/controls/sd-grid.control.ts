@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
-import { $computed } from "../utils/hooks";
+import { $computed } from "../utils/hooks/hooks";
 import { injectSizeSignals } from "../utils/dom/size-signals.injector";
 
 @Component({
@@ -24,10 +24,10 @@ import { injectSizeSignals } from "../utils/dom/size-signals.injector";
   },
 })
 export class SdGridControl {
-  #size = injectSizeSignals();
+  private _size = injectSizeSignals();
 
   gap = input<"xxs" | "xs" | "sm" | "default" | "lg" | "xl" | "xxl">();
 
   styleGap = $computed(() => (this.gap() != null ? "var(--gap-" + this.gap() + ")" : undefined));
-  offsetWidth = $computed(() => this.#size.offsetWidth());
+  offsetWidth = $computed(() => this._size.offsetWidth());
 }

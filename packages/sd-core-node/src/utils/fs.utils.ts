@@ -7,7 +7,7 @@ import { JsonConvert, SdError } from "@simplysm/sd-core-common";
 import { HashUtils } from "./hash.utils";
 
 export class FsUtils {
-  public static getParentPaths(currentPath: string): string[] {
+  static getParentPaths(currentPath: string): string[] {
     const result: string[] = [];
     let curr = currentPath;
     while (curr !== path.resolve(curr, "..")) {
@@ -18,7 +18,7 @@ export class FsUtils {
     return result;
   }
 
-  public static async getMd5Async(filePath: string): Promise<string> {
+  static async getMd5Async(filePath: string): Promise<string> {
     return await new Promise<string>((resolve, reject) => {
       const hash = crypto.createHash("md5").setEncoding("hex");
       fs.createReadStream(filePath)
@@ -32,9 +32,9 @@ export class FsUtils {
     });
   }
 
-  public static async globAsync(pattern: string): Promise<string[]>;
-  public static async globAsync(pattern: string, options: glob.GlobOptions): Promise<string[]>;
-  public static async globAsync(pattern: string, options?: glob.GlobOptions): Promise<string[]> {
+  static async globAsync(pattern: string): Promise<string[]>;
+  static async globAsync(pattern: string, options: glob.GlobOptions): Promise<string[]>;
+  static async globAsync(pattern: string, options?: glob.GlobOptions): Promise<string[]> {
     return (await glob.glob(pattern.replace(/\\/g, "/"), options ?? {})).map((item) => path.resolve(
       item));
     /*return await new Promise<string[]>((resolve, reject) => {
@@ -48,12 +48,12 @@ export class FsUtils {
     });*/
   }
 
-  public static glob(pattern: string, options?: glob.GlobOptions): string[] {
+  static glob(pattern: string, options?: glob.GlobOptions): string[] {
     return glob.globSync(pattern.replace(/\\/g, "/"), options ?? {})
       .map((item) => path.resolve(item));
   }
 
-  public static async readdirAsync(targetPath: string): Promise<string[]> {
+  static async readdirAsync(targetPath: string): Promise<string[]> {
     try {
       return await fs.promises.readdir(targetPath);
     }
@@ -67,7 +67,7 @@ export class FsUtils {
     }
   }
 
-  public static readdir(targetPath: string): string[] {
+  static readdir(targetPath: string): string[] {
     try {
       return fs.readdirSync(targetPath);
     }
@@ -81,7 +81,7 @@ export class FsUtils {
     }
   }
 
-  public static exists(targetPath: string): boolean {
+  static exists(targetPath: string): boolean {
     try {
       return fs.existsSync(targetPath);
     }
@@ -95,7 +95,7 @@ export class FsUtils {
     }
   }
 
-  public static async removeAsync(targetPath: string): Promise<void> {
+  static async removeAsync(targetPath: string): Promise<void> {
     try {
       await fs.promises.rm(
         targetPath,
@@ -112,7 +112,7 @@ export class FsUtils {
     }
   }
 
-  public static remove(targetPath: string): void {
+  static remove(targetPath: string): void {
     try {
       fs.rmSync(targetPath, { recursive: true, force: true });
     }
@@ -126,7 +126,7 @@ export class FsUtils {
     }
   }
 
-  public static async copyAsync(
+  static async copyAsync(
     sourcePath: string,
     targetPath: string,
     filter?: (subPath: string) => boolean,
@@ -180,7 +180,7 @@ export class FsUtils {
     }
   }
 
-  public static copy(
+  static copy(
     sourcePath: string,
     targetPath: string,
     filter?: (subPath: string) => boolean,
@@ -233,7 +233,7 @@ export class FsUtils {
     }
   }
 
-  public static async mkdirsAsync(targetPath: string): Promise<void> {
+  static async mkdirsAsync(targetPath: string): Promise<void> {
     if (FsUtils.exists(targetPath)) return;
 
     try {
@@ -249,7 +249,7 @@ export class FsUtils {
     }
   }
 
-  public static mkdirs(targetPath: string): void {
+  static mkdirs(targetPath: string): void {
     if (FsUtils.exists(targetPath)) return;
 
     try {
@@ -265,7 +265,7 @@ export class FsUtils {
     }
   }
 
-  public static async writeJsonAsync(
+  static async writeJsonAsync(
     targetPath: string,
     data: any,
     options?: {
@@ -277,7 +277,7 @@ export class FsUtils {
     await FsUtils.writeFileAsync(targetPath, json);
   }
 
-  public static writeJson(
+  static writeJson(
     targetPath: string,
     data: any,
     options?: {
@@ -289,7 +289,7 @@ export class FsUtils {
     FsUtils.writeFile(targetPath, json);
   }
 
-  public static async writeFileAsync(targetPath: string, data: any): Promise<void> {
+  static async writeFileAsync(targetPath: string, data: any): Promise<void> {
     await FsUtils.mkdirsAsync(path.dirname(targetPath));
 
     try {
@@ -310,7 +310,7 @@ export class FsUtils {
     }
   }
 
-  public static writeFile(targetPath: string, data: any): void {
+  static writeFile(targetPath: string, data: any): void {
     FsUtils.mkdirs(path.dirname(targetPath));
 
     try {
@@ -328,7 +328,7 @@ export class FsUtils {
     }
   }
 
-  public static readFile(targetPath: string): string {
+  static readFile(targetPath: string): string {
     try {
       return fs.readFileSync(targetPath, "utf-8");
     }
@@ -342,7 +342,7 @@ export class FsUtils {
     }
   }
 
-  public static async readFileAsync(targetPath: string): Promise<string> {
+  static async readFileAsync(targetPath: string): Promise<string> {
     if (!FsUtils.exists(targetPath)) {
       throw new SdError(targetPath + "파일을 찾을 수 없습니다.");
     }
@@ -360,7 +360,7 @@ export class FsUtils {
     }
   }
 
-  public static readFileBuffer(targetPath: string): Buffer {
+  static readFileBuffer(targetPath: string): Buffer {
     try {
       return fs.readFileSync(targetPath);
     }
@@ -374,7 +374,7 @@ export class FsUtils {
     }
   }
 
-  public static async readFileBufferAsync(targetPath: string): Promise<Buffer> {
+  static async readFileBufferAsync(targetPath: string): Promise<Buffer> {
     try {
       return await fs.promises.readFile(targetPath);
     }
@@ -388,12 +388,12 @@ export class FsUtils {
     }
   }
 
-  public static readJson(targetPath: string): any {
+  static readJson(targetPath: string): any {
     const contents = FsUtils.readFile(targetPath);
     return JsonConvert.parse(contents);
   }
 
-  public static async readJsonAsync(targetPath: string): Promise<any> {
+  static async readJsonAsync(targetPath: string): Promise<any> {
     const contents = await FsUtils.readFileAsync(targetPath);
     try {
       return JsonConvert.parse(contents);
@@ -408,7 +408,7 @@ export class FsUtils {
     }
   }
 
-  public static lstat(targetPath: string): fs.Stats {
+  static lstat(targetPath: string): fs.Stats {
     try {
       return fs.lstatSync(targetPath);
     }
@@ -422,7 +422,7 @@ export class FsUtils {
     }
   }
 
-  public static async lstatAsync(targetPath: string): Promise<fs.Stats> {
+  static async lstatAsync(targetPath: string): Promise<fs.Stats> {
     try {
       return await fs.promises.lstat(targetPath);
     }
@@ -436,7 +436,7 @@ export class FsUtils {
     }
   }
 
-  public static stat(targetPath: string): fs.Stats {
+  static stat(targetPath: string): fs.Stats {
     try {
       return fs.statSync(targetPath);
     }
@@ -450,7 +450,7 @@ export class FsUtils {
     }
   }
 
-  public static async statAsync(targetPath: string): Promise<fs.Stats> {
+  static async statAsync(targetPath: string): Promise<fs.Stats> {
     try {
       return await fs.promises.stat(targetPath);
     }
@@ -464,7 +464,7 @@ export class FsUtils {
     }
   }
 
-  public static appendFile(targetPath: string, data: any): void {
+  static appendFile(targetPath: string, data: any): void {
     try {
       fs.appendFileSync(targetPath, data, "utf8");
     }
@@ -478,7 +478,7 @@ export class FsUtils {
     }
   }
 
-  public static open(targetPath: string, flags: string | number): number {
+  static open(targetPath: string, flags: string | number): number {
     try {
       return fs.openSync(targetPath, flags);
     }
@@ -492,7 +492,7 @@ export class FsUtils {
     }
   }
 
-  public static async openAsync(
+  static async openAsync(
     targetPath: string,
     flags: string | number,
   ): Promise<fs.promises.FileHandle> {
@@ -509,7 +509,7 @@ export class FsUtils {
     }
   }
 
-  public static createReadStream(sourcePath: string): fs.ReadStream {
+  static createReadStream(sourcePath: string): fs.ReadStream {
     try {
       return fs.createReadStream(sourcePath);
     }
@@ -523,7 +523,7 @@ export class FsUtils {
     }
   }
 
-  public static createWriteStream(targetPath: string): fs.WriteStream {
+  static createWriteStream(targetPath: string): fs.WriteStream {
     try {
       return fs.createWriteStream(targetPath);
     }
@@ -545,7 +545,7 @@ export class FsUtils {
     return FsUtil.stat(targetPath).isDirectory();
   }*/
 
-  public static async clearEmptyDirectoryAsync(dirPath: string): Promise<void> {
+  static async clearEmptyDirectoryAsync(dirPath: string): Promise<void> {
     if (!FsUtils.exists(dirPath)) return;
 
     const childNames = await FsUtils.readdirAsync(dirPath);
@@ -561,7 +561,7 @@ export class FsUtils {
     }
   }
 
-  public static findAllParentChildPaths(
+  static findAllParentChildPaths(
     childGlob: string,
     fromPath: string,
     rootPath?: string,

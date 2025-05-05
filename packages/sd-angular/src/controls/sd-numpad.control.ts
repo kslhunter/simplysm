@@ -8,7 +8,7 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import { SdTextfieldControl } from "./sd-textfield.control";
-import { $effect, $signal } from "../utils/hooks";
+import { $effect, $signal } from "../utils/hooks/hooks";
 import { SdButtonControl } from "./sd-button.control";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { SdIconControl } from "./sd-icon.control";
@@ -129,7 +129,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
   ],
 })
 export class SdNumpadControl {
-  icons = inject(SdAngularConfigProvider).icons;
+ protected icons = inject(SdAngularConfigProvider).icons;
 
   text = $signal<string>();
 

@@ -11,7 +11,7 @@ import {
 import { SdSelectControl } from "./sd-select-control";
 import { SdCheckboxControl } from "./sd-checkbox.control";
 import { SdGapControl } from "./sd-gap.control";
-import { $computed, $effect, $signal } from "../utils/hooks";
+import { $computed, $effect, $signal } from "../utils/hooks/hooks";
 import { injectElementRef } from "../utils/dom/element-ref.injector";
 import { useRipple } from "../utils/use-ripple";
 import { transformBoolean } from "../utils/type-tramsforms";
@@ -81,15 +81,16 @@ import { transformBoolean } from "../utils/type-tramsforms";
   },
 })
 export class SdSelectItemControl {
-  #selectControl: SdSelectControl<any, any> = inject(forwardRef(() => SdSelectControl));
+  private _selectControl: SdSelectControl<any, any> = inject(forwardRef(() => SdSelectControl));
+
   elRef = injectElementRef<HTMLElement>();
 
   value = input<any>();
   disabled = input(false, { transform: transformBoolean });
   hidden = input(false, { transform: transformBoolean });
 
-  selectMode = $computed(() => this.#selectControl.selectMode());
-  isSelected = $computed(() => this.#selectControl.getIsSelectedItemControl(this));
+  selectMode = $computed(() => this._selectControl.selectMode());
+  isSelected = $computed(() => this._selectControl.getIsSelectedItemControl(this));
 
   contentHTML = $signal<string>("");
 
@@ -97,10 +98,10 @@ export class SdSelectItemControl {
     useRipple(() => !this.disabled());
 
     $effect((onCleanup) => {
-      this.#selectControl.itemControls.update((v) => [...v, this]);
+      this._selectControl.itemControls.update((v) => [...v, this]);
 
       onCleanup(() => {
-        this.#selectControl.itemControls.update((v) => v.filter((item) => item !== this));
+        this._selectControl.itemControls.update((v) => v.filter((item) => item !== this));
       });
     });
 
@@ -118,7 +119,7 @@ export class SdSelectItemControl {
     event.stopPropagation();
     if (this.disabled()) return;
 
-    this.#selectControl.onItemControlClick(this, this.selectMode() === "single");
+    this._selectControl.onItemControlClick(this, this.selectMode() === "single");
   }
 
   @HostListener("keydown", ["$event"])
@@ -129,13 +130,13 @@ export class SdSelectItemControl {
       event.preventDefault();
       event.stopPropagation();
 
-      this.#selectControl.onItemControlClick(this, false);
+      this._selectControl.onItemControlClick(this, false);
     }
     if (!event.ctrlKey && !event.altKey && event.key === "Enter") {
       event.preventDefault();
       event.stopPropagation();
 
-      this.#selectControl.onItemControlClick(this, this.selectMode() === "single");
+      this._selectControl.onItemControlClick(this, this.selectMode() === "single");
     }
   }
 }

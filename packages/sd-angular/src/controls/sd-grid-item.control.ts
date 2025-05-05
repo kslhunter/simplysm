@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, input, ViewEncapsulation } from "@angular/core";
 import { SdGridControl } from "./sd-grid.control";
-import { $computed } from "../utils/hooks";
+import { $computed } from "../utils/hooks/hooks";
 
 @Component({
   selector: "sd-grid-item",
@@ -22,7 +22,7 @@ import { $computed } from "../utils/hooks";
   }
 })
 export class SdGridItemControl {
-  #parentControl = inject(SdGridControl);
+  private _parentControl = inject(SdGridControl);
 
   colSpan = input.required<number>();
   colSpanSm = input<number>();
@@ -30,7 +30,7 @@ export class SdGridItemControl {
   colSpanXxs = input<number>();
 
   styleGridColumnEnd = $computed(() => {
-    const parentWidth = this.#parentControl.offsetWidth();
+    const parentWidth = this._parentControl.offsetWidth();
     if (parentWidth < 800) {
       return `span ${this.colSpanXxs() ?? this.colSpanXs() ?? this.colSpanSm() ?? this.colSpan()}`;
     }

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, input, ViewEncapsulation } from "@angular/core";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
-import { $computed } from "../utils/hooks";
+import { $computed } from "../utils/hooks/hooks";
 import { transformBoolean } from "../utils/type-tramsforms";
 import { SdIconControl } from "./sd-icon.control";
 
@@ -32,7 +32,7 @@ import { SdIconControl } from "./sd-icon.control";
   }
 })
 export class SdCollapseIconControl {
-  icons = inject(SdAngularConfigProvider).icons;
+ protected icons = inject(SdAngularConfigProvider).icons;
 
   icon = input(this.icons.angleDown);
   open = input(false, { transform: transformBoolean });

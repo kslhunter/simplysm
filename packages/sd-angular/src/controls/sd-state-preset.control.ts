@@ -1,11 +1,18 @@
-import { ChangeDetectionStrategy, Component, inject, input, output, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  input,
+  output,
+  ViewEncapsulation,
+} from "@angular/core";
 import { ObjectUtils } from "@simplysm/sd-core-common";
 import { SdSystemConfigProvider } from "../providers/sd-system-config.provider";
 import { SdToastProvider } from "../providers/sd-toast.provider";
 import { SdGapControl } from "./sd-gap.control";
 import { SdAnchorControl } from "./sd-anchor.control";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
-import { $effect, $model, $signal } from "../utils/hooks";
+import { $effect, $model, $signal } from "../utils/hooks/hooks";
 import { SdIconControl } from "./sd-icon.control";
 
 @Component({
@@ -88,14 +95,14 @@ import { SdIconControl } from "./sd-icon.control";
   },
 })
 export class SdStatePresetControl {
-  icons = inject(SdAngularConfigProvider).icons;
+  protected icons = inject(SdAngularConfigProvider).icons;
 
-  #sdSystemConfig = inject(SdSystemConfigProvider);
-  #sdToast = inject(SdToastProvider);
+  private _sdSystemConfig = inject(SdSystemConfigProvider);
+  private _sdToast = inject(SdToastProvider);
 
-  _state = input<any>(undefined, { alias: "state" });
-  _stateChange = output<any>({ alias: "stateChange" });
-  state = $model(this._state, this._stateChange);
+  __state = input<any>(undefined, { alias: "state" });
+  __stateChange = output<any>({ alias: "stateChange" });
+  state = $model(this.__state, this.__stateChange);
 
   key = input.required<string>();
   size = input<"sm" | "lg">();
@@ -104,7 +111,8 @@ export class SdStatePresetControl {
 
   constructor() {
     $effect([this.key], async () => {
-      this.presets.set((await this.#sdSystemConfig.getAsync(`sd-state-preset.${this.key()}`)) ?? []);
+      this.presets.set((await this._sdSystemConfig.getAsync(`sd-state-preset.${this.key()}`))
+        ?? []);
     });
   }
 
@@ -119,9 +127,9 @@ export class SdStatePresetControl {
         state: ObjectUtils.clone(this.state),
       },
     ]);
-    await this.#sdSystemConfig.setAsync(`sd-state-preset.${this.key()}`, this.presets());
+    await this._sdSystemConfig.setAsync(`sd-state-preset.${this.key()}`, this.presets());
 
-    this.#sdToast.info(`현재 상태가 ${newName}에 저장되었습니다.`);
+    this._sdToast.info(`현재 상태가 ${newName}에 저장되었습니다.`);
   }
 
   onItemClick(preset: ISdStatePresetVM) {
@@ -134,14 +142,14 @@ export class SdStatePresetControl {
     if (!confirm("저장된 '" + preset.name + "'상태가 삭제됩니다.")) return;
 
     this.presets.update((v) => v.filter((item) => item !== preset));
-    await this.#sdSystemConfig.setAsync(`sd-state-preset.${this.key()}`, this.presets());
+    await this._sdSystemConfig.setAsync(`sd-state-preset.${this.key()}`, this.presets());
   }
 
   async onSaveButtonClick(preset: ISdStatePresetVM) {
     preset.state = ObjectUtils.clone(this.state());
-    await this.#sdSystemConfig.setAsync(`sd-state-preset.${this.key()}`, this.presets());
+    await this._sdSystemConfig.setAsync(`sd-state-preset.${this.key()}`, this.presets());
 
-    this.#sdToast.info(`현재 상태가 ${preset.name}에 저장되었습니다.`);
+    this._sdToast.info(`현재 상태가 ${preset.name}에 저장되었습니다.`);
   }
 }
 

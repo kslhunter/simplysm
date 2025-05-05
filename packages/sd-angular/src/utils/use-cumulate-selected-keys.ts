@@ -1,6 +1,6 @@
 import { Signal, WritableSignal } from "@angular/core";
 import { ObjectUtils } from "@simplysm/sd-core-common";
-import { $effect } from "./hooks";
+import { $effect } from "./hooks/hooks";
 
 export function useCumulateSelectedKeys<T extends object, K>(
   items: Signal<T[]>,

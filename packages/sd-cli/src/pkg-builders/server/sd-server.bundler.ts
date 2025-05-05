@@ -13,24 +13,22 @@ import { convertOutputFile } from "@angular/build/src/tools/esbuild/utils";
 import { resolveAssets } from "@angular/build/src/utils/resolve-assets";
 
 export class SdServerBundler {
-  readonly #logger = SdLogger.get(["simplysm", "sd-cli", "SdServerBundler"]);
+  private _logger = SdLogger.get(["simplysm", "sd-cli", "SdServerBundler"]);
 
-  #context?: esbuild.BuildContext;
+  private _context?: esbuild.BuildContext;
 
-  readonly #modifiedFileSet = new Set<TNormPath>();
-  readonly #resultCache: ISdCliServerPluginResultCache = {};
+  private _modifiedFileSet = new Set<TNormPath>();
+  private _resultCache: ISdCliServerPluginResultCache = {};
 
-  readonly #outputHashCache = new Map<TNormPath, string>();
+  private _outputHashCache = new Map<TNormPath, string>();
 
-  constructor(
-    private readonly _opt: {
-      dev: boolean;
-      pkgPath: TNormPath;
-      entryPoints: string[];
-      external?: string[];
-      watchScopePaths: TNormPath[];
-    },
-  ) {
+  constructor(private _opt: {
+    dev: boolean;
+    pkgPath: TNormPath;
+    entryPoints: string[];
+    external?: string[];
+    watchScopePaths: TNormPath[];
+  }) {
   }
 
   async bundleAsync(modifiedFileSet?: Set<TNormPath>): Promise<{
@@ -39,13 +37,13 @@ export class SdServerBundler {
     results: ISdBuildMessage[];
     emitFileSet: Set<TNormPath>;
   }> {
-    this.#modifiedFileSet.clear();
+    this._modifiedFileSet.clear();
     if (modifiedFileSet) {
-      this.#modifiedFileSet.adds(...modifiedFileSet);
+      this._modifiedFileSet.adds(...modifiedFileSet);
     }
 
-    if (!this.#context) {
-      this.#context = await esbuild.context({
+    if (!this._context) {
+      this._context = await esbuild.context({
         entryPoints: this._opt.entryPoints,
         keepNames: true,
         bundle: true,
@@ -106,10 +104,10 @@ const __dirname = __path__.dirname(__filename);`.trim(),
         },
         plugins: [
           createSdServerPlugin({
-            modifiedFileSet: this.#modifiedFileSet,
+            modifiedFileSet: this._modifiedFileSet,
             dev: this._opt.dev,
             pkgPath: this._opt.pkgPath,
-            result: this.#resultCache,
+            result: this._resultCache,
             watchScopePaths: this._opt.watchScopePaths,
           }),
         ],
@@ -119,18 +117,18 @@ const __dirname = __path__.dirname(__filename);`.trim(),
     const emitFileSet = new Set<TNormPath>();
     let result: esbuild.BuildResult | esbuild.BuildFailure;
     try {
-      result = await this.#context.rebuild();
+      result = await this._context.rebuild();
 
       const outputFiles: BuildOutputFile[] =
         result.outputFiles?.map((file) => convertOutputFile(file, BuildOutputFileType.Root)) ?? [];
 
       for (const outputFile of outputFiles) {
         const distFilePath = PathUtils.norm(this._opt.pkgPath, outputFile.path);
-        const prevHash = this.#outputHashCache.get(distFilePath);
+        const prevHash = this._outputHashCache.get(distFilePath);
         const currHash = HashUtils.get(outputFile.contents);
         if (prevHash !== currHash) {
           FsUtils.writeFile(distFilePath, outputFile.contents);
-          this.#outputHashCache.set(distFilePath, currHash);
+          this._outputHashCache.set(distFilePath, currHash);
           emitFileSet.add(distFilePath);
         }
       }
@@ -145,14 +143,14 @@ const __dirname = __path__.dirname(__filename);`.trim(),
       );
 
       for (const assetFile of assetFiles) {
-        const prevHash = this.#outputHashCache.get(PathUtils.norm(assetFile.source));
+        const prevHash = this._outputHashCache.get(PathUtils.norm(assetFile.source));
         const currHash = FsUtils.hash(assetFile.source);
         if (prevHash !== currHash) {
           FsUtils.copy(
             assetFile.source,
             path.resolve(this._opt.pkgPath, "dist", assetFile.destination),
           );
-          this.#outputHashCache.set(PathUtils.norm(assetFile.source), currHash);
+          this._outputHashCache.set(PathUtils.norm(assetFile.source), currHash);
           emitFileSet.add(PathUtils.norm(assetFile.destination));
         }
       }
@@ -161,14 +159,14 @@ const __dirname = __path__.dirname(__filename);`.trim(),
       result = err;
       for (const e of err.errors) {
         if (e.detail != null) {
-          this.#logger.error(e.detail);
+          this._logger.error(e.detail);
         }
       }
     }
 
     return {
-      watchFileSet: this.#resultCache.watchFileSet!,
-      affectedFileSet: this.#resultCache.affectedFileSet!,
+      watchFileSet: this._resultCache.watchFileSet!,
+      affectedFileSet: this._resultCache.affectedFileSet!,
       results: SdCliConvertMessageUtils.convertToBuildMessagesFromEsbuild(
         result,
         this._opt.pkgPath,

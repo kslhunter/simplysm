@@ -1,23 +1,24 @@
 import { FsUtils, SdLogger, SdProcess } from "@simplysm/sd-core-node";
-import { pathToFileURL } from "url";
 import path from "path";
 import electronBuilder from "electron-builder";
-import { ISdClientBuilderElectronConfig, ISdProjectConfig } from "../types/config.types";
+import { ISdClientBuilderElectronConfig } from "../types/config.types";
 import { INpmConfig } from "../types/common-configs.types";
+import { loadProjConfAsync } from "./utils/loadProjConfAsync";
 
 export class SdCliElectron {
-  static async runAsync(opt: { confFileRelPath: string; optNames: string[]; pkgName: string }): Promise<void> {
+  static async runAsync(opt: {
+    package: string
+    config?: string;
+    options?: string[];
+  }) {
     const logger = SdLogger.get(["simplysm", "sd-cli", "SdCliElectron", "runAsync"]);
 
-    const pkgPath = path.resolve(process.cwd(), `packages/${opt.pkgName}`);
+    const pkgPath = path.resolve(process.cwd(), `packages/${opt.package}`);
     const electronPath = path.resolve(pkgPath, "dist/electron");
 
     logger.log("설정 가져오기...");
-    const projConf = (await import(pathToFileURL(path.resolve(process.cwd(), opt.confFileRelPath)).href)).default(
-      true,
-      opt.optNames,
-    ) as ISdProjectConfig;
-    const pkgConf = projConf.packages[opt.pkgName];
+    const projConf = await loadProjConfAsync(process.cwd(), true, opt);
+    const pkgConf = projConf.packages[opt.package];
     if (pkgConf?.type !== "client" || pkgConf.builder?.electron === undefined) {
       throw new Error();
     }
@@ -66,19 +67,20 @@ export class SdCliElectron {
     await SdProcess.spawnAsync(`npx electron .`, { cwd: electronPath }, true);
   }
 
-  static async buildForDevAsync(opt: { confFileRelPath: string; optNames: string[]; pkgName: string }): Promise<void> {
+  static async buildForDevAsync(opt: {
+    package: string
+    config?: string;
+    options?: string[];
+  }) {
     const logger = SdLogger.get(["simplysm", "sd-cli", "SdCliElectron", "buildForDevAsync"]);
 
-    const pkgPath = path.resolve(process.cwd(), `packages/${opt.pkgName}`);
+    const pkgPath = path.resolve(process.cwd(), `packages/${opt.package}`);
     const electronPath = path.resolve(pkgPath, "dist/electron");
     const electronDistPath = path.resolve(pkgPath, ".electron/dist");
 
     logger.log("설정 가져오기...");
-    const projConf = (await import(pathToFileURL(path.resolve(process.cwd(), opt.confFileRelPath)).href)).default(
-      true,
-      opt.optNames,
-    ) as ISdProjectConfig;
-    const pkgConf = projConf.packages[opt.pkgName];
+    const projConf = await loadProjConfAsync(process.cwd(), true, opt);
+    const pkgConf = projConf.packages[opt.package];
     if (pkgConf?.type !== "client" || pkgConf.builder?.electron === undefined) {
       throw new Error();
     }
@@ -149,12 +151,25 @@ export class SdCliElectron {
     });
 
     FsUtils.copy(
-      path.resolve(electronDistPath, `${npmConfig.description} ${pkgConf.builder.electron.portable ? "" : "Setup "}${npmConfig.version}.exe`),
-      path.resolve(pkgPath, `dist/electron/${npmConfig.description}${pkgConf.builder.electron.portable ? "-portable" : ""}-dev.exe`),
+      path.resolve(
+        electronDistPath,
+        `${npmConfig.description} ${pkgConf.builder.electron.portable
+          ? ""
+          : "Setup "}${npmConfig.version}.exe`,
+      ),
+      path.resolve(
+        pkgPath,
+        `dist/electron/${npmConfig.description}${pkgConf.builder.electron.portable
+          ? "-portable"
+          : ""}-dev.exe`,
+      ),
     );
   }
 
-  static async buildAsync(opt: { pkgPath: string; config: ISdClientBuilderElectronConfig }): Promise<void> {
+  static async buildAsync(opt: {
+    pkgPath: string;
+    config: ISdClientBuilderElectronConfig
+  }) {
     const logger = SdLogger.get(["simplysm", "sd-cli", "SdCliElectron", "buildAsync"]);
 
     const electronSrcPath = path.resolve(opt.pkgPath, ".electron/src");
@@ -187,7 +202,12 @@ export class SdCliElectron {
     await SdProcess.spawnAsync(`npm install`, { cwd: electronSrcPath }, true);
 
     for (const reinstallPkgName of reinstallPkgNames) {
-      if (FsUtils.exists(path.resolve(electronSrcPath, "node_modules", reinstallPkgName, "binding.gyp"))) {
+      if (FsUtils.exists(path.resolve(
+        electronSrcPath,
+        "node_modules",
+        reinstallPkgName,
+        "binding.gyp",
+      ))) {
         logger.log(`electron rebuild (${reinstallPkgName})...`);
         await SdProcess.spawnAsync(
           `electron-rebuild -m ./node_modules/${reinstallPkgName}`,
@@ -223,12 +243,23 @@ export class SdCliElectron {
     });
 
     FsUtils.copy(
-      path.resolve(electronDistPath, `${npmConfig.description} ${opt.config.portable ? "" : "Setup "}${npmConfig.version}.exe`),
-      path.resolve(opt.pkgPath, `dist/electron/${npmConfig.description}${opt.config.portable ? "-portable" : ""}-latest.exe`),
+      path.resolve(
+        electronDistPath,
+        `${npmConfig.description} ${opt.config.portable ? "" : "Setup "}${npmConfig.version}.exe`,
+      ),
+      path.resolve(
+        opt.pkgPath,
+        `dist/electron/${npmConfig.description}${opt.config.portable
+          ? "-portable"
+          : ""}-latest.exe`,
+      ),
     );
 
     FsUtils.copy(
-      path.resolve(electronDistPath, `${npmConfig.description} ${opt.config.portable ? "" : "Setup "}${npmConfig.version}.exe`),
+      path.resolve(
+        electronDistPath,
+        `${npmConfig.description} ${opt.config.portable ? "" : "Setup "}${npmConfig.version}.exe`,
+      ),
       path.resolve(opt.pkgPath, `dist/electron/updates/${npmConfig.version}.exe`),
     );
   }

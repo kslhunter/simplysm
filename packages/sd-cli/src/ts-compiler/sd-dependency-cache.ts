@@ -134,54 +134,55 @@ export class SdDependencyCache {
 
     const queue: { fileNPath: TNormPath, exportSymbol: string | undefined }[] = [];
 
+    const enqueue = (fileNPath: TNormPath, exportSymbol: string | undefined) => {
+      const key = `${fileNPath}#${exportSymbol}`;
+      if (!visited.has(key)) {
+        visited.add(key);
+        queue.push({ fileNPath, exportSymbol });
+      }
+    };
+
     for (const modifiedNPath of modifiedNPathSet) {
       const exportSymbols = this._getExportSymbols(modifiedNPath);
       if (exportSymbols.size === 0) {
-        queue.push({
-          fileNPath: modifiedNPath,
-          exportSymbol: undefined,
-        });
+        enqueue(modifiedNPath, undefined);
       }
       else {
-        queue.push(...Array.from(exportSymbols).map(symbol => ({
-          fileNPath: modifiedNPath,
-          exportSymbol: symbol,
-        })));
+        for (const symbol of exportSymbols) {
+          enqueue(modifiedNPath, symbol);
+        }
       }
     }
 
     while (queue.length > 0) {
       const curr = queue.shift()!;
 
-      const key = curr.fileNPath + "#" + curr.exportSymbol;
+      /*const key = curr.fileNPath + "#" + curr.exportSymbol;
       if (visited.has(key)) continue;
-      visited.add(key);
+      visited.add(key);*/
 
       const revDepInfoMap = this._revDepCache.get(curr.fileNPath);
-      if (revDepInfoMap) {
-        for (const [revDepFileNPath, revDepInfo] of revDepInfoMap) {
-          if (curr.exportSymbol != null) {
-            // curr의 export를 토대로 revDep이 사용하고 있는지 체크
-            // curr.exportSymbol 와 revDev의 importSymbol은 같다
-            const hasImportSymbol = revDepInfo === 0 ? true : revDepInfo.has(curr.exportSymbol);
-            if (hasImportSymbol) {
-              result.add(revDepFileNPath);
+      if (!revDepInfoMap) continue;
 
-              // 하위 Deps를 queue에 넣기전 export명칭 변환 (이름을 변경한 reexport일 경우 필요)
-              const exportSymbol = this._convertImportSymbolToExportSymbol(
-                revDepFileNPath,
-                curr.fileNPath,
-                curr.exportSymbol, // revdep의 importSymbol
-              );
-              queue.push({
-                fileNPath: revDepFileNPath,
-                exportSymbol,
-              });
-            }
-          }
-          else { // Resource
+      for (const [revDepFileNPath, revDepInfo] of revDepInfoMap) {
+        if (curr.exportSymbol != null) {
+          // curr의 export를 토대로 revDep이 사용하고 있는지 체크
+          // curr.exportSymbol 와 revDev의 importSymbol은 같다
+          const hasImportSymbol = revDepInfo === 0 || revDepInfo.has(curr.exportSymbol);
+          if (hasImportSymbol) {
             result.add(revDepFileNPath);
+
+            // 하위 Deps를 queue에 넣기전 export명칭 변환 (이름을 변경한 reexport일 경우 필요)
+            const exportSymbol = this._convertImportSymbolToExportSymbol(
+              revDepFileNPath,
+              curr.fileNPath,
+              curr.exportSymbol, // revdep의 importSymbol
+            );
+            enqueue(revDepFileNPath, exportSymbol);
           }
+        }
+        else { // Resource
+          result.add(revDepFileNPath);
         }
       }
     }
@@ -197,6 +198,7 @@ export class SdDependencyCache {
       this._importCache.delete(fileNPath);
       this._reexportCache.delete(fileNPath);
       this._collectedCache.delete(fileNPath);
+      this._revDepCache.delete(fileNPath); // ← 자기 자신이 key인 경우도 정리
     }
 
     // _revDepCache는 역방향으로 순회
@@ -249,4 +251,78 @@ export class SdDependencyCache {
 
     return result;
   }
+
+  // ---
+
+  getAffectedFileTree(modifiedNPathSet: Set<TNormPath>): ISdAffectedFileTreeNode[] {
+    const visited = new Set<string>(); // 순환 방지용: file#symbol
+    const nodeMap = new Map<string, ISdAffectedFileTreeNode>(); // 중복 노드 캐시
+
+    const buildTree = (
+      fileNPath: TNormPath,
+      exportSymbol: string | undefined
+    ): ISdAffectedFileTreeNode => {
+      const key = `${fileNPath}#${exportSymbol ?? "*"}`;
+
+      // 동일 노드가 이미 만들어졌다면 재사용
+      if (nodeMap.has(key)) return nodeMap.get(key)!;
+
+      // 방문 기록
+      visited.add(key);
+
+      // 노드 생성 및 캐싱
+      const node: ISdAffectedFileTreeNode = {
+        fileNPath,
+        children: []
+      };
+      nodeMap.set(key, node);
+
+      const revDepInfoMap = this._revDepCache.get(fileNPath);
+      if (!revDepInfoMap) return node;
+
+      for (const [revDepFileNPath, revDepInfo] of revDepInfoMap.entries()) {
+        const hasImportSymbol =
+          exportSymbol == null || revDepInfo === 0 || revDepInfo.has(exportSymbol);
+        if (!hasImportSymbol) continue;
+
+        const nextExportSymbol = exportSymbol != null
+          ? this._convertImportSymbolToExportSymbol(
+            revDepFileNPath,
+            fileNPath,
+            exportSymbol
+          )
+          : undefined;
+
+        const childKey = `${revDepFileNPath}#${nextExportSymbol ?? "*"}`;
+        if (visited.has(childKey)) continue; // 순환 방지
+
+        const childNode = buildTree(revDepFileNPath, nextExportSymbol);
+        node.children.push(childNode);
+      }
+
+      return node;
+    };
+
+    const result: ISdAffectedFileTreeNode[] = [];
+
+    for (const modifiedNPath of modifiedNPathSet) {
+      const exportSymbols = this._getExportSymbols(modifiedNPath);
+      if (exportSymbols.size === 0) {
+        const rootNode = buildTree(modifiedNPath, undefined);
+        result.push(rootNode);
+      } else {
+        for (const symbol of exportSymbols) {
+          const rootNode = buildTree(modifiedNPath, symbol);
+          result.push(rootNode);
+        }
+      }
+    }
+
+    return result;
+  }
+}
+
+export interface ISdAffectedFileTreeNode {
+  fileNPath: TNormPath;
+  children: ISdAffectedFileTreeNode[];
 }

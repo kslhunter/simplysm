@@ -13,7 +13,7 @@ export class SdAutoUpdateService extends SdServiceBase {
     downloadPath: string;
   } | undefined {
     const clientName = arg2 == null ? this.request!.clientName : arg1;
-    const platform = arg2 == null ? arg1 : arg2;
+    const platform = arg2 ?? arg1;
 
     const clientPath = SdServiceServerConfUtils.getClientPath(
       this.server.options.rootPath,

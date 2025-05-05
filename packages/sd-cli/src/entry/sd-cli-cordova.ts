@@ -28,7 +28,7 @@ export class SdCliCordova {
   private _platforms: string[];
   private _npmConfig: INpmConfig;
 
-  constructor(private readonly _opt: { pkgPath: string; config: ISdClientBuilderCordovaConfig }) {
+  constructor(private _opt: { pkgPath: string; config: ISdClientBuilderCordovaConfig }) {
     this._platforms = Object.keys(this._opt.config.platform ?? { browser: {} });
     this._npmConfig = FsUtils.readJson(path.resolve(this._opt.pkgPath, "package.json"));
   }
@@ -46,7 +46,7 @@ export class SdCliCordova {
     }
   }
 
-  public async initializeAsync(): Promise<void> {
+  async initializeAsync(): Promise<void> {
     const cordovaPath = path.resolve(this._opt.pkgPath, this.CORDOVA_DIR_NAME);
 
     // 1. Cordova 프로젝트 초기화
@@ -289,7 +289,7 @@ export class SdCliCordova {
 
     // CONFIG: 파일 새로 쓰기
     const configResultContent = XmlConvert.stringify(configXml, {
-      format: true
+      format: true,
     });
     FsUtils.writeFile(configFilePath, configResultContent);
   }
@@ -435,7 +435,7 @@ export class SdCliCordova {
     configXml.widget.platform.push(androidPlatform);
   }
 
-  public async buildAsync(outPath: string): Promise<void> {
+  async buildAsync(outPath: string): Promise<void> {
     const cordovaPath = path.resolve(this._opt.pkgPath, this.CORDOVA_DIR_NAME);
 
     // 빌드 실행 - 병렬 처리로 개선
@@ -526,7 +526,7 @@ export class SdCliCordova {
     }
   }
 
-  public static async runWebviewOnDeviceAsync(opt: {
+  static async runWebviewOnDeviceAsync(opt: {
     platform: string;
     pkgName: string;
     url?: string

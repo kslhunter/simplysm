@@ -15,11 +15,11 @@ import {DbConnFactory} from "./db-conn.factory";
 export class NodeDbContextExecutor implements IDbContextExecutor {
   private _conn?: IDbConn;
 
-  public constructor(private readonly _config: TDbConnConf) {
+  constructor(private readonly _config: TDbConnConf) {
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await
-  public async getInfoAsync(): Promise<{
+  async getInfoAsync(): Promise<{
     dialect: TDbContextOption["dialect"];
     database?: string;
     schema?: string;
@@ -33,19 +33,19 @@ export class NodeDbContextExecutor implements IDbContextExecutor {
     };
   }
 
-  public async connectAsync(): Promise<void> {
+  async connectAsync(): Promise<void> {
     this._conn = await DbConnFactory.createAsync(this._config);
     await this._conn.connectAsync();
   }
 
-  public async beginTransactionAsync(isolationLevel?: ISOLATION_LEVEL): Promise<void> {
+  async beginTransactionAsync(isolationLevel?: ISOLATION_LEVEL): Promise<void> {
     if (!this._conn) {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
     await this._conn.beginTransactionAsync(isolationLevel);
   }
 
-  public async commitTransactionAsync(): Promise<void> {
+  async commitTransactionAsync(): Promise<void> {
     if (!this._conn) {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
@@ -53,7 +53,7 @@ export class NodeDbContextExecutor implements IDbContextExecutor {
     await this._conn.commitTransactionAsync();
   }
 
-  public async rollbackTransactionAsync(): Promise<void> {
+  async rollbackTransactionAsync(): Promise<void> {
     if (!this._conn) {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
@@ -61,7 +61,7 @@ export class NodeDbContextExecutor implements IDbContextExecutor {
     await this._conn.rollbackTransactionAsync();
   }
 
-  public async closeAsync(): Promise<void> {
+  async closeAsync(): Promise<void> {
     if (!this._conn) {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
@@ -69,7 +69,7 @@ export class NodeDbContextExecutor implements IDbContextExecutor {
     await this._conn.closeAsync();
   }
 
-  public async executeAsync(queries: string[]): Promise<any[][]> {
+  async executeAsync(queries: string[]): Promise<any[][]> {
     if (!this._conn) {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
@@ -77,7 +77,7 @@ export class NodeDbContextExecutor implements IDbContextExecutor {
     return await this._conn.executeAsync(queries);
   }
 
-  public async bulkInsertAsync(tableName: string, columnDefs: IQueryColumnDef[], records: Record<string, any>[]): Promise<void> {
+  async bulkInsertAsync(tableName: string, columnDefs: IQueryColumnDef[], records: Record<string, any>[]): Promise<void> {
     if (!this._conn) {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
@@ -86,7 +86,7 @@ export class NodeDbContextExecutor implements IDbContextExecutor {
   }
 
 
-  public async bulkUpsertAsync(tableName: string, columnDefs: IQueryColumnDef[], records: Record<string, any>[]): Promise<void> {
+  async bulkUpsertAsync(tableName: string, columnDefs: IQueryColumnDef[], records: Record<string, any>[]): Promise<void> {
     if (!this._conn) {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
@@ -94,7 +94,7 @@ export class NodeDbContextExecutor implements IDbContextExecutor {
     await this._conn.bulkUpsertAsync(tableName, columnDefs, records);
   }
 
-  public async executeDefsAsync(defs: TQueryDef[], options?: (IQueryResultParseOption | undefined)[]): Promise<any[][]> {
+  async executeDefsAsync(defs: TQueryDef[], options?: (IQueryResultParseOption | undefined)[]): Promise<any[][]> {
     if (!this._conn) {
       throw new Error("DB에 연결되어있지 않습니다.");
     }

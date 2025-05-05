@@ -9,7 +9,7 @@ import {
 } from "@angular/core";
 import { SdKanbanBoardControl } from "./sd-kanban-board.control";
 import { SdCardControl } from "./sd-card.control";
-import { $computed, $signal } from "../utils/hooks";
+import { $computed, $signal } from "../utils/hooks/hooks";
 import { SdKanbanLaneControl } from "./sd-kanban-lane.control";
 import { injectElementRef } from "../utils/dom/element-ref.injector";
 import { SdEventsDirective } from "../directives/sd-events.directive";
@@ -111,19 +111,19 @@ import { transformBoolean } from "../utils/type-tramsforms";
   },
 })
 export class SdKanbanControl<L, T> {
-  #boardControl = inject<SdKanbanBoardControl<L, T>>(forwardRef(() => SdKanbanBoardControl));
-  #laneControl = inject<SdKanbanLaneControl<L, T>>(forwardRef(() => SdKanbanLaneControl));
-  #elRef = injectElementRef();
+  private _boardControl = inject<SdKanbanBoardControl<L, T>>(forwardRef(() => SdKanbanBoardControl));
+  private _laneControl = inject<SdKanbanLaneControl<L, T>>(forwardRef(() => SdKanbanLaneControl));
+  private _elRef = injectElementRef();
 
   value = input.required<T>();
 
-  laneValue = $computed(() => this.#laneControl.value());
+  laneValue = $computed(() => this._laneControl.value());
 
   selectable = input(false, { transform: transformBoolean });
   draggable = input(false, { transform: transformBoolean });
 
-  selected = $computed(() => this.#boardControl.selectedValues().includes(this.value()));
-  dragKanban = $computed(() => this.#boardControl.dragKanban());
+  selected = $computed(() => this._boardControl.selectedValues().includes(this.value()));
+  dragKanban = $computed(() => this._boardControl.dragKanban());
 
   contentClass = input<string>();
 
@@ -141,7 +141,7 @@ export class SdKanbanControl<L, T> {
       event.preventDefault();
       event.stopPropagation();
 
-      this.#boardControl.selectedValues.update((v) => {
+      this._boardControl.selectedValues.update((v) => {
         const r = [...v];
         if (v.includes(this.value())) {
           r.remove(this.value());
@@ -163,12 +163,12 @@ export class SdKanbanControl<L, T> {
   onCardDragStart() {
     if (!this.draggable()) return;
 
-    this.heightOnDrag.set(this.#elRef.nativeElement.offsetHeight);
-    this.#boardControl.dragKanban.set(this);
+    this.heightOnDrag.set(this._elRef.nativeElement.offsetHeight);
+    this._boardControl.dragKanban.set(this);
   }
 
   onDragOver(event: DragEvent) {
-    if (this.#boardControl.dragKanban() == null) return;
+    if (this._boardControl.dragKanban() == null) return;
 
     event.preventDefault();
     event.stopPropagation();
@@ -184,13 +184,13 @@ export class SdKanbanControl<L, T> {
   }
 
   onDragDrop(event: DragEvent) {
-    if (this.#boardControl.dragKanban() == null) return;
+    if (this._boardControl.dragKanban() == null) return;
     this.dragOvered.set(false);
 
     event.preventDefault();
     event.stopPropagation();
 
-    this.#boardControl.onDropTo(this);
+    this._boardControl.onDropTo(this);
   }
 
   @HostListener("document:drop.capture")

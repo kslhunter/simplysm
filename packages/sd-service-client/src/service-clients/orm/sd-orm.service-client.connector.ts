@@ -4,10 +4,10 @@ import {DbContext} from "@simplysm/sd-orm-common";
 import {SdServiceClient} from "../../sd-service-client";
 
 export class SdOrmServiceClientConnector {
-  public constructor(private readonly _serviceClient: SdServiceClient) {
+  constructor(private readonly _serviceClient: SdServiceClient) {
   }
 
-  public async connectAsync<T extends DbContext, R>(config: ISdOrmServiceConnectConfig<T>,
+  async connectAsync<T extends DbContext, R>(config: ISdOrmServiceConnectConfig<T>,
                                                     callback: (conn: T) => Promise<R> | R): Promise<R> {
     const executor = new SdOrmServiceClientDbContextExecutor(this._serviceClient, config.connOpt);
     const info = await executor.getInfoAsync();
@@ -19,7 +19,7 @@ export class SdOrmServiceClientConnector {
     return await db.connectAsync(async () => await callback(db));
   }
 
-  public async connectWithoutTransactionAsync<T extends DbContext, R>(config: ISdOrmServiceConnectConfig<T>,
+  async connectWithoutTransactionAsync<T extends DbContext, R>(config: ISdOrmServiceConnectConfig<T>,
                                                                       callback: (conn: T) => Promise<R> | R): Promise<R> {
     const executor = new SdOrmServiceClientDbContextExecutor(this._serviceClient, config.connOpt);
     const info = await executor.getInfoAsync();

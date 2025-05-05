@@ -9,7 +9,7 @@ import {
 } from "@angular/core";
 import { SD_MODAL_INPUT, SdModalBase, SdModalProvider } from "../providers/sd-modal.provider";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
-import { $computed, $model } from "../utils/hooks";
+import { $computed, $model } from "../utils/hooks/hooks";
 import { transformBoolean } from "../utils/type-tramsforms";
 import { TSelectValue } from "../controls/sd-select-control";
 import { SdAdditionalButtonControl } from "../controls/sd-additional-button.control";
@@ -33,7 +33,7 @@ import { SdInvalidDirective } from "../directives/sd-invalid.directive";
   template: `
     <sd-additional-button
       [inset]="inset()" [size]="size()"
-      [sd-invalid]="required() && !_value() ? '값을 입력하세요.' : undefined"
+      [sd-invalid]="required() && !__value() ? '값을 입력하세요.' : undefined"
     >
       <ng-content />
 
@@ -64,13 +64,13 @@ export class SdSelectModalButtonControl<
   TMODAL extends SdModalBase<ISelectModalInputParam, ISelectModalOutputResult>,
   M extends keyof TSelectValue<any>,
 > {
-  icons = inject(SdAngularConfigProvider).icons;
+  protected icons = inject(SdAngularConfigProvider).icons;
 
-  #sdModal = inject(SdModalProvider);
+  private _sdModal = inject(SdModalProvider);
 
-  _value = input<TSelectValue<number | undefined>[M] | undefined>(undefined, { alias: "value" });
-  _valueChange = output<TSelectValue<number | undefined>[M] | undefined>({ alias: "valueChange" });
-  value = $model(this._value, this._valueChange);
+  __value = input<TSelectValue<number | undefined>[M] | undefined>(undefined, { alias: "value" });
+  __valueChange = output<TSelectValue<number | undefined>[M] | undefined>({ alias: "valueChange" });
+  value = $model(this.__value, this.__valueChange);
 
   disabled = input(false, { transform: transformBoolean });
   required = input(false, { transform: transformBoolean });
@@ -94,7 +94,7 @@ export class SdSelectModalButtonControl<
 
     if (!this.modalType()) return;
 
-    const result = await this.#sdModal.showAsync(
+    const result = await this._sdModal.showAsync(
       this.modalType()!,
       this.modalHeader() ?? "자세히...",
       {

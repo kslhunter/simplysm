@@ -19,28 +19,41 @@ export class SdServiceClient extends EventEmitter {
   websocketUrl: string;
   serverUrl: string;
   reconnectCount = 0;
-  readonly #id = Uuid.new().toString();
-  readonly #ws: SdWebSocket;
-  readonly #eventListenerInfoMap = new Map<string, { name: string; info: any }>();
+  private _id = Uuid.new().toString();
+  private _ws: SdWebSocket;
+  private _eventListenerInfoMap = new Map<string, { name: string; info: any }>();
 
   constructor(
-    public readonly name: string,
-    public readonly options: ISdServiceClientConnectionConfig,
+    readonly name: string,
+    readonly options: ISdServiceClientConnectionConfig,
   ) {
     super();
 
-    this.websocketUrl = `${this.options.ssl ? "wss" : "ws"}://${this.options.host}:${this.options.port}`;
-    this.serverUrl = `${this.options.ssl ? "https" : "http"}://${this.options.host}:${this.options.port}`;
-    this.#ws = new SdWebSocket(this.websocketUrl);
+    this.websocketUrl = `${this.options.ssl
+      ? "wss"
+      : "ws"}://${this.options.host}:${this.options.port}`;
+    this.serverUrl = `${this.options.ssl
+      ? "https"
+      : "http"}://${this.options.host}:${this.options.port}`;
+    this._ws = new SdWebSocket(this.websocketUrl);
   }
 
   get connected(): boolean {
-    return this.#ws.connected && this.isConnected;
+    return this._ws.connected && this.isConnected;
   }
 
-  override on(event: "request-progress", listener: (state: ISdServiceClientRequestProgressState) => void): this;
-  override on(event: "response-progress", listener: (state: ISdServiceClientResponseProgressState) => void): this;
-  override on(event: "state-change", listener: (state: "connected" | "closed" | "reconnect") => void): this;
+  override on(
+    event: "request-progress",
+    listener: (state: ISdServiceClientRequestProgressState) => void,
+  ): this;
+  override on(
+    event: "response-progress",
+    listener: (state: ISdServiceClientResponseProgressState) => void,
+  ): this;
+  override on(
+    event: "state-change",
+    listener: (state: "connected" | "closed" | "reconnect") => void,
+  ): this;
   override on(event: string | symbol, listener: (...args: any[]) => void): this {
     return super.on(event, listener);
   }
@@ -49,20 +62,25 @@ export class SdServiceClient extends EventEmitter {
     if (this.isConnected) return;
 
     await new Promise<void>(async (resolve, reject) => {
-      this.#ws.on("message", async (msgJson) => {
+      this._ws.on("message", async (msgJson) => {
         const msg = JsonConvert.parse(msgJson) as TSdServiceS2CMessage;
         if (typeof location !== "undefined" && msg.name === "client-reload") {
           console.log("클라이언트 RELOAD 명령 수신");
           location.reload();
-        } else if (msg.name === "client-get-id") {
-          const resMsg: TSdServiceC2SMessage = { name: "client-get-id-response", body: this.#id };
-          await this.#ws.sendAsync(JsonConvert.stringify(resMsg));
-        } else if (msg.name === "connected") {
+        }
+        else if (msg.name === "client-get-id") {
+          const resMsg: TSdServiceC2SMessage = { name: "client-get-id-response", body: this._id };
+          await this._ws.sendAsync(JsonConvert.stringify(resMsg));
+        }
+        else if (msg.name === "connected") {
           this.emit("state-change", "success");
           this.isConnected = true;
 
-          for (const entry of this.#eventListenerInfoMap.entries()) {
-            await this.#sendCommandAsync("addEventListener", [entry[0], entry[1].name, entry[1].info]);
+          for (const entry of this._eventListenerInfoMap.entries()) {
+            await this.#sendCommandAsync(
+              "addEventListener",
+              [entry[0], entry[1].name, entry[1].info],
+            );
           }
 
           resolve();
@@ -75,10 +93,12 @@ export class SdServiceClient extends EventEmitter {
         if (!this.options.useReconnect) {
           console.error("WebSocket 연결이 끊겼습니다. 연결상태를 확인하세요.");
           return;
-        } else if (this.reconnectCount > 100) {
+        }
+        else if (this.reconnectCount > 100) {
           console.error("연결이 너무 오래 끊겨있습니다. 연결상태 확인 후, 화면을 새로고침하세요.");
           return;
-        } else {
+        }
+        else {
           this.reconnectCount++;
           await Wait.time(2000);
         }
@@ -89,24 +109,26 @@ export class SdServiceClient extends EventEmitter {
         }
 
         try {
-          await this.#ws.connectAsync();
+          await this._ws.connectAsync();
 
           console.log("WebSocket 재연결 성공");
-        } catch (err) {
+        }
+        catch (err) {
           console.error("WebSocket 재연결 실패", err);
           // browser에서 에러로 connect를 못한 경우에도, "close" 이벤트가 뜨므로, 아래 코드 주석처리
           /*await reconnectFn();*/
         }
       };
 
-      this.#ws.on("close", async () => {
+      this._ws.on("close", async () => {
         this.isConnected = false;
 
         if (this.isManualClose) {
           this.emit("state-change", "closed");
           console.warn("WebSocket 연결 끊김");
           this.isManualClose = false;
-        } else {
+        }
+        else {
           this.emit("state-change", "reconnect");
           console.warn("WebSocket 연결 끊김 (재연결 시도)");
           await reconnectFn();
@@ -114,8 +136,9 @@ export class SdServiceClient extends EventEmitter {
       });
 
       try {
-        await this.#ws.connectAsync();
-      } catch (err) {
+        await this._ws.connectAsync();
+      }
+      catch (err) {
         reject(err);
       }
     });
@@ -123,7 +146,7 @@ export class SdServiceClient extends EventEmitter {
 
   async closeAsync(): Promise<void> {
     this.isManualClose = true;
-    await this.#ws.closeAsync();
+    await this._ws.closeAsync();
   }
 
   async sendAsync(serviceName: string, methodName: string, params: any[]): Promise<any> {
@@ -140,7 +163,7 @@ export class SdServiceClient extends EventEmitter {
     }
 
     const key = Uuid.new().toString();
-    this.#ws.on(`message`, async (msgJson: string) => {
+    this._ws.on(`message`, async (msgJson: string) => {
       const msg = JsonConvert.parse(msgJson) as TSdServiceS2CMessage;
       if (msg.name !== "event") return;
       if (msg.key !== key) return;
@@ -150,7 +173,7 @@ export class SdServiceClient extends EventEmitter {
 
     await this.#sendCommandAsync("addEventListener", [key, eventListenerType.name, info]);
 
-    this.#eventListenerInfoMap.set(key, {
+    this._eventListenerInfoMap.set(key, {
       name: eventListenerType.name,
       info,
     });
@@ -167,7 +190,8 @@ export class SdServiceClient extends EventEmitter {
       key: string;
       info: T["info"];
     }[] = await this.#sendCommandAsync("getEventListenerInfos", [eventType.name]);
-    const targetListenerKeys = listenerInfos.filter((item) => infoSelector(item.info)).map((item) => item.key);
+    const targetListenerKeys = listenerInfos.filter((item) => infoSelector(item.info))
+      .map((item) => item.key);
 
     await this.#sendCommandAsync("emitEvent", [targetListenerKeys, data]);
   }
@@ -175,7 +199,7 @@ export class SdServiceClient extends EventEmitter {
   async removeEventListenerAsync(key: string): Promise<void> {
     await this.#sendCommandAsync("removeEventListener", [key]);
 
-    this.#eventListenerInfoMap.delete(key);
+    this._eventListenerInfoMap.delete(key);
   }
 
   async downloadFileBufferAsync(relPath: string): Promise<Buffer> {
@@ -187,7 +211,8 @@ export class SdServiceClient extends EventEmitter {
       xhr.onload = () => {
         if (xhr.status === 200) {
           resolve(Buffer.from(xhr.response));
-        } else {
+        }
+        else {
           reject(new Error(xhr.status.toString()));
         }
       };
@@ -213,15 +238,27 @@ export class SdServiceClient extends EventEmitter {
 
       const reqText = JsonConvert.stringify(req);
 
-      const splitResInfo: { completedSize: number; data: string[] } = { completedSize: 0, data: [] };
+      const splitResInfo: { completedSize: number; data: string[] } = {
+        completedSize: 0,
+        data: [],
+      };
       const msgFn = (msgJson: string): void => {
         const msg = JsonConvert.parse(msgJson) as TSdServiceS2CMessage;
-        if (msg.name !== "response" && msg.name !== "response-for-split" && msg.name !== "response-split") return;
+        if (msg.name
+          !== "response"
+          && msg.name
+          !== "response-for-split"
+          && msg.name
+          !== "response-split") return;
         if (msg.reqUuid !== uuid) return;
 
         if (msg.name === "response-for-split") {
-          this.emit("request-progress", { uuid, fullSize: reqText.length, completedSize: msg.completedSize });
-        } else if (msg.name === "response-split") {
+          this.emit(
+            "request-progress",
+            { uuid, fullSize: reqText.length, completedSize: msg.completedSize },
+          );
+        }
+        else if (msg.name === "response-split") {
           splitResInfo.data[msg.index] = msg.body;
           splitResInfo.completedSize += msg.body.length;
           const isCompleted = splitResInfo.completedSize === msg.fullSize;
@@ -235,7 +272,7 @@ export class SdServiceClient extends EventEmitter {
           if (isCompleted) {
             const res = JsonConvert.parse(splitResInfo.data.join("")) as ISdServiceResponse;
 
-            this.#ws.off("message", msgFn);
+            this._ws.off("message", msgFn);
 
             if (res.state === "error") {
               reject(new Error(res.body));
@@ -244,8 +281,9 @@ export class SdServiceClient extends EventEmitter {
 
             resolve(res.body);
           }
-        } else {
-          this.#ws.off("message", msgFn);
+        }
+        else {
+          this._ws.off("message", msgFn);
 
           if (msg.state === "error") {
             reject(new Error(msg.body));
@@ -255,7 +293,7 @@ export class SdServiceClient extends EventEmitter {
           resolve(msg.body);
         }
       };
-      this.#ws.on(`message`, msgFn);
+      this._ws.on(`message`, msgFn);
 
       if (reqText.length > 3 * 1000 * 1000) {
         this.emit("request-progress", { uuid, fullSize: reqText.length, completedSize: 0 });
@@ -273,12 +311,13 @@ export class SdServiceClient extends EventEmitter {
             index,
             body: splitBody,
           };
-          await this.#ws.sendAsync(JsonConvert.stringify(splitReq));
+          await this._ws.sendAsync(JsonConvert.stringify(splitReq));
           currSize += splitBody.length;
           index++;
         }
-      } else {
-        await this.#ws.sendAsync(reqText);
+      }
+      else {
+        await this._ws.sendAsync(reqText);
       }
     });
   }

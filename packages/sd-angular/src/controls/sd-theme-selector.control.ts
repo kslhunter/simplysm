@@ -12,7 +12,7 @@ import { SdListItemControl } from "./sd-list-item.control";
 import { SdThemeProvider } from "../providers/sd-theme.provider";
 import { SdDropdownPopupControl } from "./sd-dropdown-popup.control";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
-import { $effect } from "../utils/hooks";
+import { $effect } from "../utils/hooks/hooks";
 import { SdIconControl } from "./sd-icon.control";
 
 @Component({
@@ -59,14 +59,14 @@ import { SdIconControl } from "./sd-icon.control";
   `,
 })
 export class SdThemeSelectorControl {
-  icons = inject(SdAngularConfigProvider).icons;
+ protected icons = inject(SdAngularConfigProvider).icons;
 
-  #sdTheme = inject(SdThemeProvider);
+  private _sdTheme = inject(SdThemeProvider);
 
   dropdownControl = viewChild.required(SdDropdownControl);
 
-  theme = this.#sdTheme.theme;
-  dark = this.#sdTheme.dark;
+  theme = this._sdTheme.theme;
+  dark = this._sdTheme.dark;
 
   isDev = process.env["NODE_ENV"] === "development";
 

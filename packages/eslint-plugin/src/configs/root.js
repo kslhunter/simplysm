@@ -27,6 +27,14 @@ export default [
       // 기본
       "no-console": ["warn"],
       "no-warning-comments": ["warn"],
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'PropertyDefinition[key.type="PrivateIdentifier"]',
+          message: 'Do not use ECMAScript private fields (e.g. #myField); use TypeScript "private" instead.',
+        },
+      ],
+      "eqeqeq": ["error", "always", { "null": "ignore" }],
 
       "require-await": ["error"],
       // "semi": ["error"],
@@ -59,6 +67,14 @@ export default [
       // 기본
       "no-console": ["warn"],
       "no-warning-comments": ["warn"],
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'PropertyDefinition[key.type="PrivateIdentifier"]',
+          message: 'Do not use ECMAScript private fields (e.g. #myField); use TypeScript "private" instead.',
+        },
+      ],
+      "eqeqeq": ["error", "always", { "null": "ignore" }],
 
       // 타입스크립트
       "@typescript-eslint/require-await": ["error"],
@@ -85,6 +101,20 @@ export default [
         },
       ],
       "@typescript-eslint/prefer-ts-expect-error": ["error"],
+      "@typescript-eslint/explicit-member-accessibility": [
+        "error",
+        {
+          "accessibility": "no-public",
+        },
+      ],
+      "@typescript-eslint/prefer-nullish-coalescing": [
+        "error",
+        {
+          "ignoreIfStatements": true,
+          // "ignoreConditionalTests": true,
+          // "ignoreTernaryTests": true,
+        },
+      ],
 
       // import
       "import/no-extraneous-dependencies": ["error"], // 느림

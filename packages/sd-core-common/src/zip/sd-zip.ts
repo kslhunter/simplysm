@@ -7,25 +7,25 @@ import {
 } from "@zip.js/zip.js";
 
 export class SdZip {
-  #reader?: ZipReader<Blob | Uint8Array>;
+  private _reader?: ZipReader<Blob | Uint8Array>;
 
-  #cache = new Map<string, Uint8Array | undefined>();
+  private _cache = new Map<string, Uint8Array | undefined>();
 
   constructor(data?: Blob | Uint8Array) {
     if (!data) return;
 
     if (data instanceof Uint8Array) {
-      this.#reader = new ZipReader(new Uint8ArrayReader(data));
+      this._reader = new ZipReader(new Uint8ArrayReader(data));
     }
     else {
-      this.#reader = new ZipReader(new BlobReader(data));
+      this._reader = new ZipReader(new BlobReader(data));
     }
   }
 
   async extractAllAsync(progressCallback?: (progress: IProgress) => void) {
-    if (!this.#reader) return this.#cache;
+    if (!this._reader) return this._cache;
 
-    const entries = await this.#reader.getEntries();
+    const entries = await this._reader.getEntries();
 
     // 1. 압축 해제 대상 크기 총합 계산
     const totalSize = entries
@@ -42,7 +42,7 @@ export class SdZip {
         extractedSize: totalExtracted,
       });
 
-      const entryBytes = this.#cache.get(entry.filename)
+      const entryBytes = this._cache.get(entry.filename)
         ?? await entry.getData!(new Uint8ArrayWriter(), {
           onprogress: (extracted) => {
             const currentTotal = totalExtracted + extracted;
@@ -57,7 +57,7 @@ export class SdZip {
           },
         });
 
-      this.#cache.set(entry.filename, entryBytes);
+      this._cache.set(entry.filename, entryBytes);
 
       // 3. 개별 파일이 끝나면 누적 처리
       totalExtracted += entry.uncompressedSize;
@@ -69,24 +69,24 @@ export class SdZip {
       });
     }
 
-    return this.#cache;
+    return this._cache;
   }
 
   async getAsync(fileName: string) {
-    if (this.#cache.has(fileName)) {
-      return this.#cache.get(fileName);
+    if (this._cache.has(fileName)) {
+      return this._cache.get(fileName);
     }
 
-    if (!this.#reader) {
-      this.#cache.set(fileName, undefined);
+    if (!this._reader) {
+      this._cache.set(fileName, undefined);
       return undefined;
     }
 
-    const entries = await this.#reader.getEntries();
+    const entries = await this._reader.getEntries();
 
     const entry = entries.single(item => item.filename === fileName);
     if (!entry) {
-      this.#cache.set(fileName, undefined);
+      this._cache.set(fileName, undefined);
       return undefined;
     }
 
@@ -94,7 +94,7 @@ export class SdZip {
   }
 
   write(fileName: string, bytes: Uint8Array) {
-    this.#cache.set(fileName, bytes);
+    this._cache.set(fileName, bytes);
   }
 
   async compressAsync() {
@@ -110,7 +110,7 @@ export class SdZip {
   }
 
   async closeAsync() {
-    await this.#reader?.close();
+    await this._reader?.close();
   }
 }
 

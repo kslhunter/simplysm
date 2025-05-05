@@ -54,7 +54,8 @@ ${diff}`,
       "\n-------------------------\n\n",
     );
 
-    const messages = message.content[0].text.replaceAll(/"/g, '\\"').matchAll(/```(?:\w*\n)?([\s\S]*?)```/g);
+    const messages = message.content[0].text.replaceAll(/"/g, "\\\"")
+      .matchAll(/```(?:\w*\n)?([\s\S]*?)```/g);
     const commitMessage = Array.from(messages)
       .map(item => item[1].trim())
       .join("\n\n\n");

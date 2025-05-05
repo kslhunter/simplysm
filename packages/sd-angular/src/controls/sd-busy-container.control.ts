@@ -7,7 +7,7 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import { SdBusyProvider } from "../providers/sd-busy.provider";
-import { $computed } from "../utils/hooks";
+import { $computed } from "../utils/hooks/hooks";
 import { transformBoolean, transformNullableBoolean } from "../utils/type-tramsforms";
 
 @Component({
@@ -74,11 +74,11 @@ import { transformBoolean, transformNullableBoolean } from "../utils/type-tramsf
 
           backdrop-filter: none;
           transition: backdrop-filter calc(var(--animation-duration) * 10);
-          
+
           //background: rgba(255, 255, 255, 0.1);
           //opacity: 0;
           //transition: opacity calc(var(--animation-duration) * 2);
-          
+
           transition-timing-function: linear;
 
           > ._progress {
@@ -364,7 +364,7 @@ import { transformBoolean, transformNullableBoolean } from "../utils/type-tramsf
   },
 })
 export class SdBusyContainerControl {
-  #sdBusy = inject(SdBusyProvider);
+  private _sdBusy = inject(SdBusyProvider);
 
   busy = input(false, { transform: transformBoolean });
   message = input<string>();
@@ -374,8 +374,8 @@ export class SdBusyContainerControl {
   noIndicator = input(false, { transform: transformBoolean });
   progressPercent = input<number>();
 
-  currType = $computed(() => this.type() ?? this.#sdBusy.type());
-  currNoFade = $computed(() => this.noFade() ?? this.#sdBusy.noFade());
+  currType = $computed(() => this.type() ?? this._sdBusy.type());
+  currNoFade = $computed(() => this.noFade() ?? this._sdBusy.noFade());
 
   @HostListener("keydown.capture", ["$event"])
   onKeydownCapture(event: KeyboardEvent) {

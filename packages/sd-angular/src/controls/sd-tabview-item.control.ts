@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, forwardRef, inject, input, ViewEncapsulation } from "@angular/core";
 import { SdTabviewControl } from "./sd-tabview.control";
-import { $computed } from "../utils/hooks";
+import { $computed } from "../utils/hooks/hooks";
 
 @Component({
   selector: "sd-tabview-item",

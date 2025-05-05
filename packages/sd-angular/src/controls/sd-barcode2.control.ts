@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
 import bwipjs from "bwip-js";
-import { $effect } from "../utils/hooks";
+import { $effect } from "../utils/hooks/hooks";
 import { injectElementRef } from "../utils/dom/element-ref.injector";
 
 @Component({
@@ -12,14 +12,14 @@ import { injectElementRef } from "../utils/dom/element-ref.injector";
   template: ``,
 })
 export class SdBarcode2Control {
-  #elRef = injectElementRef<HTMLElement>();
+  _elRef = injectElementRef<HTMLElement>();
 
   type = input.required<TBarcodeType>();
   value = input<string>();
 
   constructor() {
     $effect(() => {
-      this.#elRef.nativeElement.innerHTML = bwipjs.toSVG({
+      this._elRef.nativeElement.innerHTML = bwipjs.toSVG({
         bcid: this.type(),
         text: this.value() ?? "",
       });

@@ -10,7 +10,7 @@ import {
 } from "@angular/core";
 import { SdFormBoxControl } from "./sd-form-box.control";
 import { NgTemplateOutlet } from "@angular/common";
-import { $computed } from "../utils/hooks";
+import { $computed } from "../utils/hooks/hooks";
 
 @Component({
   selector: "sd-form-box-item",
@@ -145,16 +145,16 @@ import { $computed } from "../utils/hooks";
   },
 })
 export class SdFormBoxItemControl {
-  #parentControl = inject<SdFormBoxControl>(forwardRef(() => SdFormBoxControl));
+  private _parentControl = inject<SdFormBoxControl>(forwardRef(() => SdFormBoxControl));
 
   label = input<string>();
   labelTooltip = input<string>();
 
   labelTemplateRef = contentChild<any, TemplateRef<void>>("label", { read: TemplateRef });
 
-  labelAlign = $computed(() => this.#parentControl.labelAlign());
-  layout = $computed(() => this.#parentControl.layout());
+  labelAlign = $computed(() => this._parentControl.labelAlign());
+  layout = $computed(() => this._parentControl.layout());
   labelWidth = $computed(() =>
-    this.#parentControl.layout() === "table" ? this.#parentControl.labelWidth() : undefined,
+    this._parentControl.layout() === "table" ? this._parentControl.labelWidth() : undefined,
   );
 }

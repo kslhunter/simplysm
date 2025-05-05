@@ -14,7 +14,7 @@ import { ISharedDataBase } from "./sd-shared-data.provider";
 import { SD_MODAL_INPUT, SdModalBase } from "../../providers/sd-modal.provider";
 import { TSelectValue } from "../../controls/sd-select-control";
 import { transformBoolean } from "../../utils/type-tramsforms";
-import { $effect, $signal } from "../../utils/hooks";
+import { $effect, $signal } from "../../utils/hooks/hooks";
 import {
   SdItemOfTemplateContext,
   SdItemOfTemplateDirective,

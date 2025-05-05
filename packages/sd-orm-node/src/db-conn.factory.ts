@@ -1,7 +1,7 @@
 import {IDbConn, TDbConnConf} from "@simplysm/sd-orm-common";
 
 export class DbConnFactory {
-  public static async createAsync(config: TDbConnConf): Promise<IDbConn> {
+  static async createAsync(config: TDbConnConf): Promise<IDbConn> {
     if (config.dialect === "sqlite") {
       const sqlite = await import("@simplysm/sd-orm-node-sqlite");
       return new sqlite.SqliteDbConn(config);

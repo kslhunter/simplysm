@@ -4,11 +4,9 @@ import {
   effect,
   EffectCleanupRegisterFn,
   EffectRef,
-  inject,
   InputSignal,
   InputSignalWithTransform,
   OutputEmitterRef,
-  reflectComponentType,
   Signal,
   signal,
   untracked,
@@ -21,47 +19,7 @@ import {
   runPostSignalSetFn,
   SIGNAL,
 } from "@angular/core/primitives/signals";
-import { ActivatedRoute, CanDeactivateFn, Route } from "@angular/router";
 import { ObjectUtils, TArrayDiffs2Result } from "@simplysm/sd-core-common";
-import { injectElementRef } from "./dom/element-ref.injector";
-import { SdActivatedModalProvider } from "../providers/sd-modal.provider";
-
-const initializedRouteConfigSet = new Set<Route>();
-
-export function canDeactivate(fn: () => boolean) {
-  const activatedRoute = inject(ActivatedRoute, { optional: true });
-  const activatedModal = inject(SdActivatedModalProvider, { optional: true });
-  const elRef = injectElementRef();
-  // const injector = inject(Injector);
-
-  if (activatedModal) {
-    activatedModal.canDeactivefn = fn;
-  }
-  else if (activatedRoute) {
-    if (!activatedRoute.routeConfig) return;
-    if (
-      reflectComponentType(activatedRoute.component as any)?.selector !==
-      elRef.nativeElement.tagName.toLowerCase()
-    ) {
-      return;
-    }
-
-    if (!initializedRouteConfigSet.has(activatedRoute.routeConfig)) {
-      initializedRouteConfigSet.add(activatedRoute.routeConfig);
-
-      const canDeactivateFn: CanDeactivateFn<{ __sdCanDeactivate__(): boolean }> = (component) => {
-        return fn();
-        // return component.__sdCanDeactivate__();
-      };
-      activatedRoute.routeConfig.canDeactivate = [canDeactivateFn];
-    }
-  }
-
-  // requestAnimationFrame(() => {
-  //   const comp = injector["_lView"][8];
-  //   comp["__sdCanDeactivate__"] = fn;
-  // });
-}
 
 export interface SdWritableSignal<T> extends WritableSignal<T> {
   $mark(): void;
@@ -86,7 +44,7 @@ export function $effect(
   arg2?: (onCleanup: EffectCleanupRegisterFn) => void,
 ): EffectRef {
   const sigs = (arg2 ? arg1 : undefined) as Signal<any>[] | undefined;
-  const fn = (arg2 ? arg2 : arg1) as (onCleanup: EffectCleanupRegisterFn) => void | Promise<void>;
+  const fn = (arg2 ?? arg1) as (onCleanup: EffectCleanupRegisterFn) => void | Promise<void>;
 
   if (sigs) {
     return effect(
@@ -118,7 +76,7 @@ export function $afterRenderEffect(
   arg2?: (onCleanup: EffectCleanupRegisterFn) => void,
 ): EffectRef {
   const sigs = (arg2 ? arg1 : undefined) as Signal<any>[] | undefined;
-  const fn = (arg2 ? arg2 : arg1) as (onCleanup: EffectCleanupRegisterFn) => void | Promise<void>;
+  const fn = (arg2 ?? arg1) as (onCleanup: EffectCleanupRegisterFn) => void | Promise<void>;
 
   if (sigs) {
     return afterRenderEffect(

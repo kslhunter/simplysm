@@ -7,7 +7,7 @@ export class NotImplementError extends SdError {
   /**
    * @param message 도움 출력 메시지
    */
-  public constructor(message?: string) {
+  constructor(message?: string) {
     super("구현되어있지 않습니다" + (message !== undefined ? ": " + message : ""));
   }
 }

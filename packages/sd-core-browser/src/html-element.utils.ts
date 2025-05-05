@@ -1,5 +1,5 @@
 export class HtmlElementUtils {
-  public static async getBoundsAsync(els: HTMLElement[]): Promise<{
+  static async getBoundsAsync(els: HTMLElement[]): Promise<{
     target: HTMLElement;
     top: number;
     left: number;

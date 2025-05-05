@@ -4,16 +4,16 @@ import { PathUtils, TNormPath } from "./path.utils";
 import { WatcherOptions } from "watcher/dist/types";
 
 export class SdFsWatcher {
-  public static watch(paths: string[], options?: WatcherOptions): SdFsWatcher {
+  static watch(paths: string[], options?: WatcherOptions): SdFsWatcher {
     return new SdFsWatcher(paths, options);
   }
 
-  #watcher: Watcher;
-  #watchPathSet: Set<string>;
+  private _watcher: Watcher;
+  private _watchPathSet: Set<string>;
 
   private constructor(paths: string[], options?: WatcherOptions) {
-    this.#watchPathSet = new Set<string>(paths);
-    this.#watcher = new Watcher(Array.from(this.#watchPathSet.values()), {
+    this._watchPathSet = new Set<string>(paths);
+    this._watcher = new Watcher(Array.from(this._watchPathSet.values()), {
       recursive: true,
       ignoreInitial: true,
       persistent: true,
@@ -21,18 +21,26 @@ export class SdFsWatcher {
     });
   }
 
-  onChange(opt: { delay?: number }, cb: (changeInfos: ISdFsWatcherChangeInfo[]) => void | Promise<void>): this {
+  onChange(
+    opt: { delay?: number },
+    cb: (changeInfos: ISdFsWatcherChangeInfo[]) => void | Promise<void>,
+  ): this {
     const fnQ = new AsyncFnQueue();
 
     let changeInfoMap = new Map<string, TTargetEvent>();
 
-    this.#watcher.on("all", (event: TTargetEvent, filePath: string) => {
+    this._watcher.on("all", (event: TTargetEvent, filePath: string) => {
       const prevEvent = changeInfoMap.getOrCreate(filePath, event);
       if (prevEvent === "add" && event === "change") {
         changeInfoMap.set(filePath, "add" as TTargetEvent);
-      } else if ((prevEvent === "add" && event === "unlink") || (prevEvent === "addDir" && event === "unlinkDir")) {
+      }
+      else if ((prevEvent === "add" && event === "unlink") || (prevEvent
+        === "addDir"
+        && event
+        === "unlinkDir")) {
         changeInfoMap.delete(filePath);
-      } else {
+      }
+      else {
         changeInfoMap.set(filePath, event);
       }
 
@@ -55,7 +63,7 @@ export class SdFsWatcher {
   }
 
   close() {
-    this.#watcher.close();
+    this._watcher.close();
   }
 }
 

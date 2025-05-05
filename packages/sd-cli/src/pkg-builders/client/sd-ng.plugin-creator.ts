@@ -2,7 +2,7 @@ import esbuild from "esbuild";
 import path from "path";
 import os from "os";
 import { JavaScriptTransformer } from "@angular/build/src/tools/esbuild/javascript-transformer";
-import { PathUtils, SdLogger, TNormPath } from "@simplysm/sd-core-node";
+import { PathUtils, SdLogger, SdLoggerSeverity, TNormPath } from "@simplysm/sd-core-node";
 import { SdCliPerformanceTimer } from "../../utils/sd-cli-performance-time";
 import { SdCliConvertMessageUtils } from "../../utils/sd-cli-convert-message.utils";
 import { ISdCliNgPluginResultCache } from "../../types/build-plugin.types";
@@ -16,24 +16,12 @@ export function createSdNgPlugin(conf: {
   result: ISdCliNgPluginResultCache;
   watchScopePaths: TNormPath[];
 }): esbuild.Plugin {
-  /*let webWorkerResultMap = new Map<
-    TNormPath,
-    {
-      outputFiles: esbuild.OutputFile[];
-      metafile?: esbuild.Metafile;
-      errors?: esbuild.Message[];
-      warnings?: esbuild.Message[];
-    }
-  >();*/
-
-  // let workerRevDepMap = new Map<TNormPath, Set<TNormPath>>();
-
   let perf: SdCliPerformanceTimer;
   const logger = SdLogger.get(["simplysm", "sd-cli", "createSdNgPlugin"]);
 
-  function debug(...msg: any[]): void {
-    logger.debug(`[${path.basename(conf.pkgPath)}]`, ...msg);
-  }
+  const log = (severity: Exclude<keyof typeof SdLoggerSeverity, "none">, ...msg: any[]) => {
+    logger[severity](`[${path.basename(conf.pkgPath)}]`, ...msg);
+  };
 
   return {
     name: "sd-ng-compile",
@@ -44,64 +32,11 @@ export function createSdNgPlugin(conf: {
         isDevMode: conf.dev,
         isForBundle: true,
         watchScopePaths: conf.watchScopePaths,
-        /*processWebWorker: (workerFile, containingFile) => {
-          const fullWorkerPath = path.join(path.dirname(containingFile), workerFile);
-          const workerResult = build.esbuild.buildSync({
-            ...build.initialOptions,
-            platform: "browser",
-            write: false,
-            bundle: true,
-            metafile: true,
-            format: "esm",
-            entryNames: "worker-[hash]",
-            entryPoints: [fullWorkerPath],
-            supported: undefined,
-            plugins: undefined,
-            // plugins: build.initialOptions.plugins?.filter((item) => item.name !== "sd-ng-compile"),
-          });
-
-          const dependencySet = new Set<TNormPath>();
-
-          if (workerResult.errors.length > 0) {
-            dependencySet.adds(
-              ...workerResult.errors
-                .map((error) => error.location?.file)
-                .filterExists()
-                .map((file) => PathUtil.norm(build.initialOptions.absWorkingDir ?? "", file)),
-            );
-          } else {
-            dependencySet.adds(
-              ...Object.keys(workerResult.metafile.inputs).map((input) =>
-                PathUtil.norm(build.initialOptions.absWorkingDir ?? "", input),
-              ),
-            );
-          }
-
-          for (const dep of dependencySet) {
-            const depCache = workerRevDepMap.getOrCreate(dep, new Set<TNormPath>());
-            depCache.add(PathUtil.norm(containingFile));
-          }
-
-          webWorkerResultMap.set(PathUtil.norm(fullWorkerPath), {
-            outputFiles: workerResult.outputFiles,
-            metafile: workerResult.metafile,
-            warnings: workerResult.warnings,
-            errors: workerResult.errors,
-          });
-
-          const workerCodeFile = workerResult.outputFiles.single((file) =>
-            /^worker-[A-Z0-9]{8}.[cm]?js$/.test(path.basename(file.path)),
-          )!;
-          const workerCodePath = path.relative(build.initialOptions.outdir ?? "", workerCodeFile.path);
-
-          return workerCodePath.replaceAll("\\", "/");
-        },*/
       });
 
       let tsCompileResult: ISdTsCompilerResult;
       const outputContentsCacheMap = new Map<TNormPath, Uint8Array>();
 
-      // const cacheStore = new LmbdCacheStore(path.join(process.cwd(), "angular-compiler.db"));
       //-- js babel transformer
       const javascriptTransformer = new JavaScriptTransformer(
         {
@@ -111,7 +46,6 @@ export function createSdNgPlugin(conf: {
           advancedOptimizations: true,
         },
         os.cpus().length,
-        // cacheStore.createCache("jstransformer"),
       );
 
       //---------------------------
@@ -122,13 +56,6 @@ export function createSdNgPlugin(conf: {
         const res = await perf.run("typescript build", async () => {
           for (const modifiedFile of conf.modifiedFileSet) {
             outputContentsCacheMap.delete(modifiedFile);
-
-            /*if (workerRevDepMap.has(modifiedFile)) {
-              for (const workerContainingFile of workerRevDepMap.get(modifiedFile)!) {
-                outputContentsCacheMap.delete(workerContainingFile);
-                conf.modifiedFileSet.add(workerContainingFile);
-              }
-            }*/
           }
 
           tsCompileResult = await tsCompiler.compileAsync(conf.modifiedFileSet);
@@ -147,18 +74,12 @@ export function createSdNgPlugin(conf: {
               ...Array.from(tsCompileResult.stylesheetBundlingResultMap.values())
                 .flatMap((item) => item.errors)
                 .filterExists(),
-              /*...Array.from(webWorkerResultMap.values())
-                .flatMap((item) => item.errors)
-                .filterExists(),*/
             ].filterExists(),
             warnings: [
               ...tsEsbuildResult.warnings,
               ...Array.from(tsCompileResult.stylesheetBundlingResultMap.values())
                 .flatMap((item) => item.warnings)
                 .filterExists(),
-              /*...Array.from(webWorkerResultMap.values())
-                .flatMap((item) => item.warnings)
-                .filterExists(),*/
             ],
           };
         });
@@ -257,7 +178,7 @@ export function createSdNgPlugin(conf: {
 
       build.onEnd((result) => {
         perf.end("transform & bundling");
-        debug(perf.toString());
+        log("log", perf.toString());
 
         for (const stylesheetBundlingResult of tsCompileResult.stylesheetBundlingResultMap.values()) {
           if ("outputFiles" in stylesheetBundlingResult) {
@@ -270,16 +191,6 @@ export function createSdNgPlugin(conf: {
             }
           }
         }
-
-        /*for (const { outputFiles, metafile } of webWorkerResultMap.values()) {
-          result.outputFiles ??= [];
-          result.outputFiles.push(...outputFiles);
-
-          if (result.metafile && metafile) {
-            result.metafile.inputs = { ...result.metafile.inputs, ...metafile.inputs };
-            result.metafile.outputs = { ...result.metafile.outputs, ...metafile.outputs };
-          }
-        }*/
 
         conf.result.outputFiles = result.outputFiles;
         conf.result.metafile = result.metafile;

@@ -1,4 +1,4 @@
-import { $effect } from "./hooks";
+import { $effect } from "./hooks/hooks";
 
 export function useBgTheme(
   theme?: "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey",

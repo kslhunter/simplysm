@@ -21,7 +21,7 @@ import { SdSelectItemControl } from "../../controls/sd-select-item.control";
 import { NgTemplateOutlet } from "@angular/common";
 import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
 import { SdSelectButtonControl } from "../../controls/sd-select-button.control";
-import { $computed, $model, $signal } from "../../utils/hooks";
+import { $computed, $model, $signal } from "../../utils/hooks/hooks";
 import { transformBoolean } from "../../utils/type-tramsforms";
 import { SdIconControl } from "../../controls/sd-icon.control";
 
@@ -128,16 +128,16 @@ export class SdSharedDataSelectControl<
   TEDITMODAL extends SdModalBase<any, any>,
   M extends keyof TSelectValue<T>,
 > {
-  icons = inject(SdAngularConfigProvider).icons;
+  protected icons = inject(SdAngularConfigProvider).icons;
 
-  #sdModal = inject(SdModalProvider);
+  private _sdModal = inject(SdModalProvider);
 
-  _value = input<TSelectValue<T["__valueKey"] | undefined>[M] | undefined>(
+  __value = input<TSelectValue<T["__valueKey"] | undefined>[M] | undefined>(
     undefined,
     { alias: "value" },
   );
-  _valueChange = output<TSelectValue<T["__valueKey"] | undefined>[M] | undefined>({ alias: "valueChange" });
-  value = $model(this._value, this._valueChange);
+  __valueChange = output<TSelectValue<T["__valueKey"] | undefined>[M] | undefined>({ alias: "valueChange" });
+  value = $model(this.__value, this.__valueChange);
 
   items = input.required<T[]>();
 
@@ -281,7 +281,7 @@ export class SdSharedDataSelectControl<
 
     if (!this.modalType()) return;
 
-    const result = await this.#sdModal.showAsync(
+    const result = await this._sdModal.showAsync(
       this.modalType()!,
       this.modalHeader() ?? "자세히...",
       {
@@ -311,7 +311,7 @@ export class SdSharedDataSelectControl<
     const header = this.editModal()![1] ?? "자세히...";
     const params = this.editModal()![2];
 
-    await this.#sdModal.showAsync(type, header, params);
+    await this._sdModal.showAsync(type, header, params);
   }
 }
 

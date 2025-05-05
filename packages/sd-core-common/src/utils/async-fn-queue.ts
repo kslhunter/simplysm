@@ -4,10 +4,10 @@ export class AsyncFnQueue {
   private readonly _queue: (() => void | Promise<void>)[] = [];
   private _isQueueRunning = false;
 
-  public constructor(private readonly _gap?: number) {
+  constructor(private readonly _gap?: number) {
   }
 
-  public run(fn: () => void | Promise<void>): void {
+  run(fn: () => void | Promise<void>): void {
     this._queue.push(fn);
     if (this._isQueueRunning) return;
 
@@ -25,7 +25,7 @@ export class AsyncFnQueue {
     })();
   }
 
-  public runLast(fn: () => void | Promise<void>): void {
+  runLast(fn: () => void | Promise<void>): void {
     this._queue.push(fn);
     if (this._isQueueRunning) return;
 

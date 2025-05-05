@@ -5,25 +5,25 @@ export class SdError extends Error {
   /**
    * 내부오류
    */
-  public innerError?: Error;
+  innerError?: Error;
 
   /**
    * @param innerError 내부오류
    * @param message 현재 오류의 메시지
    */
-  public constructor(innerError?: Error, message?: string);
+  constructor(innerError?: Error, message?: string);
 
   /**
    * @param message 현재 오류의 메시지
    */
-  public constructor(message?: string);
+  constructor(message?: string);
 
   /**
    * @param innerErrorMessage 내부오류의 메시지
    * @param message 현재 오류의 메시지
    */
-  public constructor(innerErrorMessage?: string, message?: string);
-  public constructor(arg1?: Error | string, arg2?: string) {
+  constructor(innerErrorMessage?: string, message?: string);
+  constructor(arg1?: Error | string, arg2?: string) {
     if (typeof arg1 === "object" || typeof arg2 === "string") {
       super(
         (arg2 ?? "")

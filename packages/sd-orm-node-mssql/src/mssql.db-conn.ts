@@ -31,14 +31,14 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
   private _connTimeout?: NodeJS.Timeout;
   private _requests: tedious.Request[] = [];
 
-  public isConnected = false;
-  public isOnTransaction = false;
+  isConnected = false;
+  isOnTransaction = false;
 
-  public constructor(public readonly config: IDefaultDbConnConf) {
+  constructor(readonly config: IDefaultDbConnConf) {
     super();
   }
 
-  public async connectAsync(): Promise<void> {
+  async connectAsync(): Promise<void> {
     if (this.isConnected) {
       throw new Error("이미 'Connection'이 연결되어있습니다.");
     }
@@ -102,7 +102,7 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
     this._conn = conn;
   }
 
-  public async closeAsync(): Promise<void> {
+  async closeAsync(): Promise<void> {
     await new Promise<void>(async (resolve) => {
       this._stopTimeout();
 
@@ -122,7 +122,7 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
     });
   }
 
-  public async beginTransactionAsync(isolationLevel?: ISOLATION_LEVEL): Promise<void> {
+  async beginTransactionAsync(isolationLevel?: ISOLATION_LEVEL): Promise<void> {
     if (!this._conn || !this.isConnected) {
       throw new Error("'Connection'이 연결되어있지 않습니다.");
     }
@@ -147,7 +147,7 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
     });
   }
 
-  public async commitTransactionAsync(): Promise<void> {
+  async commitTransactionAsync(): Promise<void> {
     if (!this._conn || !this.isConnected) {
       throw new Error("'Connection'이 연결되어있지 않습니다.");
     }
@@ -168,7 +168,7 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
     });
   }
 
-  public async rollbackTransactionAsync(): Promise<void> {
+  async rollbackTransactionAsync(): Promise<void> {
     if (!this._conn || !this.isConnected) {
       throw new Error("'Connection'이 연결되어있지 않습니다.");
     }
@@ -189,7 +189,7 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
     });
   }
 
-  public async executeAsync(queries: string[]): Promise<any[][]> {
+  async executeAsync(queries: string[]): Promise<any[][]> {
     if (!this._conn || !this.isConnected) {
       throw new Error("'Connection'이 연결되어있지 않습니다.");
     }
@@ -291,7 +291,7 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
     return results;
   }
 
-  public async bulkInsertAsync(
+  async bulkInsertAsync(
     tableName: string,
     columnDefs: IQueryColumnDef[],
     records: Record<string, any>[],
@@ -326,7 +326,7 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await
-  public async bulkUpsertAsync(
+  async bulkUpsertAsync(
     tableName: string,
     columnDefs: IQueryColumnDef[],
     records: Record<string, any>[],

@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, forwardRef, inject, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  forwardRef,
+  inject,
+  ViewEncapsulation,
+} from "@angular/core";
 import { SdModalBase } from "../providers/sd-modal.provider";
 import { SdSheetColumnDirective } from "../directives/sd-sheet-column.directive";
 import { ISdSheetConfig, SdSheetControl } from "../controls/sd-sheet.control";
@@ -7,11 +13,13 @@ import { SdPaneControl } from "../controls/sd-pane.control";
 import { SdCheckboxControl } from "../controls/sd-checkbox.control";
 import { SdAnchorControl } from "../controls/sd-anchor.control";
 import { SdTextfieldControl } from "../controls/sd-textfield.control";
-import { SdSheetColumnCellTemplateDirective } from "../directives/sd-sheet-column-cell.template-directive";
+import {
+  SdSheetColumnCellTemplateDirective,
+} from "../directives/sd-sheet-column-cell.template-directive";
 import { SdDockControl } from "../controls/sd-dock.control";
 import { SdButtonControl } from "../controls/sd-button.control";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
-import { $effect, $signal } from "../utils/hooks";
+import { $effect, $signal } from "../utils/hooks/hooks";
 import { SdIconControl } from "../controls/sd-icon.control";
 
 @Component({
@@ -31,7 +39,6 @@ import { SdIconControl } from "../controls/sd-icon.control";
     SdDockControl,
     SdButtonControl,
     SdIconControl,
-
   ],
   template: `
     @if (params()) {
@@ -113,15 +120,30 @@ import { SdIconControl } from "../controls/sd-icon.control";
 
         <sd-dock position="bottom" class="p-sm-default pt-0">
           <div style="float: left">
-            <sd-button [inline]="true" theme="warning" (click)="onInitButtonClick()" buttonStyle="min-width: 60px;">
+            <sd-button
+              [inline]="true"
+              theme="warning"
+              (click)="onInitButtonClick()"
+              buttonStyle="min-width: 60px;"
+            >
               Reset
             </sd-button>
           </div>
           <div class="flex-row flex-gap-sm" style="justify-content: end">
-            <sd-button [inline]="true" theme="success" (click)="onOkButtonClick()" buttonStyle="min-width: 60px;">
+            <sd-button
+              [inline]="true"
+              theme="success"
+              (click)="onOkButtonClick()"
+              buttonStyle="min-width: 60px;"
+            >
               OK
             </sd-button>
-            <sd-button [inline]="true" (click)="onCancelButtonClick()" buttonStyle="min-width: 60px;">Cancel</sd-button>
+            <sd-button
+              [inline]="true"
+              (click)="onCancelButtonClick()"
+              buttonStyle="min-width: 60px;"
+            >Cancel
+            </sd-button>
           </div>
         </sd-dock>
       </sd-dock-container>
@@ -129,7 +151,7 @@ import { SdIconControl } from "../controls/sd-icon.control";
   `,
 })
 export class SdSheetConfigModal<T> extends SdModalBase<ISdSheetConfigModalInput<T>, ISdSheetConfig> {
-  icons = inject(SdAngularConfigProvider).icons;
+  protected icons = inject(SdAngularConfigProvider).icons;
 
   items = $signal<IItemVM[]>([]);
 
@@ -157,7 +179,8 @@ export class SdSheetConfigModal<T> extends SdModalBase<ISdSheetConfigModalInput<
         });
       }
 
-      this.items.set(items.orderBy((item) => item.displayOrder).orderBy((item) => (item.fixed ? -1 : 0)));
+      this.items.set(items.orderBy((item) => item.displayOrder)
+        .orderBy((item) => (item.fixed ? -1 : 0)));
 
       this.open();
     });

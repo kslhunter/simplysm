@@ -9,13 +9,13 @@ import { TQueryBuilderValue } from "./query-builder.types";
 export class CaseQueryHelper<T extends TQueryValue> {
   private readonly _cases: any[] = [];
 
-  public constructor(
+  constructor(
     private readonly _qh: QueryHelper,
     private _type: Type<T> | undefined,
   ) {
   }
 
-  public case(
+  case(
     predicate: TEntityValue<boolean | Boolean> | TQueryBuilderValue,
     then: TEntityValue<T>,
   ): this {
@@ -30,7 +30,7 @@ export class CaseQueryHelper<T extends TQueryValue> {
     return this;
   }
 
-  public else(then: TEntityValue<T>): QueryUnit<T> {
+  else(then: TEntityValue<T>): QueryUnit<T> {
     this._type = SdOrmUtils.getQueryValueType(then) ?? this._type;
     return new QueryUnit(
       this._type,

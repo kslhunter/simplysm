@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, forwardRef, inject, input, ViewEncapsulation } from "@angular/core";
 import { SdViewControl } from "./sd-view.control";
-import { $computed } from "../utils/hooks";
+import { $computed } from "../utils/hooks/hooks";
 
 @Component({
   selector: "sd-view-item",
@@ -33,7 +33,7 @@ import { $computed } from "../utils/hooks";
 export class SdViewItemControl {
   value = input<any>();
 
-  #parentControl = inject<SdViewControl>(forwardRef(() => SdViewControl));
+  private _parentControl = inject<SdViewControl>(forwardRef(() => SdViewControl));
 
-  isSelected = $computed(() => this.#parentControl.value() === this.value());
+  isSelected = $computed(() => this._parentControl.value() === this.value());
 }

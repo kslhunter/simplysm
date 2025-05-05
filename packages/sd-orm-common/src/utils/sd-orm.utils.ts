@@ -5,11 +5,11 @@ import { TQueryValue } from "../types";
 import { IQueryResultParseOption } from "../db-context-executor.types";
 
 export class SdOrmUtils {
-  public static replaceString(str: string) {
+  static replaceString(str: string) {
     return str.replace(/'/g, "''").replace(/\\/g, "\\\\");
   }
 
-  public static canConvertToQueryValue(value: any): value is TEntityValue<TQueryValue> {
+  static canConvertToQueryValue(value: any): value is TEntityValue<TQueryValue> {
     return (
       ["undefined", "boolean", "number", "string"].includes(typeof value) ||
       value instanceof QueryUnit ||
@@ -24,7 +24,7 @@ export class SdOrmUtils {
     );
   }
 
-  public static getQueryValueType<T extends TQueryValue>(value: TEntityValue<T>): Type<T> | undefined {
+  static getQueryValueType<T extends TQueryValue>(value: TEntityValue<T>): Type<T> | undefined {
     if (value instanceof QueryUnit) {
       return value.type as any;
     }
@@ -60,7 +60,7 @@ export class SdOrmUtils {
     }
   }
 
-  public static getQueryValueFields<T>(
+  static getQueryValueFields<T>(
     entity: TEntity<T>,
     availableDepth?: number,
   ): TEntityValue<any>[] {
@@ -78,7 +78,7 @@ export class SdOrmUtils {
     });
   }
 
-  public static parseQueryResult<T>(orgResults: any[], option?: IQueryResultParseOption): T[] {
+  static parseQueryResult<T>(orgResults: any[], option?: IQueryResultParseOption): T[] {
     // 타입 변환
     const data: Record<string, any>[] = orgResults
       .flat()

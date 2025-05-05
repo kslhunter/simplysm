@@ -3,7 +3,7 @@ import { SdExcelXmlWorksheet } from "./xmls/sd-excel-xml-worksheet";
 import { ZipCache } from "./utils/zip-cache";
 
 export class SdExcelRow {
-  #cellMap = new Map<number, SdExcelCell>();
+  private _cellMap = new Map<number, SdExcelCell>();
 
   constructor(
     private readonly _zipCache: ZipCache,
@@ -13,7 +13,7 @@ export class SdExcelRow {
   }
 
   cell(c: number): SdExcelCell {
-    return this.#cellMap.getOrCreate(
+    return this._cellMap.getOrCreate(
       c,
       new SdExcelCell(this._zipCache, this._targetFileName, this._r, c),
     );

@@ -11,7 +11,7 @@ export class SdStorage {
   // 모든 storage가 끝나야 모든 storage에 close명령을 내리도록 함
   static busyCount = 0;
 
-  public static async connectAsync<R>(
+  static async connectAsync<R>(
     type: "sftp" | "ftp" | "ftps",
     conf: ISdStorageConnectionConfig,
     fn: (storage: ISdStorage) => Promise<R>,

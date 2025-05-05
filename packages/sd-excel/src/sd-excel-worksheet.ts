@@ -10,7 +10,7 @@ import { SdExcelUtils } from "./utils/sd-excel.utils";
 export class SdExcelWorksheet {
   private readonly _rowMap = new Map<number, SdExcelRow>();
 
-  public constructor(
+  constructor(
     private readonly _zipCache: ZipCache,
     private readonly _relId: number,
     private readonly _targetFileName: string,

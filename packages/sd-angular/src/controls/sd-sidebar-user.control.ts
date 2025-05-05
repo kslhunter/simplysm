@@ -10,7 +10,7 @@ import { SdCollapseControl } from "./sd-collapse.control";
 import { SdListControl } from "./sd-list.control";
 import { SdListItemControl } from "./sd-list-item.control";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
-import { $signal } from "../utils/hooks";
+import { $signal } from "../utils/hooks/hooks";
 
 @Component({
   selector: "sd-sidebar-user",
@@ -100,7 +100,7 @@ import { $signal } from "../utils/hooks";
   },
 })
 export class SdSidebarUserControl {
-  icons = inject(SdAngularConfigProvider).icons;
+ protected icons = inject(SdAngularConfigProvider).icons;
 
   userMenu = input<ISidebarUserMenu>();
   menuTitle = input<string>();

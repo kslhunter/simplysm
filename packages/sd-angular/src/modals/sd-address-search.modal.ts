@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/core";
 import { SdModalBase } from "../providers/sd-modal.provider";
-import { $effect } from "../utils/hooks";
+import { $effect } from "../utils/hooks/hooks";
 import { injectElementRef } from "../utils/dom/element-ref.injector";
 
 @Component({
@@ -13,7 +13,7 @@ import { injectElementRef } from "../utils/dom/element-ref.injector";
     <div class="_content" style="min-height: 100px;"></div>`,
 })
 export class SdAddressSearchModal extends SdModalBase<undefined, IAddress> {
-  #elRef = injectElementRef();
+  private _elRef = injectElementRef();
 
   constructor() {
     super();
@@ -36,7 +36,7 @@ export class SdAddressSearchModal extends SdModalBase<undefined, IAddress> {
         });
       }
 
-      const contentEl = this.#elRef.nativeElement.firstChild! as HTMLDivElement;
+      const contentEl = this._elRef.nativeElement.firstChild! as HTMLDivElement;
 
       // @ts-expect-error
       new daum.Postcode({

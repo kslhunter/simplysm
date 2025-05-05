@@ -6,14 +6,14 @@ import { JsonConvert, Uuid } from "@simplysm/sd-core-common";
 import { SdLogger } from "../utils/sd-logger";
 
 export class SdWorker<T extends ISdWorkerType> extends EventEmitter {
-  #proc: cp.ChildProcess;
+  private _proc: cp.ChildProcess;
 
   constructor(filePath: string, opt?: Omit<ForkOptions, "stdio">) {
     super();
 
     const logger = SdLogger.get(["simplysm", "sd-cli", "SdChildProcessPool", "#createProcess"]);
 
-    this.#proc = cp.fork(fileURLToPath(filePath), [], {
+    this._proc = cp.fork(fileURLToPath(filePath), [], {
       stdio: ["pipe", "pipe", "pipe", "ipc"],
       ...opt,
       env: {
@@ -22,10 +22,10 @@ export class SdWorker<T extends ISdWorkerType> extends EventEmitter {
       },
     });
 
-    this.#proc.stdout!.pipe(process.stdout);
-    this.#proc.stderr!.pipe(process.stderr);
+    this._proc.stdout!.pipe(process.stdout);
+    this._proc.stderr!.pipe(process.stderr);
 
-    this.#proc.on("exit", (code) => {
+    this._proc.on("exit", (code) => {
       if (code != null && code !== 0) {
         const err = new Error(`오류와 함께 닫힘 (${code})`);
         logger.error(err);
@@ -33,11 +33,11 @@ export class SdWorker<T extends ISdWorkerType> extends EventEmitter {
       }
     });
 
-    this.#proc.on("error", (err) => {
+    this._proc.on("error", (err) => {
       logger.error(err);
     });
 
-    this.#proc.on("message", (responseJson: string) => {
+    this._proc.on("message", (responseJson: string) => {
       const response: TSdWorkerResponse<T, string> = JsonConvert.parse(responseJson);
       if (response.type === "event") {
         this.emit(response.event, response.body);
@@ -64,29 +64,29 @@ export class SdWorker<T extends ISdWorkerType> extends EventEmitter {
         const response: TSdWorkerResponse<T, K> = JsonConvert.parse(responseJson);
         if (response.type === "return") {
           if (response.request.id === request.id) {
-            this.#proc.off("message", callback);
+            this._proc.off("message", callback);
             resolve(response.body);
           }
         }
         else if (response.type === "error") {
           if (response.request.id === request.id) {
-            this.#proc.off("message", callback);
+            this._proc.off("message", callback);
             reject(response.body);
           }
         }
       };
 
-      this.#proc.on("message", callback);
-      this.#proc.send(JsonConvert.stringify(request));
+      this._proc.on("message", callback);
+      this._proc.send(JsonConvert.stringify(request));
     });
   }
 
   async killAsync() {
     await new Promise<void>((resolve) => {
-      this.#proc.on("exit", () => {
+      this._proc.on("exit", () => {
         resolve();
       });
-      this.#proc.kill("SIGKILL");
+      this._proc.kill("SIGKILL");
     });
   }
 }

@@ -14,7 +14,7 @@ import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { SdCollapseIconControl } from "./sd-collapse-icon.control";
 import { SdCollapseControl } from "./sd-collapse.control";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
-import { $computed, $model } from "../utils/hooks";
+import { $computed, $model } from "../utils/hooks/hooks";
 import { SdRippleDirective } from "../directives/sd-ripple.directive";
 import { transformBoolean } from "../utils/type-tramsforms";
 import { NgTemplateOutlet } from "@angular/common";
@@ -25,7 +25,13 @@ import { SdIconControl } from "./sd-icon.control";
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdCollapseIconControl, SdCollapseControl, SdRippleDirective, NgTemplateOutlet, SdIconControl],
+  imports: [
+    SdCollapseIconControl,
+    SdCollapseControl,
+    SdRippleDirective,
+    NgTemplateOutlet,
+    SdIconControl,
+  ],
   styles: [
     /* language=SCSS */ `
       @use "../scss/mixins";
@@ -156,11 +162,11 @@ import { SdIconControl } from "./sd-icon.control";
   },
 })
 export class SdListItemControl {
-  icons = inject(SdAngularConfigProvider).icons;
+  protected icons = inject(SdAngularConfigProvider).icons;
 
-  _open = input(false, { alias: "open", transform: transformBoolean });
-  _openChange = output<boolean>({ alias: "openChange" });
-  open = $model(this._open, this._openChange);
+  __open = input(false, { alias: "open", transform: transformBoolean });
+  __openChange = output<boolean>({ alias: "openChange" });
+  open = $model(this.__open, this.__openChange);
 
   selectedIcon = input<IconDefinition>();
   selected = input(false, { transform: transformBoolean });

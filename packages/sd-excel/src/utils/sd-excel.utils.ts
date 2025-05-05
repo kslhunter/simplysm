@@ -2,13 +2,13 @@ import { NumberUtils } from "@simplysm/sd-core-common";
 import { TSdExcelNumberFormat } from "../types";
 
 export class SdExcelUtils {
-  public static stringifyAddr(point: { r: number; c: number }): string {
+  static stringifyAddr(point: { r: number; c: number }): string {
     const rowStr = (point.r + 1).toString();
     const colStr = this.stringifyColAddr(point.c);
     return `${colStr}${rowStr}`;
   }
 
-  public static stringifyColAddr(c: number): string {
+  static stringifyColAddr(c: number): string {
     let remained = c;
     let result = String.fromCharCode((remained % 26) + 65);
     remained = Math.floor(remained / 26);
@@ -19,14 +19,14 @@ export class SdExcelUtils {
     return result;
   }
 
-  public static parseAddr(addr: string): { r: number; c: number } {
+  static parseAddr(addr: string): { r: number; c: number } {
     return {
       r: NumberUtils.parseInt(/\d*$/.exec(addr)![0])! - 1,
       c: SdExcelUtils.parseColAddr(/^[a-zA-Z]*/.exec(addr)![0]),
     };
   }
 
-  public static parseColAddr(addr: string): number {
+  static parseColAddr(addr: string): number {
     let result = 0;
     const revAddr = Array.from(addr).reverse().join("");
     for (let i = 0; i < revAddr.length; i++) {
@@ -36,7 +36,7 @@ export class SdExcelUtils {
     return result;
   }
 
-  public static parseRangeAddr(rangeAddr: string): {
+  static parseRangeAddr(rangeAddr: string): {
     s: { r: number; c: number };
     e: { r: number; c: number }
   } {
@@ -48,7 +48,7 @@ export class SdExcelUtils {
     };
   }
 
-  public static stringifyRangeAddr(point: {
+  static stringifyRangeAddr(point: {
     s: { r: number; c: number };
     e: { r: number; c: number }
   }): string {
@@ -63,7 +63,7 @@ export class SdExcelUtils {
     }
   }
 
-  public static convertTimeTickToNumber(tick: number): number {
+  static convertTimeTickToNumber(tick: number): number {
     const currDate = new Date(tick);
     currDate.setMinutes(currDate.getMinutes() - currDate.getTimezoneOffset());
     const excelBaseDateNumberUtc = Date.UTC(1899, 11, 31);
@@ -71,7 +71,7 @@ export class SdExcelUtils {
     return inputExcelDateNumberUtc / (24 * 60 * 60 * 1000) + 1;
   }
 
-  public static convertNumberToTimeTick(num: number): number {
+  static convertNumberToTimeTick(num: number): number {
     const excelBaseDateNumberUtc = Date.UTC(1899, 11, 31);
     const excelDateNumberUtc = (num - 1) * 24 * 60 * 60 * 1000;
     const dateNumberUtc = excelBaseDateNumberUtc + excelDateNumberUtc;
@@ -80,7 +80,7 @@ export class SdExcelUtils {
     return date.getTime();
   }
 
-  public static convertNumFmtCodeToName(numFmtCode: string): TSdExcelNumberFormat {
+  static convertNumFmtCodeToName(numFmtCode: string): TSdExcelNumberFormat {
     if (numFmtCode === "General") {
       return "number";
     }
@@ -113,7 +113,7 @@ export class SdExcelUtils {
     }
   }
 
-  public static convertNumFmtIdToName(numFmtId: number): TSdExcelNumberFormat {
+  static convertNumFmtIdToName(numFmtId: number): TSdExcelNumberFormat {
     if (numFmtId <= 13 || (numFmtId >= 37 && numFmtId <= 40) || numFmtId === 48) {
       return "number";
     }
@@ -143,7 +143,7 @@ export class SdExcelUtils {
     }
   }
 
-  public static convertNumFmtNameToId(numFmtName: TSdExcelNumberFormat | undefined): number {
+  static convertNumFmtNameToId(numFmtName: TSdExcelNumberFormat | undefined): number {
     if (numFmtName === "number") {
       return 0;
     }

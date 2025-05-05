@@ -3,8 +3,8 @@ import { SdSystemLogProvider } from "../providers/sd-system-log.provider";
 
 @Injectable({ providedIn: null })
 export class SdGlobalErrorHandlerPlugin implements ErrorHandler {
-  #ngModuleRef = inject(NgModuleRef);
-  #systemLog = inject(SdSystemLogProvider);
+  private _ngModuleRef = inject(NgModuleRef);
+  private _systemLog = inject(SdSystemLogProvider);
 
   handleError(error: any) {
     const err: Error = error.rejection !== undefined ? error.rejection : error;
@@ -25,7 +25,7 @@ export class SdGlobalErrorHandlerPlugin implements ErrorHandler {
     ?? ""}</pre>`;
 
     try {
-      const appRef = this.#ngModuleRef.injector.get<ApplicationRef>(ApplicationRef);
+      const appRef = this._ngModuleRef.injector.get<ApplicationRef>(ApplicationRef);
       appRef.destroy();
 
       // appRef["_views"][0]["rootNodes"][0].appendChild(divEl);
@@ -35,7 +35,7 @@ export class SdGlobalErrorHandlerPlugin implements ErrorHandler {
         location.reload();
       };
 
-      this.#systemLog.writeAsync("error", err.stack).catch(() => {
+      this._systemLog.writeAsync("error", err.stack).catch(() => {
       });
     }
     catch {

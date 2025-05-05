@@ -3,12 +3,12 @@ import {Type} from "@simplysm/sd-core-common";
 import {NodeDbContextExecutor} from "./node.db-context-executor";
 
 export class SdOrm<T extends DbContext> {
-  public constructor(public readonly dbContextType: Type<T>,
-                     public readonly config: TDbConnConf,
-                     public readonly dbContextOpt?: Partial<TDbContextOption>) {
+  constructor(readonly dbContextType: Type<T>,
+                     readonly config: TDbConnConf,
+                     readonly dbContextOpt?: Partial<TDbContextOption>) {
   }
 
-  public async connectAsync<R>(callback: (conn: T) => Promise<R>, isolationLevel?: ISOLATION_LEVEL): Promise<R> {
+  async connectAsync<R>(callback: (conn: T) => Promise<R>, isolationLevel?: ISOLATION_LEVEL): Promise<R> {
     const db = new this.dbContextType(new NodeDbContextExecutor(this.config), {
       dialect: this.dbContextOpt?.dialect ?? this.config.dialect,
       database: this.dbContextOpt?.["database"] ?? this.config["database"],
@@ -17,7 +17,7 @@ export class SdOrm<T extends DbContext> {
     return await db.connectAsync(async () => await callback(db), isolationLevel);
   }
 
-  public async connectWithoutTransactionAsync<R>(callback: (conn: T) => Promise<R>): Promise<R> {
+  async connectWithoutTransactionAsync<R>(callback: (conn: T) => Promise<R>): Promise<R> {
     const db = new this.dbContextType(new NodeDbContextExecutor(this.config), {
       dialect: this.dbContextOpt?.dialect ?? this.config.dialect,
       database: this.dbContextOpt?.["database"] ?? this.config["database"],

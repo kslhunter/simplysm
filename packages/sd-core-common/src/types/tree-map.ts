@@ -1,11 +1,11 @@
 export class TreeMap<T> {
-  #map = new Map<any, any>();
+  private _map = new Map<any, any>();
 
-  public set(keys: any[], val: T): void {
+  set(keys: any[], val: T): void {
     this._getLastMap(keys).set(keys.last(), val);
   }
 
-  public get(keys: any[]): T | undefined {
+  get(keys: any[]): T | undefined {
     return this._getLastMap(keys).get(keys.last());
   }
 
@@ -13,12 +13,12 @@ export class TreeMap<T> {
     return this._getLastMap(keys).getOrCreate(keys.last(), value);
   }
 
-  public clear() {
-    this.#map.clear();
+  clear() {
+    this._map.clear();
   }
 
   private _getLastMap(keys: any[]): Map<any, T> {
-    let currMap = this.#map;
+    let currMap = this._map;
     for (const key of keys.slice(0, -1)) {
       currMap = currMap.getOrCreate(key, new Map());
     }

@@ -13,7 +13,7 @@ import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
 import { SdAnchorControl } from "./sd-anchor.control";
 import { SdGapControl } from "./sd-gap.control";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
-import { $computed } from "../utils/hooks";
+import { $computed } from "../utils/hooks/hooks";
 import { injectElementRef } from "../utils/dom/element-ref.injector";
 import { SdIconControl } from "./sd-icon.control";
 
@@ -131,24 +131,24 @@ import { SdIconControl } from "./sd-icon.control";
   `,
 })
 export class SdTopbarControl {
-  icons = inject(SdAngularConfigProvider).icons;
+  protected icons = inject(SdAngularConfigProvider).icons;
 
-  #elRef = injectElementRef<HTMLElement>();
-  #parentSidebarContainerControl = inject(SdSidebarContainerControl, { optional: true });
-  #topbarContainerControl = inject<SdTopbarContainerControl>(forwardRef(() => SdTopbarContainerControl));
+  private _elRef = injectElementRef<HTMLElement>();
+  private _parentSidebarContainerControl = inject(SdSidebarContainerControl, { optional: true });
+  private _topbarContainerControl = inject<SdTopbarContainerControl>(forwardRef(() => SdTopbarContainerControl));
 
   sidebarContainer = input<SdSidebarContainerControl>();
 
-  hasSidebar = $computed(() => !!this.sidebarContainer() || !!this.#parentSidebarContainerControl);
+  hasSidebar = $computed(() => !!this.sidebarContainer() || !!this._parentSidebarContainerControl);
 
   onSidebarToggleButtonClick() {
-    const sidebarContainerControl = this.sidebarContainer() ?? this.#parentSidebarContainerControl;
+    const sidebarContainerControl = this.sidebarContainer() ?? this._parentSidebarContainerControl;
     sidebarContainerControl!.toggle.update((v) => !v);
   }
 
   @HostListener("sdResize", ["$event"])
   onResize(event: ISdResizeEvent) {
     if (!event.heightChanged) return;
-    this.#topbarContainerControl.paddingTop.set(this.#elRef.nativeElement.offsetHeight + "px");
+    this._topbarContainerControl.paddingTop.set(this._elRef.nativeElement.offsetHeight + "px");
   }
 }

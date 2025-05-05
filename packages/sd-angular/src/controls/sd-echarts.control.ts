@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, HostListener, input, ViewEncapsulation } from "@angular/core";
 import { injectElementRef } from "../utils/dom/element-ref.injector";
 import * as echarts from 'echarts';
-import { $effect } from "../utils/hooks";
+import { $effect } from "../utils/hooks/hooks";
 
 @Component({
   selector: "sd-echarts",
@@ -21,9 +21,9 @@ import { $effect } from "../utils/hooks";
   ],
 })
 export class SdEchartsControl {
-  #elRef = injectElementRef();
+  private _elRef = injectElementRef();
 
-  #chart!: echarts.EChartsType;
+  private _chart!: echarts.EChartsType;
 
   option = input.required<echarts.EChartsOption>();
   /*height = input.required<string>();*/
@@ -31,26 +31,26 @@ export class SdEchartsControl {
 
   constructor() {
     $effect([], () => {
-      this.#chart = echarts.init(this.#elRef.nativeElement, null, { renderer: "svg" });
+      this._chart = echarts.init(this._elRef.nativeElement, null, { renderer: "svg" });
     });
 
     $effect(() => {
-      this.#chart.setOption(this.option());
+      this._chart.setOption(this.option());
     });
 
     $effect(() => {
       if (this.loading()) {
-        this.#chart.showLoading();
+        this._chart.showLoading();
       }
       else {
-        this.#chart.hideLoading();
+        this._chart.hideLoading();
       }
     })
   }
 
   @HostListener("sdResize")
   onResize() {
-    this.#chart.resize();
+    this._chart.resize();
   }
 }
 

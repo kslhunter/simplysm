@@ -5,10 +5,10 @@ import { File } from "@awesome-cordova-plugins/file";
 export class CordovaAppStorage {
   static raw = File;
 
-  #rootDirectoryUrl: string;
+  private _rootDirectoryUrl: string;
 
   constructor(rootDirectory?: string) {
-    this.#rootDirectoryUrl = rootDirectory ?? File.applicationStorageDirectory;
+    this._rootDirectoryUrl = rootDirectory ?? File.applicationStorageDirectory;
   }
 
   async readJsonAsync(filePath: string): Promise<any> {
@@ -90,7 +90,7 @@ export class CordovaAppStorage {
   }
 
   getFullUrl(targetPath: string) {
-    return this.#rootDirectoryUrl + (targetPath.startsWith("/")
+    return this._rootDirectoryUrl + (targetPath.startsWith("/")
       ? targetPath.substring(1)
       : targetPath);
   }

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, forwardRef, inject, input, ViewEncapsulation } from "@angular/core";
 import { SdCheckboxGroupControl } from "./sd-checkbox-group.control";
 import { SdCheckboxControl } from "./sd-checkbox.control";
-import { $computed } from "../utils/hooks";
+import { $computed } from "../utils/hooks/hooks";
 import { transformBoolean } from "../utils/type-tramsforms";
 
 @Component({
@@ -22,16 +22,16 @@ import { transformBoolean } from "../utils/type-tramsforms";
   `,
 })
 export class SdCheckboxGroupItemControl<T> {
-  #parentControl = inject<SdCheckboxGroupControl<T>>(forwardRef(() => SdCheckboxGroupControl));
+  private _parentControl = inject<SdCheckboxGroupControl<T>>(forwardRef(() => SdCheckboxGroupControl));
 
   value = input.required<T>();
   inline = input(false, { transform: transformBoolean });
 
-  isSelected = $computed(() => this.#parentControl.value().includes(this.value()));
-  disabled = $computed(() => this.#parentControl.disabled());
+  isSelected = $computed(() => this._parentControl.value().includes(this.value()));
+  disabled = $computed(() => this._parentControl.disabled());
 
   onSelectedChange(selected: boolean): void {
-    this.#parentControl.value.update((v) => {
+    this._parentControl.value.update((v) => {
       if (selected) {
         return [...v, this.value()];
       }

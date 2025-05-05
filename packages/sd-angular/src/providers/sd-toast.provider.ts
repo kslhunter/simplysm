@@ -14,35 +14,38 @@ import { SdToastControl } from "../controls/sd-toast.control";
 
 @Injectable({ providedIn: "root" })
 export class SdToastProvider {
-  #appRef = inject(ApplicationRef);
-  #systemLog = inject(SdSystemLogProvider);
+  private _appRef = inject(ApplicationRef);
+  private _systemLog = inject(SdSystemLogProvider);
 
   alertThemes: ("info" | "success" | "warning" | "danger")[] = [];
   overlap = false;
 
-  #containerRef?: ComponentRef<SdToastContainerControl>;
+  private _containerRef?: ComponentRef<SdToastContainerControl>;
 
   beforeShowFn?: (theme: "info" | "success" | "warning" | "danger") => void;
 
   get containerRef(): ComponentRef<SdToastContainerControl> {
-    if (this.#containerRef === undefined) {
+    if (this._containerRef === undefined) {
       const compRef = createComponent(SdToastContainerControl, {
-        environmentInjector: this.#appRef.injector,
+        environmentInjector: this._appRef.injector,
       });
       compRef.setInput("overlap", this.overlap);
 
-      const rootComp = this.#appRef.components[0];
+      const rootComp = this._appRef.components[0];
       const rootCompEl = rootComp.location.nativeElement as HTMLElement;
       rootCompEl.appendChild(compRef.location.nativeElement);
-      this.#appRef.attachView(compRef.hostView);
-      this.#containerRef = compRef;
+      this._appRef.attachView(compRef.hostView);
+      this._containerRef = compRef;
     }
-    return this.#containerRef;
+    return this._containerRef;
   }
 
   async try<R>(fn: () => Promise<R>, messageFn?: (err: Error) => string): Promise<R>;
   try<R>(fn: () => R, messageFn?: (err: Error) => string): R;
-  async try<R>(fn: () => Promise<R> | R, messageFn?: (err: Error) => string): Promise<R | undefined> {
+  async try<R>(
+    fn: () => Promise<R> | R,
+    messageFn?: (err: Error) => string,
+  ): Promise<R | undefined> {
     try {
       return await fn();
     }
@@ -55,7 +58,7 @@ export class SdToastProvider {
           this.danger(err.message);
         }
 
-        await this.#systemLog.writeAsync("error", err.stack);
+        await this._systemLog.writeAsync("error", err.stack);
 
         return undefined;
       }
@@ -71,12 +74,12 @@ export class SdToastProvider {
     onclose: (result: T["__tOutput__"] | undefined) => void | Promise<void>,
   ): void {
     const compRef = createComponent(toastType, {
-      environmentInjector: this.#appRef.injector,
+      environmentInjector: this._appRef.injector,
     });
     const containerEl = this.containerRef.location.nativeElement as HTMLElement;
 
     const toastRef = createComponent(SdToastControl, {
-      environmentInjector: this.#appRef.injector,
+      environmentInjector: this._appRef.injector,
       projectableNodes: [[compRef.location.nativeElement]],
     });
     const toastEl = toastRef.location.nativeElement as HTMLElement;
@@ -94,13 +97,13 @@ export class SdToastProvider {
     toastRef.instance.close.subscribe(async () => {
       await close();
     });
-    this.#appRef.attachView(toastRef.hostView);
+    this._appRef.attachView(toastRef.hostView);
 
     compRef.setInput("params", params);
     compRef.instance.close = async (v) => {
       await close(v);
     };
-    this.#appRef.attachView(compRef.hostView);
+    this._appRef.attachView(compRef.hostView);
 
     toastRef.setInput("open", true);
 
@@ -114,15 +117,21 @@ export class SdToastProvider {
     return this.#show("info", message, progress);
   }
 
-  success<T extends boolean>(message: string, progress?: T): T extends true ? ISdProgressToast : void {
+  success<T extends boolean>(message: string, progress?: T): T extends true
+    ? ISdProgressToast
+    : void {
     return this.#show("success", message, progress);
   }
 
-  warning<T extends boolean>(message: string, progress?: T): T extends true ? ISdProgressToast : void {
+  warning<T extends boolean>(message: string, progress?: T): T extends true
+    ? ISdProgressToast
+    : void {
     return this.#show("warning", message, progress);
   }
 
-  danger<T extends boolean>(message: string, progress?: T): T extends true ? ISdProgressToast : void {
+  danger<T extends boolean>(message: string, progress?: T): T extends true
+    ? ISdProgressToast
+    : void {
     return this.#show("danger", message, progress);
   }
 
@@ -139,7 +148,7 @@ export class SdToastProvider {
     }
 
     const toastRef = createComponent(SdToastControl, {
-      environmentInjector: this.#appRef.injector,
+      environmentInjector: this._appRef.injector,
     });
     const toastEl = toastRef.location.nativeElement as HTMLElement;
 
@@ -150,7 +159,7 @@ export class SdToastProvider {
       }
     }
     containerEl.appendChild(toastEl);
-    this.#appRef.attachView(toastRef.hostView);
+    this._appRef.attachView(toastRef.hostView);
 
     toastEl.findAll<HTMLElement>("._sd-toast-message")[0].innerText = message;
     toastRef.setInput("useProgress", progress ?? false);

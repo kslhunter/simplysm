@@ -20,7 +20,7 @@ import { SdWebRequestError } from "./sd-web-request.error";
 import { SdServiceServerConfUtils } from "./utils/sd-service-server-conf.utils";
 
 export class SdServiceServer extends EventEmitter {
-  public isOpen = false;
+  isOpen = false;
   /***
    * 경로 프록시 (브라우저에 입력된 경로를 기본 파일경로가 아닌 다른 파일경로로 바꾸어 리턴함)
    *
@@ -29,7 +29,7 @@ export class SdServiceServer extends EventEmitter {
    * * 'from'에 'api'로 시작하는 경로 사용 불가
    *
    */
-  public pathProxy: Record</* from */ string, /* to */ string | number> = {};
+  pathProxy: Record</* from */ string, /* to */ string | number> = {};
   private readonly _logger = SdLogger.get(["simplysm", "sd-service-server", this.constructor.name]);
   private _httpServer?: http.Server | https.Server;
   private _wsServer?: WebSocketServer;
@@ -39,11 +39,11 @@ export class SdServiceServer extends EventEmitter {
   // public devMiddlewares?: NextHandleFunction[];
   private _pingInterval?: NodeJS.Timeout;
 
-  public constructor(public readonly options: ISdServiceServerOptions) {
+  constructor(readonly options: ISdServiceServerOptions) {
     super();
   }
 
-  public async getWsClientAsync(socketId: string): Promise<TSdWebSocket | undefined> {
+  async getWsClientAsync(socketId: string): Promise<TSdWebSocket | undefined> {
     try {
       await Wait.until(
         () => {
@@ -91,7 +91,7 @@ export class SdServiceServer extends EventEmitter {
     }
   }
 
-  public getConfig(clientName?: string): Record<string, any | undefined> {
+  getConfig(clientName?: string): Record<string, any | undefined> {
     SdServiceServerConfUtils.getConfig(this.options.rootPath, clientName, this.pathProxy);
     let result: Record<string, any | undefined> = {};
 
@@ -115,7 +115,7 @@ export class SdServiceServer extends EventEmitter {
     return result;
   }
 
-  public async listenAsync(): Promise<void> {
+  async listenAsync(): Promise<void> {
     await new Promise<void>(async (resolve) => {
       this._logger.debug("서버 시작..." + process.env["SD_VERSION"]);
 
@@ -166,7 +166,7 @@ export class SdServiceServer extends EventEmitter {
     this.emit("ready");
   }
 
-  public async closeAsync(): Promise<void> {
+  async closeAsync(): Promise<void> {
     clearInterval(this._pingInterval);
 
     if (this._wsServer) {
@@ -207,14 +207,14 @@ export class SdServiceServer extends EventEmitter {
     this.emit("close");
   }
 
-  public broadcastReload(changedFileSet: Set<string>): void {
+  broadcastReload(changedFileSet: Set<string>): void {
     this._logger.debug("서버내 모든 클라이언트 RELOAD 명령 전송");
     this._wsServer?.clients.forEach(async (wsClient) => {
       await this._sendAsync(wsClient, { name: "client-reload", changedFileSet });
     });
   }
 
-  public async emitAsync<T extends SdServiceEventListenerBase<any, any>>(
+  async emitAsync<T extends SdServiceEventListenerBase<any, any>>(
     eventType: Type<T>,
     infoSelector: (item: T["info"]) => boolean,
     data: T["data"],

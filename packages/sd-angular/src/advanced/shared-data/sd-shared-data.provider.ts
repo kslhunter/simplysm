@@ -2,7 +2,7 @@ import { inject, Injectable, Signal, WritableSignal } from "@angular/core";
 import { SdServiceEventListenerBase } from "@simplysm/sd-service-common";
 import { SdServiceClientFactoryProvider } from "../../providers/sd-service-client-factory.provider";
 import { DateOnly, DateTime, ObjectUtils, Time, Wait } from "@simplysm/sd-core-common";
-import { $computed, $signal } from "../../utils/hooks";
+import { $computed, $signal } from "../../utils/hooks/hooks";
 
 export interface ISharedSignal<T extends ISharedDataBase<string | number>> extends Signal<T[]> {
   $get(key: T["__valueKey"] | undefined): T | undefined;
@@ -12,21 +12,21 @@ export interface ISharedSignal<T extends ISharedDataBase<string | number>> exten
 
 @Injectable({ providedIn: "root" })
 export class SdSharedDataProvider<T extends Record<string, ISharedDataBase<string | number>>> {
-  #sdServiceFactory = inject(SdServiceClientFactoryProvider);
+  private _sdServiceFactory = inject(SdServiceClientFactoryProvider);
 
-  #infoMap = new Map<keyof T & string, ISharedDataInnerInfo<any>>();
+  private _infoMap = new Map<keyof T & string, ISharedDataInnerInfo<any>>();
 
   loadingCount = 0;
 
   register<K extends keyof T & string>(name: K, getter: ISharedDataInfo<T[K]>) {
-    this.#infoMap.set(name, { getter });
+    this._infoMap.set(name, { getter });
   }
 
   async emitAsync<K extends keyof T & string>(name: K, changeKeys?: T[K]["__valueKey"][]) {
-    const info = this.#infoMap.get(name);
+    const info = this._infoMap.get(name);
     if (!info) throw new Error(`'${name}'에 대한 공유데이터 정보가 없습니다.`);
 
-    await this.#sdServiceFactory
+    await this._sdServiceFactory
       .get(info.getter.serviceKey)
       .emitAsync(
         SdSharedDataChangeEvent,
@@ -40,12 +40,12 @@ export class SdSharedDataProvider<T extends Record<string, ISharedDataBase<strin
   }
 
   getSignal<K extends keyof T & string>(name: K): ISharedSignal<T[K]> {
-    const info = this.#infoMap.get(name);
+    const info = this._infoMap.get(name);
     if (!info) throw new Error(`'${name}'에 대한 공유데이터 정보가 없습니다.`);
 
     //-- listener
     if (info.listenerKey == null) {
-      info.listenerKey = void this.#sdServiceFactory.get(info.getter.serviceKey).addEventListenerAsync(
+      info.listenerKey = void this._sdServiceFactory.get(info.getter.serviceKey).addEventListenerAsync(
         SdSharedDataChangeEvent,
         {
           name,
@@ -73,7 +73,7 @@ export class SdSharedDataProvider<T extends Record<string, ISharedDataBase<strin
   async #loadDataAsync<K extends keyof T & string>(name: K, changeKeys?: T[K]["__valueKey"][]) {
     this.loadingCount++;
     try {
-      const info = this.#infoMap.get(name);
+      const info = this._infoMap.get(name);
       if (!info) throw new Error(`'${name}'에 대한 공유데이터 로직 정보가 없습니다.`);
       if (!info.signal) throw new Error(`'${name}'에 대한 공유데이터 저장소가 없습니다.`);
 

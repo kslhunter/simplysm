@@ -7,7 +7,7 @@ import { NeverEntryError } from "../errors/never-entry.error";
 import { UnwrappedType, WrappedType } from "../types/wrap.types";
 
 export class ObjectUtils {
-  public static clone<T>(source: T, options?: {
+  static clone<T>(source: T, options?: {
     excludes?: string[];
     useRefTypes?: any[];
     onlyOneDepth?: boolean;
@@ -101,7 +101,7 @@ export class ObjectUtils {
     return source;
   }
 
-  public static merge<T, P>(source: T, target: P, opt?: {
+  static merge<T, P>(source: T, target: P, opt?: {
     arrayProcess?: "replace" | "concat";
     useDelTargetNull?: boolean
   }): (T & P) {
@@ -172,7 +172,7 @@ export class ObjectUtils {
     return result as any;
   }
 
-  public static merge3<S extends Record<string, TFlatType>, O extends Record<string, TFlatType>, T extends Record<string, TFlatType>>(
+  static merge3<S extends Record<string, TFlatType>, O extends Record<string, TFlatType>, T extends Record<string, TFlatType>>(
     source: S,
     origin: O,
     target: T,
@@ -208,7 +208,7 @@ export class ObjectUtils {
     };
   }
 
-  public static omit<T extends Record<string, any>, K extends keyof T>(
+  static omit<T extends Record<string, any>, K extends keyof T>(
     item: T,
     omitKeys: K[],
   ): Omit<T, K> {
@@ -221,7 +221,7 @@ export class ObjectUtils {
     return result;
   }
 
-  public static omitByFilter<T extends Record<string, any>>(
+  static omitByFilter<T extends Record<string, any>>(
     item: T,
     omitKeyFn: (key: keyof T) => boolean,
   ): T {
@@ -234,7 +234,7 @@ export class ObjectUtils {
     return result;
   }
 
-  public static pick<T extends Record<string, any>, K extends keyof T>(
+  static pick<T extends Record<string, any>, K extends keyof T>(
     item: T,
     keys: K[],
   ): Pick<T, K> {
@@ -245,7 +245,7 @@ export class ObjectUtils {
     return result;
   }
 
-  public static pickByType<T extends Record<string, any>, A extends TFlatType>(
+  static pickByType<T extends Record<string, any>, A extends TFlatType>(
     item: T,
     type: Type<A>,
   ): { [K in keyof T]: WrappedType<T[K]> extends WrappedType<A> ? T[K] : never } {
@@ -280,7 +280,7 @@ export class ObjectUtils {
     return result;
   }
 
-  public static equal(source: any, target: any, options?: {
+  static equal(source: any, target: any, options?: {
     includes?: string[];
     excludes?: string[];
     ignoreArrayIndex?: boolean,
@@ -416,7 +416,7 @@ export class ObjectUtils {
     return false;
   }
 
-  public static validate<T>(value: T, def: TValidateDef<T>): IValidateResult<T> | undefined {
+  static validate<T>(value: T, def: TValidateDef<T>): IValidateResult<T> | undefined {
     let currDef: IValidateDef<T> & {
       type?: Type<WrappedType<T>>[]
     };
@@ -488,7 +488,7 @@ export class ObjectUtils {
     return undefined;
   }
 
-  public static validateObject<T>(obj: T, def: TValidateObjectDef<T>): TValidateObjectResult<T> {
+  static validateObject<T>(obj: T, def: TValidateObjectDef<T>): TValidateObjectResult<T> {
     const result: TValidateObjectResult<T> = {};
     for (const defKey of Object.keys(def)) {
       const validateResult = ObjectUtils.validate(this.getChainValue(obj, defKey), def[defKey]);
@@ -500,7 +500,7 @@ export class ObjectUtils {
     return result;
   }
 
-  public static validateObjectWithThrow<T>(
+  static validateObjectWithThrow<T>(
     displayName: string,
     obj: T,
     def: TValidateObjectDefWithName<T>,
@@ -533,7 +533,7 @@ export class ObjectUtils {
     }
   }
 
-  public static validateArray<T>(
+  static validateArray<T>(
     arr: T[],
     def: ((item: T) => TValidateObjectDef<T>) | TValidateObjectDef<T>,
   ): IValidateArrayResult<T>[] {
@@ -556,7 +556,7 @@ export class ObjectUtils {
     return result;
   }
 
-  public static validateArrayWithThrow<T>(
+  static validateArrayWithThrow<T>(
     displayName: string,
     arr: T[],
     def: ((item: T) => TValidateObjectDefWithName<T>) | TValidateObjectDefWithName<T>,
@@ -593,14 +593,14 @@ export class ObjectUtils {
     }
   }
 
-  public static getChainValueByDepth<T, K extends keyof T>(
+  static getChainValueByDepth<T, K extends keyof T>(
     obj: T,
     key: K,
     depth: number,
     optional: true,
   ): T[K] | undefined;
-  public static getChainValueByDepth<T, K extends keyof T>(obj: T, key: K, depth: number): T[K];
-  public static getChainValueByDepth<T, K extends keyof T>(
+  static getChainValueByDepth<T, K extends keyof T>(obj: T, key: K, depth: number): T[K];
+  static getChainValueByDepth<T, K extends keyof T>(
     obj: T,
     key: K,
     depth: number,
@@ -635,9 +635,9 @@ export class ObjectUtils {
     return result;
   }
 
-  public static getChainValue(obj: any, chain: string, optional: true): any | undefined;
-  public static getChainValue(obj: any, chain: string): any;
-  public static getChainValue(obj: any, chain: string, optional?: true): any | undefined {
+  static getChainValue(obj: any, chain: string, optional: true): any | undefined;
+  static getChainValue(obj: any, chain: string): any;
+  static getChainValue(obj: any, chain: string, optional?: true): any | undefined {
     const splits = this._getChainSplits(chain);
     let result = obj;
     for (const splitItem of splits) {
@@ -651,7 +651,7 @@ export class ObjectUtils {
     return result;
   }
 
-  public static setChainValue(obj: any, chain: string, value: any): void {
+  static setChainValue(obj: any, chain: string, value: any): void {
     const splits = this._getChainSplits(chain);
     let curr = obj;
     for (const splitItem of splits.slice(0, -1)) {
@@ -667,7 +667,7 @@ export class ObjectUtils {
     curr[last] = value;
   }
 
-  public static deleteChainValue(obj: any, chain: string): void {
+  static deleteChainValue(obj: any, chain: string): void {
     const splits = this._getChainSplits(chain);
     let curr = obj;
     for (const splitItem of splits.slice(0, -1)) {
@@ -682,7 +682,7 @@ export class ObjectUtils {
     delete curr[last];
   }
 
-  public static clearUndefined<T>(obj: T): T {
+  static clearUndefined<T>(obj: T): T {
     if (obj == null) {
       return obj;
     }
@@ -696,14 +696,14 @@ export class ObjectUtils {
     return obj;
   }
 
-  public static clear<T extends {}>(obj: T): {} {
+  static clear<T extends {}>(obj: T): {} {
     for (const key of Object.keys(obj)) {
       delete obj[key];
     }
     return obj;
   }
 
-  public static nullToUndefined<T>(obj: T): T | undefined {
+  static nullToUndefined<T>(obj: T): T | undefined {
     if (obj == null) {
       return undefined;
     }
@@ -735,7 +735,7 @@ export class ObjectUtils {
     return obj;
   }
 
-  public static optToUndef<T>(obj: TOptionalUndef<T>): T {
+  static optToUndef<T>(obj: TOptionalUndef<T>): T {
     return obj as T;
   }
 }

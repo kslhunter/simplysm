@@ -1,5 +1,5 @@
 import { injectElementRef } from "./dom/element-ref.injector";
-import { $effect } from "./hooks";
+import { $effect } from "./hooks/hooks";
 
 export function useShowEffect(optFn?: () => {
   type?: "l2r" | "t2b";

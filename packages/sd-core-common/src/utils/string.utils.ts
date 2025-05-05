@@ -1,5 +1,5 @@
 export class StringUtils {
-  public static getSuffix(text: string, type: "을" | "은" | "이" | "와" | "랑" | "로" | "라"): string {
+  static getSuffix(text: string, type: "을" | "은" | "이" | "와" | "랑" | "로" | "라"): string {
     const table = {
       "을": {t: "을", f: "를"},
       "은": {t: "은", f: "는"},
@@ -15,7 +15,7 @@ export class StringUtils {
     return hasLast ? table[type].t : table[type].f;
   }
 
-  public static replaceSpecialDefaultChar(str: string): string {
+  static replaceSpecialDefaultChar(str: string): string {
     return str
       .replace(/Ａ/g, "A")
       .replace(/Ｂ/g, "B")
@@ -58,29 +58,29 @@ export class StringUtils {
       .replace(/（/g, "(");
   }
 
-  public static toPascalCase(str: string): string {
+  static toPascalCase(str: string): string {
     return str
       .replace(/[-.][a-z]/g, (m) => m[1].toUpperCase())
       .replace(/^[a-z]/, (m) => m.toUpperCase());
   }
 
-  public static toCamelCase(str: string): string {
+  static toCamelCase(str: string): string {
     return str
       .replace(/[-.][a-z]/g, (m) => m[1].toUpperCase())
       .replace(/^[A-Z]/, (m) => m.toLowerCase());
   }
 
-  public static toKebabCase(str: string): string {
+  static toKebabCase(str: string): string {
     return str
       .replace(/^[A-Z]/, (m) => m.toLowerCase())
       .replace(/[-_]?[A-Z]/g, (m) => "-" + m.toLowerCase());
   }
 
-  public static isNullOrEmpty(str: string | null | undefined): str is ("" | undefined | null) {
+  static isNullOrEmpty(str: string | null | undefined): str is ("" | undefined | null) {
     return str == null || str === "";
   }
 
-  public static insert(str: string, index: number, insertString: string) {
+  static insert(str: string, index: number, insertString: string) {
     return str.substring(0, index) + insertString + str.substring(index)
   }
 }

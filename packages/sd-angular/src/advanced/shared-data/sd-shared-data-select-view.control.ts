@@ -32,7 +32,7 @@ import {
   ISharedDataModalInputParam,
   ISharedDataModalOutputResult,
 } from "./sd-shared-data-select.control";
-import { $computed, $effect, $model, $signal } from "../../utils/hooks";
+import { $computed, $effect, $model, $signal } from "../../utils/hooks/hooks";
 import { transformBoolean } from "../../utils/type-tramsforms";
 import { SdIconControl } from "../../controls/sd-icon.control";
 import { SdPaginationControl } from "../../controls/sd-pagination.control";
@@ -136,13 +136,13 @@ export class SdSharedDataSelectViewControl<
   T extends ISharedDataBase<string | number>,
   TMODAL extends SdModalBase<ISharedDataModalInputParam, ISharedDataModalOutputResult>,
 > {
-  icons = inject(SdAngularConfigProvider).icons;
+  protected icons = inject(SdAngularConfigProvider).icons;
 
-  #sdModal = inject(SdModalProvider);
+  private _sdModal = inject(SdModalProvider);
 
-  _selectedItem = input<T | undefined>(undefined, { alias: "selectedItem" });
-  _selectedItemChange = output<T | undefined>({ alias: "selectedItemChange" });
-  selectedItem = $model(this._selectedItem, this._selectedItemChange);
+  __selectedItem = input<T | undefined>(undefined, { alias: "selectedItem" });
+  __selectedItemChange = output<T | undefined>({ alias: "selectedItemChange" });
+  selectedItem = $model(this.__selectedItem, this.__selectedItemChange);
 
   items = input.required<T[]>();
   selectedIcon = input<IconDefinition>();
@@ -211,7 +211,7 @@ export class SdSharedDataSelectViewControl<
   async onModalButtonClick(): Promise<void> {
     if (!this.modalType()) return;
 
-    const result = await this.#sdModal.showAsync(
+    const result = await this._sdModal.showAsync(
       this.modalType()!,
       this.modalHeader() ?? "자세히...",
       {

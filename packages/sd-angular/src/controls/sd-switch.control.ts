@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, HostListener, input, output, ViewEncapsulation } from "@angular/core";
 import { transformBoolean } from "../utils/type-tramsforms";
-import { $model } from "../utils/hooks";
+import { $model } from "../utils/hooks/hooks";
 
 @Component({
   selector: "sd-switch",
@@ -108,9 +108,9 @@ import { $model } from "../utils/hooks";
   },
 })
 export class SdSwitchControl {
-  _value = input(false, { alias: "value", transform: transformBoolean });
-  _valueChange = output<boolean>({ alias: "valueChange" });
-  value = $model(this._value, this._valueChange);
+  __value = input(false, { alias: "value", transform: transformBoolean });
+  __valueChange = output<boolean>({ alias: "valueChange" });
+  value = $model(this.__value, this.__valueChange);
 
   disabled = input(false, { transform: transformBoolean });
   inline = input(false, { transform: transformBoolean });

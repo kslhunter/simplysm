@@ -1,45 +1,47 @@
 export default {
   meta: {
-    type: "suggestion",
+    type: "problem",
     docs: {
-      description: "HTML의 'TODO' 주석 경고",
+      description: "HTML 템플릿내 TODO 주석을 경고합니다.",
     },
-
     schema: [],
+    messages: {
+      noTodo: "Unexpected TODO comment in HTML template: '{{content}}'",
+    },
   },
 
-  create: (context) => {
-    // const parserServices = context.parserServices;
-    return {
-      Program(node) {
-        if ("value" in node && typeof node.value === "string") {
-          const comments = node.value.match(/<!--(((?!-->)[\s\S])*)-->/g);
-          if (!comments) return;
+  create(context) {
+    const source = context.getSourceCode().getText();
 
-          let cursor = 0;
-          for (const comment of comments) {
-            if (!comment.includes("TODO:")) continue;
+    const commentRegex = /<!--[\s\S]*?-->/g;
+    let match;
 
-            const index = node.value.slice(cursor).indexOf(comment) + cursor;
-            const line = node.value.slice(0, index).split("\n").length;
-            const column = index - node.value.slice(0, index).lastIndexOf("\n") - 1;
+    while ((match = commentRegex.exec(source)) !== null) {
+      const comment = match[0];
+      if (!comment.includes("TODO:")) continue;
 
-            const endIndex = index + comment.length;
-            const endLine = node.value.slice(0, endIndex).split("\n").length;
-            const endColumn = endIndex - node.value.slice(0, endIndex).lastIndexOf("\n") - 1;
+      const start = match.index;
+      const end = start + comment.length;
 
-            cursor += index;
+      const contentMatch = comment.match(/<!--([\s\S]*?)-->/);
+      let content = contentMatch ? contentMatch[1].trim() : "";
+      const todoIndex = content.indexOf("TODO:");
+      if (todoIndex !== -1) {
+        content = content.substring(todoIndex + 5).trim();
+      }
 
-            context.report({
-              loc: {
-                start: { line, column },
-                end: { line: endLine, column: endColumn },
-              },
-              message: comment.match(/<!--(((?!-->)[\s\S])*)-->/)[1].trim(),
-            });
-          }
-        }
-      },
-    };
+      const loc = context.getSourceCode().getLocFromIndex(start);
+      const endLoc = context.getSourceCode().getLocFromIndex(end);
+
+      context.report({
+        loc: { start: loc, end: endLoc },
+        messageId: "noTodo",
+        data: {
+          content: content,
+        },
+      });
+    }
+
+    return {};
   },
 };

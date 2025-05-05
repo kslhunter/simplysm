@@ -1,36 +1,31 @@
 import path from "path";
 import { FsUtils, PathUtils, SdLogger, SdProcess } from "@simplysm/sd-core-node";
-import { pathToFileURL } from "url";
 import semver from "semver";
 import { NeverEntryError, StringUtils, Wait, XmlConvert } from "@simplysm/sd-core-common";
 import { SdStorage } from "@simplysm/sd-storage";
 import { SdCliLocalUpdate } from "./sd-cli-local-update";
 import { SdMultiBuildRunner } from "../pkg-builders/sd-multi.build-runner";
 import { SdCliConvertMessageUtils } from "../utils/sd-cli-convert-message.utils";
-import { ISdProjectConfig, TSdPackageConfig } from "../types/config.types";
+import { TSdPackageConfig } from "../types/config.types";
 import { INpmConfig } from "../types/common-configs.types";
 import { ISdBuildMessage } from "../types/build.types";
+import { loadProjConfAsync } from "./utils/loadProjConfAsync";
 
 export class SdCliProject {
   static async watchAsync(opt: {
-    confFileRelPath: string;
-    optNames: string[];
-    pkgNames: string[];
-    inspectNames: string[];
+    config?: string;
+    options?: string[];
+    packages?: string[];
+    inspects?: string[];
   }): Promise<void> {
     const logger = SdLogger.get(["simplysm", "sd-cli", "SdCliProject", "watchAsync"]);
 
     logger.debug("프로젝트 설정 가져오기...");
-    const projConf = (
-      await import(pathToFileURL(path.resolve(process.cwd(), opt.confFileRelPath)).href)
-    ).default(true, opt.optNames) as ISdProjectConfig;
+    const projConf = await loadProjConfAsync(process.cwd(), true, opt);
 
     if (projConf.localUpdates) {
       logger.debug("로컬 라이브러리 업데이트 변경감지 시작...");
-      await SdCliLocalUpdate.watchAsync({
-        confFileRelPath: opt.confFileRelPath,
-        optNames: opt.optNames,
-      });
+      await SdCliLocalUpdate.watchAsync(opt);
     }
 
     logger.debug("프로젝트 package.json 가져오기...");
@@ -45,8 +40,8 @@ export class SdCliProject {
       .filter((item) => !item.includes("."))
       .map((item) => PathUtils.norm(item));
     let pkgPaths = allPkgPaths.filter((pkgPath) => path.basename(pkgPath) in projConf.packages);
-    if (opt.pkgNames.length !== 0) {
-      pkgPaths = pkgPaths.filter((pkgPath) => opt.pkgNames.includes(path.basename(pkgPath)));
+    if (opt.packages) {
+      pkgPaths = pkgPaths.filter((pkgPath) => opt.packages!.includes(path.basename(pkgPath)));
     }
 
     logger.debug("패키지 존재 확인...");
@@ -76,20 +71,14 @@ export class SdCliProject {
   }
 
   static async buildAsync(opt: {
-    confFileRelPath: string;
-    optNames: string[];
-    pkgNames: string[]
+    config?: string;
+    options?: string[];
+    packages?: string[];
   }): Promise<void> {
     const logger = SdLogger.get(["simplysm", "sd-cli", "SdCliProject", "buildAsync"]);
 
     logger.debug("프로젝트 설정 가져오기...");
-    const projConf = (await import(pathToFileURL(path.resolve(
-      process.cwd(),
-      opt.confFileRelPath,
-    )).href)).default(
-      false,
-      opt.optNames,
-    ) as ISdProjectConfig;
+    const projConf = await loadProjConfAsync(process.cwd(), false, opt);
 
     logger.debug("프로젝트 package.json 가져오기...");
     const projNpmConf = FsUtils.readJson(path.resolve(process.cwd(), "package.json")) as INpmConfig;
@@ -101,8 +90,8 @@ export class SdCliProject {
     const allPkgPaths = projNpmConf.workspaces.mapMany((item) => FsUtils.glob(item))
       .map((item) => PathUtils.norm(item));
     let pkgPaths = allPkgPaths.filter((pkgPath) => path.basename(pkgPath) in projConf.packages);
-    if (opt.pkgNames.length !== 0) {
-      pkgPaths = pkgPaths.filter((pkgPath) => opt.pkgNames.includes(path.basename(pkgPath)));
+    if (opt.packages) {
+      pkgPaths = pkgPaths.filter((pkgPath) => opt.packages!.includes(path.basename(pkgPath)));
     }
 
     logger.debug("프로젝트 및 패키지 버전 설정...");
@@ -121,22 +110,16 @@ export class SdCliProject {
     this.#logging(messages.mapMany(), logger);
   }
 
-  public static async publishAsync(opt: {
-    noBuild: boolean;
-    confFileRelPath: string;
-    optNames: string[];
-    pkgNames: string[];
+  static async publishAsync(opt: {
+    config: string;
+    options?: string[];
+    packages?: string[];
+    noBuild?: boolean;
   }): Promise<void> {
     const logger = SdLogger.get(["simplysm", "sd-cli", "SdCliProject", "publishAsync"]);
 
     logger.debug("프로젝트 설정 가져오기...");
-    const projConf = (await import(pathToFileURL(path.resolve(
-      process.cwd(),
-      opt.confFileRelPath,
-    )).href)).default(
-      false,
-      opt.optNames,
-    ) as ISdProjectConfig;
+    const projConf = await loadProjConfAsync(process.cwd(), false, opt);
 
     logger.debug("프로젝트 package.json 가져오기...");
     const projNpmConf = FsUtils.readJson(path.resolve(process.cwd(), "package.json")) as INpmConfig;
@@ -165,8 +148,8 @@ export class SdCliProject {
       .filter((item) => !item.includes("."))
       .map((item) => PathUtils.norm(item));
     let pkgPaths = allPkgPaths.filter((pkgPath) => path.basename(pkgPath) in projConf.packages);
-    if (opt.pkgNames.length !== 0) {
-      pkgPaths = pkgPaths.filter((pkgPath) => opt.pkgNames.includes(path.basename(pkgPath)));
+    if (opt.packages) {
+      pkgPaths = pkgPaths.filter((pkgPath) => opt.packages!.includes(path.basename(pkgPath)));
     }
 
     if (!opt.noBuild) {

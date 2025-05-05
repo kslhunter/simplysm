@@ -24,7 +24,7 @@ import { SdEventsDirective } from "../directives/sd-events.directive";
   `,
 })
 export class SdFormControl {
-  #sdToast = inject(SdToastProvider);
+  private _sdToast = inject(SdToastProvider);
 
   formElRef = viewChild.required<any, ElementRef<HTMLFormElement>>("formEl", { read: ElementRef });
 
@@ -61,7 +61,7 @@ export class SdFormControl {
       });
     }
 
-    this.#sdToast.info(errorMessage);
+    this._sdToast.info(errorMessage);
     this.invalid.emit();
   }
 

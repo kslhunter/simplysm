@@ -7,7 +7,7 @@ import {
 } from "@angular/core";
 import { SdTextfieldControl, TSdTextfieldTypes } from "./sd-textfield.control";
 import { transformBoolean } from "../utils/type-tramsforms";
-import { $model } from "../utils/hooks";
+import { $model } from "../utils/hooks/hooks";
 
 @Component({
   selector: "sd-range",
@@ -46,13 +46,13 @@ import { $model } from "../utils/hooks";
 export class SdRangeControl<K extends keyof TSdTextfieldTypes> {
   type = input.required<K>();
 
-  _from = input<TSdTextfieldTypes[K] | undefined>(undefined, { alias: "from" });
-  _fromChange = output<TSdTextfieldTypes[K] | undefined>({ alias: "fromChange" });
-  from = $model(this._from, this._fromChange);
+  __from = input<TSdTextfieldTypes[K] | undefined>(undefined, { alias: "from" });
+  __fromChange = output<TSdTextfieldTypes[K] | undefined>({ alias: "fromChange" });
+  from = $model(this.__from, this.__fromChange);
 
-  _to = input<TSdTextfieldTypes[K] | undefined>(undefined, { alias: "to" });
-  _toChange = output<TSdTextfieldTypes[K] | undefined>({ alias: "toChange" });
-  to = $model(this._to, this._toChange);
+  __to = input<TSdTextfieldTypes[K] | undefined>(undefined, { alias: "to" });
+  __toChange = output<TSdTextfieldTypes[K] | undefined>({ alias: "toChange" });
+  to = $model(this.__to, this.__toChange);
 
   inputStyle = input<string>();
 

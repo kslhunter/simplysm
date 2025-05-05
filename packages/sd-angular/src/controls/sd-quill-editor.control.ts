@@ -1,7 +1,13 @@
-import { ChangeDetectionStrategy, Component, input, output, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  output,
+  ViewEncapsulation,
+} from "@angular/core";
 import Quill from "quill";
 import QuillResizeImage from "quill-resize-image";
-import { $effect, $model } from "../utils/hooks";
+import { $effect, $model } from "../utils/hooks/hooks";
 import { injectElementRef } from "../utils/dom/element-ref.injector";
 import { transformBoolean } from "../utils/type-tramsforms";
 
@@ -75,19 +81,19 @@ Quill.register("modules/resize", QuillResizeImage);
   },
 })
 export class SdQuillEditorControl {
-  #elRef = injectElementRef<HTMLElement>();
+  private _elRef = injectElementRef<HTMLElement>();
 
-  _value = input<string | undefined>(undefined, { alias: "value" });
-  _valueChange = output<string | undefined>({ alias: "valueChange" });
-  value = $model(this._value, this._valueChange);
+  __value = input<string | undefined>(undefined, { alias: "value" });
+  __valueChange = output<string | undefined>({ alias: "valueChange" });
+  value = $model(this.__value, this.__valueChange);
 
   disabled = input(false, { transform: transformBoolean });
 
-  #quill!: Quill;
+  private _quill!: Quill;
 
   constructor() {
     $effect([], () => {
-      this.#quill = new Quill(this.#elRef.nativeElement.firstElementChild as HTMLElement, {
+      this._quill = new Quill(this._elRef.nativeElement.firstElementChild as HTMLElement, {
         theme: "snow",
         modules: {
           toolbar: [
@@ -108,25 +114,25 @@ export class SdQuillEditorControl {
         },
       });
 
-      this.#quill.root.addEventListener("input", () => {
-        const newValue = this.#quill.root.innerHTML;
+      this._quill.root.addEventListener("input", () => {
+        const newValue = this._quill.root.innerHTML;
         this.value.set(newValue === "" ? undefined : newValue);
       });
 
-      this.#quill.on("text-change", () => {
-        const newValue = this.#quill.root.innerHTML;
+      this._quill.on("text-change", () => {
+        const newValue = this._quill.root.innerHTML;
         this.value.set(newValue === "" ? undefined : newValue);
       });
     });
 
     $effect(() => {
-      if (this.#quill.root.innerHTML !== (this.value() ?? "")) {
-        this.#quill.root.innerHTML = this.value() ?? "";
+      if (this._quill.root.innerHTML !== (this.value() ?? "")) {
+        this._quill.root.innerHTML = this.value() ?? "";
       }
     });
 
     $effect(() => {
-      this.#quill.enable(!this.disabled());
+      this._quill.enable(!this.disabled());
     });
   }
 }

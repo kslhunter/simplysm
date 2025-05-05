@@ -8,7 +8,7 @@ import {
   ViewEncapsulation
 } from "@angular/core";
 import { SdTabControl } from "./sd-tab.control";
-import { $computed } from "../utils/hooks";
+import { $computed } from "../utils/hooks/hooks";
 
 @Component({
   selector: "sd-tab-item",
@@ -68,14 +68,14 @@ import { $computed } from "../utils/hooks";
   }
 })
 export class SdTabItemControl {
-  #parentControl = inject<SdTabControl>(forwardRef(() => SdTabControl));
+  private _parentControl = inject<SdTabControl>(forwardRef(() => SdTabControl));
 
   value = input<any>();
 
-  isSelected = $computed(() => this.#parentControl.value() === this.value());
+  isSelected = $computed(() => this._parentControl.value() === this.value());
 
   @HostListener("click")
   onClick() {
-    this.#parentControl.value.set(this.value());
+    this._parentControl.value.set(this.value());
   }
 }

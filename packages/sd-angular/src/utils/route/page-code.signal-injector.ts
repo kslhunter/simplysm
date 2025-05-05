@@ -2,7 +2,7 @@ import { inject, Signal } from "@angular/core";
 import { NavigationEnd, Router } from "@angular/router";
 import { toSignal } from "@angular/core/rxjs-interop";
 import { filter, map } from "rxjs";
-import { $computed } from "../hooks";
+import { $computed } from "../hooks/hooks";
 
 export function injectPageCode$(): Signal<string> {
   const router = inject(Router);

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
-import { $computed } from "../utils/hooks";
+import { $computed } from "../utils/hooks/hooks";
 import { SizeProp } from "@fortawesome/fontawesome-svg-core";
 import { transformBoolean } from "../utils/type-tramsforms";
 

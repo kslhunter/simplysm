@@ -19,8 +19,8 @@ export interface ISdServiceServerOptions {
 }
 
 export class SdServiceBase {
-  public server!: SdServiceServer;
-  public socketId?: string; // API로 접근한 경우 undefined
-  public request?: ISdServiceRequest; // API로 접근한 경우 undefined
-  public webHeaders?: http.IncomingHttpHeaders; // Socket로 접근한 경우 undefined
+  server!: SdServiceServer;
+  socketId?: string; // API로 접근한 경우 undefined
+  request?: ISdServiceRequest; // API로 접근한 경우 undefined
+  webHeaders?: http.IncomingHttpHeaders; // Socket로 접근한 경우 undefined
 }

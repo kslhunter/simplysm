@@ -1,5 +1,5 @@
 export class DateTimeFormatUtils {
-  public static format(format: string, args: {
+  static format(format: string, args: {
     year?: number;
     month?: number;
     day?: number;

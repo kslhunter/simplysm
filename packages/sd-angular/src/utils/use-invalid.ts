@@ -1,5 +1,5 @@
 import { injectElementRef } from "./dom/element-ref.injector";
-import { $effect } from "./hooks";
+import { $effect } from "./hooks/hooks";
 import { StringUtils } from "@simplysm/sd-core-common";
 import { Signal } from "@angular/core";
 

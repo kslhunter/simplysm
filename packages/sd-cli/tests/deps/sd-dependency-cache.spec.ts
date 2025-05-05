@@ -1,13 +1,17 @@
 import "@simplysm/sd-core-common";
 import { PathUtils } from "@simplysm/sd-core-node";
 import { beforeEach, describe, expect, it } from "vitest";
-import { SdDependencyCache } from "../../src/ts-compiler/sd-dependency-cache";
+import {
+  ISdAffectedFileTreeNode,
+  SdDependencyCache,
+} from "../../src/ts-compiler/sd-dependency-cache";
 
 describe("SdDependencyCache", () => {
   const a = PathUtils.norm("/a.ts");
   const b = PathUtils.norm("/b.ts");
   const c = PathUtils.norm("/c.ts");
   const html = PathUtils.norm("/comp.html");
+  const style = PathUtils.norm("/style.scss");
 
   let depCache: SdDependencyCache;
 
@@ -105,5 +109,36 @@ describe("SdDependencyCache", () => {
     // 내부 캐시 확인
     expect(depCache["_exportCache"].has(a)).toBe(false);
     expect(depCache["_revDepCache"].get(a)?.has(b)).toBeFalsy(); // unefined
+  });
+
+  it("getAffectedFileTree()는 영향도를 트리 형태로 표현한다", () => {
+    // a.ts → export A
+    depCache.addExport(a, "A");
+
+    // b.ts → export { A as B } from './a.ts'
+    depCache.addReexport(b, a, {
+      importSymbol: "A",
+      exportSymbol: "B",
+    });
+
+    // c.ts → import { B } from './b.ts'
+    depCache.addImport(c, b, "B");
+
+    const trees = depCache.getAffectedFileTree(new Set([a]));
+
+    expect(trees.length).toBeGreaterThan(0);
+    const aNode = trees.find(t => t.fileNPath === a)!;
+    expect(aNode.children.some(c1 => c1.fileNPath === b)).toBeTruthy();
+    const bNode = aNode.children.find(c1 => c1.fileNPath === b)!;
+    expect(bNode.children.some(c2 => c2.fileNPath === c)).toBeTruthy();
+
+    const printTree = (node: ISdAffectedFileTreeNode, indent = "") => {
+      console.log(indent + node.fileNPath);
+      for (const child of node.children) {
+        printTree(child, indent + "  ");
+      }
+    };
+
+    console.log(printTree(trees[0]));
   });
 });

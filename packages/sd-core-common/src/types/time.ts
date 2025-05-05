@@ -5,11 +5,11 @@ import {DateTime} from "./date-time";
 export class Time {
   private _tick: number;
 
-  public constructor();
-  public constructor(hour: number, minute: number, second?: number, millisecond?: number);
-  public constructor(tick: number);
-  public constructor(date: Date);
-  public constructor(arg1?: number | Date, arg2?: number, arg3?: number, arg4?: number) {
+  constructor();
+  constructor(hour: number, minute: number, second?: number, millisecond?: number);
+  constructor(tick: number);
+  constructor(date: Date);
+  constructor(arg1?: number | Date, arg2?: number, arg3?: number, arg4?: number) {
     if (arg1 === undefined) {
       const now = new Date();
       this._tick = (
@@ -40,7 +40,7 @@ export class Time {
     }
   }
 
-  public static parse(str: string): Time {
+  static parse(str: string): Time {
     const match1 = (/(오전|오후) ([0-9]{1,2}):([0-9]{1,2}):([0-9]{1,2})(\.([0-9]{1,3}))?$/).exec(str);
     if (match1 != null) {
       return new Time(
@@ -75,79 +75,79 @@ export class Time {
     }
   }
 
-  public get hour(): number {
+  get hour(): number {
     return Math.floor(this._tick / (60 * 60 * 1000));
   }
 
-  public set hour(value: number) {
+  set hour(value: number) {
     this._tick = (this._tick + ((value - this.hour) * 60 * 60 * 1000)) % (24 * 60 * 60 * 1000);
   }
 
-  public get minute(): number {
+  get minute(): number {
     return Math.floor(this._tick / (60 * 1000)) % 60;
   }
 
-  public set minute(value: number) {
+  set minute(value: number) {
     this._tick = (this._tick + ((value - this.minute) * 60 * 1000)) % (24 * 60 * 60 * 1000);
   }
 
-  public get second(): number {
+  get second(): number {
     return Math.floor(this._tick / 1000) % 60;
   }
 
-  public set second(value: number) {
+  set second(value: number) {
     this._tick = (this._tick + ((value - this.second) * 1000)) % (24 * 60 * 60 * 1000);
   }
 
-  public get millisecond(): number {
+  get millisecond(): number {
     return this._tick % 1000;
   }
 
-  public set millisecond(value: number) {
+  set millisecond(value: number) {
     this._tick = (this._tick + (value - this.millisecond)) % (24 * 60 * 60 * 1000);
   }
 
-  public get tick(): number {
+  get tick(): number {
     return this._tick;
   }
 
-  public set tick(tick: number) {
+  set tick(tick: number) {
     this._tick = tick % (24 * 60 * 60 * 1000);
   }
 
-  public setHour(hour: number): Time {
+  setHour(hour: number): Time {
     return new Time(hour, this.minute, this.second, this.millisecond);
   }
 
-  public setMinute(minute: number): Time {
+  setMinute(minute: number): Time {
     return new Time(this.hour, minute, this.second, this.millisecond);
   }
 
-  public setSecond(second: number): Time {
+  setSecond(second: number): Time {
     return new Time(this.hour, this.minute, second, this.millisecond);
   }
 
-  public setMillisecond(millisecond: number): Time {
+  setMillisecond(millisecond: number): Time {
     return new Time(this.hour, this.minute, this.second, millisecond);
   }
 
-  public addHours(hours: number): Time {
+  addHours(hours: number): Time {
     return this.setHour(this.hour + hours);
   }
 
-  public addMinutes(minutes: number): Time {
+  addMinutes(minutes: number): Time {
     return this.setMinute(this.minute + minutes);
   }
 
-  public addSeconds(seconds: number): Time {
+  addSeconds(seconds: number): Time {
     return this.setSecond(this.second + seconds);
   }
 
-  public addMilliseconds(milliseconds: number): Time {
+  addMilliseconds(milliseconds: number): Time {
     return this.setMillisecond(this.millisecond + milliseconds);
   }
 
-  public toFormatString(format: string): string {
+  toFormatString(format: string): string {
     return DateTimeFormatUtils.format(format, {
       hour: this.hour,
       minute: this.minute,
@@ -156,7 +156,7 @@ export class Time {
     });
   }
 
-  public toString(): string {
+  toString(): string {
     return this.toFormatString("HH:mm:ss.fff");
   }
 }

@@ -2,18 +2,18 @@ import * as XLSX from "xlsx";
 import {SdExcelReaderDataTable} from "./sd-excel-reader-data-table";
 
 export class SdExcelReaderWorksheet {
-  public constructor(private readonly _ws: XLSX.WorkSheet) {
+  constructor(private readonly _ws: XLSX.WorkSheet) {
   }
 
   private _range?: XLSX.Range;
-  public get range(): XLSX.Range {
+  get range(): XLSX.Range {
     if (!this._range) {
       this._range = XLSX.utils.decode_range(this._ws["!ref"]!)!;
     }
     return this._range;
   }
 
-  public val(r: number, c: number): string | number | boolean | Date | undefined {
+  val(r: number, c: number): string | number | boolean | Date | undefined {
     const addr = this._addr(r, c);
     const cell = this._ws[addr] as XLSX.CellObject;
 
@@ -26,7 +26,7 @@ export class SdExcelReaderWorksheet {
     }
   }
 
-  public dataTable(startRow?: number, startCol?: number, endRow?: number, endCol?: number): SdExcelReaderDataTable {
+  dataTable(startRow?: number, startCol?: number, endRow?: number, endCol?: number): SdExcelReaderDataTable {
     return new SdExcelReaderDataTable(this, {
       s: {
         r: startRow === undefined ? this.range.s.r : startRow < 0 ? this.range.s.r + startRow : startRow,

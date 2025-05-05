@@ -14,7 +14,7 @@ export function PropertyValidate(def: TValidateDef<any>, replacer?: TPropertyVal
       const replacedNextValue = replacer !== undefined ? replacer(nextValue) : nextValue;
       const error = ObjectUtils.validate(replacedNextValue, def);
       if (error !== undefined) {
-        throw new Error(`${error.message !== undefined ? error.message : "입력값이 잘못되었습니다"}: ${JSON.stringify({
+        throw new Error(`${error.message ?? "입력값이 잘못되었습니다"}: ${JSON.stringify({
           component: target.constructor.name,
           propertyName,
           value: error.value,

@@ -1,5 +1,5 @@
 import { EventEmitter } from "events";
-import { FsUtils, SdLogger, PathUtils, SdFsWatcher, TNormPath } from "@simplysm/sd-core-node";
+import { FsUtils, PathUtils, SdFsWatcher, SdLogger, TNormPath } from "@simplysm/sd-core-node";
 import path from "path";
 import { SdNgBundler } from "./sd-ng.bundler";
 import { SdCliNgRoutesFileGenerator } from "./sd-cli-ng-routes.file-generator";
@@ -17,7 +17,7 @@ export class SdClientBuildRunner extends EventEmitter {
   private _cordova?: SdCliCordova;
   private _watchScopePathSet: Set<TNormPath>;
 
-  public constructor(
+  constructor(
     private _projConf: ISdProjectConfig,
     private _pkgPath: TNormPath,
   ) {
@@ -36,14 +36,14 @@ export class SdClientBuildRunner extends EventEmitter {
     );
   }
 
-  public override on(event: "change", listener: () => void): this;
-  public override on(event: "complete", listener: (result: ISdBuildRunnerResult) => void): this;
-  public override on(event: string | symbol, listener: (...args: any[]) => void): this {
+  override on(event: "change", listener: () => void): this;
+  override on(event: "complete", listener: (result: ISdBuildRunnerResult) => void): this;
+  override on(event: string | symbol, listener: (...args: any[]) => void): this {
     super.on(event, listener);
     return this;
   }
 
-  public async buildAsync(): Promise<ISdBuildRunnerResult> {
+  async buildAsync(): Promise<ISdBuildRunnerResult> {
     this._debug("dist 초기화...");
     FsUtils.remove(path.resolve(this._pkgPath, "dist"));
 
@@ -65,7 +65,7 @@ export class SdClientBuildRunner extends EventEmitter {
     };
   }
 
-  public async watchAsync() {
+  async watchAsync() {
     this.emit("change");
 
     this._debug("dist 초기화...");

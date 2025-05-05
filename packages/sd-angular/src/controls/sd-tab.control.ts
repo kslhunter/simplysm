@@ -1,5 +1,11 @@
-import { ChangeDetectionStrategy, Component, input, output, ViewEncapsulation } from "@angular/core";
-import { $model } from "../utils/hooks";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  output,
+  ViewEncapsulation,
+} from "@angular/core";
+import { $model } from "../utils/hooks/hooks";
 
 @Component({
   selector: "sd-tab",
@@ -22,7 +28,7 @@ import { $model } from "../utils/hooks";
         @media all and (pointer: coarse) {
           padding: 0 calc(var(--gap-default) + 1px) 0 calc(var(--gap-default) - 1px);
         }*/
-        
+
         padding: 0 calc(var(--gap-default) + 1px) 0 calc(var(--gap-default) - 1px);
       }
     `,
@@ -31,7 +37,7 @@ import { $model } from "../utils/hooks";
     <ng-content></ng-content>`,
 })
 export class SdTabControl {
-  _value = input<any>(undefined, { alias: "value" });
-  _valueChange = output<any>({ alias: "valueChange" });
-  value = $model(this._value, this._valueChange);
+  __value = input<any>(undefined, { alias: "value" });
+  __valueChange = output<any>({ alias: "valueChange" });
+  value = $model(this.__value, this.__valueChange);
 }

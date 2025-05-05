@@ -10,7 +10,7 @@ import {
 import { DateOnly } from "@simplysm/sd-core-common";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { FormatPipe } from "../pipes/format.pipe";
-import { $computed } from "../utils/hooks";
+import { $computed } from "../utils/hooks/hooks";
 import {
   SdItemOfTemplateContext,
   SdItemOfTemplateDirective,
@@ -130,7 +130,7 @@ import { NgTemplateOutlet } from "@angular/common";
   ],
 })
 export class SdCalendarControl<T> {
-  icons = inject(SdAngularConfigProvider).icons;
+ protected icons = inject(SdAngularConfigProvider).icons;
 
   items = input.required<T[]>();
   getItemDateFn = input.required<(item: T, index: number) => DateOnly>();

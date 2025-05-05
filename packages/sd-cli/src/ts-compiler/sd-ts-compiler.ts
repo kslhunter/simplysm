@@ -1,14 +1,9 @@
 import ts from "typescript";
 import path from "path";
-import { FsUtils, PathUtils, SdLogger, TNormPath } from "@simplysm/sd-core-node";
+import { FsUtils, PathUtils, SdLogger, SdWorker, TNormPath } from "@simplysm/sd-core-node";
 import { StringUtils } from "@simplysm/sd-core-common";
 import { NgtscProgram, OptimizeFor } from "@angular/compiler-cli";
-import {
-  ComponentStylesheetBundler,
-} from "@angular/build/src/tools/esbuild/angular/component-stylesheets";
 import { AngularCompilerHost } from "@angular/build/src/tools/angular/angular-host";
-import { transformSupportedBrowsersToTargets } from "@angular/build/src/tools/esbuild/utils";
-import browserslist from "browserslist";
 import {
   replaceBootstrap,
 } from "@angular/build/src/tools/angular/transformers/jit-bootstrap-transformer";
@@ -23,15 +18,16 @@ import {
   createWorkerTransformer,
 } from "@angular/build/src/tools/angular/transformers/web-worker-transformer";
 import { ESLint } from "eslint";
-import { SdDependencyCache } from "./sd-dependency-cache";
+import { ISdAffectedFileTreeNode, SdDependencyCache } from "./sd-dependency-cache";
 import { SdDependencyAnalyzer } from "./sd-dependency-analyzer";
+import { TStyleBundlerWorkerType } from "../types/worker.types";
 
 export class SdTsCompiler {
   private _logger = SdLogger.get(["simplysm", "sd-cli", "SdTsCompiler"]);
 
   private _isForAngular: boolean;
 
-  private _stylesheetBundler: ComponentStylesheetBundler | undefined;
+  private _stylesheetBundlingWorker?: SdWorker<TStyleBundlerWorkerType>;
 
   private _ngProgram: NgtscProgram | undefined;
   private _program: ts.Program | undefined;
@@ -58,34 +54,6 @@ export class SdTsCompiler {
     const tsconfigPath = path.resolve(this._opt.pkgPath, "tsconfig.json");
     const tsconfig = FsUtils.readJson(tsconfigPath);
     this._isForAngular = Boolean(tsconfig.angularCompilerOptions);
-
-    if (this._isForAngular) {
-      //-- stylesheetBundler
-      this._stylesheetBundler = new ComponentStylesheetBundler(
-        {
-          workspaceRoot: this._opt.pkgPath,
-          optimization: !this._opt.isDevMode,
-          inlineFonts: true,
-          preserveSymlinks: false,
-          sourcemap: this._opt.isDevMode ? "inline" : false,
-          outputNames: { bundles: "[name]", media: "media/[name]" },
-          includePaths: [],
-          externalDependencies: [],
-          target: transformSupportedBrowsersToTargets(browserslist(["Chrome > 78"])),
-          postcssConfiguration: {
-            plugins: [["css-has-pseudo"]],
-          },
-          tailwindConfiguration: undefined,
-          cacheOptions: {
-            enabled: true,
-            path: ".cache/angular",
-            basePath: ".cache",
-          },
-        },
-        "scss",
-        this._opt.isDevMode,
-      );
-    }
   }
 
   private _parseTsConfig() {
@@ -183,6 +151,23 @@ export class SdTsCompiler {
     return compilerHost;
   }
 
+  private async _getOrCreateStyleBundleWorkerAsync() {
+    if (this._stylesheetBundlingWorker) {
+      return this._stylesheetBundlingWorker;
+    }
+
+    this._stylesheetBundlingWorker = new SdWorker<TStyleBundlerWorkerType>(
+      import.meta.resolve("../workers/style-bundler.worker"),
+    );
+
+    await this._stylesheetBundlingWorker.run(
+      "prepare",
+      [this._opt.pkgPath, this._opt.isDevMode],
+    );
+
+    return this._stylesheetBundlingWorker;
+  }
+
   private async _bundleStylesheetAsync(
     data: string,
     containingFile: TNormPath,
@@ -201,9 +186,8 @@ export class SdTsCompiler {
       }
 
       try {
-        const result = resourceFile != null
-          ? await this._stylesheetBundler!.bundleFile(resourceFile)
-          : await this._stylesheetBundler!.bundleInline(data, containingFile, "scss");
+        const worker = this._stylesheetBundlingWorker!;
+        const result = await worker.run("bundle", [data, containingFile, resourceFile]);
 
         for (const referencedFile of result.referencedFiles ?? []) {
           // 참조하는 파일과 참조된 파일 사이의 의존성 관계 추가
@@ -230,20 +214,19 @@ export class SdTsCompiler {
     });
   }
 
-  public async compileAsync(modifiedFileSet: Set<TNormPath>): Promise<ISdTsCompilerResult> {
+  async compileAsync(modifiedFileSet: Set<TNormPath>): Promise<ISdTsCompilerResult> {
     this._perf = new SdCliPerformanceTimer("esbuild compile");
 
     const prepareResult = await this._prepareAsync(modifiedFileSet);
 
-    const [buildResult, lintResults] = await Promise.all([
-      this._buildAsync(prepareResult),
+    const [globalStyleSheet, buildResult, lintResults] = await Promise.all([
+      this._buildGlobalStyleAsync(),
+      this._build(prepareResult),
       this._lintAsync(prepareResult),
     ]);
 
     this._debug(`빌드 완료됨`, this._perf.toString());
-    this._debug(`
-영향 받은 파일: ${prepareResult.affectedFileSet.size}개
-${Array.from(prepareResult.affectedFileSet).map(item => item).join("\n")}`.trim());
+    this._debug(`영향 받은 파일: ${prepareResult.affectedFileSet.size}개`);
     this._debug(`감시 중인 파일: ${prepareResult.watchFileSet.size}개`);
 
     return {
@@ -255,22 +238,38 @@ ${Array.from(prepareResult.affectedFileSet).map(item => item).join("\n")}`.trim(
       watchFileSet: prepareResult.watchFileSet,
       stylesheetBundlingResultMap: this._stylesheetBundlingResultMap,
       emittedFilesCacheMap: this._emittedFilesCacheMap,
-      emitFileSet: buildResult.emitFileSet,
+      emitFileSet: new Set([...buildResult.emitFileSet, globalStyleSheet].filterExists()),
     };
   }
 
   private async _prepareAsync(modifiedFileSet: Set<TNormPath>): Promise<IPrepareResult> {
+    const worker = await this._getOrCreateStyleBundleWorkerAsync();
+
     const tsconfig = this._parseTsConfig();
 
     if (modifiedFileSet.size !== 0) {
       this._debug(`캐시 무효화 및 초기화 중...`);
 
-      this._perf.run("캐시 무효화 및 초기화", () => {
+      await this._perf.run("캐시 무효화 및 초기화", async () => {
         // 기존 의존성에 의해 영향받는 파일들 계산
         const affectedFileSet = this._depCache.getAffectedFileSet(modifiedFileSet);
 
+        const getTreeText = (node: ISdAffectedFileTreeNode, indent = "") => {
+          let result = indent + node.fileNPath + "\n";
+          for (const child of node.children) {
+            result += getTreeText(child, indent + "  ");
+          }
+
+          return result;
+        };
+
+        const affectedFileTree = this._depCache.getAffectedFileTree(modifiedFileSet);
+        this._debug(`
+영향받은 기존파일:
+${affectedFileTree.map(item => getTreeText(item)).join("\n")}`.trim());
+
         // 스타일 번들러에서 영향받은 파일 관련 항목 무효화
-        this._stylesheetBundler?.invalidate(affectedFileSet);
+        await worker.run("invalidate", [affectedFileSet]);
 
         // 의존성 캐시에서 영향받은 파일 관련 항목 무효화
         this._depCache.invalidates(affectedFileSet);
@@ -378,7 +377,43 @@ ${Array.from(prepareResult.affectedFileSet).map(item => item).join("\n")}`.trim(
     return await linter.lintFiles(lintFilePaths);
   }
 
-  private async _buildAsync(prepareResult: IPrepareResult) {
+  private async _buildGlobalStyleAsync() {
+    //-- global style
+    if (
+      this._opt.globalStyleFilePath != null &&
+      FsUtils.exists(this._opt.globalStyleFilePath) &&
+      !this._emittedFilesCacheMap.has(this._opt.globalStyleFilePath)
+    ) {
+      this._debug(`전역 스타일 번들링 중...`);
+
+      await this._perf.run("전역 스타일 번들링", async () => {
+        const data = await FsUtils.readFileAsync(this._opt.globalStyleFilePath!);
+        const stylesheetBundlingResult = await this._bundleStylesheetAsync(
+          data,
+          this._opt.globalStyleFilePath!,
+          this._opt.globalStyleFilePath,
+        );
+        const emitFileInfos = this._emittedFilesCacheMap.getOrCreate(
+          this._opt.globalStyleFilePath!,
+          [],
+        );
+        emitFileInfos.push({
+          outAbsPath: PathUtils.norm(
+            this._opt.pkgPath,
+            path.relative(path.resolve(this._opt.pkgPath, "src"), this._opt.globalStyleFilePath!)
+              .replace(/\.scss$/, ".css"),
+          ),
+          text: stylesheetBundlingResult.contents ?? "",
+        });
+      });
+
+      return this._opt.globalStyleFilePath;
+    }
+
+    return undefined;
+  }
+
+  private _build(prepareResult: IPrepareResult) {
     const emitFileSet = new Set<TNormPath>();
     const diagnostics: ts.Diagnostic[] = [];
 
@@ -521,37 +556,6 @@ ${Array.from(prepareResult.affectedFileSet).map(item => item).join("\n")}`.trim(
         );
       }
     });
-
-    //-- global style
-    if (
-      this._opt.globalStyleFilePath != null &&
-      FsUtils.exists(this._opt.globalStyleFilePath) &&
-      !this._emittedFilesCacheMap.has(this._opt.globalStyleFilePath)
-    ) {
-      this._debug(`전역 스타일 번들링 중...`);
-
-      await this._perf.run("전역 스타일 번들링", async () => {
-        const data = FsUtils.readFile(this._opt.globalStyleFilePath!);
-        const stylesheetBundlingResult = await this._bundleStylesheetAsync(
-          data,
-          this._opt.globalStyleFilePath!,
-          this._opt.globalStyleFilePath,
-        );
-        const emitFileInfos = this._emittedFilesCacheMap.getOrCreate(
-          this._opt.globalStyleFilePath!,
-          [],
-        );
-        emitFileInfos.push({
-          outAbsPath: PathUtils.norm(
-            this._opt.pkgPath,
-            path.relative(path.resolve(this._opt.pkgPath, "src"), this._opt.globalStyleFilePath!)
-              .replace(/\.scss$/, ".css"),
-          ),
-          text: stylesheetBundlingResult.contents ?? "",
-        });
-        emitFileSet.add(this._opt.globalStyleFilePath!);
-      });
-    }
 
     return {
       emitFileSet,

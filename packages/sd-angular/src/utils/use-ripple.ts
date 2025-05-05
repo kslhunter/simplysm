@@ -1,5 +1,5 @@
 import { injectElementRef } from "./dom/element-ref.injector";
-import { $effect } from "./hooks";
+import { $effect } from "./hooks/hooks";
 
 export function useRipple(enableFn?: () => boolean) {
   const _elRef = injectElementRef<HTMLElement>();

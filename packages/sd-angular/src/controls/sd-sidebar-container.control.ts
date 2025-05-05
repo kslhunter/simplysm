@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, ViewEncapsulation } from "@angular/core";
 import { NavigationStart, Router } from "@angular/router";
-import { $signal } from "../utils/hooks";
+import { $signal } from "../utils/hooks/hooks";
 
 @Component({
   selector: "sd-sidebar-container",
@@ -63,13 +63,13 @@ import { $signal } from "../utils/hooks";
   }
 })
 export class SdSidebarContainerControl {
-  #router: Router | null = inject(Router, { optional: true });
+  private _router: Router | null = inject(Router, { optional: true });
 
   toggle = $signal(false);
 
   constructor() {
-    if (this.#router) {
-      this.#router.events.subscribe((value) => {
+    if (this._router) {
+      this._router.events.subscribe((value) => {
         if (value instanceof NavigationStart) {
           this.toggle.set(false);
         }

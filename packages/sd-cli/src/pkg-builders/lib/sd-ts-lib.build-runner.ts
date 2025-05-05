@@ -17,7 +17,7 @@ export class SdTsLibBuildRunner extends EventEmitter {
 
   private _builder?: SdTsLibBuilder;
 
-  public constructor(projConf: ISdProjectConfig, pkgPath: string) {
+  constructor(projConf: ISdProjectConfig, pkgPath: string) {
     super();
     this._projConf = projConf;
     this._pkgPath = pkgPath;
@@ -32,14 +32,14 @@ export class SdTsLibBuildRunner extends EventEmitter {
     );
   }
 
-  public override on(event: "change", listener: () => void): this;
-  public override on(event: "complete", listener: (result: ISdBuildRunnerResult) => void): this;
-  public override on(event: string | symbol, listener: (...args: any[]) => void): this {
+  override on(event: "change", listener: () => void): this;
+  override on(event: "complete", listener: (result: ISdBuildRunnerResult) => void): this;
+  override on(event: string | symbol, listener: (...args: any[]) => void): this {
     super.on(event, listener);
     return this;
   }
 
-  public async buildAsync(): Promise<ISdBuildRunnerResult> {
+  async buildAsync(): Promise<ISdBuildRunnerResult> {
     this._debug("dist 초기화...");
     FsUtils.remove(path.resolve(this._pkgPath, "dist"));
 
@@ -61,7 +61,7 @@ export class SdTsLibBuildRunner extends EventEmitter {
     };
   }
 
-  public async watchAsync(): Promise<void> {
+  async watchAsync(): Promise<void> {
     this.emit("change");
 
     this._debug("dist 초기화...");
@@ -150,7 +150,7 @@ export class SdTsLibBuildRunner extends EventEmitter {
     };
   }
 
-  private _debug(msg: string): void {
+  protected _debug(msg: string): void {
     this._logger.debug(`[${path.basename(this._pkgPath)}] ${msg}`);
   }
 }

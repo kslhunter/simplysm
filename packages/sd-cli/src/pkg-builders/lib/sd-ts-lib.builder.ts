@@ -22,7 +22,7 @@ export class SdTsLibBuilder {
     });
   }
 
-  public async buildAsync(modifiedFileSet: Set<TNormPath>): Promise<{
+  async buildAsync(modifiedFileSet: Set<TNormPath>): Promise<{
     watchFileSet: Set<TNormPath>;
     affectedFileSet: Set<TNormPath>;
     results: ISdBuildMessage[];

@@ -13,7 +13,7 @@ import * as htmlToImage from "html-to-image";
 
 @Injectable({ providedIn: "root" })
 export class SdPrintProvider {
-  #appRef = inject(ApplicationRef);
+  private _appRef = inject(ApplicationRef);
 
   async printAsync<T extends SdPrintTemplateBase<any>>(
     printType: Type<T>,
@@ -26,7 +26,7 @@ export class SdPrintProvider {
     await new Promise<void>((resolve) => {
       //-- comp
       const compRef = createComponent(printType, {
-        environmentInjector: this.#appRef.injector,
+        environmentInjector: this._appRef.injector,
       });
       compRef.setInput("params", params);
 
@@ -64,7 +64,7 @@ export class SdPrintProvider {
         );
       };
 
-      this.#appRef.attachView(compRef.hostView);
+      this._appRef.attachView(compRef.hostView);
     });
   }
 
@@ -79,7 +79,7 @@ export class SdPrintProvider {
       try {
         //-- comp
         const compRef = createComponent(printType, {
-          environmentInjector: this.#appRef.injector,
+          environmentInjector: this._appRef.injector,
         });
         compRef.setInput("params", params);
 
@@ -143,7 +143,7 @@ export class SdPrintProvider {
           );
         };
 
-        this.#appRef.attachView(compRef.hostView);
+        this._appRef.attachView(compRef.hostView);
       }
       catch (err) {
         reject(err);

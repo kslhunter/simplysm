@@ -14,7 +14,7 @@ import {
 import { SdBusyContainerControl } from "./sd-busy-container.control";
 import { SdKanbanControl } from "./sd-kanban.control";
 import { SdCheckboxControl } from "./sd-checkbox.control";
-import { $computed, $model, $signal } from "../utils/hooks";
+import { $computed, $model, $signal } from "../utils/hooks/hooks";
 import { SdKanbanBoardControl } from "./sd-kanban-board.control";
 import { NgTemplateOutlet } from "@angular/common";
 import { SdDockContainerControl } from "./sd-dock-container.control";
@@ -130,17 +130,17 @@ import { SdIconControl } from "./sd-icon.control";
   },
 })
 export class SdKanbanLaneControl<L, T> {
-  icons = inject(SdAngularConfigProvider).icons;
+  protected icons = inject(SdAngularConfigProvider).icons;
 
-  #boardControl = inject<SdKanbanBoardControl<L, T>>(forwardRef(() => SdKanbanBoardControl));
+  private _boardControl = inject<SdKanbanBoardControl<L, T>>(forwardRef(() => SdKanbanBoardControl));
 
   busy = input(false, { transform: transformBoolean });
 
   useCollapse = input(false, { transform: transformBoolean });
 
-  _collapse = input(false, { alias: "collapse", transform: transformBoolean });
-  _collapseChange = output<boolean>({ alias: "collapseChange" });
-  collapse = $model(this._collapse, this._collapseChange);
+  __collapse = input(false, { alias: "collapse", transform: transformBoolean });
+  __collapseChange = output<boolean>({ alias: "collapseChange" });
+  collapse = $model(this.__collapse, this.__collapseChange);
 
   value = input.required<L>();
 
@@ -151,7 +151,7 @@ export class SdKanbanLaneControl<L, T> {
 
   isAllSelected = $computed(() => this.kanbanControls().every((ctrl) => ctrl.selected()));
 
-  dragKanban = $computed(() => this.#boardControl.dragKanban());
+  dragKanban = $computed(() => this._boardControl.dragKanban());
 
   dragOvered = $signal(false);
 
@@ -161,7 +161,7 @@ export class SdKanbanLaneControl<L, T> {
 
   onSelectAllButtonClick(val: boolean) {
     if (val) {
-      this.#boardControl.selectedValues.update((v) => {
+      this._boardControl.selectedValues.update((v) => {
         const r = [...v];
         for (const ctrl of this.kanbanControls()) {
           if (!v.includes(ctrl.value())) {
@@ -172,7 +172,7 @@ export class SdKanbanLaneControl<L, T> {
       });
     }
     else {
-      this.#boardControl.selectedValues.update((v) => {
+      this._boardControl.selectedValues.update((v) => {
         const r = [...v];
         for (const ctrl of this.kanbanControls()) {
           if (v.includes(ctrl.value())) {
@@ -188,7 +188,7 @@ export class SdKanbanLaneControl<L, T> {
 
   @HostListener("dragover", ["$event"])
   onDragOver(event: DragEvent) {
-    if (this.#boardControl.dragKanban() == null) return;
+    if (this._boardControl.dragKanban() == null) return;
 
     event.preventDefault();
     event.stopPropagation();
@@ -213,12 +213,12 @@ export class SdKanbanLaneControl<L, T> {
 
   @HostListener("drop", ["$event"])
   onDragDrop(event: DragEvent) {
-    if (this.#boardControl.dragKanban() == null) return;
+    if (this._boardControl.dragKanban() == null) return;
     this.dragOvered.set(false);
 
     event.preventDefault();
     event.stopPropagation();
 
-    this.#boardControl.onDropTo(this);
+    this._boardControl.onDropTo(this);
   }
 }

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/core";
-import { $signal } from "../utils/hooks";
+import { $signal } from "../utils/hooks/hooks";
 
 @Component({
   selector: "sd-topbar-container",

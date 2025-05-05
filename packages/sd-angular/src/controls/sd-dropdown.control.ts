@@ -10,7 +10,7 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import { SdDropdownPopupControl } from "./sd-dropdown-popup.control";
-import { $effect, $model } from "../utils/hooks";
+import { $effect, $model } from "../utils/hooks/hooks";
 import { injectElementRef } from "../utils/dom/element-ref.injector";
 import { transformBoolean } from "../utils/type-tramsforms";
 
@@ -39,19 +39,25 @@ import { transformBoolean } from "../utils/type-tramsforms";
   },
 })
 export class SdDropdownControl {
-  #elRef = injectElementRef<HTMLElement>();
+  private _elRef = injectElementRef<HTMLElement>();
 
-  _open = input(false, { alias: "open", transform: transformBoolean });
-  _openChange = output<boolean>({ alias: "openChange" });
-  open = $model(this._open, this._openChange);
+  __open = input(false, { alias: "open", transform: transformBoolean });
+  __openChange = output<boolean>({ alias: "openChange" });
+  open = $model(this.__open, this.__openChange);
 
   disabled = input(false, { transform: transformBoolean });
 
   contentClass = input<string>();
   contentStyle = input<string>();
-  
-  contentElRef = viewChild.required<any, ElementRef<HTMLElement>>("contentEl", { read: ElementRef });
-  popupElRef = contentChild.required<any, ElementRef<HTMLElement>>(SdDropdownPopupControl, { read: ElementRef });
+
+  contentElRef = viewChild.required<any, ElementRef<HTMLElement>>(
+    "contentEl",
+    { read: ElementRef },
+  );
+  popupElRef = contentChild.required<any, ElementRef<HTMLElement>>(
+    SdDropdownPopupControl,
+    { read: ElementRef },
+  );
 
   constructor() {
     $effect(() => {
@@ -71,7 +77,10 @@ export class SdDropdownControl {
             top: isPlaceBottom ? "" : windowOffset.top + contentEl.offsetHeight + 2 + "px",
             bottom: isPlaceBottom ? window.innerHeight - windowOffset.top + "px" : "",
             left: isPlaceRight ? "" : windowOffset.left + "px",
-            right: isPlaceRight ? window.innerWidth - windowOffset.left - contentEl.offsetWidth + "px" : "",
+            right: isPlaceRight ? window.innerWidth
+              - windowOffset.left
+              - contentEl.offsetWidth
+              + "px" : "",
             minWidth: contentEl.offsetWidth + "px",
             opacity: "1",
             pointerEvents: "auto",
@@ -117,7 +126,7 @@ export class SdDropdownControl {
 
   @HostListener("document:scroll.capture", ["$event"])
   onDocumentScrollCapture(event: Event) {
-    if (this.#elRef.nativeElement.findParent(event.target as Element)) {
+    if (this._elRef.nativeElement.findParent(event.target as Element)) {
       const contentEl = this.contentElRef().nativeElement;
       const popupEl = this.popupElRef().nativeElement;
 
@@ -211,11 +220,11 @@ export class SdDropdownControl {
     }
   }
 
-  #mouseoverEl?: HTMLElement;
+  private _mouseoverEl?: HTMLElement;
 
   @HostListener("document:mouseover", ["$event"])
   onDocumentMouseover(event: MouseEvent) {
-    this.#mouseoverEl = event.target as HTMLElement;
+    this._mouseoverEl = event.target as HTMLElement;
   }
 
   @HostListener("document:blur.capture", ["$event"])
@@ -236,8 +245,8 @@ export class SdDropdownControl {
 
     if (
       relatedTarget == null &&
-      this.#mouseoverEl instanceof HTMLElement &&
-      (this.#mouseoverEl.findParent(contentEl) || this.#mouseoverEl.findParent(popupEl))
+      this._mouseoverEl instanceof HTMLElement &&
+      (this._mouseoverEl.findParent(contentEl) || this._mouseoverEl.findParent(popupEl))
     ) {
       const focusableFirst = popupEl.findFocusableFirst();
       if (focusableFirst) {

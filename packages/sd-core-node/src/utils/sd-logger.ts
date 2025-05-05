@@ -34,6 +34,7 @@ export enum SdLoggerSeverity {
   error = "error",
   none = ""
 }
+export type TSdLoggerSeverity = Exclude<keyof typeof SdLoggerSeverity, "none">;
 
 export interface ISdLoggerConfig {
   dot: boolean;
@@ -65,58 +66,58 @@ export interface ISdLoggerHistory {
 }
 
 export class SdLogger {
-  public static configs = new Map<string, DeepPartial<ISdLoggerConfig>>();
+  static configs = new Map<string, DeepPartial<ISdLoggerConfig>>();
   private static _historyLength = 0;
 
   private readonly _randomForStyle = MathUtils.getRandomInt(4, 9);
 
-  public static get(group: string[] = []): SdLogger {
+  static get(group: string[] = []): SdLogger {
     return new SdLogger(group);
   }
 
-  public static setConfig(group: string[], config: DeepPartial<ISdLoggerConfig>): void;
-  public static setConfig(config: DeepPartial<ISdLoggerConfig>): void;
-  public static setConfig(
+  static setConfig(group: string[], config: DeepPartial<ISdLoggerConfig>): void;
+  static setConfig(config: DeepPartial<ISdLoggerConfig>): void;
+  static setConfig(
     arg1: string[] | DeepPartial<ISdLoggerConfig>,
     arg2?: DeepPartial<ISdLoggerConfig>,
   ): void {
     const group = (arg2 !== undefined ? arg1 : []) as string[];
-    const config = (arg2 !== undefined ? arg2 : arg1) as DeepPartial<ISdLoggerConfig>;
+    const config = (arg2 ?? arg1) as DeepPartial<ISdLoggerConfig>;
 
     SdLogger.configs.set(group.join("_"), config);
   }
 
-  public static restoreConfig(): void {
+  static restoreConfig(): void {
     SdLogger.configs.clear();
   }
 
-  public static setHistoryLength(len: number): void {
+  static setHistoryLength(len: number): void {
     SdLogger._historyLength = len;
   }
 
-  public static history: ISdLoggerHistory[] = [];
+  static history: ISdLoggerHistory[] = [];
 
 
   private constructor(private readonly _group: string[]) {
   }
 
-  public debug(...args: any[]): void {
+  debug(...args: any[]): void {
     this._write(SdLoggerSeverity.debug, args);
   }
 
-  public log(...args: any[]): void {
+  log(...args: any[]): void {
     this._write(SdLoggerSeverity.log, args);
   }
 
-  public info(...args: any[]): void {
+  info(...args: any[]): void {
     this._write(SdLoggerSeverity.info, args);
   }
 
-  public warn(...args: any[]): void {
+  warn(...args: any[]): void {
     this._write(SdLoggerSeverity.warn, args);
   }
 
-  public error(...args: any[]): void {
+  error(...args: any[]): void {
     this._write(SdLoggerSeverity.error, args);
   }
 

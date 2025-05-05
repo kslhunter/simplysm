@@ -1,4 +1,4 @@
-import { $effect, $signal } from "../hooks";
+import { $effect, $signal } from "../hooks/hooks";
 import { injectElementRef } from "./element-ref.injector";
 
 export function injectSizeSignals() {

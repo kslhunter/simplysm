@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, ElementRef, input, viewChild, ViewEncapsulation } from "@angular/core";
 import { SdEventsDirective } from "../directives/sd-events.directive";
-import { $computed, $effect, $signal } from "../utils/hooks";
+import { $computed, $effect, $signal } from "../utils/hooks/hooks";
 import { transformBoolean } from "../utils/type-tramsforms";
 
 @Component({

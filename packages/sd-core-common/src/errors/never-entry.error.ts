@@ -7,7 +7,7 @@ export class NeverEntryError extends SdError {
   /**
    * @param message 도움 출력 메시지
    */
-  public constructor(message?: string) {
+  constructor(message?: string) {
     super("절대 진입될 수 없는것으로 판단된 코드에 진입되었습니다" + (message !== undefined ? ": " + message : ""));
   }
 }

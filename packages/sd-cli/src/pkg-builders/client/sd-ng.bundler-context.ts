@@ -8,24 +8,24 @@ import { SdCliConvertMessageUtils } from "../../utils/sd-cli-convert-message.uti
 interface InitialFileRecord {
   entrypoint: boolean;
   name?: string;
-  type: 'script' | 'style';
+  type: "script" | "style";
   external?: boolean;
   serverFile: boolean;
   depth: number;
 }
 
 export class SdNgBundlerContext {
-  readonly #logger = SdLogger.get(["simplysm", "sd-cli", "SdNgBundlerContext"]);
+  private _logger = SdLogger.get(["simplysm", "sd-cli", "SdNgBundlerContext"]);
 
   private _context?: esbuild.BuildContext;
 
-  public constructor(
-    private readonly _pkgPath: string,
-    private readonly _esbuildOptions: esbuild.BuildOptions,
+  constructor(
+    private _pkgPath: string,
+    private _esbuildOptions: esbuild.BuildOptions,
   ) {
   }
 
-  public async bundleAsync() {
+  async bundleAsync() {
     if (this._context == null) {
       this._context = await esbuild.context(this._esbuildOptions);
     }
@@ -33,9 +33,9 @@ export class SdNgBundlerContext {
     let esbuildResult: esbuild.BuildResult;
 
     try {
-      this.#debug(`rebuild...`);
+      this._debug(`rebuild...`);
       esbuildResult = await this._context.rebuild();
-      this.#debug(`rebuild completed`);
+      this._debug(`rebuild completed`);
     }
     catch (err) {
       if ("warnings" in err || "errors" in err) {
@@ -46,9 +46,12 @@ export class SdNgBundlerContext {
       }
     }
 
-    this.#debug(`convert results...`);
+    this._debug(`convert results...`);
 
-    const results = SdCliConvertMessageUtils.convertToBuildMessagesFromEsbuild(esbuildResult, this._pkgPath);
+    const results = SdCliConvertMessageUtils.convertToBuildMessagesFromEsbuild(
+      esbuildResult,
+      this._pkgPath,
+    );
 
     const initialFiles = new Map<string, InitialFileRecord>();
 
@@ -115,8 +118,8 @@ export class SdNgBundlerContext {
     };
   }
 
-  #debug(...msg: any[]): void {
-    this.#logger.debug(
+  private _debug(...msg: any[]): void {
+    this._logger.debug(
       `[${path.basename(this._pkgPath)}] (${Object.keys(this._esbuildOptions.entryPoints as Record<string, any>)
         .join(", ")})`,
       ...msg,

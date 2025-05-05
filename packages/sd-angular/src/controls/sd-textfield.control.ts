@@ -1,6 +1,20 @@
-import { ChangeDetectionStrategy, Component, HostListener, input, output, ViewEncapsulation } from "@angular/core";
-import { DateOnly, DateTime, JsonConvert, NumberUtils, StringUtils, Time } from "@simplysm/sd-core-common";
-import { $computed, $model } from "../utils/hooks";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  HostListener,
+  input,
+  output,
+  ViewEncapsulation,
+} from "@angular/core";
+import {
+  DateOnly,
+  DateTime,
+  JsonConvert,
+  NumberUtils,
+  StringUtils,
+  Time,
+} from "@simplysm/sd-core-common";
+import { $computed, $model } from "../utils/hooks/hooks";
 import { injectElementRef } from "../utils/dom/element-ref.injector";
 import { transformBoolean } from "../utils/type-tramsforms";
 
@@ -380,11 +394,11 @@ import { transformBoolean } from "../utils/type-tramsforms";
   },
 })
 export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
-  #elRef = injectElementRef<HTMLElement>();
+  private _elRef = injectElementRef<HTMLElement>();
 
-  _value = input<TSdTextfieldTypes[K] | undefined>(undefined, { alias: "value" });
-  _valueChange = output<TSdTextfieldTypes[K] | undefined>({ alias: "valueChange" });
-  value = $model(this._value, this._valueChange);
+  __value = input<TSdTextfieldTypes[K] | undefined>(undefined, { alias: "value" });
+  __valueChange = output<TSdTextfieldTypes[K] | undefined>({ alias: "valueChange" });
+  value = $model(this.__value, this.__valueChange);
 
   type = input.required<K>();
   placeholder = input<string>();
@@ -509,7 +523,8 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
     else if (this.type() === "format" && !StringUtils.isNullOrEmpty(this.format())) {
       const formatItems = this.format()!.split("|");
 
-      if (!formatItems.some((formatItem) => formatItem.match(/X/g)?.length === (value as string).length)) {
+      if (!formatItems.some((formatItem) => formatItem.match(/X/g)?.length
+        === (value as string).length)) {
         errorMessages.push(`문자의 길이가 요구되는 길이와 다릅니다.`);
       }
     }
@@ -558,7 +573,7 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
 
     const fullErrorMessage = errorMessages.join("\r\n");
 
-    const inputEl = this.#elRef.nativeElement.findFirst("input");
+    const inputEl = this._elRef.nativeElement.findFirst("input");
     if (inputEl instanceof HTMLInputElement) {
       inputEl.setCustomValidity(fullErrorMessage);
     }
@@ -588,7 +603,8 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
       const nonFormatChars = this.format()?.match(/[^X]/g)?.distinct();
       if (nonFormatChars) {
         this.#setValue(
-          inputEl.value.replace(new RegExp(`[${nonFormatChars.map((item) => "\\" + item).join("")}]`, "g"), ""),
+          inputEl.value.replace(new RegExp(
+            `[${nonFormatChars.map((item) => "\\" + item).join("")}]`, "g"), ""),
         );
       }
       else {
@@ -636,7 +652,11 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
         : value.toString(10);
     }
 
-    if (this.type() === "format" && !StringUtils.isNullOrEmpty(this.format()) && typeof value === "string") {
+    if (this.type()
+      === "format"
+      && !StringUtils.isNullOrEmpty(this.format())
+      && typeof value
+      === "string") {
       const formatItems = this.format()!.split("|");
 
       for (const formatItem of formatItems) {

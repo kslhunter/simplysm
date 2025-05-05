@@ -201,54 +201,25 @@ else {
 }
 
 if (argv._[0] === "local-update") {
-  await SdCliLocalUpdate.runAsync({
-    confFileRelPath: argv.config ?? "simplysm.js",
-    optNames: argv.options ?? [],
-  });
+  await SdCliLocalUpdate.runAsync(argv);
 }
 else if (argv._[0] === "watch") {
-  await SdCliProject.watchAsync({
-    confFileRelPath: argv.config ?? "simplysm.js",
-    optNames: argv.options ?? [],
-    pkgNames: argv.packages ?? [],
-    inspectNames: argv.inspects ?? [],
-  });
+  await SdCliProject.watchAsync(argv);
 }
 else if (argv._[0] === "build") {
-  await SdCliProject.buildAsync({
-    confFileRelPath: argv.config ?? "simplysm.js",
-    optNames: argv.options ?? [],
-    pkgNames: argv.packages ?? [],
-  });
+  await SdCliProject.buildAsync(argv);
 }
 else if (argv._[0] === "publish") {
-  await SdCliProject.publishAsync({
-    noBuild: argv.noBuild,
-    confFileRelPath: argv.config ?? "simplysm.js",
-    optNames: argv.options ?? [],
-    pkgNames: argv.packages ?? [],
-  });
+  await SdCliProject.publishAsync(argv);
 }
 else if (argv._[0] === "run-electron") {
-  await SdCliElectron.runAsync({
-    confFileRelPath: argv.config ?? "simplysm.js",
-    optNames: argv.options ?? [],
-    pkgName: argv.package,
-  });
+  await SdCliElectron.runAsync(argv);
 }
 else if (argv._[0] === "build-electron-for-dev") {
-  await SdCliElectron.buildForDevAsync({
-    confFileRelPath: argv.config ?? "simplysm.js",
-    optNames: argv.options ?? [],
-    pkgName: argv.package,
-  });
+  await SdCliElectron.buildForDevAsync(argv);
 }
 else if (argv._[0] === "run-cordova") {
-  await SdCliCordova.runWebviewOnDeviceAsync({
-    platform: argv.platform,
-    pkgName: argv.package,
-    url: argv.url,
-  });
+  await SdCliCordova.runWebviewOnDeviceAsync(argv);
 }
 else if (argv._[0] === "commit") {
   await SdCliAiCommand.commitAsync();

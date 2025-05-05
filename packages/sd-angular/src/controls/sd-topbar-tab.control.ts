@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, inject, output, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  output,
+  ViewEncapsulation,
+} from "@angular/core";
 import { SdAnchorControl } from "./sd-anchor.control";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { SdIconControl } from "./sd-icon.control";
@@ -45,7 +51,7 @@ import { SdIconControl } from "./sd-icon.control";
     </sd-anchor>`,
 })
 export class SdTopbarTabControl {
-  icons = inject(SdAngularConfigProvider).icons;
+  protected icons = inject(SdAngularConfigProvider).icons;
 
   clickClose = output<MouseEvent>();
 

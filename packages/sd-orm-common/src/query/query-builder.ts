@@ -45,9 +45,9 @@ import {
 } from "./query-builder.types";
 
 export class QueryBuilder {
-  public qh: QueryHelper;
+  qh: QueryHelper;
 
-  public constructor(private readonly _dialect: TDbContextOption["dialect"]) {
+  constructor(private readonly _dialect: TDbContextOption["dialect"]) {
     this.qh = new QueryHelper(this._dialect);
   }
 
@@ -56,7 +56,7 @@ export class QueryBuilder {
   // ----------------------------------------------------
   // region DATABASE
 
-  public createDatabaseIfNotExists(def: ICreateDatabaseIfNotExistsQueryDef): string {
+  createDatabaseIfNotExists(def: ICreateDatabaseIfNotExistsQueryDef): string {
     if (this._dialect === "mysql") {
       return `
 CREATE DATABASE IF NOT EXISTS ${this.wrap(def.database)};
@@ -72,7 +72,7 @@ ALTER DATABASE ${this.wrap(def.database)} CHARACTER SET utf8mb4 COLLATE utf8mb4_
     }
   }
 
-  public clearDatabaseIfExists(def: IClearDatabaseIfExistsQueryDef): string {
+  clearDatabaseIfExists(def: IClearDatabaseIfExistsQueryDef): string {
     if (this._dialect === "mysql") {
       return `
 DROP DATABASE IF EXISTS ${this.wrap(def.database)};
@@ -162,7 +162,7 @@ END`.trim();
     }
   }
 
-  public getDatabaseInfo(def: IGetDatabaseInfoDef): string {
+  getDatabaseInfo(def: IGetDatabaseInfoDef): string {
     if (this._dialect === "mysql") {
       return `SELECT * FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME='${def.database}'`.trim();
     }
@@ -171,7 +171,7 @@ END`.trim();
     }
   }
 
-  public getTableInfos(def?: IGetTableInfosDef): string {
+  getTableInfos(def?: IGetTableInfosDef): string {
     if (this._dialect === "mysql") {
       if (def?.database === undefined) throw new NeverEntryError();
       return `SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='${def.database}'`.trim();
@@ -188,7 +188,7 @@ END`.trim();
     }
   }
 
-  public getTableInfo(def: IGetTableInfoDef): string {
+  getTableInfo(def: IGetTableInfoDef): string {
     if (this._dialect === "sqlite") {
       return `SELECT * FROM sqlite_master WHERE type='table' AND name='${def.table.name}'`.trim();
     }
@@ -212,7 +212,7 @@ END`.trim();
     }
   }
 
-  public getTableColumnInfos(def: IGetTableColumnInfosDef): string {
+  getTableColumnInfos(def: IGetTableColumnInfosDef): string {
     if (this._dialect === "mysql") {
       throw new Error("MYSQL 미구현");
     }
@@ -236,7 +236,7 @@ WHERE c.object_id = OBJECT_ID('${databaseDot}${schemaDot}${def.table.name}')
     }
   }
 
-  public getTablePrimaryKeys(def: IGetTablePrimaryKeysDef): string {
+  getTablePrimaryKeys(def: IGetTablePrimaryKeysDef): string {
     if (this._dialect === "mysql") {
       throw new Error("MYSQL 미구현");
     }
@@ -255,7 +255,7 @@ ORDER BY ic.key_ordinal;
     }
   }
 
-  public getTableForeignKeys(def: IGetTableForeignKeysDef): string {
+  getTableForeignKeys(def: IGetTableForeignKeysDef): string {
     if (this._dialect === "mysql") {
       throw new Error("MYSQL 미구현");
     }
@@ -280,7 +280,7 @@ ORDER BY f.object_id, fc.constraint_column_id
     }
   }
 
-  public getTableIndexes(def: IGetTableIndexesDef): string {
+  getTableIndexes(def: IGetTableIndexesDef): string {
     if (this._dialect === "mysql") {
       throw new Error("MYSQL 미구현");
     }
@@ -302,7 +302,7 @@ ORDER BY i.index_id, ic.key_ordinal;
     }
   }
 
-  public createTable(def: ICreateTableQueryDef): string {
+  createTable(def: ICreateTableQueryDef): string {
     const tableName = this.getTableName(def.table);
 
     let query = "";
@@ -335,7 +335,7 @@ ORDER BY i.index_id, ic.key_ordinal;
     return query.trim();
   }
 
-  public createView(def: ICreateViewQueryDef): string {
+  createView(def: ICreateViewQueryDef): string {
     const tableName = this.getTableNameWithoutDatabase(def.table);
     const query = `
 USE ${def.table.database};
@@ -350,7 +350,7 @@ EXEC(@sql);`;
     return query.trim();
   }
 
-  public createProcedure(def: ICreateProcedureQueryDef): string {
+  createProcedure(def: ICreateProcedureQueryDef): string {
     const tableName = this.getTableNameWithoutDatabase(def.table);
 
     let query = `
@@ -379,7 +379,7 @@ EXEC(@sql);
     return query.trim();
   }
 
-  public executeProcedure(def: IExecuteProcedureQueryDef): string {
+  executeProcedure(def: IExecuteProcedureQueryDef): string {
     const procedureName = this.getTableName(def.procedure);
 
     let query = `
@@ -391,12 +391,12 @@ EXEC ${procedureName}
     return query.trim();
   }
 
-  public dropTable(def: IDropTableQueryDef): string {
+  dropTable(def: IDropTableQueryDef): string {
     const tableName = this.getTableName(def.table);
     return `DROP TABLE ${tableName}`;
   }
 
-  public addColumn(def: IAddColumnQueryDef): string[] {
+  addColumn(def: IAddColumnQueryDef): string[] {
     const tableName = this.getTableName(def.table);
 
     const queries: string[] = [];
@@ -418,12 +418,12 @@ EXEC ${procedureName}
     return queries;
   }
 
-  public removeColumn(def: IRemoveColumnQueryDef): string {
+  removeColumn(def: IRemoveColumnQueryDef): string {
     const tableName = this.getTableName(def.table);
     return `ALTER TABLE ${tableName} DROP COLUMN ${this.wrap(def.column)}`;
   }
 
-  public modifyColumn(def: IModifyColumnQueryDef): string[] {
+  modifyColumn(def: IModifyColumnQueryDef): string[] {
     if (this._dialect === "mysql") {
       const tableName = this.getTableName(def.table);
 
@@ -460,7 +460,7 @@ EXEC ${procedureName}
     }
   }
 
-  public renameColumn(def: IRenameColumnQueryDef): string {
+  renameColumn(def: IRenameColumnQueryDef): string {
     if (this._dialect === "mysql") {
       const tableName = this.getTableName(def.table);
       return `ALTER TABLE ${tableName} RENAME COLUMN ${this.wrap(def.prevName)} TO ${this.wrap(def.nextName)}`;
@@ -479,7 +479,7 @@ EXEC ${procedureName}
     }
   }
 
-  public dropPrimaryKey(def: IDropPrimaryKeyQueryDef): string {
+  dropPrimaryKey(def: IDropPrimaryKeyQueryDef): string {
     if (this._dialect === "mysql") {
       throw new Error("MYSQL 미구현");
     }
@@ -491,7 +491,7 @@ EXEC ${procedureName}
     }
   }
 
-  public addPrimaryKey(def: IAddPrimaryKeyQueryDef): string {
+  addPrimaryKey(def: IAddPrimaryKeyQueryDef): string {
     if (this._dialect === "mysql") {
       throw new Error("MYSQL 미구현");
     }
@@ -504,7 +504,7 @@ EXEC ${procedureName}
     }
   }
 
-  public addForeignKey(def: IAddForeignKeyQueryDef): string {
+  addForeignKey(def: IAddForeignKeyQueryDef): string {
     if (this._dialect === "sqlite") {
       const tableName = this.getTableNameChain(def.table).join(".");
       const tableNameChain = this.getTableNameChain(def.table);
@@ -554,7 +554,7 @@ pragma writable_schema=0;`.trim();
     }
   }
 
-  public removeForeignKey(def: IRemoveForeignKeyQueryDef): string {
+  removeForeignKey(def: IRemoveForeignKeyQueryDef): string {
     const tableName = this.getTableName(def.table);
     const tableNameChain = this.getTableNameChain(def.table);
     const tableKey = this._dialect === "mysql" && tableNameChain.join("_").length > 30
@@ -566,7 +566,7 @@ pragma writable_schema=0;`.trim();
     return `ALTER TABLE ${tableName} DROP CONSTRAINT ${fkName};`;
   }
 
-  public createIndex(def: ICreateIndexQueryDef): string {
+  createIndex(def: ICreateIndexQueryDef): string {
     const tableName = this.getTableName(def.table);
     const tableNameChain = this._dialect === "mysql"
       ? this.getTableNameChain(def.table)
@@ -588,7 +588,7 @@ pragma writable_schema=0;`.trim();
     );`;
   }
 
-  public dropIndex(def: IDropIndexQueryDef): string {
+  dropIndex(def: IDropIndexQueryDef): string {
     const tableName = this.getTableName(def.table);
     const tableNameChain = this._dialect === "mysql"
       ? this.getTableNameChain(def.table)
@@ -602,12 +602,12 @@ pragma writable_schema=0;`.trim();
     return `DROP INDEX ${idxName} ON ${tableName};`;
   }
 
-  public configIdentityInsert(def: IConfigIdentityInsertQueryDef): string {
+  configIdentityInsert(def: IConfigIdentityInsertQueryDef): string {
     const tableName = this.getTableName(def.table);
     return `SET IDENTITY_INSERT ${tableName} ${def.state.toUpperCase()}`;
   }
 
-  public configForeignKeyCheck(def: IConfigForeignKeyCheckQueryDef): string {
+  configForeignKeyCheck(def: IConfigForeignKeyCheckQueryDef): string {
     if (this._dialect === "mysql") {
       return `SET foreign_key_checks=${def.useCheck ? 1 : 0};`;
     }
@@ -625,7 +625,7 @@ pragma writable_schema=0;`.trim();
   // region TABLE
 
 
-  public select(def: ISelectQueryDef): string {
+  select(def: ISelectQueryDef): string {
     if (def.top !== undefined && def.limit) {
       throw new Error("TOP과 LIMIT은 함께사용할 수 없습니다.");
     }
@@ -806,7 +806,7 @@ pragma writable_schema=0;`.trim();
     return q.trim();
   }
 
-  public insertInto(def: IInsertIntoQueryDef): string {
+  insertInto(def: IInsertIntoQueryDef): string {
     let q = "";
     q += `INSERT INTO ${def.target} (${Object.keys(def.select).join(", ")})`;
     q += "\n";
@@ -816,7 +816,7 @@ pragma writable_schema=0;`.trim();
     return q.trim() + ";";
   }
 
-  public insert(def: IInsertQueryDef): string {
+  insert(def: IInsertQueryDef): string {
     let q = "";
     q += `INSERT INTO ${def.from} (${Object.keys(def.record).join(", ")})`;
     q += "\n";
@@ -843,7 +843,7 @@ pragma writable_schema=0;`.trim();
     return q.trim() + ";";
   }
 
-  public update(def: IUpdateQueryDef): string {
+  update(def: IUpdateQueryDef): string {
     if (this._dialect === "sqlite") {
       if (def.join && def.join.length > 0) {
         throw new Error("sqlite - update - join 미구현");
@@ -940,7 +940,7 @@ pragma writable_schema=0;`.trim();
     return q.trim() + ";";
   }
 
-  public insertIfNotExists(def: IInsertIfNotExistsQueryDef): string {
+  insertIfNotExists(def: IInsertIfNotExistsQueryDef): string {
     if (this._dialect === "mysql") {
       throw new Error("MYSQL 미구현");
     }
@@ -982,7 +982,7 @@ pragma writable_schema=0;`.trim();
     }
   }
 
-  public upsert(def: IUpsertQueryDef): string {
+  upsert(def: IUpsertQueryDef): string {
     if (this._dialect === "sqlite") {
       throw new Error("sqlite - upsert 미구현");
     }
@@ -1075,7 +1075,7 @@ DROP PROCEDURE ${procName};`;
     }
   }
 
-  public delete(def: IDeleteQueryDef): string {
+  delete(def: IDeleteQueryDef): string {
     if (def.as === undefined) throw new NeverEntryError();
 
     if (this._dialect === "mysql") {
@@ -1174,7 +1174,7 @@ DEALLOCATE PREPARE stmt;
     }
   }
 
-  public truncateTable(def: ITruncateTableQueryDef): string {
+  truncateTable(def: ITruncateTableQueryDef): string {
     const tableName = this.getTableName(def.table);
     return `TRUNCATE TABLE ${tableName}`;
   }
@@ -1186,24 +1186,24 @@ DEALLOCATE PREPARE stmt;
   // ----------------------------------------------------
   // region HELPERS
 
-  public query(def: TQueryDef): string {
+  query(def: TQueryDef): string {
     return this[def.type](def as any) as string;
   }
 
-  public wrap(name: string): string {
+  wrap(name: string): string {
     return this._dialect === "mysql" ? "`" + name + "`"
       : "[" + name + "]";
   }
 
-  public getTableName(def: IQueryTableNameDef): string {
+  getTableName(def: IQueryTableNameDef): string {
     return this.getTableNameChain(def).map((item) => this.wrap(item)).join(".");
   }
 
-  public getTableNameWithoutDatabase(def: IQueryTableNameDef): string {
+  getTableNameWithoutDatabase(def: IQueryTableNameDef): string {
     return this.getTableNameChain(def).slice(1).map((item) => this.wrap(item)).join(".");
   }
 
-  public getTableNameChain(def: IQueryTableNameDef): string[] {
+  getTableNameChain(def: IQueryTableNameDef): string[] {
     if (this._dialect === "mysql") {
       if (def.database !== undefined) {
         return [def.database, def.name];
@@ -1237,7 +1237,7 @@ DEALLOCATE PREPARE stmt;
     }
   }
 
-  public getQueryOfQueryValue(queryValue: TQueryBuilderValue): string {
+  getQueryOfQueryValue(queryValue: TQueryBuilderValue): string {
     if (queryValue instanceof Array) {
       return "(" + queryValue.map((item) => this.getQueryOfQueryValue(item)).join("") + ")";
     }

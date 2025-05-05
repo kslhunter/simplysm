@@ -2,7 +2,7 @@ export class Uuid {
   private static cnt = 1;
   private static readonly _prevUuidTexts: string[] = [];
 
-  public static new(): Uuid {
+  static new(): Uuid {
     const fn = (): string => "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
       const r1 = Math.random() * (this.cnt++);
       const r2 = r1 - Math.floor(r1);
@@ -22,11 +22,11 @@ export class Uuid {
 
   private readonly _uuid: string;
 
-  public constructor(uuid: string) {
+  constructor(uuid: string) {
     this._uuid = uuid;
   }
 
-  public toString(): string {
+  toString(): string {
     return this._uuid;
   }
 }

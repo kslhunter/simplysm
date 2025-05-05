@@ -47,29 +47,29 @@ import { ISdBuildMessage } from "../../types/build.types";
 import nodeModule from "node:module";
 
 export class SdNgBundler {
-  private readonly _logger = SdLogger.get(["simplysm", "sd-cli", "SdNgBundler"]);
+  private _logger = SdLogger.get(["simplysm", "sd-cli", "SdNgBundler"]);
 
-  private readonly _modifiedFileSet = new Set<TNormPath>();
-  private readonly _ngResultCache: ISdCliNgPluginResultCache = {
+  private _modifiedFileSet = new Set<TNormPath>();
+  private _ngResultCache: ISdCliNgPluginResultCache = {
     affectedFileSet: new Set<TNormPath>(),
     watchFileSet: new Set<TNormPath>(),
   };
-  private readonly _styleLoadResultCache = new MemoryLoadResultCache();
+  private _styleLoadResultCache = new MemoryLoadResultCache();
 
   private _contexts: SdNgBundlerContext[] | undefined;
 
-  private readonly _outputHashCache = new Map<TNormPath, string>();
+  private _outputHashCache = new Map<TNormPath, string>();
 
-  private readonly _pkgNpmConf: INpmConfig;
-  private readonly _mainFilePath: string;
-  private readonly _tsConfigFilePath: string;
-  private readonly _swConfFilePath: string;
-  private readonly _browserTarget: string[];
-  private readonly _indexHtmlFilePath: string;
-  private readonly _pkgName: string;
-  private readonly _baseHref: string;
+  private _pkgNpmConf: INpmConfig;
+  private _mainFilePath: string;
+  private _tsConfigFilePath: string;
+  private _swConfFilePath: string;
+  private _browserTarget: string[];
+  private _indexHtmlFilePath: string;
+  private _pkgName: string;
+  private _baseHref: string;
 
-  public constructor(
+  constructor(
     private _opt: {
       dev: boolean;
       outputPath: TNormPath;
@@ -96,7 +96,7 @@ export class SdNgBundler {
           : ``;
   }
 
-  public markForChanges(filePaths: string[]): void {
+  markForChanges(filePaths: string[]): void {
     for (const filePath of filePaths) {
       this._modifiedFileSet.add(PathUtils.norm(filePath));
       this._styleLoadResultCache.invalidate(PathUtils.norm(filePath));
@@ -104,7 +104,7 @@ export class SdNgBundler {
     // this._sourceFileCache.invalidate(filePaths);
   }
 
-  public async bundleAsync(): Promise<{
+  async bundleAsync(): Promise<{
     watchFileSet: Set<TNormPath>;
     affectedFileSet: Set<TNormPath>;
     results: ISdBuildMessage[];

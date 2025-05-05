@@ -107,6 +107,15 @@ export class SdDependencyAnalyzer {
       return false;
     };
 
+    const typeCache = new WeakMap<ts.Node, ts.Type>();
+
+    const getCachedType = (node: ts.Node) => {
+      if (typeCache.has(node)) return typeCache.get(node);
+      const type = typeChecker.getTypeAtLocation(node) as ts.Type | undefined;
+      if (type) typeCache.set(node, type);
+      return type;
+    };
+
     const collectDeps = (sf: ts.SourceFile) => {
       const sfNPath = PathUtils.norm(sf.fileName);
       if (depCache.hasCollected(sfNPath)) return;
@@ -219,7 +228,7 @@ export class SdDependencyAnalyzer {
         else if (
           ts.isPropertyAccessExpression(node)
         ) {
-          const type = typeChecker.getTypeAtLocation(node.expression) as ts.Type | undefined;
+          const type = getCachedType(node.expression);
           const propSymbol = type?.getProperty(node.name.text);
 
           if (propSymbol) {
@@ -236,7 +245,7 @@ export class SdDependencyAnalyzer {
           ts.isElementAccessExpression(node) &&
           ts.isStringLiteral(node.argumentExpression)
         ) {
-          const type = typeChecker.getTypeAtLocation(node.expression) as ts.Type | undefined;
+          const type = getCachedType(node.expression);
           const propSymbol = type?.getProperty(node.argumentExpression.text);
 
           if (propSymbol) {
@@ -295,6 +304,7 @@ export class SdDependencyAnalyzer {
         const depNPath = PathUtils.norm(dep);
         if (!inScope(depNPath)) continue;
 
+        console.log(fileNPath, depNPath);
         depCache.addImport(fileNPath, depNPath, 0);
       }
     }

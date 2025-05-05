@@ -5,7 +5,7 @@ import { SdTypedTemplateDirective } from "../directives/sd-typed.template-direct
 import { SdListItemControl } from "./sd-list-item.control";
 import { SdRouterLinkDirective } from "../directives/sd-router-link.directive";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
-import { $computed } from "../utils/hooks";
+import { $computed } from "../utils/hooks/hooks";
 import { SdIconControl } from "./sd-icon.control";
 import { injectPageCode$ } from "../utils/route/page-code.signal-injector";
 import * as querystring from "node:querystring";

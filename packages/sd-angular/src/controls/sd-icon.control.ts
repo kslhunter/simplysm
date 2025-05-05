@@ -16,7 +16,7 @@ import {
   Transform,
 } from "@fortawesome/fontawesome-svg-core";
 import { transformBoolean } from "../utils/type-tramsforms";
-import { $effect } from "../utils/hooks";
+import { $effect } from "../utils/hooks/hooks";
 
 @Component({
   selector: "sd-icon",
@@ -27,9 +27,9 @@ import { $effect } from "../utils/hooks";
   template: ``,
 })
 export class SdIconControl {
-  #sdNgConf = inject(SdAngularConfigProvider);
+  private _sdNgConf = inject(SdAngularConfigProvider);
 
-  #elRef = injectElementRef();
+  private _elRef = injectElementRef();
 
   icon = input<IconDefinition>();
 
@@ -53,7 +53,7 @@ export class SdIconControl {
 
   constructor() {
     $effect(() => {
-      const iconDef = this.icon() ?? this.#sdNgConf.icons.fallback;
+      const iconDef = this.icon() ?? this._sdNgConf.icons.fallback;
       const renderedIcon = icon(iconDef, {
         transform: typeof this.transform() === "string"
           ? parse.transform(this.transform() as string)
@@ -77,7 +77,7 @@ export class SdIconControl {
         ].filterExists(),
       });
 
-      this.#elRef.nativeElement.innerHTML = renderedIcon.html.join("\n");
+      this._elRef.nativeElement.innerHTML = renderedIcon.html.join("\n");
     });
   }
 }

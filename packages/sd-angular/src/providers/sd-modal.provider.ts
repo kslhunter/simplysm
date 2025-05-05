@@ -9,7 +9,7 @@ import {
   Type,
 } from "@angular/core";
 import { SdModalControl } from "../controls/sd-modal.control";
-import { $signal } from "../utils/hooks";
+import { $signal } from "../utils/hooks/hooks";
 import { SdBusyProvider } from "./sd-busy.provider";
 
 export const SD_MODAL_INPUT = Symbol();
@@ -19,8 +19,8 @@ const OPEN_PRESERVED = Symbol();
 
 @Injectable({ providedIn: "root" })
 export class SdModalProvider {
-  #appRef = inject(ApplicationRef);
-  #sdBusy = inject(SdBusyProvider);
+  private _appRef = inject(ApplicationRef);
+  private _sdBusy = inject(SdBusyProvider);
 
   modalCount = $signal(0);
 
@@ -46,7 +46,7 @@ export class SdModalProvider {
   ): Promise<T[typeof SD_MODEL_OUTPUT] | undefined> {
     let isFirstOpen = true;
 
-    this.#sdBusy.globalBusyCount.update((v) => v + 1);
+    this._sdBusy.globalBusyCount.update((v) => v + 1);
 
     return await new Promise<T[typeof SD_MODEL_OUTPUT] | undefined>((resolve, reject) => {
       try {
@@ -55,9 +55,9 @@ export class SdModalProvider {
 
         //-- component
         const compRef = createComponent(modalType, {
-          environmentInjector: this.#appRef.injector,
+          environmentInjector: this._appRef.injector,
           elementInjector: Injector.create({
-            parent: this.#appRef.injector,
+            parent: this._appRef.injector,
             providers: [{ provide: SdActivatedModalProvider, useValue: provider }],
           }),
         });
@@ -69,10 +69,10 @@ export class SdModalProvider {
 
         //-- modal
         const modalRef = createComponent(SdModalControl, {
-          environmentInjector: this.#appRef.injector,
+          environmentInjector: this._appRef.injector,
           projectableNodes: [[compEl]],
           elementInjector: Injector.create({
-            parent: this.#appRef.injector,
+            parent: this._appRef.injector,
             providers: [{ provide: SdActivatedModalProvider, useValue: provider }],
           }),
         });
@@ -93,7 +93,7 @@ export class SdModalProvider {
         provider.modal = modalRef.instance;
         const modalEl = modalRef.location.nativeElement as HTMLElement;
 
-        modalRef.instance._openChange.subscribe((value: boolean) => {
+        modalRef.instance.__openChange.subscribe((value: boolean) => {
           if (!provider.canDeactivefn()) return;
 
           if (!value) {
@@ -106,8 +106,11 @@ export class SdModalProvider {
         });
 
         const prevActiveElement = document.activeElement as HTMLElement | undefined;
-        compRef.instance.close = (value?: T[typeof SD_MODEL_OUTPUT], noCheckCanDeactive?: boolean): void => {
-          if(!noCheckCanDeactive && !provider.canDeactivefn()) return;
+        compRef.instance.close = (
+          value?: T[typeof SD_MODEL_OUTPUT],
+          noCheckCanDeactive?: boolean,
+        ): void => {
+          if (!noCheckCanDeactive && !provider.canDeactivefn()) return;
 
           resolve(value);
 
@@ -128,7 +131,7 @@ export class SdModalProvider {
 
           if (isFirstOpen) {
             isFirstOpen = false;
-            this.#sdBusy.globalBusyCount.update((v) => v - 1);
+            this._sdBusy.globalBusyCount.update((v) => v - 1);
           }
 
           requestAnimationFrame(
@@ -146,11 +149,11 @@ export class SdModalProvider {
           );
         };
 
-        const rootEl = this.#appRef.components[0].location.nativeElement as HTMLElement;
+        const rootEl = this._appRef.components[0].location.nativeElement as HTMLElement;
         rootEl.appendChild(modalEl);
 
-        this.#appRef.attachView(compRef.hostView);
-        this.#appRef.attachView(modalRef.hostView);
+        this._appRef.attachView(compRef.hostView);
+        this._appRef.attachView(modalRef.hostView);
 
         this.modalCount.update((v) => v + 1);
 

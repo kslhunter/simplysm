@@ -14,7 +14,7 @@ export class SdServerBuildRunner extends EventEmitter {
   private _extModules?: { name: string; exists: boolean }[];
   private _watchScopePathSet: Set<TNormPath>;
 
-  public constructor(
+  constructor(
     private readonly _projConf: ISdProjectConfig,
     private readonly _pkgPath: TNormPath,
   ) {
@@ -29,14 +29,14 @@ export class SdServerBuildRunner extends EventEmitter {
     );
   }
 
-  public override on(event: "change", listener: () => void): this;
-  public override on(event: "complete", listener: (result: ISdBuildRunnerResult) => void): this;
-  public override on(event: string | symbol, listener: (...args: any[]) => void): this {
+  override on(event: "change", listener: () => void): this;
+  override on(event: "complete", listener: (result: ISdBuildRunnerResult) => void): this;
+  override on(event: string | symbol, listener: (...args: any[]) => void): this {
     super.on(event, listener);
     return this;
   }
 
-  public async watchAsync(): Promise<void> {
+  async watchAsync(): Promise<void> {
     this.emit("change");
 
     this._debug("dist 초기화...");
@@ -79,7 +79,7 @@ export class SdServerBuildRunner extends EventEmitter {
       });
   }
 
-  public async buildAsync(): Promise<ISdBuildRunnerResult> {
+  async buildAsync(): Promise<ISdBuildRunnerResult> {
     const projNpmConfig = FsUtils.readJson(path.resolve(
       process.cwd(),
       "package.json",

@@ -10,8 +10,8 @@ import { NumberUtils, ObjectUtils } from "@simplysm/sd-core-common";
 export class SdExcelXmlWorksheet implements ISdExcelXml {
   data: ISdExcelXmlWorksheetData;
 
-  #rowDataMap = new Map<string, ISdExcelRowData>();
-  #cellDataMap = new Map<string, ISdExcelCellData>();
+  private _rowDataMap = new Map<string, ISdExcelRowData>();
+  private _cellDataMap = new Map<string, ISdExcelCellData>();
 
   range!: ISdExcelAddressRangePoint;
 
@@ -38,11 +38,11 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
     }
 
     for (const row of this.data.worksheet.sheetData[0].row ?? []) {
-      this.#rowDataMap.set(row.$.r, row);
+      this._rowDataMap.set(row.$.r, row);
 
       if (row.c === undefined) continue;
       for (const cell of row.c) {
-        this.#cellDataMap.set(cell.$.r, cell);
+        this._cellDataMap.set(cell.$.r, cell);
       }
     }
 
@@ -117,23 +117,23 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
   deleteCell(addr: string): void {
     // ROW 없으면 무효
     const rowAddr = (/\d*$/).exec(addr)![0];
-    const rowData = this.#rowDataMap.get(rowAddr);
+    const rowData = this._rowDataMap.get(rowAddr);
     if (rowData === undefined) return;
 
     // CELL 없으면 무효
-    const cellData = this.#cellDataMap.get(addr);
+    const cellData = this._cellDataMap.get(addr);
     if (cellData === undefined) return;
 
     // CELL 삭제
     const cellsData = rowData.c!;
     cellsData.remove(cellData);
-    this.#cellDataMap.delete(addr);
+    this._cellDataMap.delete(addr);
 
     // 마지막 CELL이면 ROW도 삭제
     const rowsData = this.data.worksheet.sheetData[0].row!;
     if (cellsData.length === 0) {
       rowsData.remove(rowData);
-      this.#rowDataMap.delete(rowAddr);
+      this._rowDataMap.delete(rowAddr);
     }
 
     // ROW가 없으면 XML의 row부분 자체를 삭제
@@ -360,8 +360,8 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
   }
 
   copyRow(sourceR: number, targetR: number): void {
-    const sourceRowData = this.#rowDataMap.get((sourceR + 1).toString())!;
-    const targetRowData = this.#rowDataMap.get((targetR + 1).toString());
+    const sourceRowData = this._rowDataMap.get((sourceR + 1).toString())!;
+    const targetRowData = this._rowDataMap.get((targetR + 1).toString());
 
     const rowData: ISdExcelRowData = {
       ...ObjectUtils.clone(sourceRowData),
@@ -371,7 +371,7 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
       for (const cellData of rowData.c) {
         const colLetter = cellData.$.r.replace(/\d+$/, "");
         cellData.$.r = colLetter + (targetR + 1).toString();
-        this.#cellDataMap.set(colLetter + (targetR + 1).toString(), cellData);
+        this._cellDataMap.set(colLetter + (targetR + 1).toString(), cellData);
       }
     }
 
@@ -382,7 +382,7 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
       const rowsData = this.data.worksheet.sheetData[0].row = this.data.worksheet.sheetData[0].row
         ?? [];
       rowsData.push(rowData);
-      this.#rowDataMap.set((targetR + 1).toString(), rowData);
+      this._rowDataMap.set((targetR + 1).toString(), rowData);
     }
 
 
@@ -421,8 +421,8 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
     const sourceRowAddr = (/\d*$/).exec(sourceAddr)![0];
     const targetRowAddr = (/\d*$/).exec(targetAddr)![0];
 
-    const sourceRowData = this.#rowDataMap.get(sourceRowAddr)!;
-    const targetRowData = this.#rowDataMap.get(targetRowAddr);
+    const sourceRowData = this._rowDataMap.get(sourceRowAddr)!;
+    const targetRowData = this._rowDataMap.get(targetRowAddr);
 
     const rowData: ISdExcelRowData = {
       $: { ...ObjectUtils.clone(sourceRowData.$), r: targetRowAddr },
@@ -438,7 +438,7 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
       const rowsData = this.data.worksheet.sheetData[0].row = this.data.worksheet.sheetData[0].row
         ?? [];
       rowsData.push(rowData);
-      this.#rowDataMap.set(targetRowAddr, rowData);
+      this._rowDataMap.set(targetRowAddr, rowData);
     }
 
     // CELL
@@ -459,7 +459,7 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
     else {
       const cellsData = rowData.c = rowData.c ?? [];
       cellsData.push(cellData);
-      this.#cellDataMap.set(targetAddr, cellData);
+      this._cellDataMap.set(targetAddr, cellData);
     }
 
     // RANGE 새로고침
@@ -526,31 +526,31 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
   }
 
   #getCellData(addr: string): ISdExcelCellData | undefined {
-    return this.#cellDataMap.get(addr);
+    return this._cellDataMap.get(addr);
   }
 
   #getOrCreateCellData(addr: string): ISdExcelCellData {
     // ROW 없으면 만들기
     const rowAddr = (/\d*$/).exec(addr)![0];
-    let rowData = this.#rowDataMap.get(rowAddr);
+    let rowData = this._rowDataMap.get(rowAddr);
     if (rowData === undefined) {
       const rowsData = this.data.worksheet.sheetData[0].row = this.data.worksheet.sheetData[0].row
         ?? [];
 
       rowData = { "$": { "r": rowAddr }, c: [] };
       rowsData.push(rowData);
-      this.#rowDataMap.set(rowAddr, rowData);
+      this._rowDataMap.set(rowAddr, rowData);
     }
 
     // CELL 없으면 만들기
-    let cellData = this.#cellDataMap.get(addr);
+    let cellData = this._cellDataMap.get(addr);
     if (cellData === undefined) {
       rowData.c = rowData.c ?? [];
       const cellsData = rowData.c;
 
       cellData = { "$": { "r": addr }, "v": [""] };
       cellsData.push(cellData);
-      this.#cellDataMap.set(addr, cellData);
+      this._cellDataMap.set(addr, cellData);
 
       const point = SdExcelUtils.parseAddr(addr);
 
@@ -565,7 +565,7 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
   }
 
   #refreshDimension(): void {
-    if (this.#cellDataMap.size === 0) {
+    if (this._cellDataMap.size === 0) {
       this.range = {
         s: { r: 0, c: 0 },
         e: { r: 0, c: 0 },
@@ -577,7 +577,7 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
         e: { r: 0, c: 0 },
       };
 
-      for (const addr of this.#cellDataMap.keys()) {
+      for (const addr of this._cellDataMap.keys()) {
         const point = SdExcelUtils.parseAddr(addr);
 
         this.range = {

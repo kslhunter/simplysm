@@ -73,6 +73,6 @@ interface ISdServiceEmittedEvent {
 }
 
 export class SdServiceEventListenerBase<I, O> {
-  public info!: I;
-  public data!: O;
+  info!: I;
+  data!: O;
 }

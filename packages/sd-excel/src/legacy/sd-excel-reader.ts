@@ -4,20 +4,20 @@ import { SdExcelReaderWorksheet } from "./sd-excel-reader-worksheet";
 export class SdExcelReader {
   private readonly _wb: XLSX.WorkBook;
 
-  public constructor(data: Uint8Array) {
+  constructor(data: Uint8Array) {
     this._wb = XLSX.read(data, {
       type: Buffer.isBuffer(data) ? "buffer" : "array",
       codepage: 949,
     });
   }
 
-  public get sheetNames(): string[] {
+  get sheetNames(): string[] {
     return this._wb.SheetNames;
   }
 
-  public getWorkSheet(name: string): SdExcelReaderWorksheet;
-  public getWorkSheet(index: number): SdExcelReaderWorksheet;
-  public getWorkSheet(arg: string | number): SdExcelReaderWorksheet {
+  getWorkSheet(name: string): SdExcelReaderWorksheet;
+  getWorkSheet(index: number): SdExcelReaderWorksheet;
+  getWorkSheet(arg: string | number): SdExcelReaderWorksheet {
     if (typeof arg === "number") {
       if (!Boolean(this._wb.SheetNames[arg])) {
         throw new Error(`${arg + 1}번째 시트를 찾을 수 없습니다.`);

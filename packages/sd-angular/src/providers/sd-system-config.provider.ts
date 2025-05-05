@@ -3,7 +3,7 @@ import { SdLocalStorageProvider } from "./sd-local-storage.provider";
 
 @Injectable({ providedIn: "root" })
 export class SdSystemConfigProvider<T> {
-  #sdLocalStorage = inject<SdLocalStorageProvider<T>>(SdLocalStorageProvider);
+  private _sdLocalStorage = inject<SdLocalStorageProvider<T>>(SdLocalStorageProvider);
 
   fn?: {
     set<K extends keyof T & string>(key: K, data: T[K]): Promise<void> | void;
@@ -15,7 +15,7 @@ export class SdSystemConfigProvider<T> {
       await this.fn.set(key, data);
     }
     else {
-      this.#sdLocalStorage.set(key, data);
+      this._sdLocalStorage.set(key, data);
     }
   }
 
@@ -24,7 +24,7 @@ export class SdSystemConfigProvider<T> {
       return await this.fn.get(key);
     }
     else {
-      return this.#sdLocalStorage.get(key);
+      return this._sdLocalStorage.get(key);
     }
   }
 }

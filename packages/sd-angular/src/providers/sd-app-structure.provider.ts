@@ -7,25 +7,25 @@ import {
   ISdPermission,
   SdAppStructureUtils,
 } from "../utils/sd-app-structure.utils";
-import { $signal } from "../utils/hooks";
+import { $signal } from "../utils/hooks/hooks";
 
 @Injectable({ providedIn: "root" })
 export class SdAppStructureProvider<T extends string> {
-  #items = inject(SdAngularConfigProvider).appStructure as ISdAppStructureItem<T>[];
+  private _items = inject(SdAngularConfigProvider).appStructure as ISdAppStructureItem<T>[];
 
-  #usableModules = $signal<T[]>();
-  #permRecord = $signal<Record<string, boolean | undefined>>();
+  private _usableModules = $signal<T[]>();
+  private _permRecord = $signal<Record<string, boolean | undefined>>();
 
   initialize(
     usableModules?: T[],
     permRecord?: Record<string, boolean | undefined>,
   ) {
-    this.#usableModules.set(usableModules ?? []);
-    this.#permRecord.set(permRecord ?? {});
+    this._usableModules.set(usableModules ?? []);
+    this._permRecord.set(permRecord ?? {});
   }
 
   getTitleByCode(pageCode: string) {
-    return SdAppStructureUtils.getTitleByCode(this.#items, pageCode);
+    return SdAppStructureUtils.getTitleByCode(this._items, pageCode);
   }
 
   /*getViewPerms<K extends string>(viewCodes: string[], keys: K[]): Record<K, boolean> {
@@ -65,13 +65,13 @@ export class SdAppStructureProvider<T extends string> {
   getViewPerms<K extends string>(viewCodes: string[], keys: K[]): K[] {
     const result = [] as K[];
     for (const key of keys) {
-      if (viewCodes.some((viewCode) => Boolean(this.#permRecord()?.[viewCode + "." + key]))) {
+      if (viewCodes.some((viewCode) => Boolean(this._permRecord()?.[viewCode + "." + key]))) {
         result.push(key);
       }
       else {
         if (
           viewCodes.every(viewCode => (
-            SdAppStructureUtils.getFlatPages(this.#items)
+            SdAppStructureUtils.getFlatPages(this._items)
               .single(item => item.codeChain.join(".") === viewCode)
               ?.hasPerms !== true
           ))
@@ -85,25 +85,25 @@ export class SdAppStructureProvider<T extends string> {
   }
 
   getFlatPages() {
-    if (!this.#usableModules() || !this.#permRecord()) return [];
+    if (!this._usableModules() || !this._permRecord()) return [];
 
-    return SdAppStructureUtils.getFlatPages(this.#items).filter(
+    return SdAppStructureUtils.getFlatPages(this._items).filter(
       (item) =>
-        (!item.hasPerms || Boolean(this.#permRecord()?.[item.codeChain.join(".") + ".use"])) &&
+        (!item.hasPerms || Boolean(this._permRecord()?.[item.codeChain.join(".") + ".use"])) &&
         this.#isUsableModulePage(item),
     );
   }
 
   getMenus() {
-    if (!this.#usableModules() || !this.#permRecord()) return [];
+    if (!this._usableModules() || !this._permRecord()) return [];
 
     return this.#getDisplayMenus();
   }
 
   getPerms() {
-    if (!this.#usableModules() || !this.#permRecord()) return [];
+    if (!this._usableModules() || !this._permRecord()) return [];
 
-    return this.#getPermsByModule(SdAppStructureUtils.getPermissions(this.#items));
+    return this.#getPermsByModule(SdAppStructureUtils.getPermissions(this._items));
   }
 
   getExtPermRoot(params: {
@@ -149,7 +149,7 @@ export class SdAppStructureProvider<T extends string> {
   #getDisplayMenus(menus?: ISdMenu<T>[]): ISdMenu<T>[] {
     const result: ISdMenu<T>[] = [];
 
-    for (const menu of menus ?? SdAppStructureUtils.getMenus(this.#items)) {
+    for (const menu of menus ?? SdAppStructureUtils.getMenus(this._items)) {
       if ("children" in menu) {
         if (this.#isModulesEnabled(menu.modules)) {
           const children = this.#getDisplayMenus(menu.children);
@@ -161,7 +161,7 @@ export class SdAppStructureProvider<T extends string> {
       else {
         const code = menu.codeChain.join(".");
         if (
-          (!menu.hasPerms || this.#permRecord()![code + ".use"] === true)
+          (!menu.hasPerms || this._permRecord()![code + ".use"] === true)
           && this.#isModulesEnabled(menu.modules)
         ) {
           result.push(menu);
@@ -185,6 +185,6 @@ export class SdAppStructureProvider<T extends string> {
   #isModulesEnabled(needModules: T[] | undefined): boolean {
     return needModules == null
       || needModules.length === 0
-      || !needModules.every((needModule) => !this.#usableModules()!.includes(needModule));
+      || !needModules.every((needModule) => !this._usableModules()!.includes(needModule));
   }
 }
