@@ -33,7 +33,10 @@ if (path.extname(cliPath) === ".ts") {
   child = spawn(
     "yarn",
     ["tsx", cliPath, ...process.argv.slice(2)],
-    { stdio: "inherit" },
+    {
+      stdio: "inherit",
+      env: { ...process.env },
+    },
   );
 }
 else {
