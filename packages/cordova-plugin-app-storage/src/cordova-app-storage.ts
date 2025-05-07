@@ -1,6 +1,6 @@
 import * as path from "path";
-import { JsonConvert, StringUtils } from "@simplysm/sd-core-common";
-import { File } from "@awesome-cordova-plugins/file";
+import { JsonConvert, SdError } from "@simplysm/sd-core-common";
+import { File, FileError } from "@awesome-cordova-plugins/file";
 
 export class CordovaAppStorage {
   static raw = File;
@@ -13,15 +13,15 @@ export class CordovaAppStorage {
 
   async readJsonAsync(filePath: string): Promise<any> {
     const fileStr = await this.readFileAsync(filePath);
-    return StringUtils.isNullOrEmpty(fileStr) ? undefined : JsonConvert.parse(fileStr);
+    return JsonConvert.parse(fileStr);
   }
 
-  async readFileBufferAsync(filePath: string): Promise<Buffer> {
+  async readFileBufferAsync(filePath: string): Promise<ArrayBuffer> {
     const fullUrl = this.getFullUrl(filePath);
     const dirUrl = path.dirname(fullUrl);
     const fileName = path.basename(fullUrl);
 
-    return Buffer.from(await File.readAsArrayBuffer(dirUrl, fileName));
+    return await File.readAsArrayBuffer(dirUrl, fileName);
   }
 
   async readFileAsync(filePath: string): Promise<string> {
@@ -63,7 +63,6 @@ export class CordovaAppStorage {
     const dirOrFileName = path.basename(fullUrl);
 
     try {
-      console.log(path.dirname(dirUrl), path.basename(dirUrl));
       const list = await File.listDir(path.dirname(dirUrl) + "/", path.basename(dirUrl));
       return list.some((item) => item.name === dirOrFileName);
     }
@@ -71,6 +70,32 @@ export class CordovaAppStorage {
       throw new SdError(err, "CordovaAppStorage Error: exists");
     }
   }*/
+
+  async existsAsync(targetPath: string): Promise<boolean> {
+    const fullUrl = this.getFullUrl(targetPath);
+    const dirUrl = path.dirname(fullUrl);
+    const fileName = path.basename(fullUrl);
+
+    try {
+      await File.readAsText(dirUrl, fileName);
+      return true;
+    }
+    catch (err) {
+      // 존재하지 않음
+      if (err instanceof FileError && err.code === FileError.NOT_FOUND_ERR) {
+        return false;
+      }
+
+      // 디렉터리인 경우 TYPE_MISMATCH_ERR 발생 → 존재는 함
+      if (err instanceof FileError && err.code === FileError.TYPE_MISMATCH_ERR) {
+        return true;
+      }
+
+      // 그 외 예외는 propagate
+      throw new SdError(err, "CordovaAppStorage Error: existsAsync");
+    }
+  }
+
 
   async removeAsync(dirOrFilePath: string) {
     const fullUrl = this.getFullUrl(dirOrFilePath);
