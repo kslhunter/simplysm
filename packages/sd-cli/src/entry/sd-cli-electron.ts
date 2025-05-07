@@ -201,7 +201,10 @@ export class SdCliElectron {
     logger.log("npm install...");
     await SdProcess.spawnAsync(`npm install`, { cwd: electronSrcPath }, true);
 
-    for (const reinstallPkgName of reinstallPkgNames) {
+    logger.log(`electron rebuild`);
+    await SdProcess.spawnAsync(`npx electron-rebuild`, { cwd: electronSrcPath }, true);
+
+    /*for (const reinstallPkgName of reinstallPkgNames) {
       if (FsUtils.exists(path.resolve(
         electronSrcPath,
         "node_modules",
@@ -215,10 +218,9 @@ export class SdCliElectron {
           true,
         );
       }
-    }
+    }*/
 
     logger.log("build...");
-
     await electronBuilder.build({
       targets: electronBuilder.Platform.WINDOWS.createTarget(),
       config: {
