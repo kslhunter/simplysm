@@ -261,7 +261,7 @@ export class SdNgBundler {
       }
     });
 
-    this._log(perf.toString());
+    this._debug(perf.toString());
 
     return {
       watchFileSet: new Set([
@@ -618,9 +618,5 @@ export class SdNgBundler {
 
   private _debug(...msg: any[]): void {
     this._logger.debug(`[${path.basename(this._opt.pkgPath)}]`, ...msg);
-  }
-
-  private _log(...msg: any[]): void {
-    this._logger.log(`[${path.basename(this._opt.pkgPath)}]`, ...msg);
   }
 }

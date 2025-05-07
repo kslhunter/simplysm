@@ -6,6 +6,7 @@ import { SdExcelCell } from "./sd-excel-cell";
 import { SdExcelXmlWorkbook } from "./xmls/sd-excel-xml-workbook";
 import { SdExcelCol } from "./sd-excel-col";
 import { SdExcelUtils } from "./utils/sd-excel.utils";
+import { StringUtils } from "@simplysm/sd-core-common";
 
 export class SdExcelWorksheet {
   private readonly _rowMap = new Map<number, SdExcelRow>();
@@ -149,7 +150,7 @@ export class SdExcelWorksheet {
     }
   }
 
-  /*public async setRecords(record: Record<string, any>[]): Promise<void> {
+  async setRecords(record: Record<string, any>[]): Promise<void> {
     const headers = record.mapMany((item) => Object.keys(item))
       .distinct()
       .filter((item) => !StringUtils.isNullOrEmpty(item));
@@ -163,7 +164,7 @@ export class SdExcelWorksheet {
         await this.cell(r, c).setValAsync(record[r - 1][headers[c]]);
       }
     }
-  }*/
+  }
 
   async setZoomAsync(percent: number) {
     const wbXml = await this.#getWbDataAsync();

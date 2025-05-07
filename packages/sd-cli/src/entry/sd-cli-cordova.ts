@@ -34,7 +34,11 @@ export class SdCliCordova {
   }
 
   private async _execAsync(cmd: string, cwd: string): Promise<void> {
-    try {
+    this._logger.debug(`실행 명령: ${cmd}`);
+    const msg = await SdProcess.spawnAsync(cmd, { cwd });
+    this._logger.debug(`실행 결과: ${msg}`);
+
+    /*try {
       this._logger.debug(`실행 명령: ${cmd}`);
       const msg = await SdProcess.spawnAsync(cmd, { cwd });
       this._logger.debug(`실행 결과: ${msg}`);
@@ -43,7 +47,7 @@ export class SdCliCordova {
       this._logger.error(`명령 실행 실패: ${cmd}`);
       this._logger.error(`오류: ${err instanceof Error ? err.message : String(err)}`);
       throw err;
-    }
+    }*/
   }
 
   async initializeAsync(): Promise<void> {
@@ -150,18 +154,16 @@ export class SdCliCordova {
     usePlugins: string[],
   ): Promise<void> {
     for (const alreadyPlugin of alreadyPlugins) {
-      // 사용하지 않는 플러그인 제거 시 의존성 검사
-      const isPluginUsed = usePlugins.some(
-        usePlugin => usePlugin === alreadyPlugin.id || usePlugin === alreadyPlugin.name,
-      );
-
-      if (!isPluginUsed) {
-        const isDependencyExists = alreadyPlugins.some(
-          plugin => plugin.dependencies?.includes(alreadyPlugin.name),
-        );
-
-        if (!isDependencyExists) {
+      if (!usePlugins.includes(alreadyPlugin.id) && !usePlugins.includes(alreadyPlugin.name)) {
+        try {
           await this._execAsync(`npx cordova plugin remove ${alreadyPlugin.name}`, cordovaPath);
+        }
+        catch (err) {
+          // 의존성으로 인한 skip 메시지는 무시 (로그 생략)
+          const msg = err instanceof Error ? err.message : String(err);
+          if (!msg.includes("is required by") || !msg.includes("skipping uninstallation")) {
+            throw err;
+          }
         }
       }
     }

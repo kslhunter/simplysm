@@ -225,7 +225,7 @@ export class SdTsCompiler {
       this._lintAsync(prepareResult),
     ]);
 
-    this._log(`빌드 완료됨`, this._perf.toString());
+    this._debug(`빌드 완료됨`, this._perf.toString());
     this._debug(`영향 받은 파일: ${prepareResult.affectedFileSet.size}개`);
     this._debug(`감시 중인 파일: ${prepareResult.watchFileSet.size}개`);
 
@@ -585,9 +585,6 @@ ${affectedFileTree.map(item => getTreeText(item)).join("\n")}`.trim());
 
   private _debug(...msg: any[]): void {
     this._logger.debug(`[${path.basename(this._opt.pkgPath)}]`, ...msg);
-  }
-  private _log(...msg: any[]): void {
-    this._logger.log(`[${path.basename(this._opt.pkgPath)}]`, ...msg);
   }
 }
 

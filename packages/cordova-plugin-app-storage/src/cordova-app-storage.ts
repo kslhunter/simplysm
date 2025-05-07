@@ -1,6 +1,8 @@
 import * as path from "path";
 import { JsonConvert, SdError } from "@simplysm/sd-core-common";
-import { File, FileError } from "@awesome-cordova-plugins/file";
+import { File } from "@awesome-cordova-plugins/file";
+
+// "@awesome-cordova-plugins/file"의 "FileError"는 .d.ts에는 있으나 .js가 실제로 export하지 않음.
 
 export class CordovaAppStorage {
   static raw = File;
@@ -82,12 +84,12 @@ export class CordovaAppStorage {
     }
     catch (err) {
       // 존재하지 않음
-      if (err instanceof FileError && err.code === FileError.NOT_FOUND_ERR) {
+      if ("code" in err && err.code === 1 /*NOT_FOUND_ERR*/) {
         return false;
       }
 
       // 디렉터리인 경우 TYPE_MISMATCH_ERR 발생 → 존재는 함
-      if (err instanceof FileError && err.code === FileError.TYPE_MISMATCH_ERR) {
+      if ("code" in err && err.code === 11 /*TYPE_MISMATCH_ERR*/) {
         return true;
       }
 

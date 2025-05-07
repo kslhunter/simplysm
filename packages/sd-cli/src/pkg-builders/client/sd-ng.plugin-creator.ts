@@ -19,8 +19,8 @@ export function createSdNgPlugin(conf: {
   let perf: SdCliPerformanceTimer;
   const logger = SdLogger.get(["simplysm", "sd-cli", "createSdNgPlugin"]);
 
-  const log = (...msg: any[]) => {
-    logger.log(`[${path.basename(conf.pkgPath)}]`, ...msg);
+  const debug = (...msg: any[]) => {
+    logger.debug(`[${path.basename(conf.pkgPath)}]`, ...msg);
   };
 
   return {
@@ -178,7 +178,7 @@ export function createSdNgPlugin(conf: {
 
       build.onEnd((result) => {
         perf.end("transform & bundling");
-        log(perf.toString());
+        debug(perf.toString());
 
         for (const stylesheetBundlingResult of tsCompileResult.stylesheetBundlingResultMap.values()) {
           if ("outputFiles" in stylesheetBundlingResult) {
