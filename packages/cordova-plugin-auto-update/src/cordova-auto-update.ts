@@ -3,6 +3,7 @@
 import { SdAutoUpdateServiceClient, SdServiceClient } from "@simplysm/sd-service-client";
 import { NetUtils, SdZip } from "@simplysm/sd-core-common";
 import { CordovaAppStorage } from "@simplysm/cordova-plugin-app-storage";
+import mime from "mime";
 
 export abstract class CordovaAutoUpdate {
   static async runAsync(opt: {
@@ -57,12 +58,24 @@ export abstract class CordovaAutoUpdate {
 
           opt.log(`최신버전 파일 설치중...`);
 
-          for (const extractedFileName of extractedFileMap.keys()) {
+          const totalByteLength = Array.from(extractedFileMap.values())
+            .sum(item => item!.byteLength);
+          let currByteLength = 0;
+
+          await Array.from(extractedFileMap.keys()).parallelAsync(async extractedFileName => {
             await storage.writeAsync(
               `/files/www/${extractedFileName.replace(/\\/g, "/")}`,
-              extractedFileMap.get(extractedFileName)!,
+              new Blob(
+                [extractedFileMap.get(extractedFileName)!],
+                { type: mime.getType(extractedFileName)! },
+              ),
             );
-          }
+
+            currByteLength += extractedFileMap.get(extractedFileName)!.byteLength;
+            const installProgressText = ((currByteLength * 100) / totalByteLength)
+              .toFixed(2);
+            opt.log(`최신버전 파일 설치중...(${installProgressText}%)`);
+          });
 
           opt.log(`최신버전 설치 완료...`);
 
@@ -75,12 +88,8 @@ export abstract class CordovaAutoUpdate {
         if (localVersion != null && process.env["SD_VERSION"] !== localVersion) {
           opt.log(`최신버전 실행...`);
 
-          // const baseUrl = storage.getFullUrl(`/files/www`);
-          // const basePath = Ionic.WebView.convertFileSrc(baseUrl);
-
           const basePath = storage.getFullPath(`/files/www`);
 
-          // await SdLocalBaseUrl.setUrl(url);
           Ionic.WebView.setServerBasePath(basePath);
           return;
         }

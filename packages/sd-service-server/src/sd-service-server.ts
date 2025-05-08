@@ -582,12 +582,13 @@ export class SdServiceServer extends EventEmitter {
         let params: any[] | undefined;
         if (req.method === "GET") {
           if (typeof urlObj.query["json"] !== "string") throw new Error();
-          if (req.headers["content-type"]?.toLowerCase().includes("json")) {
+          params = JsonConvert.parse(urlObj.query["json"]);
+          /*if (req.headers["content-type"]?.toLowerCase().includes("json")) {
             params = JsonConvert.parse(urlObj.query["json"]);
           }
           else {
             params = [urlObj.query];
-          }
+          }*/
         }
         else if (req.method === "POST") {
           const body = await new Promise<Buffer>((resolve) => {
@@ -600,12 +601,13 @@ export class SdServiceServer extends EventEmitter {
             });
           });
 
-          if (req.headers["content-type"]?.toLowerCase().includes("json")) {
+          params = JsonConvert.parse(body.toString());
+          /*if (req.headers["content-type"]?.toLowerCase().includes("json")) {
             params = JsonConvert.parse(body.toString());
           }
           else {
             params = [body.toString()];
-          }
+          }*/
         }
 
         if (params) {
@@ -616,13 +618,20 @@ export class SdServiceServer extends EventEmitter {
             webHeaders: req.headers,
           });
 
-          const result = req.headers["content-type"]?.toLowerCase().includes("json")
+          const result = serviceResult != null
             ? JsonConvert.stringify(serviceResult)
-            : serviceResult;
+            : "undefined";
+          /*const result = req.headers["content-type"]?.toLowerCase().includes("json")
+            ? JsonConvert.stringify(serviceResult)
+            : serviceResult;*/
 
-          res.writeHead(200, {
+          /*res.writeHead(200, {
             "Content-Length": Buffer.from(result).length,
             "Content-Type": req.headers["content-type"]?.toLowerCase(),
+          });*/
+          res.writeHead(200, {
+            "Content-Length": Buffer.from(result).length,
+            "Content-Type": "application/json",
           });
           res.end(result);
 

@@ -18,12 +18,12 @@ export class CordovaAppStorage {
     return JsonConvert.parse(fileStr);
   }
 
-  async readFileBufferAsync(filePath: string): Promise<ArrayBuffer> {
+  async readFileBufferAsync(filePath: string): Promise<Buffer> {
     const fullUrl = this.getFullUrl(filePath);
     const dirUrl = path.dirname(fullUrl);
     const fileName = path.basename(fullUrl);
 
-    return await File.readAsArrayBuffer(dirUrl, fileName);
+    return Buffer.from(await File.readAsArrayBuffer(dirUrl, fileName));
   }
 
   async readFileAsync(filePath: string): Promise<string> {
@@ -38,7 +38,7 @@ export class CordovaAppStorage {
     await this.writeAsync(filePath, JsonConvert.stringify(data));
   }
 
-  async writeAsync(filePath: string, data: Blob | string | ArrayBuffer) {
+  async writeAsync(filePath: string, data: Blob | string) {
     const fullUrl = this.getFullUrl(filePath);
     const dirUrl = path.dirname(fullUrl);
     const fileName = path.basename(fullUrl);

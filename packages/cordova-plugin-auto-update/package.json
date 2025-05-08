@@ -23,6 +23,10 @@
     "@simplysm/sd-core-common": "12.9.16",
     "@simplysm/sd-service-client": "12.9.16",
     "@simplysm/types-cordova-plugin-ionic-webview": "12.9.16",
+    "mime": "^4.0.7",
     "rxjs": "^7.8.2"
+  },
+  "devDependencies": {
+    "@types/mime": "^4.0.0"
   }
 }
