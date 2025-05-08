@@ -530,10 +530,10 @@ export class SdCliCordova {
 
   static async runWebviewOnDeviceAsync(opt: {
     platform: string;
-    pkgName: string;
+    package: string;
     url?: string
   }): Promise<void> {
-    const cordovaPath = path.resolve(process.cwd(), `packages/${opt.pkgName}/.cordova/`);
+    const cordovaPath = path.resolve(process.cwd(), `packages/${opt.package}/.cordova/`);
 
     if (opt.url !== undefined) {
       FsUtils.remove(path.resolve(cordovaPath, "www"));
@@ -544,7 +544,7 @@ export class SdCliCordova {
 '${opt.url}'로 이동중...
 <script>
   setTimeout(function () {
-    window.location.href = "${opt.url.replace(/\/$/, "")}/${opt.pkgName}/cordova/";
+    window.location.href = "${opt.url.replace(/\/$/, "")}/${opt.package}/cordova/";
   }, 3000);
 </script>`.trim(),
       );
