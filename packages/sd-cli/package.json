@@ -12,10 +12,10 @@
   "bin": "./dist/sd-cli.js",
   "type": "module",
   "dependencies": {
-    "@angular/build": "^19.2.10",
-    "@angular/compiler": "^19.2.9",
-    "@angular/compiler-cli": "^19.2.9",
-    "@anthropic-ai/sdk": "^0.40.1",
+    "@angular/build": "^19.2.11",
+    "@angular/compiler": "^19.2.10",
+    "@angular/compiler-cli": "^19.2.10",
+    "@anthropic-ai/sdk": "^0.41.0",
     "@electron/rebuild": "^4.0.1",
     "@simplysm/sd-core-common": "12.9.15",
     "@simplysm/sd-core-node": "12.9.15",
@@ -24,9 +24,9 @@
     "browserslist": "^4.24.5",
     "cordova": "^12.0.0",
     "css-has-pseudo": "^7.0.2",
-    "electron": "^36.1.0",
-    "electron-builder": "^26.0.14",
-    "esbuild": "^0.25.3",
+    "electron": "^36.2.0",
+    "electron-builder": "^26.0.15",
+    "esbuild": "^0.25.4",
     "eslint": "^9.26.0",
     "glob": "^11.0.2",
     "node-stdlib-browser": "^1.3.1",
@@ -43,6 +43,6 @@
     "@types/xml2js": "^0.4.14",
     "@types/yargs": "^17.0.33",
     "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^3.1.2"
+    "vitest": "^3.1.3"
   }
 }
