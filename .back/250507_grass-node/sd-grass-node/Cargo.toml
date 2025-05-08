@@ -1,0 +1,15 @@
+[package]
+name = "grass_node"
+version = "12.9.14"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+grass = "0.13"
+napi = { version = "2", features = ["napi4"] }
+napi-derive = "2"
+
+[package.metadata.napi]
+name = "grass_node"

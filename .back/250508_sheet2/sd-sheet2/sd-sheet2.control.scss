@@ -1,0 +1,9 @@
+sd-sheet2 {
+  ._config-bar {
+    display: flex-inline;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+    gap: var(--gap-sm);
+  }
+}

@@ -1,12 +1,16 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   contentChildren,
   ElementRef,
   HostListener,
   inject,
   input,
   output,
+  resource,
+  ResourceStatus,
+  signal,
   viewChild,
   ViewEncapsulation,
 } from "@angular/core";
@@ -25,15 +29,7 @@ import { SdPaneControl } from "./sd-pane.control";
 import { SdEventsDirective } from "../directives/sd-events.directive";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { SdCheckboxControl } from "./sd-checkbox.control";
-import {
-  $afterRenderComputed,
-  $afterRenderEffect,
-  $computed,
-  $effect,
-  $model,
-  $obj,
-  $signal,
-} from "../utils/hooks/hooks";
+import { $computed, $effect, $model, $signal } from "../utils/hooks/hooks";
 import { injectElementRef } from "../utils/dom/element-ref.injector";
 import { transformBoolean } from "../utils/type-tramsforms";
 import { SdIconControl } from "./sd-icon.control";
@@ -354,7 +350,7 @@ import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
                           : displayHeaderDefTable().length + (hasSummaryTemplate() ? 1 : 0)
                       "
                       [attr.c]="getChildrenFn() ? -2 : -1"
-                      (sdResize)="redrawNextFixedCells(getChildrenFn() ? -2 : -1)"
+                      (sdResize)="onHeaderCellResize($event, r, getChildrenFn() ? -2 : -1)"
                       [style.left.px]="this.fixedCellLefts()[getChildrenFn() ? -2 : -1]"
                     >
                       @if (selectMode() === "multi" && hasSelectableItem()) {
@@ -379,7 +375,7 @@ import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
                           : displayHeaderDefTable().length + (hasSummaryTemplate() ? 1 : 0)
                       "
                       [attr.c]="-1"
-                      (sdResize)="redrawNextFixedCells(-1)"
+                      (sdResize)="onHeaderCellResize($event, r, -1)"
                       [style.left.px]="this.fixedCellLefts()[-1]"
                     >
                       @if (hasExpandableItem()) {
@@ -399,36 +395,36 @@ import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
                         [class._fixed]="headerCell.fixed"
                         [attr.colspan]="headerCell.colspan"
                         [attr.rowspan]="headerCell.rowspan"
-                        [class._last-depth]="headerCell.isLastDepth"
+                        [class._last-depth]="headerCell.isLastRow"
                         [attr.c]="c"
-                        [style.width]="headerCell.isLastDepth ? headerCell.width : undefined"
-                        [style.min-width]="headerCell.isLastDepth ? headerCell.width : undefined"
-                        [style.max-width]="headerCell.isLastDepth ? headerCell.width : undefined"
+                        [style.width]="headerCell.isLastRow ? headerCell.width : undefined"
+                        [style.min-width]="headerCell.isLastRow ? headerCell.width : undefined"
+                        [style.max-width]="headerCell.isLastRow ? headerCell.width : undefined"
                         [style.left.px]="this.fixedCellLefts()[c]"
                         [class._ordering]="
-                          headerCell.isLastDepth && !headerCell.control.disableOrdering() && headerCell.control.key()
+                          headerCell.isLastRow && !headerCell.control.disableOrdering() && headerCell.control.key()
                         "
                         [attr.title]="
-                          headerCell.isLastDepth ? (headerCell.control.tooltip() ?? headerCell.text) : undefined
+                          headerCell.isLastRow ? (headerCell.control.tooltip() ?? headerCell.text) : undefined
                         "
-                        [class.help]="headerCell.isLastDepth && headerCell.control.tooltip()"
-                        (sdResize)="onHeaderCellResize(headerCell, c)"
+                        [class.help]="headerCell.isLastRow && headerCell.control.tooltip()"
+                        (sdResize)="onHeaderCellResize($event, r, c)"
                         (click)="onHeaderCellClick($event, headerCell)"
                       >
                         <div class="flex-row align-items-end">
                           <div
                             class="_contents flex-grow"
-                            [class._padding]="!headerCell.useTemplate"
-                            [attr.style]="headerCell!.style"
+                            [class._padding]="!headerCell.isLastRow || !headerCell.control.headerTemplateRef()"
+                            [attr.style]="!headerCell.isLastRow ? undefined : displayColumnDefs()[c].headerStyle"
                           >
-                            @if (!headerCell.useTemplate) {
+                            @if (!headerCell.isLastRow || !headerCell.control.headerTemplateRef()) {
                               <pre>{{ headerCell.text }}</pre>
                             } @else {
                               <ng-template [ngTemplateOutlet]="headerCell.control.headerTemplateRef()!" />
                             }
                           </div>
 
-                          @if (headerCell.isLastDepth
+                          @if (headerCell.isLastRow
                           && !headerCell.control.disableOrdering()
                           && headerCell.control.key()) {
                             <div class="_sort-icon">
@@ -448,7 +444,7 @@ import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
                           }
                         </div>
 
-                        @if (!headerCell.control.disableResizing() && headerCell.isLastDepth) {
+                        @if (!headerCell.control.disableResizing() && headerCell.isLastRow) {
                           <div
                             class="_resizer"
                             (mousedown)="onResizerMousedown($event, headerCell.control)"
@@ -689,171 +685,203 @@ export class SdSheetControl<T> {
   /** 셀 키 다운 이벤트 */
   cellKeydown = output<ISdSheetItemKeydownEventParam<T>>();
 
-  private _config = $signal<ISdSheetConfig>();
   private _editModeCellAddr = $signal<{ r: number; c: number }>();
   private _resizedWidths = $signal<Record<string, string | undefined>>({});
 
   private _isOnResizing = false;
 
-  fixedCellLefts = $signal<Record<number, number>>({});
+  config = resource({
+    request: () => this.key(),
+    loader: async ({ request }) => (
+      await this._sdSystemConfig.getAsync(`sd-sheet.${request}`)
+    ) as ISdSheetConfig,
+  });
 
-  displayColumnDefs = $afterRenderComputed((): IColumnDef<T>[] => {
+  // column def
+
+  columnDefs = computed(() => {
+    if (
+      this.config.status() !== ResourceStatus.Resolved
+      && this.config.status() !== ResourceStatus.Local
+    ) return [];
+
+    const conf = this.config.value();
+
     return this.columnControls()
-      .map((columnControl) => {
-        const colConf = this._config()?.columnRecord?.[columnControl.key()];
+      .map(columnControl => {
+        const colConf = conf?.columnRecord?.[columnControl.key()];
         return {
           control: columnControl,
-          key: columnControl.key(),
           fixed: colConf?.fixed ?? columnControl.fixed(),
-          width: this._resizedWidths()[columnControl.key()]
-            ?? colConf?.width
-            ?? columnControl.width(),
+          width: colConf?.width ?? columnControl.width(),
           displayOrder: colConf?.displayOrder,
           hidden: colConf?.hidden ?? columnControl.hidden(),
           headerStyle: columnControl.headerStyle(),
         };
-      })
-      .filter((item) => !item.hidden && !item.control.collapse())
-      .orderBy((item) => item.displayOrder)
+      });
+  });
+
+  displayColumnDefs = computed<IColumnDef<T>[]>(() => {
+    return this.columnDefs()
+      .filter(item => !item.hidden && !item.control.collapse())
+      .orderBy(item => item.displayOrder ?? 999)
       .orderBy((item) => (item.fixed ? -1 : 0))
-      .map((item) => ({
+      .map(item => ({
         control: item.control,
         fixed: item.fixed,
         width: item.width,
         headerStyle: item.headerStyle,
       }));
-  }, { initialValue: [] });
+  });
 
-  displayHeaderDefTable = $computed((): (IHeaderDef<T> | undefined)[][] => {
-    //-- displayHeaderDefTable
-    const tempHeaderDefTable: (
-      | {
-      control: SdSheetColumnDirective<T>;
-      width: string | undefined;
-      fixed: boolean;
-      text: string | undefined;
-      useTemplate: string | undefined;
-      style: string | undefined;
-    }
-      | undefined
-      )[][] = [];
+  // header def
+
+  headerDefTable = computed(() => {
+    const result: (Omit<IHeaderDef<T>, "colspan" | "rowspan" | "isLastRow"> | undefined)[][] = [];
+
     const displayColumnDefs = this.displayColumnDefs();
 
     for (let c = 0; c < displayColumnDefs.length; c++) {
       const columnDef = displayColumnDefs[c];
 
-      const headers =
-        columnDef.control.header() === undefined
-          ? []
-          : typeof columnDef.control.header() === "string"
-            ? [columnDef.control.header() as string]
-            : (columnDef.control.header() as string[]);
+      const colHeader = columnDef.control.header();
+      const headers = colHeader == null ? [""]
+        : typeof colHeader === "string" ? [colHeader]
+          : colHeader;
 
       for (let r = 0; r < headers.length; r++) {
-        tempHeaderDefTable[r] = tempHeaderDefTable[r] ?? [];
-        tempHeaderDefTable[r][c] = {
+        result[r] ??= [];
+
+        result[r][c] = {
           control: columnDef.control,
           width: columnDef.width,
-          fixed: columnDef.fixed ?? false,
+          fixed: columnDef.fixed,
           text: headers[r],
-          useTemplate: undefined,
-          style: columnDef.headerStyle,
-        };
-      }
-      if (columnDef.control.headerTemplateRef()) {
-        tempHeaderDefTable[headers.length] = tempHeaderDefTable[headers.length] ?? [];
-        tempHeaderDefTable[headers.length][c] = {
-          control: columnDef.control,
-          width: columnDef.width,
-          fixed: columnDef.fixed ?? false,
-          text: undefined,
-          useTemplate: columnDef.control.key(),
-          style: columnDef.headerStyle,
         };
       }
     }
 
-    const headerDefTable: (IHeaderDef<T> | undefined)[][] = [];
-    for (let r = 0; r < tempHeaderDefTable.length; r++) {
-      headerDefTable[r] = [];
-
-      const colLength = tempHeaderDefTable[r].length;
-      for (let c = 0; c < colLength; c++) {
-        if (!tempHeaderDefTable[r][c]) continue;
-
-        if (c > 0) {
-          let isIgnore = true;
-          for (let rr = 0; rr <= r; rr++) {
-            if (
-              !ObjectUtils.equal(tempHeaderDefTable[rr][c], tempHeaderDefTable[rr][c - 1], {
-                includes: ["text", "fixed", "useTemplate", "isLastDepth"],
-              })
-            ) {
-              isIgnore = false;
-              break;
-            }
-          }
-          if (isIgnore) continue;
-        }
-
-        headerDefTable[r][c] = {
-          control: tempHeaderDefTable[r][c]!.control,
-          width: tempHeaderDefTable[r][c]!.width,
-          fixed: tempHeaderDefTable[r][c]!.fixed,
-          colspan: undefined,
-          rowspan: undefined,
-          text: tempHeaderDefTable[r][c]!.text,
-          useTemplate: Boolean(tempHeaderDefTable[r][c]!.useTemplate),
-          isLastDepth: false,
-
-          style: tempHeaderDefTable[r][c]!.style,
-        };
-
-        // rowspan
-
-        let rowspan = 1;
-        for (let rr = r + 1; rr < tempHeaderDefTable.length; rr++) {
-          if (tempHeaderDefTable[rr][c] !== undefined) break;
-          rowspan++;
-        }
-        if (rowspan > 1) {
-          headerDefTable[r][c]!.rowspan = rowspan;
-        }
-
-        // last-depth
-
-        if (r + rowspan === tempHeaderDefTable.length) {
-          headerDefTable[r][c]!.isLastDepth = true;
-        }
-        else {
-          // colspan
-
-          let colspan = 1;
-          for (let cc = c + 1; cc < colLength; cc++) {
-            let isDiff = false;
-            for (let rr = 0; rr <= r; rr++) {
-              if (
-                !ObjectUtils.equal(tempHeaderDefTable[rr][c], tempHeaderDefTable[rr][cc], {
-                  includes: ["text", "fixed", "useTemplate", "isLastDepth"],
-                })
-              ) {
-                isDiff = true;
-                break;
-              }
-            }
-            if (isDiff) break;
-
-            colspan++;
-          }
-          if (colspan > 1) {
-            headerDefTable[r][c]!.colspan = colspan;
-          }
-        }
-      }
-    }
-
-    return headerDefTable;
+    return result;
   });
+
+  displayHeaderDefTable = computed(() => {
+    const headerDefTable = this.headerDefTable();
+
+    // text는 물론 fixed가 다른경우 컬럼이 분리되야 하므로, fixed도 함께 체크
+    const isSame = (r: number, c: number, cc: number) => {
+      const currColHeaderDef = headerDefTable[r][c];
+      const prevColHeaderDef = headerDefTable[r][cc];
+
+      return currColHeaderDef?.text === prevColHeaderDef?.text
+        && currColHeaderDef?.fixed === prevColHeaderDef?.fixed;
+    };
+
+    // 앞컬럼과 같으면, 컬럼 무시(앞컬럼의 colspan으로 합쳐져야하는 컬럼)
+    // 앞ROW(parent)의 text도 함께 체크해야하므로, 모든 상위 row체크
+    const isSpanned = (r: number, c: number, cc: number) => {
+      if (c === 0) return false;
+
+      for (let rr = 0; rr <= r; rr++) {
+        if (!isSame(rr, c, cc)) {
+          return false;
+        }
+      }
+
+      return true;
+    };
+
+    const getRowspan = (r: number, c: number) => {
+      let rowspan = 1;
+      for (let rr = r + 1; rr < headerDefTable.length; rr++) {
+        if (headerDefTable[rr][c] !== undefined) break;
+        rowspan++;
+      }
+
+      return rowspan;
+    };
+
+    const getColspan = (r: number, c: number) => {
+      let colspan = 1;
+      for (let cc = c + 1; cc < headerDefTable[r].length; cc++) {
+        if (!isSpanned(r, c, cc)) break;
+        colspan++;
+      }
+      return colspan;
+    };
+
+    const result: (IHeaderDef<T> | undefined)[][] = [];
+    for (let r = 0; r < headerDefTable.length; r++) {
+      result[r] = [];
+
+      for (let c = 0; c < headerDefTable[r].length; c++) {
+        const headerDef = headerDefTable[r][c];
+        if (!headerDef) continue;
+
+        const rowspan = getRowspan(r, c);
+        const isLastRow = r + rowspan === headerDefTable.length;
+
+        if (!isLastRow && isSpanned(r, c, c - 1)) continue;
+        const colspan = isLastRow ? 1 : getColspan(r, c);
+
+        result[r][c] = {
+          control: headerDef.control,
+          width: headerDef.width,
+          fixed: headerDef.fixed,
+          text: headerDef.text,
+
+          rowspan,
+          isLastRow,
+          colspan,
+        };
+      }
+    }
+
+    return result;
+  });
+
+  //-- fixed left
+
+  headerWidthTable = signal<Record<number, number>[]>([]);
+
+  onHeaderCellResize(event: ISdResizeEvent, r: number, c: number) {
+    const el = event.target as HTMLTableCellElement;
+    const offsetWidth = el.offsetWidth;
+
+    if (this.headerWidthTable()[r]?.[c] !== offsetWidth) {
+      this.headerWidthTable.update(v => {
+        const vr = [...v];
+        vr[r] ??= {};
+        vr[r][c] = offsetWidth;
+        return vr;
+      });
+    }
+  }
+
+  fixedCellLefts = computed(() => {
+    const headerDefTable = this.displayHeaderDefTable();
+
+    const result: number[] = [];
+    let nextLeft: number = 0;
+    for (let r = 0; r < this.headerWidthTable().length; r++) {
+      const headerWidthRow = this.headerWidthTable()[r];
+      for (const _c of Object.keys(headerWidthRow).orderBy()) {
+        const c = Number.parseInt(_c);
+
+        const headerDef = headerDefTable[r][c];
+        if (
+          c < 0 ||
+          (headerDef?.isLastRow && headerDef.fixed)
+        ) {
+          result[c] = nextLeft;
+          nextLeft += headerWidthRow[c];
+        }
+      }
+    }
+
+    return result;
+  });
+
+  //-- items
 
   currPageLength = $computed(() => {
     if (this.pageItemCount() != null && this.pageItemCount() !== 0 && this.items().length > 0) {
@@ -980,13 +1008,9 @@ export class SdSheetControl<T> {
     .some((item) => item.summaryTemplateRef() !== undefined));
 
   constructor() {
-    $effect([this.key], async () => {
-      this._config.set(await this._sdSystemConfig.getAsync(`sd-sheet.${this.key()}`));
-    });
-
-    $afterRenderEffect(() => {
+    /*$afterRenderEffect(() => {
       this.redrawNextFixedCells(-2);
-    });
+    });*/
 
     //-- select indicator
     $effect(() => {
@@ -1293,7 +1317,7 @@ export class SdSheetControl<T> {
       .findFirst<HTMLDivElement>("> ._focus-row-indicator")!;
 
     Object.assign(focusRowIndicatorEl.style, {
-      width: event.entry.contentRect.width + "px",
+      width: event.contentRect.width + "px",
     });
   }
 
@@ -1324,33 +1348,6 @@ export class SdSheetControl<T> {
     }
     else {
       focusCellIndicatorEl.style.opacity = "1";
-    }
-  }
-
-  onHeaderCellResize(headerCell: IHeaderDef<T>, c: number) {
-    if (!headerCell.fixed || !headerCell.isLastDepth) return;
-    this.redrawNextFixedCells(c);
-  }
-
-  redrawNextFixedCells(fromC: number) {
-    const sheetContainerEl = this.sheetContainerElRef().nativeElement;
-
-    for (let c = fromC; c < this.displayColumnDefs().length; c++) {
-      if (
-        (c < 0 || this.displayColumnDefs()[c].fixed) &&
-        (c + 1 < 0 || this.displayColumnDefs()[c + 1]?.fixed)
-      ) {
-        const thEl = sheetContainerEl.findFirst<HTMLTableCellElement>(
-          `> table > thead > tr > th._last-depth[c='${c}']`,
-        );
-
-        const nextLeft = thEl ? thEl.offsetLeft + thEl.offsetWidth : 0;
-
-        $obj(this.fixedCellLefts).updateField(c + 1, nextLeft);
-      }
-      else {
-        $obj(this.fixedCellLefts).deleteField(c + 1);
-      }
     }
   }
 
@@ -1497,7 +1494,7 @@ export class SdSheetControl<T> {
    * @param headerCell
    */
   onHeaderCellClick(event: MouseEvent, headerCell: IHeaderDef<T>): void {
-    if (!headerCell.isLastDepth) return;
+    if (!headerCell.isLastRow) return;
     if (headerCell.control.disableOrdering()) return;
     if (this._isOnResizing) return;
 
@@ -1524,7 +1521,7 @@ export class SdSheetControl<T> {
       {
         sheetKey: this.key(),
         controls: this.columnControls(),
-        config: this._config(),
+        config: this.config.value(),
       },
       {
         useCloseByBackdrop: true,
@@ -1532,7 +1529,7 @@ export class SdSheetControl<T> {
     );
     if (!result) return;
 
-    this._config.set(result);
+    this.config.set(result);
     await this._sdSystemConfig.setAsync(`sd-sheet.${this.key()}`, result);
   }
 
@@ -1638,7 +1635,7 @@ export class SdSheetControl<T> {
    * @private
    */
   async #saveColumnConfigAsync(columnKey: string, config: Partial<IConfigColumn>): Promise<void> {
-    this._config.update((v) => ({
+    this.config.update((v) => ({
       ...v,
       columnRecord: {
         ...v?.columnRecord,
@@ -1648,7 +1645,7 @@ export class SdSheetControl<T> {
         },
       },
     }));
-    await this._sdSystemConfig.setAsync(`sd-sheet.${this.key()}`, this._config());
+    await this._sdSystemConfig.setAsync(`sd-sheet.${this.key()}`, this.config.value());
   }
 }
 
@@ -1665,22 +1662,21 @@ interface IConfigColumn {
 
 interface IColumnDef<T> {
   control: SdSheetColumnDirective<T>;
-  fixed: boolean | undefined;
+  fixed: boolean;
   width: string | undefined;
+
   headerStyle: string | undefined;
 }
 
 interface IHeaderDef<T> {
   control: SdSheetColumnDirective<T>;
-  width: string | undefined;
   fixed: boolean;
+  width: string | undefined;
   colspan: number | undefined;
   rowspan: number | undefined;
   text: string | undefined;
-  useTemplate: boolean;
-  isLastDepth: boolean;
 
-  style: string | undefined;
+  isLastRow: boolean;
 }
 
 interface IItemDef<T> {

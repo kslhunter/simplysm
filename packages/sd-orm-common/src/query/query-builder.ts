@@ -403,9 +403,9 @@ EXEC ${procedureName}
     if (!def.column.nullable && def.column.defaultValue !== undefined) {
       queries.push(`ALTER TABLE ${tableName}
           ADD ${this._getQueryOfColDef({
-              ...def.column,
-              nullable: true,
-          })}`);
+        ...def.column,
+        nullable: true,
+      })}`);
       queries.push(`UPDATE ${tableName}
                     SET ${this.wrap(def.column.name)} = ${this.getQueryOfQueryValue(def.column.defaultValue)}`);
       queries.push(`ALTER TABLE ${tableName} ALTER COLUMN ${this._getQueryOfColDef(def.column)}`);
@@ -430,8 +430,8 @@ EXEC ${procedureName}
       const queries: string[] = [];
       if (!def.column.nullable && def.column.defaultValue !== undefined) {
         queries.push(`ALTER TABLE ${tableName} MODIFY COLUMN ${this._getQueryOfColDef({
-            ...def.column,
-            nullable: true,
+          ...def.column,
+          nullable: true,
         })}`);
         queries.push(
           `UPDATE ${tableName}
@@ -448,8 +448,8 @@ EXEC ${procedureName}
       const queries: string[] = [];
       if (!def.column.nullable && def.column.defaultValue !== undefined) {
         queries.push(`ALTER TABLE ${tableName} ALTER COLUMN ${this._getQueryOfColDef({
-            ...def.column,
-            nullable: true,
+          ...def.column,
+          nullable: true,
         })}`);
         queries.push(`UPDATE ${tableName}
                       SET ${this.wrap(def.column.name)} = ${this.getQueryOfQueryValue(def.column.defaultValue)}
@@ -500,7 +500,7 @@ EXEC ${procedureName}
       const schemaDot = def.table.schema !== undefined ? def.table.schema + "." : "";
 
       return `ALTER TABLE ${databaseDot}${schemaDot}${def.table.name} ADD CONSTRAINT PK_${def.table.name} PRIMARY KEY (${def.columns.map(
-              (item) => this.wrap(item)).join(", ")})`;
+        (item) => this.wrap(item)).join(", ")})`;
     }
   }
 
@@ -545,7 +545,7 @@ pragma writable_schema=0;`.trim();
       let query = "";
       query += `ALTER TABLE ${tableName}
           ADD CONSTRAINT ${fkName} FOREIGN KEY (${def.foreignKey.fkColumns.map((columnName) => `${this.wrap(
-                  columnName)}`).join(", ")})  `;
+        columnName)}`).join(", ")})  `;
       query += `  REFERENCES ${targetTableName} (${def.foreignKey.targetPkColumns.map((columnName) => `${this.wrap(
         columnName)}`).join(", ")})\n`;
       query += `  ON DELETE ${action}\n`;

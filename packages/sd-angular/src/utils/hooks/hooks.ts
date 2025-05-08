@@ -165,7 +165,6 @@ export function $model<T>(
   output: OutputEmitterRef<T>,
 ): SdWritableSignal<T> {
   const sig = $signal<T>(input[SIGNAL]["value"]);
-
   const orgSet = sig.set;
 
   $effect(() => {

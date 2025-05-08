@@ -155,8 +155,8 @@ export class SdKanbanControl<L, T> {
   }
 
   onCardResize(event: ISdResizeEvent) {
-    const marginBottom = getComputedStyle(event.entry.target).marginBottom;
-    this.cardHeight.set(event.entry.target.clientHeight + (NumberUtils.parseInt(marginBottom)
+    const marginBottom = getComputedStyle(event.target).marginBottom;
+    this.cardHeight.set(event.target.clientHeight + (NumberUtils.parseInt(marginBottom)
       ?? 0));
   }
 

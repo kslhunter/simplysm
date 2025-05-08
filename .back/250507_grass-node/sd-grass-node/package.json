@@ -1,0 +1,27 @@
+{
+  "name": "@simplysm/sd-grass-node",
+  "version": "12.9.14",
+  "description": "심플리즘 패키지 - SCSS 빌더 모듈 (node)",
+  "author": "김석래",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm.git",
+    "directory": "packages/sd-grass-node"
+  },
+  "scripts": {
+    "build": "napi build --release",
+    "prepublishOnly": "yarn run build"
+  },
+  "license": "MIT",
+  "type": "module",
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "files": [
+    "index.js",
+    "index.node",
+    "index.d.ts"
+  ],
+  "devDependencies": {
+    "@napi-rs/cli": "^2.18.4"
+  }
+}

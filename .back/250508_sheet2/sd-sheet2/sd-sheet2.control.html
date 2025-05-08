@@ -1,0 +1,62 @@
+<sd-dock-container>
+  <sd-dock class="_config-bar">
+    <sd-anchor>
+      <sd-icon [icon]="icons.cog" fixedWidth />
+    </sd-anchor>
+    <sd-pagination
+      [page]="1"
+      [pageLength]="25"
+      [displayPageLength]="10"
+    />
+  </sd-dock>
+
+  <sd-pane>
+    <table>
+      <thead>
+        @for (headerRow of displayHeaderDefTable(); let r = $index; track r) {
+          <tr>
+            @if (r === 0) {
+              <th
+                [attr.rowspan]="displayHeaderDefTable().length > 1 ? displayHeaderDefTable().length : undefined"
+                (sdResize)="onHeaderCellResize($event, r, 0)"
+                [style.left.px]="fixedCellLefts()[0]"
+              >
+              </th>
+            }
+            @for (headerCell of headerRow; let c = $index; track c) {
+              @if (headerCell) {
+                <th
+                  [attr.colspan]="headerCell.colspan"
+                  [attr.rowspan]="headerCell.rowspan"
+                  (sdResize)="onHeaderCellResize($event, r, c)"
+                  [style.left.px]="fixedCellLefts()[c + 1]"
+                >
+                  <pre>{{ headerCell.text }}</pre>
+                </th>
+              }
+            }
+          </tr>
+        }
+      </thead>
+      <tbody>
+        @for (item of items(); track $index) {
+          <tr>
+            <td></td>
+            @for (columnDef of displayColumnDefs(); track $index) {
+              <td>
+                <ng-template
+                  [ngTemplateOutlet]="columnDef.control.cellTemplateRef() ?? null"
+                  [ngTemplateOutletContext]="{
+                    $implicit: item,
+                    item: item,
+                    index: $index,
+                  }"
+                />
+              </td>
+            }
+          </tr>
+        }
+      </tbody>
+    </table>
+  </sd-pane>
+</sd-dock-container>
