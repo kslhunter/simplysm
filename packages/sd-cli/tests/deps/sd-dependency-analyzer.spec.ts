@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import * as ts from "typescript";
-import { PathUtils, TNormPath } from "@simplysm/sd-core-node/src";
+import { PathUtils, TNormPath } from "@simplysm/sd-core-node";
 import { SdDependencyCache } from "../../src/ts-compiler/sd-dependency-cache";
 import { SdDependencyAnalyzer } from "../../src/ts-compiler/sd-dependency-analyzer";
 

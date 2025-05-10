@@ -164,8 +164,8 @@ export default [
         {
           "selector": "classProperty",
           "modifiers": ["protected", "readonly"],
-          "format": ["camelCase"],
-          "leadingUnderscore": "forbid" // 명시적 허용
+          "format": null,
+          "leadingUnderscore": "allow"  // 언더스코어도 허용
         },
 
         // (2) protected 필드

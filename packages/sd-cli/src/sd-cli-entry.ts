@@ -12,6 +12,8 @@ import { SdCliLocalUpdate } from "./entry/sd-cli-local-update";
 import { SdCliCordova } from "./entry/sd-cli-cordova";
 import { SdCliAiCommand } from "./entry/sd-cli-ai-command";
 import { SdCliPostinstall } from "./entry/sd-cli-postinstall";
+import convertPrivate from "./fix/convert-private";
+import convertPrivateUnderscore from "./fix/convert-private-underscore";
 
 Error.stackTraceLimit = Infinity;
 EventEmitter.defaultMaxListeners = 0;
@@ -239,6 +241,18 @@ await yargs(hideBin(process.argv))
       .hide("help")
       .hide("debug"),
     () => SdCliPostinstall.run(),
+  )
+  .command(
+    "fix",
+    "가능한 내용 자동 수정",
+    (cmd) => cmd
+      .version(false)
+      .hide("help")
+      .hide("debug"),
+    () => {
+      convertPrivate();
+      convertPrivateUnderscore();
+    },
   )
   .strict()
   .recommendCommands()
