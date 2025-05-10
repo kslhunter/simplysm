@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/types-cordova-plugin-ionic-webview",
-  "version": "12.9.18",
+  "version": "12.9.19",
   "description": "심플리즘 패키지 - cordova-plugin-ionic-webview 에 대한 타입정의",
   "author": "김석래",
   "repository": {
