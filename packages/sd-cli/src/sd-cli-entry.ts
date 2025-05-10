@@ -12,8 +12,8 @@ import { SdCliLocalUpdate } from "./entry/sd-cli-local-update";
 import { SdCliCordova } from "./entry/sd-cli-cordova";
 import { SdCliAiCommand } from "./entry/sd-cli-ai-command";
 import { SdCliPostinstall } from "./entry/sd-cli-postinstall";
-import convertPrivate from "./fix/convert-private";
-import convertPrivateUnderscore from "./fix/convert-private-underscore";
+import convertEcmaPrivateToTsPrivate from "./fix/convert-ecma-private-to-ts-private";
+import prefixUnderscoreForAccessModifiers from "./fix/prefix-underscore-for-access-modifiers";
 
 Error.stackTraceLimit = Infinity;
 EventEmitter.defaultMaxListeners = 0;
@@ -250,14 +250,14 @@ await yargs(hideBin(process.argv))
       .hide("help")
       .hide("debug"),
     () => {
-      convertPrivate();
-      convertPrivateUnderscore();
+      convertEcmaPrivateToTsPrivate();
+      prefixUnderscoreForAccessModifiers();
     },
   )
   .strict()
   .recommendCommands()
   .fail((msg, err, cmd) => {
-    console.error("🚫 지원되지 않는 명령입니다.");
+    console.error("지원되지 않는 명령입니다.");
     console.error(msg);
     console.log("\n명령어 목록:");
     cmd.showHelp();

@@ -1,13 +1,10 @@
 /* eslint-disable no-console */
 
-import { MethodDeclaration, Project, PropertyAccessExpression, SyntaxKind } from "ts-morph";
+import { MethodDeclaration, PropertyAccessExpression, SyntaxKind } from "ts-morph";
+import getTsMortphSourceFiles from "./core/get-ts-morph-source-files";
 
-export default function convertPrivate() {
-  const project = new Project({
-    tsConfigFilePath: "tsconfig.base.json",
-  });
-
-  const sourceFiles = project.getSourceFiles("packages/*/src/**/*.ts");
+export default function convertEcmaPrivateToTsPrivate() {
+  const sourceFiles = getTsMortphSourceFiles();
 
   for (const sourceFile of sourceFiles) {
     for (const classDec of sourceFile.getClasses()) {
@@ -70,5 +67,5 @@ export default function convertPrivate() {
     }
   }
 
-  console.log("✅ ECMAScript private (#field) → TypeScript private _field 변환 완료");
+  console.log("[완료] #field/#method → private _field/_method 변환 완료");
 }

@@ -1,22 +1,18 @@
 /* eslint-disable no-console */
-
 import {
   MethodDeclaration,
-  Project,
   PropertyAccessExpression,
   PropertyDeclaration,
   SyntaxKind,
 } from "ts-morph";
+import getTsMortphSourceFiles from "./core/get-ts-morph-source-files";
 
-export default function convertPrivateUnderscore() {
-  const project = new Project({
-    tsConfigFilePath: "tsconfig.base.json",
-  });
-
-  const sourceFiles = project.getSourceFiles("packages/*/src/**/*.ts");
+export default function prefixUnderscoreForAccessModifiers() {
+  const sourceFiles = getTsMortphSourceFiles();
 
   for (const sourceFile of sourceFiles) {
     for (const classDec of sourceFile.getClasses()) {
+      let changed = false;
       const members = classDec.getMembers();
 
       for (const member of members) {
@@ -57,13 +53,16 @@ export default function convertPrivateUnderscore() {
               }
             });
 
-          console.log(`[updated] ${sourceFile.getBaseName()} :: ${originalName} → ${newName}`);
+          console.log(`[private-or-protected] ${sourceFile.getBaseName()} :: ${originalName} → ${newName}`);
+          changed = true;
         }
       }
-    }
 
-    sourceFile.saveSync();
+      if (changed) {
+        sourceFile.saveSync();
+      }
+    }
   }
 
-  console.log("✅ private/protected prefix 변환 완료");
+  console.log("[완료] private/protected 멤버 → _접두사 변환 완료");
 }
