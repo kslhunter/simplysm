@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-core-node",
-  "version": "12.9.17",
+  "version": "12.9.18",
   "description": "심플리즘 패키지 - 코어 모듈 (node)",
   "author": "김석래",
   "repository": {
@@ -13,7 +13,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@simplysm/sd-core-common": "12.9.17",
+    "@simplysm/sd-core-common": "12.9.18",
     "glob": "^11.0.2",
     "watcher": "^2.3.1"
   },

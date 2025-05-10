@@ -1,5 +1,6 @@
-import { MethodDeclaration, Project, PropertyAccessExpression, SyntaxKind } from "ts-morph";
+/* eslint-disable no-console */
 
+import { MethodDeclaration, Project, PropertyAccessExpression, SyntaxKind } from "ts-morph";
 
 export default function convertPrivate() {
   const project = new Project({
