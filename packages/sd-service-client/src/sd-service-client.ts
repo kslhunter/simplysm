@@ -77,7 +77,7 @@ export class SdServiceClient extends EventEmitter {
           this.isConnected = true;
 
           for (const entry of this._eventListenerInfoMap.entries()) {
-            await this.#sendCommandAsync(
+            await this._sendCommandAsync(
               "addEventListener",
               [entry[0], entry[1].name, entry[1].info],
             );
@@ -150,7 +150,7 @@ export class SdServiceClient extends EventEmitter {
   }
 
   async sendAsync(serviceName: string, methodName: string, params: any[]): Promise<any> {
-    return await this.#sendCommandAsync(`${serviceName}.${methodName}`, params);
+    return await this._sendCommandAsync(`${serviceName}.${methodName}`, params);
   }
 
   async addEventListenerAsync<T extends SdServiceEventListenerBase<any, any>>(
@@ -171,7 +171,7 @@ export class SdServiceClient extends EventEmitter {
       await cb(msg.body);
     });
 
-    await this.#sendCommandAsync("addEventListener", [key, eventListenerType.name, info]);
+    await this._sendCommandAsync("addEventListener", [key, eventListenerType.name, info]);
 
     this._eventListenerInfoMap.set(key, {
       name: eventListenerType.name,
@@ -189,15 +189,15 @@ export class SdServiceClient extends EventEmitter {
     const listenerInfos: {
       key: string;
       info: T["info"];
-    }[] = await this.#sendCommandAsync("getEventListenerInfos", [eventType.name]);
+    }[] = await this._sendCommandAsync("getEventListenerInfos", [eventType.name]);
     const targetListenerKeys = listenerInfos.filter((item) => infoSelector(item.info))
       .map((item) => item.key);
 
-    await this.#sendCommandAsync("emitEvent", [targetListenerKeys, data]);
+    await this._sendCommandAsync("emitEvent", [targetListenerKeys, data]);
   }
 
   async removeEventListenerAsync(key: string): Promise<void> {
-    await this.#sendCommandAsync("removeEventListener", [key]);
+    await this._sendCommandAsync("removeEventListener", [key]);
 
     this._eventListenerInfoMap.delete(key);
   }
@@ -224,7 +224,7 @@ export class SdServiceClient extends EventEmitter {
     });
   }
 
-  async #sendCommandAsync(command: string, params: any[]): Promise<any> {
+  private async _sendCommandAsync(command: string, params: any[]): Promise<any> {
     const uuid = Uuid.new().toString();
 
     return await new Promise<any>(async (resolve, reject) => {

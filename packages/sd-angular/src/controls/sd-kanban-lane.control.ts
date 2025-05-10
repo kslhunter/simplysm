@@ -130,7 +130,7 @@ import { SdIconControl } from "./sd-icon.control";
   },
 })
 export class SdKanbanLaneControl<L, T> {
-  protected icons = inject(SdAngularConfigProvider).icons;
+  protected readonly icons = inject(SdAngularConfigProvider).icons;
 
   private _boardControl = inject<SdKanbanBoardControl<L, T>>(forwardRef(() => SdKanbanBoardControl));
 

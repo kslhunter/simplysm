@@ -59,7 +59,7 @@ import { SdIconControl } from "./sd-icon.control";
   `,
 })
 export class SdThemeSelectorControl {
- protected icons = inject(SdAngularConfigProvider).icons;
+ protected readonly icons = inject(SdAngularConfigProvider).icons;
 
   private _sdTheme = inject(SdThemeProvider);
 

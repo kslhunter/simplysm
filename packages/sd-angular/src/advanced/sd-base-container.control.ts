@@ -82,7 +82,7 @@ import { SdShowEffectDirective } from "../directives/sd-show-effect.directive";
   `,
 })
 export class SdBaseContainerControl {
-  protected icons = inject(SdAngularConfigProvider).icons;
+  protected readonly icons = inject(SdAngularConfigProvider).icons;
 
   private _activatedRoute = inject(ActivatedRoute, { optional: true });
   private _sdActivatedModal = inject(SdActivatedModalProvider, { optional: true });

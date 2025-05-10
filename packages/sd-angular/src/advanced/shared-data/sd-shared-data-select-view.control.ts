@@ -136,7 +136,7 @@ export class SdSharedDataSelectViewControl<
   T extends ISharedDataBase<string | number>,
   TMODAL extends SdModalBase<ISharedDataModalInputParam, ISharedDataModalOutputResult>,
 > {
-  protected icons = inject(SdAngularConfigProvider).icons;
+  protected readonly icons = inject(SdAngularConfigProvider).icons;
 
   private _sdModal = inject(SdModalProvider);
 

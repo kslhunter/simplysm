@@ -344,7 +344,7 @@ import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
   },
 })
 export class SdModalControl {
-  protected icons = inject(SdAngularConfigProvider).icons;
+  protected readonly icons = inject(SdAngularConfigProvider).icons;
 
   private _sdSystemConfig = inject(SdSystemConfigProvider);
   private _elRef = injectElementRef<HTMLElement>();
@@ -418,23 +418,23 @@ export class SdModalControl {
   @HostListener("sdResize", ["$event"])
   onResize(event: ISdResizeEvent) {
     if (event.heightChanged) {
-      this.#calcHeight();
+      this._calcHeight();
     }
     if (event.widthChanged) {
-      this.#calcWidth();
+      this._calcWidth();
     }
   }
 
   onDialogResize(event: ISdResizeEvent) {
     if (event.heightChanged) {
-      this.#calcHeight();
+      this._calcHeight();
     }
     if (event.widthChanged) {
-      this.#calcWidth();
+      this._calcWidth();
     }
   }
 
-  #calcHeight() {
+  private _calcHeight() {
     const style = getComputedStyle(this._elRef.nativeElement);
     let paddingTop = style.paddingTop === "" ? 0 : (NumberUtils.parseInt(style.paddingTop) ?? 0);
 
@@ -446,7 +446,7 @@ export class SdModalControl {
     }
   }
 
-  #calcWidth() {
+  private _calcWidth() {
     if (this.dialogElRef().nativeElement.offsetWidth > this._elRef.nativeElement.offsetWidth) {
       this.dialogElRef().nativeElement.style.maxWidth = `100%`;
       this.dialogElRef().nativeElement.style.width = `100%`;

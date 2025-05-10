@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, inject, input, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  input,
+  ViewEncapsulation,
+} from "@angular/core";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { $computed } from "../utils/hooks/hooks";
 import { transformBoolean } from "../utils/type-tramsforms";
@@ -10,7 +16,7 @@ import { SdIconControl } from "./sd-icon.control";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
-    SdIconControl
+    SdIconControl,
   ],
   styles: [/* language=SCSS */ `
     sd-collapse-icon {
@@ -21,18 +27,18 @@ import { SdIconControl } from "./sd-icon.control";
         transition: transform 0.1s ease-out;
       }
     }
-  `
+  `,
   ],
   template: `
     <sd-icon [icon]="icon()" fixedWidth />
   `,
   host: {
     "[attr.sd-open]": "open()",
-    "[style.transform]": "transform()"
-  }
+    "[style.transform]": "transform()",
+  },
 })
 export class SdCollapseIconControl {
- protected icons = inject(SdAngularConfigProvider).icons;
+  protected readonly icons = inject(SdAngularConfigProvider).icons;
 
   icon = input(this.icons.angleDown);
   open = input(false, { transform: transformBoolean });

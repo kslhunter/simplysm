@@ -114,28 +114,28 @@ export class SdToastProvider {
   }
 
   info<T extends boolean>(message: string, progress?: T): T extends true ? ISdProgressToast : void {
-    return this.#show("info", message, progress);
+    return this._show("info", message, progress);
   }
 
   success<T extends boolean>(message: string, progress?: T): T extends true
     ? ISdProgressToast
     : void {
-    return this.#show("success", message, progress);
+    return this._show("success", message, progress);
   }
 
   warning<T extends boolean>(message: string, progress?: T): T extends true
     ? ISdProgressToast
     : void {
-    return this.#show("warning", message, progress);
+    return this._show("warning", message, progress);
   }
 
   danger<T extends boolean>(message: string, progress?: T): T extends true
     ? ISdProgressToast
     : void {
-    return this.#show("danger", message, progress);
+    return this._show("danger", message, progress);
   }
 
-  #show<T extends boolean>(
+  private _show<T extends boolean>(
     theme: "info" | "success" | "warning" | "danger",
     message: string,
     progress?: T,
@@ -177,7 +177,7 @@ export class SdToastProvider {
         progress: (percent: number) => {
           toastRef.setInput("progress", percent);
           if (percent >= 100) {
-            this.#closeAfterTime(toastRef, 1000);
+            this._closeAfterTime(toastRef, 1000);
           }
         },
         message: (msg: string) => {
@@ -186,17 +186,17 @@ export class SdToastProvider {
       } as any;
     }
     else {
-      this.#closeAfterTime(toastRef, 3000);
+      this._closeAfterTime(toastRef, 3000);
       return undefined as any;
     }
   }
 
-  #closeAfterTime(toastRef: ComponentRef<SdToastControl>, ms: number): void {
+  private _closeAfterTime(toastRef: ComponentRef<SdToastControl>, ms: number): void {
     const toastEl = toastRef.location.nativeElement as HTMLElement;
 
     window.setTimeout(() => {
       if (toastEl.matches(":hover")) {
-        this.#closeAfterTime(toastRef, ms);
+        this._closeAfterTime(toastRef, ms);
       }
       else {
         toastEl.addEventListener("transitionend", () => {

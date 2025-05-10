@@ -4,7 +4,7 @@ import { ICryptoConfig } from "@simplysm/sd-service-common";
 
 export class SdCryptoService extends SdServiceBase {
   encrypt(data: string | Buffer): string {
-    const config = this.#getConf();
+    const config = this._getConf();
 
     return crypto.createHmac("sha256", config.key)
       .update(data)
@@ -12,7 +12,7 @@ export class SdCryptoService extends SdServiceBase {
   }
 
   encryptAes(data: Buffer): string {
-    const config = this.#getConf();
+    const config = this._getConf();
 
     const iv = crypto.randomBytes(16);
     const cipher = crypto.createCipheriv(
@@ -30,7 +30,7 @@ export class SdCryptoService extends SdServiceBase {
   }
 
   decryptAes(encText: string): Buffer {
-    const config = this.#getConf();
+    const config = this._getConf();
 
     const textParts = encText.split(":");
     const iv = Buffer.from(textParts.shift()!, "hex");
@@ -45,7 +45,7 @@ export class SdCryptoService extends SdServiceBase {
     return Buffer.concat([decrypted, decipher.final()]);
   }
 
-  #getConf() {
+  private _getConf() {
     const config = this.server.getConfig(this.request?.clientName)["crypto"] as ICryptoConfig | undefined;
     if (config === undefined) {
       throw new Error("암호화 설정을 찾을 수 없습니다.");

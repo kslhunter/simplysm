@@ -312,7 +312,7 @@ import { SdIconControl } from "./sd-icon.control";
   },
 })
 export class SdSelectControl<M extends "single" | "multi", T> {
- protected icons = inject(SdAngularConfigProvider).icons;
+ protected readonly icons = inject(SdAngularConfigProvider).icons;
 
   __value = input<TSelectValue<any>[M] | undefined>(undefined, { alias: "value" });
   __valueChange = output<TSelectValue<any>[M] | undefined>({ alias: "valueChange" });

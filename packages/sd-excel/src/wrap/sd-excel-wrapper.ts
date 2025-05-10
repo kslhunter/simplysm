@@ -71,7 +71,7 @@ export class SdExcelWrapper<VT extends TValidObject> {
   }
 
   async readAsync(
-    file: Uint8Array | Blob,
+    file: Buffer | Blob,
     wsNameOrIndex: string | number = 0,
   ): Promise<TValidateObjectRecord<VT>[]> {
     const wb = new SdExcelWorkbook(file);
@@ -86,7 +86,7 @@ export class SdExcelWrapper<VT extends TValidObject> {
 
     const excelItems: TValidateObjectRecord<VT>[] = [];
     for (const item of wsdt) {
-      const fieldConf = this.#getFieldConf(item);
+      const fieldConf = this._getFieldConf(item);
 
       const firstNotNullFieldKey = Object.keys(fieldConf)
         .first(key => fieldConf[key].notnull ?? false);
@@ -160,12 +160,12 @@ export class SdExcelWrapper<VT extends TValidObject> {
     }
     if (excelItems.length === 0) throw Error("엑셀파일에서 데이터를 찾을 수 없습니다.");
 
-    ObjectUtils.validateArrayWithThrow(wsName, excelItems, item => this.#getFieldConf(item));
+    ObjectUtils.validateArrayWithThrow(wsName, excelItems, item => this._getFieldConf(item));
 
     return excelItems;
   }
 
-  #getFieldConf(item: TValidateObjectRecord<VT>) {
+  private _getFieldConf(item: TValidateObjectRecord<VT>) {
     const result = this._additionalFieldConf
       ? ObjectUtils.merge(this._fieldConf, this._additionalFieldConf(item))
       : this._fieldConf;

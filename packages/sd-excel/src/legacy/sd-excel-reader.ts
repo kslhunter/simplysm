@@ -4,7 +4,7 @@ import { SdExcelReaderWorksheet } from "./sd-excel-reader-worksheet";
 export class SdExcelReader {
   private readonly _wb: XLSX.WorkBook;
 
-  constructor(data: Uint8Array) {
+  constructor(data: Buffer) {
     this._wb = XLSX.read(data, {
       type: Buffer.isBuffer(data) ? "buffer" : "array",
       codepage: 949,

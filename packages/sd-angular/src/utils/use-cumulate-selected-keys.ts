@@ -8,7 +8,7 @@ export function useCumulateSelectedKeys<T extends object, K>(
   selectedItems: WritableSignal<T[]>,
   selectedItemKeys: WritableSignal<K[]>,
   keySelectorFn: (item: T) => K,
-) {
+): void {
   $effect([items, selectedItemKeys], () => {
     const newSelectedItems = items().filter((item) => {
       return selectedItemKeys().includes(keySelectorFn(item));

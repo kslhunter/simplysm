@@ -51,7 +51,7 @@ import { SdIconControl } from "./sd-icon.control";
     </sd-anchor>`,
 })
 export class SdTopbarTabControl {
-  protected icons = inject(SdAngularConfigProvider).icons;
+  protected readonly icons = inject(SdAngularConfigProvider).icons;
 
   clickClose = output<MouseEvent>();
 

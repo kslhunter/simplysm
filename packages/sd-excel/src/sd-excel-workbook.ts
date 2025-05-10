@@ -15,7 +15,7 @@ export class SdExcelWorkbook {
     return wbData.sheetNames;
   }
 
-  constructor(arg?: Uint8Array | Blob) {
+  constructor(arg?: Blob | Buffer) {
     if (arg) {
       this.zipCache = new ZipCache(arg);
     }
@@ -104,14 +104,14 @@ export class SdExcelWorkbook {
     return await this.zipCache.getAsync(filePath);
   }*/
 
-  async getBytesAsync(): Promise<Uint8Array> {
-    return await this.zipCache.toBytesAsync();
+  async getBufferAsync(): Promise<Buffer> {
+    return await this.zipCache.toBufferAsync();
   }
 
   async getBlobAsync(): Promise<Blob> {
-    const bytes = await this.zipCache.toBytesAsync();
+    const buffer = await this.zipCache.toBufferAsync();
     return new Blob(
-      [bytes],
+      [buffer],
       { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" },
     );
   }

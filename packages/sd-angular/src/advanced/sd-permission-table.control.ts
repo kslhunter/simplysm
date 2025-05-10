@@ -216,7 +216,7 @@ import { ObjectUtils } from "@simplysm/sd-core-common";
   `,
 })
 export class SdPermissionTableControl {
-  protected icons = inject(SdAngularConfigProvider).icons;
+  protected readonly icons = inject(SdAngularConfigProvider).icons;
 
   __value = input<Record<string, boolean>>({}, { alias: "value" });
   __valueChange = output<Record<string, boolean>>({ alias: "valueChange" });
@@ -228,7 +228,7 @@ export class SdPermissionTableControl {
   collapsedItems = $signal(new Set<ISdPermission>());
 
   depthLength = $computed(() => {
-    return this.#getDepthLength(this.items(), 0);
+    return this._getDepthLength(this.items(), 0);
   });
 
   arr(len: number): number[] {
@@ -315,13 +315,13 @@ export class SdPermissionTableControl {
 
   onPermCheckChange(item: ISdPermission, type: "use" | "edit", val: boolean) {
     const value = ObjectUtils.clone(this.value());
-    const changed = this.#changePermCheck(value, item, type, val);
+    const changed = this._changePermCheck(value, item, type, val);
     if (changed) {
       this.value.set(value);
     }
   }
 
-  #changePermCheck(
+  private _changePermCheck(
     value: Record<string, boolean>,
     item: ISdPermission,
     type: "use" | "edit",
@@ -352,7 +352,7 @@ export class SdPermissionTableControl {
     // 하위 권한을 함께 변경함
     if (item.children) {
       for (const child of item.children) {
-        const childChanged = this.#changePermCheck(value, child, type, val);
+        const childChanged = this._changePermCheck(value, child, type, val);
         if (childChanged) {
           changed = true;
         }
@@ -362,11 +362,11 @@ export class SdPermissionTableControl {
     return changed;
   }
 
-  #getDepthLength(items: ISdPermission[], depth: number): number {
+  private _getDepthLength(items: ISdPermission[], depth: number): number {
     return (
       items.max((item) => {
         if (item.children) {
-          return this.#getDepthLength(item.children, depth + 1);
+          return this._getDepthLength(item.children, depth + 1);
         }
         else {
           return depth + 1;

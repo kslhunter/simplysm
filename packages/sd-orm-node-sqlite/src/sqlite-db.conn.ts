@@ -50,7 +50,7 @@ export class SqliteDbConn extends EventEmitter implements IDbConn {
       });
 
       conn.on("open", () => {
-        this.#startTimeout();
+        this._startTimeout();
         this.isConnected = true;
         this.isOnTransaction = false;
         resolve();
@@ -63,7 +63,7 @@ export class SqliteDbConn extends EventEmitter implements IDbConn {
   }
 
   async closeAsync() {
-    this.#stopTimeout();
+    this._stopTimeout();
 
     await new Promise<void>((resolve, reject) => {
       if (!this._conn || !this.isConnected) {
@@ -89,7 +89,7 @@ export class SqliteDbConn extends EventEmitter implements IDbConn {
     if (!this._conn || !this.isConnected) {
       throw new Error("'Connection'이 연결되어있지 않습니다.");
     }
-    this.#startTimeout();
+    this._startTimeout();
 
     const conn = this._conn;
 
@@ -107,7 +107,7 @@ export class SqliteDbConn extends EventEmitter implements IDbConn {
     if (!this._conn || !this.isConnected) {
       throw new Error("'Connection'이 연결되어있지 않습니다.");
     }
-    this.#startTimeout();
+    this._startTimeout();
 
     const conn = this._conn;
 
@@ -128,7 +128,7 @@ export class SqliteDbConn extends EventEmitter implements IDbConn {
     if (!this._conn || !this.isConnected) {
       throw new Error("'Connection'이 연결되어있지 않습니다.");
     }
-    this.#startTimeout();
+    this._startTimeout();
 
     const conn = this._conn;
 
@@ -149,7 +149,7 @@ export class SqliteDbConn extends EventEmitter implements IDbConn {
     if (!this._conn || !this.isConnected) {
       throw new Error("'Connection'이 연결되어있지 않습니다.");
     }
-    this.#startTimeout();
+    this._startTimeout();
 
     const conn = this._conn;
 
@@ -163,7 +163,7 @@ export class SqliteDbConn extends EventEmitter implements IDbConn {
         this._logger.debug("쿼리 실행:\n" + queryString);
         await new Promise<void>((resolve, reject) => {
           conn.all(queryString, (err, queryResults) => {
-            this.#startTimeout();
+            this._startTimeout();
 
             if (err) {
               reject(new SdError(err, "쿼리 수행중 오류발생\n-- query\n" + queryString.trim() + "\n--"));
@@ -232,13 +232,13 @@ export class SqliteDbConn extends EventEmitter implements IDbConn {
     await this.executeAsync([q]);
   }
 
-  #stopTimeout() {
+  private _stopTimeout() {
     if (this._connTimeout) {
       clearTimeout(this._connTimeout);
     }
   }
 
-  #startTimeout() {
+  private _startTimeout() {
     if (this._connTimeout) {
       clearTimeout(this._connTimeout);
     }

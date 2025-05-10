@@ -13,7 +13,7 @@ import { loadProjConfAsync } from "./utils/loadProjConfAsync";
 
 export class SdCliProject {
   static async watchAsync(opt: {
-    config?: string;
+    config: string;
     options?: string[];
     packages?: string[];
     inspects?: string[];
@@ -58,7 +58,7 @@ export class SdCliProject {
         logger.debug("빌드를 시작합니다...");
       })
       .on("complete", (messages) => {
-        this.#logging(messages, logger);
+        this._logging(messages, logger);
       });
 
     await pkgPaths.parallelAsync(async (pkgPath) => {
@@ -71,7 +71,7 @@ export class SdCliProject {
   }
 
   static async buildAsync(opt: {
-    config?: string;
+    config: string;
     options?: string[];
     packages?: string[];
   }): Promise<void> {
@@ -107,7 +107,7 @@ export class SdCliProject {
         projConf: projConf,
       });
     });
-    this.#logging(messages.mapMany(), logger);
+    this._logging(messages.mapMany(), logger);
   }
 
   static async publishAsync(opt: {
@@ -169,7 +169,7 @@ export class SdCliProject {
           });
         });
 
-        this.#logging(messages.mapMany(), logger);
+        this._logging(messages.mapMany(), logger);
       }
       catch (err) {
         await SdProcess.spawnAsync("git checkout .");
@@ -339,7 +339,7 @@ export class SdCliProject {
     }
   }
 
-  static #logging(buildResults: ISdBuildMessage[], logger: SdLogger): void {
+  private static _logging(buildResults: ISdBuildMessage[], logger: SdLogger): void {
     const messageMap = buildResults.toSetMap(
       (item) => item.severity,
       (item) => SdCliConvertMessageUtils.getBuildMessageString(item),

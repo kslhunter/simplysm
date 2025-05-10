@@ -6,7 +6,7 @@
     "emitDecoratorMetadata": true,
     "module": "ESNext",
     "target": "ES2022",
-    "lib": ["ES2021", "DOM"],
+    "lib": ["ES2021"],
     "strict": true,
     "moduleResolution": "Node",
     "esModuleInterop": true,
@@ -30,9 +30,5 @@
         "./packages/ts-transformer-keys/src/transformer.ts"
       ]
     }
-  },
-  "exclude": ["dist", "node_modules", "tests"],
-  "ts-node": {
-    "esm": true
   }
 }

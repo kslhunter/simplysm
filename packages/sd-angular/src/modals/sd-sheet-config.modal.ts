@@ -151,7 +151,7 @@ import { SdIconControl } from "../controls/sd-icon.control";
   `,
 })
 export class SdSheetConfigModal<T> extends SdModalBase<ISdSheetConfigModalInput<T>, ISdSheetConfig> {
-  protected icons = inject(SdAngularConfigProvider).icons;
+  protected readonly icons = inject(SdAngularConfigProvider).icons;
 
   items = $signal<IItemVM[]>([]);
 

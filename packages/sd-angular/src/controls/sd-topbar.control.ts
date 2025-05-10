@@ -131,7 +131,7 @@ import { SdIconControl } from "./sd-icon.control";
   `,
 })
 export class SdTopbarControl {
-  protected icons = inject(SdAngularConfigProvider).icons;
+  protected readonly icons = inject(SdAngularConfigProvider).icons;
 
   private _elRef = injectElementRef<HTMLElement>();
   private _parentSidebarContainerControl = inject(SdSidebarContainerControl, { optional: true });

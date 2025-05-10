@@ -64,7 +64,7 @@ export class SdSelectModalButtonControl<
   TMODAL extends SdModalBase<ISelectModalInputParam, ISelectModalOutputResult>,
   M extends keyof TSelectValue<any>,
 > {
-  protected icons = inject(SdAngularConfigProvider).icons;
+  protected readonly icons = inject(SdAngularConfigProvider).icons;
 
   private _sdModal = inject(SdModalProvider);
 

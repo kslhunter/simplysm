@@ -52,7 +52,7 @@ export class SdSharedDataProvider<T extends Record<string, ISharedDataBase<strin
           filter: info.getter.filter,
         },
         async (changeKeys) => {
-          await this.#loadDataAsync(name, changeKeys);
+          await this._loadDataAsync(name, changeKeys);
         },
       );
     }
@@ -64,13 +64,13 @@ export class SdSharedDataProvider<T extends Record<string, ISharedDataBase<strin
       const computedMap = $computed(() => info.signal!().toMap((item) => item.__valueKey));
       info.signal["$get"] = (key: T[K]["__valueKey"]) => computedMap().get(key);
 
-      void this.#loadDataAsync(name);
+      void this._loadDataAsync(name);
     }
 
     return info.signal as any;
   }
 
-  async #loadDataAsync<K extends keyof T & string>(name: K, changeKeys?: T[K]["__valueKey"][]) {
+  private async _loadDataAsync<K extends keyof T & string>(name: K, changeKeys?: T[K]["__valueKey"][]) {
     this.loadingCount++;
     try {
       const info = this._infoMap.get(name);
@@ -80,7 +80,7 @@ export class SdSharedDataProvider<T extends Record<string, ISharedDataBase<strin
       const resData = await info.getter.getDataAsync(changeKeys);
 
       if (!changeKeys) {
-        info.signal.set(this.#ordering(resData, info.getter.orderBy));
+        info.signal.set(this._ordering(resData, info.getter.orderBy));
       }
       else {
         info.signal.update((v) => {
@@ -91,7 +91,7 @@ export class SdSharedDataProvider<T extends Record<string, ISharedDataBase<strin
           r.push(...resData);
 
           // 재정렬
-          return this.#ordering(r, info.getter.orderBy);
+          return this._ordering(r, info.getter.orderBy);
         });
       }
       this.loadingCount--;
@@ -102,7 +102,7 @@ export class SdSharedDataProvider<T extends Record<string, ISharedDataBase<strin
     }
   }
 
-  #ordering<TT extends T[keyof T]>(
+  private _ordering<TT extends T[keyof T]>(
     data: TT[],
     orderByList: [(data: TT) => string | number | DateOnly | DateTime | Time | undefined, "asc" | "desc"][],
   ): TT[] {

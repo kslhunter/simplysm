@@ -8,13 +8,14 @@ import { SdCliConvertMessageUtils } from "../../utils/sd-cli-convert-message.uti
 import { ISdCliNgPluginResultCache } from "../../types/build-plugin.types";
 import { ISdTsCompilerResult } from "../../types/ts-compiler.types";
 import { SdTsCompiler } from "../../ts-compiler/sd-ts-compiler";
+import { ScopePathSet } from "../commons/scope-path";
 
 export function createSdNgPlugin(conf: {
   pkgPath: TNormPath;
   dev: boolean;
   modifiedFileSet: Set<TNormPath>;
   result: ISdCliNgPluginResultCache;
-  watchScopePaths: TNormPath[];
+  watchScopePathSet: ScopePathSet;
 }): esbuild.Plugin {
   let perf: SdCliPerformanceTimer;
   const logger = SdLogger.get(["simplysm", "sd-cli", "createSdNgPlugin"]);
@@ -31,7 +32,7 @@ export function createSdNgPlugin(conf: {
         additionalOptions: { declaration: false },
         isDevMode: conf.dev,
         isForBundle: true,
-        watchScopePaths: conf.watchScopePaths,
+        watchScopePathSet: conf.watchScopePathSet,
       });
 
       let tsCompileResult: ISdTsCompilerResult;

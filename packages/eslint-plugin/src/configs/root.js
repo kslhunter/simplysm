@@ -27,11 +27,15 @@ export default [
       // 기본
       "no-console": ["warn"],
       "no-warning-comments": ["warn"],
-      'no-restricted-syntax': [
-        'error',
+      "no-restricted-syntax": [
+        "error",
         {
-          selector: 'PropertyDefinition[key.type="PrivateIdentifier"]',
-          message: 'Do not use ECMAScript private fields (e.g. #myField); use TypeScript "private" instead.',
+          selector: "PropertyDefinition[key.type='PrivateIdentifier']",
+          message: "Do not use ECMAScript private fields (e.g. #myField); use TypeScript \"private\" instead.",
+        },
+        {
+          selector: "MethodDefinition[key.type='PrivateIdentifier']",
+          message: "Do not use ECMAScript private methods (e.g. #myMethod); use TypeScript \"private\" instead.",
         },
       ],
       "eqeqeq": ["error", "always", { "null": "ignore" }],
@@ -56,6 +60,15 @@ export default [
       "@angular-eslint": ngeslint.tsPlugin,
       "import": importPlugin,
     },
+    settings: {
+      "import/resolver": {
+        typescript: {
+          project: [
+            "./tsconfig.base.json",
+          ],
+        },
+      },
+    },
     processor: ngeslint.processInlineTemplates,
     languageOptions: {
       parser: tseslint.parser,
@@ -67,11 +80,15 @@ export default [
       // 기본
       "no-console": ["warn"],
       "no-warning-comments": ["warn"],
-      'no-restricted-syntax': [
-        'error',
+      "no-restricted-syntax": [
+        "error",
         {
-          selector: 'PropertyDefinition[key.type="PrivateIdentifier"]',
-          message: 'Do not use ECMAScript private fields (e.g. #myField); use TypeScript "private" instead.',
+          selector: "PropertyDefinition[key.type='PrivateIdentifier']",
+          message: "Do not use ECMAScript private fields (e.g. #myField); use TypeScript \"private\" instead.",
+        },
+        {
+          selector: "MethodDefinition[key.type='PrivateIdentifier']",
+          message: "Do not use ECMAScript private methods (e.g. #myMethod); use TypeScript \"private\" instead.",
         },
       ],
       "eqeqeq": ["error", "always", { "null": "ignore" }],
@@ -115,12 +132,92 @@ export default [
           // "ignoreTernaryTests": true,
         },
       ],*/
+      "@typescript-eslint/naming-convention": [
+        "error",
+        // (1) private 대문자 필드 → 예외 허용
+        {
+          "selector": "classProperty",
+          "modifiers": ["private"],
+          "format": ["UPPER_CASE"],
+          "leadingUnderscore": "forbid",
+          "filter": {
+            "regex": "^[A-Z0-9_]+$",
+            "match": true
+          }
+        },
 
-      // import
-      "import/no-extraneous-dependencies": ["error"], // 느림
+        // (2) private 필드
+        {
+          "selector": "classProperty",
+          "modifiers": ["private"],
+          "format": ["camelCase"],
+          "leadingUnderscore": "require"
+        },
+        // private 메서드
+        {
+          "selector": "method",
+          "modifiers": ["private"],
+          "format": ["camelCase"],
+          "leadingUnderscore": "require",
+        },
+        // (1) protected readonly 필드 → 예외 허용
+        {
+          "selector": "classProperty",
+          "modifiers": ["protected", "readonly"],
+          "format": ["camelCase"],
+          "leadingUnderscore": "forbid" // 명시적 허용
+        },
 
-      // 심플리즘
+        // (2) protected 필드
+        {
+          "selector": "classProperty",
+          "modifiers": ["protected"],
+          "format": ["camelCase"],
+          "leadingUnderscore": "require"
+        },
+        // protected 메서드
+        {
+          "selector": "method",
+          "modifiers": ["protected"],
+          "format": ["camelCase"],
+          "leadingUnderscore": "require",
+        },
+      ],
+
+      //-- 심플리즘
       "@simplysm/ts-no-throw-not-implement-error": ["warn"],
+
+
+      // -- 아래 룰들은 매우 느림
+      // 라이브러리 작성시, 그때그때 필요할 때만 사용
+
+      // "import/no-extraneous-dependencies": [
+      //   "error",
+      //   {
+      //     "devDependencies": [
+      //       "**/*.spec.ts",
+      //       "**/lib/**",
+      //       "**!/eslint.config.js",
+      //       "**!/simplysm.js",
+      //       "**/vitest.config.js",
+      //     ],
+      //   },
+      // ],
+      // "@simplysm/ts-no-exported-types": [
+      //   "error", {
+      //     types: [
+      //       {
+      //         ban: "Uint8Array",
+      //         safe: "Buffer",
+      //       }, {
+      //         ban: "ArrayBuffer",
+      //         safe: "Buffer",
+      //         ignoreInGeneric: true,
+      //       },
+      //     ],
+      //   },
+      // ],
+      // "@simplysm/ts-no-buffer-in-typedarray-context": ["error"],
     },
   },
   {

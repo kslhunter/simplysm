@@ -600,7 +600,7 @@ import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
   },
 })
 export class SdSheetControl<T> {
-  protected icons = inject(SdAngularConfigProvider).icons;
+  protected readonly icons = inject(SdAngularConfigProvider).icons;
 
   private _sdSystemConfig = inject(SdSystemConfigProvider);
   private _sdModal = inject(SdModalProvider);
@@ -1181,7 +1181,7 @@ export class SdSheetControl<T> {
 
       const item = this.displayItemDefs()[NumberUtils.parseInt(tdEl.getAttribute("r"))!].item;
       if (this.autoSelect() === "focus" && this.getIsItemSelectable(item)) {
-        this.#selectItem(item);
+        this._selectItem(item);
       }
     });
   }
@@ -1235,22 +1235,22 @@ export class SdSheetControl<T> {
         });
       }
       else if (event.key === "ArrowDown") {
-        if (this.#moveCellIfExists(event.target, 1, 0, false)) {
+        if (this._moveCellIfExists(event.target, 1, 0, false)) {
           event.preventDefault();
         }
       }
       else if (event.key === "ArrowUp") {
-        if (this.#moveCellIfExists(event.target, -1, 0, false)) {
+        if (this._moveCellIfExists(event.target, -1, 0, false)) {
           event.preventDefault();
         }
       }
       else if (event.key === "ArrowRight") {
-        if (this.#moveCellIfExists(event.target, 0, 1, false)) {
+        if (this._moveCellIfExists(event.target, 0, 1, false)) {
           event.preventDefault();
         }
       }
       else if (event.key === "ArrowLeft") {
-        if (this.#moveCellIfExists(event.target, 0, -1, false)) {
+        if (this._moveCellIfExists(event.target, 0, -1, false)) {
           event.preventDefault();
         }
       }
@@ -1280,31 +1280,31 @@ export class SdSheetControl<T> {
         if (event.target.tagName === "TEXTAREA" || event.target.hasAttribute("contenteditable")) {
           if (event.ctrlKey) {
             event.preventDefault();
-            this.#moveCellIfExists(tdEl, 1, 0, true);
+            this._moveCellIfExists(tdEl, 1, 0, true);
           }
         }
         else {
           event.preventDefault();
-          this.#moveCellIfExists(tdEl, 1, 0, true);
+          this._moveCellIfExists(tdEl, 1, 0, true);
         }
       }
       else if (event.ctrlKey && event.key === "ArrowDown") {
-        if (this.#moveCellIfExists(tdEl, 1, 0, true)) {
+        if (this._moveCellIfExists(tdEl, 1, 0, true)) {
           event.preventDefault();
         }
       }
       else if (event.ctrlKey && event.key === "ArrowUp") {
-        if (this.#moveCellIfExists(tdEl, -1, 0, true)) {
+        if (this._moveCellIfExists(tdEl, -1, 0, true)) {
           event.preventDefault();
         }
       }
       else if (event.ctrlKey && event.key === "ArrowRight") {
-        if (this.#moveCellIfExists(tdEl, 0, 1, true)) {
+        if (this._moveCellIfExists(tdEl, 0, 1, true)) {
           event.preventDefault();
         }
       }
       else if (event.ctrlKey && event.key === "ArrowLeft") {
-        if (this.#moveCellIfExists(tdEl, 0, -1, true)) {
+        if (this._moveCellIfExists(tdEl, 0, -1, true)) {
           event.preventDefault();
         }
       }
@@ -1388,7 +1388,7 @@ export class SdSheetControl<T> {
         [columnControl.key()]: newWidthPx + 1 + "px",
       }));
 
-      await this.#saveColumnConfigAsync(columnControl.key(), {
+      await this._saveColumnConfigAsync(columnControl.key(), {
         width: newWidthPx + "px",
       });
 
@@ -1411,7 +1411,7 @@ export class SdSheetControl<T> {
       return r;
     });
 
-    await this.#saveColumnConfigAsync(columnControl.key(), { width: undefined });
+    await this._saveColumnConfigAsync(columnControl.key(), { width: undefined });
   }
 
   /**
@@ -1422,10 +1422,10 @@ export class SdSheetControl<T> {
     if (!this.getIsItemSelectable(item)) return;
 
     if (this.selectedItems().includes(item)) {
-      this.#unselectItem(item);
+      this._unselectItem(item);
     }
     else {
-      this.#selectItem(item);
+      this._selectItem(item);
     }
   }
 
@@ -1446,7 +1446,7 @@ export class SdSheetControl<T> {
     if (this.autoSelect() !== "click") return;
     if (!this.getIsItemSelectable(item)) return;
 
-    this.#selectItem(item);
+    this._selectItem(item);
   }
 
   onItemCellDoubleClick(item: T, event: MouseEvent): void {
@@ -1455,7 +1455,7 @@ export class SdSheetControl<T> {
       ? event.target
       : event.target.findParent("td")!) as HTMLTableCellElement;
 
-    const tdAddr = this.#getCellAddr(tdEl);
+    const tdAddr = this._getCellAddr(tdEl);
     this._editModeCellAddr.set(tdAddr);
 
     requestAnimationFrame(() => {
@@ -1504,10 +1504,10 @@ export class SdSheetControl<T> {
     ) return;
 
     if (event.shiftKey || event.ctrlKey) {
-      this.#toggleOrdering(headerCell.control.key(), true);
+      this._toggleOrdering(headerCell.control.key(), true);
     }
     else {
-      this.#toggleOrdering(headerCell.control.key(), false);
+      this._toggleOrdering(headerCell.control.key(), false);
     }
   }
 
@@ -1539,7 +1539,7 @@ export class SdSheetControl<T> {
    * @param multiple 여러 컬럼에 대한 정렬조건을 사용하는 토글인지 여부
    * @private
    */
-  #toggleOrdering(key: string, multiple: boolean): void {
+  private _toggleOrdering(key: string, multiple: boolean): void {
     this.ordering.update((v) => {
       let r = [...v];
       const ordItem = r.single((item) => item.key === key);
@@ -1569,7 +1569,7 @@ export class SdSheetControl<T> {
    * @param item 선택 설정할 항목
    * @private
    */
-  #selectItem(item: T): void {
+  private _selectItem(item: T): void {
     if (this.selectedItems().includes(item)) return;
 
     if (this.selectMode() === "single") {
@@ -1585,22 +1585,22 @@ export class SdSheetControl<T> {
    * @param item 선택 해제할 항목
    * @private
    */
-  #unselectItem(item: T): void {
+  private _unselectItem(item: T): void {
     if (!this.selectedItems().includes(item)) return;
 
     this.selectedItems.update(v => v.filter(item1 => item1 !== item));
   }
 
-  #moveCellIfExists(
+  private _moveCellIfExists(
     el: HTMLTableCellElement,
     offsetR: number,
     offsetC: number,
     isEditMode: boolean,
   ): boolean {
-    const elAddr = this.#getCellAddr(el);
+    const elAddr = this._getCellAddr(el);
     const targetAddr = { r: elAddr.r + offsetR, c: elAddr.c + offsetC };
 
-    const targetEl = this.#getCellEl(targetAddr);
+    const targetEl = this._getCellEl(targetAddr);
     if (!targetEl) return false;
 
     targetEl.focus();
@@ -1617,13 +1617,13 @@ export class SdSheetControl<T> {
     return true;
   }
 
-  #getCellEl(addr: { r: number, c: number }) {
+  private _getCellEl(addr: { r: number, c: number }) {
     return this._elRef.nativeElement.findFirst<HTMLTableCellElement>(
       `._sheet-container > table > tbody > tr > td[r='${addr.r}'][c='${addr.c}']`,
     );
   }
 
-  #getCellAddr(el: HTMLTableCellElement) {
+  private _getCellAddr(el: HTMLTableCellElement) {
     return {
       r: NumberUtils.parseInt(el.getAttribute("r"))!,
       c: NumberUtils.parseInt(el.getAttribute("c"))!,
@@ -1634,7 +1634,7 @@ export class SdSheetControl<T> {
    * 시트 설정중 컬럼설정 저장
    * @private
    */
-  async #saveColumnConfigAsync(columnKey: string, config: Partial<IConfigColumn>): Promise<void> {
+  private async _saveColumnConfigAsync(columnKey: string, config: Partial<IConfigColumn>): Promise<void> {
     this.config.update((v) => ({
       ...v,
       columnRecord: {

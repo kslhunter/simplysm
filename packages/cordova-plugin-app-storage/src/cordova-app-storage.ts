@@ -43,7 +43,7 @@ export class CordovaAppStorage {
     const dirUrl = path.dirname(fullUrl);
     const fileName = path.basename(fullUrl);
 
-    await this.#mkdirsAsync(path.dirname(filePath));
+    await this._mkdirsAsync(path.dirname(filePath));
 
     await File.writeFile(dirUrl, fileName, data, { replace: true });
   }
@@ -126,7 +126,7 @@ export class CordovaAppStorage {
     return "/" + this.getFullUrl(targetPath).replace(/^file:\/*/, "");
   }
 
-  async #mkdirAsync(dirPath: string) {
+  private async _mkdirAsync(dirPath: string) {
     const fullUrl = this.getFullUrl(dirPath);
     const dirUrl = path.dirname(fullUrl);
     const dirName = path.basename(fullUrl);
@@ -134,14 +134,14 @@ export class CordovaAppStorage {
     await File.createDir(dirUrl, dirName, true);
   }
 
-  async #mkdirsAsync(dirPath: string) {
+  private async _mkdirsAsync(dirPath: string) {
     const dirs = dirPath.replace(/^\//, "").replace(/\/$/, "").split("/");
 
     let currDir = "";
 
     for (const dir of dirs) {
       currDir += dir;
-      await this.#mkdirAsync(currDir);
+      await this._mkdirAsync(currDir);
       currDir += "/";
     }
   }

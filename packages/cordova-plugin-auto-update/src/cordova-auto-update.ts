@@ -36,7 +36,7 @@ export abstract class CordovaAutoUpdate {
           opt.log(`최신버전 파일 다운로드중...`);
 
           // 서버에서 최신버전의 zip파일 다운로드
-          const downloadZipBytes = await NetUtils.downloadBytesAsync(
+          const downloadZipBuffer = await NetUtils.downloadBufferAsync(
             opt.serviceClient.serverUrl + serverVersionInfo.downloadPath,
             (progress) => {
               const progressText = ((progress.receivedLength * 100) / progress.contentLength)
@@ -48,7 +48,7 @@ export abstract class CordovaAutoUpdate {
           opt.log(`최신버전 파일 압축해제중...`);
 
           // 다운로드한 최신버전파일 APP폴더에 압축풀기
-          const zip = new SdZip(downloadZipBytes);
+          const zip = new SdZip(downloadZipBuffer);
           const extractedFileMap = await zip.extractAllAsync(progress => {
             const progressText = ((progress.extractedSize * 100) / progress.totalSize)
               .toFixed(2);

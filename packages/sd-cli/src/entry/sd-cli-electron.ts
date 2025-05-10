@@ -8,7 +8,7 @@ import { loadProjConfAsync } from "./utils/loadProjConfAsync";
 export class SdCliElectron {
   static async runAsync(opt: {
     package: string
-    config?: string;
+    config: string;
     options?: string[];
   }) {
     const logger = SdLogger.get(["simplysm", "sd-cli", "SdCliElectron", "runAsync"]);
@@ -69,7 +69,7 @@ export class SdCliElectron {
 
   static async buildForDevAsync(opt: {
     package: string
-    config?: string;
+    config: string;
     options?: string[];
   }) {
     const logger = SdLogger.get(["simplysm", "sd-cli", "SdCliElectron", "buildForDevAsync"]);

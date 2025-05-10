@@ -1,10 +1,10 @@
 import { NumberUtils } from "./number.utils";
 
 export abstract class NetUtils {
-  static async downloadBytesAsync(
+  static async downloadBufferAsync(
     url: string,
     progressCallback?: (progress: INetDownloadProgress) => void,
-  ) {
+  ): Promise<Buffer> {
     const res = await fetch(url, { method: "GET" });
     const reader = res.body!.getReader();
 
@@ -32,7 +32,7 @@ export abstract class NetUtils {
       offset += chunk.length;
     }
 
-    return result;
+    return Buffer.from(result);
   }
 }
 

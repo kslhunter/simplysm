@@ -26,7 +26,7 @@ export class SdCliIndexFileGenerator {
     }
 
     // 내부 파일들 import
-    const filePaths = this.#getFilePaths(pkgPath);
+    const filePaths = this._getFilePaths(pkgPath);
     for (const filePath of filePaths.orderBy()) {
       const requirePath = PathUtils.posix(path.relative(path.dirname(indexFilePath), filePath))
         .replace(/\.tsx?$/, "")
@@ -47,7 +47,7 @@ export class SdCliIndexFileGenerator {
     return content;
   }
 
-  static #getFilePaths(pkgPath: string): string[] {
+  private static _getFilePaths(pkgPath: string): string[] {
     const indexFilePath = path.resolve(pkgPath, "src/index.ts");
 
     const tsconfig = FsUtils.readJson(path.resolve(pkgPath, "tsconfig.json"));

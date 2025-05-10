@@ -28,7 +28,8 @@ export class PathUtils {
   }
 
   static norm(...paths: string[]): TNormPath {
-    return path.resolve(...paths) as TNormPath;
+    const first = paths[0].startsWith("/") ? paths[0].slice(1) : paths[0];
+    return path.resolve(first, ...paths.slice(1)) as TNormPath;
   }
 }
 

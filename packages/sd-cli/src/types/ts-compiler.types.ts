@@ -2,13 +2,14 @@ import { CompilerOptions } from "typescript";
 import esbuild from "esbuild";
 import { ISdBuildMessage } from "./build.types";
 import { TNormPath } from "@simplysm/sd-core-node";
+import { ScopePathSet } from "../pkg-builders/commons/scope-path";
 
 export interface SdTsCompilerOptions {
   pkgPath: TNormPath;
   additionalOptions: CompilerOptions;
   isForBundle: boolean;
   isDevMode: boolean;
-  watchScopePaths: TNormPath[];
+  watchScopePathSet: ScopePathSet;
   globalStyleFilePath?: TNormPath;
   /*processWebWorker?: (
     workerFile: string,

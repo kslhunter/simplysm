@@ -128,7 +128,7 @@ export class SdSharedDataSelectControl<
   TEDITMODAL extends SdModalBase<any, any>,
   M extends keyof TSelectValue<T>,
 > {
-  protected icons = inject(SdAngularConfigProvider).icons;
+  protected readonly icons = inject(SdAngularConfigProvider).icons;
 
   private _sdModal = inject(SdModalProvider);
 

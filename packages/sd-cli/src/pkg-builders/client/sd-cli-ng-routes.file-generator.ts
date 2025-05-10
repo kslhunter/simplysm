@@ -8,13 +8,13 @@ export class SdCliNgRoutesFileGenerator {
     let cache = FsUtils.exists(routesFilePath) ? FsUtils.readFile(routesFilePath) : undefined;
 
     SdFsWatcher.watch([path.resolve(pkgPath, "src")]).onChange({ delay: 50 }, () => {
-      cache = this.run(pkgPath, cache, noLazyRoute);
+      cache = this.run(pkgPath, noLazyRoute, cache);
     });
 
-    cache = this.run(pkgPath, cache, noLazyRoute);
+    cache = this.run(pkgPath, noLazyRoute, cache);
   }
 
-  static run(pkgPath: string, cache?: string, noLazyRoute?: boolean): string {
+  static run(pkgPath: string, noLazyRoute?: boolean, cache?: string): string {
     const appDirPath = path.resolve(pkgPath, "src/app");
     const routesFilePath = path.resolve(pkgPath, "src/routes.ts");
 

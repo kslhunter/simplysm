@@ -12,7 +12,7 @@ export class XmlConvert {
         return !isAttribute && jPath.split(".").length > 1;
       },
     }).parse(str);
-    return options?.stripTagPrefix ? this.#stripTagPrefix(result) : result;
+    return options?.stripTagPrefix ? this._stripTagPrefix(result) : result;
   }
 
   static stringify(obj: any, options?: XmlBuilderOptions) {
@@ -25,9 +25,9 @@ export class XmlConvert {
     }).build(obj);
   }
 
-  static #stripTagPrefix(obj: any): any {
+  private static _stripTagPrefix(obj: any): any {
     if (Array.isArray(obj)) {
-      return obj.map(item => this.#stripTagPrefix(item));
+      return obj.map(item => this._stripTagPrefix(item));
     }
     else if (typeof obj === "object" && obj !== null) {
       const newObj: any = {};
@@ -42,7 +42,7 @@ export class XmlConvert {
         else {
           // 태그 이름에서만 ":"을 기준으로 prefix 제거
           const cleanKey = key.includes(":") ? key.split(":")[1] : key;
-          newObj[cleanKey] = this.#stripTagPrefix(value);
+          newObj[cleanKey] = this._stripTagPrefix(value);
         }
       }
 

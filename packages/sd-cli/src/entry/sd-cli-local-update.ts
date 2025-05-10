@@ -3,7 +3,7 @@ import path from "path";
 import { loadProjConfAsync } from "./utils/loadProjConfAsync";
 
 export class SdCliLocalUpdate {
-  static async runAsync(opt: { config?: string; options?: string[] }): Promise<void> {
+  static async runAsync(opt: { config: string; options?: string[] }): Promise<void> {
     const logger = SdLogger.get(["simplysm", "sd-cli", "SdCliLocalUpdate", "runAsync"]);
 
     logger.debug("프로젝트 설정 가져오기...");
@@ -28,7 +28,7 @@ export class SdCliLocalUpdate {
     logger.info("로컬 라이브러리 업데이트 완료");
   }
 
-  static async watchAsync(opt: { config?: string; options?: string[] }): Promise<void> {
+  static async watchAsync(opt: { config: string; options?: string[] }): Promise<void> {
     const logger = SdLogger.get(["simplysm", "sd-cli", "SdCliLocalUpdate", "watchAsync"]);
 
     logger.debug("프로젝트 설정 가져오기...");

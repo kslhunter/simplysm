@@ -1,7 +1,3 @@
 import root from "./configs/root.js";
 
-export default {
-  configs: {
-    root,
-  },
-};
+export default { configs: { root } };

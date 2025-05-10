@@ -11,6 +11,7 @@ import {
 } from "@angular/build/src/tools/esbuild/bundler-context";
 import { convertOutputFile } from "@angular/build/src/tools/esbuild/utils";
 import { resolveAssets } from "@angular/build/src/utils/resolve-assets";
+import { ScopePathSet } from "../commons/scope-path";
 
 export class SdServerBundler {
   private _logger = SdLogger.get(["simplysm", "sd-cli", "SdServerBundler"]);
@@ -27,7 +28,7 @@ export class SdServerBundler {
     pkgPath: TNormPath;
     entryPoints: string[];
     external?: string[];
-    watchScopePaths: TNormPath[];
+    watchScopePathSet: ScopePathSet;
   }) {
   }
 
@@ -108,7 +109,7 @@ const __dirname = __path__.dirname(__filename);`.trim(),
             dev: this._opt.dev,
             pkgPath: this._opt.pkgPath,
             result: this._resultCache,
-            watchScopePaths: this._opt.watchScopePaths,
+            watchScopePathSet: this._opt.watchScopePathSet,
           }),
         ],
       });
@@ -125,7 +126,7 @@ const __dirname = __path__.dirname(__filename);`.trim(),
       for (const outputFile of outputFiles) {
         const distFilePath = PathUtils.norm(this._opt.pkgPath, outputFile.path);
         const prevHash = this._outputHashCache.get(distFilePath);
-        const currHash = HashUtils.get(outputFile.contents);
+        const currHash = HashUtils.get(Buffer.from(outputFile.contents));
         if (prevHash !== currHash) {
           FsUtils.writeFile(distFilePath, outputFile.contents);
           this._outputHashCache.set(distFilePath, currHash);

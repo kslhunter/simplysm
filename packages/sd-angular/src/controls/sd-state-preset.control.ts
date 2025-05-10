@@ -95,7 +95,7 @@ import { SdIconControl } from "./sd-icon.control";
   },
 })
 export class SdStatePresetControl {
-  protected icons = inject(SdAngularConfigProvider).icons;
+  protected readonly icons = inject(SdAngularConfigProvider).icons;
 
   private _sdSystemConfig = inject(SdSystemConfigProvider);
   private _sdToast = inject(SdToastProvider);

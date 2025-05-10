@@ -8,21 +8,22 @@ export default {
       description: "'NotImplementError' 사용 경고",
     },
     schema: [],
+    messages: {
+      noThrowNotImplementError: "{{text}}",
+    },
   },
-  create: (context) => {
+  defaultOptions: [],
+  create(context) {
     const parserServices = getParserServices(context);
-    const program = parserServices.program;
-    const checker = program.getTypeChecker();
+    const checker = parserServices.program.getTypeChecker();
 
-    function tryGetThrowArgumentType(node) {
+    const tryGetThrowArgumentType = (node) => {
       switch (node.type) {
         case AST_NODE_TYPES.Identifier:
         case AST_NODE_TYPES.CallExpression:
         case AST_NODE_TYPES.NewExpression:
-        case AST_NODE_TYPES.MemberExpression: {
-          const tsNode = parserServices.esTreeNodeToTSNodeMap.get(node);
-          return checker.getTypeAtLocation(tsNode);
-        }
+        case AST_NODE_TYPES.MemberExpression:
+          return checker.getTypeAtLocation(parserServices.esTreeNodeToTSNodeMap.get(node));
 
         case AST_NODE_TYPES.AssignmentExpression:
           return tryGetThrowArgumentType(node.right);
@@ -43,27 +44,38 @@ export default {
         default:
           return undefined;
       }
-    }
+    };
 
-    function checkThrowArgument(node) {
-      if (node.type === AST_NODE_TYPES.AwaitExpression || node.type === AST_NODE_TYPES.YieldExpression) {
+    const checkThrowArgument = (node) => {
+      if (
+        node.type === AST_NODE_TYPES.AwaitExpression ||
+        node.type === AST_NODE_TYPES.YieldExpression
+      ) {
         return;
       }
 
       const type = tryGetThrowArgumentType(node);
-      if (type && type.getSymbol() && type.getSymbol().getName() === "NotImplementError") {
+      if (type?.getSymbol()?.getName() === "NotImplementError") {
+        let msg;
+
+        if (
+          node.type === AST_NODE_TYPES.NewExpression &&
+          node.arguments?.[0]?.type === AST_NODE_TYPES.Literal
+        ) {
+          msg = String(node.arguments[0].value ?? "");
+        }
+
         context.report({
-          node: node,
-          message: node["arguments"]["value"] || "구현되어있지 않습니다", //"'NotImplementError'를 'throw'하고 있습니다."
+          node,
+          messageId: "noThrowNotImplementError",
+          data: { text: msg ?? "구현되어있지 않습니다" },
         });
       }
-    }
+    };
 
     return {
       ThrowStatement(node) {
-        if (node.argument) {
-          checkThrowArgument(node.argument);
-        }
+        checkThrowArgument(node.argument);
       },
     };
   },

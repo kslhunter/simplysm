@@ -234,7 +234,7 @@ import { $model } from "../utils/hooks/hooks";
   },
 })
 export class SdCheckboxControl {
-  protected icons = inject(SdAngularConfigProvider).icons;
+  protected readonly icons = inject(SdAngularConfigProvider).icons;
 
   __value = input(false, { alias: "value", transform: transformBoolean });
   __valueChange = output<boolean>({ alias: "valueChange" });

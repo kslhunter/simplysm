@@ -90,20 +90,20 @@ export class SdAppStructureProvider<T extends string> {
     return SdAppStructureUtils.getFlatPages(this._items).filter(
       (item) =>
         (!item.hasPerms || Boolean(this._permRecord()?.[item.codeChain.join(".") + ".use"])) &&
-        this.#isUsableModulePage(item),
+        this._isUsableModulePage(item),
     );
   }
 
   getMenus() {
     if (!this._usableModules() || !this._permRecord()) return [];
 
-    return this.#getDisplayMenus();
+    return this._getDisplayMenus();
   }
 
   getPerms() {
     if (!this._usableModules() || !this._permRecord()) return [];
 
-    return this.#getPermsByModule(SdAppStructureUtils.getPermissions(this._items));
+    return this._getPermsByModule(SdAppStructureUtils.getPermissions(this._items));
   }
 
   getExtPermRoot(params: {
@@ -112,7 +112,7 @@ export class SdAppStructureProvider<T extends string> {
     codes: string[];
   }): ISdPermission {
     return {
-      children: this.#getPermsByModule(SdAppStructureUtils.getPermissions(
+      children: this._getPermsByModule(SdAppStructureUtils.getPermissions(
         params.appStructure,
         params.codes,
       )),
@@ -121,16 +121,16 @@ export class SdAppStructureProvider<T extends string> {
     };
   }
 
-  #getPermsByModule(perms: ISdPermission<T>[]): ISdPermission<T>[] {
+  private _getPermsByModule(perms: ISdPermission<T>[]): ISdPermission<T>[] {
     const realPerms: ISdPermission<T>[] = [];
     for (const perm of perms) {
       if (perm.children) {
-        if (this.#isModulesEnabled(perm.modules)) {
+        if (this._isModulesEnabled(perm.modules)) {
           if (perm.children.length < 1) {
             realPerms.push(perm);
           }
           else {
-            const permChildren = this.#getPermsByModule(perm.children);
+            const permChildren = this._getPermsByModule(perm.children);
             if (permChildren.length > 0 || perm.perms) {
               realPerms.push({ ...perm, children: permChildren });
             }
@@ -138,7 +138,7 @@ export class SdAppStructureProvider<T extends string> {
         }
       }
       else {
-        if (this.#isModulesEnabled(perm.modules)) {
+        if (this._isModulesEnabled(perm.modules)) {
           realPerms.push(perm);
         }
       }
@@ -146,13 +146,13 @@ export class SdAppStructureProvider<T extends string> {
     return realPerms;
   }
 
-  #getDisplayMenus(menus?: ISdMenu<T>[]): ISdMenu<T>[] {
+  private _getDisplayMenus(menus?: ISdMenu<T>[]): ISdMenu<T>[] {
     const result: ISdMenu<T>[] = [];
 
     for (const menu of menus ?? SdAppStructureUtils.getMenus(this._items)) {
       if ("children" in menu) {
-        if (this.#isModulesEnabled(menu.modules)) {
-          const children = this.#getDisplayMenus(menu.children);
+        if (this._isModulesEnabled(menu.modules)) {
+          const children = this._getDisplayMenus(menu.children);
           if (children.length > 0) {
             result.push({ ...menu, children });
           }
@@ -162,7 +162,7 @@ export class SdAppStructureProvider<T extends string> {
         const code = menu.codeChain.join(".");
         if (
           (!menu.hasPerms || this._permRecord()![code + ".use"] === true)
-          && this.#isModulesEnabled(menu.modules)
+          && this._isModulesEnabled(menu.modules)
         ) {
           result.push(menu);
         }
@@ -172,9 +172,9 @@ export class SdAppStructureProvider<T extends string> {
     return result;
   }
 
-  #isUsableModulePage(page: ISdFlatPage<T>): boolean {
+  private _isUsableModulePage(page: ISdFlatPage<T>): boolean {
     for (const modules of page.modulesChain) {
-      if (!this.#isModulesEnabled(modules)) {
+      if (!this._isModulesEnabled(modules)) {
         return false;
       }
     }
@@ -182,7 +182,7 @@ export class SdAppStructureProvider<T extends string> {
     return true;
   }
 
-  #isModulesEnabled(needModules: T[] | undefined): boolean {
+  private _isModulesEnabled(needModules: T[] | undefined): boolean {
     return needModules == null
       || needModules.length === 0
       || !needModules.every((needModule) => !this._usableModules()!.includes(needModule));

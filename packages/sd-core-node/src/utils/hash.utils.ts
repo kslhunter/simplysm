@@ -1,7 +1,7 @@
-import crypto, { BinaryLike } from "crypto";
+import crypto from "crypto";
 
 export class HashUtils {
-  static get(filePath: BinaryLike) {
-    return crypto.createHash("sha256").update(filePath).digest("hex");
+  static get(data: string | Buffer) {
+    return crypto.createHash("sha256").update(data).digest("hex");
   }
 }

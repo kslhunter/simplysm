@@ -5,9 +5,13 @@ export interface ISdProjectConfig {
   postPublish?: TSdPostPublishConfig[];
 }
 
-export type TSdProjectConfigFn = (isDev: boolean, opts?: string[]) => ISdProjectConfig;
+// export type TSdProjectConfigFn = (isDev: boolean, opts?: string[]) => ISdProjectConfig;
 
-export type TSdPackageConfig = ISdLibPackageConfig | ISdServerPackageConfig | ISdClientPackageConfig;
+export type TSdPackageConfig<T extends "server" | "library" | "client" | unknown = unknown> =
+  T extends "library" ? ISdLibPackageConfig
+    : T extends "server" ? ISdServerPackageConfig
+      : T extends "client" ? ISdClientPackageConfig
+        : (ISdLibPackageConfig | ISdServerPackageConfig | ISdClientPackageConfig);
 
 export interface ISdLibPackageConfig {
   type: "library";
@@ -15,6 +19,7 @@ export interface ISdLibPackageConfig {
   polyfills?: string[];
   noGenIndex?: boolean;
   dbContext?: string;
+  forceProductionMode?: boolean;
 }
 
 export interface ISdServerPackageConfig {
@@ -23,6 +28,8 @@ export interface ISdServerPackageConfig {
   publish?: ISdLocalDirectoryPublishConfig | ISdFtpPublishConfig;
   configs?: Record<string, any>;
   env?: Record<string, string>;
+  forceProductionMode?: boolean;
+
   pm2?: {
     name?: string;
     ignoreWatchPaths?: string[];

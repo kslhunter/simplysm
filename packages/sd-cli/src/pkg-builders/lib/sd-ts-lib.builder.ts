@@ -3,6 +3,7 @@ import { SdCliConvertMessageUtils } from "../../utils/sd-cli-convert-message.uti
 import { FsUtils, PathUtils, TNormPath } from "@simplysm/sd-core-node";
 import { ISdBuildMessage } from "../../types/build.types";
 import { SdTsCompiler } from "../../ts-compiler/sd-ts-compiler";
+import { ScopePathSet } from "../commons/scope-path";
 
 export class SdTsLibBuilder {
   private _tsCompiler: SdTsCompiler;
@@ -10,7 +11,7 @@ export class SdTsLibBuilder {
   constructor(
     private _pkgPath: TNormPath,
     dev: boolean,
-    watchScopePaths: TNormPath[],
+    watchScopePathSet: ScopePathSet,
   ) {
     this._tsCompiler = new SdTsCompiler({
       pkgPath: this._pkgPath,
@@ -18,7 +19,7 @@ export class SdTsLibBuilder {
       isDevMode: dev,
       globalStyleFilePath: PathUtils.norm(this._pkgPath, "src/styles.scss"),
       isForBundle: false,
-      watchScopePaths: watchScopePaths,
+      watchScopePathSet,
     });
   }
 

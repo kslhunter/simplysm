@@ -100,7 +100,7 @@ import { $signal } from "../utils/hooks/hooks";
   },
 })
 export class SdSidebarUserControl {
- protected icons = inject(SdAngularConfigProvider).icons;
+ protected readonly icons = inject(SdAngularConfigProvider).icons;
 
   userMenu = input<ISidebarUserMenu>();
   menuTitle = input<string>();

@@ -111,14 +111,14 @@ export class SdDropdownControl {
     });
   }
 
-  #openPopup() {
+  private _openPopup() {
     if (this.open()) return;
     if (this.disabled()) return;
 
     this.open.set(true);
   }
 
-  #closePopup() {
+  private _closePopup() {
     if (!this.open()) return;
 
     this.open.set(false);
@@ -151,10 +151,10 @@ export class SdDropdownControl {
 
   onContentClick() {
     if (this.open()) {
-      this.#closePopup();
+      this._closePopup();
     }
     else {
-      this.#openPopup();
+      this._openPopup();
     }
   }
 
@@ -164,7 +164,7 @@ export class SdDropdownControl {
         event.preventDefault();
         event.stopPropagation();
 
-        this.#openPopup();
+        this._openPopup();
       }
       else {
         const popupEl = this.popupElRef().nativeElement;
@@ -183,7 +183,7 @@ export class SdDropdownControl {
         event.preventDefault();
         event.stopPropagation();
 
-        this.#closePopup();
+        this._closePopup();
       }
     }
 
@@ -192,10 +192,10 @@ export class SdDropdownControl {
       event.stopPropagation();
 
       if (this.open()) {
-        this.#closePopup();
+        this._closePopup();
       }
       else {
-        this.#openPopup();
+        this._openPopup();
       }
     }
 
@@ -204,7 +204,7 @@ export class SdDropdownControl {
         event.preventDefault();
         event.stopPropagation();
 
-        this.#closePopup();
+        this._closePopup();
       }
     }
   }
@@ -215,7 +215,7 @@ export class SdDropdownControl {
         event.preventDefault();
         event.stopPropagation();
 
-        this.#closePopup();
+        this._closePopup();
       }
     }
   }
@@ -258,7 +258,7 @@ export class SdDropdownControl {
     }
 
     if (this.open()) {
-      this.#closePopup();
+      this._closePopup();
     }
   }
 }

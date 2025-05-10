@@ -57,7 +57,7 @@ import { SdIconControl } from "./sd-icon.control";
   `,
 })
 export class SdPaginationControl {
-  protected icons = inject(SdAngularConfigProvider).icons;
+  protected readonly icons = inject(SdAngularConfigProvider).icons;
 
   __page = input<number>(0, { alias: "page" });
   __pageChange = output<number>({ alias: "pageChange" });

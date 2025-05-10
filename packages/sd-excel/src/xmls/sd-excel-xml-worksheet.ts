@@ -51,12 +51,12 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
       this.range = SdExcelUtils.parseRangeAddr(ref);
     }
     else {
-      this.#refreshDimension();
+      this._refreshDimension();
     }
   }
 
   setCellType(addr: string, type: "s" | "b" | "str" | undefined): void {
-    const cellData = this.#getOrCreateCellData(addr);
+    const cellData = this._getOrCreateCellData(addr);
     if (type) {
       cellData.$.t = type;
     }
@@ -66,11 +66,11 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
   }
 
   getCellType(addr: string): string | undefined {
-    return this.#getCellData(addr)?.$.t;
+    return this._getCellData(addr)?.$.t;
   }
 
   setCellVal(addr: string, val: string | undefined): void {
-    const cellData = this.#getOrCreateCellData(addr);
+    const cellData = this._getOrCreateCellData(addr);
     if (val === undefined) {
       delete cellData.v;
     }
@@ -80,14 +80,14 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
   }
 
   getCellVal(addr: string): string | undefined {
-    const cellData = this.#getCellData(addr);
+    const cellData = this._getCellData(addr);
     const val = cellData?.v?.[0]
       ?? cellData?.is?.[0]?.t?.[0]?._;
     return typeof val === "string" ? val : undefined;
   }
 
   setCellFormula(addr: string, val: string | undefined): void {
-    const cellData = this.#getOrCreateCellData(addr);
+    const cellData = this._getOrCreateCellData(addr);
     if (val === undefined) {
       delete cellData.f;
     }
@@ -97,20 +97,20 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
   }
 
   getCellFormula(addr: string): string | undefined {
-    const val = this.#getCellData(addr)?.f?.[0];
+    const val = this._getCellData(addr)?.f?.[0];
     return typeof val === "string" ? val : undefined;
   }
 
   getCellStyleId(addr: string): string | undefined {
-    return this.#getCellData(addr)?.$.s;
+    return this._getCellData(addr)?.$.s;
   }
 
   setCellStyleId(addr: string, styleId: string | undefined): void {
     if (styleId != null) {
-      this.#getOrCreateCellData(addr).$.s = styleId;
+      this._getOrCreateCellData(addr).$.s = styleId;
     }
     else {
-      delete this.#getOrCreateCellData(addr).$.s;
+      delete this._getOrCreateCellData(addr).$.s;
     }
   }
 
@@ -142,7 +142,7 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
     }
 
     // RANGE 새로고침
-    this.#refreshDimension();
+    this._refreshDimension();
   }
 
   setMergeCells(startAddr: string, endAddr: string): void {
@@ -442,8 +442,8 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
     }
 
     // CELL
-    const sourceCellData = this.#getCellData(sourceAddr);
-    const targetCellData = this.#getCellData(targetAddr);
+    const sourceCellData = this._getCellData(sourceAddr);
+    const targetCellData = this._getCellData(targetAddr);
 
     const cellData: ISdExcelCellData = sourceCellData ? {
       ...ObjectUtils.clone(sourceCellData),
@@ -525,11 +525,11 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
     this.data.worksheet = result;
   }
 
-  #getCellData(addr: string): ISdExcelCellData | undefined {
+  private _getCellData(addr: string): ISdExcelCellData | undefined {
     return this._cellDataMap.get(addr);
   }
 
-  #getOrCreateCellData(addr: string): ISdExcelCellData {
+  private _getOrCreateCellData(addr: string): ISdExcelCellData {
     // ROW 없으면 만들기
     const rowAddr = (/\d*$/).exec(addr)![0];
     let rowData = this._rowDataMap.get(rowAddr);
@@ -564,7 +564,7 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
     return cellData;
   }
 
-  #refreshDimension(): void {
+  private _refreshDimension() {
     if (this._cellDataMap.size === 0) {
       this.range = {
         s: { r: 0, c: 0 },

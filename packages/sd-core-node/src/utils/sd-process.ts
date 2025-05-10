@@ -8,7 +8,7 @@ export class SdProcess {
     },
     showMessage?: boolean,
   ): Promise<string> {
-    const splitCmd = this.#splitCommand(cmd);
+    const splitCmd = this._splitCommand(cmd);
     if (!splitCmd) {
       throw new Error(`커맨드(${cmd}) 파싱 실패`);
     }
@@ -54,7 +54,7 @@ export class SdProcess {
     });
   }
 
-  static #splitCommand(cmd: string) {
+  private static _splitCommand(cmd: string) {
     const regex = /[^\s"]+|"([^"\\]*(?:\\.[^"\\]*)*)"/g;
     const matches = cmd.match(regex);
     return matches?.map(match => {

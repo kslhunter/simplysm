@@ -129,7 +129,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
   ],
 })
 export class SdNumpadControl {
- protected icons = inject(SdAngularConfigProvider).icons;
+  protected readonly icons = inject(SdAngularConfigProvider).icons;
 
   text = $signal<string>();
 

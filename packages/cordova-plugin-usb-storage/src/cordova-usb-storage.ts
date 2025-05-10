@@ -103,16 +103,16 @@ export abstract class CordovaUsbStorage {
    * USB 저장장치의 파일을 읽어옴
    * @param filter 대상 USB 장치의 vendorId와 productId
    * @param filePath 읽어올 파일 경로
-   * @returns 파일 데이터를 담은 ArrayBuffer 또는 undefined
+   * @returns 파일 데이터를 담은 Buffer 또는 undefined
    */
   static async read(
     filter: { vendorId: number; productId: number },
     filePath: string,
-  ): Promise<ArrayBuffer | undefined> {
-    return await new Promise((resolve, reject) => {
+  ): Promise<Buffer | undefined> {
+    return await new Promise<Buffer | undefined>((resolve, reject) => {
       cordova.exec(
-        (res) => {
-          resolve(res);
+        (res: ArrayBuffer | undefined) => {
+          resolve(res ? Buffer.from(res) : undefined);
         },
         (err) => {
           reject(new Error("CORDOVA: ERROR: " + err));

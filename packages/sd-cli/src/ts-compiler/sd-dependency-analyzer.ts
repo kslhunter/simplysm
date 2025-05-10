@@ -3,20 +3,17 @@ import { SdDependencyCache } from "./sd-dependency-cache";
 import { PathUtils, TNormPath } from "@simplysm/sd-core-node";
 import path from "path";
 import { NgtscProgram } from "@angular/compiler-cli";
+import { ScopePathSet } from "../pkg-builders/commons/scope-path";
 
 export class SdDependencyAnalyzer {
   static analyze(
     program: ts.Program,
     compilerHost: ts.CompilerHost,
-    scopePaths: TNormPath[],
+    scopePathSet: ScopePathSet,
     depCache: SdDependencyCache,
   ): void {
     const compilerOpts = program.getCompilerOptions();
     const typeChecker = program.getTypeChecker();
-
-    const inScope = (filePath: string): boolean => {
-      return scopePaths.some((scope) => PathUtils.isChildPath(filePath, scope));
-    };
 
     const resolveModule = (text: string, base: string): TNormPath[] => {
       const res = ts.resolveModuleName(
@@ -33,7 +30,7 @@ export class SdDependencyAnalyzer {
       }
 
       const absPath = path.resolve(path.dirname(base), text);
-      if (!inScope(absPath)) {
+      if (!scopePathSet.inScope(absPath)) {
         return [];
       }
       else if (
@@ -220,7 +217,7 @@ export class SdDependencyAnalyzer {
           for (const decl of valSymbol?.getDeclarations() ?? []) {
             const declFile = decl.getSourceFile();
             const declNPath = PathUtils.norm(declFile.fileName);
-            if (declNPath !== sfNPath && inScope(declNPath)) {
+            if (declNPath !== sfNPath && scopePathSet.inScope(declNPath)) {
               depCache.addImport(sfNPath, declNPath, 0);
             }
           }
@@ -235,7 +232,7 @@ export class SdDependencyAnalyzer {
             for (const decl of propSymbol.getDeclarations() ?? []) {
               const declFile = decl.getSourceFile();
               const declNPath = PathUtils.norm(declFile.fileName);
-              if (declNPath !== sfNPath && inScope(declNPath)) {
+              if (declNPath !== sfNPath && scopePathSet.inScope(declNPath)) {
                 depCache.addImport(sfNPath, declNPath, 0);
               }
             }
@@ -252,7 +249,7 @@ export class SdDependencyAnalyzer {
             for (const decl of propSymbol.getDeclarations() ?? []) {
               const declFile = decl.getSourceFile();
               const declNPath = PathUtils.norm(declFile.fileName);
-              if (declNPath !== sfNPath && inScope(declNPath)) {
+              if (declNPath !== sfNPath && scopePathSet.inScope(declNPath)) {
                 depCache.addImport(sfNPath, declNPath, 0);
               }
             }
@@ -275,7 +272,7 @@ export class SdDependencyAnalyzer {
 
     const sourceFileSet = new Set(
       program.getSourceFiles()
-        .filter((sf) => inScope(sf.fileName))
+        .filter((sf) => scopePathSet.inScope(sf.fileName))
         .map((sf) => getOrgSourceFile(sf))
         .filterExists(),
     );
@@ -288,23 +285,19 @@ export class SdDependencyAnalyzer {
 
   static analyzeAngularResources(
     ngProgram: NgtscProgram,
-    scopePaths: TNormPath[],
+    scopePathSet: ScopePathSet,
     depCache: SdDependencyCache,
   ) {
-    const inScope = (filePath: string): boolean => {
-      return scopePaths.some((scope) => PathUtils.isChildPath(filePath, scope));
-    };
 
     for (const sf of ngProgram.getTsProgram().getSourceFiles()) {
       const fileNPath = PathUtils.norm(sf.fileName);
-      if (!inScope(fileNPath)) continue;
+      if (!scopePathSet.inScope(fileNPath)) continue;
 
       const dependencies = ngProgram.compiler.getResourceDependencies(sf);
       for (const dep of dependencies) {
         const depNPath = PathUtils.norm(dep);
-        if (!inScope(depNPath)) continue;
+        if (!scopePathSet.inScope(depNPath)) continue;
 
-        console.log(fileNPath, depNPath);
         depCache.addImport(fileNPath, depNPath, 0);
       }
     }

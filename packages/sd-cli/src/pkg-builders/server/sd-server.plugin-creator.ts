@@ -4,13 +4,14 @@ import { ISdCliServerPluginResultCache } from "../../types/build-plugin.types";
 import { PathUtils, TNormPath } from "@simplysm/sd-core-node";
 import { ISdTsCompilerResult } from "../../types/ts-compiler.types";
 import { SdTsCompiler } from "../../ts-compiler/sd-ts-compiler";
+import { ScopePathSet } from "../commons/scope-path";
 
 export function createSdServerPlugin(conf: {
   pkgPath: TNormPath;
   dev: boolean;
   modifiedFileSet: Set<TNormPath>;
   result: ISdCliServerPluginResultCache;
-  watchScopePaths: TNormPath[];
+  watchScopePathSet: ScopePathSet;
 }): esbuild.Plugin {
   return {
     name: "sd-server-compile",
@@ -20,7 +21,7 @@ export function createSdServerPlugin(conf: {
         additionalOptions: { declaration: false },
         isDevMode: conf.dev,
         isForBundle: true,
-        watchScopePaths: conf.watchScopePaths,
+        watchScopePathSet: conf.watchScopePathSet,
       });
 
       let tsCompileResult: ISdTsCompilerResult;
@@ -32,11 +33,15 @@ export function createSdServerPlugin(conf: {
         conf.result.affectedFileSet = tsCompileResult.affectedFileSet;
 
         //-- return err/warn
-        return SdCliConvertMessageUtils.convertToEsbuildFromBuildMessages(tsCompileResult.messages, conf.pkgPath);
+        return SdCliConvertMessageUtils.convertToEsbuildFromBuildMessages(
+          tsCompileResult.messages,
+          conf.pkgPath,
+        );
       });
 
       build.onLoad({ filter: /\.ts$/ }, (args) => {
-        const emittedJsFile = tsCompileResult.emittedFilesCacheMap.get(PathUtils.norm(args.path))?.last();
+        const emittedJsFile = tsCompileResult.emittedFilesCacheMap.get(PathUtils.norm(args.path))
+          ?.last();
         if (!emittedJsFile) {
           return {
             errors: [
@@ -60,10 +65,10 @@ export function createSdServerPlugin(conf: {
         {
           filter: new RegExp(
             "(" +
-              Object.keys(build.initialOptions.loader!)
-                .map((item) => "\\" + item)
-                .join("|") +
-              ")$",
+            Object.keys(build.initialOptions.loader!)
+              .map((item) => "\\" + item)
+              .join("|") +
+            ")$",
           ),
         },
         (args) => {

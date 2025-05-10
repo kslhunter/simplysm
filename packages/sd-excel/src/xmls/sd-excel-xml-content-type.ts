@@ -51,6 +51,6 @@ export class SdExcelXmlContentType implements ISdExcelXml {
     return this;
   }
 
-  cleanup(): void {
+  cleanup() {
   }
 }

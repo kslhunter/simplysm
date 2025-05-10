@@ -130,7 +130,7 @@ import { NgTemplateOutlet } from "@angular/common";
   ],
 })
 export class SdCalendarControl<T> {
- protected icons = inject(SdAngularConfigProvider).icons;
+  protected readonly icons = inject(SdAngularConfigProvider).icons;
 
   items = input.required<T[]>();
   getItemDateFn = input.required<(item: T, index: number) => DateOnly>();

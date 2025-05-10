@@ -45,6 +45,7 @@ import { ISdClientBuilderCordovaConfig } from "../../types/config.types";
 import { ISdCliNgPluginResultCache } from "../../types/build-plugin.types";
 import { ISdBuildMessage } from "../../types/build.types";
 import nodeModule from "node:module";
+import { ScopePathSet } from "../commons/scope-path";
 
 export class SdNgBundler {
   private _logger = SdLogger.get(["simplysm", "sd-cli", "SdNgBundler"]);
@@ -78,7 +79,7 @@ export class SdNgBundler {
       env: Record<string, string> | undefined;
       external: string[];
       cordovaConfig: ISdClientBuilderCordovaConfig | undefined;
-      watchScopePaths: TNormPath[];
+      watchScopePathSet: ScopePathSet;
     },
   ) {
     this._pkgNpmConf = FsUtils.readJson(path.resolve(this._opt.pkgPath, "package.json"));
@@ -243,7 +244,7 @@ export class SdNgBundler {
       for (const outputFile of outputFiles) {
         const distFilePath = PathUtils.norm(this._opt.outputPath, outputFile.path);
         const prevHash = this._outputHashCache.get(distFilePath);
-        const currHash = HashUtils.get(outputFile.contents);
+        const currHash = HashUtils.get(Buffer.from(outputFile.contents));
         if (prevHash !== currHash) {
           FsUtils.writeFile(distFilePath, outputFile.contents);
           this._outputHashCache.set(distFilePath, currHash);
@@ -522,7 +523,7 @@ export class SdNgBundler {
           dev: this._opt.dev,
           pkgPath: this._opt.pkgPath,
           result: this._ngResultCache,
-          watchScopePaths: this._opt.watchScopePaths,
+          watchScopePathSet: this._opt.watchScopePathSet,
         }),
         ...(this._opt.builderType === "electron"
           ? []

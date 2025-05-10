@@ -30,7 +30,7 @@ export class SdCheckboxGroupItemControl<T> {
   isSelected = $computed(() => this._parentControl.value().includes(this.value()));
   disabled = $computed(() => this._parentControl.disabled());
 
-  onSelectedChange(selected: boolean): void {
+  onSelectedChange(selected: boolean) {
     this._parentControl.value.update((v) => {
       if (selected) {
         return [...v, this.value()];

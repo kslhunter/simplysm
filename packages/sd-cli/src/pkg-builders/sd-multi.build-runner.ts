@@ -51,7 +51,7 @@ export class SdMultiBuildRunner extends EventEmitter {
         }
         this._busyCount++;
       })
-      .on("complete", (result) => this.#onComplete(req, result));
+      .on("complete", (result) => this._onComplete(req, result));
 
     return await worker.run("run", [req]);
     /*const pkgConf = req.projConf.packages[path.basename(req.pkgPath)]!;
@@ -78,7 +78,7 @@ export class SdMultiBuildRunner extends EventEmitter {
     }*/
   }
 
-  #onComplete(req: ISdBuildRunnerWorkerRequest, result: ISdBuildRunnerResult) {
+  private _onComplete(req: ISdBuildRunnerWorkerRequest, result: ISdBuildRunnerResult) {
     this._resultCache.delete(req.pkgPath);
     for (const affectedFilePath of result.affectedFilePathSet) {
       if (PathUtils.isChildPath(affectedFilePath, req.pkgPath)) {
@@ -152,7 +152,7 @@ export class SdMultiBuildRunner extends EventEmitter {
           if (serverInfo.pkgInfo && serverInfo.hasChanges) {
             this._logger.debug("서버 재시작...");
             try {
-              const restartServerResult = await this.#restartServerAsync(
+              const restartServerResult = await this._restartServerAsync(
                 serverInfo.pkgInfo,
                 serverInfo.worker,
               );
@@ -212,7 +212,7 @@ export class SdMultiBuildRunner extends EventEmitter {
     }, 300);
   }
 
-  async #restartServerAsync(
+  private async _restartServerAsync(
     pkgInfo: { path: string; conf: ISdServerPackageConfig } | { port: number },
     prevWorker?: SdWorker<TServerWorkerType>,
   ): Promise<{

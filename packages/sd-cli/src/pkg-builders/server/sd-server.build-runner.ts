@@ -1,121 +1,100 @@
-import { EventEmitter } from "events";
-import { FsUtils, PathUtils, SdFsWatcher, SdLogger, TNormPath } from "@simplysm/sd-core-node";
+import { FsUtils, SdLogger, TNormPath } from "@simplysm/sd-core-node";
 import path from "path";
 import { StringUtils } from "@simplysm/sd-core-common";
 import { SdServerBundler } from "./sd-server.bundler";
-import { ISdProjectConfig, ISdServerPackageConfig } from "../../types/config.types";
-import { ISdBuildMessage, ISdBuildRunnerResult } from "../../types/build.types";
 import { INpmConfig, ITsConfig } from "../../types/common-configs.types";
+import { BuildRunnerBase, IBuildRunnerRunResult } from "../commons/build-runner.base";
 
-export class SdServerBuildRunner extends EventEmitter {
-  private _logger = SdLogger.get(["simplysm", "sd-cli", "SdCliServerBuildRunner"]);
-  private _pkgConf: ISdServerPackageConfig;
+export class SdServerBuildRunner extends BuildRunnerBase<"server"> {
+  protected override _logger = SdLogger.get(["simplysm", "sd-cli", "SdCliServerBuildRunner"]);
+
   private _serverBundler?: SdServerBundler;
   private _extModules?: { name: string; exists: boolean }[];
-  private _watchScopePathSet: Set<TNormPath>;
 
-  constructor(
-    private readonly _projConf: ISdProjectConfig,
-    private readonly _pkgPath: TNormPath,
-  ) {
-    super();
-    this._pkgConf = this._projConf.packages[path.basename(_pkgPath)] as ISdServerPackageConfig;
+  protected override async _runAsync(
+    dev: boolean,
+    modifiedFileSet?: Set<TNormPath>,
+  ): Promise<IBuildRunnerRunResult> {
+    if (!dev) {
+      await this._generateProductionFilesAsync();
+    }
 
-    const localUpdatePaths = Object.keys(this._projConf.localUpdates ?? {}).mapMany((key) =>
+    if (!modifiedFileSet) {
+      this._debug("GEN .config...");
+      const confDistPath = path.resolve(this._pkgPath, "dist/.config.json");
+      FsUtils.writeFile(confDistPath, JSON.stringify(this._pkgConf.configs ?? {}, undefined, 2));
+    }
+
+    /*const localUpdatePaths = Object.keys(this._projConf.localUpdates ?? {}).mapMany((key) =>
       FsUtils.glob(path.resolve(this._pkgPath, "../../node_modules", key)),
-    );
-    this._watchScopePathSet = new Set(
-      [path.resolve(this._pkgPath, "../"), ...localUpdatePaths].map((item) => PathUtils.norm(item)),
-    );
-  }
+    );*/
 
-  override on(event: "change", listener: () => void): this;
-  override on(event: "complete", listener: (result: ISdBuildRunnerResult) => void): this;
-  override on(event: string | symbol, listener: (...args: any[]) => void): this {
-    super.on(event, listener);
-    return this;
-  }
-
-  async watchAsync(): Promise<void> {
-    this.emit("change");
-
-    this._debug("dist 초기화...");
-    FsUtils.remove(path.resolve(this._pkgPath, "dist"));
-
-    this._debug("GEN .config...");
-    const confDistPath = path.resolve(this._pkgPath, "dist/.config.json");
-    FsUtils.writeFile(confDistPath, JSON.stringify(this._pkgConf.configs ?? {}, undefined, 2));
-
-    const result = await this._runAsync(true);
-    const res: ISdBuildRunnerResult = {
-      affectedFilePathSet: result.affectedFileSet,
-      buildMessages: result.buildMessages,
-      emitFileSet: result.emitFileSet,
-    };
-    this.emit("complete", res);
-
-    this._debug("WATCH...");
-    let lastWatchFileSet = result.watchFileSet;
-    SdFsWatcher.watch(Array.from(this._watchScopePathSet))
-      .onChange({ delay: 100 }, async (changeInfos) => {
-        const currentChangeInfos = changeInfos.filter((item) => lastWatchFileSet.has(item.path));
-        if (currentChangeInfos.length < 1) return;
-
-        this.emit("change");
-
-        const watchResult = await this._runAsync(
-          true,
-          new Set(currentChangeInfos.map((item) => PathUtils.norm(item.path))),
-        );
-        const watchRes: ISdBuildRunnerResult = {
-          affectedFilePathSet: watchResult.affectedFileSet,
-          buildMessages: watchResult.buildMessages,
-          emitFileSet: watchResult.emitFileSet,
-        };
-
-        this.emit("complete", watchRes);
-
-        lastWatchFileSet = watchResult.watchFileSet;
+    this._debug(`BUILD 준비...`);
+    const tsConfig = FsUtils.readJson(path.resolve(this._pkgPath, "tsconfig.json")) as ITsConfig;
+    this._extModules = this._extModules ?? (await this._getExternalModulesAsync());
+    this._serverBundler =
+      this._serverBundler ??
+      new SdServerBundler({
+        dev,
+        pkgPath: this._pkgPath,
+        entryPoints: tsConfig.files
+          ? tsConfig.files.map((item) => path.resolve(this._pkgPath, item))
+          : [
+            path.resolve(this._pkgPath, "src/main.ts"),
+            ...FsUtils.glob(path.resolve(this._pkgPath, "src/workers/*.ts")),
+          ],
+        external: this._extModules.map((item) => item.name),
+        watchScopePathSet: this._watchScopePathSet,
       });
+
+    this._debug(`BUILD...`);
+    const bundleResult = await this._serverBundler.bundleAsync(modifiedFileSet);
+
+    //-- filePaths
+    const watchFileSet = new Set(
+      Array.from(bundleResult.watchFileSet).filter((item) => this._watchScopePathSet.inScope(item)),
+    );
+
+    this._debug(`빌드 완료`);
+    return {
+      watchFileSet,
+      affectedFileSet: bundleResult.affectedFileSet,
+      buildMessages: bundleResult.results,
+      emitFileSet: bundleResult.emitFileSet,
+    };
   }
 
-  async buildAsync(): Promise<ISdBuildRunnerResult> {
-    const projNpmConfig = FsUtils.readJson(path.resolve(
-      process.cwd(),
-      "package.json",
-    )) as INpmConfig;
-    const npmConfig = FsUtils.readJson(path.resolve(this._pkgPath, "package.json")) as INpmConfig;
-    const extModules = await this._getExternalModulesAsync();
-
-    this._debug("dist 초기화...");
-    FsUtils.remove(path.resolve(this._pkgPath, "dist"));
-
-    this._debug("GEN .config.json...");
-    const confDistPath = path.resolve(this._pkgPath, "dist/.config.json");
-    FsUtils.writeJson(confDistPath, this._pkgConf.configs ?? {}, { space: 2 });
+  private async _generateProductionFilesAsync() {
+    const npmConf = FsUtils.readJson(path.resolve(this._pkgPath, "package.json")) as INpmConfig;
 
     this._debug("GEN package.json...");
     {
+      const projNpmConf = FsUtils.readJson(path.resolve(
+        process.cwd(),
+        "package.json",
+      )) as INpmConfig;
+      const extModules = await this._getExternalModulesAsync();
+
       const deps = extModules.filter((item) => item.exists).map((item) => item.name);
 
       const distNpmConfig: INpmConfig = {
-        name: npmConfig.name,
-        version: npmConfig.version,
-        type: npmConfig.type,
+        name: npmConf.name,
+        version: npmConf.version,
+        type: npmConf.type,
       };
       distNpmConfig.dependencies = {};
       for (const dep of deps) {
         distNpmConfig.dependencies[dep] = "*";
       }
 
-      distNpmConfig.scripts = {};
-      if (this._pkgConf.pm2 && !this._pkgConf.pm2.noStartScript) {
-        distNpmConfig.scripts["start"] = "pm2 start pm2.config.cjs";
-        // distNpmConfig.scripts["stop"] = "pm2 stop ssipec-petrochem-server";
-        // distNpmConfig.scripts["delete"] = "pm2 delete ssipec-petrochem-server";
-      }
+      // distNpmConfig.scripts = {};
+      // if (this._pkgConf.pm2 && !this._pkgConf.pm2.noStartScript) {
+      //   distNpmConfig.scripts["start"] = "pm2 start pm2.config.cjs";
+      //   distNpmConfig.scripts["stop"] = "pm2 stop pm2.config.cjs";
+      //   distNpmConfig.scripts["delete"] = "pm2 delete pm2.config.cjs";
+      // }
 
-      distNpmConfig.volta = projNpmConfig.volta;
+      distNpmConfig.volta = projNpmConf.volta;
 
       FsUtils.writeJson(
         path.resolve(this._pkgPath, "dist/package.json"),
@@ -165,36 +144,36 @@ Options = UnsafeLegacyRenegotiation`.trim(),
       this._debug("GEN pm2.config.cjs...");
 
       const str = /* language=cjs */ `
-        const cp = require("child_process");
+            const cp = require("child_process");
 
-        const npmConf = require("./package.json");
+            const npmConf = require("./package.json");
 
-        const pm2Conf = ${JSON.stringify(this._pkgConf.pm2)};
-        const env = ${JSON.stringify(this._pkgConf.env)};
+            const pm2Conf = ${JSON.stringify(this._pkgConf.pm2)};
+            const env = ${JSON.stringify(this._pkgConf.env)};
 
-        module.exports = {
-          name: pm2Conf.name ?? npmConf.name.replace(/@/g, "").replace(/\\//g, "-"),
-          script: "main.js",
-          watch: true,
-          watch_delay: 2000,
-          ignore_watch: [
-            "node_modules",
-            "www",
-            ...pm2Conf.ignoreWatchPaths ?? []
-          ],
-          ...pm2Conf.noInterpreter ? {} : {interpreter: cp.execSync("volta which node").toString().trim()},
-          interpreter_args: "--openssl-config=openssl.cnf",
-          env: {
-            NODE_ENV: "production",
-            TZ: "Asia/Seoul",
-            SD_VERSION: npmConf.version,
-            ...env ?? {}
-          },
-          arrayProcess: "concat",
-          useDelTargetNull: true,
-          exec_mode: pm2Conf.instances != null ? "cluster" : "fork",
-          instances: pm2Conf.instances ?? 1
-        };`
+            module.exports = {
+              name: pm2Conf.name ?? npmConf.name.replace(/@/g, "").replace(/\\//g, "-"),
+              script: "main.js",
+              watch: true,
+              watch_delay: 2000,
+              ignore_watch: [
+                "node_modules",
+                "www",
+                ...pm2Conf.ignoreWatchPaths ?? []
+              ],
+              ...pm2Conf.noInterpreter ? {} : {interpreter: cp.execSync("volta which node").toString().trim()},
+              interpreter_args: "--openssl-config=openssl.cnf",
+              env: {
+                NODE_ENV: "production",
+                TZ: "Asia/Seoul",
+                SD_VERSION: npmConf.version,
+                ...env ?? {}
+              },
+              arrayProcess: "concat",
+              useDelTargetNull: true,
+              exec_mode: pm2Conf.instances != null ? "cluster" : "fork",
+              instances: pm2Conf.instances ?? 1
+            };`
         .replaceAll("\n        ", "\n")
         .trim();
 
@@ -214,7 +193,7 @@ Options = UnsafeLegacyRenegotiation`.trim(),
   <appSettings>
     <add key="NODE_ENV" value="production" />
     <add key="TZ" value="Asia/Seoul" />
-    <add key="SD_VERSION" value="${npmConfig.version}" />
+    <add key="SD_VERSION" value="${npmConf.version}" />
     ${Object.keys(this._pkgConf.env ?? {})
         .map((key) => `<add key="${key}" value="${this._pkgConf.env![key]}"/>`)
         .join("\n    ")}
@@ -236,71 +215,8 @@ Options = UnsafeLegacyRenegotiation`.trim(),
     </rewrite>
     <httpErrors errorMode="Detailed" />
   </system.webServer>
-</configuration>
-`.trim());
+</configuration>`.trim());
     }
-
-    const result = await this._runAsync(false);
-    return {
-      affectedFilePathSet: result.affectedFileSet,
-      buildMessages: result.buildMessages,
-      emitFileSet: result.emitFileSet,
-    };
-  }
-
-  private async _runAsync(
-    dev: boolean,
-    modifiedFileSet?: Set<TNormPath>,
-  ): Promise<{
-    watchFileSet: Set<TNormPath>;
-    affectedFileSet: Set<TNormPath>;
-    buildMessages: ISdBuildMessage[];
-    emitFileSet: Set<TNormPath>;
-  }> {
-    const localUpdatePaths = Object.keys(this._projConf.localUpdates ?? {}).mapMany((key) =>
-      FsUtils.glob(path.resolve(this._pkgPath, "../../node_modules", key)),
-    );
-
-    this._debug(`BUILD 준비...`);
-    const tsConfig = FsUtils.readJson(path.resolve(this._pkgPath, "tsconfig.json")) as ITsConfig;
-    this._extModules = this._extModules ?? (await this._getExternalModulesAsync());
-    this._serverBundler =
-      this._serverBundler ??
-      new SdServerBundler({
-        dev,
-        pkgPath: this._pkgPath,
-        entryPoints: tsConfig.files
-          ? tsConfig.files.map((item) => path.resolve(this._pkgPath, item))
-          : [
-            path.resolve(this._pkgPath, "src/main.ts"),
-            ...FsUtils.glob(path.resolve(this._pkgPath, "src/workers/*.ts")),
-          ],
-        external: this._extModules.map((item) => item.name),
-        watchScopePaths: [
-          path.resolve(this._pkgPath, "../"),
-          ...localUpdatePaths,
-        ].map((item) => PathUtils.norm(item)),
-      });
-
-    this._debug(`BUILD...`);
-    const bundleResult = await this._serverBundler.bundleAsync(modifiedFileSet);
-
-    //-- filePaths
-    const watchFileSet = new Set(
-      Array.from(bundleResult.watchFileSet).filter(
-        (item) =>
-          PathUtils.isChildPath(item, path.resolve(this._pkgPath, "../")) ||
-          localUpdatePaths.some((lu) => PathUtils.isChildPath(item, lu)),
-      ),
-    );
-
-    this._debug(`빌드 완료`);
-    return {
-      watchFileSet,
-      affectedFileSet: bundleResult.affectedFileSet,
-      buildMessages: bundleResult.results,
-      emitFileSet: bundleResult.emitFileSet,
-    };
   }
 
   private async _getExternalModulesAsync(): Promise<
@@ -415,9 +331,5 @@ Options = UnsafeLegacyRenegotiation`.trim(),
     }
 
     return results;
-  }
-
-  private _debug(msg: string): void {
-    this._logger.debug(`[${path.basename(this._pkgPath)}] ${msg}`);
   }
 }

@@ -162,7 +162,7 @@ import { SdIconControl } from "./sd-icon.control";
   },
 })
 export class SdListItemControl {
-  protected icons = inject(SdAngularConfigProvider).icons;
+  protected readonly icons = inject(SdAngularConfigProvider).icons;
 
   __open = input(false, { alias: "open", transform: transformBoolean });
   __openChange = output<boolean>({ alias: "openChange" });

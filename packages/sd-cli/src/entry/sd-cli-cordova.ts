@@ -524,7 +524,7 @@ export class SdCliCordova {
     for (const file of files) {
       const relFilePath = path.relative(dirPath, file);
       const fileBuffer = FsUtils.readFileBuffer(file);
-      zip.write(relFilePath, new Uint8Array(fileBuffer));
+      zip.write(relFilePath, fileBuffer);
     }
   }
 

@@ -440,7 +440,7 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
   });
 
   controlValue = $computed(() => {
-    return this.#convertToControlValue(this.value());
+    return this._convertToControlValue(this.value());
   });
 
   controlValueText = $computed(() => {
@@ -482,7 +482,7 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
       return min.toFormatString("yyyy-MM-dd");
     }
     else {
-      return this.#convertToControlValue(min);
+      return this._convertToControlValue(min);
     }
   });
 
@@ -492,7 +492,7 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
       return max.toFormatString("yyyy-MM-dd");
     }
     else {
-      return this.#convertToControlValue(max);
+      return this._convertToControlValue(max);
     }
   });
 
@@ -585,7 +585,7 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
     const inputEl = event.target as HTMLInputElement;
 
     if (inputEl.value === "") {
-      this.#setValue(undefined);
+      this._setValue(undefined);
     }
     else if (this.type() === "number") {
       const inputValue = inputEl.value.replace(/[^0-9-.]/g, "");
@@ -596,52 +596,52 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
       ) {
       }
       else {
-        this.#setValue(NumberUtils.parseFloat(inputValue));
+        this._setValue(NumberUtils.parseFloat(inputValue));
       }
     }
     else if (this.type() === "format") {
       const nonFormatChars = this.format()?.match(/[^X]/g)?.distinct();
       if (nonFormatChars) {
-        this.#setValue(
+        this._setValue(
           inputEl.value.replace(new RegExp(
             `[${nonFormatChars.map((item) => "\\" + item).join("")}]`, "g"), ""),
         );
       }
       else {
-        this.#setValue(inputEl.value);
+        this._setValue(inputEl.value);
       }
     }
     else if (["year", "month", "date"].includes(this.type())) {
       try {
-        this.#setValue(DateOnly.parse(inputEl.value));
+        this._setValue(DateOnly.parse(inputEl.value));
       }
       catch {
       }
     }
     else if (["datetime", "datetime-sec"].includes(this.type())) {
       try {
-        this.#setValue(DateTime.parse(inputEl.value));
+        this._setValue(DateTime.parse(inputEl.value));
       }
       catch {
       }
     }
     else if (["time", "time-sec"].includes(this.type())) {
       try {
-        this.#setValue(Time.parse(inputEl.value));
+        this._setValue(Time.parse(inputEl.value));
       }
       catch {
       }
     }
     else {
-      this.#setValue(inputEl.value);
+      this._setValue(inputEl.value);
     }
   }
 
-  #setValue(newValue: any): void {
+  private _setValue(newValue: any): void {
     this.value.set(newValue);
   }
 
-  #convertToControlValue(value: TSdTextfieldTypes[K] | undefined): string {
+  private _convertToControlValue(value: TSdTextfieldTypes[K] | undefined): string {
     if (value == null) {
       return "";
     }
@@ -725,7 +725,7 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
   @HostListener("sd-sheet-cell-paste")
   async onSdSheetCellPaste() {
     if ("clipboard" in navigator) {
-      this.#setValue(JsonConvert.parse(await navigator.clipboard.readText()));
+      this._setValue(JsonConvert.parse(await navigator.clipboard.readText()));
     }
   }
 }
