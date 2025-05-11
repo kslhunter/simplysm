@@ -25,6 +25,7 @@ import {
 } from "@angular/build/src/tools/esbuild/angular/component-stylesheets";
 import { transformSupportedBrowsersToTargets } from "@angular/build/src/tools/esbuild/utils";
 import browserslist from "browserslist";
+import { createModelRewriteTransformer } from "./create-model-rewrite.transformer";
 
 export class SdTsCompiler {
   private _logger = SdLogger.get(["simplysm", "sd-cli", "SdTsCompiler"]);
@@ -534,6 +535,7 @@ ${affectedFileTree.map(item => getTreeText(item)).join("\n")}`.trim());
             return relPath.replace(/\.ts$/, "").replaceAll("\\", "/") + ".js";
           }),
         );
+        (transformers.before ??= []).push(createModelRewriteTransformer());
       }
 
       this._debug(`파일 출력 중...`);

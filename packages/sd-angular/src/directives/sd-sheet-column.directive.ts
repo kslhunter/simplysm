@@ -16,7 +16,7 @@ export class SdSheetColumnDirective<T> {
   headerStyle = input<string>();
   tooltip = input<string>();
   width = input<string>();
-  disableOrdering = input(false, { transform: transformBoolean });
+  disableSorting = input(false, { transform: transformBoolean });
   disableResizing = input(false, { transform: transformBoolean });
   hidden = input(false, { transform: transformBoolean });
   collapse = input(false, { transform: transformBoolean });

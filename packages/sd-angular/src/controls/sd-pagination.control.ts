@@ -3,12 +3,12 @@ import {
   Component,
   inject,
   input,
-  output,
+  model,
   ViewEncapsulation,
 } from "@angular/core";
 import { SdAnchorControl } from "./sd-anchor.control";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
-import { $computed, $model } from "../utils/hooks/hooks";
+import { $computed } from "../utils/hooks/hooks";
 import { SdIconControl } from "./sd-icon.control";
 
 @Component({
@@ -44,7 +44,10 @@ import { SdIconControl } from "./sd-icon.control";
       <sd-icon [icon]="icons.angleLeft" fixedWidth />
     </sd-anchor>
     @for (displayPage of displayPages(); track displayPage) {
-      <sd-anchor (click)="onPageClick(displayPage)" [attr.sd-selected]="displayPage === page()">
+      <sd-anchor
+        (click)="onPageClick(displayPage)"
+        [attr.sd-selected]="displayPage === currentPage()"
+      >
         {{ displayPage + 1 }}
       </sd-anchor>
     }
@@ -59,27 +62,24 @@ import { SdIconControl } from "./sd-icon.control";
 export class SdPaginationControl {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
 
-  __page = input<number>(0, { alias: "page" });
-  __pageChange = output<number>({ alias: "pageChange" });
-  page = $model(this.__page, this.__pageChange);
+  currentPage = model<number>(0);
 
-
-  pageLength = input(0);
-  displayPageLength = input(10);
+  totalPageCount = input(0);
+  visiblePageCount = input(10);
 
   displayPages = $computed(() => {
     const pages: number[] = [];
-    for (let i = 0; i < this.pageLength(); i++) {
+    for (let i = 0; i < this.totalPageCount(); i++) {
       pages.push(i);
     }
 
-    const from = Math.floor(this.page() / this.displayPageLength()) * this.displayPageLength();
-    const to = Math.min(from + this.displayPageLength(), this.pageLength());
+    const from = Math.floor(this.currentPage() / this.visiblePageCount()) * this.visiblePageCount();
+    const to = Math.min(from + this.visiblePageCount(), this.totalPageCount());
     return pages.filter((item) => item >= from && item < to);
   });
 
   hasNext = $computed(() => {
-    return (this.displayPages().last() ?? 0) < this.pageLength() - 1;
+    return (this.displayPages().last() ?? 0) < this.totalPageCount() - 1;
   });
 
   hasPrev = $computed(() => {
@@ -87,26 +87,26 @@ export class SdPaginationControl {
   });
 
   onPageClick(page: number) {
-    this.page.set(page);
+    this.currentPage.set(page);
   }
 
   onNextClick() {
     const page = (this.displayPages().last() ?? 0) + 1;
-    this.page.set(page);
+    this.currentPage.set(page);
   }
 
   onPrevClick() {
     const page = (this.displayPages().first() ?? 0) - 1;
-    this.page.set(page);
+    this.currentPage.set(page);
   }
 
   onGoFirstClick() {
     const page = 0;
-    this.page.set(page);
+    this.currentPage.set(page);
   }
 
   onGoLastClick() {
-    const page = this.pageLength() - 1;
-    this.page.set(page);
+    const page = this.totalPageCount() - 1;
+    this.currentPage.set(page);
   }
 }

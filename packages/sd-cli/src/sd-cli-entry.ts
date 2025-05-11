@@ -14,6 +14,8 @@ import { SdCliAiCommand } from "./entry/sd-cli-ai-command";
 import { SdCliPostinstall } from "./entry/sd-cli-postinstall";
 import convertEcmaPrivateToTsPrivate from "./fix/convert-ecma-private-to-ts-private";
 import prefixUnderscoreForAccessModifiers from "./fix/prefix-underscore-for-access-modifiers";
+import convertSdSheetBindingsInInlineTemplate from "./fix/convert-sd-sheet-bindings-inInline-template";
+import convertOrderingInterface from "./fix/convert-ordering-interface";
 
 Error.stackTraceLimit = Infinity;
 EventEmitter.defaultMaxListeners = 0;
@@ -252,6 +254,8 @@ await yargs(hideBin(process.argv))
     () => {
       convertEcmaPrivateToTsPrivate();
       prefixUnderscoreForAccessModifiers();
+      convertSdSheetBindingsInInlineTemplate();
+      convertOrderingInterface();
     },
   )
   .strict()

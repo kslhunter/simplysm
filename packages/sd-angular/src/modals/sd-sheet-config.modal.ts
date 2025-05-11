@@ -7,7 +7,7 @@ import {
 } from "@angular/core";
 import { SdModalBase } from "../providers/sd-modal.provider";
 import { SdSheetColumnDirective } from "../directives/sd-sheet-column.directive";
-import { ISdSheetConfig, SdSheetControl } from "../controls/sd-sheet.control";
+import { ISdSheetConfig, SdSheetControl } from "../controls/sd-sheet/sd-sheet.control";
 import { SdDockContainerControl } from "../controls/sd-dock-container.control";
 import { SdPaneControl } from "../controls/sd-pane.control";
 import { SdCheckboxControl } from "../controls/sd-checkbox.control";

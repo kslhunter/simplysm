@@ -334,7 +334,10 @@ export class SdCliProject {
         const cordovaPluginConfXml = XmlConvert.parse(FsUtils.readFile(cordovaPluginConfFilePath));
         cordovaPluginConfXml.plugin.$.version = newVersion;
 
-        FsUtils.writeFile(cordovaPluginConfFilePath, XmlConvert.stringify(cordovaPluginConfXml));
+        FsUtils.writeFile(
+          cordovaPluginConfFilePath,
+          XmlConvert.stringify(cordovaPluginConfXml, { format: true }),
+        );
       }
     }
   }

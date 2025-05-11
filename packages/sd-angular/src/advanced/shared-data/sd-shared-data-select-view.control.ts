@@ -88,8 +88,8 @@ import { SdPaginationControl } from "../../controls/sd-pagination.control";
         @if (pageItemCount()) {
           <sd-dock class="pb-default">
             <sd-pagination
-              [(page)]="page"
-              [pageLength]="pageLength()"
+              [(currentPage)]="page"
+              [totalPageCount]="pageLength()"
             />
           </sd-dock>
         }
