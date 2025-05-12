@@ -1,6 +1,11 @@
 import { computed, Signal, WritableSignal } from "@angular/core";
 
-export function useSelectionManager<T>(binding: IBinding<T>) {
+export function useSelectionManager<T>(binding: {
+  displayItems: Signal<T[]>,
+  selectedItems: WritableSignal<T[]>,
+  selectMode: Signal<"single" | "multi" | undefined>,
+  getIsItemSelectableFn: Signal<((item: T) => boolean | string) | undefined>
+}) {
   const selectableItems = computed(() =>
     binding.displayItems().filter(item => isSelectable(item)),
   );
@@ -68,11 +73,4 @@ export function useSelectionManager<T>(binding: IBinding<T>) {
     select,
     toggleAll,
   };
-}
-
-interface IBinding<T> {
-  displayItems: Signal<T[]>,
-  selectedItems: WritableSignal<T[]>,
-  selectMode: Signal<"single" | "multi" | undefined>,
-  getIsItemSelectableFn: Signal<((item: T) => boolean | string) | undefined>
 }

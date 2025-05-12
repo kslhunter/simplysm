@@ -11,7 +11,7 @@ import {
   signal,
   ViewEncapsulation,
 } from "@angular/core";
-import { SdSheetColumnDirective } from "../../directives/sd-sheet-column.directive";
+import { SdSheetColumnDirective } from "./directives/sd-sheet-column.directive";
 import { SdSheetConfigModal } from "../../modals/sd-sheet-config.modal";
 import { SdModalProvider } from "../../providers/sd-modal.provider";
 import { SdBusyContainerControl } from "../sd-busy-container.control";
@@ -21,22 +21,30 @@ import { NgTemplateOutlet } from "@angular/common";
 import { SdAnchorControl } from "../sd-anchor.control";
 import { SdPaginationControl } from "../sd-pagination.control";
 import { SdPaneControl } from "../sd-pane.control";
-import { SdEventsDirective } from "../../directives/sd-events.directive";
 import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
 import { SdCheckboxControl } from "../sd-checkbox.control";
 import { transformBoolean } from "../../utils/type-tramsforms";
 import { SdIconControl } from "../sd-icon.control";
 import { SdIconLayersControl } from "../sd-icon-layers.control";
 import { ISdResizeEvent } from "../../plugins/events/sd-resize.event-plugin";
-import { injectElementRef } from "../../utils/dom/element-ref.injector";
 import { useSdSystemConfig } from "../../features/use-sd-system-config";
 import { ISortingDef, useSortingManager } from "../../features/use-sorting-manager";
 import { useSelectionManager } from "../../features/use-selection-manager";
-import { ISdSheetHeaderDef, useSdSheetLayoutEngine } from "./use-sd-sheet-layout-engine";
-import { useSdSheetFocusIndicatorRenderer } from "./use-sd-sheet-focus-indicator-renderer";
-import { useSdSheetSelectRowIndicatorRenderer } from "./use-sd-sheet-select-row-indicator-renderer";
-import { useSdSheetCellAgent } from "./use-sd-sheet-cell-agent";
+import { useSdSheetLayoutEngine } from "./features/use-sd-sheet-layout-engine";
+import { useSdSheetFocusIndicatorRenderer } from "./features/use-sd-sheet-focus-indicator-renderer";
+import {
+  useSdSheetSelectRowIndicatorRenderer,
+} from "./features/use-sd-sheet-select-row-indicator-renderer";
+import { useSdSheetCellAgent } from "./features/use-sd-sheet-cell-agent";
 import { useExpandingManager } from "../../features/use-expanding-manager";
+import { useSdSheetDomAccessor } from "./features/use-sd-sheet-dom-accessor";
+import {
+  ISdSheetConfig,
+  ISdSheetConfigColumn,
+  ISdSheetHeaderDef,
+  ISdSheetItemKeydownEventParam,
+} from "./sd-sheet.types";
+import { SdEventsDirective } from "../../directives/sd-events.directive";
 
 @Component({
   selector: "sd-sheet",
@@ -50,11 +58,11 @@ import { useExpandingManager } from "../../features/use-expanding-manager";
     SdAnchorControl,
     SdPaginationControl,
     SdPaneControl,
-    SdEventsDirective,
     NgTemplateOutlet,
     SdCheckboxControl,
     SdIconControl,
     SdIconLayersControl,
+    SdEventsDirective,
   ],
   template: `
     <sd-busy-container [busy]="busy()" type="cube">
@@ -80,7 +88,7 @@ import { useExpandingManager } from "../../features/use-expanding-manager";
 
         <sd-pane
           class="_sheet-container"
-          (scroll)="onContainerScroll($event)"
+          (scroll)="onContainerScroll()"
           [style]="contentStyle()"
         >
           <table (sdResize)="onSheetResize($event)">
@@ -128,8 +136,8 @@ import { useExpandingManager } from "../../features/use-expanding-manager";
                   }
                   @for (headerCell of headerRow; let c = $index; track c) {
                     @if (headerCell) {
-                      <!-- 마지막 ROW가 아닐때 -->
                       @if (!headerCell.isLastRow) {
+                        <!-- 마지막 ROW가 아닐때 -->
                         <th
                           [class._fixed]="headerCell.fixed"
                           [attr.colspan]="headerCell.colspan"
@@ -142,9 +150,8 @@ import { useExpandingManager } from "../../features/use-expanding-manager";
                             </div>
                           </div>
                         </th>
-                      }
-                      <!-- 마지막 ROW일때 -->
-                      @else {
+                      } @else {
+                        <!-- 마지막 ROW일때 -->
                         <th
                           [class._fixed]="headerCell.fixed"
                           [attr.colspan]="headerCell.colspan"
@@ -576,8 +583,10 @@ import { useExpandingManager } from "../../features/use-expanding-manager";
         }
 
         &[sd-focus-mode="row"] {
-          > sd-busy-container > sd-dock-container > ._content > sd-pane._sheet-container > ._focus-row-indicator > ._focus-cell-indicator {
-            display: none !important;
+          > sd-busy-container > sd-dock-container > ._content > sd-pane._sheet-container {
+            > ._focus-row-indicator > ._focus-cell-indicator {
+              display: none !important;
+            }
           }
         }
 
@@ -614,7 +623,6 @@ export class SdSheetControl<T> {
   hideConfigBar = input(false, { transform: transformBoolean });
   inset = input(false, { transform: transformBoolean });
   contentStyle = input<string>();
-  focusMode = input<"row" | "cell">("cell");
   getItemCellClassFn = input<(item: T, colKey: string) => string | undefined>();
   getItemCellStyleFn = input<(item: T, colKey: string) => string | undefined>();
 
@@ -622,6 +630,14 @@ export class SdSheetControl<T> {
   cellKeydown = output<ISdSheetItemKeydownEventParam<T>>();
 
   columnControls = contentChildren<SdSheetColumnDirective<T>>(SdSheetColumnDirective);
+
+  //region items
+
+  items = input<T[]>([]);
+  trackByFn = input<(item: T, index: number) => any>((item) => item);
+  trackByKey = input<keyof T>();
+
+  //endregion
 
   //region config
 
@@ -647,7 +663,7 @@ export class SdSheetControl<T> {
     this.config.set(result);
   }
 
-  private _saveColumnConfig(columnKey: string, config: Partial<IConfigColumn>) {
+  private _saveColumnConfig(columnKey: string, config: Partial<ISdSheetConfigColumn>) {
     this.config.update((v) => ({
       ...v,
       columnRecord: {
@@ -719,9 +735,7 @@ export class SdSheetControl<T> {
     this._isOnResizing = true;
 
     const thEl = (event.target as HTMLElement).findParent("th")!;
-    const indicatorEl = this._elRef.nativeElement.findFirst<HTMLDivElement>(
-      "._sheet-container > ._resize-indicator",
-    )!;
+    const indicatorEl = this.dom.getColumnResizeIndicator();
 
     const startX = event.clientX;
     const startWidthPx = thEl.clientWidth;
@@ -770,6 +784,8 @@ export class SdSheetControl<T> {
   sorts = model<ISortingDef[]>([]);
   sortingManager = useSortingManager(this.sorts);
 
+  useAutoSort = input(false, { transform: transformBoolean });
+
   onHeaderCellClick(event: MouseEvent, headerCell: ISdSheetHeaderDef): void {
     if (headerCell.control.disableSorting()) return;
     if (this._isOnResizing) return;
@@ -786,6 +802,11 @@ export class SdSheetControl<T> {
       this.sortingManager.toggle(headerCell.control.key(), false);
     }
   }
+
+  private _sortedItems = computed(() => {
+    if (!this.useAutoSort()) return this.items();
+    return this.sortingManager.sort(this.items());
+  });
 
   //endregion
 
@@ -806,21 +827,6 @@ export class SdSheetControl<T> {
     }
   });
 
-  //endregion
-
-  //region itemDefs
-
-  items = input<T[]>([]);
-  trackByFn = input<(item: T, index: number) => any>((item) => item);
-  trackByKey = input<keyof T>();
-
-  useAutoSort = input(false, { transform: transformBoolean });
-
-  private _sortedItems = computed(() => {
-    if (!this.useAutoSort()) return this.items();
-    return this.sortingManager.sort(this.items());
-  });
-
   private _sortedPagedItems = computed(() => {
     const itemsPerPage = this.itemsPerPage();
     if (itemsPerPage == null || itemsPerPage === 0) return this._sortedItems();
@@ -830,49 +836,6 @@ export class SdSheetControl<T> {
     return this._sortedItems()
       .slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage);
   });
-
-  /*itemDefs = computed((): IItemDef<T>[] => {
-    let rootItems: IItemDef<T>[] = this._sortedPagedItems().map((item) => ({
-      item,
-      parentDef: undefined,
-      hasChildren: false,
-      depth: 0,
-    }));
-
-    if (!this.getChildrenFn()) return rootItems;
-
-    const queue: IItemDef<T>[] = [...rootItems];
-    const result: IItemDef<T>[] = [];
-
-    while (queue.length > 0) {
-      const current = queue.shift()!;
-      result.push(current);
-
-      const children = this.getChildrenFn()!(current.item, result.length - 1) ?? [];
-      if (children.length > 0) {
-        current.hasChildren = true;
-
-        let displayChildren = children;
-
-        if (this.useAutoSort()) {
-          displayChildren = this.sortingManager.sort(displayChildren);
-        }
-
-        const childDefs: IItemDef<T>[] = displayChildren.map((child) => ({
-          item: child,
-          parentDef: current,
-          hasChildren: false,
-          depth: current.depth + 1,
-        }));
-
-        queue.push(...childDefs);
-      }
-    }
-
-    return result;
-  });*/
-
-  displayItems = computed(() => this.expandingManager.displayItems());
 
   //endregion
 
@@ -889,6 +852,8 @@ export class SdSheetControl<T> {
       return this.useAutoSort() ? this.sortingManager.sort(items) : items;
     },
   });
+
+  displayItems = computed(() => this.expandingManager.displayItems());
 
   //endregion
 
@@ -915,9 +880,8 @@ export class SdSheetControl<T> {
 
   //endregion
 
-  //region Cell Focus And Edit
+  //region Cell agent
 
-  // private _editModeCellAddr = signal<{ r: number, c: number } | undefined>(undefined);
   cellAgent = useSdSheetCellAgent();
 
   @HostListener("keydown.capture", ["$event"])
@@ -931,33 +895,27 @@ export class SdSheetControl<T> {
 
   //endregion
 
-  private _elRef = injectElementRef<HTMLElement>();
+  dom = useSdSheetDomAccessor();
 
-  //region Select row indicator
+  focusMode = input<"row" | "cell">("cell");
 
   selectRowIndicatorRenderer = useSdSheetSelectRowIndicatorRenderer({
     selectedItems: this.selectedItems,
     displayItems: this.displayItems,
   });
-
-  //endregion
-
-  //region Focus indicator
-
   focusIndicatorRenderer = useSdSheetFocusIndicatorRenderer();
 
   @HostListener("focus.capture", ["$event"])
   onFocusCapture(event: FocusEvent): void {
-    this.focusIndicatorRenderer.handleFocus(event);
+    this.focusIndicatorRenderer.redraw();
 
-    //-- scroll to focused cell
+    //-- scroll
 
     if (!(event.target instanceof HTMLElement)) return;
 
-    const sheetContainerEl = this._elRef.nativeElement.findFirst("._sheet-container")!;
-    const theadEl = sheetContainerEl.findFirst<HTMLTableSectionElement>("> table > thead")!;
-    const fixedHeaderLastDepthEls = theadEl.findAll<HTMLTableCellElement>(
-      "> tr > th._last-depth._fixed");
+    const containerEl = this.dom.getContainer();
+    const theadEl = this.dom.getTHead();
+    const fixedHeaderLastDepthEls = this.dom.getLastDepthFixedHeaders();
 
     const tdEl = event.target.tagName.toLowerCase() === "td"
       ? event.target
@@ -967,7 +925,7 @@ export class SdSheetControl<T> {
     const rect = {
       top: tdEl.offsetTop,
       left: tdEl.offsetLeft - (tdEl.classList.contains("_fixed")
-        ? sheetContainerEl.scrollLeft
+        ? containerEl.scrollLeft
         : 0),
     };
     const noneFixedPosition = {
@@ -975,21 +933,20 @@ export class SdSheetControl<T> {
       left: fixedHeaderLastDepthEls.sum((item) => item.offsetWidth),
     };
     const scroll = {
-      top: sheetContainerEl.scrollTop,
-      left: sheetContainerEl.scrollLeft,
+      top: containerEl.scrollTop,
+      left: containerEl.scrollLeft,
     };
 
     if (!tdEl.classList.contains("_fixed")) {
       if (rect.top - scroll.top < noneFixedPosition.top) {
-        sheetContainerEl.scrollTop = rect.top - noneFixedPosition.top;
+        containerEl.scrollTop = rect.top - noneFixedPosition.top;
       }
       if (rect.left - scroll.left < noneFixedPosition.left) {
-        sheetContainerEl.scrollLeft = rect.left - noneFixedPosition.left;
+        containerEl.scrollLeft = rect.left - noneFixedPosition.left;
       }
     }
 
     //-- selection
-
     const addr = this.cellAgent.getCellAddr(tdEl);
     const item = this.displayItems()[addr.r];
     if (this.autoSelect() === "focus" && this.selectionManager.isSelectable(item)) {
@@ -999,34 +956,18 @@ export class SdSheetControl<T> {
 
   @HostListener("blur.capture", ["$event"])
   onBlurCapture(event: FocusEvent): void {
-    this.focusIndicatorRenderer.handleBlur(event);
+    this.focusIndicatorRenderer.redraw();
     this.cellAgent.handleBlur(event);
   }
 
   onSheetResize(event: ISdResizeEvent): void {
-    this.focusIndicatorRenderer.handleTableResize();
+    if (!event.widthChanged) return;
+
+    this.focusIndicatorRenderer.redraw();
+    this.selectRowIndicatorRenderer.handleTableResize();
   }
 
-  onContainerScroll(event: Event): void {
-    this.focusIndicatorRenderer.handleContainerScroll();
+  onContainerScroll(): void {
+    this.focusIndicatorRenderer.redraw();
   }
-
-  //endregion
-}
-
-export interface ISdSheetConfig {
-  columnRecord: Record<string, IConfigColumn | undefined> | undefined;
-}
-
-interface IConfigColumn {
-  fixed?: boolean;
-  width?: string;
-  displayOrder?: number;
-  hidden?: boolean;
-}
-
-export interface ISdSheetItemKeydownEventParam<T> {
-  item: T;
-  key?: string;
-  event: KeyboardEvent;
 }

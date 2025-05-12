@@ -23,7 +23,6 @@ export class SdCliCordova {
   private readonly SPLASH_SCREEN_DIR_PATH = "res/screen/android";
   private readonly SPLASH_SCREEN_XML_FILE = "splashscreen.xml";
 
-  private _logger = SdLogger.get(["simplysm", "sd-cli", "SdCliCordova"]);
 
   private _platforms: string[];
   private _npmConfig: INpmConfig;
@@ -33,7 +32,9 @@ export class SdCliCordova {
     this._npmConfig = FsUtils.readJson(path.resolve(this._opt.pkgPath, "package.json"));
   }
 
-  private async _execAsync(cmd: string, cwd: string): Promise<void> {
+  private static _logger = SdLogger.get(["simplysm", "sd-cli", "SdCliCordova"]);
+
+  private static async _execAsync(cmd: string, cwd: string): Promise<void> {
     this._logger.debug(`실행 명령: ${cmd}`);
     const msg = await SdProcess.spawnAsync(cmd, { cwd });
     this._logger.debug(`실행 결과: ${msg}`);
@@ -75,19 +76,19 @@ export class SdCliCordova {
     this._configureXml(cordovaPath);
 
     // 8. 각 플랫폼 www 준비
-    await this._execAsync(`npx cordova prepare`, cordovaPath);
+    await SdCliCordova._execAsync(`npx cordova prepare`, cordovaPath);
   }
 
   // 1. Cordova 프로젝트 초기화
   private async _initializeCordovaProjectAsync(cordovaPath: string): Promise<void> {
     if (FsUtils.exists(cordovaPath)) {
-      this._logger.log("이미 생성되어있는 '.cordova'를 사용합니다.");
+      SdCliCordova._logger.log("이미 생성되어있는 '.cordova'를 사용합니다.");
     }
     else {
-      await this._execAsync(`npx cordova telemetry on`, this._opt.pkgPath);
+      await SdCliCordova._execAsync(`npx cordova telemetry on`, this._opt.pkgPath);
 
       // 프로젝트 생성
-      await this._execAsync(
+      await SdCliCordova._execAsync(
         `npx cordova create "${cordovaPath}" "${this._opt.config.appId}" "${this._opt.config.appName}"`,
         process.cwd(),
       );
@@ -109,13 +110,13 @@ export class SdCliCordova {
       if (alreadyPlatforms.includes(platform)) continue;
 
       if (platform === "android") {
-        await this._execAsync(
+        await SdCliCordova._execAsync(
           `npx cordova platform add ${platform}@${this.ANDROID_PLATFORM_VERSION}`,
           cordovaPath,
         );
       }
       else {
-        await this._execAsync(`npx cordova platform add ${platform}`, cordovaPath);
+        await SdCliCordova._execAsync(`npx cordova platform add ${platform}`, cordovaPath);
       }
     }
   }
@@ -156,7 +157,10 @@ export class SdCliCordova {
     for (const alreadyPlugin of alreadyPlugins) {
       if (!usePlugins.includes(alreadyPlugin.id) && !usePlugins.includes(alreadyPlugin.name)) {
         try {
-          await this._execAsync(`npx cordova plugin remove ${alreadyPlugin.name}`, cordovaPath);
+          await SdCliCordova._execAsync(
+            `npx cordova plugin remove ${alreadyPlugin.name}`,
+            cordovaPath,
+          );
         }
         catch (err) {
           // 의존성으로 인한 skip 메시지는 무시 (로그 생략)
@@ -181,7 +185,7 @@ export class SdCliCordova {
       );
 
       if (!isPluginAlreadyInstalled) {
-        await this._execAsync(`npx cordova plugin add ${usePlugin}`, cordovaPath);
+        await SdCliCordova._execAsync(`npx cordova plugin add ${usePlugin}`, cordovaPath);
       }
     }
   }
@@ -445,7 +449,7 @@ export class SdCliCordova {
 
     // 모든 플랫폼 동시에 빌드
     await Promise.all(this._platforms.map(platform =>
-      this._execAsync(`npx cordova build ${platform} --${buildType}`, cordovaPath),
+      SdCliCordova._execAsync(`npx cordova build ${platform} --${buildType}`, cordovaPath),
     ));
 
     // 결과물 복사 및 ZIP 파일 생성 - 병렬 처리
@@ -550,6 +554,6 @@ export class SdCliCordova {
       );
     }
 
-    await SdProcess.spawnAsync(`npx cordova run ${opt.platform} --device`, { cwd: cordovaPath });
+    await SdCliCordova._execAsync(`npx cordova run ${opt.platform} --device`, cordovaPath);
   }
 }

@@ -14,7 +14,8 @@ import { SdCliAiCommand } from "./entry/sd-cli-ai-command";
 import { SdCliPostinstall } from "./entry/sd-cli-postinstall";
 import convertEcmaPrivateToTsPrivate from "./fix/convert-ecma-private-to-ts-private";
 import prefixUnderscoreForAccessModifiers from "./fix/prefix-underscore-for-access-modifiers";
-import convertSdSheetBindingsInInlineTemplate from "./fix/convert-sd-sheet-bindings-inInline-template";
+import convertSdSheetBindingsInInlineTemplate
+  from "./fix/convert-sd-sheet-bindings-inInline-template";
 import convertOrderingInterface from "./fix/convert-ordering-interface";
 
 Error.stackTraceLimit = Infinity;
@@ -261,6 +262,10 @@ await yargs(hideBin(process.argv))
   .strict()
   .recommendCommands()
   .fail((msg, err, cmd) => {
+    if (Boolean(err)) {
+      throw err;
+    }
+
     console.error("지원되지 않는 명령입니다.");
     console.error(msg);
     console.log("\n명령어 목록:");

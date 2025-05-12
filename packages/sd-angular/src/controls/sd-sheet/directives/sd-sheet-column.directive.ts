@@ -3,7 +3,7 @@ import {
   SdSheetColumnCellTemplateContext,
   SdSheetColumnCellTemplateDirective,
 } from "./sd-sheet-column-cell.template-directive";
-import { transformBoolean } from "../utils/type-tramsforms";
+import { transformBoolean } from "../../../utils/type-tramsforms";
 
 @Directive({
   selector: "sd-sheet-column",

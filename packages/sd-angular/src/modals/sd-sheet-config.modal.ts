@@ -6,8 +6,8 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import { SdModalBase } from "../providers/sd-modal.provider";
-import { SdSheetColumnDirective } from "../directives/sd-sheet-column.directive";
-import { ISdSheetConfig, SdSheetControl } from "../controls/sd-sheet/sd-sheet.control";
+import { SdSheetColumnDirective } from "../controls/sd-sheet/directives/sd-sheet-column.directive";
+import { SdSheetControl } from "../controls/sd-sheet/sd-sheet.control";
 import { SdDockContainerControl } from "../controls/sd-dock-container.control";
 import { SdPaneControl } from "../controls/sd-pane.control";
 import { SdCheckboxControl } from "../controls/sd-checkbox.control";
@@ -15,12 +15,13 @@ import { SdAnchorControl } from "../controls/sd-anchor.control";
 import { SdTextfieldControl } from "../controls/sd-textfield.control";
 import {
   SdSheetColumnCellTemplateDirective,
-} from "../directives/sd-sheet-column-cell.template-directive";
+} from "../controls/sd-sheet/directives/sd-sheet-column-cell.template-directive";
 import { SdDockControl } from "../controls/sd-dock.control";
 import { SdButtonControl } from "../controls/sd-button.control";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { $effect, $signal } from "../utils/hooks/hooks";
 import { SdIconControl } from "../controls/sd-icon.control";
+import { ISdSheetConfig } from "../controls/sd-sheet/sd-sheet.types";
 
 @Component({
   selector: "sd-sheet-config-modal",

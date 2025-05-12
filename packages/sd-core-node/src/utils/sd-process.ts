@@ -16,6 +16,7 @@ export class SdProcess {
     return await new Promise<string>((resolve, reject) => {
       const ps = cp.spawn(splitCmd[0], splitCmd.slice(1), {
         cwd: process.cwd(),
+        env: { ...process.env },
         ...opts,
       });
 

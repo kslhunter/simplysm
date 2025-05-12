@@ -1,12 +1,12 @@
 import { computed, ResourceRef, ResourceStatus, Signal } from "@angular/core";
-import { ISdSheetConfig } from "./sd-sheet.control";
-import { SdSheetColumnDirective } from "../../directives/sd-sheet-column.directive";
+import { SdSheetColumnDirective } from "../directives/sd-sheet-column.directive";
+import { ISdSheetColumnDef, ISdSheetConfig, ISdSheetHeaderDef } from "../sd-sheet.types";
 
 export function useSdSheetLayoutEngine<T>(binding: {
   columnControls: Signal<ReadonlyArray<SdSheetColumnDirective<T>>>;
   config: ResourceRef<ISdSheetConfig | undefined>;
 }) {
-  const columnDefs = computed<IColumnDef<T>[]>(() => {
+  const columnDefs = computed<ISdSheetColumnDef<T>[]>(() => {
     if (
       binding.config.status() !== ResourceStatus.Resolved &&
       binding.config.status() !== ResourceStatus.Local
@@ -137,13 +137,6 @@ export function useSdSheetLayoutEngine<T>(binding: {
   };
 }
 
-export interface IColumnDef<T> {
-  control: SdSheetColumnDirective<T>;
-  fixed: boolean;
-  width: string | undefined;
-  headerStyle: string | undefined;
-}
-
 interface IRawHeaderDef {
   control: SdSheetColumnDirective<any>;
 
@@ -152,10 +145,4 @@ interface IRawHeaderDef {
   style: string | undefined;
 
   text: string;
-}
-
-export interface ISdSheetHeaderDef extends IRawHeaderDef {
-  colspan: number;
-  rowspan: number;
-  isLastRow: boolean;
 }

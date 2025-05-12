@@ -1,29 +1,14 @@
 import { effect, Signal } from "@angular/core";
-import { injectElementRef } from "../../utils/dom/element-ref.injector";
+import { useSdSheetDomAccessor } from "./use-sd-sheet-dom-accessor";
 
 export function useSdSheetSelectRowIndicatorRenderer<T>(binding: {
   selectedItems: Signal<T[]>;
   displayItems: Signal<T[]>;
 }) {
-  const elRef = injectElementRef();
-
-  function getRowEl(r: number) {
-    const sheetContainerEl = elRef.nativeElement.findFirst<HTMLDivElement>(
-      "._sheet-container",
-    )!;
-
-    return sheetContainerEl.findFirst<HTMLTableCellElement>(
-      `> table > tbody > tr[r='${r}']`,
-    );
-  }
+  const dom = useSdSheetDomAccessor();
 
   effect(() => {
-    const sheetContainerEl = elRef.nativeElement.findFirst<HTMLDivElement>(
-      "._sheet-container",
-    )!;
-    const selectRowIndicatorContainerEl = sheetContainerEl.findFirst<HTMLDivElement>(
-      "> ._select-row-indicator-container",
-    )!;
+    const selectRowIndicatorContainerEl = dom.getSelectRowIndicatorContainer();
 
     if (binding.selectedItems().length <= 0) {
       selectRowIndicatorContainerEl.innerHTML = "";
@@ -34,7 +19,7 @@ export function useSdSheetSelectRowIndicatorRenderer<T>(binding: {
     const selectedTrRects = binding.selectedItems()
       .map((item) => {
         const r = binding.displayItems().indexOf(item);
-        const trEl = getRowEl(r);
+        const trEl = dom.getRow(r);
         if (!trEl) return undefined;
 
         return {
@@ -58,5 +43,20 @@ export function useSdSheetSelectRowIndicatorRenderer<T>(binding: {
     selectRowIndicatorContainerEl.style.display = "block";
   });
 
-  return {};
+  function handleTableResize() {
+    const selectRowIndicatorEls = dom.getSelectRowIndicators();
+    const tableEl = dom.getTable();
+
+    //-- row indicators
+    for (const selectRowIndicatorEl of selectRowIndicatorEls) {
+      Object.assign(selectRowIndicatorEl.style, {
+        width: tableEl.offsetWidth + "px",
+      });
+    }
+  }
+
+
+  return {
+    handleTableResize,
+  };
 }

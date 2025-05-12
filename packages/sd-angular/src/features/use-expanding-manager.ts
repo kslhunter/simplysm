@@ -45,7 +45,7 @@ export function useExpandingManager<T>(binding: {
     return result;
   });
 
-  const displayItems = computed(() => itemDefs().map(item => item.item));
+  const flattedItems = computed(() => itemDefs().map(item => item.item));
 
   const expandableItems = computed(() =>
     itemDefs().filter((itemDef) => itemDef.hasChildren).map((itemDef) => itemDef.item),
@@ -102,7 +102,7 @@ export function useExpandingManager<T>(binding: {
   }
 
   return {
-    displayItems,
+    displayItems: flattedItems,
     hasExpandable,
     isAllExpanded,
     toggle,
