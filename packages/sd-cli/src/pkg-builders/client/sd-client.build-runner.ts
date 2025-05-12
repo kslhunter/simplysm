@@ -104,7 +104,7 @@ export class SdClientBuildRunner extends BuildRunnerBase<"client"> {
       this._debug("ELECTRON BUILD...");
       await SdCliElectron.buildAsync({
         pkgPath: this._pkgPath,
-        config: this._pkgConf.builder.electron,
+        electronConfig: this._pkgConf.builder.electron,
       });
     }
 

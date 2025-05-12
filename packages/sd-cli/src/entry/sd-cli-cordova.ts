@@ -323,7 +323,7 @@ export class SdCliCordova {
     configXml.widget.preference = [{ $: { name: "MixedContentMode", value: "1" } }];
   }
 
-  private _configureAndroidXmlSettings(configXml: any): void {
+  private _configureAndroidXmlSettings(configXml: any) {
     configXml.widget.$["xmlns:android"] = "http://schemas.android.com/apk/res/android";
     configXml.widget.$["xmlns:tools"] = "http://schemas.android.com/tools";
 

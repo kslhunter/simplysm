@@ -4,66 +4,24 @@ import electronBuilder from "electron-builder";
 import { ISdClientBuilderElectronConfig } from "../types/config.types";
 import { INpmConfig } from "../types/common-configs.types";
 import { loadProjConfAsync } from "./utils/loadProjConfAsync";
+import os from "os";
+import fs from "node:fs";
 
 export class SdCliElectron {
+  private static _logger = SdLogger.get(["simplysm", "sd-cli", "SdCliElectron"]);
+
   static async runAsync(opt: {
     package: string
     config: string;
     options?: string[];
   }) {
-    const logger = SdLogger.get(["simplysm", "sd-cli", "SdCliElectron", "runAsync"]);
+    this._logger.log("설정 가져오기...");
+    const { pkgPath, electronPath, electronConfig } = await this._loadDevConfig(opt);
 
-    const pkgPath = path.resolve(process.cwd(), `packages/${opt.package}`);
-    const electronPath = path.resolve(pkgPath, "dist/electron");
+    this._logger.log("준비...");
+    await this._prepareAsync({ pkgPath, electronPath, electronConfig });
 
-    logger.log("설정 가져오기...");
-    const projConf = await loadProjConfAsync(process.cwd(), true, opt);
-    const pkgConf = projConf.packages[opt.package];
-    if (pkgConf?.type !== "client" || pkgConf.builder?.electron === undefined) {
-      throw new Error();
-    }
-
-    logger.log("package.json 파일 쓰기...");
-    const npmConfig = FsUtils.readJson(path.resolve(pkgPath, `package.json`)) as INpmConfig;
-
-    const reinstallPkgNames = pkgConf.builder.electron.reinstallDependencies ?? [];
-
-    FsUtils.writeJson(path.resolve(electronPath, `package.json`), {
-      name: npmConfig.name.replace(/^@/, "").replace(/\//, "-"),
-      version: npmConfig.version,
-      description: npmConfig.description,
-      main: "electron-main.js",
-      ...(pkgConf.builder.electron.postInstallScript !== undefined
-        ? {
-          scripts: {
-            postinstall: pkgConf.builder.electron.postInstallScript,
-          },
-        }
-        : {}),
-      dependencies: reinstallPkgNames.toObject(
-        (item) => item,
-        (item) => npmConfig.dependencies![item],
-      ),
-    });
-
-    logger.log("npm install...");
-    await SdProcess.spawnAsync(`npm install`, { cwd: electronPath }, true);
-
-    logger.log(`electron rebuild`);
-    await SdProcess.spawnAsync(`npx electron-rebuild`, { cwd: electronPath }, true);
-
-    /*for (const reinstallPkgName of reinstallPkgNames) {
-      if (FsUtil.exists(path.resolve(electronPath, "node_modules", reinstallPkgName, "binding.gyp"))) {
-        logger.log(`electron rebuild (${reinstallPkgName})...`);
-        await SdProcess.spawnAsync(
-          `electron-rebuild -m ./node_modules/${reinstallPkgName}`,
-          { cwd: electronPath },
-          true,
-        );
-      }
-    }*/
-
-    logger.log("electron...");
+    this._logger.log("실행...");
     await SdProcess.spawnAsync(`npx electron .`, { cwd: electronPath }, true);
   }
 
@@ -72,123 +30,74 @@ export class SdCliElectron {
     config: string;
     options?: string[];
   }) {
-    const logger = SdLogger.get(["simplysm", "sd-cli", "SdCliElectron", "buildForDevAsync"]);
+    this._logger.log("설정 가져오기...");
+    const { pkgPath, electronPath, electronConfig } = await this._loadDevConfig(opt);
 
-    const pkgPath = path.resolve(process.cwd(), `packages/${opt.package}`);
-    const electronPath = path.resolve(pkgPath, "dist/electron");
+    this._logger.log("준비...");
+    const { npmConfig } = await this._prepareAsync({ pkgPath, electronPath, electronConfig });
+
+    this._logger.log("빌드...");
     const electronDistPath = path.resolve(pkgPath, ".electron/dist");
+    await this._buildAsync({ pkgPath, electronPath, electronDistPath, npmConfig, electronConfig });
+  }
 
-    logger.log("설정 가져오기...");
+  static async buildAsync(opt: {
+    pkgPath: string;
+    electronConfig: ISdClientBuilderElectronConfig
+  }) {
+    this._logger.log("준비...");
+    const electronPath = path.resolve(opt.pkgPath, ".electron/src");
+    const { npmConfig } = await this._prepareAsync({ ...opt, electronPath });
+
+    this._logger.log("빌드...");
+    const electronDistPath = path.resolve(opt.pkgPath, ".electron/dist");
+    await this._buildAsync({
+      pkgPath: opt.pkgPath,
+      electronPath,
+      electronDistPath,
+      npmConfig,
+      electronConfig: opt.electronConfig,
+    });
+  }
+
+  private static async _loadDevConfig(opt: {
+    package: string
+    config: string;
+    options?: string[];
+  }) {
     const projConf = await loadProjConfAsync(process.cwd(), true, opt);
     const pkgConf = projConf.packages[opt.package];
     if (pkgConf?.type !== "client" || pkgConf.builder?.electron === undefined) {
       throw new Error();
     }
+    const pkgPath = path.resolve(process.cwd(), `packages/${opt.package}`);
+    const electronPath = path.resolve(pkgPath, "dist/electron");
 
-    logger.log("package.json 파일 쓰기...");
-    const npmConfig = FsUtils.readJson(path.resolve(pkgPath, `package.json`)) as INpmConfig;
-
-    const reinstallPkgNames = pkgConf.builder.electron.reinstallDependencies ?? [];
-
-    FsUtils.writeJson(path.resolve(electronPath, `package.json`), {
-      name: npmConfig.name.replace(/^@/, "").replace(/\//, "-"),
-      version: npmConfig.version,
-      description: npmConfig.description,
-      main: "electron-main.js",
-      ...(pkgConf.builder.electron.postInstallScript !== undefined
-        ? {
-          scripts: {
-            postinstall: pkgConf.builder.electron.postInstallScript,
-          },
-        }
-        : {}),
-      dependencies: reinstallPkgNames.toObject(
-        (item) => item,
-        (item) => npmConfig.dependencies![item],
-      ),
-    });
-
-    logger.log("npm install...");
-    await SdProcess.spawnAsync(`npm install`, { cwd: electronPath }, true);
-
-    logger.log(`electron rebuild`);
-    await SdProcess.spawnAsync(`npx electron-rebuild`, { cwd: electronPath }, true);
-
-    /*for (const reinstallPkgName of reinstallPkgNames) {
-      if (FsUtils.exists(path.resolve(electronPath, "node_modules", reinstallPkgName, "binding.gyp"))) {
-        logger.log(`electron rebuild (${reinstallPkgName})...`);
-        await SdProcess.spawnAsync(
-          `electron-rebuild -m ./node_modules/${reinstallPkgName}`,
-          { cwd: electronPath },
-          true,
-        );
-      }
-    }*/
-
-    logger.log("build...");
-
-    await electronBuilder.build({
-      targets: electronBuilder.Platform.WINDOWS.createTarget(),
-      config: {
-        appId: pkgConf.builder.electron.appId,
-        productName: npmConfig.description,
-        asar: false,
-        win: {
-          target: pkgConf.builder.electron.portable ? "portable" : "nsis",
-        },
-        nsis: {},
-        directories: {
-          app: electronPath,
-          output: electronDistPath,
-        },
-        ...(pkgConf.builder.electron.installerIcon !== undefined
-          ? {
-            icon: path.resolve(pkgPath, pkgConf.builder.electron.installerIcon),
-          }
-          : {}),
-        removePackageScripts: false,
-      },
-    });
-
-    FsUtils.copy(
-      path.resolve(
-        electronDistPath,
-        `${npmConfig.description} ${pkgConf.builder.electron.portable
-          ? ""
-          : "Setup "}${npmConfig.version}.exe`,
-      ),
-      path.resolve(
-        pkgPath,
-        `dist/electron/${npmConfig.description}${pkgConf.builder.electron.portable
-          ? "-portable"
-          : ""}-dev.exe`,
-      ),
-    );
+    return {
+      pkgPath,
+      electronPath,
+      electronConfig: pkgConf.builder.electron,
+    };
   }
 
-  static async buildAsync(opt: {
+  private static async _prepareAsync(opt: {
     pkgPath: string;
-    config: ISdClientBuilderElectronConfig
+    electronPath: string;
+    electronConfig: ISdClientBuilderElectronConfig;
   }) {
-    const logger = SdLogger.get(["simplysm", "sd-cli", "SdCliElectron", "buildAsync"]);
-
-    const electronSrcPath = path.resolve(opt.pkgPath, ".electron/src");
-    const electronDistPath = path.resolve(opt.pkgPath, ".electron/dist");
-
-    logger.log("package.json 파일 쓰기...");
     const npmConfig = FsUtils.readJson(path.resolve(opt.pkgPath, `package.json`)) as INpmConfig;
 
-    const reinstallPkgNames = opt.config.reinstallDependencies ?? [];
+    const reinstallPkgNames = opt.electronConfig.reinstallDependencies ?? [];
 
-    FsUtils.writeJson(path.resolve(electronSrcPath, `package.json`), {
+    FsUtils.writeJson(path.resolve(opt.electronPath, `package.json`), {
       name: npmConfig.name.replace(/^@/, "").replace(/\//, "-"),
       version: npmConfig.version,
       description: npmConfig.description,
       main: "electron-main.js",
-      ...(opt.config.postInstallScript !== undefined
+      ...(opt.electronConfig.postInstallScript !== undefined
         ? {
           scripts: {
-            postinstall: opt.config.postInstallScript,
+            postinstall: opt.electronConfig.postInstallScript,
           },
         }
         : {}),
@@ -198,60 +107,59 @@ export class SdCliElectron {
       ),
     });
 
-    logger.log("npm install...");
-    await SdProcess.spawnAsync(`npm install`, { cwd: electronSrcPath }, true);
+    await SdProcess.spawnAsync(`npm install`, { cwd: opt.electronPath }, true);
 
-    logger.log(`electron rebuild`);
-    await SdProcess.spawnAsync(`npx electron-rebuild`, { cwd: electronSrcPath }, true);
+    await SdProcess.spawnAsync(`npx electron-rebuild`, { cwd: opt.electronPath }, true);
 
-    /*for (const reinstallPkgName of reinstallPkgNames) {
-      if (FsUtils.exists(path.resolve(
-        electronSrcPath,
-        "node_modules",
-        reinstallPkgName,
-        "binding.gyp",
-      ))) {
-        logger.log(`electron rebuild (${reinstallPkgName})...`);
-        await SdProcess.spawnAsync(
-          `electron-rebuild -m ./node_modules/${reinstallPkgName}`,
-          { cwd: electronSrcPath },
-          true,
-        );
-      }
-    }*/
+    return { npmConfig };
+  }
 
-    logger.log("build...");
+  private static async _buildAsync(opt: {
+    pkgPath: string;
+    electronPath: string;
+    electronDistPath: string;
+    npmConfig: INpmConfig;
+    electronConfig: ISdClientBuilderElectronConfig
+  }) {
+    if (!this._canCreateSymlink()) {
+      throw new Error("'Electron 빌드'를 위해서는 'Symlink 생성' 권한이 필요합니다. 윈도우의 개발자모드를 활성화하세요.");
+    }
+
     await electronBuilder.build({
       targets: electronBuilder.Platform.WINDOWS.createTarget(),
       config: {
-        appId: opt.config.appId,
-        productName: npmConfig.description,
+        appId: opt.electronConfig.appId,
+        productName: opt.npmConfig.description,
         asar: false,
         win: {
-          target: opt.config.portable ? "portable" : "nsis",
+          target: opt.electronConfig.portable ? "portable" : "nsis",
         },
         nsis: {},
         directories: {
-          app: electronSrcPath,
-          output: electronDistPath,
+          app: opt.electronPath,
+          output: opt.electronDistPath,
         },
-        ...(opt.config.installerIcon !== undefined
+        ...(opt.electronConfig.installerIcon !== undefined
           ? {
-            icon: path.resolve(opt.pkgPath, opt.config.installerIcon),
+            icon: path.resolve(opt.pkgPath, opt.electronConfig.installerIcon),
           }
           : {}),
         removePackageScripts: false,
+        npmRebuild: false,
+        forceCodeSigning: false,
       },
     });
 
     FsUtils.copy(
       path.resolve(
-        electronDistPath,
-        `${npmConfig.description} ${opt.config.portable ? "" : "Setup "}${npmConfig.version}.exe`,
+        opt.electronDistPath,
+        `${opt.npmConfig.description} ${opt.electronConfig.portable
+          ? ""
+          : "Setup "}${opt.npmConfig.version}.exe`,
       ),
       path.resolve(
         opt.pkgPath,
-        `dist/electron/${npmConfig.description}${opt.config.portable
+        `dist/electron/${opt.npmConfig.description}${opt.electronConfig.portable
           ? "-portable"
           : ""}-latest.exe`,
       ),
@@ -259,10 +167,38 @@ export class SdCliElectron {
 
     FsUtils.copy(
       path.resolve(
-        electronDistPath,
-        `${npmConfig.description} ${opt.config.portable ? "" : "Setup "}${npmConfig.version}.exe`,
+        opt.electronDistPath,
+        `${opt.npmConfig.description} ${opt.electronConfig.portable
+          ? ""
+          : "Setup "}${opt.npmConfig.version}.exe`,
       ),
-      path.resolve(opt.pkgPath, `dist/electron/updates/${npmConfig.version}.exe`),
+      path.resolve(opt.pkgPath, `dist/electron/updates/${opt.npmConfig.version}.exe`),
     );
+  }
+
+  private static _canCreateSymlink() {
+    const tmpDir = os.tmpdir();
+    const testTarget = path.join(tmpDir, "symlink-test-target.txt");
+    const testLink = path.join(tmpDir, "symlink-test-link.txt");
+
+    try {
+      // 대상 파일 생성
+      fs.writeFileSync(testTarget, "test");
+
+      // symlink 시도
+      fs.symlinkSync(testTarget, testLink, "file");
+
+      // symlink 성공 여부 확인
+      const isSymlink = fs.lstatSync(testLink).isSymbolicLink();
+
+      // 정리
+      fs.unlinkSync(testLink);
+      fs.unlinkSync(testTarget);
+
+      return isSymlink;
+    }
+    catch {
+      return false;
+    }
   }
 }
