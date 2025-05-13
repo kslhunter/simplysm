@@ -2,8 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   contentChild,
-  input,
-  model,
+  input, output,
   TemplateRef,
   Type,
   ViewEncapsulation,
@@ -23,6 +22,7 @@ import {
   ISharedDataModalInputParam,
   ISharedDataModalOutputResult,
 } from "./sd-shared-data-select.control";
+import { $model } from "../../utils/hooks/$model";
 
 @Component({
   selector: "sd-shared-data-select-modal-button",
@@ -75,8 +75,9 @@ export class SdSharedDataSelectModalButtonControl<
   size = input<"sm" | "lg">();
 
   selectMode = input("single" as M);
-  value = model<TSelectValue<number>[M]>();
-
+  __value = input<TSelectValue<number>[M]>(undefined, { alias: "value" });
+  __valueChange = output<TSelectValue<number>[M]>({ alias: "valueChange" });
+  value = $model(this.__value, this.__valueChange);
   items = input<T[]>([]);
   selectedItems = $signal<T[]>([]);
 

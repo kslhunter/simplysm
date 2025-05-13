@@ -12,7 +12,7 @@ import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider
 import { transformBoolean } from "../utils/type-tramsforms";
 import { useRipple } from "../utils/use-ripple";
 import { SdIconControl } from "./sd-icon.control";
-import { $model } from "../utils/hooks/hooks";
+import { $model } from "../utils/hooks/$model";
 
 @Component({
   selector: "sd-checkbox",

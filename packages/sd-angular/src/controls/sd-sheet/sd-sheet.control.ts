@@ -6,7 +6,6 @@ import {
   HostListener,
   inject,
   input,
-  model,
   output,
   signal,
   ViewEncapsulation,
@@ -45,6 +44,7 @@ import {
   ISdSheetItemKeydownEventParam,
 } from "./sd-sheet.types";
 import { SdEventsDirective } from "../../directives/sd-events.directive";
+import { $model } from "../../utils/hooks/$model";
 
 @Component({
   selector: "sd-sheet",
@@ -781,7 +781,9 @@ export class SdSheetControl<T> {
 
   //region Sorting
 
-  sorts = model<ISortingDef[]>([]);
+  __sorts = input<ISortingDef[]>([], { alias: "sorts" });
+  __sortsChange = output<ISortingDef[]>({ alias: "sortsChange" });
+  sorts = $model(this.__sorts, this.__sortsChange);
   sortingManager = useSortingManager(this.sorts);
 
   useAutoSort = input(false, { transform: transformBoolean });
@@ -815,7 +817,9 @@ export class SdSheetControl<T> {
   visiblePageCount = input(10);
   totalPageCount = input(0);
   itemsPerPage = input<number>();
-  currentPage = model<number>(0);
+  __currentPage = input<number>(0, { alias: "currentPage" });
+  __currentPageChange = output<number>({ alias: "currentPageChange" });
+  currentPage = $model(this.__currentPage, this.__currentPageChange);
 
   effectivePageCount = computed(() => {
     const itemsPerPage = this.itemsPerPage();
@@ -841,7 +845,9 @@ export class SdSheetControl<T> {
 
   //region Expanding
 
-  expandedItems = model<T[]>([]);
+  __expandedItems = input<T[]>([], { alias: "expandedItems" });
+  __expandedItemsChange = output<T[]>({ alias: "expandedItemsChange" });
+  expandedItems = $model(this.__expandedItems, this.__expandedItemsChange);
   getChildrenFn = input<(item: T, index: number) => T[] | undefined>();
 
   expandingManager = useExpandingManager({
@@ -860,7 +866,9 @@ export class SdSheetControl<T> {
   //region Selecting
 
   selectMode = input<"single" | "multi">();
-  selectedItems = model<T[]>([]);
+  __selectedItems = input<T[]>([], { alias: "selectedItems" });
+  __selectedItemsChange = output<T[]>({ alias: "selectedItemsChange" });
+  selectedItems = $model(this.__selectedItems, this.__selectedItemsChange);
   autoSelect = input<"click" | "focus">();
   getIsItemSelectableFn = input<(item: T) => boolean | string>();
 

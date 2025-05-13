@@ -13,9 +13,10 @@ import { NgTemplateOutlet } from "@angular/common";
 import { SdCollapseIconControl } from "../controls/sd-collapse-icon.control";
 import { SdCheckboxControl } from "../controls/sd-checkbox.control";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
-import { $computed, $model, $signal } from "../utils/hooks/hooks";
+import { $computed, $signal } from "../utils/hooks/hooks";
 import { transformBoolean } from "../utils/type-tramsforms";
 import { ObjectUtils } from "@simplysm/sd-core-common";
+import { $model } from "../utils/hooks/$model";
 
 /**
  * 권한 테이블 컴포넌트

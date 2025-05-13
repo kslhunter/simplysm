@@ -8,9 +8,10 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import { StringUtils } from "@simplysm/sd-core-common";
-import { $computed, $effect, $model } from "../utils/hooks/hooks";
+import { $computed, $effect, } from "../utils/hooks/hooks";
 import { transformBoolean } from "../utils/type-tramsforms";
 import { SdInvalidDirective } from "../directives/sd-invalid.directive";
+import { $model } from "../utils/hooks/$model";
 
 @Component({
   selector: "sd-content-editor",

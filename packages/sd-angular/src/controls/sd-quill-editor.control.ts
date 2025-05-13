@@ -7,9 +7,10 @@ import {
 } from "@angular/core";
 import Quill from "quill";
 import QuillResizeImage from "quill-resize-image";
-import { $effect, $model } from "../utils/hooks/hooks";
+import { $effect } from "../utils/hooks/hooks";
 import { injectElementRef } from "../utils/dom/element-ref.injector";
 import { transformBoolean } from "../utils/type-tramsforms";
+import { $model } from "../utils/hooks/$model";
 
 Quill.register("modules/resize", QuillResizeImage);
 

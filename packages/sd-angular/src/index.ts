@@ -127,6 +127,7 @@ export * from "./providers/sd-theme.provider";
 export * from "./providers/sd-toast.provider";
 export * from "./utils/dom/element-ref.injector";
 export * from "./utils/dom/size-signals.injector";
+export * from "./utils/hooks/$model";
 export * from "./utils/hooks/canDeactivate";
 export * from "./utils/hooks/hooks";
 export * from "./utils/route/activate-page-code.signal-injector";

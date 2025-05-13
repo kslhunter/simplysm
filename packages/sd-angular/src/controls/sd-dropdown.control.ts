@@ -10,9 +10,10 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import { SdDropdownPopupControl } from "./sd-dropdown-popup.control";
-import { $effect, $model } from "../utils/hooks/hooks";
+import { $effect } from "../utils/hooks/hooks";
 import { injectElementRef } from "../utils/dom/element-ref.injector";
 import { transformBoolean } from "../utils/type-tramsforms";
+import { $model } from "../utils/hooks/$model";
 
 @Component({
   selector: "sd-dropdown",

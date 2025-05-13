@@ -12,8 +12,9 @@ import { SdToastProvider } from "../providers/sd-toast.provider";
 import { SdGapControl } from "./sd-gap.control";
 import { SdAnchorControl } from "./sd-anchor.control";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
-import { $effect, $model, $signal } from "../utils/hooks/hooks";
+import { $effect, $signal } from "../utils/hooks/hooks";
 import { SdIconControl } from "./sd-icon.control";
+import { $model } from "../utils/hooks/$model";
 
 @Component({
   selector: "sd-state-preset",

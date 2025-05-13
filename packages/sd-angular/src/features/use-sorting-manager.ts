@@ -1,7 +1,7 @@
-import { ModelSignal } from "@angular/core";
+import { WritableSignal } from "@angular/core";
 import { ObjectUtils } from "@simplysm/sd-core-common";
 
-export function useSortingManager(defs: ModelSignal<ISortingDef[]>) {
+export function useSortingManager(defs: WritableSignal<ISortingDef[]>) {
   function getIndexText(key: string) {
     if (defs().length < 2) {
       return undefined;

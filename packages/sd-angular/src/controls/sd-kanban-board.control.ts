@@ -6,9 +6,10 @@ import {
   output,
   ViewEncapsulation,
 } from "@angular/core";
-import { $model, $signal } from "../utils/hooks/hooks";
+import { $signal } from "../utils/hooks/hooks";
 import { SdKanbanControl } from "./sd-kanban.control";
 import { SdKanbanLaneControl } from "./sd-kanban-lane.control";
+import { $model } from "../utils/hooks/$model";
 
 @Component({
   selector: "sd-kanban-board",

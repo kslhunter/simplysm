@@ -14,11 +14,12 @@ import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { SdCollapseIconControl } from "./sd-collapse-icon.control";
 import { SdCollapseControl } from "./sd-collapse.control";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
-import { $computed, $model } from "../utils/hooks/hooks";
+import { $computed } from "../utils/hooks/hooks";
 import { SdRippleDirective } from "../directives/sd-ripple.directive";
 import { transformBoolean } from "../utils/type-tramsforms";
 import { NgTemplateOutlet } from "@angular/common";
 import { SdIconControl } from "./sd-icon.control";
+import { $model } from "../utils/hooks/$model";
 
 @Component({
   selector: "sd-list-item",

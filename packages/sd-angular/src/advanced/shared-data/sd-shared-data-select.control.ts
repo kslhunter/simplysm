@@ -21,9 +21,10 @@ import { SdSelectItemControl } from "../../controls/sd-select-item.control";
 import { NgTemplateOutlet } from "@angular/common";
 import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
 import { SdSelectButtonControl } from "../../controls/sd-select-button.control";
-import { $computed, $model, $signal } from "../../utils/hooks/hooks";
+import { $computed, $signal } from "../../utils/hooks/hooks";
 import { transformBoolean } from "../../utils/type-tramsforms";
 import { SdIconControl } from "../../controls/sd-icon.control";
+import { $model } from "../../utils/hooks/$model";
 
 // TODO: sd-select-modal-button을 사용하는식으로 바꿀 수 있나? 검토 필요
 @Component({

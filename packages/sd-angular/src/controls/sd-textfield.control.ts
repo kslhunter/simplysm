@@ -14,9 +14,10 @@ import {
   StringUtils,
   Time,
 } from "@simplysm/sd-core-common";
-import { $computed, $model } from "../utils/hooks/hooks";
+import { $computed } from "../utils/hooks/hooks";
 import { injectElementRef } from "../utils/dom/element-ref.injector";
 import { transformBoolean } from "../utils/type-tramsforms";
+import { $model } from "../utils/hooks/$model";
 
 @Component({
   selector: "sd-textfield",

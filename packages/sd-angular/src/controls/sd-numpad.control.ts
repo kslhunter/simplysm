@@ -3,7 +3,6 @@ import {
   Component,
   inject,
   input,
-  model,
   output,
   ViewEncapsulation,
 } from "@angular/core";
@@ -14,6 +13,7 @@ import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider
 import { SdIconControl } from "./sd-icon.control";
 import { NumberUtils, StringUtils } from "@simplysm/sd-core-common";
 import { transformBoolean } from "../utils/type-tramsforms";
+import { $model } from "../utils/hooks/$model";
 
 @Component({
   selector: "sd-numpad",
@@ -134,7 +134,9 @@ export class SdNumpadControl {
   text = $signal<string>();
 
   placeholder = input<string>();
-  value = model<number>();
+  __value = input<number>(undefined, { alias: "value" });
+  __valueChange = output<number>({ alias: "valueChange" });
+  value = $model(this.__value, this.__valueChange);
   required = input(false, { transform: transformBoolean });
   inputDisabled = input(false, { transform: transformBoolean });
   useEnterButton = input(false, { transform: transformBoolean });

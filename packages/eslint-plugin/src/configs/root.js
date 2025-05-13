@@ -142,8 +142,8 @@ export default [
           "leadingUnderscore": "forbid",
           "filter": {
             "regex": "^[A-Z0-9_]+$",
-            "match": true
-          }
+            "match": true,
+          },
         },
 
         // (2) private 필드
@@ -151,7 +151,7 @@ export default [
           "selector": "classProperty",
           "modifiers": ["private"],
           "format": ["camelCase"],
-          "leadingUnderscore": "require"
+          "leadingUnderscore": "require",
         },
         // private 메서드
         {
@@ -165,7 +165,7 @@ export default [
           "selector": "classProperty",
           "modifiers": ["protected", "readonly"],
           "format": null,
-          "leadingUnderscore": "allow"  // 언더스코어도 허용
+          "leadingUnderscore": "allow",  // 언더스코어도 허용
         },
 
         // (2) protected 필드
@@ -173,7 +173,7 @@ export default [
           "selector": "classProperty",
           "modifiers": ["protected"],
           "format": ["camelCase"],
-          "leadingUnderscore": "require"
+          "leadingUnderscore": "require",
         },
         // protected 메서드
         {
@@ -188,9 +188,7 @@ export default [
       "@simplysm/ts-no-throw-not-implement-error": ["warn"],
 
 
-      // -- 아래 룰들은 매우 느림
-      // 라이브러리 작성시, 그때그때 필요할 때만 사용
-
+      // -- 아래 룰들은 매우 느리거나, 라이브러리에서만 필요한것
       // "import/no-extraneous-dependencies": [
       //   "error",
       //   {
@@ -218,6 +216,18 @@ export default [
       //   },
       // ],
       // "@simplysm/ts-no-buffer-in-typedarray-context": ["error"],
+      // '@typescript-eslint/no-restricted-imports': [
+      //   'error',
+      //   {
+      //     paths: [
+      //       {
+      //         name: '@angular/core',
+      //         importNames: ['model'],
+      //         message: '`model`은 사용할 수 없습니다. input/output/$model을 사용하세요.',
+      //       },
+      //     ],
+      //   },
+      // ],
     },
   },
   {

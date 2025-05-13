@@ -2,14 +2,14 @@ import {
   ChangeDetectionStrategy,
   Component,
   inject,
-  input,
-  model,
+  input, output,
   ViewEncapsulation,
 } from "@angular/core";
 import { SdAnchorControl } from "./sd-anchor.control";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { $computed } from "../utils/hooks/hooks";
 import { SdIconControl } from "./sd-icon.control";
+import { $model } from "../utils/hooks/$model";
 
 @Component({
   selector: "sd-pagination",
@@ -62,7 +62,9 @@ import { SdIconControl } from "./sd-icon.control";
 export class SdPaginationControl {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
 
-  currentPage = model<number>(0);
+  __currentPage = input<number>(0, { alias: "currentPage" });
+  __currentPageChange = output<number>({ alias: "currentPageChange" });
+  currentPage = $model(this.__currentPage, this.__currentPageChange);
 
   totalPageCount = input(0);
   visiblePageCount = input(10);

@@ -9,7 +9,7 @@ import {
 } from "@angular/core";
 import { SD_MODAL_INPUT, SdModalBase, SdModalProvider } from "../providers/sd-modal.provider";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
-import { $computed, $model } from "../utils/hooks/hooks";
+import { $computed } from "../utils/hooks/hooks";
 import { transformBoolean } from "../utils/type-tramsforms";
 import { TSelectValue } from "../controls/sd-select-control";
 import { SdAdditionalButtonControl } from "../controls/sd-additional-button.control";
@@ -17,6 +17,7 @@ import { SdIconControl } from "../controls/sd-icon.control";
 import { SdButtonControl } from "../controls/sd-button.control";
 import { SdAnchorControl } from "../controls/sd-anchor.control";
 import { SdInvalidDirective } from "../directives/sd-invalid.directive";
+import { $model } from "../utils/hooks/$model";
 
 @Component({
   selector: "sd-select-modal-button",

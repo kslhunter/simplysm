@@ -5,7 +5,7 @@ import {
   output,
   ViewEncapsulation,
 } from "@angular/core";
-import { $model } from "../utils/hooks/hooks";
+import { $model } from "../utils/hooks/$model";
 
 @Component({
   selector: "sd-tab",

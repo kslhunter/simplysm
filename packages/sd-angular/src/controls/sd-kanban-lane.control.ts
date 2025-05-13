@@ -14,7 +14,7 @@ import {
 import { SdBusyContainerControl } from "./sd-busy-container.control";
 import { SdKanbanControl } from "./sd-kanban.control";
 import { SdCheckboxControl } from "./sd-checkbox.control";
-import { $computed, $model, $signal } from "../utils/hooks/hooks";
+import { $computed, $signal } from "../utils/hooks/hooks";
 import { SdKanbanBoardControl } from "./sd-kanban-board.control";
 import { NgTemplateOutlet } from "@angular/common";
 import { SdDockContainerControl } from "./sd-dock-container.control";
@@ -24,6 +24,7 @@ import { SdAnchorControl } from "./sd-anchor.control";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { transformBoolean } from "../utils/type-tramsforms";
 import { SdIconControl } from "./sd-icon.control";
+import { $model } from "../utils/hooks/$model";
 
 @Component({
   selector: "sd-kanban-lane",

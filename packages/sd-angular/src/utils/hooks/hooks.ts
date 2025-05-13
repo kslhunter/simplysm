@@ -4,9 +4,6 @@ import {
   effect,
   EffectCleanupRegisterFn,
   EffectRef,
-  InputSignal,
-  InputSignalWithTransform,
-  OutputEmitterRef,
   Signal,
   signal,
   untracked,
@@ -158,39 +155,6 @@ export type TEffFn<FN extends Function> = FN & {
 export function effFn<FN extends Function>(signals: Signal<any>[], fn: FN): TEffFn<FN> {
   fn["signals"] = signals;
   return fn as TEffFn<FN>;
-}
-
-export function $model<T>(
-  input: InputSignal<T> | InputSignalWithTransform<T, any>,
-  output: OutputEmitterRef<T>,
-): SdWritableSignal<T> {
-  const sig = $signal<T>(input[SIGNAL]["value"]);
-  const orgSet = sig.set;
-
-  $effect(() => {
-    orgSet(input());
-  });
-
-  sig.set = (v: T) => {
-    if (output["listeners"]?.[0] != null) {
-      output.emit(v);
-    }
-    else {
-      orgSet(v);
-    }
-  };
-
-  sig.update = (fn: (v: T) => T) => {
-    const v = fn(sig[SIGNAL]!["value"]);
-    if (output["listeners"]?.[0] != null) {
-      output.emit(v);
-    }
-    else {
-      orgSet(v);
-    }
-  };
-
-  return sig;
 }
 
 export function $mark(sig: WritableSignal<any>) {

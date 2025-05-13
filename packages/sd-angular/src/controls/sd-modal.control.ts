@@ -18,11 +18,12 @@ import { SdEventsDirective } from "../directives/sd-events.directive";
 import { SdDockContainerControl } from "./sd-dock-container.control";
 import { SdDockControl } from "./sd-dock.control";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
-import { $effect, $model, $signal } from "../utils/hooks/hooks";
+import { $effect, $signal } from "../utils/hooks/hooks";
 import { injectElementRef } from "../utils/dom/element-ref.injector";
 import { transformBoolean } from "../utils/type-tramsforms";
 import { SdIconControl } from "./sd-icon.control";
 import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
+import { $model } from "../utils/hooks/$model";
 
 @Component({
   selector: "sd-modal",

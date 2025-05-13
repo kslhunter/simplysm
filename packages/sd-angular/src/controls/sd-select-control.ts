@@ -26,10 +26,11 @@ import { SdTypedTemplateDirective } from "../directives/sd-typed.template-direct
 import { SdDropdownPopupControl } from "./sd-dropdown-popup.control";
 import { StringUtils } from "@simplysm/sd-core-common";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
-import { $afterRenderEffect, $computed, $model, $signal } from "../utils/hooks/hooks";
+import { $afterRenderEffect, $computed, $signal } from "../utils/hooks/hooks";
 import { transformBoolean } from "../utils/type-tramsforms";
 import { SdRippleDirective } from "../directives/sd-ripple.directive";
 import { SdIconControl } from "./sd-icon.control";
+import { $model } from "../utils/hooks/$model";
 
 @Component({
   selector: "sd-select",

@@ -1,8 +1,9 @@
 import { ChangeDetectionStrategy, Component, input, output, ViewEncapsulation } from "@angular/core";
 import { StringUtils } from "@simplysm/sd-core-common";
-import { $computed, $model } from "../utils/hooks/hooks";
+import { $computed } from "../utils/hooks/hooks";
 import { injectElementRef } from "../utils/dom/element-ref.injector";
 import { transformBoolean } from "../utils/type-tramsforms";
+import { $model } from "../utils/hooks/$model";
 
 @Component({
   selector: "sd-textarea",

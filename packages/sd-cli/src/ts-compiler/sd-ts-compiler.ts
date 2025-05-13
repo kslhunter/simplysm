@@ -25,7 +25,6 @@ import {
 } from "@angular/build/src/tools/esbuild/angular/component-stylesheets";
 import { transformSupportedBrowsersToTargets } from "@angular/build/src/tools/esbuild/utils";
 import browserslist from "browserslist";
-import { createModelRewriteTransformer } from "./create-model-rewrite.transformer";
 
 export class SdTsCompiler {
   private _logger = SdLogger.get(["simplysm", "sd-cli", "SdTsCompiler"]);
@@ -137,11 +136,9 @@ export class SdTsCompiler {
         ...args,
       );
 
-      if (sf) {
-        this._sourceFileCacheMap.set(fileNPath, sf);
-      }
-      else {
+      if (!sf) {
         this._sourceFileCacheMap.delete(fileNPath);
+        return undefined;
       }
 
       return sf;
@@ -523,10 +520,17 @@ ${affectedFileTree.map(item => getTreeText(item)).join("\n")}`.trim());
       let transformers: ts.CustomTransformers = {};
 
       if (this._ngProgram) {
-        transformers = {
-          ...transformers,
-          ...this._ngProgram.compiler.prepareEmit().transformers,
-        };
+        const angularTransfomers = this._ngProgram.compiler.prepareEmit().transformers;
+        (transformers.before ??= []).push(
+          ...(angularTransfomers.before ?? []),
+        );
+        (transformers.after ??= []).push(
+          ...(angularTransfomers.after ?? []),
+        );
+        (transformers.afterDeclarations ??= []).push(
+          ...(angularTransfomers.afterDeclarations ?? []),
+        );
+
         (transformers.before ??= []).push(replaceBootstrap(() => this._program!.getTypeChecker()));
         (transformers.before ??= []).push(
           createWorkerTransformer((file, importer) => {
@@ -535,7 +539,6 @@ ${affectedFileTree.map(item => getTreeText(item)).join("\n")}`.trim());
             return relPath.replace(/\.ts$/, "").replaceAll("\\", "/") + ".js";
           }),
         );
-        (transformers.before ??= []).push(createModelRewriteTransformer());
       }
 
       this._debug(`파일 출력 중...`);

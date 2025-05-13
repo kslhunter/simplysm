@@ -32,10 +32,11 @@ import {
   ISharedDataModalInputParam,
   ISharedDataModalOutputResult,
 } from "./sd-shared-data-select.control";
-import { $computed, $effect, $model, $signal } from "../../utils/hooks/hooks";
+import { $computed, $effect, $signal } from "../../utils/hooks/hooks";
 import { transformBoolean } from "../../utils/type-tramsforms";
 import { SdIconControl } from "../../controls/sd-icon.control";
 import { SdPaginationControl } from "../../controls/sd-pagination.control";
+import { $model } from "../../utils/hooks/$model";
 
 @Component({
   selector: "sd-shared-data-select-view",

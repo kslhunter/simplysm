@@ -7,7 +7,7 @@ import {
 } from "@angular/core";
 import { SdTextfieldControl, TSdTextfieldTypes } from "./sd-textfield.control";
 import { transformBoolean } from "../utils/type-tramsforms";
-import { $model } from "../utils/hooks/hooks";
+import { $model } from "../utils/hooks/$model";
 
 @Component({
   selector: "sd-range",
