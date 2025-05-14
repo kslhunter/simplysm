@@ -23,15 +23,16 @@ export class SdExcelUtils {
     return result;
   }
 
-  static parseRowAddrCode(addr: string): number {
-    return NumberUtils.parseInt(/\d*$/.exec(addr)![0])! - 1;
+  static parseRowAddrCode(addrCode: string): number {
+    const rowAddrCode = /\d*$/.exec(addrCode)![0];
+    return NumberUtils.parseInt(rowAddrCode)! - 1;
   }
 
-  static parseColAddrCode(addr: string): number {
-    const currAddr = /^[a-zA-Z]*/.exec(addr)![0];
+  static parseColAddrCode(addrCode: string): number {
+    const colAddrCode = /^[a-zA-Z]*/.exec(addrCode)![0];
 
     let result = 0;
-    const revAddr = Array.from(currAddr).reverse().join("");
+    const revAddr = Array.from(colAddrCode).reverse().join("");
     for (let i = 0; i < revAddr.length; i++) {
       const col = revAddr.charCodeAt(i) - (i === 0 ? 65 : 64);
       result += col * 26 ** i;
@@ -41,7 +42,7 @@ export class SdExcelUtils {
 
   static parseCellAddrCode(addr: string): { r: number; c: number } {
     return {
-      r: NumberUtils.parseInt(/\d*$/.exec(addr)![0])! - 1,
+      r: SdExcelUtils.parseRowAddrCode(addr),
       c: SdExcelUtils.parseColAddrCode(addr),
     };
   }

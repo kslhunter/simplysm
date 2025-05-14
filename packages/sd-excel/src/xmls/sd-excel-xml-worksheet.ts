@@ -48,13 +48,20 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
   }
 
   get range(): ISdExcelAddressRangePoint {
+    let maxRow = 0;
+    let maxCol = 0;
+
+    for (const [rowIdx, info] of this._dataMap.entries()) {
+      if (rowIdx > maxRow) maxRow = rowIdx;
+
+      for (const col of info.cellMap.keys()) {
+        if (col > maxCol) maxCol = col;
+      }
+    }
+
     return {
       s: { r: 0, c: 0 },
-      e: {
-        r: Array.from(this._dataMap.keys()).max() ?? 0,
-        c: Array.from(this._dataMap.values())
-          .max(v => SdExcelUtils.parseColAddrCode(v.data.$.r)) ?? 0,
-      },
+      e: { r: maxRow, c: maxCol },
     };
   }
 
