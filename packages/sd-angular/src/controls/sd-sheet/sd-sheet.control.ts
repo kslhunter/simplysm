@@ -7,7 +7,6 @@ import {
   inject,
   input,
   output,
-  signal,
   ViewEncapsulation,
 } from "@angular/core";
 import { SdSheetColumnDirective } from "./directives/sd-sheet-column.directive";
@@ -45,6 +44,7 @@ import {
 } from "./sd-sheet.types";
 import { SdEventsDirective } from "../../directives/sd-events.directive";
 import { $model } from "../../utils/hooks/$model";
+import { $signal } from "../../utils/hooks/hooks";
 
 @Component({
   selector: "sd-sheet",
@@ -692,7 +692,7 @@ export class SdSheetControl<T> {
 
   //region fixedColumnLefts
 
-  private _columnWidthRecord = signal<Record<number, number>>({});
+  private _columnWidthRecord = $signal<Record<number, number>>({});
 
   onHeaderLastRowCellResize(event: ISdResizeEvent, c: number) {
     const el = event.target as HTMLTableCellElement;

@@ -5,7 +5,6 @@ import { SdExcelRow } from "./sd-excel-row";
 import { SdExcelCell } from "./sd-excel-cell";
 import { SdExcelXmlWorkbook } from "./xmls/sd-excel-xml-workbook";
 import { SdExcelCol } from "./sd-excel-col";
-import { SdExcelUtils } from "./utils/sd-excel.utils";
 import { StringUtils } from "@simplysm/sd-core-common";
 
 export class SdExcelWorksheet {
@@ -44,13 +43,11 @@ export class SdExcelWorksheet {
   }
 
   async copyCellStyleAsync(
-    srcPoint: { r: number; c: number },
-    targetPoint: { r: number; c: number },
+    srcAddr: { r: number; c: number },
+    targetAddr: { r: number; c: number },
   ) {
     const wsData = await this._getWsDataAsync();
 
-    const srcAddr = SdExcelUtils.stringifyAddr(srcPoint);
-    const targetAddr = SdExcelUtils.stringifyAddr(targetPoint);
     const styleId = wsData.getCellStyleId(srcAddr);
     if (styleId != null) {
       wsData.setCellStyleId(targetAddr, styleId);
@@ -63,12 +60,10 @@ export class SdExcelWorksheet {
   }
 
   async copyCellAsync(
-    srcPoint: { r: number; c: number },
-    targetPoint: { r: number; c: number },
+    srcAddr: { r: number; c: number },
+    targetAddr: { r: number; c: number },
   ) {
     const wsData = await this._getWsDataAsync();
-    const srcAddr = SdExcelUtils.stringifyAddr(srcPoint);
-    const targetAddr = SdExcelUtils.stringifyAddr(targetPoint);
     wsData.copyCell(srcAddr, targetAddr);
   }
 

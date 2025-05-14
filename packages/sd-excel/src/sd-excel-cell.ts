@@ -42,8 +42,7 @@ export class SdExcelCell {
     },
   };
 
-  addr: string;
-  point: { r: number, c: number };
+  addr: { r: number, c: number };
 
   constructor(
     private _zipCache: ZipCache,
@@ -51,13 +50,12 @@ export class SdExcelCell {
     private _r: number,
     private _c: number,
   ) {
-    this.point = { r: this._r, c: this._c };
-    this.addr = SdExcelUtils.stringifyAddr(this.point);
+    this.addr = { r: this._r, c: this._c };
   }
 
   async setFormulaAsync(val: string | undefined) {
     if (val === undefined) {
-      await this._deleteAddrAsync(this.addr);
+      await this._deleteCellAsync(this.addr);
     }
     else {
       const wsData = await this._getWsDataAsync();
@@ -69,7 +67,7 @@ export class SdExcelCell {
 
   async setValAsync(val: TSdExcelValueType) {
     if (val === undefined) {
-      await this._deleteAddrAsync(this.addr);
+      await this._deleteCellAsync(this.addr);
     }
     else if (typeof val === "string") {
       const wsData = await this._getWsDataAsync();
@@ -209,7 +207,7 @@ export class SdExcelCell {
 
   async mergeAsync(r: number, c: number) {
     const wsData = await this._getWsDataAsync();
-    wsData.setMergeCells(this.addr, SdExcelUtils.stringifyAddr({ r, c }));
+    wsData.setMergeCells(this.addr, { r, c });
   }
 
   async getStyleIdAsync() {
@@ -222,7 +220,7 @@ export class SdExcelCell {
     wsData.setCellStyleId(this.addr, styleId);
   }
 
-  private async _deleteAddrAsync(addr: string) {
+  private async _deleteCellAsync(addr: { r: number, c: number }) {
     const wsData = await this._getWsDataAsync();
     wsData.deleteCell(addr);
 

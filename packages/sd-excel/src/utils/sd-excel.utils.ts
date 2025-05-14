@@ -3,9 +3,13 @@ import { TSdExcelNumberFormat } from "../types";
 
 export class SdExcelUtils {
   static stringifyAddr(point: { r: number; c: number }): string {
-    const rowStr = (point.r + 1).toString();
+    const rowStr = this.stringifyRowAddr(point.r);
     const colStr = this.stringifyColAddr(point.c);
     return `${colStr}${rowStr}`;
+  }
+
+  static stringifyRowAddr(r: number) {
+    return (r + 1).toString();
   }
 
   static stringifyColAddr(c: number): string {
@@ -19,16 +23,15 @@ export class SdExcelUtils {
     return result;
   }
 
-  static parseAddr(addr: string): { r: number; c: number } {
-    return {
-      r: NumberUtils.parseInt(/\d*$/.exec(addr)![0])! - 1,
-      c: SdExcelUtils.parseColAddr(/^[a-zA-Z]*/.exec(addr)![0]),
-    };
+  static parseRowAddrCode(addr: string): number {
+    return NumberUtils.parseInt(/\d*$/.exec(addr)![0])! - 1;
   }
 
-  static parseColAddr(addr: string): number {
+  static parseColAddrCode(addr: string): number {
+    const currAddr = /^[a-zA-Z]*/.exec(addr)![0];
+
     let result = 0;
-    const revAddr = Array.from(addr).reverse().join("");
+    const revAddr = Array.from(currAddr).reverse().join("");
     for (let i = 0; i < revAddr.length; i++) {
       const col = revAddr.charCodeAt(i) - (i === 0 ? 65 : 64);
       result += col * 26 ** i;
@@ -36,15 +39,22 @@ export class SdExcelUtils {
     return result;
   }
 
-  static parseRangeAddr(rangeAddr: string): {
+  static parseCellAddrCode(addr: string): { r: number; c: number } {
+    return {
+      r: NumberUtils.parseInt(/\d*$/.exec(addr)![0])! - 1,
+      c: SdExcelUtils.parseColAddrCode(addr),
+    };
+  }
+
+  static parseRangeAddrCode(rangeAddr: string): {
     s: { r: number; c: number };
     e: { r: number; c: number }
   } {
     const sAddr = rangeAddr.split(":")[0];
     const eAddr = rangeAddr.split(":")[1] ?? rangeAddr.split(":")[0];
     return {
-      s: SdExcelUtils.parseAddr(sAddr),
-      e: SdExcelUtils.parseAddr(eAddr),
+      s: SdExcelUtils.parseCellAddrCode(sAddr),
+      e: SdExcelUtils.parseCellAddrCode(eAddr),
     };
   }
 

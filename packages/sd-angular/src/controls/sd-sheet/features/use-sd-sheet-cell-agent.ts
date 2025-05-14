@@ -1,11 +1,10 @@
-import { signal } from "@angular/core";
 import { NumberUtils, ObjectUtils } from "@simplysm/sd-core-common";
 import { useSdSheetDomAccessor } from "./use-sd-sheet-dom-accessor";
-
+import { $signal } from "../../../utils/hooks/hooks";
 export function useSdSheetCellAgent() {
   const dom = useSdSheetDomAccessor();
 
-  const editModeCellAddr = signal<{ r: number; c: number } | undefined>(undefined);
+  const editModeCellAddr = $signal<{ r: number; c: number } | undefined>(undefined);
 
   function getIsCellEditMode(addr: { r: number, c: number }): boolean {
     return ObjectUtils.equal(editModeCellAddr(), addr);
