@@ -1,6 +1,6 @@
 export abstract class CordovaFileSystem {
   // 디렉토리 읽기
-  static async readdir(dirPath: string): Promise<{
+  static async readdirAsync(dirPath: string): Promise<{
     name: string;
     isDirectory: boolean;
   }[]> {
@@ -10,7 +10,7 @@ export abstract class CordovaFileSystem {
   }
 
   // 저장소 경로 얻기
-  static async getStoragePath(type: "app" | "external" | "appCache" | "externalCache"): Promise<string> {
+  static async getStoragePathAsync(type: "app" | "external" | "appCache" | "externalCache"): Promise<string> {
     return await new Promise<string>((resolve, reject) => {
       cordova.exec(resolve, reject, "CordovaFileSystem", "getStoragePath", [type]);
     });
@@ -44,16 +44,15 @@ export abstract class CordovaFileSystem {
     });
   }
 
-
   // 파일 읽기 (UTF-8 문자열)
-  static async readFileString(filePath: string): Promise<string> {
+  static async readFileStringAsync(filePath: string): Promise<string> {
     return await new Promise<string>((resolve, reject) => {
       cordova.exec(resolve, reject, "CordovaFileSystem", "readFileString", [filePath]);
     });
   }
 
   // 파일 읽기 (base64 → Buffer)
-  static async readFileBuffer(filePath: string): Promise<Buffer> {
+  static async readFileBufferAsync(filePath: string): Promise<Buffer> {
     const base64 = await new Promise<string>((resolve, reject) => {
       cordova.exec(resolve, reject, "CordovaFileSystem", "readFileBase64", [filePath]);
     });
@@ -61,21 +60,21 @@ export abstract class CordovaFileSystem {
   }
 
   // 파일/디렉토리 삭제 (디렉토리 Recursive)
-  static async remove(targetPath: string): Promise<void> {
+  static async removeAsync(targetPath: string): Promise<void> {
     await new Promise<void>((resolve, reject) => {
       cordova.exec(resolve, reject, "CordovaFileSystem", "remove", [targetPath]);
     });
   }
 
   // 디렉토리 생성 (Recursive)
-  static async mkdirs(targetPath: string): Promise<void> {
+  static async mkdirsAsync(targetPath: string): Promise<void> {
     await new Promise<void>((resolve, reject) => {
       cordova.exec(resolve, reject, "CordovaFileSystem", "mkdirs", [targetPath]);
     });
   }
 
   // 존재 여부 확인 (파일/디렉토리)
-  static async exists(targetPath: string): Promise<boolean> {
+  static async existsAsync(targetPath: string): Promise<boolean> {
     const result = await new Promise<string>((resolve, reject) => {
       cordova.exec(resolve, reject, "CordovaFileSystem", "exists", [targetPath]);
     });

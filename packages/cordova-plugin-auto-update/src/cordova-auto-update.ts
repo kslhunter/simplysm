@@ -2,10 +2,9 @@
 
 import { SdAutoUpdateServiceClient, SdServiceClient } from "@simplysm/sd-service-client";
 import { NetUtils, SdZip } from "@simplysm/sd-core-common";
-import { CordovaAppStorage } from "@simplysm/cordova-plugin-app-storage";
-import mime from "mime";
 import path from "path";
 import semver from "semver";
+import { CordovaFileSystem } from "@simplysm/cordova-plugin-file-system";
 
 export abstract class CordovaAutoUpdate {
   static async runAsync(opt: {
@@ -48,29 +47,39 @@ export abstract class CordovaAutoUpdate {
 
   static async runByExternalStorageAsync(opt: {
     log: (messageHtml: string) => void;
+    dirPath: string;
   }) {
     if (navigator.userAgent.toLowerCase().includes("android")) {
       try {
         opt.log(`최신버전 확인 중...`);
 
         // 버전 가져오기
-        const storage = new CordovaAppStorage(CordovaAppStorage.raw.externalRootDirectory);
-        const files = await storage.readdirAsync("corning-esqm");
+        const externalPath = await CordovaFileSystem.getStoragePathAsync("external");
+        const fileInfos = await CordovaFileSystem.readdirAsync(path.join(
+          externalPath,
+          opt.dirPath,
+        ));
 
-        const versions = files.map((item) => ({
-          fileName: item,
-          version: path.basename(item, path.extname(item)),
-          extName: path.extname(item),
-        })).filter((item) => {
-          return item.extName === ".zip" && (/^[0-9.]*$/).test(item.version);
-        });
+        const versions = fileInfos
+          .filter(fileInfo => !fileInfo.isDirectory)
+          .map((fileInfo) => ({
+            fileName: fileInfo.name,
+            version: path.basename(fileInfo.name, path.extname(fileInfo.name)),
+            extName: path.extname(fileInfo.name),
+          })).filter((item) => {
+            return item.extName === ".zip" && (/^[0-9.]*$/).test(item.version);
+          });
         const latestVersion = semver.maxSatisfying(versions.map((item) => item.version), "*")!;
 
         await this._runAsync({
           log: opt.log,
           latestVersion: latestVersion,
           getZipBufferAsync: async () => {
-            return await storage.readFileBufferAsync("corning-esqm/" + latestVersion + ".zip");
+            return await CordovaFileSystem.readFileBufferAsync(path.join(
+              externalPath,
+              opt.dirPath,
+              latestVersion + ".zip",
+            ));
           },
         });
       }
@@ -89,10 +98,15 @@ export abstract class CordovaAutoUpdate {
     opt.log(`보유버전 확인 중...`);
 
     // 로컬의 최종 버전 확인
-    const storage = new CordovaAppStorage();
-    const isExistsLocalVersion = await storage.existsAsync(`/files/last-version.json`);
+    const appPath = await CordovaFileSystem.getStoragePathAsync("app");
+    const isExistsLocalVersion = await CordovaFileSystem.existsAsync(path.join(
+      appPath,
+      `files/last-version.json`,
+    ));
     let localVersion = isExistsLocalVersion
-      ? await storage.readJsonAsync(`/files/last-version.json`)
+      ? JSON.parse(
+        await CordovaFileSystem.readFileStringAsync(path.join(appPath, `files/last-version.json`)),
+      )
       : undefined;
 
     // 서버와 로컬의 버전이 다르면,
@@ -120,12 +134,9 @@ export abstract class CordovaAutoUpdate {
       let currByteLength = 0;
 
       await Array.from(extractedFileMap.keys()).parallelAsync(async extractedFileName => {
-        await storage.writeAsync(
-          `/files/www/${extractedFileName.replace(/\\/g, "/")}`,
-          new Blob(
-            [extractedFileMap.get(extractedFileName)!],
-            { type: mime.getType(extractedFileName)! },
-          ),
+        await CordovaFileSystem.writeFileAsync(
+          path.join(appPath, `files/www/${extractedFileName.replace(/\\/g, "/")}`),
+          extractedFileMap.get(extractedFileName)!,
         );
 
         currByteLength += extractedFileMap.get(extractedFileName)!.byteLength;
@@ -137,7 +148,10 @@ export abstract class CordovaAutoUpdate {
       opt.log(`최신버전 설치 완료...`);
 
       // 로컬의 최종버전값 변경
-      await storage.writeJsonAsync(`/files/last-version.json`, opt.latestVersion);
+      await CordovaFileSystem.writeFileAsync(
+        path.join(appPath, `files/last-version.json`),
+        JSON.stringify(opt.latestVersion),
+      );
       localVersion = opt.latestVersion;
     }
 
@@ -145,9 +159,7 @@ export abstract class CordovaAutoUpdate {
     if (localVersion != null && process.env["SD_VERSION"] !== localVersion) {
       opt.log(`최신버전 실행...`);
 
-      const basePath = storage.getFullPath(`/files/www`);
-
-      Ionic.WebView.setServerBasePath(basePath);
+      Ionic.WebView.setServerBasePath(path.join(appPath, `files/www`));
       return;
     }
   }
