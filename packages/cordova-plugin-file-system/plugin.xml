@@ -1,27 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<plugin id="@simplysm/cordova-plugin-file-system"
-        version="12.9.32"
-        xmlns="http://apache.org/cordova/ns/plugins/1.0"
-        xmlns:tools="http://schemas.android.com/tools">
+<plugin id="@simplysm/cordova-plugin-file-system" version="12.9.33" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:tools="http://schemas.android.com/tools">
   <name>File System Plugin</name>
   <description>Cordova File System Plugin</description>
   <license>MIT</license>
   <keywords>cordova,plugin,file,system</keywords>
   <platform name="android">
-    <source-file src="android/CordovaFileSystem.java"
-                 target-dir="src/kr/co/simplysm/cordova"></source-file>
+    <source-file src="android/CordovaFileSystem.java" target-dir="src/kr/co/simplysm/cordova"></source-file>
     <config-file target="res/xml/config.xml" parent="/*">
       <feature name="CordovaFileSystem">
         <param name="android-package" value="kr.co.simplysm.cordova.CordovaFileSystem"></param>
       </feature>
     </config-file>
     <config-file target="app/src/main/AndroidManifest.xml" parent="/*">
-      <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
-                       tools:ignore="ScopedStorage" />
-      <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
-                       android:maxSdkVersion="32" />
-      <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-                       android:maxSdkVersion="29" />
+      <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" tools:ignore="ScopedStorage"></uses-permission>
+      <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32"></uses-permission>
+      <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29"></uses-permission>
     </config-file>
   </platform>
 </plugin>
