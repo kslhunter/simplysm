@@ -1,6 +1,17 @@
 
 package kr.co.simplysm.cordova;
 
+import android.Manifest;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Environment;
+import android.provider.Settings;
+
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
 import android.content.Context;
 import android.os.Environment;
 import android.util.Base64;
@@ -21,7 +32,41 @@ public class CordovaFileSystem extends CordovaPlugin {
     try {
       LOG.d("CordovaFileSystem", "Executing action: " + action);
 
-      if ("readdir".equals(action)) {
+      if ("checkPermission".equals(action)) {
+        Context context = cordova.getContext();
+
+        boolean readGranted = ContextCompat.checkSelfPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+        boolean writeGranted = ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+
+        boolean manageGranted = true;
+        if (android.os.Build.VERSION.SDK_INT >= 30) {
+          manageGranted = Environment.isExternalStorageManager();
+        }
+
+        boolean granted = (readGranted && writeGranted) || manageGranted;
+        callbackContext.success(granted ? "true" : "false");
+        return true;
+      }
+      else if ("requestPermission".equals(action)) {
+        if (android.os.Build.VERSION.SDK_INT >= 30) {
+          if (!Environment.isExternalStorageManager()) {
+            Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+            intent.setData(Uri.parse("package:" + cordova.getContext().getPackageName()));
+            cordova.getActivity().startActivity(intent);
+          }
+          callbackContext.success("requested");
+          return true;
+        }
+
+        // Android 10 이하 권한 요청
+        cordova.requestPermissions(this, 1001, new String[] {
+          Manifest.permission.READ_EXTERNAL_STORAGE,
+          Manifest.permission.WRITE_EXTERNAL_STORAGE
+        });
+        callbackContext.success("requested");
+        return true;
+      }
+      else if ("readdir".equals(action)) {
         String path = args.getString(0);
         File dir = new File(path);
 

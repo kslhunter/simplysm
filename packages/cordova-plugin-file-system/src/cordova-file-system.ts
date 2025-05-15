@@ -1,4 +1,19 @@
 export abstract class CordovaFileSystem {
+  // 권한 확인
+  static async checkPermissionAsync(): Promise<boolean> {
+    const result = await new Promise<string>((resolve, reject) => {
+      cordova.exec(resolve, reject, "CordovaFileSystem", "checkPermission", []);
+    });
+    return result === "true";
+  }
+
+  // 권한 얻기
+  static async requestPermissionAsync(): Promise<void> {
+    await new Promise<void>((resolve, reject) => {
+      cordova.exec(resolve, reject, "CordovaFileSystem", "requestPermission", []);
+    });
+  }
+  
   // 디렉토리 읽기
   static async readdirAsync(dirPath: string): Promise<{
     name: string;
