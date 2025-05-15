@@ -50,6 +50,14 @@ export default function convertSdSheetBindingsSafely() {
             .replace(/\[displayPageLength\]/g, "[visiblePageCount]"),
       );
 
+      newTemplate = newTemplate.replace(
+        /<sd-sheet-column([\s\S]*?)>/g,
+        (match) =>
+          match
+            .replace(/\[disableOrdering\]/g, "[disableSorting]")
+            .replace(/\sdisableOrdering/g, "\sdisableSorting"),
+      );
+
       if (rawTemplate !== newTemplate) {
         initializer.replaceWithText("`" + newTemplate + "`");
         console.log(`[template-updated] ${sourceFile.getBaseName()} :: 바인딩 속성 안전하게 변경 완료`);

@@ -16,6 +16,7 @@
       <excludeFolder url="file://$MODULE_DIR$/.back" />
       <excludeFolder url="file://$MODULE_DIR$/.docs" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-grass-node/target" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/cordova-plugin-file-system/android" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

@@ -6,5 +6,6 @@
   <keywords>cordova,plugin,storage</keywords>
   <platform name="android">
     <dependency id="cordova-plugin-file"></dependency>
+    <dependency id="cordova-plugin-device"></dependency>
   </platform>
 </plugin>

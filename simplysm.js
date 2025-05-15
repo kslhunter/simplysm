@@ -12,6 +12,10 @@ export default () => ({
       type: "library",
       publish: "npm",
     },
+    "cordova-plugin-file-system": {
+      type: "library",
+      publish: "npm",
+    },
     "eslint-plugin": {
       type: "library",
       publish: "npm",
