@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0" id="@simplysm/cordova-plugin-auto-update" version="12.9.28">
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+        id="@simplysm/cordova-plugin-auto-update"
+        version="12.9.29">
   <name>Auto Update</name>
   <description>Cordova Auto Update Plugin</description>
   <license>Apache 2.0</license>
   <keywords>cordova,plugin,auto,update</keywords>
   <platform name="android">
-    <dependency id="@simplysm/cordova-plugin-app-storage"></dependency>
+    <dependency id="@simplysm/cordova-plugin-file-system"></dependency>
     <dependency id="cordova-plugin-ionic-webview"></dependency>
   </platform>
 </plugin>

@@ -1,9 +1,5 @@
 export default () => ({
   packages: {
-    "cordova-plugin-app-storage": {
-      type: "library",
-      publish: "npm",
-    },
     "cordova-plugin-auto-update": {
       type: "library",
       publish: "npm",
