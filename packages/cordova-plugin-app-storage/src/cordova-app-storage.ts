@@ -1,6 +1,8 @@
 import * as path from "path";
 import { JsonConvert, SdError } from "@simplysm/sd-core-common";
+import { Device } from "@awesome-cordova-plugins/device";
 import { File } from "@awesome-cordova-plugins/file";
+import semver from "semver";
 
 // "@awesome-cordova-plugins/file"의 "FileError"는 .d.ts에는 있으나 .js가 실제로 export하지 않음.
 
@@ -49,14 +51,18 @@ export class CordovaAppStorage {
   }
 
   // Android SDK >= 33 에 External접근 시 권한 오류발생 (다른폴더접근시에도 발생하는진 모르겠음)
-  /*async readdirAsync(dirPath: string) {
+  async readdirAsync(dirPath: string) {
+    if (Device.sdkVersion == null || semver.gte("33", Device.sdkVersion)) {
+      throw new Error(`문제발생 소지가 있음. 프레임워크 개발자의 테스트가 필요함. (SDK: ${Device.sdkVersion})`);
+    }
+
     const fullUrl = this.getFullUrl(dirPath);
     const dirUrl = path.dirname(fullUrl);
     const dirName = path.basename(fullUrl);
 
     const entries = await File.listDir(dirUrl, dirName);
     return entries.map((item) => item.name);
-  }*/
+  }
 
   // Android SDK >= 33 에 External접근 시 권한 오류발생 (다른폴더접근시에도 발생하는진 모르겠음)
   /*async exists(targetPath: string) {

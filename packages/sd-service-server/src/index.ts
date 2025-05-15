@@ -1,3 +1,4 @@
+export * from "./features/sd-websocket-controller";
 export * from "./sd-service-server";
 export * from "./sd-web-request.error";
 export * from "./services/sd-auto-update.service";

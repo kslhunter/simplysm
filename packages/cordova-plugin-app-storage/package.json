@@ -20,8 +20,13 @@
   },
   "dependencies": {
     "@awesome-cordova-plugins/core": "^6.16.0",
+    "@awesome-cordova-plugins/device": "^6.16.0",
     "@awesome-cordova-plugins/file": "^6.16.0",
     "@simplysm/sd-core-common": "12.9.25",
-    "rxjs": "^7.8.2"
+    "rxjs": "^7.8.2",
+    "semver": "^7.7.2"
+  },
+  "devDependencies": {
+    "@types/semver": "^7.7.0"
   }
 }

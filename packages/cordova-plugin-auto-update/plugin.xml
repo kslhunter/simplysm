@@ -7,5 +7,6 @@
   <platform name="android">
     <dependency id="@simplysm/cordova-plugin-app-storage"></dependency>
     <dependency id="cordova-plugin-ionic-webview"></dependency>
+    <dependency id="cordova-plugin-device"></dependency>
   </platform>
 </plugin>

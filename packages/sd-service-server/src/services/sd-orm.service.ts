@@ -65,16 +65,12 @@ export class SdOrmService extends SdServiceBase {
       }
     };
     SdOrmService._wsCloseListenerMap.set(connId, closeEventListener);
-    if (this.socketId !== undefined) {
-      (await this.server.getWsClientAsync(this.socketId))?.on("close", closeEventListener);
-    }
+    this.client?.on("close", closeEventListener);
 
-    dbConn.on("close", async () => {
+    dbConn.on("close", () => {
       SdOrmService._conns.delete(connId);
       SdOrmService._wsCloseListenerMap.delete(connId);
-      if (this.socketId !== undefined) {
-        (await this.server.getWsClientAsync(this.socketId))?.off("close", closeEventListener);
-      }
+      this.client?.off("close", closeEventListener);
     });
 
     return connId;
