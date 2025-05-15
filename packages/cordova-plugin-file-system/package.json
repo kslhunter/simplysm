@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/cordova-plugin-file-system",
-  "version": "12.9.26",
+  "version": "12.9.27",
   "description": "심플리즘 패키지 - Cordova File System Plugin",
   "author": "김석래",
   "repository": {
@@ -14,7 +14,9 @@
   "types": "./dist/index.d.ts",
   "cordova": {
     "id": "@simplysm/cordova-plugin-file-system",
-    "platforms": ["android"]
+    "platforms": [
+      "android"
+    ]
   },
   "devDependencies": {
     "@types/cordova": "^11.0.3"
