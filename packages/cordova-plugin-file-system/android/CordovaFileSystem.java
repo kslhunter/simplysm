@@ -1,12 +1,19 @@
 
 package kr.co.simplysm.cordova;
 
+import android.content.Context;
+import android.os.Environment;
+import android.util.Base64;
+
 import org.apache.cordova.*;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
 
 public class CordovaFileSystem extends CordovaPlugin {
   @Override
