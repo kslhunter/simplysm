@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<plugin id="@simplysm/cordova-plugin-file-system" version="12.9.28" xmlns="http://apache.org/cordova/ns/plugins/1.0">
+  <name>File System Plugin</name>
+  <description>Cordova File System Plugin</description>
+  <license>MIT</license>
+  <keywords>cordova,plugin,file,system</keywords>
+  <platform name="android">
+    <source-file src="android/CordovaFileSystem.java" target-dir="src/kr/co/simplysm/cordova"></source-file>
+    <config-file target="res/xml/config.xml" parent="/*">
+      <feature name="CordovaFileSystem">
+        <param name="android-package" value="kr.co.simplysm.cordova.CordovaFileSystem"></param>
+      </feature>
+    </config-file>
+  </platform>
+</plugin>
