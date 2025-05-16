@@ -468,7 +468,7 @@ import { $signal } from "../../utils/hooks/hooks";
                       border-bottom: 1px solid $border-color-dark;
                     }
 
-                    &._ordering {
+                    &._sort {
                       cursor: pointer;
 
                       &:hover {
