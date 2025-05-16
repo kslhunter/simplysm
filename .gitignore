@@ -5,10 +5,10 @@
 
 _logs
 node_modules
-*/*/.cache
-*/*/.cordova
-*/*/.electron
-*/*/dist
+packages*/*/.cache
+packages*/*/.cordova
+packages*/*/.electron
+packages*/*/dist
 
 signCert.der
 signPri.key
