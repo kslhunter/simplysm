@@ -729,7 +729,7 @@ export class SdSheetControl<T> {
 
   //region Resizing
 
-  private _isOnResizing = true;
+  private _isOnResizing = false;
 
   onResizerMousedown(event: MouseEvent, colKey: string): void {
     this._isOnResizing = true;
