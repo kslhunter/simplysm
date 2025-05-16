@@ -28,19 +28,23 @@ export abstract class BuildRunnerBase<T extends "server" | "library" | "client">
   }
 
   constructor(
-    protected _projConf: ISdProjectConfig,
+    projConf: ISdProjectConfig,
     protected _pkgPath: TNormPath,
+    workspaceGlobs: string[],
   ) {
     super();
 
     this._pkgName = path.basename(_pkgPath);
-    this._pkgConf = this._projConf.packages[this._pkgName] as TSdPackageConfig<T>;
+    this._pkgConf = projConf.packages[this._pkgName] as TSdPackageConfig<T>;
 
-    const localUpdatePaths = Object.keys(this._projConf.localUpdates ?? {}).mapMany((key) =>
+    const workspacePaths = workspaceGlobs
+      .map(item => PathUtils.posix(this._pkgPath, "../../", item))
+      .mapMany(item => FsUtils.glob(item));
+    const localUpdatePaths = Object.keys(projConf.localUpdates ?? {}).mapMany((key) =>
       FsUtils.glob(path.resolve(this._pkgPath, "../../node_modules", key)),
     );
     this._watchScopePathSet = new ScopePathSet(
-      [path.resolve(this._pkgPath, "../"), ...localUpdatePaths].map((item) => PathUtils.norm(item)),
+      [...workspacePaths, ...localUpdatePaths].map((item) => PathUtils.norm(item)),
     );
   }
 

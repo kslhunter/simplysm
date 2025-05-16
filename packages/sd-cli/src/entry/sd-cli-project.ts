@@ -66,6 +66,7 @@ export class SdCliProject {
         cmd: "watch",
         pkgPath,
         projConf: projConf,
+        workspaces: projNpmConf.workspaces!
       });
     });
   }
@@ -105,6 +106,7 @@ export class SdCliProject {
         cmd: "build",
         pkgPath,
         projConf: projConf,
+        workspaces: projNpmConf.workspaces!
       });
     });
     this._logging(messages.mapMany(), logger);
@@ -166,6 +168,7 @@ export class SdCliProject {
             cmd: "build",
             pkgPath,
             projConf: projConf,
+            workspaces: projNpmConf.workspaces!
           });
         });
 

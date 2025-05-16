@@ -1,6 +1,6 @@
 import path from "path";
 import { pathToFileURL } from "url";
-import { SdServiceServer } from "@simplysm/sd-service-server";
+import type { SdServiceServer } from "@simplysm/sd-service-server";
 import { createSdWorker, SdLogger, SdLoggerSeverity } from "@simplysm/sd-core-node";
 import { EventEmitter } from "events";
 import { TServerWorkerType } from "../types/worker.types";
@@ -33,6 +33,8 @@ createSdWorker<TServerWorkerType>({
       }
       server = currServer;
     } else {
+      // packages-test에서 오류발생. 해결을 위해 여기서 import
+      const { SdServiceServer } = await import("@simplysm/sd-service-server");
       server = new SdServiceServer({
         rootPath: process.cwd(),
         services: [],

@@ -11,7 +11,8 @@
   "license": "MIT",
   "private": true,
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "packages-test/*"
   ],
   "volta": {
     "node": "22.15.0",
@@ -19,11 +20,12 @@
   },
   "scripts": {
     "watch": "yarn run _sd-cli_ --debug watch",
-    "watch:sd-core-common": "yarn run _sd-cli_ --debug watch --packages sd-core-common",
-    "watch:sd-angular": "yarn run _sd-cli_ --debug watch --packages sd-angular",
     "build": "yarn run _sd-cli_ build",
     "publish": "yarn run _sd-cli_ publish",
     "--": "",
+    "watch:cordova-test": "yarn run _sd-cli_ --debug watch --options withTest --packages cordova-test server-test",
+    "run-cordova-test": "yarn run _sd-cli_ --debug run-cordova android cordova-test http://192.168.0.27:60080",
+    "---": "",
     "_sd-cli_": "tsx --tsconfig packages/sd-cli/tsconfig.json packages/sd-cli/src/sd-cli.ts",
     "commit": "yarn run _sd-cli_ commit",
     "eslint-timing": "cross-env TIMING=1 eslint \"**/+(*.ts|*.js|*.html)\"",

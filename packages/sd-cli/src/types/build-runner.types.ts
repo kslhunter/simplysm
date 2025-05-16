@@ -5,4 +5,5 @@ export interface ISdBuildRunnerWorkerRequest {
   cmd: "watch" | "build";
   pkgPath: TNormPath;
   projConf: ISdProjectConfig;
+  workspaces: string[];
 }

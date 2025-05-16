@@ -1,0 +1,19 @@
+{
+  "name": "@simplysm/server-test",
+  "version": "12.5.36",
+  "description": "Simplysm test server",
+  "author": "김석래",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm.git",
+    "directory": "packages-test/server-test"
+  },
+  "license": "UNLICENSED",
+  "type": "module",
+  "private": true,
+  "main": "dist/main.js",
+  "dependencies": {
+    "@simplysm/sd-core-node": "^12.9.33",
+    "@simplysm/sd-service-server": "^12.9.33"
+  }
+}

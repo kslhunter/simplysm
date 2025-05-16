@@ -1,5 +1,5 @@
 import * as path from "path";
-import { FsUtils, SdLogger, SdProcess } from "@simplysm/sd-core-node";
+import { FsUtils, PathUtils, SdLogger, SdProcess } from "@simplysm/sd-core-node";
 import { INpmConfig } from "../types/common-configs.types";
 import { ISdClientBuilderCordovaConfig } from "../types/config.types";
 import { SdZip, XmlConvert } from "@simplysm/sd-core-common";
@@ -12,7 +12,7 @@ export class SdCliCordova {
 
   private readonly PLUGINS_DIR_NAME = "plugins";
   private readonly PLUGINS_FETCH_FILE = "fetch.json";
-  private readonly ANDROID_PLATFORM_VERSION = "12.0.0";
+  private readonly ANDROID_PLATFORM_VERSION = "12.0.1";
   private readonly ANDROID_SDK_VERSION = "33";
   private readonly KEYSTORE_FILE_NAME = "android.keystore";
   private readonly CONFIG_XML_FILE_NAME = "config.xml";
@@ -537,7 +537,13 @@ export class SdCliCordova {
     package: string;
     url?: string
   }): Promise<void> {
-    const cordovaPath = path.resolve(process.cwd(), `packages/${opt.package}/.cordova/`);
+    const projNpmConf = FsUtils.readJson(path.resolve(process.cwd(), "package.json")) as INpmConfig;
+    const allPkgPaths = projNpmConf.workspaces!.mapMany((item) => FsUtils.glob(PathUtils.posix(process.cwd(), item)));
+
+    const cordovaPath = path.resolve(
+      allPkgPaths.single(item => item.endsWith(opt.package))!,
+      ".cordova"
+    );
 
     if (opt.url !== undefined) {
       FsUtils.remove(path.resolve(cordovaPath, "www"));

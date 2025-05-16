@@ -1,4 +1,4 @@
-export default () => ({
+export default (dev, opt) => ({
   packages: {
     "cordova-plugin-auto-update": {
       type: "library",
@@ -106,5 +106,38 @@ export default () => ({
       publish: "npm",
       noGenIndex: true,
     },
+    ...opt.includes("withTest") ? {
+      "cordova-test": {
+        type: "client",
+        server: "server-test",
+        builder: {
+          cordova: {
+            appId: "kr.co.simplysm.cordovatest",
+            appName: "Simplysm Cordova Test",
+            plugins: [
+              "../../../packages/cordova-plugin-file-system",
+            ],
+            icon: "res/icon.png",
+            debug: true,
+            platform: {
+              android: {
+                ...dev ? {} : {
+                  sign: {
+                    keystore: "res/simplysm.keystore",
+                    storePassword: "12tlavmf#$",
+                    alias: "simplysm",
+                    password: "12tlavmf#$",
+                    keystoreType: "pkcs12",
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      "server-test": {
+        type: "server",
+      },
+    } : {},
   },
 });

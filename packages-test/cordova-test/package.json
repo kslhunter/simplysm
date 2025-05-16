@@ -1,0 +1,28 @@
+{
+  "name": "@simplysm/cordova-test",
+  "version": "1.0.0",
+  "description": "Simplysm Cordova Test",
+  "author": "심플리즘",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm.git",
+    "directory": "packages-test/cordova-test"
+  },
+  "license": "MIT",
+  "type": "module",
+  "private": true,
+  "dependencies": {
+    "@angular/common": "^19.2.10",
+    "@angular/compiler": "^19.2.10",
+    "@angular/core": "^19.2.10",
+    "@angular/platform-browser": "^19.2.10",
+    "@angular/platform-browser-dynamic": "^19.2.10",
+    "@simplysm/cordova-plugin-file-system": "^12.9.33",
+    "@simplysm/sd-angular": "^12.9.33",
+    "@simplysm/sd-core-browser": "^12.9.33",
+    "@simplysm/sd-core-common": "^12.9.33",
+    "@simplysm/sd-service-client": "^12.9.33",
+    "rxjs": "^7.8.2",
+    "zone.js": "~0.15.0"
+  }
+}

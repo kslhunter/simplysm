@@ -185,15 +185,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/animations@npm:^19.2.10":
-  version: 19.2.10
-  resolution: "@angular/animations@npm:19.2.10"
+"@angular/animations@npm:^19.2.11":
+  version: 19.2.11
+  resolution: "@angular/animations@npm:19.2.11"
   dependencies:
     tslib: "npm:^2.3.0"
   peerDependencies:
-    "@angular/common": 19.2.10
-    "@angular/core": 19.2.10
-  checksum: 10c0/be43598772e18ae8cf5e7ed68ac50dbdbdcece99aa893bf351c345d44f2e78f096ab37b087533f5cace2d3e42bd7e7b57377cd21d237503f87503ac5bc51dbcd
+    "@angular/common": 19.2.11
+    "@angular/core": 19.2.11
+  checksum: 10c0/d177c1ef4f23245f2ca7a3d1fdaeb4d02d1aed26186adcb2c8511da50f404b16ce1ef30ea3d9cd28b0799140fd80c9c0df09c6996c03060214f03c2cabeb3c83
   languageName: node
   linkType: hard
 
@@ -267,21 +267,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/common@npm:^19.2.10":
-  version: 19.2.10
-  resolution: "@angular/common@npm:19.2.10"
+"@angular/common@npm:^19.2.10, @angular/common@npm:^19.2.11":
+  version: 19.2.11
+  resolution: "@angular/common@npm:19.2.11"
   dependencies:
     tslib: "npm:^2.3.0"
   peerDependencies:
-    "@angular/core": 19.2.10
+    "@angular/core": 19.2.11
     rxjs: ^6.5.3 || ^7.4.0
-  checksum: 10c0/27fc8535355c2eb90c69a0b611755c95b57a683fc283bf87cc098e4e5353ae918bbb21f10ef49fa195f28f8acd15bef5afa07abc0b30a2a919c6b2e2115b1892
+  checksum: 10c0/6d720d8cde435bac7d11ad970c460354806da63b24d1ecb0508ecff4d5d2cc6f1f74fcbfa74eeb5ea84bc06aafdbe48e82b2415daebd8cac96db6d5d72584d95
   languageName: node
   linkType: hard
 
-"@angular/compiler-cli@npm:^19.2.10":
-  version: 19.2.10
-  resolution: "@angular/compiler-cli@npm:19.2.10"
+"@angular/compiler-cli@npm:^19.2.11":
+  version: 19.2.11
+  resolution: "@angular/compiler-cli@npm:19.2.11"
   dependencies:
     "@babel/core": "npm:7.26.9"
     "@jridgewell/sourcemap-codec": "npm:^1.4.14"
@@ -292,73 +292,87 @@ __metadata:
     tslib: "npm:^2.3.0"
     yargs: "npm:^17.2.1"
   peerDependencies:
-    "@angular/compiler": 19.2.10
+    "@angular/compiler": 19.2.11
     typescript: ">=5.5 <5.9"
   bin:
     ng-xi18n: bundles/src/bin/ng_xi18n.js
     ngc: bundles/src/bin/ngc.js
     ngcc: bundles/ngcc/index.js
-  checksum: 10c0/bae26644668e05c82fd3d2eb2f3bd936116318cf76113282ec43b9bb5fc2802a2dab86c85194ac061a849b925fa7d8f6f0f76dc3c9ac4ba2e0558cea7bfc5bd7
+  checksum: 10c0/128883f6ac853c772af36248f9ccfc04266cc1c63de67e1a758312d46dac66dec44c9b7e59d6112ec1bc2f829f7fa7d8a27ace2e38bbc83575a7dd98a5ac78a6
   languageName: node
   linkType: hard
 
-"@angular/compiler@npm:^19.2.10":
-  version: 19.2.10
-  resolution: "@angular/compiler@npm:19.2.10"
+"@angular/compiler@npm:^19.2.10, @angular/compiler@npm:^19.2.11":
+  version: 19.2.11
+  resolution: "@angular/compiler@npm:19.2.11"
   dependencies:
     tslib: "npm:^2.3.0"
-  checksum: 10c0/068e85c3d0f266aed7a1e3292c2b18a39672d1ba751de5fb91c5e74a6de2abf0ebf22a59c26f337a75d66d7efff7381dd2732063545d648d6c373f8504829162
+  checksum: 10c0/90bb5bf83a64738fbdf1f277fb96a035956e4b2345f3e8cc2ec416ba1af8a248c7a83371f5e05408c30861935f5a8f901208111a5c9e7ceaedcf51f863c300cd
   languageName: node
   linkType: hard
 
-"@angular/core@npm:^19.2.10":
-  version: 19.2.10
-  resolution: "@angular/core@npm:19.2.10"
+"@angular/core@npm:^19.2.10, @angular/core@npm:^19.2.11":
+  version: 19.2.11
+  resolution: "@angular/core@npm:19.2.11"
   dependencies:
     tslib: "npm:^2.3.0"
   peerDependencies:
     rxjs: ^6.5.3 || ^7.4.0
     zone.js: ~0.15.0
-  checksum: 10c0/18bf20db0df441451646f3ebf926a33034354261a249449cf246ddb8741c55a47009876a74b61e7c889ee2e83c1f6f62beb4b6de5151f25df6bb2613d7364fad
+  checksum: 10c0/835df1c4fc408b4a3c672ab4fb893a6d92abd9d3d7cf2c4713f412d9e4fdff166ff8388ff4d7f2e9c2d2736565ba21915898e871fe64c9e72df7472cb65774e4
   languageName: node
   linkType: hard
 
-"@angular/platform-browser@npm:^19.2.10":
-  version: 19.2.10
-  resolution: "@angular/platform-browser@npm:19.2.10"
+"@angular/platform-browser-dynamic@npm:^19.2.10":
+  version: 19.2.11
+  resolution: "@angular/platform-browser-dynamic@npm:19.2.11"
   dependencies:
     tslib: "npm:^2.3.0"
   peerDependencies:
-    "@angular/animations": 19.2.10
-    "@angular/common": 19.2.10
-    "@angular/core": 19.2.10
+    "@angular/common": 19.2.11
+    "@angular/compiler": 19.2.11
+    "@angular/core": 19.2.11
+    "@angular/platform-browser": 19.2.11
+  checksum: 10c0/90b77325b5a9f29d36f94172c3c96fe2a86c26faa4ba6fac0058550dd2f42d6b32c75c7507c1bfb360efffdd5143b763bdd6f085c8f1793a6ef325b0f2789288
+  languageName: node
+  linkType: hard
+
+"@angular/platform-browser@npm:^19.2.10, @angular/platform-browser@npm:^19.2.11":
+  version: 19.2.11
+  resolution: "@angular/platform-browser@npm:19.2.11"
+  dependencies:
+    tslib: "npm:^2.3.0"
+  peerDependencies:
+    "@angular/animations": 19.2.11
+    "@angular/common": 19.2.11
+    "@angular/core": 19.2.11
   peerDependenciesMeta:
     "@angular/animations":
       optional: true
-  checksum: 10c0/95f3d957e39c373abce36f29785536415fd159d959e7279de218be3d019c8da52975a55bf30e837b19ab226056bd1edcde008ae157178c2524bf2b9e82a30bf3
+  checksum: 10c0/7477dcc49c1be46af9a66481314cf4e7f2561bc6d9be115e5142f646d55452e1b913a0ab49f44db616bf7a6a126efd6e397a99dbd54c6096a0755f35b9e0de60
   languageName: node
   linkType: hard
 
-"@angular/router@npm:^19.2.10":
-  version: 19.2.10
-  resolution: "@angular/router@npm:19.2.10"
+"@angular/router@npm:^19.2.11":
+  version: 19.2.11
+  resolution: "@angular/router@npm:19.2.11"
   dependencies:
     tslib: "npm:^2.3.0"
   peerDependencies:
-    "@angular/common": 19.2.10
-    "@angular/core": 19.2.10
-    "@angular/platform-browser": 19.2.10
+    "@angular/common": 19.2.11
+    "@angular/core": 19.2.11
+    "@angular/platform-browser": 19.2.11
     rxjs: ^6.5.3 || ^7.4.0
-  checksum: 10c0/bac1249fcf9628a581ca3a266cacf4ffe7533c3cb0980f0d83ae5bb6593b0ccb8ca6706f01d83e3f2049d841d548e4c8d5fcb1de4225fe1d2acc1430a72a59f6
+  checksum: 10c0/aa31f48f727772e43b60c0bdea1623e7f7fd1c73865fe584a16d1a9d954d298e441fa28c21375c3dc2878fb3395de72da5ad1bdebfc31b40bd55b3e0bcc56d22
   languageName: node
   linkType: hard
 
-"@anthropic-ai/sdk@npm:^0.50.4":
-  version: 0.50.4
-  resolution: "@anthropic-ai/sdk@npm:0.50.4"
+"@anthropic-ai/sdk@npm:^0.51.0":
+  version: 0.51.0
+  resolution: "@anthropic-ai/sdk@npm:0.51.0"
   bin:
     anthropic-ai-sdk: bin/cli
-  checksum: 10c0/43d350cc4f7d7e7e859400f2cada466600da2f3945d4ee6266ec9df148be1e51b1b65f38dd8e6d6dae369d261e5be39a4f4e5f9abfe131137466ff479cc097bb
+  checksum: 10c0/eb68ad2e77c49477c6e9c883e8ad1bff758fc7f5fcd646878a5dd9b7f4b89de7d11fad8ea81480eee483b7c0563f564ff9b8b82f5e1550e1f3b5321761e241fe
   languageName: node
   linkType: hard
 
@@ -3146,7 +3160,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@simplysm/cordova-plugin-file-system@npm:12.9.33, @simplysm/cordova-plugin-file-system@workspace:packages/cordova-plugin-file-system":
+"@simplysm/cordova-plugin-file-system@npm:12.9.33, @simplysm/cordova-plugin-file-system@npm:^12.9.33, @simplysm/cordova-plugin-file-system@workspace:packages/cordova-plugin-file-system":
   version: 0.0.0-use.local
   resolution: "@simplysm/cordova-plugin-file-system@workspace:packages/cordova-plugin-file-system"
   dependencies:
@@ -3159,6 +3173,25 @@ __metadata:
   resolution: "@simplysm/cordova-plugin-usb-storage@workspace:packages/cordova-plugin-usb-storage"
   dependencies:
     "@types/cordova": "npm:^11.0.3"
+  languageName: unknown
+  linkType: soft
+
+"@simplysm/cordova-test@workspace:packages-test/cordova-test":
+  version: 0.0.0-use.local
+  resolution: "@simplysm/cordova-test@workspace:packages-test/cordova-test"
+  dependencies:
+    "@angular/common": "npm:^19.2.10"
+    "@angular/compiler": "npm:^19.2.10"
+    "@angular/core": "npm:^19.2.10"
+    "@angular/platform-browser": "npm:^19.2.10"
+    "@angular/platform-browser-dynamic": "npm:^19.2.10"
+    "@simplysm/cordova-plugin-file-system": "npm:^12.9.33"
+    "@simplysm/sd-angular": "npm:^12.9.33"
+    "@simplysm/sd-core-browser": "npm:^12.9.33"
+    "@simplysm/sd-core-common": "npm:^12.9.33"
+    "@simplysm/sd-service-client": "npm:^12.9.33"
+    rxjs: "npm:^7.8.2"
+    zone.js: "npm:~0.15.0"
   languageName: unknown
   linkType: soft
 
@@ -3180,15 +3213,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-angular@workspace:packages/sd-angular":
+"@simplysm/sd-angular@npm:^12.9.33, @simplysm/sd-angular@workspace:packages/sd-angular":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-angular@workspace:packages/sd-angular"
   dependencies:
-    "@angular/animations": "npm:^19.2.10"
-    "@angular/common": "npm:^19.2.10"
-    "@angular/core": "npm:^19.2.10"
-    "@angular/platform-browser": "npm:^19.2.10"
-    "@angular/router": "npm:^19.2.10"
+    "@angular/animations": "npm:^19.2.11"
+    "@angular/common": "npm:^19.2.11"
+    "@angular/core": "npm:^19.2.11"
+    "@angular/platform-browser": "npm:^19.2.11"
+    "@angular/router": "npm:^19.2.11"
     "@fortawesome/fontawesome-svg-core": "npm:^6.7.2"
     "@fortawesome/free-solid-svg-icons": "npm:^6.7.2"
     "@simplysm/sd-core-browser": "npm:12.9.33"
@@ -3219,9 +3252,9 @@ __metadata:
   resolution: "@simplysm/sd-cli@workspace:packages/sd-cli"
   dependencies:
     "@angular/build": "npm:^19.2.12"
-    "@angular/compiler": "npm:^19.2.10"
-    "@angular/compiler-cli": "npm:^19.2.10"
-    "@anthropic-ai/sdk": "npm:^0.50.4"
+    "@angular/compiler": "npm:^19.2.11"
+    "@angular/compiler-cli": "npm:^19.2.11"
+    "@anthropic-ai/sdk": "npm:^0.51.0"
     "@electron/rebuild": "npm:^4.0.1"
     "@simplysm/sd-core-common": "npm:12.9.33"
     "@simplysm/sd-core-node": "npm:12.9.33"
@@ -3232,7 +3265,7 @@ __metadata:
     browserslist: "npm:^4.24.5"
     cordova: "npm:^12.0.0"
     css-has-pseudo: "npm:^7.0.2"
-    electron: "npm:^36.2.0"
+    electron: "npm:^36.2.1"
     electron-builder: "npm:^26.0.15"
     esbuild: "npm:^0.25.4"
     eslint: "npm:^9.26.0"
@@ -3240,7 +3273,7 @@ __metadata:
     node-stdlib-browser: "npm:^1.3.1"
     postcss: "npm:^8.5.3"
     rxjs: "npm:^7.8.2"
-    sass: "npm:^1.88.0"
+    sass: "npm:^1.89.0"
     semver: "npm:^7.7.2"
     specifier-resolution-node: "npm:^1.1.4"
     ts-morph: "npm:^25.0.1"
@@ -3253,7 +3286,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-core-browser@npm:12.9.33, @simplysm/sd-core-browser@workspace:packages/sd-core-browser":
+"@simplysm/sd-core-browser@npm:12.9.33, @simplysm/sd-core-browser@npm:^12.9.33, @simplysm/sd-core-browser@workspace:packages/sd-core-browser":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-core-browser@workspace:packages/sd-core-browser"
   dependencies:
@@ -3261,7 +3294,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-core-common@npm:12.9.33, @simplysm/sd-core-common@workspace:packages/sd-core-common":
+"@simplysm/sd-core-common@npm:12.9.33, @simplysm/sd-core-common@npm:^12.9.33, @simplysm/sd-core-common@workspace:packages/sd-core-common":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-core-common@workspace:packages/sd-core-common"
   dependencies:
@@ -3374,7 +3407,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-service-client@npm:12.9.33, @simplysm/sd-service-client@workspace:packages/sd-service-client":
+"@simplysm/sd-service-client@npm:12.9.33, @simplysm/sd-service-client@npm:^12.9.33, @simplysm/sd-service-client@workspace:packages/sd-service-client":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-service-client@workspace:packages/sd-service-client"
   dependencies:
@@ -6914,16 +6947,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"electron@npm:^36.2.0":
-  version: 36.2.0
-  resolution: "electron@npm:36.2.0"
+"electron@npm:^36.2.1":
+  version: 36.2.1
+  resolution: "electron@npm:36.2.1"
   dependencies:
     "@electron/get": "npm:^2.0.0"
     "@types/node": "npm:^22.7.7"
     extract-zip: "npm:^2.0.1"
   bin:
     electron: cli.js
-  checksum: 10c0/74255d9c4ddc91d2adc35fcafea5c0211299c388fff6c4bd63bbddde63b841b7a04bb535d73e36ac6eff2c5cf71fd08a30ae2cb263398f817b026f7604c57f81
+  checksum: 10c0/6b8c17c6828b5e2478d94a5b531f028b6135e775e2f593e945dc92fb27d5d289645823c8d3f3f9f3648a9323e564105e4d3fe7d7d5b8f7193d8fb68f1351d7c2
   languageName: node
   linkType: hard
 
@@ -13457,9 +13490,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sass@npm:^1.88.0":
-  version: 1.88.0
-  resolution: "sass@npm:1.88.0"
+"sass@npm:^1.89.0":
+  version: 1.89.0
+  resolution: "sass@npm:1.89.0"
   dependencies:
     "@parcel/watcher": "npm:^2.4.1"
     chokidar: "npm:^4.0.0"
@@ -13470,7 +13503,7 @@ __metadata:
       optional: true
   bin:
     sass: sass.js
-  checksum: 10c0/dcb16dc29116bfa5a90485d24fd8020d2b0d95155bd2e31285901588729343b59fefe44365c5f146b2ba5a9ebadef90b23a7220b902507bdbd91ca2ba0a0b688
+  checksum: 10c0/8e31b48c5e0abd9d437edb201919a82863f605ace1c1536ccdc6b3133937a70fe29b92ad536af632ecae2f140733931e4ec971e1bfbf8b835c54d392b28331df
   languageName: node
   linkType: hard
 
