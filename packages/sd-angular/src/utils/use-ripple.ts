@@ -5,60 +5,76 @@ export function useRipple(enableFn?: () => boolean) {
   const _elRef = injectElementRef<HTMLElement>();
 
   $effect([], (onCleanup) => {
-    Object.assign(_elRef.nativeElement.style, {
+    const el = _elRef.nativeElement;
+
+    Object.assign(el.style, {
       position: "relative",
       overflow: "hidden",
     });
 
-    const onMouseDown = (event: MouseEvent) => {
+    let indicatorEl: HTMLElement | undefined;
+
+    const onPointerDown = (event: PointerEvent) => {
       if (enableFn && !enableFn()) return;
 
-      const rect = _elRef.nativeElement.getBoundingClientRect();
+      const rect = el.getBoundingClientRect();
       const size = Math.max(rect.width, rect.height);
-      // const size = Math.max(_elRef.nativeElement.offsetWidth, _elRef.nativeElement.offsetHeight);
-
-      let cursorEl = event.target as Element | null;
-      while (true) {
-        if (!cursorEl) {
-          break;
-        }
-        else if (cursorEl  instanceof HTMLElement && cursorEl.isOffsetElement()) {
-          break;
-        }
-        else {
-          cursorEl = cursorEl.parentElement;
-        }
-      }
 
       const x = event.clientX - rect.left;
       const y = event.clientY - rect.top;
-      // const offsetY = cursorEl?.getRelativeOffset(_elRef.nativeElement).top ?? 0;
-      // const offsetX = cursorEl?.getRelativeOffset(_elRef.nativeElement).left ?? 0;
 
-      const indicatorEl = document.createElement("div");
+      if (indicatorEl) {
+        indicatorEl.remove();
+      }
+
+      indicatorEl = document.createElement("div");
       indicatorEl.className = "sd-active-effect-indicator";
       Object.assign(indicatorEl.style, {
-        width: size * 2 + "px",
-        height: size * 2 + "px",
+        position: "absolute",
+        pointerEvents: "none",
+        borderRadius: "100%",
+        background: "var(--trans-light)",
+
+        width: (size * 2) + "px",
+        height: (size * 2) + "px",
         top: y - size + "px",
         left: x - size + "px",
-        // top: offsetY + event.offsetY - size + "px",
-        // left: offsetX + event.offsetX - size + "px",
-      });
 
-      _elRef.nativeElement.appendChild(indicatorEl);
+        transition: "var(--animation-duration) linear",
+        transitionProperty: "transform, opacity",
+        transform: "scale(0.1)",
+      });
+      el.appendChild(indicatorEl);
 
       indicatorEl.ontransitionend = () => {
-        if (getComputedStyle(indicatorEl).opacity === "0") {
-          _elRef.nativeElement.removeChild(indicatorEl);
+        if (indicatorEl && getComputedStyle(indicatorEl).opacity === "0") {
+          indicatorEl.remove();
         }
       };
+
+      requestAnimationFrame(() => {
+        if (indicatorEl) {
+          indicatorEl.style.transform = "scale(1)";
+        }
+      });
     };
 
-    _elRef.nativeElement.addEventListener("mousedown", onMouseDown);
+    const onPointerUp = () => {
+      if (indicatorEl) {
+        indicatorEl.style.opacity = "0";
+      }
+    };
+
+    el.addEventListener("pointerdown", onPointerDown);
+    el.addEventListener("pointerup", onPointerUp);
+    el.addEventListener("pointercancel", onPointerUp);
+    el.addEventListener("pointerleave", onPointerUp);
 
     onCleanup(() => {
-      _elRef.nativeElement.removeEventListener("mousedown", onMouseDown);
+      el.removeEventListener("pointerdown", onPointerDown);
+      el.removeEventListener("pointerup", onPointerUp);
+      el.removeEventListener("pointercancel", onPointerUp);
+      el.removeEventListener("pointerleave", onPointerUp);
     });
   });
 }

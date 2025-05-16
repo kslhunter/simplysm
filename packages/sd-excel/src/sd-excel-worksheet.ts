@@ -107,8 +107,11 @@ export class SdExcelWorksheet {
 
     const xml = await this._getWsDataAsync();
     const range = xml.range;
+
+    const startRow = opt?.headerRowIndex ?? range.s.r;
+
     for (let c = range.s.c; c <= range.e.c; c++) {
-      const headerName = await this.cell(opt?.headerRowIndex ?? range.s.r, c).getValAsync();
+      const headerName = await this.cell(startRow, c).getValAsync();
       if (typeof headerName === "string") {
         if (!opt?.usableHeaderNameFn || opt.usableHeaderNameFn(headerName)) {
           headerMap.set(headerName, c);
@@ -116,7 +119,7 @@ export class SdExcelWorksheet {
       }
     }
 
-    for (let r = (opt?.headerRowIndex ?? range.s.r) + 1; r <= range.e.r; r++) {
+    for (let r = startRow + 1; r <= range.e.r; r++) {
       if (
         opt?.checkEndColIndex !== undefined
         && await this.cell(r, opt.checkEndColIndex).getValAsync() === undefined

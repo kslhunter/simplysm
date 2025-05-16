@@ -10,7 +10,8 @@
   box-sizing: border-box;
   outline-color: var(--theme-primary-default);
 
-  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 *:focus {
@@ -445,29 +446,6 @@ hidden {
 .active-effect {
   @include active-effect(true);
 }*/
-
-.sd-active-effect-indicator {
-  pointer-events: none;
-  position: absolute;
-  border-radius: 100%;
-  background: var(--trans-light);
-  animation: sd-active-effect var(--animation-duration) linear;
-  opacity: 0;
-  transition: opacity var(--animation-duration) linear;
-
-  :active > & {
-    opacity: 1;
-  }
-}
-
-@keyframes sd-active-effect {
-  from {
-    transform: scale(0.1);
-  }
-  to {
-    transform: none;
-  }
-}
 
 
 .sd-invalid-indicator {

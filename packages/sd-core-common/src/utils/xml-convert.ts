@@ -8,6 +8,7 @@ export class XmlConvert {
       attributesGroupName: "$",
       parseAttributeValue: false,
       parseTagValue: false,
+      textNodeName: "_",
       isArray: (tagName: string, jPath: string, isLeafNode: boolean, isAttribute: boolean) => {
         return !isAttribute && jPath.split(".").length > 1;
       },
@@ -21,6 +22,7 @@ export class XmlConvert {
       attributeNamePrefix: "",
       attributesGroupName: "$",
       suppressBooleanAttributes: false,
+      textNodeName: "_",
       ...options,
     }).build(obj);
   }
