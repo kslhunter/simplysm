@@ -447,20 +447,6 @@ hidden {
   @include active-effect(true);
 }*/
 
-
-.sd-invalid-indicator {
-  display: block;
-  position: absolute;
-  z-index: 9999;
-  background: var(--theme-danger-default);
-
-  top: var(--gap-xs);
-  left: var(--gap-xs);
-  border-radius: 100%;
-  width: var(--gap-sm);
-  height: var(--gap-sm);
-}
-
 .sd-theme-dark {
   img {
     filter: invert(1) hue-rotate(180deg);

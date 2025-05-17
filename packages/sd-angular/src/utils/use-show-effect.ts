@@ -8,33 +8,34 @@ export function useShowEffect(optFn?: () => {
   const _elRef = injectElementRef<HTMLElement>();
 
   $effect([], () => {
-    Object.assign(_elRef.nativeElement.style, {
+    const el = _elRef.nativeElement;
+
+    Object.assign(el.style, {
       opacity: 0,
       transform: (optFn?.().type ?? "t2b") === "t2b" ? "translateY(-1em)" : "translateX(-1em)",
     });
 
     const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          if (optFn?.().enabled ?? true) {
-            Object.assign(_elRef.nativeElement.style, {
-              opacity: 1,
-              transform: "none",
-              transition: "var(--animation-duration) ease-out",
-              transitionProperty: "opacity, transform",
-            });
-          }
-          else {
-            Object.assign(_elRef.nativeElement.style, {
-              opacity: 1,
-              transform: "none",
-              transition: "none",
-              transitionProperty: "none",
-            });
-          }
-        }
-      });
+      const entry = entries.first();
+      if (!entry?.isIntersecting) return;
+
+      if (optFn?.().enabled ?? true) {
+        Object.assign(el.style, {
+          opacity: 1,
+          transform: "none",
+          transition: "var(--animation-duration) ease-out",
+          transitionProperty: "opacity, transform",
+        });
+      }
+      else {
+        Object.assign(el.style, {
+          opacity: 1,
+          transform: "none",
+          transition: "none",
+          transitionProperty: "none",
+        });
+      }
     });
-    observer.observe(_elRef.nativeElement);
+    observer.observe(el);
   });
 }

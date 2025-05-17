@@ -28,7 +28,6 @@ export function useRipple(enableFn?: () => boolean) {
       }
 
       indicatorEl = document.createElement("div");
-      indicatorEl.className = "sd-active-effect-indicator";
       Object.assign(indicatorEl.style, {
         position: "absolute",
         pointerEvents: "none",
