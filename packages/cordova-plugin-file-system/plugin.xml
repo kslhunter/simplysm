@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<plugin id="@simplysm/cordova-plugin-file-system" version="12.9.36" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:tools="http://schemas.android.com/tools">
+<plugin id="@simplysm/cordova-plugin-file-system" version="12.9.37" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:tools="http://schemas.android.com/tools">
   <name>File System Plugin</name>
   <description>Cordova File System Plugin</description>
   <license>MIT</license>
