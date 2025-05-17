@@ -1,6 +1,7 @@
 import { ApplicationRef, ComponentRef, createComponent, inject, Injectable } from "@angular/core";
-import { $effect, $signal } from "../utils/hooks/hooks";
 import { SdBusyContainerControl } from "../controls/sd-busy-container.control";
+import { $effect } from "../utils/bindings/$effect";
+import { $signal } from "../utils/bindings/$signal";
 
 @Injectable({ providedIn: "root" })
 export class SdBusyProvider {

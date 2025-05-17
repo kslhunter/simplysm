@@ -2,7 +2,8 @@ import { inject, Injectable, Signal, WritableSignal } from "@angular/core";
 import { SdServiceEventListenerBase } from "@simplysm/sd-service-common";
 import { SdServiceClientFactoryProvider } from "../../providers/sd-service-client-factory.provider";
 import { DateOnly, DateTime, ObjectUtils, Time, Wait } from "@simplysm/sd-core-common";
-import { $computed, $signal } from "../../utils/hooks/hooks";
+import { $signal } from "../../utils/bindings/$signal";
+import { $computed } from "../../utils/bindings/$computed";
 
 export interface ISharedSignal<T extends ISharedDataBase<string | number>> extends Signal<T[]> {
   $get(key: T["__valueKey"] | undefined): T | undefined;

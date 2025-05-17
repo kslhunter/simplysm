@@ -6,7 +6,8 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
-import { $computed } from "../utils/hooks/hooks";
+import { $computed } from "../utils/bindings/$computed";
+
 import { transformBoolean } from "../utils/type-tramsforms";
 import { SdIconControl } from "./sd-icon.control";
 

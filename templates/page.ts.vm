@@ -57,7 +57,7 @@ import {
   transformBoolean,
   #end
   #if(${useSelectYN} == "Y")
-  useCumulateSelectedKeys,
+  setupCumulateSelectedKeys,
   #end
 } from "@simplysm/sd-angular";
 import {
@@ -388,7 +388,7 @@ export class ${name_pascal}Page {
 
   constructor() {
     #if(${useSelectYN} == "Y")
-    useCumulateSelectedKeys(
+    setupCumulateSelectedKeys(
       this.items,
       this.selectMode,
       this.selectedItems,

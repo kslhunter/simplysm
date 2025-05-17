@@ -9,15 +9,15 @@ import {
 } from "@angular/core";
 import { SD_MODAL_INPUT, SdModalBase, SdModalProvider } from "../providers/sd-modal.provider";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
-import { $computed } from "../utils/hooks/hooks";
 import { transformBoolean } from "../utils/type-tramsforms";
 import { TSelectValue } from "../controls/sd-select-control";
 import { SdAdditionalButtonControl } from "../controls/sd-additional-button.control";
 import { SdIconControl } from "../controls/sd-icon.control";
 import { SdButtonControl } from "../controls/sd-button.control";
 import { SdAnchorControl } from "../controls/sd-anchor.control";
-import { SdInvalidDirective } from "../directives/sd-invalid.directive";
-import { $model } from "../utils/hooks/$model";
+import { $model } from "../utils/bindings/$model";
+import { $computed } from "../utils/bindings/$computed";
+import { setupInvalid } from "../utils/setups/setup-invalid";
 
 @Component({
   selector: "sd-select-modal-button",
@@ -29,13 +29,9 @@ import { $model } from "../utils/hooks/$model";
     SdIconControl,
     SdButtonControl,
     SdAnchorControl,
-    SdInvalidDirective,
   ],
   template: `
-    <sd-additional-button
-      [inset]="inset()" [size]="size()"
-      [sd-invalid]="required() && !__value() ? '값을 입력하세요.' : undefined"
-    >
+    <sd-additional-button [inset]="inset()" [size]="size()">
       <ng-content />
 
       @if (!disabled() && !isNoValue()) {
@@ -88,6 +84,10 @@ export class SdSelectModalButtonControl<
     return this.value() == null
       || (this.selectMode() === "multi" && (this.value() as any[]).length === 0);
   });
+
+  constructor() {
+    setupInvalid(() => (this.required() && this.value() == null) ? "값을 입력하세요." : "");
+  }
 
   async onModalButtonClick(event: MouseEvent): Promise<void> {
     event.preventDefault();

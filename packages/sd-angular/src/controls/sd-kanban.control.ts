@@ -9,13 +9,14 @@ import {
 } from "@angular/core";
 import { SdKanbanBoardControl } from "./sd-kanban-board.control";
 import { SdCardControl } from "./sd-card.control";
-import { $computed, $signal } from "../utils/hooks/hooks";
 import { SdKanbanLaneControl } from "./sd-kanban-lane.control";
-import { injectElementRef } from "../utils/dom/element-ref.injector";
+import { injectElementRef } from "../utils/injections/inject-element-ref";
 import { SdEventsDirective } from "../directives/sd-events.directive";
 import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
 import { NumberUtils } from "@simplysm/sd-core-common";
 import { transformBoolean } from "../utils/type-tramsforms";
+import { $computed } from "../utils/bindings/$computed";
+import { $signal } from "../utils/bindings/$signal";
 
 @Component({
   selector: "sd-kanban",

@@ -19,12 +19,12 @@ import { ActivatedRoute } from "@angular/router";
 import { SdActivatedModalProvider } from "../providers/sd-modal.provider";
 import { SdAppStructureProvider } from "../providers/sd-app-structure.provider";
 import { TemplateTargetDirective } from "../directives/template-target.directive";
-import { $computed } from "../utils/hooks/hooks";
 import { transformBoolean } from "../utils/type-tramsforms";
-import { injectParent } from "../utils/route/parent.injector";
-import { injectPageCode$ } from "../utils/route/page-code.signal-injector";
-import { injectActivatedPageCode$ } from "../utils/route/activate-page-code.signal-injector";
+import { injectParent } from "../utils/injections/inject-parent";
+import { useRouterManager } from "../utils/managers/use-router-manager";
 import { SdShowEffectDirective } from "../directives/sd-show-effect.directive";
+import { $computed } from "../utils/bindings/$computed";
+import { useActivatedRouteManager } from "../utils/managers/use-activated-route-manager";
 
 @Component({
   selector: "sd-base-container",
@@ -90,8 +90,8 @@ export class SdBaseContainerControl {
 
   private _parent = injectParent();
 
-  private _pageCode = injectPageCode$();
-  private _activatedPageCode = injectActivatedPageCode$();
+  private _routerManager = useRouterManager();
+  private _activatedRouteManager = useActivatedRouteManager();
 
   templateDirectives = contentChildren(TemplateTargetDirective);
   getTemplateRef = (target: "topbar" | "content" | "bottom") => {
@@ -99,14 +99,14 @@ export class SdBaseContainerControl {
   };
 
   perms = $computed(() => this._sdAppStructure.getViewPerms(
-    [this._pageCode()],
+    [this._routerManager.pageCode()],
     ["use"],
   ));
 
   realContainerType = $computed<"container" | "page" | "modal" | "control">(() => {
     if (this.containerType()) return this.containerType()!;
     else if (this._activatedRoute && this._activatedRoute.component === this._parent.constructor) {
-      if (this._pageCode() === this._activatedPageCode()) {
+      if (this._routerManager.pageCode() === this._activatedRouteManager?.pageCode()) {
         return "page";
       }
       else {
@@ -125,7 +125,9 @@ export class SdBaseContainerControl {
   title = $computed(() =>
     this._sdActivatedModal
       ? this._sdActivatedModal.modal.title()
-      : this._sdAppStructure.getTitleByCode(this._activatedPageCode() ?? this._pageCode()),
+      : this._sdAppStructure.getTitleByCode(
+        this._activatedRouteManager?.pageCode() ?? this._routerManager.pageCode(),
+      ),
   );
 
   busy = input(false, { transform: transformBoolean });

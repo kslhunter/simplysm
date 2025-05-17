@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, HostListener, input, ViewEncapsulation } from "@angular/core";
-import { injectElementRef } from "../utils/dom/element-ref.injector";
+import { injectElementRef } from "../utils/injections/inject-element-ref";
 import * as echarts from 'echarts';
-import { $effect } from "../utils/hooks/hooks";
+import { $effect } from "../utils/bindings/$effect";
 
 @Component({
   selector: "sd-echarts",

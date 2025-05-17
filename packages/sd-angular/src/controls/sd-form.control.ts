@@ -17,7 +17,12 @@ import { SdEventsDirective } from "../directives/sd-events.directive";
   standalone: true,
   imports: [SdEventsDirective],
   template: `
-    <form #formEl (submit)="onSubmit($event)" (invalid.capture)="onInvalidCapture()">
+    <form
+      #formEl
+      novalidate
+      (submit)="_onSubmit($event)"
+      (invalid.capture)="_onInvalidCapture()"
+    >
       <ng-content />
       <button hidden type="submit"></button>
     </form>
@@ -26,46 +31,41 @@ import { SdEventsDirective } from "../directives/sd-events.directive";
 export class SdFormControl {
   private _sdToast = inject(SdToastProvider);
 
-  formElRef = viewChild.required<any, ElementRef<HTMLFormElement>>("formEl", { read: ElementRef });
+  protected _formElRef = viewChild.required<any, ElementRef<HTMLFormElement>>(
+    "formEl",
+    { read: ElementRef },
+  );
+
+  protected get _formEl() {
+    return this._formElRef().nativeElement;
+  }
 
   submit = output<SubmitEvent>();
   invalid = output();
 
   requestSubmit() {
-    this.formElRef().nativeElement.requestSubmit();
+    this._formEl.requestSubmit();
   }
 
-  onSubmit(event: SubmitEvent) {
+  protected _onSubmit(event: SubmitEvent) {
     event.preventDefault();
     event.stopPropagation();
 
-    const firstInvalidEl = this.formElRef().nativeElement.findFirst<HTMLElement>("*:invalid, *[sd-invalid-message]");
-
-    if (!firstInvalidEl) {
+    if (this._formEl.checkValidity()) {
       this.submit.emit(event);
       return;
     }
 
-    const sdInvalidMessage = firstInvalidEl.getAttribute("sd-invalid-message");
-    const invalidMessage = "validationMessage" in firstInvalidEl ? firstInvalidEl.validationMessage : "";
+    // 자동 메시지 및 포커싱
+    this._formEl.reportValidity();
 
-    const errorMessage = [sdInvalidMessage, invalidMessage].filterExists().join("\n");
+    // const firstInvalidEl = this._formEl.findFirst<HTMLInputElement>("*:invalid")!;
+    // this._sdToast.info(firstInvalidEl.validationMessage);
 
-    const focusableElement =
-      (firstInvalidEl.isFocusable() ? firstInvalidEl : firstInvalidEl.findFocusableAll().first()) ??
-      firstInvalidEl.findFocusableParent();
-    // "confirm"창울 띄우는 경우에 포커싱이 안되는 현상 때문에 "requestAnimationFrame"이 필요함.
-    if (focusableElement) {
-      requestAnimationFrame(() => {
-        focusableElement.focus();
-      });
-    }
-
-    this._sdToast.info(errorMessage);
     this.invalid.emit();
   }
 
-  onInvalidCapture() {
+  protected _onInvalidCapture() {
     this.invalid.emit();
   }
 }

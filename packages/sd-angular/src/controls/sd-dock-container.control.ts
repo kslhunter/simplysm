@@ -6,8 +6,9 @@ import {
   viewChild,
   ViewEncapsulation,
 } from "@angular/core";
+import { $effect } from "../utils/bindings/$effect";
 import { SdDockControl } from "./sd-dock.control";
-import { $effect } from "../utils/hooks/hooks";
+
 
 @Component({
   selector: "sd-dock-container",

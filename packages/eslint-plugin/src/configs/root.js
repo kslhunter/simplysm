@@ -188,46 +188,58 @@ export default [
       "@simplysm/ts-no-throw-not-implement-error": ["warn"],
 
 
-      // -- 아래 룰들은 매우 느리거나, 라이브러리에서만 필요한것
-      // "import/no-extraneous-dependencies": [
-      //   "error",
-      //   {
-      //     "devDependencies": [
-      //       "**/*.spec.ts",
-      //       "**/lib/**",
-      //       "**!/eslint.config.js",
-      //       "**!/simplysm.js",
-      //       "**/vitest.config.js",
-      //     ],
-      //   },
-      // ],
-      // "@simplysm/ts-no-exported-types": [
-      //   "error", {
-      //     types: [
-      //       {
-      //         ban: "Uint8Array",
-      //         safe: "Buffer",
-      //       }, {
-      //         ban: "ArrayBuffer",
-      //         safe: "Buffer",
-      //         ignoreInGeneric: true,
-      //       },
-      //     ],
-      //   },
-      // ],
-      // "@simplysm/ts-no-buffer-in-typedarray-context": ["error"],
-      // '@typescript-eslint/no-restricted-imports': [
-      //   'error',
-      //   {
-      //     paths: [
-      //       {
-      //         name: '@angular/core',
-      //         importNames: ['model'],
-      //         message: '`model`은 사용할 수 없습니다. input/output/$model을 사용하세요.',
-      //       },
-      //     ],
-      //   },
-      // ],
+      // -- 아래 적용 검토가 필요한것
+      "import/no-extraneous-dependencies": [
+        "error",
+        {
+          "devDependencies": [
+            "**/*.spec.ts",
+            "**/lib/**",
+            "**/eslint.config.js",
+            "**/simplysm.js",
+            "**/vitest.config.js",
+          ],
+        },
+      ],
+      "@simplysm/ts-no-exported-types": [
+        "error", {
+          types: [
+            {
+              ban: "Uint8Array",
+              safe: "Buffer",
+            }, {
+              ban: "ArrayBuffer",
+              safe: "Buffer",
+              ignoreInGeneric: true,
+            },
+          ],
+        },
+      ],
+      "@simplysm/ts-no-buffer-in-typedarray-context": ["error"],
+      '@typescript-eslint/no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            /*{
+              name: '@angular/core',
+              importNames: ['model'],
+              message: '"model"은 사용할 수 없습니다. input/output/$model을 사용하세요.',
+            },*/
+            ...[
+              "signal",
+              "computed",
+              "effect",
+              "afterRenderEffect",
+              "afterRenderComputed",
+              "resource",
+            ].map(item => ({
+              name: '@angular/core',
+              importNames: [item],
+              message: `"${item}"은 사용할 수 없습니다. $${item}을 사용하세요.`,
+            })),
+          ],
+        },
+      ],
     },
   },
   {

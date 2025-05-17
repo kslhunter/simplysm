@@ -1,6 +1,12 @@
-import { ChangeDetectionStrategy, Component, inject, input, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  input,
+  ViewEncapsulation,
+} from "@angular/core";
 import { SdGridControl } from "./sd-grid.control";
-import { $computed } from "../utils/hooks/hooks";
+import { $computed } from "../utils/bindings/$computed";
 
 @Component({
   selector: "sd-grid-item",
@@ -13,13 +19,13 @@ import { $computed } from "../utils/hooks/hooks";
       sd-grid-item {
         height: 100%;
       }
-    `
+    `,
   ],
   template: `
     <ng-content /> `,
   host: {
-    "[style.gridColumnEnd]": "styleGridColumnEnd()"
-  }
+    "[style.gridColumnEnd]": "styleGridColumnEnd()",
+  },
 })
 export class SdGridItemControl {
   private _parentControl = inject(SdGridControl);

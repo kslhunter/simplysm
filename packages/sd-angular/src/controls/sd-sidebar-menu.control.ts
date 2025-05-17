@@ -5,10 +5,10 @@ import { SdTypedTemplateDirective } from "../directives/sd-typed.template-direct
 import { SdListItemControl } from "./sd-list-item.control";
 import { SdRouterLinkDirective } from "../directives/sd-router-link.directive";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
-import { $computed } from "../utils/hooks/hooks";
 import { SdIconControl } from "./sd-icon.control";
-import { injectPageCode$ } from "../utils/route/page-code.signal-injector";
+import { useRouterManager } from "../utils/managers/use-router-manager";
 import * as querystring from "node:querystring";
+import { $computed } from "../utils/bindings/$computed";
 
 @Component({
   selector: "sd-sidebar-menu",
@@ -118,7 +118,7 @@ export class SdSidebarMenuControl {
   layout = input<"accordion" | "flat">();
   getMenuIsSelectedFn = input<(menu: ISdSidebarMenuVM) => boolean>();
 
-  pageCode = injectPageCode$();
+  routerSignals = useRouterManager();
 
   rootLayout = $computed(() => this.layout() ?? (this.menus().length <= 3 ? "flat" : "accordion"));
 
@@ -141,7 +141,7 @@ export class SdSidebarMenuControl {
   getIsMenuSelected(menu: ISdSidebarMenuVM) {
     return this.getMenuIsSelectedFn()
       ? this.getMenuIsSelectedFn()!(menu)
-      : this.pageCode() === menu.codeChain.join(".");
+      : this.routerSignals.pageCode() === menu.codeChain.join(".");
   }
 
   onMenuClick(menu: ISdSidebarMenuVM): void {

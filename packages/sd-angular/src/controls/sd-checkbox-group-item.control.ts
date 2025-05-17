@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, forwardRef, inject, input, ViewEncapsulation } from "@angular/core";
 import { SdCheckboxGroupControl } from "./sd-checkbox-group.control";
 import { SdCheckboxControl } from "./sd-checkbox.control";
-import { $computed } from "../utils/hooks/hooks";
 import { transformBoolean } from "../utils/type-tramsforms";
+import { $computed } from "../utils/bindings/$computed";
 
 @Component({
   selector: "sd-checkbox-group-item",

@@ -1,6 +1,6 @@
 import { Directive, input } from "@angular/core";
 import { transformBoolean } from "../utils/type-tramsforms";
-import { useRipple } from "../utils/use-ripple";
+import { setupRipple } from "../utils/setups/setup-ripple";
 
 @Directive({
   selector: "[sd-ripple]",
@@ -10,6 +10,6 @@ export class SdRippleDirective {
   enabled = input.required({ alias: "sd-ripple", transform: transformBoolean });
 
   constructor() {
-    useRipple(() => this.enabled());
+    setupRipple(() => this.enabled());
   }
 }

@@ -24,6 +24,12 @@ declare interface Element {
   findFocusableFirst(): TFocusableElement | undefined;
 
   isOffsetElement(): boolean;
+
+  isVisible(): boolean;
+
+  copyAsync(): Promise<void>;
+
+  pasteAsync(): Promise<void>;
 }
 
 if (typeof Element.prototype.matches === "undefined") {
@@ -76,9 +82,9 @@ Element.prototype.findFirst = function (selector: string): Element | undefined {
 
 const focusableSelectorList = [
   "a[href]:not([hidden])",
-  "button:not([disabled]):not([hidden])",
+  "button:not([disabled])",
   "area[href]:not([hidden])",
-  "input:not([disabled]):not([hidden])",
+  "input:not([disabled]):not([hidden]):not(.sd-invalid-input)",
   "select:not([disabled]):not([hidden])",
   "textarea:not([disabled]):not([hidden])",
   "iframe:not([hidden])",
@@ -120,6 +126,38 @@ Element.prototype.isOffsetElement = function (): boolean {
   return [
     "relative", "absolute", "fixed", "sticky",
   ].includes(getComputedStyle(this).position);
+};
+
+Element.prototype.isVisible = function (): boolean {
+  const style = getComputedStyle(this);
+  return (
+    this.getClientRects().length > 0 &&
+    style.visibility !== "hidden" &&
+    style.opacity !== "0"
+  );
+};
+
+Element.prototype.copyAsync = async function () {
+  if (!("clipboard" in navigator)) return;
+
+  const firstInputEl = this.findFirst<HTMLInputElement>("input:not(.sd-invalid-input)");
+  if (firstInputEl) {
+    await navigator.clipboard.writeText(firstInputEl.value);
+  }
+  else {
+    await navigator.clipboard.writeText(this.innerHTML);
+  }
+};
+
+Element.prototype.pasteAsync = async function () {
+  if (!("clipboard" in navigator)) return;
+
+  const contentText = await navigator.clipboard.readText();
+
+  const firstInputEl = this.findFirst<HTMLInputElement>("input:not(.sd-invalid-input)");
+  if (firstInputEl) {
+    firstInputEl.value = contentText;
+  }
 };
 
 type TFocusableElement = Element & HTMLOrSVGElement;

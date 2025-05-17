@@ -1,9 +1,14 @@
-import { ChangeDetectionStrategy, Component, input, output, ViewEncapsulation } from "@angular/core";
-import { StringUtils } from "@simplysm/sd-core-common";
-import { $computed } from "../utils/hooks/hooks";
-import { injectElementRef } from "../utils/dom/element-ref.injector";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  output,
+  ViewEncapsulation,
+} from "@angular/core";
+import { injectElementRef } from "../utils/injections/inject-element-ref";
 import { transformBoolean } from "../utils/type-tramsforms";
-import { $model } from "../utils/hooks/$model";
+import { $model } from "../utils/bindings/$model";
+import { setupInvalid } from "../utils/setups/setup-invalid";
 
 @Component({
   selector: "sd-textarea",
@@ -123,25 +128,6 @@ import { $model } from "../utils/hooks/$model";
             }
           }
         }
-
-        > ._invalid-indicator {
-          display: none;
-        }
-
-        &:has(:invalid),
-        &[sd-invalid-message] {
-          > ._invalid-indicator {
-            display: block;
-            position: absolute;
-            background: var(--theme-danger-default);
-
-            top: var(--gap-xs);
-            left: var(--gap-xs);
-            border-radius: 100%;
-            width: var(--gap-sm);
-            height: var(--gap-sm);
-          }
-        }
       }
     `,
   ],
@@ -162,16 +148,13 @@ import { $model } from "../utils/hooks/$model";
       <textarea
         [value]="value() ?? ''"
         [attr.placeholder]="placeholder()"
-        [required]="required()"
         [attr.title]="title() ?? placeholder()"
         [attr.rows]="rows()"
         (input)="onInput($event)"
         [style]="inputStyle()"
         [class]="inputClass()"
       ></textarea>
-    }
-
-    <div class="_invalid-indicator"></div>`,
+    }`,
   host: {
     "[attr.sd-disabled]": "disabled()",
     "[attr.sd-readonly]": "readonly()",
@@ -179,7 +162,6 @@ import { $model } from "../utils/hooks/$model";
     "[attr.sd-inset]": "inset()",
     "[attr.sd-size]": "size()",
     "[attr.sd-theme]": "theme()",
-    "[attr.sd-invalid-message]": "errorMessage()",
   },
 })
 export class SdTextareaControl {
@@ -203,30 +185,25 @@ export class SdTextareaControl {
   inputStyle = input<string>();
   inputClass = input<string>();
 
-  errorMessage = $computed(() => {
-    const errorMessages: string[] = [];
-    if (this.value() == null) {
-      if (this.required()) {
-        errorMessages.push("값을 입력하세요.");
+  constructor() {
+    setupInvalid(() => {
+      const errorMessages: string[] = [];
+      if (this.value() == null) {
+        if (this.required()) {
+          errorMessages.push("값을 입력하세요.");
+        }
       }
-    }
 
-    if (this.validatorFn()) {
-      const message = this.validatorFn()!(this.value());
-      if (message !== undefined) {
-        errorMessages.push(message);
+      if (this.validatorFn()) {
+        const message = this.validatorFn()!(this.value());
+        if (message !== undefined) {
+          errorMessages.push(message);
+        }
       }
-    }
 
-    const fullErrorMessage = errorMessages.join("\r\n");
-
-    const inputEl = this._elRef.nativeElement.findFirst("input");
-    if (inputEl instanceof HTMLInputElement) {
-      inputEl.setCustomValidity(fullErrorMessage);
-    }
-
-    return StringUtils.isNullOrEmpty(fullErrorMessage) ? undefined : fullErrorMessage;
-  });
+      return errorMessages.join("\r\n");
+    });
+  }
 
   onInput(event: Event): void {
     const inputEl = event.target as HTMLInputElement;

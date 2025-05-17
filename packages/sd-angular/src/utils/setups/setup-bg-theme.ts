@@ -1,13 +1,13 @@
-import { $effect } from "./hooks/hooks";
+import { $effect } from "../bindings/$effect";
 
-export function useBgTheme(
+export function setupBgTheme(options?: {
   theme?: "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey",
   lightness?: "lightest" | "lighter"
-): void {
+}): void {
   $effect([], (onCleanup) => {
     document.body.style.setProperty(
       "--background-color",
-      theme ? `var(--theme-${theme}-${lightness ?? 'lightest'})` : "",
+      options?.theme ? `var(--theme-${options.theme}-${options.lightness ?? "lightest"})` : "",
     );
 
     onCleanup(() => {

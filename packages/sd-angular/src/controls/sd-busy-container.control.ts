@@ -7,7 +7,8 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import { SdBusyProvider } from "../providers/sd-busy.provider";
-import { $computed } from "../utils/hooks/hooks";
+import { $computed } from "../utils/bindings/$computed";
+
 import { transformBoolean, transformNullableBoolean } from "../utils/type-tramsforms";
 
 @Component({

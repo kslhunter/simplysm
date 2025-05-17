@@ -7,13 +7,14 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import { SdTextfieldControl } from "./sd-textfield.control";
-import { $effect, $signal } from "../utils/hooks/hooks";
 import { SdButtonControl } from "./sd-button.control";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { SdIconControl } from "./sd-icon.control";
 import { NumberUtils, StringUtils } from "@simplysm/sd-core-common";
 import { transformBoolean } from "../utils/type-tramsforms";
-import { $model } from "../utils/hooks/$model";
+import { $model } from "../utils/bindings/$model";
+import { $signal } from "../utils/bindings/$signal";
+import { $effect } from "../utils/bindings/$effect";
 
 @Component({
   selector: "sd-numpad",

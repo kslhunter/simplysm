@@ -13,9 +13,10 @@ import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
 import { SdAnchorControl } from "./sd-anchor.control";
 import { SdGapControl } from "./sd-gap.control";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
-import { $computed } from "../utils/hooks/hooks";
-import { injectElementRef } from "../utils/dom/element-ref.injector";
+
+import { injectElementRef } from "../utils/injections/inject-element-ref";
 import { SdIconControl } from "./sd-icon.control";
+import { $computed } from "../utils/bindings/$computed";
 
 @Component({
   selector: "sd-topbar",

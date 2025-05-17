@@ -12,7 +12,7 @@ import { SdDockControl } from "./sd-dock.control";
 import { SdTabControl } from "./sd-tab.control";
 import { SdTabItemControl } from "./sd-tab-item.control";
 import { SdPaneControl } from "./sd-pane.control";
-import { $model } from "../utils/hooks/$model";
+import { $model } from "../utils/bindings/$model";
 
 @Component({
   selector: "sd-tabview",

@@ -7,9 +7,9 @@ import {
 } from "@angular/core";
 import { SdAnchorControl } from "./sd-anchor.control";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
-import { $computed } from "../utils/hooks/hooks";
 import { SdIconControl } from "./sd-icon.control";
-import { $model } from "../utils/hooks/$model";
+import { $model } from "../utils/bindings/$model";
+import { $computed } from "../utils/bindings/$computed";
 
 @Component({
   selector: "sd-pagination",

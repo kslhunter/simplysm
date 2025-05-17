@@ -1,4 +1,5 @@
-import { computed, Signal, WritableSignal } from "@angular/core";
+import { Signal, WritableSignal } from "@angular/core";
+import { $computed } from "../bindings/$computed";
 
 export function useExpandingManager<T>(binding: {
   items: Signal<T[]>;
@@ -6,7 +7,7 @@ export function useExpandingManager<T>(binding: {
   getChildrenFn: Signal<((item: T, index: number) => T[] | undefined) | undefined>;
   sort: (items: T[]) => T[];
 }) {
-  const itemDefs = computed(() => {
+  const itemDefs = $computed(() => {
     let rootItems: IExpandItemDef<T>[] = binding.items().map((item) => ({
       item,
       parentDef: undefined,
@@ -45,15 +46,15 @@ export function useExpandingManager<T>(binding: {
     return result;
   });
 
-  const flattedItems = computed(() => itemDefs().map(item => item.item));
+  const flattedItems = $computed(() => itemDefs().map(item => item.item));
 
-  const expandableItems = computed(() =>
+  const expandableItems = $computed(() =>
     itemDefs().filter((itemDef) => itemDef.hasChildren).map((itemDef) => itemDef.item),
   );
 
-  const hasExpandable = computed(() => expandableItems().length > 0);
+  const hasExpandable = $computed(() => expandableItems().length > 0);
 
-  const isAllExpanded = computed(
+  const isAllExpanded = $computed(
     () =>
       expandableItems().length <= binding.expandedItems().length &&
       expandableItems().every((item) => binding.expandedItems().includes(item)),

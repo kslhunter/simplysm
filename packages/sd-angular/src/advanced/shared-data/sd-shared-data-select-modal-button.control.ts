@@ -2,7 +2,8 @@ import {
   ChangeDetectionStrategy,
   Component,
   contentChild,
-  input, output,
+  input,
+  output,
   TemplateRef,
   Type,
   ViewEncapsulation,
@@ -13,7 +14,6 @@ import { ISharedDataBase } from "./sd-shared-data.provider";
 import { SD_MODAL_INPUT, SdModalBase } from "../../providers/sd-modal.provider";
 import { TSelectValue } from "../../controls/sd-select-control";
 import { transformBoolean } from "../../utils/type-tramsforms";
-import { $effect, $signal } from "../../utils/hooks/hooks";
 import {
   SdItemOfTemplateContext,
   SdItemOfTemplateDirective,
@@ -22,7 +22,9 @@ import {
   ISharedDataModalInputParam,
   ISharedDataModalOutputResult,
 } from "./sd-shared-data-select.control";
-import { $model } from "../../utils/hooks/$model";
+import { $model } from "../../utils/bindings/$model";
+import { $signal } from "../../utils/bindings/$signal";
+import { $effect } from "../../utils/bindings/$effect";
 
 @Component({
   selector: "sd-shared-data-select-modal-button",

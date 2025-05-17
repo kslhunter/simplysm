@@ -5,8 +5,6 @@ import {
   input,
   ViewEncapsulation,
 } from "@angular/core";
-import { injectElementRef } from "../utils/dom/element-ref.injector";
-import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import {
   icon,
   IconDefinition,
@@ -15,8 +13,11 @@ import {
   SizeProp,
   Transform,
 } from "@fortawesome/fontawesome-svg-core";
+import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
+import { $effect } from "../utils/bindings/$effect";
+import { injectElementRef } from "../utils/injections/inject-element-ref";
 import { transformBoolean } from "../utils/type-tramsforms";
-import { $effect } from "../utils/hooks/hooks";
+
 
 @Component({
   selector: "sd-icon",

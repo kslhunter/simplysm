@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input, output, ViewEncapsulation } from "@angular/core";
 import { transformBoolean } from "../utils/type-tramsforms";
-import { $model } from "../utils/hooks/$model";
+import { $model } from "../utils/bindings/$model";
 
 @Component({
   selector: "sd-checkbox-group",

@@ -1,6 +1,6 @@
 import { Directive, input } from "@angular/core";
 import { transformBoolean } from "../utils/type-tramsforms";
-import { useShowEffect } from "../utils/use-show-effect";
+import { setupRevealOnShow } from "../utils/setups/setup-reveal-on-show";
 
 @Directive({
   selector: "[sd-show-effect]",
@@ -8,10 +8,10 @@ import { useShowEffect } from "../utils/use-show-effect";
 })
 export class SdShowEffectDirective {
   enabled = input.required({ alias: "sd-show-effect", transform: transformBoolean });
-  type = input<"l2r" | "t2b">("t2b");
+  type = input<"l2r" | "t2b">("t2b", { alias: "sd-show-effect-type" });
 
   constructor() {
-    useShowEffect(() => ({
+    setupRevealOnShow(() => ({
       type: this.type(),
       enabled: this.enabled(),
     }));

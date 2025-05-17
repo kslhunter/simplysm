@@ -19,9 +19,10 @@ import {
 import { SdDockControl } from "../controls/sd-dock.control";
 import { SdButtonControl } from "../controls/sd-button.control";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
-import { $effect, $signal } from "../utils/hooks/hooks";
 import { SdIconControl } from "../controls/sd-icon.control";
 import { ISdSheetConfig } from "../controls/sd-sheet/sd-sheet.types";
+import { $signal } from "../utils/bindings/$signal";
+import { $effect } from "../utils/bindings/$effect";
 
 @Component({
   selector: "sd-sheet-config-modal",

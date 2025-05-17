@@ -1,5 +1,5 @@
 import { inject, Injectable } from "@angular/core";
-import { SdAngularConfigProvider } from "./sd-angular-config.provider";
+import { $signal } from "../utils/bindings/$signal";
 import {
   ISdAppStructureItem,
   ISdFlatPage,
@@ -7,7 +7,8 @@ import {
   ISdPermission,
   SdAppStructureUtils,
 } from "../utils/sd-app-structure.utils";
-import { $signal } from "../utils/hooks/hooks";
+import { SdAngularConfigProvider } from "./sd-angular-config.provider";
+
 
 @Injectable({ providedIn: "root" })
 export class SdAppStructureProvider<T extends string> {

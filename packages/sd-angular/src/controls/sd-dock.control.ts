@@ -6,10 +6,12 @@ import {
   input,
   ViewEncapsulation,
 } from "@angular/core";
-import { SdSystemConfigProvider } from "../providers/sd-system-config.provider";
 import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
-import { $effect, $signal } from "../utils/hooks/hooks";
-import { injectElementRef } from "../utils/dom/element-ref.injector";
+import { SdSystemConfigProvider } from "../providers/sd-system-config.provider";
+import { $effect } from "../utils/bindings/$effect";
+import { $signal } from "../utils/bindings/$signal";
+
+import { injectElementRef } from "../utils/injections/inject-element-ref";
 import { transformBoolean } from "../utils/type-tramsforms";
 
 @Component({

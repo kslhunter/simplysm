@@ -24,13 +24,14 @@ import { SdGapControl } from "./sd-gap.control";
 import { SdPaneControl } from "./sd-pane.control";
 import { SdTypedTemplateDirective } from "../directives/sd-typed.template-directive";
 import { SdDropdownPopupControl } from "./sd-dropdown-popup.control";
-import { StringUtils } from "@simplysm/sd-core-common";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
-import { $afterRenderEffect, $computed, $signal } from "../utils/hooks/hooks";
 import { transformBoolean } from "../utils/type-tramsforms";
 import { SdRippleDirective } from "../directives/sd-ripple.directive";
 import { SdIconControl } from "./sd-icon.control";
-import { $model } from "../utils/hooks/$model";
+import { $model } from "../utils/bindings/$model";
+import { $signal } from "../utils/bindings/$signal";
+import { setupInvalid } from "../utils/setups/setup-invalid";
+import { $afterRenderEffect } from "../utils/bindings/$afterRenderEffect";
 
 @Component({
   selector: "sd-select",
@@ -96,20 +97,6 @@ import { $model } from "../utils/hooks/$model";
               &:active > ._sd-select-control-icon {
                 opacity: 1;
               }
-
-              > ._invalid-indicator {
-                display: none;
-                //display: block;
-                position: absolute;
-                z-index: 9999;
-                background: var(--theme-danger-default);
-
-                top: var(--gap-xs);
-                left: var(--gap-xs);
-                border-radius: 100%;
-                width: var(--gap-sm);
-                height: var(--gap-sm);
-              }
             }
 
             > sd-select-button {
@@ -136,13 +123,6 @@ import { $model } from "../utils/hooks/$model";
                 display: none;
               }
             }
-          }
-        }
-
-        &:has(:invalid),
-        &[sd-invalid-message] {
-          > sd-dropdown > ._sd-dropdown-control > ._sd-select-control > ._invalid-indicator {
-            display: block;
           }
         }
 
@@ -226,8 +206,6 @@ import { $model } from "../utils/hooks/$model";
         <div class="_sd-select-control-icon">
           <sd-icon [icon]="icons.caretDown" />
         </div>
-
-        <div class="_invalid-indicator"></div>
       </div>
 
       @if (!disabled()) {
@@ -309,11 +287,10 @@ import { $model } from "../utils/hooks/$model";
     "[attr.sd-inline]": "inline()",
     "[attr.sd-inset]": "inset()",
     "[attr.sd-size]": "size()",
-    "[attr.sd-invalid-message]": "errorMessage()",
   },
 })
 export class SdSelectControl<M extends "single" | "multi", T> {
- protected readonly icons = inject(SdAngularConfigProvider).icons;
+  protected readonly icons = inject(SdAngularConfigProvider).icons;
 
   __value = input<TSelectValue<any>[M] | undefined>(undefined, { alias: "value" });
   __valueChange = output<TSelectValue<any>[M] | undefined>({ alias: "valueChange" });
@@ -361,18 +338,17 @@ export class SdSelectControl<M extends "single" | "multi", T> {
 
   itemControls = $signal<SdSelectItemControl[]>([]);
 
-  errorMessage = $computed(() => {
-    const errorMessages: string[] = [];
-
-    if (this.required() && this.value() === undefined) {
-      errorMessages.push("선택된 항목이 없습니다.");
-    }
-
-    const fullErrorMessage = errorMessages.join("\r\n");
-    return !StringUtils.isNullOrEmpty(fullErrorMessage) ? fullErrorMessage : undefined;
-  });
-
   constructor() {
+    setupInvalid(() => {
+      const errorMessages: string[] = [];
+
+      if (this.required() && this.value() === undefined) {
+        errorMessages.push("선택된 항목이 없습니다.");
+      }
+
+      return errorMessages.join("\r\n");
+    });
+
     $afterRenderEffect(() => {
       const selectedItemControls = this.itemControls()
         .filter((itemControl) => itemControl.isSelected());

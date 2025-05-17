@@ -1,4 +1,4 @@
-import { injectElementRef } from "../../../utils/dom/element-ref.injector";
+import { injectElementRef } from "../../../utils/injections/inject-element-ref";
 
 export function useSdSheetDomAccessor() {
   const elRef = injectElementRef();

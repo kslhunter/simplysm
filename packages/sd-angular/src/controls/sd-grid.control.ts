@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
-import { $computed } from "../utils/hooks/hooks";
-import { injectSizeSignals } from "../utils/dom/size-signals.injector";
+import { useResizeManager } from "../utils/managers/use-resize-manager";
+import { $computed } from "../utils/bindings/$computed";
 
 @Component({
   selector: "sd-grid",
@@ -24,7 +24,7 @@ import { injectSizeSignals } from "../utils/dom/size-signals.injector";
   },
 })
 export class SdGridControl {
-  private _size = injectSizeSignals();
+  private _size = useResizeManager();
 
   gap = input<"xxs" | "xs" | "sm" | "default" | "lg" | "xl" | "xxl">();
 

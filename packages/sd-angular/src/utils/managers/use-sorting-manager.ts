@@ -1,21 +1,23 @@
 import { WritableSignal } from "@angular/core";
 import { ObjectUtils } from "@simplysm/sd-core-common";
 
-export function useSortingManager(defs: WritableSignal<ISortingDef[]>) {
+export function useSortingManager(options: {
+  sortingDefs: WritableSignal<ISortingDef[]>
+}) {
   function getIndexText(key: string) {
-    if (defs().length < 2) {
+    if (options.sortingDefs().length < 2) {
       return undefined;
     }
-    const index = defs().findIndex((item) => item.key === key);
+    const index = options.sortingDefs().findIndex((item) => item.key === key);
     return index >= 0 ? (index + 1).toString() : undefined;
   }
 
   function getIsDesc(key: string) {
-    return defs().single((item) => item.key === key)?.desc;
+    return options.sortingDefs().single((item) => item.key === key)?.desc;
   }
 
   function toggle(key: string, multiple: boolean) {
-    defs.update((v) => {
+    options.sortingDefs.update((v) => {
       let r = [...v];
       const ordItem = r.single((item) => item.key === key);
       if (ordItem) {
@@ -41,7 +43,7 @@ export function useSortingManager(defs: WritableSignal<ISortingDef[]>) {
 
   function sort<T>(items: T[]): T[] {
     let result = [...items];
-    for (const sortDef of [...defs()].reverse()) {
+    for (const sortDef of [...options.sortingDefs()].reverse()) {
       if (sortDef.desc) {
         result = result.orderByDesc((item) => ObjectUtils.getChainValue(
           item,

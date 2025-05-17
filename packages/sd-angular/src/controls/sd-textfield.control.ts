@@ -1,7 +1,6 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  HostListener,
   input,
   output,
   ViewEncapsulation,
@@ -9,15 +8,15 @@ import {
 import {
   DateOnly,
   DateTime,
-  JsonConvert,
   NumberUtils,
+  SdError,
   StringUtils,
   Time,
 } from "@simplysm/sd-core-common";
-import { $computed } from "../utils/hooks/hooks";
-import { injectElementRef } from "../utils/dom/element-ref.injector";
 import { transformBoolean } from "../utils/type-tramsforms";
-import { $model } from "../utils/hooks/$model";
+import { $model } from "../utils/bindings/$model";
+import { $computed } from "../utils/bindings/$computed";
+import { setupInvalid } from "../utils/setups/setup-invalid";
 
 @Component({
   selector: "sd-textfield",
@@ -25,6 +24,42 @@ import { $model } from "../utils/hooks/$model";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
+  template: `
+    <div
+      [style]="inputStyle()"
+      [class]="['_contents', inputClass()].filterExists().join(' ')"
+      [attr.title]="title() ?? placeholder()"
+      [style.visibility]="!readonly() && !disabled() ? 'hidden' : undefined"
+    >
+      @if (controlType() === "password") {
+        <span class="tx-trans-light">****</span>
+      } @else {
+        @if (controlValue()) {
+          <span>{{ controlValueText() }}</span>
+        } @else if (placeholder()) {
+          <span class="tx-trans-lighter">{{ placeholder() }}</span>
+        } @else {
+          <span>&nbsp;</span>
+        }
+      }
+    </div>
+    @if (!readonly() && !disabled()) {
+      <input
+        [style]="inputStyle()"
+        [class]="inputClass()"
+        [attr.title]="title() ?? placeholder()"
+
+        [attr.placeholder]="placeholder()"
+        [type]="controlType()"
+        [attr.inputmode]="type() === 'number' ? 'numeric' : undefined"
+        [value]="controlValue()"
+
+        [attr.autocomplete]="autocomplete()"
+        [attr.step]="controlStep()"
+        (input)="onInput($event)"
+      />
+    }
+  `,
   styles: [
     /* language=SCSS */ `
       @use "sass:map";
@@ -306,83 +341,9 @@ import { $model } from "../utils/hooks/$model";
             }
           }
         }
-
-        > ._invalid-indicator {
-          display: none;
-        }
-
-        body.sd-theme-compact & {
-          &:has(:invalid),
-          &[sd-invalid-message] {
-            > ._invalid-indicator {
-              display: block;
-              position: absolute;
-              background: var(--theme-danger-default);
-
-              top: var(--gap-xs);
-              left: var(--gap-xs);
-              border-radius: 100%;
-              width: var(--gap-sm);
-              height: var(--gap-sm);
-            }
-          }
-        }
-
-        body.sd-theme-mobile &,
-        body.sd-theme-kiosk & {
-          &:has(:invalid),
-          &[sd-invalid-message] {
-            > input,
-            > ._contents {
-              border-bottom-color: var(--theme-danger-default);
-            }
-          }
-        }
       }
     `,
   ],
-  template: `
-    <div
-      [style]="inputStyle()"
-      [class]="['_contents', inputClass()].filterExists().join(' ')"
-      [attr.title]="title() ?? placeholder()"
-      [style.visibility]="!readonly() && !disabled() ? 'hidden' : undefined"
-    >
-      @if (controlType() === "password") {
-        <span class="tx-trans-light">****</span>
-      } @else {
-        @if (controlValue()) {
-          <span>{{ controlValueText() }}</span>
-        } @else if (placeholder()) {
-          <span class="tx-trans-lighter">{{ placeholder() }}</span>
-        } @else {
-          <span>&nbsp;</span>
-        }
-      }
-    </div>
-    @if (!readonly() && !disabled()) {
-      <input
-        [type]="controlType()"
-        [value]="controlValue()"
-        [attr.placeholder]="placeholder()"
-        [required]="required()"
-        [attr.min]="controlMin()"
-        [attr.max]="controlMax()"
-        [attr.minlength]="minlength()"
-        [attr.maxlength]="maxlength()"
-        [attr.step]="controlStep()"
-        [attr.pattern]="pattern()"
-        [attr.title]="title() ?? placeholder()"
-        [attr.autocomplete]="autocomplete()"
-        (input)="onInput($event)"
-        [attr.inputmode]="type() === 'number' ? 'numeric' : undefined"
-        [style]="inputStyle()"
-        [class]="inputClass()"
-      />
-    }
-
-    <div class="_invalid-indicator"></div>
-  `,
   host: {
     "[attr.sd-type]": "type()",
     "[attr.sd-disabled]": "disabled()",
@@ -391,12 +352,9 @@ import { $model } from "../utils/hooks/$model";
     "[attr.sd-inset]": "inset()",
     "[attr.sd-size]": "size()",
     "[attr.sd-theme]": "theme()",
-    "[attr.sd-invalid-message]": "errorMessage()",
   },
 })
 export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
-  private _elRef = injectElementRef<HTMLElement>();
-
   __value = input<TSdTextfieldTypes[K] | undefined>(undefined, { alias: "value" });
   __valueChange = output<TSdTextfieldTypes[K] | undefined>({ alias: "valueChange" });
   value = $model(this.__value, this.__valueChange);
@@ -404,39 +362,37 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
   type = input.required<K>();
   placeholder = input<string>();
   title = input<string>();
+  inputStyle = input<string>();
+  inputClass = input<string>();
+
   disabled = input(false, { transform: transformBoolean });
   readonly = input(false, { transform: transformBoolean });
+
   required = input(false, { transform: transformBoolean });
   min = input<TSdTextfieldTypes[K]>();
   max = input<TSdTextfieldTypes[K]>();
   minlength = input<number>();
   maxlength = input<number>();
-  autocomplete = input<string>();
+  pattern = input<string>();
+  validatorFn = input<(value: TSdTextfieldTypes[K] | undefined) => string | undefined>();
+  format = input<string>();
 
   /** 10, 1, 0.1, 0.01, 0.01 방식으로 입력 */
   step = input<number>();
-  pattern = input<string>();
+  autocomplete = input<string>();
+  useNumberComma = input(true, { transform: transformBoolean });
+
   inline = input(false, { transform: transformBoolean });
   inset = input(false, { transform: transformBoolean });
   size = input<"sm" | "lg">();
-  validatorFn = input<(value: TSdTextfieldTypes[K] | undefined) => string | undefined>();
   theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey">();
-  inputStyle = input<string>();
-  inputClass = input<string>();
-  format = input<string>();
-  useNumberComma = input(true, { transform: transformBoolean });
 
   controlType = $computed(() => {
-    return this.type() === "number"
-      ? "text"
-      : this.type() === "format"
-        ? "text"
-        : this.type() === "datetime"
-          ? "datetime-local"
-          : this.type() === "datetime-sec"
-            ? "datetime-local"
-            : this.type() === "time-sec"
-              ? "time"
+    return this.type() === "number" ? "text"
+      : this.type() === "format" ? "text"
+        : this.type() === "datetime" ? "datetime-local"
+          : this.type() === "datetime-sec" ? "datetime-local"
+            : this.type() === "time-sec" ? "time"
               : this.type();
   });
 
@@ -477,110 +433,99 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
     }
   });
 
-  controlMin = $computed(() => {
-    const min = this.min();
-    if (min instanceof DateOnly) {
-      return min.toFormatString("yyyy-MM-dd");
-    }
-    else {
-      return this._convertToControlValue(min);
-    }
-  });
+  constructor() {
+    setupInvalid(() => {
+      const value = this.value();
 
-  controlMax = $computed(() => {
-    const max = this.max();
-    if (max instanceof DateOnly) {
-      return max.toFormatString("yyyy-MM-dd");
-    }
-    else {
-      return this._convertToControlValue(max);
-    }
-  });
-
-  errorMessage = $computed(() => {
-    const value = this.value();
-
-    const errorMessages: string[] = [];
-    if (value == null) {
-      if (this.required()) {
-        errorMessages.push("값을 입력하세요.");
-      }
-    }
-    else if (this.type() === "number") {
-      if (typeof value !== "number") {
-        errorMessages.push("숫자를 입력하세요");
-      }
-      else {
-        const min = this.min();
-        const max = this.max();
-        if (typeof min === "number" && min > value) {
-          errorMessages.push(`${min}보다 크거나 같아야 합니다.`);
-        }
-        if (typeof max === "number" && max < value) {
-          errorMessages.push(`${max}보다 작거나 같아야 합니다.`);
+      const errorMessages: string[] = [];
+      if (value == null) {
+        if (this.required()) {
+          errorMessages.push("값을 입력하세요.");
         }
       }
-    }
-    else if (this.type() === "format" && !StringUtils.isNullOrEmpty(this.format())) {
-      const formatItems = this.format()!.split("|");
-
-      if (!formatItems.some((formatItem) => formatItem.match(/X/g)?.length
-        === (value as string).length)) {
-        errorMessages.push(`문자의 길이가 요구되는 길이와 다릅니다.`);
-      }
-    }
-    else if (["year", "month", "date"].includes(this.type())) {
-      if (!(value instanceof DateOnly)) {
-        errorMessages.push("날짜를 입력하세요");
-      }
-      else {
-        const min = this.min();
-        const max = this.max();
-        if (min instanceof DateOnly && min.tick > value.tick) {
-          errorMessages.push(`${min}보다 크거나 같아야 합니다.`);
+      else if (this.type() === "number") {
+        if (typeof value !== "number") {
+          errorMessages.push("숫자를 입력하세요");
         }
-        if (max instanceof DateOnly && max.tick < value.tick) {
-          errorMessages.push(`${max}보다 작거나 같아야 합니다.`);
+        else {
+          const min = this.min();
+          const max = this.max();
+          if (typeof min === "number" && min > value) {
+            errorMessages.push(`${min}보다 크거나 같아야 합니다.`);
+          }
+          if (typeof max === "number" && max < value) {
+            errorMessages.push(`${max}보다 작거나 같아야 합니다.`);
+          }
         }
       }
-    }
-    else if (["datetime", "datetime-sec"].includes(this.type())) {
-      if (!(value instanceof DateTime)) {
-        errorMessages.push("날짜 및 시간을 입력하세요");
-      }
-    }
-    else if (["time", "time-sec"].includes(this.type())) {
-      if (!(value instanceof Time)) {
-        errorMessages.push("시간을 입력하세요");
-      }
-    }
-    else if (this.type() === "text") {
-      const minlength = this.minlength();
-      const maxlength = this.maxlength();
-      if (minlength !== undefined && minlength > (value as string).length) {
-        errorMessages.push(`문자의 길이가 ${minlength}보다 길거나 같아야 합니다.`);
-      }
-      if (maxlength !== undefined && maxlength > (value as string).length) {
-        errorMessages.push(`문자의 길이가 ${maxlength}보다 짧거나 같아야 합니다.`);
-      }
-    }
+      else if (this.type() === "format" && !StringUtils.isNullOrEmpty(this.format())) {
+        const formatItems = this.format()!.split("|");
 
-    if (this.validatorFn()) {
-      const message = this.validatorFn()!(value);
-      if (message !== undefined) {
-        errorMessages.push(message);
+        if (!formatItems.some((formatItem) => formatItem.match(/X/g)?.length
+          === (value as string).length)) {
+          errorMessages.push(`문자의 길이가 요구되는 길이와 다릅니다.`);
+        }
       }
-    }
+      else if (["year", "month", "date"].includes(this.type())) {
+        if (!(value instanceof DateOnly)) {
+          errorMessages.push("날짜를 입력하세요");
+        }
+        else {
+          const min = this.min();
+          const max = this.max();
+          if (min instanceof DateOnly && min.tick > value.tick) {
+            errorMessages.push(`${min}보다 크거나 같아야 합니다.`);
+          }
+          if (max instanceof DateOnly && max.tick < value.tick) {
+            errorMessages.push(`${max}보다 작거나 같아야 합니다.`);
+          }
+        }
+      }
+      else if (["datetime", "datetime-sec"].includes(this.type())) {
+        if (!(value instanceof DateTime)) {
+          errorMessages.push("날짜 및 시간을 입력하세요");
+        }
+      }
+      else if (["time", "time-sec"].includes(this.type())) {
+        if (!(value instanceof Time)) {
+          errorMessages.push("시간을 입력하세요");
+        }
+      }
+      else if (this.type() === "text") {
+        const minlength = this.minlength();
+        const maxlength = this.maxlength();
+        if (minlength !== undefined && minlength > (value as string).length) {
+          errorMessages.push(`문자의 길이가 ${minlength}보다 길거나 같아야 합니다.`);
+        }
+        if (maxlength !== undefined && maxlength > (value as string).length) {
+          errorMessages.push(`문자의 길이가 ${maxlength}보다 짧거나 같아야 합니다.`);
+        }
 
-    const fullErrorMessage = errorMessages.join("\r\n");
+        // 👇 pattern 속성 검사 수동 적용
+        const pattern = this.pattern();
+        if (!StringUtils.isNullOrEmpty(pattern)) {
+          try {
+            const regex = new RegExp(`^(?:${pattern})$`);
+            if (!regex.test(value as string)) {
+              errorMessages.push(`입력 값이 형식에 맞지 않습니다.`);
+            }
+          }
+          catch (err) {
+            throw new SdError(`잘못된 pattern: ${pattern}`, err);
+          }
+        }
+      }
 
-    const inputEl = this._elRef.nativeElement.findFirst("input");
-    if (inputEl instanceof HTMLInputElement) {
-      inputEl.setCustomValidity(fullErrorMessage);
-    }
+      if (this.validatorFn()) {
+        const message = this.validatorFn()!(value);
+        if (message !== undefined) {
+          errorMessages.push(message);
+        }
+      }
 
-    return StringUtils.isNullOrEmpty(fullErrorMessage) ? undefined : fullErrorMessage;
-  });
+      return errorMessages.join("\r\n");
+    });
+  }
 
   onInput(event: Event) {
     const inputEl = event.target as HTMLInputElement;
@@ -716,7 +661,7 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
     throw new Error(`'sd-textfield'에 대한 'value'가 잘못되었습니다. (입력값: ${value.toString()})`);
   }
 
-  @HostListener("sd-sheet-cell-copy")
+  /*@HostListener("sd-sheet-cell-copy")
   async onSdSheetCellCopy() {
     if ("clipboard" in navigator) {
       await navigator.clipboard.writeText(JsonConvert.stringify(this.value()));
@@ -728,7 +673,7 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
     if ("clipboard" in navigator) {
       this._setValue(JsonConvert.parse(await navigator.clipboard.readText()));
     }
-  }
+  }*/
 }
 
 /*export type TSdTextfieldType =

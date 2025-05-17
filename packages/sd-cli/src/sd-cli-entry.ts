@@ -2,21 +2,21 @@
 
 /* eslint-disable no-console */
 
-import yargs from "yargs";
-import { hideBin } from "yargs/helpers";
-import { SdCliProject } from "./entry/sd-cli-project";
 import { SdLogger, SdLoggerSeverity } from "@simplysm/sd-core-node";
 import { EventEmitter } from "events";
+import yargs from "yargs";
+import { hideBin } from "yargs/helpers";
+import { SdCliAiCommand } from "./entry/sd-cli-ai-command";
+import { SdCliCordova } from "./entry/sd-cli-cordova";
 import { SdCliElectron } from "./entry/sd-cli-electron";
 import { SdCliLocalUpdate } from "./entry/sd-cli-local-update";
-import { SdCliCordova } from "./entry/sd-cli-cordova";
-import { SdCliAiCommand } from "./entry/sd-cli-ai-command";
 import { SdCliPostinstall } from "./entry/sd-cli-postinstall";
+import { SdCliProject } from "./entry/sd-cli-project";
 import convertEcmaPrivateToTsPrivate from "./fix/convert-ecma-private-to-ts-private";
-import prefixUnderscoreForAccessModifiers from "./fix/prefix-underscore-for-access-modifiers";
+import convertSdAngularSymbolNames from "./fix/convert-sd-angular-symbol-names";
 import convertSdSheetBindingsInInlineTemplate
   from "./fix/convert-sd-sheet-bindings-inInline-template";
-import convertOrderingInterface from "./fix/convert-ordering-interface";
+import prefixUnderscoreForAccessModifiers from "./fix/prefix-underscore-for-access-modifiers";
 
 Error.stackTraceLimit = Infinity;
 EventEmitter.defaultMaxListeners = 0;
@@ -256,7 +256,7 @@ await yargs(hideBin(process.argv))
       convertEcmaPrivateToTsPrivate();
       prefixUnderscoreForAccessModifiers();
       convertSdSheetBindingsInInlineTemplate();
-      convertOrderingInterface();
+      convertSdAngularSymbolNames();
     },
   )
   .strict()

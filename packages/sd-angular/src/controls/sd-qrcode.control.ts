@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, ElementRef, input, viewChild, ViewEncapsulation } from "@angular/core";
 import qrcode from "qrcode";
-import { $effect } from "../utils/hooks/hooks";
+import { $effect } from "../utils/bindings/$effect";
 
 @Component({
   selector: "sd-qrcode",

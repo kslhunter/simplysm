@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
-import { $computed } from "../utils/hooks/hooks";
 import { SizeProp } from "@fortawesome/fontawesome-svg-core";
 import { transformBoolean } from "../utils/type-tramsforms";
+import { $computed } from "../utils/bindings/$computed";
 
 @Component({
   selector: "sd-icon-layers",

@@ -1,7 +1,9 @@
 import { ChangeDetectionStrategy, Component, ElementRef, input, viewChild, ViewEncapsulation } from "@angular/core";
 import { SdEventsDirective } from "../directives/sd-events.directive";
-import { $computed, $effect, $signal } from "../utils/hooks/hooks";
 import { transformBoolean } from "../utils/type-tramsforms";
+import { $signal } from "../utils/bindings/$signal";
+import { $computed } from "../utils/bindings/$computed";
+import { $effect } from "../utils/bindings/$effect";
 
 @Component({
   selector: "sd-collapse",

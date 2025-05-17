@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/core";
-import { useRipple } from "../utils/use-ripple";
+import { setupRipple } from "../utils/setups/setup-ripple";
 
 @Component({
   selector: "sd-select-button",
@@ -31,6 +31,6 @@ import { useRipple } from "../utils/use-ripple";
 })
 export class SdSelectButtonControl {
   constructor() {
-    useRipple();
+    setupRipple();
   }
 }

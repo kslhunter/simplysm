@@ -10,9 +10,9 @@ import {
 
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { transformBoolean } from "../utils/type-tramsforms";
-import { useRipple } from "../utils/use-ripple";
+import { setupRipple } from "../utils/setups/setup-ripple";
 import { SdIconControl } from "./sd-icon.control";
-import { $model } from "../utils/hooks/$model";
+import { $model } from "../utils/bindings/$model";
 
 @Component({
   selector: "sd-checkbox",
@@ -252,7 +252,7 @@ export class SdCheckboxControl {
   contentStyle = input<string>();
 
   constructor() {
-    useRipple(() => !this.disabled());
+    setupRipple(() => !this.disabled());
   }
 
   @HostListener("click")

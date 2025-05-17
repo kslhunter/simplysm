@@ -21,7 +21,7 @@ import {
   ${DS}effect,
   ${DS}obj,
   ${DS}signal,
-  canDeactivate,
+  setupCanDeactivate,
   SdAppStructureProvider,
   SdBaseContainerControl,
   SdButtonControl,
@@ -173,7 +173,7 @@ export class ${name_pascal}DetailModal extends SdModalBase<IModalParam, boolean>
       this.open();
     });
 
-    canDeactivate(() => this.checkIgnoreChanges());
+    setupCanDeactivate(() => this.checkIgnoreChanges());
   }
 
   checkIgnoreChanges() {

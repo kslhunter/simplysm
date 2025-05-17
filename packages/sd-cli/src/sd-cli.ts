@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import path from "path";
 
 // 어차피 sd-worker가 fork로 되어있어서 CPU 제한 안걸리는듯..
+// tsx사용을 해야해서 fork말고 worker로는 동작 못시킴..
 
 
 // ProcessorAffinity 마스크 계산

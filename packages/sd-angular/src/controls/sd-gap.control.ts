@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
-import { $effect } from "../utils/hooks/hooks";
-import { injectElementRef } from "../utils/dom/element-ref.injector";
+import { $effect } from "../utils/bindings/$effect";
+
+import { injectElementRef } from "../utils/injections/inject-element-ref";
 
 @Component({
   selector: "sd-gap",

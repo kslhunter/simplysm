@@ -2,7 +2,7 @@ import { inject, Injectable } from "@angular/core";
 import { ObjectUtils } from "@simplysm/sd-core-common";
 import { ISdServiceClientConnectionConfig, SdServiceClient } from "@simplysm/sd-service-client";
 import { ISdProgressToast, SdToastProvider } from "./sd-toast.provider";
-import { $effect } from "../utils/hooks/hooks";
+import { $effect } from "../utils/bindings/$effect";
 
 @Injectable({ providedIn: "root" })
 export class SdServiceClientFactoryProvider {

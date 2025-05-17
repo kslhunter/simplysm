@@ -10,7 +10,7 @@ import {
 } from "@angular/core";
 import { SdFormBoxControl } from "./sd-form-box.control";
 import { NgTemplateOutlet } from "@angular/common";
-import { $computed } from "../utils/hooks/hooks";
+import { $computed } from "../utils/bindings/$computed";
 
 @Component({
   selector: "sd-form-box-item",

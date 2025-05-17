@@ -1,11 +1,11 @@
 import { inject, reflectComponentType } from "@angular/core";
 import { ActivatedRoute, CanDeactivateFn, Route } from "@angular/router";
 import { SdActivatedModalProvider } from "../../providers/sd-modal.provider";
-import { injectElementRef } from "../dom/element-ref.injector";
+import { injectElementRef } from "../injections/inject-element-ref";
 
 const initializedRouteConfigSet = new Set<Route>();
 
-export function canDeactivate(fn: () => boolean): void {
+export function setupCanDeactivate(fn: () => boolean): void {
   const activatedRoute = inject(ActivatedRoute, { optional: true });
   const activatedModal = inject(SdActivatedModalProvider, { optional: true });
   const elRef = injectElementRef();

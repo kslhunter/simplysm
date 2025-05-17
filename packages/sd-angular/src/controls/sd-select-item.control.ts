@@ -11,10 +11,12 @@ import {
 import { SdSelectControl } from "./sd-select-control";
 import { SdCheckboxControl } from "./sd-checkbox.control";
 import { SdGapControl } from "./sd-gap.control";
-import { $computed, $effect, $signal } from "../utils/hooks/hooks";
-import { injectElementRef } from "../utils/dom/element-ref.injector";
-import { useRipple } from "../utils/use-ripple";
+import { injectElementRef } from "../utils/injections/inject-element-ref";
+import { setupRipple } from "../utils/setups/setup-ripple";
 import { transformBoolean } from "../utils/type-tramsforms";
+import { $computed } from "../utils/bindings/$computed";
+import { $signal } from "../utils/bindings/$signal";
+import { $effect } from "../utils/bindings/$effect";
 
 @Component({
   selector: "sd-select-item",
@@ -95,7 +97,7 @@ export class SdSelectItemControl {
   contentHTML = $signal<string>("");
 
   constructor() {
-    useRipple(() => !this.disabled());
+    setupRipple(() => !this.disabled());
 
     $effect((onCleanup) => {
       this._selectControl.itemControls.update((v) => [...v, this]);

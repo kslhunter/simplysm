@@ -6,10 +6,10 @@ import {
   output,
   ViewEncapsulation,
 } from "@angular/core";
-import { $signal } from "../utils/hooks/hooks";
 import { SdKanbanControl } from "./sd-kanban.control";
 import { SdKanbanLaneControl } from "./sd-kanban-lane.control";
-import { $model } from "../utils/hooks/$model";
+import { $model } from "../utils/bindings/$model";
+import { $signal } from "../utils/bindings/$signal";
 
 @Component({
   selector: "sd-kanban-board",
@@ -17,7 +17,9 @@ import { $model } from "../utils/hooks/$model";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
-  //region styles
+  template: `
+    <ng-content></ng-content>
+  `,
   styles: [
     /* language=SCSS */ `
       sd-kanban-board {
@@ -30,10 +32,6 @@ import { $model } from "../utils/hooks/$model";
       }
     `,
   ],
-  //endregion
-  template: `
-    <ng-content></ng-content>
-  `,
 })
 export class SdKanbanBoardControl<L, T> {
   dragKanban = $signal<SdKanbanControl<L, T>>();

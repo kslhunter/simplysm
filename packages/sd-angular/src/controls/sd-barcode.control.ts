@@ -7,7 +7,7 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import jsbarcode from "jsbarcode";
-import { $effect } from "../utils/hooks/hooks";
+import { $effect } from "../utils/bindings/$effect";
 
 /**
  * jsbarcode 라이브러리를 사용하여 바코드를 렌더링하는 Angular 컴포넌트입니다.

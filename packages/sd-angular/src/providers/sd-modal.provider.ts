@@ -9,8 +9,9 @@ import {
   Type,
 } from "@angular/core";
 import { SdModalControl } from "../controls/sd-modal.control";
-import { $signal } from "../utils/hooks/hooks";
+
 import { SdBusyProvider } from "./sd-busy.provider";
+import { $signal } from "../utils/bindings/$signal";
 
 export const SD_MODAL_INPUT = Symbol();
 export const SD_MODEL_OUTPUT = Symbol();

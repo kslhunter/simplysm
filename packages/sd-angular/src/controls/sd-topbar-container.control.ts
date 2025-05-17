@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/core";
-import { $signal } from "../utils/hooks/hooks";
+import { $signal } from "../utils/bindings/$signal";
+
 
 @Component({
   selector: "sd-topbar-container",
@@ -14,13 +15,13 @@ import { $signal } from "../utils/hooks/hooks";
         position: relative;
         height: 100%;
       }
-    `
+    `,
   ],
   template: `
     <ng-content></ng-content>`,
   host: {
-    "[style.padding-top]": "paddingTop()"
-  }
+    "[style.padding-top]": "paddingTop()",
+  },
 })
 export class SdTopbarContainerControl {
   paddingTop = $signal<string>();

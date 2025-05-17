@@ -1,7 +1,8 @@
-import { $effect, $signal } from "../hooks/hooks";
-import { injectElementRef } from "./element-ref.injector";
+import { injectElementRef } from "../injections/inject-element-ref";
+import { $signal } from "../bindings/$signal";
+import { $effect } from "../bindings/$effect";
 
-export function injectSizeSignals() {
+export function useResizeManager() {
   const elRef = injectElementRef();
 
   const offsetWidth = $signal(0);

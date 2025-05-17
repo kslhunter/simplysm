@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, forwardRef, inject, input, ViewEncapsulation } from "@angular/core";
 import { SdViewControl } from "./sd-view.control";
-import { $computed } from "../utils/hooks/hooks";
+import { $computed } from "../utils/bindings/$computed";
 
 @Component({
   selector: "sd-view-item",

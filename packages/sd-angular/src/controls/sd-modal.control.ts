@@ -11,19 +11,21 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import { NumberUtils } from "@simplysm/sd-core-common";
-import { SdAnchorControl } from "./sd-anchor.control";
-import { SdPaneControl } from "./sd-pane.control";
-import { SdSystemConfigProvider } from "../providers/sd-system-config.provider";
 import { SdEventsDirective } from "../directives/sd-events.directive";
+import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
+import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
+import { SdSystemConfigProvider } from "../providers/sd-system-config.provider";
+import { $effect } from "../utils/bindings/$effect";
+import { $model } from "../utils/bindings/$model";
+import { $signal } from "../utils/bindings/$signal";
+
+import { injectElementRef } from "../utils/injections/inject-element-ref";
+import { transformBoolean } from "../utils/type-tramsforms";
+import { SdAnchorControl } from "./sd-anchor.control";
 import { SdDockContainerControl } from "./sd-dock-container.control";
 import { SdDockControl } from "./sd-dock.control";
-import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
-import { $effect, $signal } from "../utils/hooks/hooks";
-import { injectElementRef } from "../utils/dom/element-ref.injector";
-import { transformBoolean } from "../utils/type-tramsforms";
 import { SdIconControl } from "./sd-icon.control";
-import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
-import { $model } from "../utils/hooks/$model";
+import { SdPaneControl } from "./sd-pane.control";
 
 @Component({
   selector: "sd-modal",

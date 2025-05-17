@@ -1,4 +1,5 @@
-import { computed, ResourceRef, ResourceStatus, Signal } from "@angular/core";
+import { ResourceRef, ResourceStatus, Signal } from "@angular/core";
+import { $computed } from "../../../utils/bindings/$computed";
 import { SdSheetColumnDirective } from "../directives/sd-sheet-column.directive";
 import { ISdSheetColumnDef, ISdSheetConfig, ISdSheetHeaderDef } from "../sd-sheet.types";
 
@@ -6,7 +7,7 @@ export function useSdSheetLayoutEngine<T>(binding: {
   columnControls: Signal<ReadonlyArray<SdSheetColumnDirective<T>>>;
   config: ResourceRef<ISdSheetConfig | undefined>;
 }) {
-  const columnDefs = computed<ISdSheetColumnDef<T>[]>(() => {
+  const columnDefs = $computed<ISdSheetColumnDef<T>[]>(() => {
     if (
       binding.config.status() !== ResourceStatus.Resolved &&
       binding.config.status() !== ResourceStatus.Local
@@ -37,7 +38,7 @@ export function useSdSheetLayoutEngine<T>(binding: {
       }));
   });
 
-  const rawHeaderDefTable = computed<(IRawHeaderDef | undefined)[][]>(() => {
+  const rawHeaderDefTable = $computed<(IRawHeaderDef | undefined)[][]>(() => {
     const result: (IRawHeaderDef | undefined)[][] = [];
     const defs = columnDefs();
 
@@ -62,7 +63,7 @@ export function useSdSheetLayoutEngine<T>(binding: {
     return result;
   });
 
-  const headerDefTable = computed<(ISdSheetHeaderDef | undefined)[][]>(() => {
+  const headerDefTable = $computed<(ISdSheetHeaderDef | undefined)[][]>(() => {
     const rawTable = rawHeaderDefTable();
 
     const isSame = (r: number, currC: number, prevC: number) => {
@@ -121,11 +122,11 @@ export function useSdSheetLayoutEngine<T>(binding: {
     return result;
   });
 
-  const hasSummary = computed<boolean>(() =>
+  const hasSummary = $computed<boolean>(() =>
     binding.columnControls().some(item => item.summaryTemplateRef()),
   );
 
-  const headerFeatureRowSpan = computed<number>(() =>
+  const headerFeatureRowSpan = $computed<number>(() =>
     rawHeaderDefTable().length + (hasSummary() ? 1 : 0),
   );
 

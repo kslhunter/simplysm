@@ -1,6 +1,7 @@
 import { NumberUtils, ObjectUtils } from "@simplysm/sd-core-common";
 import { useSdSheetDomAccessor } from "./use-sd-sheet-dom-accessor";
-import { $signal } from "../../../utils/hooks/hooks";
+import { $signal } from "../../../utils/bindings/$signal";
+
 export function useSdSheetCellAgent() {
   const dom = useSdSheetDomAccessor();
 
@@ -10,41 +11,44 @@ export function useSdSheetCellAgent() {
     return ObjectUtils.equal(editModeCellAddr(), addr);
   }
 
-  function handleKeydown(event: KeyboardEvent) {
+  async function handleKeydownAsync(event: KeyboardEvent) {
     if (event.target instanceof HTMLTableCellElement) {
+      const el = event.target;
+
       if (event.key === "F2") {
         event.preventDefault();
-        enterEditMode(event.target);
+        enterEditMode(el);
       }
       else if (event.key === "ArrowDown") {
-        if (moveCellIfExists(event.target, 1, 0, false)) {
+        if (moveCellIfExists(el, 1, 0, false)) {
           event.preventDefault();
         }
       }
       else if (event.key === "ArrowUp") {
-        if (moveCellIfExists(event.target, -1, 0, false)) {
+        if (moveCellIfExists(el, -1, 0, false)) {
           event.preventDefault();
         }
       }
       else if (event.key === "ArrowRight") {
-        if (moveCellIfExists(event.target, 0, 1, false)) {
+        if (moveCellIfExists(el, 0, 1, false)) {
           event.preventDefault();
         }
       }
       else if (event.key === "ArrowLeft") {
-        if (moveCellIfExists(event.target, 0, -1, false)) {
+        if (moveCellIfExists(el, 0, -1, false)) {
           event.preventDefault();
         }
       }
       else if (event.ctrlKey && event.key === "c") {
         if (!document.getSelection()) {
+
           event.preventDefault();
-          _dispatchCustomEvent(event.target, "sd-sheet-cell-copy");
+          await el.copyAsync();
         }
       }
       else if (event.ctrlKey && event.key === "v") {
         event.preventDefault();
-        _dispatchCustomEvent(event.target, "sd-sheet-cell-paste");
+        await el.pasteAsync();
       }
     }
     else if (event.target instanceof HTMLElement) {
@@ -87,10 +91,6 @@ export function useSdSheetCellAgent() {
         }
       }
     }
-  }
-
-  function _dispatchCustomEvent(tdEl: HTMLTableCellElement, name: string) {
-    tdEl.findFirst("sd-textfield")?.dispatchEvent(new CustomEvent(name));
   }
 
   function handleCellDoubleClick(event: MouseEvent) {
@@ -158,7 +158,7 @@ export function useSdSheetCellAgent() {
   }
 
   return {
-    handleKeydown,
+    handleKeydownAsync,
     handleCellDoubleClick,
     handleBlur,
     getIsCellEditMode,

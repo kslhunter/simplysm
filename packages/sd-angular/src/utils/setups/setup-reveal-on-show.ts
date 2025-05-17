@@ -1,7 +1,7 @@
-import { injectElementRef } from "./dom/element-ref.injector";
-import { $effect } from "./hooks/hooks";
+import { injectElementRef } from "../injections/inject-element-ref";
+import { $effect } from "../bindings/$effect";
 
-export function useShowEffect(optFn?: () => {
+export function setupRevealOnShow(optFn?: () => {
   type?: "l2r" | "t2b";
   enabled?: boolean;
 }) {

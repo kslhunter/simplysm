@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
 import bwipjs from "bwip-js";
-import { $effect } from "../utils/hooks/hooks";
-import { injectElementRef } from "../utils/dom/element-ref.injector";
+import { injectElementRef } from "../utils/injections/inject-element-ref";
+import { $effect } from "../utils/bindings/$effect";
 
 @Component({
   selector: "sd-barcode2",

@@ -1,7 +1,6 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  computed,
   contentChildren,
   HostListener,
   inject,
@@ -9,6 +8,7 @@ import {
   output,
   ViewEncapsulation,
 } from "@angular/core";
+import { $computed } from "../../utils/bindings/$computed";
 import { SdSheetColumnDirective } from "./directives/sd-sheet-column.directive";
 import { SdSheetConfigModal } from "../../modals/sd-sheet-config.modal";
 import { SdModalProvider } from "../../providers/sd-modal.provider";
@@ -25,16 +25,12 @@ import { transformBoolean } from "../../utils/type-tramsforms";
 import { SdIconControl } from "../sd-icon.control";
 import { SdIconLayersControl } from "../sd-icon-layers.control";
 import { ISdResizeEvent } from "../../plugins/events/sd-resize.event-plugin";
-import { useSdSystemConfig } from "../../features/use-sd-system-config";
-import { ISortingDef, useSortingManager } from "../../features/use-sorting-manager";
-import { useSelectionManager } from "../../features/use-selection-manager";
 import { useSdSheetLayoutEngine } from "./features/use-sd-sheet-layout-engine";
 import { useSdSheetFocusIndicatorRenderer } from "./features/use-sd-sheet-focus-indicator-renderer";
 import {
   useSdSheetSelectRowIndicatorRenderer,
 } from "./features/use-sd-sheet-select-row-indicator-renderer";
 import { useSdSheetCellAgent } from "./features/use-sd-sheet-cell-agent";
-import { useExpandingManager } from "../../features/use-expanding-manager";
 import { useSdSheetDomAccessor } from "./features/use-sd-sheet-dom-accessor";
 import {
   ISdSheetConfig,
@@ -43,8 +39,12 @@ import {
   ISdSheetItemKeydownEventParam,
 } from "./sd-sheet.types";
 import { SdEventsDirective } from "../../directives/sd-events.directive";
-import { $model } from "../../utils/hooks/$model";
-import { $signal } from "../../utils/hooks/hooks";
+import { $model } from "../../utils/bindings/$model";
+import { useSystemConfigManager } from "../../utils/managers/use-system-config-manager";
+import { $signal } from "../../utils/bindings/$signal";
+import { ISortingDef, useSortingManager } from "../../utils/managers/use-sorting-manager";
+import { useExpandingManager } from "../../utils/managers/use-expanding-manager";
+import { useSelectionManager } from "../../utils/managers/use-selection-manager";
 
 @Component({
   selector: "sd-sheet",
@@ -643,7 +643,10 @@ export class SdSheetControl<T> {
 
   key = input.required<string>();
 
-  config = useSdSystemConfig<ISdSheetConfig>(this.key);
+  private _configManager = useSystemConfigManager<ISdSheetConfig>({
+    key: this.key,
+  });
+  config = this._configManager.config;
 
   async onConfigButtonClick(): Promise<void> {
     const result = await this._sdModal.showAsync(
@@ -685,8 +688,8 @@ export class SdSheetControl<T> {
     columnControls: this.columnControls,
   });
 
-  columnDefs = computed(() => this.layoutEngine.columnDefs());
-  headerDefTable = computed(() => this.layoutEngine.headerDefTable());
+  columnDefs = $computed(() => this.layoutEngine.columnDefs());
+  headerDefTable = $computed(() => this.layoutEngine.headerDefTable());
 
   //endregion
 
@@ -706,7 +709,7 @@ export class SdSheetControl<T> {
     }
   }
 
-  fixedColumnLefts = computed(() => {
+  fixedColumnLefts = $computed(() => {
     const colDefs = this.columnDefs();
     const colWidthRecord = this._columnWidthRecord();
 
@@ -784,7 +787,9 @@ export class SdSheetControl<T> {
   __sorts = input<ISortingDef[]>([], { alias: "sorts" });
   __sortsChange = output<ISortingDef[]>({ alias: "sortsChange" });
   sorts = $model(this.__sorts, this.__sortsChange);
-  sortingManager = useSortingManager(this.sorts);
+  sortingManager = useSortingManager({
+    sortingDefs: this.sorts,
+  });
 
   useAutoSort = input(false, { transform: transformBoolean });
 
@@ -805,7 +810,7 @@ export class SdSheetControl<T> {
     }
   }
 
-  private _sortedItems = computed(() => {
+  private _sortedItems = $computed(() => {
     if (!this.useAutoSort()) return this.items();
     return this.sortingManager.sort(this.items());
   });
@@ -821,7 +826,7 @@ export class SdSheetControl<T> {
   __currentPageChange = output<number>({ alias: "currentPageChange" });
   currentPage = $model(this.__currentPage, this.__currentPageChange);
 
-  effectivePageCount = computed(() => {
+  effectivePageCount = $computed(() => {
     const itemsPerPage = this.itemsPerPage();
     if (itemsPerPage != null && itemsPerPage !== 0 && this.items().length > 0) {
       return Math.ceil(this.items().length / itemsPerPage);
@@ -831,7 +836,7 @@ export class SdSheetControl<T> {
     }
   });
 
-  private _sortedPagedItems = computed(() => {
+  private _sortedPagedItems = $computed(() => {
     const itemsPerPage = this.itemsPerPage();
     if (itemsPerPage == null || itemsPerPage === 0) return this._sortedItems();
     if (this.items().length <= 0) return this._sortedItems();
@@ -859,7 +864,7 @@ export class SdSheetControl<T> {
     },
   });
 
-  displayItems = computed(() => this.expandingManager.displayItems());
+  displayItems = $computed(() => this.expandingManager.displayItems());
 
   //endregion
 
@@ -893,8 +898,8 @@ export class SdSheetControl<T> {
   cellAgent = useSdSheetCellAgent();
 
   @HostListener("keydown.capture", ["$event"])
-  onKeydownCapture(event: KeyboardEvent) {
-    this.cellAgent.handleKeydown(event);
+  async onKeydownCapture(event: KeyboardEvent) {
+    await this.cellAgent.handleKeydownAsync(event);
   }
 
   onItemCellDoubleClick(event: MouseEvent): void {

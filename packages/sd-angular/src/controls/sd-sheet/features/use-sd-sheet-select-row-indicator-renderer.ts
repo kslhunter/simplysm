@@ -1,4 +1,5 @@
-import { effect, Signal } from "@angular/core";
+import { Signal } from "@angular/core";
+import { $effect } from "../../../utils/bindings/$effect";
 import { useSdSheetDomAccessor } from "./use-sd-sheet-dom-accessor";
 
 export function useSdSheetSelectRowIndicatorRenderer<T>(binding: {
@@ -7,7 +8,7 @@ export function useSdSheetSelectRowIndicatorRenderer<T>(binding: {
 }) {
   const dom = useSdSheetDomAccessor();
 
-  effect(() => {
+  $effect(() => {
     const selectRowIndicatorContainerEl = dom.getSelectRowIndicatorContainer();
 
     if (binding.selectedItems().length <= 0) {

@@ -12,8 +12,8 @@ import { SdListItemControl } from "./sd-list-item.control";
 import { SdThemeProvider } from "../providers/sd-theme.provider";
 import { SdDropdownPopupControl } from "./sd-dropdown-popup.control";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
-import { $effect } from "../utils/hooks/hooks";
 import { SdIconControl } from "./sd-icon.control";
+import { $effect } from "../utils/bindings/$effect";
 
 @Component({
   selector: "sd-theme-selector",

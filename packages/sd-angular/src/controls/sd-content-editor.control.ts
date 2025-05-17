@@ -7,20 +7,28 @@ import {
   viewChild,
   ViewEncapsulation,
 } from "@angular/core";
-import { StringUtils } from "@simplysm/sd-core-common";
-import { $computed, $effect, } from "../utils/hooks/hooks";
 import { transformBoolean } from "../utils/type-tramsforms";
-import { SdInvalidDirective } from "../directives/sd-invalid.directive";
-import { $model } from "../utils/hooks/$model";
+import { $model } from "../utils/bindings/$model";
+import { setupInvalid } from "../utils/setups/setup-invalid";
+import { $effect } from "../utils/bindings/$effect";
 
 @Component({
   selector: "sd-content-editor",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [
-    SdInvalidDirective,
-  ],
+  imports: [],
+  template: `
+    <div
+      #editorEl
+      class="_editor"
+      (input)="onInput()"
+      [attr.contenteditable]="!disabled() && !readonly()"
+      [title]="value()"
+      [style]="editorStyle()"
+      (focus)="onEditorFocus()"
+    ></div>
+  `,
   styles: [
     /* language=SCSS */ `
       @use "../scss/mixins";
@@ -113,18 +121,6 @@ import { $model } from "../utils/hooks/$model";
       }
     `,
   ],
-  template: `
-    <div
-      #editorEl
-      class="_editor"
-      (input)="onInput()"
-      [attr.contenteditable]="!disabled() && !readonly()"
-      [title]="value()"
-      [style]="editorStyle()"
-      (focus)="onEditorFocus()"
-      [sd-invalid]="errorMessage()"
-    ></div>
-  `,
   host: {
     "[attr.sd-disabled]": "disabled()",
     "[attr.sd-readonly]": "readonly()",
@@ -154,23 +150,22 @@ export class SdContentEditorControl {
     { read: ElementRef },
   );
 
-  errorMessage = $computed(() => {
-    const errorMessages: string[] = [];
-    if (this.value() == null && this.required()) {
-      errorMessages.push("값을 입력하세요.");
-    }
-    else if (this.validatorFn()) {
-      const message = this.validatorFn()!(this.value());
-      if (message !== undefined) {
-        errorMessages.push(message);
-      }
-    }
-
-    const fullErrorMessage = errorMessages.join("\r\n");
-    return StringUtils.isNullOrEmpty(fullErrorMessage) ? undefined : fullErrorMessage;
-  });
-
   constructor() {
+    setupInvalid(() => {
+      const errorMessages: string[] = [];
+      if (this.value() == null && this.required()) {
+        errorMessages.push("값을 입력하세요.");
+      }
+      else if (this.validatorFn()) {
+        const message = this.validatorFn()!(this.value());
+        if (message !== undefined) {
+          errorMessages.push(message);
+        }
+      }
+
+      return errorMessages.join("\r\n");
+    });
+
     $effect(() => {
       const innerHTML = this.editorElRef().nativeElement.innerHTML;
       if (innerHTML !== this.value()) {

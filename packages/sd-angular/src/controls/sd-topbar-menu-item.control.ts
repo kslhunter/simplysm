@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
-import { useRipple } from "../utils/use-ripple";
+import { setupRipple } from "../utils/setups/setup-ripple";
 import { transformBoolean } from "../utils/type-tramsforms";
 
 @Component({
@@ -55,6 +55,6 @@ export class SdTopbarMenuItemControl {
   theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey">("primary");
 
   constructor() {
-    useRipple(() => !this.disabled());
+    setupRipple(() => !this.disabled());
   }
 }

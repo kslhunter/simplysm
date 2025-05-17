@@ -8,7 +8,7 @@ import {
   ViewEncapsulation
 } from "@angular/core";
 import { SdTabControl } from "./sd-tab.control";
-import { $computed } from "../utils/hooks/hooks";
+import { $computed } from "../utils/bindings/$computed";
 
 @Component({
   selector: "sd-tab-item",
