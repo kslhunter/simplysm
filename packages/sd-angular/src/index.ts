@@ -89,6 +89,7 @@ export * from "./controls/sd-topbar.control";
 export * from "./controls/sd-view-item.control";
 export * from "./controls/sd-view.control";
 export * from "./directives/sd-events.directive";
+export * from "./directives/sd-invalid.directive";
 export * from "./directives/sd-item-of.template-directive";
 export * from "./directives/sd-ripple.directive";
 export * from "./directives/sd-router-link.directive";

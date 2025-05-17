@@ -60,7 +60,7 @@ export default [
       "@angular-eslint": ngeslint.tsPlugin,
       "import": importPlugin,
     },
-    settings: {
+    /*settings: {
       "import/resolver": {
         typescript: {
           project: [
@@ -68,7 +68,7 @@ export default [
           ],
         },
       },
-    },
+    },*/
     processor: ngeslint.processInlineTemplates,
     languageOptions: {
       parser: tseslint.parser,
@@ -205,13 +205,20 @@ export default [
         "error", {
           types: [
             {
-              ban: "Uint8Array",
-              safe: "Buffer",
-            }, {
               ban: "ArrayBuffer",
               safe: "Buffer",
               ignoreInGeneric: true,
             },
+            ...[
+              'Uint8Array', 'Uint8ClampedArray',
+              'Int8Array', 'Uint16Array', 'Int16Array',
+              'Uint32Array', 'Int32Array',
+              'Float32Array', 'Float64Array',
+              "BigInt64Array", "BigUint64Array",
+            ].map(item => ({
+              ban: item,
+              safe: "Buffer",
+            })),
           ],
         },
       ],
@@ -220,11 +227,13 @@ export default [
         'error',
         {
           paths: [
-            /*{
+            // library에서만
+            {
               name: '@angular/core',
               importNames: ['model'],
               message: '"model"은 사용할 수 없습니다. input/output/$model을 사용하세요.',
-            },*/
+            },
+            // fix로 변환됨
             ...[
               "signal",
               "computed",

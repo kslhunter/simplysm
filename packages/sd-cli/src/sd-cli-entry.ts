@@ -16,6 +16,8 @@ import convertEcmaPrivateToTsPrivate from "./fix/convert-ecma-private-to-ts-priv
 import convertSdAngularSymbolNames from "./fix/convert-sd-angular-symbol-names";
 import convertSdSheetBindingsInInlineTemplate
   from "./fix/convert-sd-sheet-bindings-inInline-template";
+import convertSetupCumulateSelectedKeysToObjectParam
+  from "./fix/convert-setup-cumulate-selected-keys-to-object-param";
 import prefixUnderscoreForAccessModifiers from "./fix/prefix-underscore-for-access-modifiers";
 
 Error.stackTraceLimit = Infinity;
@@ -253,10 +255,19 @@ await yargs(hideBin(process.argv))
       .hide("help")
       .hide("debug"),
     () => {
+      // GIT 사용중일 경우, 커밋되지 않은 수정사항이 있는지 확인
+      /*if (FsUtils.exists(path.resolve(process.cwd(), ".git"))) {
+        const gitStatusResult = await SdProcess.spawnAsync("git status");
+        if (gitStatusResult.includes("Changes") || gitStatusResult.includes("Untracked")) {
+          throw new Error("커밋되지 않은 정보가 있습니다. FIX오류시 롤백이 불가능하므로, 미리 커밋을 해놔야 합니다.\n" + gitStatusResult);
+        }
+      }*/
+
       convertEcmaPrivateToTsPrivate();
       prefixUnderscoreForAccessModifiers();
       convertSdSheetBindingsInInlineTemplate();
       convertSdAngularSymbolNames();
+      convertSetupCumulateSelectedKeysToObjectParam();
     },
   )
   .strict()

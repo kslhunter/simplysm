@@ -55,7 +55,7 @@ export default function convertSdSheetBindingsSafely() {
         (match) =>
           match
             .replace(/\[disableOrdering\]/g, "[disableSorting]")
-            .replace(/\sdisableOrdering/g, "\sdisableSorting"),
+            .replace(/\sdisableOrdering/g, " disableSorting"),
       );
 
       if (rawTemplate !== newTemplate) {
