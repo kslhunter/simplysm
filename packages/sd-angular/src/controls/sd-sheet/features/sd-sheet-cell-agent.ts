@@ -1,41 +1,49 @@
 import { NumberUtils, ObjectUtils } from "@simplysm/sd-core-common";
-import { useSdSheetDomAccessor } from "./use-sd-sheet-dom-accessor";
 import { $signal } from "../../../utils/bindings/$signal";
+import { SdSheetDomAccessor } from "./sd-sheet-dom-accessor";
 
-export function useSdSheetCellAgent() {
-  const dom = useSdSheetDomAccessor();
-
-  const editModeCellAddr = $signal<{ r: number; c: number } | undefined>(undefined);
-
-  function getIsCellEditMode(addr: { r: number, c: number }): boolean {
-    return ObjectUtils.equal(editModeCellAddr(), addr);
+export class SdSheetCellAgent {
+  constructor(private _options: { domAccessor: SdSheetDomAccessor; }) {
   }
 
-  async function handleKeydownAsync(event: KeyboardEvent) {
+  private _editModeCellAddr = $signal<{ r: number; c: number } | undefined>(undefined);
+
+  getIsCellEditMode(addr: { r: number, c: number }): boolean {
+    return ObjectUtils.equal(this._editModeCellAddr(), addr);
+  }
+
+  getCellAddr(el: HTMLTableCellElement) {
+    return {
+      r: NumberUtils.parseInt(el.getAttribute("r"))!,
+      c: NumberUtils.parseInt(el.getAttribute("c"))!,
+    };
+  }
+
+  async handleKeydownCaptureAsync(event: KeyboardEvent) {
     if (event.target instanceof HTMLTableCellElement) {
       const el = event.target;
 
       if (event.key === "F2") {
         event.preventDefault();
-        enterEditMode(el);
+        this._enterEditMode(el);
       }
       else if (event.key === "ArrowDown") {
-        if (moveCellIfExists(el, 1, 0, false)) {
+        if (this._moveCellIfExists(el, 1, 0, false)) {
           event.preventDefault();
         }
       }
       else if (event.key === "ArrowUp") {
-        if (moveCellIfExists(el, -1, 0, false)) {
+        if (this._moveCellIfExists(el, -1, 0, false)) {
           event.preventDefault();
         }
       }
       else if (event.key === "ArrowRight") {
-        if (moveCellIfExists(el, 0, 1, false)) {
+        if (this._moveCellIfExists(el, 0, 1, false)) {
           event.preventDefault();
         }
       }
       else if (event.key === "ArrowLeft") {
-        if (moveCellIfExists(el, 0, -1, false)) {
+        if (this._moveCellIfExists(el, 0, -1, false)) {
           event.preventDefault();
         }
       }
@@ -56,112 +64,97 @@ export function useSdSheetCellAgent() {
       if (!tdEl) return;
       if (event.key === "Escape") {
         event.preventDefault();
-        exitEditMode(tdEl);
+        this._exitEditMode(tdEl);
       }
       else if (event.key === "Enter") {
         if (event.target.tagName === "TEXTAREA" || event.target.hasAttribute("contenteditable")) {
           if (event.ctrlKey) {
             event.preventDefault();
-            moveCellIfExists(tdEl, 1, 0, true);
+            this._moveCellIfExists(tdEl, 1, 0, true);
           }
         }
         else {
           event.preventDefault();
-          moveCellIfExists(tdEl, 1, 0, true);
+          this._moveCellIfExists(tdEl, 1, 0, true);
         }
       }
       else if (event.ctrlKey && event.key === "ArrowDown") {
-        if (moveCellIfExists(tdEl, 1, 0, true)) {
+        if (this._moveCellIfExists(tdEl, 1, 0, true)) {
           event.preventDefault();
         }
       }
       else if (event.ctrlKey && event.key === "ArrowUp") {
-        if (moveCellIfExists(tdEl, -1, 0, true)) {
+        if (this._moveCellIfExists(tdEl, -1, 0, true)) {
           event.preventDefault();
         }
       }
       else if (event.ctrlKey && event.key === "ArrowRight") {
-        if (moveCellIfExists(tdEl, 0, 1, true)) {
+        if (this._moveCellIfExists(tdEl, 0, 1, true)) {
           event.preventDefault();
         }
       }
       else if (event.ctrlKey && event.key === "ArrowLeft") {
-        if (moveCellIfExists(tdEl, 0, -1, true)) {
+        if (this._moveCellIfExists(tdEl, 0, -1, true)) {
           event.preventDefault();
         }
       }
     }
   }
 
-  function handleCellDoubleClick(event: MouseEvent) {
+  handleCellDoubleClick(event: MouseEvent) {
     if (!(event.target instanceof HTMLElement)) return;
 
     const tdEl = (event.target.tagName === "TD"
       ? event.target
       : event.target.findParent("td")!) as HTMLTableCellElement;
 
-    enterEditMode(tdEl);
+    this._enterEditMode(tdEl);
   }
 
-  function handleBlur(event: FocusEvent) {
+  handleBlurCapture(event: FocusEvent) {
     if (
-      editModeCellAddr() &&
+      this._editModeCellAddr() &&
       !(
         event.target instanceof HTMLElement &&
         event.relatedTarget instanceof HTMLElement &&
         (event.target.findParent("td") ?? event.target) === event.relatedTarget.findParent("td")
       )
     ) {
-      editModeCellAddr.set(undefined);
+      this._editModeCellAddr.set(undefined);
     }
   }
 
-  function enterEditMode(tdEl: HTMLTableCellElement) {
-    const addr = getCellAddr(tdEl);
-    editModeCellAddr.set(addr);
+  private _enterEditMode(tdEl: HTMLTableCellElement) {
+    const addr = this.getCellAddr(tdEl);
+    this._editModeCellAddr.set(addr);
     requestAnimationFrame(() => tdEl.findFocusableFirst()?.focus());
   }
 
-  function exitEditMode(tdEl: HTMLTableCellElement) {
+  private _exitEditMode(tdEl: HTMLTableCellElement) {
     tdEl.focus();
-    editModeCellAddr.set(undefined);
+    this._editModeCellAddr.set(undefined);
   }
 
-  function moveCellIfExists(
+  private _moveCellIfExists(
     fromEl: HTMLTableCellElement,
     offsetR: number,
     offsetC: number,
     isEditMode: boolean,
   ): boolean {
-    const fromAddr = getCellAddr(fromEl);
+    const fromAddr = this.getCellAddr(fromEl);
     const toAddr = { r: fromAddr.r + offsetR, c: fromAddr.c + offsetC };
 
-    const tdEl = dom.getCell(toAddr.r, toAddr.c);
+    const tdEl = this._options.domAccessor.getCell(toAddr.r, toAddr.c);
     if (!tdEl) return false;
 
     tdEl.focus();
     if (isEditMode) {
-      editModeCellAddr.set(toAddr);
+      this._editModeCellAddr.set(toAddr);
       requestAnimationFrame(() => tdEl.findFocusableFirst()?.focus());
     }
     else {
-      editModeCellAddr.set(undefined);
+      this._editModeCellAddr.set(undefined);
     }
     return true;
   }
-
-  function getCellAddr(el: HTMLTableCellElement) {
-    return {
-      r: NumberUtils.parseInt(el.getAttribute("r"))!,
-      c: NumberUtils.parseInt(el.getAttribute("c"))!,
-    };
-  }
-
-  return {
-    handleKeydownAsync,
-    handleCellDoubleClick,
-    handleBlur,
-    getIsCellEditMode,
-    getCellAddr,
-  };
 }

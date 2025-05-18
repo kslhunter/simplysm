@@ -10,10 +10,7 @@ export function $resource<T, R>(options: ResourceOptions<T, R> & {
 
   if (options.saver) {
     $effect(async () => {
-      if (
-        sig.status() !== ResourceStatus.Local
-        || sig.status() !== ResourceStatus.Resolved
-      ) return;
+      if (sig.status() !== ResourceStatus.Local) return;
 
       await options.saver!(sig.value());
     });

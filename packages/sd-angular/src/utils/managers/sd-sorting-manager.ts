@@ -1,23 +1,28 @@
 import { WritableSignal } from "@angular/core";
 import { ObjectUtils } from "@simplysm/sd-core-common";
+import { $computed } from "../bindings/$computed";
 
-export function useSortingManager(options: {
-  sortingDefs: WritableSignal<ISortingDef[]>
-}) {
-  function getIndexText(key: string) {
-    if (options.sortingDefs().length < 2) {
-      return undefined;
-    }
-    const index = options.sortingDefs().findIndex((item) => item.key === key);
-    return index >= 0 ? (index + 1).toString() : undefined;
+export class SdSortingManager {
+  constructor(private _options: { sorts: WritableSignal<ISdSortingDef[]> }) {
   }
 
-  function getIsDesc(key: string) {
-    return options.sortingDefs().single((item) => item.key === key)?.desc;
-  }
+  defMap = $computed(() => {
+    return this._options.sorts().toMap(item => item.key, item => {
+      if (this._options.sorts().length < 2) {
+        return { indexText: undefined, desc: item.desc };
+      }
 
-  function toggle(key: string, multiple: boolean) {
-    options.sortingDefs.update((v) => {
+      const index = this._options.sorts().findIndex(item1 => item1.key === item.key);
+      const indexText = index >= 0 ? (index + 1).toString() : undefined;
+      return {
+        indexText,
+        desc: item.desc,
+      };
+    });
+  });
+
+  toggle(key: string, multiple: boolean) {
+    this._options.sorts.update((v) => {
       let r = [...v];
       const ordItem = r.single((item) => item.key === key);
       if (ordItem) {
@@ -41,9 +46,9 @@ export function useSortingManager(options: {
     });
   }
 
-  function sort<T>(items: T[]): T[] {
+  sort<T>(items: T[]): T[] {
     let result = [...items];
-    for (const sortDef of [...options.sortingDefs()].reverse()) {
+    for (const sortDef of [...this._options.sorts()].reverse()) {
       if (sortDef.desc) {
         result = result.orderByDesc((item) => ObjectUtils.getChainValue(
           item,
@@ -58,16 +63,9 @@ export function useSortingManager(options: {
     }
     return result;
   }
-
-  return {
-    sort,
-    getIndexText,
-    getIsDesc,
-    toggle,
-  };
 }
 
-export interface ISortingDef {
+export interface ISdSortingDef {
   key: string;
   desc: boolean;
 }

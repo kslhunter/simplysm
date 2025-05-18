@@ -1,13 +1,16 @@
-import { useSdSheetDomAccessor } from "./use-sd-sheet-dom-accessor";
+import { SdSheetDomAccessor } from "./sd-sheet-dom-accessor";
 
-export function useSdSheetFocusIndicatorRenderer() {
-  const dom = useSdSheetDomAccessor();
+export class SdSheetFocusIndicatorRenderer {
 
+  constructor(private _options: {
+    domAccessor: SdSheetDomAccessor
+  }) {
+  }
 
-  function redraw() {
-    const containerEl = dom.getContainer();
-    const rowIndicatorEl = dom.getFocusRowIndicator();
-    const cellIndicatorEl = dom.getFocusCellIndicator();
+  redraw() {
+    const containerEl = this._options.domAccessor.getContainer();
+    const rowIndicatorEl = this._options.domAccessor.getFocusRowIndicator();
+    const cellIndicatorEl = this._options.domAccessor.getFocusCellIndicator();
 
     const focusedEl = document.activeElement;
     if (!(focusedEl instanceof HTMLElement)) {
@@ -60,8 +63,8 @@ export function useSdSheetFocusIndicatorRenderer() {
     if (!(focusedEl instanceof HTMLTableCellElement)) return;
     if (focusedEl.className.includes("_fixed")) return;
 
-    const theadEl = dom.getTHead();
-    const lastDepthFixedHeaderEls = dom.getLastDepthFixedHeaders();
+    const theadEl = this._options.domAccessor.getTHead();
+    const lastDepthFixedHeaderEls = this._options.domAccessor.getLastDepthFixedHeaders();
 
     const noneFixedPosition = {
       top: theadEl.offsetHeight,
@@ -80,8 +83,4 @@ export function useSdSheetFocusIndicatorRenderer() {
       cellIndicatorEl.style.opacity = "1";
     }
   }
-
-  return {
-    redraw,
-  };
 }

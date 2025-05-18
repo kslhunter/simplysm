@@ -14,3 +14,10 @@ export function $signal<T>(initialValue?: T): SdWritableSignal<T | undefined> {
   sig.$mark = () => $mark(sig);
   return sig;
 }
+
+
+export function to$Signal<T>(sig: WritableSignal<T>): SdWritableSignal<T> {
+  const result = sig as SdWritableSignal<T>;
+  result.$mark = () => $mark(sig);
+  return result;
+}

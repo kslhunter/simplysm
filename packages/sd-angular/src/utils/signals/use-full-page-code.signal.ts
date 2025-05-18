@@ -1,12 +1,10 @@
-import { inject, Signal } from "@angular/core";
-import { NavigationEnd, Router } from "@angular/router";
+import { inject } from "@angular/core";
 import { toSignal } from "@angular/core/rxjs-interop";
+import { NavigationEnd, Router } from "@angular/router";
 import { filter, map } from "rxjs";
 import { $computed } from "../bindings/$computed";
 
-export function useRouterManager(): {
-  pageCode: Signal<string>
-} {
+export function useFullPageCodeSignal() {
   const router = inject(Router);
 
   const url = toSignal(
@@ -17,13 +15,9 @@ export function useRouterManager(): {
     { initialValue: router.url },
   );
 
-  const pageCode = $computed(() => url()
+  return $computed(() => url()
     .split("/")
     .slice(2)
     .map((item) => item.split(/[;?]/).first())
     .join("."));
-
-  return {
-    pageCode,
-  };
 }

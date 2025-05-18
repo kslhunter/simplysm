@@ -4,6 +4,11 @@ declare interface HTMLElement {
   getRelativeOffset(parentElement: HTMLElement): { top: number; left: number };
 
   getRelativeOffset(parentSelector: string): { top: number; left: number };
+
+  scrollIntoViewIfNeeded(
+    target: { top: number, left: number },
+    offset?: { top: number, left: number },
+  ): void;
 }
 
 HTMLElement.prototype.repaint = function (this: HTMLElement): void {
@@ -35,7 +40,7 @@ HTMLElement.prototype.getRelativeOffset = function (parent: HTMLElement | string
   // 4. 부모 요소와의 상대적 위치 계산 (스크롤 위치 반영)
   const relativeOffset = {
     top: elementRect.top - parentRect.top + scrollTop + (parentEl.scrollTop || 0),
-    left: elementRect.left - parentRect.left + scrollLeft + (parentEl.scrollLeft || 0)
+    left: elementRect.left - parentRect.left + scrollLeft + (parentEl.scrollLeft || 0),
   };
 
   // 5. 부모 요소들의 border와 padding 고려
@@ -65,4 +70,21 @@ HTMLElement.prototype.getRelativeOffset = function (parent: HTMLElement | string
   }
 
   return relativeOffset;
+};
+
+HTMLElement.prototype.scrollIntoViewIfNeeded = function (
+  target: { top: number, left: number },
+  offset: { top: number, left: number } = { top: 0, left: 0 },
+): void {
+  const scroll = {
+    top: this.scrollTop,
+    left: this.scrollLeft,
+  };
+
+  if (target.top - scroll.top < offset.top) {
+    this.scrollTop = target.top - offset.top;
+  }
+  if (target.left - scroll.left < offset.left) {
+    this.scrollLeft = target.left - offset.left;
+  }
 };

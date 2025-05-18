@@ -1,3 +1,4 @@
+import { NgTemplateOutlet } from "@angular/common";
 import {
   ChangeDetectionStrategy,
   Component,
@@ -6,25 +7,24 @@ import {
   input,
   ViewEncapsulation,
 } from "@angular/core";
-import { SdPaneControl } from "../controls/sd-pane.control";
-import { SdIconControl } from "../controls/sd-icon.control";
-import { SdTopbarContainerControl } from "../controls/sd-topbar-container.control";
-import { SdTopbarControl } from "../controls/sd-topbar.control";
+import { ActivatedRoute } from "@angular/router";
 import { SdBusyContainerControl } from "../controls/sd-busy-container.control";
-import { NgTemplateOutlet } from "@angular/common";
 import { SdDockContainerControl } from "../controls/sd-dock-container.control";
 import { SdDockControl } from "../controls/sd-dock.control";
-import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
-import { ActivatedRoute } from "@angular/router";
-import { SdActivatedModalProvider } from "../providers/sd-modal.provider";
-import { SdAppStructureProvider } from "../providers/sd-app-structure.provider";
-import { TemplateTargetDirective } from "../directives/template-target.directive";
-import { transformBoolean } from "../utils/type-tramsforms";
-import { injectParent } from "../utils/injections/inject-parent";
-import { useRouterManager } from "../utils/managers/use-router-manager";
+import { SdIconControl } from "../controls/sd-icon.control";
+import { SdPaneControl } from "../controls/sd-pane.control";
+import { SdTopbarContainerControl } from "../controls/sd-topbar-container.control";
+import { SdTopbarControl } from "../controls/sd-topbar.control";
 import { SdShowEffectDirective } from "../directives/sd-show-effect.directive";
+import { TemplateTargetDirective } from "../directives/template-target.directive";
+import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
+import { SdAppStructureProvider } from "../providers/sd-app-structure.provider";
+import { SdActivatedModalProvider } from "../providers/sd-modal.provider";
 import { $computed } from "../utils/bindings/$computed";
-import { useActivatedRouteManager } from "../utils/managers/use-activated-route-manager";
+import { injectParent } from "../utils/injections/inject-parent";
+import { useCurrentPageCodeSignal } from "../utils/signals/use-current-page-code.signal";
+import { useFullPageCodeSignal } from "../utils/signals/use-full-page-code.signal";
+import { transformBoolean } from "../utils/type-tramsforms";
 
 @Component({
   selector: "sd-base-container",
@@ -90,8 +90,8 @@ export class SdBaseContainerControl {
 
   private _parent = injectParent();
 
-  private _routerManager = useRouterManager();
-  private _activatedRouteManager = useActivatedRouteManager();
+  private _fullPageCode = useFullPageCodeSignal();
+  private _currPageCode = useCurrentPageCodeSignal();
 
   templateDirectives = contentChildren(TemplateTargetDirective);
   getTemplateRef = (target: "topbar" | "content" | "bottom") => {
@@ -99,14 +99,14 @@ export class SdBaseContainerControl {
   };
 
   perms = $computed(() => this._sdAppStructure.getViewPerms(
-    [this._routerManager.pageCode()],
+    [this._fullPageCode()],
     ["use"],
   ));
 
   realContainerType = $computed<"container" | "page" | "modal" | "control">(() => {
     if (this.containerType()) return this.containerType()!;
     else if (this._activatedRoute && this._activatedRoute.component === this._parent.constructor) {
-      if (this._routerManager.pageCode() === this._activatedRouteManager?.pageCode()) {
+      if (this._fullPageCode() === this._currPageCode?.()) {
         return "page";
       }
       else {
@@ -126,7 +126,7 @@ export class SdBaseContainerControl {
     this._sdActivatedModal
       ? this._sdActivatedModal.modal.title()
       : this._sdAppStructure.getTitleByCode(
-        this._activatedRouteManager?.pageCode() ?? this._routerManager.pageCode(),
+        this._currPageCode?.() ?? this._fullPageCode(),
       ),
   );
 

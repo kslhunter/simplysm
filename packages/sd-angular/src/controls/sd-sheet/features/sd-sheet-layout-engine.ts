@@ -3,19 +3,22 @@ import { $computed } from "../../../utils/bindings/$computed";
 import { SdSheetColumnDirective } from "../directives/sd-sheet-column.directive";
 import { ISdSheetColumnDef, ISdSheetConfig, ISdSheetHeaderDef } from "../sd-sheet.types";
 
-export function useSdSheetLayoutEngine<T>(binding: {
-  columnControls: Signal<ReadonlyArray<SdSheetColumnDirective<T>>>;
-  config: ResourceRef<ISdSheetConfig | undefined>;
-}) {
-  const columnDefs = $computed<ISdSheetColumnDef<T>[]>(() => {
+export class SdSheetLayoutEngine<T> {
+  constructor(private _options: {
+    columnControls: Signal<ReadonlyArray<SdSheetColumnDirective<T>>>;
+    config: ResourceRef<ISdSheetConfig | undefined>;
+  }) {
+  }
+
+  columnDefs = $computed<ISdSheetColumnDef<T>[]>(() => {
     if (
-      binding.config.status() !== ResourceStatus.Resolved &&
-      binding.config.status() !== ResourceStatus.Local
+      this._options.config.status() !== ResourceStatus.Resolved &&
+      this._options.config.status() !== ResourceStatus.Local
     ) return [];
 
-    const conf = binding.config.value();
+    const conf = this._options.config.value();
 
-    return binding.columnControls()
+    return this._options.columnControls()
       .map(columnControl => {
         const colConf = conf?.columnRecord?.[columnControl.key()];
         return {
@@ -38,9 +41,9 @@ export function useSdSheetLayoutEngine<T>(binding: {
       }));
   });
 
-  const rawHeaderDefTable = $computed<(IRawHeaderDef | undefined)[][]>(() => {
+  private _rawHeaderDefTable = $computed<(IRawHeaderDef | undefined)[][]>(() => {
     const result: (IRawHeaderDef | undefined)[][] = [];
-    const defs = columnDefs();
+    const defs = this.columnDefs();
 
     for (let c = 0; c < defs.length; c++) {
       const colDef = defs[c];
@@ -63,8 +66,8 @@ export function useSdSheetLayoutEngine<T>(binding: {
     return result;
   });
 
-  const headerDefTable = $computed<(ISdSheetHeaderDef | undefined)[][]>(() => {
-    const rawTable = rawHeaderDefTable();
+  headerDefTable = $computed<(ISdSheetHeaderDef | undefined)[][]>(() => {
+    const rawTable = this._rawHeaderDefTable();
 
     const isSame = (r: number, currC: number, prevC: number) => {
       const currDef = rawTable[r][currC];
@@ -122,20 +125,13 @@ export function useSdSheetLayoutEngine<T>(binding: {
     return result;
   });
 
-  const hasSummary = $computed<boolean>(() =>
-    binding.columnControls().some(item => item.summaryTemplateRef()),
+  hasSummary = $computed<boolean>(() =>
+    this._options.columnControls().some(item => item.summaryTemplateRef()),
   );
 
-  const headerFeatureRowSpan = $computed<number>(() =>
-    rawHeaderDefTable().length + (hasSummary() ? 1 : 0),
+  headerFeatureRowSpan = $computed<number>(() =>
+    this._rawHeaderDefTable().length + (this.hasSummary() ? 1 : 0),
   );
-
-  return {
-    columnDefs,
-    headerDefTable,
-    hasSummary,
-    headerFeatureRowSpan,
-  };
 }
 
 interface IRawHeaderDef {

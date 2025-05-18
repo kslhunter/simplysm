@@ -7,8 +7,10 @@ export default function convertSdAngularSymbolNames() {
     "@simplysm/sd-angular#canDeactivate": "@simplysm/sd-angular#setupCanDeactivate",
     "@simplysm/sd-angular#useRipple": "@simplysm/sd-angular#setupRipple",
     "@simplysm/sd-angular#useCumulateSelectedKeys": "@simplysm/sd-angular#setupCumulateSelectedKeys",
-    "@simplysm/sd-angular#injectQueryParamMap$": "@simplysm/sd-angular#useActivateRouteManager",
-    "@simplysm/sd-angular#ISdSheetColumnOrderingVM": "@simplysm/sd-angular#ISortingDef",
+    "@simplysm/sd-angular#injectQueryParamMap$": "@simplysm/sd-angular#useQueryParamMapSignal",
+    "@simplysm/sd-angular#useActivatedRouteManager": "@simplysm/sd-angular#useQueryParamMapSignal",
+    "@simplysm/sd-angular#ISdSheetColumnOrderingVM": "@simplysm/sd-angular#ISdSortingDef",
+    "@simplysm/sd-angular#ISortingDef": "@simplysm/sd-angular#ISdSortingDef",
 
     "@angular/core#signal": "@simplysm/sd-angular#$signal",
     "@angular/core#computed": "@simplysm/sd-angular#$computed",

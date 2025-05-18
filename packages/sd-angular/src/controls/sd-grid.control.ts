@@ -1,6 +1,13 @@
-import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
-import { useResizeManager } from "../utils/managers/use-resize-manager";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  HostListener,
+  input,
+  ViewEncapsulation,
+} from "@angular/core";
+import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
 import { $computed } from "../utils/bindings/$computed";
+import { $signal } from "../utils/bindings/$signal";
 
 @Component({
   selector: "sd-grid",
@@ -24,10 +31,14 @@ import { $computed } from "../utils/bindings/$computed";
   },
 })
 export class SdGridControl {
-  private _size = useResizeManager();
-
   gap = input<"xxs" | "xs" | "sm" | "default" | "lg" | "xl" | "xxl">();
 
   styleGap = $computed(() => (this.gap() != null ? "var(--gap-" + this.gap() + ")" : undefined));
-  offsetWidth = $computed(() => this._size.offsetWidth());
+  offsetWidth = $signal(0);
+
+  @HostListener("sdResize", ["$event"])
+  onResize(event: ISdResizeEvent) {
+    if (!event.widthChanged) return;
+    this.offsetWidth.set(event.contentRect.width);
+  }
 }

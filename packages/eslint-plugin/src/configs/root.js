@@ -228,12 +228,12 @@ export default [
         {
           paths: [
             // library에서만
-            {
+            /*{
               name: '@angular/core',
               importNames: ['model'],
               message: '"model"은 사용할 수 없습니다. input/output/$model을 사용하세요.',
-            },
-            // fix로 변환됨
+            },*/
+            // sd-cli fix로 변환되는 항목임
             ...[
               "signal",
               "computed",

@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
+import { useFullPageCodeSignal } from "../utils/signals/use-full-page-code.signal";
 import { SdListControl } from "./sd-list.control";
 import { NgTemplateOutlet } from "@angular/common";
 import { SdTypedTemplateDirective } from "../directives/sd-typed.template-directive";
@@ -6,7 +7,6 @@ import { SdListItemControl } from "./sd-list-item.control";
 import { SdRouterLinkDirective } from "../directives/sd-router-link.directive";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { SdIconControl } from "./sd-icon.control";
-import { useRouterManager } from "../utils/managers/use-router-manager";
 import * as querystring from "node:querystring";
 import { $computed } from "../utils/bindings/$computed";
 
@@ -118,7 +118,7 @@ export class SdSidebarMenuControl {
   layout = input<"accordion" | "flat">();
   getMenuIsSelectedFn = input<(menu: ISdSidebarMenuVM) => boolean>();
 
-  routerSignals = useRouterManager();
+  fullPageCode = useFullPageCodeSignal();
 
   rootLayout = $computed(() => this.layout() ?? (this.menus().length <= 3 ? "flat" : "accordion"));
 
@@ -141,7 +141,7 @@ export class SdSidebarMenuControl {
   getIsMenuSelected(menu: ISdSidebarMenuVM) {
     return this.getMenuIsSelectedFn()
       ? this.getMenuIsSelectedFn()!(menu)
-      : this.routerSignals.pageCode() === menu.codeChain.join(".");
+      : this.fullPageCode() === menu.codeChain.join(".");
   }
 
   onMenuClick(menu: ISdSidebarMenuVM): void {
