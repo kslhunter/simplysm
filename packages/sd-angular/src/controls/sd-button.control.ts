@@ -20,7 +20,6 @@ import { transformBoolean } from "../utils/type-tramsforms";
       <ng-content></ng-content>
     </button>
   `,
-  //region styles
   styles: [
     /* language=SCSS */ `
       @use "sass:map";
@@ -43,7 +42,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
           cursor: pointer;
 
           transition: 0.1s linear;
-          transition-property: border,background;
+          transition-property: border, background;
 
           &:hover {
             background: var(--theme-grey-lightest);
@@ -149,7 +148,6 @@ import { transformBoolean } from "../utils/type-tramsforms";
       }
     `,
   ],
-  //endregion
   host: {
     "[attr.sd-theme]": "theme()",
     "[attr.sd-inline]": "inline()",
