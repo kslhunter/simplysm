@@ -44,8 +44,8 @@ export class SdZip {
       });
 
       const entryBuffer = this._cache.get(entry.filename)
-        ?? Buffer.from(
-          await entry.getData!(new Uint8ArrayWriter(), {
+        ?? Buffer.from((
+          await entry.getData(new Uint8ArrayWriter(), {
             onprogress: (extracted) => {
               const currentTotal = totalExtracted + extracted;
 
@@ -57,8 +57,8 @@ export class SdZip {
 
               return undefined;
             },
-          }),
-        );
+          })
+        )!);
 
       this._cache.set(entry.filename, entryBuffer);
 
@@ -93,7 +93,7 @@ export class SdZip {
       return undefined;
     }
 
-    const bytes = await entry.getData?.(new Uint8ArrayWriter());
+    const bytes = await entry.getData(new Uint8ArrayWriter());
     return bytes ? Buffer.from(bytes) : undefined;
   }
 
