@@ -87,4 +87,13 @@ export class SdExcelXmlWorkbook implements ISdExcelXml {
     return this.data.workbook.sheets?.[0].sheet.single((item) => NumberUtils.parseInt(item.$["r:id"])
       === id)?.$.name;
   }
+
+  setWorksheetNameById(id: number, newName: string) {
+    //-- 시트명칭 사용불가 텍스트를 "_"로 변환
+    const replacedName = newName.replace(/[:\\/?*\[\]']/g, "_");
+
+    const tag = this.data.workbook.sheets?.[0].sheet
+      .single((item) => NumberUtils.parseInt(item.$["r:id"]) === id);
+    tag!.$.name = replacedName;
+  }
 }

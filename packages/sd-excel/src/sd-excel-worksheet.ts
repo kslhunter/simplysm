@@ -1,11 +1,11 @@
-import { SdExcelXmlWorksheet } from "./xmls/sd-excel-xml-worksheet";
-import { ZipCache } from "./utils/zip-cache";
-import { ISdExcelAddressRangePoint, TSdExcelValueType } from "./types";
-import { SdExcelRow } from "./sd-excel-row";
-import { SdExcelCell } from "./sd-excel-cell";
-import { SdExcelXmlWorkbook } from "./xmls/sd-excel-xml-workbook";
-import { SdExcelCol } from "./sd-excel-col";
 import { StringUtils } from "@simplysm/sd-core-common";
+import { SdExcelCell } from "./sd-excel-cell";
+import { SdExcelCol } from "./sd-excel-col";
+import { SdExcelRow } from "./sd-excel-row";
+import { ISdExcelAddressRangePoint, TSdExcelValueType } from "./types";
+import { ZipCache } from "./utils/zip-cache";
+import { SdExcelXmlWorkbook } from "./xmls/sd-excel-xml-workbook";
+import { SdExcelXmlWorksheet } from "./xmls/sd-excel-xml-worksheet";
 
 export class SdExcelWorksheet {
   private readonly _rowMap = new Map<number, SdExcelRow>();
@@ -20,6 +20,11 @@ export class SdExcelWorksheet {
   async getNameAsync(): Promise<string> {
     const wbXmlData = await this._getWbDataAsync();
     return wbXmlData.getWorksheetNameById(this._relId)!;
+  }
+
+  async setNameAsync(newName: string): Promise<void> {
+    const wbXmlData = await this._getWbDataAsync();
+    wbXmlData.setWorksheetNameById(this._relId, newName)!;
   }
 
   row(r: number): SdExcelRow {
