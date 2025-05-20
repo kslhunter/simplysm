@@ -1,10 +1,11 @@
 import { Signal } from "@angular/core";
+import { NumberUtils } from "@simplysm/sd-core-common";
 import { $effect } from "../../../utils/bindings/$effect";
 import { SdSheetDomAccessor } from "./sd-sheet-dom-accessor";
 
 export class SdSheetSelectRowIndicatorRenderer<T> {
   constructor(private _options: {
-    domAccessor:  SdSheetDomAccessor
+    domAccessor: SdSheetDomAccessor
     selectedItems: Signal<T[]>;
     displayItems: Signal<T[]>;
   }) {
@@ -17,28 +18,21 @@ export class SdSheetSelectRowIndicatorRenderer<T> {
         return;
       }
 
-      const selectedTrRects = this._options.selectedItems()
+      const selectedTrInfos = this._options.selectedItems()
         .map((item) => {
           const r = this._options.displayItems().indexOf(item);
-          const trEl = this._options.domAccessor.getRow(r);
-          if (!trEl) return undefined;
-
-          return {
-            top: trEl.offsetTop,
-            width: trEl.offsetWidth,
-            height: trEl.offsetHeight,
-          };
+          return this._getTrInfo(r);
         })
         .filterExists();
 
       let html = "";
-      for (const selectedTrRect of selectedTrRects) {
-        let styleText = `top: ${selectedTrRect.top}px;`;
-        styleText += `height: ${selectedTrRect.height - 1}px;`;
-        styleText += `width: ${selectedTrRect.width - 1}px;`;
+      for (const selectedTrInfo of selectedTrInfos) {
+        let styleText = `top: ${selectedTrInfo.top}px;`;
+        styleText += `height: ${selectedTrInfo.height - 1}px;`;
+        styleText += `width: ${selectedTrInfo.width - 1}px;`;
 
         html += /* language="HTML" */ `
-          <div class='_select-row-indicator' style="${styleText}"></div>`.trim();
+          <div class='_select-row-indicator' style="${styleText}" r="${selectedTrInfo.r}"></div>`.trim();
       }
       selectRowIndicatorContainerEl.innerHTML = html;
       selectRowIndicatorContainerEl.style.display = "block";
@@ -47,13 +41,31 @@ export class SdSheetSelectRowIndicatorRenderer<T> {
 
   redraw() {
     const selectRowIndicatorEls = this._options.domAccessor.getSelectRowIndicators();
-    const tableEl = this._options.domAccessor.getTable();
 
     //-- row indicators
     for (const selectRowIndicatorEl of selectRowIndicatorEls) {
+      const r = NumberUtils.parseInt(selectRowIndicatorEl.getAttribute("r"))!;
+
+      const trInfo = this._getTrInfo(r);
+      if (!trInfo) return;
+
       Object.assign(selectRowIndicatorEl.style, {
-        width: tableEl.offsetWidth + "px",
+        top: trInfo.top + "px",
+        width: trInfo.width + "px",
+        height: trInfo.height + "px",
       });
     }
+  }
+
+  private _getTrInfo(r: number) {
+    const trEl = this._options.domAccessor.getRow(r);
+    if (!trEl) return undefined;
+
+    return {
+      r,
+      top: trEl.offsetTop,
+      width: trEl.offsetWidth,
+      height: trEl.offsetHeight,
+    };
   }
 }

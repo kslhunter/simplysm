@@ -1,19 +1,38 @@
 /* eslint-disable @typescript-eslint/no-restricted-imports */
 
-import { effect, EffectCleanupRegisterFn, EffectRef, Signal, untracked } from "@angular/core";
+import {
+  CreateEffectOptions,
+  effect,
+  EffectCleanupRegisterFn,
+  EffectRef,
+  Signal,
+  untracked,
+} from "@angular/core";
 
-export function $effect(fn: (onCleanup: EffectCleanupRegisterFn) => Promise<void>): never;
-export function $effect(fn: (onCleanup: EffectCleanupRegisterFn) => void): EffectRef;
+export function $effect(
+  fn: (onCleanup: EffectCleanupRegisterFn) => Promise<void>,
+  options?: CreateEffectOptions,
+): never;
+export function $effect(
+  fn:
+  (onCleanup: EffectCleanupRegisterFn) => void,
+  options?: CreateEffectOptions,
+): EffectRef;
 export function $effect(
   signals: Signal<any>[],
   fn: (onCleanup: EffectCleanupRegisterFn) => void | Promise<void>,
+  options?: CreateEffectOptions,
 ): EffectRef;
 export function $effect(
-  arg1: ((onCleanup: EffectCleanupRegisterFn) => void) | Signal<any>[],
-  arg2?: (onCleanup: EffectCleanupRegisterFn) => void,
+  arg1: ((onCleanup: EffectCleanupRegisterFn) => void | Promise<void>) | Signal<any>[],
+  arg2?: ((onCleanup: EffectCleanupRegisterFn) => void | Promise<void>) | CreateEffectOptions,
+  arg3?: CreateEffectOptions,
 ): EffectRef {
-  const sigs = (arg2 ? arg1 : undefined) as Signal<any>[] | undefined;
-  const fn = (arg2 ?? arg1) as (onCleanup: EffectCleanupRegisterFn) => void | Promise<void>;
+  const sigs = arg1 instanceof Array ? arg1 : undefined;
+  const fn = (typeof arg1 === "function"
+    ? arg1
+    : arg2) as (onCleanup: EffectCleanupRegisterFn) => void | Promise<void>;
+  const options = (typeof arg1 === "function" ? arg2 : arg3) as CreateEffectOptions;
 
   if (sigs) {
     return effect(
@@ -26,9 +45,10 @@ export function $effect(
           await fn(onCleanup);
         });
       },
+      options,
     );
   }
   else {
-    return effect((onCleanup) => fn(onCleanup));
+    return effect((onCleanup) => fn(onCleanup), options);
   }
 }

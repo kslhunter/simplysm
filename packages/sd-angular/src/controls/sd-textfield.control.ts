@@ -13,10 +13,10 @@ import {
   StringUtils,
   Time,
 } from "@simplysm/sd-core-common";
-import { transformBoolean } from "../utils/type-tramsforms";
-import { $model } from "../utils/bindings/$model";
 import { $computed } from "../utils/bindings/$computed";
+import { $model } from "../utils/bindings/$model";
 import { setupInvalid } from "../utils/setups/setup-invalid";
+import { transformBoolean } from "../utils/type-tramsforms";
 
 @Component({
   selector: "sd-textfield",
@@ -722,3 +722,19 @@ export type TSdTextfieldTypes = {
   "time": Time;
   "time-sec": Time;
 };
+
+export const sdTextfieldTypes: (keyof TSdTextfieldTypes)[] = [
+  "number",
+  "text",
+  "password",
+  "color",
+  "email",
+  "format",
+  "date",
+  "month",
+  "year",
+  "datetime",
+  "datetime-sec",
+  "time",
+  "time-sec",
+];

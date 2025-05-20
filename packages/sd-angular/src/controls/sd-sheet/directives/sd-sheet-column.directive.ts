@@ -21,7 +21,7 @@ export class SdSheetColumnDirective<T> {
   hidden = input(false, { transform: transformBoolean });
   collapse = input(false, { transform: transformBoolean });
 
-  cellTemplateRef = contentChild<any, TemplateRef<SdSheetColumnCellTemplateContext<T>>>(
+  cellTemplateRef = contentChild.required<any, TemplateRef<SdSheetColumnCellTemplateContext<T>>>(
     SdSheetColumnCellTemplateDirective,
     {
       read: TemplateRef,

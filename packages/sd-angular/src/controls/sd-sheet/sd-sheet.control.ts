@@ -265,7 +265,6 @@ import {
                     } @else if (selectMode() === "single") {
                       @let _selectable = selectionManager.getSelectable(item);
                       <sd-checkbox
-                        [radio]="true"
                         [value]="selectedItems().includes(item)"
                         [inline]="true"
                         theme="white"
@@ -623,7 +622,6 @@ export class SdSheetControl<T> {
 
   items = input<T[]>([]);
   trackByFn = input<(item: T, index: number) => any>((item) => item);
-  trackByKey = input<keyof T>();
 
   domAccessor = new SdSheetDomAccessor();
 
@@ -825,9 +823,11 @@ export class SdSheetControl<T> {
   //region Selecting
 
   selectMode = input<"single" | "multi">();
+
   __selectedItems = input<T[]>([], { alias: "selectedItems" });
   __selectedItemsChange = output<T[]>({ alias: "selectedItemsChange" });
   selectedItems = $model(this.__selectedItems, this.__selectedItemsChange);
+
   autoSelect = input<"click" | "focus">();
   getItemSelectableFn = input<(item: T) => boolean | string>();
 

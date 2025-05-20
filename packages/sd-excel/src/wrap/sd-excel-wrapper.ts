@@ -9,7 +9,7 @@ type TValidFieldSpec<T extends Type<any>> = {
   hidden?: boolean;
 };
 
-type TValidObject = Record<string, TValidFieldSpec<any>>;
+export type TExcelValidObject = Record<string, TValidFieldSpec<any>>;
 
 type TInferField<T extends Type<any>> =
   T extends StringConstructor ? string :
@@ -22,16 +22,16 @@ type TFieldValue<T extends TValidFieldSpec<any>> = T["includes"] extends Array<i
   ? U
   : TInferField<T["type"]>;
 
-type TValidateObjectRecord<VT extends TValidObject> = {
+export type TExcelValidateObjectRecord<VT extends TExcelValidObject> = {
   [P in keyof VT as VT[P]["notnull"] extends true ? P : never]: TFieldValue<VT[P]>
 } & {
   [P in keyof VT as VT[P]["notnull"] extends true ? never : P]?: TFieldValue<VT[P]>
 };
 
-export class SdExcelWrapper<VT extends TValidObject> {
+export class SdExcelWrapper<VT extends TExcelValidObject> {
   constructor(
     private _fieldConf: VT,
-    private _additionalFieldConf?: (item: TValidateObjectRecord<VT>) => {
+    private _additionalFieldConf?: (item: TExcelValidateObjectRecord<VT>) => {
       [P in keyof VT]?: Partial<TValidFieldSpec<VT[P]["type"]>>
     },
   ) {
@@ -39,7 +39,7 @@ export class SdExcelWrapper<VT extends TValidObject> {
 
   async writeAsync(
     wsName: string,
-    items: TValidateObjectRecord<VT>[],
+    items: TExcelValidateObjectRecord<VT>[],
   ): Promise<SdExcelWorkbook> {
     const wb = new SdExcelWorkbook();
     const ws = await wb.createWorksheetAsync(wsName);
@@ -73,7 +73,7 @@ export class SdExcelWrapper<VT extends TValidObject> {
   async readAsync(
     file: Buffer | Blob,
     wsNameOrIndex: string | number = 0,
-  ): Promise<TValidateObjectRecord<VT>[]> {
+  ): Promise<TExcelValidateObjectRecord<VT>[]> {
     const wb = new SdExcelWorkbook(file);
     const ws = await wb.getWorksheetAsync(wsNameOrIndex);
     const wsName = await ws.getNameAsync();
@@ -84,7 +84,7 @@ export class SdExcelWrapper<VT extends TValidObject> {
       usableHeaderNameFn: headerName => headers.includes(headerName),
     }) as any[];
 
-    const excelItems: TValidateObjectRecord<VT>[] = [];
+    const excelItems: TExcelValidateObjectRecord<VT>[] = [];
     for (const item of wsdt) {
       const fieldConf = this._getFieldConf(item);
 
@@ -165,7 +165,7 @@ export class SdExcelWrapper<VT extends TValidObject> {
     return excelItems;
   }
 
-  private _getFieldConf(item: TValidateObjectRecord<VT>) {
+  private _getFieldConf(item: TExcelValidateObjectRecord<VT>) {
     const result = this._additionalFieldConf
       ? ObjectUtils.merge(this._fieldConf, this._additionalFieldConf(item))
       : this._fieldConf;

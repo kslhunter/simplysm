@@ -1,3 +1,4 @@
+import { NgTemplateOutlet } from "@angular/common";
 import {
   ChangeDetectionStrategy,
   Component,
@@ -9,23 +10,26 @@ import {
   Type,
   ViewEncapsulation,
 } from "@angular/core";
-import { ISharedDataBase } from "./sd-shared-data.provider";
-import { SD_MODAL_INPUT, SdModalBase, SdModalProvider } from "../../providers/sd-modal.provider";
+import { SdIconControl } from "../../controls/sd-icon.control";
+import { SdSelectButtonControl } from "../../controls/sd-select-button.control";
+import { SdSelectControl, TSelectValue } from "../../controls/sd-select-control";
+import { SdSelectItemControl } from "../../controls/sd-select-item.control";
+import { SdTextfieldControl } from "../../controls/sd-textfield.control";
 import {
   SdItemOfTemplateContext,
   SdItemOfTemplateDirective,
 } from "../../directives/sd-item-of.template-directive";
-import { SdSelectControl, TSelectValue } from "../../controls/sd-select-control";
-import { SdTextfieldControl } from "../../controls/sd-textfield.control";
-import { SdSelectItemControl } from "../../controls/sd-select-item.control";
-import { NgTemplateOutlet } from "@angular/common";
 import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
-import { SdSelectButtonControl } from "../../controls/sd-select-button.control";
-import { transformBoolean } from "../../utils/type-tramsforms";
-import { SdIconControl } from "../../controls/sd-icon.control";
+import { SD_MODAL_INPUT, SdModalBase, SdModalProvider } from "../../providers/sd-modal.provider";
+import { $computed } from "../../utils/bindings/$computed";
 import { $model } from "../../utils/bindings/$model";
 import { $signal } from "../../utils/bindings/$signal";
-import { $computed } from "../../utils/bindings/$computed";
+import { transformBoolean } from "../../utils/type-tramsforms";
+import {
+  ISdDataSheetControl, ISdDataSheetControlParam,
+  SdDataSheetSelectModal,
+} from "../sd-data-sheet/sd-data-sheet.select-modal";
+import { ISharedDataBase } from "./sd-shared-data.provider";
 
 // TODO: sd-select-modal-button을 사용하는식으로 바꿀 수 있나? 검토 필요
 @Component({
@@ -59,7 +63,7 @@ import { $computed } from "../../utils/bindings/$computed";
       [(open)]="open"
       (openChange)="onOpenChange()"
     >
-      @if (modalType()) {
+      @if (modalType() || selector()) {
         <sd-select-button (click)="onModalButtonClick($event)">
           <sd-icon [icon]="icons.search" />
         </sd-select-button>
@@ -84,8 +88,7 @@ import { $computed } from "../../utils/bindings/$computed";
 
       <ng-template #before>
         @if ((!required() && selectMode() === "single") || (useUndefined()
-          && selectMode()
-          === "multi")) {
+          && selectMode() === "multi")) {
           <sd-select-item>
             @if (undefinedTemplateRef()) {
               <ng-template [ngTemplateOutlet]="undefinedTemplateRef()!" />
@@ -128,6 +131,7 @@ export class SdSharedDataSelectControl<
   T extends ISharedDataBase<string | number>,
   TMODAL extends SdModalBase<ISharedDataModalInputParam, ISharedDataModalOutputResult>,
   TEDITMODAL extends SdModalBase<any, any>,
+  TSELECTOR extends ISdDataSheetControl,
   M extends keyof TSelectValue<T>,
 > {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
@@ -158,6 +162,8 @@ export class SdSharedDataSelectControl<
   modalType = input<Type<TMODAL>>();
   modalHeader = input<string>();
   editModal = input<[Type<TEDITMODAL>, string?, TEDITMODAL[typeof SD_MODAL_INPUT]?]>();
+
+  selector = input<ISdDataSheetControlParam<TSELECTOR>>();
 
   selectClass = input<string>();
   multiSelectionDisplayDirection = input<"vertical" | "horizontal">();
@@ -281,19 +287,36 @@ export class SdSharedDataSelectControl<
     event.preventDefault();
     event.stopPropagation();
 
-    if (!this.modalType()) return;
+    let result: ISharedDataModalOutputResult | undefined;
+    if (this.selector()) {
+      result = await this._sdModal.showAsync(
+        SdDataSheetSelectModal,
+        "자세히...",
+        {
+          type: this.selector()!.type,
+          inputs: this.selector()!.inputs,
 
-    const result = await this._sdModal.showAsync(
-      this.modalType()!,
-      this.modalHeader() ?? "자세히...",
-      {
-        selectMode: this.selectMode(),
-        selectedItemKeys: (this.selectMode() === "multi"
-          ? (this.value() as any[])
-          : [this.value()]).filterExists(),
-        ...this.modalInputParam(),
-      },
-    );
+          selectMode: this.selectMode(),
+          selectedItemKeys: (this.selectMode() === "multi"
+            ? (this.value() as any[])
+            : [this.value()]).filterExists(),
+          ...this.modalInputParam(),
+        },
+      );
+    }
+    else if (this.modalType()) {
+      result = await this._sdModal.showAsync(
+        this.modalType()!,
+        this.modalHeader() ?? "자세히...",
+        {
+          selectMode: this.selectMode(),
+          selectedItemKeys: (this.selectMode() === "multi"
+            ? (this.value() as any[])
+            : [this.value()]).filterExists(),
+          ...this.modalInputParam(),
+        },
+      );
+    }
 
     if (result) {
       const newValue = this.selectMode() === "multi"

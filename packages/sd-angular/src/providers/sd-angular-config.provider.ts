@@ -52,4 +52,11 @@ export interface ISdAngularIcon {
   search: IconDefinition;
   edit: IconDefinition;
   externalLink: IconDefinition;
+
+  refresh: IconDefinition;
+  add: IconDefinition;
+  delete: IconDefinition;
+  redo: IconDefinition;
+  upload: IconDefinition;
+  fileExcel: IconDefinition;
 }

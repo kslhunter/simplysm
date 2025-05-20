@@ -2,16 +2,15 @@ import {
   ChangeDetectionStrategy,
   Component,
   HostListener,
-  inject,
   input,
   ViewEncapsulation,
 } from "@angular/core";
 import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
-import { SdSystemConfigProvider } from "../providers/sd-system-config.provider";
 import { $effect } from "../utils/bindings/$effect";
 import { $signal } from "../utils/bindings/$signal";
 
 import { injectElementRef } from "../utils/injections/inject-element-ref";
+import { useSdSystemConfigResource } from "../utils/signals/use-sd-system-config.resource";
 import { transformBoolean } from "../utils/type-tramsforms";
 
 @Component({
@@ -88,7 +87,6 @@ import { transformBoolean } from "../utils/type-tramsforms";
   },
 })
 export class SdDockControl {
-  private _sdSystemConfig = inject(SdSystemConfigProvider);
   private _elRef = injectElementRef<HTMLElement>();
 
   key = input<string>();
@@ -97,15 +95,11 @@ export class SdDockControl {
 
   size = $signal(0);
 
-  private _config = $signal<{ size?: string }>();
+  private _config = useSdSystemConfigResource<{ size?: string }>({ key: this.key });
 
   constructor() {
-    $effect([this.key], async () => {
-      this._config.set(await this._sdSystemConfig.getAsync(`sd-dock.${this.key()}`));
-    });
-
     $effect(() => {
-      const conf = this._config();
+      const conf = this._config.value();
       if (this.resizable() && conf && conf.size != null) {
         if (["right", "left"].includes(this.position())) {
           this._elRef.nativeElement.style.width = conf.size;
@@ -158,7 +152,7 @@ export class SdDockControl {
       }
     };
 
-    const stopDrag = async (e: MouseEvent): Promise<void> => {
+    const stopDrag = (e: MouseEvent) => {
       e.stopPropagation();
       e.preventDefault();
 
@@ -174,7 +168,6 @@ export class SdDockControl {
           newConf.size = thisEl.style.height;
         }
         this._config.set(newConf);
-        await this._sdSystemConfig.setAsync(`sd-dock.${this.key()}`, newConf);
       }
     };
 

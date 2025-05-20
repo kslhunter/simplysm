@@ -7,7 +7,6 @@ import {
   input,
   ViewEncapsulation,
 } from "@angular/core";
-import { ActivatedRoute } from "@angular/router";
 import { SdBusyContainerControl } from "../controls/sd-busy-container.control";
 import { SdDockContainerControl } from "../controls/sd-dock-container.control";
 import { SdDockControl } from "../controls/sd-dock.control";
@@ -21,9 +20,9 @@ import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider
 import { SdAppStructureProvider } from "../providers/sd-app-structure.provider";
 import { SdActivatedModalProvider } from "../providers/sd-modal.provider";
 import { $computed } from "../utils/bindings/$computed";
-import { injectParent } from "../utils/injections/inject-parent";
 import { useCurrentPageCodeSignal } from "../utils/signals/use-current-page-code.signal";
 import { useFullPageCodeSignal } from "../utils/signals/use-full-page-code.signal";
+import { useViewTypeSignal } from "../utils/signals/use-view-type.signal";
 import { transformBoolean } from "../utils/type-tramsforms";
 
 @Component({
@@ -84,14 +83,12 @@ import { transformBoolean } from "../utils/type-tramsforms";
 export class SdBaseContainerControl {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
 
-  private _activatedRoute = inject(ActivatedRoute, { optional: true });
   private _sdActivatedModal = inject(SdActivatedModalProvider, { optional: true });
   private _sdAppStructure = inject(SdAppStructureProvider);
 
-  private _parent = injectParent();
-
   private _fullPageCode = useFullPageCodeSignal();
   private _currPageCode = useCurrentPageCodeSignal();
+  private _viewType = useViewTypeSignal();
 
   templateDirectives = contentChildren(TemplateTargetDirective);
   getTemplateRef = (target: "topbar" | "content" | "bottom") => {
@@ -104,20 +101,11 @@ export class SdBaseContainerControl {
   ));
 
   realContainerType = $computed<"container" | "page" | "modal" | "control">(() => {
-    if (this.containerType()) return this.containerType()!;
-    else if (this._activatedRoute && this._activatedRoute.component === this._parent.constructor) {
-      if (this._fullPageCode() === this._currPageCode?.()) {
-        return "page";
-      }
-      else {
-        return "container";
-      }
-    }
-    else if (this._sdActivatedModal) {
-      return "modal";
+    if (this.containerType()) {
+      return this.containerType()!;
     }
     else {
-      return "control";
+      return this._viewType();
     }
   });
   containerType = input<"container" | "page" | "modal" | "control">();

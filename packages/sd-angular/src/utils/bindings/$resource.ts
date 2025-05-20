@@ -9,10 +9,14 @@ export function $resource<T, R>(options: ResourceOptions<T, R> & {
   const sig = resource(options);
 
   if (options.saver) {
-    $effect(async () => {
+    $effect(() => {
       if (sig.status() !== ResourceStatus.Local) return;
 
-      await options.saver!(sig.value());
+      const value = sig.value();
+
+      queueMicrotask(async () => {
+        await options.saver!(value);
+      });
     });
   }
 

@@ -69,16 +69,16 @@ export class SdSheetLayoutEngine<T> {
   headerDefTable = $computed<(ISdSheetHeaderDef | undefined)[][]>(() => {
     const rawTable = this._rawHeaderDefTable();
 
-    const isSame = (r: number, currC: number, prevC: number) => {
+    const isSame = (r: number, currC: number, targetC: number) => {
       const currDef = rawTable[r][currC];
-      const prevDef = rawTable[r][prevC];
-      return currDef?.text === prevDef?.text && currDef?.fixed === prevDef?.fixed;
+      const nextDef = rawTable[r][targetC];
+      return currDef?.text === nextDef?.text && currDef?.fixed === nextDef?.fixed;
     };
 
-    const isSpanned = (r: number, currC: number, prevC: number) => {
-      if (currC === 0) return false;
+    const isSpanned = (r: number, currC: number, targetC: number) => {
+      if (currC < 0 || targetC < 0) return false;
       for (let rr = 0; rr <= r; rr++) {
-        if (!isSame(rr, currC, prevC)) return false;
+        if (!isSame(rr, currC, targetC)) return false;
       }
       return true;
     };

@@ -1,5 +1,10 @@
 import "@simplysm/sd-core-browser";
 export * from "./advanced/sd-base-container.control";
+export * from "./advanced/sd-data-sheet/sd-data-sheet-column.directive";
+export * from "./advanced/sd-data-sheet/sd-data-sheet-filter.directive";
+export * from "./advanced/sd-data-sheet/sd-data-sheet-view-model";
+export * from "./advanced/sd-data-sheet/sd-data-sheet.control";
+export * from "./advanced/sd-data-sheet/sd-data-sheet.select-modal";
 export * from "./advanced/sd-permission-table.control";
 export * from "./advanced/sd-select-modal-button.control";
 export * from "./advanced/shared-data/sd-shared-data-select-modal-button.control";
@@ -152,4 +157,5 @@ export * from "./utils/signals/use-full-page-code.signal";
 export * from "./utils/signals/use-param-map.signal";
 export * from "./utils/signals/use-query-param-map.signal";
 export * from "./utils/signals/use-sd-system-config.resource";
+export * from "./utils/signals/use-view-type.signal";
 export * from "./utils/type-tramsforms";

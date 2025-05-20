@@ -28,20 +28,20 @@ import {
   faEraser,
   faExternalLink,
   faEye,
-  faEyeSlash,
+  faEyeSlash, faFileExcel,
   faMinus,
   faMountainSun,
   faPen,
-  faPlus,
+  faPlus, faPlusCircle,
   faQuestion,
-  faQuestionCircle,
+  faQuestionCircle, faRedo, faRefresh,
   faSave,
   faSearch,
   faSort,
   faSortDown,
   faSortUp,
   faStar,
-  faTriangleExclamation,
+  faTriangleExclamation, faUpload,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import { EVENT_MANAGER_PLUGINS } from "@angular/platform-browser";
@@ -125,6 +125,13 @@ export function provideSdAngular(opt: {
           search: faSearch,
           externalLink: faExternalLink,
           edit: faEdit,
+
+          refresh: faRefresh,
+          add: faPlusCircle,
+          delete: faEraser,
+          redo: faRedo,
+          upload: faUpload,
+          fileExcel: faFileExcel,
 
           ...opt.icons,
         };

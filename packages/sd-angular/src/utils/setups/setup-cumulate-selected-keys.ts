@@ -2,18 +2,22 @@ import { Signal, WritableSignal } from "@angular/core";
 import { ObjectUtils } from "@simplysm/sd-core-common";
 import { $effect } from "../bindings/$effect";
 
-export function setupCumulateSelectedKeys<T extends object, K>(options: {
+export function setupCumulateSelectedKeys<T, K>(options: {
   items: Signal<T[]>,
   selectMode: Signal<"single" | "multi" | undefined>,
   selectedItems: WritableSignal<T[]>,
   selectedItemKeys: WritableSignal<K[]>,
-  keySelectorFn: (item: T) => K,
+  keySelectorFn: (item: T, index: number) => K,
 }): void {
   $effect([options.items, options.selectedItemKeys], () => {
-    const newSelectedItems = options.items().filter((item) => {
-      return options.selectedItemKeys().includes(options.keySelectorFn(item));
+    const newSelectedItems = options.items().filter((item, i) => {
+      return options.selectedItemKeys().includes(options.keySelectorFn(item, i));
     });
-    if (!ObjectUtils.equal(options.selectedItems(), newSelectedItems, { onlyOneDepth: true })) {
+    if (!ObjectUtils.equal(
+      options.selectedItems(),
+      newSelectedItems,
+      { onlyOneDepth: true, ignoreArrayIndex: true },
+    )) {
       options.selectedItems.set(newSelectedItems);
     }
   });
@@ -22,12 +26,15 @@ export function setupCumulateSelectedKeys<T extends object, K>(options: {
     let newSelectedItemKeys: K[];
 
     newSelectedItemKeys = [...options.selectedItemKeys()];
-    for (const item of options.items()) {
+    for (let i = 0; i < options.items().length; i++) {
+      const item = options.items()[i];
+
       if (options.selectedItems().includes(item)) {
-        newSelectedItemKeys = [...newSelectedItemKeys, options.keySelectorFn(item)].distinct();
+        newSelectedItemKeys = [...newSelectedItemKeys, options.keySelectorFn(item, i)].distinct();
       }
       else {
-        newSelectedItemKeys = newSelectedItemKeys.filter(v1 => v1 !== options.keySelectorFn(item));
+        newSelectedItemKeys = newSelectedItemKeys
+          .filter(v1 => v1 !== options.keySelectorFn(item, i));
       }
     }
 
@@ -38,7 +45,7 @@ export function setupCumulateSelectedKeys<T extends object, K>(options: {
     if (!ObjectUtils.equal(
       newSelectedItemKeys,
       options.selectedItemKeys(),
-      { onlyOneDepth: true },
+      { onlyOneDepth: true, ignoreArrayIndex: true },
     )) {
       options.selectedItemKeys.set(newSelectedItemKeys);
     }
