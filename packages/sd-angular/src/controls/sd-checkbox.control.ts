@@ -4,24 +4,21 @@ import {
   HostListener,
   inject,
   input,
-  output,
+  model,
   ViewEncapsulation,
 } from "@angular/core";
 
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
-import { transformBoolean } from "../utils/type-tramsforms";
 import { setupRipple } from "../utils/setups/setup-ripple";
+import { transformBoolean } from "../utils/type-tramsforms";
 import { SdIconControl } from "./sd-icon.control";
-import { $model } from "../utils/bindings/$model";
 
 @Component({
   selector: "sd-checkbox",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [
-    SdIconControl,
-  ],
+  imports: [SdIconControl],
   template: `
     <div class="_indicator_rect">
       <div class="_indicator">
@@ -49,7 +46,9 @@ import { $model } from "../utils/bindings/$model";
         cursor: pointer;
         border-radius: var(--border-radius-xs);
 
-        height: calc(var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-sm) * 2 + 2px);
+        height: calc(
+          var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-sm) * 2 + 2px
+        );
         gap: var(--gap-sm);
 
         > ._indicator_rect {
@@ -169,28 +168,38 @@ import { $model } from "../utils/bindings/$model";
         }
 
         &[sd-size="sm"] {
-          height: calc(var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-xs) * 2 + 2px);
+          height: calc(
+            var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-xs) * 2 + 2px
+          );
           padding: var(--gap-xs) var(--gap-sm);
           gap: var(--gap-xs);
         }
 
         &[sd-size="lg"] {
-          height: calc(var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-default) * 2 + 2px);
+          height: calc(
+            var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-default) * 2 + 2px
+          );
           padding: var(--gap-default) var(--gap-lg);
           gap: var(--gap-default);
         }
 
         &[sd-inset="true"] {
-          height: calc(var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-sm) * 2);
+          height: calc(
+            var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-sm) * 2
+          );
           border: none;
           justify-content: center;
 
           &[sd-size="sm"] {
-            height: calc(var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-xs) * 2);
+            height: calc(
+              var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-xs) * 2
+            );
           }
 
           &[sd-size="lg"] {
-            height: calc(var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-default) * 2);
+            height: calc(
+              var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-default) * 2
+            );
           }
         }
 
@@ -236,9 +245,7 @@ import { $model } from "../utils/bindings/$model";
 export class SdCheckboxControl {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
 
-  __value = input(false, { alias: "value", transform: transformBoolean });
-  __valueChange = output<boolean>({ alias: "valueChange" });
-  value = $model(this.__value, this.__valueChange);
+  value = model(false);
 
   icon = input(this.icons.check);
   radio = input(false, { transform: transformBoolean });
@@ -247,7 +254,17 @@ export class SdCheckboxControl {
   size = input<"sm" | "lg">();
   inline = input(false, { transform: transformBoolean });
   inset = input(false, { transform: transformBoolean });
-  theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey" | "white">();
+  theme = input<
+    | "primary"
+    | "secondary"
+    | "info"
+    | "success"
+    | "warning"
+    | "danger"
+    | "grey"
+    | "blue-grey"
+    | "white"
+  >();
 
   contentStyle = input<string>();
 
@@ -260,8 +277,7 @@ export class SdCheckboxControl {
     if (this.disabled()) return;
     if (this.radio()) {
       this.value.set(true);
-    }
-    else {
+    } else {
       this.value.update((v) => !v);
     }
   }
@@ -272,8 +288,7 @@ export class SdCheckboxControl {
       if (this.disabled()) return;
       if (this.radio()) {
         this.value.set(true);
-      }
-      else {
+      } else {
         this.value.update((v) => !v);
       }
     }

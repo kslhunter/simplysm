@@ -2,9 +2,10 @@ import { NgTemplateOutlet } from "@angular/common";
 import {
   ChangeDetectionStrategy,
   Component,
-  contentChildren,
+  contentChild,
   inject,
   input,
+  TemplateRef,
   ViewEncapsulation,
 } from "@angular/core";
 import { SdBusyContainerControl } from "../controls/sd-busy-container.control";
@@ -15,14 +16,13 @@ import { SdPaneControl } from "../controls/sd-pane.control";
 import { SdTopbarContainerControl } from "../controls/sd-topbar-container.control";
 import { SdTopbarControl } from "../controls/sd-topbar.control";
 import { SdShowEffectDirective } from "../directives/sd-show-effect.directive";
-import { TemplateTargetDirective } from "../directives/template-target.directive";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { SdAppStructureProvider } from "../providers/sd-app-structure.provider";
 import { SdActivatedModalProvider } from "../providers/sd-modal.provider";
 import { $computed } from "../utils/bindings/$computed";
 import { useCurrentPageCodeSignal } from "../utils/signals/use-current-page-code.signal";
 import { useFullPageCodeSignal } from "../utils/signals/use-full-page-code.signal";
-import { useViewTypeSignal } from "../utils/signals/use-view-type.signal";
+import { TSdViewType, useViewTypeSignal } from "../utils/signals/use-view-type.signal";
 import { transformBoolean } from "../utils/type-tramsforms";
 
 @Component({
@@ -46,36 +46,34 @@ import { transformBoolean } from "../utils/type-tramsforms";
       @if (!perms().includes("use")) {
         <sd-pane
           class="tx-theme-grey-light p-xxl tx-center"
-          [sd-show-effect]="realContainerType() !== 'modal'"
+          [sd-show-effect]="currViewType() !== 'modal'"
         >
           <br />
           <sd-icon [icon]="icons.triangleExclamation" fixedWidth size="5x" />
           <br />
           <br />
-          {{ title() }}에 대한 사용권한이 없습니다. 시스템 관리자에게 문의하세요.
+          '{{ title() }}'에 대한 사용권한이 없습니다. 시스템 관리자에게 문의하세요.
         </sd-pane>
-      } @else if (realContainerType() === "page") {
+      } @else if (currViewType() === "page") {
         <sd-topbar-container>
           <sd-topbar>
             <h4>{{ title() }}</h4>
 
-            <ng-template [ngTemplateOutlet]="getTemplateRef('topbar')" />
+            <ng-template [ngTemplateOutlet]="pageTopbarTemplateRef() ?? null" />
           </sd-topbar>
 
-          <ng-template [ngTemplateOutlet]="getTemplateRef('content')" />
+          <ng-template [ngTemplateOutlet]="contentTemplateRef() ?? null" />
         </sd-topbar-container>
-      } @else if (realContainerType() === 'modal') {
+      } @else if (currViewType() === "modal" && modalBottomTemplateRef()) {
         <sd-dock-container>
-          <ng-template [ngTemplateOutlet]="getTemplateRef('content')" />
+          <ng-template [ngTemplateOutlet]="contentTemplateRef() ?? null" />
 
-          @if (getTemplateRef('bottom')) {
-            <sd-dock position="bottom">
-              <ng-template [ngTemplateOutlet]="getTemplateRef('bottom')" />
-            </sd-dock>
-          }
+          <sd-dock position="bottom">
+            <ng-template [ngTemplateOutlet]="modalBottomTemplateRef() ?? null" />
+          </sd-dock>
         </sd-dock-container>
-      } @else {
-        <ng-template [ngTemplateOutlet]="getTemplateRef('content')" />
+      } @else if (currViewType() === "modal") {
+        <ng-template [ngTemplateOutlet]="contentTemplateRef() ?? null" />
       }
     </sd-busy-container>
   `,
@@ -88,34 +86,21 @@ export class SdBaseContainerControl {
 
   private _fullPageCode = useFullPageCodeSignal();
   private _currPageCode = useCurrentPageCodeSignal();
+
+  pageTopbarTemplateRef = contentChild("pageTopbar", { read: TemplateRef });
+  contentTemplateRef = contentChild("content", { read: TemplateRef });
+  modalBottomTemplateRef = contentChild("modalBottom", { read: TemplateRef });
+
+  perms = $computed(() => this._sdAppStructure.getViewPerms([this._fullPageCode()], ["use"]));
+
   private _viewType = useViewTypeSignal();
+  viewType = input<TSdViewType>();
+  currViewType = $computed(() => this.viewType() ?? this._viewType());
 
-  templateDirectives = contentChildren(TemplateTargetDirective);
-  getTemplateRef = (target: "topbar" | "content" | "bottom") => {
-    return this.templateDirectives().single(item => item.target() === target)?.templateRef ?? null;
-  };
-
-  perms = $computed(() => this._sdAppStructure.getViewPerms(
-    [this._fullPageCode()],
-    ["use"],
-  ));
-
-  realContainerType = $computed<"container" | "page" | "modal" | "control">(() => {
-    if (this.containerType()) {
-      return this.containerType()!;
-    }
-    else {
-      return this._viewType();
-    }
-  });
-  containerType = input<"container" | "page" | "modal" | "control">();
-
-  title = $computed(() =>
-    this._sdActivatedModal
-      ? this._sdActivatedModal.modal.title()
-      : this._sdAppStructure.getTitleByCode(
-        this._currPageCode?.() ?? this._fullPageCode(),
-      ),
+  title = $computed(
+    () =>
+      this._sdActivatedModal?.modalComponent()?.title() ??
+      this._sdAppStructure.getTitleByCode(this._currPageCode?.() ?? this._fullPageCode()),
   );
 
   busy = input(false, { transform: transformBoolean });

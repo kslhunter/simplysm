@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-restricted-imports */
 
 import { afterRenderEffect, signal, Signal } from "@angular/core";
 

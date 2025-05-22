@@ -1,5 +1,5 @@
 import { fileURLToPath } from "url";
-import fs from "node:fs";
+import fs from "fs";
 
 export class SdCliPostinstall {
   static run() {

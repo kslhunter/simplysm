@@ -9,7 +9,7 @@ import {
 import { SdBusyProvider } from "../providers/sd-busy.provider";
 import { $computed } from "../utils/bindings/$computed";
 
-import { transformBoolean, transformNullableBoolean } from "../utils/type-tramsforms";
+import { transformBoolean } from "../utils/type-tramsforms";
 
 @Component({
   selector: "sd-busy-container",
@@ -19,29 +19,27 @@ import { transformBoolean, transformNullableBoolean } from "../utils/type-tramsf
   imports: [],
   template: `
     <div class="_screen">
-      @if (!noIndicator()) {
-        <div class="_rect">
-          <!--<div class="_bar"></div>-->
-          <div class="_indicator">
-            <div class="_cube1"></div>
-            <div class="_cube2"></div>
-            <div class="_cube4"></div>
-            <div class="_cube3"></div>
-          </div>
-          @if (message()) {
-            <div class="_message">
-              <pre>{{ message() }}</pre>
-            </div>
-          }
+      <div class="_rect">
+        <!--<div class="_bar"></div>-->
+        <div class="_indicator">
+          <div class="_cube1"></div>
+          <div class="_cube2"></div>
+          <div class="_cube4"></div>
+          <div class="_cube3"></div>
         </div>
-        @if (progressPercent() != null) {
-          <div class="_progress">
-            <div
-              class="_progress-bar"
-              [style.transform]="'scaleX(' + progressPercent()! / 100 + ')'"
-            ></div>
+        @if (message()) {
+          <div class="_message">
+            <pre>{{ message() }}</pre>
           </div>
         }
+      </div>
+      @if (progressPercent() != null) {
+        <div class="_progress">
+          <div
+            class="_progress-bar"
+            [style.transform]="'scaleX(' + progressPercent()! / 100 + ')'"
+          ></div>
+        </div>
       }
     </div>
     <ng-content></ng-content>
@@ -73,12 +71,12 @@ import { transformBoolean, transformNullableBoolean } from "../utils/type-tramsf
           visibility: hidden;
           pointer-events: none;
 
-          backdrop-filter: none;
-          transition: backdrop-filter calc(var(--animation-duration) * 10);
+        / / backdrop-filter: none;
+        / / transition: backdrop-filter calc(var(--animation-duration) * 10);
 
-          //background: rgba(255, 255, 255, 0.1);
-          //opacity: 0;
-          //transition: opacity calc(var(--animation-duration) * 2);
+        / / background: rgba(255, 255, 255, 0.1);
+        / / opacity: 0;
+        / / transition: opacity calc(var(--animation-duration) * 2);
 
           transition-timing-function: linear;
 
@@ -114,14 +112,7 @@ import { transformBoolean, transformNullableBoolean } from "../utils/type-tramsf
             pointer-events: auto;
 
             opacity: 1;
-            backdrop-filter: blur(2px);
-          }
-        }
-
-        &[sd-no-fade="true"] {
-          > ._screen {
-            //background: rgba(255, 255, 255, 0);
-            backdrop-filter: none !important;
+          / / backdrop-filter: blur(2 px);
           }
         }
 
@@ -361,7 +352,6 @@ import { transformBoolean, transformNullableBoolean } from "../utils/type-tramsf
   host: {
     "[attr.sd-busy]": "busy()",
     "[attr.sd-type]": "currType()",
-    "[attr.sd-no-fade]": "currNoFade()",
   },
 })
 export class SdBusyContainerControl {
@@ -370,13 +360,9 @@ export class SdBusyContainerControl {
   busy = input(false, { transform: transformBoolean });
   message = input<string>();
   type = input<"spinner" | "bar" | "cube">();
-  /** @deprecated */
-  noFade = input(undefined, { transform: transformNullableBoolean });
-  noIndicator = input(false, { transform: transformBoolean });
   progressPercent = input<number>();
 
   currType = $computed(() => this.type() ?? this._sdBusy.type());
-  currNoFade = $computed(() => this.noFade() ?? this._sdBusy.noFade());
 
   @HostListener("keydown.capture", ["$event"])
   onKeydownCapture(event: KeyboardEvent) {

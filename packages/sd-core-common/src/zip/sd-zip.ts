@@ -7,7 +7,7 @@ import {
 } from "@zip.js/zip.js";
 
 export class SdZip {
-  private _reader?: ZipReader<Blob | Buffer>;
+  private readonly _reader?: ZipReader<Blob | Buffer>;
 
   private _cache = new Map<string, Buffer | undefined>();
 
@@ -17,8 +17,7 @@ export class SdZip {
     if (Buffer.isBuffer(data)) {
       const uint8Array = new Uint8Array(data);
       this._reader = new ZipReader(new Uint8ArrayReader(uint8Array));
-    }
-    else {
+    } else {
       this._reader = new ZipReader(new BlobReader(data));
     }
   }
@@ -29,9 +28,7 @@ export class SdZip {
     const entries = await this._reader.getEntries();
 
     // 1. 압축 해제 대상 크기 총합 계산
-    const totalSize = entries
-      .filter(e => !e.directory)
-      .sum(e => e.uncompressedSize);
+    const totalSize = entries.filter((e) => !e.directory).sum((e) => e.uncompressedSize);
 
     let totalExtracted = 0;
     for (const entry of entries) {
@@ -43,9 +40,10 @@ export class SdZip {
         extractedSize: totalExtracted,
       });
 
-      const entryBuffer = this._cache.get(entry.filename)
-        ?? Buffer.from((
-          await entry.getData(new Uint8ArrayWriter(), {
+      const entryBuffer =
+        this._cache.get(entry.filename) ??
+        Buffer.from(
+          (await entry.getData?.(new Uint8ArrayWriter(), {
             onprogress: (extracted) => {
               const currentTotal = totalExtracted + extracted;
 
@@ -57,8 +55,8 @@ export class SdZip {
 
               return undefined;
             },
-          })
-        )!);
+          })) ?? [],
+        );
 
       this._cache.set(entry.filename, entryBuffer);
 
@@ -87,13 +85,13 @@ export class SdZip {
 
     const entries = await this._reader.getEntries();
 
-    const entry = entries.single(item => item.filename === fileName);
+    const entry = entries.single((item) => item.filename === fileName);
     if (!entry) {
       this._cache.set(fileName, undefined);
       return undefined;
     }
 
-    const bytes = await entry.getData(new Uint8ArrayWriter());
+    const bytes = await entry.getData?.(new Uint8ArrayWriter());
     return bytes ? Buffer.from(bytes) : undefined;
   }
 

@@ -1,3 +1,4 @@
+import { NgTemplateOutlet } from "@angular/common";
 import {
   ChangeDetectionStrategy,
   Component,
@@ -7,25 +8,23 @@ import {
   HostListener,
   inject,
   input,
-  output,
+  model,
   TemplateRef,
   ViewEncapsulation,
 } from "@angular/core";
-import { SdBusyContainerControl } from "./sd-busy-container.control";
-import { SdKanbanControl } from "./sd-kanban.control";
-import { SdCheckboxControl } from "./sd-checkbox.control";
-import { SdKanbanBoardControl } from "./sd-kanban-board.control";
-import { NgTemplateOutlet } from "@angular/common";
-import { SdDockContainerControl } from "./sd-dock-container.control";
-import { SdDockControl } from "./sd-dock.control";
-import { SdPaneControl } from "./sd-pane.control";
-import { SdAnchorControl } from "./sd-anchor.control";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
-import { transformBoolean } from "../utils/type-tramsforms";
-import { SdIconControl } from "./sd-icon.control";
-import { $model } from "../utils/bindings/$model";
 import { $computed } from "../utils/bindings/$computed";
 import { $signal } from "../utils/bindings/$signal";
+import { transformBoolean } from "../utils/type-tramsforms";
+import { SdAnchorControl } from "./sd-anchor.control";
+import { SdBusyContainerControl } from "./sd-busy-container.control";
+import { SdCheckboxControl } from "./sd-checkbox.control";
+import { SdDockContainerControl } from "./sd-dock-container.control";
+import { SdDockControl } from "./sd-dock.control";
+import { SdIconControl } from "./sd-icon.control";
+import { SdKanbanBoardControl } from "./sd-kanban-board.control";
+import { SdKanbanControl } from "./sd-kanban.control";
+import { SdPaneControl } from "./sd-pane.control";
 
 @Component({
   selector: "sd-kanban-lane",
@@ -41,7 +40,6 @@ import { $signal } from "../utils/bindings/$signal";
     SdPaneControl,
     SdAnchorControl,
     SdIconControl,
-
   ],
   //region styles
   styles: [
@@ -134,15 +132,15 @@ import { $signal } from "../utils/bindings/$signal";
 export class SdKanbanLaneControl<L, T> {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
 
-  private _boardControl = inject<SdKanbanBoardControl<L, T>>(forwardRef(() => SdKanbanBoardControl));
+  private _boardControl = inject<SdKanbanBoardControl<L, T>>(
+    forwardRef(() => SdKanbanBoardControl),
+  );
 
   busy = input(false, { transform: transformBoolean });
 
   useCollapse = input(false, { transform: transformBoolean });
 
-  __collapse = input(false, { alias: "collapse", transform: transformBoolean });
-  __collapseChange = output<boolean>({ alias: "collapseChange" });
-  collapse = $model(this.__collapse, this.__collapseChange);
+  collapse = model(false);
 
   value = input.required<L>();
 
@@ -172,8 +170,7 @@ export class SdKanbanLaneControl<L, T> {
         }
         return r.length === v.length ? v : r;
       });
-    }
-    else {
+    } else {
       this._boardControl.selectedValues.update((v) => {
         const r = [...v];
         for (const ctrl of this.kanbanControls()) {
@@ -186,8 +183,6 @@ export class SdKanbanLaneControl<L, T> {
     }
   }
 
-  // #timeout?: NodeJS.Timeout;
-
   @HostListener("dragover", ["$event"])
   onDragOver(event: DragEvent) {
     if (this._boardControl.dragKanban() == null) return;
@@ -195,9 +190,6 @@ export class SdKanbanLaneControl<L, T> {
     event.preventDefault();
     event.stopPropagation();
 
-    // if (this.#timeout != null) {
-    //   clearTimeout(this.#timeout);
-    // }
     this.dragOvered.set(true);
   }
 
@@ -205,10 +197,6 @@ export class SdKanbanLaneControl<L, T> {
   onDragLeave(event: DragEvent) {
     event.preventDefault();
     event.stopPropagation();
-
-    // this.#timeout = setTimeout(() => {
-    //   this.dragOvered.set(false);
-    // }, 25);
 
     this.dragOvered.set(false);
   }

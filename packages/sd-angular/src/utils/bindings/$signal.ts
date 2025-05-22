@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-restricted-imports */
-
 import { signal, WritableSignal } from "@angular/core";
 import { $mark } from "./utils/$mark";
 

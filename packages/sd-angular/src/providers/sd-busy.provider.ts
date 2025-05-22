@@ -8,7 +8,6 @@ export class SdBusyProvider {
   private _appRef = inject(ApplicationRef);
 
   type = $signal<"spinner" | "bar" | "cube">("bar");
-  noFade = $signal(false);
 
   globalBusyCount = $signal(0);
 
@@ -20,7 +19,6 @@ export class SdBusyProvider {
         environmentInjector: this._appRef.injector,
       });
       compRef.setInput("type", this.type());
-      compRef.setInput("noFade", this.noFade());
       (compRef.location.nativeElement as HTMLElement).style.position = "absolute";
 
       this._appRef.attachView(compRef.hostView);

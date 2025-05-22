@@ -5,15 +5,14 @@ import {
   ElementRef,
   HostListener,
   input,
-  output,
+  model,
   viewChild,
   ViewEncapsulation,
 } from "@angular/core";
-import { SdDropdownPopupControl } from "./sd-dropdown-popup.control";
+import { $effect } from "../utils/bindings/$effect";
 import { injectElementRef } from "../utils/injections/inject-element-ref";
 import { transformBoolean } from "../utils/type-tramsforms";
-import { $model } from "../utils/bindings/$model";
-import { $effect } from "../utils/bindings/$effect";
+import { SdDropdownPopupControl } from "./sd-dropdown-popup.control";
 
 @Component({
   selector: "sd-dropdown",
@@ -42,23 +41,19 @@ import { $effect } from "../utils/bindings/$effect";
 export class SdDropdownControl {
   private _elRef = injectElementRef<HTMLElement>();
 
-  __open = input(false, { alias: "open", transform: transformBoolean });
-  __openChange = output<boolean>({ alias: "openChange" });
-  open = $model(this.__open, this.__openChange);
+  open = model(false);
 
   disabled = input(false, { transform: transformBoolean });
 
   contentClass = input<string>();
   contentStyle = input<string>();
 
-  contentElRef = viewChild.required<any, ElementRef<HTMLElement>>(
-    "contentEl",
-    { read: ElementRef },
-  );
-  popupElRef = contentChild.required<any, ElementRef<HTMLElement>>(
-    SdDropdownPopupControl,
-    { read: ElementRef },
-  );
+  contentElRef = viewChild.required<any, ElementRef<HTMLElement>>("contentEl", {
+    read: ElementRef,
+  });
+  popupElRef = contentChild.required<any, ElementRef<HTMLElement>>(SdDropdownPopupControl, {
+    read: ElementRef,
+  });
 
   constructor() {
     $effect(() => {
@@ -78,18 +73,16 @@ export class SdDropdownControl {
             top: isPlaceBottom ? "" : windowOffset.top + contentEl.offsetHeight + 2 + "px",
             bottom: isPlaceBottom ? window.innerHeight - windowOffset.top + "px" : "",
             left: isPlaceRight ? "" : windowOffset.left + "px",
-            right: isPlaceRight ? window.innerWidth
-              - windowOffset.left
-              - contentEl.offsetWidth
-              + "px" : "",
+            right: isPlaceRight
+              ? window.innerWidth - windowOffset.left - contentEl.offsetWidth + "px"
+              : "",
             minWidth: contentEl.offsetWidth + "px",
             opacity: "1",
             pointerEvents: "auto",
             transform: "none",
           });
         });
-      }
-      else {
+      } else {
         const contentEl = this.contentElRef().nativeElement;
         const popupEl = this.popupElRef().nativeElement;
 
@@ -139,8 +132,7 @@ export class SdDropdownControl {
           bottom: window.innerHeight - windowOffset.top + "px",
           left: windowOffset.left + "px",
         });
-      }
-      else {
+      } else {
         Object.assign(popupEl.style, {
           top: windowOffset.top + this.contentElRef().nativeElement.offsetHeight + "px",
           bottom: "",
@@ -153,8 +145,7 @@ export class SdDropdownControl {
   onContentClick() {
     if (this.open()) {
       this._closePopup();
-    }
-    else {
+    } else {
       this._openPopup();
     }
   }
@@ -166,8 +157,7 @@ export class SdDropdownControl {
         event.stopPropagation();
 
         this._openPopup();
-      }
-      else {
+      } else {
         const popupEl = this.popupElRef().nativeElement;
         const focusableFirst = popupEl.findFocusableFirst();
         if (focusableFirst) {
@@ -194,8 +184,7 @@ export class SdDropdownControl {
 
       if (this.open()) {
         this._closePopup();
-      }
-      else {
+      } else {
         this._openPopup();
       }
     }
@@ -252,8 +241,7 @@ export class SdDropdownControl {
       const focusableFirst = popupEl.findFocusableFirst();
       if (focusableFirst) {
         popupEl.findFocusableFirst()?.focus();
-      }
-      else {
+      } else {
         contentEl.focus();
       }
     }

@@ -21,46 +21,49 @@ export default function convertSdSheetBindingsSafely() {
       if (!initializer) continue;
 
       let rawTemplate: string | undefined;
-      if (initializer.isKind(SyntaxKind.NoSubstitutionTemplateLiteral) || initializer.isKind(
-        SyntaxKind.StringLiteral)) {
+      if (
+        initializer.isKind(SyntaxKind.NoSubstitutionTemplateLiteral) ||
+        initializer.isKind(SyntaxKind.StringLiteral)
+      ) {
         rawTemplate = initializer.getLiteralText();
-      }
-      else if (initializer.isKind(SyntaxKind.TemplateExpression)) {
+      } else if (initializer.isKind(SyntaxKind.TemplateExpression)) {
         rawTemplate = initializer.getFullText().slice(1, -1);
-      }
-      else continue;
+      } else continue;
 
       // 정규식으로 <sd-sheet> 안에서만 바인딩 속성 치환
-      let newTemplate = rawTemplate.replace(
-        /<sd-sheet([\s\S]*?)>/g,
-        (match) =>
-          match
-            .replace(/\[\(page\)\]/g, "[(currentPage)]")
-            .replace(/\[pageLength\]/g, "[totalPageCount]")
-            .replace(/\[\(ordering\)\]/g, "[(sorts)]")
-            .replace(/\[pageItemCount\]/g, "[itemsPerPage]"),
+      let newTemplate = rawTemplate.replace(/<sd-sheet([\s\S]*?)>/g, (match) =>
+        match
+          .replace(/\[\(page\)\]/g, "[(currentPage)]")
+          .replace(/\[pageLength\]/g, "[totalPageCount]")
+          .replace(/\[\(ordering\)\]/g, "[(sorts)]")
+          .replace(/\[pageItemCount\]/g, "[itemsPerPage]"),
       );
 
-      newTemplate = newTemplate.replace(
-        /<sd-pagination([\s\S]*?)>/g,
-        (match) =>
-          match
-            .replace(/\[\(page\)\]/g, "[(currentPage)]")
-            .replace(/\[pageLength\]/g, "[totalPageCount]")
-            .replace(/\[displayPageLength\]/g, "[visiblePageCount]"),
+      newTemplate = newTemplate.replace(/<sd-pagination([\s\S]*?)>/g, (match) =>
+        match
+          .replace(/\[\(page\)\]/g, "[(currentPage)]")
+          .replace(/\[pageLength\]/g, "[totalPageCount]")
+          .replace(/\[displayPageLength\]/g, "[visiblePageCount]"),
       );
 
-      newTemplate = newTemplate.replace(
-        /<sd-sheet-column([\s\S]*?)>/g,
-        (match) =>
-          match
-            .replace(/\[disableOrdering\]/g, "[disableSorting]")
-            .replace(/\sdisableOrdering/g, " disableSorting"),
+      newTemplate = newTemplate.replace(/<sd-sheet-column([\s\S]*?)>/g, (match) =>
+        match
+          .replace(/\[disableOrdering\]/g, "[disableSorting]")
+          .replace(/\sdisableOrdering/g, " disableSorting"),
+      );
+
+      newTemplate = newTemplate.replace(/<ng-template([\s\S]*?)>/g, (match) =>
+        match
+          .replace(/target="content"/g, "#content")
+          .replace(/target="topbar"/g, "#pageTopbar")
+          .replace(/target="bottom"/g, "#modalBottom"),
       );
 
       if (rawTemplate !== newTemplate) {
         initializer.replaceWithText("`" + newTemplate + "`");
-        console.log(`[template-updated] ${sourceFile.getBaseName()} :: 바인딩 속성 안전하게 변경 완료`);
+        console.log(
+          `[template-updated] ${sourceFile.getBaseName()} :: 바인딩 속성 안전하게 변경 완료`,
+        );
         sourceFile.saveSync();
       }
     }

@@ -1,20 +1,16 @@
 import { FsUtils, SdLogger, SdProcess } from "@simplysm/sd-core-node";
-import path from "path";
 import electronBuilder from "electron-builder";
-import { ISdClientBuilderElectronConfig } from "../types/config.types";
-import { INpmConfig } from "../types/common-configs.types";
-import { loadProjConfAsync } from "./utils/loadProjConfAsync";
+import fs from "fs";
 import os from "os";
-import fs from "node:fs";
+import path from "path";
+import { INpmConfig } from "../types/common-configs.types";
+import { ISdClientBuilderElectronConfig } from "../types/config.types";
+import { loadProjConfAsync } from "./utils/loadProjConfAsync";
 
 export class SdCliElectron {
   private static _logger = SdLogger.get(["simplysm", "sd-cli", "SdCliElectron"]);
 
-  static async runAsync(opt: {
-    package: string
-    config: string;
-    options?: string[];
-  }) {
+  static async runAsync(opt: { package: string; config: string; options?: string[] }) {
     this._logger.log("설정 가져오기...");
     const { pkgPath, electronPath, electronConfig } = await this._loadDevConfig(opt);
 
@@ -22,14 +18,10 @@ export class SdCliElectron {
     await this._prepareAsync({ pkgPath, electronPath, electronConfig });
 
     this._logger.log("실행...");
-    await SdProcess.spawnAsync(`npx electron .`, { cwd: electronPath }, true);
+    await SdProcess.spawnAsync(`npx electron .`, { cwd: electronPath, showMessage: true });
   }
 
-  static async buildForDevAsync(opt: {
-    package: string
-    config: string;
-    options?: string[];
-  }) {
+  static async buildForDevAsync(opt: { package: string; config: string; options?: string[] }) {
     this._logger.log("설정 가져오기...");
     const { pkgPath, electronPath, electronConfig } = await this._loadDevConfig(opt);
 
@@ -43,7 +35,7 @@ export class SdCliElectron {
 
   static async buildAsync(opt: {
     pkgPath: string;
-    electronConfig: ISdClientBuilderElectronConfig
+    electronConfig: ISdClientBuilderElectronConfig;
   }) {
     this._logger.log("준비...");
     const electronPath = path.resolve(opt.pkgPath, ".electron/src");
@@ -61,7 +53,7 @@ export class SdCliElectron {
   }
 
   private static async _loadDevConfig(opt: {
-    package: string
+    package: string;
     config: string;
     options?: string[];
   }) {
@@ -96,10 +88,10 @@ export class SdCliElectron {
       main: "electron-main.js",
       ...(opt.electronConfig.postInstallScript !== undefined
         ? {
-          scripts: {
-            postinstall: opt.electronConfig.postInstallScript,
-          },
-        }
+            scripts: {
+              postinstall: opt.electronConfig.postInstallScript,
+            },
+          }
         : {}),
       dependencies: reinstallPkgNames.toObject(
         (item) => item,
@@ -107,9 +99,12 @@ export class SdCliElectron {
       ),
     });
 
-    await SdProcess.spawnAsync(`npm install`, { cwd: opt.electronPath }, true);
+    await SdProcess.spawnAsync(`npm install`, { cwd: opt.electronPath, showMessage: true });
 
-    await SdProcess.spawnAsync(`npx electron-rebuild`, { cwd: opt.electronPath }, true);
+    await SdProcess.spawnAsync(`npx electron-rebuild`, {
+      cwd: opt.electronPath,
+      showMessage: true,
+    });
 
     return { npmConfig };
   }
@@ -119,10 +114,12 @@ export class SdCliElectron {
     electronPath: string;
     electronDistPath: string;
     npmConfig: INpmConfig;
-    electronConfig: ISdClientBuilderElectronConfig
+    electronConfig: ISdClientBuilderElectronConfig;
   }) {
     if (!this._canCreateSymlink()) {
-      throw new Error("'Electron 빌드'를 위해서는 'Symlink 생성' 권한이 필요합니다. 윈도우의 개발자모드를 활성화하세요.");
+      throw new Error(
+        "'Electron 빌드'를 위해서는 'Symlink 생성' 권한이 필요합니다. 윈도우의 개발자모드를 활성화하세요.",
+      );
     }
 
     await electronBuilder.build({
@@ -141,8 +138,8 @@ export class SdCliElectron {
         },
         ...(opt.electronConfig.installerIcon !== undefined
           ? {
-            icon: path.resolve(opt.pkgPath, opt.electronConfig.installerIcon),
-          }
+              icon: path.resolve(opt.pkgPath, opt.electronConfig.installerIcon),
+            }
           : {}),
         removePackageScripts: false,
         npmRebuild: false,
@@ -153,24 +150,24 @@ export class SdCliElectron {
     FsUtils.copy(
       path.resolve(
         opt.electronDistPath,
-        `${opt.npmConfig.description} ${opt.electronConfig.portable
-          ? ""
-          : "Setup "}${opt.npmConfig.version}.exe`,
+        `${opt.npmConfig.description} ${
+          opt.electronConfig.portable ? "" : "Setup "
+        }${opt.npmConfig.version}.exe`,
       ),
       path.resolve(
         opt.pkgPath,
-        `dist/electron/${opt.npmConfig.description}${opt.electronConfig.portable
-          ? "-portable"
-          : ""}-latest.exe`,
+        `dist/electron/${opt.npmConfig.description}${
+          opt.electronConfig.portable ? "-portable" : ""
+        }-latest.exe`,
       ),
     );
 
     FsUtils.copy(
       path.resolve(
         opt.electronDistPath,
-        `${opt.npmConfig.description} ${opt.electronConfig.portable
-          ? ""
-          : "Setup "}${opt.npmConfig.version}.exe`,
+        `${opt.npmConfig.description} ${
+          opt.electronConfig.portable ? "" : "Setup "
+        }${opt.npmConfig.version}.exe`,
       ),
       path.resolve(opt.pkgPath, `dist/electron/updates/${opt.npmConfig.version}.exe`),
     );
@@ -196,8 +193,7 @@ export class SdCliElectron {
       fs.unlinkSync(testTarget);
 
       return isSymlink;
-    }
-    catch {
+    } catch {
       return false;
     }
   }

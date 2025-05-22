@@ -1,22 +1,17 @@
 import {
   ApplicationRef,
   createComponent,
-  Directive,
   inject,
   Injectable,
   Injector,
-  input,
+  OutputEmitterRef,
   Type,
 } from "@angular/core";
 import { SdModalControl } from "../controls/sd-modal.control";
+import { $signal } from "../utils/bindings/$signal";
+import { TDirectiveInputSignals } from "../utils/types";
 
 import { SdBusyProvider } from "./sd-busy.provider";
-import { $signal } from "../utils/bindings/$signal";
-
-export const SD_MODAL_INPUT = Symbol();
-export const SD_MODEL_OUTPUT = Symbol();
-
-const OPEN_PRESERVED = Symbol();
 
 @Injectable({ providedIn: "root" })
 export class SdModalProvider {
@@ -25,10 +20,8 @@ export class SdModalProvider {
 
   modalCount = $signal(0);
 
-  async showAsync<T extends SdModalBase<any, any>>(
-    modalType: Type<T>,
-    title: string,
-    params: T[typeof SD_MODAL_INPUT],
+  async showAsync<T extends ISdModal<any>>(
+    modal: ISdModalInput<T>,
     options?: {
       key?: string;
       hideHeader?: boolean;
@@ -44,31 +37,32 @@ export class SdModalProvider {
       fill?: boolean;
       noFirstControlFocusing?: boolean;
     },
-  ): Promise<T[typeof SD_MODEL_OUTPUT] | undefined> {
+  ): Promise<Parameters<T["close"]["emit"]>[0] | undefined> {
     let isFirstOpen = true;
 
     this._sdBusy.globalBusyCount.update((v) => v + 1);
 
-    return await new Promise<T[typeof SD_MODEL_OUTPUT] | undefined>((resolve, reject) => {
+    return await new Promise<Parameters<T["close"]["emit"]>[0] | undefined>((resolve, reject) => {
       try {
         //-- Provider
-        const provider = new SdActivatedModalProvider();
+        const provider = new SdActivatedModalProvider<T>();
 
-        //-- component
-        const compRef = createComponent(modalType, {
+        //-- Content component
+        const compRef = createComponent(modal.type, {
           environmentInjector: this._appRef.injector,
           elementInjector: Injector.create({
             parent: this._appRef.injector,
             providers: [{ provide: SdActivatedModalProvider, useValue: provider }],
           }),
         });
-        compRef.setInput("title", title);
-        compRef.setInput("params", params);
+        for (const inputKey in modal.inputs) {
+          compRef.setInput(inputKey, modal.inputs[inputKey]);
+        }
 
-        provider.content = compRef.instance;
+        provider.contentComponent.set(compRef.instance);
         const compEl = compRef.location.nativeElement as HTMLElement;
 
-        //-- modal
+        //-- Modal component
         const modalRef = createComponent(SdModalControl, {
           environmentInjector: this._appRef.injector,
           projectableNodes: [[compEl]],
@@ -77,8 +71,8 @@ export class SdModalProvider {
             providers: [{ provide: SdActivatedModalProvider, useValue: provider }],
           }),
         });
+        modalRef.setInput("title", modal.title);
         modalRef.setInput("key", options?.key);
-        modalRef.setInput("title", title);
         modalRef.setInput("hideHeader", options?.hideHeader ?? false);
         modalRef.setInput("hideCloseButton", options?.hideCloseButton ?? false);
         modalRef.setInput("useCloseByBackdrop", options?.useCloseByBackdrop ?? false);
@@ -91,27 +85,23 @@ export class SdModalProvider {
         modalRef.setInput("headerStyle", options?.headerStyle);
         modalRef.setInput("fill", options?.fill ?? false);
 
-        provider.modal = modalRef.instance;
+        provider.modalComponent.set(modalRef.instance);
         const modalEl = modalRef.location.nativeElement as HTMLElement;
 
-        modalRef.instance.__openChange.subscribe((value: boolean) => {
+        modalRef.instance.open.subscribe((value: boolean) => {
           if (!provider.canDeactivefn()) return;
 
           if (!value) {
             modalRef.setInput("open", value);
-            compRef.instance.close(undefined, true);
-          }
-          else {
+            compRef.instance.close.emit(undefined);
+          } else {
             modalRef.setInput("open", value);
           }
         });
 
         const prevActiveElement = document.activeElement as HTMLElement | undefined;
-        compRef.instance.close = (
-          value?: T[typeof SD_MODEL_OUTPUT],
-          noCheckCanDeactive?: boolean,
-        ): void => {
-          if (!noCheckCanDeactive && !provider.canDeactivefn()) return;
+        compRef.instance.close.subscribe((value: Parameters<T["close"]["emit"]>[0] | undefined) => {
+          if (value != null && !provider.canDeactivefn()) return;
 
           resolve(value);
 
@@ -126,29 +116,7 @@ export class SdModalProvider {
           if (prevActiveElement) {
             prevActiveElement.focus();
           }
-        };
-        compRef.instance.open = () => {
-          modalRef.setInput("open", true);
-
-          if (isFirstOpen) {
-            isFirstOpen = false;
-            this._sdBusy.globalBusyCount.update((v) => v - 1);
-          }
-
-          requestAnimationFrame(
-            () => {
-              if (options?.noFirstControlFocusing) {
-                modalRef.instance.dialogElRef().nativeElement.focus();
-              }
-              else {
-                (
-                  (compRef.location.nativeElement as HTMLElement).findFocusableFirst()
-                  ?? modalRef.instance.dialogElRef().nativeElement
-                ).focus();
-              }
-            },
-          );
-        };
+        });
 
         const rootEl = this._appRef.components[0].location.nativeElement as HTMLElement;
         rootEl.appendChild(modalEl);
@@ -156,40 +124,48 @@ export class SdModalProvider {
         this._appRef.attachView(compRef.hostView);
         this._appRef.attachView(modalRef.hostView);
 
-        this.modalCount.update((v) => v + 1);
+        //-- open
 
-        if (compRef.instance[OPEN_PRESERVED]) {
-          compRef.instance.open();
-        }
-      }
-      catch (err) {
+        this.modalCount.update((v) => v + 1);
+        requestAnimationFrame(() => {
+          modalRef.setInput("open", true);
+
+          if (isFirstOpen) {
+            isFirstOpen = false;
+            this._sdBusy.globalBusyCount.update((v) => v - 1);
+          }
+
+          requestAnimationFrame(() => {
+            if (options?.noFirstControlFocusing) {
+              modalRef.instance.dialogElRef().nativeElement.focus();
+            } else {
+              (
+                (compRef.location.nativeElement as HTMLElement).findFocusableFirst() ??
+                modalRef.instance.dialogElRef().nativeElement
+              ).focus();
+            }
+          });
+        });
+      } catch (err) {
         reject(err);
       }
     });
   }
 }
 
-@Directive()
-export abstract class SdModalBase<I, O> {
-  [SD_MODAL_INPUT]!: I;
-  [SD_MODEL_OUTPUT]!: O;
-  [OPEN_PRESERVED]?: boolean;
-
-  title = input.required<string>();
-  params = input.required<I>();
-
-  open() {
-    this[OPEN_PRESERVED] = true;
-  }
-
-  close(value?: O, noCheckCanDeactive?: boolean): void {
-    throw new Error("모달이 초기화되어있지 않습니다.");
-  }
+export interface ISdModal<O> {
+  close: OutputEmitterRef<O | undefined>;
 }
 
 @Injectable()
-export class SdActivatedModalProvider {
-  modal!: SdModalControl;
-  content!: SdModalBase<any, any>;
+export class SdActivatedModalProvider<T> {
+  modalComponent = $signal<SdModalControl>();
+  contentComponent = $signal<T>();
   canDeactivefn = () => true;
+}
+
+export interface ISdModalInput<T extends ISdModal<any>, X extends keyof any = ""> {
+  title: string;
+  type: Type<T>;
+  inputs: Omit<TDirectiveInputSignals<T>, X>;
 }

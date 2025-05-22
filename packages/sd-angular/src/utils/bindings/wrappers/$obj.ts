@@ -3,7 +3,7 @@ import { ObjectUtils } from "@simplysm/sd-core-common";
 
 const ORIGIN_SNAPSHOT = Symbol();
 
-export function $obj<T extends Record<any, any>>(sig: Signal<T> | WritableSignal<T>) {
+export function $obj<T extends object>(sig: Signal<T> | WritableSignal<T>) {
   return {
     snapshot() {
       sig[ORIGIN_SNAPSHOT] = ObjectUtils.clone(sig());

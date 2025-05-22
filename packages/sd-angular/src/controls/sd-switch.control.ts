@@ -1,6 +1,12 @@
-import { ChangeDetectionStrategy, Component, HostListener, input, output, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  HostListener,
+  input,
+  model,
+  ViewEncapsulation,
+} from "@angular/core";
 import { transformBoolean } from "../utils/type-tramsforms";
-import { $model } from "../utils/bindings/$model";
 
 @Component({
   selector: "sd-switch",
@@ -96,7 +102,8 @@ import { $model } from "../utils/bindings/$model";
   template: `
     <div>
       <div></div>
-    </div>`,
+    </div>
+  `,
   host: {
     "[attr.sd-on]": "value()",
     "[attr.sd-disabled]": "disabled()",
@@ -108,16 +115,16 @@ import { $model } from "../utils/bindings/$model";
   },
 })
 export class SdSwitchControl {
-  __value = input(false, { alias: "value", transform: transformBoolean });
-  __valueChange = output<boolean>({ alias: "valueChange" });
-  value = $model(this.__value, this.__valueChange);
+  value = model(false);
 
   disabled = input(false, { transform: transformBoolean });
   inline = input(false, { transform: transformBoolean });
   inset = input(false, { transform: transformBoolean });
 
   size = input<"sm" | "lg">();
-  theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey">();
+  theme = input<
+    "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey"
+  >();
 
   @HostListener("click", ["$event"])
   onClick(event: Event) {

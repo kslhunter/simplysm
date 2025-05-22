@@ -1,43 +1,62 @@
-import cp, { ForkOptions } from "child_process";
-import { fileURLToPath } from "url";
-import { EventEmitter } from "events";
-import { ISdWorkerRequest, ISdWorkerType, TSdWorkerResponse } from "./sd-worker.types";
 import { JsonConvert, Uuid } from "@simplysm/sd-core-common";
+import { EventEmitter } from "events";
+import path from "path";
+import { fileURLToPath } from "url";
+import { Worker, WorkerOptions } from "worker_threads";
 import { SdLogger } from "../utils/sd-logger";
+import { ISdWorkerRequest, ISdWorkerType, TSdWorkerResponse } from "./sd-worker.types";
 
 export class SdWorker<T extends ISdWorkerType> extends EventEmitter {
-  private _proc: cp.ChildProcess;
+  private _worker: Worker;
 
-  constructor(filePath: string, opt?: Omit<ForkOptions, "stdio">) {
+  constructor(filePath: string, opt?: Omit<WorkerOptions, "stdout" | "stderr">) {
     super();
 
-    const logger = SdLogger.get(["simplysm", "sd-cli", "SdChildProcessPool", "#createProcess"]);
+    const logger = SdLogger.get(["simplysm", "sd-cli", "SdWorker"]);
 
-    this._proc = cp.fork(fileURLToPath(filePath), [], {
-      stdio: ["pipe", "pipe", "pipe", "ipc"],
-      ...opt,
-      env: {
-        ...process.env,
-        ...opt?.env,
-      },
-    });
+    const ext = path.extname(import.meta.filename);
+    if (ext === ".ts") {
+      this._worker = new Worker(
+        path.resolve(import.meta.dirname, "../../lib/worker-dev-proxy.js"),
+        {
+          stdout: true,
+          stderr: true,
+          ...opt,
+          env: {
+            ...process.env,
+            ...(opt?.env as any),
+          },
+          argv: [filePath, ...(opt?.argv ?? [])],
+        },
+      );
+    } else {
+      this._worker = new Worker(fileURLToPath(filePath), {
+        stdout: true,
+        stderr: true,
+        ...opt,
+        env: {
+          ...process.env,
+          ...(opt?.env as any),
+        },
+      });
+    }
 
-    this._proc.stdout!.pipe(process.stdout);
-    this._proc.stderr!.pipe(process.stderr);
+    // 워커의 stdout/stderr을 메인에 출력
+    this._worker.stdout.pipe(process.stdout);
+    this._worker.stderr.pipe(process.stderr);
 
-    this._proc.on("exit", (code) => {
-      if (code != null && code !== 0) {
-        const err = new Error(`오류와 함께 닫힘 (${code})`);
+    this._worker.on("exit", (code) => {
+      if (code !== 0) {
+        const err = new Error(`오류와 함께 닫힘 (CODE: ${code})`);
         logger.error(err);
-        return;
       }
     });
 
-    this._proc.on("error", (err) => {
+    this._worker.on("error", (err) => {
       logger.error(err);
     });
 
-    this._proc.on("message", (responseJson: string) => {
+    this._worker.on("message", (responseJson: string) => {
       const response: TSdWorkerResponse<T, string> = JsonConvert.parse(responseJson);
       if (response.type === "event") {
         this.emit(response.event, response.body);
@@ -64,29 +83,23 @@ export class SdWorker<T extends ISdWorkerType> extends EventEmitter {
         const response: TSdWorkerResponse<T, K> = JsonConvert.parse(responseJson);
         if (response.type === "return") {
           if (response.request.id === request.id) {
-            this._proc.off("message", callback);
+            this._worker.off("message", callback);
             resolve(response.body);
           }
-        }
-        else if (response.type === "error") {
+        } else if (response.type === "error") {
           if (response.request.id === request.id) {
-            this._proc.off("message", callback);
+            this._worker.off("message", callback);
             reject(response.body);
           }
         }
       };
 
-      this._proc.on("message", callback);
-      this._proc.send(JsonConvert.stringify(request));
+      this._worker.on("message", callback);
+      this._worker.postMessage(JsonConvert.stringify(request));
     });
   }
 
   async killAsync() {
-    await new Promise<void>((resolve) => {
-      this._proc.on("exit", () => {
-        resolve();
-      });
-      this._proc.kill("SIGKILL");
-    });
+    await this._worker.terminate();
   }
 }

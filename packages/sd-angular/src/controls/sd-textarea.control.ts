@@ -1,14 +1,6 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  input,
-  output,
-  ViewEncapsulation,
-} from "@angular/core";
-import { injectElementRef } from "../utils/injections/inject-element-ref";
-import { transformBoolean } from "../utils/type-tramsforms";
-import { $model } from "../utils/bindings/$model";
+import { ChangeDetectionStrategy, Component, input, model, ViewEncapsulation } from "@angular/core";
 import { setupInvalid } from "../utils/setups/setup-invalid";
+import { transformBoolean } from "../utils/type-tramsforms";
 
 @Component({
   selector: "sd-textarea",
@@ -154,7 +146,8 @@ import { setupInvalid } from "../utils/setups/setup-invalid";
         [style]="inputStyle()"
         [class]="inputClass()"
       ></textarea>
-    }`,
+    }
+  `,
   host: {
     "[attr.sd-disabled]": "disabled()",
     "[attr.sd-readonly]": "readonly()",
@@ -165,11 +158,7 @@ import { setupInvalid } from "../utils/setups/setup-invalid";
   },
 })
 export class SdTextareaControl {
-  private _elRef = injectElementRef<HTMLElement>();
-
-  __value = input<string | undefined>(undefined, { alias: "value" });
-  __valueChange = output<string | undefined>({ alias: "valueChange" });
-  value = $model(this.__value, this.__valueChange);
+  value = model<string>();
 
   placeholder = input<string>();
   title = input<string>();
@@ -181,7 +170,9 @@ export class SdTextareaControl {
   inset = input(false, { transform: transformBoolean });
   size = input<"sm" | "lg">();
   validatorFn = input<(value: string | undefined) => string | undefined>();
-  theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey">();
+  theme = input<
+    "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey"
+  >();
   inputStyle = input<string>();
   inputClass = input<string>();
 

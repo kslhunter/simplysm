@@ -27,7 +27,7 @@ export default [
       // 기본
       "no-console": ["warn"],
       "no-warning-comments": ["warn"],
-      "no-restricted-syntax": [
+      /*"no-restricted-syntax": [
         "error",
         {
           selector: "PropertyDefinition[key.type='PrivateIdentifier']",
@@ -37,7 +37,7 @@ export default [
           selector: "MethodDefinition[key.type='PrivateIdentifier']",
           message: "Do not use ECMAScript private methods (e.g. #myMethod); use TypeScript \"private\" instead.",
         },
-      ],
+      ],*/
       "eqeqeq": ["error", "always", { "null": "ignore" }],
 
       "require-await": ["error"],
@@ -80,7 +80,7 @@ export default [
       // 기본
       "no-console": ["warn"],
       "no-warning-comments": ["warn"],
-      "no-restricted-syntax": [
+      /*"no-restricted-syntax": [
         "error",
         {
           selector: "PropertyDefinition[key.type='PrivateIdentifier']",
@@ -90,7 +90,7 @@ export default [
           selector: "MethodDefinition[key.type='PrivateIdentifier']",
           message: "Do not use ECMAScript private methods (e.g. #myMethod); use TypeScript \"private\" instead.",
         },
-      ],
+      ],*/
       "eqeqeq": ["error", "always", { "null": "ignore" }],
 
       // 타입스크립트
@@ -132,7 +132,7 @@ export default [
           // "ignoreTernaryTests": true,
         },
       ],*/
-      "@typescript-eslint/naming-convention": [
+      /*"@typescript-eslint/naming-convention": [
         "error",
         // (1) private 대문자 필드 → 예외 허용
         {
@@ -182,22 +182,22 @@ export default [
           "format": ["camelCase"],
           "leadingUnderscore": "require",
         },
-      ],
+      ],*/
 
       //-- 심플리즘
       "@simplysm/ts-no-throw-not-implement-error": ["warn"],
 
 
       // -- 아래 적용 검토가 필요한것
-      "import/no-extraneous-dependencies": [
+      /*"import/no-extraneous-dependencies": [
         "error",
         {
           "devDependencies": [
-            "**/*.spec.ts",
-            "**/lib/**",
-            "**/eslint.config.js",
-            "**/simplysm.js",
-            "**/vitest.config.js",
+            "**!/!*.spec.ts",
+            "**!/lib/!**",
+            "**!/eslint.config.js",
+            "**!/simplysm.js",
+            "**!/vitest.config.js",
           ],
         },
       ],
@@ -228,11 +228,11 @@ export default [
         {
           paths: [
             // library에서만
-            /*{
+            /!*{
               name: '@angular/core',
               importNames: ['model'],
               message: '"model"은 사용할 수 없습니다. input/output/$model을 사용하세요.',
-            },*/
+            },*!/
             // sd-cli fix로 변환되는 항목임
             ...[
               "signal",
@@ -248,7 +248,7 @@ export default [
             })),
           ],
         },
-      ],
+      ],*/
     },
   },
   {

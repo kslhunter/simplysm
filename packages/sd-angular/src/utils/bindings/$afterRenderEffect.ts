@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-restricted-imports */
-
 import {
   afterRenderEffect,
   EffectCleanupRegisterFn,

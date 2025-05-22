@@ -3,29 +3,25 @@ import {
   Component,
   inject,
   input,
+  model,
   output,
   ViewEncapsulation,
 } from "@angular/core";
-import { SdTextfieldControl } from "./sd-textfield.control";
-import { SdButtonControl } from "./sd-button.control";
-import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
-import { SdIconControl } from "./sd-icon.control";
 import { NumberUtils, StringUtils } from "@simplysm/sd-core-common";
-import { transformBoolean } from "../utils/type-tramsforms";
-import { $model } from "../utils/bindings/$model";
-import { $signal } from "../utils/bindings/$signal";
+import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { $effect } from "../utils/bindings/$effect";
+import { $signal } from "../utils/bindings/$signal";
+import { transformBoolean } from "../utils/type-tramsforms";
+import { SdButtonControl } from "./sd-button.control";
+import { SdIconControl } from "./sd-icon.control";
+import { SdTextfieldControl } from "./sd-textfield.control";
 
 @Component({
   selector: "sd-numpad",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [
-    SdTextfieldControl,
-    SdButtonControl,
-    SdIconControl,
-  ],
+  imports: [SdTextfieldControl, SdButtonControl, SdIconControl],
   template: `
     <table>
       <thead>
@@ -58,20 +54,11 @@ import { $effect } from "../utils/bindings/$effect";
         <tr>
           @if (useMinusButton()) {
             <td>
-              <sd-button
-                size="lg"
-                (click)="onButtonClick('Minus')"
-              >
-                -
-              </sd-button>
+              <sd-button size="lg" (click)="onButtonClick('Minus')">-</sd-button>
             </td>
           }
           <td [attr.colspan]="useMinusButton() ? 1 : 2">
-            <sd-button
-              size="lg"
-              buttonClass="tx-theme-danger-default"
-              (click)="onButtonClick('C')"
-            >
+            <sd-button size="lg" buttonClass="tx-theme-danger-default" (click)="onButtonClick('C')">
               <sd-icon [icon]="icons.eraser" />
             </sd-button>
           </td>
@@ -89,11 +76,8 @@ import { $effect } from "../utils/bindings/$effect";
           <tr>
             @for (c of [0, 1, 2]; track $index) {
               <td>
-                <sd-button
-                  size="lg"
-                  (click)="onButtonClick(((r * 3) + c + 1).toString())"
-                >
-                  {{ (r * 3) + c + 1 }}
+                <sd-button size="lg" (click)="onButtonClick((r * 3 + c + 1).toString())">
+                  {{ r * 3 + c + 1 }}
                 </sd-button>
               </td>
             }
@@ -108,7 +92,8 @@ import { $effect } from "../utils/bindings/$effect";
           </td>
         </tr>
       </tbody>
-    </table>`,
+    </table>
+  `,
   styles: [
     /* language=SCSS */ `
       sd-numpad {
@@ -135,9 +120,8 @@ export class SdNumpadControl {
   text = $signal<string>();
 
   placeholder = input<string>();
-  __value = input<number>(undefined, { alias: "value" });
-  __valueChange = output<number>({ alias: "valueChange" });
-  value = $model(this.__value, this.__valueChange);
+  value = model<number>();
+
   required = input(false, { transform: transformBoolean });
   inputDisabled = input(false, { transform: transformBoolean });
   useEnterButton = input(false, { transform: transformBoolean });
@@ -164,28 +148,23 @@ export class SdNumpadControl {
   onButtonClick(key: string) {
     if (key === "C") {
       this.text.set(undefined);
-    }
-    else if (key === "BS") {
-      this.text.update(v => {
+    } else if (key === "BS") {
+      this.text.update((v) => {
         const str = v?.slice(0, -1);
         return StringUtils.isNullOrEmpty(str) ? undefined : str;
       });
-    }
-    else if (key === "ENT") {
+    } else if (key === "ENT") {
       this.enterButtonClick.emit();
-    }
-    else if (key === "Minus") {
-      this.text.update(v => {
+    } else if (key === "Minus") {
+      this.text.update((v) => {
         if (v != null && v[0] === "-") {
           return v.slice(1);
-        }
-        else {
+        } else {
           return "-" + (v ?? "");
         }
       });
-    }
-    else {
-      this.text.update(v => (v ?? "") + key);
+    } else {
+      this.text.update((v) => (v ?? "") + key);
     }
   }
 }

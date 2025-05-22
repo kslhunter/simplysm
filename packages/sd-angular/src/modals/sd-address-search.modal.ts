@@ -1,23 +1,30 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/core";
-import { SdModalBase } from "../providers/sd-modal.provider";
-import { injectElementRef } from "../utils/injections/inject-element-ref";
+import { ChangeDetectionStrategy, Component, output, ViewEncapsulation } from "@angular/core";
+import { SdBusyContainerControl } from "../controls/sd-busy-container.control";
+import { ISdModal } from "../providers/sd-modal.provider";
 import { $effect } from "../utils/bindings/$effect";
+import { $signal } from "../utils/bindings/$signal";
+import { injectElementRef } from "../utils/injections/inject-element-ref";
 
 @Component({
   selector: "sd-address-search-modal",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [],
+  imports: [SdBusyContainerControl],
   template: `
-    <div class="_content" style="min-height: 100px;"></div>`,
+    <sd-busy-container [busy]="!initialized()">
+      <div class="_content" style="min-height: 100px;"></div>
+    </sd-busy-container>
+  `,
 })
-export class SdAddressSearchModal extends SdModalBase<undefined, IAddress> {
+export class SdAddressSearchModal implements ISdModal<IAddress> {
   private _elRef = injectElementRef();
 
-  constructor() {
-    super();
+  close = output<IAddress>();
 
+  initialized = $signal(false);
+
+  constructor() {
     $effect([], async () => {
       if (!document.getElementById("daum_address")) {
         await new Promise<void>((resolve) => {
@@ -58,7 +65,7 @@ export class SdAddressSearchModal extends SdModalBase<undefined, IAddress> {
             }
           }
 
-          this.close({
+          this.close.emit({
             postNumber: data.zonecode,
             address: addr + extraAddr,
             buildingName: data.buildingName,
@@ -71,7 +78,7 @@ export class SdAddressSearchModal extends SdModalBase<undefined, IAddress> {
         height: "100%",
       }).embed(contentEl, { autoClose: false });
 
-      this.open();
+      this.initialized.set(true);
     });
   }
 }

@@ -117,7 +117,7 @@ export class SdOrmUtils {
     };
 
     // DATA 추출 타입 변환
-    const data: Record<string, any>[] = orgResults.map((item) => {
+    const data: Record<string, any>[] = orgResults.flat().map((item) => {
       const obj: Record<string, any> = {};
       for (const key of Object.keys(item)) {
         if (item[key] == null) {

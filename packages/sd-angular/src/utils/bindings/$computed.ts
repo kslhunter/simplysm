@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-restricted-imports */
 
 import { computed, effect, signal, Signal, untracked } from "@angular/core";
 

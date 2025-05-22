@@ -28,19 +28,20 @@ export function $arr<T>(sig: Signal<T[]> | WritableSignal<T[]>) {
 
       sig.update((v) => {
         if (v.includes(value)) {
-          return v.filter(item => item !== value);
-        }
-        else {
+          return v.filter((item) => item !== value);
+        } else {
           return [...v, value];
         }
 
         return v;
       });
     },
-    snapshot(keyPropName: keyof T) {
+    snapshot(keyPropName: keyof T | "$item") {
       sig[ORIGIN_SNAPSHOT] = {
         keyPropName,
-        snapshot: ObjectUtils.clone(sig()).toMap((item) => item[keyPropName]),
+        snapshot: ObjectUtils.clone(sig()).toMap((item) =>
+          keyPropName === "$item" ? item : item[keyPropName],
+        ),
       };
     },
     changed(item: T) {

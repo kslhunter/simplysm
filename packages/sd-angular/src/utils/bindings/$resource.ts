@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-restricted-imports */
-
 import { resource, ResourceOptions, ResourceRef, ResourceStatus } from "@angular/core";
 import { $effect } from "./$effect";
 

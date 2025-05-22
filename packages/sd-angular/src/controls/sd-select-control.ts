@@ -1,3 +1,4 @@
+import { NgTemplateOutlet } from "@angular/common";
 import {
   ChangeDetectionStrategy,
   Component,
@@ -5,33 +6,31 @@ import {
   ElementRef,
   inject,
   input,
-  output,
+  model,
   TemplateRef,
   viewChild,
   ViewEncapsulation,
 } from "@angular/core";
-import { SdSelectItemControl } from "./sd-select-item.control";
-import { SdDropdownControl } from "./sd-dropdown.control";
 import {
   SdItemOfTemplateContext,
   SdItemOfTemplateDirective,
 } from "../directives/sd-item-of.template-directive";
-import { SdDockContainerControl } from "./sd-dock-container.control";
-import { NgTemplateOutlet } from "@angular/common";
-import { SdDockControl } from "./sd-dock.control";
-import { SdAnchorControl } from "./sd-anchor.control";
-import { SdGapControl } from "./sd-gap.control";
-import { SdPaneControl } from "./sd-pane.control";
-import { SdTypedTemplateDirective } from "../directives/sd-typed.template-directive";
-import { SdDropdownPopupControl } from "./sd-dropdown-popup.control";
-import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
-import { transformBoolean } from "../utils/type-tramsforms";
 import { SdRippleDirective } from "../directives/sd-ripple.directive";
-import { SdIconControl } from "./sd-icon.control";
-import { $model } from "../utils/bindings/$model";
+import { SdTypedTemplateDirective } from "../directives/sd-typed.template-directive";
+import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
+import { $afterRenderEffect } from "../utils/bindings/$afterRenderEffect";
 import { $signal } from "../utils/bindings/$signal";
 import { setupInvalid } from "../utils/setups/setup-invalid";
-import { $afterRenderEffect } from "../utils/bindings/$afterRenderEffect";
+import { transformBoolean } from "../utils/type-tramsforms";
+import { SdAnchorControl } from "./sd-anchor.control";
+import { SdDockContainerControl } from "./sd-dock-container.control";
+import { SdDockControl } from "./sd-dock.control";
+import { SdDropdownPopupControl } from "./sd-dropdown-popup.control";
+import { SdDropdownControl } from "./sd-dropdown.control";
+import { SdGapControl } from "./sd-gap.control";
+import { SdIconControl } from "./sd-icon.control";
+import { SdPaneControl } from "./sd-pane.control";
+import { SdSelectItemControl } from "./sd-select-item.control";
 
 @Component({
   selector: "sd-select",
@@ -256,9 +255,11 @@ import { $afterRenderEffect } from "../utils/bindings/$afterRenderEffect";
                       }"
                     ></ng-template>
 
-                    @if (getChildrenFn() &&
-                    getChildrenFn()!(item, index, depth) &&
-                    getChildrenFn()!(item, index, depth).length > 0) {
+                    @if (
+                      getChildrenFn() &&
+                      getChildrenFn()!(item, index, depth) &&
+                      getChildrenFn()!(item, index, depth).length > 0
+                    ) {
                       <div class="_children">
                         <ng-template
                           [ngTemplateOutlet]="rowOfList"
@@ -292,13 +293,9 @@ import { $afterRenderEffect } from "../utils/bindings/$afterRenderEffect";
 export class SdSelectControl<M extends "single" | "multi", T> {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
 
-  __value = input<TSelectValue<any>[M] | undefined>(undefined, { alias: "value" });
-  __valueChange = output<TSelectValue<any>[M] | undefined>({ alias: "valueChange" });
-  value = $model(this.__value, this.__valueChange);
+  value = model<TSelectValue<any>[M]>();
 
-  __open = input(false, { alias: "open", transform: transformBoolean });
-  __openChange = output<boolean>({ alias: "openChange" });
-  open = $model(this.__open, this.__openChange);
+  open = model(false);
 
   required = input(false, { transform: transformBoolean });
   disabled = input(false, { transform: transformBoolean });
@@ -317,15 +314,13 @@ export class SdSelectControl<M extends "single" | "multi", T> {
   hideSelectAll = input(false, { transform: transformBoolean });
   placeholder = input<string>();
 
-  contentElRef = viewChild.required<any, ElementRef<HTMLElement>>(
-    "contentEl",
-    { read: ElementRef },
-  );
+  contentElRef = viewChild.required<any, ElementRef<HTMLElement>>("contentEl", {
+    read: ElementRef,
+  });
   dropdownControl = viewChild.required<SdDropdownControl>("dropdown");
-  dropdownPopupElRef = viewChild.required<any, ElementRef<HTMLElement>>(
-    "dropdownPopup",
-    { read: ElementRef },
-  );
+  dropdownPopupElRef = viewChild.required<any, ElementRef<HTMLElement>>("dropdownPopup", {
+    read: ElementRef,
+  });
 
   headerTemplateRef = contentChild<any, TemplateRef<void>>("header", { read: TemplateRef });
   beforeTemplateRef = contentChild<any, TemplateRef<void>>("before", { read: TemplateRef });
@@ -350,29 +345,30 @@ export class SdSelectControl<M extends "single" | "multi", T> {
     });
 
     $afterRenderEffect(() => {
-      const selectedItemControls = this.itemControls()
-        .filter((itemControl) => itemControl.isSelected());
+      const selectedItemControls = this.itemControls().filter((itemControl) =>
+        itemControl.isSelected(),
+      );
       // const selectedItemEls = selectedItemControls.map((item) => item.elRef.nativeElement);
       // const innerHTML = selectedItemEls
       //   .map((el) => el.findFirst("> ._content")?.innerHTML ?? "")
       //   .map((item) => `<div style="display: inline-block">${item}</div>`)
       //   .join(this.multiSelectionDisplayDirection() === "vertical" ? "<div class='p-sm-0'></div>" : ", ");
       const innerHTML = selectedItemControls
-        .map(ctl => ctl.contentHTML())
+        .map((ctl) => ctl.contentHTML())
         .map((item) => `<div style="display: inline-block">${item}</div>`)
-        .join(this.multiSelectionDisplayDirection() === "vertical"
-          ? "<div class='p-sm-0'></div>"
-          : ", ");
+        .join(
+          this.multiSelectionDisplayDirection() === "vertical"
+            ? "<div class='p-sm-0'></div>"
+            : ", ",
+        );
 
       if (innerHTML === "") {
         if (this.placeholder() !== undefined) {
           this.contentElRef().nativeElement.innerHTML = `<span class='sd-text-color-grey-default'>${this.placeholder()}</span>`;
-        }
-        else {
+        } else {
           this.contentElRef().nativeElement.innerHTML = `&nbsp;`;
         }
-      }
-      else {
+      } else {
         this.contentElRef().nativeElement.innerHTML = innerHTML;
       }
     });
@@ -390,12 +386,10 @@ export class SdSelectControl<M extends "single" | "multi", T> {
         if (event.key === "ArrowUp") {
           if (currIndex === 0) {
             this.dropdownControl().contentElRef().nativeElement.focus();
-          }
-          else {
+          } else {
             focusableEls[currIndex - 1].focus();
           }
-        }
-        else {
+        } else {
           if (typeof focusableEls[currIndex + 1] !== "undefined") {
             focusableEls[currIndex + 1].focus();
           }
@@ -408,8 +402,7 @@ export class SdSelectControl<M extends "single" | "multi", T> {
     if (this.selectMode() === "multi") {
       const itemKeyValues = this.value() as any[] | undefined;
       return itemKeyValues?.includes(itemControl.value()) ?? false;
-    }
-    else {
+    } else {
       const itemKeyValue = this.value();
       return itemKeyValue === itemControl.value();
     }
@@ -421,14 +414,12 @@ export class SdSelectControl<M extends "single" | "multi", T> {
         const r = [...((v ?? []) as any[])];
         if (r.includes(itemControl.value())) {
           r.remove(itemControl.value());
-        }
-        else {
+        } else {
           r.push(itemControl.value());
         }
         return r;
       });
-    }
-    else {
+    } else {
       this.value.set(itemControl.value());
     }
 
@@ -440,8 +431,8 @@ export class SdSelectControl<M extends "single" | "multi", T> {
   onSelectAllButtonClick(check: boolean) {
     const value = check
       ? this.itemControls()
-        .filter(item => !item.hidden() && !item.disabled())
-        .map((item) => item.value())
+          .filter((item) => !item.hidden() && !item.disabled())
+          .map((item) => item.value())
       : [];
 
     this.value.set(value);

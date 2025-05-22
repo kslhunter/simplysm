@@ -1,23 +1,15 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  input,
-  output,
-  ViewEncapsulation,
-} from "@angular/core";
-import { SdAnchorControl } from "../controls/sd-anchor.control";
-import { ISdPermission } from "../utils/sd-app-structure.utils";
-import { SdTypedTemplateDirective } from "../directives/sd-typed.template-directive";
 import { NgTemplateOutlet } from "@angular/common";
-import { SdCollapseIconControl } from "../controls/sd-collapse-icon.control";
-import { SdCheckboxControl } from "../controls/sd-checkbox.control";
-import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
-import { transformBoolean } from "../utils/type-tramsforms";
+import { ChangeDetectionStrategy, Component, inject, input, model, ViewEncapsulation } from "@angular/core";
 import { ObjectUtils } from "@simplysm/sd-core-common";
-import { $model } from "../utils/bindings/$model";
-import { $signal } from "../utils/bindings/$signal";
+import { SdAnchorControl } from "../controls/sd-anchor.control";
+import { SdCheckboxControl } from "../controls/sd-checkbox.control";
+import { SdCollapseIconControl } from "../controls/sd-collapse-icon.control";
+import { SdTypedTemplateDirective } from "../directives/sd-typed.template-directive";
+import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { $computed } from "../utils/bindings/$computed";
+import { $signal } from "../utils/bindings/$signal";
+import { ISdPermission } from "../utils/sd-app-structure.utils";
+import { transformBoolean } from "../utils/type-tramsforms";
 
 /**
  * 권한 테이블 컴포넌트
@@ -151,7 +143,15 @@ import { $computed } from "../utils/bindings/$computed";
       @if ((item.children && item.children.length !== 0) || (item.perms && item.perms.length > 0)) {
         <tr
           [attr.sd-collapse]="!!parent && getIsPermCollapsed(parent)"
-          [attr.sd-theme]="depth === 0 ? 'first' : depth % 3 === 0 ? 'success' : depth % 3 === 1 ? 'info' : 'warning'"
+          [attr.sd-theme]="
+            depth === 0
+              ? 'first'
+              : depth % 3 === 0
+                ? 'success'
+                : depth % 3 === 1
+                  ? 'info'
+                  : 'warning'
+          "
         >
           @for (_ of arr(depth + 1); let i = $index; track i) {
             <td class="_before">&nbsp;</td>
@@ -220,9 +220,9 @@ import { $computed } from "../utils/bindings/$computed";
 export class SdPermissionTableControl {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
 
-  __value = input<Record<string, boolean>>({}, { alias: "value" });
-  __valueChange = output<Record<string, boolean>>({ alias: "valueChange" });
-  value = $model(this.__value, this.__valueChange);
+  /*__value = input<Record<string, boolean>>({}, { alias: "value" });
+  __valueChange = output<Record<string, boolean>>({ alias: "valueChange" });*/
+  value = model<Record<string, boolean>>({});
 
   items = input<ISdPermission[]>([]);
   disabled = input(false, { transform: transformBoolean });
@@ -254,10 +254,12 @@ export class SdPermissionTableControl {
       if (this.getIsPermExists(item, "use") && !this.getIsPermChecked(item, "use")) {
         return true;
       }
-    }
-    else {
-      if (item.children?.every((child) => !this.getIsPermExists(child, "edit")
-        || this.getEditDisabled(child))) {
+    } else {
+      if (
+        item.children?.every(
+          (child) => !this.getIsPermExists(child, "edit") || this.getEditDisabled(child),
+        )
+      ) {
         return true;
       }
     }
@@ -303,8 +305,7 @@ export class SdPermissionTableControl {
       const r = new Set(v);
       if (r.has(item)) {
         r.delete(item);
-      }
-      else {
+      } else {
         r.add(item);
         const allChildren = this.getAllChildren(item);
         for (const allChild of allChildren) {
@@ -335,8 +336,7 @@ export class SdPermissionTableControl {
       const permCode = item.codes.join(".");
 
       if (type === "edit" && val && !this.getIsPermChecked(item, "use")) {
-      }
-      else {
+      } else {
         if (this.getIsPermExists(item, type) && value[permCode + "." + type] !== val) {
           value[permCode + "." + type] = val;
           changed = true;
@@ -344,8 +344,12 @@ export class SdPermissionTableControl {
       }
 
       // USE권한 지우면 EDIT권한도 자동으로 지움
-      if (type === "use" && !val && this.getIsPermExists(item, "edit") && !value[permCode
-      + ".edit"]) {
+      if (
+        type === "use" &&
+        !val &&
+        this.getIsPermExists(item, "edit") &&
+        !value[permCode + ".edit"]
+      ) {
         value[permCode + ".edit"] = false;
         changed = true;
       }
@@ -369,8 +373,7 @@ export class SdPermissionTableControl {
       items.max((item) => {
         if (item.children) {
           return this._getDepthLength(item.children, depth + 1);
-        }
-        else {
+        } else {
           return depth + 1;
         }
       }) ?? depth

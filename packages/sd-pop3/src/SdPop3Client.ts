@@ -1,4 +1,4 @@
-import * as tls from "node:tls";
+import * as tls from "tls";
 import { simpleParser } from "mailparser";
 import { DateTime, NumberUtils } from "@simplysm/sd-core-common";
 

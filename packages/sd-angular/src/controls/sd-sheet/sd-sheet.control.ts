@@ -6,6 +6,7 @@ import {
   HostListener,
   inject,
   input,
+  model,
   output,
   ViewEncapsulation,
 } from "@angular/core";
@@ -15,7 +16,6 @@ import { ISdResizeEvent } from "../../plugins/events/sd-resize.event-plugin";
 import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
 import { SdModalProvider } from "../../providers/sd-modal.provider";
 import { $computed } from "../../utils/bindings/$computed";
-import { $model } from "../../utils/bindings/$model";
 import { SdExpandingManager } from "../../utils/managers/sd-expanding-manager";
 import { SdSelectionManager } from "../../utils/managers/sd-selection-manager";
 import { ISdSortingDef, SdSortingManager } from "../../utils/managers/sd-sorting-manager";
@@ -36,9 +36,7 @@ import { SdSheetColumnFixingManager } from "./features/sd-sheet-column-fixing-ma
 import { SdSheetDomAccessor } from "./features/sd-sheet-dom-accessor";
 import { SdSheetFocusIndicatorRenderer } from "./features/sd-sheet-focus-indicator-renderer";
 import { SdSheetLayoutEngine } from "./features/sd-sheet-layout-engine";
-import {
-  SdSheetSelectRowIndicatorRenderer,
-} from "./features/sd-sheet-select-row-indicator-renderer";
+import { SdSheetSelectRowIndicatorRenderer } from "./features/sd-sheet-select-row-indicator-renderer";
 import {
   ISdSheetConfig,
   ISdSheetConfigColumn,
@@ -63,7 +61,6 @@ import {
     SdIconControl,
     SdIconLayersControl,
     SdEventsDirective,
-
   ],
   template: `
     <sd-busy-container [busy]="busy()" type="cube">
@@ -87,11 +84,7 @@ import {
           </sd-dock>
         }
 
-        <sd-pane
-          class="_sheet-container"
-          (scroll)="onContainerScroll()"
-          [style]="contentStyle()"
-        >
+        <sd-pane class="_sheet-container" (scroll)="onContainerScroll()" [style]="contentStyle()">
           <table (sdResize)="onSheetResize($event)">
             <thead>
               @for (headerRow of layoutEngine.headerDefTable(); let r = $index; track r) {
@@ -106,7 +99,7 @@ import {
                       [style.left.px]="columnFixingManager.fixedLeftMap().get(_c)"
                       (sdResize)="onHeaderLastRowCellResize($event, _c)"
                     >
-                      @if (selectionManager.hasSelectable() && selectMode() === 'multi') {
+                      @if (selectionManager.hasSelectable() && selectMode() === "multi") {
                         <sd-checkbox
                           [value]="selectionManager.isAllSelected()"
                           (valueChange)="selectionManager.toggleAll()"
@@ -160,7 +153,6 @@ import {
                           [attr.colspan]="headerCell.colspan"
                           [attr.rowspan]="headerCell.rowspan"
                           [attr.c]="c"
-
                           class="_last-depth"
                           [class._sort]="!headerCell.control.disableSorting()"
                           [attr.title]="headerCell.control.tooltip() ?? headerCell.text"
@@ -299,8 +291,11 @@ import {
                       }
                     </td>
                   }
-                  @for (columnDef of layoutEngine.columnDefs(); let
-                    c = $index; track columnDef.control.key()) {
+                  @for (
+                    columnDef of layoutEngine.columnDefs();
+                    let c = $index;
+                    track columnDef.control.key()
+                  ) {
                     <td
                       tabindex="0"
                       [class._fixed]="columnDef.fixed"
@@ -323,13 +318,13 @@ import {
                       "
                     >
                       <ng-template
-                        [ngTemplateOutlet]="columnDef.control.cellTemplateRef() ?? null"
+                        [ngTemplateOutlet]="columnDef.control.cellTemplateRef()"
                         [ngTemplateOutletContext]="{
                           $implicit: item,
                           item: item,
                           index: r,
                           depth: expandingManager.getDef(item).depth,
-                          edit: cellAgent.getIsCellEditMode({r, c}),
+                          edit: cellAgent.getIsCellEditMode({ r, c }),
                         }"
                       />
                     </td>
@@ -619,7 +614,6 @@ export class SdSheetControl<T> {
 
   columnControls = contentChildren<SdSheetColumnDirective<T>>(SdSheetColumnDirective);
 
-
   items = input<T[]>([]);
   trackByFn = input<(item: T, index: number) => any>((item) => item);
 
@@ -635,12 +629,14 @@ export class SdSheetControl<T> {
 
   async onConfigButtonClick(): Promise<void> {
     const result = await this._sdModal.showAsync(
-      SdSheetConfigModal,
-      "시트 설정창",
       {
-        sheetKey: this.key(),
-        controls: this.columnControls(),
-        config: this.config.value(),
+        type: SdSheetConfigModal,
+        title: "시트 설정창",
+        inputs: {
+          sheetKey: this.key(),
+          controls: this.columnControls(),
+          config: this.config.value(),
+        },
       },
       {
         useCloseByBackdrop: true,
@@ -674,7 +670,9 @@ export class SdSheetControl<T> {
   //region Column fixing
 
   columnFixingManager = new SdSheetColumnFixingManager({
-    fixedLength: $computed(() => this.layoutEngine.columnDefs().filter(item => item.fixed).length),
+    fixedLength: $computed(
+      () => this.layoutEngine.columnDefs().filter((item) => item.fixed).length,
+    ),
   });
 
   onHeaderLastRowCellResize(event: ISdResizeEvent, c: number) {
@@ -737,9 +735,7 @@ export class SdSheetControl<T> {
 
   //region Sorting
 
-  __sorts = input<ISdSortingDef[]>([], { alias: "sorts" });
-  __sortsChange = output<ISdSortingDef[]>({ alias: "sortsChange" });
-  sorts = $model(this.__sorts, this.__sortsChange);
+  sorts = model<ISdSortingDef[]>([]);
 
   sortingManager = new SdSortingManager({ sorts: this.sorts });
 
@@ -749,15 +745,11 @@ export class SdSheetControl<T> {
     if (headerCell.control.disableSorting()) return;
     if (this._isOnResizing) return;
 
-    if (
-      event.target instanceof HTMLElement
-      && event.target.classList.contains("_resizer")
-    ) return;
+    if (event.target instanceof HTMLElement && event.target.classList.contains("_resizer")) return;
 
     if (event.shiftKey || event.ctrlKey) {
       this.sortingManager.toggle(headerCell.control.key(), true);
-    }
-    else {
+    } else {
       this.sortingManager.toggle(headerCell.control.key(), false);
     }
   }
@@ -774,16 +766,13 @@ export class SdSheetControl<T> {
   visiblePageCount = input(10);
   totalPageCount = input(0);
   itemsPerPage = input<number>();
-  __currentPage = input<number>(0, { alias: "currentPage" });
-  __currentPageChange = output<number>({ alias: "currentPageChange" });
-  currentPage = $model(this.__currentPage, this.__currentPageChange);
+  currentPage = model<number>(0);
 
   effectivePageCount = $computed(() => {
     const itemsPerPage = this.itemsPerPage();
     if (itemsPerPage != null && itemsPerPage !== 0 && this.items().length > 0) {
       return Math.ceil(this.items().length / itemsPerPage);
-    }
-    else {
+    } else {
       return this.totalPageCount();
     }
   });
@@ -794,17 +783,14 @@ export class SdSheetControl<T> {
     if (this.items().length <= 0) return this._sortedItems();
 
     const currentPage = this.currentPage();
-    return this._sortedItems()
-      .slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage);
+    return this._sortedItems().slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage);
   });
 
   //endregion
 
   //region Expanding
 
-  __expandedItems = input<T[]>([], { alias: "expandedItems" });
-  __expandedItemsChange = output<T[]>({ alias: "expandedItemsChange" });
-  expandedItems = $model(this.__expandedItems, this.__expandedItemsChange);
+  expandedItems = model<T[]>([]);
   getChildrenFn = input<(item: T, index: number) => T[] | undefined>();
 
   expandingManager = new SdExpandingManager({
@@ -824,9 +810,7 @@ export class SdSheetControl<T> {
 
   selectMode = input<"single" | "multi">();
 
-  __selectedItems = input<T[]>([], { alias: "selectedItems" });
-  __selectedItemsChange = output<T[]>({ alias: "selectedItemsChange" });
-  selectedItems = $model(this.__selectedItems, this.__selectedItemsChange);
+  selectedItems = model<T[]>([]);
 
   autoSelect = input<"click" | "focus">();
   getItemSelectableFn = input<(item: T) => boolean | string>();
@@ -847,9 +831,8 @@ export class SdSheetControl<T> {
   onFocusCaptureForSelection(event: FocusEvent): void {
     if (!(event.target instanceof HTMLElement)) return;
 
-    const tdEl = event.target.tagName.toLowerCase() === "td"
-      ? event.target
-      : event.target.findParent("td");
+    const tdEl =
+      event.target.tagName.toLowerCase() === "td" ? event.target : event.target.findParent("td");
     if (!(tdEl instanceof HTMLTableCellElement)) return;
 
     const addr = this.cellAgent.getCellAddr(tdEl);
@@ -893,16 +876,14 @@ export class SdSheetControl<T> {
     const theadEl = this.domAccessor.getTHead();
     const fixedHeaderLastDepthEls = this.domAccessor.getLastDepthFixedHeaders();
 
-    const tdEl = event.target.tagName.toLowerCase() === "td"
-      ? event.target
-      : event.target.findParent("td");
+    const tdEl =
+      event.target.tagName.toLowerCase() === "td" ? event.target : event.target.findParent("td");
     if (!(tdEl instanceof HTMLTableCellElement)) return;
     if (tdEl.classList.contains("_fixed")) return;
 
     const target = {
       top: tdEl.offsetTop,
-      left: tdEl.offsetLeft
-        - (tdEl.classList.contains("_fixed") ? containerEl.scrollLeft : 0),
+      left: tdEl.offsetLeft - (tdEl.classList.contains("_fixed") ? containerEl.scrollLeft : 0),
     };
     const offset = {
       top: theadEl.offsetHeight,

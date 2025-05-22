@@ -3,19 +3,18 @@ import {
   Component,
   inject,
   input,
-  output,
+  model,
   ViewEncapsulation,
 } from "@angular/core";
 import { ObjectUtils } from "@simplysm/sd-core-common";
+import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { SdSystemConfigProvider } from "../providers/sd-system-config.provider";
 import { SdToastProvider } from "../providers/sd-toast.provider";
-import { SdGapControl } from "./sd-gap.control";
-import { SdAnchorControl } from "./sd-anchor.control";
-import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
-import { SdIconControl } from "./sd-icon.control";
-import { $model } from "../utils/bindings/$model";
-import { $signal } from "../utils/bindings/$signal";
 import { $effect } from "../utils/bindings/$effect";
+import { $signal } from "../utils/bindings/$signal";
+import { SdAnchorControl } from "./sd-anchor.control";
+import { SdGapControl } from "./sd-gap.control";
+import { SdIconControl } from "./sd-icon.control";
 
 @Component({
   selector: "sd-state-preset",
@@ -102,9 +101,7 @@ export class SdStatePresetControl {
   private _sdSystemConfig = inject(SdSystemConfigProvider);
   private _sdToast = inject(SdToastProvider);
 
-  __state = input<any>(undefined, { alias: "state" });
-  __stateChange = output<any>({ alias: "stateChange" });
-  state = $model(this.__state, this.__stateChange);
+  state = model<any>();
 
   key = input.required<string>();
   size = input<"sm" | "lg">();
@@ -113,8 +110,9 @@ export class SdStatePresetControl {
 
   constructor() {
     $effect([this.key], async () => {
-      this.presets.set((await this._sdSystemConfig.getAsync(`sd-state-preset.${this.key()}`))
-        ?? []);
+      this.presets.set(
+        (await this._sdSystemConfig.getAsync(`sd-state-preset.${this.key()}`)) ?? [],
+      );
     });
   }
 

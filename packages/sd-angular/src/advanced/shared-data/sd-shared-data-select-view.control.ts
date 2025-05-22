@@ -1,44 +1,38 @@
+import { NgTemplateOutlet } from "@angular/common";
 import {
   ChangeDetectionStrategy,
   Component,
   contentChild,
   inject,
   input,
-  output,
+  model,
   TemplateRef,
-  Type,
-  untracked,
   ViewEncapsulation,
 } from "@angular/core";
-import { StringUtils } from "@simplysm/sd-core-common";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
-import { ISharedDataBase } from "./sd-shared-data.provider";
+import { StringUtils } from "@simplysm/sd-core-common";
+import { SdAnchorControl } from "../../controls/sd-anchor.control";
+import { SdBusyContainerControl } from "../../controls/sd-busy-container.control";
+import { SdDockContainerControl } from "../../controls/sd-dock-container.control";
+import { SdDockControl } from "../../controls/sd-dock.control";
+import { SdIconControl } from "../../controls/sd-icon.control";
+import { SdListItemControl } from "../../controls/sd-list-item.control";
+import { SdListControl } from "../../controls/sd-list.control";
+import { SdPaginationControl } from "../../controls/sd-pagination.control";
+import { SdPaneControl } from "../../controls/sd-pane.control";
+import { SdTextfieldControl } from "../../controls/sd-textfield.control";
 import {
   SdItemOfTemplateContext,
   SdItemOfTemplateDirective,
 } from "../../directives/sd-item-of.template-directive";
-import { SdBusyContainerControl } from "../../controls/sd-busy-container.control";
-import { SdDockContainerControl } from "../../controls/sd-dock-container.control";
-import { SdDockControl } from "../../controls/sd-dock.control";
-import { NgTemplateOutlet } from "@angular/common";
-import { SdTextfieldControl } from "../../controls/sd-textfield.control";
-import { SdListControl } from "../../controls/sd-list.control";
-import { SdPaneControl } from "../../controls/sd-pane.control";
-import { SdListItemControl } from "../../controls/sd-list-item.control";
 import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
-import { SdAnchorControl } from "../../controls/sd-anchor.control";
-import { SD_MODAL_INPUT, SdModalBase, SdModalProvider } from "../../providers/sd-modal.provider";
-import {
-  ISharedDataModalInputParam,
-  ISharedDataModalOutputResult,
-} from "./sd-shared-data-select.control";
-import { transformBoolean } from "../../utils/type-tramsforms";
-import { SdIconControl } from "../../controls/sd-icon.control";
-import { SdPaginationControl } from "../../controls/sd-pagination.control";
-import { $model } from "../../utils/bindings/$model";
-import { $signal } from "../../utils/bindings/$signal";
+import { SdModalProvider } from "../../providers/sd-modal.provider";
 import { $computed } from "../../utils/bindings/$computed";
 import { $effect } from "../../utils/bindings/$effect";
+import { $signal } from "../../utils/bindings/$signal";
+import { transformBoolean } from "../../utils/type-tramsforms";
+import { TSdSelectModalInput } from "../sd-select-modal-button.control";
+import { ISharedDataBase } from "./sd-shared-data.provider";
 
 @Component({
   selector: "sd-shared-data-select-view",
@@ -61,7 +55,7 @@ import { $effect } from "../../utils/bindings/$effect";
   template: `
     <sd-busy-container [busy]="busyCount() > 0">
       <sd-dock-container>
-        @if (headerTemplateRef() || modalType()) {
+        @if (headerTemplateRef() || modal()) {
           <sd-dock class="pb-default">
             <div class="flex-row">
               <div class="flex-grow">
@@ -69,7 +63,7 @@ import { $effect } from "../../utils/bindings/$effect";
                   <ng-template [ngTemplateOutlet]="headerTemplateRef()!"></ng-template>
                 }
               </div>
-              @if (modalType()) {
+              @if (modal()) {
                 <div>
                   <sd-anchor (click)="onModalButtonClick()">
                     <sd-icon [icon]="icons.externalLink" fixedWidth />
@@ -90,10 +84,7 @@ import { $effect } from "../../utils/bindings/$effect";
 
         @if (pageItemCount()) {
           <sd-dock class="pb-default">
-            <sd-pagination
-              [(currentPage)]="page"
-              [totalPageCount]="pageLength()"
-            />
+            <sd-pagination [(currentPage)]="page" [totalPageCount]="pageLength()" />
           </sd-dock>
         }
 
@@ -102,7 +93,7 @@ import { $effect } from "../../utils/bindings/$effect";
             @if (useUndefined()) {
               <sd-list-item
                 [selected]="selectedItem() === undefined"
-                (click)="selectedItem.set(undefined)"
+                (click)="onSelect(undefined)"
                 [selectedIcon]="selectedIcon()"
               >
                 @if (undefinedTemplateRef()) {
@@ -115,7 +106,7 @@ import { $effect } from "../../utils/bindings/$effect";
             @for (item of displayItems(); let index = $index; track item.__valueKey) {
               <sd-list-item
                 [selected]="selectedItem() === item"
-                (click)="selectedItem() === item ? selectedItem.set(undefined) : selectedItem.set(item)"
+                (click)="onSelect(selectedItem() === item ? undefined : item)"
                 [selectedIcon]="selectedIcon()"
               >
                 <ng-template
@@ -135,26 +126,20 @@ import { $effect } from "../../utils/bindings/$effect";
     </sd-busy-container>
   `,
 })
-export class SdSharedDataSelectViewControl<
-  T extends ISharedDataBase<string | number>,
-  TMODAL extends SdModalBase<ISharedDataModalInputParam, ISharedDataModalOutputResult>,
-> {
+export class SdSharedDataSelectViewControl<T extends ISharedDataBase<string | number>> {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
 
   private _sdModal = inject(SdModalProvider);
 
-  __selectedItem = input<T | undefined>(undefined, { alias: "selectedItem" });
-  __selectedItemChange = output<T | undefined>({ alias: "selectedItemChange" });
-  selectedItem = $model(this.__selectedItem, this.__selectedItemChange);
+  selectedItem = model<T>();
+  beforeSelect = input<(item: T | undefined) => boolean | Promise<boolean>>(() => true);
 
   items = input.required<T[]>();
   selectedIcon = input<IconDefinition>();
   useUndefined = input(false, { transform: transformBoolean });
   filterFn = input<(item: T, index: number) => boolean>();
 
-  modalInputParam = input<TMODAL[typeof SD_MODAL_INPUT]>();
-  modalType = input<Type<TMODAL>>();
-  modalHeader = input<string>();
+  modal = input<TSdSelectModalInput>();
 
   headerTemplateRef = contentChild<any, TemplateRef<void>>("headerTemplate", { read: TemplateRef });
   filterTemplateRef = contentChild<any, TemplateRef<void>>("filterTemplate", { read: TemplateRef });
@@ -164,10 +149,9 @@ export class SdSharedDataSelectViewControl<
       read: TemplateRef,
     },
   );
-  undefinedTemplateRef = contentChild<any, TemplateRef<void>>(
-    "undefinedTemplate",
-    { read: TemplateRef },
-  );
+  undefinedTemplateRef = contentChild<any, TemplateRef<void>>("undefinedTemplate", {
+    read: TemplateRef,
+  });
 
   busyCount = $signal(0);
   searchText = $signal<string>();
@@ -203,30 +187,36 @@ export class SdSharedDataSelectViewControl<
   });
 
   constructor() {
-    $effect(() => {
+    $effect([this.items], () => {
       const newSelectedItem = this.items().single(
-        (item) => item.__valueKey === untracked(() => this.selectedItem())?.__valueKey,
+        (item) => item.__valueKey === this.selectedItem()?.__valueKey,
       );
       this.selectedItem.set(newSelectedItem);
     });
   }
 
-  async onModalButtonClick(): Promise<void> {
-    if (!this.modalType()) return;
+  async onSelect(item: T | undefined) {
+    if (!(await this.beforeSelect()(item))) return;
+    this.selectedItem.set(item);
+  }
 
-    const result = await this._sdModal.showAsync(
-      this.modalType()!,
-      this.modalHeader() ?? "자세히...",
-      {
+  async onModalButtonClick(): Promise<void> {
+    const modal = this.modal();
+    if (!modal) return;
+
+    const result = await this._sdModal.showAsync({
+      ...modal,
+      inputs: {
         selectMode: "single",
         selectedItemKeys: [this.selectedItem()].filterExists().map((item) => item.__valueKey),
-        ...this.modalInputParam(),
+        ...modal.inputs,
       },
-    );
+    });
 
     if (result) {
-      const newSelectedItem = this.items()
-        .single((item) => item.__valueKey === result.selectedItemKeys[0]);
+      const newSelectedItem = this.items().single(
+        (item) => item.__valueKey === result.selectedItemKeys[0],
+      );
       this.selectedItem.set(newSelectedItem);
     }
   }

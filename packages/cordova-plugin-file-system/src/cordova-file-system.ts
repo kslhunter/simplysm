@@ -13,19 +13,23 @@ export abstract class CordovaFileSystem {
       cordova.exec(resolve, reject, "CordovaFileSystem", "requestPermission", []);
     });
   }
-  
+
   // 디렉토리 읽기
-  static async readdirAsync(dirPath: string): Promise<{
-    name: string;
-    isDirectory: boolean;
-  }[]> {
+  static async readdirAsync(dirPath: string): Promise<
+    {
+      name: string;
+      isDirectory: boolean;
+    }[]
+  > {
     return await new Promise((resolve, reject) => {
       cordova.exec(resolve, reject, "CordovaFileSystem", "readdir", [dirPath]);
     });
   }
 
   // 저장소 경로 얻기
-  static async getStoragePathAsync(type: "app" | "external" | "appCache" | "externalCache"): Promise<string> {
+  static async getStoragePathAsync(
+    type: "app" | "external" | "appCache" | "externalCache",
+  ): Promise<string> {
     return await new Promise<string>((resolve, reject) => {
       cordova.exec(resolve, reject, "CordovaFileSystem", "getStoragePath", [type]);
     });
@@ -35,8 +39,7 @@ export abstract class CordovaFileSystem {
   static async writeFileAsync(filePath: string, data: string | Buffer): Promise<void> {
     if (Buffer.isBuffer(data)) {
       await this._writeFileBufferAsync(filePath, data);
-    }
-    else {
+    } else {
       await this._writeFileStringAsync(filePath, data);
     }
   }
@@ -49,13 +52,10 @@ export abstract class CordovaFileSystem {
 
   private static async _writeFileBufferAsync(filePath: string, data: Buffer): Promise<void> {
     await new Promise<string>((resolve, reject) => {
-      cordova.exec(
-        resolve,
-        reject,
-        "CordovaFileSystem",
-        "writeFileBase64",
-        [filePath, data.toString("base64")],
-      );
+      cordova.exec(resolve, reject, "CordovaFileSystem", "writeFileBase64", [
+        filePath,
+        data.toString("base64"),
+      ]);
     });
   }
 

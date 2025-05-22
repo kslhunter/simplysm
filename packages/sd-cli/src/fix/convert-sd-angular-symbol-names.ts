@@ -11,6 +11,7 @@ export default function convertSdAngularSymbolNames() {
     "@simplysm/sd-angular#useActivatedRouteManager": "@simplysm/sd-angular#useQueryParamMapSignal",
     "@simplysm/sd-angular#ISdSheetColumnOrderingVM": "@simplysm/sd-angular#ISdSortingDef",
     "@simplysm/sd-angular#ISortingDef": "@simplysm/sd-angular#ISdSortingDef",
+    "@simplysm/sd-angular#ISharedDataModalOutputResult": "@simplysm/sd-angular#ISelectModalOutputResult",
 
     "@angular/core#signal": "@simplysm/sd-angular#$signal",
     "@angular/core#computed": "@simplysm/sd-angular#$computed",

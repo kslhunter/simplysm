@@ -2,15 +2,13 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
-  input,
-  output,
+  input, model,
   viewChild,
   ViewEncapsulation,
 } from "@angular/core";
-import { transformBoolean } from "../utils/type-tramsforms";
-import { $model } from "../utils/bindings/$model";
-import { setupInvalid } from "../utils/setups/setup-invalid";
 import { $effect } from "../utils/bindings/$effect";
+import { setupInvalid } from "../utils/setups/setup-invalid";
+import { transformBoolean } from "../utils/type-tramsforms";
 
 @Component({
   selector: "sd-content-editor",
@@ -45,7 +43,9 @@ import { $effect } from "../utils/bindings/$effect";
           border: 1px solid var(--trans-lighter);
           border-radius: var(--border-radius-default);
 
-          min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
+          min-height: calc(
+            var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px
+          );
 
           &:focus {
             outline: none;
@@ -63,14 +63,19 @@ import { $effect } from "../utils/bindings/$effect";
         &[sd-size="sm"] {
           > ._editor {
             padding: var(--gap-xs) var(--gap-sm);
-            min-height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
+            min-height: calc(
+              var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px
+            );
           }
         }
 
         &[sd-size="lg"] {
           > ._editor {
             padding: var(--gap-default) var(--gap-lg);
-            min-height: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
+            min-height: calc(
+              var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit) +
+                2px
+            );
           }
         }
 
@@ -98,18 +103,24 @@ import { $effect } from "../utils/bindings/$effect";
           }
 
           > ._editor {
-            min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
+            min-height: calc(
+              var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit)
+            );
           }
 
           &[sd-size="sm"] {
             > ._editor {
-              min-height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
+              min-height: calc(
+                var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit)
+              );
             }
           }
 
           &[sd-size="lg"] {
             > ._editor {
-              min-height: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
+              min-height: calc(
+                var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit)
+              );
             }
           }
 
@@ -130,9 +141,7 @@ import { $effect } from "../utils/bindings/$effect";
   },
 })
 export class SdContentEditorControl {
-  __value = input<string | undefined>(undefined, { alias: "value" });
-  __valueChange = output<string | undefined>({ alias: "valueChange" });
-  value = $model(this.__value, this.__valueChange);
+  value = model<string>();
 
   disabled = input(false, { transform: transformBoolean });
   readonly = input(false, { transform: transformBoolean });
@@ -145,18 +154,16 @@ export class SdContentEditorControl {
 
   editorStyle = input<string>();
 
-  editorElRef = viewChild.required<any, ElementRef<HTMLDivElement>>(
-    "editorEl",
-    { read: ElementRef },
-  );
+  editorElRef = viewChild.required<any, ElementRef<HTMLDivElement>>("editorEl", {
+    read: ElementRef,
+  });
 
   constructor() {
     setupInvalid(() => {
       const errorMessages: string[] = [];
       if (this.value() == null && this.required()) {
         errorMessages.push("값을 입력하세요.");
-      }
-      else if (this.validatorFn()) {
+      } else if (this.validatorFn()) {
         const message = this.validatorFn()!(this.value());
         if (message !== undefined) {
           errorMessages.push(message);
@@ -192,8 +199,7 @@ export class SdContentEditorControl {
     let value: string | undefined;
     if (editorEl.innerHTML === "") {
       value = undefined;
-    }
-    else {
+    } else {
       value = editorEl.innerHTML;
     }
 

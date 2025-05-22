@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  input,
-  output,
-  ViewEncapsulation,
-} from "@angular/core";
-import { $model } from "../utils/bindings/$model";
+import { ChangeDetectionStrategy, Component, model, ViewEncapsulation } from "@angular/core";
 
 @Component({
   selector: "sd-tab",
@@ -37,7 +30,5 @@ import { $model } from "../utils/bindings/$model";
     <ng-content></ng-content>`,
 })
 export class SdTabControl {
-  __value = input<any>(undefined, { alias: "value" });
-  __valueChange = output<any>({ alias: "valueChange" });
-  value = $model(this.__value, this.__valueChange);
+  value = model<any>();
 }

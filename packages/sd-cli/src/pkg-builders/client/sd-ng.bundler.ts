@@ -44,7 +44,7 @@ import { INpmConfig } from "../../types/common-configs.types";
 import { ISdClientBuilderCordovaConfig } from "../../types/config.types";
 import { ISdCliNgPluginResultCache } from "../../types/build-plugin.types";
 import { ISdBuildMessage } from "../../types/build.types";
-import nodeModule from "node:module";
+import nodeModule from "module";
 import { ScopePathSet } from "../commons/scope-path";
 
 export class SdNgBundler {

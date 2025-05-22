@@ -1,3 +1,4 @@
+import { NgTemplateOutlet } from "@angular/common";
 import {
   ChangeDetectionStrategy,
   Component,
@@ -5,21 +6,19 @@ import {
   forwardRef,
   inject,
   input,
-  output,
+  model,
   TemplateRef,
   ViewEncapsulation,
 } from "@angular/core";
-import { SdListControl } from "./sd-list.control";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
+import { SdRippleDirective } from "../directives/sd-ripple.directive";
+import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
+import { $computed } from "../utils/bindings/$computed";
+import { transformBoolean } from "../utils/type-tramsforms";
 import { SdCollapseIconControl } from "./sd-collapse-icon.control";
 import { SdCollapseControl } from "./sd-collapse.control";
-import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
-import { SdRippleDirective } from "../directives/sd-ripple.directive";
-import { transformBoolean } from "../utils/type-tramsforms";
-import { NgTemplateOutlet } from "@angular/common";
 import { SdIconControl } from "./sd-icon.control";
-import { $model } from "../utils/bindings/$model";
-import { $computed } from "../utils/bindings/$computed";
+import { SdListControl } from "./sd-list.control";
 
 @Component({
   selector: "sd-list-item",
@@ -165,9 +164,7 @@ import { $computed } from "../utils/bindings/$computed";
 export class SdListItemControl {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
 
-  __open = input(false, { alias: "open", transform: transformBoolean });
-  __openChange = output<boolean>({ alias: "openChange" });
-  open = $model(this.__open, this.__openChange);
+  open = model(false);
 
   selectedIcon = input<IconDefinition>();
   selected = input(false, { transform: transformBoolean });

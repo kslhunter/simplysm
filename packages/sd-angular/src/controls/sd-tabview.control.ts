@@ -2,17 +2,15 @@ import {
   ChangeDetectionStrategy,
   Component,
   contentChildren,
-  input,
-  output,
+  model,
   ViewEncapsulation,
 } from "@angular/core";
-import { SdTabviewItemControl } from "./sd-tabview-item.control";
 import { SdDockContainerControl } from "./sd-dock-container.control";
 import { SdDockControl } from "./sd-dock.control";
-import { SdTabControl } from "./sd-tab.control";
-import { SdTabItemControl } from "./sd-tab-item.control";
 import { SdPaneControl } from "./sd-pane.control";
-import { $model } from "../utils/bindings/$model";
+import { SdTabItemControl } from "./sd-tab-item.control";
+import { SdTabControl } from "./sd-tab.control";
+import { SdTabviewItemControl } from "./sd-tabview-item.control";
 
 @Component({
   selector: "sd-tabview",
@@ -35,12 +33,11 @@ import { $model } from "../utils/bindings/$model";
       <sd-pane>
         <ng-content></ng-content>
       </sd-pane>
-    </sd-dock-container>`,
+    </sd-dock-container>
+  `,
 })
 export class SdTabviewControl<T> {
-  __value = input<T | undefined>(undefined, { alias: "value" });
-  __valueChange = output<T | undefined>({ alias: "valueChange" });
-  value = $model(this.__value, this.__valueChange);
+  value = model<T>();
 
   itemControls = contentChildren<SdTabviewItemControl<T>>(SdTabviewItemControl);
 }

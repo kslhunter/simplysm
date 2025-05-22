@@ -14,20 +14,19 @@ export function useViewTypeSignal() {
   const _fullPageCode = useFullPageCodeSignal();
   const _currPageCode = useCurrentPageCodeSignal();
 
-  return $computed<"container" | "page" | "modal" | "control">(() => {
-    if (_activatedRoute && _activatedRoute.component === _parent.constructor) {
-      if (_fullPageCode() === _currPageCode?.()) {
-        return "page";
-      }
-      else {
-        return "container";
-      }
-    }
-    else if (_sdActivatedModal) {
+  return $computed<TSdViewType>(() => {
+    if (
+      _activatedRoute &&
+      _activatedRoute.component === _parent.constructor &&
+      _fullPageCode() === _currPageCode?.()
+    ) {
+      return "page";
+    } else if (_sdActivatedModal && _sdActivatedModal.contentComponent() === _parent) {
       return "modal";
-    }
-    else {
+    } else {
       return "control";
     }
   });
 }
+
+export type TSdViewType = "page" | "modal" | "control";

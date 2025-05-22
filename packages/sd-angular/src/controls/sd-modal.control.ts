@@ -5,8 +5,7 @@ import {
   forwardRef,
   HostListener,
   inject,
-  input,
-  output,
+  input, model,
   viewChild,
   ViewEncapsulation,
 } from "@angular/core";
@@ -16,9 +15,7 @@ import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { SdSystemConfigProvider } from "../providers/sd-system-config.provider";
 import { $effect } from "../utils/bindings/$effect";
-import { $model } from "../utils/bindings/$model";
 import { $signal } from "../utils/bindings/$signal";
-
 import { injectElementRef } from "../utils/injections/inject-element-ref";
 import { transformBoolean } from "../utils/type-tramsforms";
 import { SdAnchorControl } from "./sd-anchor.control";
@@ -352,9 +349,7 @@ export class SdModalControl {
   private _sdSystemConfig = inject(SdSystemConfigProvider);
   private _elRef = injectElementRef<HTMLElement>();
 
-  __open = input(false, { alias: "open", transform: transformBoolean });
-  __openChange = output<boolean>({ alias: "openChange" });
-  open = $model(this.__open, this.__openChange);
+  open = model(false);
 
   key = input<string>();
   title = input.required<string>();

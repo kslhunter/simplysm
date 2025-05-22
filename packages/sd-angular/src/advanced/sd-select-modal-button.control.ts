@@ -3,33 +3,27 @@ import {
   Component,
   inject,
   input,
-  output,
-  Type,
+  InputSignal,
+  model,
   ViewEncapsulation,
 } from "@angular/core";
-import { SD_MODAL_INPUT, SdModalBase, SdModalProvider } from "../providers/sd-modal.provider";
-import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
-import { transformBoolean } from "../utils/type-tramsforms";
-import { TSelectValue } from "../controls/sd-select-control";
 import { SdAdditionalButtonControl } from "../controls/sd-additional-button.control";
-import { SdIconControl } from "../controls/sd-icon.control";
-import { SdButtonControl } from "../controls/sd-button.control";
 import { SdAnchorControl } from "../controls/sd-anchor.control";
-import { $model } from "../utils/bindings/$model";
+import { SdButtonControl } from "../controls/sd-button.control";
+import { SdIconControl } from "../controls/sd-icon.control";
+import { TSelectValue } from "../controls/sd-select-control";
+import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
+import { ISdModal, ISdModalInput, SdModalProvider } from "../providers/sd-modal.provider";
 import { $computed } from "../utils/bindings/$computed";
 import { setupInvalid } from "../utils/setups/setup-invalid";
+import { transformBoolean } from "../utils/type-tramsforms";
 
 @Component({
   selector: "sd-select-modal-button",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [
-    SdAdditionalButtonControl,
-    SdIconControl,
-    SdButtonControl,
-    SdAnchorControl,
-  ],
+  imports: [SdAdditionalButtonControl, SdIconControl, SdButtonControl, SdAnchorControl],
   template: `
     <sd-additional-button [inset]="inset()" [size]="size()">
       <ng-content />
@@ -57,17 +51,12 @@ import { setupInvalid } from "../utils/setups/setup-invalid";
     `,
   ],
 })
-export class SdSelectModalButtonControl<
-  TMODAL extends SdModalBase<ISelectModalInputParam, ISelectModalOutputResult>,
-  M extends keyof TSelectValue<any>,
-> {
+export class SdSelectModalButtonControl<M extends keyof TSelectValue<any>> {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
 
   private _sdModal = inject(SdModalProvider);
 
-  __value = input<TSelectValue<number | undefined>[M] | undefined>(undefined, { alias: "value" });
-  __valueChange = output<TSelectValue<number | undefined>[M] | undefined>({ alias: "valueChange" });
-  value = $model(this.__value, this.__valueChange);
+  value = model<TSelectValue<number | undefined>[M]>();
 
   disabled = input(false, { transform: transformBoolean });
   required = input(false, { transform: transformBoolean });
@@ -76,56 +65,58 @@ export class SdSelectModalButtonControl<
   size = input<"sm" | "lg">();
   selectMode = input("single" as M);
 
-  modalInputParam = input<TMODAL[typeof SD_MODAL_INPUT]>();
-  modalType = input<Type<TMODAL>>();
-  modalHeader = input<string>();
+  modal = input.required<TSdSelectModalInput>();
 
   isNoValue = $computed(() => {
-    return this.value() == null
-      || (this.selectMode() === "multi" && (this.value() as any[]).length === 0);
+    return (
+      this.value() == null ||
+      (this.selectMode() === "multi" && (this.value() as any[]).length === 0)
+    );
   });
 
   constructor() {
-    setupInvalid(() => (this.required() && this.value() == null) ? "값을 입력하세요." : "");
+    setupInvalid(() => (this.required() && this.value() == null ? "값을 입력하세요." : ""));
   }
 
   async onModalButtonClick(event: MouseEvent): Promise<void> {
     event.preventDefault();
     event.stopPropagation();
 
-    if (!this.modalType()) return;
-
-    const result = await this._sdModal.showAsync(
-      this.modalType()!,
-      this.modalHeader() ?? "자세히...",
-      {
+    const modal = this.modal();
+    const result = await this._sdModal.showAsync({
+      ...modal,
+      inputs: {
         selectMode: this.selectMode(),
         selectedItemKeys: (this.selectMode() === "multi"
           ? (this.value() as any[])
-          : [this.value()]).filterExists(),
-        ...this.modalInputParam(),
+          : [this.value()]
+        ).filterExists(),
+        ...modal.inputs,
       },
-    );
+    });
 
     if (result) {
-      const newValue = this.selectMode() === "multi"
-        ? result.selectedItemKeys
-        : result.selectedItemKeys[0];
+      const newValue =
+        this.selectMode() === "multi" ? result.selectedItemKeys : result.selectedItemKeys[0];
       this.value.set(newValue);
     }
   }
 
   onCancelButtonClick() {
-    this.value.set((
-      this.selectMode() === "multi" ? [] : undefined
-    ) as TSelectValue<number | undefined>[M] | undefined);
+    this.value.set(
+      (this.selectMode() === "multi" ? [] : undefined) as
+        | TSelectValue<number | undefined>[M]
+        | undefined,
+    );
   }
 }
 
-export interface ISelectModalInputParam {
-  selectMode?: "single" | "multi";
-  selectedItemKeys?: any[];
+export interface ISdSelectModal extends ISdModal<ISelectModalOutputResult> {
+  selectMode: InputSignal<"single" | "multi" | undefined>;
+  selectedItemKeys: InputSignal<any[]>;
 }
+
+export type TSdSelectModalInput = ISdModalInput<ISdSelectModal, "selectMode" | "selectedItemKeys">;
 
 export interface ISelectModalOutputResult {
   selectedItemKeys: any[];

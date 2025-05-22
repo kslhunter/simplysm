@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 import { Identifier, SyntaxKind } from "ts-morph";
 import getTsMortphSourceFiles from "./get-ts-morph-source-files";
 

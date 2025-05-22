@@ -1,40 +1,30 @@
+import { NgTemplateOutlet } from "@angular/common";
 import {
   ChangeDetectionStrategy,
   Component,
   contentChild,
   input,
-  output,
+  model,
   TemplateRef,
-  Type,
   ViewEncapsulation,
 } from "@angular/core";
-import { NgTemplateOutlet } from "@angular/common";
-import { SdSelectModalButtonControl } from "../sd-select-modal-button.control";
-import { ISharedDataBase } from "./sd-shared-data.provider";
-import { SD_MODAL_INPUT, SdModalBase } from "../../providers/sd-modal.provider";
 import { TSelectValue } from "../../controls/sd-select-control";
-import { transformBoolean } from "../../utils/type-tramsforms";
 import {
   SdItemOfTemplateContext,
   SdItemOfTemplateDirective,
 } from "../../directives/sd-item-of.template-directive";
-import {
-  ISharedDataModalInputParam,
-  ISharedDataModalOutputResult,
-} from "./sd-shared-data-select.control";
-import { $model } from "../../utils/bindings/$model";
-import { $signal } from "../../utils/bindings/$signal";
 import { $effect } from "../../utils/bindings/$effect";
+import { $signal } from "../../utils/bindings/$signal";
+import { transformBoolean } from "../../utils/type-tramsforms";
+import { SdSelectModalButtonControl, TSdSelectModalInput } from "../sd-select-modal-button.control";
+import { ISharedDataBase } from "./sd-shared-data.provider";
 
 @Component({
   selector: "sd-shared-data-select-modal-button",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [
-    SdSelectModalButtonControl,
-    NgTemplateOutlet,
-  ],
+  imports: [SdSelectModalButtonControl, NgTemplateOutlet],
   template: `
     <sd-select-modal-button
       [required]="required()"
@@ -43,9 +33,7 @@ import { $effect } from "../../utils/bindings/$effect";
       [size]="size()"
       [(value)]="value"
       [selectMode]="selectMode()"
-      [modalHeader]="modalHeader()"
-      [modalType]="modalType()"
-      [modalInputParam]="modalInputParam()"
+      [modal]="modal()"
     >
       @for (item of selectedItems(); track item.__valueKey; let index = $index) {
         @if (index !== 0) {
@@ -68,8 +56,7 @@ import { $effect } from "../../utils/bindings/$effect";
 })
 export class SdSharedDataSelectModalButtonControl<
   T extends ISharedDataBase<number>,
-  TMODAL extends SdModalBase<ISharedDataModalInputParam, ISharedDataModalOutputResult>,
-  M extends keyof TSelectValue<any>
+  M extends keyof TSelectValue<any>,
 > {
   required = input(false, { transform: transformBoolean });
   disabled = input(false, { transform: transformBoolean });
@@ -77,15 +64,13 @@ export class SdSharedDataSelectModalButtonControl<
   size = input<"sm" | "lg">();
 
   selectMode = input("single" as M);
-  __value = input<TSelectValue<number>[M]>(undefined, { alias: "value" });
-  __valueChange = output<TSelectValue<number>[M]>({ alias: "valueChange" });
-  value = $model(this.__value, this.__valueChange);
+
+  value = model<TSelectValue<number>[M]>();
+
   items = input<T[]>([]);
   selectedItems = $signal<T[]>([]);
 
-  modalInputParam = input<TMODAL[typeof SD_MODAL_INPUT]>();
-  modalType = input.required<Type<TMODAL>>();
-  modalHeader = input<string>();
+  modal = input.required<TSdSelectModalInput>();
 
   itemTemplateRef = contentChild.required<any, TemplateRef<SdItemOfTemplateContext<T>>>(
     SdItemOfTemplateDirective,
@@ -98,12 +83,10 @@ export class SdSharedDataSelectModalButtonControl<
     $effect([this.value, this.selectMode, this.items], () => {
       const value = this.value();
       if (this.selectMode() === "multi" && value instanceof Array && value.length > 0) {
-        this.selectedItems.set(this.items().filter(item => value.includes(item.__valueKey)));
-      }
-      else if (this.selectMode() === "single" && !(value instanceof Array) && value != null) {
-        this.selectedItems.set(this.items().filter(item => item.__valueKey === value));
-      }
-      else {
+        this.selectedItems.set(this.items().filter((item) => value.includes(item.__valueKey)));
+      } else if (this.selectMode() === "single" && !(value instanceof Array) && value != null) {
+        this.selectedItems.set(this.items().filter((item) => item.__valueKey === value));
+      } else {
         this.selectedItems.set([]);
       }
     });

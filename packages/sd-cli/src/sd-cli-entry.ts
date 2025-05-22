@@ -13,12 +13,13 @@ import { SdCliLocalUpdate } from "./entry/sd-cli-local-update";
 import { SdCliPostinstall } from "./entry/sd-cli-postinstall";
 import { SdCliProject } from "./entry/sd-cli-project";
 import convertEcmaPrivateToTsPrivate from "./fix/convert-ecma-private-to-ts-private";
+import { convertExtendsSdModalBaseToInterface } from "./fix/convert-extends-sd-modal-base-to-interface";
+import convertModalShowParams from "./fix/convert-modal-show-params";
 import convertSdAngularSymbolNames from "./fix/convert-sd-angular-symbol-names";
-import convertSdSheetBindingsInInlineTemplate
-  from "./fix/convert-sd-sheet-bindings-inInline-template";
-import convertSetupCumulateSelectedKeysToObjectParam
-  from "./fix/convert-setup-cumulate-selected-keys-to-object-param";
+import convertSdSheetBindingsInInlineTemplate from "./fix/convert-sd-sheet-bindings-inInline-template";
+import convertSetupCumulateSelectedKeysToObjectParam from "./fix/convert-setup-cumulate-selected-keys-to-object-param";
 import prefixUnderscoreForAccessModifiers from "./fix/prefix-underscore-for-access-modifiers";
+import removeSdAngularSymbolNames from "./fix/remove-sd-angular-symbol-names";
 
 Error.stackTraceLimit = Infinity;
 EventEmitter.defaultMaxListeners = 0;
@@ -39,221 +40,218 @@ await yargs(hideBin(process.argv))
       SdLogger.setConfig({
         console: { level: SdLoggerSeverity.debug },
       });
-    }
-    else {
+    } else {
       SdLogger.setConfig({ dot: true });
     }
   })
   .command(
     "local-update",
     "로컬 라이브러리 업데이트를 수행합니다.",
-    cmd => cmd
-      .version(false)
-      .hide("help")
-      .hide("debug")
-      .options({
-        config: {
-          string: true,
-          describe: "설정 파일 경로",
-          default: "simplysm.js",
-        },
-        options: {
-          string: true,
-          array: true,
-          describe: "옵션 설정",
-        },
-      }),
+    (cmd) =>
+      cmd
+        .version(false)
+        .hide("help")
+        .hide("debug")
+        .options({
+          config: {
+            string: true,
+            describe: "설정 파일 경로",
+            default: "simplysm.js",
+          },
+          options: {
+            string: true,
+            array: true,
+            describe: "옵션 설정",
+          },
+        }),
     async (argv) => await SdCliLocalUpdate.runAsync(argv),
   )
   .command(
     "watch",
     "프로젝트의 각 패키지에 대한 변경감지 빌드를 수행합니다.",
-    (cmd) => cmd
-      .version(false)
-      .hide("help")
-      .hide("debug")
-      .options({
-        config: {
-          string: true,
-          describe: "설정 파일 경로",
-          default: "simplysm.js",
-        },
-        options: {
-          string: true,
-          array: true,
-          describe: "옵션 설정",
-        },
-        packages: {
-          string: true,
-          array: true,
-          describe: "수행할 패키지 설정",
-        },
-        inspects: {
-          string: true,
-          array: true,
-          describe: "크롬 inspect를 수행할 패키지 설정",
-        },
-      }),
+    (cmd) =>
+      cmd
+        .version(false)
+        .hide("help")
+        .hide("debug")
+        .options({
+          config: {
+            string: true,
+            describe: "설정 파일 경로",
+            default: "simplysm.js",
+          },
+          options: {
+            string: true,
+            array: true,
+            describe: "옵션 설정",
+          },
+          packages: {
+            string: true,
+            array: true,
+            describe: "수행할 패키지 설정",
+          },
+          inspects: {
+            string: true,
+            array: true,
+            describe: "크롬 inspect를 수행할 패키지 설정",
+          },
+        }),
     async (argv) => await SdCliProject.watchAsync(argv),
   )
   .command(
     "build",
     "프로젝트의 각 패키지에 대한 빌드를 수행합니다.",
-    (cmd) => cmd
-      .version(false)
-      .hide("help")
-      .hide("debug")
-      .options({
-        config: {
-          string: true,
-          describe: "설정 파일 경로",
-          default: "simplysm.js",
-        },
-        options: {
-          string: true,
-          array: true,
-          describe: "옵션 설정",
-        },
-        packages: {
-          string: true,
-          array: true,
-          describe: "수행할 패키지 설정",
-        },
-      }),
+    (cmd) =>
+      cmd
+        .version(false)
+        .hide("help")
+        .hide("debug")
+        .options({
+          config: {
+            string: true,
+            describe: "설정 파일 경로",
+            default: "simplysm.js",
+          },
+          options: {
+            string: true,
+            array: true,
+            describe: "옵션 설정",
+          },
+          packages: {
+            string: true,
+            array: true,
+            describe: "수행할 패키지 설정",
+          },
+        }),
     async (argv) => await SdCliProject.buildAsync(argv),
   )
   .command(
     "publish",
     "프로젝트의 각 패키지를 배포합니다.",
-    (cmd) => cmd
-      .version(false)
-      .hide("help")
-      .hide("debug")
-      .options({
-        noBuild: {
-          type: "boolean",
-          describe: "빌드를 하지않고 배포합니다.",
-          default: false,
-        },
-        config: {
-          type: "string",
-          describe: "설정 파일 경로",
-          default: "simplysm.js",
-        },
-        options: {
-          type: "string",
-          array: true,
-          describe: "옵션 설정",
-        },
-        packages: {
-          type: "string",
-          array: true,
-          describe: "수행할 패키지 설정",
-        },
-      }),
+    (cmd) =>
+      cmd
+        .version(false)
+        .hide("help")
+        .hide("debug")
+        .options({
+          noBuild: {
+            type: "boolean",
+            describe: "빌드를 하지않고 배포합니다.",
+            default: false,
+          },
+          config: {
+            type: "string",
+            describe: "설정 파일 경로",
+            default: "simplysm.js",
+          },
+          options: {
+            type: "string",
+            array: true,
+            describe: "옵션 설정",
+          },
+          packages: {
+            type: "string",
+            array: true,
+            describe: "수행할 패키지 설정",
+          },
+        }),
     async (argv) => await SdCliProject.publishAsync(argv),
   )
   .command(
     "run-electron <package>",
     "변경감지중인 플랫폼을 ELECTRON 앱 형태로 띄웁니다.",
-    (cmd) => cmd
-      .version(false)
-      .hide("help")
-      .hide("debug")
-      .positional("package", {
-        type: "string",
-        describe: "패키지명",
-        demandOption: true,
-      })
-      .options({
-        config: {
+    (cmd) =>
+      cmd
+        .version(false)
+        .hide("help")
+        .hide("debug")
+        .positional("package", {
           type: "string",
-          describe: "설정 파일 경로",
-          default: "simplysm.js",
-        },
-        options: {
-          type: "string",
-          array: true,
-          describe: "옵션 설정",
-        },
-      }),
+          describe: "패키지명",
+          demandOption: true,
+        })
+        .options({
+          config: {
+            type: "string",
+            describe: "설정 파일 경로",
+            default: "simplysm.js",
+          },
+          options: {
+            type: "string",
+            array: true,
+            describe: "옵션 설정",
+          },
+        }),
     async (argv) => await SdCliElectron.runAsync(argv),
   )
   .command(
     "build-electron-for-dev <package>",
     "변경감지중인 플랫폼을 ELECTRON 앱 형태로 띄웁니다.",
-    (cmd) => cmd
-      .version(false)
-      .hide("help")
-      .hide("debug")
-      .positional("package", {
-        type: "string",
-        describe: "패키지명",
-        demandOption: true,
-      })
-      .options({
-        config: {
+    (cmd) =>
+      cmd
+        .version(false)
+        .hide("help")
+        .hide("debug")
+        .positional("package", {
           type: "string",
-          describe: "설정 파일 경로",
-          default: "simplysm.js",
-        },
-        options: {
-          type: "string",
-          array: true,
-          describe: "옵션 설정",
-        },
-      }),
+          describe: "패키지명",
+          demandOption: true,
+        })
+        .options({
+          config: {
+            type: "string",
+            describe: "설정 파일 경로",
+            default: "simplysm.js",
+          },
+          options: {
+            type: "string",
+            array: true,
+            describe: "옵션 설정",
+          },
+        }),
     async (argv) => await SdCliElectron.buildForDevAsync(argv),
   )
   .command(
     "run-cordova <platform> <package> [url]",
     "변경감지중인 플랫폼을 코도바 디바이스에 앱 형태로 띄웁니다.",
-    (cmd) => cmd
-      .version(false)
-      .hide("help")
-      .hide("debug")
-      .positional("platform", {
-        type: "string",
-        describe: "빌드 플랫폼(android,...)",
-        demandOption: true,
-      })
-      .positional("package", {
-        type: "string",
-        describe: "패키지명",
-        demandOption: true,
-      })
-      .positional("url", {
-        type: "string",
-        describe: "Webview로 오픈할 URL",
-        demandOption: true,
-      }),
+    (cmd) =>
+      cmd
+        .version(false)
+        .hide("help")
+        .hide("debug")
+        .positional("platform", {
+          type: "string",
+          describe: "빌드 플랫폼(android,...)",
+          demandOption: true,
+        })
+        .positional("package", {
+          type: "string",
+          describe: "패키지명",
+          demandOption: true,
+        })
+        .positional("url", {
+          type: "string",
+          describe: "Webview로 오픈할 URL",
+          demandOption: true,
+        }),
     async (argv) => await SdCliCordova.runWebviewOnDeviceAsync(argv),
   )
   .command(
     "commit",
     "AI를 통해 변경사항에 대한 커밋 메시지를 작성하여, 커밋 및 푸쉬를 수행합니다.",
-    (cmd) => cmd
-      .version(false)
-      .hide("help")
-      .hide("debug"),
+    (cmd) => cmd.version(false).hide("help").hide("debug"),
     async () => await SdCliAiCommand.commitAsync(),
   )
   .command(
     "postinstall",
     "설치후 자동실행할 작업",
-    (cmd) => cmd
-      .version(false)
-      .hide("help")
-      .hide("debug"),
+    (cmd) => cmd.version(false).hide("help").hide("debug"),
     () => SdCliPostinstall.run(),
   )
   .command(
     "fix",
     "가능한 내용 자동 수정",
-    (cmd) => cmd
-      .version(false)
-      .hide("help")
-      .hide("debug"),
+    (cmd) => cmd.version(false).hide("help").hide("debug"),
     () => {
       // GIT 사용중일 경우, 커밋되지 않은 수정사항이 있는지 확인
       /*if (FsUtils.exists(path.resolve(process.cwd(), ".git"))) {
@@ -266,8 +264,13 @@ await yargs(hideBin(process.argv))
       convertEcmaPrivateToTsPrivate();
       prefixUnderscoreForAccessModifiers();
       convertSdSheetBindingsInInlineTemplate();
-      convertSdAngularSymbolNames();
       convertSetupCumulateSelectedKeysToObjectParam();
+      convertExtendsSdModalBaseToInterface();
+      convertModalShowParams();
+
+      //-- last
+      removeSdAngularSymbolNames();
+      convertSdAngularSymbolNames();
     },
   )
   .strict()
