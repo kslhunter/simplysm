@@ -259,9 +259,11 @@ import { SdDataSheetToolDirective } from "./sd-data-sheet-tool.directive";
               {{ selectMode() === "multi" ? "모두" : "선택" }}
               해제
             </sd-button>
-            <sd-button theme="primary" inline (click)="onConfirmButtonClick()">
-              확인({{ selectedItemKeys().length }})
-            </sd-button>
+            @if (selectMode() === "multi") {
+              <sd-button theme="primary" inline (click)="onConfirmButtonClick()">
+                확인({{ selectedItemKeys().length }})
+              </sd-button>
+            }
           </sd-dock>
         </ng-template>
       }
@@ -308,6 +310,8 @@ export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>>
 
   selectedItemKeys = model<TVMItemKey<VM>[]>([]);
 
+  orgFirstSelectedItemKey = $signal<TVMItemKey<VM>>();
+
   //-- search
 
   lastFilter = $signal<TVMFilter<VM>>();
@@ -338,6 +342,19 @@ export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>>
       });
       this.busyCount.update((v) => v - 1);
       this.initialized.set(true);
+    });
+
+    $effect([], () => {
+      this.orgFirstSelectedItemKey.set(this.selectedItemKeys().first());
+    });
+
+    $effect([this.selectedItemKeys], () => {
+      if (
+        this.selectMode() === "single" &&
+        this.orgFirstSelectedItemKey() !== this.selectedItemKeys().first()
+      ) {
+        this.close.emit({ selectedItemKeys: this.selectedItemKeys() });
+      }
     });
   }
 
