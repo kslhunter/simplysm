@@ -160,15 +160,6 @@ import { SdDataSheetToolDirective } from "./sd-data-sheet-tool.directive";
 
                 @for (toolControl of toolControls(); track toolControl) {
                   <ng-template [ngTemplateOutlet]="toolControl.contentTemplateRef()" />
-                  <!--<sd-button
-                    size="sm"
-                    [theme]="toolControl.theme()"
-                    [disabled]="toolControl.disabled()"
-                    [buttonStyle]="toolControl.buttonStyle()"
-                    [buttonClass]="toolControl.buttonClass()"
-                  >
-                    <ng-template [ngTemplateOutlet]="toolControl.contentTemplateRef()" />
-                  </sd-button>-->
                 }
               </div>
             </sd-dock>
@@ -217,11 +208,9 @@ import { SdDataSheetToolDirective } from "./sd-data-sheet-tool.directive";
                       let-depth="depth"
                       let-edit="edit"
                     >
-                      @if (
-                        viewModel().editItemAsync &&
-                        columnControl.edit() &&
-                        viewModel().perms().includes("edit")
-                      ) {
+                      @if (viewModel().editItemAsync &&
+                      columnControl.edit() &&
+                      viewModel().perms().includes("edit")) {
                         <sd-anchor class="flex-row" (click)="onItemClick(item, index, $event)">
                           <div class="p-xs-sm pr-0">
                             <sd-icon [icon]="icons.edit" />

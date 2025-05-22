@@ -72,7 +72,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
             <ng-template [ngTemplateOutlet]="modalBottomTemplateRef() ?? null" />
           </sd-dock>
         </sd-dock-container>
-      } @else if (currViewType() === "modal") {
+      } @else {
         <ng-template [ngTemplateOutlet]="contentTemplateRef() ?? null" />
       }
     </sd-busy-container>
