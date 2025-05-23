@@ -110,7 +110,7 @@ export abstract class CordovaAutoUpdate {
 
       opt.log(`최신버전 설치파일 실행중...`);
       const externalUrl = await CordovaFileSystem.getStorageUrlAsync("externalCache");
-      const contentUrl = `${externalUrl}latest.apk`;
+      const contentUrl = `${externalUrl}/latest.apk`;
 
       console.log(apkFilePath, contentUrl);
       const FLAG_ACTIVITY_NEW_TASK = 0x10000000;
