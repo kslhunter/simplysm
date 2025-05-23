@@ -2,7 +2,7 @@ import * as path from "path";
 import { FsUtils, PathUtils, SdLogger, SdProcess } from "@simplysm/sd-core-node";
 import { INpmConfig } from "../types/common-configs.types";
 import { ISdClientBuilderCordovaConfig } from "../types/config.types";
-import { SdZip, XmlConvert } from "@simplysm/sd-core-common";
+import { XmlConvert } from "@simplysm/sd-core-common";
 
 export class SdCliCordova {
   // 상수 정의
@@ -22,7 +22,6 @@ export class SdCliCordova {
   private readonly ICON_DIR_PATH = "res/icons";
   private readonly SPLASH_SCREEN_DIR_PATH = "res/screen/android";
   private readonly SPLASH_SCREEN_XML_FILE = "splashscreen.xml";
-
 
   private _platforms: string[];
   private _npmConfig: INpmConfig;
@@ -83,8 +82,7 @@ export class SdCliCordova {
   private async _initializeCordovaProjectAsync(cordovaPath: string): Promise<void> {
     if (FsUtils.exists(cordovaPath)) {
       SdCliCordova._logger.log("이미 생성되어있는 '.cordova'를 사용합니다.");
-    }
-    else {
+    } else {
       await SdCliCordova._execAsync(`npx cordova telemetry on`, this._opt.pkgPath);
 
       // 프로젝트 생성
@@ -114,8 +112,7 @@ export class SdCliCordova {
           `npx cordova platform add ${platform}@${this.ANDROID_PLATFORM_VERSION}`,
           cordovaPath,
         );
-      }
-      else {
+      } else {
         await SdCliCordova._execAsync(`npx cordova platform add ${platform}`, cordovaPath);
       }
     }
@@ -128,15 +125,13 @@ export class SdCliCordova {
       this.PLUGINS_DIR_NAME,
       this.PLUGINS_FETCH_FILE,
     );
-    const pluginsFetch = FsUtils.exists(pluginsFetchPath)
-      ? FsUtils.readJson(pluginsFetchPath)
-      : {};
+    const pluginsFetch = FsUtils.exists(pluginsFetchPath) ? FsUtils.readJson(pluginsFetchPath) : {};
 
     const alreadyPlugins: Array<{
       name: string;
       id: string;
-      dependencies?: string[]
-    }> = Object.keys(pluginsFetch).map(key => ({
+      dependencies?: string[];
+    }> = Object.keys(pluginsFetch).map((key) => ({
       name: key,
       id: pluginsFetch[key].source.id,
       dependencies: pluginsFetch[key].dependencies,
@@ -161,8 +156,7 @@ export class SdCliCordova {
             `npx cordova plugin remove ${alreadyPlugin.name}`,
             cordovaPath,
           );
-        }
-        catch (err) {
+        } catch (err) {
           // 의존성으로 인한 skip 메시지는 무시 (로그 생략)
           const msg = err instanceof Error ? err.message : String(err);
           if (!msg.includes("is required by") || !msg.includes("skipping uninstallation")) {
@@ -181,7 +175,7 @@ export class SdCliCordova {
     // 병렬로 플러그인을 설치하면 충돌이 발생할 수 있으므로 순차 처리
     for (const usePlugin of usePlugins) {
       const isPluginAlreadyInstalled = alreadyPlugins.some(
-        plugin => usePlugin === plugin.id || usePlugin === plugin.name,
+        (plugin) => usePlugin === plugin.id || usePlugin === plugin.name,
       );
 
       if (!isPluginAlreadyInstalled) {
@@ -200,8 +194,7 @@ export class SdCliCordova {
         path.resolve(this._opt.pkgPath, this._opt.config.platform.android.sign.keystore),
         keystorePath,
       );
-    }
-    else {
+    } else {
       FsUtils.remove(keystorePath);
       // SIGN을 안쓸경우 아래 파일이 생성되어 있으면 오류남
       FsUtils.remove(signingPropsPath);
@@ -215,21 +208,21 @@ export class SdCliCordova {
 
     const androidConfig = this._opt.config.platform?.android
       ? {
-        android: {
-          release: {
-            packageType: this._opt.config.platform.android.bundle ? "bundle" : "apk",
-            ...(this._opt.config.platform.android.sign
-              ? {
-                keystore: keystorePath,
-                storePassword: this._opt.config.platform.android.sign.storePassword,
-                alias: this._opt.config.platform.android.sign.alias,
-                password: this._opt.config.platform.android.sign.password,
-                keystoreType: this._opt.config.platform.android.sign.keystoreType,
-              }
-              : {}),
+          android: {
+            release: {
+              packageType: this._opt.config.platform.android.bundle ? "bundle" : "apk",
+              ...(this._opt.config.platform.android.sign
+                ? {
+                    keystore: keystorePath,
+                    storePassword: this._opt.config.platform.android.sign.storePassword,
+                    alias: this._opt.config.platform.android.sign.alias,
+                    password: this._opt.config.platform.android.sign.password,
+                    keystoreType: this._opt.config.platform.android.sign.keystoreType,
+                  }
+                : {}),
+            },
           },
-        },
-      }
+        }
       : {};
 
     FsUtils.writeJson(buildJsonPath, androidConfig);
@@ -248,8 +241,7 @@ export class SdCliCordova {
         path.resolve(this._opt.pkgPath, this._opt.config.icon),
         path.resolve(iconDirPath, path.basename(this._opt.config.icon)),
       );
-    }
-    else {
+    } else {
       FsUtils.remove(iconDirPath);
     }
 
@@ -366,13 +358,12 @@ export class SdCliCordova {
             {
               $: {
                 "android:usesCleartextTraffic": "true",
-                ...this._opt.config.platform!.android!.config
-                  ? Object.keys(this._opt.config.platform!.android!.config)
-                    .toObject(
-                      key => "android:" + key,
-                      key => this._opt.config.platform!.android!.config![key],
+                ...(this._opt.config.platform!.android!.config
+                  ? Object.keys(this._opt.config.platform!.android!.config).toObject(
+                      (key) => "android:" + key,
+                      (key) => this._opt.config.platform!.android!.config![key],
                     )
-                  : {},
+                  : {}),
               },
             },
           ],
@@ -425,13 +416,13 @@ export class SdCliCordova {
             "android:name": `android.permission.${perm.name}`,
             ...(perm.maxSdkVersion != null
               ? {
-                "android:maxSdkVersion": `${perm.maxSdkVersion}`,
-              }
+                  "android:maxSdkVersion": `${perm.maxSdkVersion}`,
+                }
               : {}),
             ...(perm.ignore != null
               ? {
-                "tools:ignore": `${perm.ignore}`,
-              }
+                  "tools:ignore": `${perm.ignore}`,
+                }
               : {}),
           },
         })),
@@ -448,14 +439,18 @@ export class SdCliCordova {
     const buildType = this._opt.config.debug ? "debug" : "release";
 
     // 모든 플랫폼 동시에 빌드
-    await Promise.all(this._platforms.map(platform =>
-      SdCliCordova._execAsync(`npx cordova build ${platform} --${buildType}`, cordovaPath),
-    ));
+    await Promise.all(
+      this._platforms.map((platform) =>
+        SdCliCordova._execAsync(`npx cordova build ${platform} --${buildType}`, cordovaPath),
+      ),
+    );
 
     // 결과물 복사 및 ZIP 파일 생성 - 병렬 처리
-    await Promise.all(Object.keys(this._opt.config.platform ?? {}).map(async platform => {
-      await this._processBuildOutputAsync(cordovaPath, outPath, platform, buildType);
-    }));
+    await Promise.all(
+      Object.keys(this._opt.config.platform ?? {}).map(async (platform) => {
+        await this._processBuildOutputAsync(cordovaPath, outPath, platform, buildType);
+      }),
+    );
   }
 
   private async _processBuildOutputAsync(
@@ -472,22 +467,18 @@ export class SdCliCordova {
     }
 
     // 자동업데이트를 위한 파일 생성
-    await this._createUpdateZipAsync(cordovaPath, outPath, platform);
+    // await this._createUpdateZipAsync(cordovaPath, outPath, platform);
   }
 
-  private _copyAndroidBuildOutput(
-    cordovaPath: string,
-    targetOutPath: string,
-    buildType: string,
-  ) {
+  private _copyAndroidBuildOutput(cordovaPath: string, targetOutPath: string, buildType: string) {
     const apkFileName = this._opt.config.platform!.android!.sign
       ? `app-${buildType}.apk`
       : `app-${buildType}-unsigned.apk`;
 
     const latestDistApkFileName = path.basename(
-      `${this._opt.config.appName}${this._opt.config.platform!.android!.sign
-        ? ""
-        : "-unsigned"}-latest.apk`,
+      `${this._opt.config.appName}${
+        this._opt.config.platform!.android!.sign ? "" : "-unsigned"
+      }-latest.apk`,
     );
 
     FsUtils.mkdirs(targetOutPath);
@@ -495,54 +486,62 @@ export class SdCliCordova {
       path.resolve(cordovaPath, "platforms/android/app/build/outputs/apk", buildType, apkFileName),
       path.resolve(targetOutPath, latestDistApkFileName),
     );
-  }
 
-  private async _createUpdateZipAsync(
-    cordovaPath: string,
-    outPath: string,
-    platform: string,
-  ): Promise<void> {
-    const zip = new SdZip();
-    const wwwPath = path.resolve(cordovaPath, this.WWW_DIR_NAME);
-    const platformWwwPath = path.resolve(
-      cordovaPath,
-      this.PLATFORMS_DIR_NAME,
-      platform,
-      "platform_www",
-    );
-
-    this._addFilesToZip(zip, wwwPath);
-    this._addFilesToZip(zip, platformWwwPath);
-
-    // ZIP 파일 생성
-    const updateDirPath = path.resolve(outPath, platform, "updates");
-    FsUtils.mkdirs(updateDirPath);
-    FsUtils.writeFile(
-      path.resolve(updateDirPath, this._npmConfig.version + ".zip"),
-      await zip.compressAsync(),
+    // 업데이트파일
+    FsUtils.copy(
+      path.resolve(cordovaPath, "platforms/android/app/build/outputs/apk", buildType, apkFileName),
+      path.resolve(targetOutPath, "updates", `${this._npmConfig.version}.apk`),
     );
   }
 
-  private _addFilesToZip(zip: SdZip, dirPath: string) {
-    const files = FsUtils.glob(path.resolve(dirPath, "**/*"), { nodir: true });
-    for (const file of files) {
-      const relFilePath = path.relative(dirPath, file);
-      const fileBuffer = FsUtils.readFileBuffer(file);
-      zip.write(relFilePath, fileBuffer);
-    }
-  }
+  // private async _createUpdateZipAsync(
+  //   cordovaPath: string,
+  //   outPath: string,
+  //   platform: string,
+  // ): Promise<void> {
+  //   const zip = new SdZip();
+  //   const wwwPath = path.resolve(cordovaPath, this.WWW_DIR_NAME);
+  //   const platformWwwPath = path.resolve(
+  //     cordovaPath,
+  //     this.PLATFORMS_DIR_NAME,
+  //     platform,
+  //     "platform_www",
+  //   );
+  //
+  //   this._addFilesToZip(zip, wwwPath);
+  //   this._addFilesToZip(zip, platformWwwPath);
+  //
+  //   // ZIP 파일 생성
+  //   const updateDirPath = path.resolve(outPath, platform, "updates");
+  //   FsUtils.mkdirs(updateDirPath);
+  //   FsUtils.writeFile(
+  //     path.resolve(updateDirPath, this._npmConfig.version + ".zip"),
+  //     await zip.compressAsync(),
+  //   );
+  // }
+  //
+  // private _addFilesToZip(zip: SdZip, dirPath: string) {
+  //   const files = FsUtils.glob(path.resolve(dirPath, "**/*"), { nodir: true });
+  //   for (const file of files) {
+  //     const relFilePath = path.relative(dirPath, file);
+  //     const fileBuffer = FsUtils.readFileBuffer(file);
+  //     zip.write(relFilePath, fileBuffer);
+  //   }
+  // }
 
   static async runWebviewOnDeviceAsync(opt: {
     platform: string;
     package: string;
-    url?: string
+    url?: string;
   }): Promise<void> {
     const projNpmConf = FsUtils.readJson(path.resolve(process.cwd(), "package.json")) as INpmConfig;
-    const allPkgPaths = projNpmConf.workspaces!.mapMany((item) => FsUtils.glob(PathUtils.posix(process.cwd(), item)));
+    const allPkgPaths = projNpmConf.workspaces!.mapMany((item) =>
+      FsUtils.glob(PathUtils.posix(process.cwd(), item)),
+    );
 
     const cordovaPath = path.resolve(
-      allPkgPaths.single(item => item.endsWith(opt.package))!,
-      ".cordova"
+      allPkgPaths.single((item) => item.endsWith(opt.package))!,
+      ".cordova",
     );
 
     if (opt.url !== undefined) {

@@ -19,16 +19,15 @@
     ]
   },
   "dependencies": {
+    "@awesome-cordova-plugins/android-permissions": "^6.16.0",
+    "@awesome-cordova-plugins/core": "^6.16.0",
+    "@awesome-cordova-plugins/file-opener": "^6.16.0",
     "@simplysm/cordova-plugin-file-system": "12.10.4",
     "@simplysm/sd-core-common": "12.10.4",
     "@simplysm/sd-service-client": "12.10.4",
-    "@simplysm/types-cordova-plugin-ionic-webview": "12.10.4",
-    "mime": "^4.0.7",
-    "rxjs": "^7.8.2",
     "semver": "^7.7.2"
   },
   "devDependencies": {
-    "@types/mime": "^4.0.0",
     "@types/semver": "^7.7.0"
   }
 }
