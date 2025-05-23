@@ -33,6 +33,7 @@ import { $signal } from "../../utils/bindings/$signal";
 import { transformBoolean } from "../../utils/type-tramsforms";
 import { TSdSelectModalInput } from "../sd-select-modal-button.control";
 import { ISharedDataBase } from "./sd-shared-data.provider";
+import { setupModelHook } from "../../utils/setups/setup-model-hook";
 
 @Component({
   selector: "sd-shared-data-select-view",
@@ -93,7 +94,7 @@ import { ISharedDataBase } from "./sd-shared-data.provider";
             @if (useUndefined()) {
               <sd-list-item
                 [selected]="selectedItem() === undefined"
-                (click)="onSelect(undefined)"
+                (click)="select(undefined)"
                 [selectedIcon]="selectedIcon()"
               >
                 @if (undefinedTemplateRef()) {
@@ -106,7 +107,7 @@ import { ISharedDataBase } from "./sd-shared-data.provider";
             @for (item of displayItems(); let index = $index; track item.__valueKey) {
               <sd-list-item
                 [selected]="selectedItem() === item"
-                (click)="onSelect(selectedItem() === item ? undefined : item)"
+                (click)="toggle(item)"
                 [selectedIcon]="selectedIcon()"
               >
                 <ng-template
@@ -132,7 +133,7 @@ export class SdSharedDataSelectViewControl<T extends ISharedDataBase<string | nu
   private _sdModal = inject(SdModalProvider);
 
   selectedItem = model<T>();
-  beforeSelect = input<(item: T | undefined) => boolean | Promise<boolean>>(() => true);
+  beforeSelectFn = input<(item: T | undefined) => boolean | Promise<boolean>>(() => true);
 
   items = input.required<T[]>();
   selectedIcon = input<IconDefinition>();
@@ -187,6 +188,8 @@ export class SdSharedDataSelectViewControl<T extends ISharedDataBase<string | nu
   });
 
   constructor() {
+    setupModelHook(this.selectedItem, this.beforeSelectFn);
+
     $effect([this.items], () => {
       const newSelectedItem = this.items().single(
         (item) => item.__valueKey === this.selectedItem()?.__valueKey,
@@ -195,9 +198,12 @@ export class SdSharedDataSelectViewControl<T extends ISharedDataBase<string | nu
     });
   }
 
-  async onSelect(item: T | undefined) {
-    if (!(await this.beforeSelect()(item))) return;
+  select(item: T | undefined) {
     this.selectedItem.set(item);
+  }
+
+  toggle(item: T | undefined) {
+    this.selectedItem.update((v) => (v === item ? undefined : item));
   }
 
   async onModalButtonClick(): Promise<void> {

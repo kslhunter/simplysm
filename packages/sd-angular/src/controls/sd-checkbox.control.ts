@@ -12,6 +12,7 @@ import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider
 import { setupRipple } from "../utils/setups/setup-ripple";
 import { transformBoolean } from "../utils/type-tramsforms";
 import { SdIconControl } from "./sd-icon.control";
+import { setupModelHook } from "../utils/setups/setup-model-hook";
 
 @Component({
   selector: "sd-checkbox",
@@ -246,6 +247,7 @@ export class SdCheckboxControl {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
 
   value = model(false);
+  beforeChangeFn = input<(item: boolean) => boolean | Promise<boolean>>(() => true);
 
   icon = input(this.icons.check);
   radio = input(false, { transform: transformBoolean });
@@ -269,6 +271,7 @@ export class SdCheckboxControl {
   contentStyle = input<string>();
 
   constructor() {
+    setupModelHook(this.value, this.beforeChangeFn);
     setupRipple(() => !this.disabled());
   }
 

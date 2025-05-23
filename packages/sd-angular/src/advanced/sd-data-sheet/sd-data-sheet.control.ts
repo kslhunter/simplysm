@@ -42,6 +42,7 @@ import { SdSharedDataProvider } from "../shared-data/sd-shared-data.provider";
 import { SdDataSheetColumnDirective } from "./sd-data-sheet-column.directive";
 import { SdDataSheetFilterDirective } from "./sd-data-sheet-filter.directive";
 import { SdDataSheetToolDirective } from "./sd-data-sheet-tool.directive";
+import { setupCloserWhenSingleSelectionChange } from "../../utils/setups/setup-closer-when-single-selection-change";
 
 @Component({
   selector: "sd-data-sheet",
@@ -208,9 +209,11 @@ import { SdDataSheetToolDirective } from "./sd-data-sheet-tool.directive";
                       let-depth="depth"
                       let-edit="edit"
                     >
-                      @if (viewModel().editItemAsync &&
-                      columnControl.edit() &&
-                      viewModel().perms().includes("edit")) {
+                      @if (
+                        viewModel().editItemAsync &&
+                        columnControl.edit() &&
+                        viewModel().perms().includes("edit")
+                      ) {
                         <sd-anchor class="flex-row" (click)="onItemClick(item, index, $event)">
                           <div class="p-xs-sm pr-0">
                             <sd-icon [icon]="icons.edit" />
@@ -310,8 +313,6 @@ export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>>
 
   selectedItemKeys = model<TVMItemKey<VM>[]>([]);
 
-  orgFirstSelectedItemKey = $signal<TVMItemKey<VM>>();
-
   //-- search
 
   lastFilter = $signal<TVMFilter<VM>>();
@@ -323,6 +324,12 @@ export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>>
       selectedItems: this.selectedItems,
       selectedItemKeys: this.selectedItemKeys,
       keySelectorFn: (item) => this.trackByFn(item),
+    });
+
+    setupCloserWhenSingleSelectionChange({
+      selectMode: this.selectMode,
+      selectedItemKeys: this.selectedItemKeys,
+      close: this.close,
     });
 
     $effect([this.page, this.lastFilter, this.ordering], async () => {
@@ -342,19 +349,6 @@ export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>>
       });
       this.busyCount.update((v) => v - 1);
       this.initialized.set(true);
-    });
-
-    $effect([], () => {
-      this.orgFirstSelectedItemKey.set(this.selectedItemKeys().first());
-    });
-
-    $effect([this.selectedItemKeys], () => {
-      if (
-        this.selectMode() === "single" &&
-        this.orgFirstSelectedItemKey() !== this.selectedItemKeys().first()
-      ) {
-        this.close.emit({ selectedItemKeys: this.selectedItemKeys() });
-      }
     });
   }
 
@@ -397,9 +391,7 @@ export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>>
   }
 
   async searchAllAsync() {
-    return (
-      await this.viewModel().searchAsync("excel", this.lastFilter(), this.ordering())
-    ).items;
+    return (await this.viewModel().searchAsync("excel", this.lastFilter(), this.ordering())).items;
   }
 
   //-- edit

@@ -213,7 +213,7 @@ import {
                 </tr>
               }
 
-              <!-- 합계 행 -->
+            <!-- 합계 행 -->
               @if (layoutEngine.hasSummary()) {
                 <tr class="_summary-row">
                   @for (colDef of layoutEngine.columnDefs(); let c = $index; track c) {
@@ -248,21 +248,23 @@ import {
                       @let _selectable = selectionManager.getSelectable(item);
                       <sd-checkbox
                         [value]="selectedItems().includes(item)"
+                        (valueChange)="selectionManager.toggle(item)"
+                        [beforeChangeFn]="selectionManager.getBeforeChangeFn(item)"
                         [inline]="true"
                         theme="white"
                         [disabled]="_selectable !== true"
                         [attr.title]="_selectable"
-                        (valueChange)="selectionManager.toggle(item)"
                       />
                     } @else if (selectMode() === "single") {
                       @let _selectable = selectionManager.getSelectable(item);
                       <sd-checkbox
                         [value]="selectedItems().includes(item)"
+                        (valueChange)="selectionManager.toggle(item)"
+                        [beforeChangeFn]="selectionManager.getBeforeChangeFn(item)"
                         [inline]="true"
                         theme="white"
                         [disabled]="_selectable !== true"
                         [attr.title]="_selectable"
-                        (valueChange)="selectionManager.toggle(item)"
                       />
                     }
                   </td>
@@ -291,11 +293,9 @@ import {
                       }
                     </td>
                   }
-                  @for (
-                    columnDef of layoutEngine.columnDefs();
+                  @for (columnDef of layoutEngine.columnDefs();
                     let c = $index;
-                    track columnDef.control.key()
-                  ) {
+                    track columnDef.control.key()) {
                     <td
                       tabindex="0"
                       [class._fixed]="columnDef.fixed"

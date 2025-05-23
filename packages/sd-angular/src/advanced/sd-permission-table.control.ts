@@ -317,11 +317,11 @@ export class SdPermissionTableControl {
   }
 
   onPermCheckChange(item: ISdPermission, type: "use" | "edit", val: boolean) {
-    const value = ObjectUtils.clone(this.value());
-    const changed = this._changePermCheck(value, item, type, val);
-    if (changed) {
-      this.value.set(value);
-    }
+    this.value.update((v) => {
+      const r = ObjectUtils.clone(v);
+      this._changePermCheck(r, item, type, val);
+      return r;
+    });
   }
 
   private _changePermCheck(

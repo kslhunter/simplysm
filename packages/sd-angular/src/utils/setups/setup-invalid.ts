@@ -51,11 +51,11 @@ function createIndicatorEl(renderer: Renderer2, hostEl: HTMLElement) {
     zIndex: "9999",
     background: "var(--theme-danger-default)",
 
-    top: "var(--gap-xs)",
-    left: "var(--gap-xs)",
+    top: "2px",
+    left: "2px",
+    width: "4px",
+    height: "4px",
     borderRadius: "100%",
-    width: "var(--gap-sm)",
-    height: "var(--gap-sm)",
   });
   renderer.insertBefore(hostEl, newEl, hostEl.firstChild);
   return newEl;
@@ -68,7 +68,7 @@ function createInputHiddenEl(renderer: Renderer2, hostEl: HTMLElement) {
   newEl.className = "sd-invalid-input";
   setSafeStyle(renderer, newEl, {
     position: "absolute",
-    left: "var(--gap-xs)",
+    left: "2px",
     bottom: "0",
     width: "1px",
     height: "1px",

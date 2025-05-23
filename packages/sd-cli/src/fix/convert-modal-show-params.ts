@@ -18,22 +18,18 @@ export default function convertShowAsyncCall() {
 
     for (const callExpr of callExprs) {
       const args = callExpr.getArguments();
-      if (args.length < 2 || args.length > 3) continue;
+      if (args.length < 3) continue; // 최소 3개는 있어야 함
 
-      const [typeArg, titleArg, inputsArg] = args;
+      const typeText = args[0].getText();
+      const titleText = args[1].getText();
+      const inputsText = args[2]?.getText() ?? "{}";
 
-      // 반드시 교체 전에 텍스트만 추출
-      const typeText = typeArg.getText();
-      const titleText = titleArg.getText();
-      const inputsText = inputsArg.getText();
+      const props = [`type: ${typeText}`, `title: ${titleText}`, `inputs: ${inputsText}`];
+      const objectLiteralText = `{\n  ${props.join(",\n  ")}\n}`;
 
-      const props: string[] = [`type: ${typeText}`, `title: ${titleText}`, `inputs: ${inputsText}`];
+      const newArgs = [`${objectLiteralText}`, ...args.slice(3).map((arg) => arg.getText())].join(", ");
 
-      const objectLiteralText = `{
-  ${props.join(",\n  ")}
-}`;
-
-      callExpr.replaceWithText(`this._sdModal.showAsync(${objectLiteralText})`);
+      callExpr.replaceWithText(`this._sdModal.showAsync(${newArgs})`);
     }
 
     sourceFile.saveSync();
