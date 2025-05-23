@@ -147,7 +147,7 @@ public class CordovaFileSystem extends CordovaPlugin {
                 path = context.getExternalCacheDir();
                 break;
             case "externalMedia":
-                File[] mediaDirs = ContextCompat.getExternalMediaDirs(context);
+                File[] mediaDirs = context.getExternalMediaDirs(context);
                 path = (mediaDirs.length > 0) ? mediaDirs[0] : null;
                 break;
             case "appData":

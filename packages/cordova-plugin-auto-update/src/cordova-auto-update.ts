@@ -104,15 +104,15 @@ export abstract class CordovaAutoUpdate {
     if (process.env["SD_VERSION"] !== opt.latestVersion) {
       opt.log(`최신버전 파일 다운로드중...`);
       const buffer = await opt.getApkBufferAsync();
-      const externalPath = await CordovaFileSystem.getStoragePathAsync("external");
-      const apkFilePath = path.join(externalPath, `files/latest.apk`);
+      const externalPath = await CordovaFileSystem.getStoragePathAsync("externalFiles");
+      const apkFilePath = path.join(externalPath, `latest.apk`);
       await CordovaFileSystem.writeFileAsync(apkFilePath, buffer);
 
       opt.log(`최신버전 설치파일 실행중...`);
       const uri = await WebIntent.getUri();
       const contentUrl = `${uri}/latest.apk`;
 
-      console.log(contentUrl);
+      console.log(apkFilePath, contentUrl);
       const FLAG_ACTIVITY_NEW_TASK = 0x10000000;
       const FLAG_GRANT_READ_URI_PERMISSION = 0x00000001;
       await WebIntent.startActivity({
