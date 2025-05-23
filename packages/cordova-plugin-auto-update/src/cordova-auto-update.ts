@@ -6,7 +6,6 @@ import { SdAutoUpdateServiceClient, SdServiceClient } from "@simplysm/sd-service
 import path from "path";
 import semver from "semver";
 import { WebIntent } from "@awesome-cordova-plugins/web-intent";
-import { AppVersion } from "@awesome-cordova-plugins/app-version";
 
 export abstract class CordovaAutoUpdate {
   static async runAsync(opt: {
@@ -106,7 +105,7 @@ export abstract class CordovaAutoUpdate {
       opt.log(`최신버전 파일 다운로드중...`);
       const buffer = await opt.getApkBufferAsync();
       const externalPath = await CordovaFileSystem.getStoragePathAsync("external");
-      const apkFilePath = path.join(externalPath, `latest.apk`);
+      const apkFilePath = path.join(externalPath, `files/latest.apk`);
       await CordovaFileSystem.writeFileAsync(apkFilePath, buffer);
 
       opt.log(`최신버전 설치파일 실행중...`);

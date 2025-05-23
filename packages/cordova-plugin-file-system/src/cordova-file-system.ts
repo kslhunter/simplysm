@@ -28,7 +28,14 @@ export abstract class CordovaFileSystem {
 
   // 저장소 경로 얻기
   static async getStoragePathAsync(
-    type: "app" | "external" | "appCache" | "externalCache",
+    type:
+      | "external"
+      | "externalFiles"
+      | "externalCache"
+      | "externalMedia"
+      | "appData"
+      | "appFiles"
+      | "appCache",
   ): Promise<string> {
     return await new Promise<string>((resolve, reject) => {
       cordova.exec(resolve, reject, "CordovaFileSystem", "getStoragePath", [type]);

@@ -140,14 +140,24 @@ public class CordovaFileSystem extends CordovaPlugin {
             case "external":
                 path = Environment.getExternalStorageDirectory();
                 break;
-            case "app":
-                path = new File(context.getApplicationInfo().dataDir);
-                break;
-            case "appCache":
-                path = context.getCacheDir();
+            case "externalFiles":
+                path = context.getExternalFilesDir(null);
                 break;
             case "externalCache":
                 path = context.getExternalCacheDir();
+                break;
+            case "externalMedia":
+                File[] mediaDirs = ContextCompat.getExternalMediaDirs(context);
+                path = (mediaDirs.length > 0) ? mediaDirs[0] : null;
+                break;
+            case "appData":
+                path = new File(context.getApplicationInfo().dataDir);
+                break;
+            case "appFiles":
+                path = context.getFilesDir();
+                break;
+            case "appCache":
+                path = context.getCacheDir();
                 break;
             default:
                 callbackContext.error("Unknown storage type: " + type);
