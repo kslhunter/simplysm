@@ -399,15 +399,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@awesome-cordova-plugins/file-opener@npm:^6.16.0":
+"@awesome-cordova-plugins/web-intent@npm:^6.16.0":
   version: 6.16.0
-  resolution: "@awesome-cordova-plugins/file-opener@npm:6.16.0"
+  resolution: "@awesome-cordova-plugins/web-intent@npm:6.16.0"
   dependencies:
     "@types/cordova": "npm:latest"
   peerDependencies:
     "@awesome-cordova-plugins/core": ^6.0.1
     rxjs: ^5.5.0 || ^6.5.0 || ^7.3.0
-  checksum: 10c0/ea2881f15f167dbff359aa613bc063df18393c4efbd5fe74e9001ebef230f47b2e0f2ad29b8c89c355faa463ae01a3be6c9b2652e3380aee22d1c8e72dfac64a
+  checksum: 10c0/fdd0b03dc7dcd93e484e3e1745c631f2c74a3768470762f367cdcaa52b381f7dcd5e01eb0e8099018e576ad59bf205472e3bb26325ac968b5cbceda0a71fa875
   languageName: node
   linkType: hard
 
@@ -2637,7 +2637,7 @@ __metadata:
   dependencies:
     "@awesome-cordova-plugins/android-permissions": "npm:^6.16.0"
     "@awesome-cordova-plugins/core": "npm:^6.16.0"
-    "@awesome-cordova-plugins/file-opener": "npm:^6.16.0"
+    "@awesome-cordova-plugins/web-intent": "npm:^6.16.0"
     "@simplysm/cordova-plugin-file-system": "npm:12.10.4"
     "@simplysm/sd-core-common": "npm:12.10.4"
     "@simplysm/sd-service-client": "npm:12.10.4"

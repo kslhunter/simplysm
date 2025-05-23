@@ -6,7 +6,7 @@ import { SdAutoUpdateServiceClient, SdServiceClient } from "@simplysm/sd-service
 import path from "path";
 import semver from "semver";
 import { AndroidPermissions } from "@awesome-cordova-plugins/android-permissions";
-import { FileOpener } from "@awesome-cordova-plugins/file-opener";
+import { WebIntent } from "@awesome-cordova-plugins/web-intent";
 
 export abstract class CordovaAutoUpdate {
   static async runAsync(opt: {
@@ -133,7 +133,14 @@ export abstract class CordovaAutoUpdate {
       await CordovaFileSystem.writeFileAsync(apkFilePath, buffer);
 
       opt.log(`최신버전 설치파일 실행중...`);
-      await FileOpener.open(apkFilePath, "application/vnd.android.package-archive");
+      const FLAG_ACTIVITY_NEW_TASK = 0x10000000;
+      const FLAG_GRANT_READ_URI_PERMISSION = 0x00000001;
+      await WebIntent.startActivity({
+        action: WebIntent.ACTION_VIEW,
+        url: "file://" + apkFilePath,
+        type: "application/vnd.android.package-archive",
+        flags: [FLAG_ACTIVITY_NEW_TASK, FLAG_GRANT_READ_URI_PERMISSION],
+      });
       return false;
     }
 

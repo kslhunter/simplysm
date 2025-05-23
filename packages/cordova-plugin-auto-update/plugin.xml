@@ -7,8 +7,9 @@
   <keywords>cordova,plugin,auto,update</keywords>
   <platform name="android">
     <dependency id="@simplysm/cordova-plugin-file-system"/>
-    <dependency id="cordova-plugin-file-opener2"/>
     <dependency id="cordova-plugin-android-permissions"/>
+    <dependency id="com-darryncampbell-cordova-plugin-intent"/>
+
 
     <config-file target="app/src/main/AndroidManifest.xml" parent="/*">
       <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
