@@ -445,20 +445,18 @@ export class SdCliCordova {
       ),
     );
 
-    // 결과물 복사 및 ZIP 파일 생성 - 병렬 처리
-    await Promise.all(
-      Object.keys(this._opt.config.platform ?? {}).map(async (platform) => {
-        await this._processBuildOutputAsync(cordovaPath, outPath, platform, buildType);
-      }),
-    );
+    // 결과물 복사 및 ZIP 파일 생성
+    for (const platform of Object.keys(this._opt.config.platform ?? {})) {
+      this._processBuildOutput(cordovaPath, outPath, platform, buildType);
+    }
   }
 
-  private async _processBuildOutputAsync(
+  private _processBuildOutput(
     cordovaPath: string,
     outPath: string,
     platform: string,
     buildType: string,
-  ): Promise<void> {
+  ) {
     const targetOutPath = path.resolve(outPath, platform);
 
     // 결과물 복사: ANDROID
