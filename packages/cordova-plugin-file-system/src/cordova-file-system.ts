@@ -44,7 +44,13 @@ export abstract class CordovaFileSystem {
 
   // 저장소 URL 얻기
   static async getStorageUrlAsync(
-    type: "external" | "externalFiles" | "externalCache" | "externalMedia",
+    type:
+      | "external"
+      | "externalFiles"
+      | "externalCache"
+      | "externalMedia"
+      | "appFiles"
+      | "appCache",
   ): Promise<string> {
     const url = await new Promise<string>((resolve, reject) => {
       cordova.exec(resolve, reject, "CordovaFileSystem", "getProviderUrl", [type]);
@@ -57,7 +63,11 @@ export abstract class CordovaFileSystem {
           ? "external_cache"
           : type === "externalMedia"
             ? "external_media"
-            : "external")
+            : type === "appFiles"
+              ? "app_files"
+              : type === "appCache"
+                ? "app_cache"
+                : "external")
     );
   }
 

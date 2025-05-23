@@ -19,10 +19,7 @@
     ]
   },
   "dependencies": {
-    "@awesome-cordova-plugins/android-permissions": "^6.16.0",
-    "@awesome-cordova-plugins/app-version": "^6.16.0",
     "@awesome-cordova-plugins/core": "^6.16.0",
-    "@awesome-cordova-plugins/web-intent": "^6.16.0",
     "@simplysm/cordova-plugin-file-system": "12.10.11",
     "@simplysm/sd-core-common": "12.10.11",
     "@simplysm/sd-service-client": "12.10.11",
