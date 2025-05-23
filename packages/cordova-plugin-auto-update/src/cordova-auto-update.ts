@@ -5,8 +5,8 @@ import { NetUtils } from "@simplysm/sd-core-common";
 import { SdAutoUpdateServiceClient, SdServiceClient } from "@simplysm/sd-service-client";
 import path from "path";
 import semver from "semver";
-import { AndroidPermissions } from "@awesome-cordova-plugins/android-permissions";
 import { WebIntent } from "@awesome-cordova-plugins/web-intent";
+import { AppVersion } from "@awesome-cordova-plugins/app-version";
 
 export abstract class CordovaAutoUpdate {
   static async runAsync(opt: {
@@ -16,13 +16,6 @@ export abstract class CordovaAutoUpdate {
     try {
       if (!navigator.userAgent.toLowerCase().includes("android")) {
         throw new Error("안드로이드만 지원합니다.");
-      }
-
-      if (
-        !(await AndroidPermissions.requestPermission("android.permission.REQUEST_INSTALL_PACKAGES"))
-          .hasPermission
-      ) {
-        throw new Error("APK 설치 권한이 없습니다.");
       }
 
       opt.log(`최신버전 확인 중...`);
@@ -64,22 +57,6 @@ export abstract class CordovaAutoUpdate {
     try {
       if (!navigator.userAgent.toLowerCase().includes("android")) {
         throw new Error("안드로이드만 지원합니다.");
-      }
-
-      if (
-        !(await AndroidPermissions.requestPermission("android.permission.MANAGE_EXTERNAL_STORAGE"))
-          .hasPermission ||
-        !(await AndroidPermissions.requestPermission("android.permission.READ_EXTERNAL_STORAGE"))
-          .hasPermission
-      ) {
-        throw new Error("외부저장소 사용권한이 없습니다.");
-      }
-
-      if (
-        !(await AndroidPermissions.requestPermission("android.permission.REQUEST_INSTALL_PACKAGES"))
-          .hasPermission
-      ) {
-        throw new Error("APK 설치 권한이 없습니다.");
       }
 
       opt.log(`최신버전 확인 중...`);
@@ -128,16 +105,19 @@ export abstract class CordovaAutoUpdate {
     if (process.env["SD_VERSION"] !== opt.latestVersion) {
       opt.log(`최신버전 파일 다운로드중...`);
       const buffer = await opt.getApkBufferAsync();
-      const appPath = await CordovaFileSystem.getStoragePathAsync("app");
-      const apkFilePath = path.join(appPath, `latest.apk`);
+      const externalCachePath = await CordovaFileSystem.getStoragePathAsync("externalCache");
+      const apkFilePath = path.join(externalCachePath, `latest.apk`);
       await CordovaFileSystem.writeFileAsync(apkFilePath, buffer);
 
       opt.log(`최신버전 설치파일 실행중...`);
+      const apkPkgName = AppVersion.getPackageName();
+      const contentUrl = `content://${apkPkgName}.fileprovider/apk_cache/latest.apk`;
+
       const FLAG_ACTIVITY_NEW_TASK = 0x10000000;
       const FLAG_GRANT_READ_URI_PERMISSION = 0x00000001;
       await WebIntent.startActivity({
         action: WebIntent.ACTION_VIEW,
-        url: "file://" + apkFilePath,
+        url: contentUrl,
         type: "application/vnd.android.package-archive",
         flags: [FLAG_ACTIVITY_NEW_TASK, FLAG_GRANT_READ_URI_PERMISSION],
       });
