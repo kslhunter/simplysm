@@ -41,6 +41,9 @@ public class CordovaFileSystem extends CordovaPlugin {
                 case "getStoragePath":
                     handleGetStoragePath(args, callbackContext);
                     return true;
+                case "getProviderUrl":
+                    handleGetProviderUrl(args, callbackContext);
+                    return true;
                 case "writeFileString":
                     handleWriteFileString(args, callbackContext);
                     return true;
@@ -167,6 +170,18 @@ public class CordovaFileSystem extends CordovaPlugin {
             callbackContext.success(path.getAbsolutePath());
         } else {
             callbackContext.error("Path not available for type: " + type);
+        }
+    }
+
+    private void handleGetProviderUrl(JSONArray args, CallbackContext callbackContext) {
+        try {
+            Context context = cordova.getContext();
+            String packageName = context.getPackageName();
+            String url = "content://" + packageName + ".fileprovider/";
+            callbackContext.success(url);
+        } catch (Exception e) {
+            LOG.e("CordovaFileSystem", "getProviderUrl failed", e);
+            callbackContext.error("getProviderUrl failed: " + e.getClass().getSimpleName() + " - " + e.getMessage());
         }
     }
 
