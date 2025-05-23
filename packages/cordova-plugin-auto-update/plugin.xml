@@ -12,19 +12,6 @@
     <dependency id="cordova-plugin-app-version"/>
     <config-file target="app/src/main/AndroidManifest.xml" parent="application">
       <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
-
-      <provider
-        android:name="androidx.core.content.FileProvider"
-        android:authorities="$PACKAGE_NAME.fileprovider"
-        android:exported="false"
-        android:grantUriPermissions="true">
-        <meta-data
-          android:name="android.support.FILE_PROVIDER_PATHS"
-          android:resource="@xml/file_paths"/>
-      </provider>
-
-      <!-- file_paths.xml 새 파일로 복사 -->
-      <resource-file src="file_paths.xml" target="app/src/main/res/xml/file_paths.xml"/>
     </config-file>
   </platform>
 </plugin>
