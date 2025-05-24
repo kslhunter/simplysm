@@ -23,6 +23,7 @@ export abstract class CordovaAutoUpdate {
       const downloadHtml =
         targetHref != null
           ? html`
+              APK파일을 다시 다운로드 받아, 설치해야 합니다.
               <style>
                 ._button {
                   all: unset;
@@ -37,11 +38,19 @@ export abstract class CordovaAutoUpdate {
                   border-top: 1px solid lightgrey;
                 }
 
-                button:active {
+                ._button:active {
                   background: lightgrey;
                 }
               </style>
-              <a class="_button" href="${targetHref}">다운로드</a>
+              <a
+                class="_button"
+                href="intent://${targetHref.replace(
+                  /^https?:\/\//,
+                  "",
+                )}#Intent;scheme=http;end"
+              >
+                다운로드
+              </a>
             `
           : "";
 
@@ -110,7 +119,11 @@ export abstract class CordovaAutoUpdate {
   }
 
   private static _getErrorMessage(err: any) {
-    return html`업데이트 중 오류 발생:<br/> ${err instanceof Error ? err.message : String(err)}`;
+    return html`
+      업데이트 중 오류 발생:
+      <br />
+      ${err instanceof Error ? err.message : String(err)}
+    `;
   }
 
   static async runAsync(opt: {
