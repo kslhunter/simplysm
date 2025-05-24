@@ -141,16 +141,16 @@ export abstract class CordovaAutoUpdate {
         throw new Error("서버에서 최신버전 정보를 가져오지 못했습니다.");
       }
 
-      // 최신버전이면 반환
-      if (process.env["SD_VERSION"] === serverVersionInfo.version) {
-        return true;
-      }
-
       opt.log(`권한 확인 중...`);
       await this._checkPermissionAsync(
         opt.log,
         opt.serviceClient.serverUrl + serverVersionInfo.downloadPath,
       );
+
+      // 최신버전이면 반환
+      if (process.env["SD_VERSION"] === serverVersionInfo.version) {
+        return true;
+      }
 
       opt.log(`최신버전 파일 다운로드중...`);
       const buffer = await NetUtils.downloadBufferAsync(
