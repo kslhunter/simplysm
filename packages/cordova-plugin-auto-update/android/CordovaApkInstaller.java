@@ -32,6 +32,9 @@ public class CordovaApkInstaller extends CordovaPlugin {
                 case "hasPermissionManifest":
                     handleHasPermissionManifest(callbackContext);
                     return true;
+                case "getVersionInfo":
+                    handleGetVersionInfo(callbackContext);
+                    return true;
                 default:
                     callbackContext.error("Unknown action: " + action);
                     return false;
@@ -112,6 +115,30 @@ public class CordovaApkInstaller extends CordovaPlugin {
             } catch (Exception e) {
                 LOG.e("CordovaApkInstaller", "Manifest permission check failed", e);
                 callbackContext.error("Manifest check failed: " + e.getClass().getSimpleName() + " - " + e.getMessage());
+            }
+        });
+    }
+
+    private void handleGetVersionInfo(CallbackContext callbackContext) {
+        cordova.getThreadPool().execute(() -> {
+            try {
+                Context context = this.cordova.getContext();
+                PackageManager pm = context.getPackageManager();
+                PackageInfo info = pm.getPackageInfo(context.getPackageName(), 0);
+
+                String versionName = info.versionName;
+                long versionCode = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
+                    ? info.getLongVersionCode()
+                    : info.versionCode;
+
+                JSONObject result = new JSONObject();
+                result.put("versionName", versionName);
+                result.put("versionCode", versionCode);
+
+                callbackContext.success(result);
+            } catch (Exception e) {
+                LOG.e("CordovaApkInstaller", "getVersionInfo failed", e);
+                callbackContext.error("getVersionInfo failed: " + e.getClass().getSimpleName() + " - " + e.getMessage());
             }
         });
     }

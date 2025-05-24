@@ -8,11 +8,41 @@ import semver from "semver";
 import { CordovaApkInstaller } from "./cordova-apk-installer";
 
 export abstract class CordovaAutoUpdate {
-  private static async _checkPermissionAsync(log: (messageHtml: string) => void) {
-    log(`권한 확인 중...`);
-
+  private static async _checkPermissionAsync(
+    log: (messageHtml: string) => void,
+    targetHref?: string,
+  ) {
     if (!navigator.userAgent.toLowerCase().includes("android")) {
       throw new Error(`안드로이드만 지원합니다.`);
+    }
+
+    if (!(await CordovaApkInstaller.hasPermissionManifest())) {
+      const downloadHtml = targetHref != null ? html`
+        <style>
+          ._button {
+            all: unset;
+            color: blue;
+            width: 100%;
+            padding: 10px;
+            line-height: 1.5em;
+            font-size: 20px;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            border-top: 1px solid lightgrey;
+          }
+
+          button:active {
+            background: lightgrey;
+          }
+        </style>
+        <a class="_button" href="${targetHref}">다운로드</a>
+      ` : "";
+
+      throw new Error(html`
+        APK파일을 다시 다운로드 받아, 설치해야 합니다.
+        ${downloadHtml}
+      `);
     }
 
     const hasPerm = await CordovaApkInstaller.hasPermission();
@@ -37,9 +67,7 @@ export abstract class CordovaAutoUpdate {
             background: lightgrey;
           }
         </style>
-        <button onclick="location.reload()">
-          재시도
-        </button>
+        <button onclick="location.reload()">재시도</button>
       `);
       await CordovaApkInstaller.requestPermission();
       await Wait.until(async () => {
@@ -69,9 +97,7 @@ export abstract class CordovaAutoUpdate {
           background: lightgrey;
         }
       </style>
-      <button onclick="location.reload()">
-        재시도
-      </button>
+      <button onclick="location.reload()">재시도</button>
     `);
     const apkFileUri = await CordovaFileSystem.getFileUriAsync(apkFilePath);
     await CordovaApkInstaller.install(apkFileUri);
@@ -99,9 +125,7 @@ export abstract class CordovaAutoUpdate {
           background: lightgrey;
         }
       </style>
-      <button onclick="location.reload()">
-        재시도
-      </button>
+      <button onclick="location.reload()">재시도</button>
     `;
   }
 
@@ -110,8 +134,6 @@ export abstract class CordovaAutoUpdate {
     serviceClient: SdServiceClient;
   }) {
     try {
-      await this._checkPermissionAsync(opt.log);
-
       opt.log(`최신버전 확인 중...`);
 
       // 서버의 버전 및 다운로드링크 가져오기
@@ -126,6 +148,12 @@ export abstract class CordovaAutoUpdate {
       if (process.env["SD_VERSION"] === serverVersionInfo.version) {
         return true;
       }
+
+      opt.log(`권한 확인 중...`);
+      await this._checkPermissionAsync(
+        opt.log,
+        opt.serviceClient.serverUrl + serverVersionInfo.downloadPath
+      );
 
       opt.log(`최신버전 파일 다운로드중...`);
       const buffer = await NetUtils.downloadBufferAsync(
@@ -154,6 +182,7 @@ export abstract class CordovaAutoUpdate {
     dirPath: string;
   }) {
     try {
+      opt.log(`권한 확인 중...`);
       await this._checkPermissionAsync(opt.log);
 
       opt.log(`최신버전 확인 중...`);

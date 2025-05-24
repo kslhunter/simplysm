@@ -34,4 +34,13 @@ export abstract class CordovaApkInstaller {
       cordova.exec(resolve, reject, "CordovaApkInstaller", "install", [apkUri]);
     });
   }
+
+  static async getVersionInfo(): Promise<{
+    versionName: string;
+    versionCode: string;
+  }> {
+    return await new Promise((resolve, reject) => {
+      cordova.exec(resolve, reject, "CordovaFileSystem", "getVersionInfo", []);
+    });
+  }
 }
