@@ -21,6 +21,6 @@
         <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/sd_file_paths"></meta-data>
       </provider>
     </config-file>
-    <resource-file src="sd_file_paths.xml" target="res/xml/file_paths.xml"></resource-file>
+    <resource-file src="sd_file_paths.xml" target="res/xml/sd_file_paths.xml"></resource-file>
   </platform>
 </plugin>
