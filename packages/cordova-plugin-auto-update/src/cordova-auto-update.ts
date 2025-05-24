@@ -19,12 +19,25 @@ export abstract class CordovaAutoUpdate {
     if (!hasPerm) {
       log(html`
         설치권한이 설정되어야합니다.
-        <br />
-        <br />
-        <button
-          onclick="location.reload()"
-          style="all: unset; color: blue; text-decoration: underline;"
-        >
+        <style>
+          button {
+            all: unset;
+            color: blue;
+            width: 100%;
+            padding: 10px;
+            line-height: 1.5em;
+            font-size: 20px;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            border-top: 1px solid lightgrey;
+          }
+
+          button:active {
+            background: lightgrey;
+          }
+        </style>
+        <button onclick="location.reload()">
           재시도
         </button>
       `);
@@ -38,20 +51,26 @@ export abstract class CordovaAutoUpdate {
   private static async _installApkAsync(log: (messageHtml: string) => void, apkFilePath: string) {
     log(html`
       최신버전을 설치한 후 재시작하세요.
-      <br />
-      <br />
-      <button
-        onclick="location.reload()"
-        style="all: unset; color: blue; text-decoration: underline;"
-      >
+      <style>
+        button {
+          all: unset;
+          color: blue;
+          width: 100%;
+          padding: 10px;
+          line-height: 1.5em;
+          font-size: 20px;
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          border-top: 1px solid lightgrey;
+        }
+
+        button:active {
+          background: lightgrey;
+        }
+      </style>
+      <button onclick="location.reload()">
         재시도
-      </button>
-      &nbsp;&nbsp;
-      <button
-        onclick="navigator.app.exitApp();"
-        style="all: unset; color: blue; text-decoration: underline;"
-      >
-        종료
       </button>
     `);
     const apkFileUri = await CordovaFileSystem.getFileUriAsync(apkFilePath);
@@ -62,12 +81,25 @@ export abstract class CordovaAutoUpdate {
   private static _getErrorMessage(err: any) {
     return html`
       업데이트 중 오류 발생: ${err instanceof Error ? err.message : String(err)}
-      <br />
-      <br />
-      <button
-        onclick="location.reload()"
-        style="all: unset; color: blue; text-decoration: underline;"
-      >
+      <style>
+        button {
+          all: unset;
+          color: blue;
+          width: 100%;
+          padding: 10px;
+          line-height: 1.5em;
+          font-size: 20px;
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          border-top: 1px solid lightgrey;
+        }
+
+        button:active {
+          background: lightgrey;
+        }
+      </style>
+      <button onclick="location.reload()">
         재시도
       </button>
     `;
