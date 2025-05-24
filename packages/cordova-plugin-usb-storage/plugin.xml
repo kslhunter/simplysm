@@ -6,7 +6,7 @@
   <keywords>cordova,plugin,usb,storage</keywords>
   <platform name="android">
     <source-file src="android/CordovaUsbStorage.java" target-dir="src/kr/co/simplysm/cordova"></source-file>
-    <config-file target="res/xml/config.xml" parent="/*">
+    <config-file target="res/xml/config.xml" parent="/widget">
       <feature name="CordovaUsbStorage">
         <param name="android-package" value="kr.co.simplysm.cordova.CordovaUsbStorage"></param>
       </feature>

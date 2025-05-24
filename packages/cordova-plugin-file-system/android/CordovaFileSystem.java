@@ -48,7 +48,7 @@ public class CordovaFileSystem extends CordovaPlugin {
                 case "getStoragePath":
                     handleGetStoragePath(args, callbackContext);
                     return true;
-                case "handleGetFileUri":
+                case "getFileUri":
                     handleGetFileUri(args, callbackContext);
                     return true;
                 case "writeFileString":
@@ -203,8 +203,8 @@ public class CordovaFileSystem extends CordovaPlugin {
                 Uri fileUri = FileProvider.getUriForFile(context, authority, file);
                 callbackContext.success(fileUri.toString());
             } catch (Exception e) {
-                LOG.e("CordovaFileSystem", "getProviderUrl failed", e);
-                callbackContext.error("getProviderUrl failed: " + e.getClass().getSimpleName() + " - " + e.getMessage());
+                LOG.e("CordovaFileSystem", "getFileUri failed", e);
+                callbackContext.error("getFileUri failed: " + e.getClass().getSimpleName() + " - " + e.getMessage());
             }
         });
     }
