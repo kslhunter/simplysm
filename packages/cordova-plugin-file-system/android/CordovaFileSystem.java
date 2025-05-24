@@ -2,29 +2,36 @@ package kr.co.simplysm.cordova;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.Settings;
-import android.net.Uri;
-import android.content.Intent;
 import android.util.Base64;
 
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.LOG;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.nio.charset.StandardCharsets;
 
 public class CordovaFileSystem extends CordovaPlugin {
 
     @Override
-    public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
+    public boolean execute(String action, JSONArray args, CallbackContext callbackContext) {
         try {
             LOG.d("CordovaFileSystem", "Executing action: " + action);
 
@@ -41,8 +48,8 @@ public class CordovaFileSystem extends CordovaPlugin {
                 case "getStoragePath":
                     handleGetStoragePath(args, callbackContext);
                     return true;
-                case "getProviderUrl":
-                    handleGetProviderUrl(args, callbackContext);
+                case "handleGetFileUri":
+                    handleGetFileUri(args, callbackContext);
                     return true;
                 case "writeFileString":
                     handleWriteFileString(args, callbackContext);
@@ -79,36 +86,44 @@ public class CordovaFileSystem extends CordovaPlugin {
     // ---- Action Handlers ----
 
     private void handleCheckPermission(CallbackContext callbackContext) {
-        Context context = cordova.getContext();
-        boolean readGranted = ContextCompat.checkSelfPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE) == android.content.pm.PackageManager.PERMISSION_GRANTED;
-        boolean writeGranted = ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) == android.content.pm.PackageManager.PERMISSION_GRANTED;
-        boolean manageGranted = true;
-        if (Build.VERSION.SDK_INT >= 30) {
-            manageGranted = Environment.isExternalStorageManager();
-        }
-        boolean granted = (readGranted && writeGranted) || manageGranted;
-        callbackContext.success(granted ? "true" : "false");
+        cordova.getThreadPool().execute(() -> {
+            Context context = cordova.getContext();
+            boolean granted;
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                granted = Environment.isExternalStorageManager();
+            } else {
+                boolean readGranted = ContextCompat.checkSelfPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+                boolean writeGranted = ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+                granted = readGranted && writeGranted;
+            }
+
+            callbackContext.success(granted ? "true" : "false");
+        });
     }
 
     private void handleRequestPermission(CallbackContext callbackContext) {
-        if (Build.VERSION.SDK_INT >= 30) {
-            if (!Environment.isExternalStorageManager()) {
-                Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
-                intent.setData(Uri.parse("package:" + cordova.getContext().getPackageName()));
-                cordova.getActivity().startActivity(intent);
+        cordova.getThreadPool().execute(() -> {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                if (!Environment.isExternalStorageManager()) {
+                    Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                    intent.setData(Uri.parse("package:" + cordova.getContext().getPackageName()));
+                    cordova.getActivity().startActivity(intent);
+                }
+                callbackContext.success();
+            } else {
+                cordova.requestPermissions(this, 1001, new String[]{
+                        Manifest.permission.READ_EXTERNAL_STORAGE,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE
+                });
+                callbackContext.success();
             }
-            callbackContext.success("requested");
-            return;
-        }
-        cordova.requestPermissions(this, 1001, new String[]{
-                Manifest.permission.READ_EXTERNAL_STORAGE,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
         });
-        callbackContext.success("requested");
     }
 
     private void handleReadDir(JSONArray args, CallbackContext callbackContext) throws JSONException {
         final String path = args.getString(0);
+
         cordova.getThreadPool().execute(() -> {
             File dir = new File(path);
             if (!dir.exists() || !dir.isDirectory()) {
@@ -136,64 +151,74 @@ public class CordovaFileSystem extends CordovaPlugin {
     }
 
     private void handleGetStoragePath(JSONArray args, CallbackContext callbackContext) throws JSONException {
-        String type = args.getString(0);
-        Context context = cordova.getActivity().getApplicationContext();
-        File path;
-        switch (type) {
-            case "external":
-                path = Environment.getExternalStorageDirectory();
-                break;
-            case "externalFiles":
-                path = context.getExternalFilesDir(null);
-                break;
-            case "externalCache":
-                path = context.getExternalCacheDir();
-                break;
-            case "externalMedia":
-                File[] mediaDirs = context.getExternalMediaDirs();
-                path = (mediaDirs.length > 0 && mediaDirs[0] != null) ? mediaDirs[0] : null;
-                break;
-            case "appData":
-                path = new File(context.getApplicationInfo().dataDir);
-                break;
-            case "appFiles":
-                path = context.getFilesDir();
-                break;
-            case "appCache":
-                path = context.getCacheDir();
-                break;
-            default:
-                callbackContext.error("Unknown storage type: " + type);
-                return;
-        }
-        if (path != null) {
-            callbackContext.success(path.getAbsolutePath());
-        } else {
-            callbackContext.error("Path not available for type: " + type);
-        }
+        final String type = args.getString(0);
+
+        cordova.getThreadPool().execute(() -> {
+            Context context = cordova.getActivity().getApplicationContext();
+            File path;
+            switch (type) {
+                case "external":
+                    path = Environment.getExternalStorageDirectory();
+                    break;
+                case "externalFiles":
+                    path = context.getExternalFilesDir(null);
+                    break;
+                case "externalCache":
+                    path = context.getExternalCacheDir();
+                    break;
+                case "externalMedia":
+                    File[] mediaDirs = context.getExternalMediaDirs();
+                    path = (mediaDirs.length > 0 && mediaDirs[0] != null) ? mediaDirs[0] : null;
+                    break;
+                case "appData":
+                    path = new File(context.getApplicationInfo().dataDir);
+                    break;
+                case "appFiles":
+                    path = context.getFilesDir();
+                    break;
+                case "appCache":
+                    path = context.getCacheDir();
+                    break;
+                default:
+                    callbackContext.error("Unknown storage type: " + type);
+                    return;
+            }
+            if (path != null) {
+                callbackContext.success(path.getAbsolutePath());
+            } else {
+                callbackContext.error("Path not available for type: " + type);
+            }
+        });
     }
 
-    private void handleGetProviderUrl(JSONArray args, CallbackContext callbackContext) {
-        try {
+    private void handleGetFileUri(JSONArray args, CallbackContext callbackContext) throws JSONException {
+        final String fullPath = args.getString(0);
+        final File file = new File(fullPath);
+
+        cordova.getThreadPool().execute(() -> {
             Context context = cordova.getContext();
-            String packageName = context.getPackageName();
-            String url = "content://" + packageName + ".fileprovider/";
-            callbackContext.success(url);
-        } catch (Exception e) {
-            LOG.e("CordovaFileSystem", "getProviderUrl failed", e);
-            callbackContext.error("getProviderUrl failed: " + e.getClass().getSimpleName() + " - " + e.getMessage());
-        }
+            String authority = context.getPackageName() + ".fileprovider";
+
+            try {
+                Uri fileUri = FileProvider.getUriForFile(context, authority, file);
+                callbackContext.success(fileUri.toString());
+            } catch (Exception e) {
+                LOG.e("CordovaFileSystem", "getProviderUrl failed", e);
+                callbackContext.error("getProviderUrl failed: " + e.getClass().getSimpleName() + " - " + e.getMessage());
+            }
+        });
     }
 
     private void handleWriteFileString(JSONArray args, CallbackContext callbackContext) throws JSONException {
         final String filePath = args.getString(0);
         final String content = args.getString(1);
+
         cordova.getThreadPool().execute(() -> {
             File file = new File(filePath);
             File parent = file.getParentFile();
             if (parent != null && !parent.exists()) parent.mkdirs();
             try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file, false))) {
-                bos.write(content.getBytes("UTF-8"));
+                bos.write(content.getBytes(StandardCharsets.UTF_8));
                 callbackContext.success("String written successfully");
             } catch (Exception e) {
                 LOG.e("CordovaFileSystem", "writeFileString failed", e);
@@ -205,6 +230,7 @@ public class CordovaFileSystem extends CordovaPlugin {
     private void handleWriteFileBase64(JSONArray args, CallbackContext callbackContext) throws JSONException {
         final String filePath = args.getString(0);
         final String base64Data = args.getString(1);
+
         cordova.getThreadPool().execute(() -> {
             try {
                 byte[] decoded = Base64.decode(base64Data, Base64.DEFAULT);
@@ -224,6 +250,7 @@ public class CordovaFileSystem extends CordovaPlugin {
 
     private void handleReadFileString(JSONArray args, CallbackContext callbackContext) throws JSONException {
         final String filePath = args.getString(0);
+
         cordova.getThreadPool().execute(() -> {
             File file = new File(filePath);
             if (!file.exists() || !file.isFile()) {
@@ -248,12 +275,14 @@ public class CordovaFileSystem extends CordovaPlugin {
 
     private void handleReadFileBase64(JSONArray args, CallbackContext callbackContext) throws JSONException {
         final String filePath = args.getString(0);
+
         cordova.getThreadPool().execute(() -> {
             File file = new File(filePath);
             if (!file.exists() || !file.isFile()) {
                 callbackContext.error("File not found: " + filePath);
                 return;
             }
+
             try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
                  ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
                 byte[] buffer = new byte[8192];
@@ -272,6 +301,7 @@ public class CordovaFileSystem extends CordovaPlugin {
 
     private void handleRemove(JSONArray args, CallbackContext callbackContext) throws JSONException {
         final String filePath = args.getString(0);
+
         cordova.getThreadPool().execute(() -> {
             File target = new File(filePath);
             try {
@@ -290,6 +320,7 @@ public class CordovaFileSystem extends CordovaPlugin {
 
     private void handleMkdirs(JSONArray args, CallbackContext callbackContext) throws JSONException {
         final String dirPath = args.getString(0);
+
         cordova.getThreadPool().execute(() -> {
             File dir = new File(dirPath);
             if (dir.exists()) {
@@ -307,6 +338,7 @@ public class CordovaFileSystem extends CordovaPlugin {
 
     private void handleExists(JSONArray args, CallbackContext callbackContext) throws JSONException {
         final String path = args.getString(0);
+
         cordova.getThreadPool().execute(() -> {
             File target = new File(path);
             boolean exists = target.exists();
@@ -320,10 +352,17 @@ public class CordovaFileSystem extends CordovaPlugin {
             File[] children = file.listFiles();
             if (children != null) {
                 for (File child : children) {
-                    if (!deleteRecursively(child)) return false;
+                    if (!deleteRecursively(child)) {
+                        LOG.w("CordovaFileSystem", "Failed to delete: " + child.getAbsolutePath());
+                        return false;
+                    }
                 }
             }
         }
-        return file.delete();
+        boolean deleted = file.delete();
+        if (!deleted) {
+            LOG.w("CordovaFileSystem", "Failed to delete: " + file.getAbsolutePath());
+        }
+        return deleted;
     }
 }

@@ -12,7 +12,6 @@ export class SdCliCordova {
 
   private readonly PLUGINS_DIR_NAME = "plugins";
   private readonly PLUGINS_FETCH_FILE = "fetch.json";
-  private readonly ANDROID_PLATFORM_VERSION = "12.0.1";
   private readonly ANDROID_SDK_VERSION = "33";
   private readonly KEYSTORE_FILE_NAME = "android.keystore";
   private readonly CONFIG_XML_FILE_NAME = "config.xml";
@@ -107,14 +106,7 @@ export class SdCliCordova {
     for (const platform of this._platforms) {
       if (alreadyPlatforms.includes(platform)) continue;
 
-      if (platform === "android") {
-        await SdCliCordova._execAsync(
-          `npx cordova platform add ${platform}@${this.ANDROID_PLATFORM_VERSION}`,
-          cordovaPath,
-        );
-      } else {
-        await SdCliCordova._execAsync(`npx cordova platform add ${platform}`, cordovaPath);
-      }
+      await SdCliCordova._execAsync(`npx cordova platform add ${platform}`, cordovaPath);
     }
   }
 

@@ -1,91 +1,87 @@
 package kr.co.simplysm.cordova;
 
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageInstaller;
+import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.LOG;
-
 import org.json.JSONArray;
 import org.json.JSONException;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.OutputStream;
 
 public class ApkInstaller extends CordovaPlugin {
 
     @Override
-    public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
-        if ("installApk".equals(action)) {
-            String apkPath = args.getString(0);
-            cordova.getThreadPool().execute(() -> installApk(apkPath, callbackContext));
-            return true;
-        } else if ("canRequestPackageInstalls".equals(action)) {
-            boolean allowed = Build.VERSION.SDK_INT < 26 || cordova.getContext()
-                .getPackageManager().canRequestPackageInstalls();
-            callbackContext.success(allowed ? "true" : "false");
-            return true;
-        } else if ("openUnknownAppSourcesSettings".equals(action)) {
-            openUnknownSourcesSettings();
-            callbackContext.success();
-            return true;
-        }
-
-        return false;
-    }
-
-    private void installApk(String apkPath, CallbackContext callbackContext) {
+    public boolean execute(String action, JSONArray args, CallbackContext callbackContext) {
         try {
-            Context context = cordova.getContext();
-            File apkFile = new File(apkPath);
-            if (!apkFile.exists()) {
-                callbackContext.error("APK file not found: " + apkFile.getAbsolutePath());
-                return;
+            LOG.d("ApkInstaller", "Executing action: " + action);
+
+            switch (action) {
+                case "install":
+                    handleInstall(args, callbackContext);
+                    return true;
+                case "hasPermission":
+                    handleHasPermission(callbackContext);
+                    return true;
+                case "requestPermission":
+                    handleRequestPermission(callbackContext);
+                    return true;
+                default:
+                    callbackContext.error("Unknown action: " + action);
+                    return false;
             }
-
-            PackageInstaller packageInstaller = context.getPackageManager().getPackageInstaller();
-            PackageInstaller.SessionParams params = new PackageInstaller.SessionParams(
-                PackageInstaller.SessionParams.MODE_FULL_INSTALL);
-            int sessionId = packageInstaller.createSession(params);
-            PackageInstaller.Session session = packageInstaller.openSession(sessionId);
-
-            try (OutputStream out = session.openWrite("apk", 0, -1);
-                 FileInputStream in = new FileInputStream(apkFile)) {
-                byte[] buffer = new byte[65536];
-                int len;
-                while ((len = in.read(buffer)) != -1) {
-                    out.write(buffer, 0, len);
-                }
-                session.fsync(out);
-            }
-
-            Intent emptyIntent = new Intent();
-            PendingIntent pi = PendingIntent.getActivity(
-                context, 0, emptyIntent, PendingIntent.FLAG_IMMUTABLE
-            );
-            session.commit(pi.getIntentSender());
-
-            session.close(); // 리소스 정리
-
-            callbackContext.success("Installation started");
         } catch (Exception e) {
-            LOG.e("ApkInstaller", "Install failed", e);
-            callbackContext.error("Install failed: " + e.getMessage());
+            LOG.e("ApkInstaller", "Error occurred while executing action: " + action, e);
+            callbackContext.error("Error: " + e.getClass().getSimpleName() + " - " + e.getMessage());
+            return false;
         }
     }
 
-    private void openUnknownSourcesSettings() {
-        if (Build.VERSION.SDK_INT >= 26) {
-            Intent intent = new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES);
-            intent.setData(android.net.Uri.parse("package:" + cordova.getContext().getPackageName()));
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            cordova.getActivity().startActivity(intent);
-        }
+    // ---- Action Handlers ----
+
+    private void handleInstall(JSONArray args, CallbackContext callbackContext) throws JSONException {
+        final Context context = this.cordova.getContext();
+        final String apkUriStr = args.getString(0);
+
+        cordova.getThreadPool().execute(() -> {
+            try {
+                Uri apkUri = Uri.parse(apkUriStr);
+
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setDataAndType(apkUri, "application/vnd.android.package-archive");
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+                context.startActivity(intent);
+                callbackContext.success();
+            } catch (Exception e) {
+                LOG.e("ApkInstaller", "install failed", e);
+                callbackContext.error("Install failed: " + e.getClass().getSimpleName() + " - " + e.getMessage());
+            }
+        });
+    }
+
+    private void handleHasPermission(CallbackContext callbackContext) {
+        cordova.getThreadPool().execute(() -> {
+            Context context = this.cordova.getContext();
+            boolean allowed = Build.VERSION.SDK_INT < Build.VERSION_CODES.O || context.getPackageManager().canRequestPackageInstalls();
+            callbackContext.success(allowed ? "true" : "false");
+        });
+    }
+
+    private void handleRequestPermission(CallbackContext callbackContext) {
+        cordova.getThreadPool().execute(() -> {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                Context context = this.cordova.getContext();
+                Intent intent = new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES);
+                intent.setData(Uri.parse("package:" + context.getPackageName()));
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                context.startActivity(intent);
+            }
+
+            callbackContext.success();
+        });
     }
 }

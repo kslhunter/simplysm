@@ -1,7 +1,7 @@
 /// <reference types="@simplysm/types-cordova-plugin-ionic-webview"/>
 
 import { CordovaFileSystem } from "@simplysm/cordova-plugin-file-system";
-import { html, NetUtils } from "@simplysm/sd-core-common";
+import { html, NetUtils, Wait } from "@simplysm/sd-core-common";
 import { SdAutoUpdateServiceClient, SdServiceClient } from "@simplysm/sd-service-client";
 import path from "path";
 import semver from "semver";
@@ -12,11 +12,10 @@ export abstract class CordovaAutoUpdate {
     log(`권한 확인 중...`);
 
     if (!navigator.userAgent.toLowerCase().includes("android")) {
-      log(`안드로이드만 지원합니다.`);
-      return false;
+      throw new Error(`안드로이드만 지원합니다.`);
     }
 
-    const hasPerm = await CordovaApkInstaller.requestPermission();
+    const hasPerm = await CordovaApkInstaller.hasPermission();
     if (!hasPerm) {
       log(html`
         설치권한이 설정되어야합니다.
@@ -29,10 +28,11 @@ export abstract class CordovaAutoUpdate {
           재시도
         </button>
       `);
-      return false;
+      await CordovaApkInstaller.requestPermission();
+      await Wait.until(async () => {
+        return await CordovaApkInstaller.hasPermission();
+      }, 1000);
     }
-
-    return true;
   }
 
   private static async _installApkAsync(log: (messageHtml: string) => void, apkFilePath: string) {
@@ -54,8 +54,23 @@ export abstract class CordovaAutoUpdate {
         종료
       </button>
     `);
-    await CordovaApkInstaller.installApkFromPath(apkFilePath);
+    const apkFileUri = await CordovaFileSystem.getFileUriAsync(apkFilePath);
+    await CordovaApkInstaller.install(apkFileUri);
     return false;
+  }
+
+  private static _getErrorMessage(err: any) {
+    return html`
+      업데이트 중 오류 발생: ${err instanceof Error ? err.message : String(err)}
+      <br />
+      <br />
+      <button
+        onclick="location.reload()"
+        style="all: unset; color: blue; text-decoration: underline;"
+      >
+        재시도
+      </button>
+    `;
   }
 
   static async runAsync(opt: {
@@ -63,7 +78,7 @@ export abstract class CordovaAutoUpdate {
     serviceClient: SdServiceClient;
   }) {
     try {
-      if (!(await this._checkPermissionAsync(opt.log))) return false;
+      await this._checkPermissionAsync(opt.log);
 
       opt.log(`최신버전 확인 중...`);
 
@@ -97,7 +112,7 @@ export abstract class CordovaAutoUpdate {
       await this._installApkAsync(opt.log, apkFilePath);
       return false;
     } catch (err) {
-      opt.log(`업데이트 중 오류 발생: ${err instanceof Error ? err.message : String(err)}`);
+      opt.log(this._getErrorMessage(err));
       throw err;
     }
   }
@@ -107,7 +122,7 @@ export abstract class CordovaAutoUpdate {
     dirPath: string;
   }) {
     try {
-      if (!(await this._checkPermissionAsync(opt.log))) return false;
+      await this._checkPermissionAsync(opt.log);
 
       opt.log(`최신버전 확인 중...`);
 
@@ -139,7 +154,7 @@ export abstract class CordovaAutoUpdate {
       await this._installApkAsync(opt.log, apkFilePath);
       return false;
     } catch (err) {
-      opt.log(`업데이트 중 오류 발생: ${err instanceof Error ? err.message : String(err)}`);
+      opt.log(this._getErrorMessage(err));
       throw err;
     }
   }

@@ -42,33 +42,11 @@ export abstract class CordovaFileSystem {
     });
   }
 
-  // 저장소 URL 얻기
-  static async getStorageUrlAsync(
-    type:
-      | "external"
-      | "externalFiles"
-      | "externalCache"
-      | "externalMedia"
-      | "appFiles"
-      | "appCache",
-  ): Promise<string> {
-    const url = await new Promise<string>((resolve, reject) => {
-      cordova.exec(resolve, reject, "CordovaFileSystem", "getProviderUrl", [type]);
+  // 파일 URI 얻기
+  static async getFileUriAsync(filePath: string): Promise<string> {
+    return await new Promise<string>((resolve, reject) => {
+      cordova.exec(resolve, reject, "CordovaFileSystem", "getFileUri", [filePath]);
     });
-    return (
-      url +
-      (type === "externalFiles"
-        ? "external_files"
-        : type === "externalCache"
-          ? "external_cache"
-          : type === "externalMedia"
-            ? "external_media"
-            : type === "appFiles"
-              ? "app_files"
-              : type === "appCache"
-                ? "app_cache"
-                : "external")
-    );
   }
 
   // 파일 쓰기
