@@ -1,20 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<plugin id="@simplysm/cordova-plugin-auto-update" version="12.10.11"
-        xmlns="http://apache.org/cordova/ns/plugins/1.0">
+<plugin id="@simplysm/cordova-plugin-auto-update" version="12.10.12" xmlns="http://apache.org/cordova/ns/plugins/1.0">
   <name>Auto Update</name>
   <description>Cordova Auto Update Plugin</description>
   <license>Apache 2.0</license>
   <keywords>cordova,plugin,auto,update</keywords>
   <platform name="android">
     <dependency id="@simplysm/cordova-plugin-file-system"></dependency>
-
     <config-file target="res/xml/config.xml" parent="/*">
       <feature name="ApkInstaller">
-        <param name="android-package" value="kr.co.simplysm.cordova.ApkInstaller"/>
+        <param name="android-package" value="kr.co.simplysm.cordova.ApkInstaller"></param>
       </feature>
     </config-file>
-
-    <source-file src="src/android/ApkInstaller.java" target-dir="src/kr/co/simplysm/cordova"/>
-    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
+    <source-file src="src/android/ApkInstaller.java" target-dir="src/kr/co/simplysm/cordova"></source-file>
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"></uses-permission>
   </platform>
 </plugin>
