@@ -8,6 +8,43 @@ import semver from "semver";
 import { CordovaApkInstaller } from "./cordova-apk-installer";
 
 export abstract class CordovaAutoUpdate {
+  private static _throwAboutReinstall(targetHref?: string) {
+    const downloadHtml =
+      targetHref != null
+        ? html`
+            APK파일을 다시 다운로드 받아, 설치해야 합니다.
+            <style>
+              ._button {
+                all: unset;
+                color: blue;
+                width: 100%;
+                padding: 10px;
+                line-height: 1.5em;
+                font-size: 20px;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                border-top: 1px solid lightgrey;
+              }
+
+              ._button:active {
+                background: lightgrey;
+              }
+            </style>
+            <a
+              class="_button"
+              href="intent://${targetHref.replace(/^https?:\/\//, "")}#Intent;scheme=http;end"
+            >
+              다운로드
+            </a>
+          `
+        : "";
+
+    throw new Error(html`
+      APK파일을 다시 다운로드 받아, 설치해야 합니다. ${downloadHtml}
+    `);
+  }
+
   private static async _checkPermissionAsync(
     log: (messageHtml: string) => void,
     targetHref?: string,
@@ -16,47 +53,12 @@ export abstract class CordovaAutoUpdate {
       throw new Error(`안드로이드만 지원합니다.`);
     }
 
-    if (
-      typeof CordovaApkInstaller === "undefined" ||
-      !(await CordovaApkInstaller.hasPermissionManifest())
-    ) {
-      const downloadHtml =
-        targetHref != null
-          ? html`
-              APK파일을 다시 다운로드 받아, 설치해야 합니다.
-              <style>
-                ._button {
-                  all: unset;
-                  color: blue;
-                  width: 100%;
-                  padding: 10px;
-                  line-height: 1.5em;
-                  font-size: 20px;
-                  position: fixed;
-                  bottom: 0;
-                  left: 0;
-                  border-top: 1px solid lightgrey;
-                }
-
-                ._button:active {
-                  background: lightgrey;
-                }
-              </style>
-              <a
-                class="_button"
-                href="intent://${targetHref.replace(
-                  /^https?:\/\//,
-                  "",
-                )}#Intent;scheme=http;end"
-              >
-                다운로드
-              </a>
-            `
-          : "";
-
-      throw new Error(html`
-        APK파일을 다시 다운로드 받아, 설치해야 합니다. ${downloadHtml}
-      `);
+    try {
+      if (!(await CordovaApkInstaller.hasPermissionManifest())) {
+        this._throwAboutReinstall();
+      }
+    } catch {
+      this._throwAboutReinstall();
     }
 
     const hasPerm = await CordovaApkInstaller.hasPermission();
