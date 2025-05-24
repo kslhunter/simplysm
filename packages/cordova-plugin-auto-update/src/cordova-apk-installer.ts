@@ -1,4 +1,16 @@
 export abstract class CordovaApkInstaller {
+  static async hasPermissionManifest(): Promise<boolean> {
+    return await new Promise((resolve) => {
+      cordova.exec(
+        (result: string) => resolve(result === "true"),
+        () => resolve(false),
+        "CordovaApkInstaller",
+        "hasPermissionManifest",
+        [],
+      );
+    });
+  }
+
   static async hasPermission(): Promise<boolean> {
     return await new Promise((resolve) => {
       cordova.exec(

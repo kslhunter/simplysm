@@ -29,6 +29,9 @@ public class CordovaApkInstaller extends CordovaPlugin {
                 case "requestPermission":
                     handleRequestPermission(callbackContext);
                     return true;
+                case "hasPermissionManifest":
+                    handleHasPermissionManifest(callbackContext);
+                    return true;
                 default:
                     callbackContext.error("Unknown action: " + action);
                     return false;
@@ -82,6 +85,34 @@ public class CordovaApkInstaller extends CordovaPlugin {
             }
 
             callbackContext.success();
+        });
+    }
+
+    private void handleHasPermissionManifest(CallbackContext callbackContext){
+        cordova.getThreadPool().execute(() -> {
+            try {
+                Context context = this.cordova.getContext();
+                String targetPermission = "android.permission.REQUEST_INSTALL_PACKAGES";
+
+                String[] requestedPermissions = context.getPackageManager()
+                    .getPackageInfo(context.getPackageName(), PackageManager.GET_PERMISSIONS)
+                    .requestedPermissions;
+
+                boolean declared = false;
+                if (requestedPermissions != null) {
+                    for (String perm : requestedPermissions) {
+                        if (targetPermission.equals(perm)) {
+                            declared = true;
+                            break;
+                        }
+                    }
+                }
+
+                callbackContext.success(declared ? "true" : "false");
+            } catch (Exception e) {
+                LOG.e("CordovaApkInstaller", "Manifest permission check failed", e);
+                callbackContext.error("Manifest check failed: " + e.getClass().getSimpleName() + " - " + e.getMessage());
+            }
         });
     }
 }
