@@ -527,7 +527,7 @@ export class SdCliCordova {
   //   }
   // }
 
-  static async runWebviewOnDeviceAsync(opt: {
+  /*static async runWebviewOnDeviceAsync(opt: {
     platform: string;
     package: string;
     url?: string;
@@ -558,5 +558,44 @@ export class SdCliCordova {
     }
 
     await SdCliCordova._execAsync(`npx cordova run ${opt.platform} --device`, cordovaPath);
+  }*/
+
+  static async runWebviewOnDeviceAsync(opt: {
+    platform: string;
+    package: string;
+    url?: string;
+  }): Promise<void> {
+    const projNpmConf = FsUtils.readJson(path.resolve(process.cwd(), "package.json")) as INpmConfig;
+    const allPkgPaths = projNpmConf.workspaces!.mapMany((item) =>
+      FsUtils.glob(PathUtils.posix(process.cwd(), item)),
+    );
+
+    const pkgPath = allPkgPaths.single((item) => item.endsWith(opt.package))!;
+    const cordovaPath = path.resolve(pkgPath, ".cordova");
+
+    if (opt.url !== undefined) {
+      FsUtils.remove(path.resolve(cordovaPath, "www"));
+      FsUtils.mkdirs(path.resolve(cordovaPath, "www"));
+      FsUtils.writeFile(
+        path.resolve(cordovaPath, "www/index.html"),
+        `
+'${opt.url}'로 이동중...
+<script>
+  setTimeout(function () {
+    window.location.href = "${opt.url.replace(/\/$/, "")}/${opt.package}/cordova/";
+  }, 3000);
+</script>`.trim(),
+      );
+    }
+
+    await SdCliCordova._execAsync(`npx cordova build ${opt.platform} --release`, cordovaPath);
+    await SdCliCordova._execAsync(
+      `adb install -r platforms/android/app/build/outputs/apk/release/app-release.apk`,
+      cordovaPath,
+    );
+    await SdCliCordova._execAsync(
+      `adb shell monkey -p kr.co.simplysm.js_auto_wms.client_mobile -c android.intent.category.LAUNCHER 1`,
+      cordovaPath,
+    );
   }
 }

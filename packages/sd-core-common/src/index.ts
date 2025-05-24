@@ -11,6 +11,7 @@ export * from "./errors/timeout.error";
 export * from "./extensions/array.extensions";
 import "./extensions/map.extensions";
 import "./extensions/set.extensions";
+export * from "./template-strings";
 export * from "./types/date-only";
 export * from "./types/date-time";
 export * from "./types/deep-partial";

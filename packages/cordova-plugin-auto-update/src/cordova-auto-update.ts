@@ -1,41 +1,60 @@
 /// <reference types="@simplysm/types-cordova-plugin-ionic-webview"/>
 
 import { CordovaFileSystem } from "@simplysm/cordova-plugin-file-system";
-import { NetUtils } from "@simplysm/sd-core-common";
+import { html, NetUtils } from "@simplysm/sd-core-common";
 import { SdAutoUpdateServiceClient, SdServiceClient } from "@simplysm/sd-service-client";
 import path from "path";
 import semver from "semver";
+import { CordovaApkInstaller } from "./cordova-apk-installer";
 
 export abstract class CordovaAutoUpdate {
-  private static async _ensureCanInstallApk(): Promise<boolean> {
-    return await new Promise((resolve) => {
-      cordova.exec(
-        (result: string) => resolve(result === "true"),
-        () => resolve(false),
-        "ApkInstaller",
-        "canRequestPackageInstalls",
-        [],
-      );
-    });
+  private static async _checkPermissionAsync(log: (messageHtml: string) => void) {
+    log(`권한 확인 중...`);
+
+    if (!navigator.userAgent.toLowerCase().includes("android")) {
+      log(`안드로이드만 지원합니다.`);
+      return false;
+    }
+
+    const hasPerm = await CordovaApkInstaller.requestPermission();
+    if (!hasPerm) {
+      log(html`
+        설치권한이 설정되어야합니다.
+        <br />
+        <br />
+        <button
+          onclick="location.reload()"
+          style="all: unset; color: blue; text-decoration: underline;"
+        >
+          재시도
+        </button>
+      `);
+      return false;
+    }
+
+    return true;
   }
 
-  private static async _openUnknownSourceSettings(): Promise<void> {
-    return await new Promise((resolve, reject) => {
-      cordova.exec(resolve, reject, "ApkInstaller", "openUnknownAppSourcesSettings", []);
-    });
-  }
-
-  private static async _installApkFromPath(apkPath: string): Promise<void> {
-    await new Promise<void>((resolve, reject) => {
-      cordova.exec(resolve, reject, "ApkInstaller", "installApk", [apkPath]);
-    });
-  }
-
-  private static async _requestPermission() {
-    const canInstall = await this._ensureCanInstallApk();
-    if (canInstall) return true;
-
-    await this._openUnknownSourceSettings();
+  private static async _installApkAsync(log: (messageHtml: string) => void, apkFilePath: string) {
+    log(html`
+      최신버전을 설치한 후 재시작하세요.
+      <br />
+      <br />
+      <button
+        onclick="location.reload()"
+        style="all: unset; color: blue; text-decoration: underline;"
+      >
+        재시도
+      </button>
+      &nbsp;&nbsp;
+      <button
+        onclick="navigator.app.exitApp();"
+        style="all: unset; color: blue; text-decoration: underline;"
+      >
+        종료
+      </button>
+    `);
+    await CordovaApkInstaller.installApkFromPath(apkFilePath);
     return false;
   }
 
@@ -44,16 +63,7 @@ export abstract class CordovaAutoUpdate {
     serviceClient: SdServiceClient;
   }) {
     try {
-      opt.log(`권한 확인 중...`);
-
-      if (!navigator.userAgent.toLowerCase().includes("android")) {
-        throw new Error("안드로이드만 지원합니다.");
-      }
-
-      const hasPerm = await this._requestPermission();
-      if (!hasPerm) {
-        return false;
-      }
+      if (!(await this._checkPermissionAsync(opt.log))) return false;
 
       opt.log(`최신버전 확인 중...`);
 
@@ -84,8 +94,7 @@ export abstract class CordovaAutoUpdate {
       const apkFilePath = path.join(storagePath, `latest.apk`);
       await CordovaFileSystem.writeFileAsync(apkFilePath, buffer);
 
-      opt.log(`최신버전을 설치한 후 재시작하세요.`);
-      await this._installApkFromPath(apkFilePath);
+      await this._installApkAsync(opt.log, apkFilePath);
       return false;
     } catch (err) {
       opt.log(`업데이트 중 오류 발생: ${err instanceof Error ? err.message : String(err)}`);
@@ -98,9 +107,7 @@ export abstract class CordovaAutoUpdate {
     dirPath: string;
   }) {
     try {
-      if (!navigator.userAgent.toLowerCase().includes("android")) {
-        throw new Error("안드로이드만 지원합니다.");
-      }
+      if (!(await this._checkPermissionAsync(opt.log))) return false;
 
       opt.log(`최신버전 확인 중...`);
 
@@ -128,8 +135,8 @@ export abstract class CordovaAutoUpdate {
         return true;
       }
 
-      opt.log(`최신버전을 설치한 후 재시작하세요.`);
-      await this._installApkFromPath(path.join(externalPath, opt.dirPath, latestVersion + ".apk"));
+      const apkFilePath = path.join(externalPath, opt.dirPath, latestVersion + ".apk");
+      await this._installApkAsync(opt.log, apkFilePath);
       return false;
     } catch (err) {
       opt.log(`업데이트 중 오류 발생: ${err instanceof Error ? err.message : String(err)}`);

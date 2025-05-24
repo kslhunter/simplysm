@@ -1,16 +1,19 @@
 import { Signal } from "@angular/core";
-import { NumberUtils } from "@simplysm/sd-core-common";
+import { html, NumberUtils } from "@simplysm/sd-core-common";
 import { $effect } from "../../../utils/bindings/$effect";
 import { SdSheetDomAccessor } from "./sd-sheet-dom-accessor";
 
 export class SdSheetSelectRowIndicatorRenderer<T> {
-  constructor(private _options: {
-    domAccessor: SdSheetDomAccessor
-    selectedItems: Signal<T[]>;
-    displayItems: Signal<T[]>;
-  }) {
+  constructor(
+    private _options: {
+      domAccessor: SdSheetDomAccessor;
+      selectedItems: Signal<T[]>;
+      displayItems: Signal<T[]>;
+    },
+  ) {
     $effect(() => {
-      const selectRowIndicatorContainerEl = this._options.domAccessor.getSelectRowIndicatorContainer();
+      const selectRowIndicatorContainerEl =
+        this._options.domAccessor.getSelectRowIndicatorContainer();
 
       if (this._options.selectedItems().length <= 0) {
         selectRowIndicatorContainerEl.innerHTML = "";
@@ -18,23 +21,25 @@ export class SdSheetSelectRowIndicatorRenderer<T> {
         return;
       }
 
-      const selectedTrInfos = this._options.selectedItems()
+      const selectedTrInfos = this._options
+        .selectedItems()
         .map((item) => {
           const r = this._options.displayItems().indexOf(item);
           return this._getTrInfo(r);
         })
         .filterExists();
 
-      let html = "";
+      let indicatorHtml = "";
       for (const selectedTrInfo of selectedTrInfos) {
         let styleText = `top: ${selectedTrInfo.top}px;`;
         styleText += `height: ${selectedTrInfo.height - 1}px;`;
         styleText += `width: ${selectedTrInfo.width - 1}px;`;
 
-        html += /* language="HTML" */ `
-          <div class='_select-row-indicator' style="${styleText}" r="${selectedTrInfo.r}"></div>`.trim();
+        indicatorHtml += html`
+          <div class="_select-row-indicator" style="${styleText}" r="${selectedTrInfo.r}"></div>
+        `.trim();
       }
-      selectRowIndicatorContainerEl.innerHTML = html;
+      selectRowIndicatorContainerEl.innerHTML = indicatorHtml;
       selectRowIndicatorContainerEl.style.display = "block";
     });
   }

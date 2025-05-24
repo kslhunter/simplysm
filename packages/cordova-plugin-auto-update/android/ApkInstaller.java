@@ -65,7 +65,13 @@ public class ApkInstaller extends CordovaPlugin {
                 session.fsync(out);
             }
 
-            session.commit(null);
+            Intent emptyIntent = new Intent();
+            PendingIntent pi = PendingIntent.getActivity(
+                context, 0, emptyIntent, PendingIntent.FLAG_IMMUTABLE
+            );
+            session.commit(pi.getIntentSender());
+
+            session.close(); // 리소스 정리
 
             callbackContext.success("Installation started");
         } catch (Exception e) {

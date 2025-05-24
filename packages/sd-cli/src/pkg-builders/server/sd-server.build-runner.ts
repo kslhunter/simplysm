@@ -1,6 +1,6 @@
 import { FsUtils, SdLogger, TNormPath } from "@simplysm/sd-core-node";
 import path from "path";
-import { StringUtils } from "@simplysm/sd-core-common";
+import { javascript, StringUtils } from "@simplysm/sd-core-common";
 import { SdServerBundler } from "./sd-server.bundler";
 import { INpmConfig, ITsConfig } from "../../types/common-configs.types";
 import { BuildRunnerBase, IBuildRunnerRunResult } from "../commons/build-runner.base";
@@ -40,9 +40,9 @@ export class SdServerBuildRunner extends BuildRunnerBase<"server"> {
         entryPoints: tsConfig.files
           ? tsConfig.files.map((item) => path.resolve(this._pkgPath, item))
           : [
-            path.resolve(this._pkgPath, "src/main.ts"),
-            ...FsUtils.glob(path.resolve(this._pkgPath, "src/workers/*.ts")),
-          ],
+              path.resolve(this._pkgPath, "src/main.ts"),
+              ...FsUtils.glob(path.resolve(this._pkgPath, "src/workers/*.ts")),
+            ],
         external: this._extModules.map((item) => item.name),
         watchScopePathSet: this._watchScopePathSet,
       });
@@ -69,10 +69,9 @@ export class SdServerBuildRunner extends BuildRunnerBase<"server"> {
 
     this._debug("GEN package.json...");
     {
-      const projNpmConf = FsUtils.readJson(path.resolve(
-        process.cwd(),
-        "package.json",
-      )) as INpmConfig;
+      const projNpmConf = FsUtils.readJson(
+        path.resolve(process.cwd(), "package.json"),
+      ) as INpmConfig;
       const extModules = await this._getExternalModulesAsync();
 
       const deps = extModules.filter((item) => item.exists).map((item) => item.name);
@@ -96,11 +95,9 @@ export class SdServerBuildRunner extends BuildRunnerBase<"server"> {
 
       distNpmConfig.volta = projNpmConf.volta;
 
-      FsUtils.writeJson(
-        path.resolve(this._pkgPath, "dist/package.json"),
-        distNpmConfig,
-        { space: 2 },
-      );
+      FsUtils.writeJson(path.resolve(this._pkgPath, "dist/package.json"), distNpmConfig, {
+        space: 2,
+      });
     }
 
     this._debug("GEN .yarnrc.yml...");
@@ -143,37 +140,37 @@ Options = UnsafeLegacyRenegotiation`.trim(),
     if (this._pkgConf.pm2) {
       this._debug("GEN pm2.config.cjs...");
 
-      const str = /* language=cjs */ `
-            const cp = require("child_process");
+      const str = javascript`
+        const cp = require("child_process");
 
-            const npmConf = require("./package.json");
+        const npmConf = require("./package.json");
 
-            const pm2Conf = ${JSON.stringify(this._pkgConf.pm2)};
-            const env = ${JSON.stringify(this._pkgConf.env)};
+        const pm2Conf = ${JSON.stringify(this._pkgConf.pm2)};
+        const env = ${JSON.stringify(this._pkgConf.env)};
 
-            module.exports = {
-              name: pm2Conf.name ?? npmConf.name.replace(/@/g, "").replace(/\\//g, "-"),
-              script: "main.js",
-              watch: true,
-              watch_delay: 2000,
-              ignore_watch: [
-                "node_modules",
-                "www",
-                ...pm2Conf.ignoreWatchPaths ?? []
-              ],
-              ...pm2Conf.noInterpreter ? {} : {interpreter: cp.execSync("volta which node").toString().trim()},
-              interpreter_args: "--openssl-config=openssl.cnf",
-              env: {
-                NODE_ENV: "production",
-                TZ: "Asia/Seoul",
-                SD_VERSION: npmConf.version,
-                ...env ?? {}
-              },
-              arrayProcess: "concat",
-              useDelTargetNull: true,
-              exec_mode: pm2Conf.instances != null ? "cluster" : "fork",
-              instances: pm2Conf.instances ?? 1
-            };`
+        module.exports = {
+          name: pm2Conf.name ?? npmConf.name.replace(/@/g, "").replace(/\\//g, "-"),
+          script: "main.js",
+          watch: true,
+          watch_delay: 2000,
+          ignore_watch: [
+            "node_modules",
+            "www",
+            ...pm2Conf.ignoreWatchPaths ?? [],
+          ],
+          ...pm2Conf.noInterpreter ? {} : { interpreter: cp.execSync("volta which node").toString().trim() },
+          interpreter_args: "--openssl-config=openssl.cnf",
+          env: {
+            NODE_ENV: "production",
+            TZ: "Asia/Seoul",
+            SD_VERSION: npmConf.version,
+            ...env ?? {},
+          },
+          arrayProcess: "concat",
+          useDelTargetNull: true,
+          exec_mode: pm2Conf.instances != null ? "cluster" : "fork",
+          instances: pm2Conf.instances ?? 1,
+        };`
         .replaceAll("\n        ", "\n")
         .trim();
 
@@ -185,18 +182,21 @@ Options = UnsafeLegacyRenegotiation`.trim(),
 
       const iisDistPath = path.resolve(this._pkgPath, "dist/web.config");
       const nodeVersion = process.versions.node.substring(1);
-      const serverExeFilePath = this._pkgConf.iis.nodeExeFilePath
-        ?? `%HOMEDRIVE%%HOMEPATH%\\AppData\\Local\\Volta\\tools\\image\\node\\${nodeVersion}\\node.exe`;
+      const serverExeFilePath =
+        this._pkgConf.iis.nodeExeFilePath ??
+        `%HOMEDRIVE%%HOMEPATH%\\AppData\\Local\\Volta\\tools\\image\\node\\${nodeVersion}\\node.exe`;
 
-      FsUtils.writeFile(iisDistPath, `
+      FsUtils.writeFile(
+        iisDistPath,
+        `
 <configuration>
   <appSettings>
     <add key="NODE_ENV" value="production" />
     <add key="TZ" value="Asia/Seoul" />
     <add key="SD_VERSION" value="${npmConf.version}" />
     ${Object.keys(this._pkgConf.env ?? {})
-        .map((key) => `<add key="${key}" value="${this._pkgConf.env![key]}"/>`)
-        .join("\n    ")}
+      .map((key) => `<add key="${key}" value="${this._pkgConf.env![key]}"/>`)
+      .join("\n    ")}
   </appSettings>
   <system.webServer>
     <handlers>
@@ -215,7 +215,8 @@ Options = UnsafeLegacyRenegotiation`.trim(),
     </rewrite>
     <httpErrors errorMode="Detailed" />
   </system.webServer>
-</configuration>`.trim());
+</configuration>`.trim(),
+      );
     }
   }
 
