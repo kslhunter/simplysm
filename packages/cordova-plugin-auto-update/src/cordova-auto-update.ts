@@ -16,32 +16,37 @@ export abstract class CordovaAutoUpdate {
       throw new Error(`안드로이드만 지원합니다.`);
     }
 
-    if (!(await CordovaApkInstaller.hasPermissionManifest())) {
-      const downloadHtml = targetHref != null ? html`
-        <style>
-          ._button {
-            all: unset;
-            color: blue;
-            width: 100%;
-            padding: 10px;
-            line-height: 1.5em;
-            font-size: 20px;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            border-top: 1px solid lightgrey;
-          }
+    if (
+      typeof CordovaApkInstaller === "undefined" ||
+      !(await CordovaApkInstaller.hasPermissionManifest())
+    ) {
+      const downloadHtml =
+        targetHref != null
+          ? html`
+              <style>
+                ._button {
+                  all: unset;
+                  color: blue;
+                  width: 100%;
+                  padding: 10px;
+                  line-height: 1.5em;
+                  font-size: 20px;
+                  position: fixed;
+                  bottom: 0;
+                  left: 0;
+                  border-top: 1px solid lightgrey;
+                }
 
-          button:active {
-            background: lightgrey;
-          }
-        </style>
-        <a class="_button" href="${targetHref}">다운로드</a>
-      ` : "";
+                button:active {
+                  background: lightgrey;
+                }
+              </style>
+              <a class="_button" href="${targetHref}">다운로드</a>
+            `
+          : "";
 
       throw new Error(html`
-        APK파일을 다시 다운로드 받아, 설치해야 합니다.
-        ${downloadHtml}
+        APK파일을 다시 다운로드 받아, 설치해야 합니다. ${downloadHtml}
       `);
     }
 
@@ -152,7 +157,7 @@ export abstract class CordovaAutoUpdate {
       opt.log(`권한 확인 중...`);
       await this._checkPermissionAsync(
         opt.log,
-        opt.serviceClient.serverUrl + serverVersionInfo.downloadPath
+        opt.serviceClient.serverUrl + serverVersionInfo.downloadPath,
       );
 
       opt.log(`최신버전 파일 다운로드중...`);
