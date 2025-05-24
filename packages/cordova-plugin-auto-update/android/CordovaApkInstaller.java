@@ -1,4 +1,4 @@
-package kr.co.simplysm.cordova;
+package kr.co.simplysm.cordova.apkinstaller;
 
 import android.content.Context;
 import android.content.Intent;

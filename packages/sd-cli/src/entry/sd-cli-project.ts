@@ -1,7 +1,7 @@
 import path from "path";
 import { FsUtils, PathUtils, SdLogger, SdProcess } from "@simplysm/sd-core-node";
 import semver from "semver";
-import { NeverEntryError, StringUtils, Wait, XmlConvert } from "@simplysm/sd-core-common";
+import { NeverEntryError, StringUtils, Wait } from "@simplysm/sd-core-common";
 import { SdStorage } from "@simplysm/sd-storage";
 import { SdCliLocalUpdate } from "./sd-cli-local-update";
 import { SdMultiBuildRunner } from "../pkg-builders/sd-multi.build-runner";
@@ -66,7 +66,7 @@ export class SdCliProject {
         cmd: "watch",
         pkgPath,
         projConf: projConf,
-        workspaces: projNpmConf.workspaces!
+        workspaces: projNpmConf.workspaces!,
       });
     });
   }
@@ -88,7 +88,8 @@ export class SdCliProject {
     if (!projNpmConf.workspaces) {
       throw new Error("프로젝트 package.json에 workspaces가 설정되어있지 않습니다.");
     }
-    const allPkgPaths = projNpmConf.workspaces.mapMany((item) => FsUtils.glob(item))
+    const allPkgPaths = projNpmConf.workspaces
+      .mapMany((item) => FsUtils.glob(item))
       .map((item) => PathUtils.norm(item));
     let pkgPaths = allPkgPaths.filter((pkgPath) => path.basename(pkgPath) in projConf.packages);
     if (opt.packages) {
@@ -106,7 +107,7 @@ export class SdCliProject {
         cmd: "build",
         pkgPath,
         projConf: projConf,
-        workspaces: projNpmConf.workspaces!
+        workspaces: projNpmConf.workspaces!,
       });
     });
     this._logging(messages.mapMany(), logger);
@@ -129,8 +130,7 @@ export class SdCliProject {
     if (opt.noBuild) {
       logger.warn("빌드하지 않고, 배포하는것은 상당히 위험합니다.");
       await this._waitSecMessageAsync("프로세스를 중지하려면, 'CTRL+C'를 누르세요.", 5);
-    }
-    else {
+    } else {
       // GIT 사용중일 경우, 커밋되지 않은 수정사항이 있는지 확인
       if (FsUtils.exists(path.resolve(process.cwd(), ".git"))) {
         logger.debug("GIT 커밋여부 확인...");
@@ -168,13 +168,12 @@ export class SdCliProject {
             cmd: "build",
             pkgPath,
             projConf: projConf,
-            workspaces: projNpmConf.workspaces!
+            workspaces: projNpmConf.workspaces!,
           });
         });
 
         this._logging(messages.mapMany(), logger);
-      }
-      catch (err) {
+      } catch (err) {
         await SdProcess.spawnAsync("git checkout .");
         throw err;
       }
@@ -184,7 +183,9 @@ export class SdCliProject {
         logger.debug("새 버전 커밋 및 TAG 생성...");
         await SdProcess.spawnAsync("git add .");
         await SdProcess.spawnAsync(`git commit -m "v${projNpmConf.version}"`);
-        await SdProcess.spawnAsync(`git tag -a "v${projNpmConf.version}" -m "v${projNpmConf.version}"`);
+        await SdProcess.spawnAsync(
+          `git tag -a "v${projNpmConf.version}" -m "v${projNpmConf.version}"`,
+        );
 
         logger.debug("새 버전 푸쉬...");
         await SdProcess.spawnAsync("git push");
@@ -219,8 +220,7 @@ export class SdCliProject {
             return process.env[envName] ?? item;
           });
           await SdProcess.spawnAsync(script);
-        }
-        else {
+        } else {
           throw new NeverEntryError();
         }
       }
@@ -235,8 +235,7 @@ export class SdCliProject {
   ): Promise<void> {
     if (pkgPubConf === "npm") {
       await SdProcess.spawnAsync("yarn npm publish --access public", { cwd: pkgPath });
-    }
-    else if (pkgPubConf?.type === "local-directory") {
+    } else if (pkgPubConf?.type === "local-directory") {
       const pkgNpmConf = FsUtils.readJson(path.resolve(pkgPath, "package.json")) as INpmConfig;
 
       const targetRootPath = pkgPubConf.path.replace(/%([^%]*)%/g, (item) => {
@@ -260,22 +259,24 @@ export class SdCliProject {
         const targetPath = PathUtils.posix(targetRootPath, relativeFilePath);
         FsUtils.copy(filePath, targetPath);
       }
-    }
-    else if (
+    } else if (
       pkgPubConf?.type === "ftp" ||
       pkgPubConf?.type === "ftps" ||
       pkgPubConf?.type === "sftp"
     ) {
-      await SdStorage.connectAsync(pkgPubConf.type, {
-        host: pkgPubConf.host,
-        port: pkgPubConf.port,
-        user: pkgPubConf.user,
-        pass: pkgPubConf.pass,
-      }, async storage => {
-        await storage.uploadDirAsync(path.resolve(pkgPath, "dist"), pkgPubConf.path ?? "/");
-      });
-    }
-    else {
+      await SdStorage.connectAsync(
+        pkgPubConf.type,
+        {
+          host: pkgPubConf.host,
+          port: pkgPubConf.port,
+          user: pkgPubConf.user,
+          pass: pkgPubConf.pass,
+        },
+        async (storage) => {
+          await storage.uploadDirAsync(path.resolve(pkgPath, "dist"), pkgPubConf.path ?? "/");
+        },
+      );
+    } else {
       throw new NeverEntryError();
     }
   }
@@ -334,13 +335,13 @@ export class SdCliProject {
 
       if (FsUtils.exists(path.resolve(pkgPath, "plugin.xml"))) {
         const cordovaPluginConfFilePath = path.resolve(pkgPath, "plugin.xml");
-        const cordovaPluginConfXml = XmlConvert.parse(FsUtils.readFile(cordovaPluginConfFilePath));
-        cordovaPluginConfXml.plugin.$.version = newVersion;
-
-        FsUtils.writeFile(
-          cordovaPluginConfFilePath,
-          XmlConvert.stringify(cordovaPluginConfXml, { format: true }),
+        const cordovaPluginConfContent = FsUtils.readFile(cordovaPluginConfFilePath);
+        const newCordovaPluginConfContent = cordovaPluginConfContent.replace(
+          /(<plugin\s[^>]*\bversion\s*=\s*")[^"]+(")/,
+          `$1${newVersion}$2`,
         );
+
+        FsUtils.writeFile(cordovaPluginConfFilePath, newCordovaPluginConfContent);
       }
     }
   }

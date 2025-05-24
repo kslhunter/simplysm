@@ -1,4 +1,4 @@
-package kr.co.simplysm.cordova;
+package kr.co.simplysm.cordova.fs;
 
 import android.Manifest;
 import android.content.Context;
@@ -197,7 +197,7 @@ public class CordovaFileSystem extends CordovaPlugin {
 
         cordova.getThreadPool().execute(() -> {
             Context context = cordova.getContext();
-            String authority = context.getPackageName() + ".fileprovider";
+            String authority = context.getPackageName() + ".fs.provider";
 
             try {
                 Uri fileUri = FileProvider.getUriForFile(context, authority, file);

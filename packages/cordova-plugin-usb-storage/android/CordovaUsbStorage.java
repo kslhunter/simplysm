@@ -2,7 +2,7 @@
  * 참고코드: https://github.com/magnusja/libaums/blob/cc71b9654ac2ea0ee713f06b26d9eb01fa88b515/androidtests/src/androidTest/java/me/jahnen/libaums/core/androidtests/LibAumsTest.kt#L14
  */
 
-package kr.co.simplysm.cordova;
+package kr.co.simplysm.cordova.usbstorage;
 
 import android.annotation.SuppressLint;
 import android.app.PendingIntent;
@@ -34,7 +34,7 @@ import me.jahnen.libaums.core.fs.UsbFile;
 import me.jahnen.libaums.core.fs.UsbFileInputStream;
 
 public class CordovaUsbStorage extends CordovaPlugin {
-  private static final String ACTION_USB_PERMISSION = "kr.co.simplysm.usb-storage.USB_PERMISSION";
+  private static final String ACTION_USB_PERMISSION = "kr.co.simplysm.cordova.usbstorage.USB_PERMISSION";
 
   public Context context;
 
