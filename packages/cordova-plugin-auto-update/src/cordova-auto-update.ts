@@ -110,28 +110,7 @@ export abstract class CordovaAutoUpdate {
   }
 
   private static _getErrorMessage(err: any) {
-    return html`
-      업데이트 중 오류 발생: ${err instanceof Error ? err.message : String(err)}
-      <style>
-        button {
-          all: unset;
-          color: blue;
-          width: 100%;
-          padding: 10px;
-          line-height: 1.5em;
-          font-size: 20px;
-          position: fixed;
-          bottom: 0;
-          left: 0;
-          border-top: 1px solid lightgrey;
-        }
-
-        button:active {
-          background: lightgrey;
-        }
-      </style>
-      <button onclick="location.reload()">재시도</button>
-    `;
+    return `업데이트 중 오류 발생: ${err instanceof Error ? err.message : String(err)}`;
   }
 
   static async runAsync(opt: {
