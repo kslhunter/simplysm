@@ -12,12 +12,12 @@ import org.apache.cordova.LOG;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-public class ApkInstaller extends CordovaPlugin {
+public class CordovaApkInstaller extends CordovaPlugin {
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) {
         try {
-            LOG.d("ApkInstaller", "Executing action: " + action);
+            LOG.d("CordovaApkInstaller", "Executing action: " + action);
 
             switch (action) {
                 case "install":
@@ -34,7 +34,7 @@ public class ApkInstaller extends CordovaPlugin {
                     return false;
             }
         } catch (Exception e) {
-            LOG.e("ApkInstaller", "Error occurred while executing action: " + action, e);
+            LOG.e("CordovaApkInstaller", "Error occurred while executing action: " + action, e);
             callbackContext.error("Error: " + e.getClass().getSimpleName() + " - " + e.getMessage());
             return false;
         }
@@ -57,7 +57,7 @@ public class ApkInstaller extends CordovaPlugin {
                 context.startActivity(intent);
                 callbackContext.success();
             } catch (Exception e) {
-                LOG.e("ApkInstaller", "install failed", e);
+                LOG.e("CordovaApkInstaller", "install failed", e);
                 callbackContext.error("Install failed: " + e.getClass().getSimpleName() + " - " + e.getMessage());
             }
         });
