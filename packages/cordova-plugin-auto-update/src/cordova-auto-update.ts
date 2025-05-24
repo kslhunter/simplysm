@@ -12,7 +12,6 @@ export abstract class CordovaAutoUpdate {
     const downloadHtml =
       targetHref != null
         ? html`
-            APK파일을 다시 다운로드 받아, 설치해야 합니다.
             <style>
               ._button {
                 all: unset;
