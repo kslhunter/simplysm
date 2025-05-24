@@ -55,10 +55,10 @@ export abstract class CordovaAutoUpdate {
 
     try {
       if (!(await CordovaApkInstaller.hasPermissionManifest())) {
-        this._throwAboutReinstall();
+        this._throwAboutReinstall(targetHref);
       }
     } catch {
-      this._throwAboutReinstall();
+      this._throwAboutReinstall(targetHref);
     }
 
     const hasPerm = await CordovaApkInstaller.hasPermission();
