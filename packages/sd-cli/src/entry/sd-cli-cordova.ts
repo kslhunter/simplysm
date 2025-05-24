@@ -527,7 +527,7 @@ export class SdCliCordova {
   //   }
   // }
 
-  /*static async runWebviewOnDeviceAsync(opt: {
+  static async runWebviewOnDeviceAsync(opt: {
     platform: string;
     package: string;
     url?: string;
@@ -558,9 +558,9 @@ export class SdCliCordova {
     }
 
     await SdCliCordova._execAsync(`npx cordova run ${opt.platform} --device`, cordovaPath);
-  }*/
+  }
 
-  static async runWebviewOnDeviceAsync(opt: {
+  /*static async runWebviewOnDeviceAsync(opt: {
     platform: string;
     package: string;
     url?: string;
@@ -597,5 +597,5 @@ export class SdCliCordova {
       `adb shell monkey -p kr.co.simplysm.js_auto_wms.client_mobile -c android.intent.category.LAUNCHER 1`,
       cordovaPath,
     );
-  }
+  }*/
 }
