@@ -149,7 +149,7 @@ Options = UnsafeLegacyRenegotiation`.trim(),
         const env = ${JSON.stringify(this._pkgConf.env)};
 
         module.exports = {
-          name: pm2Conf.name ?? npmConf.name.replace(/@/g, "").replace(/\\//g, "-"),
+          name: pm2Conf.name ?? npmConf.name.replace(/\@/g, "").replace(/\\\//g, "-"),
           script: "main.js",
           watch: true,
           watch_delay: 2000,
