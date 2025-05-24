@@ -2,7 +2,7 @@ import * as path from "path";
 import { FsUtils, PathUtils, SdLogger, SdProcess } from "@simplysm/sd-core-node";
 import { INpmConfig } from "../types/common-configs.types";
 import { ISdClientBuilderCordovaConfig } from "../types/config.types";
-import { XmlConvert } from "@simplysm/sd-core-common";
+import { SdZip, XmlConvert } from "@simplysm/sd-core-common";
 
 export class SdCliCordova {
   // 상수 정의
@@ -437,18 +437,20 @@ export class SdCliCordova {
       ),
     );
 
-    // 결과물 복사 및 ZIP 파일 생성
-    for (const platform of Object.keys(this._opt.config.platform ?? {})) {
-      this._processBuildOutput(cordovaPath, outPath, platform, buildType);
-    }
+    // 결과물 복사 및 ZIP 파일 생성 - 병렬 처리
+    await Promise.all(
+      Object.keys(this._opt.config.platform ?? {}).map(async (platform) => {
+        await this._processBuildOutputAsync(cordovaPath, outPath, platform, buildType);
+      }),
+    );
   }
 
-  private _processBuildOutput(
+  private async _processBuildOutputAsync(
     cordovaPath: string,
     outPath: string,
     platform: string,
     buildType: string,
-  ) {
+  ): Promise<void> {
     const targetOutPath = path.resolve(outPath, platform);
 
     // 결과물 복사: ANDROID
@@ -457,7 +459,7 @@ export class SdCliCordova {
     }
 
     // 자동업데이트를 위한 파일 생성
-    // await this._createUpdateZipAsync(cordovaPath, outPath, platform);
+    await this._createUpdateZipAsync(cordovaPath, outPath, platform);
   }
 
   private _copyAndroidBuildOutput(cordovaPath: string, targetOutPath: string, buildType: string) {
@@ -484,40 +486,40 @@ export class SdCliCordova {
     );
   }
 
-  // private async _createUpdateZipAsync(
-  //   cordovaPath: string,
-  //   outPath: string,
-  //   platform: string,
-  // ): Promise<void> {
-  //   const zip = new SdZip();
-  //   const wwwPath = path.resolve(cordovaPath, this.WWW_DIR_NAME);
-  //   const platformWwwPath = path.resolve(
-  //     cordovaPath,
-  //     this.PLATFORMS_DIR_NAME,
-  //     platform,
-  //     "platform_www",
-  //   );
-  //
-  //   this._addFilesToZip(zip, wwwPath);
-  //   this._addFilesToZip(zip, platformWwwPath);
-  //
-  //   // ZIP 파일 생성
-  //   const updateDirPath = path.resolve(outPath, platform, "updates");
-  //   FsUtils.mkdirs(updateDirPath);
-  //   FsUtils.writeFile(
-  //     path.resolve(updateDirPath, this._npmConfig.version + ".zip"),
-  //     await zip.compressAsync(),
-  //   );
-  // }
-  //
-  // private _addFilesToZip(zip: SdZip, dirPath: string) {
-  //   const files = FsUtils.glob(path.resolve(dirPath, "**/*"), { nodir: true });
-  //   for (const file of files) {
-  //     const relFilePath = path.relative(dirPath, file);
-  //     const fileBuffer = FsUtils.readFileBuffer(file);
-  //     zip.write(relFilePath, fileBuffer);
-  //   }
-  // }
+  private async _createUpdateZipAsync(
+    cordovaPath: string,
+    outPath: string,
+    platform: string,
+  ): Promise<void> {
+    const zip = new SdZip();
+    const wwwPath = path.resolve(cordovaPath, this.WWW_DIR_NAME);
+    const platformWwwPath = path.resolve(
+      cordovaPath,
+      this.PLATFORMS_DIR_NAME,
+      platform,
+      "platform_www",
+    );
+
+    this._addFilesToZip(zip, wwwPath);
+    this._addFilesToZip(zip, platformWwwPath);
+
+    // ZIP 파일 생성
+    const updateDirPath = path.resolve(outPath, platform, "updates");
+    FsUtils.mkdirs(updateDirPath);
+    FsUtils.writeFile(
+      path.resolve(updateDirPath, this._npmConfig.version + ".zip"),
+      await zip.compressAsync(),
+    );
+  }
+
+  private _addFilesToZip(zip: SdZip, dirPath: string) {
+    const files = FsUtils.glob(path.resolve(dirPath, "**/*"), { nodir: true });
+    for (const file of files) {
+      const relFilePath = path.relative(dirPath, file);
+      const fileBuffer = FsUtils.readFileBuffer(file);
+      zip.write(relFilePath, fileBuffer);
+    }
+  }
 
   static async runWebviewOnDeviceAsync(opt: {
     platform: string;
@@ -551,43 +553,4 @@ export class SdCliCordova {
 
     await SdCliCordova._execAsync(`npx cordova run ${opt.platform} --device`, cordovaPath);
   }
-
-  /*static async runWebviewOnDeviceAsync(opt: {
-    platform: string;
-    package: string;
-    url?: string;
-  }): Promise<void> {
-    const projNpmConf = FsUtils.readJson(path.resolve(process.cwd(), "package.json")) as INpmConfig;
-    const allPkgPaths = projNpmConf.workspaces!.mapMany((item) =>
-      FsUtils.glob(PathUtils.posix(process.cwd(), item)),
-    );
-
-    const pkgPath = allPkgPaths.single((item) => item.endsWith(opt.package))!;
-    const cordovaPath = path.resolve(pkgPath, ".cordova");
-
-    if (opt.url !== undefined) {
-      FsUtils.remove(path.resolve(cordovaPath, "www"));
-      FsUtils.mkdirs(path.resolve(cordovaPath, "www"));
-      FsUtils.writeFile(
-        path.resolve(cordovaPath, "www/index.html"),
-        `
-'${opt.url}'로 이동중...
-<script>
-  setTimeout(function () {
-    window.location.href = "${opt.url.replace(/\/$/, "")}/${opt.package}/cordova/";
-  }, 3000);
-</script>`.trim(),
-      );
-    }
-
-    await SdCliCordova._execAsync(`npx cordova build ${opt.platform} --release`, cordovaPath);
-    await SdCliCordova._execAsync(
-      `adb install -r platforms/android/app/build/outputs/apk/release/app-release.apk`,
-      cordovaPath,
-    );
-    await SdCliCordova._execAsync(
-      `adb shell monkey -p kr.co.simplysm.js_auto_wms.client_mobile -c android.intent.category.LAUNCHER 1`,
-      cordovaPath,
-    );
-  }*/
 }
