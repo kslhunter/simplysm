@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/cordova-test",
-  "version": "12.10.28",
+  "version": "12.10.29",
   "description": "Simplysm Cordova Test",
   "author": "심플리즘",
   "repository": {
@@ -17,11 +17,11 @@
     "@angular/core": "^19.2.13",
     "@angular/platform-browser": "^19.2.13",
     "@angular/platform-browser-dynamic": "^19.2.13",
-    "@simplysm/cordova-plugin-file-system": "12.10.28",
-    "@simplysm/sd-angular": "12.10.28",
-    "@simplysm/sd-core-browser": "12.10.28",
-    "@simplysm/sd-core-common": "12.10.28",
-    "@simplysm/sd-service-client": "12.10.28",
+    "@simplysm/cordova-plugin-file-system": "12.10.29",
+    "@simplysm/sd-angular": "12.10.29",
+    "@simplysm/sd-core-browser": "12.10.29",
+    "@simplysm/sd-core-common": "12.10.29",
+    "@simplysm/sd-service-client": "12.10.29",
     "rxjs": "^7.8.2",
     "zone.js": "~0.15.1"
   }
