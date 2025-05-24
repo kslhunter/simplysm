@@ -110,7 +110,7 @@ export abstract class CordovaAutoUpdate {
   }
 
   private static _getErrorMessage(err: any) {
-    return `업데이트 중 오류 발생: ${err instanceof Error ? err.message : String(err)}`;
+    return html`업데이트 중 오류 발생:<br/> ${err instanceof Error ? err.message : String(err)}`;
   }
 
   static async runAsync(opt: {

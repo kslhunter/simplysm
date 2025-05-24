@@ -5,7 +5,15 @@ import { FsUtils } from "@simplysm/sd-core-node";
 import { SdServiceServerConfUtils } from "../utils/sd-service-server-conf.utils";
 
 export class SdAutoUpdateService extends SdServiceBase {
-  getLastVersion(platform: string): { version: string; downloadPath: string } | undefined {
+  getLastVersion(
+    platform: string,
+    apk?: boolean,
+  ):
+    | {
+        version: string;
+        downloadPath: string;
+      }
+    | undefined {
     const clientName = this.request!.clientName;
 
     const clientPath = SdServiceServerConfUtils.getClientPath(
@@ -24,7 +32,11 @@ export class SdAutoUpdateService extends SdServiceBase {
       }))
       .filter((item) => {
         if (platform === "android") {
-          return item.extName === ".apk" && /^[0-9.]*$/.test(item.version);
+          if (apk) {
+            return item.extName === ".apk" && /^[0-9.]*$/.test(item.version);
+          } else {
+            return item.extName === ".zip" && /^[0-9.]*$/.test(item.version);
+          }
         } else {
           return item.extName === ".exe" && /^[0-9.]*$/.test(item.version);
         }

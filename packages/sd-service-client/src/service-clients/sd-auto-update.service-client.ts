@@ -8,6 +8,6 @@ export class SdAutoUpdateServiceClient {
     version: string;
     downloadPath: string;
   } | undefined> {
-    return await this._client.sendAsync("SdAutoUpdateService", "getLastVersion", [platform]);
+    return await this._client.sendAsync("SdAutoUpdateService", "getLastVersion", [platform, true]);
   }
 }
