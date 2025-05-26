@@ -76,18 +76,18 @@ import { FormatPipe } from "../../pipes/format.pipe";
       </ng-template>
 
       <ng-template #modalBottom>
-        @let _dataInfo = viewModel().getDataInfo();
-        @if (_dataInfo.lastModifiedDateTime || _dataInfo.lastModifiedUserName) {
+        @let _dataInfo = viewModel().dataInfo();
+        @if (_dataInfo.lastModifiedAt || _dataInfo.lastModifiedBy) {
           <div class="bg-theme-grey-lightest tx-right p-sm-default">
             최종수정:
-            {{ _dataInfo.lastModifiedDateTime! | format: "yyyy-MM-dd HH:mm" }}
-            ({{ _dataInfo.lastModifiedUserName }})
+            {{ _dataInfo.lastModifiedAt! | format: "yyyy-MM-dd HH:mm" }}
+            ({{ _dataInfo.lastModifiedBy }})
           </div>
         }
 
         @if (hasPerm("edit")) {
           <div class="p-sm-default flex-row">
-            @if (!_dataInfo.isNew && viewModel().toggleDeleteAsync) {
+            @if (!_dataInfo.isNew && viewModel().toggleDelete) {
               <div>
                 @if (!_dataInfo.isDeleted) {
                   <sd-button theme="danger" inline (click)="onToggleDeleteButtonClick(true)">
@@ -184,7 +184,7 @@ export class SdDataDetailControl<T extends object> {
 
     this.busyCount.update((v) => v + 1);
     await this._sdToast.try(async () => {
-      const result = await this.viewModel().toggleDeleteAsync?.(del);
+      const result = await this.viewModel().toggleDelete?.(del);
       if (!result) return;
 
       this._sdToast.success(`${del ? "삭제" : "복구"}되었습니다.`);
@@ -211,7 +211,7 @@ export class SdDataDetailControl<T extends object> {
 
     this.busyCount.update((v) => v + 1);
     await this._sdToast.try(async () => {
-      const result = await this.viewModel().submitAsync();
+      const result = await this.viewModel().submit();
       if (!result) return;
 
       this._sdToast.success("저장되었습니다.");
@@ -226,16 +226,18 @@ export interface ISdDataDetailViewModel<T extends object> {
 
   data: WritableSignal<T>;
 
+  dataInfo: Signal<ISdDetailDataInfo>;
+
   loadData(): Promise<T> | T;
 
-  getDataInfo(): {
-    isNew: boolean;
-    isDeleted?: boolean;
-    lastModifiedDateTime?: DateTime;
-    lastModifiedUserName?: string;
-  };
+  toggleDelete?(del: boolean): Promise<boolean> | boolean;
 
-  toggleDeleteAsync?(del: boolean): Promise<boolean>;
+  submit(): Promise<boolean> | boolean;
+}
 
-  submitAsync(): Promise<boolean>;
+export interface ISdDetailDataInfo {
+  isNew: boolean;
+  isDeleted: boolean | undefined;
+  lastModifiedAt: DateTime | undefined;
+  lastModifiedBy: string | undefined;
 }

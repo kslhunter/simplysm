@@ -1,11 +1,11 @@
 import { ISdAppStructureItem } from "./utils/sd-app-structure.utils";
 import { ISdAngularIcon, SdAngularConfigProvider } from "./providers/sd-angular-config.provider";
 import {
-  ENVIRONMENT_INITIALIZER,
   EnvironmentProviders,
   ErrorHandler,
   inject,
   makeEnvironmentProviders,
+  provideEnvironmentInitializer,
   provideExperimentalZonelessChangeDetection,
 } from "@angular/core";
 import {
@@ -28,20 +28,25 @@ import {
   faEraser,
   faExternalLink,
   faEye,
-  faEyeSlash, faFileExcel,
+  faEyeSlash,
+  faFileExcel,
   faMinus,
   faMountainSun,
   faPen,
-  faPlus, faPlusCircle,
+  faPlus,
+  faPlusCircle,
   faQuestion,
-  faQuestionCircle, faRedo, faRefresh,
+  faQuestionCircle,
+  faRedo,
+  faRefresh,
   faSave,
   faSearch,
   faSort,
   faSortDown,
   faSortUp,
   faStar,
-  faTriangleExclamation, faUpload,
+  faTriangleExclamation,
+  faUpload,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import { EVENT_MANAGER_PLUGINS } from "@angular/platform-browser";
@@ -63,20 +68,14 @@ export function provideSdAngular(opt: {
   icons?: Partial<ISdAngularIcon>;
 }): EnvironmentProviders {
   return makeEnvironmentProviders([
-    {
-      provide: ENVIRONMENT_INITIALIZER,
-      useFactory: () => {
-        const _sdNgConf = inject(SdAngularConfigProvider);
-        const _sdTheme = inject(SdThemeProvider);
-        const _sdLocalStorage = inject(SdLocalStorageProvider);
+    provideEnvironmentInitializer(() => {
+      const _sdNgConf = inject(SdAngularConfigProvider);
+      const _sdTheme = inject(SdThemeProvider);
+      const _sdLocalStorage = inject(SdLocalStorageProvider);
 
-        return () => {
-          _sdTheme.theme.set(_sdLocalStorage.get("sd-theme") ?? _sdNgConf.defaultTheme);
-          _sdTheme.dark.set(_sdLocalStorage.get("sd-theme-dark") ?? _sdNgConf.defaultDark);
-        };
-      },
-      multi: true,
-    },
+      _sdTheme.theme.set(_sdLocalStorage.get("sd-theme") ?? _sdNgConf.defaultTheme);
+      _sdTheme.dark.set(_sdLocalStorage.get("sd-theme-dark") ?? _sdNgConf.defaultDark);
+    }),
     {
       provide: SdAngularConfigProvider,
       useFactory: () => {

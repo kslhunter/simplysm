@@ -25,63 +25,58 @@ export abstract class DbContextExt extends DbContext {
     //-- 오래된 인증정보 삭제
 
     await this.authentication
-      .where((item) => [
-        this.qh.lessThen(
-          item.lastDateTime,
-          new DateTime().addDays(-1),
-        ),
-      ])
+      .where((item) => [this.qh.lessThen(item.lastDateTime, new DateTime().addDays(-1))])
       .deleteAsync();
 
     //-- 사용자.ID 가져오기
 
-    const dbUser = authKey != null
-      ? await this.authentication
-        .include(item => item.user.permissions)
-        .include(item => item.user.configs)
-        .where((item) => [this.qh.equal(item.key, authKey)])
-        .select(item => ({
-          id: item.user.id.notNull(),
-          name: item.user.name,
-          email: item.user.email,
-          permissions: item.user.permissions.map(item1 => ({
-            code: item1.code,
-            valueJson: item1.valueJson,
-          })),
-          configs: item.user.configs.map(item1 => ({
-            code: item1.code,
-            valueJson: item1.valueJson,
-          })),
-        }))
-        .singleAsync()
-      : await this.user
-        .where((item) => [
-          this.qh.equal(item.loginId, loginId),
-          this.qh.equal(item.encryptedPassword, encryptedPassword),
-          this.qh.isFalse(item.isDeleted),
-        ])
-        .include(item => item.permissions)
-        .include(item => item.configs)
-        .select(item => ({
-          id: item.id.notNull(),
-          name: item.name,
-          email: item.email,
-          permissions: item.permissions.map(item1 => ({
-            code: item1.code,
-            valueJson: item1.valueJson,
-          })),
-          configs: item.configs.map(item1 => ({
-            code: item1.code,
-            valueJson: item1.valueJson,
-          })),
-        }))
-        .singleAsync();
+    const dbUser =
+      authKey != null
+        ? await this.authentication
+            .include((item) => item.user.permissions)
+            .include((item) => item.user.configs)
+            .where((item) => [this.qh.equal(item.key, authKey)])
+            .select((item) => ({
+              id: item.user.id.notNull(),
+              name: item.user.name,
+              email: item.user.email,
+              permissions: item.user.permissions.map((item1) => ({
+                code: item1.code,
+                valueJson: item1.valueJson,
+              })),
+              configs: item.user.configs.map((item1) => ({
+                code: item1.code,
+                valueJson: item1.valueJson,
+              })),
+            }))
+            .singleAsync()
+        : await this.user
+            .where((item) => [
+              this.qh.equal(item.loginId, loginId),
+              this.qh.equal(item.encryptedPassword, encryptedPassword),
+              this.qh.isFalse(item.isDeleted),
+            ])
+            .include((item) => item.permissions)
+            .include((item) => item.configs)
+            .select((item) => ({
+              id: item.id.notNull(),
+              name: item.name,
+              email: item.email,
+              permissions: item.permissions.map((item1) => ({
+                code: item1.code,
+                valueJson: item1.valueJson,
+              })),
+              configs: item.configs.map((item1) => ({
+                code: item1.code,
+                valueJson: item1.valueJson,
+              })),
+            }))
+            .singleAsync();
 
     if (dbUser == null) {
       if (authKey != null) {
         throw new Error("인증정보가 만료되었습니다.\n다시 로그인하세요.");
-      }
-      else {
+      } else {
         throw new Error("직원 정보를 찾을 수 없습니다.\n아이디/비밀번호를 확인하세요.");
       }
     }
@@ -89,16 +84,18 @@ export abstract class DbContextExt extends DbContext {
     //-- 인증갱신
     const upsertAuthKey = (
       await this.authentication
-        .where((item) => [
-          this.qh.equal(item.userId, dbUser.id),
-        ])
-        .upsertAsync(() => ({
-          lastDateTime: new DateTime(),
-        }), (updateRecord) => ({
-          ...updateRecord,
-          key: Uuid.new(),
-          userId: dbUser.id,
-        }), ["key"])
+        .where((item) => [this.qh.equal(item.userId, dbUser.id)])
+        .upsertAsync(
+          () => ({
+            lastDateTime: new DateTime(),
+          }),
+          (updateRecord) => ({
+            ...updateRecord,
+            key: Uuid.new(),
+            userId: dbUser.id,
+          }),
+          ["key"],
+        )
     ).single()!.key;
 
     //-- 반환
@@ -108,10 +105,14 @@ export abstract class DbContextExt extends DbContext {
       user: {
         id: dbUser.id,
         name: dbUser.name,
-        permissionRecord: dbUser.permissions
-          .toObject((item) => item.code, (item) => JsonConvert.parse(item.valueJson)),
-        configRecord: dbUser.configs
-          .toObject((item) => item.code, (item) => JsonConvert.parse(item.valueJson)),
+        permissionRecord: dbUser.permissions.toObject(
+          (item) => item.code,
+          (item) => JsonConvert.parse(item.valueJson),
+        ),
+        configRecord: dbUser.configs.toObject(
+          (item) => item.code,
+          (item) => JsonConvert.parse(item.valueJson),
+        ),
       },
     };
   }

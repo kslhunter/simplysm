@@ -13,8 +13,7 @@ export class SdSystemConfigProvider<T> {
   async setAsync<K extends keyof T & string>(key: K, data: T[K]) {
     if (this.fn) {
       await this.fn.set(key, data);
-    }
-    else {
+    } else {
       this._sdLocalStorage.set(key, data);
     }
   }
@@ -22,8 +21,7 @@ export class SdSystemConfigProvider<T> {
   async getAsync(key: keyof T & string) {
     if (this.fn) {
       return await this.fn.get(key);
-    }
-    else {
+    } else {
       return this._sdLocalStorage.get(key);
     }
   }

@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { Injectable } from "@angular/core";
 
 @Injectable({ providedIn: "root" })
@@ -6,10 +7,13 @@ export class SdSystemLogProvider {
 
   async writeAsync(severity: "error" | "warn" | "log", ...data: any[]): Promise<void> {
     if (this.writeFn) {
-      await this.writeFn(severity, ...data);
-    }
-    else {
-      // eslint-disable-next-line no-console
+      try {
+        await this.writeFn(severity, ...data);
+      } catch (err) {
+        console[severity](...data);
+        alert(err);
+      }
+    } else {
       console[severity](...data);
     }
   }
