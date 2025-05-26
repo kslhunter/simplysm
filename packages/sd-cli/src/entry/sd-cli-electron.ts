@@ -147,31 +147,6 @@ export class SdCliElectron {
     FsUtils.writeJson(configFilePath, electronConfig);
     await SdProcess.spawnAsync(`npx electron-builder --win --config ${configFilePath}`);
 
-    /*await electronBuilder.build({
-      targets: electronBuilder.Platform.WINDOWS.createTarget(),
-      config: {
-        appId: opt.electronConfig.appId,
-        productName: opt.npmConfig.description,
-        asar: false,
-        win: {
-          target: opt.electronConfig.portable ? "portable" : "nsis",
-        },
-        nsis: {},
-        directories: {
-          app: opt.electronPath,
-          output: opt.electronDistPath,
-        },
-        ...(opt.electronConfig.installerIcon !== undefined
-          ? {
-              icon: path.resolve(opt.pkgPath, opt.electronConfig.installerIcon),
-            }
-          : {}),
-        removePackageScripts: false,
-        npmRebuild: false,
-        forceCodeSigning: false,
-      },
-    });*/
-
     FsUtils.copy(
       path.resolve(
         opt.electronDistPath,
