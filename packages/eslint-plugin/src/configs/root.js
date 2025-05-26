@@ -49,7 +49,18 @@ export default [
       "no-undef": ["error"],
 
       // import
-      "import/no-extraneous-dependencies": ["error"], // 느림
+      "import/no-extraneous-dependencies": [
+        "error",
+        {
+          "devDependencies": [
+            "**/*.spec.js",
+            "**/lib/**",
+            "**/eslint.config.js",
+            "**/simplysm.js",
+            "**/vitest.config.js",
+          ],
+        },
+      ],
     },
   },
   {
@@ -189,19 +200,15 @@ export default [
 
 
       // -- 아래 적용 검토가 필요한것
-      /*"import/no-extraneous-dependencies": [
+      "import/no-extraneous-dependencies": [
         "error",
         {
           "devDependencies": [
-            "**!/!*.spec.ts",
-            "**!/lib/!**",
-            "**!/eslint.config.js",
-            "**!/simplysm.js",
-            "**!/vitest.config.js",
+            "**/*.spec.ts",
           ],
         },
       ],
-      "@simplysm/ts-no-exported-types": [
+      /*"@simplysm/ts-no-exported-types": [
         "error", {
           types: [
             {

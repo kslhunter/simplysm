@@ -7,22 +7,29 @@ import { NeverEntryError } from "../errors/never-entry.error";
 import { UnwrappedType, WrappedType } from "../types/wrap.types";
 
 export class ObjectUtils {
-  static clone<T>(source: T, options?: {
-    excludes?: string[];
-    useRefTypes?: any[];
-    onlyOneDepth?: boolean;
-  }): T {
+  static clone<T>(
+    source: T,
+    options?: {
+      excludes?: string[];
+      useRefTypes?: any[];
+      onlyOneDepth?: boolean;
+    },
+  ): T {
     return ObjectUtils._clone(source, options);
   }
 
-  private static _clone(source: any, options?: {
-    excludes?: any[];
-    useRefTypes?: any[];
-    onlyOneDepth?: boolean;
-  }, prevClones?: {
-    source: any;
-    clone: any
-  }[]): any {
+  private static _clone(
+    source: any,
+    options?: {
+      excludes?: any[];
+      useRefTypes?: any[];
+      onlyOneDepth?: boolean;
+    },
+    prevClones?: {
+      source: any;
+      clone: any;
+    }[],
+  ): any {
     if (source == null) {
       return source;
     }
@@ -32,17 +39,15 @@ export class ObjectUtils {
     if (source instanceof Array) {
       if (options?.onlyOneDepth) {
         return [...source];
-      }
-      else {
+      } else {
         return source.map((item) => ObjectUtils._clone(item, options));
       }
     }
     if (source instanceof Map) {
-      return Array.from(source.keys())
-        .toMap(
-          (key) => ObjectUtils._clone(key, options),
-          (key) => ObjectUtils._clone(source.get(key), options),
-        );
+      return Array.from(source.keys()).toMap(
+        (key) => ObjectUtils._clone(key, options),
+        (key) => ObjectUtils._clone(source.get(key), options),
+      );
     }
     if (source instanceof Date) {
       return new Date(source.getTime());
@@ -62,8 +67,7 @@ export class ObjectUtils {
     if (typeof source === "object") {
       if (options?.onlyOneDepth) {
         return { ...source };
-      }
-      else {
+      } else {
         const result: Record<string, any> = {};
         Object.setPrototypeOf(result, source.constructor.prototype);
         const currPrevClones = prevClones ?? [];
@@ -71,20 +75,18 @@ export class ObjectUtils {
           source,
           clone: result,
         });
-        for (const key of Object.keys(source)
-          .filter((sourceKey) => options?.excludes?.includes(sourceKey) !== true)) {
+        for (const key of Object.keys(source).filter(
+          (sourceKey) => options?.excludes?.includes(sourceKey) !== true,
+        )) {
           if (source[key] === undefined) {
             result[key] = undefined;
-          }
-          else if (options?.useRefTypes?.includes(source[key].constructor) === true) {
+          } else if (options?.useRefTypes?.includes(source[key].constructor) === true) {
             result[key] = source[key];
-          }
-          else {
+          } else {
             const matchedPrevClone = prevClones?.single((item) => item.source === source[key]);
             if (matchedPrevClone !== undefined) {
               result[key] = matchedPrevClone.clone;
-            }
-            else {
+            } else {
               result[key] = ObjectUtils._clone(
                 source[key],
                 { useRefTypes: options?.useRefTypes },
@@ -101,10 +103,14 @@ export class ObjectUtils {
     return source;
   }
 
-  static merge<T, P>(source: T, target: P, opt?: {
-    arrayProcess?: "replace" | "concat";
-    useDelTargetNull?: boolean
-  }): (T & P) {
+  static merge<T, P>(
+    source: T,
+    target: P,
+    opt?: {
+      arrayProcess?: "replace" | "concat";
+      useDelTargetNull?: boolean;
+    },
+  ): T & P {
     if (source == null) {
       return ObjectUtils.clone(target) as any;
     }
@@ -114,7 +120,7 @@ export class ObjectUtils {
     }
 
     if (target === null) {
-      return opt?.useDelTargetNull ? undefined : ObjectUtils.clone(source) as any;
+      return opt?.useDelTargetNull ? undefined : (ObjectUtils.clone(source) as any);
     }
 
     if (typeof target !== "object") {
@@ -122,16 +128,13 @@ export class ObjectUtils {
     }
 
     if (
-      target instanceof Date
-      || target instanceof DateTime
-      || target instanceof DateOnly
-      || target instanceof Time
-      || target instanceof Uuid
-      || target instanceof Buffer
-      || (
-        opt?.arrayProcess === "replace"
-        && target instanceof Array
-      )
+      target instanceof Date ||
+      target instanceof DateTime ||
+      target instanceof DateOnly ||
+      target instanceof Time ||
+      target instanceof Uuid ||
+      target instanceof Buffer ||
+      (opt?.arrayProcess === "replace" && target instanceof Array)
     ) {
       return ObjectUtils.clone(target) as any;
     }
@@ -145,8 +148,7 @@ export class ObjectUtils {
       for (const key of target.keys()) {
         if (result.has(key)) {
           result.set(key, ObjectUtils.merge(result.get(key), target.get(key), opt));
-        }
-        else {
+        } else {
           result.set(key, target.get(key));
         }
       }
@@ -172,39 +174,43 @@ export class ObjectUtils {
     return result as any;
   }
 
-  static merge3<S extends Record<string, TFlatType>, O extends Record<string, TFlatType>, T extends Record<string, TFlatType>>(
+  static merge3<
+    S extends Record<string, TFlatType>,
+    O extends Record<string, TFlatType>,
+    T extends Record<string, TFlatType>,
+  >(
     source: S,
     origin: O,
     target: T,
-    optionsObj?: Record<string, {
-      keys?: string[];
-      excludes?: string[];
-      ignoreArrayIndex?: boolean
-    }>,
+    optionsObj?: Record<
+      string,
+      {
+        keys?: string[];
+        excludes?: string[];
+        ignoreArrayIndex?: boolean;
+      }
+    >,
   ): {
     conflict: boolean;
-    result: O & S & T
+    result: O & S & T;
   } {
     let conflict = false;
     const result = ObjectUtils.clone(origin) as Record<string, TFlatType>;
     for (const key of Object.keys(source).concat(Object.keys(target)).concat(Object.keys(origin))) {
       if (ObjectUtils.equal(source[key], result[key], optionsObj?.[key])) {
         result[key] = ObjectUtils.clone(target[key]);
-      }
-      else if (ObjectUtils.equal(target[key], result[key], optionsObj?.[key])) {
+      } else if (ObjectUtils.equal(target[key], result[key], optionsObj?.[key])) {
         result[key] = ObjectUtils.clone(source[key]);
-      }
-      else if (ObjectUtils.equal(source[key], target[key], optionsObj?.[key])) {
+      } else if (ObjectUtils.equal(source[key], target[key], optionsObj?.[key])) {
         result[key] = ObjectUtils.clone(source[key]);
-      }
-      else {
+      } else {
         conflict = true;
       }
     }
 
     return {
       conflict,
-      result: result as (O & S & T),
+      result: result as O & S & T,
     };
   }
 
@@ -234,10 +240,7 @@ export class ObjectUtils {
     return result;
   }
 
-  static pick<T extends Record<string, any>, K extends keyof T>(
-    item: T,
-    keys: K[],
-  ): Pick<T, K> {
+  static pick<T extends Record<string, any>, K extends keyof T>(item: T, keys: K[]): Pick<T, K> {
     const result: any = {};
     for (const key of keys) {
       result[key] = item[key];
@@ -254,38 +257,35 @@ export class ObjectUtils {
       const typeCast = type as Type<TFlatType>;
       if (typeCast === String && typeof item[key] === "string") {
         result[key] = item[key];
-      }
-      else if (typeCast === Number && typeof item[key] === "number") {
+      } else if (typeCast === Number && typeof item[key] === "number") {
         result[key] = item[key];
-      }
-      else if (typeCast === Boolean && typeof item[key] === "boolean") {
+      } else if (typeCast === Boolean && typeof item[key] === "boolean") {
         result[key] = item[key];
-      }
-      else if (typeCast === DateOnly && item[key] instanceof DateOnly) {
+      } else if (typeCast === DateOnly && item[key] instanceof DateOnly) {
         result[key] = item[key];
-      }
-      else if (typeCast === DateTime && item[key] instanceof DateTime) {
+      } else if (typeCast === DateTime && item[key] instanceof DateTime) {
         result[key] = item[key];
-      }
-      else if (typeCast === Time && item[key] instanceof Time) {
+      } else if (typeCast === Time && item[key] instanceof Time) {
         result[key] = item[key];
-      }
-      else if (typeCast === Uuid && item[key] instanceof Uuid) {
+      } else if (typeCast === Uuid && item[key] instanceof Uuid) {
         result[key] = item[key];
-      }
-      else if (typeCast === Buffer && item[key] instanceof Buffer) {
+      } else if (typeCast === Buffer && item[key] instanceof Buffer) {
         result[key] = item[key];
       }
     }
     return result;
   }
 
-  static equal(source: any, target: any, options?: {
-    includes?: string[];
-    excludes?: string[];
-    ignoreArrayIndex?: boolean,
-    onlyOneDepth?: boolean;
-  }): boolean {
+  static equal(
+    source: any,
+    target: any,
+    options?: {
+      includes?: string[];
+      excludes?: string[];
+      ignoreArrayIndex?: boolean;
+      onlyOneDepth?: boolean;
+    },
+  ): boolean {
     if (source === target) {
       return true;
     }
@@ -295,9 +295,9 @@ export class ObjectUtils {
     }
 
     if (
-      (source instanceof DateTime && target instanceof DateTime)
-      || (source instanceof DateOnly && target instanceof DateOnly)
-      || (source instanceof Time && target instanceof Time)
+      (source instanceof DateTime && target instanceof DateTime) ||
+      (source instanceof DateOnly && target instanceof DateOnly) ||
+      (source instanceof Time && target instanceof Time)
     ) {
       return source.tick === target.tick;
     }
@@ -309,27 +309,22 @@ export class ObjectUtils {
 
       if (options?.ignoreArrayIndex) {
         if (options.onlyOneDepth) {
-          return source.every((sourceItem) => (
-            target.some((targetItem) => targetItem === sourceItem)
-          ));
+          return source.every((sourceItem) =>
+            target.some((targetItem) => targetItem === sourceItem),
+          );
+        } else {
+          return source.every((sourceItem) =>
+            target.some((targetItem) => ObjectUtils.equal(targetItem, sourceItem, options)),
+          );
         }
-        else {
-          return source.every((sourceItem) => (
-            target.some((targetItem) => (
-              ObjectUtils.equal(targetItem, sourceItem, options)
-            ))
-          ));
-        }
-      }
-      else {
+      } else {
         if (options?.onlyOneDepth) {
           for (let i = 0; i < source.length; i++) {
             if (source[i] !== target[i]) {
               return false;
             }
           }
-        }
-        else {
+        } else {
           for (let i = 0; i < source.length; i++) {
             if (!ObjectUtils.equal(source[i], target[i], options)) {
               return false;
@@ -342,16 +337,18 @@ export class ObjectUtils {
     }
 
     if (source instanceof Map && target instanceof Map) {
-      const sourceKeys = Array.from(source.keys())
-        .filter((key) => (options?.includes === undefined || options.includes.includes(key))
-          && (!options?.excludes?.includes(key))
-          && source[key]
-          !== undefined);
-      const targetKeys = Array.from(target.keys())
-        .filter((key) => (options?.includes === undefined || options.includes.includes(key))
-          && (!options?.excludes?.includes(key))
-          && target[key]
-          !== undefined);
+      const sourceKeys = Array.from(source.keys()).filter(
+        (key) =>
+          (options?.includes === undefined || options.includes.includes(key)) &&
+          !options?.excludes?.includes(key) &&
+          source[key] !== undefined,
+      );
+      const targetKeys = Array.from(target.keys()).filter(
+        (key) =>
+          (options?.includes === undefined || options.includes.includes(key)) &&
+          !options?.excludes?.includes(key) &&
+          target[key] !== undefined,
+      );
 
       if (sourceKeys.length !== targetKeys.length) {
         return false;
@@ -362,13 +359,12 @@ export class ObjectUtils {
           if (source.get(key) !== target.get(key)) {
             return false;
           }
-        }
-        else {
-          if (!ObjectUtils.equal(
-            source.get(key),
-            target.get(key),
-            { ignoreArrayIndex: options?.ignoreArrayIndex },
-          )) {
+        } else {
+          if (
+            !ObjectUtils.equal(source.get(key), target.get(key), {
+              ignoreArrayIndex: options?.ignoreArrayIndex,
+            })
+          ) {
             return false;
           }
         }
@@ -378,16 +374,18 @@ export class ObjectUtils {
     }
 
     if (typeof source === "object" && typeof target === "object") {
-      const sourceKeys = Object.keys(source)
-        .filter((key) => (options?.includes === undefined || options.includes.includes(key))
-          && (!options?.excludes?.includes(key))
-          && source[key]
-          !== undefined);
-      const targetKeys = Object.keys(target)
-        .filter((key) => (options?.includes === undefined || options.includes.includes(key))
-          && (!options?.excludes?.includes(key))
-          && target[key]
-          !== undefined);
+      const sourceKeys = Object.keys(source).filter(
+        (key) =>
+          (options?.includes === undefined || options.includes.includes(key)) &&
+          !options?.excludes?.includes(key) &&
+          source[key] !== undefined,
+      );
+      const targetKeys = Object.keys(target).filter(
+        (key) =>
+          (options?.includes === undefined || options.includes.includes(key)) &&
+          !options?.excludes?.includes(key) &&
+          target[key] !== undefined,
+      );
 
       if (sourceKeys.length !== targetKeys.length) {
         return false;
@@ -398,13 +396,12 @@ export class ObjectUtils {
           if (source[key] !== target[key]) {
             return false;
           }
-        }
-        else {
-          if (!ObjectUtils.equal(
-            source[key],
-            target[key],
-            { ignoreArrayIndex: options?.ignoreArrayIndex },
-          )) {
+        } else {
+          if (
+            !ObjectUtils.equal(source[key], target[key], {
+              ignoreArrayIndex: options?.ignoreArrayIndex,
+            })
+          ) {
             return false;
           }
         }
@@ -418,29 +415,29 @@ export class ObjectUtils {
 
   static validate<T>(value: T, def: TValidateDef<T>): IValidateResult<T> | undefined {
     let currDef: IValidateDef<T> & {
-      type?: Type<WrappedType<T>>[]
+      type?: Type<WrappedType<T>>[];
     };
-    if (def instanceof Array) { //Type<T>[]
+    if (def instanceof Array) {
+      //Type<T>[]
       currDef = {
         type: def,
       };
-    }
-    else if (typeof def === "function") { //Type<T>
+    } else if (typeof def === "function") {
+      //Type<T>
       currDef = {
         type: [def],
       };
-    }
-    else { //IValidateDef<T>
+    } else {
+      //IValidateDef<T>
       currDef = {
         ...def,
-        type: def.type !== undefined
-          ? def.type instanceof Array ? def.type : [def.type]
-          : undefined,
+        type:
+          def.type !== undefined ? (def.type instanceof Array ? def.type : [def.type]) : undefined,
       };
     }
 
     const invalidateDef: IValidateDef<T> & {
-      type?: Type<WrappedType<T>>[]
+      type?: Type<WrappedType<T>>[];
     } = {};
     if (currDef.notnull && value === undefined) {
       invalidateDef.notnull = currDef.notnull;
@@ -451,8 +448,8 @@ export class ObjectUtils {
     }
 
     if (
-      currDef.type !== undefined
-      && !currDef.type.some((type) => type === (value as any)?.constructor)
+      currDef.type !== undefined &&
+      !currDef.type.some((type) => type === (value as any)?.constructor)
     ) {
       invalidateDef.type = currDef.type;
     }
@@ -516,12 +513,12 @@ export class ObjectUtils {
         if ((def[invalidateKey] as IValidateDefWithName<any>).displayValue) {
           const itemValue = validateResult[invalidateKey].value;
           if (
-            typeof itemValue === "string"
-            || typeof itemValue === "number"
-            || typeof itemValue === "boolean"
-            || typeof itemValue === "undefined"
-            || itemValue instanceof DateTime
-            || itemValue instanceof DateOnly
+            typeof itemValue === "string" ||
+            typeof itemValue === "number" ||
+            typeof itemValue === "boolean" ||
+            typeof itemValue === "undefined" ||
+            itemValue instanceof DateTime ||
+            itemValue instanceof DateOnly
           ) {
             errMessage += `: ${itemValue?.toString() ?? "undefined"}`;
           }
@@ -575,12 +572,12 @@ export class ObjectUtils {
           if ((realDef[invalidateKey] as IValidateDefWithName<any>).displayValue) {
             const itemValue = validateResult.result[invalidateKey].value;
             if (
-              typeof itemValue === "string"
-              || typeof itemValue === "number"
-              || typeof itemValue === "boolean"
-              || typeof itemValue === "undefined"
-              || itemValue instanceof DateTime
-              || itemValue instanceof DateOnly
+              typeof itemValue === "string" ||
+              typeof itemValue === "number" ||
+              typeof itemValue === "boolean" ||
+              typeof itemValue === "undefined" ||
+              itemValue instanceof DateTime ||
+              itemValue instanceof DateOnly
             ) {
               errMessage += `: ${itemValue?.toString() ?? "undefined"}`;
             }
@@ -610,8 +607,7 @@ export class ObjectUtils {
     for (let i = 0; i < depth; i++) {
       if (optional) {
         result = result?.[key];
-      }
-      else {
+      } else {
         result = result[key];
       }
     }
@@ -619,15 +615,15 @@ export class ObjectUtils {
   }
 
   private static _getChainSplits(chain: string): (string | number)[] {
-    const split = chain.split(/[.\[\]]/g)
+    const split = chain
+      .split(/[.\[\]]/g)
       .map((item) => item.replace(/[?!'"]/g, ""))
       .filter((item) => Boolean(item));
     const result: (string | number)[] = [];
     for (const splitItem of split) {
       if (/^[0-9]*$/.test(splitItem)) {
         result.push(Number.parseInt(splitItem));
-      }
-      else {
+      } else {
         result.push(splitItem);
       }
     }
@@ -643,8 +639,7 @@ export class ObjectUtils {
     for (const splitItem of splits) {
       if (optional && result === undefined) {
         result = undefined;
-      }
-      else {
+      } else {
         result = result[splitItem];
       }
     }
@@ -709,10 +704,10 @@ export class ObjectUtils {
     }
 
     if (
-      obj instanceof Date
-      || obj instanceof DateTime
-      || obj instanceof DateOnly
-      || obj instanceof Time
+      obj instanceof Date ||
+      obj instanceof DateTime ||
+      obj instanceof DateOnly ||
+      obj instanceof Time
     ) {
       return obj;
     }
@@ -735,7 +730,7 @@ export class ObjectUtils {
     return obj;
   }
 
-  static optToUndef<T>(obj: TOptionalUndef<T>): T {
+  static optToUndef<T>(obj: TUndefToOptional<T>): T {
     return obj as T;
   }
 }
@@ -753,7 +748,7 @@ export interface IValidateDef<T> {
 export interface IValidateResult<T> {
   value: T;
   invalidateDef: IValidateDef<T> & {
-    type?: Type<WrappedType<T>>[]
+    type?: Type<WrappedType<T>>[];
   };
   message?: string;
 }
@@ -773,8 +768,12 @@ interface IValidateArrayResult<T> {
   result: TValidateObjectResult<T>;
 }
 
-export type TOptionalUndef<T> = {
-  [K in keyof T as undefined extends T[K] ? K : never]?: T[K]
+export type TUndefToOptional<T> = {
+  [K in keyof T as undefined extends T[K] ? K : never]?: T[K];
 } & {
-  [K in keyof T as undefined extends T[K] ? never : K]: T[K]
+  [K in keyof T as undefined extends T[K] ? never : K]: T[K];
+};
+
+export type TOptionalToUndef<T> = {
+  [K in keyof T]-?: {} extends Pick<T, K> ? Exclude<T[K], undefined> | undefined : T[K];
 };
