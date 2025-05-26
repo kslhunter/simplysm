@@ -76,20 +76,20 @@ import { FormatPipe } from "../../pipes/format.pipe";
       </ng-template>
 
       <ng-template #modalBottom>
-        @let _lastModificationInfo = viewModel().getLastModificationInfo?.();
-        @if (_lastModificationInfo) {
+        @let _dataInfo = viewModel().getDataInfo();
+        @if (_dataInfo.lastModifiedDateTime || _dataInfo.lastModifiedUserName) {
           <div class="bg-theme-grey-lightest tx-right p-sm-default">
             최종수정:
-            {{ _lastModificationInfo.dateTime | format: "yyyy-MM-dd HH:mm" }}
-            ({{ _lastModificationInfo.userName }})
+            {{ _dataInfo.lastModifiedDateTime! | format: "yyyy-MM-dd HH:mm" }}
+            ({{ _dataInfo.lastModifiedUserName }})
           </div>
         }
 
         @if (hasPerm("edit")) {
           <div class="p-sm-default flex-row">
-            @if (viewModel().getIsNew && !viewModel().getIsNew!()) {
+            @if (!_dataInfo.isNew && viewModel().toggleDeleteAsync) {
               <div>
-                @if (!viewModel().getIsDeleted || !viewModel().getIsDeleted!()) {
+                @if (!_dataInfo.isDeleted) {
                   <sd-button theme="danger" inline (click)="onToggleDeleteButtonClick(true)">
                     삭제
                   </sd-button>
@@ -174,15 +174,7 @@ export class SdDataDetailControl<T extends object> {
   }
 
   private async _refresh() {
-    if (
-      this.viewModel().getIsNew &&
-      this.viewModel().getDefaultData &&
-      this.viewModel().getIsNew!()
-    ) {
-      this.viewModel().data.set(this.viewModel().getDefaultData!());
-    } else {
-      this.viewModel().data.set(await this.viewModel().getDataAsync());
-    }
+    this.viewModel().data.set(await this.viewModel().loadData());
     $obj(this.viewModel().data).snapshot();
   }
 
@@ -234,20 +226,14 @@ export interface ISdDataDetailViewModel<T extends object> {
 
   data: WritableSignal<T>;
 
-  getLastModificationInfo?():
-    | {
-        dateTime: DateTime;
-        userName: string;
-      }
-    | undefined;
+  loadData(): Promise<T> | T;
 
-  getIsNew?(): boolean; // params로 체크
-
-  getIsDeleted?(): boolean;
-
-  getDefaultData?(): T;
-
-  getDataAsync(): Promise<T>;
+  getDataInfo(): {
+    isNew: boolean;
+    isDeleted?: boolean;
+    lastModifiedDateTime?: DateTime;
+    lastModifiedUserName?: string;
+  };
 
   toggleDeleteAsync?(del: boolean): Promise<boolean>;
 

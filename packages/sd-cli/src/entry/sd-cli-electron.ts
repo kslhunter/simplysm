@@ -1,11 +1,11 @@
 import { FsUtils, SdLogger, SdProcess } from "@simplysm/sd-core-node";
-import electronBuilder from "electron-builder";
 import fs from "fs";
 import os from "os";
 import path from "path";
 import { INpmConfig } from "../types/common-configs.types";
 import { ISdClientBuilderElectronConfig } from "../types/config.types";
 import { loadProjConfAsync } from "./utils/loadProjConfAsync";
+import electronBuilder from "electron-builder";
 
 export class SdCliElectron {
   private static _logger = SdLogger.get(["simplysm", "sd-cli", "SdCliElectron"]);
@@ -122,7 +122,32 @@ export class SdCliElectron {
       );
     }
 
-    await electronBuilder.build({
+    const electronConfig: electronBuilder.Configuration = {
+      appId: opt.electronConfig.appId,
+      productName: opt.npmConfig.description,
+      asar: false,
+      win: {
+        target: opt.electronConfig.portable ? "portable" : "nsis",
+      },
+      nsis: {},
+      directories: {
+        app: opt.electronPath,
+        output: opt.electronDistPath,
+      },
+      ...(opt.electronConfig.installerIcon !== undefined
+        ? {
+            icon: path.resolve(opt.pkgPath, opt.electronConfig.installerIcon),
+          }
+        : {}),
+      removePackageScripts: false,
+      npmRebuild: false,
+      forceCodeSigning: false,
+    };
+    const configFilePath = path.resolve(opt.pkgPath, ".electron/builder-config.json");
+    FsUtils.writeJson(configFilePath, electronConfig);
+    await SdProcess.spawnAsync(`npx electron-builder --win --config ${configFilePath}`);
+
+    /*await electronBuilder.build({
       targets: electronBuilder.Platform.WINDOWS.createTarget(),
       config: {
         appId: opt.electronConfig.appId,
@@ -145,7 +170,7 @@ export class SdCliElectron {
         npmRebuild: false,
         forceCodeSigning: false,
       },
-    });
+    });*/
 
     FsUtils.copy(
       path.resolve(

@@ -201,6 +201,10 @@ export abstract class CordovaAutoUpdate {
         .filter((item) => {
           return item.extName === ".apk" && /^[0-9.]*$/.test(item.version);
         });
+
+      // 버전파일 저장된것 없으면 반환
+      if (versions.length === 0) return true;
+
       const latestVersion = semver.maxSatisfying(
         versions.map((item) => item.version),
         "*",
