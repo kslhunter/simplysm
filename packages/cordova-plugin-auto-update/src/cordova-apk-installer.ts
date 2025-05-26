@@ -40,7 +40,7 @@ export abstract class CordovaApkInstaller {
     versionCode: string;
   }> {
     return await new Promise((resolve, reject) => {
-      cordova.exec(resolve, reject, "CordovaFileSystem", "getVersionInfo", []);
+      cordova.exec(resolve, reject, "CordovaApkInstaller", "getVersionInfo", []);
     });
   }
 }
