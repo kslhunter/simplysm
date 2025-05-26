@@ -249,7 +249,7 @@ import {
                       <sd-checkbox
                         [value]="selectedItems().includes(item)"
                         (valueChange)="selectionManager.toggle(item)"
-                        [beforeChangeFn]="selectionManager.getBeforeChangeFn(item)"
+                        [canChangeFn]="selectionManager.getCanChangeFn(item)"
                         [inline]="true"
                         theme="white"
                         [disabled]="_selectable !== true"
@@ -260,7 +260,7 @@ import {
                       <sd-checkbox
                         [value]="selectedItems().includes(item)"
                         (valueChange)="selectionManager.toggle(item)"
-                        [beforeChangeFn]="selectionManager.getBeforeChangeFn(item)"
+                        [canChangeFn]="selectionManager.getCanChangeFn(item)"
                         [inline]="true"
                         theme="white"
                         [disabled]="_selectable !== true"

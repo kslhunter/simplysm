@@ -133,7 +133,7 @@ export class SdSharedDataSelectViewControl<T extends ISharedDataBase<string | nu
   private _sdModal = inject(SdModalProvider);
 
   selectedItem = model<T>();
-  beforeSelectFn = input<(item: T | undefined) => boolean | Promise<boolean>>(() => true);
+  canChangeFn = input<(item: T | undefined) => boolean | Promise<boolean>>(() => true);
 
   items = input.required<T[]>();
   selectedIcon = input<IconDefinition>();
@@ -188,7 +188,7 @@ export class SdSharedDataSelectViewControl<T extends ISharedDataBase<string | nu
   });
 
   constructor() {
-    setupModelHook(this.selectedItem, this.beforeSelectFn);
+    setupModelHook(this.selectedItem, this.canChangeFn);
 
     $effect([this.items], () => {
       const newSelectedItem = this.items().single(

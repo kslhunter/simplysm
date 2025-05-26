@@ -247,7 +247,7 @@ export class SdCheckboxControl {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
 
   value = model(false);
-  beforeChangeFn = input<(item: boolean) => boolean | Promise<boolean>>(() => true);
+  canChangeFn = input<(item: boolean) => boolean | Promise<boolean>>(() => true);
 
   icon = input(this.icons.check);
   radio = input(false, { transform: transformBoolean });
@@ -271,7 +271,7 @@ export class SdCheckboxControl {
   contentStyle = input<string>();
 
   constructor() {
-    setupModelHook(this.value, this.beforeChangeFn);
+    setupModelHook(this.value, this.canChangeFn);
     setupRipple(() => !this.disabled());
   }
 

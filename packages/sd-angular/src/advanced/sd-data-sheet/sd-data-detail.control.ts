@@ -30,6 +30,8 @@ import { setupCanDeactivate } from "../../utils/setups/setup-can-deactivate";
 import { TSdViewType, useViewTypeSignal } from "../../utils/signals/use-view-type.signal";
 import { SdBaseContainerControl } from "../sd-base-container.control";
 import { SdSharedDataProvider } from "../shared-data/sd-shared-data.provider";
+import { DateTime } from "@simplysm/sd-core-common";
+import { FormatPipe } from "../../pipes/format.pipe";
 
 @Component({
   selector: "sd-data-detail",
@@ -46,6 +48,7 @@ import { SdSharedDataProvider } from "../shared-data/sd-shared-data.provider";
     SdIconControl,
     NgIf,
     NgTemplateOutlet,
+    FormatPipe,
   ],
   template: `
     <sd-base-container [busy]="busyCount() > 0" [viewType]="currViewType()">
@@ -73,6 +76,15 @@ import { SdSharedDataProvider } from "../shared-data/sd-shared-data.provider";
       </ng-template>
 
       <ng-template #modalBottom>
+        @let _lastModificationInfo = viewModel().getLastModificationInfo?.();
+        @if (_lastModificationInfo) {
+          <div class="bg-theme-grey-lightest tx-right p-sm-default">
+            최종수정:
+            {{ _lastModificationInfo.dateTime | format: "yyyy-MM-dd HH:mm" }}
+            ({{ _lastModificationInfo.userName }})
+          </div>
+        }
+
         @if (hasPerm("edit")) {
           <div class="p-sm-default flex-row">
             @if (viewModel().getIsNew && !viewModel().getIsNew!()) {
@@ -221,6 +233,13 @@ export interface ISdDataDetailViewModel<T extends object> {
   perms?: Signal<string[]>;
 
   data: WritableSignal<T>;
+
+  getLastModificationInfo?():
+    | {
+        dateTime: DateTime;
+        userName: string;
+      }
+    | undefined;
 
   getIsNew?(): boolean; // params로 체크
 

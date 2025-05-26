@@ -23,7 +23,7 @@ export class SdSelectionManager<T> {
       this._selectableItems().every((item) => this._options.selectedItems().includes(item)),
   );
 
-  getBeforeChangeFn(item: T) {
+  getCanChangeFn(item: T) {
     return (): boolean => this.getSelectable(item) === true;
   }
 

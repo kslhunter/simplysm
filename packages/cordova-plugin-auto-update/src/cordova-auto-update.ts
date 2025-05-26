@@ -149,8 +149,9 @@ export abstract class CordovaAutoUpdate {
       );
 
       // 최신버전이면 반환
-      const currVersion = await CordovaApkInstaller.getVersionInfo();
-      if (currVersion.versionName === serverVersionInfo.version) {
+      // const currAppVersionInfo = await CordovaApkInstaller.getVersionInfo();
+      // if (currAppVersionInfo.versionName === serverVersionInfo.version) {
+      if (process.env["SD_VERSION"] === serverVersionInfo.version) {
         return true;
       }
 
@@ -206,8 +207,9 @@ export abstract class CordovaAutoUpdate {
       )!;
 
       // 최신버전이면 반환
-      const currVersion = await CordovaApkInstaller.getVersionInfo();
-      if (currVersion.versionName === latestVersion) {
+      // const currVersion = await CordovaApkInstaller.getVersionInfo();
+      // if (currVersion.versionName === latestVersion) {
+      if (process.env["SD_VERSION"] === latestVersion) {
         return true;
       }
 
