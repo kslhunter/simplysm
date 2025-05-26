@@ -18,7 +18,7 @@
       </feature>
     </config-file>
 
-    <config-file target="AndroidManifest.xml" parent="/manifest" mode="merge">
+    <config-file target="AndroidManifest.xml" parent="/manifest">
       <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
     </config-file>
 
