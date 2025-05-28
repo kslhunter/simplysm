@@ -124,7 +124,7 @@ export interface ISharedDataInfo<T extends ISharedDataBase<string | number>> {
   serviceKey: string;
   getDataAsync: (changeKeys?: T["__valueKey"][]) => Promise<T[]>;
   orderBy: [(data: T) => any, "asc" | "desc"][];
-  filter: any;
+  filter: any; // 이 값이 동일한 요청들만 변경이벤트 발생
 }
 
 interface ISharedDataInnerInfo<T extends ISharedDataBase<string | number>> {

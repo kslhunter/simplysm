@@ -24,19 +24,17 @@ export class SdCliDbContextFileGenerator {
     const importTexts: string[] = [];
 
     if (useExt) {
-      importTexts.push("import { DbContextExt } from \"@simplysm/sd-orm-common-ext\";");
-    }
-    else {
-      importTexts.push("import { DbContext } from \"@simplysm/sd-orm-common\";");
+      importTexts.push('import { DbContextExt } from "@simplysm/sd-orm-common-ext";');
+    } else {
+      importTexts.push('import { DbContext } from "@simplysm/sd-orm-common";');
     }
 
     // Migrations
     const migTexts: string[] = [];
     {
-      const filePaths = FsUtils.glob(
-        path.resolve(pkgPath, "src/migrations/**/*.ts"),
-        { nodir: true },
-      );
+      const filePaths = FsUtils.glob(path.resolve(pkgPath, "src/migrations/**/*.ts"), {
+        nodir: true,
+      });
 
       for (const filePath of filePaths.orderBy()) {
         const requirePath = PathUtils.posix(path.relative(path.dirname(targetFilePath), filePath))
@@ -54,10 +52,7 @@ export class SdCliDbContextFileGenerator {
     // Models
     const modelTexts: string[] = [];
     {
-      const filePaths = FsUtils.glob(
-        path.resolve(pkgPath, "src/models/**/*.ts"),
-        { nodir: true },
-      );
+      const filePaths = FsUtils.glob(path.resolve(pkgPath, "src/models/**/*.ts"), { nodir: true });
 
       for (const filePath of filePaths.orderBy()) {
         const requirePath = PathUtils.posix(path.relative(path.dirname(targetFilePath), filePath))
@@ -69,17 +64,28 @@ export class SdCliDbContextFileGenerator {
         const className = fileName.includes("_") ? fileName : StringUtils.toPascalCase(fileName);
 
         importTexts.push(`import { ${className} } from "./${requirePath}";`);
-        modelTexts.push(`${varName} = new Queryable(this, ${className})`);
+        if (
+          useExt &&
+          [
+            "systemDataLog",
+            "systemErrorLog",
+            "authentication",
+            "user",
+            "userConfig",
+            "userPermission",
+          ].includes(varName)
+        ) {
+          modelTexts.push(`override ${varName} = new Queryable(this, ${className})`);
+        } else {
+          modelTexts.push(`${varName} = new Queryable(this, ${className})`);
+        }
       }
     }
 
     // Views
     const viewTexts: string[] = [];
     {
-      const filePaths = FsUtils.glob(
-        path.resolve(pkgPath, "src/views/**/*.ts"),
-        { nodir: true },
-      );
+      const filePaths = FsUtils.glob(path.resolve(pkgPath, "src/views/**/*.ts"), { nodir: true });
 
       for (const filePath of filePaths.orderBy()) {
         const requirePath = PathUtils.posix(path.relative(path.dirname(targetFilePath), filePath))
@@ -98,10 +104,9 @@ export class SdCliDbContextFileGenerator {
     // Stored Procedures
     const spTexts: string[] = [];
     {
-      const filePaths = FsUtils.glob(
-        path.resolve(pkgPath, "src/stored-procedures/**/*.ts"),
-        { nodir: true },
-      );
+      const filePaths = FsUtils.glob(path.resolve(pkgPath, "src/stored-procedures/**/*.ts"), {
+        nodir: true,
+      });
 
       for (const filePath of filePaths.orderBy()) {
         const requirePath = PathUtils.posix(path.relative(path.dirname(targetFilePath), filePath))
@@ -117,27 +122,27 @@ export class SdCliDbContextFileGenerator {
       }
     }
 
-    importTexts.push(...[
-      `import { IDbMigration${modelTexts.length > 0 || viewTexts.length > 0
-        ? ", Queryable"
-        : ""}${spTexts.length > 0
-        ? ", StoredProcedure"
-        : ""} } from "@simplysm/sd-orm-common";`,
-      "import { Type } from \"@simplysm/sd-core-common\";",
-    ]);
+    importTexts.push(
+      ...[
+        `import { IDbMigration${
+          modelTexts.length > 0 || viewTexts.length > 0 ? ", Queryable" : ""
+        }${spTexts.length > 0 ? ", StoredProcedure" : ""} } from "@simplysm/sd-orm-common";`,
+        'import { Type } from "@simplysm/sd-core-common";',
+      ],
+    );
 
     const content = `
 ${importTexts.join("\n")}
 
-export class MainDbContext extends DbContext${useExt ? "Ext" : ""} {
+export class ${StringUtils.toPascalCase(kebabName)} extends DbContext${useExt ? "Ext" : ""} {
   get migrations(): Type<IDbMigration>[] {
     return [
-${migTexts.map(item => "    " + item).join("\n")}
+${migTexts.map((item) => "    " + item).join("\n")}
     ];
   }
-${(modelTexts.length > 0 ? "\n  // Models\n" + modelTexts.map(item => "  " + item).join("\n") : "")}
-${(viewTexts.length > 0 ? "\n  // Views\n" + viewTexts.map(item => "  " + item).join("\n") : "")}
-${spTexts.length > 0 ? "\n  // StoredProcedures\n" + spTexts.map(item => "  " + item).join("\n") : ""}
+${modelTexts.length > 0 ? "\n  // Models\n" + modelTexts.map((item) => "  " + item).join("\n") : ""}
+${viewTexts.length > 0 ? "\n  // Views\n" + viewTexts.map((item) => "  " + item).join("\n") : ""}
+${spTexts.length > 0 ? "\n  // StoredProcedures\n" + spTexts.map((item) => "  " + item).join("\n") : ""}
 }
 `.trim();
     if (content.trim() !== cache?.trim()) {

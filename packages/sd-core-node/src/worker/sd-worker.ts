@@ -9,6 +9,8 @@ import { ISdWorkerRequest, ISdWorkerType, TSdWorkerResponse } from "./sd-worker.
 export class SdWorker<T extends ISdWorkerType> extends EventEmitter {
   private _worker: Worker;
 
+  private _isTerminated = false;
+
   constructor(filePath: string, opt?: Omit<WorkerOptions, "stdout" | "stderr">) {
     super();
 
@@ -46,7 +48,7 @@ export class SdWorker<T extends ISdWorkerType> extends EventEmitter {
     this._worker.stderr.pipe(process.stderr);
 
     this._worker.on("exit", (code) => {
-      if (code !== 0) {
+      if (!this._isTerminated && code !== 0) {
         const err = new Error(`오류와 함께 닫힘 (CODE: ${code})`);
         logger.error(err);
       }
@@ -100,6 +102,7 @@ export class SdWorker<T extends ISdWorkerType> extends EventEmitter {
   }
 
   async killAsync() {
+    this._isTerminated = true;
     await this._worker.terminate();
   }
 }

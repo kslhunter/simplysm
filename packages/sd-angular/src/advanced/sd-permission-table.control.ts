@@ -1,5 +1,12 @@
 import { NgTemplateOutlet } from "@angular/common";
-import { ChangeDetectionStrategy, Component, inject, input, model, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  input,
+  model,
+  ViewEncapsulation,
+} from "@angular/core";
 import { ObjectUtils } from "@simplysm/sd-core-common";
 import { SdAnchorControl } from "../controls/sd-anchor.control";
 import { SdCheckboxControl } from "../controls/sd-checkbox.control";
@@ -8,8 +15,8 @@ import { SdTypedTemplateDirective } from "../directives/sd-typed.template-direct
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { $computed } from "../utils/bindings/$computed";
 import { $signal } from "../utils/bindings/$signal";
-import { ISdPermission } from "../utils/sd-app-structure.utils";
 import { transformBoolean } from "../utils/type-tramsforms";
+import { ISdPermission } from "../providers/sd-app-structure.provider";
 
 /**
  * 권한 테이블 컴포넌트
@@ -118,7 +125,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
   template: `
     <table>
       <tbody>
-        @for (item of items(); track item.codes.join(".")) {
+        @for (item of items(); track item.codeChain.join(".")) {
           <ng-template
             [ngTemplateOutlet]="itemTemplate"
             [ngTemplateOutletContext]="{
@@ -202,12 +209,12 @@ import { transformBoolean } from "../utils/type-tramsforms";
         </tr>
       }
       @if (item.children && item.children.length > 0) {
-        @for (child of item.children; track child.codes.join(".")) {
+        @for (child of item.children; track child.codeChain.join(".")) {
           <ng-template
             [ngTemplateOutlet]="itemTemplate"
             [ngTemplateOutletContext]="{
               item: child,
-              parentKey: parentKey + '_' + item.codes.join('.'),
+              parentKey: parentKey + '_' + item.codeChain.join('.'),
               depth: depth + 1,
               parent: item,
             }"
@@ -217,17 +224,15 @@ import { transformBoolean } from "../utils/type-tramsforms";
     </ng-template>
   `,
 })
-export class SdPermissionTableControl {
+export class SdPermissionTableControl<TModule> {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
 
-  /*__value = input<Record<string, boolean>>({}, { alias: "value" });
-  __valueChange = output<Record<string, boolean>>({ alias: "valueChange" });*/
   value = model<Record<string, boolean>>({});
 
-  items = input<ISdPermission[]>([]);
+  items = input<ISdPermission<TModule>[]>([]);
   disabled = input(false, { transform: transformBoolean });
 
-  collapsedItems = $signal(new Set<ISdPermission>());
+  collapsedItems = $signal(new Set<ISdPermission<TModule>>());
 
   depthLength = $computed(() => {
     return this._getDepthLength(this.items(), 0);
@@ -237,15 +242,15 @@ export class SdPermissionTableControl {
     return Array(len).fill(0);
   }
 
-  getIsPermCollapsed(item: ISdPermission): boolean {
+  getIsPermCollapsed(item: ISdPermission<TModule>): boolean {
     return this.collapsedItems().has(item);
   }
 
-  getAllChildren(item: ISdPermission): ISdPermission[] {
+  getAllChildren(item: ISdPermission<TModule>): ISdPermission<TModule>[] {
     return item.children?.mapMany((child) => [child, ...this.getAllChildren(child)]) ?? [];
   }
 
-  getEditDisabled(item: ISdPermission) {
+  getEditDisabled(item: ISdPermission<TModule>) {
     if (this.disabled()) {
       return true;
     }
@@ -267,7 +272,7 @@ export class SdPermissionTableControl {
     return false;
   }
 
-  getIsPermExists(item: ISdPermission, type: "use" | "edit"): boolean {
+  getIsPermExists(item: ISdPermission<TModule>, type: "use" | "edit"): boolean {
     if (item.perms) {
       return item.perms.includes(type);
     }
@@ -283,9 +288,9 @@ export class SdPermissionTableControl {
     return false;
   }
 
-  getIsPermChecked(item: ISdPermission, type: "use" | "edit"): boolean {
+  getIsPermChecked(item: ISdPermission<TModule>, type: "use" | "edit"): boolean {
     if (item.perms) {
-      const permCode = item.codes.join(".");
+      const permCode = item.codeChain.join(".");
       return this.value()[permCode + "." + type] ?? false;
     }
 
@@ -300,7 +305,7 @@ export class SdPermissionTableControl {
     return false;
   }
 
-  onPermCollapseToggle(item: ISdPermission) {
+  onPermCollapseToggle(item: ISdPermission<TModule>) {
     this.collapsedItems.update((v) => {
       const r = new Set(v);
       if (r.has(item)) {
@@ -316,7 +321,7 @@ export class SdPermissionTableControl {
     });
   }
 
-  onPermCheckChange(item: ISdPermission, type: "use" | "edit", val: boolean) {
+  onPermCheckChange(item: ISdPermission<TModule>, type: "use" | "edit", val: boolean) {
     this.value.update((v) => {
       const r = ObjectUtils.clone(v);
       this._changePermCheck(r, item, type, val);
@@ -326,14 +331,14 @@ export class SdPermissionTableControl {
 
   private _changePermCheck(
     value: Record<string, boolean>,
-    item: ISdPermission,
+    item: ISdPermission<TModule>,
     type: "use" | "edit",
     val: boolean,
   ) {
     let changed = false;
 
     if (item.perms) {
-      const permCode = item.codes.join(".");
+      const permCode = item.codeChain.join(".");
 
       if (type === "edit" && val && !this.getIsPermChecked(item, "use")) {
       } else {
@@ -368,7 +373,7 @@ export class SdPermissionTableControl {
     return changed;
   }
 
-  private _getDepthLength(items: ISdPermission[], depth: number): number {
+  private _getDepthLength(items: ISdPermission<TModule>[], depth: number): number {
     return (
       items.max((item) => {
         if (item.children) {
@@ -381,9 +386,9 @@ export class SdPermissionTableControl {
   }
 
   protected readonly itemTemplateType!: {
-    item: ISdPermission;
+    item: ISdPermission<TModule>;
     parentKey: string;
     depth: number;
-    parent: ISdPermission | undefined;
+    parent: ISdPermission<TModule> | undefined;
   };
 }

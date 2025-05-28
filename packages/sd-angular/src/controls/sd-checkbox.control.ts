@@ -45,7 +45,7 @@ import { setupModelHook } from "../utils/setups/setup-model-hook";
         @include mixins.form-control-base();
         color: inherit;
         cursor: pointer;
-        border-radius: var(--border-radius-xs);
+        border-radius: var(--border-radius-sm);
 
         height: calc(
           var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-sm) * 2 + 2px
@@ -62,7 +62,7 @@ import { setupModelHook } from "../utils/setups/setup-model-hook";
           height: calc(var(--font-size-default) + 2px);
           border: 1px solid var(--trans-light);
           background: var(--theme-secondary-lightest);
-          border-radius: var(--border-radius-xs);
+          border-radius: var(--border-radius-sm);
 
           > ._indicator {
             text-align: center;

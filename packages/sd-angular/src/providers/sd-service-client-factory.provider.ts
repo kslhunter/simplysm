@@ -3,10 +3,12 @@ import { ObjectUtils } from "@simplysm/sd-core-common";
 import { ISdServiceClientConnectionConfig, SdServiceClient } from "@simplysm/sd-service-client";
 import { ISdProgressToast, SdToastProvider } from "./sd-toast.provider";
 import { $effect } from "../utils/bindings/$effect";
+import { SdAngularConfigProvider } from "./sd-angular-config.provider";
 
 @Injectable({ providedIn: "root" })
 export class SdServiceClientFactoryProvider {
   private _sdToast = inject(SdToastProvider);
+  private _sdNgConf = inject(SdAngularConfigProvider);
 
   private _clientMap = new Map<string, SdServiceClient>();
 
@@ -22,7 +24,6 @@ export class SdServiceClientFactoryProvider {
   }
 
   async connectAsync(
-    clientName: string,
     key: string,
     options: Partial<ISdServiceClientConnectionConfig> = {},
   ): Promise<void> {
@@ -36,7 +37,7 @@ export class SdServiceClientFactoryProvider {
     }
 
     const client = new SdServiceClient(
-      clientName,
+      this._sdNgConf.clientName,
       ObjectUtils.merge(
         {
           port: location.port,

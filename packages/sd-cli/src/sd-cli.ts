@@ -34,6 +34,7 @@ if (path.extname(cliPath) === ".ts") {
     "node",
     [
       "--import=specifier-resolution-node/register",
+      "--max-old-space-size=8192",
       fileURLToPath(cliPath),
       ...process.argv.slice(2),
     ],

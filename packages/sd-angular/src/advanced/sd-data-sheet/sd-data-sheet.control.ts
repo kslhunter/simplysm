@@ -111,9 +111,13 @@ import { setupCloserWhenSingleSelectionChange } from "../../utils/setups/setup-c
 
             <sd-dock class="pb-xs">
               <div class="flex-row flex-gap-sm">
+                @for (toolControl of beforeToolControls(); track toolControl) {
+                  <ng-template [ngTemplateOutlet]="toolControl.contentTemplateRef()" />
+                }
+
                 @if (viewModel().editItemAsync) {
                   @if (viewModel().perms().includes("edit")) {
-                    <sd-button size="sm" theme="link-primary" (click)="onCreateItemButtonClick()">
+                    <sd-button size="sm" theme="primary" (click)="onCreateItemButtonClick()">
                       <sd-icon [icon]="icons.add" fixedWidth />
                       등록
                       <small>(CTRL+INSERT)</small>
@@ -159,7 +163,7 @@ import { setupCloserWhenSingleSelectionChange } from "../../utils/setups/setup-c
                   </sd-button>
                 }
 
-                @for (toolControl of toolControls(); track toolControl) {
+                @for (toolControl of afterToolControls(); track toolControl) {
                   <ng-template [ngTemplateOutlet]="toolControl.contentTemplateRef()" />
                 }
               </div>
@@ -297,9 +301,13 @@ export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>>
   toolControls = contentChildren(SdDataSheetToolDirective);
   columnControls = contentChildren(SdDataSheetColumnDirective<TVMItem<VM>>);
 
+  beforeToolControls = $computed(() => this.toolControls().filter((item) => item.prepend()));
+  afterToolControls = $computed(() => this.toolControls().filter((item) => !item.prepend()));
+
   //-- items
 
   items = $signal<TVMItem<VM>[]>([]);
+  summary = $signal<Partial<TVMItem<VM>>>({});
 
   selectedItems = model<TVMItem<VM>[]>([]);
 
@@ -380,6 +388,7 @@ export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>>
     );
     this.items.set(result.items);
     this.pageLength.set(result.pageLength ?? 0);
+    this.summary.set(result.summary ?? {});
 
     this.selectedItems.set(
       this.items().filter((item) =>
@@ -519,7 +528,7 @@ export interface ISdDataSheetViewModel<F extends Record<string, any>, I, K> {
     lastFilter: F,
     sortingDefs: ISdSortingDef[],
     page?: number,
-  ): Promise<{ items: I[]; pageLength?: number }>;
+  ): Promise<{ items: I[]; pageLength?: number; summary?: Partial<I> }>;
 
   editItemAsync?(item?: I): Promise<boolean>;
 

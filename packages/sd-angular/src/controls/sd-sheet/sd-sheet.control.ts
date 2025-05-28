@@ -385,19 +385,29 @@ import {
               background: var(--sheet-bg);
               border-bottom-left-radius: var(--border-radius-default);
               border-bottom-right-radius: var(--border-radius-default);
+              overflow: auto;
 
               > table {
                 border-spacing: 0;
                 table-layout: fixed;
                 margin-right: 2px;
                 margin-bottom: 2px;
+                border-bottom-right-radius: var(--border-radius-default);
+                @include mixins.elevation(1);
 
                 > * > tr > *:last-child {
-                  border-right: 1px solid $border-color-dark;
+                  //border-right: 1px solid $border-color-dark;
+                  border-right: 1px solid transparent;
                 }
 
                 > * > tr:last-child > * {
-                  border-bottom: 1px solid $border-color-dark;
+                  //border-bottom: 1px solid $border-color-dark;
+                  border-bottom: 1px solid transparent;
+                }
+
+                > *:last-child > tr:last-child > td:last-child {
+                  border-bottom-right-radius: var(--border-radius-default);
+                  overflow: hidden;
                 }
 
                 > * > tr > * {
@@ -589,7 +599,7 @@ import {
           }
         }
       }
-    `,
+      `,
   ],
   host: {
     "[attr.sd-inset]": "inset()",

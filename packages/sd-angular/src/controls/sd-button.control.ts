@@ -36,6 +36,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
           background: var(--control-color);
           border-color: var(--border-color-default);
           border-radius: var(--border-radius-default);
+          //@include mixins.elevation(1);
 
           font-weight: bold;
           text-align: center;

@@ -142,7 +142,6 @@ export * from "./utils/injections/inject-parent";
 export * from "./utils/managers/sd-expanding-manager";
 export * from "./utils/managers/sd-selection-manager";
 export * from "./utils/managers/sd-sorting-manager";
-export * from "./utils/sd-app-structure.utils";
 export * from "./utils/set-safe-style";
 export * from "./utils/setups/setup-bg-theme";
 export * from "./utils/setups/setup-can-deactivate";

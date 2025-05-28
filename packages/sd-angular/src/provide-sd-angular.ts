@@ -1,10 +1,10 @@
-import { ISdAppStructureItem } from "./utils/sd-app-structure.utils";
 import { ISdAngularIcon, SdAngularConfigProvider } from "./providers/sd-angular-config.provider";
 import {
   EnvironmentProviders,
   ErrorHandler,
   inject,
   makeEnvironmentProviders,
+  provideAppInitializer,
   provideEnvironmentInitializer,
   provideExperimentalZonelessChangeDetection,
 } from "@angular/core";
@@ -59,10 +59,20 @@ import { SdBackbuttonEventPlugin } from "./plugins/events/sd-backbutton.event-pl
 import { SdGlobalErrorHandlerPlugin } from "./plugins/sd-global-error-handler.plugin";
 import { SdThemeProvider, TSdTheme } from "./providers/sd-theme.provider";
 import { SdLocalStorageProvider } from "./providers/sd-local-storage.provider";
+import {
+  NavigationCancel,
+  NavigationEnd,
+  NavigationError,
+  NavigationStart,
+  Router,
+} from "@angular/router";
+import { SdBusyProvider } from "./providers/sd-busy.provider";
+import { SwUpdate } from "@angular/service-worker";
+import { TSdAppStructureItem } from "./providers/sd-app-structure.provider";
 
 export function provideSdAngular(opt: {
   clientName: string;
-  appStructure?: ISdAppStructureItem[];
+  appStructure?: TSdAppStructureItem<any>[];
   defaultTheme?: TSdTheme;
   defaultDark?: boolean;
   icons?: Partial<ISdAngularIcon>;
@@ -145,5 +155,49 @@ export function provideSdAngular(opt: {
     { provide: EVENT_MANAGER_PLUGINS, useClass: SdBackbuttonEventPlugin, multi: true },
     { provide: ErrorHandler, useClass: SdGlobalErrorHandlerPlugin },
     provideExperimentalZonelessChangeDetection(),
+
+    //-- 페이지 이동시 로딩 표시
+    provideAppInitializer(() => {
+      const router = inject(Router, { optional: true });
+      if (!router) return;
+
+      const sdBusy = inject(SdBusyProvider);
+
+      router.events.subscribe((event) => {
+        if (event instanceof NavigationStart) {
+          sdBusy.globalBusyCount.update((v) => v + 1);
+        } else if (
+          event instanceof NavigationEnd ||
+          event instanceof NavigationCancel ||
+          event instanceof NavigationError
+        ) {
+          sdBusy.globalBusyCount.update((v) => v - 1);
+        }
+      });
+    }),
+
+    //-- SwUpdate
+    provideAppInitializer(() => {
+      const swUpdate = inject(SwUpdate, { optional: true });
+
+      const updateFn = async () => {
+        if (swUpdate?.isEnabled) {
+          if (await swUpdate.checkForUpdate()) {
+            if (
+              window.confirm(
+                "클라이언트가 업데이트되었습니다. 새로고침하시겠습니까?\n\n" +
+                  "  - 새로고침하지 않으면 몇몇 기능이 정상적으로 동작하지 않을 수 있습니다.",
+              )
+            ) {
+              await swUpdate.activateUpdate();
+              window.location.reload();
+            }
+          }
+        }
+
+        setTimeout(updateFn, 5 * 60 * 1000);
+      };
+      void updateFn();
+    }),
   ]);
 }

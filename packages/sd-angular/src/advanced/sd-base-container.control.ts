@@ -17,7 +17,7 @@ import { SdTopbarContainerControl } from "../controls/sd-topbar-container.contro
 import { SdTopbarControl } from "../controls/sd-topbar.control";
 import { SdShowEffectDirective } from "../directives/sd-show-effect.directive";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
-import { SdAppStructureProvider } from "../providers/sd-app-structure.provider";
+import { SdAppStructureProvider, usePermsSignal } from "../providers/sd-app-structure.provider";
 import { SdActivatedModalProvider } from "../providers/sd-modal.provider";
 import { $computed } from "../utils/bindings/$computed";
 import { useCurrentPageCodeSignal } from "../utils/signals/use-current-page-code.signal";
@@ -91,7 +91,7 @@ export class SdBaseContainerControl {
   contentTemplateRef = contentChild("content", { read: TemplateRef });
   modalBottomTemplateRef = contentChild("modalBottom", { read: TemplateRef });
 
-  perms = $computed(() => this._sdAppStructure.getViewPerms([this._fullPageCode()], ["use"]));
+  perms = usePermsSignal([this._fullPageCode()], ["use"]);
 
   private _viewType = useViewTypeSignal();
   viewType = input<TSdViewType>();
@@ -100,7 +100,7 @@ export class SdBaseContainerControl {
   title = $computed(
     () =>
       this._sdActivatedModal?.modalComponent()?.title() ??
-      this._sdAppStructure.getTitleByCode(this._currPageCode?.() ?? this._fullPageCode()),
+      this._sdAppStructure.getTitleByFullCode(this._currPageCode?.() ?? this._fullPageCode()),
   );
 
   busy = input(false, { transform: transformBoolean });

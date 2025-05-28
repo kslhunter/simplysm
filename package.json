@@ -27,7 +27,7 @@
     "watch:cordova-test": "yarn run _sd-cli_ --debug watch --options withTest --packages cordova-test server-test",
     "run-cordova-test": "yarn run _sd-cli_ --debug run-cordova android cordova-test http://192.168.0.27:60080",
     "---": "",
-    "_sd-cli_": "tsx --tsconfig packages/sd-cli/tsconfig.json packages/sd-cli/src/sd-cli.ts",
+    "_sd-cli_": "cross-env NODE_OPTIONS=--max-old-space-size=8192 tsx --tsconfig packages/sd-cli/tsconfig.json packages/sd-cli/src/sd-cli.ts",
     "commit": "yarn run _sd-cli_ commit",
     "eslint-timing": "cross-env TIMING=1 eslint \"**/+(*.ts|*.js|*.html)\"",
     "eslint-fix": "cross-env TIMING=1 eslint --fix \"**/+(*.ts|*.js|*.html)\"",

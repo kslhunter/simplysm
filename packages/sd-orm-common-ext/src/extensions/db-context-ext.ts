@@ -105,6 +105,7 @@ export abstract class DbContextExt extends DbContext {
       user: {
         id: dbUser.id,
         name: dbUser.name,
+        email: dbUser.email,
         permissionRecord: dbUser.permissions.toObject(
           (item) => item.code,
           (item) => JsonConvert.parse(item.valueJson),
@@ -123,7 +124,7 @@ export interface IAuthInfo<T extends Record<string, any> = Record<string, any>> 
   user: {
     id: number;
     name: string;
-    email?: string;
+    email: string | undefined;
     permissionRecord: Record<string, any>;
     configRecord: T;
   };
