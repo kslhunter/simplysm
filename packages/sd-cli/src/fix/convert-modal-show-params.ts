@@ -1,7 +1,7 @@
 import { Node, SyntaxKind } from "ts-morph";
 import getTsMorphSourceFiles from "./core/get-ts-morph-source-files";
 
-export default function convertShowAsyncCall() {
+export default function convertModalShowParams() {
   const sourceFiles = getTsMorphSourceFiles();
 
   for (const sourceFile of sourceFiles) {

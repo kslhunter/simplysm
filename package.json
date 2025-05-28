@@ -35,7 +35,7 @@
     "postinstall": "yarn run _sd-cli_ postinstall"
   },
   "devDependencies": {
-    "@types/node": "^22.15.21",
+    "@types/node": "^22.15.23",
     "cross-env": "^7.0.3",
     "eslint": "^9.27.0",
     "glob": "^11.0.2",

@@ -10,16 +10,154 @@ export function usePermsSignal<K extends string>(viewCodes: string[], keys: K[])
 // 권한은 모듈만 체크하고
 // 메뉴는 모듈/권한 모두 체크함
 @Injectable({ providedIn: "root" })
-export abstract class SdAppStructureProvider<TModule> {
+export abstract class SdAppStructureProvider<TModule = unknown> {
   abstract items: TSdAppStructureItem<TModule>[];
 
   abstract usableModules: Signal<TModule[] | undefined>;
   abstract permRecord: Signal<Record<string, boolean> | undefined>;
 
-  usablePerms = $computed(() => this._getPerms(this.items));
-  usableMenus = $computed<ISdMenu<TModule>[]>(() => this._getMenus(this.items));
+  usableMenus = $computed(() =>
+    SdAppStructureUtils.getMenus(this.items, [], this.usableModules(), this.permRecord()),
+  );
+  usableFlatMenus = $computed<ISdFlatMenu<TModule>[]>(() =>
+    SdAppStructureUtils.getFlatMenus(this.items, this.usableModules(), this.permRecord()),
+  );
 
-  usableFlatMenus = $computed<ISdFlatMenu<TModule>[]>(() => {
+  getPermissionsByStructure(items: TSdAppStructureItem<TModule>[], codeChain: string[] = []) {
+    return SdAppStructureUtils.getPermissions(items, codeChain, this.usableModules());
+  }
+
+  getTitleByFullCode(fullCode: string) {
+    return SdAppStructureUtils.getTitleByFullCode(this.items, fullCode);
+  }
+
+  getPermsByFullCode<K extends string>(fullCodes: string[], permKeys: K[]): K[] {
+    return SdAppStructureUtils.getPermsByFullCode(
+      this.items,
+      fullCodes,
+      permKeys,
+      this.permRecord(),
+    );
+  }
+}
+
+export abstract class SdAppStructureUtils {
+  //---------- Info
+
+  static getTitleByFullCode<TModule>(items: TSdAppStructureItem<TModule>[], fullCode: string) {
+    const itemChain = this._getItemChainByFullCode(items, fullCode);
+    const parent = itemChain
+      .slice(0, -1)
+      .map((item) => item.title)
+      .join(" > ");
+    const current = itemChain.last()!.title;
+    return (parent ? `[${parent}] ` : "") + current;
+  }
+
+  static getPermsByFullCode<TModule, K extends string>(
+    items: TSdAppStructureItem<TModule>[],
+    fullCodes: string[],
+    permKeys: K[],
+    permRecord: Record<string, boolean> | undefined,
+  ): K[] {
+    const result = [] as K[];
+    for (const permKey of permKeys) {
+      // 해당 권한이 설정되어있거나
+      if (fullCodes.some((fullCode) => permRecord?.[fullCode + "." + permKey])) {
+        result.push(permKey);
+      }
+      // 권한이라는것이 아얘 존재하지 않거나
+      else if (
+        fullCodes.every((fullCode) => {
+          const item = this._getItemChainByFullCode(items, fullCode).last()!;
+          return !("perms" in item);
+        })
+      ) {
+        result.push(permKey);
+      }
+    }
+
+    return result;
+  }
+
+  private static _getItemChainByFullCode<TModule>(
+    items: TSdAppStructureItem<TModule>[],
+    fullCode: string,
+  ): TSdAppStructureItem<TModule>[] {
+    const codeChain = fullCode.split(".");
+
+    const result: TSdAppStructureItem<TModule>[] = [];
+
+    let cursor: TSdAppStructureItem<TModule> | undefined;
+    let cursorChildren = items;
+    for (const currCode of codeChain) {
+      cursor = cursorChildren.single((item) => item.code === currCode);
+      cursorChildren = cursor != null && "children" in cursor ? cursor.children : [];
+      if (cursor) {
+        result.push(cursor);
+      }
+    }
+
+    return result;
+  }
+
+  //---------- Menus
+
+  static getMenus<TModule>(
+    items: TSdAppStructureItem<TModule>[],
+    codeChain: string[],
+    usableModules: TModule[] | undefined,
+    permRecord: Record<string, boolean> | undefined,
+  ): ISdMenu<TModule>[] {
+    const resultMenus: ISdMenu<TModule>[] = [];
+
+    for (const item of items) {
+      if ("isNotMenu" in item && item.isNotMenu) continue;
+
+      const currCodeChain = [...codeChain, item.code];
+
+      // 모듈 활성화 여부 확인
+      if ("modules" in item && !this._isUsableModules(item.modules, usableModules)) continue;
+
+      // 그룹 메뉴
+      if ("children" in item) {
+        const children = this.getMenus(item.children, currCodeChain, usableModules, permRecord);
+
+        // 자식 중 표시 가능한 게 있으면 그룹 메뉴 포함
+        if (children.length > 0) {
+          resultMenus.push({
+            title: item.title,
+            icon: "icon" in item ? item.icon : undefined,
+            codeChain: currCodeChain,
+            modules: "modules" in item ? item.modules : undefined,
+            children,
+          });
+        }
+      }
+      // Leaf 메뉴
+      else {
+        const code = currCodeChain.join(".");
+
+        if (item.perms != null && !permRecord?.[code + ".use"]) continue;
+
+        resultMenus.push({
+          title: item.title,
+          icon: item.icon,
+          codeChain: currCodeChain,
+          modules: item.modules,
+          children: undefined,
+        });
+      }
+    }
+
+    return resultMenus;
+  }
+
+  static getFlatMenus<TModule>(
+    items: TSdAppStructureItem<TModule>[],
+    usableModules: TModule[] | undefined,
+    permRecord: Record<string, boolean> | undefined,
+  ): ISdFlatMenu<TModule>[] {
     const resultFlatMenus: ISdFlatMenu<TModule>[] = [];
 
     type QueueItem = {
@@ -29,7 +167,7 @@ export abstract class SdAppStructureProvider<TModule> {
       modulesChain: TModule[][];
     };
 
-    const queue: QueueItem[] = this.items.map((item) => ({
+    const queue: QueueItem[] = items.map((item) => ({
       item,
       titleChain: [],
       codeChain: [],
@@ -46,7 +184,7 @@ export abstract class SdAppStructureProvider<TModule> {
       const currModulesChain =
         "modules" in item ? [...modulesChain, item.modules ?? []] : modulesChain;
 
-      if (!this.isUsableModulesChain(currModulesChain, this.usableModules())) continue;
+      if (!this._isUsableModulesChain(currModulesChain, usableModules)) continue;
 
       if ("children" in item) {
         for (const child of item.children) {
@@ -57,10 +195,7 @@ export abstract class SdAppStructureProvider<TModule> {
             modulesChain: currModulesChain,
           });
         }
-      } else if (
-        item.perms == null ||
-        Boolean(this.permRecord()?.[currCodeChain.join(".") + ".use"])
-      ) {
+      } else if (item.perms == null || Boolean(permRecord?.[currCodeChain.join(".") + ".use"])) {
         resultFlatMenus.push({
           titleChain: currTitleChain,
           codeChain: currCodeChain,
@@ -70,40 +205,59 @@ export abstract class SdAppStructureProvider<TModule> {
     }
 
     return resultFlatMenus;
-  });
-  usableFlatPerms = $computed<ISdFlatPermission<TModule>[]>(() =>
-    this.getFlatPerms(this.items, this.usableModules()),
-  );
-
-  getTitleByFullCode(fullCode: string) {
-    const itemChain = this._getItemChainByFullCode(fullCode);
-    const parent = itemChain.slice(0, -1).map(item => item.title).join(" > ");
-    const current = itemChain.last()!.title;
-    return (parent ? `[${parent}] ` : "") + current;
   }
 
-  getPermsByFullCode<K extends string>(fullCodes: string[], permKeys: K[]): K[] {
-    const result = [] as K[];
-    for (const permKey of permKeys) {
-      // 해당 권한이 설정되어있거나
-      if (fullCodes.some((fullCode) => this.permRecord()?.[fullCode + "." + permKey])) {
-        result.push(permKey);
+  //---------- Perms
+
+  static getPermissions<TModule>(
+    items: TSdAppStructureItem<TModule>[],
+    codeChain: string[],
+    usableModules: TModule[] | undefined,
+  ): ISdPermission<TModule>[] {
+    const results: ISdPermission<TModule>[] = [];
+    for (const item of items) {
+      const currCodeChain = [...codeChain, item.code];
+
+      // 모듈 활성화 여부 확인
+      if ("modules" in item && !this._isUsableModules(item.modules, usableModules)) continue;
+
+      // 그룹
+      if ("children" in item) {
+        const children = this.getPermissions(item.children, currCodeChain, usableModules);
+
+        results.push({
+          title: item.title,
+          codeChain: currCodeChain,
+          modules: "modules" in item ? item.modules : undefined,
+          perms: undefined,
+          children: children,
+        });
       }
-      // 권한이라는것이 아얘 존재하지 않거나
-      else if (
-        fullCodes.every((fullCode) => {
-          const item = this._getItemChainByFullCode(fullCode).last()!;
-          return !("perms" in item);
-        })
-      ) {
-        result.push(permKey);
+      // Leaf
+      else {
+        results.push({
+          title: item.title,
+          codeChain: currCodeChain,
+          perms: item.perms,
+          modules: item.modules,
+          children: item.subPerms?.map((subPerm) => ({
+            title: subPerm.title,
+            codeChain: [...currCodeChain, subPerm.code],
+            perms: subPerm.perms,
+            modules: subPerm.modules,
+            children: undefined,
+          })),
+        });
       }
     }
 
-    return result;
+    return results;
   }
 
-  getFlatPerms(items: TSdAppStructureItem<TModule>[], usableModules: TModule[] | undefined) {
+  static getFlatPermissions<TModule>(
+    items: TSdAppStructureItem<TModule>[],
+    usableModules: TModule[] | undefined,
+  ) {
     const results: ISdFlatPermission<TModule>[] = [];
 
     type QueueItem = {
@@ -128,7 +282,7 @@ export abstract class SdAppStructureProvider<TModule> {
       const currModulesChain =
         "modules" in item ? [...modulesChain, item.modules ?? []] : modulesChain;
 
-      if (!this.isUsableModulesChain(currModulesChain, usableModules)) continue;
+      if (!this._isUsableModulesChain(currModulesChain, usableModules)) continue;
 
       // 1. 자식 enqueue
       if ("children" in item) {
@@ -170,117 +324,12 @@ export abstract class SdAppStructureProvider<TModule> {
     return results;
   }
 
-  private _getPerms(
-    items: TSdAppStructureItem<TModule>[],
-    codeChain: string[] = [],
-  ): ISdPermission<TModule>[] {
-    const results: ISdPermission<TModule>[] = [];
-    for (const item of items) {
-      const currCodeChain = [...codeChain, item.code];
+  //-- Modules (private)
 
-      // 모듈 활성화 여부 확인
-      if ("modules" in item && !this._isUsableModules(item.modules, this.usableModules())) continue;
-
-      // 그룹
-      if ("children" in item) {
-        const children = this._getPerms(item.children, currCodeChain);
-
-        results.push({
-          title: item.title,
-          codeChain: currCodeChain,
-          modules: "modules" in item ? item.modules : undefined,
-          perms: undefined,
-          children: children,
-        });
-      }
-      // Leaf
-      else {
-        results.push({
-          title: item.title,
-          codeChain: currCodeChain,
-          perms: item.perms,
-          modules: item.modules,
-          children: item.subPerms?.map((subPerm) => ({
-            title: subPerm.title,
-            codeChain: [...currCodeChain, subPerm.code],
-            perms: subPerm.perms,
-            modules: subPerm.modules,
-            children: undefined,
-          })),
-        });
-      }
-    }
-
-    return results;
-  }
-
-  private _getItemChainByFullCode(fullCode: string): TSdAppStructureItem<TModule>[] {
-    const codeChain = fullCode.split(".");
-
-    const result: TSdAppStructureItem<TModule>[] = [];
-
-    let cursor: TSdAppStructureItem<TModule> | undefined;
-    let cursorChildren = this.items;
-    for (const currCode of codeChain) {
-      cursor = cursorChildren.single((item) => item.code === currCode);
-      cursorChildren = cursor != null && "children" in cursor ? cursor.children : [];
-      if (cursor) {
-        result.push(cursor);
-      }
-    }
-
-    return result;
-  }
-
-  private _getMenus(
-    items: TSdAppStructureItem<TModule>[],
-    codeChain: string[] = [],
-  ): ISdMenu<TModule>[] {
-    const resultMenus: ISdMenu<TModule>[] = [];
-
-    for (const item of items) {
-      if ("isNotMenu" in item && item.isNotMenu) continue;
-
-      const currCodeChain = [...codeChain, item.code];
-
-      // 모듈 활성화 여부 확인
-      if ("modules" in item && !this._isUsableModules(item.modules, this.usableModules())) continue;
-
-      // 그룹 메뉴
-      if ("children" in item) {
-        const children = this._getMenus(item.children, currCodeChain);
-
-        // 자식 중 표시 가능한 게 있으면 그룹 메뉴 포함
-        if (children.length > 0) {
-          resultMenus.push({
-            title: item.title,
-            icon: "icon" in item ? item.icon : undefined,
-            codeChain: currCodeChain,
-            modules: "modules" in item ? item.modules : undefined,
-            children,
-          });
-        }
-      }
-      // Leaf 메뉴
-      else {
-        const code = currCodeChain.join(".");
-
-        if (item.perms != null && !this.permRecord()?.[code + ".use"]) continue;
-
-        resultMenus.push({
-          title: item.title,
-          icon: item.icon,
-          codeChain: currCodeChain,
-          modules: item.modules,
-          children: undefined,
-        });
-      }
-    }
-
-    return resultMenus;
-  }
-
-  isUsableModulesChain(modulesChain: TModule[][], usableModules: TModule[] | undefined) {
+  private static _isUsableModulesChain<TModule>(
+    modulesChain: TModule[][],
+    usableModules: TModule[] | undefined,
+  ) {
     for (const modules of modulesChain) {
       if (!this._isUsableModules(modules, usableModules)) {
         return false;
@@ -290,8 +339,7 @@ export abstract class SdAppStructureProvider<TModule> {
     return true;
   }
 
-  // 하나라도 일치하면 화면 사용가능 (각 화면의 modules 관계는 OR)
-  private _isUsableModules(
+  private static _isUsableModules<TModule>(
     modules: TModule[] | undefined,
     usableModules: TModule[] | undefined,
   ): boolean {
@@ -301,23 +349,9 @@ export abstract class SdAppStructureProvider<TModule> {
       !modules.every((module) => !usableModules?.includes(module))
     );
   }
-
-  /*getOtherStructurePermsRoot(params: {
-    appStructure: TSdAppStructureItem<TModule>[];
-    title: string;
-    codeChain: string[];
-  }): ISdPermission<TModule> {
-    return {
-      title: params.title,
-      codeChain: params.codeChain,
-      modules: undefined,
-      perms: undefined,
-      children: this._getPerms(params.appStructure, params.codeChain),
-    };
-  }*/
 }
 
-export type TSdAppStructureItem<TModule> =
+export type TSdAppStructureItem<TModule = unknown> =
   | ISdAppStructureGroupItem<TModule>
   | ISdAppStructureLeafItem<TModule>;
 
@@ -346,7 +380,7 @@ interface ISdAppStructureSubPermission<TModule> {
   perms: ("use" | "edit")[];
 }
 
-export interface ISdMenu<TModule> {
+export interface ISdMenu<TModule = unknown> {
   title: string;
   codeChain: string[];
   icon: IconDefinition | undefined;
@@ -354,13 +388,13 @@ export interface ISdMenu<TModule> {
   children: ISdMenu<TModule>[] | undefined;
 }
 
-export interface ISdFlatMenu<TModule> {
+export interface ISdFlatMenu<TModule = unknown> {
   titleChain: string[];
   codeChain: string[];
   modulesChain: TModule[][];
 }
 
-export interface ISdPermission<TModule> {
+export interface ISdPermission<TModule = unknown> {
   title: string;
   codeChain: string[];
   modules: TModule[] | undefined;
@@ -368,7 +402,7 @@ export interface ISdPermission<TModule> {
   children: ISdPermission<TModule>[] | undefined;
 }
 
-export interface ISdFlatPermission<TModule> {
+export interface ISdFlatPermission<TModule = unknown> {
   titleChain: string[];
   codeChain: string[];
   modulesChain: TModule[][];

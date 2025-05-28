@@ -13,13 +13,21 @@ import { SdCliLocalUpdate } from "./entry/sd-cli-local-update";
 import { SdCliPostinstall } from "./entry/sd-cli-postinstall";
 import { SdCliProject } from "./entry/sd-cli-project";
 import convertEcmaPrivateToTsPrivate from "./fix/convert-ecma-private-to-ts-private";
-import { convertExtendsSdModalBaseToInterface } from "./fix/convert-extends-sd-modal-base-to-interface";
+import {
+  convertExtendsSdModalBaseToInterface
+} from "./fix/convert-extends-sd-modal-base-to-interface";
 import convertModalShowParams from "./fix/convert-modal-show-params";
 import convertSdAngularSymbolNames from "./fix/convert-sd-angular-symbol-names";
-import convertSdSheetBindingsInInlineTemplate from "./fix/convert-sd-sheet-bindings-inInline-template";
-import convertSetupCumulateSelectedKeysToObjectParam from "./fix/convert-setup-cumulate-selected-keys-to-object-param";
+import convertSdSheetBindingsInInlineTemplate
+  from "./fix/convert-sd-sheet-bindings-inInline-template";
+import convertSetupCumulateSelectedKeysToObjectParam
+  from "./fix/convert-setup-cumulate-selected-keys-to-object-param";
 import prefixUnderscoreForAccessModifiers from "./fix/prefix-underscore-for-access-modifiers";
 import removeSdAngularSymbolNames from "./fix/remove-sd-angular-symbol-names";
+import {
+  convertExtendsSdPrintTemplateBaseToInterface
+} from "./fix/convert-extends-sd-print-template-base-to-interface";
+import convertPrintParams from "./fix/convert-print-params";
 
 Error.stackTraceLimit = Infinity;
 EventEmitter.defaultMaxListeners = 0;
@@ -267,6 +275,8 @@ await yargs(hideBin(process.argv))
       convertSetupCumulateSelectedKeysToObjectParam();
       convertExtendsSdModalBaseToInterface();
       convertModalShowParams();
+      convertExtendsSdPrintTemplateBaseToInterface();
+      convertPrintParams();
 
       //-- last
       removeSdAngularSymbolNames();

@@ -115,7 +115,7 @@ import { setupCloserWhenSingleSelectionChange } from "../../utils/setups/setup-c
                   <ng-template [ngTemplateOutlet]="toolControl.contentTemplateRef()" />
                 }
 
-                @if (viewModel().editItemAsync) {
+                @if (viewModel().editItem) {
                   @if (viewModel().perms().includes("edit")) {
                     <sd-button size="sm" theme="primary" (click)="onCreateItemButtonClick()">
                       <sd-icon [icon]="icons.add" fixedWidth />
@@ -126,7 +126,7 @@ import { setupCloserWhenSingleSelectionChange } from "../../utils/setups/setup-c
                 }
 
                 @if (!selectMode()) {
-                  @if (viewModel().toggleDeletesAsync) {
+                  @if (viewModel().toggleDeletes) {
                     <sd-button
                       size="sm"
                       theme="link-danger"
@@ -148,7 +148,7 @@ import { setupCloserWhenSingleSelectionChange } from "../../utils/setups/setup-c
                     }
                   }
 
-                  @if (viewModel().uploadExcelAsync) {
+                  @if (viewModel().uploadExcel) {
                     <sd-button size="sm" theme="link-success" (click)="onUploadExcelButtonClick()">
                       <sd-icon [icon]="icons.upload" fixedWidth />
                       엑셀 업로드
@@ -156,7 +156,7 @@ import { setupCloserWhenSingleSelectionChange } from "../../utils/setups/setup-c
                   }
                 }
 
-                @if (viewModel().downloadExcelAsync) {
+                @if (viewModel().downloadExcel) {
                   <sd-button size="sm" theme="link-success" (click)="onDownloadExcelButtonClick()">
                     <sd-icon [icon]="icons.fileExcel" fixedWidth />
                     엑셀 다운로드
@@ -214,7 +214,7 @@ import { setupCloserWhenSingleSelectionChange } from "../../utils/setups/setup-c
                       let-edit="edit"
                     >
                       @if (
-                        viewModel().editItemAsync &&
+                        viewModel().editItem &&
                         columnControl.edit() &&
                         viewModel().perms().includes("edit")
                       ) {
@@ -380,7 +380,7 @@ export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>>
   async refreshAsync() {
     if (this.lastFilter() == null) return;
 
-    const result = await this.viewModel().searchAsync(
+    const result = await this.viewModel().search(
       "sheet",
       this.lastFilter(),
       this.ordering(),
@@ -400,7 +400,7 @@ export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>>
   }
 
   async searchAllAsync() {
-    return (await this.viewModel().searchAsync("excel", this.lastFilter(), this.ordering())).items;
+    return (await this.viewModel().search("excel", this.lastFilter(), this.ordering())).items;
   }
 
   //-- edit
@@ -421,9 +421,9 @@ export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>>
   }
 
   private async _editItemAsync(item?: TVMItem<VM>) {
-    if (!this.viewModel().editItemAsync) return;
+    if (!this.viewModel().editItem) return;
 
-    const result = await this.viewModel().editItemAsync!(item);
+    const result = await this.viewModel().editItem!(item);
     if (!result) return;
 
     this.busyCount.update((v) => v + 1);
@@ -446,13 +446,13 @@ export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>>
     this.viewModel().getIsDeleted?.(item) ? "text-decoration: line-through;" : undefined;
 
   async onToggleDeletesButtonClick(del: boolean) {
-    if (!this.viewModel().toggleDeletesAsync) return;
+    if (!this.viewModel().toggleDeletes) return;
     if (!this.viewModel().perms().includes("edit")) return;
 
     this.busyCount.update((v) => v + 1);
 
     await this._sdToast.try(async () => {
-      const result = await this.viewModel().toggleDeletesAsync!(this.selectedItems(), del);
+      const result = await this.viewModel().toggleDeletes!(this.selectedItems(), del);
       if (!result) return;
 
       await this.refreshAsync();
@@ -465,20 +465,20 @@ export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>>
   //-- excel
 
   async onDownloadExcelButtonClick() {
-    if (!this.viewModel().downloadExcelAsync) return;
+    if (!this.viewModel().downloadExcel) return;
 
     this.busyCount.update((v) => v + 1);
     await this._sdToast.try(async () => {
       if (this.lastFilter() == null) return;
 
-      const data = await this.viewModel().searchAsync("excel", this.lastFilter(), this.ordering());
-      await this.viewModel().downloadExcelAsync!(data.items);
+      const data = await this.viewModel().search("excel", this.lastFilter(), this.ordering());
+      await this.viewModel().downloadExcel!(data.items);
     });
     this.busyCount.update((v) => v - 1);
   }
 
   async onUploadExcelButtonClick() {
-    if (!this.viewModel().uploadExcelAsync) return;
+    if (!this.viewModel().uploadExcel) return;
     if (!this.viewModel().perms().includes("edit")) return;
 
     const file = await this._sdFileDialog.showAsync(
@@ -490,7 +490,7 @@ export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>>
     this.busyCount.update((v) => v + 1);
 
     await this._sdToast.try(async () => {
-      await this.viewModel().uploadExcelAsync!(file);
+      await this.viewModel().uploadExcel!(file);
 
       await this.refreshAsync();
 
@@ -523,20 +523,20 @@ export interface ISdDataSheetViewModel<F extends Record<string, any>, I, K> {
 
   getIsDeleted?(item: I): boolean;
 
-  searchAsync(
+  search(
     type: "excel" | "sheet",
     lastFilter: F,
     sortingDefs: ISdSortingDef[],
     page?: number,
   ): Promise<{ items: I[]; pageLength?: number; summary?: Partial<I> }>;
 
-  editItemAsync?(item?: I): Promise<boolean>;
+  editItem?(item?: I): Promise<boolean>;
 
-  toggleDeletesAsync?(selectedItems: I[], del: boolean): Promise<boolean>;
+  toggleDeletes?(selectedItems: I[], del: boolean): Promise<boolean>;
 
-  downloadExcelAsync?(items: I[]): Promise<void>;
+  downloadExcel?(items: I[]): Promise<void>;
 
-  uploadExcelAsync?(file: File): Promise<void>;
+  uploadExcel?(file: File): Promise<void>;
 }
 
 // export type TFilterSignals<F> = { [P in keyof F]: WritableSignal<F[P]> };
