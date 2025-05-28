@@ -372,7 +372,7 @@ export class SdModalControl {
 
   dialogElRef = viewChild.required<any, ElementRef<HTMLElement>>("dialogEl", { read: ElementRef });
 
-  private _config = $signal<ISdModalConfigVM>();
+  private _config = $signal<ISdModalConfig>();
 
   constructor() {
     $effect([this.key], async () => {
@@ -639,7 +639,7 @@ export class SdModalControl {
   }
 }
 
-export interface ISdModalConfigVM {
+export interface ISdModalConfig {
   position: string;
   left: string;
   top: string;

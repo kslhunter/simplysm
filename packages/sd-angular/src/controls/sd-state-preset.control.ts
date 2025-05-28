@@ -106,7 +106,7 @@ export class SdStatePresetControl {
   key = input.required<string>();
   size = input<"sm" | "lg">();
 
-  presets = $signal<ISdStatePresetVM[]>([]);
+  presets = $signal<ISdStatePreset[]>([]);
 
   constructor() {
     $effect([this.key], async () => {
@@ -132,20 +132,20 @@ export class SdStatePresetControl {
     this._sdToast.info(`현재 상태가 ${newName}에 저장되었습니다.`);
   }
 
-  onItemClick(preset: ISdStatePresetVM) {
+  onItemClick(preset: ISdStatePreset) {
     if (!ObjectUtils.equal(this.state(), preset.state)) {
       this.state.set(ObjectUtils.clone(preset.state));
     }
   }
 
-  async onRemoveButtonClick(preset: ISdStatePresetVM) {
+  async onRemoveButtonClick(preset: ISdStatePreset) {
     if (!confirm("저장된 '" + preset.name + "'상태가 삭제됩니다.")) return;
 
     this.presets.update((v) => v.filter((item) => item !== preset));
     await this._sdSystemConfig.setAsync(`sd-state-preset.${this.key()}`, this.presets());
   }
 
-  async onSaveButtonClick(preset: ISdStatePresetVM) {
+  async onSaveButtonClick(preset: ISdStatePreset) {
     preset.state = ObjectUtils.clone(this.state());
     await this._sdSystemConfig.setAsync(`sd-state-preset.${this.key()}`, this.presets());
 
@@ -153,7 +153,7 @@ export class SdStatePresetControl {
   }
 }
 
-export interface ISdStatePresetVM {
+export interface ISdStatePreset {
   name: string;
   state: any;
 }

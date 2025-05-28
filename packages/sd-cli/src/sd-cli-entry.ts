@@ -28,6 +28,11 @@ import {
   convertExtendsSdPrintTemplateBaseToInterface
 } from "./fix/convert-extends-sd-print-template-base-to-interface";
 import convertPrintParams from "./fix/convert-print-params";
+import { convertToUsePermsSignal } from "./fix/convert-to-use-perms-signal";
+import { convertGetMenusToUsableMenus } from "./fix/convert-get-menus-to-usable-menus";
+import { removeUnusedInjects } from "./fix/remove-unused-injects";
+import { removeUnusedImports } from "./fix/remove-unused-imports";
+import { convertFlatPagesToUsableFlatMenus } from "./fix/convert-flat-pages-to-flat-menus";
 
 Error.stackTraceLimit = Infinity;
 EventEmitter.defaultMaxListeners = 0;
@@ -277,10 +282,17 @@ await yargs(hideBin(process.argv))
       convertModalShowParams();
       convertExtendsSdPrintTemplateBaseToInterface();
       convertPrintParams();
+      convertToUsePermsSignal();
+      convertGetMenusToUsableMenus();
+      convertFlatPagesToUsableFlatMenus();
 
-      //-- last
+      //-- 심볼정리
       removeSdAngularSymbolNames();
       convertSdAngularSymbolNames();
+
+      //-- inject/import 정리
+      removeUnusedInjects();
+      removeUnusedImports();
     },
   )
   .strict()

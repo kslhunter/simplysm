@@ -171,13 +171,13 @@ export class SdSheetConfigModal<T> implements ISdModal<ISdSheetConfig> {
   close = output<ISdSheetConfig | undefined>();
 
   initialized = $signal(false);
-  items = $signal<IItemVM[]>([]);
+  items = $signal<IItem[]>([]);
 
-  trackByFn = (item: IItemVM): string => item.key;
+  trackByFn = (item: IItem): string => item.key;
 
   constructor() {
     $effect(() => {
-      const items: IItemVM[] = [];
+      const items: IItem[] = [];
       for (const control of this.controls()) {
         const config = this.config()?.columnRecord?.[control.key()];
 
@@ -203,7 +203,7 @@ export class SdSheetConfigModal<T> implements ISdModal<ISdSheetConfig> {
     });
   }
 
-  onDisplayOrderUpButtonClick(item: IItemVM): void {
+  onDisplayOrderUpButtonClick(item: IItem): void {
     this.items.update((v) => {
       const r = [...v];
       const index = r.indexOf(item);
@@ -217,7 +217,7 @@ export class SdSheetConfigModal<T> implements ISdModal<ISdSheetConfig> {
     });
   }
 
-  onDisplayOrderDownButtonClick(item: IItemVM): void {
+  onDisplayOrderDownButtonClick(item: IItem): void {
     this.items.update((v) => {
       const r = [...v];
       const index = r.indexOf(item);
@@ -256,7 +256,7 @@ export class SdSheetConfigModal<T> implements ISdModal<ISdSheetConfig> {
   }
 }
 
-interface IItemVM {
+interface IItem {
   key: string;
   header: string | undefined;
   disableResizing: boolean;

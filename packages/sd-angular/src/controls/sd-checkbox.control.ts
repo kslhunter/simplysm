@@ -45,7 +45,7 @@ import { setupModelHook } from "../utils/setups/setup-model-hook";
         @include mixins.form-control-base();
         color: inherit;
         cursor: pointer;
-        border-radius: var(--border-radius-sm);
+        border-radius: var(--border-radius-default);
 
         height: calc(
           var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-sm) * 2 + 2px

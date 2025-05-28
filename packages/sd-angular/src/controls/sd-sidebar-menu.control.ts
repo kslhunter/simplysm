@@ -114,15 +114,15 @@ import { $computed } from "../utils/bindings/$computed";
   },
 })
 export class SdSidebarMenuControl {
-  menus = input<ISdSidebarMenuVM[]>([]);
+  menus = input<ISdSidebarMenu[]>([]);
   layout = input<"accordion" | "flat">();
-  getMenuIsSelectedFn = input<(menu: ISdSidebarMenuVM) => boolean>();
+  getMenuIsSelectedFn = input<(menu: ISdSidebarMenu) => boolean>();
 
   fullPageCode = useFullPageCodeSignal();
 
   rootLayout = $computed(() => this.layout() ?? (this.menus().length <= 3 ? "flat" : "accordion"));
 
-  getMenuRouterLinkOption(menu: ISdSidebarMenuVM) {
+  getMenuRouterLinkOption(menu: ISdSidebarMenu) {
     if (menu.children || menu.url != null) {
       return undefined;
     }
@@ -138,28 +138,28 @@ export class SdSidebarMenuControl {
     };
   }
 
-  getIsMenuSelected(menu: ISdSidebarMenuVM) {
+  getIsMenuSelected(menu: ISdSidebarMenu) {
     return this.getMenuIsSelectedFn()
       ? this.getMenuIsSelectedFn()!(menu)
       : this.fullPageCode() === menu.codeChain.join(".");
   }
 
-  onMenuClick(menu: ISdSidebarMenuVM): void {
+  onMenuClick(menu: ISdSidebarMenu): void {
     if (menu.url != null) {
       window.open(menu.url, "_blank");
     }
   }
 
   protected readonly itemTemplateType!: {
-    menus: ISdSidebarMenuVM[];
+    menus: ISdSidebarMenu[];
     depth: number;
   };
 }
 
-export interface ISdSidebarMenuVM {
+export interface ISdSidebarMenu {
   title: string;
   codeChain: string[];
   url?: string;
   icon?: IconDefinition;
-  children?: ISdSidebarMenuVM[];
+  children?: ISdSidebarMenu[];
 }

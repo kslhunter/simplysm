@@ -538,6 +538,7 @@ import {
                 > ._focus-cell-indicator {
                   position: absolute;
                   border: 2px solid var(--theme-primary-default);
+                  border-radius: var(--border-radius-default);
                 }
               }
 

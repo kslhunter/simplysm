@@ -68,11 +68,9 @@ import {
 } from "@angular/router";
 import { SdBusyProvider } from "./providers/sd-busy.provider";
 import { SwUpdate } from "@angular/service-worker";
-import { TSdAppStructureItem } from "./providers/sd-app-structure.provider";
 
 export function provideSdAngular(opt: {
   clientName: string;
-  appStructure?: TSdAppStructureItem<any>[];
   defaultTheme?: TSdTheme;
   defaultDark?: boolean;
   icons?: Partial<ISdAngularIcon>;
@@ -91,7 +89,6 @@ export function provideSdAngular(opt: {
       useFactory: () => {
         const provider = new SdAngularConfigProvider();
         provider.clientName = opt.clientName;
-        provider.appStructure = opt.appStructure ?? [];
         provider.defaultTheme = opt.defaultTheme ?? "compact";
         provider.defaultDark = opt.defaultDark ?? false;
         provider.icons = {
