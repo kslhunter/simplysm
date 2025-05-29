@@ -1,11 +1,12 @@
 import { ISdAngularIcon, SdAngularConfigProvider } from "./providers/sd-angular-config.provider";
 import {
   EnvironmentProviders,
-  ErrorHandler,
   inject,
   makeEnvironmentProviders,
   provideAppInitializer,
-  provideEnvironmentInitializer, provideZonelessChangeDetection,
+  provideBrowserGlobalErrorListeners,
+  provideEnvironmentInitializer,
+  provideZonelessChangeDetection,
 } from "@angular/core";
 import {
   faAngleDoubleLeft,
@@ -55,7 +56,6 @@ import { SdInsertCommandEventPlugin } from "./plugins/commands/sd-insert-command
 import { SdResizeEventPlugin } from "./plugins/events/sd-resize.event-plugin";
 import { SdOptionEventPlugin } from "./plugins/events/sd-option.event-plugin";
 import { SdBackbuttonEventPlugin } from "./plugins/events/sd-backbutton.event-plugin";
-import { SdGlobalErrorHandlerPlugin } from "./plugins/sd-global-error-handler.plugin";
 import { SdThemeProvider, TSdTheme } from "./providers/sd-theme.provider";
 import { SdLocalStorageProvider } from "./providers/sd-local-storage.provider";
 import {
@@ -149,7 +149,8 @@ export function provideSdAngular(opt: {
     { provide: EVENT_MANAGER_PLUGINS, useClass: SdResizeEventPlugin, multi: true },
     { provide: EVENT_MANAGER_PLUGINS, useClass: SdOptionEventPlugin, multi: true },
     { provide: EVENT_MANAGER_PLUGINS, useClass: SdBackbuttonEventPlugin, multi: true },
-    { provide: ErrorHandler, useClass: SdGlobalErrorHandlerPlugin },
+    // { provide: ErrorHandler, useClass: SdGlobalErrorHandlerPlugin },
+    provideBrowserGlobalErrorListeners(),
     provideZonelessChangeDetection(),
 
     //-- 페이지 이동시 로딩 표시

@@ -1,4 +1,12 @@
-import { ApplicationRef, createComponent, inject, Injectable, Signal, Type } from "@angular/core";
+import {
+  ApplicationRef,
+  createComponent,
+  inject,
+  Injectable,
+  inputBinding,
+  Signal,
+  Type,
+} from "@angular/core";
 import { jsPDF } from "jspdf";
 import * as htmlToImage from "html-to-image";
 import { TDirectiveInputSignals } from "../utils/types";
@@ -20,10 +28,12 @@ export class SdPrintProvider {
         //-- comp
         const compRef = createComponent(template.type, {
           environmentInjector: this._appRef.injector,
+          bindings: [
+            ...Object.keys(template.inputs).map((inputKey) =>
+              inputBinding(inputKey, () => template.inputs[inputKey]),
+            ),
+          ],
         });
-        for (const inputKey in template.inputs) {
-          compRef.setInput(inputKey, template.inputs[inputKey]);
-        }
 
         const compEl = compRef.location.nativeElement as HTMLElement;
         compEl.classList.add("_sd-print-template");
@@ -83,10 +93,12 @@ export class SdPrintProvider {
         //-- comp
         const compRef = createComponent(template.type, {
           environmentInjector: this._appRef.injector,
+          bindings: [
+            ...Object.keys(template.inputs).map((inputKey) =>
+              inputBinding(inputKey, () => template.inputs[inputKey]),
+            ),
+          ],
         });
-        for (const inputKey in template.inputs) {
-          compRef.setInput(inputKey, template.inputs[inputKey]);
-        }
 
         const compEl = compRef.location.nativeElement as HTMLElement;
         compEl.classList.add("_sd-print-template");

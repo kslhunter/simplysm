@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input, output, ViewEncapsulation } from "@angular/core";
+import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
 import { transformBoolean } from "../utils/type-tramsforms";
 
 @Component({
@@ -107,7 +107,11 @@ import { transformBoolean } from "../utils/type-tramsforms";
   template: `
     <div class="_sd-toast-block">
       <div class="_sd-toast-message">
-        <ng-content></ng-content>
+        @if (message() != null) {
+          {{ message() }}
+        } @else {
+          <ng-content></ng-content>
+        }
       </div>
       @if (useProgress()) {
         <div class="_sd-toast-progress">
@@ -124,9 +128,10 @@ import { transformBoolean } from "../utils/type-tramsforms";
 export class SdToastControl {
   open = input(false, { transform: transformBoolean });
   useProgress = input(false, { transform: transformBoolean });
-  theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey">("info");
+  theme = input<
+    "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey"
+  >("info");
 
   progress = input<number>(0);
-
-  close = output();
+  message = input<string>();
 }

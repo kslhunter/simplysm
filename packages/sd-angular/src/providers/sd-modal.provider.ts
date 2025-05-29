@@ -1,9 +1,13 @@
 import {
   ApplicationRef,
+  ComponentRef,
   createComponent,
+  EventEmitter,
   inject,
   Injectable,
   Injector,
+  inputBinding,
+  outputBinding,
   OutputEmitterRef,
   Type,
 } from "@angular/core";
@@ -11,12 +15,140 @@ import { SdModalControl } from "../controls/sd-modal.control";
 import { $signal } from "../utils/bindings/$signal";
 import { TDirectiveInputSignals } from "../utils/types";
 
-import { SdBusyProvider } from "./sd-busy.provider";
+export class SdModalInstance<T extends ISdModal<any>> {
+  private readonly _activatedModalProvider: SdActivatedModalProvider<T>;
+  private readonly _compRef: ComponentRef<T>;
+  private readonly _modalRef: ComponentRef<SdModalControl>;
+  private readonly _prevActiveEl?: HTMLElement;
+
+  private _open = $signal(false);
+
+  close = new EventEmitter<any>();
+
+  constructor(
+    appRef: ApplicationRef,
+    modal: ISdModalInput<T>,
+    options?: {
+      key?: string;
+      hideHeader?: boolean;
+      hideCloseButton?: boolean;
+      useCloseByBackdrop?: boolean;
+      useCloseByEscapeKey?: boolean;
+      float?: boolean;
+      minHeightPx?: number;
+      minWidthPx?: number;
+      resizable?: boolean;
+      movable?: boolean;
+      headerStyle?: string;
+      fill?: boolean;
+      noFirstControlFocusing?: boolean;
+    },
+  ) {
+    //-- Provider
+    this._activatedModalProvider = new SdActivatedModalProvider<T>();
+
+    //-- Content component
+    this._compRef = createComponent(modal.type, {
+      environmentInjector: appRef.injector,
+      elementInjector: Injector.create({
+        parent: appRef.injector,
+        providers: [{ provide: SdActivatedModalProvider, useValue: this._activatedModalProvider }],
+      }),
+      bindings: [
+        ...Object.keys(modal.inputs).map(
+          (inputKey) => inputBinding(inputKey, () => modal.inputs[inputKey]),
+          outputBinding("close", (val) => this._onComponentClosed(val)),
+        ),
+      ],
+    });
+
+    this._activatedModalProvider.contentComponent.set(this._compRef.instance);
+    const compEl = this._compRef.location.nativeElement as HTMLElement;
+
+    //-- Modal component
+    this._modalRef = createComponent(SdModalControl, {
+      environmentInjector: appRef.injector,
+      projectableNodes: [[compEl]],
+      elementInjector: Injector.create({
+        parent: appRef.injector,
+        providers: [{ provide: SdActivatedModalProvider, useValue: this._activatedModalProvider }],
+      }),
+      bindings: [
+        inputBinding("title", () => modal.title),
+        inputBinding("key", () => options?.key),
+        inputBinding("hideHeader", () => options?.hideHeader ?? false),
+        inputBinding("hideCloseButton", () => options?.hideCloseButton ?? false),
+        inputBinding("useCloseByBackdrop", () => options?.useCloseByBackdrop ?? false),
+        inputBinding("useCloseByEscapeKey", () => options?.useCloseByEscapeKey ?? false),
+        inputBinding("float", () => options?.float ?? false),
+        inputBinding("minHeightPx", () => options?.minHeightPx),
+        inputBinding("minWidthPx", () => options?.minWidthPx),
+        inputBinding("resizable", () => options?.resizable ?? true),
+        inputBinding("movable", () => options?.movable ?? true),
+        inputBinding("headerStyle", () => options?.headerStyle),
+        inputBinding("fill", () => options?.fill ?? false),
+
+        inputBinding("open", this._open),
+        outputBinding("openChange", (val: boolean) => this._onModalOpenChange(val)),
+      ],
+    });
+    this._activatedModalProvider.modalComponent.set(this._modalRef.instance);
+    const modalEl = this._modalRef.location.nativeElement as HTMLElement;
+
+    this._prevActiveEl = document.activeElement as HTMLElement | undefined;
+
+    document.body.appendChild(modalEl);
+
+    appRef.attachView(this._compRef.hostView);
+    appRef.attachView(this._modalRef.hostView);
+
+    requestAnimationFrame(() => {
+      this._open.set(true);
+
+      requestAnimationFrame(() => {
+        if (options?.noFirstControlFocusing) {
+          this._modalRef.instance.dialogElRef().nativeElement.focus();
+        } else {
+          (
+            compEl.findFocusableFirst() ?? this._modalRef.instance.dialogElRef().nativeElement
+          ).focus();
+        }
+      });
+    });
+  }
+
+  private _onModalOpenChange(val: boolean) {
+    if (!this._activatedModalProvider.canDeactivefn()) return;
+
+    if (val) {
+      this._open.set(val);
+    } else {
+      this._onComponentClosed(undefined);
+    }
+  }
+
+  private _onComponentClosed(val: any) {
+    if (val != null && !this._activatedModalProvider.canDeactivefn()) return;
+
+    const modalEl = this._modalRef.location.nativeElement as HTMLElement;
+    modalEl.addEventListener("transitionend", () => {
+      this._compRef.destroy();
+      this._modalRef.destroy();
+    });
+
+    this._open.set(false);
+
+    if (this._prevActiveEl) {
+      this._prevActiveEl.focus();
+    }
+
+    this.close.emit(val);
+  }
+}
 
 @Injectable({ providedIn: "root" })
 export class SdModalProvider {
   private _appRef = inject(ApplicationRef);
-  private _sdBusy = inject(SdBusyProvider);
 
   modalCount = $signal(0);
 
@@ -38,117 +170,17 @@ export class SdModalProvider {
       noFirstControlFocusing?: boolean;
     },
   ): Promise<Parameters<T["close"]["emit"]>[0] | undefined> {
-    let isFirstOpen = true;
-
-    this._sdBusy.globalBusyCount.update((v) => v + 1);
-
     return await new Promise<Parameters<T["close"]["emit"]>[0] | undefined>((resolve, reject) => {
+      this.modalCount.update((v) => v + 1);
       try {
-        //-- Provider
-        const provider = new SdActivatedModalProvider<T>();
-
-        //-- Content component
-        const compRef = createComponent(modal.type, {
-          environmentInjector: this._appRef.injector,
-          elementInjector: Injector.create({
-            parent: this._appRef.injector,
-            providers: [{ provide: SdActivatedModalProvider, useValue: provider }],
-          }),
-        });
-        for (const inputKey in modal.inputs) {
-          compRef.setInput(inputKey, modal.inputs[inputKey]);
-        }
-
-        provider.contentComponent.set(compRef.instance);
-        const compEl = compRef.location.nativeElement as HTMLElement;
-
-        //-- Modal component
-        const modalRef = createComponent(SdModalControl, {
-          environmentInjector: this._appRef.injector,
-          projectableNodes: [[compEl]],
-          elementInjector: Injector.create({
-            parent: this._appRef.injector,
-            providers: [{ provide: SdActivatedModalProvider, useValue: provider }],
-          }),
-        });
-        modalRef.setInput("title", modal.title);
-        modalRef.setInput("key", options?.key);
-        modalRef.setInput("hideHeader", options?.hideHeader ?? false);
-        modalRef.setInput("hideCloseButton", options?.hideCloseButton ?? false);
-        modalRef.setInput("useCloseByBackdrop", options?.useCloseByBackdrop ?? false);
-        modalRef.setInput("useCloseByEscapeKey", options?.useCloseByEscapeKey ?? false);
-        modalRef.setInput("float", options?.float ?? false);
-        modalRef.setInput("minHeightPx", options?.minHeightPx);
-        modalRef.setInput("minWidthPx", options?.minWidthPx);
-        modalRef.setInput("resizable", options?.resizable ?? true);
-        modalRef.setInput("movable", options?.movable ?? true);
-        modalRef.setInput("headerStyle", options?.headerStyle);
-        modalRef.setInput("fill", options?.fill ?? false);
-
-        provider.modalComponent.set(modalRef.instance);
-        const modalEl = modalRef.location.nativeElement as HTMLElement;
-
-        modalRef.instance.open.subscribe((value: boolean) => {
-          if (!provider.canDeactivefn()) return;
-
-          if (!value) {
-            modalRef.setInput("open", value);
-            compRef.instance.close.emit(undefined);
-          } else {
-            modalRef.setInput("open", value);
-          }
-        });
-
-        const prevActiveElement = document.activeElement as HTMLElement | undefined;
-        compRef.instance.close.subscribe((value: Parameters<T["close"]["emit"]>[0] | undefined) => {
-          if (value != null && !provider.canDeactivefn()) return;
-
-          resolve(value);
-
-          modalEl.addEventListener("transitionend", () => {
-            compRef.destroy();
-            modalRef.destroy();
-          });
-
-          modalRef.setInput("open", false);
-          this.modalCount.update((v) => v - 1);
-
-          if (prevActiveElement) {
-            prevActiveElement.focus();
-          }
-        });
-
-        const rootEl = this._appRef.components[0].location.nativeElement as HTMLElement;
-        rootEl.appendChild(modalEl);
-
-        this._appRef.attachView(compRef.hostView);
-        this._appRef.attachView(modalRef.hostView);
-
-        //-- open
-
-        this.modalCount.update((v) => v + 1);
-        requestAnimationFrame(() => {
-          modalRef.setInput("open", true);
-
-          if (isFirstOpen) {
-            isFirstOpen = false;
-            this._sdBusy.globalBusyCount.update((v) => v - 1);
-          }
-
-          requestAnimationFrame(() => {
-            if (options?.noFirstControlFocusing) {
-              modalRef.instance.dialogElRef().nativeElement.focus();
-            } else {
-              (
-                (compRef.location.nativeElement as HTMLElement).findFocusableFirst() ??
-                modalRef.instance.dialogElRef().nativeElement
-              ).focus();
-            }
-          });
+        const modalInstance = new SdModalInstance(this._appRef, modal, options);
+        modalInstance.close.subscribe((val) => {
+          resolve(val);
         });
       } catch (err) {
         reject(err);
       }
+      this.modalCount.update((v) => v - 1);
     });
   }
 }

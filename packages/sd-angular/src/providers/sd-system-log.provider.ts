@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { inject, Injectable } from "@angular/core";
+import { Injectable } from "@angular/core";
 
 @Injectable({ providedIn: "root" })
 export class SdSystemLogProvider {
@@ -17,11 +17,4 @@ export class SdSystemLogProvider {
       console[severity](...data);
     }
   }
-}
-
-export function provideSdSystemLogWriterForExt(
-  writeFn: (severity: "error" | "warn" | "log", ...data: any[]) => Promise<void> | void,
-) {
-  const sdSystemLog = inject(SdSystemLogProvider);
-  sdSystemLog.writeFn = writeFn;
 }
