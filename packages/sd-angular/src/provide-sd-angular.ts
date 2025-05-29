@@ -5,8 +5,7 @@ import {
   inject,
   makeEnvironmentProviders,
   provideAppInitializer,
-  provideEnvironmentInitializer,
-  provideExperimentalZonelessChangeDetection,
+  provideEnvironmentInitializer, provideZonelessChangeDetection,
 } from "@angular/core";
 import {
   faAngleDoubleLeft,
@@ -151,7 +150,7 @@ export function provideSdAngular(opt: {
     { provide: EVENT_MANAGER_PLUGINS, useClass: SdOptionEventPlugin, multi: true },
     { provide: EVENT_MANAGER_PLUGINS, useClass: SdBackbuttonEventPlugin, multi: true },
     { provide: ErrorHandler, useClass: SdGlobalErrorHandlerPlugin },
-    provideExperimentalZonelessChangeDetection(),
+    provideZonelessChangeDetection(),
 
     //-- 페이지 이동시 로딩 표시
     provideAppInitializer(() => {

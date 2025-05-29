@@ -19,7 +19,6 @@
     ]
   },
   "dependencies": {
-    "@awesome-cordova-plugins/core": "^6.16.0",
     "@simplysm/cordova-plugin-file-system": "12.11.4",
     "@simplysm/sd-core-common": "12.11.4",
     "@simplysm/sd-service-client": "12.11.4",

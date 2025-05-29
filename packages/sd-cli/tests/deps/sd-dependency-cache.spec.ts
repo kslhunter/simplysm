@@ -11,7 +11,7 @@ describe("SdDependencyCache", () => {
   const b = PathUtils.norm("/b.ts");
   const c = PathUtils.norm("/c.ts");
   const html = PathUtils.norm("/comp.html");
-  const style = PathUtils.norm("/style.scss");
+  // const style = PathUtils.norm("/style.scss");
 
   let depCache: SdDependencyCache;
 
@@ -127,10 +127,10 @@ describe("SdDependencyCache", () => {
     const trees = depCache.getAffectedFileTree(new Set([a]));
 
     expect(trees.length).toBeGreaterThan(0);
-    const aNode = trees.find(t => t.fileNPath === a)!;
-    expect(aNode.children.some(c1 => c1.fileNPath === b)).toBeTruthy();
-    const bNode = aNode.children.find(c1 => c1.fileNPath === b)!;
-    expect(bNode.children.some(c2 => c2.fileNPath === c)).toBeTruthy();
+    const aNode = trees.find((t) => t.fileNPath === a)!;
+    expect(aNode.children.some((c1) => c1.fileNPath === b)).toBeTruthy();
+    const bNode = aNode.children.find((c1) => c1.fileNPath === b)!;
+    expect(bNode.children.some((c2) => c2.fileNPath === c)).toBeTruthy();
 
     const printTree = (node: ISdAffectedFileTreeNode, indent = "") => {
       console.log(indent + node.fileNPath);

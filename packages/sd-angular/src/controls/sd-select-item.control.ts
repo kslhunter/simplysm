@@ -1,5 +1,5 @@
 import {
-  afterRender,
+  afterEveryRender,
   ChangeDetectionStrategy,
   Component,
   forwardRef,
@@ -107,7 +107,7 @@ export class SdSelectItemControl {
       });
     });
 
-    afterRender(() => {
+    afterEveryRender(() => {
       const html = this.elRef.nativeElement.findFirst("> ._content")!.innerHTML;
       if (this.contentHTML() !== html.trim()) {
         this.contentHTML.set(html.trim());

@@ -16,5 +16,5 @@ export function $mark(sig: WritableSignal<any>) {
   node.version++;
   producerIncrementEpoch();
   producerNotifyConsumers(node);
-  runPostSignalSetFn();
+  runPostSignalSetFn(node);
 }

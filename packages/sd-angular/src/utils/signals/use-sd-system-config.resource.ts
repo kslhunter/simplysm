@@ -3,21 +3,19 @@ import { SdSystemConfigProvider } from "../../providers/sd-system-config.provide
 import { $resource } from "../bindings/$resource";
 import { injectElementRef } from "../injections/inject-element-ref";
 
-export function useSdSystemConfigResource<T>(
-  options: { key: Signal<string | undefined> },
-) {
+export function useSdSystemConfigResource<T>(options: { key: Signal<string | undefined> }) {
   const sdSystemConfig = inject(SdSystemConfigProvider);
   const elRef = injectElementRef();
 
   const elTag = elRef.nativeElement.tagName.toLowerCase();
 
   return $resource<T, { key?: string }>({
-    request: () => ({
+    params: () => ({
       key: options.key(),
     }),
-    loader: async ({ request }) => {
-      if (request.key == null) return undefined;
-      return await sdSystemConfig.getAsync(`${elTag}.${request}`);
+    loader: async ({ params }) => {
+      if (params.key == null) return undefined;
+      return await sdSystemConfig.getAsync(`${elTag}.${params.key}`);
     },
     saver: (value) => {
       const key = options.key();

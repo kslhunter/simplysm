@@ -120,7 +120,7 @@ export class ObjectUtils {
     }
 
     if (target === null) {
-      return opt?.useDelTargetNull ? undefined : (ObjectUtils.clone(source) as any);
+      return opt?.useDelTargetNull ? undefined as any : (ObjectUtils.clone(source) as any);
     }
 
     if (typeof target !== "object") {

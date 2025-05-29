@@ -1,25 +1,25 @@
-import { ResourceRef, ResourceStatus, Signal } from "@angular/core";
+import { ResourceRef, Signal } from "@angular/core";
 import { $computed } from "../../../utils/bindings/$computed";
 import { SdSheetColumnDirective } from "../directives/sd-sheet-column.directive";
 import { ISdSheetColumnDef, ISdSheetConfig, ISdSheetHeaderDef } from "../sd-sheet.types";
 
 export class SdSheetLayoutEngine<T> {
-  constructor(private _options: {
-    columnControls: Signal<ReadonlyArray<SdSheetColumnDirective<T>>>;
-    config: ResourceRef<ISdSheetConfig | undefined>;
-  }) {
-  }
+  constructor(
+    private _options: {
+      columnControls: Signal<ReadonlyArray<SdSheetColumnDirective<T>>>;
+      config: ResourceRef<ISdSheetConfig | undefined>;
+    },
+  ) {}
 
   columnDefs = $computed<ISdSheetColumnDef<T>[]>(() => {
-    if (
-      this._options.config.status() !== ResourceStatus.Resolved &&
-      this._options.config.status() !== ResourceStatus.Local
-    ) return [];
+    if (this._options.config.status() !== "resolved" && this._options.config.status() !== "local")
+      return [];
 
     const conf = this._options.config.value();
 
-    return this._options.columnControls()
-      .map(columnControl => {
+    return this._options
+      .columnControls()
+      .map((columnControl) => {
         const colConf = conf?.columnRecord?.[columnControl.key()];
         return {
           control: columnControl,
@@ -30,10 +30,10 @@ export class SdSheetLayoutEngine<T> {
           headerStyle: columnControl.headerStyle(),
         };
       })
-      .filter(item => !item.hidden && !item.control.collapse())
-      .orderBy(item => item.displayOrder ?? 999)
+      .filter((item) => !item.hidden && !item.control.collapse())
+      .orderBy((item) => item.displayOrder ?? 999)
       .orderBy((item) => (item.fixed ? -1 : 0))
-      .map(item => ({
+      .map((item) => ({
         control: item.control,
         fixed: item.fixed,
         width: item.width,
@@ -47,9 +47,10 @@ export class SdSheetLayoutEngine<T> {
 
     for (let c = 0; c < defs.length; c++) {
       const colDef = defs[c];
-      const headers = typeof colDef.control.header() === "string"
-        ? [colDef.control.header() as string]
-        : colDef.control.header() ?? [""];
+      const headers =
+        typeof colDef.control.header() === "string"
+          ? [colDef.control.header() as string]
+          : (colDef.control.header() ?? [""]);
 
       for (let r = 0; r < headers.length; r++) {
         result[r] ??= [];
@@ -126,11 +127,11 @@ export class SdSheetLayoutEngine<T> {
   });
 
   hasSummary = $computed<boolean>(() =>
-    this._options.columnControls().some(item => item.summaryTemplateRef()),
+    this._options.columnControls().some((item) => item.summaryTemplateRef()),
   );
 
-  headerFeatureRowSpan = $computed<number>(() =>
-    this._rawHeaderDefTable().length + (this.hasSummary() ? 1 : 0),
+  headerFeatureRowSpan = $computed<number>(
+    () => this._rawHeaderDefTable().length + (this.hasSummary() ? 1 : 0),
   );
 }
 
