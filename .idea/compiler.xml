@@ -3,6 +3,6 @@
   <component name="TypeScriptCompiler">
     <option name="showAllErrors" value="false" />
     <option name="showSuggestions" value="false" />
-    <option name="useTypesFromServer" value="false" />
+    <option name="useTypesFromServer" value="true" />
   </component>
 </project>

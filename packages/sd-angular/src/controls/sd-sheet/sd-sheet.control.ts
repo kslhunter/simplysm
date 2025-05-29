@@ -386,6 +386,7 @@ import {
               border-bottom-left-radius: var(--border-radius-default);
               border-bottom-right-radius: var(--border-radius-default);
               overflow: auto;
+              //@include mixins.elevation(-16);
 
               > table {
                 border-spacing: 0;
@@ -393,16 +394,18 @@ import {
                 margin-right: 2px;
                 margin-bottom: 2px;
                 border-bottom-right-radius: var(--border-radius-default);
-                @include mixins.elevation(1);
+                @include mixins.elevation(16);
 
                 > * > tr > *:last-child {
                   //border-right: 1px solid $border-color-dark;
-                  border-right: 1px solid transparent;
+                  //border-right: 1px solid transparent;
+                  border-right: none;
                 }
 
                 > * > tr:last-child > * {
                   //border-bottom: 1px solid $border-color-dark;
-                  border-bottom: 1px solid transparent;
+                  //border-bottom: 1px solid transparent;
+                  border-bottom: none;
                 }
 
                 > *:last-child > tr:last-child > td:last-child {
