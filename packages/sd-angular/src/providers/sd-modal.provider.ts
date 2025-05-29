@@ -55,10 +55,10 @@ export class SdModalInstance<T extends ISdModal<any>> {
         providers: [{ provide: SdActivatedModalProvider, useValue: this._activatedModalProvider }],
       }),
       bindings: [
-        ...Object.keys(modal.inputs).map(
-          (inputKey) => inputBinding(inputKey, () => modal.inputs[inputKey]),
-          outputBinding("close", (val) => this._onComponentClosed(val)),
+        ...Object.keys(modal.inputs).map((inputKey) =>
+          inputBinding(inputKey, () => modal.inputs[inputKey]),
         ),
+        outputBinding("close", (val) => this._onComponentClosed(val)),
       ],
     });
 
