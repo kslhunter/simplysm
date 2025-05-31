@@ -43,37 +43,42 @@ import { transformBoolean } from "../utils/type-tramsforms";
   ],
   template: `
     <sd-busy-container [busy]="busy()" [message]="busyMessage()">
-      @if (!perms().includes("use")) {
-        <sd-pane
-          class="tx-theme-grey-light p-xxl tx-center"
-          [sd-show-effect]="currViewType() !== 'modal'"
-        >
-          <br />
-          <sd-icon [icon]="icons.triangleExclamation" fixedWidth size="5x" />
-          <br />
-          <br />
-          '{{ title() }}'에 대한 사용권한이 없습니다. 시스템 관리자에게 문의하세요.
-        </sd-pane>
-      } @else if (currViewType() === "page") {
-        <sd-topbar-container>
-          <sd-topbar>
-            <h4>{{ title() }}</h4>
+      @if (initialized()) {
+        @if (!perms().includes("use")) {
+          <sd-pane class="tx-theme-grey-light p-xxl tx-center" sd-show-effect>
+            <br />
+            <sd-icon [icon]="icons.triangleExclamation" fixedWidth size="5x" />
+            <br />
+            <br />
+            '{{ title() }}'에 대한 사용권한이 없습니다. 시스템 관리자에게 문의하세요.
+          </sd-pane>
+        } @else if (currViewType() === "page") {
+          <sd-topbar-container>
+            <sd-topbar>
+              <h4>{{ title() }}</h4>
 
-            <ng-template [ngTemplateOutlet]="pageTopbarTemplateRef() ?? null" />
-          </sd-topbar>
+              <ng-template [ngTemplateOutlet]="pageTopbarTemplateRef() ?? null" />
+            </sd-topbar>
 
-          <ng-template [ngTemplateOutlet]="contentTemplateRef() ?? null" />
-        </sd-topbar-container>
-      } @else if (currViewType() === "modal" && modalBottomTemplateRef()) {
-        <sd-dock-container>
-          <ng-template [ngTemplateOutlet]="contentTemplateRef() ?? null" />
+            <sd-pane sd-show-effect>
+              <ng-template [ngTemplateOutlet]="contentTemplateRef() ?? null" />
+            </sd-pane>
+          </sd-topbar-container>
+        } @else if (currViewType() === "modal" && modalBottomTemplateRef()) {
+          <sd-dock-container>
+            <sd-pane sd-show-effect>
+              <ng-template [ngTemplateOutlet]="contentTemplateRef() ?? null" />
+            </sd-pane>
 
-          <sd-dock position="bottom">
-            <ng-template [ngTemplateOutlet]="modalBottomTemplateRef() ?? null" />
-          </sd-dock>
-        </sd-dock-container>
-      } @else {
-        <ng-template [ngTemplateOutlet]="contentTemplateRef() ?? null" />
+            <sd-dock position="bottom">
+              <ng-template [ngTemplateOutlet]="modalBottomTemplateRef() ?? null" />
+            </sd-dock>
+          </sd-dock-container>
+        } @else {
+          <sd-pane sd-show-effect>
+            <ng-template [ngTemplateOutlet]="contentTemplateRef() ?? null" />
+          </sd-pane>
+        }
       }
     </sd-busy-container>
   `,
@@ -103,6 +108,7 @@ export class SdBaseContainerControl {
       this._sdAppStructure.getTitleByFullCode(this._currPageCode?.() ?? this._fullPageCode()),
   );
 
+  initialized = input.required({ transform: transformBoolean });
   busy = input(false, { transform: transformBoolean });
   busyMessage = input<string>();
 }

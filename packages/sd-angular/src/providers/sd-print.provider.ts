@@ -11,10 +11,12 @@ import { jsPDF } from "jspdf";
 import * as htmlToImage from "html-to-image";
 import { TDirectiveInputSignals } from "../utils/types";
 import { Wait } from "@simplysm/sd-core-common";
+import { SdBusyProvider } from "./sd-busy.provider";
 
 @Injectable({ providedIn: "root" })
 export class SdPrintProvider {
   private _appRef = inject(ApplicationRef);
+  private _sdBusy = inject(SdBusyProvider);
 
   async printAsync<T extends ISdPrint>(
     template: ISdPrintInput<T>,
@@ -25,6 +27,9 @@ export class SdPrintProvider {
   ): Promise<void> {
     await new Promise<void>((resolve, reject) => {
       try {
+        //-- busy
+        this._sdBusy.globalBusyCount.update(v => v + 1);
+
         //-- comp
         const compRef = createComponent(template.type, {
           environmentInjector: this._appRef.injector,
@@ -61,7 +66,7 @@ export class SdPrintProvider {
 
         requestAnimationFrame(async () => {
           try {
-            await this._waitForBusyCount(compRef.instance.initialized);
+            await Wait.until(() => compRef.instance.initialized());
             await this._waitForAllImagesLoadedAsync(compEl);
 
             window.print();
@@ -70,8 +75,8 @@ export class SdPrintProvider {
             reject(err);
           } finally {
             try {
+              this._sdBusy.globalBusyCount.update(v => v - 1);
               styleEl.remove();
-              compEl.remove();
               compRef.destroy();
             } catch {}
           }
@@ -90,6 +95,9 @@ export class SdPrintProvider {
   ): Promise<Buffer> {
     return await new Promise<Buffer>((resolve, reject) => {
       try {
+        //-- busy
+        this._sdBusy.globalBusyCount.update(v => v + 1);
+
         //-- comp
         const compRef = createComponent(template.type, {
           environmentInjector: this._appRef.injector,
@@ -115,7 +123,7 @@ export class SdPrintProvider {
 
         requestAnimationFrame(async () => {
           try {
-            await this._waitForBusyCount(compRef.instance.initialized);
+            await Wait.until(() => compRef.instance.initialized());
             await this._waitForAllImagesLoadedAsync(compEl);
 
             const doc = new jsPDF(options?.orientation ?? "p", "pt", "a4");
@@ -157,8 +165,8 @@ export class SdPrintProvider {
             reject(err);
           } finally {
             try {
+              this._sdBusy.globalBusyCount.update(v => v - 1);
               styleEl.remove();
-              compEl.remove();
               compRef.destroy();
             } catch {}
           }
@@ -167,10 +175,6 @@ export class SdPrintProvider {
         reject(err);
       }
     });
-  }
-
-  private async _waitForBusyCount(initialized?: Signal<boolean>) {
-    await Wait.until(() => initialized == null || initialized());
   }
 
   private async _waitForAllImagesLoadedAsync(container: HTMLElement): Promise<void> {

@@ -733,6 +733,30 @@ export class ObjectUtils {
   static optToUndef<T>(obj: TUndefToOptional<T>): T {
     return obj as T;
   }
+
+  static unflattenObject(flatObj: Record<string, any>): Record<string, any> {
+    const result: Record<string, any> = {};
+
+    for (const key in flatObj) {
+      const parts = key.split(".");
+      let current = result;
+
+      for (let i = 0; i < parts.length; i++) {
+        const part = parts[i];
+
+        if (i === parts.length - 1) {
+          current[part] = flatObj[key];
+        } else {
+          if (!(part in current)) {
+            current[part] = {};
+          }
+          current = current[part];
+        }
+      }
+    }
+
+    return result;
+  }
 }
 
 export type TValidateDef<T> = Type<WrappedType<T>> | Type<WrappedType<T>>[] | IValidateDef<T>;

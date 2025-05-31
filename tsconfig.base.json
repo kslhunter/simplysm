@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "declaration": true,
-    "downlevelIteration": true,
+    "downlevelIteration": false,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "module": "ESNext",

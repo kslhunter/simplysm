@@ -13,7 +13,7 @@ export class SdSheetFocusIndicatorRenderer {
     const cellIndicatorEl = this._options.domAccessor.getFocusCellIndicator();
 
     const focusedEl = document.activeElement;
-    if (!(focusedEl instanceof HTMLElement)) {
+    if (!(focusedEl instanceof HTMLElement) || !focusedEl.findParent(containerEl)) {
       cellIndicatorEl.style.display = "none";
       rowIndicatorEl.style.display = "none";
       return;

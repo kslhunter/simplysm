@@ -1,4 +1,4 @@
-import { NgIf, NgTemplateOutlet } from "@angular/common";
+import { NgTemplateOutlet } from "@angular/common";
 import {
   ChangeDetectionStrategy,
   Component,
@@ -6,6 +6,7 @@ import {
   HostListener,
   inject,
   input,
+  model,
   output,
   Signal,
   TemplateRef,
@@ -19,12 +20,10 @@ import { SdFormControl } from "../../controls/sd-form.control";
 import { SdIconControl } from "../../controls/sd-icon.control";
 import { SdTopbarMenuItemControl } from "../../controls/sd-topbar-menu-item.control";
 import { SdTopbarMenuControl } from "../../controls/sd-topbar-menu.control";
-import { SdShowEffectDirective } from "../../directives/sd-show-effect.directive";
 import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
 import { SdToastProvider } from "../../providers/sd-toast.provider";
 import { $computed } from "../../utils/bindings/$computed";
 import { $effect } from "../../utils/bindings/$effect";
-import { $signal } from "../../utils/bindings/$signal";
 import { $obj } from "../../utils/bindings/wrappers/$obj";
 import { setupCanDeactivate } from "../../utils/setups/setup-can-deactivate";
 import { TSdViewType, useViewTypeSignal } from "../../utils/signals/use-view-type.signal";
@@ -42,16 +41,18 @@ import { FormatPipe } from "../../pipes/format.pipe";
     SdBaseContainerControl,
     SdFormControl,
     SdButtonControl,
-    SdShowEffectDirective,
     SdTopbarMenuControl,
     SdTopbarMenuItemControl,
     SdIconControl,
-    NgIf,
     NgTemplateOutlet,
     FormatPipe,
   ],
   template: `
-    <sd-base-container [busy]="busyCount() > 0" [viewType]="currViewType()">
+    <sd-base-container
+      [busy]="busyCount() > 0"
+      [viewType]="currViewType()"
+      [initialized]="initialized()"
+    >
       <ng-template #pageTopbar>
         <sd-topbar-menu>
           <sd-topbar-menu-item (click)="onSubmitButtonClick()">
@@ -68,11 +69,9 @@ import { FormatPipe } from "../../pipes/format.pipe";
       </ng-template>
 
       <ng-template #content>
-        <ng-container *ngIf="initialized()">
-          <sd-form #formCtrl (submit)="onSubmit()" sd-show-effect>
-            <ng-template [ngTemplateOutlet]="contentTemplateRef()" />
-          </sd-form>
-        </ng-container>
+        <sd-form #formCtrl (submit)="onSubmit()">
+          <ng-template [ngTemplateOutlet]="contentTemplateRef()" />
+        </sd-form>
       </ng-template>
 
       <ng-template #modalBottom>
@@ -131,8 +130,8 @@ export class SdDataDetailControl<T extends object> {
 
   //-- view
 
-  initialized = $signal(false);
-  busyCount = $signal(0);
+  initialized = model(false);
+  busyCount = model(0);
 
   formCtrl = viewChild<SdFormControl>("formCtrl");
 
@@ -188,9 +187,10 @@ export class SdDataDetailControl<T extends object> {
       if (!result) return;
 
       this._sdToast.success(`${del ? "삭제" : "복구"}되었습니다.`);
+
+      this.close.emit(true);
     });
     this.busyCount.update((v) => v - 1);
-    this.close.emit(true);
   }
 
   @HostListener("sdSaveCommand")
@@ -215,9 +215,10 @@ export class SdDataDetailControl<T extends object> {
       if (!result) return;
 
       this._sdToast.success("저장되었습니다.");
+
+      this.close.emit(true);
     });
     this.busyCount.update((v) => v - 1);
-    this.close.emit(true);
   }
 }
 

@@ -30,7 +30,7 @@ export type TExcelValidateObjectRecord<VT extends TExcelValidObject> = {
 
 export class SdExcelWrapper<VT extends TExcelValidObject> {
   constructor(
-    private _fieldConf: VT,
+    private _fieldConf: VT | (() => VT),
     private _additionalFieldConf?: (item: TExcelValidateObjectRecord<VT>) => {
       [P in keyof VT]?: Partial<TValidFieldSpec<VT[P]["type"]>>
     },
@@ -44,8 +44,9 @@ export class SdExcelWrapper<VT extends TExcelValidObject> {
     const wb = new SdExcelWorkbook();
     const ws = await wb.createWorksheetAsync(wsName);
 
-    const keys = Object.keys(this._fieldConf);
-    const headers = Object.values(this._fieldConf).map(val => val.displayName);
+    const defaultFieldConf = typeof this._fieldConf === "function" ? this._fieldConf() : this._fieldConf;
+    const keys = Object.keys(defaultFieldConf);
+    const headers = Object.values(defaultFieldConf).map(val => val.displayName);
 
     await ws.setDataMatrixAsync([
       headers,
@@ -59,7 +60,7 @@ export class SdExcelWrapper<VT extends TExcelValidObject> {
     }
 
     for (let c = 0; c < keys.length; c++) {
-      if (this._fieldConf[keys[c]].notnull) {
+      if (defaultFieldConf[keys[c]].notnull) {
         await ws.cell(0, c).style.setBackgroundAsync("00FFFF00");
       }
     }
@@ -78,8 +79,8 @@ export class SdExcelWrapper<VT extends TExcelValidObject> {
     const ws = await wb.getWorksheetAsync(wsNameOrIndex);
     const wsName = await ws.getNameAsync();
 
-    // const defaultFieldConf = this._fieldConf();
-    const headers = Object.keys(this._fieldConf).map(key => this._fieldConf[key].displayName);
+    const defaultFieldConf = typeof this._fieldConf === "function" ? this._fieldConf() : this._fieldConf;
+    const headers = Object.keys(defaultFieldConf).map(key => defaultFieldConf[key].displayName);
     const wsdt = await ws.getDataTableAsync({
       usableHeaderNameFn: headerName => headers.includes(headerName),
     }) as any[];
@@ -166,9 +167,11 @@ export class SdExcelWrapper<VT extends TExcelValidObject> {
   }
 
   private _getFieldConf(item: TExcelValidateObjectRecord<VT>) {
+    const defaultFieldConf = typeof this._fieldConf === "function" ? this._fieldConf() : this._fieldConf;
+
     const result = this._additionalFieldConf
-      ? ObjectUtils.merge(this._fieldConf, this._additionalFieldConf(item))
-      : this._fieldConf;
+      ? ObjectUtils.merge(defaultFieldConf, this._additionalFieldConf(item))
+      : defaultFieldConf;
 
     const hiddenKeys = Object.keys(result).filter(key => result[key].hidden);
     for (const hiddenKey of hiddenKeys) {

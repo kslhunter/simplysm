@@ -26,12 +26,10 @@ import { SdSheetColumnDirective } from "../../controls/sd-sheet/directives/sd-sh
 import { SdSheetControl } from "../../controls/sd-sheet/sd-sheet.control";
 import { SdTopbarMenuItemControl } from "../../controls/sd-topbar-menu-item.control";
 import { SdTopbarMenuControl } from "../../controls/sd-topbar-menu.control";
-import { SdShowEffectDirective } from "../../directives/sd-show-effect.directive";
 import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
 import { SdFileDialogProvider } from "../../providers/sd-file-dialog.provider";
 import { SdToastProvider } from "../../providers/sd-toast.provider";
 import { $computed } from "../../utils/bindings/$computed";
-import { $effect } from "../../utils/bindings/$effect";
 import { $signal } from "../../utils/bindings/$signal";
 import { ISdSortingDef } from "../../utils/managers/sd-sorting-manager";
 import { setupCumulateSelectedKeys } from "../../utils/setups/setup-cumulate-selected-keys";
@@ -43,6 +41,7 @@ import { SdDataSheetColumnDirective } from "./sd-data-sheet-column.directive";
 import { SdDataSheetFilterDirective } from "./sd-data-sheet-filter.directive";
 import { SdDataSheetToolDirective } from "./sd-data-sheet-tool.directive";
 import { setupCloserWhenSingleSelectionChange } from "../../utils/setups/setup-closer-when-single-selection-change";
+import { $effect } from "../../utils/bindings/$effect";
 
 @Component({
   selector: "sd-data-sheet",
@@ -55,7 +54,6 @@ import { setupCloserWhenSingleSelectionChange } from "../../utils/setups/setup-c
     SdIconControl,
     SdDockContainerControl,
     SdDockControl,
-    SdShowEffectDirective,
     SdFormControl,
     SdFormBoxControl,
     SdFormBoxItemControl,
@@ -69,7 +67,11 @@ import { setupCloserWhenSingleSelectionChange } from "../../utils/setups/setup-c
     SdBaseContainerControl,
   ],
   template: `
-    <sd-base-container [busy]="busyCount() > 0" [viewType]="currViewType()">
+    <sd-base-container
+      [busy]="busyCount() > 0"
+      [viewType]="currViewType()"
+      [initialized]="initialized()"
+    >
       <ng-template #pageTopbar>
         <sd-topbar-menu>
           <sd-topbar-menu-item theme="info" (click)="onRefreshCommand()">
@@ -81,180 +83,179 @@ import { setupCloserWhenSingleSelectionChange } from "../../utils/setups/setup-c
       </ng-template>
 
       <ng-template #content>
-        @if (initialized()) {
-          <sd-dock-container class="p-lg" sd-show-effect>
-            <sd-dock class="pb-lg">
-              <sd-form (submit)="onFilterSubmit()">
-                <sd-form-box layout="inline">
-                  <sd-form-box-item>
-                    <sd-button type="submit" theme="info">
-                      <sd-icon [icon]="icons.search" fixedWidth />
-                      조회
-                    </sd-button>
-                  </sd-form-box-item>
-                  @for (filterControl of filterControls(); track filterControl) {
-                    <sd-form-box-item
-                      [label]="filterControl.label()"
-                      [labelTooltip]="filterControl.labelTooltip()"
-                    >
-                      @if (filterControl.labelTemplateRef()) {
-                        <ng-template #label>
-                          <ng-template [ngTemplateOutlet]="filterControl.labelTemplateRef()!" />
-                        </ng-template>
-                      }
-                      <ng-template [ngTemplateOutlet]="filterControl.contentTemplateRef()" />
-                    </sd-form-box-item>
-                  }
-                </sd-form-box>
-              </sd-form>
-            </sd-dock>
-
-            <sd-dock class="pb-xs">
-              <div class="flex-row flex-gap-sm">
-                @for (toolControl of beforeToolControls(); track toolControl) {
-                  <ng-template [ngTemplateOutlet]="toolControl.contentTemplateRef()" />
-                }
-
-                @if (viewModel().editItem) {
-                  @if (viewModel().perms().includes("edit")) {
-                    <sd-button size="sm" theme="primary" (click)="onCreateItemButtonClick()">
-                      <sd-icon [icon]="icons.add" fixedWidth />
-                      등록
-                      <small>(CTRL+INSERT)</small>
-                    </sd-button>
-                  }
-                }
-
-                @if (!selectMode()) {
-                  @if (viewModel().toggleDeletes) {
-                    <sd-button
-                      size="sm"
-                      theme="link-danger"
-                      (click)="onToggleDeletesButtonClick(true)"
-                      [disabled]="!isSelectedItemsHasNotDeleted()"
-                    >
-                      <sd-icon [icon]="icons.delete" [fixedWidth]="true" />
-                      선택 삭제
-                    </sd-button>
-                    @if (isSelectedItemsHasDeleted()) {
-                      <sd-button
-                        size="sm"
-                        theme="link-warning"
-                        (click)="onToggleDeletesButtonClick(false)"
-                      >
-                        <sd-icon [icon]="icons.redo" [fixedWidth]="true" />
-                        선택 복구
-                      </sd-button>
+        <sd-dock-container class="p-lg">
+          <sd-dock class="pb-lg">
+            <sd-form (submit)="onFilterSubmit()">
+              <sd-form-box layout="inline">
+                <sd-form-box-item>
+                  <sd-button type="submit" theme="info">
+                    <sd-icon [icon]="icons.search" fixedWidth />
+                    조회
+                  </sd-button>
+                </sd-form-box-item>
+                @for (filterControl of filterControls(); track filterControl) {
+                  <sd-form-box-item
+                    [label]="filterControl.label()"
+                    [labelTooltip]="filterControl.labelTooltip()"
+                  >
+                    @if (filterControl.labelTemplateRef()) {
+                      <ng-template #label>
+                        <ng-template [ngTemplateOutlet]="filterControl.labelTemplateRef()!" />
+                      </ng-template>
                     }
-                  }
-
-                  @if (viewModel().uploadExcel) {
-                    <sd-button size="sm" theme="link-success" (click)="onUploadExcelButtonClick()">
-                      <sd-icon [icon]="icons.upload" fixedWidth />
-                      엑셀 업로드
-                    </sd-button>
-                  }
+                    <ng-template [ngTemplateOutlet]="filterControl.contentTemplateRef()" />
+                  </sd-form-box-item>
                 }
+              </sd-form-box>
+            </sd-form>
+          </sd-dock>
 
-                @if (viewModel().downloadExcel) {
-                  <sd-button size="sm" theme="link-success" (click)="onDownloadExcelButtonClick()">
-                    <sd-icon [icon]="icons.fileExcel" fixedWidth />
-                    엑셀 다운로드
+          <sd-dock class="pb-xs">
+            <div class="flex-row flex-gap-sm">
+              @for (toolControl of beforeToolControls(); track toolControl) {
+                <ng-template [ngTemplateOutlet]="toolControl.contentTemplateRef()" />
+              }
+
+              @if (viewModel().editItem) {
+                @if (viewModel().perms().includes("edit")) {
+                  <sd-button size="sm" theme="primary" (click)="onCreateItemButtonClick()">
+                    <sd-icon [icon]="icons.add" fixedWidth />
+                    등록
+                    <small>(CTRL+INSERT)</small>
                   </sd-button>
                 }
+              }
 
-                @for (toolControl of afterToolControls(); track toolControl) {
-                  <ng-template [ngTemplateOutlet]="toolControl.contentTemplateRef()" />
-                }
-              </div>
-            </sd-dock>
-
-            <sd-pane>
-              <sd-sheet
-                [key]="viewModel().key + '-sheet'"
-                [items]="items()"
-                [(currentPage)]="page"
-                [totalPageCount]="pageLength()"
-                [(sorts)]="ordering"
-                [selectMode]="selectMode() ?? 'multi'"
-                [autoSelect]="selectMode() === 'single' ? 'click' : undefined"
-                [(selectedItems)]="selectedItems"
-                [trackByFn]="trackByFn"
-                [getItemCellStyleFn]="getItemCellStyleFn"
-              >
-                @for (columnControl of columnControls(); track columnControl.key) {
-                  <sd-sheet-column
-                    [key]="columnControl.key()"
-                    [fixed]="columnControl.fixed()"
-                    [header]="columnControl.header()"
-                    [headerStyle]="columnControl.headerStyle()"
-                    [tooltip]="columnControl.tooltip()"
-                    [width]="columnControl.width()"
-                    [disableSorting]="columnControl.disableSorting()"
-                    [disableResizing]="columnControl.disableResizing()"
-                    [hidden]="columnControl.hidden()"
-                    [collapse]="columnControl.collapse()"
+              @if (!selectMode()) {
+                @if (viewModel().toggleDeletes) {
+                  <sd-button
+                    size="sm"
+                    theme="link-danger"
+                    (click)="onToggleDeletesButtonClick(true)"
+                    [disabled]="!isSelectedItemsHasNotDeleted()"
                   >
-                    @if (columnControl.headerTemplateRef()) {
-                      <ng-template #header>
-                        <ng-template [ngTemplateOutlet]="columnControl.headerTemplateRef()!" />
-                      </ng-template>
-                    }
-                    @if (columnControl.summaryTemplateRef()) {
-                      <ng-template #summary>
-                        <ng-template [ngTemplateOutlet]="columnControl.summaryTemplateRef()!" />
-                      </ng-template>
-                    }
-
-                    <ng-template
-                      [cell]="items()"
-                      let-item
-                      let-index="index"
-                      let-depth="depth"
-                      let-edit="edit"
+                    <sd-icon [icon]="icons.delete" [fixedWidth]="true" />
+                    선택 삭제
+                  </sd-button>
+                  @if (isSelectedItemsHasDeleted()) {
+                    <sd-button
+                      size="sm"
+                      theme="link-warning"
+                      (click)="onToggleDeletesButtonClick(false)"
                     >
-                      @if (
-                        viewModel().editItem &&
-                        columnControl.edit() &&
-                        viewModel().perms().includes("edit")
-                      ) {
-                        <sd-anchor class="flex-row" (click)="onItemClick(item, index, $event)">
-                          <div class="p-xs-sm pr-0">
-                            <sd-icon [icon]="icons.edit" />
-                          </div>
-                          <div class="flex-grow">
-                            <ng-template
-                              [ngTemplateOutlet]="columnControl.cellTemplateRef()"
-                              [ngTemplateOutletContext]="{
-                                $implicit: item,
-                                item: item,
-                                index: index,
-                                depth: depth,
-                                edit: edit,
-                              }"
-                            />
-                          </div>
-                        </sd-anchor>
-                      } @else {
-                        <ng-template
-                          [ngTemplateOutlet]="columnControl.cellTemplateRef()"
-                          [ngTemplateOutletContext]="{
-                            $implicit: item,
-                            item: item,
-                            index: index,
-                            depth: depth,
-                            edit: edit,
-                          }"
-                        />
-                      }
-                    </ng-template>
-                  </sd-sheet-column>
+                      <sd-icon [icon]="icons.redo" [fixedWidth]="true" />
+                      선택 복구
+                    </sd-button>
+                  }
                 }
-              </sd-sheet>
-            </sd-pane>
-          </sd-dock-container>
-        }
+
+                @if (viewModel().uploadExcel) {
+                  <sd-button size="sm" theme="link-success" (click)="onUploadExcelButtonClick()">
+                    <sd-icon [icon]="icons.upload" fixedWidth />
+                    엑셀 업로드
+                  </sd-button>
+                }
+              }
+
+              @if (viewModel().downloadExcel) {
+                <sd-button size="sm" theme="link-success" (click)="onDownloadExcelButtonClick()">
+                  <sd-icon [icon]="icons.fileExcel" fixedWidth />
+                  엑셀 다운로드
+                </sd-button>
+              }
+
+              @for (toolControl of afterToolControls(); track toolControl) {
+                <ng-template [ngTemplateOutlet]="toolControl.contentTemplateRef()" />
+              }
+            </div>
+          </sd-dock>
+
+          <sd-pane>
+            <sd-sheet
+              [key]="viewModel().key + '-sheet'"
+              [items]="items()"
+              [(currentPage)]="page"
+              [totalPageCount]="pageLength()"
+              [(sorts)]="ordering"
+              [selectMode]="selectMode() ?? viewModel().toggleDeletes ? 'multi' : undefined"
+              [autoSelect]="selectMode() === 'single' ? 'click' : undefined"
+              [(selectedItems)]="selectedItems"
+              [trackByFn]="trackByFn"
+              [getItemCellStyleFn]="getItemCellStyleFn"
+            >
+              @for (columnControl of columnControls(); track columnControl.key) {
+                <sd-sheet-column
+                  [key]="columnControl.key()"
+                  [fixed]="columnControl.fixed()"
+                  [header]="columnControl.header()"
+                  [headerStyle]="columnControl.headerStyle()"
+                  [tooltip]="columnControl.tooltip()"
+                  [width]="columnControl.width()"
+                  [disableSorting]="columnControl.disableSorting()"
+                  [disableResizing]="columnControl.disableResizing()"
+                  [hidden]="columnControl.hidden()"
+                  [collapse]="columnControl.collapse()"
+                >
+                  @if (columnControl.headerTemplateRef()) {
+                    <ng-template #header>
+                      <ng-template [ngTemplateOutlet]="columnControl.headerTemplateRef()!" />
+                    </ng-template>
+                  }
+                  @if (columnControl.summaryTemplateRef()) {
+                    <ng-template #summary>
+                      <ng-template [ngTemplateOutlet]="columnControl.summaryTemplateRef()!" />
+                    </ng-template>
+                  }
+
+                  <ng-template
+                    [cell]="items()"
+                    let-item
+                    let-index="index"
+                    let-depth="depth"
+                    let-edit="edit"
+                  >
+                    @if (
+                      viewModel().editItem &&
+                      columnControl.edit() &&
+                      viewModel().perms().includes("edit")
+                    ) {
+                      <sd-anchor class="flex-row" (click)="onItemClick(item, index, $event)">
+                        <div class="p-xs-sm pr-0">
+                          <sd-icon [icon]="icons.edit" />
+                        </div>
+                        <div class="flex-grow">
+                          <ng-template
+                            [ngTemplateOutlet]="columnControl.cellTemplateRef()"
+                            [ngTemplateOutletContext]="{
+                              $implicit: item,
+                              item: item,
+                              index: index,
+                              depth: depth,
+                              edit: edit,
+                            }"
+                          />
+                        </div>
+                      </sd-anchor>
+                    } @else {
+                      <ng-template
+                        [ngTemplateOutlet]="columnControl.cellTemplateRef()"
+                        [ngTemplateOutletContext]="{
+                          $implicit: item,
+                          item: item,
+                          index: index,
+                          depth: depth,
+                          edit: edit,
+                        }"
+                      />
+                    }
+                  </ng-template>
+                </sd-sheet-column>
+              }
+            </sd-sheet>
+          </sd-pane>
+        </sd-dock-container>
       </ng-template>
+
       @if (selectMode()) {
         <ng-template #modalBottom>
           <sd-dock
@@ -294,8 +295,8 @@ export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>>
 
   //-- view
 
-  initialized = $signal(false);
-  busyCount = $signal(0);
+  initialized = model(false);
+  busyCount = model(0);
 
   filterControls = contentChildren(SdDataSheetFilterDirective);
   toolControls = contentChildren(SdDataSheetToolDirective);
@@ -340,24 +341,36 @@ export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>>
       close: this.close,
     });
 
-    $effect([this.page, this.lastFilter, this.ordering], async () => {
-      if (!this.viewModel().perms().includes("use")) {
+    $effect(
+      [
+        () => {
+          this.page();
+          this.lastFilter();
+          this.ordering();
+          for (const searchCondition of this.viewModel().searchConditions ?? []) {
+            searchCondition();
+          }
+        },
+      ],
+      async () => {
+        if (!this.viewModel().perms().includes("use")) {
+          this.initialized.set(true);
+          return;
+        }
+
+        if (this.lastFilter() == null) {
+          this._updateLastFilter();
+        }
+
+        this.busyCount.update((v) => v + 1);
+        await this._sdToast.try(async () => {
+          await this._sdSharedData.wait();
+          await this.refreshAsync();
+        });
+        this.busyCount.update((v) => v - 1);
         this.initialized.set(true);
-        return;
-      }
-
-      if (this.lastFilter() == null) {
-        this._updateLastFilter();
-      }
-
-      this.busyCount.update((v) => v + 1);
-      await this._sdToast.try(async () => {
-        await this._sdSharedData.wait();
-        await this.refreshAsync();
-      });
-      this.busyCount.update((v) => v - 1);
-      this.initialized.set(true);
-    });
+      },
+    );
   }
 
   onFilterSubmit() {
@@ -471,8 +484,8 @@ export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>>
     await this._sdToast.try(async () => {
       if (this.lastFilter() == null) return;
 
-      const data = await this.viewModel().search("excel", this.lastFilter(), this.ordering());
-      await this.viewModel().downloadExcel!(data.items);
+      const items = await this.searchAllAsync();
+      await this.viewModel().downloadExcel!(items);
     });
     this.busyCount.update((v) => v - 1);
   }
@@ -523,6 +536,8 @@ export interface ISdDataSheetViewModel<F extends Record<string, any>, I, K> {
 
   getIsDeleted?(item: I): boolean;
 
+  searchConditions?: Signal<any>[];
+
   search(
     type: "excel" | "sheet",
     lastFilter: F,
@@ -530,7 +545,7 @@ export interface ISdDataSheetViewModel<F extends Record<string, any>, I, K> {
     page?: number,
   ): Promise<{ items: I[]; pageLength?: number; summary?: Partial<I> }>;
 
-  editItem?(item?: I): Promise<boolean>;
+  editItem?(item?: I): Promise<boolean | undefined>;
 
   toggleDeletes?(selectedItems: I[], del: boolean): Promise<boolean>;
 

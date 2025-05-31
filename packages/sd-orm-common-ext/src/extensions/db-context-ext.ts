@@ -117,6 +117,50 @@ export abstract class DbContextExt extends DbContext {
       },
     };
   }
+
+  async setUserConfig(userId: number, key: string, val: any) {
+    const db = this;
+    await db.userConfig
+      .where((item) => [db.qh.equal(item.userId, userId), db.qh.equal(item.code, key)])
+      .upsertAsync(
+        () => ({
+          valueJson: JsonConvert.stringify(val),
+        }),
+        (updateRecord) => ({
+          ...updateRecord,
+          userId: userId,
+          code: key,
+        }),
+      );
+  }
+
+  async getUserConfig(userId: number, key: string) {
+    const db = this;
+    const userConfig = await db.userConfig
+      .where((item) => [db.qh.equal(item.userId, userId), db.qh.equal(item.code, key)])
+      .singleAsync();
+    return userConfig?.valueJson !== undefined
+      ? JsonConvert.parse(userConfig.valueJson)
+      : undefined;
+  }
+
+  async writeSystemLog(
+    userId: number,
+    clientName: string,
+    severity: "error" | "warn" | "log",
+    ...logs: any[]
+  ) {
+    const db = this;
+    await db.systemErrorLog.insertAsync(
+      logs.map((log) => ({
+        clientName: clientName,
+        dateTime: new DateTime(),
+        type: severity,
+        jsonData: JsonConvert.stringify(log),
+        userId: userId,
+      })),
+    );
+  }
 }
 
 export interface IAuthInfo<T extends Record<string, any> = Record<string, any>> {

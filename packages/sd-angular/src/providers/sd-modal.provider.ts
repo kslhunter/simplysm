@@ -9,16 +9,20 @@ import {
   inputBinding,
   outputBinding,
   OutputEmitterRef,
+  Signal,
   Type,
 } from "@angular/core";
 import { SdModalControl } from "../controls/sd-modal.control";
 import { $signal } from "../utils/bindings/$signal";
 import { TDirectiveInputSignals } from "../utils/types";
+import { Wait } from "@simplysm/sd-core-common";
+import { SdBusyProvider } from "./sd-busy.provider";
 
 export class SdModalInstance<T extends ISdModal<any>> {
   private readonly _activatedModalProvider: SdActivatedModalProvider<T>;
   private readonly _compRef: ComponentRef<T>;
   private readonly _modalRef: ComponentRef<SdModalControl>;
+
   private readonly _prevActiveEl?: HTMLElement;
 
   private _open = $signal(false);
@@ -44,7 +48,11 @@ export class SdModalInstance<T extends ISdModal<any>> {
       noFirstControlFocusing?: boolean;
     },
   ) {
-    //-- Provider
+    //-- busy
+    const sdBusy = appRef.injector.get(SdBusyProvider);
+    sdBusy.globalBusyCount.update((v) => v + 1);
+
+    //-- new Provider
     this._activatedModalProvider = new SdActivatedModalProvider<T>();
 
     //-- Content component
@@ -97,23 +105,29 @@ export class SdModalInstance<T extends ISdModal<any>> {
 
     this._prevActiveEl = document.activeElement as HTMLElement | undefined;
 
-    document.body.appendChild(modalEl);
-
     appRef.attachView(this._compRef.hostView);
     appRef.attachView(this._modalRef.hostView);
 
-    requestAnimationFrame(() => {
-      this._open.set(true);
+    requestAnimationFrame(async () => {
+      if (!this._compRef.instance.initialized()) {
+        await Wait.until(() => this._compRef.instance.initialized());
+      }
+      document.body.appendChild(modalEl);
 
-      requestAnimationFrame(() => {
-        if (options?.noFirstControlFocusing) {
-          this._modalRef.instance.dialogElRef().nativeElement.focus();
-        } else {
-          (
-            compEl.findFocusableFirst() ?? this._modalRef.instance.dialogElRef().nativeElement
-          ).focus();
-        }
-      });
+      setTimeout(() => {
+        sdBusy.globalBusyCount.update((v) => v - 1);
+        this._open.set(true);
+
+        requestAnimationFrame(() => {
+          if (options?.noFirstControlFocusing) {
+            this._modalRef.instance.dialogElRef().nativeElement.focus();
+          } else {
+            (
+              compEl.findFocusableFirst() ?? this._modalRef.instance.dialogElRef().nativeElement
+            ).focus();
+          }
+        });
+      }, 100);
     });
   }
 
@@ -186,6 +200,7 @@ export class SdModalProvider {
 }
 
 export interface ISdModal<O> {
+  initialized: Signal<boolean>;
   close: OutputEmitterRef<O | undefined>;
 }
 

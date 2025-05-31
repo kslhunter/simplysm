@@ -603,7 +603,7 @@ import {
           }
         }
       }
-      `,
+    `,
   ],
   host: {
     "[attr.sd-inset]": "inset()",
@@ -841,8 +841,9 @@ export class SdSheetControl<T> {
     this.selectionManager.select(item);
   }
 
-  @HostListener("focus.capture", ["$event"])
   onFocusCaptureForSelection(event: FocusEvent): void {
+    if (this.autoSelect() !== "focus") return;
+
     if (!(event.target instanceof HTMLElement)) return;
 
     const tdEl =
@@ -851,9 +852,8 @@ export class SdSheetControl<T> {
 
     const addr = this.cellAgent.getCellAddr(tdEl);
     const item = this.displayItems()[addr.r];
-    if (this.autoSelect() === "focus") {
-      this.selectionManager.select(item);
-    }
+
+    this.selectionManager.select(item);
   }
 
   //endregion
@@ -864,8 +864,7 @@ export class SdSheetControl<T> {
     domAccessor: this.domAccessor,
   });
 
-  @HostListener("keydown.capture", ["$event"])
-  async onKeydownCapture(event: KeyboardEvent) {
+  async onKeydownCaptureForCellAgent(event: KeyboardEvent) {
     await this.cellAgent.handleKeydownCaptureAsync(event);
   }
 
@@ -873,7 +872,6 @@ export class SdSheetControl<T> {
     this.cellAgent.handleCellDoubleClick(event);
   }
 
-  @HostListener("blur.capture", ["$event"])
   onBlurCaptureForCellAgent(event: FocusEvent): void {
     this.cellAgent.handleBlurCapture(event);
   }
@@ -882,7 +880,6 @@ export class SdSheetControl<T> {
 
   //region Auto scroll
 
-  @HostListener("focus.capture", ["$event"])
   onFocusCaptureForAutoScroll(event: FocusEvent): void {
     if (!(event.target instanceof HTMLElement)) return;
 
@@ -922,12 +919,10 @@ export class SdSheetControl<T> {
     domAccessor: this.domAccessor,
   });
 
-  @HostListener("focus.capture", ["$event"])
-  onFocusCaptureForIndicator(): void {
+  onFocusCaptureForFocusIndicator(): void {
     this.focusIndicatorRenderer.redraw();
   }
 
-  @HostListener("blur.capture", ["$event"])
   onBlurCaptureForFocusIndicator(): void {
     this.focusIndicatorRenderer.redraw();
   }
@@ -944,4 +939,22 @@ export class SdSheetControl<T> {
   }
 
   //endregion
+
+  @HostListener("keydown.capture", ["$event"])
+  async onKeydownCapture(event: KeyboardEvent){
+    await this.onKeydownCaptureForCellAgent(event);
+  }
+
+  @HostListener("focus.capture", ["$event"])
+  onFocusCapture(event: FocusEvent) {
+    this.onFocusCaptureForSelection(event);
+    this.onFocusCaptureForAutoScroll(event);
+    this.onFocusCaptureForFocusIndicator();
+  }
+
+  @HostListener("blur.capture", ["$event"])
+  onBlurCapture(event: FocusEvent) {
+    this.onBlurCaptureForCellAgent(event);
+    this.onBlurCaptureForFocusIndicator();
+  }
 }

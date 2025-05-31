@@ -1,10 +1,8 @@
-
 import {
   CreateEffectOptions,
   effect,
   EffectCleanupRegisterFn,
   EffectRef,
-  Signal,
   untracked,
 } from "@angular/core";
 
@@ -17,24 +15,24 @@ export function $effect(
   options?: CreateEffectOptions,
 ): EffectRef;
 export function $effect(
-  signals: Signal<any>[],
+  conditions: (() => unknown)[],
   fn: (onCleanup: EffectCleanupRegisterFn) => void | Promise<void>,
   options?: CreateEffectOptions,
 ): EffectRef;
 export function $effect(
-  arg1: ((onCleanup: EffectCleanupRegisterFn) => void | Promise<void>) | Signal<any>[],
+  arg1: ((onCleanup: EffectCleanupRegisterFn) => void | Promise<void>) | (() => unknown)[],
   arg2?: ((onCleanup: EffectCleanupRegisterFn) => void | Promise<void>) | CreateEffectOptions,
   arg3?: CreateEffectOptions,
 ): EffectRef {
-  const sigs = arg1 instanceof Array ? arg1 : undefined;
+  const conditions = arg1 instanceof Array ? arg1 : undefined;
   const fn = (typeof arg1 === "function" ? arg1 : arg2) as (
     onCleanup: EffectCleanupRegisterFn,
   ) => void | Promise<void>;
   const options = (typeof arg1 === "function" ? arg2 : arg3) as CreateEffectOptions;
 
-  if (sigs) {
+  if (conditions) {
     return effect(async (onCleanup) => {
-      for (const sig of sigs) {
+      for (const sig of conditions) {
         sig();
       }
 
