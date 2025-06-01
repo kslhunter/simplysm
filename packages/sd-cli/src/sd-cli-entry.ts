@@ -31,6 +31,7 @@ import { convertGetMenusToUsableMenus } from "./fix/convert-get-menus-to-usable-
 import { removeUnusedInjects } from "./fix/remove-unused-injects";
 import { removeUnusedImports } from "./fix/remove-unused-imports";
 import { convertFlatPagesToUsableFlatMenus } from "./fix/convert-flat-pages-to-flat-menus";
+import convertPrivateToHash from "./fix/convert-private-to-hash";
 
 Error.stackTraceLimit = Infinity;
 EventEmitter.defaultMaxListeners = 0;
@@ -262,8 +263,19 @@ await yargs(hideBin(process.argv))
   .command(
     "fix",
     "가능한 내용 자동 수정",
-    (cmd) => cmd.version(false).hide("help").hide("debug"),
-    () => {
+    (cmd) =>
+      cmd
+        .version(false)
+        .hide("help")
+        .hide("debug")
+        .options({
+          library: {
+            type: "boolean",
+            describe: "simplysm 라이브러리 픽스",
+            default: false,
+          },
+        }),
+    (argv) => {
       // GIT 사용중일 경우, 커밋되지 않은 수정사항이 있는지 확인
       /*if (FsUtils.exists(path.resolve(process.cwd(), ".git"))) {
         const gitStatusResult = await SdProcess.spawnAsync("git status");
@@ -271,6 +283,9 @@ await yargs(hideBin(process.argv))
           throw new Error("커밋되지 않은 정보가 있습니다. FIX오류시 롤백이 불가능하므로, 미리 커밋을 해놔야 합니다.\n" + gitStatusResult);
         }
       }*/
+
+      convertPrivateToHash();
+      if (argv.library) return;
 
       convertSdSheetBindingsInInlineTemplate();
       convertSetupCumulateSelectedKeysToObjectParam();

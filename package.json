@@ -23,6 +23,7 @@
     "watch:sd-core-common": "yarn run _sd-cli_ --debug watch --packages sd-core-common",
     "build": "yarn run _sd-cli_ build",
     "publish": "yarn run _sd-cli_ publish",
+    "fix": "yarn run _sd-cli_ fix --library",
     "--": "",
     "watch:cordova-test": "yarn run _sd-cli_ --debug watch --options withTest --packages cordova-test server-test",
     "run-cordova-test": "yarn run _sd-cli_ --debug run-cordova android cordova-test http://192.168.0.27:60080",

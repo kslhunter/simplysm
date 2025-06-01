@@ -2,12 +2,10 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
-  inject,
   output,
   viewChild,
   ViewEncapsulation,
 } from "@angular/core";
-import { SdToastProvider } from "../providers/sd-toast.provider";
 import { SdEventsDirective } from "../directives/sd-events.directive";
 
 @Component({
@@ -20,8 +18,8 @@ import { SdEventsDirective } from "../directives/sd-events.directive";
     <form
       #formEl
       novalidate
-      (submit)="_onSubmit($event)"
-      (invalid.capture)="_onInvalidCapture()"
+      (submit)="handleSubmit($event)"
+      (invalid.capture)="this.invalid.emit()"
     >
       <ng-content />
       <button hidden type="submit"></button>
@@ -29,43 +27,33 @@ import { SdEventsDirective } from "../directives/sd-events.directive";
   `,
 })
 export class SdFormControl {
-  private _sdToast = inject(SdToastProvider);
+  formElRef = viewChild.required<any, ElementRef<HTMLFormElement>>("formEl", {
+    read: ElementRef,
+  });
 
-  protected _formElRef = viewChild.required<any, ElementRef<HTMLFormElement>>(
-    "formEl",
-    { read: ElementRef },
-  );
-
-  protected get _formEl() {
-    return this._formElRef().nativeElement;
+  get formEl() {
+    return this.formElRef().nativeElement;
   }
 
   submit = output<SubmitEvent>();
   invalid = output();
 
   requestSubmit() {
-    this._formEl.requestSubmit();
+    this.formEl.requestSubmit();
   }
 
-  protected _onSubmit(event: SubmitEvent) {
+  handleSubmit(event: SubmitEvent) {
     event.preventDefault();
     event.stopPropagation();
 
-    if (this._formEl.checkValidity()) {
+    if (this.formEl.checkValidity()) {
       this.submit.emit(event);
       return;
     }
 
     // 자동 메시지 및 포커싱
-    this._formEl.reportValidity();
+    this.formEl.reportValidity();
 
-    // const firstInvalidEl = this._formEl.findFirst<HTMLInputElement>("*:invalid")!;
-    // this._sdToast.info(firstInvalidEl.validationMessage);
-
-    this.invalid.emit();
-  }
-
-  protected _onInvalidCapture() {
     this.invalid.emit();
   }
 }
