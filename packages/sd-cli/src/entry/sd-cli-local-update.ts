@@ -10,7 +10,7 @@ export class SdCliLocalUpdate {
     const projConf = await loadProjConfAsync(process.cwd(), true, opt);
     if (!projConf.localUpdates) return;
 
-    const updatePathInfos = this._getUpdatePathInfos(projConf.localUpdates);
+    const updatePathInfos = this.#getUpdatePathInfos(projConf.localUpdates);
     logger.debug("로컬 업데이트 구성", updatePathInfos);
 
     logger.log("로컬 라이브러리 업데이트 시작...");
@@ -35,7 +35,7 @@ export class SdCliLocalUpdate {
     const projConf = await loadProjConfAsync(process.cwd(), true, opt);
     if (!projConf.localUpdates) return;
 
-    const updatePathInfos = this._getUpdatePathInfos(projConf.localUpdates);
+    const updatePathInfos = this.#getUpdatePathInfos(projConf.localUpdates);
     logger.debug("로컬 업데이트 구성", updatePathInfos);
 
     const watcher = SdFsWatcher.watch(updatePathInfos.map((item) => item.source));
@@ -68,7 +68,7 @@ export class SdCliLocalUpdate {
     });
   }
 
-  private static _getUpdatePathInfos(record: Record<string, string>): IUpdatePathInfo[] {
+  static #getUpdatePathInfos(record: Record<string, string>): IUpdatePathInfo[] {
     const result: IUpdatePathInfo[] = [];
     for (const pkgGlobPath of Object.keys(record)) {
       // "node_modules'에서 로컬업데이트 설정에 맞는 패키지를 "glob"하여 대상 패키지경로 목록 가져오기

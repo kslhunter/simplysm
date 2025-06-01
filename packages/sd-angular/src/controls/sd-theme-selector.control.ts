@@ -61,12 +61,12 @@ import { $effect } from "../utils/bindings/$effect";
 export class SdThemeSelectorControl {
  protected readonly icons = inject(SdAngularConfigProvider).icons;
 
-  private _sdTheme = inject(SdThemeProvider);
+  #sdTheme = inject(SdThemeProvider);
 
   dropdownControl = viewChild.required(SdDropdownControl);
 
-  theme = this._sdTheme.theme;
-  dark = this._sdTheme.dark;
+  theme = this.#sdTheme.theme;
+  dark = this.#sdTheme.dark;
 
   isDev = process.env["NODE_ENV"] === "development";
 

@@ -7,9 +7,9 @@ import { SdLogger } from "../utils/sd-logger";
 import { ISdWorkerRequest, ISdWorkerType, TSdWorkerResponse } from "./sd-worker.types";
 
 export class SdWorker<T extends ISdWorkerType> extends EventEmitter {
-  private _worker: Worker;
+  #worker: Worker;
 
-  private _isTerminated = false;
+  #isTerminated = false;
 
   constructor(filePath: string, opt?: Omit<WorkerOptions, "stdout" | "stderr">) {
     super();
@@ -18,7 +18,7 @@ export class SdWorker<T extends ISdWorkerType> extends EventEmitter {
 
     const ext = path.extname(import.meta.filename);
     if (ext === ".ts") {
-      this._worker = new Worker(
+      this.#worker = new Worker(
         path.resolve(import.meta.dirname, "../../lib/worker-dev-proxy.js"),
         {
           stdout: true,
@@ -32,7 +32,7 @@ export class SdWorker<T extends ISdWorkerType> extends EventEmitter {
         },
       );
     } else {
-      this._worker = new Worker(fileURLToPath(filePath), {
+      this.#worker = new Worker(fileURLToPath(filePath), {
         stdout: true,
         stderr: true,
         ...opt,
@@ -44,21 +44,21 @@ export class SdWorker<T extends ISdWorkerType> extends EventEmitter {
     }
 
     // 워커의 stdout/stderr을 메인에 출력
-    this._worker.stdout.pipe(process.stdout);
-    this._worker.stderr.pipe(process.stderr);
+    this.#worker.stdout.pipe(process.stdout);
+    this.#worker.stderr.pipe(process.stderr);
 
-    this._worker.on("exit", (code) => {
-      if (!this._isTerminated && code !== 0) {
+    this.#worker.on("exit", (code) => {
+      if (!this.#isTerminated && code !== 0) {
         const err = new Error(`오류와 함께 닫힘 (CODE: ${code})`);
         logger.error(err);
       }
     });
 
-    this._worker.on("error", (err) => {
+    this.#worker.on("error", (err) => {
       logger.error(err);
     });
 
-    this._worker.on("message", (responseJson: string) => {
+    this.#worker.on("message", (responseJson: string) => {
       const response: TSdWorkerResponse<T, string> = JsonConvert.parse(responseJson);
       if (response.type === "event") {
         this.emit(response.event, response.body);
@@ -85,24 +85,24 @@ export class SdWorker<T extends ISdWorkerType> extends EventEmitter {
         const response: TSdWorkerResponse<T, K> = JsonConvert.parse(responseJson);
         if (response.type === "return") {
           if (response.request.id === request.id) {
-            this._worker.off("message", callback);
+            this.#worker.off("message", callback);
             resolve(response.body);
           }
         } else if (response.type === "error") {
           if (response.request.id === request.id) {
-            this._worker.off("message", callback);
+            this.#worker.off("message", callback);
             reject(response.body);
           }
         }
       };
 
-      this._worker.on("message", callback);
-      this._worker.postMessage(JsonConvert.stringify(request));
+      this.#worker.on("message", callback);
+      this.#worker.postMessage(JsonConvert.stringify(request));
     });
   }
 
   async killAsync() {
-    this._isTerminated = true;
-    await this._worker.terminate();
+    this.#isTerminated = true;
+    await this.#worker.terminate();
   }
 }

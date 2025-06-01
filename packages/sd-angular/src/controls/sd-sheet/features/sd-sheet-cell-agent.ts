@@ -3,13 +3,13 @@ import { $signal } from "../../../utils/bindings/$signal";
 import { SdSheetDomAccessor } from "./sd-sheet-dom-accessor";
 
 export class SdSheetCellAgent {
-  constructor(private _options: { domAccessor: SdSheetDomAccessor; }) {
+  constructor(private readonly _options: { domAccessor: SdSheetDomAccessor; }) {
   }
 
-  private _editModeCellAddr = $signal<{ r: number; c: number } | undefined>(undefined);
+  #editModeCellAddr = $signal<{ r: number; c: number } | undefined>(undefined);
 
   getIsCellEditMode(addr: { r: number, c: number }): boolean {
-    return ObjectUtils.equal(this._editModeCellAddr(), addr);
+    return ObjectUtils.equal(this.#editModeCellAddr(), addr);
   }
 
   getCellAddr(el: HTMLTableCellElement) {
@@ -25,25 +25,25 @@ export class SdSheetCellAgent {
 
       if (event.key === "F2") {
         event.preventDefault();
-        this._enterEditMode(el);
+        this.#enterEditMode(el);
       }
       else if (event.key === "ArrowDown") {
-        if (this._moveCellIfExists(el, 1, 0, false)) {
+        if (this.#moveCellIfExists(el, 1, 0, false)) {
           event.preventDefault();
         }
       }
       else if (event.key === "ArrowUp") {
-        if (this._moveCellIfExists(el, -1, 0, false)) {
+        if (this.#moveCellIfExists(el, -1, 0, false)) {
           event.preventDefault();
         }
       }
       else if (event.key === "ArrowRight") {
-        if (this._moveCellIfExists(el, 0, 1, false)) {
+        if (this.#moveCellIfExists(el, 0, 1, false)) {
           event.preventDefault();
         }
       }
       else if (event.key === "ArrowLeft") {
-        if (this._moveCellIfExists(el, 0, -1, false)) {
+        if (this.#moveCellIfExists(el, 0, -1, false)) {
           event.preventDefault();
         }
       }
@@ -64,37 +64,37 @@ export class SdSheetCellAgent {
       if (!tdEl) return;
       if (event.key === "Escape") {
         event.preventDefault();
-        this._exitEditMode(tdEl);
+        this.#exitEditMode(tdEl);
       }
       else if (event.key === "Enter") {
         if (event.target.tagName === "TEXTAREA" || event.target.hasAttribute("contenteditable")) {
           if (event.ctrlKey) {
             event.preventDefault();
-            this._moveCellIfExists(tdEl, 1, 0, true);
+            this.#moveCellIfExists(tdEl, 1, 0, true);
           }
         }
         else {
           event.preventDefault();
-          this._moveCellIfExists(tdEl, 1, 0, true);
+          this.#moveCellIfExists(tdEl, 1, 0, true);
         }
       }
       else if (event.ctrlKey && event.key === "ArrowDown") {
-        if (this._moveCellIfExists(tdEl, 1, 0, true)) {
+        if (this.#moveCellIfExists(tdEl, 1, 0, true)) {
           event.preventDefault();
         }
       }
       else if (event.ctrlKey && event.key === "ArrowUp") {
-        if (this._moveCellIfExists(tdEl, -1, 0, true)) {
+        if (this.#moveCellIfExists(tdEl, -1, 0, true)) {
           event.preventDefault();
         }
       }
       else if (event.ctrlKey && event.key === "ArrowRight") {
-        if (this._moveCellIfExists(tdEl, 0, 1, true)) {
+        if (this.#moveCellIfExists(tdEl, 0, 1, true)) {
           event.preventDefault();
         }
       }
       else if (event.ctrlKey && event.key === "ArrowLeft") {
-        if (this._moveCellIfExists(tdEl, 0, -1, true)) {
+        if (this.#moveCellIfExists(tdEl, 0, -1, true)) {
           event.preventDefault();
         }
       }
@@ -108,34 +108,34 @@ export class SdSheetCellAgent {
       ? event.target
       : event.target.findParent("td")!) as HTMLTableCellElement;
 
-    this._enterEditMode(tdEl);
+    this.#enterEditMode(tdEl);
   }
 
   handleBlurCapture(event: FocusEvent) {
     if (
-      this._editModeCellAddr() &&
+      this.#editModeCellAddr() &&
       !(
         event.target instanceof HTMLElement &&
         event.relatedTarget instanceof HTMLElement &&
         (event.target.findParent("td") ?? event.target) === event.relatedTarget.findParent("td")
       )
     ) {
-      this._editModeCellAddr.set(undefined);
+      this.#editModeCellAddr.set(undefined);
     }
   }
 
-  private _enterEditMode(tdEl: HTMLTableCellElement) {
+  #enterEditMode(tdEl: HTMLTableCellElement) {
     const addr = this.getCellAddr(tdEl);
-    this._editModeCellAddr.set(addr);
+    this.#editModeCellAddr.set(addr);
     requestAnimationFrame(() => tdEl.findFocusableFirst()?.focus());
   }
 
-  private _exitEditMode(tdEl: HTMLTableCellElement) {
+  #exitEditMode(tdEl: HTMLTableCellElement) {
     tdEl.focus();
-    this._editModeCellAddr.set(undefined);
+    this.#editModeCellAddr.set(undefined);
   }
 
-  private _moveCellIfExists(
+  #moveCellIfExists(
     fromEl: HTMLTableCellElement,
     offsetR: number,
     offsetC: number,
@@ -149,11 +149,11 @@ export class SdSheetCellAgent {
 
     tdEl.focus();
     if (isEditMode) {
-      this._editModeCellAddr.set(toAddr);
+      this.#editModeCellAddr.set(toAddr);
       requestAnimationFrame(() => tdEl.findFocusableFirst()?.focus());
     }
     else {
-      this._editModeCellAddr.set(undefined);
+      this.#editModeCellAddr.set(undefined);
     }
     return true;
   }

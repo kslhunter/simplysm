@@ -13,7 +13,7 @@ import {
 import {DbConnFactory} from "./db-conn.factory";
 
 export class NodeDbContextExecutor implements IDbContextExecutor {
-  private _conn?: IDbConn;
+  #conn?: IDbConn;
 
   constructor(private readonly _config: TDbConnConf) {
   }
@@ -34,77 +34,77 @@ export class NodeDbContextExecutor implements IDbContextExecutor {
   }
 
   async connectAsync(): Promise<void> {
-    this._conn = await DbConnFactory.createAsync(this._config);
-    await this._conn.connectAsync();
+    this.#conn = await DbConnFactory.createAsync(this._config);
+    await this.#conn.connectAsync();
   }
 
   async beginTransactionAsync(isolationLevel?: ISOLATION_LEVEL): Promise<void> {
-    if (!this._conn) {
+    if (!this.#conn) {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
-    await this._conn.beginTransactionAsync(isolationLevel);
+    await this.#conn.beginTransactionAsync(isolationLevel);
   }
 
   async commitTransactionAsync(): Promise<void> {
-    if (!this._conn) {
+    if (!this.#conn) {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
 
-    await this._conn.commitTransactionAsync();
+    await this.#conn.commitTransactionAsync();
   }
 
   async rollbackTransactionAsync(): Promise<void> {
-    if (!this._conn) {
+    if (!this.#conn) {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
 
-    await this._conn.rollbackTransactionAsync();
+    await this.#conn.rollbackTransactionAsync();
   }
 
   async closeAsync(): Promise<void> {
-    if (!this._conn) {
+    if (!this.#conn) {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
 
-    await this._conn.closeAsync();
+    await this.#conn.closeAsync();
   }
 
   async executeAsync(queries: string[]): Promise<any[][]> {
-    if (!this._conn) {
+    if (!this.#conn) {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
 
-    return await this._conn.executeAsync(queries);
+    return await this.#conn.executeAsync(queries);
   }
 
   async bulkInsertAsync(tableName: string, columnDefs: IQueryColumnDef[], records: Record<string, any>[]): Promise<void> {
-    if (!this._conn) {
+    if (!this.#conn) {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
 
-    await this._conn.bulkInsertAsync(tableName, columnDefs, records);
+    await this.#conn.bulkInsertAsync(tableName, columnDefs, records);
   }
 
 
   async bulkUpsertAsync(tableName: string, columnDefs: IQueryColumnDef[], records: Record<string, any>[]): Promise<void> {
-    if (!this._conn) {
+    if (!this.#conn) {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
 
-    await this._conn.bulkUpsertAsync(tableName, columnDefs, records);
+    await this.#conn.bulkUpsertAsync(tableName, columnDefs, records);
   }
 
   async executeDefsAsync(defs: TQueryDef[], options?: (IQueryResultParseOption | undefined)[]): Promise<any[][]> {
-    if (!this._conn) {
+    if (!this.#conn) {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
 
     // 가져올데이터가 없는것으로 옵션 설정을 했을때, 하나의 쿼리로 한번의 요청보냄
     if (options && options.every((item) => item == null)) {
-      return await this._conn.executeAsync([defs.map((def) => new QueryBuilder(this._conn!.config.dialect).query(def)).join("\n")]);
+      return await this.#conn.executeAsync([defs.map((def) => new QueryBuilder(this.#conn!.config.dialect).query(def)).join("\n")]);
     }
     else {
-      const result = await this._conn.executeAsync(defs.map((def) => new QueryBuilder(this._conn!.config.dialect).query(def)));
+      const result = await this.#conn.executeAsync(defs.map((def) => new QueryBuilder(this.#conn!.config.dialect).query(def)));
       return result.map((item, i) => SdOrmUtils.parseQueryResult(item, options ? options[i] : undefined));
     }
   }

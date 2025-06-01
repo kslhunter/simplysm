@@ -54,7 +54,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
 export class SdSelectModalButtonControl<M extends keyof TSelectValue<any>> {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
 
-  private _sdModal = inject(SdModalProvider);
+  #sdModal = inject(SdModalProvider);
 
   value = model<TSelectValue<number | undefined>[M]>();
 
@@ -83,7 +83,7 @@ export class SdSelectModalButtonControl<M extends keyof TSelectValue<any>> {
     event.stopPropagation();
 
     const modal = this.modal();
-    const result = await this._sdModal.showAsync({
+    const result = await this.#sdModal.showAsync({
       ...modal,
       inputs: {
         selectMode: this.selectMode(),

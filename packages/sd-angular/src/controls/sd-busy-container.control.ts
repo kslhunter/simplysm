@@ -355,14 +355,14 @@ import { transformBoolean } from "../utils/type-tramsforms";
   },
 })
 export class SdBusyContainerControl {
-  private _sdBusy = inject(SdBusyProvider);
+  #sdBusy = inject(SdBusyProvider);
 
   busy = input(false, { transform: transformBoolean });
   message = input<string>();
   type = input<"spinner" | "bar" | "cube">();
   progressPercent = input<number>();
 
-  currType = $computed(() => this.type() ?? this._sdBusy.type());
+  currType = $computed(() => this.type() ?? this.#sdBusy.type());
 
   @HostListener("keydown.capture", ["$event"])
   onKeydownCapture(event: KeyboardEvent) {

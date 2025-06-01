@@ -2,7 +2,7 @@ import { Signal, WritableSignal } from "@angular/core";
 import { $computed } from "../bindings/$computed";
 
 export class SdExpandingManager<T> {
-  constructor(private _options: {
+  constructor(private readonly _options: {
     items: Signal<T[]>;
     expandedItems: WritableSignal<T[]>;
     getChildrenFn: Signal<((item: T, index: number) => T[] | undefined) | undefined>;
@@ -10,7 +10,7 @@ export class SdExpandingManager<T> {
   }) {
   }
 
-  private _itemDefs = $computed(() => {
+  #itemDefs = $computed(() => {
     let rootItems: ISdExpandItemDef<T>[] = this._options.items().map((item) => ({
       item,
       parentDef: undefined,
@@ -49,17 +49,17 @@ export class SdExpandingManager<T> {
     return result;
   });
 
-  flattedItems = $computed(() => this._itemDefs().map(item => item.item));
+  flattedItems = $computed(() => this.#itemDefs().map(item => item.item));
 
-  private _expandableItems = $computed(() =>
-    this._itemDefs().filter((itemDef) => itemDef.hasChildren).map((itemDef) => itemDef.item),
+  #expandableItems = $computed(() =>
+    this.#itemDefs().filter((itemDef) => itemDef.hasChildren).map((itemDef) => itemDef.item),
   );
 
-  hasExpandable = $computed(() => this._expandableItems().length > 0);
+  hasExpandable = $computed(() => this.#expandableItems().length > 0);
 
   isAllExpanded = $computed(() =>
-    this._expandableItems().length <= this._options.expandedItems().length &&
-    this._expandableItems().every((item) => this._options.expandedItems().includes(item)),
+    this.#expandableItems().length <= this._options.expandedItems().length &&
+    this.#expandableItems().every((item) => this._options.expandedItems().includes(item)),
   );
 
   toggleAll() {
@@ -67,7 +67,7 @@ export class SdExpandingManager<T> {
       this._options.expandedItems.set([]);
     }
     else {
-      const expandedItems = this._itemDefs()
+      const expandedItems = this.#itemDefs()
         .filter((item) => item.hasChildren)
         .map((item) => item.item);
       this._options.expandedItems.set(expandedItems);
@@ -100,7 +100,7 @@ export class SdExpandingManager<T> {
   }
 
   getDef(item: T) {
-    return this._itemDefs().single(item1 => item1.item === item)!;
+    return this.#itemDefs().single(item1 => item1.item === item)!;
   }
 }
 

@@ -4,7 +4,7 @@ import { DbDefUtils } from "../utils/db-def.utils";
 import { TInsertObject } from "./queryable.types";
 
 export class StoredProcedure<D extends DbContext, T> {
-  constructor(public db: D, public tableType: Type<T>) {
+  constructor(public readonly db: D, public readonly tableType: Type<T>) {
   }
 
   async execAsync(obj: TInsertObject<T>): Promise<void> {

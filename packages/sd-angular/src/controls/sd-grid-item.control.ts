@@ -28,7 +28,7 @@ import { $computed } from "../utils/bindings/$computed";
   },
 })
 export class SdGridItemControl {
-  private _parentControl = inject(SdGridControl);
+  #parentControl = inject(SdGridControl);
 
   colSpan = input.required<number>();
   colSpanSm = input<number>();
@@ -36,7 +36,7 @@ export class SdGridItemControl {
   colSpanXxs = input<number>();
 
   styleGridColumnEnd = $computed(() => {
-    const parentWidth = this._parentControl.offsetWidth();
+    const parentWidth = this.#parentControl.offsetWidth();
     if (parentWidth < 800) {
       return `span ${this.colSpanXxs() ?? this.colSpanXs() ?? this.colSpanSm() ?? this.colSpan()}`;
     }

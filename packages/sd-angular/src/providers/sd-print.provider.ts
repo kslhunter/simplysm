@@ -15,8 +15,8 @@ import { SdBusyProvider } from "./sd-busy.provider";
 
 @Injectable({ providedIn: "root" })
 export class SdPrintProvider {
-  private _appRef = inject(ApplicationRef);
-  private _sdBusy = inject(SdBusyProvider);
+  #appRef = inject(ApplicationRef);
+  #sdBusy = inject(SdBusyProvider);
 
   async printAsync<T extends ISdPrint>(
     template: ISdPrintInput<T>,
@@ -28,11 +28,11 @@ export class SdPrintProvider {
     await new Promise<void>((resolve, reject) => {
       try {
         //-- busy
-        this._sdBusy.globalBusyCount.update(v => v + 1);
+        this.#sdBusy.globalBusyCount.update(v => v + 1);
 
         //-- comp
         const compRef = createComponent(template.type, {
-          environmentInjector: this._appRef.injector,
+          environmentInjector: this.#appRef.injector,
           bindings: [
             ...Object.keys(template.inputs).map((inputKey) =>
               inputBinding(inputKey, () => template.inputs[inputKey]),
@@ -58,7 +58,7 @@ export class SdPrintProvider {
       body > ._sd-print-template { display: block !important; }
   }`;
 
-        this._appRef.attachView(compRef.hostView);
+        this.#appRef.attachView(compRef.hostView);
 
         //-- print
         document.body.appendChild(compEl);
@@ -67,7 +67,7 @@ export class SdPrintProvider {
         requestAnimationFrame(async () => {
           try {
             await Wait.until(() => compRef.instance.initialized());
-            await this._waitForAllImagesLoadedAsync(compEl);
+            await this.#waitForAllImagesLoadedAsync(compEl);
 
             window.print();
             resolve();
@@ -75,7 +75,7 @@ export class SdPrintProvider {
             reject(err);
           } finally {
             try {
-              this._sdBusy.globalBusyCount.update(v => v - 1);
+              this.#sdBusy.globalBusyCount.update(v => v - 1);
               styleEl.remove();
               compRef.destroy();
             } catch {}
@@ -96,11 +96,11 @@ export class SdPrintProvider {
     return await new Promise<Buffer>((resolve, reject) => {
       try {
         //-- busy
-        this._sdBusy.globalBusyCount.update(v => v + 1);
+        this.#sdBusy.globalBusyCount.update(v => v + 1);
 
         //-- comp
         const compRef = createComponent(template.type, {
-          environmentInjector: this._appRef.injector,
+          environmentInjector: this.#appRef.injector,
           bindings: [
             ...Object.keys(template.inputs).map((inputKey) =>
               inputBinding(inputKey, () => template.inputs[inputKey]),
@@ -115,7 +115,7 @@ export class SdPrintProvider {
         const styleEl = document.createElement("style");
         styleEl.innerHTML = `html, body { overflow: hidden }`;
 
-        this._appRef.attachView(compRef.hostView);
+        this.#appRef.attachView(compRef.hostView);
 
         //-- print
         document.body.appendChild(compEl);
@@ -124,7 +124,7 @@ export class SdPrintProvider {
         requestAnimationFrame(async () => {
           try {
             await Wait.until(() => compRef.instance.initialized());
-            await this._waitForAllImagesLoadedAsync(compEl);
+            await this.#waitForAllImagesLoadedAsync(compEl);
 
             const doc = new jsPDF(options?.orientation ?? "p", "pt", "a4");
             doc.deletePage(1);
@@ -165,7 +165,7 @@ export class SdPrintProvider {
             reject(err);
           } finally {
             try {
-              this._sdBusy.globalBusyCount.update(v => v - 1);
+              this.#sdBusy.globalBusyCount.update(v => v - 1);
               styleEl.remove();
               compRef.destroy();
             } catch {}
@@ -177,7 +177,7 @@ export class SdPrintProvider {
     });
   }
 
-  private async _waitForAllImagesLoadedAsync(container: HTMLElement): Promise<void> {
+  async #waitForAllImagesLoadedAsync(container: HTMLElement): Promise<void> {
     const imgs = Array.from(container.querySelectorAll("img"));
 
     await Promise.all(

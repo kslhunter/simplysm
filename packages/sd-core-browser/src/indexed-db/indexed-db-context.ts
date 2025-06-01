@@ -7,8 +7,8 @@ export class IndexedDbContext {
 
   constructor(
     public dbName: string,
-    private _version: number,
-    private _upgradeFn: (oldVersion: number) => void,
+    private readonly _version: number,
+    private readonly _upgradeFn: (oldVersion: number) => void,
   ) {}
 
   async connectAsync<R>(fn: () => Promise<R>): Promise<R> {

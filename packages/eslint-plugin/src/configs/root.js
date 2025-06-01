@@ -129,12 +129,12 @@ export default [
         },
       ],
       "@typescript-eslint/prefer-ts-expect-error": ["error"],
-      "@typescript-eslint/explicit-member-accessibility": [
+      /*"@typescript-eslint/explicit-member-accessibility": [
         "error",
         {
           "accessibility": "no-public",
         },
-      ],
+      ],*/
       /*"@typescript-eslint/prefer-nullish-coalescing": [
         "error",
         {

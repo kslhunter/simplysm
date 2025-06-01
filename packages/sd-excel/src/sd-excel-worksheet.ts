@@ -8,7 +8,7 @@ import { SdExcelXmlWorkbook } from "./xmls/sd-excel-xml-workbook";
 import { SdExcelXmlWorksheet } from "./xmls/sd-excel-xml-worksheet";
 
 export class SdExcelWorksheet {
-  private readonly _rowMap = new Map<number, SdExcelRow>();
+  readonly #rowMap = new Map<number, SdExcelRow>();
 
   constructor(
     private readonly _zipCache: ZipCache,
@@ -18,17 +18,17 @@ export class SdExcelWorksheet {
   }
 
   async getNameAsync(): Promise<string> {
-    const wbXmlData = await this._getWbDataAsync();
+    const wbXmlData = await this.#getWbDataAsync();
     return wbXmlData.getWorksheetNameById(this._relId)!;
   }
 
   async setNameAsync(newName: string): Promise<void> {
-    const wbXmlData = await this._getWbDataAsync();
+    const wbXmlData = await this.#getWbDataAsync();
     wbXmlData.setWorksheetNameById(this._relId, newName)!;
   }
 
   row(r: number): SdExcelRow {
-    return this._rowMap.getOrCreate(r, new SdExcelRow(this._zipCache, this._targetFileName, r));
+    return this.#rowMap.getOrCreate(r, new SdExcelRow(this._zipCache, this._targetFileName, r));
   }
 
   cell(r: number, c: number): SdExcelCell {
@@ -51,7 +51,7 @@ export class SdExcelWorksheet {
     srcAddr: { r: number; c: number },
     targetAddr: { r: number; c: number },
   ) {
-    const wsData = await this._getWsDataAsync();
+    const wsData = await this.#getWsDataAsync();
 
     const styleId = wsData.getCellStyleId(srcAddr);
     if (styleId != null) {
@@ -60,7 +60,7 @@ export class SdExcelWorksheet {
   }
 
   async copyRowAsync(srcR: number, targetR: number) {
-    const wsData = await this._getWsDataAsync();
+    const wsData = await this.#getWsDataAsync();
     wsData.copyRow(srcR, targetR);
   }
 
@@ -68,7 +68,7 @@ export class SdExcelWorksheet {
     srcAddr: { r: number; c: number },
     targetAddr: { r: number; c: number },
   ) {
-    const wsData = await this._getWsDataAsync();
+    const wsData = await this.#getWsDataAsync();
     wsData.copyCell(srcAddr, targetAddr);
   }
 
@@ -83,14 +83,14 @@ export class SdExcelWorksheet {
   }
 
   async getRangeAsync(): Promise<ISdExcelAddressRangePoint> {
-    const xml = await this._getWsDataAsync();
+    const xml = await this.#getWsDataAsync();
     return xml.range;
   }
 
   async getCellsAsync(): Promise<SdExcelCell[][]> {
     const result: SdExcelCell[][] = [];
 
-    const xml = await this._getWsDataAsync();
+    const xml = await this.#getWsDataAsync();
 
     const range = xml.range;
     for (let r = range.s.r; r <= range.e.r; r++) {
@@ -110,7 +110,7 @@ export class SdExcelWorksheet {
 
     const headerMap = new Map<string, number>();
 
-    const xml = await this._getWsDataAsync();
+    const xml = await this.#getWsDataAsync();
     const range = xml.range;
 
     const startRow = opt?.headerRowIndex ?? range.s.r;
@@ -170,18 +170,18 @@ export class SdExcelWorksheet {
   }
 
   async setZoomAsync(percent: number) {
-    const wbXml = await this._getWbDataAsync();
+    const wbXml = await this.#getWbDataAsync();
     wbXml.initializeView();
 
-    const wsXml = await this._getWsDataAsync();
+    const wsXml = await this.#getWsDataAsync();
     wsXml.setZoom(percent);
   }
 
   async setFixAsync(point: { r?: number, c?: number }) {
-    const wbXml = await this._getWbDataAsync();
+    const wbXml = await this.#getWbDataAsync();
     wbXml.initializeView();
 
-    const wsXml = await this._getWsDataAsync();
+    const wsXml = await this.#getWsDataAsync();
     wsXml.setFix(point);
   }
 
@@ -282,11 +282,11 @@ export class SdExcelWorksheet {
     return excelItems;
   }*/
 
-  private async _getWsDataAsync() {
+  async #getWsDataAsync() {
     return await this._zipCache.getAsync(`xl/worksheets/${this._targetFileName}`) as SdExcelXmlWorksheet;
   }
 
-  private async _getWbDataAsync() {
+  async #getWbDataAsync() {
     return await this._zipCache.getAsync("xl/workbook.xml") as SdExcelXmlWorkbook;
   }
 }

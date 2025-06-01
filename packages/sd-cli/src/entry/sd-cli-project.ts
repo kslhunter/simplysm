@@ -58,7 +58,7 @@ export class SdCliProject {
         logger.debug("빌드를 시작합니다...");
       })
       .on("complete", (messages) => {
-        this._logging(messages, logger);
+        this.#logging(messages, logger);
       });
 
     await pkgPaths.parallelAsync(async (pkgPath) => {
@@ -97,7 +97,7 @@ export class SdCliProject {
     }
 
     logger.debug("프로젝트 및 패키지 버전 설정...");
-    this._upgradeVersion(projNpmConf, allPkgPaths);
+    this.#upgradeVersion(projNpmConf, allPkgPaths);
 
     logger.debug("빌드 프로세스 시작...");
     const multiBuildRunner = new SdMultiBuildRunner();
@@ -110,7 +110,7 @@ export class SdCliProject {
         workspaces: projNpmConf.workspaces!,
       });
     });
-    this._logging(messages.mapMany(), logger);
+    this.#logging(messages.mapMany(), logger);
   }
 
   static async publishAsync(opt: {
@@ -129,7 +129,7 @@ export class SdCliProject {
 
     if (opt.noBuild) {
       logger.warn("빌드하지 않고, 배포하는것은 상당히 위험합니다.");
-      await this._waitSecMessageAsync("프로세스를 중지하려면, 'CTRL+C'를 누르세요.", 5);
+      await this.#waitSecMessageAsync("프로세스를 중지하려면, 'CTRL+C'를 누르세요.", 5);
     } else {
       // GIT 사용중일 경우, 커밋되지 않은 수정사항이 있는지 확인
       if (FsUtils.exists(path.resolve(process.cwd(), ".git"))) {
@@ -156,7 +156,7 @@ export class SdCliProject {
 
     if (!opt.noBuild) {
       logger.debug("프로젝트 및 패키지 버전 설정...");
-      this._upgradeVersion(projNpmConf, allPkgPaths);
+      this.#upgradeVersion(projNpmConf, allPkgPaths);
 
       // 빌드
       try {
@@ -172,7 +172,7 @@ export class SdCliProject {
           });
         });
 
-        this._logging(messages.mapMany(), logger);
+        this.#logging(messages.mapMany(), logger);
       } catch (err) {
         await SdProcess.spawnAsync("git checkout .");
         throw err;
@@ -200,7 +200,7 @@ export class SdCliProject {
       if (pkgConf?.publish == null) return;
 
       logger.debug(`[${pkgName}] 배포 시작...`);
-      await this._publishPkgAsync(pkgPath, pkgConf.publish);
+      await this.#publishPkgAsync(pkgPath, pkgConf.publish);
       logger.debug(`[${pkgName}] 배포 완료`);
     });
 
@@ -229,7 +229,7 @@ export class SdCliProject {
     logger.info(`모든 배포가 완료되었습니다. (v${projNpmConf.version})`);
   }
 
-  private static async _publishPkgAsync(
+  static async #publishPkgAsync(
     pkgPath: string,
     pkgPubConf: TSdPackageConfig["publish"],
   ): Promise<void> {
@@ -281,7 +281,7 @@ export class SdCliProject {
     }
   }
 
-  private static async _waitSecMessageAsync(msg: string, sec: number): Promise<void> {
+  static async #waitSecMessageAsync(msg: string, sec: number): Promise<void> {
     for (let i = sec; i > 0; i--) {
       if (i !== sec) {
         process.stdout.cursorTo(0);
@@ -294,7 +294,7 @@ export class SdCliProject {
     process.stdout.clearLine(0);
   }
 
-  private static _upgradeVersion(projNpmConf: INpmConfig, allPkgPaths: string[]) {
+  static #upgradeVersion(projNpmConf: INpmConfig, allPkgPaths: string[]) {
     // 작업공간 package.json 버전 설정
     const newVersion = semver.inc(projNpmConf.version, "patch")!;
     projNpmConf.version = newVersion;
@@ -346,7 +346,7 @@ export class SdCliProject {
     }
   }
 
-  private static _logging(buildResults: ISdBuildMessage[], logger: SdLogger): void {
+  static #logging(buildResults: ISdBuildMessage[], logger: SdLogger): void {
     const messageMap = buildResults.toSetMap(
       (item) => item.severity,
       (item) => SdCliConvertMessageUtils.getBuildMessageString(item),

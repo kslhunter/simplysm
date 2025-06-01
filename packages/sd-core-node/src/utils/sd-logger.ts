@@ -67,9 +67,9 @@ export interface ISdLoggerHistory {
 
 export class SdLogger {
   static configs = new Map<string, DeepPartial<ISdLoggerConfig>>();
-  private static _historyLength = 0;
+  static #historyLength = 0;
 
-  private readonly _randomForStyle = MathUtils.getRandomInt(4, 9);
+  readonly #randomForStyle = MathUtils.getRandomInt(4, 9);
 
   static get(group: string[] = []): SdLogger {
     return new SdLogger(group);
@@ -84,15 +84,15 @@ export class SdLogger {
     const group = (arg2 !== undefined ? arg1 : []) as string[];
     const config = (arg2 ?? arg1) as DeepPartial<ISdLoggerConfig>;
 
-    SdLogger.configs.set(group.join("_"), config);
+    this.configs.set(group.join("_"), config);
   }
 
   static restoreConfig(): void {
-    SdLogger.configs.clear();
+    this.configs.clear();
   }
 
   static setHistoryLength(len: number): void {
-    SdLogger._historyLength = len;
+    this.#historyLength = len;
   }
 
   static history: ISdLoggerHistory[] = [];
@@ -102,27 +102,27 @@ export class SdLogger {
   }
 
   debug(...args: any[]): void {
-    this._write(SdLoggerSeverity.debug, args);
+    this.#write(SdLoggerSeverity.debug, args);
   }
 
   log(...args: any[]): void {
-    this._write(SdLoggerSeverity.log, args);
+    this.#write(SdLoggerSeverity.log, args);
   }
 
   info(...args: any[]): void {
-    this._write(SdLoggerSeverity.info, args);
+    this.#write(SdLoggerSeverity.info, args);
   }
 
   warn(...args: any[]): void {
-    this._write(SdLoggerSeverity.warn, args);
+    this.#write(SdLoggerSeverity.warn, args);
   }
 
   error(...args: any[]): void {
-    this._write(SdLoggerSeverity.error, args);
+    this.#write(SdLoggerSeverity.error, args);
   }
 
-  private _write(severity: SdLoggerSeverity, logs: any[]): void {
-    const config = this._getConfig();
+  #write(severity: SdLoggerSeverity, logs: any[]): void {
+    const config = this.#getConfig();
     const now = new DateTime();
 
     const severityIndex = Object.values(SdLoggerSeverity).indexOf(severity);
@@ -219,7 +219,7 @@ export class SdLogger {
       }
     }
 
-    if (SdLogger._historyLength > 0) {
+    if (SdLogger.#historyLength > 0) {
       SdLogger.history.push({
         datetime: now,
         group: this._group,
@@ -227,18 +227,18 @@ export class SdLogger {
         logs,
       });
 
-      while (SdLogger.history.length > SdLogger._historyLength) {
+      while (SdLogger.history.length > SdLogger.#historyLength) {
         SdLogger.history.remove(SdLogger.history[0]);
       }
     }
   }
 
-  private _getConfig(): ISdLoggerConfig {
+  #getConfig(): ISdLoggerConfig {
     let config: ISdLoggerConfig = {
       dot: false,
 
       console: {
-        style: SdLoggerStyle[Object.keys(SdLoggerStyle)[this._randomForStyle]],
+        style: SdLoggerStyle[Object.keys(SdLoggerStyle)[this.#randomForStyle]],
         level: SdLoggerSeverity.log,
         styles: {
           debug: SdLoggerStyle.fgGray,

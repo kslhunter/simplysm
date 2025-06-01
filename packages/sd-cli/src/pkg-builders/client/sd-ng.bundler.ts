@@ -48,30 +48,30 @@ import nodeModule from "module";
 import { ScopePathSet } from "../commons/scope-path";
 
 export class SdNgBundler {
-  private _logger = SdLogger.get(["simplysm", "sd-cli", "SdNgBundler"]);
+  #logger = SdLogger.get(["simplysm", "sd-cli", "SdNgBundler"]);
 
-  private _modifiedFileSet = new Set<TNormPath>();
-  private _ngResultCache: ISdCliNgPluginResultCache = {
+  #modifiedFileSet = new Set<TNormPath>();
+  #ngResultCache: ISdCliNgPluginResultCache = {
     affectedFileSet: new Set<TNormPath>(),
     watchFileSet: new Set<TNormPath>(),
   };
-  private _styleLoadResultCache = new MemoryLoadResultCache();
+  #styleLoadResultCache = new MemoryLoadResultCache();
 
-  private _contexts: SdNgBundlerContext[] | undefined;
+  #contexts: SdNgBundlerContext[] | undefined;
 
-  private _outputHashCache = new Map<TNormPath, string>();
+  #outputHashCache = new Map<TNormPath, string>();
 
-  private _pkgNpmConf: INpmConfig;
-  private _mainFilePath: string;
-  private _tsConfigFilePath: string;
-  private _swConfFilePath: string;
-  private _browserTarget: string[];
-  private _indexHtmlFilePath: string;
-  private _pkgName: string;
-  private _baseHref: string;
+  #pkgNpmConf: INpmConfig;
+  #mainFilePath: string;
+  #tsConfigFilePath: string;
+  #swConfFilePath: string;
+  #browserTarget: string[];
+  #indexHtmlFilePath: string;
+  #pkgName: string;
+  #baseHref: string;
 
   constructor(
-    private _opt: {
+    private readonly _opt: {
       dev: boolean;
       outputPath: TNormPath;
       pkgPath: TNormPath;
@@ -82,25 +82,25 @@ export class SdNgBundler {
       watchScopePathSet: ScopePathSet;
     },
   ) {
-    this._pkgNpmConf = FsUtils.readJson(path.resolve(this._opt.pkgPath, "package.json"));
-    this._mainFilePath = path.resolve(this._opt.pkgPath, "src/main.ts");
-    this._tsConfigFilePath = path.resolve(this._opt.pkgPath, "tsconfig.json");
-    this._swConfFilePath = path.resolve(this._opt.pkgPath, "ngsw-config.json");
-    this._browserTarget = transformSupportedBrowsersToTargets(browserslist(["Chrome > 78"]));
-    this._indexHtmlFilePath = path.resolve(this._opt.pkgPath, "src/index.html");
-    this._pkgName = path.basename(this._opt.pkgPath);
-    this._baseHref =
+    this.#pkgNpmConf = FsUtils.readJson(path.resolve(this._opt.pkgPath, "package.json"));
+    this.#mainFilePath = path.resolve(this._opt.pkgPath, "src/main.ts");
+    this.#tsConfigFilePath = path.resolve(this._opt.pkgPath, "tsconfig.json");
+    this.#swConfFilePath = path.resolve(this._opt.pkgPath, "ngsw-config.json");
+    this.#browserTarget = transformSupportedBrowsersToTargets(browserslist(["Chrome > 78"]));
+    this.#indexHtmlFilePath = path.resolve(this._opt.pkgPath, "src/index.html");
+    this.#pkgName = path.basename(this._opt.pkgPath);
+    this.#baseHref =
       this._opt.builderType === "web"
-        ? `/${this._pkgName}/`
+        ? `/${this.#pkgName}/`
         : this._opt.dev
-          ? `/${this._pkgName}/${this._opt.builderType}/`
+          ? `/${this.#pkgName}/${this._opt.builderType}/`
           : ``;
   }
 
   markForChanges(filePaths: string[]): void {
     for (const filePath of filePaths) {
-      this._modifiedFileSet.add(PathUtils.norm(filePath));
-      this._styleLoadResultCache.invalidate(PathUtils.norm(filePath));
+      this.#modifiedFileSet.add(PathUtils.norm(filePath));
+      this.#styleLoadResultCache.invalidate(PathUtils.norm(filePath));
     }
     // this._sourceFileCache.invalidate(filePaths);
   }
@@ -113,28 +113,28 @@ export class SdNgBundler {
   }> {
     const perf = new SdCliPerformanceTimer("ng bundle");
 
-    this._debug(`get contexts...`);
+    this.#debug(`get contexts...`);
 
-    if (!this._contexts) {
-      this._contexts = perf.run("get contexts", () => [
-        this._getAppContext(),
+    if (!this.#contexts) {
+      this.#contexts = perf.run("get contexts", () => [
+        this.#getAppContext(),
         ...FsUtils.exists(path.resolve(this._opt.pkgPath, "src/styles.scss")) ? [
-          this._getStyleContext(),
+          this.#getStyleContext(),
         ] : [],
-        ...(this._opt.builderType === "electron" ? [this._getElectronMainContext()] : []),
+        ...(this._opt.builderType === "electron" ? [this.#getElectronMainContext()] : []),
       ]);
     }
 
-    this._debug(`build...`);
+    this.#debug(`build...`);
 
     const bundlingResults = await perf.run("build", async () => {
-      return await this._contexts!.mapAsync(async (ctx) => await ctx.bundleAsync());
+      return await this.#contexts!.mapAsync(async (ctx) => await ctx.bundleAsync());
     });
 
     //-- results
     const results = bundlingResults.mapMany((bundlingResult) => bundlingResult.results);
 
-    this._debug(`convert result...`);
+    this.#debug(`convert result...`);
 
     const outputFiles: BuildOutputFile[] = bundlingResults.mapMany(
       (item) => item.outputFiles?.map((file) => convertOutputFile(file, BuildOutputFileType.Root))
@@ -160,9 +160,9 @@ export class SdNgBundler {
       outputFiles.push(createOutputFile("cordova-empty.js", "export default {};", BuildOutputFileType.Root));
     }*/
 
-    this._debug(`create index.html...`);
+    this.#debug(`create index.html...`);
     await perf.run("create index.html", async () => {
-      const genIndexHtmlResult = await this._genIndexHtmlAsync(outputFiles, initialFiles);
+      const genIndexHtmlResult = await this.#genIndexHtmlAsync(outputFiles, initialFiles);
       for (const warning of genIndexHtmlResult.warnings) {
         results.push({
           filePath: undefined,
@@ -194,7 +194,7 @@ export class SdNgBundler {
 
     await perf.run("assets", async () => {
       //-- copy assets
-      assetFiles.push(...(await this._copyAssetsAsync()));
+      assetFiles.push(...(await this.#copyAssetsAsync()));
 
       //-- extract 3rdpartylicenses
       if (!this._opt.dev) {
@@ -209,12 +209,12 @@ export class SdNgBundler {
     });
 
     //-- service worker
-    if (FsUtils.exists(this._swConfFilePath)) {
-      this._debug(`prepare service worker...`);
+    if (FsUtils.exists(this.#swConfFilePath)) {
+      this.#debug(`prepare service worker...`);
 
       await perf.run("prepare service worker", async () => {
         try {
-          const serviceWorkerResult = await this._genServiceWorkerAsync(outputFiles, assetFiles);
+          const serviceWorkerResult = await this.#genServiceWorkerAsync(outputFiles, assetFiles);
           outputFiles.push(createOutputFile(
             "ngsw.json",
             serviceWorkerResult.manifest,
@@ -237,47 +237,47 @@ export class SdNgBundler {
     }
 
     //-- write
-    this._debug(`write output files...(${outputFiles.length})`);
+    this.#debug(`write output files...(${outputFiles.length})`);
 
     const emitFileSet = new Set<TNormPath>();
     perf.run("write output file", () => {
       for (const outputFile of outputFiles) {
         const distFilePath = PathUtils.norm(this._opt.outputPath, outputFile.path);
-        const prevHash = this._outputHashCache.get(distFilePath);
+        const prevHash = this.#outputHashCache.get(distFilePath);
         const currHash = HashUtils.get(Buffer.from(outputFile.contents));
         if (prevHash !== currHash) {
           FsUtils.writeFile(distFilePath, outputFile.contents);
-          this._outputHashCache.set(distFilePath, currHash);
+          this.#outputHashCache.set(distFilePath, currHash);
           emitFileSet.add(PathUtils.norm(outputFile.path));
         }
       }
       for (const assetFile of assetFiles) {
-        const prevHash = this._outputHashCache.get(PathUtils.norm(assetFile.source));
+        const prevHash = this.#outputHashCache.get(PathUtils.norm(assetFile.source));
         const currHash = FsUtils.hash(assetFile.source);
         if (prevHash !== currHash) {
           FsUtils.copy(assetFile.source, path.resolve(this._opt.outputPath, assetFile.destination));
-          this._outputHashCache.set(PathUtils.norm(assetFile.source), currHash);
+          this.#outputHashCache.set(PathUtils.norm(assetFile.source), currHash);
           emitFileSet.add(PathUtils.norm(assetFile.destination));
         }
       }
     });
 
-    this._debug(perf.toString());
+    this.#debug(perf.toString());
 
     return {
       watchFileSet: new Set([
-        ...this._ngResultCache.watchFileSet!,
-        ...this._styleLoadResultCache.watchFiles.map((item) => PathUtils.norm(item)),
+        ...this.#ngResultCache.watchFileSet!,
+        ...this.#styleLoadResultCache.watchFiles.map((item) => PathUtils.norm(item)),
         ...assetFiles.map((item) => PathUtils.norm(item.source)),
-        PathUtils.norm(this._indexHtmlFilePath),
+        PathUtils.norm(this.#indexHtmlFilePath),
       ]),
-      affectedFileSet: this._ngResultCache.affectedFileSet!,
+      affectedFileSet: this.#ngResultCache.affectedFileSet!,
       results,
       emitFileSet: emitFileSet,
     };
   }
 
-  private async _genIndexHtmlAsync(
+  async #genIndexHtmlAsync(
     outputFiles: esbuild.OutputFile[],
     initialFiles: Map<string, InitialFileRecord>,
   ): Promise<IndexHtmlProcessResult> {
@@ -292,7 +292,7 @@ export class SdNgBundler {
     };
 
     const indexHtmlGenerator = new IndexHtmlGenerator({
-      indexPath: this._indexHtmlFilePath,
+      indexPath: this.#indexHtmlFilePath,
       entrypoints: [
         ["polyfills", true],
         ["styles", false],
@@ -337,7 +337,7 @@ export class SdNgBundler {
     }
 
     return await indexHtmlGenerator.process({
-      baseHref: this._baseHref,
+      baseHref: this.#baseHref,
       lang: undefined,
       outputPath: "/",
       files: [...initialFiles].map(([file, record]) => ({
@@ -349,7 +349,7 @@ export class SdNgBundler {
     });
   }
 
-  private async _copyAssetsAsync(): Promise<
+  async #copyAssetsAsync(): Promise<
     {
       source: string;
       destination: string;
@@ -389,7 +389,7 @@ export class SdNgBundler {
     );
   }
 
-  private async _genServiceWorkerAsync(
+  async #genServiceWorkerAsync(
     outputFiles: BuildOutputFile[],
     assetFiles: {
       source: string;
@@ -404,15 +404,15 @@ export class SdNgBundler {
   }> {
     return await augmentAppWithServiceWorkerEsbuild(
       this._opt.pkgPath,
-      this._swConfFilePath,
-      this._baseHref,
+      this.#swConfFilePath,
+      this.#baseHref,
       "index.html",
       outputFiles,
       assetFiles,
     );
   }
 
-  private _getAppContext() {
+  #getAppContext() {
     const workerEntries = FsUtils.glob(path.resolve(this._opt.pkgPath, "src/workers/*.ts"))
       .toObject(
         (p) => "workers/" + path.basename(p, path.extname(p)),
@@ -436,7 +436,7 @@ export class SdNgBundler {
       outExtension: undefined,
       sourcemap: this._opt.dev,
       chunkNames: "[name]-[hash]",
-      tsconfig: this._tsConfigFilePath,
+      tsconfig: this.#tsConfigFilePath,
       write: false,
       preserveSymlinks: false,
       define: {
@@ -445,7 +445,7 @@ export class SdNgBundler {
         "global": "global",
         "process": "process",
         "Buffer": "Buffer",
-        "process.env.SD_VERSION": JSON.stringify(this._pkgNpmConf.version),
+        "process.env.SD_VERSION": JSON.stringify(this.#pkgNpmConf.version),
         "process.env.NODE_ENV": JSON.stringify(this._opt.dev ? "development" : "production"),
         ...(this._opt.env
           ? Object.keys(this._opt.env).toObject(
@@ -457,7 +457,7 @@ export class SdNgBundler {
       mainFields: ["es2020", "es2015", "browser", "module", "main"],
       entryNames: "[dir]/[name]",
       entryPoints: {
-        main: this._mainFilePath,
+        main: this.#mainFilePath,
         ...FsUtils.exists(path.resolve(this._opt.pkgPath, "src/polyfills.ts")) ? {
           polyfills: path.resolve(this._opt.pkgPath, "src/polyfills.ts"),
         } : {},
@@ -508,7 +508,7 @@ export class SdNgBundler {
         }
         : {
           platform: "browser",
-          target: this._browserTarget,
+          target: this.#browserTarget,
           format: "esm",
           splitting: true,
           inject: [
@@ -519,10 +519,10 @@ export class SdNgBundler {
       plugins: [
         createSourcemapIgnorelistPlugin(),
         createSdNgPlugin({
-          modifiedFileSet: this._modifiedFileSet,
+          modifiedFileSet: this.#modifiedFileSet,
           dev: this._opt.dev,
           pkgPath: this._opt.pkgPath,
-          result: this._ngResultCache,
+          result: this.#ngResultCache,
           watchScopePathSet: this._opt.watchScopePathSet,
         }),
         ...(this._opt.builderType === "electron"
@@ -543,13 +543,13 @@ export class SdNgBundler {
     });
   }
 
-  private _getStyleContext(): SdNgBundlerContext {
+  #getStyleContext(): SdNgBundlerContext {
     const pluginFactory = new StylesheetPluginFactory(
       {
         sourcemap: this._opt.dev,
         includePaths: [],
       },
-      this._styleLoadResultCache,
+      this.#styleLoadResultCache,
     );
 
     return new SdNgBundlerContext(this._opt.pkgPath, {
@@ -564,7 +564,7 @@ export class SdNgBundler {
       outdir: this._opt.pkgPath,
       write: false,
       platform: "browser",
-      target: this._browserTarget,
+      target: this.#browserTarget,
       preserveSymlinks: false,
       external: [],
       conditions: ["style", "sass"],
@@ -576,12 +576,12 @@ export class SdNgBundler {
       plugins: [
         pluginFactory.create(SassStylesheetLanguage),
         pluginFactory.create(CssStylesheetLanguage),
-        createCssResourcePlugin(this._styleLoadResultCache),
+        createCssResourcePlugin(this.#styleLoadResultCache),
       ],
     });
   }
 
-  private _getElectronMainContext() {
+  #getElectronMainContext() {
     return new SdNgBundlerContext(this._opt.pkgPath, {
       absWorkingDir: this._opt.pkgPath,
       bundle: true,
@@ -595,13 +595,13 @@ export class SdNgBundler {
       minify: !this._opt.dev,
       outdir: this._opt.pkgPath,
       sourcemap: this._opt.dev,
-      tsconfig: this._tsConfigFilePath,
+      tsconfig: this.#tsConfigFilePath,
       write: false,
       preserveSymlinks: false,
       external: ["electron"],
       define: {
         ...(!this._opt.dev ? { ngDevMode: "false" } : {}),
-        "process.env.SD_VERSION": JSON.stringify(this._pkgNpmConf.version),
+        "process.env.SD_VERSION": JSON.stringify(this.#pkgNpmConf.version),
         "process.env.NODE_ENV": JSON.stringify(this._opt.dev ? "development" : "production"),
         ...(this._opt.env
           ? Object.keys(this._opt.env).toObject(
@@ -617,7 +617,7 @@ export class SdNgBundler {
     });
   }
 
-  private _debug(...msg: any[]): void {
-    this._logger.debug(`[${path.basename(this._opt.pkgPath)}]`, ...msg);
+  #debug(...msg: any[]): void {
+    this.#logger.debug(`[${path.basename(this._opt.pkgPath)}]`, ...msg);
   }
 }

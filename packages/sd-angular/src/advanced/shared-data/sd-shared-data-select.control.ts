@@ -128,7 +128,7 @@ export class SdSharedDataSelectControl<
 > {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
 
-  private _sdModal = inject(SdModalProvider);
+  #sdModal = inject(SdModalProvider);
 
   value = model<TSelectValue<T["__valueKey"] | undefined>[M]>();
 
@@ -263,7 +263,7 @@ export class SdSharedDataSelectControl<
     const modal = this.modal();
     if (!modal) return;
 
-    const result = await this._sdModal.showAsync({
+    const result = await this.#sdModal.showAsync({
       ...modal,
       inputs: {
         selectMode: this.selectMode(),
@@ -289,6 +289,6 @@ export class SdSharedDataSelectControl<
     const modal = this.editModal();
     if (!modal) return;
 
-    await this._sdModal.showAsync(modal);
+    await this.#sdModal.showAsync(modal);
   }
 }

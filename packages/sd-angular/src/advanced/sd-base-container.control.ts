@@ -68,19 +68,21 @@ import { transformBoolean } from "../utils/type-tramsforms";
               }
 
               <sd-pane sd-show-effect>
-                <ng-template [ngTemplateOutlet]="contentTemplateRef() ?? null" />
+                <ng-template [ngTemplateOutlet]="contentTemplateRef()" />
               </sd-pane>
             </sd-dock-container>
           </sd-topbar-container>
         } @else if (currViewType() === "modal" && modalBottomTemplateRef()) {
           <sd-dock-container>
             <sd-pane sd-show-effect>
-              <ng-template [ngTemplateOutlet]="contentTemplateRef() ?? null" />
+              <ng-template [ngTemplateOutlet]="contentTemplateRef()" />
             </sd-pane>
 
-            <sd-dock position="bottom">
-              <ng-template [ngTemplateOutlet]="modalBottomTemplateRef() ?? null" />
-            </sd-dock>
+            @if (modalBottomTemplateRef()) {
+              <sd-dock position="bottom">
+                <ng-template [ngTemplateOutlet]="modalBottomTemplateRef() ?? null" />
+              </sd-dock>
+            }
           </sd-dock-container>
         } @else {
           <sd-dock-container>
@@ -91,7 +93,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
             }
 
             <sd-pane sd-show-effect>
-              <ng-template [ngTemplateOutlet]="contentTemplateRef() ?? null" />
+              <ng-template [ngTemplateOutlet]="contentTemplateRef()" />
             </sd-pane>
           </sd-dock-container>
         }
@@ -102,27 +104,27 @@ import { transformBoolean } from "../utils/type-tramsforms";
 export class SdBaseContainerControl {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
 
-  private _sdActivatedModal = inject(SdActivatedModalProvider, { optional: true });
-  private _sdAppStructure = inject(SdAppStructureProvider);
+  #sdActivatedModal = inject(SdActivatedModalProvider, { optional: true });
+  #sdAppStructure = inject(SdAppStructureProvider);
 
-  private _fullPageCode = useFullPageCodeSignal();
-  private _currPageCode = useCurrentPageCodeSignal();
+  #fullPageCode = useFullPageCodeSignal();
+  #currPageCode = useCurrentPageCodeSignal();
 
   pageTopbarTemplateRef = contentChild("pageTopbar", { read: TemplateRef });
   toolTemplateRef = contentChild("tool", { read: TemplateRef });
-  contentTemplateRef = contentChild("content", { read: TemplateRef });
+  contentTemplateRef = contentChild.required("content", { read: TemplateRef });
   modalBottomTemplateRef = contentChild("modalBottom", { read: TemplateRef });
 
-  perms = usePermsSignal([this._fullPageCode()], ["use"]);
+  perms = usePermsSignal([this.#fullPageCode()], ["use"]);
 
-  private _viewType = useViewTypeSignal();
+  #viewType = useViewTypeSignal();
   viewType = input<TSdViewType>();
-  currViewType = $computed(() => this.viewType() ?? this._viewType());
+  currViewType = $computed(() => this.viewType() ?? this.#viewType());
 
   title = $computed(
     () =>
-      this._sdActivatedModal?.modalComponent()?.title() ??
-      this._sdAppStructure.getTitleByFullCode(this._currPageCode?.() ?? this._fullPageCode()),
+      this.#sdActivatedModal?.modalComponent()?.title() ??
+      this.#sdAppStructure.getTitleByFullCode(this.#currPageCode?.() ?? this.#fullPageCode()),
   );
 
   initialized = input.required({ transform: transformBoolean });

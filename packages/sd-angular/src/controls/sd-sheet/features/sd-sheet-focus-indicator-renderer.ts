@@ -2,7 +2,7 @@ import { SdSheetDomAccessor } from "./sd-sheet-dom-accessor";
 
 export class SdSheetFocusIndicatorRenderer {
 
-  constructor(private _options: {
+  constructor(private readonly _options: {
     domAccessor: SdSheetDomAccessor
   }) {
   }

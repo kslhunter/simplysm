@@ -87,7 +87,7 @@ export class SdExcelWrapper<VT extends TExcelValidObject> {
 
     const excelItems: TExcelValidateObjectRecord<VT>[] = [];
     for (const item of wsdt) {
-      const fieldConf = this._getFieldConf(item);
+      const fieldConf = this.#getFieldConf(item);
 
       const firstNotNullFieldKey = Object.keys(fieldConf)
         .first(key => fieldConf[key].notnull ?? false);
@@ -161,12 +161,12 @@ export class SdExcelWrapper<VT extends TExcelValidObject> {
     }
     if (excelItems.length === 0) throw Error("엑셀파일에서 데이터를 찾을 수 없습니다.");
 
-    ObjectUtils.validateArrayWithThrow(wsName, excelItems, item => this._getFieldConf(item));
+    ObjectUtils.validateArrayWithThrow(wsName, excelItems, item => this.#getFieldConf(item));
 
     return excelItems;
   }
 
-  private _getFieldConf(item: TExcelValidateObjectRecord<VT>) {
+  #getFieldConf(item: TExcelValidateObjectRecord<VT>) {
     const defaultFieldConf = typeof this._fieldConf === "function" ? this._fieldConf() : this._fieldConf;
 
     const result = this._additionalFieldConf

@@ -38,7 +38,7 @@ import { injectElementRef } from "../utils/injections/inject-element-ref";
   },
 })
 export class SdGapControl {
-  private _elRef = injectElementRef<HTMLElement>();
+  #elRef = injectElementRef<HTMLElement>();
 
   height = input<"xxs" | "xs" | "sm" | "default" | "lg" | "xl" | "xxl">();
   heightPx = input<number>();
@@ -49,20 +49,20 @@ export class SdGapControl {
   constructor() {
     $effect(() => {
       if (this.widthPx() === 0 || this.heightPx() === 0 || this.widthEm() === 0) {
-        this._elRef.nativeElement.style.display = "none";
+        this.#elRef.nativeElement.style.display = "none";
       }
       else if (
         this.width() !== undefined
         || this.widthPx() !== undefined
         || this.widthEm() !== undefined
       ) {
-        this._elRef.nativeElement.style.display = "inline-block";
+        this.#elRef.nativeElement.style.display = "inline-block";
       }
       else if (this.height() !== undefined || this.heightPx() !== undefined) {
-        this._elRef.nativeElement.style.display = "block";
+        this.#elRef.nativeElement.style.display = "block";
       }
       else {
-        this._elRef.nativeElement.style.display = "";
+        this.#elRef.nativeElement.style.display = "";
       }
     });
   }

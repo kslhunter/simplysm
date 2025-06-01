@@ -1,12 +1,12 @@
 import { TNormPath } from "@simplysm/sd-core-node";
 
 export class SdDependencyCache {
-  private _exportCache = new Map<
+  #exportCache = new Map<
     /* fileNPath: */ TNormPath,
     /* exportSymbolSet: */ Set<string>
   >();
 
-  private _importCache = new Map<
+  #importCache = new Map<
     /* fileNPath: */ TNormPath,
     Map<
       /* targetNPath: */ TNormPath,
@@ -14,7 +14,7 @@ export class SdDependencyCache {
     >
   >();
 
-  private _reexportCache = new Map<
+  #reexportCache = new Map<
     /* fileNPath: */ TNormPath,
     Map<
       /* targetNPath: */ TNormPath,
@@ -25,7 +25,7 @@ export class SdDependencyCache {
     >
   >();
 
-  private _revDepCache = new Map<
+  #revDepCache = new Map<
     /* targetNPath: */ TNormPath,
     Map<
       /* fileNPath: */ TNormPath,
@@ -33,27 +33,27 @@ export class SdDependencyCache {
     >
   >();
 
-  private _collectedCache = new Set<TNormPath>();
+  #collectedCache = new Set<TNormPath>();
 
   getFiles(): Set<TNormPath> {
     return new Set<TNormPath>([
-      ...this._collectedCache.keys(),
-      ...this._revDepCache.keys(),
+      ...this.#collectedCache.keys(),
+      ...this.#revDepCache.keys(),
     ]);
   }
 
   addCollected(fileNPath: TNormPath) {
-    this._collectedCache.add(fileNPath);
+    this.#collectedCache.add(fileNPath);
   }
 
   hasCollected(fileNPath: TNormPath) {
-    return this._collectedCache.has(fileNPath);
+    return this.#collectedCache.has(fileNPath);
   }
 
   // export const ...
   // export function/class/interface A ...
   addExport(fileNPath: TNormPath, exportSymbol: string) {
-    const exportSymbolSet = this._exportCache.getOrCreate(fileNPath, new Set());
+    const exportSymbolSet = this.#exportCache.getOrCreate(fileNPath, new Set());
     exportSymbolSet.add(exportSymbol);
   }
 
@@ -62,10 +62,10 @@ export class SdDependencyCache {
   // import(...)
   // require(...)
   addImport(fileNPath: TNormPath, targetNPath: TNormPath, targetSymbol: string | 0) {
-    const importTargetMap = this._importCache.getOrCreate(fileNPath, new Map());
+    const importTargetMap = this.#importCache.getOrCreate(fileNPath, new Map());
     if (targetSymbol === 0) {
       importTargetMap.set(targetNPath, 0);
-      this._addRevDep(targetNPath, fileNPath, 0);
+      this.#addRevDep(targetNPath, fileNPath, 0);
     }
     else {
       const importTargetSymbolSet = importTargetMap.getOrCreate(targetNPath, new Set());
@@ -74,7 +74,7 @@ export class SdDependencyCache {
       }
 
       importTargetSymbolSet.add(targetSymbol);
-      this._addRevDep(targetNPath, fileNPath, targetSymbol);
+      this.#addRevDep(targetNPath, fileNPath, targetSymbol);
     }
   }
 
@@ -89,10 +89,10 @@ export class SdDependencyCache {
     targetNPath: TNormPath,
     targetSymbolInfo: { importSymbol: string, exportSymbol: string } | 0,
   ) {
-    const reexportTargetMap = this._reexportCache.getOrCreate(fileNPath, new Map());
+    const reexportTargetMap = this.#reexportCache.getOrCreate(fileNPath, new Map());
     if (targetSymbolInfo === 0) {
       reexportTargetMap.set(targetNPath, 0);
-      this._addRevDep(targetNPath, fileNPath, 0);
+      this.#addRevDep(targetNPath, fileNPath, 0);
     }
     else {
       const reexportTargetSymbolInfos = reexportTargetMap.getOrCreate(targetNPath, []);
@@ -107,13 +107,13 @@ export class SdDependencyCache {
         )
       ) {
         reexportTargetSymbolInfos.push(targetSymbolInfo);
-        this._addRevDep(targetNPath, fileNPath, targetSymbolInfo.importSymbol);
+        this.#addRevDep(targetNPath, fileNPath, targetSymbolInfo.importSymbol);
       }
     }
   }
 
-  private _addRevDep(targetNPath: TNormPath, fileNPath: TNormPath, exportSymbol: string | 0) {
-    const revDepInfoMap = this._revDepCache.getOrCreate(targetNPath, new Map());
+  #addRevDep(targetNPath: TNormPath, fileNPath: TNormPath, exportSymbol: string | 0) {
+    const revDepInfoMap = this.#revDepCache.getOrCreate(targetNPath, new Map());
     if (exportSymbol === 0) {
       revDepInfoMap.set(fileNPath, exportSymbol);
     }
@@ -143,7 +143,7 @@ export class SdDependencyCache {
     };
 
     for (const modifiedNPath of modifiedNPathSet) {
-      const exportSymbols = this._getExportSymbols(modifiedNPath);
+      const exportSymbols = this.#getExportSymbols(modifiedNPath);
       if (exportSymbols.size === 0) {
         enqueue(modifiedNPath, undefined);
       }
@@ -161,7 +161,7 @@ export class SdDependencyCache {
       if (visited.has(key)) continue;
       visited.add(key);*/
 
-      const revDepInfoMap = this._revDepCache.get(curr.fileNPath);
+      const revDepInfoMap = this.#revDepCache.get(curr.fileNPath);
       if (!revDepInfoMap) continue;
 
       for (const [revDepFileNPath, revDepInfo] of revDepInfoMap) {
@@ -173,7 +173,7 @@ export class SdDependencyCache {
             result.add(revDepFileNPath);
 
             // 하위 Deps를 queue에 넣기전 export명칭 변환 (이름을 변경한 reexport일 경우 필요)
-            const exportSymbol = this._convertImportSymbolToExportSymbol(
+            const exportSymbol = this.#convertImportSymbolToExportSymbol(
               revDepFileNPath,
               curr.fileNPath,
               curr.exportSymbol, // revdep의 importSymbol
@@ -194,31 +194,31 @@ export class SdDependencyCache {
     const affectedFiles = this.getAffectedFileSet(fileNPathSet);
 
     for (const fileNPath of affectedFiles) {
-      this._exportCache.delete(fileNPath);
-      this._importCache.delete(fileNPath);
-      this._reexportCache.delete(fileNPath);
-      this._collectedCache.delete(fileNPath);
-      this._revDepCache.delete(fileNPath); // ← 자기 자신이 key인 경우도 정리
+      this.#exportCache.delete(fileNPath);
+      this.#importCache.delete(fileNPath);
+      this.#reexportCache.delete(fileNPath);
+      this.#collectedCache.delete(fileNPath);
+      this.#revDepCache.delete(fileNPath); // ← 자기 자신이 key인 경우도 정리
     }
 
     // _revDepCache는 역방향으로 순회
-    for (const [targetNPath, infoMap] of this._revDepCache) {
+    for (const [targetNPath, infoMap] of this.#revDepCache) {
       for (const fileNPath of affectedFiles) {
         infoMap.delete(fileNPath);
       }
 
       if (infoMap.size === 0) {
-        this._revDepCache.delete(targetNPath);
+        this.#revDepCache.delete(targetNPath);
       }
     }
   }
 
-  private _convertImportSymbolToExportSymbol(
+  #convertImportSymbolToExportSymbol(
     fileNPath: TNormPath,
     targetNPath: TNormPath,
     importSymbol: string,
   ) {
-    const symbolInfos = this._reexportCache.get(fileNPath)?.get(targetNPath);
+    const symbolInfos = this.#reexportCache.get(fileNPath)?.get(targetNPath);
     if (symbolInfos != null && symbolInfos !== 0 && symbolInfos.length > 0) {
       const symbolInfo = symbolInfos.single(item => item.importSymbol === importSymbol);
       if (symbolInfo) {
@@ -229,19 +229,19 @@ export class SdDependencyCache {
     return importSymbol;
   }
 
-  private _getExportSymbols(fileNPath: TNormPath): Set<string> {
+  #getExportSymbols(fileNPath: TNormPath): Set<string> {
     const result = new Set<string>();
 
-    const set = this._exportCache.get(fileNPath);
+    const set = this.#exportCache.get(fileNPath);
     if (set) {
       result.adds(...set);
     }
 
-    const map = this._reexportCache.get(fileNPath);
+    const map = this.#reexportCache.get(fileNPath);
     if (map) {
       for (const [key, val] of map) {
         if (val === 0) {
-          result.adds(...this._getExportSymbols(key));
+          result.adds(...this.#getExportSymbols(key));
         }
         else {
           result.adds(...val.map(item => item.exportSymbol));
@@ -277,7 +277,7 @@ export class SdDependencyCache {
       };
       nodeMap.set(key, node);
 
-      const revDepInfoMap = this._revDepCache.get(fileNPath);
+      const revDepInfoMap = this.#revDepCache.get(fileNPath);
       if (!revDepInfoMap) return node;
 
       for (const [revDepFileNPath, revDepInfo] of revDepInfoMap.entries()) {
@@ -286,7 +286,7 @@ export class SdDependencyCache {
         if (!hasImportSymbol) continue;
 
         const nextExportSymbol = exportSymbol != null
-          ? this._convertImportSymbolToExportSymbol(
+          ? this.#convertImportSymbolToExportSymbol(
             revDepFileNPath,
             fileNPath,
             exportSymbol
@@ -306,7 +306,7 @@ export class SdDependencyCache {
     const result: ISdAffectedFileTreeNode[] = [];
 
     for (const modifiedNPath of modifiedNPathSet) {
-      const exportSymbols = this._getExportSymbols(modifiedNPath);
+      const exportSymbols = this.#getExportSymbols(modifiedNPath);
       if (exportSymbols.size === 0) {
         const rootNode = buildTree(modifiedNPath, undefined);
         result.push(rootNode);

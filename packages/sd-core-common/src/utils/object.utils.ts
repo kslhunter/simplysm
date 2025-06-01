@@ -15,10 +15,10 @@ export class ObjectUtils {
       onlyOneDepth?: boolean;
     },
   ): T {
-    return ObjectUtils._clone(source, options);
+    return this.#clone(source, options);
   }
 
-  private static _clone(
+  static #clone(
     source: any,
     options?: {
       excludes?: any[];
@@ -40,13 +40,13 @@ export class ObjectUtils {
       if (options?.onlyOneDepth) {
         return [...source];
       } else {
-        return source.map((item) => ObjectUtils._clone(item, options));
+        return source.map((item) => this.#clone(item, options));
       }
     }
     if (source instanceof Map) {
       return Array.from(source.keys()).toMap(
-        (key) => ObjectUtils._clone(key, options),
-        (key) => ObjectUtils._clone(source.get(key), options),
+        (key) => this.#clone(key, options),
+        (key) => this.#clone(source.get(key), options),
       );
     }
     if (source instanceof Date) {
@@ -87,7 +87,7 @@ export class ObjectUtils {
             if (matchedPrevClone !== undefined) {
               result[key] = matchedPrevClone.clone;
             } else {
-              result[key] = ObjectUtils._clone(
+              result[key] = this.#clone(
                 source[key],
                 { useRefTypes: options?.useRefTypes },
                 currPrevClones,
@@ -112,15 +112,15 @@ export class ObjectUtils {
     },
   ): T & P {
     if (source == null) {
-      return ObjectUtils.clone(target) as any;
+      return this.clone(target) as any;
     }
 
     if (target === undefined) {
-      return ObjectUtils.clone(source) as any;
+      return this.clone(source) as any;
     }
 
     if (target === null) {
-      return opt?.useDelTargetNull ? undefined as any : (ObjectUtils.clone(source) as any);
+      return opt?.useDelTargetNull ? (undefined as any) : (this.clone(source) as any);
     }
 
     if (typeof target !== "object") {
@@ -136,7 +136,7 @@ export class ObjectUtils {
       target instanceof Buffer ||
       (opt?.arrayProcess === "replace" && target instanceof Array)
     ) {
-      return ObjectUtils.clone(target) as any;
+      return this.clone(target) as any;
     }
 
     if (typeof source !== typeof target) {
@@ -144,10 +144,10 @@ export class ObjectUtils {
     }
 
     if (source instanceof Map && target instanceof Map) {
-      const result = ObjectUtils.clone(source);
+      const result = this.clone(source);
       for (const key of target.keys()) {
         if (result.has(key)) {
-          result.set(key, ObjectUtils.merge(result.get(key), target.get(key), opt));
+          result.set(key, this.merge(result.get(key), target.get(key), opt));
         } else {
           result.set(key, target.get(key));
         }
@@ -163,9 +163,9 @@ export class ObjectUtils {
       return result as any;
     }
 
-    const result = ObjectUtils.clone(source);
+    const result = this.clone(source);
     for (const key of Object.keys(target)) {
-      result[key] = ObjectUtils.merge(source[key], target[key], opt);
+      result[key] = this.merge(source[key], target[key], opt);
       if (result[key] === undefined) {
         delete result[key];
       }
@@ -195,14 +195,14 @@ export class ObjectUtils {
     result: O & S & T;
   } {
     let conflict = false;
-    const result = ObjectUtils.clone(origin) as Record<string, TFlatType>;
+    const result = this.clone(origin) as Record<string, TFlatType>;
     for (const key of Object.keys(source).concat(Object.keys(target)).concat(Object.keys(origin))) {
-      if (ObjectUtils.equal(source[key], result[key], optionsObj?.[key])) {
-        result[key] = ObjectUtils.clone(target[key]);
-      } else if (ObjectUtils.equal(target[key], result[key], optionsObj?.[key])) {
-        result[key] = ObjectUtils.clone(source[key]);
-      } else if (ObjectUtils.equal(source[key], target[key], optionsObj?.[key])) {
-        result[key] = ObjectUtils.clone(source[key]);
+      if (this.equal(source[key], result[key], optionsObj?.[key])) {
+        result[key] = this.clone(target[key]);
+      } else if (this.equal(target[key], result[key], optionsObj?.[key])) {
+        result[key] = this.clone(source[key]);
+      } else if (this.equal(source[key], target[key], optionsObj?.[key])) {
+        result[key] = this.clone(source[key]);
       } else {
         conflict = true;
       }
@@ -314,7 +314,7 @@ export class ObjectUtils {
           );
         } else {
           return source.every((sourceItem) =>
-            target.some((targetItem) => ObjectUtils.equal(targetItem, sourceItem, options)),
+            target.some((targetItem) => this.equal(targetItem, sourceItem, options)),
           );
         }
       } else {
@@ -326,7 +326,7 @@ export class ObjectUtils {
           }
         } else {
           for (let i = 0; i < source.length; i++) {
-            if (!ObjectUtils.equal(source[i], target[i], options)) {
+            if (!this.equal(source[i], target[i], options)) {
               return false;
             }
           }
@@ -361,7 +361,7 @@ export class ObjectUtils {
           }
         } else {
           if (
-            !ObjectUtils.equal(source.get(key), target.get(key), {
+            !this.equal(source.get(key), target.get(key), {
               ignoreArrayIndex: options?.ignoreArrayIndex,
             })
           ) {
@@ -398,7 +398,7 @@ export class ObjectUtils {
           }
         } else {
           if (
-            !ObjectUtils.equal(source[key], target[key], {
+            !this.equal(source[key], target[key], {
               ignoreArrayIndex: options?.ignoreArrayIndex,
             })
           ) {
@@ -488,7 +488,7 @@ export class ObjectUtils {
   static validateObject<T>(obj: T, def: TValidateObjectDef<T>): TValidateObjectResult<T> {
     const result: TValidateObjectResult<T> = {};
     for (const defKey of Object.keys(def)) {
-      const validateResult = ObjectUtils.validate(this.getChainValue(obj, defKey), def[defKey]);
+      const validateResult = this.validate(this.getChainValue(obj, defKey), def[defKey]);
       if (validateResult !== undefined) {
         result[defKey] = validateResult;
       }
@@ -502,7 +502,7 @@ export class ObjectUtils {
     obj: T,
     def: TValidateObjectDefWithName<T>,
   ): void {
-    const validateResult = ObjectUtils.validateObject(obj, def);
+    const validateResult = this.validateObject(obj, def);
     if (Object.keys(validateResult).length > 0) {
       const errMessages: string[] = [];
       const invalidateKeys = Object.keys(validateResult);
@@ -537,7 +537,7 @@ export class ObjectUtils {
     const result: IValidateArrayResult<T>[] = [];
     for (let i = 0; i < arr.length; i++) {
       const item = arr[i];
-      const validateObjectResult = ObjectUtils.validateObject(
+      const validateObjectResult = this.validateObject(
         item,
         typeof def === "function" ? def(item) : def,
       );
@@ -558,7 +558,7 @@ export class ObjectUtils {
     arr: T[],
     def: ((item: T) => TValidateObjectDefWithName<T>) | TValidateObjectDefWithName<T>,
   ): void {
-    const validateResults = ObjectUtils.validateArray(arr, def);
+    const validateResults = this.validateArray(arr, def);
     if (validateResults.length > 0) {
       const errMessages: string[] = [];
       for (const validateResult of validateResults) {
@@ -614,7 +614,7 @@ export class ObjectUtils {
     return result;
   }
 
-  private static _getChainSplits(chain: string): (string | number)[] {
+  static #getChainSplits(chain: string): (string | number)[] {
     const split = chain
       .split(/[.\[\]]/g)
       .map((item) => item.replace(/[?!'"]/g, ""))
@@ -634,7 +634,7 @@ export class ObjectUtils {
   static getChainValue(obj: any, chain: string, optional: true): any | undefined;
   static getChainValue(obj: any, chain: string): any;
   static getChainValue(obj: any, chain: string, optional?: true): any | undefined {
-    const splits = this._getChainSplits(chain);
+    const splits = this.#getChainSplits(chain);
     let result = obj;
     for (const splitItem of splits) {
       if (optional && result === undefined) {
@@ -647,7 +647,7 @@ export class ObjectUtils {
   }
 
   static setChainValue(obj: any, chain: string, value: any): void {
-    const splits = this._getChainSplits(chain);
+    const splits = this.#getChainSplits(chain);
     let curr = obj;
     for (const splitItem of splits.slice(0, -1)) {
       curr[splitItem] = curr[splitItem] ?? {};
@@ -663,7 +663,7 @@ export class ObjectUtils {
   }
 
   static deleteChainValue(obj: any, chain: string): void {
-    const splits = this._getChainSplits(chain);
+    const splits = this.#getChainSplits(chain);
     let curr = obj;
     for (const splitItem of splits.slice(0, -1)) {
       curr = curr[splitItem];
@@ -714,14 +714,14 @@ export class ObjectUtils {
 
     if (obj instanceof Array) {
       for (let i = 0; i < obj.length; i++) {
-        obj[i] = ObjectUtils.nullToUndefined(obj[i]);
+        obj[i] = this.nullToUndefined(obj[i]);
       }
       return obj;
     }
 
     if (typeof obj === "object") {
       for (const key of Object.keys(obj)) {
-        obj[key] = ObjectUtils.nullToUndefined(obj[key]);
+        obj[key] = this.nullToUndefined(obj[key]);
       }
 
       return obj;

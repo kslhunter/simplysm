@@ -6,14 +6,14 @@ import { SdTsCompiler } from "../../ts-compiler/sd-ts-compiler";
 import { ScopePathSet } from "../commons/scope-path";
 
 export class SdTsLibBuilder {
-  private _tsCompiler: SdTsCompiler;
+  #tsCompiler: SdTsCompiler;
 
   constructor(
-    private _pkgPath: TNormPath,
+    private readonly _pkgPath: TNormPath,
     dev: boolean,
     watchScopePathSet: ScopePathSet,
   ) {
-    this._tsCompiler = new SdTsCompiler({
+    this.#tsCompiler = new SdTsCompiler({
       pkgPath: this._pkgPath,
       additionalOptions: { declaration: true },
       isDevMode: dev,
@@ -29,7 +29,7 @@ export class SdTsLibBuilder {
     results: ISdBuildMessage[];
     emitFileSet: Set<TNormPath>;
   }> {
-    const tsCompileResult = await this._tsCompiler.compileAsync(modifiedFileSet);
+    const tsCompileResult = await this.#tsCompiler.compileAsync(modifiedFileSet);
 
     const emitFileSet = new Set<TNormPath>();
     for (const emitFile of tsCompileResult.emitFileSet) {

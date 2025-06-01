@@ -1,17 +1,17 @@
 import { PathUtils, TNormPath } from "@simplysm/sd-core-node";
 
 export class ScopePathSet {
-  private _data: Set<TNormPath>;
+  #data: Set<TNormPath>;
 
   constructor(arr?: TNormPath[]) {
-    this._data = new Set(arr);
+    this.#data = new Set(arr);
   }
 
   inScope(filePath: string) {
-    return Array.from(this._data).some((scope) => PathUtils.isChildPath(filePath, scope));
+    return Array.from(this.#data).some((scope) => PathUtils.isChildPath(filePath, scope));
   }
 
   toArray() {
-    return Array.from(this._data);
+    return Array.from(this.#data);
   }
 }

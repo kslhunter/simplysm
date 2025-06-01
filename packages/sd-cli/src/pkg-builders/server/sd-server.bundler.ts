@@ -14,16 +14,16 @@ import { resolveAssets } from "@angular/build/src/utils/resolve-assets";
 import { ScopePathSet } from "../commons/scope-path";
 
 export class SdServerBundler {
-  private _logger = SdLogger.get(["simplysm", "sd-cli", "SdServerBundler"]);
+  #logger = SdLogger.get(["simplysm", "sd-cli", "SdServerBundler"]);
 
-  private _context?: esbuild.BuildContext;
+  #context?: esbuild.BuildContext;
 
-  private _modifiedFileSet = new Set<TNormPath>();
-  private _resultCache: ISdCliServerPluginResultCache = {};
+  #modifiedFileSet = new Set<TNormPath>();
+  #resultCache: ISdCliServerPluginResultCache = {};
 
-  private _outputHashCache = new Map<TNormPath, string>();
+  #outputHashCache = new Map<TNormPath, string>();
 
-  constructor(private _opt: {
+  constructor(private readonly _opt: {
     dev: boolean;
     pkgPath: TNormPath;
     entryPoints: string[];
@@ -38,13 +38,13 @@ export class SdServerBundler {
     results: ISdBuildMessage[];
     emitFileSet: Set<TNormPath>;
   }> {
-    this._modifiedFileSet.clear();
+    this.#modifiedFileSet.clear();
     if (modifiedFileSet) {
-      this._modifiedFileSet.adds(...modifiedFileSet);
+      this.#modifiedFileSet.adds(...modifiedFileSet);
     }
 
-    if (!this._context) {
-      this._context = await esbuild.context({
+    if (!this.#context) {
+      this.#context = await esbuild.context({
         entryPoints: this._opt.entryPoints,
         keepNames: true,
         bundle: true,
@@ -105,10 +105,10 @@ const __dirname = __path__.dirname(__filename);`.trim(),
         },
         plugins: [
           createSdServerPlugin({
-            modifiedFileSet: this._modifiedFileSet,
+            modifiedFileSet: this.#modifiedFileSet,
             dev: this._opt.dev,
             pkgPath: this._opt.pkgPath,
-            result: this._resultCache,
+            result: this.#resultCache,
             watchScopePathSet: this._opt.watchScopePathSet,
           }),
         ],
@@ -118,18 +118,18 @@ const __dirname = __path__.dirname(__filename);`.trim(),
     const emitFileSet = new Set<TNormPath>();
     let result: esbuild.BuildResult | esbuild.BuildFailure;
     try {
-      result = await this._context.rebuild();
+      result = await this.#context.rebuild();
 
       const outputFiles: BuildOutputFile[] =
         result.outputFiles?.map((file) => convertOutputFile(file, BuildOutputFileType.Root)) ?? [];
 
       for (const outputFile of outputFiles) {
         const distFilePath = PathUtils.norm(this._opt.pkgPath, outputFile.path);
-        const prevHash = this._outputHashCache.get(distFilePath);
+        const prevHash = this.#outputHashCache.get(distFilePath);
         const currHash = HashUtils.get(Buffer.from(outputFile.contents));
         if (prevHash !== currHash) {
           FsUtils.writeFile(distFilePath, outputFile.contents);
-          this._outputHashCache.set(distFilePath, currHash);
+          this.#outputHashCache.set(distFilePath, currHash);
           emitFileSet.add(distFilePath);
         }
       }
@@ -144,14 +144,14 @@ const __dirname = __path__.dirname(__filename);`.trim(),
       );
 
       for (const assetFile of assetFiles) {
-        const prevHash = this._outputHashCache.get(PathUtils.norm(assetFile.source));
+        const prevHash = this.#outputHashCache.get(PathUtils.norm(assetFile.source));
         const currHash = FsUtils.hash(assetFile.source);
         if (prevHash !== currHash) {
           FsUtils.copy(
             assetFile.source,
             path.resolve(this._opt.pkgPath, "dist", assetFile.destination),
           );
-          this._outputHashCache.set(PathUtils.norm(assetFile.source), currHash);
+          this.#outputHashCache.set(PathUtils.norm(assetFile.source), currHash);
           emitFileSet.add(PathUtils.norm(assetFile.destination));
         }
       }
@@ -160,14 +160,14 @@ const __dirname = __path__.dirname(__filename);`.trim(),
       result = err;
       for (const e of err.errors) {
         if (e.detail != null) {
-          this._logger.error(e.detail);
+          this.#logger.error(e.detail);
         }
       }
     }
 
     return {
-      watchFileSet: this._resultCache.watchFileSet!,
-      affectedFileSet: this._resultCache.affectedFileSet!,
+      watchFileSet: this.#resultCache.watchFileSet!,
+      affectedFileSet: this.#resultCache.affectedFileSet!,
       results: SdCliConvertMessageUtils.convertToBuildMessagesFromEsbuild(
         result,
         this._opt.pkgPath,

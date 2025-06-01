@@ -11,12 +11,12 @@ import {
 } from "@simplysm/sd-orm-common";
 
 export class MysqlDbConn extends EventEmitter implements IDbConn {
-  private readonly _logger = SdLogger.get(["simplysm", "sd-orm-node", this.constructor.name]);
+  readonly #logger = SdLogger.get(["simplysm", "sd-orm-node", this.constructor.name]);
 
-  private readonly _timeout = 5 * 60 * 1000;
+  readonly #timeout = 5 * 60 * 1000;
 
-  private _conn?: mysql.Connection;
-  private _connTimeout?: NodeJS.Timeout;
+  #conn?: mysql.Connection;
+  #connTimeout?: NodeJS.Timeout;
 
   isConnected = false;
   isOnTransaction = false;
@@ -44,13 +44,13 @@ export class MysqlDbConn extends EventEmitter implements IDbConn {
       this.emit("close");
       this.isConnected = false;
       this.isOnTransaction = false;
-      delete this._conn;
+      this.#conn = undefined;
     });
 
     await new Promise<void>((resolve, reject) => {
       conn.on("error", (error) => {
         if (this.isConnected) {
-          this._logger.error("error: " + error.message);
+          this.#logger.error("error: " + error.message);
         }
         else {
           reject(new Error(error.message));
@@ -58,7 +58,7 @@ export class MysqlDbConn extends EventEmitter implements IDbConn {
       });
 
       conn.on("connect", () => {
-        this._startTimeout();
+        this.#startTimeout();
         this.isConnected = true;
         this.isOnTransaction = false;
         resolve();
@@ -66,32 +66,32 @@ export class MysqlDbConn extends EventEmitter implements IDbConn {
 
       conn.connect();
     });
-    this._conn = conn;
+    this.#conn = conn;
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await
   async closeAsync(): Promise<void> {
-    this._stopTimeout();
+    this.#stopTimeout();
 
-    if (!this._conn || !this.isConnected) {
+    if (!this.#conn || !this.isConnected) {
       return;
     }
 
-    this._conn.destroy();
+    this.#conn.destroy();
 
     this.emit("close");
     this.isConnected = false;
     this.isOnTransaction = false;
-    delete this._conn;
+    this.#conn = undefined;
   }
 
   async beginTransactionAsync(isolationLevel?: ISOLATION_LEVEL): Promise<void> {
-    if (!this._conn || !this.isConnected) {
+    if (!this.#conn || !this.isConnected) {
       throw new Error("'Connection'이 연결되어있지 않습니다.");
     }
-    this._startTimeout();
+    this.#startTimeout();
 
-    const conn = this._conn;
+    const conn = this.#conn;
 
     await new Promise<void>((resolve, reject) => {
       conn.beginTransaction((err: mysql.MysqlError | null) => {
@@ -105,7 +105,7 @@ export class MysqlDbConn extends EventEmitter implements IDbConn {
     await new Promise<void>((resolve, reject) => {
       conn.query({
         sql: "SET SESSION TRANSACTION ISOLATION LEVEL " + (isolationLevel ?? this.config.defaultIsolationLevel ?? "REPEATABLE_READ").replace(/_/g, " "),
-        timeout: this._timeout
+        timeout: this.#timeout
       }, (err) => {
         if (err) {
           reject(new Error(err.message));
@@ -119,12 +119,12 @@ export class MysqlDbConn extends EventEmitter implements IDbConn {
   }
 
   async commitTransactionAsync(): Promise<void> {
-    if (!this._conn || !this.isConnected) {
+    if (!this.#conn || !this.isConnected) {
       throw new Error("'Connection'이 연결되어있지 않습니다.");
     }
-    this._startTimeout();
+    this.#startTimeout();
 
-    const conn = this._conn;
+    const conn = this.#conn;
 
     await new Promise<void>((resolve, reject) => {
       conn.commit((err: mysql.MysqlError | null) => {
@@ -140,12 +140,12 @@ export class MysqlDbConn extends EventEmitter implements IDbConn {
   }
 
   async rollbackTransactionAsync(): Promise<void> {
-    if (!this._conn || !this.isConnected) {
+    if (!this.#conn || !this.isConnected) {
       throw new Error("'Connection'이 연결되어있지 않습니다.");
     }
-    this._startTimeout();
+    this.#startTimeout();
 
-    const conn = this._conn;
+    const conn = this.#conn;
 
     await new Promise<void>((resolve, reject) => {
       conn.rollback((err: mysql.MysqlError | null) => {
@@ -161,12 +161,12 @@ export class MysqlDbConn extends EventEmitter implements IDbConn {
   }
 
   async executeAsync(queries: string[]): Promise<any[][]> {
-    if (!this._conn || !this.isConnected) {
+    if (!this.#conn || !this.isConnected) {
       throw new Error("'Connection'이 연결되어있지 않습니다.");
     }
-    this._startTimeout();
+    this.#startTimeout();
 
-    const conn = this._conn;
+    const conn = this.#conn;
 
     const results: any[][] = [];
     for (const query of queries.filter((item) => !StringUtils.isNullOrEmpty(item))) {
@@ -174,12 +174,12 @@ export class MysqlDbConn extends EventEmitter implements IDbConn {
 
       const resultItems: any[] = [];
       for (const queryString of queryStrings) {
-        this._logger.debug(`쿼리 실행(${queryString.length.toLocaleString()}): ${queryString}`);
+        this.#logger.debug(`쿼리 실행(${queryString.length.toLocaleString()}): ${queryString}`);
         await new Promise<void>((resolve, reject) => {
           let rejected = false;
           conn
-            .query({sql: queryString, timeout: this._timeout}, (err, queryResults) => {
-              this._startTimeout();
+            .query({sql: queryString, timeout: this.#timeout}, (err, queryResults) => {
+              this.#startTimeout();
 
               if (err) {
                 rejected = true;
@@ -194,14 +194,14 @@ export class MysqlDbConn extends EventEmitter implements IDbConn {
               }
             })
             .on("error", (err) => {
-              this._startTimeout();
+              this.#startTimeout();
               if (rejected) return;
 
               rejected = true;
               reject(new SdError(err, "쿼리 수행중 오류발생" + (err.sql !== undefined ? "\n-- query\n" + err.sql.trim() + "\n--" : "")));
             })
             .on("end", () => {
-              this._startTimeout();
+              this.#startTimeout();
               if (rejected) return;
 
               resolve();
@@ -257,21 +257,21 @@ export class MysqlDbConn extends EventEmitter implements IDbConn {
     await this.executeAsync([q]);
   }
 
-  private _stopTimeout(): void {
-    if (this._connTimeout) {
-      clearTimeout(this._connTimeout);
+  #stopTimeout(): void {
+    if (this.#connTimeout) {
+      clearTimeout(this.#connTimeout);
     }
   }
 
-  private _startTimeout(): void {
-    if (this._connTimeout) {
-      clearTimeout(this._connTimeout);
+  #startTimeout(): void {
+    if (this.#connTimeout) {
+      clearTimeout(this.#connTimeout);
     }
-    this._connTimeout = setTimeout(
+    this.#connTimeout = setTimeout(
       async () => {
         await this.closeAsync();
       },
-      this._timeout * 2
+      this.#timeout * 2
     );
   }
 }

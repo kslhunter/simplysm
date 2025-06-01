@@ -24,7 +24,7 @@ export class SdJsLibBuildRunner extends BuildRunnerBase<"library"> {
 
     this._debug("LINT...");
 
-    const lintResults = await this._lintAsync(filePathSet);
+    const lintResults = await this.#lintAsync(filePathSet);
     const messages = SdCliConvertMessageUtils.convertToBuildMessagesFromEslint(lintResults);
 
     this._debug(`LINT 완료`);
@@ -45,7 +45,7 @@ export class SdJsLibBuildRunner extends BuildRunnerBase<"library"> {
     );
   }
 
-  private async _lintAsync(fileSet: Set<string>) {
+  async #lintAsync(fileSet: Set<string>) {
     const lintFilePaths = Array.from(fileSet)
       .filter((item) => PathUtils.isChildPath(item, path.resolve(this._pkgPath, "src")))
       .filter((item) => item.endsWith(".js"))

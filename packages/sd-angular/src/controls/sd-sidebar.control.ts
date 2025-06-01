@@ -84,7 +84,7 @@ import { $computed } from "../utils/bindings/$computed";
   },
 })
 export class SdSidebarControl {
-  private _parentControl = inject<SdSidebarContainerControl>(forwardRef(() => SdSidebarContainerControl));
+  #parentControl = inject<SdSidebarContainerControl>(forwardRef(() => SdSidebarContainerControl));
 
-  toggle = $computed(() => this._parentControl.toggle());
+  toggle = $computed(() => this.#parentControl.toggle());
 }

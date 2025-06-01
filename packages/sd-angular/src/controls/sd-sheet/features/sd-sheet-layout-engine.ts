@@ -5,7 +5,7 @@ import { ISdSheetColumnDef, ISdSheetConfig, ISdSheetHeaderDef } from "../sd-shee
 
 export class SdSheetLayoutEngine<T> {
   constructor(
-    private _options: {
+    private readonly _options: {
       columnControls: Signal<ReadonlyArray<SdSheetColumnDirective<T>>>;
       config: ResourceRef<ISdSheetConfig | undefined>;
     },
@@ -41,7 +41,7 @@ export class SdSheetLayoutEngine<T> {
       }));
   });
 
-  private _rawHeaderDefTable = $computed<(IRawHeaderDef | undefined)[][]>(() => {
+  #rawHeaderDefTable = $computed<(IRawHeaderDef | undefined)[][]>(() => {
     const result: (IRawHeaderDef | undefined)[][] = [];
     const defs = this.columnDefs();
 
@@ -68,7 +68,7 @@ export class SdSheetLayoutEngine<T> {
   });
 
   headerDefTable = $computed<(ISdSheetHeaderDef | undefined)[][]>(() => {
-    const rawTable = this._rawHeaderDefTable();
+    const rawTable = this.#rawHeaderDefTable();
 
     const isSame = (r: number, currC: number, targetC: number) => {
       const currDef = rawTable[r][currC];
@@ -131,7 +131,7 @@ export class SdSheetLayoutEngine<T> {
   );
 
   headerFeatureRowSpan = $computed<number>(
-    () => this._rawHeaderDefTable().length + (this.hasSummary() ? 1 : 0),
+    () => this.#rawHeaderDefTable().length + (this.hasSummary() ? 1 : 0),
   );
 }
 

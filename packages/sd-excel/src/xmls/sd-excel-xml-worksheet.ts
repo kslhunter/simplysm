@@ -11,7 +11,7 @@ import { NumberUtils, ObjectUtils } from "@simplysm/sd-core-common";
 export class SdExcelXmlWorksheet implements ISdExcelXml {
   data: ISdExcelXmlWorksheetData;
 
-  private _dataMap = new Map<number, IRowInfo>();
+  #dataMap = new Map<number, IRowInfo>();
 
   constructor(data?: ISdExcelXmlWorksheetData) {
     if (data === undefined) {
@@ -35,7 +35,7 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
       this.data = data;
     }
 
-    this._dataMap = (this.data.worksheet.sheetData[0].row ?? []).toMap(
+    this.#dataMap = (this.data.worksheet.sheetData[0].row ?? []).toMap(
       row => SdExcelUtils.parseRowAddrCode(row.$.r),
       row => ({
         data: row,
@@ -51,7 +51,7 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
     let maxRow = 0;
     let maxCol = 0;
 
-    for (const [rowIdx, info] of this._dataMap.entries()) {
+    for (const [rowIdx, info] of this.#dataMap.entries()) {
       if (rowIdx > maxRow) maxRow = rowIdx;
 
       for (const col of info.cellMap.keys()) {
@@ -66,7 +66,7 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
   }
 
   setCellType(addr: { r: number, c: number }, type: "s" | "b" | "str" | undefined): void {
-    const cellData = this._getOrCreateCellData(addr);
+    const cellData = this.#getOrCreateCellData(addr);
     if (type) {
       cellData.$.t = type;
     }
@@ -76,11 +76,11 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
   }
 
   getCellType(addr: { r: number, c: number }): string | undefined {
-    return this._getCellData(addr)?.$.t;
+    return this.#getCellData(addr)?.$.t;
   }
 
   setCellVal(addr: { r: number, c: number }, val: string | undefined): void {
-    const cellData = this._getOrCreateCellData(addr);
+    const cellData = this.#getOrCreateCellData(addr);
     if (val === undefined) {
       delete cellData.v;
     }
@@ -90,13 +90,13 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
   }
 
   getCellVal(addr: { r: number, c: number }): string | undefined {
-    const cellData = this._getCellData(addr);
+    const cellData = this.#getCellData(addr);
     const val = cellData?.v?.[0] ?? cellData?.is?.[0]?.t?.[0]?._;
     return typeof val === "string" ? val : undefined;
   }
 
   setCellFormula(addr: { r: number, c: number }, val: string | undefined): void {
-    const cellData = this._getOrCreateCellData(addr);
+    const cellData = this.#getOrCreateCellData(addr);
     if (val === undefined) {
       delete cellData.f;
     }
@@ -106,26 +106,26 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
   }
 
   getCellFormula(addr: { r: number, c: number }): string | undefined {
-    const val = this._getCellData(addr)?.f?.[0];
+    const val = this.#getCellData(addr)?.f?.[0];
     return typeof val === "string" ? val : undefined;
   }
 
   getCellStyleId(addr: { r: number, c: number }): string | undefined {
-    return this._getCellData(addr)?.$.s;
+    return this.#getCellData(addr)?.$.s;
   }
 
   setCellStyleId(addr: { r: number, c: number }, styleId: string | undefined): void {
     if (styleId != null) {
-      this._getOrCreateCellData(addr).$.s = styleId;
+      this.#getOrCreateCellData(addr).$.s = styleId;
     }
     else {
-      delete this._getOrCreateCellData(addr).$.s;
+      delete this.#getOrCreateCellData(addr).$.s;
     }
   }
 
   deleteCell(addr: { r: number, c: number }) {
     // ROW 없으면 무효
-    const rowInfo = this._dataMap.get(addr.r);
+    const rowInfo = this.#dataMap.get(addr.r);
     if (!rowInfo) return;
 
     // CELL 업으면 무효
@@ -139,7 +139,7 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
 
     // 마지막 CELL이면 ROW도 삭제
     if (rowInfo.cellMap.size === 0) {
-      this._deleteRow(addr.r);
+      this.#deleteRow(addr.r);
     }
   }
 
@@ -321,7 +321,7 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
 
   copyRow(sourceR: number, targetR: number): void {
     // 출발지ROW 데이터 복제
-    const sourceRowInfo = this._dataMap.get(sourceR);
+    const sourceRowInfo = this.#dataMap.get(sourceR);
 
     if (sourceRowInfo) {
       // rowData 복제
@@ -338,10 +338,10 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
         }
       }
 
-      this._replaceRowData(targetR, newRowData);
+      this.#replaceRowData(targetR, newRowData);
     }
     else {
-      this._deleteRow(targetR);
+      this.#deleteRow(targetR);
     }
 
 
@@ -365,12 +365,12 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
   }
 
   copyCell(sourceAddr: { r: number, c: number }, targetAddr: { r: number, c: number }): void {
-    const sourceCellData = this._getCellData(sourceAddr);
+    const sourceCellData = this.#getCellData(sourceAddr);
 
     if (sourceCellData) {
       const newCellData = ObjectUtils.clone(sourceCellData);
       newCellData.$.r = SdExcelUtils.stringifyAddr(targetAddr);
-      this._replaceCellData(targetAddr, newCellData);
+      this.#replaceCellData(targetAddr, newCellData);
     }
     else {
       this.deleteCell(targetAddr);
@@ -432,13 +432,13 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
     this.data.worksheet = result;
   }
 
-  private _getCellData(addr: { r: number, c: number }): ISdExcelCellData | undefined {
-    return this._dataMap.get(addr.r)?.cellMap.get(addr.c);
+  #getCellData(addr: { r: number, c: number }): ISdExcelCellData | undefined {
+    return this.#dataMap.get(addr.r)?.cellMap.get(addr.c);
   }
 
-  private _getOrCreateCellData(addr: { r: number, c: number }): ISdExcelCellData {
+  #getOrCreateCellData(addr: { r: number, c: number }): ISdExcelCellData {
     // ROW 없으면 만들기
-    let rowInfo = this._getOrCreateRowInfo(addr.r);
+    let rowInfo = this.#getOrCreateRowInfo(addr.r);
 
     // CELL 없으면 만들기
     let cellData = rowInfo.cellMap.get(addr.c);
@@ -453,16 +453,16 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
     return cellData;
   }
 
-  private _getOrCreateRowInfo(r: number): IRowInfo {
-    let rowInfo = this._dataMap.get(r);
+  #getOrCreateRowInfo(r: number): IRowInfo {
+    let rowInfo = this.#dataMap.get(r);
     if (!rowInfo) {
-      return this._replaceRowData(r, { "$": { "r": SdExcelUtils.stringifyRowAddr(r) }, c: [] });
+      return this.#replaceRowData(r, { "$": { "r": SdExcelUtils.stringifyRowAddr(r) }, c: [] });
     }
     return rowInfo;
   }
 
-  private _replaceRowData(r: number, rowData: ISdExcelRowData): IRowInfo {
-    this._deleteRow(r);
+  #replaceRowData(r: number, rowData: ISdExcelRowData): IRowInfo {
+    this.#deleteRow(r);
 
     // sheet에 기록
     this.data.worksheet.sheetData[0].row = this.data.worksheet.sheetData[0].row ?? [];
@@ -476,16 +476,16 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
         cell => cell,
       ),
     };
-    this._dataMap.set(r, rowInfo);
+    this.#dataMap.set(r, rowInfo);
 
     return rowInfo;
   }
 
-  private _replaceCellData(addr: { r: number, c: number }, cellData: ISdExcelCellData): void {
+  #replaceCellData(addr: { r: number, c: number }, cellData: ISdExcelCellData): void {
     this.deleteCell(addr);
 
     // ROW
-    const targetRowInfo = this._getOrCreateRowInfo(addr.r);
+    const targetRowInfo = this.#getOrCreateRowInfo(addr.r);
 
     // sheet에 기록
     targetRowInfo.data.c = targetRowInfo.data.c ?? [];
@@ -495,12 +495,12 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
     targetRowInfo.cellMap.set(addr.c, cellData);
   }
 
-  private _deleteRow(r: number) {
-    const targetRowInfo = this._dataMap.get(r);
+  #deleteRow(r: number) {
+    const targetRowInfo = this.#dataMap.get(r);
     if (targetRowInfo) {
       this.data.worksheet.sheetData[0].row?.remove(targetRowInfo.data);
     }
-    this._dataMap.delete(r);
+    this.#dataMap.delete(r);
 
     // ROW가 하나도 없으면 XML의 row부분 자체를 삭제
     if (this.data.worksheet.sheetData[0].row?.length === 0) {

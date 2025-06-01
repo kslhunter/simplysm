@@ -7,7 +7,7 @@ import { SdCliDbContextFileGenerator } from "./sd-cli-db-context.file-generator"
 export class SdTsLibBuildRunner extends BuildRunnerBase<"library"> {
   protected override _logger = SdLogger.get(["simplysm", "sd-cli", "SdCliTsLibBuilder"]);
 
-  private _builder?: SdTsLibBuilder;
+  #builder?: SdTsLibBuilder;
 
   protected override async _runAsync(
     dev: boolean,
@@ -39,12 +39,12 @@ export class SdTsLibBuildRunner extends BuildRunnerBase<"library"> {
     }
 
     this._debug(`BUILD...`);
-    this._builder ??= new SdTsLibBuilder(
+    this.#builder ??= new SdTsLibBuilder(
       PathUtils.norm(this._pkgPath),
       dev,
       this._watchScopePathSet,
     );
-    const buildResult = await this._builder.buildAsync(modifiedFileSet ?? new Set());
+    const buildResult = await this.#builder.buildAsync(modifiedFileSet ?? new Set());
 
     this._debug(`빌드 완료`);
     const watchFileSet = new Set(

@@ -18,7 +18,7 @@ import { injectElementRef } from "../utils/injections/inject-element-ref";
   `,
 })
 export class SdAddressSearchModal implements ISdModal<IAddress> {
-  private _elRef = injectElementRef();
+  #elRef = injectElementRef();
 
   close = output<IAddress>();
 
@@ -43,7 +43,7 @@ export class SdAddressSearchModal implements ISdModal<IAddress> {
         });
       }
 
-      const contentEl = this._elRef.nativeElement.firstChild! as HTMLDivElement;
+      const contentEl = this.#elRef.nativeElement.firstChild! as HTMLDivElement;
 
       // @ts-expect-error
       new daum.Postcode({

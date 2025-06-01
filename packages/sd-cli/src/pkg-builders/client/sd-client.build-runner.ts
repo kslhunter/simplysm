@@ -10,8 +10,8 @@ import { INpmConfig } from "../../types/common-configs.types";
 export class SdClientBuildRunner extends BuildRunnerBase<"client"> {
   protected override _logger = SdLogger.get(["simplysm", "sd-cli", "SdClientBuildRunner"]);
 
-  private _ngBundlers?: SdNgBundler[];
-  private _cordova?: SdCliCordova;
+  #ngBundlers?: SdNgBundler[];
+  #cordova?: SdCliCordova;
 
   protected override async _runAsync(
     dev: boolean,
@@ -36,7 +36,7 @@ export class SdClientBuildRunner extends BuildRunnerBase<"client"> {
       }
     }
     else {
-      for (const ngBundler of this._ngBundlers!) {
+      for (const ngBundler of this.#ngBundlers!) {
         ngBundler.markForChanges(Array.from(modifiedFileSet));
       }
     }
@@ -46,19 +46,19 @@ export class SdClientBuildRunner extends BuildRunnerBase<"client"> {
       | "electron"
       | "cordova"
       )[];
-    if (this._pkgConf.builder?.cordova && !this._cordova) {
+    if (this._pkgConf.builder?.cordova && !this.#cordova) {
       this._debug("CORDOVA 준비...");
-      this._cordova = new SdCliCordova({
+      this.#cordova = new SdCliCordova({
         pkgPath: this._pkgPath,
         config: this._pkgConf.builder.cordova,
       });
-      await this._cordova.initializeAsync();
+      await this.#cordova.initializeAsync();
     }
 
-    if (!this._ngBundlers) {
+    if (!this.#ngBundlers) {
       this._debug(`BUILD 준비...`);
 
-      this._ngBundlers = ngBundlerBuilderTypes.map(
+      this.#ngBundlers = ngBundlerBuilderTypes.map(
         (ngBundlerBuilderType) =>
           new SdNgBundler({
             dev,
@@ -89,15 +89,15 @@ export class SdClientBuildRunner extends BuildRunnerBase<"client"> {
     }
 
     this._debug(`BUILD...`);
-    const buildResults = await Promise.all(this._ngBundlers.map((builder) => builder.bundleAsync()));
+    const buildResults = await Promise.all(this.#ngBundlers.map((builder) => builder.bundleAsync()));
     const watchFileSet = new Set(buildResults.mapMany((item) => Array.from(item.watchFileSet)));
     const affectedFileSet = new Set(buildResults.mapMany((item) => Array.from(item.affectedFileSet)));
     const emitFileSet = new Set(buildResults.mapMany((item) => Array.from(item.emitFileSet)));
     const results = buildResults.mapMany((item) => item.results).distinct();
 
-    if (!dev && this._cordova) {
+    if (!dev && this.#cordova) {
       this._debug("CORDOVA BUILD...");
-      await this._cordova.buildAsync(path.resolve(this._pkgPath, "dist"));
+      await this.#cordova.buildAsync(path.resolve(this._pkgPath, "dist"));
     }
 
     if (!dev && this._pkgConf.builder?.electron) {

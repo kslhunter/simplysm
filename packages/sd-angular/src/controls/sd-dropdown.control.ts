@@ -39,7 +39,7 @@ import { SdDropdownPopupControl } from "./sd-dropdown-popup.control";
   },
 })
 export class SdDropdownControl {
-  private _elRef = injectElementRef<HTMLElement>();
+  #elRef = injectElementRef<HTMLElement>();
 
   open = model(false);
 
@@ -105,14 +105,14 @@ export class SdDropdownControl {
     });
   }
 
-  private _openPopup() {
+  #openPopup() {
     if (this.open()) return;
     if (this.disabled()) return;
 
     this.open.set(true);
   }
 
-  private _closePopup() {
+  #closePopup() {
     if (!this.open()) return;
 
     this.open.set(false);
@@ -120,7 +120,7 @@ export class SdDropdownControl {
 
   @HostListener("document:scroll.capture", ["$event"])
   onDocumentScrollCapture(event: Event) {
-    if (this._elRef.nativeElement.findParent(event.target as Element)) {
+    if (this.#elRef.nativeElement.findParent(event.target as Element)) {
       const contentEl = this.contentElRef().nativeElement;
       const popupEl = this.popupElRef().nativeElement;
 
@@ -144,9 +144,9 @@ export class SdDropdownControl {
 
   onContentClick() {
     if (this.open()) {
-      this._closePopup();
+      this.#closePopup();
     } else {
-      this._openPopup();
+      this.#openPopup();
     }
   }
 
@@ -156,7 +156,7 @@ export class SdDropdownControl {
         event.preventDefault();
         event.stopPropagation();
 
-        this._openPopup();
+        this.#openPopup();
       } else {
         const popupEl = this.popupElRef().nativeElement;
         const focusableFirst = popupEl.findFocusableFirst();
@@ -174,7 +174,7 @@ export class SdDropdownControl {
         event.preventDefault();
         event.stopPropagation();
 
-        this._closePopup();
+        this.#closePopup();
       }
     }
 
@@ -183,9 +183,9 @@ export class SdDropdownControl {
       event.stopPropagation();
 
       if (this.open()) {
-        this._closePopup();
+        this.#closePopup();
       } else {
-        this._openPopup();
+        this.#openPopup();
       }
     }
 
@@ -194,7 +194,7 @@ export class SdDropdownControl {
         event.preventDefault();
         event.stopPropagation();
 
-        this._closePopup();
+        this.#closePopup();
       }
     }
   }
@@ -205,16 +205,16 @@ export class SdDropdownControl {
         event.preventDefault();
         event.stopPropagation();
 
-        this._closePopup();
+        this.#closePopup();
       }
     }
   }
 
-  private _mouseoverEl?: HTMLElement;
+  #mouseoverEl?: HTMLElement;
 
   @HostListener("document:mouseover", ["$event"])
   onDocumentMouseover(event: MouseEvent) {
-    this._mouseoverEl = event.target as HTMLElement;
+    this.#mouseoverEl = event.target as HTMLElement;
   }
 
   @HostListener("document:blur.capture", ["$event"])
@@ -235,8 +235,8 @@ export class SdDropdownControl {
 
     if (
       relatedTarget == null &&
-      this._mouseoverEl instanceof HTMLElement &&
-      (this._mouseoverEl.findParent(contentEl) || this._mouseoverEl.findParent(popupEl))
+      this.#mouseoverEl instanceof HTMLElement &&
+      (this.#mouseoverEl.findParent(contentEl) || this.#mouseoverEl.findParent(popupEl))
     ) {
       const focusableFirst = popupEl.findFocusableFirst();
       if (focusableFirst) {
@@ -247,7 +247,7 @@ export class SdDropdownControl {
     }
 
     if (this.open()) {
-      this._closePopup();
+      this.#closePopup();
     }
   }
 }

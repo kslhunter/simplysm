@@ -76,17 +76,17 @@ Quill.register("modules/resize", QuillResizeImage);
   },
 })
 export class SdQuillEditorControl {
-  private _elRef = injectElementRef<HTMLElement>();
+  #elRef = injectElementRef<HTMLElement>();
 
   value = model<string>();
 
   disabled = input(false, { transform: transformBoolean });
 
-  private _quill!: Quill;
+  #quill!: Quill;
 
   constructor() {
     $effect([], () => {
-      this._quill = new Quill(this._elRef.nativeElement.firstElementChild as HTMLElement, {
+      this.#quill = new Quill(this.#elRef.nativeElement.firstElementChild as HTMLElement, {
         theme: "snow",
         modules: {
           toolbar: [
@@ -107,25 +107,25 @@ export class SdQuillEditorControl {
         },
       });
 
-      this._quill.root.addEventListener("input", () => {
-        const newValue = this._quill.root.innerHTML;
+      this.#quill.root.addEventListener("input", () => {
+        const newValue = this.#quill.root.innerHTML;
         this.value.set(newValue === "" ? undefined : newValue);
       });
 
-      this._quill.on("text-change", () => {
-        const newValue = this._quill.root.innerHTML;
+      this.#quill.on("text-change", () => {
+        const newValue = this.#quill.root.innerHTML;
         this.value.set(newValue === "" ? undefined : newValue);
       });
     });
 
     $effect(() => {
-      if (this._quill.root.innerHTML !== (this.value() ?? "")) {
-        this._quill.root.innerHTML = this.value() ?? "";
+      if (this.#quill.root.innerHTML !== (this.value() ?? "")) {
+        this.#quill.root.innerHTML = this.value() ?? "";
       }
     });
 
     $effect(() => {
-      this._quill.enable(!this.disabled());
+      this.#quill.enable(!this.disabled());
     });
   }
 }

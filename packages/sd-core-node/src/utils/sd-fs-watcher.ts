@@ -8,12 +8,12 @@ export class SdFsWatcher {
     return new SdFsWatcher(paths, options);
   }
 
-  private _watcher: Watcher;
-  private _watchPathSet: Set<string>;
+  #watcher: Watcher;
+  #watchPathSet: Set<string>;
 
   private constructor(paths: string[], options?: WatcherOptions) {
-    this._watchPathSet = new Set<string>(paths);
-    this._watcher = new Watcher(Array.from(this._watchPathSet.values()), {
+    this.#watchPathSet = new Set<string>(paths);
+    this.#watcher = new Watcher(Array.from(this.#watchPathSet.values()), {
       recursive: true,
       ignoreInitial: true,
       persistent: true,
@@ -29,7 +29,7 @@ export class SdFsWatcher {
 
     let changeInfoMap = new Map<string, TTargetEvent>();
 
-    this._watcher.on("all", (event: TTargetEvent, filePath: string) => {
+    this.#watcher.on("all", (event: TTargetEvent, filePath: string) => {
       const prevEvent = changeInfoMap.getOrCreate(filePath, event);
       if (prevEvent === "add" && event === "change") {
         changeInfoMap.set(filePath, "add" as TTargetEvent);
@@ -63,7 +63,7 @@ export class SdFsWatcher {
   }
 
   close() {
-    this._watcher.close();
+    this.#watcher.close();
   }
 }
 

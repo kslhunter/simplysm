@@ -132,7 +132,7 @@ import { SdPaneControl } from "./sd-pane.control";
 export class SdKanbanLaneControl<L, T> {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
 
-  private _boardControl = inject<SdKanbanBoardControl<L, T>>(
+  #boardControl = inject<SdKanbanBoardControl<L, T>>(
     forwardRef(() => SdKanbanBoardControl),
   );
 
@@ -151,7 +151,7 @@ export class SdKanbanLaneControl<L, T> {
 
   isAllSelected = $computed(() => this.kanbanControls().every((ctrl) => ctrl.selected()));
 
-  dragKanban = $computed(() => this._boardControl.dragKanban());
+  dragKanban = $computed(() => this.#boardControl.dragKanban());
 
   dragOvered = $signal(false);
 
@@ -161,7 +161,7 @@ export class SdKanbanLaneControl<L, T> {
 
   onSelectAllButtonClick(val: boolean) {
     if (val) {
-      this._boardControl.selectedValues.update((v) => {
+      this.#boardControl.selectedValues.update((v) => {
         const r = [...v];
         for (const ctrl of this.kanbanControls()) {
           if (!v.includes(ctrl.value())) {
@@ -171,7 +171,7 @@ export class SdKanbanLaneControl<L, T> {
         return r.length === v.length ? v : r;
       });
     } else {
-      this._boardControl.selectedValues.update((v) => {
+      this.#boardControl.selectedValues.update((v) => {
         const r = [...v];
         for (const ctrl of this.kanbanControls()) {
           if (v.includes(ctrl.value())) {
@@ -185,7 +185,7 @@ export class SdKanbanLaneControl<L, T> {
 
   @HostListener("dragover", ["$event"])
   onDragOver(event: DragEvent) {
-    if (this._boardControl.dragKanban() == null) return;
+    if (this.#boardControl.dragKanban() == null) return;
 
     event.preventDefault();
     event.stopPropagation();
@@ -203,12 +203,12 @@ export class SdKanbanLaneControl<L, T> {
 
   @HostListener("drop", ["$event"])
   onDragDrop(event: DragEvent) {
-    if (this._boardControl.dragKanban() == null) return;
+    if (this.#boardControl.dragKanban() == null) return;
     this.dragOvered.set(false);
 
     event.preventDefault();
     event.stopPropagation();
 
-    this._boardControl.onDropTo(this);
+    this.#boardControl.onDropTo(this);
   }
 }

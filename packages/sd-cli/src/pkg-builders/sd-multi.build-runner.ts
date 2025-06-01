@@ -8,12 +8,12 @@ import { INpmConfig } from "../types/common-configs.types";
 import { ISdBuildRunnerWorkerRequest } from "../types/build-runner.types";
 
 export class SdMultiBuildRunner extends EventEmitter {
-  private _logger = SdLogger.get(["simplysm", "sd-cli", "SdMultiBuildRunner"]);
+  #logger = SdLogger.get(["simplysm", "sd-cli", "SdMultiBuildRunner"]);
 
-  private _busyCount = 0;
+  #busyCount = 0;
 
-  private _resultCache = new Map<TNormPath, ISdBuildMessage[]>();
-  private _serverInfoMap = new Map<
+  #resultCache = new Map<TNormPath, ISdBuildMessage[]>();
+  #serverInfoMap = new Map<
     string,
     {
       pkgInfo?: { path: string; conf: ISdServerPackageConfig } | { port: number }; // persist
@@ -46,12 +46,12 @@ export class SdMultiBuildRunner extends EventEmitter {
     const worker = new SdWorker<TSdBuildRunnerWorkerType>(import.meta.resolve(
       "../workers/build-runner.worker"))
       .on("change", () => {
-        if (this._busyCount === 0) {
+        if (this.#busyCount === 0) {
           this.emit("change");
         }
-        this._busyCount++;
+        this.#busyCount++;
       })
-      .on("complete", (result) => this._onComplete(req, result));
+      .on("complete", (result) => this.#onComplete(req, result));
 
     return await worker.run("run", [req]);
     /*const pkgConf = req.projConf.packages[path.basename(req.pkgPath)]!;
@@ -78,16 +78,16 @@ export class SdMultiBuildRunner extends EventEmitter {
     }*/
   }
 
-  private _onComplete(req: ISdBuildRunnerWorkerRequest, result: ISdBuildRunnerResult) {
-    this._resultCache.delete(req.pkgPath);
+  #onComplete(req: ISdBuildRunnerWorkerRequest, result: ISdBuildRunnerResult) {
+    this.#resultCache.delete(req.pkgPath);
     for (const affectedFilePath of result.affectedFilePathSet) {
       if (PathUtils.isChildPath(affectedFilePath, req.pkgPath)) {
-        this._resultCache.delete(affectedFilePath);
+        this.#resultCache.delete(affectedFilePath);
       }
     }
 
     for (const buildMessage of result.buildMessages) {
-      const cacheItem = this._resultCache.getOrCreate(buildMessage.filePath ?? req.pkgPath, []);
+      const cacheItem = this.#resultCache.getOrCreate(buildMessage.filePath ?? req.pkgPath, []);
       cacheItem.push(buildMessage);
     }
 
@@ -95,7 +95,7 @@ export class SdMultiBuildRunner extends EventEmitter {
 
     if (pkgConf.type === "server") {
       const pkgName = path.basename(req.pkgPath);
-      const serverInfo = this._serverInfoMap.getOrCreate(pkgName, {
+      const serverInfo = this.#serverInfoMap.getOrCreate(pkgName, {
         hasChanges: true,
         clientChangedFileSet: new Set(),
         clients: {},
@@ -113,7 +113,7 @@ export class SdMultiBuildRunner extends EventEmitter {
       const pkgName = path.basename(req.pkgPath);
 
       if (pkgConf.server !== undefined) {
-        const serverInfo = this._serverInfoMap.getOrCreate(
+        const serverInfo = this.#serverInfoMap.getOrCreate(
           typeof pkgConf.server === "string" ? pkgConf.server : pkgConf.server.port.toString(),
           {
             hasChanges: true,
@@ -134,7 +134,7 @@ export class SdMultiBuildRunner extends EventEmitter {
         serverInfo.clientChangedFileSet.adds(...result.emitFileSet);
       }
       else {
-        const serverInfo = this._serverInfoMap.getOrCreate(pkgName, {
+        const serverInfo = this.#serverInfoMap.getOrCreate(pkgName, {
           hasChanges: true,
           clientChangedFileSet: new Set(),
           clients: {},
@@ -145,14 +145,14 @@ export class SdMultiBuildRunner extends EventEmitter {
     }
 
     setTimeout(async () => {
-      this._busyCount--;
-      if (this._busyCount === 0) {
-        for (const serverPkgNameOrPort of this._serverInfoMap.keys()) {
-          const serverInfo = this._serverInfoMap.get(serverPkgNameOrPort)!;
+      this.#busyCount--;
+      if (this.#busyCount === 0) {
+        for (const serverPkgNameOrPort of this.#serverInfoMap.keys()) {
+          const serverInfo = this.#serverInfoMap.get(serverPkgNameOrPort)!;
           if (serverInfo.pkgInfo && serverInfo.hasChanges) {
-            this._logger.debug("서버 재시작...");
+            this.#logger.debug("서버 재시작...");
             try {
-              const restartServerResult = await this._restartServerAsync(
+              const restartServerResult = await this.#restartServerAsync(
                 serverInfo.pkgInfo,
                 serverInfo.worker,
               );
@@ -161,12 +161,12 @@ export class SdMultiBuildRunner extends EventEmitter {
               serverInfo.hasChanges = false;
             }
             catch (err) {
-              this._logger.error(err);
+              this.#logger.error(err);
             }
           }
 
           if (serverInfo.worker) {
-            this._logger.debug("클라이언트 설정...");
+            this.#logger.debug("클라이언트 설정...");
             await serverInfo.worker.run("setPathProxy", [
               {
                 ...Object.keys(serverInfo.clients).toObject(
@@ -178,14 +178,14 @@ export class SdMultiBuildRunner extends EventEmitter {
             ]);
 
             if (serverInfo.clientChangedFileSet.size > 0) {
-              this._logger.debug("클라이언트 새로고침...");
+              this.#logger.debug("클라이언트 새로고침...");
               await serverInfo.worker.run("broadcastReload", [serverInfo.clientChangedFileSet]);
             }
           }
         }
 
         const clientPaths: string[] = [];
-        for (const serverInfo of this._serverInfoMap.values()) {
+        for (const serverInfo of this.#serverInfoMap.values()) {
           if (Object.keys(serverInfo.clients).length > 0) {
             for (const clientPkgName of Object.keys(serverInfo.clients)) {
               for (const buildType of serverInfo.clients[clientPkgName].buildTypes) {
@@ -203,16 +203,16 @@ export class SdMultiBuildRunner extends EventEmitter {
           }
         }
         if (clientPaths.length > 0) {
-          this._logger.info("클라이언트 개발 서버 접속 주소\n" + clientPaths.join("\n"));
+          this.#logger.info("클라이언트 개발 서버 접속 주소\n" + clientPaths.join("\n"));
         }
 
-        const messages = Array.from(this._resultCache.values()).mapMany();
+        const messages = Array.from(this.#resultCache.values()).mapMany();
         this.emit("complete", messages);
       }
     }, 300);
   }
 
-  private async _restartServerAsync(
+  async #restartServerAsync(
     pkgInfo: { path: string; conf: ISdServerPackageConfig } | { port: number },
     prevWorker?: SdWorker<TServerWorkerType>,
   ): Promise<{

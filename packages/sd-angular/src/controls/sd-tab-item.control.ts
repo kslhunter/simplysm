@@ -68,14 +68,14 @@ import { $computed } from "../utils/bindings/$computed";
   }
 })
 export class SdTabItemControl {
-  private _parentControl = inject<SdTabControl>(forwardRef(() => SdTabControl));
+  #parentControl = inject<SdTabControl>(forwardRef(() => SdTabControl));
 
   value = input<any>();
 
-  isSelected = $computed(() => this._parentControl.value() === this.value());
+  isSelected = $computed(() => this.#parentControl.value() === this.value());
 
   @HostListener("click")
   onClick() {
-    this._parentControl.value.set(this.value());
+    this.#parentControl.value.set(this.value());
   }
 }

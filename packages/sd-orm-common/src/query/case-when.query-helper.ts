@@ -6,8 +6,8 @@ import { QueryHelper } from "./query-helper";
 import { TEntityValue } from "./queryable.types";
 
 export class CaseWhenQueryHelper<T extends TQueryValue> {
-  private readonly _cases: any[] = [];
-  private _type: Type<T> | undefined = undefined;
+  readonly #cases: any[] = [];
+  #type: Type<T> | undefined = undefined;
 
   constructor(
     private readonly _qh: QueryHelper,
@@ -16,8 +16,8 @@ export class CaseWhenQueryHelper<T extends TQueryValue> {
   }
 
   when(arg: TEntityValue<TQueryValue>, then: TEntityValue<T>): CaseWhenQueryHelper<T> {
-    this._type = SdOrmUtils.getQueryValueType(then) ?? this._type;
-    this._cases.push(...[
+    this.#type = SdOrmUtils.getQueryValueType(then) ?? this.#type;
+    this.#cases.push(...[
       " WHEN ",
       this._qh.getQueryValue(this._qh.equal(this._arg, arg)),
       " THEN ",
@@ -27,10 +27,10 @@ export class CaseWhenQueryHelper<T extends TQueryValue> {
   }
 
   else(then: TEntityValue<T>): QueryUnit<T> {
-    this._type = SdOrmUtils.getQueryValueType(then) ?? this._type;
+    this.#type = SdOrmUtils.getQueryValueType(then) ?? this.#type;
     return new QueryUnit(
-      this._type,
-      ["CASE ", ...this._cases, " ELSE ", this._qh.getQueryValue(then), " END"],
+      this.#type,
+      ["CASE ", ...this.#cases, " ELSE ", this._qh.getQueryValue(then), " END"],
     );
   }
 }

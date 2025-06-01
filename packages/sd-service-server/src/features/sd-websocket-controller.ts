@@ -13,12 +13,12 @@ import {
 import { SdLogger } from "@simplysm/sd-core-node";
 
 export class SdWebsocketController {
-  private _logger = SdLogger.get(["simplysm", "sd-service-server", "SdWebsocketController"]);
+  #logger = SdLogger.get(["simplysm", "sd-service-server", "SdWebsocketController"]);
 
-  private _server: ws.WebSocketServer;
-  private _pingInterval?: NodeJS.Timeout;
+  #server: ws.WebSocketServer;
+  #pingInterval?: NodeJS.Timeout;
 
-  private _clientInfoMap = new WeakMap<ws.WebSocket, ISdClientInfo>();
+  #clientInfoMap = new WeakMap<ws.WebSocket, ISdClientInfo>();
 
   constructor(
     webServer: http.Server | https.Server | undefined,
@@ -30,22 +30,22 @@ export class SdWebsocketController {
       params: any[];
     }) => Promise<any>,
   ) {
-    this._server = new ws.WebSocketServer({ server: webServer });
+    this.#server = new ws.WebSocketServer({ server: webServer });
 
-    this._server.on("connection", async (client, req) => {
+    this.#server.on("connection", async (client, req) => {
       try {
         // 클라이언트에게 ID 요청
-        const clientId = await this._getClientIdAsync(client);
+        const clientId = await this.#getClientIdAsync(client);
 
         // 가존 연결 끊기
-        for (const prevClient of this._server.clients) {
-          const prevClientInfo = this._clientInfoMap.get(prevClient);
+        for (const prevClient of this.#server.clients) {
+          const prevClientInfo = this.#clientInfoMap.get(prevClient);
           if (!prevClientInfo || prevClientInfo.id !== clientId) continue;
 
           const connectionDateTimeText
             = prevClientInfo.connectedAtDateTime.toFormatString("yyyy:MM:dd HH:mm:ss.fff");
 
-          this._logger.debug(
+          this.#logger.debug(
             `클라이언트 기존연결 끊기: ${clientId}: ${connectionDateTimeText}`,
           );
 
@@ -53,8 +53,8 @@ export class SdWebsocketController {
         }
 
         // 연결 로그
-        this._logger.debug(
-          `클라이언트 연결됨: ${clientId}: ${req.socket.remoteAddress}: ${this._server.clients.size}`,
+        this.#logger.debug(
+          `클라이언트 연결됨: ${clientId}: ${req.socket.remoteAddress}: ${this.#server.clients.size}`,
         );
 
         // 정보 저장
@@ -66,28 +66,28 @@ export class SdWebsocketController {
           listenerInfos: [],
           splitReqCache: new Map()
         };
-        this._clientInfoMap.set(client, clientInfo);
+        this.#clientInfoMap.set(client, clientInfo);
 
         // 메시지 핸들러
         client.on("message", async (msgJson: string) => {
           try {
             const msg = JsonConvert.parse(msgJson) as TSdServiceC2SMessage;
             if (msg.name === "request") {
-              await this._onRequestAsync(client, msg);
+              await this.#onRequestAsync(client, msg);
             }
             else if (msg.name === "request-split") {
-              await this._onRequestSplitAsync(client, msg);
+              await this.#onRequestSplitAsync(client, msg);
             }
           }
           catch (err) {
-            this._logger.error("WebSocket 메시지 처리 중 오류 발생", err);
+            this.#logger.error("WebSocket 메시지 처리 중 오류 발생", err);
           }
         });
 
         // 닫힘 핸들러
         client.on("close", (code) => {
-          this._logger.debug(
-            `클라이언트 연결 끊김: ${clientId}: ${this._server.clients.size}: ${code}`,
+          this.#logger.debug(
+            `클라이언트 연결 끊김: ${clientId}: ${this.#server.clients.size}: ${code}`,
           );
         });
 
@@ -97,19 +97,19 @@ export class SdWebsocketController {
         });
 
         // 클라이언트에게 연결 완료 알림
-        this._send(client, { name: "connected" });
+        this.#send(client, { name: "connected" });
       }
       catch (err) {
-        this._logger.error("연결 처리 중 오류 발생", err);
+        this.#logger.error("연결 처리 중 오류 발생", err);
         client.terminate();
       }
     });
 
     // 핑
-    clearInterval(this._pingInterval);
-    this._pingInterval = setInterval(() => {
-      for (const client of this._server.clients) {
-        const clientInfo = this._clientInfoMap.get(client);
+    clearInterval(this.#pingInterval);
+    this.#pingInterval = setInterval(() => {
+      for (const client of this.#server.clients) {
+        const clientInfo = this.#clientInfoMap.get(client);
         if (!clientInfo) continue;
 
         if (clientInfo.isAlive === false) return client.terminate();
@@ -121,14 +121,14 @@ export class SdWebsocketController {
   }
 
   async closeAsync() {
-    clearInterval(this._pingInterval);
+    clearInterval(this.#pingInterval);
 
-    for (const client of this._server.clients) {
+    for (const client of this.#server.clients) {
       client.terminate();
     }
 
     await new Promise<void>((resolve, reject) => {
-      this._server.close((err) => {
+      this.#server.close((err) => {
         if (err) {
           reject(err);
           return;
@@ -140,8 +140,8 @@ export class SdWebsocketController {
   }
 
   broadcastReload(changedFileSet: Set<string>) {
-    for (const client of this._server.clients) {
-      this._send(client, { name: "client-reload", changedFileSet });
+    for (const client of this.#server.clients) {
+      this.#send(client, { name: "client-reload", changedFileSet });
     }
   }
 
@@ -150,20 +150,20 @@ export class SdWebsocketController {
     infoSelector: (item: T["info"]) => boolean,
     data: T["data"],
   ) {
-    const listenerInfos = Array.from(this._server.clients)
-      .mapMany(item => this._clientInfoMap.get(item)?.listenerInfos ?? [])
+    const listenerInfos = Array.from(this.#server.clients)
+      .mapMany(item => this.#clientInfoMap.get(item)?.listenerInfos ?? [])
       .filter((item) => item.eventName === eventType.name)
       .map((item) => ({ key: item.key, info: item.info }));
 
     const targetKeys = listenerInfos.filter((item) => infoSelector(item.info))
       .map((item) => item.key);
 
-    this._emitToTargets(targetKeys, data);
+    this.#emitToTargets(targetKeys, data);
   }
 
-  private _emitToTargets(targetKeys: string[], data: any) {
-    for (const currClient of this._server.clients) {
-      for (const listenerInfo of this._clientInfoMap.get(currClient)?.listenerInfos ?? []) {
+  #emitToTargets(targetKeys: string[], data: any) {
+    for (const currClient of this.#server.clients) {
+      for (const listenerInfo of this.#clientInfoMap.get(currClient)?.listenerInfos ?? []) {
         if (!targetKeys.includes(listenerInfo.key)) continue;
 
         if (currClient.readyState === WebSocket.OPEN) {
@@ -172,19 +172,19 @@ export class SdWebsocketController {
             key: listenerInfo.key,
             body: data,
           };
-          this._send(currClient, evtMsg);
+          this.#send(currClient, evtMsg);
         }
       }
     }
   }
 
-  private async _onRequestSplitAsync(
+  async #onRequestSplitAsync(
     client: ws.WebSocket,
     splitReq: ISdServiceSplitRequest,
   ) {
-    this._logger.debug("분할요청 받음", splitReq.uuid + "(" + splitReq.index + ")");
+    this.#logger.debug("분할요청 받음", splitReq.uuid + "(" + splitReq.index + ")");
 
-    const clientInfo = this._clientInfoMap.get(client)!;
+    const clientInfo = this.#clientInfoMap.get(client)!;
     const splitCacheInfo = clientInfo.splitReqCache.getOrCreate(
       splitReq.uuid,
       { completedSize: 0, data: [] },
@@ -195,7 +195,7 @@ export class SdWebsocketController {
 
       const isCompleted = splitCacheInfo.completedSize === splitReq.fullSize;
 
-      this._send(client, {
+      this.#send(client, {
         name: "response-for-split",
         reqUuid: splitReq.uuid,
         completedSize: splitCacheInfo.completedSize,
@@ -203,7 +203,7 @@ export class SdWebsocketController {
 
       if (isCompleted) {
         const req = JsonConvert.parse(splitCacheInfo.data.join("")) as ISdServiceRequest;
-        await this._onRequestAsync(client, req);
+        await this.#onRequestAsync(client, req);
         clientInfo.splitReqCache.delete(splitReq.uuid);
       }
     }
@@ -213,16 +213,16 @@ export class SdWebsocketController {
     }
   }
 
-  private async _onRequestAsync(client: ws.WebSocket, req: ISdServiceRequest) {
-    this._logger.debug("요청 받음", req);
+  async #onRequestAsync(client: ws.WebSocket, req: ISdServiceRequest) {
+    this.#logger.debug("요청 받음", req);
 
-    const res = await this._processRequestAsync(client, req);
+    const res = await this.#processRequestAsync(client, req);
 
-    this._logger.debug(`응답 전송 (size: ${Buffer.from(JsonConvert.stringify(res)).length})`);
-    this._send(client, res);
+    this.#logger.debug(`응답 전송 (size: ${Buffer.from(JsonConvert.stringify(res)).length})`);
+    this.#send(client, res);
   }
 
-  private async _processRequestAsync(
+  async #processRequestAsync(
     client: ws.WebSocket,
     req: ISdServiceRequest,
   ): Promise<ISdServiceResponse> {
@@ -253,7 +253,7 @@ export class SdWebsocketController {
         const eventName = req.params[1] as string;
         const info = req.params[2];
 
-        const clientInfo = this._clientInfoMap.get(client)!;
+        const clientInfo = this.#clientInfoMap.get(client)!;
         clientInfo.listenerInfos.push({ key, eventName, info });
 
         return {
@@ -266,7 +266,7 @@ export class SdWebsocketController {
       else if (req.command === "removeEventListener") {
         const key = req.params[0] as string;
 
-        const clientInfo = this._clientInfoMap.get(client)!;
+        const clientInfo = this.#clientInfoMap.get(client)!;
         clientInfo.listenerInfos.remove((item) => item.key === key);
 
         return {
@@ -279,8 +279,8 @@ export class SdWebsocketController {
       else if (req.command === "getEventListenerInfos") {
         const eventName = req.params[0] as string;
 
-        const body = Array.from(this._server.clients)
-          .mapMany(item => this._clientInfoMap.get(item)?.listenerInfos ?? [])
+        const body = Array.from(this.#server.clients)
+          .mapMany(item => this.#clientInfoMap.get(item)?.listenerInfos ?? [])
           .filter((item) => item.eventName === eventName)
           .map((item) => ({ key: item.key, info: item.info }));
 
@@ -295,7 +295,7 @@ export class SdWebsocketController {
         const targetKeys = req.params[0] as string[];
         const data = req.params[1];
 
-        this._emitToTargets(targetKeys, data);
+        this.#emitToTargets(targetKeys, data);
 
         return {
           name: "response",
@@ -325,7 +325,7 @@ export class SdWebsocketController {
     }
   }
 
-  private async _getClientIdAsync(client: ws.WebSocket): Promise<string> {
+  async #getClientIdAsync(client: ws.WebSocket): Promise<string> {
     return await new Promise<string>((resolve, reject) => {
       const msgFn = (msgJson: string): void => {
         try {
@@ -343,11 +343,11 @@ export class SdWebsocketController {
 
       client.on("message", msgFn);
 
-      this._send(client, { name: "client-get-id" });
+      this.#send(client, { name: "client-get-id" });
     });
   }
 
-  private _send(client: ws.WebSocket, cmd: TSdServiceS2CMessage) {
+  #send(client: ws.WebSocket, cmd: TSdServiceS2CMessage) {
     const cmdJson = JsonConvert.stringify(cmd);
 
     if (cmd.name === "response" && cmdJson.length > 3 * 1000 * 1000) {

@@ -5,7 +5,7 @@ import { SdSheetDomAccessor } from "./sd-sheet-dom-accessor";
 
 export class SdSheetSelectRowIndicatorRenderer<T> {
   constructor(
-    private _options: {
+    private readonly _options: {
       domAccessor: SdSheetDomAccessor;
       selectedItems: Signal<T[]>;
       displayItems: Signal<T[]>;
@@ -25,7 +25,7 @@ export class SdSheetSelectRowIndicatorRenderer<T> {
         .selectedItems()
         .map((item) => {
           const r = this._options.displayItems().indexOf(item);
-          return this._getTrInfo(r);
+          return this.#getTrInfo(r);
         })
         .filterExists();
 
@@ -51,7 +51,7 @@ export class SdSheetSelectRowIndicatorRenderer<T> {
     for (const selectRowIndicatorEl of selectRowIndicatorEls) {
       const r = NumberUtils.parseInt(selectRowIndicatorEl.getAttribute("r"))!;
 
-      const trInfo = this._getTrInfo(r);
+      const trInfo = this.#getTrInfo(r);
       if (!trInfo) return;
 
       Object.assign(selectRowIndicatorEl.style, {
@@ -62,7 +62,7 @@ export class SdSheetSelectRowIndicatorRenderer<T> {
     }
   }
 
-  private _getTrInfo(r: number) {
+  #getTrInfo(r: number) {
     const trEl = this._options.domAccessor.getRow(r);
     if (!trEl) return undefined;
 

@@ -28,9 +28,9 @@ import { transformBoolean } from "../utils/type-tramsforms";
   template: ``,
 })
 export class SdIconControl {
-  private _sdNgConf = inject(SdAngularConfigProvider);
+  #sdNgConf = inject(SdAngularConfigProvider);
 
-  private _elRef = injectElementRef();
+  #elRef = injectElementRef();
 
   icon = input<IconDefinition>();
 
@@ -54,7 +54,7 @@ export class SdIconControl {
 
   constructor() {
     $effect(() => {
-      const iconDef = this.icon() ?? this._sdNgConf.icons.fallback;
+      const iconDef = this.icon() ?? this.#sdNgConf.icons.fallback;
       const renderedIcon = icon(iconDef, {
         transform: typeof this.transform() === "string"
           ? parse.transform(this.transform() as string)
@@ -78,7 +78,7 @@ export class SdIconControl {
         ].filterExists(),
       });
 
-      this._elRef.nativeElement.innerHTML = renderedIcon.html.join("\n");
+      this.#elRef.nativeElement.innerHTML = renderedIcon.html.join("\n");
     });
   }
 }

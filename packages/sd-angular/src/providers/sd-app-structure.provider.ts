@@ -45,7 +45,7 @@ export abstract class SdAppStructureUtils {
   //---------- Info
 
   static getTitleByFullCode<TModule>(items: TSdAppStructureItem<TModule>[], fullCode: string) {
-    const itemChain = this._getItemChainByFullCode(items, fullCode);
+    const itemChain = this.#getItemChainByFullCode(items, fullCode);
     const parent = itemChain
       .slice(0, -1)
       .map((item) => item.title)
@@ -69,7 +69,7 @@ export abstract class SdAppStructureUtils {
       // 권한이라는것이 아얘 존재하지 않거나
       else if (
         fullCodes.every((fullCode) => {
-          const item = this._getItemChainByFullCode(items, fullCode).last()!;
+          const item = this.#getItemChainByFullCode(items, fullCode).last()!;
           return !("perms" in item);
         })
       ) {
@@ -80,7 +80,7 @@ export abstract class SdAppStructureUtils {
     return result;
   }
 
-  private static _getItemChainByFullCode<TModule>(
+  static #getItemChainByFullCode<TModule>(
     items: TSdAppStructureItem<TModule>[],
     fullCode: string,
   ): TSdAppStructureItem<TModule>[] {
@@ -117,7 +117,7 @@ export abstract class SdAppStructureUtils {
       const currCodeChain = [...codeChain, item.code];
 
       // 모듈 활성화 여부 확인
-      if ("modules" in item && !this._isUsableModules(item.modules, usableModules)) continue;
+      if ("modules" in item && !this.#isUsableModules(item.modules, usableModules)) continue;
 
       // 그룹 메뉴
       if ("children" in item) {
@@ -184,7 +184,7 @@ export abstract class SdAppStructureUtils {
       const currModulesChain =
         "modules" in item ? [...modulesChain, item.modules ?? []] : modulesChain;
 
-      if (!this._isUsableModulesChain(currModulesChain, usableModules)) continue;
+      if (!this.#isUsableModulesChain(currModulesChain, usableModules)) continue;
 
       if ("children" in item) {
         for (const child of item.children) {
@@ -219,7 +219,7 @@ export abstract class SdAppStructureUtils {
       const currCodeChain = [...codeChain, item.code];
 
       // 모듈 활성화 여부 확인
-      if ("modules" in item && !this._isUsableModules(item.modules, usableModules)) continue;
+      if ("modules" in item && !this.#isUsableModules(item.modules, usableModules)) continue;
 
       // 그룹
       if ("children" in item) {
@@ -282,7 +282,7 @@ export abstract class SdAppStructureUtils {
       const currModulesChain =
         "modules" in item ? [...modulesChain, item.modules ?? []] : modulesChain;
 
-      if (!this._isUsableModulesChain(currModulesChain, usableModules)) continue;
+      if (!this.#isUsableModulesChain(currModulesChain, usableModules)) continue;
 
       // 1. 자식 enqueue
       if ("children" in item) {
@@ -326,12 +326,12 @@ export abstract class SdAppStructureUtils {
 
   //-- Modules (private)
 
-  private static _isUsableModulesChain<TModule>(
+  static #isUsableModulesChain<TModule>(
     modulesChain: TModule[][],
     usableModules: TModule[] | undefined,
   ) {
     for (const modules of modulesChain) {
-      if (!this._isUsableModules(modules, usableModules)) {
+      if (!this.#isUsableModules(modules, usableModules)) {
         return false;
       }
     }
@@ -339,7 +339,7 @@ export abstract class SdAppStructureUtils {
     return true;
   }
 
-  private static _isUsableModules<TModule>(
+  static #isUsableModules<TModule>(
     modules: TModule[] | undefined,
     usableModules: TModule[] | undefined,
   ): boolean {

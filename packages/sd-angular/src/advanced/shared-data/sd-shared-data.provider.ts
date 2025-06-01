@@ -13,21 +13,21 @@ export interface ISharedSignal<T extends ISharedDataBase<string | number>> exten
 
 @Injectable({ providedIn: "root" })
 export class SdSharedDataProvider<T extends Record<string, ISharedDataBase<string | number>>> {
-  private _sdServiceFactory = inject(SdServiceClientFactoryProvider);
+  #sdServiceFactory = inject(SdServiceClientFactoryProvider);
 
-  private _infoMap = new Map<keyof T & string, ISharedDataInnerInfo<any>>();
+  #infoMap = new Map<keyof T & string, ISharedDataInnerInfo<any>>();
 
   loadingCount = 0;
 
   register<K extends keyof T & string>(name: K, getter: ISharedDataInfo<T[K]>) {
-    this._infoMap.set(name, { getter });
+    this.#infoMap.set(name, { getter });
   }
 
   async emitAsync<K extends keyof T & string>(name: K, changeKeys?: T[K]["__valueKey"][]) {
-    const info = this._infoMap.get(name);
+    const info = this.#infoMap.get(name);
     if (!info) throw new Error(`'${name}'에 대한 공유데이터 정보가 없습니다.`);
 
-    await this._sdServiceFactory
+    await this.#sdServiceFactory
       .get(info.getter.serviceKey)
       .emitAsync(
         SdSharedDataChangeEvent,
@@ -41,19 +41,19 @@ export class SdSharedDataProvider<T extends Record<string, ISharedDataBase<strin
   }
 
   getSignal<K extends keyof T & string>(name: K): ISharedSignal<T[K]> {
-    const info = this._infoMap.get(name);
+    const info = this.#infoMap.get(name);
     if (!info) throw new Error(`'${name}'에 대한 공유데이터 정보가 없습니다.`);
 
     //-- listener
     if (info.listenerKey == null) {
-      info.listenerKey = void this._sdServiceFactory.get(info.getter.serviceKey).addEventListenerAsync(
+      info.listenerKey = void this.#sdServiceFactory.get(info.getter.serviceKey).addEventListenerAsync(
         SdSharedDataChangeEvent,
         {
           name,
           filter: info.getter.filter,
         },
         async (changeKeys) => {
-          await this._loadDataAsync(name, changeKeys);
+          await this.#loadDataAsync(name, changeKeys);
         },
       );
     }
@@ -65,23 +65,23 @@ export class SdSharedDataProvider<T extends Record<string, ISharedDataBase<strin
       const computedMap = $computed(() => info.signal!().toMap((item) => item.__valueKey));
       info.signal["$get"] = (key: T[K]["__valueKey"]) => computedMap().get(key);
 
-      void this._loadDataAsync(name);
+      void this.#loadDataAsync(name);
     }
 
     return info.signal as any;
   }
 
-  private async _loadDataAsync<K extends keyof T & string>(name: K, changeKeys?: T[K]["__valueKey"][]) {
+  async #loadDataAsync<K extends keyof T & string>(name: K, changeKeys?: T[K]["__valueKey"][]) {
     this.loadingCount++;
     try {
-      const info = this._infoMap.get(name);
+      const info = this.#infoMap.get(name);
       if (!info) throw new Error(`'${name}'에 대한 공유데이터 로직 정보가 없습니다.`);
       if (!info.signal) throw new Error(`'${name}'에 대한 공유데이터 저장소가 없습니다.`);
 
       const resData = await info.getter.getDataAsync(changeKeys);
 
       if (!changeKeys) {
-        info.signal.set(this._ordering(resData, info.getter.orderBy));
+        info.signal.set(this.#ordering(resData, info.getter.orderBy));
       }
       else {
         info.signal.update((v) => {
@@ -92,7 +92,7 @@ export class SdSharedDataProvider<T extends Record<string, ISharedDataBase<strin
           r.push(...resData);
 
           // 재정렬
-          return this._ordering(r, info.getter.orderBy);
+          return this.#ordering(r, info.getter.orderBy);
         });
       }
       this.loadingCount--;
@@ -103,7 +103,7 @@ export class SdSharedDataProvider<T extends Record<string, ISharedDataBase<strin
     }
   }
 
-  private _ordering<TT extends T[keyof T]>(
+  #ordering<TT extends T[keyof T]>(
     data: TT[],
     orderByList: [(data: TT) => string | number | DateOnly | DateTime | Time | undefined, "asc" | "desc"][],
   ): TT[] {

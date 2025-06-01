@@ -8,7 +8,7 @@ import semver from "semver";
 import { CordovaApkInstaller } from "./cordova-apk-installer";
 
 export abstract class CordovaAutoUpdate {
-  private static _throwAboutReinstall(targetHref?: string) {
+  static #throwAboutReinstall(targetHref?: string) {
     const downloadHtml =
       targetHref != null
         ? html`
@@ -44,7 +44,7 @@ export abstract class CordovaAutoUpdate {
     `);
   }
 
-  private static async _checkPermissionAsync(
+  static async #checkPermissionAsync(
     log: (messageHtml: string) => void,
     targetHref?: string,
   ) {
@@ -54,10 +54,10 @@ export abstract class CordovaAutoUpdate {
 
     try {
       if (!(await CordovaApkInstaller.hasPermissionManifest())) {
-        this._throwAboutReinstall(targetHref);
+        this.#throwAboutReinstall(targetHref);
       }
     } catch {
-      this._throwAboutReinstall(targetHref);
+      this.#throwAboutReinstall(targetHref);
     }
 
     const hasPerm = await CordovaApkInstaller.hasPermission();
@@ -91,7 +91,7 @@ export abstract class CordovaAutoUpdate {
     }
   }
 
-  private static async _installApkAsync(log: (messageHtml: string) => void, apkFilePath: string) {
+  static async #installApkAsync(log: (messageHtml: string) => void, apkFilePath: string) {
     log(html`
       최신버전을 설치한 후 재시작하세요.
       <style>
@@ -119,7 +119,7 @@ export abstract class CordovaAutoUpdate {
     return false;
   }
 
-  private static _getErrorMessage(err: any) {
+  static #getErrorMessage(err: any) {
     return html`
       업데이트 중 오류 발생:
       <br />
@@ -143,7 +143,7 @@ export abstract class CordovaAutoUpdate {
       }
 
       opt.log(`권한 확인 중...`);
-      await this._checkPermissionAsync(
+      await this.#checkPermissionAsync(
         opt.log,
         opt.serviceClient.serverUrl + serverVersionInfo.downloadPath,
       );
@@ -169,10 +169,10 @@ export abstract class CordovaAutoUpdate {
       const apkFilePath = path.join(storagePath, `latest.apk`);
       await CordovaFileSystem.writeFileAsync(apkFilePath, buffer);
 
-      await this._installApkAsync(opt.log, apkFilePath);
+      await this.#installApkAsync(opt.log, apkFilePath);
       return false;
     } catch (err) {
-      opt.log(this._getErrorMessage(err));
+      opt.log(this.#getErrorMessage(err));
       throw err;
     }
   }
@@ -183,7 +183,7 @@ export abstract class CordovaAutoUpdate {
   }) {
     try {
       opt.log(`권한 확인 중...`);
-      await this._checkPermissionAsync(opt.log);
+      await this.#checkPermissionAsync(opt.log);
 
       opt.log(`최신버전 확인 중...`);
 
@@ -218,10 +218,10 @@ export abstract class CordovaAutoUpdate {
       }
 
       const apkFilePath = path.join(externalPath, opt.dirPath, latestVersion + ".apk");
-      await this._installApkAsync(opt.log, apkFilePath);
+      await this.#installApkAsync(opt.log, apkFilePath);
       return false;
     } catch (err) {
-      opt.log(this._getErrorMessage(err));
+      opt.log(this.#getErrorMessage(err));
       throw err;
     }
   }

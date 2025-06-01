@@ -145,16 +145,16 @@ import { $computed } from "../utils/bindings/$computed";
   },
 })
 export class SdFormBoxItemControl {
-  private _parentControl = inject<SdFormBoxControl>(forwardRef(() => SdFormBoxControl));
+  #parentControl = inject<SdFormBoxControl>(forwardRef(() => SdFormBoxControl));
 
   label = input<string>();
   labelTooltip = input<string>();
 
   labelTemplateRef = contentChild<any, TemplateRef<void>>("label", { read: TemplateRef });
 
-  labelAlign = $computed(() => this._parentControl.labelAlign());
-  layout = $computed(() => this._parentControl.layout());
+  labelAlign = $computed(() => this.#parentControl.labelAlign());
+  layout = $computed(() => this.#parentControl.layout());
   labelWidth = $computed(() =>
-    this._parentControl.layout() === "table" ? this._parentControl.labelWidth() : undefined,
+    this.#parentControl.layout() === "table" ? this.#parentControl.labelWidth() : undefined,
   );
 }

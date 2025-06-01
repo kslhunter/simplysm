@@ -5,7 +5,7 @@ import { SdModalProvider } from "../../providers/sd-modal.provider";
 
 @Injectable({ providedIn: null })
 export class SdSaveCommandEventPlugin extends EventManagerPlugin {
-  private _sdModal = inject(SdModalProvider);
+  #sdModal = inject(SdModalProvider);
 
   constructor() {
     super(inject(DOCUMENT));
@@ -28,7 +28,7 @@ export class SdSaveCommandEventPlugin extends EventManagerPlugin {
         && event.ctrlKey
         && !event.altKey
         && !event.shiftKey) {
-        if (this._sdModal.modalCount() > 0) {
+        if (this.#sdModal.modalCount() > 0) {
           if ((event.target as Element).findParent("sd-modal") === element.findParent("sd-modal")) {
             event.preventDefault();
             event.stopPropagation();

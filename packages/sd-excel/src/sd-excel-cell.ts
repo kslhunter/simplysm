@@ -15,30 +15,30 @@ export class SdExcelCell {
         throw new Error("색상 형식이 잘못되었습니다. (형식: 00000000: alpha(역)+rgb)");
       }
 
-      await this._setStyleAsync({ background: color });
+      await this.#setStyleAsync({ background: color });
     },
     setBorderAsync: async (directions: ("left" | "right" | "top" | "bottom")[]) => {
-      await this._setStyleAsync({ border: directions });
+      await this.#setStyleAsync({ border: directions });
     },
     setVerticalAlignAsync: async (align: "center" | "top" | "bottom") => {
-      await this._setStyleAsync({ verticalAlign: align });
+      await this.#setStyleAsync({ verticalAlign: align });
     },
     setHorizontalAlignAsync: async (align: "center" | "left" | "right") => {
-      await this._setStyleAsync({ horizontalAlign: align });
+      await this.#setStyleAsync({ horizontalAlign: align });
     },
     setFormatPresetAsync: async (format: TSdExcelNumberFormat | "ThousandsSeparator") => {
       if (format === "ThousandsSeparator") {
-        await this._setStyleAsync({ numFmtId: "41" });
+        await this.#setStyleAsync({ numFmtId: "41" });
       }
       else {
-        await this._setStyleAsync({
+        await this.#setStyleAsync({
           numFmtId: SdExcelUtils.convertNumFmtNameToId(format)
             .toString(),
         });
       }
     },
     setNumFormatIdAsync: async (numFmtId: string) => {
-      await this._setStyleAsync({ numFmtId: numFmtId });
+      await this.#setStyleAsync({ numFmtId: numFmtId });
     },
   };
 
@@ -55,10 +55,10 @@ export class SdExcelCell {
 
   async setFormulaAsync(val: string | undefined) {
     if (val === undefined) {
-      await this._deleteCellAsync(this.addr);
+      await this.#deleteCellAsync(this.addr);
     }
     else {
-      const wsData = await this._getWsDataAsync();
+      const wsData = await this.#getWsDataAsync();
       wsData.setCellType(this.addr, "str");
       wsData.setCellVal(this.addr, undefined);
       wsData.setCellFormula(this.addr, val);
@@ -67,12 +67,12 @@ export class SdExcelCell {
 
   async setValAsync(val: TSdExcelValueType) {
     if (val === undefined) {
-      await this._deleteCellAsync(this.addr);
+      await this.#deleteCellAsync(this.addr);
     }
     else if (typeof val === "string") {
-      const wsData = await this._getWsDataAsync();
+      const wsData = await this.#getWsDataAsync();
 
-      const ssData = await this._getOrCreateSsDataAsync();
+      const ssData = await this.#getOrCreateSsDataAsync();
       const ssId = ssData.getIdByString(val);
       if (ssId !== undefined) {
         wsData.setCellType(this.addr, "s");
@@ -85,41 +85,41 @@ export class SdExcelCell {
       }
     }
     else if (typeof val === "boolean") {
-      const wsData = await this._getWsDataAsync();
+      const wsData = await this.#getWsDataAsync();
       wsData.setCellType(this.addr, "b");
       wsData.setCellVal(this.addr, val ? "1" : "0");
     }
     else if (typeof val === "number") {
-      const wsData = await this._getWsDataAsync();
+      const wsData = await this.#getWsDataAsync();
       wsData.setCellType(this.addr, undefined);
       wsData.setCellVal(this.addr, val.toString());
     }
     else if (val instanceof DateOnly) {
-      const wsData = await this._getWsDataAsync();
+      const wsData = await this.#getWsDataAsync();
       wsData.setCellType(this.addr, undefined);
       wsData.setCellVal(this.addr, SdExcelUtils.convertTimeTickToNumber(val.tick).toString());
 
-      await this._setStyleAsync({
+      await this.#setStyleAsync({
         numFmtId: SdExcelUtils.convertNumFmtNameToId("DateOnly")
           .toString(),
       });
     }
     else if (val instanceof DateTime) {
-      const wsData = await this._getWsDataAsync();
+      const wsData = await this.#getWsDataAsync();
       wsData.setCellType(this.addr, undefined);
       wsData.setCellVal(this.addr, SdExcelUtils.convertTimeTickToNumber(val.tick).toString());
 
-      await this._setStyleAsync({
+      await this.#setStyleAsync({
         numFmtId: SdExcelUtils.convertNumFmtNameToId("DateTime")
           .toString(),
       });
     }
     else if (val instanceof Time) {
-      const wsData = await this._getWsDataAsync();
+      const wsData = await this.#getWsDataAsync();
       wsData.setCellType(this.addr, undefined);
       wsData.setCellVal(this.addr, SdExcelUtils.convertTimeTickToNumber(val.tick).toString());
 
-      await this._setStyleAsync({
+      await this.#setStyleAsync({
         numFmtId: SdExcelUtils.convertNumFmtNameToId("Time")
           .toString(),
       });
@@ -130,14 +130,14 @@ export class SdExcelCell {
   }
 
   async getValAsync(): Promise<TSdExcelValueType> {
-    const wsData = await this._getWsDataAsync();
+    const wsData = await this.#getWsDataAsync();
     const cellVal = wsData.getCellVal(this.addr);
     if (cellVal === undefined || StringUtils.isNullOrEmpty(cellVal)) {
       return undefined;
     }
     const cellType = wsData.getCellType(this.addr);
     if (cellType === "s") {
-      const ssData = await this._getOrCreateSsDataAsync();
+      const ssData = await this.#getOrCreateSsDataAsync();
       return ssData.getStringById(NumberUtils.parseInt(cellVal)!);
     }
     else if (cellType === "str") {
@@ -161,7 +161,7 @@ export class SdExcelCell {
         return NumberUtils.parseFloat(cellVal);
       }
 
-      const styleData = (await this._getStyleDataAsync())!;
+      const styleData = (await this.#getStyleDataAsync())!;
       const numFmtId = styleData.get(cellStyleId).numFmtId;
       if (numFmtId === undefined) {
         return NumberUtils.parseFloat(cellVal);
@@ -206,34 +206,34 @@ export class SdExcelCell {
   }
 
   async mergeAsync(r: number, c: number) {
-    const wsData = await this._getWsDataAsync();
+    const wsData = await this.#getWsDataAsync();
     wsData.setMergeCells(this.addr, { r, c });
   }
 
   async getStyleIdAsync() {
-    const wsData = await this._getWsDataAsync();
+    const wsData = await this.#getWsDataAsync();
     return wsData.getCellStyleId(this.addr);
   }
 
   async setStyleIdAsync(styleId: string | undefined) {
-    const wsData = await this._getWsDataAsync();
+    const wsData = await this.#getWsDataAsync();
     wsData.setCellStyleId(this.addr, styleId);
   }
 
-  private async _deleteCellAsync(addr: { r: number, c: number }) {
-    const wsData = await this._getWsDataAsync();
+  async #deleteCellAsync(addr: { r: number, c: number }) {
+    const wsData = await this.#getWsDataAsync();
     wsData.deleteCell(addr);
 
     // TODO: 이 셀에서만 쓰이는 Style과 SharedString도 삭제? 이 내용은 수정할때도 적용되야? 아니면 저장할때 한꺼번에 정리해야하나.. 무시해도되나..
   }
 
-  private async _getWsDataAsync() {
+  async #getWsDataAsync() {
     return await this._zipCache.getAsync(`xl/worksheets/${this._targetFileName}`) as SdExcelXmlWorksheet;
   }
 
-  private async _setStyleAsync(style: ISdExcelStyle) {
-    const wsData = await this._getWsDataAsync();
-    const styleData = await this._getOrCreateStyleDataAsync();
+  async #setStyleAsync(style: ISdExcelStyle) {
+    const wsData = await this.#getWsDataAsync();
+    const styleData = await this.#getOrCreateStyleDataAsync();
     let styleId = wsData.getCellStyleId(this.addr);
     if (styleId == null) {
       styleId = styleData.add(style);
@@ -244,38 +244,38 @@ export class SdExcelCell {
     wsData.setCellStyleId(this.addr, styleId);
   }
 
-  private async _getTypeDataAsync() {
+  async #getTypeDataAsync() {
     return await this._zipCache.getAsync("[Content_Types].xml") as SdExcelXmlContentType;
   }
 
-  private async _getSsDataAsync() {
+  async #getSsDataAsync() {
     return await this._zipCache.getAsync("xl/sharedStrings.xml") as SdExcelXmlSharedString | undefined;
   }
 
-  private async _getWbRelDataAsync() {
+  async #getWbRelDataAsync() {
     return await this._zipCache.getAsync("xl/_rels/workbook.xml.rels") as SdExcelXmlRelationShip;
   }
 
-  private async _getStyleDataAsync() {
+  async #getStyleDataAsync() {
     return await this._zipCache.getAsync("xl/styles.xml") as SdExcelXmlStyle | undefined;
   }
 
-  private async _getOrCreateSsDataAsync(): Promise<SdExcelXmlSharedString> {
-    let ssData = await this._getSsDataAsync();
+  async #getOrCreateSsDataAsync(): Promise<SdExcelXmlSharedString> {
+    let ssData = await this.#getSsDataAsync();
     if (!ssData) {
       //-- SharedString
       ssData = new SdExcelXmlSharedString();
       this._zipCache.set("xl/sharedStrings.xml", ssData);
 
       //-- Content Type
-      const typeData = await this._getTypeDataAsync();
+      const typeData = await this.#getTypeDataAsync();
       typeData.add(
         "/xl/sharedStrings.xml",
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml",
       );
 
       //-- Workbook Rel
-      const wbRelData = await this._getWbRelDataAsync();
+      const wbRelData = await this.#getWbRelDataAsync();
       wbRelData.add(
         `sharedStrings.xml`,
         `http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings`,
@@ -285,22 +285,22 @@ export class SdExcelCell {
     return ssData;
   }
 
-  private async _getOrCreateStyleDataAsync(): Promise<SdExcelXmlStyle> {
-    let styleData = await this._getStyleDataAsync();
+  async #getOrCreateStyleDataAsync(): Promise<SdExcelXmlStyle> {
+    let styleData = await this.#getStyleDataAsync();
     if (!styleData) {
       //-- Style
       styleData = new SdExcelXmlStyle();
       this._zipCache.set("xl/styles.xml", styleData);
 
       //-- Content Type
-      const typeData = await this._getTypeDataAsync();
+      const typeData = await this.#getTypeDataAsync();
       typeData.add(
         "/xl/styles.xml",
         "application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml",
       );
 
       //-- Workbook Rel
-      const wbRelData = await this._getWbRelDataAsync();
+      const wbRelData = await this.#getWbRelDataAsync();
       wbRelData.add(
         `styles.xml`,
         `http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles`,

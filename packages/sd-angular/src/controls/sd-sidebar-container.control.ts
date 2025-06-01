@@ -64,13 +64,13 @@ import { $signal } from "../utils/bindings/$signal";
   },
 })
 export class SdSidebarContainerControl {
-  private _router: Router | null = inject(Router, { optional: true });
+  #router: Router | null = inject(Router, { optional: true });
 
   toggle = $signal(false);
 
   constructor() {
-    if (this._router) {
-      this._router.events.subscribe((value) => {
+    if (this.#router) {
+      this.#router.events.subscribe((value) => {
         if (value instanceof NavigationStart) {
           this.toggle.set(false);
         }

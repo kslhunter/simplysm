@@ -12,18 +12,18 @@ import { $effect } from "../utils/bindings/$effect";
 
 @Injectable({ providedIn: "root" })
 export class SdBusyProvider {
-  private _appRef = inject(ApplicationRef);
+  #appRef = inject(ApplicationRef);
 
   type = $signal<"spinner" | "bar" | "cube">("bar");
 
   globalBusyCount = $signal(0);
 
-  private _containerRef?: ComponentRef<SdBusyContainerControl>;
+  #containerRef?: ComponentRef<SdBusyContainerControl>;
 
   get containerRef(): ComponentRef<SdBusyContainerControl> {
-    if (this._containerRef == null) {
+    if (this.#containerRef == null) {
       const compRef = createComponent(SdBusyContainerControl, {
-        environmentInjector: this._appRef.injector,
+        environmentInjector: this.#appRef.injector,
         bindings: [
           inputBinding("type", this.type),
           inputBinding("busy", () => this.globalBusyCount() > 0),
@@ -32,12 +32,12 @@ export class SdBusyProvider {
       (compRef.location.nativeElement as HTMLElement).style.position = "absolute";
       (compRef.location.nativeElement as HTMLElement).style.pointerEvents = "none";
 
-      this._appRef.attachView(compRef.hostView);
-      this._containerRef = compRef;
-      document.body.appendChild(this._containerRef.location.nativeElement);
+      this.#appRef.attachView(compRef.hostView);
+      this.#containerRef = compRef;
+      document.body.appendChild(this.#containerRef.location.nativeElement);
     }
 
-    return this._containerRef;
+    return this.#containerRef;
   }
 
   constructor() {

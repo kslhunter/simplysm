@@ -800,7 +800,7 @@ export class QueryHelper {
   getQueryValue(value: TEntityValue<any> | Queryable<any, any>): string | ISelectQueryDef {
     if (value instanceof QueryUnit) {
       if (value.query instanceof Array) {
-        return this._getQueryValueArray(value.query);
+        return this.#getQueryValueArray(value.query);
       }
       else if (value.query instanceof QueryUnit) {
         return this.getQueryValue(value.query);
@@ -881,7 +881,7 @@ export class QueryHelper {
   getBulkInsertQueryValue(value: TEntityValue<any>): any {
     if (value instanceof QueryUnit) {
       if (value.query instanceof Array) {
-        return this._getBulkInsertQueryValueArray(value.query);
+        return this.#getBulkInsertQueryValueArray(value.query);
       }
       else if (value.query instanceof QueryUnit) {
         return this.getBulkInsertQueryValue(value.query);
@@ -932,10 +932,10 @@ export class QueryHelper {
     }
   }
 
-  private _getBulkInsertQueryValueArray(arr: any[]): TEntityValueOrQueryableOrArray<any, any> {
+  #getBulkInsertQueryValueArray(arr: any[]): TEntityValueOrQueryableOrArray<any, any> {
     return arr.map((item) => {
       if (item instanceof Array) {
-        return this._getBulkInsertQueryValueArray(item);
+        return this.#getBulkInsertQueryValueArray(item);
       }
       else if (item instanceof QueryUnit) {
         return this.getBulkInsertQueryValue(item);
@@ -949,10 +949,10 @@ export class QueryHelper {
     });
   }
 
-  private _getQueryValueArray(arr: any[]): TEntityValueOrQueryableOrArray<any, any> {
+  #getQueryValueArray(arr: any[]): TEntityValueOrQueryableOrArray<any, any> {
     return arr.map((item) => {
       if (item instanceof Array) {
-        return this._getQueryValueArray(item);
+        return this.#getQueryValueArray(item);
       }
       else if (item instanceof QueryUnit) {
         return this.getQueryValue(item);

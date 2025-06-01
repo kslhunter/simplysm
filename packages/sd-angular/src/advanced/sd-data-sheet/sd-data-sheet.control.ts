@@ -277,17 +277,17 @@ import { $effect } from "../../utils/bindings/$effect";
 export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>> {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
 
-  private _sdToast = inject(SdToastProvider);
-  private _sdSharedData = inject(SdSharedDataProvider);
-  private _sdFileDialog = inject(SdFileDialogProvider);
+  #sdToast = inject(SdToastProvider);
+  #sdSharedData = inject(SdSharedDataProvider);
+  #sdFileDialog = inject(SdFileDialogProvider);
 
   //-- base
 
   viewModel = input.required<VM>();
 
-  private _viewType = useViewTypeSignal();
+  #viewType = useViewTypeSignal();
   viewType = input<TSdViewType>();
-  currViewType = $computed(() => this.viewType() ?? this._viewType());
+  currViewType = $computed(() => this.viewType() ?? this.#viewType());
 
   //-- view
 
@@ -355,12 +355,12 @@ export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>>
         }
 
         if (this.lastFilter() == null) {
-          this._updateLastFilter();
+          this.#updateLastFilter();
         }
 
         this.busyCount.update((v) => v + 1);
-        await this._sdToast.try(async () => {
-          await this._sdSharedData.wait();
+        await this.#sdToast.try(async () => {
+          await this.#sdSharedData.wait();
           await this.refreshAsync();
         });
         this.busyCount.update((v) => v - 1);
@@ -372,10 +372,10 @@ export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>>
   onFilterSubmit() {
     this.page.set(0);
 
-    this._updateLastFilter();
+    this.#updateLastFilter();
   }
 
-  private _updateLastFilter() {
+  #updateLastFilter() {
     this.lastFilter.set(ObjectUtils.clone(this.viewModel().filter()));
   }
 
@@ -412,7 +412,7 @@ export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>>
   async onCreateItemButtonClick() {
     if (!this.viewModel().perms().includes("edit")) return;
 
-    await this._editItemAsync();
+    await this.#editItemAsync();
   }
 
   async onItemClick(item: TVMItem<VM>, index: number, event: MouseEvent) {
@@ -421,17 +421,17 @@ export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>>
     event.preventDefault();
     event.stopPropagation();
 
-    await this._editItemAsync(item);
+    await this.#editItemAsync(item);
   }
 
-  private async _editItemAsync(item?: TVMItem<VM>) {
+  async #editItemAsync(item?: TVMItem<VM>) {
     if (!this.viewModel().editItem) return;
 
     const result = await this.viewModel().editItem!(item);
     if (!result) return;
 
     this.busyCount.update((v) => v + 1);
-    await this._sdToast.try(async () => {
+    await this.#sdToast.try(async () => {
       await this.refreshAsync();
     });
     this.busyCount.update((v) => v - 1);
@@ -455,13 +455,13 @@ export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>>
 
     this.busyCount.update((v) => v + 1);
 
-    await this._sdToast.try(async () => {
+    await this.#sdToast.try(async () => {
       const result = await this.viewModel().toggleDeletes!(this.selectedItems(), del);
       if (!result) return;
 
       await this.refreshAsync();
 
-      this._sdToast.success(`${del ? "삭제" : "복구"} 되었습니다.`);
+      this.#sdToast.success(`${del ? "삭제" : "복구"} 되었습니다.`);
     });
     this.busyCount.update((v) => v - 1);
   }
@@ -472,7 +472,7 @@ export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>>
     if (!this.viewModel().downloadExcel) return;
 
     this.busyCount.update((v) => v + 1);
-    await this._sdToast.try(async () => {
+    await this.#sdToast.try(async () => {
       if (this.lastFilter() == null) return;
 
       const items = (await this.searchAsync("excel")).items;
@@ -485,7 +485,7 @@ export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>>
     if (!this.viewModel().uploadExcel) return;
     if (!this.viewModel().perms().includes("edit")) return;
 
-    const file = await this._sdFileDialog.showAsync(
+    const file = await this.#sdFileDialog.showAsync(
       false,
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     );
@@ -493,12 +493,12 @@ export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>>
 
     this.busyCount.update((v) => v + 1);
 
-    await this._sdToast.try(async () => {
+    await this.#sdToast.try(async () => {
       await this.viewModel().uploadExcel!(file);
 
       await this.refreshAsync();
 
-      this._sdToast.success("엑셀 업로드가 완료 되었습니다.");
+      this.#sdToast.success("엑셀 업로드가 완료 되었습니다.");
     });
     this.busyCount.update((v) => v - 1);
   }

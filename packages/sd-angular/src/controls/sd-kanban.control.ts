@@ -112,19 +112,19 @@ import { $signal } from "../utils/bindings/$signal";
   },
 })
 export class SdKanbanControl<L, T> {
-  private _boardControl = inject<SdKanbanBoardControl<L, T>>(forwardRef(() => SdKanbanBoardControl));
-  private _laneControl = inject<SdKanbanLaneControl<L, T>>(forwardRef(() => SdKanbanLaneControl));
-  private _elRef = injectElementRef();
+  #boardControl = inject<SdKanbanBoardControl<L, T>>(forwardRef(() => SdKanbanBoardControl));
+  #laneControl = inject<SdKanbanLaneControl<L, T>>(forwardRef(() => SdKanbanLaneControl));
+  #elRef = injectElementRef();
 
   value = input.required<T>();
 
-  laneValue = $computed(() => this._laneControl.value());
+  laneValue = $computed(() => this.#laneControl.value());
 
   selectable = input(false, { transform: transformBoolean });
   draggable = input(false, { transform: transformBoolean });
 
-  selected = $computed(() => this._boardControl.selectedValues().includes(this.value()));
-  dragKanban = $computed(() => this._boardControl.dragKanban());
+  selected = $computed(() => this.#boardControl.selectedValues().includes(this.value()));
+  dragKanban = $computed(() => this.#boardControl.dragKanban());
 
   contentClass = input<string>();
 
@@ -142,7 +142,7 @@ export class SdKanbanControl<L, T> {
       event.preventDefault();
       event.stopPropagation();
 
-      this._boardControl.selectedValues.update((v) => {
+      this.#boardControl.selectedValues.update((v) => {
         const r = [...v];
         if (v.includes(this.value())) {
           r.remove(this.value());
@@ -164,12 +164,12 @@ export class SdKanbanControl<L, T> {
   onCardDragStart() {
     if (!this.draggable()) return;
 
-    this.heightOnDrag.set(this._elRef.nativeElement.offsetHeight);
-    this._boardControl.dragKanban.set(this);
+    this.heightOnDrag.set(this.#elRef.nativeElement.offsetHeight);
+    this.#boardControl.dragKanban.set(this);
   }
 
   onDragOver(event: DragEvent) {
-    if (this._boardControl.dragKanban() == null) return;
+    if (this.#boardControl.dragKanban() == null) return;
 
     event.preventDefault();
     event.stopPropagation();
@@ -185,13 +185,13 @@ export class SdKanbanControl<L, T> {
   }
 
   onDragDrop(event: DragEvent) {
-    if (this._boardControl.dragKanban() == null) return;
+    if (this.#boardControl.dragKanban() == null) return;
     this.dragOvered.set(false);
 
     event.preventDefault();
     event.stopPropagation();
 
-    this._boardControl.onDropTo(this);
+    this.#boardControl.onDropTo(this);
   }
 
   @HostListener("document:drop.capture")

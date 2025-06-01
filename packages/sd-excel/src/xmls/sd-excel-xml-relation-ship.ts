@@ -21,14 +21,14 @@ export class SdExcelXmlRelationShip implements ISdExcelXml {
 
   getTargetByRelId(rId: number): string | undefined {
     return this.data.Relationships.Relationship
-      ?.single((rel) => this._getRelId(rel) === rId)
+      ?.single((rel) => this.#getRelId(rel) === rId)
       ?.$.Target;
   }
 
   add(target: string, type: string): this {
     this.data.Relationships.Relationship = this.data.Relationships.Relationship ?? [];
 
-    const newId = (this._lastId ?? 0) + 1;
+    const newId = (this.#lastId ?? 0) + 1;
 
     this.data.Relationships.Relationship.push({
       "$": {
@@ -45,9 +45,9 @@ export class SdExcelXmlRelationShip implements ISdExcelXml {
     this.data.Relationships.Relationship = this.data.Relationships.Relationship ?? [];
 
     const shiftRels = this.data.Relationships.Relationship
-      .filter((rel) => this._getRelId(rel) >= rId);
+      .filter((rel) => this.#getRelId(rel) >= rId);
     for (const shiftRel of shiftRels) {
-      shiftRel.$.Id = `rId${this._getRelId(shiftRel) + 1}`;
+      shiftRel.$.Id = `rId${this.#getRelId(shiftRel) + 1}`;
     }
 
     this.data.Relationships.Relationship.push({
@@ -64,11 +64,11 @@ export class SdExcelXmlRelationShip implements ISdExcelXml {
   cleanup() {
   }
 
-  private get _lastId(): number | undefined {
-    return this.data.Relationships.Relationship?.max((rel) => this._getRelId(rel));
+  get #lastId(): number | undefined {
+    return this.data.Relationships.Relationship?.max((rel) => this.#getRelId(rel));
   }
 
-  private _getRelId(rel: ISdExcelRelationshipData): number {
+  #getRelId(rel: ISdExcelRelationshipData): number {
     return NumberUtils.parseInt((/[0-9]*$/).exec(rel.$.Id)![0])!;
   }
 }

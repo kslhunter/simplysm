@@ -27,33 +27,33 @@ import { $effect } from "../utils/bindings/$effect";
   ],
 })
 export class SdEchartsControl {
-  private _elRef = injectElementRef();
+  #elRef = injectElementRef();
 
-  private _chart!: echarts.EChartsType;
+  #chart!: echarts.EChartsType;
 
   option = input.required<echarts.EChartsOption>();
   loading = input(false);
 
   constructor() {
     $effect([], () => {
-      this._chart = echarts.init(this._elRef.nativeElement, null, { renderer: "svg" });
+      this.#chart = echarts.init(this.#elRef.nativeElement, null, { renderer: "svg" });
     });
 
     $effect(() => {
-      this._chart.setOption(this.option());
+      this.#chart.setOption(this.option());
     });
 
     $effect(() => {
       if (this.loading()) {
-        this._chart.showLoading();
+        this.#chart.showLoading();
       } else {
-        this._chart.hideLoading();
+        this.#chart.hideLoading();
       }
     });
   }
 
   @HostListener("sdResize")
   onResize() {
-    this._chart.resize();
+    this.#chart.resize();
   }
 }

@@ -3,7 +3,7 @@ import { ObjectUtils } from "@simplysm/sd-core-common";
 import { $computed } from "../bindings/$computed";
 
 export class SdSortingManager {
-  constructor(private _options: { sorts: WritableSignal<ISdSortingDef[]> }) {
+  constructor(private readonly _options: { sorts: WritableSignal<ISdSortingDef[]> }) {
   }
 
   defMap = $computed(() => {

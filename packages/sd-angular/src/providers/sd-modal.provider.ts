@@ -19,13 +19,13 @@ import { Wait } from "@simplysm/sd-core-common";
 import { SdBusyProvider } from "./sd-busy.provider";
 
 export class SdModalInstance<T extends ISdModal<any>> {
-  private readonly _activatedModalProvider: SdActivatedModalProvider<T>;
-  private readonly _compRef: ComponentRef<T>;
-  private readonly _modalRef: ComponentRef<SdModalControl>;
+  readonly #activatedModalProvider: SdActivatedModalProvider<T>;
+  readonly #compRef: ComponentRef<T>;
+  readonly #modalRef: ComponentRef<SdModalControl>;
 
-  private readonly _prevActiveEl?: HTMLElement;
+  readonly #prevActiveEl?: HTMLElement;
 
-  private _open = $signal(false);
+  #open = $signal(false);
 
   close = new EventEmitter<any>();
 
@@ -53,33 +53,33 @@ export class SdModalInstance<T extends ISdModal<any>> {
     sdBusy.globalBusyCount.update((v) => v + 1);
 
     //-- new Provider
-    this._activatedModalProvider = new SdActivatedModalProvider<T>();
+    this.#activatedModalProvider = new SdActivatedModalProvider<T>();
 
     //-- Content component
-    this._compRef = createComponent(modal.type, {
+    this.#compRef = createComponent(modal.type, {
       environmentInjector: appRef.injector,
       elementInjector: Injector.create({
         parent: appRef.injector,
-        providers: [{ provide: SdActivatedModalProvider, useValue: this._activatedModalProvider }],
+        providers: [{ provide: SdActivatedModalProvider, useValue: this.#activatedModalProvider }],
       }),
       bindings: [
         ...Object.keys(modal.inputs).map((inputKey) =>
           inputBinding(inputKey, () => modal.inputs[inputKey]),
         ),
-        outputBinding("close", (val) => this._onComponentClosed(val)),
+        outputBinding("close", (val) => this.#onComponentClosed(val)),
       ],
     });
 
-    this._activatedModalProvider.contentComponent.set(this._compRef.instance);
-    const compEl = this._compRef.location.nativeElement as HTMLElement;
+    this.#activatedModalProvider.contentComponent.set(this.#compRef.instance);
+    const compEl = this.#compRef.location.nativeElement as HTMLElement;
 
     //-- Modal component
-    this._modalRef = createComponent(SdModalControl, {
+    this.#modalRef = createComponent(SdModalControl, {
       environmentInjector: appRef.injector,
       projectableNodes: [[compEl]],
       elementInjector: Injector.create({
         parent: appRef.injector,
-        providers: [{ provide: SdActivatedModalProvider, useValue: this._activatedModalProvider }],
+        providers: [{ provide: SdActivatedModalProvider, useValue: this.#activatedModalProvider }],
       }),
       bindings: [
         inputBinding("title", () => modal.title),
@@ -96,34 +96,34 @@ export class SdModalInstance<T extends ISdModal<any>> {
         inputBinding("headerStyle", () => options?.headerStyle),
         inputBinding("fill", () => options?.fill ?? false),
 
-        inputBinding("open", this._open),
-        outputBinding("openChange", (val: boolean) => this._onModalOpenChange(val)),
+        inputBinding("open", this.#open),
+        outputBinding("openChange", (val: boolean) => this.#onModalOpenChange(val)),
       ],
     });
-    this._activatedModalProvider.modalComponent.set(this._modalRef.instance);
-    const modalEl = this._modalRef.location.nativeElement as HTMLElement;
+    this.#activatedModalProvider.modalComponent.set(this.#modalRef.instance);
+    const modalEl = this.#modalRef.location.nativeElement as HTMLElement;
 
-    this._prevActiveEl = document.activeElement as HTMLElement | undefined;
+    this.#prevActiveEl = document.activeElement as HTMLElement | undefined;
 
-    appRef.attachView(this._compRef.hostView);
-    appRef.attachView(this._modalRef.hostView);
+    appRef.attachView(this.#compRef.hostView);
+    appRef.attachView(this.#modalRef.hostView);
 
     requestAnimationFrame(async () => {
-      if (!this._compRef.instance.initialized()) {
-        await Wait.until(() => this._compRef.instance.initialized());
+      if (!this.#compRef.instance.initialized()) {
+        await Wait.until(() => this.#compRef.instance.initialized());
       }
       document.body.appendChild(modalEl);
 
       setTimeout(() => {
         sdBusy.globalBusyCount.update((v) => v - 1);
-        this._open.set(true);
+        this.#open.set(true);
 
         requestAnimationFrame(() => {
           if (options?.noFirstControlFocusing) {
-            this._modalRef.instance.dialogElRef().nativeElement.focus();
+            this.#modalRef.instance.dialogElRef().nativeElement.focus();
           } else {
             (
-              compEl.findFocusableFirst() ?? this._modalRef.instance.dialogElRef().nativeElement
+              compEl.findFocusableFirst() ?? this.#modalRef.instance.dialogElRef().nativeElement
             ).focus();
           }
         });
@@ -131,29 +131,29 @@ export class SdModalInstance<T extends ISdModal<any>> {
     });
   }
 
-  private _onModalOpenChange(val: boolean) {
-    if (!this._activatedModalProvider.canDeactivefn()) return;
+  #onModalOpenChange(val: boolean) {
+    if (!this.#activatedModalProvider.canDeactivefn()) return;
 
     if (val) {
-      this._open.set(val);
+      this.#open.set(val);
     } else {
-      this._onComponentClosed(undefined);
+      this.#onComponentClosed(undefined);
     }
   }
 
-  private _onComponentClosed(val: any) {
-    if (val != null && !this._activatedModalProvider.canDeactivefn()) return;
+  #onComponentClosed(val: any) {
+    if (val != null && !this.#activatedModalProvider.canDeactivefn()) return;
 
-    const modalEl = this._modalRef.location.nativeElement as HTMLElement;
+    const modalEl = this.#modalRef.location.nativeElement as HTMLElement;
     modalEl.addEventListener("transitionend", () => {
-      this._compRef.destroy();
-      this._modalRef.destroy();
+      this.#compRef.destroy();
+      this.#modalRef.destroy();
     });
 
-    this._open.set(false);
+    this.#open.set(false);
 
-    if (this._prevActiveEl) {
-      this._prevActiveEl.focus();
+    if (this.#prevActiveEl) {
+      this.#prevActiveEl.focus();
     }
 
     this.close.emit(val);
@@ -162,7 +162,7 @@ export class SdModalInstance<T extends ISdModal<any>> {
 
 @Injectable({ providedIn: "root" })
 export class SdModalProvider {
-  private _appRef = inject(ApplicationRef);
+  #appRef = inject(ApplicationRef);
 
   modalCount = $signal(0);
 
@@ -187,7 +187,7 @@ export class SdModalProvider {
     return await new Promise<Parameters<T["close"]["emit"]>[0] | undefined>((resolve, reject) => {
       this.modalCount.update((v) => v + 1);
       try {
-        const modalInstance = new SdModalInstance(this._appRef, modal, options);
+        const modalInstance = new SdModalInstance(this.#appRef, modal, options);
         modalInstance.close.subscribe((val) => {
           resolve(val);
         });

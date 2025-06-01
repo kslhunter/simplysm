@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 import { Node, SyntaxKind } from "ts-morph";
 import getTsMortphSourceFiles from "./core/get-ts-morph-source-files";
 
@@ -5,6 +7,8 @@ export default function convertPrivateToHash() {
   const sourceFiles = getTsMortphSourceFiles();
 
   for (const sourceFile of sourceFiles) {
+    let changed = false;
+
     for (const classDecl of sourceFile.getClasses()) {
       const renameMap = new Map<string, string>();
 
@@ -25,8 +29,16 @@ export default function convertPrivateToHash() {
 
             nameNode.replaceWithText(newName);
             member.toggleModifier("private", false);
-
             renameMap.set(oldName, newName);
+
+            const kind = Node.isMethodDeclaration(member)
+              ? "method"
+              : Node.isGetAccessorDeclaration(member) || Node.isSetAccessorDeclaration(member)
+                ? "accessor"
+                : "field";
+
+            console.log(`[private-${kind}] ${sourceFile.getBaseName()} :: private ${oldName} → ${newName}`);
+            changed = true;
           }
         }
       }
@@ -43,11 +55,18 @@ export default function convertPrivateToHash() {
           if (expr.getText() === "this" && renameMap.has(name)) {
             const newName = renameMap.get(name)!;
             propAccess.replaceWithText(`this.${newName}`);
+            console.log(`[ref] ${sourceFile.getBaseName()} :: this.${name} → this.${newName}`);
+            changed = true;
           }
         }
       });
     }
 
-    sourceFile.saveSync();
+    if (changed) {
+      sourceFile.saveSync();
+      console.log(`[save] ${sourceFile.getFilePath()}`);
+    }
   }
+
+  console.log("[완료] private → ECMAScript # 멤버 변환 완료");
 }

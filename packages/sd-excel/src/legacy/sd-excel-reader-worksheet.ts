@@ -5,16 +5,16 @@ export class SdExcelReaderWorksheet {
   constructor(private readonly _ws: XLSX.WorkSheet) {
   }
 
-  private _range?: XLSX.Range;
+  #range?: XLSX.Range;
   get range(): XLSX.Range {
-    if (!this._range) {
-      this._range = XLSX.utils.decode_range(this._ws["!ref"]!)!;
+    if (!this.#range) {
+      this.#range = XLSX.utils.decode_range(this._ws["!ref"]!)!;
     }
-    return this._range;
+    return this.#range;
   }
 
   val(r: number, c: number): string | number | boolean | Date | undefined {
-    const addr = this._addr(r, c);
+    const addr = this.#addr(r, c);
     const cell = this._ws[addr] as XLSX.CellObject;
 
     if (!Boolean(cell)) return undefined;
@@ -39,7 +39,7 @@ export class SdExcelReaderWorksheet {
     });
   }
 
-  private _addr(r: number, c: number): string {
+  #addr(r: number, c: number): string {
     return XLSX.utils.encode_cell({r, c});
   }
 }

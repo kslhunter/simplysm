@@ -134,22 +134,22 @@ import { $computed } from "../utils/bindings/$computed";
 export class SdTopbarControl {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
 
-  private _elRef = injectElementRef<HTMLElement>();
-  private _parentSidebarContainerControl = inject(SdSidebarContainerControl, { optional: true });
-  private _topbarContainerControl = inject<SdTopbarContainerControl>(forwardRef(() => SdTopbarContainerControl));
+  #elRef = injectElementRef<HTMLElement>();
+  #parentSidebarContainerControl = inject(SdSidebarContainerControl, { optional: true });
+  #topbarContainerControl = inject<SdTopbarContainerControl>(forwardRef(() => SdTopbarContainerControl));
 
   sidebarContainer = input<SdSidebarContainerControl>();
 
-  hasSidebar = $computed(() => !!this.sidebarContainer() || !!this._parentSidebarContainerControl);
+  hasSidebar = $computed(() => !!this.sidebarContainer() || !!this.#parentSidebarContainerControl);
 
   onSidebarToggleButtonClick() {
-    const sidebarContainerControl = this.sidebarContainer() ?? this._parentSidebarContainerControl;
+    const sidebarContainerControl = this.sidebarContainer() ?? this.#parentSidebarContainerControl;
     sidebarContainerControl!.toggle.update((v) => !v);
   }
 
   @HostListener("sdResize", ["$event"])
   onResize(event: ISdResizeEvent) {
     if (!event.heightChanged) return;
-    this._topbarContainerControl.paddingTop.set(this._elRef.nativeElement.offsetHeight + "px");
+    this.#topbarContainerControl.paddingTop.set(this.#elRef.nativeElement.offsetHeight + "px");
   }
 }

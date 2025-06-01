@@ -8,15 +8,15 @@ import { BuildRunnerBase, IBuildRunnerRunResult } from "../commons/build-runner.
 export class SdServerBuildRunner extends BuildRunnerBase<"server"> {
   protected override _logger = SdLogger.get(["simplysm", "sd-cli", "SdCliServerBuildRunner"]);
 
-  private _serverBundler?: SdServerBundler;
-  private _extModules?: { name: string; exists: boolean }[];
+  #serverBundler?: SdServerBundler;
+  #extModules?: { name: string; exists: boolean }[];
 
   protected override async _runAsync(
     dev: boolean,
     modifiedFileSet?: Set<TNormPath>,
   ): Promise<IBuildRunnerRunResult> {
     if (!dev) {
-      await this._generateProductionFilesAsync();
+      await this.#generateProductionFilesAsync();
     }
 
     if (!modifiedFileSet) {
@@ -31,9 +31,9 @@ export class SdServerBuildRunner extends BuildRunnerBase<"server"> {
 
     this._debug(`BUILD 준비...`);
     const tsConfig = FsUtils.readJson(path.resolve(this._pkgPath, "tsconfig.json")) as ITsConfig;
-    this._extModules = this._extModules ?? (await this._getExternalModulesAsync());
-    this._serverBundler =
-      this._serverBundler ??
+    this.#extModules = this.#extModules ?? (await this.#getExternalModulesAsync());
+    this.#serverBundler =
+      this.#serverBundler ??
       new SdServerBundler({
         dev,
         pkgPath: this._pkgPath,
@@ -43,12 +43,12 @@ export class SdServerBuildRunner extends BuildRunnerBase<"server"> {
               path.resolve(this._pkgPath, "src/main.ts"),
               ...FsUtils.glob(path.resolve(this._pkgPath, "src/workers/*.ts")),
             ],
-        external: this._extModules.map((item) => item.name),
+        external: this.#extModules.map((item) => item.name),
         watchScopePathSet: this._watchScopePathSet,
       });
 
     this._debug(`BUILD...`);
-    const bundleResult = await this._serverBundler.bundleAsync(modifiedFileSet);
+    const bundleResult = await this.#serverBundler.bundleAsync(modifiedFileSet);
 
     //-- filePaths
     const watchFileSet = new Set(
@@ -64,7 +64,7 @@ export class SdServerBuildRunner extends BuildRunnerBase<"server"> {
     };
   }
 
-  private async _generateProductionFilesAsync() {
+  async #generateProductionFilesAsync() {
     const npmConf = FsUtils.readJson(path.resolve(this._pkgPath, "package.json")) as INpmConfig;
 
     this._debug("GEN package.json...");
@@ -72,7 +72,7 @@ export class SdServerBuildRunner extends BuildRunnerBase<"server"> {
       const projNpmConf = FsUtils.readJson(
         path.resolve(process.cwd(), "package.json"),
       ) as INpmConfig;
-      const extModules = await this._getExternalModulesAsync();
+      const extModules = await this.#getExternalModulesAsync();
 
       const deps = extModules.filter((item) => item.exists).map((item) => item.name);
 
@@ -220,7 +220,7 @@ Options = UnsafeLegacyRenegotiation`.trim(),
     }
   }
 
-  private async _getExternalModulesAsync(): Promise<
+  async #getExternalModulesAsync(): Promise<
     {
       name: string;
       exists: boolean;

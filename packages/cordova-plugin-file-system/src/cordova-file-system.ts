@@ -52,19 +52,19 @@ export abstract class CordovaFileSystem {
   // 파일 쓰기
   static async writeFileAsync(filePath: string, data: string | Buffer): Promise<void> {
     if (Buffer.isBuffer(data)) {
-      await this._writeFileBufferAsync(filePath, data);
+      await this.#writeFileBufferAsync(filePath, data);
     } else {
-      await this._writeFileStringAsync(filePath, data);
+      await this.#writeFileStringAsync(filePath, data);
     }
   }
 
-  private static async _writeFileStringAsync(filePath: string, data: string): Promise<void> {
+  static async #writeFileStringAsync(filePath: string, data: string): Promise<void> {
     await new Promise<string>((resolve, reject) => {
       cordova.exec(resolve, reject, "CordovaFileSystem", "writeFileString", [filePath, data]);
     });
   }
 
-  private static async _writeFileBufferAsync(filePath: string, data: Buffer): Promise<void> {
+  static async #writeFileBufferAsync(filePath: string, data: Buffer): Promise<void> {
     await new Promise<string>((resolve, reject) => {
       cordova.exec(resolve, reject, "CordovaFileSystem", "writeFileBase64", [
         filePath,

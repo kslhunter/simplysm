@@ -81,7 +81,7 @@ export class SdPop3Client {
     });
   }
 
-  constructor(private _fns: {
+  constructor(private readonly _fns: {
     sendAsync: (cmd: string) => Promise<string>
   }) {
   }

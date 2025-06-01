@@ -78,19 +78,23 @@ import { SdSharedDataProvider } from "../shared-data/sd-shared-data.provider";
             <ng-template [ngTemplateOutlet]="contentTemplateRef()" />
           </sd-form>
         </div>
-      </ng-template>
-
-      <ng-template #modalBottom>
         @if (_dataInfo.lastModifiedAt || _dataInfo.lastModifiedBy) {
-          <div class="bg-theme-grey-lightest tx-right p-sm-default">
+          <div class="bg-theme-grey-lightest p-sm-default">
             최종수정:
             {{ _dataInfo.lastModifiedAt! | format: "yyyy-MM-dd HH:mm" }}
             ({{ _dataInfo.lastModifiedBy }})
           </div>
         }
+        @if (additionalTemplateRef() != null) {
+          <div class="p-lg">
+            <ng-template [ngTemplateOutlet]="additionalTemplateRef() ?? null" />
+          </div>
+        }
+      </ng-template>
 
-        @if (hasPerm("edit")) {
-          <div class="p-sm-default flex-row">
+      @if (hasPerm("edit")) {
+        <ng-template #modalBottom>
+          <div class="p-sm-default flex-row bdt bdt-theme-grey-lightest">
             @if (!_dataInfo.isNew && viewModel().toggleDelete) {
               <div>
                 @if (!_dataInfo.isDeleted) {
@@ -109,22 +113,23 @@ import { SdSharedDataProvider } from "../shared-data/sd-shared-data.provider";
               <sd-button theme="primary" inline (click)="onSubmitButtonClick()">확인</sd-button>
             </div>
           </div>
-        }
-      </ng-template>
+        </ng-template>
+      }
     </sd-base-container>
   `,
 })
 export class SdDataDetailControl<T extends object> {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
-  private _sdToast = inject(SdToastProvider);
-  private _sdSharedData = inject(SdSharedDataProvider);
+
+  #sdToast = inject(SdToastProvider);
+  #sdSharedData = inject(SdSharedDataProvider);
 
   //- base
-  readonly viewModel = input.required<ISdDataDetailViewModel<T>>();
+  viewModel = input.required<ISdDataDetailViewModel<T>>();
 
-  private _viewType = useViewTypeSignal();
+  #viewType = useViewTypeSignal();
   viewType = input<TSdViewType>();
-  currViewType = $computed(() => this.viewType() ?? this._viewType());
+  currViewType = $computed(() => this.viewType() ?? this.#viewType());
 
   close = output<boolean>();
 
@@ -134,11 +139,13 @@ export class SdDataDetailControl<T extends object> {
 
   //-- view
 
-  readonly initialized = model(false);
-  readonly busyCount = model(0);
+  initialized = model(false);
+  busyCount = model(0);
 
-  readonly formCtrl = viewChild<SdFormControl>("formCtrl");
-  readonly contentTemplateRef = contentChild.required(TemplateRef);
+  formCtrl = viewChild<SdFormControl>("formCtrl");
+
+  contentTemplateRef = contentChild.required(TemplateRef);
+  additionalTemplateRef = contentChild("additional", { read: TemplateRef });
 
   constructor() {
     $effect(
@@ -156,9 +163,9 @@ export class SdDataDetailControl<T extends object> {
         }
 
         this.busyCount.update((v) => v + 1);
-        await this._sdToast.try(async () => {
-          await this._sdSharedData.wait();
-          await this._refresh();
+        await this.#sdToast.try(async () => {
+          await this.#sdSharedData.wait();
+          await this.#refreshAsync();
         });
         this.busyCount.update((v) => v - 1);
         this.initialized.set(true);
@@ -178,13 +185,13 @@ export class SdDataDetailControl<T extends object> {
     if (!this.checkIgnoreChanges()) return;
 
     this.busyCount.update((v) => v + 1);
-    await this._sdToast.try(async () => {
-      await this._refresh();
+    await this.#sdToast.try(async () => {
+      await this.#refreshAsync();
     });
     this.busyCount.update((v) => v - 1);
   }
 
-  private async _refresh() {
+  async #refreshAsync() {
     this.viewModel().data.set(await this.viewModel().loadData());
     $obj(this.viewModel().data).snapshot();
   }
@@ -194,11 +201,11 @@ export class SdDataDetailControl<T extends object> {
     if (!this.hasPerm("edit")) return;
 
     this.busyCount.update((v) => v + 1);
-    await this._sdToast.try(async () => {
+    await this.#sdToast.try(async () => {
       const result = await this.viewModel().toggleDelete?.(del);
       if (!result) return;
 
-      this._sdToast.success(`${del ? "삭제" : "복구"}되었습니다.`);
+      this.#sdToast.success(`${del ? "삭제" : "복구"}되었습니다.`);
 
       this.close.emit(true);
     });
@@ -217,18 +224,20 @@ export class SdDataDetailControl<T extends object> {
     if (!this.hasPerm("edit")) return;
 
     if (!$obj(this.viewModel().data).changed()) {
-      this._sdToast.info("변경사항이 없습니다.");
+      this.#sdToast.info("변경사항이 없습니다.");
       return;
     }
 
     this.busyCount.update((v) => v + 1);
-    await this._sdToast.try(async () => {
+    await this.#sdToast.try(async () => {
       const result = await this.viewModel().submit();
       if (!result) return;
 
-      this._sdToast.success("저장되었습니다.");
+      this.#sdToast.success("저장되었습니다.");
 
       this.close.emit(true);
+
+      await this.#refreshAsync();
     });
     this.busyCount.update((v) => v - 1);
   }

@@ -130,7 +130,7 @@ import { setupModelHook } from "../../utils/setups/setup-model-hook";
 export class SdSharedDataSelectViewControl<T extends ISharedDataBase<string | number>> {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
 
-  private _sdModal = inject(SdModalProvider);
+  #sdModal = inject(SdModalProvider);
 
   selectedItem = model<T>();
   canChangeFn = input<(item: T | undefined) => boolean | Promise<boolean>>(() => true);
@@ -210,7 +210,7 @@ export class SdSharedDataSelectViewControl<T extends ISharedDataBase<string | nu
     const modal = this.modal();
     if (!modal) return;
 
-    const result = await this._sdModal.showAsync({
+    const result = await this.#sdModal.showAsync({
       ...modal,
       inputs: {
         selectMode: "single",

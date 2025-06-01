@@ -22,16 +22,16 @@ import { $computed } from "../utils/bindings/$computed";
   `,
 })
 export class SdCheckboxGroupItemControl<T> {
-  private _parentControl = inject<SdCheckboxGroupControl<T>>(forwardRef(() => SdCheckboxGroupControl));
+  #parentControl = inject<SdCheckboxGroupControl<T>>(forwardRef(() => SdCheckboxGroupControl));
 
   value = input.required<T>();
   inline = input(false, { transform: transformBoolean });
 
-  isSelected = $computed(() => this._parentControl.value().includes(this.value()));
-  disabled = $computed(() => this._parentControl.disabled());
+  isSelected = $computed(() => this.#parentControl.value().includes(this.value()));
+  disabled = $computed(() => this.#parentControl.disabled());
 
   onSelectedChange(selected: boolean) {
-    this._parentControl.value.update((v) => {
+    this.#parentControl.value.update((v) => {
       if (selected) {
         return [...v, this.value()];
       }

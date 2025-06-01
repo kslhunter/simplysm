@@ -3,7 +3,7 @@ import { $computed } from "../bindings/$computed";
 
 export class SdSelectionManager<T> {
   constructor(
-    private _options: {
+    private readonly _options: {
       displayItems: Signal<T[]>;
       selectedItems: WritableSignal<T[]>;
       selectMode: Signal<"single" | "multi" | undefined>;
@@ -11,16 +11,16 @@ export class SdSelectionManager<T> {
     },
   ) {}
 
-  private _selectableItems = $computed(() =>
+  #selectableItems = $computed(() =>
     this._options.displayItems().filter((item) => this.getSelectable(item) === true),
   );
 
-  hasSelectable = $computed(() => this._selectableItems().length > 0);
+  hasSelectable = $computed(() => this.#selectableItems().length > 0);
 
   isAllSelected = $computed(
     () =>
       this.hasSelectable() &&
-      this._selectableItems().every((item) => this._options.selectedItems().includes(item)),
+      this.#selectableItems().every((item) => this._options.selectedItems().includes(item)),
   );
 
   getCanChangeFn(item: T) {
@@ -38,10 +38,10 @@ export class SdSelectionManager<T> {
   toggleAll() {
     if (this.isAllSelected()) {
       this._options.selectedItems.update((v) =>
-        v.filter((item) => !this._selectableItems().includes(item)),
+        v.filter((item) => !this.#selectableItems().includes(item)),
       );
     } else {
-      this._options.selectedItems.update((v) => [...v, ...this._selectableItems()].distinct());
+      this._options.selectedItems.update((v) => [...v, ...this.#selectableItems()].distinct());
     }
   }
 

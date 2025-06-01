@@ -83,7 +83,7 @@ import { $effect } from "../utils/bindings/$effect";
   },
 })
 export class SdSelectItemControl {
-  private _selectControl: SdSelectControl<any, any> = inject(forwardRef(() => SdSelectControl));
+  #selectControl: SdSelectControl<any, any> = inject(forwardRef(() => SdSelectControl));
 
   elRef = injectElementRef<HTMLElement>();
 
@@ -91,8 +91,8 @@ export class SdSelectItemControl {
   disabled = input(false, { transform: transformBoolean });
   hidden = input(false, { transform: transformBoolean });
 
-  selectMode = $computed(() => this._selectControl.selectMode());
-  isSelected = $computed(() => this._selectControl.getIsSelectedItemControl(this));
+  selectMode = $computed(() => this.#selectControl.selectMode());
+  isSelected = $computed(() => this.#selectControl.getIsSelectedItemControl(this));
 
   contentHTML = $signal<string>("");
 
@@ -100,10 +100,10 @@ export class SdSelectItemControl {
     setupRipple(() => !this.disabled());
 
     $effect((onCleanup) => {
-      this._selectControl.itemControls.update((v) => [...v, this]);
+      this.#selectControl.itemControls.update((v) => [...v, this]);
 
       onCleanup(() => {
-        this._selectControl.itemControls.update((v) => v.filter((item) => item !== this));
+        this.#selectControl.itemControls.update((v) => v.filter((item) => item !== this));
       });
     });
 
@@ -121,7 +121,7 @@ export class SdSelectItemControl {
     event.stopPropagation();
     if (this.disabled()) return;
 
-    this._selectControl.onItemControlClick(this, this.selectMode() === "single");
+    this.#selectControl.onItemControlClick(this, this.selectMode() === "single");
   }
 
   @HostListener("keydown", ["$event"])
@@ -132,13 +132,13 @@ export class SdSelectItemControl {
       event.preventDefault();
       event.stopPropagation();
 
-      this._selectControl.onItemControlClick(this, false);
+      this.#selectControl.onItemControlClick(this, false);
     }
     if (!event.ctrlKey && !event.altKey && event.key === "Enter") {
       event.preventDefault();
       event.stopPropagation();
 
-      this._selectControl.onItemControlClick(this, this.selectMode() === "single");
+      this.#selectControl.onItemControlClick(this, this.selectMode() === "single");
     }
   }
 }

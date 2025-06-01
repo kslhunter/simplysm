@@ -26,10 +26,10 @@ export class SdServiceServer extends EventEmitter {
    */
   pathProxy: Record</* from */ string, /* to */ string | number> = {};
 
-  private readonly _logger = SdLogger.get(["simplysm", "sd-service-server", this.constructor.name]);
-  private _httpServer?: http.Server | https.Server;
+  readonly #logger = SdLogger.get(["simplysm", "sd-service-server", this.constructor.name]);
+  #httpServer?: http.Server | https.Server;
 
-  private _ws?: SdWebsocketController;
+  #ws?: SdWebsocketController;
 
   constructor(readonly options: ISdServiceServerOptions) {
     super();
@@ -61,51 +61,51 @@ export class SdServiceServer extends EventEmitter {
 
   async listenAsync(): Promise<void> {
     await new Promise<void>(async (resolve) => {
-      this._logger.debug("서버 시작..." + process.env["SD_VERSION"]);
+      this.#logger.debug("서버 시작..." + process.env["SD_VERSION"]);
 
       if (this.options.ssl) {
         const pfx =
           typeof this.options.ssl.pfxBuffer === "function"
             ? await this.options.ssl.pfxBuffer()
             : this.options.ssl.pfxBuffer;
-        this._httpServer = https.createServer({
+        this.#httpServer = https.createServer({
           pfx,
           passphrase: this.options.ssl.passphrase,
         });
       }
       else {
-        this._httpServer = http.createServer();
+        this.#httpServer = http.createServer();
       }
 
-      this._httpServer.on("request", async (req, res) => {
-        await this._onWebRequestAsync(req, res);
+      this.#httpServer.on("request", async (req, res) => {
+        await this.#onWebRequestAsync(req, res);
       });
 
-      this._ws = new SdWebsocketController(
-        this._httpServer,
-        async (def) => await this._runServiceMethodAsync(def),
+      this.#ws = new SdWebsocketController(
+        this.#httpServer,
+        async (def) => await this.#runServiceMethodAsync(def),
       );
 
-      this._httpServer.listen(this.options.port, () => {
+      this.#httpServer.listen(this.options.port, () => {
         resolve();
       });
     });
 
     this.isOpen = true;
-    this._logger.debug("서버 시작됨");
+    this.#logger.debug("서버 시작됨");
     this.emit("ready");
   }
 
   async closeAsync(): Promise<void> {
-    await this._ws?.closeAsync();
+    await this.#ws?.closeAsync();
 
     await new Promise<void>((resolve, reject) => {
-      if (!this._httpServer || !this._httpServer.listening) {
+      if (!this.#httpServer || !this.#httpServer.listening) {
         resolve();
         return;
       }
 
-      this._httpServer.close((err) => {
+      this.#httpServer.close((err) => {
         if (err) {
           reject(err);
           return;
@@ -116,13 +116,13 @@ export class SdServiceServer extends EventEmitter {
     });
 
     this.isOpen = false;
-    this._logger.debug("서버 종료됨");
+    this.#logger.debug("서버 종료됨");
     this.emit("close");
   }
 
   broadcastReload(changedFileSet: Set<string>): void {
-    this._logger.debug("서버내 모든 클라이언트 RELOAD 명령 전송");
-    this._ws?.broadcastReload(changedFileSet);
+    this.#logger.debug("서버내 모든 클라이언트 RELOAD 명령 전송");
+    this.#ws?.broadcastReload(changedFileSet);
   }
 
   emitEvent<T extends SdServiceEventListenerBase<any, any>>(
@@ -130,10 +130,10 @@ export class SdServiceServer extends EventEmitter {
     infoSelector: (item: T["info"]) => boolean,
     data: T["data"],
   ) {
-    this._ws?.emit(eventType, infoSelector, data);
+    this.#ws?.emit(eventType, infoSelector, data);
   }
 
-  private async _runServiceMethodAsync(def: {
+  async #runServiceMethodAsync(def: {
     client?: ws.WebSocket;
     request?: ISdServiceRequest;
     serviceName: string;
@@ -162,7 +162,7 @@ export class SdServiceServer extends EventEmitter {
     return await method.apply(service, def.params);
   }
 
-  private async _onWebRequestAsync(
+  async #onWebRequestAsync(
     req: http.IncomingMessage,
     res: http.ServerResponse,
   ): Promise<void> {
@@ -229,7 +229,7 @@ export class SdServiceServer extends EventEmitter {
         }
 
         if (params) {
-          const serviceResult = await this._runServiceMethodAsync({
+          const serviceResult = await this.#runServiceMethodAsync({
             serviceName: serviceName,
             methodName,
             params,
@@ -300,15 +300,15 @@ export class SdServiceServer extends EventEmitter {
 
         if (!FsUtils.exists(targetFilePath)) {
           const errorMessage = "파일을 찾을 수 없습니다.";
-          this._responseErrorHtml(res, 404, errorMessage);
-          this._logger.warn(`[404] ${errorMessage} (${targetFilePath})`);
+          this.#responseErrorHtml(res, 404, errorMessage);
+          this.#logger.warn(`[404] ${errorMessage} (${targetFilePath})`);
           return;
         }
 
         if (path.basename(targetFilePath).startsWith(".")) {
           const errorMessage = "파일을 사용할 권한이 없습니다.";
-          this._responseErrorHtml(res, 403, errorMessage);
-          this._logger.warn(`[403] ${errorMessage} (${targetFilePath})`);
+          this.#responseErrorHtml(res, 403, errorMessage);
+          this.#logger.warn(`[403] ${errorMessage} (${targetFilePath})`);
           return;
         }
 
@@ -323,8 +323,8 @@ export class SdServiceServer extends EventEmitter {
       }
       else {
         const errorMessage = "요청이 잘못되었습니다.";
-        this._responseErrorHtml(res, 405, errorMessage);
-        this._logger.warn(`[405] ${errorMessage} (${req.method!.toUpperCase()})`);
+        this.#responseErrorHtml(res, 405, errorMessage);
+        this.#logger.warn(`[405] ${errorMessage} (${req.method!.toUpperCase()})`);
         return;
       }
     }
@@ -332,17 +332,17 @@ export class SdServiceServer extends EventEmitter {
       if (err instanceof SdWebRequestError) {
         res.writeHead(err.statusCode);
         res.end(err.message);
-        this._logger.error(`[${err.statusCode}]\n${err.message}`, err);
+        this.#logger.error(`[${err.statusCode}]\n${err.message}`, err);
       }
       else {
         const errorMessage = "요청 처리중 오류가 발생하였습니다.";
-        this._responseErrorHtml(res, 405, errorMessage);
-        this._logger.error(`[405] ${errorMessage}`, err);
+        this.#responseErrorHtml(res, 405, errorMessage);
+        this.#logger.error(`[405] ${errorMessage}`, err);
       }
     }
   }
 
-  private _responseErrorHtml(res: http.ServerResponse, code: number, message: string): void {
+  #responseErrorHtml(res: http.ServerResponse, code: number, message: string): void {
     res.writeHead(code);
     res.end(`
 <!DOCTYPE html>
