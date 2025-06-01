@@ -60,9 +60,17 @@ import { transformBoolean } from "../utils/type-tramsforms";
               <ng-template [ngTemplateOutlet]="pageTopbarTemplateRef() ?? null" />
             </sd-topbar>
 
-            <sd-pane sd-show-effect>
-              <ng-template [ngTemplateOutlet]="contentTemplateRef() ?? null" />
-            </sd-pane>
+            <sd-dock-container>
+              @if (toolTemplateRef()) {
+                <sd-dock>
+                  <ng-template [ngTemplateOutlet]="toolTemplateRef() ?? null" />
+                </sd-dock>
+              }
+
+              <sd-pane sd-show-effect>
+                <ng-template [ngTemplateOutlet]="contentTemplateRef() ?? null" />
+              </sd-pane>
+            </sd-dock-container>
           </sd-topbar-container>
         } @else if (currViewType() === "modal" && modalBottomTemplateRef()) {
           <sd-dock-container>
@@ -75,9 +83,17 @@ import { transformBoolean } from "../utils/type-tramsforms";
             </sd-dock>
           </sd-dock-container>
         } @else {
-          <sd-pane sd-show-effect>
-            <ng-template [ngTemplateOutlet]="contentTemplateRef() ?? null" />
-          </sd-pane>
+          <sd-dock-container>
+            @if (toolTemplateRef()) {
+              <sd-dock>
+                <ng-template [ngTemplateOutlet]="toolTemplateRef() ?? null" />
+              </sd-dock>
+            }
+
+            <sd-pane sd-show-effect>
+              <ng-template [ngTemplateOutlet]="contentTemplateRef() ?? null" />
+            </sd-pane>
+          </sd-dock-container>
         }
       }
     </sd-busy-container>
@@ -93,6 +109,7 @@ export class SdBaseContainerControl {
   private _currPageCode = useCurrentPageCodeSignal();
 
   pageTopbarTemplateRef = contentChild("pageTopbar", { read: TemplateRef });
+  toolTemplateRef = contentChild("tool", { read: TemplateRef });
   contentTemplateRef = contentChild("content", { read: TemplateRef });
   modalBottomTemplateRef = contentChild("modalBottom", { read: TemplateRef });
 

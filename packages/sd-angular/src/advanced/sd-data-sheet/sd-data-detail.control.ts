@@ -18,8 +18,6 @@ import { TXT_CHANGE_IGNORE_CONFIRM } from "../../commons";
 import { SdButtonControl } from "../../controls/sd-button.control";
 import { SdFormControl } from "../../controls/sd-form.control";
 import { SdIconControl } from "../../controls/sd-icon.control";
-import { SdTopbarMenuItemControl } from "../../controls/sd-topbar-menu-item.control";
-import { SdTopbarMenuControl } from "../../controls/sd-topbar-menu.control";
 import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
 import { SdToastProvider } from "../../providers/sd-toast.provider";
 import { $computed } from "../../utils/bindings/$computed";
@@ -28,9 +26,9 @@ import { $obj } from "../../utils/bindings/wrappers/$obj";
 import { setupCanDeactivate } from "../../utils/setups/setup-can-deactivate";
 import { TSdViewType, useViewTypeSignal } from "../../utils/signals/use-view-type.signal";
 import { SdBaseContainerControl } from "../sd-base-container.control";
-import { SdSharedDataProvider } from "../shared-data/sd-shared-data.provider";
 import { DateTime } from "@simplysm/sd-core-common";
 import { FormatPipe } from "../../pipes/format.pipe";
+import { SdSharedDataProvider } from "../shared-data/sd-shared-data.provider";
 
 @Component({
   selector: "sd-data-detail",
@@ -41,8 +39,6 @@ import { FormatPipe } from "../../pipes/format.pipe";
     SdBaseContainerControl,
     SdFormControl,
     SdButtonControl,
-    SdTopbarMenuControl,
-    SdTopbarMenuItemControl,
     SdIconControl,
     NgTemplateOutlet,
     FormatPipe,
@@ -53,29 +49,38 @@ import { FormatPipe } from "../../pipes/format.pipe";
       [viewType]="currViewType()"
       [initialized]="initialized()"
     >
-      <ng-template #pageTopbar>
-        <sd-topbar-menu>
-          <sd-topbar-menu-item (click)="onSubmitButtonClick()">
-            <sd-icon [icon]="icons.save" fixedWidth />
-            저장
-            <small>(CTRL+S)</small>
-          </sd-topbar-menu-item>
-          <sd-topbar-menu-item theme="info" (click)="onRefreshButtonClick()">
-            <sd-icon [icon]="icons.refresh" fixedWidth />
-            새로고침
-            <small>(CTRL+ALT+L)</small>
-          </sd-topbar-menu-item>
-        </sd-topbar-menu>
-      </ng-template>
+      @let _dataInfo = viewModel().dataInfo();
+
+      @if (hasPerm("edit")) {
+        <ng-template #tool>
+          <div class="p-sm-lg flex-row flex-gap-sm">
+            <sd-button theme="primary" (click)="onSubmitButtonClick()">
+              <sd-icon [icon]="icons.save" fixedWidth />
+              저장
+              <small>(CTRL+S)</small>
+            </sd-button>
+            @if (!_dataInfo.isNew && viewModel().toggleDelete) {
+              @if (!_dataInfo.isDeleted) {
+                <sd-button theme="danger" (click)="onToggleDeleteButtonClick(true)">삭제</sd-button>
+              } @else {
+                <sd-button theme="warning" (click)="onToggleDeleteButtonClick(false)">
+                  복구
+                </sd-button>
+              }
+            }
+          </div>
+        </ng-template>
+      }
 
       <ng-template #content>
-        <sd-form #formCtrl (submit)="onSubmit()">
-          <ng-template [ngTemplateOutlet]="contentTemplateRef()" />
-        </sd-form>
+        <div class="p-lg">
+          <sd-form #formCtrl (submit)="_onSubmit()">
+            <ng-template [ngTemplateOutlet]="contentTemplateRef()" />
+          </sd-form>
+        </div>
       </ng-template>
 
       <ng-template #modalBottom>
-        @let _dataInfo = viewModel().dataInfo();
         @if (_dataInfo.lastModifiedAt || _dataInfo.lastModifiedBy) {
           <div class="bg-theme-grey-lightest tx-right p-sm-default">
             최종수정:
@@ -111,12 +116,11 @@ import { FormatPipe } from "../../pipes/format.pipe";
 })
 export class SdDataDetailControl<T extends object> {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
-
   private _sdToast = inject(SdToastProvider);
   private _sdSharedData = inject(SdSharedDataProvider);
 
-  //-- base
-  viewModel = input.required<ISdDataDetailViewModel<T>>();
+  //- base
+  readonly viewModel = input.required<ISdDataDetailViewModel<T>>();
 
   private _viewType = useViewTypeSignal();
   viewType = input<TSdViewType>();
@@ -130,28 +134,36 @@ export class SdDataDetailControl<T extends object> {
 
   //-- view
 
-  initialized = model(false);
-  busyCount = model(0);
+  readonly initialized = model(false);
+  readonly busyCount = model(0);
 
-  formCtrl = viewChild<SdFormControl>("formCtrl");
-
-  contentTemplateRef = contentChild.required(TemplateRef);
+  readonly formCtrl = viewChild<SdFormControl>("formCtrl");
+  readonly contentTemplateRef = contentChild.required(TemplateRef);
 
   constructor() {
-    $effect([], async () => {
-      if (!this.hasPerm("use")) {
-        this.initialized.set(true);
-        return;
-      }
+    $effect(
+      [
+        () => {
+          for (const loadCondition of this.viewModel().loadConditions ?? []) {
+            loadCondition();
+          }
+        },
+      ],
+      async () => {
+        if (!this.hasPerm("use")) {
+          this.initialized.set(true);
+          return;
+        }
 
-      this.busyCount.update((v) => v + 1);
-      await this._sdToast.try(async () => {
-        await this._sdSharedData.wait();
-        await this._refresh();
-      });
-      this.busyCount.update((v) => v - 1);
-      this.initialized.set(true);
-    });
+        this.busyCount.update((v) => v + 1);
+        await this._sdToast.try(async () => {
+          await this._sdSharedData.wait();
+          await this._refresh();
+        });
+        this.busyCount.update((v) => v - 1);
+        this.initialized.set(true);
+      },
+    );
 
     setupCanDeactivate(() => this.currViewType() === "modal" || this.checkIgnoreChanges());
   }
@@ -200,7 +212,7 @@ export class SdDataDetailControl<T extends object> {
     this.formCtrl()?.requestSubmit();
   }
 
-  async onSubmit() {
+  protected async _onSubmit() {
     if (this.busyCount() > 0) return;
     if (!this.hasPerm("edit")) return;
 
@@ -228,6 +240,8 @@ export interface ISdDataDetailViewModel<T extends object> {
   data: WritableSignal<T>;
 
   dataInfo: Signal<ISdDetailDataInfo>;
+
+  loadConditions?: Signal<any>[];
 
   loadData(): Promise<T> | T;
 

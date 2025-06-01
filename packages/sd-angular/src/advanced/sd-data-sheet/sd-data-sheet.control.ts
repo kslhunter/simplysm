@@ -24,8 +24,6 @@ import { SdPaneControl } from "../../controls/sd-pane.control";
 import { SdSheetColumnCellTemplateDirective } from "../../controls/sd-sheet/directives/sd-sheet-column-cell.template-directive";
 import { SdSheetColumnDirective } from "../../controls/sd-sheet/directives/sd-sheet-column.directive";
 import { SdSheetControl } from "../../controls/sd-sheet/sd-sheet.control";
-import { SdTopbarMenuItemControl } from "../../controls/sd-topbar-menu-item.control";
-import { SdTopbarMenuControl } from "../../controls/sd-topbar-menu.control";
 import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
 import { SdFileDialogProvider } from "../../providers/sd-file-dialog.provider";
 import { SdToastProvider } from "../../providers/sd-toast.provider";
@@ -49,8 +47,6 @@ import { $effect } from "../../utils/bindings/$effect";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
-    SdTopbarMenuControl,
-    SdTopbarMenuItemControl,
     SdIconControl,
     SdDockContainerControl,
     SdDockControl,
@@ -72,7 +68,7 @@ import { $effect } from "../../utils/bindings/$effect";
       [viewType]="currViewType()"
       [initialized]="initialized()"
     >
-      <ng-template #pageTopbar>
+      <!--<ng-template #pageTopbar>
         <sd-topbar-menu>
           <sd-topbar-menu-item theme="info" (click)="onRefreshCommand()">
             <sd-icon [icon]="icons.refresh" fixedWidth />
@@ -80,7 +76,7 @@ import { $effect } from "../../utils/bindings/$effect";
             <small>(CTRL+ALT+L)</small>
           </sd-topbar-menu-item>
         </sd-topbar-menu>
-      </ng-template>
+      </ng-template>-->
 
       <ng-template #content>
         <sd-dock-container class="p-lg">
@@ -177,7 +173,7 @@ import { $effect } from "../../utils/bindings/$effect";
               [(currentPage)]="page"
               [totalPageCount]="pageLength()"
               [(sorts)]="ordering"
-              [selectMode]="selectMode() ?? viewModel().toggleDeletes ? 'multi' : undefined"
+              [selectMode]="(selectMode() ?? viewModel().toggleDeletes) ? 'multi' : undefined"
               [autoSelect]="selectMode() === 'single' ? 'click' : undefined"
               [(selectedItems)]="selectedItems"
               [trackByFn]="trackByFn"
@@ -393,12 +389,7 @@ export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>>
   async refreshAsync() {
     if (this.lastFilter() == null) return;
 
-    const result = await this.viewModel().search(
-      "sheet",
-      this.lastFilter(),
-      this.ordering(),
-      this.page(),
-    );
+    const result = await this.searchAsync("sheet");
     this.items.set(result.items);
     this.pageLength.set(result.pageLength ?? 0);
     this.summary.set(result.summary ?? {});
@@ -412,8 +403,8 @@ export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>>
     );
   }
 
-  async searchAllAsync() {
-    return (await this.viewModel().search("excel", this.lastFilter(), this.ordering())).items;
+  async searchAsync<T extends "sheet" | "excel">(type: T) {
+    return await this.viewModel().search(type, this.lastFilter(), this.ordering(), this.page());
   }
 
   //-- edit
@@ -484,7 +475,7 @@ export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>>
     await this._sdToast.try(async () => {
       if (this.lastFilter() == null) return;
 
-      const items = await this.searchAllAsync();
+      const items = (await this.searchAsync("excel")).items;
       await this.viewModel().downloadExcel!(items);
     });
     this.busyCount.update((v) => v - 1);
@@ -538,11 +529,11 @@ export interface ISdDataSheetViewModel<F extends Record<string, any>, I, K> {
 
   searchConditions?: Signal<any>[];
 
-  search(
-    type: "excel" | "sheet",
+  search<T extends "excel" | "sheet">(
+    type: T,
     lastFilter: F,
     sortingDefs: ISdSortingDef[],
-    page?: number,
+    page: number,
   ): Promise<{ items: I[]; pageLength?: number; summary?: Partial<I> }>;
 
   editItem?(item?: I): Promise<boolean | undefined>;
@@ -553,8 +544,6 @@ export interface ISdDataSheetViewModel<F extends Record<string, any>, I, K> {
 
   uploadExcel?(file: File): Promise<void>;
 }
-
-// export type TFilterSignals<F> = { [P in keyof F]: WritableSignal<F[P]> };
 
 type TVMFilter<T extends ISdDataSheetViewModel<any, any, any>> = ReturnType<T["filter"]>;
 type TVMItem<T extends ISdDataSheetViewModel<any, any, any>> = Parameters<T["getKey"]>[0];

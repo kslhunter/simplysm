@@ -15,9 +15,7 @@ import { SdDockContainerControl } from "../controls/sd-dock-container.control";
 import { SdDockControl } from "../controls/sd-dock.control";
 import { SdIconControl } from "../controls/sd-icon.control";
 import { SdPaneControl } from "../controls/sd-pane.control";
-import {
-  SdSheetColumnCellTemplateDirective,
-} from "../controls/sd-sheet/directives/sd-sheet-column-cell.template-directive";
+import { SdSheetColumnCellTemplateDirective } from "../controls/sd-sheet/directives/sd-sheet-column-cell.template-directive";
 import { SdSheetColumnDirective } from "../controls/sd-sheet/directives/sd-sheet-column.directive";
 import { SdSheetControl } from "../controls/sd-sheet/sd-sheet.control";
 import { ISdSheetConfig } from "../controls/sd-sheet/sd-sheet.types";

@@ -213,7 +213,7 @@ import {
                 </tr>
               }
 
-            <!-- 합계 행 -->
+              <!-- 합계 행 -->
               @if (layoutEngine.hasSummary()) {
                 <tr class="_summary-row">
                   @for (colDef of layoutEngine.columnDefs(); let c = $index; track c) {
@@ -293,9 +293,11 @@ import {
                       }
                     </td>
                   }
-                  @for (columnDef of layoutEngine.columnDefs();
+                  @for (
+                    columnDef of layoutEngine.columnDefs();
                     let c = $index;
-                    track columnDef.control.key()) {
+                    track columnDef.control.key()
+                  ) {
                     <td
                       tabindex="0"
                       [class._fixed]="columnDef.fixed"
@@ -941,7 +943,7 @@ export class SdSheetControl<T> {
   //endregion
 
   @HostListener("keydown.capture", ["$event"])
-  async onKeydownCapture(event: KeyboardEvent){
+  async onKeydownCapture(event: KeyboardEvent) {
     await this.onKeydownCaptureForCellAgent(event);
   }
 
