@@ -67,6 +67,7 @@ import { $effect } from "../../utils/bindings/$effect";
       [busy]="busyCount() > 0"
       [viewType]="currViewType()"
       [initialized]="initialized()"
+      [visible]="hasPerm('use')"
     >
       <!--<ng-template #pageTopbar>
         <sd-topbar-menu>
@@ -113,7 +114,7 @@ import { $effect } from "../../utils/bindings/$effect";
               }
 
               @if (viewModel().editItem) {
-                @if (viewModel().perms().includes("edit")) {
+                @if (hasPerm("edit")) {
                   <sd-button size="sm" theme="primary" (click)="onCreateItemButtonClick()">
                     <sd-icon [icon]="icons.add" fixedWidth />
                     등록
@@ -210,11 +211,9 @@ import { $effect } from "../../utils/bindings/$effect";
                     let-depth="depth"
                     let-edit="edit"
                   >
-                    @if (
-                      viewModel().editItem &&
-                      columnControl.edit() &&
-                      viewModel().perms().includes("edit")
-                    ) {
+                    @if (viewModel().editItem &&
+                    columnControl.edit() &&
+                    hasPerm("edit")) {
                       <sd-anchor class="flex-row" (click)="onItemClick(item, index, $event)">
                         <div class="p-xs-sm pr-0">
                           <sd-icon [icon]="icons.edit" />
@@ -289,6 +288,10 @@ export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>>
   viewType = input<TSdViewType>();
   currViewType = $computed(() => this.viewType() ?? this.#viewType());
 
+  hasPerm(code: string) {
+    return !this.viewModel().perms || this.viewModel().perms!().includes(code);
+  }
+
   //-- view
 
   initialized = model(false);
@@ -349,7 +352,7 @@ export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>>
         },
       ],
       async () => {
-        if (!this.viewModel().perms().includes("use")) {
+        if (!this.hasPerm("use")) {
           this.initialized.set(true);
           return;
         }
@@ -410,13 +413,13 @@ export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>>
   //-- edit
 
   async onCreateItemButtonClick() {
-    if (!this.viewModel().perms().includes("edit")) return;
+    if (!this.hasPerm("edit")) return;
 
     await this.#editItemAsync();
   }
 
   async onItemClick(item: TVMItem<VM>, index: number, event: MouseEvent) {
-    if (!this.viewModel().perms().includes("edit")) return;
+    if (!this.hasPerm("edit")) return;
 
     event.preventDefault();
     event.stopPropagation();
@@ -451,7 +454,7 @@ export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>>
 
   async onToggleDeletesButtonClick(del: boolean) {
     if (!this.viewModel().toggleDeletes) return;
-    if (!this.viewModel().perms().includes("edit")) return;
+    if (!this.hasPerm("edit")) return;
 
     this.busyCount.update((v) => v + 1);
 
@@ -483,7 +486,7 @@ export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>>
 
   async onUploadExcelButtonClick() {
     if (!this.viewModel().uploadExcel) return;
-    if (!this.viewModel().perms().includes("edit")) return;
+    if (!this.hasPerm("edit")) return;
 
     const file = await this.#sdFileDialog.showAsync(
       false,
@@ -519,7 +522,7 @@ export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>>
 export interface ISdDataSheetViewModel<F extends Record<string, any>, I, K> {
   key: string;
   name: string;
-  perms: Signal<string[]>;
+  perms?: Signal<string[]>;
 
   filter: Signal<F>;
 

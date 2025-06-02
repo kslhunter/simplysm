@@ -105,6 +105,8 @@ export class SdModalInstance<T extends ISdModal<any>> {
 
     this.#prevActiveEl = document.activeElement as HTMLElement | undefined;
 
+    document.body.appendChild(modalEl);
+
     appRef.attachView(this.#compRef.hostView);
     appRef.attachView(this.#modalRef.hostView);
 
@@ -112,7 +114,6 @@ export class SdModalInstance<T extends ISdModal<any>> {
       if (!this.#compRef.instance.initialized()) {
         await Wait.until(() => this.#compRef.instance.initialized());
       }
-      document.body.appendChild(modalEl);
 
       setTimeout(() => {
         sdBusy.globalBusyCount.update((v) => v - 1);

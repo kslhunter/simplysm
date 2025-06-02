@@ -17,7 +17,7 @@ import { SdTopbarContainerControl } from "../controls/sd-topbar-container.contro
 import { SdTopbarControl } from "../controls/sd-topbar.control";
 import { SdShowEffectDirective } from "../directives/sd-show-effect.directive";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
-import { SdAppStructureProvider, usePermsSignal } from "../providers/sd-app-structure.provider";
+import { SdAppStructureProvider } from "../providers/sd-app-structure.provider";
 import { SdActivatedModalProvider } from "../providers/sd-modal.provider";
 import { $computed } from "../utils/bindings/$computed";
 import { useCurrentPageCodeSignal } from "../utils/signals/use-current-page-code.signal";
@@ -44,18 +44,18 @@ import { transformBoolean } from "../utils/type-tramsforms";
   template: `
     <sd-busy-container [busy]="busy()" [message]="busyMessage()">
       @if (initialized()) {
-        @if (!perms().includes("use")) {
+        @if (!visible()) {
           <sd-pane class="tx-theme-grey-light p-xxl tx-center" sd-show-effect>
             <br />
             <sd-icon [icon]="icons.triangleExclamation" fixedWidth size="5x" />
             <br />
             <br />
-            '{{ title() }}'에 대한 사용권한이 없습니다. 시스템 관리자에게 문의하세요.
+            '{{ modalOrPageTitle() }}'에 대한 사용권한이 없습니다. 시스템 관리자에게 문의하세요.
           </sd-pane>
         } @else if (currViewType() === "page") {
           <sd-topbar-container>
             <sd-topbar>
-              <h4>{{ title() }}</h4>
+              <h4>{{ modalOrPageTitle() }}</h4>
 
               <ng-template [ngTemplateOutlet]="pageTopbarTemplateRef() ?? null" />
             </sd-topbar>
@@ -115,19 +115,18 @@ export class SdBaseContainerControl {
   contentTemplateRef = contentChild.required("content", { read: TemplateRef });
   modalBottomTemplateRef = contentChild("modalBottom", { read: TemplateRef });
 
-  perms = usePermsSignal([this.#fullPageCode()], ["use"]);
-
   #viewType = useViewTypeSignal();
   viewType = input<TSdViewType>();
   currViewType = $computed(() => this.viewType() ?? this.#viewType());
 
-  title = $computed(
+  modalOrPageTitle = $computed(
     () =>
       this.#sdActivatedModal?.modalComponent()?.title() ??
       this.#sdAppStructure.getTitleByFullCode(this.#currPageCode?.() ?? this.#fullPageCode()),
   );
 
   initialized = input.required({ transform: transformBoolean });
+  visible = input(true, { transform: transformBoolean });
   busy = input(false, { transform: transformBoolean });
   busyMessage = input<string>();
 }

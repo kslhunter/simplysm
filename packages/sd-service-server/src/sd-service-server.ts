@@ -11,7 +11,7 @@ import mime from "mime";
 import { SdWebRequestError } from "./sd-web-request.error";
 import { SdServiceServerConfUtils } from "./utils/sd-service-server-conf.utils";
 import { SdWebsocketController } from "./features/sd-websocket-controller";
-import * as ws from "ws";
+import { WebSocket } from "ws";
 
 export class SdServiceServer extends EventEmitter {
   isOpen = false;
@@ -72,8 +72,7 @@ export class SdServiceServer extends EventEmitter {
           pfx,
           passphrase: this.options.ssl.passphrase,
         });
-      }
-      else {
+      } else {
         this.#httpServer = http.createServer();
       }
 
@@ -134,7 +133,7 @@ export class SdServiceServer extends EventEmitter {
   }
 
   async #runServiceMethodAsync(def: {
-    client?: ws.WebSocket;
+    client?: WebSocket;
     request?: ISdServiceRequest;
     serviceName: string;
     methodName: string;
@@ -162,10 +161,7 @@ export class SdServiceServer extends EventEmitter {
     return await method.apply(service, def.params);
   }
 
-  async #onWebRequestAsync(
-    req: http.IncomingMessage,
-    res: http.ServerResponse,
-  ): Promise<void> {
+  async #onWebRequestAsync(req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {
     try {
       if (this.options.middlewares) {
         for (const optMdw of this.options.middlewares) {
@@ -207,8 +203,7 @@ export class SdServiceServer extends EventEmitter {
           else {
             params = [urlObj.query];
           }*/
-        }
-        else if (req.method === "POST") {
+        } else if (req.method === "POST") {
           const body = await new Promise<Buffer>((resolve) => {
             let tmp = Buffer.from([]);
             req.on("data", (chunk) => {
@@ -236,9 +231,7 @@ export class SdServiceServer extends EventEmitter {
             webHeaders: req.headers,
           });
 
-          const result = serviceResult != null
-            ? JsonConvert.stringify(serviceResult)
-            : "undefined";
+          const result = serviceResult != null ? JsonConvert.stringify(serviceResult) : "undefined";
           /*const result = req.headers["content-type"]?.toLowerCase().includes("json")
             ? JsonConvert.stringify(serviceResult)
             : serviceResult;*/
@@ -259,8 +252,9 @@ export class SdServiceServer extends EventEmitter {
 
       if (req.method === "GET") {
         let targetFilePath: string;
-        const currPathProxyFrom = Object.keys(this.pathProxy)
-          .single((from) => urlPath.startsWith(from));
+        const currPathProxyFrom = Object.keys(this.pathProxy).single((from) =>
+          urlPath.startsWith(from),
+        );
         if (currPathProxyFrom !== undefined) {
           if (typeof this.pathProxy[currPathProxyFrom] === "number") {
             const proxyReq = http.request(
@@ -283,14 +277,12 @@ export class SdServiceServer extends EventEmitter {
             );
             req.pipe(proxyReq, { end: true });
             return;
-          }
-          else {
+          } else {
             targetFilePath = path.resolve(
               this.pathProxy[currPathProxyFrom] + urlPath.substring(currPathProxyFrom.length),
             );
           }
-        }
-        else {
+        } else {
           targetFilePath = path.resolve(this.options.rootPath, "www", urlPath);
         }
         targetFilePath =
@@ -320,21 +312,18 @@ export class SdServiceServer extends EventEmitter {
         res.setHeader("Content-Type", mime.getType(targetFilePath)!);
         res.writeHead(200);
         fileStream.pipe(res);
-      }
-      else {
+      } else {
         const errorMessage = "요청이 잘못되었습니다.";
         this.#responseErrorHtml(res, 405, errorMessage);
         this.#logger.warn(`[405] ${errorMessage} (${req.method!.toUpperCase()})`);
         return;
       }
-    }
-    catch (err) {
+    } catch (err) {
       if (err instanceof SdWebRequestError) {
         res.writeHead(err.statusCode);
         res.end(err.message);
         this.#logger.error(`[${err.statusCode}]\n${err.message}`, err);
-      }
-      else {
+      } else {
         const errorMessage = "요청 처리중 오류가 발생하였습니다.";
         this.#responseErrorHtml(res, 405, errorMessage);
         this.#logger.error(`[405] ${errorMessage}`, err);

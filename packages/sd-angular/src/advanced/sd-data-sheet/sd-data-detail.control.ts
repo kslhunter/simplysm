@@ -48,6 +48,7 @@ import { SdSharedDataProvider } from "../shared-data/sd-shared-data.provider";
       [busy]="busyCount() > 0"
       [viewType]="currViewType()"
       [initialized]="initialized()"
+      [visible]="hasPerm('use')"
     >
       @let _dataInfo = viewModel().dataInfo();
 

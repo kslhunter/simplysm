@@ -1,6 +1,6 @@
 import https from "https";
 import http from "http";
-import * as ws from "ws";
+import { WebSocket, WebSocketServer } from "ws";
 import { DateTime, JsonConvert, Type } from "@simplysm/sd-core-common";
 import {
   ISdServiceRequest,
@@ -15,22 +15,22 @@ import { SdLogger } from "@simplysm/sd-core-node";
 export class SdWebsocketController {
   #logger = SdLogger.get(["simplysm", "sd-service-server", "SdWebsocketController"]);
 
-  #server: ws.WebSocketServer;
+  #server: WebSocketServer;
   #pingInterval?: NodeJS.Timeout;
 
-  #clientInfoMap = new WeakMap<ws.WebSocket, ISdClientInfo>();
+  #clientInfoMap = new WeakMap<WebSocket, ISdClientInfo>();
 
   constructor(
     webServer: http.Server | https.Server | undefined,
     private _runServiceMethodAsync: (def: {
-      client: ws.WebSocket;
+      client: WebSocket;
       request: ISdServiceRequest;
       serviceName: string;
       methodName: string;
       params: any[];
     }) => Promise<any>,
   ) {
-    this.#server = new ws.WebSocketServer({ server: webServer });
+    this.#server = new WebSocketServer({ server: webServer });
 
     this.#server.on("connection", async (client, req) => {
       try {
@@ -42,12 +42,10 @@ export class SdWebsocketController {
           const prevClientInfo = this.#clientInfoMap.get(prevClient);
           if (!prevClientInfo || prevClientInfo.id !== clientId) continue;
 
-          const connectionDateTimeText
-            = prevClientInfo.connectedAtDateTime.toFormatString("yyyy:MM:dd HH:mm:ss.fff");
+          const connectionDateTimeText =
+            prevClientInfo.connectedAtDateTime.toFormatString("yyyy:MM:dd HH:mm:ss.fff");
 
-          this.#logger.debug(
-            `클라이언트 기존연결 끊기: ${clientId}: ${connectionDateTimeText}`,
-          );
+          this.#logger.debug(`클라이언트 기존연결 끊기: ${clientId}: ${connectionDateTimeText}`);
 
           prevClient.terminate();
         }
@@ -64,7 +62,7 @@ export class SdWebsocketController {
           remoteAddress: req.socket.remoteAddress,
           isAlive: true,
           listenerInfos: [],
-          splitReqCache: new Map()
+          splitReqCache: new Map(),
         };
         this.#clientInfoMap.set(client, clientInfo);
 
@@ -74,12 +72,10 @@ export class SdWebsocketController {
             const msg = JsonConvert.parse(msgJson) as TSdServiceC2SMessage;
             if (msg.name === "request") {
               await this.#onRequestAsync(client, msg);
-            }
-            else if (msg.name === "request-split") {
+            } else if (msg.name === "request-split") {
               await this.#onRequestSplitAsync(client, msg);
             }
-          }
-          catch (err) {
+          } catch (err) {
             this.#logger.error("WebSocket 메시지 처리 중 오류 발생", err);
           }
         });
@@ -98,8 +94,7 @@ export class SdWebsocketController {
 
         // 클라이언트에게 연결 완료 알림
         this.#send(client, { name: "connected" });
-      }
-      catch (err) {
+      } catch (err) {
         this.#logger.error("연결 처리 중 오류 발생", err);
         client.terminate();
       }
@@ -151,11 +146,12 @@ export class SdWebsocketController {
     data: T["data"],
   ) {
     const listenerInfos = Array.from(this.#server.clients)
-      .mapMany(item => this.#clientInfoMap.get(item)?.listenerInfos ?? [])
+      .mapMany((item) => this.#clientInfoMap.get(item)?.listenerInfos ?? [])
       .filter((item) => item.eventName === eventType.name)
       .map((item) => ({ key: item.key, info: item.info }));
 
-    const targetKeys = listenerInfos.filter((item) => infoSelector(item.info))
+    const targetKeys = listenerInfos
+      .filter((item) => infoSelector(item.info))
       .map((item) => item.key);
 
     this.#emitToTargets(targetKeys, data);
@@ -178,17 +174,14 @@ export class SdWebsocketController {
     }
   }
 
-  async #onRequestSplitAsync(
-    client: ws.WebSocket,
-    splitReq: ISdServiceSplitRequest,
-  ) {
+  async #onRequestSplitAsync(client: WebSocket, splitReq: ISdServiceSplitRequest) {
     this.#logger.debug("분할요청 받음", splitReq.uuid + "(" + splitReq.index + ")");
 
     const clientInfo = this.#clientInfoMap.get(client)!;
-    const splitCacheInfo = clientInfo.splitReqCache.getOrCreate(
-      splitReq.uuid,
-      { completedSize: 0, data: [] },
-    );
+    const splitCacheInfo = clientInfo.splitReqCache.getOrCreate(splitReq.uuid, {
+      completedSize: 0,
+      data: [],
+    });
     try {
       splitCacheInfo.data[splitReq.index] = splitReq.body;
       splitCacheInfo.completedSize += splitReq.body.length;
@@ -206,14 +199,13 @@ export class SdWebsocketController {
         await this.#onRequestAsync(client, req);
         clientInfo.splitReqCache.delete(splitReq.uuid);
       }
-    }
-    catch (err) {
+    } catch (err) {
       clientInfo.splitReqCache.delete(splitReq.uuid);
       throw err;
     }
   }
 
-  async #onRequestAsync(client: ws.WebSocket, req: ISdServiceRequest) {
+  async #onRequestAsync(client: WebSocket, req: ISdServiceRequest) {
     this.#logger.debug("요청 받음", req);
 
     const res = await this.#processRequestAsync(client, req);
@@ -223,7 +215,7 @@ export class SdWebsocketController {
   }
 
   async #processRequestAsync(
-    client: ws.WebSocket,
+    client: WebSocket,
     req: ISdServiceRequest,
   ): Promise<ISdServiceResponse> {
     try {
@@ -247,8 +239,7 @@ export class SdWebsocketController {
           state: "success",
           body: result,
         };
-      }
-      else if (req.command === "addEventListener") {
+      } else if (req.command === "addEventListener") {
         const key = req.params[0] as string;
         const eventName = req.params[1] as string;
         const info = req.params[2];
@@ -262,8 +253,7 @@ export class SdWebsocketController {
           state: "success",
           body: undefined,
         };
-      }
-      else if (req.command === "removeEventListener") {
+      } else if (req.command === "removeEventListener") {
         const key = req.params[0] as string;
 
         const clientInfo = this.#clientInfoMap.get(client)!;
@@ -275,12 +265,11 @@ export class SdWebsocketController {
           state: "success",
           body: undefined,
         };
-      }
-      else if (req.command === "getEventListenerInfos") {
+      } else if (req.command === "getEventListenerInfos") {
         const eventName = req.params[0] as string;
 
         const body = Array.from(this.#server.clients)
-          .mapMany(item => this.#clientInfoMap.get(item)?.listenerInfos ?? [])
+          .mapMany((item) => this.#clientInfoMap.get(item)?.listenerInfos ?? [])
           .filter((item) => item.eventName === eventName)
           .map((item) => ({ key: item.key, info: item.info }));
 
@@ -290,8 +279,7 @@ export class SdWebsocketController {
           state: "success",
           body,
         };
-      }
-      else if (req.command === "emitEvent") {
+      } else if (req.command === "emitEvent") {
         const targetKeys = req.params[0] as string[];
         const data = req.params[1];
 
@@ -303,8 +291,7 @@ export class SdWebsocketController {
           state: "success",
           body: undefined,
         };
-      }
-      else {
+      } else {
         // 에러 응답
         return {
           name: "response",
@@ -313,8 +300,7 @@ export class SdWebsocketController {
           body: "요청이 잘못되었습니다.",
         };
       }
-    }
-    catch (err) {
+    } catch (err) {
       // 에러 응답
       return {
         name: "response",
@@ -325,7 +311,7 @@ export class SdWebsocketController {
     }
   }
 
-  async #getClientIdAsync(client: ws.WebSocket): Promise<string> {
+  async #getClientIdAsync(client: WebSocket): Promise<string> {
     return await new Promise<string>((resolve, reject) => {
       const msgFn = (msgJson: string): void => {
         try {
@@ -334,8 +320,7 @@ export class SdWebsocketController {
             client.off("message", msgFn);
             resolve(msg.body);
           }
-        }
-        catch (err) {
+        } catch (err) {
           client.off("message", msgFn);
           reject(err);
         }
@@ -347,7 +332,7 @@ export class SdWebsocketController {
     });
   }
 
-  #send(client: ws.WebSocket, cmd: TSdServiceS2CMessage) {
+  #send(client: WebSocket, cmd: TSdServiceS2CMessage) {
     const cmdJson = JsonConvert.stringify(cmd);
 
     if (cmd.name === "response" && cmdJson.length > 3 * 1000 * 1000) {
@@ -371,8 +356,7 @@ export class SdWebsocketController {
         currSize += splitBody.length;
         index++;
       }
-    }
-    else {
+    } else {
       client.send(cmdJson);
     }
   }
@@ -389,4 +373,4 @@ interface ISdClientInfo {
     info: any;
   }[];
   splitReqCache: Map<string, { completedSize: number; data: string[] }>;
-};
+}

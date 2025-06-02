@@ -2,7 +2,7 @@ import { Type } from "@simplysm/sd-core-common";
 import { SdServiceServer } from "./sd-service-server";
 import { ISdServiceRequest } from "@simplysm/sd-service-common";
 import * as http from "http";
-import * as ws from "ws";
+import { WebSocket } from "ws";
 
 export interface ISdServiceServerOptions {
   rootPath: string;
@@ -22,7 +22,7 @@ export interface ISdServiceServerOptions {
 export class SdServiceBase {
   server!: SdServiceServer;
 
-  client?: ws.WebSocket; // API로 접근한 경우 undefined
+  client?: WebSocket; // API로 접근한 경우 undefined
   request?: ISdServiceRequest; // API로 접근한 경우 undefined
 
   webHeaders?: http.IncomingHttpHeaders; // Socket로 접근한 경우 undefined
