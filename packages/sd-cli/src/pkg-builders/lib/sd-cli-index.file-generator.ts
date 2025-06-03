@@ -1,19 +1,21 @@
-import { FsUtils, PathUtils, SdFsWatcher } from "@simplysm/sd-core-node";
+import { FsUtils, HashUtils, PathUtils, SdFsWatcher } from "@simplysm/sd-core-node";
 import path from "path";
 
 export class SdCliIndexFileGenerator {
-  static watch(pkgPath: string, polyfills?: string[]) {
+  cachedHash?: string;
+
+  watch(pkgPath: string, polyfills?: string[]) {
     const indexFilePath = path.resolve(pkgPath, "src/index.ts");
-    let cache = FsUtils.exists(indexFilePath) ? FsUtils.readFile(indexFilePath) : undefined;
+    this.cachedHash = FsUtils.exists(indexFilePath) ? FsUtils.readFile(indexFilePath) : undefined;
 
     SdFsWatcher.watch([path.resolve(pkgPath, "src")]).onChange({ delay: 50 }, () => {
-      cache = this.run(pkgPath, polyfills, cache);
+      this.run(pkgPath, polyfills);
     });
 
-    cache = this.run(pkgPath, polyfills, cache);
+    this.run(pkgPath, polyfills);
   }
 
-  static run(pkgPath: string, polyfills?: string[], cache?: string): string {
+  run(pkgPath: string, polyfills?: string[]): string {
     const indexFilePath = path.resolve(pkgPath, "src/index.ts");
 
     const importTexts: string[] = [];
@@ -41,19 +43,25 @@ export class SdCliIndexFileGenerator {
     }
 
     const content = importTexts.join("\n") + "\n";
-    if (content.trim() !== cache?.trim()) {
+    const currHash = HashUtils.get(content);
+    if (currHash !== this.cachedHash) {
       FsUtils.writeFile(indexFilePath, content);
+      this.cachedHash = currHash;
     }
     return content;
   }
 
-  static #getFilePaths(pkgPath: string): string[] {
+  #getFilePaths(pkgPath: string): string[] {
     const indexFilePath = path.resolve(pkgPath, "src/index.ts");
 
     const tsconfig = FsUtils.readJson(path.resolve(pkgPath, "tsconfig.json"));
-    const entryFilePaths: string[] = tsconfig.files?.map((item) => path.resolve(pkgPath, item)) ?? [];
+    const entryFilePaths: string[] =
+      tsconfig.files?.map((item) => path.resolve(pkgPath, item)) ?? [];
 
-    return FsUtils.glob(path.resolve(pkgPath, "src/**/*{.ts,.tsx}"), { nodir: true, ignore: tsconfig.excludes }).filter(
+    return FsUtils.glob(path.resolve(pkgPath, "src/**/*{.ts,.tsx}"), {
+      nodir: true,
+      ignore: tsconfig.excludes,
+    }).filter(
       (item) => !entryFilePaths.includes(item) && item !== indexFilePath && !item.endsWith(".d.ts"),
     );
   }

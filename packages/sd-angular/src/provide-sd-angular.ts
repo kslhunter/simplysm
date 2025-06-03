@@ -1,6 +1,5 @@
 import { ISdAngularIcon, SdAngularConfigProvider } from "./providers/sd-angular-config.provider";
 import {
-  ApplicationRef,
   DestroyRef,
   EnvironmentProviders,
   inject,
@@ -18,12 +17,10 @@ import {
   faAngleUp,
   faArrowLeft,
   faArrowLeftLong,
-  faArrowRight,
   faBars,
   faCaretDown,
   faCaretRight,
   faCheck,
-  faCode,
   faCog,
   faEdit,
   faEraser,
@@ -31,12 +28,8 @@ import {
   faEye,
   faEyeSlash,
   faFileExcel,
-  faMinus,
   faMountainSun,
-  faPen,
-  faPlus,
   faPlusCircle,
-  faQuestion,
   faQuestionCircle,
   faRedo,
   faRefresh,
@@ -75,7 +68,7 @@ export function provideSdAngular(opt: {
   clientName: string;
   defaultTheme?: TSdTheme;
   defaultDark?: boolean;
-  icons?: Partial<ISdAngularIcon>;
+  icons?: ISdAngularIcon;
 }): EnvironmentProviders {
   return makeEnvironmentProviders([
     provideEnvironmentInitializer(() => {
@@ -87,7 +80,7 @@ export function provideSdAngular(opt: {
       _sdTheme.dark.set(_sdLocalStorage.get("sd-theme-dark") ?? _sdNgConf.defaultDark);
     }),
     provideEnvironmentInitializer(() => {
-      const appRef = inject(ApplicationRef);
+      // const appRef = inject(ApplicationRef);
       const sdSystemLog = inject(SdSystemLogProvider);
       const window = inject(DOCUMENT).defaultView;
 
@@ -108,11 +101,10 @@ export function provideSdAngular(opt: {
 
         divEl.innerHTML = `<pre style="font-size: 12px; font-family: monospace; line-height: 1.4em;">${message}</pre>`;
 
-        appRef.destroy();
+        // appRef.destroy();
 
         document.body.append(divEl);
         divEl.onclick = () => {
-          location.hash = "/";
           location.reload();
         };
 
@@ -175,12 +167,9 @@ Source  : ${filename}(${lineno}, ${colno})${stack}`);
           fallback: faQuestionCircle,
 
           caretDown: faCaretDown,
-          code: faCode,
           eye: faEye,
           eyeSlash: faEyeSlash,
-          pen: faPen,
           angleDown: faAngleDown,
-          question: faQuestion,
           triangleExclamation: faTriangleExclamation,
           angleDoubleLeft: faAngleDoubleLeft,
           angleDoubleRight: faAngleDoubleRight,
@@ -188,18 +177,14 @@ Source  : ${filename}(${lineno}, ${colno})${stack}`);
           angleRight: faAngleRight,
           cog: faCog,
           arrowLeft: faArrowLeft,
-          arrowRight: faArrowRight,
           caretRight: faCaretRight,
           save: faSave,
           star: faStar,
           mountainSun: faMountainSun,
           bars: faBars,
           angleUp: faAngleUp,
-          questionCircle: faQuestionCircle,
 
           check: faCheck,
-          minus: faMinus,
-          plus: faPlus,
           xmark: faXmark,
           sort: faSort,
           sortDown: faSortDown,
@@ -214,7 +199,6 @@ Source  : ${filename}(${lineno}, ${colno})${stack}`);
 
           refresh: faRefresh,
           add: faPlusCircle,
-          delete: faEraser,
           redo: faRedo,
           upload: faUpload,
           fileExcel: faFileExcel,

@@ -12,7 +12,9 @@ import { ISdBuildMessage, ISdBuildRunnerResult } from "../../types/build.types";
 import path from "path";
 import { ScopePathSet } from "./scope-path";
 
-export abstract class BuildRunnerBase<T extends "server" | "library" | "client"> extends EventEmitter {
+export abstract class BuildRunnerBase<
+  T extends "server" | "library" | "client",
+> extends EventEmitter {
   protected abstract _logger: SdLogger;
 
   protected _pkgName: string;
@@ -38,8 +40,8 @@ export abstract class BuildRunnerBase<T extends "server" | "library" | "client">
     this._pkgConf = projConf.packages[this._pkgName] as TSdPackageConfig<T>;
 
     const workspacePaths = workspaceGlobs
-      .map(item => PathUtils.posix(this._pkgPath, "../../", item))
-      .mapMany(item => FsUtils.glob(item));
+      .map((item) => PathUtils.posix(this._pkgPath, "../../", item))
+      .mapMany((item) => FsUtils.glob(item));
     const localUpdatePaths = Object.keys(projConf.localUpdates ?? {}).mapMany((key) =>
       FsUtils.glob(path.resolve(this._pkgPath, "../../node_modules", key)),
     );
@@ -81,10 +83,12 @@ export abstract class BuildRunnerBase<T extends "server" | "library" | "client">
     this.emit("complete", res);
 
     this._debug("WATCH...");
-    let lastWatchFileSet = result.watchFileSet;
-    SdFsWatcher.watch(this._watchScopePathSet.toArray())
-      .onChange({ delay: 100 }, async (changeInfos) => {
+    let lastWatchFileSet = result.watchFileSet!;
+    SdFsWatcher.watch(this._watchScopePathSet.toArray()).onChange(
+      { delay: 100 },
+      async (changeInfos) => {
         const modifiedFileSet = this._getModifiedFileSet(changeInfos, lastWatchFileSet);
+
         if (modifiedFileSet.size < 1) return;
 
         this.emit("change");
@@ -93,9 +97,8 @@ export abstract class BuildRunnerBase<T extends "server" | "library" | "client">
         try {
           watchResult = await this._runAsync(!this._pkgConf.forceProductionMode, modifiedFileSet);
 
-          lastWatchFileSet = watchResult.watchFileSet;
-        }
-        catch (err) {
+          lastWatchFileSet = watchResult.watchFileSet!;
+        } catch (err) {
           watchResult = {
             affectedFileSet: modifiedFileSet,
             buildMessages: [
@@ -119,7 +122,8 @@ export abstract class BuildRunnerBase<T extends "server" | "library" | "client">
           buildMessages: watchResult.buildMessages,
           emitFileSet: watchResult.emitFileSet,
         });
-      });
+      },
+    );
   }
 
   protected _getModifiedFileSet(
@@ -127,11 +131,10 @@ export abstract class BuildRunnerBase<T extends "server" | "library" | "client">
     lastWatchFileSet?: Set<TNormPath>,
   ) {
     return new Set(
-      (
-        lastWatchFileSet
-          ? changeInfos.filter((item) => lastWatchFileSet.has(item.path))
-          : changeInfos
-      ).map(item => item.path),
+      (lastWatchFileSet
+        ? changeInfos.filter((item) => lastWatchFileSet.has(item.path))
+        : changeInfos
+      ).map((item) => item.path),
     );
   }
 

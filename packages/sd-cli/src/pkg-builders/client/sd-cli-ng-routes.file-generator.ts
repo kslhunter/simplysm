@@ -1,20 +1,22 @@
 import path from "path";
-import { FsUtils, PathUtils, SdFsWatcher } from "@simplysm/sd-core-node";
+import { FsUtils, HashUtils, PathUtils, SdFsWatcher } from "@simplysm/sd-core-node";
 import { StringUtils } from "@simplysm/sd-core-common";
 
 export class SdCliNgRoutesFileGenerator {
-  static watch(pkgPath: string, noLazyRoute?: boolean) {
+  cachedHash?: string;
+
+  watch(pkgPath: string, noLazyRoute?: boolean) {
     const routesFilePath = path.resolve(pkgPath, "src/routes.ts");
-    let cache = FsUtils.exists(routesFilePath) ? FsUtils.readFile(routesFilePath) : undefined;
+    this.cachedHash = FsUtils.exists(routesFilePath) ? HashUtils.get(FsUtils.readFile(routesFilePath)) : undefined;
 
     SdFsWatcher.watch([path.resolve(pkgPath, "src")]).onChange({ delay: 50 }, () => {
-      cache = this.run(pkgPath, noLazyRoute, cache);
+      this.run(pkgPath, noLazyRoute);
     });
 
-    cache = this.run(pkgPath, noLazyRoute, cache);
+    this.run(pkgPath, noLazyRoute);
   }
 
-  static run(pkgPath: string, noLazyRoute?: boolean, cache?: string): string {
+  run(pkgPath: string, noLazyRoute?: boolean) {
     const appDirPath = path.resolve(pkgPath, "src/app");
     const routesFilePath = path.resolve(pkgPath, "src/routes.ts");
 
@@ -52,16 +54,18 @@ export class SdCliNgRoutesFileGenerator {
         cont += indentStr + `  path: "${key}",\n`;
         if (val.relModulePath != null) {
           if (noLazyRoute) {
-            cont += indentStr
-              + `  component: ${StringUtils.toPascalCase(path.basename(val.relModulePath))},\n`;
-            imports.push(`import { ${StringUtils.toPascalCase(path.basename(val.relModulePath))} } from "./app/${val.relModulePath}";`);
-          }
-          else {
+            cont +=
+              indentStr +
+              `  component: ${StringUtils.toPascalCase(path.basename(val.relModulePath))},\n`;
+            imports.push(
+              `import { ${StringUtils.toPascalCase(path.basename(val.relModulePath))} } from "./app/${val.relModulePath}";`,
+            );
+          } else {
             cont +=
               indentStr +
               `  loadComponent: () => import("./app/${val.relModulePath}").then((m) => m.${StringUtils.toPascalCase(
-                path.basename(
-                  val.relModulePath))}),\n`;
+                path.basename(val.relModulePath),
+              )}),\n`;
           }
         }
         if (val.children.size > 0) {
@@ -82,10 +86,11 @@ ${imports.join("\n")}
 export const routes: Routes = [
 ${routes}
 ];`.trim();
-    if (content !== cache) {
+    const currHash = HashUtils.get(content);
+    if (currHash !== this.cachedHash) {
       FsUtils.writeFile(routesFilePath, content);
+      this.cachedHash = currHash;
     }
-    return content;
   }
 }
 

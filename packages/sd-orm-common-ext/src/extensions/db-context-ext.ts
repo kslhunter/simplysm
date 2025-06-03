@@ -1,6 +1,6 @@
 import { DbContext, Queryable } from "@simplysm/sd-orm-common";
 import { SystemDataLog } from "../models/system-data-log";
-import { SystemErrorLog } from "../models/system-error-log";
+import { SystemLog } from "../models/system-log";
 import { Authentication } from "../models/authentication";
 import { User } from "../models/user";
 import { UserConfig } from "../models/user-config";
@@ -9,7 +9,7 @@ import { DateTime, JsonConvert, Uuid } from "@simplysm/sd-core-common";
 
 export abstract class DbContextExt extends DbContext {
   systemDataLog = new Queryable(this, SystemDataLog);
-  systemErrorLog = new Queryable(this, SystemErrorLog);
+  systemLog = new Queryable(this, SystemLog);
   authentication = new Queryable(this, Authentication);
   user = new Queryable(this, User);
   userConfig = new Queryable(this, UserConfig);
@@ -145,13 +145,13 @@ export abstract class DbContextExt extends DbContext {
   }
 
   async writeSystemLog(
-    userId: number,
+    userId: number | undefined,
     clientName: string,
     severity: "error" | "warn" | "log",
     ...logs: any[]
   ) {
     const db = this;
-    await db.systemErrorLog.insertAsync(
+    await db.systemLog.insertAsync(
       logs.map((log) => ({
         clientName: clientName,
         dateTime: new DateTime(),

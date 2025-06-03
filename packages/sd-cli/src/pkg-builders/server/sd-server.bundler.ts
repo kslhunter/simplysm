@@ -23,14 +23,15 @@ export class SdServerBundler {
 
   #outputHashCache = new Map<TNormPath, string>();
 
-  constructor(private readonly _opt: {
-    dev: boolean;
-    pkgPath: TNormPath;
-    entryPoints: string[];
-    external?: string[];
-    watchScopePathSet: ScopePathSet;
-  }) {
-  }
+  constructor(
+    private readonly _opt: {
+      dev: boolean;
+      pkgPath: TNormPath;
+      entryPoints: string[];
+      external?: string[];
+      watchScopePathSet: ScopePathSet;
+    },
+  ) {}
 
   async bundleAsync(modifiedFileSet?: Set<TNormPath>): Promise<{
     watchFileSet: Set<TNormPath>;
@@ -145,7 +146,7 @@ const __dirname = __path__.dirname(__filename);`.trim(),
 
       for (const assetFile of assetFiles) {
         const prevHash = this.#outputHashCache.get(PathUtils.norm(assetFile.source));
-        const currHash = FsUtils.hash(assetFile.source);
+        const currHash = HashUtils.get(FsUtils.readFileBuffer(assetFile.source));
         if (prevHash !== currHash) {
           FsUtils.copy(
             assetFile.source,
@@ -155,8 +156,7 @@ const __dirname = __path__.dirname(__filename);`.trim(),
           emitFileSet.add(PathUtils.norm(assetFile.destination));
         }
       }
-    }
-    catch (err) {
+    } catch (err) {
       result = err;
       for (const e of err.errors) {
         if (e.detail != null) {

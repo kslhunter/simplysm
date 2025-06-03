@@ -141,4 +141,16 @@ describe("SdDependencyCache", () => {
 
     console.log(printTree(trees[0]));
   });
+
+  it("d.ts를 입력하면 js도 함께 영향을 받는다", () => {
+    const dts = PathUtils.norm("/mod.d.ts");
+    const js = PathUtils.norm("/mod.js");
+    const consumer = PathUtils.norm("/consumer.ts");
+
+    depCache.addExport(dts, "Foo");
+    depCache.addImport(consumer, js, "Foo"); // js 경로로 import
+
+    const result = depCache.getAffectedFileSet(new Set([dts]));
+    expect(result).toEqual(new Set([dts, js, consumer]));
+  });
 });

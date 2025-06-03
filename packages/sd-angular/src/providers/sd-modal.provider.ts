@@ -112,7 +112,7 @@ export class SdModalInstance<T extends ISdModal<any>> {
 
     requestAnimationFrame(async () => {
       if (!this.#compRef.instance.initialized()) {
-        await Wait.until(() => this.#compRef.instance.initialized());
+        await Wait.until(() => this.#compRef.instance.initialized(), undefined, 60 * 1000);
       }
 
       setTimeout(() => {

@@ -44,10 +44,7 @@ export abstract class CordovaAutoUpdate {
     `);
   }
 
-  static async #checkPermissionAsync(
-    log: (messageHtml: string) => void,
-    targetHref?: string,
-  ) {
+  static async #checkPermissionAsync(log: (messageHtml: string) => void, targetHref?: string) {
     if (!navigator.userAgent.toLowerCase().includes("android")) {
       throw new Error(`안드로이드만 지원합니다.`);
     }
@@ -127,6 +124,10 @@ export abstract class CordovaAutoUpdate {
     `;
   }
 
+  static async #freezeApp() {
+    await new Promise(() => {}); // 무한대기
+  }
+
   static async runAsync(opt: {
     log: (messageHtml: string) => void;
     serviceClient: SdServiceClient;
@@ -152,7 +153,7 @@ export abstract class CordovaAutoUpdate {
       // const currAppVersionInfo = await CordovaApkInstaller.getVersionInfo();
       // if (currAppVersionInfo.versionName === serverVersionInfo.version) {
       if (process.env["SD_VERSION"] === serverVersionInfo.version) {
-        return true;
+        return;
       }
 
       opt.log(`최신버전 파일 다운로드중...`);
@@ -170,10 +171,10 @@ export abstract class CordovaAutoUpdate {
       await CordovaFileSystem.writeFileAsync(apkFilePath, buffer);
 
       await this.#installApkAsync(opt.log, apkFilePath);
-      return false;
+      await this.#freezeApp();
     } catch (err) {
       opt.log(this.#getErrorMessage(err));
-      throw err;
+      await this.#freezeApp();
     }
   }
 
@@ -203,7 +204,7 @@ export abstract class CordovaAutoUpdate {
         });
 
       // 버전파일 저장된것 없으면 반환
-      if (versions.length === 0) return true;
+      if (versions.length === 0) return;
 
       const latestVersion = semver.maxSatisfying(
         versions.map((item) => item.version),
@@ -214,15 +215,15 @@ export abstract class CordovaAutoUpdate {
       // const currVersion = await CordovaApkInstaller.getVersionInfo();
       // if (currVersion.versionName === latestVersion) {
       if (process.env["SD_VERSION"] === latestVersion) {
-        return true;
+        return;
       }
 
       const apkFilePath = path.join(externalPath, opt.dirPath, latestVersion + ".apk");
       await this.#installApkAsync(opt.log, apkFilePath);
-      return false;
+      await this.#freezeApp();
     } catch (err) {
       opt.log(this.#getErrorMessage(err));
-      throw err;
+      await this.#freezeApp();
     }
   }
 }

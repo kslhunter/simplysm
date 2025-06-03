@@ -7,6 +7,8 @@ import { SdCliDbContextFileGenerator } from "./sd-cli-db-context.file-generator"
 export class SdTsLibBuildRunner extends BuildRunnerBase<"library"> {
   protected override _logger = SdLogger.get(["simplysm", "sd-cli", "SdCliTsLibBuilder"]);
 
+  #indexFileGenerator = new SdCliIndexFileGenerator();
+  #dbContextGenerator = new SdCliDbContextFileGenerator();
   #builder?: SdTsLibBuilder;
 
   protected override async _runAsync(
@@ -17,23 +19,22 @@ export class SdTsLibBuildRunner extends BuildRunnerBase<"library"> {
       if (!dev) {
         if (!this._pkgConf.noGenIndex) {
           this._debug("GEN index.ts...");
-          SdCliIndexFileGenerator.run(this._pkgPath, this._pkgConf.polyfills);
+          this.#indexFileGenerator.run(this._pkgPath, this._pkgConf.polyfills);
         }
 
         if (this._pkgConf.dbContext != null) {
           this._debug(`GEN ${this._pkgConf.dbContext}.ts...`);
-          SdCliDbContextFileGenerator.run(this._pkgPath, this._pkgConf.dbContext);
+          this.#dbContextGenerator.run(this._pkgPath, this._pkgConf.dbContext);
         }
-      }
-      else {
+      } else {
         if (!this._pkgConf.noGenIndex) {
           this._debug("Watch for GEN index.ts...");
-          SdCliIndexFileGenerator.watch(this._pkgPath, this._pkgConf.polyfills);
+          this.#indexFileGenerator.watch(this._pkgPath, this._pkgConf.polyfills);
         }
 
         if (this._pkgConf.dbContext != null) {
           this._debug(`Watch for GEN ${this._pkgConf.dbContext}.ts...`);
-          SdCliDbContextFileGenerator.watch(this._pkgPath, this._pkgConf.dbContext);
+          this.#dbContextGenerator.watch(this._pkgPath, this._pkgConf.dbContext);
         }
       }
     }

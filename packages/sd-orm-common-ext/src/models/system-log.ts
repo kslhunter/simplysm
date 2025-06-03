@@ -3,7 +3,7 @@ import { User } from "./user";
 import { Column, ForeignKey, Table } from "@simplysm/sd-orm-common";
 
 @Table({ description: "시스템 에러로그" })
-export class SystemErrorLog {
+export class SystemLog {
   @Column({ description: "ID", autoIncrement: true, primaryKey: 1 })
   id?: number;
 

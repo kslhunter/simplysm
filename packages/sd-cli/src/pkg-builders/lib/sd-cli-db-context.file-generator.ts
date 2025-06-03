@@ -1,21 +1,23 @@
-import { FsUtils, PathUtils, SdFsWatcher } from "@simplysm/sd-core-node";
+import { FsUtils, HashUtils, PathUtils, SdFsWatcher } from "@simplysm/sd-core-node";
 import path from "path";
 import { StringUtils } from "@simplysm/sd-core-common";
 import { INpmConfig } from "../../types/common-configs.types";
 
 export class SdCliDbContextFileGenerator {
-  static watch(pkgPath: string, kebabName: string) {
+  cachedHash?: string;
+
+  watch(pkgPath: string, kebabName: string) {
     const targetFilePath = path.resolve(pkgPath, `src/${kebabName}.ts`);
-    let cache = FsUtils.exists(targetFilePath) ? FsUtils.readFile(targetFilePath) : undefined;
+    this.cachedHash = FsUtils.exists(targetFilePath) ? HashUtils.get(FsUtils.readFile(targetFilePath)) : undefined;
 
     SdFsWatcher.watch([path.resolve(pkgPath, "src")]).onChange({ delay: 50 }, () => {
-      cache = this.run(pkgPath, kebabName, cache);
+      this.run(pkgPath, kebabName);
     });
 
-    cache = this.run(pkgPath, kebabName, cache);
+    this.run(pkgPath, kebabName);
   }
 
-  static run(pkgPath: string, kebabName: string, cache?: string): string {
+  run(pkgPath: string, kebabName: string) {
     const npmConfig = FsUtils.readJson(path.resolve(pkgPath, "package.json")) as INpmConfig;
     const useExt = npmConfig.dependencies?.["@simplysm/sd-orm-common-ext"] != null;
 
@@ -68,7 +70,7 @@ export class SdCliDbContextFileGenerator {
           useExt &&
           [
             "systemDataLog",
-            "systemErrorLog",
+            "systemLog",
             "authentication",
             "user",
             "userConfig",
@@ -145,9 +147,10 @@ ${viewTexts.length > 0 ? "\n  // Views\n" + viewTexts.map((item) => "  " + item)
 ${spTexts.length > 0 ? "\n  // StoredProcedures\n" + spTexts.map((item) => "  " + item).join("\n") : ""}
 }
 `.trim();
-    if (content.trim() !== cache?.trim()) {
+    const currHash = HashUtils.get(content);
+    if (currHash !== this.cachedHash) {
       FsUtils.writeFile(targetFilePath, content);
+      this.cachedHash = currHash;
     }
-    return content;
   }
 }

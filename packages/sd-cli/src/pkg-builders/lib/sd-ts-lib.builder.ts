@@ -1,12 +1,13 @@
 import path from "path";
 import { SdCliConvertMessageUtils } from "../../utils/sd-cli-convert-message.utils";
-import { FsUtils, PathUtils, TNormPath } from "@simplysm/sd-core-node";
+import { FsUtils, HashUtils, PathUtils, TNormPath } from "@simplysm/sd-core-node";
 import { ISdBuildMessage } from "../../types/build.types";
 import { SdTsCompiler } from "../../ts-compiler/sd-ts-compiler";
 import { ScopePathSet } from "../commons/scope-path";
 
 export class SdTsLibBuilder {
   #tsCompiler: SdTsCompiler;
+  #outputHashCache = new Map<TNormPath, string>();
 
   constructor(
     private readonly _pkgPath: TNormPath,
@@ -37,15 +38,20 @@ export class SdTsLibBuilder {
       if (emitFileInfos) {
         for (const emitFileInfo of emitFileInfos) {
           if (emitFileInfo.outAbsPath != null) {
-            FsUtils.writeFile(emitFileInfo.outAbsPath, emitFileInfo.text);
-            emitFileSet.add(emitFileInfo.outAbsPath);
+            const emitFilePath = PathUtils.norm(emitFileInfo.outAbsPath);
+            const prevHash = this.#outputHashCache.get(emitFilePath);
+            const currHash = HashUtils.get(Buffer.from(emitFileInfo.text));
+            if (prevHash !== currHash) {
+              FsUtils.writeFile(emitFilePath, emitFileInfo.text);
+              this.#outputHashCache.set(emitFilePath, currHash);
+              emitFileSet.add(emitFilePath);
+            }
           }
         }
       }
 
-      const globalStylesheetBundlingResult = tsCompileResult
-        .stylesheetBundlingResultMap
-        .get(emitFile);
+      const globalStylesheetBundlingResult =
+        tsCompileResult.stylesheetBundlingResultMap.get(emitFile);
       if (globalStylesheetBundlingResult && "outputFiles" in globalStylesheetBundlingResult) {
         for (const outputFile of globalStylesheetBundlingResult.outputFiles) {
           const distPath = PathUtils.norm(
@@ -54,17 +60,21 @@ export class SdTsLibBuilder {
             path.relative(this._pkgPath, outputFile.path),
           );
           if (PathUtils.isChildPath(distPath, path.resolve(this._pkgPath, "dist"))) {
-            FsUtils.writeFile(distPath, outputFile.text);
-            emitFileSet.add(distPath);
+            const prevHash = this.#outputHashCache.get(distPath);
+            const currHash = HashUtils.get(Buffer.from(outputFile.text));
+            if (prevHash !== currHash) {
+              FsUtils.writeFile(distPath, outputFile.text);
+              this.#outputHashCache.set(distPath, currHash);
+              emitFileSet.add(distPath);
+            }
           }
         }
       }
     }
 
-    const styleResults = Array.from(tsCompileResult.stylesheetBundlingResultMap.values())
-      .mapMany((item) =>
-        SdCliConvertMessageUtils.convertToBuildMessagesFromEsbuild(item, this._pkgPath),
-      );
+    const styleResults = Array.from(tsCompileResult.stylesheetBundlingResultMap.values()).mapMany(
+      (item) => SdCliConvertMessageUtils.convertToBuildMessagesFromEsbuild(item, this._pkgPath),
+    );
 
     return {
       watchFileSet: tsCompileResult.watchFileSet,

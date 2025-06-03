@@ -6,15 +6,14 @@ export class SdSystemLogProvider {
   writeFn?: (severity: "error" | "warn" | "log", ...data: any[]) => Promise<void> | void;
 
   async writeAsync(severity: "error" | "warn" | "log", ...data: any[]): Promise<void> {
+    console[severity](...data);
+
     if (this.writeFn) {
       try {
         await this.writeFn(severity, ...data);
       } catch (err) {
-        console[severity](...data);
-        alert(err);
+        console.error(err);
       }
-    } else {
-      console[severity](...data);
     }
   }
 }

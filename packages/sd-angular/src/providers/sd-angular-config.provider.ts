@@ -14,12 +14,9 @@ export interface ISdAngularIcon {
   fallback: IconDefinition;
 
   caretDown: IconDefinition;
-  code: IconDefinition;
   eye: IconDefinition;
   eyeSlash: IconDefinition;
-  pen: IconDefinition;
   angleDown: IconDefinition;
-  question: IconDefinition;
   triangleExclamation: IconDefinition;
   angleDoubleLeft: IconDefinition;
   angleDoubleRight: IconDefinition;
@@ -27,18 +24,14 @@ export interface ISdAngularIcon {
   angleRight: IconDefinition;
   cog: IconDefinition;
   arrowLeft: IconDefinition;
-  arrowRight: IconDefinition;
   caretRight: IconDefinition;
   save: IconDefinition;
   star: IconDefinition;
   mountainSun: IconDefinition;
   bars: IconDefinition;
   angleUp: IconDefinition;
-  questionCircle: IconDefinition;
 
   check: IconDefinition;
-  minus: IconDefinition;
-  plus: IconDefinition;
   xmark: IconDefinition;
   sort: IconDefinition;
   sortDown: IconDefinition;
@@ -53,7 +46,6 @@ export interface ISdAngularIcon {
 
   refresh: IconDefinition;
   add: IconDefinition;
-  delete: IconDefinition;
   redo: IconDefinition;
   upload: IconDefinition;
   fileExcel: IconDefinition;

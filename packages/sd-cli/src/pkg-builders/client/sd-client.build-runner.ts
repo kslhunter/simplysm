@@ -10,6 +10,7 @@ import { INpmConfig } from "../../types/common-configs.types";
 export class SdClientBuildRunner extends BuildRunnerBase<"client"> {
   protected override _logger = SdLogger.get(["simplysm", "sd-cli", "SdClientBuildRunner"]);
 
+  #routeGenerator = new SdCliNgRoutesFileGenerator();
   #ngBundlers?: SdNgBundler[];
   #cordova?: SdCliCordova;
 
@@ -17,6 +18,7 @@ export class SdClientBuildRunner extends BuildRunnerBase<"client"> {
     dev: boolean,
     modifiedFileSet?: Set<TNormPath>,
   ): Promise<IBuildRunnerRunResult> {
+    // 최초
     if (!modifiedFileSet) {
       this._debug("GEN .config...");
       const confDistPath = path.resolve(this._pkgPath, "dist/.config.json");
@@ -27,14 +29,14 @@ export class SdClientBuildRunner extends BuildRunnerBase<"client"> {
       if ("@angular/router" in (npmConf.dependencies ?? {})) {
         if (!dev) {
           this._debug(`GEN routes.ts...`);
-          SdCliNgRoutesFileGenerator.run(this._pkgPath, this._pkgConf.noLazyRoute);
-        }
-        else {
+          this.#routeGenerator.run(this._pkgPath, this._pkgConf.noLazyRoute);
+        } else {
           this._debug(`Watch for GEN routes.ts...`);
-          SdCliNgRoutesFileGenerator.watch(this._pkgPath, this._pkgConf.noLazyRoute);
+          this.#routeGenerator.watch(this._pkgPath, this._pkgConf.noLazyRoute);
         }
       }
     }
+    // watch
     else {
       for (const ngBundler of this.#ngBundlers!) {
         ngBundler.markForChanges(Array.from(modifiedFileSet));
@@ -45,7 +47,7 @@ export class SdClientBuildRunner extends BuildRunnerBase<"client"> {
       | "web"
       | "electron"
       | "cordova"
-      )[];
+    )[];
     if (this._pkgConf.builder?.cordova && !this.#cordova) {
       this._debug("CORDOVA 준비...");
       this.#cordova = new SdCliCordova({
@@ -80,18 +82,21 @@ export class SdClientBuildRunner extends BuildRunnerBase<"client"> {
               ngBundlerBuilderType === "electron"
                 ? (this._pkgConf.builder?.electron?.reinstallDependencies ?? [])
                 : [],
-            cordovaConfig: ngBundlerBuilderType === "cordova"
-              ? this._pkgConf.builder!.cordova
-              : undefined,
+            cordovaConfig:
+              ngBundlerBuilderType === "cordova" ? this._pkgConf.builder!.cordova : undefined,
             watchScopePathSet: this._watchScopePathSet,
           }),
       );
     }
 
     this._debug(`BUILD...`);
-    const buildResults = await Promise.all(this.#ngBundlers.map((builder) => builder.bundleAsync()));
+    const buildResults = await Promise.all(
+      this.#ngBundlers.map((builder) => builder.bundleAsync()),
+    );
     const watchFileSet = new Set(buildResults.mapMany((item) => Array.from(item.watchFileSet)));
-    const affectedFileSet = new Set(buildResults.mapMany((item) => Array.from(item.affectedFileSet)));
+    const affectedFileSet = new Set(
+      buildResults.mapMany((item) => Array.from(item.affectedFileSet)),
+    );
     const emitFileSet = new Set(buildResults.mapMany((item) => Array.from(item.emitFileSet)));
     const results = buildResults.mapMany((item) => item.results).distinct();
 

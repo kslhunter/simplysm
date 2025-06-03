@@ -22,6 +22,7 @@ export default [
     files: ["**/*.js", "**/*.jsx"],
     plugins: {
       import: importPlugin,
+      "@simplysm": plugin,
     },
     rules: {
       // 기본
@@ -38,7 +39,7 @@ export default [
           message: "Do not use ECMAScript private methods (e.g. #myMethod); use TypeScript \"private\" instead.",
         },
       ],*/
-      "eqeqeq": ["error", "always", { "null": "ignore" }],
+      "eqeqeq": ["error", "always", { null: "ignore" }],
 
       "require-await": ["error"],
       // "semi": ["error"],
@@ -52,7 +53,7 @@ export default [
       "import/no-extraneous-dependencies": [
         "error",
         {
-          "devDependencies": [
+          devDependencies: [
             "**/*.spec.js",
             "**/lib/**",
             "**/eslint.config.js",
@@ -61,6 +62,9 @@ export default [
           ],
         },
       ],
+
+      // simplysm
+      "@simplysm/no-subpath-imports-from-simplysm": ["error"],
     },
   },
   {
@@ -102,7 +106,7 @@ export default [
           message: "Do not use ECMAScript private methods (e.g. #myMethod); use TypeScript \"private\" instead.",
         },
       ],*/
-      "eqeqeq": ["error", "always", { "null": "ignore" }],
+      "eqeqeq": ["error", "always", { null: "ignore" }],
 
       // 타입스크립트
       "@typescript-eslint/require-await": ["error"],
@@ -197,15 +201,13 @@ export default [
 
       //-- 심플리즘
       "@simplysm/ts-no-throw-not-implement-error": ["warn"],
-
+      "@simplysm/no-subpath-imports-from-simplysm": ["error"],
 
       // -- 아래 적용 검토가 필요한것
       "import/no-extraneous-dependencies": [
         "error",
         {
-          "devDependencies": [
-            "**/*.spec.ts",
-          ],
+          devDependencies: ["**/*.spec.ts"],
         },
       ],
       /*"@simplysm/ts-no-exported-types": [

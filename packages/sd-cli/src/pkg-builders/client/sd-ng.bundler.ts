@@ -253,7 +253,7 @@ export class SdNgBundler {
       }
       for (const assetFile of assetFiles) {
         const prevHash = this.#outputHashCache.get(PathUtils.norm(assetFile.source));
-        const currHash = FsUtils.hash(assetFile.source);
+        const currHash = HashUtils.get(FsUtils.readFileBuffer(assetFile.source));
         if (prevHash !== currHash) {
           FsUtils.copy(assetFile.source, path.resolve(this._opt.outputPath, assetFile.destination));
           this.#outputHashCache.set(PathUtils.norm(assetFile.source), currHash);

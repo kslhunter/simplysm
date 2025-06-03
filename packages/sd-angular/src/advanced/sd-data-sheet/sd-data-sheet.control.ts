@@ -40,6 +40,7 @@ import { SdDataSheetFilterDirective } from "./sd-data-sheet-filter.directive";
 import { SdDataSheetToolDirective } from "./sd-data-sheet-tool.directive";
 import { setupCloserWhenSingleSelectionChange } from "../../utils/setups/setup-closer-when-single-selection-change";
 import { $effect } from "../../utils/bindings/$effect";
+import { transformBoolean } from "../../utils/type-tramsforms";
 
 @Component({
   selector: "sd-data-sheet",
@@ -67,7 +68,7 @@ import { $effect } from "../../utils/bindings/$effect";
       [busy]="busyCount() > 0"
       [viewType]="currViewType()"
       [initialized]="initialized()"
-      [visible]="hasPerm('use')"
+      [visible]="usable()"
     >
       <!--<ng-template #pageTopbar>
         <sd-topbar-menu>
@@ -114,7 +115,7 @@ import { $effect } from "../../utils/bindings/$effect";
               }
 
               @if (viewModel().editItem) {
-                @if (hasPerm("edit")) {
+                @if (editable()) {
                   <sd-button size="sm" theme="primary" (click)="onCreateItemButtonClick()">
                     <sd-icon [icon]="icons.add" fixedWidth />
                     등록
@@ -131,7 +132,7 @@ import { $effect } from "../../utils/bindings/$effect";
                     (click)="onToggleDeletesButtonClick(true)"
                     [disabled]="!isSelectedItemsHasNotDeleted()"
                   >
-                    <sd-icon [icon]="icons.delete" [fixedWidth]="true" />
+                    <sd-icon [icon]="icons.eraser" [fixedWidth]="true" />
                     선택 삭제
                   </sd-button>
                   @if (isSelectedItemsHasDeleted()) {
@@ -211,9 +212,7 @@ import { $effect } from "../../utils/bindings/$effect";
                     let-depth="depth"
                     let-edit="edit"
                   >
-                    @if (viewModel().editItem &&
-                    columnControl.edit() &&
-                    hasPerm("edit")) {
+                    @if (viewModel().editItem && columnControl.edit() && editable()) {
                       <sd-anchor class="flex-row" (click)="onItemClick(item, index, $event)">
                         <div class="p-xs-sm pr-0">
                           <sd-icon [icon]="icons.edit" />
@@ -288,9 +287,12 @@ export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>>
   viewType = input<TSdViewType>();
   currViewType = $computed(() => this.viewType() ?? this.#viewType());
 
-  hasPerm(code: string) {
-    return !this.viewModel().perms || this.viewModel().perms!().includes(code);
-  }
+  disabled = input(false, { transform: transformBoolean });
+  usable = $computed(() => !this.viewModel().perms || this.viewModel().perms!().includes("use"));
+  editable = $computed(
+    () =>
+      (!this.viewModel().perms || this.viewModel().perms!().includes("edit")) && !this.disabled(),
+  );
 
   //-- view
 
@@ -352,7 +354,7 @@ export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>>
         },
       ],
       async () => {
-        if (!this.hasPerm("use")) {
+        if (!this.usable()) {
           this.initialized.set(true);
           return;
         }
@@ -413,13 +415,13 @@ export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>>
   //-- edit
 
   async onCreateItemButtonClick() {
-    if (!this.hasPerm("edit")) return;
+    if (!this.editable()) return;
 
     await this.#editItemAsync();
   }
 
   async onItemClick(item: TVMItem<VM>, index: number, event: MouseEvent) {
-    if (!this.hasPerm("edit")) return;
+    if (!this.editable()) return;
 
     event.preventDefault();
     event.stopPropagation();
@@ -454,7 +456,7 @@ export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>>
 
   async onToggleDeletesButtonClick(del: boolean) {
     if (!this.viewModel().toggleDeletes) return;
-    if (!this.hasPerm("edit")) return;
+    if (!this.editable()) return;
 
     this.busyCount.update((v) => v + 1);
 
@@ -486,7 +488,7 @@ export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>>
 
   async onUploadExcelButtonClick() {
     if (!this.viewModel().uploadExcel) return;
-    if (!this.hasPerm("edit")) return;
+    if (!this.editable()) return;
 
     const file = await this.#sdFileDialog.showAsync(
       false,
