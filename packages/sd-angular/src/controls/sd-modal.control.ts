@@ -21,7 +21,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
 import { SdAnchorControl } from "./sd-anchor.control";
 import { SdDockContainerControl } from "./sd-dock-container.control";
 import { SdDockControl } from "./sd-dock.control";
-import { SdIconControl } from "./sd-icon.control";
+import { SdIconControl } from "./icon/sd-icon.control";
 import { SdPaneControl } from "./sd-pane.control";
 
 @Component({

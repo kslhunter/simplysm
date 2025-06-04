@@ -28,7 +28,7 @@ import { SdDockControl } from "./sd-dock.control";
 import { SdDropdownPopupControl } from "./sd-dropdown-popup.control";
 import { SdDropdownControl } from "./sd-dropdown.control";
 import { SdGapControl } from "./sd-gap.control";
-import { SdIconControl } from "./sd-icon.control";
+import { SdIconControl } from "./icon/sd-icon.control";
 import { SdPaneControl } from "./sd-pane.control";
 import { SdSelectItemControl } from "./sd-select-item.control";
 

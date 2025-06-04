@@ -13,7 +13,7 @@ import { SdButtonControl } from "../controls/sd-button.control";
 import { SdCheckboxControl } from "../controls/sd-checkbox.control";
 import { SdDockContainerControl } from "../controls/sd-dock-container.control";
 import { SdDockControl } from "../controls/sd-dock.control";
-import { SdIconControl } from "../controls/sd-icon.control";
+import { SdIconControl } from "../controls/icon/sd-icon.control";
 import { SdPaneControl } from "../controls/sd-pane.control";
 import { SdSheetColumnCellTemplateDirective } from "../controls/sd-sheet/directives/sd-sheet-column-cell.template-directive";
 import { SdSheetColumnDirective } from "../controls/sd-sheet/directives/sd-sheet-column.directive";

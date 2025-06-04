@@ -12,7 +12,7 @@ import { SdListItemControl } from "./sd-list-item.control";
 import { SdThemeProvider } from "../providers/sd-theme.provider";
 import { SdDropdownPopupControl } from "./sd-dropdown-popup.control";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
-import { SdIconControl } from "./sd-icon.control";
+import { SdIconControl } from "./icon/sd-icon.control";
 import { $effect } from "../utils/bindings/$effect";
 
 @Component({

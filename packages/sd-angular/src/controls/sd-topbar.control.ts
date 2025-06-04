@@ -15,7 +15,7 @@ import { SdGapControl } from "./sd-gap.control";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 
 import { injectElementRef } from "../utils/injections/inject-element-ref";
-import { SdIconControl } from "./sd-icon.control";
+import { SdIconControl } from "./icon/sd-icon.control";
 import { $computed } from "../utils/bindings/$computed";
 
 @Component({

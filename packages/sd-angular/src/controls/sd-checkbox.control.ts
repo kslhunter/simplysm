@@ -11,7 +11,7 @@ import {
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { setupRipple } from "../utils/setups/setup-ripple";
 import { transformBoolean } from "../utils/type-tramsforms";
-import { SdIconControl } from "./sd-icon.control";
+import { SdIconControl } from "./icon/sd-icon.control";
 import { setupModelHook } from "../utils/setups/setup-model-hook";
 
 @Component({

@@ -2865,22 +2865,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-angular-icons@workspace:packages/sd-angular-icons":
-  version: 0.0.0-use.local
-  resolution: "@simplysm/sd-angular-icons@workspace:packages/sd-angular-icons"
-  dependencies:
-    "@angular/core": "npm:^20.0.0"
-    "@material-symbols/svg-100": "npm:^0.31.4"
-    "@material-symbols/svg-200": "npm:^0.31.4"
-    "@material-symbols/svg-300": "npm:^0.31.4"
-    "@material-symbols/svg-400": "npm:^0.31.4"
-    "@material-symbols/svg-500": "npm:^0.31.4"
-    "@material-symbols/svg-600": "npm:^0.31.4"
-    "@material-symbols/svg-700": "npm:^0.31.4"
-    rxjs: "npm:^7.8.2"
-  languageName: unknown
-  linkType: soft
-
 "@simplysm/sd-angular@npm:12.11.10, @simplysm/sd-angular@workspace:packages/sd-angular":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-angular@workspace:packages/sd-angular"
@@ -2896,6 +2880,7 @@ __metadata:
     "@simplysm/sd-core-browser": "npm:12.11.10"
     "@simplysm/sd-core-common": "npm:12.11.10"
     "@simplysm/sd-excel": "npm:12.11.10"
+    "@simplysm/sd-mat-icons": "npm:12.11.10"
     "@simplysm/sd-service-client": "npm:12.11.10"
     "@simplysm/sd-service-common": "npm:12.11.10"
     "@types/qrcode": "npm:^1.5.5"
@@ -2991,6 +2976,20 @@ __metadata:
   dependencies:
     "@simplysm/sd-core-common": "npm:12.11.10"
     xlsx: "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
+  languageName: unknown
+  linkType: soft
+
+"@simplysm/sd-mat-icons@npm:12.11.10, @simplysm/sd-mat-icons@workspace:packages/sd-mat-icons":
+  version: 0.0.0-use.local
+  resolution: "@simplysm/sd-mat-icons@workspace:packages/sd-mat-icons"
+  dependencies:
+    "@material-symbols/svg-100": "npm:^0.31.4"
+    "@material-symbols/svg-200": "npm:^0.31.4"
+    "@material-symbols/svg-300": "npm:^0.31.4"
+    "@material-symbols/svg-400": "npm:^0.31.4"
+    "@material-symbols/svg-500": "npm:^0.31.4"
+    "@material-symbols/svg-600": "npm:^0.31.4"
+    "@material-symbols/svg-700": "npm:^0.31.4"
   languageName: unknown
   linkType: soft
 

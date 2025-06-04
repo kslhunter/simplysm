@@ -13,7 +13,7 @@ import { $effect } from "../utils/bindings/$effect";
 import { $signal } from "../utils/bindings/$signal";
 import { transformBoolean } from "../utils/type-tramsforms";
 import { SdButtonControl } from "./sd-button.control";
-import { SdIconControl } from "./sd-icon.control";
+import { SdIconControl } from "./icon/sd-icon.control";
 import { SdTextfieldControl } from "./sd-textfield.control";
 
 @Component({

@@ -21,7 +21,7 @@ import { SdBusyContainerControl } from "./sd-busy-container.control";
 import { SdCheckboxControl } from "./sd-checkbox.control";
 import { SdDockContainerControl } from "./sd-dock-container.control";
 import { SdDockControl } from "./sd-dock.control";
-import { SdIconControl } from "./sd-icon.control";
+import { SdIconControl } from "./icon/sd-icon.control";
 import { SdKanbanBoardControl } from "./sd-kanban-board.control";
 import { SdKanbanControl } from "./sd-kanban.control";
 import { SdPaneControl } from "./sd-pane.control";

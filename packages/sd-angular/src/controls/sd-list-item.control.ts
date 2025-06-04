@@ -17,7 +17,7 @@ import { $computed } from "../utils/bindings/$computed";
 import { transformBoolean } from "../utils/type-tramsforms";
 import { SdCollapseIconControl } from "./sd-collapse-icon.control";
 import { SdCollapseControl } from "./sd-collapse.control";
-import { SdIconControl } from "./sd-icon.control";
+import { SdIconControl } from "./icon/sd-icon.control";
 import { SdListControl } from "./sd-list.control";
 
 @Component({

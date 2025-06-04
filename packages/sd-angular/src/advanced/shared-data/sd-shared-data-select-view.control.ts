@@ -15,7 +15,7 @@ import { SdAnchorControl } from "../../controls/sd-anchor.control";
 import { SdBusyContainerControl } from "../../controls/sd-busy-container.control";
 import { SdDockContainerControl } from "../../controls/sd-dock-container.control";
 import { SdDockControl } from "../../controls/sd-dock.control";
-import { SdIconControl } from "../../controls/sd-icon.control";
+import { SdIconControl } from "../../controls/icon/sd-icon.control";
 import { SdListItemControl } from "../../controls/sd-list-item.control";
 import { SdListControl } from "../../controls/sd-list.control";
 import { SdPaginationControl } from "../../controls/sd-pagination.control";

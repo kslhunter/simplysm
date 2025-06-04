@@ -19,7 +19,7 @@ import { SdDockControl } from "../../controls/sd-dock.control";
 import { SdFormBoxItemControl } from "../../controls/sd-form-box-item.control";
 import { SdFormBoxControl } from "../../controls/sd-form-box.control";
 import { SdFormControl } from "../../controls/sd-form.control";
-import { SdIconControl } from "../../controls/sd-icon.control";
+import { SdIconControl } from "../../controls/icon/sd-icon.control";
 import { SdPaneControl } from "../../controls/sd-pane.control";
 import { SdSheetColumnCellTemplateDirective } from "../../controls/sd-sheet/directives/sd-sheet-column-cell.template-directive";
 import { SdSheetColumnDirective } from "../../controls/sd-sheet/directives/sd-sheet-column.directive";

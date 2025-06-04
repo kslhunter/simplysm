@@ -10,7 +10,7 @@ import {
 import { SdAdditionalButtonControl } from "../controls/sd-additional-button.control";
 import { SdAnchorControl } from "../controls/sd-anchor.control";
 import { SdButtonControl } from "../controls/sd-button.control";
-import { SdIconControl } from "../controls/sd-icon.control";
+import { SdIconControl } from "../controls/icon/sd-icon.control";
 import { TSelectValue } from "../controls/sd-select-control";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { ISdModal, ISdModalInput, SdModalProvider } from "../providers/sd-modal.provider";

@@ -9,7 +9,7 @@ import {
   TemplateRef,
   ViewEncapsulation,
 } from "@angular/core";
-import { SdIconControl } from "../../controls/sd-icon.control";
+import { SdIconControl } from "../../controls/icon/sd-icon.control";
 import { SdSelectButtonControl } from "../../controls/sd-select-button.control";
 import { SdSelectControl, TSelectValue } from "../../controls/sd-select-control";
 import { SdSelectItemControl } from "../../controls/sd-select-item.control";
