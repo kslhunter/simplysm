@@ -9,7 +9,6 @@ import {
   TemplateRef,
   ViewEncapsulation,
 } from "@angular/core";
-import { SdIconControl } from "../../controls/icon/sd-icon.control";
 import { SdSelectButtonControl } from "../../controls/sd-select-button.control";
 import { SdSelectControl, TSelectValue } from "../../controls/sd-select-control";
 import { SdSelectItemControl } from "../../controls/sd-select-item.control";
@@ -18,13 +17,15 @@ import {
   SdItemOfTemplateContext,
   SdItemOfTemplateDirective,
 } from "../../directives/sd-item-of.template-directive";
-import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
 import { ISdModal, ISdModalInput, SdModalProvider } from "../../providers/sd-modal.provider";
 import { $computed } from "../../utils/bindings/$computed";
 import { $signal } from "../../utils/bindings/$signal";
 import { transformBoolean } from "../../utils/type-tramsforms";
 import { TSdSelectModalInput } from "../sd-select-modal-button.control";
 import { ISharedDataBase } from "./sd-shared-data.provider";
+import { SdTablerIconControl } from "../../controls/tabler-icon/sd-tabler-icon.control";
+import { taSearch } from "@simplysm/sd-tabler-icons/icons/ta-search";
+import { taEdit } from "@simplysm/sd-tabler-icons/icons/ta-edit";
 
 // TODO: sd-select-modal-button을 사용하는식으로 바꿀 수 있나? 검토 필요
 @Component({
@@ -39,7 +40,7 @@ import { ISharedDataBase } from "./sd-shared-data.provider";
     SdItemOfTemplateDirective,
     NgTemplateOutlet,
     SdSelectButtonControl,
-    SdIconControl,
+    SdTablerIconControl,
   ],
   template: `
     <sd-select
@@ -60,12 +61,12 @@ import { ISharedDataBase } from "./sd-shared-data.provider";
     >
       @if (modal()) {
         <sd-select-button (click)="onModalButtonClick($event)">
-          <sd-icon [icon]="icons.search" />
+          <sd-tabler-icon [icon]="taSearch" />
         </sd-select-button>
       }
       @if (editModal()) {
         <sd-select-button (click)="onEditModalButtonClick($event)">
-          <sd-icon [icon]="icons.edit" />
+          <sd-tabler-icon [icon]="taEdit" />
         </sd-select-button>
       }
 
@@ -126,8 +127,6 @@ export class SdSharedDataSelectControl<
   T extends ISharedDataBase<string | number>,
   M extends keyof TSelectValue<T>,
 > {
-  protected readonly icons = inject(SdAngularConfigProvider).icons;
-
   #sdModal = inject(SdModalProvider);
 
   value = model<TSelectValue<T["__valueKey"] | undefined>[M]>();
@@ -291,4 +290,7 @@ export class SdSharedDataSelectControl<
 
     await this.#sdModal.showAsync(modal);
   }
+
+  protected readonly taSearch = taSearch;
+  protected readonly taEdit = taEdit;
 }

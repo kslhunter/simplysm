@@ -2,29 +2,27 @@ import {
   ChangeDetectionStrategy,
   Component,
   HostListener,
-  inject,
   input,
   model,
   ViewEncapsulation,
 } from "@angular/core";
-
-import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { setupRipple } from "../utils/setups/setup-ripple";
 import { transformBoolean } from "../utils/type-tramsforms";
-import { SdIconControl } from "./icon/sd-icon.control";
 import { setupModelHook } from "../utils/setups/setup-model-hook";
+import { SdTablerIconControl } from "./tabler-icon/sd-tabler-icon.control";
+import { taCheck } from "@simplysm/sd-tabler-icons/icons/ta-check";
 
 @Component({
   selector: "sd-checkbox",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdIconControl],
+  imports: [SdTablerIconControl],
   template: `
     <div class="_indicator_rect">
       <div class="_indicator">
         @if (!radio()) {
-          <sd-icon [icon]="icon()" />
+          <sd-tabler-icon [icon]="icon()" />
         } @else {
           <div></div>
         }
@@ -244,12 +242,10 @@ import { setupModelHook } from "../utils/setups/setup-model-hook";
   },
 })
 export class SdCheckboxControl {
-  protected readonly icons = inject(SdAngularConfigProvider).icons;
-
   value = model(false);
   canChangeFn = input<(item: boolean) => boolean | Promise<boolean>>(() => true);
 
-  icon = input(this.icons.check);
+  icon = input(taCheck);
   radio = input(false, { transform: transformBoolean });
   disabled = input(false, { transform: transformBoolean });
 

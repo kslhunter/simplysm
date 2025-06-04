@@ -4,7 +4,6 @@ import {
   Component,
   contentChild,
   ElementRef,
-  inject,
   input,
   model,
   TemplateRef,
@@ -17,7 +16,6 @@ import {
 } from "../directives/sd-item-of.template-directive";
 import { SdRippleDirective } from "../directives/sd-ripple.directive";
 import { SdTypedTemplateDirective } from "../directives/sd-typed.template-directive";
-import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { $afterRenderEffect } from "../utils/bindings/$afterRenderEffect";
 import { $signal } from "../utils/bindings/$signal";
 import { setupInvalid } from "../utils/setups/setup-invalid";
@@ -28,9 +26,10 @@ import { SdDockControl } from "./sd-dock.control";
 import { SdDropdownPopupControl } from "./sd-dropdown-popup.control";
 import { SdDropdownControl } from "./sd-dropdown.control";
 import { SdGapControl } from "./sd-gap.control";
-import { SdIconControl } from "./icon/sd-icon.control";
 import { SdPaneControl } from "./sd-pane.control";
 import { SdSelectItemControl } from "./sd-select-item.control";
+import { SdTablerIconControl } from "./tabler-icon/sd-tabler-icon.control";
+import { taCaretDown } from "@simplysm/sd-tabler-icons/icons/ta-caret-down";
 
 @Component({
   selector: "sd-select",
@@ -48,7 +47,7 @@ import { SdSelectItemControl } from "./sd-select-item.control";
     NgTemplateOutlet,
     SdTypedTemplateDirective,
     SdRippleDirective,
-    SdIconControl,
+    SdTablerIconControl,
   ],
   styles: [
     /* language=SCSS */ `
@@ -203,7 +202,7 @@ import { SdSelectItemControl } from "./sd-select-item.control";
       <div class="_sd-select-control" [sd-ripple]="!disabled()">
         <div #contentEl class="_sd-select-control-content"></div>
         <div class="_sd-select-control-icon">
-          <sd-icon [icon]="icons.caretDown" />
+          <sd-tabler-icon [icon]="taCaretDown" />
         </div>
       </div>
 
@@ -291,8 +290,6 @@ import { SdSelectItemControl } from "./sd-select-item.control";
   },
 })
 export class SdSelectControl<M extends "single" | "multi", T> {
-  protected readonly icons = inject(SdAngularConfigProvider).icons;
-
   value = model<TSelectValue<any>[M]>();
 
   open = model(false);
@@ -442,6 +439,7 @@ export class SdSelectControl<M extends "single" | "multi", T> {
     items: T[];
     depth: number;
   };
+  protected readonly taCaretDown = taCaretDown;
 }
 
 export type TSelectValue<T> = {

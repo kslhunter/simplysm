@@ -1,6 +1,6 @@
 import { inject, Injectable, Signal } from "@angular/core";
-import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { $computed } from "../utils/bindings/$computed";
+import { SdTablerIcon } from "@simplysm/sd-tabler-icons";
 
 export function usePermsSignal<K extends string>(viewCodes: string[], keys: K[]): Signal<K[]> {
   const sdAppStructure = inject(SdAppStructureProvider);
@@ -359,7 +359,7 @@ interface ISdAppStructureGroupItem<TModule> {
   code: string;
   title: string;
   modules?: TModule[];
-  icon?: IconDefinition;
+  icon?: SdTablerIcon;
   children: TSdAppStructureItem<TModule>[];
 }
 
@@ -369,7 +369,7 @@ interface ISdAppStructureLeafItem<TModule> {
   modules?: TModule[];
   perms?: ("use" | "edit")[];
   subPerms?: ISdAppStructureSubPermission<TModule>[];
-  icon?: IconDefinition;
+  icon?: SdTablerIcon;
   isNotMenu?: boolean;
 }
 
@@ -383,7 +383,7 @@ interface ISdAppStructureSubPermission<TModule> {
 export interface ISdMenu<TModule = unknown> {
   title: string;
   codeChain: string[];
-  icon: IconDefinition | undefined;
+  icon: SdTablerIcon | undefined;
   modules: TModule[] | undefined;
   children: ISdMenu<TModule>[] | undefined;
 }

@@ -1,16 +1,10 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  input,
-  ViewEncapsulation,
-} from "@angular/core";
+import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
 import { SdCollapseIconControl } from "./sd-collapse-icon.control";
 import { SdCollapseControl } from "./sd-collapse.control";
 import { SdListControl } from "./sd-list.control";
 import { SdListItemControl } from "./sd-list-item.control";
-import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { $signal } from "../utils/bindings/$signal";
+import { SdRippleDirective } from "../directives/sd-ripple.directive";
 
 @Component({
   selector: "sd-sidebar-user",
@@ -22,6 +16,7 @@ import { $signal } from "../utils/bindings/$signal";
     SdCollapseControl,
     SdListControl,
     SdListItemControl,
+    SdRippleDirective,
   ],
   styles: [
     /* language=SCSS */ `
@@ -77,7 +72,7 @@ import { $signal } from "../utils/bindings/$signal";
         <ng-content></ng-content>
       </div>
       @if (userMenu()?.title) {
-        <div class="_menu-button" (click)="onMenuOpenButtonClick()" sdUseRipple>
+        <div class="_menu-button" (click)="onMenuOpenButtonClick()" sd-ripple>
           {{ userMenu()?.title }}
           <sd-collapse-icon [open]="menuOpen()" style="float: right;" [openRotate]="180" />
         </div>
@@ -100,8 +95,6 @@ import { $signal } from "../utils/bindings/$signal";
   },
 })
 export class SdSidebarUserControl {
- protected readonly icons = inject(SdAngularConfigProvider).icons;
-
   userMenu = input<ISidebarUserMenu>();
   menuTitle = input<string>();
   contentStyle = input<string>();

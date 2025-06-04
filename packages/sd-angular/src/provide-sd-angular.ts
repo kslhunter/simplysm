@@ -1,4 +1,4 @@
-import { ISdAngularIcon, SdAngularConfigProvider } from "./providers/sd-angular-config.provider";
+import { SdAngularConfigProvider } from "./providers/sd-angular-config.provider";
 import {
   DestroyRef,
   EnvironmentProviders,
@@ -8,41 +8,6 @@ import {
   provideEnvironmentInitializer,
   provideZonelessChangeDetection,
 } from "@angular/core";
-import {
-  faAngleDoubleLeft,
-  faAngleDoubleRight,
-  faAngleDown,
-  faAngleLeft,
-  faAngleRight,
-  faAngleUp,
-  faArrowLeft,
-  faArrowLeftLong,
-  faBars,
-  faCaretDown,
-  faCaretRight,
-  faCheck,
-  faCog,
-  faEdit,
-  faEraser,
-  faExternalLink,
-  faEye,
-  faEyeSlash,
-  faFileExcel,
-  faMountainSun,
-  faPlusCircle,
-  faQuestionCircle,
-  faRedo,
-  faRefresh,
-  faSave,
-  faSearch,
-  faSort,
-  faSortDown,
-  faSortUp,
-  faStar,
-  faTriangleExclamation,
-  faUpload,
-  faXmark,
-} from "@fortawesome/free-solid-svg-icons";
 import { EVENT_MANAGER_PLUGINS } from "@angular/platform-browser";
 import { SdSaveCommandEventPlugin } from "./plugins/commands/sd-save-command.event-plugin";
 import { SdRefreshCommandEventPlugin } from "./plugins/commands/sd-refresh-command.event-plugin";
@@ -68,7 +33,6 @@ export function provideSdAngular(opt: {
   clientName: string;
   defaultTheme?: TSdTheme;
   defaultDark?: boolean;
-  icons?: ISdAngularIcon;
 }): EnvironmentProviders {
   return makeEnvironmentProviders([
     provideEnvironmentInitializer(() => {
@@ -163,48 +127,6 @@ Source  : ${filename}(${lineno}, ${colno})${stack}`);
         provider.clientName = opt.clientName;
         provider.defaultTheme = opt.defaultTheme ?? "compact";
         provider.defaultDark = opt.defaultDark ?? false;
-        provider.icons = {
-          fallback: faQuestionCircle,
-
-          caretDown: faCaretDown,
-          eye: faEye,
-          eyeSlash: faEyeSlash,
-          angleDown: faAngleDown,
-          triangleExclamation: faTriangleExclamation,
-          angleDoubleLeft: faAngleDoubleLeft,
-          angleDoubleRight: faAngleDoubleRight,
-          angleLeft: faAngleLeft,
-          angleRight: faAngleRight,
-          cog: faCog,
-          arrowLeft: faArrowLeft,
-          caretRight: faCaretRight,
-          save: faSave,
-          star: faStar,
-          mountainSun: faMountainSun,
-          bars: faBars,
-          angleUp: faAngleUp,
-
-          check: faCheck,
-          xmark: faXmark,
-          sort: faSort,
-          sortDown: faSortDown,
-          sortUp: faSortUp,
-
-          eraser: faEraser,
-          arrowLeftLong: faArrowLeftLong,
-
-          search: faSearch,
-          externalLink: faExternalLink,
-          edit: faEdit,
-
-          refresh: faRefresh,
-          add: faPlusCircle,
-          redo: faRedo,
-          upload: faUpload,
-          fileExcel: faFileExcel,
-
-          ...opt.icons,
-        };
         return provider;
       },
     },

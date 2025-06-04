@@ -12,18 +12,19 @@ import { SdSidebarContainerControl } from "./sd-sidebar-container.control";
 import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
 import { SdAnchorControl } from "./sd-anchor.control";
 import { SdGapControl } from "./sd-gap.control";
-import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 
 import { injectElementRef } from "../utils/injections/inject-element-ref";
-import { SdIconControl } from "./icon/sd-icon.control";
 import { $computed } from "../utils/bindings/$computed";
+import { SdTablerIconControl } from "./tabler-icon/sd-tabler-icon.control";
+import { taMenu } from "@simplysm/sd-tabler-icons/icons/ta-menu";
+import { SdRippleDirective } from "../directives/sd-ripple.directive";
 
 @Component({
   selector: "sd-topbar",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdAnchorControl, SdGapControl, SdIconControl],
+  imports: [SdAnchorControl, SdGapControl, SdTablerIconControl, SdRippleDirective],
   styles: [
     /* language=SCSS */ `
       @use "../scss/mixins";
@@ -119,8 +120,8 @@ import { $computed } from "../utils/bindings/$computed";
   ],
   template: `
     @if (hasSidebar()) {
-      <sd-anchor class="_sidebar-toggle-button" (click)="onSidebarToggleButtonClick()" sdUseRipple>
-        <sd-icon [icon]="icons.bars" fixedWidth />
+      <sd-anchor class="_sidebar-toggle-button" (click)="onSidebarToggleButtonClick()" sd-ripple>
+        <sd-tabler-icon [icon]="taMenu" />
       </sd-anchor>
     } @else {
       <sd-gap width="sm" />
@@ -132,11 +133,11 @@ import { $computed } from "../utils/bindings/$computed";
   `,
 })
 export class SdTopbarControl {
-  protected readonly icons = inject(SdAngularConfigProvider).icons;
-
   #elRef = injectElementRef<HTMLElement>();
   #parentSidebarContainerControl = inject(SdSidebarContainerControl, { optional: true });
-  #topbarContainerControl = inject<SdTopbarContainerControl>(forwardRef(() => SdTopbarContainerControl));
+  #topbarContainerControl = inject<SdTopbarContainerControl>(
+    forwardRef(() => SdTopbarContainerControl),
+  );
 
   sidebarContainer = input<SdSidebarContainerControl>();
 
@@ -152,4 +153,6 @@ export class SdTopbarControl {
     if (!event.heightChanged) return;
     this.#topbarContainerControl.paddingTop.set(this.#elRef.nativeElement.offsetHeight + "px");
   }
+
+  protected readonly taMenu = taMenu;
 }

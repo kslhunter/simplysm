@@ -1,22 +1,18 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  input,
-  model,
-  ViewEncapsulation,
-} from "@angular/core";
-import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
+import { ChangeDetectionStrategy, Component, input, model, ViewEncapsulation } from "@angular/core";
 import { $computed } from "../utils/bindings/$computed";
 import { SdAnchorControl } from "./sd-anchor.control";
-import { SdIconControl } from "./icon/sd-icon.control";
+import { SdTablerIconControl } from "./tabler-icon/sd-tabler-icon.control";
+import { taChevronsLeft } from "@simplysm/sd-tabler-icons/icons/ta-chevrons-left";
+import { taChevronsRight } from "@simplysm/sd-tabler-icons/icons/ta-chevrons-right";
+import { taChevronLeft } from "@simplysm/sd-tabler-icons/icons/ta-chevron-left";
+import { taChevronRight } from "@simplysm/sd-tabler-icons/icons/ta-chevron-right";
 
 @Component({
   selector: "sd-pagination",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdAnchorControl, SdIconControl],
+  imports: [SdAnchorControl, SdTablerIconControl],
   styles: [
     /* language=SCSS */ `
       @use "../scss/mixins";
@@ -38,10 +34,10 @@ import { SdIconControl } from "./icon/sd-icon.control";
   ],
   template: `
     <sd-anchor [disabled]="!hasPrev()" (click)="onGoFirstClick()">
-      <sd-icon [icon]="icons.angleDoubleLeft" fixedWidth />
+      <sd-tabler-icon [icon]="taChevronsLeft" />
     </sd-anchor>
     <sd-anchor [disabled]="!hasPrev()" (click)="onPrevClick()">
-      <sd-icon [icon]="icons.angleLeft" fixedWidth />
+      <sd-tabler-icon [icon]="taChevronLeft" />
     </sd-anchor>
     @for (displayPage of displayPages(); track displayPage) {
       <sd-anchor
@@ -52,16 +48,14 @@ import { SdIconControl } from "./icon/sd-icon.control";
       </sd-anchor>
     }
     <sd-anchor [disabled]="!hasNext()" (click)="onNextClick()">
-      <sd-icon [icon]="icons.angleRight" fixedWidth />
+      <sd-tabler-icon [icon]="taChevronRight" />
     </sd-anchor>
     <sd-anchor [disabled]="!hasNext()" (click)="onGoLastClick()">
-      <sd-icon [icon]="icons.angleDoubleRight" fixedWidth />
+      <sd-tabler-icon [icon]="taChevronsRight" />
     </sd-anchor>
   `,
 })
 export class SdPaginationControl {
-  protected readonly icons = inject(SdAngularConfigProvider).icons;
-
   currentPage = model<number>(0);
 
   totalPageCount = input(0);
@@ -109,4 +103,9 @@ export class SdPaginationControl {
     const page = this.totalPageCount() - 1;
     this.currentPage.set(page);
   }
+
+  protected readonly taChevronsLeft = taChevronsLeft;
+  protected readonly taChevronsRight = taChevronsRight;
+  protected readonly taChevronLeft = taChevronLeft;
+  protected readonly taChevronRight = taChevronRight;
 }

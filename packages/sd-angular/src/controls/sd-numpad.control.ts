@@ -1,27 +1,27 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  inject,
   input,
   model,
   output,
   ViewEncapsulation,
 } from "@angular/core";
 import { NumberUtils, StringUtils } from "@simplysm/sd-core-common";
-import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { $effect } from "../utils/bindings/$effect";
 import { $signal } from "../utils/bindings/$signal";
 import { transformBoolean } from "../utils/type-tramsforms";
 import { SdButtonControl } from "./sd-button.control";
-import { SdIconControl } from "./icon/sd-icon.control";
 import { SdTextfieldControl } from "./sd-textfield.control";
+import { SdTablerIconControl } from "./tabler-icon/sd-tabler-icon.control";
+import { taEraser } from "@simplysm/sd-tabler-icons/icons/ta-eraser";
+import { taBackspace } from "@simplysm/sd-tabler-icons/icons/ta-backspace";
 
 @Component({
   selector: "sd-numpad",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdTextfieldControl, SdButtonControl, SdIconControl],
+  imports: [SdTextfieldControl, SdButtonControl, SdTablerIconControl],
   template: `
     <table>
       <thead>
@@ -59,7 +59,7 @@ import { SdTextfieldControl } from "./sd-textfield.control";
           }
           <td [attr.colspan]="useMinusButton() ? 1 : 2">
             <sd-button size="lg" buttonClass="tx-theme-danger-default" (click)="onButtonClick('C')">
-              <sd-icon [icon]="icons.eraser" />
+              <sd-tabler-icon [icon]="taEraser" />
             </sd-button>
           </td>
           <td>
@@ -68,7 +68,7 @@ import { SdTextfieldControl } from "./sd-textfield.control";
               buttonClass="tx-theme-warning-default"
               (click)="onButtonClick('BS')"
             >
-              <sd-icon [icon]="icons.arrowLeftLong" />
+              <sd-tabler-icon [icon]="taBackspace" />
             </sd-button>
           </td>
         </tr>
@@ -115,8 +115,6 @@ import { SdTextfieldControl } from "./sd-textfield.control";
   ],
 })
 export class SdNumpadControl {
-  protected readonly icons = inject(SdAngularConfigProvider).icons;
-
   text = $signal<string>();
 
   placeholder = input<string>();
@@ -167,4 +165,7 @@ export class SdNumpadControl {
       this.text.update((v) => (v ?? "") + key);
     }
   }
+
+  protected readonly taEraser = taEraser;
+  protected readonly taBackspace = taBackspace;
 }

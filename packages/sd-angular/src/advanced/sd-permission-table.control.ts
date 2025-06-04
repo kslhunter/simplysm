@@ -1,22 +1,15 @@
 import { NgTemplateOutlet } from "@angular/common";
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  input,
-  model,
-  ViewEncapsulation,
-} from "@angular/core";
+import { ChangeDetectionStrategy, Component, input, model, ViewEncapsulation } from "@angular/core";
 import { ObjectUtils } from "@simplysm/sd-core-common";
 import { SdAnchorControl } from "../controls/sd-anchor.control";
 import { SdCheckboxControl } from "../controls/sd-checkbox.control";
 import { SdCollapseIconControl } from "../controls/sd-collapse-icon.control";
 import { SdTypedTemplateDirective } from "../directives/sd-typed.template-directive";
-import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { $computed } from "../utils/bindings/$computed";
 import { $signal } from "../utils/bindings/$signal";
 import { transformBoolean } from "../utils/type-tramsforms";
 import { ISdPermission } from "../providers/sd-app-structure.provider";
+import { taChevronRight } from "@simplysm/sd-tabler-icons/icons/ta-chevron-right";
 
 /**
  * 권한 테이블 컴포넌트
@@ -167,7 +160,7 @@ import { ISdPermission } from "../providers/sd-app-structure.provider";
           <td class="_title">
             @if (item.children && item.children.length > 0) {
               <sd-anchor (click)="onPermCollapseToggle(item)">
-                <sd-collapse-icon [icon]="icons.angleRight" [open]="getIsPermCollapsed(item)" />
+                <sd-collapse-icon [icon]="taChevronRight" [open]="getIsPermCollapsed(item)" />
                 {{ item.title }}
               </sd-anchor>
             } @else {
@@ -225,8 +218,6 @@ import { ISdPermission } from "../providers/sd-app-structure.provider";
   `,
 })
 export class SdPermissionTableControl<TModule> {
-  protected readonly icons = inject(SdAngularConfigProvider).icons;
-
   value = model<Record<string, boolean>>({});
 
   items = input<ISdPermission<TModule>[]>([]);
@@ -391,4 +382,5 @@ export class SdPermissionTableControl<TModule> {
     depth: number;
     parent: ISdPermission<TModule> | undefined;
   };
+  protected readonly taChevronRight = taChevronRight;
 }

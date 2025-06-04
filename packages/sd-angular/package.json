@@ -20,8 +20,6 @@
     "@angular/platform-browser": "^20.0.0",
     "@angular/router": "^20.0.0",
     "@angular/service-worker": "^20.0.0",
-    "@fortawesome/fontawesome-svg-core": "^6.7.2",
-    "@fortawesome/free-solid-svg-icons": "^6.7.2",
     "@simplysm/sd-core-browser": "12.11.15",
     "@simplysm/sd-core-common": "12.11.15",
     "@simplysm/sd-excel": "12.11.15",
