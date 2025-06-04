@@ -19,16 +19,10 @@ import { SdDockControl } from "../../controls/sd-dock.control";
 import { SdFormBoxItemControl } from "../../controls/sd-form-box-item.control";
 import { SdFormBoxControl } from "../../controls/sd-form-box.control";
 import { SdFormControl } from "../../controls/sd-form.control";
-import { SdIconControl } from "../../controls/icon/sd-icon.control";
 import { SdPaneControl } from "../../controls/sd-pane.control";
-import {
-  SdSheetColumnCellTemplateDirective,
-} from "../../controls/sd-sheet/directives/sd-sheet-column-cell.template-directive";
-import {
-  SdSheetColumnDirective,
-} from "../../controls/sd-sheet/directives/sd-sheet-column.directive";
+import { SdSheetColumnCellTemplateDirective } from "../../controls/sd-sheet/directives/sd-sheet-column-cell.template-directive";
+import { SdSheetColumnDirective } from "../../controls/sd-sheet/directives/sd-sheet-column.directive";
 import { SdSheetControl } from "../../controls/sd-sheet/sd-sheet.control";
-import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
 import { SdFileDialogProvider } from "../../providers/sd-file-dialog.provider";
 import { SdToastProvider } from "../../providers/sd-toast.provider";
 import { $computed } from "../../utils/bindings/$computed";
@@ -42,14 +36,17 @@ import { SdSharedDataProvider } from "../shared-data/sd-shared-data.provider";
 import { SdDataSheetColumnDirective } from "./sd-data-sheet-column.directive";
 import { SdDataSheetFilterDirective } from "./sd-data-sheet-filter.directive";
 import { SdDataSheetToolDirective } from "./sd-data-sheet-tool.directive";
-import {
-  setupCloserWhenSingleSelectionChange,
-} from "../../utils/setups/setup-closer-when-single-selection-change";
+import { setupCloserWhenSingleSelectionChange } from "../../utils/setups/setup-closer-when-single-selection-change";
 import { $effect } from "../../utils/bindings/$effect";
 import { transformBoolean } from "../../utils/type-tramsforms";
 import { SdTablerIconControl } from "../../controls/tabler-icon/sd-tabler-icon.control";
 import { taCirclePlus } from "@simplysm/sd-tabler-icons/icons/ta-circle-plus";
 import { taSearch } from "@simplysm/sd-tabler-icons/icons/ta-search";
+import { taEraser } from "@simplysm/sd-tabler-icons/icons/ta-eraser";
+import { taUpload } from "@simplysm/sd-tabler-icons/icons/ta-upload";
+import { taFileExcel } from "@simplysm/sd-tabler-icons/icons/ta-file-excel";
+import { taEdit } from "@simplysm/sd-tabler-icons/icons/ta-edit";
+import { taReload } from "@simplysm/sd-tabler-icons/icons/ta-reload";
 
 @Component({
   selector: "sd-data-sheet",
@@ -57,7 +54,6 @@ import { taSearch } from "@simplysm/sd-tabler-icons/icons/ta-search";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
-    SdIconControl,
     SdDockContainerControl,
     SdDockControl,
     SdFormControl,
@@ -83,7 +79,7 @@ import { taSearch } from "@simplysm/sd-tabler-icons/icons/ta-search";
       <!--<ng-template #pageTopbar>
         <sd-topbar-menu>
           <sd-topbar-menu-item theme="info" (click)="onRefreshCommand()">
-            <sd-icon [icon]="icons.refresh" fixedWidth />
+            <sd-tabler-icon [icon]="taRefresh" />
             새로고침
             <small>(CTRL+ALT+L)</small>
           </sd-topbar-menu-item>
@@ -142,7 +138,7 @@ import { taSearch } from "@simplysm/sd-tabler-icons/icons/ta-search";
                     (click)="onToggleDeletesButtonClick(true)"
                     [disabled]="!isSelectedItemsHasNotDeleted()"
                   >
-                    <sd-icon [icon]="icons.eraser" [fixedWidth]="true" />
+                    <sd-tabler-icon [icon]="taEraser" />
                     선택 삭제
                   </sd-button>
                   @if (isSelectedItemsHasDeleted()) {
@@ -151,7 +147,7 @@ import { taSearch } from "@simplysm/sd-tabler-icons/icons/ta-search";
                       theme="link-warning"
                       (click)="onToggleDeletesButtonClick(false)"
                     >
-                      <sd-icon [icon]="icons.redo" [fixedWidth]="true" />
+                      <sd-tabler-icon [icon]="taReload" />
                       선택 복구
                     </sd-button>
                   }
@@ -159,7 +155,7 @@ import { taSearch } from "@simplysm/sd-tabler-icons/icons/ta-search";
 
                 @if (viewModel().uploadExcel) {
                   <sd-button size="sm" theme="link-success" (click)="onUploadExcelButtonClick()">
-                    <sd-icon [icon]="icons.upload" fixedWidth />
+                    <sd-tabler-icon [icon]="taUpload" />
                     엑셀 업로드
                   </sd-button>
                 }
@@ -167,7 +163,7 @@ import { taSearch } from "@simplysm/sd-tabler-icons/icons/ta-search";
 
               @if (viewModel().downloadExcel) {
                 <sd-button size="sm" theme="link-success" (click)="onDownloadExcelButtonClick()">
-                  <sd-icon [icon]="icons.fileExcel" fixedWidth />
+                  <sd-tabler-icon [icon]="taFileExcel" />
                   엑셀 다운로드
                 </sd-button>
               }
@@ -225,7 +221,7 @@ import { taSearch } from "@simplysm/sd-tabler-icons/icons/ta-search";
                     @if (viewModel().editItem && columnControl.edit() && editable()) {
                       <sd-anchor class="flex-row" (click)="onItemClick(item, index, $event)">
                         <div class="p-xs-sm pr-0">
-                          <sd-icon [icon]="icons.edit" />
+                          <sd-tabler-icon [icon]="taEdit" />
                         </div>
                         <div class="flex-grow">
                           <ng-template
@@ -283,8 +279,6 @@ import { taSearch } from "@simplysm/sd-tabler-icons/icons/ta-search";
   `,
 })
 export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>> {
-  protected readonly icons = inject(SdAngularConfigProvider).icons;
-
   #sdToast = inject(SdToastProvider);
   #sdSharedData = inject(SdSharedDataProvider);
   #sdFileDialog = inject(SdFileDialogProvider);
@@ -532,6 +526,11 @@ export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>>
 
   protected readonly taCirclePlus = taCirclePlus;
   protected readonly taSearch = taSearch;
+  protected readonly taEraser = taEraser;
+  protected readonly taFileExcel = taFileExcel;
+  protected readonly taUpload = taUpload;
+  protected readonly taEdit = taEdit;
+  protected readonly taReload = taReload;
 }
 
 export interface ISdDataSheetViewModel<F extends Record<string, any>, I, K> {

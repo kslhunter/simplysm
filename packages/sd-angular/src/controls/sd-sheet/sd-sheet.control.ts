@@ -13,7 +13,6 @@ import {
 import { SdEventsDirective } from "../../directives/sd-events.directive";
 import { SdSheetConfigModal } from "../../modals/sd-sheet-config.modal";
 import { ISdResizeEvent } from "../../plugins/events/sd-resize.event-plugin";
-import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
 import { SdModalProvider } from "../../providers/sd-modal.provider";
 import { $computed } from "../../utils/bindings/$computed";
 import { SdExpandingManager } from "../../utils/managers/sd-expanding-manager";
@@ -26,8 +25,6 @@ import { SdBusyContainerControl } from "../sd-busy-container.control";
 import { SdCheckboxControl } from "../sd-checkbox.control";
 import { SdDockContainerControl } from "../sd-dock-container.control";
 import { SdDockControl } from "../sd-dock.control";
-import { SdIconLayersControl } from "../icon/sd-icon-layers.control";
-import { SdIconControl } from "../icon/sd-icon.control";
 import { SdPaginationControl } from "../sd-pagination.control";
 import { SdPaneControl } from "../sd-pane.control";
 import { SdSheetColumnDirective } from "./directives/sd-sheet-column.directive";
@@ -43,6 +40,12 @@ import {
   ISdSheetHeaderDef,
   ISdSheetItemKeydownEventParam,
 } from "./sd-sheet.types";
+import { SdTablerIconControl } from "../tabler-icon/sd-tabler-icon.control";
+import { taSettings } from "@simplysm/sd-tabler-icons/icons/ta-settings";
+import { taCaretRight } from "@simplysm/sd-tabler-icons/icons/ta-caret-right";
+import { taSortDescending } from "@simplysm/sd-tabler-icons/icons/ta-sort-descending";
+import { taSortAscending } from "@simplysm/sd-tabler-icons/icons/ta-sort-ascending";
+import { taArrowsSort } from "@simplysm/sd-tabler-icons/icons/ta-arrows-sort";
 
 @Component({
   selector: "sd-sheet",
@@ -58,9 +61,8 @@ import {
     SdPaneControl,
     NgTemplateOutlet,
     SdCheckboxControl,
-    SdIconControl,
-    SdIconLayersControl,
     SdEventsDirective,
+    SdTablerIconControl,
   ],
   template: `
     <sd-busy-container [busy]="busy()" type="cube">
@@ -70,7 +72,7 @@ import {
             <div class="flex-row-inline flex-gap-sm">
               @if (key()) {
                 <sd-anchor (click)="onConfigButtonClick()">
-                  <sd-icon [icon]="icons.cog" fixedWidth />
+                  <sd-tabler-icon [icon]="taSettings" />
                 </sd-anchor>
               }
               @if (effectivePageCount() > 1) {
@@ -118,11 +120,12 @@ import {
                         [style.left.px]="columnFixingManager.fixedLeftMap().get(-1)"
                         (sdResize)="onHeaderLastRowCellResize($event, -1)"
                       >
-                        <sd-icon
-                          [icon]="icons.caretRight"
-                          fixedWidth
+                        <sd-tabler-icon
+                          [icon]="taCaretRight"
                           [class.tx-theme-primary-default]="expandingManager.isAllExpanded()"
-                          [rotate]="expandingManager.isAllExpanded() ? 90 : undefined"
+                          [style.transform]="
+                            expandingManager.isAllExpanded() ? 'rotate(90deg)' : undefined
+                          "
                           (click)="expandingManager.toggleAll()"
                         />
                       </th>
@@ -181,15 +184,14 @@ import {
                             <!-- 정렬 아이콘 -->
                             @if (!headerCell.control.disableSorting()) {
                               <div class="_sort-icon">
-                                <sd-icon-layers>
-                                  <sd-icon [icon]="icons.sort" class="tx-trans-lightest" />
-                                  @let _def = sortingManager.defMap().get(headerCell.control.key());
-                                  @if (_def?.desc === false) {
-                                    <sd-icon [icon]="icons.sortDown" />
-                                  } @else if (_def?.desc === true) {
-                                    <sd-icon [icon]="icons.sortUp" />
-                                  }
-                                </sd-icon-layers>
+                                @let _def = sortingManager.defMap().get(headerCell.control.key());
+                                @if (_def?.desc === false) {
+                                  <sd-tabler-icon [icon]="taSortAscending" />
+                                } @else if (_def?.desc === true) {
+                                  <sd-tabler-icon [icon]="taSortDescending" />
+                                } @else {
+                                  <sd-tabler-icon [icon]="taArrowsSort" class="tx-trans-lightest" />
+                                }
                                 @let _idxText = _def?.indexText;
                                 @if (_idxText) {
                                   <sub>{{ _idxText }}</sub>
@@ -283,10 +285,11 @@ import {
                         ></div>
                       }
                       @if (itemExpDef.hasChildren) {
-                        <sd-icon
-                          [icon]="icons.caretRight"
-                          fixedWidth
-                          [rotate]="expandedItems().includes(item) ? 90 : undefined"
+                        <sd-tabler-icon
+                          [icon]="taCaretRight"
+                          [style.transform]="
+                            expandedItems().includes(item) ? 'rotate(90deg)' : undefined
+                          "
                           [class.tx-theme-primary-default]="expandedItems().includes(item)"
                           (click)="expandingManager.toggle(item)"
                         />
@@ -613,8 +616,6 @@ import {
   },
 })
 export class SdSheetControl<T> {
-  protected readonly icons = inject(SdAngularConfigProvider).icons;
-
   #sdModal = inject(SdModalProvider);
 
   busy = input(false, { transform: transformBoolean });
@@ -959,4 +960,10 @@ export class SdSheetControl<T> {
     this.onBlurCaptureForCellAgent(event);
     this.onBlurCaptureForFocusIndicator();
   }
+
+  protected readonly taSettings = taSettings;
+  protected readonly taCaretRight = taCaretRight;
+  protected readonly taSortDescending = taSortDescending;
+  protected readonly taSortAscending = taSortAscending;
+  protected readonly taArrowsSort = taArrowsSort;
 }

@@ -2,13 +2,15 @@ import {
   ChangeDetectionStrategy,
   Component,
   effect,
-  ElementRef,
   input,
-  viewChild,
   ViewEncapsulation,
 } from "@angular/core";
 import { SdTablerIcon } from "@simplysm/sd-tabler-icons";
+import { injectElementRef } from "../../utils/injections/inject-element-ref";
 
+/**
+ * https://tabler.io/icons
+ */
 @Component({
   selector: "sd-tabler-icon",
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -16,18 +18,6 @@ import { SdTablerIcon } from "@simplysm/sd-tabler-icons";
   standalone: true,
   imports: [],
   template: `
-    <svg
-      #svgEl
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-    ></svg>
   `,
   styles: [
     /* language=SCSS */ `
@@ -35,22 +25,33 @@ import { SdTablerIcon } from "@simplysm/sd-tabler-icons";
         font-size: 1em;
 
         > svg {
-          height: 1em;
-          vertical-align: calc((1 - var(--line-height)) / 2);
+          height: 1.25em;
+          vertical-align: -0.25em;
         }
       }
     `,
   ],
 })
 export class SdTablerIconControl {
-  icon = input.required<SdTablerIcon>();
+  #elRef = injectElementRef();
 
-  svgEl = viewChild.required<any, ElementRef<SVGElement>>("svgEl", { read: ElementRef });
+  icon = input.required<SdTablerIcon>();
 
   constructor() {
     effect(() => {
       const elementDefs = this.icon();
-      const newEls: Element[] = [];
+
+      const svg = document.createElement("svg");
+      svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+      // svg.setAttribute("width", "24");
+      // svg.setAttribute("height", "24");
+      svg.setAttribute("viewBox", "0 0 24 24");
+      svg.setAttribute("fill", "none");
+      svg.setAttribute("stroke", "currentColor");
+      svg.setAttribute("stroke-width", "2");
+      svg.setAttribute("stroke-linecap", "round");
+      svg.setAttribute("stroke-linejoin", "round");
+
       for (const elementDef of elementDefs) {
         const tag = elementDef[0];
         const attr = elementDef[1];
@@ -59,11 +60,10 @@ export class SdTablerIconControl {
         for (const attrKey in attr) {
           newEl.setAttribute(attrKey, attr[attrKey]);
         }
-        newEls.push(newEl);
+        svg.append(newEl);
       }
 
-      this.svgEl().nativeElement.innerHTML = "";
-      this.svgEl().nativeElement.append(...newEls);
+      this.#elRef.nativeElement.innerHTML = svg.outerHTML;
     });
   }
 }
