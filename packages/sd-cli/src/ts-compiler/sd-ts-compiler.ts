@@ -1,7 +1,7 @@
 import ts from "typescript";
 import path from "path";
 import { FsUtils, PathUtils, SdLogger, TNormPath } from "@simplysm/sd-core-node";
-import { StringUtils } from "@simplysm/sd-core-common";
+import { StringUtils, Wait } from "@simplysm/sd-core-common";
 import { NgtscProgram, OptimizeFor } from "@angular/compiler-cli";
 import { AngularCompilerHost } from "@angular/build/src/tools/angular/angular-host";
 import {
@@ -294,6 +294,7 @@ export class SdTsCompiler {
 
     if (modifiedFileSet.size !== 0) {
       this.#debug(`캐시 무효화 및 초기화 중...`);
+      await Wait.time(300);
 
       // this._perf.run("캐시 무효화 및 초기화", () => {
       this.#perf.run("캐시 무효화 및 초기화", () => {
@@ -331,6 +332,7 @@ ${affectedFileTree.map(item => getTreeText(item)).join("\n")}`.trim());
     }
 
     this.#debug(`ts.Program 생성 중...`);
+    await Wait.time(300);
 
     const compilerHost = this.#perf.run("ts.CompilerHost 생성", () => {
       return this.#createCompilerHost(tsconfig.options, modifiedFileSet);
@@ -355,6 +357,8 @@ ${affectedFileTree.map(item => getTreeText(item)).join("\n")}`.trim());
         );
       }
     });
+    this.#debug(`ts.Program 생성`);
+    await Wait.time(300);
 
     if (this.#ngProgram) {
       await this.#perf.run("Angular 템플릿 분석", async () => {

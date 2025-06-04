@@ -1,6 +1,6 @@
 {
   "name": "simplysm",
-  "version": "12.11.10",
+  "version": "12.11.11",
   "description": "심플리즘 패키지",
   "author": "김석래",
   "repository": {
@@ -20,6 +20,7 @@
   },
   "scripts": {
     "watch": "yarn run _sd-cli_ --debug watch",
+    "watch:sd-mat-icons": "yarn run _sd-cli_ --debug watch --packages sd-mat-icons",
     "watch:sd-core-common": "yarn run _sd-cli_ --debug watch --packages sd-core-common",
     "build": "yarn run _sd-cli_ build",
     "publish": "yarn run _sd-cli_ publish",

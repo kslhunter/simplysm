@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 
 const exportLines = [];
+const exportDefLines = [];
 
 const pkgDirs = fs
   .readdirSync(path.resolve(import.meta.dirname, "../../../node_modules/@material-symbols"), {
@@ -32,8 +33,10 @@ for (const pkgDir of pkgDirs) {
       exportLines.push(
         `export { default as ${varName} } from "@material-symbols/${pkgDir.name}/${typeDir.name}/${iconFile.name}"`,
       );
+      exportDefLines.push(`export const ${varName}: string;`);
     }
   }
 }
 
-fs.writeFileSync(path.resolve(import.meta.dirname, "../src/icons.ts"), exportLines.join("\n"));
+fs.writeFileSync(path.resolve(import.meta.dirname, "../dist/index.js"), exportLines.join("\n"));
+fs.writeFileSync(path.resolve(import.meta.dirname, "../dist/index.d.ts"), exportDefLines.join("\n"));

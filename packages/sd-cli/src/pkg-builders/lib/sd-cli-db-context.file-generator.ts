@@ -34,7 +34,7 @@ export class SdCliDbContextFileGenerator {
     // Migrations
     const migTexts: string[] = [];
     {
-      const filePaths = FsUtils.glob(path.resolve(pkgPath, "src/migrations/**/*.ts"), {
+      const filePaths = FsUtils.glob(path.resolve(pkgPath, "dist/migrations/**/*.ts"), {
         nodir: true,
       });
 
@@ -54,7 +54,7 @@ export class SdCliDbContextFileGenerator {
     // Models
     const modelTexts: string[] = [];
     {
-      const filePaths = FsUtils.glob(path.resolve(pkgPath, "src/models/**/*.ts"), { nodir: true });
+      const filePaths = FsUtils.glob(path.resolve(pkgPath, "dist/models/**/*.ts"), { nodir: true });
 
       for (const filePath of filePaths.orderBy()) {
         const requirePath = PathUtils.posix(path.relative(path.dirname(targetFilePath), filePath))
@@ -87,7 +87,7 @@ export class SdCliDbContextFileGenerator {
     // Views
     const viewTexts: string[] = [];
     {
-      const filePaths = FsUtils.glob(path.resolve(pkgPath, "src/views/**/*.ts"), { nodir: true });
+      const filePaths = FsUtils.glob(path.resolve(pkgPath, "dist/views/**/*.ts"), { nodir: true });
 
       for (const filePath of filePaths.orderBy()) {
         const requirePath = PathUtils.posix(path.relative(path.dirname(targetFilePath), filePath))
@@ -106,7 +106,7 @@ export class SdCliDbContextFileGenerator {
     // Stored Procedures
     const spTexts: string[] = [];
     {
-      const filePaths = FsUtils.glob(path.resolve(pkgPath, "src/stored-procedures/**/*.ts"), {
+      const filePaths = FsUtils.glob(path.resolve(pkgPath, "dist/stored-procedures/**/*.ts"), {
         nodir: true,
       });
 

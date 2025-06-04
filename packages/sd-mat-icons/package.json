@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-mat-icons",
-  "version": "12.11.10",
+  "version": "12.11.11",
   "description": "심플리즘 패키지 - Material 아이콘 모듈 (browser)",
   "author": "김석래",
   "repository": {
@@ -10,8 +10,8 @@
   },
   "license": "MIT",
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
   "dependencies": {
     "@material-symbols/svg-100": "^0.31.4",
     "@material-symbols/svg-200": "^0.31.4",

@@ -40,8 +40,8 @@ export class SdServerBuildRunner extends BuildRunnerBase<"server"> {
         entryPoints: tsConfig.files
           ? tsConfig.files.map((item) => path.resolve(this._pkgPath, item))
           : [
-              path.resolve(this._pkgPath, "src/main.ts"),
-              ...FsUtils.glob(path.resolve(this._pkgPath, "src/workers/*.ts")),
+              path.resolve(this._pkgPath, "dist/main.ts"),
+              ...FsUtils.glob(path.resolve(this._pkgPath, "dist/workers/*.ts")),
             ],
         external: this.#extModules.map((item) => item.name),
         watchScopePathSet: this._watchScopePathSet,

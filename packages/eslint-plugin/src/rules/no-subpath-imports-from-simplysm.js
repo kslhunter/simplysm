@@ -3,7 +3,7 @@ export default {
     type: "problem",
     docs: {
       description:
-        "@simplysm 패키지에서 서브경로 import를 금지합니다. (ex: @simplysm/pkg/src/x → 금지)",
+        "@simplysm 패키지에서 서브경로 import를 금지합니다. (ex: @simplysm/pkg/dist/x → 금지)",
       recommended: "error",
     },
     schema: [],

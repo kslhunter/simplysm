@@ -62,6 +62,11 @@ export class SdCliProject {
       });
 
     await pkgPaths.parallelAsync(async (pkgPath) => {
+      const pkgConf = projConf.packages[path.basename(pkgPath)];
+      if (pkgConf?.type === "library" && pkgConf.noBuild) {
+        return;
+      }
+
       await multiBuildRunner.runAsync({
         cmd: "watch",
         pkgPath,
@@ -103,6 +108,11 @@ export class SdCliProject {
     const multiBuildRunner = new SdMultiBuildRunner();
 
     const messages = await pkgPaths.parallelAsync(async (pkgPath) => {
+      const pkgConf = projConf.packages[path.basename(pkgPath)];
+      if (pkgConf?.type === "library" && pkgConf.noBuild) {
+        return [];
+      }
+
       return await multiBuildRunner.runAsync({
         cmd: "build",
         pkgPath,
@@ -164,6 +174,11 @@ export class SdCliProject {
         const multiBuildRunner = new SdMultiBuildRunner();
 
         const messages = await pkgPaths.parallelAsync(async (pkgPath) => {
+          const pkgConf = projConf.packages[path.basename(pkgPath)];
+          if (pkgConf?.type === "library" && pkgConf.noBuild) {
+            return [];
+          }
+
           return await multiBuildRunner.runAsync({
             cmd: "build",
             pkgPath,

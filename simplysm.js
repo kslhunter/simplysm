@@ -24,6 +24,7 @@ export default (dev, opt) => ({
     "sd-mat-icons": {
       type: "library",
       publish: "npm",
+      noBuild: true
     },
     "sd-cli": {
       type: "library",

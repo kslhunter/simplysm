@@ -8,16 +8,20 @@ export interface ISdProjectConfig {
 // export type TSdProjectConfigFn = (isDev: boolean, opts?: string[]) => ISdProjectConfig;
 
 export type TSdPackageConfig<T extends "server" | "library" | "client" | unknown = unknown> =
-  T extends "library" ? ISdLibPackageConfig
-    : T extends "server" ? ISdServerPackageConfig
-      : T extends "client" ? ISdClientPackageConfig
-        : (ISdLibPackageConfig | ISdServerPackageConfig | ISdClientPackageConfig);
+  T extends "library"
+    ? ISdLibPackageConfig
+    : T extends "server"
+      ? ISdServerPackageConfig
+      : T extends "client"
+        ? ISdClientPackageConfig
+        : ISdLibPackageConfig | ISdServerPackageConfig | ISdClientPackageConfig;
 
 export interface ISdLibPackageConfig {
   type: "library";
   publish?: "npm";
   polyfills?: string[];
   noGenIndex?: boolean;
+  noBuild?: boolean;
   dbContext?: string;
   forceProductionMode?: boolean;
 }

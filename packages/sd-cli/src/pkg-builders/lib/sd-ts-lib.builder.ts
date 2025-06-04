@@ -18,7 +18,7 @@ export class SdTsLibBuilder {
       pkgPath: this._pkgPath,
       additionalOptions: { declaration: true },
       isDevMode: dev,
-      globalStyleFilePath: PathUtils.norm(this._pkgPath, "src/styles.scss"),
+      globalStyleFilePath: PathUtils.norm(this._pkgPath, "dist/styles.scss"),
       isForBundle: false,
       watchScopePathSet,
     });

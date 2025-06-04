@@ -181,7 +181,7 @@ import { transformBoolean } from "../../utils/type-tramsforms";
               [trackByFn]="trackByFn"
               [getItemCellStyleFn]="getItemCellStyleFn"
             >
-              @for (columnControl of columnControls(); track columnControl.key) {
+              @for (columnControl of columnControls(); track columnControl.key()) {
                 <sd-sheet-column
                   [key]="columnControl.key()"
                   [fixed]="columnControl.fixed()"

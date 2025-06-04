@@ -5,7 +5,7 @@ export class SdCliIndexFileGenerator {
   cachedHash?: string;
 
   watch(pkgPath: string, polyfills?: string[]) {
-    const indexFilePath = path.resolve(pkgPath, "src/index.ts");
+    const indexFilePath = path.resolve(pkgPath, "dist/index.ts");
     this.cachedHash = FsUtils.exists(indexFilePath) ? FsUtils.readFile(indexFilePath) : undefined;
 
     SdFsWatcher.watch([path.resolve(pkgPath, "src")]).onChange({ delay: 50 }, () => {
@@ -16,7 +16,7 @@ export class SdCliIndexFileGenerator {
   }
 
   run(pkgPath: string, polyfills?: string[]): string {
-    const indexFilePath = path.resolve(pkgPath, "src/index.ts");
+    const indexFilePath = path.resolve(pkgPath, "dist/index.ts");
 
     const importTexts: string[] = [];
 
@@ -52,13 +52,13 @@ export class SdCliIndexFileGenerator {
   }
 
   #getFilePaths(pkgPath: string): string[] {
-    const indexFilePath = path.resolve(pkgPath, "src/index.ts");
+    const indexFilePath = path.resolve(pkgPath, "dist/index.ts");
 
     const tsconfig = FsUtils.readJson(path.resolve(pkgPath, "tsconfig.json"));
     const entryFilePaths: string[] =
       tsconfig.files?.map((item) => path.resolve(pkgPath, item)) ?? [];
 
-    return FsUtils.glob(path.resolve(pkgPath, "src/**/*{.ts,.tsx}"), {
+    return FsUtils.glob(path.resolve(pkgPath, "dist/**/*{.ts,.tsx}"), {
       nodir: true,
       ignore: tsconfig.excludes,
     }).filter(

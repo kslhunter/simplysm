@@ -5,5 +5,5 @@ export default function getTsMortphSourceFiles() {
     tsConfigFilePath: "tsconfig.base.json",
   });
 
-  return project.getSourceFiles("packages/*/src/**/*.ts");
+  return project.getSourceFiles("packages/*/dist/**/*.ts");
 }

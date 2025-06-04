@@ -5,7 +5,7 @@ import { SdCliIndexFileGenerator } from "./sd-cli-index.file-generator";
 import { SdCliDbContextFileGenerator } from "./sd-cli-db-context.file-generator";
 
 export class SdTsLibBuildRunner extends BuildRunnerBase<"library"> {
-  protected override _logger = SdLogger.get(["simplysm", "sd-cli", "SdCliTsLibBuilder"]);
+  protected override _logger = SdLogger.get(["simplysm", "sd-cli", "SdTsLibBuildRunner"]);
 
   #indexFileGenerator = new SdCliIndexFileGenerator();
   #dbContextGenerator = new SdCliDbContextFileGenerator();
