@@ -1,0 +1,1 @@
+export { default as mr4SyncLock } from "@material-symbols/svg-400/rounded/sync_lock.svg"

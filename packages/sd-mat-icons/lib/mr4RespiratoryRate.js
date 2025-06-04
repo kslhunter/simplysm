@@ -1,0 +1,1 @@
+export { default as mr4RespiratoryRate } from "@material-symbols/svg-400/rounded/respiratory_rate.svg"

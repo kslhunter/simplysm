@@ -1,0 +1,1 @@
+export { default as mr4DetectorAlarm } from "@material-symbols/svg-400/rounded/detector_alarm.svg"

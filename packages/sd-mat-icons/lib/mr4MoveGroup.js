@@ -1,0 +1,1 @@
+export { default as mr4MoveGroup } from "@material-symbols/svg-400/rounded/move_group.svg"

@@ -1,0 +1,1 @@
+export { default as mr4PermScanWifi } from "@material-symbols/svg-400/rounded/perm_scan_wifi.svg"

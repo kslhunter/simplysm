@@ -1,0 +1,1 @@
+export { default as mr4LocalLaundryService } from "@material-symbols/svg-400/rounded/local_laundry_service.svg"

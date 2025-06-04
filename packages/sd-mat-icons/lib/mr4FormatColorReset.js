@@ -1,0 +1,1 @@
+export { default as mr4FormatColorReset } from "@material-symbols/svg-400/rounded/format_color_reset.svg"

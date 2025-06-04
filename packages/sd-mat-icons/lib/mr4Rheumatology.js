@@ -1,0 +1,1 @@
+export { default as mr4Rheumatology } from "@material-symbols/svg-400/rounded/rheumatology.svg"

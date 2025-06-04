@@ -1,0 +1,1 @@
+export { default as mr4IntegrationInstructions } from "@material-symbols/svg-400/rounded/integration_instructions.svg"

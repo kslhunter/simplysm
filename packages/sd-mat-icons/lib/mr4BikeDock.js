@@ -1,0 +1,1 @@
+export { default as mr4BikeDock } from "@material-symbols/svg-400/rounded/bike_dock.svg"

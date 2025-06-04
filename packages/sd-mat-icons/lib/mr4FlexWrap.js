@@ -1,0 +1,1 @@
+export { default as mr4FlexWrap } from "@material-symbols/svg-400/rounded/flex_wrap.svg"

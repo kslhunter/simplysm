@@ -1,0 +1,1 @@
+export { default as mr4MobileWrench } from "@material-symbols/svg-400/rounded/mobile_wrench.svg"

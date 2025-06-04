@@ -1,0 +1,1 @@
+export { default as mr4CalendarViewDay } from "@material-symbols/svg-400/rounded/calendar_view_day.svg"

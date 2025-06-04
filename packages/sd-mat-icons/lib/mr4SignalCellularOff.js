@@ -1,0 +1,1 @@
+export { default as mr4SignalCellularOff } from "@material-symbols/svg-400/rounded/signal_cellular_off.svg"

@@ -1,0 +1,1 @@
+export { default as mr4PersonPinCircle } from "@material-symbols/svg-400/rounded/person_pin_circle.svg"

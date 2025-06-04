@@ -1,0 +1,1 @@
+export { default as mr4SyncSavedLocally } from "@material-symbols/svg-400/rounded/sync_saved_locally.svg"

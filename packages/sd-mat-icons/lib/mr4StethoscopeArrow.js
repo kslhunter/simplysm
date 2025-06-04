@@ -1,0 +1,1 @@
+export { default as mr4StethoscopeArrow } from "@material-symbols/svg-400/rounded/stethoscope_arrow.svg"

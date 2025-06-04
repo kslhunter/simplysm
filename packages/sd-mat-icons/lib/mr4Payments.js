@@ -1,0 +1,1 @@
+export { default as mr4Payments } from "@material-symbols/svg-400/rounded/payments.svg"

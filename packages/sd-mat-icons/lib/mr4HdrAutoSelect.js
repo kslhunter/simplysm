@@ -1,0 +1,1 @@
+export { default as mr4HdrAutoSelect } from "@material-symbols/svg-400/rounded/hdr_auto_select.svg"

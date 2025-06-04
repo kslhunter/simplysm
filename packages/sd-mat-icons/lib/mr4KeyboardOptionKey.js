@@ -1,0 +1,1 @@
+export { default as mr4KeyboardOptionKey } from "@material-symbols/svg-400/rounded/keyboard_option_key.svg"

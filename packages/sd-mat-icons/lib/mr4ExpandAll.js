@@ -1,0 +1,1 @@
+export { default as mr4ExpandAll } from "@material-symbols/svg-400/rounded/expand_all.svg"

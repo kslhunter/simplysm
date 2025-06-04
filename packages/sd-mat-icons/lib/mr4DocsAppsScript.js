@@ -1,0 +1,1 @@
+export { default as mr4DocsAppsScript } from "@material-symbols/svg-400/rounded/docs_apps_script.svg"

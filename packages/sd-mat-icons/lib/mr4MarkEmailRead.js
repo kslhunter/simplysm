@@ -1,0 +1,1 @@
+export { default as mr4MarkEmailRead } from "@material-symbols/svg-400/rounded/mark_email_read.svg"

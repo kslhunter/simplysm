@@ -1,0 +1,1 @@
+export { default as mr4EncryptedAdd } from "@material-symbols/svg-400/rounded/encrypted_add.svg"

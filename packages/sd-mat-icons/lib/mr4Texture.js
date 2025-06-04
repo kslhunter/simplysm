@@ -1,0 +1,1 @@
+export { default as mr4Texture } from "@material-symbols/svg-400/rounded/texture.svg"

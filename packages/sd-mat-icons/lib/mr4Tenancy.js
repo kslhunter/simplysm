@@ -1,0 +1,1 @@
+export { default as mr4Tenancy } from "@material-symbols/svg-400/rounded/tenancy.svg"

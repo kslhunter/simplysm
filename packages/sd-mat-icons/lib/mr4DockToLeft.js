@@ -1,0 +1,1 @@
+export { default as mr4DockToLeft } from "@material-symbols/svg-400/rounded/dock_to_left.svg"

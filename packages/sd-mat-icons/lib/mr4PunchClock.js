@@ -1,0 +1,1 @@
+export { default as mr4PunchClock } from "@material-symbols/svg-400/rounded/punch_clock.svg"

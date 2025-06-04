@@ -1,0 +1,1 @@
+export { default as mr4SendMoney } from "@material-symbols/svg-400/rounded/send_money.svg"

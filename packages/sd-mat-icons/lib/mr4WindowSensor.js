@@ -1,0 +1,1 @@
+export { default as mr4WindowSensor } from "@material-symbols/svg-400/rounded/window_sensor.svg"

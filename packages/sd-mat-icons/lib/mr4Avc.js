@@ -1,0 +1,1 @@
+export { default as mr4Avc } from "@material-symbols/svg-400/rounded/avc.svg"

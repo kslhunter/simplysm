@@ -1,0 +1,1 @@
+export { default as mr4IncompleteCircle } from "@material-symbols/svg-400/rounded/incomplete_circle.svg"

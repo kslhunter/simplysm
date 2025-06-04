@@ -1,0 +1,1 @@
+export { default as mr4IdCard } from "@material-symbols/svg-400/rounded/id_card.svg"

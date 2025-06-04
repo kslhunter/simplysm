@@ -1,0 +1,1 @@
+export { default as mr4EmojiLanguage } from "@material-symbols/svg-400/rounded/emoji_language.svg"

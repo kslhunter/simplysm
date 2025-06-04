@@ -1,0 +1,1 @@
+export { default as mr4LogoDev } from "@material-symbols/svg-400/rounded/logo_dev.svg"

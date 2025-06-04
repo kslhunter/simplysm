@@ -1,0 +1,1 @@
+export { default as mr4BatteryVeryLow } from "@material-symbols/svg-400/rounded/battery_very_low.svg"

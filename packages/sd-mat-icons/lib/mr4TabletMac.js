@@ -1,0 +1,1 @@
+export { default as mr4TabletMac } from "@material-symbols/svg-400/rounded/tablet_mac.svg"

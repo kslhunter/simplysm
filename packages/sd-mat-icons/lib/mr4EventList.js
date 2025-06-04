@@ -1,0 +1,1 @@
+export { default as mr4EventList } from "@material-symbols/svg-400/rounded/event_list.svg"

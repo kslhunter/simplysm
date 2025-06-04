@@ -1,0 +1,1 @@
+export { default as mr4Mosque } from "@material-symbols/svg-400/rounded/mosque.svg"

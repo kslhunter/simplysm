@@ -1,0 +1,1 @@
+export { default as mr4WifiNotification } from "@material-symbols/svg-400/rounded/wifi_notification.svg"

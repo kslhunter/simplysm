@@ -1,0 +1,1 @@
+export { default as mr4EvShadowAdd } from "@material-symbols/svg-400/rounded/ev_shadow_add.svg"

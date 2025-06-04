@@ -1,0 +1,1 @@
+export { default as mr4StrokeFull } from "@material-symbols/svg-400/rounded/stroke_full.svg"

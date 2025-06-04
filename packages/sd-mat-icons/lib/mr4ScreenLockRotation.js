@@ -1,0 +1,1 @@
+export { default as mr4ScreenLockRotation } from "@material-symbols/svg-400/rounded/screen_lock_rotation.svg"

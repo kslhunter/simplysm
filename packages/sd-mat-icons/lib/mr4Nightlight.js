@@ -1,0 +1,1 @@
+export { default as mr4Nightlight } from "@material-symbols/svg-400/rounded/nightlight.svg"

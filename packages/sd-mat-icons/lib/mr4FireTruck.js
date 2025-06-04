@@ -1,0 +1,1 @@
+export { default as mr4FireTruck } from "@material-symbols/svg-400/rounded/fire_truck.svg"

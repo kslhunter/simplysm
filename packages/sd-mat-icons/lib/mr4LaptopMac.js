@@ -1,0 +1,1 @@
+export { default as mr4LaptopMac } from "@material-symbols/svg-400/rounded/laptop_mac.svg"

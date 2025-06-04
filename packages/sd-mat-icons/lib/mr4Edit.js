@@ -1,0 +1,1 @@
+export { default as mr4Edit } from "@material-symbols/svg-400/rounded/edit.svg"

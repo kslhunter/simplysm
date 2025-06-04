@@ -1,0 +1,1 @@
+export { default as mr4ComputerCancel } from "@material-symbols/svg-400/rounded/computer_cancel.svg"

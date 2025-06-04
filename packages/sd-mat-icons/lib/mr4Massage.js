@@ -1,0 +1,1 @@
+export { default as mr4Massage } from "@material-symbols/svg-400/rounded/massage.svg"

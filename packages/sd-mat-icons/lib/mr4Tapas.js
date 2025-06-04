@@ -1,0 +1,1 @@
+export { default as mr4Tapas } from "@material-symbols/svg-400/rounded/tapas.svg"

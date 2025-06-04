@@ -1,42 +1,30 @@
 import fs from "fs";
 import path from "path";
+import { fileURLToPath } from "node:url";
 
-const exportLines = [];
-const exportDefLines = [];
+const distDirPath = path.resolve(import.meta.dirname, `../lib`);
+await fs.promises.rm(distDirPath, { recursive: true, force: true });
+await fs.promises.mkdir(distDirPath);
 
-const pkgDirs = fs
-  .readdirSync(path.resolve(import.meta.dirname, "../../../node_modules/@material-symbols"), {
+const moduleDirPath = fileURLToPath(import.meta.resolve("@material-symbols/svg-400/rounded"));
+
+const iconFiles = (
+  await fs.promises.readdir(moduleDirPath, {
     withFileTypes: true,
   })
-  .filter((item) => item.isDirectory() && /^svg-[0-9]00$/.test(item.name));
+).filter((item) => item.isFile() && item.name.endsWith(".svg") && !item.name.endsWith("-fill.svg"));
 
-for (const pkgDir of pkgDirs) {
-  const widthNum = pkgDir.name.slice(4, -2);
+for (const iconFile of iconFiles) {
+  const pascalIconName = path
+    .basename(iconFile.name, path.extname(iconFile.name))
+    .replace(/[-._][a-z0-9]/g, (m) => m[1].toUpperCase())
+    .replace(/^[a-z]/, (m) => m.toUpperCase());
 
-  const typeDirs = fs
-    .readdirSync(path.resolve(pkgDir.parentPath, pkgDir.name), { withFileTypes: true })
-    .filter((item) => item.isDirectory());
-  for (const typeDir of typeDirs) {
-    const typeChar = typeDir.name[0];
+  const varName = `mr4${pascalIconName}`;
 
-    const iconFiles = fs
-      .readdirSync(path.resolve(typeDir.parentPath, typeDir.name), { withFileTypes: true })
-      .filter((item) => item.isFile() && item.name.endsWith(".svg"));
-    for (const iconFile of iconFiles) {
-      const pascalIconName = path
-        .basename(iconFile.name, path.extname(iconFile.name))
-        .replace(/[-._][a-z]/g, (m) => m[1].toUpperCase())
-        .replace(/^[a-z]/, (m) => m.toUpperCase());
+  const js = `export { default as ${varName} } from "@material-symbols/svg-400/rounded/${iconFile.name}"`;
+  const dts = `export const ${varName}: string;`;
 
-      const varName = `m${typeChar}${widthNum}${pascalIconName}`;
-
-      exportLines.push(
-        `export { default as ${varName} } from "@material-symbols/${pkgDir.name}/${typeDir.name}/${iconFile.name}"`,
-      );
-      exportDefLines.push(`export const ${varName}: string;`);
-    }
-  }
+  await fs.promises.writeFile(path.resolve(distDirPath, `${varName}.js`), js);
+  await fs.promises.writeFile(path.resolve(distDirPath, `${varName}.d.ts`), dts);
 }
-
-fs.writeFileSync(path.resolve(import.meta.dirname, "../dist/index.js"), exportLines.join("\n"));
-fs.writeFileSync(path.resolve(import.meta.dirname, "../dist/index.d.ts"), exportDefLines.join("\n"));

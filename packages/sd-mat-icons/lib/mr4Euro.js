@@ -1,0 +1,1 @@
+export { default as mr4Euro } from "@material-symbols/svg-400/rounded/euro.svg"

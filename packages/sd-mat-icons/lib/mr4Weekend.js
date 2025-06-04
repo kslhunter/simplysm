@@ -1,0 +1,1 @@
+export { default as mr4Weekend } from "@material-symbols/svg-400/rounded/weekend.svg"

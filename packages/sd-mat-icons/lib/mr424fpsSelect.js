@@ -1,0 +1,1 @@
+export { default as mr424fpsSelect } from "@material-symbols/svg-400/rounded/24fps_select.svg"

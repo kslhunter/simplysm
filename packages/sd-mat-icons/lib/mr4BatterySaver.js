@@ -1,0 +1,1 @@
+export { default as mr4BatterySaver } from "@material-symbols/svg-400/rounded/battery_saver.svg"

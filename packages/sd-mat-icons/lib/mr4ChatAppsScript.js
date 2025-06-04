@@ -1,0 +1,1 @@
+export { default as mr4ChatAppsScript } from "@material-symbols/svg-400/rounded/chat_apps_script.svg"

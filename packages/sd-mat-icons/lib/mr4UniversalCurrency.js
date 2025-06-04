@@ -1,0 +1,1 @@
+export { default as mr4UniversalCurrency } from "@material-symbols/svg-400/rounded/universal_currency.svg"

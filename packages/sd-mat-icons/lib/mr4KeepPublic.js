@@ -1,0 +1,1 @@
+export { default as mr4KeepPublic } from "@material-symbols/svg-400/rounded/keep_public.svg"

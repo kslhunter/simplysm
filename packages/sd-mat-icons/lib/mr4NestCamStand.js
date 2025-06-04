@@ -1,0 +1,1 @@
+export { default as mr4NestCamStand } from "@material-symbols/svg-400/rounded/nest_cam_stand.svg"

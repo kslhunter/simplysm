@@ -1,0 +1,1 @@
+export { default as mr4ReadMore } from "@material-symbols/svg-400/rounded/read_more.svg"

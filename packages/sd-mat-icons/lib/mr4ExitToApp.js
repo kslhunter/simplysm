@@ -1,0 +1,1 @@
+export { default as mr4ExitToApp } from "@material-symbols/svg-400/rounded/exit_to_app.svg"

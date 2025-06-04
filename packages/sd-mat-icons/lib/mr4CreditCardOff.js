@@ -1,0 +1,1 @@
+export { default as mr4CreditCardOff } from "@material-symbols/svg-400/rounded/credit_card_off.svg"

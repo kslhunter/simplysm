@@ -1,0 +1,1 @@
+export { default as mr4Send } from "@material-symbols/svg-400/rounded/send.svg"

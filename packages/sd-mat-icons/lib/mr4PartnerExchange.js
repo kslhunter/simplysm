@@ -1,0 +1,1 @@
+export { default as mr4PartnerExchange } from "@material-symbols/svg-400/rounded/partner_exchange.svg"

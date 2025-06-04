@@ -1,0 +1,1 @@
+export { default as mr4AlignSpaceEven } from "@material-symbols/svg-400/rounded/align_space_even.svg"

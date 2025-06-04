@@ -1,0 +1,1 @@
+export { default as mr4FormatQuoteOff } from "@material-symbols/svg-400/rounded/format_quote_off.svg"

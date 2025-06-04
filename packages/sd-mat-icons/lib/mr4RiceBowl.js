@@ -1,0 +1,1 @@
+export { default as mr4RiceBowl } from "@material-symbols/svg-400/rounded/rice_bowl.svg"

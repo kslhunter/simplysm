@@ -1,0 +1,1 @@
+export { default as mr4ClockArrowUp } from "@material-symbols/svg-400/rounded/clock_arrow_up.svg"

@@ -1,0 +1,1 @@
+export { default as mr4TextSelectEnd } from "@material-symbols/svg-400/rounded/text_select_end.svg"

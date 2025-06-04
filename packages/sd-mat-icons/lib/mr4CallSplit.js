@@ -1,0 +1,1 @@
+export { default as mr4CallSplit } from "@material-symbols/svg-400/rounded/call_split.svg"

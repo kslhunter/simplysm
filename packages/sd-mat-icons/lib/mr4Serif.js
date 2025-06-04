@@ -1,0 +1,1 @@
+export { default as mr4Serif } from "@material-symbols/svg-400/rounded/serif.svg"

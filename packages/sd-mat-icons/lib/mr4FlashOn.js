@@ -1,0 +1,1 @@
+export { default as mr4FlashOn } from "@material-symbols/svg-400/rounded/flash_on.svg"

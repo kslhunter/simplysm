@@ -1,0 +1,1 @@
+export { default as mr4VoiceChat } from "@material-symbols/svg-400/rounded/voice_chat.svg"

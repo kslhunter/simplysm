@@ -1,0 +1,1 @@
+export { default as mr4StarHalf } from "@material-symbols/svg-400/rounded/star_half.svg"

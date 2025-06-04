@@ -1,0 +1,1 @@
+export { default as mr4Subway } from "@material-symbols/svg-400/rounded/subway.svg"

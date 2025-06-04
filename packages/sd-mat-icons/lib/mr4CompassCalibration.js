@@ -1,0 +1,1 @@
+export { default as mr4CompassCalibration } from "@material-symbols/svg-400/rounded/compass_calibration.svg"

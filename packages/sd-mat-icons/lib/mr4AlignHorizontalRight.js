@@ -1,0 +1,1 @@
+export { default as mr4AlignHorizontalRight } from "@material-symbols/svg-400/rounded/align_horizontal_right.svg"

@@ -1,0 +1,1 @@
+export { default as mr4Grid4x4 } from "@material-symbols/svg-400/rounded/grid_4x4.svg"

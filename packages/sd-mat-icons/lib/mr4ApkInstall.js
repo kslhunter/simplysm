@@ -1,0 +1,1 @@
+export { default as mr4ApkInstall } from "@material-symbols/svg-400/rounded/apk_install.svg"

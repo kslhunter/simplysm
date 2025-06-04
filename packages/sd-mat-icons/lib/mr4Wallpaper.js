@@ -1,0 +1,1 @@
+export { default as mr4Wallpaper } from "@material-symbols/svg-400/rounded/wallpaper.svg"

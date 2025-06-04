@@ -1,0 +1,1 @@
+export { default as mr4DeleteSweep } from "@material-symbols/svg-400/rounded/delete_sweep.svg"

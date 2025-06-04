@@ -1,0 +1,1 @@
+export { default as mr4Fort } from "@material-symbols/svg-400/rounded/fort.svg"

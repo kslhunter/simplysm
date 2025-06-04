@@ -1,0 +1,1 @@
+export { default as mr4MoveSelectionRight } from "@material-symbols/svg-400/rounded/move_selection_right.svg"

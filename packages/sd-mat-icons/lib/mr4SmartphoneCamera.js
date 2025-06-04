@@ -1,0 +1,1 @@
+export { default as mr4SmartphoneCamera } from "@material-symbols/svg-400/rounded/smartphone_camera.svg"

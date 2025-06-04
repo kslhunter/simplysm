@@ -1,0 +1,1 @@
+export { default as mr4HighlightKeyboardFocus } from "@material-symbols/svg-400/rounded/highlight_keyboard_focus.svg"

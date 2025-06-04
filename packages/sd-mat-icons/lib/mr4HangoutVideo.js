@@ -1,0 +1,1 @@
+export { default as mr4HangoutVideo } from "@material-symbols/svg-400/rounded/hangout_video.svg"

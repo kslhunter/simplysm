@@ -1,0 +1,1 @@
+export { default as mr4Motorcycle } from "@material-symbols/svg-400/rounded/motorcycle.svg"

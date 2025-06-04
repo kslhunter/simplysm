@@ -1,0 +1,1 @@
+export { default as mr4PhysicalTherapy } from "@material-symbols/svg-400/rounded/physical_therapy.svg"

@@ -1,0 +1,1 @@
+export { default as mr4CarCrash } from "@material-symbols/svg-400/rounded/car_crash.svg"

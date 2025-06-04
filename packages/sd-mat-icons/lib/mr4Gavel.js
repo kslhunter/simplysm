@@ -1,0 +1,1 @@
+export { default as mr4Gavel } from "@material-symbols/svg-400/rounded/gavel.svg"

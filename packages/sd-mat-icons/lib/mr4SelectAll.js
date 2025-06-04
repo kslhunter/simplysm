@@ -1,0 +1,1 @@
+export { default as mr4SelectAll } from "@material-symbols/svg-400/rounded/select_all.svg"

@@ -1,0 +1,1 @@
+export { default as mr4FileUploadOff } from "@material-symbols/svg-400/rounded/file_upload_off.svg"

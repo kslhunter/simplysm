@@ -1,0 +1,1 @@
+export { default as mr4KeyboardExternalInput } from "@material-symbols/svg-400/rounded/keyboard_external_input.svg"

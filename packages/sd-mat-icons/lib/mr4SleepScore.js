@@ -1,0 +1,1 @@
+export { default as mr4SleepScore } from "@material-symbols/svg-400/rounded/sleep_score.svg"

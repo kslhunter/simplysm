@@ -1,0 +1,1 @@
+export { default as mr4Web } from "@material-symbols/svg-400/rounded/web.svg"

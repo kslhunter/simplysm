@@ -1,0 +1,1 @@
+export { default as mr4Living } from "@material-symbols/svg-400/rounded/living.svg"

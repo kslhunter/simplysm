@@ -1,0 +1,1 @@
+export { default as mr4MobileCancel } from "@material-symbols/svg-400/rounded/mobile_cancel.svg"

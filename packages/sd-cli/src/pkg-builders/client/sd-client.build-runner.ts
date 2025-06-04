@@ -70,7 +70,7 @@ export class SdClientBuildRunner extends BuildRunnerBase<"client"> {
               ngBundlerBuilderType === "web"
                 ? PathUtils.norm(this._pkgPath, "dist")
                 : ngBundlerBuilderType === "electron" && !dev
-                  ? PathUtils.norm(this._pkgPath, ".electron/dist")
+                  ? PathUtils.norm(this._pkgPath, ".electron/src")
                   : ngBundlerBuilderType === "cordova" && !dev
                     ? PathUtils.norm(this._pkgPath, ".cordova/www")
                     : PathUtils.norm(this._pkgPath, "dist", ngBundlerBuilderType),

@@ -1,0 +1,1 @@
+export { default as mr4ArrowRightAlt } from "@material-symbols/svg-400/rounded/arrow_right_alt.svg"

@@ -1,0 +1,1 @@
+export { default as mr4CastForEducation } from "@material-symbols/svg-400/rounded/cast_for_education.svg"

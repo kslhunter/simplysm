@@ -1,0 +1,1 @@
+export { default as mr4Sprinkler } from "@material-symbols/svg-400/rounded/sprinkler.svg"

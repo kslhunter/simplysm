@@ -1,0 +1,1 @@
+export { default as mr4FitScreen } from "@material-symbols/svg-400/rounded/fit_screen.svg"

@@ -1,0 +1,1 @@
+export { default as mr4LocalPharmacy } from "@material-symbols/svg-400/rounded/local_pharmacy.svg"

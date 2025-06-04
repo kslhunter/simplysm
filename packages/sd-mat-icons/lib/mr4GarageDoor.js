@@ -1,0 +1,1 @@
+export { default as mr4GarageDoor } from "@material-symbols/svg-400/rounded/garage_door.svg"

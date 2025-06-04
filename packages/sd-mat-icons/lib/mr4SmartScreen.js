@@ -1,0 +1,1 @@
+export { default as mr4SmartScreen } from "@material-symbols/svg-400/rounded/smart_screen.svg"

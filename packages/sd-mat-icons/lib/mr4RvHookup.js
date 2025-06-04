@@ -1,0 +1,1 @@
+export { default as mr4RvHookup } from "@material-symbols/svg-400/rounded/rv_hookup.svg"

@@ -1,0 +1,1 @@
+export { default as mr4BathPrivate } from "@material-symbols/svg-400/rounded/bath_private.svg"

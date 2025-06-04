@@ -1,0 +1,1 @@
+export { default as mr4BookRibbon } from "@material-symbols/svg-400/rounded/book_ribbon.svg"

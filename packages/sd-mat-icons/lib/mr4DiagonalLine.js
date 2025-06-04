@@ -1,0 +1,1 @@
+export { default as mr4DiagonalLine } from "@material-symbols/svg-400/rounded/diagonal_line.svg"

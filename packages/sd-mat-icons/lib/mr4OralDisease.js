@@ -1,0 +1,1 @@
+export { default as mr4OralDisease } from "@material-symbols/svg-400/rounded/oral_disease.svg"

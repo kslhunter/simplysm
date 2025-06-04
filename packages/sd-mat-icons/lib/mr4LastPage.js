@@ -1,0 +1,1 @@
+export { default as mr4LastPage } from "@material-symbols/svg-400/rounded/last_page.svg"

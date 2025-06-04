@@ -1,0 +1,1 @@
+export { default as mr4RotateAuto } from "@material-symbols/svg-400/rounded/rotate_auto.svg"

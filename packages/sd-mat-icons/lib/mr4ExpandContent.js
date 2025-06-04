@@ -1,0 +1,1 @@
+export { default as mr4ExpandContent } from "@material-symbols/svg-400/rounded/expand_content.svg"

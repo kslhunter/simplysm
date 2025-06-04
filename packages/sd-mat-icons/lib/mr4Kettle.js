@@ -1,0 +1,1 @@
+export { default as mr4Kettle } from "@material-symbols/svg-400/rounded/kettle.svg"

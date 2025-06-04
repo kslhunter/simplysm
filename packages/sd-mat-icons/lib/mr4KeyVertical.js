@@ -1,0 +1,1 @@
+export { default as mr4KeyVertical } from "@material-symbols/svg-400/rounded/key_vertical.svg"

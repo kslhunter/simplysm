@@ -1,0 +1,1 @@
+export { default as mr4EmergencyHome } from "@material-symbols/svg-400/rounded/emergency_home.svg"

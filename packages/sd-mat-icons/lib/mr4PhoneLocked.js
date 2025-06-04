@@ -1,0 +1,1 @@
+export { default as mr4PhoneLocked } from "@material-symbols/svg-400/rounded/phone_locked.svg"

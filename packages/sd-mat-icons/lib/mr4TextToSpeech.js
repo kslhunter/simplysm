@@ -1,0 +1,1 @@
+export { default as mr4TextToSpeech } from "@material-symbols/svg-400/rounded/text_to_speech.svg"

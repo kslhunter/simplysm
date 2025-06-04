@@ -1,0 +1,1 @@
+export { default as mr4DirectionsRailway2 } from "@material-symbols/svg-400/rounded/directions_railway_2.svg"

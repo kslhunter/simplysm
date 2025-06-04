@@ -83,11 +83,11 @@ export class SdNgBundler {
     },
   ) {
     this.#pkgNpmConf = FsUtils.readJson(path.resolve(this._opt.pkgPath, "package.json"));
-    this.#mainFilePath = path.resolve(this._opt.pkgPath, "dist/main.ts");
+    this.#mainFilePath = path.resolve(this._opt.pkgPath, "src/main.ts");
     this.#tsConfigFilePath = path.resolve(this._opt.pkgPath, "tsconfig.json");
     this.#swConfFilePath = path.resolve(this._opt.pkgPath, "ngsw-config.json");
     this.#browserTarget = transformSupportedBrowsersToTargets(browserslist(["Chrome > 78"]));
-    this.#indexHtmlFilePath = path.resolve(this._opt.pkgPath, "dist/index.html");
+    this.#indexHtmlFilePath = path.resolve(this._opt.pkgPath, "src/index.html");
     this.#pkgName = path.basename(this._opt.pkgPath);
     this.#baseHref =
       this._opt.builderType === "web"
@@ -118,7 +118,7 @@ export class SdNgBundler {
     if (!this.#contexts) {
       this.#contexts = perf.run("get contexts", () => [
         this.#getAppContext(),
-        ...FsUtils.exists(path.resolve(this._opt.pkgPath, "dist/styles.scss")) ? [
+        ...FsUtils.exists(path.resolve(this._opt.pkgPath, "src/styles.scss")) ? [
           this.#getStyleContext(),
         ] : [],
         ...(this._opt.builderType === "electron" ? [this.#getElectronMainContext()] : []),
@@ -413,7 +413,7 @@ export class SdNgBundler {
   }
 
   #getAppContext() {
-    const workerEntries = FsUtils.glob(path.resolve(this._opt.pkgPath, "dist/workers/*.ts"))
+    const workerEntries = FsUtils.glob(path.resolve(this._opt.pkgPath, "src/workers/*.ts"))
       .toObject(
         (p) => "workers/" + path.basename(p, path.extname(p)),
       );
@@ -458,8 +458,8 @@ export class SdNgBundler {
       entryNames: "[dir]/[name]",
       entryPoints: {
         main: this.#mainFilePath,
-        ...FsUtils.exists(path.resolve(this._opt.pkgPath, "dist/polyfills.ts")) ? {
-          polyfills: path.resolve(this._opt.pkgPath, "dist/polyfills.ts"),
+        ...FsUtils.exists(path.resolve(this._opt.pkgPath, "src/polyfills.ts")) ? {
+          polyfills: path.resolve(this._opt.pkgPath, "src/polyfills.ts"),
         } : {},
 
         ...(this._opt.builderType === "cordova"
@@ -571,7 +571,7 @@ export class SdNgBundler {
       mainFields: ["style", "sass"],
       legalComments: !this._opt.dev ? "none" : "eof",
       entryPoints: {
-        styles: path.resolve(this._opt.pkgPath, "dist/styles.scss"),
+        styles: path.resolve(this._opt.pkgPath, "src/styles.scss"),
       },
       plugins: [
         pluginFactory.create(SassStylesheetLanguage),
@@ -612,7 +612,7 @@ export class SdNgBundler {
       },
       platform: "node",
       entryPoints: {
-        "electron-main": path.resolve(this._opt.pkgPath, "dist/electron-main.ts"),
+        "electron-main": path.resolve(this._opt.pkgPath, "src/electron-main.ts"),
       },
     });
   }

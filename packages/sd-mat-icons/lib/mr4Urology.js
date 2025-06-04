@@ -1,0 +1,1 @@
+export { default as mr4Urology } from "@material-symbols/svg-400/rounded/urology.svg"

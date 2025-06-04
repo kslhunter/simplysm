@@ -1,0 +1,1 @@
+export { default as mr4HandheldController } from "@material-symbols/svg-400/rounded/handheld_controller.svg"

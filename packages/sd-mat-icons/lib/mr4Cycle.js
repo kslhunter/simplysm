@@ -1,0 +1,1 @@
+export { default as mr4Cycle } from "@material-symbols/svg-400/rounded/cycle.svg"

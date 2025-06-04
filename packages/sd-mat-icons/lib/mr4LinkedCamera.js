@@ -1,0 +1,1 @@
+export { default as mr4LinkedCamera } from "@material-symbols/svg-400/rounded/linked_camera.svg"

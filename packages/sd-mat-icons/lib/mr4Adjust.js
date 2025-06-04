@@ -1,0 +1,1 @@
+export { default as mr4Adjust } from "@material-symbols/svg-400/rounded/adjust.svg"

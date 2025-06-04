@@ -1,0 +1,1 @@
+export { default as mr4KeyboardCommandKey } from "@material-symbols/svg-400/rounded/keyboard_command_key.svg"

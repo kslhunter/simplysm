@@ -1,0 +1,1 @@
+export { default as mr4Outlet } from "@material-symbols/svg-400/rounded/outlet.svg"

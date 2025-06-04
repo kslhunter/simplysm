@@ -1,0 +1,1 @@
+export { default as mr4SpecificGravity } from "@material-symbols/svg-400/rounded/specific_gravity.svg"

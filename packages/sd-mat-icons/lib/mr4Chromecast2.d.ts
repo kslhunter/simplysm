@@ -1,0 +1,1 @@
+export const mr4Chromecast2: string;

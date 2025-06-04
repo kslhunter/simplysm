@@ -1,0 +1,1 @@
+export { default as mr4BatteryHoriz075 } from "@material-symbols/svg-400/rounded/battery_horiz_075.svg"

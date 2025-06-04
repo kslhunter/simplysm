@@ -1,0 +1,1 @@
+export { default as mr4MoreHoriz } from "@material-symbols/svg-400/rounded/more_horiz.svg"

@@ -1,0 +1,1 @@
+export { default as mr4AwardStar } from "@material-symbols/svg-400/rounded/award_star.svg"

@@ -1,0 +1,1 @@
+export { default as mr4Infrared } from "@material-symbols/svg-400/rounded/infrared.svg"

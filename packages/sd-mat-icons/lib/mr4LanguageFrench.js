@@ -1,0 +1,1 @@
+export { default as mr4LanguageFrench } from "@material-symbols/svg-400/rounded/language_french.svg"

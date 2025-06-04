@@ -1,0 +1,1 @@
+export { default as mr4SettingsNightSight } from "@material-symbols/svg-400/rounded/settings_night_sight.svg"

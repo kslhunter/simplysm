@@ -1,0 +1,1 @@
+export { default as mr4NestEcoLeaf } from "@material-symbols/svg-400/rounded/nest_eco_leaf.svg"

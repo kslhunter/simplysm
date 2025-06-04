@@ -1,0 +1,1 @@
+export { default as mr4ViewInArOff } from "@material-symbols/svg-400/rounded/view_in_ar_off.svg"

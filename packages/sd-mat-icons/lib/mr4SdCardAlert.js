@@ -1,0 +1,1 @@
+export { default as mr4SdCardAlert } from "@material-symbols/svg-400/rounded/sd_card_alert.svg"

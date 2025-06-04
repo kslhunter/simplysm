@@ -1,0 +1,1 @@
+export { default as mr4MicOff } from "@material-symbols/svg-400/rounded/mic_off.svg"

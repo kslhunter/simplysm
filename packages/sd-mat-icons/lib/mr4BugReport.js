@@ -1,0 +1,1 @@
+export { default as mr4BugReport } from "@material-symbols/svg-400/rounded/bug_report.svg"

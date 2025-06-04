@@ -1,0 +1,1 @@
+export { default as mr4Paragliding } from "@material-symbols/svg-400/rounded/paragliding.svg"

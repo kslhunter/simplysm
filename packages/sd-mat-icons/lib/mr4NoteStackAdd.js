@@ -1,0 +1,1 @@
+export { default as mr4NoteStackAdd } from "@material-symbols/svg-400/rounded/note_stack_add.svg"

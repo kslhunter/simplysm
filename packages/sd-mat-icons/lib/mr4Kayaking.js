@@ -1,0 +1,1 @@
+export { default as mr4Kayaking } from "@material-symbols/svg-400/rounded/kayaking.svg"

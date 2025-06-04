@@ -1,0 +1,1 @@
+export { default as mr4ModeDual } from "@material-symbols/svg-400/rounded/mode_dual.svg"

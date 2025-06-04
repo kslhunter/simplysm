@@ -1,0 +1,1 @@
+export { default as mr4BakeryDining } from "@material-symbols/svg-400/rounded/bakery_dining.svg"

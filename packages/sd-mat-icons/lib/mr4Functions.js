@@ -1,0 +1,1 @@
+export { default as mr4Functions } from "@material-symbols/svg-400/rounded/functions.svg"

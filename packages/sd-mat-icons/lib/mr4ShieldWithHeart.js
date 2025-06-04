@@ -1,0 +1,1 @@
+export { default as mr4ShieldWithHeart } from "@material-symbols/svg-400/rounded/shield_with_heart.svg"

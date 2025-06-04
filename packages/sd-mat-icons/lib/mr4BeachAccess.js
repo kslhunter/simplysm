@@ -1,0 +1,1 @@
+export { default as mr4BeachAccess } from "@material-symbols/svg-400/rounded/beach_access.svg"

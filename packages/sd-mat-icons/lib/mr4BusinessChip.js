@@ -1,0 +1,1 @@
+export { default as mr4BusinessChip } from "@material-symbols/svg-400/rounded/business_chip.svg"

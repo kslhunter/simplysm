@@ -1,0 +1,1 @@
+export { default as mr4BrowseActivity } from "@material-symbols/svg-400/rounded/browse_activity.svg"

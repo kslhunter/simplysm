@@ -1,0 +1,1 @@
+export { default as mr4HdrWeak } from "@material-symbols/svg-400/rounded/hdr_weak.svg"

@@ -1,0 +1,1 @@
+export { default as mr4HourglassPause } from "@material-symbols/svg-400/rounded/hourglass_pause.svg"

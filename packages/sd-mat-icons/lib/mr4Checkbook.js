@@ -1,0 +1,1 @@
+export { default as mr4Checkbook } from "@material-symbols/svg-400/rounded/checkbook.svg"

@@ -1,0 +1,1 @@
+export { default as mr4PersonAddDisabled } from "@material-symbols/svg-400/rounded/person_add_disabled.svg"

@@ -1,0 +1,1 @@
+export { default as mr4MobileHand } from "@material-symbols/svg-400/rounded/mobile_hand.svg"

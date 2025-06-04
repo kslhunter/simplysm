@@ -1,0 +1,1 @@
+export { default as mr4LaptopChromebook } from "@material-symbols/svg-400/rounded/laptop_chromebook.svg"

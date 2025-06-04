@@ -1,0 +1,1 @@
+export { default as mr4SirenCheck } from "@material-symbols/svg-400/rounded/siren_check.svg"

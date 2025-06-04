@@ -1,0 +1,1 @@
+export { default as mr4SearchInsights } from "@material-symbols/svg-400/rounded/search_insights.svg"

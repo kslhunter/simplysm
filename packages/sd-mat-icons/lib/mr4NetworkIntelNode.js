@@ -1,0 +1,1 @@
+export { default as mr4NetworkIntelNode } from "@material-symbols/svg-400/rounded/network_intel_node.svg"

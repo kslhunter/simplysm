@@ -1,0 +1,1 @@
+export { default as mr4ZonePersonIdle } from "@material-symbols/svg-400/rounded/zone_person_idle.svg"

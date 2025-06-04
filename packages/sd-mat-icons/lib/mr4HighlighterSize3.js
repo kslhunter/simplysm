@@ -1,0 +1,1 @@
+export { default as mr4HighlighterSize3 } from "@material-symbols/svg-400/rounded/highlighter_size_3.svg"

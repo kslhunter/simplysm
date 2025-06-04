@@ -1,0 +1,1 @@
+export { default as mr4MedicalInformation } from "@material-symbols/svg-400/rounded/medical_information.svg"

@@ -1,0 +1,1 @@
+export { default as mr4DigitalWellbeing } from "@material-symbols/svg-400/rounded/digital_wellbeing.svg"

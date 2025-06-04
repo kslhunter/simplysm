@@ -1,0 +1,1 @@
+export { default as mr4ScreenshotRegion } from "@material-symbols/svg-400/rounded/screenshot_region.svg"

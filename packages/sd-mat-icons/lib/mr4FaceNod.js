@@ -1,0 +1,1 @@
+export { default as mr4FaceNod } from "@material-symbols/svg-400/rounded/face_nod.svg"

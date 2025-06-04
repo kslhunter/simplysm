@@ -1,0 +1,1 @@
+export { default as mr4ModeFanOff } from "@material-symbols/svg-400/rounded/mode_fan_off.svg"

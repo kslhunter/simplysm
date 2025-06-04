@@ -1,0 +1,1 @@
+export { default as mr4Energy } from "@material-symbols/svg-400/rounded/energy.svg"

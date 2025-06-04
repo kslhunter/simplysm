@@ -1,0 +1,1 @@
+export { default as mr4Chess } from "@material-symbols/svg-400/rounded/chess.svg"

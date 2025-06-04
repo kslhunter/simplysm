@@ -6,7 +6,7 @@ export class SdCliNgRoutesFileGenerator {
   cachedHash?: string;
 
   watch(pkgPath: string, noLazyRoute?: boolean) {
-    const routesFilePath = path.resolve(pkgPath, "dist/routes.ts");
+    const routesFilePath = path.resolve(pkgPath, "src/routes.ts");
     this.cachedHash = FsUtils.exists(routesFilePath) ? HashUtils.get(FsUtils.readFile(routesFilePath)) : undefined;
 
     SdFsWatcher.watch([path.resolve(pkgPath, "src")]).onChange({ delay: 50 }, () => {
@@ -17,8 +17,8 @@ export class SdCliNgRoutesFileGenerator {
   }
 
   run(pkgPath: string, noLazyRoute?: boolean) {
-    const appDirPath = path.resolve(pkgPath, "dist/app");
-    const routesFilePath = path.resolve(pkgPath, "dist/routes.ts");
+    const appDirPath = path.resolve(pkgPath, "src/app");
+    const routesFilePath = path.resolve(pkgPath, "src/routes.ts");
 
     // 내부 파일들 import
     const result: TInfo = new Map();

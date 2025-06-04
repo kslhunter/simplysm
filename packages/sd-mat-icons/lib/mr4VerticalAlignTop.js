@@ -1,0 +1,1 @@
+export { default as mr4VerticalAlignTop } from "@material-symbols/svg-400/rounded/vertical_align_top.svg"

@@ -1,0 +1,1 @@
+export { default as mr4Chalet } from "@material-symbols/svg-400/rounded/chalet.svg"

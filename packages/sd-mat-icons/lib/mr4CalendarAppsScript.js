@@ -1,0 +1,1 @@
+export { default as mr4CalendarAppsScript } from "@material-symbols/svg-400/rounded/calendar_apps_script.svg"

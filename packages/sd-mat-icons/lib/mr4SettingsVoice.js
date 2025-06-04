@@ -1,0 +1,1 @@
+export { default as mr4SettingsVoice } from "@material-symbols/svg-400/rounded/settings_voice.svg"

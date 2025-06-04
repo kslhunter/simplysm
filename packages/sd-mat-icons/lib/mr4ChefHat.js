@@ -1,0 +1,1 @@
+export { default as mr4ChefHat } from "@material-symbols/svg-400/rounded/chef_hat.svg"

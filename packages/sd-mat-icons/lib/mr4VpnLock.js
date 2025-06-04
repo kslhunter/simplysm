@@ -1,0 +1,1 @@
+export { default as mr4VpnLock } from "@material-symbols/svg-400/rounded/vpn_lock.svg"

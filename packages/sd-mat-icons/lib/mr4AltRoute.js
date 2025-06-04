@@ -1,0 +1,1 @@
+export { default as mr4AltRoute } from "@material-symbols/svg-400/rounded/alt_route.svg"

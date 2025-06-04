@@ -1,0 +1,1 @@
+export { default as mr4SwapVert } from "@material-symbols/svg-400/rounded/swap_vert.svg"

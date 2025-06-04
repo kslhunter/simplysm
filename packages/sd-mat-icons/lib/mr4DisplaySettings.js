@@ -1,0 +1,1 @@
+export { default as mr4DisplaySettings } from "@material-symbols/svg-400/rounded/display_settings.svg"

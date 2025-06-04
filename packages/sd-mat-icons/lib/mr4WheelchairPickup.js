@@ -1,0 +1,1 @@
+export { default as mr4WheelchairPickup } from "@material-symbols/svg-400/rounded/wheelchair_pickup.svg"

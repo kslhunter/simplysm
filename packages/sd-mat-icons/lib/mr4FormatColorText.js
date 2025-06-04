@@ -1,0 +1,1 @@
+export { default as mr4FormatColorText } from "@material-symbols/svg-400/rounded/format_color_text.svg"

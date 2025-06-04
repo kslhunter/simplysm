@@ -1,0 +1,1 @@
+export { default as mr4LibraryAddCheck } from "@material-symbols/svg-400/rounded/library_add_check.svg"

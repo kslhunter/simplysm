@@ -1,0 +1,1 @@
+export { default as mr4ArtTrack } from "@material-symbols/svg-400/rounded/art_track.svg"

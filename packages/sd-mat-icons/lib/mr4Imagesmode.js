@@ -1,0 +1,1 @@
+export { default as mr4Imagesmode } from "@material-symbols/svg-400/rounded/imagesmode.svg"

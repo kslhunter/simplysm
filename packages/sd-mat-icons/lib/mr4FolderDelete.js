@@ -1,0 +1,1 @@
+export { default as mr4FolderDelete } from "@material-symbols/svg-400/rounded/folder_delete.svg"

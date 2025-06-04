@@ -1,0 +1,1 @@
+export { default as mr4PointScan } from "@material-symbols/svg-400/rounded/point_scan.svg"

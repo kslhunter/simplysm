@@ -1,0 +1,1 @@
+export { default as mr4CorporateFare } from "@material-symbols/svg-400/rounded/corporate_fare.svg"

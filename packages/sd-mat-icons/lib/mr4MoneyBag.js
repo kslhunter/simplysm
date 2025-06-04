@@ -1,0 +1,1 @@
+export { default as mr4MoneyBag } from "@material-symbols/svg-400/rounded/money_bag.svg"

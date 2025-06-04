@@ -1,0 +1,1 @@
+export { default as mr4PageHeader } from "@material-symbols/svg-400/rounded/page_header.svg"

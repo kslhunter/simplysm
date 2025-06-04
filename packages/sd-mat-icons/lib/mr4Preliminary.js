@@ -1,0 +1,1 @@
+export { default as mr4Preliminary } from "@material-symbols/svg-400/rounded/preliminary.svg"

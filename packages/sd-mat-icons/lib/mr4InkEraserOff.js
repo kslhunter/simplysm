@@ -1,0 +1,1 @@
+export { default as mr4InkEraserOff } from "@material-symbols/svg-400/rounded/ink_eraser_off.svg"

@@ -1,0 +1,1 @@
+export { default as mr4WidthFull } from "@material-symbols/svg-400/rounded/width_full.svg"

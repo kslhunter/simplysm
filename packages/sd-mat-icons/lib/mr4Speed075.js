@@ -1,0 +1,1 @@
+export { default as mr4Speed075 } from "@material-symbols/svg-400/rounded/speed_0_75.svg"

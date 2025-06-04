@@ -1,0 +1,1 @@
+export { default as mr4Tooltip2 } from "@material-symbols/svg-400/rounded/tooltip_2.svg"

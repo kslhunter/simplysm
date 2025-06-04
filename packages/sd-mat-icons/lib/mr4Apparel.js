@@ -1,0 +1,1 @@
+export { default as mr4Apparel } from "@material-symbols/svg-400/rounded/apparel.svg"

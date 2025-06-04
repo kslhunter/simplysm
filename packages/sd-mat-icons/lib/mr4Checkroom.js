@@ -1,0 +1,1 @@
+export { default as mr4Checkroom } from "@material-symbols/svg-400/rounded/checkroom.svg"

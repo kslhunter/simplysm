@@ -1,0 +1,1 @@
+export { default as mr4FaceRetouchingOff } from "@material-symbols/svg-400/rounded/face_retouching_off.svg"

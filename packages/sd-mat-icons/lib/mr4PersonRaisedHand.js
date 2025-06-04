@@ -1,0 +1,1 @@
+export { default as mr4PersonRaisedHand } from "@material-symbols/svg-400/rounded/person_raised_hand.svg"

@@ -1,0 +1,1 @@
+export { default as mr4DesktopPortrait } from "@material-symbols/svg-400/rounded/desktop_portrait.svg"

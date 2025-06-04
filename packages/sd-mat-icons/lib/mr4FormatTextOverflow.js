@@ -1,0 +1,1 @@
+export { default as mr4FormatTextOverflow } from "@material-symbols/svg-400/rounded/format_text_overflow.svg"

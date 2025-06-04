@@ -1,0 +1,1 @@
+export { default as mr4SevereCold } from "@material-symbols/svg-400/rounded/severe_cold.svg"

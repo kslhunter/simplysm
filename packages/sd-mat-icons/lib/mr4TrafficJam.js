@@ -1,0 +1,1 @@
+export { default as mr4TrafficJam } from "@material-symbols/svg-400/rounded/traffic_jam.svg"

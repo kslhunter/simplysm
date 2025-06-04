@@ -1,0 +1,1 @@
+export { default as mr4NoBackpack } from "@material-symbols/svg-400/rounded/no_backpack.svg"

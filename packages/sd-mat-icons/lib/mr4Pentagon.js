@@ -1,0 +1,1 @@
+export { default as mr4Pentagon } from "@material-symbols/svg-400/rounded/pentagon.svg"

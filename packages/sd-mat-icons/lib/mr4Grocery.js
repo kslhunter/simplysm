@@ -1,0 +1,1 @@
+export { default as mr4Grocery } from "@material-symbols/svg-400/rounded/grocery.svg"

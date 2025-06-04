@@ -1,0 +1,1 @@
+export { default as mr4Contract } from "@material-symbols/svg-400/rounded/contract.svg"

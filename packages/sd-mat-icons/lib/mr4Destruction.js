@@ -1,0 +1,1 @@
+export { default as mr4Destruction } from "@material-symbols/svg-400/rounded/destruction.svg"

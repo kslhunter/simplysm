@@ -1,0 +1,1 @@
+export { default as mr4ComputerArrowUp } from "@material-symbols/svg-400/rounded/computer_arrow_up.svg"

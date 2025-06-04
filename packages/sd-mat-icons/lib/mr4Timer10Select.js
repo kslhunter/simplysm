@@ -1,0 +1,1 @@
+export { default as mr4Timer10Select } from "@material-symbols/svg-400/rounded/timer_10_select.svg"

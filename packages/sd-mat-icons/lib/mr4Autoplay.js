@@ -1,0 +1,1 @@
+export { default as mr4Autoplay } from "@material-symbols/svg-400/rounded/autoplay.svg"

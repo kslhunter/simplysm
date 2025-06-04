@@ -1,0 +1,1 @@
+export { default as mr4Backup } from "@material-symbols/svg-400/rounded/backup.svg"

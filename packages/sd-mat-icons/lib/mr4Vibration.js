@@ -1,0 +1,1 @@
+export { default as mr4Vibration } from "@material-symbols/svg-400/rounded/vibration.svg"

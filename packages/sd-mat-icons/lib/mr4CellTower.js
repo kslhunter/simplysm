@@ -1,0 +1,1 @@
+export { default as mr4CellTower } from "@material-symbols/svg-400/rounded/cell_tower.svg"

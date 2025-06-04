@@ -1,0 +1,1 @@
+export const mr4Face2: string;

@@ -1,0 +1,1 @@
+export { default as mr4SettingsVideoCamera } from "@material-symbols/svg-400/rounded/settings_video_camera.svg"

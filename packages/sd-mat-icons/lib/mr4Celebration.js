@@ -1,0 +1,1 @@
+export { default as mr4Celebration } from "@material-symbols/svg-400/rounded/celebration.svg"

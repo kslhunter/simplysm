@@ -1,0 +1,1 @@
+export { default as mr4Compost } from "@material-symbols/svg-400/rounded/compost.svg"

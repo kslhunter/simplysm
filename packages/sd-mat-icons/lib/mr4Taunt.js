@@ -1,0 +1,1 @@
+export { default as mr4Taunt } from "@material-symbols/svg-400/rounded/taunt.svg"

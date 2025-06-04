@@ -1,0 +1,1 @@
+export { default as mr4VideoSearch } from "@material-symbols/svg-400/rounded/video_search.svg"

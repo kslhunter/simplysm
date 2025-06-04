@@ -1,0 +1,1 @@
+export { default as mr4ArrowWarmUp } from "@material-symbols/svg-400/rounded/arrow_warm_up.svg"

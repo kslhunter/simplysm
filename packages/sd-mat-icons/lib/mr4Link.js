@@ -1,0 +1,1 @@
+export { default as mr4Link } from "@material-symbols/svg-400/rounded/link.svg"

@@ -1,0 +1,1 @@
+export { default as mr4PhoneForwarded } from "@material-symbols/svg-400/rounded/phone_forwarded.svg"

@@ -1,0 +1,1 @@
+export { default as mr4CookieOff } from "@material-symbols/svg-400/rounded/cookie_off.svg"

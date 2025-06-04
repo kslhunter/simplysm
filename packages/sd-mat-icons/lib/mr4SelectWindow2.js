@@ -1,0 +1,1 @@
+export { default as mr4SelectWindow2 } from "@material-symbols/svg-400/rounded/select_window_2.svg"

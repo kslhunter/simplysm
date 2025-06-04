@@ -1,0 +1,1 @@
+export const mr4FormatH2: string;

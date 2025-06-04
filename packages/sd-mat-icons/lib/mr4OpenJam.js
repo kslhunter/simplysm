@@ -1,0 +1,1 @@
+export { default as mr4OpenJam } from "@material-symbols/svg-400/rounded/open_jam.svg"

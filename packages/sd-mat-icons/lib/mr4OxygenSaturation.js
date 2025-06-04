@@ -1,0 +1,1 @@
+export { default as mr4OxygenSaturation } from "@material-symbols/svg-400/rounded/oxygen_saturation.svg"

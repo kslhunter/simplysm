@@ -1,0 +1,1 @@
+export { default as mr4TextRotationAngleup } from "@material-symbols/svg-400/rounded/text_rotation_angleup.svg"

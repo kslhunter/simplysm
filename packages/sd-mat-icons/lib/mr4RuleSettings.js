@@ -1,0 +1,1 @@
+export { default as mr4RuleSettings } from "@material-symbols/svg-400/rounded/rule_settings.svg"

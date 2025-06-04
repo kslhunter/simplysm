@@ -1,0 +1,1 @@
+export { default as mr4SyncArrowUp } from "@material-symbols/svg-400/rounded/sync_arrow_up.svg"

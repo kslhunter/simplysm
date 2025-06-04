@@ -1,0 +1,1 @@
+export { default as mr4Azm } from "@material-symbols/svg-400/rounded/azm.svg"

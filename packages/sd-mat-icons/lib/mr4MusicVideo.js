@@ -1,0 +1,1 @@
+export { default as mr4MusicVideo } from "@material-symbols/svg-400/rounded/music_video.svg"

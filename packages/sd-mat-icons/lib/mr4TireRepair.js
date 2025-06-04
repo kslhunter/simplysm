@@ -1,0 +1,1 @@
+export { default as mr4TireRepair } from "@material-symbols/svg-400/rounded/tire_repair.svg"

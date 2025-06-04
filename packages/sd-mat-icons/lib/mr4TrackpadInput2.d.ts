@@ -1,0 +1,1 @@
+export const mr4TrackpadInput2: string;

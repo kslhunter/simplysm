@@ -1,0 +1,1 @@
+export { default as mr4Volcano } from "@material-symbols/svg-400/rounded/volcano.svg"

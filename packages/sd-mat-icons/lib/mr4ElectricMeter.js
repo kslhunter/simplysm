@@ -1,0 +1,1 @@
+export { default as mr4ElectricMeter } from "@material-symbols/svg-400/rounded/electric_meter.svg"

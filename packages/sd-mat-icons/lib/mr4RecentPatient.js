@@ -1,0 +1,1 @@
+export { default as mr4RecentPatient } from "@material-symbols/svg-400/rounded/recent_patient.svg"

@@ -1,0 +1,1 @@
+export { default as mr43k } from "@material-symbols/svg-400/rounded/3k.svg"

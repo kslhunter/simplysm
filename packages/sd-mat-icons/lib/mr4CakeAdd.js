@@ -1,0 +1,1 @@
+export { default as mr4CakeAdd } from "@material-symbols/svg-400/rounded/cake_add.svg"

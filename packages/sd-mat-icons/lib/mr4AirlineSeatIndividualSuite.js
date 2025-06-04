@@ -1,0 +1,1 @@
+export { default as mr4AirlineSeatIndividualSuite } from "@material-symbols/svg-400/rounded/airline_seat_individual_suite.svg"

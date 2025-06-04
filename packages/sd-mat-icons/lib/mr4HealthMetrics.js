@@ -1,0 +1,1 @@
+export { default as mr4HealthMetrics } from "@material-symbols/svg-400/rounded/health_metrics.svg"

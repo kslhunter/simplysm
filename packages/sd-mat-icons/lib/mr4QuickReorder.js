@@ -1,0 +1,1 @@
+export { default as mr4QuickReorder } from "@material-symbols/svg-400/rounded/quick_reorder.svg"

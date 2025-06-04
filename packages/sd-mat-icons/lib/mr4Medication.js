@@ -1,0 +1,1 @@
+export { default as mr4Medication } from "@material-symbols/svg-400/rounded/medication.svg"

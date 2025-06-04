@@ -1,0 +1,1 @@
+export { default as mr4Campaign } from "@material-symbols/svg-400/rounded/campaign.svg"

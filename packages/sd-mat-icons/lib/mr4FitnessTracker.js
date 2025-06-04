@@ -1,0 +1,1 @@
+export { default as mr4FitnessTracker } from "@material-symbols/svg-400/rounded/fitness_tracker.svg"

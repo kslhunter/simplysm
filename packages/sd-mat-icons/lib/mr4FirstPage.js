@@ -1,0 +1,1 @@
+export { default as mr4FirstPage } from "@material-symbols/svg-400/rounded/first_page.svg"

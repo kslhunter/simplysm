@@ -1,0 +1,1 @@
+export { default as mr4Trophy } from "@material-symbols/svg-400/rounded/trophy.svg"

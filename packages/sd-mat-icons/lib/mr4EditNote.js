@@ -1,0 +1,1 @@
+export { default as mr4EditNote } from "@material-symbols/svg-400/rounded/edit_note.svg"

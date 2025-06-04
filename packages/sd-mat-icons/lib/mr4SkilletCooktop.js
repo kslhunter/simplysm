@@ -1,0 +1,1 @@
+export { default as mr4SkilletCooktop } from "@material-symbols/svg-400/rounded/skillet_cooktop.svg"

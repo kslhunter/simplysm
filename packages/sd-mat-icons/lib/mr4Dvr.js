@@ -1,0 +1,1 @@
+export { default as mr4Dvr } from "@material-symbols/svg-400/rounded/dvr.svg"

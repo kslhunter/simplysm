@@ -1,0 +1,1 @@
+export { default as mr4Theaters } from "@material-symbols/svg-400/rounded/theaters.svg"

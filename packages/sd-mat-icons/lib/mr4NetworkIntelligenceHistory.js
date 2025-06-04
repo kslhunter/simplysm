@@ -1,0 +1,1 @@
+export { default as mr4NetworkIntelligenceHistory } from "@material-symbols/svg-400/rounded/network_intelligence_history.svg"

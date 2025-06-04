@@ -1,0 +1,1 @@
+export { default as mr4TouchpadMouse } from "@material-symbols/svg-400/rounded/touchpad_mouse.svg"

@@ -1,0 +1,1 @@
+export { default as mr4ChildCare } from "@material-symbols/svg-400/rounded/child_care.svg"

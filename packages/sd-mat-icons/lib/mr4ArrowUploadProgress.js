@@ -1,0 +1,1 @@
+export { default as mr4ArrowUploadProgress } from "@material-symbols/svg-400/rounded/arrow_upload_progress.svg"

@@ -1,0 +1,1 @@
+export { default as mr4AddBusiness } from "@material-symbols/svg-400/rounded/add_business.svg"

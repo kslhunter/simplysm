@@ -1,0 +1,1 @@
+export { default as mr4ViewComfyAlt } from "@material-symbols/svg-400/rounded/view_comfy_alt.svg"

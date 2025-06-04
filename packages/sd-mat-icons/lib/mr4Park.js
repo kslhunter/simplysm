@@ -1,0 +1,1 @@
+export { default as mr4Park } from "@material-symbols/svg-400/rounded/park.svg"

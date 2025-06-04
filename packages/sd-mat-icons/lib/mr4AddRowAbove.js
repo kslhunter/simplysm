@@ -1,0 +1,1 @@
+export { default as mr4AddRowAbove } from "@material-symbols/svg-400/rounded/add_row_above.svg"

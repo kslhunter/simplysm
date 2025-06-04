@@ -1,0 +1,1 @@
+export { default as mr4PanoramaWideAngle } from "@material-symbols/svg-400/rounded/panorama_wide_angle.svg"

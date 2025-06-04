@@ -1,0 +1,1 @@
+export { default as mr4LineCurve } from "@material-symbols/svg-400/rounded/line_curve.svg"

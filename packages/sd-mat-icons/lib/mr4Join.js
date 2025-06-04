@@ -1,0 +1,1 @@
+export { default as mr4Join } from "@material-symbols/svg-400/rounded/join.svg"

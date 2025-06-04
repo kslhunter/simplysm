@@ -1,0 +1,1 @@
+export { default as mr4MenstrualHealth } from "@material-symbols/svg-400/rounded/menstrual_health.svg"

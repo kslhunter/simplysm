@@ -3,7 +3,7 @@ import path from "path";
 import { SdLogger } from "@simplysm/sd-core-node";
 import { SdCliConvertMessageUtils } from "../../utils/sd-cli-convert-message.utils";
 
-// import { InitialFileRecord } from "@angular/build/dist/tools/esbuild/bundler-context";
+// import { InitialFileRecord } from "@angular/build/src/tools/esbuild/bundler-context";
 
 interface InitialFileRecord {
   entrypoint: boolean;

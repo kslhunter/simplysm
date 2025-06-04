@@ -1,0 +1,1 @@
+export { default as mr4ChatInfo } from "@material-symbols/svg-400/rounded/chat_info.svg"

@@ -1,0 +1,1 @@
+export { default as mr4FiberPin } from "@material-symbols/svg-400/rounded/fiber_pin.svg"

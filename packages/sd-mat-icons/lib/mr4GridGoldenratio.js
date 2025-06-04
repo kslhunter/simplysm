@@ -1,0 +1,1 @@
+export { default as mr4GridGoldenratio } from "@material-symbols/svg-400/rounded/grid_goldenratio.svg"

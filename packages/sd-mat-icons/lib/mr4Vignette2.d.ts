@@ -1,0 +1,1 @@
+export const mr4Vignette2: string;

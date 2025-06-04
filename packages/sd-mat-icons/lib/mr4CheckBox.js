@@ -1,0 +1,1 @@
+export { default as mr4CheckBox } from "@material-symbols/svg-400/rounded/check_box.svg"

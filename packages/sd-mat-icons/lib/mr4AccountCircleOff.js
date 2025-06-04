@@ -1,0 +1,1 @@
+export { default as mr4AccountCircleOff } from "@material-symbols/svg-400/rounded/account_circle_off.svg"

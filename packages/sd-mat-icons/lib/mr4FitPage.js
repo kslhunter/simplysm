@@ -1,0 +1,1 @@
+export { default as mr4FitPage } from "@material-symbols/svg-400/rounded/fit_page.svg"

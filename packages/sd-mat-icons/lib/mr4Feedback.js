@@ -1,0 +1,1 @@
+export { default as mr4Feedback } from "@material-symbols/svg-400/rounded/feedback.svg"

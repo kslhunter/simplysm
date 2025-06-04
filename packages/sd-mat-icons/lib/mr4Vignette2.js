@@ -1,0 +1,1 @@
+export { default as mr4Vignette2 } from "@material-symbols/svg-400/rounded/vignette_2.svg"

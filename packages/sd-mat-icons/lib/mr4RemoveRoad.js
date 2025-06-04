@@ -1,0 +1,1 @@
+export { default as mr4RemoveRoad } from "@material-symbols/svg-400/rounded/remove_road.svg"

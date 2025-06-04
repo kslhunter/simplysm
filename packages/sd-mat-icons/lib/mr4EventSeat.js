@@ -1,0 +1,1 @@
+export { default as mr4EventSeat } from "@material-symbols/svg-400/rounded/event_seat.svg"

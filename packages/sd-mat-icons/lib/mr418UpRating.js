@@ -1,0 +1,1 @@
+export { default as mr418UpRating } from "@material-symbols/svg-400/rounded/18_up_rating.svg"

@@ -1,0 +1,1 @@
+export { default as mr4SaveClock } from "@material-symbols/svg-400/rounded/save_clock.svg"

@@ -1,0 +1,1 @@
+export { default as mr4HearingAidDisabled } from "@material-symbols/svg-400/rounded/hearing_aid_disabled.svg"

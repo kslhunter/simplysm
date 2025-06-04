@@ -1,0 +1,1 @@
+export { default as mr4ConfirmationNumber } from "@material-symbols/svg-400/rounded/confirmation_number.svg"

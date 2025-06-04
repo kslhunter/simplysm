@@ -1,0 +1,1 @@
+export const mr4Timer10: string;

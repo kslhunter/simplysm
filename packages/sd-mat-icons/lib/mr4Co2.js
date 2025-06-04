@@ -1,0 +1,1 @@
+export { default as mr4Co2 } from "@material-symbols/svg-400/rounded/co2.svg"

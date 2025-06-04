@@ -1,0 +1,1 @@
+export { default as mr4Battery1Bar } from "@material-symbols/svg-400/rounded/battery_1_bar.svg"

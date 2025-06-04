@@ -1,0 +1,1 @@
+export { default as mr4SouthWest } from "@material-symbols/svg-400/rounded/south_west.svg"

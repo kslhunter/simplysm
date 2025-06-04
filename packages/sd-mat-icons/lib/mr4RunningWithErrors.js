@@ -1,0 +1,1 @@
+export { default as mr4RunningWithErrors } from "@material-symbols/svg-400/rounded/running_with_errors.svg"

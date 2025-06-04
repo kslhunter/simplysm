@@ -1,0 +1,1 @@
+export const mr4GasMeter: string;

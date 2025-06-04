@@ -1,0 +1,1 @@
+export { default as mr4AspectRatio } from "@material-symbols/svg-400/rounded/aspect_ratio.svg"

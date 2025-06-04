@@ -1,0 +1,1 @@
+export { default as mr4ThermostatArrowUp } from "@material-symbols/svg-400/rounded/thermostat_arrow_up.svg"

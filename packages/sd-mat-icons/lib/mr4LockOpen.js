@@ -1,0 +1,1 @@
+export { default as mr4LockOpen } from "@material-symbols/svg-400/rounded/lock_open.svg"

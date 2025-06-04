@@ -1,0 +1,1 @@
+export { default as mr4Check } from "@material-symbols/svg-400/rounded/check.svg"

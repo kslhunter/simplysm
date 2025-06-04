@@ -1,0 +1,1 @@
+export { default as mr4MixtureMed } from "@material-symbols/svg-400/rounded/mixture_med.svg"

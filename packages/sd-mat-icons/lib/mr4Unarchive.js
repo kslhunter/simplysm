@@ -1,0 +1,1 @@
+export { default as mr4Unarchive } from "@material-symbols/svg-400/rounded/unarchive.svg"

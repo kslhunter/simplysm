@@ -1,0 +1,1 @@
+export { default as mr4WbAuto } from "@material-symbols/svg-400/rounded/wb_auto.svg"

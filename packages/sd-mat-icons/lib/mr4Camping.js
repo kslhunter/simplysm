@@ -1,0 +1,1 @@
+export { default as mr4Camping } from "@material-symbols/svg-400/rounded/camping.svg"

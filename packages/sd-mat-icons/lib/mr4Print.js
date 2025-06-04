@@ -1,0 +1,1 @@
+export { default as mr4Print } from "@material-symbols/svg-400/rounded/print.svg"

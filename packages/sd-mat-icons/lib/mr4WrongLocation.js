@@ -1,0 +1,1 @@
+export { default as mr4WrongLocation } from "@material-symbols/svg-400/rounded/wrong_location.svg"

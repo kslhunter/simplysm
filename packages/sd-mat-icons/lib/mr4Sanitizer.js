@@ -1,0 +1,1 @@
+export { default as mr4Sanitizer } from "@material-symbols/svg-400/rounded/sanitizer.svg"

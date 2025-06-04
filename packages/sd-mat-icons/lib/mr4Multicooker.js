@@ -1,0 +1,1 @@
+export { default as mr4Multicooker } from "@material-symbols/svg-400/rounded/multicooker.svg"

@@ -1,0 +1,1 @@
+export { default as mr4Support } from "@material-symbols/svg-400/rounded/support.svg"

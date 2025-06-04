@@ -1,0 +1,1 @@
+export { default as mr4HeadsetOff } from "@material-symbols/svg-400/rounded/headset_off.svg"

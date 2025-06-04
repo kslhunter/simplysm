@@ -1,0 +1,1 @@
+export { default as mr4Shower } from "@material-symbols/svg-400/rounded/shower.svg"

@@ -1,0 +1,1 @@
+export { default as mr4Foggy } from "@material-symbols/svg-400/rounded/foggy.svg"

@@ -1,0 +1,1 @@
+export { default as mr4Padding } from "@material-symbols/svg-400/rounded/padding.svg"

@@ -1,0 +1,1 @@
+export { default as mr4Hd } from "@material-symbols/svg-400/rounded/hd.svg"

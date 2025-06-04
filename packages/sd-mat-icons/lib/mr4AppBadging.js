@@ -1,0 +1,1 @@
+export { default as mr4AppBadging } from "@material-symbols/svg-400/rounded/app_badging.svg"

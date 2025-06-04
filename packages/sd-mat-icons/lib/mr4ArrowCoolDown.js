@@ -1,0 +1,1 @@
+export { default as mr4ArrowCoolDown } from "@material-symbols/svg-400/rounded/arrow_cool_down.svg"

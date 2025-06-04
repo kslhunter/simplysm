@@ -1,0 +1,1 @@
+export { default as mr4QrCode } from "@material-symbols/svg-400/rounded/qr_code.svg"

@@ -1,0 +1,1 @@
+export { default as mr4ElectricRickshaw } from "@material-symbols/svg-400/rounded/electric_rickshaw.svg"

@@ -1,0 +1,1 @@
+export { default as mr4Reminder } from "@material-symbols/svg-400/rounded/reminder.svg"

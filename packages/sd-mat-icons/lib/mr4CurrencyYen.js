@@ -1,0 +1,1 @@
+export { default as mr4CurrencyYen } from "@material-symbols/svg-400/rounded/currency_yen.svg"

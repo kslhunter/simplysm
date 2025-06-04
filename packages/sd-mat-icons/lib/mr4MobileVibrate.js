@@ -1,0 +1,1 @@
+export { default as mr4MobileVibrate } from "@material-symbols/svg-400/rounded/mobile_vibrate.svg"

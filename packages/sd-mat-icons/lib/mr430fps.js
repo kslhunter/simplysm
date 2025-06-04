@@ -1,0 +1,1 @@
+export { default as mr430fps } from "@material-symbols/svg-400/rounded/30fps.svg"

@@ -1,0 +1,1 @@
+export const mr4MobileSound2: string;

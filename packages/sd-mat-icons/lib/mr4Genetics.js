@@ -1,0 +1,1 @@
+export { default as mr4Genetics } from "@material-symbols/svg-400/rounded/genetics.svg"

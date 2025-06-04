@@ -1,0 +1,1 @@
+export { default as mr4ModelTraining } from "@material-symbols/svg-400/rounded/model_training.svg"

@@ -1,0 +1,1 @@
+export { default as mr4BatteryError } from "@material-symbols/svg-400/rounded/battery_error.svg"

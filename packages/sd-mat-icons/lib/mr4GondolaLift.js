@@ -1,0 +1,1 @@
+export { default as mr4GondolaLift } from "@material-symbols/svg-400/rounded/gondola_lift.svg"

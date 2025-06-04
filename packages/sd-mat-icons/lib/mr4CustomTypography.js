@@ -1,0 +1,1 @@
+export { default as mr4CustomTypography } from "@material-symbols/svg-400/rounded/custom_typography.svg"

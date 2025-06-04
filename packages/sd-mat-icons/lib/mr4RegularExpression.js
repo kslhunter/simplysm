@@ -1,0 +1,1 @@
+export { default as mr4RegularExpression } from "@material-symbols/svg-400/rounded/regular_expression.svg"

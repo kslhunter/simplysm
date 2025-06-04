@@ -1,0 +1,1 @@
+export { default as mr4GppBad } from "@material-symbols/svg-400/rounded/gpp_bad.svg"

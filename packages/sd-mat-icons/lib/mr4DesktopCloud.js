@@ -1,0 +1,1 @@
+export { default as mr4DesktopCloud } from "@material-symbols/svg-400/rounded/desktop_cloud.svg"

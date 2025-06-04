@@ -1,0 +1,1 @@
+export const mr4SettingsVideoCamera: string;

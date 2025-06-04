@@ -1,0 +1,1 @@
+export { default as mr4FormatH2 } from "@material-symbols/svg-400/rounded/format_h2.svg"

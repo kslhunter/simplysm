@@ -1,0 +1,1 @@
+export { default as mr4CloudUpload } from "@material-symbols/svg-400/rounded/cloud_upload.svg"

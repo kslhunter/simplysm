@@ -1,0 +1,1 @@
+export { default as mr4AodTablet } from "@material-symbols/svg-400/rounded/aod_tablet.svg"

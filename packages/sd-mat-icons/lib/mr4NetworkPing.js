@@ -1,0 +1,1 @@
+export { default as mr4NetworkPing } from "@material-symbols/svg-400/rounded/network_ping.svg"

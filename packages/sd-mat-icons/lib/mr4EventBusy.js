@@ -1,0 +1,1 @@
+export { default as mr4EventBusy } from "@material-symbols/svg-400/rounded/event_busy.svg"

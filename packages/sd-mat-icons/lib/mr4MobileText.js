@@ -1,0 +1,1 @@
+export { default as mr4MobileText } from "@material-symbols/svg-400/rounded/mobile_text.svg"

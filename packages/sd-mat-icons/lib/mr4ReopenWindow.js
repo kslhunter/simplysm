@@ -1,0 +1,1 @@
+export { default as mr4ReopenWindow } from "@material-symbols/svg-400/rounded/reopen_window.svg"

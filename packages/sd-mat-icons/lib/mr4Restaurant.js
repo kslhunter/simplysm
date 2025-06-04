@@ -1,0 +1,1 @@
+export { default as mr4Restaurant } from "@material-symbols/svg-400/rounded/restaurant.svg"

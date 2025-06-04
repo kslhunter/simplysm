@@ -1,0 +1,1 @@
+export { default as mr4TwoPagerStore } from "@material-symbols/svg-400/rounded/two_pager_store.svg"

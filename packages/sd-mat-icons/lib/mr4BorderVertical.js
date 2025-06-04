@@ -1,0 +1,1 @@
+export { default as mr4BorderVertical } from "@material-symbols/svg-400/rounded/border_vertical.svg"

@@ -1,0 +1,1 @@
+export { default as mr4TextSelectJumpToBeginning } from "@material-symbols/svg-400/rounded/text_select_jump_to_beginning.svg"

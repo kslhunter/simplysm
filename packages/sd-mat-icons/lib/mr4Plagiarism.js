@@ -1,0 +1,1 @@
+export { default as mr4Plagiarism } from "@material-symbols/svg-400/rounded/plagiarism.svg"

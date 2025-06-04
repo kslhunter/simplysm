@@ -1,0 +1,1 @@
+export const mr4Doorbell3p: string;

@@ -1,0 +1,1 @@
+export { default as mr4MovieInfo } from "@material-symbols/svg-400/rounded/movie_info.svg"

@@ -1,0 +1,1 @@
+export { default as mr4TabDuplicate } from "@material-symbols/svg-400/rounded/tab_duplicate.svg"

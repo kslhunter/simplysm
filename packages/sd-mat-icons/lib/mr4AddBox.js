@@ -1,0 +1,1 @@
+export { default as mr4AddBox } from "@material-symbols/svg-400/rounded/add_box.svg"

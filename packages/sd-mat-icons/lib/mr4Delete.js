@@ -1,0 +1,1 @@
+export { default as mr4Delete } from "@material-symbols/svg-400/rounded/delete.svg"

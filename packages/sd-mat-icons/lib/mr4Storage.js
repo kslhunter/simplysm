@@ -1,0 +1,1 @@
+export { default as mr4Storage } from "@material-symbols/svg-400/rounded/storage.svg"

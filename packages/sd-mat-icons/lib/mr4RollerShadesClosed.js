@@ -1,0 +1,1 @@
+export { default as mr4RollerShadesClosed } from "@material-symbols/svg-400/rounded/roller_shades_closed.svg"

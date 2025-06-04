@@ -1,0 +1,1 @@
+export { default as mr4Palette } from "@material-symbols/svg-400/rounded/palette.svg"

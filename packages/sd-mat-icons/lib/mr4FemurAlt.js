@@ -1,0 +1,1 @@
+export { default as mr4FemurAlt } from "@material-symbols/svg-400/rounded/femur_alt.svg"

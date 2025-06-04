@@ -1,0 +1,1 @@
+export { default as mr4LocalDrink } from "@material-symbols/svg-400/rounded/local_drink.svg"

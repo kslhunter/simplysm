@@ -1,0 +1,1 @@
+export { default as mr4ContentPaste } from "@material-symbols/svg-400/rounded/content_paste.svg"

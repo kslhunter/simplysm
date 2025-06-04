@@ -1,0 +1,1 @@
+export { default as mr4ToolsPowerDrill } from "@material-symbols/svg-400/rounded/tools_power_drill.svg"

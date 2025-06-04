@@ -1,0 +1,1 @@
+export { default as mr4ConversionPath } from "@material-symbols/svg-400/rounded/conversion_path.svg"

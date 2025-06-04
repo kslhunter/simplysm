@@ -1,0 +1,1 @@
+export { default as mr4NoteAlt } from "@material-symbols/svg-400/rounded/note_alt.svg"

@@ -1,0 +1,1 @@
+export { default as mr4Lightbulb } from "@material-symbols/svg-400/rounded/lightbulb.svg"

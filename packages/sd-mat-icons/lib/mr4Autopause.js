@@ -1,0 +1,1 @@
+export { default as mr4Autopause } from "@material-symbols/svg-400/rounded/autopause.svg"

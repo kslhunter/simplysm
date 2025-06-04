@@ -1,0 +1,1 @@
+export { default as mr4MediaOutput } from "@material-symbols/svg-400/rounded/media_output.svg"

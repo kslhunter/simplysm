@@ -1,0 +1,1 @@
+export { default as mr4OpenRun } from "@material-symbols/svg-400/rounded/open_run.svg"

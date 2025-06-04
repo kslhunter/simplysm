@@ -1,0 +1,1 @@
+export { default as mr4EditLocation } from "@material-symbols/svg-400/rounded/edit_location.svg"

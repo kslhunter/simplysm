@@ -1,0 +1,1 @@
+export { default as mr4SpatialSpeaker } from "@material-symbols/svg-400/rounded/spatial_speaker.svg"

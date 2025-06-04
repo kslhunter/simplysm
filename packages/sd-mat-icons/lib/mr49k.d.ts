@@ -1,0 +1,1 @@
+export const mr49k: string;

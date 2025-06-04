@@ -1,0 +1,1 @@
+export { default as mr4Airwave } from "@material-symbols/svg-400/rounded/airwave.svg"

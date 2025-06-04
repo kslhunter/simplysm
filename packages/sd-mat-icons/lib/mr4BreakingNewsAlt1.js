@@ -1,0 +1,1 @@
+export { default as mr4BreakingNewsAlt1 } from "@material-symbols/svg-400/rounded/breaking_news_alt_1.svg"

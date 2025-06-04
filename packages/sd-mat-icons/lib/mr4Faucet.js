@@ -1,0 +1,1 @@
+export { default as mr4Faucet } from "@material-symbols/svg-400/rounded/faucet.svg"

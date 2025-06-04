@@ -1,0 +1,1 @@
+export { default as mr4Acute } from "@material-symbols/svg-400/rounded/acute.svg"

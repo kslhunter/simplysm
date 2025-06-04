@@ -1,0 +1,1 @@
+export { default as mr4RearCamera } from "@material-symbols/svg-400/rounded/rear_camera.svg"

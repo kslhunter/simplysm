@@ -1,0 +1,1 @@
+export { default as mr4Plumbing } from "@material-symbols/svg-400/rounded/plumbing.svg"

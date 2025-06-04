@@ -1,0 +1,1 @@
+export { default as mr4Recycling } from "@material-symbols/svg-400/rounded/recycling.svg"

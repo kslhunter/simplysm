@@ -1,0 +1,1 @@
+export { default as mr4AirplaneTicket } from "@material-symbols/svg-400/rounded/airplane_ticket.svg"

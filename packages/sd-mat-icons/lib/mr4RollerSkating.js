@@ -1,0 +1,1 @@
+export { default as mr4RollerSkating } from "@material-symbols/svg-400/rounded/roller_skating.svg"

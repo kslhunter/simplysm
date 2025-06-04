@@ -1,0 +1,1 @@
+export { default as mr4Summarize } from "@material-symbols/svg-400/rounded/summarize.svg"

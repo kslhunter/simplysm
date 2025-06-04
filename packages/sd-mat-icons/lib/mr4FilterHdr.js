@@ -1,0 +1,1 @@
+export { default as mr4FilterHdr } from "@material-symbols/svg-400/rounded/filter_hdr.svg"

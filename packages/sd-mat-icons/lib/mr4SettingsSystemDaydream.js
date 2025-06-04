@@ -1,0 +1,1 @@
+export { default as mr4SettingsSystemDaydream } from "@material-symbols/svg-400/rounded/settings_system_daydream.svg"

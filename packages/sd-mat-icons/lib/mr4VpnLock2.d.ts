@@ -1,0 +1,1 @@
+export const mr4VpnLock2: string;

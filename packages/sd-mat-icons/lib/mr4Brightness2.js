@@ -1,0 +1,1 @@
+export { default as mr4Brightness2 } from "@material-symbols/svg-400/rounded/brightness_2.svg"

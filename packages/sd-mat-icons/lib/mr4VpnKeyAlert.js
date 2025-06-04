@@ -1,0 +1,1 @@
+export { default as mr4VpnKeyAlert } from "@material-symbols/svg-400/rounded/vpn_key_alert.svg"

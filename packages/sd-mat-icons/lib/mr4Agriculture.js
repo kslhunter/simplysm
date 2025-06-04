@@ -1,0 +1,1 @@
+export { default as mr4Agriculture } from "@material-symbols/svg-400/rounded/agriculture.svg"

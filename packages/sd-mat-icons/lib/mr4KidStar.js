@@ -1,0 +1,1 @@
+export { default as mr4KidStar } from "@material-symbols/svg-400/rounded/kid_star.svg"

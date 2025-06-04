@@ -1,0 +1,1 @@
+export { default as mr4Rotate90DegreesCw } from "@material-symbols/svg-400/rounded/rotate_90_degrees_cw.svg"

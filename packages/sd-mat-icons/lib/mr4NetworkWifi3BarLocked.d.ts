@@ -1,0 +1,1 @@
+export const mr4NetworkWifi3BarLocked: string;

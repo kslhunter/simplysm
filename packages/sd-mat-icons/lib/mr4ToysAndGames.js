@@ -1,0 +1,1 @@
+export { default as mr4ToysAndGames } from "@material-symbols/svg-400/rounded/toys_and_games.svg"

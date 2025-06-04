@@ -1,0 +1,1 @@
+export { default as mr4TripOrigin } from "@material-symbols/svg-400/rounded/trip_origin.svg"

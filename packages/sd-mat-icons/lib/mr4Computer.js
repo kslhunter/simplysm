@@ -1,0 +1,1 @@
+export { default as mr4Computer } from "@material-symbols/svg-400/rounded/computer.svg"

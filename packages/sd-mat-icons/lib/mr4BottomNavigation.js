@@ -1,0 +1,1 @@
+export { default as mr4BottomNavigation } from "@material-symbols/svg-400/rounded/bottom_navigation.svg"

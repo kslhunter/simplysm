@@ -1,0 +1,1 @@
+export { default as mr4AssistantDevice } from "@material-symbols/svg-400/rounded/assistant_device.svg"

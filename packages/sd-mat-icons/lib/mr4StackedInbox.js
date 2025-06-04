@@ -1,0 +1,1 @@
+export { default as mr4StackedInbox } from "@material-symbols/svg-400/rounded/stacked_inbox.svg"

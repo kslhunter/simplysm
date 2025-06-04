@@ -19,7 +19,7 @@ export class SdJsLibBuildRunner extends BuildRunnerBase<"library"> {
     modifiedFileSet?: Set<TNormPath>,
   ): Promise<IBuildRunnerRunResult> {
     const filePathSet = modifiedFileSet ?? new Set(
-      FsUtils.glob(path.resolve(this._pkgPath, "dist/**/*.js")).map(item => PathUtils.norm(item)),
+      FsUtils.glob(path.resolve(this._pkgPath, "src/**/*.js")).map(item => PathUtils.norm(item)),
     );
 
     this._debug("LINT...");

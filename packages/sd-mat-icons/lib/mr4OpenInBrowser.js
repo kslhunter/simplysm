@@ -1,0 +1,1 @@
+export { default as mr4OpenInBrowser } from "@material-symbols/svg-400/rounded/open_in_browser.svg"

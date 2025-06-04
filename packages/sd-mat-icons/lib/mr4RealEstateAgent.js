@@ -1,0 +1,1 @@
+export { default as mr4RealEstateAgent } from "@material-symbols/svg-400/rounded/real_estate_agent.svg"

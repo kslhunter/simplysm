@@ -1,0 +1,1 @@
+export { default as mr4360 } from "@material-symbols/svg-400/rounded/360.svg"

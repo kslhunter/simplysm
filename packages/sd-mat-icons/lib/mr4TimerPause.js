@@ -1,0 +1,1 @@
+export { default as mr4TimerPause } from "@material-symbols/svg-400/rounded/timer_pause.svg"

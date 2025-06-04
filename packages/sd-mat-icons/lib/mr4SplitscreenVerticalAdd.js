@@ -1,0 +1,1 @@
+export { default as mr4SplitscreenVerticalAdd } from "@material-symbols/svg-400/rounded/splitscreen_vertical_add.svg"

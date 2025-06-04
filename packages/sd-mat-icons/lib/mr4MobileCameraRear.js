@@ -1,0 +1,1 @@
+export { default as mr4MobileCameraRear } from "@material-symbols/svg-400/rounded/mobile_camera_rear.svg"

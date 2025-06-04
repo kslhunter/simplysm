@@ -1,0 +1,1 @@
+export { default as mr4SplitscreenRight } from "@material-symbols/svg-400/rounded/splitscreen_right.svg"

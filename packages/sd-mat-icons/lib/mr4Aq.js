@@ -1,0 +1,1 @@
+export { default as mr4Aq } from "@material-symbols/svg-400/rounded/aq.svg"

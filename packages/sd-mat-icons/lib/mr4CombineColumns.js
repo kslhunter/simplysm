@@ -1,0 +1,1 @@
+export { default as mr4CombineColumns } from "@material-symbols/svg-400/rounded/combine_columns.svg"

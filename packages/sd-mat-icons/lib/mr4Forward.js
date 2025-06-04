@@ -1,0 +1,1 @@
+export { default as mr4Forward } from "@material-symbols/svg-400/rounded/forward.svg"

@@ -1,0 +1,1 @@
+export { default as mr4RepeatOneOn } from "@material-symbols/svg-400/rounded/repeat_one_on.svg"

@@ -1,0 +1,1 @@
+export { default as mr4HistoryOff } from "@material-symbols/svg-400/rounded/history_off.svg"

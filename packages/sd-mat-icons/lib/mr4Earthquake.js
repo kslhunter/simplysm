@@ -1,0 +1,1 @@
+export { default as mr4Earthquake } from "@material-symbols/svg-400/rounded/earthquake.svg"

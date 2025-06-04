@@ -1,0 +1,1 @@
+export { default as mr4TrailLengthShort } from "@material-symbols/svg-400/rounded/trail_length_short.svg"

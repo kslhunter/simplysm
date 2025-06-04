@@ -1,0 +1,1 @@
+export { default as mr4Bomb } from "@material-symbols/svg-400/rounded/bomb.svg"

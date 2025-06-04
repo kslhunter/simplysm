@@ -1,0 +1,1 @@
+export { default as mr4VideoLibrary } from "@material-symbols/svg-400/rounded/video_library.svg"

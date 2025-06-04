@@ -1,0 +1,1 @@
+export { default as mr4Fragrance } from "@material-symbols/svg-400/rounded/fragrance.svg"

@@ -1,0 +1,1 @@
+export { default as mr4StackOff } from "@material-symbols/svg-400/rounded/stack_off.svg"

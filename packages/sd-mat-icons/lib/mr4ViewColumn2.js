@@ -1,0 +1,1 @@
+export { default as mr4ViewColumn2 } from "@material-symbols/svg-400/rounded/view_column_2.svg"

@@ -1,0 +1,1 @@
+export { default as mr4EnergySavingsLeaf } from "@material-symbols/svg-400/rounded/energy_savings_leaf.svg"

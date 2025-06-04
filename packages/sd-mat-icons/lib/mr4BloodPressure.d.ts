@@ -1,0 +1,1 @@
+export const mr4BloodPressure: string;

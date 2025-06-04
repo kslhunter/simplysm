@@ -38,7 +38,7 @@ export class SdCliElectron {
     electronConfig: ISdClientBuilderElectronConfig;
   }) {
     this.#logger.log("준비...");
-    const electronPath = path.resolve(opt.pkgPath, ".electron/dist");
+    const electronPath = path.resolve(opt.pkgPath, ".electron/src");
     const { npmConfig } = await this.#prepareAsync({ ...opt, electronPath });
 
     this.#logger.log("빌드...");

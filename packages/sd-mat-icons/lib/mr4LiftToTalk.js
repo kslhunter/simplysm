@@ -1,0 +1,1 @@
+export { default as mr4LiftToTalk } from "@material-symbols/svg-400/rounded/lift_to_talk.svg"

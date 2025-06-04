@@ -1,0 +1,1 @@
+export { default as mr4FollowTheSigns } from "@material-symbols/svg-400/rounded/follow_the_signs.svg"

@@ -1,0 +1,1 @@
+export { default as mr4EditorChoice } from "@material-symbols/svg-400/rounded/editor_choice.svg"

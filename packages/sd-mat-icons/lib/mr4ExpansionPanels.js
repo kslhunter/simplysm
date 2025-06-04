@@ -1,0 +1,1 @@
+export { default as mr4ExpansionPanels } from "@material-symbols/svg-400/rounded/expansion_panels.svg"

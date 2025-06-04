@@ -1,0 +1,1 @@
+export { default as mr4Radiology } from "@material-symbols/svg-400/rounded/radiology.svg"

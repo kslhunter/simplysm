@@ -1,0 +1,1 @@
+export { default as mr4HMobiledata } from "@material-symbols/svg-400/rounded/h_mobiledata.svg"

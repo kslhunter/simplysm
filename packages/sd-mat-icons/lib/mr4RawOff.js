@@ -1,0 +1,1 @@
+export { default as mr4RawOff } from "@material-symbols/svg-400/rounded/raw_off.svg"

@@ -1,0 +1,1 @@
+export { default as mr4Stylus } from "@material-symbols/svg-400/rounded/stylus.svg"

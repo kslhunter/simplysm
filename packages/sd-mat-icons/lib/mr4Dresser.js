@@ -1,0 +1,1 @@
+export { default as mr4Dresser } from "@material-symbols/svg-400/rounded/dresser.svg"

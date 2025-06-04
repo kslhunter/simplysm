@@ -1,0 +1,1 @@
+export const mr4Person3: string;

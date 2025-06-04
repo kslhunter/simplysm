@@ -1,0 +1,1 @@
+export { default as mr4Undo } from "@material-symbols/svg-400/rounded/undo.svg"

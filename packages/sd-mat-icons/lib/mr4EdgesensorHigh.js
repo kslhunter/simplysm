@@ -1,0 +1,1 @@
+export { default as mr4EdgesensorHigh } from "@material-symbols/svg-400/rounded/edgesensor_high.svg"

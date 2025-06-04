@@ -1,0 +1,1 @@
+export { default as mr4QuickPhrases } from "@material-symbols/svg-400/rounded/quick_phrases.svg"

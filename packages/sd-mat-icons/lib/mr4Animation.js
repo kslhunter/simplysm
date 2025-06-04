@@ -1,0 +1,1 @@
+export { default as mr4Animation } from "@material-symbols/svg-400/rounded/animation.svg"

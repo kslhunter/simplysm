@@ -1,0 +1,1 @@
+export { default as mr4ActionKey } from "@material-symbols/svg-400/rounded/action_key.svg"

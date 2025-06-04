@@ -1,0 +1,1 @@
+export { default as mr4PhonelinkErase } from "@material-symbols/svg-400/rounded/phonelink_erase.svg"

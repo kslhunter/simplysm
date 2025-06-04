@@ -1,0 +1,1 @@
+export { default as mr4FormatInkHighlighter } from "@material-symbols/svg-400/rounded/format_ink_highlighter.svg"

@@ -1,0 +1,1 @@
+export { default as mr4KeyboardDoubleArrowDown } from "@material-symbols/svg-400/rounded/keyboard_double_arrow_down.svg"

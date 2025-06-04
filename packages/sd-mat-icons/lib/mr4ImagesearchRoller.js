@@ -1,0 +1,1 @@
+export { default as mr4ImagesearchRoller } from "@material-symbols/svg-400/rounded/imagesearch_roller.svg"

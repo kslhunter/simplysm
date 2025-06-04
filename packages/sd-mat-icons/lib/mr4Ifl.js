@@ -1,0 +1,1 @@
+export { default as mr4Ifl } from "@material-symbols/svg-400/rounded/ifl.svg"

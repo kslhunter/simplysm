@@ -1,0 +1,1 @@
+export { default as mr4StrikethroughS } from "@material-symbols/svg-400/rounded/strikethrough_s.svg"

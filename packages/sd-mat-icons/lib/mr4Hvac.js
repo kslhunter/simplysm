@@ -1,0 +1,1 @@
+export { default as mr4Hvac } from "@material-symbols/svg-400/rounded/hvac.svg"

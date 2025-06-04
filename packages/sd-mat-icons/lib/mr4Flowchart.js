@@ -1,0 +1,1 @@
+export { default as mr4Flowchart } from "@material-symbols/svg-400/rounded/flowchart.svg"

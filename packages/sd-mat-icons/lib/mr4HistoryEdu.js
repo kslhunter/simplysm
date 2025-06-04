@@ -1,0 +1,1 @@
+export { default as mr4HistoryEdu } from "@material-symbols/svg-400/rounded/history_edu.svg"

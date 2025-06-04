@@ -1,0 +1,1 @@
+export { default as mr4BoatRailway } from "@material-symbols/svg-400/rounded/boat_railway.svg"

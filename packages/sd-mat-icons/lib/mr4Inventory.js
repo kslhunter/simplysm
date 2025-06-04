@@ -1,0 +1,1 @@
+export { default as mr4Inventory } from "@material-symbols/svg-400/rounded/inventory.svg"

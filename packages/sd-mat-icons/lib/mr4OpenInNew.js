@@ -1,0 +1,1 @@
+export { default as mr4OpenInNew } from "@material-symbols/svg-400/rounded/open_in_new.svg"

@@ -1,0 +1,1 @@
+export { default as mr4TransitionPush } from "@material-symbols/svg-400/rounded/transition_push.svg"

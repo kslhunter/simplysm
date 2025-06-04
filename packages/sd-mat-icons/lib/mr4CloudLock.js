@@ -1,0 +1,1 @@
+export { default as mr4CloudLock } from "@material-symbols/svg-400/rounded/cloud_lock.svg"

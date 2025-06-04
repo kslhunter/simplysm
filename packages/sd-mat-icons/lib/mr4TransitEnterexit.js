@@ -1,0 +1,1 @@
+export { default as mr4TransitEnterexit } from "@material-symbols/svg-400/rounded/transit_enterexit.svg"

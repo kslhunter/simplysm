@@ -1,0 +1,1 @@
+export { default as mr4TypeSpecimen } from "@material-symbols/svg-400/rounded/type_specimen.svg"

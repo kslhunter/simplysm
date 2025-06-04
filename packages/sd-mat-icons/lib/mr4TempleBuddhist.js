@@ -1,0 +1,1 @@
+export { default as mr4TempleBuddhist } from "@material-symbols/svg-400/rounded/temple_buddhist.svg"

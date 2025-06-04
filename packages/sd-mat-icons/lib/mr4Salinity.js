@@ -1,0 +1,1 @@
+export { default as mr4Salinity } from "@material-symbols/svg-400/rounded/salinity.svg"

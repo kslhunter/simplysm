@@ -1,0 +1,1 @@
+export { default as mr4PhoneDisabled } from "@material-symbols/svg-400/rounded/phone_disabled.svg"

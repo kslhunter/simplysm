@@ -1,0 +1,1 @@
+export { default as mr4EncryptedMinusCircle } from "@material-symbols/svg-400/rounded/encrypted_minus_circle.svg"

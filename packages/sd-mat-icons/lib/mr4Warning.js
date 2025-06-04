@@ -1,0 +1,1 @@
+export { default as mr4Warning } from "@material-symbols/svg-400/rounded/warning.svg"

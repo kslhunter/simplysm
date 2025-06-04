@@ -1,0 +1,1 @@
+export { default as mr4Headphones } from "@material-symbols/svg-400/rounded/headphones.svg"

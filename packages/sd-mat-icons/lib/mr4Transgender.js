@@ -1,0 +1,1 @@
+export { default as mr4Transgender } from "@material-symbols/svg-400/rounded/transgender.svg"

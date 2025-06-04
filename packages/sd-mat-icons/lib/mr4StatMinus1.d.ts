@@ -1,0 +1,1 @@
+export const mr4StatMinus1: string;

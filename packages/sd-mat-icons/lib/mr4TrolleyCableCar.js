@@ -1,0 +1,1 @@
+export { default as mr4TrolleyCableCar } from "@material-symbols/svg-400/rounded/trolley_cable_car.svg"

@@ -1,0 +1,1 @@
+export { default as mr4AvgPace } from "@material-symbols/svg-400/rounded/avg_pace.svg"

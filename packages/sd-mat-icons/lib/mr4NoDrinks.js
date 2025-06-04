@@ -1,0 +1,1 @@
+export { default as mr4NoDrinks } from "@material-symbols/svg-400/rounded/no_drinks.svg"

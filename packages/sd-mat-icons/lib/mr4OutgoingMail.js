@@ -1,0 +1,1 @@
+export { default as mr4OutgoingMail } from "@material-symbols/svg-400/rounded/outgoing_mail.svg"

@@ -1,0 +1,1 @@
+export { default as mr4ViewRealSize } from "@material-symbols/svg-400/rounded/view_real_size.svg"

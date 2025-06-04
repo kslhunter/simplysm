@@ -1,0 +1,1 @@
+export { default as mr4InkMarker } from "@material-symbols/svg-400/rounded/ink_marker.svg"

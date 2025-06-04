@@ -1,0 +1,1 @@
+export { default as mr4SwitchRight } from "@material-symbols/svg-400/rounded/switch_right.svg"

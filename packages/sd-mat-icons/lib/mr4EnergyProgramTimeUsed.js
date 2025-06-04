@@ -1,0 +1,1 @@
+export { default as mr4EnergyProgramTimeUsed } from "@material-symbols/svg-400/rounded/energy_program_time_used.svg"

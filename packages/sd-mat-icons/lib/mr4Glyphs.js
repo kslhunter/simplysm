@@ -1,0 +1,1 @@
+export { default as mr4Glyphs } from "@material-symbols/svg-400/rounded/glyphs.svg"

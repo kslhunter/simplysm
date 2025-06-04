@@ -1,0 +1,1 @@
+export { default as mr4AlarmAdd } from "@material-symbols/svg-400/rounded/alarm_add.svg"

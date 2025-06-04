@@ -1,0 +1,1 @@
+export { default as mr4PermContactCalendar } from "@material-symbols/svg-400/rounded/perm_contact_calendar.svg"

@@ -1,0 +1,1 @@
+export { default as mr4WavingHand } from "@material-symbols/svg-400/rounded/waving_hand.svg"

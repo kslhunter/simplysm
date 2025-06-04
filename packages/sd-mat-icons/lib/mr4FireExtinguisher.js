@@ -1,0 +1,1 @@
+export { default as mr4FireExtinguisher } from "@material-symbols/svg-400/rounded/fire_extinguisher.svg"

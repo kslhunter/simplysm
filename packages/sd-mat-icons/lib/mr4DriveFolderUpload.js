@@ -1,0 +1,1 @@
+export { default as mr4DriveFolderUpload } from "@material-symbols/svg-400/rounded/drive_folder_upload.svg"

@@ -1,0 +1,1 @@
+export { default as mr4ChairAlt } from "@material-symbols/svg-400/rounded/chair_alt.svg"

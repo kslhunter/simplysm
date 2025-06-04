@@ -1,0 +1,1 @@
+export { default as mr4Eyeglasses2 } from "@material-symbols/svg-400/rounded/eyeglasses_2.svg"

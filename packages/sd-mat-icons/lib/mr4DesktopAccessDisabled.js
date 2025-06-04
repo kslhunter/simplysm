@@ -1,0 +1,1 @@
+export { default as mr4DesktopAccessDisabled } from "@material-symbols/svg-400/rounded/desktop_access_disabled.svg"

@@ -1,0 +1,1 @@
+export { default as mr4Wallet } from "@material-symbols/svg-400/rounded/wallet.svg"

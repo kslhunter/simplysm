@@ -1,0 +1,1 @@
+export { default as mr4FilterBAndW } from "@material-symbols/svg-400/rounded/filter_b_and_w.svg"

@@ -1,0 +1,1 @@
+export { default as mr4NestDetect } from "@material-symbols/svg-400/rounded/nest_detect.svg"

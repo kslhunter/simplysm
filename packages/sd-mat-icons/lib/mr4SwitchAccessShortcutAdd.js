@@ -1,0 +1,1 @@
+export { default as mr4SwitchAccessShortcutAdd } from "@material-symbols/svg-400/rounded/switch_access_shortcut_add.svg"

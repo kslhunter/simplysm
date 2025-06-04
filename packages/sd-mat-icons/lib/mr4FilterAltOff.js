@@ -1,0 +1,1 @@
+export { default as mr4FilterAltOff } from "@material-symbols/svg-400/rounded/filter_alt_off.svg"

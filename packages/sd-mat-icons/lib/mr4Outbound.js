@@ -1,0 +1,1 @@
+export { default as mr4Outbound } from "@material-symbols/svg-400/rounded/outbound.svg"

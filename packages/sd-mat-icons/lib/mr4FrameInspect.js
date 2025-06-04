@@ -1,0 +1,1 @@
+export { default as mr4FrameInspect } from "@material-symbols/svg-400/rounded/frame_inspect.svg"

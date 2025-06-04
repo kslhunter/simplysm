@@ -1,0 +1,1 @@
+export { default as mr4GroupedBarChart } from "@material-symbols/svg-400/rounded/grouped_bar_chart.svg"

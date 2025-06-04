@@ -1,0 +1,1 @@
+export { default as mr4NestRemoteComfortSensor } from "@material-symbols/svg-400/rounded/nest_remote_comfort_sensor.svg"

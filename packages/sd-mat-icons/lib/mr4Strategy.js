@@ -1,0 +1,1 @@
+export { default as mr4Strategy } from "@material-symbols/svg-400/rounded/strategy.svg"

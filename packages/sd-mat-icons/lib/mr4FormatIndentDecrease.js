@@ -1,0 +1,1 @@
+export { default as mr4FormatIndentDecrease } from "@material-symbols/svg-400/rounded/format_indent_decrease.svg"

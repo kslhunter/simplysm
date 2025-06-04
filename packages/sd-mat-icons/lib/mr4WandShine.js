@@ -1,0 +1,1 @@
+export { default as mr4WandShine } from "@material-symbols/svg-400/rounded/wand_shine.svg"

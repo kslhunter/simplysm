@@ -1,0 +1,1 @@
+export { default as mr4CancelPresentation } from "@material-symbols/svg-400/rounded/cancel_presentation.svg"

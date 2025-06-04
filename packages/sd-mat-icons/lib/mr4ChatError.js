@@ -1,0 +1,1 @@
+export { default as mr4ChatError } from "@material-symbols/svg-400/rounded/chat_error.svg"

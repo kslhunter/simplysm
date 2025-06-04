@@ -1,0 +1,1 @@
+export { default as mr4SortByAlpha } from "@material-symbols/svg-400/rounded/sort_by_alpha.svg"

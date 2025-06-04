@@ -1,0 +1,1 @@
+export { default as mr4CreditScore } from "@material-symbols/svg-400/rounded/credit_score.svg"

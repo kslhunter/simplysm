@@ -1,0 +1,1 @@
+export { default as mr4Laundry } from "@material-symbols/svg-400/rounded/laundry.svg"

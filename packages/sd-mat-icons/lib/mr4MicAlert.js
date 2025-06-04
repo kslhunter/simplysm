@@ -1,0 +1,1 @@
+export { default as mr4MicAlert } from "@material-symbols/svg-400/rounded/mic_alert.svg"

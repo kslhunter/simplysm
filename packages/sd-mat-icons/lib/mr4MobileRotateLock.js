@@ -1,0 +1,1 @@
+export { default as mr4MobileRotateLock } from "@material-symbols/svg-400/rounded/mobile_rotate_lock.svg"

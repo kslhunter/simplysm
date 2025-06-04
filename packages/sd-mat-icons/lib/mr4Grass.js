@@ -1,0 +1,1 @@
+export { default as mr4Grass } from "@material-symbols/svg-400/rounded/grass.svg"

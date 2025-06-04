@@ -1,0 +1,1 @@
+export { default as mr4WatchArrow } from "@material-symbols/svg-400/rounded/watch_arrow.svg"

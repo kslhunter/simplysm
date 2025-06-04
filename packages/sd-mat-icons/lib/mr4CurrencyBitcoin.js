@@ -1,0 +1,1 @@
+export { default as mr4CurrencyBitcoin } from "@material-symbols/svg-400/rounded/currency_bitcoin.svg"

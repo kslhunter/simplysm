@@ -1,0 +1,1 @@
+export { default as mr4AutoStories } from "@material-symbols/svg-400/rounded/auto_stories.svg"

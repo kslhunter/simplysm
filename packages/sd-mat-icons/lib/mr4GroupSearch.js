@@ -1,0 +1,1 @@
+export { default as mr4GroupSearch } from "@material-symbols/svg-400/rounded/group_search.svg"

@@ -1,0 +1,1 @@
+export { default as mr4Rsvp } from "@material-symbols/svg-400/rounded/rsvp.svg"

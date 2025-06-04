@@ -1,0 +1,1 @@
+export { default as mr4SolarPower } from "@material-symbols/svg-400/rounded/solar_power.svg"

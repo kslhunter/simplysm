@@ -1,0 +1,1 @@
+export { default as mr4BarcodeScanner } from "@material-symbols/svg-400/rounded/barcode_scanner.svg"

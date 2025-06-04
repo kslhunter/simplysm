@@ -1,0 +1,1 @@
+export { default as mr4PottedPlant } from "@material-symbols/svg-400/rounded/potted_plant.svg"

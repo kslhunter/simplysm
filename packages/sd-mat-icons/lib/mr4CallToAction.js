@@ -1,0 +1,1 @@
+export { default as mr4CallToAction } from "@material-symbols/svg-400/rounded/call_to_action.svg"

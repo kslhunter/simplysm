@@ -1,0 +1,1 @@
+export { default as mr4MenuOpen } from "@material-symbols/svg-400/rounded/menu_open.svg"

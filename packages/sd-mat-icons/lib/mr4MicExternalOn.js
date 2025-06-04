@@ -1,0 +1,1 @@
+export { default as mr4MicExternalOn } from "@material-symbols/svg-400/rounded/mic_external_on.svg"

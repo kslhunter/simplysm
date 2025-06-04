@@ -1,0 +1,1 @@
+export { default as mr4Shift } from "@material-symbols/svg-400/rounded/shift.svg"

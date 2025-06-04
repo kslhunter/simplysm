@@ -1,0 +1,1 @@
+export { default as mr4JoinLeft } from "@material-symbols/svg-400/rounded/join_left.svg"

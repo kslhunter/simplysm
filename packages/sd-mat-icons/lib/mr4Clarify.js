@@ -1,0 +1,1 @@
+export { default as mr4Clarify } from "@material-symbols/svg-400/rounded/clarify.svg"

@@ -1,0 +1,1 @@
+export { default as mr4ElectricBolt } from "@material-symbols/svg-400/rounded/electric_bolt.svg"

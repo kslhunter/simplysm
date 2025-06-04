@@ -1,0 +1,1 @@
+export { default as mr4LaptopWindows } from "@material-symbols/svg-400/rounded/laptop_windows.svg"

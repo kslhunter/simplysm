@@ -1,0 +1,1 @@
+export { default as mr4Counter9 } from "@material-symbols/svg-400/rounded/counter_9.svg"

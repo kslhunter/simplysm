@@ -1,0 +1,1 @@
+export { default as mr4Cabin } from "@material-symbols/svg-400/rounded/cabin.svg"

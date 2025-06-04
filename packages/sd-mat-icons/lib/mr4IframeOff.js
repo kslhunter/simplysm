@@ -1,0 +1,1 @@
+export { default as mr4IframeOff } from "@material-symbols/svg-400/rounded/iframe_off.svg"

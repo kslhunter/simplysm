@@ -1,0 +1,1 @@
+export const mr4Brightness5: string;

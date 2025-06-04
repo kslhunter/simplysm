@@ -1,0 +1,1 @@
+export { default as mr4CloudCircle } from "@material-symbols/svg-400/rounded/cloud_circle.svg"

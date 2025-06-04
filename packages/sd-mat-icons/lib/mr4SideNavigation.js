@@ -1,0 +1,1 @@
+export { default as mr4SideNavigation } from "@material-symbols/svg-400/rounded/side_navigation.svg"

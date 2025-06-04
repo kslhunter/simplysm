@@ -1,0 +1,1 @@
+export { default as mr4AccountBox } from "@material-symbols/svg-400/rounded/account_box.svg"

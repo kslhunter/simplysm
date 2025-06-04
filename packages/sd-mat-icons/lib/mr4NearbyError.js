@@ -1,0 +1,1 @@
+export { default as mr4NearbyError } from "@material-symbols/svg-400/rounded/nearby_error.svg"

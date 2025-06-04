@@ -1,0 +1,1 @@
+export { default as mr4WarningOff } from "@material-symbols/svg-400/rounded/warning_off.svg"

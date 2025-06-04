@@ -1,0 +1,1 @@
+export const mr4SelectWindow2: string;

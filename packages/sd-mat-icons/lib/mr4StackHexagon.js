@@ -1,0 +1,1 @@
+export { default as mr4StackHexagon } from "@material-symbols/svg-400/rounded/stack_hexagon.svg"

@@ -1,0 +1,1 @@
+export { default as mr4InboxTextPerson } from "@material-symbols/svg-400/rounded/inbox_text_person.svg"

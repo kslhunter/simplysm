@@ -1,0 +1,1 @@
+export { default as mr4ScreenshotKeyboard } from "@material-symbols/svg-400/rounded/screenshot_keyboard.svg"

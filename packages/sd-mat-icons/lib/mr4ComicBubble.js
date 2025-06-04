@@ -1,0 +1,1 @@
+export { default as mr4ComicBubble } from "@material-symbols/svg-400/rounded/comic_bubble.svg"

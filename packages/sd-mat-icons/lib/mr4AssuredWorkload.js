@@ -1,0 +1,1 @@
+export { default as mr4AssuredWorkload } from "@material-symbols/svg-400/rounded/assured_workload.svg"

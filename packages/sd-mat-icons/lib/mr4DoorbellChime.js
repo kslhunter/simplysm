@@ -1,0 +1,1 @@
+export { default as mr4DoorbellChime } from "@material-symbols/svg-400/rounded/doorbell_chime.svg"

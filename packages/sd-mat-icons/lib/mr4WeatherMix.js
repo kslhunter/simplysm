@@ -1,0 +1,1 @@
+export { default as mr4WeatherMix } from "@material-symbols/svg-400/rounded/weather_mix.svg"

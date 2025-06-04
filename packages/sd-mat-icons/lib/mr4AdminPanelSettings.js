@@ -1,0 +1,1 @@
+export { default as mr4AdminPanelSettings } from "@material-symbols/svg-400/rounded/admin_panel_settings.svg"

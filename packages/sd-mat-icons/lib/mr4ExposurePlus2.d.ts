@@ -1,0 +1,1 @@
+export const mr4ExposurePlus2: string;

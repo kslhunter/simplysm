@@ -1,0 +1,1 @@
+export { default as mr4Hardware } from "@material-symbols/svg-400/rounded/hardware.svg"

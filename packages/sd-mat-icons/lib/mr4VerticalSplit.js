@@ -1,0 +1,1 @@
+export { default as mr4VerticalSplit } from "@material-symbols/svg-400/rounded/vertical_split.svg"

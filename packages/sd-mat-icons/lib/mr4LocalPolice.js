@@ -1,0 +1,1 @@
+export { default as mr4LocalPolice } from "@material-symbols/svg-400/rounded/local_police.svg"

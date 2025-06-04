@@ -1,0 +1,1 @@
+export { default as mr4GoToLine } from "@material-symbols/svg-400/rounded/go_to_line.svg"

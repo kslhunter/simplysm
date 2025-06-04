@@ -1,0 +1,1 @@
+export { default as mr4Compare } from "@material-symbols/svg-400/rounded/compare.svg"

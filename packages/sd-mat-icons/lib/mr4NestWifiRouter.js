@@ -1,0 +1,1 @@
+export { default as mr4NestWifiRouter } from "@material-symbols/svg-400/rounded/nest_wifi_router.svg"

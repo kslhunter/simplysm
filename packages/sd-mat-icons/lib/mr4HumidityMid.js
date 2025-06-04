@@ -1,0 +1,1 @@
+export { default as mr4HumidityMid } from "@material-symbols/svg-400/rounded/humidity_mid.svg"

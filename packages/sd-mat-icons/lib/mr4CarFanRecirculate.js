@@ -1,0 +1,1 @@
+export { default as mr4CarFanRecirculate } from "@material-symbols/svg-400/rounded/car_fan_recirculate.svg"

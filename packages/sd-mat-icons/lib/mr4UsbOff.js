@@ -1,0 +1,1 @@
+export { default as mr4UsbOff } from "@material-symbols/svg-400/rounded/usb_off.svg"

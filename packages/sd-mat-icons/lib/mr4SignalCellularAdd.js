@@ -1,0 +1,1 @@
+export { default as mr4SignalCellularAdd } from "@material-symbols/svg-400/rounded/signal_cellular_add.svg"

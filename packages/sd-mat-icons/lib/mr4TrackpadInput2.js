@@ -1,0 +1,1 @@
+export { default as mr4TrackpadInput2 } from "@material-symbols/svg-400/rounded/trackpad_input_2.svg"

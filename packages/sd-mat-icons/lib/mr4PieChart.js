@@ -1,0 +1,1 @@
+export { default as mr4PieChart } from "@material-symbols/svg-400/rounded/pie_chart.svg"

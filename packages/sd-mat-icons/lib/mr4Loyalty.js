@@ -1,0 +1,1 @@
+export { default as mr4Loyalty } from "@material-symbols/svg-400/rounded/loyalty.svg"

@@ -1,0 +1,1 @@
+export { default as mr4P2p } from "@material-symbols/svg-400/rounded/p2p.svg"

@@ -1,0 +1,1 @@
+export { default as mr4AirFreshener } from "@material-symbols/svg-400/rounded/air_freshener.svg"

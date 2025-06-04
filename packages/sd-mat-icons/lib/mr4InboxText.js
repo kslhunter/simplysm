@@ -1,0 +1,1 @@
+export { default as mr4InboxText } from "@material-symbols/svg-400/rounded/inbox_text.svg"

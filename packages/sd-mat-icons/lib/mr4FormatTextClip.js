@@ -1,0 +1,1 @@
+export { default as mr4FormatTextClip } from "@material-symbols/svg-400/rounded/format_text_clip.svg"

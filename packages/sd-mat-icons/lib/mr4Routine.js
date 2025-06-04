@@ -1,0 +1,1 @@
+export { default as mr4Routine } from "@material-symbols/svg-400/rounded/routine.svg"

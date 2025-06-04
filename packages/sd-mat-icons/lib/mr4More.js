@@ -1,0 +1,1 @@
+export { default as mr4More } from "@material-symbols/svg-400/rounded/more.svg"

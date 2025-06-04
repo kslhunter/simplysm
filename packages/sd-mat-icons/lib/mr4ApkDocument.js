@@ -1,0 +1,1 @@
+export { default as mr4ApkDocument } from "@material-symbols/svg-400/rounded/apk_document.svg"

@@ -1,0 +1,1 @@
+export { default as mr4FeaturedSeasonalAndGifts } from "@material-symbols/svg-400/rounded/featured_seasonal_and_gifts.svg"

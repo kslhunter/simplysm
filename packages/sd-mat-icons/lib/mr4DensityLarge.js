@@ -1,0 +1,1 @@
+export { default as mr4DensityLarge } from "@material-symbols/svg-400/rounded/density_large.svg"

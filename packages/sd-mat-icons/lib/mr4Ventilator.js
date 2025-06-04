@@ -1,0 +1,1 @@
+export { default as mr4Ventilator } from "@material-symbols/svg-400/rounded/ventilator.svg"

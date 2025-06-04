@@ -1,0 +1,1 @@
+export { default as mr4SettingsHeart } from "@material-symbols/svg-400/rounded/settings_heart.svg"

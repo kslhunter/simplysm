@@ -1,0 +1,1 @@
+export { default as mr4SunnySnowing } from "@material-symbols/svg-400/rounded/sunny_snowing.svg"

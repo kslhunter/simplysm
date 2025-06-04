@@ -1,0 +1,1 @@
+export { default as mr4PlaylistPlay } from "@material-symbols/svg-400/rounded/playlist_play.svg"

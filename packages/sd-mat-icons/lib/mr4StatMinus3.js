@@ -1,0 +1,1 @@
+export { default as mr4StatMinus3 } from "@material-symbols/svg-400/rounded/stat_minus_3.svg"

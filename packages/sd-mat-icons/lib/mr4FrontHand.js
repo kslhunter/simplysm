@@ -1,0 +1,1 @@
+export { default as mr4FrontHand } from "@material-symbols/svg-400/rounded/front_hand.svg"

@@ -1,0 +1,1 @@
+export { default as mr4SignalWifiOff } from "@material-symbols/svg-400/rounded/signal_wifi_off.svg"

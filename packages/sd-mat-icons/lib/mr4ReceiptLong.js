@@ -1,0 +1,1 @@
+export { default as mr4ReceiptLong } from "@material-symbols/svg-400/rounded/receipt_long.svg"

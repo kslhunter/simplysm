@@ -1,0 +1,1 @@
+export { default as mr4Looks } from "@material-symbols/svg-400/rounded/looks.svg"

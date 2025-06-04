@@ -1,0 +1,1 @@
+export { default as mr4StackStar } from "@material-symbols/svg-400/rounded/stack_star.svg"

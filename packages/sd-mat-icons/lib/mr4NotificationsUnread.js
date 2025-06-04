@@ -1,0 +1,1 @@
+export { default as mr4NotificationsUnread } from "@material-symbols/svg-400/rounded/notifications_unread.svg"

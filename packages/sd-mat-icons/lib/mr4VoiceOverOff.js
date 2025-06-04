@@ -1,0 +1,1 @@
+export { default as mr4VoiceOverOff } from "@material-symbols/svg-400/rounded/voice_over_off.svg"

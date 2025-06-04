@@ -1,0 +1,1 @@
+export { default as mr4BodyFat } from "@material-symbols/svg-400/rounded/body_fat.svg"

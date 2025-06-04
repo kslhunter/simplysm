@@ -1,0 +1,1 @@
+export { default as mr4Splitscreen } from "@material-symbols/svg-400/rounded/splitscreen.svg"

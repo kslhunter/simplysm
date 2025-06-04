@@ -1,0 +1,1 @@
+export { default as mr4ContentPasteSearch } from "@material-symbols/svg-400/rounded/content_paste_search.svg"

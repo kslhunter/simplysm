@@ -1,0 +1,1 @@
+export { default as mr4PostAdd } from "@material-symbols/svg-400/rounded/post_add.svg"

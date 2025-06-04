@@ -1,0 +1,1 @@
+export { default as mr4Mouse } from "@material-symbols/svg-400/rounded/mouse.svg"

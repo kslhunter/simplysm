@@ -1,0 +1,1 @@
+export { default as mr4NfcOff } from "@material-symbols/svg-400/rounded/nfc_off.svg"

@@ -1,0 +1,1 @@
+export { default as mr4Target } from "@material-symbols/svg-400/rounded/target.svg"

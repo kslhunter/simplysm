@@ -1,0 +1,1 @@
+export { default as mr4SoundDetectionGlassBreak } from "@material-symbols/svg-400/rounded/sound_detection_glass_break.svg"

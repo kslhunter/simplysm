@@ -1,0 +1,1 @@
+export { default as mr4ArticlePerson } from "@material-symbols/svg-400/rounded/article_person.svg"

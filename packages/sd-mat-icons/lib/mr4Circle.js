@@ -1,0 +1,1 @@
+export { default as mr4Circle } from "@material-symbols/svg-400/rounded/circle.svg"

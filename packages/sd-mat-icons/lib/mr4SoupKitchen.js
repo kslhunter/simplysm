@@ -1,0 +1,1 @@
+export { default as mr4SoupKitchen } from "@material-symbols/svg-400/rounded/soup_kitchen.svg"

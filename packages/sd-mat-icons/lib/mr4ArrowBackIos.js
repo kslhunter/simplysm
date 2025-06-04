@@ -1,0 +1,1 @@
+export { default as mr4ArrowBackIos } from "@material-symbols/svg-400/rounded/arrow_back_ios.svg"

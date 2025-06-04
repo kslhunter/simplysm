@@ -1,0 +1,1 @@
+export { default as mr4DetectorSmoke } from "@material-symbols/svg-400/rounded/detector_smoke.svg"

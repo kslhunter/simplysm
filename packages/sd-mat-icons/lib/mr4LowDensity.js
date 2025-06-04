@@ -1,0 +1,1 @@
+export { default as mr4LowDensity } from "@material-symbols/svg-400/rounded/low_density.svg"

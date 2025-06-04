@@ -1,0 +1,1 @@
+export { default as mr4HdrStrong } from "@material-symbols/svg-400/rounded/hdr_strong.svg"

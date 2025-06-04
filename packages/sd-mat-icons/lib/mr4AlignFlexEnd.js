@@ -1,0 +1,1 @@
+export { default as mr4AlignFlexEnd } from "@material-symbols/svg-400/rounded/align_flex_end.svg"

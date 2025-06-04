@@ -1,0 +1,1 @@
+export { default as mr4PartlyCloudyDay } from "@material-symbols/svg-400/rounded/partly_cloudy_day.svg"

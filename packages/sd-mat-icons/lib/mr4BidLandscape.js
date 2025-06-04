@@ -1,0 +1,1 @@
+export { default as mr4BidLandscape } from "@material-symbols/svg-400/rounded/bid_landscape.svg"

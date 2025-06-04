@@ -1,0 +1,1 @@
+export { default as mr4RssFeed } from "@material-symbols/svg-400/rounded/rss_feed.svg"

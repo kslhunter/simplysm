@@ -1,0 +1,1 @@
+export { default as mr4AddShoppingCart } from "@material-symbols/svg-400/rounded/add_shopping_cart.svg"

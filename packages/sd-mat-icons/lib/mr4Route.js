@@ -1,0 +1,1 @@
+export { default as mr4Route } from "@material-symbols/svg-400/rounded/route.svg"

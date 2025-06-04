@@ -1,0 +1,1 @@
+export { default as mr4ProcessChart } from "@material-symbols/svg-400/rounded/process_chart.svg"

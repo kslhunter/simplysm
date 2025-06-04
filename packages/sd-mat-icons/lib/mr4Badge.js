@@ -1,0 +1,1 @@
+export { default as mr4Badge } from "@material-symbols/svg-400/rounded/badge.svg"

@@ -1,0 +1,1 @@
+export { default as mr4SkipPrevious } from "@material-symbols/svg-400/rounded/skip_previous.svg"

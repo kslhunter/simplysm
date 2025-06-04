@@ -1,0 +1,1 @@
+export { default as mr4FmdBad } from "@material-symbols/svg-400/rounded/fmd_bad.svg"

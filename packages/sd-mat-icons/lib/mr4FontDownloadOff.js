@@ -1,0 +1,1 @@
+export { default as mr4FontDownloadOff } from "@material-symbols/svg-400/rounded/font_download_off.svg"

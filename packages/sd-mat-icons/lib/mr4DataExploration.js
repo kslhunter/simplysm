@@ -1,0 +1,1 @@
+export { default as mr4DataExploration } from "@material-symbols/svg-400/rounded/data_exploration.svg"

@@ -1,0 +1,1 @@
+export { default as mr4HdrOnSelect } from "@material-symbols/svg-400/rounded/hdr_on_select.svg"

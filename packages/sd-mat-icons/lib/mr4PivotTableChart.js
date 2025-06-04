@@ -1,0 +1,1 @@
+export { default as mr4PivotTableChart } from "@material-symbols/svg-400/rounded/pivot_table_chart.svg"

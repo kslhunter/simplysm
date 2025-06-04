@@ -1,0 +1,1 @@
+export { default as mr4Biotech } from "@material-symbols/svg-400/rounded/biotech.svg"

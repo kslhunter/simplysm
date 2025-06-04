@@ -1,0 +1,1 @@
+export { default as mr4Dashboard2 } from "@material-symbols/svg-400/rounded/dashboard_2.svg"

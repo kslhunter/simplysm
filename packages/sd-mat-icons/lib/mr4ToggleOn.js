@@ -1,0 +1,1 @@
+export { default as mr4ToggleOn } from "@material-symbols/svg-400/rounded/toggle_on.svg"

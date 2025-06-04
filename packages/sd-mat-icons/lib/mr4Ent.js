@@ -1,0 +1,1 @@
+export { default as mr4Ent } from "@material-symbols/svg-400/rounded/ent.svg"

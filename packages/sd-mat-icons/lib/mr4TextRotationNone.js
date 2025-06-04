@@ -1,0 +1,1 @@
+export { default as mr4TextRotationNone } from "@material-symbols/svg-400/rounded/text_rotation_none.svg"

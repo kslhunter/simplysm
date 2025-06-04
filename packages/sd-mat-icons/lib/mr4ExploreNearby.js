@@ -1,0 +1,1 @@
+export { default as mr4ExploreNearby } from "@material-symbols/svg-400/rounded/explore_nearby.svg"

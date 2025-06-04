@@ -1,0 +1,1 @@
+export { default as mr4ConnectedTv } from "@material-symbols/svg-400/rounded/connected_tv.svg"

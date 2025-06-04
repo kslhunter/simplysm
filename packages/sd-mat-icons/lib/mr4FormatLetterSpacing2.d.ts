@@ -1,0 +1,1 @@
+export const mr4FormatLetterSpacing2: string;

@@ -1,0 +1,1 @@
+export { default as mr4HomeRepairService } from "@material-symbols/svg-400/rounded/home_repair_service.svg"

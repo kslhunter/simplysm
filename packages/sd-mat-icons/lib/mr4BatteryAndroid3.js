@@ -1,0 +1,1 @@
+export { default as mr4BatteryAndroid3 } from "@material-symbols/svg-400/rounded/battery_android_3.svg"

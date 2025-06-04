@@ -1,0 +1,1 @@
+export { default as mr4ShieldWithHouse } from "@material-symbols/svg-400/rounded/shield_with_house.svg"

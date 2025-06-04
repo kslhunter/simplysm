@@ -1,0 +1,1 @@
+export { default as mr4ArrowSelectorTool } from "@material-symbols/svg-400/rounded/arrow_selector_tool.svg"

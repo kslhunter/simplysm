@@ -1,0 +1,1 @@
+export { default as mr4SettingsBRoll } from "@material-symbols/svg-400/rounded/settings_b_roll.svg"

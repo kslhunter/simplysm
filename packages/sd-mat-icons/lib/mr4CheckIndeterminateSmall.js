@@ -1,0 +1,1 @@
+export { default as mr4CheckIndeterminateSmall } from "@material-symbols/svg-400/rounded/check_indeterminate_small.svg"

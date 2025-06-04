@@ -1,0 +1,1 @@
+export { default as mr4EmojiObjects } from "@material-symbols/svg-400/rounded/emoji_objects.svg"

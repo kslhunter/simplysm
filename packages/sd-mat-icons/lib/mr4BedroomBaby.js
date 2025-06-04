@@ -1,0 +1,1 @@
+export { default as mr4BedroomBaby } from "@material-symbols/svg-400/rounded/bedroom_baby.svg"

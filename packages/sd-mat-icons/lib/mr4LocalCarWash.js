@@ -1,0 +1,1 @@
+export { default as mr4LocalCarWash } from "@material-symbols/svg-400/rounded/local_car_wash.svg"

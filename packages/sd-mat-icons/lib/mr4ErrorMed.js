@@ -1,0 +1,1 @@
+export { default as mr4ErrorMed } from "@material-symbols/svg-400/rounded/error_med.svg"

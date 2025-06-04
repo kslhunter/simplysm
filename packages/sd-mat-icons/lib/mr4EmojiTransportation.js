@@ -1,0 +1,1 @@
+export { default as mr4EmojiTransportation } from "@material-symbols/svg-400/rounded/emoji_transportation.svg"

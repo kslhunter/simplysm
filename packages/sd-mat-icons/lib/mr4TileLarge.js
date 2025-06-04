@@ -1,0 +1,1 @@
+export { default as mr4TileLarge } from "@material-symbols/svg-400/rounded/tile_large.svg"

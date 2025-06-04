@@ -1,0 +1,1 @@
+export { default as mr4Balcony } from "@material-symbols/svg-400/rounded/balcony.svg"

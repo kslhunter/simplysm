@@ -1,0 +1,1 @@
+export { default as mr4OtherAdmission } from "@material-symbols/svg-400/rounded/other_admission.svg"

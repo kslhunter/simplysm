@@ -1,0 +1,1 @@
+export { default as mr4TurnLeft } from "@material-symbols/svg-400/rounded/turn_left.svg"

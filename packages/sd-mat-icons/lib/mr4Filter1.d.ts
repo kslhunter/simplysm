@@ -1,0 +1,1 @@
+export const mr4Filter1: string;

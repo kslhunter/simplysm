@@ -1,0 +1,1 @@
+export const mr4BatteryCharging30: string;

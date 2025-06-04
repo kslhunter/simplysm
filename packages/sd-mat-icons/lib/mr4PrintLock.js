@@ -1,0 +1,1 @@
+export { default as mr4PrintLock } from "@material-symbols/svg-400/rounded/print_lock.svg"

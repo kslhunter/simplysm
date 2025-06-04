@@ -1,0 +1,1 @@
+export { default as mr4LeftPanelClose } from "@material-symbols/svg-400/rounded/left_panel_close.svg"

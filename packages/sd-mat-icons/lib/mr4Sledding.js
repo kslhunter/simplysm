@@ -1,0 +1,1 @@
+export { default as mr4Sledding } from "@material-symbols/svg-400/rounded/sledding.svg"

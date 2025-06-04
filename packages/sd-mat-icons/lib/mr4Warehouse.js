@@ -1,0 +1,1 @@
+export { default as mr4Warehouse } from "@material-symbols/svg-400/rounded/warehouse.svg"

@@ -1,0 +1,1 @@
+export { default as mr4RawOn } from "@material-symbols/svg-400/rounded/raw_on.svg"

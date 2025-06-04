@@ -1,0 +1,1 @@
+export { default as mr4DecimalIncrease } from "@material-symbols/svg-400/rounded/decimal_increase.svg"

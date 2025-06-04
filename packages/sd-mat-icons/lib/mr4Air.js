@@ -1,0 +1,1 @@
+export { default as mr4Air } from "@material-symbols/svg-400/rounded/air.svg"

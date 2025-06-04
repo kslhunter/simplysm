@@ -1,0 +1,1 @@
+export { default as mr4PedalBike } from "@material-symbols/svg-400/rounded/pedal_bike.svg"

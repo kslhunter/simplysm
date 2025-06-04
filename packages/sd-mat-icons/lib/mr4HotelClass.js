@@ -1,0 +1,1 @@
+export { default as mr4HotelClass } from "@material-symbols/svg-400/rounded/hotel_class.svg"

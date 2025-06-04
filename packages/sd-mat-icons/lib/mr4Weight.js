@@ -1,0 +1,1 @@
+export { default as mr4Weight } from "@material-symbols/svg-400/rounded/weight.svg"

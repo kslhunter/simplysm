@@ -1,0 +1,1 @@
+export const mr4ArrowBack2: string;

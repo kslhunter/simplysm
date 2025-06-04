@@ -1,0 +1,1 @@
+export { default as mr4Lan } from "@material-symbols/svg-400/rounded/lan.svg"

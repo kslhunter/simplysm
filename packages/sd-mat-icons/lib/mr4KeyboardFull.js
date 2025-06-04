@@ -1,0 +1,1 @@
+export { default as mr4KeyboardFull } from "@material-symbols/svg-400/rounded/keyboard_full.svg"

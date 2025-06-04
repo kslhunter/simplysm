@@ -1,0 +1,1 @@
+export { default as mr4ArrowBack2 } from "@material-symbols/svg-400/rounded/arrow_back_2.svg"

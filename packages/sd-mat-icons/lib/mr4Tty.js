@@ -1,0 +1,1 @@
+export { default as mr4Tty } from "@material-symbols/svg-400/rounded/tty.svg"

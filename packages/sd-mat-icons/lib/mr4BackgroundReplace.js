@@ -1,0 +1,1 @@
+export { default as mr4BackgroundReplace } from "@material-symbols/svg-400/rounded/background_replace.svg"

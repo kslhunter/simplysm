@@ -1,0 +1,1 @@
+export { default as mr4VpnKeyOff } from "@material-symbols/svg-400/rounded/vpn_key_off.svg"

@@ -1,0 +1,1 @@
+export { default as mr4FileDownloadOff } from "@material-symbols/svg-400/rounded/file_download_off.svg"

@@ -1,0 +1,1 @@
+export { default as mr4DiamondShine } from "@material-symbols/svg-400/rounded/diamond_shine.svg"

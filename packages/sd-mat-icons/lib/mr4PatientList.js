@@ -1,0 +1,1 @@
+export { default as mr4PatientList } from "@material-symbols/svg-400/rounded/patient_list.svg"

@@ -1,0 +1,1 @@
+export { default as mr4BrandingWatermark } from "@material-symbols/svg-400/rounded/branding_watermark.svg"

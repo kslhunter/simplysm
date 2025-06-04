@@ -1,0 +1,1 @@
+export { default as mr4MoonStars } from "@material-symbols/svg-400/rounded/moon_stars.svg"

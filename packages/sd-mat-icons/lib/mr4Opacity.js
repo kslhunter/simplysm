@@ -1,0 +1,1 @@
+export { default as mr4Opacity } from "@material-symbols/svg-400/rounded/opacity.svg"

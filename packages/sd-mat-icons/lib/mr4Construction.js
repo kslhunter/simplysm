@@ -1,0 +1,1 @@
+export { default as mr4Construction } from "@material-symbols/svg-400/rounded/construction.svg"

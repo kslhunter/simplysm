@@ -1,0 +1,1 @@
+export { default as mr4MailLock } from "@material-symbols/svg-400/rounded/mail_lock.svg"

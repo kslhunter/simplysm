@@ -1,0 +1,1 @@
+export { default as mr4PowerSettingsCircle } from "@material-symbols/svg-400/rounded/power_settings_circle.svg"

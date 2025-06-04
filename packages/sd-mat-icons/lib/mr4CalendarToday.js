@@ -1,0 +1,1 @@
+export { default as mr4CalendarToday } from "@material-symbols/svg-400/rounded/calendar_today.svg"

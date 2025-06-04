@@ -1,0 +1,1 @@
+export { default as mr4ControlPointDuplicate } from "@material-symbols/svg-400/rounded/control_point_duplicate.svg"

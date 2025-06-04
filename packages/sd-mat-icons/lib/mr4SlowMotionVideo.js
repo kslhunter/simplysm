@@ -1,0 +1,1 @@
+export { default as mr4SlowMotionVideo } from "@material-symbols/svg-400/rounded/slow_motion_video.svg"

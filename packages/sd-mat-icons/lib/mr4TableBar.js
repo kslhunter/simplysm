@@ -1,0 +1,1 @@
+export { default as mr4TableBar } from "@material-symbols/svg-400/rounded/table_bar.svg"

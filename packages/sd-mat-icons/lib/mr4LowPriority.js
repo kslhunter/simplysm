@@ -1,0 +1,1 @@
+export { default as mr4LowPriority } from "@material-symbols/svg-400/rounded/low_priority.svg"

@@ -1,0 +1,1 @@
+export { default as mr4StrokePartial } from "@material-symbols/svg-400/rounded/stroke_partial.svg"

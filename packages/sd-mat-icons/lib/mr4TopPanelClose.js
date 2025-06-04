@@ -1,0 +1,1 @@
+export { default as mr4TopPanelClose } from "@material-symbols/svg-400/rounded/top_panel_close.svg"

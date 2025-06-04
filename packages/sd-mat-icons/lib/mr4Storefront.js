@@ -1,0 +1,1 @@
+export { default as mr4Storefront } from "@material-symbols/svg-400/rounded/storefront.svg"

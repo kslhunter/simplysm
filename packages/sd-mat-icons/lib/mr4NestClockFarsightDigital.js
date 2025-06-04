@@ -1,0 +1,1 @@
+export { default as mr4NestClockFarsightDigital } from "@material-symbols/svg-400/rounded/nest_clock_farsight_digital.svg"

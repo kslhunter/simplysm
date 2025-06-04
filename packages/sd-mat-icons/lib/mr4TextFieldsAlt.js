@@ -1,0 +1,1 @@
+export { default as mr4TextFieldsAlt } from "@material-symbols/svg-400/rounded/text_fields_alt.svg"

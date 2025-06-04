@@ -1,0 +1,1 @@
+export { default as mr4StockMedia } from "@material-symbols/svg-400/rounded/stock_media.svg"

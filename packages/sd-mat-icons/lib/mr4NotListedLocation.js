@@ -1,0 +1,1 @@
+export { default as mr4NotListedLocation } from "@material-symbols/svg-400/rounded/not_listed_location.svg"

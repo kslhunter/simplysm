@@ -1,0 +1,1 @@
+export { default as mr4Oncology } from "@material-symbols/svg-400/rounded/oncology.svg"

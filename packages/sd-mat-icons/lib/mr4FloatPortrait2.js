@@ -1,0 +1,1 @@
+export { default as mr4FloatPortrait2 } from "@material-symbols/svg-400/rounded/float_portrait_2.svg"

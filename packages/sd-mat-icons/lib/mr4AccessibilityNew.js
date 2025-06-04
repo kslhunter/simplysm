@@ -1,0 +1,1 @@
+export { default as mr4AccessibilityNew } from "@material-symbols/svg-400/rounded/accessibility_new.svg"

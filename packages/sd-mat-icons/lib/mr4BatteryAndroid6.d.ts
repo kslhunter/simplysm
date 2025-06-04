@@ -1,0 +1,1 @@
+export const mr4BatteryAndroid6: string;

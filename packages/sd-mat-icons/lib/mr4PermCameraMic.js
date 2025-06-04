@@ -1,0 +1,1 @@
+export { default as mr4PermCameraMic } from "@material-symbols/svg-400/rounded/perm_camera_mic.svg"

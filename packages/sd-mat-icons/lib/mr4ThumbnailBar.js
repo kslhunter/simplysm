@@ -1,0 +1,1 @@
+export { default as mr4ThumbnailBar } from "@material-symbols/svg-400/rounded/thumbnail_bar.svg"

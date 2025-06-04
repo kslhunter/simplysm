@@ -1,0 +1,1 @@
+export { default as mr4NotAccessibleForward } from "@material-symbols/svg-400/rounded/not_accessible_forward.svg"

@@ -1,0 +1,1 @@
+export { default as mr4LocalTaxi } from "@material-symbols/svg-400/rounded/local_taxi.svg"

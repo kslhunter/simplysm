@@ -1,0 +1,1 @@
+export { default as mr4WidgetSmall } from "@material-symbols/svg-400/rounded/widget_small.svg"

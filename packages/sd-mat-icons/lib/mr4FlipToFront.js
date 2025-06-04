@@ -1,0 +1,1 @@
+export { default as mr4FlipToFront } from "@material-symbols/svg-400/rounded/flip_to_front.svg"

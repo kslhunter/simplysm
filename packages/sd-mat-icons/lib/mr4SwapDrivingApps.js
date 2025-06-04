@@ -1,0 +1,1 @@
+export { default as mr4SwapDrivingApps } from "@material-symbols/svg-400/rounded/swap_driving_apps.svg"

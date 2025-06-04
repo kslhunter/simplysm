@@ -1,0 +1,1 @@
+export { default as mr4DirectionsCar } from "@material-symbols/svg-400/rounded/directions_car.svg"

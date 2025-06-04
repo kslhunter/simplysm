@@ -1,0 +1,1 @@
+export { default as mr4MultipleStop } from "@material-symbols/svg-400/rounded/multiple_stop.svg"

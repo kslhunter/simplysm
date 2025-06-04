@@ -1,0 +1,1 @@
+export { default as mr4TimerArrowUp } from "@material-symbols/svg-400/rounded/timer_arrow_up.svg"

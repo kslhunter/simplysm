@@ -1,0 +1,1 @@
+export { default as mr4GlassCup } from "@material-symbols/svg-400/rounded/glass_cup.svg"

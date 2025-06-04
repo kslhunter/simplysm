@@ -1,0 +1,1 @@
+export { default as mr4Face } from "@material-symbols/svg-400/rounded/face.svg"

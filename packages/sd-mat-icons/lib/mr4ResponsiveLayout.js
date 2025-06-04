@@ -1,0 +1,1 @@
+export { default as mr4ResponsiveLayout } from "@material-symbols/svg-400/rounded/responsive_layout.svg"

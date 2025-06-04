@@ -1,0 +1,1 @@
+export { default as mr4CardioLoad } from "@material-symbols/svg-400/rounded/cardio_load.svg"

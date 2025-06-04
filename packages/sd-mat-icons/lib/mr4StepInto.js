@@ -1,0 +1,1 @@
+export { default as mr4StepInto } from "@material-symbols/svg-400/rounded/step_into.svg"

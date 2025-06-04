@@ -1,0 +1,1 @@
+export { default as mr4MovingMinistry } from "@material-symbols/svg-400/rounded/moving_ministry.svg"

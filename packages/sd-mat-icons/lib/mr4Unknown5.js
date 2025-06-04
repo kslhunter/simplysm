@@ -1,0 +1,1 @@
+export { default as mr4Unknown5 } from "@material-symbols/svg-400/rounded/unknown_5.svg"

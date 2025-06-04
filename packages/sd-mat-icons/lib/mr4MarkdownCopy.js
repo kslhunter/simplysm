@@ -1,0 +1,1 @@
+export { default as mr4MarkdownCopy } from "@material-symbols/svg-400/rounded/markdown_copy.svg"

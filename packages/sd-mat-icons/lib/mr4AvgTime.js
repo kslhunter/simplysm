@@ -1,0 +1,1 @@
+export { default as mr4AvgTime } from "@material-symbols/svg-400/rounded/avg_time.svg"

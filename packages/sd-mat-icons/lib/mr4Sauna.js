@@ -1,0 +1,1 @@
+export { default as mr4Sauna } from "@material-symbols/svg-400/rounded/sauna.svg"

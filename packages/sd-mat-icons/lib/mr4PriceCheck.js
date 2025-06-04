@@ -1,0 +1,1 @@
+export { default as mr4PriceCheck } from "@material-symbols/svg-400/rounded/price_check.svg"

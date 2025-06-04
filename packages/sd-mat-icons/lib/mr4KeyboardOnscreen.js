@@ -1,0 +1,1 @@
+export { default as mr4KeyboardOnscreen } from "@material-symbols/svg-400/rounded/keyboard_onscreen.svg"

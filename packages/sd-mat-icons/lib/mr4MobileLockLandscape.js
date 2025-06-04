@@ -1,0 +1,1 @@
+export { default as mr4MobileLockLandscape } from "@material-symbols/svg-400/rounded/mobile_lock_landscape.svg"

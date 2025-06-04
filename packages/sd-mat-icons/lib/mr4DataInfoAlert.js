@@ -1,0 +1,1 @@
+export { default as mr4DataInfoAlert } from "@material-symbols/svg-400/rounded/data_info_alert.svg"

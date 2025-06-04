@@ -1,0 +1,1 @@
+export { default as mr4FeaturedVideo } from "@material-symbols/svg-400/rounded/featured_video.svg"

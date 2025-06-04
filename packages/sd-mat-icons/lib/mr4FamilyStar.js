@@ -1,0 +1,1 @@
+export { default as mr4FamilyStar } from "@material-symbols/svg-400/rounded/family_star.svg"

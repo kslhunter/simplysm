@@ -1,0 +1,1 @@
+export { default as mr4InteractiveSpace } from "@material-symbols/svg-400/rounded/interactive_space.svg"

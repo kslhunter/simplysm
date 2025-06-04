@@ -1,0 +1,1 @@
+export { default as mr4RotateLeft } from "@material-symbols/svg-400/rounded/rotate_left.svg"

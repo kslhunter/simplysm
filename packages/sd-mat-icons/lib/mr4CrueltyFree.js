@@ -1,0 +1,1 @@
+export { default as mr4CrueltyFree } from "@material-symbols/svg-400/rounded/cruelty_free.svg"

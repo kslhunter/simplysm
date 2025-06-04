@@ -1,0 +1,1 @@
+export { default as mr4SettingsRemote } from "@material-symbols/svg-400/rounded/settings_remote.svg"

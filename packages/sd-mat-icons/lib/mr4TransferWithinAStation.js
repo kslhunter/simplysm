@@ -1,0 +1,1 @@
+export { default as mr4TransferWithinAStation } from "@material-symbols/svg-400/rounded/transfer_within_a_station.svg"

@@ -1,0 +1,1 @@
+export { default as mr4VisibilityOff } from "@material-symbols/svg-400/rounded/visibility_off.svg"

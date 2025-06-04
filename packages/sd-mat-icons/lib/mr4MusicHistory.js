@@ -1,0 +1,1 @@
+export { default as mr4MusicHistory } from "@material-symbols/svg-400/rounded/music_history.svg"

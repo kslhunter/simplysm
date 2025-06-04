@@ -1,0 +1,1 @@
+export { default as mr4Lowercase } from "@material-symbols/svg-400/rounded/lowercase.svg"

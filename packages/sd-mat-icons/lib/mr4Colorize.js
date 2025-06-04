@@ -1,0 +1,1 @@
+export { default as mr4Colorize } from "@material-symbols/svg-400/rounded/colorize.svg"

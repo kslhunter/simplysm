@@ -1,0 +1,1 @@
+export { default as mr4ScatterPlot } from "@material-symbols/svg-400/rounded/scatter_plot.svg"

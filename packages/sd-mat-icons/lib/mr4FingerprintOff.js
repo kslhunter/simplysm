@@ -1,0 +1,1 @@
+export { default as mr4FingerprintOff } from "@material-symbols/svg-400/rounded/fingerprint_off.svg"

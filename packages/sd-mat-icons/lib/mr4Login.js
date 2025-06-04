@@ -1,0 +1,1 @@
+export { default as mr4Login } from "@material-symbols/svg-400/rounded/login.svg"

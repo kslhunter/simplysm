@@ -1,0 +1,1 @@
+export { default as mr4EscalatorWarning } from "@material-symbols/svg-400/rounded/escalator_warning.svg"

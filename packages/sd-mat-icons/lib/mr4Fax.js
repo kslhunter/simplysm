@@ -1,0 +1,1 @@
+export { default as mr4Fax } from "@material-symbols/svg-400/rounded/fax.svg"

@@ -1,0 +1,1 @@
+export { default as mr4Ungroup } from "@material-symbols/svg-400/rounded/ungroup.svg"

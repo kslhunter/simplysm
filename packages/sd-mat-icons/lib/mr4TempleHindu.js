@@ -1,0 +1,1 @@
+export { default as mr4TempleHindu } from "@material-symbols/svg-400/rounded/temple_hindu.svg"

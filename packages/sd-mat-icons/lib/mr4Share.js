@@ -1,0 +1,1 @@
+export { default as mr4Share } from "@material-symbols/svg-400/rounded/share.svg"

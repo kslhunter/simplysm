@@ -1,0 +1,1 @@
+export { default as mr4Mood } from "@material-symbols/svg-400/rounded/mood.svg"

@@ -1,0 +1,1 @@
+export { default as mr4VideoLabel } from "@material-symbols/svg-400/rounded/video_label.svg"

@@ -1,0 +1,1 @@
+export { default as mr43dRotation } from "@material-symbols/svg-400/rounded/3d_rotation.svg"

@@ -1,0 +1,1 @@
+export { default as mr4SocialLeaderboard } from "@material-symbols/svg-400/rounded/social_leaderboard.svg"

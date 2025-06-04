@@ -1,0 +1,1 @@
+export { default as mr4Host } from "@material-symbols/svg-400/rounded/host.svg"

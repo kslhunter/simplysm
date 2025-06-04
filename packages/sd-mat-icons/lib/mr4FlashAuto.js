@@ -1,0 +1,1 @@
+export { default as mr4FlashAuto } from "@material-symbols/svg-400/rounded/flash_auto.svg"

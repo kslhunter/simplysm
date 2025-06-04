@@ -1,0 +1,1 @@
+export { default as mr4FolderSupervised } from "@material-symbols/svg-400/rounded/folder_supervised.svg"

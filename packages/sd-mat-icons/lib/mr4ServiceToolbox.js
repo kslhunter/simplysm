@@ -1,0 +1,1 @@
+export { default as mr4ServiceToolbox } from "@material-symbols/svg-400/rounded/service_toolbox.svg"

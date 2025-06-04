@@ -1,0 +1,1 @@
+export { default as mr4DisabledByDefault } from "@material-symbols/svg-400/rounded/disabled_by_default.svg"

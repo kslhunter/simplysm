@@ -1,0 +1,1 @@
+export { default as mr4Package } from "@material-symbols/svg-400/rounded/package.svg"

@@ -1,0 +1,1 @@
+export { default as mr4Tag } from "@material-symbols/svg-400/rounded/tag.svg"

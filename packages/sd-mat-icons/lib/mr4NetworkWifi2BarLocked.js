@@ -1,0 +1,1 @@
+export { default as mr4NetworkWifi2BarLocked } from "@material-symbols/svg-400/rounded/network_wifi_2_bar_locked.svg"

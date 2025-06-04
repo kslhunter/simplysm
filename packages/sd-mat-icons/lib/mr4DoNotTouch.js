@@ -1,0 +1,1 @@
+export { default as mr4DoNotTouch } from "@material-symbols/svg-400/rounded/do_not_touch.svg"

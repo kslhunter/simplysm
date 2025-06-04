@@ -1,0 +1,1 @@
+export { default as mr4Kitchen } from "@material-symbols/svg-400/rounded/kitchen.svg"

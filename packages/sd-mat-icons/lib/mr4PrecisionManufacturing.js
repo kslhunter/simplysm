@@ -1,0 +1,1 @@
+export { default as mr4PrecisionManufacturing } from "@material-symbols/svg-400/rounded/precision_manufacturing.svg"

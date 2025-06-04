@@ -1,0 +1,1 @@
+export { default as mr4CheckSmall } from "@material-symbols/svg-400/rounded/check_small.svg"

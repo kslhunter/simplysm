@@ -1,0 +1,1 @@
+export { default as mr4Pip } from "@material-symbols/svg-400/rounded/pip.svg"

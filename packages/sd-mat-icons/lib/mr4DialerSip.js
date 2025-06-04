@@ -1,0 +1,1 @@
+export { default as mr4DialerSip } from "@material-symbols/svg-400/rounded/dialer_sip.svg"

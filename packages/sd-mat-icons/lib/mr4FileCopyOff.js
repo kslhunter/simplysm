@@ -1,0 +1,1 @@
+export { default as mr4FileCopyOff } from "@material-symbols/svg-400/rounded/file_copy_off.svg"

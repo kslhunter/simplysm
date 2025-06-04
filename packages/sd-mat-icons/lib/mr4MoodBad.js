@@ -1,0 +1,1 @@
+export { default as mr4MoodBad } from "@material-symbols/svg-400/rounded/mood_bad.svg"

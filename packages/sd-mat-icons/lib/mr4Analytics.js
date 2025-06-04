@@ -1,0 +1,1 @@
+export { default as mr4Analytics } from "@material-symbols/svg-400/rounded/analytics.svg"

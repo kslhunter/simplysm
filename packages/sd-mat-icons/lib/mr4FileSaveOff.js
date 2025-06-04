@@ -1,0 +1,1 @@
+export { default as mr4FileSaveOff } from "@material-symbols/svg-400/rounded/file_save_off.svg"

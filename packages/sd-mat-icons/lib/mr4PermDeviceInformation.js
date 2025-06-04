@@ -1,0 +1,1 @@
+export { default as mr4PermDeviceInformation } from "@material-symbols/svg-400/rounded/perm_device_information.svg"

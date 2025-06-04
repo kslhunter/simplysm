@@ -1,0 +1,1 @@
+export { default as mr4Phishing } from "@material-symbols/svg-400/rounded/phishing.svg"

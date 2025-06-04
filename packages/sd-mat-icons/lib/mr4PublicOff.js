@@ -1,0 +1,1 @@
+export { default as mr4PublicOff } from "@material-symbols/svg-400/rounded/public_off.svg"

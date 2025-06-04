@@ -1,0 +1,1 @@
+export { default as mr4FilterListOff } from "@material-symbols/svg-400/rounded/filter_list_off.svg"

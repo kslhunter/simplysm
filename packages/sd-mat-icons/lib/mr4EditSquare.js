@@ -1,0 +1,1 @@
+export { default as mr4EditSquare } from "@material-symbols/svg-400/rounded/edit_square.svg"

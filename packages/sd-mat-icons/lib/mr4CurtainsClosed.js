@@ -1,0 +1,1 @@
+export { default as mr4CurtainsClosed } from "@material-symbols/svg-400/rounded/curtains_closed.svg"

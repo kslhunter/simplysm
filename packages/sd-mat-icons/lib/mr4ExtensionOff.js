@@ -1,0 +1,1 @@
+export { default as mr4ExtensionOff } from "@material-symbols/svg-400/rounded/extension_off.svg"

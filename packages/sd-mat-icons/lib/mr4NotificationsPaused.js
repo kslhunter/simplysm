@@ -1,0 +1,1 @@
+export { default as mr4NotificationsPaused } from "@material-symbols/svg-400/rounded/notifications_paused.svg"

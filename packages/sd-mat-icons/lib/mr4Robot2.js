@@ -1,0 +1,1 @@
+export { default as mr4Robot2 } from "@material-symbols/svg-400/rounded/robot_2.svg"

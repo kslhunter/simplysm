@@ -1,0 +1,1 @@
+export { default as mr4RadioButtonPartial } from "@material-symbols/svg-400/rounded/radio_button_partial.svg"

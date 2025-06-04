@@ -1,0 +1,1 @@
+export { default as mr4ChromeReaderMode } from "@material-symbols/svg-400/rounded/chrome_reader_mode.svg"

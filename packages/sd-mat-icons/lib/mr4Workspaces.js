@@ -1,0 +1,1 @@
+export { default as mr4Workspaces } from "@material-symbols/svg-400/rounded/workspaces.svg"

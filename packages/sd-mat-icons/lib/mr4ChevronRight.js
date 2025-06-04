@@ -1,0 +1,1 @@
+export { default as mr4ChevronRight } from "@material-symbols/svg-400/rounded/chevron_right.svg"

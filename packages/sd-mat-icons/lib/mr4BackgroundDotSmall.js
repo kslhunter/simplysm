@@ -1,0 +1,1 @@
+export { default as mr4BackgroundDotSmall } from "@material-symbols/svg-400/rounded/background_dot_small.svg"

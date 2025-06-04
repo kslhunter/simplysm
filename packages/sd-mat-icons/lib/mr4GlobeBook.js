@@ -1,0 +1,1 @@
+export { default as mr4GlobeBook } from "@material-symbols/svg-400/rounded/globe_book.svg"

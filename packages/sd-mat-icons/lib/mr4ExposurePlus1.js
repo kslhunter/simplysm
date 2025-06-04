@@ -1,0 +1,1 @@
+export { default as mr4ExposurePlus1 } from "@material-symbols/svg-400/rounded/exposure_plus_1.svg"

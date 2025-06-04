@@ -1,0 +1,1 @@
+export { default as mr4FinanceChip } from "@material-symbols/svg-400/rounded/finance_chip.svg"

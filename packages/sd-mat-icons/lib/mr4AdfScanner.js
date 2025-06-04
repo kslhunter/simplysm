@@ -1,0 +1,1 @@
+export { default as mr4AdfScanner } from "@material-symbols/svg-400/rounded/adf_scanner.svg"

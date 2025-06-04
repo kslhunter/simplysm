@@ -1,0 +1,1 @@
+export { default as mr4HomeHealth } from "@material-symbols/svg-400/rounded/home_health.svg"

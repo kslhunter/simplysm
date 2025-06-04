@@ -1,0 +1,1 @@
+export { default as mr4Pending } from "@material-symbols/svg-400/rounded/pending.svg"

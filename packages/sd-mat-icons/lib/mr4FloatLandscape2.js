@@ -1,0 +1,1 @@
+export { default as mr4FloatLandscape2 } from "@material-symbols/svg-400/rounded/float_landscape_2.svg"

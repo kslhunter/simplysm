@@ -1,0 +1,1 @@
+export { default as mr4QuestionMark } from "@material-symbols/svg-400/rounded/question_mark.svg"

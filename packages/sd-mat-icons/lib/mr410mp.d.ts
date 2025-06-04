@@ -1,0 +1,1 @@
+export const mr410mp: string;

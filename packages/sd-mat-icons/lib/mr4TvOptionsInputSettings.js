@@ -1,0 +1,1 @@
+export { default as mr4TvOptionsInputSettings } from "@material-symbols/svg-400/rounded/tv_options_input_settings.svg"

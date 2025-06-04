@@ -1,0 +1,1 @@
+export { default as mr4Vo2Max } from "@material-symbols/svg-400/rounded/vo2_max.svg"

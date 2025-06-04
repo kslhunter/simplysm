@@ -1,0 +1,1 @@
+export { default as mr4ElectricalServices } from "@material-symbols/svg-400/rounded/electrical_services.svg"

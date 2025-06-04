@@ -1,0 +1,1 @@
+export { default as mr4BikeScooter } from "@material-symbols/svg-400/rounded/bike_scooter.svg"

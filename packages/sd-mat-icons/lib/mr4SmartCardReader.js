@@ -1,0 +1,1 @@
+export { default as mr4SmartCardReader } from "@material-symbols/svg-400/rounded/smart_card_reader.svg"

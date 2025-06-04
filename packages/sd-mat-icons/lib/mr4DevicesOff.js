@@ -1,0 +1,1 @@
+export { default as mr4DevicesOff } from "@material-symbols/svg-400/rounded/devices_off.svg"

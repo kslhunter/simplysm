@@ -1,0 +1,1 @@
+export { default as mr4FormatShapes } from "@material-symbols/svg-400/rounded/format_shapes.svg"

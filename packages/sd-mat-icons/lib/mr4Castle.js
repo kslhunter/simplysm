@@ -1,0 +1,1 @@
+export { default as mr4Castle } from "@material-symbols/svg-400/rounded/castle.svg"

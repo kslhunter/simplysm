@@ -1,0 +1,1 @@
+export { default as mr4TabMove } from "@material-symbols/svg-400/rounded/tab_move.svg"

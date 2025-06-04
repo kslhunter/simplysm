@@ -1,0 +1,1 @@
+export { default as mr4MotionSensorIdle } from "@material-symbols/svg-400/rounded/motion_sensor_idle.svg"

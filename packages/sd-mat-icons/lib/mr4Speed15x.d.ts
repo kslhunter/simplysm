@@ -1,0 +1,1 @@
+export const mr4Speed15x: string;

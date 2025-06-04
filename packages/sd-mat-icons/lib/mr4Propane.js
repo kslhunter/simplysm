@@ -1,0 +1,1 @@
+export { default as mr4Propane } from "@material-symbols/svg-400/rounded/propane.svg"

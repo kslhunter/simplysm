@@ -1,0 +1,1 @@
+export { default as mr4HomeWork } from "@material-symbols/svg-400/rounded/home_work.svg"

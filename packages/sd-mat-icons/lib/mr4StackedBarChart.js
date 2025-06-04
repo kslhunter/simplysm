@@ -1,0 +1,1 @@
+export { default as mr4StackedBarChart } from "@material-symbols/svg-400/rounded/stacked_bar_chart.svg"

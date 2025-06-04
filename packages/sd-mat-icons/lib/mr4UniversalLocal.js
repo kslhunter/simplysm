@@ -1,0 +1,1 @@
+export { default as mr4UniversalLocal } from "@material-symbols/svg-400/rounded/universal_local.svg"

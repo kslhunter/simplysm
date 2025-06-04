@@ -1,0 +1,1 @@
+export { default as mr4TextUp } from "@material-symbols/svg-400/rounded/text_up.svg"

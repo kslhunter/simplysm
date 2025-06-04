@@ -1,0 +1,1 @@
+export { default as mr4AddDiamond } from "@material-symbols/svg-400/rounded/add_diamond.svg"

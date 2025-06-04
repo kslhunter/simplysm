@@ -1,0 +1,1 @@
+export { default as mr4LocalFlorist } from "@material-symbols/svg-400/rounded/local_florist.svg"

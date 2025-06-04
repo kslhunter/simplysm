@@ -1,0 +1,1 @@
+export { default as mr4BrandAwareness } from "@material-symbols/svg-400/rounded/brand_awareness.svg"

@@ -1,0 +1,1 @@
+export { default as mr4Difference } from "@material-symbols/svg-400/rounded/difference.svg"

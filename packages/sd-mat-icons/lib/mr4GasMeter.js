@@ -1,0 +1,1 @@
+export { default as mr4GasMeter } from "@material-symbols/svg-400/rounded/gas_meter.svg"

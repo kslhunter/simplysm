@@ -1,0 +1,1 @@
+export { default as mr4CarDefrostMidLowLeft } from "@material-symbols/svg-400/rounded/car_defrost_mid_low_left.svg"

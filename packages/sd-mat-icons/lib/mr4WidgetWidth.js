@@ -1,0 +1,1 @@
+export { default as mr4WidgetWidth } from "@material-symbols/svg-400/rounded/widget_width.svg"

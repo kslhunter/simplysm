@@ -1,0 +1,1 @@
+export { default as mr4DrawCollage } from "@material-symbols/svg-400/rounded/draw_collage.svg"

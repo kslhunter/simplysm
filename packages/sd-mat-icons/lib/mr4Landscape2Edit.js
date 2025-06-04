@@ -1,0 +1,1 @@
+export { default as mr4Landscape2Edit } from "@material-symbols/svg-400/rounded/landscape_2_edit.svg"

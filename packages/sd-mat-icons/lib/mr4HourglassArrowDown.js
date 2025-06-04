@@ -1,0 +1,1 @@
+export { default as mr4HourglassArrowDown } from "@material-symbols/svg-400/rounded/hourglass_arrow_down.svg"

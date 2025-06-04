@@ -1,0 +1,1 @@
+export { default as mr4ProductionQuantityLimits } from "@material-symbols/svg-400/rounded/production_quantity_limits.svg"

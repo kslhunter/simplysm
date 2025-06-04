@@ -1,0 +1,1 @@
+export { default as mr4PersonalInjury } from "@material-symbols/svg-400/rounded/personal_injury.svg"

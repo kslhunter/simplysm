@@ -1,0 +1,1 @@
+export { default as mr4TvGen } from "@material-symbols/svg-400/rounded/tv_gen.svg"

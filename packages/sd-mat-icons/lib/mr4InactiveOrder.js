@@ -1,0 +1,1 @@
+export { default as mr4InactiveOrder } from "@material-symbols/svg-400/rounded/inactive_order.svg"

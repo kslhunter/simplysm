@@ -1,0 +1,1 @@
+export { default as mr4ShieldLock } from "@material-symbols/svg-400/rounded/shield_lock.svg"

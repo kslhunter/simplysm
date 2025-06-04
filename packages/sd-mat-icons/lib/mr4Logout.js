@@ -1,0 +1,1 @@
+export { default as mr4Logout } from "@material-symbols/svg-400/rounded/logout.svg"

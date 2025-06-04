@@ -1,0 +1,1 @@
+export { default as mr4ContactEmergency } from "@material-symbols/svg-400/rounded/contact_emergency.svg"

@@ -1,0 +1,1 @@
+export { default as mr4Wash } from "@material-symbols/svg-400/rounded/wash.svg"

@@ -1,0 +1,1 @@
+export { default as mr4BorderTop } from "@material-symbols/svg-400/rounded/border_top.svg"

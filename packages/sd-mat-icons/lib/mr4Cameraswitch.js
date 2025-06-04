@@ -1,0 +1,1 @@
+export { default as mr4Cameraswitch } from "@material-symbols/svg-400/rounded/cameraswitch.svg"

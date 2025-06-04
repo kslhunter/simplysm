@@ -1,0 +1,1 @@
+export { default as mr4ViewCompact } from "@material-symbols/svg-400/rounded/view_compact.svg"

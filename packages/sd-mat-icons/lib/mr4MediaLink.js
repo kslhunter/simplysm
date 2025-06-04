@@ -1,0 +1,1 @@
+export { default as mr4MediaLink } from "@material-symbols/svg-400/rounded/media_link.svg"

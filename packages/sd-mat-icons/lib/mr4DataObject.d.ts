@@ -1,0 +1,1 @@
+export const mr4DataObject: string;

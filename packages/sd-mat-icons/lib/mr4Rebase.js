@@ -1,0 +1,1 @@
+export { default as mr4Rebase } from "@material-symbols/svg-400/rounded/rebase.svg"

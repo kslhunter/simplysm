@@ -1,0 +1,1 @@
+export { default as mr4Event } from "@material-symbols/svg-400/rounded/event.svg"

@@ -1,0 +1,1 @@
+export { default as mr4Ophthalmology } from "@material-symbols/svg-400/rounded/ophthalmology.svg"

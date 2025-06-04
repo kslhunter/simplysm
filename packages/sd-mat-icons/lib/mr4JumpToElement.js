@@ -1,0 +1,1 @@
+export { default as mr4JumpToElement } from "@material-symbols/svg-400/rounded/jump_to_element.svg"

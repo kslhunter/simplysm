@@ -1,0 +1,1 @@
+export { default as mr4Sdk } from "@material-symbols/svg-400/rounded/sdk.svg"

@@ -1,0 +1,1 @@
+export { default as mr4StopScreenShare } from "@material-symbols/svg-400/rounded/stop_screen_share.svg"

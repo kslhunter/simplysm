@@ -1,0 +1,1 @@
+export { default as mr4LanguageChineseCangjie } from "@material-symbols/svg-400/rounded/language_chinese_cangjie.svg"

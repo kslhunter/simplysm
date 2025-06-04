@@ -1,0 +1,1 @@
+export { default as mr4PinInvoke } from "@material-symbols/svg-400/rounded/pin_invoke.svg"

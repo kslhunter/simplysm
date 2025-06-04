@@ -1,0 +1,1 @@
+export { default as mr4Sensors } from "@material-symbols/svg-400/rounded/sensors.svg"

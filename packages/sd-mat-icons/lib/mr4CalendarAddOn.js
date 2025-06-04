@@ -1,0 +1,1 @@
+export { default as mr4CalendarAddOn } from "@material-symbols/svg-400/rounded/calendar_add_on.svg"

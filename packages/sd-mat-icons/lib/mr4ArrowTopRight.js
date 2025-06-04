@@ -1,0 +1,1 @@
+export { default as mr4ArrowTopRight } from "@material-symbols/svg-400/rounded/arrow_top_right.svg"

@@ -1,0 +1,1 @@
+export { default as mr4MacroAuto } from "@material-symbols/svg-400/rounded/macro_auto.svg"

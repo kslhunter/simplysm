@@ -1,0 +1,1 @@
+export { default as mr4HrResting } from "@material-symbols/svg-400/rounded/hr_resting.svg"

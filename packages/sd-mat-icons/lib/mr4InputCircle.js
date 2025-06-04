@@ -1,0 +1,1 @@
+export { default as mr4InputCircle } from "@material-symbols/svg-400/rounded/input_circle.svg"

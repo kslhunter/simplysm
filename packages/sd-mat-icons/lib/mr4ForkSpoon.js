@@ -1,0 +1,1 @@
+export { default as mr4ForkSpoon } from "@material-symbols/svg-400/rounded/fork_spoon.svg"

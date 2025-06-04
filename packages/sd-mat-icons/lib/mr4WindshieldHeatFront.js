@@ -1,0 +1,1 @@
+export { default as mr4WindshieldHeatFront } from "@material-symbols/svg-400/rounded/windshield_heat_front.svg"

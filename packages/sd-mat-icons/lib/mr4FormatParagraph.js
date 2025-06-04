@@ -1,0 +1,1 @@
+export { default as mr4FormatParagraph } from "@material-symbols/svg-400/rounded/format_paragraph.svg"

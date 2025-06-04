@@ -1,0 +1,1 @@
+export { default as mr4AssistWalker } from "@material-symbols/svg-400/rounded/assist_walker.svg"

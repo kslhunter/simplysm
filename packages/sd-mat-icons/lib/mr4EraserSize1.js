@@ -1,0 +1,1 @@
+export { default as mr4EraserSize1 } from "@material-symbols/svg-400/rounded/eraser_size_1.svg"

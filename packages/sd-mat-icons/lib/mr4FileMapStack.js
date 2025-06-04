@@ -1,0 +1,1 @@
+export { default as mr4FileMapStack } from "@material-symbols/svg-400/rounded/file_map_stack.svg"

@@ -1,0 +1,1 @@
+export { default as mr4Gite } from "@material-symbols/svg-400/rounded/gite.svg"

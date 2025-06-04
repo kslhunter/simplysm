@@ -1,0 +1,1 @@
+export { default as mr4WbTwilight } from "@material-symbols/svg-400/rounded/wb_twilight.svg"

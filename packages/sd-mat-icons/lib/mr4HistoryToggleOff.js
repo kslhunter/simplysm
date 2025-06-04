@@ -1,0 +1,1 @@
+export { default as mr4HistoryToggleOff } from "@material-symbols/svg-400/rounded/history_toggle_off.svg"

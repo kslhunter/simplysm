@@ -1,0 +1,1 @@
+export const mr44gMobiledataBadge: string;

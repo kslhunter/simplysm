@@ -1,0 +1,1 @@
+export { default as mr4Ward } from "@material-symbols/svg-400/rounded/ward.svg"

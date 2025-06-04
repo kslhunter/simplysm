@@ -1,0 +1,1 @@
+export { default as mr4South } from "@material-symbols/svg-400/rounded/south.svg"

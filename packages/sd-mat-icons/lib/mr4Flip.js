@@ -1,0 +1,1 @@
+export { default as mr4Flip } from "@material-symbols/svg-400/rounded/flip.svg"

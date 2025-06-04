@@ -1,0 +1,1 @@
+export { default as mr4Gamepad } from "@material-symbols/svg-400/rounded/gamepad.svg"

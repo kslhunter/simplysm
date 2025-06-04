@@ -1,0 +1,1 @@
+export { default as mr4FrameSource } from "@material-symbols/svg-400/rounded/frame_source.svg"

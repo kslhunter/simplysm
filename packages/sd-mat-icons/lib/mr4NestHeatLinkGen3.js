@@ -1,0 +1,1 @@
+export { default as mr4NestHeatLinkGen3 } from "@material-symbols/svg-400/rounded/nest_heat_link_gen_3.svg"

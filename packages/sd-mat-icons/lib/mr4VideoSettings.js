@@ -1,0 +1,1 @@
+export { default as mr4VideoSettings } from "@material-symbols/svg-400/rounded/video_settings.svg"

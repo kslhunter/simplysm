@@ -1,0 +1,1 @@
+export { default as mr4HealthCross } from "@material-symbols/svg-400/rounded/health_cross.svg"

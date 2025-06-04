@@ -1,0 +1,1 @@
+export { default as mr4TouchLong } from "@material-symbols/svg-400/rounded/touch_long.svg"

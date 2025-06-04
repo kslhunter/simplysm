@@ -1,0 +1,1 @@
+export { default as mr4BigtopUpdates } from "@material-symbols/svg-400/rounded/bigtop_updates.svg"

@@ -1,0 +1,1 @@
+export const mr4Graph3: string;

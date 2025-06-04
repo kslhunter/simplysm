@@ -1,0 +1,1 @@
+export { default as mr4LabResearch } from "@material-symbols/svg-400/rounded/lab_research.svg"

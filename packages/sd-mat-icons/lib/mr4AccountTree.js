@@ -1,0 +1,1 @@
+export { default as mr4AccountTree } from "@material-symbols/svg-400/rounded/account_tree.svg"

@@ -1,0 +1,1 @@
+export { default as mr4EventNote } from "@material-symbols/svg-400/rounded/event_note.svg"

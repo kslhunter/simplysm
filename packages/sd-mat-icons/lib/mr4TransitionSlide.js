@@ -1,0 +1,1 @@
+export { default as mr4TransitionSlide } from "@material-symbols/svg-400/rounded/transition_slide.svg"

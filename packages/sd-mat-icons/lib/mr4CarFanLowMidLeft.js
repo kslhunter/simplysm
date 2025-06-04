@@ -1,0 +1,1 @@
+export { default as mr4CarFanLowMidLeft } from "@material-symbols/svg-400/rounded/car_fan_low_mid_left.svg"

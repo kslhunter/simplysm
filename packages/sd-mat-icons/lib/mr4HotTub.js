@@ -1,0 +1,1 @@
+export { default as mr4HotTub } from "@material-symbols/svg-400/rounded/hot_tub.svg"

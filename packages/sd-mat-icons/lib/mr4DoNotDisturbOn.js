@@ -1,0 +1,1 @@
+export { default as mr4DoNotDisturbOn } from "@material-symbols/svg-400/rounded/do_not_disturb_on.svg"

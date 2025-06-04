@@ -1,0 +1,1 @@
+export { default as mr4ResetTv } from "@material-symbols/svg-400/rounded/reset_tv.svg"

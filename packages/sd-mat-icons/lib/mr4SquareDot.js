@@ -1,0 +1,1 @@
+export { default as mr4SquareDot } from "@material-symbols/svg-400/rounded/square_dot.svg"

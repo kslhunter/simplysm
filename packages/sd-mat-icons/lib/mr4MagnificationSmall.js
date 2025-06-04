@@ -1,0 +1,1 @@
+export { default as mr4MagnificationSmall } from "@material-symbols/svg-400/rounded/magnification_small.svg"

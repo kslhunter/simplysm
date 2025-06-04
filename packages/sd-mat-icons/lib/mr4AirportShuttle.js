@@ -1,0 +1,1 @@
+export { default as mr4AirportShuttle } from "@material-symbols/svg-400/rounded/airport_shuttle.svg"

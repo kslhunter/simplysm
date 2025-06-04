@@ -1,0 +1,1 @@
+export { default as mr4ModeStandby } from "@material-symbols/svg-400/rounded/mode_standby.svg"

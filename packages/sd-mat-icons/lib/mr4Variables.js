@@ -1,0 +1,1 @@
+export { default as mr4Variables } from "@material-symbols/svg-400/rounded/variables.svg"

@@ -1,0 +1,1 @@
+export { default as mr4CallEnd } from "@material-symbols/svg-400/rounded/call_end.svg"

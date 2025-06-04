@@ -1,0 +1,1 @@
+export { default as mr4WaterDamage } from "@material-symbols/svg-400/rounded/water_damage.svg"

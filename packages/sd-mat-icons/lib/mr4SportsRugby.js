@@ -1,0 +1,1 @@
+export { default as mr4SportsRugby } from "@material-symbols/svg-400/rounded/sports_rugby.svg"

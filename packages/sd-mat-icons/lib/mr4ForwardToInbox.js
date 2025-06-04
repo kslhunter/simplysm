@@ -1,0 +1,1 @@
+export { default as mr4ForwardToInbox } from "@material-symbols/svg-400/rounded/forward_to_inbox.svg"

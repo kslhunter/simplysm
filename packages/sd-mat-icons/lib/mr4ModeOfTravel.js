@@ -1,0 +1,1 @@
+export { default as mr4ModeOfTravel } from "@material-symbols/svg-400/rounded/mode_of_travel.svg"

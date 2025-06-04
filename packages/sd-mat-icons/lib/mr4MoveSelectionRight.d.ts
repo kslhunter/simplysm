@@ -1,0 +1,1 @@
+export const mr4MoveSelectionRight: string;

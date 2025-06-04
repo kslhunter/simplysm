@@ -1,0 +1,1 @@
+export { default as mr4HdrPlus } from "@material-symbols/svg-400/rounded/hdr_plus.svg"

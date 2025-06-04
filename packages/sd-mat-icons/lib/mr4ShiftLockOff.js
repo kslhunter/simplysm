@@ -1,0 +1,1 @@
+export { default as mr4ShiftLockOff } from "@material-symbols/svg-400/rounded/shift_lock_off.svg"

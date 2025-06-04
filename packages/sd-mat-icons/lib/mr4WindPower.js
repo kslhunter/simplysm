@@ -1,0 +1,1 @@
+export { default as mr4WindPower } from "@material-symbols/svg-400/rounded/wind_power.svg"

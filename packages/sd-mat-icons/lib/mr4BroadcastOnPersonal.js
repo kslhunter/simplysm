@@ -1,0 +1,1 @@
+export { default as mr4BroadcastOnPersonal } from "@material-symbols/svg-400/rounded/broadcast_on_personal.svg"

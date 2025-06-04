@@ -1,0 +1,1 @@
+export { default as mr4Transportation } from "@material-symbols/svg-400/rounded/transportation.svg"

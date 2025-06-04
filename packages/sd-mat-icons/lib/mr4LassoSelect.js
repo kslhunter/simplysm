@@ -1,0 +1,1 @@
+export { default as mr4LassoSelect } from "@material-symbols/svg-400/rounded/lasso_select.svg"

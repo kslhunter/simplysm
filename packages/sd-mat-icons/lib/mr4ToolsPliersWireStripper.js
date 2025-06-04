@@ -1,0 +1,1 @@
+export { default as mr4ToolsPliersWireStripper } from "@material-symbols/svg-400/rounded/tools_pliers_wire_stripper.svg"

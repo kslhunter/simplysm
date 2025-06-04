@@ -1,0 +1,1 @@
+export { default as mr4PermDataSetting } from "@material-symbols/svg-400/rounded/perm_data_setting.svg"

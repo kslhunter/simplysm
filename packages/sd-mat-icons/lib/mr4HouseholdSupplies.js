@@ -1,0 +1,1 @@
+export { default as mr4HouseholdSupplies } from "@material-symbols/svg-400/rounded/household_supplies.svg"

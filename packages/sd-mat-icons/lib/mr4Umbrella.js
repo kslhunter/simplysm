@@ -1,0 +1,1 @@
+export { default as mr4Umbrella } from "@material-symbols/svg-400/rounded/umbrella.svg"

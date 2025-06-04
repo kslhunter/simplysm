@@ -1,0 +1,1 @@
+export { default as mr4PillOff } from "@material-symbols/svg-400/rounded/pill_off.svg"

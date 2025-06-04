@@ -1,0 +1,1 @@
+export { default as mr4PlaceItem } from "@material-symbols/svg-400/rounded/place_item.svg"

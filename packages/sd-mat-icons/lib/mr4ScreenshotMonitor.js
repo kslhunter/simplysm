@@ -1,0 +1,1 @@
+export { default as mr4ScreenshotMonitor } from "@material-symbols/svg-400/rounded/screenshot_monitor.svg"

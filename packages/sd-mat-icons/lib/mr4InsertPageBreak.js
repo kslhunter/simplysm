@@ -1,0 +1,1 @@
+export { default as mr4InsertPageBreak } from "@material-symbols/svg-400/rounded/insert_page_break.svg"

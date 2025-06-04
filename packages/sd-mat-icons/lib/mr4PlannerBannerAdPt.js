@@ -1,0 +1,1 @@
+export { default as mr4PlannerBannerAdPt } from "@material-symbols/svg-400/rounded/planner_banner_ad_pt.svg"

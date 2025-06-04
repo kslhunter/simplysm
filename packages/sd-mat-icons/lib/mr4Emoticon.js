@@ -1,0 +1,1 @@
+export { default as mr4Emoticon } from "@material-symbols/svg-400/rounded/emoticon.svg"

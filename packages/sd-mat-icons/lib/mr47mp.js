@@ -1,0 +1,1 @@
+export { default as mr47mp } from "@material-symbols/svg-400/rounded/7mp.svg"

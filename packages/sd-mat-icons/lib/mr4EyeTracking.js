@@ -1,0 +1,1 @@
+export { default as mr4EyeTracking } from "@material-symbols/svg-400/rounded/eye_tracking.svg"

@@ -1,0 +1,1 @@
+export { default as mr4NextWeek } from "@material-symbols/svg-400/rounded/next_week.svg"

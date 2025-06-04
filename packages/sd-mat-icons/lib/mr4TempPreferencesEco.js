@@ -1,0 +1,1 @@
+export { default as mr4TempPreferencesEco } from "@material-symbols/svg-400/rounded/temp_preferences_eco.svg"

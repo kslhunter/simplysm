@@ -1,0 +1,1 @@
+export { default as mr4GridOn } from "@material-symbols/svg-400/rounded/grid_on.svg"

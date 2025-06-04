@@ -1,0 +1,1 @@
+export { default as mr4WoundsInjuries } from "@material-symbols/svg-400/rounded/wounds_injuries.svg"

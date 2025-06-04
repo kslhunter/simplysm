@@ -1,0 +1,1 @@
+export { default as mr4UnpavedRoad } from "@material-symbols/svg-400/rounded/unpaved_road.svg"

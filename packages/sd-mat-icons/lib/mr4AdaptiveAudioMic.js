@@ -1,0 +1,1 @@
+export { default as mr4AdaptiveAudioMic } from "@material-symbols/svg-400/rounded/adaptive_audio_mic.svg"

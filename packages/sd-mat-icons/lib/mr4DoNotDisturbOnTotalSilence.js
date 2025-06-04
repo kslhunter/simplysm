@@ -1,0 +1,1 @@
+export { default as mr4DoNotDisturbOnTotalSilence } from "@material-symbols/svg-400/rounded/do_not_disturb_on_total_silence.svg"

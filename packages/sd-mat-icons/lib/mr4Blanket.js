@@ -1,0 +1,1 @@
+export { default as mr4Blanket } from "@material-symbols/svg-400/rounded/blanket.svg"

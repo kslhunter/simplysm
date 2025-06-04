@@ -1,0 +1,1 @@
+export { default as mr4DesignServices } from "@material-symbols/svg-400/rounded/design_services.svg"

@@ -1,0 +1,1 @@
+export { default as mr4YoutubeSearchedFor } from "@material-symbols/svg-400/rounded/youtube_searched_for.svg"

@@ -1,0 +1,1 @@
+export { default as mr4AddColumnRight } from "@material-symbols/svg-400/rounded/add_column_right.svg"

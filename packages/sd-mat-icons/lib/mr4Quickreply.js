@@ -1,0 +1,1 @@
+export { default as mr4Quickreply } from "@material-symbols/svg-400/rounded/quickreply.svg"

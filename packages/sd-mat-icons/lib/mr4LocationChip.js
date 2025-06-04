@@ -1,0 +1,1 @@
+export { default as mr4LocationChip } from "@material-symbols/svg-400/rounded/location_chip.svg"

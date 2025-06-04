@@ -1,0 +1,1 @@
+export { default as mr4Dataset } from "@material-symbols/svg-400/rounded/dataset.svg"

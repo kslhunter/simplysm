@@ -1,0 +1,1 @@
+export { default as mr4Exclamation } from "@material-symbols/svg-400/rounded/exclamation.svg"

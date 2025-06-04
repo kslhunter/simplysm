@@ -1,0 +1,1 @@
+export { default as mr4VolumeOff } from "@material-symbols/svg-400/rounded/volume_off.svg"

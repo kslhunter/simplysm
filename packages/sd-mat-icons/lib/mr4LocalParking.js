@@ -1,0 +1,1 @@
+export { default as mr4LocalParking } from "@material-symbols/svg-400/rounded/local_parking.svg"

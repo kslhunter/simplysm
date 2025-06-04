@@ -1,0 +1,1 @@
+export { default as mr4Report } from "@material-symbols/svg-400/rounded/report.svg"

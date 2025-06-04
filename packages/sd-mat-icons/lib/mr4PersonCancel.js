@@ -1,0 +1,1 @@
+export { default as mr4PersonCancel } from "@material-symbols/svg-400/rounded/person_cancel.svg"

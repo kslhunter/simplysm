@@ -1,0 +1,1 @@
+export { default as mr4DevicesFold2 } from "@material-symbols/svg-400/rounded/devices_fold_2.svg"

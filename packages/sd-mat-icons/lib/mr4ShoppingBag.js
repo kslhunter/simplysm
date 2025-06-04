@@ -1,0 +1,1 @@
+export { default as mr4ShoppingBag } from "@material-symbols/svg-400/rounded/shopping_bag.svg"

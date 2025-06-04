@@ -1,0 +1,1 @@
+export { default as mr4RestoreFromTrash } from "@material-symbols/svg-400/rounded/restore_from_trash.svg"

@@ -1,0 +1,1 @@
+export { default as mr4RamenDining } from "@material-symbols/svg-400/rounded/ramen_dining.svg"

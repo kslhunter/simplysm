@@ -1,0 +1,1 @@
+export { default as mr4AreaChart } from "@material-symbols/svg-400/rounded/area_chart.svg"

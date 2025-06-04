@@ -1,0 +1,1 @@
+export { default as mr4FastForward } from "@material-symbols/svg-400/rounded/fast_forward.svg"

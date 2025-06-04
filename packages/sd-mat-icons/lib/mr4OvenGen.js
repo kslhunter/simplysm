@@ -1,0 +1,1 @@
+export { default as mr4OvenGen } from "@material-symbols/svg-400/rounded/oven_gen.svg"

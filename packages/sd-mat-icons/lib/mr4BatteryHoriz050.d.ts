@@ -1,0 +1,1 @@
+export const mr4BatteryHoriz050: string;

@@ -1,0 +1,1 @@
+export { default as mr4ClimateMiniSplit } from "@material-symbols/svg-400/rounded/climate_mini_split.svg"

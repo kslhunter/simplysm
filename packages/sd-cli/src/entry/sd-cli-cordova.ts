@@ -328,7 +328,7 @@ export class SdCliCordova {
       "edit-config": [
         {
           $: {
-            file: "app/dist/main/AndroidManifest.xml",
+            file: "app/src/main/AndroidManifest.xml",
             mode: "merge",
             target: "/manifest",
           },
@@ -342,7 +342,7 @@ export class SdCliCordova {
         },
         {
           $: {
-            file: "app/dist/main/AndroidManifest.xml",
+            file: "app/src/main/AndroidManifest.xml",
             mode: "merge",
             target: "/manifest/application",
           },

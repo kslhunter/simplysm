@@ -1,0 +1,1 @@
+export { default as mr4DownloadForOffline } from "@material-symbols/svg-400/rounded/download_for_offline.svg"

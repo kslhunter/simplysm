@@ -1,0 +1,1 @@
+export { default as mr4AssignmentReturn } from "@material-symbols/svg-400/rounded/assignment_return.svg"

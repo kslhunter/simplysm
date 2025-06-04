@@ -1,0 +1,1 @@
+export { default as mr4Sync } from "@material-symbols/svg-400/rounded/sync.svg"

@@ -1,0 +1,1 @@
+export { default as mr4WebStories } from "@material-symbols/svg-400/rounded/web_stories.svg"

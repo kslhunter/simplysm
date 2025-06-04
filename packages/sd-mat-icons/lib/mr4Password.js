@@ -1,0 +1,1 @@
+export { default as mr4Password } from "@material-symbols/svg-400/rounded/password.svg"

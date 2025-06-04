@@ -1,0 +1,1 @@
+export { default as mr4ReleaseAlert } from "@material-symbols/svg-400/rounded/release_alert.svg"

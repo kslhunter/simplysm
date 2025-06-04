@@ -1,0 +1,1 @@
+export { default as mr4Podiatry } from "@material-symbols/svg-400/rounded/podiatry.svg"

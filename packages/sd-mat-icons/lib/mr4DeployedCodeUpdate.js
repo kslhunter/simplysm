@@ -1,0 +1,1 @@
+export { default as mr4DeployedCodeUpdate } from "@material-symbols/svg-400/rounded/deployed_code_update.svg"

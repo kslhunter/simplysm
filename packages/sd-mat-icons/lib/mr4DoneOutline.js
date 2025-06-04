@@ -1,0 +1,1 @@
+export { default as mr4DoneOutline } from "@material-symbols/svg-400/rounded/done_outline.svg"

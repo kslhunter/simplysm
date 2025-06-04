@@ -1,0 +1,1 @@
+export { default as mr4CropPortrait } from "@material-symbols/svg-400/rounded/crop_portrait.svg"

@@ -1,0 +1,1 @@
+export { default as mr4MapSearch } from "@material-symbols/svg-400/rounded/map_search.svg"

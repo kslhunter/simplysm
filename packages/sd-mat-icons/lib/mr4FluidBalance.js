@@ -1,0 +1,1 @@
+export { default as mr4FluidBalance } from "@material-symbols/svg-400/rounded/fluid_balance.svg"

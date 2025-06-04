@@ -1,0 +1,1 @@
+export { default as mr4MovingBeds } from "@material-symbols/svg-400/rounded/moving_beds.svg"

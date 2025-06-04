@@ -1,0 +1,1 @@
+export { default as mr4SnippetFolder } from "@material-symbols/svg-400/rounded/snippet_folder.svg"

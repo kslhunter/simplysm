@@ -1,0 +1,1 @@
+export { default as mr4Steppers } from "@material-symbols/svg-400/rounded/steppers.svg"

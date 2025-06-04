@@ -1,0 +1,1 @@
+export { default as mr4LockReset } from "@material-symbols/svg-400/rounded/lock_reset.svg"

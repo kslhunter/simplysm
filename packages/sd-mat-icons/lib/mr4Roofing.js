@@ -1,0 +1,1 @@
+export { default as mr4Roofing } from "@material-symbols/svg-400/rounded/roofing.svg"

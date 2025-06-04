@@ -1,0 +1,1 @@
+export { default as mr4VolunteerActivism } from "@material-symbols/svg-400/rounded/volunteer_activism.svg"

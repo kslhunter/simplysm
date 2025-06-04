@@ -1,0 +1,1 @@
+export { default as mr4VapeFree } from "@material-symbols/svg-400/rounded/vape_free.svg"

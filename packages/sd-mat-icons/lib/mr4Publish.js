@@ -1,0 +1,1 @@
+export { default as mr4Publish } from "@material-symbols/svg-400/rounded/publish.svg"

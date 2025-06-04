@@ -1,0 +1,1 @@
+export { default as mr4Maximize } from "@material-symbols/svg-400/rounded/maximize.svg"

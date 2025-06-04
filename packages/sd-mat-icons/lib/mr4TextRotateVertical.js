@@ -1,0 +1,1 @@
+export { default as mr4TextRotateVertical } from "@material-symbols/svg-400/rounded/text_rotate_vertical.svg"

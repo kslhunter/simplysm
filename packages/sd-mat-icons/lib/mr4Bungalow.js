@@ -1,0 +1,1 @@
+export { default as mr4Bungalow } from "@material-symbols/svg-400/rounded/bungalow.svg"

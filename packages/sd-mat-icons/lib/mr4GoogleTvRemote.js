@@ -1,0 +1,1 @@
+export { default as mr4GoogleTvRemote } from "@material-symbols/svg-400/rounded/google_tv_remote.svg"

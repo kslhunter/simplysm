@@ -1,0 +1,1 @@
+export { default as mr4ShareOff } from "@material-symbols/svg-400/rounded/share_off.svg"

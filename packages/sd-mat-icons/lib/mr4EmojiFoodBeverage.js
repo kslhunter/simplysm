@@ -1,0 +1,1 @@
+export { default as mr4EmojiFoodBeverage } from "@material-symbols/svg-400/rounded/emoji_food_beverage.svg"

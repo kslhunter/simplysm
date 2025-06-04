@@ -1,0 +1,1 @@
+export { default as mr4Hub } from "@material-symbols/svg-400/rounded/hub.svg"

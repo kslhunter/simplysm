@@ -1,0 +1,1 @@
+export { default as mr4WaterBottle } from "@material-symbols/svg-400/rounded/water_bottle.svg"

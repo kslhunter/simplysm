@@ -1,0 +1,1 @@
+export { default as mr4StylusBrush } from "@material-symbols/svg-400/rounded/stylus_brush.svg"

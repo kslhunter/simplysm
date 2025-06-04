@@ -1,0 +1,1 @@
+export { default as mr4AlignJustifyStretch } from "@material-symbols/svg-400/rounded/align_justify_stretch.svg"

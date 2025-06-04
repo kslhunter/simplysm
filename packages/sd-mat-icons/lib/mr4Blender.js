@@ -1,0 +1,1 @@
+export { default as mr4Blender } from "@material-symbols/svg-400/rounded/blender.svg"

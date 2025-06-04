@@ -1,0 +1,1 @@
+export { default as mr4Lyrics } from "@material-symbols/svg-400/rounded/lyrics.svg"

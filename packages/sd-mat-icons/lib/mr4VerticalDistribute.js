@@ -1,0 +1,1 @@
+export { default as mr4VerticalDistribute } from "@material-symbols/svg-400/rounded/vertical_distribute.svg"

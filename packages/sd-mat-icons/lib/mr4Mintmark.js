@@ -1,0 +1,1 @@
+export { default as mr4Mintmark } from "@material-symbols/svg-400/rounded/mintmark.svg"

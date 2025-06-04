@@ -1,0 +1,1 @@
+export { default as mr4CaptivePortal } from "@material-symbols/svg-400/rounded/captive_portal.svg"

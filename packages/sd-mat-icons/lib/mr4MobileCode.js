@@ -1,0 +1,1 @@
+export { default as mr4MobileCode } from "@material-symbols/svg-400/rounded/mobile_code.svg"

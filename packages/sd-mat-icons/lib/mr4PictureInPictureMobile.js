@@ -1,0 +1,1 @@
+export { default as mr4PictureInPictureMobile } from "@material-symbols/svg-400/rounded/picture_in_picture_mobile.svg"

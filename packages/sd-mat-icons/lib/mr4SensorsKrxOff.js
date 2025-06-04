@@ -1,0 +1,1 @@
+export { default as mr4SensorsKrxOff } from "@material-symbols/svg-400/rounded/sensors_krx_off.svg"

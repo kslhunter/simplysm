@@ -1,0 +1,1 @@
+export { default as mr4HighlightMouseCursor } from "@material-symbols/svg-400/rounded/highlight_mouse_cursor.svg"

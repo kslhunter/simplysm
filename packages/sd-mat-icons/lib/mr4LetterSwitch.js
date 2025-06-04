@@ -1,0 +1,1 @@
+export { default as mr4LetterSwitch } from "@material-symbols/svg-400/rounded/letter_switch.svg"

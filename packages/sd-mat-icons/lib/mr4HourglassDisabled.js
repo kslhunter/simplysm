@@ -1,0 +1,1 @@
+export { default as mr4HourglassDisabled } from "@material-symbols/svg-400/rounded/hourglass_disabled.svg"

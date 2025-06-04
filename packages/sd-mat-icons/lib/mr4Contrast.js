@@ -1,0 +1,1 @@
+export { default as mr4Contrast } from "@material-symbols/svg-400/rounded/contrast.svg"

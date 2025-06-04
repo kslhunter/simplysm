@@ -1,0 +1,1 @@
+export { default as mr4ViewKanban } from "@material-symbols/svg-400/rounded/view_kanban.svg"

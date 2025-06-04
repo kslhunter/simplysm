@@ -1,0 +1,1 @@
+export { default as mr4Airware } from "@material-symbols/svg-400/rounded/airware.svg"

@@ -1,0 +1,1 @@
+export { default as mr4RoomPreferences } from "@material-symbols/svg-400/rounded/room_preferences.svg"

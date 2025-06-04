@@ -1,0 +1,1 @@
+export { default as mr4NotificationImportant } from "@material-symbols/svg-400/rounded/notification_important.svg"

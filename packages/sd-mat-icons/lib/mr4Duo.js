@@ -1,0 +1,1 @@
+export { default as mr4Duo } from "@material-symbols/svg-400/rounded/duo.svg"

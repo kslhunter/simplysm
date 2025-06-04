@@ -1,0 +1,1 @@
+export { default as mr4LocalConvenienceStore } from "@material-symbols/svg-400/rounded/local_convenience_store.svg"

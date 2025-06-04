@@ -1,0 +1,1 @@
+export { default as mr4ImportContacts } from "@material-symbols/svg-400/rounded/import_contacts.svg"

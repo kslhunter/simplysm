@@ -1,0 +1,1 @@
+export { default as mr4CurrencyPound } from "@material-symbols/svg-400/rounded/currency_pound.svg"

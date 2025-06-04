@@ -1,0 +1,1 @@
+export { default as mr4Watch } from "@material-symbols/svg-400/rounded/watch.svg"

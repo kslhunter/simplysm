@@ -1,0 +1,1 @@
+export const mr4Grid4x4: string;

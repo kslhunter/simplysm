@@ -1,0 +1,1 @@
+export { default as mr4SecurityKey } from "@material-symbols/svg-400/rounded/security_key.svg"

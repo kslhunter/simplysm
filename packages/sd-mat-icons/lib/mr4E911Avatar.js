@@ -1,0 +1,1 @@
+export { default as mr4E911Avatar } from "@material-symbols/svg-400/rounded/e911_avatar.svg"

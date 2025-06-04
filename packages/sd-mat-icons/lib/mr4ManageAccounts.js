@@ -1,0 +1,1 @@
+export { default as mr4ManageAccounts } from "@material-symbols/svg-400/rounded/manage_accounts.svg"

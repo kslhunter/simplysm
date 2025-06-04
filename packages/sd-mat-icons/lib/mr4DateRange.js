@@ -1,0 +1,1 @@
+export { default as mr4DateRange } from "@material-symbols/svg-400/rounded/date_range.svg"

@@ -1,0 +1,1 @@
+export { default as mr4DeveloperModeTv } from "@material-symbols/svg-400/rounded/developer_mode_tv.svg"

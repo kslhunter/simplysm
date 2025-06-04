@@ -1,0 +1,1 @@
+export { default as mr4SkullList } from "@material-symbols/svg-400/rounded/skull_list.svg"

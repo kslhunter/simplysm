@@ -1,0 +1,1 @@
+export { default as mr4VolumeDown } from "@material-symbols/svg-400/rounded/volume_down.svg"

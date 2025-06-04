@@ -1,0 +1,1 @@
+export { default as mr4Automation } from "@material-symbols/svg-400/rounded/automation.svg"

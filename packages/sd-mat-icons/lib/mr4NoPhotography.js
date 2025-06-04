@@ -1,0 +1,1 @@
+export { default as mr4NoPhotography } from "@material-symbols/svg-400/rounded/no_photography.svg"

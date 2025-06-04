@@ -1,0 +1,1 @@
+export { default as mr4Enterprise } from "@material-symbols/svg-400/rounded/enterprise.svg"

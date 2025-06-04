@@ -1,0 +1,1 @@
+export { default as mr4DirectionsAltOff } from "@material-symbols/svg-400/rounded/directions_alt_off.svg"

@@ -1,0 +1,1 @@
+export { default as mr4MobileSoundOff } from "@material-symbols/svg-400/rounded/mobile_sound_off.svg"

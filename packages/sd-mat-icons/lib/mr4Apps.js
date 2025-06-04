@@ -1,0 +1,1 @@
+export { default as mr4Apps } from "@material-symbols/svg-400/rounded/apps.svg"

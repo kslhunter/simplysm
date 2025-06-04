@@ -1,0 +1,1 @@
+export { default as mr4TextIncrease } from "@material-symbols/svg-400/rounded/text_increase.svg"

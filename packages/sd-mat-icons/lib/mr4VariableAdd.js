@@ -1,0 +1,1 @@
+export { default as mr4VariableAdd } from "@material-symbols/svg-400/rounded/variable_add.svg"

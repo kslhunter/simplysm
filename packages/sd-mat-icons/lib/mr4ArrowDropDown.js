@@ -1,0 +1,1 @@
+export { default as mr4ArrowDropDown } from "@material-symbols/svg-400/rounded/arrow_drop_down.svg"

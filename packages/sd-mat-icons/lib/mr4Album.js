@@ -1,0 +1,1 @@
+export { default as mr4Album } from "@material-symbols/svg-400/rounded/album.svg"

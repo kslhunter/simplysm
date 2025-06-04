@@ -1,0 +1,1 @@
+export { default as mr4MotionPhotosAuto } from "@material-symbols/svg-400/rounded/motion_photos_auto.svg"

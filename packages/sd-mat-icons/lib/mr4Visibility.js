@@ -1,0 +1,1 @@
+export { default as mr4Visibility } from "@material-symbols/svg-400/rounded/visibility.svg"

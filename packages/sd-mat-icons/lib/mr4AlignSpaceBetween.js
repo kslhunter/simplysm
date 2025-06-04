@@ -1,0 +1,1 @@
+export { default as mr4AlignSpaceBetween } from "@material-symbols/svg-400/rounded/align_space_between.svg"

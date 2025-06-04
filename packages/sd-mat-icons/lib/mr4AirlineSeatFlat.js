@@ -1,0 +1,1 @@
+export { default as mr4AirlineSeatFlat } from "@material-symbols/svg-400/rounded/airline_seat_flat.svg"

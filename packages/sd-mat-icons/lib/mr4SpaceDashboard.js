@@ -1,0 +1,1 @@
+export { default as mr4SpaceDashboard } from "@material-symbols/svg-400/rounded/space_dashboard.svg"

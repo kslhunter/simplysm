@@ -1,0 +1,1 @@
+export { default as mr4NewLabel } from "@material-symbols/svg-400/rounded/new_label.svg"

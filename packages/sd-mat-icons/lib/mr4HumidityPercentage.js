@@ -1,0 +1,1 @@
+export { default as mr4HumidityPercentage } from "@material-symbols/svg-400/rounded/humidity_percentage.svg"

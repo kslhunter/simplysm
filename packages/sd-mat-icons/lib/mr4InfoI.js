@@ -1,0 +1,1 @@
+export { default as mr4InfoI } from "@material-symbols/svg-400/rounded/info_i.svg"

@@ -25,7 +25,6 @@
     "@simplysm/sd-core-browser": "12.11.12",
     "@simplysm/sd-core-common": "12.11.12",
     "@simplysm/sd-excel": "12.11.12",
-    "@simplysm/sd-mat-icons": "12.11.12",
     "@simplysm/sd-service-client": "12.11.12",
     "@simplysm/sd-service-common": "12.11.12",
     "bwip-js": "^4.6.0",

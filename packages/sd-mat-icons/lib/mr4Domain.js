@@ -1,0 +1,1 @@
+export { default as mr4Domain } from "@material-symbols/svg-400/rounded/domain.svg"

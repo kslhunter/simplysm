@@ -1,0 +1,1 @@
+export { default as mr4Snowmobile } from "@material-symbols/svg-400/rounded/snowmobile.svg"

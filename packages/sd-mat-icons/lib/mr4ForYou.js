@@ -1,0 +1,1 @@
+export { default as mr4ForYou } from "@material-symbols/svg-400/rounded/for_you.svg"

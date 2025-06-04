@@ -1,0 +1,1 @@
+export { default as mr4NightSightAutoOff } from "@material-symbols/svg-400/rounded/night_sight_auto_off.svg"

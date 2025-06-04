@@ -1,0 +1,1 @@
+export { default as mr4ContentCopy } from "@material-symbols/svg-400/rounded/content_copy.svg"

@@ -1,0 +1,1 @@
+export { default as mr4SmbShare } from "@material-symbols/svg-400/rounded/smb_share.svg"

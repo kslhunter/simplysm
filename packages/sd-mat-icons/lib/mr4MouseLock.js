@@ -1,0 +1,1 @@
+export { default as mr4MouseLock } from "@material-symbols/svg-400/rounded/mouse_lock.svg"

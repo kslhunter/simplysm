@@ -1,0 +1,1 @@
+export { default as mr4SettopComponent } from "@material-symbols/svg-400/rounded/settop_component.svg"

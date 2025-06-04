@@ -1,0 +1,1 @@
+export { default as mr4MenuBook } from "@material-symbols/svg-400/rounded/menu_book.svg"

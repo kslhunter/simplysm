@@ -1,0 +1,1 @@
+export { default as mr4QueuePlayNext } from "@material-symbols/svg-400/rounded/queue_play_next.svg"

@@ -1,0 +1,1 @@
+export { default as mr4FullscreenPortrait } from "@material-symbols/svg-400/rounded/fullscreen_portrait.svg"

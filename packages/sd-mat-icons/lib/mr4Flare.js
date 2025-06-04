@@ -1,0 +1,1 @@
+export { default as mr4Flare } from "@material-symbols/svg-400/rounded/flare.svg"

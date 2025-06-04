@@ -1,0 +1,1 @@
+export { default as mr4ModeHeat } from "@material-symbols/svg-400/rounded/mode_heat.svg"

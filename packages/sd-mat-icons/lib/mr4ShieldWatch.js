@@ -1,0 +1,1 @@
+export { default as mr4ShieldWatch } from "@material-symbols/svg-400/rounded/shield_watch.svg"

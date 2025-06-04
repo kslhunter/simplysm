@@ -1,0 +1,1 @@
+export { default as mr4TimerOff } from "@material-symbols/svg-400/rounded/timer_off.svg"

@@ -1,0 +1,1 @@
+export { default as mr4WandStars } from "@material-symbols/svg-400/rounded/wand_stars.svg"

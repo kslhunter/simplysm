@@ -1,0 +1,1 @@
+export { default as mr4RecentActors } from "@material-symbols/svg-400/rounded/recent_actors.svg"

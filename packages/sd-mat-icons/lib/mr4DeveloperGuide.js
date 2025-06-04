@@ -1,0 +1,1 @@
+export { default as mr4DeveloperGuide } from "@material-symbols/svg-400/rounded/developer_guide.svg"

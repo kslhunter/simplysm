@@ -1,0 +1,1 @@
+export { default as mr4SettingsBackupRestore } from "@material-symbols/svg-400/rounded/settings_backup_restore.svg"

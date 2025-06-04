@@ -1,0 +1,1 @@
+export { default as mr4RewardedAds } from "@material-symbols/svg-400/rounded/rewarded_ads.svg"

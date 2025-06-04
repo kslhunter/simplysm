@@ -1,0 +1,1 @@
+export { default as mr4BottomAppBar } from "@material-symbols/svg-400/rounded/bottom_app_bar.svg"

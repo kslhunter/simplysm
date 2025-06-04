@@ -1,0 +1,1 @@
+export { default as mr4Floor } from "@material-symbols/svg-400/rounded/floor.svg"

@@ -1,0 +1,1 @@
+export { default as mr4ProgressActivity } from "@material-symbols/svg-400/rounded/progress_activity.svg"

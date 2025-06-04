@@ -1,0 +1,1 @@
+export { default as mr4RainyHeavy } from "@material-symbols/svg-400/rounded/rainy_heavy.svg"

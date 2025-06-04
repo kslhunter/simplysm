@@ -1,0 +1,1 @@
+export { default as mr4CloseSmall } from "@material-symbols/svg-400/rounded/close_small.svg"

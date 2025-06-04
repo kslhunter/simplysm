@@ -1,0 +1,1 @@
+export { default as mr4SimCardDownload } from "@material-symbols/svg-400/rounded/sim_card_download.svg"

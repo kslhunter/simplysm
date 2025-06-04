@@ -1,0 +1,1 @@
+export { default as mr4Keep } from "@material-symbols/svg-400/rounded/keep.svg"

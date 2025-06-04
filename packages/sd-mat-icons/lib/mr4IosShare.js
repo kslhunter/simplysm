@@ -1,0 +1,1 @@
+export { default as mr4IosShare } from "@material-symbols/svg-400/rounded/ios_share.svg"

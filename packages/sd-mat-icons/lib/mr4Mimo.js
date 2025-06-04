@@ -1,0 +1,1 @@
+export { default as mr4Mimo } from "@material-symbols/svg-400/rounded/mimo.svg"

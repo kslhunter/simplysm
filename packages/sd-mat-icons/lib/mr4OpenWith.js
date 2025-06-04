@@ -1,0 +1,1 @@
+export { default as mr4OpenWith } from "@material-symbols/svg-400/rounded/open_with.svg"

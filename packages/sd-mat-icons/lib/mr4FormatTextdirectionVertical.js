@@ -1,0 +1,1 @@
+export { default as mr4FormatTextdirectionVertical } from "@material-symbols/svg-400/rounded/format_textdirection_vertical.svg"

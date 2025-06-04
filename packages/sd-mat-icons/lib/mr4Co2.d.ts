@@ -1,0 +1,1 @@
+export const mr4Co2: string;

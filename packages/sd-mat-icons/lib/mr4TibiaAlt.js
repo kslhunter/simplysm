@@ -1,0 +1,1 @@
+export { default as mr4TibiaAlt } from "@material-symbols/svg-400/rounded/tibia_alt.svg"

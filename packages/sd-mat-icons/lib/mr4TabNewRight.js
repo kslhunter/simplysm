@@ -1,0 +1,1 @@
+export { default as mr4TabNewRight } from "@material-symbols/svg-400/rounded/tab_new_right.svg"

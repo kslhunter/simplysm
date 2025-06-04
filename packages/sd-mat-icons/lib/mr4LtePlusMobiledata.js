@@ -1,0 +1,1 @@
+export { default as mr4LtePlusMobiledata } from "@material-symbols/svg-400/rounded/lte_plus_mobiledata.svg"

@@ -1,0 +1,1 @@
+export { default as mr4FitnessCenter } from "@material-symbols/svg-400/rounded/fitness_center.svg"

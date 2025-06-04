@@ -1,0 +1,1 @@
+export { default as mr4NetworkWifi } from "@material-symbols/svg-400/rounded/network_wifi.svg"

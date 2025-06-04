@@ -15,6 +15,15 @@ import {
   standalone: true,
   imports: [],
   template: ``,
+  styles: [/* language=SCSS */ `
+    sd-svg-icon {
+      font-size: 1em;
+
+      > svg {
+        height: 1em;
+      }
+    }
+  `],
 })
 export class SdSvgIconControl {
   #elRef = inject(ElementRef);
@@ -27,7 +36,9 @@ export class SdSvgIconControl {
 
       queueMicrotask(async () => {
         const res = await fetch(svg);
-        this.#elRef.nativeElement.innerHTML = await res.text();
+        let text = await res.text();
+        text = text.replaceAll(/height="([^"]*)"/g, "").replaceAll(/width="([^"]*)"/g, "");
+        this.#elRef.nativeElement.innerHTML = text;
       });
     });
   }

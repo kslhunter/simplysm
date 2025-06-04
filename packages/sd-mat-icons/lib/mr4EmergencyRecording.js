@@ -1,0 +1,1 @@
+export { default as mr4EmergencyRecording } from "@material-symbols/svg-400/rounded/emergency_recording.svg"

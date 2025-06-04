@@ -1,0 +1,1 @@
+export { default as mr4Forklift } from "@material-symbols/svg-400/rounded/forklift.svg"

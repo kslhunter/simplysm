@@ -1,0 +1,1 @@
+export { default as mr4StylusHighlighter } from "@material-symbols/svg-400/rounded/stylus_highlighter.svg"

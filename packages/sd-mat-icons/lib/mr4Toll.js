@@ -1,0 +1,1 @@
+export { default as mr4Toll } from "@material-symbols/svg-400/rounded/toll.svg"

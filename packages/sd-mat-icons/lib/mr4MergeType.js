@@ -1,0 +1,1 @@
+export { default as mr4MergeType } from "@material-symbols/svg-400/rounded/merge_type.svg"

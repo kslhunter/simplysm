@@ -1,0 +1,1 @@
+export { default as mr4FullscreenExit } from "@material-symbols/svg-400/rounded/fullscreen_exit.svg"

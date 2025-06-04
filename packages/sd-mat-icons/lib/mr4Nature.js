@@ -1,0 +1,1 @@
+export { default as mr4Nature } from "@material-symbols/svg-400/rounded/nature.svg"

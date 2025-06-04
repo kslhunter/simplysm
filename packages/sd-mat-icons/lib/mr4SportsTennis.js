@@ -1,0 +1,1 @@
+export { default as mr4SportsTennis } from "@material-symbols/svg-400/rounded/sports_tennis.svg"

@@ -1,0 +1,1 @@
+export { default as mr4MoveItem } from "@material-symbols/svg-400/rounded/move_item.svg"

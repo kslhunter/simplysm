@@ -1,0 +1,1 @@
+export { default as mr4CenterFocusStrong } from "@material-symbols/svg-400/rounded/center_focus_strong.svg"

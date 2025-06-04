@@ -1,0 +1,1 @@
+export { default as mr4LanguageChineseQuick } from "@material-symbols/svg-400/rounded/language_chinese_quick.svg"

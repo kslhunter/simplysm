@@ -1,0 +1,1 @@
+export { default as mr4TabInactive } from "@material-symbols/svg-400/rounded/tab_inactive.svg"

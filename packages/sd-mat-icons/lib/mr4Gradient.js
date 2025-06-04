@@ -1,0 +1,1 @@
+export { default as mr4Gradient } from "@material-symbols/svg-400/rounded/gradient.svg"

@@ -1,0 +1,1 @@
+export { default as mr4DocumentScanner } from "@material-symbols/svg-400/rounded/document_scanner.svg"

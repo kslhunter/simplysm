@@ -1,0 +1,1 @@
+export { default as mr4Tour } from "@material-symbols/svg-400/rounded/tour.svg"

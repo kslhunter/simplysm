@@ -1,0 +1,1 @@
+export { default as mr4FarsightDigital } from "@material-symbols/svg-400/rounded/farsight_digital.svg"

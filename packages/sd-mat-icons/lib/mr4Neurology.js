@@ -1,0 +1,1 @@
+export { default as mr4Neurology } from "@material-symbols/svg-400/rounded/neurology.svg"

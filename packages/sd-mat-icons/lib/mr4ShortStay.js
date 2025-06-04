@@ -1,0 +1,1 @@
+export { default as mr4ShortStay } from "@material-symbols/svg-400/rounded/short_stay.svg"

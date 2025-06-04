@@ -1,0 +1,1 @@
+export { default as mr4LanguageUsColemak } from "@material-symbols/svg-400/rounded/language_us_colemak.svg"

@@ -1,0 +1,1 @@
+export { default as mr4Stars2 } from "@material-symbols/svg-400/rounded/stars_2.svg"

@@ -1,0 +1,1 @@
+export { default as mr4NestWakeOnPress } from "@material-symbols/svg-400/rounded/nest_wake_on_press.svg"

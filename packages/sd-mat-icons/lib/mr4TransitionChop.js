@@ -1,0 +1,1 @@
+export { default as mr4TransitionChop } from "@material-symbols/svg-400/rounded/transition_chop.svg"

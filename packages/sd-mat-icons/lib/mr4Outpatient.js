@@ -1,0 +1,1 @@
+export { default as mr4Outpatient } from "@material-symbols/svg-400/rounded/outpatient.svg"

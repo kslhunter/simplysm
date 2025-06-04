@@ -1,0 +1,1 @@
+export { default as mr4BatteryStatusGood } from "@material-symbols/svg-400/rounded/battery_status_good.svg"

@@ -1,0 +1,1 @@
+export { default as mr4PartyMode } from "@material-symbols/svg-400/rounded/party_mode.svg"

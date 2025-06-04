@@ -1,0 +1,1 @@
+export { default as mr4VideocamOff } from "@material-symbols/svg-400/rounded/videocam_off.svg"

@@ -1,0 +1,1 @@
+export { default as mr4School } from "@material-symbols/svg-400/rounded/school.svg"

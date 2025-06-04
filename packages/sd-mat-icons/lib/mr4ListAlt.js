@@ -1,0 +1,1 @@
+export { default as mr4ListAlt } from "@material-symbols/svg-400/rounded/list_alt.svg"

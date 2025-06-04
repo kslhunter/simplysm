@@ -1,0 +1,1 @@
+export { default as mr4SteeringWheelHeat } from "@material-symbols/svg-400/rounded/steering_wheel_heat.svg"

@@ -1,0 +1,1 @@
+export { default as mr4KeyboardCapslock } from "@material-symbols/svg-400/rounded/keyboard_capslock.svg"

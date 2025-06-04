@@ -1,0 +1,1 @@
+export { default as mr4Chips } from "@material-symbols/svg-400/rounded/chips.svg"

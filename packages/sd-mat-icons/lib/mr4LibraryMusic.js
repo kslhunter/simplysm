@@ -1,0 +1,1 @@
+export { default as mr4LibraryMusic } from "@material-symbols/svg-400/rounded/library_music.svg"

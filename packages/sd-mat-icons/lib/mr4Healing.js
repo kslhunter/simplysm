@@ -1,0 +1,1 @@
+export { default as mr4Healing } from "@material-symbols/svg-400/rounded/healing.svg"

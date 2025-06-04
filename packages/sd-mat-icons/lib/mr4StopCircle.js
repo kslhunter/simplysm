@@ -1,0 +1,1 @@
+export { default as mr4StopCircle } from "@material-symbols/svg-400/rounded/stop_circle.svg"

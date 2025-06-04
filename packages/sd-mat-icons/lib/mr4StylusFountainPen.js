@@ -1,0 +1,1 @@
+export { default as mr4StylusFountainPen } from "@material-symbols/svg-400/rounded/stylus_fountain_pen.svg"

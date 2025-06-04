@@ -1,0 +1,1 @@
+export { default as mr4EmergencyHeat } from "@material-symbols/svg-400/rounded/emergency_heat.svg"

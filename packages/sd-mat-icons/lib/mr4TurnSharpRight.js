@@ -1,0 +1,1 @@
+export { default as mr4TurnSharpRight } from "@material-symbols/svg-400/rounded/turn_sharp_right.svg"

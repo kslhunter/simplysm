@@ -1,0 +1,1 @@
+export { default as mr4RightClick } from "@material-symbols/svg-400/rounded/right_click.svg"

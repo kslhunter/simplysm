@@ -1,0 +1,1 @@
+export { default as mr4SoundDetectionLoudSound } from "@material-symbols/svg-400/rounded/sound_detection_loud_sound.svg"

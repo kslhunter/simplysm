@@ -1,0 +1,1 @@
+export { default as mr4FormatOverline } from "@material-symbols/svg-400/rounded/format_overline.svg"

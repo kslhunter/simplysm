@@ -1,0 +1,1 @@
+export { default as mr4HMobiledataBadge } from "@material-symbols/svg-400/rounded/h_mobiledata_badge.svg"

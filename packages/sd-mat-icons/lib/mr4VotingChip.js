@@ -1,0 +1,1 @@
+export { default as mr4VotingChip } from "@material-symbols/svg-400/rounded/voting_chip.svg"

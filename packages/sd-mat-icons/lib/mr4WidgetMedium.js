@@ -1,0 +1,1 @@
+export { default as mr4WidgetMedium } from "@material-symbols/svg-400/rounded/widget_medium.svg"

@@ -1,0 +1,1 @@
+export { default as mr4FlightTakeoff } from "@material-symbols/svg-400/rounded/flight_takeoff.svg"

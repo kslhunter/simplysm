@@ -1,0 +1,1 @@
+export { default as mr4LineEndSquare } from "@material-symbols/svg-400/rounded/line_end_square.svg"

@@ -1,0 +1,1 @@
+export { default as mr4FolderOpen } from "@material-symbols/svg-400/rounded/folder_open.svg"

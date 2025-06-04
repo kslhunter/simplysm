@@ -1,0 +1,1 @@
+export { default as mr4HeartMinus } from "@material-symbols/svg-400/rounded/heart_minus.svg"

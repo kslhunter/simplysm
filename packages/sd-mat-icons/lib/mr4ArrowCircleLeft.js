@@ -1,0 +1,1 @@
+export { default as mr4ArrowCircleLeft } from "@material-symbols/svg-400/rounded/arrow_circle_left.svg"

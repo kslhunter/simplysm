@@ -1,0 +1,1 @@
+export { default as mr4BarChartOff } from "@material-symbols/svg-400/rounded/bar_chart_off.svg"

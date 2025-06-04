@@ -1,0 +1,1 @@
+export { default as mr4BottomPanelOpen } from "@material-symbols/svg-400/rounded/bottom_panel_open.svg"

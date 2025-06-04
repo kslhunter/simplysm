@@ -1,0 +1,1 @@
+export { default as mr4Cadence } from "@material-symbols/svg-400/rounded/cadence.svg"

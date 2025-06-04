@@ -1,0 +1,1 @@
+export { default as mr4EarlyOn } from "@material-symbols/svg-400/rounded/early_on.svg"

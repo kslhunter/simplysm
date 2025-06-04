@@ -1,0 +1,1 @@
+export { default as mr4Owl } from "@material-symbols/svg-400/rounded/owl.svg"

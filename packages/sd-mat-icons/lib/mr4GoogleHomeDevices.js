@@ -1,0 +1,1 @@
+export { default as mr4GoogleHomeDevices } from "@material-symbols/svg-400/rounded/google_home_devices.svg"

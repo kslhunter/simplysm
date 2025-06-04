@@ -1,0 +1,1 @@
+export { default as mr4BorderBottom } from "@material-symbols/svg-400/rounded/border_bottom.svg"

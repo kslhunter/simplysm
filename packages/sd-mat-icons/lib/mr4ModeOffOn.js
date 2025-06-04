@@ -1,0 +1,1 @@
+export { default as mr4ModeOffOn } from "@material-symbols/svg-400/rounded/mode_off_on.svg"

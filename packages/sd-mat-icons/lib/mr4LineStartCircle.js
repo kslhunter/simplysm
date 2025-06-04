@@ -1,0 +1,1 @@
+export { default as mr4LineStartCircle } from "@material-symbols/svg-400/rounded/line_start_circle.svg"

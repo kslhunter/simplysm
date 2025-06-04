@@ -1,0 +1,1 @@
+export { default as mr4Ods } from "@material-symbols/svg-400/rounded/ods.svg"

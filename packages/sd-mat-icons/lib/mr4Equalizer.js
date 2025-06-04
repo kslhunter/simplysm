@@ -1,0 +1,1 @@
+export { default as mr4Equalizer } from "@material-symbols/svg-400/rounded/equalizer.svg"

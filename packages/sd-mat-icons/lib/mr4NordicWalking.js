@@ -1,0 +1,1 @@
+export { default as mr4NordicWalking } from "@material-symbols/svg-400/rounded/nordic_walking.svg"

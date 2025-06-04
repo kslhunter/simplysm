@@ -1,0 +1,1 @@
+export { default as mr4MeasuringTape } from "@material-symbols/svg-400/rounded/measuring_tape.svg"

@@ -1,0 +1,1 @@
+export { default as mr4GTranslate } from "@material-symbols/svg-400/rounded/g_translate.svg"

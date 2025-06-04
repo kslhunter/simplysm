@@ -1,0 +1,1 @@
+export { default as mr4EditArrowUp } from "@material-symbols/svg-400/rounded/edit_arrow_up.svg"

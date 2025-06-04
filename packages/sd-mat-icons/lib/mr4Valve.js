@@ -1,0 +1,1 @@
+export { default as mr4Valve } from "@material-symbols/svg-400/rounded/valve.svg"

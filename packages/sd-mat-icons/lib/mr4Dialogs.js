@@ -1,0 +1,1 @@
+export { default as mr4Dialogs } from "@material-symbols/svg-400/rounded/dialogs.svg"

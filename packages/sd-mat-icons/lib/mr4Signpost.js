@@ -1,0 +1,1 @@
+export { default as mr4Signpost } from "@material-symbols/svg-400/rounded/signpost.svg"

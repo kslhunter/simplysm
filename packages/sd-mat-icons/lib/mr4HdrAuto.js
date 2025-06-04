@@ -1,0 +1,1 @@
+export { default as mr4HdrAuto } from "@material-symbols/svg-400/rounded/hdr_auto.svg"

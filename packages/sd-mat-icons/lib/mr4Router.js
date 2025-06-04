@@ -1,0 +1,1 @@
+export { default as mr4Router } from "@material-symbols/svg-400/rounded/router.svg"

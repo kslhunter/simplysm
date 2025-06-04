@@ -1,0 +1,1 @@
+export { default as mr4InsertChart } from "@material-symbols/svg-400/rounded/insert_chart.svg"

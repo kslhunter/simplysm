@@ -1,0 +1,1 @@
+export { default as mr4Bed } from "@material-symbols/svg-400/rounded/bed.svg"

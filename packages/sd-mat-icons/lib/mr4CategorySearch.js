@@ -1,0 +1,1 @@
+export { default as mr4CategorySearch } from "@material-symbols/svg-400/rounded/category_search.svg"

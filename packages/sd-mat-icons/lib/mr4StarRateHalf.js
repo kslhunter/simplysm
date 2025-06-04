@@ -1,0 +1,1 @@
+export { default as mr4StarRateHalf } from "@material-symbols/svg-400/rounded/star_rate_half.svg"

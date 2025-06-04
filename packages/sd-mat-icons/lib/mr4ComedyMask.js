@@ -1,0 +1,1 @@
+export { default as mr4ComedyMask } from "@material-symbols/svg-400/rounded/comedy_mask.svg"

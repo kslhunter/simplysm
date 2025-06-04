@@ -1,0 +1,1 @@
+export { default as mr4DriveFileMove } from "@material-symbols/svg-400/rounded/drive_file_move.svg"

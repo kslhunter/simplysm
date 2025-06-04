@@ -1,0 +1,1 @@
+export { default as mr4PanToolAlt } from "@material-symbols/svg-400/rounded/pan_tool_alt.svg"

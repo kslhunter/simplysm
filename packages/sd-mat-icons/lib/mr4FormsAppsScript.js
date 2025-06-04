@@ -1,0 +1,1 @@
+export { default as mr4FormsAppsScript } from "@material-symbols/svg-400/rounded/forms_apps_script.svg"

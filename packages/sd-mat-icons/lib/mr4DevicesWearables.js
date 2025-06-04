@@ -1,0 +1,1 @@
+export { default as mr4DevicesWearables } from "@material-symbols/svg-400/rounded/devices_wearables.svg"

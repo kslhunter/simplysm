@@ -1,0 +1,1 @@
+export { default as mr4TableRows } from "@material-symbols/svg-400/rounded/table_rows.svg"

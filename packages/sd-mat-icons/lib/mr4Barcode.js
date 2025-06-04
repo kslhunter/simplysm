@@ -1,0 +1,1 @@
+export { default as mr4Barcode } from "@material-symbols/svg-400/rounded/barcode.svg"

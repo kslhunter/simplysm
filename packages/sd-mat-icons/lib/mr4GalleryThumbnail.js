@@ -1,0 +1,1 @@
+export { default as mr4GalleryThumbnail } from "@material-symbols/svg-400/rounded/gallery_thumbnail.svg"

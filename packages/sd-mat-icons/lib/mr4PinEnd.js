@@ -1,0 +1,1 @@
+export { default as mr4PinEnd } from "@material-symbols/svg-400/rounded/pin_end.svg"

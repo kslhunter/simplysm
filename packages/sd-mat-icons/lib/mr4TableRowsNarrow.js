@@ -1,0 +1,1 @@
+export { default as mr4TableRowsNarrow } from "@material-symbols/svg-400/rounded/table_rows_narrow.svg"

@@ -1,0 +1,1 @@
+export { default as mr4TextSelectMoveDown } from "@material-symbols/svg-400/rounded/text_select_move_down.svg"

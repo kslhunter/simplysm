@@ -1,0 +1,1 @@
+export { default as mr4BrowserUpdated } from "@material-symbols/svg-400/rounded/browser_updated.svg"

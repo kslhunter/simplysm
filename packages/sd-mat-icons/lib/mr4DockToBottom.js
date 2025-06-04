@@ -1,0 +1,1 @@
+export { default as mr4DockToBottom } from "@material-symbols/svg-400/rounded/dock_to_bottom.svg"

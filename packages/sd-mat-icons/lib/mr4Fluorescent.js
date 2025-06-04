@@ -1,0 +1,1 @@
+export { default as mr4Fluorescent } from "@material-symbols/svg-400/rounded/fluorescent.svg"

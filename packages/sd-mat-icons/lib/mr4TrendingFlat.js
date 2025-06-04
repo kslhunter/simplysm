@@ -1,0 +1,1 @@
+export { default as mr4TrendingFlat } from "@material-symbols/svg-400/rounded/trending_flat.svg"

@@ -1,0 +1,1 @@
+export { default as mr4BlurLinear } from "@material-symbols/svg-400/rounded/blur_linear.svg"

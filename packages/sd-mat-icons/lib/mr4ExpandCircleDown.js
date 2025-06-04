@@ -1,0 +1,1 @@
+export { default as mr4ExpandCircleDown } from "@material-symbols/svg-400/rounded/expand_circle_down.svg"

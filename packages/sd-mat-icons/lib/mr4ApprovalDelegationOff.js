@@ -1,0 +1,1 @@
+export { default as mr4ApprovalDelegationOff } from "@material-symbols/svg-400/rounded/approval_delegation_off.svg"

@@ -1,0 +1,1 @@
+export { default as mr4ZoomOutMap } from "@material-symbols/svg-400/rounded/zoom_out_map.svg"

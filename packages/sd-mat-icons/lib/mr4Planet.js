@@ -1,0 +1,1 @@
+export { default as mr4Planet } from "@material-symbols/svg-400/rounded/planet.svg"

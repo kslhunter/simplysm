@@ -1,0 +1,1 @@
+export { default as mr4SettingsBluetooth } from "@material-symbols/svg-400/rounded/settings_bluetooth.svg"

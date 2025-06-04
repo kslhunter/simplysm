@@ -1,0 +1,1 @@
+export { default as mr4BookmarkFlag } from "@material-symbols/svg-400/rounded/bookmark_flag.svg"

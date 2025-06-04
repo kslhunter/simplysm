@@ -1,0 +1,1 @@
+export { default as mr4HandBones } from "@material-symbols/svg-400/rounded/hand_bones.svg"

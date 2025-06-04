@@ -1,0 +1,1 @@
+export { default as mr4LocationSearching } from "@material-symbols/svg-400/rounded/location_searching.svg"

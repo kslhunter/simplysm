@@ -1,0 +1,1 @@
+export { default as mr4Commit } from "@material-symbols/svg-400/rounded/commit.svg"

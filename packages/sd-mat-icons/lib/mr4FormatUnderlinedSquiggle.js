@@ -1,0 +1,1 @@
+export { default as mr4FormatUnderlinedSquiggle } from "@material-symbols/svg-400/rounded/format_underlined_squiggle.svg"

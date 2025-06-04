@@ -1,0 +1,1 @@
+export { default as mr4Capture } from "@material-symbols/svg-400/rounded/capture.svg"

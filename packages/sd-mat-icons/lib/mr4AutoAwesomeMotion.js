@@ -1,0 +1,1 @@
+export { default as mr4AutoAwesomeMotion } from "@material-symbols/svg-400/rounded/auto_awesome_motion.svg"

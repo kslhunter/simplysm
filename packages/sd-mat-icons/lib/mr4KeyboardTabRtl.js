@@ -1,0 +1,1 @@
+export { default as mr4KeyboardTabRtl } from "@material-symbols/svg-400/rounded/keyboard_tab_rtl.svg"

@@ -1,0 +1,1 @@
+export { default as mr4SendAndArchive } from "@material-symbols/svg-400/rounded/send_and_archive.svg"

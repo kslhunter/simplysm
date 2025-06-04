@@ -1,0 +1,1 @@
+export { default as mr4FormatLineSpacing } from "@material-symbols/svg-400/rounded/format_line_spacing.svg"

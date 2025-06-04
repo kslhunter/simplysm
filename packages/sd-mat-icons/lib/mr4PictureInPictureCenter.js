@@ -1,0 +1,1 @@
+export { default as mr4PictureInPictureCenter } from "@material-symbols/svg-400/rounded/picture_in_picture_center.svg"

@@ -1,0 +1,1 @@
+export { default as mr4WhereToVote } from "@material-symbols/svg-400/rounded/where_to_vote.svg"

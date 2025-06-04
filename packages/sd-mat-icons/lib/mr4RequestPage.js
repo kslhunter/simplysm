@@ -1,0 +1,1 @@
+export { default as mr4RequestPage } from "@material-symbols/svg-400/rounded/request_page.svg"

@@ -1,0 +1,1 @@
+export { default as mr4ZoomIn } from "@material-symbols/svg-400/rounded/zoom_in.svg"

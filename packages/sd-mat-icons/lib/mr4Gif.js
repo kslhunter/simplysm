@@ -1,0 +1,1 @@
+export { default as mr4Gif } from "@material-symbols/svg-400/rounded/gif.svg"
