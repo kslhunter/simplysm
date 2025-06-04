@@ -75,6 +75,7 @@ export * from "./controls/sd-sidebar-menu.control";
 export * from "./controls/sd-sidebar-user.control";
 export * from "./controls/sd-sidebar.control";
 export * from "./controls/sd-state-preset.control";
+export * from "./controls/sd-svg-icon";
 export * from "./controls/sd-switch.control";
 export * from "./controls/sd-tab-item.control";
 export * from "./controls/sd-tab.control";

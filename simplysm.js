@@ -21,6 +21,10 @@ export default (dev, opt) => ({
       publish: "npm",
       polyfills: ["@simplysm/sd-core-browser"],
     },
+    "sd-angular-icons": {
+      type: "library",
+      publish: "npm",
+    },
     "sd-cli": {
       type: "library",
       noGenIndex: true,

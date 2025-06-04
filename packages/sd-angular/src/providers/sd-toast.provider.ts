@@ -76,8 +76,8 @@ export class SdToastProvider {
     const compRef = createComponent(toast.type, {
       environmentInjector: this.#appRef.injector,
       bindings: [
-        ...Object.keys(toast.inputs).map(
-          (inputKey) => inputBinding(inputKey, () => toast.inputs[inputKey]),
+        ...Object.keys(toast.inputs).map((inputKey) =>
+          inputBinding(inputKey, () => toast.inputs[inputKey]),
         ),
         outputBinding("close", () => closeFn()),
       ],
@@ -129,11 +129,7 @@ export class SdToastProvider {
     return this.#show("danger", message, useProgress);
   }
 
-  #show(
-    theme: "info" | "success" | "warning" | "danger",
-    message: string,
-    useProgress: boolean,
-  ) {
+  #show(theme: "info" | "success" | "warning" | "danger", message: string, useProgress: boolean) {
     this.beforeShowFn?.(theme);
 
     if (this.alertThemes().includes(theme)) {
@@ -173,10 +169,16 @@ export class SdToastProvider {
     bindings.open.set(true);
 
     if (useProgress) {
-      $effect([bindings.progress], () => {
-        if (bindings.progress() < 100) return;
-        closeAfterTime(1000);
-      });
+      $effect(
+        [bindings.progress],
+        () => {
+          if (bindings.progress() < 100) return;
+          closeAfterTime(1000);
+        },
+        {
+          injector: this.#appRef.injector,
+        },
+      );
     } else {
       closeAfterTime(3000);
     }
