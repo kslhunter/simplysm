@@ -1,1 +1,0 @@
-export { default as mr4LinkedServices } from "@material-symbols/svg-400/rounded/linked_services.svg"

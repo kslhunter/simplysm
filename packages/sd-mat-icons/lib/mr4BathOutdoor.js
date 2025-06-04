@@ -1,1 +1,0 @@
-export { default as mr4BathOutdoor } from "@material-symbols/svg-400/rounded/bath_outdoor.svg"

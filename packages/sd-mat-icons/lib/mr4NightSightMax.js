@@ -1,1 +1,0 @@
-export { default as mr4NightSightMax } from "@material-symbols/svg-400/rounded/night_sight_max.svg"

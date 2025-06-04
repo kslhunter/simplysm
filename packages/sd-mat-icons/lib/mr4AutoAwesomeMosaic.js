@@ -1,1 +1,0 @@
-export { default as mr4AutoAwesomeMosaic } from "@material-symbols/svg-400/rounded/auto_awesome_mosaic.svg"

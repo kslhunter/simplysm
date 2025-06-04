@@ -21,10 +21,10 @@ export default (dev, opt) => ({
       publish: "npm",
       polyfills: ["@simplysm/sd-core-browser"],
     },
-    "sd-mat-icons": {
+    "sd-tabler-icons": {
       type: "library",
       publish: "npm",
-      noBuild: true
+      noBuild: true,
     },
     "sd-cli": {
       type: "library",

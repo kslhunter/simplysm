@@ -1,1 +1,0 @@
-export { default as mr4Houseboat } from "@material-symbols/svg-400/rounded/houseboat.svg"

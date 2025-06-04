@@ -1,1 +1,0 @@
-export { default as mr4DomainDisabled } from "@material-symbols/svg-400/rounded/domain_disabled.svg"

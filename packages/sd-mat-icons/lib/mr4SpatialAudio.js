@@ -1,1 +1,0 @@
-export { default as mr4SpatialAudio } from "@material-symbols/svg-400/rounded/spatial_audio.svg"

@@ -1,1 +1,0 @@
-export { default as mr4ArOnYou } from "@material-symbols/svg-400/rounded/ar_on_you.svg"

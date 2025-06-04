@@ -1,1 +1,0 @@
-export { default as mr4BorderAll } from "@material-symbols/svg-400/rounded/border_all.svg"

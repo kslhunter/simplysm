@@ -1,1 +1,0 @@
-export { default as mr4BuildCircle } from "@material-symbols/svg-400/rounded/build_circle.svg"

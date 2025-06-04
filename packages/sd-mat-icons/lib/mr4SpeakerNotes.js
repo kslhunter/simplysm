@@ -1,1 +1,0 @@
-export { default as mr4SpeakerNotes } from "@material-symbols/svg-400/rounded/speaker_notes.svg"

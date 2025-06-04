@@ -1,1 +1,0 @@
-export { default as mr4LegendToggle } from "@material-symbols/svg-400/rounded/legend_toggle.svg"

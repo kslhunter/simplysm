@@ -1,1 +1,0 @@
-export { default as mr4Distance } from "@material-symbols/svg-400/rounded/distance.svg"

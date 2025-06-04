@@ -1,1 +1,0 @@
-export { default as mr4ArrowForward } from "@material-symbols/svg-400/rounded/arrow_forward.svg"

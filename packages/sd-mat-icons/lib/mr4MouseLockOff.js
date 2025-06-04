@@ -1,1 +1,0 @@
-export { default as mr4MouseLockOff } from "@material-symbols/svg-400/rounded/mouse_lock_off.svg"

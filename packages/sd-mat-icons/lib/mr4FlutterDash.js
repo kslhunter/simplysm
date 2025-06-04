@@ -1,1 +1,0 @@
-export { default as mr4FlutterDash } from "@material-symbols/svg-400/rounded/flutter_dash.svg"

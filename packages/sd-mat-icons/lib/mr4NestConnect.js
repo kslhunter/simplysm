@@ -1,1 +1,0 @@
-export { default as mr4NestConnect } from "@material-symbols/svg-400/rounded/nest_connect.svg"

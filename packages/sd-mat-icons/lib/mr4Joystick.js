@@ -1,1 +1,0 @@
-export { default as mr4Joystick } from "@material-symbols/svg-400/rounded/joystick.svg"

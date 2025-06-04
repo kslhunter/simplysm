@@ -1,1 +1,0 @@
-export { default as mr4LteMobiledataBadge } from "@material-symbols/svg-400/rounded/lte_mobiledata_badge.svg"

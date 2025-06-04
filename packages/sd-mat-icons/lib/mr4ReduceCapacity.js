@@ -1,1 +1,0 @@
-export { default as mr4ReduceCapacity } from "@material-symbols/svg-400/rounded/reduce_capacity.svg"

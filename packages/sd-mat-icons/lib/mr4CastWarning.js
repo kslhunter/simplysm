@@ -1,1 +1,0 @@
-export { default as mr4CastWarning } from "@material-symbols/svg-400/rounded/cast_warning.svg"

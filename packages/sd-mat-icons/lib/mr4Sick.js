@@ -1,1 +1,0 @@
-export { default as mr4Sick } from "@material-symbols/svg-400/rounded/sick.svg"

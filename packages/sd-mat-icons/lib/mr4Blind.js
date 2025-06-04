@@ -1,1 +1,0 @@
-export { default as mr4Blind } from "@material-symbols/svg-400/rounded/blind.svg"

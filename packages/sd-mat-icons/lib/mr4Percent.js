@@ -1,1 +1,0 @@
-export { default as mr4Percent } from "@material-symbols/svg-400/rounded/percent.svg"

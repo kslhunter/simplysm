@@ -1,1 +1,0 @@
-export { default as mr4Monitoring } from "@material-symbols/svg-400/rounded/monitoring.svg"

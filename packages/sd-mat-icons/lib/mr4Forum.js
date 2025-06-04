@@ -1,1 +1,0 @@
-export { default as mr4Forum } from "@material-symbols/svg-400/rounded/forum.svg"

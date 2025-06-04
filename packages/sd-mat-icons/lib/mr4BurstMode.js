@@ -1,1 +1,0 @@
-export { default as mr4BurstMode } from "@material-symbols/svg-400/rounded/burst_mode.svg"

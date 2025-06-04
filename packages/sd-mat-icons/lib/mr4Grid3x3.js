@@ -1,1 +1,0 @@
-export { default as mr4Grid3x3 } from "@material-symbols/svg-400/rounded/grid_3x3.svg"

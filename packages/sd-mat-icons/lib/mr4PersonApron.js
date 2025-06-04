@@ -1,1 +1,0 @@
-export { default as mr4PersonApron } from "@material-symbols/svg-400/rounded/person_apron.svg"

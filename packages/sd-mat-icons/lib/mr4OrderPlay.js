@@ -1,1 +1,0 @@
-export { default as mr4OrderPlay } from "@material-symbols/svg-400/rounded/order_play.svg"

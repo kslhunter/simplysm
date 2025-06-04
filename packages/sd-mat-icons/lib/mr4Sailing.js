@@ -1,1 +1,0 @@
-export { default as mr4Sailing } from "@material-symbols/svg-400/rounded/sailing.svg"

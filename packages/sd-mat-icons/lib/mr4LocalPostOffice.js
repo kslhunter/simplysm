@@ -1,1 +1,0 @@
-export { default as mr4LocalPostOffice } from "@material-symbols/svg-400/rounded/local_post_office.svg"

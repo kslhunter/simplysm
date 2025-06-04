@@ -1,1 +1,0 @@
-export { default as mr4CinematicBlur } from "@material-symbols/svg-400/rounded/cinematic_blur.svg"

@@ -1,1 +1,0 @@
-export { default as mr4GardenCart } from "@material-symbols/svg-400/rounded/garden_cart.svg"

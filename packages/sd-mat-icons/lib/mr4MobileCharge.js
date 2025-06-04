@@ -1,1 +1,0 @@
-export { default as mr4MobileCharge } from "@material-symbols/svg-400/rounded/mobile_charge.svg"

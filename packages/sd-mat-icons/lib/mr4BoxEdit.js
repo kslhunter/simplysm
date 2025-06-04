@@ -1,1 +1,0 @@
-export { default as mr4BoxEdit } from "@material-symbols/svg-400/rounded/box_edit.svg"

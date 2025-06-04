@@ -1,1 +1,0 @@
-export { default as mr4RainyLight } from "@material-symbols/svg-400/rounded/rainy_light.svg"

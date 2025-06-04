@@ -1,1 +1,0 @@
-export { default as mr4PrivateConnectivity } from "@material-symbols/svg-400/rounded/private_connectivity.svg"

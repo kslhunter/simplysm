@@ -1,1 +1,0 @@
-export { default as mr4StylusLaserPointer } from "@material-symbols/svg-400/rounded/stylus_laser_pointer.svg"

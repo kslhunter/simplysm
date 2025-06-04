@@ -1,1 +1,0 @@
-export { default as mr4FilterRetrolux } from "@material-symbols/svg-400/rounded/filter_retrolux.svg"

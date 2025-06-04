@@ -1,1 +1,0 @@
-export { default as mr4Dock } from "@material-symbols/svg-400/rounded/dock.svg"

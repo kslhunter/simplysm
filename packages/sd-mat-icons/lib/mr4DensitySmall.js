@@ -1,1 +1,0 @@
-export { default as mr4DensitySmall } from "@material-symbols/svg-400/rounded/density_small.svg"

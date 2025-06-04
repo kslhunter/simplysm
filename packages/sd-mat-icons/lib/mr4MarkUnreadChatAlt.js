@@ -1,1 +1,0 @@
-export { default as mr4MarkUnreadChatAlt } from "@material-symbols/svg-400/rounded/mark_unread_chat_alt.svg"

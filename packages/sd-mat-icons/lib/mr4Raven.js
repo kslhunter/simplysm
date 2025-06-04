@@ -1,1 +1,0 @@
-export { default as mr4Raven } from "@material-symbols/svg-400/rounded/raven.svg"

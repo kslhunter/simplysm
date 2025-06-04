@@ -1,1 +1,0 @@
-export { default as mr4ArrowsMoreUp } from "@material-symbols/svg-400/rounded/arrows_more_up.svg"

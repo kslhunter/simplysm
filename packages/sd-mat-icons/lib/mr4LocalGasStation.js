@@ -1,1 +1,0 @@
-export { default as mr4LocalGasStation } from "@material-symbols/svg-400/rounded/local_gas_station.svg"

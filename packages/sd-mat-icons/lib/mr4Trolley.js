@@ -1,1 +1,0 @@
-export { default as mr4Trolley } from "@material-symbols/svg-400/rounded/trolley.svg"

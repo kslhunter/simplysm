@@ -1,1 +1,0 @@
-export { default as mr4RemoveShoppingCart } from "@material-symbols/svg-400/rounded/remove_shopping_cart.svg"

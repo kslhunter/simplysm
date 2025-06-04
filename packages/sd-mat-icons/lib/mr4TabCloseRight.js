@@ -1,1 +1,0 @@
-export { default as mr4TabCloseRight } from "@material-symbols/svg-400/rounded/tab_close_right.svg"

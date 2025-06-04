@@ -1,1 +1,0 @@
-export { default as mr4Sos } from "@material-symbols/svg-400/rounded/sos.svg"

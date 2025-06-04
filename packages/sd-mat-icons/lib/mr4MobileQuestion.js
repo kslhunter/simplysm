@@ -1,1 +1,0 @@
-export { default as mr4MobileQuestion } from "@material-symbols/svg-400/rounded/mobile_question.svg"

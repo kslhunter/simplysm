@@ -1,1 +1,0 @@
-export { default as mr4Spoke } from "@material-symbols/svg-400/rounded/spoke.svg"

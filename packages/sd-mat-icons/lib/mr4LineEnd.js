@@ -1,1 +1,0 @@
-export { default as mr4LineEnd } from "@material-symbols/svg-400/rounded/line_end.svg"

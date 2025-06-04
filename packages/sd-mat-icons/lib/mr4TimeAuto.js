@@ -1,1 +1,0 @@
-export { default as mr4TimeAuto } from "@material-symbols/svg-400/rounded/time_auto.svg"

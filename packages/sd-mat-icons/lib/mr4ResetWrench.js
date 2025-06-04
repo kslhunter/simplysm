@@ -1,1 +1,0 @@
-export { default as mr4ResetWrench } from "@material-symbols/svg-400/rounded/reset_wrench.svg"

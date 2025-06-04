@@ -1,1 +1,0 @@
-export { default as mr4Crib } from "@material-symbols/svg-400/rounded/crib.svg"

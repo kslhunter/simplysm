@@ -1,1 +1,0 @@
-export { default as mr4Metabolism } from "@material-symbols/svg-400/rounded/metabolism.svg"

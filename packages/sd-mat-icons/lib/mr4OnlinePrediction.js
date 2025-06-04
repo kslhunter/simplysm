@@ -1,1 +1,0 @@
-export { default as mr4OnlinePrediction } from "@material-symbols/svg-400/rounded/online_prediction.svg"

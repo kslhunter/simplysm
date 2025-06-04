@@ -1,1 +1,0 @@
-export { default as mr4PsychologyAlt } from "@material-symbols/svg-400/rounded/psychology_alt.svg"

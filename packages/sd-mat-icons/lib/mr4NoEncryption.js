@@ -1,1 +1,0 @@
-export { default as mr4NoEncryption } from "@material-symbols/svg-400/rounded/no_encryption.svg"

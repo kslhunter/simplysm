@@ -1,1 +1,0 @@
-export { default as mr4EarSound } from "@material-symbols/svg-400/rounded/ear_sound.svg"

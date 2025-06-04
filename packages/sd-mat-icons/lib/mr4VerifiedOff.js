@@ -1,1 +1,0 @@
-export { default as mr4VerifiedOff } from "@material-symbols/svg-400/rounded/verified_off.svg"

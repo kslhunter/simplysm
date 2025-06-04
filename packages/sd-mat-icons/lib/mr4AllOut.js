@@ -1,1 +1,0 @@
-export { default as mr4AllOut } from "@material-symbols/svg-400/rounded/all_out.svg"

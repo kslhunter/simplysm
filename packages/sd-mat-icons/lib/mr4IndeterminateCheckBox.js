@@ -1,1 +1,0 @@
-export { default as mr4IndeterminateCheckBox } from "@material-symbols/svg-400/rounded/indeterminate_check_box.svg"

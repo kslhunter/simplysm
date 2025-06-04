@@ -1,1 +1,0 @@
-export { default as mr4DropperEye } from "@material-symbols/svg-400/rounded/dropper_eye.svg"

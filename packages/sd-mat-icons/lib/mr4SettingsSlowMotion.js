@@ -1,1 +1,0 @@
-export { default as mr4SettingsSlowMotion } from "@material-symbols/svg-400/rounded/settings_slow_motion.svg"

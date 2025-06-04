@@ -1,1 +1,0 @@
-export { default as mr4FlightsAndHotels } from "@material-symbols/svg-400/rounded/flights_and_hotels.svg"

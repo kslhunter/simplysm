@@ -1,1 +1,0 @@
-export { default as mr4Highlight } from "@material-symbols/svg-400/rounded/highlight.svg"

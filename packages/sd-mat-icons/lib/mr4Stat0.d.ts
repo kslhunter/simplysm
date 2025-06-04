@@ -1,1 +1,0 @@
-export const mr4Stat0: string;

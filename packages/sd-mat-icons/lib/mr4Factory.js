@@ -1,1 +1,0 @@
-export { default as mr4Factory } from "@material-symbols/svg-400/rounded/factory.svg"

@@ -1,1 +1,0 @@
-export { default as mr4LocalAtm } from "@material-symbols/svg-400/rounded/local_atm.svg"

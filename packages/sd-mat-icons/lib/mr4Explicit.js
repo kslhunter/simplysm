@@ -1,1 +1,0 @@
-export { default as mr4Explicit } from "@material-symbols/svg-400/rounded/explicit.svg"

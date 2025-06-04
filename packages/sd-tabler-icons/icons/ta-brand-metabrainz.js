@@ -1,0 +1,1 @@
+export const taBrandMetabrainz = [["path",{"d":"M3 7v10l7 4v-18z"}],["path",{"d":"M21 7v10l-7 4v-18z"}]];

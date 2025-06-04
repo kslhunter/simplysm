@@ -1,1 +1,0 @@
-export { default as mr4EmojiNature } from "@material-symbols/svg-400/rounded/emoji_nature.svg"

@@ -1,1 +1,0 @@
-export { default as mr4GroupRemove } from "@material-symbols/svg-400/rounded/group_remove.svg"

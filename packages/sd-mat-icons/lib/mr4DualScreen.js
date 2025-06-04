@@ -1,1 +1,0 @@
-export { default as mr4DualScreen } from "@material-symbols/svg-400/rounded/dual_screen.svg"

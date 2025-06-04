@@ -1,1 +1,0 @@
-export { default as mr4Thunderstorm } from "@material-symbols/svg-400/rounded/thunderstorm.svg"

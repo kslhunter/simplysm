@@ -1,1 +1,0 @@
-export { default as mr4ScreenshotTablet } from "@material-symbols/svg-400/rounded/screenshot_tablet.svg"

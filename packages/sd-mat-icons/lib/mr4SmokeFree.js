@@ -1,1 +1,0 @@
-export { default as mr4SmokeFree } from "@material-symbols/svg-400/rounded/smoke_free.svg"

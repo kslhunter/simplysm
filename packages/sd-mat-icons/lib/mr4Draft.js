@@ -1,1 +1,0 @@
-export { default as mr4Draft } from "@material-symbols/svg-400/rounded/draft.svg"

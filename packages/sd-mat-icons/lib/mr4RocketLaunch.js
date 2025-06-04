@@ -1,1 +1,0 @@
-export { default as mr4RocketLaunch } from "@material-symbols/svg-400/rounded/rocket_launch.svg"

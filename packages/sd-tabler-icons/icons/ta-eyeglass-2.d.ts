@@ -1,0 +1,1 @@
+import {SdTablerIcon} from "../index"; export const taEyeglass2: SdTablerIcon;

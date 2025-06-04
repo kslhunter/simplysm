@@ -1,1 +1,0 @@
-export { default as mr4SwapDrivingAppsWheel } from "@material-symbols/svg-400/rounded/swap_driving_apps_wheel.svg"

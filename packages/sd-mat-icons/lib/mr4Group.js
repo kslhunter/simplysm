@@ -1,1 +1,0 @@
-export { default as mr4Group } from "@material-symbols/svg-400/rounded/group.svg"

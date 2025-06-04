@@ -1,1 +1,0 @@
-export { default as mr4Brick } from "@material-symbols/svg-400/rounded/brick.svg"

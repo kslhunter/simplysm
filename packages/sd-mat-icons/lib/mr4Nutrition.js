@@ -1,1 +1,0 @@
-export { default as mr4Nutrition } from "@material-symbols/svg-400/rounded/nutrition.svg"

@@ -1,1 +1,0 @@
-export { default as mr4ThingsToDo } from "@material-symbols/svg-400/rounded/things_to_do.svg"

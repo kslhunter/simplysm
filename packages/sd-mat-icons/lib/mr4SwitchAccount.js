@@ -1,1 +1,0 @@
-export { default as mr4SwitchAccount } from "@material-symbols/svg-400/rounded/switch_account.svg"

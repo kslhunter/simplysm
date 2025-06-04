@@ -1,1 +1,0 @@
-export { default as mr4WifiTetheringOff } from "@material-symbols/svg-400/rounded/wifi_tethering_off.svg"

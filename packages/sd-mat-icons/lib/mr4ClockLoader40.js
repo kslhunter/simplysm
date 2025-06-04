@@ -1,1 +1,0 @@
-export { default as mr4ClockLoader40 } from "@material-symbols/svg-400/rounded/clock_loader_40.svg"

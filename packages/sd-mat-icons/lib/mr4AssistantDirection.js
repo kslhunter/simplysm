@@ -1,1 +1,0 @@
-export { default as mr4AssistantDirection } from "@material-symbols/svg-400/rounded/assistant_direction.svg"

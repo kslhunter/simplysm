@@ -1,1 +1,0 @@
-export { default as mr4AdsClick } from "@material-symbols/svg-400/rounded/ads_click.svg"

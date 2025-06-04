@@ -1,1 +1,0 @@
-export { default as mr4ViewStream } from "@material-symbols/svg-400/rounded/view_stream.svg"

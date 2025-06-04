@@ -1,1 +1,0 @@
-export { default as mr4AppRegistration } from "@material-symbols/svg-400/rounded/app_registration.svg"

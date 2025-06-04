@@ -1,1 +1,0 @@
-export { default as mr4Brush } from "@material-symbols/svg-400/rounded/brush.svg"

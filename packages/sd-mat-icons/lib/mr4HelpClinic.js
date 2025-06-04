@@ -1,1 +1,0 @@
-export { default as mr4HelpClinic } from "@material-symbols/svg-400/rounded/help_clinic.svg"

@@ -1,1 +1,0 @@
-export { default as mr4StackedLineChart } from "@material-symbols/svg-400/rounded/stacked_line_chart.svg"

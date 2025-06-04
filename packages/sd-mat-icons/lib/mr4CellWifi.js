@@ -1,1 +1,0 @@
-export { default as mr4CellWifi } from "@material-symbols/svg-400/rounded/cell_wifi.svg"

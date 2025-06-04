@@ -1,1 +1,0 @@
-export { default as mr4ShelfAutoHide } from "@material-symbols/svg-400/rounded/shelf_auto_hide.svg"

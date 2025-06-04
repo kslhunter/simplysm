@@ -1,1 +1,0 @@
-export { default as mr4PhoneEnabled } from "@material-symbols/svg-400/rounded/phone_enabled.svg"

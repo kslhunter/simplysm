@@ -1,1 +1,0 @@
-export const mr44kPlus: string;

@@ -1,1 +1,0 @@
-export { default as mr4Deblur } from "@material-symbols/svg-400/rounded/deblur.svg"

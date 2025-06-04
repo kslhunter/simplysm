@@ -1,1 +1,0 @@
-export { default as mr4AddCard } from "@material-symbols/svg-400/rounded/add_card.svg"

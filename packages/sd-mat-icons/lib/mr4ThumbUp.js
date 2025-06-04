@@ -1,1 +1,0 @@
-export { default as mr4ThumbUp } from "@material-symbols/svg-400/rounded/thumb_up.svg"

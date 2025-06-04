@@ -1,1 +1,0 @@
-export { default as mr4FileCopy } from "@material-symbols/svg-400/rounded/file_copy.svg"

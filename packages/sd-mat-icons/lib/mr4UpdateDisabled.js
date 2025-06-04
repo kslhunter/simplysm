@@ -1,1 +1,0 @@
-export { default as mr4UpdateDisabled } from "@material-symbols/svg-400/rounded/update_disabled.svg"

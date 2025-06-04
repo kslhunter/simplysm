@@ -1,1 +1,0 @@
-export { default as mr4QrCode2Add } from "@material-symbols/svg-400/rounded/qr_code_2_add.svg"

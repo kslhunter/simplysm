@@ -1,1 +1,0 @@
-export { default as mr4Architecture } from "@material-symbols/svg-400/rounded/architecture.svg"

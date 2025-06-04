@@ -1,1 +1,0 @@
-export { default as mr4TravelExplore } from "@material-symbols/svg-400/rounded/travel_explore.svg"

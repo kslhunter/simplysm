@@ -1,1 +1,0 @@
-export { default as mr4AlignEnd } from "@material-symbols/svg-400/rounded/align_end.svg"

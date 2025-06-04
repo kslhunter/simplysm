@@ -1,1 +1,0 @@
-export { default as mr4Lists } from "@material-symbols/svg-400/rounded/lists.svg"

@@ -1,1 +1,0 @@
-export { default as mr4Straighten } from "@material-symbols/svg-400/rounded/straighten.svg"

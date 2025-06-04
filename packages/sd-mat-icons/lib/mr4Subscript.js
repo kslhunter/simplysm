@@ -1,1 +1,0 @@
-export { default as mr4Subscript } from "@material-symbols/svg-400/rounded/subscript.svg"

@@ -1,1 +1,0 @@
-export { default as mr4BookOnline } from "@material-symbols/svg-400/rounded/book_online.svg"

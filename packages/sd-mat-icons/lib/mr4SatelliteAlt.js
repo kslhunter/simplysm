@@ -1,1 +1,0 @@
-export { default as mr4SatelliteAlt } from "@material-symbols/svg-400/rounded/satellite_alt.svg"

@@ -1,1 +1,0 @@
-export { default as mr4ArrowUpwardAlt } from "@material-symbols/svg-400/rounded/arrow_upward_alt.svg"

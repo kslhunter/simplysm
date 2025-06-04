@@ -1,1 +1,0 @@
-export { default as mr4PictureAsPdf } from "@material-symbols/svg-400/rounded/picture_as_pdf.svg"

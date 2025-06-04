@@ -1,1 +1,0 @@
-export { default as mr4HomePin } from "@material-symbols/svg-400/rounded/home_pin.svg"

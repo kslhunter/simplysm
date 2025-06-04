@@ -1,1 +1,0 @@
-export { default as mr4Stairs2 } from "@material-symbols/svg-400/rounded/stairs_2.svg"

@@ -1,1 +1,0 @@
-export { default as mr4Cardiology } from "@material-symbols/svg-400/rounded/cardiology.svg"

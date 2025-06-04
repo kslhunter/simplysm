@@ -1,1 +1,0 @@
-export { default as mr4VisibilityLock } from "@material-symbols/svg-400/rounded/visibility_lock.svg"

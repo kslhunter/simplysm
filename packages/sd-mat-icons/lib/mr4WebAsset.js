@@ -1,1 +1,0 @@
-export { default as mr4WebAsset } from "@material-symbols/svg-400/rounded/web_asset.svg"

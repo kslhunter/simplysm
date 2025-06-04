@@ -1,1 +1,0 @@
-export { default as mr4AccountChildInvert } from "@material-symbols/svg-400/rounded/account_child_invert.svg"

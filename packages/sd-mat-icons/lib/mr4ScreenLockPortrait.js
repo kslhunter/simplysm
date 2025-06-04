@@ -1,1 +1,0 @@
-export { default as mr4ScreenLockPortrait } from "@material-symbols/svg-400/rounded/screen_lock_portrait.svg"

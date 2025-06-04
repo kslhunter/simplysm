@@ -1,1 +1,0 @@
-export { default as mr4PowerOff } from "@material-symbols/svg-400/rounded/power_off.svg"

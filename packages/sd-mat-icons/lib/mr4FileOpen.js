@@ -1,1 +1,0 @@
-export { default as mr4FileOpen } from "@material-symbols/svg-400/rounded/file_open.svg"

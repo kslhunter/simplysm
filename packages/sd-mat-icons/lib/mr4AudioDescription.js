@@ -1,1 +1,0 @@
-export { default as mr4AudioDescription } from "@material-symbols/svg-400/rounded/audio_description.svg"

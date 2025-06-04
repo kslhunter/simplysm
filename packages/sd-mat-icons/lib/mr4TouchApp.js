@@ -1,1 +1,0 @@
-export { default as mr4TouchApp } from "@material-symbols/svg-400/rounded/touch_app.svg"

@@ -1,1 +1,0 @@
-export { default as mr4OnDeviceTraining } from "@material-symbols/svg-400/rounded/on_device_training.svg"

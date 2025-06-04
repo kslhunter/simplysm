@@ -1,1 +1,0 @@
-export { default as mr4ActivityZone } from "@material-symbols/svg-400/rounded/activity_zone.svg"

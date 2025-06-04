@@ -1,1 +1,0 @@
-export { default as mr4EmergencyShareOff } from "@material-symbols/svg-400/rounded/emergency_share_off.svg"

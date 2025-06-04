@@ -1,1 +1,0 @@
-export { default as mr4ViewCompactAlt } from "@material-symbols/svg-400/rounded/view_compact_alt.svg"

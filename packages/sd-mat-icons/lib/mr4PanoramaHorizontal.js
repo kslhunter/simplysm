@@ -1,1 +1,0 @@
-export { default as mr4PanoramaHorizontal } from "@material-symbols/svg-400/rounded/panorama_horizontal.svg"

@@ -1,1 +1,0 @@
-export { default as mr4PersonPin } from "@material-symbols/svg-400/rounded/person_pin.svg"

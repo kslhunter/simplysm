@@ -1,1 +1,0 @@
-export { default as mr4PictureInPicture } from "@material-symbols/svg-400/rounded/picture_in_picture.svg"

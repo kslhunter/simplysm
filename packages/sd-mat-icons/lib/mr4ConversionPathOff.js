@@ -1,1 +1,0 @@
-export { default as mr4ConversionPathOff } from "@material-symbols/svg-400/rounded/conversion_path_off.svg"

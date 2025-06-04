@@ -1,1 +1,0 @@
-export { default as mr4NestThermostatGen3 } from "@material-symbols/svg-400/rounded/nest_thermostat_gen_3.svg"

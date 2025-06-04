@@ -1,1 +1,0 @@
-export const mr4ScreenLockRotation: string;

@@ -1,1 +1,0 @@
-export { default as mr4ViewCozy } from "@material-symbols/svg-400/rounded/view_cozy.svg"

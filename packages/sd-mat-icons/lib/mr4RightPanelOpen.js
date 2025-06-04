@@ -1,1 +1,0 @@
-export { default as mr4RightPanelOpen } from "@material-symbols/svg-400/rounded/right_panel_open.svg"

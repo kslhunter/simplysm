@@ -1,1 +1,0 @@
-export { default as mr4AirlineSeatLegroomReduced } from "@material-symbols/svg-400/rounded/airline_seat_legroom_reduced.svg"

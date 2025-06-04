@@ -1,1 +1,0 @@
-export { default as mr4Elevator } from "@material-symbols/svg-400/rounded/elevator.svg"

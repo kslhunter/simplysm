@@ -1,1 +1,0 @@
-export { default as mr4CodeBlocks } from "@material-symbols/svg-400/rounded/code_blocks.svg"

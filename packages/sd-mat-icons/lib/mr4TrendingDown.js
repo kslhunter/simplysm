@@ -1,1 +1,0 @@
-export { default as mr4TrendingDown } from "@material-symbols/svg-400/rounded/trending_down.svg"

@@ -1,1 +1,0 @@
-export { default as mr4Exercise } from "@material-symbols/svg-400/rounded/exercise.svg"

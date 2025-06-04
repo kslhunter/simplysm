@@ -1,1 +1,0 @@
-export { default as mr4Troubleshoot } from "@material-symbols/svg-400/rounded/troubleshoot.svg"

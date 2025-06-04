@@ -1,1 +1,0 @@
-export { default as mr4DetectorOffline } from "@material-symbols/svg-400/rounded/detector_offline.svg"

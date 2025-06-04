@@ -1,1 +1,0 @@
-export { default as mr4RemoveFromQueue } from "@material-symbols/svg-400/rounded/remove_from_queue.svg"

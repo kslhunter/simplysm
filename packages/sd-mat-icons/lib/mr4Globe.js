@@ -1,1 +1,0 @@
-export { default as mr4Globe } from "@material-symbols/svg-400/rounded/globe.svg"

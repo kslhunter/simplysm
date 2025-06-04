@@ -1,1 +1,0 @@
-export { default as mr4Concierge } from "@material-symbols/svg-400/rounded/concierge.svg"

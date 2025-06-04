@@ -1,1 +1,0 @@
-export { default as mr4SafetyDivider } from "@material-symbols/svg-400/rounded/safety_divider.svg"

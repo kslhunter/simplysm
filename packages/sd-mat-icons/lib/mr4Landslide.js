@@ -1,1 +1,0 @@
-export { default as mr4Landslide } from "@material-symbols/svg-400/rounded/landslide.svg"

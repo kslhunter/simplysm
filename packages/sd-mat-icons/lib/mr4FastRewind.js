@@ -1,1 +1,0 @@
-export { default as mr4FastRewind } from "@material-symbols/svg-400/rounded/fast_rewind.svg"

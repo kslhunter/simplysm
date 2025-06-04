@@ -1,1 +1,0 @@
-export { default as mr4ScubaDiving } from "@material-symbols/svg-400/rounded/scuba_diving.svg"

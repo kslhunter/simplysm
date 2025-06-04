@@ -1,1 +1,0 @@
-export { default as mr4Autostop } from "@material-symbols/svg-400/rounded/autostop.svg"

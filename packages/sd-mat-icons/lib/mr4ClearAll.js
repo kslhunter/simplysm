@@ -1,1 +1,0 @@
-export { default as mr4ClearAll } from "@material-symbols/svg-400/rounded/clear_all.svg"

@@ -1,0 +1,1 @@
+export const taWaveSawTool = [["path",{"d":"M3 12h5l4 8v-16l4 8h5"}]];

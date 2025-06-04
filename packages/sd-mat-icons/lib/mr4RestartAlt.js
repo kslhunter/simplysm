@@ -1,1 +1,0 @@
-export { default as mr4RestartAlt } from "@material-symbols/svg-400/rounded/restart_alt.svg"

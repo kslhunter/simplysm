@@ -1,1 +1,0 @@
-export { default as mr4Candle } from "@material-symbols/svg-400/rounded/candle.svg"

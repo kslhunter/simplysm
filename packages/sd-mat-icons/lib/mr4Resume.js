@@ -1,1 +1,0 @@
-export { default as mr4Resume } from "@material-symbols/svg-400/rounded/resume.svg"

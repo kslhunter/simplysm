@@ -1,1 +1,0 @@
-export { default as mr4HomeAndGarden } from "@material-symbols/svg-400/rounded/home_and_garden.svg"

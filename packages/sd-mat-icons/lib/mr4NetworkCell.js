@@ -1,1 +1,0 @@
-export { default as mr4NetworkCell } from "@material-symbols/svg-400/rounded/network_cell.svg"

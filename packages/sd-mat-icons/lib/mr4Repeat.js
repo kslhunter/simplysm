@@ -1,1 +1,0 @@
-export { default as mr4Repeat } from "@material-symbols/svg-400/rounded/repeat.svg"

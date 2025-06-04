@@ -1,1 +1,0 @@
-export { default as mr4FileJson } from "@material-symbols/svg-400/rounded/file_json.svg"

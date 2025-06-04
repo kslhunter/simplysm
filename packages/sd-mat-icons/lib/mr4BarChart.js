@@ -1,1 +1,0 @@
-export { default as mr4BarChart } from "@material-symbols/svg-400/rounded/bar_chart.svg"

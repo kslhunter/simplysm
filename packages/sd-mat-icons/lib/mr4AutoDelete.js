@@ -1,1 +1,0 @@
-export { default as mr4AutoDelete } from "@material-symbols/svg-400/rounded/auto_delete.svg"

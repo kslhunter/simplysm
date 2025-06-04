@@ -1,1 +1,0 @@
-export { default as mr4Dropdown } from "@material-symbols/svg-400/rounded/dropdown.svg"

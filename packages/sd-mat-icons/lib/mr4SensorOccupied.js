@@ -1,1 +1,0 @@
-export { default as mr4SensorOccupied } from "@material-symbols/svg-400/rounded/sensor_occupied.svg"

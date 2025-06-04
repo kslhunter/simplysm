@@ -1,1 +1,0 @@
-export { default as mr4ThermometerLoss } from "@material-symbols/svg-400/rounded/thermometer_loss.svg"

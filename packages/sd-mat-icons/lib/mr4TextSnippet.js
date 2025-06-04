@@ -1,1 +1,0 @@
-export { default as mr4TextSnippet } from "@material-symbols/svg-400/rounded/text_snippet.svg"

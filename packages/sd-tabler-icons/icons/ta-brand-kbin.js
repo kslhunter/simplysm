@@ -1,0 +1,1 @@
+export const taBrandKbin = [["g",{"stroke-width":"1.838"}]];

@@ -1,1 +1,0 @@
-export { default as mr4AssistantOnHub } from "@material-symbols/svg-400/rounded/assistant_on_hub.svg"

@@ -1,1 +1,0 @@
-export { default as mr43gMobiledataBadge } from "@material-symbols/svg-400/rounded/3g_mobiledata_badge.svg"

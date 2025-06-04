@@ -1,1 +1,0 @@
-export { default as mr4AlignJustifySpaceAround } from "@material-symbols/svg-400/rounded/align_justify_space_around.svg"

@@ -1,1 +1,0 @@
-export { default as mr4DirectorySync } from "@material-symbols/svg-400/rounded/directory_sync.svg"

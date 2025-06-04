@@ -1,1 +1,0 @@
-export { default as mr4FloorLamp } from "@material-symbols/svg-400/rounded/floor_lamp.svg"

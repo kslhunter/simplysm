@@ -1,1 +1,0 @@
-export { default as mr4SelfImprovement } from "@material-symbols/svg-400/rounded/self_improvement.svg"

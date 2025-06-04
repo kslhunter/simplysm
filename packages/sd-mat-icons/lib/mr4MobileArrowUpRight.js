@@ -1,1 +1,0 @@
-export { default as mr4MobileArrowUpRight } from "@material-symbols/svg-400/rounded/mobile_arrow_up_right.svg"

@@ -1,1 +1,0 @@
-export { default as mr4SyncAlt } from "@material-symbols/svg-400/rounded/sync_alt.svg"

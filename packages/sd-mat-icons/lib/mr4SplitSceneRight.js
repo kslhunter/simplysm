@@ -1,1 +1,0 @@
-export { default as mr4SplitSceneRight } from "@material-symbols/svg-400/rounded/split_scene_right.svg"

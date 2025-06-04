@@ -1,1 +1,0 @@
-export { default as mr4WifiProxy } from "@material-symbols/svg-400/rounded/wifi_proxy.svg"

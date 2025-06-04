@@ -1,1 +1,0 @@
-export { default as mr4PriceChange } from "@material-symbols/svg-400/rounded/price_change.svg"

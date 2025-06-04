@@ -1,1 +1,0 @@
-export { default as mr4EditNotifications } from "@material-symbols/svg-400/rounded/edit_notifications.svg"

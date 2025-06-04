@@ -1,1 +1,0 @@
-export { default as mr4CenterFocusWeak } from "@material-symbols/svg-400/rounded/center_focus_weak.svg"

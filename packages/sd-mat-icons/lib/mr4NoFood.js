@@ -1,1 +1,0 @@
-export { default as mr4NoFood } from "@material-symbols/svg-400/rounded/no_food.svg"

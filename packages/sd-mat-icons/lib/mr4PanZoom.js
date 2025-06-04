@@ -1,1 +1,0 @@
-export { default as mr4PanZoom } from "@material-symbols/svg-400/rounded/pan_zoom.svg"

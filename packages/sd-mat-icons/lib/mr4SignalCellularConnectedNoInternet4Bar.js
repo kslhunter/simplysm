@@ -1,1 +1,0 @@
-export { default as mr4SignalCellularConnectedNoInternet4Bar } from "@material-symbols/svg-400/rounded/signal_cellular_connected_no_internet_4_bar.svg"

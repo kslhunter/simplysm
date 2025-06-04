@@ -1,1 +1,0 @@
-export { default as mr4PersonalBagOff } from "@material-symbols/svg-400/rounded/personal_bag_off.svg"

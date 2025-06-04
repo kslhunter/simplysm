@@ -1,1 +1,0 @@
-export { default as mr4PermPhoneMsg } from "@material-symbols/svg-400/rounded/perm_phone_msg.svg"

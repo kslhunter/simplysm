@@ -1,1 +1,0 @@
-export { default as mr4MilitaryTech } from "@material-symbols/svg-400/rounded/military_tech.svg"

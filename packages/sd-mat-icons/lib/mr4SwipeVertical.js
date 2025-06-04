@@ -1,1 +1,0 @@
-export { default as mr4SwipeVertical } from "@material-symbols/svg-400/rounded/swipe_vertical.svg"

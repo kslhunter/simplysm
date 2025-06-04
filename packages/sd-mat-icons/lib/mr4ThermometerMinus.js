@@ -1,1 +1,0 @@
-export { default as mr4ThermometerMinus } from "@material-symbols/svg-400/rounded/thermometer_minus.svg"

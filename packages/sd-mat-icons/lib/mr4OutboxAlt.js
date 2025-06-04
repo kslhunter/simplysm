@@ -1,1 +1,0 @@
-export { default as mr4OutboxAlt } from "@material-symbols/svg-400/rounded/outbox_alt.svg"

@@ -1,1 +1,0 @@
-export { default as mr4CandlestickChart } from "@material-symbols/svg-400/rounded/candlestick_chart.svg"

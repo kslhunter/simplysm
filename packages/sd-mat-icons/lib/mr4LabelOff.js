@@ -1,1 +1,0 @@
-export { default as mr4LabelOff } from "@material-symbols/svg-400/rounded/label_off.svg"

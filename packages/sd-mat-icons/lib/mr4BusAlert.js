@@ -1,1 +1,0 @@
-export { default as mr4BusAlert } from "@material-symbols/svg-400/rounded/bus_alert.svg"

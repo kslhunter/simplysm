@@ -1,0 +1,1 @@
+export const taAlignRight2 = [["path",{"d":"M20 4v16"}],["path",{"d":"M4 6h12"}],["path",{"d":"M10 12h6"}],["path",{"d":"M6 18h10"}]];

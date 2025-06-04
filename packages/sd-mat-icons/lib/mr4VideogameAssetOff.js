@@ -1,1 +1,0 @@
-export { default as mr4VideogameAssetOff } from "@material-symbols/svg-400/rounded/videogame_asset_off.svg"

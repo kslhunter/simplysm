@@ -1,1 +1,0 @@
-export { default as mr4PestControlRodent } from "@material-symbols/svg-400/rounded/pest_control_rodent.svg"

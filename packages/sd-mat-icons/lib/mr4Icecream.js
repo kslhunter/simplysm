@@ -1,1 +1,0 @@
-export { default as mr4Icecream } from "@material-symbols/svg-400/rounded/icecream.svg"

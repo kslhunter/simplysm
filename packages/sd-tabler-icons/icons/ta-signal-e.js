@@ -1,0 +1,1 @@
+export const taSignalE = [["path",{"d":"M14 8h-4v8h4"}],["path",{"d":"M10 12h2.5"}]];

@@ -1,1 +1,0 @@
-export { default as mr4Balance } from "@material-symbols/svg-400/rounded/balance.svg"

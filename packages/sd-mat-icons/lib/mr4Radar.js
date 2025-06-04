@@ -1,1 +1,0 @@
-export { default as mr4Radar } from "@material-symbols/svg-400/rounded/radar.svg"

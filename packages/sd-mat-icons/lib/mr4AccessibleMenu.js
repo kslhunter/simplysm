@@ -1,1 +1,0 @@
-export { default as mr4AccessibleMenu } from "@material-symbols/svg-400/rounded/accessible_menu.svg"

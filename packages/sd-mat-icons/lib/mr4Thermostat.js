@@ -1,1 +1,0 @@
-export { default as mr4Thermostat } from "@material-symbols/svg-400/rounded/thermostat.svg"

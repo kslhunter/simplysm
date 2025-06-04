@@ -1,1 +1,0 @@
-export { default as mr4StayCurrentLandscape } from "@material-symbols/svg-400/rounded/stay_current_landscape.svg"

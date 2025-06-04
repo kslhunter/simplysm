@@ -1,1 +1,0 @@
-export { default as mr4CalendarClock } from "@material-symbols/svg-400/rounded/calendar_clock.svg"

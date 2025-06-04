@@ -1,1 +1,0 @@
-export { default as mr4NoLuggage } from "@material-symbols/svg-400/rounded/no_luggage.svg"

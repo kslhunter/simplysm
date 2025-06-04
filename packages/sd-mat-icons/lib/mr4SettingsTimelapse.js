@@ -1,1 +1,0 @@
-export { default as mr4SettingsTimelapse } from "@material-symbols/svg-400/rounded/settings_timelapse.svg"

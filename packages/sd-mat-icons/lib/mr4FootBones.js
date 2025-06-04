@@ -1,1 +1,0 @@
-export { default as mr4FootBones } from "@material-symbols/svg-400/rounded/foot_bones.svg"

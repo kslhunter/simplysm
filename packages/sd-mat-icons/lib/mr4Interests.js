@@ -1,1 +1,0 @@
-export { default as mr4Interests } from "@material-symbols/svg-400/rounded/interests.svg"

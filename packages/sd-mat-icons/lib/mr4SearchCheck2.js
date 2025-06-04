@@ -1,1 +1,0 @@
-export { default as mr4SearchCheck2 } from "@material-symbols/svg-400/rounded/search_check_2.svg"

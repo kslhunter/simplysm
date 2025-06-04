@@ -1,1 +1,0 @@
-export { default as mr4FormatListBulleted } from "@material-symbols/svg-400/rounded/format_list_bulleted.svg"

@@ -1,1 +1,0 @@
-export { default as mr4VoiceSelectionOff } from "@material-symbols/svg-400/rounded/voice_selection_off.svg"

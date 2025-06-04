@@ -1,1 +1,0 @@
-export { default as mr4HeartPlus } from "@material-symbols/svg-400/rounded/heart_plus.svg"

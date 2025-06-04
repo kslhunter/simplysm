@@ -1,1 +1,0 @@
-export { default as mr4BatteryProfile } from "@material-symbols/svg-400/rounded/battery_profile.svg"

@@ -1,1 +1,0 @@
-export { default as mr4Earbuds } from "@material-symbols/svg-400/rounded/earbuds.svg"

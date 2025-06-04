@@ -1,1 +1,0 @@
-export { default as mr4DownhillSkiing } from "@material-symbols/svg-400/rounded/downhill_skiing.svg"

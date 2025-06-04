@@ -1,1 +1,0 @@
-export { default as mr4Ballot } from "@material-symbols/svg-400/rounded/ballot.svg"

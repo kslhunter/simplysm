@@ -1,1 +1,0 @@
-export { default as mr4Leaderboard } from "@material-symbols/svg-400/rounded/leaderboard.svg"

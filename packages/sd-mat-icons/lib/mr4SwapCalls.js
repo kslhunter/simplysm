@@ -1,1 +1,0 @@
-export { default as mr4SwapCalls } from "@material-symbols/svg-400/rounded/swap_calls.svg"

@@ -1,1 +1,0 @@
-export { default as mr4FilterCenterFocus } from "@material-symbols/svg-400/rounded/filter_center_focus.svg"

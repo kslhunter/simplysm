@@ -1,1 +1,0 @@
-export { default as mr4LinkOff } from "@material-symbols/svg-400/rounded/link_off.svg"

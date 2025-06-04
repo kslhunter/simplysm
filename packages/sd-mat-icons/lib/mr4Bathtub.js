@@ -1,1 +1,0 @@
-export { default as mr4Bathtub } from "@material-symbols/svg-400/rounded/bathtub.svg"

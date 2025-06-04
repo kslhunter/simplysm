@@ -1,1 +1,0 @@
-export { default as mr4AutoTowing } from "@material-symbols/svg-400/rounded/auto_towing.svg"

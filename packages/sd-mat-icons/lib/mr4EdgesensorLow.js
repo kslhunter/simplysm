@@ -1,1 +1,0 @@
-export { default as mr4EdgesensorLow } from "@material-symbols/svg-400/rounded/edgesensor_low.svg"

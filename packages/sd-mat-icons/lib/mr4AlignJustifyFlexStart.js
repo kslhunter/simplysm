@@ -1,1 +1,0 @@
-export { default as mr4AlignJustifyFlexStart } from "@material-symbols/svg-400/rounded/align_justify_flex_start.svg"

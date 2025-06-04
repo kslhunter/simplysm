@@ -1,1 +1,0 @@
-export { default as mr4ConveyorBelt } from "@material-symbols/svg-400/rounded/conveyor_belt.svg"

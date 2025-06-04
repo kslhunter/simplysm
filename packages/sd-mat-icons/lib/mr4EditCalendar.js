@@ -1,1 +1,0 @@
-export { default as mr4EditCalendar } from "@material-symbols/svg-400/rounded/edit_calendar.svg"

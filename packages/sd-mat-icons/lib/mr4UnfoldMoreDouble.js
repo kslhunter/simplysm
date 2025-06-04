@@ -1,1 +1,0 @@
-export { default as mr4UnfoldMoreDouble } from "@material-symbols/svg-400/rounded/unfold_more_double.svg"

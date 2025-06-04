@@ -1,1 +1,0 @@
-export { default as mr4Man } from "@material-symbols/svg-400/rounded/man.svg"

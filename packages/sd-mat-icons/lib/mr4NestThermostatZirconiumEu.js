@@ -1,1 +1,0 @@
-export { default as mr4NestThermostatZirconiumEu } from "@material-symbols/svg-400/rounded/nest_thermostat_zirconium_eu.svg"

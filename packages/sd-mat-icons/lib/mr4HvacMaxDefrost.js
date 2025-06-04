@@ -1,1 +1,0 @@
-export { default as mr4HvacMaxDefrost } from "@material-symbols/svg-400/rounded/hvac_max_defrost.svg"

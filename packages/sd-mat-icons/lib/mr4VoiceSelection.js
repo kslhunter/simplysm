@@ -1,1 +1,0 @@
-export { default as mr4VoiceSelection } from "@material-symbols/svg-400/rounded/voice_selection.svg"

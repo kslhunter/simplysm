@@ -1,1 +1,0 @@
-export { default as mr4TravelLuggageAndBags } from "@material-symbols/svg-400/rounded/travel_luggage_and_bags.svg"

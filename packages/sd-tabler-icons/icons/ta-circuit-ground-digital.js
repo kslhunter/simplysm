@@ -1,0 +1,1 @@
+export const taCircuitGroundDigital = [["path",{"d":"M12 13v-10"}],["path",{"d":"M12 21l-6 -8h12z"}]];

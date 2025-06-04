@@ -1,1 +1,0 @@
-export { default as mr4DisplayExternalInput } from "@material-symbols/svg-400/rounded/display_external_input.svg"

@@ -1,1 +1,0 @@
-export { default as mr4LightningStand } from "@material-symbols/svg-400/rounded/lightning_stand.svg"

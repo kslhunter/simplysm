@@ -1,1 +1,0 @@
-export { default as mr4AppsOutage } from "@material-symbols/svg-400/rounded/apps_outage.svg"

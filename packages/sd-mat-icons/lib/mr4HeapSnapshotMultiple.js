@@ -1,1 +1,0 @@
-export { default as mr4HeapSnapshotMultiple } from "@material-symbols/svg-400/rounded/heap_snapshot_multiple.svg"

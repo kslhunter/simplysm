@@ -1,1 +1,0 @@
-export { default as mr4AodWatch } from "@material-symbols/svg-400/rounded/aod_watch.svg"

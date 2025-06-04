@@ -1,1 +1,0 @@
-export { default as mr4MultimodalHandEye } from "@material-symbols/svg-400/rounded/multimodal_hand_eye.svg"

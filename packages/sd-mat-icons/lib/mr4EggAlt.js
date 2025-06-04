@@ -1,1 +1,0 @@
-export { default as mr4EggAlt } from "@material-symbols/svg-400/rounded/egg_alt.svg"

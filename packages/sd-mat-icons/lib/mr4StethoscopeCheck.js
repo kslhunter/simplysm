@@ -1,1 +1,0 @@
-export { default as mr4StethoscopeCheck } from "@material-symbols/svg-400/rounded/stethoscope_check.svg"

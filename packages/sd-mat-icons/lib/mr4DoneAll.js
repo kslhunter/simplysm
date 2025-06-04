@@ -1,1 +1,0 @@
-export { default as mr4DoneAll } from "@material-symbols/svg-400/rounded/done_all.svg"

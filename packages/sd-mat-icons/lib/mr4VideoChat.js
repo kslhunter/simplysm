@@ -1,1 +1,0 @@
-export { default as mr4VideoChat } from "@material-symbols/svg-400/rounded/video_chat.svg"

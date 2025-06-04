@@ -1,1 +1,0 @@
-export { default as mr4HowToVote } from "@material-symbols/svg-400/rounded/how_to_vote.svg"

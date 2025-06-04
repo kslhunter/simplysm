@@ -1,1 +1,0 @@
-export { default as mr4Mindfulness } from "@material-symbols/svg-400/rounded/mindfulness.svg"

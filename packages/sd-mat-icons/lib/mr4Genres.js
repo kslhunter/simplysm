@@ -1,1 +1,0 @@
-export { default as mr4Genres } from "@material-symbols/svg-400/rounded/genres.svg"

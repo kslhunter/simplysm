@@ -1,1 +1,0 @@
-export { default as mr4OfflineShare } from "@material-symbols/svg-400/rounded/offline_share.svg"

@@ -1,1 +1,0 @@
-export { default as mr4Orbit } from "@material-symbols/svg-400/rounded/orbit.svg"

@@ -1,1 +1,0 @@
-export { default as mr4Skillet } from "@material-symbols/svg-400/rounded/skillet.svg"

@@ -1,0 +1,1 @@
+export const taXPowerY = [["path",{"d":"M15 3l3 5.063"}],["path",{"d":"M5 12l6 6"}],["path",{"d":"M5 18l6 -6"}],["path",{"d":"M21 3l-4.8 9"}]];

@@ -1,1 +1,0 @@
-export { default as mr4ChessPawn } from "@material-symbols/svg-400/rounded/chess_pawn.svg"

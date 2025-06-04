@@ -1,1 +1,0 @@
-export { default as mr4TvGuide } from "@material-symbols/svg-400/rounded/tv_guide.svg"

@@ -1,1 +1,0 @@
-export { default as mr4RoundaboutLeft } from "@material-symbols/svg-400/rounded/roundabout_left.svg"

@@ -1,1 +1,0 @@
-export { default as mr4BrightnessAuto } from "@material-symbols/svg-400/rounded/brightness_auto.svg"

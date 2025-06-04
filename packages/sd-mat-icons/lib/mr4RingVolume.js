@@ -1,1 +1,0 @@
-export { default as mr4RingVolume } from "@material-symbols/svg-400/rounded/ring_volume.svg"

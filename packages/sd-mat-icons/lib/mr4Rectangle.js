@@ -1,1 +1,0 @@
-export { default as mr4Rectangle } from "@material-symbols/svg-400/rounded/rectangle.svg"

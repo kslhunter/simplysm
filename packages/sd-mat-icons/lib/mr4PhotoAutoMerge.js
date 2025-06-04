@@ -1,1 +1,0 @@
-export { default as mr4PhotoAutoMerge } from "@material-symbols/svg-400/rounded/photo_auto_merge.svg"

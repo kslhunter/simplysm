@@ -1,1 +1,0 @@
-export { default as mr4QuickReferenceAll } from "@material-symbols/svg-400/rounded/quick_reference_all.svg"

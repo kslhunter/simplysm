@@ -1,1 +1,0 @@
-export { default as mr4NotificationSound } from "@material-symbols/svg-400/rounded/notification_sound.svg"

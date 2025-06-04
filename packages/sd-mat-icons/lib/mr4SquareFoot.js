@@ -1,1 +1,0 @@
-export { default as mr4SquareFoot } from "@material-symbols/svg-400/rounded/square_foot.svg"

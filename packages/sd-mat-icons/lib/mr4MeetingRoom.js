@@ -1,1 +1,0 @@
-export { default as mr4MeetingRoom } from "@material-symbols/svg-400/rounded/meeting_room.svg"

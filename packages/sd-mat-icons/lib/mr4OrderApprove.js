@@ -1,1 +1,0 @@
-export { default as mr4OrderApprove } from "@material-symbols/svg-400/rounded/order_approve.svg"

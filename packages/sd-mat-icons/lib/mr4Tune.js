@@ -1,1 +1,0 @@
-export { default as mr4Tune } from "@material-symbols/svg-400/rounded/tune.svg"

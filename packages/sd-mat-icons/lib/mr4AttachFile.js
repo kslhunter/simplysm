@@ -1,1 +1,0 @@
-export { default as mr4AttachFile } from "@material-symbols/svg-400/rounded/attach_file.svg"

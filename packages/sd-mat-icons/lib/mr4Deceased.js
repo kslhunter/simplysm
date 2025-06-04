@@ -1,1 +1,0 @@
-export { default as mr4Deceased } from "@material-symbols/svg-400/rounded/deceased.svg"

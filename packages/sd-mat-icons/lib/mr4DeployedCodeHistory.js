@@ -1,1 +1,0 @@
-export { default as mr4DeployedCodeHistory } from "@material-symbols/svg-400/rounded/deployed_code_history.svg"

@@ -1,1 +1,0 @@
-export { default as mr4Eco } from "@material-symbols/svg-400/rounded/eco.svg"

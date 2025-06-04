@@ -1,1 +1,0 @@
-export { default as mr4VpnLock2 } from "@material-symbols/svg-400/rounded/vpn_lock_2.svg"

@@ -1,1 +1,0 @@
-export { default as mr4ThreadUnread } from "@material-symbols/svg-400/rounded/thread_unread.svg"

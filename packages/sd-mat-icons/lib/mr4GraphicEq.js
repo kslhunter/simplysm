@@ -1,1 +1,0 @@
-export { default as mr4GraphicEq } from "@material-symbols/svg-400/rounded/graphic_eq.svg"

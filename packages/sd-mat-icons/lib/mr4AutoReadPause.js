@@ -1,1 +1,0 @@
-export { default as mr4AutoReadPause } from "@material-symbols/svg-400/rounded/auto_read_pause.svg"

@@ -1,1 +1,0 @@
-export { default as mr4NoiseControlOn } from "@material-symbols/svg-400/rounded/noise_control_on.svg"

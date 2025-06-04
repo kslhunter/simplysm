@@ -1,1 +1,0 @@
-export { default as mr4Crown } from "@material-symbols/svg-400/rounded/crown.svg"

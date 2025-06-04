@@ -1,1 +1,0 @@
-export { default as mr4LanguageJapaneseKana } from "@material-symbols/svg-400/rounded/language_japanese_kana.svg"

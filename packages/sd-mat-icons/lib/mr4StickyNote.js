@@ -1,1 +1,0 @@
-export { default as mr4StickyNote } from "@material-symbols/svg-400/rounded/sticky_note.svg"

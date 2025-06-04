@@ -1,1 +1,0 @@
-export { default as mr4DishwasherGen } from "@material-symbols/svg-400/rounded/dishwasher_gen.svg"

@@ -1,1 +1,0 @@
-export { default as mr4CarryOnBag } from "@material-symbols/svg-400/rounded/carry_on_bag.svg"

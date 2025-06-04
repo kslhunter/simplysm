@@ -1,1 +1,0 @@
-export { default as mr4PhoneAndroid } from "@material-symbols/svg-400/rounded/phone_android.svg"

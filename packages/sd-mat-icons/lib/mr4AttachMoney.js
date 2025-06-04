@@ -1,1 +1,0 @@
-export { default as mr4AttachMoney } from "@material-symbols/svg-400/rounded/attach_money.svg"

@@ -1,1 +1,0 @@
-export { default as mr4LabProfile } from "@material-symbols/svg-400/rounded/lab_profile.svg"

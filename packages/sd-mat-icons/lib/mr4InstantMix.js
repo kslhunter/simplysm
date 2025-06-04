@@ -1,1 +1,0 @@
-export { default as mr4InstantMix } from "@material-symbols/svg-400/rounded/instant_mix.svg"

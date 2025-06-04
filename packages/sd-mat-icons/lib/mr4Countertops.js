@@ -1,1 +1,0 @@
-export { default as mr4Countertops } from "@material-symbols/svg-400/rounded/countertops.svg"

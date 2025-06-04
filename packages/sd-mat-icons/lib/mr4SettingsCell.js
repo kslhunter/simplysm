@@ -1,1 +1,0 @@
-export { default as mr4SettingsCell } from "@material-symbols/svg-400/rounded/settings_cell.svg"

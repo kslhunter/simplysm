@@ -1,1 +1,0 @@
-export { default as mr4PlugConnect } from "@material-symbols/svg-400/rounded/plug_connect.svg"

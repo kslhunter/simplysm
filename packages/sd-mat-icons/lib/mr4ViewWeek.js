@@ -1,1 +1,0 @@
-export { default as mr4ViewWeek } from "@material-symbols/svg-400/rounded/view_week.svg"

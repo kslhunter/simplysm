@@ -1,1 +1,0 @@
-export { default as mr4Piano } from "@material-symbols/svg-400/rounded/piano.svg"

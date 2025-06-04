@@ -1,1 +1,0 @@
-export { default as mr4ConvertToText } from "@material-symbols/svg-400/rounded/convert_to_text.svg"

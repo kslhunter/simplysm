@@ -1,0 +1,17 @@
+{
+  "name": "@simplysm/sd-tabler-icons",
+  "version": "12.11.13",
+  "description": "심플리즘 패키지 - Tabler 아이콘 모듈 (browser)",
+  "author": "김석래",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm.git",
+    "directory": "packages/sd-tabler-icons"
+  },
+  "license": "MIT",
+  "type": "module",
+  "types": "index.d.ts",
+  "dependencies": {
+    "@tabler/icons": "^3.34.0"
+  }
+}

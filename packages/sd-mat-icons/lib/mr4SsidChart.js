@@ -1,1 +1,0 @@
-export { default as mr4SsidChart } from "@material-symbols/svg-400/rounded/ssid_chart.svg"

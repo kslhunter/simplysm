@@ -1,1 +1,0 @@
-export { default as mr4NewWindow } from "@material-symbols/svg-400/rounded/new_window.svg"

@@ -1,1 +1,0 @@
-export { default as mr4LineEndCircle } from "@material-symbols/svg-400/rounded/line_end_circle.svg"

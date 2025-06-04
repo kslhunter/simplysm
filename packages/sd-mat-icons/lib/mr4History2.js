@@ -1,1 +1,0 @@
-export { default as mr4History2 } from "@material-symbols/svg-400/rounded/history_2.svg"

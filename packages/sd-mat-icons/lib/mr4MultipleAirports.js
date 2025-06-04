@@ -1,1 +1,0 @@
-export { default as mr4MultipleAirports } from "@material-symbols/svg-400/rounded/multiple_airports.svg"

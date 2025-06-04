@@ -1,1 +1,0 @@
-export { default as mr4ConnectWithoutContact } from "@material-symbols/svg-400/rounded/connect_without_contact.svg"

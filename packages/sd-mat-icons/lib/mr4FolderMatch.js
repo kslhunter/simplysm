@@ -1,1 +1,0 @@
-export { default as mr4FolderMatch } from "@material-symbols/svg-400/rounded/folder_match.svg"

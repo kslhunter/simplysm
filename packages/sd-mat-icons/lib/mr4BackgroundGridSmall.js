@@ -1,1 +1,0 @@
-export { default as mr4BackgroundGridSmall } from "@material-symbols/svg-400/rounded/background_grid_small.svg"

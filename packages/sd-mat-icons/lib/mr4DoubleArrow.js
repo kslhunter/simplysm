@@ -1,1 +1,0 @@
-export { default as mr4DoubleArrow } from "@material-symbols/svg-400/rounded/double_arrow.svg"

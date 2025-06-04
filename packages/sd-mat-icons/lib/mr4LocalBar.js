@@ -1,1 +1,0 @@
-export { default as mr4LocalBar } from "@material-symbols/svg-400/rounded/local_bar.svg"

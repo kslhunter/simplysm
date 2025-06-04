@@ -1,1 +1,0 @@
-export { default as mr4AutofpsSelect } from "@material-symbols/svg-400/rounded/autofps_select.svg"

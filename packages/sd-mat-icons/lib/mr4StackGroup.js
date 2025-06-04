@@ -1,1 +1,0 @@
-export { default as mr4StackGroup } from "@material-symbols/svg-400/rounded/stack_group.svg"

@@ -1,1 +1,0 @@
-export { default as mr4NightsStay } from "@material-symbols/svg-400/rounded/nights_stay.svg"

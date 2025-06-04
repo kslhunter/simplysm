@@ -1,1 +1,0 @@
-export { default as mr4KeepOff } from "@material-symbols/svg-400/rounded/keep_off.svg"

@@ -1,1 +1,0 @@
-export { default as mr4ShoppingBagSpeed } from "@material-symbols/svg-400/rounded/shopping_bag_speed.svg"

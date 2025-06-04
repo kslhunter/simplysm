@@ -1,1 +1,0 @@
-export { default as mr4DataThresholding } from "@material-symbols/svg-400/rounded/data_thresholding.svg"

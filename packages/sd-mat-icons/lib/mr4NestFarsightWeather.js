@@ -1,1 +1,0 @@
-export { default as mr4NestFarsightWeather } from "@material-symbols/svg-400/rounded/nest_farsight_weather.svg"

@@ -1,0 +1,1 @@
+export const taChevronCompactLeft = [["path",{"d":"M13 20l-3 -8l3 -8"}]];

@@ -1,1 +1,0 @@
-export { default as mr4IdentityAwareProxy } from "@material-symbols/svg-400/rounded/identity_aware_proxy.svg"

@@ -1,1 +1,0 @@
-export { default as mr4AutoTransmission } from "@material-symbols/svg-400/rounded/auto_transmission.svg"

@@ -1,1 +1,0 @@
-export { default as mr4ComponentExchange } from "@material-symbols/svg-400/rounded/component_exchange.svg"

@@ -1,1 +1,0 @@
-export { default as mr4SettingsInputHdmi } from "@material-symbols/svg-400/rounded/settings_input_hdmi.svg"

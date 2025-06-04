@@ -1,1 +1,0 @@
-export { default as mr4UserAttributes } from "@material-symbols/svg-400/rounded/user_attributes.svg"

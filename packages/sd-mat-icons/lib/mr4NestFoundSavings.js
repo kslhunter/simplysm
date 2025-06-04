@@ -1,1 +1,0 @@
-export { default as mr4NestFoundSavings } from "@material-symbols/svg-400/rounded/nest_found_savings.svg"

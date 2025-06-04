@@ -1,1 +1,0 @@
-export { default as mr4ShieldToggle } from "@material-symbols/svg-400/rounded/shield_toggle.svg"

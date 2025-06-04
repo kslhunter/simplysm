@@ -1,1 +1,0 @@
-export { default as mr4NearMe } from "@material-symbols/svg-400/rounded/near_me.svg"

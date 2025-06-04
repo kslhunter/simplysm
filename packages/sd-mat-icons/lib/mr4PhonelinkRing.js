@@ -1,1 +1,0 @@
-export { default as mr4PhonelinkRing } from "@material-symbols/svg-400/rounded/phonelink_ring.svg"

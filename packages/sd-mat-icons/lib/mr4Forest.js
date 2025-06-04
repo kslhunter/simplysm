@@ -1,1 +1,0 @@
-export { default as mr4Forest } from "@material-symbols/svg-400/rounded/forest.svg"

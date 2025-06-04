@@ -1,0 +1,1 @@
+import {SdTablerIcon} from "../index"; export const taArrowsSplit2: SdTablerIcon;

@@ -1,1 +1,0 @@
-export { default as mr4LightbulbCircle } from "@material-symbols/svg-400/rounded/lightbulb_circle.svg"

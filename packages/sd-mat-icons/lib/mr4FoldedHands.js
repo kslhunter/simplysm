@@ -1,1 +1,0 @@
-export { default as mr4FoldedHands } from "@material-symbols/svg-400/rounded/folded_hands.svg"

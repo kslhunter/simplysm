@@ -1,1 +1,0 @@
-export { default as mr4GarageHome } from "@material-symbols/svg-400/rounded/garage_home.svg"

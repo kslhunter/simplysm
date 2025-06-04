@@ -1,1 +1,0 @@
-export { default as mr4StadiaController } from "@material-symbols/svg-400/rounded/stadia_controller.svg"

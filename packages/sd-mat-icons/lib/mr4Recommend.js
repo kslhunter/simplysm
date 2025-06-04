@@ -1,1 +1,0 @@
-export { default as mr4Recommend } from "@material-symbols/svg-400/rounded/recommend.svg"

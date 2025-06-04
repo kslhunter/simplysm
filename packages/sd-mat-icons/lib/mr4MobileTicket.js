@@ -1,1 +1,0 @@
-export { default as mr4MobileTicket } from "@material-symbols/svg-400/rounded/mobile_ticket.svg"

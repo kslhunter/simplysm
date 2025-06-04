@@ -1,1 +1,0 @@
-export { default as mr4WifiTetheringError } from "@material-symbols/svg-400/rounded/wifi_tethering_error.svg"

@@ -1,1 +1,0 @@
-export { default as mr4SpecialCharacter } from "@material-symbols/svg-400/rounded/special_character.svg"

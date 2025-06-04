@@ -1,1 +1,0 @@
-export { default as mr4HomeAppLogo } from "@material-symbols/svg-400/rounded/home_app_logo.svg"

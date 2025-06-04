@@ -1,1 +1,0 @@
-export { default as mr4Deselect } from "@material-symbols/svg-400/rounded/deselect.svg"

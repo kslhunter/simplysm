@@ -1,1 +1,0 @@
-export { default as mr4SeatHeatLeft } from "@material-symbols/svg-400/rounded/seat_heat_left.svg"

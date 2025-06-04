@@ -1,1 +1,0 @@
-export { default as mr4CheckCircle } from "@material-symbols/svg-400/rounded/check_circle.svg"

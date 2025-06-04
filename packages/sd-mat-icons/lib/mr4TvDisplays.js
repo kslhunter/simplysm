@@ -1,1 +1,0 @@
-export { default as mr4TvDisplays } from "@material-symbols/svg-400/rounded/tv_displays.svg"

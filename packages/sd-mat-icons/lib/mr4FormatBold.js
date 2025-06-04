@@ -1,1 +1,0 @@
-export { default as mr4FormatBold } from "@material-symbols/svg-400/rounded/format_bold.svg"

@@ -1,1 +1,0 @@
-export { default as mr4FireHydrant } from "@material-symbols/svg-400/rounded/fire_hydrant.svg"

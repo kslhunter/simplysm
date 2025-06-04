@@ -1,1 +1,0 @@
-export { default as mr4LanguageKoreanLatin } from "@material-symbols/svg-400/rounded/language_korean_latin.svg"

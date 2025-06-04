@@ -1,1 +1,0 @@
-export { default as mr4PhoneBluetoothSpeaker } from "@material-symbols/svg-400/rounded/phone_bluetooth_speaker.svg"

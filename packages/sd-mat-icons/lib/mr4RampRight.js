@@ -1,1 +1,0 @@
-export { default as mr4RampRight } from "@material-symbols/svg-400/rounded/ramp_right.svg"

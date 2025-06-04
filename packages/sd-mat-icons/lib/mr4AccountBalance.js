@@ -1,1 +1,0 @@
-export { default as mr4AccountBalance } from "@material-symbols/svg-400/rounded/account_balance.svg"

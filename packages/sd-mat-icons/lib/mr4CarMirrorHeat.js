@@ -1,1 +1,0 @@
-export { default as mr4CarMirrorHeat } from "@material-symbols/svg-400/rounded/car_mirror_heat.svg"

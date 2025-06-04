@@ -1,1 +1,0 @@
-export { default as mr4Festival } from "@material-symbols/svg-400/rounded/festival.svg"

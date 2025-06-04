@@ -1,1 +1,0 @@
-export { default as mr4FamilyHistory } from "@material-symbols/svg-400/rounded/family_history.svg"

@@ -1,1 +1,0 @@
-export { default as mr4Cooking } from "@material-symbols/svg-400/rounded/cooking.svg"

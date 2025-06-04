@@ -1,1 +1,0 @@
-export { default as mr4ChevronForward } from "@material-symbols/svg-400/rounded/chevron_forward.svg"

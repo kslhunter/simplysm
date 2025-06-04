@@ -1,1 +1,0 @@
-export { default as mr4CleanHands } from "@material-symbols/svg-400/rounded/clean_hands.svg"

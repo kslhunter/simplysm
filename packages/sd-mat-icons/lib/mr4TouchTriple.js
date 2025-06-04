@@ -1,1 +1,0 @@
-export { default as mr4TouchTriple } from "@material-symbols/svg-400/rounded/touch_triple.svg"

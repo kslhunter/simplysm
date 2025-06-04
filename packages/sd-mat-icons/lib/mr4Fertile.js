@@ -1,1 +1,0 @@
-export { default as mr4Fertile } from "@material-symbols/svg-400/rounded/fertile.svg"

@@ -1,1 +1,0 @@
-export { default as mr4PhonePaused } from "@material-symbols/svg-400/rounded/phone_paused.svg"

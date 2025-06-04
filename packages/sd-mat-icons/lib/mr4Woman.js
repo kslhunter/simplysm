@@ -1,1 +1,0 @@
-export { default as mr4Woman } from "@material-symbols/svg-400/rounded/woman.svg"

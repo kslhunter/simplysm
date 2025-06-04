@@ -1,1 +1,0 @@
-export { default as mr4ContactSupport } from "@material-symbols/svg-400/rounded/contact_support.svg"

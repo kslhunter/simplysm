@@ -1,1 +1,0 @@
-export { default as mr4DoNotStep } from "@material-symbols/svg-400/rounded/do_not_step.svg"

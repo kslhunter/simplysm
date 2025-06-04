@@ -1,1 +1,0 @@
-export { default as mr4SecurityUpdateWarning } from "@material-symbols/svg-400/rounded/security_update_warning.svg"

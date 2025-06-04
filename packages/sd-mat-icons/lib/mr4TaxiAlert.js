@@ -1,1 +1,0 @@
-export { default as mr4TaxiAlert } from "@material-symbols/svg-400/rounded/taxi_alert.svg"

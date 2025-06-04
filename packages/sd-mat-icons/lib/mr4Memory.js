@@ -1,1 +1,0 @@
-export { default as mr4Memory } from "@material-symbols/svg-400/rounded/memory.svg"

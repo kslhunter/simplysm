@@ -1,1 +1,0 @@
-export { default as mr4NestWakeOnApproach } from "@material-symbols/svg-400/rounded/nest_wake_on_approach.svg"

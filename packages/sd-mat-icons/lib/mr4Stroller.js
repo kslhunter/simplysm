@@ -1,1 +1,0 @@
-export { default as mr4Stroller } from "@material-symbols/svg-400/rounded/stroller.svg"

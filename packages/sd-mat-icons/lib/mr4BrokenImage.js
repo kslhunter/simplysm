@@ -1,1 +1,0 @@
-export { default as mr4BrokenImage } from "@material-symbols/svg-400/rounded/broken_image.svg"

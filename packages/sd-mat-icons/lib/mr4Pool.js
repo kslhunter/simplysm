@@ -1,1 +1,0 @@
-export { default as mr4Pool } from "@material-symbols/svg-400/rounded/pool.svg"

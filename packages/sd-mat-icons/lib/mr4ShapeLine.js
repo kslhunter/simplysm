@@ -1,1 +1,0 @@
-export { default as mr4ShapeLine } from "@material-symbols/svg-400/rounded/shape_line.svg"

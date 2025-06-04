@@ -1,1 +1,0 @@
-export { default as mr4SlideLibrary } from "@material-symbols/svg-400/rounded/slide_library.svg"

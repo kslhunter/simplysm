@@ -1,1 +1,0 @@
-export const mr430fps: string;

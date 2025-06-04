@@ -1,0 +1,1 @@
+export const taBrandVercel = [["path",{"d":"M3 19h18l-9 -15z"}]];

@@ -1,1 +1,0 @@
-export { default as mr4ScreenRotation } from "@material-symbols/svg-400/rounded/screen_rotation.svg"

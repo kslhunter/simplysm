@@ -1,1 +1,0 @@
-export { default as mr4WrapText } from "@material-symbols/svg-400/rounded/wrap_text.svg"

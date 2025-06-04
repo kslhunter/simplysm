@@ -1,1 +1,0 @@
-export { default as mr4FoodBank } from "@material-symbols/svg-400/rounded/food_bank.svg"

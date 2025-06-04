@@ -1,1 +1,0 @@
-export { default as mr4Loupe } from "@material-symbols/svg-400/rounded/loupe.svg"

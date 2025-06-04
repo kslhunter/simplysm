@@ -1,1 +1,0 @@
-export { default as mr4Titlecase } from "@material-symbols/svg-400/rounded/titlecase.svg"

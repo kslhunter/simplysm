@@ -1,1 +1,0 @@
-export { default as mr4CarTag } from "@material-symbols/svg-400/rounded/car_tag.svg"

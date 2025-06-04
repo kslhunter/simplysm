@@ -1,1 +1,0 @@
-export { default as mr4Gastroenterology } from "@material-symbols/svg-400/rounded/gastroenterology.svg"

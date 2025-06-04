@@ -1,1 +1,0 @@
-export { default as mr4ContactlessOff } from "@material-symbols/svg-400/rounded/contactless_off.svg"

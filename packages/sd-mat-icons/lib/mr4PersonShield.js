@@ -1,1 +1,0 @@
-export { default as mr4PersonShield } from "@material-symbols/svg-400/rounded/person_shield.svg"

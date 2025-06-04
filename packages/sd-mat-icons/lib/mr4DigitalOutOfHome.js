@@ -1,1 +1,0 @@
-export { default as mr4DigitalOutOfHome } from "@material-symbols/svg-400/rounded/digital_out_of_home.svg"

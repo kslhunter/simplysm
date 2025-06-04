@@ -1,1 +1,0 @@
-export { default as mr4Javascript } from "@material-symbols/svg-400/rounded/javascript.svg"

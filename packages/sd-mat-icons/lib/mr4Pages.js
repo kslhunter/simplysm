@@ -1,1 +1,0 @@
-export { default as mr4Pages } from "@material-symbols/svg-400/rounded/pages.svg"

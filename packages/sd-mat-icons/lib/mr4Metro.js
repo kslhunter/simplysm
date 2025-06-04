@@ -1,1 +1,0 @@
-export { default as mr4Metro } from "@material-symbols/svg-400/rounded/metro.svg"

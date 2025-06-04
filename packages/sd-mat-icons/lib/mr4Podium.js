@@ -1,1 +1,0 @@
-export { default as mr4Podium } from "@material-symbols/svg-400/rounded/podium.svg"

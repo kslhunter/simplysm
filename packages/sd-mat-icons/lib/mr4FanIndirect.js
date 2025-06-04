@@ -1,1 +1,0 @@
-export { default as mr4FanIndirect } from "@material-symbols/svg-400/rounded/fan_indirect.svg"

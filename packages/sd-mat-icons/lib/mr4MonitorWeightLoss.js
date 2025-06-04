@@ -1,1 +1,0 @@
-export { default as mr4MonitorWeightLoss } from "@material-symbols/svg-400/rounded/monitor_weight_loss.svg"

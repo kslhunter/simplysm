@@ -1,1 +1,0 @@
-export { default as mr4Snooze } from "@material-symbols/svg-400/rounded/snooze.svg"

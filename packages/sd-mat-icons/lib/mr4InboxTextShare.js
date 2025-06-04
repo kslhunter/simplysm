@@ -1,1 +1,0 @@
-export { default as mr4InboxTextShare } from "@material-symbols/svg-400/rounded/inbox_text_share.svg"

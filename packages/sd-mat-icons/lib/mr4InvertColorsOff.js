@@ -1,1 +1,0 @@
-export { default as mr4InvertColorsOff } from "@material-symbols/svg-400/rounded/invert_colors_off.svg"

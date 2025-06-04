@@ -1,1 +1,0 @@
-export { default as mr4FitPageWidth } from "@material-symbols/svg-400/rounded/fit_page_width.svg"

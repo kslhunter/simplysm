@@ -1,1 +1,0 @@
-export { default as mr4ClosedCaptionAdd } from "@material-symbols/svg-400/rounded/closed_caption_add.svg"

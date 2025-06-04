@@ -1,1 +1,0 @@
-export { default as mr4NightShelter } from "@material-symbols/svg-400/rounded/night_shelter.svg"

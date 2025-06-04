@@ -1,1 +1,0 @@
-export { default as mr4RangeHood } from "@material-symbols/svg-400/rounded/range_hood.svg"

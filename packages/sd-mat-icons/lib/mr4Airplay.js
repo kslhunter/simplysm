@@ -1,1 +1,0 @@
-export { default as mr4Airplay } from "@material-symbols/svg-400/rounded/airplay.svg"

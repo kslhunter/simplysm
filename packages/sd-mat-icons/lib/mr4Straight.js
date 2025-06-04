@@ -1,1 +1,0 @@
-export { default as mr4Straight } from "@material-symbols/svg-400/rounded/straight.svg"

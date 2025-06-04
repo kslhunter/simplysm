@@ -1,1 +1,0 @@
-export { default as mr4EvShadowMinus } from "@material-symbols/svg-400/rounded/ev_shadow_minus.svg"

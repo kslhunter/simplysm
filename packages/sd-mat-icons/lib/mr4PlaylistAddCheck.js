@@ -1,1 +1,0 @@
-export { default as mr4PlaylistAddCheck } from "@material-symbols/svg-400/rounded/playlist_add_check.svg"

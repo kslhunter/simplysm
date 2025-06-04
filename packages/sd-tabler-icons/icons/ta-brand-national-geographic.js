@@ -1,0 +1,1 @@
+export const taBrandNationalGeographic = [["path",{"d":"M7 3h10v18h-10z"}]];

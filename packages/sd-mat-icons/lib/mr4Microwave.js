@@ -1,1 +1,0 @@
-export { default as mr4Microwave } from "@material-symbols/svg-400/rounded/microwave.svg"

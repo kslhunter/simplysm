@@ -1,1 +1,0 @@
-export { default as mr4NestCamMagnetMount } from "@material-symbols/svg-400/rounded/nest_cam_magnet_mount.svg"

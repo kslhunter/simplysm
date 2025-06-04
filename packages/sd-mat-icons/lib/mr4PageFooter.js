@@ -1,1 +1,0 @@
-export { default as mr4PageFooter } from "@material-symbols/svg-400/rounded/page_footer.svg"

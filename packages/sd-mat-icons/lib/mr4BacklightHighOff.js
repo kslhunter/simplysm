@@ -1,1 +1,0 @@
-export { default as mr4BacklightHighOff } from "@material-symbols/svg-400/rounded/backlight_high_off.svg"

@@ -1,1 +1,0 @@
-export { default as mr4Footprint } from "@material-symbols/svg-400/rounded/footprint.svg"

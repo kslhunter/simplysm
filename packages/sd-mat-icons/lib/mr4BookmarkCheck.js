@@ -1,1 +1,0 @@
-export { default as mr4BookmarkCheck } from "@material-symbols/svg-400/rounded/bookmark_check.svg"

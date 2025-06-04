@@ -1,1 +1,0 @@
-export { default as mr4FormatListNumberedRtl } from "@material-symbols/svg-400/rounded/format_list_numbered_rtl.svg"

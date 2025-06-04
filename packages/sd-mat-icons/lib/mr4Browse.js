@@ -1,1 +1,0 @@
-export { default as mr4Browse } from "@material-symbols/svg-400/rounded/browse.svg"

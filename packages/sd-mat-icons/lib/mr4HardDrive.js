@@ -1,1 +1,0 @@
-export { default as mr4HardDrive } from "@material-symbols/svg-400/rounded/hard_drive.svg"

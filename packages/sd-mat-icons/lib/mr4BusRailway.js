@@ -1,1 +1,0 @@
-export { default as mr4BusRailway } from "@material-symbols/svg-400/rounded/bus_railway.svg"

@@ -1,1 +1,0 @@
-export { default as mr4Spa } from "@material-symbols/svg-400/rounded/spa.svg"

@@ -1,1 +1,0 @@
-export { default as mr4PhotoSizeSelectSmall } from "@material-symbols/svg-400/rounded/photo_size_select_small.svg"

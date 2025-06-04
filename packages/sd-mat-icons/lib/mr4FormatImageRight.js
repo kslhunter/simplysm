@@ -1,1 +1,0 @@
-export { default as mr4FormatImageRight } from "@material-symbols/svg-400/rounded/format_image_right.svg"

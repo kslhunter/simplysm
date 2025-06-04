@@ -1,1 +1,0 @@
-export { default as mr4Task } from "@material-symbols/svg-400/rounded/task.svg"

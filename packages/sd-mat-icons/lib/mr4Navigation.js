@@ -1,1 +1,0 @@
-export { default as mr4Navigation } from "@material-symbols/svg-400/rounded/navigation.svg"

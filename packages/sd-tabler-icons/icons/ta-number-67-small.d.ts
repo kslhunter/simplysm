@@ -1,0 +1,1 @@
+import {SdTablerIcon} from "../index"; export const taNumber67Small: SdTablerIcon;

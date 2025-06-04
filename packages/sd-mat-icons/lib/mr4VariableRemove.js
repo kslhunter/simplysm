@@ -1,1 +1,0 @@
-export { default as mr4VariableRemove } from "@material-symbols/svg-400/rounded/variable_remove.svg"

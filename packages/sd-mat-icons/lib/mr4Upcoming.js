@@ -1,1 +1,0 @@
-export { default as mr4Upcoming } from "@material-symbols/svg-400/rounded/upcoming.svg"

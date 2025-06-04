@@ -1,1 +1,0 @@
-export { default as mr4WatchButtonPress } from "@material-symbols/svg-400/rounded/watch_button_press.svg"

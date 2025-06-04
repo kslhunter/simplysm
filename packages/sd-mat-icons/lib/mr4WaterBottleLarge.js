@@ -1,1 +1,0 @@
-export { default as mr4WaterBottleLarge } from "@material-symbols/svg-400/rounded/water_bottle_large.svg"

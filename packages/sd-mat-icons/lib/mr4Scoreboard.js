@@ -1,1 +1,0 @@
-export { default as mr4Scoreboard } from "@material-symbols/svg-400/rounded/scoreboard.svg"

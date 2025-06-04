@@ -1,1 +1,0 @@
-export { default as mr4CloudDownload } from "@material-symbols/svg-400/rounded/cloud_download.svg"

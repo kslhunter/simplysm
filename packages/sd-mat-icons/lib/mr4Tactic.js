@@ -1,1 +1,0 @@
-export { default as mr4Tactic } from "@material-symbols/svg-400/rounded/tactic.svg"

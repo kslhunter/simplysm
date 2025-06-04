@@ -1,1 +1,0 @@
-export { default as mr4PlayingCards } from "@material-symbols/svg-400/rounded/playing_cards.svg"

@@ -1,1 +1,0 @@
-export { default as mr4TransitTicket } from "@material-symbols/svg-400/rounded/transit_ticket.svg"

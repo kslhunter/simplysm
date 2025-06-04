@@ -1,1 +1,0 @@
-export { default as mr4Voicemail } from "@material-symbols/svg-400/rounded/voicemail.svg"

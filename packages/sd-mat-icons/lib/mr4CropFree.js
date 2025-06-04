@@ -1,1 +1,0 @@
-export { default as mr4CropFree } from "@material-symbols/svg-400/rounded/crop_free.svg"

@@ -1,1 +1,0 @@
-export { default as mr4DeveloperBoard } from "@material-symbols/svg-400/rounded/developer_board.svg"

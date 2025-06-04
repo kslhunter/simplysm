@@ -1,1 +1,0 @@
-export { default as mr4DisabledVisible } from "@material-symbols/svg-400/rounded/disabled_visible.svg"

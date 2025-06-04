@@ -1,1 +1,0 @@
-export { default as mr4MagnifyFullscreen } from "@material-symbols/svg-400/rounded/magnify_fullscreen.svg"

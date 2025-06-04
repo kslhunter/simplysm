@@ -1,1 +1,0 @@
-export { default as mr4HorizontalSplit } from "@material-symbols/svg-400/rounded/horizontal_split.svg"

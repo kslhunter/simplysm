@@ -1,1 +1,0 @@
-export { default as mr4HealthAndBeauty } from "@material-symbols/svg-400/rounded/health_and_beauty.svg"

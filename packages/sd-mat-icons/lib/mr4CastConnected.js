@@ -1,1 +1,0 @@
-export { default as mr4CastConnected } from "@material-symbols/svg-400/rounded/cast_connected.svg"

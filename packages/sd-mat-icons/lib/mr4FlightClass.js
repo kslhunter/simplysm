@@ -1,1 +1,0 @@
-export { default as mr4FlightClass } from "@material-symbols/svg-400/rounded/flight_class.svg"

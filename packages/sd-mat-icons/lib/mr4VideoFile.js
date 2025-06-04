@@ -1,1 +1,0 @@
-export { default as mr4VideoFile } from "@material-symbols/svg-400/rounded/video_file.svg"

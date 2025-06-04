@@ -1,1 +1,0 @@
-export { default as mr4Stream } from "@material-symbols/svg-400/rounded/stream.svg"

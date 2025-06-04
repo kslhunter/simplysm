@@ -1,1 +1,0 @@
-export { default as mr4Chromecast2 } from "@material-symbols/svg-400/rounded/chromecast_2.svg"

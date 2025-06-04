@@ -1,1 +1,0 @@
-export { default as mr4RequestQuote } from "@material-symbols/svg-400/rounded/request_quote.svg"

@@ -1,1 +1,0 @@
-export { default as mr4SplitscreenBottom } from "@material-symbols/svg-400/rounded/splitscreen_bottom.svg"

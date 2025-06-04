@@ -1,1 +1,0 @@
-export { default as mr4BorderColor } from "@material-symbols/svg-400/rounded/border_color.svg"

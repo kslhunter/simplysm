@@ -1,1 +1,0 @@
-export { default as mr4FlipCameraAndroid } from "@material-symbols/svg-400/rounded/flip_camera_android.svg"

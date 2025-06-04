@@ -1,1 +1,0 @@
-export { default as mr4PenSize2 } from "@material-symbols/svg-400/rounded/pen_size_2.svg"

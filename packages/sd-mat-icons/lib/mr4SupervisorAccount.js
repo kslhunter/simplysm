@@ -1,1 +1,0 @@
-export { default as mr4SupervisorAccount } from "@material-symbols/svg-400/rounded/supervisor_account.svg"

@@ -1,1 +1,0 @@
-export { default as mr4TableConvert } from "@material-symbols/svg-400/rounded/table_convert.svg"

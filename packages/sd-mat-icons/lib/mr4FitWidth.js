@@ -1,1 +1,0 @@
-export { default as mr4FitWidth } from "@material-symbols/svg-400/rounded/fit_width.svg"

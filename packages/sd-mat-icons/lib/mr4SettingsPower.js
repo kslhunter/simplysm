@@ -1,1 +1,0 @@
-export { default as mr4SettingsPower } from "@material-symbols/svg-400/rounded/settings_power.svg"

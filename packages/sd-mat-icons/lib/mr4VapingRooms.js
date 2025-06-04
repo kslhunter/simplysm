@@ -1,1 +1,0 @@
-export { default as mr4VapingRooms } from "@material-symbols/svg-400/rounded/vaping_rooms.svg"

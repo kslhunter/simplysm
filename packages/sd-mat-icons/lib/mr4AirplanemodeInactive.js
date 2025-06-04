@@ -1,1 +1,0 @@
-export { default as mr4AirplanemodeInactive } from "@material-symbols/svg-400/rounded/airplanemode_inactive.svg"

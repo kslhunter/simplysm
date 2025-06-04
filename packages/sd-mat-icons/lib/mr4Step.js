@@ -1,1 +1,0 @@
-export { default as mr4Step } from "@material-symbols/svg-400/rounded/step.svg"

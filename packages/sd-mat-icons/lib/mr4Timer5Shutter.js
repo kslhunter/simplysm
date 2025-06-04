@@ -1,1 +1,0 @@
-export { default as mr4Timer5Shutter } from "@material-symbols/svg-400/rounded/timer_5_shutter.svg"

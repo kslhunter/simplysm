@@ -1,1 +1,0 @@
-export { default as mr4ChildFriendly } from "@material-symbols/svg-400/rounded/child_friendly.svg"

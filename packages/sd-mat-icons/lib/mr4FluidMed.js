@@ -1,1 +1,0 @@
-export { default as mr4FluidMed } from "@material-symbols/svg-400/rounded/fluid_med.svg"

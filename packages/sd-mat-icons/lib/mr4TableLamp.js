@@ -1,1 +1,0 @@
-export { default as mr4TableLamp } from "@material-symbols/svg-400/rounded/table_lamp.svg"

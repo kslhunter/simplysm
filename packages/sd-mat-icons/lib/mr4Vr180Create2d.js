@@ -1,1 +1,0 @@
-export { default as mr4Vr180Create2d } from "@material-symbols/svg-400/rounded/vr180_create2d.svg"

@@ -1,0 +1,1 @@
+export const taLetterASmall = [["path",{"d":"M10 16v-6a2 2 0 1 1 4 0v6"}],["path",{"d":"M10 13h4"}]];

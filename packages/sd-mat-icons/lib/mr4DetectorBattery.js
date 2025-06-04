@@ -1,1 +1,0 @@
-export { default as mr4DetectorBattery } from "@material-symbols/svg-400/rounded/detector_battery.svg"

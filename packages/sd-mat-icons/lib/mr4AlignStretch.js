@@ -1,1 +1,0 @@
-export { default as mr4AlignStretch } from "@material-symbols/svg-400/rounded/align_stretch.svg"

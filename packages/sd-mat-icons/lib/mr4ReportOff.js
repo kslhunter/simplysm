@@ -1,1 +1,0 @@
-export { default as mr4ReportOff } from "@material-symbols/svg-400/rounded/report_off.svg"

@@ -1,1 +1,0 @@
-export { default as mr4BlurShort } from "@material-symbols/svg-400/rounded/blur_short.svg"

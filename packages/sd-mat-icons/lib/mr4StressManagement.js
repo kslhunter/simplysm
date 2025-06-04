@@ -1,1 +1,0 @@
-export { default as mr4StressManagement } from "@material-symbols/svg-400/rounded/stress_management.svg"

@@ -1,1 +1,0 @@
-export { default as mr4HowToReg } from "@material-symbols/svg-400/rounded/how_to_reg.svg"

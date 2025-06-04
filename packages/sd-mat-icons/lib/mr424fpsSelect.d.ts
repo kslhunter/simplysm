@@ -1,1 +1,0 @@
-export const mr424fpsSelect: string;

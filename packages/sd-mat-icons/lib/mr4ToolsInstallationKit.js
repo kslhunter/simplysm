@@ -1,1 +1,0 @@
-export { default as mr4ToolsInstallationKit } from "@material-symbols/svg-400/rounded/tools_installation_kit.svg"

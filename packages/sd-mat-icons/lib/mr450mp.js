@@ -1,1 +1,0 @@
-export { default as mr450mp } from "@material-symbols/svg-400/rounded/50mp.svg"

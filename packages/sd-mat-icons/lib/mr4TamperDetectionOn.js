@@ -1,1 +1,0 @@
-export { default as mr4TamperDetectionOn } from "@material-symbols/svg-400/rounded/tamper_detection_on.svg"

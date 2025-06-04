@@ -1,1 +1,0 @@
-export { default as mr4PlayForWork } from "@material-symbols/svg-400/rounded/play_for_work.svg"

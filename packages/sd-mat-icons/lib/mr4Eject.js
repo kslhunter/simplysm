@@ -1,1 +1,0 @@
-export { default as mr4Eject } from "@material-symbols/svg-400/rounded/eject.svg"

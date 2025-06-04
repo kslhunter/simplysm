@@ -1,1 +1,0 @@
-export { default as mr4Polymer } from "@material-symbols/svg-400/rounded/polymer.svg"

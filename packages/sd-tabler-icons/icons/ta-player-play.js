@@ -1,0 +1,1 @@
+export const taPlayerPlay = [["path",{"d":"M7 4v16l13 -8z"}]];

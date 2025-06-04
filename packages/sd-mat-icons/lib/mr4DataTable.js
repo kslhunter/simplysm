@@ -1,1 +1,0 @@
-export { default as mr4DataTable } from "@material-symbols/svg-400/rounded/data_table.svg"

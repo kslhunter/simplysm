@@ -1,1 +1,0 @@
-export { default as mr4PhoneInTalk } from "@material-symbols/svg-400/rounded/phone_in_talk.svg"

@@ -1,1 +1,0 @@
-export { default as mr4Adb } from "@material-symbols/svg-400/rounded/adb.svg"

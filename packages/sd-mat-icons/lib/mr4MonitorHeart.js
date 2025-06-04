@@ -1,1 +1,0 @@
-export { default as mr4MonitorHeart } from "@material-symbols/svg-400/rounded/monitor_heart.svg"

@@ -1,1 +1,0 @@
-export { default as mr4WbIncandescent } from "@material-symbols/svg-400/rounded/wb_incandescent.svg"

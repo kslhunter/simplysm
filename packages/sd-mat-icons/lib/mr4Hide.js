@@ -1,1 +1,0 @@
-export { default as mr4Hide } from "@material-symbols/svg-400/rounded/hide.svg"

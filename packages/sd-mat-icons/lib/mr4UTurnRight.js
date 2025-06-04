@@ -1,1 +1,0 @@
-export { default as mr4UTurnRight } from "@material-symbols/svg-400/rounded/u_turn_right.svg"

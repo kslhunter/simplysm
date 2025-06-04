@@ -1,1 +1,0 @@
-export { default as mr4Autorenew } from "@material-symbols/svg-400/rounded/autorenew.svg"

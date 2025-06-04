@@ -1,1 +1,0 @@
-export { default as mr4OutdoorGarden } from "@material-symbols/svg-400/rounded/outdoor_garden.svg"

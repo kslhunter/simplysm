@@ -1,1 +1,0 @@
-export { default as mr4Falling } from "@material-symbols/svg-400/rounded/falling.svg"

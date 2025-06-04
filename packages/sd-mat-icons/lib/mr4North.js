@@ -1,1 +1,0 @@
-export { default as mr4North } from "@material-symbols/svg-400/rounded/north.svg"

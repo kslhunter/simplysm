@@ -1,1 +1,0 @@
-export { default as mr4VerticalAlignBottom } from "@material-symbols/svg-400/rounded/vertical_align_bottom.svg"

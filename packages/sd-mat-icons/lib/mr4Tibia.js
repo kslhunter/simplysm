@@ -1,1 +1,0 @@
-export { default as mr4Tibia } from "@material-symbols/svg-400/rounded/tibia.svg"

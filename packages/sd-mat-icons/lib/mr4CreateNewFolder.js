@@ -1,1 +1,0 @@
-export { default as mr4CreateNewFolder } from "@material-symbols/svg-400/rounded/create_new_folder.svg"

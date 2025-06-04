@@ -1,1 +1,0 @@
-export { default as mr4QrCodeScanner } from "@material-symbols/svg-400/rounded/qr_code_scanner.svg"

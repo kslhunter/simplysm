@@ -1,1 +1,0 @@
-export { default as mr4Heat } from "@material-symbols/svg-400/rounded/heat.svg"

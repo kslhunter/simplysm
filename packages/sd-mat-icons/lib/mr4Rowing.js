@@ -1,1 +1,0 @@
-export { default as mr4Rowing } from "@material-symbols/svg-400/rounded/rowing.svg"

@@ -1,1 +1,0 @@
-export { default as mr4RemoveModerator } from "@material-symbols/svg-400/rounded/remove_moderator.svg"

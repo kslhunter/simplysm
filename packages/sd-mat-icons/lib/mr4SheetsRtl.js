@@ -1,1 +1,0 @@
-export { default as mr4SheetsRtl } from "@material-symbols/svg-400/rounded/sheets_rtl.svg"

@@ -1,1 +1,0 @@
-export { default as mr4ElectricScooter } from "@material-symbols/svg-400/rounded/electric_scooter.svg"

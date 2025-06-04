@@ -1,1 +1,0 @@
-export { default as mr4Title } from "@material-symbols/svg-400/rounded/title.svg"

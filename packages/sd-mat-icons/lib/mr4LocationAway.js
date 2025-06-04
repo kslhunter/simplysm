@@ -1,1 +1,0 @@
-export { default as mr4LocationAway } from "@material-symbols/svg-400/rounded/location_away.svg"

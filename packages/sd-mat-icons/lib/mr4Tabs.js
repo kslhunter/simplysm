@@ -1,1 +1,0 @@
-export { default as mr4Tabs } from "@material-symbols/svg-400/rounded/tabs.svg"

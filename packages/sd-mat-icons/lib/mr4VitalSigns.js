@@ -1,1 +1,0 @@
-export { default as mr4VitalSigns } from "@material-symbols/svg-400/rounded/vital_signs.svg"

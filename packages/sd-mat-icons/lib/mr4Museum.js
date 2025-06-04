@@ -1,1 +1,0 @@
-export { default as mr4Museum } from "@material-symbols/svg-400/rounded/museum.svg"

@@ -1,1 +1,0 @@
-export { default as mr4Diversity4 } from "@material-symbols/svg-400/rounded/diversity_4.svg"

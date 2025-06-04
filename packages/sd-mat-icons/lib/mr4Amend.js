@@ -1,1 +1,0 @@
-export { default as mr4Amend } from "@material-symbols/svg-400/rounded/amend.svg"

@@ -1,1 +1,0 @@
-export { default as mr4EncryptedAddCircle } from "@material-symbols/svg-400/rounded/encrypted_add_circle.svg"

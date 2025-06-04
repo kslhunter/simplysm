@@ -1,1 +1,0 @@
-export { default as mr4MobileScreensaver } from "@material-symbols/svg-400/rounded/mobile_screensaver.svg"

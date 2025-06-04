@@ -1,1 +1,0 @@
-export { default as mr4Dentistry } from "@material-symbols/svg-400/rounded/dentistry.svg"

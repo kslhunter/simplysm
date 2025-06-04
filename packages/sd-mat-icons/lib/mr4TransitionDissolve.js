@@ -1,1 +1,0 @@
-export { default as mr4TransitionDissolve } from "@material-symbols/svg-400/rounded/transition_dissolve.svg"

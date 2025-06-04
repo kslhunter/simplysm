@@ -1,1 +1,0 @@
-export { default as mr4FeatureSearch } from "@material-symbols/svg-400/rounded/feature_search.svg"

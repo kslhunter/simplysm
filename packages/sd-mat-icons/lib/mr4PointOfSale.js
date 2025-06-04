@@ -1,1 +1,0 @@
-export { default as mr4PointOfSale } from "@material-symbols/svg-400/rounded/point_of_sale.svg"

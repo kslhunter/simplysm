@@ -1,0 +1,1 @@
+export const taMenuDeep = [["path",{"d":"M4 6h16"}],["path",{"d":"M7 12h13"}],["path",{"d":"M10 18h10"}]];

@@ -1,0 +1,1 @@
+export const taArrowBarToLeftDashed = [["path",{"d":"M10 12l10 0"}],["path",{"d":"M10 12l4 -4"}],["path",{"d":"M10 12l4 4"}],["path",{"d":"M4 20l0 -3m0 -13l0 3m0 3.5l0 3"}]];

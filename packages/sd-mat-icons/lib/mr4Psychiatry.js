@@ -1,1 +1,0 @@
-export { default as mr4Psychiatry } from "@material-symbols/svg-400/rounded/psychiatry.svg"

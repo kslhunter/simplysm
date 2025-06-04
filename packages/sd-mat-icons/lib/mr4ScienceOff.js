@@ -1,1 +1,0 @@
-export { default as mr4ScienceOff } from "@material-symbols/svg-400/rounded/science_off.svg"

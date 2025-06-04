@@ -1,1 +1,0 @@
-export { default as mr4Inventory2 } from "@material-symbols/svg-400/rounded/inventory_2.svg"

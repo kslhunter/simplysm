@@ -1,1 +1,0 @@
-export { default as mr4MacroOff } from "@material-symbols/svg-400/rounded/macro_off.svg"

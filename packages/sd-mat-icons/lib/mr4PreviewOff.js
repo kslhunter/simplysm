@@ -1,1 +1,0 @@
-export { default as mr4PreviewOff } from "@material-symbols/svg-400/rounded/preview_off.svg"

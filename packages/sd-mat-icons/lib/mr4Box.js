@@ -1,1 +1,0 @@
-export { default as mr4Box } from "@material-symbols/svg-400/rounded/box.svg"

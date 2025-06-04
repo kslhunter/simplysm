@@ -1,1 +1,0 @@
-export { default as mr4SirenQuestion } from "@material-symbols/svg-400/rounded/siren_question.svg"

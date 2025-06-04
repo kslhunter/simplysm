@@ -1,1 +1,0 @@
-export { default as mr4TextSelectStart } from "@material-symbols/svg-400/rounded/text_select_start.svg"

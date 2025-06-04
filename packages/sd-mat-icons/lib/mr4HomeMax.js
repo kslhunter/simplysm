@@ -1,1 +1,0 @@
-export { default as mr4HomeMax } from "@material-symbols/svg-400/rounded/home_max.svg"

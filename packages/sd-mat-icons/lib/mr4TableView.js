@@ -1,1 +1,0 @@
-export { default as mr4TableView } from "@material-symbols/svg-400/rounded/table_view.svg"

@@ -1,1 +1,0 @@
-export { default as mr4FiberNew } from "@material-symbols/svg-400/rounded/fiber_new.svg"

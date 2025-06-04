@@ -1,1 +1,0 @@
-export { default as mr4Soap } from "@material-symbols/svg-400/rounded/soap.svg"

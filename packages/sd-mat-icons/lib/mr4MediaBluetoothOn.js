@@ -1,1 +1,0 @@
-export { default as mr4MediaBluetoothOn } from "@material-symbols/svg-400/rounded/media_bluetooth_on.svg"

@@ -1,1 +1,0 @@
-export { default as mr4Yard } from "@material-symbols/svg-400/rounded/yard.svg"

@@ -1,1 +1,0 @@
-export { default as mr4ManageSearch } from "@material-symbols/svg-400/rounded/manage_search.svg"

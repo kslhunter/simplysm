@@ -1,1 +1,0 @@
-export { default as mr4AirPurifier } from "@material-symbols/svg-400/rounded/air_purifier.svg"

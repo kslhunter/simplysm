@@ -1,1 +1,0 @@
-export { default as mr4CarLock } from "@material-symbols/svg-400/rounded/car_lock.svg"

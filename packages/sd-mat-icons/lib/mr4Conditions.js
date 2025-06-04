@@ -1,1 +1,0 @@
-export { default as mr4Conditions } from "@material-symbols/svg-400/rounded/conditions.svg"

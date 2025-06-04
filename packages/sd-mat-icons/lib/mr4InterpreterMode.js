@@ -1,1 +1,0 @@
-export { default as mr4InterpreterMode } from "@material-symbols/svg-400/rounded/interpreter_mode.svg"

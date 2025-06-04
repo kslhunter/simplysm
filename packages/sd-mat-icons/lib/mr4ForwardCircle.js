@@ -1,1 +1,0 @@
-export { default as mr4ForwardCircle } from "@material-symbols/svg-400/rounded/forward_circle.svg"

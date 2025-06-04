@@ -1,1 +1,0 @@
-export { default as mr4WifiCalling } from "@material-symbols/svg-400/rounded/wifi_calling.svg"

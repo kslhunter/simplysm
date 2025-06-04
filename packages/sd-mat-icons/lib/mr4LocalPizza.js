@@ -1,1 +1,0 @@
-export { default as mr4LocalPizza } from "@material-symbols/svg-400/rounded/local_pizza.svg"

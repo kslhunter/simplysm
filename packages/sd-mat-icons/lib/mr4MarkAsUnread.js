@@ -1,1 +1,0 @@
-export { default as mr4MarkAsUnread } from "@material-symbols/svg-400/rounded/mark_as_unread.svg"

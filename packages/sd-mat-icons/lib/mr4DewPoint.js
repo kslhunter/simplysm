@@ -1,1 +1,0 @@
-export { default as mr4DewPoint } from "@material-symbols/svg-400/rounded/dew_point.svg"

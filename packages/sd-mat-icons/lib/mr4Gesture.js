@@ -1,1 +1,0 @@
-export { default as mr4Gesture } from "@material-symbols/svg-400/rounded/gesture.svg"

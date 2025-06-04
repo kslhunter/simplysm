@@ -1,1 +1,0 @@
-export { default as mr4HeadMountedDevice } from "@material-symbols/svg-400/rounded/head_mounted_device.svg"

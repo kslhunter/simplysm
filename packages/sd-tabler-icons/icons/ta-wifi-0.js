@@ -1,0 +1,1 @@
+export const taWifi0 = [["path",{"d":"M12 18l.01 0"}]];

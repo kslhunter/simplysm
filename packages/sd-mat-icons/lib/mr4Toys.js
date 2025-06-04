@@ -1,1 +1,0 @@
-export { default as mr4Toys } from "@material-symbols/svg-400/rounded/toys.svg"

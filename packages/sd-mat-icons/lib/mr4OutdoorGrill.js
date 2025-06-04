@@ -1,1 +1,0 @@
-export { default as mr4OutdoorGrill } from "@material-symbols/svg-400/rounded/outdoor_grill.svg"

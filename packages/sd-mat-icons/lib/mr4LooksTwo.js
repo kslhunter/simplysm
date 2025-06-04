@@ -1,1 +1,0 @@
-export { default as mr4LooksTwo } from "@material-symbols/svg-400/rounded/looks_two.svg"

@@ -1,1 +1,0 @@
-export { default as mr4ArrowAndEdge } from "@material-symbols/svg-400/rounded/arrow_and_edge.svg"

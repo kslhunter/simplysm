@@ -1,1 +1,0 @@
-export { default as mr4Tonality2 } from "@material-symbols/svg-400/rounded/tonality_2.svg"

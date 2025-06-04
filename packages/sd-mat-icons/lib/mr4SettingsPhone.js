@@ -1,1 +1,0 @@
-export { default as mr4SettingsPhone } from "@material-symbols/svg-400/rounded/settings_phone.svg"

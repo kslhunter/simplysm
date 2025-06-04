@@ -1,1 +1,0 @@
-export { default as mr4TextFields } from "@material-symbols/svg-400/rounded/text_fields.svg"

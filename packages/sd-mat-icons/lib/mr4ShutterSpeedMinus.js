@@ -1,1 +1,0 @@
-export { default as mr4ShutterSpeedMinus } from "@material-symbols/svg-400/rounded/shutter_speed_minus.svg"

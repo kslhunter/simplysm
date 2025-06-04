@@ -1,1 +1,0 @@
-export { default as mr4Stop } from "@material-symbols/svg-400/rounded/stop.svg"

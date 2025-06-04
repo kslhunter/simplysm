@@ -1,1 +1,0 @@
-export { default as mr4MediaOutputOff } from "@material-symbols/svg-400/rounded/media_output_off.svg"

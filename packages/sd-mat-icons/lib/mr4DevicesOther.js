@@ -1,1 +1,0 @@
-export { default as mr4DevicesOther } from "@material-symbols/svg-400/rounded/devices_other.svg"

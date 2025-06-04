@@ -13,7 +13,7 @@
       <excludeFolder url="file://$MODULE_DIR$/_logs" />
       <excludeFolder url="file://$MODULE_DIR$/temp" />
       <excludeFolder url="file://$MODULE_DIR$/tmp" />
-      <excludeFolder url="file://$MODULE_DIR$/packages/sd-mat-icons/lib" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-tabler-icons/icons" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

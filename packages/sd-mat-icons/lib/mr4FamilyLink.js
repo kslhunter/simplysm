@@ -1,1 +1,0 @@
-export { default as mr4FamilyLink } from "@material-symbols/svg-400/rounded/family_link.svg"

@@ -1,1 +1,0 @@
-export { default as mr4FilterArrowRight } from "@material-symbols/svg-400/rounded/filter_arrow_right.svg"

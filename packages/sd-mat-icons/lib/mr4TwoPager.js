@@ -1,1 +1,0 @@
-export { default as mr4TwoPager } from "@material-symbols/svg-400/rounded/two_pager.svg"

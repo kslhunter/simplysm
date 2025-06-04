@@ -1,1 +1,0 @@
-export { default as mr4IndeterminateQuestionBox } from "@material-symbols/svg-400/rounded/indeterminate_question_box.svg"

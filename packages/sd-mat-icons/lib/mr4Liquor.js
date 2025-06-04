@@ -1,1 +1,0 @@
-export { default as mr4Liquor } from "@material-symbols/svg-400/rounded/liquor.svg"

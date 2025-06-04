@@ -1,1 +1,0 @@
-export { default as mr4UpiPay } from "@material-symbols/svg-400/rounded/upi_pay.svg"

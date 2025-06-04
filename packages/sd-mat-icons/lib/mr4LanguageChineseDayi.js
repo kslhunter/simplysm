@@ -1,1 +1,0 @@
-export { default as mr4LanguageChineseDayi } from "@material-symbols/svg-400/rounded/language_chinese_dayi.svg"

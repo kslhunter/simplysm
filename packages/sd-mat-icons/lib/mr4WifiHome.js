@@ -1,1 +1,0 @@
-export { default as mr4WifiHome } from "@material-symbols/svg-400/rounded/wifi_home.svg"

@@ -1,1 +1,0 @@
-export { default as mr4CodeOff } from "@material-symbols/svg-400/rounded/code_off.svg"

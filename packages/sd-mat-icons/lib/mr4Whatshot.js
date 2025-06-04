@@ -1,1 +1,0 @@
-export { default as mr4Whatshot } from "@material-symbols/svg-400/rounded/whatshot.svg"

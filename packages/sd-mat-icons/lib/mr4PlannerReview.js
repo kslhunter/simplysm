@@ -1,1 +1,0 @@
-export { default as mr4PlannerReview } from "@material-symbols/svg-400/rounded/planner_review.svg"

@@ -1,1 +1,0 @@
-export { default as mr4NotificationsActive } from "@material-symbols/svg-400/rounded/notifications_active.svg"

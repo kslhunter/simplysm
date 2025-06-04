@@ -1,1 +1,0 @@
-export { default as mr4PersonBook } from "@material-symbols/svg-400/rounded/person_book.svg"

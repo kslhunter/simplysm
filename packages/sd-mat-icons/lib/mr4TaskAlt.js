@@ -1,1 +1,0 @@
-export { default as mr4TaskAlt } from "@material-symbols/svg-400/rounded/task_alt.svg"

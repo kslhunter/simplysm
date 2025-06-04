@@ -1,1 +1,0 @@
-export { default as mr4UlnaRadiusAlt } from "@material-symbols/svg-400/rounded/ulna_radius_alt.svg"

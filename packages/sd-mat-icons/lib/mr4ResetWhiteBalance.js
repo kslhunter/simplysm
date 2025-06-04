@@ -1,1 +1,0 @@
-export { default as mr4ResetWhiteBalance } from "@material-symbols/svg-400/rounded/reset_white_balance.svg"

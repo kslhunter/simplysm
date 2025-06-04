@@ -1,1 +1,0 @@
-export { default as mr4Copyright } from "@material-symbols/svg-400/rounded/copyright.svg"

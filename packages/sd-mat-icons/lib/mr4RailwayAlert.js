@@ -1,1 +1,0 @@
-export { default as mr4RailwayAlert } from "@material-symbols/svg-400/rounded/railway_alert.svg"

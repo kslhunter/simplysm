@@ -1,1 +1,0 @@
-export { default as mr4CloseFullscreen } from "@material-symbols/svg-400/rounded/close_fullscreen.svg"

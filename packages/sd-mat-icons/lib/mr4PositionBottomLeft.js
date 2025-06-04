@@ -1,1 +1,0 @@
-export { default as mr4PositionBottomLeft } from "@material-symbols/svg-400/rounded/position_bottom_left.svg"

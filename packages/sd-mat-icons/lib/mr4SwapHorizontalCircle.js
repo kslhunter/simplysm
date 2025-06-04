@@ -1,1 +1,0 @@
-export { default as mr4SwapHorizontalCircle } from "@material-symbols/svg-400/rounded/swap_horizontal_circle.svg"

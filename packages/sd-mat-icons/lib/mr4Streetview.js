@@ -1,1 +1,0 @@
-export { default as mr4Streetview } from "@material-symbols/svg-400/rounded/streetview.svg"

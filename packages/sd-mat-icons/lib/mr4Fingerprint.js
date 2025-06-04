@@ -1,1 +1,0 @@
-export { default as mr4Fingerprint } from "@material-symbols/svg-400/rounded/fingerprint.svg"

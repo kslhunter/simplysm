@@ -1,1 +1,0 @@
-export { default as mr4AddRoad } from "@material-symbols/svg-400/rounded/add_road.svg"

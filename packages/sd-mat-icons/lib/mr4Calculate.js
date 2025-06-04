@@ -1,1 +1,0 @@
-export { default as mr4Calculate } from "@material-symbols/svg-400/rounded/calculate.svg"

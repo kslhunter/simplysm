@@ -1,1 +1,0 @@
-export { default as mr4Stadium } from "@material-symbols/svg-400/rounded/stadium.svg"

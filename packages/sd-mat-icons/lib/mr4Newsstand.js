@@ -1,1 +1,0 @@
-export { default as mr4Newsstand } from "@material-symbols/svg-400/rounded/newsstand.svg"

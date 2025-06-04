@@ -1,1 +1,0 @@
-export { default as mr4Cognition } from "@material-symbols/svg-400/rounded/cognition.svg"

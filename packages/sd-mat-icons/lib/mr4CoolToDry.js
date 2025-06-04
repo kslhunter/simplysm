@@ -1,1 +1,0 @@
-export { default as mr4CoolToDry } from "@material-symbols/svg-400/rounded/cool_to_dry.svg"

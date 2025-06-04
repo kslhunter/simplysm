@@ -1,1 +1,0 @@
-export { default as mr4DoorSensor } from "@material-symbols/svg-400/rounded/door_sensor.svg"

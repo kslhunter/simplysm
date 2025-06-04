@@ -1,1 +1,0 @@
-export { default as mr4ViewInAr } from "@material-symbols/svg-400/rounded/view_in_ar.svg"

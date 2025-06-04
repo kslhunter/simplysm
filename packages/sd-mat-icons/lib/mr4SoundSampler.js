@@ -1,1 +1,0 @@
-export { default as mr4SoundSampler } from "@material-symbols/svg-400/rounded/sound_sampler.svg"

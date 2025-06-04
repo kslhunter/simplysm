@@ -1,1 +1,0 @@
-export const mr4Timer3Alt1: string;

@@ -1,1 +1,0 @@
-export { default as mr4PlaylistRemove } from "@material-symbols/svg-400/rounded/playlist_remove.svg"

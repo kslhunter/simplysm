@@ -1,1 +1,0 @@
-export { default as mr4YoutubeActivity } from "@material-symbols/svg-400/rounded/youtube_activity.svg"

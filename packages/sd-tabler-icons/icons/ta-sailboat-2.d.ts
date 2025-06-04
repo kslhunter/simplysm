@@ -1,0 +1,1 @@
+import {SdTablerIcon} from "../index"; export const taSailboat2: SdTablerIcon;

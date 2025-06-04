@@ -1,1 +1,0 @@
-export { default as mr4PrintDisabled } from "@material-symbols/svg-400/rounded/print_disabled.svg"

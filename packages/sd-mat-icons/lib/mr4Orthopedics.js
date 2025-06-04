@@ -1,1 +1,0 @@
-export { default as mr4Orthopedics } from "@material-symbols/svg-400/rounded/orthopedics.svg"

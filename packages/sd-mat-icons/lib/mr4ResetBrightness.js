@@ -1,1 +1,0 @@
-export { default as mr4ResetBrightness } from "@material-symbols/svg-400/rounded/reset_brightness.svg"

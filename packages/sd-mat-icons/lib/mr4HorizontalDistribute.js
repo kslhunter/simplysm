@@ -1,1 +1,0 @@
-export { default as mr4HorizontalDistribute } from "@material-symbols/svg-400/rounded/horizontal_distribute.svg"

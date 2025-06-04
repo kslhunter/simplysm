@@ -1,1 +1,0 @@
-export { default as mr4LocationDisabled } from "@material-symbols/svg-400/rounded/location_disabled.svg"

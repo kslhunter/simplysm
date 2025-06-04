@@ -1,1 +1,0 @@
-export { default as mr4QuestionExchange } from "@material-symbols/svg-400/rounded/question_exchange.svg"

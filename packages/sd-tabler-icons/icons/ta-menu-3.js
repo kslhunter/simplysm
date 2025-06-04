@@ -1,0 +1,1 @@
+export const taMenu3 = [["path",{"d":"M10 6h10"}],["path",{"d":"M4 12h16"}],["path",{"d":"M7 12h13"}],["path",{"d":"M4 18h10"}]];

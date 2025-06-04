@@ -1,1 +1,0 @@
-export { default as mr4LayersClear } from "@material-symbols/svg-400/rounded/layers_clear.svg"

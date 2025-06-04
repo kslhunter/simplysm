@@ -1,1 +1,0 @@
-export { default as mr4SpaceBar } from "@material-symbols/svg-400/rounded/space_bar.svg"

@@ -1,1 +1,0 @@
-export { default as mr4OnHubDevice } from "@material-symbols/svg-400/rounded/on_hub_device.svg"

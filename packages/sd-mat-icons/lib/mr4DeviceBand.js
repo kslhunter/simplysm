@@ -1,1 +1,0 @@
-export { default as mr4DeviceBand } from "@material-symbols/svg-400/rounded/device_band.svg"

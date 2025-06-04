@@ -1,1 +1,0 @@
-export { default as mr4Curtains } from "@material-symbols/svg-400/rounded/curtains.svg"

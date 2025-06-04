@@ -1,1 +1,0 @@
-export { default as mr4Tablet } from "@material-symbols/svg-400/rounded/tablet.svg"

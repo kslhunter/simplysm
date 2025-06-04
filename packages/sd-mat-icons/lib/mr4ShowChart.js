@@ -1,1 +1,0 @@
-export { default as mr4ShowChart } from "@material-symbols/svg-400/rounded/show_chart.svg"

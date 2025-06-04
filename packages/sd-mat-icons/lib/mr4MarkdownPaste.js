@@ -1,1 +1,0 @@
-export { default as mr4MarkdownPaste } from "@material-symbols/svg-400/rounded/markdown_paste.svg"

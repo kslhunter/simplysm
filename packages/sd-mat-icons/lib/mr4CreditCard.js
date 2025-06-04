@@ -1,1 +1,0 @@
-export { default as mr4CreditCard } from "@material-symbols/svg-400/rounded/credit_card.svg"

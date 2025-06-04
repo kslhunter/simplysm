@@ -1,1 +1,0 @@
-export { default as mr4MissedVideoCall } from "@material-symbols/svg-400/rounded/missed_video_call.svg"

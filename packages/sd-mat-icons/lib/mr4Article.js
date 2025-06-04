@@ -1,1 +1,0 @@
-export { default as mr4Article } from "@material-symbols/svg-400/rounded/article.svg"

@@ -1,1 +1,0 @@
-export { default as mr4Dialpad } from "@material-symbols/svg-400/rounded/dialpad.svg"

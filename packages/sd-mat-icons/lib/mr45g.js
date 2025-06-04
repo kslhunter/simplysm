@@ -1,1 +1,0 @@
-export { default as mr45g } from "@material-symbols/svg-400/rounded/5g.svg"

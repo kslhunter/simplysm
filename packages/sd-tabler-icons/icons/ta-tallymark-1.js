@@ -1,0 +1,1 @@
+export const taTallymark1 = [["path",{"d":"M12 5l0 14"}]];

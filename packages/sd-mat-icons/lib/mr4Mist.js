@@ -1,1 +1,0 @@
-export { default as mr4Mist } from "@material-symbols/svg-400/rounded/mist.svg"

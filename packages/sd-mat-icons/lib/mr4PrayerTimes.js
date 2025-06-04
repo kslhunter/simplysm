@@ -1,1 +1,0 @@
-export { default as mr4PrayerTimes } from "@material-symbols/svg-400/rounded/prayer_times.svg"

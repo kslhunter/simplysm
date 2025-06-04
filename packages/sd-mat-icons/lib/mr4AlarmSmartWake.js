@@ -1,1 +1,0 @@
-export { default as mr4AlarmSmartWake } from "@material-symbols/svg-400/rounded/alarm_smart_wake.svg"

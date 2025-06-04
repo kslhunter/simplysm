@@ -1,1 +1,0 @@
-export { default as mr4LibraryAdd } from "@material-symbols/svg-400/rounded/library_add.svg"

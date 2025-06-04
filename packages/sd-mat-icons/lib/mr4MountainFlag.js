@@ -1,1 +1,0 @@
-export { default as mr4MountainFlag } from "@material-symbols/svg-400/rounded/mountain_flag.svg"

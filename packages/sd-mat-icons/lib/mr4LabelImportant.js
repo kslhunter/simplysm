@@ -1,1 +1,0 @@
-export { default as mr4LabelImportant } from "@material-symbols/svg-400/rounded/label_important.svg"

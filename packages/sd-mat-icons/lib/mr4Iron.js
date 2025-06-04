@@ -1,1 +1,0 @@
-export { default as mr4Iron } from "@material-symbols/svg-400/rounded/iron.svg"

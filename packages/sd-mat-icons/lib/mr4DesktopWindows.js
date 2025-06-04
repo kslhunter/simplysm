@@ -1,1 +1,0 @@
-export { default as mr4DesktopWindows } from "@material-symbols/svg-400/rounded/desktop_windows.svg"

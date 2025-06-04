@@ -1,1 +1,0 @@
-export { default as mr4UnknownMed } from "@material-symbols/svg-400/rounded/unknown_med.svg"

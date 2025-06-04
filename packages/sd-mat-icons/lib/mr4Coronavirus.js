@@ -1,1 +1,0 @@
-export { default as mr4Coronavirus } from "@material-symbols/svg-400/rounded/coronavirus.svg"

@@ -1,1 +1,0 @@
-export { default as mr4Spo2 } from "@material-symbols/svg-400/rounded/spo2.svg"

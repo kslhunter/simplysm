@@ -1,1 +1,0 @@
-export { default as mr4BookmarkStar } from "@material-symbols/svg-400/rounded/bookmark_star.svg"

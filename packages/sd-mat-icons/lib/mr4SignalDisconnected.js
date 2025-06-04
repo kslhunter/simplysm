@@ -1,1 +1,0 @@
-export { default as mr4SignalDisconnected } from "@material-symbols/svg-400/rounded/signal_disconnected.svg"

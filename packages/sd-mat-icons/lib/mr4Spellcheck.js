@@ -1,1 +1,0 @@
-export { default as mr4Spellcheck } from "@material-symbols/svg-400/rounded/spellcheck.svg"

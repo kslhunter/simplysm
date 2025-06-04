@@ -1,1 +1,0 @@
-export { default as mr4Subscriptions } from "@material-symbols/svg-400/rounded/subscriptions.svg"

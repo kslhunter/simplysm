@@ -1,1 +1,0 @@
-export { default as mr4Gate } from "@material-symbols/svg-400/rounded/gate.svg"

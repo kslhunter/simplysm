@@ -1,1 +1,0 @@
-export { default as mr4Grain } from "@material-symbols/svg-400/rounded/grain.svg"

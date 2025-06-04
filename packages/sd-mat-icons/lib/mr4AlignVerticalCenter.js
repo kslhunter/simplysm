@@ -1,1 +1,0 @@
-export { default as mr4AlignVerticalCenter } from "@material-symbols/svg-400/rounded/align_vertical_center.svg"

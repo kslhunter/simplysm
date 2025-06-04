@@ -1,1 +1,0 @@
-export { default as mr4IceSkating } from "@material-symbols/svg-400/rounded/ice_skating.svg"

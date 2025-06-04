@@ -1,1 +1,0 @@
-export { default as mr4DrawAbstract } from "@material-symbols/svg-400/rounded/draw_abstract.svg"

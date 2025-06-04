@@ -1,1 +1,0 @@
-export { default as mr4DeleteForever } from "@material-symbols/svg-400/rounded/delete_forever.svg"

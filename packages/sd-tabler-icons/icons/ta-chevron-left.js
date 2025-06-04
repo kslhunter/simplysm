@@ -1,0 +1,1 @@
+export const taChevronLeft = [["path",{"d":"M15 6l-6 6l6 6"}]];

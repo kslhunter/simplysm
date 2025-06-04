@@ -1,1 +1,0 @@
-export { default as mr4KeyboardPreviousLanguage } from "@material-symbols/svg-400/rounded/keyboard_previous_language.svg"

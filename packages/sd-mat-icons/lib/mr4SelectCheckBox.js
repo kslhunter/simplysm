@@ -1,1 +1,0 @@
-export { default as mr4SelectCheckBox } from "@material-symbols/svg-400/rounded/select_check_box.svg"

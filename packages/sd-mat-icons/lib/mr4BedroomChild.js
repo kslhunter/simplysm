@@ -1,1 +1,0 @@
-export { default as mr4BedroomChild } from "@material-symbols/svg-400/rounded/bedroom_child.svg"

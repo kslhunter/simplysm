@@ -1,1 +1,0 @@
-export { default as mr4RecordVoiceOver } from "@material-symbols/svg-400/rounded/record_voice_over.svg"

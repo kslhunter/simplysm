@@ -1,1 +1,0 @@
-export { default as mr4BabyChangingStation } from "@material-symbols/svg-400/rounded/baby_changing_station.svg"

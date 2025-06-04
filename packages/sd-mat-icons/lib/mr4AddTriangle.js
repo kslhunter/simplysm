@@ -1,1 +1,0 @@
-export { default as mr4AddTriangle } from "@material-symbols/svg-400/rounded/add_triangle.svg"

@@ -1,1 +1,0 @@
-export { default as mr4Hail } from "@material-symbols/svg-400/rounded/hail.svg"

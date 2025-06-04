@@ -1,1 +1,0 @@
-export { default as mr4MobileSensorHi } from "@material-symbols/svg-400/rounded/mobile_sensor_hi.svg"

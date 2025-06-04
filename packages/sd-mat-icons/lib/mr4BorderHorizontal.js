@@ -1,1 +1,0 @@
-export { default as mr4BorderHorizontal } from "@material-symbols/svg-400/rounded/border_horizontal.svg"

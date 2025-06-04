@@ -1,1 +1,0 @@
-export { default as mr4ContractDelete } from "@material-symbols/svg-400/rounded/contract_delete.svg"

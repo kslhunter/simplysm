@@ -1,1 +1,0 @@
-export { default as mr4Monorail } from "@material-symbols/svg-400/rounded/monorail.svg"

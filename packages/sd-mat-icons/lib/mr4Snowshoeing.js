@@ -1,1 +1,0 @@
-export { default as mr4Snowshoeing } from "@material-symbols/svg-400/rounded/snowshoeing.svg"

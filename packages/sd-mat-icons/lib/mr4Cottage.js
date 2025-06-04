@@ -1,1 +1,0 @@
-export { default as mr4Cottage } from "@material-symbols/svg-400/rounded/cottage.svg"

@@ -1,1 +1,0 @@
-export { default as mr4NestProtect } from "@material-symbols/svg-400/rounded/nest_protect.svg"

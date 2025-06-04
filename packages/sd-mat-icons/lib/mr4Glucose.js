@@ -1,1 +1,0 @@
-export { default as mr4Glucose } from "@material-symbols/svg-400/rounded/glucose.svg"

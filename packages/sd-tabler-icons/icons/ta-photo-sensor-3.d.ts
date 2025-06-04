@@ -1,0 +1,1 @@
+import {SdTablerIcon} from "../index"; export const taPhotoSensor3: SdTablerIcon;

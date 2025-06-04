@@ -1,1 +1,0 @@
-export { default as mr4BikeLane } from "@material-symbols/svg-400/rounded/bike_lane.svg"

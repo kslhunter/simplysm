@@ -1,1 +1,0 @@
-export { default as mr4CameraIndoor } from "@material-symbols/svg-400/rounded/camera_indoor.svg"

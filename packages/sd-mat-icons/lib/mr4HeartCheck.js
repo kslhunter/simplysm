@@ -1,1 +1,0 @@
-export { default as mr4HeartCheck } from "@material-symbols/svg-400/rounded/heart_check.svg"

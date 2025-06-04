@@ -1,1 +1,0 @@
-export { default as mr4HomeImprovementAndTools } from "@material-symbols/svg-400/rounded/home_improvement_and_tools.svg"

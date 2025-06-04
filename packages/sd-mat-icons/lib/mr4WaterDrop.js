@@ -1,1 +1,0 @@
-export { default as mr4WaterDrop } from "@material-symbols/svg-400/rounded/water_drop.svg"

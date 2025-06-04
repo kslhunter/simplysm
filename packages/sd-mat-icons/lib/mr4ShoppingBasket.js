@@ -1,1 +1,0 @@
-export { default as mr4ShoppingBasket } from "@material-symbols/svg-400/rounded/shopping_basket.svg"

@@ -1,1 +1,0 @@
-export { default as mr4SelectWindowOff } from "@material-symbols/svg-400/rounded/select_window_off.svg"

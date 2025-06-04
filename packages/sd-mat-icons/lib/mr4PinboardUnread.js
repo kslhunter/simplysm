@@ -1,1 +1,0 @@
-export { default as mr4PinboardUnread } from "@material-symbols/svg-400/rounded/pinboard_unread.svg"

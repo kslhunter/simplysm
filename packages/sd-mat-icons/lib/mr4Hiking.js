@@ -1,1 +1,0 @@
-export { default as mr4Hiking } from "@material-symbols/svg-400/rounded/hiking.svg"

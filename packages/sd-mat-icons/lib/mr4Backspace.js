@@ -1,1 +1,0 @@
-export { default as mr4Backspace } from "@material-symbols/svg-400/rounded/backspace.svg"

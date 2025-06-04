@@ -1,1 +1,0 @@
-export { default as mr4Menu } from "@material-symbols/svg-400/rounded/menu.svg"

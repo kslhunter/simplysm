@@ -1,1 +1,0 @@
-export { default as mr4EvStation } from "@material-symbols/svg-400/rounded/ev_station.svg"

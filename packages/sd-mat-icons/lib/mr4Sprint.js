@@ -1,1 +1,0 @@
-export { default as mr4Sprint } from "@material-symbols/svg-400/rounded/sprint.svg"

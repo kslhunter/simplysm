@@ -1,1 +1,0 @@
-export { default as mr4Ecg } from "@material-symbols/svg-400/rounded/ecg.svg"

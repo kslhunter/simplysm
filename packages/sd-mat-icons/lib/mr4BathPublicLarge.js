@@ -1,1 +1,0 @@
-export { default as mr4BathPublicLarge } from "@material-symbols/svg-400/rounded/bath_public_large.svg"

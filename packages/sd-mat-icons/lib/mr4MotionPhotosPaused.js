@@ -1,1 +1,0 @@
-export { default as mr4MotionPhotosPaused } from "@material-symbols/svg-400/rounded/motion_photos_paused.svg"

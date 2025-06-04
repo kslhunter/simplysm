@@ -1,1 +1,0 @@
-export { default as mr4HorizontalRule } from "@material-symbols/svg-400/rounded/horizontal_rule.svg"

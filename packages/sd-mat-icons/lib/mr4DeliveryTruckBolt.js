@@ -1,1 +1,0 @@
-export { default as mr4DeliveryTruckBolt } from "@material-symbols/svg-400/rounded/delivery_truck_bolt.svg"

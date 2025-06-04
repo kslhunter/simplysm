@@ -1,1 +1,0 @@
-export { default as mr4Toolbar } from "@material-symbols/svg-400/rounded/toolbar.svg"

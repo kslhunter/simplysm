@@ -1,1 +1,0 @@
-export { default as mr4ZonePersonUrgent } from "@material-symbols/svg-400/rounded/zone_person_urgent.svg"

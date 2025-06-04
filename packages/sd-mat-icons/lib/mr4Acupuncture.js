@@ -1,1 +1,0 @@
-export { default as mr4Acupuncture } from "@material-symbols/svg-400/rounded/acupuncture.svg"

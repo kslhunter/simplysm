@@ -1,1 +1,0 @@
-export { default as mr4ForkRight } from "@material-symbols/svg-400/rounded/fork_right.svg"

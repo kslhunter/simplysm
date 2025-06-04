@@ -1,1 +1,0 @@
-export { default as mr4AlarmPause } from "@material-symbols/svg-400/rounded/alarm_pause.svg"

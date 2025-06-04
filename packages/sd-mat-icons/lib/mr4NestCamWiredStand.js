@@ -1,1 +1,0 @@
-export { default as mr4NestCamWiredStand } from "@material-symbols/svg-400/rounded/nest_cam_wired_stand.svg"

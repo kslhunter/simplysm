@@ -1,1 +1,0 @@
-export { default as mr4SmartOutlet } from "@material-symbols/svg-400/rounded/smart_outlet.svg"

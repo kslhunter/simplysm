@@ -1,1 +1,0 @@
-export { default as mr4TabletCamera } from "@material-symbols/svg-400/rounded/tablet_camera.svg"

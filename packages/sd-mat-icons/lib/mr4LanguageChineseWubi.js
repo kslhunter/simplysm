@@ -1,1 +1,0 @@
-export { default as mr4LanguageChineseWubi } from "@material-symbols/svg-400/rounded/language_chinese_wubi.svg"

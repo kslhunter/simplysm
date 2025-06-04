@@ -1,1 +1,0 @@
-export { default as mr4HighlightTextCursor } from "@material-symbols/svg-400/rounded/highlight_text_cursor.svg"

@@ -1,1 +1,0 @@
-export { default as mr4TabUnselected } from "@material-symbols/svg-400/rounded/tab_unselected.svg"

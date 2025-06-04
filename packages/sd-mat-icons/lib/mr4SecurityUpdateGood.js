@@ -1,1 +1,0 @@
-export { default as mr4SecurityUpdateGood } from "@material-symbols/svg-400/rounded/security_update_good.svg"

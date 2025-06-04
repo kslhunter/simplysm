@@ -1,1 +1,0 @@
-export { default as mr4Explosion } from "@material-symbols/svg-400/rounded/explosion.svg"

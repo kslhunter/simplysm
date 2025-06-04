@@ -1,1 +1,0 @@
-export { default as mr4AddPhotoAlternate } from "@material-symbols/svg-400/rounded/add_photo_alternate.svg"

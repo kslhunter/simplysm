@@ -1,1 +1,0 @@
-export { default as mr4WaterEc } from "@material-symbols/svg-400/rounded/water_ec.svg"

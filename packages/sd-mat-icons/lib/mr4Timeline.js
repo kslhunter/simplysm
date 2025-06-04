@@ -1,1 +1,0 @@
-export { default as mr4Timeline } from "@material-symbols/svg-400/rounded/timeline.svg"

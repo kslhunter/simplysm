@@ -1,1 +1,0 @@
-export { default as mr4Atr } from "@material-symbols/svg-400/rounded/atr.svg"

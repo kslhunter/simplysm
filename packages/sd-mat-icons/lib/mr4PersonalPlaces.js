@@ -1,1 +1,0 @@
-export { default as mr4PersonalPlaces } from "@material-symbols/svg-400/rounded/personal_places.svg"

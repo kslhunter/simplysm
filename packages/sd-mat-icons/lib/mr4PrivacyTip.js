@@ -1,1 +1,0 @@
-export { default as mr4PrivacyTip } from "@material-symbols/svg-400/rounded/privacy_tip.svg"

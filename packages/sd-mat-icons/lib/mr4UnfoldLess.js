@@ -1,1 +1,0 @@
-export { default as mr4UnfoldLess } from "@material-symbols/svg-400/rounded/unfold_less.svg"

@@ -1,1 +1,0 @@
-export { default as mr4BodySystem } from "@material-symbols/svg-400/rounded/body_system.svg"

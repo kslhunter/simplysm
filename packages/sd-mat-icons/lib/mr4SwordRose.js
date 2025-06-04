@@ -1,1 +1,0 @@
-export { default as mr4SwordRose } from "@material-symbols/svg-400/rounded/sword_rose.svg"

@@ -1,1 +1,0 @@
-export { default as mr4FlightLand } from "@material-symbols/svg-400/rounded/flight_land.svg"

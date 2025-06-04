@@ -1,1 +1,0 @@
-export { default as mr4FiberDvr } from "@material-symbols/svg-400/rounded/fiber_dvr.svg"

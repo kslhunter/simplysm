@@ -1,1 +1,0 @@
-export { default as mr4CrisisAlert } from "@material-symbols/svg-400/rounded/crisis_alert.svg"

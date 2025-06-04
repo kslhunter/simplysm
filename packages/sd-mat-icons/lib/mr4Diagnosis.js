@@ -1,1 +1,0 @@
-export { default as mr4Diagnosis } from "@material-symbols/svg-400/rounded/diagnosis.svg"

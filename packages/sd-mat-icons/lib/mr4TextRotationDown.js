@@ -1,1 +1,0 @@
-export { default as mr4TextRotationDown } from "@material-symbols/svg-400/rounded/text_rotation_down.svg"

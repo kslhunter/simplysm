@@ -1,1 +1,0 @@
-export { default as mr4Terminal } from "@material-symbols/svg-400/rounded/terminal.svg"

@@ -1,1 +1,0 @@
-export const mr4BreakingNewsAlt1: string;

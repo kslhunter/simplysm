@@ -1,1 +1,0 @@
-export { default as mr4OfflineBolt } from "@material-symbols/svg-400/rounded/offline_bolt.svg"

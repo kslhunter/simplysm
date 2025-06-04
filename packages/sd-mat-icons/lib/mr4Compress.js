@@ -1,1 +1,0 @@
-export { default as mr4Compress } from "@material-symbols/svg-400/rounded/compress.svg"

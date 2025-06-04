@@ -1,1 +1,0 @@
-export { default as mr4GlobeLocationPin } from "@material-symbols/svg-400/rounded/globe_location_pin.svg"

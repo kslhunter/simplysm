@@ -1,1 +1,0 @@
-export { default as mr4WatchCheck } from "@material-symbols/svg-400/rounded/watch_check.svg"

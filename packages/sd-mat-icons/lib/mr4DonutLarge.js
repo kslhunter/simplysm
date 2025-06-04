@@ -1,1 +1,0 @@
-export { default as mr4DonutLarge } from "@material-symbols/svg-400/rounded/donut_large.svg"

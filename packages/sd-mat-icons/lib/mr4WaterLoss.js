@@ -1,1 +1,0 @@
-export { default as mr4WaterLoss } from "@material-symbols/svg-400/rounded/water_loss.svg"

@@ -1,1 +1,0 @@
-export { default as mr4Resize } from "@material-symbols/svg-400/rounded/resize.svg"

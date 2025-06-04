@@ -1,1 +1,0 @@
-export { default as mr4InkSelection } from "@material-symbols/svg-400/rounded/ink_selection.svg"

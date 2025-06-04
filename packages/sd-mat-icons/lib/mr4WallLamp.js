@@ -1,1 +1,0 @@
-export { default as mr4WallLamp } from "@material-symbols/svg-400/rounded/wall_lamp.svg"

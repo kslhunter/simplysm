@@ -1,1 +1,0 @@
-export { default as mr4AddToHomeScreen } from "@material-symbols/svg-400/rounded/add_to_home_screen.svg"

@@ -1,1 +1,0 @@
-export { default as mr4ModeHeatOff } from "@material-symbols/svg-400/rounded/mode_heat_off.svg"

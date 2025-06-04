@@ -1,1 +1,0 @@
-export { default as mr4Trip } from "@material-symbols/svg-400/rounded/trip.svg"

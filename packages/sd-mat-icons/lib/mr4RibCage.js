@@ -1,1 +1,0 @@
-export { default as mr4RibCage } from "@material-symbols/svg-400/rounded/rib_cage.svg"

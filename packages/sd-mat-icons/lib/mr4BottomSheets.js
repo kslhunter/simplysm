@@ -1,1 +1,0 @@
-export { default as mr4BottomSheets } from "@material-symbols/svg-400/rounded/bottom_sheets.svg"

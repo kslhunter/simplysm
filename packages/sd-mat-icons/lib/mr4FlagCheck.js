@@ -1,1 +1,0 @@
-export { default as mr4FlagCheck } from "@material-symbols/svg-400/rounded/flag_check.svg"

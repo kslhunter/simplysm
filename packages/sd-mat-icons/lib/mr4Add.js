@@ -1,1 +1,0 @@
-export { default as mr4Add } from "@material-symbols/svg-400/rounded/add.svg"

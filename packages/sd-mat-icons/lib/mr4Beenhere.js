@@ -1,1 +1,0 @@
-export { default as mr4Beenhere } from "@material-symbols/svg-400/rounded/beenhere.svg"

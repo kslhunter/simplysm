@@ -1,1 +1,0 @@
-export { default as mr4ShopTwo } from "@material-symbols/svg-400/rounded/shop_two.svg"

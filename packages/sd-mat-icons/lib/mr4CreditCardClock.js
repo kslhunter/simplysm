@@ -1,1 +1,0 @@
-export { default as mr4CreditCardClock } from "@material-symbols/svg-400/rounded/credit_card_clock.svg"

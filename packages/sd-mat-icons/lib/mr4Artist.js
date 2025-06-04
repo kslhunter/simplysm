@@ -1,1 +1,0 @@
-export { default as mr4Artist } from "@material-symbols/svg-400/rounded/artist.svg"

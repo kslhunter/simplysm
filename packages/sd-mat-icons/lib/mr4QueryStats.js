@@ -1,1 +1,0 @@
-export { default as mr4QueryStats } from "@material-symbols/svg-400/rounded/query_stats.svg"

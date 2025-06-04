@@ -1,1 +1,0 @@
-export { default as mr4Hov } from "@material-symbols/svg-400/rounded/hov.svg"

@@ -1,1 +1,0 @@
-export { default as mr4HomeMini } from "@material-symbols/svg-400/rounded/home_mini.svg"

@@ -1,1 +1,0 @@
-export { default as mr4NextPlan } from "@material-symbols/svg-400/rounded/next_plan.svg"

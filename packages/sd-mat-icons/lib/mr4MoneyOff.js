@@ -1,1 +1,0 @@
-export { default as mr4MoneyOff } from "@material-symbols/svg-400/rounded/money_off.svg"

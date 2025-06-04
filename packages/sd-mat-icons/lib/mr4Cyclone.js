@@ -1,1 +1,0 @@
-export { default as mr4Cyclone } from "@material-symbols/svg-400/rounded/cyclone.svg"

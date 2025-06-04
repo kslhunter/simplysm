@@ -1,1 +1,0 @@
-export { default as mr4LanguagePinyin } from "@material-symbols/svg-400/rounded/language_pinyin.svg"

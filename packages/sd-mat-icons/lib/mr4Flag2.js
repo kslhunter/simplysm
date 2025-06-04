@@ -1,1 +1,0 @@
-export { default as mr4Flag2 } from "@material-symbols/svg-400/rounded/flag_2.svg"

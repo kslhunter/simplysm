@@ -1,1 +1,0 @@
-export { default as mr4Nat } from "@material-symbols/svg-400/rounded/nat.svg"

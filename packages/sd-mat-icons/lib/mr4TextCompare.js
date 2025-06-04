@@ -1,1 +1,0 @@
-export { default as mr4TextCompare } from "@material-symbols/svg-400/rounded/text_compare.svg"

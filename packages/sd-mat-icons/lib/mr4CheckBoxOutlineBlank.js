@@ -1,1 +1,0 @@
-export { default as mr4CheckBoxOutlineBlank } from "@material-symbols/svg-400/rounded/check_box_outline_blank.svg"

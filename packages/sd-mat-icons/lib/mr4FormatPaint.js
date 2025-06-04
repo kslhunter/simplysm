@@ -1,1 +1,0 @@
-export { default as mr4FormatPaint } from "@material-symbols/svg-400/rounded/format_paint.svg"

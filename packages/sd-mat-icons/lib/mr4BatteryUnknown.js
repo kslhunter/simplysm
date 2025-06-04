@@ -1,1 +1,0 @@
-export { default as mr4BatteryUnknown } from "@material-symbols/svg-400/rounded/battery_unknown.svg"

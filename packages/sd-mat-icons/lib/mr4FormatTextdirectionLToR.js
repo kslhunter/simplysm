@@ -1,1 +1,0 @@
-export { default as mr4FormatTextdirectionLToR } from "@material-symbols/svg-400/rounded/format_textdirection_l_to_r.svg"

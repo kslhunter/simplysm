@@ -1,1 +1,0 @@
-export { default as mr4Ios } from "@material-symbols/svg-400/rounded/ios.svg"

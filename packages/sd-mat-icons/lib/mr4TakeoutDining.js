@@ -1,1 +1,0 @@
-export { default as mr4TakeoutDining } from "@material-symbols/svg-400/rounded/takeout_dining.svg"

@@ -1,1 +1,0 @@
-export { default as mr4MotionMode } from "@material-symbols/svg-400/rounded/motion_mode.svg"

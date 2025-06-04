@@ -21,8 +21,12 @@ import { SdFormBoxControl } from "../../controls/sd-form-box.control";
 import { SdFormControl } from "../../controls/sd-form.control";
 import { SdIconControl } from "../../controls/icon/sd-icon.control";
 import { SdPaneControl } from "../../controls/sd-pane.control";
-import { SdSheetColumnCellTemplateDirective } from "../../controls/sd-sheet/directives/sd-sheet-column-cell.template-directive";
-import { SdSheetColumnDirective } from "../../controls/sd-sheet/directives/sd-sheet-column.directive";
+import {
+  SdSheetColumnCellTemplateDirective,
+} from "../../controls/sd-sheet/directives/sd-sheet-column-cell.template-directive";
+import {
+  SdSheetColumnDirective,
+} from "../../controls/sd-sheet/directives/sd-sheet-column.directive";
 import { SdSheetControl } from "../../controls/sd-sheet/sd-sheet.control";
 import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
 import { SdFileDialogProvider } from "../../providers/sd-file-dialog.provider";
@@ -38,9 +42,14 @@ import { SdSharedDataProvider } from "../shared-data/sd-shared-data.provider";
 import { SdDataSheetColumnDirective } from "./sd-data-sheet-column.directive";
 import { SdDataSheetFilterDirective } from "./sd-data-sheet-filter.directive";
 import { SdDataSheetToolDirective } from "./sd-data-sheet-tool.directive";
-import { setupCloserWhenSingleSelectionChange } from "../../utils/setups/setup-closer-when-single-selection-change";
+import {
+  setupCloserWhenSingleSelectionChange,
+} from "../../utils/setups/setup-closer-when-single-selection-change";
 import { $effect } from "../../utils/bindings/$effect";
 import { transformBoolean } from "../../utils/type-tramsforms";
+import { SdTablerIconControl } from "../../controls/tabler-icon/sd-tabler-icon.control";
+import { taCirclePlus } from "@simplysm/sd-tabler-icons/icons/ta-circle-plus";
+import { taSearch } from "@simplysm/sd-tabler-icons/icons/ta-search";
 
 @Component({
   selector: "sd-data-sheet",
@@ -62,6 +71,7 @@ import { transformBoolean } from "../../utils/type-tramsforms";
     SdAnchorControl,
     NgTemplateOutlet,
     SdBaseContainerControl,
+    SdTablerIconControl,
   ],
   template: `
     <sd-base-container
@@ -87,7 +97,7 @@ import { transformBoolean } from "../../utils/type-tramsforms";
               <sd-form-box layout="inline">
                 <sd-form-box-item>
                   <sd-button type="submit" theme="info">
-                    <sd-icon [icon]="icons.search" fixedWidth />
+                    <sd-tabler-icon [icon]="taSearch" />
                     조회
                   </sd-button>
                 </sd-form-box-item>
@@ -117,7 +127,7 @@ import { transformBoolean } from "../../utils/type-tramsforms";
               @if (viewModel().editItem) {
                 @if (editable()) {
                   <sd-button size="sm" theme="primary" (click)="onCreateItemButtonClick()">
-                    <sd-icon [icon]="icons.add" fixedWidth />
+                    <sd-tabler-icon [icon]="taCirclePlus" />
                     등록
                     <small>(CTRL+INSERT)</small>
                   </sd-button>
@@ -519,6 +529,9 @@ export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>>
   onCancelButtonClick() {
     this.close.emit({ selectedItemKeys: [] });
   }
+
+  protected readonly taCirclePlus = taCirclePlus;
+  protected readonly taSearch = taSearch;
 }
 
 export interface ISdDataSheetViewModel<F extends Record<string, any>, I, K> {

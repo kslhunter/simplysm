@@ -1,1 +1,0 @@
-export { default as mr4PlayArrow } from "@material-symbols/svg-400/rounded/play_arrow.svg"

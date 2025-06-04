@@ -1,1 +1,0 @@
-export { default as mr4SwitchAccess } from "@material-symbols/svg-400/rounded/switch_access.svg"

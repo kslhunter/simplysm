@@ -1,1 +1,0 @@
-export { default as mr4MovieOff } from "@material-symbols/svg-400/rounded/movie_off.svg"

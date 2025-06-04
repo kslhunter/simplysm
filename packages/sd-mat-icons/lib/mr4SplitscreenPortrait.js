@@ -1,1 +1,0 @@
-export { default as mr4SplitscreenPortrait } from "@material-symbols/svg-400/rounded/splitscreen_portrait.svg"

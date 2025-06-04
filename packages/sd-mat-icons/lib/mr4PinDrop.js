@@ -1,1 +1,0 @@
-export { default as mr4PinDrop } from "@material-symbols/svg-400/rounded/pin_drop.svg"

@@ -1,1 +1,0 @@
-export { default as mr4SetMeal } from "@material-symbols/svg-400/rounded/set_meal.svg"

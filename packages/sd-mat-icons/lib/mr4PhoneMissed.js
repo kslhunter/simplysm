@@ -1,1 +1,0 @@
-export { default as mr4PhoneMissed } from "@material-symbols/svg-400/rounded/phone_missed.svg"

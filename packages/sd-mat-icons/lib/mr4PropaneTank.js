@@ -1,1 +1,0 @@
-export { default as mr4PropaneTank } from "@material-symbols/svg-400/rounded/propane_tank.svg"

@@ -1,1 +1,0 @@
-export { default as mr4Communities } from "@material-symbols/svg-400/rounded/communities.svg"

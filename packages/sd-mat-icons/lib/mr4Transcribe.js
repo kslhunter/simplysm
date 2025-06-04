@@ -1,1 +1,0 @@
-export { default as mr4Transcribe } from "@material-symbols/svg-400/rounded/transcribe.svg"

@@ -1,1 +1,0 @@
-export { default as mr4Modeling } from "@material-symbols/svg-400/rounded/modeling.svg"

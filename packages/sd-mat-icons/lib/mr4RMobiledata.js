@@ -1,1 +1,0 @@
-export { default as mr4RMobiledata } from "@material-symbols/svg-400/rounded/r_mobiledata.svg"

@@ -1,1 +1,0 @@
-export { default as mr4BrandFamily } from "@material-symbols/svg-400/rounded/brand_family.svg"

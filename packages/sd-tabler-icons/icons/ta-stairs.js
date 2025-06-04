@@ -1,0 +1,1 @@
+export const taStairs = [["path",{"d":"M22 5h-5v5h-5v5h-5v5h-5"}]];

@@ -1,1 +1,0 @@
-export { default as mr4WorkUpdate } from "@material-symbols/svg-400/rounded/work_update.svg"

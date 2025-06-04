@@ -1,1 +1,0 @@
-export { default as mr4WidthNormal } from "@material-symbols/svg-400/rounded/width_normal.svg"

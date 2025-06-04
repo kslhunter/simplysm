@@ -1,0 +1,1 @@
+import {SdTablerIcon} from "../index"; export const taMath1Divide3: SdTablerIcon;

@@ -1,1 +1,0 @@
-export { default as mr4ChecklistRtl } from "@material-symbols/svg-400/rounded/checklist_rtl.svg"

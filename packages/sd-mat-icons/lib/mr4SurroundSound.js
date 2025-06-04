@@ -1,1 +1,0 @@
-export { default as mr4SurroundSound } from "@material-symbols/svg-400/rounded/surround_sound.svg"

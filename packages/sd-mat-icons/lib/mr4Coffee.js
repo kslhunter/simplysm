@@ -1,1 +1,0 @@
-export { default as mr4Coffee } from "@material-symbols/svg-400/rounded/coffee.svg"

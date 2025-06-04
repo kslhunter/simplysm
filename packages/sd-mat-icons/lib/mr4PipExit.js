@@ -1,1 +1,0 @@
-export { default as mr4PipExit } from "@material-symbols/svg-400/rounded/pip_exit.svg"

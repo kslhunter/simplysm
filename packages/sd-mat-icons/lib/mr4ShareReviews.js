@@ -1,1 +1,0 @@
-export { default as mr4ShareReviews } from "@material-symbols/svg-400/rounded/share_reviews.svg"

@@ -1,0 +1,1 @@
+export const taTransferVertical = [["path",{"d":"M10 4v16l-6 -5.5"}],["path",{"d":"M14 20v-16l6 5.5"}]];

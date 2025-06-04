@@ -1,1 +1,0 @@
-export { default as mr4BottomDrawer } from "@material-symbols/svg-400/rounded/bottom_drawer.svg"

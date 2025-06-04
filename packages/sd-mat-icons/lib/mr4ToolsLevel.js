@@ -1,1 +1,0 @@
-export { default as mr4ToolsLevel } from "@material-symbols/svg-400/rounded/tools_level.svg"

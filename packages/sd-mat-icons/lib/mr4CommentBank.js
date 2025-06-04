@@ -1,1 +1,0 @@
-export { default as mr4CommentBank } from "@material-symbols/svg-400/rounded/comment_bank.svg"

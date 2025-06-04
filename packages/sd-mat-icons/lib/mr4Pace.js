@@ -1,1 +1,0 @@
-export { default as mr4Pace } from "@material-symbols/svg-400/rounded/pace.svg"

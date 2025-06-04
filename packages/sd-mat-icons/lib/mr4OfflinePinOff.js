@@ -1,1 +1,0 @@
-export { default as mr4OfflinePinOff } from "@material-symbols/svg-400/rounded/offline_pin_off.svg"

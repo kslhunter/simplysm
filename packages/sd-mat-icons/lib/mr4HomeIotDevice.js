@@ -1,1 +1,0 @@
-export { default as mr4HomeIotDevice } from "@material-symbols/svg-400/rounded/home_iot_device.svg"

@@ -1,1 +1,0 @@
-export { default as mr4RemoveDone } from "@material-symbols/svg-400/rounded/remove_done.svg"

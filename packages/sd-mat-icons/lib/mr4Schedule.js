@@ -1,1 +1,0 @@
-export { default as mr4Schedule } from "@material-symbols/svg-400/rounded/schedule.svg"

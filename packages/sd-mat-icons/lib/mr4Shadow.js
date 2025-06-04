@@ -1,1 +1,0 @@
-export { default as mr4Shadow } from "@material-symbols/svg-400/rounded/shadow.svg"

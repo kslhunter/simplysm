@@ -1,1 +1,0 @@
-export { default as mr4ArrowsInput } from "@material-symbols/svg-400/rounded/arrows_input.svg"

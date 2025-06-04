@@ -1,1 +1,0 @@
-export { default as mr4AccountCircle } from "@material-symbols/svg-400/rounded/account_circle.svg"

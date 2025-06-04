@@ -1,1 +1,0 @@
-export { default as mr4DryCleaning } from "@material-symbols/svg-400/rounded/dry_cleaning.svg"

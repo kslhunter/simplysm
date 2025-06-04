@@ -1,1 +1,0 @@
-export { default as mr4ButtonsAlt } from "@material-symbols/svg-400/rounded/buttons_alt.svg"

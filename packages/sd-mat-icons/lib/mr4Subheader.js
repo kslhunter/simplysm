@@ -1,1 +1,0 @@
-export { default as mr4Subheader } from "@material-symbols/svg-400/rounded/subheader.svg"

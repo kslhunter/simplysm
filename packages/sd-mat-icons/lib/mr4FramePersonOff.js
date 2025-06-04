@@ -1,1 +1,0 @@
-export { default as mr4FramePersonOff } from "@material-symbols/svg-400/rounded/frame_person_off.svg"

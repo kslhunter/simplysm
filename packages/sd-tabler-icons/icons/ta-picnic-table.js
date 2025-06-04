@@ -1,0 +1,1 @@
+export const taPicnicTable = [["path",{"d":"M16 7l2 9m-10 -9l-2 9m-1 -9h14m2 5h-18"}]];

@@ -1,1 +1,0 @@
-export { default as mr4WaterLux } from "@material-symbols/svg-400/rounded/water_lux.svg"

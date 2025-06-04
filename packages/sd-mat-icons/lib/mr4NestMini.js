@@ -1,1 +1,0 @@
-export { default as mr4NestMini } from "@material-symbols/svg-400/rounded/nest_mini.svg"

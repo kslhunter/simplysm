@@ -1,1 +1,0 @@
-export { default as mr4PowerInput } from "@material-symbols/svg-400/rounded/power_input.svg"

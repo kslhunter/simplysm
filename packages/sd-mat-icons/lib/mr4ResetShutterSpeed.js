@@ -1,1 +1,0 @@
-export { default as mr4ResetShutterSpeed } from "@material-symbols/svg-400/rounded/reset_shutter_speed.svg"

@@ -1,1 +1,0 @@
-export { default as mr4MatchCaseOff } from "@material-symbols/svg-400/rounded/match_case_off.svg"

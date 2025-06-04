@@ -1,1 +1,0 @@
-export { default as mr4Map } from "@material-symbols/svg-400/rounded/map.svg"

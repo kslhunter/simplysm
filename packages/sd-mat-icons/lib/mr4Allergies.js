@@ -1,1 +1,0 @@
-export { default as mr4Allergies } from "@material-symbols/svg-400/rounded/allergies.svg"

@@ -1,1 +1,0 @@
-export { default as mr4TeamDashboard } from "@material-symbols/svg-400/rounded/team_dashboard.svg"

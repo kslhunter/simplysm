@@ -1,1 +1,0 @@
-export { default as mr4Counter6 } from "@material-symbols/svg-400/rounded/counter_6.svg"

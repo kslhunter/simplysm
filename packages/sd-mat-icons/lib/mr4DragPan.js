@@ -1,1 +1,0 @@
-export { default as mr4DragPan } from "@material-symbols/svg-400/rounded/drag_pan.svg"

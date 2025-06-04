@@ -1,1 +1,0 @@
-export { default as mr4InboxCustomize } from "@material-symbols/svg-400/rounded/inbox_customize.svg"

@@ -1,1 +1,0 @@
-export { default as mr4HighDensity } from "@material-symbols/svg-400/rounded/high_density.svg"

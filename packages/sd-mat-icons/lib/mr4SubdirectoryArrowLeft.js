@@ -1,1 +1,0 @@
-export { default as mr4SubdirectoryArrowLeft } from "@material-symbols/svg-400/rounded/subdirectory_arrow_left.svg"

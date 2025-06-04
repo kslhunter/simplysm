@@ -1,1 +1,0 @@
-export { default as mr4MobileOff } from "@material-symbols/svg-400/rounded/mobile_off.svg"

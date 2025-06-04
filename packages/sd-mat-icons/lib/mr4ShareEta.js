@@ -1,1 +1,0 @@
-export { default as mr4ShareEta } from "@material-symbols/svg-400/rounded/share_eta.svg"

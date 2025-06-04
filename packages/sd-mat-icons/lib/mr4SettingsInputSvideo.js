@@ -1,1 +1,0 @@
-export { default as mr4SettingsInputSvideo } from "@material-symbols/svg-400/rounded/settings_input_svideo.svg"

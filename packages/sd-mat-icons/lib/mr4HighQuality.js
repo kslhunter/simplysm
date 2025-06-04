@@ -1,1 +1,0 @@
-export { default as mr4HighQuality } from "@material-symbols/svg-400/rounded/high_quality.svg"

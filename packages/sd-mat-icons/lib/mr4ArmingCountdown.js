@@ -1,1 +1,0 @@
-export { default as mr4ArmingCountdown } from "@material-symbols/svg-400/rounded/arming_countdown.svg"

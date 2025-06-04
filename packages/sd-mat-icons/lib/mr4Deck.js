@@ -1,1 +1,0 @@
-export { default as mr4Deck } from "@material-symbols/svg-400/rounded/deck.svg"

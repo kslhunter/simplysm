@@ -1,1 +1,0 @@
-export { default as mr4MedicalMask } from "@material-symbols/svg-400/rounded/medical_mask.svg"

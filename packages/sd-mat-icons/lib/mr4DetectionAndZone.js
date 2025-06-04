@@ -1,1 +1,0 @@
-export { default as mr4DetectionAndZone } from "@material-symbols/svg-400/rounded/detection_and_zone.svg"

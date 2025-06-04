@@ -1,1 +1,0 @@
-export { default as mr4Approval } from "@material-symbols/svg-400/rounded/approval.svg"

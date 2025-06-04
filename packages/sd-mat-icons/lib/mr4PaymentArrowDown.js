@@ -1,1 +1,0 @@
-export { default as mr4PaymentArrowDown } from "@material-symbols/svg-400/rounded/payment_arrow_down.svg"

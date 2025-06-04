@@ -1,1 +1,0 @@
-export { default as mr4BackToTab } from "@material-symbols/svg-400/rounded/back_to_tab.svg"

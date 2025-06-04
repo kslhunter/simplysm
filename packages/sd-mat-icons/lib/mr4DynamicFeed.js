@@ -1,1 +1,0 @@
-export { default as mr4DynamicFeed } from "@material-symbols/svg-400/rounded/dynamic_feed.svg"

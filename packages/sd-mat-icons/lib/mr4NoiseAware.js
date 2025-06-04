@@ -1,1 +1,0 @@
-export { default as mr4NoiseAware } from "@material-symbols/svg-400/rounded/noise_aware.svg"

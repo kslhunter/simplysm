@@ -1,1 +1,0 @@
-export { default as mr4Hallway } from "@material-symbols/svg-400/rounded/hallway.svg"

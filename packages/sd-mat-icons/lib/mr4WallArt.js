@@ -1,1 +1,0 @@
-export { default as mr4WallArt } from "@material-symbols/svg-400/rounded/wall_art.svg"

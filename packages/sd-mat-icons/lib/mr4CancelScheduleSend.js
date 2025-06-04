@@ -1,1 +1,0 @@
-export { default as mr4CancelScheduleSend } from "@material-symbols/svg-400/rounded/cancel_schedule_send.svg"

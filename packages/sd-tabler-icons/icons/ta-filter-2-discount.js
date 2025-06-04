@@ -1,0 +1,1 @@
+export const taFilter2Discount = [["path",{"d":"M4 6h16"}],["path",{"d":"M6 12h12"}],["path",{"d":"M9 18h3"}],["path",{"d":"M16 16v.01"}],["path",{"d":"M16 21l5 -5"}],["path",{"d":"M21 21v.01"}]];

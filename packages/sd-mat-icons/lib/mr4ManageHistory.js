@@ -1,1 +1,0 @@
-export { default as mr4ManageHistory } from "@material-symbols/svg-400/rounded/manage_history.svg"

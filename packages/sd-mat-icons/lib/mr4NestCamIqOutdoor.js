@@ -1,1 +1,0 @@
-export { default as mr4NestCamIqOutdoor } from "@material-symbols/svg-400/rounded/nest_cam_iq_outdoor.svg"

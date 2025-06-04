@@ -1,1 +1,0 @@
-export { default as mr4ExpandCircleUp } from "@material-symbols/svg-400/rounded/expand_circle_up.svg"

@@ -1,1 +1,0 @@
-export { default as mr4AllInbox } from "@material-symbols/svg-400/rounded/all_inbox.svg"

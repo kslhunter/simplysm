@@ -1,1 +1,0 @@
-export { default as mr4MarkunreadMailbox } from "@material-symbols/svg-400/rounded/markunread_mailbox.svg"

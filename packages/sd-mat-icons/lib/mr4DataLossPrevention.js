@@ -1,1 +1,0 @@
-export { default as mr4DataLossPrevention } from "@material-symbols/svg-400/rounded/data_loss_prevention.svg"

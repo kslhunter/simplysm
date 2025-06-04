@@ -1,1 +1,0 @@
-export { default as mr4Filter9 } from "@material-symbols/svg-400/rounded/filter_9.svg"

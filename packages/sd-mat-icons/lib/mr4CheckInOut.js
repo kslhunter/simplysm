@@ -1,1 +1,0 @@
-export { default as mr4CheckInOut } from "@material-symbols/svg-400/rounded/check_in_out.svg"

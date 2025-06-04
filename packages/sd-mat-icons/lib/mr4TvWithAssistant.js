@@ -1,1 +1,0 @@
-export { default as mr4TvWithAssistant } from "@material-symbols/svg-400/rounded/tv_with_assistant.svg"

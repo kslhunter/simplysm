@@ -1,1 +1,0 @@
-export { default as mr4TopPanelOpen } from "@material-symbols/svg-400/rounded/top_panel_open.svg"

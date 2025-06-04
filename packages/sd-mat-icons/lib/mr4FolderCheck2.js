@@ -1,1 +1,0 @@
-export { default as mr4FolderCheck2 } from "@material-symbols/svg-400/rounded/folder_check_2.svg"

@@ -1,1 +1,0 @@
-export { default as mr4Timer10 } from "@material-symbols/svg-400/rounded/timer_10.svg"

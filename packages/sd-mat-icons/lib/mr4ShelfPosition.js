@@ -1,1 +1,0 @@
-export { default as mr4ShelfPosition } from "@material-symbols/svg-400/rounded/shelf_position.svg"

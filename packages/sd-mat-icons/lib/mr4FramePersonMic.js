@@ -1,1 +1,0 @@
-export { default as mr4FramePersonMic } from "@material-symbols/svg-400/rounded/frame_person_mic.svg"

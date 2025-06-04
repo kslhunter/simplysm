@@ -1,1 +1,0 @@
-export { default as mr4DraftOrders } from "@material-symbols/svg-400/rounded/draft_orders.svg"

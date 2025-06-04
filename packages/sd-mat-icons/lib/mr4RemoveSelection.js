@@ -1,1 +1,0 @@
-export { default as mr4RemoveSelection } from "@material-symbols/svg-400/rounded/remove_selection.svg"

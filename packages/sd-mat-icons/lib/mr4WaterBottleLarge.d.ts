@@ -1,1 +1,0 @@
-export const mr4WaterBottleLarge: string;

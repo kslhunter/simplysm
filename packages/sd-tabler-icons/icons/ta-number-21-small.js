@@ -1,0 +1,1 @@
+export const taNumber21Small = [["path",{"d":"M15 8h1v8"}],["path",{"d":"M7 8h3a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-2a1 1 0 0 0 -1 1v2a1 1 0 0 0 1 1h3"}]];

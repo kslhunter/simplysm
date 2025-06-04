@@ -1,1 +1,0 @@
-export { default as mr4ToolsPhillips } from "@material-symbols/svg-400/rounded/tools_phillips.svg"

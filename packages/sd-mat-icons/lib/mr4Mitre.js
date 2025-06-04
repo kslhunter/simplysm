@@ -1,1 +1,0 @@
-export { default as mr4Mitre } from "@material-symbols/svg-400/rounded/mitre.svg"

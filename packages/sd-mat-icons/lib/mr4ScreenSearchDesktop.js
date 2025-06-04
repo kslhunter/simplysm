@@ -1,1 +1,0 @@
-export { default as mr4ScreenSearchDesktop } from "@material-symbols/svg-400/rounded/screen_search_desktop.svg"

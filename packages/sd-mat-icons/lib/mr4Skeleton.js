@@ -1,1 +1,0 @@
-export { default as mr4Skeleton } from "@material-symbols/svg-400/rounded/skeleton.svg"

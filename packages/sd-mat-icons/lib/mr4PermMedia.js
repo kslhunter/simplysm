@@ -1,1 +1,0 @@
-export { default as mr4PermMedia } from "@material-symbols/svg-400/rounded/perm_media.svg"

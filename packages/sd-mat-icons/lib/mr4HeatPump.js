@@ -1,1 +1,0 @@
-export { default as mr4HeatPump } from "@material-symbols/svg-400/rounded/heat_pump.svg"

@@ -1,1 +1,0 @@
-export { default as mr4DesktopLandscape } from "@material-symbols/svg-400/rounded/desktop_landscape.svg"

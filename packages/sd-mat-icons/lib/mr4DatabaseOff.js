@@ -1,1 +1,0 @@
-export { default as mr4DatabaseOff } from "@material-symbols/svg-400/rounded/database_off.svg"

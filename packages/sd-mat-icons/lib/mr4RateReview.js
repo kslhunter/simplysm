@@ -1,1 +1,0 @@
-export { default as mr4RateReview } from "@material-symbols/svg-400/rounded/rate_review.svg"

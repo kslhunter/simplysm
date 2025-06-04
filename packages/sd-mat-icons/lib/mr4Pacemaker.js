@@ -1,1 +1,0 @@
-export { default as mr4Pacemaker } from "@material-symbols/svg-400/rounded/pacemaker.svg"

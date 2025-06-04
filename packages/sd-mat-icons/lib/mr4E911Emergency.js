@@ -1,1 +1,0 @@
-export { default as mr4E911Emergency } from "@material-symbols/svg-400/rounded/e911_emergency.svg"

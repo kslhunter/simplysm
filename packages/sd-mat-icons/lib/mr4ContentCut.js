@@ -1,1 +1,0 @@
-export { default as mr4ContentCut } from "@material-symbols/svg-400/rounded/content_cut.svg"

@@ -1,1 +1,0 @@
-export { default as mr4MusicNote } from "@material-symbols/svg-400/rounded/music_note.svg"

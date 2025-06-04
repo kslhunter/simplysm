@@ -1,1 +1,0 @@
-export { default as mr4Procedure } from "@material-symbols/svg-400/rounded/procedure.svg"

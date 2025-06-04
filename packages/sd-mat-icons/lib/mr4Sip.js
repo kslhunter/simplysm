@@ -1,1 +1,0 @@
-export { default as mr4Sip } from "@material-symbols/svg-400/rounded/sip.svg"

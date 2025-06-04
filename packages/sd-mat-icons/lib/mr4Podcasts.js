@@ -1,1 +1,0 @@
-export { default as mr4Podcasts } from "@material-symbols/svg-400/rounded/podcasts.svg"

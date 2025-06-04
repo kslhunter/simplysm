@@ -1,1 +1,0 @@
-export { default as mr4RunCircle } from "@material-symbols/svg-400/rounded/run_circle.svg"

@@ -1,1 +1,0 @@
-export { default as mr4TvRemote } from "@material-symbols/svg-400/rounded/tv_remote.svg"

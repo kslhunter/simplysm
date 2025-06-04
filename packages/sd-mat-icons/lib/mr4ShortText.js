@@ -1,1 +1,0 @@
-export { default as mr4ShortText } from "@material-symbols/svg-400/rounded/short_text.svg"

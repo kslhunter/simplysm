@@ -1,1 +1,0 @@
-export { default as mr4PulseAlert } from "@material-symbols/svg-400/rounded/pulse_alert.svg"

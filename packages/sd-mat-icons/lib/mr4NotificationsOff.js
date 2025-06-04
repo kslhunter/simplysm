@@ -1,1 +1,0 @@
-export { default as mr4NotificationsOff } from "@material-symbols/svg-400/rounded/notifications_off.svg"

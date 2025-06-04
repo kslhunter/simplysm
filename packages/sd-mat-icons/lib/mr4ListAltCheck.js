@@ -1,1 +1,0 @@
-export { default as mr4ListAltCheck } from "@material-symbols/svg-400/rounded/list_alt_check.svg"

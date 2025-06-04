@@ -1,1 +1,0 @@
-export { default as mr4NestSecureAlarm } from "@material-symbols/svg-400/rounded/nest_secure_alarm.svg"

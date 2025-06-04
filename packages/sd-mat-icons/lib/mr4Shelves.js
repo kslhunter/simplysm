@@ -1,1 +1,0 @@
-export { default as mr4Shelves } from "@material-symbols/svg-400/rounded/shelves.svg"

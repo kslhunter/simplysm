@@ -1,1 +1,0 @@
-export { default as mr4WifiProtectedSetup } from "@material-symbols/svg-400/rounded/wifi_protected_setup.svg"

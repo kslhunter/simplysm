@@ -1,1 +1,0 @@
-export { default as mr4KebabDining } from "@material-symbols/svg-400/rounded/kebab_dining.svg"

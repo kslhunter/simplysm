@@ -1,1 +1,0 @@
-export { default as mr4ExposureNeg1 } from "@material-symbols/svg-400/rounded/exposure_neg_1.svg"

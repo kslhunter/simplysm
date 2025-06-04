@@ -1,1 +1,0 @@
-export { default as mr4LineStartArrowNotch } from "@material-symbols/svg-400/rounded/line_start_arrow_notch.svg"

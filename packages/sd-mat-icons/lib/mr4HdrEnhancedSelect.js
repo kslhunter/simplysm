@@ -1,1 +1,0 @@
-export { default as mr4HdrEnhancedSelect } from "@material-symbols/svg-400/rounded/hdr_enhanced_select.svg"

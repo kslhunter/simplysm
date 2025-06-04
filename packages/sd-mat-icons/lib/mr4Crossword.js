@@ -1,1 +1,0 @@
-export { default as mr4Crossword } from "@material-symbols/svg-400/rounded/crossword.svg"

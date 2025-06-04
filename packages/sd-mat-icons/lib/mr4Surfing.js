@@ -1,1 +1,0 @@
-export { default as mr4Surfing } from "@material-symbols/svg-400/rounded/surfing.svg"

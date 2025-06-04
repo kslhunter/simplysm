@@ -1,1 +1,0 @@
-export { default as mr4Altitude } from "@material-symbols/svg-400/rounded/altitude.svg"

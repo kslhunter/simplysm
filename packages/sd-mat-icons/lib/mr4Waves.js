@@ -1,1 +1,0 @@
-export { default as mr4Waves } from "@material-symbols/svg-400/rounded/waves.svg"

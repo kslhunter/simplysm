@@ -1,1 +1,0 @@
-export { default as mr4HouseSiding } from "@material-symbols/svg-400/rounded/house_siding.svg"

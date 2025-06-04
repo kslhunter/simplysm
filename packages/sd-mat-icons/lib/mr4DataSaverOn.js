@@ -1,1 +1,0 @@
-export { default as mr4DataSaverOn } from "@material-symbols/svg-400/rounded/data_saver_on.svg"

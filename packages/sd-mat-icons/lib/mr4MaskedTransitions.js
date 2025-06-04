@@ -1,1 +1,0 @@
-export { default as mr4MaskedTransitions } from "@material-symbols/svg-400/rounded/masked_transitions.svg"

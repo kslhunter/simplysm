@@ -1,1 +1,0 @@
-export { default as mr4FormatClear } from "@material-symbols/svg-400/rounded/format_clear.svg"

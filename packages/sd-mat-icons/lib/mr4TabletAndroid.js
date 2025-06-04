@@ -1,1 +1,0 @@
-export { default as mr4TabletAndroid } from "@material-symbols/svg-400/rounded/tablet_android.svg"

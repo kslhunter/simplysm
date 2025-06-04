@@ -1,1 +1,0 @@
-export { default as mr4SwapHoriz } from "@material-symbols/svg-400/rounded/swap_horiz.svg"

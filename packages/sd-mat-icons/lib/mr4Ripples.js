@@ -1,1 +1,0 @@
-export { default as mr4Ripples } from "@material-symbols/svg-400/rounded/ripples.svg"

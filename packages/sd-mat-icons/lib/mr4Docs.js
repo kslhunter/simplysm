@@ -1,1 +1,0 @@
-export { default as mr4Docs } from "@material-symbols/svg-400/rounded/docs.svg"

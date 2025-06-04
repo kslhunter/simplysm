@@ -1,1 +1,0 @@
-export { default as mr4EarbudCase } from "@material-symbols/svg-400/rounded/earbud_case.svg"

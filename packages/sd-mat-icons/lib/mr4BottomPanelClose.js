@@ -1,1 +1,0 @@
-export { default as mr4BottomPanelClose } from "@material-symbols/svg-400/rounded/bottom_panel_close.svg"

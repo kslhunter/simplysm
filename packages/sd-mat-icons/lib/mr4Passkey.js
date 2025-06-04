@@ -1,1 +1,0 @@
-export { default as mr4Passkey } from "@material-symbols/svg-400/rounded/passkey.svg"

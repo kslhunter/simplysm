@@ -1,1 +1,0 @@
-export { default as mr4SettingsEthernet } from "@material-symbols/svg-400/rounded/settings_ethernet.svg"

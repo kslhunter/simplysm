@@ -1,1 +1,0 @@
-export { default as mr4SafetyCheck } from "@material-symbols/svg-400/rounded/safety_check.svg"

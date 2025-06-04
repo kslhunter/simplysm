@@ -1,1 +1,0 @@
-export { default as mr4FlashlightOff } from "@material-symbols/svg-400/rounded/flashlight_off.svg"

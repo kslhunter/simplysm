@@ -1,1 +1,0 @@
-export { default as mr4BubbleChart } from "@material-symbols/svg-400/rounded/bubble_chart.svg"

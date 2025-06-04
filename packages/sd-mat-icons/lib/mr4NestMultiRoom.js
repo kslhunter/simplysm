@@ -1,1 +1,0 @@
-export { default as mr4NestMultiRoom } from "@material-symbols/svg-400/rounded/nest_multi_room.svg"

@@ -1,1 +1,0 @@
-export { default as mr4BloodPressure } from "@material-symbols/svg-400/rounded/blood_pressure.svg"

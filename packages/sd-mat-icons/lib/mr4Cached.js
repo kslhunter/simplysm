@@ -1,1 +1,0 @@
-export { default as mr4Cached } from "@material-symbols/svg-400/rounded/cached.svg"

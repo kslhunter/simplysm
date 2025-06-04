@@ -1,1 +1,0 @@
-export { default as mr4FaceLeft } from "@material-symbols/svg-400/rounded/face_left.svg"

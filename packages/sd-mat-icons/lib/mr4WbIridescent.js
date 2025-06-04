@@ -1,1 +1,0 @@
-export { default as mr4WbIridescent } from "@material-symbols/svg-400/rounded/wb_iridescent.svg"

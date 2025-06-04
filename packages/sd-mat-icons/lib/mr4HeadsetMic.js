@@ -1,1 +1,0 @@
-export { default as mr4HeadsetMic } from "@material-symbols/svg-400/rounded/headset_mic.svg"

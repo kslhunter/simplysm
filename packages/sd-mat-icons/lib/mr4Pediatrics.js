@@ -1,1 +1,0 @@
-export { default as mr4Pediatrics } from "@material-symbols/svg-400/rounded/pediatrics.svg"

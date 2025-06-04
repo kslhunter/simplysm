@@ -1,1 +1,0 @@
-export { default as mr4Charger } from "@material-symbols/svg-400/rounded/charger.svg"

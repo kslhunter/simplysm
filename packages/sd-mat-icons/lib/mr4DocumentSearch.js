@@ -1,1 +1,0 @@
-export { default as mr4DocumentSearch } from "@material-symbols/svg-400/rounded/document_search.svg"

@@ -1,1 +1,0 @@
-export { default as mr4CloudDone } from "@material-symbols/svg-400/rounded/cloud_done.svg"

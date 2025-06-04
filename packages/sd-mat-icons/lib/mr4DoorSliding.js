@@ -1,1 +1,0 @@
-export { default as mr4DoorSliding } from "@material-symbols/svg-400/rounded/door_sliding.svg"

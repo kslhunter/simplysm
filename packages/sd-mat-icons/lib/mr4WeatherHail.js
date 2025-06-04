@@ -1,1 +1,0 @@
-export { default as mr4WeatherHail } from "@material-symbols/svg-400/rounded/weather_hail.svg"

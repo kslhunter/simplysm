@@ -1,1 +1,0 @@
-export { default as mr4ArrowsOutward } from "@material-symbols/svg-400/rounded/arrows_outward.svg"

@@ -1,1 +1,0 @@
-export { default as mr4VideogameAsset } from "@material-symbols/svg-400/rounded/videogame_asset.svg"

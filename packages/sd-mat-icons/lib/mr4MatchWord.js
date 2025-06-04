@@ -1,1 +1,0 @@
-export { default as mr4MatchWord } from "@material-symbols/svg-400/rounded/match_word.svg"

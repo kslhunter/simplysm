@@ -1,0 +1,1 @@
+export const taLetterZSmall = [["path",{"d":"M10 8h4l-4 8h4"}]];

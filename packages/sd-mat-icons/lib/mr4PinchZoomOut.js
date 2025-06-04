@@ -1,1 +1,0 @@
-export { default as mr4PinchZoomOut } from "@material-symbols/svg-400/rounded/pinch_zoom_out.svg"

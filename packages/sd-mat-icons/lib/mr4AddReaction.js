@@ -1,1 +1,0 @@
-export { default as mr4AddReaction } from "@material-symbols/svg-400/rounded/add_reaction.svg"

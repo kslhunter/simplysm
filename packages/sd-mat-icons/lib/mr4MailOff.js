@@ -1,1 +1,0 @@
-export { default as mr4MailOff } from "@material-symbols/svg-400/rounded/mail_off.svg"

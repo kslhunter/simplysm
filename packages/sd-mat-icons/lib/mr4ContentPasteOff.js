@@ -1,1 +1,0 @@
-export { default as mr4ContentPasteOff } from "@material-symbols/svg-400/rounded/content_paste_off.svg"

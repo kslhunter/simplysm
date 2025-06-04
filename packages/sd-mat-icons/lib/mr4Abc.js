@@ -1,1 +1,0 @@
-export { default as mr4Abc } from "@material-symbols/svg-400/rounded/abc.svg"

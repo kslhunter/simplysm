@@ -1,1 +1,0 @@
-export { default as mr4EnergyProgramSaving } from "@material-symbols/svg-400/rounded/energy_program_saving.svg"

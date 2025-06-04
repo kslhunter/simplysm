@@ -1,1 +1,0 @@
-export { default as mr4AdGroupOff } from "@material-symbols/svg-400/rounded/ad_group_off.svg"

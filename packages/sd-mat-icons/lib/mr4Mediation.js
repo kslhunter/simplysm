@@ -1,1 +1,0 @@
-export { default as mr4Mediation } from "@material-symbols/svg-400/rounded/mediation.svg"

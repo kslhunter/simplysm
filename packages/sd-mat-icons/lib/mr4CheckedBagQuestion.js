@@ -1,1 +1,0 @@
-export { default as mr4CheckedBagQuestion } from "@material-symbols/svg-400/rounded/checked_bag_question.svg"

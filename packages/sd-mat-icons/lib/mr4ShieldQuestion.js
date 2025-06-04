@@ -1,1 +1,0 @@
-export { default as mr4ShieldQuestion } from "@material-symbols/svg-400/rounded/shield_question.svg"

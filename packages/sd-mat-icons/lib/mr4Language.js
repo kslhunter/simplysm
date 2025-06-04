@@ -1,1 +1,0 @@
-export { default as mr4Language } from "@material-symbols/svg-400/rounded/language.svg"

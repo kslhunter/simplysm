@@ -1,1 +1,0 @@
-export { default as mr4RuleFolder } from "@material-symbols/svg-400/rounded/rule_folder.svg"

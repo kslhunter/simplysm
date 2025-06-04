@@ -1,1 +1,0 @@
-export { default as mr4MobileScreenShare } from "@material-symbols/svg-400/rounded/mobile_screen_share.svg"

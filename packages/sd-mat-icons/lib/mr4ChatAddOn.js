@@ -1,1 +1,0 @@
-export { default as mr4ChatAddOn } from "@material-symbols/svg-400/rounded/chat_add_on.svg"

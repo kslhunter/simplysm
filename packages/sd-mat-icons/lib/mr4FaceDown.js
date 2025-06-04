@@ -1,1 +1,0 @@
-export { default as mr4FaceDown } from "@material-symbols/svg-400/rounded/face_down.svg"

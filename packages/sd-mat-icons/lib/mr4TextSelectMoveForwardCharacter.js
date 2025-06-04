@@ -1,1 +1,0 @@
-export { default as mr4TextSelectMoveForwardCharacter } from "@material-symbols/svg-400/rounded/text_select_move_forward_character.svg"

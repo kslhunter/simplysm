@@ -1,1 +1,0 @@
-export { default as mr4MovedLocation } from "@material-symbols/svg-400/rounded/moved_location.svg"

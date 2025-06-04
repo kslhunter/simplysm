@@ -1,1 +1,0 @@
-export { default as mr4NestDisplayMax } from "@material-symbols/svg-400/rounded/nest_display_max.svg"

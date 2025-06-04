@@ -1,1 +1,0 @@
-export { default as mr4DirectionsRun } from "@material-symbols/svg-400/rounded/directions_run.svg"

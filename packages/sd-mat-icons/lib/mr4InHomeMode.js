@@ -1,1 +1,0 @@
-export { default as mr4InHomeMode } from "@material-symbols/svg-400/rounded/in_home_mode.svg"

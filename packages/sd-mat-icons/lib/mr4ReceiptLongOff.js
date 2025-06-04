@@ -1,1 +1,0 @@
-export { default as mr4ReceiptLongOff } from "@material-symbols/svg-400/rounded/receipt_long_off.svg"

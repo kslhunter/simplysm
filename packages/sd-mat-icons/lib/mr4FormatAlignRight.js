@@ -1,1 +1,0 @@
-export { default as mr4FormatAlignRight } from "@material-symbols/svg-400/rounded/format_align_right.svg"

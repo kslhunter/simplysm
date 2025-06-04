@@ -1,0 +1,1 @@
+export const taEqual = [["path",{"d":"M5 10h14"}],["path",{"d":"M5 14h14"}]];

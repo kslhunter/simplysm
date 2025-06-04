@@ -1,1 +1,0 @@
-export { default as mr4VideoCameraFront } from "@material-symbols/svg-400/rounded/video_camera_front.svg"

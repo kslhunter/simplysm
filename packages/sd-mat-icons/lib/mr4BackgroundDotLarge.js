@@ -1,1 +1,0 @@
-export { default as mr4BackgroundDotLarge } from "@material-symbols/svg-400/rounded/background_dot_large.svg"

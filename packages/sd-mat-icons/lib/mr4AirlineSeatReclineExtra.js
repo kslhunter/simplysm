@@ -1,1 +1,0 @@
-export { default as mr4AirlineSeatReclineExtra } from "@material-symbols/svg-400/rounded/airline_seat_recline_extra.svg"

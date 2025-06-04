@@ -1,1 +1,0 @@
-export { default as mr4Subtitles } from "@material-symbols/svg-400/rounded/subtitles.svg"

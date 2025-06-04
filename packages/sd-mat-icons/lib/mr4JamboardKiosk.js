@@ -1,1 +1,0 @@
-export { default as mr4JamboardKiosk } from "@material-symbols/svg-400/rounded/jamboard_kiosk.svg"

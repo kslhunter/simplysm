@@ -1,1 +1,0 @@
-export { default as mr4SupervisedUserCircle } from "@material-symbols/svg-400/rounded/supervised_user_circle.svg"

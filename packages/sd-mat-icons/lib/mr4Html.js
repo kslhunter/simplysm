@@ -1,1 +1,0 @@
-export { default as mr4Html } from "@material-symbols/svg-400/rounded/html.svg"

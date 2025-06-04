@@ -1,1 +1,0 @@
-export { default as mr4PriorityHigh } from "@material-symbols/svg-400/rounded/priority_high.svg"

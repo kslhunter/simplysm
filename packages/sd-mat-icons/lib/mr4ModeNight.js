@@ -1,1 +1,0 @@
-export { default as mr4ModeNight } from "@material-symbols/svg-400/rounded/mode_night.svg"

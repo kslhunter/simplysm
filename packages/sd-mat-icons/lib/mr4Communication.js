@@ -1,1 +1,0 @@
-export { default as mr4Communication } from "@material-symbols/svg-400/rounded/communication.svg"

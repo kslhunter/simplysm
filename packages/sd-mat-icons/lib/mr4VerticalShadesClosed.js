@@ -1,1 +1,0 @@
-export { default as mr4VerticalShadesClosed } from "@material-symbols/svg-400/rounded/vertical_shades_closed.svg"

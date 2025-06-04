@@ -1,1 +1,0 @@
-export { default as mr4RestorePage } from "@material-symbols/svg-400/rounded/restore_page.svg"

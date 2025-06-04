@@ -1,1 +1,0 @@
-export { default as mr4Moped } from "@material-symbols/svg-400/rounded/moped.svg"

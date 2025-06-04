@@ -1,1 +1,0 @@
-export { default as mr4OutputCircle } from "@material-symbols/svg-400/rounded/output_circle.svg"

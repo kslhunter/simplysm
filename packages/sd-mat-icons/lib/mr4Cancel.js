@@ -1,1 +1,0 @@
-export { default as mr4Cancel } from "@material-symbols/svg-400/rounded/cancel.svg"

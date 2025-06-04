@@ -1,1 +1,0 @@
-export { default as mr4NetworkCheck } from "@material-symbols/svg-400/rounded/network_check.svg"

@@ -1,1 +1,0 @@
-export { default as mr4ChatPasteGo } from "@material-symbols/svg-400/rounded/chat_paste_go.svg"

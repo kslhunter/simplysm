@@ -1,1 +1,0 @@
-export { default as mr4AvTimer } from "@material-symbols/svg-400/rounded/av_timer.svg"

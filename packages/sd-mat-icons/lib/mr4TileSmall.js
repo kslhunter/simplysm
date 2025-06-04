@@ -1,1 +1,0 @@
-export { default as mr4TileSmall } from "@material-symbols/svg-400/rounded/tile_small.svg"

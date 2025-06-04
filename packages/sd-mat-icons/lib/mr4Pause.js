@@ -1,1 +1,0 @@
-export { default as mr4Pause } from "@material-symbols/svg-400/rounded/pause.svg"

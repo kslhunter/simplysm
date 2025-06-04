@@ -1,1 +1,0 @@
-export { default as mr4ArrowMenuOpen } from "@material-symbols/svg-400/rounded/arrow_menu_open.svg"

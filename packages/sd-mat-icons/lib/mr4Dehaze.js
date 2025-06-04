@@ -1,1 +1,0 @@
-export { default as mr4Dehaze } from "@material-symbols/svg-400/rounded/dehaze.svg"

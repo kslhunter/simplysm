@@ -1,1 +1,0 @@
-export { default as mr4LanguageUsDvorak } from "@material-symbols/svg-400/rounded/language_us_dvorak.svg"

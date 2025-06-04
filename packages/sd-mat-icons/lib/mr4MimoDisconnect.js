@@ -1,1 +1,0 @@
-export { default as mr4MimoDisconnect } from "@material-symbols/svg-400/rounded/mimo_disconnect.svg"

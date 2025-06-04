@@ -1,1 +1,0 @@
-export { default as mr4Scanner } from "@material-symbols/svg-400/rounded/scanner.svg"

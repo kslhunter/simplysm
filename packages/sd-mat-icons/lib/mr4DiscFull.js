@@ -1,1 +1,0 @@
-export { default as mr4DiscFull } from "@material-symbols/svg-400/rounded/disc_full.svg"

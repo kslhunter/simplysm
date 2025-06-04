@@ -1,1 +1,0 @@
-export { default as mr4NestDoorbellVisitor } from "@material-symbols/svg-400/rounded/nest_doorbell_visitor.svg"

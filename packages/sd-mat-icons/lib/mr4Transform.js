@@ -1,1 +1,0 @@
-export { default as mr4Transform } from "@material-symbols/svg-400/rounded/transform.svg"

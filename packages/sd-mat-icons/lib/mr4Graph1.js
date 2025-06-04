@@ -1,1 +1,0 @@
-export { default as mr4Graph1 } from "@material-symbols/svg-400/rounded/graph_1.svg"

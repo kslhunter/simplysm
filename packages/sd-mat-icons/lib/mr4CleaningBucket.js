@@ -1,1 +1,0 @@
-export { default as mr4CleaningBucket } from "@material-symbols/svg-400/rounded/cleaning_bucket.svg"

@@ -1,1 +1,0 @@
-export { default as mr4GoogleWifi } from "@material-symbols/svg-400/rounded/google_wifi.svg"

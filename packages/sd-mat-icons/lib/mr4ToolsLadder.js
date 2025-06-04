@@ -1,1 +1,0 @@
-export { default as mr4ToolsLadder } from "@material-symbols/svg-400/rounded/tools_ladder.svg"

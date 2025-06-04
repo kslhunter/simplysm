@@ -1,1 +1,0 @@
-export { default as mr4Person2 } from "@material-symbols/svg-400/rounded/person_2.svg"

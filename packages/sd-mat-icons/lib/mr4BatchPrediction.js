@@ -1,1 +1,0 @@
-export { default as mr4BatchPrediction } from "@material-symbols/svg-400/rounded/batch_prediction.svg"

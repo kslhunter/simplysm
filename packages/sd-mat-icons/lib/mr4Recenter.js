@@ -1,1 +1,0 @@
-export { default as mr4Recenter } from "@material-symbols/svg-400/rounded/recenter.svg"

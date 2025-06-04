@@ -1,1 +1,0 @@
-export { default as mr4WaterfallChart } from "@material-symbols/svg-400/rounded/waterfall_chart.svg"

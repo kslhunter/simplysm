@@ -1,1 +1,0 @@
-export { default as mr4Notes } from "@material-symbols/svg-400/rounded/notes.svg"

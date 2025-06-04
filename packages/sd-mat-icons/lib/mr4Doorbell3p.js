@@ -1,1 +1,0 @@
-export { default as mr4Doorbell3p } from "@material-symbols/svg-400/rounded/doorbell_3p.svg"

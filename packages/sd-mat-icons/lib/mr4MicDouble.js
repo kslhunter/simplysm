@@ -1,1 +1,0 @@
-export { default as mr4MicDouble } from "@material-symbols/svg-400/rounded/mic_double.svg"

@@ -1,1 +1,0 @@
-export { default as mr4TouchpadMouseOff } from "@material-symbols/svg-400/rounded/touchpad_mouse_off.svg"

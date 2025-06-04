@@ -1,1 +1,0 @@
-export { default as mr4RoundedCorner } from "@material-symbols/svg-400/rounded/rounded_corner.svg"

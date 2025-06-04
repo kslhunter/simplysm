@@ -1,1 +1,0 @@
-export { default as mr4CollapseAll } from "@material-symbols/svg-400/rounded/collapse_all.svg"

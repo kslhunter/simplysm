@@ -1,1 +1,0 @@
-export { default as mr4VideocamAlert } from "@material-symbols/svg-400/rounded/videocam_alert.svg"

@@ -1,1 +1,0 @@
-export { default as mr4BlindsClosed } from "@material-symbols/svg-400/rounded/blinds_closed.svg"

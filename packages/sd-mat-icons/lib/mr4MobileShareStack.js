@@ -1,1 +1,0 @@
-export { default as mr4MobileShareStack } from "@material-symbols/svg-400/rounded/mobile_share_stack.svg"

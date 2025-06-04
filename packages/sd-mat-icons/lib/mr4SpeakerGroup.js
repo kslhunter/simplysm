@@ -1,1 +1,0 @@
-export { default as mr4SpeakerGroup } from "@material-symbols/svg-400/rounded/speaker_group.svg"

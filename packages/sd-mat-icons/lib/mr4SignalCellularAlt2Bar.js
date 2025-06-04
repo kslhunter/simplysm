@@ -1,1 +1,0 @@
-export { default as mr4SignalCellularAlt2Bar } from "@material-symbols/svg-400/rounded/signal_cellular_alt_2_bar.svg"

@@ -1,1 +1,0 @@
-export { default as mr4HourglassEmpty } from "@material-symbols/svg-400/rounded/hourglass_empty.svg"

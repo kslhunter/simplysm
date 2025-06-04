@@ -1,1 +1,0 @@
-export { default as mr4Receipt } from "@material-symbols/svg-400/rounded/receipt.svg"

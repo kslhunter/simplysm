@@ -1,1 +1,0 @@
-export { default as mr4PetSupplies } from "@material-symbols/svg-400/rounded/pet_supplies.svg"

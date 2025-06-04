@@ -1,1 +1,0 @@
-export { default as mr4Tornado } from "@material-symbols/svg-400/rounded/tornado.svg"

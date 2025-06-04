@@ -1,1 +1,0 @@
-export { default as mr4FormsAddOn } from "@material-symbols/svg-400/rounded/forms_add_on.svg"

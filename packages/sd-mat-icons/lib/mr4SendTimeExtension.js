@@ -1,1 +1,0 @@
-export { default as mr4SendTimeExtension } from "@material-symbols/svg-400/rounded/send_time_extension.svg"

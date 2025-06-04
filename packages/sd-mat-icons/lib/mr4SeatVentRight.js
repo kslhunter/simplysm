@@ -1,1 +1,0 @@
-export { default as mr4SeatVentRight } from "@material-symbols/svg-400/rounded/seat_vent_right.svg"

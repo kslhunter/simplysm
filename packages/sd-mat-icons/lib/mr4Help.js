@@ -1,1 +1,0 @@
-export { default as mr4Help } from "@material-symbols/svg-400/rounded/help.svg"

@@ -1,1 +1,0 @@
-export { default as mr4ExploreOff } from "@material-symbols/svg-400/rounded/explore_off.svg"

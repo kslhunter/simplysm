@@ -1,1 +1,0 @@
-export { default as mr4MultilineChart } from "@material-symbols/svg-400/rounded/multiline_chart.svg"

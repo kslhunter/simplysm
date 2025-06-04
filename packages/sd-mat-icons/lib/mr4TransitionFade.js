@@ -1,1 +1,0 @@
-export { default as mr4TransitionFade } from "@material-symbols/svg-400/rounded/transition_fade.svg"

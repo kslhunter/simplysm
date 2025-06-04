@@ -1,1 +1,0 @@
-export { default as mr4LunchDining } from "@material-symbols/svg-400/rounded/lunch_dining.svg"

@@ -1,1 +1,0 @@
-export { default as mr4ToolsFlatHead } from "@material-symbols/svg-400/rounded/tools_flat_head.svg"

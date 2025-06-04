@@ -1,1 +1,0 @@
-export { default as mr4PartnerReports } from "@material-symbols/svg-400/rounded/partner_reports.svg"

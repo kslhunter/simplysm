@@ -1,1 +1,0 @@
-export { default as mr4FiberSmartRecord } from "@material-symbols/svg-400/rounded/fiber_smart_record.svg"

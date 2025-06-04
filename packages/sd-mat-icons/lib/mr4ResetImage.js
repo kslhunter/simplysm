@@ -1,1 +1,0 @@
-export { default as mr4ResetImage } from "@material-symbols/svg-400/rounded/reset_image.svg"

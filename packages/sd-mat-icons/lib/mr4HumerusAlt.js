@@ -1,1 +1,0 @@
-export { default as mr4HumerusAlt } from "@material-symbols/svg-400/rounded/humerus_alt.svg"

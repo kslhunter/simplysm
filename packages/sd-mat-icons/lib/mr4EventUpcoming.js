@@ -1,1 +1,0 @@
-export { default as mr4EventUpcoming } from "@material-symbols/svg-400/rounded/event_upcoming.svg"

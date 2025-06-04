@@ -1,1 +1,0 @@
-export { default as mr4WindshieldDefrostRear } from "@material-symbols/svg-400/rounded/windshield_defrost_rear.svg"

@@ -1,1 +1,0 @@
-export { default as mr4FamiliarFaceAndZone } from "@material-symbols/svg-400/rounded/familiar_face_and_zone.svg"

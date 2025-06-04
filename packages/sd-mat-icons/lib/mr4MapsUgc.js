@@ -1,1 +1,0 @@
-export { default as mr4MapsUgc } from "@material-symbols/svg-400/rounded/maps_ugc.svg"

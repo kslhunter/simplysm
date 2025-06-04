@@ -1,1 +1,0 @@
-export { default as mr4NetworkWifiLocked } from "@material-symbols/svg-400/rounded/network_wifi_locked.svg"

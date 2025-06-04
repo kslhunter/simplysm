@@ -1,1 +1,0 @@
-export { default as mr4Vacuum } from "@material-symbols/svg-400/rounded/vacuum.svg"

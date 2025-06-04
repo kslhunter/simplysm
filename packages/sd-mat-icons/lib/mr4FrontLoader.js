@@ -1,1 +1,0 @@
-export { default as mr4FrontLoader } from "@material-symbols/svg-400/rounded/front_loader.svg"

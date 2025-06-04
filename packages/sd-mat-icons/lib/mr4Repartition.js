@@ -1,1 +1,0 @@
-export { default as mr4Repartition } from "@material-symbols/svg-400/rounded/repartition.svg"

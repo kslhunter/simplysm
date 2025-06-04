@@ -1,1 +1,0 @@
-export { default as mr4CommentsDisabled } from "@material-symbols/svg-400/rounded/comments_disabled.svg"

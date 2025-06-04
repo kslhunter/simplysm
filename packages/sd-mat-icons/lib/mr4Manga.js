@@ -1,1 +1,0 @@
-export { default as mr4Manga } from "@material-symbols/svg-400/rounded/manga.svg"

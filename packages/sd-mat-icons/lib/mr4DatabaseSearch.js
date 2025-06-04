@@ -1,1 +1,0 @@
-export { default as mr4DatabaseSearch } from "@material-symbols/svg-400/rounded/database_search.svg"

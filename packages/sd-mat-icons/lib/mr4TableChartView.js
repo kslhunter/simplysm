@@ -1,1 +1,0 @@
-export { default as mr4TableChartView } from "@material-symbols/svg-400/rounded/table_chart_view.svg"

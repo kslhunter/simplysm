@@ -1,1 +1,0 @@
-export { default as mr4KeyVisualizer } from "@material-symbols/svg-400/rounded/key_visualizer.svg"

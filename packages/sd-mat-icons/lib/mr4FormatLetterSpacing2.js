@@ -1,1 +1,0 @@
-export { default as mr4FormatLetterSpacing2 } from "@material-symbols/svg-400/rounded/format_letter_spacing_2.svg"

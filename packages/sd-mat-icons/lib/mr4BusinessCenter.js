@@ -1,1 +1,0 @@
-export { default as mr4BusinessCenter } from "@material-symbols/svg-400/rounded/business_center.svg"

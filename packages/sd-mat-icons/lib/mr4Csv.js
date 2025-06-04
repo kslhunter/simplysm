@@ -1,1 +1,0 @@
-export { default as mr4Csv } from "@material-symbols/svg-400/rounded/csv.svg"

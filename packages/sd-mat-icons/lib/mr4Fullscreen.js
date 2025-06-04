@@ -1,1 +1,0 @@
-export { default as mr4Fullscreen } from "@material-symbols/svg-400/rounded/fullscreen.svg"

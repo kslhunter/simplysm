@@ -1,1 +1,0 @@
-export { default as mr4Layers } from "@material-symbols/svg-400/rounded/layers.svg"

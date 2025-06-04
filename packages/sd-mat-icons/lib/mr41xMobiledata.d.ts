@@ -1,1 +1,0 @@
-export const mr41xMobiledata: string;

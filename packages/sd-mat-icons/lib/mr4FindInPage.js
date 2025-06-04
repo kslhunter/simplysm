@@ -1,1 +1,0 @@
-export { default as mr4FindInPage } from "@material-symbols/svg-400/rounded/find_in_page.svg"

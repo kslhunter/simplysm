@@ -1,1 +1,0 @@
-export { default as mr4LightMode } from "@material-symbols/svg-400/rounded/light_mode.svg"

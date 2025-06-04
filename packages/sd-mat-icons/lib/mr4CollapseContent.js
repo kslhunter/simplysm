@@ -1,1 +1,0 @@
-export { default as mr4CollapseContent } from "@material-symbols/svg-400/rounded/collapse_content.svg"

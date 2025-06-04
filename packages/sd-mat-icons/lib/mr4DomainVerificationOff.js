@@ -1,1 +1,0 @@
-export { default as mr4DomainVerificationOff } from "@material-symbols/svg-400/rounded/domain_verification_off.svg"

@@ -1,1 +1,0 @@
-export { default as mr4Pergola } from "@material-symbols/svg-400/rounded/pergola.svg"

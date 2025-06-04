@@ -1,1 +1,0 @@
-export { default as mr4OilBarrel } from "@material-symbols/svg-400/rounded/oil_barrel.svg"

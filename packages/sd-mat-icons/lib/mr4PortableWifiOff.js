@@ -1,1 +1,0 @@
-export { default as mr4PortableWifiOff } from "@material-symbols/svg-400/rounded/portable_wifi_off.svg"

@@ -1,1 +1,0 @@
-export { default as mr4ReplyAll } from "@material-symbols/svg-400/rounded/reply_all.svg"

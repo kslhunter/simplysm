@@ -1,1 +1,0 @@
-export { default as mr4Shield } from "@material-symbols/svg-400/rounded/shield.svg"

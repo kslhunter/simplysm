@@ -1,1 +1,0 @@
-export { default as mr4MemoryAlt } from "@material-symbols/svg-400/rounded/memory_alt.svg"

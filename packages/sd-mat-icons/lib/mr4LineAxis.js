@@ -1,1 +1,0 @@
-export { default as mr4LineAxis } from "@material-symbols/svg-400/rounded/line_axis.svg"

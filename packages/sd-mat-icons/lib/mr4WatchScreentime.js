@@ -1,1 +1,0 @@
-export { default as mr4WatchScreentime } from "@material-symbols/svg-400/rounded/watch_screentime.svg"

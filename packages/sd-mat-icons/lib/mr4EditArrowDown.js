@@ -1,1 +1,0 @@
-export { default as mr4EditArrowDown } from "@material-symbols/svg-400/rounded/edit_arrow_down.svg"

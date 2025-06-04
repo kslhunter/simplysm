@@ -1,1 +1,0 @@
-export { default as mr4Agender } from "@material-symbols/svg-400/rounded/agender.svg"

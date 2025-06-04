@@ -1,1 +1,0 @@
-export { default as mr4ChipExtraction } from "@material-symbols/svg-400/rounded/chip_extraction.svg"

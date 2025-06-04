@@ -1,1 +1,0 @@
-export { default as mr4RemoteGen } from "@material-symbols/svg-400/rounded/remote_gen.svg"

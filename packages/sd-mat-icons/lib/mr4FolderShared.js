@@ -1,1 +1,0 @@
-export { default as mr4FolderShared } from "@material-symbols/svg-400/rounded/folder_shared.svg"

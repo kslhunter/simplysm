@@ -1,1 +1,0 @@
-export { default as mr49mp } from "@material-symbols/svg-400/rounded/9mp.svg"

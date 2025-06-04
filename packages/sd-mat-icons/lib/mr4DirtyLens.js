@@ -1,1 +1,0 @@
-export { default as mr4DirtyLens } from "@material-symbols/svg-400/rounded/dirty_lens.svg"

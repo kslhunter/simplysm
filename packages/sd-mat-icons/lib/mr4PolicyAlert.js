@@ -1,1 +1,0 @@
-export { default as mr4PolicyAlert } from "@material-symbols/svg-400/rounded/policy_alert.svg"

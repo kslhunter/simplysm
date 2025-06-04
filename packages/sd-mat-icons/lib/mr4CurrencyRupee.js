@@ -1,1 +1,0 @@
-export { default as mr4CurrencyRupee } from "@material-symbols/svg-400/rounded/currency_rupee.svg"

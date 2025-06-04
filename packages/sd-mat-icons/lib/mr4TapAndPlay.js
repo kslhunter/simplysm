@@ -1,1 +1,0 @@
-export { default as mr4TapAndPlay } from "@material-symbols/svg-400/rounded/tap_and_play.svg"

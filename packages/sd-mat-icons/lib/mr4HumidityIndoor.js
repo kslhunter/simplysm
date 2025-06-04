@@ -1,1 +1,0 @@
-export { default as mr4HumidityIndoor } from "@material-symbols/svg-400/rounded/humidity_indoor.svg"

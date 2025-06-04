@@ -1,1 +1,0 @@
-export { default as mr4ThreatIntelligence } from "@material-symbols/svg-400/rounded/threat_intelligence.svg"

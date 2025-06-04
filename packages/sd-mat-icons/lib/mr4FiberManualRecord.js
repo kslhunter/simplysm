@@ -1,1 +1,0 @@
-export { default as mr4FiberManualRecord } from "@material-symbols/svg-400/rounded/fiber_manual_record.svg"

@@ -1,1 +1,0 @@
-export { default as mr4LinearScale } from "@material-symbols/svg-400/rounded/linear_scale.svg"

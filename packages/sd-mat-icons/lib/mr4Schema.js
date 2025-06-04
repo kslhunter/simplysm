@@ -1,1 +1,0 @@
-export { default as mr4Schema } from "@material-symbols/svg-400/rounded/schema.svg"

@@ -1,1 +1,0 @@
-export { default as mr4AlignStart } from "@material-symbols/svg-400/rounded/align_start.svg"

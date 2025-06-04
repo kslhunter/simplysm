@@ -1,1 +1,0 @@
-export { default as mr4Traffic } from "@material-symbols/svg-400/rounded/traffic.svg"

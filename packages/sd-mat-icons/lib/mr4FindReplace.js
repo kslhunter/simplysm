@@ -1,1 +1,0 @@
-export { default as mr4FindReplace } from "@material-symbols/svg-400/rounded/find_replace.svg"

@@ -1,1 +1,0 @@
-export { default as mr4NestTrueRadiant } from "@material-symbols/svg-400/rounded/nest_true_radiant.svg"

@@ -1,1 +1,0 @@
-export { default as mr4Flutter } from "@material-symbols/svg-400/rounded/flutter.svg"

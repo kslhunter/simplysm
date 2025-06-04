@@ -1,1 +1,0 @@
-export { default as mr4Unlicense } from "@material-symbols/svg-400/rounded/unlicense.svg"

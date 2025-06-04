@@ -1,1 +1,0 @@
-export { default as mr4Flaky } from "@material-symbols/svg-400/rounded/flaky.svg"

@@ -1,1 +1,0 @@
-export { default as mr4Savings } from "@material-symbols/svg-400/rounded/savings.svg"

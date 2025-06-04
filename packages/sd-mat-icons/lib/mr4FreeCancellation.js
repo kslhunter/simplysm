@@ -1,1 +1,0 @@
-export { default as mr4FreeCancellation } from "@material-symbols/svg-400/rounded/free_cancellation.svg"

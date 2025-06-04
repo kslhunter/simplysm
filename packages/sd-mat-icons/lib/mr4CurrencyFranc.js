@@ -1,1 +1,0 @@
-export { default as mr4CurrencyFranc } from "@material-symbols/svg-400/rounded/currency_franc.svg"

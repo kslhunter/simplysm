@@ -1,1 +1,0 @@
-export { default as mr46FtApart } from "@material-symbols/svg-400/rounded/6_ft_apart.svg"

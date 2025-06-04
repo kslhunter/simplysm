@@ -1,1 +1,0 @@
-export { default as mr4Uppercase } from "@material-symbols/svg-400/rounded/uppercase.svg"

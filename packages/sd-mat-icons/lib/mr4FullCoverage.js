@@ -1,1 +1,0 @@
-export { default as mr4FullCoverage } from "@material-symbols/svg-400/rounded/full_coverage.svg"

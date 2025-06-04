@@ -1,1 +1,0 @@
-export { default as mr4SoundDetectionDogBarking } from "@material-symbols/svg-400/rounded/sound_detection_dog_barking.svg"

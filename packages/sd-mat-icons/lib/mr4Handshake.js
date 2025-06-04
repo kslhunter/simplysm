@@ -1,1 +1,0 @@
-export { default as mr4Handshake } from "@material-symbols/svg-400/rounded/handshake.svg"

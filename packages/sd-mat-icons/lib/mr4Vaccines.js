@@ -1,1 +1,0 @@
-export { default as mr4Vaccines } from "@material-symbols/svg-400/rounded/vaccines.svg"

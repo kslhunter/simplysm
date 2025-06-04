@@ -1,1 +1,0 @@
-export { default as mr4PausePresentation } from "@material-symbols/svg-400/rounded/pause_presentation.svg"

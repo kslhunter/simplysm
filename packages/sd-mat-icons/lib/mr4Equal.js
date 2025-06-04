@@ -1,1 +1,0 @@
-export { default as mr4Equal } from "@material-symbols/svg-400/rounded/equal.svg"

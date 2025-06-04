@@ -1,1 +1,0 @@
-export { default as mr4BadgeCriticalBattery } from "@material-symbols/svg-400/rounded/badge_critical_battery.svg"

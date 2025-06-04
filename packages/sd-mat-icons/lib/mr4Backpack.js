@@ -1,1 +1,0 @@
-export { default as mr4Backpack } from "@material-symbols/svg-400/rounded/backpack.svg"

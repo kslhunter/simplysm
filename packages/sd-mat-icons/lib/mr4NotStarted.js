@@ -1,1 +1,0 @@
-export { default as mr4NotStarted } from "@material-symbols/svg-400/rounded/not_started.svg"

@@ -1,1 +1,0 @@
-export { default as mr4LeakRemove } from "@material-symbols/svg-400/rounded/leak_remove.svg"

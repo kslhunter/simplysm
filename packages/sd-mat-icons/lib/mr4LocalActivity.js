@@ -1,1 +1,0 @@
-export { default as mr4LocalActivity } from "@material-symbols/svg-400/rounded/local_activity.svg"
