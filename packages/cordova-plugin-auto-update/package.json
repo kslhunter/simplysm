@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/cordova-plugin-auto-update",
-  "version": "12.11.14",
+  "version": "12.11.15",
   "description": "심플리즘 패키지 - Cordova Plugin Auto Update",
   "author": "김석래",
   "repository": {
@@ -19,9 +19,9 @@
     ]
   },
   "dependencies": {
-    "@simplysm/cordova-plugin-file-system": "12.11.14",
-    "@simplysm/sd-core-common": "12.11.14",
-    "@simplysm/sd-service-client": "12.11.14",
+    "@simplysm/cordova-plugin-file-system": "12.11.15",
+    "@simplysm/sd-core-common": "12.11.15",
+    "@simplysm/sd-service-client": "12.11.15",
     "semver": "^7.7.2"
   },
   "devDependencies": {
