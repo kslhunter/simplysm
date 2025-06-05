@@ -31,8 +31,8 @@ import { SdSystemLogProvider } from "./providers/sd-system-log.provider";
 
 export function provideSdAngular(opt: {
   clientName: string;
-  defaultTheme?: TSdTheme;
-  defaultDark?: boolean;
+  defaultTheme: TSdTheme;
+  defaultDark: boolean;
   icons: ISdAngularIcon;
 }): EnvironmentProviders {
   return makeEnvironmentProviders([
@@ -126,8 +126,8 @@ Source  : ${filename}(${lineno}, ${colno})${stack}`);
       useFactory: () => {
         const provider = new SdAngularConfigProvider();
         provider.clientName = opt.clientName;
-        provider.defaultTheme = opt.defaultTheme ?? "compact";
-        provider.defaultDark = opt.defaultDark ?? false;
+        provider.defaultTheme = opt.defaultTheme;
+        provider.defaultDark = opt.defaultDark;
         provider.icons = opt.icons;
         return provider;
       },
