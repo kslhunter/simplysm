@@ -11,10 +11,12 @@ import {
 import { SdBusyContainerControl } from "../controls/sd-busy-container.control";
 import { SdDockContainerControl } from "../controls/sd-dock-container.control";
 import { SdDockControl } from "../controls/sd-dock.control";
+import { SdIconControl } from "../controls/icon/sd-icon.control";
 import { SdPaneControl } from "../controls/sd-pane.control";
 import { SdTopbarContainerControl } from "../controls/sd-topbar-container.control";
 import { SdTopbarControl } from "../controls/sd-topbar.control";
 import { SdShowEffectDirective } from "../directives/sd-show-effect.directive";
+import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { SdAppStructureProvider } from "../providers/sd-app-structure.provider";
 import { SdActivatedModalProvider } from "../providers/sd-modal.provider";
 import { $computed } from "../utils/bindings/$computed";
@@ -22,8 +24,6 @@ import { useCurrentPageCodeSignal } from "../utils/signals/use-current-page-code
 import { useFullPageCodeSignal } from "../utils/signals/use-full-page-code.signal";
 import { TSdViewType, useViewTypeSignal } from "../utils/signals/use-view-type.signal";
 import { transformBoolean } from "../utils/type-tramsforms";
-import { taAlertTriangle } from "@simplysm/sd-tabler-icons/icons/ta-alert-triangle";
-import { SdTablerIconControl } from "../controls/tabler-icon/sd-tabler-icon.control";
 
 @Component({
   selector: "sd-base-container",
@@ -32,6 +32,7 @@ import { SdTablerIconControl } from "../controls/tabler-icon/sd-tabler-icon.cont
   standalone: true,
   imports: [
     SdPaneControl,
+    SdIconControl,
     SdTopbarContainerControl,
     SdTopbarControl,
     SdBusyContainerControl,
@@ -39,7 +40,6 @@ import { SdTablerIconControl } from "../controls/tabler-icon/sd-tabler-icon.cont
     SdDockContainerControl,
     SdDockControl,
     SdShowEffectDirective,
-    SdTablerIconControl,
   ],
   template: `
     <sd-busy-container [busy]="busy()" [message]="busyMessage()">
@@ -47,7 +47,7 @@ import { SdTablerIconControl } from "../controls/tabler-icon/sd-tabler-icon.cont
         @if (!visible()) {
           <sd-pane class="tx-theme-grey-light p-xxl tx-center" sd-show-effect>
             <br />
-            <sd-tabler-icon [icon]="taAlertTriangle" style="font-size: 4em" />
+            <sd-icon [icon]="icons.triangleExclamation" fixedWidth size="5x" />
             <br />
             <br />
             '{{ modalOrPageTitle() }}'에 대한 사용권한이 없습니다. 시스템 관리자에게 문의하세요.
@@ -102,6 +102,8 @@ import { SdTablerIconControl } from "../controls/tabler-icon/sd-tabler-icon.cont
   `,
 })
 export class SdBaseContainerControl {
+  protected readonly icons = inject(SdAngularConfigProvider).icons;
+
   #sdActivatedModal = inject(SdActivatedModalProvider, { optional: true });
   #sdAppStructure = inject(SdAppStructureProvider);
 
@@ -127,5 +129,4 @@ export class SdBaseContainerControl {
   visible = input(true, { transform: transformBoolean });
   busy = input(false, { transform: transformBoolean });
   busyMessage = input<string>();
-  protected readonly taAlertTriangle = taAlertTriangle;
 }

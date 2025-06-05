@@ -1,29 +1,37 @@
-import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  input,
+  ViewEncapsulation,
+} from "@angular/core";
+import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { $computed } from "../utils/bindings/$computed";
+
 import { transformBoolean } from "../utils/type-tramsforms";
-import { taChevronDown } from "@simplysm/sd-tabler-icons/icons/ta-chevron-down";
-import { SdTablerIconControl } from "./tabler-icon/sd-tabler-icon.control";
+import { SdIconControl } from "./icon/sd-icon.control";
 
 @Component({
   selector: "sd-collapse-icon",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdTablerIconControl],
-  styles: [
-    /* language=SCSS */ `
-      sd-collapse-icon {
-        display: inline-block;
-        transition: transform 0.1s ease-in;
+  imports: [
+    SdIconControl,
+  ],
+  styles: [/* language=SCSS */ `
+    sd-collapse-icon {
+      display: inline-block;
+      transition: transform 0.1s ease-in;
 
-        &[sd-open="true"] {
-          transition: transform 0.1s ease-out;
-        }
+      &[sd-open="true"] {
+        transition: transform 0.1s ease-out;
       }
-    `,
+    }
+  `,
   ],
   template: `
-    <sd-tabler-icon [icon]="icon()" />
+    <sd-icon [icon]="icon()" fixedWidth />
   `,
   host: {
     "[attr.sd-open]": "open()",
@@ -31,7 +39,9 @@ import { SdTablerIconControl } from "./tabler-icon/sd-tabler-icon.control";
   },
 })
 export class SdCollapseIconControl {
-  icon = input(taChevronDown);
+  protected readonly icons = inject(SdAngularConfigProvider).icons;
+
+  icon = input(this.icons.angleDown);
   open = input(false, { transform: transformBoolean });
   openRotate = input(90);
 

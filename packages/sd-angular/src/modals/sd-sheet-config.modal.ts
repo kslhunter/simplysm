@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   forwardRef,
+  inject,
   input,
   output,
   ViewEncapsulation,
@@ -12,19 +13,17 @@ import { SdButtonControl } from "../controls/sd-button.control";
 import { SdCheckboxControl } from "../controls/sd-checkbox.control";
 import { SdDockContainerControl } from "../controls/sd-dock-container.control";
 import { SdDockControl } from "../controls/sd-dock.control";
+import { SdIconControl } from "../controls/icon/sd-icon.control";
 import { SdPaneControl } from "../controls/sd-pane.control";
 import { SdSheetColumnCellTemplateDirective } from "../controls/sd-sheet/directives/sd-sheet-column-cell.template-directive";
 import { SdSheetColumnDirective } from "../controls/sd-sheet/directives/sd-sheet-column.directive";
 import { SdSheetControl } from "../controls/sd-sheet/sd-sheet.control";
 import { ISdSheetConfig } from "../controls/sd-sheet/sd-sheet.types";
 import { SdTextfieldControl } from "../controls/sd-textfield.control";
+import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { ISdModal } from "../providers/sd-modal.provider";
 import { $effect } from "../utils/bindings/$effect";
 import { $signal } from "../utils/bindings/$signal";
-import { taChevronUp } from "@simplysm/sd-tabler-icons/icons/ta-chevron-up";
-import { taChevronDown } from "@simplysm/sd-tabler-icons/icons/ta-chevron-down";
-import { SdTablerIconControl } from "../controls/tabler-icon/sd-tabler-icon.control";
-import { taX } from "@simplysm/sd-tabler-icons/icons/ta-x";
 
 @Component({
   selector: "sd-sheet-config-modal",
@@ -42,8 +41,8 @@ import { taX } from "@simplysm/sd-tabler-icons/icons/ta-x";
     SdSheetColumnCellTemplateDirective,
     SdDockControl,
     SdButtonControl,
+    SdIconControl,
     SdBusyContainerControl,
-    SdTablerIconControl,
   ],
   template: `
     <sd-busy-container [busy]="!initialized()">
@@ -75,7 +74,7 @@ import { taX } from "@simplysm/sd-tabler-icons/icons/ta-x";
                       [disabled]="index === 0 || (!item.fixed && items()[index - 1].fixed)"
                       (click)="onDisplayOrderUpButtonClick(item)"
                     >
-                      <sd-tabler-icon [icon]="taChevronUp" />
+                      <sd-icon [icon]="icons.angleUp" fixedWidth />
                     </sd-anchor>
                     <sd-anchor
                       [disabled]="
@@ -83,7 +82,7 @@ import { taX } from "@simplysm/sd-tabler-icons/icons/ta-x";
                       "
                       (click)="onDisplayOrderDownButtonClick(item)"
                     >
-                      <sd-tabler-icon [icon]="taChevronDown" />
+                      <sd-icon [icon]="icons.angleDown" fixedWidth />
                     </sd-anchor>
                   </div>
                 </ng-template>
@@ -109,6 +108,7 @@ import { taX } from "@simplysm/sd-tabler-icons/icons/ta-x";
                 </ng-template>
               </sd-sheet-column>
               <sd-sheet-column key="hidden" header="Hidden" disableSorting disableResizing>
+                .
                 <ng-template [cell]="items()" let-item="item">
                   <div style="text-align: center">
                     <sd-checkbox
@@ -116,7 +116,7 @@ import { taX } from "@simplysm/sd-tabler-icons/icons/ta-x";
                       [inset]="true"
                       [(value)]="item.hidden"
                       (valueChange)="items.$mark()"
-                      [icon]="taX"
+                      [icon]="icons.xmark"
                       theme="danger"
                     ></sd-checkbox>
                   </div>
@@ -160,6 +160,8 @@ import { taX } from "@simplysm/sd-tabler-icons/icons/ta-x";
   `,
 })
 export class SdSheetConfigModal<T> implements ISdModal<ISdSheetConfig> {
+  protected readonly icons = inject(SdAngularConfigProvider).icons;
+
   sheetKey = input.required<string>();
   controls = input.required<readonly SdSheetColumnDirective<T>[]>();
   config = input.required<ISdSheetConfig | undefined>();
@@ -250,10 +252,6 @@ export class SdSheetConfigModal<T> implements ISdModal<ISdSheetConfig> {
       this.close.emit({ columnRecord: {} });
     }
   }
-
-  protected readonly taChevronUp = taChevronUp;
-  protected readonly taChevronDown = taChevronDown;
-  protected readonly taX = taX;
 }
 
 interface IItem {

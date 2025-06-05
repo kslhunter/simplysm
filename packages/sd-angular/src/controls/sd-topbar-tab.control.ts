@@ -1,14 +1,20 @@
-import { ChangeDetectionStrategy, Component, output, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  output,
+  ViewEncapsulation,
+} from "@angular/core";
 import { SdAnchorControl } from "./sd-anchor.control";
-import { SdTablerIconControl } from "./tabler-icon/sd-tabler-icon.control";
-import { taBackspace } from "@simplysm/sd-tabler-icons/icons/ta-backspace";
+import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
+import { SdIconControl } from "./icon/sd-icon.control";
 
 @Component({
   selector: "sd-topbar-tab",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdAnchorControl, SdTablerIconControl],
+  imports: [SdAnchorControl, SdIconControl],
   styles: [
     /* language=SCSS */ `
       sd-topbar-tab {
@@ -41,11 +47,12 @@ import { taBackspace } from "@simplysm/sd-tabler-icons/icons/ta-backspace";
   template: `
     <ng-content></ng-content>
     <sd-anchor (click)="onCloseButtonClick($event)">
-      <sd-tabler-icon [icon]="taBackspace" />
-    </sd-anchor>
-  `,
+      <sd-icon [icon]="icons.xmark" fixedWidth />
+    </sd-anchor>`,
 })
 export class SdTopbarTabControl {
+  protected readonly icons = inject(SdAngularConfigProvider).icons;
+
   clickClose = output<MouseEvent>();
 
   onCloseButtonClick(event: MouseEvent) {
@@ -54,6 +61,4 @@ export class SdTopbarTabControl {
 
     this.clickClose.emit(event);
   }
-
-  protected readonly taBackspace = taBackspace;
 }

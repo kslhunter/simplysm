@@ -11,10 +11,9 @@ import { SdListControl } from "./sd-list.control";
 import { SdListItemControl } from "./sd-list-item.control";
 import { SdThemeProvider } from "../providers/sd-theme.provider";
 import { SdDropdownPopupControl } from "./sd-dropdown-popup.control";
+import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
+import { SdIconControl } from "./icon/sd-icon.control";
 import { $effect } from "../utils/bindings/$effect";
-import { SdTablerIconControl } from "./tabler-icon/sd-tabler-icon.control";
-import { taColorSwatch } from "@simplysm/sd-tabler-icons/icons/ta-color-swatch";
-import { taCheck } from "@simplysm/sd-tabler-icons/icons/ta-check";
 
 @Component({
   selector: "sd-theme-selector",
@@ -27,12 +26,12 @@ import { taCheck } from "@simplysm/sd-tabler-icons/icons/ta-check";
     SdAnchorControl,
     SdListControl,
     SdListItemControl,
-    SdTablerIconControl,
+    SdIconControl,
   ],
   template: `
     <sd-dropdown>
       <sd-anchor style="color: var(--theme-grey-default)">
-        <sd-tabler-icon [icon]="taColorSwatch" />
+        <sd-icon [icon]="icons.mountainSun" />
         {{ theme() }}
       </sd-anchor>
 
@@ -40,7 +39,7 @@ import { taCheck } from "@simplysm/sd-tabler-icons/icons/ta-check";
         <sd-list>
           <sd-list-item
             [selected]="theme() === 'compact' && !dark()"
-            [selectedIcon]="taCheck"
+            [selectedIcon]="icons.check"
             (click)="theme.set('compact'); dark.set(false)"
           >
             compact
@@ -48,7 +47,7 @@ import { taCheck } from "@simplysm/sd-tabler-icons/icons/ta-check";
           @if (isDev) {
             <sd-list-item
               [selected]="theme() === 'compact' && dark()"
-              [selectedIcon]="taCheck"
+              [selectedIcon]="icons.check"
               (click)="theme.set('compact'); dark.set(true)"
             >
               compact-dark
@@ -60,6 +59,8 @@ import { taCheck } from "@simplysm/sd-tabler-icons/icons/ta-check";
   `,
 })
 export class SdThemeSelectorControl {
+ protected readonly icons = inject(SdAngularConfigProvider).icons;
+
   #sdTheme = inject(SdThemeProvider);
 
   dropdownControl = viewChild.required(SdDropdownControl);
@@ -74,7 +75,4 @@ export class SdThemeSelectorControl {
       this.dropdownControl().open.set(false);
     });
   }
-
-  protected readonly taColorSwatch = taColorSwatch;
-  protected readonly taCheck = taCheck;
 }

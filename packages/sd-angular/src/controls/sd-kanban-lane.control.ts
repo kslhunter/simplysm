@@ -12,6 +12,7 @@ import {
   TemplateRef,
   ViewEncapsulation,
 } from "@angular/core";
+import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { $computed } from "../utils/bindings/$computed";
 import { $signal } from "../utils/bindings/$signal";
 import { transformBoolean } from "../utils/type-tramsforms";
@@ -20,13 +21,10 @@ import { SdBusyContainerControl } from "./sd-busy-container.control";
 import { SdCheckboxControl } from "./sd-checkbox.control";
 import { SdDockContainerControl } from "./sd-dock-container.control";
 import { SdDockControl } from "./sd-dock.control";
+import { SdIconControl } from "./icon/sd-icon.control";
 import { SdKanbanBoardControl } from "./sd-kanban-board.control";
 import { SdKanbanControl } from "./sd-kanban.control";
 import { SdPaneControl } from "./sd-pane.control";
-import { taEyeCancel } from "@simplysm/sd-tabler-icons/icons/ta-eye-cancel";
-import { taEyeOff } from "@simplysm/sd-tabler-icons/icons/ta-eye-off";
-import { taEye } from "@simplysm/sd-tabler-icons/icons/ta-eye";
-import { SdTablerIconControl } from "./tabler-icon/sd-tabler-icon.control";
 
 @Component({
   selector: "sd-kanban-lane",
@@ -41,7 +39,7 @@ import { SdTablerIconControl } from "./tabler-icon/sd-tabler-icon.control";
     SdDockControl,
     SdPaneControl,
     SdAnchorControl,
-    SdTablerIconControl,
+    SdIconControl,
   ],
   //region styles
   styles: [
@@ -85,7 +83,7 @@ import { SdTablerIconControl } from "./tabler-icon/sd-tabler-icon.control";
         <sd-dock class="p-default pb-0">
           @if (useCollapse()) {
             <sd-anchor theme="info" (click)="onToggleCollapseButtonClick()">
-              <sd-tabler-icon [icon]="collapse() ? taEyeOff : taEye" />
+              <sd-icon [icon]="collapse() ? icons.eyeSlash : icons.eye" fixedWidth />
             </sd-anchor>
           }
 
@@ -132,7 +130,11 @@ import { SdTablerIconControl } from "./tabler-icon/sd-tabler-icon.control";
   },
 })
 export class SdKanbanLaneControl<L, T> {
-  #boardControl = inject<SdKanbanBoardControl<L, T>>(forwardRef(() => SdKanbanBoardControl));
+  protected readonly icons = inject(SdAngularConfigProvider).icons;
+
+  #boardControl = inject<SdKanbanBoardControl<L, T>>(
+    forwardRef(() => SdKanbanBoardControl),
+  );
 
   busy = input(false, { transform: transformBoolean });
 
@@ -209,8 +211,4 @@ export class SdKanbanLaneControl<L, T> {
 
     this.#boardControl.onDropTo(this);
   }
-
-  protected readonly taEyeCancel = taEyeCancel;
-  protected readonly taEyeOff = taEyeOff;
-  protected readonly taEye = taEye;
 }

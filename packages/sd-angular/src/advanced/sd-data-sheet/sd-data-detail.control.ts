@@ -17,6 +17,8 @@ import {
 import { TXT_CHANGE_IGNORE_CONFIRM } from "../../commons";
 import { SdButtonControl } from "../../controls/sd-button.control";
 import { SdFormControl } from "../../controls/sd-form.control";
+import { SdIconControl } from "../../controls/icon/sd-icon.control";
+import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
 import { SdToastProvider } from "../../providers/sd-toast.provider";
 import { $computed } from "../../utils/bindings/$computed";
 import { $effect } from "../../utils/bindings/$effect";
@@ -27,8 +29,6 @@ import { SdBaseContainerControl } from "../sd-base-container.control";
 import { DateTime } from "@simplysm/sd-core-common";
 import { FormatPipe } from "../../pipes/format.pipe";
 import { SdSharedDataProvider } from "../shared-data/sd-shared-data.provider";
-import { taDeviceFloppy } from "@simplysm/sd-tabler-icons/icons/ta-device-floppy";
-import { SdTablerIconControl } from "../../controls/tabler-icon/sd-tabler-icon.control";
 
 @Component({
   selector: "sd-data-detail",
@@ -39,9 +39,9 @@ import { SdTablerIconControl } from "../../controls/tabler-icon/sd-tabler-icon.c
     SdBaseContainerControl,
     SdFormControl,
     SdButtonControl,
+    SdIconControl,
     NgTemplateOutlet,
     FormatPipe,
-    SdTablerIconControl,
   ],
   template: `
     <sd-base-container
@@ -56,7 +56,7 @@ import { SdTablerIconControl } from "../../controls/tabler-icon/sd-tabler-icon.c
         <ng-template #tool>
           <div class="p-sm-lg flex-row flex-gap-sm">
             <sd-button theme="primary" (click)="onSubmitButtonClick()">
-              <sd-tabler-icon [icon]="taDeviceFloppy" />
+              <sd-icon [icon]="icons.save" fixedWidth />
               저장
               <small>(CTRL+S)</small>
             </sd-button>
@@ -120,6 +120,8 @@ import { SdTablerIconControl } from "../../controls/tabler-icon/sd-tabler-icon.c
   `,
 })
 export class SdDataDetailControl<T extends object> {
+  protected readonly icons = inject(SdAngularConfigProvider).icons;
+
   #sdToast = inject(SdToastProvider);
   #sdSharedData = inject(SdSharedDataProvider);
 
@@ -240,8 +242,6 @@ export class SdDataDetailControl<T extends object> {
     });
     this.busyCount.update((v) => v - 1);
   }
-
-  protected readonly taDeviceFloppy = taDeviceFloppy;
 }
 
 export interface ISdDataDetailViewModel<T extends object> {

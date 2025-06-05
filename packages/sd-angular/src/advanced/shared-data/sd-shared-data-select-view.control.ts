@@ -9,11 +9,13 @@ import {
   TemplateRef,
   ViewEncapsulation,
 } from "@angular/core";
+import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { StringUtils } from "@simplysm/sd-core-common";
 import { SdAnchorControl } from "../../controls/sd-anchor.control";
 import { SdBusyContainerControl } from "../../controls/sd-busy-container.control";
 import { SdDockContainerControl } from "../../controls/sd-dock-container.control";
 import { SdDockControl } from "../../controls/sd-dock.control";
+import { SdIconControl } from "../../controls/icon/sd-icon.control";
 import { SdListItemControl } from "../../controls/sd-list-item.control";
 import { SdListControl } from "../../controls/sd-list.control";
 import { SdPaginationControl } from "../../controls/sd-pagination.control";
@@ -23,6 +25,7 @@ import {
   SdItemOfTemplateContext,
   SdItemOfTemplateDirective,
 } from "../../directives/sd-item-of.template-directive";
+import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
 import { SdModalProvider } from "../../providers/sd-modal.provider";
 import { $computed } from "../../utils/bindings/$computed";
 import { $effect } from "../../utils/bindings/$effect";
@@ -31,9 +34,6 @@ import { transformBoolean } from "../../utils/type-tramsforms";
 import { TSdSelectModalInput } from "../sd-select-modal-button.control";
 import { ISharedDataBase } from "./sd-shared-data.provider";
 import { setupModelHook } from "../../utils/setups/setup-model-hook";
-import { SdTablerIconControl } from "../../controls/tabler-icon/sd-tabler-icon.control";
-import { taExternalLink } from "@simplysm/sd-tabler-icons/icons/ta-external-link";
-import { SdTablerIcon } from "@simplysm/sd-tabler-icons";
 
 @Component({
   selector: "sd-shared-data-select-view",
@@ -50,8 +50,8 @@ import { SdTablerIcon } from "@simplysm/sd-tabler-icons";
     SdPaneControl,
     SdListItemControl,
     SdAnchorControl,
+    SdIconControl,
     SdPaginationControl,
-    SdTablerIconControl,
   ],
   template: `
     <sd-busy-container [busy]="busyCount() > 0">
@@ -67,7 +67,7 @@ import { SdTablerIcon } from "@simplysm/sd-tabler-icons";
               @if (modal()) {
                 <div>
                   <sd-anchor (click)="onModalButtonClick()">
-                    <sd-tabler-icon [icon]="taExternalLink" />
+                    <sd-icon [icon]="icons.externalLink" fixedWidth />
                   </sd-anchor>
                 </div>
               }
@@ -128,13 +128,15 @@ import { SdTablerIcon } from "@simplysm/sd-tabler-icons";
   `,
 })
 export class SdSharedDataSelectViewControl<T extends ISharedDataBase<string | number>> {
+  protected readonly icons = inject(SdAngularConfigProvider).icons;
+
   #sdModal = inject(SdModalProvider);
 
   selectedItem = model<T>();
   canChangeFn = input<(item: T | undefined) => boolean | Promise<boolean>>(() => true);
 
   items = input.required<T[]>();
-  selectedIcon = input<SdTablerIcon>();
+  selectedIcon = input<IconDefinition>();
   useUndefined = input(false, { transform: transformBoolean });
   filterFn = input<(item: T, index: number) => boolean>();
 
@@ -224,6 +226,4 @@ export class SdSharedDataSelectViewControl<T extends ISharedDataBase<string | nu
       this.selectedItem.set(newSelectedItem);
     }
   }
-
-  protected readonly taExternalLink = taExternalLink;
 }

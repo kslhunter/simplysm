@@ -4,19 +4,21 @@ import {
   Component,
   contentChild,
   forwardRef,
+  inject,
   input,
   model,
   TemplateRef,
   ViewEncapsulation,
 } from "@angular/core";
+import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { SdRippleDirective } from "../directives/sd-ripple.directive";
+import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { $computed } from "../utils/bindings/$computed";
 import { transformBoolean } from "../utils/type-tramsforms";
 import { SdCollapseIconControl } from "./sd-collapse-icon.control";
 import { SdCollapseControl } from "./sd-collapse.control";
+import { SdIconControl } from "./icon/sd-icon.control";
 import { SdListControl } from "./sd-list.control";
-import { SdTablerIconControl } from "./tabler-icon/sd-tabler-icon.control";
-import { SdTablerIcon } from "@simplysm/sd-tabler-icons";
 
 @Component({
   selector: "sd-list-item",
@@ -28,7 +30,7 @@ import { SdTablerIcon } from "@simplysm/sd-tabler-icons";
     SdCollapseControl,
     SdRippleDirective,
     NgTemplateOutlet,
-    SdTablerIconControl,
+    SdIconControl,
   ],
   styles: [
     /* language=SCSS */ `
@@ -125,7 +127,7 @@ import { SdTablerIcon } from "@simplysm/sd-tabler-icons";
     >
       <div class="flex-row flex-gap-xs">
         @if (selectedIcon() && !hasChildren()) {
-          <sd-tabler-icon class="_selected-icon" [icon]="selectedIcon()!" />
+          <sd-icon class="_selected-icon" [icon]="selectedIcon()!" fixedWidth />
         }
         <div style="flex-grow: 1">
           <ng-content></ng-content>
@@ -160,9 +162,11 @@ import { SdTablerIcon } from "@simplysm/sd-tabler-icons";
   },
 })
 export class SdListItemControl {
+  protected readonly icons = inject(SdAngularConfigProvider).icons;
+
   open = model(false);
 
-  selectedIcon = input<SdTablerIcon>();
+  selectedIcon = input<IconDefinition>();
   selected = input(false, { transform: transformBoolean });
 
   layout = input<"flat" | "accordion">("accordion");

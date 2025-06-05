@@ -5,10 +5,10 @@ import { NgTemplateOutlet } from "@angular/common";
 import { SdTypedTemplateDirective } from "../directives/sd-typed.template-directive";
 import { SdListItemControl } from "./sd-list-item.control";
 import { SdRouterLinkDirective } from "../directives/sd-router-link.directive";
+import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
+import { SdIconControl } from "./icon/sd-icon.control";
 import * as querystring from "querystring";
 import { $computed } from "../utils/bindings/$computed";
-import { SdTablerIcon } from "@simplysm/sd-tabler-icons";
-import { SdTablerIconControl } from "./tabler-icon/sd-tabler-icon.control";
 
 @Component({
   selector: "sd-sidebar-menu",
@@ -21,7 +21,7 @@ import { SdTablerIconControl } from "./tabler-icon/sd-tabler-icon.control";
     SdTypedTemplateDirective,
     SdListItemControl,
     SdRouterLinkDirective,
-    SdTablerIconControl,
+    SdIconControl,
   ],
   template: `
     @if (rootLayout() === "accordion") {
@@ -44,7 +44,7 @@ import { SdTablerIconControl } from "./tabler-icon/sd-tabler-icon.control";
           [layout]="depth === 0 ? rootLayout() : 'accordion'"
         >
           @if (menu.icon) {
-            <sd-tabler-icon [icon]="menu.icon" />
+            <sd-icon [icon]="menu.icon" fixedWidth />
             &nbsp;
           }
           {{ menu.title }}
@@ -160,6 +160,6 @@ export interface ISdSidebarMenu {
   title: string;
   codeChain: string[];
   url?: string;
-  icon?: SdTablerIcon;
+  icon?: IconDefinition;
   children?: ISdSidebarMenu[];
 }

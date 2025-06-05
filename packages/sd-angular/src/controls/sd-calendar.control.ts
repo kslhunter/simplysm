@@ -2,11 +2,13 @@ import {
   ChangeDetectionStrategy,
   Component,
   contentChild,
+  inject,
   input,
   TemplateRef,
   ViewEncapsulation,
 } from "@angular/core";
 import { DateOnly } from "@simplysm/sd-core-common";
+import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { FormatPipe } from "../pipes/format.pipe";
 import {
   SdItemOfTemplateContext,
@@ -20,7 +22,10 @@ import { $computed } from "../utils/bindings/$computed";
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [FormatPipe, NgTemplateOutlet],
+  imports: [
+    FormatPipe,
+    NgTemplateOutlet,
+  ],
   template: `
     <table>
       <thead>
@@ -61,11 +66,11 @@ import { $computed } from "../utils/bindings/$computed";
                     <ng-template
                       [ngTemplateOutlet]="itemTemplateRef()"
                       [ngTemplateOutletContext]="{
-                        $implicit: item,
-                        item: item,
-                        index: r * 7 + c,
-                        depth: 0,
-                      }"
+                      $implicit: item,
+                      item: item,
+                      index: r * 7 + c,
+                      depth: 0,
+                    }"
                     ></ng-template>
                   }
                 </div>
@@ -125,6 +130,8 @@ import { $computed } from "../utils/bindings/$computed";
   ],
 })
 export class SdCalendarControl<T> {
+  protected readonly icons = inject(SdAngularConfigProvider).icons;
+
   items = input.required<T[]>();
   getItemDateFn = input.required<(item: T, index: number) => DateOnly>();
 
@@ -146,10 +153,8 @@ export class SdCalendarControl<T> {
       items: T[];
     }[][] = [];
 
-    const firstDate = this.yearMonth().getWeekSeqStartDate(
-      this.weekStartDay(),
-      this.minDaysInFirstWeek(),
-    );
+    const firstDate = this.yearMonth()
+      .getWeekSeqStartDate(this.weekStartDay(), this.minDaysInFirstWeek());
     for (let r = 0; r < 6; r++) {
       const row: {
         date: DateOnly;
@@ -159,9 +164,8 @@ export class SdCalendarControl<T> {
         const date = firstDate.addDays(r * 7 + c);
         row.push({
           date,
-          items: this.items().filter(
-            (item, index1) => this.getItemDateFn()(item, index1).tick === date.tick,
-          ),
+          items: this.items()
+            .filter((item, index1) => this.getItemDateFn()(item, index1).tick === date.tick),
         });
       }
       result.push(row);

@@ -7,23 +7,21 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import { ObjectUtils } from "@simplysm/sd-core-common";
+import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { SdSystemConfigProvider } from "../providers/sd-system-config.provider";
 import { SdToastProvider } from "../providers/sd-toast.provider";
 import { $effect } from "../utils/bindings/$effect";
 import { $signal } from "../utils/bindings/$signal";
 import { SdAnchorControl } from "./sd-anchor.control";
 import { SdGapControl } from "./sd-gap.control";
-import { SdTablerIconControl } from "./tabler-icon/sd-tabler-icon.control";
-import { taStar } from "@simplysm/sd-tabler-icons/icons/ta-star";
-import { taDeviceFloppy } from "@simplysm/sd-tabler-icons/icons/ta-device-floppy";
-import { taBackspace } from "@simplysm/sd-tabler-icons/icons/ta-backspace";
+import { SdIconControl } from "./icon/sd-icon.control";
 
 @Component({
   selector: "sd-state-preset",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdAnchorControl, SdGapControl, SdTablerIconControl],
+  imports: [SdAnchorControl, SdGapControl, SdIconControl],
   styles: [
     /* language=SCSS */ `
       sd-state-preset {
@@ -75,7 +73,7 @@ import { taBackspace } from "@simplysm/sd-tabler-icons/icons/ta-backspace";
   ],
   template: `
     <sd-anchor (click)="onAddButtonClick()">
-      <sd-tabler-icon [icon]="taStar" class="tx-theme-warning-default" />
+      <sd-icon [icon]="icons.star" class="tx-theme-warning-default" fixedWidth />
     </sd-anchor>
     <sd-gap width="sm"></sd-gap>
     @for (preset of presets(); track preset.name) {
@@ -84,10 +82,10 @@ import { taBackspace } from "@simplysm/sd-tabler-icons/icons/ta-backspace";
           {{ preset.name }}
         </sd-anchor>
         <sd-anchor (click)="onSaveButtonClick(preset)">
-          <sd-tabler-icon [icon]="taDeviceFloppy" />
+          <sd-icon [icon]="icons.save" size="sm" />
         </sd-anchor>
         <sd-anchor (click)="onRemoveButtonClick(preset)">
-          <sd-tabler-icon [icon]="taBackspace" />
+          <sd-icon [icon]="icons.xmark" size="sm" />
         </sd-anchor>
       </div>
       <sd-gap width="sm"></sd-gap>
@@ -98,6 +96,8 @@ import { taBackspace } from "@simplysm/sd-tabler-icons/icons/ta-backspace";
   },
 })
 export class SdStatePresetControl {
+  protected readonly icons = inject(SdAngularConfigProvider).icons;
+
   #sdSystemConfig = inject(SdSystemConfigProvider);
   #sdToast = inject(SdToastProvider);
 
@@ -151,10 +151,6 @@ export class SdStatePresetControl {
 
     this.#sdToast.info(`현재 상태가 ${preset.name}에 저장되었습니다.`);
   }
-
-  protected readonly taStar = taStar;
-  protected readonly taDeviceFloppy = taDeviceFloppy;
-  protected readonly taBackspace = taBackspace;
 }
 
 export interface ISdStatePreset {
