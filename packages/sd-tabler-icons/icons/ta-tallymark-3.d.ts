@@ -1,1 +1,0 @@
-import {SdTablerIcon} from "../index"; export const taTallymark3: SdTablerIcon;

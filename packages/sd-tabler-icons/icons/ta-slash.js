@@ -1,1 +1,0 @@
-export const taSlash = [["path",{"d":"M17 5l-10 14"}]];

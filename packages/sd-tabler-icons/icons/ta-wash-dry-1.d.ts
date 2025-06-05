@@ -1,1 +1,0 @@
-import {SdTablerIcon} from "../index"; export const taWashDry1: SdTablerIcon;

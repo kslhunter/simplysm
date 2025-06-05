@@ -1,1 +1,0 @@
-export const taLetterLSmall = [["path",{"d":"M10 8v8h4"}]];

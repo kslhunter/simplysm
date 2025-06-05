@@ -1,1 +1,0 @@
-export const taFilter2Exclamation = [["path",{"d":"M4 6h16"}],["path",{"d":"M6 12h12"}],["path",{"d":"M9 18h6"}],["path",{"d":"M19 16v3m0 3v.01"}]];

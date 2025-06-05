@@ -1,1 +1,0 @@
-export const taChevronRightPipe = [["path",{"d":"M6 6l6 6l-6 6"}],["path",{"d":"M17 5v13"}]];

@@ -1,1 +1,0 @@
-export const taGridGoldenratio = [["path",{"d":"M3 10h18"}],["path",{"d":"M3 14h18"}],["path",{"d":"M10 3v18"}],["path",{"d":"M14 3v18"}]];

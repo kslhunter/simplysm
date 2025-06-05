@@ -1,1 +1,0 @@
-export const taNumber11Small = [["path",{"d":"M8 8h1v8"}],["path",{"d":"M14 8h1v8"}]];

@@ -1,1 +1,0 @@
-export const taPlayerSkipForward = [["path",{"d":"M4 5v14l12 -7z"}],["path",{"d":"M20 5l0 14"}]];

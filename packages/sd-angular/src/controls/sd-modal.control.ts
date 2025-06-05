@@ -2,10 +2,10 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
-  forwardRef,
   HostListener,
   inject,
-  input, model,
+  input,
+  model,
   viewChild,
   ViewEncapsulation,
 } from "@angular/core";
@@ -21,8 +21,9 @@ import { transformBoolean } from "../utils/type-tramsforms";
 import { SdAnchorControl } from "./sd-anchor.control";
 import { SdDockContainerControl } from "./sd-dock-container.control";
 import { SdDockControl } from "./sd-dock.control";
-import { SdIconControl } from "./icon/sd-icon.control";
+
 import { SdPaneControl } from "./sd-pane.control";
+import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 
 @Component({
   selector: "sd-modal",
@@ -35,7 +36,7 @@ import { SdPaneControl } from "./sd-pane.control";
     SdDockContainerControl,
     SdDockControl,
     SdEventsDirective,
-    forwardRef(() => SdIconControl),
+    FaIconComponent,
   ],
   styles: [
     /* language=SCSS */ `
@@ -290,8 +291,12 @@ import { SdPaneControl } from "./sd-pane.control";
       (keydown.escape)="onDialogEscapeKeydown()"
       [style.min-width.px]="minWidthPx()"
       [style.min-height.px]="minHeightPx()"
-      [style.width.px]="minWidthPx() && widthPx() && minWidthPx()! > widthPx()! ? minWidthPx() : widthPx()"
-      [style.height.px]="minHeightPx() && heightPx() && minHeightPx()! > heightPx()! ? minHeightPx() : heightPx()"
+      [style.width.px]="
+        minWidthPx() && widthPx() && minWidthPx()! > widthPx()! ? minWidthPx() : widthPx()
+      "
+      [style.height.px]="
+        minHeightPx() && heightPx() && minHeightPx()! > heightPx()! ? minHeightPx() : heightPx()
+      "
       (focus)="onDialogFocus()"
       (sdResize)="onDialogResize($event)"
     >
@@ -301,7 +306,7 @@ import { SdPaneControl } from "./sd-pane.control";
             <h5 class="_title">{{ title() }}</h5>
             @if (!hideCloseButton()) {
               <sd-anchor class="_close-button" theme="grey" (click)="onCloseButtonClick()">
-                <sd-icon [icon]="icons.xmark" fixedWidth />
+                <fa-icon [icon]="icons.xmark" [fixedWidth]="true" />
               </sd-anchor>
             }
           </sd-dock>
@@ -406,7 +411,8 @@ export class SdModalControl {
   }
 
   onDialogFocus() {
-    const maxZIndex = document.body.findAll("sd-modal")
+    const maxZIndex = document.body
+      .findAll("sd-modal")
       .max((el) => Number(getComputedStyle(el).zIndex));
     if (maxZIndex !== undefined) {
       this.#elRef.nativeElement.style.zIndex = (maxZIndex + 1).toString();
@@ -436,9 +442,10 @@ export class SdModalControl {
     const style = getComputedStyle(this.#elRef.nativeElement);
     let paddingTop = style.paddingTop === "" ? 0 : (NumberUtils.parseInt(style.paddingTop) ?? 0);
 
-    if (this.dialogElRef().nativeElement.offsetHeight
-      > this.#elRef.nativeElement.offsetHeight
-      - paddingTop) {
+    if (
+      this.dialogElRef().nativeElement.offsetHeight >
+      this.#elRef.nativeElement.offsetHeight - paddingTop
+    ) {
       this.dialogElRef().nativeElement.style.maxHeight = `100%`; // `calc(100% - ${paddingTop}px)`;
       this.dialogElRef().nativeElement.style.height = `100%`; // `calc(100% - ${paddingTop}px)`;
     }
@@ -454,14 +461,12 @@ export class SdModalControl {
   @HostListener("window:resize")
   onWindowResize() {
     if (this.dialogElRef().nativeElement.offsetLeft > this.#elRef.nativeElement.offsetWidth - 100) {
-      this.dialogElRef().nativeElement.style.left = this.#elRef.nativeElement.offsetWidth
-        - 100
-        + "px";
+      this.dialogElRef().nativeElement.style.left =
+        this.#elRef.nativeElement.offsetWidth - 100 + "px";
     }
     if (this.dialogElRef().nativeElement.offsetTop > this.#elRef.nativeElement.offsetHeight - 100) {
-      this.dialogElRef().nativeElement.style.right = this.#elRef.nativeElement.offsetHeight
-        - 100
-        + "px";
+      this.dialogElRef().nativeElement.style.right =
+        this.#elRef.nativeElement.offsetHeight - 100 + "px";
     }
   }
 
@@ -491,7 +496,15 @@ export class SdModalControl {
 
   onResizeBarMousedown(
     event: MouseEvent,
-    direction: "left" | "right" | "top" | "top-left" | "top-right" | "bottom" | "bottom-left" | "bottom-right",
+    direction:
+      | "left"
+      | "right"
+      | "top"
+      | "top-left"
+      | "top-right"
+      | "bottom"
+      | "bottom-left"
+      | "bottom-right",
   ) {
     if (!this.resizable()) return;
 
@@ -527,21 +540,19 @@ export class SdModalControl {
         )}px`;
       }
       if (direction === "right" || direction === "bottom-right" || direction === "top-right") {
-        dialogEl.style.width = `${Math.max(startWidth
-          + (e.clientX - startX)
-          * (dialogEl.style.position === "absolute"
-            ? 1
-            : 2), this.minWidthPx() ?? 0)}px`;
+        dialogEl.style.width = `${Math.max(
+          startWidth + (e.clientX - startX) * (dialogEl.style.position === "absolute" ? 1 : 2),
+          this.minWidthPx() ?? 0,
+        )}px`;
       }
       if (direction === "left" || direction === "bottom-left" || direction === "top-left") {
         if (dialogEl.style.position === "absolute") {
           dialogEl.style.left = startLeft + (e.clientX - startX) + "px";
         }
-        dialogEl.style.width = `${Math.max(startWidth
-          - (e.clientX - startX)
-          * (dialogEl.style.position === "absolute"
-            ? 1
-            : 2), this.minWidthPx() ?? 0)}px`;
+        dialogEl.style.width = `${Math.max(
+          startWidth - (e.clientX - startX) * (dialogEl.style.position === "absolute" ? 1 : 2),
+          this.minWidthPx() ?? 0,
+        )}px`;
       }
 
       isDoDrag = true;

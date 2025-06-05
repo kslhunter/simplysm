@@ -1,1 +1,0 @@
-export const taFilter2X = [["path",{"d":"M4 6h16"}],["path",{"d":"M6 12h12"}],["path",{"d":"M9 18h4"}],["path",{"d":"M22 22l-5 -5m0 5l5 -5"}]];

@@ -1,1 +1,0 @@
-export const taChevronUpLeft = [["path",{"d":"M8 16v-8h8"}]];

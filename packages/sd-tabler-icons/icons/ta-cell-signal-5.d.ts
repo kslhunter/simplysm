@@ -1,1 +1,0 @@
-import {SdTablerIcon} from "../index"; export const taCellSignal5: SdTablerIcon;

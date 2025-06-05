@@ -9,7 +9,8 @@ import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider
 import { $computed } from "../utils/bindings/$computed";
 
 import { transformBoolean } from "../utils/type-tramsforms";
-import { SdIconControl } from "./icon/sd-icon.control";
+import { FaIconComponent } from "@fortawesome/angular-fontawesome";
+
 
 @Component({
   selector: "sd-collapse-icon",
@@ -17,7 +18,7 @@ import { SdIconControl } from "./icon/sd-icon.control";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
-    SdIconControl,
+    FaIconComponent,
   ],
   styles: [/* language=SCSS */ `
     sd-collapse-icon {
@@ -31,7 +32,7 @@ import { SdIconControl } from "./icon/sd-icon.control";
   `,
   ],
   template: `
-    <sd-icon [icon]="icon()" fixedWidth />
+    <fa-icon [icon]="icon()" [fixedWidth]="true" />
   `,
   host: {
     "[attr.sd-open]": "open()",

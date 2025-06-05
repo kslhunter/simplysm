@@ -1,1 +1,0 @@
-import {SdTablerIcon} from "../index"; export const taBrandAuth0: SdTablerIcon;

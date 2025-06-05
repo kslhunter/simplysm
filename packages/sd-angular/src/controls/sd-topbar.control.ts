@@ -15,15 +15,16 @@ import { SdGapControl } from "./sd-gap.control";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 
 import { injectElementRef } from "../utils/injections/inject-element-ref";
-import { SdIconControl } from "./icon/sd-icon.control";
+
 import { $computed } from "../utils/bindings/$computed";
+import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 
 @Component({
   selector: "sd-topbar",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdAnchorControl, SdGapControl, SdIconControl],
+  imports: [SdAnchorControl, SdGapControl, FaIconComponent],
   styles: [
     /* language=SCSS */ `
       @use "../scss/mixins";
@@ -120,7 +121,7 @@ import { $computed } from "../utils/bindings/$computed";
   template: `
     @if (hasSidebar()) {
       <sd-anchor class="_sidebar-toggle-button" (click)="onSidebarToggleButtonClick()" sdUseRipple>
-        <sd-icon [icon]="icons.bars" fixedWidth />
+        <fa-icon [icon]="icons.bars" [fixedWidth]="true" />
       </sd-anchor>
     } @else {
       <sd-gap width="sm" />

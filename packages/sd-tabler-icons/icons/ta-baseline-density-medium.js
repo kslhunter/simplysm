@@ -1,1 +1,0 @@
-export const taBaselineDensityMedium = [["path",{"d":"M4 20h16"}],["path",{"d":"M4 12h16"}],["path",{"d":"M4 4h16"}]];

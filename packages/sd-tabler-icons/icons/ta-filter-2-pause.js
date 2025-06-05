@@ -1,1 +1,0 @@
-export const taFilter2Pause = [["path",{"d":"M4 6h16"}],["path",{"d":"M6 12h12"}],["path",{"d":"M9 18h4"}],["path",{"d":"M17 17v5"}],["path",{"d":"M21 17v5"}]];

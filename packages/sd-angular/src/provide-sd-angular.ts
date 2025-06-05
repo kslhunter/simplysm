@@ -8,41 +8,6 @@ import {
   provideEnvironmentInitializer,
   provideZonelessChangeDetection,
 } from "@angular/core";
-import {
-  faAngleDoubleLeft,
-  faAngleDoubleRight,
-  faAngleDown,
-  faAngleLeft,
-  faAngleRight,
-  faAngleUp,
-  faArrowLeft,
-  faArrowLeftLong,
-  faBars,
-  faCaretDown,
-  faCaretRight,
-  faCheck,
-  faCog,
-  faEdit,
-  faEraser,
-  faExternalLink,
-  faEye,
-  faEyeSlash,
-  faFileExcel,
-  faMountainSun,
-  faPlusCircle,
-  faQuestionCircle,
-  faRedo,
-  faRefresh,
-  faSave,
-  faSearch,
-  faSort,
-  faSortDown,
-  faSortUp,
-  faStar,
-  faTriangleExclamation,
-  faUpload,
-  faXmark,
-} from "@fortawesome/free-solid-svg-icons";
 import { EVENT_MANAGER_PLUGINS } from "@angular/platform-browser";
 import { SdSaveCommandEventPlugin } from "./plugins/commands/sd-save-command.event-plugin";
 import { SdRefreshCommandEventPlugin } from "./plugins/commands/sd-refresh-command.event-plugin";
@@ -63,6 +28,39 @@ import { SdBusyProvider } from "./providers/sd-busy.provider";
 import { SwUpdate } from "@angular/service-worker";
 import { DOCUMENT } from "@angular/common";
 import { SdSystemLogProvider } from "./providers/sd-system-log.provider";
+import { faQuestionCircle } from "@fortawesome/free-solid-svg-icons/faQuestionCircle";
+import { faCaretDown } from "@fortawesome/free-solid-svg-icons/faCaretDown";
+import { faEye } from "@fortawesome/free-solid-svg-icons/faEye";
+import { faEyeSlash } from "@fortawesome/free-solid-svg-icons/faEyeSlash";
+import { faAngleDown } from "@fortawesome/free-solid-svg-icons/faAngleDown";
+import { faTriangleExclamation } from "@fortawesome/free-solid-svg-icons/faTriangleExclamation";
+import { faAngleDoubleLeft } from "@fortawesome/free-solid-svg-icons/faAngleDoubleLeft";
+import { faAngleDoubleRight } from "@fortawesome/free-solid-svg-icons/faAngleDoubleRight";
+import { faAngleLeft } from "@fortawesome/free-solid-svg-icons/faAngleLeft";
+import { faAngleRight } from "@fortawesome/free-solid-svg-icons/faAngleRight";
+import { faCog } from "@fortawesome/free-solid-svg-icons/faCog";
+import { faArrowLeft } from "@fortawesome/free-solid-svg-icons/faArrowLeft";
+import { faCaretRight } from "@fortawesome/free-solid-svg-icons/faCaretRight";
+import { faSave } from "@fortawesome/free-solid-svg-icons/faSave";
+import { faStar } from "@fortawesome/free-solid-svg-icons/faStar";
+import { faMountainSun } from "@fortawesome/free-solid-svg-icons/faMountainSun";
+import { faBars } from "@fortawesome/free-solid-svg-icons/faBars";
+import { faAngleUp } from "@fortawesome/free-solid-svg-icons/faAngleUp";
+import { faCheck } from "@fortawesome/free-solid-svg-icons/faCheck";
+import { faXmark } from "@fortawesome/free-solid-svg-icons/faXmark";
+import { faSort } from "@fortawesome/free-solid-svg-icons/faSort";
+import { faSortDown } from "@fortawesome/free-solid-svg-icons/faSortDown";
+import { faSortUp } from "@fortawesome/free-solid-svg-icons/faSortUp";
+import { faEraser } from "@fortawesome/free-solid-svg-icons/faEraser";
+import { faArrowLeftLong } from "@fortawesome/free-solid-svg-icons/faArrowLeftLong";
+import { faSearch } from "@fortawesome/free-solid-svg-icons/faSearch";
+import { faExternalLink } from "@fortawesome/free-solid-svg-icons/faExternalLink";
+import { faEdit } from "@fortawesome/free-solid-svg-icons/faEdit";
+import { faRefresh } from "@fortawesome/free-solid-svg-icons/faRefresh";
+import { faPlusCircle } from "@fortawesome/free-solid-svg-icons/faPlusCircle";
+import { faRedo } from "@fortawesome/free-solid-svg-icons/faRedo";
+import { faUpload } from "@fortawesome/free-solid-svg-icons/faUpload";
+import { faFileExcel } from "@fortawesome/free-solid-svg-icons/faFileExcel";
 
 export function provideSdAngular(opt: {
   clientName: string;

@@ -14,14 +14,15 @@ import { $effect } from "../utils/bindings/$effect";
 import { $signal } from "../utils/bindings/$signal";
 import { SdAnchorControl } from "./sd-anchor.control";
 import { SdGapControl } from "./sd-gap.control";
-import { SdIconControl } from "./icon/sd-icon.control";
+import { FaIconComponent } from "@fortawesome/angular-fontawesome";
+
 
 @Component({
   selector: "sd-state-preset",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdAnchorControl, SdGapControl, SdIconControl],
+  imports: [SdAnchorControl, SdGapControl, FaIconComponent],
   styles: [
     /* language=SCSS */ `
       sd-state-preset {
@@ -73,7 +74,7 @@ import { SdIconControl } from "./icon/sd-icon.control";
   ],
   template: `
     <sd-anchor (click)="onAddButtonClick()">
-      <sd-icon [icon]="icons.star" class="tx-theme-warning-default" fixedWidth />
+      <fa-icon [icon]="icons.star" class="tx-theme-warning-default" [fixedWidth]="true" />
     </sd-anchor>
     <sd-gap width="sm"></sd-gap>
     @for (preset of presets(); track preset.name) {
@@ -82,10 +83,10 @@ import { SdIconControl } from "./icon/sd-icon.control";
           {{ preset.name }}
         </sd-anchor>
         <sd-anchor (click)="onSaveButtonClick(preset)">
-          <sd-icon [icon]="icons.save" size="sm" />
+          <fa-icon [icon]="icons.save" size="sm" />
         </sd-anchor>
         <sd-anchor (click)="onRemoveButtonClick(preset)">
-          <sd-icon [icon]="icons.xmark" size="sm" />
+          <fa-icon [icon]="icons.xmark" size="sm" />
         </sd-anchor>
       </div>
       <sd-gap width="sm"></sd-gap>

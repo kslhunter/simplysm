@@ -9,7 +9,7 @@ import {
   TemplateRef,
   ViewEncapsulation,
 } from "@angular/core";
-import { SdIconControl } from "../../controls/icon/sd-icon.control";
+
 import { SdSelectButtonControl } from "../../controls/sd-select-button.control";
 import { SdSelectControl, TSelectValue } from "../../controls/sd-select-control";
 import { SdSelectItemControl } from "../../controls/sd-select-item.control";
@@ -25,6 +25,7 @@ import { $signal } from "../../utils/bindings/$signal";
 import { transformBoolean } from "../../utils/type-tramsforms";
 import { TSdSelectModalInput } from "../sd-select-modal-button.control";
 import { ISharedDataBase } from "./sd-shared-data.provider";
+import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 
 // TODO: sd-select-modal-button을 사용하는식으로 바꿀 수 있나? 검토 필요
 @Component({
@@ -39,7 +40,7 @@ import { ISharedDataBase } from "./sd-shared-data.provider";
     SdItemOfTemplateDirective,
     NgTemplateOutlet,
     SdSelectButtonControl,
-    SdIconControl,
+    FaIconComponent,
   ],
   template: `
     <sd-select
@@ -60,12 +61,12 @@ import { ISharedDataBase } from "./sd-shared-data.provider";
     >
       @if (modal()) {
         <sd-select-button (click)="onModalButtonClick($event)">
-          <sd-icon [icon]="icons.search" />
+          <fa-icon [icon]="icons.search" />
         </sd-select-button>
       }
       @if (editModal()) {
         <sd-select-button (click)="onEditModalButtonClick($event)">
-          <sd-icon [icon]="icons.edit" />
+          <fa-icon [icon]="icons.edit" />
         </sd-select-button>
       }
 

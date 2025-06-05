@@ -1,1 +1,0 @@
-import {SdTablerIcon} from "../index"; export const taArrowsExchange2: SdTablerIcon;

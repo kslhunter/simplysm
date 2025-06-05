@@ -9,14 +9,14 @@ import {
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { $computed } from "../utils/bindings/$computed";
 import { SdAnchorControl } from "./sd-anchor.control";
-import { SdIconControl } from "./icon/sd-icon.control";
+import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 
 @Component({
   selector: "sd-pagination",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdAnchorControl, SdIconControl],
+  imports: [SdAnchorControl, FaIconComponent],
   styles: [
     /* language=SCSS */ `
       @use "../scss/mixins";
@@ -38,10 +38,10 @@ import { SdIconControl } from "./icon/sd-icon.control";
   ],
   template: `
     <sd-anchor [disabled]="!hasPrev()" (click)="onGoFirstClick()">
-      <sd-icon [icon]="icons.angleDoubleLeft" fixedWidth />
+      <fa-icon [icon]="icons.angleDoubleLeft" [fixedWidth]="true" />
     </sd-anchor>
     <sd-anchor [disabled]="!hasPrev()" (click)="onPrevClick()">
-      <sd-icon [icon]="icons.angleLeft" fixedWidth />
+      <fa-icon [icon]="icons.angleLeft" [fixedWidth]="true" />
     </sd-anchor>
     @for (displayPage of displayPages(); track displayPage) {
       <sd-anchor
@@ -52,10 +52,10 @@ import { SdIconControl } from "./icon/sd-icon.control";
       </sd-anchor>
     }
     <sd-anchor [disabled]="!hasNext()" (click)="onNextClick()">
-      <sd-icon [icon]="icons.angleRight" fixedWidth />
+      <fa-icon [icon]="icons.angleRight" [fixedWidth]="true" />
     </sd-anchor>
     <sd-anchor [disabled]="!hasNext()" (click)="onGoLastClick()">
-      <sd-icon [icon]="icons.angleDoubleRight" fixedWidth />
+      <fa-icon [icon]="icons.angleDoubleRight" [fixedWidth]="true" />
     </sd-anchor>
   `,
 })

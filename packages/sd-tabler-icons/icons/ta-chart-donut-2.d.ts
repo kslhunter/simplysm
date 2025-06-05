@@ -1,1 +1,0 @@
-import {SdTablerIcon} from "../index"; export const taChartDonut2: SdTablerIcon;

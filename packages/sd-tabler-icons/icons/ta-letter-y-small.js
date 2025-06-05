@@ -1,1 +1,0 @@
-export const taLetterYSmall = [["path",{"d":"M10 8l2 5l2 -5"}],["path",{"d":"M12 16v-3"}]];

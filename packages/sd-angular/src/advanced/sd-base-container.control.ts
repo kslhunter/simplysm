@@ -11,7 +11,7 @@ import {
 import { SdBusyContainerControl } from "../controls/sd-busy-container.control";
 import { SdDockContainerControl } from "../controls/sd-dock-container.control";
 import { SdDockControl } from "../controls/sd-dock.control";
-import { SdIconControl } from "../controls/icon/sd-icon.control";
+
 import { SdPaneControl } from "../controls/sd-pane.control";
 import { SdTopbarContainerControl } from "../controls/sd-topbar-container.control";
 import { SdTopbarControl } from "../controls/sd-topbar.control";
@@ -24,6 +24,7 @@ import { useCurrentPageCodeSignal } from "../utils/signals/use-current-page-code
 import { useFullPageCodeSignal } from "../utils/signals/use-full-page-code.signal";
 import { TSdViewType, useViewTypeSignal } from "../utils/signals/use-view-type.signal";
 import { transformBoolean } from "../utils/type-tramsforms";
+import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 
 @Component({
   selector: "sd-base-container",
@@ -32,7 +33,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
   standalone: true,
   imports: [
     SdPaneControl,
-    SdIconControl,
+    FaIconComponent,
     SdTopbarContainerControl,
     SdTopbarControl,
     SdBusyContainerControl,
@@ -47,7 +48,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
         @if (!visible()) {
           <sd-pane class="tx-theme-grey-light p-xxl tx-center" sd-show-effect>
             <br />
-            <sd-icon [icon]="icons.triangleExclamation" fixedWidth size="5x" />
+            <fa-icon [icon]="icons.triangleExclamation" [fixedWidth]="true" size="5x" />
             <br />
             <br />
             '{{ modalOrPageTitle() }}'에 대한 사용권한이 없습니다. 시스템 관리자에게 문의하세요.

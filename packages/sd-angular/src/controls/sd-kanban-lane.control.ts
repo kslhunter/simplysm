@@ -21,10 +21,11 @@ import { SdBusyContainerControl } from "./sd-busy-container.control";
 import { SdCheckboxControl } from "./sd-checkbox.control";
 import { SdDockContainerControl } from "./sd-dock-container.control";
 import { SdDockControl } from "./sd-dock.control";
-import { SdIconControl } from "./icon/sd-icon.control";
+
 import { SdKanbanBoardControl } from "./sd-kanban-board.control";
 import { SdKanbanControl } from "./sd-kanban.control";
 import { SdPaneControl } from "./sd-pane.control";
+import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 
 @Component({
   selector: "sd-kanban-lane",
@@ -39,7 +40,7 @@ import { SdPaneControl } from "./sd-pane.control";
     SdDockControl,
     SdPaneControl,
     SdAnchorControl,
-    SdIconControl,
+    FaIconComponent,
   ],
   //region styles
   styles: [
@@ -83,7 +84,7 @@ import { SdPaneControl } from "./sd-pane.control";
         <sd-dock class="p-default pb-0">
           @if (useCollapse()) {
             <sd-anchor theme="info" (click)="onToggleCollapseButtonClick()">
-              <sd-icon [icon]="collapse() ? icons.eyeSlash : icons.eye" fixedWidth />
+              <fa-icon [icon]="collapse() ? icons.eyeSlash : icons.eye" [fixedWidth]="true" />
             </sd-anchor>
           }
 

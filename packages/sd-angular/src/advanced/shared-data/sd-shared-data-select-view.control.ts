@@ -15,7 +15,6 @@ import { SdAnchorControl } from "../../controls/sd-anchor.control";
 import { SdBusyContainerControl } from "../../controls/sd-busy-container.control";
 import { SdDockContainerControl } from "../../controls/sd-dock-container.control";
 import { SdDockControl } from "../../controls/sd-dock.control";
-import { SdIconControl } from "../../controls/icon/sd-icon.control";
 import { SdListItemControl } from "../../controls/sd-list-item.control";
 import { SdListControl } from "../../controls/sd-list.control";
 import { SdPaginationControl } from "../../controls/sd-pagination.control";
@@ -34,6 +33,7 @@ import { transformBoolean } from "../../utils/type-tramsforms";
 import { TSdSelectModalInput } from "../sd-select-modal-button.control";
 import { ISharedDataBase } from "./sd-shared-data.provider";
 import { setupModelHook } from "../../utils/setups/setup-model-hook";
+import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 
 @Component({
   selector: "sd-shared-data-select-view",
@@ -50,8 +50,9 @@ import { setupModelHook } from "../../utils/setups/setup-model-hook";
     SdPaneControl,
     SdListItemControl,
     SdAnchorControl,
-    SdIconControl,
+    FaIconComponent,
     SdPaginationControl,
+    FaIconComponent,
   ],
   template: `
     <sd-busy-container [busy]="busyCount() > 0">
@@ -67,7 +68,7 @@ import { setupModelHook } from "../../utils/setups/setup-model-hook";
               @if (modal()) {
                 <div>
                   <sd-anchor (click)="onModalButtonClick()">
-                    <sd-icon [icon]="icons.externalLink" fixedWidth />
+                    <fa-icon [icon]="icons.externalLink" [fixedWidth]="true" />
                   </sd-anchor>
                 </div>
               }

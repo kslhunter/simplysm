@@ -1,1 +1,0 @@
-export const taMinus = [["path",{"d":"M5 12l14 0"}]];

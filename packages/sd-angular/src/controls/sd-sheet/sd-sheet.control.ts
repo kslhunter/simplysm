@@ -13,6 +13,7 @@ import {
 import { SdEventsDirective } from "../../directives/sd-events.directive";
 import { SdSheetConfigModal } from "../../modals/sd-sheet-config.modal";
 import { ISdResizeEvent } from "../../plugins/events/sd-resize.event-plugin";
+import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
 import { SdModalProvider } from "../../providers/sd-modal.provider";
 import { $computed } from "../../utils/bindings/$computed";
 import { SdExpandingManager } from "../../utils/managers/sd-expanding-manager";
@@ -40,12 +41,7 @@ import {
   ISdSheetHeaderDef,
   ISdSheetItemKeydownEventParam,
 } from "./sd-sheet.types";
-import { SdTablerIconControl } from "../tabler-icon/sd-tabler-icon.control";
-import { taSettings } from "@simplysm/sd-tabler-icons/icons/ta-settings";
-import { taCaretRight } from "@simplysm/sd-tabler-icons/icons/ta-caret-right";
-import { taSortDescending } from "@simplysm/sd-tabler-icons/icons/ta-sort-descending";
-import { taSortAscending } from "@simplysm/sd-tabler-icons/icons/ta-sort-ascending";
-import { taArrowsSort } from "@simplysm/sd-tabler-icons/icons/ta-arrows-sort";
+import { FaIconComponent, FaLayersComponent } from "@fortawesome/angular-fontawesome";
 
 @Component({
   selector: "sd-sheet",
@@ -62,7 +58,8 @@ import { taArrowsSort } from "@simplysm/sd-tabler-icons/icons/ta-arrows-sort";
     NgTemplateOutlet,
     SdCheckboxControl,
     SdEventsDirective,
-    SdTablerIconControl,
+    FaIconComponent,
+    FaLayersComponent,
   ],
   template: `
     <sd-busy-container [busy]="busy()" type="cube">
@@ -72,7 +69,7 @@ import { taArrowsSort } from "@simplysm/sd-tabler-icons/icons/ta-arrows-sort";
             <div class="flex-row-inline flex-gap-sm">
               @if (key()) {
                 <sd-anchor (click)="onConfigButtonClick()">
-                  <sd-tabler-icon [icon]="taSettings" />
+                  <fa-icon [icon]="icons.cog" [fixedWidth]="true" />
                 </sd-anchor>
               }
               @if (effectivePageCount() > 1) {
@@ -120,12 +117,11 @@ import { taArrowsSort } from "@simplysm/sd-tabler-icons/icons/ta-arrows-sort";
                         [style.left.px]="columnFixingManager.fixedLeftMap().get(-1)"
                         (sdResize)="onHeaderLastRowCellResize($event, -1)"
                       >
-                        <sd-tabler-icon
-                          [icon]="taCaretRight"
+                        <fa-icon
+                          [icon]="icons.caretRight"
+                          [fixedWidth]="true"
                           [class.tx-theme-primary-default]="expandingManager.isAllExpanded()"
-                          [style.transform]="
-                            expandingManager.isAllExpanded() ? 'rotate(90deg)' : undefined
-                          "
+                          [rotate]="expandingManager.isAllExpanded() ? 90 : undefined"
                           (click)="expandingManager.toggleAll()"
                         />
                       </th>
@@ -184,14 +180,15 @@ import { taArrowsSort } from "@simplysm/sd-tabler-icons/icons/ta-arrows-sort";
                             <!-- 정렬 아이콘 -->
                             @if (!headerCell.control.disableSorting()) {
                               <div class="_sort-icon">
-                                @let _def = sortingManager.defMap().get(headerCell.control.key());
-                                @if (_def?.desc === false) {
-                                  <sd-tabler-icon [icon]="taSortAscending" />
-                                } @else if (_def?.desc === true) {
-                                  <sd-tabler-icon [icon]="taSortDescending" />
-                                } @else {
-                                  <sd-tabler-icon [icon]="taArrowsSort" class="tx-trans-lightest" />
-                                }
+                                <fa-layers>
+                                  <fa-icon [icon]="icons.sort" class="tx-trans-lightest" />
+                                  @let _def = sortingManager.defMap().get(headerCell.control.key());
+                                  @if (_def?.desc === false) {
+                                    <fa-icon [icon]="icons.sortDown" />
+                                  } @else if (_def?.desc === true) {
+                                    <fa-icon [icon]="icons.sortUp" />
+                                  }
+                                </fa-layers>
                                 @let _idxText = _def?.indexText;
                                 @if (_idxText) {
                                   <sub>{{ _idxText }}</sub>
@@ -285,11 +282,10 @@ import { taArrowsSort } from "@simplysm/sd-tabler-icons/icons/ta-arrows-sort";
                         ></div>
                       }
                       @if (itemExpDef.hasChildren) {
-                        <sd-tabler-icon
-                          [icon]="taCaretRight"
-                          [style.transform]="
-                            expandedItems().includes(item) ? 'rotate(90deg)' : undefined
-                          "
+                        <fa-icon
+                          [icon]="icons.caretRight"
+                          [fixedWidth]="true"
+                          [rotate]="expandedItems().includes(item) ? 90 : undefined"
                           [class.tx-theme-primary-default]="expandedItems().includes(item)"
                           (click)="expandingManager.toggle(item)"
                         />
@@ -432,7 +428,7 @@ import { taArrowsSort } from "@simplysm/sd-tabler-icons/icons/ta-arrows-sort";
                     padding: var(--sheet-pv) var(--sheet-ph);
                     text-align: left;
 
-                    > sd-icon {
+                    > fa-icon {
                       cursor: pointer;
                       color: var(--text-trans-lightest);
                     }
@@ -616,6 +612,8 @@ import { taArrowsSort } from "@simplysm/sd-tabler-icons/icons/ta-arrows-sort";
   },
 })
 export class SdSheetControl<T> {
+  protected readonly icons = inject(SdAngularConfigProvider).icons;
+
   #sdModal = inject(SdModalProvider);
 
   busy = input(false, { transform: transformBoolean });
@@ -960,10 +958,4 @@ export class SdSheetControl<T> {
     this.onBlurCaptureForCellAgent(event);
     this.onBlurCaptureForFocusIndicator();
   }
-
-  protected readonly taSettings = taSettings;
-  protected readonly taCaretRight = taCaretRight;
-  protected readonly taSortDescending = taSortDescending;
-  protected readonly taSortAscending = taSortAscending;
-  protected readonly taArrowsSort = taArrowsSort;
 }

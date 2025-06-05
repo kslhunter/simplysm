@@ -1,1 +1,0 @@
-export const taEaseOut = [["path",{"d":"M3 20s10 -16 18 -16"}]];

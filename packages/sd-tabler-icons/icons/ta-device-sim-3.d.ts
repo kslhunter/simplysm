@@ -1,1 +1,0 @@
-import {SdTablerIcon} from "../index"; export const taDeviceSim3: SdTablerIcon;

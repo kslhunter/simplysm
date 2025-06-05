@@ -1,1 +1,0 @@
-export const taXxx = [["path",{"d":"M10 8l4 8"}],["path",{"d":"M10 16l4 -8"}],["path",{"d":"M17 8l4 8"}],["path",{"d":"M17 16l4 -8"}],["path",{"d":"M3 8l4 8"}],["path",{"d":"M3 16l4 -8"}]];

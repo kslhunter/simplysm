@@ -1,1 +1,0 @@
-export const taRadiusTopRight = [["path",{"d":"M5 5h6a8 8 0 0 1 8 8v6"}]];

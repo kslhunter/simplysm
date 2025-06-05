@@ -1,1 +1,0 @@
-import {SdTablerIcon} from "../index"; export const taIceCream2: SdTablerIcon;

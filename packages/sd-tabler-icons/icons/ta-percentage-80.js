@@ -1,1 +1,0 @@
-export const taPercentage80 = [["path",{"d":"M12 3a9 9 0 1 1 -8.497 6.025l8.497 2.975z","fill":"currentColor","stroke":"none"}],["path",{"d":"M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"}]];

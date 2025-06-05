@@ -6,9 +6,10 @@ import { SdTypedTemplateDirective } from "../directives/sd-typed.template-direct
 import { SdListItemControl } from "./sd-list-item.control";
 import { SdRouterLinkDirective } from "../directives/sd-router-link.directive";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
-import { SdIconControl } from "./icon/sd-icon.control";
+
 import * as querystring from "querystring";
 import { $computed } from "../utils/bindings/$computed";
+import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 
 @Component({
   selector: "sd-sidebar-menu",
@@ -21,7 +22,7 @@ import { $computed } from "../utils/bindings/$computed";
     SdTypedTemplateDirective,
     SdListItemControl,
     SdRouterLinkDirective,
-    SdIconControl,
+    FaIconComponent,
   ],
   template: `
     @if (rootLayout() === "accordion") {
@@ -44,7 +45,7 @@ import { $computed } from "../utils/bindings/$computed";
           [layout]="depth === 0 ? rootLayout() : 'accordion'"
         >
           @if (menu.icon) {
-            <sd-icon [icon]="menu.icon" fixedWidth />
+            <fa-icon [icon]="menu.icon" [fixedWidth]="true" />
             &nbsp;
           }
           {{ menu.title }}

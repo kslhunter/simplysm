@@ -1,1 +1,0 @@
-export const taDeviceUsb = [["path",{"d":"M7 8h10v8a5 5 0 0 1 -10 0z"}],["path",{"d":"M9 8v-5h6v5"}]];

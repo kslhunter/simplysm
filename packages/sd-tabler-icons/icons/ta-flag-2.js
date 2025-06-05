@@ -1,1 +1,0 @@
-export const taFlag2 = [["path",{"d":"M5 14h14v-9h-14v16"}]];

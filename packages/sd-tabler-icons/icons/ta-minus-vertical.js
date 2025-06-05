@@ -1,1 +1,0 @@
-export const taMinusVertical = [["path",{"d":"M12 5v14"}]];

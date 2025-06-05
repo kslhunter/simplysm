@@ -1,1 +1,0 @@
-export const taLetterZ = [["path",{"d":"M7 4h10l-10 16h10"}]];

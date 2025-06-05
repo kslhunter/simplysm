@@ -28,9 +28,9 @@ import { SdDockControl } from "./sd-dock.control";
 import { SdDropdownPopupControl } from "./sd-dropdown-popup.control";
 import { SdDropdownControl } from "./sd-dropdown.control";
 import { SdGapControl } from "./sd-gap.control";
-import { SdIconControl } from "./icon/sd-icon.control";
 import { SdPaneControl } from "./sd-pane.control";
 import { SdSelectItemControl } from "./sd-select-item.control";
+import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 
 @Component({
   selector: "sd-select",
@@ -48,7 +48,7 @@ import { SdSelectItemControl } from "./sd-select-item.control";
     NgTemplateOutlet,
     SdTypedTemplateDirective,
     SdRippleDirective,
-    SdIconControl,
+    FaIconComponent,
   ],
   styles: [
     /* language=SCSS */ `
@@ -203,7 +203,7 @@ import { SdSelectItemControl } from "./sd-select-item.control";
       <div class="_sd-select-control" [sd-ripple]="!disabled()">
         <div #contentEl class="_sd-select-control-content"></div>
         <div class="_sd-select-control-icon">
-          <sd-icon [icon]="icons.caretDown" />
+          <fa-icon [icon]="icons.caretDown" />
         </div>
       </div>
 

@@ -1,1 +1,0 @@
-export const taArrowBadgeLeft = [["path",{"d":"M11 17h6l-4 -5l4 -5h-6l-4 5z"}]];

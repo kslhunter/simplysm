@@ -10,33 +10,33 @@ import {
 import { SdAdditionalButtonControl } from "../controls/sd-additional-button.control";
 import { SdAnchorControl } from "../controls/sd-anchor.control";
 import { SdButtonControl } from "../controls/sd-button.control";
-import { SdIconControl } from "../controls/icon/sd-icon.control";
 import { TSelectValue } from "../controls/sd-select-control";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { ISdModal, ISdModalInput, SdModalProvider } from "../providers/sd-modal.provider";
 import { $computed } from "../utils/bindings/$computed";
 import { setupInvalid } from "../utils/setups/setup-invalid";
 import { transformBoolean } from "../utils/type-tramsforms";
+import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 
 @Component({
   selector: "sd-select-modal-button",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdAdditionalButtonControl, SdIconControl, SdButtonControl, SdAnchorControl],
+  imports: [SdAdditionalButtonControl, FaIconComponent, SdButtonControl, SdAnchorControl],
   template: `
     <sd-additional-button [inset]="inset()" [size]="size()">
       <ng-content />
 
       @if (!disabled() && !isNoValue()) {
         <sd-anchor (click)="onCancelButtonClick()" theme="danger">
-          <sd-icon [icon]="icons.xmark" />
+          <fa-icon [icon]="icons.xmark" />
         </sd-anchor>
       }
 
       @if (!disabled()) {
         <sd-button (click)="onModalButtonClick($event)" inset>
-          <sd-icon [icon]="icons.search" />
+          <fa-icon [icon]="icons.search" />
         </sd-button>
       }
     </sd-additional-button>

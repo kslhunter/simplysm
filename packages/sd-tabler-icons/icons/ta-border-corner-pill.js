@@ -1,1 +1,0 @@
-export const taBorderCornerPill = [["path",{"d":"M4 20v-5c0 -6.075 4.925 -11 11 -11h5"}]];

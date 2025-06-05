@@ -1,1 +1,0 @@
-export const taBracketsAngle = [["path",{"d":"M8 4l-5 8l5 8"}],["path",{"d":"M16 4l5 8l-5 8"}]];

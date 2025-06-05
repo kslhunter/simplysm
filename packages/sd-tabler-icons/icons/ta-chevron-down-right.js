@@ -1,1 +1,0 @@
-export const taChevronDownRight = [["path",{"d":"M16 8v8h-8"}]];

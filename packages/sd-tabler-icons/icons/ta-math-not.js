@@ -1,1 +1,0 @@
-export const taMathNot = [["path",{"d":"M5 12h14v4"}]];

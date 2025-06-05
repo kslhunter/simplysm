@@ -1,1 +1,0 @@
-export const taLane = [["path",{"d":"M4 6v13"}],["path",{"d":"M20 6v13"}]];

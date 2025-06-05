@@ -1,1 +1,0 @@
-export const taBrandAppleNews = [["path",{"d":"M4 14l6 6h-6z"}],["path",{"d":"M20 10l-6 -6h6z"}],["path",{"d":"M4 4v4l12 12h4v-4l-12 -12z"}]];

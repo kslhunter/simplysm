@@ -1,1 +1,0 @@
-import {SdTablerIcon} from "../index"; export const taMultiplier1x: SdTablerIcon;

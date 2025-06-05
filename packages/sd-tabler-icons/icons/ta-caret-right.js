@@ -1,1 +1,0 @@
-export const taCaretRight = [["path",{"d":"M10 18l6 -6l-6 -6v12"}]];

@@ -39,14 +39,8 @@ import { SdDataSheetToolDirective } from "./sd-data-sheet-tool.directive";
 import { setupCloserWhenSingleSelectionChange } from "../../utils/setups/setup-closer-when-single-selection-change";
 import { $effect } from "../../utils/bindings/$effect";
 import { transformBoolean } from "../../utils/type-tramsforms";
-import { SdTablerIconControl } from "../../controls/tabler-icon/sd-tabler-icon.control";
-import { taCirclePlus } from "@simplysm/sd-tabler-icons/icons/ta-circle-plus";
-import { taSearch } from "@simplysm/sd-tabler-icons/icons/ta-search";
-import { taEraser } from "@simplysm/sd-tabler-icons/icons/ta-eraser";
-import { taUpload } from "@simplysm/sd-tabler-icons/icons/ta-upload";
-import { taFileExcel } from "@simplysm/sd-tabler-icons/icons/ta-file-excel";
-import { taEdit } from "@simplysm/sd-tabler-icons/icons/ta-edit";
-import { taReload } from "@simplysm/sd-tabler-icons/icons/ta-reload";
+import { FaIconComponent } from "@fortawesome/angular-fontawesome";
+import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
 
 @Component({
   selector: "sd-data-sheet",
@@ -67,7 +61,7 @@ import { taReload } from "@simplysm/sd-tabler-icons/icons/ta-reload";
     SdAnchorControl,
     NgTemplateOutlet,
     SdBaseContainerControl,
-    SdTablerIconControl,
+    FaIconComponent,
   ],
   template: `
     <sd-base-container
@@ -76,16 +70,6 @@ import { taReload } from "@simplysm/sd-tabler-icons/icons/ta-reload";
       [initialized]="initialized()"
       [visible]="usable()"
     >
-      <!--<ng-template #pageTopbar>
-        <sd-topbar-menu>
-          <sd-topbar-menu-item theme="info" (click)="onRefreshCommand()">
-            <sd-tabler-icon [icon]="taRefresh" />
-            새로고침
-            <small>(CTRL+ALT+L)</small>
-          </sd-topbar-menu-item>
-        </sd-topbar-menu>
-      </ng-template>-->
-
       <ng-template #content>
         <sd-dock-container class="p-lg">
           <sd-dock class="pb-lg">
@@ -93,7 +77,7 @@ import { taReload } from "@simplysm/sd-tabler-icons/icons/ta-reload";
               <sd-form-box layout="inline">
                 <sd-form-box-item>
                   <sd-button type="submit" theme="info">
-                    <sd-tabler-icon [icon]="taSearch" />
+                    <fa-icon [icon]="icons.search" [fixedWidth]="true" />
                     조회
                   </sd-button>
                 </sd-form-box-item>
@@ -123,7 +107,7 @@ import { taReload } from "@simplysm/sd-tabler-icons/icons/ta-reload";
               @if (viewModel().editItem) {
                 @if (editable()) {
                   <sd-button size="sm" theme="primary" (click)="onCreateItemButtonClick()">
-                    <sd-tabler-icon [icon]="taCirclePlus" />
+                    <fa-icon [icon]="icons.add" [fixedWidth]="true" />
                     등록
                     <small>(CTRL+INSERT)</small>
                   </sd-button>
@@ -138,7 +122,7 @@ import { taReload } from "@simplysm/sd-tabler-icons/icons/ta-reload";
                     (click)="onToggleDeletesButtonClick(true)"
                     [disabled]="!isSelectedItemsHasNotDeleted()"
                   >
-                    <sd-tabler-icon [icon]="taEraser" />
+                    <fa-icon [icon]="icons.eraser" [fixedWidth]="true" />
                     선택 삭제
                   </sd-button>
                   @if (isSelectedItemsHasDeleted()) {
@@ -147,7 +131,7 @@ import { taReload } from "@simplysm/sd-tabler-icons/icons/ta-reload";
                       theme="link-warning"
                       (click)="onToggleDeletesButtonClick(false)"
                     >
-                      <sd-tabler-icon [icon]="taReload" />
+                      <fa-icon [icon]="icons.redo" [fixedWidth]="true" />
                       선택 복구
                     </sd-button>
                   }
@@ -155,7 +139,7 @@ import { taReload } from "@simplysm/sd-tabler-icons/icons/ta-reload";
 
                 @if (viewModel().uploadExcel) {
                   <sd-button size="sm" theme="link-success" (click)="onUploadExcelButtonClick()">
-                    <sd-tabler-icon [icon]="taUpload" />
+                    <fa-icon [icon]="icons.upload" [fixedWidth]="true" />
                     엑셀 업로드
                   </sd-button>
                 }
@@ -163,7 +147,7 @@ import { taReload } from "@simplysm/sd-tabler-icons/icons/ta-reload";
 
               @if (viewModel().downloadExcel) {
                 <sd-button size="sm" theme="link-success" (click)="onDownloadExcelButtonClick()">
-                  <sd-tabler-icon [icon]="taFileExcel" />
+                  <fa-icon [icon]="icons.fileExcel" [fixedWidth]="true" />
                   엑셀 다운로드
                 </sd-button>
               }
@@ -221,7 +205,7 @@ import { taReload } from "@simplysm/sd-tabler-icons/icons/ta-reload";
                     @if (viewModel().editItem && columnControl.edit() && editable()) {
                       <sd-anchor class="flex-row" (click)="onItemClick(item, index, $event)">
                         <div class="p-xs-sm pr-0">
-                          <sd-tabler-icon [icon]="taEdit" />
+                          <fa-icon [icon]="icons.edit" [fixedWidth]="true" />
                         </div>
                         <div class="flex-grow">
                           <ng-template
@@ -279,6 +263,8 @@ import { taReload } from "@simplysm/sd-tabler-icons/icons/ta-reload";
   `,
 })
 export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>> {
+  protected readonly icons = inject(SdAngularConfigProvider).icons;
+
   #sdToast = inject(SdToastProvider);
   #sdSharedData = inject(SdSharedDataProvider);
   #sdFileDialog = inject(SdFileDialogProvider);
@@ -523,14 +509,6 @@ export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>>
   onCancelButtonClick() {
     this.close.emit({ selectedItemKeys: [] });
   }
-
-  protected readonly taCirclePlus = taCirclePlus;
-  protected readonly taSearch = taSearch;
-  protected readonly taEraser = taEraser;
-  protected readonly taFileExcel = taFileExcel;
-  protected readonly taUpload = taUpload;
-  protected readonly taEdit = taEdit;
-  protected readonly taReload = taReload;
 }
 
 export interface ISdDataSheetViewModel<F extends Record<string, any>, I, K> {

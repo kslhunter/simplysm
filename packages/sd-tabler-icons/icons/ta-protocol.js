@@ -1,1 +1,0 @@
-export const taProtocol = [["path",{"d":"M15 6l-7 12"}],["path",{"d":"M20 6l-7 12"}],["path",{"d":"M5 14v.015"}],["path",{"d":"M5 10.015v.015"}]];

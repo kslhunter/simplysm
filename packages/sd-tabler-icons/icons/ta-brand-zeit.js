@@ -1,1 +1,0 @@
-export const taBrandZeit = [["path",{"d":"M3 20h18l-9 -16z"}]];

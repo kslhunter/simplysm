@@ -17,7 +17,6 @@ import {
 import { TXT_CHANGE_IGNORE_CONFIRM } from "../../commons";
 import { SdButtonControl } from "../../controls/sd-button.control";
 import { SdFormControl } from "../../controls/sd-form.control";
-import { SdIconControl } from "../../controls/icon/sd-icon.control";
 import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
 import { SdToastProvider } from "../../providers/sd-toast.provider";
 import { $computed } from "../../utils/bindings/$computed";
@@ -29,6 +28,7 @@ import { SdBaseContainerControl } from "../sd-base-container.control";
 import { DateTime } from "@simplysm/sd-core-common";
 import { FormatPipe } from "../../pipes/format.pipe";
 import { SdSharedDataProvider } from "../shared-data/sd-shared-data.provider";
+import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 
 @Component({
   selector: "sd-data-detail",
@@ -39,9 +39,9 @@ import { SdSharedDataProvider } from "../shared-data/sd-shared-data.provider";
     SdBaseContainerControl,
     SdFormControl,
     SdButtonControl,
-    SdIconControl,
     NgTemplateOutlet,
     FormatPipe,
+    FaIconComponent,
   ],
   template: `
     <sd-base-container
@@ -56,7 +56,7 @@ import { SdSharedDataProvider } from "../shared-data/sd-shared-data.provider";
         <ng-template #tool>
           <div class="p-sm-lg flex-row flex-gap-sm">
             <sd-button theme="primary" (click)="onSubmitButtonClick()">
-              <sd-icon [icon]="icons.save" fixedWidth />
+              <fa-icon [icon]="icons.save" [fixedWidth]="true" />
               저장
               <small>(CTRL+S)</small>
             </sd-button>

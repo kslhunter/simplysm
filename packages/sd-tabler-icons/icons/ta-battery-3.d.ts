@@ -1,1 +1,0 @@
-import {SdTablerIcon} from "../index"; export const taBattery3: SdTablerIcon;

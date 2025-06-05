@@ -1,1 +1,0 @@
-export const taPlaylistX = [["path",{"d":"M19 8h-14"}],["path",{"d":"M5 12h7"}],["path",{"d":"M12 16h-7"}],["path",{"d":"M16 14l4 4"}],["path",{"d":"M20 14l-4 4"}]];

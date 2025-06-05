@@ -13,7 +13,7 @@ import { SdButtonControl } from "../controls/sd-button.control";
 import { SdCheckboxControl } from "../controls/sd-checkbox.control";
 import { SdDockContainerControl } from "../controls/sd-dock-container.control";
 import { SdDockControl } from "../controls/sd-dock.control";
-import { SdIconControl } from "../controls/icon/sd-icon.control";
+
 import { SdPaneControl } from "../controls/sd-pane.control";
 import { SdSheetColumnCellTemplateDirective } from "../controls/sd-sheet/directives/sd-sheet-column-cell.template-directive";
 import { SdSheetColumnDirective } from "../controls/sd-sheet/directives/sd-sheet-column.directive";
@@ -24,6 +24,7 @@ import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider
 import { ISdModal } from "../providers/sd-modal.provider";
 import { $effect } from "../utils/bindings/$effect";
 import { $signal } from "../utils/bindings/$signal";
+import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 
 @Component({
   selector: "sd-sheet-config-modal",
@@ -41,7 +42,7 @@ import { $signal } from "../utils/bindings/$signal";
     SdSheetColumnCellTemplateDirective,
     SdDockControl,
     SdButtonControl,
-    SdIconControl,
+    FaIconComponent,
     SdBusyContainerControl,
   ],
   template: `
@@ -74,7 +75,7 @@ import { $signal } from "../utils/bindings/$signal";
                       [disabled]="index === 0 || (!item.fixed && items()[index - 1].fixed)"
                       (click)="onDisplayOrderUpButtonClick(item)"
                     >
-                      <sd-icon [icon]="icons.angleUp" fixedWidth />
+                      <fa-icon [icon]="icons.angleUp" [fixedWidth]="true" />
                     </sd-anchor>
                     <sd-anchor
                       [disabled]="
@@ -82,7 +83,7 @@ import { $signal } from "../utils/bindings/$signal";
                       "
                       (click)="onDisplayOrderDownButtonClick(item)"
                     >
-                      <sd-icon [icon]="icons.angleDown" fixedWidth />
+                      <fa-icon [icon]="icons.angleDown" [fixedWidth]="true" />
                     </sd-anchor>
                   </div>
                 </ng-template>

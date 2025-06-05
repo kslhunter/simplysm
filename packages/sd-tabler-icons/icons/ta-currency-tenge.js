@@ -1,1 +1,0 @@
-export const taCurrencyTenge = [["path",{"d":"M6 5h12"}],["path",{"d":"M6 9h12"}],["path",{"d":"M12 9v10"}]];

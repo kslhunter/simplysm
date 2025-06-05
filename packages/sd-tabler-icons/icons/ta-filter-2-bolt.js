@@ -1,1 +1,0 @@
-export const taFilter2Bolt = [["path",{"d":"M4 6h16"}],["path",{"d":"M6 12h12"}],["path",{"d":"M9 18h4"}],["path",{"d":"M19 16l-2 3h4l-2 3"}]];

@@ -1,1 +1,0 @@
-import {SdTablerIcon} from "../index"; export const taSend2: SdTablerIcon;

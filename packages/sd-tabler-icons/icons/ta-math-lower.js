@@ -1,1 +1,0 @@
-export const taMathLower = [["path",{"d":"M19 18l-14 -6l14 -6"}]];

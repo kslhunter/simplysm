@@ -1,1 +1,0 @@
-import {SdTablerIcon} from "../index"; export const taFileFunction: SdTablerIcon;

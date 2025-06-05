@@ -13,15 +13,16 @@ import { $effect } from "../utils/bindings/$effect";
 import { $signal } from "../utils/bindings/$signal";
 import { transformBoolean } from "../utils/type-tramsforms";
 import { SdButtonControl } from "./sd-button.control";
-import { SdIconControl } from "./icon/sd-icon.control";
+
 import { SdTextfieldControl } from "./sd-textfield.control";
+import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 
 @Component({
   selector: "sd-numpad",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdTextfieldControl, SdButtonControl, SdIconControl],
+  imports: [SdTextfieldControl, SdButtonControl, FaIconComponent],
   template: `
     <table>
       <thead>
@@ -59,7 +60,7 @@ import { SdTextfieldControl } from "./sd-textfield.control";
           }
           <td [attr.colspan]="useMinusButton() ? 1 : 2">
             <sd-button size="lg" buttonClass="tx-theme-danger-default" (click)="onButtonClick('C')">
-              <sd-icon [icon]="icons.eraser" />
+              <fa-icon [icon]="icons.eraser" />
             </sd-button>
           </td>
           <td>
@@ -68,7 +69,7 @@ import { SdTextfieldControl } from "./sd-textfield.control";
               buttonClass="tx-theme-warning-default"
               (click)="onButtonClick('BS')"
             >
-              <sd-icon [icon]="icons.arrowLeftLong" />
+              <fa-icon [icon]="icons.arrowLeftLong" />
             </sd-button>
           </td>
         </tr>

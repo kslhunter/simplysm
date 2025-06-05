@@ -7,14 +7,14 @@ import {
 } from "@angular/core";
 import { SdAnchorControl } from "./sd-anchor.control";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
-import { SdIconControl } from "./icon/sd-icon.control";
+import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 
 @Component({
   selector: "sd-topbar-tab",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdAnchorControl, SdIconControl],
+  imports: [SdAnchorControl, FaIconComponent],
   styles: [
     /* language=SCSS */ `
       sd-topbar-tab {
@@ -47,8 +47,9 @@ import { SdIconControl } from "./icon/sd-icon.control";
   template: `
     <ng-content></ng-content>
     <sd-anchor (click)="onCloseButtonClick($event)">
-      <sd-icon [icon]="icons.xmark" fixedWidth />
-    </sd-anchor>`,
+      <fa-icon [icon]="icons.xmark" [fixedWidth]="true" />
+    </sd-anchor>
+  `,
 })
 export class SdTopbarTabControl {
   protected readonly icons = inject(SdAngularConfigProvider).icons;

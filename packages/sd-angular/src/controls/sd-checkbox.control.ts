@@ -11,20 +11,21 @@ import {
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { setupRipple } from "../utils/setups/setup-ripple";
 import { transformBoolean } from "../utils/type-tramsforms";
-import { SdIconControl } from "./icon/sd-icon.control";
+
 import { setupModelHook } from "../utils/setups/setup-model-hook";
+import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 
 @Component({
   selector: "sd-checkbox",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdIconControl],
+  imports: [FaIconComponent],
   template: `
     <div class="_indicator_rect">
       <div class="_indicator">
         @if (!radio()) {
-          <sd-icon [icon]="icon()" />
+          <fa-icon [icon]="icon()" />
         } @else {
           <div></div>
         }
@@ -69,7 +70,7 @@ import { setupModelHook } from "../utils/setups/setup-model-hook";
             opacity: 0;
             color: white;
 
-            > sd-icon > svg {
+            > fa-icon > svg {
               vertical-align: top;
             }
           }

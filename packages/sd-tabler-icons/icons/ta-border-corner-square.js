@@ -1,1 +1,0 @@
-export const taBorderCornerSquare = [["path",{"d":"M4 20v-15a1 1 0 0 1 1 -1h15"}]];

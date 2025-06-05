@@ -1,1 +1,0 @@
-export const taArrowNarrowUpDashed = [["path",{"d":"M12 5v6m0 3v1.5m0 3v.5"}],["path",{"d":"M16 9l-4 -4"}],["path",{"d":"M8 9l4 -4"}]];

@@ -1,1 +1,0 @@
-import {SdTablerIcon} from "../index"; export const taCircleNumber5: SdTablerIcon;

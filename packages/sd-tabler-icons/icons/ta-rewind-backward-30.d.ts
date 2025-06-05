@@ -1,1 +1,0 @@
-import {SdTablerIcon} from "../index"; export const taRewindBackward30: SdTablerIcon;
