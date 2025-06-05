@@ -28,45 +28,12 @@ import { SdBusyProvider } from "./providers/sd-busy.provider";
 import { SwUpdate } from "@angular/service-worker";
 import { DOCUMENT } from "@angular/common";
 import { SdSystemLogProvider } from "./providers/sd-system-log.provider";
-import { faQuestionCircle } from "@fortawesome/free-solid-svg-icons/faQuestionCircle";
-import { faCaretDown } from "@fortawesome/free-solid-svg-icons/faCaretDown";
-import { faEye } from "@fortawesome/free-solid-svg-icons/faEye";
-import { faEyeSlash } from "@fortawesome/free-solid-svg-icons/faEyeSlash";
-import { faAngleDown } from "@fortawesome/free-solid-svg-icons/faAngleDown";
-import { faTriangleExclamation } from "@fortawesome/free-solid-svg-icons/faTriangleExclamation";
-import { faAngleDoubleLeft } from "@fortawesome/free-solid-svg-icons/faAngleDoubleLeft";
-import { faAngleDoubleRight } from "@fortawesome/free-solid-svg-icons/faAngleDoubleRight";
-import { faAngleLeft } from "@fortawesome/free-solid-svg-icons/faAngleLeft";
-import { faAngleRight } from "@fortawesome/free-solid-svg-icons/faAngleRight";
-import { faCog } from "@fortawesome/free-solid-svg-icons/faCog";
-import { faArrowLeft } from "@fortawesome/free-solid-svg-icons/faArrowLeft";
-import { faCaretRight } from "@fortawesome/free-solid-svg-icons/faCaretRight";
-import { faSave } from "@fortawesome/free-solid-svg-icons/faSave";
-import { faStar } from "@fortawesome/free-solid-svg-icons/faStar";
-import { faMountainSun } from "@fortawesome/free-solid-svg-icons/faMountainSun";
-import { faBars } from "@fortawesome/free-solid-svg-icons/faBars";
-import { faAngleUp } from "@fortawesome/free-solid-svg-icons/faAngleUp";
-import { faCheck } from "@fortawesome/free-solid-svg-icons/faCheck";
-import { faXmark } from "@fortawesome/free-solid-svg-icons/faXmark";
-import { faSort } from "@fortawesome/free-solid-svg-icons/faSort";
-import { faSortDown } from "@fortawesome/free-solid-svg-icons/faSortDown";
-import { faSortUp } from "@fortawesome/free-solid-svg-icons/faSortUp";
-import { faEraser } from "@fortawesome/free-solid-svg-icons/faEraser";
-import { faArrowLeftLong } from "@fortawesome/free-solid-svg-icons/faArrowLeftLong";
-import { faSearch } from "@fortawesome/free-solid-svg-icons/faSearch";
-import { faExternalLink } from "@fortawesome/free-solid-svg-icons/faExternalLink";
-import { faEdit } from "@fortawesome/free-solid-svg-icons/faEdit";
-import { faRefresh } from "@fortawesome/free-solid-svg-icons/faRefresh";
-import { faPlusCircle } from "@fortawesome/free-solid-svg-icons/faPlusCircle";
-import { faRedo } from "@fortawesome/free-solid-svg-icons/faRedo";
-import { faUpload } from "@fortawesome/free-solid-svg-icons/faUpload";
-import { faFileExcel } from "@fortawesome/free-solid-svg-icons/faFileExcel";
 
 export function provideSdAngular(opt: {
   clientName: string;
   defaultTheme?: TSdTheme;
   defaultDark?: boolean;
-  icons?: ISdAngularIcon;
+  icons: ISdAngularIcon;
 }): EnvironmentProviders {
   return makeEnvironmentProviders([
     provideEnvironmentInitializer(() => {
@@ -161,48 +128,7 @@ Source  : ${filename}(${lineno}, ${colno})${stack}`);
         provider.clientName = opt.clientName;
         provider.defaultTheme = opt.defaultTheme ?? "compact";
         provider.defaultDark = opt.defaultDark ?? false;
-        provider.icons = {
-          fallback: faQuestionCircle,
-
-          caretDown: faCaretDown,
-          eye: faEye,
-          eyeSlash: faEyeSlash,
-          angleDown: faAngleDown,
-          triangleExclamation: faTriangleExclamation,
-          angleDoubleLeft: faAngleDoubleLeft,
-          angleDoubleRight: faAngleDoubleRight,
-          angleLeft: faAngleLeft,
-          angleRight: faAngleRight,
-          cog: faCog,
-          arrowLeft: faArrowLeft,
-          caretRight: faCaretRight,
-          save: faSave,
-          star: faStar,
-          mountainSun: faMountainSun,
-          bars: faBars,
-          angleUp: faAngleUp,
-
-          check: faCheck,
-          xmark: faXmark,
-          sort: faSort,
-          sortDown: faSortDown,
-          sortUp: faSortUp,
-
-          eraser: faEraser,
-          arrowLeftLong: faArrowLeftLong,
-
-          search: faSearch,
-          externalLink: faExternalLink,
-          edit: faEdit,
-
-          refresh: faRefresh,
-          add: faPlusCircle,
-          redo: faRedo,
-          upload: faUpload,
-          fileExcel: faFileExcel,
-
-          ...opt.icons,
-        };
+        provider.icons = opt.icons;
         return provider;
       },
     },
