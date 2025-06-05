@@ -35,9 +35,9 @@ export class SdCliPostinstall {
           path.resolve(dirPath, "package.json"),
           JSON.stringify(contents, undefined, 2),
         );
-        fs.rmSync(path.resolve(dirPath, "index.d.ts"));
-        fs.rmSync(path.resolve(dirPath, "index.js"));
-        fs.rmSync(path.resolve(dirPath, "index.mjs"));
+        fs.rmSync(path.resolve(dirPath, "index.d.ts"), { force: true });
+        fs.rmSync(path.resolve(dirPath, "index.js"), { force: true });
+        fs.rmSync(path.resolve(dirPath, "index.mjs"), { force: true });
       }
     }
 
