@@ -3,16 +3,15 @@ import {
   ChangeDetectionStrategy,
   Component,
   contentChild,
+  Directive,
   HostListener,
   inject,
   input,
-  model,
   output,
   Signal,
   TemplateRef,
   viewChild,
   ViewEncapsulation,
-  WritableSignal,
 } from "@angular/core";
 import { TXT_CHANGE_IGNORE_CONFIRM } from "../../commons";
 import { SdButtonControl } from "../../controls/sd-button.control";
@@ -29,6 +28,9 @@ import { DateTime } from "@simplysm/sd-core-common";
 import { FormatPipe } from "../../pipes/format.pipe";
 import { SdSharedDataProvider } from "../shared-data/sd-shared-data.provider";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
+import { $signal } from "../../utils/bindings/$signal";
+import { injectParent } from "../../utils/injections/inject-parent";
+import { ISdModal } from "../../providers/sd-modal.provider";
 
 @Component({
   selector: "sd-data-detail",
@@ -45,14 +47,12 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
   ],
   template: `
     <sd-base-container
-      [busy]="busyCount() > 0"
-      [viewType]="currViewType()"
-      [initialized]="initialized()"
-      [visible]="hasPerm('use')"
+      [busy]="parent.busyCount() > 0"
+      [viewType]="parent.currViewType()"
+      [initialized]="parent.initialized()"
+      [restricted]="parent.restricted?.()"
     >
-      @let _dataInfo = viewModel().dataInfo();
-
-      @if (hasPerm("edit")) {
+      @if (!parent.readonly?.()) {
         <ng-template #tool>
           <div class="p-sm-lg flex-row flex-gap-sm">
             <sd-button theme="primary" (click)="onSubmitButtonClick()">
@@ -60,13 +60,11 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
               저장
               <small>(CTRL+S)</small>
             </sd-button>
-            @if (!_dataInfo.isNew && viewModel().toggleDelete) {
-              @if (!_dataInfo.isDeleted) {
-                <sd-button theme="danger" (click)="onToggleDeleteButtonClick(true)">삭제</sd-button>
+            @if (!parent.isNew() && parent.toggleDelete) {
+              @if (!parent.dataInfo().isDeleted) {
+                <sd-button theme="danger" (click)="parent.doToggleDelete(true)">삭제</sd-button>
               } @else {
-                <sd-button theme="warning" (click)="onToggleDeleteButtonClick(false)">
-                  복구
-                </sd-button>
+                <sd-button theme="warning" (click)="parent.doToggleDelete(false)">복구</sd-button>
               }
             }
           </div>
@@ -75,15 +73,15 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 
       <ng-template #content>
         <div class="p-lg">
-          <sd-form #formCtrl (submit)="_onSubmit()">
+          <sd-form #formCtrl (submit)="onSubmit()">
             <ng-template [ngTemplateOutlet]="contentTemplateRef()" />
           </sd-form>
         </div>
-        @if (_dataInfo.lastModifiedAt || _dataInfo.lastModifiedBy) {
+        @if (parent.dataInfo().lastModifiedAt || parent.dataInfo().lastModifiedBy) {
           <div class="bg-theme-grey-lightest p-sm-default">
             최종수정:
-            {{ _dataInfo.lastModifiedAt! | format: "yyyy-MM-dd HH:mm" }}
-            ({{ _dataInfo.lastModifiedBy }})
+            {{ parent.dataInfo().lastModifiedAt! | format: "yyyy-MM-dd HH:mm" }}
+            ({{ parent.dataInfo().lastModifiedBy }})
           </div>
         }
         @if (additionalTemplateRef() != null) {
@@ -93,17 +91,17 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
         }
       </ng-template>
 
-      @if (hasPerm("edit")) {
+      @if (!parent.readonly?.()) {
         <ng-template #modalBottom>
           <div class="p-sm-default flex-row bdt bdt-theme-grey-lightest">
-            @if (!_dataInfo.isNew && viewModel().toggleDelete) {
+            @if (!parent.isNew() && parent.toggleDelete) {
               <div>
-                @if (!_dataInfo.isDeleted) {
-                  <sd-button theme="danger" inline (click)="onToggleDeleteButtonClick(true)">
+                @if (!parent.dataInfo().isDeleted) {
+                  <sd-button theme="danger" inline (click)="parent.doToggleDelete(true)">
                     삭제
                   </sd-button>
                 } @else {
-                  <sd-button theme="warning" inline (click)="onToggleDeleteButtonClick(false)">
+                  <sd-button theme="warning" inline (click)="parent.doToggleDelete(false)">
                     복구
                   </sd-button>
                 }
@@ -119,46 +117,74 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
     </sd-base-container>
   `,
 })
-export class SdDataDetailControl<T extends object> {
+export class SdDataDetailControl {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
 
-  #sdToast = inject(SdToastProvider);
-  #sdSharedData = inject(SdSharedDataProvider);
-
-  //- base
-  viewModel = input.required<ISdDataDetailViewModel<T>>();
-
-  #viewType = useViewTypeSignal();
-  viewType = input<TSdViewType>();
-  currViewType = $computed(() => this.viewType() ?? this.#viewType());
-
-  close = output<boolean>();
-
-  hasPerm(code: string) {
-    return !this.viewModel().perms || this.viewModel().perms!().includes(code);
-  }
-
-  //-- view
-
-  initialized = model(false);
-  busyCount = model(0);
+  parent = injectParent<AbsSdDataDetail<any>>();
 
   formCtrl = viewChild<SdFormControl>("formCtrl");
 
   contentTemplateRef = contentChild.required(TemplateRef);
   additionalTemplateRef = contentChild("additional", { read: TemplateRef });
 
+  @HostListener("sdRefreshCommand")
+  async onRefreshButtonClick() {
+    await this.parent.doRefresh();
+  }
+
+  @HostListener("sdSaveCommand")
+  onSubmitButtonClick() {
+    if (this.parent.busyCount() > 0) return;
+
+    this.formCtrl()?.requestSubmit();
+  }
+
+  async onSubmit() {
+    await this.parent.doSubmit();
+  }
+}
+
+@Directive()
+export abstract class AbsSdDataDetail<T extends object> implements ISdModal<boolean> {
+  //-- abstract
+
+  restricted?: Signal<boolean>; // computed (use권한)
+  readonly?: Signal<boolean>; // computed (edit권한)
+  abstract isNew: Signal<boolean>; // computed
+  abstract dataInfo: Signal<ISdDataDetailDataInfo>; // computed
+  loadConditions?: Signal<any>[];
+
+  abstract load(): Promise<T> | T;
+
+  toggleDelete?(del: boolean): Promise<boolean> | boolean;
+
+  abstract submit(): Promise<boolean> | boolean;
+
+  //-- implement
+  #sdToast = inject(SdToastProvider);
+  #sdSharedData = inject(SdSharedDataProvider);
+
+  #viewType = useViewTypeSignal(() => this);
+  viewType = input<TSdViewType>();
+  currViewType = $computed(() => this.viewType() ?? this.#viewType());
+
+  busyCount = $signal(0);
+  initialized = $signal(false);
+  close = output<boolean>();
+
+  data = $signal<T>({} as T);
+
   constructor() {
     $effect(
       [
         () => {
-          for (const loadCondition of this.viewModel().loadConditions ?? []) {
+          for (const loadCondition of this.loadConditions ?? []) {
             loadCondition();
           }
         },
       ],
       async () => {
-        if (!this.hasPerm("use")) {
+        if (this.restricted?.()) {
           this.initialized.set(true);
           return;
         }
@@ -166,7 +192,7 @@ export class SdDataDetailControl<T extends object> {
         this.busyCount.update((v) => v + 1);
         await this.#sdToast.try(async () => {
           await this.#sdSharedData.wait();
-          await this.#refreshAsync();
+          await this.refresh();
         });
         this.busyCount.update((v) => v - 1);
         this.initialized.set(true);
@@ -177,33 +203,32 @@ export class SdDataDetailControl<T extends object> {
   }
 
   checkIgnoreChanges() {
-    return !$obj(this.viewModel().data).changed() || confirm(TXT_CHANGE_IGNORE_CONFIRM);
+    return !$obj(this.data).changed() || confirm(TXT_CHANGE_IGNORE_CONFIRM);
   }
 
-  @HostListener("sdRefreshCommand")
-  async onRefreshButtonClick() {
+  async doRefresh() {
     if (this.busyCount() > 0) return;
     if (!this.checkIgnoreChanges()) return;
 
     this.busyCount.update((v) => v + 1);
     await this.#sdToast.try(async () => {
-      await this.#refreshAsync();
+      await this.refresh();
     });
     this.busyCount.update((v) => v - 1);
   }
 
-  async #refreshAsync() {
-    this.viewModel().data.set(await this.viewModel().loadData());
-    $obj(this.viewModel().data).snapshot();
+  async refresh() {
+    this.data.set(await this.load());
+    $obj(this.data).snapshot();
   }
 
-  async onToggleDeleteButtonClick(del: boolean) {
+  async doToggleDelete(del: boolean) {
     if (this.busyCount() > 0) return;
-    if (!this.hasPerm("edit")) return;
+    if (this.readonly?.()) return;
 
     this.busyCount.update((v) => v + 1);
     await this.#sdToast.try(async () => {
-      const result = await this.viewModel().toggleDelete?.(del);
+      const result = await this.toggleDelete?.(del);
       if (!result) return;
 
       this.#sdToast.success(`${del ? "삭제" : "복구"}되었습니다.`);
@@ -213,55 +238,31 @@ export class SdDataDetailControl<T extends object> {
     this.busyCount.update((v) => v - 1);
   }
 
-  @HostListener("sdSaveCommand")
-  onSubmitButtonClick() {
+  async doSubmit() {
     if (this.busyCount() > 0) return;
+    if (this.readonly?.()) return;
 
-    this.formCtrl()?.requestSubmit();
-  }
-
-  protected async _onSubmit() {
-    if (this.busyCount() > 0) return;
-    if (!this.hasPerm("edit")) return;
-
-    if (!$obj(this.viewModel().data).changed()) {
+    if (!$obj(this.data).changed()) {
       this.#sdToast.info("변경사항이 없습니다.");
       return;
     }
 
     this.busyCount.update((v) => v + 1);
     await this.#sdToast.try(async () => {
-      const result = await this.viewModel().submit();
+      const result = await this.submit();
       if (!result) return;
 
       this.#sdToast.success("저장되었습니다.");
 
       this.close.emit(true);
 
-      await this.#refreshAsync();
+      await this.refresh();
     });
     this.busyCount.update((v) => v - 1);
   }
 }
 
-export interface ISdDataDetailViewModel<T extends object> {
-  perms?: Signal<string[]>;
-
-  data: WritableSignal<T>;
-
-  dataInfo: Signal<ISdDetailDataInfo>;
-
-  loadConditions?: Signal<any>[];
-
-  loadData(): Promise<T> | T;
-
-  toggleDelete?(del: boolean): Promise<boolean> | boolean;
-
-  submit(): Promise<boolean> | boolean;
-}
-
-export interface ISdDetailDataInfo {
-  isNew: boolean;
+export interface ISdDataDetailDataInfo {
   isDeleted: boolean | undefined;
   lastModifiedAt: DateTime | undefined;
   lastModifiedBy: string | undefined;

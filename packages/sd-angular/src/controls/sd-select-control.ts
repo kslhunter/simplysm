@@ -293,7 +293,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 export class SdSelectControl<M extends "single" | "multi", T> {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
 
-  value = model<TSelectValue<any>[M]>();
+  value = model<TSelectModeValue<any>[M]>();
 
   open = model(false);
 
@@ -444,7 +444,7 @@ export class SdSelectControl<M extends "single" | "multi", T> {
   };
 }
 
-export type TSelectValue<T> = {
+export type TSelectModeValue<T> = {
   multi: T[];
   single: T;
 };

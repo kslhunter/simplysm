@@ -31,7 +31,7 @@ export class SdModalInstance<T extends ISdModal<any>> {
 
   constructor(
     appRef: ApplicationRef,
-    modal: ISdModalInput<T>,
+    modal: ISdModalInfo<T>,
     options?: {
       key?: string;
       hideHeader?: boolean;
@@ -168,7 +168,7 @@ export class SdModalProvider {
   modalCount = $signal(0);
 
   async showAsync<T extends ISdModal<any>>(
-    modal: ISdModalInput<T>,
+    modal: ISdModalInfo<T>,
     options?: {
       key?: string;
       hideHeader?: boolean;
@@ -212,7 +212,7 @@ export class SdActivatedModalProvider<T> {
   canDeactivefn = () => true;
 }
 
-export interface ISdModalInput<T extends ISdModal<any>, X extends keyof any = ""> {
+export interface ISdModalInfo<T extends ISdModal<any>, X extends keyof any = ""> {
   title: string;
   type: Type<T>;
   inputs: Omit<TDirectiveInputSignals<T>, X>;

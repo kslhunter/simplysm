@@ -25,6 +25,7 @@ import { useFullPageCodeSignal } from "../utils/signals/use-full-page-code.signa
 import { TSdViewType, useViewTypeSignal } from "../utils/signals/use-view-type.signal";
 import { transformBoolean } from "../utils/type-tramsforms";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
+import { injectParent } from "../utils/injections/inject-parent";
 
 @Component({
   selector: "sd-base-container",
@@ -45,7 +46,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
   template: `
     <sd-busy-container [busy]="busy()" [message]="busyMessage()">
       @if (initialized()) {
-        @if (!visible()) {
+        @if (restricted()) {
           <sd-pane class="tx-theme-grey-light p-xxl tx-center" sd-show-effect>
             <br />
             <fa-icon [icon]="icons.triangleExclamation" [fixedWidth]="true" size="5x" />
@@ -73,7 +74,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
               </sd-pane>
             </sd-dock-container>
           </sd-topbar-container>
-        } @else if (currViewType() === "modal" && modalBottomTemplateRef()) {
+        } @else if (currViewType() === "modal") {
           <sd-dock-container>
             <sd-pane sd-show-effect>
               <ng-template [ngTemplateOutlet]="contentTemplateRef()" />
@@ -108,6 +109,8 @@ export class SdBaseContainerControl {
   #sdActivatedModal = inject(SdActivatedModalProvider, { optional: true });
   #sdAppStructure = inject(SdAppStructureProvider);
 
+  #parent = injectParent();
+
   #fullPageCode = useFullPageCodeSignal();
   #currPageCode = useCurrentPageCodeSignal();
 
@@ -116,9 +119,9 @@ export class SdBaseContainerControl {
   contentTemplateRef = contentChild.required("content", { read: TemplateRef });
   modalBottomTemplateRef = contentChild("modalBottom", { read: TemplateRef });
 
-  #viewType = useViewTypeSignal();
+  #parentViewType = useViewTypeSignal(() => this.#parent);
   viewType = input<TSdViewType>();
-  currViewType = $computed(() => this.viewType() ?? this.#viewType());
+  currViewType = $computed(() => this.viewType() ?? this.#parentViewType());
 
   modalOrPageTitle = $computed(
     () =>
@@ -127,7 +130,7 @@ export class SdBaseContainerControl {
   );
 
   initialized = input.required({ transform: transformBoolean });
-  visible = input(true, { transform: transformBoolean });
+  restricted = input(false, { transform: transformBoolean });
   busy = input(false, { transform: transformBoolean });
   busyMessage = input<string>();
 }

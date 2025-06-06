@@ -11,7 +11,7 @@ import {
 } from "@angular/core";
 
 import { SdSelectButtonControl } from "../../controls/sd-select-button.control";
-import { SdSelectControl, TSelectValue } from "../../controls/sd-select-control";
+import { SdSelectControl, TSelectModeValue } from "../../controls/sd-select-control";
 import { SdSelectItemControl } from "../../controls/sd-select-item.control";
 import { SdTextfieldControl } from "../../controls/sd-textfield.control";
 import {
@@ -19,15 +19,14 @@ import {
   SdItemOfTemplateDirective,
 } from "../../directives/sd-item-of.template-directive";
 import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
-import { ISdModal, ISdModalInput, SdModalProvider } from "../../providers/sd-modal.provider";
+import { ISdModal, ISdModalInfo, SdModalProvider } from "../../providers/sd-modal.provider";
 import { $computed } from "../../utils/bindings/$computed";
 import { $signal } from "../../utils/bindings/$signal";
 import { transformBoolean } from "../../utils/type-tramsforms";
-import { TSdSelectModalInput } from "../sd-select-modal-button.control";
 import { ISharedDataBase } from "./sd-shared-data.provider";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
+import { TSdSelectModalInfo } from "../sd-data-sheet/sd-data-select-button.control";
 
-// TODO: sd-select-modal-button을 사용하는식으로 바꿀 수 있나? 검토 필요
 @Component({
   selector: "sd-shared-data-select",
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -125,13 +124,13 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 })
 export class SdSharedDataSelectControl<
   T extends ISharedDataBase<string | number>,
-  M extends keyof TSelectValue<T>,
+  M extends keyof TSelectModeValue<T>,
 > {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
 
   #sdModal = inject(SdModalProvider);
 
-  value = model<TSelectValue<T["__valueKey"] | undefined>[M]>();
+  value = model<TSelectModeValue<T["__valueKey"] | undefined>[M]>();
 
   items = input.required<T[]>();
 
@@ -146,9 +145,9 @@ export class SdSharedDataSelectControl<
   filterFn = input<(item: T, index: number, ...params: any[]) => boolean>();
   filterFnParams = input<any[]>();
 
-  modal = input<TSdSelectModalInput>();
+  modal = input<TSdSelectModalInfo>();
 
-  editModal = input<ISdModalInput<ISdModal<boolean>>>();
+  editModal = input<ISdModalInfo<ISdModal<boolean>>>();
 
   selectClass = input<string>();
   multiSelectionDisplayDirection = input<"vertical" | "horizontal">();

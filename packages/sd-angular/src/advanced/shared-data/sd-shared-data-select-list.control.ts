@@ -30,13 +30,13 @@ import { $computed } from "../../utils/bindings/$computed";
 import { $effect } from "../../utils/bindings/$effect";
 import { $signal } from "../../utils/bindings/$signal";
 import { transformBoolean } from "../../utils/type-tramsforms";
-import { TSdSelectModalInput } from "../sd-select-modal-button.control";
 import { ISharedDataBase } from "./sd-shared-data.provider";
 import { setupModelHook } from "../../utils/setups/setup-model-hook";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
+import { TSdSelectModalInfo } from "../sd-data-sheet/sd-data-select-button.control";
 
 @Component({
-  selector: "sd-shared-data-select-view",
+  selector: "sd-shared-data-select-list",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
@@ -128,7 +128,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
     </sd-busy-container>
   `,
 })
-export class SdSharedDataSelectViewControl<T extends ISharedDataBase<string | number>> {
+export class SdSharedDataSelectListControl<T extends ISharedDataBase<string | number>> {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
 
   #sdModal = inject(SdModalProvider);
@@ -141,7 +141,7 @@ export class SdSharedDataSelectViewControl<T extends ISharedDataBase<string | nu
   useUndefined = input(false, { transform: transformBoolean });
   filterFn = input<(item: T, index: number) => boolean>();
 
-  modal = input<TSdSelectModalInput>();
+  modal = input<TSdSelectModalInfo>();
 
   headerTemplateRef = contentChild<any, TemplateRef<void>>("headerTemplate", { read: TemplateRef });
   filterTemplateRef = contentChild<any, TemplateRef<void>>("filterTemplate", { read: TemplateRef });

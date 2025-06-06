@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   contentChildren,
+  Directive,
   HostListener,
   inject,
   input,
@@ -31,16 +32,16 @@ import { ISdSortingDef } from "../../utils/managers/sd-sorting-manager";
 import { setupCumulateSelectedKeys } from "../../utils/setups/setup-cumulate-selected-keys";
 import { TSdViewType, useViewTypeSignal } from "../../utils/signals/use-view-type.signal";
 import { SdBaseContainerControl } from "../sd-base-container.control";
-import { ISelectModalOutputResult } from "../sd-select-modal-button.control";
 import { SdSharedDataProvider } from "../shared-data/sd-shared-data.provider";
 import { SdDataSheetColumnDirective } from "./sd-data-sheet-column.directive";
 import { SdDataSheetFilterDirective } from "./sd-data-sheet-filter.directive";
 import { SdDataSheetToolDirective } from "./sd-data-sheet-tool.directive";
 import { setupCloserWhenSingleSelectionChange } from "../../utils/setups/setup-closer-when-single-selection-change";
 import { $effect } from "../../utils/bindings/$effect";
-import { transformBoolean } from "../../utils/type-tramsforms";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
+import { ISdSelectModal, ISelectModalOutputResult } from "./sd-data-select-button.control";
+import { injectParent } from "../../utils/injections/inject-parent";
 
 @Component({
   selector: "sd-data-sheet",
@@ -65,10 +66,10 @@ import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provi
   ],
   template: `
     <sd-base-container
-      [busy]="busyCount() > 0"
-      [viewType]="currViewType()"
-      [initialized]="initialized()"
-      [visible]="usable()"
+      [busy]="parent.busyCount() > 0"
+      [viewType]="parent.currViewType()"
+      [initialized]="parent.initialized()"
+      [restricted]="parent.restricted?.()"
     >
       <ng-template #content>
         <sd-dock-container class="p-lg">
@@ -104,8 +105,8 @@ import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provi
                 <ng-template [ngTemplateOutlet]="toolControl.contentTemplateRef()" />
               }
 
-              @if (viewModel().editItem) {
-                @if (editable()) {
+              @if (parent.editItem) {
+                @if (!parent.readonly?.()) {
                   <sd-button size="sm" theme="primary" (click)="onCreateItemButtonClick()">
                     <fa-icon [icon]="icons.add" [fixedWidth]="true" />
                     등록
@@ -114,22 +115,22 @@ import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provi
                 }
               }
 
-              @if (!selectMode()) {
-                @if (viewModel().toggleDeletes) {
+              @if (!parent.selectMode()) {
+                @if (parent.toggleDeleteItems) {
                   <sd-button
                     size="sm"
                     theme="link-danger"
-                    (click)="onToggleDeletesButtonClick(true)"
-                    [disabled]="!isSelectedItemsHasNotDeleted()"
+                    (click)="onToggleDeleteItemsButtonClick(true)"
+                    [disabled]="!parent.isSelectedItemsHasNotDeleted()"
                   >
                     <fa-icon [icon]="icons.eraser" [fixedWidth]="true" />
                     선택 삭제
                   </sd-button>
-                  @if (isSelectedItemsHasDeleted()) {
+                  @if (parent.isSelectedItemsHasDeleted()) {
                     <sd-button
                       size="sm"
                       theme="link-warning"
-                      (click)="onToggleDeletesButtonClick(false)"
+                      (click)="onToggleDeleteItemsButtonClick(false)"
                     >
                       <fa-icon [icon]="icons.redo" [fixedWidth]="true" />
                       선택 복구
@@ -137,7 +138,7 @@ import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provi
                   }
                 }
 
-                @if (viewModel().uploadExcel) {
+                @if (parent.uploadExcel) {
                   <sd-button size="sm" theme="link-success" (click)="onUploadExcelButtonClick()">
                     <fa-icon [icon]="icons.upload" [fixedWidth]="true" />
                     엑셀 업로드
@@ -145,7 +146,7 @@ import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provi
                 }
               }
 
-              @if (viewModel().downloadExcel) {
+              @if (parent.downloadExcel) {
                 <sd-button size="sm" theme="link-success" (click)="onDownloadExcelButtonClick()">
                   <fa-icon [icon]="icons.fileExcel" [fixedWidth]="true" />
                   엑셀 다운로드
@@ -160,16 +161,16 @@ import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provi
 
           <sd-pane>
             <sd-sheet
-              [key]="viewModel().key + '-sheet'"
-              [items]="items()"
-              [(currentPage)]="page"
-              [totalPageCount]="pageLength()"
-              [(sorts)]="ordering"
-              [selectMode]="(selectMode() ?? viewModel().toggleDeletes) ? 'multi' : undefined"
-              [autoSelect]="selectMode() === 'single' ? 'click' : undefined"
-              [(selectedItems)]="selectedItems"
-              [trackByFn]="trackByFn"
-              [getItemCellStyleFn]="getItemCellStyleFn"
+              [key]="parent.key + '-sheet'"
+              [items]="parent.items()"
+              [(currentPage)]="parent.page"
+              [totalPageCount]="parent.pageLength()"
+              [(sorts)]="parent.sortingDefs"
+              [selectMode]="(parent.selectMode() ?? parent.toggleDeleteItems) ? 'multi' : undefined"
+              [autoSelect]="parent.selectMode() === 'single' ? 'click' : undefined"
+              [(selectedItems)]="parent.selectedItems"
+              [trackByFn]="parent.trackByFn"
+              [getItemCellStyleFn]="parent.getItemCellStyleFn"
             >
               @for (columnControl of columnControls(); track columnControl.key()) {
                 <sd-sheet-column
@@ -196,14 +197,17 @@ import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provi
                   }
 
                   <ng-template
-                    [cell]="items()"
+                    [cell]="parent.items()"
                     let-item
                     let-index="index"
                     let-depth="depth"
                     let-edit="edit"
                   >
-                    @if (viewModel().editItem && columnControl.edit() && editable()) {
-                      <sd-anchor class="flex-row" (click)="onItemClick(item, index, $event)">
+                    @if (parent.editItem && columnControl.edit() && !parent.readonly?.()) {
+                      <sd-anchor
+                        class="flex-row"
+                        (click)="onEditItemButtonClick(item, index, $event)"
+                      >
                         <div class="p-xs-sm pr-0">
                           <fa-icon [icon]="icons.edit" [fixedWidth]="true" />
                         </div>
@@ -240,7 +244,7 @@ import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provi
         </sd-dock-container>
       </ng-template>
 
-      @if (selectMode()) {
+      @if (parent.selectMode()) {
         <ng-template #modalBottom>
           <sd-dock
             position="bottom"
@@ -248,12 +252,12 @@ import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provi
             style="justify-content: right"
           >
             <sd-button theme="danger" inline (click)="onCancelButtonClick()">
-              {{ selectMode() === "multi" ? "모두" : "선택" }}
+              {{ parent.selectMode() === "multi" ? "모두" : "선택" }}
               해제
             </sd-button>
-            @if (selectMode() === "multi") {
+            @if (parent.selectMode() === "multi") {
               <sd-button theme="primary" inline (click)="onConfirmButtonClick()">
-                확인({{ selectedItemKeys().length }})
+                확인({{ parent.selectedItemKeys().length }})
               </sd-button>
             }
           </sd-dock>
@@ -262,60 +266,120 @@ import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provi
     </sd-base-container>
   `,
 })
-export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>> {
+export class SdDataSheetControl {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
 
-  #sdToast = inject(SdToastProvider);
-  #sdSharedData = inject(SdSharedDataProvider);
-  #sdFileDialog = inject(SdFileDialogProvider);
-
-  //-- base
-
-  viewModel = input.required<VM>();
-
-  #viewType = useViewTypeSignal();
-  viewType = input<TSdViewType>();
-  currViewType = $computed(() => this.viewType() ?? this.#viewType());
-
-  disabled = input(false, { transform: transformBoolean });
-  usable = $computed(() => !this.viewModel().perms || this.viewModel().perms!().includes("use"));
-  editable = $computed(
-    () =>
-      (!this.viewModel().perms || this.viewModel().perms!().includes("edit")) && !this.disabled(),
-  );
-
-  //-- view
-
-  initialized = model(false);
-  busyCount = model(0);
+  parent = injectParent();
 
   filterControls = contentChildren(SdDataSheetFilterDirective);
   toolControls = contentChildren(SdDataSheetToolDirective);
-  columnControls = contentChildren(SdDataSheetColumnDirective<TVMItem<VM>>);
+  columnControls = contentChildren(SdDataSheetColumnDirective<any>);
 
   beforeToolControls = $computed(() => this.toolControls().filter((item) => item.prepend()));
   afterToolControls = $computed(() => this.toolControls().filter((item) => !item.prepend()));
 
-  //-- items
+  onFilterSubmit() {
+    this.parent.doFilterSubmit();
+  }
 
-  items = $signal<TVMItem<VM>[]>([]);
-  summary = $signal<Partial<TVMItem<VM>>>({});
+  @HostListener("sdRefreshCommand")
+  onRefreshCommand() {
+    this.parent.doRefresh();
+  }
 
-  selectedItems = model<TVMItem<VM>[]>([]);
+  //-- edit
 
-  trackByFn = (item: TVMItem<VM>): TVMItemKey<VM> => this.viewModel().getKey(item);
+  async onCreateItemButtonClick() {
+    await this.parent.doEditItem();
+  }
+
+  async onEditItemButtonClick(item: any, index: number, event: MouseEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    await this.parent.doEditItem(item);
+  }
+
+  async onToggleDeleteItemsButtonClick(del: boolean) {
+    await this.parent.doToggleDeleteItems(del);
+  }
+
+  //-- excel
+
+  async onDownloadExcelButtonClick() {
+    await this.parent.doDownloadExcel();
+  }
+
+  async onUploadExcelButtonClick() {
+    await this.parent.doUploadExcel();
+  }
+
+  //-- modal
+
+  async onConfirmButtonClick() {
+    await this.parent.doModalConfirm();
+  }
+
+  async onCancelButtonClick() {
+    await this.parent.doModalCancel();
+  }
+}
+
+@Directive()
+export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K>
+  implements ISdSelectModal
+{
+  //-- abstract
+
+  restricted?: Signal<boolean>; // computed (use권한)
+  readonly?: Signal<boolean>; // computed (edit권한)
+  abstract key: string;
+  abstract name: string;
+  abstract filter: Signal<F>;
+
+  abstract getItemInfo(item: I): ISdDataSheetItemInfo<K>;
+
+  searchConditions?: Signal<any>[];
+
+  abstract search(param: TSdDataSheetSearchParam<F>): Promise<ISdDataSheetSearchResult<I>>;
+
+  editItem?(item?: I): Promise<boolean | undefined>;
+
+  toggleDeleteItems?(selectedItems: I[], del: boolean): Promise<boolean>;
+
+  downloadExcel?(items: I[]): Promise<void>;
+
+  uploadExcel?(file: File): Promise<void>;
+
+  //-- implement
+  #sdToast = inject(SdToastProvider);
+  #sdSharedData = inject(SdSharedDataProvider);
+  #sdFileDialog = inject(SdFileDialogProvider);
+
+  #viewType = useViewTypeSignal(() => this);
+  viewType = input<TSdViewType>();
+  currViewType = $computed(() => this.viewType() ?? this.#viewType());
+
+  busyCount = $signal(0);
+  initialized = $signal(false);
+  close = output<ISelectModalOutputResult>();
+  selectMode = input<"single" | "multi">();
+  selectedItemKeys = model<K[]>([]);
+
+  items = $signal<I[]>([]);
+  summaryData = $signal<Partial<I>>({});
+
+  selectedItems = $signal<I[]>([]);
+
+  trackByFn = (item: I): K => this.getItemInfo(item).key;
 
   page = $signal(0);
   pageLength = $signal(0);
-  ordering = $signal<ISdSortingDef[]>([]);
-
-  selectMode = input<"single" | "multi">();
-
-  selectedItemKeys = model<TVMItemKey<VM>[]>([]);
+  sortingDefs = $signal<ISdSortingDef[]>([]);
 
   //-- search
 
-  lastFilter = $signal<TVMFilter<VM>>();
+  lastFilter = $signal<F>();
 
   constructor() {
     setupCumulateSelectedKeys({
@@ -337,26 +401,26 @@ export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>>
         () => {
           this.page();
           this.lastFilter();
-          this.ordering();
-          for (const searchCondition of this.viewModel().searchConditions ?? []) {
+          this.sortingDefs();
+          for (const searchCondition of this.searchConditions ?? []) {
             searchCondition();
           }
         },
       ],
       async () => {
-        if (!this.usable()) {
+        if (this.restricted?.()) {
           this.initialized.set(true);
           return;
         }
 
         if (this.lastFilter() == null) {
-          this.#updateLastFilter();
+          this.lastFilter.set(ObjectUtils.clone(this.filter()));
         }
 
         this.busyCount.update((v) => v + 1);
         await this.#sdToast.try(async () => {
           await this.#sdSharedData.wait();
-          await this.refreshAsync();
+          await this.refresh();
         });
         this.busyCount.update((v) => v - 1);
         this.initialized.set(true);
@@ -364,70 +428,51 @@ export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>>
     );
   }
 
-  onFilterSubmit() {
+  doFilterSubmit() {
     this.page.set(0);
-
-    this.#updateLastFilter();
+    this.lastFilter.set(ObjectUtils.clone(this.filter()));
   }
 
-  #updateLastFilter() {
-    this.lastFilter.set(ObjectUtils.clone(this.viewModel().filter()));
-  }
-
-  @HostListener("sdRefreshCommand")
-  onRefreshCommand() {
+  doRefresh() {
     if (this.busyCount() > 0) return;
+    if (this.restricted?.()) return;
 
     this.lastFilter.$mark();
   }
 
-  async refreshAsync() {
+  async refresh() {
     if (this.lastFilter() == null) return;
 
-    const result = await this.searchAsync("sheet");
+    const result = await this.search({
+      type: "sheet",
+      lastFilter: this.lastFilter()!,
+      sortingDefs: this.sortingDefs(),
+      page: this.page(),
+    });
     this.items.set(result.items);
     this.pageLength.set(result.pageLength ?? 0);
-    this.summary.set(result.summary ?? {});
+    this.summaryData.set(result.summary ?? {});
 
     this.selectedItems.set(
       this.items().filter((item) =>
         this.selectedItems().some(
-          (sel) => this.viewModel().getKey(sel) === this.viewModel().getKey(item),
+          (sel) => this.getItemInfo(sel).key === this.getItemInfo(item).key,
         ),
       ),
     );
   }
 
-  async searchAsync<T extends "sheet" | "excel">(type: T) {
-    return await this.viewModel().search(type, this.lastFilter(), this.ordering(), this.page());
-  }
-
   //-- edit
 
-  async onCreateItemButtonClick() {
-    if (!this.editable()) return;
+  async doEditItem(item?: I) {
+    if (!this.editItem) return;
 
-    await this.#editItemAsync();
-  }
-
-  async onItemClick(item: TVMItem<VM>, index: number, event: MouseEvent) {
-    if (!this.editable()) return;
-
-    event.preventDefault();
-    event.stopPropagation();
-
-    await this.#editItemAsync(item);
-  }
-
-  async #editItemAsync(item?: TVMItem<VM>) {
-    if (!this.viewModel().editItem) return;
-
-    const result = await this.viewModel().editItem!(item);
+    const result = await this.editItem(item);
     if (!result) return;
 
     this.busyCount.update((v) => v + 1);
     await this.#sdToast.try(async () => {
-      await this.refreshAsync();
+      await this.refresh();
     });
     this.busyCount.update((v) => v - 1);
   }
@@ -435,26 +480,26 @@ export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>>
   //-- delete
 
   isSelectedItemsHasDeleted = $computed(() =>
-    this.selectedItems().some((item) => this.viewModel().getIsDeleted?.(item) ?? false),
+    this.selectedItems().some((item) => this.getItemInfo(item).isDeleted),
   );
   isSelectedItemsHasNotDeleted = $computed(() =>
-    this.selectedItems().some((item) => !(this.viewModel().getIsDeleted?.(item) ?? false)),
+    this.selectedItems().some((item) => !this.getItemInfo(item).isDeleted),
   );
 
-  getItemCellStyleFn = (item: TVMItem<VM>) =>
-    this.viewModel().getIsDeleted?.(item) ? "text-decoration: line-through;" : undefined;
+  getItemCellStyleFn = (item: I) =>
+    this.getItemInfo(item).isDeleted ? "text-decoration: line-through;" : undefined;
 
-  async onToggleDeletesButtonClick(del: boolean) {
-    if (!this.viewModel().toggleDeletes) return;
-    if (!this.editable()) return;
+  async doToggleDeleteItems(del: boolean) {
+    if (!this.toggleDeleteItems) return;
+    if (this.readonly?.()) return;
 
     this.busyCount.update((v) => v + 1);
 
     await this.#sdToast.try(async () => {
-      const result = await this.viewModel().toggleDeletes!(this.selectedItems(), del);
+      const result = await this.toggleDeleteItems!(this.selectedItems(), del);
       if (!result) return;
 
-      await this.refreshAsync();
+      await this.refresh();
 
       this.#sdToast.success(`${del ? "삭제" : "복구"} 되었습니다.`);
     });
@@ -463,22 +508,28 @@ export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>>
 
   //-- excel
 
-  async onDownloadExcelButtonClick() {
-    if (!this.viewModel().downloadExcel) return;
+  async doDownloadExcel() {
+    if (!this.downloadExcel) return;
 
     this.busyCount.update((v) => v + 1);
     await this.#sdToast.try(async () => {
       if (this.lastFilter() == null) return;
 
-      const items = (await this.searchAsync("excel")).items;
-      await this.viewModel().downloadExcel!(items);
+      const items = (
+        await this.search({
+          type: "excel",
+          lastFilter: this.lastFilter()!,
+          sortingDefs: this.sortingDefs(),
+        })
+      ).items;
+      await this.downloadExcel!(items);
     });
     this.busyCount.update((v) => v - 1);
   }
 
-  async onUploadExcelButtonClick() {
-    if (!this.viewModel().uploadExcel) return;
-    if (!this.editable()) return;
+  async doUploadExcel() {
+    if (!this.uploadExcel) return;
+    if (this.readonly?.()) return;
 
     const file = await this.#sdFileDialog.showAsync(
       false,
@@ -489,57 +540,48 @@ export class SdDataSheetControl<VM extends ISdDataSheetViewModel<any, any, any>>
     this.busyCount.update((v) => v + 1);
 
     await this.#sdToast.try(async () => {
-      await this.viewModel().uploadExcel!(file);
+      await this.uploadExcel!(file);
 
-      await this.refreshAsync();
+      await this.refresh();
 
       this.#sdToast.success("엑셀 업로드가 완료 되었습니다.");
     });
     this.busyCount.update((v) => v - 1);
   }
 
-  //-- modal
-
-  close = output<ISelectModalOutputResult>();
-
-  onConfirmButtonClick() {
+  doModalConfirm() {
     this.close.emit({ selectedItemKeys: this.selectedItemKeys() });
   }
 
-  onCancelButtonClick() {
+  doModalCancel() {
     this.close.emit({ selectedItemKeys: [] });
   }
 }
 
-export interface ISdDataSheetViewModel<F extends Record<string, any>, I, K> {
-  key: string;
-  name: string;
-  perms?: Signal<string[]>;
-
-  filter: Signal<F>;
-
-  getKey(item: I): K;
-
-  getIsDeleted?(item: I): boolean;
-
-  searchConditions?: Signal<any>[];
-
-  search<T extends "excel" | "sheet">(
-    type: T,
-    lastFilter: F,
-    sortingDefs: ISdSortingDef[],
-    page: number,
-  ): Promise<{ items: I[]; pageLength?: number; summary?: Partial<I> }>;
-
-  editItem?(item?: I): Promise<boolean | undefined>;
-
-  toggleDeletes?(selectedItems: I[], del: boolean): Promise<boolean>;
-
-  downloadExcel?(items: I[]): Promise<void>;
-
-  uploadExcel?(file: File): Promise<void>;
+export interface ISdDataSheetItemInfo<K> {
+  key: K;
+  isDeleted: boolean | undefined;
 }
 
-type TVMFilter<T extends ISdDataSheetViewModel<any, any, any>> = ReturnType<T["filter"]>;
-type TVMItem<T extends ISdDataSheetViewModel<any, any, any>> = Parameters<T["getKey"]>[0];
-type TVMItemKey<T extends ISdDataSheetViewModel<any, any, any>> = ReturnType<T["getKey"]>;
+export type TSdDataSheetSearchParam<F extends Record<string, any>> =
+  | ISdDataSheetSearchExcelParam<F>
+  | ISdDataSheetSearchSheetParam<F>;
+
+interface ISdDataSheetSearchExcelParam<F extends Record<string, any>> {
+  type: "excel";
+  lastFilter: F;
+  sortingDefs: ISdSortingDef[];
+}
+
+interface ISdDataSheetSearchSheetParam<F extends Record<string, any>> {
+  type: "sheet";
+  lastFilter: F;
+  sortingDefs: ISdSortingDef[];
+  page: number;
+}
+
+export interface ISdDataSheetSearchResult<I> {
+  items: I[];
+  pageLength?: number;
+  summary?: Partial<I>;
+}
