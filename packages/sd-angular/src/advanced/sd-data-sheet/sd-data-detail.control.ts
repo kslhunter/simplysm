@@ -157,7 +157,9 @@ export class SdDataDetailControl {
 }
 
 @Directive()
-export abstract class AbsSdDataDetail<T extends object> implements ISdModal<boolean> {
+export abstract class AbsSdDataDetail<T extends object | undefined, R = boolean>
+  implements ISdModal<R>
+{
   //-- abstract
 
   restricted?: Signal<boolean>; // computed (use권한)
@@ -168,9 +170,9 @@ export abstract class AbsSdDataDetail<T extends object> implements ISdModal<bool
 
   abstract load(): Promise<T> | T;
 
-  toggleDelete?(del: boolean): Promise<boolean> | boolean;
+  toggleDelete?(del: boolean): Promise<R> | R;
 
-  abstract submit(): Promise<boolean> | boolean;
+  abstract submit(): Promise<R> | R;
 
   //-- implement
   #sdToast = inject(SdToastProvider);
@@ -182,9 +184,9 @@ export abstract class AbsSdDataDetail<T extends object> implements ISdModal<bool
 
   busyCount = $signal(0);
   initialized = $signal(false);
-  close = output<boolean>();
+  close = output<R>();
 
-  data = $signal<T>({} as T);
+  data = $signal<T>(undefined as T);
 
   constructor() {
     $effect(
@@ -239,14 +241,19 @@ export abstract class AbsSdDataDetail<T extends object> implements ISdModal<bool
     if (this.readonly?.()) return;
 
     this.busyCount.update((v) => v + 1);
-    await this.#sdToast.try(async () => {
-      const result = await this.toggleDelete?.(del);
-      if (!result) return;
+    await this.#sdToast.try(
+      async () => {
+        const result = await this.toggleDelete?.(del);
+        if (!result) return;
 
-      this.#sdToast.success(`${del ? "삭제" : "복구"}되었습니다.`);
+        this.#sdToast.success(`${del ? "삭제" : "복구"}되었습니다.`);
 
-      this.close.emit(true);
-    });
+        this.close.emit(result);
+      },
+      () => {
+        return "삭제할 수 없습니다. 연동된 작업이 있는지 확인하세요.";
+      },
+    );
     this.busyCount.update((v) => v - 1);
   }
 
@@ -262,11 +269,12 @@ export abstract class AbsSdDataDetail<T extends object> implements ISdModal<bool
     this.busyCount.update((v) => v + 1);
     await this.#sdToast.try(async () => {
       const result = await this.submit();
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition,@typescript-eslint/strict-boolean-expressions
       if (!result) return;
 
       this.#sdToast.success("저장되었습니다.");
 
-      this.close.emit(true);
+      this.close.emit(result);
 
       await this.refresh();
     });

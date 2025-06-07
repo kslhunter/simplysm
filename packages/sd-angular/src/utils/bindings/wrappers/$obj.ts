@@ -3,7 +3,7 @@ import { ObjectUtils } from "@simplysm/sd-core-common";
 
 const ORIGIN_SNAPSHOT = Symbol();
 
-export function $obj<T extends object>(sig: Signal<T> | WritableSignal<T>) {
+export function $obj<T extends object | undefined>(sig: Signal<T> | WritableSignal<T>) {
   return {
     snapshot() {
       sig[ORIGIN_SNAPSHOT] = ObjectUtils.clone(sig());
@@ -18,9 +18,9 @@ export function $obj<T extends object>(sig: Signal<T> | WritableSignal<T>) {
     updateField<K extends keyof T>(key: K, val: T[K]) {
       if (!("update" in sig)) throw new Error("Readonly signal does not support remove.");
 
-      if (sig()[key] === val) return;
+      if (sig() && sig()![key] === val) return;
 
-      sig.update(v => ({
+      sig.update((v) => ({
         ...v,
         [key]: val,
       }));
@@ -28,11 +28,11 @@ export function $obj<T extends object>(sig: Signal<T> | WritableSignal<T>) {
     deleteField<K extends keyof T>(key: K) {
       if (!("update" in sig)) throw new Error("Readonly signal does not support remove.");
 
-      if (!(key in sig())) return;
+      if (sig() && !(key in sig()!)) return;
 
-      sig.update(v => {
-        const r = { ...v };
-        delete v[key];
+      sig.update((v) => {
+        const r = { ...v } as any;
+        delete r[key];
         return r;
       });
     },

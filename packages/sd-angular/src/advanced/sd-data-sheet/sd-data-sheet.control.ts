@@ -109,7 +109,7 @@ import { injectParent } from "../../utils/injections/inject-parent";
                 @if (!parent.readonly?.()) {
                   <sd-button size="sm" theme="primary" (click)="onCreateItemButtonClick()">
                     <fa-icon [icon]="icons.add" [fixedWidth]="true" />
-                    등록
+                    {{ insertText() }}
                     <small>(CTRL+INSERT)</small>
                   </sd-button>
                 }
@@ -124,7 +124,7 @@ import { injectParent } from "../../utils/injections/inject-parent";
                     [disabled]="!parent.isSelectedItemsHasNotDeleted()"
                   >
                     <fa-icon [icon]="icons.eraser" [fixedWidth]="true" />
-                    선택 삭제
+                    선택 {{ deleteText() }}
                   </sd-button>
                   @if (parent.isSelectedItemsHasDeleted()) {
                     <sd-button
@@ -271,6 +271,9 @@ export class SdDataSheetControl {
 
   parent = injectParent();
 
+  insertText = input("등록");
+  deleteText = input("삭제");
+
   filterControls = contentChildren(SdDataSheetFilterDirective);
   toolControls = contentChildren(SdDataSheetToolDirective);
   columnControls = contentChildren(SdDataSheetColumnDirective<any>);
@@ -338,6 +341,8 @@ export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K>
   abstract filter: Signal<F>;
 
   abstract getItemInfo(item: I): ISdDataSheetItemInfo<K>;
+
+  abstract mergeFilter(filter: F): F;
 
   searchConditions?: Signal<any>[];
 
