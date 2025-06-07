@@ -14,9 +14,9 @@
   "dependencies": {
     "@eslint/compat": "^1.2.9",
     "@typescript-eslint/utils": "^8.33.1",
-    "angular-eslint": "^19.7.1",
+    "angular-eslint": "^20.0.0",
     "eslint": "^9.28.0",
-    "eslint-import-resolver-typescript": "^4.4.2",
+    "eslint-import-resolver-typescript": "^4.4.3",
     "eslint-plugin-import": "^2.31.0",
     "globals": "^16.2.0",
     "typescript": "~5.8.3",
@@ -24,6 +24,6 @@
   },
   "devDependencies": {
     "@typescript-eslint/rule-tester": "^8.33.1",
-    "vitest": "^3.2.1"
+    "vitest": "^3.2.2"
   }
 }
