@@ -64,9 +64,6 @@ export class SdGlobalErrorHandlerPlugin implements ErrorHandler {
       }
     } catch (err) {
       console.error(err);
-    } finally {
-      const appRef = this.#envInjector.get<ApplicationRef>(ApplicationRef);
-      appRef.destroy();
     }
   }
 
@@ -98,5 +95,8 @@ export class SdGlobalErrorHandlerPlugin implements ErrorHandler {
     };
 
     await this.#systemLog.writeAsync("error", `[${title}]\n${paramLines.join("\n")}`);
+
+    const appRef = this.#envInjector.get<ApplicationRef>(ApplicationRef);
+    appRef.destroy();
   }
 }

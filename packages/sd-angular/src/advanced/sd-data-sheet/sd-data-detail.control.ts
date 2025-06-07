@@ -68,10 +68,20 @@ import { ISdModal } from "../../providers/sd-modal.provider";
               }
             }
           </div>
+          @if (toolTemplateRef() != null) {
+            <div class="p-sm-lg">
+              <ng-template [ngTemplateOutlet]="toolTemplateRef() ?? null" />
+            </div>
+          }
         </ng-template>
       }
 
       <ng-template #content>
+        @if (prevTemplateRef() != null) {
+          <div class="p-lg">
+            <ng-template [ngTemplateOutlet]="prevTemplateRef() ?? null" />
+          </div>
+        }
         <div class="p-lg">
           <sd-form #formCtrl (submit)="onSubmit()">
             <ng-template [ngTemplateOutlet]="contentTemplateRef()" />
@@ -84,9 +94,9 @@ import { ISdModal } from "../../providers/sd-modal.provider";
             ({{ parent.dataInfo().lastModifiedBy }})
           </div>
         }
-        @if (additionalTemplateRef() != null) {
+        @if (nextTemplateRef() != null) {
           <div class="p-lg">
-            <ng-template [ngTemplateOutlet]="additionalTemplateRef() ?? null" />
+            <ng-template [ngTemplateOutlet]="nextTemplateRef() ?? null" />
           </div>
         }
       </ng-template>
@@ -124,8 +134,10 @@ export class SdDataDetailControl {
 
   formCtrl = viewChild<SdFormControl>("formCtrl");
 
-  contentTemplateRef = contentChild.required(TemplateRef);
-  additionalTemplateRef = contentChild("additional", { read: TemplateRef });
+  contentTemplateRef = contentChild.required("content", { read: TemplateRef });
+  toolTemplateRef = contentChild("tool", { read: TemplateRef });
+  prevTemplateRef = contentChild("prev", { read: TemplateRef });
+  nextTemplateRef = contentChild("next", { read: TemplateRef });
 
   @HostListener("sdRefreshCommand")
   async onRefreshButtonClick() {
