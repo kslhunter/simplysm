@@ -34,6 +34,7 @@ import removeSdAngularSymbolNames from "./fix/remove-sd-angular-symbol-names";
 import convertSdAngularSymbolNames from "./fix/convert-sd-angular-symbol-names";
 import { removeUnusedInjects } from "./fix/remove-unused-injects";
 import { removeUnusedImports } from "./fix/remove-unused-imports";
+import removeUnusedProtectedReadonly from "./fix/remove-unused-protected-readonly";
 
 Error.stackTraceLimit = Infinity;
 EventEmitter.defaultMaxListeners = 0;
@@ -307,6 +308,7 @@ await yargs(hideBin(process.argv))
 
       //-- inject/import 정리
       removeUnusedInjects();
+      removeUnusedProtectedReadonly();
       removeUnusedImports();
     },
   )

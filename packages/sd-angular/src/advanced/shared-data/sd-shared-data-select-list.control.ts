@@ -33,7 +33,7 @@ import { transformBoolean } from "../../utils/type-tramsforms";
 import { ISharedDataBase } from "./sd-shared-data.provider";
 import { setupModelHook } from "../../utils/setups/setup-model-hook";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
-import { TSdSelectModalInfo } from "../sd-data-sheet/sd-data-select-button.control";
+import { ISdSelectModal, TSdSelectModalInfo } from "../sd-data-sheet/sd-data-select-button.control";
 
 @Component({
   selector: "sd-shared-data-select-list",
@@ -128,7 +128,10 @@ import { TSdSelectModalInfo } from "../sd-data-sheet/sd-data-select-button.contr
     </sd-busy-container>
   `,
 })
-export class SdSharedDataSelectListControl<T extends ISharedDataBase<string | number>> {
+export class SdSharedDataSelectListControl<
+  T extends ISharedDataBase<string | number>,
+  TModal extends ISdSelectModal
+> {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
 
   #sdModal = inject(SdModalProvider);
@@ -141,7 +144,7 @@ export class SdSharedDataSelectListControl<T extends ISharedDataBase<string | nu
   useUndefined = input(false, { transform: transformBoolean });
   filterFn = input<(item: T, index: number) => boolean>();
 
-  modal = input<TSdSelectModalInfo>();
+  modal = input<TSdSelectModalInfo<TModal>>();
 
   headerTemplateRef = contentChild<any, TemplateRef<void>>("headerTemplate", { read: TemplateRef });
   filterTemplateRef = contentChild<any, TemplateRef<void>>("filterTemplate", { read: TemplateRef });

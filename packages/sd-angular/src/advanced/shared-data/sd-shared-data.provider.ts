@@ -12,12 +12,16 @@ export interface ISharedSignal<T extends ISharedDataBase<string | number>> exten
 }
 
 @Injectable({ providedIn: "root" })
-export class SdSharedDataProvider<T extends Record<string, ISharedDataBase<string | number>>> {
+export abstract class SdSharedDataProvider<
+  T extends Record<string, ISharedDataBase<string | number>>,
+> {
   #sdServiceFactory = inject(SdServiceClientFactoryProvider);
 
   #infoMap = new Map<keyof T & string, ISharedDataInnerInfo<any>>();
 
   loadingCount = 0;
+
+  abstract initialize(): void;
 
   register<K extends keyof T & string>(name: K, getter: ISharedDataInfo<T[K]>) {
     this.#infoMap.set(name, { getter });
@@ -46,16 +50,18 @@ export class SdSharedDataProvider<T extends Record<string, ISharedDataBase<strin
 
     //-- listener
     if (info.listenerKey == null) {
-      info.listenerKey = void this.#sdServiceFactory.get(info.getter.serviceKey).addEventListenerAsync(
-        SdSharedDataChangeEvent,
-        {
-          name,
-          filter: info.getter.filter,
-        },
-        async (changeKeys) => {
-          await this.#loadDataAsync(name, changeKeys);
-        },
-      );
+      info.listenerKey = void this.#sdServiceFactory
+        .get(info.getter.serviceKey)
+        .addEventListenerAsync(
+          SdSharedDataChangeEvent,
+          {
+            name,
+            filter: info.getter.filter,
+          },
+          async (changeKeys) => {
+            await this.#loadDataAsync(name, changeKeys);
+          },
+        );
     }
 
     //-- data
@@ -82,11 +88,10 @@ export class SdSharedDataProvider<T extends Record<string, ISharedDataBase<strin
 
       if (!changeKeys) {
         info.signal.set(this.#ordering(resData, info.getter.orderBy));
-      }
-      else {
+      } else {
         info.signal.update((v) => {
           // changeKeys에 있는것 전부 삭제
-          const r = v.filter(item => !changeKeys.includes(item.__valueKey));
+          const r = v.filter((item) => !changeKeys.includes(item.__valueKey));
 
           // changeKeys로 검색한 결과물인, resData를 다시 입력
           r.push(...resData);
@@ -96,8 +101,7 @@ export class SdSharedDataProvider<T extends Record<string, ISharedDataBase<strin
         });
       }
       this.loadingCount--;
-    }
-    catch (err) {
+    } catch (err) {
       this.loadingCount--;
       throw err;
     }
@@ -105,14 +109,16 @@ export class SdSharedDataProvider<T extends Record<string, ISharedDataBase<strin
 
   #ordering<TT extends T[keyof T]>(
     data: TT[],
-    orderByList: [(data: TT) => string | number | DateOnly | DateTime | Time | undefined, "asc" | "desc"][],
+    orderByList: [
+      (data: TT) => string | number | DateOnly | DateTime | Time | undefined,
+      "asc" | "desc",
+    ][],
   ): TT[] {
     let result = [...data];
     for (const orderBy of orderByList.reverse()) {
       if (orderBy[1] === "desc") {
         result = result.orderByDesc((item) => orderBy[0](item));
-      }
-      else {
+      } else {
         result = result.orderBy((item) => orderBy[0](item));
       }
     }
@@ -143,5 +149,4 @@ export interface ISharedDataBase<VK extends string | number> {
 export class SdSharedDataChangeEvent extends SdServiceEventListenerBase<
   { name: string; filter: any },
   (string | number)[] | undefined
-> {
-}
+> {}

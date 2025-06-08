@@ -13,10 +13,11 @@ import {
 } from "../../directives/sd-item-of.template-directive";
 import { ISharedDataBase } from "./sd-shared-data.provider";
 import {
-  AbsSdDataSelectButton,
+  AbsSdDataSelectButton, ISdSelectModal,
   SdDataSelectButtonControl,
   TSdSelectModalInfo,
 } from "../sd-data-sheet/sd-data-select-button.control";
+import { TSelectModeValue } from "../../controls/sd-select-control";
 
 @Component({
   selector: "sd-shared-data-select-button",
@@ -42,9 +43,11 @@ import {
 })
 export class SdSharedDataSelectButtonControl<
   T extends ISharedDataBase<number>,
-> extends AbsSdDataSelectButton<T, number> {
+  M extends keyof TSelectModeValue<number>,
+  TModal extends ISdSelectModal
+> extends AbsSdDataSelectButton<T, number, M> {
   items = input<T[]>([]);
-  modal = input.required<TSdSelectModalInfo>();
+  modal = input.required<TSdSelectModalInfo<TModal>>();
 
   itemTemplateRef = contentChild.required<any, TemplateRef<SdItemOfTemplateContext<T>>>(
     SdItemOfTemplateDirective,

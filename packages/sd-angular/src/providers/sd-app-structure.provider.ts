@@ -12,7 +12,6 @@ export function usePermsSignal<K extends string>(viewCodes: string[], keys: K[])
 @Injectable({ providedIn: "root" })
 export abstract class SdAppStructureProvider<TModule = unknown> {
   abstract items: TSdAppStructureItem<TModule>[];
-
   abstract usableModules: Signal<TModule[] | undefined>;
   abstract permRecord: Signal<Record<string, boolean> | undefined>;
 

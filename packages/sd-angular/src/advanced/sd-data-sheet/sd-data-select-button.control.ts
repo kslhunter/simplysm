@@ -109,21 +109,25 @@ export class SdDataSelectButtonControl {
 }
 
 @Directive()
-export abstract class AbsSdDataSelectButton<T extends object, K> {
+export abstract class AbsSdDataSelectButton<
+  T extends object,
+  K,
+  M extends keyof TSelectModeValue<K> = keyof TSelectModeValue<K>,
+> {
   //-- abstract
-  abstract modal: Signal<TSdSelectModalInfo>; // computed
+  abstract modal: Signal<TSdSelectModalInfo<ISdSelectModal>>; // computed
   abstract load(keys: K[]): Promise<T[]> | T[];
 
   //-- implement
   #sdModal = inject(SdModalProvider);
 
-  value = model<K | K[]>();
+  value = model<TSelectModeValue<K>[M]>();
 
   disabled = input(false, { transform: transformBoolean });
   required = input(false, { transform: transformBoolean });
   inset = input(false, { transform: transformBoolean });
   size = input<"sm" | "lg">();
-  selectMode = input<keyof TSelectModeValue<any>>("single");
+  selectMode = input<M>("single" as M);
   isNoValue = $computed(() => {
     return (
       this.value() == null ||
@@ -145,7 +149,7 @@ export abstract class AbsSdDataSelectButton<T extends object, K> {
       ) {
         this.selectedItems.set(await this.load(value.filterExists()));
       } else if (this.selectMode() === "single" && !(value instanceof Array) && value != null) {
-        this.selectedItems.set(await this.load([value]));
+        this.selectedItems.set(await this.load([value as K]));
       } else {
         this.selectedItems.set([]);
       }
@@ -174,11 +178,7 @@ export abstract class AbsSdDataSelectButton<T extends object, K> {
   }
 
   doInitialValue() {
-    this.value.set(
-      (this.selectMode() === "multi" ? [] : undefined) as
-        | K[]
-        | undefined,
-    );
+    this.value.set((this.selectMode() === "multi" ? [] : undefined) as any);
   }
 }
 
@@ -187,7 +187,7 @@ export interface ISdSelectModal extends ISdModal<ISelectModalOutputResult> {
   selectedItemKeys: InputSignal<any[]>;
 }
 
-export type TSdSelectModalInfo<T extends ISdSelectModal = ISdSelectModal> = ISdModalInfo<
+export type TSdSelectModalInfo<T extends ISdSelectModal> = ISdModalInfo<
   T,
   "selectMode" | "selectedItemKeys"
 >;

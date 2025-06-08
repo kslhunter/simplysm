@@ -25,7 +25,7 @@ import { $signal } from "../../utils/bindings/$signal";
 import { transformBoolean } from "../../utils/type-tramsforms";
 import { ISharedDataBase } from "./sd-shared-data.provider";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
-import { TSdSelectModalInfo } from "../sd-data-sheet/sd-data-select-button.control";
+import { ISdSelectModal, TSdSelectModalInfo } from "../sd-data-sheet/sd-data-select-button.control";
 
 @Component({
   selector: "sd-shared-data-select",
@@ -125,6 +125,7 @@ import { TSdSelectModalInfo } from "../sd-data-sheet/sd-data-select-button.contr
 export class SdSharedDataSelectControl<
   T extends ISharedDataBase<string | number>,
   M extends keyof TSelectModeValue<T>,
+  TModal extends ISdSelectModal
 > {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
 
@@ -145,7 +146,7 @@ export class SdSharedDataSelectControl<
   filterFn = input<(item: T, index: number, ...params: any[]) => boolean>();
   filterFnParams = input<any[]>();
 
-  modal = input<TSdSelectModalInfo>();
+  modal = input<TSdSelectModalInfo<TModal>>();
 
   editModal = input<ISdModalInfo<ISdModal<boolean>>>();
 

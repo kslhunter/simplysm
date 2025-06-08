@@ -4,11 +4,14 @@ import {
   Component,
   contentChildren,
   Directive,
+  effect,
   HostListener,
   inject,
   input,
   model,
+  OnInit,
   output,
+  reflectComponentType,
   Signal,
   ViewEncapsulation,
 } from "@angular/core";
@@ -37,7 +40,6 @@ import { SdDataSheetColumnDirective } from "./sd-data-sheet-column.directive";
 import { SdDataSheetFilterDirective } from "./sd-data-sheet-filter.directive";
 import { SdDataSheetToolDirective } from "./sd-data-sheet-tool.directive";
 import { setupCloserWhenSingleSelectionChange } from "../../utils/setups/setup-closer-when-single-selection-change";
-import { $effect } from "../../utils/bindings/$effect";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
 import { ISdSelectModal, ISelectModalOutputResult } from "./sd-data-select-button.control";
@@ -330,21 +332,17 @@ export class SdDataSheetControl {
 
 @Directive()
 export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K>
-  implements ISdSelectModal
+  implements ISdSelectModal, OnInit
 {
   //-- abstract
 
   restricted?: Signal<boolean>; // computed (use권한)
   readonly?: Signal<boolean>; // computed (edit권한)
   abstract key: string;
-  abstract name: string;
-  abstract filter: Signal<F>;
+
+  initFilter?(): F;
 
   abstract getItemInfo(item: I): ISdDataSheetItemInfo<K>;
-
-  abstract mergeFilter(filter: F): F;
-
-  searchConditions?: Signal<any>[];
 
   abstract search(param: TSdDataSheetSearchParam<F>): Promise<ISdDataSheetSearchResult<I>>;
 
@@ -384,7 +382,16 @@ export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K>
 
   //-- search
 
-  lastFilter = $signal<F>();
+  filter = $signal<F>({} as F);
+  lastFilter = $signal<F>({} as F);
+
+  ngOnInit() {
+    if (this.initFilter) {
+      const filter = this.initFilter();
+      this.filter.set(filter);
+      this.lastFilter.set(ObjectUtils.clone(this.filter()));
+    }
+  }
 
   constructor() {
     setupCumulateSelectedKeys({
@@ -401,25 +408,21 @@ export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K>
       close: this.close,
     });
 
-    $effect(
-      [
-        () => {
-          this.page();
-          this.lastFilter();
-          this.sortingDefs();
-          for (const searchCondition of this.searchConditions ?? []) {
-            searchCondition();
-          }
-        },
-      ],
-      async () => {
+    effect(() => {
+      this.page();
+      this.lastFilter();
+      this.sortingDefs();
+
+      const reflected = reflectComponentType(this.constructor as any)!;
+      const inputPropNames = reflected.inputs.map((item) => item.propName);
+      for (const inputPropName of inputPropNames) {
+        this[inputPropName]();
+      }
+
+      queueMicrotask(async () => {
         if (this.restricted?.()) {
           this.initialized.set(true);
           return;
-        }
-
-        if (this.lastFilter() == null) {
-          this.lastFilter.set(ObjectUtils.clone(this.filter()));
         }
 
         this.busyCount.update((v) => v + 1);
@@ -429,8 +432,8 @@ export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K>
         });
         this.busyCount.update((v) => v - 1);
         this.initialized.set(true);
-      },
-    );
+      });
+    });
   }
 
   doFilterSubmit() {
@@ -446,11 +449,9 @@ export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K>
   }
 
   async refresh() {
-    if (this.lastFilter() == null) return;
-
     const result = await this.search({
       type: "sheet",
-      lastFilter: this.lastFilter()!,
+      lastFilter: this.lastFilter(),
       sortingDefs: this.sortingDefs(),
       page: this.page(),
     });
@@ -518,12 +519,10 @@ export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K>
 
     this.busyCount.update((v) => v + 1);
     await this.#sdToast.try(async () => {
-      if (this.lastFilter() == null) return;
-
       const items = (
         await this.search({
           type: "excel",
-          lastFilter: this.lastFilter()!,
+          lastFilter: this.lastFilter(),
           sortingDefs: this.sortingDefs(),
         })
       ).items;
@@ -565,7 +564,7 @@ export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K>
 
 export interface ISdDataSheetItemInfo<K> {
   key: K;
-  isDeleted: boolean | undefined;
+  isDeleted?: boolean;
 }
 
 export type TSdDataSheetSearchParam<F extends Record<string, any>> =

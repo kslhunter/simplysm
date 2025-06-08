@@ -4,10 +4,12 @@ import {
   Component,
   contentChild,
   Directive,
+  effect,
   HostListener,
   inject,
   input,
   output,
+  reflectComponentType,
   Signal,
   TemplateRef,
   viewChild,
@@ -19,7 +21,6 @@ import { SdFormControl } from "../../controls/sd-form.control";
 import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
 import { SdToastProvider } from "../../providers/sd-toast.provider";
 import { $computed } from "../../utils/bindings/$computed";
-import { $effect } from "../../utils/bindings/$effect";
 import { $obj } from "../../utils/bindings/wrappers/$obj";
 import { setupCanDeactivate } from "../../utils/setups/setup-can-deactivate";
 import { TSdViewType, useViewTypeSignal } from "../../utils/signals/use-view-type.signal";
@@ -60,7 +61,7 @@ import { ISdModal } from "../../providers/sd-modal.provider";
               저장
               <small>(CTRL+S)</small>
             </sd-button>
-            @if (!parent.isNew() && parent.toggleDelete) {
+            @if (parent.isNew && parent.dataInfo && !parent.isNew() && parent.toggleDelete) {
               @if (!parent.dataInfo().isDeleted) {
                 <sd-button theme="danger" (click)="parent.doToggleDelete(true)">삭제</sd-button>
               } @else {
@@ -87,7 +88,9 @@ import { ISdModal } from "../../providers/sd-modal.provider";
             <ng-template [ngTemplateOutlet]="contentTemplateRef()" />
           </sd-form>
         </div>
-        @if (parent.dataInfo().lastModifiedAt || parent.dataInfo().lastModifiedBy) {
+        @if (
+          parent.dataInfo && (parent.dataInfo().lastModifiedAt || parent.dataInfo().lastModifiedBy)
+        ) {
           <div class="bg-theme-grey-lightest p-sm-default">
             최종수정:
             {{ parent.dataInfo().lastModifiedAt! | format: "yyyy-MM-dd HH:mm" }}
@@ -104,7 +107,7 @@ import { ISdModal } from "../../providers/sd-modal.provider";
       @if (!parent.readonly?.()) {
         <ng-template #modalBottom>
           <div class="p-sm-default flex-row bdt bdt-theme-grey-lightest">
-            @if (!parent.isNew() && parent.toggleDelete) {
+            @if (parent.isNew && parent.dataInfo && !parent.isNew() && parent.toggleDelete) {
               <div>
                 @if (!parent.dataInfo().isDeleted) {
                   <sd-button theme="danger" inline (click)="parent.doToggleDelete(true)">
@@ -164,15 +167,14 @@ export abstract class AbsSdDataDetail<T extends object | undefined, R = boolean>
 
   restricted?: Signal<boolean>; // computed (use권한)
   readonly?: Signal<boolean>; // computed (edit권한)
-  abstract isNew: Signal<boolean>; // computed
-  abstract dataInfo: Signal<ISdDataDetailDataInfo>; // computed
-  loadConditions?: Signal<any>[];
+  isNew?: Signal<boolean>; // computed
+  dataInfo?: Signal<ISdDataDetailDataInfo>; // computed
 
   abstract load(): Promise<T> | T;
 
   toggleDelete?(del: boolean): Promise<R> | R;
 
-  abstract submit(): Promise<R> | R;
+  submit?(): Promise<R> | R;
 
   //-- implement
   #sdToast = inject(SdToastProvider);
@@ -189,15 +191,14 @@ export abstract class AbsSdDataDetail<T extends object | undefined, R = boolean>
   data = $signal<T>(undefined as T);
 
   constructor() {
-    $effect(
-      [
-        () => {
-          for (const loadCondition of this.loadConditions ?? []) {
-            loadCondition();
-          }
-        },
-      ],
-      async () => {
+    effect(() => {
+      const reflected = reflectComponentType(this.constructor as any)!;
+      const inputPropNames = reflected.inputs.map((item) => item.propName);
+      for (const inputPropName of inputPropNames) {
+        this[inputPropName]();
+      }
+
+      queueMicrotask(async () => {
         if (this.restricted?.()) {
           this.initialized.set(true);
           return;
@@ -210,8 +211,8 @@ export abstract class AbsSdDataDetail<T extends object | undefined, R = boolean>
         });
         this.busyCount.update((v) => v - 1);
         this.initialized.set(true);
-      },
-    );
+      });
+    });
 
     setupCanDeactivate(() => this.currViewType() === "modal" || this.checkIgnoreChanges());
   }
@@ -260,6 +261,7 @@ export abstract class AbsSdDataDetail<T extends object | undefined, R = boolean>
   async doSubmit() {
     if (this.busyCount() > 0) return;
     if (this.readonly?.()) return;
+    if (!this.submit) return;
 
     if (!$obj(this.data).changed()) {
       this.#sdToast.info("변경사항이 없습니다.");
@@ -268,7 +270,7 @@ export abstract class AbsSdDataDetail<T extends object | undefined, R = boolean>
 
     this.busyCount.update((v) => v + 1);
     await this.#sdToast.try(async () => {
-      const result = await this.submit();
+      const result = await this.submit!();
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition,@typescript-eslint/strict-boolean-expressions
       if (!result) return;
 
@@ -283,7 +285,7 @@ export abstract class AbsSdDataDetail<T extends object | undefined, R = boolean>
 }
 
 export interface ISdDataDetailDataInfo {
-  isDeleted: boolean | undefined;
-  lastModifiedAt: DateTime | undefined;
-  lastModifiedBy: string | undefined;
+  isDeleted?: boolean;
+  lastModifiedAt?: DateTime;
+  lastModifiedBy?: string;
 }

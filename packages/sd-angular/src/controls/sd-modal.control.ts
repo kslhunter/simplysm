@@ -66,7 +66,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
           display: block;
           margin: 0 auto;
           width: fit-content;
-          min-width: 240px;
+          min-width: 200px;
           background: var(--control-color);
           //border: 1px solid var(--theme-primary-darker);
           // border-radius:2 px;
