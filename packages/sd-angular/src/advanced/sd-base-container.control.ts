@@ -62,17 +62,9 @@ import { injectParent } from "../utils/injections/inject-parent";
               <ng-template [ngTemplateOutlet]="pageTopbarTemplateRef() ?? null" />
             </sd-topbar>
 
-            <sd-dock-container>
-              @if (toolTemplateRef()) {
-                <sd-dock>
-                  <ng-template [ngTemplateOutlet]="toolTemplateRef() ?? null" />
-                </sd-dock>
-              }
-
-              <sd-pane sd-show-effect>
-                <ng-template [ngTemplateOutlet]="contentTemplateRef()" />
-              </sd-pane>
-            </sd-dock-container>
+            <sd-pane sd-show-effect>
+              <ng-template [ngTemplateOutlet]="contentTemplateRef()" />
+            </sd-pane>
           </sd-topbar-container>
         } @else if (currViewType() === "modal") {
           <sd-dock-container>
@@ -88,9 +80,9 @@ import { injectParent } from "../utils/injections/inject-parent";
           </sd-dock-container>
         } @else {
           <sd-dock-container>
-            @if (toolTemplateRef()) {
+            @if (controlToolTemplateRef()) {
               <sd-dock>
-                <ng-template [ngTemplateOutlet]="toolTemplateRef() ?? null" />
+                <ng-template [ngTemplateOutlet]="controlToolTemplateRef() ?? null" />
               </sd-dock>
             }
 
@@ -115,7 +107,7 @@ export class SdBaseContainerControl {
   #currPageCode = useCurrentPageCodeSignal();
 
   pageTopbarTemplateRef = contentChild("pageTopbar", { read: TemplateRef });
-  toolTemplateRef = contentChild("tool", { read: TemplateRef });
+  controlToolTemplateRef = contentChild("controlTool", { read: TemplateRef });
   contentTemplateRef = contentChild.required("content", { read: TemplateRef });
   modalBottomTemplateRef = contentChild("modalBottom", { read: TemplateRef });
 

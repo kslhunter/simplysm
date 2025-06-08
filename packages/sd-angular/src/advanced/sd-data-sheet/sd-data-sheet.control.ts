@@ -82,6 +82,7 @@ import { injectParent } from "../../utils/injections/inject-parent";
                   <sd-button type="submit" theme="info">
                     <fa-icon [icon]="icons.search" [fixedWidth]="true" />
                     조회
+                    {{ parent.currViewType() }},
                   </sd-button>
                 </sd-form-box-item>
                 @for (filterControl of filterControls(); track filterControl) {
@@ -248,8 +249,7 @@ import { injectParent } from "../../utils/injections/inject-parent";
 
       @if (parent.selectMode()) {
         <ng-template #modalBottom>
-          <sd-dock
-            position="bottom"
+          <div
             class="p-sm-default bdt bdt-trans-light flex-row flex-gap-sm"
             style="justify-content: right"
           >
@@ -262,7 +262,7 @@ import { injectParent } from "../../utils/injections/inject-parent";
                 확인({{ parent.selectedItemKeys().length }})
               </sd-button>
             }
-          </sd-dock>
+          </div>
         </ng-template>
       }
     </sd-base-container>

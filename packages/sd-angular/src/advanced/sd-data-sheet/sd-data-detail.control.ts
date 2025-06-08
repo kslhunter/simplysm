@@ -32,6 +32,8 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { $signal } from "../../utils/bindings/$signal";
 import { injectParent } from "../../utils/injections/inject-parent";
 import { ISdModal } from "../../providers/sd-modal.provider";
+import { SdTopbarMenuControl } from "../../controls/sd-topbar-menu.control";
+import { SdTopbarMenuItemControl } from "../../controls/sd-topbar-menu-item.control";
 
 @Component({
   selector: "sd-data-detail",
@@ -45,6 +47,8 @@ import { ISdModal } from "../../providers/sd-modal.provider";
     NgTemplateOutlet,
     FormatPipe,
     FaIconComponent,
+    SdTopbarMenuControl,
+    SdTopbarMenuItemControl,
   ],
   template: `
     <sd-base-container
@@ -54,21 +58,35 @@ import { ISdModal } from "../../providers/sd-modal.provider";
       [restricted]="parent.restricted?.()"
     >
       @if (!parent.readonly?.()) {
-        <ng-template #tool>
-          <div class="p-sm-lg flex-row flex-gap-sm">
-            <sd-button theme="primary" (click)="onSubmitButtonClick()">
+        <ng-template #pageTopbar>
+          <sd-topbar-menu>
+            <sd-topbar-menu-item (click)="onSubmitButtonClick()">
               <fa-icon [icon]="icons.save" [fixedWidth]="true" />
               저장
               <small>(CTRL+S)</small>
-            </sd-button>
-            @if (parent.isNew && parent.dataInfo && !parent.isNew() && parent.toggleDelete) {
-              @if (!parent.dataInfo().isDeleted) {
-                <sd-button theme="danger" (click)="parent.doToggleDelete(true)">삭제</sd-button>
-              } @else {
-                <sd-button theme="warning" (click)="parent.doToggleDelete(false)">복구</sd-button>
+            </sd-topbar-menu-item>
+          </sd-topbar-menu>
+        </ng-template>
+      }
+
+      @if (!parent.readonly?.() || toolTemplateRef() != null) {
+        <ng-template #controlTool>
+          @if (!parent.readonly?.()) {
+            <div class="p-sm-lg flex-row flex-gap-sm">
+              <sd-button theme="primary" (click)="onSubmitButtonClick()">
+                <fa-icon [icon]="icons.save" [fixedWidth]="true" />
+                저장
+                <small>(CTRL+S)</small>
+              </sd-button>
+              @if (parent.isNew && parent.dataInfo && !parent.isNew() && parent.toggleDelete) {
+                @if (!parent.dataInfo().isDeleted) {
+                  <sd-button theme="danger" (click)="parent.doToggleDelete(true)">삭제</sd-button>
+                } @else {
+                  <sd-button theme="warning" (click)="parent.doToggleDelete(false)">복구</sd-button>
+                }
               }
-            }
-          </div>
+            </div>
+          }
           @if (toolTemplateRef() != null) {
             <div class="p-sm-lg">
               <ng-template [ngTemplateOutlet]="toolTemplateRef() ?? null" />
