@@ -43,8 +43,8 @@ export class SdToastProvider {
     return this.#containerRef;
   }
 
-  async try<R>(fn: () => Promise<R>, messageFn?: (err: Error) => string): Promise<R>;
-  try<R>(fn: () => R, messageFn?: (err: Error) => string): R;
+  async try<R>(fn: () => Promise<R>, messageFn?: (err: Error) => string): Promise<R | undefined>;
+  try<R>(fn: () => R, messageFn?: (err: Error) => string): R | undefined;
   async try<R>(
     fn: () => Promise<R> | R,
     messageFn?: (err: Error) => string,

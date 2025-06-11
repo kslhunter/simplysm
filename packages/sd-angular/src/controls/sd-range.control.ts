@@ -20,6 +20,7 @@ import { SdTextfieldControl, TSdTextfieldTypes } from "./sd-textfield.control";
     <sd-textfield
       [type]="type()"
       [(value)]="to"
+      [min]="from()"
       [required]="required()"
       [disabled]="disabled()"
       [inputStyle]="inputStyle()"

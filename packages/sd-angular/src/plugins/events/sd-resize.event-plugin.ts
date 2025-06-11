@@ -30,7 +30,6 @@ export class SdResizeEventPlugin extends EventManagerPlugin {
       prevHeight = contentRect.height;
       prevWidth = contentRect.width;
 
-
       handler({
         heightChanged,
         widthChanged,
@@ -60,6 +59,7 @@ export class SdResizeEventPlugin extends EventManagerPlugin {
     resizeObserver.observe(element);
 
     return (): void => {
+      intersectionObserver.disconnect();
       resizeObserver.disconnect();
     };
   }

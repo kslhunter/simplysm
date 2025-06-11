@@ -6,6 +6,7 @@ export * from "./advanced/sd-data-sheet/sd-data-sheet-column.directive";
 export * from "./advanced/sd-data-sheet/sd-data-sheet-filter.directive";
 export * from "./advanced/sd-data-sheet/sd-data-sheet-tool.directive";
 export * from "./advanced/sd-data-sheet/sd-data-sheet.control";
+export * from "./advanced/sd-date-range-picker/sd-date-range-picker";
 export * from "./advanced/sd-permission-table.control";
 export * from "./advanced/shared-data/sd-shared-data-select-button.control";
 export * from "./advanced/shared-data/sd-shared-data-select-list.control";

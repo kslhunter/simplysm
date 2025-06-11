@@ -42,12 +42,15 @@ import { transformBoolean } from "../utils/type-tramsforms";
         [class]="inputClass()"
         [attr.title]="title() ?? placeholder()"
         [attr.placeholder]="placeholder()"
+        [attr.min]="min()"
+        [attr.max]="max()"
         [type]="controlType()"
         [attr.inputmode]="type() === 'number' ? 'numeric' : undefined"
         [value]="controlValue()"
         [attr.autocomplete]="autocomplete()"
         [attr.step]="controlStep()"
         (input)="onInput($event)"
+        (paste)="onInputPaste($event)"
       />
     }
   `,
@@ -513,11 +516,19 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
 
   onInput(event: Event) {
     const inputEl = event.target as HTMLInputElement;
+    this.#setControlValue(inputEl.value);
+  }
 
-    if (inputEl.value === "") {
+  onInputPaste(event: ClipboardEvent) {
+    const text = event.clipboardData?.getData("text/plain").trim();
+    this.#setControlValue(text ?? "");
+  }
+
+  #setControlValue(value: string): void {
+    if (value === "") {
       this.#setValue(undefined);
     } else if (this.type() === "number") {
-      const inputValue = inputEl.value.replace(/[^0-9-.]/g, "");
+      const inputValue = value.replace(/[^0-9-.]/g, "");
       if (
         Number.isNaN(Number(inputValue)) ||
         inputValue.endsWith(".") ||
@@ -530,28 +541,28 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
       const nonFormatChars = this.format()?.match(/[^X]/g)?.distinct();
       if (nonFormatChars) {
         this.#setValue(
-          inputEl.value.replace(
+          value.replace(
             new RegExp(`[${nonFormatChars.map((item) => "\\" + item).join("")}]`, "g"),
             "",
           ),
         );
       } else {
-        this.#setValue(inputEl.value);
+        this.#setValue(value);
       }
     } else if (["year", "month", "date"].includes(this.type())) {
       try {
-        this.#setValue(DateOnly.parse(inputEl.value));
+        this.#setValue(DateOnly.parse(value));
       } catch {}
     } else if (["datetime", "datetime-sec"].includes(this.type())) {
       try {
-        this.#setValue(DateTime.parse(inputEl.value));
+        this.#setValue(DateTime.parse(value));
       } catch {}
     } else if (["time", "time-sec"].includes(this.type())) {
       try {
-        this.#setValue(Time.parse(inputEl.value));
+        this.#setValue(Time.parse(value));
       } catch {}
     } else {
-      this.#setValue(inputEl.value);
+      this.#setValue(value);
     }
   }
 

@@ -78,11 +78,11 @@ import { SdTopbarMenuItemControl } from "../../controls/sd-topbar-menu-item.cont
                 저장
                 <small>(CTRL+S)</small>
               </sd-button>
-              @if (parent.isNew && parent.dataInfo && !parent.isNew() && parent.toggleDelete) {
-                @if (!parent.dataInfo().isDeleted) {
-                  <sd-button theme="danger" (click)="parent.doToggleDelete(true)">삭제</sd-button>
-                } @else {
+              @if ((!parent.isNew || !parent.isNew()) && parent.toggleDelete) {
+                @if (parent.dataInfo && parent.dataInfo().isDeleted) {
                   <sd-button theme="warning" (click)="parent.doToggleDelete(false)">복구</sd-button>
+                } @else {
+                  <sd-button theme="danger" (click)="parent.doToggleDelete(true)">삭제</sd-button>
                 }
               }
             </div>
@@ -125,15 +125,15 @@ import { SdTopbarMenuItemControl } from "../../controls/sd-topbar-menu-item.cont
       @if (!parent.readonly?.()) {
         <ng-template #modalBottom>
           <div class="p-sm-default flex-row bdt bdt-theme-grey-lightest">
-            @if (parent.isNew && parent.dataInfo && !parent.isNew() && parent.toggleDelete) {
+            @if ((!parent.isNew || !parent.isNew()) && parent.toggleDelete) {
               <div>
-                @if (!parent.dataInfo().isDeleted) {
-                  <sd-button theme="danger" inline (click)="parent.doToggleDelete(true)">
-                    삭제
-                  </sd-button>
-                } @else {
+                @if (parent.dataInfo && parent.dataInfo().isDeleted) {
                   <sd-button theme="warning" inline (click)="parent.doToggleDelete(false)">
                     복구
+                  </sd-button>
+                } @else {
+                  <sd-button theme="danger" inline (click)="parent.doToggleDelete(true)">
+                    삭제
                   </sd-button>
                 }
               </div>
@@ -213,6 +213,7 @@ export abstract class AbsSdDataDetail<T extends object | undefined, R = boolean>
       const reflected = reflectComponentType(this.constructor as any)!;
       const inputPropNames = reflected.inputs.map((item) => item.propName);
       for (const inputPropName of inputPropNames) {
+        if (inputPropName === "viewType") continue;
         this[inputPropName]();
       }
 

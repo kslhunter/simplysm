@@ -82,7 +82,6 @@ import { injectParent } from "../../utils/injections/inject-parent";
                   <sd-button type="submit" theme="info">
                     <fa-icon [icon]="icons.search" [fixedWidth]="true" />
                     조회
-                    {{ parent.currViewType() }},
                   </sd-button>
                 </sd-form-box-item>
                 @for (filterControl of filterControls(); track filterControl) {
@@ -104,10 +103,6 @@ import { injectParent } from "../../utils/injections/inject-parent";
 
           <sd-dock class="pb-xs">
             <div class="flex-row flex-gap-sm">
-              @for (toolControl of beforeToolControls(); track toolControl) {
-                <ng-template [ngTemplateOutlet]="toolControl.contentTemplateRef()" />
-              }
-
               @if (parent.editItem) {
                 @if (!parent.readonly?.()) {
                   <sd-button size="sm" theme="primary" (click)="onCreateItemButtonClick()">
@@ -116,6 +111,10 @@ import { injectParent } from "../../utils/injections/inject-parent";
                     <small>(CTRL+INSERT)</small>
                   </sd-button>
                 }
+              }
+
+              @for (toolControl of beforeToolControls(); track toolControl) {
+                <ng-template [ngTemplateOutlet]="toolControl.contentTemplateRef()" />
               }
 
               @if (!parent.selectMode()) {
@@ -416,6 +415,7 @@ export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K>
       const reflected = reflectComponentType(this.constructor as any)!;
       const inputPropNames = reflected.inputs.map((item) => item.propName);
       for (const inputPropName of inputPropNames) {
+        if (["viewType", "selectMode, selectedItemKeys"].includes(inputPropName)) continue;
         this[inputPropName]();
       }
 

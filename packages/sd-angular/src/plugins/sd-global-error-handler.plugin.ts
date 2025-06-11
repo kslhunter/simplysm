@@ -64,7 +64,12 @@ export class SdGlobalErrorHandlerPlugin implements ErrorHandler {
       }
     } catch (err) {
       console.error(err);
+
+      const appRef = this.#envInjector.get<ApplicationRef>(ApplicationRef);
+      appRef.destroy();
     }
+
+    return false;
   }
 
   async #warning(message: string) {
@@ -73,6 +78,13 @@ export class SdGlobalErrorHandlerPlugin implements ErrorHandler {
 
   async #displayErrorMessage(title: string, param: Record<string, string>) {
     const paramLines = Object.keys(param).map((key) => key + ": " + param[key]);
+
+    await this.#systemLog.writeAsync("error", `[${title}]\n${paramLines.join("\n")}`);
+
+    const appRef = this.#envInjector.get<ApplicationRef>(ApplicationRef);
+    appRef.destroy();
+
+    // HTML 그리는 순간 appRef의 각종 이벤트가 발생하기 때문에, appRef가 destroy된 다음 수행해야함
     const htmlText = `[${title}]<br />${paramLines.join("<br />")}`;
 
     const divEl = document.createElement("div");
@@ -93,10 +105,5 @@ export class SdGlobalErrorHandlerPlugin implements ErrorHandler {
     divEl.onclick = () => {
       location.reload();
     };
-
-    await this.#systemLog.writeAsync("error", `[${title}]\n${paramLines.join("\n")}`);
-
-    const appRef = this.#envInjector.get<ApplicationRef>(ApplicationRef);
-    appRef.destroy();
   }
 }

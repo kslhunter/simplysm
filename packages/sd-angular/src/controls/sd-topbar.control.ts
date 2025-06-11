@@ -25,6 +25,19 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [SdAnchorControl, SdGapControl, FaIconComponent],
+  template: `
+    @if (hasSidebar()) {
+      <sd-anchor class="_sidebar-toggle-button" (click)="onSidebarToggleButtonClick()" sdUseRipple>
+        <fa-icon [icon]="icons.bars" [fixedWidth]="true" />
+      </sd-anchor>
+    } @else {
+      <sd-gap width="sm" />
+    }
+
+    <ng-content />
+
+    <ng-content select="sd-topbar-menu"></ng-content>
+  `,
   styles: [
     /* language=SCSS */ `
       @use "../scss/mixins";
@@ -51,9 +64,10 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 
         background: var(--control-color);
         color: var(--text-trans-default);
+        //border-bottom: 1px solid var(--border-color-light);
 
         //body.sd-theme-compact & {
-        //  border-bottom: 1px solid var(--border-color-light);
+        // border-bottom: 1px solid var(--border-color-light);
         //  @include mixins.elevation(2);
         //  animation: sd-topbar var(--animation-duration) ease-in;
         //}
@@ -118,26 +132,15 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
       }
     `,
   ],
-  template: `
-    @if (hasSidebar()) {
-      <sd-anchor class="_sidebar-toggle-button" (click)="onSidebarToggleButtonClick()" sdUseRipple>
-        <fa-icon [icon]="icons.bars" [fixedWidth]="true" />
-      </sd-anchor>
-    } @else {
-      <sd-gap width="sm" />
-    }
-
-    <ng-content />
-
-    <ng-content select="sd-topbar-menu"></ng-content>
-  `,
 })
 export class SdTopbarControl {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
 
   #elRef = injectElementRef<HTMLElement>();
   #parentSidebarContainerControl = inject(SdSidebarContainerControl, { optional: true });
-  #topbarContainerControl = inject<SdTopbarContainerControl>(forwardRef(() => SdTopbarContainerControl));
+  #topbarContainerControl = inject<SdTopbarContainerControl>(
+    forwardRef(() => SdTopbarContainerControl),
+  );
 
   sidebarContainer = input<SdSidebarContainerControl>();
 
