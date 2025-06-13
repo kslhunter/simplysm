@@ -13,7 +13,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
     </div>
     <div class="_button">
       <ng-content select="sd-anchor" />
-      <ng-content select="sd-button" />      
+      <ng-content select="sd-button" />
     </div>
   `,
   styles: [

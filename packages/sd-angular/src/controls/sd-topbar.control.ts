@@ -64,7 +64,6 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 
         background: var(--control-color);
         color: var(--text-trans-default);
-        //border-bottom: 1px solid var(--border-color-light);
 
         //body.sd-theme-compact & {
         // border-bottom: 1px solid var(--border-color-light);

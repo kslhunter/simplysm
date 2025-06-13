@@ -1,7 +1,7 @@
 import { Signal } from "@angular/core";
 import { html, NumberUtils } from "@simplysm/sd-core-common";
-import { $effect } from "../../../utils/bindings/$effect";
 import { SdSheetDomAccessor } from "./sd-sheet-dom-accessor";
+import { $afterRenderEffect } from "../../../utils/bindings/$afterRenderEffect";
 
 export class SdSheetSelectRowIndicatorRenderer<T> {
   constructor(
@@ -11,7 +11,7 @@ export class SdSheetSelectRowIndicatorRenderer<T> {
       displayItems: Signal<T[]>;
     },
   ) {
-    $effect(() => {
+    $afterRenderEffect(() => {
       const selectRowIndicatorContainerEl =
         this._options.domAccessor.getSelectRowIndicatorContainer();
 

@@ -253,7 +253,9 @@ export abstract class AbsSdDataDetail<T extends object | undefined, R = boolean>
 
   async refresh() {
     this.data.set(await this.load());
-    $obj(this.data).snapshot();
+    if (!this.isNew || !this.isNew()) {
+      $obj(this.data).snapshot();
+    }
   }
 
   async doToggleDelete(del: boolean) {

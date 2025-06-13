@@ -75,31 +75,33 @@ import { injectParent } from "../../utils/injections/inject-parent";
     >
       <ng-template #content>
         <sd-dock-container class="p-lg">
-          <sd-dock class="pb-lg">
-            <sd-form (submit)="onFilterSubmit()">
-              <sd-form-box layout="inline">
-                <sd-form-box-item>
-                  <sd-button type="submit" theme="info">
-                    <fa-icon [icon]="icons.search" [fixedWidth]="true" />
-                    조회
-                  </sd-button>
-                </sd-form-box-item>
-                @for (filterControl of filterControls(); track filterControl) {
-                  <sd-form-box-item
-                    [label]="filterControl.label()"
-                    [labelTooltip]="filterControl.labelTooltip()"
-                  >
-                    @if (filterControl.labelTemplateRef()) {
-                      <ng-template #label>
-                        <ng-template [ngTemplateOutlet]="filterControl.labelTemplateRef()!" />
-                      </ng-template>
-                    }
-                    <ng-template [ngTemplateOutlet]="filterControl.contentTemplateRef()" />
+          @if (filterControls().length > 0) {
+            <sd-dock class="pb-lg">
+              <sd-form (submit)="onFilterSubmit()">
+                <sd-form-box layout="inline">
+                  <sd-form-box-item>
+                    <sd-button type="submit" theme="info">
+                      <fa-icon [icon]="icons.search" [fixedWidth]="true" />
+                      조회
+                    </sd-button>
                   </sd-form-box-item>
-                }
-              </sd-form-box>
-            </sd-form>
-          </sd-dock>
+                  @for (filterControl of filterControls(); track filterControl) {
+                    <sd-form-box-item
+                      [label]="filterControl.label()"
+                      [labelTooltip]="filterControl.labelTooltip()"
+                    >
+                      @if (filterControl.labelTemplateRef()) {
+                        <ng-template #label>
+                          <ng-template [ngTemplateOutlet]="filterControl.labelTemplateRef()!" />
+                        </ng-template>
+                      }
+                      <ng-template [ngTemplateOutlet]="filterControl.contentTemplateRef()" />
+                    </sd-form-box-item>
+                  }
+                </sd-form-box>
+              </sd-form>
+            </sd-dock>
+          }
 
           <sd-dock class="pb-xs">
             <div class="flex-row flex-gap-sm">
