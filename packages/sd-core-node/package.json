@@ -14,11 +14,11 @@
   "types": "./dist/index.d.ts",
   "dependencies": {
     "@simplysm/sd-core-common": "12.11.27",
-    "glob": "^11.0.2",
+    "glob": "^11.0.3",
     "watcher": "^2.3.1"
   },
   "devDependencies": {
     "@types/glob": "^8.1.0",
-    "tsx": "^4.19.4"
+    "tsx": "^4.20.3"
   }
 }
