@@ -183,7 +183,7 @@ export abstract class AbsSdDataSelectButton<
 }
 
 export interface ISdSelectModal extends ISdModal<ISelectModalOutputResult> {
-  selectMode: InputSignal<"single" | "multi" | undefined>;
+  selectMode: InputSignal<"single" | "multi" | "none" | undefined>;
   selectedItemKeys: InputSignal<any[]>;
 }
 

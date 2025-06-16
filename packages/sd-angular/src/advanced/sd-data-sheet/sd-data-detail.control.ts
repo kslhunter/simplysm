@@ -9,7 +9,6 @@ import {
   inject,
   input,
   output,
-  reflectComponentType,
   Signal,
   TemplateRef,
   viewChild,
@@ -34,6 +33,9 @@ import { injectParent } from "../../utils/injections/inject-parent";
 import { ISdModal } from "../../providers/sd-modal.provider";
 import { SdTopbarMenuControl } from "../../controls/sd-topbar-menu.control";
 import { SdTopbarMenuItemControl } from "../../controls/sd-topbar-menu-item.control";
+import { SdDockContainerControl } from "../../controls/sd-dock-container.control";
+import { SdDockControl } from "../../controls/sd-dock.control";
+import { SdPaneControl } from "../../controls/sd-pane.control";
 
 @Component({
   selector: "sd-data-detail",
@@ -49,6 +51,9 @@ import { SdTopbarMenuItemControl } from "../../controls/sd-topbar-menu-item.cont
     FaIconComponent,
     SdTopbarMenuControl,
     SdTopbarMenuItemControl,
+    SdDockContainerControl,
+    SdDockControl,
+    SdPaneControl,
   ],
   template: `
     <sd-base-container
@@ -80,9 +85,15 @@ import { SdTopbarMenuItemControl } from "../../controls/sd-topbar-menu-item.cont
               </sd-button>
               @if ((!parent.isNew || !parent.isNew()) && parent.toggleDelete) {
                 @if (parent.dataInfo && parent.dataInfo().isDeleted) {
-                  <sd-button theme="warning" (click)="parent.doToggleDelete(false)">복구</sd-button>
+                  <sd-button theme="warning" (click)="parent.doToggleDelete(false)">
+                    <fa-icon [icon]="icons.redo" [fixedWidth]="true" />
+                    복구
+                  </sd-button>
                 } @else {
-                  <sd-button theme="danger" (click)="parent.doToggleDelete(true)">삭제</sd-button>
+                  <sd-button theme="danger" (click)="parent.doToggleDelete(true)">
+                    <fa-icon [icon]="icons.eraser" [fixedWidth]="true" />
+                    삭제
+                  </sd-button>
                 }
               }
             </div>
@@ -96,30 +107,30 @@ import { SdTopbarMenuItemControl } from "../../controls/sd-topbar-menu-item.cont
       }
 
       <ng-template #content>
-        @if (prevTemplateRef() != null) {
-          <div class="p-lg">
-            <ng-template [ngTemplateOutlet]="prevTemplateRef() ?? null" />
-          </div>
-        }
-        <div class="p-lg">
-          <sd-form #formCtrl (submit)="onSubmit()">
-            <ng-template [ngTemplateOutlet]="contentTemplateRef()" />
-          </sd-form>
-        </div>
-        @if (
-          parent.dataInfo && (parent.dataInfo().lastModifiedAt || parent.dataInfo().lastModifiedBy)
-        ) {
-          <div class="bg-theme-grey-lightest p-sm-default">
-            최종수정:
-            {{ parent.dataInfo().lastModifiedAt! | format: "yyyy-MM-dd HH:mm" }}
-            ({{ parent.dataInfo().lastModifiedBy }})
-          </div>
-        }
-        @if (nextTemplateRef() != null) {
-          <div class="p-lg">
-            <ng-template [ngTemplateOutlet]="nextTemplateRef() ?? null" />
-          </div>
-        }
+        <sd-dock-container style="min-width: 20em">
+          @if (prevTemplateRef() != null) {
+            <sd-dock class="p-lg">
+              <ng-template [ngTemplateOutlet]="prevTemplateRef() ?? null" />
+            </sd-dock>
+          }
+          <sd-pane class="p-lg">
+            <sd-form #formCtrl (submit)="onSubmit()">
+              <ng-template [ngTemplateOutlet]="contentTemplateRef()" />
+            </sd-form>
+          </sd-pane>
+          @if (parent.dataInfo && (parent.dataInfo().lastModifiedAt || parent.dataInfo().lastModifiedBy)) {
+            <sd-dock position="bottom" class="bg-theme-grey-lightest p-sm-default">
+              최종수정:
+              {{ parent.dataInfo().lastModifiedAt! | format: "yyyy-MM-dd HH:mm" }}
+              ({{ parent.dataInfo().lastModifiedBy }})
+            </sd-dock>
+          }
+          @if (nextTemplateRef() != null) {
+            <sd-dock position="bottom" class="p-lg">
+              <ng-template [ngTemplateOutlet]="nextTemplateRef() ?? null" />
+            </sd-dock>
+          }
+        </sd-dock-container>
       </ng-template>
 
       @if (!parent.readonly?.()) {
@@ -128,13 +139,9 @@ import { SdTopbarMenuItemControl } from "../../controls/sd-topbar-menu-item.cont
             @if ((!parent.isNew || !parent.isNew()) && parent.toggleDelete) {
               <div>
                 @if (parent.dataInfo && parent.dataInfo().isDeleted) {
-                  <sd-button theme="warning" inline (click)="parent.doToggleDelete(false)">
-                    복구
-                  </sd-button>
+                  <sd-button theme="warning" inline (click)="parent.doToggleDelete(false)">복구</sd-button>
                 } @else {
-                  <sd-button theme="danger" inline (click)="parent.doToggleDelete(true)">
-                    삭제
-                  </sd-button>
+                  <sd-button theme="danger" inline (click)="parent.doToggleDelete(true)">삭제</sd-button>
                 }
               </div>
             }
@@ -178,15 +185,15 @@ export class SdDataDetailControl {
 }
 
 @Directive()
-export abstract class AbsSdDataDetail<T extends object | undefined, R = boolean>
-  implements ISdModal<R>
-{
+export abstract class AbsSdDataDetail<T extends object | undefined, R = boolean> implements ISdModal<R> {
   //-- abstract
 
   restricted?: Signal<boolean>; // computed (use권한)
   readonly?: Signal<boolean>; // computed (edit권한)
   isNew?: Signal<boolean>; // computed
   dataInfo?: Signal<ISdDataDetailDataInfo>; // computed
+
+  prepareRefreshEffect?(): void;
 
   abstract load(): Promise<T> | T;
 
@@ -210,12 +217,13 @@ export abstract class AbsSdDataDetail<T extends object | undefined, R = boolean>
 
   constructor() {
     effect(() => {
-      const reflected = reflectComponentType(this.constructor as any)!;
+      this.prepareRefreshEffect?.();
+      /*const reflected = reflectComponentType(this.constructor as any)!;
       const inputPropNames = reflected.inputs.map((item) => item.propName);
       for (const inputPropName of inputPropNames) {
         if (inputPropName === "viewType") continue;
         this[inputPropName]();
-      }
+      }*/
 
       queueMicrotask(async () => {
         if (this.restricted?.()) {
@@ -272,9 +280,7 @@ export abstract class AbsSdDataDetail<T extends object | undefined, R = boolean>
 
         this.close.emit(result);
       },
-      () => {
-        return "삭제할 수 없습니다. 연동된 작업이 있는지 확인하세요.";
-      },
+      (err) => this.#getOrmDataEditToastErrorMessage(err),
     );
     this.busyCount.update((v) => v - 1);
   }
@@ -290,18 +296,32 @@ export abstract class AbsSdDataDetail<T extends object | undefined, R = boolean>
     }
 
     this.busyCount.update((v) => v + 1);
-    await this.#sdToast.try(async () => {
-      const result = await this.submit!();
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition,@typescript-eslint/strict-boolean-expressions
-      if (!result) return;
+    await this.#sdToast.try(
+      async () => {
+        const result = await this.submit!();
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition,@typescript-eslint/strict-boolean-expressions
+        if (!result) return;
 
-      this.#sdToast.success("저장되었습니다.");
+        this.#sdToast.success("저장되었습니다.");
 
-      this.close.emit(result);
+        this.close.emit(result);
 
-      await this.refresh();
-    });
+        await this.refresh();
+      },
+      (err) => this.#getOrmDataEditToastErrorMessage(err),
+    );
     this.busyCount.update((v) => v - 1);
+  }
+
+  #getOrmDataEditToastErrorMessage(err: Error) {
+    if (
+      err.message.includes("a parent row: a foreign key constraint") ||
+      err.message.includes("conflicted with the REFERENCE")
+    ) {
+      return "경고! 연결된 작업에 의한 처리 거부. 후속작업 확인 요망";
+    } else {
+      return err.message;
+    }
   }
 }
 

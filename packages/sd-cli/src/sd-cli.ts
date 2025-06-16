@@ -14,7 +14,7 @@ if (path.extname(cliPath) === ".ts") {
   // .ts 바로실행 (개발)
 
   // 현재 프로세스에 affinity 적용
-  configureProcessorAffinity(process.pid);
+  configureProcessorAffinityAndPriority(process.pid);
 
   await import(cliPath);
 } else {
@@ -35,6 +35,9 @@ if (path.extname(cliPath) === ".ts") {
     [
       "--import=specifier-resolution-node/register",
       "--max-old-space-size=8192",
+      "--initial-old-space-size=2048",
+      "--max-semi-space-size=128",
+      "--stack-size=8192",
       fileURLToPath(cliPath),
       ...process.argv.slice(2),
     ],
@@ -44,36 +47,60 @@ if (path.extname(cliPath) === ".ts") {
   // 실행된 프로세스에 Affinity 적용
   child.on("spawn", () => {
     if (child.pid == null) return;
-    configureProcessorAffinity(child.pid);
+    configureProcessorAffinityAndPriority(child.pid);
   });
 }
 
-function configureProcessorAffinity(pid: number) {
-  // 논리 CPU 수 기반 affinity mask 계산 (전체 - 1)
+function configureProcessorAffinityAndPriority(pid: number) {
   const cpuCount = os.cpus().length;
   const affinityMask = calculateAffinityMask(cpuCount);
 
-  const command = `powershell -Command "$p = Get-Process -Id ${pid}; $p.ProcessorAffinity = ${affinityMask}"`;
+  const commands = [
+    `$p = Get-Process -Id ${pid}`,
+    `$p.ProcessorAffinity = ${affinityMask}`,
+    `$p.PriorityClass = 'BelowNormal'`,
+  ].join("; ");
+
+  const command = `powershell -Command "${commands}"`;
 
   exec(command, (err) => {
     if (err) {
-      console.error("Affinity 설정 실패:", err.message);
+      console.error("Affinity 또는 우선순위 설정 실패:", err.message);
     }
   });
 }
 
-// ProcessorAffinity 마스크 계산
+// ProcessorAffinity 마스크 계산 (앞 코어 빼기)
 function calculateAffinityMask(cpuCount: number): string {
-  const exclude = cpuCount <= 1 ? 0 : Math.ceil(cpuCount / 12); // 12개당 1개씩 뺌
-  const usable = cpuCount - exclude;
+  const exclude = cpuCount <= 1 ? 0 : Math.ceil(cpuCount / 4); // 예: 4개당 1개 제외
+  const usableStart = exclude;
+  const usableEnd = cpuCount;
 
-  if (usable <= 0) {
+  if (usableEnd - usableStart <= 0) {
     throw new Error(`CPU 사용 가능 개수가 0 이하입니다 (총: ${cpuCount}, 제외: ${exclude})`);
   }
 
-  const maskValue = (1 << usable) - 1;
-  return "0x" + maskValue.toString(16).toUpperCase();
+  let mask = 0n;
+
+  for (let i = usableStart; i < usableEnd; i++) {
+    mask |= 1n << BigInt(i);
+  }
+
+  return "0x" + mask.toString(16).toUpperCase();
 }
+
+// ProcessorAffinity 마스크 계산 (뒤 코어 빼기)
+// function calculateAffinityMask(cpuCount: number): string {
+//   const exclude = cpuCount <= 1 ? 0 : Math.ceil(cpuCount / 8); // 8개당 1개씩 뺌
+//   const usable = cpuCount - exclude;
+//
+//   if (usable <= 0) {
+//     throw new Error(`CPU 사용 가능 개수가 0 이하입니다 (총: ${cpuCount}, 제외: ${exclude})`);
+//   }
+//
+//   const maskValue = (1 << usable) - 1;
+//   return "0x" + maskValue.toString(16).toUpperCase();
+// }
 
 async function spawnWaitAsync(command: string, args: string[]) {
   await new Promise<void>((resolve) => {

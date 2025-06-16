@@ -2,6 +2,7 @@ import { NgTemplateOutlet } from "@angular/common";
 import {
   ChangeDetectionStrategy,
   Component,
+  contentChild,
   contentChildren,
   Directive,
   effect,
@@ -9,10 +10,9 @@ import {
   inject,
   input,
   model,
-  OnInit,
   output,
-  reflectComponentType,
   Signal,
+  TemplateRef,
   ViewEncapsulation,
 } from "@angular/core";
 import { ObjectUtils } from "@simplysm/sd-core-common";
@@ -86,10 +86,7 @@ import { injectParent } from "../../utils/injections/inject-parent";
                     </sd-button>
                   </sd-form-box-item>
                   @for (filterControl of filterControls(); track filterControl) {
-                    <sd-form-box-item
-                      [label]="filterControl.label()"
-                      [labelTooltip]="filterControl.labelTooltip()"
-                    >
+                    <sd-form-box-item [label]="filterControl.label()" [labelTooltip]="filterControl.labelTooltip()">
                       @if (filterControl.labelTemplateRef()) {
                         <ng-template #label>
                           <ng-template [ngTemplateOutlet]="filterControl.labelTemplateRef()!" />
@@ -119,7 +116,7 @@ import { injectParent } from "../../utils/injections/inject-parent";
                 <ng-template [ngTemplateOutlet]="toolControl.contentTemplateRef()" />
               }
 
-              @if (!parent.selectMode()) {
+              @if (!parent.realSelectMode() && !parent.readonly?.()) {
                 @if (parent.toggleDeleteItems) {
                   <sd-button
                     size="sm"
@@ -131,13 +128,9 @@ import { injectParent } from "../../utils/injections/inject-parent";
                     선택 {{ deleteText() }}
                   </sd-button>
                   @if (parent.isSelectedItemsHasDeleted()) {
-                    <sd-button
-                      size="sm"
-                      theme="link-warning"
-                      (click)="onToggleDeleteItemsButtonClick(false)"
-                    >
+                    <sd-button size="sm" theme="link-warning" (click)="onToggleDeleteItemsButtonClick(false)">
                       <fa-icon [icon]="icons.redo" [fixedWidth]="true" />
-                      선택 복구
+                      선택 {{ restoreText() }}
                     </sd-button>
                   }
                 }
@@ -170,8 +163,8 @@ import { injectParent } from "../../utils/injections/inject-parent";
               [(currentPage)]="parent.page"
               [totalPageCount]="parent.pageLength()"
               [(sorts)]="parent.sortingDefs"
-              [selectMode]="(parent.selectMode() ?? parent.toggleDeleteItems) ? 'multi' : undefined"
-              [autoSelect]="parent.selectMode() === 'single' ? 'click' : undefined"
+              [selectMode]="parent.realSelectMode()"
+              [autoSelect]="parent.realSelectMode() === 'single' ? 'click' : undefined"
               [(selectedItems)]="parent.selectedItems"
               [trackByFn]="parent.trackByFn"
               [getItemCellStyleFn]="parent.getItemCellStyleFn"
@@ -200,18 +193,9 @@ import { injectParent } from "../../utils/injections/inject-parent";
                     </ng-template>
                   }
 
-                  <ng-template
-                    [cell]="parent.items()"
-                    let-item
-                    let-index="index"
-                    let-depth="depth"
-                    let-edit="edit"
-                  >
+                  <ng-template [cell]="parent.items()" let-item let-index="index" let-depth="depth" let-edit="edit">
                     @if (parent.editItem && columnControl.edit() && !parent.readonly?.()) {
-                      <sd-anchor
-                        class="flex-row"
-                        (click)="onEditItemButtonClick(item, index, $event)"
-                      >
+                      <sd-anchor class="flex-row" (click)="onEditItemButtonClick(item, index, $event)">
                         <div class="p-xs-sm pr-0">
                           <fa-icon [icon]="icons.edit" [fixedWidth]="true" />
                         </div>
@@ -248,17 +232,18 @@ import { injectParent } from "../../utils/injections/inject-parent";
         </sd-dock-container>
       </ng-template>
 
-      @if (parent.selectMode()) {
+      @if (parent.realSelectMode()) {
         <ng-template #modalBottom>
-          <div
-            class="p-sm-default bdt bdt-trans-light flex-row flex-gap-sm"
-            style="justify-content: right"
-          >
+          <div class="p-sm-default bdt bdt-trans-light flex-row flex-gap-sm" style="justify-content: right">
+            @if (modalBottomTemplate()) {
+              <ng-template [ngTemplateOutlet]="modalBottomTemplate()!" />
+            }
+
             <sd-button theme="danger" inline (click)="onCancelButtonClick()">
-              {{ parent.selectMode() === "multi" ? "모두" : "선택" }}
+              {{ parent.realSelectMode() === "multi" ? "모두" : "선택" }}
               해제
             </sd-button>
-            @if (parent.selectMode() === "multi") {
+            @if (parent.realSelectMode() === "multi") {
               <sd-button theme="primary" inline (click)="onConfirmButtonClick()">
                 확인({{ parent.selectedItemKeys().length }})
               </sd-button>
@@ -276,10 +261,13 @@ export class SdDataSheetControl {
 
   insertText = input("등록");
   deleteText = input("삭제");
+  restoreText = input("복구");
 
   filterControls = contentChildren(SdDataSheetFilterDirective);
   toolControls = contentChildren(SdDataSheetToolDirective);
   columnControls = contentChildren(SdDataSheetColumnDirective<any>);
+
+  modalBottomTemplate = contentChild("modalBottom", { read: TemplateRef });
 
   beforeToolControls = $computed(() => this.toolControls().filter((item) => item.prepend()));
   afterToolControls = $computed(() => this.toolControls().filter((item) => !item.prepend()));
@@ -332,18 +320,20 @@ export class SdDataSheetControl {
 }
 
 @Directive()
-export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K>
-  implements ISdSelectModal, OnInit
-{
+export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K> implements ISdSelectModal {
   //-- abstract
 
   restricted?: Signal<boolean>; // computed (use권한)
   readonly?: Signal<boolean>; // computed (edit권한)
   abstract key: string;
 
-  initFilter?(): F;
+  defaultSelectMode?: "single" | "multi" | "none";
+
+  bindFilter?(): F;
 
   abstract getItemInfo(item: I): ISdDataSheetItemInfo<K>;
+
+  prepareRefreshEffect?(): void;
 
   abstract search(param: TSdDataSheetSearchParam<F>): Promise<ISdDataSheetSearchResult<I>>;
 
@@ -367,7 +357,7 @@ export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K>
   busyCount = $signal(0);
   initialized = $signal(false);
   close = output<ISelectModalOutputResult>();
-  selectMode = input<"single" | "multi">();
+  selectMode = input<"single" | "multi" | "none">();
   selectedItemKeys = model<K[]>([]);
 
   items = $signal<I[]>([]);
@@ -381,45 +371,50 @@ export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K>
   pageLength = $signal(0);
   sortingDefs = $signal<ISdSortingDef[]>([]);
 
+  realSelectMode = $computed(() =>
+    this.selectMode() ? this.selectMode() : this.toggleDeleteItems ? "multi" : this.defaultSelectMode,
+  );
+
   //-- search
 
   filter = $signal<F>({} as F);
   lastFilter = $signal<F>({} as F);
 
-  ngOnInit() {
-    if (this.initFilter) {
-      const filter = this.initFilter();
-      this.filter.set(filter);
-      this.lastFilter.set(ObjectUtils.clone(this.filter()));
-    }
-  }
-
   constructor() {
     setupCumulateSelectedKeys({
       items: this.items,
-      selectMode: this.selectMode,
+      selectMode: this.realSelectMode,
       selectedItems: this.selectedItems,
       selectedItemKeys: this.selectedItemKeys,
       keySelectorFn: (item) => this.trackByFn(item),
     });
 
     setupCloserWhenSingleSelectionChange({
-      selectMode: this.selectMode,
+      selectMode: this.realSelectMode,
       selectedItemKeys: this.selectedItemKeys,
       close: this.close,
+    });
+
+    effect(() => {
+      if (this.bindFilter) {
+        const filter = this.bindFilter();
+        this.filter.set(filter);
+        this.lastFilter.set(ObjectUtils.clone(filter));
+      }
     });
 
     effect(() => {
       this.page();
       this.lastFilter();
       this.sortingDefs();
+      this.prepareRefreshEffect?.();
 
-      const reflected = reflectComponentType(this.constructor as any)!;
-      const inputPropNames = reflected.inputs.map((item) => item.propName);
-      for (const inputPropName of inputPropNames) {
-        if (["viewType", "selectMode, selectedItemKeys"].includes(inputPropName)) continue;
-        this[inputPropName]();
-      }
+      // const reflected = reflectComponentType(this.constructor as any)!;
+      // const inputPropNames = reflected.inputs.map((item) => item.propName);
+      // for (const inputPropName of inputPropNames) {
+      //   if (["viewType", "selectMode, selectedItemKeys"].includes(inputPropName)) continue;
+      //   this[inputPropName]();
+      // }
 
       queueMicrotask(async () => {
         if (this.restricted?.()) {
@@ -463,9 +458,7 @@ export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K>
 
     this.selectedItems.set(
       this.items().filter((item) =>
-        this.selectedItems().some(
-          (sel) => this.getItemInfo(sel).key === this.getItemInfo(item).key,
-        ),
+        this.selectedItems().some((sel) => this.getItemInfo(sel).key === this.getItemInfo(item).key),
       ),
     );
   }
@@ -487,15 +480,12 @@ export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K>
 
   //-- delete
 
-  isSelectedItemsHasDeleted = $computed(() =>
-    this.selectedItems().some((item) => this.getItemInfo(item).isDeleted),
-  );
+  isSelectedItemsHasDeleted = $computed(() => this.selectedItems().some((item) => this.getItemInfo(item).isDeleted));
   isSelectedItemsHasNotDeleted = $computed(() =>
     this.selectedItems().some((item) => !this.getItemInfo(item).isDeleted),
   );
 
-  getItemCellStyleFn = (item: I) =>
-    this.getItemInfo(item).isDeleted ? "text-decoration: line-through;" : undefined;
+  getItemCellStyleFn = (item: I) => (this.getItemInfo(item).isDeleted ? "text-decoration: line-through;" : undefined);
 
   async doToggleDeleteItems(del: boolean) {
     if (!this.toggleDeleteItems) return;
@@ -503,14 +493,17 @@ export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K>
 
     this.busyCount.update((v) => v + 1);
 
-    await this.#sdToast.try(async () => {
-      const result = await this.toggleDeleteItems!(this.selectedItems(), del);
-      if (!result) return;
+    await this.#sdToast.try(
+      async () => {
+        const result = await this.toggleDeleteItems!(this.selectedItems(), del);
+        if (!result) return;
 
-      await this.refresh();
+        await this.refresh();
 
-      this.#sdToast.success(`${del ? "삭제" : "복구"} 되었습니다.`);
-    });
+        this.#sdToast.success(`${del ? "삭제" : "복구"} 되었습니다.`);
+      },
+      (err) => this.#getOrmDataEditToastErrorMessage(err),
+    );
     this.busyCount.update((v) => v - 1);
   }
 
@@ -545,13 +538,16 @@ export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K>
 
     this.busyCount.update((v) => v + 1);
 
-    await this.#sdToast.try(async () => {
-      await this.uploadExcel!(file);
+    await this.#sdToast.try(
+      async () => {
+        await this.uploadExcel!(file);
 
-      await this.refresh();
+        await this.refresh();
 
-      this.#sdToast.success("엑셀 업로드가 완료 되었습니다.");
-    });
+        this.#sdToast.success("엑셀 업로드가 완료 되었습니다.");
+      },
+      (err) => this.#getOrmDataEditToastErrorMessage(err),
+    );
     this.busyCount.update((v) => v - 1);
   }
 
@@ -561,6 +557,17 @@ export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K>
 
   doModalCancel() {
     this.close.emit({ selectedItemKeys: [] });
+  }
+
+  #getOrmDataEditToastErrorMessage(err: Error) {
+    if (
+      err.message.includes("a parent row: a foreign key constraint") ||
+      err.message.includes("conflicted with the REFERENCE")
+    ) {
+      return "경고! 연결된 작업에 의한 처리 거부. 후속작업 확인 요망";
+    } else {
+      return err.message;
+    }
   }
 }
 

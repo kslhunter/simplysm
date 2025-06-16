@@ -68,8 +68,8 @@ export abstract class SdAppStructureUtils {
       // 권한이라는것이 아얘 존재하지 않거나
       else if (
         fullCodes.every((fullCode) => {
-          const item = this.#getItemChainByFullCode(items, fullCode).last()!;
-          return !("perms" in item);
+          const item = this.#getItemChainByFullCode(items, fullCode).last();
+          return !item || !("perms" in item);
         })
       ) {
         result.push(permKey);

@@ -488,7 +488,7 @@ export class Queryable<D extends DbContext, T> {
     joinTypeOrQrs: Type<J> | Queryable<D, J>[],
     as: A,
     fwd: (qr: Queryable<D, J>, en: TEntity<T>) => Queryable<D, R>,
-  ): Queryable<D, T & { [K in A]: Partial<R> }> {
+  ): Queryable<D, T & { [K in A]?: R }> {
     const realAs = this.#as !== undefined ? this.#as + "." + as : as;
 
     if (this.#def.join?.some((item) => item.as === this.db.qb.wrap(`TBL.${realAs}`))) {
@@ -504,7 +504,7 @@ export class Queryable<D extends DbContext, T> {
     const joinQueryable = fwd(joinTableQueryable, this.#entity);
     const joinEntity = this.#getParentEntity(joinQueryable.#entity, realAs, undefined);
 
-    const entity = { ...this.#entity } as TEntity<T & { [K in A]: Partial<R> }>;
+    const entity = { ...this.#entity } as TEntity<T & { [K in A]?: R }>;
     this.#setEntityChainValue(entity, as, joinEntity);
 
     const result = new Queryable(this.db, this as any, entity);

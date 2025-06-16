@@ -9,7 +9,7 @@ export class ArgumentError extends SdError {
     const argObj = typeof arg1 === "string" ? arg2 : arg1;
 
     if (argObj) {
-      super((message ?? "인수가 잘못되었습니다.") + "\n" + YAML.stringify(argObj));
+      super((message ?? "인수가 잘못되었습니다.") + "\n\n" + YAML.stringify(argObj));
     } else {
       super(message ?? "인수가 잘못되었습니다.");
     }

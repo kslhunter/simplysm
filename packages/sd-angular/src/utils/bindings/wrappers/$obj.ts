@@ -12,8 +12,8 @@ export function $obj<T extends object | undefined>(sig: Signal<T> | WritableSign
       const orgData = sig[ORIGIN_SNAPSHOT];
       return !ObjectUtils.equal(orgData, sig());
     },
-    get origin(): T {
-      return sig[ORIGIN_SNAPSHOT] ?? ObjectUtils.clone(sig());
+    get origin(): T | undefined {
+      return sig[ORIGIN_SNAPSHOT];
     },
     updateField<K extends keyof T>(key: K, val: T[K]) {
       if (!("update" in sig)) throw new Error("Readonly signal does not support remove.");
