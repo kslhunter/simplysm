@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, ViewEncapsulation } from "@angular/core";
 import { NavigationStart, Router } from "@angular/router";
-import { $signal } from "../utils/bindings/$signal";
+import { $signal } from "../../utils/bindings/$signal";
 
 
 @Component({

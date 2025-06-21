@@ -191,6 +191,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
           );
           border: none;
           justify-content: center;
+          text-align: center;
 
           &[sd-size="sm"] {
             height: calc(
@@ -215,7 +216,8 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
         }
 
         &[sd-disabled="true"] {
-          > ._indicator_rect {
+          opacity: .3;
+          /*> ._indicator_rect {
             background: var(--theme-grey-lighter);
             border: 1px solid var(--trans-light);
 
@@ -228,7 +230,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
             > ._indicator_rect {
               border-color: var(--theme-grey-default);
             }
-          }
+          }*/
         }
       }
     `,

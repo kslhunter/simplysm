@@ -11,11 +11,13 @@ import {
   input,
   model,
   output,
+  reflectComponentType,
   Signal,
   TemplateRef,
+  viewChild,
   ViewEncapsulation,
 } from "@angular/core";
-import { ObjectUtils } from "@simplysm/sd-core-common";
+import { DateTime, ObjectUtils, TArrayDiffs2Result } from "@simplysm/sd-core-common";
 import { SdAnchorControl } from "../../controls/sd-anchor.control";
 import { SdButtonControl } from "../../controls/sd-button.control";
 import { SdDockContainerControl } from "../../controls/sd-dock-container.control";
@@ -24,9 +26,9 @@ import { SdFormBoxItemControl } from "../../controls/sd-form-box-item.control";
 import { SdFormBoxControl } from "../../controls/sd-form-box.control";
 import { SdFormControl } from "../../controls/sd-form.control";
 import { SdPaneControl } from "../../controls/sd-pane.control";
-import { SdSheetColumnCellTemplateDirective } from "../../controls/sd-sheet/directives/sd-sheet-column-cell.template-directive";
-import { SdSheetColumnDirective } from "../../controls/sd-sheet/directives/sd-sheet-column.directive";
-import { SdSheetControl } from "../../controls/sd-sheet/sd-sheet.control";
+import { SdSheetColumnCellTemplateDirective } from "../../controls/sheet/directives/sd-sheet-column-cell.template-directive";
+import { SdSheetColumnDirective } from "../../controls/sheet/directives/sd-sheet-column.directive";
+import { SdSheetControl } from "../../controls/sheet/sd-sheet.control";
 import { SdFileDialogProvider } from "../../providers/sd-file-dialog.provider";
 import { SdToastProvider } from "../../providers/sd-toast.provider";
 import { $computed } from "../../utils/bindings/$computed";
@@ -44,6 +46,11 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
 import { ISdSelectModal, ISelectModalOutputResult } from "./sd-data-select-button.control";
 import { injectParent } from "../../utils/injections/inject-parent";
+import { SdRegionControl } from "../../controls/containers/sd-region";
+import { FormatPipe } from "../../pipes/format.pipe";
+import { setupCanDeactivate } from "../../utils/setups/setup-can-deactivate";
+import { $arr } from "../../utils/bindings/wrappers/$arr";
+import { TXT_CHANGE_IGNORE_CONFIRM } from "../../commons";
 
 @Component({
   selector: "sd-data-sheet",
@@ -65,6 +72,8 @@ import { injectParent } from "../../utils/injections/inject-parent";
     NgTemplateOutlet,
     SdBaseContainerControl,
     FaIconComponent,
+    SdRegionControl,
+    FormatPipe,
   ],
   template: `
     <sd-base-container
@@ -74,161 +83,224 @@ import { injectParent } from "../../utils/injections/inject-parent";
       [restricted]="parent.restricted?.()"
     >
       <ng-template #content>
-        <sd-dock-container class="p-lg">
+        <sd-dock-container>
           @if (filterControls().length > 0) {
-            <sd-dock class="pb-lg">
-              <sd-form (submit)="onFilterSubmit()">
-                <sd-form-box layout="inline">
-                  <sd-form-box-item>
-                    <sd-button type="submit" theme="info">
-                      <fa-icon [icon]="icons.search" [fixedWidth]="true" />
-                      조회
-                    </sd-button>
-                  </sd-form-box-item>
-                  @for (filterControl of filterControls(); track filterControl) {
-                    <sd-form-box-item [label]="filterControl.label()" [labelTooltip]="filterControl.labelTooltip()">
-                      @if (filterControl.labelTemplateRef()) {
-                        <ng-template #label>
-                          <ng-template [ngTemplateOutlet]="filterControl.labelTemplateRef()!" />
-                        </ng-template>
-                      }
-                      <ng-template [ngTemplateOutlet]="filterControl.contentTemplateRef()" />
+            <sd-dock>
+              <sd-region>
+                <sd-form (submit)="onFilterSubmit()">
+                  <sd-form-box layout="inline" class="p-default">
+                    <sd-form-box-item>
+                      <sd-button type="submit" theme="info">
+                        <fa-icon [icon]="icons.search" [fixedWidth]="true" />
+                        조회
+                      </sd-button>
                     </sd-form-box-item>
-                  }
-                </sd-form-box>
-              </sd-form>
+                    @for (filterControl of filterControls(); track filterControl) {
+                      <sd-form-box-item [label]="filterControl.label()" [labelTooltip]="filterControl.labelTooltip()">
+                        @if (filterControl.labelTemplateRef()) {
+                          <ng-template #label>
+                            <ng-template [ngTemplateOutlet]="filterControl.labelTemplateRef()!" />
+                          </ng-template>
+                        }
+                        <ng-template [ngTemplateOutlet]="filterControl.contentTemplateRef()" />
+                      </sd-form-box-item>
+                    }
+                  </sd-form-box>
+                </sd-form>
+              </sd-region>
             </sd-dock>
           }
 
-          <sd-dock class="pb-xs">
-            <div class="flex-row flex-gap-sm">
-              @if (parent.editItem) {
-                @if (!parent.readonly?.()) {
-                  <sd-button size="sm" theme="primary" (click)="onCreateItemButtonClick()">
-                    <fa-icon [icon]="icons.add" [fixedWidth]="true" />
-                    {{ insertText() }}
-                    <small>(CTRL+INSERT)</small>
-                  </sd-button>
-                }
-              }
-
-              @for (toolControl of beforeToolControls(); track toolControl) {
-                <ng-template [ngTemplateOutlet]="toolControl.contentTemplateRef()" />
-              }
-
-              @if (!parent.realSelectMode() && !parent.readonly?.()) {
-                @if (parent.toggleDeleteItems) {
-                  <sd-button
-                    size="sm"
-                    theme="link-danger"
-                    (click)="onToggleDeleteItemsButtonClick(true)"
-                    [disabled]="!parent.isSelectedItemsHasNotDeleted()"
-                  >
-                    <fa-icon [icon]="icons.eraser" [fixedWidth]="true" />
-                    선택 {{ deleteText() }}
-                  </sd-button>
-                  @if (parent.isSelectedItemsHasDeleted()) {
-                    <sd-button size="sm" theme="link-warning" (click)="onToggleDeleteItemsButtonClick(false)">
-                      <fa-icon [icon]="icons.redo" [fixedWidth]="true" />
-                      선택 {{ restoreText() }}
-                    </sd-button>
-                  }
-                }
-
-                @if (parent.uploadExcel) {
-                  <sd-button size="sm" theme="link-success" (click)="onUploadExcelButtonClick()">
-                    <fa-icon [icon]="icons.upload" [fixedWidth]="true" />
-                    엑셀 업로드
-                  </sd-button>
-                }
-              }
-
-              @if (parent.downloadExcel) {
-                <sd-button size="sm" theme="link-success" (click)="onDownloadExcelButtonClick()">
-                  <fa-icon [icon]="icons.fileExcel" [fixedWidth]="true" />
-                  엑셀 다운로드
-                </sd-button>
-              }
-
-              @for (toolControl of afterToolControls(); track toolControl) {
-                <ng-template [ngTemplateOutlet]="toolControl.contentTemplateRef()" />
-              }
-            </div>
-          </sd-dock>
-
-          <sd-pane>
-            <sd-sheet
-              [key]="parent.key + '-sheet'"
-              [items]="parent.items()"
-              [(currentPage)]="parent.page"
-              [totalPageCount]="parent.pageLength()"
-              [(sorts)]="parent.sortingDefs"
-              [selectMode]="parent.realSelectMode()"
-              [autoSelect]="parent.realSelectMode() === 'single' ? 'click' : undefined"
-              [(selectedItems)]="parent.selectedItems"
-              [trackByFn]="parent.trackByFn"
-              [getItemCellStyleFn]="parent.getItemCellStyleFn"
-            >
-              @for (columnControl of columnControls(); track columnControl.key()) {
-                <sd-sheet-column
-                  [key]="columnControl.key()"
-                  [fixed]="columnControl.fixed()"
-                  [header]="columnControl.header()"
-                  [headerStyle]="columnControl.headerStyle()"
-                  [tooltip]="columnControl.tooltip()"
-                  [width]="columnControl.width()"
-                  [disableSorting]="columnControl.disableSorting()"
-                  [disableResizing]="columnControl.disableResizing()"
-                  [hidden]="columnControl.hidden()"
-                  [collapse]="columnControl.collapse()"
-                >
-                  @if (columnControl.headerTemplateRef()) {
-                    <ng-template #header>
-                      <ng-template [ngTemplateOutlet]="columnControl.headerTemplateRef()!" />
-                    </ng-template>
-                  }
-                  @if (columnControl.summaryTemplateRef()) {
-                    <ng-template #summary>
-                      <ng-template [ngTemplateOutlet]="columnControl.summaryTemplateRef()!" />
-                    </ng-template>
-                  }
-
-                  <ng-template [cell]="parent.items()" let-item let-index="index" let-depth="depth" let-edit="edit">
-                    @if (parent.editItem && columnControl.edit() && !parent.readonly?.()) {
-                      <sd-anchor class="flex-row" (click)="onEditItemButtonClick(item, index, $event)">
-                        <div class="p-xs-sm pr-0">
-                          <fa-icon [icon]="icons.edit" [fixedWidth]="true" />
-                        </div>
-                        <div class="flex-grow">
-                          <ng-template
-                            [ngTemplateOutlet]="columnControl.cellTemplateRef()"
-                            [ngTemplateOutletContext]="{
-                              $implicit: item,
-                              item: item,
-                              index: index,
-                              depth: depth,
-                              edit: edit,
-                            }"
-                          />
-                        </div>
-                      </sd-anchor>
-                    } @else {
-                      <ng-template
-                        [ngTemplateOutlet]="columnControl.cellTemplateRef()"
-                        [ngTemplateOutletContext]="{
-                          $implicit: item,
-                          item: item,
-                          index: index,
-                          depth: depth,
-                          edit: edit,
-                        }"
-                      />
+          <sd-form #formCtrl (submit)="onSubmit()">
+            <sd-region contentClass="p-default">
+              <sd-dock-container>
+                <sd-dock class="pb-xs">
+                  <div class="flex-row flex-gap-sm">
+                    @if (!parent.readonly?.()) {
+                      @if (parent.submit) {
+                        <sd-button type="submit" size="sm" theme="primary">
+                          <fa-icon [icon]="icons.save" [fixedWidth]="true" />
+                          저장
+                          <small>(CTRL+S)</small>
+                        </sd-button>
+                      }
+                      @if (parent.editItem) {
+                        <sd-button size="sm" theme="primary" (click)="onCreateItemButtonClick()">
+                          <fa-icon [icon]="icons.add" [fixedWidth]="true" />
+                          {{ insertText() }}
+                          <small>(CTRL+INSERT)</small>
+                        </sd-button>
+                      }
+                      @if (parent.addNewItem) {
+                        <sd-button size="sm" theme="link-warning" (click)="onAddItemButtonClick()">
+                          <fa-icon [icon]="icons.add" [fixedWidth]="true" />
+                          행 추가
+                          <small>(CTRL+INSERT)</small>
+                        </sd-button>
+                      }
                     }
-                  </ng-template>
-                </sd-sheet-column>
-              }
-            </sd-sheet>
-          </sd-pane>
+
+                    @for (toolControl of beforeToolControls(); track toolControl) {
+                      <ng-template [ngTemplateOutlet]="toolControl.contentTemplateRef()" />
+                    }
+
+                    @if (!parent.readonly?.()) {
+                      @if (!parent.selectMode() && parent.toggleDeleteItems) {
+                        <sd-button
+                          size="sm"
+                          theme="link-danger"
+                          (click)="onToggleDeleteItemsButtonClick(true)"
+                          [disabled]="!parent.isSelectedItemsHasNotDeleted()"
+                        >
+                          <fa-icon [icon]="icons.eraser" [fixedWidth]="true" />
+                          선택 {{ deleteText() }}
+                        </sd-button>
+                        @if (parent.isSelectedItemsHasDeleted()) {
+                          <sd-button size="sm" theme="link-warning" (click)="onToggleDeleteItemsButtonClick(false)">
+                            <fa-icon [icon]="icons.redo" [fixedWidth]="true" />
+                            선택 {{ restoreText() }}
+                          </sd-button>
+                        }
+                      }
+
+                      @if (parent.uploadExcel) {
+                        <sd-button size="sm" theme="link-success" (click)="onUploadExcelButtonClick()">
+                          <fa-icon [icon]="icons.upload" [fixedWidth]="true" />
+                          엑셀 업로드
+                        </sd-button>
+                      }
+                    }
+
+                    @if (parent.downloadExcel) {
+                      <sd-button size="sm" theme="link-success" (click)="onDownloadExcelButtonClick()">
+                        <fa-icon [icon]="icons.fileExcel" [fixedWidth]="true" />
+                        엑셀 다운로드
+                      </sd-button>
+                    }
+
+                    @for (toolControl of afterToolControls(); track toolControl) {
+                      <ng-template [ngTemplateOutlet]="toolControl.contentTemplateRef()" />
+                    }
+                  </div>
+                </sd-dock>
+
+                <sd-pane>
+                  <sd-sheet
+                    [key]="parent.key + '-sheet'"
+                    [items]="parent.items()"
+                    [(currentPage)]="parent.page"
+                    [totalPageCount]="parent.pageLength()"
+                    [(sorts)]="parent.sortingDefs"
+                    [selectMode]="parent.realSelectMode()"
+                    [autoSelect]="parent.realSelectMode() === 'single' ? 'click' : undefined"
+                    [(selectedItems)]="parent.selectedItems"
+                    [trackByFn]="parent.trackByFn"
+                    [getItemCellStyleFn]="parent.getItemCellStyleFn"
+                    [getItemSelectableFn]="parent.getItemSelectableFn"
+                  >
+                    @if (parent.deletedPropName && !parent.readonly?.()) {
+                      <sd-sheet-column fixed [key]="parent.deletedPropName">
+                        <ng-template #header>
+                          <div class="p-xs-sm tx-center">
+                            <fa-icon [icon]="icons.eraser" />
+                          </div>
+                        </ng-template>
+                        <ng-template [cell]="parent.items()" let-item>
+                          <div class="p-xs-sm tx-center">
+                            <sd-anchor (click)="onToggleDeleteItemButtonClick(item)" theme="danger">
+                              <fa-icon [icon]="item[parent.deletedPropName] ? icons.redo : icons.eraser" />
+                            </sd-anchor>
+                          </div>
+                        </ng-template>
+                      </sd-sheet-column>
+                    }
+
+                    @for (columnControl of columnControls(); track columnControl.key()) {
+                      <sd-sheet-column
+                        [key]="columnControl.key()"
+                        [fixed]="columnControl.fixed()"
+                        [header]="columnControl.header()"
+                        [headerStyle]="columnControl.headerStyle()"
+                        [tooltip]="columnControl.tooltip()"
+                        [width]="columnControl.width()"
+                        [disableSorting]="columnControl.disableSorting()"
+                        [disableResizing]="columnControl.disableResizing()"
+                        [hidden]="columnControl.hidden()"
+                        [collapse]="columnControl.collapse()"
+                      >
+                        @if (columnControl.headerTemplateRef()) {
+                          <ng-template #header>
+                            <ng-template [ngTemplateOutlet]="columnControl.headerTemplateRef()!" />
+                          </ng-template>
+                        }
+                        @if (columnControl.summaryTemplateRef()) {
+                          <ng-template #summary>
+                            <ng-template [ngTemplateOutlet]="columnControl.summaryTemplateRef()!" />
+                          </ng-template>
+                        }
+
+                        <ng-template
+                          [cell]="parent.items()"
+                          let-item
+                          let-index="index"
+                          let-depth="depth"
+                          let-edit="edit"
+                        >
+                          @if (parent.editItem && columnControl.edit() && !parent.readonly?.()) {
+                            <sd-anchor class="flex-row" (click)="onEditItemButtonClick(item, index, $event)">
+                              <div class="p-xs-sm pr-0">
+                                <fa-icon [icon]="icons.edit" [fixedWidth]="true" />
+                              </div>
+                              <div class="flex-grow">
+                                <ng-template
+                                  [ngTemplateOutlet]="columnControl.cellTemplateRef()"
+                                  [ngTemplateOutletContext]="{
+                                    $implicit: item,
+                                    item: item,
+                                    index: index,
+                                    depth: depth,
+                                    edit: edit,
+                                  }"
+                                />
+                              </div>
+                            </sd-anchor>
+                          } @else {
+                            <ng-template
+                              [ngTemplateOutlet]="columnControl.cellTemplateRef()"
+                              [ngTemplateOutletContext]="{
+                                $implicit: item,
+                                item: item,
+                                index: index,
+                                depth: depth,
+                                edit: edit,
+                              }"
+                            />
+                          }
+                        </ng-template>
+                      </sd-sheet-column>
+                    }
+
+                    @if (parent.getItemLastModifiedInfo) {
+                      <sd-sheet-column header="수정일시" key="lastModifiedAt">
+                        <ng-template [cell]="parent.items()" let-item>
+                          <div class="p-xs-sm tx-center">
+                            {{ item.lastModifiedAt | format: "yyyy-MM-dd HH:mm" }}
+                          </div>
+                        </ng-template>
+                      </sd-sheet-column>
+                      <sd-sheet-column header="수정자" key="lastModifiedBy">
+                        <ng-template [cell]="parent.items()" let-item>
+                          <div class="p-xs-sm tx-center">
+                            {{ item.lastModifiedBy }}
+                          </div>
+                        </ng-template>
+                      </sd-sheet-column>
+                    }
+                  </sd-sheet>
+                </sd-pane>
+              </sd-dock-container>
+            </sd-region>
+          </sd-form>
         </sd-dock-container>
       </ng-template>
 
@@ -257,7 +329,9 @@ import { injectParent } from "../../utils/injections/inject-parent";
 export class SdDataSheetControl {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
 
-  parent = injectParent();
+  parent = injectParent<AbsSdDataSheet<any, any, any>>();
+
+  formCtrl = viewChild<SdFormControl>("formCtrl");
 
   insertText = input("등록");
   deleteText = input("삭제");
@@ -298,6 +372,25 @@ export class SdDataSheetControl {
     await this.parent.doToggleDeleteItems(del);
   }
 
+  onToggleDeleteItemButtonClick(item: any) {
+    this.parent.doToggleDeleteItem(item);
+  }
+
+  @HostListener("sdSaveCommand")
+  onSubmitButtonClick() {
+    if (this.parent.busyCount() > 0) return;
+
+    this.formCtrl()?.requestSubmit();
+  }
+
+  async onSubmit() {
+    await this.parent.doSubmit();
+  }
+
+  async onAddItemButtonClick() {
+    await this.parent.doAddItem();
+  }
+
   //-- excel
 
   async onDownloadExcelButtonClick() {
@@ -310,12 +403,12 @@ export class SdDataSheetControl {
 
   //-- modal
 
-  async onConfirmButtonClick() {
-    await this.parent.doModalConfirm();
+  onConfirmButtonClick() {
+    this.parent.doModalConfirm();
   }
 
-  async onCancelButtonClick() {
-    await this.parent.doModalCancel();
+  onCancelButtonClick() {
+    this.parent.doModalCancel();
   }
 }
 
@@ -325,30 +418,41 @@ export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K> implem
 
   restricted?: Signal<boolean>; // computed (use권한)
   readonly?: Signal<boolean>; // computed (edit권한)
-  abstract key: string;
 
   defaultSelectMode?: "single" | "multi" | "none";
 
   bindFilter?(): F;
 
-  abstract getItemInfo(item: I): ISdDataSheetItemInfo<K>;
+  abstract getItemKey(item: I): K;
+
+  deletedPropName?: keyof I & string;
+
+  getItemLastModifiedInfo?(item: I): ISdDataSheetItemLastModifiedInfo;
 
   prepareRefreshEffect?(): void;
 
-  abstract search(param: TSdDataSheetSearchParam<F>): Promise<ISdDataSheetSearchResult<I>>;
+  abstract search(
+    param: ISdDataSheetSearchParam<F>,
+  ): Promise<ISdDataSheetSearchResult<I>> | ISdDataSheetSearchResult<I>;
 
-  editItem?(item?: I): Promise<boolean | undefined>;
+  editItem?(item?: I): Promise<boolean | undefined> | boolean | undefined;
 
   toggleDeleteItems?(selectedItems: I[], del: boolean): Promise<boolean>;
 
-  downloadExcel?(items: I[]): Promise<void>;
+  addNewItem?(): Promise<I> | I;
 
-  uploadExcel?(file: File): Promise<void>;
+  submit?(diffs: TArrayDiffs2Result<I>[]): Promise<boolean> | boolean;
+
+  downloadExcel?(items: I[]): Promise<void> | void;
+
+  uploadExcel?(file: File): Promise<void> | void;
 
   //-- implement
   #sdToast = inject(SdToastProvider);
   #sdSharedData = inject(SdSharedDataProvider);
   #sdFileDialog = inject(SdFileDialogProvider);
+
+  key = reflectComponentType(this.constructor as any)?.selector;
 
   #viewType = useViewTypeSignal(() => this);
   viewType = input<TSdViewType>();
@@ -365,7 +469,7 @@ export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K> implem
 
   selectedItems = $signal<I[]>([]);
 
-  trackByFn = (item: I): K => this.getItemInfo(item).key;
+  trackByFn = (item: I): K | I => this.getItemKey(item) ?? item;
 
   page = $signal(0);
   pageLength = $signal(0);
@@ -380,13 +484,15 @@ export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K> implem
   filter = $signal<F>({} as F);
   lastFilter = $signal<F>({} as F);
 
+  getItemSelectableFn = (item: I) => this.getItemKey(item) != null;
+
   constructor() {
     setupCumulateSelectedKeys({
       items: this.items,
       selectMode: this.realSelectMode,
       selectedItems: this.selectedItems,
       selectedItemKeys: this.selectedItemKeys,
-      keySelectorFn: (item) => this.trackByFn(item),
+      keySelectorFn: (item) => this.getItemKey(item),
     });
 
     setupCloserWhenSingleSelectionChange({
@@ -409,13 +515,6 @@ export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K> implem
       this.sortingDefs();
       this.prepareRefreshEffect?.();
 
-      // const reflected = reflectComponentType(this.constructor as any)!;
-      // const inputPropNames = reflected.inputs.map((item) => item.propName);
-      // for (const inputPropName of inputPropNames) {
-      //   if (["viewType", "selectMode, selectedItemKeys"].includes(inputPropName)) continue;
-      //   this[inputPropName]();
-      // }
-
       queueMicrotask(async () => {
         if (this.restricted?.()) {
           this.initialized.set(true);
@@ -431,9 +530,19 @@ export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K> implem
         this.initialized.set(true);
       });
     });
+
+    setupCanDeactivate(() => this.currViewType() === "modal" || this.checkIgnoreChanges());
+  }
+
+  checkIgnoreChanges() {
+    return $arr(this.items).diffs().length === 0 || confirm(TXT_CHANGE_IGNORE_CONFIRM);
   }
 
   doFilterSubmit() {
+    if (this.busyCount() > 0) return;
+    if (this.restricted?.()) return;
+    if (!this.checkIgnoreChanges()) return;
+
     this.page.set(0);
     this.lastFilter.set(ObjectUtils.clone(this.filter()));
   }
@@ -441,25 +550,25 @@ export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K> implem
   doRefresh() {
     if (this.busyCount() > 0) return;
     if (this.restricted?.()) return;
+    if (!this.checkIgnoreChanges()) return;
 
     this.lastFilter.$mark();
   }
 
   async refresh() {
     const result = await this.search({
-      type: "sheet",
       lastFilter: this.lastFilter(),
       sortingDefs: this.sortingDefs(),
       page: this.page(),
     });
     this.items.set(result.items);
+    $arr(this.items).snapshot((item) => this.getItemKey(item));
+
     this.pageLength.set(result.pageLength ?? 0);
     this.summaryData.set(result.summary ?? {});
 
     this.selectedItems.set(
-      this.items().filter((item) =>
-        this.selectedItems().some((sel) => this.getItemInfo(sel).key === this.getItemInfo(item).key),
-      ),
+      this.items().filter((item) => this.selectedItems().some((sel) => this.getItemKey(sel) === this.getItemKey(item))),
     );
   }
 
@@ -478,14 +587,58 @@ export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K> implem
     this.busyCount.update((v) => v - 1);
   }
 
+  async doAddItem() {
+    if (!this.addNewItem) return;
+
+    this.busyCount.update((v) => v + 1);
+    await this.#sdToast.try(async () => {
+      const newItem = await this.addNewItem!();
+      this.items.update((items) => [newItem, ...items]);
+    });
+    this.busyCount.update((v) => v - 1);
+    this.initialized.set(true);
+  }
+
+  async doSubmit() {
+    if (this.busyCount() > 0) return;
+    if (this.readonly?.()) return;
+    if (!this.submit) return;
+
+    const diffs = $arr(this.items).diffs();
+
+    if (diffs.length === 0) {
+      this.#sdToast.info("변경사항이 없습니다.");
+      return;
+    }
+
+    this.busyCount.update((v) => v + 1);
+    await this.#sdToast.try(
+      async () => {
+        const result = await this.submit!(diffs);
+        if (!result) return;
+
+        this.#sdToast.success("저장되었습니다.");
+
+        await this.refresh();
+      },
+      (err) => this.#getOrmDataEditToastErrorMessage(err),
+    );
+    this.busyCount.update((v) => v - 1);
+  }
+
   //-- delete
 
-  isSelectedItemsHasDeleted = $computed(() => this.selectedItems().some((item) => this.getItemInfo(item).isDeleted));
+  isSelectedItemsHasDeleted = $computed(() =>
+    this.selectedItems().some((item) => this.deletedPropName != null && (item[this.deletedPropName] as boolean)),
+  );
   isSelectedItemsHasNotDeleted = $computed(() =>
-    this.selectedItems().some((item) => !this.getItemInfo(item).isDeleted),
+    this.selectedItems().some((item) => this.deletedPropName == null || !(item[this.deletedPropName] as boolean)),
   );
 
-  getItemCellStyleFn = (item: I) => (this.getItemInfo(item).isDeleted ? "text-decoration: line-through;" : undefined);
+  getItemCellStyleFn = (item: I) =>
+    this.deletedPropName != null && (item[this.deletedPropName] as boolean)
+      ? "text-decoration: line-through;"
+      : undefined;
 
   async doToggleDeleteItems(del: boolean) {
     if (!this.toggleDeleteItems) return;
@@ -507,6 +660,19 @@ export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K> implem
     this.busyCount.update((v) => v - 1);
   }
 
+  doToggleDeleteItem(item: I) {
+    if (this.deletedPropName == null) return;
+    if (this.readonly?.()) return;
+
+    if (this.getItemKey(item) == null) {
+      this.items.update((items) => items.filter((item1) => item1 !== item));
+      return;
+    }
+
+    (item[this.deletedPropName] as boolean) = !(item[this.deletedPropName] as boolean);
+    this.items.$mark();
+  }
+
   //-- excel
 
   async doDownloadExcel() {
@@ -516,7 +682,6 @@ export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K> implem
     await this.#sdToast.try(async () => {
       const items = (
         await this.search({
-          type: "excel",
           lastFilter: this.lastFilter(),
           sortingDefs: this.sortingDefs(),
         })
@@ -571,26 +736,15 @@ export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K> implem
   }
 }
 
-export interface ISdDataSheetItemInfo<K> {
-  key: K;
-  isDeleted?: boolean;
+export interface ISdDataSheetItemLastModifiedInfo {
+  lastModifiedAt?: DateTime;
+  lastModifiedBy?: string;
 }
 
-export type TSdDataSheetSearchParam<F extends Record<string, any>> =
-  | ISdDataSheetSearchExcelParam<F>
-  | ISdDataSheetSearchSheetParam<F>;
-
-interface ISdDataSheetSearchExcelParam<F extends Record<string, any>> {
-  type: "excel";
+export interface ISdDataSheetSearchParam<F extends Record<string, any>> {
   lastFilter: F;
   sortingDefs: ISdSortingDef[];
-}
-
-interface ISdDataSheetSearchSheetParam<F extends Record<string, any>> {
-  type: "sheet";
-  lastFilter: F;
-  sortingDefs: ISdSortingDef[];
-  page: number;
+  page?: number;
 }
 
 export interface ISdDataSheetSearchResult<I> {

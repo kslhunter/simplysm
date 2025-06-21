@@ -95,7 +95,7 @@ declare global {
 
     oneWayDiffs<K extends keyof T>(
       orgItems: T[] | Map<T[K], T>,
-      key: K,
+      keyPropNameOrFn: K | ((item: T) => K),
       options?: {
         includeSame?: boolean;
         excludes?: string[];
@@ -198,7 +198,7 @@ declare global {
 
     oneWayDiffs<K extends keyof T>(
       orgItems: T[] | Map<T[K], T>,
-      key: K,
+      keyPropNameOrFn: K | ((item: T) => K),
       options?: {
         includeSame?: boolean;
         excludes?: string[];
@@ -255,14 +255,13 @@ declare global {
       }
 
       return undefined;
-    }
-    else {
+    } else {
       return this[this.length - 1];
     }
   };
 
   prototype.filterExists = function <T>(this: T[]): NonNullable<T>[] {
-    return this.filter((item) => item != null)/* as NonNullable<T>[]*/;
+    return this.filter((item) => item != null) /* as NonNullable<T>[]*/;
   };
 
   prototype.ofType = function <T, N extends T>(this: T[], type: Type<WrappedType<N>>): N[] {
@@ -314,8 +313,7 @@ declare global {
       const existsRecord = result.single((item) => ObjectUtils.equal(item.key, keyObj));
       if (existsRecord !== undefined) {
         existsRecord.values.push(valueObj);
-      }
-      else {
+      } else {
         result.push({ key: keyObj, values: [valueObj] });
       }
     }
@@ -504,23 +502,17 @@ declare global {
 
       if (cpn === cpp) {
         return 0;
-      }
-      else if (typeof cpn === "string" && typeof cpp === "string") {
+      } else if (typeof cpn === "string" && typeof cpp === "string") {
         return cpp.localeCompare(cpn);
-      }
-      else if (typeof cpn === "number" && typeof cpp === "number") {
+      } else if (typeof cpn === "number" && typeof cpp === "number") {
         return cpn > cpp ? -1 : cpn < cpp ? 1 : 0;
-      }
-      else if (typeof cpn === "boolean" && typeof cpp === "boolean") {
+      } else if (typeof cpn === "boolean" && typeof cpp === "boolean") {
         return cpn === cpp ? 0 : cpn ? -1 : 1;
-      }
-      else if (typeof cpp === "undefined") {
+      } else if (typeof cpp === "undefined") {
         return -1;
-      }
-      else if (typeof cpn === "undefined") {
+      } else if (typeof cpn === "undefined") {
         return 1;
-      }
-      else {
+      } else {
         throw new Error("orderBy를 사용할 수 없는 타입입니다.");
       }
     });
@@ -541,23 +533,17 @@ declare global {
 
       if (cpn === cpp) {
         return 0;
-      }
-      else if (typeof cpn === "string" && typeof cpp === "string") {
+      } else if (typeof cpn === "string" && typeof cpp === "string") {
         return cpp.localeCompare(cpn);
-      }
-      else if (typeof cpn === "number" && typeof cpp === "number") {
+      } else if (typeof cpn === "number" && typeof cpp === "number") {
         return cpn > cpp ? -1 : cpn < cpp ? 1 : 0;
-      }
-      else if (typeof cpn === "boolean" && typeof cpp === "boolean") {
+      } else if (typeof cpn === "boolean" && typeof cpp === "boolean") {
         return cpn === cpp ? 0 : cpn ? -1 : 1;
-      }
-      else if (typeof cpp === "undefined") {
+      } else if (typeof cpp === "undefined") {
         return -1;
-      }
-      else if (typeof cpn === "undefined") {
+      } else if (typeof cpn === "undefined") {
         return 1;
-      }
-      else {
+      } else {
         throw new Error("orderBy를 사용할 수 없는 타입입니다.");
       }
     });
@@ -578,23 +564,17 @@ declare global {
 
       if (cpn === cpp) {
         return 0;
-      }
-      else if (typeof cpn === "string" && typeof cpp === "string") {
+      } else if (typeof cpn === "string" && typeof cpp === "string") {
         return cpn.localeCompare(cpp);
-      }
-      else if (typeof cpn === "number" && typeof cpp === "number") {
+      } else if (typeof cpn === "number" && typeof cpp === "number") {
         return cpn < cpp ? -1 : cpn > cpp ? 1 : 0;
-      }
-      else if (typeof cpn === "boolean" && typeof cpp === "boolean") {
+      } else if (typeof cpn === "boolean" && typeof cpp === "boolean") {
         return cpn === cpp ? 0 : cpn ? 1 : -1;
-      }
-      else if (typeof cpp === "undefined") {
+      } else if (typeof cpp === "undefined") {
         return 1;
-      }
-      else if (typeof cpn === "undefined") {
+      } else if (typeof cpn === "undefined") {
         return -1;
-      }
-      else {
+      } else {
         throw new Error("orderBy를 사용할 수 없는 타입입니다.");
       }
     });
@@ -615,23 +595,17 @@ declare global {
 
       if (cpn === cpp) {
         return 0;
-      }
-      else if (typeof cpn === "string" && typeof cpp === "string") {
+      } else if (typeof cpn === "string" && typeof cpp === "string") {
         return cpn.localeCompare(cpp);
-      }
-      else if (typeof cpn === "number" && typeof cpp === "number") {
+      } else if (typeof cpn === "number" && typeof cpp === "number") {
         return cpn < cpp ? -1 : cpn > cpp ? 1 : 0;
-      }
-      else if (typeof cpn === "boolean" && typeof cpp === "boolean") {
+      } else if (typeof cpn === "boolean" && typeof cpp === "boolean") {
         return cpn === cpp ? 0 : cpn ? 1 : -1;
-      }
-      else if (typeof cpp === "undefined") {
+      } else if (typeof cpp === "undefined") {
         return 1;
-      }
-      else if (typeof cpn === "undefined") {
+      } else if (typeof cpn === "undefined") {
         return -1;
-      }
-      else {
+      } else {
         throw new Error("orderBy를 사용할 수 없는 타입입니다.");
       }
     });
@@ -675,8 +649,7 @@ declare global {
 
         //기타: source 에서 삭제된 항목
         result.push({ source: sourceItem, target: undefined });
-      }
-      else {
+      } else {
         uncheckedTarget.remove(sameTarget);
       }
     }
@@ -692,24 +665,30 @@ declare global {
   prototype.oneWayDiffs = function <T extends Record<string, any>, K extends keyof T>(
     this: T[],
     orgItems: T[] | Map<T[K], T>,
-    key: K,
+    keyPropNameOrFn: K | ((item: T) => K),
     options?: {
       includeSame?: boolean;
       excludes?: string[];
       includes?: string[];
     },
   ): TArrayDiffs2Result<T>[] {
-    const orgItemMap = orgItems instanceof Map ? orgItems : orgItems.toMap((orgItem) => orgItem[key]);
+    const orgItemMap =
+      orgItems instanceof Map
+        ? orgItems
+        : orgItems.toMap((orgItem) =>
+            typeof keyPropNameOrFn === "function" ? keyPropNameOrFn(orgItem) : orgItem[keyPropNameOrFn],
+          );
     const includeSame = options?.includeSame ?? false;
 
     const diffs: TArrayDiffs2Result<T>[] = [];
     for (const item of this) {
-      if (item[key] === undefined) {
+      const keyValue = typeof keyPropNameOrFn === "function" ? keyPropNameOrFn(item) : item[keyPropNameOrFn];
+      if (keyValue == null) {
         diffs.push({ type: "create", item, orgItem: undefined });
         continue;
       }
 
-      const orgItem = orgItemMap.get(item[key]);
+      const orgItem = orgItemMap.get(keyValue);
       if (!orgItem) {
         diffs.push({ type: "create", item, orgItem: undefined });
         continue;
@@ -827,7 +806,9 @@ declare global {
 
   prototype.remove = function <T>(this: T[], itemOrSelector: T | ((item: T, index: number) => boolean)): T[] {
     const removeItems =
-      typeof itemOrSelector === "function" ? this.filter((itemOrSelector as (item: T, index: number) => boolean).bind(this)) : [itemOrSelector];
+      typeof itemOrSelector === "function"
+        ? this.filter((itemOrSelector as (item: T, index: number) => boolean).bind(this))
+        : [itemOrSelector];
 
     for (const removeItem of removeItems) {
       while (this.includes(removeItem)) {
@@ -841,8 +822,7 @@ declare global {
   prototype.toggle = function <T>(this: T[], item: T): T[] {
     if (this.includes(item)) {
       this.remove(item);
-    }
-    else {
+    } else {
       this.push(item);
     }
     return this;

@@ -12,9 +12,7 @@ export interface ISharedSignal<T extends ISharedDataBase<string | number>> exten
 }
 
 @Injectable({ providedIn: "root" })
-export abstract class SdSharedDataProvider<
-  T extends Record<string, ISharedDataBase<string | number>>,
-> {
+export abstract class SdSharedDataProvider<T extends Record<string, ISharedDataBase<string | number>>> {
   #sdServiceFactory = inject(SdServiceClientFactoryProvider);
 
   #infoMap = new Map<keyof T & string, ISharedDataInnerInfo<any>>();
@@ -50,18 +48,16 @@ export abstract class SdSharedDataProvider<
 
     //-- listener
     if (info.listenerKey == null) {
-      info.listenerKey = void this.#sdServiceFactory
-        .get(info.getter.serviceKey)
-        .addEventListenerAsync(
-          SdSharedDataChangeEvent,
-          {
-            name,
-            filter: info.getter.filter,
-          },
-          async (changeKeys) => {
-            await this.#loadDataAsync(name, changeKeys);
-          },
-        );
+      info.listenerKey = void this.#sdServiceFactory.get(info.getter.serviceKey).addEventListenerAsync(
+        SdSharedDataChangeEvent,
+        {
+          name,
+          filter: info.getter.filter,
+        },
+        async (changeKeys) => {
+          await this.#loadDataAsync(name, changeKeys);
+        },
+      );
     }
 
     //-- data
@@ -109,10 +105,7 @@ export abstract class SdSharedDataProvider<
 
   #ordering<TT extends T[keyof T]>(
     data: TT[],
-    orderByList: [
-      (data: TT) => string | number | DateOnly | DateTime | Time | undefined,
-      "asc" | "desc",
-    ][],
+    orderByList: [(data: TT) => string | number | DateOnly | DateTime | Time | undefined, "asc" | "desc"][],
   ): TT[] {
     let result = [...data];
     for (const orderBy of orderByList.reverse()) {
@@ -130,7 +123,7 @@ export interface ISharedDataInfo<T extends ISharedDataBase<string | number>> {
   serviceKey: string;
   getDataAsync: (changeKeys?: T["__valueKey"][]) => Promise<T[]>;
   orderBy: [(data: T) => any, "asc" | "desc"][];
-  filter: any; // 이 값이 동일한 요청들만 변경이벤트 발생
+  filter?: any; // 이 값이 동일한 요청들만 변경이벤트 발생
 }
 
 interface ISharedDataInnerInfo<T extends ISharedDataBase<string | number>> {

@@ -79,17 +79,17 @@ import { injectParent } from "../utils/injections/inject-parent";
             }
           </sd-dock-container>
         } @else {
-          <sd-dock-container>
+          <!--<sd-dock-container>
             @if (controlToolTemplateRef()) {
               <sd-dock>
                 <ng-template [ngTemplateOutlet]="controlToolTemplateRef() ?? null" />
               </sd-dock>
-            }
+            }-->
 
-            <sd-pane sd-show-effect>
-              <ng-template [ngTemplateOutlet]="contentTemplateRef()" />
-            </sd-pane>
-          </sd-dock-container>
+          <sd-pane sd-show-effect>
+            <ng-template [ngTemplateOutlet]="contentTemplateRef()" />
+          </sd-pane>
+          <!--</sd-dock-container>-->
         }
       }
     </sd-busy-container>
@@ -106,9 +106,10 @@ export class SdBaseContainerControl {
   #fullPageCode = useFullPageCodeSignal();
   #currPageCode = useCurrentPageCodeSignal();
 
-  pageTopbarTemplateRef = contentChild("pageTopbar", { read: TemplateRef });
-  controlToolTemplateRef = contentChild("controlTool", { read: TemplateRef });
   contentTemplateRef = contentChild.required("content", { read: TemplateRef });
+
+  pageTopbarTemplateRef = contentChild("pageTopbar", { read: TemplateRef });
+  // controlToolTemplateRef = contentChild("controlTool", { read: TemplateRef });
   modalBottomTemplateRef = contentChild("modalBottom", { read: TemplateRef });
 
   #parentViewType = useViewTypeSignal(() => this.#parent);

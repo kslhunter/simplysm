@@ -38,6 +38,8 @@ body {
 *::-webkit-scrollbar {
   width: 16px;
   height: 16px;
+  border: 1px solid var(--background-color);
+  border-radius: 12px;
 }
 
 *::-webkit-scrollbar-thumb {

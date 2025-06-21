@@ -36,6 +36,7 @@ import { SdTopbarMenuItemControl } from "../../controls/sd-topbar-menu-item.cont
 import { SdDockContainerControl } from "../../controls/sd-dock-container.control";
 import { SdDockControl } from "../../controls/sd-dock.control";
 import { SdPaneControl } from "../../controls/sd-pane.control";
+import { SdRegionControl } from "../../controls/containers/sd-region";
 
 @Component({
   selector: "sd-data-detail",
@@ -54,6 +55,7 @@ import { SdPaneControl } from "../../controls/sd-pane.control";
     SdDockContainerControl,
     SdDockControl,
     SdPaneControl,
+    SdRegionControl,
   ],
   template: `
     <sd-base-container
@@ -62,7 +64,7 @@ import { SdPaneControl } from "../../controls/sd-pane.control";
       [initialized]="parent.initialized()"
       [restricted]="parent.restricted?.()"
     >
-      @if (!parent.readonly?.()) {
+      <!--@if (!parent.readonly?.()) {
         <ng-template #pageTopbar>
           <sd-topbar-menu>
             <sd-topbar-menu-item (click)="onSubmitButtonClick()">
@@ -72,62 +74,71 @@ import { SdPaneControl } from "../../controls/sd-pane.control";
             </sd-topbar-menu-item>
           </sd-topbar-menu>
         </ng-template>
-      }
-
-      @if (!parent.readonly?.() || toolTemplateRef() != null) {
-        <ng-template #controlTool>
-          @if (!parent.readonly?.()) {
-            <div class="p-sm-lg flex-row flex-gap-sm">
-              <sd-button theme="primary" (click)="onSubmitButtonClick()">
-                <fa-icon [icon]="icons.save" [fixedWidth]="true" />
-                저장
-                <small>(CTRL+S)</small>
-              </sd-button>
-              @if ((!parent.isNew || !parent.isNew()) && parent.toggleDelete) {
-                @if (parent.dataInfo && parent.dataInfo().isDeleted) {
-                  <sd-button theme="warning" (click)="parent.doToggleDelete(false)">
-                    <fa-icon [icon]="icons.redo" [fixedWidth]="true" />
-                    복구
-                  </sd-button>
-                } @else {
-                  <sd-button theme="danger" (click)="parent.doToggleDelete(true)">
-                    <fa-icon [icon]="icons.eraser" [fixedWidth]="true" />
-                    삭제
-                  </sd-button>
-                }
-              }
-            </div>
-          }
-          @if (toolTemplateRef() != null) {
-            <div class="p-sm-lg">
-              <ng-template [ngTemplateOutlet]="toolTemplateRef() ?? null" />
-            </div>
-          }
-        </ng-template>
-      }
+      }-->
 
       <ng-template #content>
         <sd-dock-container style="min-width: 20em">
-          @if (prevTemplateRef() != null) {
-            <sd-dock class="p-lg">
-              <ng-template [ngTemplateOutlet]="prevTemplateRef() ?? null" />
-            </sd-dock>
-          }
-          <sd-pane class="p-lg">
-            <sd-form #formCtrl (submit)="onSubmit()">
-              <ng-template [ngTemplateOutlet]="contentTemplateRef()" />
-            </sd-form>
-          </sd-pane>
+          <sd-region contentClass="p-default">
+            <sd-dock-container>
+              @if (!parent.readonly?.() || toolTemplateRef() != null) {
+                <sd-dock class="pb-sm flex-column flex-gap-sm">
+                  @if (!parent.readonly?.()) {
+                    <div class="flex-row flex-gap-sm">
+                      <sd-button size="sm" theme="primary" (click)="onSubmitButtonClick()">
+                        <fa-icon [icon]="icons.save" [fixedWidth]="true" />
+                        저장
+                        <small>(CTRL+S)</small>
+                      </sd-button>
+                      @if ((!parent.isNew || !parent.isNew()) && parent.toggleDelete) {
+                        @if (parent.dataInfo && parent.dataInfo().isDeleted) {
+                          <sd-button size="sm" theme="warning" (click)="parent.doToggleDelete(false)">
+                            <fa-icon [icon]="icons.redo" [fixedWidth]="true" />
+                            복구
+                          </sd-button>
+                        } @else {
+                          <sd-button size="sm" theme="danger" (click)="parent.doToggleDelete(true)">
+                            <fa-icon [icon]="icons.eraser" [fixedWidth]="true" />
+                            삭제
+                          </sd-button>
+                        }
+                      }
+                    </div>
+                  }
+                  @if (toolTemplateRef() != null) {
+                    <div>
+                      <ng-template [ngTemplateOutlet]="toolTemplateRef() ?? null" />
+                    </div>
+                  }
+                </sd-dock>
+              }
+
+              @if (prevTemplateRef() != null) {
+                <sd-dock class="pb-sm">
+                  <ng-template [ngTemplateOutlet]="prevTemplateRef() ?? null" />
+                </sd-dock>
+              }
+              <sd-pane>
+                <sd-form #formCtrl (submit)="onSubmit()">
+                  <ng-template [ngTemplateOutlet]="contentTemplateRef()" />
+                </sd-form>
+              </sd-pane>
+            </sd-dock-container>
+          </sd-region>
+
           @if (parent.dataInfo && (parent.dataInfo().lastModifiedAt || parent.dataInfo().lastModifiedBy)) {
-            <sd-dock position="bottom" class="bg-theme-grey-lightest p-sm-default">
-              최종수정:
-              {{ parent.dataInfo().lastModifiedAt! | format: "yyyy-MM-dd HH:mm" }}
-              ({{ parent.dataInfo().lastModifiedBy }})
+            <sd-dock position="bottom" class="bg-theme-grey-lightest">
+              <sd-region contentClass="p-sm-default">
+                최종수정:
+                {{ parent.dataInfo().lastModifiedAt! | format: "yyyy-MM-dd HH:mm" }}
+                ({{ parent.dataInfo().lastModifiedBy }})
+              </sd-region>
             </sd-dock>
           }
           @if (nextTemplateRef() != null) {
-            <sd-dock position="bottom" class="p-lg">
-              <ng-template [ngTemplateOutlet]="nextTemplateRef() ?? null" />
+            <sd-dock position="bottom">
+              <sd-region contentClass="p-default">
+                <ng-template [ngTemplateOutlet]="nextTemplateRef() ?? null" />
+              </sd-region>
             </sd-dock>
           }
         </sd-dock-container>
@@ -199,7 +210,7 @@ export abstract class AbsSdDataDetail<T extends object | undefined, R = boolean>
 
   toggleDelete?(del: boolean): Promise<R> | R;
 
-  submit?(): Promise<R> | R;
+  submit?(): Promise<R | undefined> | R | undefined;
 
   //-- implement
   #sdToast = inject(SdToastProvider);

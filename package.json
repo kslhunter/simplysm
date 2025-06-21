@@ -20,8 +20,6 @@
   },
   "scripts": {
     "watch": "yarn run _sd-cli_ --debug watch",
-    "watch:sd-mat-icons": "yarn run _sd-cli_ --debug watch --packages sd-mat-icons",
-    "watch:sd-core-common": "yarn run _sd-cli_ --debug watch --packages sd-core-common",
     "build": "yarn run _sd-cli_ build",
     "publish": "yarn run _sd-cli_ publish",
     "fix": "yarn run _sd-cli_ fix --library",

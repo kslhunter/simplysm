@@ -15,10 +15,10 @@ import { SdDockContainerControl } from "../controls/sd-dock-container.control";
 import { SdDockControl } from "../controls/sd-dock.control";
 
 import { SdPaneControl } from "../controls/sd-pane.control";
-import { SdSheetColumnCellTemplateDirective } from "../controls/sd-sheet/directives/sd-sheet-column-cell.template-directive";
-import { SdSheetColumnDirective } from "../controls/sd-sheet/directives/sd-sheet-column.directive";
-import { SdSheetControl } from "../controls/sd-sheet/sd-sheet.control";
-import { ISdSheetConfig } from "../controls/sd-sheet/sd-sheet.types";
+import { SdSheetColumnCellTemplateDirective } from "../controls/sheet/directives/sd-sheet-column-cell.template-directive";
+import { SdSheetColumnDirective } from "../controls/sheet/directives/sd-sheet-column.directive";
+import { SdSheetControl } from "../controls/sheet/sd-sheet.control";
+import { ISdSheetConfig } from "../controls/sheet/sd-sheet.types";
 import { SdTextfieldControl } from "../controls/sd-textfield.control";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { ISdModal } from "../providers/sd-modal.provider";

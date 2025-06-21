@@ -8,7 +8,7 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import { SdTopbarContainerControl } from "./sd-topbar-container.control";
-import { SdSidebarContainerControl } from "./sd-sidebar-container.control";
+import { SdSidebarContainerControl } from "./sidebar/sd-sidebar-container.control";
 import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
 import { SdAnchorControl } from "./sd-anchor.control";
 import { SdGapControl } from "./sd-gap.control";
@@ -49,7 +49,6 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
         gap: var(--gap-default);
         align-items: center;
         justify-content: start;
-        //white-space: nowrap;
 
         position: absolute;
         z-index: var(--z-index-topbar);
@@ -59,31 +58,13 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
         height: var(--topbar-height);
         overflow-x: auto;
         overflow-y: hidden;
-        //line-height: var(--topbar-height);
         user-select: none;
 
-        background: var(--control-color);
+        background: var(--background-color);
         color: var(--text-trans-default);
-
-        //body.sd-theme-compact & {
-        // border-bottom: 1px solid var(--border-color-light);
-        //  @include mixins.elevation(2);
-        //  animation: sd-topbar var(--animation-duration) ease-in;
-        //}
-
-        /*> ._nav {
-        display: inline-block;
-        height: var(--topbar-height);s
-        white-space: nowrap;
-        vertical-align: top;
-      }*/
 
         @each $h in (h1, h2, h3, h4, h5, h6) {
           > #{$h} {
-            //display: inline-block;
-            //vertical-align: top;
-            //line-height: var(--topbar-height);
-            //margin-right: var(--gap-xxl);
             padding-right: var(--gap-xl);
           }
         }
@@ -107,10 +88,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
         }
 
         > ._sidebar-toggle-button {
-          //display: inline-block;
-          //vertical-align: top;
           text-align: center;
-          //margin-right: var(--gap-default);
           cursor: pointer;
           line-height: var(--topbar-height);
 
@@ -137,9 +115,7 @@ export class SdTopbarControl {
 
   #elRef = injectElementRef<HTMLElement>();
   #parentSidebarContainerControl = inject(SdSidebarContainerControl, { optional: true });
-  #topbarContainerControl = inject<SdTopbarContainerControl>(
-    forwardRef(() => SdTopbarContainerControl),
-  );
+  #topbarContainerControl = inject<SdTopbarContainerControl>(forwardRef(() => SdTopbarContainerControl));
 
   sidebarContainer = input<SdSidebarContainerControl>();
 

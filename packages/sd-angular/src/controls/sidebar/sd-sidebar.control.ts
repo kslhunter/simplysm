@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, forwardRef, inject, ViewEncapsulation } from "@angular/core";
 import { SdSidebarContainerControl } from "./sd-sidebar-container.control";
-import { $computed } from "../utils/bindings/$computed";
-
+import { $computed } from "../../utils/bindings/$computed";
 
 @Component({
   selector: "sd-sidebar",
@@ -9,9 +8,12 @@ import { $computed } from "../utils/bindings/$computed";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
+  template: `
+    <ng-content></ng-content>
+  `,
   styles: [
     /* language=SCSS */ `
-      @use "../scss/mixins";
+      @use "../../scss/mixins";
 
       sd-sidebar {
         display: block;
@@ -22,29 +24,6 @@ import { $computed } from "../utils/bindings/$computed";
         width: var(--sidebar-width);
         height: 100%;
         animation: sd-sidebar var(--animation-duration) ease-in;
-
-        //-- 테마
-
-        background: var(--control-color);
-
-        body.sd-theme-kiosk &,
-        body.sd-theme-mobile & {
-          border-top-right-radius: var(--gap-default);
-          border-bottom-right-radius: var(--gap-default);
-        }
-
-        body.sd-theme-compact & {
-          //background: var(--theme-grey-lightest);
-          border-right: 1px solid var(--border-color-light);
-
-          //box-shadow: inset -2px 0 8px rgba(0, 0, 0, .05);
-
-          //@include mixins.elevation(16);
-
-          &[sd-toggle="true"] {
-            border-right: none;
-          }
-        }
 
         //-- 화면 크기
 
@@ -78,7 +57,6 @@ import { $computed } from "../utils/bindings/$computed";
       }
     `,
   ],
-  template: `<ng-content></ng-content>`,
   host: {
     "[attr.sd-toggle]": "toggle()",
   },

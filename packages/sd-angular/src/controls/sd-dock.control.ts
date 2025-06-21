@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  HostListener,
-  input,
-  ViewEncapsulation,
-} from "@angular/core";
+import { ChangeDetectionStrategy, Component, HostListener, input, ViewEncapsulation } from "@angular/core";
 import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
 import { $effect } from "../utils/bindings/$effect";
 import { $signal } from "../utils/bindings/$signal";
@@ -26,7 +20,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
         position: absolute;
         overflow: auto;
 
-        &[sd-resizable="true"] {
+        /*&[sd-resizable="true"] {
           > ._resize-bar {
             position: absolute;
             background: var(--border-color-light);
@@ -71,15 +65,15 @@ import { transformBoolean } from "../utils/type-tramsforms";
               cursor: ew-resize;
             }
           }
-        }
+        }*/
       }
     `,
   ],
   template: `
     <ng-content></ng-content>
-    @if (resizable()) {
+    <!--@if (resizable()) {
       <div class="_resize-bar" (mousedown)="onResizeBarMousedown($event)"></div>
-    }
+    }-->
   `,
   host: {
     "[attr.sd-position]": "position()",
@@ -139,14 +133,11 @@ export class SdDockControl {
 
       if (this.position() === "bottom") {
         thisEl.style.height = `${startHeight - e.clientY + startY}px`;
-      }
-      else if (this.position() === "right") {
+      } else if (this.position() === "right") {
         thisEl.style.width = `${startWidth - e.clientX + startX}px`;
-      }
-      else if (this.position() === "top") {
+      } else if (this.position() === "top") {
         thisEl.style.height = `${startHeight + e.clientY - startY}px`;
-      }
-      else {
+      } else {
         // left
         thisEl.style.width = `${startWidth + e.clientX - startX}px`;
       }
@@ -163,8 +154,7 @@ export class SdDockControl {
         const newConf: { size?: string } = {};
         if (["right", "left"].includes(this.position())) {
           newConf.size = thisEl.style.width;
-        }
-        else {
+        } else {
           newConf.size = thisEl.style.height;
         }
         this.#config.set(newConf);

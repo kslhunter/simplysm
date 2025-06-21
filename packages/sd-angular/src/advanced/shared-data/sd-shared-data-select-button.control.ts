@@ -1,19 +1,10 @@
 import { NgTemplateOutlet } from "@angular/common";
-import {
-  ChangeDetectionStrategy,
-  Component,
-  contentChild,
-  input,
-  TemplateRef,
-  ViewEncapsulation,
-} from "@angular/core";
-import {
-  SdItemOfTemplateContext,
-  SdItemOfTemplateDirective,
-} from "../../directives/sd-item-of.template-directive";
+import { ChangeDetectionStrategy, Component, contentChild, input, TemplateRef, ViewEncapsulation } from "@angular/core";
+import { SdItemOfTemplateContext, SdItemOfTemplateDirective } from "../../directives/sd-item-of.template-directive";
 import { ISharedDataBase } from "./sd-shared-data.provider";
 import {
-  AbsSdDataSelectButton, ISdSelectModal,
+  AbsSdDataSelectButton,
+  ISdSelectModal,
   SdDataSelectButtonControl,
   TSdSelectModalInfo,
 } from "../sd-data-sheet/sd-data-select-button.control";
@@ -38,23 +29,21 @@ import { TSelectModeValue } from "../../controls/sd-select-control";
           }"
         />
       </ng-template>
+      <ng-content />
     </sd-data-select-button>
   `,
 })
 export class SdSharedDataSelectButtonControl<
   T extends ISharedDataBase<number>,
   M extends keyof TSelectModeValue<number>,
-  TModal extends ISdSelectModal
+  TModal extends ISdSelectModal,
 > extends AbsSdDataSelectButton<T, number, M> {
   items = input<T[]>([]);
   modal = input.required<TSdSelectModalInfo<TModal>>();
 
-  itemTemplateRef = contentChild.required<any, TemplateRef<SdItemOfTemplateContext<T>>>(
-    SdItemOfTemplateDirective,
-    {
-      read: TemplateRef,
-    },
-  );
+  itemTemplateRef = contentChild.required<any, TemplateRef<SdItemOfTemplateContext<T>>>(SdItemOfTemplateDirective, {
+    read: TemplateRef,
+  });
 
   override load(keys: number[]) {
     return this.items().filter((item) => keys.includes(item.__valueKey));

@@ -1,11 +1,11 @@
 import { SdSheetDomAccessor } from "./sd-sheet-dom-accessor";
 
 export class SdSheetFocusIndicatorRenderer {
-
-  constructor(private readonly _options: {
-    domAccessor: SdSheetDomAccessor
-  }) {
-  }
+  constructor(
+    private readonly _options: {
+      domAccessor: SdSheetDomAccessor;
+    },
+  ) {}
 
   redraw() {
     const containerEl = this._options.domAccessor.getContainer();
@@ -61,7 +61,7 @@ export class SdSheetFocusIndicatorRenderer {
     //-- Cell indicator opacity
 
     if (!(focusedEl instanceof HTMLTableCellElement)) return;
-    if (focusedEl.className.includes("_fixed")) return;
+    if (focusedEl.classList.contains("_fixed")) return;
 
     const theadEl = this._options.domAccessor.getTHead();
     const lastDepthFixedHeaderEls = this._options.domAccessor.getLastDepthFixedHeaders();
@@ -75,11 +75,9 @@ export class SdSheetFocusIndicatorRenderer {
       left: cellIndicatorEl.offsetLeft - containerEl.scrollLeft + 2,
     };
 
-    if (indicatorPosition.top < noneFixedPosition.top
-      || indicatorPosition.left < noneFixedPosition.left) {
+    if (indicatorPosition.top < noneFixedPosition.top || indicatorPosition.left < noneFixedPosition.left - 1) {
       cellIndicatorEl.style.opacity = ".3";
-    }
-    else {
+    } else {
       cellIndicatorEl.style.opacity = "1";
     }
   }

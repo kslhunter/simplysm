@@ -258,7 +258,7 @@ $vars: (
   theme: (
     "grey": (
       lightest: var(--color-grey-100),
-      lighter: var(--color-grey-200),
+      lighter: var(--color-grey-300),
       light: var(--color-grey-400),
       default: var(--color-grey-500),
       dark: var(--color-grey-600),
@@ -419,7 +419,7 @@ $vars: (
   //font-family: sans-serif,
   font-family: "'Pretendard Variable', 'Noto Sans KR', sans-serif",
   font-family-monospace: monospace,
-  background-color: white,
+  background-color: var(--theme-grey-lightest),
   background-rev-color: black,
   control-color: white,
   animation-duration: .2s,

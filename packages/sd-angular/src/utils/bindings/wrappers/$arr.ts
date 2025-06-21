@@ -36,30 +36,31 @@ export function $arr<T>(sig: Signal<T[]> | WritableSignal<T[]>) {
         return v;
       });
     },
-    snapshot(keyPropName: keyof T | "$item") {
+    snapshot(keyPropNameOrFn: keyof T | ((item: T) => any)) {
       sig[ORIGIN_SNAPSHOT] = {
-        keyPropName,
+        keyPropNameOrFn,
         snapshot: ObjectUtils.clone(sig()).toMap((item) =>
-          keyPropName === "$item" ? item : item[keyPropName],
+          typeof keyPropNameOrFn === "function" ? keyPropNameOrFn(item) : item[keyPropNameOrFn],
         ),
       };
     },
     changed(item: T) {
       if (sig[ORIGIN_SNAPSHOT] == null) return false;
       const orgItemMap = sig[ORIGIN_SNAPSHOT].snapshot as Map<any, any>;
-      const keyPropName = sig[ORIGIN_SNAPSHOT].keyPropName as keyof T;
+      const keyPropNameOrFn = sig[ORIGIN_SNAPSHOT].keyPropNameOrFn as keyof T | ((item: T) => any);
 
-      if (item[keyPropName] == null) return true;
+      const keyValue = typeof keyPropNameOrFn === "function" ? keyPropNameOrFn(item) : item[keyPropNameOrFn];
 
-      const orgItem = orgItemMap.get(item[keyPropName]);
+      if (keyValue == null) return true;
+      const orgItem = orgItemMap.get(keyValue);
       return !ObjectUtils.equal(orgItem, item);
     },
     diffs(): TArrayDiffs2Result<T>[] {
       if (sig[ORIGIN_SNAPSHOT] == null) return [];
       const orgItemMap = sig[ORIGIN_SNAPSHOT].snapshot as Map<any, any>;
-      const keyPropName = sig[ORIGIN_SNAPSHOT].keyPropName as keyof T;
+      const keyPropNameOrFn = sig[ORIGIN_SNAPSHOT].keyPropNameOrFn as keyof T | ((item: T) => any);
 
-      return sig().oneWayDiffs(orgItemMap, keyPropName);
+      return sig().oneWayDiffs(orgItemMap, keyPropNameOrFn);
     },
     get origin(): Map<any, T> {
       return sig[ORIGIN_SNAPSHOT]?.snapshot ?? new Map<any, T>();

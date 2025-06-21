@@ -3,12 +3,12 @@ import {
   Component,
   contentChildren,
   ElementRef,
+  input,
   viewChild,
   ViewEncapsulation,
 } from "@angular/core";
 import { $effect } from "../utils/bindings/$effect";
 import { SdDockControl } from "./sd-dock.control";
-
 
 @Component({
   selector: "sd-dock-container",
@@ -30,7 +30,7 @@ import { SdDockControl } from "./sd-dock.control";
     `,
   ],
   template: `
-    <div #content class="_content">
+    <div #content [class]="['_content', contentClass()].filterExists().join(' ')">
       <ng-content />
     </div>
   `,
@@ -38,10 +38,9 @@ import { SdDockControl } from "./sd-dock.control";
 export class SdDockContainerControl {
   dockControls = contentChildren(SdDockControl);
 
-  contentElRef = viewChild.required<any, ElementRef<HTMLDivElement>>(
-    "content",
-    { read: ElementRef },
-  );
+  contentElRef = viewChild.required<any, ElementRef<HTMLDivElement>>("content", { read: ElementRef });
+
+  contentClass = input<string>();
 
   constructor() {
     $effect(() => {
@@ -60,8 +59,7 @@ export class SdDockContainerControl {
             right: right + "px",
           });
           top += dockControl.size();
-        }
-        else if (position === "bottom") {
+        } else if (position === "bottom") {
           dockControl.assignStyle({
             top: "",
             bottom: bottom + "px",
@@ -69,8 +67,7 @@ export class SdDockContainerControl {
             right: right + "px",
           });
           bottom += dockControl.size();
-        }
-        else if (position === "left") {
+        } else if (position === "left") {
           dockControl.assignStyle({
             top: top + "px",
             bottom: bottom + "px",
@@ -78,8 +75,7 @@ export class SdDockContainerControl {
             right: "",
           });
           left += dockControl.size();
-        }
-        else {
+        } else {
           dockControl.assignStyle({
             top: top + "px",
             bottom: bottom + "px",

@@ -398,15 +398,15 @@ import { FaIconComponent, FaLayersComponent } from "@fortawesome/angular-fontawe
                 @include mixins.elevation(16);
 
                 > * > tr > *:last-child {
-                  //border-right: 1px solid $border-color-dark;
+                  border-right: 1px solid $border-color-dark;
                   //border-right: 1px solid transparent;
-                  border-right: none;
+                  //border-right: none;
                 }
 
                 > * > tr:last-child > * {
-                  //border-bottom: 1px solid $border-color-dark;
+                  border-bottom: 1px solid $border-color-dark;
                   //border-bottom: 1px solid transparent;
-                  border-bottom: none;
+                  //border-bottom: none;
                 }
 
                 > *:last-child > tr:last-child > td:last-child {
@@ -823,7 +823,7 @@ export class SdSheetControl<T> {
 
   //region Selecting
 
-  selectMode = input<"single" | "multi">();
+  selectMode = input<"single" | "multi" | "none">();
 
   selectedItems = model<T[]>([]);
 

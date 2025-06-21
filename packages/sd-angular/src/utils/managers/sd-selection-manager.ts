@@ -6,7 +6,7 @@ export class SdSelectionManager<T> {
     private readonly _options: {
       displayItems: Signal<T[]>;
       selectedItems: WritableSignal<T[]>;
-      selectMode: Signal<"single" | "multi" | undefined>;
+      selectMode: Signal<"single" | "multi" | "none" | undefined>;
       getItemSelectableFn: Signal<((item: T) => boolean | string) | undefined>;
     },
   ) {}

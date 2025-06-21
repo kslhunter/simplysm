@@ -42,7 +42,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
           padding: var(--gap-sm) var(--gap-default);
 
           border-radius: var(--border-radius-default);
-          margin: var(--gap-xxs);
+          margin: var(--gap-xs);
 
           > .flex-row > ._selected-icon {
             color: var(--text-trans-lightest);
@@ -56,7 +56,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
         }
 
         > ._child {
-          margin: var(--gap-xxs);
+          margin: var(--gap-xs);
         }
 
         &[sd-layout="accordion"] {

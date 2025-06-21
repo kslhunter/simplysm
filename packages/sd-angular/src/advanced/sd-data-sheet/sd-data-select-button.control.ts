@@ -60,6 +60,7 @@ import { injectParent } from "../../utils/injections/inject-parent";
           ></ng-template>
         </div>
       }
+      <ng-content />
 
       @if (!parent.disabled() && !parent.isNoValue()) {
         <sd-anchor (click)="onCancelButtonClick()" theme="danger">
