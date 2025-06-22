@@ -80,9 +80,9 @@ import { SdRegionControl } from "../../controls/containers/sd-region";
         <sd-dock-container style="min-width: 20em">
           <sd-region contentClass="p-default">
             <sd-dock-container>
-              @if (!parent.readonly?.() || toolTemplateRef() != null) {
+              @if ((parent.currViewType() !== "modal" && !parent.readonly?.()) || toolTemplateRef() != null) {
                 <sd-dock class="pb-sm flex-column flex-gap-sm">
-                  @if (!parent.readonly?.()) {
+                  @if (parent.currViewType() !== "modal" && !parent.readonly?.()) {
                     <div class="flex-row flex-gap-sm">
                       <sd-button size="sm" theme="primary" (click)="onSubmitButtonClick()">
                         <fa-icon [icon]="icons.save" [fixedWidth]="true" />

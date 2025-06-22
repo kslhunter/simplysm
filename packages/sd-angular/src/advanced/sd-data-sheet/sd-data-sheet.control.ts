@@ -17,7 +17,7 @@ import {
   viewChild,
   ViewEncapsulation,
 } from "@angular/core";
-import { DateTime, ObjectUtils, TArrayDiffs2Result } from "@simplysm/sd-core-common";
+import { ObjectUtils, TArrayDiffs2Result } from "@simplysm/sd-core-common";
 import { SdAnchorControl } from "../../controls/sd-anchor.control";
 import { SdButtonControl } from "../../controls/sd-button.control";
 import { SdDockContainerControl } from "../../controls/sd-dock-container.control";
@@ -124,14 +124,14 @@ import { TXT_CHANGE_IGNORE_CONFIRM } from "../../commons";
                           <small>(CTRL+S)</small>
                         </sd-button>
                       }
-                      @if (parent.editItem) {
+                      @if (parent.editItem && !parent.isCreateDisabled?.()) {
                         <sd-button size="sm" theme="primary" (click)="onCreateItemButtonClick()">
                           <fa-icon [icon]="icons.add" [fixedWidth]="true" />
                           {{ insertText() }}
                           <small>(CTRL+INSERT)</small>
                         </sd-button>
                       }
-                      @if (parent.addNewItem) {
+                      @if (parent.addNewItem && !parent.isCreateDisabled?.()) {
                         <sd-button size="sm" theme="link-warning" (click)="onAddItemButtonClick()">
                           <fa-icon [icon]="icons.add" [fixedWidth]="true" />
                           행 추가
@@ -152,12 +152,12 @@ import { TXT_CHANGE_IGNORE_CONFIRM } from "../../commons";
                           (click)="onToggleDeleteItemsButtonClick(true)"
                           [disabled]="!parent.isSelectedItemsHasNotDeleted()"
                         >
-                          <fa-icon [icon]="icons.eraser" [fixedWidth]="true" />
+                          <fa-icon [icon]="deleteIcon()" [fixedWidth]="true" />
                           선택 {{ deleteText() }}
                         </sd-button>
                         @if (parent.isSelectedItemsHasDeleted()) {
                           <sd-button size="sm" theme="link-warning" (click)="onToggleDeleteItemsButtonClick(false)">
-                            <fa-icon [icon]="icons.redo" [fixedWidth]="true" />
+                            <fa-icon [icon]="restoreIcon()" [fixedWidth]="true" />
                             선택 {{ restoreText() }}
                           </sd-button>
                         }
@@ -198,17 +198,18 @@ import { TXT_CHANGE_IGNORE_CONFIRM } from "../../commons";
                     [getItemCellStyleFn]="parent.getItemCellStyleFn"
                     [getItemSelectableFn]="parent.getItemSelectableFn"
                   >
-                    @if (parent.deletedPropName && !parent.readonly?.()) {
-                      <sd-sheet-column fixed [key]="parent.deletedPropName">
+                    @if (parent.itemPropInfo?.isDeleted && !parent.readonly?.() && !parent.isDeleteDisabled?.()) {
+                      <sd-sheet-column fixed [key]="parent.itemPropInfo!.isDeleted!">
                         <ng-template #header>
                           <div class="p-xs-sm tx-center">
-                            <fa-icon [icon]="icons.eraser" />
+                            <fa-icon [icon]="deleteIcon()" />
                           </div>
                         </ng-template>
                         <ng-template [cell]="parent.items()" let-item>
                           <div class="p-xs-sm tx-center">
                             <sd-anchor (click)="onToggleDeleteItemButtonClick(item)" theme="danger">
-                              <fa-icon [icon]="item[parent.deletedPropName] ? icons.redo : icons.eraser" />
+                              <fa-icon [icon]="item[parent.itemPropInfo!.isDeleted!] ? restoreIcon() : deleteIcon()" [fixedWidth]="true" />
+                              {{ item[parent.itemPropInfo!.isDeleted!] ? restoreText() : deleteText() }}
                             </sd-anchor>
                           </div>
                         </ng-template>
@@ -280,18 +281,20 @@ import { TXT_CHANGE_IGNORE_CONFIRM } from "../../commons";
                       </sd-sheet-column>
                     }
 
-                    @if (parent.getItemLastModifiedInfo) {
-                      <sd-sheet-column header="수정일시" key="lastModifiedAt">
+                    @if (parent.itemPropInfo?.lastModifiedAt) {
+                      <sd-sheet-column header="수정일시" [key]="parent.itemPropInfo!.lastModifiedAt!">
                         <ng-template [cell]="parent.items()" let-item>
                           <div class="p-xs-sm tx-center">
-                            {{ item.lastModifiedAt | format: "yyyy-MM-dd HH:mm" }}
+                            {{ item[parent.itemPropInfo!.lastModifiedAt!] | format: "yyyy-MM-dd HH:mm" }}
                           </div>
                         </ng-template>
                       </sd-sheet-column>
-                      <sd-sheet-column header="수정자" key="lastModifiedBy">
+                    }
+                    @if (parent.itemPropInfo?.lastModifiedBy) {
+                      <sd-sheet-column header="수정자" [key]="parent.itemPropInfo!.lastModifiedBy!">
                         <ng-template [cell]="parent.items()" let-item>
                           <div class="p-xs-sm tx-center">
-                            {{ item.lastModifiedBy }}
+                            {{ item[parent.itemPropInfo!.lastModifiedBy!] }}
                           </div>
                         </ng-template>
                       </sd-sheet-column>
@@ -336,6 +339,8 @@ export class SdDataSheetControl {
   insertText = input("등록");
   deleteText = input("삭제");
   restoreText = input("복구");
+  deleteIcon = input(this.icons.eraser);
+  restoreIcon = input(this.icons.redo);
 
   filterControls = contentChildren(SdDataSheetFilterDirective);
   toolControls = contentChildren(SdDataSheetToolDirective);
@@ -419,15 +424,16 @@ export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K> implem
   restricted?: Signal<boolean>; // computed (use권한)
   readonly?: Signal<boolean>; // computed (edit권한)
 
+  isCreateDisabled?: Signal<boolean>; // computed (등록버튼 없애기)
+  isDeleteDisabled?: Signal<boolean>; // computed (등록버튼 없애기)
+
   defaultSelectMode?: "single" | "multi" | "none";
 
   bindFilter?(): F;
 
-  abstract getItemKey(item: I): K;
+  abstract itemKeyFn: (item: I) => K;
 
-  deletedPropName?: keyof I & string;
-
-  getItemLastModifiedInfo?(item: I): ISdDataSheetItemLastModifiedInfo;
+  itemPropInfo?: ISdDataSheetItemPropInfo<I>;
 
   prepareRefreshEffect?(): void;
 
@@ -469,7 +475,7 @@ export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K> implem
 
   selectedItems = $signal<I[]>([]);
 
-  trackByFn = (item: I): K | I => this.getItemKey(item) ?? item;
+  trackByFn = (item: I): K | I => this.itemKeyFn(item) ?? item;
 
   page = $signal(0);
   pageLength = $signal(0);
@@ -484,7 +490,7 @@ export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K> implem
   filter = $signal<F>({} as F);
   lastFilter = $signal<F>({} as F);
 
-  getItemSelectableFn = (item: I) => this.getItemKey(item) != null;
+  getItemSelectableFn = (item: I) => this.itemKeyFn(item) != null;
 
   constructor() {
     setupCumulateSelectedKeys({
@@ -492,7 +498,7 @@ export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K> implem
       selectMode: this.realSelectMode,
       selectedItems: this.selectedItems,
       selectedItemKeys: this.selectedItemKeys,
-      keySelectorFn: (item) => this.getItemKey(item),
+      keySelectorFn: (item) => this.itemKeyFn(item),
     });
 
     setupCloserWhenSingleSelectionChange({
@@ -562,13 +568,13 @@ export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K> implem
       page: this.page(),
     });
     this.items.set(result.items);
-    $arr(this.items).snapshot((item) => this.getItemKey(item));
+    $arr(this.items).snapshot((item) => this.itemKeyFn(item));
 
     this.pageLength.set(result.pageLength ?? 0);
     this.summaryData.set(result.summary ?? {});
 
     this.selectedItems.set(
-      this.items().filter((item) => this.selectedItems().some((sel) => this.getItemKey(sel) === this.getItemKey(item))),
+      this.items().filter((item) => this.selectedItems().some((sel) => this.itemKeyFn(sel) === this.itemKeyFn(item))),
     );
   }
 
@@ -629,14 +635,18 @@ export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K> implem
   //-- delete
 
   isSelectedItemsHasDeleted = $computed(() =>
-    this.selectedItems().some((item) => this.deletedPropName != null && (item[this.deletedPropName] as boolean)),
+    this.selectedItems().some(
+      (item) => this.itemPropInfo?.isDeleted != null && (item[this.itemPropInfo.isDeleted] as boolean),
+    ),
   );
   isSelectedItemsHasNotDeleted = $computed(() =>
-    this.selectedItems().some((item) => this.deletedPropName == null || !(item[this.deletedPropName] as boolean)),
+    this.selectedItems().some(
+      (item) => this.itemPropInfo?.isDeleted == null || !(item[this.itemPropInfo.isDeleted] as boolean),
+    ),
   );
 
   getItemCellStyleFn = (item: I) =>
-    this.deletedPropName != null && (item[this.deletedPropName] as boolean)
+    this.itemPropInfo?.isDeleted != null && (item[this.itemPropInfo.isDeleted] as boolean)
       ? "text-decoration: line-through;"
       : undefined;
 
@@ -661,15 +671,15 @@ export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K> implem
   }
 
   doToggleDeleteItem(item: I) {
-    if (this.deletedPropName == null) return;
+    if (this.itemPropInfo?.isDeleted == null) return;
     if (this.readonly?.()) return;
 
-    if (this.getItemKey(item) == null) {
+    if (this.itemKeyFn(item) == null) {
       this.items.update((items) => items.filter((item1) => item1 !== item));
       return;
     }
 
-    (item[this.deletedPropName] as boolean) = !(item[this.deletedPropName] as boolean);
+    (item[this.itemPropInfo.isDeleted] as boolean) = !(item[this.itemPropInfo.isDeleted] as boolean);
     this.items.$mark();
   }
 
@@ -736,9 +746,10 @@ export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K> implem
   }
 }
 
-export interface ISdDataSheetItemLastModifiedInfo {
-  lastModifiedAt?: DateTime;
-  lastModifiedBy?: string;
+export interface ISdDataSheetItemPropInfo<I> {
+  isDeleted?: keyof I & string;
+  lastModifiedAt?: keyof I & string;
+  lastModifiedBy?: keyof I & string;
 }
 
 export interface ISdDataSheetSearchParam<F extends Record<string, any>> {
