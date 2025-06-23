@@ -30,14 +30,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [
-    SdAnchorControl,
-    SdPaneControl,
-    SdDockContainerControl,
-    SdDockControl,
-    SdEventsDirective,
-    FaIconComponent,
-  ],
+  imports: [SdAnchorControl, SdPaneControl, SdDockContainerControl, SdDockControl, SdEventsDirective, FaIconComponent],
   styles: [
     /* language=SCSS */ `
       @use "../scss/mixins";
@@ -67,7 +60,8 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
           margin: 0 auto;
           width: fit-content;
           min-width: 200px;
-          background: var(--control-color);
+          background: var(--background-color);
+          //background: var(--control-color);
           //border: 1px solid var(--theme-primary-darker);
           // border-radius:2 px;
           overflow: hidden;
@@ -85,6 +79,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
               flex-direction: row;
               user-select: none;
               border-bottom: 1px solid var(--trans-light);
+              background: var(--control-color);
 
               > ._title {
                 // display: inline-block;
@@ -291,12 +286,8 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
       (keydown.escape)="onDialogEscapeKeydown()"
       [style.min-width.px]="minWidthPx()"
       [style.min-height.px]="minHeightPx()"
-      [style.width.px]="
-        minWidthPx() && widthPx() && minWidthPx()! > widthPx()! ? minWidthPx() : widthPx()
-      "
-      [style.height.px]="
-        minHeightPx() && heightPx() && minHeightPx()! > heightPx()! ? minHeightPx() : heightPx()
-      "
+      [style.width.px]="minWidthPx() && widthPx() && minWidthPx()! > widthPx()! ? minWidthPx() : widthPx()"
+      [style.height.px]="minHeightPx() && heightPx() && minHeightPx()! > heightPx()! ? minHeightPx() : heightPx()"
       (focus)="onDialogFocus()"
       (sdResize)="onDialogResize($event)"
     >
@@ -321,23 +312,11 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
         <div class="_left-resize-bar" (mousedown)="onResizeBarMousedown($event, 'left')"></div>
         <div class="_right-resize-bar" (mousedown)="onResizeBarMousedown($event, 'right')"></div>
         <div class="_top-resize-bar" (mousedown)="onResizeBarMousedown($event, 'top')"></div>
-        <div
-          class="_top-right-resize-bar"
-          (mousedown)="onResizeBarMousedown($event, 'top-right')"
-        ></div>
-        <div
-          class="_top-left-resize-bar"
-          (mousedown)="onResizeBarMousedown($event, 'top-left')"
-        ></div>
+        <div class="_top-right-resize-bar" (mousedown)="onResizeBarMousedown($event, 'top-right')"></div>
+        <div class="_top-left-resize-bar" (mousedown)="onResizeBarMousedown($event, 'top-left')"></div>
         <div class="_bottom-resize-bar" (mousedown)="onResizeBarMousedown($event, 'bottom')"></div>
-        <div
-          class="_bottom-right-resize-bar"
-          (mousedown)="onResizeBarMousedown($event, 'bottom-right')"
-        ></div>
-        <div
-          class="_bottom-left-resize-bar"
-          (mousedown)="onResizeBarMousedown($event, 'bottom-left')"
-        ></div>
+        <div class="_bottom-right-resize-bar" (mousedown)="onResizeBarMousedown($event, 'bottom-right')"></div>
+        <div class="_bottom-left-resize-bar" (mousedown)="onResizeBarMousedown($event, 'bottom-left')"></div>
       }
     </div>
   `,
@@ -411,9 +390,7 @@ export class SdModalControl {
   }
 
   onDialogFocus() {
-    const maxZIndex = document.body
-      .findAll("sd-modal")
-      .max((el) => Number(getComputedStyle(el).zIndex));
+    const maxZIndex = document.body.findAll("sd-modal").max((el) => Number(getComputedStyle(el).zIndex));
     if (maxZIndex !== undefined) {
       this.#elRef.nativeElement.style.zIndex = (maxZIndex + 1).toString();
     }
@@ -442,10 +419,7 @@ export class SdModalControl {
     const style = getComputedStyle(this.#elRef.nativeElement);
     let paddingTop = style.paddingTop === "" ? 0 : (NumberUtils.parseInt(style.paddingTop) ?? 0);
 
-    if (
-      this.dialogElRef().nativeElement.offsetHeight >
-      this.#elRef.nativeElement.offsetHeight - paddingTop
-    ) {
+    if (this.dialogElRef().nativeElement.offsetHeight > this.#elRef.nativeElement.offsetHeight - paddingTop) {
       this.dialogElRef().nativeElement.style.maxHeight = `100%`; // `calc(100% - ${paddingTop}px)`;
       this.dialogElRef().nativeElement.style.height = `100%`; // `calc(100% - ${paddingTop}px)`;
     }
@@ -461,12 +435,10 @@ export class SdModalControl {
   @HostListener("window:resize")
   onWindowResize() {
     if (this.dialogElRef().nativeElement.offsetLeft > this.#elRef.nativeElement.offsetWidth - 100) {
-      this.dialogElRef().nativeElement.style.left =
-        this.#elRef.nativeElement.offsetWidth - 100 + "px";
+      this.dialogElRef().nativeElement.style.left = this.#elRef.nativeElement.offsetWidth - 100 + "px";
     }
     if (this.dialogElRef().nativeElement.offsetTop > this.#elRef.nativeElement.offsetHeight - 100) {
-      this.dialogElRef().nativeElement.style.right =
-        this.#elRef.nativeElement.offsetHeight - 100 + "px";
+      this.dialogElRef().nativeElement.style.right = this.#elRef.nativeElement.offsetHeight - 100 + "px";
     }
   }
 
@@ -496,15 +468,7 @@ export class SdModalControl {
 
   onResizeBarMousedown(
     event: MouseEvent,
-    direction:
-      | "left"
-      | "right"
-      | "top"
-      | "top-left"
-      | "top-right"
-      | "bottom"
-      | "bottom-left"
-      | "bottom-right",
+    direction: "left" | "right" | "top" | "top-left" | "top-right" | "bottom" | "bottom-left" | "bottom-right",
   ) {
     if (!this.resizable()) return;
 
@@ -528,16 +492,10 @@ export class SdModalControl {
           dialogEl.style.top = startTop + (e.clientY - startY) + "px";
           dialogEl.style.bottom = "auto";
         }
-        dialogEl.style.height = `${Math.max(
-          startHeight - (e.clientY - startY),
-          this.minHeightPx() ?? 0,
-        )}px`;
+        dialogEl.style.height = `${Math.max(startHeight - (e.clientY - startY), this.minHeightPx() ?? 0)}px`;
       }
       if (direction === "bottom" || direction === "bottom-right" || direction === "bottom-left") {
-        dialogEl.style.height = `${Math.max(
-          startHeight + e.clientY - startY,
-          this.minHeightPx() ?? 0,
-        )}px`;
+        dialogEl.style.height = `${Math.max(startHeight + e.clientY - startY, this.minHeightPx() ?? 0)}px`;
       }
       if (direction === "right" || direction === "bottom-right" || direction === "top-right") {
         dialogEl.style.width = `${Math.max(

@@ -11,6 +11,10 @@ import { SdPaneControl } from "../sd-pane.control";
   imports: [SdDockContainerControl, SdDockControl, SdPaneControl],
   styles: [
     /* language=SCSS */ `
+      @use "sass:map";
+
+      @use "../../scss/variables";
+
       sd-region {
         display: block;
         height: 100%;
@@ -30,10 +34,17 @@ import { SdPaneControl } from "../sd-pane.control";
             border-top-left-radius: var(--border-radius-lg);
             border-top-right-radius: var(--border-radius-lg);
             background: var(--control-color);
-            z-index: var(--z-index-sidebar);
             padding: var(--gap-default);
             font-size: var(--font-size-sm);
             color: var(--text-trans-lighter);
+          }
+        }
+
+        @each $key, $val in map.get(variables.$vars, theme) {
+          &[sd-theme="#{$key}"] {
+            > sd-dock-container {
+              background: var(--theme-#{$key}-lighter);
+            }
           }
         }
       }
@@ -46,7 +57,7 @@ import { SdPaneControl } from "../sd-pane.control";
           {{ header() }}
         </sd-dock>
       }
-      <sd-pane [class]="contentClass()">
+      <sd-pane [class]="contentClass()" [style]="contentStyle()">
         <ng-content></ng-content>
       </sd-pane>
     </sd-dock-container>
@@ -56,4 +67,5 @@ export class SdRegionControl {
   header = input<string>();
 
   contentClass = input<string>();
+  contentStyle = input<string>();
 }

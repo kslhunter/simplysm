@@ -31,8 +31,6 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { $signal } from "../../utils/bindings/$signal";
 import { injectParent } from "../../utils/injections/inject-parent";
 import { ISdModal } from "../../providers/sd-modal.provider";
-import { SdTopbarMenuControl } from "../../controls/sd-topbar-menu.control";
-import { SdTopbarMenuItemControl } from "../../controls/sd-topbar-menu-item.control";
 import { SdDockContainerControl } from "../../controls/sd-dock-container.control";
 import { SdDockControl } from "../../controls/sd-dock.control";
 import { SdPaneControl } from "../../controls/sd-pane.control";
@@ -50,8 +48,6 @@ import { SdRegionControl } from "../../controls/containers/sd-region";
     NgTemplateOutlet,
     FormatPipe,
     FaIconComponent,
-    SdTopbarMenuControl,
-    SdTopbarMenuItemControl,
     SdDockContainerControl,
     SdDockControl,
     SdPaneControl,
@@ -78,10 +74,10 @@ import { SdRegionControl } from "../../controls/containers/sd-region";
 
       <ng-template #content>
         <sd-dock-container style="min-width: 20em">
-          <sd-region contentClass="p-default">
+          <sd-region>
             <sd-dock-container>
               @if ((parent.currViewType() !== "modal" && !parent.readonly?.()) || toolTemplateRef() != null) {
-                <sd-dock class="pb-sm flex-column flex-gap-sm">
+                <sd-dock class="p-default pb-0 flex-column flex-gap-sm">
                   @if (parent.currViewType() !== "modal" && !parent.readonly?.()) {
                     <div class="flex-row flex-gap-sm">
                       <sd-button size="sm" theme="primary" (click)="onSubmitButtonClick()">
@@ -113,11 +109,11 @@ import { SdRegionControl } from "../../controls/containers/sd-region";
               }
 
               @if (prevTemplateRef() != null) {
-                <sd-dock class="pb-sm">
+                <sd-dock class="p-default pb-0">
                   <ng-template [ngTemplateOutlet]="prevTemplateRef() ?? null" />
                 </sd-dock>
               }
-              <sd-pane>
+              <sd-pane class="p-default">
                 <sd-form #formCtrl (submit)="onSubmit()">
                   <ng-template [ngTemplateOutlet]="contentTemplateRef()" />
                 </sd-form>
@@ -126,7 +122,7 @@ import { SdRegionControl } from "../../controls/containers/sd-region";
           </sd-region>
 
           @if (parent.dataInfo && (parent.dataInfo().lastModifiedAt || parent.dataInfo().lastModifiedBy)) {
-            <sd-dock position="bottom" class="bg-theme-grey-lightest">
+            <sd-dock position="bottom">
               <sd-region contentClass="p-sm-default">
                 최종수정:
                 {{ parent.dataInfo().lastModifiedAt! | format: "yyyy-MM-dd HH:mm" }}
@@ -146,7 +142,7 @@ import { SdRegionControl } from "../../controls/containers/sd-region";
 
       @if (!parent.readonly?.()) {
         <ng-template #modalBottom>
-          <div class="p-sm-default flex-row bdt bdt-theme-grey-lightest">
+          <div class="p-sm-default flex-row bdt bdt-theme-grey-lightest bg-white">
             @if ((!parent.isNew || !parent.isNew()) && parent.toggleDelete) {
               <div>
                 @if (parent.dataInfo && parent.dataInfo().isDeleted) {

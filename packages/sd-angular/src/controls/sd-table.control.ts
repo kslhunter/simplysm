@@ -24,6 +24,9 @@ import { transformBoolean } from "../utils/type-tramsforms";
           border-right: 1px solid $border-color-dark;
           border-bottom: 1px solid $border-color-dark;
 
+          border-radius: var(--border-radius-default);
+          overflow: hidden;
+
           > * > tr > * {
             padding: var(--gap-xs) var(--gap-sm);
             border-left: 1px solid $border-color-light;
@@ -111,9 +114,11 @@ import { transformBoolean } from "../utils/type-tramsforms";
       }
     `,
   ],
-  template: ` <table>
-    <ng-content></ng-content>
-  </table>`,
+  template: `
+    <table>
+      <ng-content></ng-content>
+    </table>
+  `,
   host: {
     "[attr.sd-inset]": "inset()",
     "[attr.sd-inline]": "inline()",

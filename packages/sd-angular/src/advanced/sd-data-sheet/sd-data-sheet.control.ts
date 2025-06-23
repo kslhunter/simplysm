@@ -17,7 +17,7 @@ import {
   viewChild,
   ViewEncapsulation,
 } from "@angular/core";
-import { ObjectUtils, TArrayDiffs2Result } from "@simplysm/sd-core-common";
+import { ObjectUtils, TArrayDiffs2Result, TUndefToOptional } from "@simplysm/sd-core-common";
 import { SdAnchorControl } from "../../controls/sd-anchor.control";
 import { SdButtonControl } from "../../controls/sd-button.control";
 import { SdDockContainerControl } from "../../controls/sd-dock-container.control";
@@ -114,7 +114,7 @@ import { TXT_CHANGE_IGNORE_CONFIRM } from "../../commons";
           <sd-form #formCtrl (submit)="onSubmit()">
             <sd-region contentClass="p-default">
               <sd-dock-container>
-                <sd-dock class="pb-xs">
+                <sd-dock class="pb-sm">
                   <div class="flex-row flex-gap-sm">
                     @if (!parent.readonly?.()) {
                       @if (parent.submit) {
@@ -127,11 +127,11 @@ import { TXT_CHANGE_IGNORE_CONFIRM } from "../../commons";
                       @if (parent.editItem && !parent.isCreateDisabled?.()) {
                         <sd-button size="sm" theme="primary" (click)="onCreateItemButtonClick()">
                           <fa-icon [icon]="icons.add" [fixedWidth]="true" />
-                          {{ insertText() }}
+                          {{ insertText() ?? "등록" }}
                           <small>(CTRL+INSERT)</small>
                         </sd-button>
                       }
-                      @if (parent.addNewItem && !parent.isCreateDisabled?.()) {
+                      @if (parent.newItem && !parent.isCreateDisabled?.()) {
                         <sd-button size="sm" theme="link-warning" (click)="onAddItemButtonClick()">
                           <fa-icon [icon]="icons.add" [fixedWidth]="true" />
                           행 추가
@@ -153,12 +153,12 @@ import { TXT_CHANGE_IGNORE_CONFIRM } from "../../commons";
                           [disabled]="!parent.isSelectedItemsHasNotDeleted()"
                         >
                           <fa-icon [icon]="deleteIcon()" [fixedWidth]="true" />
-                          선택 {{ deleteText() }}
+                          선택 {{ deleteText() ?? "삭제" }}
                         </sd-button>
                         @if (parent.isSelectedItemsHasDeleted()) {
                           <sd-button size="sm" theme="link-warning" (click)="onToggleDeleteItemsButtonClick(false)">
                             <fa-icon [icon]="restoreIcon()" [fixedWidth]="true" />
-                            선택 {{ restoreText() }}
+                            선택 {{ restoreText() ?? "복구" }}
                           </sd-button>
                         }
                       }
@@ -198,7 +198,12 @@ import { TXT_CHANGE_IGNORE_CONFIRM } from "../../commons";
                     [getItemCellStyleFn]="parent.getItemCellStyleFn"
                     [getItemSelectableFn]="parent.getItemSelectableFn"
                   >
-                    @if (parent.itemPropInfo?.isDeleted && !parent.readonly?.() && !parent.isDeleteDisabled?.()) {
+                    @if (
+                      parent.itemPropInfo?.isDeleted &&
+                      !parent.readonly?.() &&
+                      !parent.isDeleteDisabled?.() &&
+                      parent.submit
+                    ) {
                       <sd-sheet-column fixed [key]="parent.itemPropInfo!.isDeleted!">
                         <ng-template #header>
                           <div class="p-xs-sm tx-center">
@@ -208,7 +213,10 @@ import { TXT_CHANGE_IGNORE_CONFIRM } from "../../commons";
                         <ng-template [cell]="parent.items()" let-item>
                           <div class="p-xs-sm tx-center">
                             <sd-anchor (click)="onToggleDeleteItemButtonClick(item)" theme="danger">
-                              <fa-icon [icon]="item[parent.itemPropInfo!.isDeleted!] ? restoreIcon() : deleteIcon()" [fixedWidth]="true" />
+                              <fa-icon
+                                [icon]="item[parent.itemPropInfo!.isDeleted!] ? restoreIcon() : deleteIcon()"
+                                [fixedWidth]="true"
+                              />
                               {{ item[parent.itemPropInfo!.isDeleted!] ? restoreText() : deleteText() }}
                             </sd-anchor>
                           </div>
@@ -309,7 +317,7 @@ import { TXT_CHANGE_IGNORE_CONFIRM } from "../../commons";
 
       @if (parent.realSelectMode()) {
         <ng-template #modalBottom>
-          <div class="p-sm-default bdt bdt-trans-light flex-row flex-gap-sm" style="justify-content: right">
+          <div class="p-sm-default bdt bdt-trans-light flex-row flex-gap-sm bg-white" style="justify-content: right">
             @if (modalBottomTemplate()) {
               <ng-template [ngTemplateOutlet]="modalBottomTemplate()!" />
             }
@@ -336,9 +344,9 @@ export class SdDataSheetControl {
 
   formCtrl = viewChild<SdFormControl>("formCtrl");
 
-  insertText = input("등록");
-  deleteText = input("삭제");
-  restoreText = input("복구");
+  insertText = input<string>();
+  deleteText = input<string>();
+  restoreText = input<string>();
   deleteIcon = input(this.icons.eraser);
   restoreIcon = input(this.icons.redo);
 
@@ -425,11 +433,11 @@ export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K> implem
   readonly?: Signal<boolean>; // computed (edit권한)
 
   isCreateDisabled?: Signal<boolean>; // computed (등록버튼 없애기)
-  isDeleteDisabled?: Signal<boolean>; // computed (등록버튼 없애기)
+  isDeleteDisabled?: Signal<boolean>; // computed (삭제버튼 없애기)
 
   defaultSelectMode?: "single" | "multi" | "none";
 
-  bindFilter?(): F;
+  bindFilter?(): TUndefToOptional<F>;
 
   abstract itemKeyFn: (item: I) => K;
 
@@ -445,7 +453,7 @@ export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K> implem
 
   toggleDeleteItems?(selectedItems: I[], del: boolean): Promise<boolean>;
 
-  addNewItem?(): Promise<I> | I;
+  newItem?(): Promise<TUndefToOptional<I>> | TUndefToOptional<I>;
 
   submit?(diffs: TArrayDiffs2Result<I>[]): Promise<boolean> | boolean;
 
@@ -510,8 +518,8 @@ export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K> implem
     effect(() => {
       if (this.bindFilter) {
         const filter = this.bindFilter();
-        this.filter.set(filter);
-        this.lastFilter.set(ObjectUtils.clone(filter));
+        this.filter.set(filter as F);
+        this.lastFilter.set(ObjectUtils.clone(filter) as F);
       }
     });
 
@@ -594,11 +602,11 @@ export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K> implem
   }
 
   async doAddItem() {
-    if (!this.addNewItem) return;
+    if (!this.newItem) return;
 
     this.busyCount.update((v) => v + 1);
     await this.#sdToast.try(async () => {
-      const newItem = await this.addNewItem!();
+      const newItem = (await this.newItem!()) as I;
       this.items.update((items) => [newItem, ...items]);
     });
     this.busyCount.update((v) => v - 1);

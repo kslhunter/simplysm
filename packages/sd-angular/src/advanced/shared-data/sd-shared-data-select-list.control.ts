@@ -89,7 +89,7 @@ import { SdRegionControl } from "../../controls/containers/sd-region";
           </sd-region>
         </sd-dock>
 
-        <sd-region contentClass="p-default">
+        <sd-region>
           <sd-dock-container>
             @if (pageItemCount()) {
               <sd-dock class="pb-default">

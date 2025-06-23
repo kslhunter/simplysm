@@ -11,10 +11,7 @@ import {
   viewChild,
   ViewEncapsulation,
 } from "@angular/core";
-import {
-  SdItemOfTemplateContext,
-  SdItemOfTemplateDirective,
-} from "../directives/sd-item-of.template-directive";
+import { SdItemOfTemplateContext, SdItemOfTemplateDirective } from "../directives/sd-item-of.template-directive";
 import { SdRippleDirective } from "../directives/sd-ripple.directive";
 import { SdTypedTemplateDirective } from "../directives/sd-typed.template-directive";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
@@ -240,7 +237,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
               </sd-dock>
             }
 
-            <sd-pane class="bdt bdt-trans-default">
+            <sd-pane>
               <ng-template [ngTemplateOutlet]="beforeTemplateRef() ?? null" />
               <ng-template #rowOfList [typed]="rowOfListType" let-items="items" let-depth="depth">
                 @for (item of items; let index = $index; track trackByFn()(item, index)) {
@@ -324,12 +321,9 @@ export class SdSelectControl<M extends "single" | "multi", T> {
 
   headerTemplateRef = contentChild<any, TemplateRef<void>>("header", { read: TemplateRef });
   beforeTemplateRef = contentChild<any, TemplateRef<void>>("before", { read: TemplateRef });
-  itemTemplateRef = contentChild<any, TemplateRef<SdItemOfTemplateContext<T>>>(
-    SdItemOfTemplateDirective,
-    {
-      read: TemplateRef,
-    },
-  );
+  itemTemplateRef = contentChild<any, TemplateRef<SdItemOfTemplateContext<T>>>(SdItemOfTemplateDirective, {
+    read: TemplateRef,
+  });
 
   itemControls = $signal<SdSelectItemControl[]>([]);
 
@@ -345,9 +339,7 @@ export class SdSelectControl<M extends "single" | "multi", T> {
     });
 
     $afterRenderEffect(() => {
-      const selectedItemControls = this.itemControls().filter((itemControl) =>
-        itemControl.isSelected(),
-      );
+      const selectedItemControls = this.itemControls().filter((itemControl) => itemControl.isSelected());
       // const selectedItemEls = selectedItemControls.map((item) => item.elRef.nativeElement);
       // const innerHTML = selectedItemEls
       //   .map((el) => el.findFirst("> ._content")?.innerHTML ?? "")
@@ -356,11 +348,7 @@ export class SdSelectControl<M extends "single" | "multi", T> {
       const innerHTML = selectedItemControls
         .map((ctl) => ctl.contentHTML())
         .map((item) => `<div style="display: inline-block">${item}</div>`)
-        .join(
-          this.multiSelectionDisplayDirection() === "vertical"
-            ? "<div class='p-sm-0'></div>"
-            : ", ",
-        );
+        .join(this.multiSelectionDisplayDirection() === "vertical" ? "<div class='p-sm-0'></div>" : ", ");
 
       if (innerHTML === "") {
         if (this.placeholder() !== undefined) {

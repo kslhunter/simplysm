@@ -14,10 +14,7 @@ import { SdSelectButtonControl } from "../../controls/sd-select-button.control";
 import { SdSelectControl, TSelectModeValue } from "../../controls/sd-select-control";
 import { SdSelectItemControl } from "../../controls/sd-select-item.control";
 import { SdTextfieldControl } from "../../controls/sd-textfield.control";
-import {
-  SdItemOfTemplateContext,
-  SdItemOfTemplateDirective,
-} from "../../directives/sd-item-of.template-directive";
+import { SdItemOfTemplateContext, SdItemOfTemplateDirective } from "../../directives/sd-item-of.template-directive";
 import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
 import { ISdModal, ISdModalInfo, SdModalProvider } from "../../providers/sd-modal.provider";
 import { $computed } from "../../utils/bindings/$computed";
@@ -70,21 +67,13 @@ import { ISdSelectModal, TSdSelectModalInfo } from "../sd-data-sheet/sd-data-sel
       }
 
       <ng-template #header>
-        <sd-textfield
-          type="text"
-          [(value)]="searchText"
-          placeholder="검색어"
-          [inset]="true"
-          [size]="size()"
-          inputStyle="outline: none"
-          class="bdb bdb-trans-default"
-        />
+        <div class="p-xs">
+          <sd-textfield type="text" [(value)]="searchText" placeholder="검색어" [size]="size()" />
+        </div>
       </ng-template>
 
       <ng-template #before>
-        @if (
-          (!required() && selectMode() === "single") || (useUndefined() && selectMode() === "multi")
-        ) {
+        @if ((!required() && selectMode() === "single") || (useUndefined() && selectMode() === "multi")) {
           <sd-select-item>
             @if (undefinedTemplateRef()) {
               <ng-template [ngTemplateOutlet]="undefinedTemplateRef()!" />
@@ -95,17 +84,10 @@ import { ISdSelectModal, TSdSelectModalInfo } from "../sd-data-sheet/sd-data-sel
         }
       </ng-template>
 
-      <ng-template
-        [itemOf]="rootDisplayItems()"
-        let-item="item"
-        let-index="index"
-        let-depth="depth"
-      >
+      <ng-template [itemOf]="rootDisplayItems()" let-item="item" let-index="index" let-depth="depth">
         @if (getItemSelectable(item, index, depth)) {
           <sd-select-item [value]="item.__valueKey" [hidden]="!getItemVisible(item, index, depth)">
-            <span
-              [style.text-decoration]="getIsHiddenFn()(item, index) ? 'line-through' : undefined"
-            >
+            <span [style.text-decoration]="getIsHiddenFn()(item, index) ? 'line-through' : undefined">
               <ng-template
                 [ngTemplateOutlet]="itemTemplateRef() ?? null"
                 [ngTemplateOutletContext]="{
@@ -125,7 +107,7 @@ import { ISdSelectModal, TSdSelectModalInfo } from "../sd-data-sheet/sd-data-sel
 export class SdSharedDataSelectControl<
   T extends ISharedDataBase<string | number>,
   M extends keyof TSelectModeValue<T>,
-  TModal extends ISdSelectModal
+  TModal extends ISdSelectModal,
 > {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
 
@@ -157,12 +139,9 @@ export class SdSharedDataSelectControl<
   parentKeyProp = input<string>();
   displayOrderKeyProp = input<string>();
 
-  itemTemplateRef = contentChild<any, TemplateRef<SdItemOfTemplateContext<T>>>(
-    SdItemOfTemplateDirective,
-    {
-      read: TemplateRef,
-    },
-  );
+  itemTemplateRef = contentChild<any, TemplateRef<SdItemOfTemplateContext<T>>>(SdItemOfTemplateDirective, {
+    read: TemplateRef,
+  });
   undefinedTemplateRef = contentChild<any, TemplateRef<void>>("undefinedTemplate", {
     read: TemplateRef,
   });
@@ -202,9 +181,7 @@ export class SdSharedDataSelectControl<
 
   // 선택될 수 있는것들 (검색어에 의해 숨겨진것도 포함)
   getItemSelectable(item: any, index: number, depth: number) {
-    return (
-      this.parentKeyProp() === undefined || depth !== 0 || item[this.parentKeyProp()!] === undefined
-    );
+    return this.parentKeyProp() === undefined || depth !== 0 || item[this.parentKeyProp()!] === undefined;
   }
 
   // 화면 목록에서 뿌려질것 (검색어에 의해 숨겨진것 제외)
@@ -268,17 +245,13 @@ export class SdSharedDataSelectControl<
       ...modal,
       inputs: {
         selectMode: this.selectMode(),
-        selectedItemKeys: (this.selectMode() === "multi"
-          ? (this.value() as any[])
-          : [this.value()]
-        ).filterExists(),
+        selectedItemKeys: (this.selectMode() === "multi" ? (this.value() as any[]) : [this.value()]).filterExists(),
         ...modal.inputs,
       },
     });
 
     if (result) {
-      const newValue =
-        this.selectMode() === "multi" ? result.selectedItemKeys : result.selectedItemKeys[0];
+      const newValue = this.selectMode() === "multi" ? result.selectedItemKeys : result.selectedItemKeys[0];
       this.value.set(newValue);
     }
   }

@@ -216,10 +216,7 @@ import { FaIconComponent, FaLayersComponent } from "@fortawesome/angular-fontawe
               @if (layoutEngine.hasSummary()) {
                 <tr class="_summary-row">
                   @for (colDef of layoutEngine.columnDefs(); let c = $index; track c) {
-                    <th
-                      [class._fixed]="colDef.fixed"
-                      [style.left.px]="columnFixingManager.fixedLeftMap().get(c)"
-                    >
+                    <th [class._fixed]="colDef.fixed" [style.left.px]="columnFixingManager.fixedLeftMap().get(c)">
                       @let _tempRef = colDef.control.summaryTemplateRef();
                       @if (_tempRef) {
                         <ng-template [ngTemplateOutlet]="_tempRef" />
@@ -276,10 +273,7 @@ import { FaIconComponent, FaLayersComponent } from "@fortawesome/angular-fontawe
                     >
                       @let itemExpDef = expandingManager.getDef(item);
                       @if (itemExpDef.depth > 0) {
-                        <div
-                          class="_depth-indicator"
-                          [style.margin-left.em]="itemExpDef.depth - 0.5"
-                        ></div>
+                        <div class="_depth-indicator" [style.margin-left.em]="itemExpDef.depth - 0.5"></div>
                       }
                       @if (itemExpDef.hasChildren) {
                         <fa-icon
@@ -292,11 +286,7 @@ import { FaIconComponent, FaLayersComponent } from "@fortawesome/angular-fontawe
                       }
                     </td>
                   }
-                  @for (
-                    columnDef of layoutEngine.columnDefs();
-                    let c = $index;
-                    track columnDef.control.key()
-                  ) {
+                  @for (columnDef of layoutEngine.columnDefs(); let c = $index; track columnDef.control.key()) {
                     <td
                       tabindex="0"
                       [class._fixed]="columnDef.fixed"
@@ -685,13 +675,11 @@ export class SdSheetControl<T> {
   //region Column fixing
 
   columnFixingManager = new SdSheetColumnFixingManager({
-    fixedLength: $computed(
-      () => this.layoutEngine.columnDefs().filter((item) => item.fixed).length,
-    ),
+    fixedLength: $computed(() => this.layoutEngine.columnDefs().filter((item) => item.fixed).length),
   });
 
   onHeaderLastRowCellResize(event: ISdResizeEvent, c: number) {
-    this.columnFixingManager.registerWidth(c, event.contentRect.width);
+    this.columnFixingManager.registerWidth(c, (event.target as HTMLElement).offsetWidth);
   }
 
   //endregion
@@ -847,8 +835,7 @@ export class SdSheetControl<T> {
 
     if (!(event.target instanceof HTMLElement)) return;
 
-    const tdEl =
-      event.target.tagName.toLowerCase() === "td" ? event.target : event.target.findParent("td");
+    const tdEl = event.target.tagName.toLowerCase() === "td" ? event.target : event.target.findParent("td");
     if (!(tdEl instanceof HTMLTableCellElement)) return;
 
     const addr = this.cellAgent.getCellAddr(tdEl);
@@ -888,8 +875,7 @@ export class SdSheetControl<T> {
     const theadEl = this.domAccessor.getTHead();
     const fixedHeaderLastDepthEls = this.domAccessor.getLastDepthFixedHeaders();
 
-    const tdEl =
-      event.target.tagName.toLowerCase() === "td" ? event.target : event.target.findParent("td");
+    const tdEl = event.target.tagName.toLowerCase() === "td" ? event.target : event.target.findParent("td");
     if (!(tdEl instanceof HTMLTableCellElement)) return;
     if (tdEl.classList.contains("_fixed")) return;
 
