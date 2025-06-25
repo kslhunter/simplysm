@@ -8,7 +8,7 @@ import {
   SdDataSelectButtonControl,
   TSdSelectModalInfo,
 } from "../sd-data-sheet/sd-data-select-button.control";
-import { TSelectModeValue } from "../../controls/sd-select-control";
+import { TSelectModeValue } from "../../controls/select/sd-select.control";
 
 @Component({
   selector: "sd-shared-data-select-button",

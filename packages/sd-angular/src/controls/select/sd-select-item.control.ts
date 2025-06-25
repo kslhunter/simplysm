@@ -8,15 +8,15 @@ import {
   input,
   ViewEncapsulation,
 } from "@angular/core";
-import { SdSelectControl } from "./sd-select-control";
-import { SdCheckboxControl } from "./sd-checkbox.control";
-import { SdGapControl } from "./sd-gap.control";
-import { injectElementRef } from "../utils/injections/inject-element-ref";
-import { setupRipple } from "../utils/setups/setup-ripple";
-import { transformBoolean } from "../utils/type-tramsforms";
-import { $computed } from "../utils/bindings/$computed";
-import { $signal } from "../utils/bindings/$signal";
-import { $effect } from "../utils/bindings/$effect";
+import { SdSelectControl } from "./sd-select.control";
+import { SdCheckboxControl } from "../sd-checkbox.control";
+import { SdGapControl } from "../sd-gap.control";
+import { injectElementRef } from "../../utils/injections/inject-element-ref";
+import { setupRipple } from "../../utils/setups/setup-ripple";
+import { transformBoolean } from "../../utils/type-tramsforms";
+import { $computed } from "../../utils/bindings/$computed";
+import { $signal } from "../../utils/bindings/$signal";
+import { $effect } from "../../utils/bindings/$effect";
 
 @Component({
   selector: "sd-select-item",
@@ -26,7 +26,7 @@ import { $effect } from "../utils/bindings/$effect";
   imports: [SdCheckboxControl, SdGapControl],
   styles: [
     /* language=SCSS */ `
-      @use "../scss/mixins";
+      @use "../../scss/mixins";
 
       sd-select-item {
         display: block;
@@ -99,7 +99,7 @@ export class SdSelectItemControl {
   constructor() {
     setupRipple(() => !this.disabled());
 
-    $effect((onCleanup) => {
+    $effect([], (onCleanup) => {
       this.#selectControl.itemControls.update((v) => [...v, this]);
 
       onCleanup(() => {

@@ -15,17 +15,14 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { SdAdditionalButtonControl } from "../../controls/sd-additional-button.control";
 import { SdButtonControl } from "../../controls/sd-button.control";
 import { SdAnchorControl } from "../../controls/sd-anchor.control";
-import { TSelectModeValue } from "../../controls/sd-select-control";
+import { TSelectModeValue } from "../../controls/select/sd-select.control";
 import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
 import { ISdModal, ISdModalInfo, SdModalProvider } from "../../providers/sd-modal.provider";
 import { transformBoolean } from "../../utils/type-tramsforms";
 import { $computed } from "../../utils/bindings/$computed";
 import { setupInvalid } from "../../utils/setups/setup-invalid";
 import { $effect } from "../../utils/bindings/$effect";
-import {
-  SdItemOfTemplateContext,
-  SdItemOfTemplateDirective,
-} from "../../directives/sd-item-of.template-directive";
+import { SdItemOfTemplateContext, SdItemOfTemplateDirective } from "../../directives/sd-item-of.template-directive";
 import { NgTemplateOutlet } from "@angular/common";
 import { $signal } from "../../utils/bindings/$signal";
 import { injectParent } from "../../utils/injections/inject-parent";
@@ -35,13 +32,7 @@ import { injectParent } from "../../utils/injections/inject-parent";
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [
-    SdAdditionalButtonControl,
-    FaIconComponent,
-    SdButtonControl,
-    SdAnchorControl,
-    NgTemplateOutlet,
-  ],
+  imports: [SdAdditionalButtonControl, FaIconComponent, SdButtonControl, SdAnchorControl, NgTemplateOutlet],
   template: `
     <sd-additional-button [inset]="parent.inset()" [size]="parent.size()">
       @for (item of parent.selectedItems(); track item; let index = $index) {
@@ -90,12 +81,9 @@ export class SdDataSelectButtonControl {
 
   parent = injectParent();
 
-  itemTemplateRef = contentChild.required<any, TemplateRef<SdItemOfTemplateContext<any>>>(
-    SdItemOfTemplateDirective,
-    {
-      read: TemplateRef,
-    },
-  );
+  itemTemplateRef = contentChild.required<any, TemplateRef<SdItemOfTemplateContext<any>>>(SdItemOfTemplateDirective, {
+    read: TemplateRef,
+  });
 
   async onModalButtonClick(event: MouseEvent): Promise<void> {
     event.preventDefault();
@@ -130,10 +118,7 @@ export abstract class AbsSdDataSelectButton<
   size = input<"sm" | "lg">();
   selectMode = input<M>("single" as M);
   isNoValue = $computed(() => {
-    return (
-      this.value() == null ||
-      (this.selectMode() === "multi" && (this.value() as any[]).length === 0)
-    );
+    return this.value() == null || (this.selectMode() === "multi" && (this.value() as any[]).length === 0);
   });
 
   selectedItems = $signal<T[]>([]);
@@ -143,11 +128,7 @@ export abstract class AbsSdDataSelectButton<
 
     $effect([this.value], async () => {
       const value = this.value();
-      if (
-        this.selectMode() === "multi" &&
-        value instanceof Array &&
-        value.filterExists().length > 0
-      ) {
+      if (this.selectMode() === "multi" && value instanceof Array && value.filterExists().length > 0) {
         this.selectedItems.set(await this.load(value.filterExists()));
       } else if (this.selectMode() === "single" && !(value instanceof Array) && value != null) {
         this.selectedItems.set(await this.load([value as K]));
@@ -163,17 +144,13 @@ export abstract class AbsSdDataSelectButton<
       ...modal,
       inputs: {
         selectMode: this.selectMode(),
-        selectedItemKeys: (this.selectMode() === "multi"
-          ? (this.value() as any[])
-          : [this.value()]
-        ).filterExists(),
+        selectedItemKeys: (this.selectMode() === "multi" ? (this.value() as any[]) : [this.value()]).filterExists(),
         ...modal.inputs,
       },
     });
 
     if (result) {
-      const newValue =
-        this.selectMode() === "multi" ? result.selectedItemKeys : result.selectedItemKeys[0];
+      const newValue = this.selectMode() === "multi" ? result.selectedItemKeys : result.selectedItemKeys[0];
       this.value.set(newValue);
     }
   }
@@ -188,10 +165,7 @@ export interface ISdSelectModal extends ISdModal<ISelectModalOutputResult> {
   selectedItemKeys: InputSignal<any[]>;
 }
 
-export type TSdSelectModalInfo<T extends ISdSelectModal> = ISdModalInfo<
-  T,
-  "selectMode" | "selectedItemKeys"
->;
+export type TSdSelectModalInfo<T extends ISdSelectModal> = ISdModalInfo<T, "selectMode" | "selectedItemKeys">;
 
 export interface ISelectModalOutputResult {
   selectedItemKeys: any[];

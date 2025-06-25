@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, forwardRef, inject, ViewEncapsulation } from "@angular/core";
 import { SdDropdownControl } from "./sd-dropdown.control";
-import { SdEventsDirective } from "../directives/sd-events.directive";
-import { injectElementRef } from "../utils/injections/inject-element-ref";
+import { SdEventsDirective } from "../../directives/sd-events.directive";
+import { injectElementRef } from "../../utils/injections/inject-element-ref";
 
 // TODO: 모바일일때는 모달 형식으로 표현
 @Component({
@@ -12,7 +12,7 @@ import { injectElementRef } from "../utils/injections/inject-element-ref";
   imports: [SdEventsDirective],
   styles: [
     /* language=SCSS */ `
-      @use "../scss/mixins";
+      @use "../../scss/mixins";
 
       sd-dropdown-popup {
         position: fixed;

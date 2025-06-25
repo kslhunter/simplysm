@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/core";
-import { setupRipple } from "../utils/setups/setup-ripple";
+import { setupRipple } from "../../utils/setups/setup-ripple";
 
 @Component({
   selector: "sd-select-button",
@@ -9,7 +9,7 @@ import { setupRipple } from "../utils/setups/setup-ripple";
   imports: [],
   styles: [
     /* language=SCSS */ `
-      @use "../scss/mixins";
+      @use "../../scss/mixins";
 
       sd-select-button {
         display: block;
@@ -27,7 +27,9 @@ import { setupRipple } from "../utils/setups/setup-ripple";
       }
     `,
   ],
-  template: ` <ng-content></ng-content> `,
+  template: `
+    <ng-content></ng-content>
+  `,
 })
 export class SdSelectButtonControl {
   constructor() {

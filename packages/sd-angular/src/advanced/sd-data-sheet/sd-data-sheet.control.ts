@@ -124,14 +124,14 @@ import { TXT_CHANGE_IGNORE_CONFIRM } from "../../commons";
                           <small>(CTRL+S)</small>
                         </sd-button>
                       }
-                      @if (parent.editItem && !parent.isCreateDisabled?.()) {
+                      @if (parent.editItem && !(parent.editMode?.() === "sheet")) {
                         <sd-button size="sm" theme="primary" (click)="onCreateItemButtonClick()">
                           <fa-icon [icon]="icons.add" [fixedWidth]="true" />
                           {{ insertText() ?? "등록" }}
                           <small>(CTRL+INSERT)</small>
                         </sd-button>
                       }
-                      @if (parent.newItem && !parent.isCreateDisabled?.()) {
+                      @if (parent.newItem && !(parent.editMode?.() === "modal")) {
                         <sd-button size="sm" theme="link-warning" (click)="onAddItemButtonClick()">
                           <fa-icon [icon]="icons.add" [fixedWidth]="true" />
                           행 추가
@@ -201,7 +201,7 @@ import { TXT_CHANGE_IGNORE_CONFIRM } from "../../commons";
                     @if (
                       parent.itemPropInfo?.isDeleted &&
                       !parent.readonly?.() &&
-                      !parent.isDeleteDisabled?.() &&
+                      !(parent.editMode?.() === "sheet") &&
                       parent.submit
                     ) {
                       <sd-sheet-column fixed [key]="parent.itemPropInfo!.isDeleted!">
@@ -290,7 +290,7 @@ import { TXT_CHANGE_IGNORE_CONFIRM } from "../../commons";
                     }
 
                     @if (parent.itemPropInfo?.lastModifiedAt) {
-                      <sd-sheet-column header="수정일시" [key]="parent.itemPropInfo!.lastModifiedAt!">
+                      <sd-sheet-column header="수정일시" [key]="parent.itemPropInfo!.lastModifiedAt!" hidden>
                         <ng-template [cell]="parent.items()" let-item>
                           <div class="p-xs-sm tx-center">
                             {{ item[parent.itemPropInfo!.lastModifiedAt!] | format: "yyyy-MM-dd HH:mm" }}
@@ -299,7 +299,7 @@ import { TXT_CHANGE_IGNORE_CONFIRM } from "../../commons";
                       </sd-sheet-column>
                     }
                     @if (parent.itemPropInfo?.lastModifiedBy) {
-                      <sd-sheet-column header="수정자" [key]="parent.itemPropInfo!.lastModifiedBy!">
+                      <sd-sheet-column header="수정자" [key]="parent.itemPropInfo!.lastModifiedBy!" hidden>
                         <ng-template [cell]="parent.items()" let-item>
                           <div class="p-xs-sm tx-center">
                             {{ item[parent.itemPropInfo!.lastModifiedBy!] }}
@@ -426,14 +426,14 @@ export class SdDataSheetControl {
 }
 
 @Directive()
-export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K> implements ISdSelectModal {
+export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K extends string | number | undefined>
+  implements ISdSelectModal
+{
   //-- abstract
 
+  editMode?: Signal<"sheet" | "modal" | undefined>; // computed (편집모드)
   restricted?: Signal<boolean>; // computed (use권한)
   readonly?: Signal<boolean>; // computed (edit권한)
-
-  isCreateDisabled?: Signal<boolean>; // computed (등록버튼 없애기)
-  isDeleteDisabled?: Signal<boolean>; // computed (삭제버튼 없애기)
 
   defaultSelectMode?: "single" | "multi" | "none";
 

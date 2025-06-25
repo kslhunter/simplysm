@@ -35,11 +35,11 @@
     "postinstall": "yarn run _sd-cli_ postinstall"
   },
   "devDependencies": {
-    "@types/node": "^22.15.32",
+    "@types/node": "^22.15.33",
     "cross-env": "^7.0.3",
     "eslint": "^9.29.0",
     "glob": "^11.0.3",
-    "prettier": "^3.6.0",
+    "prettier": "^3.6.1",
     "tsx": "^4.20.3",
     "typescript": "~5.8.3"
   }

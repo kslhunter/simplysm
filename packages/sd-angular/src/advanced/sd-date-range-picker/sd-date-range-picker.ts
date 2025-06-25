@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input, model, ViewEncapsulation } from "@angular/core";
-import { SdSelectControl } from "../../controls/sd-select-control";
-import { SdSelectItemControl } from "../../controls/sd-select-item.control";
+import { SdSelectControl } from "../../controls/select/sd-select.control";
+import { SdSelectItemControl } from "../../controls/select/sd-select-item.control";
 import { SdRangeControl } from "../../controls/sd-range.control";
 import { SdTextfieldControl } from "../../controls/sd-textfield.control";
 import { DateOnly } from "@simplysm/sd-core-common";
@@ -13,12 +13,7 @@ import { transformBoolean } from "../../utils/type-tramsforms";
   standalone: true,
   imports: [SdSelectControl, SdSelectItemControl, SdRangeControl, SdTextfieldControl],
   template: `
-    <sd-select
-      [(value)]="periodType"
-      (valueChange)="handleDatePeriodTypeChanged()"
-      required
-      style="min-width: 0"
-    >
+    <sd-select [(value)]="periodType" (valueChange)="handleDatePeriodTypeChanged()" required style="min-width: 0">
       <sd-select-item value="일">일</sd-select-item>
       <sd-select-item value="월">월</sd-select-item>
       <sd-select-item value="범위">범위</sd-select-item>
@@ -71,12 +66,7 @@ export class SdDateRangePicker {
       this.to.set(fromDate?.addMonths(1).setDay(1).addDays(-1));
     } else if (this.periodType() === "일") {
       this.to.set(this.from());
-    } else if (
-      this.periodType() === "범위" &&
-      this.from() &&
-      this.to() &&
-      this.from()!.tick > this.to()!.tick
-    ) {
+    } else if (this.periodType() === "범위" && this.from() && this.to() && this.from()!.tick > this.to()!.tick) {
       this.to.set(this.from());
     }
   }

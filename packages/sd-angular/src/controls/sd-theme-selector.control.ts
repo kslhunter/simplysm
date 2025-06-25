@@ -1,16 +1,10 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  viewChild,
-  ViewEncapsulation,
-} from "@angular/core";
-import { SdDropdownControl } from "./sd-dropdown.control";
+import { ChangeDetectionStrategy, Component, inject, viewChild, ViewEncapsulation } from "@angular/core";
+import { SdDropdownControl } from "./dropdown/sd-dropdown.control";
 import { SdAnchorControl } from "./sd-anchor.control";
 import { SdListControl } from "./sd-list.control";
 import { SdListItemControl } from "./sd-list-item.control";
 import { SdThemeProvider } from "../providers/sd-theme.provider";
-import { SdDropdownPopupControl } from "./sd-dropdown-popup.control";
+import { SdDropdownPopupControl } from "./dropdown/sd-dropdown-popup.control";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { $effect } from "../utils/bindings/$effect";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
@@ -59,7 +53,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
   `,
 })
 export class SdThemeSelectorControl {
- protected readonly icons = inject(SdAngularConfigProvider).icons;
+  protected readonly icons = inject(SdAngularConfigProvider).icons;
 
   #sdTheme = inject(SdThemeProvider);
 

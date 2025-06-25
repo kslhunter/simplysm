@@ -10,9 +10,8 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 
-import { SdSelectButtonControl } from "../../controls/sd-select-button.control";
-import { SdSelectControl, TSelectModeValue } from "../../controls/sd-select-control";
-import { SdSelectItemControl } from "../../controls/sd-select-item.control";
+import { SdSelectButtonControl } from "../../controls/select/sd-select-button.control";
+import { SdSelectItemControl } from "../../controls/select/sd-select-item.control";
 import { SdTextfieldControl } from "../../controls/sd-textfield.control";
 import { SdItemOfTemplateContext, SdItemOfTemplateDirective } from "../../directives/sd-item-of.template-directive";
 import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
@@ -23,6 +22,7 @@ import { transformBoolean } from "../../utils/type-tramsforms";
 import { ISharedDataBase } from "./sd-shared-data.provider";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { ISdSelectModal, TSdSelectModalInfo } from "../sd-data-sheet/sd-data-select-button.control";
+import { SdSelectControl, TSelectModeValue } from "../../controls/select/sd-select.control";
 
 @Component({
   selector: "sd-shared-data-select",

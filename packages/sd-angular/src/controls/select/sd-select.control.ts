@@ -11,23 +11,23 @@ import {
   viewChild,
   ViewEncapsulation,
 } from "@angular/core";
-import { SdItemOfTemplateContext, SdItemOfTemplateDirective } from "../directives/sd-item-of.template-directive";
-import { SdRippleDirective } from "../directives/sd-ripple.directive";
-import { SdTypedTemplateDirective } from "../directives/sd-typed.template-directive";
-import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
-import { $afterRenderEffect } from "../utils/bindings/$afterRenderEffect";
-import { $signal } from "../utils/bindings/$signal";
-import { setupInvalid } from "../utils/setups/setup-invalid";
-import { transformBoolean } from "../utils/type-tramsforms";
-import { SdAnchorControl } from "./sd-anchor.control";
-import { SdDockContainerControl } from "./sd-dock-container.control";
-import { SdDockControl } from "./sd-dock.control";
-import { SdDropdownPopupControl } from "./sd-dropdown-popup.control";
-import { SdDropdownControl } from "./sd-dropdown.control";
-import { SdGapControl } from "./sd-gap.control";
-import { SdPaneControl } from "./sd-pane.control";
+import { SdItemOfTemplateContext, SdItemOfTemplateDirective } from "../../directives/sd-item-of.template-directive";
+import { SdRippleDirective } from "../../directives/sd-ripple.directive";
+import { SdTypedTemplateDirective } from "../../directives/sd-typed.template-directive";
+import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
+import { $signal } from "../../utils/bindings/$signal";
+import { setupInvalid } from "../../utils/setups/setup-invalid";
+import { transformBoolean } from "../../utils/type-tramsforms";
+import { SdAnchorControl } from "../sd-anchor.control";
+import { SdDockContainerControl } from "../sd-dock-container.control";
+import { SdDockControl } from "../sd-dock.control";
+import { SdGapControl } from "../sd-gap.control";
+import { SdPaneControl } from "../sd-pane.control";
 import { SdSelectItemControl } from "./sd-select-item.control";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
+import { SdDropdownControl } from "../dropdown/sd-dropdown.control";
+import { SdDropdownPopupControl } from "../dropdown/sd-dropdown-popup.control";
+import { $afterRenderEffect } from "../../utils/bindings/$afterRenderEffect";
 
 @Component({
   selector: "sd-select",
@@ -49,7 +49,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
   ],
   styles: [
     /* language=SCSS */ `
-      @use "../scss/mixins";
+      @use "../../scss/mixins";
 
       sd-select {
         display: block;

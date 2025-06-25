@@ -26,13 +26,42 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [
-    SdCollapseIconControl,
-    SdCollapseControl,
-    SdRippleDirective,
-    NgTemplateOutlet,
-    FaIconComponent,
-  ],
+  imports: [SdCollapseIconControl, SdCollapseControl, SdRippleDirective, NgTemplateOutlet, FaIconComponent],
+  template: `
+    <div
+      [class]="['_content', contentClass()].filterExists().join(' ')"
+      [style]="contentStyle()"
+      (click)="onContentClick()"
+      tabindex="0"
+      [sd-ripple]="!readonly() && !(layout() === 'flat' && hasChildren())"
+    >
+      <div class="flex-row flex-gap-xs">
+        @if (selectedIcon() && !hasChildren()) {
+          <fa-icon class="_selected-icon" [icon]="selectedIcon()!" [fixedWidth]="true" />
+        }
+        <div style="flex-grow: 1">
+          <ng-content></ng-content>
+        </div>
+
+        @if (toolsTemplateRef()) {
+          <div>
+            <ng-template [ngTemplateOutlet]="toolsTemplateRef()!" />
+          </div>
+        }
+
+        @if (hasChildren() && layout() === "accordion") {
+          <div>
+            <sd-collapse-icon [open]="open()" />
+          </div>
+        }
+      </div>
+    </div>
+    @if (hasChildren()) {
+      <sd-collapse class="_child" [open]="layout() === 'flat' || open()">
+        <ng-content select="sd-list"></ng-content>
+      </sd-collapse>
+    }
+  `,
   styles: [
     /* language=SCSS */ `
       @use "../scss/mixins";
@@ -118,41 +147,6 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
       }
     `,
   ],
-  template: `
-    <div
-      [class]="['_content', contentClass()].filterExists().join(' ')"
-      [style]="contentStyle()"
-      (click)="onContentClick()"
-      tabindex="0"
-      [sd-ripple]="!readonly() && !(layout() === 'flat' && hasChildren())"
-    >
-      <div class="flex-row flex-gap-xs">
-        @if (selectedIcon() && !hasChildren()) {
-          <fa-icon class="_selected-icon" [icon]="selectedIcon()!" [fixedWidth]="true" />
-        }
-        <div style="flex-grow: 1">
-          <ng-content></ng-content>
-        </div>
-
-        @if (toolsTemplateRef()) {
-          <div>
-            <ng-template [ngTemplateOutlet]="toolsTemplateRef()!" />
-          </div>
-        }
-
-        @if (hasChildren() && layout() === "accordion") {
-          <div>
-            <sd-collapse-icon [open]="open()" />
-          </div>
-        }
-      </div>
-    </div>
-    @if (hasChildren()) {
-      <sd-collapse class="_child" [open]="layout() === 'flat' || open()">
-        <ng-content select="sd-list"></ng-content>
-      </sd-collapse>
-    }
-  `,
   host: {
     "[attr.sd-layout]": "layout()",
     "[attr.sd-open]": "open()",
