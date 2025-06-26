@@ -186,12 +186,12 @@ export class SdModalProvider {
       try {
         const modalInstance = new SdModalInstance(this.#appRef, modal, options);
         modalInstance.close.subscribe((val) => {
+          this.modalCount.update((v) => v - 1);
           resolve(val);
         });
       } catch (err) {
         reject(err);
       }
-      this.modalCount.update((v) => v - 1);
     });
   }
 }

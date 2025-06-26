@@ -15,7 +15,6 @@ import { SdDockControl } from "../controls/sd-dock.control";
 import { SdPaneControl } from "../controls/sd-pane.control";
 import { SdTopbarContainerControl } from "../controls/sd-topbar-container.control";
 import { SdTopbarControl } from "../controls/sd-topbar.control";
-import { SdShowEffectDirective } from "../directives/sd-show-effect.directive";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { SdAppStructureProvider } from "../providers/sd-app-structure.provider";
 import { SdActivatedModalProvider } from "../providers/sd-modal.provider";
@@ -41,13 +40,12 @@ import { injectParent } from "../utils/injections/inject-parent";
     NgTemplateOutlet,
     SdDockContainerControl,
     SdDockControl,
-    SdShowEffectDirective,
   ],
   template: `
     <sd-busy-container [busy]="busy()" [message]="busyMessage()">
       @if (initialized()) {
         @if (restricted()) {
-          <sd-pane class="tx-theme-grey-light p-xxl tx-center" sd-show-effect>
+          <sd-pane class="tx-theme-grey-light p-xxl tx-center">
             <br />
             <fa-icon [icon]="icons.triangleExclamation" [fixedWidth]="true" size="5x" />
             <br />
@@ -62,13 +60,13 @@ import { injectParent } from "../utils/injections/inject-parent";
               <ng-template [ngTemplateOutlet]="pageTopbarTemplateRef() ?? null" />
             </sd-topbar>
 
-            <sd-pane sd-show-effect>
+            <sd-pane>
               <ng-template [ngTemplateOutlet]="contentTemplateRef()" />
             </sd-pane>
           </sd-topbar-container>
         } @else if (currViewType() === "modal") {
           <sd-dock-container>
-            <sd-pane sd-show-effect>
+            <sd-pane>
               <ng-template [ngTemplateOutlet]="contentTemplateRef()" />
             </sd-pane>
 
@@ -86,7 +84,7 @@ import { injectParent } from "../utils/injections/inject-parent";
               </sd-dock>
             }-->
 
-          <sd-pane sd-show-effect>
+          <sd-pane>
             <ng-template [ngTemplateOutlet]="contentTemplateRef()" />
           </sd-pane>
           <!--</sd-dock-container>-->

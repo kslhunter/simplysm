@@ -55,7 +55,7 @@ import { injectParent } from "../../utils/injections/inject-parent";
 
       @if (!parent.disabled() && !parent.isNoValue()) {
         <sd-anchor (click)="onCancelButtonClick()" theme="danger">
-          <fa-icon [icon]="icons.xmark" />
+          <fa-icon [icon]="icons.eraser" />
         </sd-anchor>
       }
 
@@ -68,7 +68,7 @@ import { injectParent } from "../../utils/injections/inject-parent";
   `,
   styles: [
     /* language=SCSS */ `
-      sd-select-modal-button {
+      sd-data-select-button {
         display: block;
         width: 100%;
         min-width: 10em;

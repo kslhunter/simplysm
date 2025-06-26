@@ -16,7 +16,6 @@ import { setupRipple } from "../../utils/setups/setup-ripple";
 import { transformBoolean } from "../../utils/type-tramsforms";
 import { $computed } from "../../utils/bindings/$computed";
 import { $signal } from "../../utils/bindings/$signal";
-import { $effect } from "../../utils/bindings/$effect";
 
 @Component({
   selector: "sd-select-item",
@@ -99,13 +98,13 @@ export class SdSelectItemControl {
   constructor() {
     setupRipple(() => !this.disabled());
 
-    $effect([], (onCleanup) => {
+    /*$effect([], (onCleanup) => {
       this.#selectControl.itemControls.update((v) => [...v, this]);
 
       onCleanup(() => {
         this.#selectControl.itemControls.update((v) => v.filter((item) => item !== this));
       });
-    });
+    });*/
 
     afterEveryRender(() => {
       const html = this.elRef.nativeElement.findFirst("> ._content")!.innerHTML;

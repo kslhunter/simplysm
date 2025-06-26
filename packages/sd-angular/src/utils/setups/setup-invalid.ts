@@ -5,9 +5,9 @@ import { Uuid } from "@simplysm/sd-core-common";
 import { $effect } from "../bindings/$effect";
 
 type TUseInvalidProps =
-  | { getInvalidMessage: () => string; }
-  | { inputEl: HTMLInputElement; }
-  | { inputEl: HTMLInputElement; getInvalidMessage: () => string; }
+  | { getInvalidMessage: () => string }
+  | { inputEl: HTMLInputElement }
+  | { inputEl: HTMLInputElement; getInvalidMessage: () => string }
   | (() => string);
 
 export function setupInvalid(options: TUseInvalidProps) {
@@ -20,15 +20,12 @@ export function setupInvalid(options: TUseInvalidProps) {
 
   const indicatorEl = createIndicatorEl(_renderer, hostEl);
 
-  const inputEl = "inputEl" in options
-    ? options.inputEl
-    : createInputHiddenEl(_renderer, hostEl);
+  const inputEl = "inputEl" in options ? options.inputEl : createInputHiddenEl(_renderer, hostEl);
 
   $effect(() => {
     if ("getInvalidMessage" in options) {
       inputEl.setCustomValidity(options.getInvalidMessage());
-    }
-    else if (typeof options === "function") {
+    } else if (typeof options === "function") {
       inputEl.setCustomValidity(options());
     }
 
@@ -36,8 +33,7 @@ export function setupInvalid(options: TUseInvalidProps) {
 
     if (isInvalid) {
       setSafeStyle(_renderer, indicatorEl, { display: "block" });
-    }
-    else {
+    } else {
       setSafeStyle(_renderer, indicatorEl, { display: "none" });
     }
   });
@@ -48,7 +44,7 @@ function createIndicatorEl(renderer: Renderer2, hostEl: HTMLElement) {
   setSafeStyle(renderer, newEl, {
     display: "none",
     position: "absolute",
-    zIndex: "9999",
+    // zIndex: "9999",
     background: "var(--theme-danger-default)",
 
     top: "2px",
@@ -79,8 +75,7 @@ function createInputHiddenEl(renderer: Renderer2, hostEl: HTMLElement) {
 
   renderer.listen(newEl, "focus", () => {
     const focusableElement =
-      (hostEl.isFocusable() ? hostEl : hostEl.findFocusableFirst()) ??
-      hostEl.findFocusableParent();
+      (hostEl.isFocusable() ? hostEl : hostEl.findFocusableFirst()) ?? hostEl.findFocusableParent();
     if (focusableElement) {
       focusableElement.focus();
     }

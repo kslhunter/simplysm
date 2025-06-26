@@ -1,14 +1,11 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
-import { SdDockContainerControl } from "../sd-dock-container.control";
-import { SdDockControl } from "../sd-dock.control";
-import { SdPaneControl } from "../sd-pane.control";
 
 @Component({
   selector: "sd-region",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdDockContainerControl, SdDockControl, SdPaneControl],
+  imports: [],
   styles: [
     /* language=SCSS */ `
       @use "sass:map";
@@ -20,52 +17,78 @@ import { SdPaneControl } from "../sd-pane.control";
         height: 100%;
         padding: var(--gap-xs);
 
-        > sd-dock-container {
-          //position: relative;
-          //height: 100%;
-          overflow: auto;
+        > div {
+          display: flex;
+          height: 100%;
+          flex-direction: column;
           background: var(--control-color);
           border-radius: var(--border-radius-lg);
 
-          > ._content > ._title {
-            //position: sticky;
-            //top: 0;
+          animation: sd-region var(--animation-duration) ease-out;
+          animation-fill-mode: forwards;
+          opacity: 0;
+          transform: translateY(-1em);
 
-            border-top-left-radius: var(--border-radius-lg);
-            border-top-right-radius: var(--border-radius-lg);
-            background: var(--control-color);
+          > ._header {
+            border-radius: var(--border-radius-lg);
             padding: var(--gap-default);
             font-size: var(--font-size-sm);
             color: var(--text-trans-lighter);
+            font-weight: bold;
+          }
+
+          > ._content {
+            flex-grow: 1;
+            overflow: auto;
+            background: var(--control-color);
+            border-radius: var(--border-radius-lg);
           }
         }
 
         @each $key, $val in map.get(variables.$vars, theme) {
           &[sd-theme="#{$key}"] {
-            > sd-dock-container {
+            > div {
               background: var(--theme-#{$key}-lighter);
             }
           }
         }
       }
+
+      @keyframes sd-region {
+        from {
+          opacity: 0;
+          transform: translateY(-1em);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
     `,
   ],
   template: `
-    <sd-dock-container>
+    <div [style]="cardStyle()">
       @if (header()) {
-        <sd-dock class="_title">
+        <div class="_header">
           {{ header() }}
-        </sd-dock>
+        </div>
       }
-      <sd-pane [class]="contentClass()" [style]="contentStyle()">
+      <div class="_content" [class]="contentClass()" [style]="contentStyle()">
         <ng-content></ng-content>
-      </sd-pane>
-    </sd-dock-container>
+      </div>
+    </div>
   `,
+  host: {
+    "[attr.sd-theme]": "theme()",
+  },
 })
 export class SdRegionControl {
   header = input<string>();
 
+  cardStyle = input<string>();
+
   contentClass = input<string>();
   contentStyle = input<string>();
+
+  theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey">();
 }

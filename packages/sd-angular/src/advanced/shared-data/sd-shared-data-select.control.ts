@@ -40,6 +40,7 @@ import { SdSelectControl, TSelectModeValue } from "../../controls/select/sd-sele
   ],
   template: `
     <sd-select
+      #selectCtrl
       [(value)]="value"
       [disabled]="disabled()"
       [required]="required()"
@@ -85,7 +86,9 @@ import { SdSelectControl, TSelectModeValue } from "../../controls/select/sd-sele
       </ng-template>
 
       <ng-template [itemOf]="rootDisplayItems()" let-item="item" let-index="index" let-depth="depth">
-        @if (getItemSelectable(item, index, depth)) {
+        @if (
+          getItemSelectable(item, index, depth) && (selectCtrl.open() || this.selectedKeys().includes(item.__valueKey))
+        ) {
           <sd-select-item [value]="item.__valueKey" [hidden]="!getItemVisible(item, index, depth)">
             <span [style.text-decoration]="getIsHiddenFn()(item, index) ? 'line-through' : undefined">
               <ng-template
@@ -179,6 +182,10 @@ export class SdSharedDataSelectControl<
     return result;
   });
 
+  selectedKeys = $computed(() =>
+    (this.selectMode() === "multi" ? (this.value() as any[]) : [this.value()]).filterExists(),
+  );
+
   // 선택될 수 있는것들 (검색어에 의해 숨겨진것도 포함)
   getItemSelectable(item: any, index: number, depth: number) {
     return this.parentKeyProp() === undefined || depth !== 0 || item[this.parentKeyProp()!] === undefined;
@@ -245,7 +252,7 @@ export class SdSharedDataSelectControl<
       ...modal,
       inputs: {
         selectMode: this.selectMode(),
-        selectedItemKeys: (this.selectMode() === "multi" ? (this.value() as any[]) : [this.value()]).filterExists(),
+        selectedItemKeys: this.selectedKeys(),
         ...modal.inputs,
       },
     });

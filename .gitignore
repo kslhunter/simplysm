@@ -9,6 +9,8 @@ packages*/*/.cache
 packages*/*/.cordova
 packages*/*/.electron
 packages*/*/dist
+*.~*
+~*.*
 
 signCert.der
 signPri.key

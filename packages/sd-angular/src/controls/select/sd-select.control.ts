@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   contentChild,
+  contentChildren,
   ElementRef,
   inject,
   input,
@@ -15,7 +16,6 @@ import { SdItemOfTemplateContext, SdItemOfTemplateDirective } from "../../direct
 import { SdRippleDirective } from "../../directives/sd-ripple.directive";
 import { SdTypedTemplateDirective } from "../../directives/sd-typed.template-directive";
 import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
-import { $signal } from "../../utils/bindings/$signal";
 import { setupInvalid } from "../../utils/setups/setup-invalid";
 import { transformBoolean } from "../../utils/type-tramsforms";
 import { SdAnchorControl } from "../sd-anchor.control";
@@ -325,7 +325,8 @@ export class SdSelectControl<M extends "single" | "multi", T> {
     read: TemplateRef,
   });
 
-  itemControls = $signal<SdSelectItemControl[]>([]);
+  // itemControls = $signal<SdSelectItemControl[]>([]);
+  itemControls = contentChildren(SdSelectItemControl);
 
   constructor() {
     setupInvalid(() => {

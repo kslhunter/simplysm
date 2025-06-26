@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, model, ViewEncapsulation } from "@angular/core";
 import { setupInvalid } from "../utils/setups/setup-invalid";
 import { transformBoolean } from "../utils/type-tramsforms";
+import { $computed } from "../utils/bindings/$computed";
 
 @Component({
   selector: "sd-textarea",
@@ -8,6 +9,33 @@ import { transformBoolean } from "../utils/type-tramsforms";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
+  template: `
+    <div
+      [style]="inputStyle()"
+      [class]="['_contents', inputClass()].filterExists().join(' ')"
+      [attr.title]="title() ?? placeholder()"
+      [style.visibility]="!readonly() && !disabled() ? 'hidden' : undefined"
+    >
+      @if (value()) {
+        <pre>{{ value() }} </pre>
+      } @else if (placeholder()) {
+        <span class="tx-trans-lighter">{{ placeholder() }}</span>
+      } @else {
+        <span>&nbsp;</span>
+      }
+    </div>
+    @if (!readonly() && !disabled()) {
+      <textarea
+        [value]="value() ?? ''"
+        [attr.placeholder]="placeholder()"
+        [attr.title]="title() ?? placeholder()"
+        [attr.rows]="currRows()"
+        (input)="onInput($event)"
+        [style]="inputStyle()"
+        [class]="inputClass()"
+      ></textarea>
+    }
+  `,
   styles: [
     /* language=SCSS */ `
       @use "sass:map";
@@ -22,6 +50,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
         > textarea,
         > ._contents {
           @include mixins.form-control-base();
+          resize: none;
 
           overflow: auto;
           width: 100%;
@@ -123,31 +152,6 @@ import { transformBoolean } from "../utils/type-tramsforms";
       }
     `,
   ],
-  template: `
-    <div
-      [style]="inputStyle()"
-      [class]="['_contents', inputClass()].filterExists().join(' ')"
-      [attr.title]="title() ?? placeholder()"
-      [style.visibility]="!readonly() && !disabled() ? 'hidden' : undefined"
-    >
-      @if (value()) {
-        <pre>{{ value() }}</pre>
-      } @else {
-        <span class="tx-trans-lighter">{{ placeholder() }}</span>
-      }
-    </div>
-    @if (!readonly() && !disabled()) {
-      <textarea
-        [value]="value() ?? ''"
-        [attr.placeholder]="placeholder()"
-        [attr.title]="title() ?? placeholder()"
-        [attr.rows]="rows()"
-        (input)="onInput($event)"
-        [style]="inputStyle()"
-        [class]="inputClass()"
-      ></textarea>
-    }
-  `,
   host: {
     "[attr.sd-disabled]": "disabled()",
     "[attr.sd-readonly]": "readonly()",
@@ -162,7 +166,7 @@ export class SdTextareaControl {
 
   placeholder = input<string>();
   title = input<string>();
-  rows = input(3);
+  // rows = input<number>(1);
   disabled = input(false, { transform: transformBoolean });
   readonly = input(false, { transform: transformBoolean });
   required = input(false, { transform: transformBoolean });
@@ -170,11 +174,11 @@ export class SdTextareaControl {
   inset = input(false, { transform: transformBoolean });
   size = input<"sm" | "lg">();
   validatorFn = input<(value: string | undefined) => string | undefined>();
-  theme = input<
-    "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey"
-  >();
+  theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey">();
   inputStyle = input<string>();
   inputClass = input<string>();
+
+  currRows = $computed(() => this.value()?.split("\n").length ?? 1);
 
   constructor() {
     setupInvalid(() => {

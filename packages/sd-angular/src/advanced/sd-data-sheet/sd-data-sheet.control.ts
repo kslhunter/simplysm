@@ -86,7 +86,7 @@ import { TXT_CHANGE_IGNORE_CONFIRM } from "../../commons";
         <sd-dock-container>
           @if (filterControls().length > 0) {
             <sd-dock>
-              <sd-region>
+              <sd-region cardStyle="animation-delay: 100ms">
                 <sd-form (submit)="onFilterSubmit()">
                   <sd-form-box layout="inline" class="p-default">
                     <sd-form-box-item>
@@ -112,10 +112,10 @@ import { TXT_CHANGE_IGNORE_CONFIRM } from "../../commons";
           }
 
           <sd-form #formCtrl (submit)="onSubmit()">
-            <sd-region contentClass="p-default">
+            <sd-region contentClass="p-default" cardStyle="animation-delay: 200ms">
               <sd-dock-container>
                 <sd-dock class="pb-sm">
-                  <div class="flex-row flex-gap-sm">
+                  <div class="flex-row flex-gap-sm" style="white-space: nowrap">
                     @if (!parent.readonly?.()) {
                       @if (parent.submit) {
                         <sd-button type="submit" size="sm" theme="primary">
@@ -192,7 +192,6 @@ import { TXT_CHANGE_IGNORE_CONFIRM } from "../../commons";
                     [totalPageCount]="parent.pageLength()"
                     [(sorts)]="parent.sortingDefs"
                     [selectMode]="parent.realSelectMode()"
-                    [autoSelect]="parent.realSelectMode() === 'single' ? 'click' : undefined"
                     [(selectedItems)]="parent.selectedItems"
                     [trackByFn]="parent.trackByFn"
                     [getItemCellStyleFn]="parent.getItemCellStyleFn"

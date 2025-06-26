@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  HostListener,
-  input,
-  ViewEncapsulation,
-} from "@angular/core";
+import { ChangeDetectionStrategy, Component, HostListener, input, ViewEncapsulation } from "@angular/core";
 import { injectElementRef } from "../utils/injections/inject-element-ref";
 import * as echarts from "echarts";
 import { $effect } from "../utils/bindings/$effect";
@@ -22,6 +16,7 @@ import { $effect } from "../utils/bindings/$effect";
     /* language=SCSS */ `
       sd-echarts {
         display: block;
+        height: 100%;
       }
     `,
   ],

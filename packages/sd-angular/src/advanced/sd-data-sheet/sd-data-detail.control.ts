@@ -80,19 +80,19 @@ import { SdRegionControl } from "../../controls/containers/sd-region";
                 <sd-dock class="p-default pb-0 flex-column flex-gap-sm">
                   @if (parent.currViewType() !== "modal" && !parent.readonly?.()) {
                     <div class="flex-row flex-gap-sm">
-                      <sd-button size="sm" theme="primary" (click)="onSubmitButtonClick()">
+                      <sd-button theme="primary" (click)="onSubmitButtonClick()">
                         <fa-icon [icon]="icons.save" [fixedWidth]="true" />
                         저장
                         <small>(CTRL+S)</small>
                       </sd-button>
                       @if ((!parent.isNew || !parent.isNew()) && parent.toggleDelete) {
                         @if (parent.dataInfo && parent.dataInfo().isDeleted) {
-                          <sd-button size="sm" theme="warning" (click)="parent.doToggleDelete(false)">
+                          <sd-button theme="warning" (click)="parent.doToggleDelete(false)">
                             <fa-icon [icon]="icons.redo" [fixedWidth]="true" />
                             복구
                           </sd-button>
                         } @else {
-                          <sd-button size="sm" theme="danger" (click)="parent.doToggleDelete(true)">
+                          <sd-button theme="danger" (click)="parent.doToggleDelete(true)">
                             <fa-icon [icon]="icons.eraser" [fixedWidth]="true" />
                             삭제
                           </sd-button>
