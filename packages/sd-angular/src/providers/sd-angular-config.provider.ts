@@ -49,4 +49,6 @@ export interface ISdAngularIcon {
   redo: IconDefinition;
   upload: IconDefinition;
   fileExcel: IconDefinition;
+
+  arrowRight: IconDefinition;
 }

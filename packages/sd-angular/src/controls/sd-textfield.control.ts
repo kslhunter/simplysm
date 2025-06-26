@@ -77,6 +77,12 @@ import { transformBoolean } from "../utils/type-tramsforms";
               outline: none;
               border-color: var(--theme-secondary-default);
             }
+
+            &[type="date"],
+            &[type="datetime-local"] {
+              padding-top: calc(var(--gap-sm) - 1px);
+              padding-bottom: calc(var(--gap-sm) - 1px);
+            }
           }
 
           body.sd-theme-mobile &,
@@ -86,12 +92,17 @@ import { transformBoolean } from "../utils/type-tramsforms";
             border-top: none;
             border-bottom: 2px solid var(--border-color-default);
             background: transparent;
-            //transition: border-color 0.3s;
             padding: calc(var(--gap-sm) + 1px) 0 calc(var(--gap-sm) - 1px);
 
             &:focus {
               outline: none;
               border-bottom-color: var(--theme-secondary-default);
+            }
+
+            &[type="date"],
+            &[type="datetime-local"] {
+              padding-top: var(--gap-sm);
+              padding-bottom: calc(var(--gap-sm) - 2px);
             }
           }
 
@@ -149,17 +160,25 @@ import { transformBoolean } from "../utils/type-tramsforms";
         &[sd-size="sm"] {
           > input,
           > ._contents {
-            padding: var(--gap-xs) var(--gap-sm);
-            //height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
-            //min-height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
+            body.sd-theme-compact & {
+              padding: var(--gap-xs) var(--gap-sm);
 
-            //&[type="color"] {
-            //  padding-top: 1px;
-            //  padding-bottom: 1px;
-            //}
-            &[type="date"] {
-              padding-top: calc(var(--gap-xs) - 1px);
-              padding-bottom: calc(var(--gap-xs) - 1px);
+              &[type="date"],
+              &[type="datetime-local"] {
+                padding-top: calc(var(--gap-xs) - 1px);
+                padding-bottom: calc(var(--gap-xs) - 1px);
+              }
+            }
+
+            body.sd-theme-mobile &,
+            body.sd-theme-kiosk & {
+              padding: calc(var(--gap-xs) + 1px) 0 calc(var(--gap-xs) - 1px);
+
+              &[type="date"],
+              &[type="datetime-local"] {
+                padding-top: var(--gap-xs);
+                padding-bottom: calc(var(--gap-xs) - 2px);
+              }
             }
           }
         }
@@ -167,14 +186,26 @@ import { transformBoolean } from "../utils/type-tramsforms";
         &[sd-size="lg"] {
           > input,
           > ._contents {
-            padding: var(--gap-default) var(--gap-lg);
-            //height: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
-            //min-height: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
+            body.sd-theme-compact & {
+              padding: var(--gap-default) var(--gap-lg);
 
-            //&[type="color"] {
-            //  padding-top: 1px;
-            //  padding-bottom: 1px;
-            //}
+              &[type="date"],
+              &[type="datetime-local"] {
+                padding-top: calc(var(--gap-default) - 1px);
+                padding-bottom: calc(var(--gap-default) - 1px);
+              }
+            }
+
+            body.sd-theme-mobile &,
+            body.sd-theme-kiosk & {
+              padding: calc(var(--gap-default) + 1px) 0 calc(var(--gap-default) - 1px);
+
+              &[type="date"],
+              &[type="datetime-local"] {
+                padding-top: var(--gap-default);
+                padding-bottom: calc(var(--gap-default) - 2px);
+              }
+            }
           }
         }
 

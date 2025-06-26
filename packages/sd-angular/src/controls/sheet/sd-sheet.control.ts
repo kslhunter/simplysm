@@ -253,7 +253,7 @@ import { FaIconComponent, FaLayersComponent } from "@fortawesome/angular-fontawe
                       />
                     } @else if (selectMode() === "single") {
                       @let _selectable = selectionManager.getSelectable(item);
-                      <sd-checkbox
+                      <!--<sd-checkbox
                         [value]="selectedItems().includes(item)"
                         (valueChange)="selectionManager.toggle(item)"
                         [canChangeFn]="selectionManager.getCanChangeFn(item)"
@@ -261,7 +261,16 @@ import { FaIconComponent, FaLayersComponent } from "@fortawesome/angular-fontawe
                         theme="white"
                         [disabled]="_selectable !== true"
                         [attr.title]="_selectable"
-                      />
+                      />-->
+
+                      <sd-anchor
+                        [theme]="selectedItems().includes(item) ? 'primary' : 'grey'"
+                        (click)="selectionManager.toggle(item)"
+                        [disabled]="_selectable !== true || !selectionManager.getCanChangeFn(item)"
+                        [attr.title]="_selectable"
+                      >
+                        <fa-icon [icon]="icons.arrowRight" [fixedWidth]="true" />
+                      </sd-anchor>
                     }
                   </td>
                   @if (expandingManager.hasExpandable()) {
