@@ -24,7 +24,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
         @each $key, $val in map.get(variables.$vars, theme) {
           &[sd-theme="#{$key}"] {
             background: var(--theme-#{$key}-lightest);
-            border-color: var(--theme-#{$key}-light);
+            border: 1px solid var(--theme-#{$key}-light);
           }
         }
 
@@ -43,7 +43,9 @@ import { transformBoolean } from "../utils/type-tramsforms";
       }
     `,
   ],
-  template: ` <ng-content></ng-content> `,
+  template: `
+    <ng-content></ng-content>
+  `,
   host: {
     "[attr.sd-theme]": "theme()",
     "[attr.sd-size]": "size()",

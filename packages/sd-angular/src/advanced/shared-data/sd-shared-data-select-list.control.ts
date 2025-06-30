@@ -13,12 +13,8 @@ import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { StringUtils } from "@simplysm/sd-core-common";
 import { SdAnchorControl } from "../../controls/sd-anchor.control";
 import { SdBusyContainerControl } from "../../controls/sd-busy-container.control";
-import { SdDockContainerControl } from "../../controls/sd-dock-container.control";
-import { SdDockControl } from "../../controls/sd-dock.control";
 import { SdListItemControl } from "../../controls/sd-list-item.control";
-import { SdListControl } from "../../controls/sd-list.control";
 import { SdPaginationControl } from "../../controls/sd-pagination.control";
-import { SdPaneControl } from "../../controls/sd-pane.control";
 import { SdTextfieldControl } from "../../controls/sd-textfield.control";
 import { SdItemOfTemplateContext, SdItemOfTemplateDirective } from "../../directives/sd-item-of.template-directive";
 import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
@@ -32,6 +28,7 @@ import { setupModelHook } from "../../utils/setups/setup-model-hook";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { ISdSelectModal, TSdSelectModalInfo } from "../sd-data-sheet/sd-data-select-button.control";
 import { SdRegionControl } from "../../controls/containers/sd-region";
+import { SdListControl } from "../../controls/sd-list.control";
 
 @Component({
   selector: "sd-shared-data-select-list",
@@ -40,23 +37,20 @@ import { SdRegionControl } from "../../controls/containers/sd-region";
   standalone: true,
   imports: [
     SdBusyContainerControl,
-    SdDockContainerControl,
-    SdDockControl,
     NgTemplateOutlet,
     SdTextfieldControl,
-    SdListControl,
-    SdPaneControl,
     SdListItemControl,
     SdAnchorControl,
     FaIconComponent,
     SdPaginationControl,
     FaIconComponent,
     SdRegionControl,
+    SdListControl,
   ],
   template: `
     <sd-busy-container [busy]="busyCount() > 0">
-      <sd-dock-container>
-        <sd-dock>
+      <div class="flex-column" style="height: 100%;">
+        <div>
           <sd-region [header]="header()">
             <div class="flex-column flex-gap-sm p-default">
               @if (headerTemplateRef() || modal()) {
@@ -87,17 +81,17 @@ import { SdRegionControl } from "../../controls/containers/sd-region";
               </div>
             </div>
           </sd-region>
-        </sd-dock>
+        </div>
 
-        <sd-region>
-          <sd-dock-container>
+        <div class="flex-grow">
+          <sd-region contentClass="flex-column flex-gap-default">
             @if (pageItemCount()) {
-              <sd-dock class="pb-default">
+              <div>
                 <sd-pagination [(currentPage)]="page" [totalPageCount]="pageLength()" />
-              </sd-dock>
+              </div>
             }
 
-            <sd-pane>
+            <div class="flex-grow">
               <sd-list inset>
                 @if (useUndefined()) {
                   <sd-list-item
@@ -130,10 +124,10 @@ import { SdRegionControl } from "../../controls/containers/sd-region";
                   </sd-list-item>
                 }
               </sd-list>
-            </sd-pane>
-          </sd-dock-container>
-        </sd-region>
-      </sd-dock-container>
+            </div>
+          </sd-region>
+        </div>
+      </div>
     </sd-busy-container>
   `,
 })

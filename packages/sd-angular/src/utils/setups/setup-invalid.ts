@@ -49,8 +49,8 @@ function createIndicatorEl(renderer: Renderer2, hostEl: HTMLElement) {
 
     top: "2px",
     left: "2px",
-    width: "var(--gap-sm)",
-    height: "var(--gap-sm)",
+    width: "4px",
+    height: "4px",
     borderRadius: "100%",
   });
   renderer.insertBefore(hostEl, newEl, hostEl.firstChild);

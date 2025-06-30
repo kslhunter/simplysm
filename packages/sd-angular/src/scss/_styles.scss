@@ -369,6 +369,7 @@ hidden {
   display: flex !important;
   flex-wrap: nowrap;
   flex-direction: row;
+  //width: 100%;
 }
 
 .flex-row-inline {
@@ -382,6 +383,7 @@ hidden {
   display: flex !important;
   flex-wrap: nowrap;
   flex-direction: column;
+  //height: 100%;
 }
 
 .flex-column-inline {

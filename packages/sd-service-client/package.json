@@ -17,6 +17,6 @@
     "@simplysm/sd-orm-common": "12.12.5",
     "@simplysm/sd-service-common": "12.12.5",
     "isomorphic-ws": "^5.0.0",
-    "ws": "^8.18.2"
+    "ws": "^8.18.3"
   }
 }

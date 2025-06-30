@@ -11,10 +11,6 @@ import { SdAnchorControl } from "../controls/sd-anchor.control";
 import { SdBusyContainerControl } from "../controls/sd-busy-container.control";
 import { SdButtonControl } from "../controls/sd-button.control";
 import { SdCheckboxControl } from "../controls/sd-checkbox.control";
-import { SdDockContainerControl } from "../controls/sd-dock-container.control";
-import { SdDockControl } from "../controls/sd-dock.control";
-
-import { SdPaneControl } from "../controls/sd-pane.control";
 import { SdSheetColumnCellTemplateDirective } from "../controls/sheet/directives/sd-sheet-column-cell.template-directive";
 import { SdSheetColumnDirective } from "../controls/sheet/directives/sd-sheet-column.directive";
 import { SdSheetControl } from "../controls/sheet/sd-sheet.control";
@@ -25,6 +21,7 @@ import { ISdModal } from "../providers/sd-modal.provider";
 import { $effect } from "../utils/bindings/$effect";
 import { $signal } from "../utils/bindings/$signal";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
+import { SdRegionControl } from "../controls/containers/sd-region";
 
 @Component({
   selector: "sd-sheet-config-modal",
@@ -32,130 +29,109 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
-    SdDockContainerControl,
-    SdPaneControl,
     forwardRef(() => SdSheetControl),
     SdSheetColumnDirective,
     SdCheckboxControl,
     SdAnchorControl,
     SdTextfieldControl,
     SdSheetColumnCellTemplateDirective,
-    SdDockControl,
     SdButtonControl,
     FaIconComponent,
     SdBusyContainerControl,
+    SdRegionControl,
   ],
   template: `
     <sd-busy-container [busy]="!initialized()">
       @if (initialized()) {
-        <sd-dock-container>
-          <sd-pane class="p-default">
-            <sd-sheet
-              key="sd-sheet-config-modal"
-              [key]="sheetKey() + '-config'"
-              [items]="items()"
-              [trackByFn]="trackByFn"
-            >
-              <sd-sheet-column key="fixed" header="Fix" disableSorting disableResizing>
-                <ng-template [cell]="items()" let-item="item">
-                  <div style="text-align: center">
-                    <sd-checkbox
-                      size="sm"
-                      [inset]="true"
-                      [(value)]="item.fixed"
-                      (valueChange)="items.$mark()"
-                    ></sd-checkbox>
-                  </div>
-                </ng-template>
-              </sd-sheet-column>
-              <sd-sheet-column key="ordering" header="Order" disableSorting disableResizing>
-                <ng-template [cell]="items()" let-item="item" let-index="index">
-                  <div class="p-xs-sm" style="text-align: center">
-                    <sd-anchor
-                      [disabled]="index === 0 || (!item.fixed && items()[index - 1].fixed)"
-                      (click)="onDisplayOrderUpButtonClick(item)"
-                    >
-                      <fa-icon [icon]="icons.angleUp" [fixedWidth]="true" />
-                    </sd-anchor>
-                    <sd-anchor
-                      [disabled]="
-                        index === items().length - 1 || (item.fixed && !items()[index + 1].fixed)
-                      "
-                      (click)="onDisplayOrderDownButtonClick(item)"
-                    >
-                      <fa-icon [icon]="icons.angleDown" [fixedWidth]="true" />
-                    </sd-anchor>
-                  </div>
-                </ng-template>
-              </sd-sheet-column>
-              <sd-sheet-column key="header" header="Header" disableSorting>
-                <ng-template [cell]="items()" let-item="item">
-                  <div class="p-xs-sm">
-                    {{ item.header }}
-                  </div>
-                </ng-template>
-              </sd-sheet-column>
-              <sd-sheet-column key="width" header="Width" disableSorting width="60px">
-                <ng-template [cell]="items()" let-item="item">
-                  @if (!item.disableResizing) {
-                    <sd-textfield
-                      type="text"
-                      size="sm"
-                      [inset]="true"
-                      [(value)]="item.width"
-                      (valueChange)="items.$mark()"
-                    />
-                  }
-                </ng-template>
-              </sd-sheet-column>
-              <sd-sheet-column key="hidden" header="Hidden" disableSorting disableResizing>
-                .
-                <ng-template [cell]="items()" let-item="item">
-                  <div style="text-align: center">
-                    <sd-checkbox
-                      size="sm"
-                      [inset]="true"
-                      [(value)]="item.hidden"
-                      (valueChange)="items.$mark()"
-                      [icon]="icons.xmark"
-                      theme="danger"
-                    ></sd-checkbox>
-                  </div>
-                </ng-template>
-              </sd-sheet-column>
-            </sd-sheet>
-          </sd-pane>
+        <div class="flex-column" style="height: 100%">
+          <div class="flex-grow p-xs">
+            <sd-region contentClass="p-xs">
+              <sd-sheet [key]="sheetKey() + '-config'" [items]="items()" [trackByFn]="trackByFn">
+                <sd-sheet-column key="fixed" header="Fix" disableSorting disableResizing>
+                  <ng-template [cell]="items()" let-item="item">
+                    <div style="text-align: center">
+                      <sd-checkbox
+                        size="sm"
+                        [inset]="true"
+                        [(value)]="item.fixed"
+                        (valueChange)="items.$mark()"
+                      ></sd-checkbox>
+                    </div>
+                  </ng-template>
+                </sd-sheet-column>
+                <sd-sheet-column key="ordering" header="Order" disableSorting disableResizing>
+                  <ng-template [cell]="items()" let-item="item" let-index="index">
+                    <div class="p-xs-sm" style="text-align: center">
+                      <sd-anchor
+                        [disabled]="index === 0 || (!item.fixed && items()[index - 1].fixed)"
+                        (click)="onDisplayOrderUpButtonClick(item)"
+                      >
+                        <fa-icon [icon]="icons.angleUp" [fixedWidth]="true" />
+                      </sd-anchor>
+                      <sd-anchor
+                        [disabled]="index === items().length - 1 || (item.fixed && !items()[index + 1].fixed)"
+                        (click)="onDisplayOrderDownButtonClick(item)"
+                      >
+                        <fa-icon [icon]="icons.angleDown" [fixedWidth]="true" />
+                      </sd-anchor>
+                    </div>
+                  </ng-template>
+                </sd-sheet-column>
+                <sd-sheet-column key="header" header="Header" disableSorting>
+                  <ng-template [cell]="items()" let-item="item">
+                    <div class="p-xs-sm">
+                      {{ item.header }}
+                    </div>
+                  </ng-template>
+                </sd-sheet-column>
+                <sd-sheet-column key="width" header="Width" disableSorting width="60px">
+                  <ng-template [cell]="items()" let-item="item">
+                    @if (!item.disableResizing) {
+                      <sd-textfield
+                        type="text"
+                        size="sm"
+                        [inset]="true"
+                        [(value)]="item.width"
+                        (valueChange)="items.$mark()"
+                      />
+                    }
+                  </ng-template>
+                </sd-sheet-column>
+                <sd-sheet-column key="hidden" header="Hidden" disableSorting disableResizing>
+                  .
+                  <ng-template [cell]="items()" let-item="item">
+                    <div style="text-align: center">
+                      <sd-checkbox
+                        size="sm"
+                        [inset]="true"
+                        [(value)]="item.hidden"
+                        (valueChange)="items.$mark()"
+                        [icon]="icons.xmark"
+                        theme="danger"
+                      ></sd-checkbox>
+                    </div>
+                  </ng-template>
+                </sd-sheet-column>
+              </sd-sheet>
+            </sd-region>
+          </div>
 
-          <sd-dock position="bottom" class="p-sm-default pt-0">
+          <div class="p-sm-default bg-white">
             <div style="float: left">
-              <sd-button
-                [inline]="true"
-                theme="warning"
-                (click)="onInitButtonClick()"
-                buttonStyle="min-width: 60px;"
-              >
+              <sd-button [inline]="true" theme="warning" (click)="onInitButtonClick()" buttonStyle="min-width: 60px;">
                 Reset
               </sd-button>
             </div>
             <div class="flex-row flex-gap-sm" style="justify-content: end">
-              <sd-button
-                [inline]="true"
-                theme="success"
-                (click)="onOkButtonClick()"
-                buttonStyle="min-width: 60px;"
-              >
+              <sd-button [inline]="true" theme="success" (click)="onOkButtonClick()" buttonStyle="min-width: 60px;">
                 OK
               </sd-button>
-              <sd-button
-                [inline]="true"
-                (click)="onCancelButtonClick()"
-                buttonStyle="min-width: 60px;"
-              >
+              <sd-button [inline]="true" (click)="onCancelButtonClick()" buttonStyle="min-width: 60px;">
                 Cancel
               </sd-button>
             </div>
-          </sd-dock>
-        </sd-dock-container>
+          </div>
+        </div>
       }
     </sd-busy-container>
   `,
@@ -194,9 +170,7 @@ export class SdSheetConfigModal<T> implements ISdModal<ISdSheetConfig> {
         });
       }
 
-      this.items.set(
-        items.orderBy((item) => item.displayOrder).orderBy((item) => (item.fixed ? -1 : 0)),
-      );
+      this.items.set(items.orderBy((item) => item.displayOrder).orderBy((item) => (item.fixed ? -1 : 0)));
 
       this.initialized.set(true);
     });

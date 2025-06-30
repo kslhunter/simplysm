@@ -95,9 +95,8 @@ export function createSdNgPlugin(conf: {
           return { contents: output, loader: "js" };
         }
 
-        const emittedJsFile = tsCompileResult.emittedFilesCacheMap.get(PathUtils.norm(args.path))
-          ?.last();
-        if (!emittedJsFile) {
+        const emittedJsFile = tsCompileResult.emittedFilesCacheMap.get(PathUtils.norm(args.path))?.last();
+        /*if (!emittedJsFile) {
           return {
             errors: [
               {
@@ -106,20 +105,16 @@ export function createSdNgPlugin(conf: {
             ],
           };
         }
+        const contents = emittedJsFile.text;*/
 
-        const contents = emittedJsFile.text;
+        const contents = emittedJsFile?.text ?? "";
 
         const { sideEffects } = await build.resolve(args.path, {
           kind: "import-statement",
           resolveDir: build.initialOptions.absWorkingDir ?? "",
         });
 
-        const newContents = await javascriptTransformer.transformData(
-          args.path,
-          contents,
-          true,
-          sideEffects,
-        );
+        const newContents = await javascriptTransformer.transformData(args.path, contents, true, sideEffects);
 
         outputContentsCacheMap.set(PathUtils.norm(args.path), newContents);
 
@@ -140,11 +135,7 @@ export function createSdNgPlugin(conf: {
         });
 
         try {
-          const newContents = await javascriptTransformer.transformFile(
-            args.path,
-            false,
-            sideEffects,
-          );
+          const newContents = await javascriptTransformer.transformFile(args.path, false, sideEffects);
 
           outputContentsCacheMap.set(PathUtils.norm(args.path), newContents);
 
@@ -152,8 +143,7 @@ export function createSdNgPlugin(conf: {
             contents: newContents,
             loader: "js",
           };
-        }
-        catch (err) {
+        } catch (err) {
           return {
             contents: `console.error(${JSON.stringify(err.message)});`,
             loader: "js",
@@ -165,10 +155,10 @@ export function createSdNgPlugin(conf: {
         {
           filter: new RegExp(
             "(" +
-            Object.keys(build.initialOptions.loader!)
-              .map((item) => "\\" + item)
-              .join("|") +
-            ")$",
+              Object.keys(build.initialOptions.loader!)
+                .map((item) => "\\" + item)
+                .join("|") +
+              ")$",
           ),
         },
         (args) => {

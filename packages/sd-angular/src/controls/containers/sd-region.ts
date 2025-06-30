@@ -40,7 +40,6 @@ import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@a
           > ._content {
             flex-grow: 1;
             overflow: auto;
-            background: var(--control-color);
             border-radius: var(--border-radius-lg);
           }
         }
@@ -48,7 +47,7 @@ import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@a
         @each $key, $val in map.get(variables.$vars, theme) {
           &[sd-theme="#{$key}"] {
             > div {
-              background: var(--theme-#{$key}-lighter);
+              background: var(--theme-#{$key}-lightest);
             }
           }
         }

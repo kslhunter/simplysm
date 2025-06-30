@@ -9,8 +9,6 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import { SdBusyContainerControl } from "../controls/sd-busy-container.control";
-import { SdDockContainerControl } from "../controls/sd-dock-container.control";
-import { SdDockControl } from "../controls/sd-dock.control";
 
 import { SdPaneControl } from "../controls/sd-pane.control";
 import { SdTopbarContainerControl } from "../controls/sd-topbar-container.control";
@@ -38,8 +36,6 @@ import { injectParent } from "../utils/injections/inject-parent";
     SdTopbarControl,
     SdBusyContainerControl,
     NgTemplateOutlet,
-    SdDockContainerControl,
-    SdDockControl,
   ],
   template: `
     <sd-busy-container [busy]="busy()" [message]="busyMessage()">
@@ -65,17 +61,14 @@ import { injectParent } from "../utils/injections/inject-parent";
             </sd-pane>
           </sd-topbar-container>
         } @else if (currViewType() === "modal") {
-          <sd-dock-container>
-            <sd-pane>
+          <div class="flex-column" style="height: 100%">
+            <div class="flex-grow">
               <ng-template [ngTemplateOutlet]="contentTemplateRef()" />
-            </sd-pane>
-
+            </div>
             @if (modalBottomTemplateRef()) {
-              <sd-dock position="bottom">
-                <ng-template [ngTemplateOutlet]="modalBottomTemplateRef() ?? null" />
-              </sd-dock>
+              <ng-template [ngTemplateOutlet]="modalBottomTemplateRef() ?? null" />
             }
-          </sd-dock-container>
+          </div>
         } @else {
           <!--<sd-dock-container>
             @if (controlToolTemplateRef()) {
@@ -114,8 +107,10 @@ export class SdBaseContainerControl {
   viewType = input<TSdViewType>();
   currViewType = $computed(() => this.viewType() ?? this.#parentViewType());
 
+  header = input<string>();
   modalOrPageTitle = $computed(
     () =>
+      this.header() ??
       this.#sdActivatedModal?.modalComponent()?.title() ??
       this.#sdAppStructure.getTitleByFullCode(this.#currPageCode?.() ?? this.#fullPageCode()),
   );

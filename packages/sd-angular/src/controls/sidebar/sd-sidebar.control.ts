@@ -24,6 +24,7 @@ import { $computed } from "../../utils/bindings/$computed";
         width: var(--sidebar-width);
         height: 100%;
         animation: sd-sidebar var(--animation-duration) ease-in;
+        background: var(--background-color);
 
         //-- 화면 크기
 

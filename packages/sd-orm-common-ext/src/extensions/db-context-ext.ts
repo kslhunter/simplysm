@@ -6,8 +6,10 @@ import { User } from "../models/user";
 import { UserConfig } from "../models/user-config";
 import { UserPermission } from "../models/user-permission";
 import { DateTime, JsonConvert, Uuid } from "@simplysm/sd-core-common";
+import { UniqueCode } from "../models/unique-code";
 
 export abstract class DbContextExt extends DbContext {
+  uniqueCode = new Queryable(this, UniqueCode);
   systemDataLog = new Queryable(this, SystemDataLog);
   systemLog = new Queryable(this, SystemLog);
   authentication = new Queryable(this, Authentication);
@@ -139,9 +141,7 @@ export abstract class DbContextExt extends DbContext {
     const userConfig = await db.userConfig
       .where((item) => [db.qh.equal(item.userId, userId), db.qh.equal(item.code, key)])
       .singleAsync();
-    return userConfig?.valueJson !== undefined
-      ? JsonConvert.parse(userConfig.valueJson)
-      : undefined;
+    return userConfig?.valueJson !== undefined ? JsonConvert.parse(userConfig.valueJson) : undefined;
   }
 
   async writeSystemLog(
@@ -160,6 +160,34 @@ export abstract class DbContextExt extends DbContext {
         userId: userId,
       })),
     );
+  }
+
+  async createUniqueCodes(option: { prefix: string; seqLength: number; count: number }): Promise<string[]> {
+    const db = this;
+
+    const lastSeq =
+      (
+        await db.uniqueCode
+          .where((item) => [db.qh.startsWith(item.code, option.prefix)])
+          .select((item) => ({
+            seq: db.qh.max(item.seq),
+          }))
+          .lock()
+          .singleAsync()
+      )?.seq ?? 0;
+
+    const newSeq = lastSeq + 1;
+
+    const items: UniqueCode[] = [];
+    for (let i = 0; i < option.count; i++) {
+      const seq = newSeq + i;
+      const code = option.prefix + seq.toString().padStart(option.seqLength, "0");
+      items.push({ seq, code });
+    }
+
+    await db.uniqueCode.insertAsync(items);
+
+    return items.map((item) => item.code);
   }
 }
 

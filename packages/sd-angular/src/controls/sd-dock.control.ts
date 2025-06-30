@@ -20,10 +20,10 @@ import { transformBoolean } from "../utils/type-tramsforms";
         position: absolute;
         overflow: auto;
 
-        /*&[sd-resizable="true"] {
+        &[sd-resizable="true"] {
           > ._resize-bar {
             position: absolute;
-            background: var(--border-color-light);
+            //background: var(--border-color-light);
           }
 
           &[sd-position="top"] {
@@ -65,15 +65,15 @@ import { transformBoolean } from "../utils/type-tramsforms";
               cursor: ew-resize;
             }
           }
-        }*/
+        }
       }
     `,
   ],
   template: `
     <ng-content></ng-content>
-    <!--@if (resizable()) {
+    @if (resizable()) {
       <div class="_resize-bar" (mousedown)="onResizeBarMousedown($event)"></div>
-    }-->
+    }
   `,
   host: {
     "[attr.sd-position]": "position()",
@@ -112,10 +112,10 @@ export class SdDockControl {
   @HostListener("sdResize", ["$event"])
   onResize(event: ISdResizeEvent) {
     if (["top", "bottom"].includes(this.position()) && event.heightChanged) {
-      this.size.set(this.#elRef.nativeElement.offsetHeight);
+      this.size.set(this.#elRef.nativeElement.clientHeight);
     }
     if (["right", "left"].includes(this.position()) && event.widthChanged) {
-      this.size.set(this.#elRef.nativeElement.offsetWidth);
+      this.size.set(this.#elRef.nativeElement.clientWidth);
     }
   }
 

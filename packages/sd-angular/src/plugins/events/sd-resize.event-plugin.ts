@@ -39,8 +39,6 @@ export class SdResizeEventPlugin extends EventManagerPlugin {
 
       intersectionObserver.unobserve(entry.target);
     });
-    intersectionObserver.observe(element);
-
     const resizeObserver = new ResizeObserver(([entry]) => {
       const contentRect = entry.contentRect;
 
@@ -56,7 +54,9 @@ export class SdResizeEventPlugin extends EventManagerPlugin {
         contentRect: entry.contentRect,
       });
     });
+
     resizeObserver.observe(element);
+    intersectionObserver.observe(element);
 
     return (): void => {
       intersectionObserver.disconnect();

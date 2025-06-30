@@ -15,9 +15,7 @@ export abstract class SdAppStructureProvider<TModule = unknown> {
   abstract usableModules: Signal<TModule[] | undefined>;
   abstract permRecord: Signal<Record<string, boolean> | undefined>;
 
-  usableMenus = $computed(() =>
-    SdAppStructureUtils.getMenus(this.items, [], this.usableModules(), this.permRecord()),
-  );
+  usableMenus = $computed(() => SdAppStructureUtils.getMenus(this.items, [], this.usableModules(), this.permRecord()));
   usableFlatMenus = $computed<ISdFlatMenu<TModule>[]>(() =>
     SdAppStructureUtils.getFlatMenus(this.items, this.usableModules(), this.permRecord()),
   );
@@ -30,13 +28,12 @@ export abstract class SdAppStructureProvider<TModule = unknown> {
     return SdAppStructureUtils.getTitleByFullCode(this.items, fullCode);
   }
 
+  getItemChainByFullCode(fullCode: string) {
+    return SdAppStructureUtils.getItemChainByFullCode(this.items, fullCode);
+  }
+
   getPermsByFullCode<K extends string>(fullCodes: string[], permKeys: K[]): K[] {
-    return SdAppStructureUtils.getPermsByFullCode(
-      this.items,
-      fullCodes,
-      permKeys,
-      this.permRecord(),
-    );
+    return SdAppStructureUtils.getPermsByFullCode(this.items, fullCodes, permKeys, this.permRecord());
   }
 }
 
@@ -44,7 +41,7 @@ export abstract class SdAppStructureUtils {
   //---------- Info
 
   static getTitleByFullCode<TModule>(items: TSdAppStructureItem<TModule>[], fullCode: string) {
-    const itemChain = this.#getItemChainByFullCode(items, fullCode);
+    const itemChain = this.getItemChainByFullCode(items, fullCode);
     const parent = itemChain
       .slice(0, -1)
       .map((item) => item.title)
@@ -68,7 +65,7 @@ export abstract class SdAppStructureUtils {
       // 권한이라는것이 아얘 존재하지 않거나
       else if (
         fullCodes.every((fullCode) => {
-          const item = this.#getItemChainByFullCode(items, fullCode).last();
+          const item = this.getItemChainByFullCode(items, fullCode).last();
           return !item || !("perms" in item);
         })
       ) {
@@ -79,7 +76,7 @@ export abstract class SdAppStructureUtils {
     return result;
   }
 
-  static #getItemChainByFullCode<TModule>(
+  static getItemChainByFullCode<TModule>(
     items: TSdAppStructureItem<TModule>[],
     fullCode: string,
   ): TSdAppStructureItem<TModule>[] {
@@ -180,8 +177,7 @@ export abstract class SdAppStructureUtils {
 
       const currTitleChain = [...titleChain, item.title];
       const currCodeChain = [...codeChain, item.code];
-      const currModulesChain =
-        "modules" in item ? [...modulesChain, item.modules ?? []] : modulesChain;
+      const currModulesChain = "modules" in item ? [...modulesChain, item.modules ?? []] : modulesChain;
 
       if (!this.#isUsableModulesChain(currModulesChain, usableModules)) continue;
 
@@ -253,10 +249,7 @@ export abstract class SdAppStructureUtils {
     return results;
   }
 
-  static getFlatPermissions<TModule>(
-    items: TSdAppStructureItem<TModule>[],
-    usableModules: TModule[] | undefined,
-  ) {
+  static getFlatPermissions<TModule>(items: TSdAppStructureItem<TModule>[], usableModules: TModule[] | undefined) {
     const results: ISdFlatPermission<TModule>[] = [];
 
     type QueueItem = {
@@ -278,8 +271,7 @@ export abstract class SdAppStructureUtils {
 
       const currTitleChain = [...titleChain, item.title];
       const currCodeChain = [...codeChain, item.code];
-      const currModulesChain =
-        "modules" in item ? [...modulesChain, item.modules ?? []] : modulesChain;
+      const currModulesChain = "modules" in item ? [...modulesChain, item.modules ?? []] : modulesChain;
 
       if (!this.#isUsableModulesChain(currModulesChain, usableModules)) continue;
 
@@ -325,10 +317,7 @@ export abstract class SdAppStructureUtils {
 
   //-- Modules (private)
 
-  static #isUsableModulesChain<TModule>(
-    modulesChain: TModule[][],
-    usableModules: TModule[] | undefined,
-  ) {
+  static #isUsableModulesChain<TModule>(modulesChain: TModule[][], usableModules: TModule[] | undefined) {
     for (const modules of modulesChain) {
       if (!this.#isUsableModules(modules, usableModules)) {
         return false;
@@ -338,15 +327,8 @@ export abstract class SdAppStructureUtils {
     return true;
   }
 
-  static #isUsableModules<TModule>(
-    modules: TModule[] | undefined,
-    usableModules: TModule[] | undefined,
-  ): boolean {
-    return (
-      modules == null ||
-      modules.length === 0 ||
-      !modules.every((module) => !usableModules?.includes(module))
-    );
+  static #isUsableModules<TModule>(modules: TModule[] | undefined, usableModules: TModule[] | undefined): boolean {
+    return modules == null || modules.length === 0 || !modules.every((module) => !usableModules?.includes(module));
   }
 }
 

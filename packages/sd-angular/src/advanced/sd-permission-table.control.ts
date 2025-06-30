@@ -1,12 +1,5 @@
 import { NgTemplateOutlet } from "@angular/common";
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  input,
-  model,
-  ViewEncapsulation,
-} from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, input, model, ViewEncapsulation } from "@angular/core";
 import { ObjectUtils } from "@simplysm/sd-core-common";
 import { SdAnchorControl } from "../controls/sd-anchor.control";
 import { SdCheckboxControl } from "../controls/sd-checkbox.control";
@@ -38,13 +31,7 @@ import { ISdPermission } from "../providers/sd-app-structure.provider";
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [
-    SdAnchorControl,
-    SdTypedTemplateDirective,
-    NgTemplateOutlet,
-    SdCollapseIconControl,
-    SdCheckboxControl,
-  ],
+  imports: [SdAnchorControl, SdTypedTemplateDirective, NgTemplateOutlet, SdCollapseIconControl, SdCheckboxControl],
   styles: [
     /* language=SCSS */ `
       sd-permission-table {
@@ -150,15 +137,7 @@ import { ISdPermission } from "../providers/sd-app-structure.provider";
       @if ((item.children && item.children.length !== 0) || (item.perms && item.perms.length > 0)) {
         <tr
           [attr.sd-collapse]="!!parent && getIsPermCollapsed(parent)"
-          [attr.sd-theme]="
-            depth === 0
-              ? 'first'
-              : depth % 3 === 0
-                ? 'success'
-                : depth % 3 === 1
-                  ? 'info'
-                  : 'warning'
-          "
+          [attr.sd-theme]="depth === 0 ? 'first' : depth % 3 === 0 ? 'success' : depth % 3 === 1 ? 'info' : 'warning'"
         >
           @for (_ of arr(depth + 1); let i = $index; track i) {
             <td class="_before">&nbsp;</td>
@@ -260,11 +239,7 @@ export class SdPermissionTableControl<TModule> {
         return true;
       }
     } else {
-      if (
-        item.children?.every(
-          (child) => !this.getIsPermExists(child, "edit") || this.getEditDisabled(child),
-        )
-      ) {
+      if (item.children?.every((child) => !this.getIsPermExists(child, "edit") || this.getEditDisabled(child))) {
         return true;
       }
     }
@@ -329,18 +304,13 @@ export class SdPermissionTableControl<TModule> {
     });
   }
 
-  #changePermCheck(
-    value: Record<string, boolean>,
-    item: ISdPermission<TModule>,
-    type: "use" | "edit",
-    val: boolean,
-  ) {
+  #changePermCheck(value: Record<string, boolean>, item: ISdPermission<TModule>, type: "use" | "edit", val: boolean) {
     let changed = false;
 
     if (item.perms) {
       const permCode = item.codeChain.join(".");
 
-      if (type === "edit" && val && !this.getIsPermChecked(item, "use")) {
+      if (type === "edit" && val && this.getIsPermExists(item, "use") && !this.getIsPermChecked(item, "use")) {
       } else {
         if (this.getIsPermExists(item, type) && value[permCode + "." + type] !== val) {
           value[permCode + "." + type] = val;
@@ -349,12 +319,7 @@ export class SdPermissionTableControl<TModule> {
       }
 
       // USE권한 지우면 EDIT권한도 자동으로 지움
-      if (
-        type === "use" &&
-        !val &&
-        this.getIsPermExists(item, "edit") &&
-        !value[permCode + ".edit"]
-      ) {
+      if (type === "use" && !val && this.getIsPermExists(item, "edit") && !value[permCode + ".edit"]) {
         value[permCode + ".edit"] = false;
         changed = true;
       }

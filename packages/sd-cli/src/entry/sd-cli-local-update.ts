@@ -39,9 +39,8 @@ export class SdCliLocalUpdate {
     logger.debug("로컬 업데이트 구성", updatePathInfos);
 
     const watcher = SdFsWatcher.watch(updatePathInfos.map((item) => item.source));
-    watcher.onChange({ delay: 500 }, (changedInfos) => {
-      const changedFileInfos = changedInfos.filter((item) => ["add", "change", "unlink"].includes(
-        item.event));
+    watcher.onChange({ delay: 1000 }, (changedInfos) => {
+      const changedFileInfos = changedInfos.filter((item) => ["add", "change", "unlink"].includes(item.event));
       if (changedFileInfos.length === 0) return;
 
       logger.log("로컬 라이브러리 변경감지...");
@@ -56,8 +55,7 @@ export class SdCliLocalUpdate {
           if (changedFileInfo.event === "unlink") {
             logger.debug(`변경파일감지(삭제): ${targetFilePath}`);
             FsUtils.remove(targetFilePath);
-          }
-          else {
+          } else {
             logger.debug(`변경파일감지(복사): ${changedFileInfo.path} => ${targetFilePath}`);
             FsUtils.copy(changedFileInfo.path, targetFilePath);
           }

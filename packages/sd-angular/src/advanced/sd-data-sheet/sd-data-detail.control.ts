@@ -31,9 +31,6 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { $signal } from "../../utils/bindings/$signal";
 import { injectParent } from "../../utils/injections/inject-parent";
 import { ISdModal } from "../../providers/sd-modal.provider";
-import { SdDockContainerControl } from "../../controls/sd-dock-container.control";
-import { SdDockControl } from "../../controls/sd-dock.control";
-import { SdPaneControl } from "../../controls/sd-pane.control";
 import { SdRegionControl } from "../../controls/containers/sd-region";
 
 @Component({
@@ -48,9 +45,6 @@ import { SdRegionControl } from "../../controls/containers/sd-region";
     NgTemplateOutlet,
     FormatPipe,
     FaIconComponent,
-    SdDockContainerControl,
-    SdDockControl,
-    SdPaneControl,
     SdRegionControl,
   ],
   template: `
@@ -73,71 +67,67 @@ import { SdRegionControl } from "../../controls/containers/sd-region";
       }-->
 
       <ng-template #content>
-        <sd-dock-container style="min-width: 20em">
+        <div class="flex-column" style="height: 100%" [class.p-xs]="parent.currViewType() === 'modal'">
           <sd-region>
-            <sd-dock-container>
+            <div class="flex-column flex-gap-default p-default" style="height: 100%;">
               @if ((parent.currViewType() !== "modal" && !parent.readonly?.()) || toolTemplateRef() != null) {
-                <sd-dock class="p-default pb-0 flex-column flex-gap-sm">
+                <div class="flex-row flex-gap-sm">
                   @if (parent.currViewType() !== "modal" && !parent.readonly?.()) {
-                    <div class="flex-row flex-gap-sm">
-                      <sd-button theme="primary" (click)="onSubmitButtonClick()">
-                        <fa-icon [icon]="icons.save" [fixedWidth]="true" />
-                        저장
-                        <small>(CTRL+S)</small>
-                      </sd-button>
-                      @if ((!parent.isNew || !parent.isNew()) && parent.toggleDelete) {
-                        @if (parent.dataInfo && parent.dataInfo().isDeleted) {
-                          <sd-button theme="warning" (click)="parent.doToggleDelete(false)">
-                            <fa-icon [icon]="icons.redo" [fixedWidth]="true" />
-                            복구
-                          </sd-button>
-                        } @else {
-                          <sd-button theme="danger" (click)="parent.doToggleDelete(true)">
-                            <fa-icon [icon]="icons.eraser" [fixedWidth]="true" />
-                            삭제
-                          </sd-button>
-                        }
+                    <sd-button theme="primary" (click)="onSubmitButtonClick()">
+                      <fa-icon [icon]="icons.save" [fixedWidth]="true" />
+                      저장
+                    </sd-button>
+                    @if ((!parent.isNew || !parent.isNew()) && parent.toggleDelete) {
+                      @if (parent.dataInfo && parent.dataInfo().isDeleted) {
+                        <sd-button theme="warning" (click)="parent.doToggleDelete(false)">
+                          <fa-icon [icon]="icons.redo" [fixedWidth]="true" />
+                          복구
+                        </sd-button>
+                      } @else {
+                        <sd-button theme="danger" (click)="parent.doToggleDelete(true)">
+                          <fa-icon [icon]="icons.eraser" [fixedWidth]="true" />
+                          삭제
+                        </sd-button>
                       }
-                    </div>
+                    }
                   }
+
                   @if (toolTemplateRef() != null) {
-                    <div>
-                      <ng-template [ngTemplateOutlet]="toolTemplateRef() ?? null" />
-                    </div>
+                    <ng-template [ngTemplateOutlet]="toolTemplateRef() ?? null" />
                   }
-                </sd-dock>
+                </div>
               }
 
               @if (prevTemplateRef() != null) {
-                <sd-dock class="p-default pb-0">
+                <div>
                   <ng-template [ngTemplateOutlet]="prevTemplateRef() ?? null" />
-                </sd-dock>
+                </div>
               }
-              <sd-pane class="p-default">
+              <div class="flex-grow">
                 <sd-form #formCtrl (submit)="onSubmit()">
                   <ng-template [ngTemplateOutlet]="contentTemplateRef()" />
                 </sd-form>
-              </sd-pane>
-            </sd-dock-container>
+              </div>
+            </div>
           </sd-region>
 
+          @if (nextTemplateRef() != null) {
+            <div>
+              <sd-region contentClass="p-default">
+                <ng-template [ngTemplateOutlet]="nextTemplateRef() ?? null" />
+              </sd-region>
+            </div>
+          }
           @if (parent.dataInfo && (parent.dataInfo().lastModifiedAt || parent.dataInfo().lastModifiedBy)) {
-            <sd-dock position="bottom">
+            <div>
               <sd-region contentClass="p-sm-default">
                 최종수정:
                 {{ parent.dataInfo().lastModifiedAt! | format: "yyyy-MM-dd HH:mm" }}
                 ({{ parent.dataInfo().lastModifiedBy }})
               </sd-region>
-            </sd-dock>
+            </div>
           }
-          @if (nextTemplateRef() != null) {
-            <sd-dock position="bottom">
-              <sd-region contentClass="p-default">
-                <ng-template [ngTemplateOutlet]="nextTemplateRef() ?? null" />
-              </sd-region>
-            </sd-dock>
-          }
-        </sd-dock-container>
+        </div>
       </ng-template>
 
       @if (!parent.readonly?.()) {

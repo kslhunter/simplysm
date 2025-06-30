@@ -15,19 +15,19 @@ export class SdRouterLinkDirective {
   #router = inject(Router);
   #navWindow = inject(SdNavigateWindowProvider);
 
-  option = input<{
-    link: string,
-    params?: Record<string, string>,
-    window?: {
-      width?: number;
-      height?: number;
-    },
-    outletName?: string;
-    queryParams?: Record<string, string> | ParsedUrlQuery
-  } | undefined>(
-    undefined,
-    { alias: "sd-router-link" },
-  );
+  option = input<
+    | {
+        link: string;
+        params?: Record<string, string>;
+        window?: {
+          width?: number;
+          height?: number;
+        };
+        outletName?: string;
+        queryParams?: Record<string, string> | ParsedUrlQuery;
+      }
+    | undefined
+  >(undefined, { alias: "sd-router-link" });
 
   @HostListener("click", ["$event"])
   async onClick(event: MouseEvent): Promise<void> {
@@ -45,33 +45,26 @@ export class SdRouterLinkDirective {
       const height = option.window?.height ?? 800;
       const qp = option.queryParams ? "?" + querystring.stringify(option.queryParams) : "";
       this.#navWindow.open(option.link + qp, option.params, `width=${width},height=${height}`);
-    }
-    else if (event.ctrlKey || event.altKey) {
+    } else if (event.ctrlKey || event.altKey) {
       // 알트키: 새탭
       // 컨트롤키: 새탭 (새탭이 포커싱되지 않음)
       const qp = option.queryParams ? "?" + querystring.stringify(option.queryParams) : "";
       this.#navWindow.open(option.link + qp, option.params, "_blank");
-    }
-    else if (event.shiftKey) {
+    } else if (event.shiftKey) {
       // 쉬프트키: 새창
       const width = option.window?.width ?? 800;
       const height = option.window?.height ?? 800;
 
       const qp = option.queryParams ? "?" + querystring.stringify(option.queryParams) : "";
       this.#navWindow.open(option.link + qp, option.params, `width=${width},height=${height}`);
-    }
-    else if (option.outletName === undefined) {
+    } else if (option.outletName === undefined) {
       await this.#router.navigate(
         [option.link, ...(option.params ? [option.params] : [])],
         option.queryParams ? { queryParams: option.queryParams } : undefined,
       );
-    }
-    else {
+    } else {
       await this.#router.navigate(
-        [
-          { outlets: { [option.outletName]: option.link } },
-          ...(option.params ? [option.params] : []),
-        ],
+        [{ outlets: { [option.outletName]: option.link } }, ...(option.params ? [option.params] : [])],
         option.queryParams ? { queryParams: option.queryParams } : undefined,
       );
     }
