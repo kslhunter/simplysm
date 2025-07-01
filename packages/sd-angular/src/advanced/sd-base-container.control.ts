@@ -23,6 +23,8 @@ import { TSdViewType, useViewTypeSignal } from "../utils/signals/use-view-type.s
 import { transformBoolean } from "../utils/type-tramsforms";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { injectParent } from "../utils/injections/inject-parent";
+import { SdFlexControl } from "../controls/flex/sd-flex.control";
+import { SdFlexItemControl } from "../controls/flex/sd-flex-item.control";
 
 @Component({
   selector: "sd-base-container",
@@ -36,6 +38,8 @@ import { injectParent } from "../utils/injections/inject-parent";
     SdTopbarControl,
     SdBusyContainerControl,
     NgTemplateOutlet,
+    SdFlexControl,
+    SdFlexItemControl,
   ],
   template: `
     <sd-busy-container [busy]="busy()" [message]="busyMessage()">
@@ -61,14 +65,16 @@ import { injectParent } from "../utils/injections/inject-parent";
             </sd-pane>
           </sd-topbar-container>
         } @else if (currViewType() === "modal") {
-          <div class="flex-column" style="height: 100%">
-            <div class="flex-grow">
+          <sd-flex vertical>
+            <sd-flex-item fill>
               <ng-template [ngTemplateOutlet]="contentTemplateRef()" />
-            </div>
+            </sd-flex-item>
             @if (modalBottomTemplateRef()) {
-              <ng-template [ngTemplateOutlet]="modalBottomTemplateRef() ?? null" />
+              <sd-flex-item>
+                <ng-template [ngTemplateOutlet]="modalBottomTemplateRef() ?? null" />
+              </sd-flex-item>
             }
-          </div>
+          </sd-flex>
         } @else {
           <!--<sd-dock-container>
             @if (controlToolTemplateRef()) {

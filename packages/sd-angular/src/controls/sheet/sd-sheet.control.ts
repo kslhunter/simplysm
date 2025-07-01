@@ -24,10 +24,7 @@ import { transformBoolean } from "../../utils/type-tramsforms";
 import { SdAnchorControl } from "../sd-anchor.control";
 import { SdBusyContainerControl } from "../sd-busy-container.control";
 import { SdCheckboxControl } from "../sd-checkbox.control";
-import { SdDockContainerControl } from "../sd-dock-container.control";
-import { SdDockControl } from "../sd-dock.control";
 import { SdPaginationControl } from "../sd-pagination.control";
-import { SdPaneControl } from "../sd-pane.control";
 import { SdSheetColumnDirective } from "./directives/sd-sheet-column.directive";
 import { SdSheetCellAgent } from "./features/sd-sheet-cell-agent";
 import { SdSheetColumnFixingManager } from "./features/sd-sheet-column-fixing-manager";
@@ -42,6 +39,8 @@ import {
   ISdSheetItemKeydownEventParam,
 } from "./sd-sheet.types";
 import { FaIconComponent, FaLayersComponent } from "@fortawesome/angular-fontawesome";
+import { SdFlexControl } from "../flex/sd-flex.control";
+import { SdFlexItemControl } from "../flex/sd-flex-item.control";
 
 @Component({
   selector: "sd-sheet",
@@ -50,40 +49,43 @@ import { FaIconComponent, FaLayersComponent } from "@fortawesome/angular-fontawe
   standalone: true,
   imports: [
     SdBusyContainerControl,
-    SdDockContainerControl,
-    SdDockControl,
     SdAnchorControl,
     SdPaginationControl,
-    SdPaneControl,
     NgTemplateOutlet,
     SdCheckboxControl,
     SdEventsDirective,
     FaIconComponent,
     FaLayersComponent,
+    SdFlexControl,
+    SdFlexItemControl,
   ],
   template: `
     <sd-busy-container [busy]="busy()" type="cube">
-      <sd-dock-container [hidden]="busy()">
+      <sd-flex vertical [hidden]="busy()">
         @if ((key() || effectivePageCount() > 0) && !hideConfigBar()) {
-          <sd-dock>
-            <div class="flex-row-inline flex-gap-sm">
+          <sd-flex-item class="_tool">
+            <sd-flex gap="sm">
               @if (key()) {
-                <sd-anchor (click)="onConfigButtonClick()">
-                  <fa-icon [icon]="icons.cog" [fixedWidth]="true" />
-                </sd-anchor>
+                <sd-flex-item>
+                  <sd-anchor (click)="onConfigButtonClick()">
+                    <fa-icon [icon]="icons.cog" [fixedWidth]="true" />
+                  </sd-anchor>
+                </sd-flex-item>
               }
               @if (effectivePageCount() > 1) {
-                <sd-pagination
-                  [(currentPage)]="currentPage"
-                  [totalPageCount]="effectivePageCount()"
-                  [visiblePageCount]="visiblePageCount()"
-                />
+                <sd-flex-item>
+                  <sd-pagination
+                    [(currentPage)]="currentPage"
+                    [totalPageCount]="effectivePageCount()"
+                    [visiblePageCount]="visiblePageCount()"
+                  />
+                </sd-flex-item>
               }
-            </div>
-          </sd-dock>
+            </sd-flex>
+          </sd-flex-item>
         }
 
-        <sd-pane class="_sheet-container" (scroll)="onContainerScroll()" [style]="contentStyle()">
+        <sd-flex-item fill class="_sheet-container" (scroll)="onContainerScroll()" [style]="contentStyle()">
           <table (sdResize)="onSheetResize($event)">
             <thead>
               @for (headerRow of layoutEngine.headerDefTable(); let r = $index; track r) {
@@ -139,10 +141,8 @@ import { FaIconComponent, FaLayersComponent } from "@fortawesome/angular-fontawe
                           [attr.title]="headerCell.text"
                           [style.left.px]="columnFixingManager.fixedLeftMap().get(c)"
                         >
-                          <div class="flex-row align-items-end">
-                            <div class="_contents flex-grow _padding">
-                              <pre>{{ headerCell.text }}</pre>
-                            </div>
+                          <div class="_padding">
+                            <pre>{{ headerCell.text }}</pre>
                           </div>
                         </th>
                       } @else {
@@ -163,23 +163,19 @@ import { FaIconComponent, FaLayersComponent } from "@fortawesome/angular-fontawe
                           (sdResize)="onHeaderLastRowCellResize($event, c)"
                           (click)="onHeaderCellClick($event, headerCell)"
                         >
-                          <div class="flex-row align-items-end">
+                          <sd-flex>
                             @let _tempRef = headerCell.control.headerTemplateRef();
-                            <div
-                              class="_contents flex-grow"
-                              [class._padding]="!_tempRef"
-                              [attr.style]="headerCell.style"
-                            >
+                            <sd-flex-item fill [class._padding]="!_tempRef" [attr.style]="headerCell.style">
                               @if (_tempRef) {
                                 <ng-template [ngTemplateOutlet]="_tempRef" />
                               } @else {
                                 <pre>{{ headerCell.text }}</pre>
                               }
-                            </div>
+                            </sd-flex-item>
 
                             <!-- 정렬 아이콘 -->
                             @if (!headerCell.control.disableSorting()) {
-                              <div class="_sort-icon">
+                              <sd-flex-item class="_sort-icon">
                                 <fa-layers>
                                   <fa-icon [icon]="icons.sort" class="tx-trans-lightest" />
                                   @let _def = sortingManager.defMap().get(headerCell.control.key());
@@ -193,9 +189,9 @@ import { FaIconComponent, FaLayersComponent } from "@fortawesome/angular-fontawe
                                 @if (_idxText) {
                                   <sub>{{ _idxText }}</sub>
                                 }
-                              </div>
+                              </sd-flex-item>
                             }
-                          </div>
+                          </sd-flex>
 
                           <!-- 정렬 리사이징 -->
                           @if (!headerCell.control.disableResizing()) {
@@ -339,8 +335,8 @@ import { FaIconComponent, FaLayersComponent } from "@fortawesome/angular-fontawe
           </div>
           <div class="_resize-indicator"></div>
           <div class="_select-row-indicator-container"></div>
-        </sd-pane>
-      </sd-dock-container>
+        </sd-flex-item>
+      </sd-flex>
     </sd-busy-container>
   `,
   styles: [
@@ -359,6 +355,10 @@ import { FaIconComponent, FaLayersComponent } from "@fortawesome/angular-fontawe
       $border-color-darker: var(--theme-grey-light);
 
       sd-sheet {
+        ._padding {
+          padding: var(--sheet-pv) var(--sheet-ph);
+        }
+
         > sd-busy-container {
           border-radius: var(--border-radius-default);
 
@@ -366,17 +366,17 @@ import { FaIconComponent, FaLayersComponent } from "@fortawesome/angular-fontawe
             border-radius: var(--border-radius-default);
           }
 
-          > sd-dock-container > ._content {
+          > sd-flex {
             border: 1px solid $border-color-dark;
             border-radius: var(--border-radius-default);
 
-            > sd-dock {
+            > sd-flex-item._tool {
               background: var(--control-color);
               border-top-left-radius: var(--border-radius-default);
               border-top-right-radius: var(--border-radius-default);
               border-bottom: 1px solid $border-color-dark;
 
-              > div > sd-anchor {
+              > sd-flex > sd-flex-item > sd-anchor {
                 padding: var(--gap-sm);
               }
             }
@@ -474,12 +474,6 @@ import { FaIconComponent, FaLayersComponent } from "@fortawesome/angular-fontawe
                     }
 
                     > div:first-child {
-                      > ._contents {
-                        &._padding {
-                          padding: var(--sheet-pv) var(--sheet-ph);
-                        }
-                      }
-
                       > ._sort-icon {
                         display: inline-block;
                         padding: var(--gap-xs) var(--gap-xs) var(--gap-xs) 0;
@@ -581,7 +575,7 @@ import { FaIconComponent, FaLayersComponent } from "@fortawesome/angular-fontawe
         }
 
         &[sd-focus-mode="row"] {
-          > sd-busy-container > sd-dock-container > ._content > sd-pane._sheet-container {
+          > sd-busy-container > sd-flex > ._sheet-container {
             > ._focus-row-indicator > ._focus-cell-indicator {
               display: none !important;
             }
@@ -596,7 +590,7 @@ import { FaIconComponent, FaLayersComponent } from "@fortawesome/angular-fontawe
               border-radius: var(--border-radius-default);
             }
 
-            > sd-dock-container > ._content {
+            > sd-flex {
               border: none;
               border-radius: 0;
             }

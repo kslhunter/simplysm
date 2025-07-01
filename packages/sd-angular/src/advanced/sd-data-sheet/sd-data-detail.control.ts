@@ -32,6 +32,8 @@ import { $signal } from "../../utils/bindings/$signal";
 import { injectParent } from "../../utils/injections/inject-parent";
 import { ISdModal } from "../../providers/sd-modal.provider";
 import { SdRegionControl } from "../../controls/containers/sd-region";
+import { SdFlexControl } from "../../controls/flex/sd-flex.control";
+import { SdFlexItemControl } from "../../controls/flex/sd-flex-item.control";
 
 @Component({
   selector: "sd-data-detail",
@@ -46,6 +48,8 @@ import { SdRegionControl } from "../../controls/containers/sd-region";
     FormatPipe,
     FaIconComponent,
     SdRegionControl,
+    SdFlexControl,
+    SdFlexItemControl,
   ],
   template: `
     <sd-base-container
@@ -67,86 +71,97 @@ import { SdRegionControl } from "../../controls/containers/sd-region";
       }-->
 
       <ng-template #content>
-        <div class="flex-column" style="height: 100%" [class.p-xs]="parent.currViewType() === 'modal'">
-          <sd-region>
-            <div class="flex-column flex-gap-default p-default" style="height: 100%;">
-              @if ((parent.currViewType() !== "modal" && !parent.readonly?.()) || toolTemplateRef() != null) {
-                <div class="flex-row flex-gap-sm">
-                  @if (parent.currViewType() !== "modal" && !parent.readonly?.()) {
-                    <sd-button theme="primary" (click)="onSubmitButtonClick()">
-                      <fa-icon [icon]="icons.save" [fixedWidth]="true" />
-                      저장
-                    </sd-button>
-                    @if ((!parent.isNew || !parent.isNew()) && parent.toggleDelete) {
-                      @if (parent.dataInfo && parent.dataInfo().isDeleted) {
-                        <sd-button theme="warning" (click)="parent.doToggleDelete(false)">
-                          <fa-icon [icon]="icons.redo" [fixedWidth]="true" />
-                          복구
-                        </sd-button>
-                      } @else {
-                        <sd-button theme="danger" (click)="parent.doToggleDelete(true)">
-                          <fa-icon [icon]="icons.eraser" [fixedWidth]="true" />
-                          삭제
-                        </sd-button>
+        <sd-flex vertical [class.p-xs]="parent.currViewType() === 'modal'">
+          <sd-flex-item [fill]="parent.currViewType() !== 'modal'">
+            <sd-region>
+              <sd-flex vertical gap="default" padding="default">
+                @if ((parent.currViewType() !== "modal" && !parent.readonly?.()) || toolTemplateRef() != null) {
+                  <sd-flex-item>
+                    <sd-flex gap="sm">
+                      @if (parent.currViewType() !== "modal" && !parent.readonly?.()) {
+                        <sd-flex-item>
+                          <sd-button theme="primary" (click)="onSubmitButtonClick()">
+                            <fa-icon [icon]="icons.save" [fixedWidth]="true" />
+                            저장
+                          </sd-button>
+                        </sd-flex-item>
+                        @if ((!parent.isNew || !parent.isNew()) && parent.toggleDelete) {
+                          @if (parent.dataInfo && parent.dataInfo().isDeleted) {
+                            <sd-flex-item>
+                              <sd-button theme="warning" (click)="parent.doToggleDelete(false)">
+                                <fa-icon [icon]="icons.redo" [fixedWidth]="true" />
+                                복구
+                              </sd-button>
+                            </sd-flex-item>
+                          } @else {
+                            <sd-flex-item>
+                              <sd-button theme="danger" (click)="parent.doToggleDelete(true)">
+                                <fa-icon [icon]="icons.eraser" [fixedWidth]="true" />
+                                삭제
+                              </sd-button>
+                            </sd-flex-item>
+                          }
+                        }
                       }
-                    }
-                  }
 
-                  @if (toolTemplateRef() != null) {
-                    <ng-template [ngTemplateOutlet]="toolTemplateRef() ?? null" />
-                  }
-                </div>
-              }
+                      @if (toolTemplateRef() != null) {
+                        <sd-flex-item>
+                          <ng-template [ngTemplateOutlet]="toolTemplateRef() ?? null" />
+                        </sd-flex-item>
+                      }
+                    </sd-flex>
+                  </sd-flex-item>
+                }
 
-              @if (prevTemplateRef() != null) {
-                <div>
-                  <ng-template [ngTemplateOutlet]="prevTemplateRef() ?? null" />
-                </div>
-              }
-              <div class="flex-grow">
-                <sd-form #formCtrl (submit)="onSubmit()">
-                  <ng-template [ngTemplateOutlet]="contentTemplateRef()" />
-                </sd-form>
-              </div>
-            </div>
-          </sd-region>
+                @if (prevTemplateRef() != null) {
+                  <sd-flex-item>
+                    <ng-template [ngTemplateOutlet]="prevTemplateRef() ?? null" />
+                  </sd-flex-item>
+                }
+                <sd-flex-item fill>
+                  <sd-form #formCtrl (submit)="onSubmit()">
+                    <ng-template [ngTemplateOutlet]="contentTemplateRef()" />
+                  </sd-form>
+                </sd-flex-item>
+
+                @if (parent.dataInfo && (parent.dataInfo().lastModifiedAt || parent.dataInfo().lastModifiedBy)) {
+                  <sd-flex-item>
+                    최종수정:
+                    {{ parent.dataInfo().lastModifiedAt! | format: "yyyy-MM-dd HH:mm" }}
+                    ({{ parent.dataInfo().lastModifiedBy }})
+                  </sd-flex-item>
+                }
+              </sd-flex>
+            </sd-region>
+          </sd-flex-item>
 
           @if (nextTemplateRef() != null) {
-            <div>
+            <sd-flex-item>
               <sd-region contentClass="p-default">
                 <ng-template [ngTemplateOutlet]="nextTemplateRef() ?? null" />
               </sd-region>
-            </div>
+            </sd-flex-item>
           }
-          @if (parent.dataInfo && (parent.dataInfo().lastModifiedAt || parent.dataInfo().lastModifiedBy)) {
-            <div>
-              <sd-region contentClass="p-sm-default">
-                최종수정:
-                {{ parent.dataInfo().lastModifiedAt! | format: "yyyy-MM-dd HH:mm" }}
-                ({{ parent.dataInfo().lastModifiedBy }})
-              </sd-region>
-            </div>
-          }
-        </div>
+        </sd-flex>
       </ng-template>
 
       @if (!parent.readonly?.()) {
         <ng-template #modalBottom>
-          <div class="p-sm-default flex-row bdt bdt-theme-grey-lightest bg-white">
+          <sd-flex class="p-sm-default bdt bdt-theme-grey-lightest bg-white">
             @if ((!parent.isNew || !parent.isNew()) && parent.toggleDelete) {
-              <div>
+              <sd-flex-item>
                 @if (parent.dataInfo && parent.dataInfo().isDeleted) {
                   <sd-button theme="warning" inline (click)="parent.doToggleDelete(false)">복구</sd-button>
                 } @else {
                   <sd-button theme="danger" inline (click)="parent.doToggleDelete(true)">삭제</sd-button>
                 }
-              </div>
+              </sd-flex-item>
             }
 
-            <div class="flex-grow tx-right">
+            <sd-flex-item fill class="tx-right">
               <sd-button theme="primary" inline (click)="onSubmitButtonClick()">확인</sd-button>
-            </div>
-          </div>
+            </sd-flex-item>
+          </sd-flex>
         </ng-template>
       }
     </sd-base-container>

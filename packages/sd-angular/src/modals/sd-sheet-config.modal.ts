@@ -22,6 +22,8 @@ import { $effect } from "../utils/bindings/$effect";
 import { $signal } from "../utils/bindings/$signal";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { SdRegionControl } from "../controls/containers/sd-region";
+import { SdFlexControl } from "../controls/flex/sd-flex.control";
+import { SdFlexItemControl } from "../controls/flex/sd-flex-item.control";
 
 @Component({
   selector: "sd-sheet-config-modal",
@@ -39,23 +41,20 @@ import { SdRegionControl } from "../controls/containers/sd-region";
     FaIconComponent,
     SdBusyContainerControl,
     SdRegionControl,
+    SdFlexControl,
+    SdFlexItemControl,
   ],
   template: `
     <sd-busy-container [busy]="!initialized()">
       @if (initialized()) {
-        <div class="flex-column" style="height: 100%">
-          <div class="flex-grow p-xs">
+        <sd-flex vertical>
+          <sd-flex-item fill class="p-xs">
             <sd-region contentClass="p-xs">
               <sd-sheet [key]="sheetKey() + '-config'" [items]="items()" [trackByFn]="trackByFn">
                 <sd-sheet-column key="fixed" header="Fix" disableSorting disableResizing>
                   <ng-template [cell]="items()" let-item="item">
                     <div style="text-align: center">
-                      <sd-checkbox
-                        size="sm"
-                        [inset]="true"
-                        [(value)]="item.fixed"
-                        (valueChange)="items.$mark()"
-                      ></sd-checkbox>
+                      <sd-checkbox size="sm" [inset]="true" [(value)]="item.fixed" (valueChange)="items.$mark()" />
                     </div>
                   </ng-template>
                 </sd-sheet-column>
@@ -114,24 +113,24 @@ import { SdRegionControl } from "../controls/containers/sd-region";
                 </sd-sheet-column>
               </sd-sheet>
             </sd-region>
-          </div>
+          </sd-flex-item>
 
           <div class="p-sm-default bg-white">
-            <div style="float: left">
-              <sd-button [inline]="true" theme="warning" (click)="onInitButtonClick()" buttonStyle="min-width: 60px;">
-                Reset
-              </sd-button>
-            </div>
-            <div class="flex-row flex-gap-sm" style="justify-content: end">
-              <sd-button [inline]="true" theme="success" (click)="onOkButtonClick()" buttonStyle="min-width: 60px;">
-                OK
-              </sd-button>
-              <sd-button [inline]="true" (click)="onCancelButtonClick()" buttonStyle="min-width: 60px;">
-                Cancel
-              </sd-button>
-            </div>
+            <sd-flex gap="sm">
+              <sd-flex-item fill>
+                <sd-button inline theme="warning" (click)="onInitButtonClick()" buttonStyle="min-width: 60px;">
+                  Reset
+                </sd-button>
+              </sd-flex-item>
+              <sd-flex-item>
+                <sd-button theme="success" (click)="onOkButtonClick()" buttonStyle="min-width: 60px;">OK</sd-button>
+              </sd-flex-item>
+              <sd-flex-item>
+                <sd-button (click)="onCancelButtonClick()" buttonStyle="min-width: 60px;">Cancel</sd-button>
+              </sd-flex-item>
+            </sd-flex>
           </div>
-        </div>
+        </sd-flex>
       }
     </sd-busy-container>
   `,

@@ -20,13 +20,23 @@ import { SdCollapseControl } from "./sd-collapse.control";
 
 import { SdListControl } from "./sd-list.control";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
+import { SdFlexControl } from "./flex/sd-flex.control";
+import { SdFlexItemControl } from "./flex/sd-flex-item.control";
 
 @Component({
   selector: "sd-list-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdCollapseIconControl, SdCollapseControl, SdRippleDirective, NgTemplateOutlet, FaIconComponent],
+  imports: [
+    SdCollapseIconControl,
+    SdCollapseControl,
+    SdRippleDirective,
+    NgTemplateOutlet,
+    FaIconComponent,
+    SdFlexControl,
+    SdFlexItemControl,
+  ],
   template: `
     <div
       [class]="['_content', contentClass()].filterExists().join(' ')"
@@ -35,26 +45,28 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
       tabindex="0"
       [sd-ripple]="!readonly() && !(layout() === 'flat' && hasChildren())"
     >
-      <div class="flex-row flex-gap-xs">
+      <sd-flex gap="xs">
         @if (selectedIcon() && !hasChildren()) {
-          <fa-icon class="_selected-icon" [icon]="selectedIcon()!" [fixedWidth]="true" />
+          <sd-flex-item>
+            <fa-icon class="_selected-icon" [icon]="selectedIcon()!" [fixedWidth]="true" />
+          </sd-flex-item>
         }
-        <div style="flex-grow: 1">
-          <ng-content></ng-content>
-        </div>
+        <sd-flex-item fill>
+          <ng-content />
+        </sd-flex-item>
 
         @if (toolsTemplateRef()) {
-          <div>
+          <sd-flex-item>
             <ng-template [ngTemplateOutlet]="toolsTemplateRef()!" />
-          </div>
+          </sd-flex-item>
         }
 
         @if (hasChildren() && layout() === "accordion") {
-          <div>
+          <sd-flex-item>
             <sd-collapse-icon [open]="open()" />
-          </div>
+          </sd-flex-item>
         }
-      </div>
+      </sd-flex>
     </div>
     @if (hasChildren()) {
       <sd-collapse class="_child" [open]="layout() === 'flat' || open()">
@@ -73,7 +85,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
           border-radius: var(--border-radius-default);
           margin: var(--gap-xs);
 
-          > .flex-row > ._selected-icon {
+          > sd-flex > sd-flex-item > ._selected-icon {
             color: var(--text-trans-lightest);
           }
         }
@@ -131,7 +143,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
             //background: transparent;
             color: var(--text-trans-default);
 
-            > .flex-row > ._selected-icon {
+            > sd-flex > sd-flex-item > ._selected-icon {
               color: var(--theme-primary-default);
             }
 

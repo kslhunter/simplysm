@@ -19,18 +19,60 @@ import { $signal } from "../utils/bindings/$signal";
 import { injectElementRef } from "../utils/injections/inject-element-ref";
 import { transformBoolean } from "../utils/type-tramsforms";
 import { SdAnchorControl } from "./sd-anchor.control";
-import { SdDockContainerControl } from "./sd-dock-container.control";
-import { SdDockControl } from "./sd-dock.control";
-
-import { SdPaneControl } from "./sd-pane.control";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
+import { SdFlexControl } from "./flex/sd-flex.control";
+import { SdFlexItemControl } from "./flex/sd-flex-item.control";
 
 @Component({
   selector: "sd-modal",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdAnchorControl, SdPaneControl, SdDockContainerControl, SdDockControl, SdEventsDirective, FaIconComponent],
+  imports: [SdAnchorControl, SdEventsDirective, FaIconComponent, SdFlexControl, SdFlexItemControl],
+  template: `
+    <div class="_backdrop" (click)="onBackdropClick()"></div>
+
+    <div
+      #dialogEl
+      class="_dialog"
+      tabindex="0"
+      (keydown.escape)="onDialogEscapeKeydown()"
+      [style.min-width.px]="minWidthPx()"
+      [style.min-height.px]="minHeightPx()"
+      [style.width.px]="minWidthPx() && widthPx() && minWidthPx()! > widthPx()! ? minWidthPx() : widthPx()"
+      [style.height.px]="minHeightPx() && heightPx() && minHeightPx()! > heightPx()! ? minHeightPx() : heightPx()"
+      (focus)="onDialogFocus()"
+      (sdResize)="onDialogResize($event)"
+    >
+      <sd-flex vertical>
+        @if (!hideHeader()) {
+          <sd-flex-item class="_header" (mousedown)="onHeaderMouseDown($event)" [style]="headerStyle()">
+            <h5 class="_title">{{ title() }}</h5>
+            @if (!hideCloseButton()) {
+              <sd-anchor class="_close-button" theme="grey" (click)="onCloseButtonClick()">
+                <fa-icon [icon]="icons.xmark" [fixedWidth]="true" />
+              </sd-anchor>
+            }
+          </sd-flex-item>
+        }
+
+        <sd-flex-item fill class="_content">
+          <ng-content></ng-content>
+        </sd-flex-item>
+      </sd-flex>
+
+      @if (resizable()) {
+        <div class="_left-resize-bar" (mousedown)="onResizeBarMousedown($event, 'left')"></div>
+        <div class="_right-resize-bar" (mousedown)="onResizeBarMousedown($event, 'right')"></div>
+        <div class="_top-resize-bar" (mousedown)="onResizeBarMousedown($event, 'top')"></div>
+        <div class="_top-right-resize-bar" (mousedown)="onResizeBarMousedown($event, 'top-right')"></div>
+        <div class="_top-left-resize-bar" (mousedown)="onResizeBarMousedown($event, 'top-left')"></div>
+        <div class="_bottom-resize-bar" (mousedown)="onResizeBarMousedown($event, 'bottom')"></div>
+        <div class="_bottom-right-resize-bar" (mousedown)="onResizeBarMousedown($event, 'bottom-right')"></div>
+        <div class="_bottom-left-resize-bar" (mousedown)="onResizeBarMousedown($event, 'bottom-left')"></div>
+      }
+    </div>
+  `,
   styles: [
     /* language=SCSS */ `
       @use "../scss/mixins";
@@ -73,7 +115,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
             outline: none;
           }
 
-          > sd-dock-container > ._content {
+          > sd-flex {
             > ._header {
               display: flex;
               flex-direction: row;
@@ -258,7 +300,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
             border: none;
             border-radius: 0;
 
-            > sd-dock-container > ._content > ._header {
+            > sd-flex > ._header {
               background: transparent;
               color: var(--text-trans-lighter);
 
@@ -276,50 +318,6 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
       }
     `,
   ],
-  template: `
-    <div class="_backdrop" (click)="onBackdropClick()"></div>
-
-    <div
-      #dialogEl
-      class="_dialog"
-      tabindex="0"
-      (keydown.escape)="onDialogEscapeKeydown()"
-      [style.min-width.px]="minWidthPx()"
-      [style.min-height.px]="minHeightPx()"
-      [style.width.px]="minWidthPx() && widthPx() && minWidthPx()! > widthPx()! ? minWidthPx() : widthPx()"
-      [style.height.px]="minHeightPx() && heightPx() && minHeightPx()! > heightPx()! ? minHeightPx() : heightPx()"
-      (focus)="onDialogFocus()"
-      (sdResize)="onDialogResize($event)"
-    >
-      <sd-dock-container>
-        @if (!hideHeader()) {
-          <sd-dock class="_header" (mousedown)="onHeaderMouseDown($event)" [style]="headerStyle()">
-            <h5 class="_title">{{ title() }}</h5>
-            @if (!hideCloseButton()) {
-              <sd-anchor class="_close-button" theme="grey" (click)="onCloseButtonClick()">
-                <fa-icon [icon]="icons.xmark" [fixedWidth]="true" />
-              </sd-anchor>
-            }
-          </sd-dock>
-        }
-
-        <sd-pane class="_content">
-          <ng-content></ng-content>
-        </sd-pane>
-      </sd-dock-container>
-
-      @if (resizable()) {
-        <div class="_left-resize-bar" (mousedown)="onResizeBarMousedown($event, 'left')"></div>
-        <div class="_right-resize-bar" (mousedown)="onResizeBarMousedown($event, 'right')"></div>
-        <div class="_top-resize-bar" (mousedown)="onResizeBarMousedown($event, 'top')"></div>
-        <div class="_top-right-resize-bar" (mousedown)="onResizeBarMousedown($event, 'top-right')"></div>
-        <div class="_top-left-resize-bar" (mousedown)="onResizeBarMousedown($event, 'top-left')"></div>
-        <div class="_bottom-resize-bar" (mousedown)="onResizeBarMousedown($event, 'bottom')"></div>
-        <div class="_bottom-right-resize-bar" (mousedown)="onResizeBarMousedown($event, 'bottom-right')"></div>
-        <div class="_bottom-left-resize-bar" (mousedown)="onResizeBarMousedown($event, 'bottom-left')"></div>
-      }
-    </div>
-  `,
   host: {
     "[attr.sd-open]": "open()",
     "[attr.sd-float]": "float()",

@@ -49,6 +49,8 @@ import { setupCanDeactivate } from "../../utils/setups/setup-can-deactivate";
 import { $arr } from "../../utils/bindings/wrappers/$arr";
 import { TXT_CHANGE_IGNORE_CONFIRM } from "../../commons";
 import { SdDataSheetNoteDirective } from "./sd-data-sheet-note.directive";
+import { SdFlexControl } from "../../controls/flex/sd-flex.control";
+import { SdFlexItemControl } from "../../controls/flex/sd-flex-item.control";
 
 @Component({
   selector: "sd-data-sheet",
@@ -69,6 +71,8 @@ import { SdDataSheetNoteDirective } from "./sd-data-sheet-note.directive";
     FaIconComponent,
     SdRegionControl,
     FormatPipe,
+    SdFlexControl,
+    SdFlexItemControl,
   ],
   template: `
     <sd-base-container
@@ -78,22 +82,22 @@ import { SdDataSheetNoteDirective } from "./sd-data-sheet-note.directive";
       [restricted]="parent.restricted?.()"
     >
       <ng-template #content>
-        <div class="flex-column" [class.p-xs]="parent.currViewType() === 'modal'" style="height: 100%;">
+        <sd-flex vertical [class.p-xs]="parent.currViewType() === 'modal'">
           @if (noteControls().length > 0) {
             @for (noteControl of noteControls(); track noteControl) {
-              <div>
+              <sd-flex-item>
                 <sd-region
                   [theme]="noteControl.theme()"
                   [contentClass]="'p-sm-default bd bd-theme-' + noteControl.theme() + '-light'"
                 >
                   <ng-template [ngTemplateOutlet]="noteControl.contentTemplateRef()" />
                 </sd-region>
-              </div>
+              </sd-flex-item>
             }
           }
 
           @if (filterControls().length > 0) {
-            <div>
+            <sd-flex-item>
               <sd-region cardStyle="animation-delay: 100ms">
                 <sd-form (submit)="onFilterSubmit()">
                   <sd-form-box layout="inline" class="p-default">
@@ -116,14 +120,14 @@ import { SdDataSheetNoteDirective } from "./sd-data-sheet-note.directive";
                   </sd-form-box>
                 </sd-form>
               </sd-region>
-            </div>
+            </sd-flex-item>
           }
 
-          <div class="flex-grow">
-            <sd-region contentClass="p-default" cardStyle="animation-delay: 200ms">
-              <sd-form #formCtrl (submit)="onSubmit()">
-                <div class="flex-column flex-gap-sm" style="height: 100%;">
-                  <div>
+          <sd-flex-item fill>
+            <sd-form #formCtrl (submit)="onSubmit()">
+              <sd-region cardStyle="animation-delay: 200ms">
+                <sd-flex vertical gap="sm" padding="default">
+                  <sd-flex-item>
                     <div class="flex-row flex-gap-sm" style="white-space: nowrap">
                       @if (!parent.readonly?.()) {
                         @if (parent.submit) {
@@ -188,9 +192,9 @@ import { SdDataSheetNoteDirective } from "./sd-data-sheet-note.directive";
                         <ng-template [ngTemplateOutlet]="toolControl.contentTemplateRef()" />
                       }
                     </div>
-                  </div>
+                  </sd-flex-item>
 
-                  <div class="flex-grow">
+                  <sd-flex-item fill>
                     <sd-sheet
                       [key]="parent.key + '-sheet'"
                       [items]="parent.items()"
@@ -318,12 +322,12 @@ import { SdDataSheetNoteDirective } from "./sd-data-sheet-note.directive";
                         </sd-sheet-column>
                       }
                     </sd-sheet>
-                  </div>
-                </div>
-              </sd-form>
-            </sd-region>
-          </div>
-        </div>
+                  </sd-flex-item>
+                </sd-flex>
+              </sd-region>
+            </sd-form>
+          </sd-flex-item>
+        </sd-flex>
       </ng-template>
 
       @if (parent.realSelectMode()) {

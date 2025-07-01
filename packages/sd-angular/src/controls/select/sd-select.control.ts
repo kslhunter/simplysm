@@ -19,15 +19,14 @@ import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provi
 import { setupInvalid } from "../../utils/setups/setup-invalid";
 import { transformBoolean } from "../../utils/type-tramsforms";
 import { SdAnchorControl } from "../sd-anchor.control";
-import { SdDockContainerControl } from "../sd-dock-container.control";
-import { SdDockControl } from "../sd-dock.control";
 import { SdGapControl } from "../sd-gap.control";
-import { SdPaneControl } from "../sd-pane.control";
 import { SdSelectItemControl } from "./sd-select-item.control";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { SdDropdownControl } from "../dropdown/sd-dropdown.control";
 import { SdDropdownPopupControl } from "../dropdown/sd-dropdown-popup.control";
 import { $afterRenderEffect } from "../../utils/bindings/$afterRenderEffect";
+import { SdFlexControl } from "../flex/sd-flex.control";
+import { SdFlexItemControl } from "../flex/sd-flex-item.control";
 
 @Component({
   selector: "sd-select",
@@ -37,15 +36,14 @@ import { $afterRenderEffect } from "../../utils/bindings/$afterRenderEffect";
   imports: [
     SdDropdownControl,
     SdDropdownPopupControl,
-    SdDockContainerControl,
-    SdDockControl,
     SdAnchorControl,
     SdGapControl,
-    SdPaneControl,
     NgTemplateOutlet,
     SdTypedTemplateDirective,
     SdRippleDirective,
     FaIconComponent,
+    SdFlexControl,
+    SdFlexItemControl,
   ],
   styles: [
     /* language=SCSS */ `
@@ -210,34 +208,34 @@ import { $afterRenderEffect } from "../../utils/bindings/$afterRenderEffect";
 
       <sd-dropdown-popup #dropdownPopup (keydown)="onPopupKeydown($event)">
         @if (!items()) {
-          <sd-dock-container>
+          <sd-flex vertical>
             @if (headerTemplateRef()) {
-              <sd-dock>
+              <sd-flex-item>
                 <ng-template [ngTemplateOutlet]="headerTemplateRef()!" />
-              </sd-dock>
+              </sd-flex-item>
             }
 
-            <sd-pane>
+            <sd-flex-item fill>
               <ng-content></ng-content>
-            </sd-pane>
-          </sd-dock-container>
+            </sd-flex-item>
+          </sd-flex>
         } @else {
-          <sd-dock-container>
+          <sd-flex vertical>
             @if (headerTemplateRef()) {
-              <sd-dock>
+              <sd-flex-item>
                 <ng-template [ngTemplateOutlet]="headerTemplateRef()!" />
-              </sd-dock>
+              </sd-flex-item>
             }
 
             @if (selectMode() === "multi" && !hideSelectAll()) {
-              <sd-dock class="p-sm-default">
+              <sd-flex-item class="p-sm-default">
                 <sd-anchor (click)="onSelectAllButtonClick(true)">전체선택</sd-anchor>
                 <sd-gap width="sm"></sd-gap>
                 <sd-anchor (click)="onSelectAllButtonClick(false)">전체해제</sd-anchor>
-              </sd-dock>
+              </sd-flex-item>
             }
 
-            <sd-pane>
+            <sd-flex-item fill>
               <ng-template [ngTemplateOutlet]="beforeTemplateRef() ?? null" />
               <ng-template #rowOfList [typed]="rowOfListType" let-items="items" let-depth="depth">
                 @for (item of items; let index = $index; track trackByFn()(item, index)) {
@@ -274,8 +272,8 @@ import { $afterRenderEffect } from "../../utils/bindings/$afterRenderEffect";
                 [ngTemplateOutlet]="rowOfList"
                 [ngTemplateOutletContext]="{ items: items(), depth: 0 }"
               ></ng-template>
-            </sd-pane>
-          </sd-dock-container>
+            </sd-flex-item>
+          </sd-flex>
         }
       </sd-dropdown-popup>
     </sd-dropdown>

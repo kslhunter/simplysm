@@ -1,26 +1,19 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  contentChildren,
-  model,
-  ViewEncapsulation,
-} from "@angular/core";
-import { SdDockContainerControl } from "./sd-dock-container.control";
-import { SdDockControl } from "./sd-dock.control";
-import { SdPaneControl } from "./sd-pane.control";
+import { ChangeDetectionStrategy, Component, contentChildren, model, ViewEncapsulation } from "@angular/core";
 import { SdTabItemControl } from "./sd-tab-item.control";
 import { SdTabControl } from "./sd-tab.control";
 import { SdTabviewItemControl } from "./sd-tabview-item.control";
+import { SdFlexControl } from "./flex/sd-flex.control";
+import { SdFlexItemControl } from "./flex/sd-flex-item.control";
 
 @Component({
   selector: "sd-tabview",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdDockContainerControl, SdDockControl, SdTabControl, SdTabItemControl, SdPaneControl],
+  imports: [SdTabControl, SdTabItemControl, SdFlexControl, SdFlexItemControl],
   template: `
-    <sd-dock-container>
-      <sd-dock>
+    <sd-flex vertical>
+      <sd-flex-item>
         <sd-tab [(value)]="value">
           @for (itemControl of itemControls(); track itemControl.value()) {
             <sd-tab-item [value]="itemControl.value()">
@@ -28,12 +21,12 @@ import { SdTabviewItemControl } from "./sd-tabview-item.control";
             </sd-tab-item>
           }
         </sd-tab>
-      </sd-dock>
+      </sd-flex-item>
 
-      <sd-pane>
+      <sd-flex-item fill>
         <ng-content></ng-content>
-      </sd-pane>
-    </sd-dock-container>
+      </sd-flex-item>
+    </sd-flex>
   `,
 })
 export class SdTabviewControl<T> {

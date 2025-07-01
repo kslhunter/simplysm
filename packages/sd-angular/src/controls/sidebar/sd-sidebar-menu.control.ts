@@ -34,36 +34,37 @@ import { SdRegionControl } from "../containers/sd-region";
           [ngTemplateOutletContext]="{ menus: menus(), depth: 0 }"
         ></ng-template>
       </sd-list>
-      <ng-template #itemTemplate [typed]="itemTemplateType" let-currMenus="menus" let-depth="depth">
-        @for (menu of currMenus; track menu.codeChain.join(".")) {
-          <!--[contentStyle]="'padding-left: ' + ((depth + 1) * 6) + 'px'"-->
-          <sd-list-item
-            [contentClass]="depth === 0 ? 'pv-default' : ''"
-            [sd-router-link]="getMenuRouterLinkOption(menu)"
-            (click)="onMenuClick(menu)"
-            [selected]="getIsMenuSelected(menu)"
-            [layout]="depth === 0 ? rootLayout() : 'accordion'"
-          >
-            @if (menu.icon) {
-              <fa-icon [icon]="menu.icon" [fixedWidth]="true" />
-              &nbsp;
-            }
-            {{ menu.title }}
-            @if (menu.children) {
-              <sd-list [inset]="true">
-                <ng-template
-                  [ngTemplateOutlet]="itemTemplate"
-                  [ngTemplateOutletContext]="{
-                    menus: menu.children,
-                    depth: depth + 1,
-                  }"
-                ></ng-template>
-              </sd-list>
-            }
-          </sd-list-item>
-        }
-      </ng-template>
     </sd-region>
+
+    <ng-template #itemTemplate [typed]="itemTemplateType" let-currMenus="menus" let-depth="depth">
+      @for (menu of currMenus; track menu.codeChain.join(".")) {
+        <!--[contentStyle]="'padding-left: ' + ((depth + 1) * 6) + 'px'"-->
+        <sd-list-item
+          [contentClass]="depth === 0 ? 'pv-default' : ''"
+          [sd-router-link]="getMenuRouterLinkOption(menu)"
+          (click)="onMenuClick(menu)"
+          [selected]="getIsMenuSelected(menu)"
+          [layout]="depth === 0 ? rootLayout() : 'accordion'"
+        >
+          @if (menu.icon) {
+            <fa-icon [icon]="menu.icon" [fixedWidth]="true" />
+            &nbsp;
+          }
+          {{ menu.title }}
+          @if (menu.children) {
+            <sd-list [inset]="true">
+              <ng-template
+                [ngTemplateOutlet]="itemTemplate"
+                [ngTemplateOutletContext]="{
+                  menus: menu.children,
+                  depth: depth + 1,
+                }"
+              ></ng-template>
+            </sd-list>
+          }
+        </sd-list-item>
+      }
+    </ng-template>
   `,
   styles: [
     /* language=SCSS */ `

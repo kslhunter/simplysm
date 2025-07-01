@@ -17,6 +17,8 @@ export * from "./commons";
 export * from "./controls/containers/sd-region";
 export * from "./controls/dropdown/sd-dropdown-popup.control";
 export * from "./controls/dropdown/sd-dropdown.control";
+export * from "./controls/flex/sd-flex-item.control";
+export * from "./controls/flex/sd-flex.control";
 export * from "./controls/sd-additional-button.control";
 export * from "./controls/sd-anchor.control";
 export * from "./controls/sd-barcode.control";
