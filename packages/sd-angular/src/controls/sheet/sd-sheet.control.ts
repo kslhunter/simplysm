@@ -381,7 +381,8 @@ import { SdFlexItemControl } from "../flex/sd-flex-item.control";
               }
             }
 
-            > sd-pane._sheet-container {
+            > ._sheet-container {
+              position: relative;
               background: var(--sheet-bg);
               border-bottom-left-radius: var(--border-radius-default);
               border-bottom-right-radius: var(--border-radius-default);

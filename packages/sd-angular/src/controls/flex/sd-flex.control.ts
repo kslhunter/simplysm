@@ -14,6 +14,8 @@ import { transformBoolean } from "../../utils/type-tramsforms";
     /* language=SCSS */ `
       sd-flex {
         flex-wrap: nowrap;
+        width: 100%;
+        height: 100%;
       }
     `,
   ],
@@ -21,8 +23,6 @@ import { transformBoolean } from "../../utils/type-tramsforms";
     "[style.display]": "inline() ? 'flex-inline' : 'flex'",
     "[style.white-space]": "inline() ? 'nowrap' : undefined",
     "[style.flex-direction]": "vertical() ? 'column' : 'row'",
-    "[style.height]": "vertical() ? '100%' : undefined",
-    "[style.width]": "!vertical() ? '100%' : undefined",
     "[style.gap]": "gap() != null ? 'var(--gap-' + gap() +')' : undefined",
     "[style.padding-top]": "padding() != null ? 'var(--gap-' + padding() +')' : undefined",
     "[style.padding-bottom]": "padding() != null ? 'var(--gap-' + padding() +')' : undefined",
