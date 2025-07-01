@@ -1,12 +1,13 @@
 import { ChangeDetectionStrategy, Component, HostListener, input, ViewEncapsulation } from "@angular/core";
-import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
-import { $effect } from "../utils/bindings/$effect";
-import { $signal } from "../utils/bindings/$signal";
+import { ISdResizeEvent } from "../../plugins/events/sd-resize.event-plugin";
+import { $effect } from "../../utils/bindings/$effect";
+import { $signal } from "../../utils/bindings/$signal";
 
-import { injectElementRef } from "../utils/injections/inject-element-ref";
-import { useSdSystemConfigResource } from "../utils/signals/use-sd-system-config.resource";
-import { transformBoolean } from "../utils/type-tramsforms";
+import { injectElementRef } from "../../utils/injections/inject-element-ref";
+import { useSdSystemConfigResource } from "../../utils/signals/use-sd-system-config.resource";
+import { transformBoolean } from "../../utils/type-tramsforms";
 
+/** @deprecated **/
 @Component({
   selector: "sd-dock",
   changeDetection: ChangeDetectionStrategy.OnPush,

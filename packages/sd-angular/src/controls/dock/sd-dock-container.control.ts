@@ -7,9 +7,10 @@ import {
   viewChild,
   ViewEncapsulation,
 } from "@angular/core";
-import { $effect } from "../utils/bindings/$effect";
+import { $effect } from "../../utils/bindings/$effect";
 import { SdDockControl } from "./sd-dock.control";
 
+/** @deprecated **/
 @Component({
   selector: "sd-dock-container",
   changeDetection: ChangeDetectionStrategy.OnPush,
