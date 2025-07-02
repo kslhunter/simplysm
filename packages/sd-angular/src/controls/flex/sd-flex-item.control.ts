@@ -11,9 +11,18 @@ import { transformBoolean } from "../../utils/type-tramsforms";
   template: `
     <ng-content />
   `,
+  styles: [
+    /* language=SCSS */ `
+      sd-flex-item {
+        display: block;
+      }
+    `,
+  ],
   host: {
     "[style.flex-grow]": "fill() ? 1 : undefined",
     "[style.overflow]": "fill() ? 'auto' : undefined",
+    "[style.width]": "fill() ? '100%' : undefined",
+    "[style.height]": "fill() ? '100%' : undefined",
     "[style.padding-left]": "parent.padding() != null ? 'var(--gap-' + parent.padding() +')' : undefined",
     "[style.padding-right]": "parent.padding() != null ? 'var(--gap-' + parent.padding() +')' : undefined",
   },

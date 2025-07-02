@@ -311,7 +311,6 @@ export abstract class AbsSdDataDetail<T extends object | undefined, R = boolean>
     await this.#sdToast.try(
       async () => {
         const result = await this.submit!();
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition,@typescript-eslint/strict-boolean-expressions
         if (!result) return;
 
         this.#sdToast.success("저장되었습니다.");
