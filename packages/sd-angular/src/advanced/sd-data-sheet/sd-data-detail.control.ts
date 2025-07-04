@@ -88,14 +88,14 @@ import { SdFlexItemControl } from "../../controls/flex/sd-flex-item.control";
                         @if ((!parent.isNew || !parent.isNew()) && parent.toggleDelete) {
                           @if (parent.dataInfo && parent.dataInfo().isDeleted) {
                             <sd-flex-item>
-                              <sd-button theme="warning" (click)="parent.doToggleDelete(false)">
+                              <sd-button theme="warning" (click)="onRestoreButtonClick()">
                                 <fa-icon [icon]="icons.redo" [fixedWidth]="true" />
                                 복구
                               </sd-button>
                             </sd-flex-item>
                           } @else {
                             <sd-flex-item>
-                              <sd-button theme="danger" (click)="parent.doToggleDelete(true)">
+                              <sd-button theme="danger" (click)="onDeleteButtonClick()">
                                 <fa-icon [icon]="icons.eraser" [fixedWidth]="true" />
                                 삭제
                               </sd-button>
@@ -151,9 +151,9 @@ import { SdFlexItemControl } from "../../controls/flex/sd-flex-item.control";
             @if ((!parent.isNew || !parent.isNew()) && parent.toggleDelete) {
               <sd-flex-item>
                 @if (parent.dataInfo && parent.dataInfo().isDeleted) {
-                  <sd-button theme="warning" inline (click)="parent.doToggleDelete(false)">복구</sd-button>
+                  <sd-button theme="warning" inline (click)="onRestoreButtonClick()">복구</sd-button>
                 } @else {
-                  <sd-button theme="danger" inline (click)="parent.doToggleDelete(true)">삭제</sd-button>
+                  <sd-button theme="danger" inline (click)="onDeleteButtonClick()">삭제</sd-button>
                 }
               </sd-flex-item>
             }
@@ -181,18 +181,39 @@ export class SdDataDetailControl {
 
   @HostListener("sdRefreshCommand")
   async onRefreshButtonClick() {
+    if (this.parent.busyCount() > 0) return;
+    if (this.parent.restricted?.()) return;
+
     await this.parent.doRefresh();
   }
 
   @HostListener("sdSaveCommand")
   onSubmitButtonClick() {
     if (this.parent.busyCount() > 0) return;
+    if (this.parent.readonly?.()) return;
 
     this.formCtrl()?.requestSubmit();
   }
 
   async onSubmit() {
+    if (this.parent.busyCount() > 0) return;
+    if (this.parent.readonly?.()) return;
+
     await this.parent.doSubmit();
+  }
+
+  async onDeleteButtonClick() {
+    if (this.parent.busyCount() > 0) return;
+    if (this.parent.readonly?.()) return;
+
+    await this.parent.doToggleDelete(true);
+  }
+
+  async onRestoreButtonClick() {
+    if (this.parent.busyCount() > 0) return;
+    if (this.parent.readonly?.()) return;
+
+    await this.parent.doToggleDelete(false);
   }
 }
 
@@ -280,7 +301,6 @@ export abstract class AbsSdDataDetail<T extends object | undefined, R = boolean>
 
   async doToggleDelete(del: boolean) {
     if (this.busyCount() > 0) return;
-    if (this.readonly?.()) return;
 
     this.busyCount.update((v) => v + 1);
     await this.#sdToast.try(
@@ -297,9 +317,8 @@ export abstract class AbsSdDataDetail<T extends object | undefined, R = boolean>
     this.busyCount.update((v) => v - 1);
   }
 
-  async doSubmit() {
+  async doSubmit(force?: boolean) {
     if (this.busyCount() > 0) return;
-    if (this.readonly?.()) return;
     if (!this.submit) return;
 
     if (!$obj(this.data).changed()) {
