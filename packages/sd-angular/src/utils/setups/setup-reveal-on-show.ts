@@ -1,10 +1,12 @@
 import { injectElementRef } from "../injections/inject-element-ref";
 import { $effect } from "../bindings/$effect";
 
-export function setupRevealOnShow(optFn?: () => {
-  type?: "l2r" | "t2b";
-  enabled?: boolean;
-}) {
+export function setupRevealOnShow(
+  optFn?: () => {
+    type?: "l2r" | "t2b";
+    enabled?: boolean;
+  },
+) {
   const _elRef = injectElementRef<HTMLElement>();
 
   $effect([], () => {
@@ -23,16 +25,17 @@ export function setupRevealOnShow(optFn?: () => {
         Object.assign(el.style, {
           opacity: 1,
           transform: "none",
-          transition: "var(--animation-duration) ease-out",
+          transitionDuration: "var(--animation-duration)",
+          transitionTimingFunction: "ease-out",
           transitionProperty: "opacity, transform",
         });
-      }
-      else {
+      } else {
         Object.assign(el.style, {
           opacity: 1,
-          transform: "none",
-          transition: "none",
-          transitionProperty: "none",
+          transform: "",
+          transitionDuration: "",
+          transitionTimingFunction: "",
+          transitionProperty: "",
         });
       }
     });

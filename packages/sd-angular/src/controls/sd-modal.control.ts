@@ -9,7 +9,6 @@ import {
   viewChild,
   ViewEncapsulation,
 } from "@angular/core";
-import { NumberUtils } from "@simplysm/sd-core-common";
 import { SdEventsDirective } from "../directives/sd-events.directive";
 import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
@@ -22,6 +21,7 @@ import { SdAnchorControl } from "./sd-anchor.control";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { SdFlexControl } from "./flex/sd-flex.control";
 import { SdFlexItemControl } from "./flex/sd-flex-item.control";
+import { NumberUtils } from "@simplysm/sd-core-common";
 
 @Component({
   selector: "sd-modal",
@@ -353,6 +353,7 @@ export class SdModalControl {
   headerStyle = input<string>();
 
   dialogElRef = viewChild.required<any, ElementRef<HTMLElement>>("dialogEl", { read: ElementRef });
+  dialogContentElRef = viewChild.required<any, ElementRef<HTMLElement>>("dialogContentEl", { read: ElementRef });
 
   #config = $signal<ISdModalConfig>();
 

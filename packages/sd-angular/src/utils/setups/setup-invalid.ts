@@ -47,10 +47,10 @@ function createIndicatorEl(renderer: Renderer2, hostEl: HTMLElement) {
     // zIndex: "9999",
     background: "var(--theme-danger-default)",
 
-    top: "2px",
-    left: "2px",
-    width: "4px",
-    height: "4px",
+    top: "var(--gap-xs)",
+    left: "var(--gap-xs)",
+    width: "var(--gap-sm)",
+    height: "var(--gap-sm)",
     borderRadius: "100%",
   });
   renderer.insertBefore(hostEl, newEl, hostEl.firstChild);
