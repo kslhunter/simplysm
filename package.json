@@ -20,6 +20,7 @@
   },
   "scripts": {
     "watch": "yarn run _sd-cli_ --debug watch",
+    "watch:sd-angular": "yarn run _sd-cli_ --debug watch --packages sd-angular",
     "build": "yarn run _sd-cli_ build",
     "publish": "yarn run _sd-cli_ publish",
     "fix": "yarn run _sd-cli_ fix --library",
@@ -36,7 +37,7 @@
   },
   "devDependencies": {
     "@google/gemini-cli": "^0.1.9",
-    "@types/node": "^22.16.0",
+    "@types/node": "^22.16.2",
     "cross-env": "^7.0.3",
     "eslint": "^9.30.1",
     "glob": "^11.0.3",

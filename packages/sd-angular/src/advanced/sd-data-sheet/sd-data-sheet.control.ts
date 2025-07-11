@@ -128,70 +128,88 @@ import { SdFlexItemControl } from "../../controls/flex/sd-flex-item.control";
               <sd-region cardStyle="animation-delay: 200ms">
                 <sd-flex vertical gap="sm" padding="default">
                   <sd-flex-item>
-                    <div class="flex-row flex-gap-sm" style="white-space: nowrap">
+                    <sd-flex gap="sm">
                       @if (!parent.readonly?.()) {
                         @if (parent.submit) {
-                          <sd-button type="submit" size="sm" theme="primary">
-                            <fa-icon [icon]="icons.save" [fixedWidth]="true" />
-                            저장
-                          </sd-button>
+                          <sd-flex-item>
+                            <sd-button type="submit" size="sm" theme="primary">
+                              <fa-icon [icon]="icons.save" [fixedWidth]="true" />
+                              저장
+                            </sd-button>
+                          </sd-flex-item>
                         }
                         @if (parent.editItem && !(parent.editMode?.() === "sheet")) {
-                          <sd-button size="sm" theme="link-primary" (click)="onCreateItemButtonClick()">
-                            <fa-icon [icon]="icons.add" [fixedWidth]="true" />
-                            {{ insertText() ?? "등록" }}
-                          </sd-button>
+                          <sd-flex-item>
+                            <sd-button size="sm" theme="link-primary" (click)="onCreateItemButtonClick()">
+                              <fa-icon [icon]="icons.add" [fixedWidth]="true" />
+                              {{ insertText() ?? "등록" }}
+                            </sd-button>
+                          </sd-flex-item>
                         }
                         @if (parent.newItem && !(parent.editMode?.() === "modal")) {
-                          <sd-button size="sm" theme="link-primary" (click)="onAddItemButtonClick()">
-                            <fa-icon [icon]="icons.add" [fixedWidth]="true" />
-                            행 추가
-                          </sd-button>
+                          <sd-flex-item>
+                            <sd-button size="sm" theme="link-primary" (click)="onAddItemButtonClick()">
+                              <fa-icon [icon]="icons.add" [fixedWidth]="true" />
+                              행 추가
+                            </sd-button>
+                          </sd-flex-item>
                         }
                       }
 
                       @for (toolControl of beforeToolControls(); track toolControl) {
-                        <ng-template [ngTemplateOutlet]="toolControl.contentTemplateRef()" />
+                        <sd-flex-item fill>
+                          <ng-template [ngTemplateOutlet]="toolControl.contentTemplateRef()" />
+                        </sd-flex-item>
                       }
 
                       @if (!parent.readonly?.()) {
                         @if (!parent.selectMode() && parent.toggleDeleteItems) {
-                          <sd-button
-                            size="sm"
-                            theme="link-danger"
-                            (click)="onToggleDeleteItemsButtonClick(true)"
-                            [disabled]="!parent.isSelectedItemsHasNotDeleted()"
-                          >
-                            <fa-icon [icon]="deleteIcon()" [fixedWidth]="true" />
-                            선택 {{ deleteText() ?? "삭제" }}
-                          </sd-button>
-                          @if (parent.isSelectedItemsHasDeleted()) {
-                            <sd-button size="sm" theme="link-warning" (click)="onToggleDeleteItemsButtonClick(false)">
-                              <fa-icon [icon]="restoreIcon()" [fixedWidth]="true" />
-                              선택 {{ restoreText() ?? "복구" }}
+                          <sd-flex-item>
+                            <sd-button
+                              size="sm"
+                              theme="link-danger"
+                              (click)="onToggleDeleteItemsButtonClick(true)"
+                              [disabled]="!parent.isSelectedItemsHasNotDeleted()"
+                            >
+                              <fa-icon [icon]="deleteIcon()" [fixedWidth]="true" />
+                              선택 {{ deleteText() ?? "삭제" }}
                             </sd-button>
+                          </sd-flex-item>
+                          @if (parent.isSelectedItemsHasDeleted()) {
+                            <sd-flex-item>
+                              <sd-button size="sm" theme="link-warning" (click)="onToggleDeleteItemsButtonClick(false)">
+                                <fa-icon [icon]="restoreIcon()" [fixedWidth]="true" />
+                                선택 {{ restoreText() ?? "복구" }}
+                              </sd-button>
+                            </sd-flex-item>
                           }
                         }
 
                         @if (parent.uploadExcel) {
-                          <sd-button size="sm" theme="link-success" (click)="onUploadExcelButtonClick()">
-                            <fa-icon [icon]="icons.upload" [fixedWidth]="true" />
-                            엑셀 업로드
-                          </sd-button>
+                          <sd-flex-item>
+                            <sd-button size="sm" theme="link-success" (click)="onUploadExcelButtonClick()">
+                              <fa-icon [icon]="icons.upload" [fixedWidth]="true" />
+                              엑셀 업로드
+                            </sd-button>
+                          </sd-flex-item>
                         }
                       }
 
                       @if (parent.downloadExcel) {
-                        <sd-button size="sm" theme="link-success" (click)="onDownloadExcelButtonClick()">
-                          <fa-icon [icon]="icons.fileExcel" [fixedWidth]="true" />
-                          엑셀 다운로드
-                        </sd-button>
+                        <sd-flex-item>
+                          <sd-button size="sm" theme="link-success" (click)="onDownloadExcelButtonClick()">
+                            <fa-icon [icon]="icons.fileExcel" [fixedWidth]="true" />
+                            엑셀 다운로드
+                          </sd-button>
+                        </sd-flex-item>
                       }
 
                       @for (toolControl of afterToolControls(); track toolControl) {
-                        <ng-template [ngTemplateOutlet]="toolControl.contentTemplateRef()" />
+                        <sd-flex-item>
+                          <ng-template [ngTemplateOutlet]="toolControl.contentTemplateRef()" />
+                        </sd-flex-item>
                       }
-                    </div>
+                    </sd-flex>
                   </sd-flex-item>
 
                   <sd-flex-item fill>
@@ -270,22 +288,24 @@ import { SdFlexItemControl } from "../../controls/flex/sd-flex-item.control";
                             let-edit="edit"
                           >
                             @if (parent.editItem && columnControl.edit() && !parent.readonly?.()) {
-                              <sd-anchor class="flex-row" (click)="onEditItemButtonClick(item, index, $event)">
-                                <div class="p-xs-sm pr-0">
-                                  <fa-icon [icon]="icons.edit" [fixedWidth]="true" />
-                                </div>
-                                <div class="flex-grow">
-                                  <ng-template
-                                    [ngTemplateOutlet]="columnControl.cellTemplateRef()"
-                                    [ngTemplateOutletContext]="{
-                                      $implicit: item,
-                                      item: item,
-                                      index: index,
-                                      depth: depth,
-                                      edit: edit,
-                                    }"
-                                  />
-                                </div>
+                              <sd-anchor (click)="onEditItemButtonClick(item, index, $event)">
+                                <sd-flex>
+                                  <sd-flex-item class="p-xs-sm">
+                                    <fa-icon [icon]="icons.edit" [fixedWidth]="true" />
+                                  </sd-flex-item>
+                                  <sd-flex-item fill>
+                                    <ng-template
+                                      [ngTemplateOutlet]="columnControl.cellTemplateRef()"
+                                      [ngTemplateOutletContext]="{
+                                        $implicit: item,
+                                        item: item,
+                                        index: index,
+                                        depth: depth,
+                                        edit: edit,
+                                      }"
+                                    />
+                                  </sd-flex-item>
+                                </sd-flex>
                               </sd-anchor>
                             } @else {
                               <ng-template
@@ -332,20 +352,28 @@ import { SdFlexItemControl } from "../../controls/flex/sd-flex-item.control";
 
       @if (parent.realSelectMode()) {
         <ng-template #modalBottom>
-          <div class="p-sm-default bdt bdt-trans-light flex-row flex-gap-sm bg-white" style="justify-content: right">
-            @if (modalBottomTemplate()) {
-              <ng-template [ngTemplateOutlet]="modalBottomTemplate()!" />
-            }
+          <div class="p-sm-default bdt bdt-trans-light bg-white">
+            <sd-flex gap="sm" mainAlign="end">
+              @if (modalBottomTemplate()) {
+                <sd-flex-item>
+                  <ng-template [ngTemplateOutlet]="modalBottomTemplate()!" />
+                </sd-flex-item>
+              }
 
-            <sd-button theme="danger" inline (click)="onCancelButtonClick()">
-              {{ parent.realSelectMode() === "multi" ? "모두" : "선택" }}
-              해제
-            </sd-button>
-            @if (parent.realSelectMode() === "multi") {
-              <sd-button theme="primary" inline (click)="onConfirmButtonClick()">
-                확인({{ parent.selectedItemKeys().length }})
-              </sd-button>
-            }
+              <sd-flex-item>
+                <sd-button theme="danger" inline (click)="onCancelButtonClick()">
+                  {{ parent.realSelectMode() === "multi" ? "모두" : "선택" }}
+                  해제
+                </sd-button>
+              </sd-flex-item>
+              @if (parent.realSelectMode() === "multi") {
+                <sd-flex-item>
+                  <sd-button theme="primary" inline (click)="onConfirmButtonClick()">
+                    확인({{ parent.selectedItemKeys().length }})
+                  </sd-button>
+                </sd-flex-item>
+              }
+            </sd-flex>
           </div>
         </ng-template>
       }

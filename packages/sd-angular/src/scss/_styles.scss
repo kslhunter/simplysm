@@ -367,52 +367,6 @@ hidden {
   }
 }
 
-//-- FLEX
-
-.flex-row {
-  display: flex !important;
-  //flex-wrap: nowrap;
-  flex-direction: row;
-  //width: 100%;
-}
-
-.flex-row-inline {
-  display: inline-flex !important;
-  //flex-wrap: nowrap;
-  flex-direction: row;
-  //white-space: nowrap;
-}
-
-.flex-column {
-  display: flex !important;
-  //flex-wrap: nowrap;
-  flex-direction: column;
-  //height: 100%;
-}
-
-.flex-column-inline {
-  display: inline-flex !important;
-  //flex-wrap: nowrap;
-  flex-direction: column;
-  //white-space: nowrap;
-}
-
-@each $key, $val in map.get(variables.$vars, gap) {
-  .flex-gap-#{$key} {
-    gap: var(--gap-#{$key}) !important;
-  }
-}
-
-.flex-grow {
-  //flex-grow: 1;
-  flex: 1 1 auto;
-  overflow: auto;
-  min-height: 0;
-}
-
-.flex-grow-0 {
-  flex: 0 1 auto;
-}
 
 //-- ETC
 

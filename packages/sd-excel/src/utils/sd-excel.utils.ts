@@ -49,7 +49,7 @@ export class SdExcelUtils {
 
   static parseRangeAddrCode(rangeAddr: string): {
     s: { r: number; c: number };
-    e: { r: number; c: number }
+    e: { r: number; c: number };
   } {
     const sAddr = rangeAddr.split(":")[0];
     const eAddr = rangeAddr.split(":")[1] ?? rangeAddr.split(":")[0];
@@ -59,17 +59,13 @@ export class SdExcelUtils {
     };
   }
 
-  static stringifyRangeAddr(point: {
-    s: { r: number; c: number };
-    e: { r: number; c: number }
-  }): string {
+  static stringifyRangeAddr(point: { s: { r: number; c: number }; e: { r: number; c: number } }): string {
     const sAddr = this.stringifyAddr(point.s);
     const eAddr = this.stringifyAddr(point.e);
 
     if (sAddr === eAddr) {
       return sAddr;
-    }
-    else {
+    } else {
       return sAddr + ":" + eAddr;
     }
   }
@@ -94,23 +90,19 @@ export class SdExcelUtils {
   static convertNumFmtCodeToName(numFmtCode: string): TSdExcelNumberFormat {
     if (numFmtCode === "General") {
       return "number";
-    }
-    else if (/yy/i.test(numFmtCode) || /dd/i.test(numFmtCode)) {
+    } else if (/yy/i.test(numFmtCode) || /dd/i.test(numFmtCode)) {
       return "DateTime";
-    }
-    else if (
+    } else if (
       (/yy/i.test(numFmtCode) || /dd/i.test(numFmtCode)) &&
       (/hh/i.test(numFmtCode) || /ss/i.test(numFmtCode))
     ) {
       return "DateOnly";
-    }
-    else if (/^[0.#,_;()\-\\ @*"]*$/.test(numFmtCode.split("]").last()!)) {
+    } else if (/^[0.#,_;()\-\\$ @*?"]*$/.test(numFmtCode.split("]").last()!)) {
       return "number";
-    }
-    else if (numFmtCode.split("]").last()!.includes("#,0")) {
+    } else if (numFmtCode.split("]").last()!.includes("#,0")) {
       return "number";
-    }
-    /*else if (numFmtCode.includes("0_")) {
+    } else {
+      /*else if (numFmtCode.includes("0_")) {
       return "number";
     }
     else if (numFmtCode.includes("0_")) {
@@ -119,7 +111,6 @@ export class SdExcelUtils {
     else if (numFmtCode.includes("##0")) {
       return "number";
     }*/
-    else {
       throw new Error("[numFmtCode: " + numFmtCode + "]에 대한 형식을 알 수 없습니다.");
     }
   }
@@ -127,29 +118,24 @@ export class SdExcelUtils {
   static convertNumFmtIdToName(numFmtId: number): TSdExcelNumberFormat {
     if (numFmtId <= 13 || (numFmtId >= 37 && numFmtId <= 40) || numFmtId === 48) {
       return "number";
-    }
-    else if (
+    } else if (
       (numFmtId >= 14 && numFmtId <= 17) ||
       (numFmtId >= 27 && numFmtId <= 31) ||
       (numFmtId >= 34 && numFmtId <= 36) ||
       (numFmtId >= 50 && numFmtId <= 58)
     ) {
       return "DateOnly";
-    }
-    else if (numFmtId === 22) {
+    } else if (numFmtId === 22) {
       return "DateTime";
-    }
-    else if (
+    } else if (
       (numFmtId >= 18 && numFmtId <= 21) ||
       (numFmtId >= 32 && numFmtId <= 33) ||
       (numFmtId >= 45 && numFmtId <= 47)
     ) {
       return "Time";
-    }
-    else if (numFmtId === 49) {
+    } else if (numFmtId === 49) {
       return "string";
-    }
-    else {
+    } else {
       throw new Error("[numFmtId: " + numFmtId + "]에 대한 형식을 알 수 없습니다.");
     }
   }
@@ -157,20 +143,15 @@ export class SdExcelUtils {
   static convertNumFmtNameToId(numFmtName: TSdExcelNumberFormat | undefined): number {
     if (numFmtName === "number") {
       return 0;
-    }
-    else if (numFmtName === "DateOnly") {
+    } else if (numFmtName === "DateOnly") {
       return 14;
-    }
-    else if (numFmtName === "DateTime") {
+    } else if (numFmtName === "DateTime") {
       return 22;
-    }
-    else if (numFmtName === "Time") {
+    } else if (numFmtName === "Time") {
       return 18;
-    }
-    else if (numFmtName === "string") {
+    } else if (numFmtName === "string") {
       return 49;
-    }
-    else {
+    } else {
       throw new Error("'" + numFmtName + "'에 대한 'numFmtId'를 알 수 없습니다.");
     }
   }

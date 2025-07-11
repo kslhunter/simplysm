@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, input, ViewEncapsulation } from "@angular/core";
-import { SdFlexControl } from "./sd-flex.control";
 import { transformBoolean } from "../../utils/type-tramsforms";
+import { SdFlexControl } from "./sd-flex.control";
 
 @Component({
   selector: "sd-flex-item",
@@ -15,28 +15,18 @@ import { transformBoolean } from "../../utils/type-tramsforms";
     /* language=SCSS */ `
       sd-flex-item {
         display: block;
-
-        flex: 0 1 auto;
-
-        &[data-sd-fill="true"] {
-          flex: 1 1 auto;
-          overflow: auto;
-        }
       }
     `,
   ],
   host: {
-    "[attr.data-sd-fill]": "fill()",
-    // "[style.flex]": "fill() ? '1 1 auto' : '0 1 0%'",
-    // "[style.overflow]": "fill() ? 'auto' : undefined",
-    // "[style.width]": "fill() ? '100%' : undefined",
-    // "[style.height]": "parent.vertical() && fill() ? '100%' : undefined",
-    "[style.min-height]": "parent.vertical() && fill() ? '0' : undefined",
+    "[style.flex]": "fill() ? '1 1 auto' : min() ? '0 0 0' : undefined",
+    "[style.overflow]": "fill() ? 'auto' : undefined",
     "[style.padding-left]": "parent.padding() != null ? 'var(--gap-' + parent.padding() +')' : undefined",
     "[style.padding-right]": "parent.padding() != null ? 'var(--gap-' + parent.padding() +')' : undefined",
   },
 })
 export class SdFlexItemControl {
   parent = inject(SdFlexControl);
+  min = input(false, { transform: transformBoolean });
   fill = input(false, { transform: transformBoolean });
 }

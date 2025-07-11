@@ -115,7 +115,7 @@ import { SdFlexItemControl } from "../controls/flex/sd-flex-item.control";
             </sd-region>
           </sd-flex-item>
 
-          <div class="p-sm-default bg-white">
+          <sd-flex-item class="p-sm-default bg-white">
             <sd-flex gap="sm">
               <sd-flex-item fill>
                 <sd-button inline theme="warning" (click)="onInitButtonClick()" buttonStyle="min-width: 60px;">
@@ -129,7 +129,7 @@ import { SdFlexItemControl } from "../controls/flex/sd-flex-item.control";
                 <sd-button (click)="onCancelButtonClick()" buttonStyle="min-width: 60px;">Cancel</sd-button>
               </sd-flex-item>
             </sd-flex>
-          </div>
+          </sd-flex-item>
         </sd-flex>
       }
     </sd-busy-container>

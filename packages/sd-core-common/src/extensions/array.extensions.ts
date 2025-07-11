@@ -513,7 +513,7 @@ declare global {
       } else if (typeof cpn === "undefined") {
         return 1;
       } else {
-        throw new Error("orderBy를 사용할 수 없는 타입입니다.");
+        throw new Error(`orderBy를 사용할 수 없는 타입입니다. (${typeof cpp}, ${typeof cpn})`);
       }
     });
   };

@@ -10,7 +10,7 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import { SdEventsDirective } from "../directives/sd-events.directive";
-import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
+import { type ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { SdSystemConfigProvider } from "../providers/sd-system-config.provider";
 import { $effect } from "../utils/bindings/$effect";

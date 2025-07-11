@@ -11,11 +11,8 @@ export class SdTsLibBuildRunner extends BuildRunnerBase<"library"> {
   #dbContextGenerator = new SdCliDbContextFileGenerator();
   #builder?: SdTsLibBuilder;
 
-  protected override async _runAsync(
-    dev: boolean,
-    modifiedFileSet?: Set<TNormPath>,
-  ): Promise<IBuildRunnerRunResult> {
-    if (!modifiedFileSet) {
+  protected override async _runAsync(dev: boolean, modifiedFileSet?: Set<TNormPath>): Promise<IBuildRunnerRunResult> {
+    /*if (!modifiedFileSet) {
       if (!dev) {
         if (!this._pkgConf.noGenIndex) {
           this._debug("GEN index.ts...");
@@ -37,14 +34,26 @@ export class SdTsLibBuildRunner extends BuildRunnerBase<"library"> {
           this.#dbContextGenerator.watch(this._pkgPath, this._pkgConf.dbContext);
         }
       }
+    }*/
+
+    if (!this._pkgConf.noGenIndex) {
+      this._debug("GEN index.ts...");
+      const genIndexResult = this.#indexFileGenerator.run(this._pkgPath, this._pkgConf.polyfills);
+      if (modifiedFileSet && genIndexResult.changed) {
+        modifiedFileSet.add(PathUtils.norm(genIndexResult.filePath));
+      }
+    }
+
+    if (this._pkgConf.dbContext != null) {
+      this._debug(`GEN ${this._pkgConf.dbContext}.ts...`);
+      const genDbContextResult = this.#dbContextGenerator.run(this._pkgPath, this._pkgConf.dbContext);
+      if (modifiedFileSet && genDbContextResult.changed) {
+        modifiedFileSet.add(PathUtils.norm(genDbContextResult.filePath));
+      }
     }
 
     this._debug(`BUILD...`);
-    this.#builder ??= new SdTsLibBuilder(
-      PathUtils.norm(this._pkgPath),
-      dev,
-      this._watchScopePathSet,
-    );
+    this.#builder ??= new SdTsLibBuilder(PathUtils.norm(this._pkgPath), dev, this._watchScopePathSet);
     const buildResult = await this.#builder.buildAsync(modifiedFileSet ?? new Set());
 
     this._debug(`빌드 완료`);

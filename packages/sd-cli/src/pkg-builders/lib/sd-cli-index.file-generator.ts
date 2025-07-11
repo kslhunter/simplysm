@@ -1,10 +1,10 @@
-import { FsUtils, HashUtils, PathUtils, SdFsWatcher } from "@simplysm/sd-core-node";
+import { FsUtils, HashUtils, PathUtils } from "@simplysm/sd-core-node";
 import path from "path";
 
 export class SdCliIndexFileGenerator {
   cachedHash?: string;
 
-  watch(pkgPath: string, polyfills?: string[]) {
+  /*watch(pkgPath: string, polyfills?: string[]) {
     const indexFilePath = path.resolve(pkgPath, "src/index.ts");
     this.cachedHash = FsUtils.exists(indexFilePath) ? FsUtils.readFile(indexFilePath) : undefined;
 
@@ -13,9 +13,9 @@ export class SdCliIndexFileGenerator {
     });
 
     this.run(pkgPath, polyfills);
-  }
+  }*/
 
-  run(pkgPath: string, polyfills?: string[]): string {
+  run(pkgPath: string, polyfills?: string[]): { changed: boolean; filePath: string; content: string } {
     const indexFilePath = path.resolve(pkgPath, "src/index.ts");
 
     const importTexts: string[] = [];
@@ -47,22 +47,21 @@ export class SdCliIndexFileGenerator {
     if (currHash !== this.cachedHash) {
       FsUtils.writeFile(indexFilePath, content);
       this.cachedHash = currHash;
+      return { changed: true, filePath: indexFilePath, content };
+    } else {
+      return { changed: false, filePath: indexFilePath, content };
     }
-    return content;
   }
 
   #getFilePaths(pkgPath: string): string[] {
     const indexFilePath = path.resolve(pkgPath, "src/index.ts");
 
     const tsconfig = FsUtils.readJson(path.resolve(pkgPath, "tsconfig.json"));
-    const entryFilePaths: string[] =
-      tsconfig.files?.map((item) => path.resolve(pkgPath, item)) ?? [];
+    const entryFilePaths: string[] = tsconfig.files?.map((item) => path.resolve(pkgPath, item)) ?? [];
 
     return FsUtils.glob(path.resolve(pkgPath, "src/**/*{.ts,.tsx}"), {
       nodir: true,
       ignore: tsconfig.excludes,
-    }).filter(
-      (item) => !entryFilePaths.includes(item) && item !== indexFilePath && !item.endsWith(".d.ts"),
-    );
+    }).filter((item) => !entryFilePaths.includes(item) && item !== indexFilePath && !item.endsWith(".d.ts"));
   }
 }

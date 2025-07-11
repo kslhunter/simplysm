@@ -1,11 +1,5 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  HostListener,
-  input,
-  ViewEncapsulation,
-} from "@angular/core";
-import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
+import { ChangeDetectionStrategy, Component, HostListener, input, ViewEncapsulation } from "@angular/core";
+import { type ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
 import { $computed } from "../utils/bindings/$computed";
 import { $signal } from "../utils/bindings/$signal";
 

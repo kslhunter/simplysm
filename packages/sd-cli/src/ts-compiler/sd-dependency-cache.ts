@@ -43,6 +43,8 @@ export class SdDependencyCache {
    */
   private _collectedCache = new Set<TNormPath>();
 
+  private _exportSymbolCache = new Map<TNormPath, Set<string>>();
+
   /**
    * .d.ts 또는 .js가 입력되었을 때 쌍으로 존재하는 파일 경로를 반환
    * 예: "/a.d.ts" → ["/a.d.ts", "/a.js"]
@@ -240,6 +242,7 @@ export class SdDependencyCache {
       this._reexportCache.delete(fileNPath);
       this._collectedCache.delete(fileNPath);
       this._revDepCache.delete(fileNPath); // 자신이 key인 경우
+      this._exportSymbolCache.delete(fileNPath);
     }
 
     for (const [targetNPath, infoMap] of this._revDepCache) {
@@ -255,11 +258,7 @@ export class SdDependencyCache {
   /**
    * reexport된 경우 importSymbol → exportSymbol로 변환
    */
-  #convertImportSymbolToExportSymbol(
-    fileNPath: TNormPath,
-    targetNPath: TNormPath,
-    importSymbol: string,
-  ) {
+  #convertImportSymbolToExportSymbol(fileNPath: TNormPath, targetNPath: TNormPath, importSymbol: string) {
     const symbolInfos = this._reexportCache.get(fileNPath)?.get(targetNPath);
     if (symbolInfos != null && symbolInfos !== 0 && symbolInfos.length > 0) {
       const symbolInfo = symbolInfos.single((item) => item.importSymbol === importSymbol);
@@ -272,6 +271,10 @@ export class SdDependencyCache {
    * 해당 파일에서 export된 모든 심볼 (직접 + 재export 포함)
    */
   #getExportSymbols(fileNPath: TNormPath): Set<string> {
+    if (this._exportSymbolCache.has(fileNPath)) {
+      return this._exportSymbolCache.get(fileNPath)!;
+    }
+
     const result = new Set<string>();
 
     for (const path of this.#getRelatedNPaths(fileNPath)) {
@@ -284,12 +287,13 @@ export class SdDependencyCache {
           if (val === 0) {
             result.adds(...this.#getExportSymbols(key));
           } else {
-            result.adds(...val.map(item => item.exportSymbol));
+            result.adds(...val.map((item) => item.exportSymbol));
           }
         }
       }
     }
 
+    this._exportSymbolCache.set(fileNPath, result);
     return result;
   }
 
@@ -301,10 +305,7 @@ export class SdDependencyCache {
     const visited = new Set<string>();
     const nodeMap = new Map<string, ISdAffectedFileTreeNode>();
 
-    const buildTree = (
-      fileNPath: TNormPath,
-      exportSymbol: string | undefined,
-    ): ISdAffectedFileTreeNode => {
+    const buildTree = (fileNPath: TNormPath, exportSymbol: string | undefined): ISdAffectedFileTreeNode => {
       const key = `${fileNPath}#${exportSymbol ?? "*"}`;
       if (nodeMap.has(key)) return nodeMap.get(key)!;
 
@@ -320,8 +321,7 @@ export class SdDependencyCache {
       if (!revDepInfoMap) return node;
 
       for (const [revDepFileNPath, revDepInfo] of revDepInfoMap.entries()) {
-        const hasImportSymbol =
-          exportSymbol == null || revDepInfo === 0 || revDepInfo.has(exportSymbol);
+        const hasImportSymbol = exportSymbol == null || revDepInfo === 0 || revDepInfo.has(exportSymbol);
         if (!hasImportSymbol) continue;
 
         const nextExportSymbol =

@@ -4,25 +4,15 @@ import { FsUtils, PathUtils, SdLogger, TNormPath } from "@simplysm/sd-core-node"
 import { StringUtils, Wait } from "@simplysm/sd-core-common";
 import { NgtscProgram, OptimizeFor } from "@angular/compiler-cli";
 import { AngularCompilerHost } from "@angular/build/src/tools/angular/angular-host";
-import {
-  replaceBootstrap,
-} from "@angular/build/src/tools/angular/transformers/jit-bootstrap-transformer";
+import { replaceBootstrap } from "@angular/build/src/tools/angular/transformers/jit-bootstrap-transformer";
 import { SdCliPerformanceTimer } from "../utils/sd-cli-performance-time";
 import { SdCliConvertMessageUtils } from "../utils/sd-cli-convert-message.utils";
-import {
-  ISdTsCompilerResult,
-  SdTsCompilerOptions,
-  TStylesheetBundlingResult,
-} from "../types/ts-compiler.types";
-import {
-  createWorkerTransformer,
-} from "@angular/build/src/tools/angular/transformers/web-worker-transformer";
+import { ISdTsCompilerResult, SdTsCompilerOptions, TStylesheetBundlingResult } from "../types/ts-compiler.types";
+import { createWorkerTransformer } from "@angular/build/src/tools/angular/transformers/web-worker-transformer";
 import { ISdAffectedFileTreeNode, SdDependencyCache } from "./sd-dependency-cache";
 import { SdDependencyAnalyzer } from "./sd-dependency-analyzer";
 import { FlatESLint } from "eslint/use-at-your-own-risk";
-import {
-  ComponentStylesheetBundler,
-} from "@angular/build/src/tools/esbuild/angular/component-stylesheets";
+import { ComponentStylesheetBundler } from "@angular/build/src/tools/esbuild/angular/component-stylesheets";
 import { transformSupportedBrowsersToTargets } from "@angular/build/src/tools/esbuild/utils";
 import browserslist from "browserslist";
 
@@ -95,10 +85,7 @@ export class SdTsCompiler {
       ...this._opt.additionalOptions,
     });
 
-    const distPath = PathUtils.norm(parsedTsconfig.options.outDir ?? path.resolve(
-      this._opt.pkgPath,
-      "dist",
-    ));
+    const distPath = PathUtils.norm(parsedTsconfig.options.outDir ?? path.resolve(this._opt.pkgPath, "dist"));
 
     return {
       fileNames: parsedTsconfig.fileNames,
@@ -107,10 +94,9 @@ export class SdTsCompiler {
     };
   }
 
-  #createCompilerHost(
-    compilerOptions: ts.CompilerOptions,
-    modifiedFileSet: Set<TNormPath>,
-  ) {
+  #createCompilerHost(compilerOptions: ts.CompilerOptions, modifiedFileSet: Set<TNormPath>) {
+    // 지식: SourceFile은 하나의 파일에만 국한된 정적 정보객체임, 변경된 파일의 SourceFile만 다시 생성하면됨
+
     const compilerHost = ts.createCompilerHost(compilerOptions);
 
     const baseGetSourceFile = compilerHost.getSourceFile;
@@ -123,7 +109,11 @@ export class SdTsCompiler {
     ): ts.SourceFile | undefined => {
       const fileNPath = PathUtils.norm(fileName);
 
-      if (!shouldCreateNewSourceFile && this.#sourceFileCacheMap.has(fileNPath)) {
+      /*if (!shouldCreateNewSourceFile && this.#sourceFileCacheMap.has(fileNPath)) {
+        return this.#sourceFileCacheMap.get(fileNPath);
+      }*/
+
+      if (this.#sourceFileCacheMap.has(fileNPath)) {
         return this.#sourceFileCacheMap.get(fileNPath);
       }
 
@@ -132,7 +122,7 @@ export class SdTsCompiler {
         fileName,
         languageVersionOrOptions,
         onError,
-        true,
+        false,
         ...args,
       );
 
@@ -140,6 +130,8 @@ export class SdTsCompiler {
         this.#sourceFileCacheMap.delete(fileNPath);
         return undefined;
       }
+
+      this.#sourceFileCacheMap.set(fileNPath, sf);
 
       return sf;
     };
@@ -220,15 +212,18 @@ export class SdTsCompiler {
         // const worker = this._stylesheetBundlingWorker!;
         // const result = await worker.run("bundle", [data, containingFile, resourceFile]);
 
-        const result = resourceFile != null
-          ? await this.#stylesheetBundler.bundleFile(resourceFile)
-          : await this.#stylesheetBundler.bundleInline(data, containingFile, "scss");
+        const result =
+          resourceFile != null
+            ? await this.#stylesheetBundler.bundleFile(resourceFile)
+            : await this.#stylesheetBundler.bundleInline(data, containingFile, "scss");
 
         for (const referencedFile of result.referencedFiles ?? []) {
           // for (const referencedFile of result.referencedFiles) {
           // 참조하는 파일과 참조된 파일 사이의 의존성 관계 추가
           this.#depCache.addImport(fileNPath, PathUtils.norm(referencedFile), 0);
         }
+
+        this.#stylesheetBundlingResultMap.set(fileNPath, result);
 
         // this._stylesheetBundlingResultMap.set(fileNPath, {
         //   errors: undefined,
@@ -242,8 +237,7 @@ export class SdTsCompiler {
         //   ...result,
         // };
         return result;
-      }
-      catch (err) {
+      } catch (err) {
         const result = {
           errors: [
             {
@@ -311,21 +305,25 @@ export class SdTsCompiler {
         };
 
         const affectedFileTree = this.#depCache.getAffectedFileTree(modifiedFileSet);
-        this.#debug(`
-영향받은 기존파일:
-${affectedFileTree.map(item => getTreeText(item)).join("\n")}`.trim());
+        this.#debug(`영향받은 기존파일: ${affectedFileTree.map((item) => getTreeText(item)).join("\n")}`.trim());
 
         // 스타일 번들러에서 영향받은 파일 관련 항목 무효화
-        this.#stylesheetBundler.invalidate(affectedFileSet);
+        this.#stylesheetBundler.invalidate(
+          new Set([...modifiedFileSet, ...Array.from(affectedFileSet).filter((item) => item.endsWith(".scss"))]),
+        );
         // await worker.run("invalidate", [affectedFileSet]);
 
-        // 의존성 캐시에서 영향받은 파일 관련 항목 무효화
-        this.#depCache.invalidates(affectedFileSet);
+        // 소스파일은 변경된 파일들로 무효화
+        for (const modifiedFile of modifiedFileSet) {
+          this.#sourceFileCacheMap.delete(modifiedFile);
+        }
+
+        // 의존성 캐시에서 영향받은 파일 관련 항목 무효화 (Affected더라도 SF는 동일하므로, modifiedFileSet만 넣어도될듯?)
+        this.#depCache.invalidates(modifiedFileSet);
 
         // 내부 캐시에서 영향받은 파일 관련 항목 무효화
         for (const affectedFile of affectedFileSet) {
           this.#emittedFilesCacheMap.delete(affectedFile);
-          this.#sourceFileCacheMap.delete(affectedFile);
           this.#stylesheetBundlingResultMap.delete(affectedFile);
         }
       });
@@ -340,21 +338,10 @@ ${affectedFileTree.map(item => getTreeText(item)).join("\n")}`.trim());
 
     this.#perf.run("ts.Program 생성", () => {
       if (this.#isForAngular) {
-        this.#ngProgram = new NgtscProgram(
-          tsconfig.fileNames,
-          tsconfig.options,
-          compilerHost,
-          this.#ngProgram,
-        );
+        this.#ngProgram = new NgtscProgram(tsconfig.fileNames, tsconfig.options, compilerHost, this.#ngProgram);
         this.#program = this.#ngProgram.getTsProgram();
-      }
-      else {
-        this.#program = ts.createProgram(
-          tsconfig.fileNames,
-          tsconfig.options,
-          compilerHost,
-          this.#program,
-        );
+      } else {
+        this.#program = ts.createProgram(tsconfig.fileNames, tsconfig.options, compilerHost, this.#program);
       }
     });
     this.#debug(`ts.Program 생성`);
@@ -370,26 +357,16 @@ ${affectedFileTree.map(item => getTreeText(item)).join("\n")}`.trim());
 
     this.#perf.run("새 의존성 분석", () => {
       // SdTsDependencyAnalyzer를 통해 의존성 분석 및 SdDepCache 업데이트
-      SdDependencyAnalyzer.analyze(
-        this.#program!,
-        compilerHost,
-        this._opt.watchScopePathSet,
-        this.#depCache,
-      );
+      SdDependencyAnalyzer.analyze(this.#program!, compilerHost, this._opt.watchScopePathSet, this.#depCache);
 
       // Angular 리소스 의존성 추가
       if (this.#ngProgram) {
-        SdDependencyAnalyzer.analyzeAngularResources(
-          this.#ngProgram,
-          this._opt.watchScopePathSet,
-          this.#depCache,
-        );
+        SdDependencyAnalyzer.analyzeAngularResources(this.#ngProgram, this._opt.watchScopePathSet, this.#depCache);
       }
     });
 
-    const affectedFileSet = modifiedFileSet.size === 0
-      ? this.#depCache.getFiles()
-      : this.#depCache.getAffectedFileSet(modifiedFileSet);
+    const affectedFileSet =
+      modifiedFileSet.size === 0 ? this.#depCache.getFiles() : this.#depCache.getAffectedFileSet(modifiedFileSet);
     const watchFileSet = this.#depCache.getFiles();
 
     return {
@@ -403,10 +380,7 @@ ${affectedFileTree.map(item => getTreeText(item)).join("\n")}`.trim());
   async #lintAsync(prepareResult: IPrepareResult) {
     const lintFilePaths = Array.from(prepareResult.affectedFileSet)
       .filter((item) => PathUtils.isChildPath(item, this._opt.pkgPath))
-      .filter((item) => (
-        (!item.endsWith(".d.ts") && item.endsWith(".ts")) ||
-        item.endsWith(".js")
-      ))
+      .filter((item) => (!item.endsWith(".d.ts") && item.endsWith(".ts")) || item.endsWith(".js"))
       .filter((item) => FsUtils.exists(item));
 
     if (lintFilePaths.length === 0) {
@@ -444,14 +418,12 @@ ${affectedFileTree.map(item => getTreeText(item)).join("\n")}`.trim());
           this._opt.globalStyleFilePath!,
           this._opt.globalStyleFilePath,
         );
-        const emitFileInfos = this.#emittedFilesCacheMap.getOrCreate(
-          this._opt.globalStyleFilePath!,
-          [],
-        );
+        const emitFileInfos = this.#emittedFilesCacheMap.getOrCreate(this._opt.globalStyleFilePath!, []);
         emitFileInfos.push({
           outAbsPath: PathUtils.norm(
             this._opt.pkgPath,
-            path.relative(path.resolve(this._opt.pkgPath, "src"), this._opt.globalStyleFilePath!)
+            path
+              .relative(path.resolve(this._opt.pkgPath, "src"), this._opt.globalStyleFilePath!)
               .replace(/\.scss$/, ".css"),
           ),
           text: stylesheetBundlingResult.contents ?? "",
@@ -509,10 +481,7 @@ ${affectedFileTree.map(item => getTreeText(item)).join("\n")}`.trim());
           if (affectedSourceFile.isDeclarationFile) return;
 
           diagnostics.push(
-            ...this.#ngProgram!.compiler.getDiagnosticsForFile(
-              affectedSourceFile,
-              OptimizeFor.WholeProgram,
-            ),
+            ...this.#ngProgram!.compiler.getDiagnosticsForFile(affectedSourceFile, OptimizeFor.WholeProgram),
           );
         });
       }
@@ -525,15 +494,9 @@ ${affectedFileTree.map(item => getTreeText(item)).join("\n")}`.trim());
 
       if (this.#ngProgram) {
         const angularTransfomers = this.#ngProgram.compiler.prepareEmit().transformers;
-        (transformers.before ??= []).push(
-          ...(angularTransfomers.before ?? []),
-        );
-        (transformers.after ??= []).push(
-          ...(angularTransfomers.after ?? []),
-        );
-        (transformers.afterDeclarations ??= []).push(
-          ...(angularTransfomers.afterDeclarations ?? []),
-        );
+        (transformers.before ??= []).push(...(angularTransfomers.before ?? []));
+        (transformers.after ??= []).push(...(angularTransfomers.after ?? []));
+        (transformers.afterDeclarations ??= []).push(...(angularTransfomers.afterDeclarations ?? []));
 
         (transformers.before ??= []).push(replaceBootstrap(() => this.#program!.getTypeChecker()));
         (transformers.before ??= []).push(
@@ -568,14 +531,7 @@ ${affectedFileTree.map(item => getTreeText(item)).join("\n")}`.trim());
           sf,
           (fileName, text, writeByteOrderMark, onError, sourceFiles, data) => {
             if (!sourceFiles || sourceFiles.length === 0) {
-              prepareResult.compilerHost.writeFile(
-                fileName,
-                text,
-                writeByteOrderMark,
-                onError,
-                sourceFiles,
-                data,
-              );
+              prepareResult.compilerHost.writeFile(fileName, text, writeByteOrderMark, onError, sourceFiles, data);
               return;
             }
 
@@ -585,24 +541,16 @@ ${affectedFileTree.map(item => getTreeText(item)).join("\n")}`.trim());
               this.#ngProgram.compiler.incrementalCompilation.recordSuccessfulEmit(sourceFile);
             }
 
-            const emitFileInfoCaches = this.#emittedFilesCacheMap.getOrCreate(
-              PathUtils.norm(sourceFile.fileName),
-              [],
-            );
+            const emitFileInfoCaches = this.#emittedFilesCacheMap.getOrCreate(PathUtils.norm(sourceFile.fileName), []);
 
             if (PathUtils.isChildPath(sourceFile.fileName, this._opt.pkgPath)) {
-              const real = this.#convertOutputToReal(
-                fileName,
-                prepareResult.tsconfig.distPath,
-                text,
-              );
+              const real = this.#convertOutputToReal(fileName, prepareResult.tsconfig.distPath, text);
 
               emitFileInfoCaches.push({
                 outAbsPath: real.filePath,
                 text: real.text,
               });
-            }
-            else {
+            } else {
               emitFileInfoCaches.push({ text });
             }
 
@@ -645,7 +593,6 @@ ${affectedFileTree.map(item => getTreeText(item)).join("\n")}`.trim());
     this.#logger.debug(`[${path.basename(this._opt.pkgPath)}]`, ...msg);
   }
 }
-
 
 interface ITsConfigInfo {
   fileNames: string[];

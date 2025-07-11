@@ -14,51 +14,32 @@ export class SdClientBuildRunner extends BuildRunnerBase<"client"> {
   #ngBundlers?: SdNgBundler[];
   #cordova?: SdCliCordova;
 
-  protected override async _runAsync(
-    dev: boolean,
-    modifiedFileSet?: Set<TNormPath>,
-  ): Promise<IBuildRunnerRunResult> {
-    // 최초
+  protected override async _runAsync(dev: boolean, modifiedFileSet?: Set<TNormPath>): Promise<IBuildRunnerRunResult> {
+    // 최초 한번
     if (!modifiedFileSet) {
+      // config
       this._debug("GEN .config...");
       const confDistPath = path.resolve(this._pkgPath, "dist/.config.json");
       FsUtils.writeFile(confDistPath, JSON.stringify(this._pkgConf.configs ?? {}, undefined, 2));
 
-      const npmConf = FsUtils.readJson(path.resolve(this._pkgPath, "package.json")) as INpmConfig;
-
-      if ("@angular/router" in (npmConf.dependencies ?? {})) {
-        if (!dev) {
-          this._debug(`GEN routes.ts...`);
-          this.#routeGenerator.run(this._pkgPath, this._pkgConf.noLazyRoute);
-        } else {
-          this._debug(`Watch for GEN routes.ts...`);
-          this.#routeGenerator.watch(this._pkgPath, this._pkgConf.noLazyRoute);
-        }
+      // cordova
+      if (this._pkgConf.builder?.cordova) {
+        this._debug("CORDOVA 준비...");
+        this.#cordova = new SdCliCordova({
+          pkgPath: this._pkgPath,
+          config: this._pkgConf.builder.cordova,
+        });
+        await this.#cordova.initializeAsync();
       }
-    }
-    // watch
-    else {
-      for (const ngBundler of this.#ngBundlers!) {
-        ngBundler.markForChanges(Array.from(modifiedFileSet));
-      }
-    }
 
-    const ngBundlerBuilderTypes = Object.keys(this._pkgConf.builder ?? { web: {} }) as (
-      | "web"
-      | "electron"
-      | "cordova"
-    )[];
-    if (this._pkgConf.builder?.cordova && !this.#cordova) {
-      this._debug("CORDOVA 준비...");
-      this.#cordova = new SdCliCordova({
-        pkgPath: this._pkgPath,
-        config: this._pkgConf.builder.cordova,
-      });
-      await this.#cordova.initializeAsync();
-    }
-
-    if (!this.#ngBundlers) {
+      // ng
       this._debug(`BUILD 준비...`);
+
+      const ngBundlerBuilderTypes = Object.keys(this._pkgConf.builder ?? { web: {} }) as (
+        | "web"
+        | "electron"
+        | "cordova"
+      )[];
 
       this.#ngBundlers = ngBundlerBuilderTypes.map(
         (ngBundlerBuilderType) =>
@@ -79,24 +60,33 @@ export class SdClientBuildRunner extends BuildRunnerBase<"client"> {
               ...this._pkgConf.builder?.[ngBundlerBuilderType]?.env,
             },
             external:
-              ngBundlerBuilderType === "electron"
-                ? (this._pkgConf.builder?.electron?.reinstallDependencies ?? [])
-                : [],
-            cordovaConfig:
-              ngBundlerBuilderType === "cordova" ? this._pkgConf.builder!.cordova : undefined,
+              ngBundlerBuilderType === "electron" ? (this._pkgConf.builder?.electron?.reinstallDependencies ?? []) : [],
+            cordovaConfig: ngBundlerBuilderType === "cordova" ? this._pkgConf.builder!.cordova : undefined,
             watchScopePathSet: this._watchScopePathSet,
           }),
       );
     }
 
+    const npmConf = FsUtils.readJson(path.resolve(this._pkgPath, "package.json")) as INpmConfig;
+
+    if ("@angular/router" in (npmConf.dependencies ?? {})) {
+      this._debug(`GEN routes.ts...`);
+      const genRoutesResult = this.#routeGenerator.run(this._pkgPath, this._pkgConf.noLazyRoute);
+      if (modifiedFileSet && genRoutesResult.changed) {
+        modifiedFileSet.add(PathUtils.norm(genRoutesResult.filePath));
+      }
+    }
+
+    if (modifiedFileSet) {
+      for (const ngBundler of this.#ngBundlers!) {
+        ngBundler.markForChanges(Array.from(modifiedFileSet));
+      }
+    }
+
     this._debug(`BUILD...`);
-    const buildResults = await Promise.all(
-      this.#ngBundlers.map((builder) => builder.bundleAsync()),
-    );
+    const buildResults = await Promise.all(this.#ngBundlers!.map((builder) => builder.bundleAsync()));
     const watchFileSet = new Set(buildResults.mapMany((item) => Array.from(item.watchFileSet)));
-    const affectedFileSet = new Set(
-      buildResults.mapMany((item) => Array.from(item.affectedFileSet)),
-    );
+    const affectedFileSet = new Set(buildResults.mapMany((item) => Array.from(item.affectedFileSet)));
     const emitFileSet = new Set(buildResults.mapMany((item) => Array.from(item.emitFileSet)));
     const results = buildResults.mapMany((item) => item.results).distinct();
 

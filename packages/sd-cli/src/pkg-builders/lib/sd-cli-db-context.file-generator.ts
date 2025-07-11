@@ -1,4 +1,4 @@
-import { FsUtils, HashUtils, PathUtils, SdFsWatcher } from "@simplysm/sd-core-node";
+import { FsUtils, HashUtils, PathUtils } from "@simplysm/sd-core-node";
 import path from "path";
 import { StringUtils } from "@simplysm/sd-core-common";
 import { INpmConfig } from "../../types/common-configs.types";
@@ -6,7 +6,7 @@ import { INpmConfig } from "../../types/common-configs.types";
 export class SdCliDbContextFileGenerator {
   cachedHash?: string;
 
-  watch(pkgPath: string, kebabName: string) {
+  /*watch(pkgPath: string, kebabName: string) {
     const targetFilePath = path.resolve(pkgPath, `src/${kebabName}.ts`);
     this.cachedHash = FsUtils.exists(targetFilePath) ? HashUtils.get(FsUtils.readFile(targetFilePath)) : undefined;
 
@@ -15,9 +15,9 @@ export class SdCliDbContextFileGenerator {
     });
 
     this.run(pkgPath, kebabName);
-  }
+  }*/
 
-  run(pkgPath: string, kebabName: string) {
+  run(pkgPath: string, kebabName: string): { changed: boolean; filePath: string; content: string } {
     const npmConfig = FsUtils.readJson(path.resolve(pkgPath, "package.json")) as INpmConfig;
     const useExt = npmConfig.dependencies?.["@simplysm/sd-orm-common-ext"] != null;
 
@@ -68,14 +68,7 @@ export class SdCliDbContextFileGenerator {
         importTexts.push(`import { ${className} } from "./${requirePath}";`);
         if (
           useExt &&
-          [
-            "systemDataLog",
-            "systemLog",
-            "authentication",
-            "user",
-            "userConfig",
-            "userPermission",
-          ].includes(varName)
+          ["systemDataLog", "systemLog", "authentication", "user", "userConfig", "userPermission"].includes(varName)
         ) {
           modelTexts.push(`override ${varName} = new Queryable(this, ${className})`);
         } else {
@@ -151,6 +144,9 @@ ${spTexts.length > 0 ? "\n  // StoredProcedures\n" + spTexts.map((item) => "  " 
     if (currHash !== this.cachedHash) {
       FsUtils.writeFile(targetFilePath, content);
       this.cachedHash = currHash;
+      return { changed: true, filePath: targetFilePath, content };
+    } else {
+      return { changed: false, filePath: targetFilePath, content };
     }
   }
 }

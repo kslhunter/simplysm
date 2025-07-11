@@ -20,7 +20,7 @@
     "@simplysm/sd-service-common": "12.12.7",
     "bufferutil": "^4.0.9",
     "mime": "^4.0.7",
-    "nodemailer": "^7.0.4",
+    "nodemailer": "^7.0.5",
     "semver": "^7.7.2",
     "utf-8-validate": "^6.0.5",
     "ws": "^8.18.3"
