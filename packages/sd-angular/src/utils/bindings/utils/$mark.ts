@@ -1,20 +1,17 @@
 import { WritableSignal } from "@angular/core";
-import {
-  producerIncrementEpoch,
-  producerNotifyConsumers,
-  producerUpdatesAllowed,
-  runPostSignalSetFn,
-  SIGNAL,
-} from "@angular/core/primitives/signals";
+import { producerUpdatesAllowed } from "@angular/core/primitives/signals";
+import { ObjectUtils } from "@simplysm/sd-core-common";
 
 export function $mark(sig: WritableSignal<any>) {
   if (!producerUpdatesAllowed()) {
     throw new Error();
   }
 
-  const node = sig[SIGNAL] as any;
+  sig.update((v) => ObjectUtils.clone(v, { onlyOneDepth: true }));
+
+  /*const node = sig[SIGNAL] as any;
   node.version++;
   producerIncrementEpoch();
   producerNotifyConsumers(node);
-  runPostSignalSetFn(node);
+  runPostSignalSetFn(node);*/
 }

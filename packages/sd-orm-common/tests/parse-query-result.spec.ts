@@ -36,6 +36,8 @@ describe("SdOrmUtils.parseQueryResult<any>", () => {
       },
     );
 
+    console.log(result);
+
     expect(result.length).toBe(1);
     expect(result[0].id).toBe("abc");
   });

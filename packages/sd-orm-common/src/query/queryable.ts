@@ -64,13 +64,15 @@ export class Queryable<D extends DbContext, T> {
       this.tableDef = arg1.tableDef ? ObjectUtils.clone(arg1.tableDef) : undefined;
       this.#entity = ObjectUtils.clone(arg1.#entity);
       this.#def = ObjectUtils.clone(arg1.#def);
-      this.#isCustomEntity = arg1.#isCustomEntity;
+      // this.#isCustomEntity = arg1.#isCustomEntity;
 
       if (arg2 !== undefined) {
         this.#entity = ObjectUtils.clone(arg2 as TEntity<T>, {
           useRefTypes: [this.db.constructor as Type<any>],
         });
-        this.#isCustomEntity = true;
+        // console.log("arg2??", arg2);
+        // this.#isCustomEntity = true;
+        // this.#isCustomEntity = arg1.#isCustomEntity;
       }
     }
     // 일반 생성
@@ -107,7 +109,7 @@ export class Queryable<D extends DbContext, T> {
       this.#def = arg4!;
 
       // wrapping인 경우 customEntity 강제
-      this.#isCustomEntity = true;
+      // this.#isCustomEntity = true;
 
       if (arg1 !== undefined) {
         this.tableType = arg1;
@@ -192,7 +194,9 @@ export class Queryable<D extends DbContext, T> {
     // Init defs.from
     const from = cqrs.map((item) => item.getSelectQueryDef());
 
-    return new Queryable(db, undefined, as, entity, { from });
+    const qr = new Queryable(db, undefined, as, entity, { from });
+    qr.#isCustomEntity = true;
+    return qr;
   }
 
   lock(): Queryable<D, T> {
@@ -205,7 +209,9 @@ export class Queryable<D extends DbContext, T> {
   select<R>(fwd: (entity: TEntity<T>) => TSelectEntity<R>): Queryable<D, R>;
   select(fwd: (entity: TEntity<T>) => any): Queryable<D, any> {
     const newEntity = fwd(this.#entity);
-    return new Queryable(this.db, this as any, newEntity);
+    const qr = new Queryable(this.db, this as any, newEntity);
+    qr.#isCustomEntity = true;
+    return qr;
   }
 
   selectByType<A>(tableType: Type<A>): Queryable<D, A> {
@@ -219,7 +225,9 @@ export class Queryable<D extends DbContext, T> {
       newEntity[colDef.propertyKey] = this.#entity[colDef.propertyKey];
     }
 
-    return new Queryable(this.db, this as any, newEntity) as any;
+    const qr = new Queryable(this.db, this as any, newEntity);
+    qr.#isCustomEntity = true;
+    return qr as any;
   }
 
   ofType<A>(): Queryable<D, A> {
@@ -345,6 +353,7 @@ export class Queryable<D extends DbContext, T> {
     }
 
     let result = new Queryable(this.db, this as any, entity);
+    result.#isCustomEntity = true;
 
     if (this.db.opt.dialect === "mysql") {
       result = result.groupBy(
@@ -399,6 +408,7 @@ export class Queryable<D extends DbContext, T> {
     }
 
     const result = new Queryable(this.db, this as any, entity);
+    result.#isCustomEntity = true;
 
     result.#def.unpivot = {
       valueColumn: this.db.qb.wrap(valueColumn),
@@ -447,6 +457,7 @@ export class Queryable<D extends DbContext, T> {
     this.#setEntityChainValue(entity, as, [joinEntity]);
 
     const result = new Queryable(this.db, this as any, entity);
+    result.#isCustomEntity = joinQueryable.#isCustomEntity;
 
     result.#def.join = result.#def.join ?? [];
     result.#def.join.push({
@@ -483,6 +494,7 @@ export class Queryable<D extends DbContext, T> {
     this.#setEntityChainValue(entity, as, joinEntity);
 
     const result = new Queryable(this.db, this as any, entity);
+    result.#isCustomEntity = joinQueryable.#isCustomEntity;
 
     result.#def.join = result.#def.join ?? [];
     result.#def.join.push({
@@ -642,6 +654,7 @@ export class Queryable<D extends DbContext, T> {
     } else {
       clone = new Queryable(this.db, this);
     }
+    clone.#isCustomEntity = true;
 
     const subFrom = clone.getSelectQueryDef();
     if (this.db.opt.dialect === "mssql" || this.db.opt.dialect === "mssql-azure") {
@@ -659,6 +672,7 @@ export class Queryable<D extends DbContext, T> {
     const result = new Queryable<D, any>(this.db, tableType, this.#as, currEntity, {
       from: subFrom,
     });
+    result.#isCustomEntity = true;
 
     if (this.db.opt.dialect === "mssql" || this.db.opt.dialect === "mssql-azure") {
       if (subFrom.orderBy && subFrom.orderBy.length > 0) {
@@ -1131,7 +1145,7 @@ export class Queryable<D extends DbContext, T> {
   async singleAsync(): Promise<T | undefined> {
     const result = await this.resultAsync();
     if (result.length > 1) {
-      if (process.env["NODE_ENV"] !== "development") {
+      if (process.env["NODE_ENV"] === "development") {
         // eslint-disable-next-line no-console
         console.error(result);
       }
@@ -1149,6 +1163,12 @@ export class Queryable<D extends DbContext, T> {
         "distinct 이후엔 'countAsync'를 사용할 수 없습니다." +
           " 사용하려면 distinct와 countAsync 사이에 wrap을 먼저 사용하거나," +
           " distinct대신 groupBy와 qh.count 로 수동으로 처리하세요.",
+      );
+    }
+    if (this.#def.groupBy) {
+      throw new Error(
+        "groupBy 이후엔 'countAsync'를 사용할 수 없습니다." +
+          " 사용하려면 groupBy와 countAsync 사이에 wrap을 먼저 사용하세요.",
       );
     }
 

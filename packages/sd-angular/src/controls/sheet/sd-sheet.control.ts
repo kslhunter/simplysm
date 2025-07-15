@@ -261,7 +261,7 @@ import { SdFlexItemControl } from "../flex/sd-flex-item.control";
 
                       <sd-anchor
                         [theme]="selectedItems().includes(item) ? 'primary' : 'grey'"
-                        (click)="selectionManager.toggle(item)"
+                        (pointerdown)="selectionManager.toggle(item)"
                         [disabled]="_selectable !== true || !selectionManager.getCanChangeFn(item)"
                         [attr.title]="_selectable"
                       >
@@ -474,7 +474,7 @@ import { SdFlexItemControl } from "../flex/sd-flex-item.control";
                       }
                     }
 
-                    > div:first-child {
+                    > sd-flex:first-child {
                       > ._sort-icon {
                         display: inline-block;
                         padding: var(--gap-xs) var(--gap-xs) var(--gap-xs) 0;

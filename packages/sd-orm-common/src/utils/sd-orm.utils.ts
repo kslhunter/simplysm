@@ -58,10 +58,7 @@ export class SdOrmUtils {
         return [item];
       }
 
-      return SdOrmUtils.getQueryValueFields(
-        item,
-        availableDepth !== undefined ? availableDepth - 1 : undefined,
-      );
+      return SdOrmUtils.getQueryValueFields(item, availableDepth !== undefined ? availableDepth - 1 : undefined);
     });
   }
 
@@ -151,35 +148,22 @@ export class SdOrmUtils {
       return "(" + result.join("|") + ")";
     };
 
-    const getKeyObj = (
-      sourceItem: Record<string, any>,
-      joinKeys: string[],
-    ): Record<string, any> => {
+    const getKeyObj = (sourceItem: Record<string, any>, joinKeys: string[]): Record<string, any> => {
       const result: Record<string, any> = {};
       for (const sourceItemKey of Object.keys(sourceItem)) {
-        if (
-          joinKeys.some(
-            (joinKey) => sourceItemKey === joinKey || sourceItemKey.startsWith(joinKey + "."),
-          )
-        )
-          continue;
+        if (joinKeys.some((joinKey) => sourceItemKey === joinKey || sourceItemKey.startsWith(joinKey + "."))) continue;
         result[sourceItemKey] = sourceItem[sourceItemKey];
       }
       return result;
     };
 
-    const getObjOrUndefined = (
-      sourceItem: Record<string, any> | undefined,
-    ): Record<string, any> | undefined => {
+    const getObjOrUndefined = (sourceItem: Record<string, any> | undefined): Record<string, any> | undefined => {
       return sourceItem == null || Object.keys(sourceItem).every((key) => sourceItem[key] == null)
         ? undefined
         : sourceItem;
     };
 
-    const joinToObj = (
-      source: Record<string, any>[],
-      joinKeys: string[],
-    ): Record<string, any>[] => {
+    const joinToObj = (source: Record<string, any>[], joinKeys: string[]): Record<string, any>[] => {
       const result: Record<string, any>[] = [];
       for (const sourceItem of source) {
         const resultItem: Record<string, any> = {};
@@ -187,8 +171,7 @@ export class SdOrmUtils {
           for (const joinKey of joinKeys) {
             if (sourceItemKey.startsWith(joinKey + ".")) {
               resultItem[joinKey] = resultItem[joinKey] ?? {};
-              resultItem[joinKey][sourceItemKey.slice(joinKey.length + 1)] =
-                sourceItem[sourceItemKey];
+              resultItem[joinKey][sourceItemKey.slice(joinKey.length + 1)] = sourceItem[sourceItemKey];
             } else {
               resultItem[sourceItemKey] = sourceItem[sourceItemKey];
             }
@@ -232,70 +215,6 @@ export class SdOrmUtils {
       return Array.from(result.values());
     };
 
-    /*const doing = (
-      source: Record<string, any>[],
-      joinInfos: { key: string; isSingle: boolean }[],
-      parentKey?: string,
-    ): Record<string, any>[] => {
-      const joinKeys = joinInfos.map((item) => item.key);
-      const result = grouping(joinToObj(source, joinKeys), joinKeys);
-      const finalResult: Record<string, any>[] = [];
-
-      for (const resultItem of result) {
-        let splitItems: Record<string, any>[] = [resultItem];
-
-        for (const joinInfo of joinInfos) {
-          const fullJoinKey = parentKey != null ? `${parentKey}.${joinInfo.key}` : joinInfo.key;
-          const childJoinInfos = allJoinInfos
-            .filter(
-              (item) =>
-                item.key.startsWith(fullJoinKey + ".") &&
-                !item.key.slice(fullJoinKey.length + 1).includes("."),
-            )
-            .map((item) => ({
-              key: item.key.slice(fullJoinKey.length + 1),
-              isSingle: item.isSingle,
-            }));
-
-          const tempSplitItems: Record<string, any>[] = [];
-
-          for (const item of splitItems) {
-            const joinValue = item[joinInfo.key];
-
-            if (childJoinInfos.length > 0) {
-              const childJoinValue = doing(joinValue, childJoinInfos, fullJoinKey);
-              if (joinInfo.isSingle) {
-                for (const val of childJoinValue) {
-                  tempSplitItems.push({ ...item, [joinInfo.key]: val });
-                }
-              } else {
-                item[joinInfo.key] = childJoinValue;
-                tempSplitItems.push(item);
-              }
-            } else {
-              if (joinInfo.isSingle && Array.isArray(joinValue)) {
-                if (joinValue.length === 0) {
-                  tempSplitItems.push({ ...item, [joinInfo.key]: undefined });
-                } else {
-                  for (const val of joinValue) {
-                    tempSplitItems.push({ ...item, [joinInfo.key]: val });
-                  }
-                }
-              } else {
-                // 그대로 유지
-                tempSplitItems.push(item);
-              }
-            }
-          }
-
-          splitItems = tempSplitItems;
-        }
-
-        finalResult.push(...splitItems);
-      }
-
-      return finalResult;
-    };*/
     const doing = (
       source: Record<string, any>[],
       joinInfos: { key: string; isSingle: boolean }[],
@@ -317,9 +236,7 @@ export class SdOrmUtils {
 
           const childJoinInfos = allJoinInfos
             .filter(
-              (info) =>
-                info.key.startsWith(fullJoinKey + ".") &&
-                !info.key.slice(fullJoinKey.length + 1).includes("."),
+              (info) => info.key.startsWith(fullJoinKey + ".") && !info.key.slice(fullJoinKey.length + 1).includes("."),
             )
             .map((info) => ({
               key: info.key.slice(fullJoinKey.length + 1),
