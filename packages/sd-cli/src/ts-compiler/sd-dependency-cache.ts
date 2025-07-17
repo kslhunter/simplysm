@@ -176,7 +176,7 @@ export class SdDependencyCache {
   /**
    * 변경된 파일 경로 집합으로부터 영향을 받는 전체 파일 집합을 계산
    */
-  getAffectedFileSet(modifiedNPathSet: Set<TNormPath>): Set<TNormPath> {
+  /*getAffectedFileSet(modifiedNPathSet: Set<TNormPath>): Set<TNormPath> {
     const visited = new Set<string>();
     const result = new Set<TNormPath>();
 
@@ -228,15 +228,71 @@ export class SdDependencyCache {
     }
 
     return result;
+  }*/
+  getAffectedFileMap(modifiedNPathSet: Set<TNormPath>): Map<TNormPath, Set<TNormPath>> {
+    const resultMap = new Map<TNormPath, Set<TNormPath>>();
+
+    for (const modifiedNPath of modifiedNPathSet) {
+      const visited = new Set<string>();
+      const result = new Set<TNormPath>();
+      const queue: { fileNPath: TNormPath; exportSymbol: string | undefined }[] = [];
+
+      const enqueue = (fileNPath: TNormPath, exportSymbol: string | undefined) => {
+        const key = `${fileNPath}#${exportSymbol}`;
+        if (!visited.has(key)) {
+          visited.add(key);
+          queue.push({ fileNPath, exportSymbol });
+        }
+      };
+
+      for (const path of this.#getRelatedNPaths(modifiedNPath)) {
+        result.add(path);
+        const exportSymbols = this.#getExportSymbols(path);
+        if (exportSymbols.size === 0) {
+          enqueue(path, undefined);
+        } else {
+          for (const symbol of exportSymbols) {
+            enqueue(path, symbol);
+          }
+        }
+      }
+
+      while (queue.length > 0) {
+        const curr = queue.shift()!;
+        const revDepInfoMap = this._revDepCache.get(curr.fileNPath);
+        if (!revDepInfoMap) continue;
+
+        for (const [revDepFileNPath, revDepInfo] of revDepInfoMap) {
+          if (curr.exportSymbol != null) {
+            const hasImportSymbol = revDepInfo === 0 || revDepInfo.has(curr.exportSymbol);
+            if (hasImportSymbol) {
+              result.add(revDepFileNPath);
+              const exportSymbol = this.#convertImportSymbolToExportSymbol(
+                revDepFileNPath,
+                curr.fileNPath,
+                curr.exportSymbol,
+              );
+              enqueue(revDepFileNPath, exportSymbol);
+            }
+          } else {
+            result.add(revDepFileNPath);
+          }
+        }
+      }
+
+      resultMap.set(modifiedNPath, result);
+    }
+
+    return resultMap;
   }
 
   /**
    * 주어진 파일들 및 그 영향 범위에 해당하는 모든 캐시를 무효화
    */
   invalidates(fileNPathSet: Set<TNormPath>) {
-    const affectedFiles = this.getAffectedFileSet(fileNPathSet);
+    // const affectedFileMap = this.getAffectedFileMap(fileNPathSet);
 
-    for (const fileNPath of affectedFiles) {
+    for (const fileNPath of fileNPathSet) {
       this._exportCache.delete(fileNPath);
       this._importCache.delete(fileNPath);
       this._reexportCache.delete(fileNPath);
@@ -246,7 +302,7 @@ export class SdDependencyCache {
     }
 
     for (const [targetNPath, infoMap] of this._revDepCache) {
-      for (const fileNPath of affectedFiles) {
+      for (const fileNPath of fileNPathSet) {
         infoMap.delete(fileNPath);
       }
       if (infoMap.size === 0) {

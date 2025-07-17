@@ -288,12 +288,13 @@ export class SdTsCompiler {
 
     if (modifiedFileSet.size !== 0) {
       this.#debug(`캐시 무효화 및 초기화 중...`);
-      await Wait.time(300);
+      await Wait.time(100);
 
       // this._perf.run("캐시 무효화 및 초기화", () => {
       this.#perf.run("캐시 무효화 및 초기화", () => {
         // 기존 의존성에 의해 영향받는 파일들 계산
-        const affectedFileSet = this.#depCache.getAffectedFileSet(modifiedFileSet);
+        const affectedFileMap = this.#depCache.getAffectedFileMap(modifiedFileSet);
+        const affectedFiles = Array.from(affectedFileMap.values()).mapMany((item) => Array.from(item));
 
         const getTreeText = (node: ISdAffectedFileTreeNode, indent = "") => {
           let result = indent + node.fileNPath + "\n";
@@ -307,22 +308,29 @@ export class SdTsCompiler {
         const affectedFileTree = this.#depCache.getAffectedFileTree(modifiedFileSet);
         this.#debug(`영향받은 기존파일: ${affectedFileTree.map((item) => getTreeText(item)).join("\n")}`.trim());
 
-        // 스타일 번들러에서 영향받은 파일 관련 항목 무효화
+        // 스타일 번들러에서 영향받은 파일 관련 항목 무효화 (.scss만 해당)
         this.#stylesheetBundler.invalidate(
-          new Set([...modifiedFileSet, ...Array.from(affectedFileSet).filter((item) => item.endsWith(".scss"))]),
+          new Set([...modifiedFileSet, ...affectedFiles.filter((item) => item.endsWith(".scss"))]),
         );
         // await worker.run("invalidate", [affectedFileSet]);
 
-        // 소스파일은 변경된 파일들로 무효화
+        // 소스파일은 변경된 파일들로 무효화 (스타일 변화시 타고들어가야됨)
         for (const modifiedFile of modifiedFileSet) {
-          this.#sourceFileCacheMap.delete(modifiedFile);
+          if (modifiedFile.endsWith(".scss")) {
+            for (const fileNPath of affectedFileMap.get(modifiedFile) ?? []) {
+              this.#sourceFileCacheMap.delete(fileNPath);
+            }
+          } else {
+            this.#sourceFileCacheMap.delete(modifiedFile);
+          }
         }
 
         // 의존성 캐시에서 영향받은 파일 관련 항목 무효화 (Affected더라도 SF는 동일하므로, modifiedFileSet만 넣어도될듯?)
-        this.#depCache.invalidates(modifiedFileSet);
+        // 250715: sourceFile 타입체크를 다시 해야해서 affected로 넣는게 맞는듯.
+        this.#depCache.invalidates(new Set(affectedFiles));
 
         // 내부 캐시에서 영향받은 파일 관련 항목 무효화
-        for (const affectedFile of affectedFileSet) {
+        for (const affectedFile of affectedFiles) {
           this.#emittedFilesCacheMap.delete(affectedFile);
           this.#stylesheetBundlingResultMap.delete(affectedFile);
         }
@@ -366,7 +374,11 @@ export class SdTsCompiler {
     });
 
     const affectedFileSet =
-      modifiedFileSet.size === 0 ? this.#depCache.getFiles() : this.#depCache.getAffectedFileSet(modifiedFileSet);
+      modifiedFileSet.size === 0
+        ? this.#depCache.getFiles()
+        : new Set(
+            Array.from(this.#depCache.getAffectedFileMap(modifiedFileSet).values()).mapMany((item) => Array.from(item)),
+          );
     const watchFileSet = this.#depCache.getFiles();
 
     return {

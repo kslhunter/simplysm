@@ -7,6 +7,7 @@ import { transformBoolean } from "../../utils/type-tramsforms";
 })
 export class SdDataSheetToolDirective {
   prepend = input(false, { transform: transformBoolean });
+  fill = input(false, { transform: transformBoolean });
 
   contentTemplateRef = contentChild.required<any, TemplateRef<void>>("content", {
     read: TemplateRef,

@@ -21,7 +21,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
         <span class="tx-trans-light">****</span>
       } @else {
         @if (controlValue()) {
-          <pre>{{ controlValueText() }} </pre>
+          <pre>{{ controlValueText() ? controlValueText() : " " }}</pre>
         } @else if (placeholder()) {
           <span class="tx-trans-lighter">{{ placeholder() }}</span>
         } @else {

@@ -10,49 +10,49 @@ import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/
     <ng-content></ng-content>
   `,
   //region styles
-  styles: [/* language=SCSS */ `
-    @use "../scss/mixins";
+  styles: [
+    /* language=SCSS */ `
+      @use "../scss/mixins";
 
-    sd-card {
-      display: block;
-      background: var(--control-color);
-      border-radius: var(--border-radius-default);
-      overflow: hidden;
-      transition: box-shadow 0.3s ease-in-out;
-      @include mixins.elevation(2);
-      animation: sd-card var(--animation-duration) ease-out;
-      opacity: 0;
-      transform: translateY(-1em);
-      animation-fill-mode: forwards;
+      sd-card {
+        display: block;
+        background: var(--control-color);
+        border-radius: var(--border-radius-default);
+        overflow: hidden;
+        transition: box-shadow 0.3s ease-in-out;
+        @include mixins.elevation(2);
+        animation: sd-card var(--animation-duration) ease-out;
+        opacity: 0;
+        transform: translateY(-1em);
+        animation-fill-mode: forwards;
 
-      &:hover,
-      &:has(:focus) {
-        @include mixins.elevation(6);
-      }
+        &:hover,
+        &:has(:focus) {
+          @include mixins.elevation(6);
+        }
 
-      @media all and (pointer: coarse) {
+        /*@media all and (pointer: coarse) {
         @include mixins.elevation(0);
 
         &:hover,
         &:has(:focus) {
           @include mixins.elevation(0);
         }
+      }*/
       }
-    }
 
-    @keyframes sd-card {
-      from {
-        opacity: 0;
-        transform: translateY(-1em);
+      @keyframes sd-card {
+        from {
+          opacity: 0;
+          transform: translateY(-1em);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
       }
-      to {
-        opacity: 1;
-        transform: none;
-      }
-    }
-  `
+    `,
   ],
   //endregion
 })
-export class SdCardControl {
-}
+export class SdCardControl {}

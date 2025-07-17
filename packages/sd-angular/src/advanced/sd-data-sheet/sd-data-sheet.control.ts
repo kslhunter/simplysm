@@ -43,7 +43,6 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
 import { ISdSelectModal, ISelectModalOutputResult } from "./sd-data-select-button.control";
 import { injectParent } from "../../utils/injections/inject-parent";
-import { SdRegionControl } from "../../controls/containers/sd-region";
 import { FormatPipe } from "../../pipes/format.pipe";
 import { setupCanDeactivate } from "../../utils/setups/setup-can-deactivate";
 import { $arr } from "../../utils/bindings/wrappers/$arr";
@@ -51,6 +50,8 @@ import { TXT_CHANGE_IGNORE_CONFIRM } from "../../commons";
 import { SdDataSheetNoteDirective } from "./sd-data-sheet-note.directive";
 import { SdFlexControl } from "../../controls/flex/sd-flex.control";
 import { SdFlexItemControl } from "../../controls/flex/sd-flex-item.control";
+import { SdNoteControl } from "../../controls/sd-note.control";
+import { SdRegionControl } from "../../controls/containers/sd-region";
 
 @Component({
   selector: "sd-data-sheet",
@@ -69,10 +70,11 @@ import { SdFlexItemControl } from "../../controls/flex/sd-flex-item.control";
     NgTemplateOutlet,
     SdBaseContainerControl,
     FaIconComponent,
-    SdRegionControl,
     FormatPipe,
     SdFlexControl,
     SdFlexItemControl,
+    SdNoteControl,
+    SdRegionControl,
   ],
   template: `
     <sd-base-container
@@ -82,25 +84,22 @@ import { SdFlexItemControl } from "../../controls/flex/sd-flex-item.control";
       [restricted]="parent.restricted?.()"
     >
       <ng-template #content>
-        <sd-flex vertical [class.p-xs]="parent.currViewType() === 'modal'">
-          @if (noteControls().length > 0) {
-            @for (noteControl of noteControls(); track noteControl) {
-              <sd-flex-item>
-                <sd-region
-                  [theme]="noteControl.theme()"
-                  [contentClass]="'p-sm-default bd bd-theme-' + noteControl.theme() + '-light'"
-                >
-                  <ng-template [ngTemplateOutlet]="noteControl.contentTemplateRef()" />
-                </sd-region>
-              </sd-flex-item>
+        <sd-region>
+          <sd-flex vertical [class.p-xs]="parent.currViewType() === 'modal'">
+            @if (noteControls().length > 0) {
+              @for (noteControl of noteControls(); track noteControl) {
+                <sd-flex-item>
+                  <sd-note [theme]="noteControl.theme()">
+                    <ng-template [ngTemplateOutlet]="noteControl.contentTemplateRef()" />
+                  </sd-note>
+                </sd-flex-item>
+              }
             }
-          }
 
-          @if (filterControls().length > 0) {
-            <sd-flex-item>
-              <sd-region cardStyle="animation-delay: 100ms">
+            @if (filterControls().length > 0) {
+              <sd-flex-item class="p-default bdb bdb-theme-grey-lightest">
                 <sd-form (submit)="onFilterSubmit()">
-                  <sd-form-box layout="inline" class="p-default">
+                  <sd-form-box layout="inline">
                     <sd-form-box-item>
                       <sd-button type="submit" theme="info">
                         <fa-icon [icon]="icons.search" [fixedWidth]="true" />
@@ -119,13 +118,11 @@ import { SdFlexItemControl } from "../../controls/flex/sd-flex-item.control";
                     }
                   </sd-form-box>
                 </sd-form>
-              </sd-region>
-            </sd-flex-item>
-          }
+              </sd-flex-item>
+            }
 
-          <sd-flex-item fill>
-            <sd-form #formCtrl (submit)="onSubmit()">
-              <sd-region cardStyle="animation-delay: 200ms">
+            <sd-flex-item fill>
+              <sd-form #formCtrl (submit)="onSubmit()">
                 <sd-flex vertical gap="sm" padding="default">
                   <sd-flex-item>
                     <sd-flex gap="sm">
@@ -157,7 +154,7 @@ import { SdFlexItemControl } from "../../controls/flex/sd-flex-item.control";
                       }
 
                       @for (toolControl of beforeToolControls(); track toolControl) {
-                        <sd-flex-item fill>
+                        <sd-flex-item [fill]="toolControl.fill()">
                           <ng-template [ngTemplateOutlet]="toolControl.contentTemplateRef()" />
                         </sd-flex-item>
                       }
@@ -205,7 +202,7 @@ import { SdFlexItemControl } from "../../controls/flex/sd-flex-item.control";
                       }
 
                       @for (toolControl of afterToolControls(); track toolControl) {
-                        <sd-flex-item>
+                        <sd-flex-item [fill]="toolControl.fill()">
                           <ng-template [ngTemplateOutlet]="toolControl.contentTemplateRef()" />
                         </sd-flex-item>
                       }
@@ -344,10 +341,10 @@ import { SdFlexItemControl } from "../../controls/flex/sd-flex-item.control";
                     </sd-sheet>
                   </sd-flex-item>
                 </sd-flex>
-              </sd-region>
-            </sd-form>
-          </sd-flex-item>
-        </sd-flex>
+              </sd-form>
+            </sd-flex-item>
+          </sd-flex>
+        </sd-region>
       </ng-template>
 
       @if (parent.realSelectMode()) {

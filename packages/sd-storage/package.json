@@ -18,6 +18,6 @@
     "ssh2-sftp-client": "^12.0.1"
   },
   "devDependencies": {
-    "@types/ssh2-sftp-client": "^9.0.4"
+    "@types/ssh2-sftp-client": "^9.0.5"
   }
 }

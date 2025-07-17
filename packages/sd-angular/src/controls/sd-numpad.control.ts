@@ -1,12 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  input,
-  model,
-  output,
-  ViewEncapsulation,
-} from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, input, model, output, ViewEncapsulation } from "@angular/core";
 import { NumberUtils, StringUtils } from "@simplysm/sd-core-common";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { $effect } from "../utils/bindings/$effect";
@@ -30,7 +22,8 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
           <td [attr.colspan]="useEnterButton() ? 2 : 3">
             <sd-textfield
               type="text"
-              inputClass="tx-right ft-size-h3"
+              size="lg"
+              inputClass="tx-right"
               [placeholder]="placeholder()"
               [required]="required()"
               [disabled]="inputDisabled()"
@@ -64,11 +57,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
             </sd-button>
           </td>
           <td>
-            <sd-button
-              size="lg"
-              buttonClass="tx-theme-warning-default"
-              (click)="onButtonClick('BS')"
-            >
+            <sd-button size="lg" buttonClass="tx-theme-warning-default" (click)="onButtonClick('BS')">
               <fa-icon [icon]="icons.arrowLeftLong" />
             </sd-button>
           </td>
