@@ -15,7 +15,7 @@ export class SystemDataLog {
   tableDescription?: string;
 
   @Column({ description: "구분" })
-  type?: string;
+  type!: string;
 
   @Index({ name: "tableItem", order: 2 })
   @Column({ description: "항목.ID", nullable: true })

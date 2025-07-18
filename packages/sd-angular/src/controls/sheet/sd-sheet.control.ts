@@ -354,26 +354,28 @@ import { SdFlexItemControl } from "../flex/sd-flex-item.control";
       $border-color-dark: var(--theme-grey-lighter);
       $border-color-darker: var(--theme-grey-light);
 
+      $border-radius: var(--border-radius-default);
+
       sd-sheet {
         ._padding {
           padding: var(--sheet-pv) var(--sheet-ph);
         }
 
         > sd-busy-container {
-          border-radius: var(--border-radius-default);
+          border-radius: $border-radius;
 
           > ._screen {
-            border-radius: var(--border-radius-default);
+            border-radius: $border-radius;
           }
 
           > sd-flex {
             border: 1px solid $border-color-dark;
-            border-radius: var(--border-radius-default);
+            border-radius: $border-radius;
 
             > sd-flex-item._tool {
               background: var(--control-color);
-              border-top-left-radius: var(--border-radius-default);
-              border-top-right-radius: var(--border-radius-default);
+              border-top-left-radius: $border-radius;
+              border-top-right-radius: $border-radius;
               border-bottom: 1px solid $border-color-dark;
 
               > sd-flex > sd-flex-item > sd-anchor {
@@ -384,8 +386,8 @@ import { SdFlexItemControl } from "../flex/sd-flex-item.control";
             > ._sheet-container {
               position: relative;
               background: var(--sheet-bg);
-              border-bottom-left-radius: var(--border-radius-default);
-              border-bottom-right-radius: var(--border-radius-default);
+              border-bottom-left-radius: $border-radius;
+              border-bottom-right-radius: $border-radius;
               overflow: auto;
               //@include mixins.elevation(-16);
 
@@ -394,7 +396,7 @@ import { SdFlexItemControl } from "../flex/sd-flex-item.control";
                 table-layout: fixed;
                 margin-right: 2px;
                 margin-bottom: 2px;
-                border-bottom-right-radius: var(--border-radius-default);
+                border-bottom-right-radius: $border-radius;
                 @include mixins.elevation(16);
 
                 > * > tr > *:last-child {
@@ -410,7 +412,7 @@ import { SdFlexItemControl } from "../flex/sd-flex-item.control";
                 }
 
                 > *:last-child > tr:last-child > td:last-child {
-                  border-bottom-right-radius: var(--border-radius-default);
+                  border-bottom-right-radius: $border-radius;
                   overflow: hidden;
                 }
 
@@ -536,7 +538,7 @@ import { SdFlexItemControl } from "../flex/sd-flex-item.control";
                 > ._focus-cell-indicator {
                   position: absolute;
                   border: 2px solid var(--theme-primary-default);
-                  border-radius: var(--border-radius-default);
+                  border-radius: $border-radius;
                 }
               }
 
@@ -585,10 +587,10 @@ import { SdFlexItemControl } from "../flex/sd-flex-item.control";
 
         &[sd-inset="true"] {
           > sd-busy-container {
-            border-radius: var(--border-radius-default);
+            border-radius: $border-radius;
 
             > ._screen {
-              border-radius: var(--border-radius-default);
+              border-radius: $border-radius;
             }
 
             > sd-flex {

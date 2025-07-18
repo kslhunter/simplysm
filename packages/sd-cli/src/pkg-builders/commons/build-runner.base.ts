@@ -1,20 +1,11 @@
 import { EventEmitter } from "events";
-import {
-  FsUtils,
-  ISdFsWatcherChangeInfo,
-  PathUtils,
-  SdFsWatcher,
-  SdLogger,
-  TNormPath,
-} from "@simplysm/sd-core-node";
+import { FsUtils, ISdFsWatcherChangeInfo, PathUtils, SdFsWatcher, SdLogger, TNormPath } from "@simplysm/sd-core-node";
 import { ISdProjectConfig, TSdPackageConfig } from "../../types/config.types";
 import { ISdBuildMessage, ISdBuildRunnerResult } from "../../types/build.types";
 import path from "path";
 import { ScopePathSet } from "./scope-path";
 
-export abstract class BuildRunnerBase<
-  T extends "server" | "library" | "client",
-> extends EventEmitter {
+export abstract class BuildRunnerBase<T extends "server" | "library" | "client"> extends EventEmitter {
   protected abstract _logger: SdLogger;
 
   protected _pkgName: string;
@@ -83,65 +74,70 @@ export abstract class BuildRunnerBase<
     this.emit("complete", res);
 
     this._debug("WATCH...");
-    let lastWatchFileSet = result.watchFileSet!;
-    SdFsWatcher.watch(this._watchScopePathSet.toArray()).onChange(
-      { delay: 100 },
-      async (changeInfos) => {
-        const modifiedFileSet = this._getModifiedFileSet(changeInfos, lastWatchFileSet);
+    let lastWatchFileSet = result.watchFileSet;
+    SdFsWatcher.watch(this._watchScopePathSet.toArray(), {
+      ignore: (filePath) =>
+        filePath === path.resolve(this._pkgPath, ".cache") ||
+        filePath === path.resolve(this._pkgPath, ".cordova") ||
+        filePath === path.resolve(this._pkgPath, ".electron") ||
+        filePath === path.resolve(this._pkgPath, "dist") ||
+        (this._pkgConf.type === "client" && filePath === path.resolve(this._pkgPath, "src", "routes.ts")) ||
+        ("dbContext" in this._pkgConf &&
+          this._pkgConf.dbContext != null &&
+          filePath === path.resolve(this._pkgPath, "src", `${this._pkgConf.dbContext}.ts`)) ||
+        ("noGenIndex" in this._pkgConf &&
+          !this._pkgConf.noGenIndex &&
+          filePath === path.resolve(this._pkgPath, "src", "index.ts")),
+    }).onChange({ delay: 100 }, async (changeInfos) => {
+      const modifiedFileSet = this._getModifiedFileSet(changeInfos, lastWatchFileSet);
 
-        if (modifiedFileSet.size < 1) return;
+      if (modifiedFileSet.size < 1) return;
 
-        this.emit("change");
+      this.emit("change");
 
-        let watchResult: IBuildRunnerRunResult;
-        try {
-          watchResult = await this._runAsync(!this._pkgConf.forceProductionMode, modifiedFileSet);
+      let watchResult: IBuildRunnerRunResult;
+      try {
+        watchResult = await this._runAsync(!this._pkgConf.forceProductionMode, modifiedFileSet);
 
-          lastWatchFileSet = watchResult.watchFileSet!;
-        } catch (err) {
-          watchResult = {
-            affectedFileSet: modifiedFileSet,
-            buildMessages: [
-              {
-                filePath: undefined,
-                line: undefined,
-                char: undefined,
-                code: undefined,
-                severity: "error",
-                message: `파일 변경 처리 중 오류 발생: ${err}`,
-                type: "watch",
-              },
-            ],
-            emitFileSet: new Set(),
-            watchFileSet: lastWatchFileSet,
-          };
-        }
+        lastWatchFileSet = watchResult.watchFileSet;
+      } catch (err) {
+        watchResult = {
+          affectedFileSet: modifiedFileSet,
+          buildMessages: [
+            {
+              filePath: undefined,
+              line: undefined,
+              char: undefined,
+              code: undefined,
+              severity: "error",
+              message: `파일 변경 처리 중 오류 발생: ${err}`,
+              type: "watch",
+            },
+          ],
+          emitFileSet: new Set(),
+        };
+      }
 
-        this.emit("complete", {
-          affectedFilePathSet: watchResult.affectedFileSet,
-          buildMessages: watchResult.buildMessages,
-          emitFileSet: watchResult.emitFileSet,
-        });
-      },
-    );
+      this.emit("complete", {
+        affectedFilePathSet: watchResult.affectedFileSet,
+        buildMessages: watchResult.buildMessages,
+        emitFileSet: watchResult.emitFileSet,
+      });
+    });
   }
 
-  protected _getModifiedFileSet(
-    changeInfos: ISdFsWatcherChangeInfo[],
-    lastWatchFileSet?: Set<TNormPath>,
-  ) {
+  protected _getModifiedFileSet(changeInfos: ISdFsWatcherChangeInfo[], lastWatchFileSet?: Set<TNormPath>) {
     return new Set(
       (lastWatchFileSet
-        ? changeInfos.filter((item) => lastWatchFileSet.has(item.path))
+        ? changeInfos.filter((item) =>
+            Array.from(lastWatchFileSet).some((item1) => item.path.startsWith(path.dirname(item1))),
+          )
         : changeInfos
       ).map((item) => item.path),
     );
   }
 
-  protected abstract _runAsync(
-    dev: boolean,
-    modifiedFileSet?: Set<TNormPath>,
-  ): Promise<IBuildRunnerRunResult>;
+  protected abstract _runAsync(dev: boolean, modifiedFileSet?: Set<TNormPath>): Promise<IBuildRunnerRunResult>;
 
   protected _debug(msg: string): void {
     this._logger.debug(`[${path.basename(this._pkgPath)}] ${msg}`);

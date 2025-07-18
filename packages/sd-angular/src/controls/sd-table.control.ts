@@ -24,7 +24,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
           border-right: 1px solid $border-color-dark;
           border-bottom: 1px solid $border-color-dark;
 
-          border-radius: var(--border-radius-default);
+          //border-radius: var(--border-radius-default);
           overflow: hidden;
 
           > * > tr > * {

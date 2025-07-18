@@ -115,9 +115,9 @@ import { SdFlexItemControl } from "./flex/sd-flex-item.control";
         }
 
         &[sd-layout="flat"] {
-          > ._content {
+          /*> ._content {
             display: none;
-          }
+          }*/
 
           &[sd-has-children="true"] {
             > ._content {

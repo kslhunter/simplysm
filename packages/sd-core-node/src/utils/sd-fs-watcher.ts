@@ -21,10 +21,7 @@ export class SdFsWatcher {
     });
   }
 
-  onChange(
-    opt: { delay?: number },
-    cb: (changeInfos: ISdFsWatcherChangeInfo[]) => void | Promise<void>,
-  ): this {
+  onChange(opt: { delay?: number }, cb: (changeInfos: ISdFsWatcherChangeInfo[]) => void | Promise<void>): this {
     const fnQ = new AsyncFnQueue();
 
     let changeInfoMap = new Map<string, TTargetEvent>();
@@ -33,14 +30,9 @@ export class SdFsWatcher {
       const prevEvent = changeInfoMap.getOrCreate(filePath, event);
       if (prevEvent === "add" && event === "change") {
         changeInfoMap.set(filePath, "add" as TTargetEvent);
-      }
-      else if ((prevEvent === "add" && event === "unlink") || (prevEvent
-        === "addDir"
-        && event
-        === "unlinkDir")) {
+      } else if ((prevEvent === "add" && event === "unlink") || (prevEvent === "addDir" && event === "unlinkDir")) {
         changeInfoMap.delete(filePath);
-      }
-      else {
+      } else {
         changeInfoMap.set(filePath, event);
       }
 
