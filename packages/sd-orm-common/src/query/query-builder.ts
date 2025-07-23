@@ -1158,8 +1158,8 @@ DEALLOCATE PREPARE stmt;
   // ----------------------------------------------------
   // region HELPERS
 
-  query(def: TQueryDef): string {
-    return this[def.type](def as any) as string;
+  query<T extends TQueryDef>(def: T): ReturnType<this[T["type"]]> {
+    return this[def.type](def as any) as ReturnType<this[T["type"]]>;
   }
 
   wrap(name: string): string {

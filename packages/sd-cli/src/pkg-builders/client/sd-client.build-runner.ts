@@ -14,6 +14,8 @@ export class SdClientBuildRunner extends BuildRunnerBase<"client"> {
   #ngBundlers?: SdNgBundler[];
   #cordova?: SdCliCordova;
 
+  #hasGenRoutesError = false;
+
   protected override async _runAsync(dev: boolean, modifiedFileSet?: Set<TNormPath>): Promise<IBuildRunnerRunResult> {
     // 최초 한번
     if (!modifiedFileSet) {
@@ -69,12 +71,14 @@ export class SdClientBuildRunner extends BuildRunnerBase<"client"> {
 
     const npmConf = FsUtils.readJson(path.resolve(this._pkgPath, "package.json")) as INpmConfig;
 
+    let routesFileNPath: TNormPath | undefined;
     if ("@angular/router" in (npmConf.dependencies ?? {})) {
       this._debug(`GEN routes.ts...`);
       const genRoutesResult = this.#routeGenerator.run(this._pkgPath, this._pkgConf.noLazyRoute);
-      if (modifiedFileSet && genRoutesResult.changed) {
+      if (modifiedFileSet && (genRoutesResult.changed || this.#hasGenRoutesError)) {
         modifiedFileSet.add(PathUtils.norm(genRoutesResult.filePath));
       }
+      routesFileNPath = PathUtils.norm(genRoutesResult.filePath);
     }
 
     if (modifiedFileSet) {
@@ -102,6 +106,8 @@ export class SdClientBuildRunner extends BuildRunnerBase<"client"> {
         electronConfig: this._pkgConf.builder.electron,
       });
     }
+
+    this.#hasGenRoutesError = routesFileNPath != null && results.map((item) => item.filePath).includes(routesFileNPath);
 
     this._debug(`빌드 완료`);
 

@@ -1,11 +1,5 @@
 /* eslint-disable no-console */
-import {
-  ApplicationRef,
-  EnvironmentInjector,
-  ErrorHandler,
-  inject,
-  Injectable,
-} from "@angular/core";
+import { ApplicationRef, EnvironmentInjector, ErrorHandler, inject, Injectable } from "@angular/core";
 import { SdSystemLogProvider } from "../providers/sd-system-log.provider";
 
 @Injectable({ providedIn: null })
@@ -103,6 +97,9 @@ export class SdGlobalErrorHandlerPlugin implements ErrorHandler {
 
     document.body.append(divEl);
     divEl.onclick = () => {
+      if (process.env["NODE_ENV"] === "production") {
+        location.hash = "/";
+      }
       location.reload();
     };
   }

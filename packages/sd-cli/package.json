@@ -15,7 +15,7 @@
     "@angular/build": "^20.1.1",
     "@angular/compiler": "^20.1.2",
     "@angular/compiler-cli": "^20.1.2",
-    "@anthropic-ai/sdk": "^0.56.0",
+    "@anthropic-ai/sdk": "^0.57.0",
     "@electron/rebuild": "^4.0.1",
     "@simplysm/sd-core-common": "12.12.14",
     "@simplysm/sd-core-node": "12.12.14",

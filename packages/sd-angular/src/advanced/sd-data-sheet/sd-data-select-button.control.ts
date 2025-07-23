@@ -71,10 +71,23 @@ import { injectParent } from "../../utils/injections/inject-parent";
       sd-data-select-button {
         display: block;
         width: 100%;
-        min-width: 10em;
+        min-width: 3em;
+
+        > sd-additional-button {
+          background: var(--theme-secondary-lightest);
+        }
+
+        &[data-sd-disabled="true"] {
+          > sd-additional-button {
+            background: transparent;
+          }
+        }
       }
     `,
   ],
+  host: {
+    "[attr.data-sd-disabled]": "parent.disabled()",
+  },
 })
 export class SdDataSelectButtonControl {
   protected readonly icons = inject(SdAngularConfigProvider).icons;

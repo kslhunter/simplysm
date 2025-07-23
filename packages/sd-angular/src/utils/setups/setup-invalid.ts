@@ -44,7 +44,7 @@ function createIndicatorEl(renderer: Renderer2, hostEl: HTMLElement) {
   setSafeStyle(renderer, newEl, {
     display: "none",
     position: "absolute",
-    // zIndex: "9999",
+    zIndex: "1",
     background: "var(--theme-danger-default)",
 
     top: "var(--gap-xs)",

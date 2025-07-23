@@ -1,0 +1,10 @@
+{
+  "model": "claude-4-opus-latest",
+  "temperature": 0.7,
+  "maxTokens": 4000,
+  "contextLimit": 15000,
+  "defaultLanguage": "typescript",
+  "templateOverrides": {
+    "codeReview": "다음 {{language}} 코드를 리뷰하고 개선점을 제안해 주세요:"
+  }
+}
