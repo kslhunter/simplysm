@@ -43,7 +43,7 @@ export class SdTsLibBuildRunner extends BuildRunnerBase<"library"> {
     if (!this._pkgConf.noGenIndex) {
       this._debug("GEN index.ts...");
       const genIndexResult = this.#indexFileGenerator.run(this._pkgPath, this._pkgConf.polyfills);
-      if (modifiedFileSet && genIndexResult.changed) {
+      if (modifiedFileSet && (genIndexResult.changed || this.#hasGenIndexError)) {
         modifiedFileSet.add(PathUtils.norm(genIndexResult.filePath));
       }
       indexFileNPath = PathUtils.norm(genIndexResult.filePath);
@@ -53,7 +53,7 @@ export class SdTsLibBuildRunner extends BuildRunnerBase<"library"> {
     if (this._pkgConf.dbContext != null) {
       this._debug(`GEN ${this._pkgConf.dbContext}.ts...`);
       const genDbContextResult = this.#dbContextGenerator.run(this._pkgPath, this._pkgConf.dbContext);
-      if (modifiedFileSet && genDbContextResult.changed) {
+      if (modifiedFileSet && (genDbContextResult.changed || this.#hasGenDbContextError)) {
         modifiedFileSet.add(PathUtils.norm(genDbContextResult.filePath));
       }
       dbContentFileNPath = PathUtils.norm(genDbContextResult.filePath);

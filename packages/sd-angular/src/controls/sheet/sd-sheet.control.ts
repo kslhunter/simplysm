@@ -424,6 +424,10 @@ import { SdFlexItemControl } from "../flex/sd-flex-item.control";
                   padding: 0;
                   position: relative;
 
+                  &._fixed:has(+ :not(._fixed)) + :not(._fixed) {
+                    border-left: 1px solid $border-color;
+                  }
+
                   &._feature-cell {
                     background: var(--theme-grey-lightest);
                     min-width: calc(var(--font-size-default) + 2px + var(--sheet-ph) * 2);

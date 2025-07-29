@@ -1,26 +1,14 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ElementRef,
-  output,
-  viewChild,
-  ViewEncapsulation,
-} from "@angular/core";
-import { SdEventsDirective } from "../directives/sd-events.directive";
+import { ChangeDetectionStrategy, Component, ElementRef, output, viewChild, ViewEncapsulation } from "@angular/core";
 
 @Component({
   selector: "sd-form",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdEventsDirective],
+  imports: [],
   template: `
-    <form
-      #formEl
-      novalidate
-      (submit)="handleSubmit($event)"
-      (invalid.capture)="this.invalid.emit()"
-    >
+    <form #formEl novalidate (submit)="handleSubmit($event)">
+      <!-- (invalid.capture)="invalid.emit()": 입력할때마다 에러떠버리네.. -->
       <ng-content />
       <button hidden type="submit"></button>
     </form>

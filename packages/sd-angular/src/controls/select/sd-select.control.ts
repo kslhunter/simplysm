@@ -346,7 +346,7 @@ export class SdSelectControl<M extends "single" | "multi", T> {
       //   .join(this.multiSelectionDisplayDirection() === "vertical" ? "<div class='p-sm-0'></div>" : ", ");
       const innerHTML = selectedItemControls
         .map((ctl) => ctl.contentHTML())
-        .map((item) => `<div style="display: inline-block">${item}</div>`)
+        .map((item) => `<span style="display: inline">${item}</span>`)
         .join(this.multiSelectionDisplayDirection() === "vertical" ? "<div class='p-sm-0'></div>" : ", ");
 
       if (innerHTML === "") {

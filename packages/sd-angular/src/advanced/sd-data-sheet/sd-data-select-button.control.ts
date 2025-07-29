@@ -53,7 +53,7 @@ import { injectParent } from "../../utils/injections/inject-parent";
       }
       <ng-content />
 
-      @if (!parent.disabled() && !parent.isNoValue()) {
+      @if (!parent.disabled() && !parent.isNoValue() && !parent.required()) {
         <sd-anchor (click)="onCancelButtonClick()" theme="danger">
           <fa-icon [icon]="icons.eraser" />
         </sd-anchor>

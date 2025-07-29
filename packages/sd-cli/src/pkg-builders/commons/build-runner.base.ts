@@ -82,10 +82,10 @@ export abstract class BuildRunnerBase<T extends "server" | "library" | "client">
         filePath === path.resolve(this._pkgPath, ".electron") ||
         filePath === path.resolve(this._pkgPath, "dist") ||
         (this._pkgConf.type === "client" && filePath === path.resolve(this._pkgPath, "src", "routes.ts")) ||
-        ("dbContext" in this._pkgConf &&
+        (this._pkgConf.type === "library" &&
           this._pkgConf.dbContext != null &&
           filePath === path.resolve(this._pkgPath, "src", `${this._pkgConf.dbContext}.ts`)) ||
-        ("noGenIndex" in this._pkgConf &&
+        (this._pkgConf.type === "library" &&
           !this._pkgConf.noGenIndex &&
           filePath === path.resolve(this._pkgPath, "src", "index.ts")),
     }).onChange({ delay: 100 }, async (changeInfos) => {
