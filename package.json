@@ -32,6 +32,7 @@
     "commit": "yarn run _sd-cli_ commit",
     "eslint-timing": "cross-env TIMING=1 eslint \"**/+(*.ts|*.js|*.html)\"",
     "eslint-fix": "cross-env TIMING=1 eslint --fix \"**/+(*.ts|*.js|*.html)\"",
+    "pre-upgrade": "node pre-upgrade.js",
     "reinstall": "yarn install --refresh-lockfile",
     "postinstall": "yarn run _sd-cli_ postinstall"
   },
