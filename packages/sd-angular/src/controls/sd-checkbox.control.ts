@@ -48,9 +48,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
         cursor: pointer;
         border-radius: var(--border-radius-default);
 
-        height: calc(
-          var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-sm) * 2 + 2px
-        );
+        height: calc(var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-sm) * 2 + 2px);
         gap: var(--gap-sm);
 
         > ._indicator_rect {
@@ -170,39 +168,29 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
         }
 
         &[sd-size="sm"] {
-          height: calc(
-            var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-xs) * 2 + 2px
-          );
+          height: calc(var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-xs) * 2 + 2px);
           padding: var(--gap-xs) var(--gap-sm);
           gap: var(--gap-xs);
         }
 
         &[sd-size="lg"] {
-          height: calc(
-            var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-default) * 2 + 2px
-          );
+          height: calc(var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-default) * 2 + 2px);
           padding: var(--gap-default) var(--gap-lg);
           gap: var(--gap-default);
         }
 
         &[sd-inset="true"] {
-          height: calc(
-            var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-sm) * 2
-          );
+          height: calc(var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-sm) * 2);
           border: none;
           justify-content: center;
           text-align: center;
 
           &[sd-size="sm"] {
-            height: calc(
-              var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-xs) * 2
-            );
+            height: calc(var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-xs) * 2);
           }
 
           &[sd-size="lg"] {
-            height: calc(
-              var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-default) * 2
-            );
+            height: calc(var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-default) * 2);
           }
         }
 
@@ -216,7 +204,8 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
         }
 
         &[sd-disabled="true"] {
-          opacity: .3;
+          opacity: 0.3;
+          pointer-events: none;
           /*> ._indicator_rect {
             background: var(--theme-grey-lighter);
             border: 1px solid var(--trans-light);
@@ -259,17 +248,7 @@ export class SdCheckboxControl {
   size = input<"sm" | "lg">();
   inline = input(false, { transform: transformBoolean });
   inset = input(false, { transform: transformBoolean });
-  theme = input<
-    | "primary"
-    | "secondary"
-    | "info"
-    | "success"
-    | "warning"
-    | "danger"
-    | "grey"
-    | "blue-grey"
-    | "white"
-  >();
+  theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey" | "white">();
 
   contentStyle = input<string>();
 

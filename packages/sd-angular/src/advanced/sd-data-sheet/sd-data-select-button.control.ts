@@ -73,7 +73,7 @@ import { injectParent } from "../../utils/injections/inject-parent";
         width: 100%;
         min-width: 3em;
 
-        > sd-additional-button {
+        /*> sd-additional-button {
           background: var(--theme-secondary-lightest);
         }
 
@@ -81,7 +81,7 @@ import { injectParent } from "../../utils/injections/inject-parent";
           > sd-additional-button {
             background: transparent;
           }
-        }
+        }*/
       }
     `,
   ],
