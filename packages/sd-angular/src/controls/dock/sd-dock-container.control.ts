@@ -10,7 +10,7 @@ import {
 import { $effect } from "../../utils/bindings/$effect";
 import { SdDockControl } from "./sd-dock.control";
 
-/** @deprecated **/
+/** @deprecated */
 @Component({
   selector: "sd-dock-container",
   changeDetection: ChangeDetectionStrategy.OnPush,

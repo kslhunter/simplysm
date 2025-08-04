@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@a
 import { setupRipple } from "../utils/setups/setup-ripple";
 import { transformBoolean } from "../utils/type-tramsforms";
 
+/** @deprecated */
 @Component({
   selector: "sd-topbar-menu-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -44,7 +45,9 @@ import { transformBoolean } from "../utils/type-tramsforms";
       }
     `,
   ],
-  template: ` <ng-content></ng-content>`,
+  template: `
+    <ng-content></ng-content>
+  `,
   host: {
     "[attr.disabled]": "disabled()",
     "[attr.sd-theme]": "theme()",

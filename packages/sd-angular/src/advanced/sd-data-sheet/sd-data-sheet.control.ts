@@ -53,6 +53,7 @@ import { SdFlexItemControl } from "../../controls/flex/sd-flex-item.control";
 import { SdNoteControl } from "../../controls/sd-note.control";
 import { SdRegionControl } from "../../controls/containers/sd-region";
 
+/** @deprecated */
 @Component({
   selector: "sd-data-sheet",
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -349,28 +350,22 @@ import { SdRegionControl } from "../../controls/containers/sd-region";
 
       @if (parent.realSelectMode()) {
         <ng-template #modalBottom>
-          <div class="p-sm-default bdt bdt-trans-light bg-white">
-            <sd-flex gap="sm" mainAlign="end">
-              @if (modalBottomTemplate()) {
-                <sd-flex-item>
-                  <ng-template [ngTemplateOutlet]="modalBottomTemplate()!" />
-                </sd-flex-item>
-              }
+          <div class="p-sm-default bdt bdt-trans-light bg-white flex flex-gap-sm flex-align-end">
+            @if (modalBottomTemplate()) {
+              <div>
+                <ng-template [ngTemplateOutlet]="modalBottomTemplate()!" />
+              </div>
+            }
 
-              <sd-flex-item>
-                <sd-button theme="danger" inline (click)="onCancelButtonClick()">
-                  {{ parent.realSelectMode() === "multi" ? "모두" : "선택" }}
-                  해제
-                </sd-button>
-              </sd-flex-item>
-              @if (parent.realSelectMode() === "multi") {
-                <sd-flex-item>
-                  <sd-button theme="primary" inline (click)="onConfirmButtonClick()">
-                    확인({{ parent.selectedItemKeys().length }})
-                  </sd-button>
-                </sd-flex-item>
-              }
-            </sd-flex>
+            <sd-button theme="danger" inline (click)="onCancelButtonClick()">
+              {{ parent.realSelectMode() === "multi" ? "모두" : "선택" }}
+              해제
+            </sd-button>
+            @if (parent.realSelectMode() === "multi") {
+              <sd-button theme="primary" inline (click)="onConfirmButtonClick()">
+                확인({{ parent.selectedItemKeys().length }})
+              </sd-button>
+            }
           </div>
         </ng-template>
       }
@@ -654,7 +649,6 @@ export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K extends
       this.items.update((items) => [newItem, ...items]);
     });
     this.busyCount.update((v) => v - 1);
-    this.initialized.set(true);
   }
 
   async doSubmit() {

@@ -35,6 +35,7 @@ import { SdRegionControl } from "../../controls/containers/sd-region";
 import { SdFlexControl } from "../../controls/flex/sd-flex.control";
 import { SdFlexItemControl } from "../../controls/flex/sd-flex-item.control";
 
+/** @deprecated */
 @Component({
   selector: "sd-data-detail",
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -348,7 +349,7 @@ export abstract class AbsSdDataDetail<T extends object | undefined, R = boolean>
       err.message.includes("a parent row: a foreign key constraint") ||
       err.message.includes("conflicted with the REFERENCE")
     ) {
-      return "경고! 연결된 작업에 의한 처리 거부. 후속작업 확인 요망";
+      return "경고! 연결된 작업에 의한 처리 거부. 후속작업 확인요망";
     } else {
       return err.message;
     }

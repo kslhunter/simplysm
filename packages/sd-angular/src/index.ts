@@ -158,6 +158,7 @@ export * from "./utils/signals/use-full-page-code.signal";
 export * from "./utils/signals/use-param-map.signal";
 export * from "./utils/signals/use-query-param-map.signal";
 export * from "./utils/signals/use-sd-system-config.resource";
+export * from "./utils/signals/use-view-title.signal";
 export * from "./utils/signals/use-view-type.signal";
 export * from "./utils/type-tramsforms";
 export * from "./utils/types";

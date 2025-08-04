@@ -27,10 +27,7 @@ import { ISharedDataBase } from "./sd-shared-data.provider";
 import { setupModelHook } from "../../utils/setups/setup-model-hook";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { ISdSelectModal, TSdSelectModalInfo } from "../sd-data-sheet/sd-data-select-button.control";
-import { SdRegionControl } from "../../controls/containers/sd-region";
 import { SdListControl } from "../../controls/sd-list.control";
-import { SdFlexControl } from "../../controls/flex/sd-flex.control";
-import { SdFlexItemControl } from "../../controls/flex/sd-flex-item.control";
 
 @Component({
   selector: "sd-shared-data-select-list",
@@ -46,94 +43,77 @@ import { SdFlexItemControl } from "../../controls/flex/sd-flex-item.control";
     FaIconComponent,
     SdPaginationControl,
     FaIconComponent,
-    SdRegionControl,
     SdListControl,
-    SdFlexControl,
-    SdFlexItemControl,
   ],
   template: `
-    <sd-busy-container [busy]="busyCount() > 0">
-      <sd-flex vertical>
-        <sd-flex-item>
-          <sd-region [header]="header()">
-            <sd-flex vertical gap="sm" padding="default">
-              @if (headerTemplateRef() || modal()) {
-                <sd-flex-item>
-                  <sd-flex>
-                    <sd-flex-item fill>
-                      @if (headerTemplateRef()) {
-                        <ng-template [ngTemplateOutlet]="headerTemplateRef()!"></ng-template>
-                      }
-                    </sd-flex-item>
-                    @if (modal()) {
-                      <sd-flex-item>
-                        <sd-anchor (click)="onModalButtonClick()">
-                          <fa-icon [icon]="icons.externalLink" [fixedWidth]="true" />
-                        </sd-anchor>
-                      </sd-flex-item>
-                    }
-                  </sd-flex>
-                </sd-flex-item>
-              }
+    <sd-busy-container [busy]="busyCount() > 0" class="flex-vertical region">
+      @if (header()) {
+        <div class="control-header p-sm-default">
+          {{ header() }}
+        </div>
+      }
 
-              <sd-flex-item>
-                @if (!filterTemplateRef()) {
-                  <sd-textfield type="text" placeholder="검색어" [(value)]="searchText" />
+      <div class="flex-vertical flex-gap-sm p-default bdb bdb-theme-grey-lightest">
+        @if (headerTemplateRef() || modal()) {
+          <div class="flex">
+            <div class="flex-fill">
+              @if (headerTemplateRef()) {
+                <ng-template [ngTemplateOutlet]="headerTemplateRef()!"></ng-template>
+              }
+            </div>
+            @if (modal()) {
+              <sd-anchor (click)="onModalButtonClick()">
+                <fa-icon [icon]="icons.externalLink" [fixedWidth]="true" />
+              </sd-anchor>
+            }
+          </div>
+        }
+
+        @if (!filterTemplateRef()) {
+          <sd-textfield type="text" placeholder="검색어" [(value)]="searchText" />
+        } @else {
+          <div>
+            <ng-template [ngTemplateOutlet]="filterTemplateRef()!" />
+          </div>
+        }
+      </div>
+
+      <div class="flex-fill">
+        <div class="flex-vertical flex-gap-default">
+          @if (pageItemCount()) {
+            <sd-pagination [(currentPage)]="page" [totalPageCount]="pageLength()" />
+          }
+
+          <sd-list inset class="flex-fill">
+            @if (useUndefined()) {
+              <sd-list-item
+                [selected]="selectedItem() === undefined"
+                (click)="select(undefined)"
+                [selectedIcon]="selectedIcon()"
+              >
+                @if (undefinedTemplateRef()) {
+                  <ng-template [ngTemplateOutlet]="undefinedTemplateRef()!" />
                 } @else {
-                  <ng-template [ngTemplateOutlet]="filterTemplateRef()!" />
+                  <span class="tx-theme-grey-default">미지정</span>
                 }
-              </sd-flex-item>
-            </sd-flex>
-          </sd-region>
-        </sd-flex-item>
-
-        <sd-flex-item fill>
-          <sd-region>
-            <sd-flex vertical gap="default">
-              @if (pageItemCount()) {
-                <sd-flex-item>
-                  <sd-pagination [(currentPage)]="page" [totalPageCount]="pageLength()" />
-                </sd-flex-item>
-              }
-
-              <sd-flex-item fill>
-                <sd-list inset>
-                  @if (useUndefined()) {
-                    <sd-list-item
-                      [selected]="selectedItem() === undefined"
-                      (click)="select(undefined)"
-                      [selectedIcon]="selectedIcon()"
-                    >
-                      @if (undefinedTemplateRef()) {
-                        <ng-template [ngTemplateOutlet]="undefinedTemplateRef()!" />
-                      } @else {
-                        <span class="tx-theme-grey-default">미지정</span>
-                      }
-                    </sd-list-item>
-                  }
-                  @for (item of displayItems(); let index = $index; track item.__valueKey) {
-                    <sd-list-item
-                      [selected]="selectedItem() === item"
-                      (click)="toggle(item)"
-                      [selectedIcon]="selectedIcon()"
-                    >
-                      <ng-template
-                        [ngTemplateOutlet]="itemTemplateRef() ?? null"
-                        [ngTemplateOutletContext]="{
-                          $implicit: item,
-                          item: item,
-                          index: index,
-                          depth: 0,
-                        }"
-                      ></ng-template>
-                    </sd-list-item>
-                  }
-                </sd-list>
-              </sd-flex-item>
-            </sd-flex>
-          </sd-region>
-        </sd-flex-item>
-      </sd-flex>
+              </sd-list-item>
+            }
+            @for (item of displayItems(); let index = $index; track item.__valueKey) {
+              <sd-list-item [selected]="selectedItem() === item" (click)="toggle(item)" [selectedIcon]="selectedIcon()">
+                <ng-template
+                  [ngTemplateOutlet]="itemTemplateRef() ?? null"
+                  [ngTemplateOutletContext]="{
+                    $implicit: item,
+                    item: item,
+                    index: index,
+                    depth: 0,
+                  }"
+                ></ng-template>
+              </sd-list-item>
+            }
+          </sd-list>
+        </div>
+      </div>
     </sd-busy-container>
   `,
 })

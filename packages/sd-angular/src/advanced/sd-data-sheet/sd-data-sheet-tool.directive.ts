@@ -1,6 +1,7 @@
 import { contentChild, Directive, input, TemplateRef } from "@angular/core";
 import { transformBoolean } from "../../utils/type-tramsforms";
 
+/** @deprecated */
 @Directive({
   selector: "sd-data-sheet-tool",
   standalone: true,

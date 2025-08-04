@@ -259,14 +259,15 @@ import { SdFlexItemControl } from "../flex/sd-flex-item.control";
                         [attr.title]="_selectable"
                       />-->
 
-                      <sd-anchor
-                        [theme]="selectedItems().includes(item) ? 'primary' : 'grey'"
-                        (pointerdown)="selectionManager.toggle(item)"
-                        [disabled]="_selectable !== true || !selectionManager.getCanChangeFn(item)"
-                        [attr.title]="_selectable"
-                      >
-                        <fa-icon [icon]="icons.arrowRight" [fixedWidth]="true" />
-                      </sd-anchor>
+                      @if (_selectable === true && selectionManager.getCanChangeFn(item)) {
+                        <sd-anchor
+                          [theme]="selectedItems().includes(item) ? 'primary' : 'grey'"
+                          (pointerdown)="selectionManager.toggle(item)"
+                          [attr.title]="_selectable"
+                        >
+                          <fa-icon [icon]="icons.arrowRight" [fixedWidth]="true" />
+                        </sd-anchor>
+                      }
                     }
                   </td>
                   @if (expandingManager.hasExpandable()) {

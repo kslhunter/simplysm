@@ -27,6 +27,7 @@ import { NgTemplateOutlet } from "@angular/common";
 import { $signal } from "../../utils/bindings/$signal";
 import { injectParent } from "../../utils/injections/inject-parent";
 
+/** @deprecated */
 @Component({
   selector: "sd-data-select-button",
   changeDetection: ChangeDetectionStrategy.OnPush,

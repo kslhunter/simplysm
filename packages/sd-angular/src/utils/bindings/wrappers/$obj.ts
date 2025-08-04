@@ -10,7 +10,7 @@ export function $obj<T extends object | undefined>(sig: Signal<T> | WritableSign
     },
     changed() {
       const orgData = sig[ORIGIN_SNAPSHOT];
-      return !ObjectUtils.equal(orgData, sig());
+      return orgData != null && !ObjectUtils.equal(orgData, sig());
     },
     get origin(): T | undefined {
       return sig[ORIGIN_SNAPSHOT];

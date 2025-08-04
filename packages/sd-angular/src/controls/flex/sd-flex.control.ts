@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
 import { transformBoolean } from "../../utils/type-tramsforms";
 
+/** @deprecated */
 @Component({
   selector: "sd-flex",
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -32,8 +33,12 @@ export class SdFlexControl {
   vertical = input(false, { transform: transformBoolean });
   inline = input(false, { transform: transformBoolean });
   gap = input<"xxs" | "xs" | "sm" | "default" | "lg" | "xl" | "xxl">();
+
+  /** @deprecated */
   padding = input<"xxs" | "xs" | "sm" | "default" | "lg" | "xl" | "xxl">();
 
+  align = input<"start" | "end" | "center">();
+  /** @deprecated */
   mainAlign = input<"start" | "end" | "center">();
   crossAlign = input<"start" | "end" | "center">();
 }

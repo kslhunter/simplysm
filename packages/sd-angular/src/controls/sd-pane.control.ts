@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/core";
 
+/** @deprecated 스타일클래스 "fill"로 변경됨 */
 @Component({
   selector: "sd-pane",
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -17,7 +18,7 @@ import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/
     `,
   ],
   template: `
-    <ng-content></ng-content> `,
+    <ng-content></ng-content>
+  `,
 })
-export class SdPaneControl {
-}
+export class SdPaneControl {}

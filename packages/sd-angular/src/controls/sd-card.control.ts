@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/core";
 
+/** @deprecated */
 @Component({
   selector: "sd-card",
   changeDetection: ChangeDetectionStrategy.OnPush,

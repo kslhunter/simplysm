@@ -1,9 +1,9 @@
 import { inject, reflectComponentType } from "@angular/core";
-import { ActivatedRoute, CanDeactivateFn, Route } from "@angular/router";
+import { ActivatedRoute, CanDeactivateFn } from "@angular/router";
 import { SdActivatedModalProvider } from "../../providers/sd-modal.provider";
 import { injectElementRef } from "../injections/inject-element-ref";
 
-const initializedRouteConfigSet = new Set<Route>();
+// const initializedRouteConfigSet = new Set<Route>();
 
 export function setupCanDeactivate(fn: () => boolean): void {
   const activatedRoute = inject(ActivatedRoute, { optional: true });
@@ -12,23 +12,19 @@ export function setupCanDeactivate(fn: () => boolean): void {
 
   if (activatedModal) {
     activatedModal.canDeactivefn = fn;
-  }
-  else if (activatedRoute) {
+  } else if (activatedRoute) {
     if (!activatedRoute.routeConfig) return;
-    if (
-      reflectComponentType(activatedRoute.component as any)?.selector !==
-      elRef.nativeElement.tagName.toLowerCase()
-    ) {
+    if (reflectComponentType(activatedRoute.component as any)?.selector !== elRef.nativeElement.tagName.toLowerCase()) {
       return;
     }
 
-    if (!initializedRouteConfigSet.has(activatedRoute.routeConfig)) {
-      initializedRouteConfigSet.add(activatedRoute.routeConfig);
+    /*if (!initializedRouteConfigSet.has(activatedRoute.routeConfig)) {
+      initializedRouteConfigSet.add(activatedRoute.routeConfig);*/
 
-      const canDeactivateFn: CanDeactivateFn<{ __sdCanDeactivate__(): boolean }> = (component) => {
-        return fn();
-      };
-      activatedRoute.routeConfig.canDeactivate = [canDeactivateFn];
-    }
+    const canDeactivateFn: CanDeactivateFn<{ __sdCanDeactivate__(): boolean }> = (component) => {
+      return fn();
+    };
+    activatedRoute.routeConfig.canDeactivate = [canDeactivateFn];
+    // }
   }
 }

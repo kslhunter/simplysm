@@ -1,16 +1,19 @@
 import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/core";
 
+/** @deprecated ".form-table" 사용 */
 @Component({
   selector: "sd-form-table",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
-  template: ` <table>
-    <tbody>
-      <ng-content></ng-content>
-    </tbody>
-  </table>`,
+  template: `
+    <table>
+      <tbody>
+        <ng-content></ng-content>
+      </tbody>
+    </table>
+  `,
   styles: [
     /* language=SCSS */ `
       sd-form-table {
@@ -46,5 +49,4 @@ import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/
     `,
   ],
 })
-export class SdFormTableControl {
-}
+export class SdFormTableControl {}

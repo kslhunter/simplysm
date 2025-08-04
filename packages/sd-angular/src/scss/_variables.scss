@@ -288,7 +288,7 @@ $vars: (
       //default: var(--color-indigo-500),
       //dark: var(--color-indigo-600),
       //darker: var(--color-indigo-700),
-      //darkest: var(--color-indigo-800),
+       //darkest: var(--color-indigo-800),
     ),
     secondary: (
       lightest: var(--color-blue-50),
@@ -322,7 +322,7 @@ $vars: (
       //default: var(--color-green-500),
       //dark: var(--color-green-600),
       //darker: var(--color-green-700),
-      //darkest: var(--color-green-800),
+       //darkest: var(--color-green-800),
     ),
     warning: (
       lightest: var(--color-orange-50),
@@ -341,29 +341,29 @@ $vars: (
       dark: var(--color-red-700),
       darker: var(--color-red-800),
       darkest: var(--color-red-900),
-    )
+    ),
   ),
   trans: (
-    darkest: rgba(0, 0, 0, .5),
-    darker: rgba(0, 0, 0, .4),
-    dark: rgba(0, 0, 0, .3),
-    default: rgba(0, 0, 0, .2),
-    light: rgba(0, 0, 0, .1),
-    lighter: rgba(0, 0, 0, .03),
-    rev-default: rgba(255, 255, 255, .1),
-    rev-light: rgba(255, 255, 255, .2),
-    rev-lighter: rgba(255, 255, 255, .3),
-    rev-lightest: rgba(255, 255, 255, .4),
+    darkest: rgba(0, 0, 0, 0.5),
+    darker: rgba(0, 0, 0, 0.4),
+    dark: rgba(0, 0, 0, 0.3),
+    default: rgba(0, 0, 0, 0.2),
+    light: rgba(0, 0, 0, 0.1),
+    lighter: rgba(0, 0, 0, 0.05),
+    rev-default: rgba(255, 255, 255, 0.1),
+    rev-light: rgba(255, 255, 255, 0.2),
+    rev-lighter: rgba(255, 255, 255, 0.3),
+    rev-lightest: rgba(255, 255, 255, 0.4),
   ),
   text-trans: (
     dark: black,
-    default: rgba(0, 0, 0, .87),
-    light: rgba(0, 0, 0, .60),
-    lighter: rgba(0, 0, 0, .38),
-    lightest: rgba(0, 0, 0, .2),
+    default: rgba(0, 0, 0, 0.87),
+    light: rgba(0, 0, 0, 0.6),
+    lighter: rgba(0, 0, 0, 0.38),
+    lightest: rgba(0, 0, 0, 0.2),
     rev-default: white,
-    rev-dark: rgba(255, 255, 255, .7),
-    rev-darker: rgba(255, 255, 255, .5),
+    rev-dark: rgba(255, 255, 255, 0.7),
+    rev-darker: rgba(255, 255, 255, 0.5),
   ),
   font-size: (
     lg: 14px,
@@ -374,7 +374,7 @@ $vars: (
     h3: 16px,
     h4: 14px,
     h5: 12px,
-    h6: 11px
+    h6: 11px,
   ),
   gap: (
     xxs: 1px,
@@ -385,13 +385,13 @@ $vars: (
     xl: 12px,
     xxl: 18px,
     0: 0,
-    auto: "auto"
+    auto: "auto",
   ),
   border-color: (
     light: var(--theme-grey-lighter),
     default: var(--theme-grey-light),
     dark: var(--theme-grey-default),
-    darker: var(--theme-grey-dark)
+    darker: var(--theme-grey-dark),
   ),
   border-radius: (
     xs: var(--gap-xxs),
@@ -399,12 +399,11 @@ $vars: (
     default: var(--gap-sm),
     lg: var(--gap-default),
     xl: var(--gap-lg),
-    xxl: var(--gap-xl)
-    //xs: var(--gap-xs),
+    xxl: var(--gap-xl) //xs: var(--gap-xs),
     //sm: var(--gap-sm),
     //default: var(--gap-default),
     //lg: var(--gap-lg),
-    //xl: var(--gap-xl),
+    , //xl: var(--gap-xl),
     //xxl: var(--gap-xxl)
   ),
   z-index: (
@@ -412,7 +411,7 @@ $vars: (
     busy: 9998,
     dropdown: 5000,
     modal: 4000,
-    sidebar: 3000
+    sidebar: 3000,
   ),
   line-height: 1.5em,
   line-height-strip-unit: 1.5,
@@ -422,17 +421,17 @@ $vars: (
   background-color: var(--theme-grey-lightest),
   background-rev-color: black,
   control-color: white,
-  animation-duration: .2s,
+  animation-duration: 0.2s,
   elevation-size: 1px,
   sidebar: (
-    width: 15em
+    width: 15em,
   ),
   topbar: (
-    height: 3em
+    height: 3em,
   ),
   sheet: (
     pv: var(--gap-xs),
     ph: var(--gap-sm),
-    bg: var(--color-grey-100)
-  )
+    bg: var(--color-grey-100),
+  ),
 );

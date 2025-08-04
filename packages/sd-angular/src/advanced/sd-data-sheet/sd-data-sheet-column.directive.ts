@@ -1,9 +1,8 @@
 import { Directive, input } from "@angular/core";
-import {
-  SdSheetColumnDirective,
-} from "../../controls/sheet/directives/sd-sheet-column.directive";
+import { SdSheetColumnDirective } from "../../controls/sheet/directives/sd-sheet-column.directive";
 import { transformBoolean } from "../../utils/type-tramsforms";
 
+/** @deprecated */
 @Directive({
   selector: "sd-data-sheet-column",
   standalone: true,

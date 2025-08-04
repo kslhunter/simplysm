@@ -23,9 +23,8 @@ import { TSdViewType, useViewTypeSignal } from "../utils/signals/use-view-type.s
 import { transformBoolean } from "../utils/type-tramsforms";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { injectParent } from "../utils/injections/inject-parent";
-import { SdFlexControl } from "../controls/flex/sd-flex.control";
-import { SdFlexItemControl } from "../controls/flex/sd-flex-item.control";
 
+/** @deprecated */
 @Component({
   selector: "sd-base-container",
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -38,20 +37,18 @@ import { SdFlexItemControl } from "../controls/flex/sd-flex-item.control";
     SdTopbarControl,
     SdBusyContainerControl,
     NgTemplateOutlet,
-    SdFlexControl,
-    SdFlexItemControl,
   ],
   template: `
     <sd-busy-container [busy]="busy()" [message]="busyMessage()">
-      @if (initialized()) {
+      @if (initialized() == null || initialized()) {
         @if (restricted()) {
-          <sd-pane class="tx-theme-grey-light p-xxl tx-center">
+          <div class="fill tx-theme-grey-light p-xxl tx-center">
             <br />
             <fa-icon [icon]="icons.triangleExclamation" [fixedWidth]="true" size="5x" />
             <br />
             <br />
             '{{ modalOrPageTitle() }}'에 대한 사용권한이 없습니다. 시스템 관리자에게 문의하세요.
-          </sd-pane>
+          </div>
         } @else if (currViewType() === "page") {
           <sd-topbar-container>
             <sd-topbar>
@@ -60,21 +57,21 @@ import { SdFlexItemControl } from "../controls/flex/sd-flex-item.control";
               <ng-template [ngTemplateOutlet]="pageTopbarTemplateRef() ?? null" />
             </sd-topbar>
 
-            <sd-pane>
+            <div class="fill">
               <ng-template [ngTemplateOutlet]="contentTemplateRef()" />
-            </sd-pane>
+            </div>
           </sd-topbar-container>
         } @else if (currViewType() === "modal") {
-          <sd-flex vertical>
-            <sd-flex-item fill>
+          <div class="flex-vertical">
+            <div class="flex-fill">
               <ng-template [ngTemplateOutlet]="contentTemplateRef()" />
-            </sd-flex-item>
+            </div>
             @if (modalBottomTemplateRef()) {
-              <sd-flex-item>
+              <div>
                 <ng-template [ngTemplateOutlet]="modalBottomTemplateRef() ?? null" />
-              </sd-flex-item>
+              </div>
             }
-          </sd-flex>
+          </div>
         } @else {
           <!--<sd-dock-container>
             @if (controlToolTemplateRef()) {
@@ -121,7 +118,7 @@ export class SdBaseContainerControl {
       this.#sdAppStructure.getTitleByFullCode(this.#currPageCode?.() ?? this.#fullPageCode()),
   );
 
-  initialized = input.required({ transform: transformBoolean });
+  initialized = input(undefined, { transform: transformBoolean });
   restricted = input(false, { transform: transformBoolean });
   busy = input(false, { transform: transformBoolean });
   busyMessage = input<string>();

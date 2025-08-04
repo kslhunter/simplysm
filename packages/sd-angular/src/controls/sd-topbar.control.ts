@@ -10,7 +10,6 @@ import {
 import { SdTopbarContainerControl } from "./sd-topbar-container.control";
 import { SdSidebarContainerControl } from "./sidebar/sd-sidebar-container.control";
 import { type ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
-import { SdAnchorControl } from "./sd-anchor.control";
 import { SdGapControl } from "./sd-gap.control";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 
@@ -18,18 +17,19 @@ import { injectElementRef } from "../utils/injections/inject-element-ref";
 
 import { $computed } from "../utils/bindings/$computed";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
+import { SdButtonControl } from "./sd-button.control";
 
 @Component({
   selector: "sd-topbar",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdAnchorControl, SdGapControl, FaIconComponent],
+  imports: [SdGapControl, FaIconComponent, SdButtonControl],
   template: `
     @if (hasSidebar()) {
-      <sd-anchor class="_sidebar-toggle-button" (click)="onSidebarToggleButtonClick()" sdUseRipple>
+      <sd-button theme="link-primary" (click)="onSidebarToggleButtonClick()">
         <fa-icon [icon]="icons.bars" [fixedWidth]="true" />
-      </sd-anchor>
+      </sd-button>
     } @else {
       <sd-gap width="sm" />
     }
@@ -87,7 +87,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
           background-color: rgba(0, 0, 0, 0.2);
         }
 
-        > ._sidebar-toggle-button {
+        /*> ._sidebar-toggle-button {
           text-align: center;
           cursor: pointer;
           line-height: var(--topbar-height);
@@ -98,10 +98,10 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
           color: var(--theme-primary-default);
 
           &:hover {
-            background: transparent;
+            background: var(--trans-lighter);
             color: var(--theme-primary-darker);
           }
-        }
+        }*/
 
         body.sd-theme-mobile & {
           background: var(--background-color);

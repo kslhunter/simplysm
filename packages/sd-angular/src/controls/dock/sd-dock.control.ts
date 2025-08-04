@@ -6,7 +6,7 @@ import { injectElementRef } from "../../utils/injections/inject-element-ref";
 import { useSdSystemConfigResource } from "../../utils/signals/use-sd-system-config.resource";
 import { transformBoolean } from "../../utils/type-tramsforms";
 
-/** @deprecated **/
+/** @deprecated */
 @Component({
   selector: "sd-dock",
   changeDetection: ChangeDetectionStrategy.OnPush,

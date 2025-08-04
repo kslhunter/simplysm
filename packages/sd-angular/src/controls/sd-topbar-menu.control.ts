@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/core";
 
+/** @deprecated */
 @Component({
   selector: "sd-topbar-menu",
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -29,7 +30,7 @@ import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/
     `,
   ],
   template: `
-    <ng-content></ng-content>`,
+    <ng-content></ng-content>
+  `,
 })
-export class SdTopbarMenuControl {
-}
+export class SdTopbarMenuControl {}

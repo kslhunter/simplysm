@@ -3,6 +3,7 @@ import { transformBoolean } from "../../utils/type-tramsforms";
 import { SdFlexControl } from "./sd-flex.control";
 import { $computed } from "../../utils/bindings/$computed";
 
+/** @deprecated */
 @Component({
   selector: "sd-flex-item",
   changeDetection: ChangeDetectionStrategy.OnPush,

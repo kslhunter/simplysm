@@ -367,7 +367,6 @@ hidden {
   }
 }
 
-
 //-- ETC
 
 .sh-topbar {
@@ -406,6 +405,12 @@ hidden {
   }*/
 }
 
+.control-header {
+  line-height: var(--line-height);
+  font-size: var(--font-size-sm);
+  color: var(--theme-grey-default);
+}
+
 /*
 .active-effect {
   @include active-effect(true);
@@ -421,4 +426,102 @@ hidden {
   position: sticky !important;
   top: 0;
   z-index: 1;
+}
+
+//-- flex
+.flex {
+  display: flex;
+  flex-direction: row;
+}
+
+.flex-vertical {
+  display: flex;
+  flex-direction: column;
+}
+
+.flex-inline {
+  display: inline-flex;
+  flex-direction: row;
+}
+
+.flex-vertical-inline {
+  display: inline-flex;
+  flex-direction: column;
+}
+
+@each $key, $val in map.get(variables.$vars, gap) {
+  .flex-gap-#{$key} {
+    gap: var(--gap-#{$key});
+  }
+}
+
+@each $val in [start, end, center] {
+  .flex-align-#{$val} {
+    justify-content: $val;
+  }
+
+  .flex-cross-align-#{$val} {
+    align-items: $val;
+  }
+}
+
+.flex-auto {
+  flex: 1 0 auto;
+}
+
+.flex-fill {
+  flex: 1 1 auto;
+  overflow: auto;
+}
+
+.flex-min {
+  flex: 0 0 0;
+}
+
+//-- region
+.region {
+  background: var(--control-color);
+  border: var(--gap-xs) solid var(--background-color);
+  border-radius: var(--border-radius-lg);
+}
+
+//-- card
+.card {
+  background: var(--control-color);
+  border-radius: var(--border-radius-default);
+  @include mixins.elevation(2);
+}
+
+//-- form-table
+.form-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 0;
+
+  > tbody > tr > * {
+    padding: 0 var(--gap-default) var(--gap-sm) 0;
+    vertical-align: middle;
+
+    &:last-child {
+      padding-right: 0;
+    }
+  }
+
+  > * > tr:last-child > * {
+    padding-bottom: 0;
+  }
+
+  > tbody > tr > th {
+    padding-left: var(--gap-sm);
+    text-align: right;
+    width: 0;
+    white-space: nowrap;
+  }
+}
+
+//--
+.fill {
+  height: 100%;
+  width: 100%;
+  overflow: auto;
 }

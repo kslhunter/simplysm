@@ -19,8 +19,6 @@ import { injectElementRef } from "../utils/injections/inject-element-ref";
 import { transformBoolean } from "../utils/type-tramsforms";
 import { SdAnchorControl } from "./sd-anchor.control";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
-import { SdFlexControl } from "./flex/sd-flex.control";
-import { SdFlexItemControl } from "./flex/sd-flex-item.control";
 import { NumberUtils } from "@simplysm/sd-core-common";
 
 @Component({
@@ -28,7 +26,7 @@ import { NumberUtils } from "@simplysm/sd-core-common";
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdAnchorControl, SdEventsDirective, FaIconComponent, SdFlexControl, SdFlexItemControl],
+  imports: [SdAnchorControl, SdEventsDirective, FaIconComponent],
   template: `
     <div class="_backdrop" (click)="onBackdropClick()"></div>
 
@@ -44,22 +42,22 @@ import { NumberUtils } from "@simplysm/sd-core-common";
       (focus)="onDialogFocus()"
       (sdResize)="onDialogResize($event)"
     >
-      <sd-flex vertical>
+      <div class="flex-vertical">
         @if (!hideHeader()) {
-          <sd-flex-item class="_header" (mousedown)="onHeaderMouseDown($event)" [style]="headerStyle()">
-            <h5 class="_title">{{ title() }}</h5>
+          <div class="_header flex" (mousedown)="onHeaderMouseDown($event)" [style]="headerStyle()">
+            <h5 class="_title flex-fill">{{ title() }}</h5>
             @if (!hideCloseButton()) {
               <sd-anchor class="_close-button" theme="grey" (click)="onCloseButtonClick()">
                 <fa-icon [icon]="icons.xmark" [fixedWidth]="true" />
               </sd-anchor>
             }
-          </sd-flex-item>
+          </div>
         }
 
-        <sd-flex-item fill class="_content">
+        <div class="_content flex-fill">
           <ng-content></ng-content>
-        </sd-flex-item>
-      </sd-flex>
+        </div>
+      </div>
 
       @if (resizable()) {
         <div class="_left-resize-bar" (mousedown)="onResizeBarMousedown($event, 'left')"></div>
@@ -103,9 +101,6 @@ import { NumberUtils } from "@simplysm/sd-core-common";
           width: fit-content;
           min-width: 200px;
           background: var(--background-color);
-          //background: var(--control-color);
-          //border: 1px solid var(--theme-primary-darker);
-          // border-radius:2 px;
           overflow: hidden;
           @include mixins.elevation(16);
 
@@ -115,38 +110,18 @@ import { NumberUtils } from "@simplysm/sd-core-common";
             outline: none;
           }
 
-          > sd-flex {
+          > .flex-vertical {
             > ._header {
-              display: flex;
-              flex-direction: row;
               user-select: none;
               border-bottom: 1px solid var(--trans-light);
               background: var(--control-color);
 
               > ._title {
-                // display: inline-block;
-                flex-grow: 1;
-
-                // padding:var(--gap-sm) var(--gap-default);
-                //padding: var(--gap-default) var(--gap-lg);
                 padding: var(--gap-sm) var(--gap-default);
               }
 
               > ._close-button {
-                //display: inline-block;
-                //float: right;
-                //cursor: pointer;
-                //text-align: center;
                 padding: var(--gap-sm) var(--gap-default);
-                //margin: calc(var(--gap-default) - var(--gap-sm));
-
-                //&:hover {
-                //  background: var(--theme-grey-lightest);
-                //}
-                //
-                //&:active {
-                //  background: var(--theme-grey-lighter);
-                //}
               }
             }
           }
@@ -237,7 +212,7 @@ import { NumberUtils } from "@simplysm/sd-core-common";
           transition: transform var(--animation-duration) ease-in-out;
         }
 
-        &[sd-open="true"][sd-init="true"] {
+        &[data-sd-open="true"][sd-init="true"] {
           opacity: 1;
           pointer-events: auto;
 
@@ -246,7 +221,7 @@ import { NumberUtils } from "@simplysm/sd-core-common";
           }
         }
 
-        &[sd-float="true"] {
+        &[data-sd-float="true"] {
           pointer-events: none;
 
           > ._backdrop {
@@ -264,7 +239,7 @@ import { NumberUtils } from "@simplysm/sd-core-common";
             }
           }
 
-          &[sd-open="true"][sd-init="true"] {
+          &[data-sd-open="true"][sd-init="true"] {
             pointer-events: none;
 
             > ._dialog {
@@ -274,7 +249,7 @@ import { NumberUtils } from "@simplysm/sd-core-common";
           }
         }
 
-        &[sd-position="bottom-right"] {
+        &[data-sd-position="bottom-right"] {
           > ._dialog {
             position: absolute;
             right: calc(var(--gap-xxl) * 2);
@@ -282,7 +257,7 @@ import { NumberUtils } from "@simplysm/sd-core-common";
           }
         }
 
-        &[sd-position="top-right"] {
+        &[data-sd-position="top-right"] {
           > ._dialog {
             position: absolute;
             right: var(--gap-xxl);
@@ -290,7 +265,7 @@ import { NumberUtils } from "@simplysm/sd-core-common";
           }
         }
 
-        &[sd-fill="true"] {
+        &[data-sd-fill="true"] {
           padding-top: 0;
 
           > ._dialog {
@@ -300,18 +275,9 @@ import { NumberUtils } from "@simplysm/sd-core-common";
             border: none;
             border-radius: 0;
 
-            > sd-flex > ._header {
+            > .flex-vertical > ._header {
               background: transparent;
               color: var(--text-trans-lighter);
-
-              /*._close-button {
-              color: var(--text-trans-lighter);
-
-              &:hover {
-                background: transparent;
-                color: var(--text-trans-lighter);
-              }
-            }*/
             }
           }
         }
@@ -319,10 +285,10 @@ import { NumberUtils } from "@simplysm/sd-core-common";
     `,
   ],
   host: {
-    "[attr.sd-open]": "open()",
-    "[attr.sd-float]": "float()",
-    "[attr.sd-position]": "position()",
-    "[attr.sd-fill]": "fill()",
+    "[attr.data-sd-open]": "open()",
+    "[attr.data-sd-float]": "float()",
+    "[attr.data-sd-position]": "position()",
+    "[attr.data-sd-fill]": "fill()",
   },
 })
 export class SdModalControl {
@@ -353,7 +319,7 @@ export class SdModalControl {
   headerStyle = input<string>();
 
   dialogElRef = viewChild.required<any, ElementRef<HTMLElement>>("dialogEl", { read: ElementRef });
-  dialogContentElRef = viewChild.required<any, ElementRef<HTMLElement>>("dialogContentEl", { read: ElementRef });
+  // dialogContentElRef = viewChild.required<any, ElementRef<HTMLElement>>("dialogContentEl", { read: ElementRef });
 
   #config = $signal<ISdModalConfig>();
 

@@ -3,21 +3,17 @@ import { ObjectUtils } from "@simplysm/sd-core-common";
 import { $effect } from "../bindings/$effect";
 
 export function setupCumulateSelectedKeys<T, K>(options: {
-  items: Signal<T[]>,
-  selectMode: Signal<"single" | "multi" | "none" | undefined>,
-  selectedItems: WritableSignal<T[]>,
-  selectedItemKeys: WritableSignal<K[]>,
-  keySelectorFn: (item: T, index: number) => K,
+  items: Signal<T[]>;
+  selectMode: Signal<"single" | "multi" | "none" | undefined>;
+  selectedItems: WritableSignal<T[]>;
+  selectedItemKeys: WritableSignal<K[]>;
+  keySelectorFn: (item: T, index: number) => K;
 }): void {
   $effect([options.items, options.selectedItemKeys], () => {
     const newSelectedItems = options.items().filter((item, i) => {
       return options.selectedItemKeys().includes(options.keySelectorFn(item, i));
     });
-    if (!ObjectUtils.equal(
-      options.selectedItems(),
-      newSelectedItems,
-      { onlyOneDepth: true, ignoreArrayIndex: true },
-    )) {
+    if (!ObjectUtils.equal(options.selectedItems(), newSelectedItems, { onlyOneDepth: true, ignoreArrayIndex: true })) {
       options.selectedItems.set(newSelectedItems);
     }
   });
@@ -31,10 +27,8 @@ export function setupCumulateSelectedKeys<T, K>(options: {
 
       if (options.selectedItems().includes(item)) {
         newSelectedItemKeys = [...newSelectedItemKeys, options.keySelectorFn(item, i)].distinct();
-      }
-      else {
-        newSelectedItemKeys = newSelectedItemKeys
-          .filter(v1 => v1 !== options.keySelectorFn(item, i));
+      } else {
+        newSelectedItemKeys = newSelectedItemKeys.filter((v1) => v1 !== options.keySelectorFn(item, i));
       }
     }
 
@@ -42,11 +36,12 @@ export function setupCumulateSelectedKeys<T, K>(options: {
       newSelectedItemKeys = [newSelectedItemKeys.last()!];
     }
 
-    if (!ObjectUtils.equal(
-      newSelectedItemKeys,
-      options.selectedItemKeys(),
-      { onlyOneDepth: true, ignoreArrayIndex: true },
-    )) {
+    if (
+      !ObjectUtils.equal(newSelectedItemKeys, options.selectedItemKeys(), {
+        onlyOneDepth: true,
+        ignoreArrayIndex: true,
+      })
+    ) {
       options.selectedItemKeys.set(newSelectedItemKeys);
     }
   });

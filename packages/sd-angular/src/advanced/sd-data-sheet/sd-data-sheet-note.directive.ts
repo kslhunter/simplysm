@@ -1,5 +1,6 @@
 import { contentChild, Directive, input, TemplateRef } from "@angular/core";
 
+/** @deprecated */
 @Directive({
   selector: "sd-data-sheet-note",
   standalone: true,

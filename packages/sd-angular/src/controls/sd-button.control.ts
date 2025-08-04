@@ -112,9 +112,11 @@ import { transformBoolean } from "../utils/type-tramsforms";
         @each $key, $val in map.get(variables.$vars, theme) {
           &[sd-theme="link-#{$key}"] > button {
             border-color: transparent;
+            background: transparent;
             color: var(--theme-#{$key}-default);
 
             &:hover {
+              background: var(--trans-lighter);
               color: var(--theme-#{$key}-darker);
             }
 
