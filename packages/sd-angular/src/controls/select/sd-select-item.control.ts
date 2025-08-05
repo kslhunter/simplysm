@@ -45,19 +45,19 @@ import { $signal } from "../../utils/bindings/$signal";
           background: rgba(0, 0, 0, 0.07);
         }
 
-        &[sd-selected="true"] {
+        &[data-sd-selected="true"] {
           color: var(--theme-primary-default);
           font-weight: bold;
           //background: var(--theme-primary-lightest);
           background: rgba(0, 0, 0, 0.07);
         }
 
-        &[sd-disabled="true"] {
+        &[data-sd-disabled="true"] {
           background: var(--theme-grey-default);
           opacity: 0.3;
         }
 
-        &[sd-hidden="true"] {
+        &[data-sd-hidden="true"] {
           display: none;
         }
       }
@@ -75,10 +75,10 @@ import { $signal } from "../../utils/bindings/$signal";
   `,
   host: {
     "[attr.tabindex]": "'0'",
-    "[attr.sd-disabled]": "disabled()",
-    "[attr.sd-select-mode]": "selectMode()",
-    "[attr.sd-selected]": "isSelected()",
-    "[attr.sd-hidden]": "hidden()",
+    "[attr.data-sd-disabled]": "disabled()",
+    "[attr.data-sd-select-mode]": "selectMode()",
+    "[attr.data-sd-selected]": "isSelected()",
+    "[attr.data-sd-hidden]": "hidden()",
   },
 })
 export class SdSelectItemControl {

@@ -7,7 +7,6 @@ import {
   output,
   ViewEncapsulation,
 } from "@angular/core";
-import { SdAnchorControl } from "../controls/sd-anchor.control";
 import { SdBusyContainerControl } from "../controls/sd-busy-container.control";
 import { SdButtonControl } from "../controls/sd-button.control";
 import { SdCheckboxControl } from "../controls/sd-checkbox.control";
@@ -21,9 +20,6 @@ import { ISdModal } from "../providers/sd-modal.provider";
 import { $effect } from "../utils/bindings/$effect";
 import { $signal } from "../utils/bindings/$signal";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
-import { SdRegionControl } from "../controls/containers/sd-region";
-import { SdFlexControl } from "../controls/flex/sd-flex.control";
-import { SdFlexItemControl } from "../controls/flex/sd-flex-item.control";
 
 @Component({
   selector: "sd-sheet-config-modal",
@@ -34,103 +30,89 @@ import { SdFlexItemControl } from "../controls/flex/sd-flex-item.control";
     forwardRef(() => SdSheetControl),
     SdSheetColumnDirective,
     SdCheckboxControl,
-    SdAnchorControl,
     SdTextfieldControl,
     SdSheetColumnCellTemplateDirective,
     SdButtonControl,
     FaIconComponent,
     SdBusyContainerControl,
-    SdRegionControl,
-    SdFlexControl,
-    SdFlexItemControl,
   ],
   template: `
-    <sd-busy-container [busy]="!initialized()">
+    <sd-busy-container [busy]="!initialized()" class="flex-vertical">
       @if (initialized()) {
-        <sd-flex vertical>
-          <sd-flex-item fill class="p-xs">
-            <sd-region contentClass="p-xs">
-              <sd-sheet [key]="sheetKey() + '-config'" [items]="items()" [trackByFn]="trackByFn">
-                <sd-sheet-column key="fixed" header="Fix" disableSorting disableResizing>
-                  <ng-template [cell]="items()" let-item="item">
-                    <div style="text-align: center">
-                      <sd-checkbox size="sm" [inset]="true" [(value)]="item.fixed" (valueChange)="items.$mark()" />
-                    </div>
-                  </ng-template>
-                </sd-sheet-column>
-                <sd-sheet-column key="ordering" header="Order" disableSorting disableResizing>
-                  <ng-template [cell]="items()" let-item="item" let-index="index">
-                    <div class="p-xs-sm" style="text-align: center">
-                      <sd-anchor
-                        [disabled]="index === 0 || (!item.fixed && items()[index - 1].fixed)"
-                        (click)="onDisplayOrderUpButtonClick(item)"
-                      >
-                        <fa-icon [icon]="icons.angleUp" [fixedWidth]="true" />
-                      </sd-anchor>
-                      <sd-anchor
-                        [disabled]="index === items().length - 1 || (item.fixed && !items()[index + 1].fixed)"
-                        (click)="onDisplayOrderDownButtonClick(item)"
-                      >
-                        <fa-icon [icon]="icons.angleDown" [fixedWidth]="true" />
-                      </sd-anchor>
-                    </div>
-                  </ng-template>
-                </sd-sheet-column>
-                <sd-sheet-column key="header" header="Header" disableSorting>
-                  <ng-template [cell]="items()" let-item="item">
-                    <div class="p-xs-sm">
-                      {{ item.header }}
-                    </div>
-                  </ng-template>
-                </sd-sheet-column>
-                <sd-sheet-column key="width" header="Width" disableSorting width="60px">
-                  <ng-template [cell]="items()" let-item="item">
-                    @if (!item.disableResizing) {
-                      <sd-textfield
-                        type="text"
-                        size="sm"
-                        [inset]="true"
-                        [(value)]="item.width"
-                        (valueChange)="items.$mark()"
-                      />
-                    }
-                  </ng-template>
-                </sd-sheet-column>
-                <sd-sheet-column key="hidden" header="Hidden" disableSorting disableResizing>
-                  .
-                  <ng-template [cell]="items()" let-item="item">
-                    <div style="text-align: center">
-                      <sd-checkbox
-                        size="sm"
-                        [inset]="true"
-                        [(value)]="item.hidden"
-                        (valueChange)="items.$mark()"
-                        [icon]="icons.xmark"
-                        theme="danger"
-                      ></sd-checkbox>
-                    </div>
-                  </ng-template>
-                </sd-sheet-column>
-              </sd-sheet>
-            </sd-region>
-          </sd-flex-item>
+        <div class="flex-fill p-default">
+          <sd-sheet [key]="sheetKey() + '-config'" [items]="items()" [trackByFn]="trackByFn" hideConfigBar>
+            <sd-sheet-column key="fixed" header="Fix" disableSorting disableResizing>
+              <ng-template [cell]="items()" let-item="item">
+                <div style="text-align: center">
+                  <sd-checkbox size="sm" [inset]="true" [(value)]="item.fixed" (valueChange)="items.$mark()" />
+                </div>
+              </ng-template>
+            </sd-sheet-column>
+            <sd-sheet-column key="ordering" header="Order" disableSorting disableResizing>
+              <ng-template [cell]="items()" let-item="item" let-index="index">
+                <div class="p-xs-sm" style="text-align: center">
+                  <a
+                    [class.a-disabled]="index === 0 || (!item.fixed && items()[index - 1].fixed)"
+                    (click)="onDisplayOrderUpButtonClick(item)"
+                  >
+                    <fa-icon [icon]="icons.angleUp" [fixedWidth]="true" />
+                  </a>
+                  <a
+                    [class.a-disabled]="index === items().length - 1 || (item.fixed && !items()[index + 1].fixed)"
+                    (click)="onDisplayOrderDownButtonClick(item)"
+                  >
+                    <fa-icon [icon]="icons.angleDown" [fixedWidth]="true" />
+                  </a>
+                </div>
+              </ng-template>
+            </sd-sheet-column>
+            <sd-sheet-column key="header" header="Header" disableSorting>
+              <ng-template [cell]="items()" let-item="item">
+                <div class="p-xs-sm">
+                  {{ item.header }}
+                </div>
+              </ng-template>
+            </sd-sheet-column>
+            <sd-sheet-column key="width" header="Width" disableSorting width="60px">
+              <ng-template [cell]="items()" let-item="item">
+                @if (!item.disableResizing) {
+                  <sd-textfield
+                    type="text"
+                    size="sm"
+                    [inset]="true"
+                    [(value)]="item.width"
+                    (valueChange)="items.$mark()"
+                  />
+                }
+              </ng-template>
+            </sd-sheet-column>
+            <sd-sheet-column key="hidden" header="Hidden" disableSorting disableResizing>
+              .
+              <ng-template [cell]="items()" let-item="item">
+                <div style="text-align: center">
+                  <sd-checkbox
+                    size="sm"
+                    [inset]="true"
+                    [(value)]="item.hidden"
+                    (valueChange)="items.$mark()"
+                    [icon]="icons.xmark"
+                    theme="danger"
+                  ></sd-checkbox>
+                </div>
+              </ng-template>
+            </sd-sheet-column>
+          </sd-sheet>
+        </div>
 
-          <sd-flex-item class="p-sm-default bg-white">
-            <sd-flex gap="sm">
-              <sd-flex-item fill>
-                <sd-button inline theme="warning" (click)="onInitButtonClick()" buttonStyle="min-width: 60px;">
-                  Reset
-                </sd-button>
-              </sd-flex-item>
-              <sd-flex-item>
-                <sd-button theme="success" (click)="onOkButtonClick()" buttonStyle="min-width: 60px;">OK</sd-button>
-              </sd-flex-item>
-              <sd-flex-item>
-                <sd-button (click)="onCancelButtonClick()" buttonStyle="min-width: 60px;">Cancel</sd-button>
-              </sd-flex-item>
-            </sd-flex>
-          </sd-flex-item>
-        </sd-flex>
+        <div class="p-sm-default flex flex-gap-sm bdt bdt-theme-grey-lightest">
+          <div class="flex-fill flex-align-start">
+            <sd-button size="sm" inline theme="warning" (click)="onInitButtonClick()" style="min-width: 60px;">
+              Reset
+            </sd-button>
+          </div>
+          <sd-button size="sm" theme="success" (click)="onOkButtonClick()" style="min-width: 60px;">OK</sd-button>
+          <sd-button size="sm" (click)="onCancelButtonClick()" style="min-width: 60px;">Cancel</sd-button>
+        </div>
       }
     </sd-busy-container>
   `,

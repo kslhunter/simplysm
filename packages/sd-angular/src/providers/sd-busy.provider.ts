@@ -1,11 +1,4 @@
-import {
-  ApplicationRef,
-  ComponentRef,
-  createComponent,
-  inject,
-  Injectable,
-  inputBinding,
-} from "@angular/core";
+import { ApplicationRef, ComponentRef, createComponent, inject, Injectable, inputBinding } from "@angular/core";
 import { SdBusyContainerControl } from "../controls/sd-busy-container.control";
 import { $signal } from "../utils/bindings/$signal";
 import { $effect } from "../utils/bindings/$effect";
@@ -14,7 +7,7 @@ import { $effect } from "../utils/bindings/$effect";
 export class SdBusyProvider {
   #appRef = inject(ApplicationRef);
 
-  type = $signal<"spinner" | "bar" | "cube">("bar");
+  type = $signal<"spinner" | "bar" | "cube">("cube");
 
   globalBusyCount = $signal(0);
 
@@ -24,10 +17,7 @@ export class SdBusyProvider {
     if (this.#containerRef == null) {
       const compRef = createComponent(SdBusyContainerControl, {
         environmentInjector: this.#appRef.injector,
-        bindings: [
-          inputBinding("type", this.type),
-          inputBinding("busy", () => this.globalBusyCount() > 0),
-        ],
+        bindings: [inputBinding("type", this.type), inputBinding("busy", () => this.globalBusyCount() > 0)],
       });
       (compRef.location.nativeElement as HTMLElement).style.position = "absolute";
       (compRef.location.nativeElement as HTMLElement).style.pointerEvents = "none";

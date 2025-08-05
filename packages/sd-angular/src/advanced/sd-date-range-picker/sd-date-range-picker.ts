@@ -12,6 +12,9 @@ import { transformBoolean } from "../../utils/type-tramsforms";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [SdSelectControl, SdSelectItemControl, SdRangeControl, SdTextfieldControl],
+  host: {
+    class: "flex flex-gap-sm",
+  },
   template: `
     <sd-select [(value)]="periodType" (valueChange)="handleDatePeriodTypeChanged()" required style="min-width: 0">
       <sd-select-item value="일">일</sd-select-item>
@@ -35,16 +38,6 @@ import { transformBoolean } from "../../utils/type-tramsforms";
       />
     }
   `,
-  styles: [
-    /* language=SCSS */ `
-      sd-date-range-picker {
-        display: flex !important;
-        flex-wrap: nowrap;
-        flex-direction: row;
-        gap: var(--gap-sm);
-      }
-    `,
-  ],
 })
 export class SdDateRangePicker {
   periodType = model<"일" | "월" | "범위">("범위");

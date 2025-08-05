@@ -31,7 +31,7 @@ import { $computed } from "../../utils/bindings/$computed";
         @media not all and (max-width: 520px) {
           transition: transform 0.1s ease-out;
 
-          &[sd-toggle="true"] {
+          &[data-sd-toggle="true"] {
             transform: translateX(-100%);
             transition: transform 0.1s ease-in;
           }
@@ -42,7 +42,7 @@ import { $computed } from "../../utils/bindings/$computed";
           transform: translateX(-100%);
           animation: none;
 
-          &[sd-toggle="true"] {
+          &[data-sd-toggle="true"] {
             transform: none;
             transition: transform 0.3s ease-out;
             @include mixins.elevation(16);
@@ -59,7 +59,7 @@ import { $computed } from "../../utils/bindings/$computed";
     `,
   ],
   host: {
-    "[attr.sd-toggle]": "toggle()",
+    "[attr.data-sd-toggle]": "toggle()",
   },
 })
 export class SdSidebarControl {

@@ -22,19 +22,19 @@ import { transformBoolean } from "../utils/type-tramsforms";
         text-indent: 0;
 
         @each $key, $val in map.get(variables.$vars, theme) {
-          &[sd-theme="#{$key}"] {
+          &[data-sd-theme="#{$key}"] {
             background: var(--theme-#{$key}-default);
           }
         }
 
-        &[sd-clickable="true"] {
+        &[data-sd-clickable="true"] {
           cursor: pointer;
 
           &:hover {
             background: var(--theme-grey-dark);
 
             @each $key, $val in map.get(variables.$vars, theme) {
-              &[sd-theme="#{$key}"] {
+              &[data-sd-theme="#{$key}"] {
                 background: var(--theme-#{$key}-dark);
               }
             }
@@ -43,11 +43,13 @@ import { transformBoolean } from "../utils/type-tramsforms";
       }
     `,
   ],
-  template: ` <ng-content></ng-content>`,
+  template: `
+    <ng-content></ng-content>
+  `,
   host: {
-    "[attr.sd-theme]": "theme()",
+    "[attr.data-sd-theme]": "theme()",
     "[style.background]": "color()",
-    "[attr.sd-clickable]": "clickable()",
+    "[attr.data-sd-clickable]": "clickable()",
   },
 })
 export class SdLabelControl {

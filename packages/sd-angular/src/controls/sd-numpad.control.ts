@@ -95,7 +95,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
             border: none;
             padding: var(--gap-xxs);
 
-            > sd-button > button {
+            > sd-button {
               border: none;
             }
           }

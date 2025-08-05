@@ -56,7 +56,7 @@ Quill.register("modules/resize", QuillResizeImage);
           }
         }
 
-        &[sd-disabled1="true"] {
+        &[data-sd-disabled1="true"] {
           border: none;
 
           > .ql-toolbar {
@@ -72,7 +72,7 @@ Quill.register("modules/resize", QuillResizeImage);
     `,
   ],
   host: {
-    "[attr.sd-disabled]": "disabled()",
+    "[attr.data-sd-disabled]": "disabled()",
   },
 })
 export class SdQuillEditorControl {

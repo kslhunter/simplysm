@@ -1,0 +1,36 @@
+@use "sass:map";
+
+@use "../../scss/variables";
+@use "../../scss/mixins";
+
+sd-anchor {
+  display: inline-block;
+  cursor: pointer;
+
+  @each $key, $val in map.get(variables.$vars, theme) {
+    &[data-sd-theme="#{$key}"] {
+      color: var(--theme-#{$key}-default);
+
+      &:hover {
+        color: var(--theme-#{$key}-darker);
+        text-decoration: underline;
+      }
+
+      &:active {
+        color: var(--theme-#{$key}-default);
+      }
+
+      @media all and (pointer: coarse) {
+        &:hover {
+          color: var(--theme-#{$key}-default);
+          text-decoration: none;
+        }
+      }
+    }
+  }
+
+  &[data-sd-disabled="true"] {
+    opacity: 0.3;
+    pointer-events: none;
+  }
+}

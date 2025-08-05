@@ -13,7 +13,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
         display: block;
         background: var(--control-color);
 
-        &[sd-fill="true"] {
+        &[data-sd-fill="true"] {
           height: 100%;
         }
       }
@@ -23,7 +23,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
     <ng-content></ng-content>
   `,
   host: {
-    "[attr.sd-fill]": "fill()",
+    "[attr.data-sd-fill]": "fill()",
   },
 })
 export class SdViewControl {

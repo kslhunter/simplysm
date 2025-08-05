@@ -5,7 +5,7 @@ import {
   HostListener,
   inject,
   input,
-  ViewEncapsulation
+  ViewEncapsulation,
 } from "@angular/core";
 import { SdTabControl } from "./sd-tab.control";
 import { $computed } from "../utils/bindings/$computed";
@@ -24,48 +24,23 @@ import { $computed } from "../utils/bindings/$computed";
         cursor: pointer;
         margin-bottom: -2px;
 
-        /*@media not all and (pointer: coarse) {
-          border-top: 2px solid transparent;
-          border-left: 1px solid transparent;
-          border-right: 1px solid transparent;
-
-          &:hover {
-            background: rgba(0, 0, 0, 0.05);
-          }
-
-          &[sd-selected="true"] {
-            background: var(--control-color);
-            border-color: var(--theme-grey-lighter);
-          }
-        }
-
-        @media all and (pointer: coarse) {
-          border-bottom: 2px solid transparent !important;
-          font-weight: bold;
-          color: var(--theme-grey-default);
-  
-          &[sd-selected="true"] {
-            border-bottom: 3px solid var(--theme-primary-default) !important;
-            color: var(--theme-primary-default);
-          }
-        }*/
-
         border-bottom: 2px solid transparent !important;
         font-weight: bold;
         color: var(--theme-grey-default);
 
-        &[sd-selected="true"] {
+        &[data-sd-selected="true"] {
           border-bottom: 3px solid var(--theme-primary-default) !important;
           color: var(--theme-primary-default);
         }
       }
-    `
+    `,
   ],
   template: `
-    <ng-content></ng-content>`,
+    <ng-content></ng-content>
+  `,
   host: {
-    "[attr.sd-selected]": "isSelected()"
-  }
+    "[attr.data-sd-selected]": "isSelected()",
+  },
 })
 export class SdTabItemControl {
   #parentControl = inject<SdTabControl>(forwardRef(() => SdTabControl));

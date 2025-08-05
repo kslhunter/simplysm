@@ -12,8 +12,7 @@ export class SdSheetSelectRowIndicatorRenderer<T> {
     },
   ) {
     $afterRenderEffect(() => {
-      const selectRowIndicatorContainerEl =
-        this._options.domAccessor.getSelectRowIndicatorContainer();
+      const selectRowIndicatorContainerEl = this._options.domAccessor.getSelectRowIndicatorContainer();
 
       if (this._options.selectedItems().length <= 0) {
         selectRowIndicatorContainerEl.innerHTML = "";
@@ -49,7 +48,7 @@ export class SdSheetSelectRowIndicatorRenderer<T> {
 
     //-- row indicators
     for (const selectRowIndicatorEl of selectRowIndicatorEls) {
-      const r = NumberUtils.parseInt(selectRowIndicatorEl.getAttribute("r"))!;
+      const r = NumberUtils.parseInt(selectRowIndicatorEl.getAttribute("data-r"))!;
 
       const trInfo = this.#getTrInfo(r);
       if (!trInfo) return;

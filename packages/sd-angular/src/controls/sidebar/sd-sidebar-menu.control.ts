@@ -1,16 +1,15 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
 import { useFullPageCodeSignal } from "../../utils/signals/use-full-page-code.signal";
-import { SdListControl } from "../sd-list.control";
+import { SdListControl } from "../list/sd-list.control";
 import { NgTemplateOutlet } from "@angular/common";
 import { SdTypedTemplateDirective } from "../../directives/sd-typed.template-directive";
-import { SdListItemControl } from "../sd-list-item.control";
+import { SdListItemControl } from "../list/sd-list-item.control";
 import { SdRouterLinkDirective } from "../../directives/sd-router-link.directive";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 
 import * as querystring from "querystring";
 import { $computed } from "../../utils/bindings/$computed";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
-import { SdRegionControl } from "../containers/sd-region";
 
 @Component({
   selector: "sd-sidebar-menu",
@@ -24,17 +23,16 @@ import { SdRegionControl } from "../containers/sd-region";
     SdListItemControl,
     SdRouterLinkDirective,
     FaIconComponent,
-    SdRegionControl,
   ],
   template: `
-    <sd-region header="MENU">
-      <sd-list [inset]="true">
-        <ng-template
-          [ngTemplateOutlet]="itemTemplate"
-          [ngTemplateOutletContext]="{ menus: menus(), depth: 0 }"
-        ></ng-template>
-      </sd-list>
-    </sd-region>
+    <div class="control-header p-default">MENU</div>
+
+    <sd-list class="flex-fill" inset>
+      <ng-template
+        [ngTemplateOutlet]="itemTemplate"
+        [ngTemplateOutletContext]="{ menus: menus(), depth: 0 }"
+      ></ng-template>
+    </sd-list>
 
     <ng-template #itemTemplate [typed]="itemTemplateType" let-currMenus="menus" let-depth="depth">
       @for (menu of currMenus; track menu.codeChain.join(".")) {
@@ -71,18 +69,15 @@ import { SdRegionControl } from "../containers/sd-region";
       @use "../../scss/mixins";
 
       sd-sidebar-menu {
-        display: block;
-        height: 100%;
-
-        > sd-region > div > ._content > sd-list[sd-inset="true"] {
+        > sd-list[data-sd-inset="true"] {
           sd-list {
             background: rgba(0, 0, 0, 0.03);
             border-radius: var(--border-radius-lg);
           }
         }
 
-        &:not([sd-root-layout="accordion"]) {
-          > sd-region > div > ._content > sd-list[sd-inset="true"] > sd-list-item > sd-collapse > ._content > sd-list {
+        &:not([data-sd-root-layout="accordion"]) {
+          > sd-list[data-sd-inset="true"] > sd-list-item > sd-collapse > ._content > sd-list {
             background: transparent;
           }
         }
@@ -90,7 +85,8 @@ import { SdRegionControl } from "../containers/sd-region";
     `,
   ],
   host: {
-    "[attr.sd-root-layout]": "rootLayout()",
+    "class": "region flex-vertical fill",
+    "[attr.data-sd-root-layout]": "rootLayout()",
   },
 })
 export class SdSidebarMenuControl {

@@ -32,8 +32,6 @@ export function $arr<T>(sig: Signal<T[]> | WritableSignal<T[]>) {
         } else {
           return [...v, value];
         }
-
-        return v;
       });
     },
     snapshot(keyPropNameOrFn: keyof T | ((item: T) => any)) {

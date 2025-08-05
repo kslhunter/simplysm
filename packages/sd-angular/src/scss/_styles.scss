@@ -103,7 +103,7 @@ form {
   display: inline;
 }
 
-hidden {
+*[hidden] {
   display: none !important;
 }
 
@@ -483,6 +483,19 @@ hidden {
   background: var(--control-color);
   border: var(--gap-xs) solid var(--background-color);
   border-radius: var(--border-radius-lg);
+
+  animation: region var(--animation-duration) ease-out;
+}
+
+@keyframes region {
+  from {
+    opacity: 0;
+    transform: translateY(-1em);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 //-- card
@@ -490,6 +503,8 @@ hidden {
   background: var(--control-color);
   border-radius: var(--border-radius-default);
   @include mixins.elevation(2);
+
+  animation: region var(--animation-duration) ease-out;
 }
 
 //-- form-table
@@ -524,4 +539,104 @@ hidden {
   height: 100%;
   width: 100%;
   overflow: auto;
+}
+
+//-- form-box
+.form-box {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-default);
+
+  > div {
+    display: block;
+
+    > label {
+      display: block;
+      margin-bottom: var(--gap-xs);
+      white-space: nowrap;
+      font-weight: bold;
+      border: 1px solid transparent;
+    }
+
+    @media all and (pointer: coarse) {
+      margin-bottom: var(--gap-default);
+
+      > label {
+        margin-bottom: var(gap-xxs);
+      }
+    }
+  }
+}
+
+.form-box-inline {
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: var(--gap-sm);
+
+  > div {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+
+    > label {
+      display: block;
+      white-space: nowrap;
+      font-weight: bold;
+      border: 1px solid transparent;
+      padding-left: var(--gap-sm);
+      padding-right: var(--gap-sm);
+    }
+  }
+}
+
+//-- a
+a {
+  cursor: pointer;
+
+  color: var(--theme-primary-default);
+
+  &:hover {
+    color: var(--theme-primary-darker);
+    text-decoration: underline;
+  }
+
+  &:active {
+    color: var(--theme-primary-default);
+  }
+
+  @each $key, $val in map.get(variables.$vars, theme) {
+    &.a-#{$key} {
+      color: var(--theme-#{$key}-default);
+
+      &:hover {
+        color: var(--theme-#{$key}-darker);
+        text-decoration: underline;
+      }
+
+      &:active {
+        color: var(--theme-#{$key}-default);
+      }
+
+      /*@media all and (pointer: coarse) {
+        &:hover {
+          color: var(--theme-#{$key}-default);
+          text-decoration: none;
+        }
+      }*/
+    }
+  }
+
+  &.a-disabled {
+    opacity: 0.3;
+    pointer-events: none;
+  }
+}
+
+@each $key, $val in map.get(variables.$vars, theme) {
+  .note-#{$key} {
+    background: var(--theme-#{$key}-lightest);
+    border: 1px solid var(--theme-#{$key}-lightest);
+    border-radius: var(--border-radius-default);
+  }
 }

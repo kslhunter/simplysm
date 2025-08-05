@@ -1,35 +1,46 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  input,
-  model,
-  ViewEncapsulation,
-} from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, input, model, ViewEncapsulation } from "@angular/core";
 import { ObjectUtils } from "@simplysm/sd-core-common";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { SdSystemConfigProvider } from "../providers/sd-system-config.provider";
 import { SdToastProvider } from "../providers/sd-toast.provider";
 import { $effect } from "../utils/bindings/$effect";
 import { $signal } from "../utils/bindings/$signal";
-import { SdAnchorControl } from "./sd-anchor.control";
 import { SdGapControl } from "./sd-gap.control";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
-
 
 @Component({
   selector: "sd-state-preset",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdAnchorControl, SdGapControl, FaIconComponent],
+  imports: [SdGapControl, FaIconComponent],
+  template: `
+    <a (click)="onAddButtonClick()">
+      <fa-icon [icon]="icons.star" class="tx-theme-warning-default" [fixedWidth]="true" />
+    </a>
+    <sd-gap width="sm"></sd-gap>
+    @for (preset of presets(); track preset.name) {
+      <div>
+        <a (click)="onItemClick(preset)" class="tx-trans-default">
+          {{ preset.name }}
+        </a>
+        <a (click)="onSaveButtonClick(preset)">
+          <fa-icon [icon]="icons.save" size="sm" />
+        </a>
+        <a (click)="onRemoveButtonClick(preset)">
+          <fa-icon [icon]="icons.xmark" size="sm" />
+        </a>
+      </div>
+      <sd-gap width="sm"></sd-gap>
+    }
+  `,
   styles: [
     /* language=SCSS */ `
       sd-state-preset {
         display: inline-block;
         vertical-align: top;
 
-        > sd-anchor {
+        > a {
           display: inline-block;
           vertical-align: top;
           line-height: var(--line-height);
@@ -51,20 +62,20 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
             background: var(--theme-grey-lighter);
           }
 
-          > sd-anchor {
+          > a {
             padding: 0 var(--gap-sm);
           }
         }
 
-        &[sd-size="sm"] {
-          > sd-anchor,
+        &[data-sd-size="sm"] {
+          > a,
           > div {
             padding: var(--gap-xs) var(--gap-default);
           }
         }
 
-        &[sd-size="lg"] {
-          > sd-anchor,
+        &[data-sd-size="lg"] {
+          > a,
           > div {
             padding: var(--gap-default) var(--gap-lg);
           }
@@ -72,28 +83,8 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
       }
     `,
   ],
-  template: `
-    <sd-anchor (click)="onAddButtonClick()">
-      <fa-icon [icon]="icons.star" class="tx-theme-warning-default" [fixedWidth]="true" />
-    </sd-anchor>
-    <sd-gap width="sm"></sd-gap>
-    @for (preset of presets(); track preset.name) {
-      <div>
-        <sd-anchor (click)="onItemClick(preset)" class="tx-trans-default">
-          {{ preset.name }}
-        </sd-anchor>
-        <sd-anchor (click)="onSaveButtonClick(preset)">
-          <fa-icon [icon]="icons.save" size="sm" />
-        </sd-anchor>
-        <sd-anchor (click)="onRemoveButtonClick(preset)">
-          <fa-icon [icon]="icons.xmark" size="sm" />
-        </sd-anchor>
-      </div>
-      <sd-gap width="sm"></sd-gap>
-    }
-  `,
   host: {
-    "[attr.sd-size]": "size()",
+    "[attr.data-sd-size]": "size()",
   },
 })
 export class SdStatePresetControl {
@@ -111,9 +102,7 @@ export class SdStatePresetControl {
 
   constructor() {
     $effect([this.key], async () => {
-      this.presets.set(
-        (await this.#sdSystemConfig.getAsync(`sd-state-preset.${this.key()}`)) ?? [],
-      );
+      this.presets.set((await this.#sdSystemConfig.getAsync(`sd-state-preset.${this.key()}`)) ?? []);
     });
   }
 

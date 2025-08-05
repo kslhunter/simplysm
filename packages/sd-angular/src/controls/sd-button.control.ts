@@ -1,24 +1,16 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
-import { SdRippleDirective } from "../directives/sd-ripple.directive";
 import { transformBoolean } from "../utils/type-tramsforms";
+import { setupRipple } from "../utils/setups/setup-ripple";
 
 @Component({
   selector: "sd-button",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdRippleDirective],
+  imports: [],
   template: `
-    <button
-      tabindex="0"
-      [type]="type()"
-      [disabled]="disabled()"
-      [class]="buttonClass()"
-      [style]="buttonStyle()"
-      [sd-ripple]="!disabled()"
-    >
-      <ng-content></ng-content>
-    </button>
+    <ng-content></ng-content>
+    <button hidden [type]="type()"></button>
   `,
   styles: [
     /* language=SCSS */ `
@@ -28,36 +20,35 @@ import { transformBoolean } from "../utils/type-tramsforms";
       @use "../scss/mixins";
 
       sd-button {
-        > button {
-          @include mixins.form-control-base();
-          user-select: none;
-          padding: var(--gap-sm) var(--gap-lg);
+        @include mixins.form-control-base();
+        user-select: none;
+        padding: var(--gap-sm) var(--gap-lg);
 
-          background: var(--control-color);
-          border-color: var(--border-color-default);
-          border-radius: var(--border-radius-default);
-          //@include mixins.elevation(1);
+        background: var(--control-color);
+        border-color: var(--border-color-default);
+        border-radius: var(--border-radius-default);
+        //@include mixins.elevation(1);
 
-          font-weight: bold;
-          text-align: center;
-          cursor: pointer;
+        font-weight: bold;
+        text-align: center;
+        cursor: pointer;
 
-          transition: 0.1s linear;
-          transition-property: border, background;
+        transition: 0.1s linear;
+        transition-property: border, background;
 
-          &:hover {
-            background: var(--theme-grey-lightest);
-          }
-
-          &:disabled {
-            background: var(--control-color);
-            border-color: var(--theme-grey-lighter);
-            color: var(--text-trans-lighter);
-            cursor: default;
-          }
+        &:hover {
+          background: var(--theme-grey-lightest);
         }
 
-        &[sd-inset="true"] > button {
+        &[data-sd-disabled="true"] {
+          background: var(--control-color);
+          border-color: var(--theme-grey-lighter);
+          color: var(--text-trans-lighter);
+          cursor: default;
+          pointer-events: none;
+        }
+
+        &[data-sd-inset="true"] {
           border-radius: 0;
           border: none;
           color: var(--theme-primary-default);
@@ -75,7 +66,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
         }
 
         @each $key, $val in map.get(variables.$vars, theme) {
-          &[sd-theme="#{$key}"] > button {
+          &[data-sd-theme="#{$key}"] {
             background: var(--theme-#{$key}-default);
             border-color: var(--theme-#{$key}-default);
             color: var(--text-trans-rev-default);
@@ -95,7 +86,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
           }
         }
 
-        &[sd-theme="link"] > button {
+        &[data-sd-theme="link"] {
           border-color: transparent;
           color: var(--theme-primary-default);
 
@@ -110,7 +101,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
         }
 
         @each $key, $val in map.get(variables.$vars, theme) {
-          &[sd-theme="link-#{$key}"] > button {
+          &[data-sd-theme="link-#{$key}"] {
             border-color: transparent;
             background: transparent;
             color: var(--theme-#{$key}-default);
@@ -127,36 +118,29 @@ import { transformBoolean } from "../utils/type-tramsforms";
           }
         }
 
-        &[sd-inline="true"] > button {
+        &[data-sd-inline="true"] {
           display: inline-block;
           width: auto;
           vertical-align: top;
         }
 
-        &[sd-size="sm"] > button {
-          //font-weight: normal;
+        &[data-sd-size="sm"] {
           padding: var(--gap-xs) var(--gap-default);
         }
 
-        &[sd-size="lg"] > button {
+        &[data-sd-size="lg"] {
           padding: var(--gap-default) var(--gap-xl);
-          // border-radius:2 px;
-        }
-
-        &[disabled="true"] {
-          &:active {
-            pointer-events: none;
-          }
         }
       }
     `,
   ],
   host: {
-    "[attr.sd-theme]": "theme()",
-    "[attr.sd-inline]": "inline()",
-    "[attr.sd-size]": "size()",
-    "[attr.disabled]": "disabled()",
-    "[attr.sd-inset]": "inset()",
+    "tabindex": "0",
+    "[attr.data-sd-theme]": "theme()",
+    "[attr.data-sd-inline]": "inline()",
+    "[attr.data-sd-size]": "size()",
+    "[attr.data-sd-inset]": "inset()",
+    "[attr.data-disabled]": "disabled()",
   },
 })
 export class SdButtonControl {
@@ -187,6 +171,7 @@ export class SdButtonControl {
 
   disabled = input(false, { transform: transformBoolean });
 
-  buttonStyle = input<string>();
-  buttonClass = input<string>();
+  constructor() {
+    setupRipple(() => !this.disabled());
+  }
 }

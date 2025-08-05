@@ -44,10 +44,10 @@ export class SdSheetDomAccessor {
   }
 
   getRow(r: number) {
-    return this.getTable().findFirst<HTMLElement>(`> tbody > tr[r='${r}']`);
+    return this.getTable().findFirst<HTMLElement>(`> tbody > tr[data-r='${r}']`);
   }
 
   getCell(r: number, c: number) {
-    return this.getRow(r)?.findFirst<HTMLElement>(` > td[c='${c}']`);
+    return this.getRow(r)?.findFirst<HTMLElement>(` > td[data-c='${c}']`);
   }
 }

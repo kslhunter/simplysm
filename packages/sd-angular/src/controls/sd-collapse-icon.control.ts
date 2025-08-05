@@ -20,14 +20,14 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
         display: inline-block;
         transition: transform 0.1s ease-in;
 
-        &[sd-open="true"] {
+        &[data-sd-open="true"] {
           transition: transform 0.1s ease-out;
         }
       }
     `,
   ],
   host: {
-    "[attr.sd-open]": "open()",
+    "[attr.data-sd-open]": "open()",
     "[style.transform]": "transform()",
   },
 })

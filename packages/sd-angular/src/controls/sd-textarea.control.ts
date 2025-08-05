@@ -78,7 +78,7 @@ import { $computed } from "../utils/bindings/$computed";
         }
 
         @each $key, $val in map.get(variables.$vars, theme) {
-          &[sd-theme="#{$key}"] {
+          &[data-sd-theme="#{$key}"] {
             > textarea,
             > ._contents {
               background: var(--theme-#{$key}-lightest);
@@ -86,21 +86,21 @@ import { $computed } from "../utils/bindings/$computed";
           }
         }
 
-        &[sd-size="sm"] {
+        &[data-sd-size="sm"] {
           > textarea,
           > ._contents {
             padding: var(--gap-xs) var(--gap-sm);
           }
         }
 
-        &[sd-size="lg"] {
+        &[data-sd-size="lg"] {
           > textarea,
           > ._contents {
             padding: var(--gap-default) var(--gap-lg);
           }
         }
 
-        &[sd-inline="true"] {
+        &[data-sd-inline="true"] {
           display: inline-block;
           vertical-align: top;
 
@@ -111,7 +111,7 @@ import { $computed } from "../utils/bindings/$computed";
           }
         }
 
-        &[sd-inset="true"] {
+        &[data-sd-inset="true"] {
           > ._contents {
             display: block;
           }
@@ -135,14 +135,14 @@ import { $computed } from "../utils/bindings/$computed";
           }
         }
 
-        &[sd-disabled="true"] {
+        &[data-sd-disabled="true"] {
           > ._contents {
             display: block;
             background: var(--theme-grey-lightest);
             color: var(--text-trans-light);
           }
 
-          &[sd-inset="true"] {
+          &[data-sd-inset="true"] {
             > ._contents {
               background: var(--control-color);
               color: var(--text-trans-default);
@@ -153,12 +153,12 @@ import { $computed } from "../utils/bindings/$computed";
     `,
   ],
   host: {
-    "[attr.sd-disabled]": "disabled()",
-    "[attr.sd-readonly]": "readonly()",
-    "[attr.sd-inline]": "inline()",
-    "[attr.sd-inset]": "inset()",
-    "[attr.sd-size]": "size()",
-    "[attr.sd-theme]": "theme()",
+    "[attr.data-sd-disabled]": "disabled()",
+    "[attr.data-sd-readonly]": "readonly()",
+    "[attr.data-sd-inline]": "inline()",
+    "[attr.data-sd-inset]": "inset()",
+    "[attr.data-sd-size]": "size()",
+    "[attr.data-sd-theme]": "theme()",
   },
 })
 export class SdTextareaControl {

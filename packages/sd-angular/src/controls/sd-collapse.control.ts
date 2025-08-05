@@ -17,11 +17,11 @@ import { $effect } from "../utils/bindings/$effect";
         display: block;
         overflow: hidden;
 
-        &[sd-open="false"] > ._content {
+        &[data-sd-open="false"] > ._content {
           transition: margin-top 0.1s ease-in;
         }
 
-        &[sd-open="true"] > ._content {
+        &[data-sd-open="true"] > ._content {
           transition: margin-top 0.1s ease-out;
         }
       }
@@ -33,7 +33,7 @@ import { $effect } from "../utils/bindings/$effect";
     </div>
   `,
   host: {
-    "[attr.sd-open]": "open()",
+    "[attr.data-sd-open]": "open()",
   },
 })
 export class SdCollapseControl {

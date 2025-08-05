@@ -1,7 +1,6 @@
 import { NgTemplateOutlet } from "@angular/common";
 import { ChangeDetectionStrategy, Component, inject, input, model, ViewEncapsulation } from "@angular/core";
 import { ObjectUtils } from "@simplysm/sd-core-common";
-import { SdAnchorControl } from "../controls/sd-anchor.control";
 import { SdCheckboxControl } from "../controls/sd-checkbox.control";
 import { SdCollapseIconControl } from "../controls/sd-collapse-icon.control";
 import { SdTypedTemplateDirective } from "../directives/sd-typed.template-directive";
@@ -31,7 +30,7 @@ import { ISdPermission } from "../providers/sd-app-structure.provider";
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdAnchorControl, SdTypedTemplateDirective, NgTemplateOutlet, SdCollapseIconControl, SdCheckboxControl],
+  imports: [SdTypedTemplateDirective, NgTemplateOutlet, SdCollapseIconControl, SdCheckboxControl],
   styles: [
     /* language=SCSS */ `
       sd-permission-table {
@@ -59,11 +58,11 @@ import { ISdPermission } from "../providers/sd-app-structure.provider";
               }
             }
 
-            &[sd-collapse="true"] {
+            &[data-sd-collapse="true"] {
               display: none;
             }
 
-            &[sd-theme="first"] {
+            &[data-sd-theme="first"] {
               > * {
                 &._title,
                 &._after {
@@ -78,7 +77,7 @@ import { ISdPermission } from "../providers/sd-app-structure.provider";
               }
             }
 
-            &[sd-theme="info"] {
+            &[data-sd-theme="info"] {
               > * {
                 &._title,
                 &._after {
@@ -87,7 +86,7 @@ import { ISdPermission } from "../providers/sd-app-structure.provider";
               }
             }
 
-            &[sd-theme="warning"] {
+            &[data-sd-theme="warning"] {
               > * {
                 &._title,
                 &._after {
@@ -96,7 +95,7 @@ import { ISdPermission } from "../providers/sd-app-structure.provider";
               }
             }
 
-            &[sd-theme="success"] {
+            &[data-sd-theme="success"] {
               > * {
                 &._title,
                 &._after {
@@ -136,19 +135,21 @@ import { ISdPermission } from "../providers/sd-app-structure.provider";
     >
       @if ((item.children && item.children.length !== 0) || (item.perms && item.perms.length > 0)) {
         <tr
-          [attr.sd-collapse]="!!parent && getIsPermCollapsed(parent)"
-          [attr.sd-theme]="depth === 0 ? 'first' : depth % 3 === 0 ? 'success' : depth % 3 === 1 ? 'info' : 'warning'"
+          [attr.data-sd-collapse]="!!parent && getIsPermCollapsed(parent)"
+          [attr.data-sd-theme]="
+            depth === 0 ? 'first' : depth % 3 === 0 ? 'success' : depth % 3 === 1 ? 'info' : 'warning'
+          "
         >
-          @for (_ of arr(depth + 1); let i = $index; track i) {
+          @for (i of arr(depth + 1); track i) {
             <td class="_before">&nbsp;</td>
           }
 
           <td class="_title">
             @if (item.children && item.children.length > 0) {
-              <sd-anchor (click)="onPermCollapseToggle(item)">
+              <a (click)="onPermCollapseToggle(item)">
                 <sd-collapse-icon [icon]="icons.angleRight" [open]="getIsPermCollapsed(item)" />
                 {{ item.title }}
-              </sd-anchor>
+              </a>
             } @else {
               <div style="padding-left: 14px;">
                 {{ item.title }}
@@ -156,7 +157,7 @@ import { ISdPermission } from "../providers/sd-app-structure.provider";
             }
           </td>
 
-          @for (_ of arr(depthLength() - (depth + 1)); let i = $index; track i) {
+          @for (i of arr(depthLength() - (depth + 1)); track i) {
             <td class="_after">&nbsp;</td>
           }
 
@@ -218,7 +219,9 @@ export class SdPermissionTableControl<TModule> {
   });
 
   arr(len: number): number[] {
-    return Array(len).fill(0);
+    return Array(len)
+      .fill(0)
+      .map((_, i) => i);
   }
 
   getIsPermCollapsed(item: ISdPermission<TModule>): boolean {

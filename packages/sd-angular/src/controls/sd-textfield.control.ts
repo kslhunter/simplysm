@@ -65,10 +65,6 @@ import { transformBoolean } from "../utils/type-tramsforms";
           overflow: auto;
           width: 100%;
 
-          //height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
-          //min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
-
-          //body.sd-theme-compact & {
           border: 1px solid var(--trans-lighter);
           border-radius: var(--border-radius-default);
           background: var(--theme-secondary-lightest);
@@ -83,28 +79,6 @@ import { transformBoolean } from "../utils/type-tramsforms";
             padding-top: calc(var(--gap-sm) - 1px);
             padding-bottom: calc(var(--gap-sm) - 1px);
           }
-          //}
-
-          /*body.sd-theme-mobile &,
-          body.sd-theme-kiosk & {
-            border-left: none;
-            border-right: none;
-            border-top: none;
-            border-bottom: 2px solid var(--border-color-default);
-            background: transparent;
-            padding: calc(var(--gap-sm) + 1px) 0 calc(var(--gap-sm) - 1px);
-
-            &:focus {
-              outline: none;
-              border-bottom-color: var(--theme-secondary-default);
-            }
-
-            &[type="date"],
-            &[type="datetime-local"] {
-              padding-top: var(--gap-sm);
-              padding-bottom: calc(var(--gap-sm) - 2px);
-            }
-          }*/
 
           &::-webkit-scrollbar {
             display: none;
@@ -130,7 +104,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
           display: none;
         }
 
-        &[sd-type="number"] {
+        &[data-sd-type="number"] {
           > input,
           > ._contents {
             text-align: right;
@@ -138,29 +112,17 @@ import { transformBoolean } from "../utils/type-tramsforms";
         }
 
         @each $key, $val in map.get(variables.$vars, theme) {
-          &[sd-theme="#{$key}"] {
-            //body.sd-theme-compact & {
+          &[data-sd-theme="#{$key}"] {
             > input,
             > ._contents {
               background: var(--theme-#{$key}-lightest);
             }
-            //}
-
-            /*body.sd-theme-mobile &,
-            body.sd-theme-kiosk & {
-              border-bottom-color: var(--theme-#{$key}-lighter);
-
-              &:focus {
-                border-bottom-color: var(--theme-#{$key}-default);
-              }
-            }*/
           }
         }
 
-        &[sd-size="sm"] {
+        &[data-sd-size="sm"] {
           > input,
           > ._contents {
-            //body.sd-theme-compact & {
             padding: var(--gap-xs) var(--gap-sm);
 
             &[type="date"],
@@ -168,25 +130,12 @@ import { transformBoolean } from "../utils/type-tramsforms";
               padding-top: calc(var(--gap-xs) - 1px);
               padding-bottom: calc(var(--gap-xs) - 1px);
             }
-            //}
-
-            //body.sd-theme-mobile &,
-            //body.sd-theme-kiosk & {
-            //  padding: calc(var(--gap-xs) + 1px) 0 calc(var(--gap-xs) - 1px);
-            //
-            //  &[type="date"],
-            //  &[type="datetime-local"] {
-            //    padding-top: var(--gap-xs);
-            //    padding-bottom: calc(var(--gap-xs) - 2px);
-            //  }
-            //}
           }
         }
 
-        &[sd-size="lg"] {
+        &[data-sd-size="lg"] {
           > input,
           > ._contents {
-            //body.sd-theme-compact & {
             padding: var(--gap-default) var(--gap-lg);
 
             &[type="date"],
@@ -194,22 +143,10 @@ import { transformBoolean } from "../utils/type-tramsforms";
               padding-top: calc(var(--gap-default) - 1px);
               padding-bottom: calc(var(--gap-default) - 1px);
             }
-            //}
-
-            //body.sd-theme-mobile &,
-            //body.sd-theme-kiosk & {
-            //  padding: calc(var(--gap-default) + 1px) 0 calc(var(--gap-default) - 1px);
-            //
-            //  &[type="date"],
-            //  &[type="datetime-local"] {
-            //    padding-top: var(--gap-default);
-            //    padding-bottom: calc(var(--gap-default) - 2px);
-            //  }
-            //}
           }
         }
 
-        &[sd-inline="true"] {
+        &[data-sd-inline="true"] {
           display: inline-block;
           vertical-align: top;
 
@@ -220,10 +157,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
           }
         }
 
-        &[sd-inset="true"] {
-          //body.sd-theme-compact &,
-          //body.sd-theme-mobile &,
-          //body.sd-theme-kiosk & {
+        &[data-sd-inset="true"] {
           > ._contents {
             display: block;
           }
@@ -239,87 +173,44 @@ import { transformBoolean } from "../utils/type-tramsforms";
             width: 100%;
             border: none;
             border-radius: 0;
-            //height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
-            //min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
           }
 
-          &[sd-type="month"] {
+          &[data-sd-type="month"] {
             > input,
             > ._contents {
               width: 9em;
             }
           }
 
-          &[sd-type="date"] {
+          &[data-sd-type="date"] {
             > input,
             > ._contents {
               width: 8.25em;
             }
           }
 
-          &[sd-type="datetime"] {
+          &[data-sd-type="datetime"] {
             > input,
             > ._contents {
               width: 14em;
             }
           }
 
-          &[sd-size="sm"] {
-            > input,
-            > ._contents {
-              //height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
-              //min-height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
-            }
-          }
-
-          &[sd-size="lg"] {
-            > input,
-            > ._contents {
-              //height: calc((var(--gap-default) * 2) + (var(--font-size-default) * var(--line-height-strip-unit)));
-              //min-height: calc((var(--gap-default) * 2) + (var(--font-size-default) * var(--line-height-strip-unit)));
-            }
-          }
-          //}
-
-          //body.sd-theme-compact & {
           > input:focus {
             outline: 1px solid var(--theme-primary-default);
             outline-offset: -1px;
           }
-          //}
-
-          //body.sd-theme-mobile &,
-          //body.sd-theme-kiosk & {
-          //  &[sd-size="sm"] {
-          //    > input,
-          //    > ._contents {
-          //      padding: calc(var(--gap-xs) + 1px) 0 calc(var(--gap-xs) - 1px);
-          //    }
-          //  }
-          //
-          //  &[sd-size="lg"] {
-          //    > input,
-          //    > ._contents {
-          //      padding: calc(var(--gap-default) + 1px) 0 calc(var(--gap-default) - 1px);
-          //    }
-          //  }
-          //
-          //  > input:focus {
-          //    outline: none;
-          //    border-bottom-color: var(--theme-primary-default);
-          //  }
-          //}
         }
 
         //body.sd-theme-compact & {
-        &[sd-disabled="true"] {
+        &[data-sd-disabled="true"] {
           > ._contents {
             display: block;
             background: var(--theme-grey-lightest);
             color: var(--text-trans-light);
           }
 
-          &[sd-inset="true"] {
+          &[data-sd-inset="true"] {
             > ._contents {
               background: var(--control-color);
               color: var(--text-trans-default);
@@ -327,49 +218,23 @@ import { transformBoolean } from "../utils/type-tramsforms";
           }
         }
 
-        &[sd-readonly="true"] {
+        &[data-sd-readonly="true"] {
           > ._contents {
             display: block;
             //background: var(--background-color);
           }
         }
-        //}
-
-        /*body.sd-theme-mobile &,
-        body.sd-theme-kiosk & {
-          &[sd-disabled="true"] {
-            > ._contents {
-              display: block;
-              color: var(--text-trans-light);
-              //border-color: transparent;
-            }
-
-            &[sd-inset="true"] {
-              > ._contents {
-                color: var(--text-trans-default);
-                border-color: transparent;
-              }
-            }
-          }
-
-          &[sd-readonly="true"] {
-            > ._contents {
-              display: block;
-              border-color: transparent !important;
-            }
-          }
-        }*/
       }
     `,
   ],
   host: {
-    "[attr.sd-type]": "type()",
-    "[attr.sd-disabled]": "disabled()",
-    "[attr.sd-readonly]": "readonly()",
-    "[attr.sd-inline]": "inline()",
-    "[attr.sd-inset]": "inset()",
-    "[attr.sd-size]": "size()",
-    "[attr.sd-theme]": "theme()",
+    "[attr.data-sd-type]": "type()",
+    "[attr.data-sd-disabled]": "disabled()",
+    "[attr.data-sd-readonly]": "readonly()",
+    "[attr.data-sd-inline]": "inline()",
+    "[attr.data-sd-inset]": "inset()",
+    "[attr.data-sd-size]": "size()",
+    "[attr.data-sd-theme]": "theme()",
   },
 })
 export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {

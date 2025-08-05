@@ -18,15 +18,12 @@ import { SdTypedTemplateDirective } from "../../directives/sd-typed.template-dir
 import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
 import { setupInvalid } from "../../utils/setups/setup-invalid";
 import { transformBoolean } from "../../utils/type-tramsforms";
-import { SdAnchorControl } from "../sd-anchor.control";
 import { SdGapControl } from "../sd-gap.control";
 import { SdSelectItemControl } from "./sd-select-item.control";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { SdDropdownControl } from "../dropdown/sd-dropdown.control";
 import { SdDropdownPopupControl } from "../dropdown/sd-dropdown-popup.control";
 import { $afterRenderEffect } from "../../utils/bindings/$afterRenderEffect";
-import { SdFlexControl } from "../flex/sd-flex.control";
-import { SdFlexItemControl } from "../flex/sd-flex-item.control";
 
 @Component({
   selector: "sd-select",
@@ -36,156 +33,11 @@ import { SdFlexItemControl } from "../flex/sd-flex-item.control";
   imports: [
     SdDropdownControl,
     SdDropdownPopupControl,
-    SdAnchorControl,
     SdGapControl,
     NgTemplateOutlet,
     SdTypedTemplateDirective,
     SdRippleDirective,
     FaIconComponent,
-    SdFlexControl,
-    SdFlexItemControl,
-  ],
-  styles: [
-    /* language=SCSS */ `
-      @use "../../scss/mixins";
-
-      sd-select {
-        display: block;
-        width: 100%;
-        min-width: 10em;
-
-        > sd-dropdown {
-          > ._sd-dropdown-control {
-            display: flex;
-            overflow: hidden;
-
-            border: 1px solid var(--trans-lighter);
-            border-radius: var(--border-radius-default);
-            background: var(--theme-secondary-lightest);
-
-            &:focus,
-            &:has(:focus) {
-              border-color: var(--theme-primary-default);
-            }
-
-            > ._sd-select-control {
-              display: flex;
-              position: relative;
-              gap: var(--gap-default);
-              flex-grow: 1;
-              padding: var(--gap-sm) var(--gap-default);
-
-              cursor: pointer;
-
-              > ._sd-select-control-content {
-                flex-grow: 1;
-                white-space: nowrap;
-              }
-
-              > ._sd-select-control-icon {
-                opacity: 0.3;
-              }
-
-              &:hover > ._sd-select-control-icon,
-              &:focus > ._sd-select-control-icon,
-              &:active > ._sd-select-control-icon {
-                opacity: 1;
-              }
-            }
-
-            > sd-select-button {
-              padding: var(--gap-sm);
-              border-left: 1px solid var(--theme-grey-lightest);
-
-              &:last-of-type {
-                border-top-right-radius: var(--border-radius-default);
-                border-bottom-right-radius: var(--border-radius-default);
-              }
-            }
-          }
-        }
-
-        &[sd-disabled="true"] {
-          > sd-dropdown > ._sd-dropdown-control {
-            background: var(--theme-grey-lightest);
-
-            > ._sd-select-control {
-              color: var(--text-trans-light);
-              cursor: default;
-
-              > ._sd-select-control-icon {
-                display: none;
-              }
-            }
-          }
-        }
-
-        &[sd-inline="true"] {
-          display: inline-block;
-          width: auto;
-          vertical-align: top;
-        }
-
-        &[sd-size="sm"] {
-          > sd-dropdown > ._sd-dropdown-control {
-            > ._sd-select-control {
-              padding: var(--gap-xs) var(--gap-sm);
-              gap: var(--gap-sm);
-            }
-
-            > sd-select-button {
-              padding: var(--gap-xs);
-            }
-          }
-        }
-
-        &[sd-size="lg"] {
-          > sd-dropdown > ._sd-dropdown-control {
-            > ._sd-select-control {
-              padding: var(--gap-default) var(--gap-lg);
-              gap: var(--gap-lg);
-            }
-
-            > sd-select-button {
-              padding: var(--gap-default);
-            }
-          }
-        }
-
-        &[sd-inset="true"] {
-          min-width: auto;
-          border-radius: 0;
-
-          > sd-dropdown > ._sd-dropdown-control {
-            border: none;
-            border-radius: 0;
-
-            > sd-select-button {
-              border-radius: 0;
-            }
-
-            &:focus,
-            &:has(:focus) {
-              outline: 1px solid var(--theme-primary-default);
-              outline-offset: -1px;
-
-              > sd-select-button {
-                outline: 1px solid var(--theme-primary-default);
-                outline-offset: -1px;
-              }
-            }
-          }
-
-          &[sd-disabled="true"] > sd-dropdown > ._sd-dropdown-control {
-            background: var(--control-color);
-
-            > ._sd-select-control {
-              color: var(--text-trans-default);
-            }
-          }
-        }
-      }
-    `,
   ],
   template: `
     <sd-dropdown
@@ -208,34 +60,34 @@ import { SdFlexItemControl } from "../flex/sd-flex-item.control";
 
       <sd-dropdown-popup #dropdownPopup (keydown)="onPopupKeydown($event)">
         @if (!items()) {
-          <sd-flex vertical>
+          <div class="flex-vertical">
             @if (headerTemplateRef()) {
-              <sd-flex-item>
+              <div>
                 <ng-template [ngTemplateOutlet]="headerTemplateRef()!" />
-              </sd-flex-item>
+              </div>
             }
 
-            <sd-flex-item fill>
+            <div class="flex-fill">
               <ng-content></ng-content>
-            </sd-flex-item>
-          </sd-flex>
+            </div>
+          </div>
         } @else {
-          <sd-flex vertical>
+          <div class="flex-vertical">
             @if (headerTemplateRef()) {
-              <sd-flex-item>
+              <div>
                 <ng-template [ngTemplateOutlet]="headerTemplateRef()!" />
-              </sd-flex-item>
+              </div>
             }
 
             @if (selectMode() === "multi" && !hideSelectAll()) {
-              <sd-flex-item class="p-sm-default">
-                <sd-anchor (click)="onSelectAllButtonClick(true)">전체선택</sd-anchor>
+              <div class="p-sm-default">
+                <a (click)="onSelectAllButtonClick(true)">전체선택</a>
                 <sd-gap width="sm"></sd-gap>
-                <sd-anchor (click)="onSelectAllButtonClick(false)">전체해제</sd-anchor>
-              </sd-flex-item>
+                <a (click)="onSelectAllButtonClick(false)">전체해제</a>
+              </div>
             }
 
-            <sd-flex-item fill>
+            <div class="flex-fill">
               <ng-template [ngTemplateOutlet]="beforeTemplateRef() ?? null" />
               <ng-template #rowOfList [typed]="rowOfListType" let-items="items" let-depth="depth">
                 @for (item of items; let index = $index; track trackByFn()(item, index)) {
@@ -272,17 +124,158 @@ import { SdFlexItemControl } from "../flex/sd-flex-item.control";
                 [ngTemplateOutlet]="rowOfList"
                 [ngTemplateOutletContext]="{ items: items(), depth: 0 }"
               ></ng-template>
-            </sd-flex-item>
-          </sd-flex>
+            </div>
+          </div>
         }
       </sd-dropdown-popup>
     </sd-dropdown>
   `,
+
+  styles: [
+    /* language=SCSS */ `
+      @use "../../scss/mixins";
+
+      sd-select {
+        display: block;
+        width: 100%;
+        min-width: 10em;
+
+        > sd-dropdown {
+          display: flex;
+          overflow: hidden;
+
+          border: 1px solid var(--trans-lighter);
+          border-radius: var(--border-radius-default);
+          background: var(--theme-secondary-lightest);
+
+          &:focus,
+          &:has(:focus) {
+            border-color: var(--theme-primary-default);
+          }
+
+          > ._sd-select-control {
+            display: flex;
+            position: relative;
+            gap: var(--gap-default);
+            flex-grow: 1;
+            padding: var(--gap-sm) var(--gap-default);
+
+            cursor: pointer;
+
+            > ._sd-select-control-content {
+              flex-grow: 1;
+              white-space: nowrap;
+            }
+
+            > ._sd-select-control-icon {
+              opacity: 0.3;
+            }
+
+            &:hover > ._sd-select-control-icon,
+            &:focus > ._sd-select-control-icon,
+            &:active > ._sd-select-control-icon {
+              opacity: 1;
+            }
+          }
+
+          > sd-select-button {
+            padding: var(--gap-sm);
+            border-left: 1px solid var(--theme-grey-lightest);
+
+            &:last-of-type {
+              border-top-right-radius: var(--border-radius-default);
+              border-bottom-right-radius: var(--border-radius-default);
+            }
+          }
+        }
+
+        &[data-sd-disabled="true"] {
+          > sd-dropdown {
+            background: var(--theme-grey-lightest);
+
+            > ._sd-select-control {
+              color: var(--text-trans-light);
+              cursor: default;
+
+              > ._sd-select-control-icon {
+                display: none;
+              }
+            }
+          }
+        }
+
+        &[data-sd-inline="true"] {
+          display: inline-block;
+          width: auto;
+          vertical-align: top;
+        }
+
+        &[data-sd-size="sm"] {
+          > sd-dropdown {
+            > ._sd-select-control {
+              padding: var(--gap-xs) var(--gap-sm);
+              gap: var(--gap-sm);
+            }
+
+            > sd-select-button {
+              padding: var(--gap-xs);
+            }
+          }
+        }
+
+        &[data-sd-size="lg"] {
+          > sd-dropdown {
+            > ._sd-select-control {
+              padding: var(--gap-default) var(--gap-lg);
+              gap: var(--gap-lg);
+            }
+
+            > sd-select-button {
+              padding: var(--gap-default);
+            }
+          }
+        }
+
+        &[data-sd-inset="true"] {
+          min-width: auto;
+          border-radius: 0;
+
+          > sd-dropdown {
+            border: none;
+            border-radius: 0;
+
+            > sd-select-button {
+              border-radius: 0;
+            }
+
+            &:focus,
+            &:has(:focus) {
+              outline: 1px solid var(--theme-primary-default);
+              outline-offset: -1px;
+
+              > sd-select-button {
+                outline: 1px solid var(--theme-primary-default);
+                outline-offset: -1px;
+              }
+            }
+          }
+
+          &[data-sd-disabled="true"] > sd-dropdown {
+            background: var(--control-color);
+
+            > ._sd-select-control {
+              color: var(--text-trans-default);
+            }
+          }
+        }
+      }
+    `,
+  ],
   host: {
-    "[attr.sd-disabled]": "disabled()",
-    "[attr.sd-inline]": "inline()",
-    "[attr.sd-inset]": "inset()",
-    "[attr.sd-size]": "size()",
+    "[attr.data-sd-disabled]": "disabled()",
+    "[attr.data-sd-inline]": "inline()",
+    "[attr.data-sd-inset]": "inset()",
+    "[attr.data-sd-size]": "size()",
   },
 })
 export class SdSelectControl<M extends "single" | "multi", T> {
@@ -372,7 +365,7 @@ export class SdSelectControl<M extends "single" | "multi", T> {
 
         if (event.key === "ArrowUp") {
           if (currIndex === 0) {
-            this.dropdownControl().contentElRef().nativeElement.focus();
+            this.dropdownControl().elRef.nativeElement.focus();
           } else {
             focusableEls[currIndex - 1].focus();
           }

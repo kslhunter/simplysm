@@ -18,18 +18,27 @@
   @if $value == none or $value == 0 {
     box-shadow: none;
   } @else if $value < 0 {
-    box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.05),
-    inset 0 calc(#{$value * -1} * var(--elevation-size)) calc(#{$value * -1} * 4 * var(--elevation-size)) rgba(0, 0, 0, 0.05);
+    box-shadow:
+      inset 0 0 2px rgba(0, 0, 0, 0.05),
+      inset
+        0
+        calc(#{$value * -1} * var(--elevation-size))
+        calc(#{$value * -1} * 4 * var(--elevation-size))
+        rgba(0, 0, 0, 0.05);
   } @else {
-    box-shadow: 0 0 2px rgba(0, 0, 0, 0.05),
-    //0 calc(#{$value} * var(--elevation-size)) calc(#{$value} * 4 * var(--elevation-size)) rgba(0, 0, 0, 0.05);
-    0 var(--elevation-size) var(--elevation-size) rgba(0, 0, 0, 0.05);
+    box-shadow:
+      0 0 2px rgba(0, 0, 0, 0.05),
+      //0 calc(#{$value} * var(--elevation-size)) calc(#{$value} * 4 * var(--elevation-size)) rgba(0, 0, 0, 0.05);
+      0
+        var(--elevation-size)
+        var(--elevation-size)
+        rgba(0, 0, 0, 0.05);
   }
 }
 
 @mixin form-control-base() {
   display: block;
-  width: 100%;
+  //width: 100%;
   padding: var(--gap-sm) var(--gap-default);
   border: 1px solid transparent;
 

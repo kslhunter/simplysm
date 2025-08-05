@@ -6,7 +6,6 @@ import {
   HostListener,
   input,
   model,
-  viewChild,
   ViewEncapsulation,
 } from "@angular/core";
 import { $effect } from "../../utils/bindings/$effect";
@@ -20,26 +19,18 @@ import { SdDropdownPopupControl } from "./sd-dropdown-popup.control";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
+  host: {
+    "[attr.tabindex]": "disabled() ? undefined : '0'",
+    "(click)": "onContentClick()",
+    "(keydown)": "onContentKeydown($event)",
+  },
   template: `
-    <div
-      #contentEl
-      class="_sd-dropdown-control"
-      [attr.tabindex]="disabled() ? undefined : '0'"
-      [class]="contentClass()"
-      [style]="contentStyle()"
-      (click)="onContentClick()"
-      (keydown)="onContentKeydown($event)"
-    >
-      <ng-content />
-    </div>
+    <ng-content />
     <ng-content select="sd-dropdown-popup" />
   `,
-  host: {
-    "[attr.sd-disabled]": "disabled()",
-  },
 })
 export class SdDropdownControl {
-  #elRef = injectElementRef<HTMLElement>();
+  elRef = injectElementRef<HTMLElement>();
 
   open = model(false);
 
@@ -48,9 +39,6 @@ export class SdDropdownControl {
   contentClass = input<string>();
   contentStyle = input<string>();
 
-  contentElRef = viewChild.required<any, ElementRef<HTMLElement>>("contentEl", {
-    read: ElementRef,
-  });
   popupElRef = contentChild.required<any, ElementRef<HTMLElement>>(SdDropdownPopupControl, {
     read: ElementRef,
   });
@@ -61,7 +49,7 @@ export class SdDropdownControl {
         document.body.appendChild(this.popupElRef().nativeElement);
 
         requestAnimationFrame(() => {
-          const contentEl = this.contentElRef().nativeElement;
+          const contentEl = this.elRef.nativeElement;
           const popupEl = this.popupElRef().nativeElement;
 
           const windowOffset = contentEl.getRelativeOffset(window.document.body);
@@ -81,7 +69,7 @@ export class SdDropdownControl {
           });
         });
       } else {
-        const contentEl = this.contentElRef().nativeElement;
+        const contentEl = this.elRef.nativeElement;
         const popupEl = this.popupElRef().nativeElement;
 
         if (popupEl.matches(":focus, :has(*:focus)")) {
@@ -118,8 +106,8 @@ export class SdDropdownControl {
 
   @HostListener("document:scroll.capture", ["$event"])
   onDocumentScrollCapture(event: Event) {
-    if (this.#elRef.nativeElement.findParent(event.target as Element)) {
-      const contentEl = this.contentElRef().nativeElement;
+    if (this.elRef.nativeElement.findParent(event.target as Element)) {
+      const contentEl = this.elRef.nativeElement;
       const popupEl = this.popupElRef().nativeElement;
 
       const windowOffset = contentEl.getRelativeOffset(window.document.body);
@@ -132,7 +120,7 @@ export class SdDropdownControl {
         });
       } else {
         Object.assign(popupEl.style, {
-          top: windowOffset.top + this.contentElRef().nativeElement.offsetHeight + "px",
+          top: windowOffset.top + this.elRef.nativeElement.offsetHeight + "px",
           bottom: "",
           left: windowOffset.left + "px",
         });
@@ -217,7 +205,7 @@ export class SdDropdownControl {
 
   @HostListener("document:blur.capture", ["$event"])
   onBlurCapture(event: FocusEvent) {
-    const contentEl = this.contentElRef().nativeElement;
+    const contentEl = this.elRef.nativeElement;
     const popupEl = this.popupElRef().nativeElement;
 
     const relatedTarget = event.relatedTarget as HTMLElement | undefined;

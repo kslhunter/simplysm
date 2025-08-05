@@ -1,8 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, viewChild, ViewEncapsulation } from "@angular/core";
 import { SdDropdownControl } from "./dropdown/sd-dropdown.control";
-import { SdAnchorControl } from "./sd-anchor.control";
-import { SdListControl } from "./sd-list.control";
-import { SdListItemControl } from "./sd-list-item.control";
+import { SdListControl } from "./list/sd-list.control";
+import { SdListItemControl } from "./list/sd-list-item.control";
 import { SdThemeProvider } from "../providers/sd-theme.provider";
 import { SdDropdownPopupControl } from "./dropdown/sd-dropdown-popup.control";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
@@ -14,20 +13,13 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [
-    SdDropdownControl,
-    SdDropdownPopupControl,
-    SdAnchorControl,
-    SdListControl,
-    SdListItemControl,
-    FaIconComponent,
-  ],
+  imports: [SdDropdownControl, SdDropdownPopupControl, SdListControl, SdListItemControl, FaIconComponent],
   template: `
     <sd-dropdown>
-      <sd-anchor style="color: var(--theme-grey-default)">
+      <a style="color: var(--theme-grey-default)">
         <fa-icon [icon]="icons.mountainSun" />
         {{ theme() }}
-      </sd-anchor>
+      </a>
 
       <sd-dropdown-popup>
         <sd-list>

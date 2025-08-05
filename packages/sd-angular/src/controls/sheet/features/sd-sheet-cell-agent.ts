@@ -3,19 +3,18 @@ import { $signal } from "../../../utils/bindings/$signal";
 import { SdSheetDomAccessor } from "./sd-sheet-dom-accessor";
 
 export class SdSheetCellAgent {
-  constructor(private readonly _options: { domAccessor: SdSheetDomAccessor; }) {
-  }
+  constructor(private readonly _options: { domAccessor: SdSheetDomAccessor }) {}
 
   #editModeCellAddr = $signal<{ r: number; c: number } | undefined>(undefined);
 
-  getIsCellEditMode(addr: { r: number, c: number }): boolean {
+  getIsCellEditMode(addr: { r: number; c: number }): boolean {
     return ObjectUtils.equal(this.#editModeCellAddr(), addr);
   }
 
   getCellAddr(el: HTMLTableCellElement) {
     return {
-      r: NumberUtils.parseInt(el.getAttribute("r"))!,
-      c: NumberUtils.parseInt(el.getAttribute("c"))!,
+      r: NumberUtils.parseInt(el.getAttribute("data-r"))!,
+      c: NumberUtils.parseInt(el.getAttribute("data-c"))!,
     };
   }
 
@@ -26,74 +25,60 @@ export class SdSheetCellAgent {
       if (event.key === "F2") {
         event.preventDefault();
         this.#enterEditMode(el);
-      }
-      else if (event.key === "ArrowDown") {
+      } else if (event.key === "ArrowDown") {
         if (this.#moveCellIfExists(el, 1, 0, false)) {
           event.preventDefault();
         }
-      }
-      else if (event.key === "ArrowUp") {
+      } else if (event.key === "ArrowUp") {
         if (this.#moveCellIfExists(el, -1, 0, false)) {
           event.preventDefault();
         }
-      }
-      else if (event.key === "ArrowRight") {
+      } else if (event.key === "ArrowRight") {
         if (this.#moveCellIfExists(el, 0, 1, false)) {
           event.preventDefault();
         }
-      }
-      else if (event.key === "ArrowLeft") {
+      } else if (event.key === "ArrowLeft") {
         if (this.#moveCellIfExists(el, 0, -1, false)) {
           event.preventDefault();
         }
-      }
-      else if (event.ctrlKey && event.key === "c") {
+      } else if (event.ctrlKey && event.key === "c") {
         if (!document.getSelection()) {
-
           event.preventDefault();
           await el.copyAsync();
         }
-      }
-      else if (event.ctrlKey && event.key === "v") {
+      } else if (event.ctrlKey && event.key === "v") {
         event.preventDefault();
         await el.pasteAsync();
       }
-    }
-    else if (event.target instanceof HTMLElement) {
+    } else if (event.target instanceof HTMLElement) {
       const tdEl = event.target.findParent("td") as HTMLTableCellElement | undefined;
       if (!tdEl) return;
       if (event.key === "Escape") {
         event.preventDefault();
         this.#exitEditMode(tdEl);
-      }
-      else if (event.key === "Enter") {
+      } else if (event.key === "Enter") {
         if (event.target.tagName === "TEXTAREA" || event.target.hasAttribute("contenteditable")) {
           if (event.ctrlKey) {
             event.preventDefault();
             this.#moveCellIfExists(tdEl, 1, 0, true);
           }
-        }
-        else {
+        } else {
           event.preventDefault();
           this.#moveCellIfExists(tdEl, 1, 0, true);
         }
-      }
-      else if (event.ctrlKey && event.key === "ArrowDown") {
+      } else if (event.ctrlKey && event.key === "ArrowDown") {
         if (this.#moveCellIfExists(tdEl, 1, 0, true)) {
           event.preventDefault();
         }
-      }
-      else if (event.ctrlKey && event.key === "ArrowUp") {
+      } else if (event.ctrlKey && event.key === "ArrowUp") {
         if (this.#moveCellIfExists(tdEl, -1, 0, true)) {
           event.preventDefault();
         }
-      }
-      else if (event.ctrlKey && event.key === "ArrowRight") {
+      } else if (event.ctrlKey && event.key === "ArrowRight") {
         if (this.#moveCellIfExists(tdEl, 0, 1, true)) {
           event.preventDefault();
         }
-      }
-      else if (event.ctrlKey && event.key === "ArrowLeft") {
+      } else if (event.ctrlKey && event.key === "ArrowLeft") {
         if (this.#moveCellIfExists(tdEl, 0, -1, true)) {
           event.preventDefault();
         }
@@ -104,9 +89,9 @@ export class SdSheetCellAgent {
   handleCellDoubleClick(event: MouseEvent) {
     if (!(event.target instanceof HTMLElement)) return;
 
-    const tdEl = (event.target.tagName === "TD"
-      ? event.target
-      : event.target.findParent("td")!) as HTMLTableCellElement;
+    const tdEl = (
+      event.target.tagName === "TD" ? event.target : event.target.findParent("td")!
+    ) as HTMLTableCellElement;
 
     this.#enterEditMode(tdEl);
   }
@@ -135,12 +120,7 @@ export class SdSheetCellAgent {
     this.#editModeCellAddr.set(undefined);
   }
 
-  #moveCellIfExists(
-    fromEl: HTMLTableCellElement,
-    offsetR: number,
-    offsetC: number,
-    isEditMode: boolean,
-  ): boolean {
+  #moveCellIfExists(fromEl: HTMLTableCellElement, offsetR: number, offsetC: number, isEditMode: boolean): boolean {
     const fromAddr = this.getCellAddr(fromEl);
     const toAddr = { r: fromAddr.r + offsetR, c: fromAddr.c + offsetC };
 
@@ -151,8 +131,7 @@ export class SdSheetCellAgent {
     if (isEditMode) {
       this.#editModeCellAddr.set(toAddr);
       requestAnimationFrame(() => tdEl.findFocusableFirst()?.focus());
-    }
-    else {
+    } else {
       this.#editModeCellAddr.set(undefined);
     }
     return true;

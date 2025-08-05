@@ -18,7 +18,7 @@ import { $signal } from "../../utils/bindings/$signal";
         padding-left: var(--sidebar-width);
         transition: padding-left 0.1s ease-out;
 
-        &[sd-toggle="true"] {
+        &[data-sd-toggle="true"] {
           padding-left: 0;
           transition: padding-left 0.1s ease-in;
         }
@@ -46,7 +46,7 @@ import { $signal } from "../../utils/bindings/$signal";
             transition: opacity 0.3s ease-in-out;
           }
 
-          &[sd-toggle="true"] {
+          &[data-sd-toggle="true"] {
             > ._backdrop {
               opacity: 0.6;
               pointer-events: auto;
@@ -60,7 +60,7 @@ import { $signal } from "../../utils/bindings/$signal";
     <ng-content></ng-content>
     <div class="_backdrop" (click)="onBackdropClick()"></div>`,
   host: {
-    "[attr.sd-toggle]": "toggle()",
+    "[attr.data-sd-toggle]": "toggle()",
   },
 })
 export class SdSidebarContainerControl {

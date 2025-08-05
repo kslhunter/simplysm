@@ -16,16 +16,17 @@ import { $computed } from "../utils/bindings/$computed";
         height: 100%;
         overflow: auto;
 
-        &[sd-selected="true"] {
+        &[data-sd-selected="true"] {
           display: block;
         }
       }
     `,
   ],
   template: `
-    <ng-content></ng-content>`,
+    <ng-content></ng-content>
+  `,
   host: {
-    "[attr.sd-selected]": "isSelected()",
+    "[attr.data-sd-selected]": "isSelected()",
   },
 })
 export class SdTabviewItemControl<T> {

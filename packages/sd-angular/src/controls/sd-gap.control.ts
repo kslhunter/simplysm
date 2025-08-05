@@ -17,11 +17,11 @@ import { injectElementRef } from "../utils/injections/inject-element-ref";
 
       sd-gap {
         @each $key, $val in map.get(variables.$vars, gap) {
-          &[sd-height="#{$key}"] {
+          &[data-sd-height="#{$key}"] {
             height: var(--gap-#{$key});
           }
 
-          &[sd-width="#{$key}"] {
+          &[data-sd-width="#{$key}"] {
             width: var(--gap-#{$key});
           }
         }
@@ -30,9 +30,9 @@ import { injectElementRef } from "../utils/injections/inject-element-ref";
   ],
   template: "",
   host: {
-    "[attr.sd-height]": "height()",
+    "[attr.data-sd-height]": "height()",
     "[style.height.px]": "heightPx()",
-    "[attr.sd-width]": "width()",
+    "[attr.data-sd-width]": "width()",
     "[style.width.px]": "widthPx()",
     "[style.width.em]": "widthEm()",
   },
@@ -50,18 +50,11 @@ export class SdGapControl {
     $effect(() => {
       if (this.widthPx() === 0 || this.heightPx() === 0 || this.widthEm() === 0) {
         this.#elRef.nativeElement.style.display = "none";
-      }
-      else if (
-        this.width() !== undefined
-        || this.widthPx() !== undefined
-        || this.widthEm() !== undefined
-      ) {
+      } else if (this.width() !== undefined || this.widthPx() !== undefined || this.widthEm() !== undefined) {
         this.#elRef.nativeElement.style.display = "inline-block";
-      }
-      else if (this.height() !== undefined || this.heightPx() !== undefined) {
+      } else if (this.height() !== undefined || this.heightPx() !== undefined) {
         this.#elRef.nativeElement.style.display = "block";
-      }
-      else {
+      } else {
         this.#elRef.nativeElement.style.display = "";
       }
     });

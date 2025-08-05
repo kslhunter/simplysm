@@ -88,7 +88,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
           border-color: var(--theme-primary-dark);
         }
 
-        &[sd-checked="true"] {
+        &[data-sd-checked="true"] {
           > ._indicator_rect {
             background: var(--theme-primary-default);
 
@@ -99,7 +99,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
         }
 
         @each $key, $val in map.get(variables.$vars, theme) {
-          &[sd-theme="#{$key}"] {
+          &[data-sd-theme="#{$key}"] {
             > ._indicator_rect {
               background: var(--theme-#{$key}-lightest);
 
@@ -114,7 +114,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
               }
             }
 
-            &[sd-checked="true"] {
+            &[data-sd-checked="true"] {
               > ._indicator_rect {
                 background: var(--theme-#{$key}-default);
 
@@ -126,7 +126,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
           }
         }
 
-        &[sd-theme="white"] {
+        &[data-sd-theme="white"] {
           > ._indicator_rect {
             background: var(--control-color);
             border-color: var(--text-trans-lightest);
@@ -138,14 +138,14 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
             }
           }
 
-          &[sd-checked="true"] {
+          &[data-sd-checked="true"] {
             > ._indicator_rect {
               background: var(--theme-primary-default);
             }
           }
         }
 
-        &[sd-radio="true"] {
+        &[data-sd-radio="true"] {
           > ._indicator_rect {
             border-radius: 100%;
             padding: var(--gap-xs);
@@ -158,43 +158,42 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
             }
           }
 
-          &[sd-checked="true"] {
+          &[data-sd-checked="true"] {
             > ._indicator_rect {
               background: var(--theme-secondary-lightest);
               border-color: var(--theme-primary-dark);
-              //background: var(--theme-primary-default);
             }
           }
         }
 
-        &[sd-size="sm"] {
+        &[data-sd-size="sm"] {
           height: calc(var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-xs) * 2 + 2px);
           padding: var(--gap-xs) var(--gap-sm);
           gap: var(--gap-xs);
         }
 
-        &[sd-size="lg"] {
+        &[data-sd-size="lg"] {
           height: calc(var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-default) * 2 + 2px);
           padding: var(--gap-default) var(--gap-lg);
           gap: var(--gap-default);
         }
 
-        &[sd-inset="true"] {
+        &[data-sd-inset="true"] {
           height: calc(var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-sm) * 2);
           border: none;
           justify-content: center;
           text-align: center;
 
-          &[sd-size="sm"] {
+          &[data-sd-size="sm"] {
             height: calc(var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-xs) * 2);
           }
 
-          &[sd-size="lg"] {
+          &[data-sd-size="lg"] {
             height: calc(var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-default) * 2);
           }
         }
 
-        &[sd-inline="true"] {
+        &[data-sd-inline="true"] {
           display: inline-block;
           vertical-align: top;
           padding: 0;
@@ -203,35 +202,21 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
           width: auto;
         }
 
-        &[sd-disabled="true"] {
+        &[data-sd-disabled="true"] {
           opacity: 0.3;
           pointer-events: none;
-          /*> ._indicator_rect {
-            background: var(--theme-grey-lighter);
-            border: 1px solid var(--trans-light);
-
-            > ._indicator {
-              color: var(--theme-grey-default);
-            }
-          }
-
-          &:focus {
-            > ._indicator_rect {
-              border-color: var(--theme-grey-default);
-            }
-          }*/
         }
       }
     `,
   ],
   host: {
-    "[attr.sd-checked]": "value()",
-    "[attr.sd-disabled]": "disabled()",
-    "[attr.sd-inline]": "inline()",
-    "[attr.sd-inset]": "inset()",
-    "[attr.sd-radio]": "radio()",
-    "[attr.sd-size]": "size()",
-    "[attr.sd-theme]": "theme()",
+    "[attr.data-sd-checked]": "value()",
+    "[attr.data-sd-disabled]": "disabled()",
+    "[attr.data-sd-inline]": "inline()",
+    "[attr.data-sd-inset]": "inset()",
+    "[attr.data-sd-radio]": "radio()",
+    "[attr.data-sd-size]": "size()",
+    "[attr.data-sd-theme]": "theme()",
     "[attr.tabindex]": "0",
   },
 })

@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  HostListener,
-  inject,
-  input,
-  ViewEncapsulation,
-} from "@angular/core";
+import { ChangeDetectionStrategy, Component, HostListener, inject, input, ViewEncapsulation } from "@angular/core";
 import { SdBusyProvider } from "../providers/sd-busy.provider";
 import { $computed } from "../utils/bindings/$computed";
 
@@ -35,10 +28,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
       </div>
       @if (progressPercent() != null) {
         <div class="_progress">
-          <div
-            class="_progress-bar"
-            [style.transform]="'scaleX(' + progressPercent()! / 100 + ')'"
-          ></div>
+          <div class="_progress-bar" [style.transform]="'scaleX(' + progressPercent()! / 100 + ')'"></div>
         </div>
       }
     </div>
@@ -75,8 +65,8 @@ import { transformBoolean } from "../utils/type-tramsforms";
           // transition: backdrop-filter calc(var(--animation-duration) * 10);
 
           // background: rgba(255, 255, 255, 0.1);
-          // opacity: 0;
-          // transition: opacity calc(var(--animation-duration) * 2);
+          opacity: 0;
+          transition: opacity var(--animation-duration);
 
           transition-timing-function: linear;
 
@@ -106,17 +96,16 @@ import { transformBoolean } from "../utils/type-tramsforms";
           }
         }
 
-        &[sd-busy="true"] {
+        &[data-sd-busy="true"] {
           > ._screen {
             visibility: visible;
             pointer-events: auto;
 
             opacity: 1;
-            // backdrop-filter:blur(2 px);
           }
         }
 
-        &[sd-type="spinner"] {
+        &[data-sd-type="spinner"] {
           > ._screen > ._rect {
             transform: translateY(-100%);
             transition: 0.1s ease-in;
@@ -149,7 +138,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
             }
           }
 
-          &[sd-busy="true"] {
+          &[data-sd-busy="true"] {
             > ._screen > ._rect {
               transform: none;
               transition: 0.1s ease-out;
@@ -157,10 +146,10 @@ import { transformBoolean } from "../utils/type-tramsforms";
           }
         }
 
-        &[sd-type="bar"] {
+        &[data-sd-type="bar"] {
           min-height: 4px;
 
-          &[sd-busy="true"] {
+          &[data-sd-busy="true"] {
             > ._screen > ._rect {
               > ._indicator {
                 position: absolute;
@@ -208,7 +197,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
           }
         }
 
-        &[sd-type="cube"] {
+        &[data-sd-type="cube"] {
           > ._screen > ._rect {
             /*> ._bar {
             &:before,
@@ -350,8 +339,8 @@ import { transformBoolean } from "../utils/type-tramsforms";
   ],
   //endregion
   host: {
-    "[attr.sd-busy]": "busy()",
-    "[attr.sd-type]": "currType()",
+    "[attr.data-sd-busy]": "busy()",
+    "[attr.data-sd-type]": "currType()",
   },
 })
 export class SdBusyContainerControl {

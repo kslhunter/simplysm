@@ -13,11 +13,11 @@ import { $computed } from "../utils/bindings/$computed";
       sd-view-item {
         display: none;
 
-        &[sd-selected="true"] {
+        &[data-sd-selected="true"] {
           display: block;
         }
 
-        sd-view[sd-fill="true"] & {
+        sd-view[data-sd-fill="true"] & {
           height: 100%;
         }
       }
@@ -27,7 +27,7 @@ import { $computed } from "../utils/bindings/$computed";
     <ng-content></ng-content>
   `,
   host: {
-    "[attr.sd-selected]": "isSelected()",
+    "[attr.data-sd-selected]": "isSelected()",
   },
 })
 export class SdViewItemControl {

@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
 import { transformBoolean } from "../utils/type-tramsforms";
 
+//TODO: style로 변경
 @Component({
   selector: "sd-table",
   changeDetection: ChangeDetectionStrategy.OnPush,

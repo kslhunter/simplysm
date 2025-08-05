@@ -9,9 +9,9 @@ import {
   OutputEmitterRef,
   Type,
 } from "@angular/core";
-import { SdToastContainerControl } from "../controls/sd-toast-container.control";
+import { SdToastContainerControl } from "../controls/toast/sd-toast-container.control";
 import { SdSystemLogProvider } from "./sd-system-log.provider";
-import { SdToastControl } from "../controls/sd-toast.control";
+import { SdToastControl } from "../controls/toast/sd-toast.control";
 import { $signal } from "../utils/bindings/$signal";
 import { TDirectiveInputSignals } from "../utils/types";
 import { $effect } from "../utils/bindings/$effect";
@@ -45,10 +45,7 @@ export class SdToastProvider {
 
   async try<R>(fn: () => Promise<R>, messageFn?: (err: Error) => string): Promise<R | undefined>;
   try<R>(fn: () => R, messageFn?: (err: Error) => string): R | undefined;
-  async try<R>(
-    fn: () => Promise<R> | R,
-    messageFn?: (err: Error) => string,
-  ): Promise<R | undefined> {
+  async try<R>(fn: () => Promise<R> | R, messageFn?: (err: Error) => string): Promise<R | undefined> {
     try {
       return await fn();
     } catch (err) {
@@ -76,9 +73,7 @@ export class SdToastProvider {
     const compRef = createComponent(toast.type, {
       environmentInjector: this.#appRef.injector,
       bindings: [
-        ...Object.keys(toast.inputs).map((inputKey) =>
-          inputBinding(inputKey, () => toast.inputs[inputKey]),
-        ),
+        ...Object.keys(toast.inputs).map((inputKey) => inputBinding(inputKey, () => toast.inputs[inputKey])),
         outputBinding("close", () => closeFn()),
       ],
     });

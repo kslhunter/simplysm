@@ -9,10 +9,8 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import { SdBusyContainerControl } from "../controls/sd-busy-container.control";
-
-import { SdPaneControl } from "../controls/sd-pane.control";
-import { SdTopbarContainerControl } from "../controls/sd-topbar-container.control";
-import { SdTopbarControl } from "../controls/sd-topbar.control";
+import { SdTopbarContainerControl } from "../controls/topbar/sd-topbar-container.control";
+import { SdTopbarControl } from "../controls/topbar/sd-topbar.control";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { SdAppStructureProvider } from "../providers/sd-app-structure.provider";
 import { SdActivatedModalProvider } from "../providers/sd-modal.provider";
@@ -24,20 +22,12 @@ import { transformBoolean } from "../utils/type-tramsforms";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { injectParent } from "../utils/injections/inject-parent";
 
-/** @deprecated */
 @Component({
   selector: "sd-base-container",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [
-    SdPaneControl,
-    FaIconComponent,
-    SdTopbarContainerControl,
-    SdTopbarControl,
-    SdBusyContainerControl,
-    NgTemplateOutlet,
-  ],
+  imports: [FaIconComponent, SdTopbarContainerControl, SdTopbarControl, SdBusyContainerControl, NgTemplateOutlet],
   template: `
     <sd-busy-container [busy]="busy()" [message]="busyMessage()">
       @if (initialized() == null || initialized()) {
@@ -67,23 +57,13 @@ import { injectParent } from "../utils/injections/inject-parent";
               <ng-template [ngTemplateOutlet]="contentTemplateRef()" />
             </div>
             @if (modalBottomTemplateRef()) {
-              <div>
+              <div class="bdt bdt-theme-grey-lightest">
                 <ng-template [ngTemplateOutlet]="modalBottomTemplateRef() ?? null" />
               </div>
             }
           </div>
         } @else {
-          <!--<sd-dock-container>
-            @if (controlToolTemplateRef()) {
-              <sd-dock>
-                <ng-template [ngTemplateOutlet]="controlToolTemplateRef() ?? null" />
-              </sd-dock>
-            }-->
-
-          <sd-pane>
-            <ng-template [ngTemplateOutlet]="contentTemplateRef()" />
-          </sd-pane>
-          <!--</sd-dock-container>-->
+          <ng-template [ngTemplateOutlet]="contentTemplateRef()" />
         }
       }
     </sd-busy-container>
@@ -103,7 +83,6 @@ export class SdBaseContainerControl {
   contentTemplateRef = contentChild.required("content", { read: TemplateRef });
 
   pageTopbarTemplateRef = contentChild("pageTopbar", { read: TemplateRef });
-  // controlToolTemplateRef = contentChild("controlTool", { read: TemplateRef });
   modalBottomTemplateRef = contentChild("modalBottom", { read: TemplateRef });
 
   #parentViewType = useViewTypeSignal(() => this.#parent);

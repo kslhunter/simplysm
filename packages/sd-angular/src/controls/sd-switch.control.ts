@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  HostListener,
-  input,
-  model,
-  ViewEncapsulation,
-} from "@angular/core";
+import { ChangeDetectionStrategy, Component, HostListener, input, model, ViewEncapsulation } from "@angular/core";
 import { transformBoolean } from "../utils/type-tramsforms";
 
 @Component({
@@ -48,7 +41,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
           }
         }
 
-        &[sd-on="true"] {
+        &[data-sd-on="true"] {
           > div {
             background: var(--theme-success-default);
 
@@ -58,28 +51,28 @@ import { transformBoolean } from "../utils/type-tramsforms";
           }
         }
 
-        &[sd-inline="true"] {
+        &[data-sd-inline="true"] {
           display: inline-block;
           padding: 0;
           border: none;
         }
 
-        &[sd-inset="true"] {
+        &[data-sd-inset="true"] {
           border: none;
         }
 
-        &[sd-size="sm"] {
+        &[data-sd-size="sm"] {
           padding: var(--gap-sm) 0;
         }
 
-        &[sd-size="lg"] {
+        &[data-sd-size="lg"] {
           font-size: var(--font-size-lg);
           padding: var(--gap-default) 0;
         }
 
         @each $key, $val in map.get(variables.$vars, theme) {
-          &[sd-theme="#{$key}"] {
-            &[sd-on="true"] {
+          &[data-sd-theme="#{$key}"] {
+            &[data-sd-on="true"] {
               > div {
                 background: var(--theme-#{$key}-default);
               }
@@ -87,7 +80,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
           }
         }
 
-        &[sd-disabled="true"] {
+        &[data-sd-disabled="true"] {
           > div {
             opacity: 0.5;
 
@@ -105,12 +98,12 @@ import { transformBoolean } from "../utils/type-tramsforms";
     </div>
   `,
   host: {
-    "[attr.sd-on]": "value()",
-    "[attr.sd-disabled]": "disabled()",
-    "[attr.sd-inline]": "inline()",
-    "[attr.sd-inset]": "inset()",
-    "[attr.sd-size]": "size()",
-    "[attr.sd-theme]": "theme()",
+    "[attr.data-sd-on]": "value()",
+    "[attr.data-sd-disabled]": "disabled()",
+    "[attr.data-sd-inline]": "inline()",
+    "[attr.data-sd-inset]": "inset()",
+    "[attr.data-sd-size]": "size()",
+    "[attr.data-sd-theme]": "theme()",
     "[attr.tabindex]": "'0'",
   },
 })
@@ -122,9 +115,7 @@ export class SdSwitchControl {
   inset = input(false, { transform: transformBoolean });
 
   size = input<"sm" | "lg">();
-  theme = input<
-    "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey"
-  >();
+  theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey">();
 
   @HostListener("click", ["$event"])
   onClick(event: Event) {

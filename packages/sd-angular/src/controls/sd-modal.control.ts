@@ -17,7 +17,6 @@ import { $effect } from "../utils/bindings/$effect";
 import { $signal } from "../utils/bindings/$signal";
 import { injectElementRef } from "../utils/injections/inject-element-ref";
 import { transformBoolean } from "../utils/type-tramsforms";
-import { SdAnchorControl } from "./sd-anchor.control";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { NumberUtils } from "@simplysm/sd-core-common";
 
@@ -26,7 +25,7 @@ import { NumberUtils } from "@simplysm/sd-core-common";
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdAnchorControl, SdEventsDirective, FaIconComponent],
+  imports: [SdEventsDirective, FaIconComponent],
   template: `
     <div class="_backdrop" (click)="onBackdropClick()"></div>
 
@@ -42,14 +41,14 @@ import { NumberUtils } from "@simplysm/sd-core-common";
       (focus)="onDialogFocus()"
       (sdResize)="onDialogResize($event)"
     >
-      <div class="flex-vertical">
+      <div class="flex-vertical fill">
         @if (!hideHeader()) {
           <div class="_header flex" (mousedown)="onHeaderMouseDown($event)" [style]="headerStyle()">
             <h5 class="_title flex-fill">{{ title() }}</h5>
             @if (!hideCloseButton()) {
-              <sd-anchor class="_close-button" theme="grey" (click)="onCloseButtonClick()">
+              <a class="_close-button a-grey" (click)="onCloseButtonClick()">
                 <fa-icon [icon]="icons.xmark" [fixedWidth]="true" />
-              </sd-anchor>
+              </a>
             }
           </div>
         }
@@ -100,7 +99,7 @@ import { NumberUtils } from "@simplysm/sd-core-common";
           margin: 0 auto;
           width: fit-content;
           min-width: 200px;
-          background: var(--background-color);
+          background: var(--control-color);
           overflow: hidden;
           @include mixins.elevation(16);
 
@@ -113,8 +112,7 @@ import { NumberUtils } from "@simplysm/sd-core-common";
           > .flex-vertical {
             > ._header {
               user-select: none;
-              border-bottom: 1px solid var(--trans-light);
-              background: var(--control-color);
+              border-bottom: 1px solid var(--theme-grey-lightest);
 
               > ._title {
                 padding: var(--gap-sm) var(--gap-default);
@@ -212,7 +210,7 @@ import { NumberUtils } from "@simplysm/sd-core-common";
           transition: transform var(--animation-duration) ease-in-out;
         }
 
-        &[data-sd-open="true"][sd-init="true"] {
+        &[data-sd-open="true"][data-sd-init="true"] {
           opacity: 1;
           pointer-events: auto;
 
@@ -239,7 +237,7 @@ import { NumberUtils } from "@simplysm/sd-core-common";
             }
           }
 
-          &[data-sd-open="true"][sd-init="true"] {
+          &[data-sd-open="true"][data-sd-init="true"] {
             pointer-events: none;
 
             > ._dialog {
@@ -344,7 +342,7 @@ export class SdModalControl {
         }
       }
 
-      this.#elRef.nativeElement.setAttribute("sd-init", "true");
+      this.#elRef.nativeElement.setAttribute("data-sd-init", "true");
     });
 
     $effect(() => {

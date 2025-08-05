@@ -21,7 +21,7 @@ import { $signal } from "../../utils/bindings/$signal";
 import { transformBoolean } from "../../utils/type-tramsforms";
 import { ISharedDataBase } from "./sd-shared-data.provider";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
-import { ISdSelectModal, TSdSelectModalInfo } from "../sd-data-sheet/sd-data-select-button.control";
+import { ISdSelectModal, TSdSelectModalInfo } from "../../deprecated/sd-data-sheet/sd-data-select-button.control";
 import { SdSelectControl, TSelectModeValue } from "../../controls/select/sd-select.control";
 
 @Component({
@@ -89,7 +89,7 @@ import { SdSelectControl, TSelectModeValue } from "../../controls/select/sd-sele
         @if (
           getItemSelectable(item, index, depth) && (selectCtrl.open() || this.selectedKeys().includes(item.__valueKey))
         ) {
-          <sd-select-item [value]="item.__valueKey" [hidden]="!getItemVisible(item, index, depth)">
+          <sd-select-item [value]="item.__valueKey" [hidden]="!getItemVisible(item, index)">
             <span [style.text-decoration]="getIsHiddenFn()(item, index) ? 'line-through' : undefined">
               <ng-template
                 [ngTemplateOutlet]="itemTemplateRef() ?? null"
@@ -149,7 +149,7 @@ export class SdSharedDataSelectControl<
     read: TemplateRef,
   });
 
-  trackByFn = (item: T, index: number) => item.__valueKey;
+  trackByFn = (item: T) => item.__valueKey;
 
   open = $signal(false);
 
@@ -192,15 +192,15 @@ export class SdSharedDataSelectControl<
   }
 
   // 화면 목록에서 뿌려질것 (검색어에 의해 숨겨진것 제외)
-  getItemVisible(item: any, index: number, depth: number) {
+  getItemVisible(item: any, index: number) {
     return (
-      (this.isIncludeSearchText(item, index, depth) && !this.getIsHiddenFn()(item, index)) ||
+      (this.isIncludeSearchText(item, index) && !this.getIsHiddenFn()(item, index)) ||
       this.value() === item.__valueKey ||
       (this.value() instanceof Array && (this.value() as any[]).includes(item.__valueKey))
     );
   }
 
-  isIncludeSearchText(item: any, index: number, depth: number): boolean {
+  isIncludeSearchText(item: any, index: number): boolean {
     const splitSearchTexts =
       this.searchText()
         ?.trim()
@@ -216,9 +216,9 @@ export class SdSharedDataSelectControl<
     }
 
     if (this.parentKeyProp() !== undefined) {
-      const children = this.getChildren(item, index, item.depth);
+      const children = this.getChildren(item);
       for (let i = 0; i < children.length; i++) {
-        if (this.isIncludeSearchText(children[i], i, item.depth + 1)) {
+        if (this.isIncludeSearchText(children[i], i)) {
           return true;
         }
       }
@@ -227,7 +227,7 @@ export class SdSharedDataSelectControl<
     return true;
   }
 
-  getChildren = (item: ISharedDataBase<string | number>, index: number, depth: number): any[] => {
+  getChildren = (item: ISharedDataBase<string | number>): any[] => {
     let result = this.itemByParentKeyMap()?.get(item.__valueKey) ?? [];
 
     if (this.displayOrderKeyProp() !== undefined) {
