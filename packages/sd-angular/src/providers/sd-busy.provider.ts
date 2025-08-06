@@ -7,7 +7,7 @@ import { $effect } from "../utils/bindings/$effect";
 export class SdBusyProvider {
   #appRef = inject(ApplicationRef);
 
-  type = $signal<"spinner" | "bar" | "cube">("cube");
+  type = $signal<"spinner" | "bar" | "cube">("bar");
 
   globalBusyCount = $signal(0);
 

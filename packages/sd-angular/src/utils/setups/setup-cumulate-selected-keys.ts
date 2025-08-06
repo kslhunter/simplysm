@@ -4,9 +4,10 @@ import { $effect } from "../bindings/$effect";
 
 export function setupCumulateSelectedKeys<T, K>(options: {
   items: Signal<T[]>;
-  selectMode: Signal<"single" | "multi" | "none" | undefined>;
   selectedItems: WritableSignal<T[]>;
   selectedItemKeys: WritableSignal<K[]>;
+
+  selectMode: () => "single" | "multi" | undefined;
   keySelectorFn: (item: T, index: number) => K;
 }): void {
   $effect([options.items, options.selectedItemKeys], () => {

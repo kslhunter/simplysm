@@ -1,0 +1,771 @@
+import { NgTemplateOutlet } from "@angular/common";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  contentChild,
+  contentChildren,
+  Directive,
+  effect,
+  HostListener,
+  inject,
+  input,
+  InputSignal,
+  model,
+  output,
+  reflectComponentType,
+  Signal,
+  TemplateRef,
+  viewChild,
+  ViewEncapsulation,
+} from "@angular/core";
+import { ObjectUtils, TArrayDiffs2Result } from "@simplysm/sd-core-common";
+import { SdButtonControl } from "../../controls/sd-button.control";
+import { SdFormControl } from "../../controls/sd-form.control";
+import { SdSheetColumnCellTemplateDirective } from "../../controls/sheet/directives/sd-sheet-column-cell.template-directive";
+import { SdSheetColumnDirective } from "../../controls/sheet/directives/sd-sheet-column.directive";
+import { SdSheetControl } from "../../controls/sheet/sd-sheet.control";
+import { SdFileDialogProvider } from "../../providers/sd-file-dialog.provider";
+import { SdToastProvider } from "../../providers/sd-toast.provider";
+import { $computed } from "../../utils/bindings/$computed";
+import { $signal } from "../../utils/bindings/$signal";
+import { ISdSortingDef } from "../../utils/managers/sd-sorting-manager";
+import { setupCumulateSelectedKeys } from "../../utils/setups/setup-cumulate-selected-keys";
+import { useViewTypeSignal } from "../../utils/signals/use-view-type.signal";
+import { SdBaseContainerControl } from "../sd-base-container.control";
+import { SdSharedDataProvider } from "../shared-data/sd-shared-data.provider";
+import { SdDataSheetColumnDirective } from "./sd-data-sheet-column.directive";
+import { setupCloserWhenSingleSelectionChange } from "../../utils/setups/setup-closer-when-single-selection-change";
+import { FaIconComponent } from "@fortawesome/angular-fontawesome";
+import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
+import { ISdSelectModal, ISelectModalOutputResult } from "../../deprecated/sd-data-sheet/sd-data-select-button.control";
+import { injectParent } from "../../utils/injections/inject-parent";
+import { FormatPipe } from "../../pipes/format.pipe";
+import { setupCanDeactivate } from "../../utils/setups/setup-can-deactivate";
+import { $arr } from "../../utils/bindings/wrappers/$arr";
+import { TXT_CHANGE_IGNORE_CONFIRM } from "../../commons";
+import { $effect } from "../../utils/bindings/$effect";
+
+@Component({
+  selector: "sd-data-sheet",
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  standalone: true,
+  imports: [
+    SdFormControl,
+    SdButtonControl,
+    SdSheetControl,
+    SdSheetColumnDirective,
+    SdSheetColumnCellTemplateDirective,
+    NgTemplateOutlet,
+    SdBaseContainerControl,
+    FaIconComponent,
+    FormatPipe,
+  ],
+  template: `
+    <sd-base-container
+      [busy]="parent.busyCount() > 0"
+      [viewType]="parent.viewType()"
+      [initialized]="parent.initialized()"
+      [restricted]="!parent.canUse()"
+    >
+      <ng-template #pageTopbar>
+        @if (parent.canEdit() && parent.submit) {
+          <sd-button theme="link-primary" (click)="onSubmitButtonClick()">
+            <fa-icon [icon]="icons.save" [fixedWidth]="true" />
+            저장
+            <small>(CTRL+S)</small>
+          </sd-button>
+        }
+        <sd-button theme="link-info" (click)="onRefreshButtonClick()">
+          <fa-icon [icon]="icons.refresh" [fixedWidth]="true" />
+          새로고침
+          <small>(CTRL+ALT+L)</small>
+        </sd-button>
+      </ng-template>
+
+      <ng-template #content>
+        <div class="fill flex-vertical" [class.region]="parent.viewType() === 'page'">
+          @if (parent.canEdit() && parent.submit && parent.viewType() === "control") {
+            <div class="flex flex-gap-sm p-default bdb bdb-theme-grey-lightest">
+              <sd-button size="sm" theme="primary" (click)="onSubmitButtonClick()">
+                <fa-icon [icon]="icons.save" [fixedWidth]="true" />
+                저장
+                <small>(CTRL+S)</small>
+              </sd-button>
+              <sd-button size="sm" theme="info" (click)="onRefreshButtonClick()">
+                <fa-icon [icon]="icons.refresh" [fixedWidth]="true" />
+                새로고침
+                <small>(CTRL+ALT+L)</small>
+              </sd-button>
+            </div>
+          }
+
+          @if (prevTplRef()) {
+            <div>
+              <ng-template [ngTemplateOutlet]="prevTplRef()!" />
+            </div>
+          }
+
+          @if (filterTplRef()) {
+            <div class="p-default bdb bdb-theme-grey-lightest">
+              <sd-form (submit)="onFilterSubmit()">
+                <div class="form-box-inline">
+                  <div>
+                    <sd-button type="submit" theme="info">
+                      <fa-icon [icon]="icons.search" [fixedWidth]="true" />
+                      조회
+                    </sd-button>
+                  </div>
+                  <ng-template [ngTemplateOutlet]="filterTplRef()!" />
+                </div>
+              </sd-form>
+            </div>
+          }
+
+          <div class="flex flex-gap-sm p-xs-default">
+            @if (parent.editMode === "modal") {
+              @if (parent.canEdit() && parent.editItem) {
+                <sd-button size="sm" theme="link-primary" (click)="onCreateItemButtonClick()">
+                  <fa-icon [icon]="icons.add" [fixedWidth]="true" />
+                  {{ insertText() ?? "등록" }}
+                </sd-button>
+              }
+            } @else if (parent.editMode === "inline") {
+              @if (parent.canEdit() && parent.newItem) {
+                <sd-button size="sm" theme="link-primary" (click)="onAddItemButtonClick()">
+                  <fa-icon [icon]="icons.add" [fixedWidth]="true" />
+                  행 추가
+                </sd-button>
+              }
+            }
+
+            <ng-template [ngTemplateOutlet]="beforeToolTplRef() ?? null" />
+
+            @if (parent.canEdit()) {
+              @if (parent.editMode === "modal" && parent.toggleDeleteItems) {
+                <sd-button
+                  size="sm"
+                  theme="link-danger"
+                  (click)="onToggleDeleteItemsButtonClick(true)"
+                  [disabled]="!parent.isSelectedItemsHasNotDeleted()"
+                >
+                  <fa-icon [icon]="deleteIcon()" [fixedWidth]="true" />
+                  선택 {{ deleteText() ?? "삭제" }}
+                </sd-button>
+                @if (parent.isSelectedItemsHasDeleted()) {
+                  <sd-button size="sm" theme="link-warning" (click)="onToggleDeleteItemsButtonClick(false)">
+                    <fa-icon [icon]="restoreIcon()" [fixedWidth]="true" />
+                    선택 {{ restoreText() ?? "복구" }}
+                  </sd-button>
+                }
+              }
+
+              @if (parent.uploadExcel) {
+                <sd-button size="sm" theme="link-success" (click)="onUploadExcelButtonClick()">
+                  <fa-icon [icon]="icons.upload" [fixedWidth]="true" />
+                  엑셀 업로드
+                </sd-button>
+              }
+            }
+
+            @if (parent.downloadExcel) {
+              <sd-button size="sm" theme="link-success" (click)="onDownloadExcelButtonClick()">
+                <fa-icon [icon]="icons.fileExcel" [fixedWidth]="true" />
+                엑셀 다운로드
+              </sd-button>
+            }
+
+            <ng-template [ngTemplateOutlet]="toolTplRef() ?? null" />
+          </div>
+
+          <sd-form #formCtrl (submit)="onSubmit()" class="flex-fill p-default pt-0">
+            <sd-sheet
+              [key]="parent.key + '-sheet'"
+              [items]="parent.items()"
+              [(currentPage)]="parent.page"
+              [totalPageCount]="parent.pageLength()"
+              [(sorts)]="parent.sortingDefs"
+              [selectMode]="parent.selectMode()"
+              [autoSelect]="parent.autoSelect()"
+              [(selectedItems)]="parent.selectedItems"
+              [trackByFn]="parent.trackByFn"
+              [getItemCellStyleFn]="parent.getItemCellStyleFn"
+              [getItemSelectableFn]="parent.getItemSelectableFn"
+            >
+              @if (parent.editMode === "inline" && parent.canEdit() && parent.itemPropInfo.isDeleted) {
+                <sd-sheet-column fixed [key]="parent.itemPropInfo.isDeleted">
+                  <ng-template #header>
+                    <div class="p-xs-sm tx-center">
+                      <fa-icon [icon]="deleteIcon()" />
+                    </div>
+                  </ng-template>
+                  <ng-template [cell]="parent.items()" let-item>
+                    <div class="p-xs-sm tx-center">
+                      <a
+                        class="a-danger"
+                        (click)="onToggleDeleteItemButtonClick(item)"
+                        [class.a-disabled]="!parent.getItemInfoFn(item).canDelete"
+                      >
+                        <fa-icon
+                          [icon]="item[parent.itemPropInfo.isDeleted] ? restoreIcon() : deleteIcon()"
+                          [fixedWidth]="true"
+                        />
+                        {{ item[parent.itemPropInfo.isDeleted] ? restoreText() : deleteText() }}
+                      </a>
+                    </div>
+                  </ng-template>
+                </sd-sheet-column>
+              }
+
+              @for (columnControl of columnControls(); track columnControl.key()) {
+                <sd-sheet-column
+                  [key]="columnControl.key()"
+                  [fixed]="columnControl.fixed()"
+                  [header]="columnControl.header()"
+                  [headerStyle]="columnControl.headerStyle()"
+                  [tooltip]="columnControl.tooltip()"
+                  [width]="columnControl.width()"
+                  [disableSorting]="columnControl.disableSorting()"
+                  [disableResizing]="columnControl.disableResizing()"
+                  [hidden]="columnControl.hidden()"
+                  [collapse]="columnControl.collapse()"
+                >
+                  @if (columnControl.headerTemplateRef()) {
+                    <ng-template #header>
+                      <ng-template [ngTemplateOutlet]="columnControl.headerTemplateRef()!" />
+                    </ng-template>
+                  }
+                  @if (columnControl.summaryTemplateRef()) {
+                    <ng-template #summary>
+                      <ng-template [ngTemplateOutlet]="columnControl.summaryTemplateRef()!" />
+                    </ng-template>
+                  }
+
+                  <ng-template [cell]="parent.items()" let-item let-index="index" let-depth="depth" let-edit="edit">
+                    @if (
+                      parent.editMode === "modal" &&
+                      parent.canEdit() &&
+                      columnControl.edit() &&
+                      parent.getItemInfoFn(item).canEdit
+                    ) {
+                      <a (click)="onEditItemButtonClick(item, index, $event)" class="flex">
+                        <div class="p-xs-sm">
+                          <fa-icon [icon]="icons.edit" [fixedWidth]="true" />
+                        </div>
+                        <div class="flex-fill">
+                          <ng-template
+                            [ngTemplateOutlet]="columnControl.cellTemplateRef()"
+                            [ngTemplateOutletContext]="{
+                              $implicit: item,
+                              item: item,
+                              index: index,
+                              depth: depth,
+                              edit: edit,
+                            }"
+                          />
+                        </div>
+                      </a>
+                    } @else {
+                      <ng-template
+                        [ngTemplateOutlet]="columnControl.cellTemplateRef()"
+                        [ngTemplateOutletContext]="{
+                          $implicit: item,
+                          item: item,
+                          index: index,
+                          depth: depth,
+                          edit: edit,
+                        }"
+                      />
+                    }
+                  </ng-template>
+                </sd-sheet-column>
+              }
+
+              @if (parent.itemPropInfo.lastModifiedAt) {
+                <sd-sheet-column header="수정일시" [key]="parent.itemPropInfo.lastModifiedAt!">
+                  <ng-template [cell]="parent.items()" let-item>
+                    <div class="p-xs-sm tx-center">
+                      {{ item[parent.itemPropInfo.lastModifiedAt!] | format: "yyyy-MM-dd HH:mm" }}
+                    </div>
+                  </ng-template>
+                </sd-sheet-column>
+              }
+              @if (parent.itemPropInfo.lastModifiedBy) {
+                <sd-sheet-column header="수정자" [key]="parent.itemPropInfo.lastModifiedBy!">
+                  <ng-template [cell]="parent.items()" let-item>
+                    <div class="p-xs-sm tx-center">
+                      {{ item[parent.itemPropInfo.lastModifiedBy!] }}
+                    </div>
+                  </ng-template>
+                </sd-sheet-column>
+              }
+            </sd-sheet>
+          </sd-form>
+        </div>
+      </ng-template>
+
+      @if (parent.selectMode()) {
+        <ng-template #modalBottom>
+          <div class="p-sm-default flex flex-gap-sm">
+            <div class="flex-fill flex flex-gap-sm">
+              @if (modalBottomTplRef()) {
+                <ng-template [ngTemplateOutlet]="modalBottomTplRef()!" />
+              }
+            </div>
+
+            <sd-button size="sm" theme="danger" (click)="onCancelButtonClick()">
+              {{ parent.selectMode() === "multi" ? "모두" : "선택" }}
+              해제
+            </sd-button>
+            @if (parent.selectMode() === "multi") {
+              <sd-button size="sm" theme="primary" (click)="onConfirmButtonClick()">
+                확인({{ parent.selectedItemKeys().length }})
+              </sd-button>
+            }
+          </div>
+        </ng-template>
+
+        <ng-template #modalActionTpl>
+          <a class="a-grey p-sm-default" (click)="onRefreshButtonClick()" title="새로고침(CTRL+ALT+L)">
+            <fa-icon [icon]="icons.refresh" [fixedWidth]="true" />
+          </a>
+        </ng-template>
+      }
+    </sd-base-container>
+  `,
+})
+export class SdDataSheetControl {
+  protected readonly icons = inject(SdAngularConfigProvider).icons;
+
+  parent = injectParent<AbsSdDataSheet<any, any, any>>();
+
+  formCtrl = viewChild<SdFormControl>("formCtrl");
+
+  insertText = input<string>();
+  deleteText = input<string>();
+  restoreText = input<string>();
+  deleteIcon = input(this.icons.eraser);
+  restoreIcon = input(this.icons.redo);
+
+  prevTplRef = contentChild("prevTpl", { read: TemplateRef });
+  filterTplRef = contentChild("filterTpl", { read: TemplateRef });
+  beforeToolTplRef = contentChild("beforeToolTpl", { read: TemplateRef });
+  toolTplRef = contentChild("toolTpl", { read: TemplateRef });
+  modalBottomTplRef = contentChild("modalBottomTpl", { read: TemplateRef });
+
+  columnControls = contentChildren(SdDataSheetColumnDirective<any>);
+
+  modalActionTplRef = viewChild("modalActionTpl", { read: TemplateRef });
+
+  constructor() {
+    $effect(() => {
+      this.parent.actionTplRef = this.modalActionTplRef();
+    });
+  }
+
+  onFilterSubmit() {
+    this.parent.doFilterSubmit();
+  }
+
+  @HostListener("sdRefreshCommand")
+  onRefreshButtonClick() {
+    this.parent.doRefresh();
+  }
+
+  //-- edit
+
+  async onCreateItemButtonClick() {
+    await this.parent.doEditItem();
+  }
+
+  async onEditItemButtonClick(item: any, index: number, event: MouseEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    await this.parent.doEditItem(item);
+  }
+
+  async onToggleDeleteItemsButtonClick(del: boolean) {
+    await this.parent.doToggleDeleteItems(del);
+  }
+
+  onToggleDeleteItemButtonClick(item: any) {
+    this.parent.doToggleDeleteItem(item);
+  }
+
+  @HostListener("sdSaveCommand")
+  onSubmitButtonClick() {
+    this.formCtrl()?.requestSubmit();
+  }
+
+  async onSubmit() {
+    await this.parent.doSubmit();
+  }
+
+  async onAddItemButtonClick() {
+    await this.parent.doAddItem();
+  }
+
+  //-- excel
+
+  async onDownloadExcelButtonClick() {
+    await this.parent.doDownloadExcel();
+  }
+
+  async onUploadExcelButtonClick() {
+    await this.parent.doUploadExcel();
+  }
+
+  //-- modal
+
+  onConfirmButtonClick() {
+    this.parent.doModalConfirm();
+  }
+
+  onCancelButtonClick() {
+    this.parent.doModalCancel();
+  }
+}
+
+@Directive()
+export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K extends string | number | undefined>
+  implements ISdSelectModal
+{
+  //-- abstract
+  abstract canUse: Signal<boolean>;
+  abstract canEdit: Signal<boolean>;
+
+  abstract editMode: "inline" | "modal" | undefined;
+  abstract selectMode: InputSignal<"single" | "multi" | undefined>;
+
+  abstract bindFilter(): F;
+
+  abstract itemPropInfo: ISdDataSheetItemPropInfo<I>;
+  abstract getItemInfoFn: (item: I) => ISdDataSheetItemInfo<K>;
+
+  prepareRefreshEffect?(): void;
+
+  abstract search(usePagination: boolean): Promise<ISdDataSheetSearchResult<I>> | ISdDataSheetSearchResult<I>;
+
+  //-- modal
+  // 등록/편집
+  editItem?(item?: I): Promise<boolean | undefined> | boolean | undefined;
+
+  // 선택삭제
+  toggleDeleteItems?(del: boolean): Promise<boolean>;
+  //----------
+
+  //-- inline
+  // 행추가
+  newItem?(): Promise<I> | I;
+
+  // 저장
+  submit?(diffs: TArrayDiffs2Result<I>[]): Promise<boolean> | boolean;
+  //----------
+
+  // 엑셀다운로드
+  downloadExcel?(items: I[]): Promise<void> | void;
+
+  // 엑셀업로드
+  uploadExcel?(file: File): Promise<void> | void;
+
+  //-- implement
+  #sdToast = inject(SdToastProvider);
+  #sdSharedData = inject(SdSharedDataProvider);
+  #sdFileDialog = inject(SdFileDialogProvider);
+
+  key = reflectComponentType(this.constructor as any)?.selector;
+
+  viewType = useViewTypeSignal(() => this);
+
+  busyCount = $signal(0);
+  initialized = $signal(false);
+  close = output<ISelectModalOutputResult>();
+  selectedItemKeys = model<K[]>([]);
+  actionTplRef?: TemplateRef<any>;
+
+  autoSelect = $computed<"click" | undefined>(() =>
+    (!this.canEdit() || this.editMode === "modal") && this.selectMode() ? "click" : undefined,
+  );
+
+  items = $signal<I[]>([]);
+  summaryData = $signal<Partial<I>>({});
+
+  selectedItems = $signal<I[]>([]);
+
+  trackByFn = (item: I): K | I => this.getItemInfoFn(item).key ?? item;
+
+  page = $signal(0);
+  pageLength = $signal(0);
+  sortingDefs = $signal<ISdSortingDef[]>([]);
+
+  //-- search
+
+  filter = $signal<F>({} as F);
+  lastFilter = $signal<F>({} as F);
+
+  constructor() {
+    setupCumulateSelectedKeys({
+      items: this.items,
+      selectedItems: this.selectedItems,
+      selectedItemKeys: this.selectedItemKeys,
+
+      selectMode: () => this.selectMode(),
+      keySelectorFn: (item) => this.getItemInfoFn(item).key,
+    });
+
+    setupCloserWhenSingleSelectionChange({
+      selectedItemKeys: this.selectedItemKeys,
+
+      selectMode: () => this.selectMode(),
+      close: this.close,
+    });
+
+    effect(() => {
+      const filter = this.bindFilter();
+      this.filter.set(filter);
+      this.lastFilter.set(ObjectUtils.clone(filter));
+    });
+
+    effect(() => {
+      this.page();
+      this.lastFilter();
+      this.sortingDefs();
+      this.prepareRefreshEffect?.();
+
+      queueMicrotask(async () => {
+        if (!this.canUse()) {
+          this.initialized.set(true);
+          return;
+        }
+
+        this.busyCount.update((v) => v + 1);
+        await this.#sdToast.try(async () => {
+          await this.#sdSharedData.wait();
+          await this.refresh();
+        });
+        this.busyCount.update((v) => v - 1);
+        this.initialized.set(true);
+      });
+    });
+
+    setupCanDeactivate(() => this.viewType() === "modal" || this.checkIgnoreChanges());
+  }
+
+  checkIgnoreChanges() {
+    return $arr(this.items).diffs().length === 0 || confirm(TXT_CHANGE_IGNORE_CONFIRM);
+  }
+
+  doFilterSubmit() {
+    if (this.busyCount() > 0) return;
+    if (!this.canUse()) return;
+    if (!this.checkIgnoreChanges()) return;
+
+    this.page.set(0);
+    this.lastFilter.set(ObjectUtils.clone(this.filter()));
+  }
+
+  doRefresh() {
+    if (this.busyCount() > 0) return;
+    if (!this.canUse()) return;
+    if (!this.checkIgnoreChanges()) return;
+
+    this.lastFilter.$mark();
+  }
+
+  async refresh() {
+    const result = await this.search(true);
+    this.items.set(result.items);
+    $arr(this.items).snapshot((item) => this.getItemInfoFn(item).key);
+
+    this.pageLength.set(result.pageLength ?? 0);
+    this.summaryData.set(result.summary ?? {});
+
+    this.selectedItems.set(
+      this.items().filter((item) =>
+        this.selectedItems().some((sel) => this.getItemInfoFn(sel).key === this.getItemInfoFn(item).key),
+      ),
+    );
+  }
+
+  //-- edit
+
+  async doEditItem(item?: I) {
+    if (!this.editItem) return;
+
+    const result = await this.editItem(item);
+    if (!result) return;
+
+    this.busyCount.update((v) => v + 1);
+    await this.#sdToast.try(async () => {
+      await this.refresh();
+    });
+    this.busyCount.update((v) => v - 1);
+  }
+
+  async doAddItem() {
+    if (!this.newItem) return;
+
+    this.busyCount.update((v) => v + 1);
+    await this.#sdToast.try(async () => {
+      const newItem = (await this.newItem!()) as I;
+      this.items.update((items) => [newItem, ...items]);
+    });
+    this.busyCount.update((v) => v - 1);
+  }
+
+  async doSubmit() {
+    if (this.busyCount() > 0) return;
+    if (!this.canEdit()) return;
+    if (!this.submit) return;
+
+    const diffs = $arr(this.items).diffs();
+
+    if (diffs.length === 0) {
+      this.#sdToast.info("변경사항이 없습니다.");
+      return;
+    }
+
+    this.busyCount.update((v) => v + 1);
+    await this.#sdToast.try(
+      async () => {
+        const result = await this.submit!(diffs);
+        if (!result) return;
+
+        this.#sdToast.success("저장되었습니다.");
+
+        await this.refresh();
+      },
+      (err) => this.#getOrmDataEditToastErrorMessage(err),
+    );
+    this.busyCount.update((v) => v - 1);
+  }
+
+  //-- delete
+
+  isSelectedItemsHasDeleted = $computed(() =>
+    this.selectedItems().some(
+      (item) => this.itemPropInfo.isDeleted != null && (item[this.itemPropInfo.isDeleted] as boolean),
+    ),
+  );
+  isSelectedItemsHasNotDeleted = $computed(() =>
+    this.selectedItems().some(
+      (item) => this.itemPropInfo.isDeleted == null || !(item[this.itemPropInfo.isDeleted] as boolean),
+    ),
+  );
+
+  getItemCellStyleFn = (item: I) =>
+    this.itemPropInfo.isDeleted != null && (item[this.itemPropInfo.isDeleted] as boolean)
+      ? "text-decoration: line-through;"
+      : undefined;
+
+  getItemSelectableFn = (item: I) => this.getItemInfoFn(item).canSelect;
+
+  async doToggleDeleteItems(del: boolean) {
+    if (!this.canEdit()) return;
+    if (!this.toggleDeleteItems) return;
+
+    this.busyCount.update((v) => v + 1);
+
+    await this.#sdToast.try(
+      async () => {
+        const result = await this.toggleDeleteItems!(del);
+        if (!result) return;
+
+        await this.refresh();
+
+        this.#sdToast.success(`${del ? "삭제" : "복구"} 되었습니다.`);
+      },
+      (err) => this.#getOrmDataEditToastErrorMessage(err),
+    );
+    this.busyCount.update((v) => v - 1);
+  }
+
+  doToggleDeleteItem(item: I) {
+    if (!this.canEdit()) return;
+    if (this.itemPropInfo.isDeleted == null) return;
+
+    if (this.getItemInfoFn(item).key == null) {
+      this.items.update((items) => items.filter((item1) => item1 !== item));
+      return;
+    }
+
+    (item[this.itemPropInfo.isDeleted] as boolean) = !(item[this.itemPropInfo.isDeleted] as boolean);
+    this.items.$mark();
+  }
+
+  //-- excel
+
+  async doDownloadExcel() {
+    if (!this.downloadExcel) return;
+
+    this.busyCount.update((v) => v + 1);
+    await this.#sdToast.try(async () => {
+      const items = (await this.search(false)).items;
+      await this.downloadExcel!(items);
+    });
+    this.busyCount.update((v) => v - 1);
+  }
+
+  async doUploadExcel() {
+    if (!this.uploadExcel) return;
+
+    const file = await this.#sdFileDialog.showAsync(
+      false,
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    );
+    if (!file) return;
+
+    this.busyCount.update((v) => v + 1);
+
+    await this.#sdToast.try(
+      async () => {
+        await this.uploadExcel!(file);
+
+        await this.refresh();
+
+        this.#sdToast.success("엑셀 업로드가 완료 되었습니다.");
+      },
+      (err) => this.#getOrmDataEditToastErrorMessage(err),
+    );
+    this.busyCount.update((v) => v - 1);
+  }
+
+  doModalConfirm() {
+    this.close.emit({ selectedItemKeys: this.selectedItemKeys() });
+  }
+
+  doModalCancel() {
+    this.close.emit({ selectedItemKeys: [] });
+  }
+
+  #getOrmDataEditToastErrorMessage(err: Error) {
+    if (
+      err.message.includes("a parent row: a foreign key constraint") ||
+      err.message.includes("conflicted with the REFERENCE")
+    ) {
+      return "경고! 연결된 작업에 의한 처리 거부. 후속작업 확인 요망";
+    } else {
+      return err.message;
+    }
+  }
+}
+
+export interface ISdDataSheetItemPropInfo<I> {
+  isDeleted: (keyof I & string) | undefined;
+  lastModifiedAt: (keyof I & string) | undefined;
+  lastModifiedBy: (keyof I & string) | undefined;
+}
+
+export interface ISdDataSheetItemInfo<K> {
+  key: K;
+  canSelect: boolean;
+  canEdit: boolean;
+  canDelete: boolean;
+}
+
+export interface ISdDataSheetSearchResult<I> {
+  items: I[];
+  pageLength?: number;
+  summary?: Partial<I>;
+}

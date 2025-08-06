@@ -777,7 +777,7 @@ export class SdSheetControl<T> {
 
   //region Selecting
 
-  selectMode = input<"single" | "multi" | "none">();
+  selectMode = input<"single" | "multi">();
 
   selectedItems = model<T[]>([]);
 

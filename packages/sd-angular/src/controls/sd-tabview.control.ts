@@ -23,7 +23,7 @@ import { SdTabviewItemControl } from "./sd-tabview-item.control";
     </div>
   `,
   host: {
-    class: "flex-vertical",
+    class: "flex-vertical fill",
   },
 })
 export class SdTabviewControl<T> {

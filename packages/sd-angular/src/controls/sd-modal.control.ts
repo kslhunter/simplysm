@@ -6,6 +6,7 @@ import {
   inject,
   input,
   model,
+  TemplateRef,
   viewChild,
   ViewEncapsulation,
 } from "@angular/core";
@@ -19,13 +20,14 @@ import { injectElementRef } from "../utils/injections/inject-element-ref";
 import { transformBoolean } from "../utils/type-tramsforms";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { NumberUtils } from "@simplysm/sd-core-common";
+import { NgTemplateOutlet } from "@angular/common";
 
 @Component({
   selector: "sd-modal",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdEventsDirective, FaIconComponent],
+  imports: [SdEventsDirective, FaIconComponent, NgTemplateOutlet],
   template: `
     <div class="_backdrop" (click)="onBackdropClick()"></div>
 
@@ -45,6 +47,7 @@ import { NumberUtils } from "@simplysm/sd-core-common";
         @if (!hideHeader()) {
           <div class="_header flex" (mousedown)="onHeaderMouseDown($event)" [style]="headerStyle()">
             <h5 class="_title flex-fill">{{ title() }}</h5>
+            <ng-template [ngTemplateOutlet]="actionTplRef() ?? null" />
             @if (!hideCloseButton()) {
               <a class="_close-button a-grey" (click)="onCloseButtonClick()">
                 <fa-icon [icon]="icons.xmark" [fixedWidth]="true" />
@@ -307,6 +310,8 @@ export class SdModalControl {
   movable = input(true, { transform: transformBoolean });
   float = input(false, { transform: transformBoolean });
   fill = input(false, { transform: transformBoolean });
+
+  actionTplRef = input<TemplateRef<any>>();
 
   heightPx = input<number>();
   widthPx = input<number>();

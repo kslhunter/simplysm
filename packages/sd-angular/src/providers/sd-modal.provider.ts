@@ -10,6 +10,7 @@ import {
   outputBinding,
   OutputEmitterRef,
   Signal,
+  TemplateRef,
   Type,
 } from "@angular/core";
 import { SdModalControl } from "../controls/sd-modal.control";
@@ -93,6 +94,7 @@ export class SdModalInstance<T extends ISdModal<any>> {
         inputBinding("movable", () => options?.movable ?? true),
         inputBinding("headerStyle", () => options?.headerStyle),
         inputBinding("fill", () => options?.fill ?? false),
+        inputBinding("actionTplRef", () => this.#compRef.instance.actionTplRef),
 
         inputBinding("open", this.#open),
         outputBinding("openChange", (val: boolean) => this.#onModalOpenChange(val)),
@@ -199,6 +201,8 @@ export class SdModalProvider {
 export interface ISdModal<O> {
   initialized: Signal<boolean>;
   close: OutputEmitterRef<O | undefined>;
+
+  actionTplRef?: TemplateRef<any>;
 }
 
 @Injectable()

@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  HostListener,
+  input,
+  viewChild,
+  ViewEncapsulation,
+} from "@angular/core";
 import { transformBoolean } from "../utils/type-tramsforms";
 import { setupRipple } from "../utils/setups/setup-ripple";
 
@@ -10,7 +18,7 @@ import { setupRipple } from "../utils/setups/setup-ripple";
   imports: [],
   template: `
     <ng-content></ng-content>
-    <button hidden [type]="type()"></button>
+    <button #btnEl hidden [type]="type()"></button>
   `,
   styles: [
     /* language=SCSS */ `
@@ -57,7 +65,7 @@ import { setupRipple } from "../utils/setups/setup-ripple";
             color: var(--theme-primary-darker);
           }
 
-          &:disabled {
+          &[data-sd-disabled="true"] {
             background: var(--control-color);
             border-color: var(--theme-grey-lighter);
             color: var(--text-trans-default);
@@ -77,7 +85,7 @@ import { setupRipple } from "../utils/setups/setup-ripple";
               color: var(--text-trans-rev-default);
             }
 
-            &:disabled {
+            &[data-sd-disabled="true"] {
               background: var(--theme-grey-lighter);
               border-color: var(--theme-grey-lighter);
               color: var(--text-trans-lighter);
@@ -94,7 +102,7 @@ import { setupRipple } from "../utils/setups/setup-ripple";
             color: var(--theme-primary-darker);
           }
 
-          &:disabled {
+          &[data-sd-disabled="true"] {
             border-color: transparent;
             color: var(--text-trans-lighter);
           }
@@ -111,7 +119,7 @@ import { setupRipple } from "../utils/setups/setup-ripple";
               color: var(--theme-#{$key}-darker);
             }
 
-            &:disabled {
+            &[data-sd-disabled="true"] {
               border-color: transparent;
               color: var(--text-trans-lighter);
             }
@@ -140,10 +148,12 @@ import { setupRipple } from "../utils/setups/setup-ripple";
     "[attr.data-sd-inline]": "inline()",
     "[attr.data-sd-size]": "size()",
     "[attr.data-sd-inset]": "inset()",
-    "[attr.data-disabled]": "disabled()",
+    "[attr.data-sd-disabled]": "disabled()",
   },
 })
 export class SdButtonControl {
+  btnElRef = viewChild.required<ElementRef<HTMLButtonElement>>("btnEl");
+
   type = input<"button" | "submit">("button");
   theme = input<
     | "primary"
@@ -173,5 +183,12 @@ export class SdButtonControl {
 
   constructor() {
     setupRipple(() => !this.disabled());
+  }
+
+  @HostListener("click")
+  onClick() {
+    if (this.type() === "submit") {
+      this.btnElRef().nativeElement.form?.requestSubmit();
+    }
   }
 }

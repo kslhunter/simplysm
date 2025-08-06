@@ -4,8 +4,9 @@ import { OutputEmitterRef, Signal } from "@angular/core";
 import { ISelectModalOutputResult } from "../../deprecated/sd-data-sheet/sd-data-select-button.control";
 
 export function setupCloserWhenSingleSelectionChange<T>(bindings: {
-  selectMode: Signal<"single" | "multi" | "none" | undefined>;
   selectedItemKeys: Signal<T[]>;
+
+  selectMode: () => "single" | "multi" | undefined;
   close: OutputEmitterRef<ISelectModalOutputResult>;
 }) {
   const orgFirstSelectedItemKey = $signal<T>();
