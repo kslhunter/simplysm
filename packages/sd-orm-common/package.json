@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-orm-common",
-  "version": "12.13.8",
+  "version": "12.13.9",
   "description": "심플리즘 패키지 - ORM 모듈 (common)",
   "author": "김석래",
   "repository": {
@@ -13,7 +13,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@simplysm/sd-core-common": "12.13.8"
+    "@simplysm/sd-core-common": "12.13.9"
   },
   "devDependencies": {
     "vite-tsconfig-paths": "^5.1.4",
