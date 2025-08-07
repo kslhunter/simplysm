@@ -7,7 +7,7 @@ import {
   ISdSelectModal,
   SdDataSelectButtonControl,
   TSdSelectModalInfo,
-} from "./sd-data-sheet/sd-data-select-button.control";
+} from "../advanced/sd-data-view/sd-data-select-button.control";
 import { TSelectModeValue } from "../controls/select/sd-select.control";
 
 /** @deprecated */

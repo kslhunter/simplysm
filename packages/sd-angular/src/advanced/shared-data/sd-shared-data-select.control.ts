@@ -21,7 +21,7 @@ import { $signal } from "../../utils/bindings/$signal";
 import { transformBoolean } from "../../utils/type-tramsforms";
 import { ISharedDataBase } from "./sd-shared-data.provider";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
-import { ISdSelectModal, TSdSelectModalInfo } from "../../deprecated/sd-data-sheet/sd-data-select-button.control";
+import { ISdSelectModal, TSdSelectModalInfo } from "../sd-data-view/sd-data-select-button.control";
 import { SdSelectControl, TSelectModeValue } from "../../controls/select/sd-select.control";
 
 @Component({

@@ -197,7 +197,7 @@ export class SdDataDetailControl {
 }
 
 @Directive()
-export abstract class AbsSdDataDetail<T extends object> implements ISdModal<boolean> {
+export abstract class AbsSdDataDetail<T extends object, R = boolean> implements ISdModal<R> {
   //-- abstract
 
   abstract canUse: Signal<boolean>; // computed (use권한)
@@ -207,9 +207,9 @@ export abstract class AbsSdDataDetail<T extends object> implements ISdModal<bool
 
   abstract load(): Promise<{ data: T; info: ISdDataDetailDataInfo }> | { data: T; info: ISdDataDetailDataInfo };
 
-  toggleDelete?(del: boolean): Promise<boolean> | boolean;
+  toggleDelete?(del: boolean): Promise<R | undefined> | R | undefined;
 
-  submit?(data: T): Promise<boolean> | boolean;
+  submit?(data: T): Promise<R | undefined> | R | undefined;
 
   //-- implement
   #sdToast = inject(SdToastProvider);
@@ -219,7 +219,7 @@ export abstract class AbsSdDataDetail<T extends object> implements ISdModal<bool
 
   busyCount = $signal(0);
   initialized = $signal(false);
-  close = output<boolean>();
+  close = output<R>();
   actionTplRef?: TemplateRef<any>;
 
   data = $signal<T>({} as T);

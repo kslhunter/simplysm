@@ -24,7 +24,7 @@ import { transformBoolean } from "../../utils/type-tramsforms";
 import { ISharedDataBase } from "./sd-shared-data.provider";
 import { setupModelHook } from "../../utils/setups/setup-model-hook";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
-import { ISdSelectModal, TSdSelectModalInfo } from "../../deprecated/sd-data-sheet/sd-data-select-button.control";
+import { ISdSelectModal, TSdSelectModalInfo } from "../sd-data-view/sd-data-select-button.control";
 import { SdListControl } from "../../controls/list/sd-list.control";
 
 @Component({

@@ -63,10 +63,6 @@ import { SdButtonControl } from "../sd-button.control";
         &::-webkit-scrollbar-thumb {
           background-color: rgba(0, 0, 0, 0.2);
         }
-
-        body.sd-theme-mobile & {
-          background: var(--background-color);
-        }
       }
     `,
   ],

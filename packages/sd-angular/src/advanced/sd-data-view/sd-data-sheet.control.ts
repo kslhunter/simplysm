@@ -37,7 +37,7 @@ import { SdDataSheetColumnDirective } from "./sd-data-sheet-column.directive";
 import { setupCloserWhenSingleSelectionChange } from "../../utils/setups/setup-closer-when-single-selection-change";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
-import { ISdSelectModal, ISelectModalOutputResult } from "../../deprecated/sd-data-sheet/sd-data-select-button.control";
+import { ISdSelectModal, ISelectModalOutputResult } from "./sd-data-select-button.control";
 import { injectParent } from "../../utils/injections/inject-parent";
 import { FormatPipe } from "../../pipes/format.pipe";
 import { setupCanDeactivate } from "../../utils/setups/setup-can-deactivate";

@@ -1,6 +1,7 @@
 import "@simplysm/sd-core-browser";
 export * from "./advanced/sd-base-container.control";
 export * from "./advanced/sd-data-view/sd-data-detail.control";
+export * from "./advanced/sd-data-view/sd-data-select-button.control";
 export * from "./advanced/sd-data-view/sd-data-sheet-column.directive";
 export * from "./advanced/sd-data-view/sd-data-sheet.control";
 export * from "./advanced/sd-date-range-picker/sd-date-range-picker";
@@ -84,10 +85,6 @@ export * from "./deprecated/note/sd-note.control";
 export * from "./deprecated/sd-barcode-legacy.control";
 export * from "./deprecated/sd-card.control";
 export * from "./deprecated/sd-content-editor.control";
-export * from "./deprecated/sd-data-sheet/sd-data-select-button.control";
-export * from "./deprecated/sd-data-sheet/sd-data-sheet-filter.directive";
-export * from "./deprecated/sd-data-sheet/sd-data-sheet-note.directive";
-export * from "./deprecated/sd-data-sheet/sd-data-sheet-tool.directive";
 export * from "./deprecated/sd-pane.control";
 export * from "./deprecated/sd-qrcode.control";
 export * from "./deprecated/sd-region";

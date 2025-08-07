@@ -14,7 +14,6 @@ import {
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { SdAdditionalButtonControl } from "../../controls/sd-additional-button.control";
 import { SdButtonControl } from "../../controls/sd-button.control";
-import { SdAnchorControl } from "../anchor/sd-anchor.control";
 import { TSelectModeValue } from "../../controls/select/sd-select.control";
 import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
 import { ISdModal, ISdModalInfo, SdModalProvider } from "../../providers/sd-modal.provider";
@@ -27,13 +26,12 @@ import { NgTemplateOutlet } from "@angular/common";
 import { $signal } from "../../utils/bindings/$signal";
 import { injectParent } from "../../utils/injections/inject-parent";
 
-/** @deprecated */
 @Component({
   selector: "sd-data-select-button",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdAdditionalButtonControl, FaIconComponent, SdButtonControl, SdAnchorControl, NgTemplateOutlet],
+  imports: [SdAdditionalButtonControl, FaIconComponent, SdButtonControl, NgTemplateOutlet],
   template: `
     <sd-additional-button [inset]="parent.inset()" [size]="parent.size()">
       @for (item of parent.selectedItems(); track item; let index = $index) {
@@ -55,9 +53,9 @@ import { injectParent } from "../../utils/injections/inject-parent";
       <ng-content />
 
       @if (!parent.disabled() && !parent.isNoValue() && !parent.required()) {
-        <sd-anchor (click)="onCancelButtonClick()" theme="danger">
+        <a class="a-danger" (click)="onCancelButtonClick()">
           <fa-icon [icon]="icons.eraser" />
-        </sd-anchor>
+        </a>
       }
 
       @if (!parent.disabled()) {
@@ -73,16 +71,6 @@ import { injectParent } from "../../utils/injections/inject-parent";
         display: block;
         width: 100%;
         min-width: 3em;
-
-        /*> sd-additional-button {
-          background: var(--theme-secondary-lightest);
-        }
-
-        &[data-sd-disabled="true"] {
-          > sd-additional-button {
-            background: transparent;
-          }
-        }*/
       }
     `,
   ],
