@@ -9,6 +9,7 @@ import { $computed } from "../utils/bindings/$computed";
 import { $signal } from "../utils/bindings/$signal";
 import { transformBoolean } from "../utils/type-tramsforms";
 import { ISdPermission } from "../providers/sd-app-structure.provider";
+import { SdAnchorControl } from "../controls/sd-anchor.control";
 
 /**
  * 권한 테이블 컴포넌트
@@ -30,7 +31,7 @@ import { ISdPermission } from "../providers/sd-app-structure.provider";
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdTypedTemplateDirective, NgTemplateOutlet, SdCollapseIconControl, SdCheckboxControl],
+  imports: [SdTypedTemplateDirective, NgTemplateOutlet, SdCollapseIconControl, SdCheckboxControl, SdAnchorControl],
   styles: [
     /* language=SCSS */ `
       sd-permission-table {
@@ -146,10 +147,10 @@ import { ISdPermission } from "../providers/sd-app-structure.provider";
 
           <td class="_title">
             @if (item.children && item.children.length > 0) {
-              <a (click)="onPermCollapseToggle(item)">
+              <sd-anchor (click)="onPermCollapseToggle(item)">
                 <sd-collapse-icon [icon]="icons.angleRight" [open]="getIsPermCollapsed(item)" />
                 {{ item.title }}
-              </a>
+              </sd-anchor>
             } @else {
               <div style="padding-left: 14px;">
                 {{ item.title }}

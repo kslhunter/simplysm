@@ -12,7 +12,7 @@ $vars: (
     xl: 24px,
     xxl: 32px,
     0: 0,
-    auto: "auto"
+    auto: "auto",
   ),
   font-size: (
     lg: 18px,
@@ -25,7 +25,7 @@ $vars: (
     h5: 16px,
     h6: 14px,
   ),
-  //background-color: var(--color-grey-50),
+  background-color: var(--theme-grey-lightest),
   /*border-color: (
     light: var(--theme-grey-lightest),
     default: var(--theme-grey-lighter),
@@ -33,10 +33,10 @@ $vars: (
     darker: var(--theme-grey-dark)
   ),*/
   sidebar: (
-    width: 240px
-  ),
+      width: 240px,
+    ),
   topbar: (
-    height: 48px
+    height: 48px,
   ),
   /*text-trans: (
     dark: black,
@@ -48,8 +48,8 @@ $vars: (
     rev-dark: rgba(255, 255, 255, .5),
     rev-darker: rgba(255, 255, 255, .3),
   ),*/
-  //font-family: "'Pretendard Variable', sans-serif",
-  animation-duration: .3s,
+    //font-family: "'Pretendard Variable', sans-serif",
+  animation-duration: 0.3s,
   elevation-size: 4px,
 
   border-radius: (
@@ -58,11 +58,11 @@ $vars: (
     default: var(--gap-sm),
     lg: var(--gap-default),
     xl: var(--gap-lg),
-    xxl: var(--gap-xl)
+    xxl: var(--gap-xl),
   ),
   sheet: (
     pv: var(--gap-xs),
     ph: var(--gap-sm),
-    bg: var(--color-grey-100)
-  )
-)
+    bg: var(--color-grey-100),
+  ),
+);

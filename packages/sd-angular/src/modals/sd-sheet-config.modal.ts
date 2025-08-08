@@ -20,6 +20,7 @@ import { ISdModal } from "../providers/sd-modal.provider";
 import { $effect } from "../utils/bindings/$effect";
 import { $signal } from "../utils/bindings/$signal";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
+import { SdAnchorControl } from "../controls/sd-anchor.control";
 
 @Component({
   selector: "sd-sheet-config-modal",
@@ -35,9 +36,10 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
     SdButtonControl,
     FaIconComponent,
     SdBusyContainerControl,
+    SdAnchorControl,
   ],
   template: `
-    <sd-busy-container [busy]="!initialized()" class="flex-vertical">
+    <sd-busy-container [busy]="!initialized()" class="flex-column">
       @if (initialized()) {
         <div class="flex-fill p-default">
           <sd-sheet [key]="sheetKey() + '-config'" [items]="items()" [trackByFn]="trackByFn" hideConfigBar>
@@ -51,18 +53,18 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
             <sd-sheet-column key="ordering" header="Order" disableSorting disableResizing>
               <ng-template [cell]="items()" let-item="item" let-index="index">
                 <div class="p-xs-sm" style="text-align: center">
-                  <a
-                    [class.a-disabled]="index === 0 || (!item.fixed && items()[index - 1].fixed)"
+                  <sd-anchor
+                    [disabled]="index === 0 || (!item.fixed && items()[index - 1].fixed)"
                     (click)="onDisplayOrderUpButtonClick(item)"
                   >
                     <fa-icon [icon]="icons.angleUp" [fixedWidth]="true" />
-                  </a>
-                  <a
-                    [class.a-disabled]="index === items().length - 1 || (item.fixed && !items()[index + 1].fixed)"
+                  </sd-anchor>
+                  <sd-anchor
+                    [disabled]="index === items().length - 1 || (item.fixed && !items()[index + 1].fixed)"
                     (click)="onDisplayOrderDownButtonClick(item)"
                   >
                     <fa-icon [icon]="icons.angleDown" [fixedWidth]="true" />
-                  </a>
+                  </sd-anchor>
                 </div>
               </ng-template>
             </sd-sheet-column>
@@ -104,8 +106,8 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
           </sd-sheet>
         </div>
 
-        <div class="p-sm-default flex flex-gap-sm bdt bdt-theme-grey-lightest">
-          <div class="flex-fill flex-align-start">
+        <div class="p-sm-default flex-row gap-sm bdt bdt-theme-grey-lightest">
+          <div class="flex-fill align-start">
             <sd-button size="sm" inline theme="warning" (click)="onInitButtonClick()" style="min-width: 60px;">
               Reset
             </sd-button>

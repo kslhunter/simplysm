@@ -44,6 +44,7 @@ import { setupCanDeactivate } from "../../utils/setups/setup-can-deactivate";
 import { $arr } from "../../utils/bindings/wrappers/$arr";
 import { TXT_CHANGE_IGNORE_CONFIRM } from "../../commons";
 import { $effect } from "../../utils/bindings/$effect";
+import { SdAnchorControl } from "../../controls/sd-anchor.control";
 
 @Component({
   selector: "sd-data-sheet",
@@ -60,6 +61,7 @@ import { $effect } from "../../utils/bindings/$effect";
     SdBaseContainerControl,
     FaIconComponent,
     FormatPipe,
+    SdAnchorControl,
   ],
   template: `
     <sd-base-container
@@ -84,9 +86,9 @@ import { $effect } from "../../utils/bindings/$effect";
       </ng-template>
 
       <ng-template #content>
-        <div class="fill flex-vertical" [class.region]="parent.viewType() === 'page'">
+        <div class="flex-column fill">
           @if (parent.canEdit() && parent.submit && parent.viewType() === "control") {
-            <div class="flex flex-gap-sm p-default bdb bdb-theme-grey-lightest">
+            <div class="flex-row gap-sm p-default bdb bdb-theme-grey-lightest">
               <sd-button size="sm" theme="primary" (click)="onSubmitButtonClick()">
                 <fa-icon [icon]="icons.save" [fixedWidth]="true" />
                 저장
@@ -100,14 +102,10 @@ import { $effect } from "../../utils/bindings/$effect";
             </div>
           }
 
-          @if (prevTplRef()) {
-            <div>
-              <ng-template [ngTemplateOutlet]="prevTplRef()!" />
-            </div>
-          }
+          <ng-template [ngTemplateOutlet]="prevTplRef() ?? null" />
 
           @if (filterTplRef()) {
-            <div class="p-default bdb bdb-theme-grey-lightest">
+            <div class="p-default">
               <sd-form (submit)="onFilterSubmit()">
                 <div class="form-box-inline">
                   <div>
@@ -122,61 +120,61 @@ import { $effect } from "../../utils/bindings/$effect";
             </div>
           }
 
-          <div class="flex flex-gap-sm p-xs-default">
-            @if (parent.editMode === "modal") {
-              @if (parent.canEdit() && parent.editItem) {
-                <sd-button size="sm" theme="link-primary" (click)="onCreateItemButtonClick()">
-                  <fa-icon [icon]="icons.add" [fixedWidth]="true" />
-                  {{ insertText() ?? "등록" }}
-                </sd-button>
-              }
-            } @else if (parent.editMode === "inline") {
-              @if (parent.canEdit() && parent.newItem) {
-                <sd-button size="sm" theme="link-primary" (click)="onAddItemButtonClick()">
-                  <fa-icon [icon]="icons.add" [fixedWidth]="true" />
-                  행 추가
-                </sd-button>
-              }
-            }
-
-            <ng-template [ngTemplateOutlet]="beforeToolTplRef() ?? null" />
-
-            @if (parent.canEdit()) {
-              @if (parent.editMode === "modal" && parent.toggleDeleteItems) {
-                <sd-button
-                  size="sm"
-                  theme="link-danger"
-                  (click)="onToggleDeleteItemsButtonClick(true)"
-                  [disabled]="!parent.isSelectedItemsHasNotDeleted()"
-                >
-                  <fa-icon [icon]="deleteIcon()" [fixedWidth]="true" />
-                  선택 {{ deleteText() ?? "삭제" }}
-                </sd-button>
-                @if (parent.isSelectedItemsHasDeleted()) {
-                  <sd-button size="sm" theme="link-warning" (click)="onToggleDeleteItemsButtonClick(false)">
-                    <fa-icon [icon]="restoreIcon()" [fixedWidth]="true" />
-                    선택 {{ restoreText() ?? "복구" }}
+          @if (parent.canEdit() || beforeToolTplRef() || parent.downloadExcel) {
+            <div class="flex-row gap-sm p-xs-default">
+              @if (parent.canEdit()) {
+                @if (parent.editMode === "modal" && parent.editItem) {
+                  <sd-button size="sm" theme="link-primary" (click)="onCreateItemButtonClick()">
+                    <fa-icon [icon]="icons.add" [fixedWidth]="true" />
+                    {{ insertText() ?? "등록" }}
+                  </sd-button>
+                } @else if (parent.editMode === "inline" && parent.newItem) {
+                  <sd-button size="sm" theme="link-primary" (click)="onAddItemButtonClick()">
+                    <fa-icon [icon]="icons.add" [fixedWidth]="true" />
+                    행 추가
                   </sd-button>
                 }
               }
 
-              @if (parent.uploadExcel) {
-                <sd-button size="sm" theme="link-success" (click)="onUploadExcelButtonClick()">
-                  <fa-icon [icon]="icons.upload" [fixedWidth]="true" />
-                  엑셀 업로드
+              <ng-template [ngTemplateOutlet]="beforeToolTplRef() ?? null" />
+
+              @if (parent.canEdit()) {
+                @if (parent.editMode === "modal" && parent.toggleDeleteItems) {
+                  <sd-button
+                    size="sm"
+                    theme="link-danger"
+                    (click)="onToggleDeleteItemsButtonClick(true)"
+                    [disabled]="!parent.isSelectedItemsHasNotDeleted()"
+                  >
+                    <fa-icon [icon]="deleteIcon()" [fixedWidth]="true" />
+                    선택 {{ deleteText() ?? "삭제" }}
+                  </sd-button>
+                  @if (parent.isSelectedItemsHasDeleted()) {
+                    <sd-button size="sm" theme="link-warning" (click)="onToggleDeleteItemsButtonClick(false)">
+                      <fa-icon [icon]="restoreIcon()" [fixedWidth]="true" />
+                      선택 {{ restoreText() ?? "복구" }}
+                    </sd-button>
+                  }
+                }
+
+                @if (parent.uploadExcel) {
+                  <sd-button size="sm" theme="link-success" (click)="onUploadExcelButtonClick()">
+                    <fa-icon [icon]="icons.upload" [fixedWidth]="true" />
+                    엑셀 업로드
+                  </sd-button>
+                }
+              }
+
+              @if (parent.downloadExcel) {
+                <sd-button size="sm" theme="link-success" (click)="onDownloadExcelButtonClick()">
+                  <fa-icon [icon]="icons.fileExcel" [fixedWidth]="true" />
+                  엑셀 다운로드
                 </sd-button>
               }
-            }
 
-            @if (parent.downloadExcel) {
-              <sd-button size="sm" theme="link-success" (click)="onDownloadExcelButtonClick()">
-                <fa-icon [icon]="icons.fileExcel" [fixedWidth]="true" />
-                엑셀 다운로드
-              </sd-button>
-            }
-
-            <ng-template [ngTemplateOutlet]="toolTplRef() ?? null" />
-          </div>
+              <ng-template [ngTemplateOutlet]="toolTplRef() ?? null" />
+            </div>
+          }
 
           <sd-form #formCtrl (submit)="onSubmit()" class="flex-fill p-default pt-0">
             <sd-sheet
@@ -201,17 +199,17 @@ import { $effect } from "../../utils/bindings/$effect";
                   </ng-template>
                   <ng-template [cell]="parent.items()" let-item>
                     <div class="p-xs-sm tx-center">
-                      <a
-                        class="a-danger"
+                      <sd-anchor
+                        theme="danger"
                         (click)="onToggleDeleteItemButtonClick(item)"
-                        [class.a-disabled]="!parent.getItemInfoFn(item).canDelete"
+                        [disabled]="!parent.getItemInfoFn(item).canDelete"
                       >
                         <fa-icon
                           [icon]="item[parent.itemPropInfo.isDeleted] ? restoreIcon() : deleteIcon()"
                           [fixedWidth]="true"
                         />
                         {{ item[parent.itemPropInfo.isDeleted] ? restoreText() : deleteText() }}
-                      </a>
+                      </sd-anchor>
                     </div>
                   </ng-template>
                 </sd-sheet-column>
@@ -248,7 +246,7 @@ import { $effect } from "../../utils/bindings/$effect";
                       columnControl.edit() &&
                       parent.getItemInfoFn(item).canEdit
                     ) {
-                      <a (click)="onEditItemButtonClick(item, index, $event)" class="flex">
+                      <sd-anchor (click)="onEditItemButtonClick(item, index, $event)" class="flex-row">
                         <div class="p-xs-sm">
                           <fa-icon [icon]="icons.edit" [fixedWidth]="true" />
                         </div>
@@ -264,7 +262,7 @@ import { $effect } from "../../utils/bindings/$effect";
                             }"
                           />
                         </div>
-                      </a>
+                      </sd-anchor>
                     } @else {
                       <ng-template
                         [ngTemplateOutlet]="columnControl.cellTemplateRef()"
@@ -306,8 +304,8 @@ import { $effect } from "../../utils/bindings/$effect";
 
       @if (parent.selectMode()) {
         <ng-template #modalBottom>
-          <div class="p-sm-default flex flex-gap-sm">
-            <div class="flex-fill flex flex-gap-sm">
+          <div class="p-sm-default flex-row gap-sm">
+            <div class="flex-fill flex-row gap-sm">
               @if (modalBottomTplRef()) {
                 <ng-template [ngTemplateOutlet]="modalBottomTplRef()!" />
               }
@@ -326,9 +324,9 @@ import { $effect } from "../../utils/bindings/$effect";
         </ng-template>
 
         <ng-template #modalActionTpl>
-          <a class="a-grey p-sm-default" (click)="onRefreshButtonClick()" title="새로고침(CTRL+ALT+L)">
+          <sd-anchor theme="grey" class="p-sm-default" (click)="onRefreshButtonClick()" title="새로고침(CTRL+ALT+L)">
             <fa-icon [icon]="icons.refresh" [fixedWidth]="true" />
-          </a>
+          </sd-anchor>
         </ng-template>
       }
     </sd-base-container>
@@ -399,7 +397,7 @@ export class SdDataSheetControl {
   }
 
   async onSubmit() {
-    await this.parent.doSubmit();
+    await this.parent.doSubmit(true);
   }
 
   async onAddItemButtonClick() {
@@ -485,7 +483,7 @@ export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K extends
   actionTplRef?: TemplateRef<any>;
 
   autoSelect = $computed<"click" | undefined>(() =>
-    (!this.canEdit() || this.editMode === "modal") && this.selectMode() ? "click" : undefined,
+    (!this.canEdit() || this.editMode === "modal") && this.selectMode() === "single" ? "click" : undefined,
   );
 
   items = $signal<I[]>([]);
@@ -614,9 +612,9 @@ export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K extends
     this.busyCount.update((v) => v - 1);
   }
 
-  async doSubmit() {
+  async doSubmit(permCheck?: boolean) {
     if (this.busyCount() > 0) return;
-    if (!this.canEdit()) return;
+    if (permCheck && !this.canEdit()) return;
     if (!this.submit) return;
 
     const diffs = $arr(this.items).diffs();

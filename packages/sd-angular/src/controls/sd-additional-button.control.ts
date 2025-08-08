@@ -8,7 +8,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
   standalone: true,
   imports: [],
   host: {
-    "class": "flex flex-gap-sm",
+    "class": "flex-row gap-sm",
     "[attr.data-sd-size]": "size()",
     "[attr.data-sd-inset]": "inset()",
   },
@@ -17,7 +17,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
       <ng-content />
     </div>
     <div class="_button">
-      <ng-content select="a" />
+      <ng-content select="sd-anchor" />
       <ng-content select="sd-button" />
     </div>
   `,
@@ -39,7 +39,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
           flex-wrap: nowrap;
           flex-direction: row;
 
-          > a {
+          > sd-anchor {
             padding: var(--gap-sm) !important;
           }
 
@@ -61,7 +61,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
           }
 
           > ._button {
-            > a {
+            > sd-anchor {
               padding: var(--gap-xs) var(--gap-sm) !important;
             }
 
@@ -77,7 +77,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
           }
 
           > ._button {
-            > a {
+            > sd-anchor {
               padding: var(--gap-default) !important;
             }
 

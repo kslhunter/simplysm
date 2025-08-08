@@ -52,7 +52,7 @@ import { injectParent } from "../utils/injections/inject-parent";
             </div>
           </sd-topbar-container>
         } @else if (currViewType() === "modal") {
-          <div class="flex-vertical fill">
+          <div class="flex-column fill">
             <div class="flex-fill">
               <ng-template [ngTemplateOutlet]="contentTemplateRef()" />
             </div>

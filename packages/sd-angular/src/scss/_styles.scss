@@ -173,6 +173,9 @@ form {
 .tx-line-through {
   text-decoration: line-through;
 }
+.tx-underline {
+  text-decoration: underline;
+}
 
 //-- BORDER
 
@@ -422,45 +425,55 @@ form {
   }
 }
 
-.sd-sticky-top {
+.sticky-top {
   position: sticky !important;
   top: 0;
   z-index: 1;
 }
 
+.overflow-auto {
+  overflow: auto;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
 //-- flex
-.flex {
+.flex-row {
   display: flex;
   flex-direction: row;
+  flex-wrap: nowrap;
 }
 
-.flex-vertical {
+.flex-column {
   display: flex;
   flex-direction: column;
+  flex-wrap: nowrap;
 }
 
-.flex-inline {
+.flex-row-inline {
   display: inline-flex;
   flex-direction: row;
 }
 
-.flex-vertical-inline {
+.flex-column-inline {
   display: inline-flex;
   flex-direction: column;
 }
 
 @each $key, $val in map.get(variables.$vars, gap) {
-  .flex-gap-#{$key} {
+  .gap-#{$key} {
     gap: var(--gap-#{$key});
   }
 }
 
 @each $val in [start, end, center] {
-  .flex-align-#{$val} {
+  .main-align-#{$val} {
     justify-content: $val;
   }
 
-  .flex-cross-align-#{$val} {
+  .cross-align-#{$val} {
     align-items: $val;
   }
 }
@@ -476,35 +489,6 @@ form {
 
 .flex-min {
   flex: 0 0 0;
-}
-
-//-- region
-.region {
-  background: var(--control-color);
-  border: var(--gap-xs) solid var(--background-color);
-  border-radius: var(--border-radius-lg);
-
-  animation: region var(--animation-duration) ease-out;
-}
-
-@keyframes region {
-  from {
-    opacity: 0;
-    transform: translateY(-1em);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-//-- card
-.card {
-  background: var(--control-color);
-  border-radius: var(--border-radius-default);
-  @include mixins.elevation(2);
-
-  animation: region var(--animation-duration) ease-out;
 }
 
 //-- form-table
@@ -593,53 +577,32 @@ form {
   }
 }
 
-//-- a
-a {
-  cursor: pointer;
+//-- card
+.sd-card {
+  display: block;
+  background: var(--control-color);
+  border-radius: var(--border-radius-default);
+  overflow: hidden;
+  transition: box-shadow 0.3s ease-in-out;
+  @include mixins.elevation(2);
+  animation: sd-card var(--animation-duration) ease-out;
+  opacity: 0;
+  transform: translateY(-1em);
+  animation-fill-mode: forwards;
 
-  color: var(--theme-primary-default);
-
-  &:hover {
-    color: var(--theme-primary-darker);
-    text-decoration: underline;
-  }
-
-  &:active {
-    color: var(--theme-primary-default);
-  }
-
-  @each $key, $val in map.get(variables.$vars, theme) {
-    &.a-#{$key} {
-      color: var(--theme-#{$key}-default);
-
-      &:hover {
-        color: var(--theme-#{$key}-darker);
-        text-decoration: underline;
-      }
-
-      &:active {
-        color: var(--theme-#{$key}-default);
-      }
-
-      /*@media all and (pointer: coarse) {
-        &:hover {
-          color: var(--theme-#{$key}-default);
-          text-decoration: none;
-        }
-      }*/
-    }
-  }
-
-  &.a-disabled {
-    opacity: 0.3;
-    pointer-events: none;
+  &:hover,
+  &:has(:focus) {
+    @include mixins.elevation(6);
   }
 }
 
-@each $key, $val in map.get(variables.$vars, theme) {
-  .note-#{$key} {
-    background: var(--theme-#{$key}-lightest);
-    border: 1px solid var(--theme-#{$key}-lightest);
-    border-radius: var(--border-radius-default);
+@keyframes sd-card {
+  from {
+    opacity: 0;
+    transform: translateY(-1em);
+  }
+  to {
+    opacity: 1;
+    transform: none;
   }
 }

@@ -13,7 +13,7 @@ import { transformBoolean } from "../../utils/type-tramsforms";
   standalone: true,
   imports: [SdSelectControl, SdSelectItemControl, SdRangeControl, SdTextfieldControl],
   host: {
-    class: "flex flex-gap-sm",
+    class: "flex-row gap-sm",
   },
   template: `
     <sd-select [(value)]="periodType" (valueChange)="handleDatePeriodTypeChanged()" required style="min-width: 0">

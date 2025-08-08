@@ -2,47 +2,44 @@ import { ChangeDetectionStrategy, Component, inject, input, model, ViewEncapsula
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { $computed } from "../utils/bindings/$computed";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
+import { SdAnchorControl } from "./sd-anchor.control";
 
 @Component({
   selector: "sd-pagination",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [FaIconComponent],
+  imports: [FaIconComponent, SdAnchorControl],
   host: {
-    class: "flex flex-gap-xs",
+    class: "flex-row gap-xs",
   },
   template: `
-    <a [class.a-disabled]="!hasPrev()" (click)="onGoFirstClick()">
+    <sd-anchor [disabled]="!hasPrev()" (click)="onGoFirstClick()">
       <fa-icon [icon]="icons.angleDoubleLeft" [fixedWidth]="true" />
-    </a>
-    <a [class.a-disabled]="!hasPrev()" (click)="onPrevClick()">
+    </sd-anchor>
+    <sd-anchor [disabled]="!hasPrev()" (click)="onPrevClick()">
       <fa-icon [icon]="icons.angleLeft" [fixedWidth]="true" />
-    </a>
+    </sd-anchor>
     @for (displayPage of displayPages(); track displayPage) {
-      <a (click)="onPageClick(displayPage)" [attr.data-sd-selected]="displayPage === currentPage()">
+      <sd-anchor (click)="onPageClick(displayPage)" [class.tx-underline]="displayPage === currentPage()">
         {{ displayPage + 1 }}
-      </a>
+      </sd-anchor>
     }
-    <a [class.a-disabled]="!hasNext()" (click)="onNextClick()">
+    <sd-anchor [disabled]="!hasNext()" (click)="onNextClick()">
       <fa-icon [icon]="icons.angleRight" [fixedWidth]="true" />
-    </a>
-    <a [class.a-disabled]="!hasNext()" (click)="onGoLastClick()">
+    </sd-anchor>
+    <sd-anchor [disabled]="!hasNext()" (click)="onGoLastClick()">
       <fa-icon [icon]="icons.angleDoubleRight" [fixedWidth]="true" />
-    </a>
+    </sd-anchor>
   `,
   styles: [
     /* language=SCSS */ `
       @use "../scss/mixins";
 
       sd-pagination {
-        > a {
+        > sd-anchor {
           display: inline-block;
           padding: var(--gap-xs);
-
-          &[data-sd-selected="true"] {
-            text-decoration: underline;
-          }
         }
       }
     `,

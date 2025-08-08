@@ -24,6 +24,10 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
     SdRouterLinkDirective,
     FaIconComponent,
   ],
+  host: {
+    "class": "flex-column",
+    "[attr.data-sd-root-layout]": "rootLayout()",
+  },
   template: `
     <div class="control-header p-default">MENU</div>
 
@@ -71,8 +75,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
       sd-sidebar-menu {
         > sd-list[data-sd-inset="true"] {
           sd-list {
-            background: rgba(0, 0, 0, 0.03);
-            border-radius: var(--border-radius-lg);
+            background: var(--trans-lightest);
           }
         }
 
@@ -84,10 +87,6 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
       }
     `,
   ],
-  host: {
-    "class": "region flex-vertical fill",
-    "[attr.data-sd-root-layout]": "rootLayout()",
-  },
 })
 export class SdSidebarMenuControl {
   menus = input<ISdSidebarMenu[]>([]);

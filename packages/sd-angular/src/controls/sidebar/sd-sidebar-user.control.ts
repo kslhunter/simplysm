@@ -13,9 +13,6 @@ import { SdRippleDirective } from "../../directives/sd-ripple.directive";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [SdCollapseIconControl, SdCollapseControl, SdListControl, SdListItemControl, SdRippleDirective],
-  host: {
-    class: "region",
-  },
   template: `
     <div class="p-lg">
       <ng-content></ng-content>
@@ -29,15 +26,13 @@ import { SdRippleDirective } from "../../directives/sd-ripple.directive";
 
     @if (userMenu()?.title) {
       <sd-collapse [open]="menuOpen()">
-        <div class="p-xs">
-          <sd-list class="pv-xxs" [inset]="true">
-            @for (menu of userMenu()?.menus; track menu.title) {
-              <sd-list-item (click)="menu.onClick()">
-                {{ menu.title }}
-              </sd-list-item>
-            }
-          </sd-list>
-        </div>
+        <sd-list inset>
+          @for (menu of userMenu()?.menus; track menu.title) {
+            <sd-list-item (click)="menu.onClick()">
+              {{ menu.title }}
+            </sd-list-item>
+          }
+        </sd-list>
       </sd-collapse>
     }
   `,
@@ -54,19 +49,15 @@ import { SdRippleDirective } from "../../directives/sd-ripple.directive";
           user-select: none;
 
           padding: var(--gap-default);
-          border-radius: var(--border-radius-default);
-          margin: var(--gap-xxs);
 
           &:hover {
             background: var(--trans-lighter);
           }
         }
 
-        > sd-collapse > ._content {
-          > div > sd-list {
-            background: rgba(0, 0, 0, 0.03);
-            border-radius: var(--border-radius-default);
-          }
+        > sd-collapse > ._content > sd-list {
+          background: var(--trans-lightest);
+          padding: var(--gap-xs) 0;
         }
       }
     `,

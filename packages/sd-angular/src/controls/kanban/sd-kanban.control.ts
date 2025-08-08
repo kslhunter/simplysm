@@ -16,13 +16,14 @@ import { NumberUtils } from "@simplysm/sd-core-common";
 import { transformBoolean } from "../../utils/type-tramsforms";
 import { $computed } from "../../utils/bindings/$computed";
 import { $signal } from "../../utils/bindings/$signal";
+import { SdCardControl } from "../sd-card.control";
 
 @Component({
   selector: "sd-kanban",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdEventsDirective],
+  imports: [SdEventsDirective, SdCardControl],
   //region styles
   styles: [
     /* language=SCSS */ `
@@ -49,7 +50,7 @@ import { $signal } from "../../utils/bindings/$signal";
             pointer-events: auto;
           }
 
-          > .card {
+          > sd-card {
             pointer-events: none;
           }
         }
@@ -72,7 +73,7 @@ import { $signal } from "../../utils/bindings/$signal";
           }
         }
 
-        > .card {
+        > sd-card {
           white-space: normal;
           user-select: none;
           cursor: pointer;
@@ -95,15 +96,14 @@ import { $signal } from "../../utils/bindings/$signal";
       [style.height]="dragOvered() ? (dragKanban()?.heightOnDrag() ?? 0) + 'px' : '0px'"
       [style.display]="dragKanban() ? 'block' : 'none'"
     ></div>
-    <div
-      class="card"
+    <sd-card
       [class]="contentClass()"
       [draggable]="draggable()"
       (dragstart)="onCardDragStart()"
       (sdResize)="onCardResize($event)"
     >
       <ng-content></ng-content>
-    </div>
+    </sd-card>
   `,
   host: {
     "[attr.data-sd-dragging-this]": "dragKanban() === this",

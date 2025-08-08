@@ -7,19 +7,27 @@ import { SdDropdownPopupControl } from "./dropdown/sd-dropdown-popup.control";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { $effect } from "../utils/bindings/$effect";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
+import { SdAnchorControl } from "./sd-anchor.control";
 
 @Component({
   selector: "sd-theme-selector",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdDropdownControl, SdDropdownPopupControl, SdListControl, SdListItemControl, FaIconComponent],
+  imports: [
+    SdDropdownControl,
+    SdDropdownPopupControl,
+    SdListControl,
+    SdListItemControl,
+    FaIconComponent,
+    SdAnchorControl,
+  ],
   template: `
     <sd-dropdown>
-      <a style="color: var(--theme-grey-default)">
+      <sd-anchor theme="grey">
         <fa-icon [icon]="icons.mountainSun" />
         {{ theme() }}
-      </a>
+      </sd-anchor>
 
       <sd-dropdown-popup>
         <sd-list>

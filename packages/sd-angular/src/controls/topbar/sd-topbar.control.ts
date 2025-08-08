@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, input, ViewEncapsulation } from "@angular/core";
 import { SdSidebarContainerControl } from "../sidebar/sd-sidebar-container.control";
-import { SdGapControl } from "../sd-gap.control";
 import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
 
 import { $computed } from "../../utils/bindings/$computed";
@@ -12,18 +11,14 @@ import { SdButtonControl } from "../sd-button.control";
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdGapControl, FaIconComponent, SdButtonControl],
+  imports: [FaIconComponent, SdButtonControl],
   host: {
-    class: "flex flex-gap-default flex-cross-align-center flex-align-start",
+    class: "flex-row gap-default cross-align-center main-align-start",
   },
   template: `
-    @if (hasSidebar()) {
-      <sd-button theme="link-primary" (click)="onSidebarToggleButtonClick()">
-        <fa-icon [icon]="icons.bars" [fixedWidth]="true" />
-      </sd-button>
-    } @else {
-      <sd-gap width="sm" />
-    }
+    <sd-button theme="link-primary" class="p-sm-default" (click)="onSidebarToggleButtonClick()">
+      <fa-icon [icon]="icons.bars" />
+    </sd-button>
 
     <ng-content />
   `,
@@ -39,6 +34,8 @@ import { SdButtonControl } from "../sd-button.control";
 
         background: var(--background-color);
         color: var(--text-trans-default);
+        border-bottom: 1px solid var(--border-color-lighter);
+        padding-left: var(--gap-sm);
 
         @each $h in (h1, h2, h3, h4, h5, h6) {
           > #{$h} {

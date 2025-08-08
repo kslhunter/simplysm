@@ -22,20 +22,21 @@ import { SdCheckboxControl } from "../sd-checkbox.control";
 import { SdKanbanBoardControl } from "./sd-kanban-board.control";
 import { SdKanbanControl } from "./sd-kanban.control";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
+import { SdAnchorControl } from "../sd-anchor.control";
 
 @Component({
   selector: "sd-kanban-lane",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdBusyContainerControl, SdCheckboxControl, NgTemplateOutlet, FaIconComponent],
+  imports: [SdBusyContainerControl, SdCheckboxControl, NgTemplateOutlet, FaIconComponent, SdAnchorControl],
   template: `
     @if (useCollapse() || titleTemplateRef()) {
       <div>
         @if (useCollapse()) {
-          <a class="a-info" (click)="onToggleCollapseButtonClick()">
+          <sd-anchor theme="info" (click)="onToggleCollapseButtonClick()">
             <fa-icon [icon]="collapse() ? icons.eyeSlash : icons.eye" [fixedWidth]="true" />
-          </a>
+          </sd-anchor>
         }
 
         @if (titleTemplateRef()) {
@@ -110,7 +111,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
     `,
   ],
   host: {
-    "class": "flex-vertical p-default flex-gap-default",
+    "class": "flex-column p-default gap-default",
     "[attr.data-sd-drag-over]": "dragOvered()",
   },
 })

@@ -30,13 +30,22 @@ import { $signal } from "../../utils/bindings/$signal";
 import { injectParent } from "../../utils/injections/inject-parent";
 import { ISdModal } from "../../providers/sd-modal.provider";
 import { $effect } from "../../utils/bindings/$effect";
+import { SdAnchorControl } from "../../controls/sd-anchor.control";
 
 @Component({
   selector: "sd-data-detail",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdBaseContainerControl, SdFormControl, SdButtonControl, NgTemplateOutlet, FormatPipe, FaIconComponent],
+  imports: [
+    SdBaseContainerControl,
+    SdFormControl,
+    SdButtonControl,
+    NgTemplateOutlet,
+    FormatPipe,
+    FaIconComponent,
+    SdAnchorControl,
+  ],
   template: `
     <sd-base-container
       [busy]="parent.busyCount() > 0"
@@ -60,9 +69,9 @@ import { $effect } from "../../utils/bindings/$effect";
       </ng-template>
 
       <ng-template #content>
-        <div class="fill flex-vertical region">
+        <div class="flex-column fill">
           @if ((parent.viewType() === "control" && parent.canEdit()) || toolTplRef() != null) {
-            <div class="p-default flex flex-gap-default bdb bdb-theme-grey-lightest">
+            <div class="p-default flex-row gap-default bdb bdb-theme-grey-lightest">
               @if (parent.viewType() === "control" && parent.canEdit()) {
                 @if (parent.submit) {
                   <sd-button theme="primary" (click)="onSubmitButtonClick()">
@@ -129,7 +138,7 @@ import { $effect } from "../../utils/bindings/$effect";
 
       @if (parent.canEdit()) {
         <ng-template #modalBottom>
-          <div class="p-sm-default flex flex-gap-sm">
+          <div class="p-sm-default flex-row gap-sm">
             @if (!parent.dataInfo()?.isNew && parent.toggleDelete) {
               @if (parent.dataInfo()?.isDeleted) {
                 <sd-button size="sm" theme="warning" (click)="onRestoreButtonClick()">복구</sd-button>
@@ -145,9 +154,9 @@ import { $effect } from "../../utils/bindings/$effect";
         </ng-template>
 
         <ng-template #modalActionTpl>
-          <a class="a-grey p-sm-default" (click)="onRefreshButtonClick()" title="새로고침(CTRL+ALT+L)">
+          <sd-anchor theme="grey" class="p-sm-default" (click)="onRefreshButtonClick()" title="새로고침(CTRL+ALT+L)">
             <fa-icon [icon]="icons.refresh" [fixedWidth]="true" />
-          </a>
+          </sd-anchor>
         </ng-template>
       }
     </sd-base-container>
@@ -192,7 +201,7 @@ export class SdDataDetailControl {
   }
 
   async onSubmit() {
-    await this.parent.doSubmit();
+    await this.parent.doSubmit(true);
   }
 }
 
@@ -255,7 +264,7 @@ export abstract class AbsSdDataDetail<T extends object, R = boolean> implements 
 
   async doRefresh() {
     if (this.busyCount() > 0) return;
-    if (!this.canEdit()) return;
+    if (!this.canUse()) return;
     if (!this.checkIgnoreChanges()) return;
 
     this.busyCount.update((v) => v + 1);
@@ -291,9 +300,9 @@ export abstract class AbsSdDataDetail<T extends object, R = boolean> implements 
     this.busyCount.update((v) => v - 1);
   }
 
-  async doSubmit() {
+  async doSubmit(permCheck?: boolean) {
     if (this.busyCount() > 0) return;
-    if (!this.canEdit()) return;
+    if (permCheck && !this.canEdit()) return;
     if (!this.submit) return;
 
     if (!this.dataInfo()?.isNew && !$obj(this.data).changed()) {

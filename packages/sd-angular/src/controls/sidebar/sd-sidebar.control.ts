@@ -8,6 +8,10 @@ import { $computed } from "../../utils/bindings/$computed";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
+  host: {
+    "class": "flex-column",
+    "[attr.data-sd-toggle]": "toggle()",
+  },
   template: `
     <ng-content></ng-content>
   `,
@@ -16,7 +20,6 @@ import { $computed } from "../../utils/bindings/$computed";
       @use "../../scss/mixins";
 
       sd-sidebar {
-        display: block;
         position: absolute;
         z-index: var(--z-index-sidebar);
         top: 0;
@@ -24,7 +27,8 @@ import { $computed } from "../../utils/bindings/$computed";
         width: var(--sidebar-width);
         height: 100%;
         animation: sd-sidebar var(--animation-duration) ease-in;
-        background: var(--background-color);
+        background: var(--control-color);
+        border-right: 1px solid var(--border-color-lighter);
 
         //-- 화면 크기
 
@@ -58,9 +62,6 @@ import { $computed } from "../../utils/bindings/$computed";
       }
     `,
   ],
-  host: {
-    "[attr.data-sd-toggle]": "toggle()",
-  },
 })
 export class SdSidebarControl {
   #parentControl = inject<SdSidebarContainerControl>(forwardRef(() => SdSidebarContainerControl));

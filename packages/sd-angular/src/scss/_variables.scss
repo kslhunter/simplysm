@@ -350,6 +350,7 @@ $vars: (
     default: rgba(0, 0, 0, 0.2),
     light: rgba(0, 0, 0, 0.1),
     lighter: rgba(0, 0, 0, 0.05),
+    lightest: rgba(0, 0, 0, 0.03),
     rev-default: rgba(255, 255, 255, 0.1),
     rev-light: rgba(255, 255, 255, 0.2),
     rev-lighter: rgba(255, 255, 255, 0.3),
@@ -388,6 +389,7 @@ $vars: (
     auto: "auto",
   ),
   border-color: (
+    lighter: var(--theme-grey-lightest),
     light: var(--theme-grey-lighter),
     default: var(--theme-grey-light),
     dark: var(--theme-grey-default),
@@ -400,11 +402,11 @@ $vars: (
     lg: var(--gap-default),
     xl: var(--gap-lg),
     xxl: var(--gap-xl) //xs: var(--gap-xs),
-    //sm: var(--gap-sm),
+    , //sm: var(--gap-sm),
     //default: var(--gap-default),
     //lg: var(--gap-lg),
-    , //xl: var(--gap-xl),
-    //xxl: var(--gap-xxl)
+    //xl: var(--gap-xl),
+     //xxl: var(--gap-xxl)
   ),
   z-index: (
     toast: 9999,
@@ -418,7 +420,8 @@ $vars: (
   //font-family: sans-serif,
   font-family: "'Pretendard Variable', 'Noto Sans KR', sans-serif",
   font-family-monospace: monospace,
-  background-color: var(--theme-grey-lightest),
+  background-color: white,
+  //var(--theme-grey-lightest),
   background-rev-color: black,
   control-color: white,
   animation-duration: 0.2s,

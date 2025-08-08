@@ -25,13 +25,14 @@ import { SdItemOfTemplateContext, SdItemOfTemplateDirective } from "../../direct
 import { NgTemplateOutlet } from "@angular/common";
 import { $signal } from "../../utils/bindings/$signal";
 import { injectParent } from "../../utils/injections/inject-parent";
+import { SdAnchorControl } from "../../controls/sd-anchor.control";
 
 @Component({
   selector: "sd-data-select-button",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdAdditionalButtonControl, FaIconComponent, SdButtonControl, NgTemplateOutlet],
+  imports: [SdAdditionalButtonControl, FaIconComponent, SdButtonControl, NgTemplateOutlet, SdAnchorControl],
   template: `
     <sd-additional-button [inset]="parent.inset()" [size]="parent.size()">
       @for (item of parent.selectedItems(); track item; let index = $index) {
@@ -53,9 +54,9 @@ import { injectParent } from "../../utils/injections/inject-parent";
       <ng-content />
 
       @if (!parent.disabled() && !parent.isNoValue() && !parent.required()) {
-        <a class="a-danger" (click)="onCancelButtonClick()">
+        <sd-anchor theme="danger" (click)="onCancelButtonClick()">
           <fa-icon [icon]="icons.eraser" />
-        </a>
+        </sd-anchor>
       }
 
       @if (!parent.disabled()) {

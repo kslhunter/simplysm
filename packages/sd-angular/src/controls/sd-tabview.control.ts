@@ -9,6 +9,9 @@ import { SdTabviewItemControl } from "./sd-tabview-item.control";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [SdTabControl, SdTabItemControl],
+  host: {
+    class: "flex-column fill",
+  },
   template: `
     <sd-tab [(value)]="value">
       @for (itemControl of itemControls(); track itemControl.value()) {
@@ -22,9 +25,6 @@ import { SdTabviewItemControl } from "./sd-tabview-item.control";
       <ng-content />
     </div>
   `,
-  host: {
-    class: "flex-vertical fill",
-  },
 })
 export class SdTabviewControl<T> {
   value = model<T>();

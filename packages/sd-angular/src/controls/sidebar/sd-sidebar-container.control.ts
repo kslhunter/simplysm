@@ -2,13 +2,19 @@ import { ChangeDetectionStrategy, Component, inject, ViewEncapsulation } from "@
 import { NavigationStart, Router } from "@angular/router";
 import { $signal } from "../../utils/bindings/$signal";
 
-
 @Component({
   selector: "sd-sidebar-container",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
+  host: {
+    "[attr.data-sd-toggle]": "toggle()",
+  },
+  template: `
+    <ng-content></ng-content>
+    <div class="_backdrop" (click)="onBackdropClick()"></div>
+  `,
   styles: [
     /* language=SCSS */ `
       sd-sidebar-container {
@@ -56,12 +62,6 @@ import { $signal } from "../../utils/bindings/$signal";
       }
     `,
   ],
-  template: `
-    <ng-content></ng-content>
-    <div class="_backdrop" (click)="onBackdropClick()"></div>`,
-  host: {
-    "[attr.data-sd-toggle]": "toggle()",
-  },
 })
 export class SdSidebarContainerControl {
   #router: Router | null = inject(Router, { optional: true });

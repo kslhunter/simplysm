@@ -21,13 +21,14 @@ import { transformBoolean } from "../utils/type-tramsforms";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { NumberUtils } from "@simplysm/sd-core-common";
 import { NgTemplateOutlet } from "@angular/common";
+import { SdAnchorControl } from "./sd-anchor.control";
 
 @Component({
   selector: "sd-modal",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdEventsDirective, FaIconComponent, NgTemplateOutlet],
+  imports: [SdEventsDirective, FaIconComponent, NgTemplateOutlet, SdAnchorControl],
   template: `
     <div class="_backdrop" (click)="onBackdropClick()"></div>
 
@@ -43,15 +44,15 @@ import { NgTemplateOutlet } from "@angular/common";
       (focus)="onDialogFocus()"
       (sdResize)="onDialogResize($event)"
     >
-      <div class="flex-vertical fill">
+      <div class="flex-column fill">
         @if (!hideHeader()) {
-          <div class="_header flex" (mousedown)="onHeaderMouseDown($event)" [style]="headerStyle()">
+          <div class="_header flex-row" (mousedown)="onHeaderMouseDown($event)" [style]="headerStyle()">
             <h5 class="_title flex-fill">{{ title() }}</h5>
             <ng-template [ngTemplateOutlet]="actionTplRef() ?? null" />
             @if (!hideCloseButton()) {
-              <a class="_close-button a-grey" (click)="onCloseButtonClick()">
+              <sd-anchor theme="grey" class="_close-button" (click)="onCloseButtonClick()">
                 <fa-icon [icon]="icons.xmark" [fixedWidth]="true" />
-              </a>
+              </sd-anchor>
             }
           </div>
         }
@@ -112,7 +113,7 @@ import { NgTemplateOutlet } from "@angular/common";
             outline: none;
           }
 
-          > .flex-vertical {
+          > .flex-column {
             > ._header {
               user-select: none;
               border-bottom: 1px solid var(--theme-grey-lightest);
@@ -276,7 +277,7 @@ import { NgTemplateOutlet } from "@angular/common";
             border: none;
             border-radius: 0;
 
-            > .flex-vertical > ._header {
+            > .flex-column > ._header {
               background: transparent;
               color: var(--text-trans-lighter);
             }

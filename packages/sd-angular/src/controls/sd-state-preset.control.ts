@@ -7,29 +7,30 @@ import { $effect } from "../utils/bindings/$effect";
 import { $signal } from "../utils/bindings/$signal";
 import { SdGapControl } from "./sd-gap.control";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
+import { SdAnchorControl } from "./sd-anchor.control";
 
 @Component({
   selector: "sd-state-preset",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdGapControl, FaIconComponent],
+  imports: [SdGapControl, FaIconComponent, SdAnchorControl],
   template: `
-    <a (click)="onAddButtonClick()">
+    <sd-anchor (click)="onAddButtonClick()">
       <fa-icon [icon]="icons.star" class="tx-theme-warning-default" [fixedWidth]="true" />
-    </a>
+    </sd-anchor>
     <sd-gap width="sm"></sd-gap>
     @for (preset of presets(); track preset.name) {
       <div>
-        <a (click)="onItemClick(preset)" class="tx-trans-default">
+        <sd-anchor (click)="onItemClick(preset)" class="tx-trans-default">
           {{ preset.name }}
-        </a>
-        <a (click)="onSaveButtonClick(preset)">
+        </sd-anchor>
+        <sd-anchor (click)="onSaveButtonClick(preset)">
           <fa-icon [icon]="icons.save" size="sm" />
-        </a>
-        <a (click)="onRemoveButtonClick(preset)">
+        </sd-anchor>
+        <sd-anchor (click)="onRemoveButtonClick(preset)">
           <fa-icon [icon]="icons.xmark" size="sm" />
-        </a>
+        </sd-anchor>
       </div>
       <sd-gap width="sm"></sd-gap>
     }
@@ -40,7 +41,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
         display: inline-block;
         vertical-align: top;
 
-        > a {
+        > sd-anchor {
           display: inline-block;
           vertical-align: top;
           line-height: var(--line-height);
@@ -62,20 +63,20 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
             background: var(--theme-grey-lighter);
           }
 
-          > a {
+          > sd-anchor {
             padding: 0 var(--gap-sm);
           }
         }
 
         &[data-sd-size="sm"] {
-          > a,
+          > sd-anchor,
           > div {
             padding: var(--gap-xs) var(--gap-default);
           }
         }
 
         &[data-sd-size="lg"] {
-          > a,
+          > sd-anchor,
           > div {
             padding: var(--gap-default) var(--gap-lg);
           }

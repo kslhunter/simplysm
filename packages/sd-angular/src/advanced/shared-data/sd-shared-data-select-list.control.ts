@@ -26,6 +26,7 @@ import { setupModelHook } from "../../utils/setups/setup-model-hook";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { ISdSelectModal, TSdSelectModalInfo } from "../sd-data-view/sd-data-select-button.control";
 import { SdListControl } from "../../controls/list/sd-list.control";
+import { SdAnchorControl } from "../../controls/sd-anchor.control";
 
 @Component({
   selector: "sd-shared-data-select-list",
@@ -40,29 +41,30 @@ import { SdListControl } from "../../controls/list/sd-list.control";
     SdPaginationControl,
     FaIconComponent,
     SdListControl,
+    SdAnchorControl,
   ],
   host: {
-    class: "flex-vertical region",
+    class: "flex-column",
   },
   template: `
     @if (header()) {
-      <div class="control-header p-sm-default">
+      <div class="control-header p-default">
         {{ header() }}
       </div>
     }
 
-    <div class="flex-vertical flex-gap-sm p-default bdb bdb-theme-grey-lightest">
+    <div class="flex-column gap-sm p-default pt-0">
       @if (headerTemplateRef() || modal()) {
-        <div class="flex">
+        <div class="flex-row">
           <div class="flex-fill">
             @if (headerTemplateRef()) {
               <ng-template [ngTemplateOutlet]="headerTemplateRef()!"></ng-template>
             }
           </div>
           @if (modal()) {
-            <a (click)="onModalButtonClick()">
+            <sd-anchor (click)="onModalButtonClick()">
               <fa-icon [icon]="icons.externalLink" [fixedWidth]="true" />
-            </a>
+            </sd-anchor>
           }
         </div>
       }
@@ -77,7 +79,7 @@ import { SdListControl } from "../../controls/list/sd-list.control";
     </div>
 
     <div class="flex-fill">
-      <div class="flex-vertical flex-gap-default">
+      <div class="flex-column gap-default">
         @if (pageItemCount()) {
           <sd-pagination [(currentPage)]="page" [totalPageCount]="pageLength()" />
         }

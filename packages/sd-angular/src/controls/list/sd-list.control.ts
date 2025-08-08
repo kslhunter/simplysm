@@ -7,33 +7,29 @@ import { transformBoolean } from "../../utils/type-tramsforms";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
+  host: {
+    "class": "flex-column",
+    "[attr.data-sd-inset]": "inset()",
+  },
+  template: `
+    <ng-content></ng-content>
+  `,
   styles: [
     /* language=SCSS */ `
       sd-list {
-        display: block;
         user-select: none;
-        border-radius: var(--border-radius-default);
         background: var(--control-color);
-        width: 100%;
 
         &[data-sd-inset="true"] {
-          border-radius: 0;
           background: transparent;
 
           sd-list {
-            border-radius: 0;
             background: transparent;
           }
         }
       }
     `,
   ],
-  template: `
-    <ng-content></ng-content>
-  `,
-  host: {
-    "[attr.data-sd-inset]": "inset()",
-  },
 })
 export class SdListControl {
   inset = input(false, { transform: transformBoolean });

@@ -27,9 +27,17 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [SdCollapseIconControl, SdCollapseControl, SdRippleDirective, NgTemplateOutlet, FaIconComponent],
+  host: {
+    "[attr.data-sd-layout]": "layout()",
+    "[attr.data-sd-open]": "open()",
+    "[attr.data-sd-selected]": "selected()",
+    "[attr.data-sd-readonly]": "readonly()",
+    "[attr.data-sd-has-selected-icon]": "!!selectedIcon()",
+    "[attr.data-sd-has-children]": "hasChildren()",
+  },
   template: `
     <div
-      class="_content flex flex-gap-xs"
+      class="_content flex-row gap-xs"
       [class]="contentClass()"
       [style]="contentStyle()"
       (click)="onContentClick()"
@@ -37,7 +45,12 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
       [sd-ripple]="!readonly() && !(layout() === 'flat' && hasChildren())"
     >
       @if (selectedIcon() && !hasChildren()) {
-        <fa-icon class="_selected-icon" [icon]="selectedIcon()!" [fixedWidth]="true" />
+        <fa-icon
+          class="tx-trans-lightest"
+          [class.tx-theme-primary-default]="selected()"
+          [icon]="selectedIcon()!"
+          [fixedWidth]="true"
+        />
       }
       <div class="flex-fill">
         <ng-content />
@@ -66,23 +79,13 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
       sd-list-item {
         > ._content {
           padding: var(--gap-sm) var(--gap-default);
-
-          border-radius: var(--border-radius-default);
-          margin: var(--gap-xs);
-
-          > ._selected-icon {
-            color: var(--text-trans-lightest);
-          }
+          cursor: pointer;
         }
 
-        &:not([data-sd-readonly="true"]) {
+        &[data-sd-readonly="true"] {
           > ._content {
-            cursor: pointer;
+            cursor: default;
           }
-        }
-
-        > ._child {
-          margin: var(--gap-xs);
         }
 
         &[data-sd-layout="accordion"] {
@@ -95,20 +98,17 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
           }
 
           > ._child > ._content > sd-list {
-            padding: var(--gap-xxs) 0;
+            padding: var(--gap-xs) 0;
           }
         }
 
-        &[data-sd-layout="flat"] {
-          &[data-sd-has-children="true"] {
-            > ._content {
-              display: block;
-              background: transparent;
-              cursor: default;
-              font-size: var(--font-size-sm);
-              opacity: 0.7;
-              margin-top: var(--gap-sm);
-            }
+        &[data-sd-layout="flat"][data-sd-has-children="true"] {
+          > ._content {
+            display: block;
+            background: transparent;
+            cursor: default;
+            font-size: var(--font-size-sm);
+            opacity: 0.7;
           }
         }
 
@@ -121,33 +121,16 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 
         &[data-sd-has-selected-icon="true"][data-sd-selected="true"] {
           > ._content {
-            //background: transparent;
             color: var(--text-trans-default);
-
-            > ._selected-icon {
-              color: var(--theme-primary-default);
-            }
 
             &:hover {
               background: var(--trans-lighter);
             }
-
-            /*&:active {
-              background: var(--trans-dark);
-            }*/
           }
         }
       }
     `,
   ],
-  host: {
-    "[attr.data-sd-layout]": "layout()",
-    "[attr.data-sd-open]": "open()",
-    "[attr.data-sd-selected]": "selected()",
-    "[attr.data-sd-readonly]": "readonly()",
-    "[attr.data-sd-has-selected-icon]": "!!selectedIcon()",
-    "[attr.data-sd-has-children]": "hasChildren()",
-  },
 })
 export class SdListItemControl {
   protected readonly icons = inject(SdAngularConfigProvider).icons;

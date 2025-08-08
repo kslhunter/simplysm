@@ -38,6 +38,7 @@ import {
 } from "./sd-sheet.types";
 import { FaIconComponent, FaLayersComponent } from "@fortawesome/angular-fontawesome";
 import { SdButtonControl } from "../sd-button.control";
+import { SdAnchorControl } from "../sd-anchor.control";
 
 @Component({
   selector: "sd-sheet",
@@ -52,10 +53,11 @@ import { SdButtonControl } from "../sd-button.control";
     FaIconComponent,
     FaLayersComponent,
     SdButtonControl,
+    SdAnchorControl,
   ],
   template: `
     @if ((key() || effectivePageCount() > 0) && !hideConfigBar()) {
-      <div class="_tool flex flex-gap-sm p-xs">
+      <div class="_tool flex-row gap-sm p-xs">
         @if (key()) {
           <sd-button class="p-xs-sm" theme="link-primary" (click)="onConfigButtonClick()">
             <fa-icon [icon]="icons.cog" [fixedWidth]="true" />
@@ -150,7 +152,7 @@ import { SdButtonControl } from "../sd-button.control";
                       (sdResize)="onHeaderLastRowCellResize($event, c)"
                       (click)="onHeaderCellClick($event, headerCell)"
                     >
-                      <div class="_headerContent flex">
+                      <div class="_headerContent flex-row">
                         @let _tempRef = headerCell.control.headerTemplateRef();
                         <div class="flex-fill" [class._p-sheet]="!_tempRef" [attr.style]="headerCell.style">
                           @if (_tempRef) {
@@ -247,14 +249,13 @@ import { SdButtonControl } from "../sd-button.control";
                       />-->
 
                   @if (_selectable === true && selectionManager.getCanChangeFn(item)) {
-                    <a
-                      [class.a-primary]="selectedItems().includes(item)"
-                      [class.a-grey]="!selectedItems().includes(item)"
+                    <sd-anchor
+                      [theme]="selectedItems().includes(item) ? 'primary' : 'grey'"
                       (pointerdown)="selectionManager.toggle(item)"
                       [attr.title]="_selectable"
                     >
                       <fa-icon [icon]="icons.arrowRight" [fixedWidth]="true" />
-                    </a>
+                    </sd-anchor>
                   }
                 }
               </td>
@@ -564,7 +565,7 @@ import { SdButtonControl } from "../sd-button.control";
     `,
   ],
   host: {
-    "class": "flex-vertical fill",
+    "class": "flex-column fill",
     "[attr.data-sd-inset]": "inset()",
     "[attr.data-sd-focus-mode]": "focusMode()",
   },

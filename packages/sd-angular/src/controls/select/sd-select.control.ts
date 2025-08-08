@@ -24,6 +24,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { SdDropdownControl } from "../dropdown/sd-dropdown.control";
 import { SdDropdownPopupControl } from "../dropdown/sd-dropdown-popup.control";
 import { $afterRenderEffect } from "../../utils/bindings/$afterRenderEffect";
+import { SdAnchorControl } from "../sd-anchor.control";
 
 @Component({
   selector: "sd-select",
@@ -38,6 +39,7 @@ import { $afterRenderEffect } from "../../utils/bindings/$afterRenderEffect";
     SdTypedTemplateDirective,
     SdRippleDirective,
     FaIconComponent,
+    SdAnchorControl,
   ],
   template: `
     <sd-dropdown
@@ -60,7 +62,7 @@ import { $afterRenderEffect } from "../../utils/bindings/$afterRenderEffect";
 
       <sd-dropdown-popup #dropdownPopup (keydown)="onPopupKeydown($event)">
         @if (!items()) {
-          <div class="flex-vertical">
+          <div class="flex-column">
             @if (headerTemplateRef()) {
               <div>
                 <ng-template [ngTemplateOutlet]="headerTemplateRef()!" />
@@ -72,7 +74,7 @@ import { $afterRenderEffect } from "../../utils/bindings/$afterRenderEffect";
             </div>
           </div>
         } @else {
-          <div class="flex-vertical">
+          <div class="flex-column">
             @if (headerTemplateRef()) {
               <div>
                 <ng-template [ngTemplateOutlet]="headerTemplateRef()!" />
@@ -81,9 +83,9 @@ import { $afterRenderEffect } from "../../utils/bindings/$afterRenderEffect";
 
             @if (selectMode() === "multi" && !hideSelectAll()) {
               <div class="p-sm-default">
-                <a (click)="onSelectAllButtonClick(true)">전체선택</a>
+                <sd-anchor (click)="onSelectAllButtonClick(true)">전체선택</sd-anchor>
                 <sd-gap width="sm"></sd-gap>
-                <a (click)="onSelectAllButtonClick(false)">전체해제</a>
+                <sd-anchor (click)="onSelectAllButtonClick(false)">전체해제</sd-anchor>
               </div>
             }
 
