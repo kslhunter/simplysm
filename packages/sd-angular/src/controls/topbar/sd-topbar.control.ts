@@ -32,7 +32,7 @@ import { SdButtonControl } from "../sd-button.control";
         overflow-y: hidden;
         user-select: none;
 
-        background: var(--background-color);
+        background: var(--control-color);
         color: var(--text-trans-default);
         border-bottom: 1px solid var(--border-color-lighter);
         padding-left: var(--gap-sm);

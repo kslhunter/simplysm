@@ -1,5 +1,11 @@
 @use "pretendard/dist/web/variable/pretendardvariable.css";
-@use 'quill/dist/quill.snow.css';
+@use "quill/dist/quill.snow.css";
 
 @use "scss/theme-variables";
 @use "scss/styles";
+
+@use "scss/controls/flex";
+@use "scss/controls/form-table";
+@use "scss/controls/form-box";
+@use "scss/controls/card";
+@use "scss/controls/table";

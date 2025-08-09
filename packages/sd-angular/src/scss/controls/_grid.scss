@@ -1,0 +1,36 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  container-type: inline-size;
+  container-name: grid;
+}
+
+@for $i from 1 through 12 {
+  .grid-#{$i} {
+    grid-column-end: span #{$i};
+  }
+}
+
+@container grid (width < 1280px) {
+  @for $i from 1 through 12 {
+    .grid-sm-#{$i} {
+      grid-column-end: span #{$i};
+    }
+  }
+}
+
+@container grid (width < 1024px) {
+  @for $i from 1 through 12 {
+    .grid-xs-#{$i} {
+      grid-column-end: span #{$i};
+    }
+  }
+}
+
+@container grid (width < 800px) {
+  @for $i from 1 through 12 {
+    .grid-xxs-#{$i} {
+      grid-column-end: span #{$i};
+    }
+  }
+}

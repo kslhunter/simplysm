@@ -62,9 +62,9 @@ export class SdTsCompiler {
         externalDependencies: [],
         target: transformSupportedBrowsersToTargets(browserslist(["Chrome > 78"])),
         tailwindConfiguration: undefined,
-        postcssConfiguration: {
+        /*postcssConfiguration: {
           plugins: [["css-has-pseudo"]],
-        },
+        },*/
         // publicPath:
         cacheOptions: {
           enabled: true,

@@ -1,0 +1,47 @@
+.form-box {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-default);
+
+  > div {
+    display: block;
+
+    > label {
+      display: block;
+      margin-bottom: var(--gap-xs);
+      white-space: nowrap;
+      font-weight: bold;
+      border: 1px solid transparent;
+    }
+
+    @media all and (pointer: coarse) {
+      margin-bottom: var(--gap-default);
+
+      > label {
+        margin-bottom: var(gap-xxs);
+      }
+    }
+  }
+}
+
+.form-box-inline {
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: var(--gap-sm);
+
+  > div {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+
+    > label {
+      display: block;
+      white-space: nowrap;
+      font-weight: bold;
+      border: 1px solid transparent;
+      padding-left: var(--gap-sm);
+      padding-right: var(--gap-sm);
+    }
+  }
+}

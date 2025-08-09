@@ -117,7 +117,7 @@ import { SdAnchorControl } from "../../controls/sd-anchor.control";
           </div>
 
           @if (parent.dataInfo()?.lastModifiedAt || parent.dataInfo()?.lastModifiedBy) {
-            <div class="p-sm-default">
+            <div class="p-sm-default" [class.bg-theme-grey-lightest]="parent.viewType() === 'modal'">
               최종수정:
               @if (parent.dataInfo()?.lastModifiedAt) {
                 {{ parent.dataInfo()!.lastModifiedAt | format: "yyyy-MM-dd HH:mm" }}
@@ -147,7 +147,7 @@ import { SdAnchorControl } from "../../controls/sd-anchor.control";
               }
             }
 
-            <div class="flex-fill tx-right">
+            <div class="flex-fill flex-row gap-sm main-align-end">
               <sd-button size="sm" theme="primary" (click)="onSubmitButtonClick()">확인</sd-button>
             </div>
           </div>

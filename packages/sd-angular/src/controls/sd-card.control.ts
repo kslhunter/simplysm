@@ -7,7 +7,7 @@ import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/
   standalone: true,
   imports: [],
   host: {
-    class: "sd-card",
+    class: "card",
   },
   template: `
     <ng-content></ng-content>

@@ -1,16 +1,15 @@
 import { NgTemplateOutlet } from "@angular/common";
 import { ChangeDetectionStrategy, Component, contentChild, input, TemplateRef, ViewEncapsulation } from "@angular/core";
-import { SdItemOfTemplateContext, SdItemOfTemplateDirective } from "../directives/sd-item-of.template-directive";
-import { ISharedDataBase } from "../advanced/shared-data/sd-shared-data.provider";
+import { SdItemOfTemplateContext, SdItemOfTemplateDirective } from "../../directives/sd-item-of.template-directive";
+import { ISharedDataBase } from "./sd-shared-data.provider";
 import {
   AbsSdDataSelectButton,
   ISdSelectModal,
   SdDataSelectButtonControl,
   TSdSelectModalInfo,
-} from "../advanced/sd-data-view/sd-data-select-button.control";
-import { TSelectModeValue } from "../controls/select/sd-select.control";
+} from "../sd-data-view/sd-data-select-button.control";
+import { TSelectModeValue } from "../../controls/select/sd-select.control";
 
-/** @deprecated */
 @Component({
   selector: "sd-shared-data-select-button",
   changeDetection: ChangeDetectionStrategy.OnPush,

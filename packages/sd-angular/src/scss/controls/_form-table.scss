@@ -1,0 +1,28 @@
+.form-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 0;
+
+  > tbody > tr,
+  > tr {
+    > * {
+      padding: 0 var(--gap-default) var(--gap-sm) 0;
+      vertical-align: middle;
+
+      &:last-child {
+        padding-right: 0;
+      }
+    }
+
+    &:last-child > * {
+      padding-bottom: 0;
+    }
+
+    > th {
+      padding-left: var(--gap-sm);
+      text-align: right;
+      width: 0;
+      white-space: nowrap;
+    }
+  }
+}
