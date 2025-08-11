@@ -25,7 +25,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
     FaIconComponent,
   ],
   host: {
-    "class": "flex-column",
+    "class": "flex-column fill",
     "[attr.data-sd-root-layout]": "rootLayout()",
   },
   template: `

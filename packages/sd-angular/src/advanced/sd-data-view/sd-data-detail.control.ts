@@ -85,7 +85,11 @@ import { SdAnchorControl } from "../../controls/sd-anchor.control";
                     <small>(CTRL+ALT+L)</small>
                   </sd-button>
                 }
-                @if (!parent.dataInfo()?.isNew && parent.toggleDelete) {
+                @if (
+                  !parent.dataInfo()?.isNew &&
+                  parent.toggleDelete &&
+                  (!parent.canDelete || parent.canDelete())
+                ) {
                   @if (parent.dataInfo()?.isDeleted) {
                     <sd-button theme="warning" (click)="onRestoreButtonClick()">
                       <fa-icon [icon]="icons.redo" [fixedWidth]="true" />
@@ -117,7 +121,10 @@ import { SdAnchorControl } from "../../controls/sd-anchor.control";
           </div>
 
           @if (parent.dataInfo()?.lastModifiedAt || parent.dataInfo()?.lastModifiedBy) {
-            <div class="p-sm-default" [class.bg-theme-grey-lightest]="parent.viewType() === 'modal'">
+            <div
+              class="p-sm-default"
+              [class.bg-theme-grey-lightest]="parent.viewType() === 'modal'"
+            >
               최종수정:
               @if (parent.dataInfo()?.lastModifiedAt) {
                 {{ parent.dataInfo()!.lastModifiedAt | format: "yyyy-MM-dd HH:mm" }}
@@ -139,9 +146,15 @@ import { SdAnchorControl } from "../../controls/sd-anchor.control";
       @if (parent.canEdit()) {
         <ng-template #modalBottom>
           <div class="p-sm-default flex-row gap-sm">
-            @if (!parent.dataInfo()?.isNew && parent.toggleDelete) {
+            @if (
+              !parent.dataInfo()?.isNew &&
+              parent.toggleDelete &&
+              (!parent.canDelete || parent.canDelete())
+            ) {
               @if (parent.dataInfo()?.isDeleted) {
-                <sd-button size="sm" theme="warning" (click)="onRestoreButtonClick()">복구</sd-button>
+                <sd-button size="sm" theme="warning" (click)="onRestoreButtonClick()">
+                  복구
+                </sd-button>
               } @else {
                 <sd-button size="sm" theme="danger" (click)="onDeleteButtonClick()">삭제</sd-button>
               }
@@ -154,7 +167,12 @@ import { SdAnchorControl } from "../../controls/sd-anchor.control";
         </ng-template>
 
         <ng-template #modalActionTpl>
-          <sd-anchor theme="grey" class="p-sm-default" (click)="onRefreshButtonClick()" title="새로고침(CTRL+ALT+L)">
+          <sd-anchor
+            theme="grey"
+            class="p-sm-default"
+            (click)="onRefreshButtonClick()"
+            title="새로고침(CTRL+ALT+L)"
+          >
             <fa-icon [icon]="icons.refresh" [fixedWidth]="true" />
           </sd-anchor>
         </ng-template>
@@ -211,10 +229,13 @@ export abstract class AbsSdDataDetail<T extends object, R = boolean> implements 
 
   abstract canUse: Signal<boolean>; // computed (use권한)
   abstract canEdit: Signal<boolean>; // computed (edit권한)
+  canDelete?: Signal<boolean>;
 
   prepareRefreshEffect?(): void;
 
-  abstract load(): Promise<{ data: T; info: ISdDataDetailDataInfo }> | { data: T; info: ISdDataDetailDataInfo };
+  abstract load():
+    | Promise<{ data: T; info: ISdDataDetailDataInfo }>
+    | { data: T; info: ISdDataDetailDataInfo };
 
   toggleDelete?(del: boolean): Promise<R | undefined> | R | undefined;
 
@@ -286,6 +307,7 @@ export abstract class AbsSdDataDetail<T extends object, R = boolean> implements 
   async doToggleDelete(del: boolean) {
     if (this.busyCount() > 0) return;
     if (!this.canEdit()) return;
+    if (this.canDelete && !this.canDelete()) return;
     if (!this.toggleDelete) return;
 
     this.busyCount.update((v) => v + 1);

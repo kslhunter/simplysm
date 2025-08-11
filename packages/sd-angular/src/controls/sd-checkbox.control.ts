@@ -7,11 +7,9 @@ import {
   model,
   ViewEncapsulation,
 } from "@angular/core";
-
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { setupRipple } from "../utils/setups/setup-ripple";
 import { transformBoolean } from "../utils/type-tramsforms";
-
 import { setupModelHook } from "../utils/setups/setup-model-hook";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 
@@ -48,7 +46,9 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
         cursor: pointer;
         border-radius: var(--border-radius-default);
 
-        height: calc(var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-sm) * 2 + 2px);
+        height: calc(
+          var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-sm) * 2 + 2px
+        );
         gap: var(--gap-sm);
 
         > ._indicator_rect {
@@ -64,6 +64,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
           border-radius: var(--border-radius-sm);
 
           > ._indicator {
+            margin: 0 -1px;
             text-align: center;
             opacity: 0;
             color: white;
@@ -167,29 +168,39 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
         }
 
         &[data-sd-size="sm"] {
-          height: calc(var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-xs) * 2 + 2px);
+          height: calc(
+            var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-xs) * 2 + 2px
+          );
           padding: var(--gap-xs) var(--gap-sm);
           gap: var(--gap-xs);
         }
 
         &[data-sd-size="lg"] {
-          height: calc(var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-default) * 2 + 2px);
+          height: calc(
+            var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-default) * 2 + 2px
+          );
           padding: var(--gap-default) var(--gap-lg);
           gap: var(--gap-default);
         }
 
         &[data-sd-inset="true"] {
-          height: calc(var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-sm) * 2);
+          height: calc(
+            var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-sm) * 2
+          );
           border: none;
           justify-content: center;
           text-align: center;
 
           &[data-sd-size="sm"] {
-            height: calc(var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-xs) * 2);
+            height: calc(
+              var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-xs) * 2
+            );
           }
 
           &[data-sd-size="lg"] {
-            height: calc(var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-default) * 2);
+            height: calc(
+              var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-default) * 2
+            );
           }
         }
 
@@ -233,7 +244,17 @@ export class SdCheckboxControl {
   size = input<"sm" | "lg">();
   inline = input(false, { transform: transformBoolean });
   inset = input(false, { transform: transformBoolean });
-  theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey" | "white">();
+  theme = input<
+    | "primary"
+    | "secondary"
+    | "info"
+    | "success"
+    | "warning"
+    | "danger"
+    | "grey"
+    | "blue-grey"
+    | "white"
+  >();
 
   contentStyle = input<string>();
 

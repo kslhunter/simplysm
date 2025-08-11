@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, ElementRef, output, viewChild, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  output,
+  viewChild,
+  ViewEncapsulation,
+} from "@angular/core";
 
 @Component({
   selector: "sd-form",

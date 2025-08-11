@@ -29,7 +29,17 @@ import { SdAnchorControl } from "../sd-anchor.control";
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdBusyContainerControl, SdCheckboxControl, NgTemplateOutlet, FaIconComponent, SdAnchorControl],
+  imports: [
+    SdBusyContainerControl,
+    SdCheckboxControl,
+    NgTemplateOutlet,
+    FaIconComponent,
+    SdAnchorControl,
+  ],
+  host: {
+    "class": "flex-column p-default gap-default",
+    "[attr.data-sd-drag-over]": "dragOvered()",
+  },
   template: `
     @if (useCollapse() || titleTemplateRef()) {
       <div>
@@ -110,10 +120,6 @@ import { SdAnchorControl } from "../sd-anchor.control";
       }
     `,
   ],
-  host: {
-    "class": "flex-column p-default gap-default",
-    "[attr.data-sd-drag-over]": "dragOvered()",
-  },
 })
 export class SdKanbanLaneControl<L, T> {
   protected readonly icons = inject(SdAngularConfigProvider).icons;

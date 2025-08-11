@@ -43,7 +43,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
             padding: var(--gap-sm) !important;
           }
 
-          > sd-button {
+          > sd-button > button {
             border-left: 1px solid var(--trans-lighter) !important;
             padding: var(--gap-sm) !important;
             height: 100%;
@@ -65,7 +65,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
               padding: var(--gap-xs) var(--gap-sm) !important;
             }
 
-            > sd-button {
+            > sd-button > button {
               padding: var(--gap-xs) var(--gap-sm) !important;
             }
           }
@@ -81,7 +81,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
               padding: var(--gap-default) !important;
             }
 
-            > sd-button {
+            > sd-button > button {
               padding: var(--gap-default) !important;
             }
           }

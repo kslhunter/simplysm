@@ -1,5 +1,5 @@
 export default {
-  printWidth: 120, // 한 줄 최대 길이 (일반적으로 100~120)
+  printWidth: 100, // 한 줄 최대 길이 (일반적으로 100~120)
   tabWidth: 2, // 탭 너비 (Angular, JS, TS 모두 2칸 권장)
   useTabs: false, // 공백(스페이스) 들여쓰기
   semi: true, // 세미콜론 항상 붙임

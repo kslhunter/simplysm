@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, forwardRef, inject, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  forwardRef,
+  inject,
+  ViewEncapsulation,
+} from "@angular/core";
 import { SdSidebarContainerControl } from "./sd-sidebar-container.control";
 import { $computed } from "../../utils/bindings/$computed";
 
@@ -9,7 +15,6 @@ import { $computed } from "../../utils/bindings/$computed";
   standalone: true,
   imports: [],
   host: {
-    "class": "flex-column",
     "[attr.data-sd-toggle]": "toggle()",
   },
   template: `

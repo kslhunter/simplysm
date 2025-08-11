@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, inject, input, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  input,
+  ViewEncapsulation,
+} from "@angular/core";
 import { SdSidebarContainerControl } from "../sidebar/sd-sidebar-container.control";
 import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
 
@@ -16,7 +22,11 @@ import { SdButtonControl } from "../sd-button.control";
     class: "flex-row gap-default cross-align-center main-align-start",
   },
   template: `
-    <sd-button theme="link-primary" class="p-sm-default" (click)="onSidebarToggleButtonClick()">
+    <sd-button
+      theme="link-primary"
+      buttonClass="p-sm-default"
+      (click)="onSidebarToggleButtonClick()"
+    >
       <fa-icon [icon]="icons.bars" />
     </sd-button>
 

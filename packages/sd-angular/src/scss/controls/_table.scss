@@ -8,8 +8,6 @@ $border-color-dark: var(--theme-grey-lighter);
   border-right: 1px solid $border-color-dark;
   border-bottom: 1px solid $border-color-dark;
 
-  overflow: hidden;
-
   > * > tr,
   > tr {
     > * {

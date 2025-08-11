@@ -154,17 +154,17 @@ form {
 
 //-- TEXT COLOR
 
+@each $key, $val in map.get(variables.$vars, text-trans) {
+  .tx-trans-#{$key} {
+    color: var(--text-trans-#{$key}) !important;
+  }
+}
+
 @each $key, $val in map.get(variables.$vars, theme) {
   @each $key1, $val1 in $val {
     .tx-theme-#{$key}-#{$key1} {
       color: var(--theme-#{$key}-#{$key1}) !important;
     }
-  }
-}
-
-@each $key, $val in map.get(variables.$vars, text-trans) {
-  .tx-trans-#{$key} {
-    color: var(--text-trans-#{$key}) !important;
   }
 }
 
@@ -422,6 +422,10 @@ form {
 
 .overflow-auto {
   overflow: auto;
+}
+
+.position-relative {
+  position: relative;
 }
 
 .nowrap {

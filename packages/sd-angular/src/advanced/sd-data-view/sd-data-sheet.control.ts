@@ -150,7 +150,11 @@ import { SdAnchorControl } from "../../controls/sd-anchor.control";
                     선택 {{ deleteText() ?? "삭제" }}
                   </sd-button>
                   @if (parent.isSelectedItemsHasDeleted()) {
-                    <sd-button size="sm" theme="link-warning" (click)="onToggleDeleteItemsButtonClick(false)">
+                    <sd-button
+                      size="sm"
+                      theme="link-warning"
+                      (click)="onToggleDeleteItemsButtonClick(false)"
+                    >
                       <fa-icon [icon]="restoreIcon()" [fixedWidth]="true" />
                       선택 {{ restoreText() ?? "복구" }}
                     </sd-button>
@@ -190,7 +194,9 @@ import { SdAnchorControl } from "../../controls/sd-anchor.control";
               [getItemCellStyleFn]="parent.getItemCellStyleFn"
               [getItemSelectableFn]="parent.getItemSelectableFn"
             >
-              @if (parent.editMode === "inline" && parent.canEdit() && parent.itemPropInfo.isDeleted) {
+              @if (
+                parent.editMode === "inline" && parent.canEdit() && parent.itemPropInfo.isDeleted
+              ) {
                 <sd-sheet-column fixed [key]="parent.itemPropInfo.isDeleted">
                   <ng-template #header>
                     <div class="p-xs-sm tx-center">
@@ -205,7 +211,9 @@ import { SdAnchorControl } from "../../controls/sd-anchor.control";
                         [disabled]="!parent.getItemInfoFn(item).canDelete"
                       >
                         <fa-icon
-                          [icon]="item[parent.itemPropInfo.isDeleted] ? restoreIcon() : deleteIcon()"
+                          [icon]="
+                            item[parent.itemPropInfo.isDeleted] ? restoreIcon() : deleteIcon()
+                          "
                           [fixedWidth]="true"
                         />
                         {{ item[parent.itemPropInfo.isDeleted] ? restoreText() : deleteText() }}
@@ -239,14 +247,23 @@ import { SdAnchorControl } from "../../controls/sd-anchor.control";
                     </ng-template>
                   }
 
-                  <ng-template [cell]="parent.items()" let-item let-index="index" let-depth="depth" let-edit="edit">
+                  <ng-template
+                    [cell]="parent.items()"
+                    let-item
+                    let-index="index"
+                    let-depth="depth"
+                    let-edit="edit"
+                  >
                     @if (
                       parent.editMode === "modal" &&
                       parent.canEdit() &&
                       columnControl.edit() &&
                       parent.getItemInfoFn(item).canEdit
                     ) {
-                      <sd-anchor (click)="onEditItemButtonClick(item, index, $event)" class="flex-row">
+                      <sd-anchor
+                        (click)="onEditItemButtonClick(item, index, $event)"
+                        class="flex-row"
+                      >
                         <div class="p-xs-sm">
                           <fa-icon [icon]="icons.edit" [fixedWidth]="true" />
                         </div>
@@ -280,7 +297,11 @@ import { SdAnchorControl } from "../../controls/sd-anchor.control";
               }
 
               @if (parent.itemPropInfo.lastModifiedAt) {
-                <sd-sheet-column header="수정일시" [key]="parent.itemPropInfo.lastModifiedAt!">
+                <sd-sheet-column
+                  header="수정일시"
+                  [key]="parent.itemPropInfo.lastModifiedAt!"
+                  [hidden]="parent.viewType() !== 'page'"
+                >
                   <ng-template [cell]="parent.items()" let-item>
                     <div class="p-xs-sm tx-center">
                       {{ item[parent.itemPropInfo.lastModifiedAt!] | format: "yyyy-MM-dd HH:mm" }}
@@ -289,7 +310,11 @@ import { SdAnchorControl } from "../../controls/sd-anchor.control";
                 </sd-sheet-column>
               }
               @if (parent.itemPropInfo.lastModifiedBy) {
-                <sd-sheet-column header="수정자" [key]="parent.itemPropInfo.lastModifiedBy!">
+                <sd-sheet-column
+                  header="수정자"
+                  [key]="parent.itemPropInfo.lastModifiedBy!"
+                  [hidden]="parent.viewType() !== 'page'"
+                >
                   <ng-template [cell]="parent.items()" let-item>
                     <div class="p-xs-sm tx-center">
                       {{ item[parent.itemPropInfo.lastModifiedBy!] }}
@@ -324,7 +349,12 @@ import { SdAnchorControl } from "../../controls/sd-anchor.control";
         </ng-template>
 
         <ng-template #modalActionTpl>
-          <sd-anchor theme="grey" class="p-sm-default" (click)="onRefreshButtonClick()" title="새로고침(CTRL+ALT+L)">
+          <sd-anchor
+            theme="grey"
+            class="p-sm-default"
+            (click)="onRefreshButtonClick()"
+            title="새로고침(CTRL+ALT+L)"
+          >
             <fa-icon [icon]="icons.refresh" [fixedWidth]="true" />
           </sd-anchor>
         </ng-template>
@@ -426,8 +456,11 @@ export class SdDataSheetControl {
 }
 
 @Directive()
-export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K extends string | number | undefined>
-  implements ISdSelectModal
+export abstract class AbsSdDataSheet<
+  F extends Record<string, any>,
+  I,
+  K extends string | number | undefined,
+> implements ISdSelectModal
 {
   //-- abstract
   abstract canUse: Signal<boolean>;
@@ -443,7 +476,9 @@ export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K extends
 
   prepareRefreshEffect?(): void;
 
-  abstract search(usePagination: boolean): Promise<ISdDataSheetSearchResult<I>> | ISdDataSheetSearchResult<I>;
+  abstract search(
+    usePagination: boolean,
+  ): Promise<ISdDataSheetSearchResult<I>> | ISdDataSheetSearchResult<I>;
 
   //-- modal
   // 등록/편집
@@ -483,7 +518,9 @@ export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K extends
   actionTplRef?: TemplateRef<any>;
 
   autoSelect = $computed<"click" | undefined>(() =>
-    (!this.canEdit() || this.editMode === "modal") && this.selectMode() === "single" ? "click" : undefined,
+    (!this.canEdit() || this.editMode === "modal") && this.selectMode() === "single"
+      ? "click"
+      : undefined,
   );
 
   items = $signal<I[]>([]);
@@ -581,7 +618,9 @@ export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K extends
 
     this.selectedItems.set(
       this.items().filter((item) =>
-        this.selectedItems().some((sel) => this.getItemInfoFn(sel).key === this.getItemInfoFn(item).key),
+        this.selectedItems().some(
+          (sel) => this.getItemInfoFn(sel).key === this.getItemInfoFn(item).key,
+        ),
       ),
     );
   }
@@ -643,12 +682,14 @@ export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K extends
 
   isSelectedItemsHasDeleted = $computed(() =>
     this.selectedItems().some(
-      (item) => this.itemPropInfo.isDeleted != null && (item[this.itemPropInfo.isDeleted] as boolean),
+      (item) =>
+        this.itemPropInfo.isDeleted != null && (item[this.itemPropInfo.isDeleted] as boolean),
     ),
   );
   isSelectedItemsHasNotDeleted = $computed(() =>
     this.selectedItems().some(
-      (item) => this.itemPropInfo.isDeleted == null || !(item[this.itemPropInfo.isDeleted] as boolean),
+      (item) =>
+        this.itemPropInfo.isDeleted == null || !(item[this.itemPropInfo.isDeleted] as boolean),
     ),
   );
 
@@ -688,7 +729,9 @@ export abstract class AbsSdDataSheet<F extends Record<string, any>, I, K extends
       return;
     }
 
-    (item[this.itemPropInfo.isDeleted] as boolean) = !(item[this.itemPropInfo.isDeleted] as boolean);
+    (item[this.itemPropInfo.isDeleted] as boolean) = !(item[
+      this.itemPropInfo.isDeleted
+    ] as boolean);
     this.items.$mark();
   }
 

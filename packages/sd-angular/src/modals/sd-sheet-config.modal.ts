@@ -39,14 +39,24 @@ import { SdAnchorControl } from "../controls/sd-anchor.control";
     SdAnchorControl,
   ],
   template: `
-    <sd-busy-container [busy]="!initialized()" class="flex-column">
+    <sd-busy-container [busy]="!initialized()">
       @if (initialized()) {
         <div class="flex-fill p-default">
-          <sd-sheet [key]="sheetKey() + '-config'" [items]="items()" [trackByFn]="trackByFn" hideConfigBar>
+          <sd-sheet
+            [key]="sheetKey() + '-config'"
+            [items]="items()"
+            [trackByFn]="trackByFn"
+            hideConfigBar
+          >
             <sd-sheet-column key="fixed" header="Fix" disableSorting disableResizing>
               <ng-template [cell]="items()" let-item="item">
                 <div style="text-align: center">
-                  <sd-checkbox size="sm" [inset]="true" [(value)]="item.fixed" (valueChange)="items.$mark()" />
+                  <sd-checkbox
+                    size="sm"
+                    [inset]="true"
+                    [(value)]="item.fixed"
+                    (valueChange)="items.$mark()"
+                  />
                 </div>
               </ng-template>
             </sd-sheet-column>
@@ -60,7 +70,9 @@ import { SdAnchorControl } from "../controls/sd-anchor.control";
                     <fa-icon [icon]="icons.angleUp" [fixedWidth]="true" />
                   </sd-anchor>
                   <sd-anchor
-                    [disabled]="index === items().length - 1 || (item.fixed && !items()[index + 1].fixed)"
+                    [disabled]="
+                      index === items().length - 1 || (item.fixed && !items()[index + 1].fixed)
+                    "
                     (click)="onDisplayOrderDownButtonClick(item)"
                   >
                     <fa-icon [icon]="icons.angleDown" [fixedWidth]="true" />
@@ -108,12 +120,27 @@ import { SdAnchorControl } from "../controls/sd-anchor.control";
 
         <div class="p-sm-default flex-row gap-sm bdt bdt-theme-grey-lightest">
           <div class="flex-fill align-start">
-            <sd-button size="sm" inline theme="warning" (click)="onInitButtonClick()" style="min-width: 60px;">
+            <sd-button
+              size="sm"
+              inline
+              theme="warning"
+              (click)="onInitButtonClick()"
+              buttonStyle="min-width: 60px;"
+            >
               Reset
             </sd-button>
           </div>
-          <sd-button size="sm" theme="success" (click)="onOkButtonClick()" style="min-width: 60px;">OK</sd-button>
-          <sd-button size="sm" (click)="onCancelButtonClick()" style="min-width: 60px;">Cancel</sd-button>
+          <sd-button
+            size="sm"
+            theme="success"
+            (click)="onOkButtonClick()"
+            buttonStyle="min-width: 60px;"
+          >
+            OK
+          </sd-button>
+          <sd-button size="sm" (click)="onCancelButtonClick()" buttonStyle="min-width: 60px;">
+            Cancel
+          </sd-button>
         </div>
       }
     </sd-busy-container>
@@ -153,7 +180,9 @@ export class SdSheetConfigModal<T> implements ISdModal<ISdSheetConfig> {
         });
       }
 
-      this.items.set(items.orderBy((item) => item.displayOrder).orderBy((item) => (item.fixed ? -1 : 0)));
+      this.items.set(
+        items.orderBy((item) => item.displayOrder).orderBy((item) => (item.fixed ? -1 : 0)),
+      );
 
       this.initialized.set(true);
     });

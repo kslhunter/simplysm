@@ -26,7 +26,13 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdCollapseIconControl, SdCollapseControl, SdRippleDirective, NgTemplateOutlet, FaIconComponent],
+  imports: [
+    SdCollapseIconControl,
+    SdCollapseControl,
+    SdRippleDirective,
+    NgTemplateOutlet,
+    FaIconComponent,
+  ],
   host: {
     "[attr.data-sd-layout]": "layout()",
     "[attr.data-sd-open]": "open()",
@@ -46,8 +52,8 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
     >
       @if (selectedIcon() && !hasChildren()) {
         <fa-icon
-          class="tx-trans-lightest"
           [class.tx-theme-primary-default]="selected()"
+          [class.tx-trans-lightest]="!selected()"
           [icon]="selectedIcon()!"
           [fixedWidth]="true"
         />

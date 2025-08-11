@@ -55,11 +55,16 @@ import { SdAnchorControl } from "../sd-anchor.control";
     SdButtonControl,
     SdAnchorControl,
   ],
+  host: {
+    "class": "flex-column fill",
+    "[attr.data-sd-inset]": "inset()",
+    "[attr.data-sd-focus-mode]": "focusMode()",
+  },
   template: `
     @if ((key() || effectivePageCount() > 0) && !hideConfigBar()) {
       <div class="_tool flex-row gap-sm p-xs">
         @if (key()) {
-          <sd-button class="p-xs-sm" theme="link-primary" (click)="onConfigButtonClick()">
+          <sd-button buttonClass="p-xs-sm" theme="link-primary" (click)="onConfigButtonClick()">
             <fa-icon [icon]="icons.cog" [fixedWidth]="true" />
           </sd-button>
         }
@@ -154,7 +159,11 @@ import { SdAnchorControl } from "../sd-anchor.control";
                     >
                       <div class="_headerContent flex-row">
                         @let _tempRef = headerCell.control.headerTemplateRef();
-                        <div class="flex-fill" [class._p-sheet]="!_tempRef" [attr.style]="headerCell.style">
+                        <div
+                          class="flex-fill"
+                          [class._p-sheet]="!_tempRef"
+                          [attr.style]="headerCell.style"
+                        >
                           @if (_tempRef) {
                             <ng-template [ngTemplateOutlet]="_tempRef" />
                           } @else {
@@ -201,7 +210,11 @@ import { SdAnchorControl } from "../sd-anchor.control";
           @if (layoutEngine.hasSummary()) {
             <tr class="_summary-row">
               @for (colDef of layoutEngine.columnDefs(); let c = $index; track c) {
-                <th [class._fixed]="colDef.fixed" [style.left.px]="columnFixingManager.fixedLeftMap().get(c)">
+                <th
+                  [class._fixed]="colDef.fixed"
+                  [attr.data-c]="c"
+                  [style.left.px]="columnFixingManager.fixedLeftMap().get(c)"
+                >
                   @let _tempRef = colDef.control.summaryTemplateRef();
                   @if (_tempRef) {
                     <ng-template [ngTemplateOutlet]="_tempRef" />
@@ -268,7 +281,10 @@ import { SdAnchorControl } from "../sd-anchor.control";
                 >
                   @let itemExpDef = expandingManager.getDef(item);
                   @if (itemExpDef.depth > 0) {
-                    <div class="_depth-indicator" [style.margin-left.em]="itemExpDef.depth - 0.5"></div>
+                    <div
+                      class="_depth-indicator"
+                      [style.margin-left.em]="itemExpDef.depth - 0.5"
+                    ></div>
                   }
                   @if (itemExpDef.hasChildren) {
                     <fa-icon
@@ -281,7 +297,11 @@ import { SdAnchorControl } from "../sd-anchor.control";
                   }
                 </td>
               }
-              @for (columnDef of layoutEngine.columnDefs(); let c = $index; track columnDef.control.key()) {
+              @for (
+                columnDef of layoutEngine.columnDefs();
+                let c = $index;
+                track columnDef.control.key()
+              ) {
                 <td
                   tabindex="0"
                   [class._fixed]="columnDef.fixed"
@@ -391,7 +411,7 @@ import { SdAnchorControl } from "../sd-anchor.control";
               padding: 0;
               position: relative;
 
-              &._fixed:has(+ :not(._fixed)) + :not(._fixed) {
+              &._fixed:has(+ :not(._fixed)) + :not(._fixed):not([data-c="0"]) {
                 border-left: 1px solid $border-color;
               }
 
@@ -564,11 +584,6 @@ import { SdAnchorControl } from "../sd-anchor.control";
       }
     `,
   ],
-  host: {
-    "class": "flex-column fill",
-    "[attr.data-sd-inset]": "inset()",
-    "[attr.data-sd-focus-mode]": "focusMode()",
-  },
 })
 export class SdSheetControl<T> {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
@@ -642,7 +657,9 @@ export class SdSheetControl<T> {
   //region Column fixing
 
   columnFixingManager = new SdSheetColumnFixingManager({
-    fixedLength: $computed(() => this.layoutEngine.columnDefs().filter((item) => item.fixed).length),
+    fixedLength: $computed(
+      () => this.layoutEngine.columnDefs().filter((item) => item.fixed).length,
+    ),
   });
 
   onHeaderLastRowCellResize(event: ISdResizeEvent, c: number) {
@@ -802,7 +819,8 @@ export class SdSheetControl<T> {
 
     if (!(event.target instanceof HTMLElement)) return;
 
-    const tdEl = event.target.tagName.toLowerCase() === "td" ? event.target : event.target.findParent("td");
+    const tdEl =
+      event.target.tagName.toLowerCase() === "td" ? event.target : event.target.findParent("td");
     if (!(tdEl instanceof HTMLTableCellElement)) return;
 
     const addr = this.cellAgent.getCellAddr(tdEl);
@@ -842,7 +860,8 @@ export class SdSheetControl<T> {
     const theadEl = this.domAccessor.getTHead();
     const fixedHeaderLastDepthEls = this.domAccessor.getLastDepthFixedHeaders();
 
-    const tdEl = event.target.tagName.toLowerCase() === "td" ? event.target : event.target.findParent("td");
+    const tdEl =
+      event.target.tagName.toLowerCase() === "td" ? event.target : event.target.findParent("td");
     if (!(tdEl instanceof HTMLTableCellElement)) return;
     if (tdEl.classList.contains("_fixed")) return;
 
