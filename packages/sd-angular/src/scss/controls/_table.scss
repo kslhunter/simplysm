@@ -44,7 +44,7 @@ $border-color-dark: var(--theme-grey-lighter);
     background: var(--theme-grey-lightest);
   }
 
-  .table-inset {
+  &.table-inset {
     border-right: none;
     border-bottom: none;
 
@@ -63,11 +63,11 @@ $border-color-dark: var(--theme-grey-lighter);
     }
   }
 
-  .table-inline {
+  &.table-inline {
     width: auto;
   }
 
-  .table-bd-v {
+  &.table-bd-v {
     border-bottom: none;
 
     > * > tr,
@@ -77,7 +77,8 @@ $border-color-dark: var(--theme-grey-lighter);
       }
     }
   }
-  .table-bd-h {
+
+  &.table-bd-h {
     border-right: none;
 
     > tbody > tr,

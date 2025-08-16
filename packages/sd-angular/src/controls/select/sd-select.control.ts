@@ -12,7 +12,10 @@ import {
   viewChild,
   ViewEncapsulation,
 } from "@angular/core";
-import { SdItemOfTemplateContext, SdItemOfTemplateDirective } from "../../directives/sd-item-of.template-directive";
+import {
+  SdItemOfTemplateContext,
+  SdItemOfTemplateDirective,
+} from "../../directives/sd-item-of.template-directive";
 import { SdRippleDirective } from "../../directives/sd-ripple.directive";
 import { SdTypedTemplateDirective } from "../../directives/sd-typed.template-directive";
 import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
@@ -314,9 +317,12 @@ export class SdSelectControl<M extends "single" | "multi", T> {
 
   headerTemplateRef = contentChild<any, TemplateRef<void>>("header", { read: TemplateRef });
   beforeTemplateRef = contentChild<any, TemplateRef<void>>("before", { read: TemplateRef });
-  itemTemplateRef = contentChild<any, TemplateRef<SdItemOfTemplateContext<T>>>(SdItemOfTemplateDirective, {
-    read: TemplateRef,
-  });
+  itemTemplateRef = contentChild<any, TemplateRef<SdItemOfTemplateContext<T>>>(
+    SdItemOfTemplateDirective,
+    {
+      read: TemplateRef,
+    },
+  );
 
   // itemControls = $signal<SdSelectItemControl[]>([]);
   itemControls = contentChildren(SdSelectItemControl);
@@ -333,7 +339,9 @@ export class SdSelectControl<M extends "single" | "multi", T> {
     });
 
     $afterRenderEffect(() => {
-      const selectedItemControls = this.itemControls().filter((itemControl) => itemControl.isSelected());
+      const selectedItemControls = this.itemControls().filter((itemControl) =>
+        itemControl.isSelected(),
+      );
       // const selectedItemEls = selectedItemControls.map((item) => item.elRef.nativeElement);
       // const innerHTML = selectedItemEls
       //   .map((el) => el.findFirst("> ._content")?.innerHTML ?? "")
@@ -342,7 +350,11 @@ export class SdSelectControl<M extends "single" | "multi", T> {
       const innerHTML = selectedItemControls
         .map((ctl) => ctl.contentHTML())
         .map((item) => `<span style="display: inline">${item}</span>`)
-        .join(this.multiSelectionDisplayDirection() === "vertical" ? "<div class='p-sm-0'></div>" : ", ");
+        .join(
+          this.multiSelectionDisplayDirection() === "vertical"
+            ? "<div class='p-sm-0'></div>"
+            : ", ",
+        );
 
       if (innerHTML === "") {
         if (this.placeholder() !== undefined) {

@@ -4,13 +4,7 @@ import { setSafeStyle } from "../set-safe-style";
 import { Uuid } from "@simplysm/sd-core-common";
 import { $effect } from "../bindings/$effect";
 
-type TUseInvalidProps =
-  | { getInvalidMessage: () => string }
-  | { inputEl: HTMLInputElement }
-  | { inputEl: HTMLInputElement; getInvalidMessage: () => string }
-  | (() => string);
-
-export function setupInvalid(options: TUseInvalidProps) {
+export function setupInvalid(getInvalidMessage: () => string) {
   const _elRef = injectElementRef<HTMLElement>();
   const _renderer = inject(Renderer2);
 
@@ -19,15 +13,10 @@ export function setupInvalid(options: TUseInvalidProps) {
   setSafeStyle(_renderer, hostEl, { position: "relative" });
 
   const indicatorEl = createIndicatorEl(_renderer, hostEl);
-
-  const inputEl = "inputEl" in options ? options.inputEl : createInputHiddenEl(_renderer, hostEl);
+  const inputEl = createInputHiddenEl(_renderer, hostEl);
 
   $effect(() => {
-    if ("getInvalidMessage" in options) {
-      inputEl.setCustomValidity(options.getInvalidMessage());
-    } else if (typeof options === "function") {
-      inputEl.setCustomValidity(options());
-    }
+    inputEl.setCustomValidity(getInvalidMessage());
 
     const isInvalid = !inputEl.checkValidity();
 
@@ -52,6 +41,8 @@ function createIndicatorEl(renderer: Renderer2, hostEl: HTMLElement) {
     width: "var(--gap-sm)",
     height: "var(--gap-sm)",
     borderRadius: "100%",
+
+    userSelect: "none",
   });
   renderer.insertBefore(hostEl, newEl, hostEl.firstChild);
   return newEl;
@@ -71,6 +62,8 @@ function createInputHiddenEl(renderer: Renderer2, hostEl: HTMLElement) {
     opacity: "0",
     pointerEvents: "none",
     zIndex: "-1",
+
+    userSelect: "none",
   });
 
   renderer.listen(newEl, "focus", () => {

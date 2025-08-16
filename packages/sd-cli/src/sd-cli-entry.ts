@@ -12,24 +12,7 @@ import { SdCliElectron } from "./entry/sd-cli-electron";
 import { SdCliLocalUpdate } from "./entry/sd-cli-local-update";
 import { SdCliPostinstall } from "./entry/sd-cli-postinstall";
 import { SdCliProject } from "./entry/sd-cli-project";
-import convertSelectModalButtonToSelectButton
-  from "./fix/convert-select-modal-button-to-select-button";
 import convertPrivateToHash from "./fix/convert-private-to-hash";
-import convertSdSheetBindingsSafely from "./fix/convert-sd-sheet-bindings-safety";
-import convertSetupCumulateSelectedKeysToObjectParam
-  from "./fix/convert-setup-cumulate-selected-keys-to-object-param";
-import {
-  convertExtendsSdModalBaseToInterface,
-} from "./fix/convert-extends-sd-modal-base-to-interface";
-import convertModalShowParams from "./fix/convert-modal-show-params";
-import {
-  convertExtendsSdPrintTemplateBaseToInterface,
-} from "./fix/convert-extends-sd-print-template-base-to-interface";
-import convertPrintParams from "./fix/convert-print-params";
-import { convertToUsePermsSignal } from "./fix/convert-to-use-perms-signal";
-import { convertGetMenusToUsableMenus } from "./fix/convert-get-menus-to-usable-menus";
-import { convertFlatPagesToUsableFlatMenus } from "./fix/convert-flat-pages-to-flat-menus";
-import convertSdIconToFaIcon from "./fix/convert-sd-icon-to-fa-icon";
 import removeSdAngularSymbolNames from "./fix/remove-sd-angular-symbol-names";
 import convertSdAngularSymbolNames from "./fix/convert-sd-angular-symbol-names";
 import { removeUnusedInjects } from "./fix/remove-unused-injects";
@@ -288,19 +271,6 @@ await yargs(hideBin(process.argv))
       }*/
 
       convertPrivateToHash();
-      if (argv.library) return;
-
-      convertSdSheetBindingsSafely();
-      convertSetupCumulateSelectedKeysToObjectParam();
-      convertExtendsSdModalBaseToInterface();
-      convertModalShowParams();
-      convertExtendsSdPrintTemplateBaseToInterface();
-      convertPrintParams();
-      convertToUsePermsSignal();
-      convertGetMenusToUsableMenus();
-      convertFlatPagesToUsableFlatMenus();
-      convertSdIconToFaIcon();
-      convertSelectModalButtonToSelectButton();
 
       //-- 심볼정리
       removeSdAngularSymbolNames();
@@ -310,6 +280,20 @@ await yargs(hideBin(process.argv))
       removeUnusedInjects();
       removeUnusedProtectedReadonly();
       removeUnusedImports();
+
+      if (argv.library) return;
+
+      // convertSdSheetBindingsSafely();
+      // convertSetupCumulateSelectedKeysToObjectParam();
+      // convertExtendsSdModalBaseToInterface();
+      // convertModalShowParams();
+      // convertExtendsSdPrintTemplateBaseToInterface();
+      // convertPrintParams();
+      // convertToUsePermsSignal();
+      // convertGetMenusToUsableMenus();
+      // convertFlatPagesToUsableFlatMenus();
+      // convertSdIconToFaIcon();
+      // convertSelectModalButtonToSelectButton();
     },
   )
   .strict()

@@ -251,16 +251,6 @@ import { SdAnchorControl } from "../sd-anchor.control";
                   />
                 } @else if (selectMode() === "single") {
                   @let _selectable = selectionManager.getSelectable(item);
-                  <!--<sd-checkbox
-                        [value]="selectedItems().includes(item)"
-                        (valueChange)="selectionManager.toggle(item)"
-                        [canChangeFn]="selectionManager.getCanChangeFn(item)"
-                        [inline]="true"
-                        theme="white"
-                        [disabled]="_selectable !== true"
-                        [attr.title]="_selectable"
-                      />-->
-
                   @if (_selectable === true && selectionManager.getCanChangeFn(item)) {
                     <sd-anchor
                       [theme]="selectedItems().includes(item) ? 'primary' : 'grey'"

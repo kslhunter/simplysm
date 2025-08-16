@@ -120,64 +120,66 @@ import { SdAnchorControl } from "../../controls/sd-anchor.control";
             </div>
           }
 
-          @if (parent.canEdit() || beforeToolTplRef() || parent.downloadExcel) {
-            <div class="flex-row gap-sm p-xs-default">
-              @if (parent.canEdit()) {
-                @if (parent.editMode === "modal" && parent.editItem) {
-                  <sd-button size="sm" theme="link-primary" (click)="onCreateItemButtonClick()">
-                    <fa-icon [icon]="icons.add" [fixedWidth]="true" />
-                    {{ insertText() ?? "등록" }}
-                  </sd-button>
-                } @else if (parent.editMode === "inline" && parent.newItem) {
-                  <sd-button size="sm" theme="link-primary" (click)="onAddItemButtonClick()">
-                    <fa-icon [icon]="icons.add" [fixedWidth]="true" />
-                    행 추가
-                  </sd-button>
-                }
-              }
-
-              <ng-template [ngTemplateOutlet]="beforeToolTplRef() ?? null" />
-
-              @if (parent.canEdit()) {
-                @if (parent.editMode === "modal" && parent.toggleDeleteItems) {
-                  <sd-button
-                    size="sm"
-                    theme="link-danger"
-                    (click)="onToggleDeleteItemsButtonClick(true)"
-                    [disabled]="!parent.isSelectedItemsHasNotDeleted()"
-                  >
-                    <fa-icon [icon]="deleteIcon()" [fixedWidth]="true" />
-                    선택 {{ deleteText() ?? "삭제" }}
-                  </sd-button>
-                  @if (parent.isSelectedItemsHasDeleted()) {
-                    <sd-button
-                      size="sm"
-                      theme="link-warning"
-                      (click)="onToggleDeleteItemsButtonClick(false)"
-                    >
-                      <fa-icon [icon]="restoreIcon()" [fixedWidth]="true" />
-                      선택 {{ restoreText() ?? "복구" }}
+          @if (!parent.hideTool || !parent.hideTool()) {
+            @if (parent.canEdit() || beforeToolTplRef() || parent.downloadExcel) {
+              <div class="flex-row gap-sm p-xs-default">
+                @if (parent.canEdit()) {
+                  @if (parent.editMode === "modal" && parent.editItem) {
+                    <sd-button size="sm" theme="link-primary" (click)="onCreateItemButtonClick()">
+                      <fa-icon [icon]="icons.add" [fixedWidth]="true" />
+                      {{ insertText() ?? "등록" }}
+                    </sd-button>
+                  } @else if (parent.editMode === "inline" && parent.newItem) {
+                    <sd-button size="sm" theme="link-primary" (click)="onAddItemButtonClick()">
+                      <fa-icon [icon]="icons.add" [fixedWidth]="true" />
+                      행 추가
                     </sd-button>
                   }
                 }
 
-                @if (parent.uploadExcel) {
-                  <sd-button size="sm" theme="link-success" (click)="onUploadExcelButtonClick()">
-                    <fa-icon [icon]="icons.upload" [fixedWidth]="true" />
-                    엑셀 업로드
+                <ng-template [ngTemplateOutlet]="beforeToolTplRef() ?? null" />
+
+                @if (parent.canEdit()) {
+                  @if (parent.editMode === "modal" && parent.toggleDeleteItems) {
+                    <sd-button
+                      size="sm"
+                      theme="link-danger"
+                      (click)="onToggleDeleteItemsButtonClick(true)"
+                      [disabled]="!parent.isSelectedItemsHasNotDeleted()"
+                    >
+                      <fa-icon [icon]="deleteIcon()" [fixedWidth]="true" />
+                      선택 {{ deleteText() ?? "삭제" }}
+                    </sd-button>
+                    @if (parent.isSelectedItemsHasDeleted()) {
+                      <sd-button
+                        size="sm"
+                        theme="link-warning"
+                        (click)="onToggleDeleteItemsButtonClick(false)"
+                      >
+                        <fa-icon [icon]="restoreIcon()" [fixedWidth]="true" />
+                        선택 {{ restoreText() ?? "복구" }}
+                      </sd-button>
+                    }
+                  }
+
+                  @if (parent.uploadExcel) {
+                    <sd-button size="sm" theme="link-success" (click)="onUploadExcelButtonClick()">
+                      <fa-icon [icon]="icons.upload" [fixedWidth]="true" />
+                      엑셀 업로드
+                    </sd-button>
+                  }
+                }
+
+                @if (parent.downloadExcel) {
+                  <sd-button size="sm" theme="link-success" (click)="onDownloadExcelButtonClick()">
+                    <fa-icon [icon]="icons.fileExcel" [fixedWidth]="true" />
+                    엑셀 다운로드
                   </sd-button>
                 }
-              }
 
-              @if (parent.downloadExcel) {
-                <sd-button size="sm" theme="link-success" (click)="onDownloadExcelButtonClick()">
-                  <fa-icon [icon]="icons.fileExcel" [fixedWidth]="true" />
-                  엑셀 다운로드
-                </sd-button>
-              }
-
-              <ng-template [ngTemplateOutlet]="toolTplRef() ?? null" />
-            </div>
+                <ng-template [ngTemplateOutlet]="toolTplRef() ?? null" />
+              </div>
+            }
           }
 
           <sd-form #formCtrl (submit)="onSubmit()" class="flex-fill p-default pt-0">
@@ -300,7 +302,7 @@ import { SdAnchorControl } from "../../controls/sd-anchor.control";
                 <sd-sheet-column
                   header="수정일시"
                   [key]="parent.itemPropInfo.lastModifiedAt!"
-                  [hidden]="parent.viewType() !== 'page'"
+                  hidden
                 >
                   <ng-template [cell]="parent.items()" let-item>
                     <div class="p-xs-sm tx-center">
@@ -310,11 +312,7 @@ import { SdAnchorControl } from "../../controls/sd-anchor.control";
                 </sd-sheet-column>
               }
               @if (parent.itemPropInfo.lastModifiedBy) {
-                <sd-sheet-column
-                  header="수정자"
-                  [key]="parent.itemPropInfo.lastModifiedBy!"
-                  [hidden]="parent.viewType() !== 'page'"
-                >
+                <sd-sheet-column header="수정자" [key]="parent.itemPropInfo.lastModifiedBy!" hidden>
                   <ng-template [cell]="parent.items()" let-item>
                     <div class="p-xs-sm tx-center">
                       {{ item[parent.itemPropInfo.lastModifiedBy!] }}
@@ -457,32 +455,33 @@ export class SdDataSheetControl {
 
 @Directive()
 export abstract class AbsSdDataSheet<
-  F extends Record<string, any>,
-  I,
-  K extends string | number | undefined,
-> implements ISdSelectModal
+  TFilter extends Record<string, any>,
+  TItem,
+  TKey extends string | number | undefined,
+> implements ISdSelectModal<TItem>
 {
   //-- abstract
   abstract canUse: Signal<boolean>;
   abstract canEdit: Signal<boolean>;
+  hideTool?: Signal<boolean>;
 
   abstract editMode: "inline" | "modal" | undefined;
   abstract selectMode: InputSignal<"single" | "multi" | undefined>;
 
-  abstract bindFilter(): F;
+  abstract bindFilter(): TFilter;
 
-  abstract itemPropInfo: ISdDataSheetItemPropInfo<I>;
-  abstract getItemInfoFn: (item: I) => ISdDataSheetItemInfo<K>;
+  abstract itemPropInfo: ISdDataSheetItemPropInfo<TItem>;
+  abstract getItemInfoFn: (item: TItem) => ISdDataSheetItemInfo<TKey>;
 
   prepareRefreshEffect?(): void;
 
   abstract search(
     usePagination: boolean,
-  ): Promise<ISdDataSheetSearchResult<I>> | ISdDataSheetSearchResult<I>;
+  ): Promise<ISdDataSheetSearchResult<TItem>> | ISdDataSheetSearchResult<TItem>;
 
   //-- modal
   // 등록/편집
-  editItem?(item?: I): Promise<boolean | undefined> | boolean | undefined;
+  editItem?(item?: TItem): Promise<boolean | undefined> | boolean | undefined;
 
   // 선택삭제
   toggleDeleteItems?(del: boolean): Promise<boolean>;
@@ -490,14 +489,14 @@ export abstract class AbsSdDataSheet<
 
   //-- inline
   // 행추가
-  newItem?(): Promise<I> | I;
+  newItem?(): Promise<TItem> | TItem;
 
   // 저장
-  submit?(diffs: TArrayDiffs2Result<I>[]): Promise<boolean> | boolean;
+  submit?(diffs: TArrayDiffs2Result<TItem>[]): Promise<boolean> | boolean;
   //----------
 
   // 엑셀다운로드
-  downloadExcel?(items: I[]): Promise<void> | void;
+  downloadExcel?(items: TItem[]): Promise<void> | void;
 
   // 엑셀업로드
   uploadExcel?(file: File): Promise<void> | void;
@@ -513,8 +512,9 @@ export abstract class AbsSdDataSheet<
 
   busyCount = $signal(0);
   initialized = $signal(false);
-  close = output<ISelectModalOutputResult>();
-  selectedItemKeys = model<K[]>([]);
+  close = output<ISelectModalOutputResult<TItem>>();
+  submitted = output<boolean>();
+  selectedItemKeys = model<TKey[]>([]);
   actionTplRef?: TemplateRef<any>;
 
   autoSelect = $computed<"click" | undefined>(() =>
@@ -523,12 +523,12 @@ export abstract class AbsSdDataSheet<
       : undefined,
   );
 
-  items = $signal<I[]>([]);
-  summaryData = $signal<Partial<I>>({});
+  items = $signal<TItem[]>([]);
+  summaryData = $signal<Partial<TItem>>({});
 
-  selectedItems = $signal<I[]>([]);
+  selectedItems = $signal<TItem[]>([]);
 
-  trackByFn = (item: I): K | I => this.getItemInfoFn(item).key ?? item;
+  trackByFn = (item: TItem): TKey | TItem => this.getItemInfoFn(item).key ?? item;
 
   page = $signal(0);
   pageLength = $signal(0);
@@ -536,8 +536,8 @@ export abstract class AbsSdDataSheet<
 
   //-- search
 
-  filter = $signal<F>({} as F);
-  lastFilter = $signal<F>({} as F);
+  filter = $signal<TFilter>({} as TFilter);
+  lastFilter = $signal<TFilter>({} as TFilter);
 
   constructor() {
     setupCumulateSelectedKeys({
@@ -551,6 +551,7 @@ export abstract class AbsSdDataSheet<
 
     setupCloserWhenSingleSelectionChange({
       selectedItemKeys: this.selectedItemKeys,
+      selectedItems: this.selectedItems,
 
       selectMode: () => this.selectMode(),
       close: this.close,
@@ -627,7 +628,7 @@ export abstract class AbsSdDataSheet<
 
   //-- edit
 
-  async doEditItem(item?: I) {
+  async doEditItem(item?: TItem) {
     if (!this.editItem) return;
 
     const result = await this.editItem(item);
@@ -645,7 +646,7 @@ export abstract class AbsSdDataSheet<
 
     this.busyCount.update((v) => v + 1);
     await this.#sdToast.try(async () => {
-      const newItem = (await this.newItem!()) as I;
+      const newItem = (await this.newItem!()) as TItem;
       this.items.update((items) => [newItem, ...items]);
     });
     this.busyCount.update((v) => v - 1);
@@ -676,6 +677,8 @@ export abstract class AbsSdDataSheet<
       (err) => this.#getOrmDataEditToastErrorMessage(err),
     );
     this.busyCount.update((v) => v - 1);
+
+    this.submitted.emit(true);
   }
 
   //-- delete
@@ -693,12 +696,12 @@ export abstract class AbsSdDataSheet<
     ),
   );
 
-  getItemCellStyleFn = (item: I) =>
+  getItemCellStyleFn = (item: TItem) =>
     this.itemPropInfo.isDeleted != null && (item[this.itemPropInfo.isDeleted] as boolean)
       ? "text-decoration: line-through;"
       : undefined;
 
-  getItemSelectableFn = (item: I) => this.getItemInfoFn(item).canSelect;
+  getItemSelectableFn = (item: TItem) => this.getItemInfoFn(item).canSelect;
 
   async doToggleDeleteItems(del: boolean) {
     if (!this.canEdit()) return;
@@ -720,7 +723,7 @@ export abstract class AbsSdDataSheet<
     this.busyCount.update((v) => v - 1);
   }
 
-  doToggleDeleteItem(item: I) {
+  doToggleDeleteItem(item: TItem) {
     if (!this.canEdit()) return;
     if (this.itemPropInfo.isDeleted == null) return;
 
@@ -773,11 +776,17 @@ export abstract class AbsSdDataSheet<
   }
 
   doModalConfirm() {
-    this.close.emit({ selectedItemKeys: this.selectedItemKeys() });
+    this.close.emit({
+      selectedItemKeys: this.selectedItemKeys(),
+      selectedItems: this.selectedItems(),
+    });
   }
 
   doModalCancel() {
-    this.close.emit({ selectedItemKeys: [] });
+    this.close.emit({
+      selectedItemKeys: [],
+      selectedItems: this.selectedItems(),
+    });
   }
 
   #getOrmDataEditToastErrorMessage(err: Error) {

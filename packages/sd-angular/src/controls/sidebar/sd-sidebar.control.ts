@@ -31,7 +31,7 @@ import { $computed } from "../../utils/bindings/$computed";
         left: 0;
         width: var(--sidebar-width);
         height: 100%;
-        animation: sd-sidebar var(--animation-duration) ease-in;
+        //animation: sd-sidebar var(--animation-duration) ease-in;
         background: var(--control-color);
         border-right: 1px solid var(--border-color-lighter);
 
@@ -59,12 +59,12 @@ import { $computed } from "../../utils/bindings/$computed";
         }
       }
 
-      @keyframes sd-sidebar {
+      /*@keyframes sd-sidebar {
         from {
           opacity: 0;
           transform: translateX(-1em);
         }
-      }
+      }*/
     `,
   ],
 })

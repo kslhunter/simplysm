@@ -34,14 +34,14 @@ import { TSelectModeValue } from "../../controls/select/sd-select.control";
   `,
 })
 export class SdSharedDataSelectButtonControl<
-  T extends ISharedDataBase<number>,
-  M extends keyof TSelectModeValue<number>,
-  TModal extends ISdSelectModal,
-> extends AbsSdDataSelectButton<T, number, M> {
-  items = input<T[]>([]);
+  TItem extends ISharedDataBase<number>,
+  TMode extends keyof TSelectModeValue<number>,
+  TModal extends ISdSelectModal<any>,
+> extends AbsSdDataSelectButton<TItem, number, TMode> {
+  items = input<TItem[]>([]);
   modal = input.required<TSdSelectModalInfo<TModal>>();
 
-  itemTemplateRef = contentChild.required<any, TemplateRef<SdItemOfTemplateContext<T>>>(SdItemOfTemplateDirective, {
+  itemTemplateRef = contentChild.required<any, TemplateRef<SdItemOfTemplateContext<TItem>>>(SdItemOfTemplateDirective, {
     read: TemplateRef,
   });
 
@@ -49,3 +49,4 @@ export class SdSharedDataSelectButtonControl<
     return this.items().filter((item) => keys.includes(item.__valueKey));
   }
 }
+

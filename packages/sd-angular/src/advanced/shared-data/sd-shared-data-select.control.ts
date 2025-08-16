@@ -108,17 +108,17 @@ import { SdSelectControl, TSelectModeValue } from "../../controls/select/sd-sele
   `,
 })
 export class SdSharedDataSelectControl<
-  T extends ISharedDataBase<string | number>,
-  M extends keyof TSelectModeValue<T>,
-  TModal extends ISdSelectModal,
+  TItem extends ISharedDataBase<string | number>,
+  TMode extends keyof TSelectModeValue<TItem>,
+  TModal extends ISdSelectModal<any>,
 > {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
 
   #sdModal = inject(SdModalProvider);
 
-  value = model<TSelectModeValue<T["__valueKey"] | undefined>[M]>();
+  value = model<TSelectModeValue<TItem["__valueKey"] | undefined>[TMode]>();
 
-  items = input.required<T[]>();
+  items = input.required<TItem[]>();
 
   disabled = input(false, { transform: transformBoolean });
   required = input(false, { transform: transformBoolean });
@@ -127,8 +127,8 @@ export class SdSharedDataSelectControl<
   inline = input(false, { transform: transformBoolean });
 
   size = input<"sm" | "lg">();
-  selectMode = input("single" as M);
-  filterFn = input<(item: T, index: number, ...params: any[]) => boolean>();
+  selectMode = input("single" as TMode);
+  filterFn = input<(item: TItem, index: number, ...params: any[]) => boolean>();
   filterFnParams = input<any[]>();
 
   modal = input<TSdSelectModalInfo<TModal>>();
@@ -137,19 +137,19 @@ export class SdSharedDataSelectControl<
 
   selectClass = input<string>();
   multiSelectionDisplayDirection = input<"vertical" | "horizontal">();
-  getIsHiddenFn = input<(item: T, index: number) => boolean>((item) => item.__isHidden);
-  getSearchTextFn = input<(item: T, index: number) => string>((item) => item.__searchText);
+  getIsHiddenFn = input<(item: TItem, index: number) => boolean>((item) => item.__isHidden);
+  getSearchTextFn = input<(item: TItem, index: number) => string>((item) => item.__searchText);
   parentKeyProp = input<string>();
   displayOrderKeyProp = input<string>();
 
-  itemTemplateRef = contentChild<any, TemplateRef<SdItemOfTemplateContext<T>>>(SdItemOfTemplateDirective, {
+  itemTemplateRef = contentChild<any, TemplateRef<SdItemOfTemplateContext<TItem>>>(SdItemOfTemplateDirective, {
     read: TemplateRef,
   });
   undefinedTemplateRef = contentChild<any, TemplateRef<void>>("undefinedTemplate", {
     read: TemplateRef,
   });
 
-  trackByFn = (item: T) => item.__valueKey;
+  trackByFn = (item: TItem) => item.__valueKey;
 
   open = $signal(false);
 
@@ -162,7 +162,7 @@ export class SdSharedDataSelectControl<
         .toMap(
           (item) => item.key,
           (item1) => item1.values,
-        ) as Map<T["__valueKey"] | undefined, any>;
+        ) as Map<TItem["__valueKey"] | undefined, any>;
     } else {
       return undefined;
     }

@@ -1,4 +1,5 @@
 import "@simplysm/sd-core-browser";
+export * from "./advanced/modal-select-button/sd-modal-select-button.control";
 export * from "./advanced/sd-base-container.control";
 export * from "./advanced/sd-data-view/sd-data-detail.control";
 export * from "./advanced/sd-data-view/sd-data-select-button.control";
@@ -20,7 +21,6 @@ export * from "./controls/kanban/sd-kanban-lane.control";
 export * from "./controls/kanban/sd-kanban.control";
 export * from "./controls/list/sd-list-item.control";
 export * from "./controls/list/sd-list.control";
-export * from "./controls/progress/sd-progress-item.control";
 export * from "./controls/progress/sd-progress.control";
 export * from "./controls/sd-additional-button.control";
 export * from "./controls/sd-anchor.control";

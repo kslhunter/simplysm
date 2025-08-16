@@ -14,7 +14,10 @@ import { StringUtils } from "@simplysm/sd-core-common";
 import { SdListItemControl } from "../../controls/list/sd-list-item.control";
 import { SdPaginationControl } from "../../controls/sd-pagination.control";
 import { SdTextfieldControl } from "../../controls/sd-textfield.control";
-import { SdItemOfTemplateContext, SdItemOfTemplateDirective } from "../../directives/sd-item-of.template-directive";
+import {
+  SdItemOfTemplateContext,
+  SdItemOfTemplateDirective,
+} from "../../directives/sd-item-of.template-directive";
 import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
 import { SdModalProvider } from "../../providers/sd-modal.provider";
 import { $computed } from "../../utils/bindings/$computed";
@@ -99,7 +102,11 @@ import { SdAnchorControl } from "../../controls/sd-anchor.control";
             </sd-list-item>
           }
           @for (item of displayItems(); let index = $index; track item.__valueKey) {
-            <sd-list-item [selected]="selectedItem() === item" (click)="toggle(item)" [selectedIcon]="selectedIcon()">
+            <sd-list-item
+              [selected]="selectedItem() === item"
+              (click)="toggle(item)"
+              [selectedIcon]="selectedIcon()"
+            >
               <ng-template
                 [ngTemplateOutlet]="itemTemplateRef() ?? null"
                 [ngTemplateOutletContext]="{
@@ -116,18 +123,21 @@ import { SdAnchorControl } from "../../controls/sd-anchor.control";
     </div>
   `,
 })
-export class SdSharedDataSelectListControl<T extends ISharedDataBase<string | number>, TModal extends ISdSelectModal> {
+export class SdSharedDataSelectListControl<
+  TItem extends ISharedDataBase<string | number>,
+  TModal extends ISdSelectModal<any>,
+> {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
 
   #sdModal = inject(SdModalProvider);
 
-  selectedItem = model<T>();
-  canChangeFn = input<(item: T | undefined) => boolean | Promise<boolean>>(() => true);
+  selectedItem = model<TItem>();
+  canChangeFn = input<(item: TItem | undefined) => boolean | Promise<boolean>>(() => true);
 
-  items = input.required<T[]>();
+  items = input.required<TItem[]>();
   selectedIcon = input<IconDefinition>();
   useUndefined = input(false, { transform: transformBoolean });
-  filterFn = input<(item: T, index: number) => boolean>();
+  filterFn = input<(item: TItem, index: number) => boolean>();
 
   modal = input<TSdSelectModalInfo<TModal>>();
 
@@ -135,9 +145,12 @@ export class SdSharedDataSelectListControl<T extends ISharedDataBase<string | nu
 
   headerTemplateRef = contentChild<any, TemplateRef<void>>("headerTemplate", { read: TemplateRef });
   filterTemplateRef = contentChild<any, TemplateRef<void>>("filterTemplate", { read: TemplateRef });
-  itemTemplateRef = contentChild<any, TemplateRef<SdItemOfTemplateContext<T>>>(SdItemOfTemplateDirective, {
-    read: TemplateRef,
-  });
+  itemTemplateRef = contentChild<any, TemplateRef<SdItemOfTemplateContext<TItem>>>(
+    SdItemOfTemplateDirective,
+    {
+      read: TemplateRef,
+    },
+  );
   undefinedTemplateRef = contentChild<any, TemplateRef<void>>("undefinedTemplate", {
     read: TemplateRef,
   });
@@ -165,7 +178,10 @@ export class SdSharedDataSelectListControl<T extends ISharedDataBase<string | nu
     }
 
     if (Boolean(this.pageItemCount())) {
-      result = result.slice(this.pageItemCount()! * this.page(), this.pageItemCount()! * (this.page() + 1));
+      result = result.slice(
+        this.pageItemCount()! * this.page(),
+        this.pageItemCount()! * (this.page() + 1),
+      );
     }
 
     return result;
@@ -175,16 +191,18 @@ export class SdSharedDataSelectListControl<T extends ISharedDataBase<string | nu
     setupModelHook(this.selectedItem, this.canChangeFn);
 
     $effect([this.items], () => {
-      const newSelectedItem = this.items().single((item) => item.__valueKey === this.selectedItem()?.__valueKey);
+      const newSelectedItem = this.items().single(
+        (item) => item.__valueKey === this.selectedItem()?.__valueKey,
+      );
       this.selectedItem.set(newSelectedItem);
     });
   }
 
-  select(item: T | undefined) {
+  select(item: TItem | undefined) {
     this.selectedItem.set(item);
   }
 
-  toggle(item: T | undefined) {
+  toggle(item: TItem | undefined) {
     this.selectedItem.update((v) => (v === item ? undefined : item));
   }
 
@@ -202,7 +220,9 @@ export class SdSharedDataSelectListControl<T extends ISharedDataBase<string | nu
     });
 
     if (result) {
-      const newSelectedItem = this.items().single((item) => item.__valueKey === result.selectedItemKeys[0]);
+      const newSelectedItem = this.items().single(
+        (item) => item.__valueKey === result.selectedItemKeys[0],
+      );
       this.selectedItem.set(newSelectedItem);
     }
   }

@@ -25,10 +25,10 @@ import {
   SdItemOfTemplateDirective,
 } from "../../directives/sd-item-of.template-directive";
 import { NgTemplateOutlet } from "@angular/common";
-import { $signal } from "../../utils/bindings/$signal";
 import { injectParent } from "../../utils/injections/inject-parent";
 import { SdAnchorControl } from "../../controls/sd-anchor.control";
 import { SdButtonControl } from "../../controls/sd-button.control";
+import { $signal } from "../../utils/bindings/$signal";
 
 @Component({
   selector: "sd-data-select-button",
@@ -44,21 +44,23 @@ import { SdButtonControl } from "../../controls/sd-button.control";
   ],
   template: `
     <sd-additional-button [inset]="parent.inset()" [size]="parent.size()">
-      @for (item of parent.selectedItems(); track item; let index = $index) {
-        @if (index !== 0) {
-          <div style="display: inline-block">,&nbsp;</div>
+      @if (itemTemplateRef()) {
+        @for (item of parent.selectedItems(); track item; let index = $index) {
+          @if (index !== 0) {
+            <div style="display: inline-block">,&nbsp;</div>
+          }
+          <div style="display: inline-block">
+            <ng-template
+              [ngTemplateOutlet]="itemTemplateRef()!"
+              [ngTemplateOutletContext]="{
+                $implicit: item,
+                item: item,
+                index: index,
+                depth: 0,
+              }"
+            ></ng-template>
+          </div>
         }
-        <div style="display: inline-block">
-          <ng-template
-            [ngTemplateOutlet]="itemTemplateRef()"
-            [ngTemplateOutletContext]="{
-              $implicit: item,
-              item: item,
-              index: index,
-              depth: 0,
-            }"
-          ></ng-template>
-        </div>
       }
       <ng-content />
 
@@ -93,7 +95,7 @@ export class SdDataSelectButtonControl {
 
   parent = injectParent();
 
-  itemTemplateRef = contentChild.required<any, TemplateRef<SdItemOfTemplateContext<any>>>(
+  itemTemplateRef = contentChild<any, TemplateRef<SdItemOfTemplateContext<any>>>(
     SdItemOfTemplateDirective,
     {
       read: TemplateRef,
@@ -114,24 +116,24 @@ export class SdDataSelectButtonControl {
 
 @Directive()
 export abstract class AbsSdDataSelectButton<
-  T extends object,
-  K,
-  M extends keyof TSelectModeValue<K> = keyof TSelectModeValue<K>,
+  TItem extends object,
+  TKey,
+  TMode extends keyof TSelectModeValue<TKey> = keyof TSelectModeValue<TKey>,
 > {
   //-- abstract
-  abstract modal: Signal<TSdSelectModalInfo<ISdSelectModal>>; // computed
-  abstract load(keys: K[]): Promise<T[]> | T[];
+  abstract modal: Signal<TSdSelectModalInfo<ISdSelectModal<any>>>;
+  abstract load(keys: TKey[]): Promise<TItem[]> | TItem[];
 
   //-- implement
   #sdModal = inject(SdModalProvider);
 
-  value = model<TSelectModeValue<K>[M]>();
+  value = model<TSelectModeValue<TKey>[TMode]>();
 
   disabled = input(false, { transform: transformBoolean });
   required = input(false, { transform: transformBoolean });
   inset = input(false, { transform: transformBoolean });
   size = input<"sm" | "lg">();
-  selectMode = input<M>("single" as M);
+  selectMode = input<TMode>("single" as TMode);
   isNoValue = $computed(() => {
     return (
       this.value() == null ||
@@ -139,7 +141,7 @@ export abstract class AbsSdDataSelectButton<
     );
   });
 
-  selectedItems = $signal<T[]>([]);
+  selectedItems = $signal<TItem[]>([]);
 
   constructor() {
     setupInvalid(() => (this.required() && this.value() == null ? "값을 입력하세요." : ""));
@@ -153,7 +155,7 @@ export abstract class AbsSdDataSelectButton<
       ) {
         this.selectedItems.set(await this.load(value.filterExists()));
       } else if (this.selectMode() === "single" && !(value instanceof Array) && value != null) {
-        this.selectedItems.set(await this.load([value as K]));
+        this.selectedItems.set(await this.load([value as TKey]));
       } else {
         this.selectedItems.set([]);
       }
@@ -186,16 +188,17 @@ export abstract class AbsSdDataSelectButton<
   }
 }
 
-export interface ISdSelectModal extends ISdModal<ISelectModalOutputResult> {
+export interface ISdSelectModal<T> extends ISdModal<ISelectModalOutputResult<T>> {
   selectMode: InputSignal<"single" | "multi" | undefined>;
   selectedItemKeys: InputSignal<any[]>;
 }
 
-export type TSdSelectModalInfo<T extends ISdSelectModal> = ISdModalInfo<
+export type TSdSelectModalInfo<T extends ISdSelectModal<any>> = ISdModalInfo<
   T,
   "selectMode" | "selectedItemKeys"
 >;
 
-export interface ISelectModalOutputResult {
+export interface ISelectModalOutputResult<T> {
   selectedItemKeys: any[];
+  selectedItems: T[];
 }

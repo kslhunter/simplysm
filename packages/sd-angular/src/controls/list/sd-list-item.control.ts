@@ -135,6 +135,12 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
           }
         }
       }
+
+      .sd-theme-mobile > sd-list-item {
+        > ._content:hover {
+          background: transparent;
+        }
+      }
     `,
   ],
 })
