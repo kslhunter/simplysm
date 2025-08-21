@@ -76,13 +76,7 @@ export class SdCliCordova {
       // 프로젝트 생성
       await SdCliCordova.#execAsync(
         "npx",
-        [
-          "cordova",
-          "create",
-          `"${cordovaPath}"`,
-          `"${this._opt.config.appId}"`,
-          `"${this._opt.config.appName}"`,
-        ],
+        ["cordova", "create", cordovaPath, this._opt.config.appId, this._opt.config.appName],
         process.cwd(),
       );
     }

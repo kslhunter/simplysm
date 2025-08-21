@@ -197,13 +197,13 @@ export class SdCliProject {
       if (FsUtils.exists(path.resolve(process.cwd(), ".git"))) {
         logger.debug("새 버전 커밋 및 TAG 생성...");
         await SdProcess.spawnAsync("git", ["add", "."]);
-        await SdProcess.spawnAsync("git", ["commit", "-m", `"v${projNpmConf.version}"`]);
+        await SdProcess.spawnAsync("git", ["commit", "-m", `v${projNpmConf.version}`]);
         await SdProcess.spawnAsync("git", [
           "tag",
           "-a",
-          `"v${projNpmConf.version}"`,
+          `v${projNpmConf.version}`,
           "-m",
-          `"v${projNpmConf.version}"`,
+          `v${projNpmConf.version}`,
         ]);
 
         logger.debug("새 버전 푸쉬...");

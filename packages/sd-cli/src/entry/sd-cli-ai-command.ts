@@ -69,7 +69,7 @@ ${diff}`,
       .map((item) => item[1].trim())
       .join("\n\n\n");
 
-    await SdProcess.spawnAsync("git", ["commit", "-m", `"${commitMessage}"`]);
+    await SdProcess.spawnAsync("git", ["commit", "-m", commitMessage]);
     process.stdout.write(
       "커밋이 완료되었습니다. 위 커밋메시지가 맘에들지 않을경우, 직접 커밋을 취소하세요.\n",
     );
