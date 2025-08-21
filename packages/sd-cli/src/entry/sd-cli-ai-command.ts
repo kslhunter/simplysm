@@ -9,12 +9,20 @@ export class SdCliAiCommand {
     }
 
     process.stdout.write("add 실행\n");
-    await SdProcess.spawnAsync("git add .");
+    await SdProcess.spawnAsync("git", ["add", "."]);
 
     process.stdout.write(`diff 실행\n`);
-    const diff = await SdProcess.spawnAsync(
-      `git diff --no-textconv --staged -- . ":(exclude).*" ":(exclude)_*" ":(exclude)yarn.lock" ":(exclude)packages/*/styles.css"`,
-    );
+    const diff = await SdProcess.spawnAsync("git", [
+      "diff",
+      "--no-textconv",
+      "--staged",
+      "--",
+      ".",
+      `:(exclude).*`,
+      `:(exclude)_*`,
+      `:(exclude)yarn.lock`,
+      `:(exclude)packages/*/styles.css`,
+    ]);
 
     if (StringUtils.isNullOrEmpty(diff.trim())) {
       throw new Error("변경사항이 없습니다.");
@@ -50,17 +58,20 @@ ${diff}`,
 
     process.stdout.write(
       "\n\n-------------------------\n" +
-      message.content[0].text +
-      "\n-------------------------\n\n",
+        message.content[0].text +
+        "\n-------------------------\n\n",
     );
 
-    const messages = message.content[0].text.replaceAll(/"/g, "\\\"")
+    const messages = message.content[0].text
+      .replaceAll(/"/g, '\\"')
       .matchAll(/```(?:\w*\n)?([\s\S]*?)```/g);
     const commitMessage = Array.from(messages)
-      .map(item => item[1].trim())
+      .map((item) => item[1].trim())
       .join("\n\n\n");
 
-    await SdProcess.spawnAsync(`git commit -m "${commitMessage}"`);
-    process.stdout.write("커밋이 완료되었습니다. 위 커밋메시지가 맘에들지 않을경우, 직접 커밋을 취소하세요.\n");
+    await SdProcess.spawnAsync("git", ["commit", "-m", `"${commitMessage}"`]);
+    process.stdout.write(
+      "커밋이 완료되었습니다. 위 커밋메시지가 맘에들지 않을경우, 직접 커밋을 취소하세요.\n",
+    );
   }
 }

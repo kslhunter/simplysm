@@ -18,7 +18,7 @@ export class SdCliElectron {
     await this.#prepareAsync({ pkgPath, electronPath, electronConfig });
 
     this.#logger.log("실행...");
-    await SdProcess.spawnAsync(`npx electron .`, { cwd: electronPath, showMessage: true });
+    await SdProcess.spawnAsync("npx", ["electron", "."], { cwd: electronPath, showMessage: true });
   }
 
   static async buildForDevAsync(opt: { package: string; config: string; options?: string[] }) {
@@ -52,11 +52,7 @@ export class SdCliElectron {
     });
   }
 
-  static async #loadDevConfig(opt: {
-    package: string;
-    config: string;
-    options?: string[];
-  }) {
+  static async #loadDevConfig(opt: { package: string; config: string; options?: string[] }) {
     const projConf = await loadProjConfAsync(process.cwd(), true, opt);
     const pkgConf = projConf.packages[opt.package];
     if (pkgConf?.type !== "client" || pkgConf.builder?.electron === undefined) {
@@ -99,9 +95,9 @@ export class SdCliElectron {
       ),
     });
 
-    await SdProcess.spawnAsync(`npm install`, { cwd: opt.electronPath, showMessage: true });
+    await SdProcess.spawnAsync("npm", ["install"], { cwd: opt.electronPath, showMessage: true });
 
-    await SdProcess.spawnAsync(`npx electron-rebuild`, {
+    await SdProcess.spawnAsync("npx", ["electron-rebuild"], {
       cwd: opt.electronPath,
       showMessage: true,
     });
@@ -145,7 +141,7 @@ export class SdCliElectron {
     };
     const configFilePath = path.resolve(opt.pkgPath, ".electron/builder-config.json");
     FsUtils.writeJson(configFilePath, electronConfig);
-    await SdProcess.spawnAsync(`npx electron-builder --win --config ${configFilePath}`);
+    await SdProcess.spawnAsync("npx", ["electron-builder", "--win", "--config", configFilePath]);
 
     FsUtils.copy(
       path.resolve(

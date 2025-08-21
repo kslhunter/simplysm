@@ -32,21 +32,10 @@ export class SdCliCordova {
 
   static #logger = SdLogger.get(["simplysm", "sd-cli", "SdCliCordova"]);
 
-  static async #execAsync(cmd: string, cwd: string): Promise<void> {
-    this.#logger.debug(`실행 명령: ${cmd}`);
-    const msg = await SdProcess.spawnAsync(cmd, { cwd });
+  static async #execAsync(cmd: string, args: string[], cwd: string): Promise<void> {
+    this.#logger.debug(`실행 명령: ${cmd + " " + args.join(" ")}`);
+    const msg = await SdProcess.spawnAsync(cmd, args, { cwd });
     this.#logger.debug(`실행 결과: ${msg}`);
-
-    /*try {
-      this._logger.debug(`실행 명령: ${cmd}`);
-      const msg = await SdProcess.spawnAsync(cmd, { cwd });
-      this._logger.debug(`실행 결과: ${msg}`);
-    }
-    catch (err) {
-      this._logger.error(`명령 실행 실패: ${cmd}`);
-      this._logger.error(`오류: ${err instanceof Error ? err.message : String(err)}`);
-      throw err;
-    }*/
   }
 
   async initializeAsync(): Promise<void> {
@@ -74,7 +63,7 @@ export class SdCliCordova {
     this.#configureXml(cordovaPath);
 
     // 8. 각 플랫폼 www 준비
-    await SdCliCordova.#execAsync(`npx cordova prepare`, cordovaPath);
+    await SdCliCordova.#execAsync("npx", ["cordova", "prepare"], cordovaPath);
   }
 
   // 1. Cordova 프로젝트 초기화
@@ -82,11 +71,18 @@ export class SdCliCordova {
     if (FsUtils.exists(cordovaPath)) {
       SdCliCordova.#logger.log("이미 생성되어있는 '.cordova'를 사용합니다.");
     } else {
-      await SdCliCordova.#execAsync(`npx cordova telemetry on`, this._opt.pkgPath);
+      await SdCliCordova.#execAsync("npx", ["cordova", "telemetry", "on"], this._opt.pkgPath);
 
       // 프로젝트 생성
       await SdCliCordova.#execAsync(
-        `npx cordova create "${cordovaPath}" "${this._opt.config.appId}" "${this._opt.config.appName}"`,
+        "npx",
+        [
+          "cordova",
+          "create",
+          `"${cordovaPath}"`,
+          `"${this._opt.config.appId}"`,
+          `"${this._opt.config.appName}"`,
+        ],
         process.cwd(),
       );
     }
@@ -106,13 +102,17 @@ export class SdCliCordova {
     for (const platform of this.#platforms) {
       if (alreadyPlatforms.includes(platform)) continue;
 
-      await SdCliCordova.#execAsync(`npx cordova platform add ${platform}`, cordovaPath);
+      await SdCliCordova.#execAsync("npx", ["cordova", "platform", "add", platform], cordovaPath);
     }
   }
 
   // 3. 플러그인 관리
   async #managePluginsAsync(cordovaPath: string): Promise<void> {
-    const pluginsFetchPath = path.resolve(cordovaPath, this.#PLUGINS_DIR_NAME, this.#PLUGINS_FETCH_FILE);
+    const pluginsFetchPath = path.resolve(
+      cordovaPath,
+      this.#PLUGINS_DIR_NAME,
+      this.#PLUGINS_FETCH_FILE,
+    );
     const pluginsFetch = FsUtils.exists(pluginsFetchPath) ? FsUtils.readJson(pluginsFetchPath) : {};
 
     const alreadyPlugins: Array<{
@@ -140,7 +140,11 @@ export class SdCliCordova {
     for (const alreadyPlugin of alreadyPlugins) {
       if (!usePlugins.includes(alreadyPlugin.id) && !usePlugins.includes(alreadyPlugin.name)) {
         try {
-          await SdCliCordova.#execAsync(`npx cordova plugin remove ${alreadyPlugin.name}`, cordovaPath);
+          await SdCliCordova.#execAsync(
+            "npx",
+            ["cordova", "plugin", "remove", alreadyPlugin.name],
+            cordovaPath,
+          );
         } catch (err) {
           // 의존성으로 인한 skip 메시지는 무시 (로그 생략)
           const msg = err instanceof Error ? err.message : String(err);
@@ -164,7 +168,7 @@ export class SdCliCordova {
       );
 
       if (!isPluginAlreadyInstalled) {
-        await SdCliCordova.#execAsync(`npx cordova plugin add ${usePlugin}`, cordovaPath);
+        await SdCliCordova.#execAsync("npx", ["cordova", "plugin", "add", usePlugin], cordovaPath);
       }
     }
   }
@@ -175,7 +179,10 @@ export class SdCliCordova {
     const signingPropsPath = path.resolve(cordovaPath, this.#ANDROID_SIGNING_PROP_PATH);
 
     if (this._opt.config.platform?.android?.sign) {
-      FsUtils.copy(path.resolve(this._opt.pkgPath, this._opt.config.platform.android.sign.keystore), keystorePath);
+      FsUtils.copy(
+        path.resolve(this._opt.pkgPath, this._opt.config.platform.android.sign.keystore),
+        keystorePath,
+      );
     } else {
       FsUtils.remove(keystorePath);
       // SIGN을 안쓸경우 아래 파일이 생성되어 있으면 오류남
@@ -423,7 +430,11 @@ export class SdCliCordova {
     // 모든 플랫폼 동시에 빌드
     await Promise.all(
       this.#platforms.map((platform) =>
-        SdCliCordova.#execAsync(`npx cordova build ${platform} --${buildType}`, cordovaPath),
+        SdCliCordova.#execAsync(
+          "npx",
+          ["cordova", "build", platform, `--${buildType}`],
+          cordovaPath,
+        ),
       ),
     );
 
@@ -474,10 +485,19 @@ export class SdCliCordova {
     );
   }
 
-  async #createUpdateZipAsync(cordovaPath: string, outPath: string, platform: string): Promise<void> {
+  async #createUpdateZipAsync(
+    cordovaPath: string,
+    outPath: string,
+    platform: string,
+  ): Promise<void> {
     const zip = new SdZip();
     const wwwPath = path.resolve(cordovaPath, this.#WWW_DIR_NAME);
-    const platformWwwPath = path.resolve(cordovaPath, this.#PLATFORMS_DIR_NAME, platform, "platform_www");
+    const platformWwwPath = path.resolve(
+      cordovaPath,
+      this.#PLATFORMS_DIR_NAME,
+      platform,
+      "platform_www",
+    );
 
     this.#addFilesToZip(zip, wwwPath);
     this.#addFilesToZip(zip, platformWwwPath);
@@ -485,7 +505,10 @@ export class SdCliCordova {
     // ZIP 파일 생성
     const updateDirPath = path.resolve(outPath, platform, "updates");
     FsUtils.mkdirs(updateDirPath);
-    FsUtils.writeFile(path.resolve(updateDirPath, this.#npmConfig.version + ".zip"), await zip.compressAsync());
+    FsUtils.writeFile(
+      path.resolve(updateDirPath, this.#npmConfig.version + ".zip"),
+      await zip.compressAsync(),
+    );
   }
 
   #addFilesToZip(zip: SdZip, dirPath: string) {
@@ -497,11 +520,20 @@ export class SdCliCordova {
     }
   }
 
-  static async runWebviewOnDeviceAsync(opt: { platform: string; package: string; url?: string }): Promise<void> {
+  static async runWebviewOnDeviceAsync(opt: {
+    platform: string;
+    package: string;
+    url?: string;
+  }): Promise<void> {
     const projNpmConf = FsUtils.readJson(path.resolve(process.cwd(), "package.json")) as INpmConfig;
-    const allPkgPaths = projNpmConf.workspaces!.mapMany((item) => FsUtils.glob(PathUtils.posix(process.cwd(), item)));
+    const allPkgPaths = projNpmConf.workspaces!.mapMany((item) =>
+      FsUtils.glob(PathUtils.posix(process.cwd(), item)),
+    );
 
-    const cordovaPath = path.resolve(allPkgPaths.single((item) => item.endsWith(opt.package))!, ".cordova");
+    const cordovaPath = path.resolve(
+      allPkgPaths.single((item) => item.endsWith(opt.package))!,
+      ".cordova",
+    );
 
     if (opt.url !== undefined) {
       FsUtils.remove(path.resolve(cordovaPath, "www"));
@@ -518,6 +550,6 @@ export class SdCliCordova {
       );
     }
 
-    await this.#execAsync(`npx cordova run ${opt.platform} --device`, cordovaPath);
+    await this.#execAsync("npx", ["cordova", "run", opt.platform, "--device"], cordovaPath);
   }
 }

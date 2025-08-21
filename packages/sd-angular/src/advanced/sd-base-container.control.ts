@@ -27,7 +27,13 @@ import { injectParent } from "../utils/injections/inject-parent";
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [FaIconComponent, SdTopbarContainerControl, SdTopbarControl, SdBusyContainerControl, NgTemplateOutlet],
+  imports: [
+    FaIconComponent,
+    SdTopbarContainerControl,
+    SdTopbarControl,
+    SdBusyContainerControl,
+    NgTemplateOutlet,
+  ],
   template: `
     <sd-busy-container [busy]="busy()" [message]="busyMessage()">
       @if (initialized() == null || initialized()) {

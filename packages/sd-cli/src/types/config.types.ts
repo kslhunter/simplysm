@@ -127,5 +127,6 @@ export type TSdPostPublishConfig = ISdPostPublishScriptConfig;
 
 export interface ISdPostPublishScriptConfig {
   type: "script";
-  script: string;
+  cmd: string;
+  args: string[];
 }

@@ -144,7 +144,7 @@ export class SdCliProject {
       // GIT 사용중일 경우, 커밋되지 않은 수정사항이 있는지 확인
       if (FsUtils.exists(path.resolve(process.cwd(), ".git"))) {
         logger.debug("GIT 커밋여부 확인...");
-        const gitStatusResult = await SdProcess.spawnAsync("git status");
+        const gitStatusResult = await SdProcess.spawnAsync("git", ["status"]);
         if (gitStatusResult.includes("Changes") || gitStatusResult.includes("Untracked")) {
           throw new Error("커밋되지 않은 정보가 있습니다.\n" + gitStatusResult);
         }
@@ -189,22 +189,26 @@ export class SdCliProject {
 
         this.#logging(messages.mapMany(), logger);
       } catch (err) {
-        await SdProcess.spawnAsync("git checkout .");
+        await SdProcess.spawnAsync("git", ["checkout", "."]);
         throw err;
       }
 
       // GIT 사용중일경우, 새 버전 커밋 및 TAG 생성
       if (FsUtils.exists(path.resolve(process.cwd(), ".git"))) {
         logger.debug("새 버전 커밋 및 TAG 생성...");
-        await SdProcess.spawnAsync("git add .");
-        await SdProcess.spawnAsync(`git commit -m "v${projNpmConf.version}"`);
-        await SdProcess.spawnAsync(
-          `git tag -a "v${projNpmConf.version}" -m "v${projNpmConf.version}"`,
-        );
+        await SdProcess.spawnAsync("git", ["add", "."]);
+        await SdProcess.spawnAsync("git", ["commit", "-m", `"v${projNpmConf.version}"`]);
+        await SdProcess.spawnAsync("git", [
+          "tag",
+          "-a",
+          `"v${projNpmConf.version}"`,
+          "-m",
+          `"v${projNpmConf.version}"`,
+        ]);
 
         logger.debug("새 버전 푸쉬...");
-        await SdProcess.spawnAsync("git push");
-        await SdProcess.spawnAsync("git push --tags");
+        await SdProcess.spawnAsync("git", ["push"]);
+        await SdProcess.spawnAsync("git", ["push", "--tags"]);
       }
     }
 
@@ -224,17 +228,21 @@ export class SdCliProject {
       for (const postPublishItem of projConf.postPublish) {
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (postPublishItem.type === "script") {
-          const script = postPublishItem.script.replace(/%([^%]*)%/g, (item) => {
-            const envName = item.replace(/%/g, "");
-            if (!StringUtils.isNullOrEmpty(projNpmConf.version) && envName === "SD_VERSION") {
-              return projNpmConf.version;
-            }
-            if (envName === "SD_PROJECT_PATH") {
-              return process.cwd();
-            }
-            return process.env[envName] ?? item;
-          });
-          await SdProcess.spawnAsync(script);
+          const replaceEnvPath = (str: string) =>
+            str.replace(/%([^%]*)%/g, (item) => {
+              const envName = item.replace(/%/g, "");
+              if (!StringUtils.isNullOrEmpty(projNpmConf.version) && envName === "SD_VERSION") {
+                return projNpmConf.version;
+              }
+              if (envName === "SD_PROJECT_PATH") {
+                return process.cwd();
+              }
+              return process.env[envName] ?? item;
+            });
+
+          const cmd = replaceEnvPath(postPublishItem.cmd);
+          const args = postPublishItem.args.map((arg) => replaceEnvPath(arg));
+          await SdProcess.spawnAsync(cmd, args);
         } else {
           throw new NeverEntryError();
         }
@@ -249,7 +257,9 @@ export class SdCliProject {
     pkgPubConf: TSdPackageConfig["publish"],
   ): Promise<void> {
     if (pkgPubConf === "npm") {
-      await SdProcess.spawnAsync("yarn npm publish --access public", { cwd: pkgPath });
+      await SdProcess.spawnAsync("yarn", ["npm", "publish", "--access", "public"], {
+        cwd: pkgPath,
+      });
     } else if (pkgPubConf?.type === "local-directory") {
       const pkgNpmConf = FsUtils.readJson(path.resolve(pkgPath, "package.json")) as INpmConfig;
 

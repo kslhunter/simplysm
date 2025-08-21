@@ -4,7 +4,7 @@
   display: block;
   background: var(--control-color);
   border-radius: var(--border-radius-default);
-  overflow: hidden;
+  //overflow: hidden;
   transition: box-shadow 0.3s ease-in-out;
   @include mixins.elevation(2);
   animation: sd-card var(--animation-duration) ease-out;

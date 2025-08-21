@@ -12,7 +12,7 @@ $vars: (
     xl: 32px,
     xxl: 40px,
     0: 0,
-    auto: "auto"
+    auto: "auto",
   ),
   font-size: (
     lg: 30px,
@@ -26,14 +26,12 @@ $vars: (
     h6: 20px,
   ),
   sidebar: (
-    width: 480px
+    width: 480px,
   ),
   topbar: (
-    height: 62px
+    height: 62px,
   ),
-  //font-family: "'Pretendard Variable', sans-serif",
-  //background-color: var(--theme-grey-lighter),
-  animation-duration: .3s,
+  animation-duration: 0.3s,
   elevation-size: 8px,
 
   border-radius: (
@@ -42,11 +40,11 @@ $vars: (
     default: var(--gap-sm),
     lg: var(--gap-default),
     xl: var(--gap-lg),
-    xxl: var(--gap-xl)
+    xxl: var(--gap-xl),
   ),
   sheet: (
     pv: var(--gap-xs),
     ph: var(--gap-sm),
-    bg: var(--color-grey-100)
-  )
-)
+    bg: var(--color-grey-100),
+  ),
+);

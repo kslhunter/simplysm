@@ -401,12 +401,7 @@ $vars: (
     default: var(--gap-sm),
     lg: var(--gap-default),
     xl: var(--gap-lg),
-    xxl: var(--gap-xl) //xs: var(--gap-xs),
-    , //sm: var(--gap-sm),
-    //default: var(--gap-default),
-    //lg: var(--gap-lg),
-    //xl: var(--gap-xl),
-     //xxl: var(--gap-xxl)
+    xxl: var(--gap-xl),
   ),
   z-index: (
     toast: 9999,
