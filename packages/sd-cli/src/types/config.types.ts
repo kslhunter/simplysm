@@ -1,3 +1,5 @@
+import electronBuilder from "electron-builder";
+
 export interface ISdProjectConfig {
   packages: Record<string, TSdPackageConfig | undefined>;
   // types: Record<string, TSdPackageConfig | undefined>;
@@ -81,6 +83,7 @@ export interface ISdClientBuilderElectronConfig {
   installerIcon?: string;
   portable?: boolean;
   postInstallScript?: string;
+  nsisOptions?: electronBuilder.NsisOptions;
   // devServerHost?: string;
   // devServerPort?: number;
   reinstallDependencies?: string[];

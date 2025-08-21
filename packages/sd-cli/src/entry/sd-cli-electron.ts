@@ -125,7 +125,7 @@ export class SdCliElectron {
       win: {
         target: opt.electronConfig.portable ? "portable" : "nsis",
       },
-      nsis: {},
+      nsis: opt.electronConfig.nsisOptions ?? {},
       directories: {
         app: opt.electronPath,
         output: opt.electronDistPath,
