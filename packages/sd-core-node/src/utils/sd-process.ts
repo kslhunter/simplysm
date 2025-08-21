@@ -60,7 +60,7 @@ export class SdProcess {
     });
   }
 
-  static #splitCommand(cmd: string) {
+  /*static #splitCommand(cmd: string) {
     const regex = /[^\s"]+|"([^"\\]*(?:\\.[^"\\]*)*)"/g;
     const matches = cmd.match(regex);
     return matches?.map((match) => {
@@ -69,5 +69,5 @@ export class SdProcess {
       }
       return match;
     });
-  }
+  }*/
 }
