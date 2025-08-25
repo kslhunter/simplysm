@@ -139,6 +139,7 @@ export class SdCliElectron {
       npmRebuild: false,
       forceCodeSigning: false,
     };
+
     const configFilePath = path.resolve(opt.pkgPath, ".electron/builder-config.json");
     FsUtils.writeJson(configFilePath, electronConfig);
     await SdProcess.spawnAsync("npx", ["electron-builder", "--win", "--config", configFilePath]);
