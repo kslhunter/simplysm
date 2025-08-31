@@ -26,6 +26,8 @@ export class SdServerBundler {
   constructor(
     private readonly _opt: {
       dev: boolean;
+      emitOnly: boolean;
+      noEmit: boolean;
       pkgPath: TNormPath;
       entryPoints: string[];
       external?: string[];
@@ -108,6 +110,8 @@ const __dirname = __path__.dirname(__filename);`.trim(),
           createSdServerPlugin({
             modifiedFileSet: this.#modifiedFileSet,
             dev: this._opt.dev,
+            emitOnly: this._opt.emitOnly,
+            noEmit: this._opt.noEmit,
             pkgPath: this._opt.pkgPath,
             result: this.#resultCache,
             watchScopePathSet: this._opt.watchScopePathSet,
@@ -153,7 +157,7 @@ const __dirname = __path__.dirname(__filename);`.trim(),
             path.resolve(this._opt.pkgPath, "dist", assetFile.destination),
           );
           this.#outputHashCache.set(PathUtils.norm(assetFile.source), currHash);
-          emitFileSet.add(PathUtils.norm(assetFile.destination));
+          emitFileSet.add(PathUtils.norm(this._opt.pkgPath, "dist", assetFile.destination));
         }
       }
     } catch (err) {

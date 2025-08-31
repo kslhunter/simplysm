@@ -47,7 +47,10 @@ declare global {
 
     toMap<K>(keySelector: (item: T, index: number) => K): Map<K, T>;
 
-    toMap<K, V>(keySelector: (item: T, index: number) => K, valueSelector: (item: T, index: number) => V): Map<K, V>;
+    toMap<K, V>(
+      keySelector: (item: T, index: number) => K,
+      valueSelector: (item: T, index: number) => V,
+    ): Map<K, V>;
 
     toMapAsync<K>(keySelector: (item: T, index: number) => Promise<K>): Promise<Map<K, T>>;
 
@@ -68,7 +71,10 @@ declare global {
       valueSelector: (item: T, index: number) => V,
     ): Map<K, Set<V>>;
 
-    toMapValues<K, V>(keySelector: (item: T, index: number) => K, valueSelector: (items: T[]) => V): Map<K, V>;
+    toMapValues<K, V>(
+      keySelector: (item: T, index: number) => K,
+      valueSelector: (items: T[]) => V,
+    ): Map<K, V>;
 
     toObject(keySelector: (item: T, index: number) => string): Record<string, T>;
 
@@ -85,13 +91,22 @@ declare global {
 
     orderBy(selector?: (item: T) => string | number | DateOnly | DateTime | Time | undefined): T[];
 
-    orderByThis(selector?: (item: T) => string | number | DateOnly | DateTime | Time | undefined): T[];
+    orderByThis(
+      selector?: (item: T) => string | number | DateOnly | DateTime | Time | undefined,
+    ): T[];
 
-    orderByDesc(selector?: (item: T) => string | number | DateOnly | DateTime | Time | undefined): T[];
+    orderByDesc(
+      selector?: (item: T) => string | number | DateOnly | DateTime | Time | undefined,
+    ): T[];
 
-    orderByDescThis(selector?: (item: T) => string | number | DateOnly | DateTime | Time | undefined): T[];
+    orderByDescThis(
+      selector?: (item: T) => string | number | DateOnly | DateTime | Time | undefined,
+    ): T[];
 
-    diffs<P>(target: P[], options?: { keys?: string[]; excludes?: string[] }): TArrayDiffsResult<T, P>[];
+    diffs<P>(
+      target: P[],
+      options?: { keys?: string[]; excludes?: string[] },
+    ): TArrayDiffsResult<T, P>[];
 
     oneWayDiffs<K extends keyof T>(
       orgItems: T[] | Map<T[K], T>,
@@ -163,7 +178,10 @@ declare global {
 
     toMap<K>(keySelector: (item: T, index: number) => K): Map<K, T>;
 
-    toMap<K, V>(keySelector: (item: T, index: number) => K, valueSelector: (item: T, index: number) => V): Map<K, V>;
+    toMap<K, V>(
+      keySelector: (item: T, index: number) => K,
+      valueSelector: (item: T, index: number) => V,
+    ): Map<K, V>;
 
     toMapAsync<K>(keySelector: (item: T, index: number) => Promise<K>): Promise<Map<K, T>>;
 
@@ -177,7 +195,10 @@ declare global {
       valueSelector: (item: T, index: number) => V,
     ): Map<K, V[]>;
 
-    toMapValues<K, V>(keySelector: (item: T, index: number) => K, valueSelector: (items: T[]) => V): Map<K, V>;
+    toMapValues<K, V>(
+      keySelector: (item: T, index: number) => K,
+      valueSelector: (items: T[]) => V,
+    ): Map<K, V>;
 
     toObject(keySelector: (item: T, index: number) => string): Record<string, T>;
 
@@ -192,9 +213,14 @@ declare global {
 
     orderBy(selector?: (item: T) => string | number | DateOnly | DateTime | Time | undefined): T[];
 
-    orderByDesc(selector?: (item: T) => string | number | DateOnly | DateTime | Time | undefined): T[];
+    orderByDesc(
+      selector?: (item: T) => string | number | DateOnly | DateTime | Time | undefined,
+    ): T[];
 
-    diffs<P>(target: P[], options?: { keys?: string[]; excludes?: string[] }): TArrayDiffsResult<T, P>[];
+    diffs<P>(
+      target: P[],
+      options?: { keys?: string[]; excludes?: string[] },
+    ): TArrayDiffsResult<T, P>[];
 
     oneWayDiffs<K extends keyof T>(
       orgItems: T[] | Map<T[K], T>,
@@ -221,7 +247,10 @@ declare global {
 }
 
 ((prototype) => {
-  prototype.single = function <T>(this: T[], predicate?: (item: T, index: number) => boolean): T | undefined {
+  prototype.single = function <T>(
+    this: T[],
+    predicate?: (item: T, index: number) => boolean,
+  ): T | undefined {
     const arr = predicate !== undefined ? this.filter(predicate) : this;
     if (arr.length > 1) {
       throw new Error(`복수의 결과물이 있습니다. (${arr.length}개)`);
@@ -229,7 +258,10 @@ declare global {
     return arr[0];
   };
 
-  prototype.first = function <T>(this: T[], predicate?: (item: T, index: number) => boolean): T | undefined {
+  prototype.first = function <T>(
+    this: T[],
+    predicate?: (item: T, index: number) => boolean,
+  ): T | undefined {
     return predicate !== undefined ? this.find(predicate) : this[0];
   };
 
@@ -246,7 +278,10 @@ declare global {
     return arr;
   };
 
-  prototype.last = function <T>(this: T[], predicate?: (item: T, index: number) => boolean): T | undefined {
+  prototype.last = function <T>(
+    this: T[],
+    predicate?: (item: T, index: number) => boolean,
+  ): T | undefined {
     if (predicate !== undefined) {
       for (let i = this.length - 1; i >= 0; i--) {
         if (predicate(this[i], i)) {
@@ -265,7 +300,9 @@ declare global {
   };
 
   prototype.ofType = function <T, N extends T>(this: T[], type: Type<WrappedType<N>>): N[] {
-    return this.filter((item) => item instanceof type || (item as any)?.constructor === type) as N[];
+    return this.filter(
+      (item) => item instanceof type || (item as any)?.constructor === type,
+    ) as N[];
   };
 
   prototype.mapAsync = async function <T, R>(
@@ -279,7 +316,10 @@ declare global {
     return result;
   };
 
-  prototype.mapMany = function <T, R>(this: T[], selector?: (item: T, index: number) => R[]): T | R[] {
+  prototype.mapMany = function <T, R>(
+    this: T[],
+    selector?: (item: T, index: number) => R[],
+  ): T | R[] {
     const arr: any[] = selector ? this.map(selector) : this;
     return arr.length > 0 ? arr.reduce((p, n) => (p ?? []).concat(n ?? [])) : arr;
   };
@@ -292,7 +332,10 @@ declare global {
     return arr.mapMany();
   };
 
-  prototype.parallelAsync = async function <T, R>(this: T[], fn: (item: T, index: number) => Promise<R>): Promise<R[]> {
+  prototype.parallelAsync = async function <T, R>(
+    this: T[],
+    fn: (item: T, index: number) => Promise<R>,
+  ): Promise<R[]> {
     return await Promise.all(this.map(async (item, index) => await fn(item, index)));
   };
 
@@ -472,7 +515,11 @@ declare global {
   prototype.distinct = function <T>(this: T[], matchAddress?: boolean): T[] {
     const result: T[] = [];
     for (const item of this) {
-      if (!result.some((item1) => (matchAddress === true ? item1 === item : ObjectUtils.equal(item1, item)))) {
+      if (
+        !result.some((item1) =>
+          matchAddress === true ? item1 === item : ObjectUtils.equal(item1, item),
+        )
+      ) {
         result.push(item);
       }
     }
@@ -496,9 +543,21 @@ declare global {
       const pp = selector !== undefined ? selector(p) : p;
 
       const cpn =
-        pn instanceof DateOnly ? pn.tick : pn instanceof DateTime ? pn.tick : pn instanceof Time ? pn.tick : pn;
+        pn instanceof DateOnly
+          ? pn.tick
+          : pn instanceof DateTime
+            ? pn.tick
+            : pn instanceof Time
+              ? pn.tick
+              : pn;
       const cpp =
-        pp instanceof DateOnly ? pp.tick : pp instanceof DateTime ? pp.tick : pp instanceof Time ? pp.tick : pp;
+        pp instanceof DateOnly
+          ? pp.tick
+          : pp instanceof DateTime
+            ? pp.tick
+            : pp instanceof Time
+              ? pp.tick
+              : pp;
 
       if (cpn === cpp) {
         return 0;
@@ -527,9 +586,21 @@ declare global {
       const pp = selector !== undefined ? selector(p) : p;
 
       const cpn =
-        pn instanceof DateOnly ? pn.tick : pn instanceof DateTime ? pn.tick : pn instanceof Time ? pn.tick : pn;
+        pn instanceof DateOnly
+          ? pn.tick
+          : pn instanceof DateTime
+            ? pn.tick
+            : pn instanceof Time
+              ? pn.tick
+              : pn;
       const cpp =
-        pp instanceof DateOnly ? pp.tick : pp instanceof DateTime ? pp.tick : pp instanceof Time ? pp.tick : pp;
+        pp instanceof DateOnly
+          ? pp.tick
+          : pp instanceof DateTime
+            ? pp.tick
+            : pp instanceof Time
+              ? pp.tick
+              : pp;
 
       if (cpn === cpp) {
         return 0;
@@ -558,9 +629,21 @@ declare global {
       const pp = selector !== undefined ? selector(p) : p;
 
       const cpn =
-        pn instanceof DateOnly ? pn.tick : pn instanceof DateTime ? pn.tick : pn instanceof Time ? pn.tick : pn;
+        pn instanceof DateOnly
+          ? pn.tick
+          : pn instanceof DateTime
+            ? pn.tick
+            : pn instanceof Time
+              ? pn.tick
+              : pn;
       const cpp =
-        pp instanceof DateOnly ? pp.tick : pp instanceof DateTime ? pp.tick : pp instanceof Time ? pp.tick : pp;
+        pp instanceof DateOnly
+          ? pp.tick
+          : pp instanceof DateTime
+            ? pp.tick
+            : pp instanceof Time
+              ? pp.tick
+              : pp;
 
       if (cpn === cpp) {
         return 0;
@@ -589,9 +672,21 @@ declare global {
       const pp = selector !== undefined ? selector(p) : p;
 
       const cpn =
-        pn instanceof DateOnly ? pn.tick : pn instanceof DateTime ? pn.tick : pn instanceof Time ? pn.tick : pn;
+        pn instanceof DateOnly
+          ? pn.tick
+          : pn instanceof DateTime
+            ? pn.tick
+            : pn instanceof Time
+              ? pn.tick
+              : pn;
       const cpp =
-        pp instanceof DateOnly ? pp.tick : pp instanceof DateTime ? pp.tick : pp instanceof Time ? pp.tick : pp;
+        pp instanceof DateOnly
+          ? pp.tick
+          : pp instanceof DateTime
+            ? pp.tick
+            : pp instanceof Time
+              ? pp.tick
+              : pp;
 
       if (cpn === cpp) {
         return 0;
@@ -676,13 +771,16 @@ declare global {
       orgItems instanceof Map
         ? orgItems
         : orgItems.toMap((orgItem) =>
-            typeof keyPropNameOrFn === "function" ? keyPropNameOrFn(orgItem) : orgItem[keyPropNameOrFn],
+            typeof keyPropNameOrFn === "function"
+              ? keyPropNameOrFn(orgItem)
+              : orgItem[keyPropNameOrFn],
           );
     const includeSame = options?.includeSame ?? false;
 
     const diffs: TArrayDiffs2Result<T>[] = [];
     for (const item of this) {
-      const keyValue = typeof keyPropNameOrFn === "function" ? keyPropNameOrFn(item) : item[keyPropNameOrFn];
+      const keyValue =
+        typeof keyPropNameOrFn === "function" ? keyPropNameOrFn(item) : item[keyPropNameOrFn];
       if (keyValue == null) {
         diffs.push({ type: "create", item, orgItem: undefined });
         continue;
@@ -694,7 +792,12 @@ declare global {
         continue;
       }
 
-      if (ObjectUtils.equal(orgItem, item, { excludes: options?.excludes, includes: options?.includes })) {
+      if (
+        ObjectUtils.equal(orgItem, item, {
+          excludes: options?.excludes,
+          includes: options?.includes,
+        })
+      ) {
         if (includeSame) {
           diffs.push({ type: "same", item, orgItem });
         }
@@ -804,7 +907,10 @@ declare global {
     return this;
   };
 
-  prototype.remove = function <T>(this: T[], itemOrSelector: T | ((item: T, index: number) => boolean)): T[] {
+  prototype.remove = function <T>(
+    this: T[],
+    itemOrSelector: T | ((item: T, index: number) => boolean),
+  ): T[] {
     const removeItems =
       typeof itemOrSelector === "function"
         ? this.filter((itemOrSelector as (item: T, index: number) => boolean).bind(this))

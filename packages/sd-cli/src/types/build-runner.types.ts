@@ -6,4 +6,6 @@ export interface ISdBuildRunnerWorkerRequest {
   pkgPath: TNormPath;
   projConf: ISdProjectConfig;
   workspaces: string[];
+  emitOnly: boolean;
+  noEmit: boolean;
 }

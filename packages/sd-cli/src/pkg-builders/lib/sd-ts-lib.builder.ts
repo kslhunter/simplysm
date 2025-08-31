@@ -12,12 +12,16 @@ export class SdTsLibBuilder {
   constructor(
     private readonly _pkgPath: TNormPath,
     dev: boolean,
+    emitOnly: boolean,
+    noEmit: boolean,
     watchScopePathSet: ScopePathSet,
   ) {
     this.#tsCompiler = new SdTsCompiler({
       pkgPath: this._pkgPath,
       additionalOptions: { declaration: true },
       isDevMode: dev,
+      isEmitOnly: emitOnly,
+      isNoEmit: noEmit,
       globalStyleFilePath: PathUtils.norm(this._pkgPath, "src/styles.scss"),
       isForBundle: false,
       watchScopePathSet,

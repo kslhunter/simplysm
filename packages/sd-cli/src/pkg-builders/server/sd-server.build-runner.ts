@@ -13,16 +13,20 @@ export class SdServerBuildRunner extends BuildRunnerBase<"server"> {
 
   protected override async _runAsync(
     dev: boolean,
+    emitOnly: boolean,
+    noEmit: boolean,
     modifiedFileSet?: Set<TNormPath>,
   ): Promise<IBuildRunnerRunResult> {
     if (!dev) {
       await this.#generateProductionFilesAsync();
     }
 
-    if (!modifiedFileSet) {
-      this._debug("GEN .config...");
-      const confDistPath = path.resolve(this._pkgPath, "dist/.config.json");
-      FsUtils.writeFile(confDistPath, JSON.stringify(this._pkgConf.configs ?? {}, undefined, 2));
+    if (!noEmit) {
+      if (!modifiedFileSet) {
+        this._debug("GEN .config...");
+        const confDistPath = path.resolve(this._pkgPath, "dist/.config.json");
+        FsUtils.writeFile(confDistPath, JSON.stringify(this._pkgConf.configs ?? {}, undefined, 2));
+      }
     }
 
     /*const localUpdatePaths = Object.keys(this._projConf.localUpdates ?? {}).mapMany((key) =>
@@ -36,6 +40,8 @@ export class SdServerBuildRunner extends BuildRunnerBase<"server"> {
       this.#serverBundler ??
       new SdServerBundler({
         dev,
+        emitOnly,
+        noEmit,
         pkgPath: this._pkgPath,
         entryPoints: tsConfig.files
           ? tsConfig.files.map((item) => path.resolve(this._pkgPath, item))

@@ -16,11 +16,25 @@ export class SdJsLibBuildRunner extends BuildRunnerBase<"library"> {
 
   protected override async _runAsync(
     dev: boolean,
+    emitOnly: boolean,
+    noEmit: boolean,
     modifiedFileSet?: Set<TNormPath>,
   ): Promise<IBuildRunnerRunResult> {
-    const filePathSet = modifiedFileSet ?? new Set(
-      FsUtils.glob(path.resolve(this._pkgPath, "src/**/*.js")).map(item => PathUtils.norm(item)),
-    );
+    if (emitOnly) {
+      return {
+        affectedFileSet: new Set(),
+        buildMessages: [],
+        emitFileSet: new Set(),
+      };
+    }
+
+    const filePathSet =
+      modifiedFileSet ??
+      new Set(
+        FsUtils.glob(path.resolve(this._pkgPath, "src/**/*.js")).map((item) =>
+          PathUtils.norm(item),
+        ),
+      );
 
     this._debug("LINT...");
 
@@ -38,10 +52,13 @@ export class SdJsLibBuildRunner extends BuildRunnerBase<"library"> {
 
   protected override _getModifiedFileSet(changeInfos: ISdFsWatcherChangeInfo[]) {
     return new Set(
-      changeInfos.filter((item) =>
-        FsUtils.exists(item.path)
-        && PathUtils.isChildPath(item.path, path.resolve(this._pkgPath, "src")),
-      ).map(item => item.path),
+      changeInfos
+        .filter(
+          (item) =>
+            FsUtils.exists(item.path) &&
+            PathUtils.isChildPath(item.path, path.resolve(this._pkgPath, "src")),
+        )
+        .map((item) => item.path),
     );
   }
 

@@ -93,6 +93,16 @@ await yargs(hideBin(process.argv))
             array: true,
             describe: "크롬 inspect를 수행할 패키지 설정",
           },
+          emitOnly: {
+            type: "boolean",
+            describe: "emit만 수행",
+            default: false,
+          },
+          noEmit: {
+            type: "boolean",
+            describe: "emit만 수행",
+            default: false,
+          },
         }),
     async (argv) => await SdCliProject.watchAsync(argv),
   )

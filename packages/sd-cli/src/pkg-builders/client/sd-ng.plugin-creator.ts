@@ -2,7 +2,7 @@ import esbuild from "esbuild";
 import path from "path";
 import os from "os";
 import { JavaScriptTransformer } from "@angular/build/src/tools/esbuild/javascript-transformer";
-import { PathUtils, SdLogger, TNormPath } from "@simplysm/sd-core-node";
+import { FsUtils, PathUtils, SdLogger, TNormPath } from "@simplysm/sd-core-node";
 import { SdCliPerformanceTimer } from "../../utils/sd-cli-performance-time";
 import { SdCliConvertMessageUtils } from "../../utils/sd-cli-convert-message.utils";
 import { ISdCliNgPluginResultCache } from "../../types/build-plugin.types";
@@ -13,6 +13,8 @@ import { ScopePathSet } from "../commons/scope-path";
 export function createSdNgPlugin(conf: {
   pkgPath: TNormPath;
   dev: boolean;
+  emitOnly: boolean;
+  noEmit: boolean;
   modifiedFileSet: Set<TNormPath>;
   result: ISdCliNgPluginResultCache;
   watchScopePathSet: ScopePathSet;
@@ -32,6 +34,8 @@ export function createSdNgPlugin(conf: {
         additionalOptions: { declaration: false },
         isDevMode: conf.dev,
         isForBundle: true,
+        isEmitOnly: conf.emitOnly,
+        isNoEmit: conf.noEmit,
         watchScopePathSet: conf.watchScopePathSet,
       });
 
@@ -41,13 +45,15 @@ export function createSdNgPlugin(conf: {
       //-- js babel transformer
       const javascriptTransformer = new JavaScriptTransformer(
         {
-          thirdPartySourcemaps: conf.dev,
+          thirdPartySourcemaps: false, //conf.dev,
           sourcemap: conf.dev,
           jit: false,
-          advancedOptimizations: true,
+          advancedOptimizations: !conf.dev,
         },
-        os.cpus().length,
+        Math.floor((os.cpus().length * 2) / 3),
       );
+
+      let cssStore = new Map<TNormPath, Buffer>();
 
       //---------------------------
 
@@ -60,6 +66,8 @@ export function createSdNgPlugin(conf: {
           }
 
           tsCompileResult = await tsCompiler.compileAsync(conf.modifiedFileSet);
+
+          cssStore.clear();
 
           conf.result.watchFileSet = tsCompileResult.watchFileSet;
           conf.result.affectedFileSet = tsCompileResult.affectedFileSet;
@@ -85,36 +93,90 @@ export function createSdNgPlugin(conf: {
           };
         });
 
-        perf.start("transform & bundling");
+        perf.start("esbuild transform & bundling");
         return res;
       });
 
+      build.onResolve({ filter: /\.css$/ }, (args) => {
+        if (args.path.startsWith("sd-css-asset:")) return;
+        return {
+          path: path.resolve(args.resolveDir, args.path),
+          namespace: "sd-css",
+        };
+      });
+
+      build.onLoad({ filter: /\.css$/, namespace: "sd-css" }, async (args) => {
+        const code = /* language=javascript */ `
+import href from "sd-css-asset:${PathUtils.posix(args.path)}"
+(function __sdEnsureStyle(href) {
+  let link = document.querySelector('link[data-sd-style="' + href + '"]');
+  if (link) return;
+  link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.setAttribute('data-sd-style', href);
+  link.href = href;
+  document.head.appendChild(link);
+})(href);`;
+
+        if (FsUtils.exists(args.path)) {
+          const css = await FsUtils.readFileBufferAsync(args.path);
+          cssStore.set(PathUtils.norm(args.path), css);
+        }
+
+        return { contents: code, loader: "js", resolveDir: path.dirname(args.path) };
+      });
+
+      build.onResolve({ filter: /^sd-css-asset:/ }, (args) => {
+        const real = args.path.replace(/^sd-css-asset:/, "");
+        return { path: real, namespace: "sd-css-asset" };
+      });
+
+      build.onLoad({ filter: /\.css$/, namespace: "sd-css-asset" }, (args) => {
+        const cssContent = cssStore.get(
+          PathUtils.norm(args.path.replace(/[\\\/]src[\\\/]/, "\\dist\\")),
+        );
+        if (cssContent == null) {
+          return { errors: [{ text: `Missing CSS for ${PathUtils.norm(args.path)}` }] };
+        }
+
+        return {
+          contents: cssContent,
+          loader: "file",
+          resolveDir: path.dirname(args.path),
+        };
+      });
+
       build.onLoad({ filter: /\.ts$/ }, async (args) => {
+        const emittedFiles = tsCompileResult.emittedFilesCacheMap.get(PathUtils.norm(args.path));
+
+        try {
+          const css = emittedFiles?.single((item) => Boolean(item.outAbsPath?.endsWith(".css")));
+          if (css) {
+            cssStore.set(PathUtils.norm(css.outAbsPath!), Buffer.from(css.text));
+          }
+        } catch (err) {
+          console.error(
+            emittedFiles?.map((item) => item.outAbsPath),
+            err,
+          );
+          return { errors: [{ text: err?.message ?? String(err) }] };
+        }
+
         const output = outputContentsCacheMap.get(PathUtils.norm(args.path));
         if (output != null) {
           return { contents: output, loader: "js" };
         }
 
-        const emittedJsFile = tsCompileResult.emittedFilesCacheMap.get(PathUtils.norm(args.path))?.last();
-        /*if (!emittedJsFile) {
-          return {
-            errors: [
-              {
-                text: `ts 빌더 결과 emit 파일이 존재하지 않습니다. ${args.path}`,
-              },
-            ],
-          };
-        }
-        const contents = emittedJsFile.text;*/
-
-        const contents = emittedJsFile?.text ?? "";
+        const contents = emittedFiles?.last()?.text ?? "";
 
         const { sideEffects } = await build.resolve(args.path, {
           kind: "import-statement",
           resolveDir: build.initialOptions.absWorkingDir ?? "",
         });
 
-        const newContents = await javascriptTransformer.transformData(args.path, contents, true, sideEffects);
+        const newContents = await perf.run("esbuild transform:js:*.ts", async () => {
+          return await javascriptTransformer.transformData(args.path, contents, true, sideEffects);
+        });
 
         outputContentsCacheMap.set(PathUtils.norm(args.path), newContents);
 
@@ -135,7 +197,22 @@ export function createSdNgPlugin(conf: {
         });
 
         try {
-          const newContents = await javascriptTransformer.transformFile(args.path, false, sideEffects);
+          const newContents = await perf.run("esbuild transform:js:*.js", async () => {
+            /*return /\.min\.[cm]?js$/.test(args.path)
+              ? await FsUtils.readFileBufferAsync(args.path)
+              : await javascriptTransformer.transformFile(args.path, false, sideEffects);*/
+
+            const contents = await FsUtils.readFileBufferAsync(args.path);
+
+            return args.path.includes("node_modules") && !args.path.includes("angular")
+              ? contents
+              : await javascriptTransformer.transformData(
+                  args.path,
+                  contents.toString(),
+                  false,
+                  sideEffects,
+                );
+          });
 
           outputContentsCacheMap.set(PathUtils.norm(args.path), newContents);
 
@@ -144,31 +221,28 @@ export function createSdNgPlugin(conf: {
             loader: "js",
           };
         } catch (err) {
-          return {
+          return { errors: [{ text: err?.message ?? String(err) }] };
+          /*return {
             contents: `console.error(${JSON.stringify(err.message)});`,
             loader: "js",
-          };
+          };*/
         }
       });
 
-      build.onLoad(
-        {
-          filter: new RegExp(
-            "(" +
-              Object.keys(build.initialOptions.loader!)
-                .map((item) => "\\" + item)
-                .join("|") +
-              ")$",
-          ),
-        },
-        (args) => {
-          conf.result.watchFileSet!.add(PathUtils.norm(args.path));
-          return null;
-        },
+      const otherLoaderFilter = new RegExp(
+        "(" +
+          Object.keys(build.initialOptions.loader ?? {})
+            .map((ext) => "\\" + ext)
+            .join("|") +
+          ")$",
       );
+      build.onLoad({ filter: otherLoaderFilter }, (args) => {
+        conf.result.watchFileSet!.add(PathUtils.norm(args.path));
+        return null;
+      });
 
       build.onEnd((result) => {
-        perf.end("transform & bundling");
+        perf.end("esbuild transform & bundling");
         debug(perf.toString());
 
         for (const stylesheetBundlingResult of tsCompileResult.stylesheetBundlingResultMap.values()) {
@@ -177,8 +251,14 @@ export function createSdNgPlugin(conf: {
             result.outputFiles.push(...stylesheetBundlingResult.outputFiles);
 
             if (result.metafile) {
-              result.metafile.inputs = { ...result.metafile.inputs, ...stylesheetBundlingResult.metafile.inputs };
-              result.metafile.outputs = { ...result.metafile.outputs, ...stylesheetBundlingResult.metafile.outputs };
+              result.metafile.inputs = {
+                ...result.metafile.inputs,
+                ...stylesheetBundlingResult.metafile.inputs,
+              };
+              result.metafile.outputs = {
+                ...result.metafile.outputs,
+                ...stylesheetBundlingResult.metafile.outputs,
+              };
             }
           }
         }

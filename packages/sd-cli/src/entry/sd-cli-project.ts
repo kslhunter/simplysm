@@ -17,15 +17,19 @@ export class SdCliProject {
     options?: string[];
     packages?: string[];
     inspects?: string[];
+    emitOnly?: boolean;
+    noEmit?: boolean;
   }): Promise<void> {
     const logger = SdLogger.get(["simplysm", "sd-cli", "SdCliProject", "watchAsync"]);
 
     logger.debug("프로젝트 설정 가져오기...");
     const projConf = await loadProjConfAsync(process.cwd(), true, opt);
 
-    if (projConf.localUpdates) {
-      logger.debug("로컬 라이브러리 업데이트 변경감지 시작...");
-      await SdCliLocalUpdate.watchAsync(opt);
+    if (!opt.noEmit) {
+      if (projConf.localUpdates) {
+        logger.debug("로컬 라이브러리 업데이트 변경감지 시작...");
+        await SdCliLocalUpdate.watchAsync(opt);
+      }
     }
 
     logger.debug("프로젝트 package.json 가져오기...");
@@ -72,6 +76,8 @@ export class SdCliProject {
         pkgPath,
         projConf: projConf,
         workspaces: projNpmConf.workspaces!,
+        emitOnly: opt.emitOnly ?? false,
+        noEmit: opt.noEmit ?? false,
       });
     });
   }
@@ -118,6 +124,8 @@ export class SdCliProject {
         pkgPath,
         projConf: projConf,
         workspaces: projNpmConf.workspaces!,
+        emitOnly: false,
+        noEmit: false,
       });
     });
     this.#logging(messages.mapMany(), logger);
@@ -184,6 +192,8 @@ export class SdCliProject {
             pkgPath,
             projConf: projConf,
             workspaces: projNpmConf.workspaces!,
+            emitOnly: false,
+            noEmit: false,
           });
         });
 

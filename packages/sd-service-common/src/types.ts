@@ -1,5 +1,5 @@
 export type TSdServiceS2CMessage =
-  ISdServiceClientReloadCommand
+  | ISdServiceClientReloadCommand
   | ISdServiceClientGetIdCommand
   | ISdServiceClientConnectedAlarm
   | ISdServiceResponse
@@ -7,12 +7,14 @@ export type TSdServiceS2CMessage =
   | ISdServiceSplitResponse
   | ISdServiceEmittedEvent;
 
-export type TSdServiceC2SMessage = ISdServiceClientGetIdResponse
+export type TSdServiceC2SMessage =
+  | ISdServiceClientGetIdResponse
   | ISdServiceRequest
   | ISdServiceSplitRequest;
 
 interface ISdServiceClientReloadCommand {
   name: "client-reload";
+  clientName: string | undefined;
   changedFileSet: Set<string>;
 }
 

@@ -48,7 +48,7 @@ createSdWorker<TServerWorkerType>({
   setPathProxy(pathProxy: Record<string, string | number>) {
     server.pathProxy = pathProxy;
   },
-  broadcastReload(changedFileSet: Set<string>) {
-    server.broadcastReload(changedFileSet);
+  broadcastReload(clientName: string | undefined, changedFileSet: Set<string>) {
+    server.broadcastReload(clientName, changedFileSet);
   },
 });

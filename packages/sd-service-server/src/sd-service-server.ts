@@ -119,9 +119,9 @@ export class SdServiceServer extends EventEmitter {
     this.emit("close");
   }
 
-  broadcastReload(changedFileSet: Set<string>): void {
+  broadcastReload(clientName: string | undefined, changedFileSet: Set<string>): void {
     this.#logger.debug("서버내 모든 클라이언트 RELOAD 명령 전송");
-    this.#ws?.broadcastReload(changedFileSet);
+    this.#ws?.broadcastReload(clientName, changedFileSet);
   }
 
   emitEvent<T extends SdServiceEventListenerBase<any, any>>(

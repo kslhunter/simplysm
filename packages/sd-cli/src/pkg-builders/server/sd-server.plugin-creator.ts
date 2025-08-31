@@ -9,6 +9,8 @@ import { ScopePathSet } from "../commons/scope-path";
 export function createSdServerPlugin(conf: {
   pkgPath: TNormPath;
   dev: boolean;
+  emitOnly: boolean;
+  noEmit: boolean;
   modifiedFileSet: Set<TNormPath>;
   result: ISdCliServerPluginResultCache;
   watchScopePathSet: ScopePathSet;
@@ -20,6 +22,8 @@ export function createSdServerPlugin(conf: {
         pkgPath: conf.pkgPath,
         additionalOptions: { declaration: false },
         isDevMode: conf.dev,
+        isNoEmit: conf.noEmit,
+        isEmitOnly: conf.emitOnly,
         isForBundle: true,
         watchScopePathSet: conf.watchScopePathSet,
       });
@@ -40,7 +44,8 @@ export function createSdServerPlugin(conf: {
       });
 
       build.onLoad({ filter: /\.ts$/ }, (args) => {
-        const emittedJsFile = tsCompileResult.emittedFilesCacheMap.get(PathUtils.norm(args.path))
+        const emittedJsFile = tsCompileResult.emittedFilesCacheMap
+          .get(PathUtils.norm(args.path))
           ?.last();
         if (!emittedJsFile) {
           return {
@@ -65,10 +70,10 @@ export function createSdServerPlugin(conf: {
         {
           filter: new RegExp(
             "(" +
-            Object.keys(build.initialOptions.loader!)
-              .map((item) => "\\" + item)
-              .join("|") +
-            ")$",
+              Object.keys(build.initialOptions.loader!)
+                .map((item) => "\\" + item)
+                .join("|") +
+              ")$",
           ),
         },
         (args) => {

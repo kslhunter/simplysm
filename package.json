@@ -20,6 +20,9 @@
   },
   "scripts": {
     "watch": "yarn run _sd-cli_ --debug watch",
+    "watch --emitOnly": "yarn run _sd-cli_ --debug watch --emitOnly",
+    "watch --noEmit": "yarn run _sd-cli_ --debug watch --noEmit",
+    "watch:sd-core": "yarn run _sd-cli_ --debug watch --packages sd-core-common sd-core-browser sd-core-node",
     "watch:sd-angular": "yarn run _sd-cli_ --debug watch --packages sd-angular",
     "build": "yarn run _sd-cli_ build",
     "publish": "yarn run _sd-cli_ publish",
@@ -37,7 +40,7 @@
     "postinstall": "yarn run _sd-cli_ postinstall"
   },
   "devDependencies": {
-    "@types/node": "^22.17.2",
+    "@types/node": "^22.18.0",
     "cross-env": "^10.0.0",
     "eslint": "^9.34.0",
     "glob": "^11.0.3",

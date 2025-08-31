@@ -18,8 +18,7 @@ if (process.env["SD_DEBUG"] != null) {
       level: SdLoggerSeverity.debug,
     },
   });
-}
-else {
+} else {
   SdLogger.setConfig({
     dot: true,
   });
@@ -38,7 +37,13 @@ const worker = createSdWorker<TSdBuildRunnerWorkerType>({
             ? SdTsLibBuildRunner
             : SdJsLibBuildRunner;
 
-    const builder = new buildRunnerType(req.projConf, req.pkgPath, req.workspaces)
+    const builder = new buildRunnerType(
+      req.projConf,
+      req.pkgPath,
+      req.workspaces,
+      req.emitOnly,
+      req.noEmit,
+    )
       .on("change", () => {
         worker.send("change");
       })
@@ -49,8 +54,7 @@ const worker = createSdWorker<TSdBuildRunnerWorkerType>({
     if (req.cmd === "build") {
       const res = await builder.buildAsync();
       return res.buildMessages;
-    }
-    else {
+    } else {
       await builder.watchAsync();
       return;
     }

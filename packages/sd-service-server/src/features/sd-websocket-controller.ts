@@ -134,9 +134,9 @@ export class SdWebsocketController {
     });
   }
 
-  broadcastReload(changedFileSet: Set<string>) {
+  broadcastReload(clientName: string | undefined, changedFileSet: Set<string>) {
     for (const client of this.#server.clients) {
-      this.#send(client, { name: "client-reload", changedFileSet });
+      this.#send(client, { name: "client-reload", clientName, changedFileSet });
     }
   }
 

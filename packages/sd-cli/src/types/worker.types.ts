@@ -2,15 +2,13 @@ import { ISdBuildRunnerWorkerRequest } from "./build-runner.types";
 import { ISdBuildMessage, ISdBuildRunnerResult } from "./build.types";
 import { ESLint } from "eslint";
 import { TNormPath } from "@simplysm/sd-core-node";
-import {
-  ComponentStylesheetResult,
-} from "@angular/build/src/tools/esbuild/angular/component-stylesheets";
+import { ComponentStylesheetResult } from "@angular/build/src/tools/esbuild/angular/component-stylesheets";
 
 export interface TServerWorkerType {
   methods: {
     listen: { params: [{ path: string } | { port: number }]; returnType: number };
     setPathProxy: { params: [Record<string, string | number>]; returnType: void };
-    broadcastReload: { params: [Set<string>]; returnType: void };
+    broadcastReload: { params: [string | undefined, Set<string>]; returnType: void };
   };
   events: {};
 }
@@ -40,15 +38,14 @@ export interface TSdBuildRunnerWorkerType {
   };
 }
 
-
 export interface TStyleBundlerWorkerType {
   methods: {
-    prepare: { params: [string, boolean]; returnType: void },
+    prepare: { params: [string, boolean]; returnType: void };
     bundle: {
-      params: [string, TNormPath, TNormPath | null],
-      returnType: ComponentStylesheetResult
-    },
-    invalidate: { params: [Set<TNormPath>], returnType: void }
+      params: [string, TNormPath, TNormPath | null];
+      returnType: ComponentStylesheetResult;
+    };
+    invalidate: { params: [Set<TNormPath>]; returnType: void };
   };
   events: {};
 }

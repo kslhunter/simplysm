@@ -9,6 +9,8 @@ export interface SdTsCompilerOptions {
   additionalOptions: CompilerOptions;
   isForBundle: boolean;
   isDevMode: boolean;
+  isEmitOnly: boolean;
+  isNoEmit: boolean;
   watchScopePathSet: ScopePathSet;
   globalStyleFilePath?: TNormPath;
   /*processWebWorker?: (
@@ -26,14 +28,16 @@ export interface ISdTsCompilerResult {
   affectedFileSet: Set<TNormPath>;
 }
 
-export type TStylesheetBundlingResult = {
-  errors: esbuild.PartialMessage[];
-  warnings: esbuild.PartialMessage[];
-  contents?: string;
-} | {
-  errors: undefined;
-  warnings: esbuild.PartialMessage[];
-  metafile: esbuild.Metafile;
-  outputFiles: esbuild.OutputFile[];
-  contents: string;
-}
+export type TStylesheetBundlingResult =
+  | {
+      errors: esbuild.PartialMessage[];
+      warnings: esbuild.PartialMessage[];
+      contents?: string;
+    }
+  | {
+      errors: undefined;
+      warnings: esbuild.PartialMessage[];
+      metafile: esbuild.Metafile;
+      outputFiles: esbuild.OutputFile[];
+      contents: string;
+    };

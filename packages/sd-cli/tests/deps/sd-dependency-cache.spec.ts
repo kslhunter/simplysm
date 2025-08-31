@@ -108,7 +108,7 @@ describe("SdDependencyCache", () => {
 
     // 내부 캐시 확인
     expect(depCache["_exportCache"].has(a)).toBe(false);
-    expect(depCache["_revDepCache"].get(a)?.has(b)).toBeFalsy(); // unefined
+    expect(depCache["#revDepCache"].get(a)?.has(b)).toBeFalsy(); // unefined
   });
 
   it("getAffectedFileTree()는 영향도를 트리 형태로 표현한다", () => {

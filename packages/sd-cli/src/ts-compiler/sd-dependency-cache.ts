@@ -4,14 +4,14 @@ export class SdDependencyCache {
   /**
    * 각 파일이 export한 심볼 집합 (예: export const A → "A")
    */
-  private _exportCache = new Map<TNormPath, Set<string>>();
+  #exportCache = new Map<TNormPath, Set<string>>();
 
   /**
    * import한 타겟과 그 심볼 정보
    * - 값이 0이면 전체 import(import * 또는 리소스 import)
    * - 값이 Set이면 선택적 심볼 import (예: import { A } ...)
    */
-  private _importCache = new Map<TNormPath, Map<TNormPath, Set<string> | 0>>();
+  #importCache = new Map<TNormPath, Map<TNormPath, Set<string> | 0>>();
 
   /**
    * re-export한 타겟과 그 심볼 정보
@@ -19,7 +19,7 @@ export class SdDependencyCache {
    * - export { A as B } from ...
    * - 값이 0이면 전체 reexport(export * from ...)
    */
-  private _reexportCache = new Map<
+  #reexportCache = new Map<
     TNormPath,
     Map<
       TNormPath,
@@ -36,14 +36,14 @@ export class SdDependencyCache {
    * - 특정 파일이 어떤 파일에게 의존(참조)되는지
    * - symbol 기반 추적
    */
-  private _revDepCache = new Map<TNormPath, Map<TNormPath, Set<string> | 0>>();
+  #revDepCache = new Map<TNormPath, Map<TNormPath, Set<string> | 0>>();
 
   /**
    * 분석이 완료된 파일 경로
    */
-  private _collectedCache = new Set<TNormPath>();
+  #collectedCache = new Set<TNormPath>();
 
-  private _exportSymbolCache = new Map<TNormPath, Set<string>>();
+  #exportSymbolCache = new Map<TNormPath, Set<string>>();
 
   /**
    * .d.ts 또는 .js가 입력되었을 때 쌍으로 존재하는 파일 경로를 반환
@@ -62,21 +62,21 @@ export class SdDependencyCache {
   /**
    * 전체 추적된 파일 경로를 반환
    */
-  getFiles(): Set<TNormPath> {
-    return new Set<TNormPath>([...this._collectedCache.keys(), ...this._revDepCache.keys()]);
-  }
+  // getFiles(): Set<TNormPath> {
+  //   return new Set<TNormPath>([...this.#collectedCache.keys(), ...this.revDepCache.keys()]);
+  // }
 
   /**
    * 분석이 완료된 파일로 표시
    */
   addCollected(fileNPath: TNormPath) {
     for (const path of this.#getRelatedNPaths(fileNPath)) {
-      this._collectedCache.add(path);
+      this.#collectedCache.add(path);
     }
   }
 
   hasCollected(fileNPath: TNormPath) {
-    return this._collectedCache.has(fileNPath);
+    return this.#collectedCache.has(fileNPath);
   }
 
   /**
@@ -85,7 +85,7 @@ export class SdDependencyCache {
    */
   addExport(fileNPath: TNormPath, exportSymbol: string) {
     for (const path of this.#getRelatedNPaths(fileNPath)) {
-      const exportSymbolSet = this._exportCache.getOrCreate(path, new Set());
+      const exportSymbolSet = this.#exportCache.getOrCreate(path, new Set());
       exportSymbolSet.add(exportSymbol);
     }
   }
@@ -97,17 +97,17 @@ export class SdDependencyCache {
    */
   addImport(fileNPath: TNormPath, targetNPath: TNormPath, targetSymbol: string | 0) {
     for (const filePath of this.#getRelatedNPaths(fileNPath)) {
-      for (const targetPath of this.#getRelatedNPaths(targetNPath)) {
-        const importTargetMap = this._importCache.getOrCreate(filePath, new Map());
+      const importTargetMap = this.#importCache.getOrCreate(filePath, new Map());
 
-        if (targetSymbol === 0) {
-          importTargetMap.set(targetPath, 0);
-          this.#addRevDep(targetPath, filePath, 0);
-        } else {
+      for (const targetPath of this.#getRelatedNPaths(targetNPath)) {
+        if (typeof targetSymbol === "string") {
           const importTargetSymbolSet = importTargetMap.getOrCreate(targetPath, new Set());
-          if (importTargetSymbolSet === 0) return;
+          if (!(importTargetSymbolSet instanceof Set)) continue;
 
           importTargetSymbolSet.add(targetSymbol);
+          this.#addRevDep(targetPath, filePath, targetSymbol);
+        } else {
+          importTargetMap.set(targetPath, targetSymbol);
           this.#addRevDep(targetPath, filePath, targetSymbol);
         }
       }
@@ -129,9 +129,9 @@ export class SdDependencyCache {
       | 0,
   ) {
     for (const filePath of this.#getRelatedNPaths(fileNPath)) {
-      for (const targetPath of this.#getRelatedNPaths(targetNPath)) {
-        const reexportTargetMap = this._reexportCache.getOrCreate(filePath, new Map());
+      const reexportTargetMap = this.#reexportCache.getOrCreate(filePath, new Map());
 
+      for (const targetPath of this.#getRelatedNPaths(targetNPath)) {
         if (targetSymbolInfo === 0) {
           reexportTargetMap.set(targetPath, 0);
           this.#addRevDep(targetPath, filePath, 0);
@@ -159,15 +159,16 @@ export class SdDependencyCache {
    */
   #addRevDep(targetNPath: TNormPath, fileNPath: TNormPath, exportSymbol: string | 0) {
     for (const targetPath of this.#getRelatedNPaths(targetNPath)) {
+      const revDepInfoMap = this.#revDepCache.getOrCreate(targetPath, new Map());
+
       for (const filePath of this.#getRelatedNPaths(fileNPath)) {
-        const revDepInfoMap = this._revDepCache.getOrCreate(targetPath, new Map());
-        if (exportSymbol === 0) {
-          revDepInfoMap.set(filePath, 0);
-        } else {
+        if (typeof exportSymbol === "string") {
           const exportSymbolSet = revDepInfoMap.getOrCreate(filePath, new Set());
-          if (exportSymbolSet === 0) return;
+          if (!(exportSymbolSet instanceof Set)) continue;
 
           exportSymbolSet.add(exportSymbol);
+        } else {
+          revDepInfoMap.set(filePath, exportSymbol);
         }
       }
     }
@@ -229,6 +230,7 @@ export class SdDependencyCache {
 
     return result;
   }*/
+
   getAffectedFileMap(modifiedNPathSet: Set<TNormPath>): Map<TNormPath, Set<TNormPath>> {
     const resultMap = new Map<TNormPath, Set<TNormPath>>();
 
@@ -259,7 +261,7 @@ export class SdDependencyCache {
 
       while (queue.length > 0) {
         const curr = queue.shift()!;
-        const revDepInfoMap = this._revDepCache.get(curr.fileNPath);
+        const revDepInfoMap = this.#revDepCache.get(curr.fileNPath);
         if (!revDepInfoMap) continue;
 
         for (const [revDepFileNPath, revDepInfo] of revDepInfoMap) {
@@ -292,21 +294,30 @@ export class SdDependencyCache {
   invalidates(fileNPathSet: Set<TNormPath>) {
     // const affectedFileMap = this.getAffectedFileMap(fileNPathSet);
 
+    const revDepCacheChanged = new Set<TNormPath>();
+
     for (const fileNPath of fileNPathSet) {
-      this._exportCache.delete(fileNPath);
-      this._importCache.delete(fileNPath);
-      this._reexportCache.delete(fileNPath);
-      this._collectedCache.delete(fileNPath);
-      this._revDepCache.delete(fileNPath); // 자신이 key인 경우
-      this._exportSymbolCache.delete(fileNPath);
+      this.#exportCache.delete(fileNPath);
+      this.#importCache.delete(fileNPath);
+      this.#reexportCache.delete(fileNPath);
+      this.#exportSymbolCache.delete(fileNPath);
+      this.#collectedCache.delete(fileNPath);
+
+      if (this.#revDepCache.has(fileNPath)) {
+        this.#revDepCache.delete(fileNPath); // 자신이 key인 경우
+        revDepCacheChanged.add(fileNPath);
+      }
     }
 
-    for (const [targetNPath, infoMap] of this._revDepCache) {
+    for (const [targetNPath, infoMap] of this.#revDepCache) {
       for (const fileNPath of fileNPathSet) {
-        infoMap.delete(fileNPath);
+        if (infoMap.has(fileNPath)) {
+          infoMap.delete(fileNPath);
+          revDepCacheChanged.add(targetNPath);
+        }
       }
       if (infoMap.size === 0) {
-        this._revDepCache.delete(targetNPath);
+        this.#revDepCache.delete(targetNPath);
       }
     }
   }
@@ -314,8 +325,12 @@ export class SdDependencyCache {
   /**
    * reexport된 경우 importSymbol → exportSymbol로 변환
    */
-  #convertImportSymbolToExportSymbol(fileNPath: TNormPath, targetNPath: TNormPath, importSymbol: string) {
-    const symbolInfos = this._reexportCache.get(fileNPath)?.get(targetNPath);
+  #convertImportSymbolToExportSymbol(
+    fileNPath: TNormPath,
+    targetNPath: TNormPath,
+    importSymbol: string,
+  ) {
+    const symbolInfos = this.#reexportCache.get(fileNPath)?.get(targetNPath);
     if (symbolInfos != null && symbolInfos !== 0 && symbolInfos.length > 0) {
       const symbolInfo = symbolInfos.single((item) => item.importSymbol === importSymbol);
       if (symbolInfo) return symbolInfo.exportSymbol;
@@ -327,17 +342,17 @@ export class SdDependencyCache {
    * 해당 파일에서 export된 모든 심볼 (직접 + 재export 포함)
    */
   #getExportSymbols(fileNPath: TNormPath): Set<string> {
-    if (this._exportSymbolCache.has(fileNPath)) {
-      return this._exportSymbolCache.get(fileNPath)!;
+    if (this.#exportSymbolCache.has(fileNPath)) {
+      return this.#exportSymbolCache.get(fileNPath)!;
     }
 
     const result = new Set<string>();
 
     for (const path of this.#getRelatedNPaths(fileNPath)) {
-      const set = this._exportCache.get(path);
+      const set = this.#exportCache.get(path);
       if (set) result.adds(...set);
 
-      const map = this._reexportCache.get(path);
+      const map = this.#reexportCache.get(path);
       if (map) {
         for (const [key, val] of map) {
           if (val === 0) {
@@ -349,7 +364,7 @@ export class SdDependencyCache {
       }
     }
 
-    this._exportSymbolCache.set(fileNPath, result);
+    this.#exportSymbolCache.set(fileNPath, result);
     return result;
   }
 
@@ -357,62 +372,66 @@ export class SdDependencyCache {
    * 변경된 파일로부터 영향을 받는 전체 트리를 반환
    * - 의존 관계를 시각화 및 구조적으로 추적할 수 있도록 트리 형태로 구성
    */
-  getAffectedFileTree(modifiedNPathSet: Set<TNormPath>): ISdAffectedFileTreeNode[] {
-    const visited = new Set<string>();
-    const nodeMap = new Map<string, ISdAffectedFileTreeNode>();
-
-    const buildTree = (fileNPath: TNormPath, exportSymbol: string | undefined): ISdAffectedFileTreeNode => {
-      const key = `${fileNPath}#${exportSymbol ?? "*"}`;
-      if (nodeMap.has(key)) return nodeMap.get(key)!;
-
-      visited.add(key);
-
-      const node: ISdAffectedFileTreeNode = {
-        fileNPath,
-        children: [],
-      };
-      nodeMap.set(key, node);
-
-      const revDepInfoMap = this._revDepCache.get(fileNPath);
-      if (!revDepInfoMap) return node;
-
-      for (const [revDepFileNPath, revDepInfo] of revDepInfoMap.entries()) {
-        const hasImportSymbol = exportSymbol == null || revDepInfo === 0 || revDepInfo.has(exportSymbol);
-        if (!hasImportSymbol) continue;
-
-        const nextExportSymbol =
-          exportSymbol != null
-            ? this.#convertImportSymbolToExportSymbol(revDepFileNPath, fileNPath, exportSymbol)
-            : undefined;
-
-        const childKey = `${revDepFileNPath}#${nextExportSymbol ?? "*"}`;
-        if (visited.has(childKey)) continue;
-
-        const childNode = buildTree(revDepFileNPath, nextExportSymbol);
-        node.children.push(childNode);
-      }
-
-      return node;
-    };
-
-    const result: ISdAffectedFileTreeNode[] = [];
-
-    for (const modifiedNPath of modifiedNPathSet) {
-      for (const path of this.#getRelatedNPaths(modifiedNPath)) {
-        result.push(buildTree(path, undefined)); // root는 symbol상관없이
-        /*const exportSymbols = this.#getExportSymbols(path);
-        if (exportSymbols.size === 0) {
-          result.push(buildTree(path, undefined));
-        } else {
-          for (const symbol of exportSymbols) {
-            result.push(buildTree(path, symbol));
-          }
-        }*/
-      }
-    }
-
-    return result;
-  }
+  // getAffectedFileTree(modifiedNPathSet: Set<TNormPath>): ISdAffectedFileTreeNode[] {
+  //   const visited = new Set<string>();
+  //   const nodeMap = new Map<string, ISdAffectedFileTreeNode>();
+  //
+  //   const buildTree = (
+  //     fileNPath: TNormPath,
+  //     exportSymbol: string | undefined,
+  //   ): ISdAffectedFileTreeNode => {
+  //     const key = `${fileNPath}#${exportSymbol ?? "*"}`;
+  //     if (nodeMap.has(key)) return nodeMap.get(key)!;
+  //
+  //     visited.add(key);
+  //
+  //     const node: ISdAffectedFileTreeNode = {
+  //       fileNPath,
+  //       children: [],
+  //     };
+  //     nodeMap.set(key, node);
+  //
+  //     const revDepInfoMap = this.revDepCache.get(fileNPath);
+  //     if (!revDepInfoMap) return node;
+  //
+  //     for (const [revDepFileNPath, revDepInfo] of revDepInfoMap.entries()) {
+  //       const hasImportSymbol =
+  //         exportSymbol == null || revDepInfo === 0 || revDepInfo.has(exportSymbol);
+  //       if (!hasImportSymbol) continue;
+  //
+  //       const nextExportSymbol =
+  //         exportSymbol != null
+  //           ? this.#convertImportSymbolToExportSymbol(revDepFileNPath, fileNPath, exportSymbol)
+  //           : undefined;
+  //
+  //       const childKey = `${revDepFileNPath}#${nextExportSymbol ?? "*"}`;
+  //       if (visited.has(childKey)) continue;
+  //
+  //       const childNode = buildTree(revDepFileNPath, nextExportSymbol);
+  //       node.children.push(childNode);
+  //     }
+  //
+  //     return node;
+  //   };
+  //
+  //   const result: ISdAffectedFileTreeNode[] = [];
+  //
+  //   for (const modifiedNPath of modifiedNPathSet) {
+  //     for (const path of this.#getRelatedNPaths(modifiedNPath)) {
+  //       result.push(buildTree(path, undefined)); // root는 symbol상관없이
+  //       /*const exportSymbols = this.#getExportSymbols(path);
+  //       if (exportSymbols.size === 0) {
+  //         result.push(buildTree(path, undefined));
+  //       } else {
+  //         for (const symbol of exportSymbols) {
+  //           result.push(buildTree(path, symbol));
+  //         }
+  //       }*/
+  //     }
+  //   }
+  //
+  //   return result;
+  // }
 }
 
 export interface ISdAffectedFileTreeNode {

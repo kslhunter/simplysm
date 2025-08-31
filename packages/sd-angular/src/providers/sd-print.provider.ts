@@ -28,7 +28,7 @@ export class SdPrintProvider {
     await new Promise<void>((resolve, reject) => {
       try {
         //-- busy
-        this.#sdBusy.globalBusyCount.update(v => v + 1);
+        this.#sdBusy.globalBusyCount.update((v) => v + 1);
 
         //-- comp
         const compRef = createComponent(template.type, {
@@ -75,7 +75,7 @@ export class SdPrintProvider {
             reject(err);
           } finally {
             try {
-              this.#sdBusy.globalBusyCount.update(v => v - 1);
+              this.#sdBusy.globalBusyCount.update((v) => v - 1);
               styleEl.remove();
               compRef.destroy();
             } catch {}
@@ -96,7 +96,7 @@ export class SdPrintProvider {
     return await new Promise<Buffer>((resolve, reject) => {
       try {
         //-- busy
-        this.#sdBusy.globalBusyCount.update(v => v + 1);
+        this.#sdBusy.globalBusyCount.update((v) => v + 1);
 
         //-- comp
         const compRef = createComponent(template.type, {
@@ -165,7 +165,7 @@ export class SdPrintProvider {
             reject(err);
           } finally {
             try {
-              this.#sdBusy.globalBusyCount.update(v => v - 1);
+              this.#sdBusy.globalBusyCount.update((v) => v - 1);
               styleEl.remove();
               compRef.destroy();
             } catch {}

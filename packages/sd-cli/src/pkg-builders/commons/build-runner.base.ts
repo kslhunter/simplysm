@@ -1,11 +1,20 @@
 import { EventEmitter } from "events";
-import { FsUtils, ISdFsWatcherChangeInfo, PathUtils, SdFsWatcher, SdLogger, TNormPath } from "@simplysm/sd-core-node";
+import {
+  FsUtils,
+  ISdFsWatcherChangeInfo,
+  PathUtils,
+  SdFsWatcher,
+  SdLogger,
+  TNormPath,
+} from "@simplysm/sd-core-node";
 import { ISdProjectConfig, TSdPackageConfig } from "../../types/config.types";
 import { ISdBuildMessage, ISdBuildRunnerResult } from "../../types/build.types";
 import path from "path";
 import { ScopePathSet } from "./scope-path";
 
-export abstract class BuildRunnerBase<T extends "server" | "library" | "client"> extends EventEmitter {
+export abstract class BuildRunnerBase<
+  T extends "server" | "library" | "client",
+> extends EventEmitter {
   protected abstract _logger: SdLogger;
 
   protected _pkgName: string;
@@ -24,6 +33,8 @@ export abstract class BuildRunnerBase<T extends "server" | "library" | "client">
     projConf: ISdProjectConfig,
     protected _pkgPath: TNormPath,
     workspaceGlobs: string[],
+    protected _emitOnly: boolean,
+    protected _noEmit: boolean,
   ) {
     super();
 
@@ -31,24 +42,27 @@ export abstract class BuildRunnerBase<T extends "server" | "library" | "client">
     this._pkgConf = projConf.packages[this._pkgName] as TSdPackageConfig<T>;
 
     const workspacePaths = workspaceGlobs
-      .map((item) => PathUtils.posix(this._pkgPath, "../../", item))
+      .map((item) => PathUtils.posix(this._pkgPath, "../../", item, "src"))
       .mapMany((item) => FsUtils.glob(item));
-    const localUpdatePaths = Object.keys(projConf.localUpdates ?? {}).mapMany((key) =>
-      FsUtils.glob(path.resolve(this._pkgPath, "../../node_modules", key)),
-    );
+    const localUpdatePaths = Object.keys(projConf.localUpdates ?? {}).mapMany((key) => [
+      ...FsUtils.glob(path.resolve(this._pkgPath, "../../node_modules", key, "dist")),
+      ...FsUtils.glob(path.resolve(this._pkgPath, "../../node_modules", key, "src/**/*.scss")),
+    ]);
     this._watchScopePathSet = new ScopePathSet(
       [...workspacePaths, ...localUpdatePaths].map((item) => PathUtils.norm(item)),
     );
   }
 
   async buildAsync(): Promise<ISdBuildRunnerResult> {
-    const distPath = path.resolve(this._pkgPath, "dist");
-    if (FsUtils.exists(distPath)) {
-      this._debug("dist 초기화...");
-      FsUtils.remove(distPath);
+    if (!this._noEmit) {
+      const distPath = path.resolve(this._pkgPath, "dist");
+      if (FsUtils.exists(distPath)) {
+        this._debug("dist 초기화...");
+        FsUtils.remove(distPath);
+      }
     }
 
-    const result = await this._runAsync(false);
+    const result = await this._runAsync(false, false, false);
     return {
       affectedFilePathSet: result.affectedFileSet,
       buildMessages: result.buildMessages,
@@ -59,13 +73,19 @@ export abstract class BuildRunnerBase<T extends "server" | "library" | "client">
   async watchAsync() {
     this.emit("change");
 
-    const distPath = path.resolve(this._pkgPath, "dist");
-    if (FsUtils.exists(distPath)) {
-      this._debug("dist 초기화...");
-      FsUtils.remove(distPath);
+    if (!this._noEmit) {
+      const distPath = path.resolve(this._pkgPath, "dist");
+      if (FsUtils.exists(distPath)) {
+        this._debug("dist 초기화...");
+        FsUtils.remove(distPath);
+      }
     }
 
-    const result = await this._runAsync(!this._pkgConf.forceProductionMode);
+    const result = await this._runAsync(
+      !this._pkgConf.forceProductionMode,
+      this._emitOnly,
+      this._noEmit,
+    );
     const res: ISdBuildRunnerResult = {
       affectedFilePathSet: result.affectedFileSet,
       buildMessages: result.buildMessages,
@@ -77,17 +97,17 @@ export abstract class BuildRunnerBase<T extends "server" | "library" | "client">
     let lastWatchFileSet = result.watchFileSet;
     SdFsWatcher.watch(this._watchScopePathSet.toArray(), {
       ignore: (filePath) =>
-        filePath === path.resolve(this._pkgPath, ".cache") ||
-        filePath === path.resolve(this._pkgPath, ".cordova") ||
-        filePath === path.resolve(this._pkgPath, ".electron") ||
-        filePath === path.resolve(this._pkgPath, "dist") ||
-        (this._pkgConf.type === "client" && filePath === path.resolve(this._pkgPath, "src", "routes.ts")) ||
+        (this._pkgConf.type === "client" &&
+          path.dirname(path.basename(filePath)) === "src" &&
+          path.basename(filePath) === `routes.ts`) ||
         (this._pkgConf.type === "library" &&
           this._pkgConf.dbContext != null &&
-          filePath === path.resolve(this._pkgPath, "src", `${this._pkgConf.dbContext}.ts`)) ||
+          path.dirname(path.basename(filePath)) === "src" &&
+          path.basename(filePath) === `${this._pkgConf.dbContext}.ts`) ||
         (this._pkgConf.type === "library" &&
           !this._pkgConf.noGenIndex &&
-          filePath === path.resolve(this._pkgPath, "src", "index.ts")),
+          path.dirname(path.basename(filePath)) === "src" &&
+          path.basename(filePath) === "index.ts"),
     }).onChange({ delay: 100 }, async (changeInfos) => {
       const modifiedFileSet = this._getModifiedFileSet(changeInfos, lastWatchFileSet);
 
@@ -97,7 +117,12 @@ export abstract class BuildRunnerBase<T extends "server" | "library" | "client">
 
       let watchResult: IBuildRunnerRunResult;
       try {
-        watchResult = await this._runAsync(!this._pkgConf.forceProductionMode, modifiedFileSet);
+        watchResult = await this._runAsync(
+          !this._pkgConf.forceProductionMode,
+          this._emitOnly,
+          this._noEmit,
+          modifiedFileSet,
+        );
 
         lastWatchFileSet = watchResult.watchFileSet;
       } catch (err) {
@@ -126,18 +151,38 @@ export abstract class BuildRunnerBase<T extends "server" | "library" | "client">
     });
   }
 
-  protected _getModifiedFileSet(changeInfos: ISdFsWatcherChangeInfo[], lastWatchFileSet?: Set<TNormPath>) {
-    return new Set(
-      (lastWatchFileSet
-        ? changeInfos.filter((item) =>
-            Array.from(lastWatchFileSet).some((item1) => item.path.startsWith(path.dirname(item1))),
+  protected _getModifiedFileSet(
+    changeInfos: ISdFsWatcherChangeInfo[],
+    lastWatchFileSet?: Set<TNormPath>,
+  ) {
+    if (!lastWatchFileSet) {
+      return new Set(changeInfos.map((item) => item.path));
+    } else {
+      return new Set(
+        changeInfos
+          .filter(
+            (item) =>
+              Array.from(lastWatchFileSet).some((item1) =>
+                item.path.startsWith(path.dirname(item1)),
+              ) ||
+              ((this._pkgConf.type === "client" ||
+                (this._pkgConf.type === "library" && this._pkgConf.dbContext != null) ||
+                (this._pkgConf.type === "library" && this._pkgConf.noGenIndex)) &&
+                item.path.startsWith(path.resolve(this._pkgPath, "src")) &&
+                item.path.endsWith(".ts") &&
+                item.event === "add"),
           )
-        : changeInfos
-      ).map((item) => item.path),
-    );
+          .map((item) => item.path),
+      );
+    }
   }
 
-  protected abstract _runAsync(dev: boolean, modifiedFileSet?: Set<TNormPath>): Promise<IBuildRunnerRunResult>;
+  protected abstract _runAsync(
+    dev: boolean,
+    emitOnly: boolean,
+    noEmit: boolean,
+    modifiedFileSet?: Set<TNormPath>,
+  ): Promise<IBuildRunnerRunResult>;
 
   protected _debug(msg: string): void {
     this._logger.debug(`[${path.basename(this._pkgPath)}] ${msg}`);
