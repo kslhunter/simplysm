@@ -108,6 +108,7 @@ export * from "./providers/sd-system-config.provider";
 export * from "./providers/sd-system-log.provider";
 export * from "./providers/sd-theme.provider";
 export * from "./providers/sd-toast.provider";
+export * from "./sd-hmr-bootstrap";
 export * from "./utils/bindings/$afterRenderComputed";
 export * from "./utils/bindings/$afterRenderEffect";
 export * from "./utils/bindings/$computed";

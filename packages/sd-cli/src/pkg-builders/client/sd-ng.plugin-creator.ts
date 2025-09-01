@@ -132,9 +132,9 @@ import href from "sd-css-asset:${PathUtils.posix(args.path)}"
       });
 
       build.onLoad({ filter: /\.css$/, namespace: "sd-css-asset" }, (args) => {
-        const cssContent = cssStore.get(
-          PathUtils.norm(args.path.replace(/[\\\/]src[\\\/]/, "\\dist\\")),
-        );
+        const cssContent =
+          cssStore.get(PathUtils.norm(args.path)) ??
+          cssStore.get(PathUtils.norm(args.path.replace(/[\\\/]src[\\\/]/, "\\dist\\")));
         if (cssContent == null) {
           return { errors: [{ text: `Missing CSS for ${PathUtils.norm(args.path)}` }] };
         }
@@ -155,11 +155,16 @@ import href from "sd-css-asset:${PathUtils.posix(args.path)}"
             cssStore.set(PathUtils.norm(css.outAbsPath!), Buffer.from(css.text));
           }
         } catch (err) {
-          console.error(
-            emittedFiles?.map((item) => item.outAbsPath),
-            err,
-          );
-          return { errors: [{ text: err?.message ?? String(err) }] };
+          return {
+            errors: [
+              {
+                text:
+                  (err?.message ?? String(err)) +
+                  "\n" +
+                  emittedFiles?.map((item) => "- " + item.outAbsPath).join("\n"),
+              },
+            ],
+          };
         }
 
         const output = outputContentsCacheMap.get(PathUtils.norm(args.path));
