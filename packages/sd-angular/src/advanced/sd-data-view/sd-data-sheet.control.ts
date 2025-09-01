@@ -66,6 +66,7 @@ import { SdAnchorControl } from "../../controls/sd-anchor.control";
   template: `
     <sd-base-container
       [busy]="parent.busyCount() > 0"
+      [busyMessage]="parent.busyMessage()"
       [viewType]="parent.viewType()"
       [initialized]="parent.initialized()"
       [restricted]="!parent.canUse()"
@@ -511,6 +512,7 @@ export abstract class AbsSdDataSheet<
   viewType = useViewTypeSignal(() => this);
 
   busyCount = $signal(0);
+  busyMessage = input<string>();
   initialized = $signal(false);
   close = output<ISelectModalOutputResult<TItem>>();
   submitted = output<boolean>();
