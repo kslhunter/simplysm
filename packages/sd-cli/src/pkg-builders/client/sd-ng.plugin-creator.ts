@@ -45,7 +45,7 @@ export function createSdNgPlugin(conf: {
       //-- js babel transformer
       const javascriptTransformer = new JavaScriptTransformer(
         {
-          thirdPartySourcemaps: false, //conf.dev,
+          thirdPartySourcemaps: conf.dev,
           sourcemap: conf.dev,
           jit: false,
           advancedOptimizations: !conf.dev,

@@ -7,6 +7,7 @@ import {
   effect,
   HostListener,
   inject,
+  input,
   output,
   Signal,
   TemplateRef,
@@ -49,6 +50,7 @@ import { SdAnchorControl } from "../../controls/sd-anchor.control";
   template: `
     <sd-base-container
       [busy]="parent.busyCount() > 0"
+      [busyMessage]="parent.busyMessage()"
       [viewType]="parent.viewType()"
       [initialized]="parent.initialized()"
       [restricted]="!parent.canUse()"
@@ -248,6 +250,7 @@ export abstract class AbsSdDataDetail<T extends object, R = boolean> implements 
   viewType = useViewTypeSignal(() => this);
 
   busyCount = $signal(0);
+  busyMessage = input<string>();
   initialized = $signal(false);
   close = output<R>();
   actionTplRef?: TemplateRef<any>;

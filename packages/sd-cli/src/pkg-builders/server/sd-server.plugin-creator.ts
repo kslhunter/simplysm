@@ -47,7 +47,7 @@ export function createSdServerPlugin(conf: {
         const emittedJsFile = tsCompileResult.emittedFilesCacheMap
           .get(PathUtils.norm(args.path))
           ?.last();
-        if (!emittedJsFile) {
+        /*if (!emittedJsFile) {
           return {
             errors: [
               {
@@ -55,10 +55,9 @@ export function createSdServerPlugin(conf: {
               },
             ],
           };
-        }
+        }*/
 
-        const contents = emittedJsFile.text;
-        return { contents, loader: "js" };
+        return { contents: emittedJsFile?.text, loader: "js" };
       });
 
       build.onLoad({ filter: /\.[cm]?js$/ }, (args) => {

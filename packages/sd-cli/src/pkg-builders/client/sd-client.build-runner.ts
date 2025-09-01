@@ -82,6 +82,12 @@ export class SdClientBuildRunner extends BuildRunnerBase<"client"> {
     }
 
     if (noEmit) {
+      if (modifiedFileSet) {
+        for (const ngBundler of this.#ngBundlers!) {
+          ngBundler.markForChanges(Array.from(modifiedFileSet));
+        }
+      }
+
       this._debug(`BUILD...`);
       const buildResults = await Promise.all(
         this.#ngBundlers!.map((builder) => builder.bundleAsync()),
