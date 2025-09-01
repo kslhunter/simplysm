@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/server-test",
-  "version": "12.13.18",
+  "version": "12.13.19",
   "description": "Simplysm test server",
   "author": "김석래",
   "repository": {
@@ -13,7 +13,7 @@
   "private": true,
   "main": "dist/main.js",
   "dependencies": {
-    "@simplysm/sd-core-node": "12.13.18",
-    "@simplysm/sd-service-server": "12.13.18"
+    "@simplysm/sd-core-node": "12.13.19",
+    "@simplysm/sd-service-server": "12.13.19"
   }
 }
