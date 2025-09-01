@@ -131,7 +131,10 @@ await yargs(hideBin(process.argv))
             describe: "수행할 패키지 설정",
           },
         }),
-    async (argv) => await SdCliProject.buildAsync(argv),
+    async (argv) => {
+      await SdCliProject.buildAsync(argv);
+      process.exit(0);
+    },
   )
   .command(
     "publish",
@@ -163,7 +166,10 @@ await yargs(hideBin(process.argv))
             describe: "수행할 패키지 설정",
           },
         }),
-    async (argv) => await SdCliProject.publishAsync(argv),
+    async (argv) => {
+      await SdCliProject.publishAsync(argv);
+      process.exit(0);
+    },
   )
   .command(
     "run-electron <package>",

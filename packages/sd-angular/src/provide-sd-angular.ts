@@ -29,6 +29,7 @@ import {
 import { SdBusyProvider } from "./providers/sd-busy.provider";
 import { SwUpdate } from "@angular/service-worker";
 import { SdGlobalErrorHandlerPlugin } from "./plugins/sd-global-error-handler.plugin";
+import { IMAGE_CONFIG } from "@angular/common";
 
 export function provideSdAngular(opt: {
   clientName: string;
@@ -37,6 +38,13 @@ export function provideSdAngular(opt: {
   icons: ISdAngularIcon;
 }): EnvironmentProviders {
   return makeEnvironmentProviders([
+    {
+      provide: IMAGE_CONFIG,
+      useValue: {
+        disableImageSizeWarning: true,
+        disableImageLazyLoadWarning: true,
+      },
+    },
     provideEnvironmentInitializer(() => {
       const _sdNgConf = inject(SdAngularConfigProvider);
       const _sdTheme = inject(SdThemeProvider);

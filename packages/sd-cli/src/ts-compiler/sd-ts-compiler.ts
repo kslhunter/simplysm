@@ -72,7 +72,7 @@ export class SdTsCompiler {
             strict: false,
             noImplicitAny: false,
             noImplicitThis: false,
-            strictNullChecks: false,
+            strictNullChecks: true,
             strictFunctionTypes: false,
             strictBindCallApply: false,
             strictPropertyInitialization: false,

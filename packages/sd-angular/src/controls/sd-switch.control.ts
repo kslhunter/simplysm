@@ -66,7 +66,6 @@ import { transformBoolean } from "../utils/type-tramsforms";
         }
 
         &[data-sd-size="lg"] {
-          font-size: var(--font-size-lg);
           padding: var(--gap-default) 0;
         }
 

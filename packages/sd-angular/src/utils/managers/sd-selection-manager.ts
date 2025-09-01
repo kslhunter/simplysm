@@ -53,6 +53,14 @@ export class SdSelectionManager<T> {
     }
   }
 
+  deselect(item: T) {
+    this._options.selectedItems.update((list) => list.filter((item1) => item1 !== item));
+  }
+
+  getIsSelected(item: T) {
+    return this._options.selectedItems().includes(item);
+  }
+
   toggle(item: T) {
     if (this._options.selectedItems().includes(item)) {
       this._options.selectedItems.update((list) => list.filter((i) => i !== item));

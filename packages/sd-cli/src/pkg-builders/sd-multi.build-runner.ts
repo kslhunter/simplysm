@@ -138,11 +138,12 @@ export class SdMultiBuildRunner extends EventEmitter {
             serverInfo.pkgInfo = pkgConf.server;
           }
 
-          serverInfo.clients[pkgName] = {
+          serverInfo.clients[pkgName] = serverInfo.clients[pkgName] ?? {
             path: path.resolve(req.pkgPath, "dist"),
             buildTypes: (pkgConf.builder ? Object.keys(pkgConf.builder) : ["web"]) as any,
-            changedFileSet: result.emitFileSet,
+            changedFileSet: new Set(),
           };
+          serverInfo.clients[pkgName].changedFileSet.adds(...result.emitFileSet);
         } else {
           const serverInfo = this.#serverInfoMap.getOrCreate(pkgName, {
             hasChanges: true,
@@ -151,7 +152,7 @@ export class SdMultiBuildRunner extends EventEmitter {
             clients: {},
           });
 
-          serverInfo.clientChangedFileSet = result.emitFileSet;
+          serverInfo.clientChangedFileSet.adds(...result.emitFileSet);
         }
       }
 
@@ -198,6 +199,7 @@ export class SdMultiBuildRunner extends EventEmitter {
                         .map((item) => path.relative(serverInfo.clients[clientName].path, item)),
                     ),
                   ]);
+                  serverInfo.clients[clientName].changedFileSet = new Set();
                 }
               } else if (serverInfo.clientChangedFileSet.size > 0) {
                 this.#logger.debug("클라이언트 새로고침...");
@@ -209,6 +211,7 @@ export class SdMultiBuildRunner extends EventEmitter {
                       .map((item) => path.relative(serverInfo.clientPath!, item)),
                   ),
                 ]);
+                serverInfo.clientChangedFileSet = new Set();
               }
             }
           }

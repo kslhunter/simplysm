@@ -5,6 +5,7 @@ import {
   contentChildren,
   HostListener,
   inject,
+  Injector,
   input,
   model,
   output,
@@ -39,6 +40,7 @@ import {
 import { FaIconComponent, FaLayersComponent } from "@fortawesome/angular-fontawesome";
 import { SdButtonControl } from "../sd-button.control";
 import { SdAnchorControl } from "../sd-anchor.control";
+import { NumberUtils } from "@simplysm/sd-core-common";
 
 @Component({
   selector: "sd-sheet",
@@ -244,6 +246,7 @@ import { SdAnchorControl } from "../sd-anchor.control";
                     [value]="selectedItems().includes(item)"
                     (valueChange)="selectionManager.toggle(item)"
                     [canChangeFn]="selectionManager.getCanChangeFn(item)"
+                    (mousedown)="onSelectorMouseDown($event, r)"
                     [inline]="true"
                     theme="white"
                     [disabled]="_selectable !== true"
@@ -579,6 +582,7 @@ export class SdSheetControl<T> {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
 
   #sdModal = inject(SdModalProvider);
+  #injector = inject(Injector);
 
   hideConfigBar = input(false, { transform: transformBoolean });
   inset = input(false, { transform: transformBoolean });
@@ -798,6 +802,34 @@ export class SdSheetControl<T> {
     selectMode: this.selectMode,
     getItemSelectableFn: this.getItemSelectableFn,
   });
+
+  onSelectorMouseDown(event: MouseEvent, r: number): void {
+    if (!event.shiftKey) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    const focusedEl = document.activeElement as HTMLElement;
+    const focusedTrEl =
+      focusedEl.tagName.toLowerCase() === "tr" ? focusedEl : focusedEl.findParent("tr");
+    if (focusedTrEl instanceof HTMLTableRowElement) {
+      const fr = NumberUtils.parseInt(focusedTrEl.getAttribute("data-r"));
+      if (fr != null) {
+        setTimeout(() => {
+          const isSelect = this.selectionManager.getIsSelected(this.displayItems()[fr]);
+          for (let i = Math.min(fr, r); i <= Math.max(fr, r); i++) {
+            if (isSelect) {
+              this.selectionManager.select(this.displayItems()[i]);
+            } else {
+              this.selectionManager.deselect(this.displayItems()[i]);
+            }
+          }
+        }, 100);
+      }
+    }
+
+    this.domAccessor.getRow(r)?.findFocusableFirst()?.focus();
+  }
 
   onItemCellClick(item: T): void {
     if (this.autoSelect() !== "click") return;

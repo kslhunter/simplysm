@@ -73,16 +73,20 @@ export class SdServiceClient extends EventEmitter {
           if (Array.from(msg.changedFileSet).every((item) => item.endsWith(".css"))) {
             for (const changedFile of msg.changedFileSet) {
               const href = "./" + changedFile.replaceAll(/[\\/]/g, "/");
-              const link = document.createElement("link");
-              link.rel = "stylesheet";
-              link.setAttribute("data-sd-style", href);
-              link.href = href;
-              const head = document.getElementsByTagName("head")[0];
-              head.appendChild(link);
-              link.onload = () => {
-                const style = document.querySelector(`[data-sd-style="${href}"]`);
-                if (style) style.remove();
-              };
+              const oldStyle = document.querySelector(`link[data-sd-style="${href}"]`) as
+                | HTMLLinkElement
+                | undefined;
+              if (oldStyle) {
+                oldStyle.href = `${href}?t=${Date.now()}`;
+              }
+
+              const oldGlobalStyle = document.querySelector(
+                `link[data-sd-style="${changedFile}"],[href="${changedFile}"]`,
+              ) as HTMLLinkElement | undefined;
+              if (oldGlobalStyle) {
+                oldGlobalStyle.setAttribute("data-sd-style", changedFile);
+                oldGlobalStyle.href = `${changedFile}?t=${Date.now()}`;
+              }
             }
           } else {
             if (window["__sd_hmr_destroy"] != null) {
