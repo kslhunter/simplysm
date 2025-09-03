@@ -53,7 +53,7 @@ export function createSdNgPlugin(conf: {
         Math.floor((os.cpus().length * 2) / 3),
       );
 
-      let cssStore = new Map<TNormPath, Buffer>();
+      // let cssStore = new Map<TNormPath, Buffer>();
 
       //---------------------------
 
@@ -67,7 +67,7 @@ export function createSdNgPlugin(conf: {
 
           tsCompileResult = await tsCompiler.compileAsync(conf.modifiedFileSet);
 
-          cssStore.clear();
+          // cssStore.clear();
 
           conf.result.watchFileSet = tsCompileResult.watchFileSet;
           conf.result.affectedFileSet = tsCompileResult.affectedFileSet;
@@ -97,7 +97,7 @@ export function createSdNgPlugin(conf: {
         return res;
       });
 
-      build.onResolve({ filter: /\.css$/ }, (args) => {
+      /*build.onResolve({ filter: /\.css$/ }, (args) => {
         if (args.path.startsWith("sd-css-asset:")) return;
         return {
           path: path.resolve(args.resolveDir, args.path),
@@ -106,7 +106,7 @@ export function createSdNgPlugin(conf: {
       });
 
       build.onLoad({ filter: /\.css$/, namespace: "sd-css" }, async (args) => {
-        const code = /* language=javascript */ `
+        const code = /!* language=javascript *!/ `
 import href from "sd-css-asset:${PathUtils.posix(args.path)}"
 (function __sdEnsureStyle(href) {
   let link = document.querySelector('link[data-sd-style="' + href + '"]');
@@ -136,7 +136,14 @@ import href from "sd-css-asset:${PathUtils.posix(args.path)}"
           cssStore.get(PathUtils.norm(args.path)) ??
           cssStore.get(PathUtils.norm(args.path.replace(/[\\\/]src[\\\/]/, "\\dist\\")));
         if (cssContent == null) {
-          return { errors: [{ text: `Missing CSS for ${PathUtils.norm(args.path)}` }] };
+          return {
+            errors: [
+              {
+                location: null,
+                text: `Missing CSS for ${PathUtils.norm(args.path)}`,
+              },
+            ],
+          };
         }
 
         return {
@@ -144,12 +151,12 @@ import href from "sd-css-asset:${PathUtils.posix(args.path)}"
           loader: "file",
           resolveDir: path.dirname(args.path),
         };
-      });
+      });*/
 
       build.onLoad({ filter: /\.ts$/ }, async (args) => {
         const emittedFiles = tsCompileResult.emittedFilesCacheMap.get(PathUtils.norm(args.path));
 
-        try {
+        /*try {
           const css = emittedFiles?.single((item) => Boolean(item.outAbsPath?.endsWith(".css")));
           if (css) {
             cssStore.set(PathUtils.norm(css.outAbsPath!), Buffer.from(css.text));
@@ -165,7 +172,7 @@ import href from "sd-css-asset:${PathUtils.posix(args.path)}"
               },
             ],
           };
-        }
+        }*/
 
         const output = outputContentsCacheMap.get(PathUtils.norm(args.path));
         if (output != null) {
@@ -188,7 +195,7 @@ import href from "sd-css-asset:${PathUtils.posix(args.path)}"
         return { contents: newContents, loader: "js" };
       });
 
-      build.onLoad({ filter: /\.[cm]?js$/ }, async (args) => {
+      build.onLoad({ filter: /\.mjs$/ }, async (args) => {
         conf.result.watchFileSet!.add(PathUtils.norm(args.path));
 
         const output = outputContentsCacheMap.get(PathUtils.norm(args.path));
@@ -209,14 +216,12 @@ import href from "sd-css-asset:${PathUtils.posix(args.path)}"
 
             const contents = await FsUtils.readFileBufferAsync(args.path);
 
-            return args.path.includes("node_modules") && !args.path.includes("angular")
-              ? contents
-              : await javascriptTransformer.transformData(
-                  args.path,
-                  contents.toString(),
-                  false,
-                  sideEffects,
-                );
+            return await javascriptTransformer.transformData(
+              args.path,
+              contents.toString(),
+              false,
+              sideEffects,
+            );
           });
 
           outputContentsCacheMap.set(PathUtils.norm(args.path), newContents);

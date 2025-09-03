@@ -1,5 +1,11 @@
 /* eslint-disable no-console */
-import { ApplicationConfig, ApplicationRef, destroyPlatform, Type } from "@angular/core";
+import {
+  ApplicationConfig,
+  ApplicationRef,
+  destroyPlatform,
+  Type,
+  ɵresetCompiledComponents,
+} from "@angular/core";
 import { bootstrapApplication } from "@angular/platform-browser";
 
 export async function sdHmrBootstrapAsync(
@@ -13,13 +19,16 @@ export async function sdHmrBootstrapAsync(
         try {
           const appRef = await bootstrapApplication(rootComponent, options);
 
-          Object.assign(window, {
-            __sd_hmr_destroy: () => {
-              document.removeEventListener("deviceready", bootstrap, false);
-              appRef.destroy();
-              destroyPlatform();
-            },
-          });
+          if (typeof ngDevMode === "undefined" || ngDevMode) {
+            Object.assign(window, {
+              __sd_hmr_destroy: () => {
+                document.removeEventListener("deviceready", bootstrap, false);
+                ɵresetCompiledComponents();
+                appRef.destroy();
+                destroyPlatform();
+              },
+            });
+          }
 
           resolve(appRef);
         } catch (err) {
@@ -33,12 +42,15 @@ export async function sdHmrBootstrapAsync(
     try {
       const appRef = await bootstrapApplication(rootComponent, options);
 
-      Object.assign(window, {
-        __sd_hmr_destroy: () => {
-          appRef.destroy();
-          destroyPlatform();
-        },
-      });
+      if (typeof ngDevMode === "undefined" || ngDevMode) {
+        Object.assign(window, {
+          __sd_hmr_destroy: () => {
+            ɵresetCompiledComponents();
+            appRef.destroy();
+            destroyPlatform();
+          },
+        });
+      }
 
       return appRef;
     } catch (err) {

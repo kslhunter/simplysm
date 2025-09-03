@@ -512,7 +512,7 @@ export abstract class AbsSdDataSheet<
   viewType = useViewTypeSignal(() => this);
 
   busyCount = $signal(0);
-  busyMessage = input<string>();
+  busyMessage = $signal<string>();
   initialized = $signal(false);
   close = output<ISelectModalOutputResult<TItem>>();
   submitted = output<boolean>();

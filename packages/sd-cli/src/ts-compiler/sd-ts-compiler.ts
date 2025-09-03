@@ -171,7 +171,7 @@ export class SdTsCompiler {
             context.resourceFile != null ? PathUtils.norm(context.resourceFile) : undefined,
           );
 
-          if (!styleBundleResult.cached && !StringUtils.isNullOrEmpty(styleBundleResult.contents)) {
+          /*if (!styleBundleResult.cached && !StringUtils.isNullOrEmpty(styleBundleResult.contents)) {
             const relPath = path.relative(
               path.resolve(this._opt.pkgPath, "src"),
               context.containingFile,
@@ -186,11 +186,11 @@ export class SdTsCompiler {
             );
             cache.remove((item) => item.outAbsPath === outAbsPath);
             cache.push({ outAbsPath, text: styleBundleResult.contents });
-          }
+          }*/
 
           return StringUtils.isNullOrEmpty(styleBundleResult.contents)
             ? null
-            : { content: "" /*styleBundleResult.contents*/ };
+            : { content: styleBundleResult.contents };
         };
       }
 
@@ -508,7 +508,7 @@ export class SdTsCompiler {
             }),
           );
 
-          (transformers.before ??= []).push(this.#createExternalizeComponentStylesTransformer());
+          // (transformers.before ??= []).push(this.#createExternalizeComponentStylesTransformer());
         }
 
         this.#debug(`파일 출력 중...`);
@@ -517,8 +517,8 @@ export class SdTsCompiler {
         // 비교해보니, 딱히 getSourceFiles라서 더 느려지는것 같지는 않음
         // 그래도 affected로 다시 테스트 (조금이라도 더 빠르게)
         for (const affectedFile of [
-          ...prepareResult.affectedFileSet /*,
-        ...prepareResult.styleAffectedFileSet,*/,
+          ...prepareResult.affectedFileSet,
+          ...prepareResult.styleAffectedFileSet,
         ]) {
           if (
             this.#emittedFilesCacheMap
@@ -595,168 +595,27 @@ export class SdTsCompiler {
     };
   }
 
-  #createExternalizeComponentStylesTransformer() {
+  /*#createExternalizeComponentStylesTransformer() {
     const f = ts.factory;
 
-    /*function makeEnsureStyleFunc() {
-      // function __sdEnsureStyle(href) { ... }
-      const hrefParam = f.createParameterDeclaration(undefined, undefined, "href");
-
-      // const d = document;
-      const declD = f.createVariableStatement(
-        undefined,
-        f.createVariableDeclarationList(
-          [f.createVariableDeclaration("d", undefined, undefined, f.createIdentifier("document"))],
-          ts.NodeFlags.Const,
-        ),
-      );
-
-      // let link = d.querySelector(`link[data-sd-style="${href}"]`);
-      const tpl = f.createTemplateExpression(f.createTemplateHead('link[data-sd-style="'), [
-        f.createTemplateSpan(f.createIdentifier("href"), f.createTemplateTail('"]')),
-      ]);
-      const declLink = f.createVariableStatement(
-        undefined,
-        f.createVariableDeclarationList(
-          [
-            f.createVariableDeclaration(
-              "link",
-              undefined,
-              undefined,
-              f.createCallExpression(
-                f.createPropertyAccessExpression(f.createIdentifier("d"), "querySelector"),
-                undefined,
-                [tpl],
-              ),
-            ),
-          ],
-          ts.NodeFlags.Let,
-        ),
-      );
-
-      // if (link) return;
-      const ifReturn = f.createIfStatement(
-        f.createIdentifier("link"),
-        f.createBlock([f.createReturnStatement()], true),
-      );
-
-      // link = d.createElement('link');
-      const mkLink = f.createExpressionStatement(
-        f.createBinaryExpression(
-          f.createIdentifier("link"),
-          ts.SyntaxKind.EqualsToken,
-          f.createCallExpression(
-            f.createPropertyAccessExpression(f.createIdentifier("d"), "createElement"),
-            undefined,
-            [f.createStringLiteral("link")],
-          ),
-        ),
-      );
-
-      // link.rel = 'stylesheet';
-      const setRel = f.createExpressionStatement(
-        f.createBinaryExpression(
-          f.createPropertyAccessExpression(f.createIdentifier("link"), "rel"),
-          ts.SyntaxKind.EqualsToken,
-          f.createStringLiteral("stylesheet"),
-        ),
-      );
-
-      // link.setAttribute('data-sd-style', href);
-      const setData = f.createExpressionStatement(
-        f.createCallExpression(
-          f.createPropertyAccessExpression(f.createIdentifier("link"), "setAttribute"),
-          undefined,
-          [f.createStringLiteral("data-sd-style"), f.createIdentifier("href")],
-        ),
-      );
-
-      // link.href = href;
-      const setHref = f.createExpressionStatement(
-        f.createBinaryExpression(
-          f.createPropertyAccessExpression(f.createIdentifier("link"), "href"),
-          ts.SyntaxKind.EqualsToken,
-          f.createIdentifier("href"),
-        ),
-      );
-
-      // d.head.appendChild(link);
-      const append = f.createExpressionStatement(
-        f.createCallExpression(
-          f.createPropertyAccessExpression(
-            f.createPropertyAccessExpression(f.createIdentifier("d"), "head"),
-            "appendChild",
-          ),
-          undefined,
-          [f.createIdentifier("link")],
-        ),
-      );
-
-      const body = f.createBlock(
-        [declD, declLink, ifReturn, mkLink, setRel, setData, setHref, append],
-        true,
-      );
-
-      return f.createFunctionDeclaration(
-        undefined,
-        undefined,
-        f.createIdentifier("__sdEnsureStyle"),
-        undefined,
-        [hrefParam],
-        undefined,
-        body,
-      );
-    }
-
-    function makeEnsureCallInStatic(href: string) {
-      return f.createExpressionStatement(
-        f.createCallExpression(
-          f.createIdentifier("__sdEnsureStyle"),
-          undefined,
-          [f.createStringLiteral(href)], // 필요하면 devBust 인자도 추가 가능
-        ),
-      );
-    }
-
-    const upsertEnsureStyleHelper = (sf: ts.SourceFile): ts.SourceFile => {
-      // 이미 있으면 스킵
-      if (
-        sf.statements.some((s) => ts.isFunctionDeclaration(s) && s.name?.text === "__sdEnsureStyle")
-      ) {
-        return sf;
-      }
-
-      const fn = makeEnsureStyleFunc();
-
-      const href = path.basename(sf.fileName).replace(/\.ts$/, ".css");
-      const call = makeEnsureCallInStatic(href);
-
-      if (this._opt.isForBundle) {
-        return f.updateSourceFile(sf, [fn, call, ...sf.statements]);
-      } else {
-        const importTarget = "./" + path.basename(sf.fileName).replace(/\.ts$/, ".css");
-        const importDecl = f.createImportDeclaration(
-          undefined,
-          undefined,
-          f.createStringLiteral(importTarget),
-        );
-
-        return f.updateSourceFile(sf, [fn, call, importDecl, ...sf.statements]);
-      }
-    };*/
-
     function upsertEnsureStyleHelper(sf: ts.SourceFile): ts.SourceFile {
-      // 이미 있으면 스킵
+      const importTarget = "./" + path.basename(sf.fileName).replace(/\.ts$/, ".css");
+
+      // 이미 동일한 import가 있으면 스킵
       if (
-        sf.statements.some((s) => ts.isFunctionDeclaration(s) && s.name?.text === "__sdEnsureStyle")
+        sf.statements.some(
+          (s) =>
+            ts.isImportDeclaration(s) &&
+            ts.isStringLiteral(s.moduleSpecifier) &&
+            s.moduleSpecifier.text === importTarget,
+        )
       ) {
         return sf;
       }
 
-      const importTarget = "./" + path.basename(sf.fileName).replace(/\.ts$/, ".css");
       const importDecl = f.createImportDeclaration(
-        undefined, // decorators
-        undefined, // modifiers
+        undefined,
+        undefined,
         f.createStringLiteral(importTarget),
       );
 
@@ -834,7 +693,7 @@ export class SdTsCompiler {
         return ts.visitNode(realSf, visitor) as ts.SourceFile;
       };
     };
-  }
+  }*/
 
   #convertOutputToReal(filePath: string, distPath: string, text: string) {
     let realFilePath = PathUtils.norm(filePath);

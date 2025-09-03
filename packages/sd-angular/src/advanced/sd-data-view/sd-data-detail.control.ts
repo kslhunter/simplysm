@@ -7,7 +7,6 @@ import {
   effect,
   HostListener,
   inject,
-  input,
   output,
   Signal,
   TemplateRef,
@@ -250,7 +249,7 @@ export abstract class AbsSdDataDetail<T extends object, R = boolean> implements 
   viewType = useViewTypeSignal(() => this);
 
   busyCount = $signal(0);
-  busyMessage = input<string>();
+  busyMessage = $signal<string>();
   initialized = $signal(false);
   close = output<R>();
   actionTplRef?: TemplateRef<any>;

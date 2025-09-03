@@ -94,12 +94,14 @@ export class SdServiceClient extends EventEmitter {
 
               const old = document.querySelector("app-root");
               if (old) old.remove();
-              document.body.appendChild(document.createElement("app-root"));
+              document.body.prepend(document.createElement("app-root"));
 
               await (
                 await import(`/${msg.clientName}/main.js?t=${Date.now()}`)
               ).default;
-              console.clear();
+              /*requestAnimationFrame(() => {
+                console.clear();
+              });*/
             } else {
               location.reload();
             }

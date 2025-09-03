@@ -141,7 +141,9 @@ export abstract class DbContextExt extends DbContext {
     const userConfig = await db.userConfig
       .where((item) => [db.qh.equal(item.userId, userId), db.qh.equal(item.code, key)])
       .singleAsync();
-    return userConfig?.valueJson !== undefined ? JsonConvert.parse(userConfig.valueJson) : undefined;
+    return userConfig?.valueJson !== undefined
+      ? JsonConvert.parse(userConfig.valueJson)
+      : undefined;
   }
 
   async writeSystemLog(
@@ -162,7 +164,11 @@ export abstract class DbContextExt extends DbContext {
     );
   }
 
-  async createUniqueCodes(option: { prefix: string; seqLength: number; count: number }): Promise<string[]> {
+  async createUniqueCodes(option: {
+    prefix: string;
+    seqLength?: number;
+    count: number;
+  }): Promise<string[]> {
     const db = this;
 
     const lastSeq =
@@ -181,7 +187,11 @@ export abstract class DbContextExt extends DbContext {
     const items: UniqueCode[] = [];
     for (let i = 0; i < option.count; i++) {
       const seq = newSeq + i;
-      const code = option.prefix + seq.toString().padStart(option.seqLength, "0");
+      const code =
+        option.prefix +
+        (option.seqLength != null
+          ? seq.toString().padStart(option.seqLength, "0")
+          : seq.toString());
       items.push({ seq, code });
     }
 
