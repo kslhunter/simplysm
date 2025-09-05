@@ -220,7 +220,7 @@ export class SdDataDetailControl {
   }
 
   async onSubmit() {
-    await this.parent.doSubmit(true);
+    await this.parent.doSubmit({ permCheck: true });
   }
 }
 
@@ -324,13 +324,15 @@ export abstract class AbsSdDataDetail<T extends object, R = boolean> implements 
     this.busyCount.update((v) => v - 1);
   }
 
-  async doSubmit(permCheck?: boolean) {
+  async doSubmit(opt?: { permCheck?: boolean; hideNoChangeMessage?: boolean }) {
     if (this.busyCount() > 0) return;
-    if (permCheck && !this.canEdit()) return;
+    if (opt?.permCheck && !this.canEdit()) return;
     if (!this.submit) return;
 
     if (!this.dataInfo()?.isNew && !$obj(this.data).changed()) {
-      this.#sdToast.info("변경사항이 없습니다.");
+      if (!opt?.hideNoChangeMessage) {
+        this.#sdToast.info("변경사항이 없습니다.");
+      }
       return;
     }
 

@@ -36,7 +36,7 @@ import { ISdSelectModal, TSdSelectModalInfo } from "../sd-data-view/sd-data-sele
 
       @if (!disabled()) {
         <sd-button (click)="onModalButtonClick($event)" inset>
-          <fa-icon [icon]="icons.search" />
+          <fa-icon [icon]="searchIcon()" />
         </sd-button>
       }
     </sd-additional-button>
@@ -72,6 +72,9 @@ export class SdModalSelectButton<
   inset = input(false, { transform: transformBoolean });
   size = input<"sm" | "lg">();
   selectMode = input<M>("single" as M);
+
+  searchIcon = input(this.icons.search);
+
   isNoValue = $computed(() => {
     return (
       this.value() == null ||

@@ -426,7 +426,7 @@ export class SdDataSheetControl {
   }
 
   async onSubmit() {
-    await this.parent.doSubmit(true);
+    await this.parent.doSubmit({ permCheck: true });
   }
 
   async onAddItemButtonClick() {
@@ -654,15 +654,17 @@ export abstract class AbsSdDataSheet<
     this.busyCount.update((v) => v - 1);
   }
 
-  async doSubmit(permCheck?: boolean) {
+  async doSubmit(opt?: { permCheck?: boolean; hideNoChangeMessage?: boolean }) {
     if (this.busyCount() > 0) return;
-    if (permCheck && !this.canEdit()) return;
+    if (opt?.permCheck && !this.canEdit()) return;
     if (!this.submit) return;
 
     const diffs = $arr(this.items).diffs();
 
     if (diffs.length === 0) {
-      this.#sdToast.info("변경사항이 없습니다.");
+      if (!opt?.hideNoChangeMessage) {
+        this.#sdToast.info("변경사항이 없습니다.");
+      }
       return;
     }
 
@@ -787,7 +789,7 @@ export abstract class AbsSdDataSheet<
   doModalCancel() {
     this.close.emit({
       selectedItemKeys: [],
-      selectedItems: this.selectedItems(),
+      selectedItems: [],
     });
   }
 

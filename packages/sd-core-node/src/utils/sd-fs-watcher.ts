@@ -1,36 +1,41 @@
 import { AsyncFnQueue } from "@simplysm/sd-core-common";
-import Watcher from "watcher";
+import * as chokidar from "chokidar";
 import { PathUtils, TNormPath } from "./path.utils";
-import { WatcherOptions } from "watcher/dist/types";
+import { EventName } from "chokidar/handler";
 
 export class SdFsWatcher {
-  static watch(paths: string[], options?: WatcherOptions): SdFsWatcher {
+  static watch(paths: string[], options?: chokidar.ChokidarOptions): SdFsWatcher {
     return new SdFsWatcher(paths, options);
   }
 
-  #watcher: Watcher;
-  #watchPathSet: Set<string>;
+  #watcher: chokidar.FSWatcher;
 
-  private constructor(paths: string[], options?: WatcherOptions) {
-    this.#watchPathSet = new Set<string>(paths);
-    this.#watcher = new Watcher(Array.from(this.#watchPathSet.values()), {
-      recursive: true,
+  private constructor(paths: string[], options?: chokidar.ChokidarOptions) {
+    this.#watcher = chokidar.watch(paths, {
       ignoreInitial: true,
       persistent: true,
       ...options,
     });
   }
 
-  onChange(opt: { delay?: number }, cb: (changeInfos: ISdFsWatcherChangeInfo[]) => void | Promise<void>): this {
+  onChange(
+    opt: { delay?: number },
+    cb: (changeInfos: ISdFsWatcherChangeInfo[]) => void | Promise<void>,
+  ): this {
     const fnQ = new AsyncFnQueue();
 
-    let changeInfoMap = new Map<string, TTargetEvent>();
+    let changeInfoMap = new Map<string, EventName>();
 
-    this.#watcher.on("all", (event: TTargetEvent, filePath: string) => {
+    this.#watcher.on("all", (event, filePath) => {
+      if (!["add", "addDir", "change", "unlink", "unlinkDir"].includes(event)) return;
+
       const prevEvent = changeInfoMap.getOrCreate(filePath, event);
       if (prevEvent === "add" && event === "change") {
-        changeInfoMap.set(filePath, "add" as TTargetEvent);
-      } else if ((prevEvent === "add" && event === "unlink") || (prevEvent === "addDir" && event === "unlinkDir")) {
+        changeInfoMap.set(filePath, "add");
+      } else if (
+        (prevEvent === "add" && event === "unlink") ||
+        (prevEvent === "addDir" && event === "unlinkDir")
+      ) {
         changeInfoMap.delete(filePath);
       } else {
         changeInfoMap.set(filePath, event);
@@ -39,14 +44,14 @@ export class SdFsWatcher {
       setTimeout(() => {
         fnQ.runLast(async () => {
           if (changeInfoMap.size === 0) return;
-          const currentChangeInfoMap = changeInfoMap;
-          changeInfoMap = new Map<string, TTargetEvent>();
+          const currChangeInfoMap = changeInfoMap;
+          changeInfoMap = new Map<string, EventName>();
 
-          const changeInfos = Array.from(currentChangeInfoMap.entries()).map((en) => ({
+          const changeInfos = Array.from(currChangeInfoMap.entries()).map((en) => ({
             path: PathUtils.norm(en[0]),
             event: en[1],
           }));
-          await cb(changeInfos);
+          await cb(changeInfos as any);
         });
       }, opt.delay);
     });
@@ -54,14 +59,12 @@ export class SdFsWatcher {
     return this;
   }
 
-  close() {
-    this.#watcher.close();
+  async close() {
+    await this.#watcher.close();
   }
 }
 
 export interface ISdFsWatcherChangeInfo {
-  event: TTargetEvent;
+  event: "add" | "addDir" | "change" | "unlink" | "unlinkDir";
   path: TNormPath;
 }
-
-type TTargetEvent = "add" | "addDir" | "change" | "rename" | "renameDir" | "unlink" | "unlinkDir";

@@ -82,6 +82,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
           }
 
           &[type="date"],
+          &[type="month"],
           &[type="datetime-local"] {
             padding-top: calc(var(--gap-sm) - 1px);
             padding-bottom: calc(var(--gap-sm) - 1px);
@@ -133,6 +134,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
             padding: var(--gap-xs) var(--gap-sm);
 
             &[type="date"],
+            &[type="month"],
             &[type="datetime-local"] {
               padding-top: calc(var(--gap-xs) - 1px);
               padding-bottom: calc(var(--gap-xs) - 1px);
@@ -146,6 +148,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
             padding: var(--gap-default) var(--gap-lg);
 
             &[type="date"],
+            &[type="month"],
             &[type="datetime-local"] {
               padding-top: calc(var(--gap-default) - 1px);
               padding-bottom: calc(var(--gap-default) - 1px);

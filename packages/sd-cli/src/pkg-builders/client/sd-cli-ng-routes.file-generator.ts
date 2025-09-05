@@ -1,22 +1,30 @@
 import path from "path";
-import { FsUtils, HashUtils, PathUtils } from "@simplysm/sd-core-node";
+import { FsUtils, HashUtils, PathUtils, SdFsWatcher } from "@simplysm/sd-core-node";
 import { StringUtils } from "@simplysm/sd-core-common";
 
 export class SdCliNgRoutesFileGenerator {
   cachedHash?: string;
 
-  /*watch(pkgPath: string, noLazyRoute?: boolean) {
+  watch(pkgPath: string, noLazyRoute?: boolean) {
     const routesFilePath = path.resolve(pkgPath, "src/routes.ts");
-    this.cachedHash = FsUtils.exists(routesFilePath) ? HashUtils.get(FsUtils.readFile(routesFilePath)) : undefined;
+    this.cachedHash = FsUtils.exists(routesFilePath)
+      ? HashUtils.get(FsUtils.readFile(routesFilePath))
+      : undefined;
 
-    SdFsWatcher.watch([path.resolve(pkgPath, "src")]).onChange({ delay: 50 }, () => {
-      this.run(pkgPath, noLazyRoute);
+    SdFsWatcher.watch([path.resolve(pkgPath, "src")], {
+      ignored: [routesFilePath],
+    }).onChange({ delay: 50 }, (changeInfos) => {
+      if (changeInfos.some((item) => ["add", "addDir", "unlink", "unlinkDir"].includes(item.event)))
+        this.run(pkgPath, noLazyRoute);
     });
 
     this.run(pkgPath, noLazyRoute);
-  }*/
+  }
 
-  run(pkgPath: string, noLazyRoute?: boolean): { changed: boolean; filePath: string; content: string } {
+  run(
+    pkgPath: string,
+    noLazyRoute?: boolean,
+  ): { changed: boolean; filePath: string; content: string } {
     const appDirPath = path.resolve(pkgPath, "src/app");
     const routesFilePath = path.resolve(pkgPath, "src/routes.ts");
 
@@ -54,7 +62,9 @@ export class SdCliNgRoutesFileGenerator {
         cont += indentStr + `  path: "${key}",\n`;
         if (val.relModulePath != null) {
           if (noLazyRoute) {
-            cont += indentStr + `  component: ${StringUtils.toPascalCase(path.basename(val.relModulePath))},\n`;
+            cont +=
+              indentStr +
+              `  component: ${StringUtils.toPascalCase(path.basename(val.relModulePath))},\n`;
             imports.push(
               `import { ${StringUtils.toPascalCase(path.basename(val.relModulePath))} } from "./app/${val.relModulePath}";`,
             );

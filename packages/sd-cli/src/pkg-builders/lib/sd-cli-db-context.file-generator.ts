@@ -1,4 +1,4 @@
-import { FsUtils, HashUtils, PathUtils } from "@simplysm/sd-core-node";
+import { FsUtils, HashUtils, PathUtils, SdFsWatcher } from "@simplysm/sd-core-node";
 import path from "path";
 import { StringUtils } from "@simplysm/sd-core-common";
 import { INpmConfig } from "../../types/common-configs.types";
@@ -6,16 +6,21 @@ import { INpmConfig } from "../../types/common-configs.types";
 export class SdCliDbContextFileGenerator {
   cachedHash?: string;
 
-  /*watch(pkgPath: string, kebabName: string) {
+  watch(pkgPath: string, kebabName: string) {
     const targetFilePath = path.resolve(pkgPath, `src/${kebabName}.ts`);
-    this.cachedHash = FsUtils.exists(targetFilePath) ? HashUtils.get(FsUtils.readFile(targetFilePath)) : undefined;
+    this.cachedHash = FsUtils.exists(targetFilePath)
+      ? HashUtils.get(FsUtils.readFile(targetFilePath))
+      : undefined;
 
-    SdFsWatcher.watch([path.resolve(pkgPath, "src")]).onChange({ delay: 50 }, () => {
-      this.run(pkgPath, kebabName);
+    SdFsWatcher.watch([path.resolve(pkgPath, "src")], {
+      ignored: [targetFilePath],
+    }).onChange({ delay: 50 }, (changeInfos) => {
+      if (changeInfos.some((item) => ["add", "addDir", "unlink", "unlinkDir"].includes(item.event)))
+        this.run(pkgPath, kebabName);
     });
 
     this.run(pkgPath, kebabName);
-  }*/
+  }
 
   run(pkgPath: string, kebabName: string): { changed: boolean; filePath: string; content: string } {
     const npmConfig = FsUtils.readJson(path.resolve(pkgPath, "package.json")) as INpmConfig;
@@ -68,7 +73,14 @@ export class SdCliDbContextFileGenerator {
         importTexts.push(`import { ${className} } from "./${requirePath}";`);
         if (
           useExt &&
-          ["systemDataLog", "systemLog", "authentication", "user", "userConfig", "userPermission"].includes(varName)
+          [
+            "systemDataLog",
+            "systemLog",
+            "authentication",
+            "user",
+            "userConfig",
+            "userPermission",
+          ].includes(varName)
         ) {
           modelTexts.push(`override ${varName} = new Queryable(this, ${className})`);
         } else {

@@ -10,11 +10,8 @@ import { INpmConfig } from "../../types/common-configs.types";
 export class SdClientBuildRunner extends BuildRunnerBase<"client"> {
   protected override _logger = SdLogger.get(["simplysm", "sd-cli", "SdClientBuildRunner"]);
 
-  #routeGenerator = new SdCliNgRoutesFileGenerator();
   #ngBundlers?: SdNgBundler[];
   #cordova?: SdCliCordova;
-
-  #hasGenRoutesError = false;
 
   protected override async _runAsync(
     dev: boolean,
@@ -24,8 +21,8 @@ export class SdClientBuildRunner extends BuildRunnerBase<"client"> {
   ): Promise<IBuildRunnerRunResult> {
     // 최초 한번
     if (!modifiedFileSet) {
-      // config
       if (!noEmit) {
+        // config
         this._debug("GEN .config...");
         const confDistPath = path.resolve(this._pkgPath, "dist/.config.json");
         FsUtils.writeFile(confDistPath, JSON.stringify(this._pkgConf.configs ?? {}, undefined, 2));
@@ -38,6 +35,13 @@ export class SdClientBuildRunner extends BuildRunnerBase<"client"> {
             config: this._pkgConf.builder.cordova,
           });
           await this.#cordova.initializeAsync();
+        }
+
+        // routes
+        const npmConf = FsUtils.readJson(path.resolve(this._pkgPath, "package.json")) as INpmConfig;
+        if ("@angular/router" in (npmConf.dependencies ?? {})) {
+          this._debug(`GEN routes.ts...`);
+          new SdCliNgRoutesFileGenerator().watch(this._pkgPath, this._pkgConf.noLazyRoute);
         }
       }
 
@@ -108,18 +112,6 @@ export class SdClientBuildRunner extends BuildRunnerBase<"client"> {
         emitFileSet,
       };
     } else {
-      const npmConf = FsUtils.readJson(path.resolve(this._pkgPath, "package.json")) as INpmConfig;
-
-      let routesFileNPath: TNormPath | undefined;
-      if ("@angular/router" in (npmConf.dependencies ?? {})) {
-        this._debug(`GEN routes.ts...`);
-        const genRoutesResult = this.#routeGenerator.run(this._pkgPath, this._pkgConf.noLazyRoute);
-        if (modifiedFileSet && (genRoutesResult.changed || this.#hasGenRoutesError)) {
-          modifiedFileSet.add(PathUtils.norm(genRoutesResult.filePath));
-        }
-        routesFileNPath = PathUtils.norm(genRoutesResult.filePath);
-      }
-
       if (modifiedFileSet) {
         for (const ngBundler of this.#ngBundlers!) {
           ngBundler.markForChanges(Array.from(modifiedFileSet));
@@ -149,9 +141,6 @@ export class SdClientBuildRunner extends BuildRunnerBase<"client"> {
           electronConfig: this._pkgConf.builder.electron,
         });
       }
-
-      this.#hasGenRoutesError =
-        routesFileNPath != null && results.map((item) => item.filePath).includes(routesFileNPath);
 
       this._debug(`빌드 완료`);
 

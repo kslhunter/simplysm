@@ -1,21 +1,29 @@
-import { FsUtils, HashUtils, PathUtils } from "@simplysm/sd-core-node";
+import { FsUtils, HashUtils, PathUtils, SdFsWatcher } from "@simplysm/sd-core-node";
 import path from "path";
 
 export class SdCliIndexFileGenerator {
   cachedHash?: string;
 
-  /*watch(pkgPath: string, polyfills?: string[]) {
+  watch(pkgPath: string, polyfills?: string[]) {
     const indexFilePath = path.resolve(pkgPath, "src/index.ts");
-    this.cachedHash = FsUtils.exists(indexFilePath) ? FsUtils.readFile(indexFilePath) : undefined;
+    this.cachedHash = FsUtils.exists(indexFilePath)
+      ? HashUtils.get(FsUtils.readFile(indexFilePath))
+      : undefined;
 
-    SdFsWatcher.watch([path.resolve(pkgPath, "src")]).onChange({ delay: 50 }, () => {
-      this.run(pkgPath, polyfills);
+    SdFsWatcher.watch([path.resolve(pkgPath, "src")], {
+      ignored: [indexFilePath],
+    }).onChange({ delay: 50 }, (changeInfos) => {
+      if (changeInfos.some((item) => ["add", "addDir", "unlink", "unlinkDir"].includes(item.event)))
+        this.run(pkgPath, polyfills);
     });
 
     this.run(pkgPath, polyfills);
-  }*/
+  }
 
-  run(pkgPath: string, polyfills?: string[]): { changed: boolean; filePath: string; content: string } {
+  run(
+    pkgPath: string,
+    polyfills?: string[],
+  ): { changed: boolean; filePath: string; content: string } {
     const indexFilePath = path.resolve(pkgPath, "src/index.ts");
 
     const importTexts: string[] = [];
@@ -57,11 +65,14 @@ export class SdCliIndexFileGenerator {
     const indexFilePath = path.resolve(pkgPath, "src/index.ts");
 
     const tsconfig = FsUtils.readJson(path.resolve(pkgPath, "tsconfig.json"));
-    const entryFilePaths: string[] = tsconfig.files?.map((item) => path.resolve(pkgPath, item)) ?? [];
+    const entryFilePaths: string[] =
+      tsconfig.files?.map((item) => path.resolve(pkgPath, item)) ?? [];
 
     return FsUtils.glob(path.resolve(pkgPath, "src/**/*{.ts,.tsx}"), {
       nodir: true,
       ignore: tsconfig.excludes,
-    }).filter((item) => !entryFilePaths.includes(item) && item !== indexFilePath && !item.endsWith(".d.ts"));
+    }).filter(
+      (item) => !entryFilePaths.includes(item) && item !== indexFilePath && !item.endsWith(".d.ts"),
+    );
   }
 }

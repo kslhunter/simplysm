@@ -26,11 +26,17 @@ import {
 import { Entrypoint } from "@angular/build/src/utils/index-file/augment-index-html";
 import { CrossOrigin } from "@angular/build/src/builders/application/schema";
 import { augmentAppWithServiceWorkerEsbuild } from "@angular/build/src/utils/service-worker";
-import { createSourcemapIgnorelistPlugin } from "@angular/build/src/tools/esbuild/sourcemap-ignorelist-plugin";
-import { StylesheetPluginFactory } from "@angular/build/src/tools/esbuild/stylesheets/stylesheet-plugin-factory";
+import {
+  createSourcemapIgnorelistPlugin
+} from "@angular/build/src/tools/esbuild/sourcemap-ignorelist-plugin";
+import {
+  StylesheetPluginFactory
+} from "@angular/build/src/tools/esbuild/stylesheets/stylesheet-plugin-factory";
 import { SassStylesheetLanguage } from "@angular/build/src/tools/esbuild/stylesheets/sass-language";
 import { CssStylesheetLanguage } from "@angular/build/src/tools/esbuild/stylesheets/css-language";
-import { createCssResourcePlugin } from "@angular/build/src/tools/esbuild/stylesheets/css-resource-plugin";
+import {
+  createCssResourcePlugin
+} from "@angular/build/src/tools/esbuild/stylesheets/css-resource-plugin";
 import { resolveAssets } from "@angular/build/src/utils/resolve-assets";
 import { createSdNgPlugin } from "./sd-ng.plugin-creator";
 import { SdCliPerformanceTimer } from "../../utils/sd-cli-performance-time";
@@ -130,142 +136,154 @@ export class SdNgBundler {
     //-- results
     const results = bundlingResults.mapMany((bundlingResult) => bundlingResult.results);
 
-    this.#debug(`convert result...`);
+    if (this._opt.noEmit) {
+      return {
+        watchFileSet: this.#ngResultCache.watchFileSet!,
+        affectedFileSet: this.#ngResultCache.affectedFileSet!,
+        results,
+        emitFileSet: new Set<TNormPath>(),
+      };
+    } else {
+      this.#debug(`convert result...`);
 
-    const outputFiles: BuildOutputFile[] = bundlingResults.mapMany(
-      (item) =>
-        item.outputFiles?.map((file) => convertOutputFile(file, BuildOutputFileType.Root)) ?? [],
-    );
-    const initialFiles = new Map<string, InitialFileRecord>();
-    const metafile: {
-      inputs: Metafile["inputs"];
-      outputs: Metafile["outputs"];
-    } = {
-      inputs: {},
-      outputs: {},
-    };
-    for (const bundlingResult of bundlingResults) {
-      bundlingResult.initialFiles.forEach((v, k) => initialFiles.set(k, v));
-      metafile.inputs = { ...metafile.inputs, ...bundlingResult.metafile?.inputs };
-      metafile.outputs = { ...metafile.outputs, ...bundlingResult.metafile?.outputs };
-    }
-    const assetFiles: { source: string; destination: string }[] = [];
+      const outputFiles: BuildOutputFile[] = bundlingResults.mapMany(
+        (item) =>
+          item.outputFiles?.map((file) => convertOutputFile(file, BuildOutputFileType.Root)) ?? [],
+      );
+      const initialFiles = new Map<string, InitialFileRecord>();
+      const metafile: {
+        inputs: Metafile["inputs"];
+        outputs: Metafile["outputs"];
+      } = {
+        inputs: {},
+        outputs: {},
+      };
+      for (const bundlingResult of bundlingResults) {
+        bundlingResult.initialFiles.forEach((v, k) => initialFiles.set(k, v));
+        metafile.inputs = { ...metafile.inputs, ...bundlingResult.metafile?.inputs };
+        metafile.outputs = { ...metafile.outputs, ...bundlingResult.metafile?.outputs };
+      }
 
-    //-- cordova empty
-    /*if (this._opt.builderType === "cordova" && this._opt.cordovaConfig?.plugins) {
+      //-- cordova empty
+      /*if (this._opt.builderType === "cordova" && this._opt.cordovaConfig?.plugins) {
       outputFiles.push(createOutputFile("cordova-empty.js", "export default {};", BuildOutputFileType.Root));
     }*/
 
-    this.#debug(`create index.html...`);
-    await perf.run("create index.html", async () => {
-      const genIndexHtmlResult = await this.#genIndexHtmlAsync(outputFiles, initialFiles);
-      for (const warning of genIndexHtmlResult.warnings) {
-        results.push({
-          filePath: undefined,
-          line: undefined,
-          char: undefined,
-          code: undefined,
-          severity: "warning",
-          message: `${warning}`,
-          type: "gen-index",
-        });
-      }
-      for (const error of genIndexHtmlResult.errors) {
-        results.push({
-          filePath: undefined,
-          line: undefined,
-          char: undefined,
-          code: undefined,
-          severity: "error",
-          message: `${error}`,
-          type: "gen-index",
-        });
-      }
-      outputFiles.push(
-        createOutputFile("index.html", genIndexHtmlResult.csrContent, BuildOutputFileType.Root),
-      );
-    });
-
-    await perf.run("assets", async () => {
-      //-- copy assets
-      assetFiles.push(...(await this.#copyAssetsAsync()));
-
-      //-- extract 3rdpartylicenses
-      if (!this._opt.dev) {
-        outputFiles.push(
-          createOutputFile(
-            "3rdpartylicenses.txt",
-            await extractLicenses(metafile, this._opt.pkgPath),
-            BuildOutputFileType.Root,
-          ),
-        );
-      }
-    });
-
-    //-- service worker
-    if (FsUtils.exists(this.#swConfFilePath)) {
-      this.#debug(`prepare service worker...`);
-
-      await perf.run("prepare service worker", async () => {
-        try {
-          const serviceWorkerResult = await this.#genServiceWorkerAsync(outputFiles, assetFiles);
-          outputFiles.push(
-            createOutputFile("ngsw.json", serviceWorkerResult.manifest, BuildOutputFileType.Root),
-          );
-          assetFiles.push(...serviceWorkerResult.assetFiles);
-        } catch (err) {
+      this.#debug(`create index.html...`);
+      await perf.run("create index.html", async () => {
+        const genIndexHtmlResult = await this.#genIndexHtmlAsync(outputFiles, initialFiles);
+        for (const warning of genIndexHtmlResult.warnings) {
+          results.push({
+            filePath: undefined,
+            line: undefined,
+            char: undefined,
+            code: undefined,
+            severity: "warning",
+            message: `${warning}`,
+            type: "gen-index",
+          });
+        }
+        for (const error of genIndexHtmlResult.errors) {
           results.push({
             filePath: undefined,
             line: undefined,
             char: undefined,
             code: undefined,
             severity: "error",
-            message: `${err.toString()}`,
-            type: "gen-sw",
+            message: `${error}`,
+            type: "gen-index",
           });
         }
+        outputFiles.push(
+          createOutputFile("index.html", genIndexHtmlResult.csrContent, BuildOutputFileType.Root),
+        );
       });
+
+      const assetFiles: { source: string; destination: string }[] = [];
+      await perf.run("assets", async () => {
+        //-- copy assets
+        assetFiles.push(...(await this.#copyAssetsAsync()));
+
+        //-- extract 3rdpartylicenses
+        if (!this._opt.dev) {
+          outputFiles.push(
+            createOutputFile(
+              "3rdpartylicenses.txt",
+              await extractLicenses(metafile, this._opt.pkgPath),
+              BuildOutputFileType.Root,
+            ),
+          );
+        }
+      });
+
+      //-- service worker
+      if (FsUtils.exists(this.#swConfFilePath)) {
+        this.#debug(`prepare service worker...`);
+
+        await perf.run("prepare service worker", async () => {
+          try {
+            const serviceWorkerResult = await this.#genServiceWorkerAsync(outputFiles, assetFiles);
+            outputFiles.push(
+              createOutputFile("ngsw.json", serviceWorkerResult.manifest, BuildOutputFileType.Root),
+            );
+            assetFiles.push(...serviceWorkerResult.assetFiles);
+          } catch (err) {
+            results.push({
+              filePath: undefined,
+              line: undefined,
+              char: undefined,
+              code: undefined,
+              severity: "error",
+              message: `${err.toString()}`,
+              type: "gen-sw",
+            });
+          }
+        });
+      }
+
+      //-- write
+      this.#debug(`write output files...(${outputFiles.length})`);
+
+      const emitFileSet = new Set<TNormPath>();
+      perf.run("write output file", () => {
+        for (const outputFile of outputFiles) {
+          const distFilePath = PathUtils.norm(this._opt.outputPath, outputFile.path);
+          const prevHash = this.#outputHashCache.get(distFilePath);
+          const currHash = HashUtils.get(Buffer.from(outputFile.contents));
+          if (prevHash !== currHash) {
+            FsUtils.writeFile(distFilePath, outputFile.contents);
+            this.#outputHashCache.set(distFilePath, currHash);
+            emitFileSet.add(distFilePath);
+          }
+        }
+        for (const assetFile of assetFiles) {
+          const prevHash = this.#outputHashCache.get(PathUtils.norm(assetFile.source));
+          const currHash = HashUtils.get(FsUtils.readFileBuffer(assetFile.source));
+          if (prevHash !== currHash) {
+            FsUtils.copy(
+              assetFile.source,
+              path.resolve(this._opt.outputPath, assetFile.destination),
+            );
+            this.#outputHashCache.set(PathUtils.norm(assetFile.source), currHash);
+            emitFileSet.add(PathUtils.norm(this._opt.outputPath, assetFile.destination));
+          }
+        }
+      });
+
+      this.#debug(perf.toString());
+
+      return {
+        watchFileSet: new Set([
+          ...this.#ngResultCache.watchFileSet!,
+          ...this.#styleLoadResultCache.watchFiles.map((item) => PathUtils.norm(item)),
+          ...assetFiles.map((item) => PathUtils.norm(item.source)),
+          PathUtils.norm(this.#indexHtmlFilePath),
+        ]),
+        affectedFileSet: this.#ngResultCache.affectedFileSet!,
+        results,
+        emitFileSet: emitFileSet,
+      };
     }
-
-    //-- write
-    this.#debug(`write output files...(${outputFiles.length})`);
-
-    const emitFileSet = new Set<TNormPath>();
-    perf.run("write output file", () => {
-      for (const outputFile of outputFiles) {
-        const distFilePath = PathUtils.norm(this._opt.outputPath, outputFile.path);
-        const prevHash = this.#outputHashCache.get(distFilePath);
-        const currHash = HashUtils.get(Buffer.from(outputFile.contents));
-        if (prevHash !== currHash) {
-          FsUtils.writeFile(distFilePath, outputFile.contents);
-          this.#outputHashCache.set(distFilePath, currHash);
-          emitFileSet.add(distFilePath);
-        }
-      }
-      for (const assetFile of assetFiles) {
-        const prevHash = this.#outputHashCache.get(PathUtils.norm(assetFile.source));
-        const currHash = HashUtils.get(FsUtils.readFileBuffer(assetFile.source));
-        if (prevHash !== currHash) {
-          FsUtils.copy(assetFile.source, path.resolve(this._opt.outputPath, assetFile.destination));
-          this.#outputHashCache.set(PathUtils.norm(assetFile.source), currHash);
-          emitFileSet.add(PathUtils.norm(this._opt.outputPath, assetFile.destination));
-        }
-      }
-    });
-
-    this.#debug(perf.toString());
-
-    return {
-      watchFileSet: new Set([
-        ...this.#ngResultCache.watchFileSet!,
-        ...this.#styleLoadResultCache.watchFiles.map((item) => PathUtils.norm(item)),
-        ...assetFiles.map((item) => PathUtils.norm(item.source)),
-        PathUtils.norm(this.#indexHtmlFilePath),
-      ]),
-      affectedFileSet: this.#ngResultCache.affectedFileSet!,
-      results,
-      emitFileSet: emitFileSet,
-    };
   }
 
   async #genIndexHtmlAsync(
