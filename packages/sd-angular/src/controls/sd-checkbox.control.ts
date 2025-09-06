@@ -2,12 +2,10 @@ import {
   ChangeDetectionStrategy,
   Component,
   HostListener,
-  inject,
   input,
   model,
   ViewEncapsulation,
 } from "@angular/core";
-import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { setupRipple } from "../utils/setups/setup-ripple";
 import { transformBoolean } from "../utils/type-tramsforms";
 import { setupModelHook } from "../utils/setups/setup-model-hook";
@@ -232,8 +230,6 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
   },
 })
 export class SdCheckboxControl {
-  protected readonly icons = inject(SdAngularConfigProvider).icons;
-
   value = model(false);
   canChangeFn = input<(item: boolean) => boolean | Promise<boolean>>(() => true);
 

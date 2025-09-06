@@ -4,7 +4,6 @@ import {
   Component,
   contentChild,
   Directive,
-  effect,
   HostListener,
   inject,
   output,
@@ -31,6 +30,7 @@ import { injectParent } from "../../utils/injections/inject-parent";
 import { ISdModal } from "../../providers/sd-modal.provider";
 import { $effect } from "../../utils/bindings/$effect";
 import { SdAnchorControl } from "../../controls/sd-anchor.control";
+import { $effect } from "@simplysm/sd-angular";
 
 @Component({
   selector: "sd-data-detail",
@@ -259,7 +259,7 @@ export abstract class AbsSdDataDetail<T extends object, R = boolean> implements 
   dataInfo = $signal<ISdDataDetailDataInfo>();
 
   constructor() {
-    effect(() => {
+    $effect(() => {
       this.prepareRefreshEffect?.();
 
       queueMicrotask(async () => {

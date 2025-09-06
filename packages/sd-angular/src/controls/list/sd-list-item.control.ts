@@ -4,7 +4,6 @@ import {
   Component,
   contentChild,
   forwardRef,
-  inject,
   input,
   model,
   TemplateRef,
@@ -12,7 +11,6 @@ import {
 } from "@angular/core";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { SdRippleDirective } from "../../directives/sd-ripple.directive";
-import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
 import { $computed } from "../../utils/bindings/$computed";
 import { transformBoolean } from "../../utils/type-tramsforms";
 import { SdCollapseIconControl } from "../sd-collapse-icon.control";
@@ -145,8 +143,6 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
   ],
 })
 export class SdListItemControl {
-  protected readonly icons = inject(SdAngularConfigProvider).icons;
-
   open = model(false);
 
   selectedIcon = input<IconDefinition>();

@@ -1,5 +1,6 @@
-import { signal, WritableSignal } from "@angular/core";
+import { WritableSignal } from "@angular/core";
 import { $mark } from "./utils/$mark";
+import { $signal } from "@simplysm/sd-angular";
 
 export interface SdWritableSignal<T> extends WritableSignal<T> {
   $mark(): void;
@@ -8,7 +9,7 @@ export interface SdWritableSignal<T> extends WritableSignal<T> {
 export function $signal<T>(): SdWritableSignal<T | undefined>;
 export function $signal<T>(initialValue: T): SdWritableSignal<T>;
 export function $signal<T>(initialValue?: T): SdWritableSignal<T | undefined> {
-  const sig = signal(initialValue) as SdWritableSignal<T | undefined>;
+  const sig = $signal(initialValue) as SdWritableSignal<T | undefined>;
   sig.$mark = () => $mark(sig);
   return sig;
 }

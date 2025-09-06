@@ -14,14 +14,14 @@
   "types": "./dist/index.d.ts",
   "style": "./styles.css",
   "dependencies": {
-    "@angular/animations": "^20.2.3",
-    "@angular/common": "^20.2.3",
-    "@angular/core": "^20.2.3",
-    "@angular/platform-browser": "^20.2.3",
-    "@angular/router": "^20.2.3",
-    "@angular/service-worker": "^20.2.3",
+    "@angular/animations": "^20.2.4",
+    "@angular/common": "^20.2.4",
+    "@angular/core": "^20.2.4",
+    "@angular/platform-browser": "^20.2.4",
+    "@angular/router": "^20.2.4",
+    "@angular/service-worker": "^20.2.4",
     "@fortawesome/angular-fontawesome": "^3.0.0",
-    "@fortawesome/fontawesome-svg-core": "^7.0.0",
+    "@fortawesome/fontawesome-svg-core": "^7.0.1",
     "@simplysm/sd-core-browser": "12.13.21",
     "@simplysm/sd-core-common": "12.13.21",
     "@simplysm/sd-excel": "12.13.21",
@@ -42,6 +42,6 @@
   },
   "devDependencies": {
     "@types/qrcode": "^1.5.5",
-    "@types/semver": "^7.7.0"
+    "@types/semver": "^7.7.1"
   }
 }

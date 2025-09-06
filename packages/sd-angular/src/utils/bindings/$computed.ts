@@ -1,5 +1,8 @@
 
-import { computed, effect, signal, Signal, untracked } from "@angular/core";
+import { Signal, untracked } from "@angular/core";
+import { $signal } from "@simplysm/sd-angular";
+import { $effect } from "@simplysm/sd-angular";
+import { $computed } from "@simplysm/sd-angular";
 
 export function $computed<R>(fn: () => Promise<R>): Signal<R | undefined>;
 export function $computed<R>(fn: () => Promise<R>, opt: { initialValue?: R }): Signal<R>;
@@ -17,9 +20,9 @@ export function $computed(...args: any): Signal<any> {
   const opt: { initialValue?: any } | undefined = args[0] instanceof Array ? args[2] : args[1];
 
   if (signals) {
-    const resultSig = signal<any>(opt?.initialValue);
+    const resultSig = $signal<any>(opt?.initialValue);
 
-    effect(
+    $effect(
       () => {
         for (const sig of signals) {
           sig();
@@ -34,6 +37,6 @@ export function $computed(...args: any): Signal<any> {
     return resultSig;
   }
   else {
-    return computed(() => fn());
+    return $computed(() => fn());
   }
 }

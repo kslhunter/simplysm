@@ -5,7 +5,6 @@ import {
   contentChild,
   contentChildren,
   Directive,
-  effect,
   HostListener,
   inject,
   input,
@@ -45,6 +44,7 @@ import { $arr } from "../../utils/bindings/wrappers/$arr";
 import { TXT_CHANGE_IGNORE_CONFIRM } from "../../commons";
 import { $effect } from "../../utils/bindings/$effect";
 import { SdAnchorControl } from "../../controls/sd-anchor.control";
+import { $effect } from "@simplysm/sd-angular";
 
 @Component({
   selector: "sd-data-sheet",
@@ -559,13 +559,13 @@ export abstract class AbsSdDataSheet<
       close: this.close,
     });
 
-    effect(() => {
+    $effect(() => {
       const filter = this.bindFilter();
       this.filter.set(filter);
       this.lastFilter.set(ObjectUtils.clone(filter));
     });
 
-    effect(() => {
+    $effect(() => {
       this.page();
       this.lastFilter();
       this.sortingDefs();

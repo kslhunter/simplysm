@@ -1,9 +1,8 @@
-import { ChangeDetectionStrategy, Component, inject, input, ViewEncapsulation } from "@angular/core";
+import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
 import { SdCollapseIconControl } from "../sd-collapse-icon.control";
 import { SdCollapseControl } from "../sd-collapse.control";
 import { SdListControl } from "../list/sd-list.control";
 import { SdListItemControl } from "../list/sd-list-item.control";
-import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
 import { $signal } from "../../utils/bindings/$signal";
 import { SdRippleDirective } from "../../directives/sd-ripple.directive";
 
@@ -64,8 +63,6 @@ import { SdRippleDirective } from "../../directives/sd-ripple.directive";
   ],
 })
 export class SdSidebarUserControl {
-  protected readonly icons = inject(SdAngularConfigProvider).icons;
-
   userMenu = input<ISidebarUserMenu>();
   menuTitle = input<string>();
 

@@ -5,7 +5,6 @@ import {
   contentChildren,
   HostListener,
   inject,
-  Injector,
   input,
   model,
   output,
@@ -582,8 +581,6 @@ export class SdSheetControl<T> {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
 
   #sdModal = inject(SdModalProvider);
-  #injector = inject(Injector);
-
   hideConfigBar = input(false, { transform: transformBoolean });
   inset = input(false, { transform: transformBoolean });
   contentStyle = input<string>();

@@ -1,10 +1,10 @@
 import {
-  afterRenderEffect,
   EffectCleanupRegisterFn,
   EffectRef,
   Signal,
   untracked,
 } from "@angular/core";
+import { $afterRenderEffect } from "@simplysm/sd-angular";
 
 export function $afterRenderEffect(fn: (onCleanup: EffectCleanupRegisterFn) => Promise<void>): never;
 export function $afterRenderEffect(fn: (onCleanup: EffectCleanupRegisterFn) => void): EffectRef;
@@ -20,7 +20,7 @@ export function $afterRenderEffect(
   const fn = (arg2 ?? arg1) as (onCleanup: EffectCleanupRegisterFn) => void | Promise<void>;
 
   if (sigs) {
-    return afterRenderEffect(
+    return $afterRenderEffect(
       async (onCleanup) => {
         for (const sig of sigs) {
           sig();
@@ -33,6 +33,6 @@ export function $afterRenderEffect(
     );
   }
   else {
-    return afterRenderEffect((onCleanup) => fn(onCleanup));
+    return $afterRenderEffect((onCleanup) => fn(onCleanup));
   }
 }

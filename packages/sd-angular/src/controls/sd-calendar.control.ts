@@ -2,13 +2,11 @@ import {
   ChangeDetectionStrategy,
   Component,
   contentChild,
-  inject,
   input,
   TemplateRef,
   ViewEncapsulation,
 } from "@angular/core";
 import { DateOnly } from "@simplysm/sd-core-common";
-import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { FormatPipe } from "../pipes/format.pipe";
 import { SdItemOfTemplateContext, SdItemOfTemplateDirective } from "../directives/sd-item-of.template-directive";
 import { NgTemplateOutlet } from "@angular/common";
@@ -126,8 +124,6 @@ import { $computed } from "../utils/bindings/$computed";
   ],
 })
 export class SdCalendarControl<T> {
-  protected readonly icons = inject(SdAngularConfigProvider).icons;
-
   items = input.required<T[]>();
   getItemDateFn = input.required<(item: T, index: number) => DateOnly>();
 

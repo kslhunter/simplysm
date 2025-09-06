@@ -1,10 +1,10 @@
 import {
   CreateEffectOptions,
-  effect,
   EffectCleanupRegisterFn,
   EffectRef,
   untracked,
 } from "@angular/core";
+import { $effect } from "@simplysm/sd-angular";
 
 export function $effect(
   fn: (onCleanup: EffectCleanupRegisterFn) => Promise<void>,
@@ -31,7 +31,7 @@ export function $effect(
   const options = (typeof arg1 === "function" ? arg2 : arg3) as CreateEffectOptions;
 
   if (conditions) {
-    return effect(async (onCleanup) => {
+    return $effect(async (onCleanup) => {
       for (const sig of conditions) {
         sig();
       }
@@ -41,6 +41,6 @@ export function $effect(
       });
     }, options);
   } else {
-    return effect((onCleanup) => fn(onCleanup), options);
+    return $effect((onCleanup) => fn(onCleanup), options);
   }
 }

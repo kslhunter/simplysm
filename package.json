@@ -15,8 +15,8 @@
     "packages-test/*"
   ],
   "volta": {
-    "node": "22.18.0",
-    "yarn": "4.9.2"
+    "node": "22.19.0",
+    "yarn": "4.9.4"
   },
   "scripts": {
     "watch": "yarn run _sd-cli_ --debug watch",
@@ -41,9 +41,9 @@
     "postinstall": "yarn run _sd-cli_ postinstall"
   },
   "devDependencies": {
-    "@types/node": "^22.18.0",
+    "@types/node": "^22.18.1",
     "cross-env": "^10.0.0",
-    "eslint": "^9.34.0",
+    "eslint": "^9.35.0",
     "glob": "^11.0.3",
     "prettier": "^3.6.2",
     "tsx": "^4.20.5",

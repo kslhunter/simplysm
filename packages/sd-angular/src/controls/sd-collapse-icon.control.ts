@@ -1,5 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, input, ViewEncapsulation } from "@angular/core";
-import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
+import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
 import { $computed } from "../utils/bindings/$computed";
 
 import { transformBoolean } from "../utils/type-tramsforms";
@@ -32,8 +31,6 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
   },
 })
 export class SdCollapseIconControl {
-  protected readonly icons = inject(SdAngularConfigProvider).icons;
-
   icon = input(this.icons.angleDown);
   open = input(false, { transform: transformBoolean });
   openRotate = input(90);
