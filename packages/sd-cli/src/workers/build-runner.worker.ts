@@ -1,13 +1,21 @@
-import { createSdWorker, FsUtils, SdLogger, SdLoggerSeverity } from "@simplysm/sd-core-node";
-import { ISdBuildMessage } from "../types/build.types";
-import path from "path";
-import { SdServerBuildRunner } from "../pkg-builders/server/sd-server.build-runner";
-import { SdClientBuildRunner } from "../pkg-builders/client/sd-client.build-runner";
-import { SdTsLibBuildRunner } from "../pkg-builders/lib/sd-ts-lib.build-runner";
-import { SdJsLibBuildRunner } from "../pkg-builders/lib/sd-js-lib.build-runner";
-import { TSdBuildRunnerWorkerType } from "../types/worker.types";
-import { ISdBuildRunnerWorkerRequest } from "../types/build-runner.types";
+import {
+  createSdWorker,
+  FsUtils,
+  SdLogger,
+  SdLoggerSeverity,
+  TNormPath,
+} from "@simplysm/sd-core-node";
 import { EventEmitter } from "events";
+import path from "path";
+import {
+  ISdBuildRunnerInitializeRequest,
+  ISdBuildRunnerWorkerType,
+} from "../types/worker/ISdBuildRunnerWorkerType";
+import { SdBuildRunnerBase } from "../pkg-builders/commons/SdBuildRunnerBase";
+import { SdServerBuildRunner } from "../pkg-builders/server/SdServerBuildRunner";
+import { SdClientBuildRunner } from "../pkg-builders/client/SdClientBuildRunner";
+import { SdTsLibBuildRunner } from "../pkg-builders/lib/SdTsLibBuildRunner";
+import { SdJsLibBuildRunner } from "../pkg-builders/lib/SdJsLibBuildRunner";
 
 Error.stackTraceLimit = Infinity;
 EventEmitter.defaultMaxListeners = 0;
@@ -24,8 +32,10 @@ if (process.env["SD_DEBUG"] != null) {
   });
 }
 
-const worker = createSdWorker<TSdBuildRunnerWorkerType>({
-  async run(req: ISdBuildRunnerWorkerRequest): Promise<ISdBuildMessage[] | void> {
+let buildRunner: SdBuildRunnerBase<any>;
+
+createSdWorker<ISdBuildRunnerWorkerType>({
+  initialize(req: ISdBuildRunnerInitializeRequest) {
     const pkgConf = req.projConf.packages[path.basename(req.pkgPath)]!;
 
     const buildRunnerType =
@@ -37,26 +47,17 @@ const worker = createSdWorker<TSdBuildRunnerWorkerType>({
             ? SdTsLibBuildRunner
             : SdJsLibBuildRunner;
 
-    const builder = new buildRunnerType(
-      req.projConf,
+    buildRunner = new buildRunnerType(
       req.pkgPath,
-      req.workspaces,
+      req.projConf,
+      req.watch ?? false,
+      req.watch ? !pkgConf.forceProductionMode : false,
       req.emitOnly,
       req.noEmit,
-    )
-      .on("change", () => {
-        worker.send("change");
-      })
-      .on("complete", (result) => {
-        worker.send("complete", result);
-      });
-
-    if (req.cmd === "build") {
-      const res = await builder.buildAsync();
-      return res.buildMessages;
-    } else {
-      await builder.watchAsync();
-      return;
-    }
+      req.scopePathSet,
+    );
+  },
+  async rebuild(modifiedFileSet?: Set<TNormPath>) {
+    return await buildRunner.rebuildAsync(modifiedFileSet);
   },
 });

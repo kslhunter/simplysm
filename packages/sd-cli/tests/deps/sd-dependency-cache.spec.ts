@@ -1,10 +1,7 @@
 import "@simplysm/sd-core-common";
 import { PathUtils } from "@simplysm/sd-core-node";
 import { beforeEach, describe, expect, it } from "vitest";
-import {
-  ISdAffectedFileTreeNode,
-  SdDependencyCache,
-} from "../../src/ts-compiler/sd-dependency-cache";
+import { ISdAffectedFileTreeNode, SdDepCache } from "../../src/ts-compiler/SdDepCache";
 
 describe("SdDependencyCache", () => {
   const a = PathUtils.norm("/a.ts");
@@ -13,10 +10,10 @@ describe("SdDependencyCache", () => {
   const html = PathUtils.norm("/comp.html");
   // const style = PathUtils.norm("/style.scss");
 
-  let depCache: SdDependencyCache;
+  let depCache: SdDepCache;
 
   beforeEach(() => {
-    depCache = new SdDependencyCache();
+    depCache = new SdDepCache();
   });
 
   it("export * from 구문으로 재export된 심볼이 정확히 전파된다", () => {

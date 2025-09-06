@@ -3,7 +3,7 @@ import { pathToFileURL } from "url";
 import type { SdServiceServer } from "@simplysm/sd-service-server";
 import { createSdWorker, SdLogger, SdLoggerSeverity } from "@simplysm/sd-core-node";
 import { EventEmitter } from "events";
-import { TServerWorkerType } from "../types/worker.types";
+import { IServerWorkerType } from "../types/worker/IServerWorkerType";
 
 Error.stackTraceLimit = Infinity;
 EventEmitter.defaultMaxListeners = 0;
@@ -22,10 +22,10 @@ if (process.env["SD_DEBUG"] != null) {
 
 let server: SdServiceServer;
 
-createSdWorker<TServerWorkerType>({
-  async listen(pkgInfo: { path: string } | { port: number }) {
-    if ("path" in pkgInfo) {
-      const mainFilePath = path.resolve(pkgInfo.path, "dist/main.js");
+createSdWorker<IServerWorkerType>({
+  async listen(pkgPathOrPort: string | number) {
+    if (typeof pkgPathOrPort === "string") {
+      const mainFilePath = path.resolve(pkgPathOrPort, "dist/main.js");
       const serverModule = await import(pathToFileURL(mainFilePath).href);
       const currServer = serverModule.default as SdServiceServer | undefined;
       if (currServer == null) {
@@ -38,14 +38,14 @@ createSdWorker<TServerWorkerType>({
       server = new SdServiceServer({
         rootPath: process.cwd(),
         services: [],
-        port: pkgInfo.port,
+        port: pkgPathOrPort,
       });
       await server.listenAsync();
     }
 
     return server.options.port;
   },
-  setPathProxy(pathProxy: Record<string, string | number>) {
+  setPathProxy(pathProxy: Record<string, string>) {
     server.pathProxy = pathProxy;
   },
   broadcastReload(clientName: string | undefined, changedFileSet: Set<string>) {

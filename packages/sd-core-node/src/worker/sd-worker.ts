@@ -62,6 +62,8 @@ export class SdWorker<T extends ISdWorkerType> extends EventEmitter {
       const response: TSdWorkerResponse<T, string> = JsonConvert.parse(responseJson);
       if (response.type === "event") {
         this.emit(response.event, response.body);
+      } else if (response.type === "log") {
+        process.stdout.write(response.body);
       }
     });
   }

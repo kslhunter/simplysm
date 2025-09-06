@@ -1,6 +1,7 @@
 import { JsonConvert } from "@simplysm/sd-core-common";
 import { parentPort } from "worker_threads";
 import { ISdWorkerRequest, ISdWorkerType, TSdWorkerResponse } from "./sd-worker.types";
+import * as util from "node:util";
 
 export function createSdWorker<T extends ISdWorkerType>(methods: {
   [P in keyof T["methods"]]: (
@@ -9,6 +10,17 @@ export function createSdWorker<T extends ISdWorkerType>(methods: {
 }) {
   if (!parentPort)
     throw new Error("This script must be run as a worker thread (parentPort required).");
+
+  console.log = (...args) => {
+    parentPort!.postMessage(
+      JsonConvert.stringify({ type: "log", body: util.format(...args) + "\n" }),
+    );
+  };
+
+  process.stdout.write = (chunk) => {
+    parentPort!.postMessage(JsonConvert.stringify({ type: "log", body: chunk.toString() }));
+    return true;
+  };
 
   parentPort.on("message", async (requestJson: string) => {
     const request: ISdWorkerRequest<T, any> = JsonConvert.parse(requestJson);
@@ -21,6 +33,7 @@ export function createSdWorker<T extends ISdWorkerType>(methods: {
             type: "return",
             body: result,
           };
+
           parentPort!.postMessage(JsonConvert.stringify(response));
         } catch (err) {
           const response: TSdWorkerResponse<T, any> = {
@@ -28,6 +41,7 @@ export function createSdWorker<T extends ISdWorkerType>(methods: {
             type: "error",
             body: err,
           };
+
           parentPort!.postMessage(JsonConvert.stringify(response));
         }
         return;
@@ -42,6 +56,7 @@ export function createSdWorker<T extends ISdWorkerType>(methods: {
         event,
         body,
       };
+
       parentPort!.postMessage(JsonConvert.stringify(response));
     },
   };

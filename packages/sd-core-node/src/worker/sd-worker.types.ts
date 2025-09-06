@@ -30,4 +30,8 @@ export type TSdWorkerResponse<T extends ISdWorkerType, K extends keyof T["method
       type: "event";
       event: string;
       body?: any;
+    }
+  | {
+      type: "log";
+      body: string;
     };

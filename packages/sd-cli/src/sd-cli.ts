@@ -1,7 +1,5 @@
 #!/usr/bin/env node
 
-/* eslint-disable no-console */
-
 import { exec, spawn } from "child_process";
 import os from "os";
 import path from "path";
@@ -67,6 +65,7 @@ function configureProcessorAffinityAndPriority(pid: number) {
 
   exec(command, (err) => {
     if (err) {
+      // eslint-disable-next-line no-console
       console.error("Affinity 또는 우선순위 설정 실패:", err.message);
     }
   });
@@ -90,19 +89,6 @@ function calculateAffinityMask(cpuCount: number): string {
 
   return "0x" + mask.toString(16).toUpperCase();
 }
-
-// ProcessorAffinity 마스크 계산 (뒤 코어 빼기)
-// function calculateAffinityMask(cpuCount: number): string {
-//   const exclude = cpuCount <= 1 ? 0 : Math.ceil(cpuCount / 8); // 8개당 1개씩 뺌
-//   const usable = cpuCount - exclude;
-//
-//   if (usable <= 0) {
-//     throw new Error(`CPU 사용 가능 개수가 0 이하입니다 (총: ${cpuCount}, 제외: ${exclude})`);
-//   }
-//
-//   const maskValue = (1 << usable) - 1;
-//   return "0x" + maskValue.toString(16).toUpperCase();
-// }
 
 async function spawnWaitAsync(command: string, args: string[]) {
   await new Promise<void>((resolve) => {

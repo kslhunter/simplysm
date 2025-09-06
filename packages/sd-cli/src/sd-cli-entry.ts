@@ -6,12 +6,12 @@ import { SdLogger, SdLoggerSeverity } from "@simplysm/sd-core-node";
 import { EventEmitter } from "events";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
-import { SdCliAiCommand } from "./entry/sd-cli-ai-command";
-import { SdCliCordova } from "./entry/sd-cli-cordova";
-import { SdCliElectron } from "./entry/sd-cli-electron";
-import { SdCliLocalUpdate } from "./entry/sd-cli-local-update";
-import { SdCliPostinstall } from "./entry/sd-cli-postinstall";
-import { SdCliProject } from "./entry/sd-cli-project";
+import { SdCliAiCommand } from "./entry/SdCliAiCommand";
+import { SdCliCordova } from "./entry/SdCliCordova";
+import { SdCliElectron } from "./entry/SdCliElectron";
+import { SdCliLocalUpdate } from "./entry/SdCliLocalUpdate";
+import { SdCliPostinstall } from "./entry/SdCliPostinstall";
+import { SdCliProject } from "./entry/SdCliProject";
 import convertPrivateToHash from "./fix/convert-private-to-hash";
 import removeSdAngularSymbolNames from "./fix/remove-sd-angular-symbol-names";
 import convertSdAngularSymbolNames from "./fix/convert-sd-angular-symbol-names";
@@ -88,11 +88,6 @@ await yargs(hideBin(process.argv))
             array: true,
             describe: "수행할 패키지 설정",
           },
-          inspects: {
-            string: true,
-            array: true,
-            describe: "크롬 inspect를 수행할 패키지 설정",
-          },
           emitOnly: {
             type: "boolean",
             describe: "emit만 수행",
@@ -133,7 +128,6 @@ await yargs(hideBin(process.argv))
         }),
     async (argv) => {
       await SdCliProject.buildAsync(argv);
-      process.exit(0);
     },
   )
   .command(
