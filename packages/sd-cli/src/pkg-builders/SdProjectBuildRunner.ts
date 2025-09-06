@@ -274,7 +274,7 @@ export class SdProjectBuildRunner {
   static async buildAsync(opt: { pkgPaths: TNormPath[]; projConf: ISdProjectConfig }) {
     const buildResults = await opt.pkgPaths.parallelAsync(async (pkgPath) => {
       const worker = new SdWorker<ISdBuildRunnerWorkerType>(
-        import.meta.resolve("./build2-runner.worker"),
+        import.meta.resolve("../workers/build-runner.worker"),
       );
 
       await worker.run("initialize", [
