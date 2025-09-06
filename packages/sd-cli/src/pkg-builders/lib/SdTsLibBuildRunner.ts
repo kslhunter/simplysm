@@ -17,13 +17,16 @@ export class SdTsLibBuildRunner extends SdBuildRunnerBase<"library"> {
         // index
         if (!this._pkgConf.noGenIndex) {
           this._debug("GEN index.ts...");
-          new SdCliIndexFileGenerator().watch(this._pkgPath, this._pkgConf.polyfills);
+          await new SdCliIndexFileGenerator().watchAsync(this._pkgPath, this._pkgConf.polyfills);
         }
 
         // db-context
         if (this._pkgConf.dbContext != null) {
           this._debug(`GEN ${this._pkgConf.dbContext}.ts...`);
-          new SdCliDbContextFileGenerator().watch(this._pkgPath, this._pkgConf.dbContext);
+          await new SdCliDbContextFileGenerator().watchAsync(
+            this._pkgPath,
+            this._pkgConf.dbContext,
+          );
         }
       }
 

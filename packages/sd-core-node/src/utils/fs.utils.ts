@@ -37,15 +37,6 @@ export class FsUtils {
     return (await glob.glob(pattern.replace(/\\/g, "/"), options ?? {})).map((item) =>
       path.resolve(item),
     );
-    /*return await new Promise<string[]>((resolve, reject) => {
-      glob(pattern.replace(/\\/g, "/"), options ?? {}, (err: (Error | null), matches) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-        resolve(matches.map((item) => path.resolve(item)));
-      });
-    });*/
   }
 
   static glob(pattern: string, options?: glob.GlobOptions): string[] {

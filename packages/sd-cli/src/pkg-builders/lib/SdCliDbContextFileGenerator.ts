@@ -6,15 +6,16 @@ import { INpmConfig } from "../../types/common-config/INpmConfig";
 export class SdCliDbContextFileGenerator {
   cachedHash?: string;
 
-  watch(pkgPath: string, kebabName: string) {
+  async watchAsync(pkgPath: string, kebabName: string) {
     const targetFilePath = path.resolve(pkgPath, `src/${kebabName}.ts`);
     this.cachedHash = FsUtils.exists(targetFilePath)
       ? HashUtils.get(FsUtils.readFile(targetFilePath))
       : undefined;
 
-    SdFsWatcher.watch([path.resolve(pkgPath, "src")], {
+    const watcher = await SdFsWatcher.watchAsync([path.resolve(pkgPath, "src")], {
       ignored: [targetFilePath],
-    }).onChange({ delay: 50 }, (changeInfos) => {
+    });
+    watcher.onChange({ delay: 50 }, (changeInfos) => {
       if (changeInfos.some((item) => ["add", "addDir", "unlink", "unlinkDir"].includes(item.event)))
         this.run(pkgPath, kebabName);
     });

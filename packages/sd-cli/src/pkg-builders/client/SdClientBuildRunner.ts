@@ -37,7 +37,10 @@ export class SdClientBuildRunner extends SdBuildRunnerBase<"client"> {
         const npmConf = FsUtils.readJson(path.resolve(this._pkgPath, "package.json")) as INpmConfig;
         if ("@angular/router" in (npmConf.dependencies ?? {})) {
           this._debug(`GEN routes.ts...`);
-          new SdCliNgRoutesFileGenerator().watch(this._pkgPath, this._pkgConf.noLazyRoute);
+          await new SdCliNgRoutesFileGenerator().watchAsync(
+            this._pkgPath,
+            this._pkgConf.noLazyRoute,
+          );
         }
       }
 

@@ -319,7 +319,12 @@ export class SdTsCompiler {
       }
     }
 
-    const allFiles = this.#program!.getSourceFiles().map((item) => PathUtils.norm(item.fileName));
+    const allFiles = this.#program!.getSourceFiles().mapMany((item) => [
+      PathUtils.norm(item.fileName),
+      ...(item.fileName.endsWith(".d.ts")
+        ? [PathUtils.norm(item.fileName.replace(/\.d\.ts$/, "") + ".js")]
+        : []),
+    ]);
     const watchFileSet = new Set(allFiles.filter((item) => this._opt.scopePathSet.inScope(item)));
 
     let affectedFileSet: Set<TNormPath>;

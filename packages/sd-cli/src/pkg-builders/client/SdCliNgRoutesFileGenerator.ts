@@ -5,15 +5,16 @@ import { StringUtils } from "@simplysm/sd-core-common";
 export class SdCliNgRoutesFileGenerator {
   cachedHash?: string;
 
-  watch(pkgPath: string, noLazyRoute?: boolean) {
+  async watchAsync(pkgPath: string, noLazyRoute?: boolean) {
     const routesFilePath = path.resolve(pkgPath, "src/routes.ts");
     this.cachedHash = FsUtils.exists(routesFilePath)
-      ? HashUtils.get(FsUtils.readFile(routesFilePath))
+      ? HashUtils.get(await FsUtils.readFileAsync(routesFilePath))
       : undefined;
 
-    SdFsWatcher.watch([path.resolve(pkgPath, "src")], {
+    const watcher = await SdFsWatcher.watchAsync([path.resolve(pkgPath, "src")], {
       ignored: [routesFilePath],
-    }).onChange({ delay: 50 }, (changeInfos) => {
+    });
+    watcher.onChange({ delay: 50 }, (changeInfos) => {
       if (changeInfos.some((item) => ["add", "addDir", "unlink", "unlinkDir"].includes(item.event)))
         this.run(pkgPath, noLazyRoute);
     });

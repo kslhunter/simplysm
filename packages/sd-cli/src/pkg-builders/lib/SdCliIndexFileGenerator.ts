@@ -4,15 +4,16 @@ import path from "path";
 export class SdCliIndexFileGenerator {
   cachedHash?: string;
 
-  watch(pkgPath: string, polyfills?: string[]) {
+  async watchAsync(pkgPath: string, polyfills?: string[]) {
     const indexFilePath = path.resolve(pkgPath, "src/index.ts");
     this.cachedHash = FsUtils.exists(indexFilePath)
-      ? HashUtils.get(FsUtils.readFile(indexFilePath))
+      ? HashUtils.get(await FsUtils.readFileAsync(indexFilePath))
       : undefined;
 
-    SdFsWatcher.watch([path.resolve(pkgPath, "src")], {
+    const watcher = await SdFsWatcher.watchAsync([path.resolve(pkgPath, "src")], {
       ignored: [indexFilePath],
-    }).onChange({ delay: 50 }, (changeInfos) => {
+    });
+    watcher.onChange({ delay: 50 }, (changeInfos) => {
       if (changeInfos.some((item) => ["add", "addDir", "unlink", "unlinkDir"].includes(item.event)))
         this.run(pkgPath, polyfills);
     });

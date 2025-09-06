@@ -20,6 +20,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
       <ng-content></ng-content>
     </button>
   `,
+
   styles: [
     /* language=SCSS */ `
       @use "sass:map";

@@ -14,17 +14,17 @@ export class SdCliLocalUpdate {
     logger.debug("로컬 업데이트 구성");
 
     logger.log("로컬 라이브러리 업데이트 시작...");
-    for (const updatePathInfo of updatePathInfos) {
+    await updatePathInfos.parallelAsync(async (updatePathInfo) => {
       if (!FsUtils.exists(updatePathInfo.source)) {
         logger.warn(`소스경로를 찾을 수 없어 무시됩니다(${updatePathInfo.source})`);
         return;
       }
 
       // 소스경로에서 대상경로로 파일 복사
-      FsUtils.copy(updatePathInfo.source, updatePathInfo.target, (src) => {
+      await FsUtils.copyAsync(updatePathInfo.source, updatePathInfo.target, (src) => {
         return !src.includes("node_modules") && !src.endsWith("package.json");
       });
-    }
+    });
     logger.info("로컬 라이브러리 업데이트 완료");
   }
 
@@ -38,8 +38,8 @@ export class SdCliLocalUpdate {
     const updatePathInfos = this.#getUpdatePathInfos(projConf.localUpdates);
     logger.debug("로컬 업데이트 구성");
 
-    const watcher = SdFsWatcher.watch(updatePathInfos.map((item) => item.source));
-    watcher.onChange({ delay: 1000 }, (changedInfos) => {
+    const watcher = await SdFsWatcher.watchAsync(updatePathInfos.map((item) => item.source));
+    watcher.onChange({ delay: 300 }, async (changedInfos) => {
       const changedFileInfos = changedInfos.filter((item) =>
         ["add", "change", "unlink"].includes(item.event),
       );
@@ -47,22 +47,22 @@ export class SdCliLocalUpdate {
 
       logger.log("로컬 라이브러리 변경감지...");
 
-      for (const changedFileInfo of changedFileInfos) {
-        for (const updatePathInfo of updatePathInfos) {
-          if (!PathUtils.isChildPath(changedFileInfo.path, updatePathInfo.source)) continue;
+      await changedFileInfos.parallelAsync(async (changedFileInfo) => {
+        await updatePathInfos.parallelAsync(async (updatePathInfo) => {
+          if (!PathUtils.isChildPath(changedFileInfo.path, updatePathInfo.source)) return;
 
           const sourceRelPath = path.relative(updatePathInfo.source, changedFileInfo.path);
           const targetFilePath = path.resolve(updatePathInfo.target, sourceRelPath);
 
           if (changedFileInfo.event === "unlink") {
             logger.debug(`변경파일감지(삭제): ${targetFilePath}`);
-            FsUtils.remove(targetFilePath);
+            await FsUtils.removeAsync(targetFilePath);
           } else {
             logger.debug(`변경파일감지(복사): ${changedFileInfo.path} => ${targetFilePath}`);
-            FsUtils.copy(changedFileInfo.path, targetFilePath);
+            await FsUtils.copyAsync(changedFileInfo.path, targetFilePath);
           }
-        }
-      }
+        });
+      });
 
       logger.info("로컬 라이브러리 복사 완료");
     });

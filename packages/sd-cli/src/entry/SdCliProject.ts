@@ -273,11 +273,11 @@ export class SdCliProject {
         nodir: true,
       });
 
-      for (const filePath of filePaths) {
+      await filePaths.parallelAsync(async (filePath) => {
         const relativeFilePath = path.relative(path.resolve(pkgPath, "dist"), filePath);
         const targetPath = PathUtils.posix(targetRootPath, relativeFilePath);
-        FsUtils.copy(filePath, targetPath);
-      }
+        await FsUtils.copyAsync(filePath, targetPath);
+      });
     } else if (
       pkgPubConf?.type === "ftp" ||
       pkgPubConf?.type === "ftps" ||

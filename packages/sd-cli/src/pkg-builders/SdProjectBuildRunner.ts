@@ -54,12 +54,13 @@ export class SdProjectBuildRunner {
       Object.keys(opt.projConf.localUpdates ?? {}),
     );
 
-    const watcher = SdFsWatcher.watch(Array.from(scopePathSet), {
+    const watcher = await SdFsWatcher.watchAsync(Array.from(scopePathSet), {
       ignoreInitial: false,
     });
     watcher.onChange({ delay: 300 }, async (changeInfos) => {
       // 변경된 패키지 정보 구성
       const changeFiles = changeInfos.map((item) => PathUtils.norm(item.path));
+
       const changedPkgInfos = opt.pkgPaths
         .map((pkgPath) => {
           let buildInfo = this.#buildInfoMap.get(pkgPath);

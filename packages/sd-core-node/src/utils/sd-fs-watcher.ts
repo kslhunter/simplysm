@@ -4,18 +4,30 @@ import { PathUtils, TNormPath } from "./path.utils";
 import { EventName } from "chokidar/handler";
 
 export class SdFsWatcher {
-  static watch(paths: string[], options?: chokidar.ChokidarOptions): SdFsWatcher {
-    return new SdFsWatcher(paths, options);
+  static async watchAsync(
+    paths: string[],
+    options?: chokidar.ChokidarOptions,
+  ): Promise<SdFsWatcher> {
+    return await new Promise<SdFsWatcher>((resolve) => {
+      const watcher = new SdFsWatcher(paths, options);
+      watcher.#watcher.on("ready", () => {
+        if (Object.keys(watcher.#watcher.getWatched()).length > 0) {
+          resolve(watcher);
+        }
+      });
+    });
   }
 
   #watcher: chokidar.FSWatcher;
+  #ignoreInitial = true;
 
   private constructor(paths: string[], options?: chokidar.ChokidarOptions) {
     this.#watcher = chokidar.watch(paths, {
-      ignoreInitial: true,
       persistent: true,
       ...options,
+      ignoreInitial: true,
     });
+    this.#ignoreInitial = options?.ignoreInitial ?? this.#ignoreInitial;
   }
 
   onChange(
@@ -25,6 +37,12 @@ export class SdFsWatcher {
     const fnQ = new AsyncFnQueue();
 
     let changeInfoMap = new Map<string, EventName>();
+
+    if (!this.#ignoreInitial) {
+      fnQ.runLast(async () => {
+        await cb([]);
+      });
+    }
 
     this.#watcher.on("all", (event, filePath) => {
       if (!["add", "addDir", "change", "unlink", "unlinkDir"].includes(event)) return;
