@@ -1,13 +1,12 @@
-import { ResourceOptions, ResourceRef } from "@angular/core";
+import { resource, ResourceOptions, ResourceRef } from "@angular/core";
 import { $effect } from "./$effect";
-import { $resource } from "@simplysm/sd-angular";
 
 export function $resource<T, R>(
   options: ResourceOptions<T, R> & {
     saver?: (param: T | undefined) => void | PromiseLike<void>;
   },
 ): ResourceRef<T | undefined> {
-  const sig = $resource(options);
+  const sig = resource(options);
 
   if (options.saver) {
     $effect(() => {

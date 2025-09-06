@@ -18,11 +18,18 @@ function parseReplacements(input: Record<string, string>): SymbolReplacement[] {
   });
 }
 
+function getSourceFileModule(filePath: string): string {
+  const match = filePath.match(/packages[\\/](.*?)[\\/]src[\\/]/);
+  return `@simplysm/${match![1]}`;
+}
+
 export default function convertSymbols(raw: Record<string, string>) {
   const replacements = parseReplacements(raw);
   const sourceFiles = getTsMortphSourceFiles();
 
   for (const sourceFile of sourceFiles) {
+    const sourceFileModule = getSourceFileModule(sourceFile.getFilePath());
+
     let changed = false;
 
     const usedReplacements = new Set<string>(); // 실제 사용된 newModule#newName 추적
@@ -47,13 +54,16 @@ export default function convertSymbols(raw: Record<string, string>) {
 
       const importModule = importDecl.getModuleSpecifierValue();
 
-      const match = replacements.find(r => r.oldModule === importModule && r.oldName === name);
-      if (!match) return;
+      const match = replacements.find((r) => r.oldModule === importModule && r.oldName === name);
+      if (!match || match.oldModule === sourceFileModule || match.newModule === sourceFileModule)
+        return;
 
       identifier.replaceWithText(match.newName);
       usedReplacements.add(`${match.newModule}#${match.newName}`);
       changed = true;
-      console.log(`[ref] ${sourceFile.getBaseName()} :: ${importModule} :: ${name} → ${match.newName}`);
+      console.log(
+        `[ref] ${sourceFile.getBaseName()} :: ${importModule} :: ${name} → ${match.newName}`,
+      );
     });
 
     // 2. import 교체
@@ -64,8 +74,18 @@ export default function convertSymbols(raw: Record<string, string>) {
       for (const ni of namedImports) {
         const oldName = ni.getName();
 
-        const match = replacements.find(r => r.oldModule === specifier && r.oldName === oldName);
-        if (match) {
+        const match = replacements.find((r) => r.oldModule === specifier && r.oldName === oldName);
+        if (
+          !match ||
+          match.oldModule === sourceFileModule ||
+          match.newModule === sourceFileModule
+        ) {
+          // 기존 import 유지 기록
+          if (!existingImportMap.has(specifier)) {
+            existingImportMap.set(specifier, new Set());
+          }
+          existingImportMap.get(specifier)!.add(oldName);
+        } else {
           ni.remove();
 
           // 만약 모듈이 동일하다면 즉시 대체
@@ -77,13 +97,9 @@ export default function convertSymbols(raw: Record<string, string>) {
           }
 
           changed = true;
-          console.log(`[import] ${sourceFile.getBaseName()} :: ${specifier} :: ${oldName} → ${match.newName}`);
-        } else {
-          // 기존 import 유지 기록
-          if (!existingImportMap.has(specifier)) {
-            existingImportMap.set(specifier, new Set());
-          }
-          existingImportMap.get(specifier)!.add(oldName);
+          console.log(
+            `[import] ${sourceFile.getBaseName()} :: ${specifier} :: ${oldName} → ${match.newName}`,
+          );
         }
       }
     }
@@ -93,10 +109,13 @@ export default function convertSymbols(raw: Record<string, string>) {
       const [newModule, newName] = key.split("#");
 
       const already = existingImportMap.get(newModule)?.has(newName);
-      const existsInFile = sourceFile.getImportDeclarations().some(decl =>
-        decl.getModuleSpecifierValue() === newModule &&
-        decl.getNamedImports().some(ni => ni.getName() === newName)
-      );
+      const existsInFile = sourceFile
+        .getImportDeclarations()
+        .some(
+          (decl) =>
+            decl.getModuleSpecifierValue() === newModule &&
+            decl.getNamedImports().some((ni) => ni.getName() === newName),
+        );
 
       if (already || existsInFile) continue;
 

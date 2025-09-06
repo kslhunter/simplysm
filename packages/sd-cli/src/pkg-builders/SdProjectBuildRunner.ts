@@ -88,10 +88,11 @@ export class SdProjectBuildRunner {
             {
               pkgPath: changedPkgInfo.pkgPath,
               projConf: opt.projConf,
+              scopePathSet: scopePathSet,
+
               watch: true,
               emitOnly: opt.emitOnly,
               noEmit: opt.noEmit,
-              scopePathSet: scopePathSet,
             },
           ]);
 
@@ -272,6 +273,11 @@ export class SdProjectBuildRunner {
   }
 
   static async buildAsync(opt: { pkgPaths: TNormPath[]; projConf: ISdProjectConfig }) {
+    const scopePathSet = await this.#getScopePathSetAsync(
+      opt.pkgPaths,
+      Object.keys(opt.projConf.localUpdates ?? {}),
+    );
+
     const buildResults = await opt.pkgPaths.parallelAsync(async (pkgPath) => {
       const worker = new SdWorker<ISdBuildRunnerWorkerType>(
         import.meta.resolve("../workers/build-runner.worker"),
@@ -281,6 +287,7 @@ export class SdProjectBuildRunner {
         {
           pkgPath,
           projConf: opt.projConf,
+          scopePathSet: scopePathSet,
         },
       ]);
 

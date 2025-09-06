@@ -44,7 +44,6 @@ import { $arr } from "../../utils/bindings/wrappers/$arr";
 import { TXT_CHANGE_IGNORE_CONFIRM } from "../../commons";
 import { $effect } from "../../utils/bindings/$effect";
 import { SdAnchorControl } from "../../controls/sd-anchor.control";
-import { $effect } from "@simplysm/sd-angular";
 
 @Component({
   selector: "sd-data-sheet",

@@ -15,11 +15,11 @@ export abstract class SdBuildRunnerBase<T extends "server" | "library" | "client
   constructor(
     protected _pkgPath: TNormPath,
     protected _projConf: ISdProjectConfig,
+    scopePathSet: Set<TNormPath>,
     protected _watch: boolean,
     protected _dev: boolean,
     protected _emitOnly?: boolean,
     protected _noEmit?: boolean,
-    scopePathSet?: Set<TNormPath>,
   ) {
     this._pkgName = path.basename(_pkgPath);
     this._pkgConf = _projConf.packages[this._pkgName] as TSdPackageConfig<T>;

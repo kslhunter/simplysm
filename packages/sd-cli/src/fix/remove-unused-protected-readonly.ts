@@ -51,7 +51,13 @@ export default function removeUnusedProtectedReadonly() {
         const usedInTemplate =
           templateText.includes(name) || new RegExp(`\\b${name}\\b`).test(templateText);
 
-        if (!usedInTemplate) {
+        const identifiers = cls.getDescendantsOfKind(SyntaxKind.Identifier);
+        const usedInClass = identifiers.some((id) => {
+          if (id.getText() !== name) return false;
+          return id !== field.getNameNode();
+        });
+
+        if (!usedInTemplate && !usedInClass) {
           console.log(`🧹 Removing unused field: ${name} in ${sourceFile.getBaseName()}`);
           field.remove();
         }

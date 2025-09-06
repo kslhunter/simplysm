@@ -50,11 +50,11 @@ createSdWorker<ISdBuildRunnerWorkerType>({
     buildRunner = new buildRunnerType(
       req.pkgPath,
       req.projConf,
+      req.scopePathSet,
       req.watch ?? false,
       req.watch ? !pkgConf.forceProductionMode : false,
       req.emitOnly,
       req.noEmit,
-      req.scopePathSet,
     );
   },
   async rebuild(modifiedFileSet?: Set<TNormPath>) {

@@ -30,7 +30,6 @@ import { injectParent } from "../../utils/injections/inject-parent";
 import { ISdModal } from "../../providers/sd-modal.provider";
 import { $effect } from "../../utils/bindings/$effect";
 import { SdAnchorControl } from "../../controls/sd-anchor.control";
-import { $effect } from "@simplysm/sd-angular";
 
 @Component({
   selector: "sd-data-detail",

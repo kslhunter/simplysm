@@ -1,12 +1,14 @@
 import {
+  afterRenderEffect,
   EffectCleanupRegisterFn,
   EffectRef,
   Signal,
   untracked,
 } from "@angular/core";
-import { $afterRenderEffect } from "@simplysm/sd-angular";
 
-export function $afterRenderEffect(fn: (onCleanup: EffectCleanupRegisterFn) => Promise<void>): never;
+export function $afterRenderEffect(
+  fn: (onCleanup: EffectCleanupRegisterFn) => Promise<void>,
+): never;
 export function $afterRenderEffect(fn: (onCleanup: EffectCleanupRegisterFn) => void): EffectRef;
 export function $afterRenderEffect(
   signals: Signal<any>[],
@@ -20,19 +22,16 @@ export function $afterRenderEffect(
   const fn = (arg2 ?? arg1) as (onCleanup: EffectCleanupRegisterFn) => void | Promise<void>;
 
   if (sigs) {
-    return $afterRenderEffect(
-      async (onCleanup) => {
-        for (const sig of sigs) {
-          sig();
-        }
+    return afterRenderEffect(async (onCleanup) => {
+      for (const sig of sigs) {
+        sig();
+      }
 
-        await untracked(async () => {
-          await fn(onCleanup);
-        });
-      },
-    );
-  }
-  else {
-    return $afterRenderEffect((onCleanup) => fn(onCleanup));
+      await untracked(async () => {
+        await fn(onCleanup);
+      });
+    });
+  } else {
+    return afterRenderEffect((onCleanup) => fn(onCleanup));
   }
 }

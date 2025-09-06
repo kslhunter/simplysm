@@ -11,5 +11,4 @@ export interface ISdTsCompilerOptions {
   isEmitOnly: boolean;
   isNoEmit: boolean;
   scopePathSet: ScopePathSet;
-  globalStyleFilePath?: TNormPath;
 }

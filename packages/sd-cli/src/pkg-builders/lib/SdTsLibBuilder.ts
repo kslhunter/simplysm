@@ -24,7 +24,6 @@ export class SdTsLibBuilder {
       isDevMode: dev,
       isEmitOnly: emitOnly,
       isNoEmit: noEmit,
-      globalStyleFilePath: PathUtils.norm(this._pkgPath, "src/styles.scss"),
       isForBundle: false,
       scopePathSet,
     });

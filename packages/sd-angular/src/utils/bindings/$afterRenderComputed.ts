@@ -1,7 +1,5 @@
 
-import { Signal } from "@angular/core";
-import { $signal } from "@simplysm/sd-angular";
-import { $afterRenderEffect } from "@simplysm/sd-angular";
+import { afterRenderEffect, signal, Signal } from "@angular/core";
 
 export function $afterRenderComputed<R>(fn: () => R, opt: { initialValue: R }): Signal<R>;
 export function $afterRenderComputed<R>(
@@ -12,9 +10,9 @@ export function $afterRenderComputed<R>(
   fn: () => R,
   opt?: { initialValue?: R },
 ): Signal<R | undefined> {
-  const resultSig = $signal<R | undefined>(opt?.initialValue);
+  const resultSig = signal<R | undefined>(opt?.initialValue);
 
-  $afterRenderEffect(() => {
+  afterRenderEffect(() => {
     resultSig.set(fn());
   });
 

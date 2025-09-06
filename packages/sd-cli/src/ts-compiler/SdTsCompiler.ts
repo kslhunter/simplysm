@@ -368,40 +368,35 @@ export class SdTsCompiler {
   }
 
   async #buildGlobalStyleAsync() {
+    if (!this.#isForAngular) return;
+
     //-- global style
-    if (
-      this._opt.globalStyleFilePath != null &&
-      FsUtils.exists(this._opt.globalStyleFilePath) &&
-      !this.#emittedFilesCacheMap.has(this._opt.globalStyleFilePath)
-    ) {
-      this.#debug(`전역 스타일 번들링 중...`);
+    const globalStyleFilePath = PathUtils.norm(this._opt.pkgPath, "src/styles.scss");
+    if (this.#emittedFilesCacheMap.has(globalStyleFilePath)) return;
+    if (!FsUtils.exists(globalStyleFilePath)) return;
 
-      await this.#perf.run("전역 스타일 번들링", async () => {
-        const data = await FsUtils.readFileAsync(this._opt.globalStyleFilePath!);
-        const stylesheetBundlingResult = await this.#styleBundler!.bundleAsync(
-          data,
-          this._opt.globalStyleFilePath!,
-          this._opt.globalStyleFilePath,
-        );
-        const emitFileInfos = this.#emittedFilesCacheMap.getOrCreate(
-          this._opt.globalStyleFilePath!,
-          [],
-        );
-        emitFileInfos.push({
-          outAbsPath: PathUtils.norm(
-            this._opt.pkgPath,
-            path
-              .relative(path.resolve(this._opt.pkgPath, "src"), this._opt.globalStyleFilePath!)
-              .replace(/\.scss$/, ".css"),
-          ),
-          text: stylesheetBundlingResult.contents ?? "",
-        });
+    this.#debug(`전역 스타일 번들링 중...`);
+
+    await this.#perf.run("전역 스타일 번들링", async () => {
+      const data = await FsUtils.readFileAsync(globalStyleFilePath);
+      const stylesheetBundlingResult = await this.#styleBundler!.bundleAsync(
+        data,
+        globalStyleFilePath,
+        globalStyleFilePath,
+      );
+      const emitFileInfos = this.#emittedFilesCacheMap.getOrCreate(globalStyleFilePath, []);
+      emitFileInfos.push({
+        outAbsPath: PathUtils.norm(
+          this._opt.pkgPath,
+          path
+            .relative(path.resolve(this._opt.pkgPath, "src"), globalStyleFilePath)
+            .replace(/\.scss$/, ".css"),
+        ),
+        text: stylesheetBundlingResult.contents ?? "",
       });
+    });
 
-      return this._opt.globalStyleFilePath;
-    }
-
-    return undefined;
+    return globalStyleFilePath;
   }
 
   #build(prepareResult: IPrepareResult) {

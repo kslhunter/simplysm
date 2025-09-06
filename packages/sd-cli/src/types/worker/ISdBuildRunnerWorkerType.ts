@@ -15,10 +15,10 @@ export interface ISdBuildRunnerWorkerType extends ISdWorkerType {
 export interface ISdBuildRunnerInitializeRequest {
   pkgPath: TNormPath;
   projConf: ISdProjectConfig;
+  scopePathSet: Set<TNormPath>;
 
   // watch
   watch?: boolean;
   emitOnly?: boolean;
   noEmit?: boolean;
-  scopePathSet?: Set<TNormPath>;
 }

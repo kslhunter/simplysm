@@ -1,6 +1,6 @@
 {
   "name": "simplysm",
-  "version": "12.13.23",
+  "version": "12.13.34",
   "description": "심플리즘 패키지",
   "author": "김석래",
   "repository": {
@@ -26,6 +26,7 @@
     "watch:sd-core": "yarn run _sd-cli_ --debug watch --packages sd-core-common sd-core-browser sd-core-node",
     "watch:sd-angular --emitOnly": "yarn run _sd-cli_ --debug watch --packages sd-angular --emitOnly",
     "build": "yarn run _sd-cli_ build",
+    "build:sd-core-common": "yarn run _sd-cli_ --debug build --packages sd-core-common",
     "publish": "yarn run _sd-cli_ publish",
     "fix": "yarn run _sd-cli_ fix --library",
     "--": "",
