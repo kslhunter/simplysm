@@ -1,6 +1,7 @@
 import { execSync } from "node:child_process";
 import path from "path";
 import fs from "fs";
+import semver from "semver";
 
 const outputJson = execSync("npm view @angular/build@^20 --json", { encoding: "utf-8" });
 const output = JSON.parse(outputJson);
@@ -20,13 +21,21 @@ const npmConfPaths = [
 ];
 for (const npmConfPath of npmConfPaths) {
   const npmConf = JSON.parse(fs.readFileSync(npmConfPath, { encoding: "utf-8" }));
-  for (const npmConfDepKey in Object.keys(npmConf.dependencies)) {
-    if (Object.keys(ngDeps).includes(npmConfDepKey)) {
-      npmConf.dependencies[npmConfDepKey] = ngDeps[npmConfDepKey];
+
+  // updateNpmConf(npmConf.dependencies);
+  // updateNpmConf(npmConf.devDependencies);
+  checkNpmConf(npmConf.peerDependencies);
+}
+
+function checkNpmConf(deps) {
+  for (const depKey in deps) {
+    if (Object.keys(ngDeps).includes(depKey)) {
+      if (!semver.subset(deps[depKey], ngDeps[depKey])) {
+        // eslint-disable-next-line no-console
+        console.error(depKey, deps[depKey], ngDeps[depKey]);
+      }
     }
   }
-
-  fs.writeFileSync(npmConfPath, JSON.stringify(npmConf, undefined, 2));
 }
 
 /*const esbuildVersion = output[output.length - 1].dependencies.esbuild;
