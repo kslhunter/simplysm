@@ -2,31 +2,15 @@ import path from "path";
 import { SdCliConvertMessageUtils } from "../../utils/SdCliConvertMessageUtils";
 import { FsUtils, HashUtils, PathUtils, TNormPath } from "@simplysm/sd-core-node";
 import { SdTsCompiler } from "../../ts-compiler/SdTsCompiler";
-import { ScopePathSet } from "../commons/ScopePathSet";
 import { ISdBuildResult } from "../../types/build/ISdBuildResult";
+import { ISdTsCompilerOptions } from "../../types/build/ISdTsCompilerOptions";
 
 export class SdTsLibBuilder {
   #tsCompiler: SdTsCompiler;
   #outputHashCache = new Map<TNormPath, string>();
 
-  constructor(
-    private readonly _pkgPath: TNormPath,
-    watch: boolean,
-    dev: boolean,
-    emitOnly: boolean,
-    noEmit: boolean,
-    scopePathSet: ScopePathSet,
-  ) {
-    this.#tsCompiler = new SdTsCompiler({
-      pkgPath: this._pkgPath,
-      additionalOptions: { declaration: true },
-      isWatchMode: watch,
-      isDevMode: dev,
-      isEmitOnly: emitOnly,
-      isNoEmit: noEmit,
-      isForBundle: false,
-      scopePathSet,
-    });
+  constructor(private readonly _opt: ISdTsCompilerOptions) {
+    this.#tsCompiler = new SdTsCompiler(_opt, false);
   }
 
   async buildAsync(modifiedFileSet?: Set<TNormPath>): Promise<ISdBuildResult> {
@@ -55,11 +39,11 @@ export class SdTsLibBuilder {
       if (globalStylesheetBundlingResult && "outputFiles" in globalStylesheetBundlingResult) {
         for (const outputFile of globalStylesheetBundlingResult.outputFiles) {
           const distPath = PathUtils.norm(
-            this._pkgPath,
+            this._opt.pkgPath,
             "dist",
-            path.relative(this._pkgPath, outputFile.path),
+            path.relative(this._opt.pkgPath, outputFile.path),
           );
-          if (PathUtils.isChildPath(distPath, path.resolve(this._pkgPath, "dist"))) {
+          if (PathUtils.isChildPath(distPath, path.resolve(this._opt.pkgPath, "dist"))) {
             const prevHash = this.#outputHashCache.get(distPath);
             const currHash = HashUtils.get(Buffer.from(outputFile.text));
             if (prevHash !== currHash) {
@@ -73,7 +57,7 @@ export class SdTsLibBuilder {
     }
 
     const styleResults = Array.from(tsCompileResult.stylesheetBundlingResultMap.values()).mapMany(
-      (item) => SdCliConvertMessageUtils.convertToBuildMessagesFromEsbuild(item, this._pkgPath),
+      (item) => SdCliConvertMessageUtils.convertToBuildMessagesFromEsbuild(item, this._opt.pkgPath),
     );
 
     return {

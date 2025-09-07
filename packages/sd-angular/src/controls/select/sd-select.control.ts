@@ -138,7 +138,7 @@ import { SdAnchorControl } from "../sd-anchor.control";
 
   styles: [
     /* language=SCSS */ `
-      @use "../../scss/mixins";
+      @use "../../../scss/commons/mixins";
 
       sd-select {
         display: block;

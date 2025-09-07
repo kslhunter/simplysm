@@ -19,7 +19,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
     /* language=SCSS */ `
       @use "sass:map";
 
-      @use "../scss/variables";
+      @use "../../scss/commons/variables";
 
       sd-note {
         display: block;
@@ -53,7 +53,9 @@ import { transformBoolean } from "../utils/type-tramsforms";
   ],
 })
 export class SdNoteControl {
-  theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey">();
+  theme = input<
+    "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey"
+  >();
   size = input<"sm" | "lg">();
   inset = input(false, { transform: transformBoolean });
 }

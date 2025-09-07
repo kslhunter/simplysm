@@ -341,7 +341,7 @@ import { NumberUtils } from "@simplysm/sd-core-common";
   `,
   styles: [
     /* language=SCSS */ `
-      @use "../../scss/mixins";
+      @use "../../../scss/commons/mixins";
 
       $z-index-fixed: 2;
       $z-index-head: 3;

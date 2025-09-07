@@ -1,49 +1,36 @@
 import { FsUtils, SdLogger, TNormPath } from "@simplysm/sd-core-node";
 import path from "path";
 import { javascript, StringUtils } from "@simplysm/sd-core-common";
-import { SdBuildRunnerBase } from "../commons/SdBuildRunnerBase";
+import { SdBuildRunnerBase } from "../SdBuildRunnerBase";
 import { SdServerBundler } from "./SdServerBundler";
 import { ISdBuildResult } from "../../types/build/ISdBuildResult";
-import { ITsConfig } from "../../types/common-config/ITsConfig";
 import { INpmConfig } from "../../types/common-config/INpmConfig";
 
 export class SdServerBuildRunner extends SdBuildRunnerBase<"server"> {
   protected override _logger = SdLogger.get(["simplysm", "sd-cli", "SdServerBuild2Runner"]);
 
   #serverBundler?: SdServerBundler;
-  #extModules?: { name: string; exists: boolean }[];
 
   protected override async _runAsync(modifiedFileSet?: Set<TNormPath>): Promise<ISdBuildResult> {
-    // prod일때 각종 파일들 생성
-    if (!this._dev) {
-      await this.#generateProductionFilesAsync();
-    }
-
     // 최초
     if (!modifiedFileSet) {
-      if (!this._noEmit) {
+      const externalModules = this.#getExternalModules();
+
+      if (!this._opt.watch?.dev) {
+        this.#generateProductionFiles(
+          externalModules.filter((item) => item.exists).map((item) => item.name),
+        );
+      }
+
+      if (!this._opt.watch?.noEmit) {
         this._debug("GEN .config...");
-        const confDistPath = path.resolve(this._pkgPath, "dist/.config.json");
+        const confDistPath = path.resolve(this._opt.pkgPath, "dist/.config.json");
         FsUtils.writeFile(confDistPath, JSON.stringify(this._pkgConf.configs ?? {}, undefined, 2));
       }
 
       this._debug(`BUILD 준비...`);
-      const tsConfig = FsUtils.readJson(path.resolve(this._pkgPath, "tsconfig.json")) as ITsConfig;
-      this.#extModules = this.#extModules ?? (await this.#getExternalModulesAsync());
-      this.#serverBundler = new SdServerBundler({
-        watch: this._watch,
-        dev: this._dev,
-        emitOnly: this._emitOnly ?? false,
-        noEmit: this._noEmit ?? false,
-        pkgPath: this._pkgPath,
-        entryPoints: tsConfig.files
-          ? tsConfig.files.map((item) => path.resolve(this._pkgPath, item))
-          : [
-              path.resolve(this._pkgPath, "src/main.ts"),
-              ...FsUtils.glob(path.resolve(this._pkgPath, "src/workers/*.ts")),
-            ],
-        external: this.#extModules.map((item) => item.name),
-        scopePathSet: this._scopePathSet,
+      this.#serverBundler = new SdServerBundler(this._opt, {
+        external: externalModules.map((item) => item.name),
       });
     }
 
@@ -54,17 +41,14 @@ export class SdServerBuildRunner extends SdBuildRunnerBase<"server"> {
     return bundleResult;
   }
 
-  async #generateProductionFilesAsync() {
-    const npmConf = FsUtils.readJson(path.resolve(this._pkgPath, "package.json")) as INpmConfig;
+  #generateProductionFiles(externals: string[]) {
+    const npmConf = FsUtils.readJson(path.resolve(this._opt.pkgPath, "package.json")) as INpmConfig;
 
     this._debug("GEN package.json...");
     {
       const projNpmConf = FsUtils.readJson(
         path.resolve(process.cwd(), "package.json"),
       ) as INpmConfig;
-      const extModules = await this.#getExternalModulesAsync();
-
-      const deps = extModules.filter((item) => item.exists).map((item) => item.name);
 
       const distNpmConfig: INpmConfig = {
         name: npmConf.name,
@@ -72,13 +56,13 @@ export class SdServerBuildRunner extends SdBuildRunnerBase<"server"> {
         type: npmConf.type,
       };
       distNpmConfig.dependencies = {};
-      for (const dep of deps) {
-        distNpmConfig.dependencies[dep] = "*";
+      for (const external of externals) {
+        distNpmConfig.dependencies[external] = "*";
       }
 
       distNpmConfig.volta = projNpmConf.volta;
 
-      FsUtils.writeJson(path.resolve(this._pkgPath, "dist/package.json"), distNpmConfig, {
+      FsUtils.writeJson(path.resolve(this._opt.pkgPath, "dist/package.json"), distNpmConfig, {
         space: 2,
       });
     }
@@ -86,7 +70,7 @@ export class SdServerBuildRunner extends SdBuildRunnerBase<"server"> {
     this._debug("GEN .yarnrc.yml...");
     {
       FsUtils.writeFile(
-        path.resolve(this._pkgPath, "dist/.yarnrc.yml"),
+        path.resolve(this._opt.pkgPath, "dist/.yarnrc.yml"),
         "nodeLinker: node-modules",
       );
     }
@@ -94,7 +78,7 @@ export class SdServerBuildRunner extends SdBuildRunnerBase<"server"> {
     this._debug("GEN openssl.cnf...");
     {
       FsUtils.writeFile(
-        path.resolve(this._pkgPath, "dist/openssl.cnf"),
+        path.resolve(this._opt.pkgPath, "dist/openssl.cnf"),
         `
 nodejs_conf = openssl_init
 
@@ -157,13 +141,13 @@ Options = UnsafeLegacyRenegotiation`.trim(),
         .replaceAll("\n        ", "\n")
         .trim();
 
-      FsUtils.writeFile(path.resolve(this._pkgPath, "dist/pm2.config.cjs"), str);
+      FsUtils.writeFile(path.resolve(this._opt.pkgPath, "dist/pm2.config.cjs"), str);
     }
 
     if (this._pkgConf.iis) {
       this._debug("GEN web.config...");
 
-      const iisDistPath = path.resolve(this._pkgPath, "dist/web.config");
+      const iisDistPath = path.resolve(this._opt.pkgPath, "dist/web.config");
       const nodeVersion = process.versions.node.substring(1);
       const serverExeFilePath =
         this._pkgConf.iis.nodeExeFilePath ??
@@ -203,12 +187,10 @@ Options = UnsafeLegacyRenegotiation`.trim(),
     }
   }
 
-  async #getExternalModulesAsync(): Promise<
-    {
-      name: string;
-      exists: boolean;
-    }[]
-  > {
+  #getExternalModules(): {
+    name: string;
+    exists: boolean;
+  }[] {
     const loadedModuleNames: string[] = [];
     const results: {
       name: string;
@@ -217,7 +199,7 @@ Options = UnsafeLegacyRenegotiation`.trim(),
 
     const npmConfigMap = new Map<string, INpmConfig>();
 
-    const fn = async (currPath: string): Promise<void> => {
+    const fn = (currPath: string) => {
       const npmConfig = npmConfigMap.getOrCreate(
         currPath,
         FsUtils.readJson(path.resolve(currPath, "package.json")),
@@ -245,7 +227,7 @@ Options = UnsafeLegacyRenegotiation`.trim(),
         const modulePath = FsUtils.findAllParentChildPaths(
           "node_modules/" + moduleName,
           currPath,
-          path.resolve(this._pkgPath, "../../"),
+          path.resolve(this._opt.pkgPath, "../../"),
         ).first();
         if (StringUtils.isNullOrEmpty(modulePath)) {
           continue;
@@ -265,7 +247,7 @@ Options = UnsafeLegacyRenegotiation`.trim(),
           });
         }
 
-        await fn(modulePath);
+        fn(modulePath);
       }
 
       for (const optModuleName of deps.optionals) {
@@ -275,7 +257,7 @@ Options = UnsafeLegacyRenegotiation`.trim(),
         const optModulePath = FsUtils.findAllParentChildPaths(
           "node_modules/" + optModuleName,
           currPath,
-          path.resolve(this._pkgPath, "../../"),
+          path.resolve(this._opt.pkgPath, "../../"),
         ).first();
         if (StringUtils.isNullOrEmpty(optModulePath)) {
           results.push({
@@ -299,11 +281,11 @@ Options = UnsafeLegacyRenegotiation`.trim(),
           });
         }
 
-        await fn(optModulePath);
+        fn(optModulePath);
       }
     };
 
-    await fn(this._pkgPath);
+    fn(this._opt.pkgPath);
 
     for (const external of this._pkgConf.externals ?? []) {
       if (!results.some((item) => item.name === external)) {

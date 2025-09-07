@@ -3,7 +3,7 @@ import { SdDepCache } from "./SdDepCache";
 import { PathUtils, TNormPath } from "@simplysm/sd-core-node";
 import path from "path";
 import { NgtscProgram } from "@angular/compiler-cli";
-import { ScopePathSet } from "../pkg-builders/commons/ScopePathSet";
+import { ScopePathSet } from "./ScopePathSet";
 
 export class SdDepAnalyzer {
   static analyze(

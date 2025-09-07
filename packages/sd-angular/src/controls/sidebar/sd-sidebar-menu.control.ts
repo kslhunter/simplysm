@@ -70,7 +70,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
   `,
   styles: [
     /* language=SCSS */ `
-      @use "../../scss/mixins";
+      @use "../../../scss/commons/mixins";
 
       sd-sidebar-menu {
         > sd-list[data-sd-inset="true"] {

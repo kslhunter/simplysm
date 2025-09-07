@@ -86,18 +86,23 @@ export class SdProjectBuildRunner {
       const buildResults = await changedPkgInfos.parallelAsync(async (changedPkgInfo) => {
         // 처음
         if (!changedPkgInfo.buildInfo) {
+          const pkgConf = opt.projConf.packages[path.basename(changedPkgInfo.pkgPath)]!;
+
           const buildWorker = new SdWorker<ISdBuildRunnerWorkerType>(
             import.meta.resolve("../workers/build-runner.worker"),
           );
           await buildWorker.run("initialize", [
             {
-              pkgPath: changedPkgInfo.pkgPath,
-              projConf: opt.projConf,
-              scopePathSet: scopePathSet,
-
-              watch: true,
-              emitOnly: opt.emitOnly,
-              noEmit: opt.noEmit,
+              options: {
+                pkgPath: changedPkgInfo.pkgPath,
+                scopePathSet,
+                watch: {
+                  dev: !pkgConf.forceProductionMode,
+                  emitOnly: opt.emitOnly,
+                  noEmit: opt.noEmit,
+                },
+              },
+              pkgConf,
             },
           ]);
 
@@ -284,15 +289,16 @@ export class SdProjectBuildRunner {
     );
 
     const buildResults = await opt.pkgPaths.parallelAsync(async (pkgPath) => {
+      const pkgConf = opt.projConf.packages[path.basename(pkgPath)]!;
+
       const worker = new SdWorker<ISdBuildRunnerWorkerType>(
         import.meta.resolve("../workers/build-runner.worker"),
       );
 
       await worker.run("initialize", [
         {
-          pkgPath,
-          projConf: opt.projConf,
-          scopePathSet: scopePathSet,
+          options: { pkgPath, scopePathSet },
+          pkgConf,
         },
       ]);
 
@@ -311,15 +317,13 @@ export class SdProjectBuildRunner {
       path.resolve(item, "src"),
       path.resolve(item, "public"),
       path.resolve(item, "public-dev"),
+      path.resolve(item, "scss"),
     ]);
     const localUpdatePaths = (
       await localUpdateGlobs.mapManyAsync(
-        async (key) => await FsUtils.globAsync(path.resolve(process.cwd(), "node_modules", key)),
+        async (glob) => await FsUtils.globAsync(path.resolve(process.cwd(), "node_modules", glob)),
       )
-    ).mapMany((key) => [
-      path.resolve(process.cwd(), "node_modules", key, "dist"),
-      path.resolve(process.cwd(), "node_modules", key, "src/**/*.scss"),
-    ]);
+    ).mapMany((dir) => [path.resolve(dir, "dist"), path.resolve(dir, "scss")]);
 
     return new Set([...workspacePaths, ...localUpdatePaths].map((item) => PathUtils.norm(item)));
   }

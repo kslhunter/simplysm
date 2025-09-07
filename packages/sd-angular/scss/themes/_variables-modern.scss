@@ -1,6 +1,6 @@
 @use "sass:map";
 
-@use "../variables";
+@use "../commons/variables";
 
 $vars: (
   gap: (
@@ -12,7 +12,7 @@ $vars: (
     xl: 13px,
     xxl: 19px,
     0: 0,
-    auto: "auto"
+    auto: "auto",
   ),
   font-size: (
     lg: 16px,
@@ -31,5 +31,5 @@ $vars: (
   //  height: 3em
   //),
   //animation-duration: .2s,
-  //font-family: "'Pretendard Variable', sans-serif",
-)
+   //font-family: "'Pretendard Variable', sans-serif",
+);

@@ -9,7 +9,7 @@ import { setupRipple } from "../../utils/setups/setup-ripple";
   imports: [],
   styles: [
     /* language=SCSS */ `
-      @use "../../scss/mixins";
+      @use "../../../scss/commons/mixins";
 
       sd-select-button {
         display: block;

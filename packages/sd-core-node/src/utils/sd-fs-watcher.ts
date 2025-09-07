@@ -11,9 +11,10 @@ export class SdFsWatcher {
     return await new Promise<SdFsWatcher>((resolve) => {
       const watcher = new SdFsWatcher(paths, options);
       watcher.#watcher.on("ready", () => {
-        if (Object.keys(watcher.#watcher.getWatched()).length > 0) {
+        resolve(watcher);
+        /*if (Object.keys(watcher.#watcher.getWatched()).length > 0) {
           resolve(watcher);
-        }
+        }*/
       });
     });
   }

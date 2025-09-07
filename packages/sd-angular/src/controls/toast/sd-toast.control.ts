@@ -27,8 +27,8 @@ import { transformBoolean } from "../../utils/type-tramsforms";
     /* language=SCSS */ `
       @use "sass:map";
 
-      @use "../../scss/mixins";
-      @use "../../scss/variables";
+      @use "../../../scss/commons/mixins";
+      @use "../../../scss/commons/variables";
 
       sd-toast {
         display: block;
@@ -128,7 +128,9 @@ import { transformBoolean } from "../../utils/type-tramsforms";
 export class SdToastControl {
   open = input(false, { transform: transformBoolean });
   useProgress = input(false, { transform: transformBoolean });
-  theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey">("info");
+  theme = input<
+    "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey"
+  >("info");
 
   progress = input<number>(0);
   message = input<string>();

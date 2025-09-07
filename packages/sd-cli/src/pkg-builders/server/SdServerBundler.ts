@@ -9,9 +9,9 @@ import {
 } from "@angular/build/src/tools/esbuild/bundler-context";
 import { convertOutputFile } from "@angular/build/src/tools/esbuild/utils";
 import { resolveAssets } from "@angular/build/src/utils/resolve-assets";
-import { ScopePathSet } from "../commons/ScopePathSet";
 import { ISdCliServerPluginResultCache } from "../../types/plugin/ISdCliServerPluginResultCache";
 import { ISdBuildResult } from "../../types/build/ISdBuildResult";
+import { ISdTsCompilerOptions } from "../../types/build/ISdTsCompilerOptions";
 
 export class SdServerBundler {
   #logger = SdLogger.get(["simplysm", "sd-cli", "SdServerBundler"]);
@@ -24,16 +24,8 @@ export class SdServerBundler {
   #outputHashCache = new Map<TNormPath, string>();
 
   constructor(
-    private readonly _opt: {
-      watch: boolean;
-      dev: boolean;
-      emitOnly: boolean;
-      noEmit: boolean;
-      pkgPath: TNormPath;
-      entryPoints: string[];
-      external?: string[];
-      scopePathSet: ScopePathSet;
-    },
+    private readonly _opt: ISdTsCompilerOptions,
+    private readonly _conf: { external: string[] },
   ) {}
 
   async bundleAsync(modifiedFileSet?: Set<TNormPath>): Promise<ISdBuildResult> {
@@ -44,20 +36,23 @@ export class SdServerBundler {
 
     if (!this.#context) {
       this.#context = await esbuild.context({
-        entryPoints: this._opt.entryPoints,
+        entryPoints: [
+          path.resolve(this._opt.pkgPath, "src/main.ts"),
+          ...FsUtils.glob(path.resolve(this._opt.pkgPath, "src/workers/*.ts")),
+        ],
         keepNames: true,
         bundle: true,
-        sourcemap: this._opt.dev,
+        sourcemap: !!this._opt.watch?.dev,
         target: "node18",
         mainFields: ["es2020", "es2015", "module", "main"],
         conditions: ["es2020", "es2015", "module"],
         tsconfig: path.resolve(this._opt.pkgPath, "tsconfig.json"),
         write: false,
         metafile: true,
-        legalComments: this._opt.dev ? "eof" : "none",
-        minifyIdentifiers: !this._opt.dev,
-        minifySyntax: !this._opt.dev,
-        minifyWhitespace: !this._opt.dev,
+        legalComments: this._opt.watch?.dev ? "eof" : "none",
+        minifyIdentifiers: !this._opt.watch?.dev,
+        minifySyntax: !this._opt.watch?.dev,
+        minifyWhitespace: !this._opt.watch?.dev,
         outdir: path.resolve(this._opt.pkgPath, "dist"),
         format: "esm",
         resolveExtensions: [".js", ".mjs", ".cjs", ".ts"],
@@ -91,7 +86,7 @@ export class SdServerBundler {
         },
         platform: "node",
         logLevel: "silent",
-        external: this._opt.external,
+        external: this._conf.external,
         banner: {
           js: `
 import __path__ from 'path';
@@ -102,25 +97,14 @@ const require = __createRequire__(import.meta.url);
 const __filename = __fileURLToPath__(import.meta.url);
 const __dirname = __path__.dirname(__filename);`.trim(),
         },
-        plugins: [
-          createSdServerPlugin({
-            modifiedFileSet: this.#modifiedFileSet,
-            watch: this._opt.watch,
-            dev: this._opt.dev,
-            emitOnly: this._opt.emitOnly,
-            noEmit: this._opt.noEmit,
-            pkgPath: this._opt.pkgPath,
-            result: this.#resultCache,
-            scopePathSet: this._opt.scopePathSet,
-          }),
-        ],
+        plugins: [createSdServerPlugin(this._opt, this.#modifiedFileSet, this.#resultCache)],
       });
     }
 
     let esbuildResult: esbuild.BuildResult | esbuild.BuildFailure;
     esbuildResult = await this.#context.rebuild();
 
-    if (this._opt.noEmit) {
+    if (this._opt.watch?.noEmit) {
       return {
         buildMessages: SdCliConvertMessageUtils.convertToBuildMessagesFromEsbuild(
           esbuildResult,
@@ -155,7 +139,7 @@ const __dirname = __path__.dirname(__filename);`.trim(),
         const assetFiles = await resolveAssets(
           [
             { input: "public", glob: "**/*", output: "." },
-            ...(this._opt.dev ? [{ input: "public-dev", glob: "**/*", output: "." }] : []),
+            ...(this._opt.watch?.dev ? [{ input: "public-dev", glob: "**/*", output: "." }] : []),
           ],
           this._opt.pkgPath,
         );

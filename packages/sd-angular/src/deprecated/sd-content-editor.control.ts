@@ -31,7 +31,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
   `,
   styles: [
     /* language=SCSS */ `
-      @use "../scss/mixins";
+      @use "../../scss/commons/mixins";
 
       sd-content-editor {
         display: block;
@@ -45,7 +45,9 @@ import { transformBoolean } from "../utils/type-tramsforms";
           border: 1px solid var(--trans-lighter);
           border-radius: var(--border-radius-default);
 
-          min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
+          min-height: calc(
+            var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px
+          );
 
           &:focus {
             outline: none;
@@ -63,14 +65,19 @@ import { transformBoolean } from "../utils/type-tramsforms";
         &[data-sd-size="sm"] {
           > ._editor {
             padding: var(--gap-xs) var(--gap-sm);
-            min-height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
+            min-height: calc(
+              var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px
+            );
           }
         }
 
         &[data-sd-size="lg"] {
           > ._editor {
             padding: var(--gap-default) var(--gap-lg);
-            min-height: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
+            min-height: calc(
+              var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit) +
+                2px
+            );
           }
         }
 
@@ -98,18 +105,24 @@ import { transformBoolean } from "../utils/type-tramsforms";
           }
 
           > ._editor {
-            min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
+            min-height: calc(
+              var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit)
+            );
           }
 
           &[data-sd-size="sm"] {
             > ._editor {
-              min-height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
+              min-height: calc(
+                var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit)
+              );
             }
           }
 
           &[data-sd-size="lg"] {
             > ._editor {
-              min-height: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
+              min-height: calc(
+                var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit)
+              );
             }
           }
 

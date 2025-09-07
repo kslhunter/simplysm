@@ -2,8 +2,9 @@ import { PathUtils, TNormPath } from "@simplysm/sd-core-node";
 import { ComponentStylesheetBundler } from "@angular/build/src/tools/esbuild/angular/component-stylesheets";
 import { transformSupportedBrowsersToTargets } from "@angular/build/src/tools/esbuild/utils";
 import browserslist from "browserslist";
-import { ScopePathSet } from "../pkg-builders/commons/ScopePathSet";
 import { TStylesheetBundlingResult } from "../types/build/TStylesheetBundlingResult";
+import { ScopePathSet } from "./ScopePathSet";
+import path from "path";
 
 export class SdStyleBundler {
   #ngStyleBundler: ComponentStylesheetBundler;
@@ -12,30 +13,40 @@ export class SdStyleBundler {
   #revRefCache = new Map<TNormPath, Set<TNormPath>>();
 
   constructor(
-    private readonly _pkgPath: TNormPath,
-    private readonly _isDevMode: boolean,
-    private readonly _scopePathSet: ScopePathSet,
+    private readonly _opt: {
+      pkgPath: TNormPath;
+      scopePathSet: ScopePathSet;
+      dev: boolean;
+    },
   ) {
     this.#ngStyleBundler = new ComponentStylesheetBundler(
       {
-        workspaceRoot: this._pkgPath,
-        optimization: !this._isDevMode,
-        inlineFonts: true,
-        preserveSymlinks: false,
-        sourcemap: this._isDevMode ? "inline" : false,
-        outputNames: { bundles: "[name]", media: "media/[name]" },
+        workspaceRoot: this._opt.pkgPath,
+        inlineFonts: !this._opt.dev,
+        optimization: !this._opt.dev,
+        sourcemap: this._opt.dev ? "linked" : false,
+        sourcesContent: this._opt.dev,
+        outputNames: { bundles: "[name]-[hash]", media: "media/[name]-[hash]" },
         includePaths: [],
+        sass: {
+          fatalDeprecations: undefined,
+          silenceDeprecations: undefined,
+          futureDeprecations: undefined,
+        },
         externalDependencies: [],
         target: transformSupportedBrowsersToTargets(browserslist(["Chrome > 78"])),
+        preserveSymlinks: false,
         tailwindConfiguration: undefined,
+        postcssConfiguration: undefined,
         cacheOptions: {
           enabled: true,
-          path: ".cache/angular",
-          basePath: ".cache",
+          basePath: path.resolve(this._opt.pkgPath, ".cache"),
+          path: path.resolve(this._opt.pkgPath, ".cache/angular"),
         },
+        publicPath: undefined,
       },
       "scss",
-      this._isDevMode,
+      this._opt.dev,
     );
   }
 
@@ -68,8 +79,8 @@ export class SdStyleBundler {
 
       for (const referencedFile of result.referencedFiles ?? []) {
         if (
-          !this._scopePathSet.inScope(fileNPath) ||
-          !this._scopePathSet.inScope(PathUtils.norm(referencedFile))
+          !this._opt.scopePathSet.inScope(fileNPath) ||
+          !this._opt.scopePathSet.inScope(PathUtils.norm(referencedFile))
         )
           continue;
 
@@ -127,8 +138,16 @@ export class SdStyleBundler {
   }
 
   #addReference(fileNPath: TNormPath, referencedFile: TNormPath) {
+    if (fileNPath === referencedFile) return;
     this.#refCache.getOrCreate(fileNPath, new Set()).add(referencedFile);
     this.#revRefCache.getOrCreate(referencedFile, new Set()).add(fileNPath);
+  }
+
+  getAllStyleFileSet() {
+    return new Set([
+      ...this.#revRefCache.keys(),
+      ...Array.from(this.#revRefCache.values()).mapMany((item) => Array.from(item)),
+    ]);
   }
 
   getAffectedFileSet(modifiedNPathSet: Set<TNormPath>) {

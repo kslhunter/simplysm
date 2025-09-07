@@ -1,7 +1,7 @@
 @use "sass:map";
 @use "sass:color";
 
-@use "../variables";
+@use "../commons/variables";
 
 $vars: (
   theme: (
@@ -33,7 +33,7 @@ $vars: (
       darkest: color.adjust(map.get(variables.$vars, color, blue-500), $lightness: 30%),
     ),
     secondary: (
-      lightest: rgba(map.get(variables.$vars, color, blue-500), .1),
+      lightest: rgba(map.get(variables.$vars, color, blue-500), 0.1),
       lighter: var(--color-blue-700),
       light: var(--color-blue-600),
       default: var(--color-blue-500),
@@ -79,37 +79,37 @@ $vars: (
     ),
   ),
   trans: (
-    darkest: rgba(255, 255, 255, .5),
-    darker: rgba(255, 255, 255, .4),
-    dark: rgba(255, 255, 255, .3),
-    default: rgba(255, 255, 255, .2),
-    light: rgba(255, 255, 255, .1),
-    lighter: rgba(255, 255, 255, .03),
-    rev-default: rgba(0, 0, 0, .1),
-    rev-light: rgba(0, 0, 0, .2),
-    rev-lighter: rgba(0, 0, 0, .3),
-    rev-lightest: rgba(0, 0, 0, .4),
+    darkest: rgba(255, 255, 255, 0.5),
+    darker: rgba(255, 255, 255, 0.4),
+    dark: rgba(255, 255, 255, 0.3),
+    default: rgba(255, 255, 255, 0.2),
+    light: rgba(255, 255, 255, 0.1),
+    lighter: rgba(255, 255, 255, 0.03),
+    rev-default: rgba(0, 0, 0, 0.1),
+    rev-light: rgba(0, 0, 0, 0.2),
+    rev-lighter: rgba(0, 0, 0, 0.3),
+    rev-lightest: rgba(0, 0, 0, 0.4),
   ),
   text-trans: (
     dark: white,
-    default: rgba(255, 255, 255, .87),
-    light: rgba(255, 255, 255, .60),
-    lighter: rgba(255, 255, 255, .38),
-    lightest: rgba(255, 255, 255, .2),
+    default: rgba(255, 255, 255, 0.87),
+    light: rgba(255, 255, 255, 0.6),
+    lighter: rgba(255, 255, 255, 0.38),
+    lightest: rgba(255, 255, 255, 0.2),
     rev-default: black,
-    rev-dark: rgba(0, 0, 0, .7),
-    rev-darker: rgba(0, 0, 0, .5),
+    rev-dark: rgba(0, 0, 0, 0.7),
+    rev-darker: rgba(0, 0, 0, 0.5),
   ),
   border-color: (
     light: var(--theme-grey-lighter),
     default: var(--theme-grey-light),
     dark: var(--theme-grey-default),
-    darker: var(--theme-grey-dark)
+    darker: var(--theme-grey-dark),
   ),
   background-color: black,
   background-rev-color: white,
   control-color: var(--theme-grey-lighter),
   sheet: (
-    bg: var(--theme-grey-lighter)
-  )
-)
+    bg: var(--theme-grey-lighter),
+  ),
+);

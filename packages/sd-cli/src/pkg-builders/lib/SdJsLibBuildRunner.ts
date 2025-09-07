@@ -1,7 +1,7 @@
 import { FsUtils, PathUtils, SdLogger, TNormPath } from "@simplysm/sd-core-node";
 import path from "path";
 import { ESLint } from "eslint";
-import { SdBuildRunnerBase } from "../commons/SdBuildRunnerBase";
+import { SdBuildRunnerBase } from "../SdBuildRunnerBase";
 import { ISdBuildResult } from "../../types/build/ISdBuildResult";
 import { SdCliConvertMessageUtils } from "../../utils/SdCliConvertMessageUtils";
 
@@ -9,7 +9,7 @@ export class SdJsLibBuildRunner extends SdBuildRunnerBase<"library"> {
   protected override _logger = SdLogger.get(["simplysm", "sd-cli", "SdJsLibBuildRunner"]);
 
   protected override async _runAsync(modifiedFileSet?: Set<TNormPath>): Promise<ISdBuildResult> {
-    if (this._emitOnly) {
+    if (this._opt.watch?.emitOnly) {
       return {
         buildMessages: [],
 
@@ -22,7 +22,7 @@ export class SdJsLibBuildRunner extends SdBuildRunnerBase<"library"> {
     const filePathSet =
       modifiedFileSet ??
       new Set(
-        FsUtils.glob(path.resolve(this._pkgPath, "src/**/*.js")).map((item) =>
+        FsUtils.glob(path.resolve(this._opt.pkgPath, "src/**/*.js")).map((item) =>
           PathUtils.norm(item),
         ),
       );
@@ -45,7 +45,7 @@ export class SdJsLibBuildRunner extends SdBuildRunnerBase<"library"> {
 
   async #lintAsync(fileSet: Set<string>) {
     const lintFilePaths = Array.from(fileSet)
-      .filter((item) => PathUtils.isChildPath(item, path.resolve(this._pkgPath, "src")))
+      .filter((item) => PathUtils.isChildPath(item, path.resolve(this._opt.pkgPath, "src")))
       .filter((item) => item.endsWith(".js"))
       .filter((item) => FsUtils.exists(item));
 
@@ -53,7 +53,7 @@ export class SdJsLibBuildRunner extends SdBuildRunnerBase<"library"> {
       return [];
     }
 
-    const linter = new ESLint({ cwd: this._pkgPath, cache: false });
+    const linter = new ESLint({ cwd: this._opt.pkgPath, cache: false });
     return await linter.lintFiles(lintFilePaths);
   }
 }

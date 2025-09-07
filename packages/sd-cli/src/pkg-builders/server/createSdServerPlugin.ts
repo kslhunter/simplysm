@@ -2,41 +2,27 @@ import esbuild from "esbuild";
 import { SdCliConvertMessageUtils } from "../../utils/SdCliConvertMessageUtils";
 import { PathUtils, TNormPath } from "@simplysm/sd-core-node";
 import { SdTsCompiler } from "../../ts-compiler/SdTsCompiler";
-import { ScopePathSet } from "../commons/ScopePathSet";
 import { ISdCliServerPluginResultCache } from "../../types/plugin/ISdCliServerPluginResultCache";
 import { ISdTsCompilerResult } from "../../types/build/ISdTsCompilerResult";
+import { ISdTsCompilerOptions } from "../../types/build/ISdTsCompilerOptions";
 
-export function createSdServerPlugin(conf: {
-  pkgPath: TNormPath;
-  watch: boolean;
-  dev: boolean;
-  emitOnly: boolean;
-  noEmit: boolean;
-  modifiedFileSet: Set<TNormPath>;
-  result: ISdCliServerPluginResultCache;
-  scopePathSet: ScopePathSet;
-}): esbuild.Plugin {
+export function createSdServerPlugin(
+  conf: ISdTsCompilerOptions,
+  modifiedFileSet: Set<TNormPath>,
+  resultCache: ISdCliServerPluginResultCache,
+): esbuild.Plugin {
   return {
     name: "sd-server-compile",
     setup: (build: esbuild.PluginBuild) => {
-      const tsCompiler = new SdTsCompiler({
-        pkgPath: conf.pkgPath,
-        additionalOptions: { declaration: false },
-        isWatchMode: conf.watch,
-        isDevMode: conf.dev,
-        isNoEmit: conf.noEmit,
-        isEmitOnly: conf.emitOnly,
-        isForBundle: true,
-        scopePathSet: conf.scopePathSet,
-      });
+      const tsCompiler = new SdTsCompiler(conf, true);
 
       let tsCompileResult: ISdTsCompilerResult;
 
       build.onStart(async () => {
-        tsCompileResult = await tsCompiler.compileAsync(conf.modifiedFileSet);
+        tsCompileResult = await tsCompiler.compileAsync(modifiedFileSet);
 
-        conf.result.watchFileSet = tsCompileResult.watchFileSet;
-        conf.result.affectedFileSet = tsCompileResult.affectedFileSet;
+        resultCache.watchFileSet = tsCompileResult.watchFileSet;
+        resultCache.affectedFileSet = tsCompileResult.affectedFileSet;
 
         //-- return err/warn
         return SdCliConvertMessageUtils.convertToEsbuildFromBuildMessages(
@@ -63,7 +49,7 @@ export function createSdServerPlugin(conf: {
       });
 
       build.onLoad({ filter: /\.[cm]?js$/ }, (args) => {
-        conf.result.watchFileSet!.add(PathUtils.norm(args.path));
+        resultCache.watchFileSet!.add(PathUtils.norm(args.path));
         return null;
       });
 
@@ -78,16 +64,16 @@ export function createSdServerPlugin(conf: {
           ),
         },
         (args) => {
-          conf.result.watchFileSet!.add(PathUtils.norm(args.path));
+          resultCache.watchFileSet!.add(PathUtils.norm(args.path));
           return null;
         },
       );
 
       build.onEnd((result) => {
-        conf.result.outputFiles = result.outputFiles;
-        conf.result.metafile = result.metafile;
+        resultCache.outputFiles = result.outputFiles;
+        resultCache.metafile = result.metafile;
 
-        conf.modifiedFileSet.clear();
+        modifiedFileSet.clear();
       });
     },
   };

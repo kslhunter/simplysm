@@ -27,7 +27,7 @@ import { SdCardControl } from "../sd-card.control";
   //region styles
   styles: [
     /* language=SCSS */ `
-      @use "../../scss/mixins";
+      @use "../../../scss/commons/mixins";
 
       sd-kanban {
         position: relative;

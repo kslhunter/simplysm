@@ -11,7 +11,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
     /* language=SCSS */ `
       @use "sass:map";
 
-      @use "../scss/variables";
+      @use "../../scss/commons/variables";
 
       sd-label {
         display: inline-block;
@@ -53,7 +53,9 @@ import { transformBoolean } from "../utils/type-tramsforms";
   },
 })
 export class SdLabelControl {
-  theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey">();
+  theme = input<
+    "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey"
+  >();
   color = input<string>();
   clickable = input(false, { transform: transformBoolean });
 }

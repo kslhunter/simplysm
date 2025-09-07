@@ -23,7 +23,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
   `,
   styles: [
     /* language=SCSS */ `
-      @use "../scss/mixins";
+      @use "../../scss/commons/mixins";
 
       sd-additional-button {
         border: 1px solid var(--trans-light);

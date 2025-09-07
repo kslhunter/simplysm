@@ -1,5 +1,5 @@
-import { PathUtils, SdLogger, TNormPath } from "@simplysm/sd-core-node";
-import { SdBuildRunnerBase } from "../commons/SdBuildRunnerBase";
+import { SdLogger, TNormPath } from "@simplysm/sd-core-node";
+import { SdBuildRunnerBase } from "../SdBuildRunnerBase";
 import { SdTsLibBuilder } from "./SdTsLibBuilder";
 import { SdCliIndexFileGenerator } from "./SdCliIndexFileGenerator";
 import { ISdBuildResult } from "../../types/build/ISdBuildResult";
@@ -13,32 +13,28 @@ export class SdTsLibBuildRunner extends SdBuildRunnerBase<"library"> {
   protected override async _runAsync(modifiedFileSet?: Set<TNormPath>): Promise<ISdBuildResult> {
     // 최초한번
     if (!modifiedFileSet) {
-      if (!this._noEmit) {
+      if (!this._opt.watch?.noEmit) {
         // index
         if (!this._pkgConf.noGenIndex) {
           this._debug("GEN index.ts...");
-          await new SdCliIndexFileGenerator().watchAsync(this._pkgPath, this._pkgConf.polyfills);
+          await new SdCliIndexFileGenerator().watchAsync(
+            this._opt.pkgPath,
+            this._pkgConf.polyfills,
+          );
         }
 
         // db-context
         if (this._pkgConf.dbContext != null) {
           this._debug(`GEN ${this._pkgConf.dbContext}.ts...`);
           await new SdCliDbContextFileGenerator().watchAsync(
-            this._pkgPath,
+            this._opt.pkgPath,
             this._pkgConf.dbContext,
           );
         }
       }
 
       this._debug(`BUILD 준비...`);
-      this.#builder = new SdTsLibBuilder(
-        PathUtils.norm(this._pkgPath),
-        this._watch,
-        this._dev,
-        this._emitOnly ?? false,
-        this._noEmit ?? false,
-        this._scopePathSet,
-      );
+      this.#builder = new SdTsLibBuilder(this._opt);
     }
 
     this._debug(`BUILD...`);

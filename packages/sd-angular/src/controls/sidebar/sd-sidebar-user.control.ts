@@ -11,7 +11,13 @@ import { SdRippleDirective } from "../../directives/sd-ripple.directive";
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdCollapseIconControl, SdCollapseControl, SdListControl, SdListItemControl, SdRippleDirective],
+  imports: [
+    SdCollapseIconControl,
+    SdCollapseControl,
+    SdListControl,
+    SdListItemControl,
+    SdRippleDirective,
+  ],
   template: `
     <div class="p-lg">
       <ng-content></ng-content>
@@ -37,7 +43,7 @@ import { SdRippleDirective } from "../../directives/sd-ripple.directive";
   `,
   styles: [
     /* language=SCSS */ `
-      @use "../../scss/mixins";
+      @use "../../../scss/commons/mixins";
 
       sd-sidebar-user {
         display: block;

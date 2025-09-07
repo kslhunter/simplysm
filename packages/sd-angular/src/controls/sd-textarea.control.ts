@@ -40,8 +40,8 @@ import { $computed } from "../utils/bindings/$computed";
     /* language=SCSS */ `
       @use "sass:map";
 
-      @use "../scss/variables";
-      @use "../scss/mixins";
+      @use "../../scss/commons/variables";
+      @use "../../scss/commons/mixins";
 
       sd-textarea {
         display: block;
@@ -174,7 +174,9 @@ export class SdTextareaControl {
   inset = input(false, { transform: transformBoolean });
   size = input<"sm" | "lg">();
   validatorFn = input<(value: string | undefined) => string | undefined>();
-  theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey">();
+  theme = input<
+    "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey"
+  >();
   inputStyle = input<string>();
   inputClass = input<string>();
 

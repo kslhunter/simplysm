@@ -1,6 +1,7 @@
 import { ISdBuildResult } from "../build/ISdBuildResult";
 import { ISdWorkerType, TNormPath } from "@simplysm/sd-core-node";
-import { ISdProjectConfig } from "../config/ISdProjectConfig";
+import { TSdPackageConfig } from "../config/ISdProjectConfig";
+import { ISdTsCompilerOptions } from "../build/ISdTsCompilerOptions";
 
 export interface ISdBuildRunnerWorkerType extends ISdWorkerType {
   methods: {
@@ -13,12 +14,6 @@ export interface ISdBuildRunnerWorkerType extends ISdWorkerType {
 }
 
 export interface ISdBuildRunnerInitializeRequest {
-  pkgPath: TNormPath;
-  projConf: ISdProjectConfig;
-  scopePathSet: Set<TNormPath>;
-
-  // watch
-  watch?: boolean;
-  emitOnly?: boolean;
-  noEmit?: boolean;
+  options: ISdTsCompilerOptions;
+  pkgConf: TSdPackageConfig<any>;
 }

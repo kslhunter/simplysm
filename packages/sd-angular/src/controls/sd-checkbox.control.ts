@@ -37,8 +37,8 @@ import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider
     /* language=SCSS */ `
       @use "sass:map";
 
-      @use "../scss/variables";
-      @use "../scss/mixins";
+      @use "../../scss/commons/variables";
+      @use "../../scss/commons/mixins";
 
       sd-checkbox {
         @include mixins.form-control-base();

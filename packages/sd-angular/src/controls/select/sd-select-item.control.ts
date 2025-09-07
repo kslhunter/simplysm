@@ -25,7 +25,7 @@ import { $signal } from "../../utils/bindings/$signal";
   imports: [SdCheckboxControl, SdGapControl],
   styles: [
     /* language=SCSS */ `
-      @use "../../scss/mixins";
+      @use "../../../scss/commons/mixins";
 
       sd-select-item {
         display: block;

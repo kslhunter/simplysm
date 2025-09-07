@@ -24,7 +24,7 @@
     "watch --noEmit": "yarn run _sd-cli_ --debug watch --noEmit",
     "watch:sd-cli": "yarn run _sd-cli_ --debug watch --packages sd-cli",
     "watch:sd-core": "yarn run _sd-cli_ --debug watch --packages sd-core-common sd-core-browser sd-core-node",
-    "watch:sd-angular --emitOnly": "yarn run _sd-cli_ --debug watch --packages sd-angular --emitOnly",
+    "watch:sd-angular": "yarn run _sd-cli_ --debug watch --packages sd-angular",
     "build": "yarn run _sd-cli_ build",
     "build:sd-core-common": "yarn run _sd-cli_ --debug build --packages sd-core-common",
     "publish": "yarn run _sd-cli_ publish",

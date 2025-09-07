@@ -34,12 +34,12 @@ import { createCssResourcePlugin } from "@angular/build/src/tools/esbuild/styles
 import { resolveAssets } from "@angular/build/src/utils/resolve-assets";
 import { createSdNgPlugin } from "./createSdNgPlugin";
 import { SdCliPerformanceTimer } from "../../utils/SdCliPerformanceTimer";
-import { ISdClientBuilderCordovaConfig } from "../../types/config/ISdProjectConfig";
+import { ISdClientPackageConfig } from "../../types/config/ISdProjectConfig";
 import nodeModule from "module";
-import { ScopePathSet } from "../commons/ScopePathSet";
 import { ISdCliNgPluginResultCache } from "../../types/plugin/ISdCliNgPluginResultCache";
 import { INpmConfig } from "../../types/common-config/INpmConfig";
 import { ISdBuildResult } from "../../types/build/ISdBuildResult";
+import { ISdTsCompilerOptions } from "../../types/build/ISdTsCompilerOptions";
 
 export class SdNgBundler {
   #logger = SdLogger.get(["simplysm", "sd-cli", "SdNgBundler"]);
@@ -63,21 +63,11 @@ export class SdNgBundler {
   #indexHtmlFilePath: string;
   #pkgName: string;
   #baseHref: string;
+  #outputPath: string;
 
   constructor(
-    private readonly _opt: {
-      watch: boolean;
-      dev: boolean;
-      emitOnly: boolean;
-      noEmit: boolean;
-      outputPath: TNormPath;
-      pkgPath: TNormPath;
-      builderType: string;
-      env: Record<string, string> | undefined;
-      external: string[];
-      cordovaConfig: ISdClientBuilderCordovaConfig | undefined;
-      scopePathSet: ScopePathSet;
-    },
+    private readonly _opt: ISdTsCompilerOptions,
+    private readonly _conf: IConf<any>,
   ) {
     this.#pkgNpmConf = FsUtils.readJson(path.resolve(this._opt.pkgPath, "package.json"));
     this.#mainFilePath = path.resolve(this._opt.pkgPath, "src/main.ts");
@@ -87,11 +77,19 @@ export class SdNgBundler {
     this.#indexHtmlFilePath = path.resolve(this._opt.pkgPath, "src/index.html");
     this.#pkgName = path.basename(this._opt.pkgPath);
     this.#baseHref =
-      this._opt.builderType === "web"
+      this._conf.builderType === "web"
         ? `/${this.#pkgName}/`
-        : this._opt.dev
-          ? `/${this.#pkgName}/${this._opt.builderType}/`
+        : this._opt.watch?.dev
+          ? `/${this.#pkgName}/${this._conf.builderType}/`
           : ``;
+    this.#outputPath =
+      this._conf.builderType === "web"
+        ? PathUtils.norm(this._opt.pkgPath, "dist")
+        : this._conf.builderType === "electron" && !this._opt.watch?.dev
+          ? PathUtils.norm(this._opt.pkgPath, ".electron/src")
+          : this._conf.builderType === "cordova" && !this._opt.watch?.dev
+            ? PathUtils.norm(this._opt.pkgPath, ".cordova/www")
+            : PathUtils.norm(this._opt.pkgPath, "dist", this._conf.builderType);
   }
 
   markForChanges(filePaths: string[]): void {
@@ -113,7 +111,7 @@ export class SdNgBundler {
         ...(FsUtils.exists(path.resolve(this._opt.pkgPath, "src/styles.scss"))
           ? [this.#getStyleContext()]
           : []),
-        ...(this._opt.builderType === "electron" ? [this.#getElectronMainContext()] : []),
+        ...(this._conf.builderType === "electron" ? [this.#getElectronMainContext()] : []),
       ]);
     }
 
@@ -126,7 +124,7 @@ export class SdNgBundler {
     //-- results
     const buildMessages = bundlingResults.mapMany((bundlingResult) => bundlingResult.results);
 
-    if (this._opt.noEmit) {
+    if (this._opt.watch?.noEmit) {
       return {
         watchFileSet: this.#ngResultCache.watchFileSet!,
         affectedFileSet: this.#ngResultCache.affectedFileSet!,
@@ -195,7 +193,7 @@ export class SdNgBundler {
         assetFiles.push(...(await this.#copyAssetsAsync()));
 
         //-- extract 3rdpartylicenses
-        if (!this._opt.dev) {
+        if (!this._opt.watch?.dev) {
           outputFiles.push(
             createOutputFile(
               "3rdpartylicenses.txt",
@@ -237,7 +235,7 @@ export class SdNgBundler {
       const emitFileSet = new Set<TNormPath>();
       perf.run("write output file", () => {
         for (const outputFile of outputFiles) {
-          const distFilePath = PathUtils.norm(this._opt.outputPath, outputFile.path);
+          const distFilePath = PathUtils.norm(this.#outputPath, outputFile.path);
           const prevHash = this.#outputHashCache.get(distFilePath);
           const currHash = HashUtils.get(Buffer.from(outputFile.contents));
           if (prevHash !== currHash) {
@@ -250,12 +248,9 @@ export class SdNgBundler {
           const prevHash = this.#outputHashCache.get(PathUtils.norm(assetFile.source));
           const currHash = HashUtils.get(FsUtils.readFileBuffer(assetFile.source));
           if (prevHash !== currHash) {
-            FsUtils.copy(
-              assetFile.source,
-              path.resolve(this._opt.outputPath, assetFile.destination),
-            );
+            FsUtils.copy(assetFile.source, path.resolve(this.#outputPath, assetFile.destination));
             this.#outputHashCache.set(PathUtils.norm(assetFile.source), currHash);
-            emitFileSet.add(PathUtils.norm(this._opt.outputPath, assetFile.destination));
+            emitFileSet.add(PathUtils.norm(this.#outputPath, assetFile.destination));
           }
         }
       });
@@ -296,17 +291,17 @@ export class SdNgBundler {
         ["polyfills", true],
         ["styles", false],
         ["main", true],
-        ...(this._opt.builderType === "cordova" ? [["cordova-entry", true] as Entrypoint] : []),
+        ...(this._conf.builderType === "cordova" ? [["cordova-entry", true] as Entrypoint] : []),
       ],
       sri: false,
       optimization: {
-        scripts: !this._opt.dev,
+        scripts: !this._opt.watch?.dev,
         styles: {
-          minify: !this._opt.dev,
-          inlineCritical: !this._opt.dev,
-          removeSpecialComments: !this._opt.dev,
+          minify: !this._opt.watch?.dev,
+          inlineCritical: !this._opt.watch?.dev,
+          removeSpecialComments: !this._opt.watch?.dev,
         },
-        fonts: { inline: !this._opt.dev },
+        fonts: { inline: !this._opt.watch?.dev },
       },
       crossOrigin: CrossOrigin.None,
       generateDedicatedSSRContent: false,
@@ -315,7 +310,7 @@ export class SdNgBundler {
 
     const modulePreloads: { url: string; mode: HintMode; depth: number }[] = [];
     const hints: { url: string; mode: HintMode; as?: string }[] = [];
-    if (!this._opt.dev) {
+    if (!this._opt.watch?.dev) {
       for (const [key, value] of initialFiles) {
         if (value.entrypoint || value.serverFile) {
           continue;
@@ -355,9 +350,9 @@ export class SdNgBundler {
     return await resolveAssets(
       [
         { input: "public", glob: "**/*", output: "." },
-        ...(this._opt.dev ? [{ input: "public-dev", glob: "**/*", output: "." }] : []),
-        ...(this._opt.dev && this._opt.builderType === "cordova"
-          ? Object.keys(this._opt.cordovaConfig?.platform ?? { browser: {} }).mapMany(
+        ...(this._opt.watch?.dev ? [{ input: "public-dev", glob: "**/*", output: "." }] : []),
+        ...(this._opt.watch?.dev && this._conf.builderType === "cordova"
+          ? Object.keys(this._conf.builderConfig?.platform ?? { browser: {} }).mapMany(
               (platform) => [
                 {
                   input: `.cordova/platforms/${platform}/platform_www/plugins`,
@@ -423,31 +418,31 @@ export class SdNgBundler {
       conditions: ["es2020", "es2015", "module"],
       resolveExtensions: [".js", ".mjs", ".cjs", ".ts"],
       metafile: true,
-      legalComments: this._opt.dev ? "eof" : "none",
+      legalComments: this._opt.watch?.dev ? "eof" : "none",
       logLevel: "silent",
-      minifyIdentifiers: !this._opt.dev,
-      minifySyntax: !this._opt.dev,
-      minifyWhitespace: !this._opt.dev,
+      minifyIdentifiers: !this._opt.watch?.dev,
+      minifySyntax: !this._opt.watch?.dev,
+      minifyWhitespace: !this._opt.watch?.dev,
       pure: ["forwardRef"],
       outdir: this._opt.pkgPath,
       outExtension: undefined,
-      sourcemap: this._opt.dev,
+      sourcemap: !!this._opt.watch?.dev,
       chunkNames: "[name]-[hash]",
       tsconfig: this.#tsConfigFilePath,
       write: false,
       preserveSymlinks: false,
       define: {
-        ...(!this._opt.dev ? { ngDevMode: "false" } : {}),
+        ...(!this._opt.watch?.dev ? { ngDevMode: "false" } : {}),
         "ngJitMode": "false",
         "global": "global",
         "process": "process",
         "Buffer": "Buffer",
         "process.env.SD_VERSION": JSON.stringify(this.#pkgNpmConf.version),
-        "process.env.NODE_ENV": JSON.stringify(this._opt.dev ? "development" : "production"),
-        ...(this._opt.env
-          ? Object.keys(this._opt.env).toObject(
+        "process.env.NODE_ENV": JSON.stringify(this._opt.watch?.dev ? "development" : "production"),
+        ...(this._conf.env
+          ? Object.keys(this._conf.env).toObject(
               (key) => `process.env.${key}`,
-              (key) => JSON.stringify(this._opt.env![key]),
+              (key) => JSON.stringify(this._conf.env![key]),
             )
           : {}),
       },
@@ -461,7 +456,7 @@ export class SdNgBundler {
             }
           : {}),
 
-        ...(this._opt.builderType === "cordova"
+        ...(this._conf.builderType === "cordova"
           ? {
               "cordova-entry": path.resolve(
                 path.dirname(fileURLToPath(import.meta.url)),
@@ -499,11 +494,15 @@ export class SdNgBundler {
         ".mp3": "file",
         ".ogg": "file",
       },
-      ...(this._opt.builderType === "electron"
+      ...(this._conf.builderType === "electron"
         ? {
             platform: "node",
             target: "node20",
-            external: ["electron", ...nodeModule.builtinModules, ...this._opt.external],
+            external: [
+              "electron",
+              ...nodeModule.builtinModules,
+              ...(this._conf.builderConfig?.reinstallDependencies ?? []),
+            ],
           }
         : {
             platform: "browser",
@@ -518,17 +517,8 @@ export class SdNgBundler {
           }),
       plugins: [
         createSourcemapIgnorelistPlugin(),
-        createSdNgPlugin({
-          modifiedFileSet: this.#modifiedFileSet,
-          watch: this._opt.watch,
-          dev: this._opt.dev,
-          emitOnly: this._opt.emitOnly,
-          noEmit: this._opt.noEmit,
-          pkgPath: this._opt.pkgPath,
-          result: this.#ngResultCache,
-          scopePathSet: this._opt.scopePathSet,
-        }),
-        ...(this._opt.builderType === "electron"
+        createSdNgPlugin(this._opt, this.#modifiedFileSet, this.#ngResultCache),
+        ...(this._conf.builderType === "electron"
           ? []
           : [nodeStdLibBrowserPlugin(nodeStdLibBrowser)]),
         // {
@@ -549,7 +539,7 @@ export class SdNgBundler {
   #getStyleContext(): SdNgBundlerContext {
     const pluginFactory = new StylesheetPluginFactory(
       {
-        sourcemap: this._opt.dev,
+        sourcemap: !!this._opt.watch?.dev,
         includePaths: [],
       },
       this.#styleLoadResultCache,
@@ -561,9 +551,9 @@ export class SdNgBundler {
       entryNames: "[name]",
       assetNames: "media/[name]",
       logLevel: "silent",
-      minify: !this._opt.dev,
+      minify: !this._opt.watch?.dev,
       metafile: true,
-      sourcemap: this._opt.dev,
+      sourcemap: !!this._opt.watch?.dev,
       outdir: this._opt.pkgPath,
       write: false,
       platform: "browser",
@@ -572,7 +562,7 @@ export class SdNgBundler {
       external: [],
       conditions: ["style", "sass"],
       mainFields: ["style", "sass"],
-      legalComments: !this._opt.dev ? "none" : "eof",
+      legalComments: !this._opt.watch?.dev ? "none" : "eof",
       entryPoints: {
         styles: path.resolve(this._opt.pkgPath, "src/styles.scss"),
       },
@@ -593,23 +583,23 @@ export class SdNgBundler {
       conditions: ["es2020", "es2015", "module"],
       resolveExtensions: [".js", ".mjs", ".cjs", ".ts"],
       metafile: true,
-      legalComments: this._opt.dev ? "eof" : "none",
+      legalComments: this._opt.watch?.dev ? "eof" : "none",
       logLevel: "silent",
-      minify: !this._opt.dev,
+      minify: !this._opt.watch?.dev,
       outdir: this._opt.pkgPath,
-      sourcemap: this._opt.dev,
+      sourcemap: !!this._opt.watch?.dev,
       tsconfig: this.#tsConfigFilePath,
       write: false,
       preserveSymlinks: false,
       external: ["electron"],
       define: {
-        ...(!this._opt.dev ? { ngDevMode: "false" } : {}),
+        ...(!this._opt.watch?.dev ? { ngDevMode: "false" } : {}),
         "process.env.SD_VERSION": JSON.stringify(this.#pkgNpmConf.version),
-        "process.env.NODE_ENV": JSON.stringify(this._opt.dev ? "development" : "production"),
-        ...(this._opt.env
-          ? Object.keys(this._opt.env).toObject(
+        "process.env.NODE_ENV": JSON.stringify(this._opt.watch?.dev ? "development" : "production"),
+        ...(this._conf.env
+          ? Object.keys(this._conf.env).toObject(
               (key) => `process.env.${key}`,
-              (key) => JSON.stringify(this._opt.env![key]),
+              (key) => JSON.stringify(this._conf.env![key]),
             )
           : {}),
       },
@@ -623,4 +613,10 @@ export class SdNgBundler {
   #debug(...msg: any[]): void {
     this.#logger.debug(`[${path.basename(this._opt.pkgPath)}]`, ...msg);
   }
+}
+
+interface IConf<T extends keyof NonNullable<ISdClientPackageConfig["builder"]>> {
+  builderType: T;
+  builderConfig: NonNullable<ISdClientPackageConfig["builder"]>[T];
+  env: Record<string, string> | undefined;
 }

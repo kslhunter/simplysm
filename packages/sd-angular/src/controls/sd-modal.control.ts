@@ -39,14 +39,22 @@ import { SdAnchorControl } from "./sd-anchor.control";
       (keydown.escape)="onDialogEscapeKeydown()"
       [style.min-width.px]="minWidthPx()"
       [style.min-height.px]="minHeightPx()"
-      [style.width.px]="minWidthPx() && widthPx() && minWidthPx()! > widthPx()! ? minWidthPx() : widthPx()"
-      [style.height.px]="minHeightPx() && heightPx() && minHeightPx()! > heightPx()! ? minHeightPx() : heightPx()"
+      [style.width.px]="
+        minWidthPx() && widthPx() && minWidthPx()! > widthPx()! ? minWidthPx() : widthPx()
+      "
+      [style.height.px]="
+        minHeightPx() && heightPx() && minHeightPx()! > heightPx()! ? minHeightPx() : heightPx()
+      "
       (focus)="onDialogFocus()"
       (sdResize)="onDialogResize($event)"
     >
       <div class="flex-column fill">
         @if (!hideHeader()) {
-          <div class="_header flex-row" (mousedown)="onHeaderMouseDown($event)" [style]="headerStyle()">
+          <div
+            class="_header flex-row"
+            (mousedown)="onHeaderMouseDown($event)"
+            [style]="headerStyle()"
+          >
             <h5 class="_title flex-fill">{{ title() }}</h5>
             <ng-template [ngTemplateOutlet]="actionTplRef() ?? null" />
             @if (!hideCloseButton()) {
@@ -66,17 +74,29 @@ import { SdAnchorControl } from "./sd-anchor.control";
         <div class="_left-resize-bar" (mousedown)="onResizeBarMousedown($event, 'left')"></div>
         <div class="_right-resize-bar" (mousedown)="onResizeBarMousedown($event, 'right')"></div>
         <div class="_top-resize-bar" (mousedown)="onResizeBarMousedown($event, 'top')"></div>
-        <div class="_top-right-resize-bar" (mousedown)="onResizeBarMousedown($event, 'top-right')"></div>
-        <div class="_top-left-resize-bar" (mousedown)="onResizeBarMousedown($event, 'top-left')"></div>
+        <div
+          class="_top-right-resize-bar"
+          (mousedown)="onResizeBarMousedown($event, 'top-right')"
+        ></div>
+        <div
+          class="_top-left-resize-bar"
+          (mousedown)="onResizeBarMousedown($event, 'top-left')"
+        ></div>
         <div class="_bottom-resize-bar" (mousedown)="onResizeBarMousedown($event, 'bottom')"></div>
-        <div class="_bottom-right-resize-bar" (mousedown)="onResizeBarMousedown($event, 'bottom-right')"></div>
-        <div class="_bottom-left-resize-bar" (mousedown)="onResizeBarMousedown($event, 'bottom-left')"></div>
+        <div
+          class="_bottom-right-resize-bar"
+          (mousedown)="onResizeBarMousedown($event, 'bottom-right')"
+        ></div>
+        <div
+          class="_bottom-left-resize-bar"
+          (mousedown)="onResizeBarMousedown($event, 'bottom-left')"
+        ></div>
       }
     </div>
   `,
   styles: [
     /* language=SCSS */ `
-      @use "../scss/mixins";
+      @use "../../scss/commons/mixins";
 
       sd-modal {
         display: block;
@@ -359,7 +379,9 @@ export class SdModalControl {
   }
 
   onDialogFocus() {
-    const maxZIndex = document.body.findAll("sd-modal").max((el) => Number(getComputedStyle(el).zIndex));
+    const maxZIndex = document.body
+      .findAll("sd-modal")
+      .max((el) => Number(getComputedStyle(el).zIndex));
     if (maxZIndex !== undefined) {
       this.#elRef.nativeElement.style.zIndex = (maxZIndex + 1).toString();
     }
@@ -388,7 +410,10 @@ export class SdModalControl {
     const style = getComputedStyle(this.#elRef.nativeElement);
     let paddingTop = style.paddingTop === "" ? 0 : (NumberUtils.parseInt(style.paddingTop) ?? 0);
 
-    if (this.dialogElRef().nativeElement.offsetHeight > this.#elRef.nativeElement.offsetHeight - paddingTop) {
+    if (
+      this.dialogElRef().nativeElement.offsetHeight >
+      this.#elRef.nativeElement.offsetHeight - paddingTop
+    ) {
       this.dialogElRef().nativeElement.style.maxHeight = `100%`; // `calc(100% - ${paddingTop}px)`;
       this.dialogElRef().nativeElement.style.height = `100%`; // `calc(100% - ${paddingTop}px)`;
     }
@@ -404,10 +429,12 @@ export class SdModalControl {
   @HostListener("window:resize")
   onWindowResize() {
     if (this.dialogElRef().nativeElement.offsetLeft > this.#elRef.nativeElement.offsetWidth - 100) {
-      this.dialogElRef().nativeElement.style.left = this.#elRef.nativeElement.offsetWidth - 100 + "px";
+      this.dialogElRef().nativeElement.style.left =
+        this.#elRef.nativeElement.offsetWidth - 100 + "px";
     }
     if (this.dialogElRef().nativeElement.offsetTop > this.#elRef.nativeElement.offsetHeight - 100) {
-      this.dialogElRef().nativeElement.style.right = this.#elRef.nativeElement.offsetHeight - 100 + "px";
+      this.dialogElRef().nativeElement.style.right =
+        this.#elRef.nativeElement.offsetHeight - 100 + "px";
     }
   }
 
@@ -437,7 +464,15 @@ export class SdModalControl {
 
   onResizeBarMousedown(
     event: MouseEvent,
-    direction: "left" | "right" | "top" | "top-left" | "top-right" | "bottom" | "bottom-left" | "bottom-right",
+    direction:
+      | "left"
+      | "right"
+      | "top"
+      | "top-left"
+      | "top-right"
+      | "bottom"
+      | "bottom-left"
+      | "bottom-right",
   ) {
     if (!this.resizable()) return;
 

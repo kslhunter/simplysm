@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, HostListener, input, model, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  HostListener,
+  input,
+  model,
+  ViewEncapsulation,
+} from "@angular/core";
 import { transformBoolean } from "../utils/type-tramsforms";
 
 @Component({
@@ -11,7 +18,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
     /* language=SCSS */ `
       @use "sass:map";
 
-      @use "../scss/variables";
+      @use "../../scss/commons/variables";
 
       sd-switch {
         display: block;
@@ -114,7 +121,9 @@ export class SdSwitchControl {
   inset = input(false, { transform: transformBoolean });
 
   size = input<"sm" | "lg">();
-  theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey">();
+  theme = input<
+    "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey"
+  >();
 
   @HostListener("click", ["$event"])
   onClick(event: Event) {

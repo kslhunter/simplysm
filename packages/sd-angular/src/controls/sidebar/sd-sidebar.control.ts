@@ -22,7 +22,7 @@ import { $computed } from "../../utils/bindings/$computed";
   `,
   styles: [
     /* language=SCSS */ `
-      @use "../../scss/mixins";
+      @use "../../../scss/commons/mixins";
 
       sd-sidebar {
         position: absolute;

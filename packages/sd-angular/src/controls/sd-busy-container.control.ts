@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, HostListener, inject, input, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  HostListener,
+  inject,
+  input,
+  ViewEncapsulation,
+} from "@angular/core";
 import { SdBusyProvider } from "../providers/sd-busy.provider";
 import { $computed } from "../utils/bindings/$computed";
 
@@ -28,7 +35,10 @@ import { transformBoolean } from "../utils/type-tramsforms";
       </div>
       @if (progressPercent() != null) {
         <div class="_progress">
-          <div class="_progress-bar" [style.transform]="'scaleX(' + progressPercent()! / 100 + ')'"></div>
+          <div
+            class="_progress-bar"
+            [style.transform]="'scaleX(' + progressPercent()! / 100 + ')'"
+          ></div>
         </div>
       }
     </div>
@@ -37,7 +47,7 @@ import { transformBoolean } from "../utils/type-tramsforms";
   //region styles
   styles: [
     /* language=SCSS */ `
-      @use "../scss/mixins";
+      @use "../../scss/commons/mixins";
 
       sd-busy-container {
         display: block;

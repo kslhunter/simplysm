@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, forwardRef, inject, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  forwardRef,
+  inject,
+  ViewEncapsulation,
+} from "@angular/core";
 import { SdDropdownControl } from "./sd-dropdown.control";
 import { SdEventsDirective } from "../../directives/sd-events.directive";
 import { injectElementRef } from "../../utils/injections/inject-element-ref";
@@ -12,7 +18,7 @@ import { injectElementRef } from "../../utils/injections/inject-element-ref";
   imports: [SdEventsDirective],
   styles: [
     /* language=SCSS */ `
-      @use "../../scss/mixins";
+      @use "../../../scss/commons/mixins";
 
       sd-dropdown-popup {
         position: fixed;
@@ -67,8 +73,7 @@ export class SdDropdownPopupControl {
 
     if (divEl.clientHeight > 300) {
       el.style.height = "300px";
-    }
-    else {
+    } else {
       delete (el.style as any).height;
     }
   }

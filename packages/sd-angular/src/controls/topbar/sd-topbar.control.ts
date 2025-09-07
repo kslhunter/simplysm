@@ -34,7 +34,7 @@ import { SdButtonControl } from "../sd-button.control";
   `,
   styles: [
     /* language=SCSS */ `
-      @use "../../scss/mixins";
+      @use "../../../scss/commons/mixins";
 
       sd-topbar {
         min-height: var(--topbar-height);

@@ -13,7 +13,7 @@ import { injectElementRef } from "../utils/injections/inject-element-ref";
     /* language=SCSS */ `
       @use "sass:map";
 
-      @use "../scss/variables";
+      @use "../../scss/commons/variables";
 
       sd-gap {
         @each $key, $val in map.get(variables.$vars, gap) {
@@ -50,7 +50,11 @@ export class SdGapControl {
     $effect(() => {
       if (this.widthPx() === 0 || this.heightPx() === 0 || this.widthEm() === 0) {
         this.#elRef.nativeElement.style.display = "none";
-      } else if (this.width() !== undefined || this.widthPx() !== undefined || this.widthEm() !== undefined) {
+      } else if (
+        this.width() !== undefined ||
+        this.widthPx() !== undefined ||
+        this.widthEm() !== undefined
+      ) {
         this.#elRef.nativeElement.style.display = "inline-block";
       } else if (this.height() !== undefined || this.heightPx() !== undefined) {
         this.#elRef.nativeElement.style.display = "block";

@@ -6,40 +6,26 @@ import { FsUtils, PathUtils, SdLogger, TNormPath } from "@simplysm/sd-core-node"
 import { SdCliPerformanceTimer } from "../../utils/SdCliPerformanceTimer";
 import { SdCliConvertMessageUtils } from "../../utils/SdCliConvertMessageUtils";
 import { SdTsCompiler } from "../../ts-compiler/SdTsCompiler";
-import { ScopePathSet } from "../commons/ScopePathSet";
 import { ISdCliNgPluginResultCache } from "../../types/plugin/ISdCliNgPluginResultCache";
 import { ISdTsCompilerResult } from "../../types/build/ISdTsCompilerResult";
+import { ISdTsCompilerOptions } from "../../types/build/ISdTsCompilerOptions";
 
-export function createSdNgPlugin(conf: {
-  pkgPath: TNormPath;
-  watch: boolean;
-  dev: boolean;
-  emitOnly: boolean;
-  noEmit: boolean;
-  modifiedFileSet: Set<TNormPath>;
-  result: ISdCliNgPluginResultCache;
-  scopePathSet: ScopePathSet;
-}): esbuild.Plugin {
+export function createSdNgPlugin(
+  opt: ISdTsCompilerOptions,
+  modifiedFileSet: Set<TNormPath>,
+  resultCache: ISdCliNgPluginResultCache,
+): esbuild.Plugin {
   let perf: SdCliPerformanceTimer;
   const logger = SdLogger.get(["simplysm", "sd-cli", "createSdNgPlugin"]);
 
   const debug = (...msg: any[]) => {
-    logger.debug(`[${path.basename(conf.pkgPath)}]`, ...msg);
+    logger.debug(`[${path.basename(opt.pkgPath)}]`, ...msg);
   };
 
   return {
     name: "sd-ng-compile",
     setup: (build: esbuild.PluginBuild) => {
-      const tsCompiler = new SdTsCompiler({
-        pkgPath: conf.pkgPath,
-        additionalOptions: { declaration: false },
-        isWatchMode: conf.watch,
-        isDevMode: conf.dev,
-        isForBundle: true,
-        isEmitOnly: conf.emitOnly,
-        isNoEmit: conf.noEmit,
-        scopePathSet: conf.scopePathSet,
-      });
+      const tsCompiler = new SdTsCompiler(opt, true);
 
       let tsCompileResult: ISdTsCompilerResult;
       const outputContentsCacheMap = new Map<TNormPath, Uint8Array>();
@@ -47,10 +33,10 @@ export function createSdNgPlugin(conf: {
       //-- js babel transformer
       const javascriptTransformer = new JavaScriptTransformer(
         {
-          thirdPartySourcemaps: conf.dev,
-          sourcemap: conf.dev,
+          thirdPartySourcemaps: !!opt.watch?.dev,
+          sourcemap: !!opt.watch?.dev,
           jit: false,
-          advancedOptimizations: !conf.dev,
+          advancedOptimizations: !opt.watch?.dev,
         },
         Math.floor((os.cpus().length * 2) / 3),
       );
@@ -61,18 +47,18 @@ export function createSdNgPlugin(conf: {
         perf = new SdCliPerformanceTimer("esbuild");
 
         const res = await perf.run("typescript build", async () => {
-          for (const modifiedFile of conf.modifiedFileSet) {
+          for (const modifiedFile of modifiedFileSet) {
             outputContentsCacheMap.delete(modifiedFile);
           }
 
-          tsCompileResult = await tsCompiler.compileAsync(conf.modifiedFileSet);
+          tsCompileResult = await tsCompiler.compileAsync(modifiedFileSet);
 
-          conf.result.watchFileSet = tsCompileResult.watchFileSet;
-          conf.result.affectedFileSet = tsCompileResult.affectedFileSet;
+          resultCache.watchFileSet = tsCompileResult.watchFileSet;
+          resultCache.affectedFileSet = tsCompileResult.affectedFileSet;
 
           const tsEsbuildResult = SdCliConvertMessageUtils.convertToEsbuildFromBuildMessages(
             tsCompileResult.messages,
-            conf.pkgPath,
+            opt.pkgPath,
           );
 
           //-- return err/warn
@@ -121,7 +107,7 @@ export function createSdNgPlugin(conf: {
       });
 
       build.onLoad({ filter: /\.mjs$/ }, async (args) => {
-        conf.result.watchFileSet!.add(PathUtils.norm(args.path));
+        resultCache.watchFileSet!.add(PathUtils.norm(args.path));
 
         const output = outputContentsCacheMap.get(PathUtils.norm(args.path));
         if (output != null) {
@@ -164,7 +150,7 @@ export function createSdNgPlugin(conf: {
           ")$",
       );
       build.onLoad({ filter: otherLoaderFilter }, (args) => {
-        conf.result.watchFileSet!.add(PathUtils.norm(args.path));
+        resultCache.watchFileSet!.add(PathUtils.norm(args.path));
         return null;
       });
 
@@ -190,10 +176,10 @@ export function createSdNgPlugin(conf: {
           }
         }
 
-        conf.result.outputFiles = result.outputFiles;
-        conf.result.metafile = result.metafile;
+        resultCache.outputFiles = result.outputFiles;
+        resultCache.metafile = result.metafile;
 
-        conf.modifiedFileSet.clear();
+        modifiedFileSet.clear();
       });
     },
   };

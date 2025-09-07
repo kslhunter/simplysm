@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, inject, input, model, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  input,
+  model,
+  ViewEncapsulation,
+} from "@angular/core";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { $computed } from "../utils/bindings/$computed";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
@@ -21,7 +28,10 @@ import { SdAnchorControl } from "./sd-anchor.control";
       <fa-icon [icon]="icons.angleLeft" [fixedWidth]="true" />
     </sd-anchor>
     @for (displayPage of displayPages(); track displayPage) {
-      <sd-anchor (click)="onPageClick(displayPage)" [class.tx-underline]="displayPage === currentPage()">
+      <sd-anchor
+        (click)="onPageClick(displayPage)"
+        [class.tx-underline]="displayPage === currentPage()"
+      >
         {{ displayPage + 1 }}
       </sd-anchor>
     }
@@ -34,7 +44,7 @@ import { SdAnchorControl } from "./sd-anchor.control";
   `,
   styles: [
     /* language=SCSS */ `
-      @use "../scss/mixins";
+      @use "../../scss/commons/mixins";
 
       sd-pagination {
         > sd-anchor {

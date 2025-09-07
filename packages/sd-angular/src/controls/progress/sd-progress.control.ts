@@ -12,8 +12,8 @@ import { PercentPipe } from "@angular/common";
     /* language=SCSS */ `
       @use "sass:map";
 
-      @use "../../scss/variables";
-      @use "../../scss/mixins";
+      @use "../../../scss/commons/variables";
+      @use "../../../scss/commons/mixins";
 
       sd-progress {
         position: relative;
