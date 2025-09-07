@@ -4,10 +4,10 @@ import { FsUtils, PathUtils, SdLogger, TNormPath } from "@simplysm/sd-core-node"
 import { StringUtils } from "@simplysm/sd-core-common";
 import { NgtscProgram, OptimizeFor } from "@angular/compiler-cli";
 import { AngularCompilerHost } from "@angular/build/src/tools/angular/angular-host";
-import { replaceBootstrap } from "@angular/build/src/tools/angular/transformers/jit-bootstrap-transformer";
 import { SdCliPerformanceTimer } from "../utils/SdCliPerformanceTimer";
 import { SdCliConvertMessageUtils } from "../utils/SdCliConvertMessageUtils";
 import { createWorkerTransformer } from "@angular/build/src/tools/angular/transformers/web-worker-transformer";
+import { replaceBootstrap } from "@angular/build/src/tools/angular/transformers/jit-bootstrap-transformer";
 import { SdDepCache } from "./SdDepCache";
 import { SdDepAnalyzer } from "./SdDepAnalyzer";
 import { FlatESLint } from "eslint/use-at-your-own-risk";
@@ -23,6 +23,8 @@ export class SdTsCompiler {
   #scopePathSet: ScopePathSet;
 
   #styleBundler: SdStyleBundler | undefined;
+
+  #moduleResolutionCache: ts.ModuleResolutionCache | undefined;
 
   #ngProgram: NgtscProgram | undefined;
   #program: ts.Program | undefined;
@@ -67,7 +69,7 @@ export class SdTsCompiler {
     }
   }
 
-  #parseTsConfig() {
+  #parseTsConfig(): ITsConfigInfo {
     const tsconfigPath = path.resolve(this._opt.pkgPath, "tsconfig.json");
     const tsconfig = FsUtils.readJson(tsconfigPath);
     const parsedTsconfig = ts.parseJsonConfigFileContent(tsconfig, ts.sys, this._opt.pkgPath, {
@@ -77,27 +79,15 @@ export class SdTsCompiler {
         ? {
             // typescript
             noEmitOnError: false,
-            strict: false,
-            noImplicitAny: false,
-            noImplicitThis: false,
-            strictNullChecks: true,
-            strictFunctionTypes: false,
-            strictBindCallApply: false,
-            strictPropertyInitialization: false,
-            useUnknownInCatchVariables: false,
-            exactOptionalPropertyTypes: false,
-            noUncheckedIndexedAccess: false,
-            noUnusedLocals: false,
-            noUnusedParameters: false,
             skipLibCheck: true,
-            checkJs: false,
-            alwaysStrict: false,
+            skipDefaultLibCheck: true,
 
             // angular
             strictTemplates: false,
             strictInjectionParameters: false,
             strictInputAccessModifiers: false,
             strictStandalone: false,
+            extendedDiagnostics: false,
           }
         : {}),
     });
@@ -190,6 +180,14 @@ export class SdTsCompiler {
       };
     }
 
+    this.#moduleResolutionCache = ts.createModuleResolutionCache(
+      compilerHost.getCurrentDirectory(),
+      compilerHost.getCanonicalFileName.bind(compilerHost),
+      compilerOptions,
+      this.#moduleResolutionCache?.getPackageJsonInfoCache(),
+    );
+    compilerHost.getModuleResolutionCache = () => this.#moduleResolutionCache;
+
     return compilerHost;
   }
 
@@ -214,7 +212,10 @@ export class SdTsCompiler {
     ]);
 
     this.#debug(`빌드 완료됨`, this.#perf.toString());
-    this.#debug(`영향 받은 파일: ${affectedFileSet.size}개`, affectedFileSet);
+    this.#debug(
+      `영향 받은 파일: ${affectedFileSet.size}개`,
+      ...(modifiedFileSet.size > 0 ? [affectedFileSet] : []),
+    );
     this.#debug(`감시 중인 파일: ${watchFileSet.size}개`);
 
     return {
@@ -301,7 +302,7 @@ export class SdTsCompiler {
       });
     }
 
-    if (!this._opt.watch?.emitOnly && this._opt.watch) {
+    if (this._opt.watch && !this._opt.watch.emitOnly) {
       this.#debug(`새 의존성 분석 중...`);
 
       this.#perf.run("새 의존성 분석", () => {

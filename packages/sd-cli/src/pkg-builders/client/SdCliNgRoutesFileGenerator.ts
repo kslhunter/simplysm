@@ -14,24 +14,21 @@ export class SdCliNgRoutesFileGenerator {
     const watcher = await SdFsWatcher.watchAsync([path.resolve(pkgPath, "src")], {
       ignored: [routesFilePath],
     });
-    watcher.onChange({ delay: 50 }, (changeInfos) => {
+    watcher.onChange({ delay: 50 }, async (changeInfos) => {
       if (changeInfos.some((item) => ["add", "addDir", "unlink", "unlinkDir"].includes(item.event)))
-        this.run(pkgPath, noLazyRoute);
+        await this.runAsync(pkgPath, noLazyRoute);
     });
 
-    this.run(pkgPath, noLazyRoute);
+    await this.runAsync(pkgPath, noLazyRoute);
   }
 
-  run(
-    pkgPath: string,
-    noLazyRoute?: boolean,
-  ): { changed: boolean; filePath: string; content: string } {
+  async runAsync(pkgPath: string, noLazyRoute?: boolean) {
     const appDirPath = path.resolve(pkgPath, "src/app");
     const routesFilePath = path.resolve(pkgPath, "src/routes.ts");
 
     // 내부 파일들 import
     const result: TInfo = new Map();
-    const filePaths = FsUtils.glob(path.resolve(appDirPath, "**/*{P,.p}age.ts"));
+    const filePaths = await FsUtils.globAsync(path.resolve(appDirPath, "**/*{P,.p}age.ts"));
     for (const filePath of filePaths.orderBy()) {
       const relModulePath = PathUtils.posix(path.relative(appDirPath, filePath)).slice(0, -3);
       const codes = relModulePath
@@ -97,7 +94,7 @@ ${routes}
 ];`.trim();
     const currHash = HashUtils.get(content);
     if (currHash !== this.cachedHash) {
-      FsUtils.writeFile(routesFilePath, content);
+      await FsUtils.writeFileAsync(routesFilePath, content);
       this.cachedHash = currHash;
       return { changed: true, filePath: routesFilePath, content };
     } else {

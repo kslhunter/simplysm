@@ -22,7 +22,10 @@ export class SdClientBuildRunner extends SdBuildRunnerBase<"client"> {
         // config
         this._debug("GEN .config...");
         const confDistPath = path.resolve(this._opt.pkgPath, "dist/.config.json");
-        FsUtils.writeFile(confDistPath, JSON.stringify(this._pkgConf.configs ?? {}, undefined, 2));
+        await FsUtils.writeFileAsync(
+          confDistPath,
+          JSON.stringify(this._pkgConf.configs ?? {}, undefined, 2),
+        );
 
         // cordova
         if (this._pkgConf.builder?.cordova) {
@@ -35,9 +38,9 @@ export class SdClientBuildRunner extends SdBuildRunnerBase<"client"> {
         }
 
         // routes
-        const npmConf = FsUtils.readJson(
+        const npmConf = (await FsUtils.readJsonAsync(
           path.resolve(this._opt.pkgPath, "package.json"),
-        ) as INpmConfig;
+        )) as INpmConfig;
         if ("@angular/router" in (npmConf.dependencies ?? {})) {
           this._debug(`GEN routes.ts...`);
           await new SdCliNgRoutesFileGenerator().watchAsync(

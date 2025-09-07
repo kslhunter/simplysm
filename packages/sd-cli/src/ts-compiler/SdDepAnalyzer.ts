@@ -21,11 +21,7 @@ export class SdDepAnalyzer {
     const compilerOpts = program.getCompilerOptions();
     const typeChecker = program.getTypeChecker();
 
-    const moduleResolutionCache = ts.createModuleResolutionCache(
-      compilerHost.getCurrentDirectory(),
-      compilerHost.getCanonicalFileName.bind(compilerHost),
-      compilerOpts,
-    );
+    const moduleResolutionCache = compilerHost.getModuleResolutionCache!();
 
     const resolveModule = (text: string, base: string): TNormPath[] => {
       const res = ts.resolveModuleName(

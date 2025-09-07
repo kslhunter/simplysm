@@ -106,8 +106,8 @@ export class SdNgBundler {
     this.#debug(`get contexts...`);
 
     if (!this.#contexts) {
-      this.#contexts = perf.run("get contexts", () => [
-        this.#getAppContext(),
+      this.#contexts = await perf.run("get contexts", async () => [
+        await this.#getAppContextAsync(),
         ...(FsUtils.exists(path.resolve(this._opt.pkgPath, "src/styles.scss"))
           ? [this.#getStyleContext()]
           : []),
@@ -233,26 +233,31 @@ export class SdNgBundler {
       this.#debug(`write output files...(${outputFiles.length})`);
 
       const emitFileSet = new Set<TNormPath>();
-      perf.run("write output file", () => {
-        for (const outputFile of outputFiles) {
-          const distFilePath = PathUtils.norm(this.#outputPath, outputFile.path);
-          const prevHash = this.#outputHashCache.get(distFilePath);
-          const currHash = HashUtils.get(Buffer.from(outputFile.contents));
-          if (prevHash !== currHash) {
-            FsUtils.writeFile(distFilePath, outputFile.contents);
-            this.#outputHashCache.set(distFilePath, currHash);
-            emitFileSet.add(distFilePath);
-          }
-        }
-        for (const assetFile of assetFiles) {
-          const prevHash = this.#outputHashCache.get(PathUtils.norm(assetFile.source));
-          const currHash = HashUtils.get(FsUtils.readFileBuffer(assetFile.source));
-          if (prevHash !== currHash) {
-            FsUtils.copy(assetFile.source, path.resolve(this.#outputPath, assetFile.destination));
-            this.#outputHashCache.set(PathUtils.norm(assetFile.source), currHash);
-            emitFileSet.add(PathUtils.norm(this.#outputPath, assetFile.destination));
-          }
-        }
+      await perf.run("write output file", async () => {
+        await Promise.all([
+          outputFiles.parallelAsync(async (outputFile) => {
+            const distFilePath = PathUtils.norm(this.#outputPath, outputFile.path);
+            const prevHash = this.#outputHashCache.get(distFilePath);
+            const currHash = HashUtils.get(Buffer.from(outputFile.contents));
+            if (prevHash !== currHash) {
+              await FsUtils.writeFileAsync(distFilePath, outputFile.contents);
+              this.#outputHashCache.set(distFilePath, currHash);
+              emitFileSet.add(distFilePath);
+            }
+          }),
+          assetFiles.parallelAsync(async (assetFile) => {
+            const prevHash = this.#outputHashCache.get(PathUtils.norm(assetFile.source));
+            const currHash = HashUtils.get(await FsUtils.readFileBufferAsync(assetFile.source));
+            if (prevHash !== currHash) {
+              await FsUtils.copyAsync(
+                assetFile.source,
+                path.resolve(this.#outputPath, assetFile.destination),
+              );
+              this.#outputHashCache.set(PathUtils.norm(assetFile.source), currHash);
+              emitFileSet.add(PathUtils.norm(this.#outputPath, assetFile.destination));
+            }
+          }),
+        ]);
       });
 
       this.#debug(perf.toString());
@@ -405,9 +410,9 @@ export class SdNgBundler {
     );
   }
 
-  #getAppContext() {
-    const workerEntries = FsUtils.glob(
-      path.resolve(this._opt.pkgPath, "src/workers/*.ts"),
+  async #getAppContextAsync() {
+    const workerEntries = (
+      await FsUtils.globAsync(path.resolve(this._opt.pkgPath, "src/workers/*.ts"))
     ).toObject((p) => "workers/" + path.basename(p, path.extname(p)));
 
     return new SdNgBundlerContext(this._opt.pkgPath, {

@@ -24,7 +24,7 @@ export class SdStyleBundler {
         workspaceRoot: this._opt.pkgPath,
         inlineFonts: !this._opt.dev,
         optimization: !this._opt.dev,
-        sourcemap: this._opt.dev ? "linked" : false,
+        sourcemap: this._opt.dev ? "inline" : false,
         sourcesContent: this._opt.dev,
         outputNames: { bundles: "[name]-[hash]", media: "media/[name]-[hash]" },
         includePaths: [],

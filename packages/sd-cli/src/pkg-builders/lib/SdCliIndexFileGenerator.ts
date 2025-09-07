@@ -13,18 +13,15 @@ export class SdCliIndexFileGenerator {
     const watcher = await SdFsWatcher.watchAsync([path.resolve(pkgPath, "src")], {
       ignored: [indexFilePath],
     });
-    watcher.onChange({ delay: 50 }, (changeInfos) => {
+    watcher.onChange({ delay: 50 }, async (changeInfos) => {
       if (changeInfos.some((item) => ["add", "addDir", "unlink", "unlinkDir"].includes(item.event)))
-        this.run(pkgPath, polyfills);
+        await this.runAsync(pkgPath, polyfills);
     });
 
-    this.run(pkgPath, polyfills);
+    await this.runAsync(pkgPath, polyfills);
   }
 
-  run(
-    pkgPath: string,
-    polyfills?: string[],
-  ): { changed: boolean; filePath: string; content: string } {
+  async runAsync(pkgPath: string, polyfills?: string[]) {
     const indexFilePath = path.resolve(pkgPath, "src/index.ts");
 
     const importTexts: string[] = [];
@@ -37,13 +34,13 @@ export class SdCliIndexFileGenerator {
     }
 
     // 내부 파일들 import
-    const filePaths = this.#getFilePaths(pkgPath);
+    const filePaths = await this.#getFilePathsAsync(pkgPath);
     for (const filePath of filePaths.orderBy()) {
       const requirePath = PathUtils.posix(path.relative(path.dirname(indexFilePath), filePath))
         .replace(/\.tsx?$/, "")
         .replace(/\/index$/, "");
 
-      const sourceTsFileContent = FsUtils.readFile(filePath);
+      const sourceTsFileContent = await FsUtils.readFileAsync(filePath);
       if (sourceTsFileContent.split("\n").some((line) => line.startsWith("export "))) {
         importTexts.push(`export * from "./${requirePath}";`);
       } else {
@@ -54,7 +51,7 @@ export class SdCliIndexFileGenerator {
     const content = importTexts.join("\n") + "\n";
     const currHash = HashUtils.get(content);
     if (currHash !== this.cachedHash) {
-      FsUtils.writeFile(indexFilePath, content);
+      await FsUtils.writeFileAsync(indexFilePath, content);
       this.cachedHash = currHash;
       return { changed: true, filePath: indexFilePath, content };
     } else {
@@ -62,17 +59,19 @@ export class SdCliIndexFileGenerator {
     }
   }
 
-  #getFilePaths(pkgPath: string): string[] {
+  async #getFilePathsAsync(pkgPath: string) {
     const indexFilePath = path.resolve(pkgPath, "src/index.ts");
 
-    const tsconfig = FsUtils.readJson(path.resolve(pkgPath, "tsconfig.json"));
+    const tsconfig = await FsUtils.readJsonAsync(path.resolve(pkgPath, "tsconfig.json"));
     const entryFilePaths: string[] =
       tsconfig.files?.map((item) => path.resolve(pkgPath, item)) ?? [];
 
-    return FsUtils.glob(path.resolve(pkgPath, "src/**/*{.ts,.tsx}"), {
-      nodir: true,
-      ignore: tsconfig.excludes,
-    }).filter(
+    return (
+      await FsUtils.globAsync(path.resolve(pkgPath, "src/**/*{.ts,.tsx}"), {
+        nodir: true,
+        ignore: tsconfig.excludes,
+      })
+    ).filter(
       (item) => !entryFilePaths.includes(item) && item !== indexFilePath && !item.endsWith(".d.ts"),
     );
   }
