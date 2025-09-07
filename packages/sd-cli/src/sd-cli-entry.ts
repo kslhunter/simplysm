@@ -16,8 +16,8 @@ import convertPrivateToHash from "./fix/convert-private-to-hash";
 import removeSdAngularSymbolNames from "./fix/remove-sd-angular-symbol-names";
 import convertSdAngularSymbolNames from "./fix/convert-sd-angular-symbol-names";
 import { removeUnusedInjects } from "./fix/remove-unused-injects";
-import { removeUnusedImports } from "./fix/remove-unused-imports";
 import removeUnusedProtectedReadonly from "./fix/remove-unused-protected-readonly";
+import { removeUnusedImports } from "./fix/remove-unused-imports";
 
 Error.stackTraceLimit = Infinity;
 EventEmitter.defaultMaxListeners = 0;

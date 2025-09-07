@@ -67,7 +67,11 @@ export class SdProjectBuildRunner {
           if (!buildInfo) return { pkgPath };
 
           const modifiedFileSet = new Set(
-            changeFiles.filter((item) => buildInfo.watchFileSet.has(item)),
+            changeFiles.filter(
+              (item) =>
+                buildInfo.watchFileSet.has(item) ||
+                PathUtils.isChildPath(item, path.resolve(pkgPath, "src")),
+            ),
           );
 
           if (modifiedFileSet.size < 1) return;
