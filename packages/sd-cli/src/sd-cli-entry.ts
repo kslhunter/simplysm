@@ -10,14 +10,14 @@ import { SdCliAiCommand } from "./entry/SdCliAiCommand";
 import { SdCliCordova } from "./entry/SdCliCordova";
 import { SdCliElectron } from "./entry/SdCliElectron";
 import { SdCliLocalUpdate } from "./entry/SdCliLocalUpdate";
-import { SdCliPostinstall } from "./entry/SdCliPostinstall";
+import { SdCliPostInstall } from "./entry/SdCliPostInstall";
 import { SdCliProject } from "./entry/SdCliProject";
-import convertPrivateToHash from "./fix/convert-private-to-hash";
-import removeSdAngularSymbolNames from "./fix/remove-sd-angular-symbol-names";
-import convertSdAngularSymbolNames from "./fix/convert-sd-angular-symbol-names";
-import { removeUnusedInjects } from "./fix/remove-unused-injects";
-import removeUnusedProtectedReadonly from "./fix/remove-unused-protected-readonly";
-import { removeUnusedImports } from "./fix/remove-unused-imports";
+import convertPrivateToHash from "./fix/convertPrivateToHash";
+import removeSdAngularSymbolNames from "./fix/removeSdAngularSymbolNames";
+import convertSdAngularSymbolNames from "./fix/convertSdAngularSymbolNames";
+import { removeUnusedInjects } from "./fix/removeUnusedInjects";
+import removeUnusedProtectedReadonly from "./fix/removeUnusedProtectedReadonly";
+import { removeUnusedImports } from "./fix/removeUnusedImports";
 
 Error.stackTraceLimit = Infinity;
 EventEmitter.defaultMaxListeners = 0;
@@ -254,7 +254,7 @@ await yargs(hideBin(process.argv))
     "postinstall",
     "설치후 자동실행할 작업",
     (cmd) => cmd.version(false).hide("help").hide("debug"),
-    () => SdCliPostinstall.run(),
+    () => SdCliPostInstall.run(),
   )
   .command(
     "fix",

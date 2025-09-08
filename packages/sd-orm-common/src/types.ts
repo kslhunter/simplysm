@@ -1,13 +1,13 @@
 import { TFlatType, Type, UnwrappedType } from "@simplysm/sd-core-common";
-import { DbContext } from "./db-context";
-import { Queryable } from "./query/queryable";
+import { DbContext } from "./DbContext";
+import { Queryable } from "./query/queryable/Queryable";
 
 export type TSdOrmDataType =
-  ISdOrmDataTypeOfText |
-  ISdOrmDataTypeOfDecimal |
-  ISdOrmDataTypeOfString |
-  ISdOrmDataTypeOfFixString |
-  ISdOrmDataTypeOfBinary;
+  | ISdOrmDataTypeOfText
+  | ISdOrmDataTypeOfDecimal
+  | ISdOrmDataTypeOfString
+  | ISdOrmDataTypeOfFixString
+  | ISdOrmDataTypeOfBinary;
 
 export interface ISdOrmDataTypeOfText {
   type: "TEXT";
@@ -33,7 +33,6 @@ export interface ISdOrmDataTypeOfBinary {
   type: "BINARY";
   length?: number | "MAX";
 }
-
 
 export type TQueryValue = TFlatType;
 

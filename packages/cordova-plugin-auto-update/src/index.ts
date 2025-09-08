@@ -1,2 +1,2 @@
-export * from "./cordova-apk-installer";
-export * from "./cordova-auto-update";
+export * from "./CordovaApkInstaller";
+export * from "./CordovaAutoUpdate";

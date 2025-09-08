@@ -1,1 +1,1 @@
-export * from "./cordova-file-system";
+export * from "./CordovaFileSystem";

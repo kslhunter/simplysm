@@ -1,5 +1,5 @@
 import { Type } from "@simplysm/sd-core-common";
-import { SdServiceServer } from "./sd-service-server";
+import { SdServiceServer } from "./SdServiceServer";
 import { ISdServiceRequest } from "@simplysm/sd-service-common";
 import * as http from "http";
 import { WebSocket } from "ws";

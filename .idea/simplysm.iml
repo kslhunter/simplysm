@@ -5,6 +5,7 @@
       <sourceFolder url="file://$MODULE_DIR$/packages/eslint-plugin/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/packages/sd-cli/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/packages/sd-orm-common/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/sd-core-node/tests" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/.back" />
       <excludeFolder url="file://$MODULE_DIR$/.docs" />
       <excludeFolder url="file://$MODULE_DIR$/.idea" />
