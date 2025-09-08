@@ -6,6 +6,7 @@ import { Uuid } from "../types/Uuid";
 import { NeverEntryError } from "../errors/NeverEntryError";
 import { WrappedType } from "../types/wrap/WrappedType";
 import { TFlatType } from "../types/type/TFlatType";
+import { UnwrappedType } from "../types/wrap/UnwrappedType";
 
 export class ObjectUtils {
   static clone<T>(

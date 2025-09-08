@@ -1,6 +1,7 @@
 import ftp from "basic-ftp";
-import { ISdStorage, ISdStorageConnConf } from "../ISdStorageConnConf";
+import { ISdStorageConnConf } from "../ISdStorageConnConf";
 import { PassThrough, Readable } from "stream";
+import { ISdStorage } from "../ISdStorage";
 
 export class SdFtpStorage implements ISdStorage {
   #ftp?: ftp.Client;

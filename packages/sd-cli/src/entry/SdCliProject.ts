@@ -372,16 +372,16 @@ export class SdCliProject {
     );
 
     if (messageMap.has("message")) {
-      logger.log(`알림\n${[...messageMap.get("message")!].join("\n")}`);
+      logger.log(`알림\n${Array.from(messageMap.get("message")!).join("\n")}`);
     }
     if (messageMap.has("suggestion")) {
-      logger.info(`제안\n${[...messageMap.get("suggestion")!].join("\n")}`);
+      logger.info(`제안\n${Array.from(messageMap.get("suggestion")!).join("\n")}`);
     }
     if (messageMap.has("warning")) {
-      logger.warn(`경고\n${[...messageMap.get("warning")!].join("\n")}`);
+      logger.warn(`경고\n${Array.from(messageMap.get("warning")!).join("\n")}`);
     }
     if (messageMap.has("error")) {
-      logger.error(`오류\n${[...messageMap.get("error")!].join("\n")}`);
+      logger.error(`오류\n${Array.from(messageMap.get("error")!).join("\n")}`);
     }
 
     logger.info("모든 빌드가 완료되었습니다.");

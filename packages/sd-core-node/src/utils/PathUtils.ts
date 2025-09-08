@@ -23,8 +23,9 @@ export class PathUtils {
   }
 
   static isChildPath(childPath: string, parentPath: string): boolean {
-    const relativePath = path.relative(parentPath, childPath);
-    return Boolean(relativePath) && !relativePath.startsWith("..") && !path.isAbsolute(relativePath);
+    return this.norm(childPath).startsWith(this.norm(parentPath));
+    // const relativePath = path.relative(parentPath, childPath);
+    // return Boolean(relativePath) && !relativePath.startsWith("..") && !path.isAbsolute(relativePath);
   }
 
   static norm(...paths: string[]): TNormPath {

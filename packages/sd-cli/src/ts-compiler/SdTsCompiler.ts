@@ -202,6 +202,10 @@ export class SdTsCompiler {
       this._opt.watch?.emitOnly ? [] : this.#lintAsync(prepareResult),
     ]);
 
+    const messages = [
+      ...SdCliConvertMessageUtils.convertToBuildMessagesFromTsDiag(buildResult.diagnostics),
+      ...SdCliConvertMessageUtils.convertToBuildMessagesFromEslint(lintResults),
+    ];
     const affectedFileSet = new Set([
       ...prepareResult.affectedFileSet,
       ...(this.#styleBundler?.getAffectedFileSet(modifiedFileSet) ?? []),
@@ -219,10 +223,7 @@ export class SdTsCompiler {
     this.#debug(`감시 중인 파일: ${watchFileSet.size}개`);
 
     return {
-      messages: [
-        ...SdCliConvertMessageUtils.convertToBuildMessagesFromTsDiag(buildResult.diagnostics),
-        ...SdCliConvertMessageUtils.convertToBuildMessagesFromEslint(lintResults),
-      ],
+      messages: messages,
       affectedFileSet: affectedFileSet,
       watchFileSet: watchFileSet,
       stylesheetBundlingResultMap: this.#styleBundler?.getResultCache() ?? new Map(),

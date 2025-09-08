@@ -263,7 +263,9 @@ export class SdProjectBuildRunner {
         for (const affectedFilePath of buildResult.affectedFileSet) {
           this.#resultCache.delete(affectedFilePath);
         }
+      }
 
+      for (const buildResult of buildResults) {
         for (const buildMessage of buildResult.buildMessages) {
           if (
             !buildMessage.filePath ||

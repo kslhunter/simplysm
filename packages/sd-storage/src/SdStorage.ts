@@ -1,7 +1,8 @@
-import { ISdStorage, ISdStorageConnConf } from "./ISdStorageConnConf";
+import { ISdStorageConnConf } from "./ISdStorageConnConf";
 import { SdSftpStorage } from "./storages/SdSftpStorage";
 import { SdFtpStorage } from "./storages/SdFtpStorage";
 import { Wait } from "@simplysm/sd-core-common";
+import { ISdStorage } from "./ISdStorage";
 
 export class SdStorage {
   // 여러 storage만들었다가,
