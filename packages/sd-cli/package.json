@@ -34,7 +34,7 @@
     "sass-embedded": "^1.92.1",
     "semver": "^7.7.2",
     "specifier-resolution-node": "^1.1.4",
-    "ts-morph": "^26.0.0",
+    "ts-morph": "^27.0.0",
     "tslib": "^2.8.1",
     "typescript": "~5.8.3",
     "yargs": "^18.0.0"

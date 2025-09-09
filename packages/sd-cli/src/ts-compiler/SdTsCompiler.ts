@@ -196,10 +196,10 @@ export class SdTsCompiler {
 
     const prepareResult = await this.#prepareAsync(modifiedFileSet);
 
-    const [globalStyleSheet, buildResult, lintResults] = await Promise.all([
+    const [globalStyleSheet, lintResults, buildResult] = await Promise.all([
       this._opt.watch?.noEmit ? undefined : this.#buildGlobalStyleAsync(),
-      this.#build(prepareResult),
       this._opt.watch?.emitOnly ? [] : this.#lintAsync(prepareResult),
+      this.#build(prepareResult),
     ]);
 
     const messages = [
@@ -371,14 +371,23 @@ export class SdTsCompiler {
         overrideConfig: {
           languageOptions: {
             parserOptions: {
+              // project: true,
+              // tsconfigRootDir: this._opt.pkgPath,
               project: null,
               programs: [this.#program],
             },
           },
         },
       });
+
+      // const result = await lintFilePaths.parallelAsync(async (lintFilePath) => {
+      //   const sf = this.#sourceFileCacheMap.get(lintFilePath);
+      //   if (!sf) return [];
+      //   return await linter.lintText(sf.text, { filePath: lintFilePath });
+      // });
       const result = await linter.lintFiles(lintFilePaths);
       this.#debug(`Linting 완료`);
+      // return result.mapMany();
       return result;
     });
   }
