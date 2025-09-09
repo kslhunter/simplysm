@@ -1,4 +1,11 @@
-import { BlobReader, Uint8ArrayReader, Uint8ArrayWriter, ZipReader, ZipWriter } from "@zip.js/zip.js";
+import {
+  BlobReader,
+  FileEntry,
+  Uint8ArrayReader,
+  Uint8ArrayWriter,
+  ZipReader,
+  ZipWriter,
+} from "@zip.js/zip.js";
 
 export class SdZip {
   readonly #reader?: ZipReader<Blob | Buffer>;
@@ -79,14 +86,14 @@ export class SdZip {
 
     const entries = await this.#reader.getEntries();
 
-    const entry = entries.single((item) => item.filename === fileName);
+    const entry = entries.single((item) => item.filename === fileName) as FileEntry | undefined;
     if (!entry) {
       this.#cache.set(fileName, undefined);
       return undefined;
     }
 
-    const bytes = await entry.getData?.(new Uint8ArrayWriter());
-    return bytes ? Buffer.from(bytes) : undefined;
+    const bytes = await entry.getData(new Uint8ArrayWriter());
+    return Buffer.from(bytes);
   }
 
   write(fileName: string, buffer: Buffer) {
