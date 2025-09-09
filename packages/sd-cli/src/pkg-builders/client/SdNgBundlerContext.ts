@@ -21,30 +21,42 @@ export class SdNgBundlerContext {
 
   constructor(
     private readonly _pkgPath: string,
+    private readonly _watch: boolean,
     private readonly _esbuildOptions: esbuild.BuildOptions,
   ) {}
 
   async bundleAsync() {
-    if (this.#context == null) {
-      this.#context = await esbuild.context(this._esbuildOptions);
-    }
-
     let esbuildResult: esbuild.BuildResult;
 
-    try {
-      this.#debug(`rebuild...`);
-      esbuildResult = await this.#context.rebuild();
-      this.#debug(`rebuild completed`);
-    } catch (err) {
-      if ("warnings" in err || "errors" in err) {
-        esbuildResult = err;
-      } else {
-        throw err;
+    this.#debug(`Building...`);
+    if (this._watch) {
+      if (this.#context == null) {
+        this.#context = await esbuild.context(this._esbuildOptions);
+      }
+
+      try {
+        esbuildResult = await this.#context.rebuild();
+      } catch (err) {
+        if ("warnings" in err || "errors" in err) {
+          esbuildResult = err;
+        } else {
+          throw err;
+        }
+      }
+    } else {
+      try {
+        esbuildResult = await esbuild.build(this._esbuildOptions);
+      } catch (err) {
+        if ("warnings" in err || "errors" in err) {
+          esbuildResult = err;
+        } else {
+          throw err;
+        }
       }
     }
+    this.#debug(`Build completed`);
 
-    this.#debug(`convert results...`);
-
+    this.#debug(`Converting results...`);
     const results = SdCliConvertMessageUtils.convertToBuildMessagesFromEsbuild(
       esbuildResult,
       this._pkgPath,

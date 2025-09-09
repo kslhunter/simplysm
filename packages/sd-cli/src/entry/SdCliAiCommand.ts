@@ -27,6 +27,7 @@ export class SdCliAiCommand {
       `:(exclude)yarn.lock`,
       `:(exclude)packages/*/styles.css`,
       `:(exclude)packages/*/package.json`,
+      `:(exclude)package.json`,
     ]);
 
     if (StringUtils.isNullOrEmpty(diff.trim())) {

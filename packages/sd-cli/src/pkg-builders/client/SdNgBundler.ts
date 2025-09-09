@@ -103,10 +103,10 @@ export class SdNgBundler {
   async bundleAsync(): Promise<ISdBuildResult> {
     const perf = new SdCliPerformanceTimer("ng bundle");
 
-    this.#debug(`get contexts...`);
+    this.#debug(`Preparing build contexts...`);
 
     if (!this.#contexts) {
-      this.#contexts = await perf.run("get contexts", async () => [
+      this.#contexts = await perf.run("Preparing build contexts", async () => [
         await this.#getAppContextAsync(),
         ...(FsUtils.exists(path.resolve(this._opt.pkgPath, "src/styles.scss"))
           ? [this.#getStyleContext()]
@@ -115,9 +115,9 @@ export class SdNgBundler {
       ]);
     }
 
-    this.#debug(`build...`);
+    this.#debug("Bundling...");
 
-    const bundlingResults = await perf.run("build", async () => {
+    const bundlingResults = await perf.run("Bundling", async () => {
       return await this.#contexts!.mapAsync(async (ctx) => await ctx.bundleAsync());
     });
 
@@ -132,7 +132,7 @@ export class SdNgBundler {
         emitFileSet: new Set<TNormPath>(),
       };
     } else {
-      this.#debug(`convert result...`);
+      this.#debug(`Converting build results...`);
 
       const outputFiles: BuildOutputFile[] = bundlingResults.mapMany(
         (item) =>
@@ -154,11 +154,11 @@ export class SdNgBundler {
 
       //-- cordova empty
       /*if (this._opt.builderType === "cordova" && this._opt.cordovaConfig?.plugins) {
-      outputFiles.push(createOutputFile("cordova-empty.js", "export default {};", BuildOutputFileType.Root));
-    }*/
+        outputFiles.push(createOutputFile("cordova-empty.js", "export default {};", BuildOutputFileType.Root));
+      }*/
 
-      this.#debug(`create index.html...`);
-      await perf.run("create index.html", async () => {
+      this.#debug(`Generating index.html...`);
+      await perf.run("Generating index.html", async () => {
         const genIndexHtmlResult = await this.#genIndexHtmlAsync(outputFiles, initialFiles);
         for (const warning of genIndexHtmlResult.warnings) {
           buildMessages.push({
@@ -187,8 +187,9 @@ export class SdNgBundler {
         );
       });
 
+      this.#debug(`Processing assets...`);
       const assetFiles: { source: string; destination: string }[] = [];
-      await perf.run("assets", async () => {
+      await perf.run("Processing assets", async () => {
         //-- copy assets
         assetFiles.push(...(await this.#copyAssetsAsync()));
 
@@ -206,9 +207,9 @@ export class SdNgBundler {
 
       //-- service worker
       if (FsUtils.exists(this.#swConfFilePath)) {
-        this.#debug(`prepare service worker...`);
+        this.#debug(`Preparing service worker...`);
 
-        await perf.run("prepare service worker", async () => {
+        await perf.run("Preparing service worker", async () => {
           try {
             const serviceWorkerResult = await this.#genServiceWorkerAsync(outputFiles, assetFiles);
             outputFiles.push(
@@ -230,10 +231,10 @@ export class SdNgBundler {
       }
 
       //-- write
-      this.#debug(`write output files...(${outputFiles.length})`);
+      this.#debug(`Writing output files...(${outputFiles.length})`);
 
       const emitFileSet = new Set<TNormPath>();
-      await perf.run("write output file", async () => {
+      await perf.run("Writing output file", async () => {
         await Promise.all([
           outputFiles.parallelAsync(async (outputFile) => {
             const distFilePath = PathUtils.norm(this.#outputPath, outputFile.path);
@@ -260,7 +261,7 @@ export class SdNgBundler {
         ]);
       });
 
-      this.#debug(perf.toString());
+      this.#debug(`Build performance summary:\n${perf.toString()}`);
 
       return {
         watchFileSet: new Set([
@@ -415,7 +416,7 @@ export class SdNgBundler {
       await FsUtils.globAsync(path.resolve(this._opt.pkgPath, "src/workers/*.ts"))
     ).toObject((p) => "workers/" + path.basename(p, path.extname(p)));
 
-    return new SdNgBundlerContext(this._opt.pkgPath, {
+    return new SdNgBundlerContext(this._opt.pkgPath, !!this._opt.watch, {
       absWorkingDir: this._opt.pkgPath,
       bundle: true,
       keepNames: true,
@@ -550,7 +551,7 @@ export class SdNgBundler {
       this.#styleLoadResultCache,
     );
 
-    return new SdNgBundlerContext(this._opt.pkgPath, {
+    return new SdNgBundlerContext(this._opt.pkgPath, !!this._opt.watch, {
       absWorkingDir: this._opt.pkgPath,
       bundle: true,
       entryNames: "[name]",
@@ -580,7 +581,7 @@ export class SdNgBundler {
   }
 
   #getElectronMainContext() {
-    return new SdNgBundlerContext(this._opt.pkgPath, {
+    return new SdNgBundlerContext(this._opt.pkgPath, !!this._opt.watch, {
       absWorkingDir: this._opt.pkgPath,
       bundle: true,
       entryNames: "[name]",

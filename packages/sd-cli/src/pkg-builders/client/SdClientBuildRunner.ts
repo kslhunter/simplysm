@@ -20,7 +20,7 @@ export class SdClientBuildRunner extends SdBuildRunnerBase<"client"> {
     if (!modifiedFileSet) {
       if (!this._opt.watch?.noEmit) {
         // config
-        this._debug("GEN .config...");
+        this._debug("Generating '.config'...");
         const confDistPath = path.resolve(this._opt.pkgPath, "dist/.config.json");
         await FsUtils.writeFileAsync(
           confDistPath,
@@ -29,7 +29,7 @@ export class SdClientBuildRunner extends SdBuildRunnerBase<"client"> {
 
         // cordova
         if (this._pkgConf.builder?.cordova) {
-          this._debug("CORDOVA 준비...");
+          this._debug("Preparing Cordova...");
           this.#cordova = new SdCliCordova({
             pkgPath: this._opt.pkgPath,
             config: this._pkgConf.builder.cordova,
@@ -42,16 +42,24 @@ export class SdClientBuildRunner extends SdBuildRunnerBase<"client"> {
           path.resolve(this._opt.pkgPath, "package.json"),
         )) as INpmConfig;
         if ("@angular/router" in (npmConf.dependencies ?? {})) {
-          this._debug(`GEN routes.ts...`);
-          await new SdCliNgRoutesFileGenerator().watchAsync(
-            this._opt.pkgPath,
-            this._pkgConf.noLazyRoute,
-          );
+          if (this._opt.watch) {
+            this._debug("Starting routes.ts generator (watch mode)...");
+            await new SdCliNgRoutesFileGenerator().watchAsync(
+              this._opt.pkgPath,
+              this._pkgConf.noLazyRoute,
+            );
+          } else {
+            this._debug(`Generating 'routes.ts'...`);
+            await new SdCliNgRoutesFileGenerator().runAsync(
+              this._opt.pkgPath,
+              this._pkgConf.noLazyRoute,
+            );
+          }
         }
       }
 
       // ng
-      this._debug(`BUILD 준비...`);
+      this._debug(`Preparing build...`);
 
       const builderTypes = Object.keys(this._pkgConf.builder ?? { web: {} }) as (keyof NonNullable<
         ISdClientPackageConfig["builder"]
@@ -74,7 +82,7 @@ export class SdClientBuildRunner extends SdBuildRunnerBase<"client"> {
     }
 
     if (this._opt.watch?.noEmit) {
-      this._debug(`BUILD...`);
+      this._debug(`Building...`);
       const buildResults = await Promise.all(
         this.#ngBundlers!.map((builder) => builder.bundleAsync()),
       );
@@ -85,8 +93,7 @@ export class SdClientBuildRunner extends SdBuildRunnerBase<"client"> {
       const emitFileSet = new Set(buildResults.mapMany((item) => Array.from(item.emitFileSet)));
       const buildMessages = buildResults.mapMany((item) => item.buildMessages).distinct();
 
-      this._debug(`빌드 완료`);
-
+      this._debug(`Build completed`);
       return {
         buildMessages,
 
@@ -95,7 +102,7 @@ export class SdClientBuildRunner extends SdBuildRunnerBase<"client"> {
         emitFileSet,
       };
     } else {
-      this._debug(`BUILD...`);
+      this._debug(`Building...`);
       const buildResults = await Promise.all(
         this.#ngBundlers!.map((builder) => builder.bundleAsync()),
       );
@@ -107,20 +114,19 @@ export class SdClientBuildRunner extends SdBuildRunnerBase<"client"> {
       const buildMessages = buildResults.mapMany((item) => item.buildMessages).distinct();
 
       if (!this._opt.watch?.dev && this.#cordova) {
-        this._debug("CORDOVA BUILD...");
+        this._debug("Building Cordova...");
         await this.#cordova.buildAsync(path.resolve(this._opt.pkgPath, "dist"));
       }
 
       if (!this._opt.watch?.dev && this._pkgConf.builder?.electron) {
-        this._debug("ELECTRON BUILD...");
+        this._debug("Bulding Electron...");
         await SdCliElectron.buildAsync({
           pkgPath: this._opt.pkgPath,
           electronConfig: this._pkgConf.builder.electron,
         });
       }
 
-      this._debug(`빌드 완료`);
-
+      this._debug(`Build completed`);
       return {
         buildMessages,
 
