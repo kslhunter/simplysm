@@ -12,7 +12,6 @@ export class SdCliAiCommand {
     await SdProcess.spawnAsync("git", ["add", "."]);
 
     process.stdout.write(`컨텍스트 수집\n`);
-    const nameStatus = await SdProcess.spawnAsync("git", ["diff", "--staged", "--name-status"]);
     const history = await SdProcess.spawnAsync("git", ["log", "-n", "3"]);
 
     const diff = await SdProcess.spawnAsync("git", [
