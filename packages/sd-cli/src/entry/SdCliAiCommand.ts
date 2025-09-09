@@ -12,11 +12,8 @@ export class SdCliAiCommand {
     await SdProcess.spawnAsync("git", ["add", "."]);
 
     process.stdout.write(`컨텍스트 수집\n`);
-    const branch = (
-      await SdProcess.spawnAsync("git", ["rev-parse", "--abbrev-ref", "HEAD"])
-    ).trim();
     const nameStatus = await SdProcess.spawnAsync("git", ["diff", "--staged", "--name-status"]);
-    const history = await SdProcess.spawnAsync("git", ["log", "-n", "15", "--oneline"]);
+    const history = await SdProcess.spawnAsync("git", ["log", "-n", "3"]);
 
     const diff = await SdProcess.spawnAsync("git", [
       "diff",
@@ -57,13 +54,8 @@ export class SdCliAiCommand {
 - 변경사항을 명확하고 간결하게 설명해야해
 - 수동적인 표현 대신 능동적 표현을 사용해
 
-[레포 컨텍스트]
-- branch: ${branch}
-- recent history (oneline, 15): 
+[git log -n 3] 
 ${history.trim()}
-
-- changed files (name-status):
-${nameStatus.trim()}
 
 [git diff --staged]
 ${diff}`,
