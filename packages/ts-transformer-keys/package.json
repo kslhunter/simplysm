@@ -23,6 +23,6 @@
   },
   "optionalDependencies": {
     "@simplysm/sd-core-node": "12.13.46",
-    "typescript": "~5.8.4"
+    "typescript": "~5.8.3"
   }
 }
