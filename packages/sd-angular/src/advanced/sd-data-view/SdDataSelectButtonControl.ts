@@ -44,14 +44,14 @@ import { $signal } from "../../utils/bindings/$signal";
   ],
   template: `
     <sd-additional-button [inset]="parent.inset()" [size]="parent.size()">
-      @if (itemTemplateRef()) {
+      @if (itemTplRef()) {
         @for (item of parent.selectedItems(); track item; let index = $index) {
           @if (index !== 0) {
             <div style="display: inline-block">,&nbsp;</div>
           }
           <div style="display: inline-block">
             <ng-template
-              [ngTemplateOutlet]="itemTemplateRef()!"
+              [ngTemplateOutlet]="itemTplRef()!"
               [ngTemplateOutletContext]="{
                 $implicit: item,
                 item: item,
@@ -95,7 +95,7 @@ export class SdDataSelectButtonControl {
 
   parent = injectParent();
 
-  itemTemplateRef = contentChild<any, TemplateRef<SdItemOfTemplateContext<any>>>(
+  itemTplRef = contentChild<any, TemplateRef<SdItemOfTemplateContext<any>>>(
     SdItemOfTemplateDirective,
     {
       read: TemplateRef,

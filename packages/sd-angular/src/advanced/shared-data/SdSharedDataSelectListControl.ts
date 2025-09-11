@@ -57,11 +57,11 @@ import { SdAnchorControl } from "../../controls/SdAnchorControl";
     }
 
     <div class="flex-column gap-sm p-default pt-0">
-      @if (headerTemplateRef() || modal()) {
+      @if (headerTplRef() || modal()) {
         <div class="flex-row">
           <div class="flex-fill">
-            @if (headerTemplateRef()) {
-              <ng-template [ngTemplateOutlet]="headerTemplateRef()!"></ng-template>
+            @if (headerTplRef()) {
+              <ng-template [ngTemplateOutlet]="headerTplRef()!"></ng-template>
             }
           </div>
           @if (modal()) {
@@ -72,11 +72,11 @@ import { SdAnchorControl } from "../../controls/SdAnchorControl";
         </div>
       }
 
-      @if (!filterTemplateRef()) {
+      @if (!filterTplRef()) {
         <sd-textfield type="text" placeholder="검색어" [(value)]="searchText" />
       } @else {
         <div>
-          <ng-template [ngTemplateOutlet]="filterTemplateRef()!" />
+          <ng-template [ngTemplateOutlet]="filterTplRef()!" />
         </div>
       }
     </div>
@@ -94,8 +94,8 @@ import { SdAnchorControl } from "../../controls/SdAnchorControl";
               (click)="select(undefined)"
               [selectedIcon]="selectedIcon()"
             >
-              @if (undefinedTemplateRef()) {
-                <ng-template [ngTemplateOutlet]="undefinedTemplateRef()!" />
+              @if (undefinedTplRef()) {
+                <ng-template [ngTemplateOutlet]="undefinedTplRef()!" />
               } @else {
                 <span class="tx-theme-grey-default">미지정</span>
               }
@@ -108,7 +108,7 @@ import { SdAnchorControl } from "../../controls/SdAnchorControl";
               [selectedIcon]="selectedIcon()"
             >
               <ng-template
-                [ngTemplateOutlet]="itemTemplateRef() ?? null"
+                [ngTemplateOutlet]="itemTplRef() ?? null"
                 [ngTemplateOutletContext]="{
                   $implicit: item,
                   item: item,
@@ -143,17 +143,13 @@ export class SdSharedDataSelectListControl<
 
   header = input<string>();
 
-  headerTemplateRef = contentChild<any, TemplateRef<void>>("headerTemplate", { read: TemplateRef });
-  filterTemplateRef = contentChild<any, TemplateRef<void>>("filterTemplate", { read: TemplateRef });
-  itemTemplateRef = contentChild<any, TemplateRef<SdItemOfTemplateContext<TItem>>>(
+  headerTplRef = contentChild<any, TemplateRef<void>>("headerTpl", { read: TemplateRef });
+  filterTplRef = contentChild<any, TemplateRef<void>>("filterTpl", { read: TemplateRef });
+  itemTplRef = contentChild<any, TemplateRef<SdItemOfTemplateContext<TItem>>>(
     SdItemOfTemplateDirective,
-    {
-      read: TemplateRef,
-    },
+    { read: TemplateRef },
   );
-  undefinedTemplateRef = contentChild<any, TemplateRef<void>>("undefinedTemplate", {
-    read: TemplateRef,
-  });
+  undefinedTplRef = contentChild<any, TemplateRef<void>>("undefinedTpl", { read: TemplateRef });
 
   searchText = $signal<string>();
 

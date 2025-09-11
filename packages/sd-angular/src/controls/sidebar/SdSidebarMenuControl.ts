@@ -33,16 +33,16 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 
     <sd-list class="flex-fill" inset>
       <ng-template
-        [ngTemplateOutlet]="itemTemplate"
+        [ngTemplateOutlet]="itemTpl"
         [ngTemplateOutletContext]="{ menus: menus(), depth: 0 }"
       ></ng-template>
     </sd-list>
 
-    <ng-template #itemTemplate [typed]="itemTemplateType" let-currMenus="menus" let-depth="depth">
+    <ng-template #itemTpl [typed]="itemTemplateType" let-currMenus="menus" let-depth="depth">
       @for (menu of currMenus; track menu.codeChain.join(".")) {
-        <!--[contentStyle]="'padding-left: ' + ((depth + 1) * 6) + 'px'"-->
         <sd-list-item
           [contentClass]="depth === 0 ? 'pv-default' : ''"
+          [contentStyle]="'padding-left: ' + (depth + 1) * 0.5 + 'em'"
           [sd-router-link]="getMenuRouterLinkOption(menu)"
           (click)="onMenuClick(menu)"
           [selected]="getIsMenuSelected(menu)"
@@ -56,7 +56,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
           @if (menu.children) {
             <sd-list [inset]="true">
               <ng-template
-                [ngTemplateOutlet]="itemTemplate"
+                [ngTemplateOutlet]="itemTpl"
                 [ngTemplateOutletContext]="{
                   menus: menu.children,
                   depth: depth + 1,

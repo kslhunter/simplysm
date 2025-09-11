@@ -7,6 +7,7 @@ import { UserConfig } from "../models/UserConfig";
 import { UserPermission } from "../models/UserPermission";
 import { DateTime, JsonConvert, Uuid } from "@simplysm/sd-core-common";
 import { UniqueCode } from "../models/UniqueCode";
+import * as util from "node:util";
 
 export abstract class DbContextExt extends DbContext {
   uniqueCode = new Queryable(this, UniqueCode);
@@ -153,15 +154,15 @@ export abstract class DbContextExt extends DbContext {
     ...logs: any[]
   ) {
     const db = this;
-    await db.systemLog.insertAsync(
-      logs.map((log) => ({
+    await db.systemLog.insertAsync([
+      {
         clientName: clientName,
         dateTime: new DateTime(),
         type: severity,
-        jsonData: JsonConvert.stringify(log),
+        message: util.format(...logs),
         userId: userId,
-      })),
-    );
+      },
+    ]);
   }
 
   async createUniqueCodes(option: {

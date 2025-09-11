@@ -127,7 +127,7 @@ import { SdAnchorControl } from "../controls/SdAnchorControl";
       <tbody>
         @for (item of items(); track item.codeChain.join(".")) {
           <ng-template
-            [ngTemplateOutlet]="itemTemplate"
+            [ngTemplateOutlet]="itemTpl"
             [ngTemplateOutletContext]="{
               item: item,
               parentKey: 'root',
@@ -140,7 +140,7 @@ import { SdAnchorControl } from "../controls/SdAnchorControl";
     </table>
 
     <ng-template
-      #itemTemplate
+      #itemTpl
       [typed]="itemTemplateType"
       let-item="item"
       let-parentKey="parentKey"
@@ -211,7 +211,7 @@ import { SdAnchorControl } from "../controls/SdAnchorControl";
       @if (item.children && item.children.length > 0) {
         @for (child of item.children; track child.codeChain.join(".")) {
           <ng-template
-            [ngTemplateOutlet]="itemTemplate"
+            [ngTemplateOutlet]="itemTpl"
             [ngTemplateOutletContext]="{
               item: child,
               parentKey: parentKey + '_' + item.codeChain.join('.'),

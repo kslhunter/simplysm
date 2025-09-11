@@ -70,7 +70,7 @@ import { SdAnchorControl } from "../../controls/SdAnchorControl";
       [initialized]="parent.initialized()"
       [restricted]="!parent.canUse()"
     >
-      <ng-template #pageTopbar>
+      <ng-template #pageTopbarTpl>
         @if (parent.canEdit() && parent.submit) {
           <sd-button theme="link-primary" (click)="onSubmitButtonClick()">
             <fa-icon [icon]="icons.save" [fixedWidth]="true" />
@@ -85,7 +85,7 @@ import { SdAnchorControl } from "../../controls/SdAnchorControl";
         </sd-button>
       </ng-template>
 
-      <ng-template #content>
+      <ng-template #contentTpl>
         <div class="flex-column fill">
           @if (parent.canEdit() && parent.submit && parent.viewType() === "control") {
             <div class="flex-row gap-sm p-default bdb bdb-theme-grey-lightest">
@@ -200,7 +200,7 @@ import { SdAnchorControl } from "../../controls/SdAnchorControl";
                 parent.editMode === "inline" && parent.canEdit() && parent.itemPropInfo.isDeleted
               ) {
                 <sd-sheet-column fixed [key]="parent.itemPropInfo.isDeleted">
-                  <ng-template #header>
+                  <ng-template #headerTpl>
                     <div class="p-xs-sm tx-center">
                       <fa-icon [icon]="deleteIcon()" />
                     </div>
@@ -238,14 +238,14 @@ import { SdAnchorControl } from "../../controls/SdAnchorControl";
                   [hidden]="columnControl.hidden()"
                   [collapse]="columnControl.collapse()"
                 >
-                  @if (columnControl.headerTemplateRef()) {
-                    <ng-template #header>
-                      <ng-template [ngTemplateOutlet]="columnControl.headerTemplateRef()!" />
+                  @if (columnControl.headerTplRef()) {
+                    <ng-template #headerTpl>
+                      <ng-template [ngTemplateOutlet]="columnControl.headerTplRef()!" />
                     </ng-template>
                   }
-                  @if (columnControl.summaryTemplateRef()) {
-                    <ng-template #summary>
-                      <ng-template [ngTemplateOutlet]="columnControl.summaryTemplateRef()!" />
+                  @if (columnControl.summaryTplRef()) {
+                    <ng-template #summaryTpl>
+                      <ng-template [ngTemplateOutlet]="columnControl.summaryTplRef()!" />
                     </ng-template>
                   }
 
@@ -271,7 +271,7 @@ import { SdAnchorControl } from "../../controls/SdAnchorControl";
                         </div>
                         <div class="flex-fill">
                           <ng-template
-                            [ngTemplateOutlet]="columnControl.cellTemplateRef()"
+                            [ngTemplateOutlet]="columnControl.cellTplRef()"
                             [ngTemplateOutletContext]="{
                               $implicit: item,
                               item: item,
@@ -284,7 +284,7 @@ import { SdAnchorControl } from "../../controls/SdAnchorControl";
                       </sd-anchor>
                     } @else {
                       <ng-template
-                        [ngTemplateOutlet]="columnControl.cellTemplateRef()"
+                        [ngTemplateOutlet]="columnControl.cellTplRef()"
                         [ngTemplateOutletContext]="{
                           $implicit: item,
                           item: item,
@@ -326,7 +326,7 @@ import { SdAnchorControl } from "../../controls/SdAnchorControl";
       </ng-template>
 
       @if (parent.selectMode()) {
-        <ng-template #modalBottom>
+        <ng-template #modalBottomTpl>
           <div class="p-sm-default flex-row gap-sm">
             <div class="flex-fill flex-row gap-sm">
               @if (modalBottomTplRef()) {

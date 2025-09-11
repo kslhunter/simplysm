@@ -1,7 +1,7 @@
 .grid {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
-  container-type: normal;
+  container-type: inline-size;
   container-name: grid;
 }
 

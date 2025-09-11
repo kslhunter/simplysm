@@ -3,7 +3,7 @@
   border-spacing: 0;
   border: 0;
 
-  > tbody > tr,
+  > * > tr,
   > tr {
     > * {
       padding: 0 var(--gap-default) var(--gap-sm) 0;
@@ -23,6 +23,22 @@
       text-align: right;
       width: 0;
       white-space: nowrap;
+
+      &.form-table-header {
+        text-align: left;
+        line-height: var(--line-height);
+        margin-bottom: var(--gap-sm);
+        color: var(--theme-grey-default);
+        font-weight: normal;
+
+        padding: var(--gap-xxl) 0 var(--gap-sm) 0;
+        font-size: var(--font-size-sm);
+      }
     }
+  }
+
+  > tbody:first-child > tr:first-child > th.form-table-header,
+  > tr:first-child > th.form-table-header {
+    padding-top: 0;
   }
 }

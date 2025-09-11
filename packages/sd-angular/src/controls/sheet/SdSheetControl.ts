@@ -156,7 +156,7 @@ import { ISdSheetItemKeydownEventParam } from "./types/ISdSheetItemKeydownEventP
                       (click)="onHeaderCellClick($event, headerCell)"
                     >
                       <div class="_headerContent flex-row">
-                        @let _tempRef = headerCell.control.headerTemplateRef();
+                        @let _tempRef = headerCell.control.headerTplRef();
                         <div
                           class="flex-fill"
                           [class._p-sheet]="!_tempRef"
@@ -213,7 +213,7 @@ import { ISdSheetItemKeydownEventParam } from "./types/ISdSheetItemKeydownEventP
                   [attr.data-c]="c"
                   [style.left.px]="columnFixingManager.fixedLeftMap().get(c)"
                 >
-                  @let _tempRef = colDef.control.summaryTemplateRef();
+                  @let _tempRef = colDef.control.summaryTplRef();
                   @if (_tempRef) {
                     <ng-template [ngTemplateOutlet]="_tempRef" />
                   }
@@ -313,7 +313,7 @@ import { ISdSheetItemKeydownEventParam } from "./types/ISdSheetItemKeydownEventP
                   "
                 >
                   <ng-template
-                    [ngTemplateOutlet]="columnDef.control.cellTemplateRef()"
+                    [ngTemplateOutlet]="columnDef.control.cellTplRef()"
                     [ngTemplateOutletContext]="{
                       $implicit: item,
                       item: item,

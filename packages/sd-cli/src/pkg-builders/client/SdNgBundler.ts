@@ -96,6 +96,9 @@ export class SdNgBundler {
     for (const filePath of filePaths) {
       this.#modifiedFileSet.add(PathUtils.norm(filePath));
       this.#styleLoadResultCache.invalidate(PathUtils.norm(filePath));
+      /*if (this.#styleLoadResultCache.invalidate(PathUtils.norm(filePath))) {
+        this.#styleLoadResultCache.invalidate(PathUtils.norm(this._opt.pkgPath, "src/styles.scss"));
+      }*/
     }
     // this._sourceFileCache.invalidate(filePaths);
   }
@@ -206,7 +209,7 @@ export class SdNgBundler {
       });
 
       //-- service worker
-      if (FsUtils.exists(this.#swConfFilePath)) {
+      if (FsUtils.exists(this.#swConfFilePath) && !this._opt.watch?.dev) {
         this.#debug(`Preparing service worker...`);
 
         await perf.run("Preparing service worker", async () => {

@@ -66,9 +66,9 @@ import { SdAnchorControl } from "../SdAnchorControl";
       <sd-dropdown-popup #dropdownPopup (keydown)="onPopupKeydown($event)">
         @if (!items()) {
           <div class="flex-column">
-            @if (headerTemplateRef()) {
+            @if (headerTplRef()) {
               <div>
-                <ng-template [ngTemplateOutlet]="headerTemplateRef()!" />
+                <ng-template [ngTemplateOutlet]="headerTplRef()!" />
               </div>
             }
 
@@ -78,9 +78,9 @@ import { SdAnchorControl } from "../SdAnchorControl";
           </div>
         } @else {
           <div class="flex-column">
-            @if (headerTemplateRef()) {
+            @if (headerTplRef()) {
               <div>
-                <ng-template [ngTemplateOutlet]="headerTemplateRef()!" />
+                <ng-template [ngTemplateOutlet]="headerTplRef()!" />
               </div>
             }
 
@@ -93,12 +93,17 @@ import { SdAnchorControl } from "../SdAnchorControl";
             }
 
             <div class="flex-fill">
-              <ng-template [ngTemplateOutlet]="beforeTemplateRef() ?? null" />
-              <ng-template #rowOfList [typed]="rowOfListType" let-items="items" let-depth="depth">
+              <ng-template [ngTemplateOutlet]="beforeTplRef() ?? null" />
+              <ng-template
+                #rowOfListTpl
+                [typed]="rowOfListType"
+                let-items="items"
+                let-depth="depth"
+              >
                 @for (item of items; let index = $index; track trackByFn()(item, index)) {
                   <div class="_sd-select-item">
                     <ng-template
-                      [ngTemplateOutlet]="itemTemplateRef() ?? null"
+                      [ngTemplateOutlet]="itemTplRef() ?? null"
                       [ngTemplateOutletContext]="{
                         $implicit: item,
                         item: item,
@@ -114,7 +119,7 @@ import { SdAnchorControl } from "../SdAnchorControl";
                     ) {
                       <div class="_children">
                         <ng-template
-                          [ngTemplateOutlet]="rowOfList"
+                          [ngTemplateOutlet]="rowOfListTpl"
                           [ngTemplateOutletContext]="{
                             items: getChildrenFn()!(item, index, depth),
                             depth: depth + 1,
@@ -126,7 +131,7 @@ import { SdAnchorControl } from "../SdAnchorControl";
                 }
               </ng-template>
               <ng-template
-                [ngTemplateOutlet]="rowOfList"
+                [ngTemplateOutlet]="rowOfListTpl"
                 [ngTemplateOutletContext]="{ items: items(), depth: 0 }"
               ></ng-template>
             </div>
@@ -315,13 +320,11 @@ export class SdSelectControl<M extends "single" | "multi", T> {
     read: ElementRef,
   });
 
-  headerTemplateRef = contentChild<any, TemplateRef<void>>("header", { read: TemplateRef });
-  beforeTemplateRef = contentChild<any, TemplateRef<void>>("before", { read: TemplateRef });
-  itemTemplateRef = contentChild<any, TemplateRef<SdItemOfTemplateContext<T>>>(
+  headerTplRef = contentChild<any, TemplateRef<void>>("headerTpl", { read: TemplateRef });
+  beforeTplRef = contentChild<any, TemplateRef<void>>("beforeTpl", { read: TemplateRef });
+  itemTplRef = contentChild<any, TemplateRef<SdItemOfTemplateContext<T>>>(
     SdItemOfTemplateDirective,
-    {
-      read: TemplateRef,
-    },
+    { read: TemplateRef },
   );
 
   // itemControls = $signal<SdSelectItemControl[]>([]);

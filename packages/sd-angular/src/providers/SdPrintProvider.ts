@@ -127,34 +127,31 @@ export class SdPrintProvider {
             await this.#waitForAllImagesLoadedAsync(compEl);
 
             const doc = new jsPDF(options?.orientation ?? "p", "pt", "a4");
+            const pageWidth = doc.internal.pageSize.getWidth();
             doc.deletePage(1);
 
-            let els = compEl.findAll<HTMLElement>("sd-print-page");
+            let els = compEl.findAll<HTMLElement>(".page");
             els = els.length > 0 ? els : [compEl];
 
             for (const el of els) {
+              el.style.width = pageWidth + "pt";
+
               const canvas = await htmlToImage.toCanvas(el, {
                 backgroundColor: "white",
                 pixelRatio: 4,
               });
 
-              const orientation = el.getAttribute("sd-orientation") as
-                | "landscape"
-                | "portrait"
-                | undefined;
-              doc.addPage("a4", orientation ?? "p").addImage({
+              // 가로 기준으로 비율 맞추기
+              const imgWidth = pageWidth;
+              const imgHeight = canvas.height * (pageWidth / canvas.width);
+
+              doc.addPage("a4", options?.orientation ?? "p").addImage({
                 imageData: canvas,
                 x: 0,
                 y: 0,
-                ...(orientation === "landscape"
-                  ? {
-                      height: 841.89,
-                      width: 595.28,
-                    }
-                  : {
-                      width: 595.28,
-                      height: 841.89,
-                    }),
+
+                width: imgWidth,
+                height: imgHeight,
               });
             }
 

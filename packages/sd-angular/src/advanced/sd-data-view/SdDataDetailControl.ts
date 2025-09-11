@@ -53,7 +53,7 @@ import { SdAnchorControl } from "../../controls/SdAnchorControl";
       [initialized]="parent.initialized()"
       [restricted]="!parent.canUse()"
     >
-      <ng-template #pageTopbar>
+      <ng-template #pageTopbarTpl>
         @if (parent.canEdit() && parent.submit) {
           <sd-button theme="link-primary" (click)="onSubmitButtonClick()">
             <fa-icon [icon]="icons.save" [fixedWidth]="true" />
@@ -68,7 +68,7 @@ import { SdAnchorControl } from "../../controls/SdAnchorControl";
         </sd-button>
       </ng-template>
 
-      <ng-template #content>
+      <ng-template #contentTpl>
         <div class="flex-column fill">
           @if ((parent.viewType() === "control" && parent.canEdit()) || toolTplRef() != null) {
             <div class="p-default flex-row gap-default bdb bdb-theme-grey-lightest">
@@ -85,11 +85,9 @@ import { SdAnchorControl } from "../../controls/SdAnchorControl";
                     <small>(CTRL+ALT+L)</small>
                   </sd-button>
                 }
-                @if (
-                  !parent.dataInfo()?.isNew &&
-                  parent.toggleDelete &&
-                  (!parent.canDelete || parent.canDelete())
-                ) {
+                @if (!parent.dataInfo()?.isNew &&
+                parent.toggleDelete &&
+                (!parent.canDelete || parent.canDelete())) {
                   @if (parent.dataInfo()?.isDeleted) {
                     <sd-button theme="warning" (click)="onRestoreButtonClick()">
                       <fa-icon [icon]="icons.redo" [fixedWidth]="true" />
@@ -144,13 +142,11 @@ import { SdAnchorControl } from "../../controls/SdAnchorControl";
       </ng-template>
 
       @if (parent.canEdit()) {
-        <ng-template #modalBottom>
+        <ng-template #modalBottomTpl>
           <div class="p-sm-default flex-row gap-sm">
-            @if (
-              !parent.dataInfo()?.isNew &&
-              parent.toggleDelete &&
-              (!parent.canDelete || parent.canDelete())
-            ) {
+            @if (!parent.dataInfo()?.isNew &&
+            parent.toggleDelete &&
+            (!parent.canDelete || parent.canDelete())) {
               @if (parent.dataInfo()?.isDeleted) {
                 <sd-button size="sm" theme="warning" (click)="onRestoreButtonClick()">
                   복구

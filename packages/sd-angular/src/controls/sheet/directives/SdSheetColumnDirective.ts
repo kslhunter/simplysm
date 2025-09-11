@@ -21,12 +21,10 @@ export class SdSheetColumnDirective<T> {
   hidden = input(false, { transform: transformBoolean });
   collapse = input(false, { transform: transformBoolean });
 
-  cellTemplateRef = contentChild.required<any, TemplateRef<SdSheetColumnCellTemplateContext<T>>>(
+  cellTplRef = contentChild.required<any, TemplateRef<SdSheetColumnCellTemplateContext<T>>>(
     SdSheetColumnCellTemplateDirective,
-    {
-      read: TemplateRef,
-    },
+    { read: TemplateRef },
   );
-  headerTemplateRef = contentChild<any, TemplateRef<void>>("header", { read: TemplateRef });
-  summaryTemplateRef = contentChild<any, TemplateRef<void>>("summary", { read: TemplateRef });
+  headerTplRef = contentChild<any, TemplateRef<void>>("headerTpl", { read: TemplateRef });
+  summaryTplRef = contentChild<any, TemplateRef<void>>("summaryTpl", { read: TemplateRef });
 }

@@ -70,19 +70,17 @@ import { SdSelectControl, TSelectModeValue } from "../../controls/select/SdSelec
         </sd-select-button>
       }
 
-      <ng-template #header>
+      <ng-template #headerTpl>
         <div class="p-xs">
           <sd-textfield type="text" [(value)]="searchText" placeholder="검색어" [size]="size()" />
         </div>
       </ng-template>
 
-      <ng-template #before>
-        @if (
-          (!required() && selectMode() === "single") || (useUndefined() && selectMode() === "multi")
-        ) {
+      <ng-template #beforeTpl>
+        @if ((!required() && selectMode() === "single") || (useUndefined() && selectMode() === "multi")) {
           <sd-select-item>
-            @if (undefinedTemplateRef()) {
-              <ng-template [ngTemplateOutlet]="undefinedTemplateRef()!" />
+            @if (undefinedTplRef()) {
+              <ng-template [ngTemplateOutlet]="undefinedTplRef()!" />
             } @else {
               <span class="tx-theme-grey-default">미지정</span>
             }
@@ -96,16 +94,14 @@ import { SdSelectControl, TSelectModeValue } from "../../controls/select/SdSelec
         let-index="index"
         let-depth="depth"
       >
-        @if (
-          getItemSelectable(item, index, depth) &&
-          (selectCtrl.open() || this.selectedKeys().includes(item.__valueKey))
-        ) {
+        @if (getItemSelectable(item, index, depth) &&
+        (selectCtrl.open() || this.selectedKeys().includes(item.__valueKey))) {
           <sd-select-item [value]="item.__valueKey" [hidden]="!getItemVisible(item, index)">
             <span
               [style.text-decoration]="getIsHiddenFn()(item, index) ? 'line-through' : undefined"
             >
               <ng-template
-                [ngTemplateOutlet]="itemTemplateRef() ?? null"
+                [ngTemplateOutlet]="itemTplRef() ?? null"
                 [ngTemplateOutletContext]="{
                   $implicit: item,
                   item: item,
@@ -155,13 +151,11 @@ export class SdSharedDataSelectControl<
   parentKeyProp = input<string>();
   displayOrderKeyProp = input<string>();
 
-  itemTemplateRef = contentChild<any, TemplateRef<SdItemOfTemplateContext<TItem>>>(
+  itemTplRef = contentChild<any, TemplateRef<SdItemOfTemplateContext<TItem>>>(
     SdItemOfTemplateDirective,
-    {
-      read: TemplateRef,
-    },
+    { read: TemplateRef },
   );
-  undefinedTemplateRef = contentChild<any, TemplateRef<void>>("undefinedTemplate", {
+  undefinedTplRef = contentChild<any, TemplateRef<void>>("undefinedTpl", {
     read: TemplateRef,
   });
 

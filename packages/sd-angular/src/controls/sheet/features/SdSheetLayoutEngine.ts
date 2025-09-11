@@ -129,7 +129,7 @@ export class SdSheetLayoutEngine<T> {
   });
 
   hasSummary = $computed<boolean>(() =>
-    this._options.columnControls().some((item) => item.summaryTemplateRef()),
+    this._options.columnControls().some((item) => item.summaryTplRef()),
   );
 
   headerFeatureRowSpan = $computed<number>(

@@ -59,7 +59,7 @@ import { $computed } from "../utils/bindings/$computed";
                 <div class="content">
                   @for (item of data.items; track $index) {
                     <ng-template
-                      [ngTemplateOutlet]="itemTemplateRef()"
+                      [ngTemplateOutlet]="itemTplRef()"
                       [ngTemplateOutletContext]="{
                         $implicit: item,
                         item: item,
@@ -132,11 +132,9 @@ export class SdCalendarControl<T> {
 
   yearMonth = input(new DateOnly().setDay(1));
 
-  itemTemplateRef = contentChild.required<any, TemplateRef<SdItemOfTemplateContext<T>>>(
+  itemTplRef = contentChild.required<any, TemplateRef<SdItemOfTemplateContext<T>>>(
     SdItemOfTemplateDirective,
-    {
-      read: TemplateRef,
-    },
+    { read: TemplateRef },
   );
 
   weekStartDay = input(0);

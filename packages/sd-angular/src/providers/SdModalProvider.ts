@@ -26,9 +26,9 @@ export class SdModalInstance<T extends ISdModal<any>> {
 
   readonly #prevActiveEl?: HTMLElement;
 
-  #open = $signal(false);
-
   close = new EventEmitter<any>();
+
+  #closed = false;
 
   constructor(
     appRef: ApplicationRef,
@@ -67,7 +67,7 @@ export class SdModalInstance<T extends ISdModal<any>> {
         ...Object.keys(modal.inputs).map((inputKey) =>
           inputBinding(inputKey, () => modal.inputs[inputKey]),
         ),
-        outputBinding("close", (val) => this.#onComponentClosed(val)),
+        outputBinding("close", (val) => this.#onComponentClose(val)),
       ],
     });
 
@@ -98,7 +98,6 @@ export class SdModalInstance<T extends ISdModal<any>> {
         inputBinding("fill", () => options?.fill ?? false),
         inputBinding("actionTplRef", () => this.#compRef.instance.actionTplRef),
 
-        inputBinding("open", this.#open),
         outputBinding("openChange", (val: boolean) => this.#onModalOpenChange(val)),
       ],
     });
@@ -119,7 +118,7 @@ export class SdModalInstance<T extends ISdModal<any>> {
 
       setTimeout(() => {
         sdBusy.globalBusyCount.update((v) => v - 1);
-        this.#open.set(true);
+        this.#modalRef.instance.open.set(true);
 
         requestAnimationFrame(() => {
           if (options?.noFirstControlFocusing) {
@@ -134,26 +133,31 @@ export class SdModalInstance<T extends ISdModal<any>> {
     });
   }
 
-  #onModalOpenChange(val: boolean) {
-    if (!this.#activatedModalProvider.canDeactivefn()) return;
+  /** 모달에서 open값이 변했을때 */
+  #onModalOpenChange(open: boolean) {
+    if (open) return;
+    if (this.#closed) return;
+    this.#closed = true;
 
-    if (val) {
-      this.#open.set(val);
-    } else {
-      this.#onComponentClosed(undefined);
-    }
+    this.#close(undefined);
   }
 
-  #onComponentClosed(val: any) {
-    if (val != null && !this.#activatedModalProvider.canDeactivefn()) return;
+  /** 사용자 컴포넌트에서 close 이벤트를 발생시켰을때 */
+  #onComponentClose(val: any) {
+    if (!this.#activatedModalProvider.canDeactivefn()) return;
+    if (this.#closed) return;
+    this.#closed = true;
 
+    this.#modalRef.instance.open.set(false);
+    this.#close(val);
+  }
+
+  #close(val: any) {
     const modalEl = this.#modalRef.location.nativeElement as HTMLElement;
     modalEl.addEventListener("transitionend", () => {
       this.#compRef.destroy();
       this.#modalRef.destroy();
     });
-
-    this.#open.set(false);
 
     if (this.#prevActiveEl) {
       this.#prevActiveEl.focus();

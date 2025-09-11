@@ -24,7 +24,33 @@ import { SdCardControl } from "../SdCardControl";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [SdEventsDirective, SdCardControl],
-  //region styles
+  host: {
+    "[attr.data-sd-dragging-this]": "dragKanban() === this",
+    "[attr.data-sd-dragging]": "dragKanban() != null",
+    "[attr.data-sd-drag-over]": "dragOvered()",
+  },
+  template: `
+    <div
+      class="_drag-position"
+      [style.height]="cardHeight() + 'px'"
+      (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave($event)"
+      (drop)="onDragDrop($event)"
+    ></div>
+    <div
+      class="_drop-position"
+      [style.height]="dragOvered() ? (dragKanban()?.heightOnDrag() ?? 0) + 'px' : '0px'"
+      [style.display]="dragKanban() ? 'block' : 'none'"
+    ></div>
+    <sd-card
+      [class]="contentClass()"
+      [draggable]="draggable()"
+      (dragstart)="onCardDragStart()"
+      (sdResize)="onCardResize($event)"
+    >
+      <ng-content></ng-content>
+    </sd-card>
+  `,
   styles: [
     /* language=SCSS */ `
       @use "../../../scss/commons/mixins";
@@ -52,6 +78,7 @@ import { SdCardControl } from "../SdCardControl";
 
           > sd-card {
             pointer-events: none;
+            cursor: pointer;
           }
         }
 
@@ -76,54 +103,27 @@ import { SdCardControl } from "../SdCardControl";
         > sd-card {
           white-space: normal;
           user-select: none;
-          cursor: pointer;
           margin-bottom: var(--gap-lg);
         }
       }
     `,
   ],
-  //endregion
-  template: `
-    <div
-      class="_drag-position"
-      [style.height]="cardHeight() + 'px'"
-      (dragover)="onDragOver($event)"
-      (dragleave)="onDragLeave($event)"
-      (drop)="onDragDrop($event)"
-    ></div>
-    <div
-      class="_drop-position"
-      [style.height]="dragOvered() ? (dragKanban()?.heightOnDrag() ?? 0) + 'px' : '0px'"
-      [style.display]="dragKanban() ? 'block' : 'none'"
-    ></div>
-    <sd-card
-      [class]="contentClass()"
-      [draggable]="draggable()"
-      (dragstart)="onCardDragStart()"
-      (sdResize)="onCardResize($event)"
-    >
-      <ng-content></ng-content>
-    </sd-card>
-  `,
-  host: {
-    "[attr.data-sd-dragging-this]": "dragKanban() === this",
-    "[attr.data-sd-dragging]": "dragKanban() != null",
-    "[attr.data-sd-drag-over]": "dragOvered()",
-  },
 })
 export class SdKanbanControl<L, T> {
   #boardControl = inject<SdKanbanBoardControl<L, T>>(forwardRef(() => SdKanbanBoardControl));
   #laneControl = inject<SdKanbanLaneControl<L, T>>(forwardRef(() => SdKanbanLaneControl));
   #elRef = injectElementRef();
 
-  value = input.required<T>();
+  value = input<T>();
 
   laneValue = $computed(() => this.#laneControl.value());
 
   selectable = input(false, { transform: transformBoolean });
   draggable = input(false, { transform: transformBoolean });
 
-  selected = $computed(() => this.#boardControl.selectedValues().includes(this.value()));
+  selected = $computed(
+    () => this.value() != null && this.#boardControl.selectedValues().includes(this.value()!),
+  );
   dragKanban = $computed(() => this.#boardControl.dragKanban());
 
   contentClass = input<string>();
@@ -138,16 +138,17 @@ export class SdKanbanControl<L, T> {
   onClick(event: MouseEvent) {
     if (event.shiftKey) {
       if (!this.selectable()) return;
+      if (this.value() == null) return;
 
       event.preventDefault();
       event.stopPropagation();
 
       this.#boardControl.selectedValues.update((v) => {
         const r = [...v];
-        if (v.includes(this.value())) {
-          r.remove(this.value());
+        if (v.includes(this.value()!)) {
+          r.remove(this.value()!);
         } else {
-          r.push(this.value());
+          r.push(this.value()!);
         }
         return r;
       });

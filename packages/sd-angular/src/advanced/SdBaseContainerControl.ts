@@ -50,26 +50,26 @@ import { injectParent } from "../utils/injections/injectParent";
             <sd-topbar>
               <h4>{{ modalOrPageTitle() }}</h4>
 
-              <ng-template [ngTemplateOutlet]="pageTopbarTemplateRef() ?? null" />
+              <ng-template [ngTemplateOutlet]="pageTopbarTplRef() ?? null" />
             </sd-topbar>
 
             <div class="fill">
-              <ng-template [ngTemplateOutlet]="contentTemplateRef()" />
+              <ng-template [ngTemplateOutlet]="contentTplRef()" />
             </div>
           </sd-topbar-container>
         } @else if (currViewType() === "modal") {
           <div class="flex-column fill">
             <div class="flex-fill">
-              <ng-template [ngTemplateOutlet]="contentTemplateRef()" />
+              <ng-template [ngTemplateOutlet]="contentTplRef()" />
             </div>
-            @if (modalBottomTemplateRef()) {
+            @if (modalBottomTplRef()) {
               <div class="bdt bdt-theme-grey-lightest">
-                <ng-template [ngTemplateOutlet]="modalBottomTemplateRef() ?? null" />
+                <ng-template [ngTemplateOutlet]="modalBottomTplRef() ?? null" />
               </div>
             }
           </div>
         } @else {
-          <ng-template [ngTemplateOutlet]="contentTemplateRef()" />
+          <ng-template [ngTemplateOutlet]="contentTplRef()" />
         }
       }
     </sd-busy-container>
@@ -86,10 +86,10 @@ export class SdBaseContainerControl {
   #fullPageCode = useFullPageCodeSignal();
   #currPageCode = useCurrentPageCodeSignal();
 
-  contentTemplateRef = contentChild.required("content", { read: TemplateRef });
+  contentTplRef = contentChild.required("contentTpl", { read: TemplateRef });
 
-  pageTopbarTemplateRef = contentChild("pageTopbar", { read: TemplateRef });
-  modalBottomTemplateRef = contentChild("modalBottom", { read: TemplateRef });
+  pageTopbarTplRef = contentChild("pageTopbarTpl", { read: TemplateRef });
+  modalBottomTplRef = contentChild("modalBottomTpl", { read: TemplateRef });
 
   #parentViewType = useViewTypeSignal(() => this.#parent);
   viewType = input<TSdViewType>();

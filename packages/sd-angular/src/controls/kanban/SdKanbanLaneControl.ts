@@ -41,7 +41,7 @@ import { SdAnchorControl } from "../SdAnchorControl";
     "[attr.data-sd-drag-over]": "dragOvered()",
   },
   template: `
-    @if (useCollapse() || titleTemplateRef()) {
+    @if (useCollapse() || titleTplRef()) {
       <div>
         @if (useCollapse()) {
           <sd-anchor theme="info" (click)="onToggleCollapseButtonClick()">
@@ -49,9 +49,9 @@ import { SdAnchorControl } from "../SdAnchorControl";
           </sd-anchor>
         }
 
-        @if (titleTemplateRef()) {
+        @if (titleTplRef()) {
           <div style="display: inline-block;" class="pl-default">
-            <ng-template [ngTemplateOutlet]="titleTemplateRef() ?? null" />
+            <ng-template [ngTemplateOutlet]="titleTplRef() ?? null" />
           </div>
         }
       </div>
@@ -59,9 +59,9 @@ import { SdAnchorControl } from "../SdAnchorControl";
 
     <div class="flex-fill">
       <sd-busy-container [busy]="busy()" style="min-height: 3em" type="bar">
-        @if (kanbanControls().length > 0 || toolsTemplateRef()) {
+        @if (selectableKanbanLength() > 0 || toolsTplRef()) {
           <div class="tx-center mb-xl">
-            @if (kanbanControls().length > 0) {
+            @if (selectableKanbanLength() > 0) {
               <sd-checkbox
                 style="float: left"
                 [inline]="true"
@@ -70,7 +70,7 @@ import { SdAnchorControl } from "../SdAnchorControl";
                 (valueChange)="onSelectAllButtonClick($event)"
               />
             }
-            <ng-template [ngTemplateOutlet]="toolsTemplateRef() ?? null" />
+            <ng-template [ngTemplateOutlet]="toolsTplRef() ?? null" />
           </div>
         }
 
@@ -132,18 +132,22 @@ export class SdKanbanLaneControl<L, T> {
 
   collapse = model(false);
 
-  value = input.required<L>();
+  value = input<L>();
 
   kanbanControls = contentChildren<SdKanbanControl<L, T>>(SdKanbanControl, { descendants: true });
 
-  toolsTemplateRef = contentChild<any, TemplateRef<void>>("toolsTemplate", { read: TemplateRef });
-  titleTemplateRef = contentChild<any, TemplateRef<void>>("titleTemplate", { read: TemplateRef });
+  toolsTplRef = contentChild<any, TemplateRef<void>>("toolsTpl", { read: TemplateRef });
+  titleTplRef = contentChild<any, TemplateRef<void>>("titleTpl", { read: TemplateRef });
 
   isAllSelected = $computed(() => this.kanbanControls().every((ctrl) => ctrl.selected()));
 
   dragKanban = $computed(() => this.#boardControl.dragKanban());
 
   dragOvered = $signal(false);
+
+  selectableKanbanLength = $computed(
+    () => this.kanbanControls().filter((ctrl) => ctrl.selectable()).length,
+  );
 
   onToggleCollapseButtonClick() {
     this.collapse.update((v) => !v);
@@ -154,8 +158,9 @@ export class SdKanbanLaneControl<L, T> {
       this.#boardControl.selectedValues.update((v) => {
         const r = [...v];
         for (const ctrl of this.kanbanControls()) {
-          if (!v.includes(ctrl.value())) {
-            r.push(ctrl.value());
+          if (ctrl.value() == null) continue;
+          if (!v.includes(ctrl.value()!)) {
+            r.push(ctrl.value()!);
           }
         }
         return r.length === v.length ? v : r;
@@ -164,7 +169,8 @@ export class SdKanbanLaneControl<L, T> {
       this.#boardControl.selectedValues.update((v) => {
         const r = [...v];
         for (const ctrl of this.kanbanControls()) {
-          if (v.includes(ctrl.value())) {
+          if (ctrl.value() == null) continue;
+          if (v.includes(ctrl.value()!)) {
             r.remove((item) => item === ctrl.value());
           }
         }

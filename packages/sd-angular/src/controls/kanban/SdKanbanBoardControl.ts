@@ -26,7 +26,7 @@ import { SdKanbanControl } from "./SdKanbanControl";
         flex-wrap: nowrap;
         flex-direction: row;
         white-space: nowrap;
-        gap: var(--gap-xxl);
+        gap: var(--gap-lg);
         height: 100%;
       }
     `,
@@ -60,7 +60,7 @@ export class SdKanbanBoardControl<L, T> {
 }
 
 export interface ISdKanbanBoardDropInfo<L, T> {
-  sourceKanbanValue: T;
-  targetLaneValue: L;
+  sourceKanbanValue?: T;
+  targetLaneValue?: L;
   targetKanbanValue?: T;
 }

@@ -30,7 +30,7 @@ import { TSelectModeValue } from "../../controls/select/SdSelectControl";
     <sd-data-select-button>
       <ng-template [itemOf]="items()" let-item let-index="index">
         <ng-template
-          [ngTemplateOutlet]="itemTemplateRef()"
+          [ngTemplateOutlet]="itemTplRef()"
           [ngTemplateOutletContext]="{
             $implicit: item,
             item: item,
@@ -51,11 +51,9 @@ export class SdSharedDataSelectButtonControl<
   items = input<TItem[]>([]);
   modal = input.required<TSdSelectModalInfo<TModal>>();
 
-  itemTemplateRef = contentChild.required<any, TemplateRef<SdItemOfTemplateContext<TItem>>>(
+  itemTplRef = contentChild.required<any, TemplateRef<SdItemOfTemplateContext<TItem>>>(
     SdItemOfTemplateDirective,
-    {
-      read: TemplateRef,
-    },
+    { read: TemplateRef },
   );
 
   override load(keys: number[]) {

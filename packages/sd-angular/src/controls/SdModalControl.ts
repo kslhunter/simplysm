@@ -22,6 +22,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { NumberUtils } from "@simplysm/sd-core-common";
 import { NgTemplateOutlet } from "@angular/common";
 import { SdAnchorControl } from "./SdAnchorControl";
+import { SdActivatedModalProvider } from "../providers/SdModalProvider";
 
 @Component({
   selector: "sd-modal",
@@ -317,6 +318,8 @@ export class SdModalControl {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
 
   #sdSystemConfig = inject(SdSystemConfigProvider);
+  #sdActivatedModal = inject(SdActivatedModalProvider);
+
   #elRef = injectElementRef<HTMLElement>();
 
   open = model(false);
@@ -439,25 +442,22 @@ export class SdModalControl {
   }
 
   onCloseButtonClick() {
-    if (this.hideCloseButton()) {
-      return;
-    }
+    if (this.hideCloseButton()) return;
+    if (!this.#sdActivatedModal.canDeactivefn()) return;
 
     this.open.set(false);
   }
 
   onBackdropClick() {
-    if (this.hideCloseButton() || !this.useCloseByBackdrop()) {
-      return;
-    }
+    if (this.hideCloseButton() || !this.useCloseByBackdrop()) return;
+    if (!this.#sdActivatedModal.canDeactivefn()) return;
 
     this.open.set(false);
   }
 
   onDialogEscapeKeydown() {
-    if (this.hideCloseButton() || !this.useCloseByEscapeKey()) {
-      return;
-    }
+    if (this.hideCloseButton() || !this.useCloseByEscapeKey()) return;
+    if (!this.#sdActivatedModal.canDeactivefn()) return;
 
     this.open.set(false);
   }
