@@ -83,6 +83,8 @@ import { SdAnchorControl } from "../../controls/SdAnchorControl";
           새로고침
           <small>(CTRL+ALT+L)</small>
         </sd-button>
+
+        <ng-template [ngTemplateOutlet]="pageTopbarTplRef() ?? null" />
       </ng-template>
 
       <ng-template #contentTpl>
@@ -373,6 +375,7 @@ export class SdDataSheetControl {
   deleteIcon = input(this.icons.eraser);
   restoreIcon = input(this.icons.redo);
 
+  pageTopbarTplRef = contentChild("pageTopbarTpl", { read: TemplateRef });
   prevTplRef = contentChild("prevTpl", { read: TemplateRef });
   filterTplRef = contentChild("filterTpl", { read: TemplateRef });
   beforeToolTplRef = contentChild("beforeToolTpl", { read: TemplateRef });

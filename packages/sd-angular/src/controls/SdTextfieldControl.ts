@@ -185,30 +185,37 @@ import { transformBoolean } from "../utils/transforms/tramsformBoolean";
             border-radius: 0;
           }
 
-          &[data-sd-type="month"] {
-            > input,
-            > ._contents {
-              width: 9em;
-            }
-          }
-
-          &[data-sd-type="date"] {
-            > input,
-            > ._contents {
-              width: 8.25em;
-            }
-          }
-
-          &[data-sd-type="datetime"] {
-            > input,
-            > ._contents {
-              width: 14em;
-            }
-          }
-
           > input:focus {
             outline: 1px solid var(--theme-primary-default);
             outline-offset: -1px;
+          }
+        }
+
+        &[data-sd-type="month"] {
+          > input,
+          > ._contents {
+            width: 8.25em;
+          }
+        }
+
+        &[data-sd-type="date"] {
+          > input,
+          > ._contents {
+            width: 8.25em;
+          }
+        }
+
+        &[data-sd-type="datetime"] {
+          > input,
+          > ._contents {
+            width: 14em;
+          }
+        }
+
+        &[data-sd-type="year"] {
+          > input,
+          > ._contents {
+            width: 4em;
           }
         }
 

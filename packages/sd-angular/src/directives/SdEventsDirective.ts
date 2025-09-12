@@ -2,7 +2,7 @@ import { Directive, output } from "@angular/core";
 import { ISdResizeEvent } from "../plugins/events/SdResizeEventPlugin";
 
 @Directive({
-  selector: `[invalid.capture], [keydown.capture], [focus.capture], [blur.capture], [sdResize], [sdRefreshCommand], [sdSaveCommand], [sdInsertCommand]`,
+  selector: `[invalid.capture], [keydown.capture], [focus.capture], [blur.capture], [dragover.capture], [sdResize], [sdRefreshCommand], [sdSaveCommand], [sdInsertCommand]`,
   standalone: true,
 })
 export class SdEventsDirective {
@@ -10,6 +10,7 @@ export class SdEventsDirective {
   keydownCapture = output<KeyboardEvent>({ alias: "keydown.capture" });
   focusCapture = output<FocusEvent>({ alias: "focus.capture" });
   blurCapture = output<FocusEvent>({ alias: "blur.capture" });
+  dragoverCapture = output<DragEvent>({ alias: "dragover.capture" });
 
   sdResize = output<ISdResizeEvent>();
 

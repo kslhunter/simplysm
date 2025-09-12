@@ -59,7 +59,7 @@ import { SdAnchorControl } from "../SdAnchorControl";
 
     <div class="flex-fill">
       <sd-busy-container [busy]="busy()" style="min-height: 3em" type="bar">
-        @if (selectableKanbanLength() > 0 || toolsTplRef()) {
+        @if (selectableKanbanLength() > 0 || toolTplRef()) {
           <div class="tx-center mb-xl">
             @if (selectableKanbanLength() > 0) {
               <sd-checkbox
@@ -70,7 +70,7 @@ import { SdAnchorControl } from "../SdAnchorControl";
                 (valueChange)="onSelectAllButtonClick($event)"
               />
             }
-            <ng-template [ngTemplateOutlet]="toolsTplRef() ?? null" />
+            <ng-template [ngTemplateOutlet]="toolTplRef() ?? null" />
           </div>
         }
 
@@ -136,7 +136,7 @@ export class SdKanbanLaneControl<L, T> {
 
   kanbanControls = contentChildren<SdKanbanControl<L, T>>(SdKanbanControl, { descendants: true });
 
-  toolsTplRef = contentChild<any, TemplateRef<void>>("toolsTpl", { read: TemplateRef });
+  toolTplRef = contentChild<any, TemplateRef<void>>("toolTpl", { read: TemplateRef });
   titleTplRef = contentChild<any, TemplateRef<void>>("titleTpl", { read: TemplateRef });
 
   isAllSelected = $computed(() => this.kanbanControls().every((ctrl) => ctrl.selected()));

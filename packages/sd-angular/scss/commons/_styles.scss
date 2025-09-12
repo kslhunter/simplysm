@@ -65,7 +65,9 @@ body {
 hr {
   border: none;
   height: 1px;
-  background-color: var(--border-color-default);
+  background-color: var(--border-color-lighter);
+  width: 100%;
+  display: block;
 }
 
 p {

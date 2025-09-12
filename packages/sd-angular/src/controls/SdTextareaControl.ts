@@ -73,8 +73,13 @@ import { $computed } from "../utils/bindings/$computed";
           }
         }
 
-        > ._contents {
-          display: none;
+        &:not([data-sd-inset="true"]):not([data-sd-disabled="true"]) > ._contents {
+          height: 0;
+          max-height: 0;
+          padding-top: 0;
+          padding-bottom: 0;
+          margin-top: 0;
+          margin-bottom: 0;
         }
 
         @each $key, $val in map.get(variables.$vars, theme) {

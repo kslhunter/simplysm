@@ -60,9 +60,9 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
         <ng-content />
       </div>
 
-      @if (toolsTplRef()) {
+      @if (toolTplRef()) {
         <div>
-          <ng-template [ngTemplateOutlet]="toolsTplRef()!" />
+          <ng-template [ngTemplateOutlet]="toolTplRef()!" />
         </div>
       }
 
@@ -154,7 +154,7 @@ export class SdListItemControl {
 
   readonly = input(false, { transform: transformBoolean });
 
-  toolsTplRef = contentChild("toolsTpl", { read: TemplateRef });
+  toolTplRef = contentChild("toolTpl", { read: TemplateRef });
   childListControl = contentChild<SdListControl>(forwardRef(() => SdListControl));
 
   hasChildren = $computed(() => this.childListControl() !== undefined);
