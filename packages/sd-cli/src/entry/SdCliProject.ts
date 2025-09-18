@@ -59,6 +59,7 @@ export class SdCliProject {
     }
 
     await SdProjectBuildRunner.watchAsync({
+      allPkgPaths,
       pkgPaths,
       projConf,
       emitOnly: opt.emitOnly ?? false,
@@ -80,7 +81,7 @@ export class SdCliProject {
     const logger = SdLogger.get(["simplysm", "sd-cli", "SdCliProject", "watchAsync"]);
 
     logger.debug("프로젝트 설정 가져오기...");
-    const projConf = await loadProjConfAsync(process.cwd(), true, opt);
+    const projConf = await loadProjConfAsync(process.cwd(), false, opt);
 
     logger.debug("프로젝트 package.json 가져오기...");
     const projNpmConf = (await FsUtils.readJsonAsync(
@@ -114,6 +115,7 @@ export class SdCliProject {
 
     logger.debug("빌드 프로세스 시작...");
     const messages = await SdProjectBuildRunner.buildAsync({
+      allPkgPaths,
       pkgPaths,
       projConf,
     });
@@ -188,6 +190,7 @@ export class SdCliProject {
       try {
         logger.debug("빌드 프로세스 시작...");
         const messages = await SdProjectBuildRunner.buildAsync({
+          allPkgPaths,
           pkgPaths,
           projConf,
         });

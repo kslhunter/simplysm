@@ -22,13 +22,15 @@ import { SdButtonControl } from "../SdButtonControl";
     class: "flex-row gap-default cross-align-center main-align-start",
   },
   template: `
-    <sd-button
-      theme="link-primary"
-      buttonClass="p-sm-default"
-      (click)="onSidebarToggleButtonClick()"
-    >
-      <fa-icon [icon]="icons.bars" />
-    </sd-button>
+    @if (hasSidebar()) {
+      <sd-button
+        theme="link-primary"
+        buttonClass="p-sm-default"
+        (click)="onSidebarToggleButtonClick()"
+      >
+        <fa-icon [icon]="icons.bars" />
+      </sd-button>
+    }
 
     <ng-content />
   `,

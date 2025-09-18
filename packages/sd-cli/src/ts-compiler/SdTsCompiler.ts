@@ -53,7 +53,6 @@ export class SdTsCompiler {
     private readonly _forBundle: boolean,
   ) {
     this.#debug("초기화 중...");
-
     const tsconfigPath = path.resolve(this._opt.pkgPath, "tsconfig.json");
     const tsconfig = FsUtils.readJson(tsconfigPath);
     this.#isForAngular = Boolean(tsconfig.angularCompilerOptions);

@@ -48,7 +48,6 @@ export class SdFormControl {
 
     // 자동 메시지 및 포커싱
     this.formEl.reportValidity();
-
     this.invalid.emit();
   }
 }

@@ -42,6 +42,7 @@ export class SdProjectBuildRunner {
   static #resultCache = new Map<TNormPath, ISdBuildMessage[]>();
 
   static async watchAsync(opt: {
+    allPkgPaths: TNormPath[];
     pkgPaths: TNormPath[];
     projConf: ISdProjectConfig;
     emitOnly: boolean;
@@ -50,7 +51,7 @@ export class SdProjectBuildRunner {
     onComplete: (buildMessages: ISdBuildMessage[]) => void;
   }) {
     const scopePathSet = await this.#getScopePathSetAsync(
-      opt.pkgPaths,
+      opt.allPkgPaths,
       Object.keys(opt.projConf.localUpdates ?? {}),
     );
 
@@ -143,6 +144,8 @@ export class SdProjectBuildRunner {
       if (!opt.noEmit) {
         // 서버 구성 및 재시작
         for (const buildResult of buildResults) {
+          if (buildResult.buildMessages.some((item) => item.severity === "error")) continue;
+
           const pkgConf = opt.projConf.packages[path.basename(buildResult.pkgPath)]!;
           if (pkgConf.type === "server") {
             const serverName = path.basename(buildResult.pkgPath);
@@ -188,6 +191,8 @@ export class SdProjectBuildRunner {
 
         // 클라이언트 구성 및 변경 Reload
         for (const buildResult of buildResults) {
+          if (buildResult.buildMessages.some((item) => item.severity === "error")) continue;
+
           const pkgConf = opt.projConf.packages[path.basename(buildResult.pkgPath)]!;
           if (pkgConf.type === "client") {
             const clientName = path.basename(buildResult.pkgPath);
@@ -267,16 +272,11 @@ export class SdProjectBuildRunner {
 
       for (const buildResult of buildResults) {
         for (const buildMessage of buildResult.buildMessages) {
-          if (
-            !buildMessage.filePath ||
-            PathUtils.isChildPath(buildMessage.filePath, buildResult.pkgPath)
-          ) {
-            const cacheItem = this.#resultCache.getOrCreate(
-              buildMessage.filePath ?? buildResult.pkgPath,
-              [],
-            );
-            cacheItem.push(buildMessage);
-          }
+          const cacheItem = this.#resultCache.getOrCreate(
+            buildMessage.filePath ?? buildResult.pkgPath,
+            [],
+          );
+          cacheItem.push(buildMessage);
         }
       }
 
@@ -284,9 +284,13 @@ export class SdProjectBuildRunner {
     });
   }
 
-  static async buildAsync(opt: { pkgPaths: TNormPath[]; projConf: ISdProjectConfig }) {
+  static async buildAsync(opt: {
+    allPkgPaths: TNormPath[];
+    pkgPaths: TNormPath[];
+    projConf: ISdProjectConfig;
+  }) {
     const scopePathSet = await this.#getScopePathSetAsync(
-      opt.pkgPaths,
+      opt.allPkgPaths,
       Object.keys(opt.projConf.localUpdates ?? {}),
     );
 

@@ -8,7 +8,7 @@ import semver from "semver";
 import { CordovaApkInstaller } from "./CordovaApkInstaller";
 
 export abstract class CordovaAutoUpdate {
-  static #throwAboutReinstall(targetHref?: string) {
+  static #throwAboutReinstall(code: number, targetHref?: string) {
     const downloadHtml =
       targetHref != null
         ? html`
@@ -40,7 +40,7 @@ export abstract class CordovaAutoUpdate {
         : "";
 
     throw new Error(html`
-      APK파일을 다시 다운로드 받아, 설치해야 합니다. ${downloadHtml}
+      APK파일을 다시 다운로드 받아, 설치해야 합니다(${code}). ${downloadHtml}
     `);
   }
 
@@ -51,10 +51,10 @@ export abstract class CordovaAutoUpdate {
 
     try {
       if (!(await CordovaApkInstaller.hasPermissionManifest())) {
-        this.#throwAboutReinstall(targetHref);
+        this.#throwAboutReinstall(1, targetHref);
       }
     } catch {
-      this.#throwAboutReinstall(targetHref);
+      this.#throwAboutReinstall(2, targetHref);
     }
 
     const hasPerm = await CordovaApkInstaller.hasPermission();

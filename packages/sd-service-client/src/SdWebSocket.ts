@@ -1,5 +1,5 @@
-import {EventEmitter} from "events";
-import {Wait} from "@simplysm/sd-core-common";
+import { EventEmitter } from "events";
+import { Wait } from "@simplysm/sd-core-common";
 import WebSocket from "isomorphic-ws";
 
 export class SdWebSocket extends EventEmitter {
@@ -34,7 +34,7 @@ export class SdWebSocket extends EventEmitter {
       };
 
       this.#ws.onerror = (errEvt) => {
-        reject(new Error(`웹소켓을 연결하는 중 오류가 발생했습니다: ${errEvt["message"]}`));
+        reject(new Error(`웹소켓을 연결하는 중 오류가 발생했습니다: ${errEvt.message}`));
       };
 
       this.#ws.onmessage = (messageEvt) => {
@@ -52,7 +52,8 @@ export class SdWebSocket extends EventEmitter {
       this.#ws === undefined ||
       this.#ws.readyState === WebSocket.CLOSING ||
       this.#ws.readyState === WebSocket.CLOSED
-    ) return;
+    )
+      return;
 
     this.#ws.close();
     await Wait.until(() => this.#ws!.readyState === WebSocket.CLOSED);
@@ -62,8 +63,7 @@ export class SdWebSocket extends EventEmitter {
   async sendAsync(message: string): Promise<void> {
     try {
       await Wait.until(() => this.connected, undefined, 5000);
-    }
-    catch {
+    } catch {
       throw new Error("서버와 연결되어있지 않습니다. 인터넷 연결을 확인하세요.");
     }
     this.#ws!.send(message);

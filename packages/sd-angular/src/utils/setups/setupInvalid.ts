@@ -1,12 +1,13 @@
 import { injectElementRef } from "../injections/injectElementRef";
-import { inject, Renderer2 } from "@angular/core";
+import { DestroyRef, inject, Renderer2 } from "@angular/core";
 import { setSafeStyle } from "../setSafeStyle";
-import { Uuid } from "@simplysm/sd-core-common";
 import { $effect } from "../bindings/$effect";
+import { Uuid } from "@simplysm/sd-core-common";
 
 export function setupInvalid(getInvalidMessage: () => string) {
   const _elRef = injectElementRef<HTMLElement>();
   const _renderer = inject(Renderer2);
+  const _destroyRef = inject(DestroyRef);
 
   const hostEl = _elRef.nativeElement;
 
@@ -15,16 +16,23 @@ export function setupInvalid(getInvalidMessage: () => string) {
   const indicatorEl = createIndicatorEl(_renderer, hostEl);
   const inputEl = createInputHiddenEl(_renderer, hostEl);
 
-  $effect(() => {
+  const refreshValidity = () => {
     inputEl.setCustomValidity(getInvalidMessage());
+  };
+
+  $effect(() => {
+    refreshValidity();
 
     const isInvalid = !inputEl.checkValidity();
+    setSafeStyle(_renderer, indicatorEl, { display: isInvalid ? "block" : "none" });
+  });
 
-    if (isInvalid) {
-      setSafeStyle(_renderer, indicatorEl, { display: "block" });
-    } else {
-      setSafeStyle(_renderer, indicatorEl, { display: "none" });
-    }
+  const formEl = inputEl.form;
+  if (!formEl) return;
+
+  formEl.addEventListener("submit", refreshValidity, { capture: true });
+  _destroyRef.onDestroy(() => {
+    formEl.removeEventListener("submit", refreshValidity, { capture: true } as any);
   });
 }
 

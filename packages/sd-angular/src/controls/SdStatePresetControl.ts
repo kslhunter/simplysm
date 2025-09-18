@@ -124,12 +124,12 @@ export class SdStatePresetControl {
       ...v,
       {
         name: newName,
-        state: ObjectUtils.clone(this.state),
+        state: ObjectUtils.clone(this.state()),
       },
     ]);
     await this.#sdSystemConfig.setAsync(`sd-state-preset.${this.key()}`, this.presets());
 
-    this.#sdToast.info(`현재 상태가 ${newName}에 저장되었습니다.`);
+    this.#sdToast.info(`현재 상태가 '${newName}'에 저장되었습니다.`);
   }
 
   onItemClick(preset: ISdStatePreset) {

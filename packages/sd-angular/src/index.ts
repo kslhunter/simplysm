@@ -77,6 +77,8 @@ export * from "./controls/toast/SdToastContainerControl";
 export * from "./controls/toast/SdToastControl";
 export * from "./controls/topbar/SdTopbarContainerControl";
 export * from "./controls/topbar/SdTopbarControl";
+export * from "./controls/topbar/SdTopbarMenuControl";
+export * from "./controls/topbar/SdTopbarUserControl";
 export * from "./directives/SdEventsDirective";
 export * from "./directives/SdInvalidDirective";
 export * from "./directives/SdItemOfTemplateDirective";

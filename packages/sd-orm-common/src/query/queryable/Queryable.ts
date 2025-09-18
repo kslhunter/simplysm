@@ -558,19 +558,34 @@ export class Queryable<D extends DbContext, T> {
       const fields = fwd(item);
       for (const field of fields) {
         if (searchText.startsWith("==") || searchText.startsWith("<>")) {
-          const searchStr = searchText
+          if (searchText.startsWith("<>")) {
+            fieldOrArr.push(
+              this.db.qh.notRegexp(
+                this.db.qh.toLowerCase(field),
+                searchText.substring(2).toLowerCase(),
+              ),
+            );
+          } else {
+            fieldOrArr.push(
+              this.db.qh.regexp(
+                this.db.qh.toLowerCase(field),
+                searchText.substring(2).toLowerCase(),
+              ),
+            );
+          }
+          /*const searchStr = searchText
             .substring(2)
             .replace(/%/g, "!%")
             .replace(/!/g, "!!")
             .replace(/_/g, "!_")
-            .replace(/\*/g, "%")
+            .replace(/\*!/g, "%")
             .toLowerCase();
 
           if (searchText.startsWith("<>")) {
             fieldOrArr.push(this.db.qh.notLike(this.db.qh.toLowerCase(field), searchStr));
           } else {
             fieldOrArr.push(this.db.qh.like(this.db.qh.toLowerCase(field), searchStr));
-          }
+          }*/
         } else {
           const splitSearchText = searchText
             .trim()

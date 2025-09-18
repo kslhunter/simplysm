@@ -9,22 +9,27 @@ export class SdCliDbContextFileGenerator {
   async watchAsync(pkgPath: string, kebabName: string) {
     const targetFilePath = path.resolve(pkgPath, `src/${kebabName}.ts`);
     this.cachedHash = FsUtils.exists(targetFilePath)
-      ? HashUtils.get(FsUtils.readFile(targetFilePath))
+      ? HashUtils.get(await FsUtils.readFileAsync(targetFilePath))
       : undefined;
 
     const watcher = await SdFsWatcher.watchAsync([path.resolve(pkgPath, "src")], {
       ignored: [targetFilePath],
     });
-    watcher.onChange({ delay: 50 }, (changeInfos) => {
+    watcher.onChange({ delay: 50 }, async (changeInfos) => {
       if (changeInfos.some((item) => ["add", "addDir", "unlink", "unlinkDir"].includes(item.event)))
-        this.run(pkgPath, kebabName);
+        await this.runAsync(pkgPath, kebabName);
     });
 
-    this.run(pkgPath, kebabName);
+    await this.runAsync(pkgPath, kebabName);
   }
 
-  run(pkgPath: string, kebabName: string): { changed: boolean; filePath: string; content: string } {
-    const npmConfig = FsUtils.readJson(path.resolve(pkgPath, "package.json")) as INpmConfig;
+  async runAsync(
+    pkgPath: string,
+    kebabName: string,
+  ): Promise<{ changed: boolean; filePath: string; content: string }> {
+    const npmConfig = (await FsUtils.readJsonAsync(
+      path.resolve(pkgPath, "package.json"),
+    )) as INpmConfig;
     const useExt = npmConfig.dependencies?.["@simplysm/sd-orm-common-ext"] != null;
 
     const targetFilePath = path.resolve(pkgPath, `src/${kebabName}.ts`);
@@ -40,7 +45,7 @@ export class SdCliDbContextFileGenerator {
     // Migrations
     const migTexts: string[] = [];
     {
-      const filePaths = FsUtils.glob(path.resolve(pkgPath, "src/migrations/**/*.ts"), {
+      const filePaths = await FsUtils.globAsync(path.resolve(pkgPath, "src/migrations/**/*.ts"), {
         nodir: true,
       });
 
@@ -60,7 +65,9 @@ export class SdCliDbContextFileGenerator {
     // Models
     const modelTexts: string[] = [];
     {
-      const filePaths = FsUtils.glob(path.resolve(pkgPath, "src/models/**/*.ts"), { nodir: true });
+      const filePaths = await FsUtils.globAsync(path.resolve(pkgPath, "src/models/**/*.ts"), {
+        nodir: true,
+      });
 
       for (const filePath of filePaths.orderBy()) {
         const requirePath = PathUtils.posix(path.relative(path.dirname(targetFilePath), filePath))
@@ -93,7 +100,9 @@ export class SdCliDbContextFileGenerator {
     // Views
     const viewTexts: string[] = [];
     {
-      const filePaths = FsUtils.glob(path.resolve(pkgPath, "src/views/**/*.ts"), { nodir: true });
+      const filePaths = await FsUtils.globAsync(path.resolve(pkgPath, "src/views/**/*.ts"), {
+        nodir: true,
+      });
 
       for (const filePath of filePaths.orderBy()) {
         const requirePath = PathUtils.posix(path.relative(path.dirname(targetFilePath), filePath))
@@ -112,9 +121,12 @@ export class SdCliDbContextFileGenerator {
     // Stored Procedures
     const spTexts: string[] = [];
     {
-      const filePaths = FsUtils.glob(path.resolve(pkgPath, "src/stored-procedures/**/*.ts"), {
-        nodir: true,
-      });
+      const filePaths = await FsUtils.globAsync(
+        path.resolve(pkgPath, "src/stored-procedures/**/*.ts"),
+        {
+          nodir: true,
+        },
+      );
 
       for (const filePath of filePaths.orderBy()) {
         const requirePath = PathUtils.posix(path.relative(path.dirname(targetFilePath), filePath))
@@ -155,7 +167,7 @@ ${spTexts.length > 0 ? "\n  // StoredProcedures\n" + spTexts.map((item) => "  " 
 `.trim();
     const currHash = HashUtils.get(content);
     if (currHash !== this.cachedHash) {
-      FsUtils.writeFile(targetFilePath, content);
+      await FsUtils.writeFileAsync(targetFilePath, content);
       this.cachedHash = currHash;
       return { changed: true, filePath: targetFilePath, content };
     } else {

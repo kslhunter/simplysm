@@ -183,14 +183,14 @@ export class SdDepCache {
         }
       };
 
-      for (const path of this.#getRelatedNPaths(modifiedNPath)) {
-        result.add(path);
-        const exportSymbols = this.#getExportSymbols(path);
+      for (const relatedNPath of this.#getRelatedNPaths(modifiedNPath)) {
+        result.add(relatedNPath);
+        const exportSymbols = this.#getExportSymbols(relatedNPath);
         if (exportSymbols.size === 0) {
-          enqueue(path, undefined);
+          enqueue(relatedNPath, undefined);
         } else {
           for (const symbol of exportSymbols) {
-            enqueue(path, symbol);
+            enqueue(relatedNPath, symbol);
           }
         }
       }
@@ -228,7 +228,7 @@ export class SdDepCache {
    * 주어진 파일들 및 그 영향 범위에 해당하는 모든 캐시를 무효화
    */
   invalidates(fileNPathSet: Set<TNormPath>) {
-    const revDepCacheChanged = new Set<TNormPath>();
+    // const revDepCacheChanged = new Set<TNormPath>();
 
     for (const fileNPath of fileNPathSet) {
       this.#exportCache.delete(fileNPath);
@@ -237,17 +237,17 @@ export class SdDepCache {
       this.#exportSymbolCache.delete(fileNPath);
       this.#collectedCache.delete(fileNPath);
 
-      if (this.#revDepCache.has(fileNPath)) {
-        this.#revDepCache.delete(fileNPath); // 자신이 key인 경우
-        revDepCacheChanged.add(fileNPath);
-      }
+      // if (this.#revDepCache.has(fileNPath)) {
+      //   this.#revDepCache.delete(fileNPath); // 자신이 key인 경우
+      // revDepCacheChanged.add(fileNPath);
+      // }
     }
 
     for (const [targetNPath, infoMap] of this.#revDepCache) {
       for (const fileNPath of fileNPathSet) {
         if (infoMap.has(fileNPath)) {
           infoMap.delete(fileNPath);
-          revDepCacheChanged.add(targetNPath);
+          // revDepCacheChanged.add(targetNPath);
         }
       }
       if (infoMap.size === 0) {

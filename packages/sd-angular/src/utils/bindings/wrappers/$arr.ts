@@ -47,18 +47,23 @@ export function $arr<T>(sig: Signal<T[]> | WritableSignal<T[]>) {
       const orgItemMap = sig[ORIGIN_SNAPSHOT].snapshot as Map<any, any>;
       const keyPropNameOrFn = sig[ORIGIN_SNAPSHOT].keyPropNameOrFn as keyof T | ((item: T) => any);
 
-      const keyValue = typeof keyPropNameOrFn === "function" ? keyPropNameOrFn(item) : item[keyPropNameOrFn];
+      const keyValue =
+        typeof keyPropNameOrFn === "function" ? keyPropNameOrFn(item) : item[keyPropNameOrFn];
 
       if (keyValue == null) return true;
       const orgItem = orgItemMap.get(keyValue);
       return !ObjectUtils.equal(orgItem, item);
     },
-    diffs(): TArrayDiffs2Result<T>[] {
+    diffs(options?: {
+      includeSame?: boolean;
+      excludes?: string[];
+      includes?: string[];
+    }): TArrayDiffs2Result<T>[] {
       if (sig[ORIGIN_SNAPSHOT] == null) return [];
       const orgItemMap = sig[ORIGIN_SNAPSHOT].snapshot as Map<any, any>;
       const keyPropNameOrFn = sig[ORIGIN_SNAPSHOT].keyPropNameOrFn as keyof T | ((item: T) => any);
 
-      return sig().oneWayDiffs(orgItemMap, keyPropNameOrFn);
+      return sig().oneWayDiffs(orgItemMap, keyPropNameOrFn, options);
     },
     get origin(): Map<any, T> {
       return sig[ORIGIN_SNAPSHOT]?.snapshot ?? new Map<any, T>();

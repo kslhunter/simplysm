@@ -135,7 +135,8 @@ import { transformBoolean } from "../utils/transforms/tramsformBoolean";
 
             &[type="date"],
             &[type="month"],
-            &[type="datetime-local"] {
+            &[type="datetime-local"],
+            &[type="color"] {
               padding-top: calc(var(--gap-xs) - 1px);
               padding-bottom: calc(var(--gap-xs) - 1px);
             }
@@ -149,7 +150,8 @@ import { transformBoolean } from "../utils/transforms/tramsformBoolean";
 
             &[type="date"],
             &[type="month"],
-            &[type="datetime-local"] {
+            &[type="datetime-local"],
+            &[type="color"] {
               padding-top: calc(var(--gap-default) - 1px);
               padding-bottom: calc(var(--gap-default) - 1px);
             }
@@ -189,33 +191,47 @@ import { transformBoolean } from "../utils/transforms/tramsformBoolean";
             outline: 1px solid var(--theme-primary-default);
             outline-offset: -1px;
           }
-        }
 
-        &[data-sd-type="month"] {
           > input,
           > ._contents {
-            width: 8.25em;
+            &[type="month"] {
+              width: 8.25em;
+            }
+            &[type="date"] {
+              width: 8.25em;
+            }
+            &[type="datetime-local"] {
+              width: 14em;
+            }
+            &[type="year"] {
+              width: 4em;
+            }
+            &[type="color"] {
+              height: calc(
+                var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-sm) * 2
+              );
+            }
           }
-        }
 
-        &[data-sd-type="date"] {
-          > input,
-          > ._contents {
-            width: 8.25em;
+          &[data-sd-size="sm"] {
+            > input,
+            > ._contents {
+              &[type="color"] {
+                height: calc(
+                  var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-xs) * 2
+                );
+              }
+            }
           }
-        }
-
-        &[data-sd-type="datetime"] {
-          > input,
-          > ._contents {
-            width: 14em;
-          }
-        }
-
-        &[data-sd-type="year"] {
-          > input,
-          > ._contents {
-            width: 4em;
+          &[data-sd-size="lg"] {
+            > input,
+            > ._contents {
+              &[type="color"] {
+                height: calc(
+                  var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-default) * 2
+                );
+              }
+            }
           }
         }
 
@@ -299,6 +315,7 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
             : this.type() === "time-sec"
               ? "time"
               : this.type();
+    // TODO: datepicker 따로 만들어서 텍스트 입력으로 일자 적을 수 있게 하는게 좋을 듯
   });
 
   controlValue = $computed(() => {

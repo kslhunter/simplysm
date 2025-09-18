@@ -85,9 +85,11 @@ import { SdAnchorControl } from "../../controls/SdAnchorControl";
                     <small>(CTRL+ALT+L)</small>
                   </sd-button>
                 }
-                @if (!parent.dataInfo()?.isNew &&
-                parent.toggleDelete &&
-                (!parent.canDelete || parent.canDelete())) {
+                @if (
+                  !parent.dataInfo()?.isNew &&
+                  parent.toggleDelete &&
+                  (!parent.canDelete || parent.canDelete())
+                ) {
                   @if (parent.dataInfo()?.isDeleted) {
                     <sd-button theme="warning" (click)="onRestoreButtonClick()">
                       <fa-icon [icon]="icons.redo" [fixedWidth]="true" />
@@ -144,9 +146,11 @@ import { SdAnchorControl } from "../../controls/SdAnchorControl";
       @if (parent.canEdit()) {
         <ng-template #modalBottomTpl>
           <div class="p-sm-default flex-row gap-sm">
-            @if (!parent.dataInfo()?.isNew &&
-            parent.toggleDelete &&
-            (!parent.canDelete || parent.canDelete())) {
+            @if (
+              !parent.dataInfo()?.isNew &&
+              parent.toggleDelete &&
+              (!parent.canDelete || parent.canDelete())
+            ) {
               @if (parent.dataInfo()?.isDeleted) {
                 <sd-button size="sm" theme="warning" (click)="onRestoreButtonClick()">
                   복구

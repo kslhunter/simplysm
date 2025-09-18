@@ -101,10 +101,11 @@ import { SdAnchorControl } from "../../controls/SdAnchorControl";
                 새로고침
                 <small>(CTRL+ALT+L)</small>
               </sd-button>
+              <ng-template [ngTemplateOutlet]="prevTplRef() ?? null" />
             </div>
+          } @else {
+            <ng-template [ngTemplateOutlet]="prevTplRef() ?? null" />
           }
-
-          <ng-template [ngTemplateOutlet]="prevTplRef() ?? null" />
 
           @if (filterTplRef()) {
             <div class="p-default">
@@ -471,6 +472,8 @@ export abstract class AbsSdDataSheet<
   abstract editMode: "inline" | "modal" | undefined;
   abstract selectMode: InputSignal<"single" | "multi" | undefined>;
 
+  diffsExcludes?: string[];
+
   abstract bindFilter(): TFilter;
 
   abstract itemPropInfo: ISdDataSheetItemPropInfo<TItem>;
@@ -593,7 +596,7 @@ export abstract class AbsSdDataSheet<
   }
 
   checkIgnoreChanges() {
-    return $arr(this.items).diffs().length === 0 || confirm(TXT_CHANGE_IGNORE_CONFIRM);
+    return this.#getDiffs().length === 0 || confirm(TXT_CHANGE_IGNORE_CONFIRM);
   }
 
   doFilterSubmit() {
@@ -661,7 +664,7 @@ export abstract class AbsSdDataSheet<
     if (opt?.permCheck && !this.canEdit()) return;
     if (!this.submit) return;
 
-    const diffs = $arr(this.items).diffs();
+    const diffs = this.#getDiffs();
 
     if (diffs.length === 0) {
       if (!opt?.hideNoChangeMessage) {
@@ -687,6 +690,12 @@ export abstract class AbsSdDataSheet<
     this.submitted.emit(true);
   }
 
+  #getDiffs() {
+    return $arr(this.items).diffs(
+      this.diffsExcludes ? { excludes: this.diffsExcludes } : undefined,
+    );
+  }
+
   //-- delete
 
   isSelectedItemsHasDeleted = $computed(() =>
@@ -702,12 +711,12 @@ export abstract class AbsSdDataSheet<
     ),
   );
 
-  getItemCellStyleFn = (item: TItem) =>
+  getItemCellStyleFn = (item: TItem): string | undefined =>
     this.itemPropInfo.isDeleted != null && (item[this.itemPropInfo.isDeleted] as boolean)
       ? "text-decoration: line-through;"
       : undefined;
 
-  getItemSelectableFn = (item: TItem) => this.getItemInfoFn(item).canSelect;
+  getItemSelectableFn = (item: TItem): boolean => this.getItemInfoFn(item).canSelect;
 
   async doToggleDeleteItems(del: boolean) {
     if (!this.canEdit()) return;

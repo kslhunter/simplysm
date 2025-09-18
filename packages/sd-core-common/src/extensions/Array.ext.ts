@@ -309,7 +309,12 @@ declare global {
     this: T[],
     selector: (item: T, index: number) => Promise<R>,
   ): Promise<R[]> {
-    return await this.parallelAsync<R>(async (item, index) => await selector(item, index));
+    const result: R[] = [];
+    for (let i = 0; i < this.length; i++) {
+      result.push(await selector(this[i], i));
+    }
+    return result;
+    // return await this.parallelAsync<R>(async (item, index) => await selector(item, index));
   };
 
   prototype.mapMany = function <T, R>(

@@ -12,9 +12,14 @@ export async function sdHmrBootstrapAsync(
   rootComponent: Type<unknown>,
   options?: ApplicationConfig,
 ): Promise<ApplicationRef> {
-  if ("cordova" in window) {
+  if (
+    Array.from(document.body.querySelectorAll("script")).some((script) =>
+      script.src.includes("cordova"),
+    )
+  ) {
     return await new Promise<ApplicationRef>((resolve) => {
       document.addEventListener("deviceready", bootstrap, false);
+
       async function bootstrap() {
         try {
           const appRef = await bootstrapApplication(rootComponent, options);

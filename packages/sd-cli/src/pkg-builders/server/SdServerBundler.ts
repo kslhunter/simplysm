@@ -23,72 +23,66 @@ export class SdServerBundler {
 
   #outputHashCache = new Map<TNormPath, string>();
 
+  #esbuildOptions: esbuild.BuildOptions;
+
   constructor(
     private readonly _opt: ISdTsCompilerOptions,
     private readonly _conf: { external: string[] },
-  ) {}
-
-  async bundleAsync(modifiedFileSet?: Set<TNormPath>): Promise<ISdBuildResult> {
-    this.#modifiedFileSet.clear();
-    if (modifiedFileSet) {
-      this.#modifiedFileSet.adds(...modifiedFileSet);
-    }
-
-    if (!this.#context) {
-      this.#context = await esbuild.context({
-        entryPoints: [
-          path.resolve(this._opt.pkgPath, "src/main.ts"),
-          ...FsUtils.glob(path.resolve(this._opt.pkgPath, "src/workers/*.ts")),
-        ],
-        keepNames: true,
-        bundle: true,
-        sourcemap: !!this._opt.watch?.dev,
-        target: "node18",
-        mainFields: ["es2020", "es2015", "module", "main"],
-        conditions: ["es2020", "es2015", "module"],
-        tsconfig: path.resolve(this._opt.pkgPath, "tsconfig.json"),
-        write: false,
-        metafile: true,
-        legalComments: this._opt.watch?.dev ? "eof" : "none",
-        minifyIdentifiers: !this._opt.watch?.dev,
-        minifySyntax: !this._opt.watch?.dev,
-        minifyWhitespace: !this._opt.watch?.dev,
-        outdir: path.resolve(this._opt.pkgPath, "dist"),
-        format: "esm",
-        resolveExtensions: [".js", ".mjs", ".cjs", ".ts"],
-        preserveSymlinks: false,
-        loader: {
-          ".png": "file",
-          ".jpeg": "file",
-          ".jpg": "file",
-          ".jfif": "file",
-          ".gif": "file",
-          ".svg": "file",
-          ".woff": "file",
-          ".woff2": "file",
-          ".ttf": "file",
-          ".ttc": "file",
-          ".eot": "file",
-          ".ico": "file",
-          ".otf": "file",
-          ".csv": "file",
-          ".xlsx": "file",
-          ".xls": "file",
-          ".pptx": "file",
-          ".ppt": "file",
-          ".docx": "file",
-          ".doc": "file",
-          ".zip": "file",
-          ".pfx": "file",
-          ".pkl": "file",
-          ".mp3": "file",
-          ".ogg": "file",
-        },
-        platform: "node",
-        logLevel: "silent",
-        external: this._conf.external,
-        banner: {
-          js: `
+  ) {
+    this.#esbuildOptions = {
+      entryPoints: [
+        path.resolve(this._opt.pkgPath, "src/main.ts"),
+        ...FsUtils.glob(path.resolve(this._opt.pkgPath, "src/workers/*.ts")),
+      ],
+      keepNames: true,
+      bundle: true,
+      sourcemap: !!this._opt.watch?.dev,
+      target: "node18",
+      mainFields: ["es2020", "es2015", "module", "main"],
+      conditions: ["es2020", "es2015", "module"],
+      tsconfig: path.resolve(this._opt.pkgPath, "tsconfig.json"),
+      write: false,
+      metafile: true,
+      legalComments: this._opt.watch?.dev ? "eof" : "none",
+      minifyIdentifiers: !this._opt.watch?.dev,
+      minifySyntax: !this._opt.watch?.dev,
+      minifyWhitespace: !this._opt.watch?.dev,
+      outdir: path.resolve(this._opt.pkgPath, "dist"),
+      format: "esm",
+      resolveExtensions: [".js", ".mjs", ".cjs", ".ts"],
+      preserveSymlinks: false,
+      loader: {
+        ".png": "file",
+        ".jpeg": "file",
+        ".jpg": "file",
+        ".jfif": "file",
+        ".gif": "file",
+        ".svg": "file",
+        ".woff": "file",
+        ".woff2": "file",
+        ".ttf": "file",
+        ".ttc": "file",
+        ".eot": "file",
+        ".ico": "file",
+        ".otf": "file",
+        ".csv": "file",
+        ".xlsx": "file",
+        ".xls": "file",
+        ".pptx": "file",
+        ".ppt": "file",
+        ".docx": "file",
+        ".doc": "file",
+        ".zip": "file",
+        ".pfx": "file",
+        ".pkl": "file",
+        ".mp3": "file",
+        ".ogg": "file",
+      },
+      platform: "node",
+      logLevel: "silent",
+      external: this._conf.external,
+      banner: {
+        js: `
 import __path__ from 'path';
 import { fileURLToPath as __fileURLToPath__ } from 'url';
 import { createRequire as __createRequire__ } from 'module';
@@ -96,13 +90,43 @@ import { createRequire as __createRequire__ } from 'module';
 const require = __createRequire__(import.meta.url);
 const __filename = __fileURLToPath__(import.meta.url);
 const __dirname = __path__.dirname(__filename);`.trim(),
-        },
-        plugins: [createSdServerPlugin(this._opt, this.#modifiedFileSet, this.#resultCache)],
-      });
+      },
+      plugins: [createSdServerPlugin(this._opt, this.#modifiedFileSet, this.#resultCache)],
+    };
+  }
+
+  async bundleAsync(modifiedFileSet?: Set<TNormPath>): Promise<ISdBuildResult> {
+    this.#modifiedFileSet.clear();
+    if (modifiedFileSet) {
+      this.#modifiedFileSet.adds(...modifiedFileSet);
     }
 
-    let esbuildResult: esbuild.BuildResult | esbuild.BuildFailure;
-    esbuildResult = await this.#context.rebuild();
+    let esbuildResult: esbuild.BuildResult;
+    if (this._opt.watch) {
+      if (this.#context == null) {
+        this.#context = await esbuild.context(this.#esbuildOptions);
+      }
+
+      try {
+        esbuildResult = await this.#context.rebuild();
+      } catch (err) {
+        if ("warnings" in err || "errors" in err) {
+          esbuildResult = err;
+        } else {
+          throw err;
+        }
+      }
+    } else {
+      try {
+        esbuildResult = await esbuild.build(this.#esbuildOptions);
+      } catch (err) {
+        if ("warnings" in err || "errors" in err) {
+          esbuildResult = err;
+        } else {
+          throw err;
+        }
+      }
+    }
 
     if (this._opt.watch?.noEmit) {
       return {

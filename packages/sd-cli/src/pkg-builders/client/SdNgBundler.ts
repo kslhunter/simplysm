@@ -121,7 +121,7 @@ export class SdNgBundler {
     this.#debug("Bundling...");
 
     const bundlingResults = await perf.run("Bundling", async () => {
-      return await this.#contexts!.mapAsync(async (ctx) => await ctx.bundleAsync());
+      return await this.#contexts!.parallelAsync(async (ctx) => await ctx.bundleAsync());
     });
 
     //-- results
@@ -473,6 +473,7 @@ export class SdNgBundler {
               ),
             }
           : {}),
+
         ...workerEntries,
       },
       supported: { "async-await": false, "object-rest-spread": false },

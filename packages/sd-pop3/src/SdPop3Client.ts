@@ -4,7 +4,9 @@ import { DateTime, NumberUtils } from "@simplysm/sd-core-common";
 
 export class SdPop3Client {
   static async connectAsync<R>(
-    conf: { host: string, port: number, user: string, pass: string },
+    conf:
+      | { host: string; port: number; user: string; pass: string }
+      | { host: string; port: number; user: string; token: string },
     fn: (client: SdPop3Client) => Promise<R>,
   ): Promise<R> {
     return await new Promise<R>((resolve, reject) => {
@@ -25,7 +27,7 @@ export class SdPop3Client {
         resolve(result);
       });
 
-      let lastInfo: { cmd: string; resolve: (res: string) => void; } | undefined;
+      let lastInfo: { cmd: string; resolve: (res: string) => void } | undefined;
       const sendAsync = async (cmd: string) => {
         return await new Promise<string>((resolve1) => {
           lastInfo = { cmd, resolve: resolve1 };
@@ -46,13 +48,10 @@ export class SdPop3Client {
         }
 
         if (
-          (
-            ["LIST", "RETR", "UIDL", "TOP"].includes(lastInfo?.cmd.split(" ")[0] ?? "") &&
-            buffer.endsWith("\r\n.\r\n")
-          ) || (
-            !["LIST", "RETR", "UIDL", "TOP"].includes(lastInfo?.cmd.split(" ")[0] ?? "") &&
-            buffer.endsWith("\r\n")
-          )
+          (["LIST", "RETR", "UIDL", "TOP"].includes(lastInfo?.cmd.split(" ")[0] ?? "") &&
+            buffer.endsWith("\r\n.\r\n")) ||
+          (!["LIST", "RETR", "UIDL", "TOP"].includes(lastInfo?.cmd.split(" ")[0] ?? "") &&
+            buffer.endsWith("\r\n"))
         ) {
           try {
             const res = buffer.trim();
@@ -61,17 +60,22 @@ export class SdPop3Client {
             if (!isConnected && res.startsWith("+OK")) {
               isConnected = true;
 
-              await sendAsync(`USER ${conf.user}`);
-              await sendAsync(`PASS ${conf.pass}`);
+              if ("pass" in conf) {
+                await sendAsync(`USER ${conf.user}`);
+                await sendAsync(`PASS ${conf.pass}`);
+              } else {
+                const authString = Buffer.from(
+                  `user=${conf.user}\x01auth=Bearer ${conf.token}\x01\x01`,
+                ).toString("base64");
+                await sendAsync(`AUTH XOAUTH2 ${authString}`);
+              }
               result = await fn(new SdPop3Client({ sendAsync }));
               await sendAsync(`QUIT`);
               client.end();
-            }
-            else {
+            } else {
               lastInfo?.resolve(res);
             }
-          }
-          catch (err) {
+          } catch (err) {
             await sendAsync(`QUIT`);
             reject(err);
             client.end();
@@ -81,10 +85,11 @@ export class SdPop3Client {
     });
   }
 
-  constructor(private readonly _fns: {
-    sendAsync: (cmd: string) => Promise<string>
-  }) {
-  }
+  constructor(
+    private readonly _fns: {
+      sendAsync: (cmd: string) => Promise<string>;
+    },
+  ) {}
 
   async statAsync() {
     const res = await this._fns.sendAsync("STAT");
@@ -98,63 +103,75 @@ export class SdPop3Client {
   async listAsync() {
     const res = await this._fns.sendAsync("LIST");
 
-    return res.split("\r\n").slice(1, -1).map(item => ({
-      seq: NumberUtils.parseInt(item.split(" ")[0])!,
-      bytes: NumberUtils.parseInt(item.split(" ")[1])!,
-    }));
+    return res
+      .split("\r\n")
+      .slice(1, -1)
+      .map((item) => ({
+        seq: NumberUtils.parseInt(item.split(" ")[0])!,
+        bytes: NumberUtils.parseInt(item.split(" ")[1])!,
+      }));
   }
 
   async topAsync(seq: number): Promise<IMailTopInfo> {
     const res = await this._fns.sendAsync(`TOP ${seq} 0`);
     const parsed = await simpleParser(res);
     return {
+      messageId: parsed.messageId,
       subject: parsed.subject,
-      dateTime: parsed.date != null
-        ? new DateTime(parsed.date)
-        : undefined,
-      to: parsed.to != null && "value" in parsed.to
-        ? parsed.to.value.map(item => item.address).filterExists()
-        : parsed.to?.mapMany(item => item.value.map(item1 => item1.address).filterExists()) ?? [],
-      from: parsed.from?.value.map(item => item.address).filterExists() ?? [],
-      cc: parsed.cc != null && "value" in parsed.cc
-        ? parsed.cc.value.map(item => item.address).filterExists()
-        : parsed.cc?.mapMany(item => item.value.map(item1 => item1.address).filterExists()) ?? [],
-      replyTo: parsed.replyTo?.value.map(item => item.address).filterExists() ?? [],
+      dateTime: parsed.date ? new DateTime(parsed.date) : undefined,
+      to:
+        parsed.to != null && "value" in parsed.to
+          ? parsed.to.value.map((item) => item.address).filterExists()
+          : (parsed.to?.mapMany((item) =>
+              item.value.map((item1) => item1.address).filterExists(),
+            ) ?? []),
+      from: parsed.from?.value.map((item) => item.address).filterExists() ?? [],
+      cc:
+        parsed.cc != null && "value" in parsed.cc
+          ? parsed.cc.value.map((item) => item.address).filterExists()
+          : (parsed.cc?.mapMany((item) =>
+              item.value.map((item1) => item1.address).filterExists(),
+            ) ?? []),
+      replyTo: parsed.replyTo?.value.map((item) => item.address).filterExists() ?? [],
       hasAttachments: parsed.headers.get("content-type")?.["value"] === "multipart/mixed",
     };
   }
-
 
   async retrAsync(seq: number): Promise<IMailInfo> {
     const res = await this._fns.sendAsync(`RETR ${seq}`);
     const parsed = await simpleParser(res);
     return {
       attachments: parsed.attachments
-        .filter(item => item.contentDisposition === "attachment")
-        .map(item => ({
+        .filter((item) => item.contentDisposition === "attachment")
+        .map((item) => ({
           fileName: item.filename,
           content: item.content,
           contentType: item.contentType,
         })),
       html: parsed.html === false ? undefined : parsed.html,
       subject: parsed.subject,
-      dateTime: parsed.date != null
-        ? new DateTime(parsed.date)
-        : undefined,
-      to: parsed.to != null && "value" in parsed.to
-        ? parsed.to.value.map(item => item.address).filterExists()
-        : parsed.to?.mapMany(item => item.value.map(item1 => item1.address).filterExists()) ?? [],
-      from: parsed.from?.value.map(item => item.address).filterExists() ?? [],
-      cc: parsed.cc != null && "value" in parsed.cc
-        ? parsed.cc.value.map(item => item.address).filterExists()
-        : parsed.cc?.mapMany(item => item.value.map(item1 => item1.address).filterExists()) ?? [],
-      replyTo: parsed.replyTo?.value.map(item => item.address).filterExists() ?? [],
+      dateTime: parsed.date != null ? new DateTime(parsed.date) : undefined,
+      to:
+        parsed.to != null && "value" in parsed.to
+          ? parsed.to.value.map((item) => item.address).filterExists()
+          : (parsed.to?.mapMany((item) =>
+              item.value.map((item1) => item1.address).filterExists(),
+            ) ?? []),
+      from: parsed.from?.value.map((item) => item.address).filterExists() ?? [],
+      cc:
+        parsed.cc != null && "value" in parsed.cc
+          ? parsed.cc.value.map((item) => item.address).filterExists()
+          : (parsed.cc?.mapMany((item) =>
+              item.value.map((item1) => item1.address).filterExists(),
+            ) ?? []),
+      replyTo: parsed.replyTo?.value.map((item) => item.address).filterExists() ?? [],
       hasAttachments: parsed.headers.get("content-type")?.["value"] === "multipart/mixed",
     };
   }
 }
 
 interface IMailTopInfo {
+  messageId?: string;
   subject?: string;
   dateTime?: DateTime;
   to: string[];
