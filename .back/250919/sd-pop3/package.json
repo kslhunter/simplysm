@@ -1,12 +1,12 @@
 {
-  "name": "@simplysm/sd-orm-node-mssql",
+  "name": "@simplysm/sd-pop3",
   "version": "12.13.53",
-  "description": "심플리즘 패키지 - MSSQL ORM 모듈 (node)",
+  "description": "심플리즘 패키지 - POP3 클라이언트",
   "author": "김석래",
   "repository": {
     "type": "git",
     "url": "https://github.com/kslhunter/simplysm.git",
-    "directory": "packages/sd-orm-node-mssql"
+    "directory": "packages/sd-pop3"
   },
   "license": "MIT",
   "type": "module",
@@ -14,8 +14,9 @@
   "types": "./dist/index.d.ts",
   "dependencies": {
     "@simplysm/sd-core-common": "12.13.53",
-    "@simplysm/sd-core-node": "12.13.53",
-    "@simplysm/sd-orm-common": "12.13.53",
-    "tedious": "18.6.1"
+    "mailparser": "^3.7.4"
+  },
+  "devDependencies": {
+    "@types/mailparser": "^3.4.6"
   }
 }

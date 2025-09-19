@@ -1,4 +1,4 @@
-export default (dev, opt) => ({
+export default () => ({
   packages: {
     "cordova-plugin-auto-update": {
       type: "library",
@@ -61,26 +61,6 @@ export default (dev, opt) => ({
       publish: "npm",
       polyfills: ["@simplysm/sd-core-common"],
     },
-    "sd-orm-node-mssql": {
-      type: "library",
-      publish: "npm",
-      polyfills: ["@simplysm/sd-core-common"],
-    },
-    "sd-orm-node-mysql": {
-      type: "library",
-      publish: "npm",
-      polyfills: ["@simplysm/sd-core-common"],
-    },
-    "sd-orm-node-sqlite": {
-      type: "library",
-      publish: "npm",
-      polyfills: ["@simplysm/sd-core-common"],
-    },
-    "sd-pop3": {
-      type: "library",
-      publish: "npm",
-      polyfills: ["@simplysm/sd-core-common"],
-    },
     "sd-service-client": {
       type: "library",
       publish: "npm",
@@ -97,53 +77,5 @@ export default (dev, opt) => ({
       type: "library",
       publish: "npm",
     },
-    "ts-transformer-keys": {
-      type: "library",
-      publish: "npm",
-    },
-    "types-cordova-plugin-ionic-webview": {
-      type: "library",
-      publish: "npm",
-      noGenIndex: true,
-    },
-    ...(opt.includes("withTest")
-      ? {
-          "cordova-test": {
-            type: "client",
-            server: "server-test",
-            builder: {
-              cordova: {
-                appId: "kr.co.simplysm.cordova.test",
-                appName: "Simplysm Cordova Test",
-                plugins: [
-                  "../../../packages/cordova-plugin-auto-update",
-                  "../../../packages/cordova-plugin-file-system",
-                  "../../../packages/cordova-plugin-usb-storage",
-                ],
-                icon: "res/icon.png",
-                debug: true,
-                platform: {
-                  android: {
-                    ...(dev
-                      ? {}
-                      : {
-                          sign: {
-                            keystore: "res/simplysm.keystore",
-                            storePassword: "12tlavmf#$",
-                            alias: "simplysm",
-                            password: "12tlavmf#$",
-                            keystoreType: "pkcs12",
-                          },
-                        }),
-                  },
-                },
-              },
-            },
-          },
-          "server-test": {
-            type: "server",
-          },
-        }
-      : {}),
   },
 });

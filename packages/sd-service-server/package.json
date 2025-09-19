@@ -19,7 +19,7 @@
     "@simplysm/sd-orm-node": "12.13.53",
     "@simplysm/sd-service-common": "12.13.53",
     "bufferutil": "^4.0.9",
-    "mime": "^4.0.7",
+    "mime": "^4.1.0",
     "nodemailer": "^7.0.6",
     "semver": "^7.7.2",
     "utf-8-validate": "^6.0.5",

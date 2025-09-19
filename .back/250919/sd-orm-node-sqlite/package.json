@@ -1,12 +1,12 @@
 {
-  "name": "@simplysm/sd-orm-node-mysql",
+  "name": "@simplysm/sd-orm-node-sqlite",
   "version": "12.13.53",
-  "description": "심플리즘 패키지 - MYSQL ORM 모듈 (node)",
+  "description": "심플리즘 패키지 - SQLITE ORM 모듈 (node)",
   "author": "김석래",
   "repository": {
     "type": "git",
     "url": "https://github.com/kslhunter/simplysm.git",
-    "directory": "packages/sd-orm-node-mysql"
+    "directory": "packages/sd-orm-node-sqlite"
   },
   "license": "MIT",
   "type": "module",
@@ -16,9 +16,9 @@
     "@simplysm/sd-core-common": "12.13.53",
     "@simplysm/sd-core-node": "12.13.53",
     "@simplysm/sd-orm-common": "12.13.53",
-    "mysql": "^2.18.1"
+    "sqlite3": "^5.1.7"
   },
   "devDependencies": {
-    "@types/mysql": "^2.15.27"
+    "@types/sqlite3": "^5.1.0"
   }
 }

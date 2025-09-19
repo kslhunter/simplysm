@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { execSync } from "node:child_process";
 import path from "path";
 import fs from "fs";
@@ -22,8 +23,6 @@ const npmConfPaths = [
 for (const npmConfPath of npmConfPaths) {
   const npmConf = JSON.parse(fs.readFileSync(npmConfPath, { encoding: "utf-8" }));
 
-  // updateNpmConf(npmConf.dependencies);
-  // updateNpmConf(npmConf.devDependencies);
   checkNpmConf(npmConf.peerDependencies);
 }
 
@@ -31,7 +30,6 @@ function checkNpmConf(deps) {
   for (const depKey in deps) {
     if (Object.keys(ngDeps).includes(depKey)) {
       if (!semver.subset(deps[depKey], ngDeps[depKey])) {
-        // eslint-disable-next-line no-console
         console.error(depKey, deps[depKey], ngDeps[depKey]);
       }
     }
