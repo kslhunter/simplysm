@@ -142,7 +142,9 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
           resolve();
         },
         "",
-        tedious.ISOLATION_LEVEL[isolationLevel ?? this.config.defaultIsolationLevel ?? "READ_COMMITTED"],
+        tedious.ISOLATION_LEVEL[
+          isolationLevel ?? this.config.defaultIsolationLevel ?? "READ_COMMITTED"
+        ],
       );
     });
   }
@@ -217,10 +219,16 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
                   const splitQuery = queryString.split("\n");
                   splitQuery[err["lineNumber"] - 1] = "==> " + splitQuery[err["lineNumber"] - 1];
                   reject(
-                    new Error(`[${err["code"] as string}] ${err.message}\n-- query\n${splitQuery.join("\n")}\n--`),
+                    new Error(
+                      `[${err["code"] as string}] ${err.message}\n-- query\n${splitQuery.join("\n")}\n--`,
+                    ),
                   );
                 } else {
-                  reject(new Error(`[${err["code"] as string}] ${err.message}\n-- query\n${queryString}\n--`));
+                  reject(
+                    new Error(
+                      `[${err["code"] as string}] ${err.message}\n-- query\n${queryString}\n--`,
+                    ),
+                  );
                 }
               }
             }
@@ -301,7 +309,9 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
     }
     this.#startTimeout();
 
-    const tediousColumnDefs = columnDefs.map((item) => this.#convertColumnDefToTediousBulkColumnDef(item));
+    const tediousColumnDefs = columnDefs.map((item) =>
+      this.#convertColumnDefToTediousBulkColumnDef(item),
+    );
 
     await new Promise<void>((resolve, reject) => {
       const bulkLoad = this.#conn?.newBulkLoad(tableName, (err) => {
@@ -367,7 +377,9 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
     };
   }
 
-  #convertColumnDataTypeToTediousBulkColumnType(type: Type<TQueryValue> | TSdOrmDataType | string): {
+  #convertColumnDataTypeToTediousBulkColumnType(
+    type: Type<TQueryValue> | TSdOrmDataType | string,
+  ): {
     type: DataType;
     length?: number;
     precision?: number;
@@ -379,7 +391,11 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
         case "TEXT":
           return { type: tedious.TYPES.NText };
         case "DECIMAL":
-          return { type: tedious.TYPES.Decimal, precision: currType.precision, scale: currType.digits };
+          return {
+            type: tedious.TYPES.Decimal,
+            precision: currType.precision,
+            scale: currType.digits,
+          };
         case "STRING":
           return {
             type: tedious.TYPES.NVarChar,
@@ -399,10 +415,16 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
       const split = type.split(/[(,)]/);
       const typeStr = split[0];
       const length =
-        split[1] === "MAX" ? Infinity : typeof split[1] !== "undefined" ? Number.parseInt(split[1], 10) : undefined;
+        split[1] === "MAX"
+          ? Infinity
+          : typeof split[1] !== "undefined"
+            ? Number.parseInt(split[1], 10)
+            : undefined;
       const digits = typeof split[2] !== "undefined" ? Number.parseInt(split[2], 10) : undefined;
 
-      const typeKey = Object.keys(tedious.TYPES).single((item) => item.toLocaleLowerCase() === typeStr.toLowerCase());
+      const typeKey = Object.keys(tedious.TYPES).single(
+        (item) => item.toLocaleLowerCase() === typeStr.toLowerCase(),
+      );
       if (typeKey === undefined) {
         throw new NeverEntryError();
       }

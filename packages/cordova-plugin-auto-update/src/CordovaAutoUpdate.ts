@@ -1,5 +1,3 @@
-/// <reference types="@simplysm/types-cordova-plugin-ionic-webview"/>
-
 import { CordovaFileSystem } from "@simplysm/cordova-plugin-file-system";
 import { html, NetUtils, Wait } from "@simplysm/sd-core-common";
 import { SdAutoUpdateServiceClient, SdServiceClient } from "@simplysm/sd-service-client";

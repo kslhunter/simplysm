@@ -196,9 +196,9 @@ export class SdTsCompiler {
     const prepareResult = await this.#prepareAsync(modifiedFileSet);
 
     const [globalStyleSheet, lintResults, buildResult] = await Promise.all([
-      this._opt.watch?.noEmit ? undefined : this.#buildGlobalStyleAsync(),
-      this._opt.watch?.emitOnly ? [] : this.#lintAsync(prepareResult),
-      this.#build(prepareResult),
+      this._opt.watch?.noEmit ? Promise.resolve(undefined) : this.#buildGlobalStyleAsync(),
+      this._opt.watch?.emitOnly ? Promise.resolve([]) : this.#lintAsync(prepareResult),
+      Promise.resolve(this.#build(prepareResult)),
     ]);
 
     const messages = [
