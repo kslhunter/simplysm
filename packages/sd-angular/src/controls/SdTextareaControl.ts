@@ -171,7 +171,7 @@ export class SdTextareaControl {
 
   placeholder = input<string>();
   title = input<string>();
-  // rows = input<number>(1);
+  minRows = input<number>(1);
   disabled = input(false, { transform: transformBoolean });
   readonly = input(false, { transform: transformBoolean });
   required = input(false, { transform: transformBoolean });
@@ -185,7 +185,7 @@ export class SdTextareaControl {
   inputStyle = input<string>();
   inputClass = input<string>();
 
-  currRows = $computed(() => this.value()?.split("\n").length ?? 1);
+  currRows = $computed(() => Math.max(this.minRows(), this.value()?.split("\n").length ?? 1));
 
   constructor() {
     setupInvalid(() => {
