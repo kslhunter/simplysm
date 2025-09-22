@@ -1,5 +1,4 @@
 import { SdLogger } from "@simplysm/sd-core-node";
-import tedious from "tedious";
 import { EventEmitter } from "events";
 import {
   DateOnly,
@@ -20,22 +19,32 @@ import {
   TQueryValue,
   TSdOrmDataType,
 } from "@simplysm/sd-orm-common";
-import { DataType } from "tedious/lib/data-type";
+import type { DataType } from "tedious/lib/data-type";
+import type tediousType from "tedious";
+
+let tedious: typeof import("tedious");
+let importErr: any | undefined;
+try {
+  tedious = await import("tedious");
+} catch (err) {
+  importErr = err;
+}
 
 export class MssqlDbConn extends EventEmitter implements IDbConn {
   readonly #logger = SdLogger.get(["simplysm", "sd-orm-node", this.constructor.name]);
 
   readonly #timeout = 10 * 60 * 1000;
 
-  #conn?: tedious.Connection;
+  #conn?: tediousType.Connection;
   #connTimeout?: NodeJS.Timeout;
-  #requests: tedious.Request[] = [];
+  #requests: tediousType.Request[] = [];
 
   isConnected = false;
   isOnTransaction = false;
 
   constructor(readonly config: IDefaultDbConnConf) {
     super();
+    if (importErr != null) throw importErr;
   }
 
   async connectAsync(): Promise<void> {

@@ -52,7 +52,7 @@ export class SdOrmService extends SdServiceBase {
   async connect(opt: Record<string, any>): Promise<number> {
     const config = await SdOrmService.getConfAsync(this, opt);
 
-    const dbConn = await DbConnFactory.createAsync(config);
+    const dbConn = DbConnFactory.create(config);
 
     const lastConnId = Array.from(SdOrmService.#conns.keys()).max() ?? 0;
     const connId = lastConnId + 1;
@@ -134,18 +134,27 @@ export class SdOrmService extends SdServiceBase {
 
     // 가져올데이터가 없는것으로 옵션 설정을 했을때, 하나의 쿼리로 한번의 요청보냄
     if (options && options.every((item) => item == null)) {
-      return await conn.executeAsync([defs.map((def) => new QueryBuilder(conn.config.dialect).query(def)).join("\n")]);
+      return await conn.executeAsync([
+        defs.map((def) => new QueryBuilder(conn.config.dialect).query(def)).join("\n"),
+      ]);
     } else {
       const queries = defs.mapMany((def) => {
         const query = new QueryBuilder(conn.config.dialect).query(def);
         return Array.isArray(query) ? query : [query];
       });
       const result = await conn.executeAsync(queries);
-      return result.map((item, i) => SdOrmUtils.parseQueryResult(item, options ? options[i] : undefined));
+      return result.map((item, i) =>
+        SdOrmUtils.parseQueryResult(item, options ? options[i] : undefined),
+      );
     }
   }
 
-  async bulkInsert(connId: number, tableName: string, columnDefs: IQueryColumnDef[], records: Record<string, any>[]) {
+  async bulkInsert(
+    connId: number,
+    tableName: string,
+    columnDefs: IQueryColumnDef[],
+    records: Record<string, any>[],
+  ) {
     const conn = SdOrmService.#conns.get(connId);
     if (!conn) {
       throw new Error("DB에 연결되어있지 않습니다.");
@@ -154,7 +163,12 @@ export class SdOrmService extends SdServiceBase {
     await conn.bulkInsertAsync(tableName, columnDefs, records);
   }
 
-  async bulkUpsert(connId: number, tableName: string, columnDefs: IQueryColumnDef[], records: Record<string, any>[]) {
+  async bulkUpsert(
+    connId: number,
+    tableName: string,
+    columnDefs: IQueryColumnDef[],
+    records: Record<string, any>[],
+  ) {
     const conn = SdOrmService.#conns.get(connId);
     if (!conn) {
       throw new Error("DB에 연결되어있지 않습니다.");

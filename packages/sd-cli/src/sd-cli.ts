@@ -19,15 +19,15 @@ if (path.extname(cliPath) === ".ts") {
   // .js 번들 실행 (배포본)
 
   // 로컬 업데이트
-  if (process.argv.slice(2).includes("watch") && !process.argv.slice(2).includes("--noEmit")) {
-    // if (!process.argv.slice(2).includes("local-update")) {
+  // if (process.argv.slice(2).includes("watch") && !process.argv.slice(2).includes("--noEmit")) {
+  if (!process.argv.slice(2).includes("local-update")) {
     await spawnWaitAsync(`node`, [
       "--import=specifier-resolution-node/register",
       fileURLToPath(cliPath),
       "local-update",
     ]);
-    // }
   }
+  // }
 
   // 프로세스 실행
   const child = spawn(

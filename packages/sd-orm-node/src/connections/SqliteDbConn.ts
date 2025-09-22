@@ -8,14 +8,22 @@ import {
   QueryHelper,
 } from "@simplysm/sd-orm-common";
 import { SdLogger } from "@simplysm/sd-core-node";
-import sqlite3 from "sqlite3";
+import type sqlite3Type from "sqlite3";
+
+let sqlite3: typeof import("sqlite3");
+let importErr: any | undefined;
+try {
+  sqlite3 = await import("sqlite3");
+} catch (err) {
+  importErr = err;
+}
 
 export class SqliteDbConn extends EventEmitter implements IDbConn {
   #logger = SdLogger.get(["simplysm", "sd-orm-node", this.constructor.name]);
 
   #timeout = 300000;
 
-  #conn?: sqlite3.Database;
+  #conn?: sqlite3Type.Database;
   #connTimeout?: NodeJS.Timeout;
 
   isConnected = false;
@@ -23,6 +31,7 @@ export class SqliteDbConn extends EventEmitter implements IDbConn {
 
   constructor(readonly config: ISqliteDbConnConf) {
     super();
+    if (importErr != null) throw importErr;
   }
 
   async connectAsync() {
@@ -43,8 +52,7 @@ export class SqliteDbConn extends EventEmitter implements IDbConn {
       conn.on("error", (error) => {
         if (this.isConnected) {
           this.#logger.error("error: " + error.message);
-        }
-        else {
+        } else {
           reject(new Error(error.message));
         }
       });
@@ -166,7 +174,9 @@ export class SqliteDbConn extends EventEmitter implements IDbConn {
             this.#startTimeout();
 
             if (err) {
-              reject(new SdError(err, "쿼리 수행중 오류발생\n-- query\n" + queryString.trim() + "\n--"));
+              reject(
+                new SdError(err, "쿼리 수행중 오류발생\n-- query\n" + queryString.trim() + "\n--"),
+              );
               return;
             }
 
@@ -223,7 +233,8 @@ export class SqliteDbConn extends EventEmitter implements IDbConn {
 
     q += "\n";
     q += "ON DUPLICATE KEY UPDATE\n";
-    for (const colName of columnDefs.filter((item) => !item.autoIncrement)
+    for (const colName of columnDefs
+      .filter((item) => !item.autoIncrement)
       .map((item) => item.name)) {
       q += `${colName} = VALUES(${colName}),\n`;
     }

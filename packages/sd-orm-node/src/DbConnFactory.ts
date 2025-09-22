@@ -1,15 +1,15 @@
 import { IDbConn, TDbConnConf } from "@simplysm/sd-orm-common";
+import { SqliteDbConn } from "./connections/SqliteDbConn";
+import { MysqlDbConn } from "./connections/MysqlDbConn";
+import { MssqlDbConn } from "./connections/MssqlDbConn";
 
 export class DbConnFactory {
-  static async createAsync(config: TDbConnConf): Promise<IDbConn> {
+  static create(config: TDbConnConf): IDbConn {
     if (config.dialect === "sqlite") {
-      const { SqliteDbConn } = await import("./connections/SqliteDbConn");
       return new SqliteDbConn(config);
     } else if (config.dialect === "mysql") {
-      const { MysqlDbConn } = await import("./connections/MysqlDbConn");
       return new MysqlDbConn(config);
     } else {
-      const { MssqlDbConn } = await import("./connections/MssqlDbConn");
       return new MssqlDbConn(config);
     }
   }

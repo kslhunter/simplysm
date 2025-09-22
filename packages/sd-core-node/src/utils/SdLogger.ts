@@ -56,6 +56,8 @@ export interface ISdLoggerConfig {
     outDir: string;
     maxBytes?: number;
   };
+
+  customFn?: (severity: SdLoggerSeverity, logs: any[]) => Promise<void> | void;
 }
 
 export interface ISdLoggerHistory {
@@ -206,8 +208,21 @@ export class SdLogger {
         }
       } catch (err) {
         // eslint-disable-next-line no-console
-        console.log("파일쓰기실패", err.message);
+        console.error("파일쓰기실패", err.message);
       }
+    }
+
+    if (config.customFn) {
+      const logMessages = logs.map((log) =>
+        log instanceof Error && log.stack !== undefined ? log.stack : log,
+      );
+
+      const r = config.customFn(severity, logMessages);
+      if (r instanceof Promise)
+        r.catch((err) => {
+          // eslint-disable-next-line no-console
+          console.error("커스텀 로깅 실패", err.message, severity, ...logMessages);
+        });
     }
 
     if (SdLogger.#historyLength > 0) {

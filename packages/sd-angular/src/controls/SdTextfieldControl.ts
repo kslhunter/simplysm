@@ -192,41 +192,54 @@ import { transformBoolean } from "../utils/transforms/tramsformBoolean";
             outline-offset: -1px;
           }
 
-          > input,
-          > ._contents {
-            &[type="month"] {
+          &[data-sd-type="month"] {
+            > input,
+            > ._contents {
               width: 8.25em;
             }
-            &[type="date"] {
+          }
+
+          &[data-sd-type="date"] {
+            > input,
+            > ._contents {
               width: 8.25em;
             }
-            &[type="datetime-local"] {
+          }
+
+          &[data-sd-type="datetime-local"] {
+            > input,
+            > ._contents {
               width: 14em;
             }
-            &[type="year"] {
+          }
+
+          &[data-sd-type="year"] {
+            > input,
+            > ._contents {
               width: 4em;
             }
-            &[type="color"] {
+          }
+
+          &[data-sd-type="color"] {
+            > input,
+            > ._contents {
               height: calc(
                 var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-sm) * 2
               );
             }
-          }
 
-          &[data-sd-size="sm"] {
-            > input,
-            > ._contents {
-              &[type="color"] {
+            &[data-sd-size="sm"] {
+              > input,
+              > ._contents {
                 height: calc(
                   var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-xs) * 2
                 );
               }
             }
-          }
-          &[data-sd-size="lg"] {
-            > input,
-            > ._contents {
-              &[type="color"] {
+
+            &[data-sd-size="lg"] {
+              > input,
+              > ._contents {
                 height: calc(
                   var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-default) * 2
                 );

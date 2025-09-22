@@ -23,6 +23,9 @@ export interface ISdLibPackageConfig {
   publish?: "npm";
   polyfills?: string[];
   noGenIndex?: boolean;
+  index?: {
+    excludes?: string[];
+  };
   dbContext?: string;
   forceProductionMode?: boolean;
 }
@@ -40,7 +43,6 @@ export interface ISdServerPackageConfig {
     ignoreWatchPaths?: string[];
     noInterpreter?: boolean;
     noStartScript?: boolean;
-    instances?: number | "max";
   };
   iis?: {
     nodeExeFilePath?: string;

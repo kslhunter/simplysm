@@ -39,19 +39,26 @@ export class SdResizeEventPlugin extends EventManagerPlugin {
 
       intersectionObserver.unobserve(entry.target);
     });
+
+    let animationFrameId: number | undefined;
     const resizeObserver = new ResizeObserver(([entry]) => {
-      const contentRect = entry.contentRect;
+      if (animationFrameId != null) {
+        cancelAnimationFrame(animationFrameId);
+      }
+      animationFrameId = requestAnimationFrame(() => {
+        const contentRect = entry.contentRect;
 
-      const heightChanged = contentRect.height !== prevHeight;
-      const widthChanged = contentRect.width !== prevWidth;
-      prevHeight = contentRect.height;
-      prevWidth = contentRect.width;
+        const heightChanged = contentRect.height !== prevHeight;
+        const widthChanged = contentRect.width !== prevWidth;
+        prevHeight = contentRect.height;
+        prevWidth = contentRect.width;
 
-      handler({
-        heightChanged,
-        widthChanged,
-        target: entry.target,
-        contentRect: entry.contentRect,
+        handler({
+          heightChanged,
+          widthChanged,
+          target: entry.target,
+          contentRect: entry.contentRect,
+        });
       });
     });
 

@@ -134,9 +134,7 @@ Options = UnsafeLegacyRenegotiation`.trim(),
             ...env ?? {},
           },
           arrayProcess: "concat",
-          useDelTargetNull: true,
-          exec_mode: pm2Conf.instances != null ? "cluster" : "fork",
-          instances: pm2Conf.instances ?? 1,
+          useDelTargetNull: true
         };`
         .replaceAll("\n        ", "\n")
         .trim();
