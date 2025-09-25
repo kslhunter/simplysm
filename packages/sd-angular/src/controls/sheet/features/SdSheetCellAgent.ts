@@ -58,7 +58,7 @@ export class SdSheetCellAgent {
         this.#exitEditMode(tdEl);
       } else if (event.key === "Enter") {
         if (event.target.tagName === "TEXTAREA" || event.target.hasAttribute("contenteditable")) {
-          if (event.ctrlKey) {
+          if (event.ctrlKey && event.altKey) {
             event.preventDefault();
             this.#moveCellIfExists(tdEl, 1, 0, true);
           }
@@ -66,19 +66,19 @@ export class SdSheetCellAgent {
           event.preventDefault();
           this.#moveCellIfExists(tdEl, 1, 0, true);
         }
-      } else if (event.ctrlKey && event.key === "ArrowDown") {
+      } else if (event.ctrlKey && event.altKey && event.key === "ArrowDown") {
         if (this.#moveCellIfExists(tdEl, 1, 0, true)) {
           event.preventDefault();
         }
-      } else if (event.ctrlKey && event.key === "ArrowUp") {
+      } else if (event.ctrlKey && event.altKey && event.key === "ArrowUp") {
         if (this.#moveCellIfExists(tdEl, -1, 0, true)) {
           event.preventDefault();
         }
-      } else if (event.ctrlKey && event.key === "ArrowRight") {
+      } else if (event.ctrlKey && event.altKey && event.key === "ArrowRight") {
         if (this.#moveCellIfExists(tdEl, 0, 1, true)) {
           event.preventDefault();
         }
-      } else if (event.ctrlKey && event.key === "ArrowLeft") {
+      } else if (event.ctrlKey && event.altKey && event.key === "ArrowLeft") {
         if (this.#moveCellIfExists(tdEl, 0, -1, true)) {
           event.preventDefault();
         }
