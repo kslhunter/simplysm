@@ -536,7 +536,7 @@ export class Queryable<D extends DbContext, T> {
     const parsed = FnUtils.parse(arg);
     const itemParamName = parsed.params[0];
     const tableChainedName = parsed.returnContent
-      .replace(new RegExp(`${itemParamName}\\.`), "")
+      .replace(itemParamName + ".", "")
       .replace(/\[0]/g, "")
       .trim();
 

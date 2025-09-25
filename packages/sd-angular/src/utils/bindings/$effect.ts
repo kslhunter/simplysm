@@ -6,10 +6,10 @@ import {
   untracked,
 } from "@angular/core";
 
-export function $effect(
-  fn: (onCleanup: EffectCleanupRegisterFn) => Promise<void>,
-  options?: CreateEffectOptions,
-): never;
+// export function $effect(
+//   fn: (onCleanup: EffectCleanupRegisterFn) => Promise<void>,
+//   options?: CreateEffectOptions,
+// ): never;
 export function $effect(
   fn: (onCleanup: EffectCleanupRegisterFn) => void,
   options?: CreateEffectOptions,
@@ -20,7 +20,7 @@ export function $effect(
   options?: CreateEffectOptions,
 ): EffectRef;
 export function $effect(
-  arg1: ((onCleanup: EffectCleanupRegisterFn) => void | Promise<void>) | (() => unknown)[],
+  arg1: ((onCleanup: EffectCleanupRegisterFn) => void) | (() => unknown)[],
   arg2?: ((onCleanup: EffectCleanupRegisterFn) => void | Promise<void>) | CreateEffectOptions,
   arg3?: CreateEffectOptions,
 ): EffectRef {

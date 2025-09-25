@@ -4,6 +4,17 @@ import { $effect } from "./$effect";
 export function $resource<T, R>(
   options: ResourceOptions<T, R> & {
     saver?: (param: T | undefined) => void | PromiseLike<void>;
+    defaultValue: NoInfer<T>;
+  },
+): ResourceRef<T>;
+export function $resource<T, R>(
+  options: ResourceOptions<T, R> & {
+    saver?: (param: T | undefined) => void | PromiseLike<void>;
+  },
+): ResourceRef<T | undefined>;
+export function $resource<T, R>(
+  options: ResourceOptions<T, R> & {
+    saver?: (param: T | undefined) => void | PromiseLike<void>;
   },
 ): ResourceRef<T | undefined> {
   const sig = resource(options);

@@ -44,6 +44,9 @@ export class SdExcelCell {
     setNumFormatIdAsync: async (numFmtId: string) => {
       await this.#setStyleAsync({ numFmtId: numFmtId });
     },
+    setNumFormatCodeAsync: async (numFmtCode: string) => {
+      await this.#setStyleAsync({ numFmtCode: numFmtCode });
+    },
   };
 
   addr: { r: number; c: number };

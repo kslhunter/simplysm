@@ -1,7 +1,7 @@
 import { computed, effect, signal, Signal, untracked } from "@angular/core";
 
-export function $computed<R>(fn: () => Promise<R>): Signal<R | undefined>;
-export function $computed<R>(fn: () => Promise<R>, opt: { initialValue?: R }): Signal<R>;
+// export function $computed<R>(fn: () => Promise<R>): Signal<R | undefined>;
+// export function $computed<R>(fn: () => Promise<R>, opt: { initialValue?: R }): Signal<R>;
 export function $computed<R>(signals: Signal<any>[], fn: () => Promise<R>): Signal<R | undefined>;
 export function $computed<R>(
   signals: Signal<any>[],
