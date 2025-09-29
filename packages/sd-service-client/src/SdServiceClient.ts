@@ -97,7 +97,7 @@ export class SdServiceClient extends EventEmitter {
               document.body.prepend(document.createElement("app-root"));
 
               await (
-                await import(`/${msg.clientName}/main.js?t=${Date.now()}`)
+                await import(`${location.pathname}main.js?t=${Date.now()}`)
               ).default;
               /*requestAnimationFrame(() => {
                 console.clear();
