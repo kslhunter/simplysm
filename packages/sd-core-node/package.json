@@ -19,7 +19,7 @@
   },
   "devDependencies": {
     "@types/glob": "^9.0.0",
-    "tsx": "^4.20.5",
+    "tsx": "^4.20.6",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.2.4"
   }
