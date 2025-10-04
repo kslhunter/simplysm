@@ -118,7 +118,7 @@ import { SdAnchorControl } from "../controls/SdAnchorControl";
           </sd-sheet>
         </div>
 
-        <div class="p-sm-default flex-row gap-sm bdt bdt-theme-grey-lightest">
+        <div class="p-sm-default flex-row gap-sm bdt bdt-theme-gray-lightest">
           <div class="flex-fill align-start">
             <sd-button
               size="sm"

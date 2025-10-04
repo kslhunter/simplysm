@@ -97,7 +97,7 @@ import { SdAnchorControl } from "../../controls/SdAnchorControl";
               @if (undefinedTplRef()) {
                 <ng-template [ngTemplateOutlet]="undefinedTplRef()!" />
               } @else {
-                <span class="tx-theme-grey-default">미지정</span>
+                <span class="tx-theme-gray-default">미지정</span>
               }
             </sd-list-item>
           }

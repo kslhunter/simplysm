@@ -252,7 +252,7 @@ import { transformBoolean } from "../utils/transforms/tramsformBoolean";
         &[data-sd-disabled="true"] {
           > ._contents {
             display: block;
-            background: var(--theme-grey-lightest);
+            background: var(--theme-gray-lightest);
             color: var(--text-trans-light);
           }
 
@@ -313,7 +313,7 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
   inset = input(false, { transform: transformBoolean });
   size = input<"sm" | "lg">();
   theme = input<
-    "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey"
+    "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray"
   >();
 
   controlType = $computed(() => {

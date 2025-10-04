@@ -90,7 +90,7 @@ import { SdAnchorControl } from "../../controls/SdAnchorControl";
       <ng-template #contentTpl>
         <div class="flex-column fill">
           @if (parent.canEdit() && parent.submit && parent.viewType() === "control") {
-            <div class="flex-row gap-sm p-default bdb bdb-theme-grey-lightest">
+            <div class="flex-row gap-sm p-default bdb bdb-theme-gray-lightest">
               <sd-button size="sm" theme="primary" (click)="onSubmitButtonClick()">
                 <fa-icon [icon]="icons.save" [fixedWidth]="true" />
                 저장
@@ -337,10 +337,12 @@ import { SdAnchorControl } from "../../controls/SdAnchorControl";
               }
             </div>
 
-            <sd-button size="sm" theme="danger" (click)="onCancelButtonClick()">
-              {{ parent.selectMode() === "multi" ? "모두" : "선택" }}
-              해제
-            </sd-button>
+            @if (parent.selectedItemKeys().length > 0) {
+              <sd-button size="sm" theme="danger" (click)="onCancelButtonClick()">
+                {{ parent.selectMode() === "multi" ? "모두" : "선택" }}
+                해제
+              </sd-button>
+            }
             @if (parent.selectMode() === "multi") {
               <sd-button size="sm" theme="primary" (click)="onConfirmButtonClick()">
                 확인({{ parent.selectedItemKeys().length }})
@@ -351,7 +353,7 @@ import { SdAnchorControl } from "../../controls/SdAnchorControl";
 
         <ng-template #modalActionTpl>
           <sd-anchor
-            theme="grey"
+            theme="gray"
             class="p-sm-default"
             (click)="onRefreshButtonClick()"
             title="새로고침(CTRL+ALT+L)"

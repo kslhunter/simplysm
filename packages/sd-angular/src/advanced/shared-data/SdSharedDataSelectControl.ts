@@ -77,12 +77,14 @@ import { SdSelectControl, TSelectModeValue } from "../../controls/select/SdSelec
       </ng-template>
 
       <ng-template #beforeTpl>
-        @if ((!required() && selectMode() === "single") || (useUndefined() && selectMode() === "multi")) {
+        @if (
+          (!required() && selectMode() === "single") || (useUndefined() && selectMode() === "multi")
+        ) {
           <sd-select-item>
             @if (undefinedTplRef()) {
               <ng-template [ngTemplateOutlet]="undefinedTplRef()!" />
             } @else {
-              <span class="tx-theme-grey-default">미지정</span>
+              <span class="tx-theme-gray-default">미지정</span>
             }
           </sd-select-item>
         }
@@ -94,8 +96,10 @@ import { SdSelectControl, TSelectModeValue } from "../../controls/select/SdSelec
         let-index="index"
         let-depth="depth"
       >
-        @if (getItemSelectable(item, index, depth) &&
-        (selectCtrl.open() || this.selectedKeys().includes(item.__valueKey))) {
+        @if (
+          getItemSelectable(item, index, depth) &&
+          (selectCtrl.open() || this.selectedKeys().includes(item.__valueKey))
+        ) {
           <sd-select-item [value]="item.__valueKey" [hidden]="!getItemVisible(item, index)">
             <span
               [style.text-decoration]="getIsHiddenFn()(item, index) ? 'line-through' : undefined"

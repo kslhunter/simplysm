@@ -42,7 +42,7 @@ import { SdDropdownPopupControl } from "../dropdown/SdDropdownPopupControl";
   template: `
     @for (menu of menus(); track menu.codeChain.join(".")) {
       <sd-dropdown #dropdownEl>
-        <sd-button theme="link-grey">
+        <sd-button theme="link-gray">
           @if (menu.icon) {
             <fa-icon [icon]="menu.icon" [fixedWidth]="true" />
           }

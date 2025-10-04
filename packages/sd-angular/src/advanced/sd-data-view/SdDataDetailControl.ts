@@ -71,7 +71,7 @@ import { SdAnchorControl } from "../../controls/SdAnchorControl";
       <ng-template #contentTpl>
         <div class="flex-column fill">
           @if ((parent.viewType() === "control" && parent.canEdit()) || toolTplRef() != null) {
-            <div class="p-default flex-row gap-default bdb bdb-theme-grey-lightest">
+            <div class="p-default flex-row gap-default bdb bdb-theme-gray-lightest">
               @if (parent.viewType() === "control" && parent.canEdit()) {
                 @if (parent.submit) {
                   <sd-button theme="primary" (click)="onSubmitButtonClick()">
@@ -123,7 +123,7 @@ import { SdAnchorControl } from "../../controls/SdAnchorControl";
           @if (parent.dataInfo()?.lastModifiedAt || parent.dataInfo()?.lastModifiedBy) {
             <div
               class="p-sm-default"
-              [class.bg-theme-grey-lightest]="parent.viewType() === 'modal'"
+              [class.bg-theme-gray-lightest]="parent.viewType() === 'modal'"
             >
               최종수정:
               @if (parent.dataInfo()?.lastModifiedAt) {
@@ -168,7 +168,7 @@ import { SdAnchorControl } from "../../controls/SdAnchorControl";
 
         <ng-template #modalActionTpl>
           <sd-anchor
-            theme="grey"
+            theme="gray"
             class="p-sm-default"
             (click)="onRefreshButtonClick()"
             title="새로고침(CTRL+ALT+L)"

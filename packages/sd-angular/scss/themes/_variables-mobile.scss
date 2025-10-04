@@ -4,23 +4,23 @@
 
 $vars: (
   theme: (
-    "grey": (
-      lightest: var(--color-grey-300),
-      lighter: var(--color-grey-400),
-      light: var(--color-grey-500),
-      default: var(--color-grey-600),
-      dark: var(--color-grey-700),
-      darker: var(--color-grey-800),
-      darkest: var(--color-grey-900),
+    "gray": (
+      lightest: var(--color-gray-300),
+      lighter: var(--color-gray-400),
+      light: var(--color-gray-500),
+      default: var(--color-gray-600),
+      dark: var(--color-gray-700),
+      darker: var(--color-gray-800),
+      darkest: var(--color-gray-900),
     ),
-    blue-grey: (
-      lightest: var(--color-blue-grey-100),
-      lighter: var(--color-blue-grey-300),
-      light: var(--color-blue-grey-400),
-      default: var(--color-blue-grey-500),
-      dark: var(--color-blue-grey-600),
-      darker: var(--color-blue-grey-800),
-      darkest: var(--color-blue-grey-900),
+    blue-gray: (
+      lightest: var(--color-blue-gray-100),
+      lighter: var(--color-blue-gray-300),
+      light: var(--color-blue-gray-400),
+      default: var(--color-blue-gray-500),
+      dark: var(--color-blue-gray-600),
+      darker: var(--color-blue-gray-800),
+      darkest: var(--color-blue-gray-900),
     ),
     primary: (
       lightest: var(--color-light-blue-50),
@@ -112,13 +112,13 @@ $vars: (
     h5: 16px,
     h6: 14px,
   ),
-  background-color: var(--theme-grey-lightest),
+  background-color: var(--theme-gray-lightest),
   border-color: (
-    lighter: var(--theme-grey-lightest),
-    light: var(--theme-grey-lighter),
-    default: var(--theme-grey-light),
-    dark: var(--theme-grey-default),
-    darker: var(--theme-grey-dark),
+    lighter: var(--theme-gray-lightest),
+    light: var(--theme-gray-lighter),
+    default: var(--theme-gray-light),
+    dark: var(--theme-gray-default),
+    darker: var(--theme-gray-dark),
   ),
   sidebar: (
     width: 240px,
@@ -151,6 +151,6 @@ $vars: (
   sheet: (
     pv: var(--gap-xs),
     ph: var(--gap-sm),
-    bg: var(--color-grey-200),
+    bg: var(--color-gray-200),
   ),
 );

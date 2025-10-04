@@ -22,7 +22,7 @@ import { setupRipple } from "../../utils/setups/setupRipple";
 
         &:hover {
           color: var(--theme-primary-darker);
-          background: var(--theme-grey-lightest);
+          background: var(--theme-gray-lightest);
         }
       }
     `,

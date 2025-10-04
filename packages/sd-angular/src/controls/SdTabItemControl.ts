@@ -26,7 +26,7 @@ import { $computed } from "../utils/bindings/$computed";
 
         border-bottom: 2px solid transparent !important;
         font-weight: bold;
-        color: var(--theme-grey-default);
+        color: var(--theme-gray-default);
 
         &[data-sd-selected="true"] {
           border-bottom: 3px solid var(--theme-primary-default) !important;

@@ -34,7 +34,7 @@ import { transformBoolean } from "../utils/transforms/tramsformBoolean";
           border-radius: calc(var(--line-height) / 2);
           text-align: left;
 
-          background: var(--theme-grey-lighter);
+          background: var(--theme-gray-lighter);
 
           > div {
             display: inline-block;
@@ -91,7 +91,7 @@ import { transformBoolean } from "../utils/transforms/tramsformBoolean";
             opacity: 0.5;
 
             > div {
-              background: var(--theme-grey-default);
+              background: var(--theme-gray-default);
             }
           }
         }
@@ -122,7 +122,7 @@ export class SdSwitchControl {
 
   size = input<"sm" | "lg">();
   theme = input<
-    "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey"
+    "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray"
   >();
 
   @HostListener("click", ["$event"])

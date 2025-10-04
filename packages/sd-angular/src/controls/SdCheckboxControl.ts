@@ -251,8 +251,8 @@ export class SdCheckboxControl {
     | "success"
     | "warning"
     | "danger"
-    | "grey"
-    | "blue-grey"
+    | "gray"
+    | "blue-gray"
     | "white"
   >();
 

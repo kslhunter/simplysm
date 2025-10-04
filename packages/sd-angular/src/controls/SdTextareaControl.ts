@@ -143,7 +143,7 @@ import { $computed } from "../utils/bindings/$computed";
         &[data-sd-disabled="true"] {
           > ._contents {
             display: block;
-            background: var(--theme-grey-lightest);
+            background: var(--theme-gray-lightest);
             color: var(--text-trans-light);
           }
 
@@ -180,7 +180,7 @@ export class SdTextareaControl {
   size = input<"sm" | "lg">();
   validatorFn = input<(value: string | undefined) => string | undefined>();
   theme = input<
-    "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey"
+    "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray"
   >();
   inputStyle = input<string>();
   inputClass = input<string>();

@@ -1,5 +1,5 @@
-$border-color-light: var(--theme-grey-lighter);
-$border-color-dark: var(--theme-grey-lighter);
+$border-color-light: var(--theme-gray-lighter);
+$border-color-dark: var(--theme-gray-lighter);
 
 .table {
   width: 100%;
@@ -32,7 +32,7 @@ $border-color-dark: var(--theme-grey-lighter);
     }
 
     > th {
-      background: var(--theme-grey-lightest);
+      background: var(--theme-gray-lightest);
     }
 
     > td {
@@ -41,7 +41,7 @@ $border-color-dark: var(--theme-grey-lighter);
   }
 
   > thead > tr > th {
-    background: var(--theme-grey-lightest);
+    background: var(--theme-gray-lightest);
   }
 
   &.table-inset {

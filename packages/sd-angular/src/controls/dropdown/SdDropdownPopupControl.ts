@@ -30,7 +30,7 @@ import { injectElementRef } from "../../utils/injections/injectElementRef";
         pointer-events: none;
         background: var(--control-color);
         min-width: 120px;
-        @include mixins.elevation(6);
+        @include mixins.elevation(4);
         overflow: hidden;
         border-radius: var(--border-radius-default);
         border: 1px solid var(--border-color-light);

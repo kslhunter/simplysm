@@ -92,7 +92,7 @@ import { SdAnchorControl } from "../SdAnchorControl";
         > .flex-fill {
           > sd-busy-container {
             padding: var(--gap-xl) var(--gap-lg);
-            background: var(--theme-grey-lightest);
+            background: var(--theme-gray-lightest);
             border-radius: var(--border-radius-default);
             //overflow: hidden;
             height: 100%;

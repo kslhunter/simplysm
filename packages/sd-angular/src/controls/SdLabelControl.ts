@@ -15,7 +15,7 @@ import { transformBoolean } from "../utils/transforms/tramsformBoolean";
 
       sd-label {
         display: inline-block;
-        background: var(--theme-grey-darker);
+        background: var(--theme-gray-darker);
         color: white;
         padding: 0 var(--gap-sm);
         border-radius: var(--border-radius-default);
@@ -31,7 +31,7 @@ import { transformBoolean } from "../utils/transforms/tramsformBoolean";
           cursor: pointer;
 
           &:hover {
-            background: var(--theme-grey-dark);
+            background: var(--theme-gray-dark);
 
             @each $key, $val in map.get(variables.$vars, theme) {
               &[data-sd-theme="#{$key}"] {
@@ -54,7 +54,7 @@ import { transformBoolean } from "../utils/transforms/tramsformBoolean";
 })
 export class SdLabelControl {
   theme = input<
-    "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey"
+    "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray"
   >();
   color = input<string>();
   clickable = input(false, { transform: transformBoolean });

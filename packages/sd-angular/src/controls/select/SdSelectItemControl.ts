@@ -53,7 +53,7 @@ import { $signal } from "../../utils/bindings/$signal";
         }
 
         &[data-sd-disabled="true"] {
-          background: var(--theme-grey-default);
+          background: var(--theme-gray-default);
           opacity: 0.3;
         }
 

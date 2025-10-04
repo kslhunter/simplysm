@@ -19,7 +19,7 @@ import { SdButtonControl } from "../SdButtonControl";
   ],
   template: `
     <sd-dropdown #dropdownEl>
-      <sd-button inline theme="link-grey">
+      <sd-button inline theme="link-gray">
         <ng-content />
       </sd-button>
 

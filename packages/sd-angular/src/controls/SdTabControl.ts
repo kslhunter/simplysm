@@ -10,10 +10,10 @@ import { ChangeDetectionStrategy, Component, model, ViewEncapsulation } from "@a
     /* language=SCSS */ `
       sd-tab {
         display: block;
-        border-bottom: 2px solid var(--theme-grey-lighter);
+        border-bottom: 2px solid var(--theme-gray-lighter);
 
         /*@media not all and (pointer: coarse) {
-          background: var(--theme-grey-lightest);
+          background: var(--theme-gray-lightest);
           padding-left: var(--gap-default);
           padding-top: 1px;
         }
@@ -27,7 +27,8 @@ import { ChangeDetectionStrategy, Component, model, ViewEncapsulation } from "@a
     `,
   ],
   template: `
-    <ng-content></ng-content>`,
+    <ng-content></ng-content>
+  `,
 })
 export class SdTabControl {
   value = model<any>();

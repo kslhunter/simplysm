@@ -38,7 +38,7 @@ import { injectParent } from "../utils/injections/injectParent";
     <sd-busy-container [busy]="busy()" [message]="busyMessage()">
       @if (initialized() == null || initialized()) {
         @if (restricted()) {
-          <div class="fill tx-theme-grey-light p-xxl tx-center">
+          <div class="fill tx-theme-gray-light p-xxl tx-center">
             <br />
             <fa-icon [icon]="icons.triangleExclamation" [fixedWidth]="true" size="5x" />
             <br />
@@ -63,7 +63,7 @@ import { injectParent } from "../utils/injections/injectParent";
               <ng-template [ngTemplateOutlet]="contentTplRef()" />
             </div>
             @if (modalBottomTplRef()) {
-              <div class="bdt bdt-theme-grey-lightest">
+              <div class="bdt bdt-theme-gray-lightest">
                 <ng-template [ngTemplateOutlet]="modalBottomTplRef() ?? null" />
               </div>
             }

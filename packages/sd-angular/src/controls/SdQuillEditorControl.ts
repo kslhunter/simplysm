@@ -20,12 +20,12 @@ Quill.register("modules/resize", QuillResizeImage);
     /* language=SCSS */ `
       sd-quill-editor {
         display: block;
-        border: 1px solid var(--theme-grey-lighter);
+        border: 1px solid var(--theme-gray-lighter);
         border-radius: var(--border-radius-default);
 
         > .ql-toolbar {
           border: none !important;
-          border-bottom: 1px solid var(--theme-grey-lighter) !important;
+          border-bottom: 1px solid var(--theme-gray-lighter) !important;
           padding: var(--gap-sm) var(--gap-default) !important;
 
           button {

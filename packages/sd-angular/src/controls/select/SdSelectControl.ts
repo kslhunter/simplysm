@@ -190,7 +190,7 @@ import { SdAnchorControl } from "../SdAnchorControl";
 
           > sd-select-button {
             padding: var(--gap-sm);
-            border-left: 1px solid var(--theme-grey-lightest);
+            border-left: 1px solid var(--theme-gray-lightest);
 
             &:last-of-type {
               border-top-right-radius: var(--border-radius-default);
@@ -201,7 +201,7 @@ import { SdAnchorControl } from "../SdAnchorControl";
 
         &[data-sd-disabled="true"] {
           > sd-dropdown {
-            background: var(--theme-grey-lightest);
+            background: var(--theme-gray-lightest);
 
             > ._sd-select-control {
               color: var(--text-trans-light);
@@ -361,7 +361,7 @@ export class SdSelectControl<M extends "single" | "multi", T> {
 
       if (innerHTML === "") {
         if (this.placeholder() !== undefined) {
-          this.contentElRef().nativeElement.innerHTML = `<span class='sd-text-color-grey-default'>${this.placeholder()}</span>`;
+          this.contentElRef().nativeElement.innerHTML = `<span class='sd-text-color-gray-default'>${this.placeholder()}</span>`;
         } else {
           this.contentElRef().nativeElement.innerHTML = `&nbsp;`;
         }

@@ -63,11 +63,11 @@ import { SdAnchorControl } from "./SdAnchorControl";
           border: 1px solid transparent;
           padding: var(--gap-sm) var(--gap-default);
 
-          background: var(--theme-grey-lightest);
+          background: var(--theme-gray-lightest);
           border-radius: var(--border-radius-lg);
 
           &:hover {
-            background: var(--theme-grey-lighter);
+            background: var(--theme-gray-lighter);
           }
 
           > sd-anchor {

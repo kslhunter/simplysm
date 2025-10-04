@@ -24,7 +24,7 @@ import { transformBoolean } from "../utils/transforms/tramsformBoolean";
       sd-note {
         display: block;
         padding: var(--gap-sm) var(--gap-default);
-        background: var(--theme-grey-lightest);
+        background: var(--theme-gray-lightest);
 
         border: none;
         border-radius: var(--border-radius-default);
@@ -54,7 +54,7 @@ import { transformBoolean } from "../utils/transforms/tramsformBoolean";
 })
 export class SdNoteControl {
   theme = input<
-    "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey"
+    "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray"
   >();
   size = input<"sm" | "lg">();
   inset = input(false, { transform: transformBoolean });

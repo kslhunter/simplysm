@@ -13,7 +13,7 @@ import { SdDropdownPopupControl } from "./dropdown/SdDropdownPopupControl";
 import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
 import { $effect } from "../utils/bindings/$effect";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
-import { SdAnchorControl } from "./SdAnchorControl";
+import { SdButtonControl } from "./SdButtonControl";
 
 @Component({
   selector: "sd-theme-selector",
@@ -26,14 +26,17 @@ import { SdAnchorControl } from "./SdAnchorControl";
     SdListControl,
     SdListItemControl,
     FaIconComponent,
-    SdAnchorControl,
+    SdButtonControl,
   ],
   template: `
     <sd-dropdown>
-      <sd-anchor theme="grey">
+      <sd-button theme="link-gray">
         <fa-icon [icon]="icons.mountainSun" />
-        {{ theme() }}
-      </sd-anchor>
+        <span>{{ theme() }}</span>
+        @if (dark()) {
+          <span>-dark</span>
+        }
+      </sd-button>
 
       <sd-dropdown-popup>
         <sd-list>
@@ -44,15 +47,13 @@ import { SdAnchorControl } from "./SdAnchorControl";
           >
             compact
           </sd-list-item>
-          @if (isDev) {
-            <sd-list-item
-              [selected]="theme() === 'compact' && dark()"
-              [selectedIcon]="icons.check"
-              (click)="theme.set('compact'); dark.set(true)"
-            >
-              compact-dark
-            </sd-list-item>
-          }
+          <sd-list-item
+            [selected]="theme() === 'compact' && dark()"
+            [selectedIcon]="icons.check"
+            (click)="theme.set('compact'); dark.set(true)"
+          >
+            compact-dark
+          </sd-list-item>
         </sd-list>
       </sd-dropdown-popup>
     </sd-dropdown>

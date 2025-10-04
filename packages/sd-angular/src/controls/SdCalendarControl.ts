@@ -88,13 +88,13 @@ import { $computed } from "../utils/bindings/$computed";
 
           > * > tr > * {
             padding: var(--gap-sm) var(--gap-default);
-            border: 1px solid var(--theme-grey-light);
+            border: 1px solid var(--theme-gray-light);
 
             width: calc(100% / 7);
           }
 
           > thead > tr > th {
-            background: var(--theme-grey-lighter);
+            background: var(--theme-gray-lighter);
             height: 10%;
           }
 
@@ -107,10 +107,10 @@ import { $computed } from "../utils/bindings/$computed";
             }
 
             &.not-current {
-              background: var(--theme-grey-lightest);
+              background: var(--theme-gray-lightest);
 
               > .day {
-                color: var(--theme-grey-default);
+                color: var(--theme-gray-default);
               }
             }
 

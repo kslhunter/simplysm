@@ -20,8 +20,8 @@ import { PercentPipe } from "@angular/common";
         display: block;
         width: 100%;
         white-space: nowrap;
-        background: var(--theme-grey-lightest);
-        border: 1px solid var(--theme-grey-lightest);
+        background: var(--theme-gray-lightest);
+        border: 1px solid var(--theme-gray-lightest);
         border-radius: var(--border-radius-default);
         overflow: hidden;
 
@@ -73,7 +73,7 @@ export class SdProgressControl {
   inset = input(false, { transform: transformBoolean });
   size = input<"sm" | "lg">();
   theme = input.required<
-    "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey"
+    "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray"
   >();
 
   value = input.required<number>();

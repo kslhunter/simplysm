@@ -59,7 +59,7 @@ import { SdActivatedModalProvider } from "../providers/SdModalProvider";
             <h5 class="_title flex-fill">{{ title() }}</h5>
             <ng-template [ngTemplateOutlet]="actionTplRef() ?? null" />
             @if (!hideCloseButton()) {
-              <sd-anchor theme="grey" class="_close-button" (click)="onCloseButtonClick()">
+              <sd-anchor theme="gray" class="_close-button" (click)="onCloseButtonClick()">
                 <fa-icon [icon]="icons.xmark" [fixedWidth]="true" />
               </sd-anchor>
             }
@@ -115,7 +115,8 @@ import { SdActivatedModalProvider } from "../providers/SdModalProvider";
           left: 0;
           width: 100%;
           height: 100%;
-          background: rgba(0, 0, 0, 0.6);
+          backdrop-filter: blur(2px);
+          //background: color-mix(in srgb, var(--background-rev-color) 40%, transparent);
         }
 
         > ._dialog {
@@ -137,7 +138,7 @@ import { SdActivatedModalProvider } from "../providers/SdModalProvider";
           > .flex-column {
             > ._header {
               user-select: none;
-              border-bottom: 1px solid var(--theme-grey-lightest);
+              border-bottom: 1px solid var(--theme-gray-lightest);
 
               > ._title {
                 padding: var(--gap-sm) var(--gap-default);
@@ -255,7 +256,7 @@ import { SdActivatedModalProvider } from "../providers/SdModalProvider";
             pointer-events: auto;
             opacity: 0;
             @include mixins.elevation(4);
-            border: 1px solid var(--theme-grey-lighter);
+            border: 1px solid var(--theme-gray-lighter);
 
             &:focus {
               @include mixins.elevation(16);

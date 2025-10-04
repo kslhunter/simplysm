@@ -8,6 +8,7 @@
 @use "../themes/variables-dark" as dark;
 
 :root {
+  @include mixins.writeVars(variables.$colors, "color");
   @include mixins.writeVars(variables.$vars, "");
 }
 

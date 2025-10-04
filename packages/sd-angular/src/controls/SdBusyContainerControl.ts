@@ -87,7 +87,7 @@ import { transformBoolean } from "../utils/transforms/tramsformBoolean";
             left: 0;
             height: 4px;
             width: 100%;
-            background-color: white;
+            background-color: var(--background-color);
 
             > ._progress-bar {
               position: absolute;
@@ -126,7 +126,7 @@ import { transformBoolean } from "../utils/transforms/tramsformBoolean";
               width: 30px;
               height: 30px;
               margin: 20px auto 0 auto;
-              border: 6px solid white;
+              border: 6px solid var(--background-color);
               border-radius: 100%;
               border-bottom-color: var(--theme-primary-default);
               animation: sd-busy-spin 1s linear infinite;
@@ -141,10 +141,10 @@ import { transformBoolean } from "../utils/transforms/tramsformBoolean";
               position: absolute;
               top: 55px;
               width: 100%;
-              color: white;
+              color: var(--background-color);
               font-weight: bold;
               text-align: center;
-              text-shadow: 0 0 2px black;
+              text-shadow: 0 0 2px var(--background-rev-color);
             }
           }
 
@@ -167,7 +167,7 @@ import { transformBoolean } from "../utils/transforms/tramsformBoolean";
                 left: 0;
                 height: 4px;
                 width: 100%;
-                background-color: white;
+                background-color: var(--background-color);
 
                 &:before,
                 &:after {
@@ -188,7 +188,7 @@ import { transformBoolean } from "../utils/transforms/tramsformBoolean";
                 }
 
                 &:after {
-                  background-color: white;
+                  background-color: var(--background-color);
                   animation: sd-busy-bar-indicator-after 2s infinite ease-out;
                 }
 

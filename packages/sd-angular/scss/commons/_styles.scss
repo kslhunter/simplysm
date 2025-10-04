@@ -43,7 +43,7 @@ body {
 }
 
 *::-webkit-scrollbar-thumb {
-  background-color: var(--theme-grey-light);
+  background-color: var(--theme-gray-light);
   border-radius: 8px;
   background-clip: padding-box;
   border: 2px solid transparent;
@@ -51,7 +51,7 @@ body {
 
 *::-webkit-scrollbar-track {
   &:hover {
-    background-color: var(--theme-grey-lighter);
+    background-color: var(--theme-gray-lighter);
     border-radius: 8px;
     background-clip: padding-box;
     border: 2px solid transparent;
@@ -140,10 +140,6 @@ form {
   .bg-trans-#{$key} {
     background: var(--trans-#{$key}) !important;
   }
-}
-
-.bg-white {
-  background: white !important;
 }
 
 .bg-default {
@@ -393,13 +389,13 @@ form {
 .control-header {
   line-height: var(--line-height);
   font-size: var(--font-size-sm);
-  color: var(--theme-grey-default);
+  color: var(--theme-gray-default);
 }
 
 .page-header {
   line-height: var(--line-height);
   margin-bottom: var(--gap-sm);
-  color: var(--theme-grey-default);
+  color: var(--theme-gray-default);
 
   padding-bottom: var(--gap-xxs);
   font-size: var(--font-size-sm);

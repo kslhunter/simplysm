@@ -47,12 +47,12 @@ import { transformBoolean } from "../utils/transforms/tramsformBoolean";
           transition-property: border, background;
 
           &:hover {
-            background: var(--theme-grey-lightest);
+            background: var(--theme-gray-lightest);
           }
 
           &:disabled {
             background: var(--control-color);
-            border-color: var(--theme-grey-lighter);
+            border-color: var(--theme-gray-lighter);
             color: var(--text-trans-lighter);
             cursor: default;
           }
@@ -69,7 +69,7 @@ import { transformBoolean } from "../utils/transforms/tramsformBoolean";
 
           &:disabled {
             background: var(--control-color);
-            border-color: var(--theme-grey-lighter);
+            border-color: var(--theme-gray-lighter);
             color: var(--text-trans-default);
             cursor: default;
           }
@@ -79,17 +79,17 @@ import { transformBoolean } from "../utils/transforms/tramsformBoolean";
           &[data-sd-theme="#{$key}"] > button {
             background: var(--theme-#{$key}-default);
             border-color: var(--theme-#{$key}-default);
-            color: var(--text-trans-rev-default);
+            color: white; //var(--text-trans-rev-default);
 
             &:hover {
               background: var(--theme-#{$key}-dark);
               border-color: var(--theme-#{$key}-dark);
-              color: var(--text-trans-rev-default);
+              color: white; //var(--text-trans-rev-default);
             }
 
             &:disabled {
-              background: var(--theme-grey-lighter);
-              border-color: var(--theme-grey-lighter);
+              background: var(--theme-gray-lighter);
+              border-color: var(--theme-gray-lighter);
               color: var(--text-trans-lighter);
               cursor: default;
             }
@@ -166,8 +166,8 @@ export class SdButtonControl {
     | "success"
     | "warning"
     | "danger"
-    | "grey"
-    | "blue-grey"
+    | "gray"
+    | "blue-gray"
     | "link"
     | "link-primary"
     | "link-secondary"
@@ -175,8 +175,8 @@ export class SdButtonControl {
     | "link-success"
     | "link-warning"
     | "link-danger"
-    | "link-grey"
-    | "link-blue-grey"
+    | "link-gray"
+    | "link-blue-gray"
   >();
 
   inline = input(false, { transform: transformBoolean });

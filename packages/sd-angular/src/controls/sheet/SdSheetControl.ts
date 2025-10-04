@@ -252,7 +252,7 @@ import { ISdSheetItemKeydownEventParam } from "./types/ISdSheetItemKeydownEventP
                   @let _selectable = selectionManager.getSelectable(item);
                   @if (_selectable === true && selectionManager.getCanChangeFn(item)) {
                     <sd-anchor
-                      [theme]="selectedItems().includes(item) ? 'primary' : 'grey'"
+                      [theme]="selectedItems().includes(item) ? 'primary' : 'gray'"
                       (pointerdown)="selectionManager.toggle(item)"
                       [attr.title]="_selectable"
                     >
@@ -347,9 +347,9 @@ import { ISdSheetItemKeydownEventParam } from "./types/ISdSheetItemKeydownEventP
       $z-index-focus-row-indicator: 6;
       $z-index-resize-indicator: 7;
 
-      $border-color: var(--theme-grey-lighter);
-      $border-color-dark: var(--theme-grey-lighter);
-      $border-color-darker: var(--theme-grey-light);
+      $border-color: var(--theme-gray-lighter);
+      $border-color-dark: var(--theme-gray-lighter);
+      $border-color-darker: var(--theme-gray-light);
 
       $border-radius: var(--border-radius-default);
 
@@ -370,6 +370,7 @@ import { ISdSheetItemKeydownEventParam } from "./types/ISdSheetItemKeydownEventP
           border-bottom-left-radius: $border-radius;
           border-bottom-right-radius: $border-radius;
           overflow: auto;
+          //@include mixins.elevation(-2);
 
           > table {
             border-spacing: 0;
@@ -377,10 +378,10 @@ import { ISdSheetItemKeydownEventParam } from "./types/ISdSheetItemKeydownEventP
             margin-right: 2px;
             margin-bottom: 2px;
             border-bottom-right-radius: $border-radius;
-            @include mixins.elevation(16);
+            //@include mixins.elevation(2);
 
             > * > tr > *:last-child {
-              border-right: 1px solid $border-color-dark;
+              bordser-right: 1px solid $border-color-dark;
             }
 
             > * > tr:last-child > * {
@@ -405,7 +406,7 @@ import { ISdSheetItemKeydownEventParam } from "./types/ISdSheetItemKeydownEventP
               }
 
               &._feature-cell {
-                background: var(--theme-grey-lightest);
+                background: var(--theme-gray-lightest);
                 min-width: calc(var(--font-size-default) + 2px + var(--sheet-ph) * 2);
                 padding: var(--sheet-pv) var(--sheet-ph);
                 text-align: left;
@@ -433,7 +434,7 @@ import { ISdSheetItemKeydownEventParam } from "./types/ISdSheetItemKeydownEventP
 
               > tr > th {
                 position: relative;
-                background: var(--theme-grey-lightest);
+                background: var(--theme-gray-lightest);
                 vertical-align: middle;
 
                 &._fixed {
@@ -459,7 +460,7 @@ import { ISdSheetItemKeydownEventParam } from "./types/ISdSheetItemKeydownEventP
                 > ._headerContent {
                   > ._sort-icon {
                     padding: var(--gap-xs) var(--gap-xs) var(--gap-xs) 0;
-                    background-color: var(--theme-grey-lightest);
+                    background-color: var(--theme-gray-lightest);
                   }
                 }
 

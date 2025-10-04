@@ -42,7 +42,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
       @for (menu of currMenus; track menu.codeChain.join(".")) {
         <sd-list-item
           [contentClass]="depth === 0 ? 'pv-default' : ''"
-          [contentStyle]="'padding-left: ' + (depth + 1) * 0.5 + 'em'"
+          [contentStyle]="depth != 0 ? 'text-indent: ' + (depth + 1) * 0.5 + 'em' : undefined"
           [sd-router-link]="getMenuRouterLinkOption(menu)"
           (click)="onMenuClick(menu)"
           [selected]="getIsMenuSelected(menu)"
