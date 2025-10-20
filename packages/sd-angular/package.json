@@ -14,12 +14,12 @@
   "types": "./dist/index.d.ts",
   "style": "./styles.css",
   "dependencies": {
-    "@angular/animations": "^20.3.3",
-    "@angular/common": "^20.3.3",
-    "@angular/core": "^20.3.3",
-    "@angular/platform-browser": "^20.3.3",
-    "@angular/router": "^20.3.3",
-    "@angular/service-worker": "^20.3.3",
+    "@angular/animations": "^20.3.6",
+    "@angular/common": "^20.3.6",
+    "@angular/core": "^20.3.6",
+    "@angular/platform-browser": "^20.3.6",
+    "@angular/router": "^20.3.6",
+    "@angular/service-worker": "^20.3.6",
     "@fortawesome/angular-fontawesome": "^3.0.0",
     "@fortawesome/fontawesome-svg-core": "^7.1.0",
     "@simplysm/sd-core-browser": "12.14.2",
@@ -32,12 +32,12 @@
     "html-to-image": "^1.11.13",
     "jsbarcode": "^3.12.1",
     "jspdf": "^3.0.3",
-    "marked": "^16.3.0",
+    "marked": "^16.4.1",
     "qrcode": "^1.5.4",
     "quill": "^2.0.3",
     "quill-resize-image": "^1.0.11",
     "rxjs": "^7.8.2",
-    "semver": "^7.7.2"
+    "semver": "^7.7.3"
   },
   "devDependencies": {
     "@types/qrcode": "^1.5.5",
