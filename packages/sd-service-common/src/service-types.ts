@@ -18,8 +18,8 @@ export interface ISmtpClientSendOption {
   host: string;
   port?: number;
   secure?: boolean;
-  user: string;
-  pass: string;
+  user?: string;
+  pass?: string;
 
   from: string;
   to: string;
@@ -33,8 +33,8 @@ export interface ISmtpClientSendOption {
 export interface ISmtpClientDefaultConfig {
   senderName: string;
   senderEmail?: string;
-  user: string;
-  pass: string;
+  user?: string;
+  pass?: string;
   host: string;
   port?: number;
   secure?: boolean;

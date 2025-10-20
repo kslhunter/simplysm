@@ -14,7 +14,7 @@
 
   &:hover,
   &:has(:focus) {
-    @include mixins.elevation(6);
+    @include mixins.elevation(4);
   }
 }
 
