@@ -308,6 +308,7 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
   step = input<number>();
   autocomplete = input<string>();
   useNumberComma = input(true, { transform: transformBoolean });
+  minDigits = input<number>();
 
   inline = input(false, { transform: transformBoolean });
   inset = input(false, { transform: transformBoolean });
@@ -347,6 +348,11 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
       return value.toFormatString("tt hh:mm");
     } else if (type === "time-sec" && (value instanceof DateTime || value instanceof Time)) {
       return value.toFormatString("tt hh:mm:ss");
+    } else if (type === "number" && typeof value === "number" && this.minDigits() != null) {
+      return value.toLocaleString(undefined, {
+        maximumFractionDigits: 10,
+        minimumFractionDigits: this.minDigits()!,
+      });
     } else {
       return this.controlValue();
     }
@@ -513,7 +519,9 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
 
     if (this.type() === "number" && typeof value === "number") {
       return this.useNumberComma()
-        ? value.toLocaleString(undefined, { maximumFractionDigits: 10 })
+        ? value.toLocaleString(undefined, {
+            maximumFractionDigits: 10,
+          })
         : value.toString(10);
     }
 

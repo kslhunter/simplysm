@@ -238,7 +238,33 @@ export class SdNgBundler {
 
       const emitFileSet = new Set<TNormPath>();
       await perf.run("Writing output file", async () => {
-        await Promise.all([
+        const allOutputFiles = outputFiles
+          .map((item) => ({
+            path: PathUtils.norm(this.#outputPath, item.path),
+            contents: item.contents,
+            hash: item.hash,
+          }))
+          .concat(
+            await assetFiles.parallelAsync(async (item) => {
+              const contents = await FsUtils.readFileBufferAsync(item.source);
+              return {
+                path: PathUtils.norm(this.#outputPath, item.destination),
+                contents,
+                hash: HashUtils.get(contents),
+              };
+            }),
+          );
+
+        for (const outputFile of allOutputFiles) {
+          const prevHash = this.#outputHashCache.get(outputFile.path);
+          if (prevHash !== outputFile.hash) {
+            await FsUtils.writeFileAsync(outputFile.path, outputFile.contents);
+            this.#outputHashCache.set(outputFile.path, outputFile.hash);
+            emitFileSet.add(outputFile.path);
+          }
+        }
+
+        /*await Promise.all([
           outputFiles.parallelAsync(async (outputFile) => {
             const distFilePath = PathUtils.norm(this.#outputPath, outputFile.path);
             const prevHash = this.#outputHashCache.get(distFilePath);
@@ -261,7 +287,7 @@ export class SdNgBundler {
               emitFileSet.add(PathUtils.norm(this.#outputPath, assetFile.destination));
             }
           }),
-        ]);
+        ]);*/
       });
 
       this.#debug(`Build performance summary:\n${perf.toString()}`);

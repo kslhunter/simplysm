@@ -20,14 +20,14 @@
     "@simplysm/sd-service-common": "12.14.3",
     "bufferutil": "^4.0.9",
     "mime": "^4.1.0",
-    "nodemailer": "^7.0.9",
+    "nodemailer": "^7.0.10",
     "semver": "^7.7.3",
     "utf-8-validate": "^6.0.5",
     "ws": "^8.18.3"
   },
   "devDependencies": {
     "@types/mime": "^4.0.0",
-    "@types/nodemailer": "^7.0.2",
+    "@types/nodemailer": "^7.0.3",
     "@types/ws": "^8.18.1"
   }
 }

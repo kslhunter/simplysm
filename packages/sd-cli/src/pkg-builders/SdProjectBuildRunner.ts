@@ -91,6 +91,13 @@ export class SdProjectBuildRunner {
 
           const buildWorker = new SdWorker<ISdBuildRunnerWorkerType>(
             import.meta.resolve("../workers/build-runner.worker"),
+            {
+              resourceLimits: {
+                maxOldGenerationSizeMb: 2048,
+                maxYoungGenerationSizeMb: 8,
+                stackSizeMb: 2,
+              },
+            },
           );
           await buildWorker.run("initialize", [
             {
@@ -299,6 +306,13 @@ export class SdProjectBuildRunner {
 
       const worker = new SdWorker<ISdBuildRunnerWorkerType>(
         import.meta.resolve("../workers/build-runner.worker"),
+        {
+          resourceLimits: {
+            maxOldGenerationSizeMb: 2048,
+            maxYoungGenerationSizeMb: 8,
+            stackSizeMb: 2,
+          },
+        },
       );
 
       await worker.run("initialize", [
@@ -356,6 +370,11 @@ export class SdProjectBuildRunner {
           TZ: "Asia/Seoul",
           SD_VERSION: npmConf.version,
           ...(typeof pkgConfOrPort === "number" ? {} : pkgConfOrPort.env),
+        },
+        resourceLimits: {
+          maxOldGenerationSizeMb: 2048,
+          maxYoungGenerationSizeMb: 8,
+          stackSizeMb: 2,
         },
       },
     );

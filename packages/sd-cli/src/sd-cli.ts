@@ -35,9 +35,9 @@ if (path.extname(cliPath) === ".ts") {
     [
       "--import=specifier-resolution-node/register",
       "--max-old-space-size=8192",
-      "--initial-old-space-size=2048",
-      "--max-semi-space-size=128",
-      "--stack-size=8192",
+      // "--initial-old-space-size=2048",
+      "--max-semi-space-size=16", //128
+      // "--stack-size=16384",
       fileURLToPath(cliPath),
       ...process.argv.slice(2),
     ],
