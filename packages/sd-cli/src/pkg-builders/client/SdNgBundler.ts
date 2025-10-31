@@ -627,7 +627,11 @@ export class SdNgBundler {
       tsconfig: this.#tsConfigFilePath,
       write: false,
       preserveSymlinks: false,
-      external: ["electron"],
+      external: [
+        "electron",
+        ...nodeModule.builtinModules,
+        ...(this._conf.builderConfig?.reinstallDependencies ?? []),
+      ],
       define: {
         ...(!this._opt.watch?.dev ? { ngDevMode: "false" } : {}),
         "process.env.SD_VERSION": JSON.stringify(this.#pkgNpmConf.version),

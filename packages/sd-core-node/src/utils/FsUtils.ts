@@ -4,6 +4,8 @@ import os from "os";
 import fs from "fs";
 import crypto from "crypto";
 import { JsonConvert, SdError } from "@simplysm/sd-core-common";
+import { HashUtils } from "./HashUtils";
+import { TNormPath } from "./PathUtils";
 
 export class FsUtils {
   static getParentPaths(currentPath: string): string[] {
@@ -255,6 +257,30 @@ export class FsUtils {
     FsUtils.writeFile(targetPath, json);
   }
 
+  /**
+   * 여러 파일 쓰기.
+   * 성능을 위해, 폴더별 병렬. 폴더내 파일은 순차.
+   * 폴더내 파일의 경우 폴더의 메타데이터갱신에 의해 LOCK이 걸릴 수 있기 때문.
+   */
+  static async writeFilesAsync(
+    files: { path: TNormPath; data: string | Buffer; prevHash?: string; hash?: string }[],
+  ): Promise<{ path: TNormPath; hash: string }[]> {
+    const result: { path: TNormPath; hash: string }[] = [];
+
+    const group = files.groupBy((item) => path.basename(item.path));
+    await group.parallelAsync(async (groupItem) => {
+      for (const file of groupItem.values) {
+        const currHash = file.hash ?? HashUtils.get(file.data);
+        if (file.prevHash !== file.hash) {
+          await FsUtils.writeFileAsync(file.path, file.data);
+          result.push({ path: file.path, hash: currHash });
+        }
+      }
+    });
+
+    return result;
+  }
+
   static async writeFileAsync(targetPath: string, data: any): Promise<void> {
     await FsUtils.mkdirsAsync(path.dirname(targetPath));
 
@@ -503,6 +529,33 @@ export class FsUtils {
     while (current) {
       const potential = path.resolve(current, childGlob);
       const globResults = FsUtils.glob(potential);
+      for (const globResult of globResults) {
+        if (FsUtils.exists(globResult)) {
+          resultPaths.push(globResult);
+        }
+      }
+
+      if (current === rootPath) break;
+
+      const next = path.dirname(current);
+      if (next === current) break;
+      current = next;
+    }
+
+    return resultPaths;
+  }
+
+  static async findAllParentChildPathsAsync(
+    childGlob: string,
+    fromPath: string,
+    rootPath?: string,
+  ): Promise<string[]> {
+    const resultPaths: string[] = [];
+
+    let current = fromPath;
+    while (current) {
+      const potential = path.resolve(current, childGlob);
+      const globResults = await FsUtils.globAsync(potential);
       for (const globResult of globResults) {
         if (FsUtils.exists(globResult)) {
           resultPaths.push(globResult);
