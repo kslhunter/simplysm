@@ -1,6 +1,6 @@
 {
   "name": "simplysm",
-  "version": "12.14.4",
+  "version": "12.14.5",
   "description": "심플리즘 패키지",
   "author": "김석래",
   "repository": {
@@ -39,9 +39,9 @@
     "postinstall": "yarn run _sd-cli_ postinstall"
   },
   "devDependencies": {
-    "@types/node": "^22.18.12",
+    "@types/node": "^22.19.0",
     "cross-env": "^10.1.0",
-    "eslint": "^9.38.0",
+    "eslint": "^9.39.1",
     "glob": "^11.0.3",
     "prettier": "^3.6.2",
     "semver": "^7.7.3",
