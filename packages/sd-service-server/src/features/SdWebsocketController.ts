@@ -30,7 +30,7 @@ export class SdWebsocketController {
       params: any[];
     }) => Promise<any>,
   ) {
-    this.#server = new WebSocketServer({ server: webServer });
+    this.#server = new WebSocketServer({ server: webServer, path: "/ws" });
 
     this.#server.on("connection", async (client, req) => {
       try {

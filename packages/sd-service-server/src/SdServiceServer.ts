@@ -183,7 +183,13 @@ export class SdServiceServer extends EventEmitter {
       const urlPath = decodeURI(urlObj.pathname!.slice(1));
       const urlPathChain = urlPath.split("/");
 
-      if (urlPathChain[0] === "api") {
+      if (urlPathChain[0] === "ws") {
+        if (req.headers.upgrade?.toLowerCase() !== "websocket") {
+          res.writeHead(426, { "Content-Type": "text/plain" });
+          res.end("Upgrade Required");
+          return;
+        }
+      } else if (urlPathChain[0] === "api") {
         if (req.headers.origin?.includes("://localhost") && req.method === "OPTIONS") {
           res.writeHead(204, { "Access-Control-Allow-Origin": "*" });
           res.end();
