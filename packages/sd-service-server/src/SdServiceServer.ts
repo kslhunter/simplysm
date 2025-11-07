@@ -30,7 +30,6 @@ export class SdServiceServer extends EventEmitter {
   #httpServer?: http.Server | https.Server;
 
   #ws?: SdWebsocketController;
-  #wsLegacy?: SdWebsocketController;
 
   constructor(readonly options: ISdServiceServerOptions) {
     super();
@@ -86,12 +85,6 @@ export class SdServiceServer extends EventEmitter {
         async (def) => await this.#runServiceMethodAsync(def),
       );
 
-      this.#wsLegacy = new SdWebsocketController(
-        this.#httpServer,
-        async (def) => await this.#runServiceMethodAsync(def),
-        true,
-      );
-
       this.#httpServer.listen(this.options.port, () => {
         resolve();
       });
@@ -104,7 +97,6 @@ export class SdServiceServer extends EventEmitter {
 
   async closeAsync(): Promise<void> {
     await this.#ws?.closeAsync();
-    await this.#wsLegacy?.closeAsync();
 
     await new Promise<void>((resolve, reject) => {
       if (!this.#httpServer || !this.#httpServer.listening) {
@@ -130,7 +122,6 @@ export class SdServiceServer extends EventEmitter {
   broadcastReload(clientName: string | undefined, changedFileSet: Set<string>): void {
     this.#logger.debug("서버내 모든 클라이언트 RELOAD 명령 전송");
     this.#ws?.broadcastReload(clientName, changedFileSet);
-    this.#wsLegacy?.broadcastReload(clientName, changedFileSet);
   }
 
   emitEvent<T extends SdServiceEventListenerBase<any, any>>(
@@ -139,7 +130,6 @@ export class SdServiceServer extends EventEmitter {
     data: T["data"],
   ) {
     this.#ws?.emit(eventType, infoSelector, data);
-    this.#wsLegacy?.emit(eventType, infoSelector, data);
   }
 
   async #runServiceMethodAsync(def: {

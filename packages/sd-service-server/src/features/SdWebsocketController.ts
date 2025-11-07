@@ -29,16 +29,29 @@ export class SdWebsocketController {
       methodName: string;
       params: any[];
     }) => Promise<any>,
-    legacy = false,
   ) {
-    this.#server = new WebSocketServer({ server: webServer });
+    this.#server = new WebSocketServer({ /*server: webServer*/ noServer: true });
+
+    // 경로 기반 업그레이드 라우팅
+    webServer?.on("upgrade", (req, socket, head) => {
+      const base = req.headers.host != null ? `http://${req.headers.host}` : "http://localhost";
+      const { pathname } = new URL(req.url ?? "/", base);
+
+      if (pathname === "/" || pathname === "/ws") {
+        this.#server.handleUpgrade(req, socket, head, (ws) => {
+          this.#server.emit("connection", ws, req);
+        });
+      } else {
+        socket.destroy();
+      }
+    });
 
     this.#server.on("connection", async (client, req) => {
       try {
         // 클라이언트에게 ID 요청
         const clientId = await this.#getClientIdAsync(client);
 
-        // 가존 연결 끊기
+        // 기존 연결 끊기
         for (const prevClient of this.#server.clients) {
           const prevClientInfo = this.#clientInfoMap.get(prevClient);
           if (!prevClientInfo || prevClientInfo.id !== clientId) continue;

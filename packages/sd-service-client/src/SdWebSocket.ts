@@ -22,7 +22,6 @@ export class SdWebSocket extends EventEmitter {
   async connectAsync(): Promise<void> {
     if (this.#ws?.readyState === WebSocket.OPEN) return;
 
-    // await this.closeAsync();
     await new Promise<void>((resolve, reject) => {
       if (this.#ws) {
         this.#ws.close();
