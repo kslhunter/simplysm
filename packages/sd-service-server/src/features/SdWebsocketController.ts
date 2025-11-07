@@ -29,8 +29,12 @@ export class SdWebsocketController {
       methodName: string;
       params: any[];
     }) => Promise<any>,
+    legacy = false,
   ) {
-    this.#server = new WebSocketServer({ server: webServer /*, path: "/ws"*/ });
+    this.#server = new WebSocketServer({
+      server: webServer,
+      ...(legacy ? {} : { path: "/ws" }),
+    });
 
     this.#server.on("connection", async (client, req) => {
       try {
