@@ -31,7 +31,7 @@ export class SdServiceClient extends EventEmitter {
 
     this.websocketUrl = `${
       this.options.ssl ? "wss" : "ws"
-    }://${this.options.host}:${this.options.port}/ws`;
+    }://${this.options.host}:${this.options.port}`;
     this.serverUrl = `${
       this.options.ssl ? "https" : "http"
     }://${this.options.host}:${this.options.port}`;
