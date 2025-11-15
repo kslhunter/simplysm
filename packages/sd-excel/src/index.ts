@@ -12,6 +12,7 @@ export * from "./utils/SdExcelUtils";
 export * from "./utils/ZipCache";
 export * from "./wrap/SdExcelWrapper";
 export * from "./xmls/SdExcelXmlContentType";
+export * from "./xmls/SdExcelXmlDrawing";
 export * from "./xmls/SdExcelXmlRelationShip";
 export * from "./xmls/SdExcelXmlSharedString";
 export * from "./xmls/SdExcelXmlStyle";
