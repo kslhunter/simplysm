@@ -7,6 +7,7 @@ import { SdExcelXmlSharedString } from "../xmls/SdExcelXmlSharedString";
 import { SdExcelXmlUnknown } from "../xmls/SdExcelXmlUnknown";
 import { SdExcelXmlStyle } from "../xmls/SdExcelXmlStyle";
 import { SdZip, XmlConvert } from "@simplysm/sd-core-common";
+import { SdExcelXmlDrawing } from "../xmls/SdExcelXmlDrawing";
 
 export class ZipCache {
   #cache = new Map<string, ISdExcelXml | Buffer | undefined>();
@@ -42,6 +43,8 @@ export class ZipCache {
         this.#cache.set(filePath, new SdExcelXmlWorkbook(xml));
       } else if (filePath.startsWith("xl/worksheets/sheet")) {
         this.#cache.set(filePath, new SdExcelXmlWorksheet(xml));
+      } else if (filePath.startsWith("xl/drawings/drawing")) {
+        this.#cache.set(filePath, new SdExcelXmlDrawing(xml));
       } else if (filePath.startsWith("xl/sharedStrings.xml")) {
         this.#cache.set(filePath, new SdExcelXmlSharedString(xml));
       } else if (filePath.startsWith("xl/styles.xml")) {
@@ -54,6 +57,14 @@ export class ZipCache {
     }
 
     return this.#cache.get(filePath);
+  }
+
+  async existsAsync(filePath: string): Promise<boolean> {
+    if (this.#cache.has(filePath)) {
+      return true;
+    }
+
+    return await this.#zip.existsAsync(filePath);
   }
 
   set(filePath: string, content: ISdExcelXml | Buffer): void {

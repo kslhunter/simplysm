@@ -14,9 +14,5 @@
   "types": "./dist/index.d.ts",
   "dependencies": {
     "@simplysm/sd-core-common": "12.14.10"
-  },
-  "devDependencies": {
-    "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^4.0.7"
   }
 }

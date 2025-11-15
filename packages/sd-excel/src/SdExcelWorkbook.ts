@@ -5,6 +5,7 @@ import { SdExcelXmlContentType } from "./xmls/SdExcelXmlContentType";
 import { SdExcelXmlWorksheet } from "./xmls/SdExcelXmlWorksheet";
 import { ZipCache } from "./utils/ZipCache";
 import * as path from "path";
+import mime from "mime";
 
 export class SdExcelWorkbook {
   zipCache: ZipCache;
@@ -100,6 +101,31 @@ export class SdExcelWorkbook {
     const ws = new SdExcelWorksheet(this.zipCache, wsId, path.basename(targetFilePath));
     this.#wsMap.set(wsId, ws);
     return ws;
+  }
+
+  /**
+   * 워크북 단위로 media 파일을 추가한다.
+   * 반환값: 저장된 mediaPath (예: "xl/media/image1.png")
+   */
+  async addMediaAsync(buffer: Buffer, ext: string): Promise<string> {
+    const mimeType = mime.getType(ext);
+    if (mimeType == null) throw new Error(`Unsupported image extension: ${ext}`);
+
+    // 다음 Media Index 찾기
+    let mediaIndex = 1;
+    while ((await this.zipCache.getAsync(`xl/media/image${mediaIndex}.${ext}`)) !== undefined) {
+      mediaIndex++;
+    }
+    const mediaPath = `xl/media/image${mediaIndex}.${ext}`;
+
+    // Media 저장
+    this.zipCache.set(mediaPath, buffer);
+
+    // [Content_Types].xml 설정
+    let typeXml = (await this.zipCache.getAsync("[Content_Types].xml")) as SdExcelXmlContentType;
+    typeXml.add(mediaPath, mimeType);
+
+    return mediaPath;
   }
 
   /*public async getCustomFileDataAsync(filePath: string): Promise<ISdExcelXml | Buffer | undefined> {

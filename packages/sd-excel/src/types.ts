@@ -1,225 +1,268 @@
 import { DateOnly, DateTime, Time } from "@simplysm/sd-core-common";
 
 export interface ISdExcelXmlContentTypeData {
-  "Types": {
-    "$": {
-      "xmlns": string;
+  Types: {
+    $: {
+      xmlns: string;
     };
-    "Default": {
-      "$": {
-        "Extension": string;
-        "ContentType": string;
+    Default: {
+      $: {
+        Extension: string;
+        ContentType: string;
       };
     }[];
-    "Override": {
-      "$": {
-        "PartName": string;
-        "ContentType": string;
+    Override: {
+      $: {
+        PartName: string;
+        ContentType: string;
       };
     }[];
   };
 }
 
 export interface ISdExcelXmlRelationshipData {
-  "Relationships": {
-    "$": {
-      "xmlns": string;
+  Relationships: {
+    $: {
+      xmlns: string;
     };
-    "Relationship"?: ISdExcelRelationshipData[];
+    Relationship?: ISdExcelRelationshipData[];
   };
 }
 
 export interface ISdExcelRelationshipData {
-  "$": {
-    "Id": string;
-    "Target": string;
-    "Type": string;
+  $: {
+    Id: string;
+    Target: string;
+    Type: string;
   };
 }
 
 export interface ISdExcelXmlWorkbookData {
-  "workbook": {
-    "$": {
+  workbook: {
+    $: {
       "xmlns": string;
       "xmlns:r"?: string;
     };
-    "bookViews"?: [
+    bookViews?: [
       {
-        "workbookView": [{}];
-      }
+        workbookView: [{}];
+      },
     ];
-    "sheets"?: [
+    sheets?: [
       {
-        "sheet": {
-          "$": {
+        sheet: {
+          $: {
             "name": string;
             "sheetId": string;
             "r:id": string;
           };
         }[];
-      }
+      },
     ];
   };
 }
 
 export interface ISdExcelXmlWorksheetData {
-  "worksheet": {
-    "$": { "xmlns": string };
-    "dimension"?: [
+  worksheet: {
+    $: { "xmlns": string; "xmlns:r"?: string };
+    dimension?: [
       {
-        "$": {
-          "ref": string;
+        $: {
+          ref: string;
         };
-      }
+      },
     ];
-    "sheetViews"?: [
+    sheetViews?: [
       {
-        "sheetView": {
-          "$": {
-            "workbookViewId": string;
-            "zoomScale"?: string;
+        sheetView: {
+          $: {
+            workbookViewId: string;
+            zoomScale?: string;
           };
-          "pane"?: [
+          pane?: [
             {
-              "$": {
-                "xSplit"?: string;
-                "ySplit"?: string;
-                "topLeftCell"?: string;
-                "activePane"?: string;
-                "state"?: string;
-              }
-            }
-          ]
+              $: {
+                xSplit?: string;
+                ySplit?: string;
+                topLeftCell?: string;
+                activePane?: string;
+                state?: string;
+              };
+            },
+          ];
         }[];
-      }
+      },
     ];
-    "sheetFormatPr"?: [
+    sheetFormatPr?: [
       {
-        "$": {
-          "defaultRowHeight": string;
+        $: {
+          defaultRowHeight: string;
         };
-      }
+      },
     ];
-    "cols"?: [
+    cols?: [
       {
-        "col": {
-          "$": {
-            "min": string;
-            "max": string;
-            "width"?: string;
-            "bestFit"?: string;
-            "customWidth"?: string;
+        col: {
+          $: {
+            min: string;
+            max: string;
+            width?: string;
+            bestFit?: string;
+            customWidth?: string;
           };
         }[];
-      }
+      },
     ];
-    "sheetData": [
+    sheetData: [
       {
-        "row"?: ISdExcelRowData[];
-      }
+        row?: ISdExcelRowData[];
+      },
     ];
-    "mergeCells"?: [
+    mergeCells?: [
       {
-        "$": { count: string };
-        "mergeCell": {
-          "$": { "ref": string };
+        $: { count: string };
+        mergeCell: {
+          $: { ref: string };
         }[];
-      }
+      },
     ];
+    drawing?: { $: { "r:id": string } }[];
   };
 }
 
 export interface ISdExcelRowData {
-  "$": {
-    "r": string; // address (1~)
+  $: {
+    r: string; // address (1~)
   };
-  "c"?: ISdExcelCellData[];
+  c?: ISdExcelCellData[];
 }
 
 export interface ISdExcelCellData {
-  "$": {
-    "r": string; // address (A~)
-    "s"?: string; // styleId
-    "t"?: string;  // type: s(sharedString)
+  $: {
+    r: string; // address (A~)
+    s?: string; // styleId
+    t?: string; // type: s(sharedString)
   };
-  "v"?: [string];
-  "f"?: [string];
-  "is"?: {
+  v?: [string];
+  f?: [string];
+  is?: {
     t?: {
-      "_"?: string
-    }[]
+      _?: string;
+    }[];
   }[];
 }
 
+export interface ISdExcelXmlDrawingData {
+  wsDr: {
+    $: {
+      "xmlns": string;
+      "xmlns:a"?: string;
+      "xmlns:r"?: string;
+    };
+    // twoCellAnchor 는 여러 항목을 가질 수 있음
+    twoCellAnchor?: {
+      from?: {
+        col: string[];
+        colOff?: string[];
+        row: string[];
+        rowOff?: string[];
+      }[];
+      to?: {
+        col: string[];
+        colOff?: string[];
+        row: string[];
+        rowOff?: string[];
+      }[];
+      pic?: {
+        nvPicPr?: {
+          cNvPr?: { $: { id: string; name: string; descr?: string } }[];
+          cNvPicPr?: Array<{ "a:picLocks"?: Array<{ $: { noChangeAspect?: string } }> }>;
+        }[];
+        blipFill?: {
+          "a:blip"?: Array<{ $: { "r:embed": string } }>;
+          "a:stretch"?: Array<{ "a:fillRect": any[] }>;
+        }[];
+        spPr?: {
+          "a:xfrm"?: Array<{
+            "a:off"?: Array<{ $: { x: string; y: string } }>;
+            "a:ext"?: Array<{ $: { cx: string; cy: string } }>;
+          }>;
+          "a:prstGeom"?: Array<{ "$": { prst: string }; "a:avLst": any[] }>;
+        }[];
+      }[];
+      clientData?: any[]; // clientData는 보통 빈 객체
+    }[];
+  };
+}
+
 export interface ISdExcelXmlSharedStringData {
-  "sst": {
-    "$": { "xmlns": string };
-    "si"?: TSdExcelXmlSharedStringDataSi[];
+  sst: {
+    $: { xmlns: string };
+    si?: TSdExcelXmlSharedStringDataSi[];
   };
 }
 
 export type TSdExcelXmlSharedStringDataSi =
-  {
-    "t": TSdExcelXmlSharedStringData;
-  }
-  |
-  {
-    "r": {
-      "t": TSdExcelXmlSharedStringData;
-    }[];
-  };
+  | {
+      t: TSdExcelXmlSharedStringData;
+    }
+  | {
+      r: {
+        t: TSdExcelXmlSharedStringData;
+      }[];
+    };
 
 export type TSdExcelXmlSharedStringData = [
-    string | {
-    "$": { "space"?: "preserve" };
-    "_"?: string
-  }
+  | string
+  | {
+      $: { space?: "preserve" };
+      _?: string;
+    },
 ];
 
-
 export interface ISdExcelXmlStyleData {
-  "styleSheet": {
-    "$": { "xmlns": string };
-    "numFmts"?: [
+  styleSheet: {
+    $: { xmlns: string };
+    numFmts?: [
       {
-        "$": { count: string };
-        "numFmt"?: {
-          "$": {
+        $: { count: string };
+        numFmt?: {
+          $: {
             numFmtId: string;
             formatCode: string;
           };
         }[];
-      }
+      },
     ];
-    "fonts": [
+    fonts: [
       {
-        "$": { count: string };
-        "font": {}[];
-      }
+        $: { count: string };
+        font: {}[];
+      },
     ];
-    "fills": [
+    fills: [
       {
-        "$": { count: string };
-        "fill": ISdExcelXmlStyleDataFill[];
-      }
+        $: { count: string };
+        fill: ISdExcelXmlStyleDataFill[];
+      },
     ];
-    "borders": [
+    borders: [
       {
-        "$": { count: string };
-        "border": ISdExcelXmlStyleDataBorder[];
-      }
+        $: { count: string };
+        border: ISdExcelXmlStyleDataBorder[];
+      },
     ];
-    "cellXfs": [
+    cellXfs: [
       {
-        "$": { count: string };
-        "xf": ISdExcelXmlStyleDataXf[];
-      }
+        $: { count: string };
+        xf: ISdExcelXmlStyleDataXf[];
+      },
     ];
   };
 }
 
 export interface ISdExcelXmlStyleDataXf {
-  "$": {
+  $: {
     numFmtId?: string;
     fontId?: string;
     fillId?: string;
@@ -233,44 +276,44 @@ export interface ISdExcelXmlStyleDataXf {
   };
   alignment?: [
     {
-      "$": { horizontal?: "center" | "left" | "right"; vertical?: "center" | "top" | "bottom" }
-    }
+      $: { horizontal?: "center" | "left" | "right"; vertical?: "center" | "top" | "bottom" };
+    },
   ];
 }
 
 export interface ISdExcelXmlStyleDataFill {
-  "patternFill": [
+  patternFill: [
     {
-      "$": { "patternType": "none" | "solid" | "gray125" };
-      "fgColor"?: [{ "$": { "rgb": string } }];
-    }
+      $: { patternType: "none" | "solid" | "gray125" };
+      fgColor?: [{ $: { rgb: string } }];
+    },
   ];
 }
 
 export interface ISdExcelXmlStyleDataBorder {
-  "top"?: [
+  top?: [
     {
-      "$": { "style": "thin" | "medium" };
-      "color"?: [{ "$": { "rgb": string } }];
-    }
+      $: { style: "thin" | "medium" };
+      color?: [{ $: { rgb: string } }];
+    },
   ];
-  "left"?: [
+  left?: [
     {
-      "$": { "style": "thin" | "medium" };
-      "color"?: [{ "$": { "rgb": string } }];
-    }
+      $: { style: "thin" | "medium" };
+      color?: [{ $: { rgb: string } }];
+    },
   ];
-  "right"?: [
+  right?: [
     {
-      "$": { "style": "thin" | "medium" };
-      "color"?: [{ "$": { "rgb": string } }];
-    }
+      $: { style: "thin" | "medium" };
+      color?: [{ $: { rgb: string } }];
+    },
   ];
-  "bottom"?: [
+  bottom?: [
     {
-      "$": { "style": "thin" | "medium" };
-      "color"?: [{ "$": { "rgb": string } }];
-    }
+      $: { style: "thin" | "medium" };
+      color?: [{ $: { rgb: string } }];
+    },
   ];
 }
 

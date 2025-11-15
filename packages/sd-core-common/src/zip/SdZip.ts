@@ -96,6 +96,20 @@ export class SdZip {
     return Buffer.from(bytes);
   }
 
+  async existsAsync(fileName: string) {
+    if (this.#cache.has(fileName)) {
+      return true;
+    }
+
+    if (!this.#reader) {
+      return false;
+    }
+
+    const entries = await this.#reader.getEntries();
+    const entry = entries.single((item) => item.filename === fileName) as FileEntry | undefined;
+    return !!entry;
+  }
+
   write(fileName: string, buffer: Buffer) {
     this.#cache.set(fileName, buffer);
   }

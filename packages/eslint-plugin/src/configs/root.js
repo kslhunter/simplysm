@@ -6,7 +6,7 @@ import importPlugin from "eslint-plugin-import";
 
 export default [
   {
-    ignores: ["**/node_modules/", "**/dist/", "**/.*/", "**/_*/"],
+    ignores: ["**/node_modules/", "**/dist/", "**/tests/", "**/.*/", "**/_*/"],
   },
   {
     languageOptions: {
@@ -21,7 +21,7 @@ export default [
   {
     files: ["**/*.js", "**/*.jsx"],
     plugins: {
-      import: importPlugin,
+      "import": importPlugin,
       "@simplysm": plugin,
     },
     rules: {

@@ -7,21 +7,22 @@ export class SdExcelXmlWorkbook implements ISdExcelXml {
   constructor(data?: ISdExcelXmlWorkbookData) {
     if (data === undefined) {
       this.data = {
-        "workbook": {
-          "$": {
+        workbook: {
+          $: {
             "xmlns": "http://schemas.openxmlformats.org/spreadsheetml/2006/main",
             "xmlns:r": "http://schemas.openxmlformats.org/officeDocument/2006/relationships",
           },
         },
       };
-    }
-    else {
+    } else {
       this.data = data;
     }
   }
 
   get lastWsRelId(): number | undefined {
-    return this.data.workbook.sheets?.[0].sheet.max((sheet) => NumberUtils.parseInt(sheet.$["r:id"])!);
+    return this.data.workbook.sheets?.[0].sheet.max(
+      (sheet) => NumberUtils.parseInt(sheet.$["r:id"])!,
+    );
   }
 
   get sheetNames(): string[] {
@@ -35,7 +36,7 @@ export class SdExcelXmlWorkbook implements ISdExcelXml {
 
     this.data.workbook.sheets = this.data.workbook.sheets ?? [{ sheet: [] }];
     this.data.workbook.sheets[0].sheet.push({
-      "$": {
+      $: {
         "name": replacedName,
         "sheetId": newWsRelId.toString(),
         "r:id": `rId${newWsRelId}`,
@@ -58,8 +59,7 @@ export class SdExcelXmlWorkbook implements ISdExcelXml {
           result.bookViews = this.data.workbook.bookViews;
         }
         result.sheets = this.data.workbook.sheets;
-      }
-      else {
+      } else {
         result[key] = this.data.workbook[key];
       }
 
@@ -74,8 +74,9 @@ export class SdExcelXmlWorkbook implements ISdExcelXml {
   }
 
   getWsRelIdByName(name: string): number | undefined {
-    return NumberUtils.parseInt(this.data.workbook.sheets?.[0].sheet.single((item) => item.$.name
-      === name)?.$["r:id"]);
+    return NumberUtils.parseInt(
+      this.data.workbook.sheets?.[0].sheet.single((item) => item.$.name === name)?.$["r:id"],
+    );
   }
 
   getWsRelIdByIndex(index: number): number | undefined {
@@ -92,8 +93,9 @@ export class SdExcelXmlWorkbook implements ISdExcelXml {
   }
 
   #getSheetDataById(id: number) {
-    return this.data.workbook.sheets?.[0].sheet
-      .single((item) => NumberUtils.parseInt(item.$["r:id"]) === id);
+    return this.data.workbook.sheets?.[0].sheet.single(
+      (item) => NumberUtils.parseInt(item.$["r:id"]) === id,
+    );
   }
 
   #getReplacedName(name: string) {
