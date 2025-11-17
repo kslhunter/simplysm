@@ -22,10 +22,11 @@ export interface ISdLibPackageConfig {
   type: "library";
   publish?: "npm";
   polyfills?: string[];
-  noGenIndex?: boolean;
-  index?: {
-    excludes?: string[];
-  };
+  index?:
+    | {
+        excludes?: string[];
+      }
+    | false;
   dbContext?: string;
   forceProductionMode?: boolean;
 }

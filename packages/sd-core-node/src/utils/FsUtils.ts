@@ -33,8 +33,6 @@ export class FsUtils {
     });
   }
 
-  static async globAsync(pattern: string): Promise<string[]>;
-  static async globAsync(pattern: string, options: glob.GlobOptions): Promise<string[]>;
   static async globAsync(pattern: string, options?: glob.GlobOptions): Promise<string[]> {
     return (await glob.glob(pattern.replace(/\\/g, "/"), options ?? {})).map((item) =>
       path.resolve(item),

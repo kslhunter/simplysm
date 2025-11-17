@@ -41,4 +41,9 @@
       </provider>
     </config-file>
   </platform>
+  <platform name="browser">
+    <js-module src="dist/browser/CordovaFileSystemProxy.js" name="CordovaFileSystemProxy">
+      <runs />
+    </js-module>
+  </platform>
 </plugin>

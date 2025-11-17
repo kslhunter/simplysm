@@ -13,9 +13,9 @@
   "type": "module",
   "dependencies": {
     "@angular/build": "^20.3.10",
-    "@angular/compiler": "^20.3.11",
-    "@angular/compiler-cli": "^20.3.11",
-    "@anthropic-ai/sdk": "^0.68.0",
+    "@angular/compiler": "^20.3.12",
+    "@angular/compiler-cli": "^20.3.12",
+    "@anthropic-ai/sdk": "^0.69.0",
     "@electron/rebuild": "^4.0.1",
     "@simplysm/sd-core-common": "12.14.11",
     "@simplysm/sd-core-node": "12.14.11",
@@ -23,7 +23,7 @@
     "@simplysm/sd-storage": "12.14.11",
     "browserslist": "^4.28.0",
     "cordova": "^12.0.0",
-    "electron": "^39.2.0",
+    "electron": "^39.2.1",
     "electron-builder": "26.0.12",
     "esbuild": "0.25.9",
     "esbuild-sass-plugin": "^3.3.1",
@@ -41,6 +41,6 @@
   },
   "devDependencies": {
     "@types/xml2js": "^0.4.14",
-    "@types/yargs": "^17.0.34"
+    "@types/yargs": "^17.0.35"
   }
 }

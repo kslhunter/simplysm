@@ -15,11 +15,12 @@ export class SdTsLibBuildRunner extends SdBuildRunnerBase<"library"> {
     if (!modifiedFileSet) {
       if (!this._opt.watch?.noEmit) {
         // index
-        if (!this._pkgConf.noGenIndex) {
+        if (this._pkgConf.index !== false) {
           this._debug("GEN index.ts...");
           await new SdCliIndexFileGenerator().watchAsync(
             this._opt.pkgPath,
             this._pkgConf.polyfills,
+            this._pkgConf.index?.excludes,
           );
         }
 

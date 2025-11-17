@@ -1,5 +1,7 @@
 export abstract class CordovaFileSystem {
-  // 권한 확인
+  /**
+   * 권한 확인
+   */
   static async checkPermissionAsync(): Promise<boolean> {
     const result = await new Promise<string>((resolve, reject) => {
       cordova.exec(resolve, reject, "CordovaFileSystem", "checkPermission", []);
@@ -73,7 +75,12 @@ export abstract class CordovaFileSystem {
     });
   }
 
-  // 파일 읽기 (UTF-8 문자열)
+  /**
+   * 파일 읽기 (UTF-8 문자열)
+   * @param filePath 읽을 파일 경로
+   * @returns 파일 내용 문자열
+   * @throws 파일이 존재하지 않는 경우 FileNotFoundException 에러가 발생합니다.
+   */
   static async readFileStringAsync(filePath: string): Promise<string> {
     return await new Promise<string>((resolve, reject) => {
       cordova.exec(resolve, reject, "CordovaFileSystem", "readFileString", [filePath]);

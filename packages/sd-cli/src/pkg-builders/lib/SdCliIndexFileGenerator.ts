@@ -4,7 +4,7 @@ import path from "path";
 export class SdCliIndexFileGenerator {
   cachedHash?: string;
 
-  async watchAsync(pkgPath: string, polyfills?: string[]) {
+  async watchAsync(pkgPath: string, polyfills?: string[], excludes?: string[]) {
     const indexFilePath = path.resolve(pkgPath, "src/index.ts");
     this.cachedHash = FsUtils.exists(indexFilePath)
       ? HashUtils.get(await FsUtils.readFileAsync(indexFilePath))
@@ -15,13 +15,13 @@ export class SdCliIndexFileGenerator {
     });
     watcher.onChange({ delay: 50 }, async (changeInfos) => {
       if (changeInfos.some((item) => ["add", "addDir", "unlink", "unlinkDir"].includes(item.event)))
-        await this.runAsync(pkgPath, polyfills);
+        await this.runAsync(pkgPath, polyfills, excludes);
     });
 
-    await this.runAsync(pkgPath, polyfills);
+    await this.runAsync(pkgPath, polyfills, excludes);
   }
 
-  async runAsync(pkgPath: string, polyfills?: string[]) {
+  async runAsync(pkgPath: string, polyfills?: string[], excludes?: string[]) {
     const indexFilePath = path.resolve(pkgPath, "src/index.ts");
 
     const importTexts: string[] = [];
@@ -34,7 +34,7 @@ export class SdCliIndexFileGenerator {
     }
 
     // 내부 파일들 import
-    const filePaths = await this.#getFilePathsAsync(pkgPath);
+    const filePaths = await this.#getFilePathsAsync(pkgPath, excludes);
     for (const filePath of filePaths.orderBy()) {
       const requirePath = PathUtils.posix(path.relative(path.dirname(indexFilePath), filePath))
         .replace(/\.tsx?$/, "")
@@ -59,7 +59,7 @@ export class SdCliIndexFileGenerator {
     }
   }
 
-  async #getFilePathsAsync(pkgPath: string) {
+  async #getFilePathsAsync(pkgPath: string, excludes?: string[]) {
     const indexFilePath = path.resolve(pkgPath, "src/index.ts");
 
     const tsconfig = await FsUtils.readJsonAsync(path.resolve(pkgPath, "tsconfig.json"));
@@ -69,7 +69,7 @@ export class SdCliIndexFileGenerator {
     return (
       await FsUtils.globAsync(path.resolve(pkgPath, "src/**/*{.ts,.tsx}"), {
         nodir: true,
-        ignore: tsconfig.excludes,
+        ignore: [...(tsconfig.excludes ?? []), ...(excludes ?? [])],
       })
     ).filter(
       (item) => !entryFilePaths.includes(item) && item !== indexFilePath && !item.endsWith(".d.ts"),
