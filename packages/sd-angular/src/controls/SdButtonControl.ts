@@ -128,6 +128,21 @@ import { transformBoolean } from "../utils/transforms/tramsformBoolean";
           }
         }
 
+        &[data-sd-theme="link-rev"] > button {
+          border-color: transparent;
+          background: transparent;
+          color: var(--text-trans-rev-default);
+
+          &:hover {
+            color: var(--text-trans-rev-dark);
+          }
+
+          &:disabled {
+            border-color: transparent;
+            color: var(--text-trans-rev-darker);
+          }
+        }
+
         &[data-sd-inline="true"] > button {
           display: inline-block;
           width: auto;
@@ -177,6 +192,7 @@ export class SdButtonControl {
     | "link-danger"
     | "link-gray"
     | "link-blue-gray"
+    | "link-rev"
   >();
 
   inline = input(false, { transform: transformBoolean });

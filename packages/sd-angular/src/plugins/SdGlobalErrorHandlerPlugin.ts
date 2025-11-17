@@ -27,6 +27,10 @@ export class SdGlobalErrorHandlerPlugin implements ErrorHandler {
           await this.#displayErrorMessage("Unhandled Promise Rejection", {
             Reason: JSON.stringify(reason, null, 2),
           });
+        } else if (typeof reason === "string") {
+          await this.#displayErrorMessage("Unhandled Promise Rejection", {
+            Reason: reason,
+          });
         } else {
           await this.#displayErrorMessage("Unhandled Promise Rejection", {
             Event: JSON.stringify(event, null, 2),
@@ -63,7 +67,7 @@ export class SdGlobalErrorHandlerPlugin implements ErrorHandler {
         );
       }
     } catch (err) {
-      console.error(err);
+      console.error(err, event);
 
       const appRef = this.#envInjector.get<ApplicationRef>(ApplicationRef);
       appRef.destroy();

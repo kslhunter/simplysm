@@ -431,11 +431,11 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
           errorMessages.push(`문자의 길이가 ${maxlength}보다 짧거나 같아야 합니다.`);
         }
 
-        // 👇 pattern 속성 검사 수동 적용
+        // pattern 속성 검사 수동 적용
         const pattern = this.pattern();
         if (!StringUtils.isNullOrEmpty(pattern)) {
           try {
-            const regex = new RegExp(`^(?:${pattern})$`);
+            const regex = new RegExp(pattern);
             if (!regex.test(value as string)) {
               errorMessages.push(`입력 값이 형식에 맞지 않습니다.`);
             }

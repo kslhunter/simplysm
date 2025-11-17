@@ -10,6 +10,14 @@ export function string(strings: TemplateStringsArray, ...values: any[]) {
   return _trimmed(String.raw(strings, ...values));
 }
 
+export function tsql(strings: TemplateStringsArray, ...values: any[]) {
+  return _trimmed(String.raw(strings, ...values));
+}
+
+export function mysql(strings: TemplateStringsArray, ...values: any[]) {
+  return _trimmed(String.raw(strings, ...values));
+}
+
 function _trimmed(full: string) {
   // 줄 분해
   const lines = full.split("\n");
