@@ -11,9 +11,6 @@ export default () => ({
     "cordova-plugin-file-system": {
       type: "library",
       publish: "npm",
-      index: {
-        excludes: ["**/src/browser/**"],
-      },
     },
     "eslint-plugin": {
       type: "library",
