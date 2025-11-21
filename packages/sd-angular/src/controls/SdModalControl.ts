@@ -12,7 +12,7 @@ import {
 } from "@angular/core";
 import { SdEventsDirective } from "../directives/SdEventsDirective";
 import { type ISdResizeEvent } from "../plugins/events/SdResizeEventPlugin";
-import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
+import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { SdSystemConfigProvider } from "../providers/SdSystemConfigProvider";
 import { $effect } from "../utils/bindings/$effect";
 import { $signal } from "../utils/bindings/$signal";
@@ -22,7 +22,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { NumberUtils } from "@simplysm/sd-core-common";
 import { NgTemplateOutlet } from "@angular/common";
 import { SdAnchorControl } from "./SdAnchorControl";
-import { SdActivatedModalProvider } from "../providers/SdModalProvider";
+import { SdActivatedModalProvider } from "../providers/sd-modal.provider";
 
 @Component({
   selector: "sd-modal",
@@ -59,7 +59,7 @@ import { SdActivatedModalProvider } from "../providers/SdModalProvider";
             <h5 class="_title flex-fill">{{ title() }}</h5>
             <ng-template [ngTemplateOutlet]="actionTplRef() ?? null" />
             @if (!hideCloseButton()) {
-              <sd-anchor theme="gray" class="_close-button" (click)="onCloseButtonClick()">
+              <sd-anchor [theme]="'gray'" class="_close-button" (click)="onCloseButtonClick()">
                 <fa-icon [icon]="icons.xmark" [fixedWidth]="true" />
               </sd-anchor>
             }

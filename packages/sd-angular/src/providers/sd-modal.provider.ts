@@ -17,7 +17,7 @@ import { SdModalControl } from "../controls/SdModalControl";
 import { $signal } from "../utils/bindings/$signal";
 import { TDirectiveInputSignals } from "../utils/TDirectiveInputSignals";
 import { Wait } from "@simplysm/sd-core-common";
-import { SdBusyProvider } from "./SdBusyProvider";
+import { SdBusyProvider } from "./sd-busy.provider";
 
 export class SdModalInstance<T extends ISdModal<any>> {
   readonly #activatedModalProvider: SdActivatedModalProvider<T>;

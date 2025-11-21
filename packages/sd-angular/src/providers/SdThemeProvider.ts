@@ -2,7 +2,7 @@ import { inject, Injectable } from "@angular/core";
 import { $effect } from "../utils/bindings/$effect";
 import { $signal } from "../utils/bindings/$signal";
 
-import { SdLocalStorageProvider } from "./SdLocalStorageProvider";
+import { SdLocalStorageProvider } from "./sd-local-storage.provider";
 
 @Injectable({ providedIn: "root" })
 export class SdThemeProvider {

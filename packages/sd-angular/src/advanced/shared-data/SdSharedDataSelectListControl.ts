@@ -18,8 +18,8 @@ import {
   SdItemOfTemplateContext,
   SdItemOfTemplateDirective,
 } from "../../directives/SdItemOfTemplateDirective";
-import { SdAngularConfigProvider } from "../../providers/SdAngularConfigProvider";
-import { SdModalProvider } from "../../providers/SdModalProvider";
+import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
+import { SdModalProvider } from "../../providers/sd-modal.provider";
 import { $computed } from "../../utils/bindings/$computed";
 import { $effect } from "../../utils/bindings/$effect";
 import { $signal } from "../../utils/bindings/$signal";
@@ -73,7 +73,7 @@ import { SdAnchorControl } from "../../controls/SdAnchorControl";
       }
 
       @if (!filterTplRef()) {
-        <sd-textfield type="text" placeholder="검색어" [(value)]="searchText" />
+        <sd-textfield [type]="'text'" [placeholder]="'검색어'" [(value)]="searchText" />
       } @else {
         <div>
           <ng-template [ngTemplateOutlet]="filterTplRef()!" />
@@ -87,7 +87,7 @@ import { SdAnchorControl } from "../../controls/SdAnchorControl";
           <sd-pagination [(currentPage)]="page" [totalPageCount]="pageLength()" />
         }
 
-        <sd-list inset class="flex-fill">
+        <sd-list [inset]="true" class="flex-fill">
           @if (useUndefined()) {
             <sd-list-item
               [selected]="selectedItem() === undefined"

@@ -1,7 +1,7 @@
 import { inject, Injectable } from "@angular/core";
 import { EventManagerPlugin } from "@angular/platform-browser";
 import { DOCUMENT } from "@angular/common";
-import { SdModalProvider } from "../../providers/SdModalProvider";
+import { SdModalProvider } from "../../providers/sd-modal.provider";
 
 @Injectable({ providedIn: null })
 export class SdRefreshCommandEventPlugin extends EventManagerPlugin {

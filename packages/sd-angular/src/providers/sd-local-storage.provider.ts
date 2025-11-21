@@ -1,6 +1,6 @@
 import { JsonConvert } from "@simplysm/sd-core-common";
 import { inject, Injectable } from "@angular/core";
-import { SdAngularConfigProvider } from "./SdAngularConfigProvider";
+import { SdAngularConfigProvider } from "./sd-angular-config.provider";
 
 export function injectSdLocalStorage<T>(): SdLocalStorageProvider<T> {
   return inject(SdLocalStorageProvider);

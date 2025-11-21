@@ -7,7 +7,7 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import { ObjectUtils } from "@simplysm/sd-core-common";
-import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
+import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { SdSystemConfigProvider } from "../providers/SdSystemConfigProvider";
 import { SdToastProvider } from "../providers/SdToastProvider";
 import { $effect } from "../utils/bindings/$effect";
@@ -26,7 +26,7 @@ import { SdAnchorControl } from "./SdAnchorControl";
     <sd-anchor (click)="onAddButtonClick()">
       <fa-icon [icon]="icons.star" class="tx-theme-warning-default" [fixedWidth]="true" />
     </sd-anchor>
-    <sd-gap width="sm"></sd-gap>
+    <sd-gap [width]="'sm'"></sd-gap>
     @for (preset of presets(); track preset.name) {
       <div>
         <sd-anchor (click)="onItemClick(preset)" class="tx-trans-default">
@@ -39,7 +39,7 @@ import { SdAnchorControl } from "./SdAnchorControl";
           <fa-icon [icon]="icons.xmark" size="sm" />
         </sd-anchor>
       </div>
-      <sd-gap width="sm"></sd-gap>
+      <sd-gap [width]="'sm'"></sd-gap>
     }
   `,
   styles: [

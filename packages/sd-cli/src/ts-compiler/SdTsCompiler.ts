@@ -89,6 +89,7 @@ export class SdTsCompiler {
             extendedDiagnostics: false,
           }
         : {}),
+      sourceMap: !!this._opt.watch?.dev,
     });
 
     const distPath = PathUtils.norm(

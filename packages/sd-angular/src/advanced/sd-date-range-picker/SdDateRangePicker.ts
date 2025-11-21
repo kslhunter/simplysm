@@ -19,16 +19,16 @@ import { transformBoolean } from "../../utils/transforms/tramsformBoolean";
     <sd-select
       [(value)]="periodType"
       (valueChange)="handleDatePeriodTypeChanged()"
-      required
+      [required]="true"
       style="min-width: 0"
     >
-      <sd-select-item value="일">일</sd-select-item>
-      <sd-select-item value="월">월</sd-select-item>
-      <sd-select-item value="범위">범위</sd-select-item>
+      <sd-select-item [value]="'일'">일</sd-select-item>
+      <sd-select-item [value]="'월'">월</sd-select-item>
+      <sd-select-item [value]="'범위'">범위</sd-select-item>
     </sd-select>
     @if (periodType() === "범위") {
       <sd-range
-        type="date"
+        [type]="'date'"
         [(from)]="from"
         [(to)]="to"
         (fromChange)="handleFromDateChanged()"

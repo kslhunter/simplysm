@@ -66,7 +66,7 @@ import { $signal } from "../../utils/bindings/$signal";
   template: `
     @if (selectMode() === "multi") {
       <sd-checkbox [value]="isSelected()" [inline]="true"></sd-checkbox>
-      <sd-gap width="sm" />
+      <sd-gap [width]="'sm'" />
     }
 
     <div class="_content" style="display: inline-block;">

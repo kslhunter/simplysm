@@ -8,7 +8,7 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import { NumberUtils, StringUtils } from "@simplysm/sd-core-common";
-import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
+import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { $effect } from "../utils/bindings/$effect";
 import { $signal } from "../utils/bindings/$signal";
 import { transformBoolean } from "../utils/transforms/tramsformBoolean";
@@ -29,9 +29,9 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
         <tr>
           <td [attr.colspan]="useEnterButton() ? 2 : 3">
             <sd-textfield
-              type="text"
-              size="lg"
-              inputClass="tx-right"
+              [type]="'text'"
+              [size]="'lg'"
+              [inputClass]="'tx-right'"
               [placeholder]="placeholder()"
               [required]="required()"
               [disabled]="inputDisabled()"
@@ -41,8 +41,8 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
           @if (useEnterButton()) {
             <td>
               <sd-button
-                size="lg"
-                theme="primary"
+                [size]="'lg'"
+                [theme]="'primary'"
                 [disabled]="required() && value() == null"
                 (click)="onButtonClick('ENT')"
               >
@@ -56,18 +56,22 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
         <tr>
           @if (useMinusButton()) {
             <td>
-              <sd-button size="lg" (click)="onButtonClick('Minus')">-</sd-button>
+              <sd-button [size]="'lg'" (click)="onButtonClick('Minus')">-</sd-button>
             </td>
           }
           <td [attr.colspan]="useMinusButton() ? 1 : 2">
-            <sd-button size="lg" buttonClass="tx-theme-danger-default" (click)="onButtonClick('C')">
+            <sd-button
+              [size]="'lg'"
+              [buttonClass]="'tx-theme-danger-default'"
+              (click)="onButtonClick('C')"
+            >
               <fa-icon [icon]="icons.eraser" />
             </sd-button>
           </td>
           <td>
             <sd-button
-              size="lg"
-              buttonClass="tx-theme-warning-default"
+              [size]="'lg'"
+              [buttonClass]="'tx-theme-warning-default'"
               (click)="onButtonClick('BS')"
             >
               <fa-icon [icon]="icons.arrowLeftLong" />
@@ -78,7 +82,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
           <tr>
             @for (c of [0, 1, 2]; track $index) {
               <td>
-                <sd-button size="lg" (click)="onButtonClick((r * 3 + c + 1).toString())">
+                <sd-button [size]="'lg'" (click)="onButtonClick((r * 3 + c + 1).toString())">
                   {{ r * 3 + c + 1 }}
                 </sd-button>
               </td>
@@ -87,10 +91,10 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
         }
         <tr>
           <td colspan="2">
-            <sd-button size="lg" (click)="onButtonClick('0')">0</sd-button>
+            <sd-button [size]="'lg'" (click)="onButtonClick('0')">0</sd-button>
           </td>
           <td>
-            <sd-button size="lg" (click)="onButtonClick('.')">.</sd-button>
+            <sd-button [size]="'lg'" (click)="onButtonClick('.')">.</sd-button>
           </td>
         </tr>
       </tbody>

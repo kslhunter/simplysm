@@ -11,7 +11,7 @@ import { setupRipple } from "../utils/setups/setupRipple";
 import { transformBoolean } from "../utils/transforms/tramsformBoolean";
 import { setupModelHook } from "../utils/setups/setupModelHook";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
-import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
+import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 
 @Component({
   selector: "sd-checkbox",
@@ -61,7 +61,7 @@ import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
           height: calc(var(--font-size-default) + 2px);
           border: 1px solid var(--trans-light);
           background: var(--theme-secondary-lightest);
-          border-radius: var(--border-radius-sm);
+          border-radius: var(--border-radius-xs);
 
           > ._indicator {
             margin: 0 -1px;

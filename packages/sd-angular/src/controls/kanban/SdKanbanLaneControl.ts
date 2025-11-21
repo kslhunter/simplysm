@@ -12,7 +12,7 @@ import {
   TemplateRef,
   ViewEncapsulation,
 } from "@angular/core";
-import { SdAngularConfigProvider } from "../../providers/SdAngularConfigProvider";
+import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
 import { $computed } from "../../utils/bindings/$computed";
 import { $signal } from "../../utils/bindings/$signal";
 import { transformBoolean } from "../../utils/transforms/tramsformBoolean";
@@ -44,7 +44,7 @@ import { SdAnchorControl } from "../SdAnchorControl";
     @if (useCollapse() || titleTplRef()) {
       <div>
         @if (useCollapse()) {
-          <sd-anchor theme="info" (click)="onToggleCollapseButtonClick()">
+          <sd-anchor [theme]="'info'" (click)="onToggleCollapseButtonClick()">
             <fa-icon [icon]="collapse() ? icons.eyeSlash : icons.eye" [fixedWidth]="true" />
           </sd-anchor>
         }
@@ -58,14 +58,14 @@ import { SdAnchorControl } from "../SdAnchorControl";
     }
 
     <div class="flex-fill">
-      <sd-busy-container [busy]="busy()" style="min-height: 3em" type="bar">
+      <sd-busy-container [busy]="busy()" style="min-height: 3em" [type]="'bar'">
         @if (selectableKanbanLength() > 0 || toolTplRef()) {
           <div class="tx-center mb-xl">
             @if (selectableKanbanLength() > 0) {
               <sd-checkbox
                 style="float: left"
                 [inline]="true"
-                theme="white"
+                [theme]="'white'"
                 [value]="isAllSelected()"
                 (valueChange)="onSelectAllButtonClick($event)"
               />

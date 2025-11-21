@@ -11,7 +11,7 @@ import { jsPDF } from "jspdf";
 import * as htmlToImage from "html-to-image";
 import { TDirectiveInputSignals } from "../utils/TDirectiveInputSignals";
 import { Wait } from "@simplysm/sd-core-common";
-import { SdBusyProvider } from "./SdBusyProvider";
+import { SdBusyProvider } from "./sd-busy.provider";
 
 @Injectable({ providedIn: "root" })
 export class SdPrintProvider {

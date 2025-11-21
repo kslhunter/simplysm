@@ -229,7 +229,12 @@ export class SdProjectBuildRunner {
               new Set(
                 Array.from(buildResult.emitFileSet)
                   .filter((item) => !item.endsWith(".map"))
-                  .map((item) => path.relative(distPath, item)),
+                  .map((item) =>
+                    path.relative(
+                      distPath,
+                      item.replace(/cordova[\\\/]/, "").replace(/electron[\\\/]/, ""),
+                    ),
+                  ),
               ),
             ]);
           }

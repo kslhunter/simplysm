@@ -28,9 +28,9 @@
   } @else {
     box-shadow:
       0
-        0
+        calc(#{$value} * var(--elevation-size))
         calc(#{$value} * 4 * var(--elevation-size))
-        color-mix(in srgb, var(--background-rev-color) 15%, transparent),
+        color-mix(in srgb, var(--background-rev-color) 5%, transparent),
       0
         var(--elevation-size)
         var(--elevation-size)

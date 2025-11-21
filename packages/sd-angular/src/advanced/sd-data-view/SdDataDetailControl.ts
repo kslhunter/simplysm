@@ -15,7 +15,7 @@ import {
 import { TXT_CHANGE_IGNORE_CONFIRM } from "../../commons";
 import { SdButtonControl } from "../../controls/SdButtonControl";
 import { SdFormControl } from "../../controls/SdFormControl";
-import { SdAngularConfigProvider } from "../../providers/SdAngularConfigProvider";
+import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
 import { SdToastProvider } from "../../providers/SdToastProvider";
 import { $obj } from "../../utils/bindings/wrappers/$obj";
 import { setupCanDeactivate } from "../../utils/setups/setupCanDeactivate";
@@ -27,7 +27,7 @@ import { SdSharedDataProvider } from "../shared-data/SdSharedDataProvider";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { $signal } from "../../utils/bindings/$signal";
 import { injectParent } from "../../utils/injections/injectParent";
-import { ISdModal } from "../../providers/SdModalProvider";
+import { ISdModal } from "../../providers/sd-modal.provider";
 import { $effect } from "../../utils/bindings/$effect";
 import { SdAnchorControl } from "../../controls/SdAnchorControl";
 
@@ -55,13 +55,13 @@ import { SdAnchorControl } from "../../controls/SdAnchorControl";
     >
       <ng-template #pageTopbarTpl>
         @if (parent.canEdit() && parent.submit) {
-          <sd-button theme="link-primary" (click)="onSubmitButtonClick()">
+          <sd-button [theme]="'link-primary'" (click)="onSubmitButtonClick()">
             <fa-icon [icon]="icons.save" [fixedWidth]="true" />
             저장
             <small>(CTRL+S)</small>
           </sd-button>
         }
-        <sd-button theme="link-info" (click)="onRefreshButtonClick()">
+        <sd-button [theme]="'link-info'" (click)="onRefreshButtonClick()">
           <fa-icon [icon]="icons.refresh" [fixedWidth]="true" />
           새로고침
           <small>(CTRL+ALT+L)</small>
@@ -74,12 +74,12 @@ import { SdAnchorControl } from "../../controls/SdAnchorControl";
             <div class="p-default flex-row gap-default bdb bdb-theme-gray-lightest">
               @if (parent.viewType() === "control" && parent.canEdit()) {
                 @if (parent.submit) {
-                  <sd-button theme="primary" (click)="onSubmitButtonClick()">
+                  <sd-button [theme]="'primary'" (click)="onSubmitButtonClick()">
                     <fa-icon [icon]="icons.save" [fixedWidth]="true" />
                     저장
                     <small>(CTRL+S)</small>
                   </sd-button>
-                  <sd-button theme="info" (click)="onRefreshButtonClick()">
+                  <sd-button [theme]="'info'" (click)="onRefreshButtonClick()">
                     <fa-icon [icon]="icons.refresh" [fixedWidth]="true" />
                     새로고침
                     <small>(CTRL+ALT+L)</small>
@@ -91,12 +91,12 @@ import { SdAnchorControl } from "../../controls/SdAnchorControl";
                   (!parent.canDelete || parent.canDelete())
                 ) {
                   @if (parent.dataInfo()?.isDeleted) {
-                    <sd-button theme="warning" (click)="onRestoreButtonClick()">
+                    <sd-button [theme]="'warning'" (click)="onRestoreButtonClick()">
                       <fa-icon [icon]="icons.redo" [fixedWidth]="true" />
                       복구
                     </sd-button>
                   } @else {
-                    <sd-button theme="danger" (click)="onDeleteButtonClick()">
+                    <sd-button [theme]="'danger'" (click)="onDeleteButtonClick()">
                       <fa-icon [icon]="icons.eraser" [fixedWidth]="true" />
                       삭제
                     </sd-button>
@@ -152,23 +152,27 @@ import { SdAnchorControl } from "../../controls/SdAnchorControl";
               (!parent.canDelete || parent.canDelete())
             ) {
               @if (parent.dataInfo()?.isDeleted) {
-                <sd-button size="sm" theme="warning" (click)="onRestoreButtonClick()">
+                <sd-button [size]="'sm'" [theme]="'warning'" (click)="onRestoreButtonClick()">
                   복구
                 </sd-button>
               } @else {
-                <sd-button size="sm" theme="danger" (click)="onDeleteButtonClick()">삭제</sd-button>
+                <sd-button [size]="'sm'" [theme]="'danger'" (click)="onDeleteButtonClick()">
+                  삭제
+                </sd-button>
               }
             }
 
             <div class="flex-fill flex-row gap-sm main-align-end">
-              <sd-button size="sm" theme="primary" (click)="onSubmitButtonClick()">확인</sd-button>
+              <sd-button [size]="'sm'" [theme]="'primary'" (click)="onSubmitButtonClick()">
+                확인
+              </sd-button>
             </div>
           </div>
         </ng-template>
 
         <ng-template #modalActionTpl>
           <sd-anchor
-            theme="gray"
+            [theme]="'gray'"
             class="p-sm-default"
             (click)="onRefreshButtonClick()"
             title="새로고침(CTRL+ALT+L)"

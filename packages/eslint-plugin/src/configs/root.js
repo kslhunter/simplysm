@@ -271,8 +271,10 @@ export default [
       "@simplysm": plugin,
     },
     rules: {
-      "@simplysm/ng-template-no-todo-comments": "warn",
       // "@angular-eslint/template/use-track-by-function": "error",
+
+      "@simplysm/ng-template-no-todo-comments": "warn",
+      "@simplysm/ng-template-sd-require-binding-attrs": ["error"],
     },
   },
 ];

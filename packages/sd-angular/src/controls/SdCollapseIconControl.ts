@@ -9,7 +9,7 @@ import { $computed } from "../utils/bindings/$computed";
 
 import { transformBoolean } from "../utils/transforms/tramsformBoolean";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
-import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
+import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 
 @Component({
   selector: "sd-collapse-icon",

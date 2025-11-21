@@ -6,7 +6,7 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import { SdSidebarContainerControl } from "../sidebar/SdSidebarContainerControl";
-import { SdAngularConfigProvider } from "../../providers/SdAngularConfigProvider";
+import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
 
 import { $computed } from "../../utils/bindings/$computed";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
@@ -24,8 +24,8 @@ import { SdButtonControl } from "../SdButtonControl";
   template: `
     @if (hasSidebar()) {
       <sd-button
-        theme="link-primary"
-        buttonClass="p-sm-default"
+        [theme]="'link-primary'"
+        [buttonClass]="'p-sm-default'"
         (click)="onSidebarToggleButtonClick()"
       >
         <fa-icon [icon]="icons.bars" />

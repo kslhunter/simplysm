@@ -6,7 +6,7 @@ import {
   input,
   ViewEncapsulation,
 } from "@angular/core";
-import { SdCheckboxGroupControl } from "./SdCheckboxGroupControl";
+import { SdCheckboxGroupControl } from "./sd-checkbox-group.control";
 import { SdCheckboxControl } from "../SdCheckboxControl";
 import { transformBoolean } from "../../utils/transforms/tramsformBoolean";
 import { $computed } from "../../utils/bindings/$computed";

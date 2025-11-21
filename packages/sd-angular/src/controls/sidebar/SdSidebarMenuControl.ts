@@ -31,7 +31,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
   template: `
     <div class="control-header p-default">MENU</div>
 
-    <sd-list class="flex-fill" inset>
+    <sd-list class="flex-fill" [inset]="true">
       <ng-template
         [ngTemplateOutlet]="itemTpl"
         [ngTemplateOutletContext]="{ menus: menus(), depth: 0 }"

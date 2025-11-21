@@ -6,7 +6,7 @@ import {
   input,
   ViewEncapsulation,
 } from "@angular/core";
-import { SdBusyProvider } from "../providers/SdBusyProvider";
+import { SdBusyProvider } from "../providers/sd-busy.provider";
 import { $computed } from "../utils/bindings/$computed";
 
 import { transformBoolean } from "../utils/transforms/tramsformBoolean";

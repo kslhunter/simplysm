@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
 import { SdListControl } from "../list/SdListControl";
 import { SdListItemControl } from "../list/SdListItemControl";
-import { SdDropdownControl } from "../dropdown/SdDropdownControl";
-import { SdDropdownPopupControl } from "../dropdown/SdDropdownPopupControl";
+import { SdDropdownControl } from "../dropdown/sd-dropdown.control";
+import { SdDropdownPopupControl } from "../dropdown/sd-dropdown-popup.control";
 import { SdButtonControl } from "../SdButtonControl";
 
 @Component({
@@ -19,7 +19,7 @@ import { SdButtonControl } from "../SdButtonControl";
   ],
   template: `
     <sd-dropdown #dropdownEl>
-      <sd-button inline theme="link-gray">
+      <sd-button [inline]="true" [theme]="'link-gray'">
         <ng-content />
       </sd-button>
 

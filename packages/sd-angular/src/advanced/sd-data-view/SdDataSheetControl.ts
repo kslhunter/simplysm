@@ -23,7 +23,7 @@ import { SdFormControl } from "../../controls/SdFormControl";
 import { SdSheetColumnCellTemplateDirective } from "../../controls/sheet/directives/SdSheetColumnCellTemplateDirective";
 import { SdSheetColumnDirective } from "../../controls/sheet/directives/SdSheetColumnDirective";
 import { SdSheetControl } from "../../controls/sheet/SdSheetControl";
-import { SdFileDialogProvider } from "../../providers/SdFileDialogProvider";
+import { SdFileDialogProvider } from "../../providers/sd-file-dialog.provider";
 import { SdToastProvider } from "../../providers/SdToastProvider";
 import { $computed } from "../../utils/bindings/$computed";
 import { $signal } from "../../utils/bindings/$signal";
@@ -35,7 +35,7 @@ import { SdSharedDataProvider } from "../shared-data/SdSharedDataProvider";
 import { SdDataSheetColumnDirective } from "./SdDataSheetColumnDirective";
 import { setupCloserWhenSingleSelectionChange } from "../../utils/setups/setupCloserWhenSingleSelectionChange";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
-import { SdAngularConfigProvider } from "../../providers/SdAngularConfigProvider";
+import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
 import { ISdSelectModal, ISelectModalOutputResult } from "./SdDataSelectButtonControl";
 import { injectParent } from "../../utils/injections/injectParent";
 import { FormatPipe } from "../../pipes/FormatPipe";
@@ -72,13 +72,13 @@ import { SdAnchorControl } from "../../controls/SdAnchorControl";
     >
       <ng-template #pageTopbarTpl>
         @if (parent.canEdit() && parent.submit) {
-          <sd-button theme="link-primary" (click)="onSubmitButtonClick()">
+          <sd-button [theme]="'link-primary'" (click)="onSubmitButtonClick()">
             <fa-icon [icon]="icons.save" [fixedWidth]="true" />
             저장
             <small>(CTRL+S)</small>
           </sd-button>
         }
-        <sd-button theme="link-info" (click)="onRefreshButtonClick()">
+        <sd-button [theme]="'link-info'" (click)="onRefreshButtonClick()">
           <fa-icon [icon]="icons.refresh" [fixedWidth]="true" />
           새로고침
           <small>(CTRL+ALT+L)</small>
@@ -91,12 +91,12 @@ import { SdAnchorControl } from "../../controls/SdAnchorControl";
         <div class="flex-column fill">
           @if (parent.canEdit() && parent.submit && parent.viewType() === "control") {
             <div class="flex-row gap-sm p-default bdb bdb-theme-gray-lightest">
-              <sd-button size="sm" theme="primary" (click)="onSubmitButtonClick()">
+              <sd-button [size]="'sm'" [theme]="'primary'" (click)="onSubmitButtonClick()">
                 <fa-icon [icon]="icons.save" [fixedWidth]="true" />
                 저장
                 <small>(CTRL+S)</small>
               </sd-button>
-              <sd-button size="sm" theme="info" (click)="onRefreshButtonClick()">
+              <sd-button [size]="'sm'" [theme]="'info'" (click)="onRefreshButtonClick()">
                 <fa-icon [icon]="icons.refresh" [fixedWidth]="true" />
                 새로고침
                 <small>(CTRL+ALT+L)</small>
@@ -112,7 +112,7 @@ import { SdAnchorControl } from "../../controls/SdAnchorControl";
               <sd-form (submit)="onFilterSubmit()">
                 <div class="form-box-inline">
                   <div>
-                    <sd-button type="submit" theme="info">
+                    <sd-button [type]="'submit'" [theme]="'info'">
                       <fa-icon [icon]="icons.search" [fixedWidth]="true" />
                       조회
                     </sd-button>
@@ -128,12 +128,20 @@ import { SdAnchorControl } from "../../controls/SdAnchorControl";
               <div class="flex-row gap-sm p-xs-default">
                 @if (parent.canEdit()) {
                   @if (parent.editMode === "modal" && parent.editItem) {
-                    <sd-button size="sm" theme="link-primary" (click)="onCreateItemButtonClick()">
+                    <sd-button
+                      [size]="'sm'"
+                      [theme]="'link-primary'"
+                      (click)="onCreateItemButtonClick()"
+                    >
                       <fa-icon [icon]="icons.add" [fixedWidth]="true" />
                       {{ insertText() ?? "등록" }}
                     </sd-button>
                   } @else if (parent.editMode === "inline" && parent.newItem) {
-                    <sd-button size="sm" theme="link-primary" (click)="onAddItemButtonClick()">
+                    <sd-button
+                      [size]="'sm'"
+                      [theme]="'link-primary'"
+                      (click)="onAddItemButtonClick()"
+                    >
                       <fa-icon [icon]="icons.add" [fixedWidth]="true" />
                       행 추가
                     </sd-button>
@@ -145,8 +153,8 @@ import { SdAnchorControl } from "../../controls/SdAnchorControl";
                 @if (parent.canEdit()) {
                   @if (parent.editMode === "modal" && parent.toggleDeleteItems) {
                     <sd-button
-                      size="sm"
-                      theme="link-danger"
+                      [size]="'sm'"
+                      [theme]="'link-danger'"
                       (click)="onToggleDeleteItemsButtonClick(true)"
                       [disabled]="!parent.isSelectedItemsHasNotDeleted()"
                     >
@@ -155,8 +163,8 @@ import { SdAnchorControl } from "../../controls/SdAnchorControl";
                     </sd-button>
                     @if (parent.isSelectedItemsHasDeleted()) {
                       <sd-button
-                        size="sm"
-                        theme="link-warning"
+                        [size]="'sm'"
+                        [theme]="'link-warning'"
                         (click)="onToggleDeleteItemsButtonClick(false)"
                       >
                         <fa-icon [icon]="restoreIcon()" [fixedWidth]="true" />
@@ -166,7 +174,11 @@ import { SdAnchorControl } from "../../controls/SdAnchorControl";
                   }
 
                   @if (parent.uploadExcel) {
-                    <sd-button size="sm" theme="link-success" (click)="onUploadExcelButtonClick()">
+                    <sd-button
+                      [size]="'sm'"
+                      [theme]="'link-success'"
+                      (click)="onUploadExcelButtonClick()"
+                    >
                       <fa-icon [icon]="icons.upload" [fixedWidth]="true" />
                       엑셀 업로드
                     </sd-button>
@@ -174,7 +186,11 @@ import { SdAnchorControl } from "../../controls/SdAnchorControl";
                 }
 
                 @if (parent.downloadExcel) {
-                  <sd-button size="sm" theme="link-success" (click)="onDownloadExcelButtonClick()">
+                  <sd-button
+                    [size]="'sm'"
+                    [theme]="'link-success'"
+                    (click)="onDownloadExcelButtonClick()"
+                  >
                     <fa-icon [icon]="icons.fileExcel" [fixedWidth]="true" />
                     엑셀 다운로드
                   </sd-button>
@@ -202,7 +218,7 @@ import { SdAnchorControl } from "../../controls/SdAnchorControl";
               @if (
                 parent.editMode === "inline" && parent.canEdit() && parent.itemPropInfo.isDeleted
               ) {
-                <sd-sheet-column fixed [key]="parent.itemPropInfo.isDeleted">
+                <sd-sheet-column [fixed]="true" [key]="parent.itemPropInfo.isDeleted">
                   <ng-template #headerTpl>
                     <div class="p-xs-sm tx-center">
                       <fa-icon [icon]="deleteIcon()" />
@@ -211,7 +227,7 @@ import { SdAnchorControl } from "../../controls/SdAnchorControl";
                   <ng-template [cell]="parent.items()" let-item>
                     <div class="p-xs-sm tx-center">
                       <sd-anchor
-                        theme="danger"
+                        [theme]="'danger'"
                         (click)="onToggleDeleteItemButtonClick(item)"
                         [disabled]="!parent.getItemInfoFn(item).canDelete"
                       >
@@ -303,9 +319,9 @@ import { SdAnchorControl } from "../../controls/SdAnchorControl";
 
               @if (parent.itemPropInfo.lastModifiedAt) {
                 <sd-sheet-column
-                  header="수정일시"
+                  [header]="'수정일시'"
                   [key]="parent.itemPropInfo.lastModifiedAt!"
-                  hidden
+                  [hidden]="true"
                 >
                   <ng-template [cell]="parent.items()" let-item>
                     <div class="p-xs-sm tx-center">
@@ -315,7 +331,11 @@ import { SdAnchorControl } from "../../controls/SdAnchorControl";
                 </sd-sheet-column>
               }
               @if (parent.itemPropInfo.lastModifiedBy) {
-                <sd-sheet-column header="수정자" [key]="parent.itemPropInfo.lastModifiedBy!" hidden>
+                <sd-sheet-column
+                  [header]="'수정자'"
+                  [key]="parent.itemPropInfo.lastModifiedBy!"
+                  [hidden]="true"
+                >
                   <ng-template [cell]="parent.items()" let-item>
                     <div class="p-xs-sm tx-center">
                       {{ item[parent.itemPropInfo.lastModifiedBy!] }}
@@ -338,13 +358,13 @@ import { SdAnchorControl } from "../../controls/SdAnchorControl";
             </div>
 
             @if (parent.selectedItemKeys().length > 0) {
-              <sd-button size="sm" theme="danger" (click)="onCancelButtonClick()">
+              <sd-button [size]="'sm'" [theme]="'danger'" (click)="onCancelButtonClick()">
                 {{ parent.selectMode() === "multi" ? "모두" : "선택" }}
                 해제
               </sd-button>
             }
             @if (parent.selectMode() === "multi") {
-              <sd-button size="sm" theme="primary" (click)="onConfirmButtonClick()">
+              <sd-button [size]="'sm'" [theme]="'primary'" (click)="onConfirmButtonClick()">
                 확인({{ parent.selectedItemKeys().length }})
               </sd-button>
             }
@@ -353,7 +373,7 @@ import { SdAnchorControl } from "../../controls/SdAnchorControl";
 
         <ng-template #modalActionTpl>
           <sd-anchor
-            theme="gray"
+            [theme]="'gray'"
             class="p-sm-default"
             (click)="onRefreshButtonClick()"
             title="새로고침(CTRL+ALT+L)"

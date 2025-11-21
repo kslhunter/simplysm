@@ -16,14 +16,14 @@ import { NumberUtils } from "@simplysm/sd-core-common";
 import { transformBoolean } from "../../utils/transforms/tramsformBoolean";
 import { $computed } from "../../utils/bindings/$computed";
 import { $signal } from "../../utils/bindings/$signal";
-import { SdCardControl } from "../SdCardControl";
+import { SdCardDirective } from "../layout/sd-card.directive";
 
 @Component({
   selector: "sd-kanban",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdEventsDirective, SdCardControl],
+  imports: [SdEventsDirective, SdCardDirective],
   host: {
     "[attr.data-sd-dragging-this]": "dragKanban() === this",
     "[attr.data-sd-dragging]": "dragKanban() != null",

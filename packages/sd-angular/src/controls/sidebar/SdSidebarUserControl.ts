@@ -31,7 +31,7 @@ import { SdRippleDirective } from "../../directives/SdRippleDirective";
 
     @if (userMenu()?.title) {
       <sd-collapse [open]="menuOpen()">
-        <sd-list inset>
+        <sd-list [inset]="true">
           @for (menu of userMenu()?.menus; track menu.title) {
             <sd-list-item (click)="menu.onClick()">
               {{ menu.title }}

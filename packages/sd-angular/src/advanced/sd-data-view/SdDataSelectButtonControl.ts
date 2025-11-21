@@ -14,8 +14,8 @@ import {
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { SdAdditionalButtonControl } from "../../controls/SdAdditionalButtonControl";
 import { TSelectModeValue } from "../../controls/select/SdSelectControl";
-import { SdAngularConfigProvider } from "../../providers/SdAngularConfigProvider";
-import { ISdModal, ISdModalInfo, SdModalProvider } from "../../providers/SdModalProvider";
+import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
+import { ISdModal, ISdModalInfo, SdModalProvider } from "../../providers/sd-modal.provider";
 import { transformBoolean } from "../../utils/transforms/tramsformBoolean";
 import { $computed } from "../../utils/bindings/$computed";
 import { setupInvalid } from "../../utils/setups/setupInvalid";
@@ -65,13 +65,13 @@ import { $signal } from "../../utils/bindings/$signal";
       <ng-content />
 
       @if (!parent.disabled() && !parent.isNoValue() && !parent.required()) {
-        <sd-anchor theme="danger" (click)="onCancelButtonClick()">
+        <sd-anchor [theme]="'danger'" (click)="onCancelButtonClick()">
           <fa-icon [icon]="icons.eraser" />
         </sd-anchor>
       }
 
       @if (!parent.disabled()) {
-        <sd-button (click)="onModalButtonClick($event)" inset>
+        <sd-button (click)="onModalButtonClick($event)" [inset]="true">
           <fa-icon [icon]="icons.search" />
         </sd-button>
       }

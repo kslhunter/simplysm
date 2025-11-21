@@ -11,11 +11,11 @@ import { ObjectUtils } from "@simplysm/sd-core-common";
 import { SdCheckboxControl } from "../controls/SdCheckboxControl";
 import { SdCollapseIconControl } from "../controls/SdCollapseIconControl";
 import { SdTypedTemplateDirective } from "../directives/SdTypedTemplateDirective";
-import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
+import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { $computed } from "../utils/bindings/$computed";
 import { $signal } from "../utils/bindings/$signal";
 import { transformBoolean } from "../utils/transforms/tramsformBoolean";
-import { ISdPermission } from "../providers/SdAppStructureProvider";
+import { ISdPermission } from "../providers/sd-app-structure.provider";
 import { SdAnchorControl } from "../controls/SdAnchorControl";
 
 /**

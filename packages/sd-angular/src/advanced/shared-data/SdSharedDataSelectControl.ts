@@ -17,8 +17,8 @@ import {
   SdItemOfTemplateContext,
   SdItemOfTemplateDirective,
 } from "../../directives/SdItemOfTemplateDirective";
-import { SdAngularConfigProvider } from "../../providers/SdAngularConfigProvider";
-import { ISdModal, ISdModalInfo, SdModalProvider } from "../../providers/SdModalProvider";
+import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
+import { ISdModal, ISdModalInfo, SdModalProvider } from "../../providers/sd-modal.provider";
 import { $computed } from "../../utils/bindings/$computed";
 import { $signal } from "../../utils/bindings/$signal";
 import { transformBoolean } from "../../utils/transforms/tramsformBoolean";
@@ -72,7 +72,12 @@ import { SdSelectControl, TSelectModeValue } from "../../controls/select/SdSelec
 
       <ng-template #headerTpl>
         <div class="p-xs">
-          <sd-textfield type="text" [(value)]="searchText" placeholder="검색어" [size]="size()" />
+          <sd-textfield
+            [type]="'text'"
+            [(value)]="searchText"
+            [placeholder]="'검색어'"
+            [size]="size()"
+          />
         </div>
       </ng-template>
 

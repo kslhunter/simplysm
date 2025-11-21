@@ -3,7 +3,7 @@ import { ObjectUtils } from "@simplysm/sd-core-common";
 import { ISdServiceClientConnectionConfig, SdServiceClient } from "@simplysm/sd-service-client";
 import { SdToastProvider } from "./SdToastProvider";
 import { $effect } from "../utils/bindings/$effect";
-import { SdAngularConfigProvider } from "./SdAngularConfigProvider";
+import { SdAngularConfigProvider } from "./sd-angular-config.provider";
 
 @Injectable({ providedIn: "root" })
 export class SdServiceClientFactoryProvider {

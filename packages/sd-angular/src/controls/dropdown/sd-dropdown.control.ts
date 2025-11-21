@@ -11,7 +11,7 @@ import {
 import { $effect } from "../../utils/bindings/$effect";
 import { injectElementRef } from "../../utils/injections/injectElementRef";
 import { transformBoolean } from "../../utils/transforms/tramsformBoolean";
-import { SdDropdownPopupControl } from "./SdDropdownPopupControl";
+import { SdDropdownPopupControl } from "./sd-dropdown-popup.control";
 
 @Component({
   selector: "sd-dropdown",

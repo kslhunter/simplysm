@@ -16,7 +16,9 @@ import { SdTabviewItemControl } from "./SdTabviewItemControl";
   standalone: true,
   imports: [SdTabControl, SdTabItemControl],
   host: {
-    class: "flex-column fill",
+    "sd-flex": "",
+    "direction": "column",
+    "sd-pane": "",
   },
   template: `
     <sd-tab [(value)]="value">

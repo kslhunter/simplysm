@@ -13,8 +13,8 @@ import {
 import { SdEventsDirective } from "../../directives/SdEventsDirective";
 import { SdSheetConfigModal } from "../../modals/SdSheetConfigModal";
 import { ISdResizeEvent } from "../../plugins/events/SdResizeEventPlugin";
-import { SdAngularConfigProvider } from "../../providers/SdAngularConfigProvider";
-import { SdModalProvider } from "../../providers/SdModalProvider";
+import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
+import { SdModalProvider } from "../../providers/sd-modal.provider";
 import { $computed } from "../../utils/bindings/$computed";
 import { SdExpandingManager } from "../../utils/managers/SdExpandingManager";
 import { SdSelectionManager } from "../../utils/managers/SdSelectionManager";
@@ -62,7 +62,11 @@ import { ISdSheetItemKeydownEventParam } from "./types/ISdSheetItemKeydownEventP
     @if ((key() || effectivePageCount() > 0) && !hideConfigBar()) {
       <div class="_tool flex-row gap-sm p-xs">
         @if (key()) {
-          <sd-button buttonClass="p-xs-sm" theme="link-primary" (click)="onConfigButtonClick()">
+          <sd-button
+            [buttonClass]="'p-xs-sm'"
+            [theme]="'link-primary'"
+            (click)="onConfigButtonClick()"
+          >
             <fa-icon [icon]="icons.cog" [fixedWidth]="true" />
           </sd-button>
         }
@@ -97,7 +101,7 @@ import { ISdSheetItemKeydownEventParam } from "./types/ISdSheetItemKeydownEventP
                       [value]="selectionManager.isAllSelected()"
                       (valueChange)="selectionManager.toggleAll()"
                       [inline]="true"
-                      theme="white"
+                      [theme]="'white'"
                     />
                   }
                 </th>
@@ -244,7 +248,7 @@ import { ISdSheetItemKeydownEventParam } from "./types/ISdSheetItemKeydownEventP
                     [canChangeFn]="selectionManager.getCanChangeFn(item)"
                     (mousedown)="onSelectorMouseDown($event, r)"
                     [inline]="true"
-                    theme="white"
+                    [theme]="'white'"
                     [disabled]="_selectable !== true"
                     [attr.title]="_selectable"
                   />

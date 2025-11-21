@@ -1,3 +1,6 @@
+@use "sass:map";
+@use "../commons/variables";
+
 .flex-row {
   display: flex !important;
   flex-direction: row;
@@ -31,4 +34,39 @@
 
 .flex-min {
   flex: 0 0 0;
+}
+
+//-- Chrominum 84 이하
+@supports not (appearance: auto) {
+  @each $key, $val in map.get(variables.$vars, gap) {
+    .flex-row.gap-#{$key} {
+      gap: 0;
+    }
+
+    .flex-column.gap-#{$key} {
+      gap: 0;
+    }
+
+    .flex-row.gap-#{$key} > * + * {
+      margin-left: var(--gap-#{$key});
+    }
+
+    .flex-column.gap-#{$key} > * + * {
+      margin-top: var(--gap-#{$key});
+    }
+  }
+
+  .main-align-start {
+    justify-content: flex-start;
+  }
+  .main-align-end {
+    justify-content: flex-end;
+  }
+
+  .cross-align-start {
+    align-items: flex-start;
+  }
+  .cross-align-end {
+    align-items: flex-end;
+  }
 }

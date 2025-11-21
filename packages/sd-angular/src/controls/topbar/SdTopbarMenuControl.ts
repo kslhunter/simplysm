@@ -15,10 +15,10 @@ import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 
 import * as querystring from "querystring";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
-import { SdDropdownControl } from "../dropdown/SdDropdownControl";
+import { SdDropdownControl } from "../dropdown/sd-dropdown.control";
 import { SdButtonControl } from "../SdButtonControl";
-import { SdAngularConfigProvider } from "../../providers/SdAngularConfigProvider";
-import { SdDropdownPopupControl } from "../dropdown/SdDropdownPopupControl";
+import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
+import { SdDropdownPopupControl } from "../dropdown/sd-dropdown-popup.control";
 
 @Component({
   selector: "sd-topbar-menu",
@@ -42,7 +42,7 @@ import { SdDropdownPopupControl } from "../dropdown/SdDropdownPopupControl";
   template: `
     @for (menu of menus(); track menu.codeChain.join(".")) {
       <sd-dropdown #dropdownEl>
-        <sd-button theme="link-gray">
+        <sd-button [theme]="'link-gray'">
           @if (menu.icon) {
             <fa-icon [icon]="menu.icon" [fixedWidth]="true" />
           }
@@ -51,7 +51,7 @@ import { SdDropdownPopupControl } from "../dropdown/SdDropdownPopupControl";
         </sd-button>
 
         <sd-dropdown-popup>
-          <sd-list inset>
+          <sd-list [inset]="true">
             <ng-template
               [ngTemplateOutlet]="itemTpl"
               [ngTemplateOutletContext]="{
@@ -79,7 +79,7 @@ import { SdDropdownPopupControl } from "../dropdown/SdDropdownPopupControl";
           [sd-router-link]="getMenuRouterLinkOption(menu)"
           (click)="onMenuClick(menu); dropdownEl.open.set(false)"
           [selected]="getIsMenuSelected(menu)"
-          layout="flat"
+          [layout]="'flat'"
         >
           @if (menu.icon) {
             <fa-icon [icon]="menu.icon" [fixedWidth]="true" />
@@ -87,7 +87,7 @@ import { SdDropdownPopupControl } from "../dropdown/SdDropdownPopupControl";
           }
           {{ menu.title }}
           @if (menu.children) {
-            <sd-list inset>
+            <sd-list [inset]="true">
               <ng-template
                 [ngTemplateOutlet]="itemTpl"
                 [ngTemplateOutletContext]="{

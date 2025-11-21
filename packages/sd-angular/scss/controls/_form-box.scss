@@ -3,7 +3,8 @@
   flex-direction: column;
   gap: var(--gap-default);
 
-  > div {
+  > div,
+  > .form-box-item {
     display: block;
 
     > label {
@@ -30,7 +31,8 @@
   flex-wrap: wrap;
   gap: var(--gap-sm);
 
-  > div {
+  > div,
+  > .form-box-item {
     display: flex;
     flex-wrap: nowrap;
     align-items: center;

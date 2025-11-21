@@ -5,12 +5,12 @@ import {
   viewChild,
   ViewEncapsulation,
 } from "@angular/core";
-import { SdDropdownControl } from "./dropdown/SdDropdownControl";
+import { SdDropdownControl } from "./dropdown/sd-dropdown.control";
 import { SdListControl } from "./list/SdListControl";
 import { SdListItemControl } from "./list/SdListItemControl";
 import { SdThemeProvider } from "../providers/SdThemeProvider";
-import { SdDropdownPopupControl } from "./dropdown/SdDropdownPopupControl";
-import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
+import { SdDropdownPopupControl } from "./dropdown/sd-dropdown-popup.control";
+import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { $effect } from "../utils/bindings/$effect";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { SdButtonControl } from "./SdButtonControl";
@@ -30,7 +30,7 @@ import { SdButtonControl } from "./SdButtonControl";
   ],
   template: `
     <sd-dropdown>
-      <sd-button theme="link-gray">
+      <sd-button [theme]="'link-gray'">
         <fa-icon [icon]="icons.mountainSun" />
         <span>{{ theme() }}</span>
         @if (dark()) {

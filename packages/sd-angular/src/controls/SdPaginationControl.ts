@@ -6,7 +6,7 @@ import {
   model,
   ViewEncapsulation,
 } from "@angular/core";
-import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
+import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { $computed } from "../utils/bindings/$computed";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { SdAnchorControl } from "./SdAnchorControl";

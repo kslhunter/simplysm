@@ -5,7 +5,7 @@ import {
   inject,
   ViewEncapsulation,
 } from "@angular/core";
-import { SdDropdownControl } from "./SdDropdownControl";
+import { SdDropdownControl } from "./sd-dropdown.control";
 import { SdEventsDirective } from "../../directives/SdEventsDirective";
 import { injectElementRef } from "../../utils/injections/injectElementRef";
 
@@ -16,6 +16,11 @@ import { injectElementRef } from "../../utils/injections/injectElementRef";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [SdEventsDirective],
+  template: `
+    <div (sdResize)="onResize()" (keydown)="onKeyDown($event)">
+      <ng-content></ng-content>
+    </div>
+  `,
   styles: [
     /* language=SCSS */ `
       @use "../../../scss/commons/mixins";
@@ -53,11 +58,6 @@ import { injectElementRef } from "../../utils/injections/injectElementRef";
       }
     `,
   ],
-  template: `
-    <div (sdResize)="onResize()" (keydown)="onKeyDown($event)">
-      <ng-content></ng-content>
-    </div>
-  `,
 })
 export class SdDropdownPopupControl {
   #parentControl = inject<SdDropdownControl>(forwardRef(() => SdDropdownControl));

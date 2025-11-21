@@ -15,8 +15,8 @@ import { SdSheetColumnDirective } from "../controls/sheet/directives/SdSheetColu
 import { SdSheetControl } from "../controls/sheet/SdSheetControl";
 import { ISdSheetConfig } from "../controls/sheet/types/ISdSheetConfig";
 import { SdTextfieldControl } from "../controls/SdTextfieldControl";
-import { SdAngularConfigProvider } from "../providers/SdAngularConfigProvider";
-import { ISdModal } from "../providers/SdModalProvider";
+import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
+import { ISdModal } from "../providers/sd-modal.provider";
 import { $effect } from "../utils/bindings/$effect";
 import { $signal } from "../utils/bindings/$signal";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
@@ -46,13 +46,18 @@ import { SdAnchorControl } from "../controls/SdAnchorControl";
             [key]="sheetKey() + '-config'"
             [items]="items()"
             [trackByFn]="trackByFn"
-            hideConfigBar
+            [hideConfigBar]="true"
           >
-            <sd-sheet-column key="fixed" header="Fix" disableSorting disableResizing>
+            <sd-sheet-column
+              [key]="'fixed'"
+              [header]="'Fix'"
+              [disableSorting]="true"
+              [disableResizing]="true"
+            >
               <ng-template [cell]="items()" let-item="item">
                 <div style="text-align: center">
                   <sd-checkbox
-                    size="sm"
+                    [size]="'sm'"
                     [inset]="true"
                     [(value)]="item.fixed"
                     (valueChange)="items.$mark()"
@@ -60,7 +65,12 @@ import { SdAnchorControl } from "../controls/SdAnchorControl";
                 </div>
               </ng-template>
             </sd-sheet-column>
-            <sd-sheet-column key="ordering" header="Order" disableSorting disableResizing>
+            <sd-sheet-column
+              [key]="'ordering'"
+              [header]="'Order'"
+              [disableSorting]="true"
+              [disableResizing]="true"
+            >
               <ng-template [cell]="items()" let-item="item" let-index="index">
                 <div class="p-xs-sm" style="text-align: center">
                   <sd-anchor
@@ -80,19 +90,24 @@ import { SdAnchorControl } from "../controls/SdAnchorControl";
                 </div>
               </ng-template>
             </sd-sheet-column>
-            <sd-sheet-column key="header" header="Header" disableSorting>
+            <sd-sheet-column [key]="'header'" [header]="'Header'" [disableSorting]="true">
               <ng-template [cell]="items()" let-item="item">
                 <div class="p-xs-sm">
                   {{ item.header }}
                 </div>
               </ng-template>
             </sd-sheet-column>
-            <sd-sheet-column key="width" header="Width" disableSorting width="60px">
+            <sd-sheet-column
+              [key]="'width'"
+              [header]="'Width'"
+              [disableSorting]="true"
+              [width]="'60px'"
+            >
               <ng-template [cell]="items()" let-item="item">
                 @if (!item.disableResizing) {
                   <sd-textfield
-                    type="text"
-                    size="sm"
+                    [type]="'text'"
+                    [size]="'sm'"
                     [inset]="true"
                     [(value)]="item.width"
                     (valueChange)="items.$mark()"
@@ -100,17 +115,22 @@ import { SdAnchorControl } from "../controls/SdAnchorControl";
                 }
               </ng-template>
             </sd-sheet-column>
-            <sd-sheet-column key="hidden" header="Hidden" disableSorting disableResizing>
+            <sd-sheet-column
+              [key]="'hidden'"
+              [header]="'Hidden'"
+              [disableSorting]="true"
+              [disableResizing]="true"
+            >
               .
               <ng-template [cell]="items()" let-item="item">
                 <div style="text-align: center">
                   <sd-checkbox
-                    size="sm"
+                    [size]="'sm'"
                     [inset]="true"
                     [(value)]="item.hidden"
                     (valueChange)="items.$mark()"
                     [icon]="icons.xmark"
-                    theme="danger"
+                    [theme]="'danger'"
                   ></sd-checkbox>
                 </div>
               </ng-template>
@@ -121,24 +141,28 @@ import { SdAnchorControl } from "../controls/SdAnchorControl";
         <div class="p-sm-default flex-row gap-sm bdt bdt-theme-gray-lightest">
           <div class="flex-fill align-start">
             <sd-button
-              size="sm"
-              inline
-              theme="warning"
+              [size]="'sm'"
+              [inline]="true"
+              [theme]="'warning'"
               (click)="onInitButtonClick()"
-              buttonStyle="min-width: 60px;"
+              [buttonStyle]="'min-width: 60px;'"
             >
               Reset
             </sd-button>
           </div>
           <sd-button
-            size="sm"
-            theme="success"
+            [size]="'sm'"
+            [theme]="'success'"
             (click)="onOkButtonClick()"
-            buttonStyle="min-width: 60px;"
+            [buttonStyle]="'min-width: 60px;'"
           >
             OK
           </sd-button>
-          <sd-button size="sm" (click)="onCancelButtonClick()" buttonStyle="min-width: 60px;">
+          <sd-button
+            [size]="'sm'"
+            (click)="onCancelButtonClick()"
+            [buttonStyle]="'min-width: 60px;'"
+          >
             Cancel
           </sd-button>
         </div>

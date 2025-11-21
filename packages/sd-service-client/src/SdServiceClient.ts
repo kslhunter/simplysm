@@ -72,7 +72,7 @@ export class SdServiceClient extends EventEmitter {
           console.log("클라이언트 RELOAD 명령 수신", msg.changedFileSet);
           if (Array.from(msg.changedFileSet).every((item) => item.endsWith(".css"))) {
             for (const changedFile of msg.changedFileSet) {
-              const href = "./" + changedFile.replaceAll(/[\\/]/g, "/");
+              const href = "./" + changedFile.replace(/[\\/]/g, "/");
               const oldStyle = document.querySelector(`link[data-sd-style="${href}"]`) as
                 | HTMLLinkElement
                 | undefined;

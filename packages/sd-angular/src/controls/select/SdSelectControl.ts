@@ -18,14 +18,14 @@ import {
 } from "../../directives/SdItemOfTemplateDirective";
 import { SdRippleDirective } from "../../directives/SdRippleDirective";
 import { SdTypedTemplateDirective } from "../../directives/SdTypedTemplateDirective";
-import { SdAngularConfigProvider } from "../../providers/SdAngularConfigProvider";
+import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
 import { setupInvalid } from "../../utils/setups/setupInvalid";
 import { transformBoolean } from "../../utils/transforms/tramsformBoolean";
 import { SdGapControl } from "../SdGapControl";
 import { SdSelectItemControl } from "./SdSelectItemControl";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
-import { SdDropdownControl } from "../dropdown/SdDropdownControl";
-import { SdDropdownPopupControl } from "../dropdown/SdDropdownPopupControl";
+import { SdDropdownControl } from "../dropdown/sd-dropdown.control";
+import { SdDropdownPopupControl } from "../dropdown/sd-dropdown-popup.control";
 import { $afterRenderEffect } from "../../utils/bindings/$afterRenderEffect";
 import { SdAnchorControl } from "../SdAnchorControl";
 
@@ -87,7 +87,7 @@ import { SdAnchorControl } from "../SdAnchorControl";
             @if (selectMode() === "multi" && !hideSelectAll()) {
               <div class="p-sm-default">
                 <sd-anchor (click)="onSelectAllButtonClick(true)">전체선택</sd-anchor>
-                <sd-gap width="sm"></sd-gap>
+                <sd-gap [width]="'sm'"></sd-gap>
                 <sd-anchor (click)="onSelectAllButtonClick(false)">전체해제</sd-anchor>
               </div>
             }

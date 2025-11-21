@@ -1,6 +1,6 @@
 import { inject, reflectComponentType } from "@angular/core";
 import { ActivatedRoute, CanDeactivateFn } from "@angular/router";
-import { SdActivatedModalProvider } from "../../providers/SdModalProvider";
+import { SdActivatedModalProvider } from "../../providers/sd-modal.provider";
 import { injectElementRef } from "../injections/injectElementRef";
 
 export function setupCanDeactivate(fn: () => boolean): void {
