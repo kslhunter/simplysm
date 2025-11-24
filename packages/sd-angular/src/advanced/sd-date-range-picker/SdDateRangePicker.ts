@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, input, model, ViewEncapsulation } from "@angular/core";
-import { SdSelectControl } from "../../controls/select/SdSelectControl";
-import { SdSelectItemControl } from "../../controls/select/SdSelectItemControl";
-import { SdRangeControl } from "../../controls/SdRangeControl";
-import { SdTextfieldControl } from "../../controls/SdTextfieldControl";
+import { SdSelectControl } from "../../controls/form-control/select/sd-select.control";
+import { SdSelectItemControl } from "../../controls/form-control/select/sd-select-item.control";
+import { SdRangeControl } from "../../controls/form-control/sd-range.control";
+import { SdTextfieldControl } from "../../controls/form-control/sd-textfield.control";
 import { DateOnly } from "@simplysm/sd-core-common";
 import { transformBoolean } from "../../utils/transforms/tramsformBoolean";
 

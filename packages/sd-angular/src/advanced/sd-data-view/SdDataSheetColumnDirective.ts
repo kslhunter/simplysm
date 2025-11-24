@@ -1,5 +1,5 @@
 import { Directive, input } from "@angular/core";
-import { SdSheetColumnDirective } from "../../controls/sheet/directives/SdSheetColumnDirective";
+import { SdSheetColumnDirective } from "../../controls/sheet/directives/sd-sheet-column.directive";
 import { transformBoolean } from "../../utils/transforms/tramsformBoolean";
 
 @Directive({

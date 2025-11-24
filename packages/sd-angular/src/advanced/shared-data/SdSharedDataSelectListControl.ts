@@ -11,9 +11,9 @@ import {
 } from "@angular/core";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { StringUtils } from "@simplysm/sd-core-common";
-import { SdListItemControl } from "../../controls/list/SdListItemControl";
-import { SdPaginationControl } from "../../controls/SdPaginationControl";
-import { SdTextfieldControl } from "../../controls/SdTextfieldControl";
+import { SdListItemControl } from "../../controls/list/sd-list-item.control";
+import { SdPaginationControl } from "../../controls/sd-pagination.control";
+import { SdTextfieldControl } from "../../controls/form-control/sd-textfield.control";
 import {
   SdItemOfTemplateContext,
   SdItemOfTemplateDirective,
@@ -28,8 +28,8 @@ import { ISharedDataBase } from "./SdSharedDataProvider";
 import { setupModelHook } from "../../utils/setups/setupModelHook";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { ISdSelectModal, TSdSelectModalInfo } from "../sd-data-view/SdDataSelectButtonControl";
-import { SdListControl } from "../../controls/list/SdListControl";
-import { SdAnchorControl } from "../../controls/SdAnchorControl";
+import { SdListControl } from "../../controls/list/sd-list.control";
+import { SdAnchorControl } from "../../controls/form-control/sd-anchor.control";
 
 @Component({
   selector: "sd-shared-data-select-list",

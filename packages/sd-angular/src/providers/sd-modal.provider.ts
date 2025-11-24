@@ -13,7 +13,7 @@ import {
   TemplateRef,
   Type,
 } from "@angular/core";
-import { SdModalControl } from "../controls/SdModalControl";
+import { SdModalControl } from "../controls/sd-modal.control";
 import { $signal } from "../utils/bindings/$signal";
 import { TDirectiveInputSignals } from "../utils/TDirectiveInputSignals";
 import { Wait } from "@simplysm/sd-core-common";

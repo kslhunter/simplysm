@@ -9,9 +9,9 @@ import {
   OutputEmitterRef,
   Type,
 } from "@angular/core";
-import { SdToastContainerControl } from "../controls/toast/SdToastContainerControl";
+import { SdToastContainerControl } from "../controls/toast/sd-toast-container.control";
 import { SdSystemLogProvider } from "./SdSystemLogProvider";
-import { SdToastControl } from "../controls/toast/SdToastControl";
+import { SdToastControl } from "../controls/toast/sd-toast.control";
 import { $signal } from "../utils/bindings/$signal";
 import { TDirectiveInputSignals } from "../utils/TDirectiveInputSignals";
 import { $effect } from "../utils/bindings/$effect";

@@ -7,7 +7,7 @@ import {
   viewChild,
   ViewEncapsulation,
 } from "@angular/core";
-import { SdBusyContainerControl } from "../controls/SdBusyContainerControl";
+import { SdBusyContainerControl } from "../controls/layout/sd-busy-container.control";
 import { ISdModal } from "../providers/sd-modal.provider";
 import { $signal } from "../utils/bindings/$signal";
 

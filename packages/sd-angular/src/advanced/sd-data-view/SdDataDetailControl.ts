@@ -13,8 +13,8 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import { TXT_CHANGE_IGNORE_CONFIRM } from "../../commons";
-import { SdButtonControl } from "../../controls/SdButtonControl";
-import { SdFormControl } from "../../controls/SdFormControl";
+import { SdButtonControl } from "../../controls/form-control/sd-button.control";
+import { SdFormControl } from "../../controls/form-control/sd-form.control";
 import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
 import { SdToastProvider } from "../../providers/SdToastProvider";
 import { $obj } from "../../utils/bindings/wrappers/$obj";
@@ -29,7 +29,7 @@ import { $signal } from "../../utils/bindings/$signal";
 import { injectParent } from "../../utils/injections/injectParent";
 import { ISdModal } from "../../providers/sd-modal.provider";
 import { $effect } from "../../utils/bindings/$effect";
-import { SdAnchorControl } from "../../controls/SdAnchorControl";
+import { SdAnchorControl } from "../../controls/form-control/sd-anchor.control";
 
 @Component({
   selector: "sd-data-detail",

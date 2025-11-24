@@ -7,20 +7,20 @@ import {
   output,
   ViewEncapsulation,
 } from "@angular/core";
-import { SdBusyContainerControl } from "../controls/SdBusyContainerControl";
-import { SdButtonControl } from "../controls/SdButtonControl";
-import { SdCheckboxControl } from "../controls/SdCheckboxControl";
-import { SdSheetColumnCellTemplateDirective } from "../controls/sheet/directives/SdSheetColumnCellTemplateDirective";
-import { SdSheetColumnDirective } from "../controls/sheet/directives/SdSheetColumnDirective";
-import { SdSheetControl } from "../controls/sheet/SdSheetControl";
+import { SdBusyContainerControl } from "../controls/layout/sd-busy-container.control";
+import { SdButtonControl } from "../controls/form-control/sd-button.control";
+import { SdCheckboxControl } from "../controls/form-control/sd-checkbox.control";
+import { SdSheetColumnCellTemplateDirective } from "../controls/sheet/directives/sd-sheet-column-cell-template.directive";
+import { SdSheetColumnDirective } from "../controls/sheet/directives/sd-sheet-column.directive";
+import { SdSheetControl } from "../controls/sheet/sd-sheet.control";
 import { ISdSheetConfig } from "../controls/sheet/types/ISdSheetConfig";
-import { SdTextfieldControl } from "../controls/SdTextfieldControl";
+import { SdTextfieldControl } from "../controls/form-control/sd-textfield.control";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { ISdModal } from "../providers/sd-modal.provider";
 import { $effect } from "../utils/bindings/$effect";
 import { $signal } from "../utils/bindings/$signal";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
-import { SdAnchorControl } from "../controls/SdAnchorControl";
+import { SdAnchorControl } from "../controls/form-control/sd-anchor.control";
 
 @Component({
   selector: "sd-sheet-config-modal",

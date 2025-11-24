@@ -8,9 +8,9 @@ import {
   TemplateRef,
   ViewEncapsulation,
 } from "@angular/core";
-import { SdBusyContainerControl } from "../controls/SdBusyContainerControl";
-import { SdTopbarContainerControl } from "../controls/topbar/SdTopbarContainerControl";
-import { SdTopbarControl } from "../controls/topbar/SdTopbarControl";
+import { SdBusyContainerControl } from "../controls/layout/sd-busy-container.control";
+import { SdTopbarContainerControl } from "../controls/topbar/sd-topbar-container.control";
+import { SdTopbarControl } from "../controls/topbar/sd-topbar.control";
 import { SdAngularConfigProvider } from "../providers/sd-angular-config.provider";
 import { SdAppStructureProvider } from "../providers/sd-app-structure.provider";
 import { SdActivatedModalProvider } from "../providers/sd-modal.provider";

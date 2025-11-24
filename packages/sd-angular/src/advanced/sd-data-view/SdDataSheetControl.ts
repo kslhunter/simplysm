@@ -18,11 +18,11 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import { ObjectUtils, TArrayDiffs2Result } from "@simplysm/sd-core-common";
-import { SdButtonControl } from "../../controls/SdButtonControl";
-import { SdFormControl } from "../../controls/SdFormControl";
-import { SdSheetColumnCellTemplateDirective } from "../../controls/sheet/directives/SdSheetColumnCellTemplateDirective";
-import { SdSheetColumnDirective } from "../../controls/sheet/directives/SdSheetColumnDirective";
-import { SdSheetControl } from "../../controls/sheet/SdSheetControl";
+import { SdButtonControl } from "../../controls/form-control/sd-button.control";
+import { SdFormControl } from "../../controls/form-control/sd-form.control";
+import { SdSheetColumnCellTemplateDirective } from "../../controls/sheet/directives/sd-sheet-column-cell-template.directive";
+import { SdSheetColumnDirective } from "../../controls/sheet/directives/sd-sheet-column.directive";
+import { SdSheetControl } from "../../controls/sheet/sd-sheet.control";
 import { SdFileDialogProvider } from "../../providers/sd-file-dialog.provider";
 import { SdToastProvider } from "../../providers/SdToastProvider";
 import { $computed } from "../../utils/bindings/$computed";
@@ -43,7 +43,7 @@ import { setupCanDeactivate } from "../../utils/setups/setupCanDeactivate";
 import { $arr } from "../../utils/bindings/wrappers/$arr";
 import { TXT_CHANGE_IGNORE_CONFIRM } from "../../commons";
 import { $effect } from "../../utils/bindings/$effect";
-import { SdAnchorControl } from "../../controls/SdAnchorControl";
+import { SdAnchorControl } from "../../controls/form-control/sd-anchor.control";
 
 @Component({
   selector: "sd-data-sheet",

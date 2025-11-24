@@ -6,7 +6,7 @@ import {
   Injectable,
   inputBinding,
 } from "@angular/core";
-import { SdBusyContainerControl } from "../controls/SdBusyContainerControl";
+import { SdBusyContainerControl } from "../controls/layout/sd-busy-container.control";
 import { $signal } from "../utils/bindings/$signal";
 import { $effect } from "../utils/bindings/$effect";
 

@@ -12,8 +12,8 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
-import { SdAdditionalButtonControl } from "../../controls/SdAdditionalButtonControl";
-import { TSelectModeValue } from "../../controls/select/SdSelectControl";
+import { SdAdditionalButtonControl } from "../../controls/form-control/sd-additional-button.control";
+import { TSelectModeValue } from "../../controls/form-control/select/sd-select.control";
 import { SdAngularConfigProvider } from "../../providers/sd-angular-config.provider";
 import { ISdModal, ISdModalInfo, SdModalProvider } from "../../providers/sd-modal.provider";
 import { transformBoolean } from "../../utils/transforms/tramsformBoolean";
@@ -26,8 +26,8 @@ import {
 } from "../../directives/SdItemOfTemplateDirective";
 import { NgTemplateOutlet } from "@angular/common";
 import { injectParent } from "../../utils/injections/injectParent";
-import { SdAnchorControl } from "../../controls/SdAnchorControl";
-import { SdButtonControl } from "../../controls/SdButtonControl";
+import { SdAnchorControl } from "../../controls/form-control/sd-anchor.control";
+import { SdButtonControl } from "../../controls/form-control/sd-button.control";
 import { $signal } from "../../utils/bindings/$signal";
 
 @Component({

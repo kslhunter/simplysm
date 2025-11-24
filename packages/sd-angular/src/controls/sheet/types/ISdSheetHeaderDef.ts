@@ -1,4 +1,4 @@
-import { SdSheetColumnDirective } from "../directives/SdSheetColumnDirective";
+import { SdSheetColumnDirective } from "../directives/sd-sheet-column.directive";
 
 export interface ISdSheetHeaderDef {
   control: SdSheetColumnDirective<any>;
