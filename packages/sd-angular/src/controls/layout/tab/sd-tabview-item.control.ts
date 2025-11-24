@@ -7,7 +7,7 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import { SdTabviewControl } from "./sd-tabview.control";
-import { $computed } from "../../utils/bindings/$computed";
+import { $computed } from "../../../utils/bindings/$computed";
 
 @Component({
   selector: "sd-tabview-item",
