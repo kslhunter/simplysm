@@ -10,11 +10,11 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
-import { SdRippleDirective } from "../../directives/SdRippleDirective";
-import { $computed } from "../../utils/bindings/$computed";
-import { transformBoolean } from "../../utils/transforms/tramsformBoolean";
-import { SdCollapseIconControl } from "../sd-collapse-icon.control";
-import { SdCollapseControl } from "../sd-collapse.control";
+import { SdRippleDirective } from "../../core/directives/sd-ripple.directive";
+import { $computed } from "../../core/utils/bindings/$computed";
+import { transformBoolean } from "../../core/utils/transforms/tramsformBoolean";
+import { SdCollapseIconControl } from "../navigation/collapse/sd-collapse-icon.control";
+import { SdCollapseControl } from "../navigation/collapse/sd-collapse.control";
 
 import { SdListControl } from "./sd-list.control";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";

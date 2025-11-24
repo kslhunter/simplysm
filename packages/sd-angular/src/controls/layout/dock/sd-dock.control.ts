@@ -5,12 +5,12 @@ import {
   input,
   ViewEncapsulation,
 } from "@angular/core";
-import { $effect } from "../../../utils/bindings/$effect";
-import { $signal } from "../../../utils/bindings/$signal";
-import { injectElementRef } from "../../../utils/injections/injectElementRef";
-import { transformBoolean } from "../../../utils/transforms/tramsformBoolean";
-import { useSdSystemConfigResource } from "../../../utils/signals/useSdSystemConfigResource";
-import { type ISdResizeEvent } from "../../../plugins/events/SdResizeEventPlugin";
+import { $effect } from "../../../core/utils/bindings/$effect";
+import { $signal } from "../../../core/utils/bindings/$signal";
+import { injectElementRef } from "../../../core/utils/injections/injectElementRef";
+import { transformBoolean } from "../../../core/utils/transforms/tramsformBoolean";
+import { useSdSystemConfigResource } from "../../../core/utils/signals/useSdSystemConfigResource";
+import { type ISdResizeEvent } from "../../../core/plugins/events/sd-resize-event.plugin";
 
 @Component({
   selector: "sd-dock",

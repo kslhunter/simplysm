@@ -1,4 +1,4 @@
-import { injectElementRef } from "../../../utils/injections/injectElementRef";
+import { injectElementRef } from "../../../core/utils/injections/injectElementRef";
 
 export class SdSheetDomAccessor {
   #elRef = injectElementRef();

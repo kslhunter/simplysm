@@ -1,5 +1,5 @@
 import { ResourceRef, Signal } from "@angular/core";
-import { $computed } from "../../../utils/bindings/$computed";
+import { $computed } from "../../../core/utils/bindings/$computed";
 import { SdSheetColumnDirective } from "../directives/sd-sheet-column.directive";
 import { ISdSheetConfig } from "../types/ISdSheetConfig";
 import { ISdSheetColumnDef } from "../types/ISdSheetColumnDef";

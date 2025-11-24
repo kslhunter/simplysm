@@ -1,5 +1,5 @@
 import { NumberUtils, ObjectUtils } from "@simplysm/sd-core-common";
-import { $signal } from "../../../utils/bindings/$signal";
+import { $signal } from "../../../core/utils/bindings/$signal";
 import { SdSheetDomAccessor } from "./SdSheetDomAccessor";
 
 export class SdSheetCellAgent {

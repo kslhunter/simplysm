@@ -1,5 +1,5 @@
 import { Directive, input } from "@angular/core";
-import { $computed } from "../../../utils/bindings/$computed";
+import { $computed } from "../../../core/utils/bindings/$computed";
 
 @Directive({
   selector: "[sd-flex-grow]",

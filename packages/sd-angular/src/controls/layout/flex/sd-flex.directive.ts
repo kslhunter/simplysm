@@ -1,5 +1,5 @@
 import { Directive, input } from "@angular/core";
-import { transformBoolean } from "../../../utils/transforms/tramsformBoolean";
+import { transformBoolean } from "../../../core/utils/transforms/tramsformBoolean";
 
 @Directive({
   selector: "sd-flex,[sd-flex]",
