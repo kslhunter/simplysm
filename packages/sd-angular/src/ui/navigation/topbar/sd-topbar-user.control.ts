@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
-import { SdListControl } from "../../list/sd-list.control";
-import { SdListItemControl } from "../../list/sd-list-item.control";
 import { SdDropdownControl } from "../../overlay/dropdown/sd-dropdown.control";
 import { SdDropdownPopupControl } from "../../overlay/dropdown/sd-dropdown-popup.control";
 import { SdButtonControl } from "../../form/button/sd-button.control";
+import { SdListControl } from "../../data/list/sd-list.control";
+import { SdListItemControl } from "../../data/list/sd-list-item.control";
 
 @Component({
   selector: "sd-topbar-user",
@@ -11,11 +11,11 @@ import { SdButtonControl } from "../../form/button/sd-button.control";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
-    SdListControl,
-    SdListItemControl,
     SdDropdownControl,
     SdDropdownPopupControl,
     SdButtonControl,
+    SdListControl,
+    SdListItemControl,
   ],
   template: `
     <sd-dropdown #dropdownEl>

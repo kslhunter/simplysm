@@ -11,7 +11,6 @@ import {
 } from "@angular/core";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { StringUtils } from "@simplysm/sd-core-common";
-import { SdListItemControl } from "../../ui/list/sd-list-item.control";
 import { SdPaginationControl } from "../../ui/navigation/sd-pagination.control";
 import { SdTextfieldControl } from "../../ui/form/input/sd-textfield.control";
 import {
@@ -28,8 +27,9 @@ import { ISharedDataBase } from "../../core/providers/storage/sd-shared-data.pro
 import { setupModelHook } from "../../core/utils/setups/setupModelHook";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { ISdSelectModal, TSdSelectModalInfo } from "../data-view/sd-data-select-button.control";
-import { SdListControl } from "../../ui/list/sd-list.control";
 import { SdAnchorControl } from "../../ui/form/button/sd-anchor.control";
+import { SdListControl } from "../../ui/data/list/sd-list.control";
+import { SdListItemControl } from "../../ui/data/list/sd-list-item.control";
 
 @Component({
   selector: "sd-shared-data-select-list",
@@ -39,12 +39,12 @@ import { SdAnchorControl } from "../../ui/form/button/sd-anchor.control";
   imports: [
     NgTemplateOutlet,
     SdTextfieldControl,
-    SdListItemControl,
     FaIconComponent,
     SdPaginationControl,
     FaIconComponent,
-    SdListControl,
     SdAnchorControl,
+    SdListControl,
+    SdListItemControl,
   ],
   host: {
     class: "flex-column",

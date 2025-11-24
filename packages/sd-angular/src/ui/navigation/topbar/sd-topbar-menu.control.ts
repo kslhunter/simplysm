@@ -6,10 +6,8 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import { useFullPageCodeSignal } from "../../../core/utils/signals/useFullPageCodeSignal";
-import { SdListControl } from "../../list/sd-list.control";
 import { NgTemplateOutlet } from "@angular/common";
 import { SdTypedTemplateDirective } from "../../../core/directives/sd-typed-template.directive";
-import { SdListItemControl } from "../../list/sd-list-item.control";
 import { SdRouterLinkDirective } from "../../../core/directives/sd-router-link.directive";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 
@@ -19,6 +17,8 @@ import { SdDropdownControl } from "../../overlay/dropdown/sd-dropdown.control";
 import { SdButtonControl } from "../../form/button/sd-button.control";
 import { SdAngularConfigProvider } from "../../../core/providers/app/sd-angular-config.provider";
 import { SdDropdownPopupControl } from "../../overlay/dropdown/sd-dropdown-popup.control";
+import { SdListControl } from "../../data/list/sd-list.control";
+import { SdListItemControl } from "../../data/list/sd-list-item.control";
 
 @Component({
   selector: "sd-topbar-menu",
@@ -26,15 +26,15 @@ import { SdDropdownPopupControl } from "../../overlay/dropdown/sd-dropdown-popup
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
-    SdListControl,
     NgTemplateOutlet,
     SdTypedTemplateDirective,
-    SdListItemControl,
     SdRouterLinkDirective,
     FaIconComponent,
     SdDropdownControl,
     SdButtonControl,
     SdDropdownPopupControl,
+    SdListControl,
+    SdListItemControl,
   ],
   host: {
     class: "flex-row gap-sm",

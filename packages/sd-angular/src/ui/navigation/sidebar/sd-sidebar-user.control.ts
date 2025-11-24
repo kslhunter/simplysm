@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
 import { SdCollapseIconControl } from "../collapse/sd-collapse-icon.control";
 import { SdCollapseControl } from "../collapse/sd-collapse.control";
-import { SdListControl } from "../../list/sd-list.control";
-import { SdListItemControl } from "../../list/sd-list-item.control";
 import { $signal } from "../../../core/utils/bindings/$signal";
 import { SdRippleDirective } from "../../../core/directives/sd-ripple.directive";
+import { SdListControl } from "../../data/list/sd-list.control";
+import { SdListItemControl } from "../../data/list/sd-list-item.control";
 
 @Component({
   selector: "sd-sidebar-user",
@@ -14,9 +14,9 @@ import { SdRippleDirective } from "../../../core/directives/sd-ripple.directive"
   imports: [
     SdCollapseIconControl,
     SdCollapseControl,
+    SdRippleDirective,
     SdListControl,
     SdListItemControl,
-    SdRippleDirective,
   ],
   template: `
     <div class="p-lg">

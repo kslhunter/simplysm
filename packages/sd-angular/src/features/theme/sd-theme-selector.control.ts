@@ -5,15 +5,15 @@ import {
   viewChild,
   ViewEncapsulation,
 } from "@angular/core";
-import { SdDropdownControl } from "../overlay/dropdown/sd-dropdown.control";
-import { SdListControl } from "../../ui/list/sd-list.control";
-import { SdListItemControl } from "../../ui/list/sd-list-item.control";
 import { SdThemeProvider } from "../../core/providers/sd-theme-provider";
-import { SdDropdownPopupControl } from "../overlay/dropdown/sd-dropdown-popup.control";
 import { SdAngularConfigProvider } from "../../core/providers/app/sd-angular-config.provider";
 import { $effect } from "../../core/utils/bindings/$effect";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
-import { SdButtonControl } from "../form/button/sd-button.control";
+import { SdDropdownControl } from "../../ui/overlay/dropdown/sd-dropdown.control";
+import { SdButtonControl } from "../../ui/form/button/sd-button.control";
+import { SdDropdownPopupControl } from "../../ui/overlay/dropdown/sd-dropdown-popup.control";
+import { SdListControl } from "../../ui/data/list/sd-list.control";
+import { SdListItemControl } from "../../ui/data/list/sd-list-item.control";
 
 @Component({
   selector: "sd-theme-selector",
@@ -21,12 +21,12 @@ import { SdButtonControl } from "../form/button/sd-button.control";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
+    FaIconComponent,
     SdDropdownControl,
+    SdButtonControl,
     SdDropdownPopupControl,
     SdListControl,
     SdListItemControl,
-    FaIconComponent,
-    SdButtonControl,
   ],
   template: `
     <sd-dropdown>

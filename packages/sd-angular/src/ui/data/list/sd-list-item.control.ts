@@ -10,14 +10,14 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
-import { SdRippleDirective } from "../../core/directives/sd-ripple.directive";
-import { $computed } from "../../core/utils/bindings/$computed";
-import { transformBoolean } from "../../core/utils/transforms/tramsformBoolean";
-import { SdCollapseIconControl } from "../navigation/collapse/sd-collapse-icon.control";
-import { SdCollapseControl } from "../navigation/collapse/sd-collapse.control";
 
 import { SdListControl } from "./sd-list.control";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
+import { SdRippleDirective } from "../../../core/directives/sd-ripple.directive";
+import { SdCollapseIconControl } from "../../navigation/collapse/sd-collapse-icon.control";
+import { SdCollapseControl } from "../../navigation/collapse/sd-collapse.control";
+import { transformBoolean } from "../../../core/utils/transforms/transformBoolean";
+import { $computed } from "../../../core/utils/bindings/$computed";
 
 @Component({
   selector: "sd-list-item",
@@ -25,11 +25,11 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
-    SdCollapseIconControl,
-    SdCollapseControl,
-    SdRippleDirective,
     NgTemplateOutlet,
     FaIconComponent,
+    SdRippleDirective,
+    SdCollapseIconControl,
+    SdCollapseControl,
   ],
   host: {
     "[attr.data-sd-layout]": "layout()",
@@ -78,7 +78,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
   `,
   styles: [
     /* language=SCSS */ `
-      @use "../../../scss/commons/mixins";
+      @use "../../../../scss/commons/mixins";
 
       sd-list-item {
         > ._content {

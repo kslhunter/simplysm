@@ -1,15 +1,15 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
 import { useFullPageCodeSignal } from "../../../core/utils/signals/useFullPageCodeSignal";
-import { SdListControl } from "../../list/sd-list.control";
 import { NgTemplateOutlet } from "@angular/common";
 import { SdTypedTemplateDirective } from "../../../core/directives/sd-typed-template.directive";
-import { SdListItemControl } from "../../list/sd-list-item.control";
 import { SdRouterLinkDirective } from "../../../core/directives/sd-router-link.directive";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 
 import * as querystring from "querystring";
 import { $computed } from "../../../core/utils/bindings/$computed";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
+import { SdListControl } from "../../data/list/sd-list.control";
+import { SdListItemControl } from "../../data/list/sd-list-item.control";
 
 @Component({
   selector: "sd-sidebar-menu",
@@ -17,12 +17,12 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
-    SdListControl,
     NgTemplateOutlet,
     SdTypedTemplateDirective,
-    SdListItemControl,
     SdRouterLinkDirective,
     FaIconComponent,
+    SdListControl,
+    SdListItemControl,
   ],
   host: {
     "class": "flex-column fill",
