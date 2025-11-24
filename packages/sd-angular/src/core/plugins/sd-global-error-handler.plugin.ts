@@ -6,7 +6,7 @@ import {
   inject,
   Injectable,
 } from "@angular/core";
-import { SdSystemLogProvider } from "../providers/sd-system-log.provider";
+import { SdSystemLogProvider } from "../providers/app/sd-system-log.provider";
 
 @Injectable({ providedIn: null })
 export class SdGlobalErrorHandlerPlugin implements ErrorHandler {

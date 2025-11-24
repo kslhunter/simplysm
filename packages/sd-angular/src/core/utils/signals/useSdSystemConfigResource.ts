@@ -1,5 +1,5 @@
 import { inject, Signal } from "@angular/core";
-import { SdSystemConfigProvider } from "../../providers/sd-system-config.provider";
+import { SdSystemConfigProvider } from "../../providers/app/sd-system-config.provider";
 import { $resource } from "../bindings/$resource";
 import { injectElementRef } from "../injections/injectElementRef";
 

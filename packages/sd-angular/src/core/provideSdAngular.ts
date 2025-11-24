@@ -1,4 +1,7 @@
-import { ISdAngularIcon, SdAngularConfigProvider } from "./providers/sd-angular-config.provider";
+import {
+  ISdAngularIcon,
+  SdAngularConfigProvider,
+} from "./providers/app/sd-angular-config.provider";
 import {
   DestroyRef,
   EnvironmentInjector,
@@ -18,7 +21,7 @@ import { SdResizeEventPlugin } from "./plugins/events/sd-resize-event.plugin";
 import { SdOptionEventPlugin } from "./plugins/events/sd-option-event.plugin";
 import { SdBackbuttonEventPlugin } from "./plugins/events/sd-backbutton-event.plugin";
 import { SdThemeProvider, TSdTheme } from "./providers/sd-theme-provider";
-import { SdLocalStorageProvider } from "./providers/sd-local-storage.provider";
+import { SdLocalStorageProvider } from "./providers/storage/sd-local-storage.provider";
 import {
   NavigationCancel,
   NavigationEnd,
@@ -26,7 +29,7 @@ import {
   NavigationStart,
   Router,
 } from "@angular/router";
-import { SdBusyProvider } from "../features/busy/sd-busy.provider";
+import { SdBusyProvider } from "../ui/overlay/busy/sd-busy.provider";
 import { SwUpdate } from "@angular/service-worker";
 import { SdGlobalErrorHandlerPlugin } from "./plugins/sd-global-error-handler.plugin";
 import { IMAGE_CONFIG } from "@angular/common";

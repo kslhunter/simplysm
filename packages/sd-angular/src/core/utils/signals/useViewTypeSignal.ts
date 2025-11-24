@@ -1,6 +1,6 @@
 import { inject } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
-import { SdActivatedModalProvider } from "../../../features/modal/sd-modal.provider";
+import { SdActivatedModalProvider } from "../../../ui/overlay/modal/sd-modal.provider";
 import { $computed } from "../bindings/$computed";
 import { useCurrentPageCodeSignal } from "./useCurrentPageCodeSignal";
 import { useFullPageCodeSignal } from "./useFullPageCodeSignal";

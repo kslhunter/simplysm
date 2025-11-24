@@ -1,6 +1,6 @@
 import { Directive, HostListener, inject, input } from "@angular/core";
 import { Router } from "@angular/router";
-import { SdNavigateWindowProvider } from "../providers/sd-navigate-window.provider";
+import { SdNavigateWindowProvider } from "../providers/integration/sd-navigate-window.provider";
 import * as querystring from "querystring";
 import { ParsedUrlQuery } from "querystring";
 

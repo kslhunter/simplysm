@@ -1,5 +1,5 @@
 import { Directive, input } from "@angular/core";
-import { transformBoolean } from "../utils/transforms/tramsformBoolean";
+import { transformBoolean } from "../utils/transforms/transformBoolean";
 import { setupRevealOnShow } from "../utils/setups/setupRevealOnShow";
 
 @Directive({
