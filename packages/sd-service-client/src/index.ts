@@ -1,5 +1,7 @@
 export * from "./ISdServiceClientConnectionConfig";
+export * from "./reconnect-strategy";
 export * from "./SdServiceClient";
+export * from "./SdServiceEventBus";
 export * from "./SdWebSocket";
 export * from "./service-clients/orm/ISdOrmServiceConnectConfig";
 export * from "./service-clients/orm/SdOrmServiceClientConnector";

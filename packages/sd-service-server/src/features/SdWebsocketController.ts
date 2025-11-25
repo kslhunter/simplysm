@@ -4,10 +4,12 @@ import { WebSocket, WebSocketServer } from "ws";
 import { DateTime, JsonConvert, Type } from "@simplysm/sd-core-common";
 import {
   ISdServiceRequest,
-  ISdServiceResponse,
   ISdServiceSplitRequest,
+  SD_SERVICE_SPECIAL_COMMANDS,
+  SdServiceCommandHelper,
   SdServiceEventListenerBase,
   TSdServiceC2SMessage,
+  TSdServiceResponse,
   TSdServiceS2CMessage,
 } from "@simplysm/sd-service-common";
 import { SdLogger } from "@simplysm/sd-core-node";
@@ -231,17 +233,16 @@ export class SdWebsocketController {
   async #processRequestAsync(
     client: WebSocket,
     req: ISdServiceRequest,
-  ): Promise<ISdServiceResponse> {
+  ): Promise<TSdServiceResponse> {
     try {
-      const cmdSplit = req.command.split(".");
-      if (cmdSplit.length === 2) {
-        const serviceName = cmdSplit[0];
-        const methodName = cmdSplit[1];
+      const methodCmdInfo = SdServiceCommandHelper.parseMethodCommand(req.command);
+      if (methodCmdInfo) {
+        const { serviceName, methodName } = methodCmdInfo;
 
         const result = await this._runServiceMethodAsync({
           client,
           request: req,
-          serviceName: serviceName,
+          serviceName,
           methodName,
           params: req.params,
         });
@@ -253,7 +254,7 @@ export class SdWebsocketController {
           state: "success",
           body: result,
         };
-      } else if (req.command === "addEventListener") {
+      } else if (req.command === SD_SERVICE_SPECIAL_COMMANDS.ADD_EVENT_LISTENER) {
         const key = req.params[0] as string;
         const eventName = req.params[1] as string;
         const info = req.params[2];
@@ -267,7 +268,7 @@ export class SdWebsocketController {
           state: "success",
           body: undefined,
         };
-      } else if (req.command === "removeEventListener") {
+      } else if (req.command === SD_SERVICE_SPECIAL_COMMANDS.REMOVE_EVENT_LISTENER) {
         const key = req.params[0] as string;
 
         const clientInfo = this.#clientInfoMap.get(client)!;
@@ -279,7 +280,7 @@ export class SdWebsocketController {
           state: "success",
           body: undefined,
         };
-      } else if (req.command === "getEventListenerInfos") {
+      } else if (req.command === SD_SERVICE_SPECIAL_COMMANDS.GET_EVENT_LISTENER_INFOS) {
         const eventName = req.params[0] as string;
 
         const body = Array.from(this.#server.clients)
@@ -293,7 +294,7 @@ export class SdWebsocketController {
           state: "success",
           body,
         };
-      } else if (req.command === "emitEvent") {
+      } else if (req.command === SD_SERVICE_SPECIAL_COMMANDS.EMIT_EVENT) {
         const targetKeys = req.params[0] as string[];
         const data = req.params[1];
 
@@ -306,21 +307,35 @@ export class SdWebsocketController {
           body: undefined,
         };
       } else {
+        const err = new Error("요청이 잘못되었습니다.");
+
         // 에러 응답
         return {
           name: "response",
           reqUuid: req.uuid,
           state: "error",
-          body: "요청이 잘못되었습니다.",
+          body: {
+            message: err.message,
+            code: "BAD_COMMAND",
+            stack: err.stack,
+          },
         };
       }
     } catch (err) {
-      // 에러 응답
+      const error =
+        err instanceof Error
+          ? err
+          : new Error(typeof err === "string" ? err : "알 수 없는 오류가 발생하였습니다.");
+
       return {
         name: "response",
         reqUuid: req.uuid,
         state: "error",
-        body: err.stack,
+        body: {
+          message: error.message,
+          code: "INTERNAL_ERROR",
+          stack: error.stack,
+        },
       };
     }
   }

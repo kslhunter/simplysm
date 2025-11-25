@@ -1,6 +1,9 @@
+import { IReconnectStrategy } from "./reconnect-strategy";
+
 export interface ISdServiceClientConnectionConfig {
   port: number;
   host: string;
   ssl?: boolean;
-  useReconnect: boolean;
+
+  reconnect?: IReconnectStrategy | false;
 }

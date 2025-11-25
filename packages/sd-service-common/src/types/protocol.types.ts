@@ -1,8 +1,10 @@
+import { TSdServiceCommand } from "./command.types";
+
 export type TSdServiceS2CMessage =
   | ISdServiceClientReloadCommand
   | ISdServiceClientGetIdCommand
   | ISdServiceClientConnectedAlarm
-  | ISdServiceResponse
+  | TSdServiceResponse
   | ISdServiceResponseForSplit
   | ISdServiceSplitResponse
   | ISdServiceEmittedEvent;
@@ -31,18 +33,33 @@ interface ISdServiceClientConnectedAlarm {
   name: "connected";
 }
 
-export interface ISdServiceResponse {
+export type TSdServiceResponse = ISdServiceSuccessResponse | ISdServiceErrorResponse;
+
+export interface ISdServiceSuccessResponse {
   name: "response";
   reqUuid: string;
-  state: "success" | "error";
+  state: "success";
   body: any;
+}
+
+export interface ISdServiceErrorResponse {
+  name: "response";
+  reqUuid: string;
+  state: "error";
+  body: ISdServiceErrorBody;
+}
+
+export interface ISdServiceErrorBody {
+  message: string;
+  code: string;
+  stack?: string;
 }
 
 export interface ISdServiceRequest {
   name: "request";
   clientName: string;
   uuid: string;
-  command: string;
+  command: TSdServiceCommand;
   params: any;
 }
 

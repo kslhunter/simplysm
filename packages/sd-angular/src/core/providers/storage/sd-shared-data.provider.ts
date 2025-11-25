@@ -81,7 +81,7 @@ export abstract class SdSharedDataProvider<
     this.loadingCount++;
     try {
       const info = this.#infoMap.get(name);
-      if (!info) throw new Error(`'${name}'에 대한 공유데이터 로직 정보가 없습니다.`);
+      if (!info) throw new Error(`'${name}'에 대한 공유데이터 정보가 없습니다.`);
       if (!info.signal) throw new Error(`'${name}'에 대한 공유데이터 저장소가 없습니다.`);
 
       const resData = await info.getter.getDataAsync(changeKeys);
