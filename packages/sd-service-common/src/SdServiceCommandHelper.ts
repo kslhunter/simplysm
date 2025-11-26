@@ -16,14 +16,4 @@ export abstract class SdServiceCommandHelper {
 
     return { serviceName, methodName };
   }
-
-  /*// 타입 가드: "Service.method" 인지 여부
-  static isMethodCommand(command: string): command is TSdServiceMethodCommand {
-    return this.parseMethodCommand(command) != null;
-  }
-
-  // 타입 가드: special command 인지 여부
-  static isSpecialCommand(command: string): command is TSdServiceSpecialCommand {
-    return Object.values(SD_SERVICE_SPECIAL_COMMANDS).includes(command as TSdServiceSpecialCommand);
-  }*/
 }

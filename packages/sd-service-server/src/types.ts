@@ -27,6 +27,21 @@ export abstract class SdServiceBase {
   request?: ISdServiceRequest; // API로 접근한 경우 undefined
 
   webHeaders?: http.IncomingHttpHeaders; // Socket로 접근한 경우 undefined
+
+  protected async getConfig<T>(section: string): Promise<T> {
+    const config = (await this.server.getConfigAsync(this.request?.clientName))[section] as
+      | T
+      | undefined;
+    if (config == null) {
+      throw new Error(`설정 섹션을 찾을 수 없습니다: ${section}`);
+    }
+    return config;
+  }
+
+  protected getClientPath() {
+    if (!this.request) throw new Error("요청정보가 없습니다.");
+    return this.server.getClientPath(this.request.clientName);
+  }
 }
 
 export interface ISdServiceActivationContext {

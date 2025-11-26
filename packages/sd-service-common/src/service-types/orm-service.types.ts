@@ -7,7 +7,7 @@ import {
 } from "@simplysm/sd-orm-common";
 
 export interface ISdOrmService {
-  getInfo(opt: Record<string, any>): Promise<{
+  getInfo(opt: TDbConnOptions & { configName: string }): Promise<{
     dialect: TDbContextOption["dialect"];
     database?: string;
     schema?: string;

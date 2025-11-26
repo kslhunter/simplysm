@@ -1,5 +1,5 @@
 import { SdServiceClient } from "../SdServiceClient";
-import { SdServiceClientBase } from "../SdServiceClientBase";
+import { SdServiceClientBase } from "../types/SdServiceClientBase";
 import { ISdAutoUpdateService } from "@simplysm/sd-service-common";
 
 export class SdAutoUpdateServiceClient extends SdServiceClientBase<ISdAutoUpdateService> {

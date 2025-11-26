@@ -38,11 +38,11 @@ export class SdSmtpClientService extends SdServiceBase implements ISdSmtpClientS
   }
 
   async sendByConfig(configName: string, options: ISmtpClientSendByDefaultOption): Promise<string> {
-    const config = this.server.getConfig(this.request?.clientName)["smtp"]?.[configName] as
-      | ISmtpClientDefaultConfig
-      | undefined;
-    if (config === undefined) {
-      throw new Error("서버에서 메일서버 설정을 찾을 수 없습니다.");
+    const config = (
+      await this.getConfig<Record<string, ISmtpClientDefaultConfig | undefined>>("smtp")
+    )[configName];
+    if (config == null) {
+      throw new Error(`SMTP 설정을 찾을 수 없습니다: ${configName}`);
     }
 
     return await this.send({

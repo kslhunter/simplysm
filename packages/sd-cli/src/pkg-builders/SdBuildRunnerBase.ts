@@ -21,7 +21,7 @@ export abstract class SdBuildRunnerBase<T extends "server" | "library" | "client
       const distPath = path.resolve(this._opt.pkgPath, "dist");
       if (FsUtils.exists(distPath)) {
         this._debug("dist 초기화...");
-        FsUtils.remove(distPath);
+        await FsUtils.removeAsync(distPath);
       }
     }
 

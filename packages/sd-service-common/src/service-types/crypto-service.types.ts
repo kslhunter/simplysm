@@ -1,7 +1,7 @@
 export interface ISdCryptoService {
-  encrypt(data: string | Buffer): string;
-  encryptAes(data: Buffer): string;
-  decryptAes(encText: string): Buffer;
+  encrypt(data: string | Buffer): Promise<string>;
+  encryptAes(data: Buffer): Promise<string>;
+  decryptAes(encText: string): Promise<Buffer>;
 }
 
 export interface ICryptoConfig {

@@ -1,27 +1,24 @@
 /* eslint-disable no-console */
 
-import { ISdServiceClientConnectionConfig } from "./ISdServiceClientConnectionConfig";
+import { ISdServiceConnectionConfig } from "./types/ISdServiceConnectionConfig";
 import { JsonConvert, Type, Uuid, Wait } from "@simplysm/sd-core-common";
 import {
-  ISdServiceErrorBody,
-  SD_SERVICE_MAX_MESSAGE_SIZE,
   SD_SERVICE_SPECIAL_COMMANDS,
-  SD_SERVICE_SPLIT_CHUNK_SIZE,
   SdServiceCommandHelper,
   SdServiceEventListenerBase,
-  TSdServiceC2SMessage,
-  TSdServiceCommand,
-  TSdServiceResponse,
   TSdServiceS2CMessage,
 } from "@simplysm/sd-service-common";
-import { SdWebSocket } from "./SdWebSocket";
+import { SdWebSocket } from "./internal/SdWebSocket";
 import { EventEmitter } from "events";
-import { SdServiceEventBus } from "./SdServiceEventBus";
-import { DefaultReconnectStrategy, IReconnectStrategy } from "./reconnect-strategy";
+import { SdServiceEventBus } from "./internal/SdServiceEventBus";
+import {
+  ISdServiceReconnectStrategy,
+  SdServiceDefaultReconnectStrategy,
+} from "./types/reconnect-strategy.types";
+import { SdServiceTransport } from "./internal/SdServiceTransport";
+import { ISdServiceProgressState } from "./types/ISdServiceProgressState";
 
 export class SdServiceClient extends EventEmitter {
-  static isOnShowAlert = false;
-
   isManualClose = false;
   isConnected = false;
   websocketUrl: string;
@@ -29,14 +26,26 @@ export class SdServiceClient extends EventEmitter {
   reconnectCount = 0;
   #id = Uuid.new().toString();
   #ws: SdWebSocket;
+
+  #transport: SdServiceTransport;
   #eventBus: SdServiceEventBus;
 
   // 재연결 정책
-  #reconnectStrategy: IReconnectStrategy | undefined;
+  #reconnectStrategy: ISdServiceReconnectStrategy | undefined;
+
+  override on(event: "request-progress", listener: (state: ISdServiceProgressState) => void): this;
+  override on(event: "response-progress", listener: (state: ISdServiceProgressState) => void): this;
+  override on(
+    event: "state-change",
+    listener: (state: "connected" | "closed" | "reconnect") => void,
+  ): this;
+  override on(event: string | symbol, listener: (...args: any[]) => void): this {
+    return super.on(event, listener);
+  }
 
   constructor(
     readonly name: string,
-    readonly options: ISdServiceClientConnectionConfig,
+    readonly options: ISdServiceConnectionConfig,
   ) {
     super();
 
@@ -48,88 +57,80 @@ export class SdServiceClient extends EventEmitter {
     }://${this.options.host}:${this.options.port}`;
 
     this.#ws = new SdWebSocket(this.websocketUrl);
-
-    this.#eventBus = new SdServiceEventBus(
-      async (command, params) => await this.#sendCommandAsync(command, params),
-    );
+    this.#transport = new SdServiceTransport(this.#ws, this.name);
+    this.#eventBus = new SdServiceEventBus(this.#transport);
 
     // 전략 주입
     this.#reconnectStrategy =
-      this.options.reconnect === false
+      this.options.reconnectStrategy === false
         ? undefined
-        : (this.options.reconnect ?? new DefaultReconnectStrategy());
+        : (this.options.reconnectStrategy ?? new SdServiceDefaultReconnectStrategy());
   }
 
   get connected(): boolean {
     return this.#ws.connected && this.isConnected;
   }
 
-  override on(
-    event: "request-progress",
-    listener: (state: ISdServiceClientRequestProgressState) => void,
-  ): this;
-  override on(
-    event: "response-progress",
-    listener: (state: ISdServiceClientResponseProgressState) => void,
-  ): this;
-  override on(
-    event: "state-change",
-    listener: (state: "connected" | "closed" | "reconnect") => void,
-  ): this;
-  override on(event: string | symbol, listener: (...args: any[]) => void): this {
-    return super.on(event, listener);
+  async #reloadAsync(changedFileSet: Set<string>) {
+    // 모두 css인 경우, refresh없이 css 파일만 전환
+    if (Array.from(changedFileSet).every((item) => item.endsWith(".css"))) {
+      for (const changedFile of changedFileSet) {
+        const href = "./" + changedFile.replace(/[\\/]/g, "/");
+        const oldStyle = document.querySelector(`link[data-sd-style="${href}"]`) as
+          | HTMLLinkElement
+          | undefined;
+        if (oldStyle) {
+          oldStyle.href = `${href}?t=${Date.now()}`;
+        }
+
+        const oldGlobalStyle = document.querySelector(
+          `link[data-sd-style="${changedFile}"],[href="${changedFile}"]`,
+        ) as HTMLLinkElement | undefined;
+        if (oldGlobalStyle) {
+          oldGlobalStyle.setAttribute("data-sd-style", changedFile);
+          oldGlobalStyle.href = `${changedFile}?t=${Date.now()}`;
+        }
+      }
+    } else {
+      // HMR refresh
+      if (window["__sd_hmr_destroy"] != null) {
+        window["__sd_hmr_destroy"]();
+
+        const old = document.querySelector("app-root");
+        if (old) old.remove();
+        document.body.prepend(document.createElement("app-root"));
+
+        await (
+          await import(`${location.pathname}main.js?t=${Date.now()}`)
+        ).default;
+      }
+      // 완전 reload
+      else {
+        location.reload();
+      }
+    }
   }
 
   async #handleServerMessageAsync(msg: TSdServiceS2CMessage): Promise<void> {
+    // 서버에서 이벤트가 날아온 경우 → EventBus 통해 콜백 실행
     if (msg.name === "event") {
-      // 서버에서 이벤트가 날아온 경우 → EventBus 통해 콜백 실행
       await this.#eventBus.handleEventAsync(msg.key, msg.body);
-    } else if (
+    }
+    // 클라이언트 리로드
+    else if (
       typeof location !== "undefined" &&
       msg.name === "client-reload" &&
       this.name === msg.clientName
     ) {
       console.log("클라이언트 RELOAD 명령 수신", msg.changedFileSet);
-      if (Array.from(msg.changedFileSet).every((item) => item.endsWith(".css"))) {
-        for (const changedFile of msg.changedFileSet) {
-          const href = "./" + changedFile.replace(/[\\/]/g, "/");
-          const oldStyle = document.querySelector(`link[data-sd-style="${href}"]`) as
-            | HTMLLinkElement
-            | undefined;
-          if (oldStyle) {
-            oldStyle.href = `${href}?t=${Date.now()}`;
-          }
-
-          const oldGlobalStyle = document.querySelector(
-            `link[data-sd-style="${changedFile}"],[href="${changedFile}"]`,
-          ) as HTMLLinkElement | undefined;
-          if (oldGlobalStyle) {
-            oldGlobalStyle.setAttribute("data-sd-style", changedFile);
-            oldGlobalStyle.href = `${changedFile}?t=${Date.now()}`;
-          }
-        }
-      } else {
-        if (window["__sd_hmr_destroy"] != null) {
-          window["__sd_hmr_destroy"]();
-
-          const old = document.querySelector("app-root");
-          if (old) old.remove();
-          document.body.prepend(document.createElement("app-root"));
-
-          await (
-            await import(`${location.pathname}main.js?t=${Date.now()}`)
-          ).default;
-          /*requestAnimationFrame(() => {
-            console.clear();
-          });*/
-        } else {
-          location.reload();
-        }
-      }
-    } else if (msg.name === "client-get-id") {
-      const resMsg: TSdServiceC2SMessage = { name: "client-get-id-response", body: this.#id };
-      await this.#ws.sendAsync(JsonConvert.stringify(resMsg));
-    } else if (msg.name === "connected") {
+      await this.#reloadAsync(msg.changedFileSet);
+    }
+    // 클라이언트 소켓 ID 가져오기
+    else if (msg.name === "client-get-id") {
+      await this.#transport.sendMessageAsync({ name: "client-get-id-response", body: this.#id });
+    }
+    // 서버 재 연결시, 리스너 재등록
+    else if (msg.name === "connected") {
       this.emit("state-change", "success");
       this.isConnected = true;
 
@@ -138,9 +139,6 @@ export class SdServiceClient extends EventEmitter {
   }
 
   async #reconectAsync(): Promise<void> {
-    // 알림 표시 중이면 기다림 (기존 동작 유지)
-    await Wait.until(() => !SdServiceClient.isOnShowAlert);
-
     // 재연결 사용 안 할 때
     if (!this.#reconnectStrategy) {
       console.error("WebSocket 연결이 끊겼습니다. 연결상태를 확인하세요.");
@@ -219,13 +217,12 @@ export class SdServiceClient extends EventEmitter {
     await this.#ws.closeAsync();
   }
 
-  async sendAsync<R = unknown>(
-    serviceName: string,
-    methodName: string,
-    params: unknown[],
-  ): Promise<R> {
+  async sendAsync(serviceName: string, methodName: string, params: any[]): Promise<any> {
     const cmd = SdServiceCommandHelper.buildMethodCommand({ serviceName, methodName });
-    return await this.#sendCommandAsync<R>(cmd, params);
+    return await this.#transport.sendCommandAsync(cmd, params, {
+      request: (state) => this.emit("request-progress", state),
+      response: (state) => this.emit("response-progress", state),
+    });
   }
 
   async addEventListenerAsync<T extends SdServiceEventListenerBase<any, any>>(
@@ -241,6 +238,10 @@ export class SdServiceClient extends EventEmitter {
     return await this.#eventBus.addListenerAsync(eventListenerType, info, cb);
   }
 
+  async removeEventListenerAsync(key: string): Promise<void> {
+    await this.#eventBus.removeListenerAsync(key);
+  }
+
   async emitAsync<T extends SdServiceEventListenerBase<any, any>>(
     eventType: Type<T>,
     infoSelector: (item: T["info"]) => boolean,
@@ -249,21 +250,18 @@ export class SdServiceClient extends EventEmitter {
     const listenerInfos: {
       key: string;
       info: T["info"];
-    }[] = await this.#sendCommandAsync(SD_SERVICE_SPECIAL_COMMANDS.GET_EVENT_LISTENER_INFOS, [
-      eventType.name,
-    ]);
+    }[] = await this.#transport.sendCommandAsync(
+      SD_SERVICE_SPECIAL_COMMANDS.GET_EVENT_LISTENER_INFOS,
+      [eventType.name],
+    );
     const targetListenerKeys = listenerInfos
       .filter((item) => infoSelector(item.info))
       .map((item) => item.key);
 
-    await this.#sendCommandAsync(SD_SERVICE_SPECIAL_COMMANDS.EMIT_EVENT, [
+    await this.#transport.sendCommandAsync(SD_SERVICE_SPECIAL_COMMANDS.EMIT_EVENT, [
       targetListenerKeys,
       data,
     ]);
-  }
-
-  async removeEventListenerAsync(key: string): Promise<void> {
-    await this.#eventBus.removeListenerAsync(key);
   }
 
   async downloadFileBufferAsync(relPath: string): Promise<Buffer> {
@@ -286,119 +284,4 @@ export class SdServiceClient extends EventEmitter {
       xhr.send();
     });
   }
-
-  async #sendCommandAsync<R = unknown>(command: TSdServiceCommand, params: unknown[]): Promise<R> {
-    const uuid = Uuid.new().toString();
-
-    return await new Promise<any>(async (resolve, reject) => {
-      const req: TSdServiceC2SMessage = {
-        name: "request",
-        clientName: this.name,
-        uuid,
-        command,
-        params,
-      };
-
-      const reqText = JsonConvert.stringify(req);
-
-      const splitResInfo: { completedSize: number; data: string[] } = {
-        completedSize: 0,
-        data: [],
-      };
-      const msgFn = (msgJson: string): void => {
-        const msg = JsonConvert.parse(msgJson) as TSdServiceS2CMessage;
-        if (
-          msg.name !== "response" &&
-          msg.name !== "response-for-split" &&
-          msg.name !== "response-split"
-        )
-          return;
-        if (msg.reqUuid !== uuid) return;
-
-        if (msg.name === "response-for-split") {
-          this.emit("request-progress", {
-            uuid,
-            fullSize: reqText.length,
-            completedSize: msg.completedSize,
-          });
-        } else if (msg.name === "response-split") {
-          splitResInfo.data[msg.index] = msg.body;
-          splitResInfo.completedSize += msg.body.length;
-          const isCompleted = splitResInfo.completedSize === msg.fullSize;
-
-          this.emit("response-progress", {
-            reqUuid: uuid,
-            fullSize: msg.fullSize,
-            completedSize: splitResInfo.completedSize,
-          });
-
-          if (isCompleted) {
-            const res = JsonConvert.parse(splitResInfo.data.join("")) as TSdServiceResponse;
-
-            this.#ws.off("message", msgFn);
-
-            if (res.state === "error") {
-              reject(this.#toError(res.body));
-              return;
-            }
-
-            resolve(res.body);
-          }
-        } else {
-          this.#ws.off("message", msgFn);
-
-          if (msg.state === "error") {
-            reject(this.#toError(msg.body));
-            return;
-          }
-
-          resolve(msg.body);
-        }
-      };
-      this.#ws.on(`message`, msgFn);
-
-      if (reqText.length > SD_SERVICE_MAX_MESSAGE_SIZE) {
-        this.emit("request-progress", { uuid, fullSize: reqText.length, completedSize: 0 });
-
-        const splitSize = SD_SERVICE_SPLIT_CHUNK_SIZE;
-
-        let index = 0;
-        let currSize = 0;
-        while (currSize !== reqText.length) {
-          const splitBody = reqText.substring(currSize, currSize + splitSize - 1);
-          const splitReq: TSdServiceC2SMessage = {
-            name: "request-split",
-            uuid: req.uuid,
-            fullSize: reqText.length,
-            index,
-            body: splitBody,
-          };
-          await this.#ws.sendAsync(JsonConvert.stringify(splitReq));
-          currSize += splitBody.length;
-          index++;
-        }
-      } else {
-        await this.#ws.sendAsync(reqText);
-      }
-    });
-  }
-
-  #toError(body: ISdServiceErrorBody): Error {
-    const err = new Error(body.message);
-    (err as any).code = body.code;
-    if (body.stack != null) err.stack = body.stack;
-    return err;
-  }
-}
-
-export interface ISdServiceClientRequestProgressState {
-  uuid: string;
-  fullSize: number;
-  completedSize: number;
-}
-
-export interface ISdServiceClientResponseProgressState {
-  reqUuid: string;
-  fullSize: number;
-  completedSize: number;
 }

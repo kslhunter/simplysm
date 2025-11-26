@@ -14,7 +14,6 @@ import { JsonConvert, ObjectUtils, Type } from "@simplysm/sd-core-common";
 import { ISdServiceRequest, SdServiceEventListenerBase } from "@simplysm/sd-service-common";
 import mime from "mime";
 import { SdWebRequestError } from "./SdWebRequestError";
-import { SdServiceServerConfUtils } from "./utils/SdServiceServerConfUtils";
 import { SdWebsocketController } from "./features/SdWebsocketController";
 import { WebSocket } from "ws";
 
@@ -59,28 +58,30 @@ export class SdServiceServer extends EventEmitter {
     return service;
   }
 
-  getConfig(clientName?: string): Record<string, any | undefined> {
-    SdServiceServerConfUtils.getConfig(this.options.rootPath, clientName, this.pathProxy);
+  async getConfigAsync(clientName?: string): Promise<Record<string, any | undefined>> {
     let result: Record<string, any | undefined> = {};
 
     const rootFilePath = path.resolve(this.options.rootPath, ".config.json");
     if (FsUtils.exists(rootFilePath)) {
-      result = FsUtils.readJson(rootFilePath);
+      result = await FsUtils.readJsonAsync(rootFilePath);
     }
 
-    if (clientName !== undefined) {
-      const targetPath =
-        typeof this.pathProxy[clientName] === "string"
-          ? this.pathProxy[clientName]
-          : path.resolve(this.options.rootPath, "www", clientName);
+    if (clientName != null) {
+      const targetPath = this.getClientPath(clientName);
 
       const filePath = path.resolve(targetPath, ".config.json");
       if (FsUtils.exists(filePath)) {
-        result = ObjectUtils.merge(result, FsUtils.readJson(filePath));
+        result = ObjectUtils.merge(result, await FsUtils.readJsonAsync(filePath));
       }
     }
 
     return result;
+  }
+
+  getClientPath(clientName: string): string {
+    return typeof this.pathProxy[clientName] === "string"
+      ? this.pathProxy[clientName]
+      : path.resolve(this.options.rootPath, "www", clientName);
   }
 
   async listenAsync(): Promise<void> {

@@ -2,7 +2,6 @@ import path from "path";
 import semver from "semver";
 import { SdServiceBase } from "../types";
 import { FsUtils } from "@simplysm/sd-core-node";
-import { SdServiceServerConfUtils } from "../utils/SdServiceServerConfUtils";
 import { ISdAutoUpdateService } from "@simplysm/sd-service-common";
 
 export class SdAutoUpdateService extends SdServiceBase implements ISdAutoUpdateService {
@@ -18,13 +17,7 @@ export class SdAutoUpdateService extends SdServiceBase implements ISdAutoUpdateS
         downloadPath: string;
       }
     | undefined {
-    const clientName = this.request!.clientName;
-
-    const clientPath = SdServiceServerConfUtils.getClientPath(
-      this.server.options.rootPath,
-      clientName,
-      this.server.pathProxy,
-    );
+    const clientPath = this.getClientPath();
     if (!FsUtils.exists(path.resolve(clientPath, platform, "updates"))) return undefined;
 
     const updates = FsUtils.readdir(path.resolve(clientPath, platform, "updates"));
@@ -53,7 +46,7 @@ export class SdAutoUpdateService extends SdServiceBase implements ISdAutoUpdateS
     const downloadPath =
       "/" +
       path.join(
-        clientName,
+        this.request!.clientName,
         platform,
         "updates",
         versions.single((item) => item.version === version)!.fileName,

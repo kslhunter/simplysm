@@ -20,24 +20,22 @@ export class SdOrmService extends SdServiceBase implements ISdOrmService {
   static #conns = new Map<number, IDbConn>();
   static #wsCloseListenerMap = new Map<number, (code: number) => Promise<void>>();
 
-  static getConfAsync(service: SdOrmService, opt: TDbConnOptions): Promise<TDbConnConf> {
-    const config: TDbConnConf | undefined =
-      opt.configName !== undefined
-        ? service.server.getConfig(service.request?.clientName)["orm"]?.[opt.configName]
-        : undefined;
-    if (config === undefined) {
-      throw new Error("서버에서 ORM 설정을 찾을 수 없습니다.");
+  async #getConf(opt: TDbConnOptions & { configName: string }): Promise<TDbConnConf> {
+    const config = (await this.getConfig<Record<string, TDbConnConf | undefined>>("orm"))[
+      opt.configName
+    ];
+    if (config == null) {
+      throw new Error(`ORM 설정을 찾을 수 없습니다: ${opt.configName}`);
     }
-
-    return Promise.resolve({ ...config, ...opt.config });
+    return { ...config, ...opt.config };
   }
 
-  async getInfo(opt: Record<string, any>): Promise<{
+  async getInfo(opt: TDbConnOptions & { configName: string }): Promise<{
     dialect: TDbContextOption["dialect"];
     database?: string;
     schema?: string;
   }> {
-    const config = await SdOrmService.getConfAsync(this, opt);
+    const config = await this.#getConf(opt);
     return {
       dialect: config.dialect,
       ...(config.dialect === "sqlite"
@@ -49,8 +47,8 @@ export class SdOrmService extends SdServiceBase implements ISdOrmService {
     };
   }
 
-  async connect(opt: Record<string, any>): Promise<number> {
-    const config = await SdOrmService.getConfAsync(this, opt);
+  async connect(opt: TDbConnOptions & { configName: string }): Promise<number> {
+    const config = await this.#getConf(opt);
 
     const dbConn = DbConnFactory.create(config);
 

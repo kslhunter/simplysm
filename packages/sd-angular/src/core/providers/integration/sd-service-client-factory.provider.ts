@@ -1,6 +1,6 @@
 import { inject, Injectable, WritableSignal } from "@angular/core";
 import { ObjectUtils } from "@simplysm/sd-core-common";
-import { ISdServiceClientConnectionConfig, SdServiceClient } from "@simplysm/sd-service-client";
+import { ISdServiceConnectionConfig, SdServiceClient } from "@simplysm/sd-service-client";
 import { SdToastProvider } from "../../../ui/overlay/toast/sd-toast.provider";
 import { $effect } from "../../utils/bindings/$effect";
 import { SdAngularConfigProvider } from "../app/sd-angular-config.provider";
@@ -25,7 +25,7 @@ export class SdServiceClientFactoryProvider {
 
   async connectAsync(
     key: string,
-    options: Partial<ISdServiceClientConnectionConfig> = {},
+    options: Partial<ISdServiceConnectionConfig> = {},
   ): Promise<void> {
     if (this.#clientMap.has(key)) {
       if (!this.#clientMap.get(key)!.connected) {
@@ -74,13 +74,13 @@ export class SdServiceClientFactoryProvider {
       | undefined
     >();
     client.on("response-progress", (state) => {
-      const toast = resProgressToastMap.getOrCreate(state.reqUuid, () =>
+      const toast = resProgressToastMap.getOrCreate(state.uuid, () =>
         this.#sdToast.info("응답을 전송받는 중입니다.", true),
       );
       toast?.progress.set((state.completedSize / state.fullSize) * 100);
 
       if (state.completedSize === state.fullSize) {
-        resProgressToastMap.delete(state.reqUuid);
+        resProgressToastMap.delete(state.uuid);
       }
     });
 

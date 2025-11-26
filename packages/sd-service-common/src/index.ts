@@ -5,4 +5,4 @@ export * from "./service-types/orm-service.types";
 export * from "./service-types/smtp-service.types";
 export * from "./types/command.types";
 export * from "./types/protocol.types";
-export * from "./types/split.types";
+export * from "./types/split-message.types";

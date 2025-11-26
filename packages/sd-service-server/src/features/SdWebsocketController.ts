@@ -7,9 +7,11 @@ import {
   ISdServiceSplitRequest,
   SD_SERVICE_MAX_MESSAGE_SIZE,
   SD_SERVICE_SPECIAL_COMMANDS,
-  SD_SERVICE_SPLIT_CHUNK_SIZE,
+  SD_SERVICE_SPLIT_MESSAGE_CHUNK_SIZE,
   SdServiceCommandHelper,
   SdServiceEventListenerBase,
+  SdServiceSplitMessageAccumulator,
+  splitServiceMessage,
   TSdServiceC2SMessage,
   TSdServiceResponse,
   TSdServiceS2CMessage,
@@ -80,7 +82,7 @@ export class SdWebsocketController {
           remoteAddress: req.socket.remoteAddress,
           isAlive: true,
           listenerInfos: [],
-          splitReqCache: new Map(),
+          splitAccumulator: new SdServiceSplitMessageAccumulator(),
         };
         this.#clientInfoMap.set(client, clientInfo);
 
@@ -196,29 +198,28 @@ export class SdWebsocketController {
     this.#logger.debug("분할요청 받음", splitReq.uuid + "(" + splitReq.index + ")");
 
     const clientInfo = this.#clientInfoMap.get(client)!;
-    const splitCacheInfo = clientInfo.splitReqCache.getOrCreate(splitReq.uuid, {
-      completedSize: 0,
-      data: [],
-    });
-    try {
-      splitCacheInfo.data[splitReq.index] = splitReq.body;
-      splitCacheInfo.completedSize += splitReq.body.length;
 
-      const isCompleted = splitCacheInfo.completedSize === splitReq.fullSize;
+    try {
+      const { completedSize, isCompleted, fullText } = clientInfo.splitAccumulator.push(
+        splitReq.uuid,
+        splitReq.fullSize,
+        splitReq.index,
+        splitReq.body,
+      );
 
       this.#send(client, {
         name: "response-for-split",
         reqUuid: splitReq.uuid,
-        completedSize: splitCacheInfo.completedSize,
+        completedSize,
       });
 
-      if (isCompleted) {
-        const req = JsonConvert.parse(splitCacheInfo.data.join("")) as ISdServiceRequest;
+      if (isCompleted && fullText !== undefined) {
+        const req = JsonConvert.parse(fullText) as ISdServiceRequest;
         await this.#onRequestAsync(client, req);
-        clientInfo.splitReqCache.delete(splitReq.uuid);
+        // push()에서 완료 시 자동으로 해당 uuid entry 삭제됨
       }
     } catch (err) {
-      clientInfo.splitReqCache.delete(splitReq.uuid);
+      clientInfo.splitAccumulator.clear(splitReq.uuid);
       throw err;
     }
   }
@@ -365,27 +366,22 @@ export class SdWebsocketController {
 
   #send(client: WebSocket, cmd: TSdServiceS2CMessage) {
     const cmdJson = JsonConvert.stringify(cmd);
-
     if (cmd.name === "response" && cmdJson.length > SD_SERVICE_MAX_MESSAGE_SIZE) {
-      const splitSize = SD_SERVICE_SPLIT_CHUNK_SIZE;
+      const chunks = splitServiceMessage(cmdJson, SD_SERVICE_SPLIT_MESSAGE_CHUNK_SIZE);
 
-      let index = 0;
-      let currSize = 0;
-      while (currSize !== cmdJson.length) {
-        const splitBody = cmdJson.substring(currSize, currSize + splitSize - 1);
-        const splitReq: TSdServiceS2CMessage = {
+      for (let index = 0; index < chunks.length; index++) {
+        const body = chunks[index];
+        const splitRes: TSdServiceS2CMessage = {
           name: "response-split",
           reqUuid: cmd.reqUuid,
           fullSize: cmdJson.length,
           index,
-          body: splitBody,
+          body,
         };
-        const splitReqJson = JsonConvert.stringify(splitReq);
+        const splitResJson = JsonConvert.stringify(splitRes);
 
-        client.send(splitReqJson);
-
-        currSize += splitBody.length;
-        index++;
+        this.#logger.debug(`분할응답 전송 (size: ${Buffer.from(splitResJson).length})`);
+        client.send(splitResJson);
       }
     } else {
       client.send(cmdJson);
@@ -403,5 +399,5 @@ interface ISdClientInfo {
     eventName: string;
     info: any;
   }[];
-  splitReqCache: Map<string, { completedSize: number; data: string[] }>;
+  splitAccumulator: SdServiceSplitMessageAccumulator;
 }

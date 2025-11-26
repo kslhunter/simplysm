@@ -2,8 +2,8 @@ import { Type, Uuid } from "@simplysm/sd-core-common";
 import {
   SD_SERVICE_SPECIAL_COMMANDS,
   SdServiceEventListenerBase,
-  TSdServiceCommand,
 } from "@simplysm/sd-service-common";
+import { SdServiceTransport } from "./SdServiceTransport";
 
 type TEventCallback = (data: any) => PromiseLike<void> | void;
 
@@ -20,12 +20,7 @@ export class SdServiceEventBus {
   // key -> { name, info, cb }
   #listenerMap = new Map<string, IEventListenerEntry>();
 
-  constructor(
-    private readonly sendCommandAsync: <R = unknown>(
-      command: TSdServiceCommand,
-      params: unknown[],
-    ) => Promise<R>,
-  ) {}
+  constructor(private readonly _transport: SdServiceTransport) {}
 
   /**
    * 이벤트 리스너 등록
@@ -39,7 +34,7 @@ export class SdServiceEventBus {
   ): Promise<string> {
     const key = Uuid.new().toString();
 
-    await this.sendCommandAsync(SD_SERVICE_SPECIAL_COMMANDS.ADD_EVENT_LISTENER, [
+    await this._transport.sendCommandAsync(SD_SERVICE_SPECIAL_COMMANDS.ADD_EVENT_LISTENER, [
       key,
       eventListenerType.name,
       info,
@@ -58,7 +53,9 @@ export class SdServiceEventBus {
    * 이벤트 리스너 제거
    */
   async removeListenerAsync(key: string): Promise<void> {
-    await this.sendCommandAsync(SD_SERVICE_SPECIAL_COMMANDS.REMOVE_EVENT_LISTENER, [key]);
+    await this._transport.sendCommandAsync(SD_SERVICE_SPECIAL_COMMANDS.REMOVE_EVENT_LISTENER, [
+      key,
+    ]);
     this.#listenerMap.delete(key);
   }
 
@@ -68,7 +65,7 @@ export class SdServiceEventBus {
    */
   async reRegisterAllAsync(): Promise<void> {
     for (const [key, value] of this.#listenerMap.entries()) {
-      await this.sendCommandAsync(SD_SERVICE_SPECIAL_COMMANDS.ADD_EVENT_LISTENER, [
+      await this._transport.sendCommandAsync(SD_SERVICE_SPECIAL_COMMANDS.ADD_EVENT_LISTENER, [
         key,
         value.name,
         value.info,

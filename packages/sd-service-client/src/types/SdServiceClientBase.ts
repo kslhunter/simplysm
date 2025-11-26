@@ -1,4 +1,4 @@
-import { SdServiceClient } from "./SdServiceClient";
+import { SdServiceClient } from "../SdServiceClient";
 
 export class SdServiceClientBase<T extends { [K in keyof T]: (...args: any[]) => any }> {
   constructor(

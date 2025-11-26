@@ -11,7 +11,7 @@ export class SdCliIndexFileGenerator {
       : undefined;
 
     const watcher = await SdFsWatcher.watchAsync([path.resolve(pkgPath, "src")], {
-      ignored: [indexFilePath],
+      ignored: await this.#getExcludesAsync(pkgPath, excludes),
     });
     watcher.onChange({ delay: 50 }, async (changeInfos) => {
       if (changeInfos.some((item) => ["add", "addDir", "unlink", "unlinkDir"].includes(item.event)))
@@ -60,19 +60,30 @@ export class SdCliIndexFileGenerator {
   }
 
   async #getFilePathsAsync(pkgPath: string, excludes?: string[]) {
-    const indexFilePath = path.resolve(pkgPath, "src/index.ts");
+    /*const indexFilePath = path.resolve(pkgPath, "src/index.ts");
 
     const tsconfig = await FsUtils.readJsonAsync(path.resolve(pkgPath, "tsconfig.json"));
     const entryFilePaths: string[] =
-      tsconfig.files?.map((item) => path.resolve(pkgPath, item)) ?? [];
+      tsconfig.files?.map((item) => path.resolve(pkgPath, item)) ?? [];*/
 
-    return (
-      await FsUtils.globAsync(path.resolve(pkgPath, "src/**/*{.ts,.tsx}"), {
-        nodir: true,
-        ignore: [...(tsconfig.excludes ?? []), ...(excludes ?? [])],
-      })
-    ).filter(
-      (item) => !entryFilePaths.includes(item) && item !== indexFilePath && !item.endsWith(".d.ts"),
-    );
+    return await FsUtils.globAsync(path.resolve(pkgPath, "src/**/*{.ts,.tsx}"), {
+      nodir: true,
+      ignore: await this.#getExcludesAsync(pkgPath, excludes),
+    });
+  }
+
+  async #getExcludesAsync(pkgPath: string, excludes?: string[]) {
+    const indexFilePath = path.resolve(pkgPath, "src/index.ts");
+
+    const tsconfig = await FsUtils.readJsonAsync(path.resolve(pkgPath, "tsconfig.json"));
+
+    return [
+      ...(tsconfig.excludes ?? []),
+      ...(excludes ?? []),
+      indexFilePath,
+      path.resolve(pkgPath, "src/**/*.d.ts"),
+      path.resolve(pkgPath, "src/index.ts"),
+      path.resolve(pkgPath, "src/internal/**/*{.ts,.tsx}"),
+    ].map((item) => item.replace(/\\/g, "/"));
   }
 }

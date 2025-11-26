@@ -4,7 +4,7 @@ import {
   ISmtpClientSendByDefaultOption,
   ISmtpClientSendOption,
 } from "@simplysm/sd-service-common";
-import { SdServiceClientBase } from "../SdServiceClientBase";
+import { SdServiceClientBase } from "../types/SdServiceClientBase";
 
 export class SdSmtpClientServiceClient extends SdServiceClientBase<ISdSmtpClientService> {
   constructor(client: SdServiceClient) {

@@ -3,14 +3,13 @@ import { SdServiceBase } from "../types";
 import { ICryptoConfig, ISdCryptoService } from "@simplysm/sd-service-common";
 
 export class SdCryptoService extends SdServiceBase implements ISdCryptoService {
-  encrypt(data: string | Buffer): string {
-    const config = this.#getConf();
-
+  async encrypt(data: string | Buffer): Promise<string> {
+    const config = await this.#getConf();
     return crypto.createHmac("sha256", config.key).update(data).digest("hex");
   }
 
-  encryptAes(data: Buffer): string {
-    const config = this.#getConf();
+  async encryptAes(data: Buffer): Promise<string> {
+    const config = await this.#getConf();
 
     const iv = crypto.randomBytes(16);
     const cipher = crypto.createCipheriv("aes-256-cbc", Buffer.from(config.key), iv);
@@ -19,8 +18,8 @@ export class SdCryptoService extends SdServiceBase implements ISdCryptoService {
     return iv.toString("hex") + ":" + Buffer.concat([encrypted, cipher.final()]).toString("hex");
   }
 
-  decryptAes(encText: string): Buffer {
-    const config = this.#getConf();
+  async decryptAes(encText: string): Promise<Buffer> {
+    const config = await this.#getConf();
 
     const textParts = encText.split(":");
     const iv = Buffer.from(textParts.shift()!, "hex");
@@ -31,13 +30,7 @@ export class SdCryptoService extends SdServiceBase implements ISdCryptoService {
     return Buffer.concat([decrypted, decipher.final()]);
   }
 
-  #getConf() {
-    const config = this.server.getConfig(this.request?.clientName)["crypto"] as
-      | ICryptoConfig
-      | undefined;
-    if (config === undefined) {
-      throw new Error("암호화 설정을 찾을 수 없습니다.");
-    }
-    return config;
+  async #getConf() {
+    return await this.getConfig<ICryptoConfig>("crypto");
   }
 }

@@ -1,4 +1,4 @@
-export interface IReconnectStrategy {
+export interface ISdServiceReconnectStrategy {
   /**
    * 해당 reconnectCount에서 재연결을 시도할지 여부
    */
@@ -15,7 +15,7 @@ export interface IReconnectStrategy {
  * - 기존 구현과 동일하게 최대 100번까지 재연결
  * - 각 시도 사이에 2초 대기
  */
-export class DefaultReconnectStrategy implements IReconnectStrategy {
+export class SdServiceDefaultReconnectStrategy implements ISdServiceReconnectStrategy {
   shouldReconnect(reconnectCount: number): boolean {
     // 기존: reconnectCount > 100 이면 종료
     return reconnectCount <= 100;

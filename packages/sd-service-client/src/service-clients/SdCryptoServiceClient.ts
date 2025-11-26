@@ -1,5 +1,5 @@
 import { SdServiceClient } from "../SdServiceClient";
-import { SdServiceClientBase } from "../SdServiceClientBase";
+import { SdServiceClientBase } from "../types/SdServiceClientBase";
 import { ISdCryptoService } from "@simplysm/sd-service-common";
 
 export class SdCryptoServiceClient extends SdServiceClientBase<ISdCryptoService> {

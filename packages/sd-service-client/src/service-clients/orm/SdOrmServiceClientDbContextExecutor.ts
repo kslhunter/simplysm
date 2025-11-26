@@ -8,7 +8,7 @@ import {
 } from "@simplysm/sd-orm-common";
 import { ISdOrmService, TDbConnOptions } from "@simplysm/sd-service-common";
 import { SdServiceClient } from "../../SdServiceClient";
-import { SdServiceClientBase } from "../../SdServiceClientBase";
+import { SdServiceClientBase } from "../../types/SdServiceClientBase";
 
 export class SdOrmServiceClientDbContextExecutor
   extends SdServiceClientBase<ISdOrmService>
@@ -18,7 +18,7 @@ export class SdOrmServiceClientDbContextExecutor
 
   constructor(
     client: SdServiceClient,
-    private readonly _opt: TDbConnOptions,
+    private readonly _opt: TDbConnOptions & { configName: string },
   ) {
     super(client, "SdOrmService");
   }

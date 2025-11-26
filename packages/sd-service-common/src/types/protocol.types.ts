@@ -63,6 +63,9 @@ export interface ISdServiceRequest {
   params: any;
 }
 
+/**
+ * 분할된 요청 (요청을 받는곳에서 합쳐야함)
+ */
 export interface ISdServiceSplitRequest {
   name: "request-split";
   uuid: string;
@@ -71,12 +74,18 @@ export interface ISdServiceSplitRequest {
   body: string;
 }
 
+/**
+ * 분할된 요청에 대한 응답
+ */
 export interface ISdServiceResponseForSplit {
   name: "response-for-split";
   reqUuid: string;
   completedSize: number;
 }
 
+/**
+ * 분할된 응답 (응답을 받는곳에서 합쳐야함)
+ */
 export interface ISdServiceSplitResponse {
   name: "response-split";
   reqUuid: string;
