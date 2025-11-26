@@ -5,7 +5,9 @@ import { DateTime, JsonConvert, Type } from "@simplysm/sd-core-common";
 import {
   ISdServiceRequest,
   ISdServiceSplitRequest,
+  SD_SERVICE_MAX_MESSAGE_SIZE,
   SD_SERVICE_SPECIAL_COMMANDS,
+  SD_SERVICE_SPLIT_CHUNK_SIZE,
   SdServiceCommandHelper,
   SdServiceEventListenerBase,
   TSdServiceC2SMessage,
@@ -364,8 +366,8 @@ export class SdWebsocketController {
   #send(client: WebSocket, cmd: TSdServiceS2CMessage) {
     const cmdJson = JsonConvert.stringify(cmd);
 
-    if (cmd.name === "response" && cmdJson.length > 3 * 1000 * 1000) {
-      const splitSize = 300 * 1000;
+    if (cmd.name === "response" && cmdJson.length > SD_SERVICE_MAX_MESSAGE_SIZE) {
+      const splitSize = SD_SERVICE_SPLIT_CHUNK_SIZE;
 
       let index = 0;
       let currSize = 0;

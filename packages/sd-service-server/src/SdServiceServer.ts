@@ -3,7 +3,12 @@ import http from "http";
 import url from "url";
 import path from "path";
 import { FsUtils, SdLogger } from "@simplysm/sd-core-node";
-import { ISdServiceServerOptions, SdServiceBase } from "./types";
+import {
+  ISdServiceActivationContext,
+  ISdServiceActivator,
+  ISdServiceServerOptions,
+  SdServiceBase,
+} from "./types";
 import { EventEmitter } from "events";
 import { JsonConvert, ObjectUtils, Type } from "@simplysm/sd-core-common";
 import { ISdServiceRequest, SdServiceEventListenerBase } from "@simplysm/sd-service-common";
@@ -33,6 +38,25 @@ export class SdServiceServer extends EventEmitter {
 
   constructor(readonly options: ISdServiceServerOptions) {
     super();
+  }
+
+  #activateService<T extends SdServiceBase>(
+    serviceClass: Type<T>,
+    ctx: ISdServiceActivationContext,
+  ): T {
+    const activator: ISdServiceActivator | undefined = this.options.serviceActivator;
+
+    if (activator) {
+      return activator.create(serviceClass, ctx);
+    }
+
+    // 기본 구현: 기존 코드와 동일하게 new 해서 필드 세팅
+    const service = new serviceClass();
+    service.server = ctx.server;
+    service.client = ctx.client;
+    service.request = ctx.request;
+    service.webHeaders = ctx.webHeaders;
+    return service;
   }
 
   getConfig(clientName?: string): Record<string, any | undefined> {
@@ -145,11 +169,13 @@ export class SdServiceServer extends EventEmitter {
     if (!serviceClass) {
       throw new Error(`서비스[${def.serviceName}]를 찾을 수 없습니다.`);
     }
-    const service: SdServiceBase = new serviceClass();
-    service.server = this;
-    service.request = def.request;
-    service.client = def.client;
-    service.webHeaders = def.webHeaders;
+
+    const service = this.#activateService(serviceClass, {
+      server: this,
+      client: def.client,
+      request: def.request,
+      webHeaders: def.webHeaders,
+    });
 
     // 메소드 가져오기
     const method = service[def.methodName];

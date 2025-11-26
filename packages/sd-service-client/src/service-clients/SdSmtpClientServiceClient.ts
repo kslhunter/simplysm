@@ -1,14 +1,21 @@
 import { SdServiceClient } from "../SdServiceClient";
-import { ISmtpClientSendByDefaultOption, ISmtpClientSendOption } from "@simplysm/sd-service-common";
+import {
+  ISdSmtpClientService,
+  ISmtpClientSendByDefaultOption,
+  ISmtpClientSendOption,
+} from "@simplysm/sd-service-common";
+import { SdServiceClientBase } from "../SdServiceClientBase";
 
-export class SdSmtpClientServiceClient {
-  constructor(private readonly _client: SdServiceClient) {}
-
-  async send(options: ISmtpClientSendOption): Promise<void> {
-    await this._client.sendAsync("SdSmtpClientService", "send", [options]);
+export class SdSmtpClientServiceClient extends SdServiceClientBase<ISdSmtpClientService> {
+  constructor(client: SdServiceClient) {
+    super(client, "SdSmtpClientService");
   }
 
-  async sendByConfig(configName: string, options: ISmtpClientSendByDefaultOption): Promise<void> {
-    await this._client.sendAsync("SdSmtpClientService", "sendByConfig", [configName, options]);
+  async send(options: ISmtpClientSendOption): Promise<string> {
+    return await this.call("send", [options]);
+  }
+
+  async sendByConfig(configName: string, options: ISmtpClientSendByDefaultOption): Promise<string> {
+    return await this.call("sendByConfig", [configName, options]);
   }
 }

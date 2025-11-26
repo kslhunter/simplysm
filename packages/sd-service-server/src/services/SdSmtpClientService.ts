@@ -1,12 +1,13 @@
 import nodemailer from "nodemailer";
 import {
+  ISdSmtpClientService,
   ISmtpClientDefaultConfig,
   ISmtpClientSendByDefaultOption,
   ISmtpClientSendOption,
 } from "@simplysm/sd-service-common";
 import { SdServiceBase } from "../types";
 
-export class SdSmtpClientService extends SdServiceBase {
+export class SdSmtpClientService extends SdServiceBase implements ISdSmtpClientService {
   async send(options: ISmtpClientSendOption): Promise<string> {
     return await new Promise<string>((resolve, reject) => {
       const transport = nodemailer.createTransport({

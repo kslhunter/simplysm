@@ -1,7 +1,11 @@
 import { SdServiceClient } from "../SdServiceClient";
+import { SdServiceClientBase } from "../SdServiceClientBase";
+import { ISdAutoUpdateService } from "@simplysm/sd-service-common";
 
-export class SdAutoUpdateServiceClient {
-  constructor(private readonly _client: SdServiceClient) {}
+export class SdAutoUpdateServiceClient extends SdServiceClientBase<ISdAutoUpdateService> {
+  constructor(client: SdServiceClient) {
+    super(client, "SdAutoUpdateService");
+  }
 
   async getLastVersion(platform: string): Promise<
     | {
@@ -10,6 +14,6 @@ export class SdAutoUpdateServiceClient {
       }
     | undefined
   > {
-    return await this._client.sendAsync("SdAutoUpdateService", "getLastVersion", [platform, true]);
+    return await this.call("getLastVersion", [platform, true]);
   }
 }

@@ -1,17 +1,21 @@
 import { SdServiceClient } from "../SdServiceClient";
+import { SdServiceClientBase } from "../SdServiceClientBase";
+import { ISdCryptoService } from "@simplysm/sd-service-common";
 
-export class SdCryptoServiceClient {
-  constructor(private readonly _client: SdServiceClient) {}
+export class SdCryptoServiceClient extends SdServiceClientBase<ISdCryptoService> {
+  constructor(client: SdServiceClient) {
+    super(client, "SdCryptoService");
+  }
 
   async encrypt(data: string | Buffer): Promise<string> {
-    return await this._client.sendAsync("SdCryptoService", "encrypt", [data]);
+    return await this.call("encrypt", [data]);
   }
 
   async encryptAes(data: Buffer): Promise<string> {
-    return await this._client.sendAsync("SdCryptoService", "encryptAes", [data]);
+    return await this.call("encryptAes", [data]);
   }
 
   async decryptAes(encText: string): Promise<Buffer> {
-    return await this._client.sendAsync("SdCryptoService", "decryptAes", [encText]);
+    return await this.call("decryptAes", [encText]);
   }
 }

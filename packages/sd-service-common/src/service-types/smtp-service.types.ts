@@ -1,3 +1,8 @@
+export interface ISdSmtpClientService {
+  send(options: ISmtpClientSendOption): Promise<string>;
+  sendByConfig(configName: string, options: ISmtpClientSendByDefaultOption): Promise<string>;
+}
+
 export interface ISmtpClientSendAttachment {
   filename: string;
   content?: Buffer;

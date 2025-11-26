@@ -6,27 +6,33 @@ import {
   TDbConnConf,
   TQueryDef,
 } from "@simplysm/sd-orm-common";
-import { TDbConnOptions } from "@simplysm/sd-service-common";
+import { ISdOrmService, TDbConnOptions } from "@simplysm/sd-service-common";
 import { SdServiceClient } from "../../SdServiceClient";
+import { SdServiceClientBase } from "../../SdServiceClientBase";
 
-export class SdOrmServiceClientDbContextExecutor implements IDbContextExecutor {
+export class SdOrmServiceClientDbContextExecutor
+  extends SdServiceClientBase<ISdOrmService>
+  implements IDbContextExecutor
+{
   #connId?: number;
 
   constructor(
-    private readonly _client: SdServiceClient,
+    client: SdServiceClient,
     private readonly _opt: TDbConnOptions,
-  ) {}
+  ) {
+    super(client, "SdOrmService");
+  }
 
   async getInfoAsync(): Promise<{
     dialect: TDbConnConf["dialect"];
     database?: string;
     schema?: string;
   }> {
-    return await this._client.sendAsync("SdOrmService", "getInfo", [this._opt]);
+    return await this.call("getInfo", [this._opt]);
   }
 
   async connectAsync(): Promise<void> {
-    this.#connId = await this._client.sendAsync("SdOrmService", "connect", [this._opt]);
+    this.#connId = await this.call("connect", [this._opt]);
   }
 
   async beginTransactionAsync(isolationLevel?: ISOLATION_LEVEL): Promise<void> {
@@ -34,10 +40,7 @@ export class SdOrmServiceClientDbContextExecutor implements IDbContextExecutor {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
 
-    await this._client.sendAsync("SdOrmService", "beginTransaction", [
-      this.#connId,
-      isolationLevel,
-    ]);
+    await this.call("beginTransaction", [this.#connId, isolationLevel]);
   }
 
   async commitTransactionAsync(): Promise<void> {
@@ -45,7 +48,7 @@ export class SdOrmServiceClientDbContextExecutor implements IDbContextExecutor {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
 
-    await this._client.sendAsync("SdOrmService", "commitTransaction", [this.#connId]);
+    await this.call("commitTransaction", [this.#connId]);
   }
 
   async rollbackTransactionAsync(): Promise<void> {
@@ -53,7 +56,7 @@ export class SdOrmServiceClientDbContextExecutor implements IDbContextExecutor {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
 
-    await this._client.sendAsync("SdOrmService", "rollbackTransaction", [this.#connId]);
+    await this.call("rollbackTransaction", [this.#connId]);
   }
 
   async closeAsync(): Promise<void> {
@@ -61,7 +64,7 @@ export class SdOrmServiceClientDbContextExecutor implements IDbContextExecutor {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
 
-    await this._client.sendAsync("SdOrmService", "close", [this.#connId]);
+    await this.call("close", [this.#connId]);
   }
 
   async executeDefsAsync(
@@ -72,11 +75,7 @@ export class SdOrmServiceClientDbContextExecutor implements IDbContextExecutor {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
 
-    return await this._client.sendAsync("SdOrmService", "executeDefs", [
-      this.#connId,
-      defs,
-      options,
-    ]);
+    return await this.call("executeDefs", [this.#connId, defs, options]);
   }
 
   async executeAsync(queries: string[]): Promise<any[][]> {
@@ -84,7 +83,7 @@ export class SdOrmServiceClientDbContextExecutor implements IDbContextExecutor {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
 
-    return await this._client.sendAsync("SdOrmService", "execute", [this.#connId, queries]);
+    return await this.call("execute", [this.#connId, queries]);
   }
 
   async bulkInsertAsync(
@@ -96,12 +95,7 @@ export class SdOrmServiceClientDbContextExecutor implements IDbContextExecutor {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
 
-    return await this._client.sendAsync("SdOrmService", "bulkInsert", [
-      this.#connId,
-      tableName,
-      columnDefs,
-      records,
-    ]);
+    return await this.call("bulkInsert", [this.#connId, tableName, columnDefs, records]);
   }
 
   async bulkUpsertAsync(
@@ -113,11 +107,6 @@ export class SdOrmServiceClientDbContextExecutor implements IDbContextExecutor {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
 
-    return await this._client.sendAsync("SdOrmService", "bulkUpsert", [
-      this.#connId,
-      tableName,
-      columnDefs,
-      records,
-    ]);
+    return await this.call("bulkUpsert", [this.#connId, tableName, columnDefs, records]);
   }
 }

@@ -4,7 +4,9 @@ import { ISdServiceClientConnectionConfig } from "./ISdServiceClientConnectionCo
 import { JsonConvert, Type, Uuid, Wait } from "@simplysm/sd-core-common";
 import {
   ISdServiceErrorBody,
+  SD_SERVICE_MAX_MESSAGE_SIZE,
   SD_SERVICE_SPECIAL_COMMANDS,
+  SD_SERVICE_SPLIT_CHUNK_SIZE,
   SdServiceCommandHelper,
   SdServiceEventListenerBase,
   TSdServiceC2SMessage,
@@ -355,10 +357,10 @@ export class SdServiceClient extends EventEmitter {
       };
       this.#ws.on(`message`, msgFn);
 
-      if (reqText.length > 3 * 1000 * 1000) {
+      if (reqText.length > SD_SERVICE_MAX_MESSAGE_SIZE) {
         this.emit("request-progress", { uuid, fullSize: reqText.length, completedSize: 0 });
 
-        const splitSize = 300 * 1000;
+        const splitSize = SD_SERVICE_SPLIT_CHUNK_SIZE;
 
         let index = 0;
         let currSize = 0;

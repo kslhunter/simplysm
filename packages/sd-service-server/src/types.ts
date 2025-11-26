@@ -17,13 +17,25 @@ export interface ISdServiceServerOptions {
     pfxBuffer: Buffer | (() => Promise<Buffer> | Buffer);
     passphrase: string;
   };
+  serviceActivator?: ISdServiceActivator;
 }
 
-export class SdServiceBase {
+export abstract class SdServiceBase {
   server!: SdServiceServer;
 
   client?: WebSocket; // API로 접근한 경우 undefined
   request?: ISdServiceRequest; // API로 접근한 경우 undefined
 
   webHeaders?: http.IncomingHttpHeaders; // Socket로 접근한 경우 undefined
+}
+
+export interface ISdServiceActivationContext {
+  server: SdServiceServer;
+  client?: WebSocket;
+  request?: ISdServiceRequest;
+  webHeaders?: http.IncomingHttpHeaders;
+}
+
+export interface ISdServiceActivator {
+  create<T extends SdServiceBase>(serviceType: Type<T>, ctx: ISdServiceActivationContext): T;
 }

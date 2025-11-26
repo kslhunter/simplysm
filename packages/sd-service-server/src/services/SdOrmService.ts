@@ -12,9 +12,9 @@ import {
 } from "@simplysm/sd-orm-common";
 import { SdLogger } from "@simplysm/sd-core-node";
 import { SdServiceBase } from "../types";
-import { TDbConnOptions } from "@simplysm/sd-service-common";
+import { ISdOrmService, TDbConnOptions } from "@simplysm/sd-service-common";
 
-export class SdOrmService extends SdServiceBase {
+export class SdOrmService extends SdServiceBase implements ISdOrmService {
   #logger = SdLogger.get(["simplysm", "sd-service-server", this.constructor.name]);
 
   static #conns = new Map<number, IDbConn>();
@@ -154,7 +154,7 @@ export class SdOrmService extends SdServiceBase {
     tableName: string,
     columnDefs: IQueryColumnDef[],
     records: Record<string, any>[],
-  ) {
+  ): Promise<void> {
     const conn = SdOrmService.#conns.get(connId);
     if (!conn) {
       throw new Error("DB에 연결되어있지 않습니다.");
@@ -168,7 +168,7 @@ export class SdOrmService extends SdServiceBase {
     tableName: string,
     columnDefs: IQueryColumnDef[],
     records: Record<string, any>[],
-  ) {
+  ): Promise<void> {
     const conn = SdOrmService.#conns.get(connId);
     if (!conn) {
       throw new Error("DB에 연결되어있지 않습니다.");
