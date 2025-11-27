@@ -100,6 +100,11 @@ export class SdWebsocketController {
           }
         });
 
+        // 에러 핸들러 (이게 없으면 클라이언트 연결 끊길 때 서버가 죽을 수 있음)
+        client.on("error", (err) => {
+          this.#logger.error("WebSocket 클라이언트 오류 발생", err);
+        });
+
         // 닫힘 핸들러
         client.on("close", (code) => {
           this.#logger.debug(

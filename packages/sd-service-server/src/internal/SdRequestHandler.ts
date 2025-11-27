@@ -35,13 +35,18 @@ export class SdRequestHandler {
         throw new Error("JSON query parameter required");
       params = JsonConvert.parse(urlObj.query["json"]);
     } else if (req.method === "POST") {
-      const body = await new Promise<Buffer>((resolve) => {
+      const body = await new Promise<Buffer>((resolve, reject) => {
         let tmp = Buffer.from([]);
         req.on("data", (chunk) => {
           tmp = Buffer.concat([tmp, chunk]);
         });
         req.on("end", () => {
           resolve(tmp);
+        });
+
+        // 요청 수신 중 에러 발생 시 처리
+        req.on("error", (err) => {
+          reject(err);
         });
       });
       params = JsonConvert.parse(body.toString());

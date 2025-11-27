@@ -84,6 +84,11 @@ export class SdServiceServer extends EventEmitter {
         await this.#onWebRequestAsync(req, res);
       });
 
+      // HTTP 서버 수준의 에러 핸들링
+      this.#httpServer.on("error", (err) => {
+        this.#logger.error("HTTP 서버 오류 발생", err);
+      });
+
       // WebSocket 컨트롤러에 RequestHandler의 메소드 전달
       this.#ws = new SdWebsocketController(
         this.#httpServer,
