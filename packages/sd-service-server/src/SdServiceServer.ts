@@ -1,12 +1,9 @@
-import http from "http";
-import url from "url";
 import path from "path";
 import { FsUtils, SdLogger } from "@simplysm/sd-core-node";
 import { ISdServiceServerOptions } from "./types";
 import { EventEmitter } from "events";
 import { ObjectUtils, Type } from "@simplysm/sd-core-common";
 import { SdServiceEventListenerBase } from "@simplysm/sd-service-common";
-import { SdWebRequestError } from "./SdWebRequestError";
 import { SdWebsocketController } from "./internal/SdWebsocketController";
 import { SdStaticFileHandler } from "./internal/SdStaticFileHandler";
 import { SdRequestHandler } from "./internal/SdRequestHandler";
@@ -88,16 +85,34 @@ export class SdServiceServer extends EventEmitter {
       }
     }
 
-    this.#fastify.all("*", async (req, res) => {
-      // Fastify의 자동 응답 방지 (수동으로 raw 응답을 제어하겠다고 선언)
-      res.hijack();
-      // Fastify Request/Response를 Node Raw 객체처럼 다룸
-      // 주의: Fastify는 기본적으로 raw request를 req.raw로 가지고 있음
-      await this.#onWebRequestAsync(req.raw, res.raw);
+    // CORS Preflight 처리 (localhost 개발용)
+    this.#fastify.options("*", async (req, reply) => {
+      if (req.headers.origin?.includes("://localhost")) {
+        reply.header("Access-Control-Allow-Origin", "*");
+        reply.status(204).send();
+      }
+    });
+
+    this.#fastify.get("/api/:service/:method", async (req, reply) => {
+      await this.#requestHandler.handleAsync(req, reply);
+    });
+
+    this.#fastify.post("/api/:service/:method", async (req, reply) => {
+      await this.#requestHandler.handleAsync(req, reply);
+    });
+
+    this.#fastify.post("/upload", async (req, reply) => {
+      // busboy는 raw request stream이 필요하므로 req.raw 전달
+      await this.#uploadHandler.handleAsync(req.raw, reply.raw);
+    });
+
+    this.#fastify.setNotFoundHandler(async (req, reply) => {
+      // Fastify Request/Reply에서 Raw 객체를 꺼내 기존 핸들러에 전달
+      // req.url은 쿼리스트링을 포함한 전체 URL을 담고 있으므로 그대로 사용 가능
+      this.#staticFileHandler.handle(req.raw, reply.raw, req.url);
     });
 
     // HTTP 서버 수준의 에러 핸들링
-    // Fastify는 .server 속성으로 raw Node.js Server 객체를 노출합니다.
     this.#fastify.server.on("error", (err) => {
       this.#logger.error("HTTP 서버 오류 발생", err);
     });
@@ -136,63 +151,5 @@ export class SdServiceServer extends EventEmitter {
     data: T["data"],
   ) {
     this.#ws?.emit(eventType, infoSelector, data);
-  }
-
-  async #onWebRequestAsync(req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {
-    try {
-      const urlObj = url.parse(req.url!, true, false);
-      const urlPath = decodeURI(urlObj.pathname!.slice(1));
-      const urlPathChain = urlPath.split("/");
-
-      // 라우팅 로직
-      if (urlPathChain[0] === "ws") {
-        if (req.headers.upgrade?.toLowerCase() !== "websocket") {
-          res.writeHead(426, { "Content-Type": "text/plain" });
-          res.end("Upgrade Required");
-          return;
-        }
-      }
-
-      if (urlPathChain[0] === "api") {
-        const handled = await this.#requestHandler.handleRequestAsync(
-          req,
-          res,
-          urlObj,
-          urlPathChain,
-        );
-        if (handled) return;
-      }
-
-      if (urlPathChain[0] === "upload") {
-        await this.#uploadHandler.handleAsync(req, res);
-        return;
-      }
-
-      this.#staticFileHandler.handle(req, res, urlPath);
-    } catch (err) {
-      if (err instanceof SdWebRequestError) {
-        res.writeHead(err.statusCode);
-        res.end(err.message);
-        this.#logger.error(`[${err.statusCode}]\n${err.message}`, err);
-      } else {
-        const errorMessage = "요청 처리중 오류가 발생하였습니다.";
-        this.#responseErrorHtml(res, 405, errorMessage);
-        this.#logger.error(`[405] ${errorMessage}`, err);
-      }
-    }
-  }
-
-  #responseErrorHtml(res: http.ServerResponse, code: number, message: string): void {
-    res.writeHead(code);
-    res.end(`
-<!DOCTYPE html>
-<html>
-<head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta charset="UTF-8">
-    <title>${code}: ${message}</title>
-</head>
-<body>${code}: ${message}</body>
-</html>`);
   }
 }

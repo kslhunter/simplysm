@@ -1,77 +1,52 @@
 import * as http from "http";
-import * as url from "url";
 import { SdLogger } from "@simplysm/sd-core-node";
 import { JsonConvert, Type } from "@simplysm/sd-core-common";
 import { ISdServiceRequest } from "@simplysm/sd-service-common";
 import { SdServiceServer } from "../SdServiceServer";
 import { ISdServiceActivationContext, ISdServiceActivator, SdServiceBase } from "../types";
 import { WebSocket } from "ws";
+import { FastifyReply, FastifyRequest } from "fastify";
 
 export class SdRequestHandler {
   readonly #logger = SdLogger.get(["simplysm", "sd-service-server", "SdRequestHandler"]);
 
   constructor(private readonly _server: SdServiceServer) {}
 
-  async handleRequestAsync(
-    req: http.IncomingMessage,
-    res: http.ServerResponse,
-    urlObj: url.UrlWithParsedQuery,
-    urlPathChain: string[],
-  ): Promise<boolean> {
-    // 1. CORS Preflight (OPTIONS)
-    if (req.headers.origin?.includes("://localhost") && req.method === "OPTIONS") {
-      res.writeHead(204, { "Access-Control-Allow-Origin": "*" });
-      res.end();
-      return true;
-    }
+  async handleAsync(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+    // 1. CORS Preflight (OPTIONS) - SdServiceServer의 options 라우트에서 처리됨
 
-    const serviceName = urlPathChain[1];
-    const methodName = urlPathChain[2];
+    const params = req.params as { service: string; method: string };
+    const serviceName = params.service;
+    const methodName = params.method;
 
     // 2. 파라미터 파싱
-    let params: any[] | undefined;
+    let args: any[] | undefined;
     if (req.method === "GET") {
-      if (typeof urlObj.query["json"] !== "string")
+      const query = req.query as { json?: string };
+      if (typeof query.json !== "string") {
         throw new Error("JSON query parameter required");
-      params = JsonConvert.parse(urlObj.query["json"]);
+      }
+      args = JsonConvert.parse(query.json);
     } else if (req.method === "POST") {
-      const body = await new Promise<Buffer>((resolve, reject) => {
-        let tmp = Buffer.from([]);
-        req.on("data", (chunk) => {
-          tmp = Buffer.concat([tmp, chunk]);
-        });
-        req.on("end", () => {
-          resolve(tmp);
-        });
-
-        // 요청 수신 중 에러 발생 시 처리
-        req.on("error", (err) => {
-          reject(err);
-        });
-      });
-      params = JsonConvert.parse(body.toString());
+      // SdServiceServer에서 addContentTypeParser를 통해 JsonConvert로 이미 파싱됨
+      args = req.body as any[];
     }
 
     // 3. 서비스 실행 및 응답
-    if (params) {
+    if (args) {
       const serviceResult = await this.runMethodAsync({
         serviceName: serviceName,
         methodName,
-        params,
+        params: args,
         webHeaders: req.headers,
       });
 
       const result = serviceResult != null ? JsonConvert.stringify(serviceResult) : "undefined";
-      res.writeHead(200, {
-        "Content-Length": Buffer.from(result).length,
-        "Content-Type": "application/json",
-      });
-      res.end(result);
 
-      return true;
+      // Fastify 방식의 응답 전송
+      reply.header("Content-Type", "application/json");
+      reply.send(result);
     }
-
-    return false;
   }
 
   async runMethodAsync(def: {
