@@ -1,16 +1,17 @@
+import https from "https";
+import http from "http";
+import url from "url";
 import path from "path";
 import { FsUtils, SdLogger } from "@simplysm/sd-core-node";
 import { ISdServiceServerOptions } from "./types";
 import { EventEmitter } from "events";
 import { ObjectUtils, Type } from "@simplysm/sd-core-common";
 import { SdServiceEventListenerBase } from "@simplysm/sd-service-common";
+import { SdWebRequestError } from "./SdWebRequestError";
 import { SdWebsocketController } from "./internal/SdWebsocketController";
 import { SdStaticFileHandler } from "./internal/SdStaticFileHandler";
 import { SdRequestHandler } from "./internal/SdRequestHandler";
 import { SdUploadHandler } from "./internal/SdUploadHandler";
-import fastify, { FastifyInstance } from "fastify";
-import fastifyMiddie from "@fastify/middie";
-import fastifyMultipart from "@fastify/multipart";
 
 export class SdServiceServer extends EventEmitter {
   isOpen = false;
@@ -25,9 +26,8 @@ export class SdServiceServer extends EventEmitter {
    */
   pathProxy: Record</* from */ string, /* to */ string | number> = {};
 
-  readonly #logger = SdLogger.get(["simplysm", "sd-service-server", this.constructor.name]); // Fastify 인스턴스
-
-  #server?: FastifyInstance;
+  readonly #logger = SdLogger.get(["simplysm", "sd-service-server", this.constructor.name]);
+  #httpServer?: http.Server | https.Server;
   #ws?: SdWebsocketController;
 
   // 핸들러 인스턴스
@@ -66,52 +66,41 @@ export class SdServiceServer extends EventEmitter {
   }
 
   async listenAsync(): Promise<void> {
-    this.#logger.debug("서버 시작..." + process.env["SD_VERSION"]);
+    await new Promise<void>(async (resolve) => {
+      this.#logger.debug("서버 시작..." + process.env["SD_VERSION"]);
 
-    // 1. Fastify 인스턴스 생성 (SSL 옵션 처리)
-    const httpsOptions = this.options.ssl
-      ? {
-          pfx:
-            typeof this.options.ssl.pfxBuffer === "function"
-              ? await this.options.ssl.pfxBuffer()
-              : this.options.ssl.pfxBuffer,
+      if (this.options.ssl) {
+        const pfx =
+          typeof this.options.ssl.pfxBuffer === "function"
+            ? await this.options.ssl.pfxBuffer()
+            : this.options.ssl.pfxBuffer;
+        this.#httpServer = https.createServer({
+          pfx,
           passphrase: this.options.ssl.passphrase,
-        }
-      : null;
-    this.#server = fastify({
-      https: httpsOptions,
-    });
-
-    // 2. 미들웨어 플러그인 등록 (기존 options.middlewares 호환)
-    await this.#server.register(fastifyMiddie);
-    if (this.options.middlewares) {
-      for (const mdw of this.options.middlewares) {
-        this.#server.use(mdw);
+        });
+      } else {
+        this.#httpServer = http.createServer();
       }
-    }
+      // 요청 처리 로직 간소화
+      this.#httpServer.on("request", async (req, res) => {
+        await this.#onWebRequestAsync(req, res);
+      });
 
-    // 3. Multipart(업로드) 플러그인 등록
-    await this.#server.register(fastifyMultipart);
+      // HTTP 서버 수준의 에러 핸들링
+      this.#httpServer.on("error", (err) => {
+        this.#logger.error("HTTP 서버 오류 발생", err);
+      });
 
-    // 4. 각 핸들러 바인딩 (라우트 등록)
-    this.#uploadHandler.bind(this.#server);
-    this.#requestHandler.bind(this.#server);
-    this.#staticFileHandler.bind(this.#server); // 정적 파일은 가장 마지막에 (우선순위)
+      // WebSocket 컨트롤러에 RequestHandler의 메소드 전달
+      this.#ws = new SdWebsocketController(
+        this.#httpServer,
+        async (def) => await this.#requestHandler.runMethodAsync(def),
+      );
 
-    // 5. 에러 핸들링
-    this.#server.setErrorHandler((error, request, reply) => {
-      this.#logger.error("Server Error", error);
-      reply.status(500).send({ error: "Internal Server Error", message: error?.["message"] });
+      this.#httpServer.listen(this.options.port, () => {
+        resolve();
+      });
     });
-
-    // 6. 서버 시작
-    await this.#server.listen({ port: this.options.port });
-
-    // 7. 웹소켓 컨트롤러 연결 (Fastify의 raw Node Server 객체 전달)
-    this.#ws = new SdWebsocketController(
-      this.#server.server,
-      async (def) => await this.#requestHandler.runMethodAsync(def),
-    );
 
     this.isOpen = true;
     this.#logger.debug("서버 시작됨");
@@ -120,7 +109,23 @@ export class SdServiceServer extends EventEmitter {
 
   async closeAsync(): Promise<void> {
     await this.#ws?.closeAsync();
-    await this.#server?.close();
+
+    await new Promise<void>((resolve, reject) => {
+      if (!this.#httpServer || !this.#httpServer.listening) {
+        resolve();
+        return;
+      }
+
+      this.#httpServer.close((err) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+
+        resolve();
+      });
+    });
+
     this.isOpen = false;
     this.#logger.debug("서버 종료됨");
     this.emit("close");
@@ -137,5 +142,79 @@ export class SdServiceServer extends EventEmitter {
     data: T["data"],
   ) {
     this.#ws?.emit(eventType, infoSelector, data);
+  }
+
+  async #onWebRequestAsync(req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {
+    try {
+      if (this.options.middlewares) {
+        for (const optMdw of this.options.middlewares) {
+          await new Promise<void>((resolve, reject) => {
+            optMdw(req, res, (err) => {
+              if (err != null) {
+                reject(err);
+                return;
+              }
+
+              resolve();
+            });
+          });
+          if (res.writableEnded) return;
+        }
+      }
+
+      const urlObj = url.parse(req.url!, true, false);
+      const urlPath = decodeURI(urlObj.pathname!.slice(1));
+      const urlPathChain = urlPath.split("/");
+
+      // 라우팅 로직
+      if (urlPathChain[0] === "ws") {
+        if (req.headers.upgrade?.toLowerCase() !== "websocket") {
+          res.writeHead(426, { "Content-Type": "text/plain" });
+          res.end("Upgrade Required");
+          return;
+        }
+      }
+
+      if (urlPathChain[0] === "api") {
+        const handled = await this.#requestHandler.handleRequestAsync(
+          req,
+          res,
+          urlObj,
+          urlPathChain,
+        );
+        if (handled) return;
+      }
+
+      if (urlPathChain[0] === "upload") {
+        await this.#uploadHandler.handleAsync(req, res);
+        return;
+      }
+
+      this.#staticFileHandler.handle(req, res, urlPath);
+    } catch (err) {
+      if (err instanceof SdWebRequestError) {
+        res.writeHead(err.statusCode);
+        res.end(err.message);
+        this.#logger.error(`[${err.statusCode}]\n${err.message}`, err);
+      } else {
+        const errorMessage = "요청 처리중 오류가 발생하였습니다.";
+        this.#responseErrorHtml(res, 405, errorMessage);
+        this.#logger.error(`[405] ${errorMessage}`, err);
+      }
+    }
+  }
+
+  #responseErrorHtml(res: http.ServerResponse, code: number, message: string): void {
+    res.writeHead(code);
+    res.end(`
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <title>${code}: ${message}</title>
+</head>
+<body>${code}: ${message}</body>
+</html>`);
   }
 }

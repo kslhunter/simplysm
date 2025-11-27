@@ -1,67 +1,112 @@
 import * as http from "http";
 import * as path from "path";
-import { SdLogger } from "@simplysm/sd-core-node";
+import { FsUtils, SdLogger } from "@simplysm/sd-core-node";
 import { SdServiceServer } from "../SdServiceServer";
-import { FastifyInstance } from "fastify";
-import fastifyStatic from "@fastify/static";
+import send from "send";
 
 export class SdStaticFileHandler {
   readonly #logger = SdLogger.get(["simplysm", "sd-service-server", "SdStaticFileHandler"]);
 
   constructor(private readonly _server: SdServiceServer) {}
 
-  bind(server: FastifyInstance) {
-    // 1. Path Proxy 등록 (특정 경로를 다른 로컬 경로로 매핑)
-    for (const [urlPath, target] of Object.entries(this._server.pathProxy)) {
-      if (typeof target === "string") {
-        // 별도의 정적 파일 서빙 인스턴스 등록
-        server.register(fastifyStatic, {
-          root: target,
-          prefix: urlPath, // 예: /client1
-          decorateReply: false, // 충돌 방지
-          index: "index.html",
-        });
-      } else if (typeof target === "number") {
-        // 포트 포워딩 (간단한 프록시 구현)
-        server.all(urlPath + "/*", (req, reply) => {
-          // Fastify req.raw, reply.raw를 사용하여 기존 http.request 프록시 로직 재사용 가능
-          // 또는 @fastify/http-proxy 사용 권장
-          const proxyReq = http.request(
-            {
-              port: target,
-              path: req.url,
-              method: req.method,
-              headers: req.headers,
-            },
-            (proxyRes) => {
-              reply.raw.writeHead(proxyRes.statusCode!, proxyRes.headers);
-              proxyRes.pipe(reply.raw);
-            },
-          );
-          req.raw.pipe(proxyReq);
-        });
-      }
+  handle(req: http.IncomingMessage, res: http.ServerResponse, urlPath: string) {
+    if (req.method !== "GET" && req.method !== "HEAD") {
+      const errorMessage = "요청이 잘못되었습니다.";
+      this.#responseErrorHtml(res, 405, errorMessage);
+      this.#logger.warn(`[405] ${errorMessage} (${req.method})`);
+      return;
     }
 
-    // 2. 기본 정적 파일 서빙 (www 폴더)
-    // 가장 마지막에 등록하여 fallback 처리
-    server.register(fastifyStatic, {
-      root: path.resolve(this._server.options.rootPath, "www"),
-      prefix: "/",
-      wildcard: true,
-      index: "index.html",
+    // 1. 프록시 및 타겟 파일 경로 결정
+    let targetFilePath: string;
+    const currPathProxyFrom = Object.keys(this._server.pathProxy).single((from) =>
+      urlPath.startsWith(from),
+    );
+
+    if (currPathProxyFrom !== undefined) {
+      // 포트 번호로 프록시 (다른 서버로 전달)
+      if (typeof this._server.pathProxy[currPathProxyFrom] === "number") {
+        const proxyReq = http.request(
+          {
+            port: this._server.pathProxy[currPathProxyFrom],
+            path: req.url,
+            method: req.method,
+            headers: req.headers,
+          },
+          (proxyRes) => {
+            if (proxyRes.statusCode === 404) {
+              res.writeHead(404, { "Content-Type": "text/html" });
+              res.end("<h1>A custom 404 page</h1>");
+              return;
+            }
+            res.writeHead(proxyRes.statusCode!, proxyRes.headers);
+            proxyRes.pipe(res, { end: true });
+          },
+        );
+        req.pipe(proxyReq, { end: true });
+        return;
+      }
+      // 경로로 매핑
+      else {
+        targetFilePath = path.resolve(
+          this._server.pathProxy[currPathProxyFrom] + urlPath.substring(currPathProxyFrom.length),
+        );
+      }
+    } else {
+      // 기본 www 폴더
+      targetFilePath = path.resolve(this._server.options.rootPath, "www", urlPath);
+    }
+
+    // 2. 디렉토리면 index.html로 변경 (SPA 지원 등을 위해)
+    // send 모듈은 디렉토리 요청 시 에러를 뱉으므로 미리 처리하거나 send 옵션 활용 가능.
+    // 기존 로직 존중하여 직접 처리:
+    if (FsUtils.exists(targetFilePath) && FsUtils.stat(targetFilePath).isDirectory()) {
+      targetFilePath = path.resolve(targetFilePath, "index.html");
+    }
+
+    // 3. send 모듈을 이용한 파일 전송 [핵심 변경]
+    // send(req, path, options)
+    // root 옵션을 주지 않으면 절대 경로로 처리합니다.
+    const stream = send(req, targetFilePath, {
+      dotfiles: "deny", // 숨김 파일(.env 등) 접근 차단 (보안)
+      acceptRanges: true, // Range Request 지원 (동영상 탐색 가능)
+      cacheControl: true, // Cache-Control 헤더 자동 생성
+      lastModified: true, // Last-Modified 헤더 자동 생성
+      etag: true, // ETag 생성
     });
 
-    // 3. SPA Fallback (파일이 없을 경우 index.html 반환) 처리
-    // @fastify/static의 not found handler 등을 활용하거나
-    // setNotFoundHandler를 통해 index.html을 서빙하도록 설정 가능
-    server.setNotFoundHandler((req, reply) => {
-      // API나 업로드가 아닌 경우 index.html 반환
-      if (!req.url.startsWith("/api") && !req.url.startsWith("/upload")) {
-        return reply.sendFile("index.html");
+    stream.on("error", (err: any) => {
+      if (err.status === 404) {
+        const errorMessage = "파일을 찾을 수 없습니다.";
+        this.#responseErrorHtml(res, 404, errorMessage);
+        this.#logger.warn(`[404] ${errorMessage} (${targetFilePath})`);
+      } else if (err.status === 403) {
+        const errorMessage = "파일을 사용할 권한이 없습니다.";
+        this.#responseErrorHtml(res, 403, errorMessage);
+        this.#logger.warn(`[403] ${errorMessage} (${targetFilePath})`);
+      } else {
+        const errorMessage = "파일 전송 중 오류가 발생했습니다.";
+        if (!res.headersSent) {
+          this.#responseErrorHtml(res, 500, errorMessage);
+        }
+        this.#logger.error(`[500] ${errorMessage}`, err);
       }
-      reply.status(404).send("Not Found");
-      return reply;
     });
+
+    stream.pipe(res);
+  }
+
+  #responseErrorHtml(res: http.ServerResponse, code: number, message: string): void {
+    res.writeHead(code);
+    res.end(`
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <title>${code}: ${message}</title>
+</head>
+<body>${code}: ${message}</body>
+</html>`);
   }
 }
