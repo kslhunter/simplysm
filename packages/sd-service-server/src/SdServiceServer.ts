@@ -1,4 +1,3 @@
-import https from "https";
 import http from "http";
 import url from "url";
 import path from "path";
@@ -12,6 +11,7 @@ import { SdWebsocketController } from "./internal/SdWebsocketController";
 import { SdStaticFileHandler } from "./internal/SdStaticFileHandler";
 import { SdRequestHandler } from "./internal/SdRequestHandler";
 import { SdUploadHandler } from "./internal/SdUploadHandler";
+import fastify, { FastifyInstance } from "fastify";
 
 export class SdServiceServer extends EventEmitter {
   isOpen = false;
@@ -27,7 +27,7 @@ export class SdServiceServer extends EventEmitter {
   pathProxy: Record</* from */ string, /* to */ string | number> = {};
 
   readonly #logger = SdLogger.get(["simplysm", "sd-service-server", this.constructor.name]);
-  #httpServer?: http.Server | https.Server;
+  #fastify?: FastifyInstance;
   #ws?: SdWebsocketController;
 
   // 핸들러 인스턴스
@@ -66,41 +66,38 @@ export class SdServiceServer extends EventEmitter {
   }
 
   async listenAsync(): Promise<void> {
-    await new Promise<void>(async (resolve) => {
-      this.#logger.debug("서버 시작..." + process.env["SD_VERSION"]);
+    this.#logger.debug("서버 시작..." + process.env["SD_VERSION"]);
 
-      if (this.options.ssl) {
-        const pfx =
-          typeof this.options.ssl.pfxBuffer === "function"
-            ? await this.options.ssl.pfxBuffer()
-            : this.options.ssl.pfxBuffer;
-        this.#httpServer = https.createServer({
-          pfx,
+    const httpsConf = this.options.ssl
+      ? {
+          pfx:
+            typeof this.options.ssl.pfxBuffer === "function"
+              ? await this.options.ssl.pfxBuffer()
+              : this.options.ssl.pfxBuffer,
           passphrase: this.options.ssl.passphrase,
-        });
-      } else {
-        this.#httpServer = http.createServer();
-      }
-      // 요청 처리 로직 간소화
-      this.#httpServer.on("request", async (req, res) => {
-        await this.#onWebRequestAsync(req, res);
-      });
+        }
+      : null;
+    this.#fastify = fastify({ https: httpsConf });
 
-      // HTTP 서버 수준의 에러 핸들링
-      this.#httpServer.on("error", (err) => {
-        this.#logger.error("HTTP 서버 오류 발생", err);
-      });
-
-      // WebSocket 컨트롤러에 RequestHandler의 메소드 전달
-      this.#ws = new SdWebsocketController(
-        this.#httpServer,
-        async (def) => await this.#requestHandler.runMethodAsync(def),
-      );
-
-      this.#httpServer.listen(this.options.port, () => {
-        resolve();
-      });
+    this.#fastify.all("*", async (req, res) => {
+      // Fastify Request/Response를 Node Raw 객체처럼 다룸
+      // 주의: Fastify는 기본적으로 raw request를 req.raw로 가지고 있음
+      await this.#onWebRequestAsync(req.raw, res.raw);
     });
+
+    // HTTP 서버 수준의 에러 핸들링
+    this.#fastify.setErrorHandler((err) => {
+      this.#logger.error("HTTP 서버 오류 발생", err);
+    });
+
+    await this.#fastify.listen({ port: this.options.port });
+
+    // WebSocket 컨트롤러에 RequestHandler의 메소드 전달
+    await this.#fastify.ready(); // 서버가 준비된 후 raw server 접근 가능
+    this.#ws = new SdWebsocketController(
+      this.#fastify.server,
+      async (def) => await this.#requestHandler.runMethodAsync(def),
+    );
 
     this.isOpen = true;
     this.#logger.debug("서버 시작됨");
@@ -109,22 +106,7 @@ export class SdServiceServer extends EventEmitter {
 
   async closeAsync(): Promise<void> {
     await this.#ws?.closeAsync();
-
-    await new Promise<void>((resolve, reject) => {
-      if (!this.#httpServer || !this.#httpServer.listening) {
-        resolve();
-        return;
-      }
-
-      this.#httpServer.close((err) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-
-        resolve();
-      });
-    });
+    await this.#fastify?.close();
 
     this.isOpen = false;
     this.#logger.debug("서버 종료됨");
