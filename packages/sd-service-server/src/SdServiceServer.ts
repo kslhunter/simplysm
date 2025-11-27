@@ -183,7 +183,7 @@ export class SdServiceServer extends EventEmitter {
         if (handled) return;
       }
 
-      await this.#staticFileHandler.handleAsync(req, res, urlPath);
+      this.#staticFileHandler.handle(req, res, urlPath);
     } catch (err) {
       if (err instanceof SdWebRequestError) {
         res.writeHead(err.statusCode);
