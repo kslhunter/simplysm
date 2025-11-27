@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/cordova-plugin-file-system",
-  "version": "12.15.20",
+  "version": "12.15.21",
   "description": "심플리즘 패키지 - Cordova File System Plugin",
   "author": "김석래",
   "repository": {
