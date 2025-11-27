@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-service-server",
-  "version": "12.15.18",
+  "version": "12.15.19",
   "description": "심플리즘 패키지 - 서비스 모듈 (서버)",
   "author": "김석래",
   "repository": {
@@ -14,11 +14,14 @@
   "types": "./dist/index.d.ts",
   "dependencies": {
     "@fastify/middie": "^9.0.3",
-    "@simplysm/sd-core-common": "12.15.18",
-    "@simplysm/sd-core-node": "12.15.18",
-    "@simplysm/sd-orm-common": "12.15.18",
-    "@simplysm/sd-orm-node": "12.15.18",
-    "@simplysm/sd-service-common": "12.15.18",
+    "@fastify/multipart": "^9.3.0",
+    "@fastify/static": "^8.3.0",
+    "@fastify/websocket": "^11.2.0",
+    "@simplysm/sd-core-common": "12.15.19",
+    "@simplysm/sd-core-node": "12.15.19",
+    "@simplysm/sd-orm-common": "12.15.19",
+    "@simplysm/sd-orm-node": "12.15.19",
+    "@simplysm/sd-service-common": "12.15.19",
     "bufferutil": "^4.0.9",
     "busboy": "^1.6.0",
     "fastify": "^5.6.2",
