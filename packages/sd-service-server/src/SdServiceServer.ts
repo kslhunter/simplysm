@@ -86,7 +86,8 @@ export class SdServiceServer extends EventEmitter {
     });
 
     // HTTP 서버 수준의 에러 핸들링
-    this.#fastify.setErrorHandler((err) => {
+    // Fastify는 .server 속성으로 raw Node.js Server 객체를 노출합니다.
+    this.#fastify.server.on("error", (err) => {
       this.#logger.error("HTTP 서버 오류 발생", err);
     });
 
