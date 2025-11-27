@@ -149,7 +149,7 @@ export class SdServiceServer extends EventEmitter {
 
     // 업로드 라우트
     this.#fastify.all("/upload", async (req, reply) => {
-      await this.#uploadHandler.handleAsync(req.raw, reply.raw);
+      await this.#uploadHandler.handleAsync(req, reply);
     });
 
     // WebSocket 라우트
