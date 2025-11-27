@@ -48,6 +48,47 @@ export class SdServiceClientFactoryProvider {
       ),
     );
 
+    // 리로드 이벤트 핸들러 등록 (기존 SdServiceClient에 있던 로직 이동)
+    client.on("client-reload", async (changedFileSet) => {
+      // 모두 css인 경우, refresh없이 css 파일만 전환
+      if (Array.from(changedFileSet).every((item) => item.endsWith(".css"))) {
+        for (const changedFile of changedFileSet) {
+          const href = "./" + changedFile.replace(/[\\/]/g, "/");
+          const oldStyle = document.querySelector(`link[data-sd-style="${href}"]`) as
+            | HTMLLinkElement
+            | undefined;
+          if (oldStyle) {
+            oldStyle.href = `${href}?t=${Date.now()}`;
+          }
+
+          const oldGlobalStyle = document.querySelector(
+            `link[data-sd-style="${changedFile}"],[href="${changedFile}"]`,
+          ) as HTMLLinkElement | undefined;
+          if (oldGlobalStyle) {
+            oldGlobalStyle.setAttribute("data-sd-style", changedFile);
+            oldGlobalStyle.href = `${changedFile}?t=${Date.now()}`;
+          }
+        }
+      } else {
+        // HMR refresh
+        if (window["__sd_hmr_destroy"] != null) {
+          window["__sd_hmr_destroy"]();
+
+          const old = document.querySelector("app-root");
+          if (old) old.remove();
+          document.body.prepend(document.createElement("app-root"));
+
+          await (
+            await import(`${location.pathname}main.js?t=${Date.now()}`)
+          ).default;
+        }
+        // 완전 reload
+        else {
+          location.reload();
+        }
+      }
+    });
+
     const reqProgressToastMap = new Map<
       string,
       | {

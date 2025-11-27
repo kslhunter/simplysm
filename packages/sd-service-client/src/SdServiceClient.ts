@@ -39,6 +39,7 @@ export class SdServiceClient extends EventEmitter {
     event: "state-change",
     listener: (state: "connected" | "closed" | "reconnect") => void,
   ): this;
+  override on(event: "client-reload", listener: (changedFileSet: Set<string>) => void): this; // 추가됨
   override on(event: string | symbol, listener: (...args: any[]) => void): this {
     return super.on(event, listener);
   }
@@ -71,44 +72,16 @@ export class SdServiceClient extends EventEmitter {
     return this.#ws.connected && this.isConnected;
   }
 
-  async #reloadAsync(changedFileSet: Set<string>) {
-    // 모두 css인 경우, refresh없이 css 파일만 전환
-    if (Array.from(changedFileSet).every((item) => item.endsWith(".css"))) {
-      for (const changedFile of changedFileSet) {
-        const href = "./" + changedFile.replace(/[\\/]/g, "/");
-        const oldStyle = document.querySelector(`link[data-sd-style="${href}"]`) as
-          | HTMLLinkElement
-          | undefined;
-        if (oldStyle) {
-          oldStyle.href = `${href}?t=${Date.now()}`;
-        }
-
-        const oldGlobalStyle = document.querySelector(
-          `link[data-sd-style="${changedFile}"],[href="${changedFile}"]`,
-        ) as HTMLLinkElement | undefined;
-        if (oldGlobalStyle) {
-          oldGlobalStyle.setAttribute("data-sd-style", changedFile);
-          oldGlobalStyle.href = `${changedFile}?t=${Date.now()}`;
-        }
-      }
-    } else {
-      // HMR refresh
-      if (window["__sd_hmr_destroy"] != null) {
-        window["__sd_hmr_destroy"]();
-
-        const old = document.querySelector("app-root");
-        if (old) old.remove();
-        document.body.prepend(document.createElement("app-root"));
-
-        await (
-          await import(`${location.pathname}main.js?t=${Date.now()}`)
-        ).default;
-      }
-      // 완전 reload
-      else {
-        location.reload();
-      }
-    }
+  // [추가] 타입 안전성을 위한 Proxy 생성 메소드
+  getService<T>(serviceName: string): TRemoteService<T> {
+    return new Proxy({} as TRemoteService<T>, {
+      get: (target, prop) => {
+        const methodName = String(prop);
+        return async (...params: any[]) => {
+          return await this.sendAsync(serviceName, methodName, params);
+        };
+      },
+    });
   }
 
   async #handleServerMessageAsync(msg: TSdServiceS2CMessage): Promise<void> {
@@ -123,7 +96,8 @@ export class SdServiceClient extends EventEmitter {
       this.name === msg.clientName
     ) {
       console.log("클라이언트 RELOAD 명령 수신", msg.changedFileSet);
-      await this.#reloadAsync(msg.changedFileSet);
+      // await this.#reloadAsync(msg.changedFileSet);
+      this.emit("client-reload", msg.changedFileSet); // 이벤트를 발생시켜 외부에서 처리하도록 위임
     }
     // 클라이언트 소켓 ID 가져오기
     else if (msg.name === "client-get-id") {
@@ -265,23 +239,22 @@ export class SdServiceClient extends EventEmitter {
   }
 
   async downloadFileBufferAsync(relPath: string): Promise<Buffer> {
-    return await new Promise<Buffer>((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      xhr.open("GET", `${this.serverUrl}${relPath.startsWith("/") ? "" : "/"}${relPath}`, true);
-      xhr.responseType = "arraybuffer";
+    const url = `${this.serverUrl}${relPath.startsWith("/") ? "" : "/"}${relPath}`;
 
-      xhr.onload = () => {
-        if (xhr.status === 200) {
-          resolve(Buffer.from(xhr.response));
-        } else {
-          reject(new Error(xhr.status.toString()));
-        }
-      };
-      xhr.onerror = (err) => {
-        reject(err);
-      };
+    const res = await fetch(url);
+    if (!res.ok) {
+      throw new Error(res.status.toString());
+    }
 
-      xhr.send();
-    });
+    // ArrayBuffer를 받아 Buffer로 변환
+    const arrayBuffer = await res.arrayBuffer();
+    return Buffer.from(arrayBuffer);
   }
 }
+
+// T의 모든 메소드 반환형을 Promise로 감싸주는 타입 변환기
+export type TRemoteService<T> = {
+  [K in keyof T]: T[K] extends (...args: any[]) => any
+    ? (...args: Parameters<T[K]>) => Promise<Awaited<ReturnType<T[K]>>>
+    : never; // 함수가 아닌 프로퍼티는 안씀
+};

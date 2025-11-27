@@ -3,19 +3,14 @@ import http from "http";
 import url from "url";
 import path from "path";
 import { FsUtils, SdLogger } from "@simplysm/sd-core-node";
-import {
-  ISdServiceActivationContext,
-  ISdServiceActivator,
-  ISdServiceServerOptions,
-  SdServiceBase,
-} from "./types";
+import { ISdServiceServerOptions } from "./types";
 import { EventEmitter } from "events";
-import { JsonConvert, ObjectUtils, Type } from "@simplysm/sd-core-common";
-import { ISdServiceRequest, SdServiceEventListenerBase } from "@simplysm/sd-service-common";
-import mime from "mime";
+import { ObjectUtils, Type } from "@simplysm/sd-core-common";
+import { SdServiceEventListenerBase } from "@simplysm/sd-service-common";
 import { SdWebRequestError } from "./SdWebRequestError";
-import { SdWebsocketController } from "./features/SdWebsocketController";
-import { WebSocket } from "ws";
+import { SdWebsocketController } from "./internal/SdWebsocketController";
+import { SdStaticFileHandler } from "./internal/SdStaticFileHandler";
+import { SdRequestHandler } from "./internal/SdRequestHandler";
 
 export class SdServiceServer extends EventEmitter {
   isOpen = false;
@@ -32,30 +27,14 @@ export class SdServiceServer extends EventEmitter {
 
   readonly #logger = SdLogger.get(["simplysm", "sd-service-server", this.constructor.name]);
   #httpServer?: http.Server | https.Server;
-
   #ws?: SdWebsocketController;
+
+  // 핸들러 인스턴스
+  #requestHandler = new SdRequestHandler(this);
+  #staticFileHandler = new SdStaticFileHandler(this);
 
   constructor(readonly options: ISdServiceServerOptions) {
     super();
-  }
-
-  #activateService<T extends SdServiceBase>(
-    serviceClass: Type<T>,
-    ctx: ISdServiceActivationContext,
-  ): T {
-    const activator: ISdServiceActivator | undefined = this.options.serviceActivator;
-
-    if (activator) {
-      return activator.create(serviceClass, ctx);
-    }
-
-    // 기본 구현: 기존 코드와 동일하게 new 해서 필드 세팅
-    const service = new serviceClass();
-    service.server = ctx.server;
-    service.client = ctx.client;
-    service.request = ctx.request;
-    service.webHeaders = ctx.webHeaders;
-    return service;
   }
 
   async getConfigAsync(clientName?: string): Promise<Record<string, any | undefined>> {
@@ -100,14 +79,15 @@ export class SdServiceServer extends EventEmitter {
       } else {
         this.#httpServer = http.createServer();
       }
-
+      // 요청 처리 로직 간소화
       this.#httpServer.on("request", async (req, res) => {
         await this.#onWebRequestAsync(req, res);
       });
 
+      // WebSocket 컨트롤러에 RequestHandler의 메소드 전달
       this.#ws = new SdWebsocketController(
         this.#httpServer,
-        async (def) => await this.#runServiceMethodAsync(def),
+        async (def) => await this.#requestHandler.runMethodAsync(def),
       );
 
       this.#httpServer.listen(this.options.port, () => {
@@ -157,37 +137,6 @@ export class SdServiceServer extends EventEmitter {
     this.#ws?.emit(eventType, infoSelector, data);
   }
 
-  async #runServiceMethodAsync(def: {
-    client?: WebSocket;
-    request?: ISdServiceRequest;
-    serviceName: string;
-    methodName: string;
-    params: any[];
-    webHeaders?: http.IncomingHttpHeaders;
-  }): Promise<any> {
-    // 서비스 가져오기
-    const serviceClass = this.options.services.last((item) => item.name === def.serviceName);
-    if (!serviceClass) {
-      throw new Error(`서비스[${def.serviceName}]를 찾을 수 없습니다.`);
-    }
-
-    const service = this.#activateService(serviceClass, {
-      server: this,
-      client: def.client,
-      request: def.request,
-      webHeaders: def.webHeaders,
-    });
-
-    // 메소드 가져오기
-    const method = service[def.methodName];
-    if (method === undefined) {
-      throw new Error(`메소드[${def.serviceName}.${def.methodName}]를 찾을 수 없습니다.`);
-    }
-
-    // 실행
-    return await method.apply(service, def.params);
-  }
-
   async #onWebRequestAsync(req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {
     try {
       if (this.options.middlewares) {
@@ -210,147 +159,26 @@ export class SdServiceServer extends EventEmitter {
       const urlPath = decodeURI(urlObj.pathname!.slice(1));
       const urlPathChain = urlPath.split("/");
 
+      // 라우팅 로직
       if (urlPathChain[0] === "ws") {
         if (req.headers.upgrade?.toLowerCase() !== "websocket") {
           res.writeHead(426, { "Content-Type": "text/plain" });
           res.end("Upgrade Required");
           return;
         }
-      } else if (urlPathChain[0] === "api") {
-        if (req.headers.origin?.includes("://localhost") && req.method === "OPTIONS") {
-          res.writeHead(204, { "Access-Control-Allow-Origin": "*" });
-          res.end();
-          return;
-        }
-
-        const serviceName = urlPathChain[1];
-        const methodName = urlPathChain[2];
-
-        let params: any[] | undefined;
-        if (req.method === "GET") {
-          if (typeof urlObj.query["json"] !== "string") throw new Error();
-          params = JsonConvert.parse(urlObj.query["json"]);
-          /*if (req.headers["content-type"]?.toLowerCase().includes("json")) {
-            params = JsonConvert.parse(urlObj.query["json"]);
-          }
-          else {
-            params = [urlObj.query];
-          }*/
-        } else if (req.method === "POST") {
-          const body = await new Promise<Buffer>((resolve) => {
-            let tmp = Buffer.from([]);
-            req.on("data", (chunk) => {
-              tmp = Buffer.concat([tmp, chunk]);
-            });
-            req.on("end", () => {
-              resolve(tmp);
-            });
-          });
-
-          params = JsonConvert.parse(body.toString());
-          /*if (req.headers["content-type"]?.toLowerCase().includes("json")) {
-            params = JsonConvert.parse(body.toString());
-          }
-          else {
-            params = [body.toString()];
-          }*/
-        }
-
-        if (params) {
-          const serviceResult = await this.#runServiceMethodAsync({
-            serviceName: serviceName,
-            methodName,
-            params,
-            webHeaders: req.headers,
-          });
-
-          const result = serviceResult != null ? JsonConvert.stringify(serviceResult) : "undefined";
-          /*const result = req.headers["content-type"]?.toLowerCase().includes("json")
-            ? JsonConvert.stringify(serviceResult)
-            : serviceResult;*/
-
-          /*res.writeHead(200, {
-            "Content-Length": Buffer.from(result).length,
-            "Content-Type": req.headers["content-type"]?.toLowerCase(),
-          });*/
-          res.writeHead(200, {
-            "Content-Length": Buffer.from(result).length,
-            "Content-Type": "application/json",
-          });
-          res.end(result);
-
-          return;
-        }
       }
 
-      if (req.method === "GET") {
-        let targetFilePath: string;
-        const currPathProxyFrom = Object.keys(this.pathProxy).single((from) =>
-          urlPath.startsWith(from),
+      if (urlPathChain[0] === "api") {
+        const handled = await this.#requestHandler.handleRequestAsync(
+          req,
+          res,
+          urlObj,
+          urlPathChain,
         );
-        if (currPathProxyFrom !== undefined) {
-          if (typeof this.pathProxy[currPathProxyFrom] === "number") {
-            const proxyReq = http.request(
-              {
-                port: this.pathProxy[currPathProxyFrom],
-                path: req.url,
-                method: req.method,
-                headers: req.headers,
-              },
-              (proxyRes) => {
-                if (proxyRes.statusCode === 404) {
-                  res.writeHead(404, { "Content-Type": "text/html" });
-                  res.end("<h1>A custom 404 page</h1>");
-                  return;
-                }
-
-                res.writeHead(proxyRes.statusCode!, proxyRes.headers);
-                proxyRes.pipe(res, { end: true });
-              },
-            );
-            req.pipe(proxyReq, { end: true });
-            return;
-          } else {
-            targetFilePath = path.resolve(
-              this.pathProxy[currPathProxyFrom] + urlPath.substring(currPathProxyFrom.length),
-            );
-          }
-        } else {
-          targetFilePath = path.resolve(this.options.rootPath, "www", urlPath);
-        }
-        targetFilePath =
-          FsUtils.exists(targetFilePath) && FsUtils.stat(targetFilePath).isDirectory()
-            ? path.resolve(targetFilePath, "index.html")
-            : targetFilePath;
-
-        if (!FsUtils.exists(targetFilePath)) {
-          const errorMessage = "파일을 찾을 수 없습니다.";
-          this.#responseErrorHtml(res, 404, errorMessage);
-          this.#logger.warn(`[404] ${errorMessage} (${targetFilePath})`);
-          return;
-        }
-
-        if (path.basename(targetFilePath).startsWith(".")) {
-          const errorMessage = "파일을 사용할 권한이 없습니다.";
-          this.#responseErrorHtml(res, 403, errorMessage);
-          this.#logger.warn(`[403] ${errorMessage} (${targetFilePath})`);
-          return;
-        }
-
-        const fileStream = FsUtils.createReadStream(targetFilePath);
-        const targetFileSize = (await FsUtils.lstatAsync(targetFilePath)).size;
-
-        res.setHeader("Access-Control-Allow-Origin", "*");
-        res.setHeader("Content-Length", targetFileSize);
-        res.setHeader("Content-Type", mime.getType(targetFilePath)!);
-        res.writeHead(200);
-        fileStream.pipe(res);
-      } else {
-        const errorMessage = "요청이 잘못되었습니다.";
-        this.#responseErrorHtml(res, 405, errorMessage);
-        this.#logger.warn(`[405] ${errorMessage} (${req.method!.toUpperCase()})`);
-        return;
+        if (handled) return;
       }
+
+      await this.#staticFileHandler.handleAsync(req, res, urlPath);
     } catch (err) {
       if (err instanceof SdWebRequestError) {
         res.writeHead(err.statusCode);

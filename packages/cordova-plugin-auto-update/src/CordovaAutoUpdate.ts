@@ -1,9 +1,10 @@
 import { CordovaFileSystem } from "@simplysm/cordova-plugin-file-system";
 import { html, NetUtils, Wait } from "@simplysm/sd-core-common";
-import { SdAutoUpdateServiceClient, SdServiceClient } from "@simplysm/sd-service-client";
+import { SdServiceClient } from "@simplysm/sd-service-client";
 import path from "path";
 import semver from "semver";
 import { CordovaApkInstaller } from "./CordovaApkInstaller";
+import { ISdAutoUpdateService } from "@simplysm/sd-service-common";
 
 export abstract class CordovaAutoUpdate {
   static #throwAboutReinstall(code: number, targetHref?: string) {
@@ -134,7 +135,8 @@ export abstract class CordovaAutoUpdate {
       opt.log(`최신버전 확인 중...`);
 
       // 서버의 버전 및 다운로드링크 가져오기
-      const autoUpdateServiceClient = new SdAutoUpdateServiceClient(opt.serviceClient);
+      const autoUpdateServiceClient =
+        opt.serviceClient.getService<ISdAutoUpdateService>("SdAutoUpdateService");
 
       const serverVersionInfo = await autoUpdateServiceClient.getLastVersion("android");
       if (!serverVersionInfo) {

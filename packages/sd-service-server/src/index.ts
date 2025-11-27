@@ -1,4 +1,3 @@
-export * from "./features/SdWebsocketController";
 export * from "./SdServiceServer";
 export * from "./SdWebRequestError";
 export * from "./services/SdAutoUpdateService";
