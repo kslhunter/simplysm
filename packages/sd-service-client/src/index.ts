@@ -5,4 +5,3 @@ export * from "./service-clients/orm/SdOrmServiceClientDbContextExecutor";
 export * from "./types/ISdServiceConnectionConfig";
 export * from "./types/ISdServiceProgressState";
 export * from "./types/reconnect-strategy.types";
-export * from "./types/SdServiceClientBase";
