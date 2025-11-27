@@ -1,77 +1,61 @@
 import * as http from "http";
-import * as url from "url";
 import { SdLogger } from "@simplysm/sd-core-node";
 import { JsonConvert, Type } from "@simplysm/sd-core-common";
 import { ISdServiceRequest } from "@simplysm/sd-service-common";
 import { SdServiceServer } from "../SdServiceServer";
 import { ISdServiceActivationContext, ISdServiceActivator, SdServiceBase } from "../types";
 import { WebSocket } from "ws";
+import { FastifyInstance } from "fastify";
 
 export class SdRequestHandler {
   readonly #logger = SdLogger.get(["simplysm", "sd-service-server", "SdRequestHandler"]);
 
   constructor(private readonly _server: SdServiceServer) {}
+  // Fastify 라우트 등록
+  bind(server: FastifyInstance) {
+    // CORS Preflight (간단 처리) - 필요시 @fastify/cors 사용 권장
+    server.options("/api/*", (req, reply) => {
+      if (req.headers.origin?.includes("://localhost")) {
+        reply.header("Access-Control-Allow-Origin", "*");
+        return "OK";
+      }
 
-  async handleRequestAsync(
-    req: http.IncomingMessage,
-    res: http.ServerResponse,
-    urlObj: url.UrlWithParsedQuery,
-    urlPathChain: string[],
-  ): Promise<boolean> {
-    // 1. CORS Preflight (OPTIONS)
-    if (req.headers.origin?.includes("://localhost") && req.method === "OPTIONS") {
-      res.writeHead(204, { "Access-Control-Allow-Origin": "*" });
-      res.end();
-      return true;
-    }
+      // 모든 경로에서 값 반환
+      return "Pass";
+    });
 
-    const serviceName = urlPathChain[1];
-    const methodName = urlPathChain[2];
+    // API 라우트 정의
+    server.all("/api/:serviceName/:methodName", async (req, reply) => {
+      const { serviceName, methodName } = req.params as any;
 
-    // 2. 파라미터 파싱
-    let params: any[] | undefined;
-    if (req.method === "GET") {
-      if (typeof urlObj.query["json"] !== "string")
-        throw new Error("JSON query parameter required");
-      params = JsonConvert.parse(urlObj.query["json"]);
-    } else if (req.method === "POST") {
-      const body = await new Promise<Buffer>((resolve, reject) => {
-        let tmp = Buffer.from([]);
-        req.on("data", (chunk) => {
-          tmp = Buffer.concat([tmp, chunk]);
+      // 파라미터 파싱 (Fastify가 query/body 자동 파싱함)
+      let params: any[] | undefined;
+      if (req.method === "GET") {
+        const jsonStr = (req.query as any)["json"];
+        if (typeof jsonStr !== "string") throw new Error("JSON query parameter required");
+        params = JsonConvert.parse(jsonStr);
+      } else {
+        // POST body는 이미 객체이거나 텍스트일 수 있음. 상황에 맞춰 조정
+        params = Array.isArray(req.body) ? req.body : JsonConvert.parse(JSON.stringify(req.body));
+      }
+
+      if (params) {
+        const result = await this.runMethodAsync({
+          serviceName,
+          methodName,
+          params,
+          webHeaders: req.raw.headers,
         });
-        req.on("end", () => {
-          resolve(tmp);
-        });
 
-        // 요청 수신 중 에러 발생 시 처리
-        req.on("error", (err) => {
-          reject(err);
-        });
-      });
-      params = JsonConvert.parse(body.toString());
-    }
+        // 결과 반환
+        reply.header("Content-Type", "application/json");
+        return result !== undefined ? JsonConvert.stringify(result) : "undefined";
+      }
 
-    // 3. 서비스 실행 및 응답
-    if (params) {
-      const serviceResult = await this.runMethodAsync({
-        serviceName: serviceName,
-        methodName,
-        params,
-        webHeaders: req.headers,
-      });
-
-      const result = serviceResult != null ? JsonConvert.stringify(serviceResult) : "undefined";
-      res.writeHead(200, {
-        "Content-Length": Buffer.from(result).length,
-        "Content-Type": "application/json",
-      });
-      res.end(result);
-
-      return true;
-    }
-
-    return false;
+      // params가 없는 경우(거의 없겠지만)에 대한 기본 반환
+      reply.code(400);
+      return "Bad Request";
+    });
   }
 
   async runMethodAsync(def: {
