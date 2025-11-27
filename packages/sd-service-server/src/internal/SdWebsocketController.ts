@@ -1,6 +1,6 @@
 import https from "https";
 import http from "http";
-import { WebSocket, WebSocketServer } from "ws";
+import { WebSocket } from "ws";
 import { DateTime, JsonConvert, Type } from "@simplysm/sd-core-common";
 import {
   ISdServiceRequest,
@@ -21,7 +21,8 @@ import { SdLogger } from "@simplysm/sd-core-node";
 export class SdWebsocketController {
   #logger = SdLogger.get(["simplysm", "sd-service-server", "SdWebsocketController"]);
 
-  #server: WebSocketServer;
+  #clients = new Set<WebSocket>();
+  // #server: WebSocketServer;
   #pingInterval?: NodeJS.Timeout;
 
   #clientInfoMap = new WeakMap<WebSocket, ISdClientInfo>();
@@ -36,99 +37,90 @@ export class SdWebsocketController {
       params: any[];
     }) => Promise<any>,
   ) {
-    this.#server = new WebSocketServer({ /*server: webServer*/ noServer: true });
+    this.#startPingInterval();
+  }
 
-    // 경로 기반 업그레이드 라우팅
-    webServer?.on("upgrade", (req, socket, head) => {
-      const base = req.headers.host != null ? `http://${req.headers.host}` : "http://localhost";
-      const { pathname } = new URL(req.url ?? "/", base);
+  // Fastify 라우트에서 호출할 메소드
+  async addClient(client: WebSocket, req: http.IncomingMessage) {
+    this.#clients.add(client);
 
-      if (pathname === "/" || pathname === "/ws") {
-        this.#server.handleUpgrade(req, socket, head, (ws) => {
-          this.#server.emit("connection", ws, req);
-        });
-      } else {
-        socket.destroy();
+    try {
+      // 클라이언트에게 ID 요청
+      const clientId = await this.#getClientIdAsync(client);
+
+      // 기존 연결 끊기 (this.#clients 순회)
+      for (const prevClient of this.#clients) {
+        const prevClientInfo = this.#clientInfoMap.get(prevClient);
+        if (!prevClientInfo || prevClientInfo.id !== clientId) continue;
+
+        const connectionDateTimeText =
+          prevClientInfo.connectedAtDateTime.toFormatString("yyyy:MM:dd HH:mm:ss.fff");
+
+        this.#logger.debug(`클라이언트 기존연결 끊기: ${clientId}: ${connectionDateTimeText}`);
+
+        prevClient.terminate();
       }
-    });
 
-    this.#server.on("connection", async (client, req) => {
-      try {
-        // 클라이언트에게 ID 요청
-        const clientId = await this.#getClientIdAsync(client);
+      // 연결 로그
+      this.#logger.debug(
+        `클라이언트 연결됨: ${clientId}: ${req.socket.remoteAddress}: ${this.#clients.size}`,
+      );
 
-        // 기존 연결 끊기
-        for (const prevClient of this.#server.clients) {
-          const prevClientInfo = this.#clientInfoMap.get(prevClient);
-          if (!prevClientInfo || prevClientInfo.id !== clientId) continue;
+      // 정보 저장
+      const clientInfo: ISdClientInfo = {
+        id: clientId,
+        connectedAtDateTime: new DateTime(),
+        remoteAddress: req.socket.remoteAddress,
+        isAlive: true,
+        listenerInfos: [],
+        splitAccumulator: new SdServiceSplitMessageAccumulator(),
+      };
+      this.#clientInfoMap.set(client, clientInfo);
 
-          const connectionDateTimeText =
-            prevClientInfo.connectedAtDateTime.toFormatString("yyyy:MM:dd HH:mm:ss.fff");
-
-          this.#logger.debug(`클라이언트 기존연결 끊기: ${clientId}: ${connectionDateTimeText}`);
-
-          prevClient.terminate();
-        }
-
-        // 연결 로그
-        this.#logger.debug(
-          `클라이언트 연결됨: ${clientId}: ${req.socket.remoteAddress}: ${this.#server.clients.size}`,
-        );
-
-        // 정보 저장
-        const clientInfo: ISdClientInfo = {
-          id: clientId,
-          connectedAtDateTime: new DateTime(),
-          remoteAddress: req.socket.remoteAddress,
-          isAlive: true,
-          listenerInfos: [],
-          splitAccumulator: new SdServiceSplitMessageAccumulator(),
-        };
-        this.#clientInfoMap.set(client, clientInfo);
-
-        // 메시지 핸들러
-        client.on("message", async (msgJson: string) => {
-          try {
-            const msg = JsonConvert.parse(msgJson) as TSdServiceC2SMessage;
-            if (msg.name === "request") {
-              await this.#onRequestAsync(client, msg);
-            } else if (msg.name === "request-split") {
-              await this.#onRequestSplitAsync(client, msg);
-            }
-          } catch (err) {
-            this.#logger.error("WebSocket 메시지 처리 중 오류 발생", err);
+      // 메시지 핸들러
+      client.on("message", async (msgJson: string) => {
+        try {
+          const msg = JsonConvert.parse(msgJson) as TSdServiceC2SMessage;
+          if (msg.name === "request") {
+            await this.#onRequestAsync(client, msg);
+          } else if (msg.name === "request-split") {
+            await this.#onRequestSplitAsync(client, msg);
           }
-        });
+        } catch (err) {
+          this.#logger.error("WebSocket 메시지 처리 중 오류 발생", err);
+        }
+      });
 
-        // 에러 핸들러 (이게 없으면 클라이언트 연결 끊길 때 서버가 죽을 수 있음)
-        client.on("error", (err) => {
-          this.#logger.error("WebSocket 클라이언트 오류 발생", err);
-        });
+      // 에러 핸들러
+      client.on("error", (err) => {
+        this.#logger.error("WebSocket 클라이언트 오류 발생", err);
+      });
 
-        // 닫힘 핸들러
-        client.on("close", (code) => {
-          this.#logger.debug(
-            `클라이언트 연결 끊김: ${clientId}: ${this.#server.clients.size}: ${code}`,
-          );
-        });
+      // 닫힘 핸들러
+      client.on("close", (code) => {
+        this.#clients.delete(client); // [중요] 목록에서 제거
+        this.#logger.debug(`클라이언트 연결 끊김: ${clientId}: ${this.#clients.size}: ${code}`);
+      });
 
-        // 퐁 핸들러
-        client.on("pong", () => {
-          clientInfo.isAlive = true;
-        });
+      // 퐁 핸들러
+      client.on("pong", () => {
+        clientInfo.isAlive = true;
+      });
 
-        // 클라이언트에게 연결 완료 알림
-        this.#send(client, { name: "connected" });
-      } catch (err) {
-        this.#logger.error("연결 처리 중 오류 발생", err);
-        client.terminate();
-      }
-    });
+      // 클라이언트에게 연결 완료 알림
+      this.#send(client, { name: "connected" });
+    } catch (err) {
+      this.#logger.error("연결 처리 중 오류 발생", err);
+      client.terminate();
+      this.#clients.delete(client);
+    }
+  }
 
-    // 핑
+  // Ping Interval 로직 분리
+  #startPingInterval() {
     clearInterval(this.#pingInterval);
     this.#pingInterval = setInterval(() => {
-      for (const client of this.#server.clients) {
+      for (const client of this.#clients) {
         const clientInfo = this.#clientInfoMap.get(client);
         if (!clientInfo) continue;
 
@@ -140,27 +132,18 @@ export class SdWebsocketController {
     }, 10000);
   }
 
-  async closeAsync() {
+  close() {
     clearInterval(this.#pingInterval);
 
-    for (const client of this.#server.clients) {
+    for (const client of this.#clients) {
       client.terminate();
     }
-
-    await new Promise<void>((resolve, reject) => {
-      this.#server.close((err) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-
-        resolve();
-      });
-    });
+    this.#clients.clear();
   }
 
   broadcastReload(clientName: string | undefined, changedFileSet: Set<string>) {
-    for (const client of this.#server.clients) {
+    for (const client of this.#clients) {
+      // this.#clients 사용
       this.#send(client, { name: "client-reload", clientName, changedFileSet });
     }
   }
@@ -170,7 +153,7 @@ export class SdWebsocketController {
     infoSelector: (item: T["info"]) => boolean,
     data: T["data"],
   ) {
-    const listenerInfos = Array.from(this.#server.clients)
+    const listenerInfos = Array.from(this.#clients) // this.#clients 사용
       .mapMany((item) => this.#clientInfoMap.get(item)?.listenerInfos ?? [])
       .filter((item) => item.eventName === eventType.name)
       .map((item) => ({ key: item.key, info: item.info }));
@@ -183,7 +166,8 @@ export class SdWebsocketController {
   }
 
   #emitToTargets(targetKeys: string[], data: any) {
-    for (const currClient of this.#server.clients) {
+    for (const currClient of this.#clients) {
+      // this.#clients 사용
       for (const listenerInfo of this.#clientInfoMap.get(currClient)?.listenerInfos ?? []) {
         if (!targetKeys.includes(listenerInfo.key)) continue;
 
@@ -246,7 +230,6 @@ export class SdWebsocketController {
       const methodCmdInfo = SdServiceCommandHelper.parseMethodCommand(req.command);
       if (methodCmdInfo) {
         const { serviceName, methodName } = methodCmdInfo;
-
         const result = await this._runServiceMethodAsync({
           client,
           request: req,
@@ -254,8 +237,6 @@ export class SdWebsocketController {
           methodName,
           params: req.params,
         });
-
-        // 응답
         return {
           name: "response",
           reqUuid: req.uuid,
@@ -266,10 +247,8 @@ export class SdWebsocketController {
         const key = req.params[0] as string;
         const eventName = req.params[1] as string;
         const info = req.params[2];
-
         const clientInfo = this.#clientInfoMap.get(client)!;
         clientInfo.listenerInfos.push({ key, eventName, info });
-
         return {
           name: "response",
           reqUuid: req.uuid,
@@ -278,10 +257,8 @@ export class SdWebsocketController {
         };
       } else if (req.command === SD_SERVICE_SPECIAL_COMMANDS.REMOVE_EVENT_LISTENER) {
         const key = req.params[0] as string;
-
         const clientInfo = this.#clientInfoMap.get(client)!;
         clientInfo.listenerInfos.remove((item) => item.key === key);
-
         return {
           name: "response",
           reqUuid: req.uuid,
@@ -290,12 +267,10 @@ export class SdWebsocketController {
         };
       } else if (req.command === SD_SERVICE_SPECIAL_COMMANDS.GET_EVENT_LISTENER_INFOS) {
         const eventName = req.params[0] as string;
-
-        const body = Array.from(this.#server.clients)
+        const body = Array.from(this.#clients)
           .mapMany((item) => this.#clientInfoMap.get(item)?.listenerInfos ?? [])
           .filter((item) => item.eventName === eventName)
           .map((item) => ({ key: item.key, info: item.info }));
-
         return {
           name: "response",
           reqUuid: req.uuid,
@@ -305,9 +280,7 @@ export class SdWebsocketController {
       } else if (req.command === SD_SERVICE_SPECIAL_COMMANDS.EMIT_EVENT) {
         const targetKeys = req.params[0] as string[];
         const data = req.params[1];
-
         this.#emitToTargets(targetKeys, data);
-
         return {
           name: "response",
           reqUuid: req.uuid,
@@ -316,8 +289,6 @@ export class SdWebsocketController {
         };
       } else {
         const err = new Error("요청이 잘못되었습니다.");
-
-        // 에러 응답
         return {
           name: "response",
           reqUuid: req.uuid,
@@ -334,7 +305,6 @@ export class SdWebsocketController {
         err instanceof Error
           ? err
           : new Error(typeof err === "string" ? err : "알 수 없는 오류가 발생하였습니다.");
-
       return {
         name: "response",
         reqUuid: req.uuid,

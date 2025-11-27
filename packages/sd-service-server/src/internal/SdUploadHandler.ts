@@ -1,66 +1,58 @@
-import * as http from "http";
 import * as path from "path";
 import * as fs from "fs";
-import busboy from "busboy";
+import { pipeline } from "stream/promises"; // Node.js 내장 파이프라인
 import { Uuid } from "@simplysm/sd-core-common";
 import { FsUtils, SdLogger } from "@simplysm/sd-core-node";
 import { SdServiceServer } from "../SdServiceServer";
+import { FastifyReply, FastifyRequest } from "fastify";
 
 export class SdUploadHandler {
   readonly #logger = SdLogger.get(["simplysm", "sd-service-server", "SdUploadHandler"]);
 
   constructor(private readonly _server: SdServiceServer) {}
 
-  async handleAsync(req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {
-    if (req.method !== "POST") {
-      res.writeHead(405, { Connection: "close" });
-      res.end("Only POST requests are allowed");
+  async handleAsync(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+    // @fastify/multipart가 등록되어 있으면 req.parts() 사용 가능
+    if (!req.isMultipart()) {
+      reply.status(400).send("Multipart request expected");
       return;
     }
 
-    const bb = busboy({ headers: req.headers });
     const result: { path: string; filename: string; size: number }[] = [];
-
-    // 업로드된 파일을 저장할 임시 디렉토리 (설정에 따라 변경 가능)
     const uploadDir = path.resolve(this._server.options.rootPath, "www", "uploads");
+
     if (!FsUtils.exists(uploadDir)) {
       await FsUtils.mkdirsAsync(uploadDir);
     }
 
-    // 1. 파일 스트림 처리
-    bb.on("file", (name, file, info) => {
-      const { filename } = info;
-      // 파일명 충돌 방지를 위한 UUID 변환
-      const saveName = `${Uuid.new().toString()}${path.extname(filename)}`;
-      const savePath = path.join(uploadDir, saveName);
+    try {
+      // 업로드된 파트(파일/필드)를 순회
+      for await (const part of req.parts()) {
+        if (part.type === "file") {
+          const originalFilename = part.filename;
+          const saveName = `${Uuid.new().toString()}${path.extname(originalFilename)}`;
+          const savePath = path.join(uploadDir, saveName);
 
-      const writeStream = fs.createWriteStream(savePath);
+          // 스트림 파이프라이닝 (파일 저장)
+          await pipeline(part.file, fs.createWriteStream(savePath));
 
-      file.pipe(writeStream);
+          // 저장 후 사이즈 확인
+          const stats = await fs.promises.stat(savePath);
 
-      writeStream.on("close", () => {
-        const stats = fs.statSync(savePath);
-        result.push({
-          path: `uploads/${saveName}`, // 클라이언트가 접근할 수 있는 상대 경로
-          filename: filename,
-          size: stats.size,
-        });
-      });
-    });
+          result.push({
+            path: `uploads/${saveName}`,
+            filename: originalFilename,
+            size: stats.size,
+          });
+        }
+      }
 
-    // 2. 처리 완료 후 응답
-    bb.on("close", () => {
-      res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
-      res.end(JSON.stringify(result));
-    });
-
-    bb.on("error", (err) => {
+      // 처리 완료 후 JSON 응답
+      reply.header("Content-Type", "application/json; charset=utf-8");
+      reply.send(result);
+    } catch (err) {
       this.#logger.error("Upload Error", err);
-      res.writeHead(500, { Connection: "close" });
-      res.end("Upload Failed");
-    });
-
-    // 요청 스트림을 busboy에 연결
-    req.pipe(bb);
+      reply.status(500).send("Upload Failed");
+    }
   }
 }
