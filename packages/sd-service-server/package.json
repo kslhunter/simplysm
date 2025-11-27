@@ -19,6 +19,7 @@
     "@simplysm/sd-orm-node": "12.15.10",
     "@simplysm/sd-service-common": "12.15.10",
     "bufferutil": "^4.0.9",
+    "busboy": "^1.6.0",
     "mime": "^4.1.0",
     "nodemailer": "^7.0.11",
     "semver": "^7.7.3",
@@ -27,6 +28,7 @@
     "ws": "^8.18.3"
   },
   "devDependencies": {
+    "@types/busboy": "^1.5.4",
     "@types/mime": "^4.0.0",
     "@types/nodemailer": "^7.0.4",
     "@types/send": "^1.2.1",

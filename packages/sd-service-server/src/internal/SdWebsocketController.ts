@@ -325,7 +325,7 @@ export class SdWebsocketController {
           body: {
             message: err.message,
             code: "BAD_COMMAND",
-            stack: err.stack,
+            stack: process.env["NODE_ENV"] !== "production" ? err.stack : undefined,
           },
         };
       }
@@ -342,7 +342,7 @@ export class SdWebsocketController {
         body: {
           message: error.message,
           code: "INTERNAL_ERROR",
-          stack: error.stack,
+          stack: process.env["NODE_ENV"] !== "production" ? error.stack : undefined,
         },
       };
     }

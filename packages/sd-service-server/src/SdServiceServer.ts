@@ -11,6 +11,7 @@ import { SdWebRequestError } from "./SdWebRequestError";
 import { SdWebsocketController } from "./internal/SdWebsocketController";
 import { SdStaticFileHandler } from "./internal/SdStaticFileHandler";
 import { SdRequestHandler } from "./internal/SdRequestHandler";
+import { SdUploadHandler } from "./internal/SdUploadHandler";
 
 export class SdServiceServer extends EventEmitter {
   isOpen = false;
@@ -32,6 +33,7 @@ export class SdServiceServer extends EventEmitter {
   // 핸들러 인스턴스
   #requestHandler = new SdRequestHandler(this);
   #staticFileHandler = new SdStaticFileHandler(this);
+  #uploadHandler = new SdUploadHandler(this);
 
   constructor(readonly options: ISdServiceServerOptions) {
     super();
@@ -181,6 +183,11 @@ export class SdServiceServer extends EventEmitter {
           urlPathChain,
         );
         if (handled) return;
+      }
+
+      if (urlPathChain[0] === "upload") {
+        await this.#uploadHandler.handleAsync(req, res);
+        return;
       }
 
       this.#staticFileHandler.handle(req, res, urlPath);
