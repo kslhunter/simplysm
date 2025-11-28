@@ -22,14 +22,12 @@
     "mime": "^4.1.0",
     "nodemailer": "^7.0.11",
     "semver": "^7.7.3",
-    "send": "^1.2.0",
     "utf-8-validate": "^6.0.5",
     "ws": "^8.18.3"
   },
   "devDependencies": {
     "@types/mime": "^4.0.0",
     "@types/nodemailer": "^7.0.4",
-    "@types/send": "^1.2.1",
     "@types/ws": "^8.18.1"
   }
 }
