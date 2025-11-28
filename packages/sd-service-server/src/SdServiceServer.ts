@@ -14,8 +14,6 @@ import fastifyWebsocket from "@fastify/websocket";
 import fastifyStatic from "@fastify/static";
 import fastifyHttpProxy from "@fastify/http-proxy";
 import fastifyMultipart from "@fastify/multipart";
-import fastifyHelmet from "@fastify/helmet";
-import fastifyCors from "@fastify/cors";
 import url from "url";
 
 export class SdServiceServer extends EventEmitter {
@@ -84,23 +82,19 @@ export class SdServiceServer extends EventEmitter {
       : null;
     this.#fastify = fastify({ https: httpsConf });
 
-    // Websocket 플러그인
+    // WebSocket 플러그인
     await this.#fastify.register(fastifyWebsocket);
 
-    // 보안 플러그인
-    // XSS 방지, HSTS 설정, iframe 클릭재킹 방지 등의 필수 보안 헤더를 자동으로 설정해 줍니다.
-    await this.#fastify.register(fastifyHelmet, { global: true });
-
-    // 업로드 플러그인
-    await this.#fastify.register(fastifyMultipart);
-
-    // 미들웨어 설정
+    // 미들웨어 플러그인
     await this.#fastify.register(fastifyMiddie);
     if (this.options.middlewares) {
       for (const mdw of this.options.middlewares) {
         this.#fastify.use(mdw);
       }
     }
+
+    // 업로드 플러그인
+    await this.#fastify.register(fastifyMultipart);
 
     // 포트 프록시 (pathProxy)
     // 파일경로 프록시는 되지 않음. 포트에 대한 프록시에만 해당함
@@ -125,19 +119,6 @@ export class SdServiceServer extends EventEmitter {
       serve: false, // 자동 서빙 방지 (수동 제어)
     });
 
-    // CORS 설정
-    await this.#fastify.register(fastifyCors, {
-      origin: (origin, cb) => {
-        // 개발 환경이면 localhost 허용, 운영이면 특정 도메인만 허용하는 로직
-        if (origin == null || /localhost/.test(origin)) {
-          cb(null, true);
-          return;
-        }
-        cb(new Error("Not allowed"), false);
-      },
-      credentials: true, // 쿠키/인증 정보 포함 시 필요
-    });
-
     // JSON 파서
     this.#fastify.addContentTypeParser(
       "application/json",
@@ -152,6 +133,14 @@ export class SdServiceServer extends EventEmitter {
         }
       },
     );
+
+    // CORS (Localhost 개발용)
+    this.#fastify.options("*", async (req, reply) => {
+      if (req.headers.origin?.includes("://localhost")) {
+        reply.header("Access-Control-Allow-Origin", "*");
+        reply.status(204).send();
+      }
+    });
 
     // API 라우트
     this.#fastify.all("/api/:service/:method", async (req, reply) => {
@@ -194,9 +183,6 @@ export class SdServiceServer extends EventEmitter {
     // 리슨
     await this.#fastify.listen({ port: this.options.port });
 
-    // Graceful Shutdown 핸들러 등록
-    this.#registerGracefulShutdown();
-
     this.isOpen = true;
     this.#logger.debug("서버 시작됨");
     this.emit("ready");
@@ -222,26 +208,5 @@ export class SdServiceServer extends EventEmitter {
     data: T["data"],
   ) {
     this.#ws?.emit(eventType, infoSelector, data);
-  }
-
-  // 종료 시그널 감지 및 처리
-  #registerGracefulShutdown() {
-    const shutdownHandler = async (signal: string) => {
-      this.#logger.info(`${signal} 시그널 감지. 서버 종료 프로세스 시작...`);
-      try {
-        if (this.isOpen) {
-          await this.closeAsync();
-        }
-        this.#logger.info("서버가 안전하게 종료되었습니다.");
-      } catch (err) {
-        this.#logger.error("서버 종료 중 오류 발생", err);
-      }
-    };
-
-    // 프로세스 시그널 리스너 등록
-    // 중복 등록 방지를 위해 process.listenerCount 체크를 할 수도 있으나,
-    // 보통 서버 인스턴스는 하나만 띄우므로 간단하게 처리했습니다.
-    process.on("SIGINT", () => shutdownHandler("SIGINT"));
-    process.on("SIGTERM", () => shutdownHandler("SIGTERM"));
   }
 }
