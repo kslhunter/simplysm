@@ -173,8 +173,9 @@ export class SdServiceServer extends EventEmitter {
       method: ["GET", "HEAD"],
       url: "/*",
       handler: async (req, reply) => {
-        const urlObj = url.parse(req.raw.url!, true, false);
-        const urlPath = decodeURI(urlObj.pathname!.slice(1));
+        // 'http://localhost'는 상대 경로 파싱을 위한 dummy base (Fastify req.url은 path만 오므로)
+        const urlObj = new URL(req.raw.url!, "http://localhost");
+        const urlPath = decodeURI(urlObj.pathname.slice(1));
         await this.#staticFileHandler.handleAsync(req, reply, urlPath);
       },
     });
@@ -238,10 +239,10 @@ export class SdServiceServer extends EventEmitter {
       try {
         if (this.isOpen) {
           await this.closeAsync();
-          process.exit(0);
         }
         this.#logger.info("서버가 안전하게 종료되었습니다.");
         clearTimeout(forceExitTimer); // 정상 종료되면 타이머 해제
+        process.exit(0);
       } catch (err) {
         this.#logger.error("서버 종료 중 오류 발생", err);
         process.exit(1);
