@@ -82,7 +82,7 @@ export class SdServiceServer extends EventEmitter {
           passphrase: this.options.ssl.passphrase,
         }
       : null;
-    this.#fastify = fastify({ https: httpsConf, bodyLimit: 100 * 1024 * 1024 });
+    this.#fastify = fastify({ https: httpsConf });
 
     // Websocket 플러그인
     await this.#fastify.register(fastifyWebsocket);
@@ -129,7 +129,7 @@ export class SdServiceServer extends EventEmitter {
     await this.#fastify.register(fastifyCors, {
       origin: (origin, cb) => {
         // 개발 환경이면 localhost 허용, 운영이면 특정 도메인만 허용하는 로직
-        if (origin == null || origin.includes("://localhost")) {
+        if (origin == null || /localhost/.test(origin)) {
           cb(null, true);
           return;
         }
@@ -228,23 +228,13 @@ export class SdServiceServer extends EventEmitter {
   #registerGracefulShutdown() {
     const shutdownHandler = async (signal: string) => {
       this.#logger.info(`${signal} 시그널 감지. 서버 종료 프로세스 시작...`);
-
-      // 안전 장치: 10초가 지나도 안 꺼지면 강제 종료
-      const forceExitTimer = setTimeout(() => {
-        this.#logger.error("서버 종료 시간 초과 (10초). 강제 종료합니다.");
-        process.exit(1);
-      }, 10000); // 10초 (필요에 따라 조절)
-
       try {
         if (this.isOpen) {
           await this.closeAsync();
-          process.exit(0);
         }
         this.#logger.info("서버가 안전하게 종료되었습니다.");
-        clearTimeout(forceExitTimer); // 정상 종료되면 타이머 해제
       } catch (err) {
         this.#logger.error("서버 종료 중 오류 발생", err);
-        process.exit(1);
       }
     };
 
