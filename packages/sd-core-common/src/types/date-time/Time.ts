@@ -58,6 +58,7 @@ export class Time {
     // 3. DateTime.parse 위임
     if (!dt.isValid) {
       try {
+
         const date = DateTime.parse(str);
         return new Time(date.hour, date.minute, date.second, date.millisecond);
       } catch {

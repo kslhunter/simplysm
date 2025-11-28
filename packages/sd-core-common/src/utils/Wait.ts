@@ -26,4 +26,21 @@ export class Wait {
       }, millisecond);
     });
   }
+
+  static async retryAsync<T>(
+    fn: () => Promise<T>,
+    tryCount: number = 3,
+    interval: number = 1000,
+  ): Promise<T> {
+    let lastError: any;
+    for (let i = 0; i < tryCount; i++) {
+      try {
+        return await fn();
+      } catch (err) {
+        lastError = err;
+        if (i < tryCount - 1) await Wait.time(interval);
+      }
+    }
+    throw lastError;
+  }
 }

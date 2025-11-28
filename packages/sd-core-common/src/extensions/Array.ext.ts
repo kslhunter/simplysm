@@ -32,6 +32,8 @@ declare global {
 
     mapManyAsync<R>(selector: (item: T, index: number) => Promise<R[]>): Promise<R[]>;
 
+    chunk(size: number): T[][];
+
     parallelAsync<R>(fn: (item: T, index: number) => Promise<R>): Promise<R[]>;
 
     groupBy<K>(keySelector: (item: T, index: number) => K): { key: K; values: T[] }[];
@@ -87,6 +89,8 @@ declare global {
     distinct(matchAddress?: boolean): T[];
 
     distinctThis(matchAddress?: boolean): T[];
+
+    distinctBy<K>(selector: (item: T) => K): T[];
 
     orderBy(selector?: (item: T) => string | number | DateOnly | DateTime | Time | undefined): T[];
 
@@ -162,6 +166,8 @@ declare global {
     mapMany<R>(selector: (item: T, index: number) => R[]): R[];
 
     mapManyAsync<R>(selector: (item: T, index: number) => Promise<R[]>): Promise<R[]>;
+
+    chunk(size: number): T[][];
 
     parallelAsync<R>(fn: (item: T, index: number) => Promise<R>): Promise<R[]>;
 
@@ -302,7 +308,11 @@ declare global {
     this: T[],
     selector: (item: T, index: number) => Promise<R>,
   ): Promise<R[]> {
-    return await Promise.all(this.map((item, index) => selector(item, index)));
+    const result: R[] = [];
+    for (let i = 0; i < this.length; i++) {
+      result.push(await selector(this[i], i));
+    }
+    return result;
   };
 
   prototype.mapMany = function <T, R>(
@@ -318,6 +328,14 @@ declare global {
   ): Promise<T | R[]> {
     const arr = selector != null ? await this.mapAsync(selector) : this;
     return arr.flat() as T;
+  };
+
+  prototype.chunk = function <T>(this: T[], size: number): T[][] {
+    const result: T[][] = [];
+    for (let i = 0; i < this.length; i += size) {
+      result.push(this.slice(i, i + size));
+    }
+    return result;
   };
 
   prototype.parallelAsync = async function <T, R>(
@@ -519,6 +537,19 @@ declare global {
     this.clear().push(...distinctArray);
 
     return this;
+  };
+
+  prototype.distinctBy = function <T, K>(this: T[], selector: (item: T) => K): T[] {
+    const set = new Set<K>();
+    const result: T[] = [];
+    for (const item of this) {
+      const key = selector(item);
+      if (!set.has(key)) {
+        set.add(key);
+        result.push(item);
+      }
+    }
+    return result;
   };
 
   prototype.orderBy = function <T>(
@@ -815,7 +846,6 @@ declare global {
     return this;
   };
 })(Array.prototype);
-
 
 function compare(a: any, b: any, selector?: (item: any) => any) {
   const pn = selector ? selector(a) : a;
