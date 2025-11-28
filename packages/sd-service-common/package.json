@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-service-common",
-  "version": "12.15.29",
+  "version": "12.15.28",
   "description": "심플리즘 패키지 - 서비스 모듈 (common)",
   "author": "김석래",
   "repository": {
@@ -13,6 +13,6 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@simplysm/sd-orm-common": "12.15.29"
+    "@simplysm/sd-orm-common": "12.15.28"
   }
 }
