@@ -25,6 +25,7 @@ export * from "./types/wrap/UnwrappedType";
 export * from "./types/wrap/WrappedType";
 export * from "./utils/AsyncFnQueue";
 export * from "./utils/CsvConvert";
+export * from "./utils/DateTimeFormatUtils";
 export * from "./utils/FnUtils";
 export * from "./utils/JsonConvert";
 export * from "./utils/MathUtils";

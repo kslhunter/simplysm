@@ -7,15 +7,14 @@ export class Time {
   private _dt: LuxonDateTime;
 
   constructor();
-  constructor(dt: LuxonDateTime);
   constructor(hour: number, minute: number, second?: number, millisecond?: number);
   constructor(tick: number);
   constructor(date: Date);
-  constructor(arg1?: LuxonDateTime | number | Date, arg2?: number, arg3?: number, arg4?: number) {
+  constructor(arg1?: number | Date, arg2?: number, arg3?: number, arg4?: number) {
+    // 기준일: 1970-01-01 (UTC가 아닌 Local 기준이어야 Time 계산이 직관적)
     const baseDate = LuxonDateTime.fromMillis(0).setZone("system");
-    if (arg1 instanceof LuxonDateTime) {
-      this._dt = arg1;
-    } else if (arg1 === undefined) {
+
+    if (arg1 === undefined) {
       // 현재 시간
       const now = LuxonDateTime.local();
       this._dt = baseDate.set({
@@ -41,7 +40,7 @@ export class Time {
       });
     } else {
       // Tick (ms from midnight)
-      const ms = arg1 % (24 * 60 * 60 * 1000);
+      const ms = (arg1) % (24 * 60 * 60 * 1000);
       this._dt = baseDate.plus({ milliseconds: ms });
     }
   }
@@ -108,29 +107,29 @@ export class Time {
   }
 
   setHour(hour: number): Time {
-    return new Time(this._dt.set({ hour }));
+    return new Time(this._dt.set({ hour }).toJSDate());
   }
   setMinute(minute: number): Time {
-    return new Time(this._dt.set({ minute }));
+    return new Time(this._dt.set({ minute }).toJSDate());
   }
   setSecond(second: number): Time {
-    return new Time(this._dt.set({ second }));
+    return new Time(this._dt.set({ second }).toJSDate());
   }
   setMillisecond(millisecond: number): Time {
-    return new Time(this._dt.set({ millisecond }));
+    return new Time(this._dt.set({ millisecond }).toJSDate());
   }
 
   addHours(hours: number): Time {
-    return new Time(this._dt.plus({ hours }));
+    return new Time(this._dt.plus({ hours }).toJSDate());
   }
   addMinutes(minutes: number): Time {
-    return new Time(this._dt.plus({ minutes }));
+    return new Time(this._dt.plus({ minutes }).toJSDate());
   }
   addSeconds(seconds: number): Time {
-    return new Time(this._dt.plus({ seconds }));
+    return new Time(this._dt.plus({ seconds }).toJSDate());
   }
   addMilliseconds(milliseconds: number): Time {
-    return new Time(this._dt.plus({ milliseconds }));
+    return new Time(this._dt.plus({ milliseconds }).toJSDate());
   }
 
   toFormatString(format: string): string {

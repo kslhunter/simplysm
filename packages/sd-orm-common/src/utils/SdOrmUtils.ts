@@ -87,11 +87,11 @@ export class SdOrmUtils {
       if (value == null) return undefined;
       switch (type) {
         case "DateTime":
-          return DateTime.parse((value as Date).toISOString());
+          return DateTime.parse(value);
         case "DateOnly":
-          return DateOnly.parse((value as Date).toISOString());
+          return DateOnly.parse(value);
         case "Time":
-          return Time.parse((value as Date).toISOString());
+          return Time.parse(value);
         case "Uuid":
           return new Uuid(value);
         case "Boolean":

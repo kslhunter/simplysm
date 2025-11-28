@@ -138,7 +138,7 @@ export class SdLogger {
       const loggerStyle: SdLoggerStyle = config.console.styles[severity];
 
       let headMessage: string = SdLoggerStyle.fgGray;
-      headMessage += now.toFormatString("yyyy-MM-dd HH:mm:ss.SSS") + " ";
+      headMessage += now.toFormatString("yyyy-MM-dd HH:mm:ss.fff") + " ";
       if (this._group.length > 0) {
         headMessage += config.console.style + "[" + this._group.join(".") + "] ";
       }
@@ -157,7 +157,7 @@ export class SdLogger {
     }
 
     if (severityIndex >= fileLevelIndex) {
-      let text = now.toFormatString("yyyy-MM-dd HH:mm:ss.SSS") + " ";
+      let text = now.toFormatString("yyyy-MM-dd HH:mm:ss.fff") + " ";
       text += this._group.length > 0 ? "[" + this._group.join(".") + "] " : "";
       text += severity.toUpperCase().padStart(5, " ") + os.EOL;
 
