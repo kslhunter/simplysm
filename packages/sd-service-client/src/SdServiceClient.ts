@@ -39,7 +39,7 @@ export class SdServiceClient extends EventEmitter {
     event: "state-change",
     listener: (state: "connected" | "closed" | "reconnect") => void,
   ): this;
-  override on(event: "client-reload", listener: (changedFileSet: Set<string>) => void): this;
+  override on(event: "client-reload", listener: (changedFileSet: Set<string>) => void): this; // 추가됨
   override on(event: string | symbol, listener: (...args: any[]) => void): this {
     return super.on(event, listener);
   }
@@ -72,7 +72,7 @@ export class SdServiceClient extends EventEmitter {
     return this.#ws.connected && this.isConnected;
   }
 
-  // 타입 안전성을 위한 Proxy 생성 메소드
+  // [추가] 타입 안전성을 위한 Proxy 생성 메소드
   getService<T>(serviceName: string): TRemoteService<T> {
     return new Proxy({} as TRemoteService<T>, {
       get: (target, prop) => {
@@ -249,44 +249,6 @@ export class SdServiceClient extends EventEmitter {
     // ArrayBuffer를 받아 Buffer로 변환
     const arrayBuffer = await res.arrayBuffer();
     return Buffer.from(arrayBuffer);
-  }
-
-  /**
-   * [NEW] HTTP 파일 업로드 (대용량 전송용)
-   * WebSocket을 통하지 않고 HTTP POST로 직접 전송합니다.
-   * @param files 업로드할 File 객체 또는 FileList
-   * @returns 서버에 저장된 파일 정보 목록
-   */
-  async uploadAsync(
-    files: FileList | File[] | File,
-  ): Promise<{ path: string; filename: string; size: number }[]> {
-    const formData = new FormData();
-
-    if (files instanceof FileList) {
-      for (let i = 0; i < files.length; i++) {
-        formData.append("files", files[i]);
-      }
-    } else if (Array.isArray(files)) {
-      for (const file of files) {
-        formData.append("files", file);
-      }
-    } else {
-      formData.append("files", files);
-    }
-
-    // 서버 URL 구성 (ws:// -> http://)
-    const uploadUrl = `${this.serverUrl}/upload`;
-
-    const res = await fetch(uploadUrl, {
-      method: "POST",
-      body: formData, // Content-Type은 fetch가 자동으로 multipart/form-data로 설정함
-    });
-
-    if (!res.ok) {
-      throw new Error(`Upload Failed: ${res.statusText}`);
-    }
-
-    return await res.json();
   }
 }
 
