@@ -22,7 +22,7 @@
     "@simplysm/sd-service-server": "12.15.11",
     "@simplysm/sd-storage": "12.15.11",
     "browserslist": "^4.28.0",
-    "cordova": "^13.0.0",
+    "cordova": "^12.0.0",
     "electron": "^39.2.3",
     "electron-builder": "26.0.12",
     "esbuild": "0.25.9",

@@ -71,7 +71,7 @@ export class SdCliCordova {
     if (FsUtils.exists(cordovaPath)) {
       SdCliCordova.#logger.log("이미 생성되어있는 '.cordova'를 사용합니다.");
     } else {
-      // await SdCliCordova.#execAsync("npx", ["cordova", "telemetry", "on"], this._opt.pkgPath);
+      await SdCliCordova.#execAsync("npx", ["cordova", "telemetry", "on"], this._opt.pkgPath);
 
       // 프로젝트 생성
       await SdCliCordova.#execAsync(
