@@ -16,7 +16,6 @@ import fastifyHttpProxy from "@fastify/http-proxy";
 import fastifyMultipart from "@fastify/multipart";
 import fastifyHelmet from "@fastify/helmet";
 import fastifyCors from "@fastify/cors";
-import url from "url";
 
 export class SdServiceServer extends EventEmitter {
   isOpen = false;
