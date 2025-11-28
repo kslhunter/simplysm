@@ -1,6 +1,7 @@
 import "./Map.ext";
 import { Type } from "../types/type/Type";
 import { WrappedType } from "../types/wrap/WrappedType";
+import { NeverEntryError } from "../errors/NeverEntryError";
 import { ObjectUtils } from "../utils/ObjectUtils";
 import { DateOnly } from "../types/date-time/DateOnly";
 import { DateTime } from "../types/date-time/DateTime";
@@ -8,67 +9,105 @@ import { Time } from "../types/date-time/Time";
 
 declare global {
   interface Array<T> {
+    /**
+     * 필터에 맞는 하나의 값 찾기 (여러값이 있을 경우 오류 발생)
+     * @param predicate 필터
+     */
     single(predicate?: (item: T, index: number) => boolean): T | undefined;
+
     first(predicate?: (item: T, index: number) => boolean): T | undefined;
+
     filterAsync(predicate: (item: T, index: number) => Promise<boolean>): Promise<T[]>;
+
     last(predicate?: (item: T, index: number) => boolean): T | undefined;
+
     filterExists(): NonNullable<T>[];
+
     ofType<N extends T>(type: Type<WrappedType<N>>): N[];
+
     mapAsync<R>(selector: (item: T, index: number) => Promise<R>): Promise<R[]>;
+
     mapMany(): T;
+
     mapMany<R>(selector: (item: T, index: number) => R[]): R[];
+
     mapManyAsync<R>(selector: (item: T, index: number) => Promise<R[]>): Promise<R[]>;
+
     parallelAsync<R>(fn: (item: T, index: number) => Promise<R>): Promise<R[]>;
+
     groupBy<K>(keySelector: (item: T, index: number) => K): { key: K; values: T[] }[];
+
     groupBy<K, V>(
       keySelector: (item: T, index: number) => K,
       valueSelector: (item: T, index: number) => V,
-    ): { key: K; values: V[] }[];
+    ): {
+      key: K;
+      values: V[];
+    }[];
+
     toMap<K>(keySelector: (item: T, index: number) => K): Map<K, T>;
+
     toMap<K, V>(
       keySelector: (item: T, index: number) => K,
       valueSelector: (item: T, index: number) => V,
     ): Map<K, V>;
+
     toMapAsync<K>(keySelector: (item: T, index: number) => Promise<K>): Promise<Map<K, T>>;
+
     toMapAsync<K, V>(
       keySelector: (item: T, index: number) => Promise<K> | K,
       valueSelector: (item: T, index: number) => Promise<V> | V,
     ): Promise<Map<K, V>>;
+
     toArrayMap<K>(keySelector: (item: T, index: number) => K): Map<K, T[]>;
+
     toArrayMap<K, V>(
       keySelector: (item: T, index: number) => K,
       valueSelector: (item: T, index: number) => V,
     ): Map<K, V[]>;
+
     toSetMap<K, V>(
       keySelector: (item: T, index: number) => K,
       valueSelector: (item: T, index: number) => V,
     ): Map<K, Set<V>>;
+
     toMapValues<K, V>(
       keySelector: (item: T, index: number) => K,
       valueSelector: (items: T[]) => V,
     ): Map<K, V>;
+
     toObject(keySelector: (item: T, index: number) => string): Record<string, T>;
+
     toObject<V>(
       keySelector: (item: T, index: number) => string,
       valueSelector: (item: T, index: number) => V,
     ): Record<string, V>;
+
     toTree<K extends keyof T, P extends keyof T>(keyProp: K, parentKey: P): ITreeArray<T>[];
+
     distinct(matchAddress?: boolean): T[];
+
     distinctThis(matchAddress?: boolean): T[];
+
     orderBy(selector?: (item: T) => string | number | DateOnly | DateTime | Time | undefined): T[];
+
     orderByThis(
       selector?: (item: T) => string | number | DateOnly | DateTime | Time | undefined,
     ): T[];
+
     orderByDesc(
       selector?: (item: T) => string | number | DateOnly | DateTime | Time | undefined,
     ): T[];
+
     orderByDescThis(
       selector?: (item: T) => string | number | DateOnly | DateTime | Time | undefined,
     ): T[];
+
     diffs<P>(
       target: P[],
       options?: { keys?: string[]; excludes?: string[] },
     ): TArrayDiffsResult<T, P>[];
+
     oneWayDiffs<K extends keyof T>(
       orgItems: T[] | Map<T[K], T>,
       keyPropNameOrFn: K | ((item: T) => K),
@@ -78,70 +117,111 @@ declare global {
         includes?: string[];
       },
     ): TArrayDiffs2Result<T>[];
+
     merge<P>(target: P[], options?: { keys?: string[]; excludes?: string[] }): (T | P | (T & P))[];
+
     sum(selector?: (item: T, index: number) => number): number;
+
     min(): T | undefined;
+
     min<P extends number | string>(selector?: (item: T, index: number) => P): P | undefined;
+
     max(): T | undefined;
+
     max<P extends number | string>(selector?: (item: T, index: number) => P): P | undefined;
+
     shuffle(): T[];
+
     insert(index: number, ...items: T[]): this;
+
     remove(item: T): this;
+
     remove(selector: (item: T, index: number) => boolean): this;
+
     toggle(item: T): this;
+
     clear(): this;
   }
 
   interface ReadonlyArray<T> {
     single(predicate?: (item: T, index: number) => boolean): T | undefined;
+
     first(predicate?: (item: T, index: number) => boolean): T | undefined;
+
     filterAsync(predicate: (item: T, index: number) => Promise<boolean>): Promise<T[]>;
+
     last(predicate?: (item: T, index: number) => boolean): T | undefined;
+
     filterExists(): NonNullable<T>[];
+
     ofType<N extends T>(type: Type<WrappedType<N>>): N[];
+
     mapAsync<R>(selector: (item: T, index: number) => Promise<R>): Promise<R[]>;
+
     mapMany(): T;
+
     mapMany<R>(selector: (item: T, index: number) => R[]): R[];
+
     mapManyAsync<R>(selector: (item: T, index: number) => Promise<R[]>): Promise<R[]>;
+
     parallelAsync<R>(fn: (item: T, index: number) => Promise<R>): Promise<R[]>;
+
     groupBy<K>(keySelector: (item: T, index: number) => K): { key: K; values: T[] }[];
+
     groupBy<K, V>(
       keySelector: (item: T, index: number) => K,
       valueSelector: (item: T, index: number) => V,
-    ): { key: K; values: V[] }[];
+    ): {
+      key: K;
+      values: V[];
+    }[];
+
     toMap<K>(keySelector: (item: T, index: number) => K): Map<K, T>;
+
     toMap<K, V>(
       keySelector: (item: T, index: number) => K,
       valueSelector: (item: T, index: number) => V,
     ): Map<K, V>;
+
     toMapAsync<K>(keySelector: (item: T, index: number) => Promise<K>): Promise<Map<K, T>>;
+
     toMapAsync<K, V>(
       keySelector: (item: T, index: number) => Promise<K> | K,
       valueSelector: (item: T, index: number) => Promise<V> | V,
     ): Promise<Map<K, V>>;
+
     toArrayMap<K, V>(
       keySelector: (item: T, index: number) => K,
       valueSelector: (item: T, index: number) => V,
     ): Map<K, V[]>;
+
     toMapValues<K, V>(
       keySelector: (item: T, index: number) => K,
       valueSelector: (items: T[]) => V,
     ): Map<K, V>;
+
     toObject(keySelector: (item: T, index: number) => string): Record<string, T>;
+
     toObject<V>(
       keySelector: (item: T, index: number) => string,
       valueSelector: (item: T, index: number) => V,
     ): Record<string, V>;
+
     toTree<K extends keyof T, P extends keyof T>(keyProp: K, parentKey: P): ITreeArray<T>[];
+
     distinct(matchAddress?: boolean): T[];
+
     orderBy(selector?: (item: T) => string | number | DateOnly | DateTime | Time | undefined): T[];
+
     orderByDesc(
       selector?: (item: T) => string | number | DateOnly | DateTime | Time | undefined,
     ): T[];
+
     diffs<P>(
       target: P[],
       options?: { keys?: string[]; excludes?: string[] },
     ): TArrayDiffsResult<T, P>[];
+
     oneWayDiffs<K extends keyof T>(
       orgItems: T[] | Map<T[K], T>,
       keyPropNameOrFn: K | ((item: T) => K),
@@ -151,11 +231,17 @@ declare global {
         includes?: string[];
       },
     ): TArrayDiffs2Result<T>[];
+
     merge<P>(target: P[], options?: { keys?: string[]; excludes?: string[] }): (T | P | (T & P))[];
+
     sum(selector?: (item: T, index: number) => number): number;
+
     min(): T | undefined;
+
     min<P extends number | string>(selector?: (item: T, index: number) => P): P | undefined;
+
     max(): T | undefined;
+
     max<P extends number | string>(selector?: (item: T, index: number) => P): P | undefined;
   }
 }
@@ -165,7 +251,7 @@ declare global {
     this: T[],
     predicate?: (item: T, index: number) => boolean,
   ): T | undefined {
-    const arr = predicate != null ? this.filter(predicate) : this;
+    const arr = predicate !== undefined ? this.filter(predicate) : this;
     if (arr.length > 1) {
       throw new Error(`복수의 결과물이 있습니다. (${arr.length}개)`);
     }
@@ -176,27 +262,33 @@ declare global {
     this: T[],
     predicate?: (item: T, index: number) => boolean,
   ): T | undefined {
-    return predicate != null ? this.find(predicate) : this[0];
+    return predicate !== undefined ? this.find(predicate) : this[0];
   };
 
   prototype.filterAsync = async function <T>(
     this: T[],
     predicate: (item: T, index: number) => Promise<boolean>,
   ): Promise<T[]> {
-    const results = await Promise.all(this.map((item, index) => predicate(item, index)));
-    return this.filter((_, index) => results[index]);
+    const arr: T[] = [];
+    for (let i = 0; i < this.length; i++) {
+      if (await predicate(this[i], i)) {
+        arr.push(this[i]);
+      }
+    }
+    return arr;
   };
 
   prototype.last = function <T>(
     this: T[],
     predicate?: (item: T, index: number) => boolean,
   ): T | undefined {
-    if (predicate != null) {
+    if (predicate !== undefined) {
       for (let i = this.length - 1; i >= 0; i--) {
         if (predicate(this[i], i)) {
           return this[i];
         }
       }
+
       return undefined;
     } else {
       return this[this.length - 1];
@@ -204,7 +296,7 @@ declare global {
   };
 
   prototype.filterExists = function <T>(this: T[]): NonNullable<T>[] {
-    return this.filter((item) => item != null);
+    return this.filter((item) => item != null) /* as NonNullable<T>[]*/;
   };
 
   prototype.ofType = function <T, N extends T>(this: T[], type: Type<WrappedType<N>>): N[] {
@@ -217,22 +309,28 @@ declare global {
     this: T[],
     selector: (item: T, index: number) => Promise<R>,
   ): Promise<R[]> {
-    return await Promise.all(this.map((item, index) => selector(item, index)));
+    const result: R[] = [];
+    for (let i = 0; i < this.length; i++) {
+      result.push(await selector(this[i], i));
+    }
+    return result;
+    // return await this.parallelAsync<R>(async (item, index) => await selector(item, index));
   };
 
   prototype.mapMany = function <T, R>(
     this: T[],
     selector?: (item: T, index: number) => R[],
   ): T | R[] {
-    return selector ? this.flatMap(selector) : (this.flat() as T);
+    const arr: any[] = selector ? this.map(selector) : this;
+    return arr.length > 0 ? arr.reduce((p, n) => (p ?? []).concat(n ?? [])) : arr;
   };
 
   prototype.mapManyAsync = async function <T, R>(
     this: T[],
     selector?: (item: T, index: number) => Promise<R[]>,
   ): Promise<T | R[]> {
-    const arr = selector != null ? await this.mapAsync(selector) : this;
-    return arr.flat() as T;
+    const arr = selector !== undefined ? await this.mapAsync(selector) : this;
+    return arr.mapMany();
   };
 
   prototype.parallelAsync = async function <T, R>(
@@ -242,41 +340,29 @@ declare global {
     return await Promise.all(this.map(async (item, index) => await fn(item, index)));
   };
 
-  // 1차: Map을 통해 참조(Reference)나 Primitive Key를 O(1)로 찾음 (대부분 여기서 걸림)
-  // 2차: Map에 없지만 Key가 객체인 경우, ObjectUtils.equal로 전체 Key를 순회하며 찾음 (정합성 보장)
   prototype.groupBy = function <T, K, V>(
     this: T[],
     keySelector: (item: T, index: number) => K,
     valueSelector?: (item: T, index: number) => V,
-  ): { key: K; values: (V | T)[] }[] {
-    const map = new Map<any, { key: K; values: (V | T)[] }>();
+  ): {
+    key: K;
+    values: (V | T)[];
+  }[] {
+    const result: { key: K; values: (V | T)[] }[] = [];
 
     for (let i = 0; i < this.length; i++) {
-      const item = this[i];
-      const key = keySelector(item, i);
-      const value = valueSelector ? valueSelector(item, i) : item;
+      const keyObj = keySelector(this[i], i);
+      const valueObj = valueSelector !== undefined ? valueSelector(this[i], i) : this[i];
 
-      let entry = map.get(key);
-
-      // Map에서 못 찾았는데 Key가 객체라면?, ObjectUtils.equal로 확실하게 찾는다.
-      if (!entry && typeof key === "object" && key !== null) {
-        for (const [mapKey, mapEntry] of map) {
-          if (ObjectUtils.equal(mapKey, key)) {
-            entry = mapEntry;
-            break;
-          }
-        }
+      const existsRecord = result.single((item) => ObjectUtils.equal(item.key, keyObj));
+      if (existsRecord !== undefined) {
+        existsRecord.values.push(valueObj);
+      } else {
+        result.push({ key: keyObj, values: [valueObj] });
       }
-
-      if (!entry) {
-        entry = { key, values: [] };
-        map.set(key, entry);
-      }
-
-      entry.values.push(value);
     }
 
-    return Array.from(map.values());
+    return result;
   };
 
   prototype.toMap = function <T, K, V>(
@@ -285,16 +371,19 @@ declare global {
     valueSelector?: (item: T, index: number) => V,
   ): Map<K, V | T> {
     const result = new Map<K, V | T>();
+
     for (let i = 0; i < this.length; i++) {
       const item = this[i];
-      const key = keySelector(item, i);
-      const value = valueSelector ? valueSelector(item, i) : item;
 
-      if (result.has(key)) {
-        throw new Error(`키가 중복되었습니다. (중복된키: ${JSON.stringify(key)})`);
+      const keyObj = keySelector(item, i);
+      const valueObj = valueSelector !== undefined ? valueSelector(item, i) : item;
+
+      if (result.has(keyObj)) {
+        throw new Error(`키가 중복되었습니다. (중복된키: ${JSON.stringify(keyObj)})`);
       }
-      result.set(key, value);
+      result.set(keyObj, valueObj);
     }
+
     return result;
   };
 
@@ -304,16 +393,19 @@ declare global {
     valueSelector?: (item: T, index: number) => Promise<V> | V,
   ): Promise<Map<K, V | T>> {
     const result = new Map<K, V | T>();
+
     for (let i = 0; i < this.length; i++) {
       const item = this[i];
-      const key = await keySelector(item, i);
-      const value = valueSelector ? await valueSelector(item, i) : item;
 
-      if (result.has(key)) {
-        throw new Error(`키가 중복되었습니다. (중복된키: ${JSON.stringify(key)})`);
+      const keyObj = await keySelector(item, i);
+      const valueObj = valueSelector !== undefined ? await valueSelector(item, i) : item;
+
+      if (result.has(keyObj)) {
+        throw new Error(`키가 중복되었습니다. (중복된키: ${JSON.stringify(keyObj)})`);
       }
-      result.set(key, value);
+      result.set(keyObj, valueObj);
     }
+
     return result;
   };
 
@@ -323,14 +415,17 @@ declare global {
     valueSelector?: (item: T, index: number) => V,
   ): Map<K, (V | T)[]> {
     const result = new Map<K, (V | T)[]>();
+
     for (let i = 0; i < this.length; i++) {
       const item = this[i];
-      const key = keySelector(item, i);
-      const value = valueSelector ? valueSelector(item, i) : item;
 
-      const arr = result.getOrCreate(key, []);
-      arr.push(value);
+      const keyObj = keySelector(item, i);
+      const valueObj = valueSelector !== undefined ? valueSelector(item, i) : item;
+
+      const arr = result.getOrCreate(keyObj, []);
+      arr.push(valueObj);
     }
+
     return result;
   };
 
@@ -340,14 +435,17 @@ declare global {
     valueSelector?: (item: T, index: number) => V,
   ): Map<K, Set<V | T>> {
     const result = new Map<K, Set<V | T>>();
+
     for (let i = 0; i < this.length; i++) {
       const item = this[i];
-      const key = keySelector(item, i);
-      const value = valueSelector ? valueSelector(item, i) : item;
 
-      const set = result.getOrCreate(key, new Set<V | T>());
-      set.add(value);
+      const keyObj = keySelector(item, i);
+      const valueObj = valueSelector !== undefined ? valueSelector(item, i) : item;
+
+      const set = result.getOrCreate(keyObj, new Set<V | T>());
+      set.add(valueObj);
     }
+
     return result;
   };
 
@@ -356,11 +454,23 @@ declare global {
     keySelector: (item: T, index: number) => K,
     valueSelector: (items: T[]) => V,
   ): Map<K, V | T> {
-    const itemsMap = this.toArrayMap(keySelector);
-    const result = new Map<K, V | T>();
-    for (const [key, items] of itemsMap) {
-      result.set(key, valueSelector(items));
+    const itemsMap = new Map<K, T[]>();
+
+    for (let i = 0; i < this.length; i++) {
+      const item = this[i];
+
+      const keyObj = keySelector(item, i);
+
+      const arr = itemsMap.getOrCreate(keyObj, []);
+      arr.push(item);
     }
+
+    const result = new Map<K, V | T>();
+
+    for (const key of itemsMap.keys()) {
+      result.set(key, valueSelector(itemsMap.get(key)!));
+    }
+
     return result;
   };
 
@@ -370,16 +480,19 @@ declare global {
     valueSelector?: (item: T, index: number) => V,
   ): Record<string, V | T | undefined> {
     const result: Record<string, V | T | undefined> = {};
+
     for (let i = 0; i < this.length; i++) {
       const item = this[i];
-      const key = keySelector(item, i);
-      const value = valueSelector ? valueSelector(item, i) : item;
 
-      if (Object.prototype.hasOwnProperty.call(result, key)) {
+      const key = keySelector(item, i);
+      const valueObj = valueSelector !== undefined ? valueSelector(item, i) : item;
+
+      if (result[key] !== undefined) {
         throw new Error(`키가 중복되었습니다. (중복된키: ${key})`);
       }
-      result[key] = value;
+      result[key] = valueObj;
     }
+
     return result;
   };
 
@@ -388,44 +501,37 @@ declare global {
     key: K,
     parentKey: P,
   ): ITreeArray<T>[] {
-    const group = this.groupBy((item) => item[parentKey]);
-    const groupMap = new Map(group.map((g) => [g.key, g.values]));
-
     const fn = (items: T[]): ITreeArray<T>[] => {
-      return items.map((item) => {
-        const children = groupMap.get(item[key] as any) || [];
-        return {
-          ...ObjectUtils.clone(item),
-          children: fn(children),
-        } as ITreeArray<T>;
-      });
+      return items.map((item) => ({
+        ...ObjectUtils.clone(item),
+        // @ts-expect-error
+        children: fn(this.filter((item1) => item1[parentKey] === item[key])),
+      }));
     };
 
-    const rootItems = this.filter((item) => item[parentKey] == null);
+    const rootItems = this.filter((item1) => item1[parentKey] == null);
     return fn(rootItems);
   };
 
-  // [엔진 교체] 정합성 보장 (ObjectUtils.equal 필수 사용)
   prototype.distinct = function <T>(this: T[], matchAddress?: boolean): T[] {
-    if (matchAddress) {
-      return Array.from(new Set(this));
-    }
-
     const result: T[] = [];
     for (const item of this) {
-      // [보완] JSON.stringify는 키 순서 문제로 인해 사용하지 않음.
-      // 느리더라도 ObjectUtils.equal을 사용하여 "값 동등성"을 확실히 보장함.
-      const found = result.some((item1) => ObjectUtils.equal(item1, item));
-      if (!found) {
+      if (
+        !result.some((item1) =>
+          matchAddress === true ? item1 === item : ObjectUtils.equal(item1, item),
+        )
+      ) {
         result.push(item);
       }
     }
+
     return result;
   };
 
   prototype.distinctThis = function <T>(this: T[], matchAddress?: boolean): T[] {
     const distinctArray = this.distinct(matchAddress);
     this.clear().push(...distinctArray);
+
     return this;
   };
 
@@ -433,109 +539,219 @@ declare global {
     this: T[],
     selector?: (item: T) => string | number | DateTime | DateOnly | Time | undefined,
   ): T[] {
-    return this.slice().sort((p, n) => compare(p, n, selector));
+    return this.concat().sort((p, n) => {
+      const pn = selector !== undefined ? selector(n) : n;
+      const pp = selector !== undefined ? selector(p) : p;
+
+      const cpn =
+        pn instanceof DateOnly
+          ? pn.tick
+          : pn instanceof DateTime
+            ? pn.tick
+            : pn instanceof Time
+              ? pn.tick
+              : pn;
+      const cpp =
+        pp instanceof DateOnly
+          ? pp.tick
+          : pp instanceof DateTime
+            ? pp.tick
+            : pp instanceof Time
+              ? pp.tick
+              : pp;
+
+      if (cpn === cpp) {
+        return 0;
+      } else if (typeof cpn === "string" && typeof cpp === "string") {
+        return cpp.localeCompare(cpn);
+      } else if (typeof cpn === "number" && typeof cpp === "number") {
+        return cpn > cpp ? -1 : cpn < cpp ? 1 : 0;
+      } else if (typeof cpn === "boolean" && typeof cpp === "boolean") {
+        return cpn === cpp ? 0 : cpn ? -1 : 1;
+      } else if (typeof cpp === "undefined") {
+        return -1;
+      } else if (typeof cpn === "undefined") {
+        return 1;
+      } else {
+        throw new Error(`orderBy를 사용할 수 없는 타입입니다. (${typeof cpp}, ${typeof cpn})`);
+      }
+    });
   };
 
   prototype.orderByThis = function <T>(
     this: T[],
     selector?: (item: T) => string | number | DateTime | DateOnly | Time | undefined,
   ): T[] {
-    return this.sort((p, n) => compare(p, n, selector));
+    return this.sort((p, n) => {
+      const pn = selector !== undefined ? selector(n) : n;
+      const pp = selector !== undefined ? selector(p) : p;
+
+      const cpn =
+        pn instanceof DateOnly
+          ? pn.tick
+          : pn instanceof DateTime
+            ? pn.tick
+            : pn instanceof Time
+              ? pn.tick
+              : pn;
+      const cpp =
+        pp instanceof DateOnly
+          ? pp.tick
+          : pp instanceof DateTime
+            ? pp.tick
+            : pp instanceof Time
+              ? pp.tick
+              : pp;
+
+      if (cpn === cpp) {
+        return 0;
+      } else if (typeof cpn === "string" && typeof cpp === "string") {
+        return cpp.localeCompare(cpn);
+      } else if (typeof cpn === "number" && typeof cpp === "number") {
+        return cpn > cpp ? -1 : cpn < cpp ? 1 : 0;
+      } else if (typeof cpn === "boolean" && typeof cpp === "boolean") {
+        return cpn === cpp ? 0 : cpn ? -1 : 1;
+      } else if (typeof cpp === "undefined") {
+        return -1;
+      } else if (typeof cpn === "undefined") {
+        return 1;
+      } else {
+        throw new Error("orderBy를 사용할 수 없는 타입입니다.");
+      }
+    });
   };
 
   prototype.orderByDesc = function <T>(
     this: T[],
     selector?: (item: T) => string | number | DateTime | DateOnly | Time | undefined,
   ): T[] {
-    return this.slice().sort((p, n) => compare(n, p, selector));
+    return this.concat().sort((p, n) => {
+      const pn = selector !== undefined ? selector(n) : n;
+      const pp = selector !== undefined ? selector(p) : p;
+
+      const cpn =
+        pn instanceof DateOnly
+          ? pn.tick
+          : pn instanceof DateTime
+            ? pn.tick
+            : pn instanceof Time
+              ? pn.tick
+              : pn;
+      const cpp =
+        pp instanceof DateOnly
+          ? pp.tick
+          : pp instanceof DateTime
+            ? pp.tick
+            : pp instanceof Time
+              ? pp.tick
+              : pp;
+
+      if (cpn === cpp) {
+        return 0;
+      } else if (typeof cpn === "string" && typeof cpp === "string") {
+        return cpn.localeCompare(cpp);
+      } else if (typeof cpn === "number" && typeof cpp === "number") {
+        return cpn < cpp ? -1 : cpn > cpp ? 1 : 0;
+      } else if (typeof cpn === "boolean" && typeof cpp === "boolean") {
+        return cpn === cpp ? 0 : cpn ? 1 : -1;
+      } else if (typeof cpp === "undefined") {
+        return 1;
+      } else if (typeof cpn === "undefined") {
+        return -1;
+      } else {
+        throw new Error("orderBy를 사용할 수 없는 타입입니다.");
+      }
+    });
   };
 
   prototype.orderByDescThis = function <T>(
     this: T[],
     selector?: (item: T) => string | number | DateTime | DateOnly | Time | undefined,
   ): T[] {
-    return this.sort((p, n) => compare(n, p, selector));
+    return this.sort((p, n) => {
+      const pn = selector !== undefined ? selector(n) : n;
+      const pp = selector !== undefined ? selector(p) : p;
+
+      const cpn =
+        pn instanceof DateOnly
+          ? pn.tick
+          : pn instanceof DateTime
+            ? pn.tick
+            : pn instanceof Time
+              ? pn.tick
+              : pn;
+      const cpp =
+        pp instanceof DateOnly
+          ? pp.tick
+          : pp instanceof DateTime
+            ? pp.tick
+            : pp instanceof Time
+              ? pp.tick
+              : pp;
+
+      if (cpn === cpp) {
+        return 0;
+      } else if (typeof cpn === "string" && typeof cpp === "string") {
+        return cpn.localeCompare(cpp);
+      } else if (typeof cpn === "number" && typeof cpp === "number") {
+        return cpn < cpp ? -1 : cpn > cpp ? 1 : 0;
+      } else if (typeof cpn === "boolean" && typeof cpp === "boolean") {
+        return cpn === cpp ? 0 : cpn ? 1 : -1;
+      } else if (typeof cpp === "undefined") {
+        return 1;
+      } else if (typeof cpn === "undefined") {
+        return -1;
+      } else {
+        throw new Error("orderBy를 사용할 수 없는 타입입니다.");
+      }
+    });
   };
 
-  // [엔진 교체: 하이브리드 최적화]
   prototype.diffs = function <T, P>(
     this: T[],
     target: P[],
-    options?: { keys?: string[]; excludes?: string[] },
+    options?: {
+      keys?: string[];
+      excludes?: string[];
+    },
   ): TArrayDiffsResult<T, P>[] {
-    // 1. 키가 지정된 경우 -> Map 활용 최적화 시도
-    if (options?.keys && options.keys.length > 0) {
-      const targetMap = new Map<string, P>();
-      const targetRemains = new Set<P>(target);
-
-      // 키 생성 함수: Primitive 값들을 조합하여 Map Key로 사용
-      const getMapKey = (item: any): string | undefined => {
-        const keyValues = options.keys!.map((k) => item[k]);
-        // 만약 키 값 중에 객체가 섞여 있다면 Map 최적화를 포기해야 함 (안전성 우선)
-        if (keyValues.some((v) => typeof v === "object" && v !== null)) return undefined;
-        return keyValues.join("||__SD_SEP__||"); // 구분자를 넣어 충돌 방지
-      };
-
-      // Target 인덱싱
-      let canOptimize = true;
-      for (const tItem of target) {
-        const keyStr = getMapKey(tItem);
-        if (keyStr == null) {
-          canOptimize = false;
-          break;
-        }
-        targetMap.set(keyStr, tItem);
-      }
-
-      // 최적화 가능한 경우 (키가 모두 Primitive일 때 - 대부분의 DB ID 케이스)
-      if (canOptimize) {
-        const result: TArrayDiffsResult<T, P>[] = [];
-        for (const sItem of this) {
-          const keyStr = getMapKey(sItem);
-          // 소스 키가 생성 안되면(객체 키 등) 로직 오류이므로 undefined 처리
-          const tItem = keyStr != null ? targetMap.get(keyStr) : undefined;
-
-          if (tItem != null) {
-            // [중요] 키가 같아도 내용은 다를 수 있으므로 ObjectUtils.equal로 최종 변경 확인
-            if (ObjectUtils.equal(sItem, tItem, { excludes: options.excludes })) {
-              // 변경 없음
-            } else {
-              result.push({ source: sItem, target: tItem });
-            }
-            targetRemains.delete(tItem);
-          } else {
-            result.push({ source: sItem, target: undefined });
-          }
-        }
-
-        for (const tItem of targetRemains) {
-          result.push({ source: undefined, target: tItem });
-        }
-        return result;
-      }
-    }
-
-    // 2. 키가 없거나 키가 복잡한 객체인 경우 -> 기존 O(N^2) 로직 유지 (안전성 보장)
     const result: TArrayDiffsResult<T, P>[] = [];
-    const uncheckedTarget = [...target];
+
+    const uncheckedTarget = ([] as P[]).concat(target); // source 비교시, 수정으로 판단되거나 변경사항이 없는것으로 판단된 target 은 제외시킴
 
     for (const sourceItem of this) {
-      const sameTargetIndex = uncheckedTarget.findIndex((targetItem) =>
+      //target 에 동일한 항목이 없을 때
+      const sameTarget = uncheckedTarget.single((targetItem) =>
         ObjectUtils.equal(
           targetItem,
           sourceItem,
-          options?.excludes ? { excludes: options.excludes } : undefined,
+          options?.excludes !== undefined ? { excludes: options.excludes } : undefined,
         ),
       );
 
-      if (sameTargetIndex === -1) {
+      if (sameTarget === undefined) {
+        //키 설정시
+        if (options?.keys !== undefined) {
+          //target 에 동일한 항목은 아니지만, key 가 같은게 있는 경우: source => target 수정된 항목
+          const sameKeyTargetItem = uncheckedTarget.single((targetItem) =>
+            ObjectUtils.equal(targetItem, sourceItem, { includes: options.keys }),
+          );
+          if (sameKeyTargetItem !== undefined) {
+            result.push({ source: sourceItem, target: sameKeyTargetItem });
+            uncheckedTarget.remove(sameKeyTargetItem);
+            continue;
+          }
+        }
+
+        //기타: source 에서 삭제된 항목
         result.push({ source: sourceItem, target: undefined });
       } else {
-        uncheckedTarget.splice(sameTargetIndex, 1);
+        uncheckedTarget.remove(sameTarget);
       }
     }
 
     for (const uncheckedTargetItem of uncheckedTarget) {
+      //target 에 추가된 항목
       result.push({ source: undefined, target: uncheckedTargetItem });
     }
 
@@ -560,37 +776,23 @@ declare global {
               ? keyPropNameOrFn(orgItem)
               : orgItem[keyPropNameOrFn],
           );
-
     const includeSame = options?.includeSame ?? false;
-    const diffs: TArrayDiffs2Result<T>[] = [];
 
+    const diffs: TArrayDiffs2Result<T>[] = [];
     for (const item of this) {
       const keyValue =
         typeof keyPropNameOrFn === "function" ? keyPropNameOrFn(item) : item[keyPropNameOrFn];
-
       if (keyValue == null) {
         diffs.push({ type: "create", item, orgItem: undefined });
         continue;
       }
 
-      let orgItem = orgItemMap.get(keyValue);
-
-      // [보완] Map에 없지만 키가 객체라면 ObjectUtils로 재검색
-      if (!orgItem && typeof keyValue === "object") {
-        for (const [mapKey, mapEntry] of orgItemMap) {
-          if (ObjectUtils.equal(mapKey, keyValue)) {
-            orgItem = mapEntry;
-            break;
-          }
-        }
-      }
-
+      const orgItem = orgItemMap.get(keyValue);
       if (!orgItem) {
         diffs.push({ type: "create", item, orgItem: undefined });
         continue;
       }
 
-      // [중요] 내용 비교는 반드시 ObjectUtils.equal 사용
       if (
         ObjectUtils.equal(orgItem, item, {
           excludes: options?.excludes,
@@ -616,28 +818,21 @@ declare global {
       excludes?: string[];
     },
   ): (T | P | (T & P))[] {
-    // diffs 결과에 의존하므로 로직은 유지하되, 내부적으로 개선된 diffs를 사용하여 성능 향상
     const diffs = this.diffs(target, options);
 
-    // 원본 배열 복사본 (불변성 유지를 위해 새로 생성)
     const result: (T | P | (T & P))[] = ObjectUtils.clone(this);
-
     for (const diff of diffs) {
-      if (diff.source != null && diff.target != null) {
-        // UPDATE: ObjectUtils.equal로 찾아서 교체
-        const index = result.findIndex((item) => ObjectUtils.equal(item, diff.source));
-        if (index !== -1) {
-          result[index] = ObjectUtils.merge(diff.source, diff.target);
+      // 변경시
+      if (diff.source !== undefined && diff.target !== undefined) {
+        const resultSourceItem = result.single((item) => ObjectUtils.equal(item, diff.source));
+        if (resultSourceItem === undefined) {
+          throw new NeverEntryError();
         }
-      } else if (diff.source == null && diff.target != null) {
-        // INSERT
+        result[result.indexOf(resultSourceItem)] = ObjectUtils.merge(diff.source, diff.target);
+      }
+      // 추가시
+      else if (diff.target !== undefined) {
         result.push(diff.target);
-      } else if (diff.source != null && diff.target == null) {
-        // DELETE
-        const index = result.findIndex((item) => ObjectUtils.equal(item, diff.source));
-        if (index !== -1) {
-          result.splice(index, 1);
-        }
       }
     }
 
@@ -647,12 +842,13 @@ declare global {
   prototype.sum = function <T>(this: T[], selector?: (item: T, index: number) => number): number {
     let result = 0;
     for (let i = 0; i < this.length; i++) {
-      const item = selector != null ? selector(this[i], i) : this[i];
+      const item = selector !== undefined ? selector(this[i], i) : this[i];
       if (typeof item !== "number") {
         throw new Error("sum 은 number 에 대해서만 사용할 수 있습니다.");
       }
       result += item;
     }
+
     return result;
   };
 
@@ -660,16 +856,17 @@ declare global {
     this: T[],
     selector?: (item: T, index: number) => string | number,
   ): string | number | undefined {
-    let result: string | number | undefined = undefined;
+    let result: string | number | undefined;
     for (let i = 0; i < this.length; i++) {
-      const item = selector != null ? selector(this[i], i) : this[i];
+      const item = selector !== undefined ? selector(this[i], i) : this[i];
       if (typeof item !== "number" && typeof item !== "string") {
         throw new Error("min 은 number/string 에 대해서만 사용할 수 있습니다.");
       }
-      if (result == null || result > item) {
+      if (result === undefined || result > item) {
         result = item;
       }
     }
+
     return result;
   };
 
@@ -677,16 +874,17 @@ declare global {
     this: T[],
     selector?: (item: T, index: number) => string | number,
   ): string | number | undefined {
-    let result: string | number | undefined = undefined;
+    let result: string | number | undefined;
     for (let i = 0; i < this.length; i++) {
-      const item = selector != null ? selector(this[i], i) : this[i];
+      const item = selector !== undefined ? selector(this[i], i) : this[i];
       if (typeof item !== "number" && typeof item !== "string") {
         throw new Error("max 은 number/string 에 대해서만 사용할 수 있습니다.");
       }
-      if (result == null || result < item) {
+      if (result === undefined || result < item) {
         result = item;
       }
     }
+
     return result;
   };
 
@@ -694,11 +892,13 @@ declare global {
     if (this.length <= 1) {
       return ObjectUtils.clone(this);
     }
-    // Fisher-Yates 알고리즘으로 개선
-    const result = this.slice();
-    for (let i = result.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [result[i], result[j]] = [result[j], result[i]];
+
+    let result = this;
+    while (true) {
+      result = result.orderBy(() => Math.random());
+      if (!ObjectUtils.equal(result, this)) {
+        break;
+      }
     }
     return result;
   };
@@ -712,27 +912,23 @@ declare global {
     this: T[],
     itemOrSelector: T | ((item: T, index: number) => boolean),
   ): T[] {
-    if (typeof itemOrSelector === "function") {
-      const selector = itemOrSelector as (item: T, index: number) => boolean;
-      for (let i = this.length - 1; i >= 0; i--) {
-        if (selector(this[i], i)) {
-          this.splice(i, 1);
-        }
-      }
-    } else {
-      let index = this.indexOf(itemOrSelector);
-      while (index !== -1) {
-        this.splice(index, 1);
-        index = this.indexOf(itemOrSelector);
+    const removeItems =
+      typeof itemOrSelector === "function"
+        ? this.filter((itemOrSelector as (item: T, index: number) => boolean).bind(this))
+        : [itemOrSelector];
+
+    for (const removeItem of removeItems) {
+      while (this.includes(removeItem)) {
+        this.splice(this.indexOf(removeItem), 1);
       }
     }
+
     return this;
   };
 
   prototype.toggle = function <T>(this: T[], item: T): T[] {
-    const index = this.indexOf(item);
-    if (index !== -1) {
-      this.splice(index, 1);
+    if (this.includes(item)) {
+      this.remove(item);
     } else {
       this.push(item);
     }
@@ -740,33 +936,14 @@ declare global {
   };
 
   prototype.clear = function <T>(this: T[]): T[] {
-    this.length = 0;
-    return this;
+    return this.remove(() => true);
   };
 })(Array.prototype);
 
-function compare(a: any, b: any, selector?: (item: any) => any) {
-  const pn = selector ? selector(a) : a;
-  const pp = selector ? selector(b) : b;
-
-  const cpn = pn instanceof DateOnly || pn instanceof DateTime || pn instanceof Time ? pn.tick : pn;
-  const cpp = pp instanceof DateOnly || pp instanceof DateTime || pp instanceof Time ? pp.tick : pp;
-
-  if (cpn === cpp) return 0;
-  if (typeof cpn === "string" && typeof cpp === "string") return cpn.localeCompare(cpp);
-  if (typeof cpn === "number" && typeof cpp === "number") return cpn < cpp ? -1 : 1;
-  if (typeof cpn === "boolean" && typeof cpp === "boolean") return cpn === cpp ? 0 : cpn ? -1 : 1;
-
-  if (cpn == null) return 1;
-  if (cpp == null) return -1;
-
-  throw new Error(`orderBy를 사용할 수 없는 타입입니다. (${typeof cpp}, ${typeof cpn})`);
-}
-
 export type TArrayDiffsResult<T, P> =
-  | { source: undefined; target: P }
-  | { source: T; target: undefined }
-  | { source: T; target: P };
+  | { source: undefined; target: P } // INSERT
+  | { source: T; target: undefined } // DELETE
+  | { source: T; target: P }; // UPDATE
 
 export type TArrayDiffs2Result<T> =
   | { type: "create"; item: T; orgItem: undefined }
