@@ -1,142 +1,153 @@
-import { DateTime as LuxonDateTime } from "luxon";
 import { ArgumentError } from "../../errors/ArgumentError";
+import { DateTimeFormatUtils } from "../../utils/DateTimeFormatUtils";
 import { DateTime } from "./DateTime";
 
 export class Time {
-  // [엔진 교체] 날짜는 무시하고 시간만 다루기 위해 1970-01-01로 고정된 Luxon 객체 사용
-  private _dt: LuxonDateTime;
+  #tick: number;
 
   constructor();
   constructor(hour: number, minute: number, second?: number, millisecond?: number);
   constructor(tick: number);
   constructor(date: Date);
   constructor(arg1?: number | Date, arg2?: number, arg3?: number, arg4?: number) {
-    // 기준일: 1970-01-01 (UTC가 아닌 Local 기준이어야 Time 계산이 직관적)
-    const baseDate = LuxonDateTime.fromMillis(0).setZone("system");
-
     if (arg1 === undefined) {
-      // 현재 시간
-      const now = LuxonDateTime.local();
-      this._dt = baseDate.set({
-        hour: now.hour,
-        minute: now.minute,
-        second: now.second,
-        millisecond: now.millisecond,
-      });
+      const now = new Date();
+      this.#tick =
+        (now.getMilliseconds() + // ms
+          now.getSeconds() * 1000 + // s
+          now.getMinutes() * 60 * 1000 + // m
+          now.getHours() * 60 * 60 * 1000) % // h
+        (24 * 60 * 60 * 1000);
     } else if (arg2 !== undefined) {
-      this._dt = baseDate.set({
-        hour: arg1 as number,
-        minute: arg2,
-        second: arg3 ?? 0,
-        millisecond: arg4 ?? 0,
-      });
+      this.#tick =
+        ((arg4 ?? 0) + // ms
+          (arg3 ?? 0) * 1000 + // s
+          arg2 * 60 * 1000 + // m
+          (arg1 as number) * 60 * 60 * 1000) % // h
+        (24 * 60 * 60 * 1000);
     } else if (arg1 instanceof Date) {
-      const dt = LuxonDateTime.fromJSDate(arg1);
-      this._dt = baseDate.set({
-        hour: dt.hour,
-        minute: dt.minute,
-        second: dt.second,
-        millisecond: dt.millisecond,
-      });
+      this.#tick =
+        (arg1.getMilliseconds() + // ms
+          arg1.getSeconds() * 1000 + // s
+          arg1.getMinutes() * 60 * 1000 + // m
+          arg1.getHours() * 60 * 60 * 1000) % // h
+        (24 * 60 * 60 * 1000);
     } else {
-      // Tick (ms from midnight)
-      const ms = (arg1) % (24 * 60 * 60 * 1000);
-      this._dt = baseDate.plus({ milliseconds: ms });
+      this.#tick = arg1 % (24 * 60 * 60 * 1000);
     }
   }
 
   static parse(str: string): Time {
-    // 1. "오전/오후" 포함 포맷 (Luxon: 'a h:mm:ss')
-    let dt = LuxonDateTime.fromFormat(str, "a h:mm:ss", { locale: "ko" });
-    if (!dt.isValid) dt = LuxonDateTime.fromFormat(str, "a h:mm:ss.u", { locale: "ko" });
-
-    // 2. "HH:mm:ss" 포맷
-    if (!dt.isValid) dt = LuxonDateTime.fromFormat(str, "HH:mm:ss");
-    if (!dt.isValid) dt = LuxonDateTime.fromFormat(str, "HH:mm:ss.u");
-
-    // 3. DateTime.parse 위임
-    if (!dt.isValid) {
-      try {
-        const date = DateTime.parse(str);
-        return new Time(date.hour, date.minute, date.second, date.millisecond);
-      } catch {
-        // ignore
-      }
+    const match1 = /(오전|오후) ([0-9]{1,2}):([0-9]{1,2}):([0-9]{1,2})(\.([0-9]{1,3}))?$/.exec(str);
+    if (match1 != null) {
+      return new Time(
+        Number(match1[2]) + (match1[1] === "오후" ? 12 : 0),
+        Number(match1[3]),
+        Number(match1[4]),
+        Number(match1[6] ? match1[6].padEnd(3, "0") : "0"),
+      );
     }
 
-    if (!dt.isValid) throw new ArgumentError({ str });
+    const match2 = /([0-9]{1,2}):([0-9]{1,2}):([0-9]{1,2})(\.([0-9]{1,3}))?$/.exec(str);
+    if (match2 != null) {
+      return new Time(
+        Number(match2[1]),
+        Number(match2[2]),
+        Number(match2[3]),
+        Number(match2[5] ? match2[5].padEnd(3, "0") : "0"),
+      );
+    }
 
-    return new Time(dt.hour, dt.minute, dt.second, dt.millisecond);
+    try {
+      const dt = DateTime.parse(str);
+      return new Time(dt.hour, dt.minute, dt.second, dt.millisecond);
+    } catch {
+      throw new ArgumentError({ str });
+    }
   }
 
   get hour(): number {
-    return this._dt.hour;
+    return Math.floor(this.#tick / (60 * 60 * 1000));
   }
-  set hour(v: number) {
-    this._dt = this._dt.set({ hour: v });
+
+  set hour(value: number) {
+    this.#tick = (this.#tick + (value - this.hour) * 60 * 60 * 1000) % (24 * 60 * 60 * 1000);
   }
 
   get minute(): number {
-    return this._dt.minute;
+    return Math.floor(this.#tick / (60 * 1000)) % 60;
   }
-  set minute(v: number) {
-    this._dt = this._dt.set({ minute: v });
+
+  set minute(value: number) {
+    this.#tick = (this.#tick + (value - this.minute) * 60 * 1000) % (24 * 60 * 60 * 1000);
   }
 
   get second(): number {
-    return this._dt.second;
+    return Math.floor(this.#tick / 1000) % 60;
   }
-  set second(v: number) {
-    this._dt = this._dt.set({ second: v });
+
+  set second(value: number) {
+    this.#tick = (this.#tick + (value - this.second) * 1000) % (24 * 60 * 60 * 1000);
   }
 
   get millisecond(): number {
-    return this._dt.millisecond;
+    return this.#tick % 1000;
   }
-  set millisecond(v: number) {
-    this._dt = this._dt.set({ millisecond: v });
+
+  set millisecond(value: number) {
+    this.#tick = (this.#tick + (value - this.millisecond)) % (24 * 60 * 60 * 1000);
   }
 
   get tick(): number {
-    // 자정으로부터 흐른 시간 계산
-    return this._dt.diff(this._dt.startOf("day")).as("milliseconds");
+    return this.#tick;
   }
-  set tick(v: number) {
-    const ms = v % (24 * 60 * 60 * 1000);
-    this._dt = this._dt.startOf("day").plus({ milliseconds: ms });
+
+  set tick(tick: number) {
+    this.#tick = tick % (24 * 60 * 60 * 1000);
   }
 
   setHour(hour: number): Time {
-    return new Time(this._dt.set({ hour }).toJSDate());
+    return new Time(hour, this.minute, this.second, this.millisecond);
   }
+
   setMinute(minute: number): Time {
-    return new Time(this._dt.set({ minute }).toJSDate());
+    return new Time(this.hour, minute, this.second, this.millisecond);
   }
+
   setSecond(second: number): Time {
-    return new Time(this._dt.set({ second }).toJSDate());
+    return new Time(this.hour, this.minute, second, this.millisecond);
   }
+
   setMillisecond(millisecond: number): Time {
-    return new Time(this._dt.set({ millisecond }).toJSDate());
+    return new Time(this.hour, this.minute, this.second, millisecond);
   }
 
   addHours(hours: number): Time {
-    return new Time(this._dt.plus({ hours }).toJSDate());
+    return this.setHour(this.hour + hours);
   }
+
   addMinutes(minutes: number): Time {
-    return new Time(this._dt.plus({ minutes }).toJSDate());
+    return this.setMinute(this.minute + minutes);
   }
+
   addSeconds(seconds: number): Time {
-    return new Time(this._dt.plus({ seconds }).toJSDate());
+    return this.setSecond(this.second + seconds);
   }
+
   addMilliseconds(milliseconds: number): Time {
-    return new Time(this._dt.plus({ milliseconds }).toJSDate());
+    return this.setMillisecond(this.millisecond + milliseconds);
   }
 
   toFormatString(format: string): string {
-    return this._dt.toFormat(format);
+    return DateTimeFormatUtils.format(format, {
+      hour: this.hour,
+      minute: this.minute,
+      second: this.second,
+      millisecond: this.millisecond,
+    });
   }
 
   toString(): string {
-    return this._dt.toFormat("HH:mm:ss.SSS");
+    return this.toFormatString("HH:mm:ss.fff");
   }
 }
