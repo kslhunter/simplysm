@@ -2,7 +2,7 @@ import path from "path";
 import { FsUtils, SdLogger } from "@simplysm/sd-core-node";
 import { ISdServiceServerOptions } from "./types";
 import { EventEmitter } from "events";
-import { JsonConvert, ObjectUtils, Type } from "@simplysm/sd-core-common";
+import { ObjectUtils, Type } from "@simplysm/sd-core-common";
 import { SdServiceEventListenerBase } from "@simplysm/sd-service-common";
 import { SdWebsocketController } from "./internal/SdWebsocketController";
 import { SdStaticFileHandler } from "./internal/SdStaticFileHandler";
@@ -10,11 +10,6 @@ import { SdRequestHandler } from "./internal/SdRequestHandler";
 import { SdUploadHandler } from "./internal/SdUploadHandler";
 import fastify, { FastifyInstance } from "fastify";
 import fastifyMiddie from "@fastify/middie";
-import fastifyWebsocket from "@fastify/websocket";
-import fastifyStatic from "@fastify/static";
-import fastifyHttpProxy from "@fastify/http-proxy";
-import fastifyMultipart from "@fastify/multipart";
-import url from "url";
 
 export class SdServiceServer extends EventEmitter {
   isOpen = false;
@@ -82,10 +77,7 @@ export class SdServiceServer extends EventEmitter {
       : null;
     this.#fastify = fastify({ https: httpsConf });
 
-    // WebSocket 플러그인
-    await this.#fastify.register(fastifyWebsocket);
-
-    // 미들웨어 플러그인
+    // 기존 미들웨어 호환성 레이어 (middie)
     await this.#fastify.register(fastifyMiddie);
     if (this.options.middlewares) {
       for (const mdw of this.options.middlewares) {
@@ -93,48 +85,7 @@ export class SdServiceServer extends EventEmitter {
       }
     }
 
-    // 업로드 플러그인
-    await this.#fastify.register(fastifyMultipart);
-
-    // 포트 프록시 (pathProxy)
-    // 파일경로 프록시는 되지 않음. 포트에 대한 프록시에만 해당함
-    for (const [key, value] of Object.entries(this.pathProxy)) {
-      if (typeof value === "number") {
-        await this.#fastify.register(fastifyHttpProxy, {
-          upstream: `http://localhost:${value}`,
-          prefix: key, // 예: '/admin'으로 들어오면 해당 포트로 전달
-          rewritePrefix: key, // 경로 유지 (필요에 따라 ''로 변경 가능)
-          http2: false, // 필요시 설정
-        });
-        this.#logger.debug(`프록시 등록: ${key} -> http://localhost:${value}`);
-      }
-    }
-
-    // @fastify/static 등록
-    // 기본적으로 www 폴더를 루트로 잡지만, wildcard: false로 설정하여
-    // 자동 라우팅을 끄고 우리가 직접 제어합니다.
-    await this.#fastify.register(fastifyStatic, {
-      root: path.resolve(this.options.rootPath, "www"),
-      wildcard: false,
-      serve: false, // 자동 서빙 방지 (수동 제어)
-    });
-
-    // JSON 파서
-    this.#fastify.addContentTypeParser(
-      "application/json",
-      { parseAs: "string" },
-      (req, body, done) => {
-        try {
-          const json = JsonConvert.parse(body as string);
-          done(null, json);
-        } catch (err: any) {
-          err.statusCode = 400;
-          done(err, undefined);
-        }
-      },
-    );
-
-    // CORS (Localhost 개발용)
+    // CORS Preflight 처리 (localhost 개발용)
     this.#fastify.options("*", async (req, reply) => {
       if (req.headers.origin?.includes("://localhost")) {
         reply.header("Access-Control-Allow-Origin", "*");
@@ -142,30 +93,23 @@ export class SdServiceServer extends EventEmitter {
       }
     });
 
-    // API 라우트
-    this.#fastify.all("/api/:service/:method", async (req, reply) => {
+    this.#fastify.get("/api/:service/:method", async (req, reply) => {
       await this.#requestHandler.handleAsync(req, reply);
     });
 
-    // 업로드 라우트
-    this.#fastify.all("/upload", async (req, reply) => {
+    this.#fastify.post("/api/:service/:method", async (req, reply) => {
+      await this.#requestHandler.handleAsync(req, reply);
+    });
+
+    this.#fastify.post("/upload", async (req, reply) => {
+      // busboy는 raw request stream이 필요하므로 req.raw 전달
       await this.#uploadHandler.handleAsync(req.raw, reply.raw);
     });
 
-    // WebSocket 라우트
-    this.#fastify.get("/ws", { websocket: true }, async (socket, req) => {
-      await this.#ws?.addClient(socket, req.raw);
-    });
-
-    // 정적 파일 와일드카드 핸들러
-    this.#fastify.route({
-      method: ["GET", "HEAD"],
-      url: "/*",
-      handler: async (req, reply) => {
-        const urlObj = url.parse(req.raw.url!, true, false);
-        const urlPath = decodeURI(urlObj.pathname!.slice(1));
-        await this.#staticFileHandler.handleAsync(req, reply, urlPath);
-      },
+    this.#fastify.setNotFoundHandler(async (req, reply) => {
+      // Fastify Request/Reply에서 Raw 객체를 꺼내 기존 핸들러에 전달
+      // req.url은 쿼리스트링을 포함한 전체 URL을 담고 있으므로 그대로 사용 가능
+      this.#staticFileHandler.handle(req.raw, reply.raw, req.url);
     });
 
     // HTTP 서버 수준의 에러 핸들링
@@ -180,7 +124,6 @@ export class SdServiceServer extends EventEmitter {
       async (def) => await this.#requestHandler.runMethodAsync(def),
     );
 
-    // 리슨
     await this.#fastify.listen({ port: this.options.port });
 
     this.isOpen = true;
@@ -189,7 +132,7 @@ export class SdServiceServer extends EventEmitter {
   }
 
   async closeAsync(): Promise<void> {
-    this.#ws?.close();
+    await this.#ws?.closeAsync();
     await this.#fastify?.close();
 
     this.isOpen = false;
