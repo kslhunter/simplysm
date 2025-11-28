@@ -16,7 +16,7 @@ export class SdStaticFileHandler {
       return;
     }
 
-    // 1. 타겟 파일 경로 결정 (포트 프록시는 상위에서 처리됨)
+    // 타겟 파일 경로 결정 (포트 프록시는 상위에서 처리됨)
     let targetFilePath: string;
 
     // pathProxy 중 값이 string인 것(경로 별칭)만 찾음
@@ -33,12 +33,20 @@ export class SdStaticFileHandler {
       targetFilePath = path.resolve(this._server.options.rootPath, "www", urlPath);
     }
 
-    // 2. 디렉토리면 index.html로 변경
+    // 디렉토리면 index.html로 변경
     if (FsUtils.exists(targetFilePath) && FsUtils.stat(targetFilePath).isDirectory()) {
       targetFilePath = path.resolve(targetFilePath, "index.html");
     }
 
-    // 3. 파일 전송
+    // targetPath 보안 방어 (../../이런거 오면 root밖으로 나갈수 있음.. 그걸 방어함)
+    if (
+      process.env["NODE_ENV"] === "production" &&
+      !targetFilePath.startsWith(path.resolve(this._server.options.rootPath))
+    ) {
+      throw new Error("Access denied");
+    }
+
+    // 파일 전송
     const filename = path.basename(targetFilePath);
     const directory = path.dirname(targetFilePath);
 
