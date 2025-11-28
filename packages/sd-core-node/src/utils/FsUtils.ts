@@ -15,7 +15,6 @@ export class FsUtils {
       curr = path.resolve(curr, "..");
       result.push(curr);
     }
-
     return result;
   }
 
@@ -23,9 +22,7 @@ export class FsUtils {
     return await new Promise<string>((resolve, reject) => {
       const hash = crypto.createHash("md5").setEncoding("hex");
       fs.createReadStream(filePath)
-        .on("error", (err: Error) => {
-          reject(new SdError(err, filePath));
-        })
+        .on("error", reject)
         .pipe(hash)
         .once("finish", () => {
           resolve(hash.read());
@@ -46,189 +43,67 @@ export class FsUtils {
   }
 
   static async readdirAsync(targetPath: string): Promise<string[]> {
-    try {
-      return await fs.promises.readdir(targetPath);
-    } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(err, targetPath);
-      } else {
-        throw err;
-      }
-    }
+    return await fs.promises.readdir(targetPath);
   }
 
   static readdir(targetPath: string): string[] {
-    try {
-      return fs.readdirSync(targetPath);
-    } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(err, targetPath);
-      } else {
-        throw err;
-      }
-    }
+    return fs.readdirSync(targetPath);
   }
 
   static exists(targetPath: string): boolean {
-    try {
-      return fs.existsSync(targetPath);
-    } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(err, targetPath);
-      } else {
-        throw err;
-      }
-    }
+    return fs.existsSync(targetPath);
   }
 
   static async removeAsync(targetPath: string): Promise<void> {
-    try {
-      await fs.promises.rm(targetPath, {
-        recursive: true,
-        force: true,
-        retryDelay: 500,
-        maxRetries: 6,
-      });
-    } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(err, targetPath);
-      } else {
-        throw err;
-      }
-    }
+    await fs.promises.rm(targetPath, {
+      recursive: true,
+      force: true,
+      maxRetries: 3,
+      retryDelay: 500,
+    });
   }
 
   static remove(targetPath: string): void {
-    try {
-      fs.rmSync(targetPath, { recursive: true, force: true });
-    } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(err, targetPath);
-      } else {
-        throw err;
-      }
-    }
+    fs.rmSync(targetPath, { recursive: true, force: true, maxRetries: 3, retryDelay: 500 });
   }
 
   static async copyAsync(
     sourcePath: string,
     targetPath: string,
-    filter?: (subPath: string) => boolean,
+    filter?: ((source: string, destination: string) => boolean | Promise<boolean>) | undefined,
   ): Promise<void> {
-    if (!FsUtils.exists(sourcePath)) {
-      return;
-    }
+    if (!FsUtils.exists(sourcePath)) return;
 
-    let lstat: fs.Stats;
-    try {
-      lstat = await fs.promises.lstat(sourcePath);
-    } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(err, targetPath);
-      } else {
-        throw err;
-      }
-    }
+    await fs.promises.mkdir(path.dirname(targetPath), { recursive: true });
 
-    if (lstat.isDirectory()) {
-      await FsUtils.mkdirsAsync(targetPath);
-
-      const children = await FsUtils.globAsync(path.resolve(sourcePath, "*"));
-
-      await children.parallelAsync(async (childPath) => {
-        if (filter && !filter(childPath)) {
-          return;
-        }
-
-        const relativeChildPath = path.relative(sourcePath, childPath);
-        const childTargetPath = path.resolve(targetPath, relativeChildPath);
-        await FsUtils.copyAsync(childPath, childTargetPath, filter);
-      });
-    } else {
-      await FsUtils.mkdirsAsync(path.resolve(targetPath, ".."));
-
-      try {
-        await fs.promises.copyFile(sourcePath, targetPath);
-      } catch (err) {
-        if (err instanceof Error) {
-          throw new SdError(err, targetPath);
-        } else {
-          throw err;
-        }
-      }
-    }
+    await fs.promises.cp(sourcePath, targetPath, {
+      recursive: true,
+      filter: filter ? (src, dest) => filter(src, dest) : undefined,
+    });
   }
-
-  static copy(sourcePath: string, targetPath: string, filter?: (subPath: string) => boolean): void {
+  static copy(
+    sourcePath: string,
+    targetPath: string,
+    filter?: ((source: string, destination: string) => boolean) | undefined,
+  ): void {
     if (!FsUtils.exists(sourcePath)) {
       return;
     }
 
-    let lstat: fs.Stats;
-    try {
-      lstat = fs.lstatSync(sourcePath);
-    } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(err, targetPath);
-      } else {
-        throw err;
-      }
-    }
-    if (lstat.isDirectory()) {
-      FsUtils.mkdirs(targetPath);
+    fs.mkdirSync(path.dirname(targetPath), { recursive: true });
 
-      const children = FsUtils.glob(path.resolve(sourcePath, "*"));
-
-      for (const childPath of children) {
-        if (filter && !filter(childPath)) {
-          continue;
-        }
-
-        const relativeChildPath = path.relative(sourcePath, childPath);
-        const childTargetPath = path.resolve(targetPath, relativeChildPath);
-        FsUtils.copy(childPath, childTargetPath, filter);
-      }
-    } else {
-      FsUtils.mkdirs(path.resolve(targetPath, ".."));
-
-      try {
-        fs.copyFileSync(sourcePath, targetPath);
-      } catch (err) {
-        if (err instanceof Error) {
-          throw new SdError(err, targetPath);
-        } else {
-          throw err;
-        }
-      }
-    }
+    fs.cpSync(sourcePath, targetPath, {
+      recursive: true,
+      filter: filter ? (src, dest) => filter(src, dest) : undefined,
+    });
   }
 
   static async mkdirsAsync(targetPath: string): Promise<void> {
-    if (FsUtils.exists(targetPath)) return;
-
-    try {
-      await fs.promises.mkdir(targetPath, { recursive: true });
-    } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(err, targetPath);
-      } else {
-        throw err;
-      }
-    }
+    await fs.promises.mkdir(targetPath, { recursive: true });
   }
 
   static mkdirs(targetPath: string): void {
-    if (FsUtils.exists(targetPath)) return;
-
-    try {
-      fs.mkdirSync(targetPath, { recursive: true });
-    } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(err, targetPath);
-      } else {
-        throw err;
-      }
-    }
+    fs.mkdirSync(targetPath, { recursive: true });
   }
 
   static async writeJsonAsync(
@@ -265,7 +140,11 @@ export class FsUtils {
   ): Promise<{ path: TNormPath; hash: string }[]> {
     const result: { path: TNormPath; hash: string }[] = [];
 
-    const group = files.groupBy((item) => path.basename(item.path));
+    // [중요 수정] basename(파일명)이 아닌 dirname(폴더명)으로 그룹핑해야 "폴더별 병렬/폴더내 순차" 의도가 맞습니다.
+    // 기존 코드는 파일명이 같으면(예: index.ts) 다른 폴더라도 순차 처리하고,
+    // 같은 폴더라도 파일명이 다르면 병렬 처리하여 LOCK 위험이 있었습니다.
+    const group = files.groupBy((item) => path.dirname(item.path));
+
     await group.parallelAsync(async (groupItem) => {
       for (const file of groupItem.values) {
         const currHash = file.hash ?? HashUtils.get(file.data);
@@ -280,51 +159,20 @@ export class FsUtils {
   }
 
   static async writeFileAsync(targetPath: string, data: any): Promise<void> {
-    await FsUtils.mkdirsAsync(path.dirname(targetPath));
-
-    try {
-      await fs.promises.writeFile(targetPath, data);
-    } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(
-          err,
-          targetPath +
-            (typeof data === "object"
-              ? ((data.constructor?.name ?? "object") as string)
-              : typeof data),
-        );
-      } else {
-        throw err;
-      }
-    }
+    await fs.promises.mkdir(path.dirname(targetPath), { recursive: true });
+    await fs.promises.writeFile(targetPath, data);
   }
 
   static writeFile(targetPath: string, data: any): void {
-    FsUtils.mkdirs(path.dirname(targetPath));
+    fs.mkdirSync(path.dirname(targetPath), { recursive: true });
 
-    try {
-      fs.writeFileSync(targetPath, data, {
-        flush: true,
-      });
-    } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(err, targetPath);
-      } else {
-        throw err;
-      }
-    }
+    fs.writeFileSync(targetPath, data, {
+      flush: true,
+    });
   }
 
   static readFile(targetPath: string): string {
-    try {
-      return fs.readFileSync(targetPath, "utf-8");
-    } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(err, targetPath);
-      } else {
-        throw err;
-      }
-    }
+    return fs.readFileSync(targetPath, "utf-8");
   }
 
   static async readFileAsync(targetPath: string): Promise<string> {
@@ -332,39 +180,15 @@ export class FsUtils {
       throw new SdError(targetPath + "파일을 찾을 수 없습니다.");
     }
 
-    try {
-      return await fs.promises.readFile(targetPath, "utf-8");
-    } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(err, targetPath);
-      } else {
-        throw err;
-      }
-    }
+    return await fs.promises.readFile(targetPath, "utf-8");
   }
 
   static readFileBuffer(targetPath: string): Buffer {
-    try {
-      return fs.readFileSync(targetPath);
-    } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(err, targetPath);
-      } else {
-        throw err;
-      }
-    }
+    return fs.readFileSync(targetPath);
   }
 
   static async readFileBufferAsync(targetPath: string): Promise<Buffer> {
-    try {
-      return await fs.promises.readFile(targetPath);
-    } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(err, targetPath);
-      } else {
-        throw err;
-      }
-    }
+    return await fs.promises.readFile(targetPath);
   }
 
   static readJson(targetPath: string): any {
@@ -386,123 +210,43 @@ export class FsUtils {
   }
 
   static lstat(targetPath: string): fs.Stats {
-    try {
-      return fs.lstatSync(targetPath);
-    } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(err, targetPath);
-      } else {
-        throw err;
-      }
-    }
+    return fs.lstatSync(targetPath);
   }
 
   static async lstatAsync(targetPath: string): Promise<fs.Stats> {
-    try {
-      return await fs.promises.lstat(targetPath);
-    } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(err, targetPath);
-      } else {
-        throw err;
-      }
-    }
+    return await fs.promises.lstat(targetPath);
   }
 
   static stat(targetPath: string): fs.Stats {
-    try {
-      return fs.statSync(targetPath);
-    } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(err, targetPath);
-      } else {
-        throw err;
-      }
-    }
+    return fs.statSync(targetPath);
   }
 
   static async statAsync(targetPath: string): Promise<fs.Stats> {
-    try {
-      return await fs.promises.stat(targetPath);
-    } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(err, targetPath);
-      } else {
-        throw err;
-      }
-    }
+    return await fs.promises.stat(targetPath);
   }
 
   static appendFile(targetPath: string, data: any): void {
-    try {
-      fs.appendFileSync(targetPath, data, "utf8");
-    } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(err, targetPath);
-      } else {
-        throw err;
-      }
-    }
+    fs.appendFileSync(targetPath, data, "utf8");
   }
 
   static open(targetPath: string, flags: string | number): number {
-    try {
-      return fs.openSync(targetPath, flags);
-    } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(err, targetPath);
-      } else {
-        throw err;
-      }
-    }
+    return fs.openSync(targetPath, flags);
   }
 
   static async openAsync(
     targetPath: string,
     flags: string | number,
   ): Promise<fs.promises.FileHandle> {
-    try {
-      return await fs.promises.open(targetPath, flags);
-    } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(err, targetPath);
-      } else {
-        throw err;
-      }
-    }
+    return await fs.promises.open(targetPath, flags);
   }
 
   static createReadStream(sourcePath: string): fs.ReadStream {
-    try {
-      return fs.createReadStream(sourcePath);
-    } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(err, sourcePath);
-      } else {
-        throw err;
-      }
-    }
+    return fs.createReadStream(sourcePath);
   }
 
   static createWriteStream(targetPath: string): fs.WriteStream {
-    try {
-      return fs.createWriteStream(targetPath);
-    } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(err, targetPath);
-      } else {
-        throw err;
-      }
-    }
+    return fs.createWriteStream(targetPath);
   }
-
-  /*public static async isDirectoryAsync(targetPath: string): Promise<boolean> {
-    return (await FsUtil.lstatAsync(targetPath)).isDirectory();
-  }
-
-  public static isDirectory(targetPath: string): boolean {
-    return FsUtil.stat(targetPath).isDirectory();
-  }*/
 
   static async clearEmptyDirectoryAsync(dirPath: string): Promise<void> {
     if (!FsUtils.exists(dirPath)) return;
