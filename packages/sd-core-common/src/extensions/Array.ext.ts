@@ -467,7 +467,7 @@ declare global {
       const key = keySelector(item, i);
       const value = valueSelector ? valueSelector(item, i) : item;
 
-      if (Object.prototype.hasOwnProperty.call(result, key)) {
+      if (result[key] != null) {
         throw new Error(`키가 중복되었습니다. (중복된키: ${key})`);
       }
       result[key] = value;
