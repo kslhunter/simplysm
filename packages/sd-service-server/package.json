@@ -13,7 +13,6 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@fastify/middie": "^9.0.3",
     "@simplysm/sd-core-common": "12.15.18",
     "@simplysm/sd-core-node": "12.15.18",
     "@simplysm/sd-orm-common": "12.15.18",

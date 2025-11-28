@@ -12,7 +12,6 @@ import { SdStaticFileHandler } from "./internal/SdStaticFileHandler";
 import { SdRequestHandler } from "./internal/SdRequestHandler";
 import { SdUploadHandler } from "./internal/SdUploadHandler";
 import fastify, { FastifyInstance } from "fastify";
-import fastifyMiddie from "@fastify/middie";
 
 export class SdServiceServer extends EventEmitter {
   isOpen = false;
@@ -80,17 +79,7 @@ export class SdServiceServer extends EventEmitter {
       : null;
     this.#fastify = fastify({ https: httpsConf });
 
-    // 기존 미들웨어 호환성 레이어 (middie)
-    await this.#fastify.register(fastifyMiddie);
-    if (this.options.middlewares) {
-      for (const mdw of this.options.middlewares) {
-        this.#fastify.use(mdw);
-      }
-    }
-
     this.#fastify.all("*", async (req, res) => {
-      // Fastify의 자동 응답 방지 (수동으로 raw 응답을 제어하겠다고 선언)
-      res.hijack();
       // Fastify Request/Response를 Node Raw 객체처럼 다룸
       // 주의: Fastify는 기본적으로 raw request를 req.raw로 가지고 있음
       await this.#onWebRequestAsync(req.raw, res.raw);
@@ -102,14 +91,14 @@ export class SdServiceServer extends EventEmitter {
       this.#logger.error("HTTP 서버 오류 발생", err);
     });
 
+    await this.#fastify.listen({ port: this.options.port });
+
     // WebSocket 컨트롤러에 RequestHandler의 메소드 전달
     await this.#fastify.ready(); // 서버가 준비된 후 raw server 접근 가능
     this.#ws = new SdWebsocketController(
       this.#fastify.server,
       async (def) => await this.#requestHandler.runMethodAsync(def),
     );
-
-    await this.#fastify.listen({ port: this.options.port });
 
     this.isOpen = true;
     this.#logger.debug("서버 시작됨");
@@ -140,6 +129,22 @@ export class SdServiceServer extends EventEmitter {
 
   async #onWebRequestAsync(req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {
     try {
+      if (this.options.middlewares) {
+        for (const optMdw of this.options.middlewares) {
+          await new Promise<void>((resolve, reject) => {
+            optMdw(req, res, (err) => {
+              if (err != null) {
+                reject(err);
+                return;
+              }
+
+              resolve();
+            });
+          });
+          if (res.writableEnded) return;
+        }
+      }
+
       const urlObj = url.parse(req.url!, true, false);
       const urlPath = decodeURI(urlObj.pathname!.slice(1));
       const urlPathChain = urlPath.split("/");
