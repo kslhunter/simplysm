@@ -88,7 +88,24 @@ export class SdServiceServer extends EventEmitter {
 
     // 보안 플러그인
     // XSS 방지, HSTS 설정, iframe 클릭재킹 방지 등의 필수 보안 헤더를 자동으로 설정해 줍니다.
-    await this.#fastify.register(fastifyHelmet, { global: true });
+    await this.#fastify.register(fastifyHelmet, {
+      global: true,
+      contentSecurityPolicy: {
+        directives: {
+          ...fastifyHelmet.contentSecurityPolicy.getDefaultDirectives(),
+          "script-src-attr": ["'unsafe-inline'"], // 인라인 이벤트 핸들러 허용
+          "script-src": ["'self'", "'unsafe-inline'"], // 인라인 스크립트(<script>내용) 허용
+          ...(!!this.options.ssl
+            ? {}
+            : {
+                "upgrade-insecure-requests": null, // HTTP -> HTTPS 강제 변환 끄기
+              }),
+        },
+      },
+      hsts: !!this.options.ssl, // HSTS(브라우저가 https 접속을 기억하는 기능) 비활성화
+      crossOriginOpenerPolicy: !!this.options.ssl, // HTTP 환경에서 COOP 에러 제거
+      originAgentCluster: false, // origin-keyed 경고 제거
+    });
 
     // 업로드 플러그인
     await this.#fastify.register(fastifyMultipart);
@@ -127,12 +144,13 @@ export class SdServiceServer extends EventEmitter {
     // CORS 설정
     await this.#fastify.register(fastifyCors, {
       origin: (origin, cb) => {
+        cb(null, true); // AllowALL
         // 개발 환경이면 localhost 허용, 운영이면 특정 도메인만 허용하는 로직
-        if (origin == null || origin.includes("://localhost")) {
+        /*if (origin == null || origin.includes("://localhost")) {
           cb(null, true);
           return;
         }
-        cb(new Error("Not allowed"), false);
+        cb(new Error("Not allowed"), false);*/
       },
       credentials: true, // 쿠키/인증 정보 포함 시 필요
     });
@@ -192,7 +210,7 @@ export class SdServiceServer extends EventEmitter {
     );
 
     // 리슨
-    await this.#fastify.listen({ port: this.options.port });
+    await this.#fastify.listen({ port: this.options.port, host: "0.0.0.0" });
 
     // Graceful Shutdown 핸들러 등록
     this.#registerGracefulShutdown();
