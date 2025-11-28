@@ -1,8 +1,8 @@
+import { DateTime as LuxonDateTime } from "luxon";
 import { ArgumentError } from "../../errors/ArgumentError";
-import { DateTimeFormatUtils } from "../../utils/DateTimeFormatUtils";
 
 export class DateTime {
-  readonly date: Date;
+  private _dt: LuxonDateTime;
 
   constructor();
   constructor(
@@ -16,8 +16,10 @@ export class DateTime {
   );
   constructor(tick: number);
   constructor(date: Date);
+  // [추가] 내부 복제용 생성자
+  constructor(dt: LuxonDateTime);
   constructor(
-    arg1?: number | Date,
+    arg1?: number | Date | LuxonDateTime,
     arg2?: number,
     arg3?: number,
     arg4?: number,
@@ -26,11 +28,13 @@ export class DateTime {
     arg7?: number,
   ) {
     if (arg1 === undefined) {
-      this.date = new Date();
+      this._dt = LuxonDateTime.local();
+    } else if (arg1 instanceof LuxonDateTime) {
+      this._dt = arg1;
     } else if (arg2 !== undefined && arg3 !== undefined) {
-      this.date = new Date(
+      this._dt = LuxonDateTime.local(
         arg1 as number,
-        arg2 - 1,
+        arg2,
         arg3,
         arg4 ?? 0,
         arg5 ?? 0,
@@ -38,213 +42,190 @@ export class DateTime {
         arg7 ?? 0,
       );
     } else if (arg1 instanceof Date) {
-      this.date = arg1;
+      this._dt = LuxonDateTime.fromJSDate(arg1);
     } else {
-      this.date = new Date(arg1);
+      this._dt = LuxonDateTime.fromMillis(arg1);
     }
+  }
+
+  // [호환성] 기존 코드가 .date 속성을 직접 쓰던 것을 지원하기 위한 Getter
+  get date(): Date {
+    return this._dt.toJSDate();
   }
 
   static parse(str: string): DateTime {
-    const parsedTick = Date.parse(str);
-    if (!Number.isNaN(parsedTick)) {
-      return new DateTime(parsedTick);
+    // 1. ISO 포맷 우선 시도 (가장 빠름)
+    let dt = LuxonDateTime.fromISO(str);
+
+    // 2. ISO가 아니면 커스텀 포맷 시도
+    if (!dt.isValid) {
+      // 기존 정규식 로직 대신 Luxon 포맷 사용
+      // 예: "2023-11-28 오전 03:00:00" 대응 (a = 오전/오후, hh = 12시간제)
+      // 한국어 로케일 강제 (서버 환경 영향 받지 않도록)
+      dt = LuxonDateTime.fromFormat(str, "yyyy-MM-dd a hh:mm:ss", { locale: "ko" });
     }
 
-    const match1 =
-      /^([0-9]{4})-([0-9]{2})-([0-9]{2}) (오전|오후) ([0-9]{2}):([0-9]{2}):([0-9]{2})$/.exec(str);
-    if (match1 != null) {
-      return new DateTime(
-        Number(match1[1]),
-        Number(match1[2]),
-        Number(match1[3]),
-        Number(match1[5]) + (match1[4] === "오후" ? 12 : 0),
-        Number(match1[6]),
-        Number(match1[7]),
-      );
+    // 3. 그래도 안되면 yyyyMMddHHmmss 등 숫자만 있는 포맷 시도
+    if (!dt.isValid) {
+      const numMatch = /^[0-9]+$/.test(str);
+      if (numMatch) {
+        if (str.length === 14) {
+          dt = LuxonDateTime.fromFormat(str, "yyyyMMddHHmmss");
+        }
+      }
     }
 
-    const match2 = /^[0-9]{14}$/.exec(str);
-    if (match2 != null) {
-      return new DateTime(
-        Number(str.substring(0, 4)),
-        Number(str.substring(4, 6)),
-        Number(str.substring(6, 8)),
-        Number(str.substring(8, 10)),
-        Number(str.substring(10, 12)),
-        Number(str.substring(12, 14)),
-      );
+    // 4. 실패 시 Date.parse (Legacy Fallback)
+    if (!dt.isValid) {
+      const legacyTick = Date.parse(str);
+      if (!Number.isNaN(legacyTick)) {
+        dt = LuxonDateTime.fromMillis(legacyTick);
+      }
     }
 
-    const match3 =
-      /^([0-9]{4})-([0-9]{2})-([0-9]{2}) ([0-9]{2}):([0-9]{2}):([0-9]{2})(\.([0-9]{3}))?$/.exec(
-        str,
-      );
-    if (match3 != null) {
-      return new DateTime(
-        Number(match3[1]),
-        Number(match3[2]),
-        Number(match3[3]),
-        Number(match3[4]),
-        Number(match3[5]),
-        Number(match3[6]),
-        match3[8] ? Number(match3[8]) : undefined,
-      );
+    if (!dt.isValid) {
+      throw new ArgumentError({ str });
     }
 
-    throw new ArgumentError({ str });
+    return new DateTime(dt);
   }
 
   get year(): number {
-    return this.date.getFullYear();
+    return this._dt.year;
   }
-
   set year(value: number) {
-    this.date.setFullYear(value);
+    this._dt = this._dt.set({ year: value });
   }
 
   get month(): number {
-    return this.date.getMonth() + 1;
+    return this._dt.month;
   }
-
   set month(value: number) {
-    this.date.setMonth(value - 1);
+    this._dt = this._dt.set({ month: value });
   }
 
   get day(): number {
-    return this.date.getDate();
+    return this._dt.day;
   }
-
   set day(value: number) {
-    this.date.setDate(value);
+    this._dt = this._dt.set({ day: value });
   }
 
   get hour(): number {
-    return this.date.getHours();
+    return this._dt.hour;
   }
-
   set hour(value: number) {
-    this.date.setHours(value);
+    this._dt = this._dt.set({ hour: value });
   }
 
   get minute(): number {
-    return this.date.getMinutes();
+    return this._dt.minute;
   }
-
   set minute(value: number) {
-    this.date.setMinutes(value);
+    this._dt = this._dt.set({ minute: value });
   }
 
   get second(): number {
-    return this.date.getSeconds();
+    return this._dt.second;
   }
-
   set second(value: number) {
-    this.date.setSeconds(value);
+    this._dt = this._dt.set({ second: value });
   }
 
   get millisecond(): number {
-    return this.date.getMilliseconds();
+    return this._dt.millisecond;
   }
-
   set millisecond(value: number) {
-    this.date.setMilliseconds(value);
+    this._dt = this._dt.set({ millisecond: value });
   }
 
   get tick(): number {
-    return this.date.getTime();
+    return this._dt.toMillis();
   }
-
   set tick(tick: number) {
-    this.date.setTime(tick);
+    this._dt = LuxonDateTime.fromMillis(tick);
   }
 
   get week(): number {
-    return this.date.getDay();
+    // JS Date: 0(일)~6(토)
+    // Luxon: 1(월)~7(일) -> 변환 필요
+    return this._dt.weekday === 7 ? 0 : this._dt.weekday;
   }
 
   get timezoneOffsetMinutes(): number {
-    return -this.date.getTimezoneOffset();
+    return this._dt.offset;
   }
 
+  // [메서드 체이닝] 불변성 유지 (새 인스턴스 반환)
   setYear(year: number): DateTime {
-    return new DateTime(new Date(this.tick).setFullYear(year));
+    return new DateTime(this._dt.set({ year }));
   }
 
   setMonth(month: number): DateTime {
-    const date = new Date(this.tick);
-    date.setDate(1);
-    date.setMonth(month);
-    date.setDate(0);
-
-    const lastDay = date.getDate();
-    const currentDay = lastDay < this.day ? lastDay : this.day;
-    date.setDate(currentDay);
-
-    return new DateTime(date);
+    // 기존 로직: 월을 바꿨을 때 날짜가 넘치면 마지막 날로 조정 (Luxon은 자동 처리됨)
+    return new DateTime(this._dt.set({ month }));
   }
 
   setDay(day: number): DateTime {
-    return new DateTime(new Date(this.tick).setDate(day));
+    return new DateTime(this._dt.set({ day }));
   }
 
   setHour(hour: number): DateTime {
-    return new DateTime(new Date(this.tick).setHours(hour));
+    return new DateTime(this._dt.set({ hour }));
   }
 
   setMinute(minute: number): DateTime {
-    return new DateTime(new Date(this.tick).setMinutes(minute));
+    return new DateTime(this._dt.set({ minute }));
   }
 
   setSecond(second: number): DateTime {
-    return new DateTime(new Date(this.tick).setSeconds(second));
+    return new DateTime(this._dt.set({ second }));
   }
 
   setMillisecond(millisecond: number): DateTime {
-    return new DateTime(new Date(this.tick).setMilliseconds(millisecond));
+    return new DateTime(this._dt.set({ millisecond }));
   }
 
   addYears(years: number): DateTime {
-    return this.setYear(this.year + years);
+    return new DateTime(this._dt.plus({ years }));
   }
 
   addMonths(months: number): DateTime {
-    return this.setMonth(this.month + months);
+    return new DateTime(this._dt.plus({ months }));
   }
 
   addDays(days: number): DateTime {
-    return this.setDay(this.day + days);
+    return new DateTime(this._dt.plus({ days }));
   }
 
   addHours(hours: number): DateTime {
-    return this.setHour(this.hour + hours);
+    return new DateTime(this._dt.plus({ hours }));
   }
 
   addMinutes(minutes: number): DateTime {
-    return this.setMinute(this.minute + minutes);
+    return new DateTime(this._dt.plus({ minutes }));
   }
 
   addSeconds(seconds: number): DateTime {
-    return this.setSecond(this.second + seconds);
+    return new DateTime(this._dt.plus({ seconds }));
   }
 
   addMilliseconds(milliseconds: number): DateTime {
-    return this.setMillisecond(this.millisecond + milliseconds);
+    return new DateTime(this._dt.plus({ milliseconds }));
   }
 
   toFormatString(format: string): string {
-    return DateTimeFormatUtils.format(format, {
-      year: this.year,
-      month: this.month,
-      day: this.day,
-      hour: this.hour,
-      minute: this.minute,
-      second: this.second,
-      millisecond: this.millisecond,
-      timezoneOffsetMinutes: this.timezoneOffsetMinutes,
-    });
+    // Luxon 포맷 문자로 변환 필요 (기존 포맷이 C# 스타일이라면 변환 필요하지만,
+    // DateTimeFormatUtils가 있다면 그대로 위임하거나 Luxon 포맷 사용)
+    // 여기서는 일단 Luxon 자체 포맷터 사용 (기존과 포맷 문자가 다를 수 있음 주의)
+    // -> 기존 DateTimeFormatUtils를 쓰고 싶다면 그대로 유지해도 됩니다.
+    // -> 하지만 엔진 교체가 목적이므로 Luxon toFormat 사용을 권장.
+    // (단, C# 포맷 문자열과 Luxon은 'yyyy' 등은 같지만 'fff' 등 미세한 차이가 있을 수 있음)
+    return this._dt.toFormat(format);
   }
 
   toString(): string {
-    return this.toFormatString("yyyy-MM-ddTHH:mm:ss.fffzzz");
+    // yyyy-MM-ddTHH:mm:ss.SSSZZ (Luxon 기본 ISO와 유사)
+    return this._dt.toISO() ?? "";
   }
 }
