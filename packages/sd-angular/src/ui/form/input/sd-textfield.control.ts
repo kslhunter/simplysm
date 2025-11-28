@@ -341,13 +341,13 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
     const value = this.value();
 
     if (type === "datetime" && value instanceof DateTime) {
-      return value.toFormatString("yyyy-MM-dd tt hh:mm");
+      return value.toFormatString("yyyy-MM-dd a hh:mm");
     } else if (type === "datetime-sec" && value instanceof DateTime) {
-      return value.toFormatString("yyyy-MM-dd tt hh:mm:ss");
+      return value.toFormatString("yyyy-MM-dd a hh:mm:ss");
     } else if (type === "time" && (value instanceof DateTime || value instanceof Time)) {
-      return value.toFormatString("tt hh:mm");
+      return value.toFormatString("a hh:mm");
     } else if (type === "time-sec" && (value instanceof DateTime || value instanceof Time)) {
-      return value.toFormatString("tt hh:mm:ss");
+      return value.toFormatString("a hh:mm:ss");
     } else if (type === "number" && typeof value === "number" && this.minDigits() != null) {
       return value.toLocaleString(undefined, {
         maximumFractionDigits: 10,

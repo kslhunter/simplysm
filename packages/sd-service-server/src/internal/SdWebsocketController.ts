@@ -54,7 +54,7 @@ export class SdWebsocketController {
         if (!prevClientInfo || prevClientInfo.id !== clientId) continue;
 
         const connectionDateTimeText =
-          prevClientInfo.connectedAtDateTime.toFormatString("yyyy:MM:dd HH:mm:ss.fff");
+          prevClientInfo.connectedAtDateTime.toFormatString("yyyy:MM:dd HH:mm:ss.SSS");
 
         this.#logger.debug(`클라이언트 기존연결 끊기: ${clientId}: ${connectionDateTimeText}`);
 
