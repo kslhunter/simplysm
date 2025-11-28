@@ -8,16 +8,17 @@ import {
 import { SdTabItemControl } from "./sd-tab-item.control";
 import { SdTabControl } from "./sd-tab.control";
 import { SdTabviewItemControl } from "./sd-tabview-item.control";
-import { SdFlexGrowDirective } from "../../layout/flex/sd-flex-grow.directive";
 
 @Component({
   selector: "sd-tabview",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdTabControl, SdTabItemControl, SdFlexGrowDirective],
+  imports: [SdTabControl, SdTabItemControl],
   host: {
-    class: "flex-column fill",
+    "sd-flex": "",
+    "direction": "column",
+    "sd-pane": "",
   },
   template: `
     <sd-tab [(value)]="value">
@@ -28,7 +29,7 @@ import { SdFlexGrowDirective } from "../../layout/flex/sd-flex-grow.directive";
       }
     </sd-tab>
 
-    <div [sd-flex-grow]="'fill'">
+    <div class="flex-fill">
       <ng-content />
     </div>
   `,

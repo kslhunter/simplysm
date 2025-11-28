@@ -9,12 +9,12 @@ export class SdStaticFileHandler {
   constructor(private readonly _server: SdServiceServer) {}
 
   async handleAsync(req: FastifyRequest, reply: FastifyReply, urlPath: string) {
-    /*if (req.method !== "GET" && req.method !== "HEAD") {
+    if (req.method !== "GET" && req.method !== "HEAD") {
       const errorMessage = "요청이 잘못되었습니다.";
       this.#responseErrorHtml(reply, 405, errorMessage);
       this.#logger.warn(`[405] ${errorMessage} (${req.method})`);
       return;
-    }*/
+    }
 
     // 타겟 파일 경로 결정 (포트 프록시는 상위에서 처리됨)
     let targetFilePath: string;
