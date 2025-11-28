@@ -32,8 +32,6 @@ declare global {
 
     mapManyAsync<R>(selector: (item: T, index: number) => Promise<R[]>): Promise<R[]>;
 
-    chunk(size: number): T[][];
-
     parallelAsync<R>(fn: (item: T, index: number) => Promise<R>): Promise<R[]>;
 
     groupBy<K>(keySelector: (item: T, index: number) => K): { key: K; values: T[] }[];
@@ -89,8 +87,6 @@ declare global {
     distinct(matchAddress?: boolean): T[];
 
     distinctThis(matchAddress?: boolean): T[];
-
-    distinctBy<K>(selector: (item: T) => K): T[];
 
     orderBy(selector?: (item: T) => string | number | DateOnly | DateTime | Time | undefined): T[];
 
@@ -330,14 +326,6 @@ declare global {
     return arr.flat() as T;
   };
 
-  prototype.chunk = function <T>(this: T[], size: number): T[][] {
-    const result: T[][] = [];
-    for (let i = 0; i < this.length; i += size) {
-      result.push(this.slice(i, i + size));
-    }
-    return result;
-  };
-
   prototype.parallelAsync = async function <T, R>(
     this: T[],
     fn: (item: T, index: number) => Promise<R>,
@@ -537,19 +525,6 @@ declare global {
     this.clear().push(...distinctArray);
 
     return this;
-  };
-
-  prototype.distinctBy = function <T, K>(this: T[], selector: (item: T) => K): T[] {
-    const set = new Set<K>();
-    const result: T[] = [];
-    for (const item of this) {
-      const key = selector(item);
-      if (!set.has(key)) {
-        set.add(key);
-        result.push(item);
-      }
-    }
-    return result;
   };
 
   prototype.orderBy = function <T>(
