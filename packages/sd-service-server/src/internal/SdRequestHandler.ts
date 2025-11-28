@@ -13,11 +13,13 @@ export class SdRequestHandler {
   constructor(private readonly _server: SdServiceServer) {}
 
   async handleAsync(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+    // 1. CORS Preflight (OPTIONS) - SdServiceServer의 options 라우트에서 처리됨
+
     const params = req.params as { service: string; method: string };
     const serviceName = params.service;
     const methodName = params.method;
 
-    // 파라미터 파싱
+    // 2. 파라미터 파싱
     let args: any[] | undefined;
     if (req.method === "GET") {
       const query = req.query as { json?: string };
@@ -30,7 +32,7 @@ export class SdRequestHandler {
       args = req.body as any[];
     }
 
-    // 서비스 실행 및 응답
+    // 3. 서비스 실행 및 응답
     if (args) {
       const serviceResult = await this.runMethodAsync({
         serviceName: serviceName,
