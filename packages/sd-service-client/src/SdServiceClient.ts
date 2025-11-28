@@ -35,8 +35,6 @@ export class SdServiceClient extends EventEmitter {
 
   override on(event: "request-progress", listener: (state: ISdServiceProgressState) => void): this;
   override on(event: "response-progress", listener: (state: ISdServiceProgressState) => void): this;
-  override on(event: "upload-progress", listener: (state: ISdServiceProgressState) => void): this;
-  override on(event: "download-progress", listener: (state: ISdServiceProgressState) => void): this;
   override on(
     event: "state-change",
     listener: (state: "connected" | "closed" | "reconnect") => void,
@@ -240,41 +238,17 @@ export class SdServiceClient extends EventEmitter {
     ]);
   }
 
-  // HTTP 파일 다운로드 + 진행률 이벤트
   async downloadFileBufferAsync(relPath: string): Promise<Buffer> {
     const url = `${this.serverUrl}${relPath.startsWith("/") ? "" : "/"}${relPath}`;
-    const uuid = Uuid.new().toString(); // 이벤트 식별용 UUID 생성
 
-    return await new Promise<Buffer>((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      xhr.open("GET", url);
-      xhr.responseType = "arraybuffer"; // Buffer로 변환하기 위해 arraybuffer 설정
+    const res = await fetch(url);
+    if (!res.ok) {
+      throw new Error(res.status.toString());
+    }
 
-      // 진행률 이벤트 발생
-      xhr.onprogress = (evt) => {
-        if (evt.lengthComputable) {
-          this.emit("download-progress", {
-            uuid,
-            fullSize: evt.total,
-            completedSize: evt.loaded,
-          });
-        }
-      };
-
-      xhr.onload = () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          resolve(Buffer.from(xhr.response));
-        } else {
-          reject(new Error(`${xhr.status}: ${xhr.statusText}`));
-        }
-      };
-
-      xhr.onerror = () => {
-        reject(new Error("Network Error"));
-      };
-
-      xhr.send();
-    });
+    // ArrayBuffer를 받아 Buffer로 변환
+    const arrayBuffer = await res.arrayBuffer();
+    return Buffer.from(arrayBuffer);
   }
 
   /**
@@ -286,7 +260,6 @@ export class SdServiceClient extends EventEmitter {
   async uploadAsync(
     files: FileList | File[] | File,
   ): Promise<{ path: string; filename: string; size: number }[]> {
-    const uuid = Uuid.new().toString(); // 이벤트 식별용 UUID 생성
     const formData = new FormData();
 
     if (files instanceof FileList) {
@@ -301,42 +274,19 @@ export class SdServiceClient extends EventEmitter {
       formData.append("files", files);
     }
 
+    // 서버 URL 구성 (ws:// -> http://)
     const uploadUrl = `${this.serverUrl}/upload`;
 
-    return await new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      xhr.open("POST", uploadUrl);
-
-      // 업로드 진행률 이벤트 발생
-      xhr.upload.onprogress = (evt) => {
-        if (evt.lengthComputable) {
-          this.emit("upload-progress", {
-            uuid,
-            fullSize: evt.total,
-            completedSize: evt.loaded,
-          });
-        }
-      };
-
-      xhr.onload = () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          try {
-            const result = JSON.parse(xhr.responseText);
-            resolve(result);
-          } catch {
-            reject(new Error("Invalid JSON response"));
-          }
-        } else {
-          reject(new Error(`Upload Failed: ${xhr.statusText} (${xhr.status})`));
-        }
-      };
-
-      xhr.onerror = () => {
-        reject(new Error("Network Error"));
-      };
-
-      xhr.send(formData);
+    const res = await fetch(uploadUrl, {
+      method: "POST",
+      body: formData, // Content-Type은 fetch가 자동으로 multipart/form-data로 설정함
     });
+
+    if (!res.ok) {
+      throw new Error(`Upload Failed: ${res.statusText}`);
+    }
+
+    return await res.json();
   }
 }
 
