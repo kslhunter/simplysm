@@ -17,7 +17,6 @@ import {
 } from "./types/reconnect-strategy.types";
 import { SdServiceTransport } from "./internal/SdServiceTransport";
 import { ISdServiceProgressState } from "./types/ISdServiceProgressState";
-import axios from "axios";
 
 export class SdServiceClient extends EventEmitter {
   isManualClose = false;
@@ -108,7 +107,7 @@ export class SdServiceClient extends EventEmitter {
     }
     // 서버 재 연결시, 리스너 재등록
     else if (msg.name === "connected") {
-      this.emit("state-change", "connected");
+      this.emit("state-change", "success");
       this.isConnected = true;
 
       await this.#eventBus.reRegisterAllAsync();
@@ -244,22 +243,38 @@ export class SdServiceClient extends EventEmitter {
   // HTTP 파일 다운로드 + 진행률 이벤트
   async downloadFileBufferAsync(relPath: string): Promise<Buffer> {
     const url = `${this.serverUrl}${relPath.startsWith("/") ? "" : "/"}${relPath}`;
-    const uuid = Uuid.new().toString();
+    const uuid = Uuid.new().toString(); // 이벤트 식별용 UUID 생성
 
-    const res = await axios.get(url, {
-      responseType: "arraybuffer", // Buffer로 받기
-      onDownloadProgress: (evt) => {
-        if (evt.total != null) {
+    return await new Promise<Buffer>((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open("GET", url);
+      xhr.responseType = "arraybuffer"; // Buffer로 변환하기 위해 arraybuffer 설정
+
+      // 진행률 이벤트 발생
+      xhr.onprogress = (evt) => {
+        if (evt.lengthComputable) {
           this.emit("download-progress", {
             uuid,
             fullSize: evt.total,
             completedSize: evt.loaded,
           });
         }
-      },
-    });
+      };
 
-    return Buffer.from(res.data);
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          resolve(Buffer.from(xhr.response));
+        } else {
+          reject(new Error(`${xhr.status}: ${xhr.statusText}`));
+        }
+      };
+
+      xhr.onerror = () => {
+        reject(new Error("Network Error"));
+      };
+
+      xhr.send();
+    });
   }
 
   /**
@@ -271,31 +286,57 @@ export class SdServiceClient extends EventEmitter {
   async uploadAsync(
     files: FileList | File[] | File,
   ): Promise<{ path: string; filename: string; size: number }[]> {
-    const uuid = Uuid.new().toString();
+    const uuid = Uuid.new().toString(); // 이벤트 식별용 UUID 생성
     const formData = new FormData();
 
     if (files instanceof FileList) {
-      for (let i = 0; i < files.length; i++) formData.append("files", files[i]);
+      for (let i = 0; i < files.length; i++) {
+        formData.append("files", files[i]);
+      }
     } else if (Array.isArray(files)) {
-      for (const file of files) formData.append("files", file);
+      for (const file of files) {
+        formData.append("files", file);
+      }
     } else {
       formData.append("files", files);
     }
 
-    const res = await axios.post(`${this.serverUrl}/upload`, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-      onUploadProgress: (evt) => {
-        if (evt.total != null) {
+    const uploadUrl = `${this.serverUrl}/upload`;
+
+    return await new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", uploadUrl);
+
+      // 업로드 진행률 이벤트 발생
+      xhr.upload.onprogress = (evt) => {
+        if (evt.lengthComputable) {
           this.emit("upload-progress", {
             uuid,
             fullSize: evt.total,
             completedSize: evt.loaded,
           });
         }
-      },
-    });
+      };
 
-    return res.data;
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            const result = JSON.parse(xhr.responseText);
+            resolve(result);
+          } catch {
+            reject(new Error("Invalid JSON response"));
+          }
+        } else {
+          reject(new Error(`Upload Failed: ${xhr.statusText} (${xhr.status})`));
+        }
+      };
+
+      xhr.onerror = () => {
+        reject(new Error("Network Error"));
+      };
+
+      xhr.send(formData);
+    });
   }
 }
 
