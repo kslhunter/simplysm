@@ -94,7 +94,10 @@ export class SdServiceServer extends EventEmitter {
         directives: {
           ...fastifyHelmet.contentSecurityPolicy.getDefaultDirectives(),
           "script-src-attr": ["'unsafe-inline'"], // 인라인 이벤트 핸들러 허용
-          "script-src": ["'self'", "'unsafe-inline'"], // 인라인 스크립트(<script>내용) 허용
+          "script-src": ["'self'", "'unsafe-inline'", "data:", "blob:"], // 인라인 스크립트(<script>내용) 허용
+          "worker-src": ["'self'", "data:", "blob:"], // Web Worker 생성을 위한 명시적 허용
+          "connect-src": ["'self'", "data:", "blob:"], // 백엔드 API 호출 외에 blob 데이터 통신 허용
+          "img-src": ["'self'", "data:", "blob:"], // 이미지 미리보기 등이 blob으로 될 경우 대비
           ...(!!this.options.ssl
             ? {}
             : {
