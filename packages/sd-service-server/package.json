@@ -13,6 +13,8 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
+    "@fastify/cors": "^11.1.0",
+    "@fastify/helmet": "^13.0.2",
     "@fastify/http-proxy": "^11.3.0",
     "@fastify/middie": "^9.0.3",
     "@fastify/multipart": "^9.3.0",
@@ -24,20 +26,16 @@
     "@simplysm/sd-orm-node": "12.15.21",
     "@simplysm/sd-service-common": "12.15.21",
     "bufferutil": "^4.0.9",
-    "busboy": "^1.6.0",
     "fastify": "^5.6.2",
     "mime": "^4.1.0",
     "nodemailer": "^7.0.11",
     "semver": "^7.7.3",
-    "send": "^1.2.0",
     "utf-8-validate": "^6.0.5",
     "ws": "^8.18.3"
   },
   "devDependencies": {
-    "@types/busboy": "^1.5.4",
     "@types/mime": "^4.0.0",
     "@types/nodemailer": "^7.0.4",
-    "@types/send": "^1.2.1",
     "@types/ws": "^8.18.1"
   }
 }
