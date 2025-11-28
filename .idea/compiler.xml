@@ -4,6 +4,6 @@
     <option name="memoryLimit" value="16384" />
     <option name="showAllErrors" value="false" />
     <option name="showSuggestions" value="false" />
-    <option name="useServicePoweredTypesChangedManually" value="DISABLED" />
+    <option name="useServicePoweredTypesChangedManually" value="ENABLED" />
   </component>
 </project>
