@@ -15,7 +15,7 @@
   ],
   "volta": {
     "node": "22.21.1",
-    "yarn": "4.11.0"
+    "yarn": "4.12.0"
   },
   "scripts": {
     "watch": "yarn run _sd-cli_ --debug watch",
@@ -44,7 +44,7 @@
     "cross-env": "^10.1.0",
     "eslint": "^9.39.1",
     "glob": "^13.0.0",
-    "prettier": "^3.7.1",
+    "prettier": "^3.7.2",
     "semver": "^7.7.3",
     "tsx": "^4.20.6",
     "typescript": "~5.8.3",

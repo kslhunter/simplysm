@@ -1,8 +1,8 @@
 import path from "path";
 import semver from "semver";
-import { SdServiceBase } from "../types";
 import { FsUtils } from "@simplysm/sd-core-node";
 import { ISdAutoUpdateService } from "@simplysm/sd-service-common";
+import { SdServiceBase } from "../types";
 
 export class SdAutoUpdateService extends SdServiceBase implements ISdAutoUpdateService {
   // zip으로 업데이트하는 legacy에서는 apk가 undefined로 들어옴

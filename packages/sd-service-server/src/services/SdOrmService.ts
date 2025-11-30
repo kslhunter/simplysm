@@ -66,12 +66,12 @@ export class SdOrmService extends SdServiceBase implements ISdOrmService {
       }
     };
     SdOrmService.#wsCloseListenerMap.set(connId, closeEventListener);
-    this.client?.on("close", closeEventListener);
+    this.socketClient?.on("close", closeEventListener);
 
     dbConn.on("close", () => {
       SdOrmService.#conns.delete(connId);
       SdOrmService.#wsCloseListenerMap.delete(connId);
-      this.client?.off("close", closeEventListener);
+      this.socketClient?.off("close", closeEventListener);
     });
 
     return connId;

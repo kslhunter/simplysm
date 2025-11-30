@@ -1,5 +1,7 @@
 import { TSdServiceCommand } from "./command.types";
 
+export type TSdServiceMessage = TSdServiceS2CMessage | TSdServiceC2SMessage;
+
 export type TSdServiceS2CMessage =
   | ISdServiceClientReloadCommand
   | ISdServiceClientGetIdCommand
@@ -58,7 +60,7 @@ export interface ISdServiceErrorBody {
 export interface ISdServiceRequest {
   name: "request";
   clientName: string;
-  uuid: string;
+  reqUuid: string;
   command: TSdServiceCommand;
   params: any;
 }
@@ -68,7 +70,7 @@ export interface ISdServiceRequest {
  */
 export interface ISdServiceSplitRequest {
   name: "request-split";
-  uuid: string;
+  reqUuid: string;
   fullSize: number;
   index: number;
   body: string;
@@ -80,6 +82,7 @@ export interface ISdServiceSplitRequest {
 export interface ISdServiceResponseForSplit {
   name: "response-for-split";
   reqUuid: string;
+  fullSize: number;
   completedSize: number;
 }
 
@@ -103,4 +106,10 @@ interface ISdServiceEmittedEvent {
 export class SdServiceEventListenerBase<I, O> {
   info!: I;
   data!: O;
+}
+
+export interface ISdServiceUploadResult {
+  path: string;
+  filename: string;
+  size: number;
 }

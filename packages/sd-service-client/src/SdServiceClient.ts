@@ -3,6 +3,7 @@
 import { ISdServiceConnectionConfig } from "./types/ISdServiceConnectionConfig";
 import { JsonConvert, Type, Uuid, Wait } from "@simplysm/sd-core-common";
 import {
+  ISdServiceUploadResult,
   SD_SERVICE_SPECIAL_COMMANDS,
   SdServiceCommandHelper,
   SdServiceEventListenerBase,
@@ -16,7 +17,7 @@ import {
   SdServiceDefaultReconnectStrategy,
 } from "./types/reconnect-strategy.types";
 import { SdServiceTransport } from "./internal/SdServiceTransport";
-import { ISdServiceProgressState } from "./types/ISdServiceProgressState";
+import { ISdServiceProgressState } from "./types/progress.types";
 
 export class SdServiceClient extends EventEmitter {
   isManualClose = false;
@@ -249,6 +250,42 @@ export class SdServiceClient extends EventEmitter {
     // ArrayBuffer를 받아 Buffer로 변환
     const arrayBuffer = await res.arrayBuffer();
     return Buffer.from(arrayBuffer);
+  }
+
+  async uploadFileAsync(
+    files: File[] | FileList | { name: string; data: Blob | Buffer }[],
+  ): Promise<ISdServiceUploadResult[]> {
+    const formData = new FormData();
+
+    // 입력값 정규화 (배열로 변환)
+    const fileList = files instanceof FileList ? Array.from(files) : files;
+
+    for (const file of fileList) {
+      if (file instanceof File) {
+        // 브라우저 File 객체
+        // encodeURIComponent로 파일명 한글 깨짐 방지 (서버/클라이언트 환경에 따라 필요할 수 있음)
+        formData.append("files", file, file.name);
+      } else {
+        // 커스텀 객체 ({ name, data })
+        const blob = file.data instanceof Blob ? file.data : new Blob([file.data]); // Buffer인 경우 Blob으로 변환
+        formData.append("files", blob, file.name);
+      }
+    }
+
+    // 서버 업로드 엔드포인트 호출
+    const res = await fetch(`${this.serverUrl}/upload`, {
+      method: "POST",
+      body: formData,
+      // fetch가 FormData를 감지하면 Content-Type: multipart/form-data; boundary=... 를 자동으로 설정함
+      // 수동으로 Content-Type 헤더를 넣으면 boundary가 빠져서 에러 남!
+    });
+
+    if (!res.ok) {
+      throw new Error(`Upload failed: ${res.statusText}`);
+    }
+
+    // 서버가 주는 [{ path, filename, size }] 응답 반환
+    return await res.json();
   }
 }
 

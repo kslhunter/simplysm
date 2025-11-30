@@ -1,9 +1,7 @@
 import {
   ISdServiceErrorBody,
-  SD_SERVICE_MAX_MESSAGE_SIZE,
-  SD_SERVICE_SPLIT_MESSAGE_CHUNK_SIZE,
-  SdServiceSplitMessageAccumulator,
-  splitServiceMessage,
+  ISdServiceRequest,
+  SdServiceProtocol,
   TSdServiceC2SMessage,
   TSdServiceCommand,
   TSdServiceResponse,
@@ -11,9 +9,11 @@ import {
 } from "@simplysm/sd-service-common";
 import { JsonConvert, Uuid } from "@simplysm/sd-core-common";
 import { SdWebSocket } from "./SdWebSocket";
-import { ISdServiceProgressState } from "../types/ISdServiceProgressState";
+import { ISdServiceProgress } from "../types/progress.types";
 
 export class SdServiceTransport {
+  readonly #protocol = new SdServiceProtocol();
+
   constructor(
     private readonly _ws: SdWebSocket,
     private readonly _clientName: string,
@@ -22,33 +22,33 @@ export class SdServiceTransport {
   async sendCommandAsync(
     command: TSdServiceCommand,
     params: any[],
-    progress?: {
-      request?: (state: ISdServiceProgressState) => void;
-      response?: (state: ISdServiceProgressState) => void;
-    },
+    progress?: ISdServiceProgress,
   ): Promise<any> {
     const uuid = Uuid.new().toString();
-    const req: TSdServiceC2SMessage = {
+    const req: ISdServiceRequest = {
       name: "request",
       clientName: this._clientName,
-      uuid,
+      reqUuid: uuid,
       command,
       params,
     };
-    const reqJson = JsonConvert.stringify(req);
 
     // 1. 응답 대기 시작 (요청 보내기 전에 리스너를 먼저 등록해야 안전함)
-    const responsePromise = this.#waitForResponseAsync(uuid, reqJson.length, progress);
+    const responsePromise = this.#waitForResponseAsync(uuid, progress);
 
     // 2. 요청 전송
-    await this.#sendRequestAsync(req.uuid, reqJson, progress);
+    await this.#sendRequestAsync(req, progress);
 
     // 3. 응답 결과 반환
     return await responsePromise;
   }
 
   async sendMessageAsync(msg: TSdServiceC2SMessage) {
-    await this._ws.sendAsync(JsonConvert.stringify(msg));
+    const encoded = this.#protocol.encode(msg);
+
+    for (const chunk of encoded.chunks) {
+      await this._ws.sendAsync(chunk);
+    }
   }
 
   // =========================================================================
@@ -60,17 +60,9 @@ export class SdServiceTransport {
    */
   async #waitForResponseAsync(
     uuid: string,
-    reqLength: number,
-    progress:
-      | {
-          request?: (s: ISdServiceProgressState) => void;
-          response?: (s: ISdServiceProgressState) => void;
-        }
-      | undefined,
+    progress: ISdServiceProgress | undefined,
   ): Promise<any> {
     return await new Promise<any>((resolve, reject) => {
-      const splitAccumulator = new SdServiceSplitMessageAccumulator();
-
       const listener = (msgJson: string) => {
         try {
           const msg = JsonConvert.parse(msgJson) as TSdServiceS2CMessage;
@@ -78,34 +70,27 @@ export class SdServiceTransport {
           // 내 요청에 대한 응답이 아니면 무시
           if (!("reqUuid" in msg) || msg.reqUuid !== uuid) return;
 
-          // 1. 분할 요청 진행률(ACK)
-          if (msg.name === "response-for-split") {
-            progress?.request?.({ uuid, fullSize: reqLength, completedSize: msg.completedSize });
-          }
-          // 2. 분할 응답 수신
-          else if (msg.name === "response-split") {
-            const splitResInfo = splitAccumulator.push(
-              msg.reqUuid,
-              msg.fullSize,
-              msg.index,
-              msg.body,
-            );
-            progress?.response?.({
-              uuid,
-              fullSize: msg.fullSize,
-              completedSize: splitResInfo.completedSize,
-            });
+          const decoded = this.#protocol.decode(msgJson);
 
-            if (splitResInfo.isCompleted && splitResInfo.fullText != null) {
-              this._ws.off("message", listener);
-              const res = JsonConvert.parse(splitResInfo.fullText) as TSdServiceResponse;
-              this.#resolveResponse(res, resolve, reject);
+          if (decoded.type === "accumulating") {
+            if (msg.name === "response-split") {
+              progress?.response?.({
+                uuid,
+                fullSize: decoded.fullSize,
+                completedSize: decoded.completedSize,
+              });
             }
-          }
-          // 3. 일반 응답 수신
-          else {
-            this._ws.off("message", listener);
-            this.#resolveResponse(msg, resolve, reject);
+          } else {
+            if (msg.name === "response-for-split") {
+              progress?.request?.({
+                uuid,
+                fullSize: msg.fullSize,
+                completedSize: msg.completedSize,
+              });
+            } else if (decoded.message.name === "response") {
+              this._ws.off("message", listener);
+              this.#resolveResponse(decoded.message, resolve, reject);
+            }
           }
         } catch (err) {
           this._ws.off("message", listener);
@@ -121,27 +106,21 @@ export class SdServiceTransport {
    * 요청 메시지 전송
    */
   async #sendRequestAsync(
-    uuid: string,
-    reqJson: string,
-    progress?: { request?: (state: ISdServiceProgressState) => void },
+    req: ISdServiceRequest,
+    progress: ISdServiceProgress | undefined,
   ): Promise<void> {
-    if (reqJson.length > SD_SERVICE_MAX_MESSAGE_SIZE) {
-      progress?.request?.({ uuid, fullSize: reqJson.length, completedSize: 0 });
+    const encoded = this.#protocol.encode(req);
 
-      const chunks = splitServiceMessage(reqJson, SD_SERVICE_SPLIT_MESSAGE_CHUNK_SIZE);
-      for (let index = 0; index < chunks.length; index++) {
-        const splitBody = chunks[index];
-        const splitReq = {
-          name: "request-split",
-          uuid,
-          fullSize: reqJson.length,
-          index,
-          body: splitBody,
-        };
-        await this._ws.sendAsync(JsonConvert.stringify(splitReq));
-      }
-    } else {
-      await this._ws.sendAsync(reqJson);
+    if (encoded.chunks.length > 1) {
+      progress?.request?.({
+        uuid: req.reqUuid,
+        fullSize: encoded.json.length,
+        completedSize: 0,
+      });
+    }
+
+    for (const chunk of encoded.chunks) {
+      await this._ws.sendAsync(chunk);
     }
   }
 
