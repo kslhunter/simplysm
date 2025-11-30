@@ -30,6 +30,18 @@ export class SdOrmService extends SdServiceBase implements ISdOrmService {
     return { ...config, ...opt.config };
   }
 
+  #getConn(connId: number): IDbConn {
+    if (!this.socketClient) throw new Error("소켓 연결 필요");
+
+    const myConns = SdOrmService.#socketConns.get(this.socketClient);
+    const conn = myConns?.get(connId);
+    if (!conn) {
+      throw new Error("DB에 연결되어있지 않습니다. (Invalid Connection ID)");
+    }
+
+    return conn;
+  }
+
   async getInfo(opt: TDbConnOptions & { configName: string }): Promise<{
     dialect: TDbContextOption["dialect"];
     database?: string;
@@ -86,18 +98,6 @@ export class SdOrmService extends SdServiceBase implements ISdOrmService {
     });
 
     return connId;
-  }
-
-  #getConn(connId: number): IDbConn {
-    if (!this.socketClient) throw new Error("소켓 연결 필요");
-
-    const myConns = SdOrmService.#socketConns.get(this.socketClient);
-    const conn = myConns?.get(connId);
-    if (!conn) {
-      throw new Error("DB에 연결되어있지 않습니다. (Invalid Connection ID)");
-    }
-
-    return conn;
   }
 
   async close(connId: number): Promise<void> {
