@@ -22,6 +22,16 @@ export class SdServiceExecutor {
       throw new Error(`서비스[${def.serviceName}]를 찾을 수 없습니다.`);
     }
 
+    // 요청 검증 (Gatekeeper)
+    // 여기서 막으면 이 뒤의 서비스 로직은 clientName이 안전하다고 믿고 쓸 수 있습니다.
+    if (def.request?.clientName != null) {
+      const { clientName } = def.request;
+      // 상위 경로(..), 루트(/), 윈도우 경로(\) 포함 시 차단
+      if (clientName.includes("..") || clientName.includes("/") || clientName.includes("\\")) {
+        throw new Error(`[Security] 유효하지 않은 클라이언트명입니다: ${clientName}`);
+      }
+    }
+
     // 3. 서비스 인스턴스 생성 (Context 주입)
     const service = new ServiceClass();
     service.server = this._server;
