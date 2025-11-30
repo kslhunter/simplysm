@@ -145,22 +145,28 @@ export class SdServiceServer extends EventEmitter {
     });
 
     // 정적 파일 와일드카드 핸들러
-    this.#fastify.all("/*", async (req, reply) => {
-      // 'http://localhost'는 상대 경로 파싱을 위한 dummy base (Fastify req.url은 path만 오므로)
-      const urlObj = new URL(req.raw.url!, "http://localhost");
-      const urlPath = decodeURI(urlObj.pathname.slice(1));
+    this.#fastify.route({
+      method: ["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD"],
+      url: "/*",
+      handler: async (req, reply) => {
+        // 'http://localhost'는 상대 경로 파싱을 위한 dummy base (Fastify req.url은 path만 오므로)
+        const urlObj = new URL(req.raw.url!, "http://localhost");
+        const urlPath = decodeURI(urlObj.pathname.slice(1));
 
-      // portProxy
-      if (this.options.portProxy) {
-        const proxyKey = Object.keys(this.options.portProxy).find((key) => urlPath.startsWith(key));
-        if (proxyKey != null) {
-          const targetPort = this.options.portProxy[proxyKey];
-          const target = `http://127.0.0.1:${targetPort}${req.raw.url}`;
-          return await reply.from(target);
+        // portProxy
+        if (this.options.portProxy) {
+          const proxyKey = Object.keys(this.options.portProxy).find((key) =>
+            urlPath.startsWith(key),
+          );
+          if (proxyKey != null) {
+            const targetPort = this.options.portProxy[proxyKey];
+            const target = `http://127.0.0.1:${targetPort}${req.raw.url}`;
+            return await reply.from(target);
+          }
         }
-      }
 
-      await this.#staticFileHandler.handleAsync(req, reply, urlPath);
+        await this.#staticFileHandler.handleAsync(req, reply, urlPath);
+      },
     });
 
     // HTTP 서버 수준의 에러 핸들링
