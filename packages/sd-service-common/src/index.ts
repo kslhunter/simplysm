@@ -1,5 +1,5 @@
 export * from "./message-protocol/message-protocol.types";
-import "./message-protocol/SdServiceMessageDecoder";
+export * from "./message-protocol/SdServiceMessageDecoder";
 export * from "./message-protocol/SdServiceMessageEncoder";
 export * from "./SdServiceCommandHelper";
 export * from "./SdServiceProtocol";

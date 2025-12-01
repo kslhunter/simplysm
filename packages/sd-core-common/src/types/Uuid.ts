@@ -1,23 +1,32 @@
+import { randomUUID } from "crypto";
+
 export class Uuid {
-  static #cnt = 1;
-  static readonly #prevUuidTexts: string[] = [];
-
   static new(): Uuid {
-    const fn = (): string => "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
-      const r1 = Math.random() * (this.#cnt++);
-      const r2 = r1 - Math.floor(r1);
-      const r = r2 * 16 | 0;
-      const v = c === "x" ? r : ((r & 0x3) | 0x8);
-      return v.toString(16);
-    });
+    return new Uuid(randomUUID());
+  }
 
-    let uuid = fn();
-    while (this.#prevUuidTexts.includes(uuid)) {
-      uuid = fn();
-    }
-    this.#prevUuidTexts.push(uuid);
-
+  static fromString(uuid: string): Uuid {
     return new Uuid(uuid);
+  }
+
+  static fromBuffer(buffer: Buffer): Uuid {
+    if (buffer.length !== 16) {
+      throw new Error(`UUID 버퍼 크기는 16바이트여야 합니다. (현재: ${buffer.length})`);
+    }
+
+    const hex = buffer.toString("hex");
+    const uuidStr =
+      hex.substring(0, 8) +
+      "-" +
+      hex.substring(8, 12) +
+      "-" +
+      hex.substring(12, 16) +
+      "-" +
+      hex.substring(16, 20) +
+      "-" +
+      hex.substring(20);
+
+    return new Uuid(uuidStr);
   }
 
   readonly #uuid: string;
@@ -28,5 +37,9 @@ export class Uuid {
 
   toString(): string {
     return this.#uuid;
+  }
+
+  toBuffer(): Buffer {
+    return Buffer.from(this.#uuid.replaceAll("-", ""), "hex");
   }
 }

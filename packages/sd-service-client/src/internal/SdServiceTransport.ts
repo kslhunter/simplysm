@@ -1,23 +1,33 @@
 import {
   ISdServiceErrorBody,
   ISdServiceRequest,
-  SdServiceProtocol,
+  SdServiceMessageDecoder,
+  SdServiceMessageEncoder,
   TSdServiceC2SMessage,
   TSdServiceCommand,
-  TSdServiceResponse,
   TSdServiceS2CMessage,
 } from "@simplysm/sd-service-common";
-import { JsonConvert, Uuid } from "@simplysm/sd-core-common";
+import { Uuid } from "@simplysm/sd-core-common";
 import { SdWebSocket } from "./SdWebSocket";
 import { ISdServiceProgress } from "../types/progress.types";
 
 export class SdServiceTransport {
-  readonly #protocol = new SdServiceProtocol();
+  readonly #decoder = new SdServiceMessageDecoder();
+  readonly listenerMap = new Map<
+    string,
+    {
+      resolve: (msg: TSdServiceS2CMessage) => void;
+      reject: (err: Error) => void;
+      progress?: ISdServiceProgress;
+    }
+  >();
 
   constructor(
     private readonly _ws: SdWebSocket,
     private readonly _clientName: string,
-  ) {}
+  ) {
+    this._ws.on("message", this.#onMessage.bind(this));
+  }
 
   async sendCommandAsync(
     command: TSdServiceCommand,
@@ -28,13 +38,19 @@ export class SdServiceTransport {
     const req: ISdServiceRequest = {
       name: "request",
       clientName: this._clientName,
-      uuid: uuid,
+      uuid,
       command,
       params,
     };
 
     // 1. 응답 대기 시작 (요청 보내기 전에 리스너를 먼저 등록해야 안전함)
-    const responsePromise = this.#waitForResponseAsync(uuid, progress);
+    const responsePromise = new Promise((resolve, reject) => {
+      this.listenerMap.set(uuid, {
+        resolve,
+        reject,
+        progress,
+      });
+    });
 
     // 2. 요청 전송
     await this.#sendRequestAsync(req, progress);
@@ -44,9 +60,12 @@ export class SdServiceTransport {
   }
 
   async sendMessageAsync(msg: TSdServiceC2SMessage) {
-    const encoded = this.#protocol.encode(msg);
+    const chunks = SdServiceMessageEncoder.encode(
+      "uuid" in msg ? msg.uuid : Uuid.new().toString(),
+      msg,
+    );
 
-    for (const chunk of encoded.chunks) {
+    for (const chunk of chunks) {
       await this._ws.sendAsync(chunk);
     }
   }
@@ -55,51 +74,36 @@ export class SdServiceTransport {
   // Private Helper Methods
   // =========================================================================
 
-  /**
-   * 응답이 올 때까지 기다리는 Promise를 반환
-   */
-  async #waitForResponseAsync(
-    uuid: string,
-    progress: ISdServiceProgress | undefined,
-  ): Promise<any> {
-    return await new Promise<any>((resolve, reject) => {
-      const listener = (msgJson: string) => {
-        try {
-          const msg = JsonConvert.parse(msgJson) as TSdServiceS2CMessage;
+  #onMessage(buf: Buffer) {
+    const decoded = this.#decoder.decode(buf);
 
-          // 내 요청에 대한 응답이 아니면 무시
-          if (!("reqUuid" in msg) || msg.reqUuid !== uuid) return;
+    const listenerInfo = this.listenerMap.get(decoded.uuid);
 
-          const decoded = this.#protocol.decode(msgJson);
-
-          if (decoded.type === "accumulating") {
-            if (msg.name === "response-split") {
-              progress?.response?.({
-                uuid,
-                totalSize: decoded.totalSize,
-                completedSize: decoded.completedSize,
-              });
-            }
+    try {
+      if (decoded.type === "progress") {
+        listenerInfo?.progress?.response?.({
+          uuid: decoded.uuid,
+          totalSize: decoded.totalSize,
+          completedSize: decoded.receivedSize,
+        });
+      } else {
+        if (decoded.message.name === "response-for-split") {
+          listenerInfo?.progress?.request?.({
+            uuid: decoded.message.reqUuid,
+            totalSize: decoded.message.totalSize,
+            completedSize: decoded.message.completedSize,
+          });
+        } else if (decoded.message.name === "response") {
+          if (decoded.message.state === "error") {
+            listenerInfo?.reject(this.#toError(decoded.message.body));
           } else {
-            if (msg.name === "response-for-split") {
-              progress?.request?.({
-                uuid,
-                totalSize: msg.totalSize,
-                completedSize: msg.completedSize,
-              });
-            } else if (decoded.message.name === "response") {
-              this._ws.off("message", listener);
-              this.#resolveResponse(decoded.message, resolve, reject);
-            }
+            listenerInfo?.resolve(decoded.message.body);
           }
-        } catch (err) {
-          this._ws.off("message", listener);
-          reject(err);
         }
-      };
-
-      this._ws.on("message", listener);
-    });
+      }
+    } catch (err) {
+      listenerInfo?.reject(err);
+    }
   }
 
   /**
@@ -109,33 +113,18 @@ export class SdServiceTransport {
     req: ISdServiceRequest,
     progress: ISdServiceProgress | undefined,
   ): Promise<void> {
-    const encoded = this.#protocol.encode(req);
+    const chunks = SdServiceMessageEncoder.encode(req.uuid, req);
 
-    if (encoded.chunks.length > 1) {
+    if (chunks.length > 1) {
       progress?.request?.({
         uuid: req.uuid,
-        totalSize: encoded.json.length,
+        totalSize: chunks.sum((chunk) => chunk.length),
         completedSize: 0,
       });
     }
 
-    for (const chunk of encoded.chunks) {
+    for (const chunk of chunks) {
       await this._ws.sendAsync(chunk);
-    }
-  }
-
-  /**
-   * 응답 결과 처리 (성공/실패 분기)
-   */
-  #resolveResponse(
-    res: TSdServiceResponse,
-    resolve: (value: any) => void,
-    reject: (reason?: any) => void,
-  ): void {
-    if (res.state === "error") {
-      reject(this.#toError(res.body));
-    } else {
-      resolve(res.body);
     }
   }
 

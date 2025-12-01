@@ -1,4 +1,4 @@
-import { DateTime, JsonConvert } from "@simplysm/sd-core-common";
+import { DateTime, JsonConvert, Uuid } from "@simplysm/sd-core-common";
 import { SD_SERVICE_MESSAGE_MAX_TOTAL_SIZE } from "./message-protocol.types";
 import { TSdServiceMessage } from "../types/protocol.types";
 
@@ -32,39 +32,40 @@ export class SdServiceMessageDecoder {
   /**
    * 메시지 디코딩 (분할 패킷 자동 조립)
    */
-  decode(buffer: Buffer): ISdServiceMessageDecodeResult {
-    // 헤더 읽기
-    const headerSize = Number(buffer.readBigUInt64BE(0));
-
-    // 헤더 없으면 바로 완료
-    if (headerSize === 0) {
-      const bodyBuffer = buffer.subarray(8);
-      const message = JsonConvert.parse(bodyBuffer.toString());
-      return { type: "complete", message };
+  decode<T extends TSdServiceMessage>(buffer: Buffer): ISdServiceMessageDecodeResult<T> {
+    if (buffer.length < 28) {
+      throw new Error(
+        `Invalid Buffer: Size(${buffer.length}) is smaller than header size(28).`,
+      );
     }
 
-    const headerBuffer = buffer.subarray(8, 8 + headerSize);
-    const header = JsonConvert.parse(headerBuffer.toString()) as {
-      uuid: string;
-      totalSize: number;
-      index: number;
-    };
-    const bodyBuffer = buffer.subarray(8 + headerSize);
+    // 1. 헤더 읽기
+
+    // UUID
+    const uuidBuffer = buffer.subarray(0, 16);
+    const uuid = Uuid.fromBuffer(uuidBuffer).toString();
+
+    // TOTAL_SIZE, INDEX
+    const headerView = new DataView(buffer.buffer, buffer.byteOffset, buffer.byteLength);
+    const totalSize = Number(headerView.getBigUint64(16, false));
+    const index = headerView.getUint32(24, false);
 
     // 전체 사이즈 제한 체크 (가장 먼저 수행)
-    if (header.totalSize > SD_SERVICE_MESSAGE_MAX_TOTAL_SIZE) {
-      throw new Error(`Message size exceeded limit: ${header.totalSize}`);
+    if (totalSize > SD_SERVICE_MESSAGE_MAX_TOTAL_SIZE) {
+      throw new Error(`Message size exceeded limit: ${totalSize}`);
     }
 
-    let accItem = this._accumulator.getOrCreate(header.uuid, {
+    const bodyBuffer = buffer.subarray(28);
+
+    let accItem = this._accumulator.getOrCreate(uuid, {
       lastUpdatedAt: new DateTime(),
-      totalSize: header.totalSize,
+      totalSize,
       receivedSize: 0,
       buffers: [],
     });
-    if (accItem.buffers[header.index] == null) {
+    if (accItem.buffers[index] == null) {
       // 패킷중복 방어
-      accItem.buffers[header.index] = bodyBuffer;
+      accItem.buffers[index] = bodyBuffer;
       accItem.receivedSize += bodyBuffer.length;
       accItem.lastUpdatedAt = new DateTime();
     }
@@ -72,21 +73,21 @@ export class SdServiceMessageDecoder {
     if (accItem.receivedSize < accItem.totalSize) {
       return {
         type: "progress",
-        uuid: header.uuid,
-        totalSize: header.totalSize,
+        uuid: uuid,
+        totalSize: totalSize,
         receivedSize: accItem.receivedSize,
       };
     } else {
-      this._accumulator.delete(header.uuid); // 메모리 해제
+      this._accumulator.delete(uuid); // 메모리 해제
 
       const resultBuffer = Buffer.concat(accItem.buffers.filterExists());
       const message = JsonConvert.parse(resultBuffer.toString());
-      return { type: "complete", message };
+      return { type: "complete", uuid: uuid, message };
     }
   }
 }
 
 // 결과 타입
-export type ISdServiceMessageDecodeResult =
-  | { type: "complete"; message: TSdServiceMessage }
+export type ISdServiceMessageDecodeResult<T extends TSdServiceMessage> =
+  | { type: "complete"; uuid: string; message: T }
   | { type: "progress"; uuid: string; receivedSize: number; totalSize: number };

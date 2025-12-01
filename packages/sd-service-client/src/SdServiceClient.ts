@@ -1,12 +1,13 @@
 /* eslint-disable no-console */
 
 import { ISdServiceConnectionConfig } from "./types/ISdServiceConnectionConfig";
-import { JsonConvert, Type, Uuid, Wait } from "@simplysm/sd-core-common";
+import { Type, Uuid, Wait } from "@simplysm/sd-core-common";
 import {
   ISdServiceUploadResult,
   SD_SERVICE_SPECIAL_COMMANDS,
   SdServiceCommandHelper,
   SdServiceEventListenerBase,
+  SdServiceMessageDecoder,
   TSdServiceS2CMessage,
 } from "@simplysm/sd-service-common";
 import { SdWebSocket } from "./internal/SdWebSocket";
@@ -18,7 +19,7 @@ import { ISdServiceProgressState } from "./types/progress.types";
 export class SdServiceClient extends EventEmitter {
   // 하트비트
   #HEARTBEAT_TIMEOUT = 30000; // 30초간 아무런 메시지가 없으면 끊김으로 간주
-  #PING_INTERVAL = 5000; // 5초마다 핑 전송
+  #HEARTBEAT_INTERVAL = 5000; // 5초마다 핑 전송
   #heartbeatInterval?: NodeJS.Timeout;
   #lastHeartbeatTime = Date.now();
 
@@ -36,6 +37,8 @@ export class SdServiceClient extends EventEmitter {
 
   #transport: SdServiceTransport;
   #eventBus: SdServiceEventBus;
+
+  #decoder = new SdServiceMessageDecoder();
 
   override on(event: "request-progress", listener: (state: ISdServiceProgressState) => void): this;
   override on(event: "response-progress", listener: (state: ISdServiceProgressState) => void): this;
@@ -161,7 +164,7 @@ export class SdServiceClient extends EventEmitter {
       try {
         await this.#transport.sendMessageAsync({ name: "client-ping" });
       } catch {}
-    }, this.#PING_INTERVAL);
+    }, this.#HEARTBEAT_INTERVAL);
   }
 
   #stopHeartbeat() {
@@ -190,15 +193,16 @@ export class SdServiceClient extends EventEmitter {
     if (this.isConnected) return;
 
     await new Promise<void>(async (resolve, reject) => {
-      this.#ws.on("message", async (msgJson) => {
+      this.#ws.on("message", async (buf) => {
         // 1. 하트비트 갱신
         this.#lastHeartbeatTime = Date.now();
 
-        const msg = JsonConvert.parse(msgJson) as TSdServiceS2CMessage;
-        await this.#handleServerMessageAsync(msg);
-
-        if (msg.name === "connected") {
-          resolve();
+        const decoded = this.#decoder.decode<TSdServiceS2CMessage>(buf);
+        if ("message" in decoded) {
+          await this.#handleServerMessageAsync(decoded.message);
+          if (decoded.message.name === "connected") {
+            resolve();
+          }
         }
       });
 

@@ -1,7 +1,8 @@
-import { DateTime, JsonConvert } from "@simplysm/sd-core-common";
+import { DateTime, JsonConvert, Uuid } from "@simplysm/sd-core-common";
 import { SdLogger } from "@simplysm/sd-core-node";
 import {
   ISdServiceRequest,
+  SdServiceMessageDecoder,
   SdServiceMessageEncoder,
   SdServiceProtocol,
   TSdServiceC2SMessage,
@@ -10,7 +11,7 @@ import {
 import { WebSocket } from "ws";
 import { EventEmitter } from "events";
 import { clearInterval } from "node:timers";
-import { SdServiceMessageDecoder } from "@simplysm/sd-service-common/dist/message-protocol/SdServiceMessageDecoder";
+import http from "http";
 
 export class SdServiceSocket extends EventEmitter {
   readonly #logger = SdLogger.get(["simplysm", "sd-service-server", "SdServiceSocket"]);
@@ -30,8 +31,16 @@ export class SdServiceSocket extends EventEmitter {
     return super.on(event, listener);
   }
 
-  constructor(private readonly _socket: WebSocket) {
+  private readonly _ver: string | null;
+
+  constructor(
+    private readonly _socket: WebSocket,
+    req: http.IncomingMessage,
+  ) {
     super();
+
+    const url = new URL(req.url ?? "", "http://localhost");
+    this._ver = url.searchParams.get("v");
 
     // 소켓 이벤트 바인딩
     this._socket.on("close", this.#onClose.bind(this));
@@ -54,11 +63,6 @@ export class SdServiceSocket extends EventEmitter {
     }, 10000);
   }
 
-  get protocolVersion() {
-    const url = new URL(this._socket.url);
-    return url.searchParams.get("v");
-  }
-
   private _clientId?: string;
 
   // TODO: 요청후 응답이 안올경우 대비 필요
@@ -66,15 +70,21 @@ export class SdServiceSocket extends EventEmitter {
     if (this._clientId != null) return this._clientId;
 
     const req: TSdServiceS2CMessage = { name: "client-get-id" };
-    const ver = this.protocolVersion;
 
     const socket = this._socket;
 
     return await new Promise<string>((resolve, reject) => {
       const tempListener = (resBuf: Buffer): void => {
         try {
-          const res: TSdServiceC2SMessage =
-            ver === "2" ? this.#decoder.decode(resBuf) : JsonConvert.parse(resBuf.toString());
+          let res: TSdServiceC2SMessage;
+          if (this._ver === "2") {
+            const decodeResult = this.#decoder.decode(resBuf);
+            if (decodeResult.type !== "complete") return;
+            res = decodeResult.message as TSdServiceC2SMessage;
+          } else {
+            res = JsonConvert.parse(resBuf.toString());
+          }
+
           if (res.name === "client-get-id-response") {
             socket.off("message", tempListener);
             this._clientId = res.body;
@@ -88,7 +98,7 @@ export class SdServiceSocket extends EventEmitter {
 
       socket.on("message", tempListener);
 
-      if (ver === "2") {
+      if (this._ver === "2") {
         this.send(req);
       } else {
         socket.send(JsonConvert.stringify(req));
@@ -104,9 +114,11 @@ export class SdServiceSocket extends EventEmitter {
   // 메시지 전송 (Protocol Encode 사용)
   send(msg: TSdServiceS2CMessage) {
     if (this._socket.readyState === WebSocket.OPEN) {
+      const uuid =
+        "uuid" in msg ? msg.uuid : "reqUuid" in msg ? msg.reqUuid : Uuid.new().toString();
       const chunks =
-        this.protocolVersion === "2"
-          ? SdServiceMessageEncoder.encode(msg)
+        this._ver === "2"
+          ? SdServiceMessageEncoder.encode(uuid, msg)
           : this.#protocol.encode(msg).chunks;
       for (const chunk of chunks) {
         this._socket.send(chunk);
@@ -155,7 +167,7 @@ export class SdServiceSocket extends EventEmitter {
 
   #onMessage(msgBuffer: Buffer) {
     try {
-      if (this.protocolVersion === "2") {
+      if (this._ver === "2") {
         const decodeResult = this.#decoder.decode(msgBuffer);
         if (decodeResult.type === "progress") {
           this.send({

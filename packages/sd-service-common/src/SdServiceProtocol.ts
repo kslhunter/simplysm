@@ -5,6 +5,9 @@ import {
   TSdServiceMessage,
 } from "./types/protocol.types";
 
+/**
+ * @deprecated
+ */
 export class SdServiceProtocol {
   // 메시지 사이즈 상수
   private readonly _SPLIT_MESSAGE_SIZE = 3 * 1024 * 1024; // 3MB

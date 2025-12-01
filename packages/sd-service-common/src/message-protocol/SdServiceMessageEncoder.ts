@@ -9,7 +9,7 @@ export class SdServiceMessageEncoder {
   /**
    * 메시지 인코딩 (필요 시 자동 분할)
    */
-  static encode(message: TSdServiceMessage): Buffer[] {
+  static encode(uuid: string, message: TSdServiceMessage): Buffer[] {
     const msgJson = JsonConvert.stringify(message);
     const msgBuffer = Buffer.from(msgJson);
 
@@ -22,7 +22,7 @@ export class SdServiceMessageEncoder {
 
     // 사이즈가 작으면 그대로 반환
     if (totalSize <= this._SPLIT_MESSAGE_SIZE) {
-      return [this.#encode(undefined, msgBuffer)];
+      return [this.#encode({ uuid, totalSize, index: 0 }, msgBuffer)];
     }
 
     // 3. 분할 처리
@@ -30,7 +30,6 @@ export class SdServiceMessageEncoder {
     let offset = 0;
     let index = 0;
 
-    const uuid = Uuid.new().toString();
     while (offset < totalSize) {
       const chunkBodyBuffer = msgBuffer.subarray(offset, offset + this._CHUNK_SIZE);
 
@@ -44,20 +43,29 @@ export class SdServiceMessageEncoder {
     return chunks;
   }
 
-  static #encode(header: any, bodyBuffer?: Buffer): Buffer {
-    if (header == null) {
-      const headerSizeBuffer = Buffer.alloc(8);
-      headerSizeBuffer.writeBigUInt64BE(BigInt(0));
-      return Buffer.concat([headerSizeBuffer, ...(bodyBuffer ? [bodyBuffer] : [])]);
-    }
+  static #encode(
+    header: {
+      uuid: string;
+      totalSize: number;
+      index: number;
+    },
+    bodyBuffer?: Buffer,
+  ): Buffer {
+    const headerBuffer = Buffer.alloc(28);
 
-    const headerJson = JsonConvert.stringify(header);
-    const headerBuffer = Buffer.from(headerJson);
-    const headerSize = headerBuffer.length;
+    // UUID
+    const uuidBuffer = Uuid.fromString(header.uuid).toBuffer();
+    headerBuffer.set(uuidBuffer, 0);
 
-    const headerSizeBuffer = Buffer.alloc(8);
-    headerSizeBuffer.writeBigUInt64BE(BigInt(headerSize));
+    // TOTAL_SIZE, INDEX
+    const headerView = new DataView(
+      headerBuffer.buffer,
+      headerBuffer.byteOffset,
+      headerBuffer.byteLength,
+    );
+    headerView.setBigUint64(16, BigInt(header.totalSize), false);
+    headerView.setUint32(24, header.index, false);
 
-    return Buffer.concat([headerSizeBuffer, headerBuffer, ...(bodyBuffer ? [bodyBuffer] : [])]);
+    return Buffer.concat([headerBuffer, ...(bodyBuffer ? [bodyBuffer] : [])]);
   }
 }

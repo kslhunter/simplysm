@@ -83,7 +83,7 @@ export class SdCliIndexFileGenerator {
       indexFilePath,
       path.resolve(pkgPath, "src/**/*.d.ts"),
       path.resolve(pkgPath, "src/index.ts"),
-      path.resolve(pkgPath, "src/internal/**/*{.ts,.tsx}"),
+      /*path.resolve(pkgPath, "src/internal/!**!/!*{.ts,.tsx}"),*/
     ].map((item) => item.replace(/\\/g, "/"));
   }
 }

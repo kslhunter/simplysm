@@ -21,7 +21,7 @@ export class SdWebSocketController {
 
   async addSocket(socket: WebSocket, req: http.IncomingMessage) {
     try {
-      const serviceSocket = new SdServiceSocket(socket);
+      const serviceSocket = new SdServiceSocket(socket, req);
       const clientId = await serviceSocket.getClientIdAsync();
 
       // 기존 연결 끊기
