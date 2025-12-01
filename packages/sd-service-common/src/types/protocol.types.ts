@@ -8,6 +8,7 @@ export type TSdServiceS2CMessage =
   | ISdServiceClientConnectedAlarm
   | ISdServiceClientPong
   | TSdServiceResponse
+  | ISdServiceProgress
   | ISdServiceResponseForSplit
   | ISdServiceSplitResponse
   | ISdServiceEmittedEvent;
@@ -78,7 +79,15 @@ export interface ISdServiceRequest {
   params: any;
 }
 
+export interface ISdServiceProgress {
+  name: "progress";
+  uuid: string;
+  totalSize: number;
+  receivedSize: number;
+}
+
 /**
+ * @deprecated
  * 분할된 요청 (요청을 받는곳에서 합쳐야함)
  */
 export interface ISdServiceSplitRequest {
@@ -91,6 +100,7 @@ export interface ISdServiceSplitRequest {
 }
 
 /**
+ * @deprecated
  * 분할된 요청에 대한 응답
  */
 export interface ISdServiceResponseForSplit {
@@ -102,6 +112,7 @@ export interface ISdServiceResponseForSplit {
 }
 
 /**
+ * @deprecated
  * 분할된 응답 (응답을 받는곳에서 합쳐야함)
  */
 export interface ISdServiceSplitResponse {

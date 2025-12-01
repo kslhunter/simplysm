@@ -1,3 +1,6 @@
+export * from "./message-protocol/message-protocol.types";
+import "./message-protocol/SdServiceMessageDecoder";
+export * from "./message-protocol/SdServiceMessageEncoder";
 export * from "./SdServiceCommandHelper";
 export * from "./SdServiceProtocol";
 export * from "./service-types/auto-update-service.types";

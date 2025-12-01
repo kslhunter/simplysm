@@ -2,6 +2,7 @@ import { DateTime, JsonConvert } from "@simplysm/sd-core-common";
 import { SdLogger } from "@simplysm/sd-core-node";
 import {
   ISdServiceRequest,
+  SdServiceMessageEncoder,
   SdServiceProtocol,
   TSdServiceC2SMessage,
   TSdServiceS2CMessage,
@@ -9,41 +10,12 @@ import {
 import { WebSocket } from "ws";
 import { EventEmitter } from "events";
 import { clearInterval } from "node:timers";
+import { SdServiceMessageDecoder } from "@simplysm/sd-service-common/dist/message-protocol/SdServiceMessageDecoder";
 
 export class SdServiceSocket extends EventEmitter {
-  static async createAsync(socket: WebSocket) {
-    // 클라이언트에게 ID 요청
-    const clientId = await this.#getClientIdAsync(socket);
-
-    return new this(clientId, socket);
-  }
-
-  static async #getClientIdAsync(socket: WebSocket): Promise<string> {
-    return await new Promise<string>((resolve, reject) => {
-      const tempListener = (resJson: string): void => {
-        try {
-          const res: TSdServiceC2SMessage = JsonConvert.parse(resJson);
-          if (res.name === "client-get-id-response") {
-            socket.off("message", tempListener);
-            resolve(res.body);
-          }
-        } catch (err) {
-          socket.off("message", tempListener);
-          reject(err);
-        }
-      };
-
-      socket.on("message", tempListener);
-
-      const req: TSdServiceS2CMessage = { name: "client-get-id" };
-      socket.send(JsonConvert.stringify(req));
-    });
-  }
-
-  // ===========================================================================
-
   readonly #logger = SdLogger.get(["simplysm", "sd-service-server", "SdServiceSocket"]);
 
+  readonly #decoder = new SdServiceMessageDecoder();
   readonly #protocol = new SdServiceProtocol();
   readonly #listenerInfos: { eventName: string; key: string; info: any }[] = [];
 
@@ -58,10 +30,7 @@ export class SdServiceSocket extends EventEmitter {
     return super.on(event, listener);
   }
 
-  private constructor(
-    public readonly clientId: string,
-    private readonly _socket: WebSocket,
-  ) {
+  constructor(private readonly _socket: WebSocket) {
     super();
 
     // 소켓 이벤트 바인딩
@@ -85,6 +54,48 @@ export class SdServiceSocket extends EventEmitter {
     }, 10000);
   }
 
+  get protocolVersion() {
+    const url = new URL(this._socket.url);
+    return url.searchParams.get("v");
+  }
+
+  private _clientId?: string;
+
+  // TODO: 요청후 응답이 안올경우 대비 필요
+  async getClientIdAsync(): Promise<string> {
+    if (this._clientId != null) return this._clientId;
+
+    const req: TSdServiceS2CMessage = { name: "client-get-id" };
+    const ver = this.protocolVersion;
+
+    const socket = this._socket;
+
+    return await new Promise<string>((resolve, reject) => {
+      const tempListener = (resBuf: Buffer): void => {
+        try {
+          const res: TSdServiceC2SMessage =
+            ver === "2" ? this.#decoder.decode(resBuf) : JsonConvert.parse(resBuf.toString());
+          if (res.name === "client-get-id-response") {
+            socket.off("message", tempListener);
+            this._clientId = res.body;
+            resolve(res.body);
+          }
+        } catch (err) {
+          socket.off("message", tempListener);
+          reject(err);
+        }
+      };
+
+      socket.on("message", tempListener);
+
+      if (ver === "2") {
+        this.send(req);
+      } else {
+        socket.send(JsonConvert.stringify(req));
+      }
+    });
+  }
+
   // 강제 종료
   close() {
     this._socket.terminate();
@@ -93,8 +104,11 @@ export class SdServiceSocket extends EventEmitter {
   // 메시지 전송 (Protocol Encode 사용)
   send(msg: TSdServiceS2CMessage) {
     if (this._socket.readyState === WebSocket.OPEN) {
-      const encoded = this.#protocol.encode(msg);
-      for (const chunk of encoded.chunks) {
+      const chunks =
+        this.protocolVersion === "2"
+          ? SdServiceMessageEncoder.encode(msg)
+          : this.#protocol.encode(msg).chunks;
+      for (const chunk of chunks) {
         this._socket.send(chunk);
       }
     }
@@ -134,31 +148,50 @@ export class SdServiceSocket extends EventEmitter {
 
   #onClose(code: number) {
     clearInterval(this.#pingInterval);
+    this.#decoder.dispose();
     this.#protocol.dispose();
     this.emit("close", code);
   }
 
   #onMessage(msgBuffer: Buffer) {
     try {
-      const msgJson = msgBuffer.toString();
-      const decodeResult = this.#protocol.decode(msgJson);
+      if (this.protocolVersion === "2") {
+        const decodeResult = this.#decoder.decode(msgBuffer);
+        if (decodeResult.type === "progress") {
+          this.send({
+            name: "progress",
+            uuid: decodeResult.uuid,
+            totalSize: decodeResult.totalSize,
+            receivedSize: decodeResult.receivedSize,
+          });
+        } else {
+          const msg = decodeResult.message as TSdServiceC2SMessage;
+          if (msg.name === "request") {
+            this.emit("request", msg);
+          } else if (msg.name === "client-ping") {
+            this.send({ name: "client-pong" });
+          }
+        }
+      } else {
+        const decodeResult = this.#protocol.decode(msgBuffer.toString());
 
-      // A. 분할 메시지 수신 중 -> ACK (reqUuid 사용)
-      if (decodeResult.type === "accumulating") {
-        this.send({
-          name: "response-for-split",
-          reqUuid: decodeResult.uuid,
-          totalSize: decodeResult.totalSize,
-          completedSize: decodeResult.completedSize,
-        });
-      }
-      // B. 메시지 완성 -> 처리 (request외에는 별개 로직으로 처리함)
-      else {
-        const msg = decodeResult.message as TSdServiceC2SMessage;
-        if (msg.name === "request") {
-          this.emit("request", msg);
-        } else if (msg.name === "client-ping") {
-          this.send({ name: "client-pong" });
+        // A. 분할 메시지 수신 중 -> ACK (reqUuid 사용)
+        if (decodeResult.type === "accumulating") {
+          this.send({
+            name: "response-for-split",
+            reqUuid: decodeResult.uuid,
+            totalSize: decodeResult.totalSize,
+            completedSize: decodeResult.completedSize,
+          });
+        }
+        // B. 메시지 완성 -> 처리
+        else {
+          const msg = decodeResult.message as TSdServiceC2SMessage;
+          if (msg.name === "request") {
+            this.emit("request", msg);
+          } else if (msg.name === "client-ping") {
+            this.send({ name: "client-pong" });
+          }
         }
       }
     } catch (err) {

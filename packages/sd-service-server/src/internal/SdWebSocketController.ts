@@ -21,29 +21,28 @@ export class SdWebSocketController {
 
   async addSocket(socket: WebSocket, req: http.IncomingMessage) {
     try {
-      const serviceSocket = await SdServiceSocket.createAsync(socket);
+      const serviceSocket = new SdServiceSocket(socket);
+      const clientId = await serviceSocket.getClientIdAsync();
 
       // 기존 연결 끊기
-      const prevServiceSocket = this.#socketMap.get(serviceSocket.clientId);
+      const prevServiceSocket = this.#socketMap.get(clientId);
       if (prevServiceSocket) {
         prevServiceSocket.close();
 
         const connectionDateTimeText =
           prevServiceSocket.connectedAtDateTime.toFormatString("yyyy:MM:dd HH:mm:ss.fff");
-        this.#logger.debug(
-          `클라이언트 기존연결 끊음: ${prevServiceSocket.clientId}: ${connectionDateTimeText}`,
-        );
+        this.#logger.debug(`클라이언트 기존연결 끊음: ${clientId}: ${connectionDateTimeText}`);
       }
 
       // 클라이언트 객체 변경
-      this.#socketMap.set(serviceSocket.clientId, serviceSocket);
+      this.#socketMap.set(clientId, serviceSocket);
 
       serviceSocket.on("close", (code: number) => {
         this.#logger.debug(`클라이언트 연결 끊김: (code: ${code})`);
 
         // clientId에 새로 set된경우, 시간차로 delete되버리지 않도록 client 동일여부 체크
-        if (this.#socketMap.get(serviceSocket.clientId) !== serviceSocket) return;
-        this.#socketMap.delete(serviceSocket.clientId);
+        if (this.#socketMap.get(clientId) !== serviceSocket) return;
+        this.#socketMap.delete(clientId);
       });
 
       serviceSocket.on("request", async (request) => {
@@ -55,7 +54,7 @@ export class SdWebSocketController {
 
       // 연결 로그
       this.#logger.debug(`클라이언트 연결됨`, {
-        clientId: serviceSocket.clientId,
+        clientId: clientId,
         remoteAddress: req.socket.remoteAddress,
         socketSize: this.#socketMap.size,
       });
@@ -69,14 +68,14 @@ export class SdWebSocketController {
   }
 
   close() {
-    for (const socket of this.#socketMap.values()) {
-      socket.close();
+    for (const serviceSocket of this.#socketMap.values()) {
+      serviceSocket.close();
     }
   }
 
   broadcastReload(clientName: string | undefined, changedFileSet: Set<string>) {
-    for (const socket of this.#socketMap.values()) {
-      socket.send({ name: "client-reload", clientName, changedFileSet });
+    for (const serviceSocket of this.#socketMap.values()) {
+      serviceSocket.send({ name: "client-reload", clientName, changedFileSet });
     }
   }
 
@@ -93,19 +92,19 @@ export class SdWebSocketController {
   }
 
   #getListenerInfos(eventName: string): { key: string; info: any }[] {
-    return Array.from(this.#socketMap.values()).mapMany((socket) =>
-      socket.getEventListners(eventName),
+    return Array.from(this.#socketMap.values()).mapMany((serviceSocket) =>
+      serviceSocket.getEventListners(eventName),
     );
   }
 
   #emitToTargets(targetKeys: string[], data: any) {
-    for (const socket of this.#socketMap.values()) {
-      socket.emitByKeys(targetKeys, data);
+    for (const serviceSocket of this.#socketMap.values()) {
+      serviceSocket.emitByKeys(targetKeys, data);
     }
   }
 
   async #processRequestAsync(
-    socket: SdServiceSocket,
+    serviceSocket: SdServiceSocket,
     req: ISdServiceRequest,
   ): Promise<TSdServiceResponse> {
     try {
@@ -113,7 +112,7 @@ export class SdWebSocketController {
 
       if (methodCmdInfo) {
         const result = await this._executor.runMethodAsync({
-          socket: socket,
+          socket: serviceSocket,
           request: req,
           serviceName: methodCmdInfo.serviceName,
           methodName: methodCmdInfo.methodName,
@@ -130,7 +129,7 @@ export class SdWebSocketController {
       } else if (req.command === SD_SERVICE_SPECIAL_COMMANDS.ADD_EVENT_LISTENER) {
         const [key, eventName, info] = req.params as [string, string, any];
 
-        socket.addEventListener(key, eventName, info);
+        serviceSocket.addEventListener(key, eventName, info);
 
         return {
           name: "response",
@@ -141,7 +140,7 @@ export class SdWebSocketController {
       } else if (req.command === SD_SERVICE_SPECIAL_COMMANDS.REMOVE_EVENT_LISTENER) {
         const [key] = req.params as [string];
 
-        socket.removeEventListener(key);
+        serviceSocket.removeEventListener(key);
 
         return {
           name: "response",

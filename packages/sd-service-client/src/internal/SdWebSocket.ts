@@ -26,7 +26,7 @@ export class SdWebSocket extends EventEmitter {
       if (this.#ws) {
         this.#ws.close();
       }
-      this.#ws = new WebSocket(this._url);
+      this.#ws = new WebSocket(this._url + "?v=2");
 
       this.#ws.onopen = () => {
         resolve();
