@@ -1,8 +1,6 @@
-import { randomUUID } from "crypto";
-
 export class Uuid {
   static new(): Uuid {
-    return new Uuid(randomUUID());
+    return new Uuid(crypto.randomUUID());
   }
 
   static fromString(uuid: string): Uuid {

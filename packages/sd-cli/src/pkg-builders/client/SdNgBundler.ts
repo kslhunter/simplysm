@@ -469,9 +469,9 @@ export class SdNgBundler {
       define: {
         ...(!this._opt.watch?.dev ? { ngDevMode: "false" } : {}),
         "ngJitMode": "false",
-        // "global": "global",
-        // "process": "process",
-        // "Buffer": "Buffer",
+        "global": "global",
+        "process": "process",
+        "Buffer": "Buffer",
         "process.env.SD_VERSION": JSON.stringify(this.#pkgNpmConf.version),
         "process.env.NODE_ENV": JSON.stringify(this._opt.watch?.dev ? "development" : "production"),
         ...(this._conf.env

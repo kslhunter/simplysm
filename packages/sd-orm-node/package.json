@@ -15,7 +15,8 @@
   "dependencies": {
     "@simplysm/sd-core-common": "12.15.33",
     "@simplysm/sd-core-node": "12.15.33",
-    "@simplysm/sd-orm-common": "12.15.33"
+    "@simplysm/sd-orm-common": "12.15.33",
+    "generic-pool": "^3.9.0"
   },
   "devDependencies": {
     "@types/mysql": "^2.15.27",
