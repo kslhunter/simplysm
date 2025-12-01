@@ -1,3 +1,4 @@
+import "./internal/SdConfigManager";
 export * from "./internal/SdHttpRequestHandler";
 export * from "./internal/SdServiceExecutor";
 export * from "./internal/SdServiceSocket";

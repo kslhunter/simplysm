@@ -1,6 +1,6 @@
 import http from "http";
 import { WebSocket } from "ws";
-import { JsonConvert, Type } from "@simplysm/sd-core-common";
+import { Type } from "@simplysm/sd-core-common";
 import {
   ISdServiceRequest,
   SD_SERVICE_SPECIAL_COMMANDS,
@@ -48,8 +48,8 @@ export class SdWebSocketController {
       serviceSocket.on("request", async (request) => {
         this.#logger.debug("요청 수신", request);
         const res = await this.#processRequestAsync(serviceSocket, request);
-        this.#logger.debug(`응답 전송 (size: ${Buffer.from(JsonConvert.stringify(res)).length})`);
-        serviceSocket.send(res);
+        const sentSize = serviceSocket.send(res);
+        this.#logger.debug(`응답 전송 (size: ${sentSize})`);
       });
 
       // 연결 로그

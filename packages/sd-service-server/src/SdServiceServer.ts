@@ -1,5 +1,4 @@
 import { SdLogger } from "@simplysm/sd-core-node";
-import { ISdServiceServerOptions } from "./types";
 import { EventEmitter } from "events";
 import { SdServiceEventListenerBase } from "@simplysm/sd-service-common";
 import { SdWebSocketController } from "./internal/SdWebSocketController";
@@ -17,6 +16,8 @@ import fastifyCors from "@fastify/cors";
 import fastifyReplyFrom from "@fastify/reply-from";
 import path from "path";
 import { SdUploadHandler } from "./internal/SdUploadHandler";
+import { SdServiceBase } from "./types";
+import http from "http";
 
 export class SdServiceServer extends EventEmitter {
   isOpen = false;
@@ -237,4 +238,21 @@ export class SdServiceServer extends EventEmitter {
     process.on("SIGINT", () => shutdownHandler("SIGINT"));
     process.on("SIGTERM", () => shutdownHandler("SIGTERM"));
   }
+}
+
+export interface ISdServiceServerOptions {
+  rootPath: string;
+  port: number;
+  ssl?: {
+    pfxBuffer: Buffer | (() => Promise<Buffer> | Buffer);
+    passphrase: string;
+  };
+  pathProxy?: Record<string, string>;
+  portProxy?: Record<string, number>;
+  services: Type<SdServiceBase>[];
+  middlewares?: ((
+    req: http.IncomingMessage,
+    res: http.ServerResponse,
+    next: (err?: any) => void,
+  ) => void)[];
 }

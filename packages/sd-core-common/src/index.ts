@@ -17,6 +17,7 @@ export * from "./types/date-time/DateOnly";
 export * from "./types/date-time/DateTime";
 export * from "./types/date-time/Time";
 export * from "./types/DeepPartial";
+export * from "./types/LazyGcMap";
 export * from "./types/TreeMap";
 export * from "./types/type/TFlatType";
 export * from "./types/type/Type";

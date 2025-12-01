@@ -1,31 +1,21 @@
-import { DateTime, JsonConvert, Uuid } from "@simplysm/sd-core-common";
+import { JsonConvert, LazyGcMap, Uuid } from "@simplysm/sd-core-common";
 import { SD_SERVICE_MESSAGE_MAX_TOTAL_SIZE } from "./message-protocol.types";
 import { TSdServiceMessage } from "../types/protocol.types";
 
 export class SdServiceMessageDecoder {
-  // 조립 중인 메시지 보관소 (Key: reqUuid)
-  private readonly _accumulator = new Map<
+  private readonly _accumulator = new LazyGcMap<
     string,
     {
-      lastUpdatedAt: DateTime;
       totalSize: number;
       receivedSize: number;
       buffers: (Buffer | undefined)[];
     }
-  >();
-
-  // GC 타이머 (10초마다 체크하여 60초 지난 미완성 조각 제거)
-  private readonly _gcInterval = setInterval(() => {
-    const now = Date.now();
-    for (const [reqUuid, item] of this._accumulator) {
-      if (now - item.lastUpdatedAt.tick > 60 * 1000) {
-        this._accumulator.delete(reqUuid);
-      }
-    }
-  }, 10000);
+  >({
+    gcInterval: 10000, // 10초마다
+    expireTime: 60000, // 60초 지난 것 삭제
+  });
 
   dispose(): void {
-    clearInterval(this._gcInterval);
     this._accumulator.clear();
   }
 
@@ -34,9 +24,7 @@ export class SdServiceMessageDecoder {
    */
   decode<T extends TSdServiceMessage>(buffer: Buffer): ISdServiceMessageDecodeResult<T> {
     if (buffer.length < 28) {
-      throw new Error(
-        `Invalid Buffer: Size(${buffer.length}) is smaller than header size(28).`,
-      );
+      throw new Error(`Invalid Buffer: Size(${buffer.length}) is smaller than header size(28).`);
     }
 
     // 1. 헤더 읽기
@@ -57,17 +45,15 @@ export class SdServiceMessageDecoder {
 
     const bodyBuffer = buffer.subarray(28);
 
-    let accItem = this._accumulator.getOrCreate(uuid, {
-      lastUpdatedAt: new DateTime(),
+    const accItem = this._accumulator.getOrCreate(uuid, () => ({
       totalSize,
       receivedSize: 0,
       buffers: [],
-    });
+    }));
     if (accItem.buffers[index] == null) {
       // 패킷중복 방어
       accItem.buffers[index] = bodyBuffer;
       accItem.receivedSize += bodyBuffer.length;
-      accItem.lastUpdatedAt = new DateTime();
     }
 
     if (accItem.receivedSize < accItem.totalSize) {

@@ -16,9 +16,9 @@ import { ISdOrmService, TDbConnOptions } from "@simplysm/sd-service-common";
 import { SdServiceSocket } from "../internal/SdServiceSocket";
 
 export class SdOrmService extends SdServiceBase implements ISdOrmService {
-  #logger = SdLogger.get(["simplysm", "sd-service-server", this.constructor.name]);
+  readonly #logger = SdLogger.get(["simplysm", "sd-service-server", this.constructor.name]);
 
-  static #socketConns = new WeakMap<SdServiceSocket, Map<number, IDbConn>>();
+  static readonly #socketConns = new WeakMap<SdServiceSocket, Map<number, IDbConn>>();
 
   async #getConf(opt: TDbConnOptions & { configName: string }): Promise<TDbConnConf> {
     const config = (await this.getConfig<Record<string, TDbConnConf | undefined>>("orm"))[
@@ -69,32 +69,46 @@ export class SdOrmService extends SdServiceBase implements ISdOrmService {
     if (!myConns) {
       myConns = new Map<number, IDbConn>();
       SdOrmService.#socketConns.set(this.socketClient, myConns);
+
+      // [수정] 소켓당 '단 한 번'만 close 리스너를 등록합니다.
+      // 소켓이 끊어지면, 해당 소켓이 가진 모든 DB 연결을 일괄 종료(반납)합니다.
+      this.socketClient.on("close", async () => {
+        if (!myConns) return;
+
+        this.#logger.debug("소켓 연결 종료 감지: 열려있는 모든 DB 연결을 정리합니다.");
+        const conns = Array.from(myConns.values());
+
+        // 병렬로 빠르게 닫기
+        await Promise.all(
+          conns.map(async (conn) => {
+            try {
+              if (conn.isConnected) {
+                await conn.closeAsync();
+              }
+            } catch (err) {
+              this.#logger.warn("DB 연결 강제 종료 중 오류 무시됨", err);
+            }
+          })
+        );
+
+        myConns.clear();
+      });
     }
 
+    // 2. 연결 생성 (이제 내부적으로 Pool에서 가져옴)
     const config = await this.#getConf(opt);
     const conn = DbConnFactory.create(config);
     await conn.connectAsync();
 
+    // 3. ID 발급 및 목록에 저장
     const lastConnId = Array.from(myConns.keys()).max() ?? 0;
     const connId = lastConnId + 1;
     myConns.set(connId, conn);
 
-    const closeEventListener = async (/*code: number*/): Promise<void> => {
-      // 1001: 클라이언트 창이 닫히거나 RELOAD 될때
-      // if (code === 1001) {
-      try {
-        await conn.closeAsync();
-        this.#logger.warn("소켓연결이 끊어져, DB 연결이 중지되었습니다.");
-      } catch (err) {
-        this.#logger.warn("DB 연결 종료 중 오류 무시됨", err);
-      }
-      // }
-    };
-    this.socketClient.on("close", closeEventListener);
-
+    // 4. 개별 연결이 (로직에 의해) 닫혔을 때, 목록에서만 제거
+    // (소켓 리스너는 제거하지 않음 - 다른 연결이 있을 수 있으므로)
     conn.on("close", () => {
       myConns.delete(connId);
-      this.socketClient?.off("close", closeEventListener);
     });
 
     return connId;

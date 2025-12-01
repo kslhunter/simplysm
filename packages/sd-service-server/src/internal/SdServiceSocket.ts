@@ -113,17 +113,18 @@ export class SdServiceSocket extends EventEmitter {
 
   // 메시지 전송 (Protocol Encode 사용)
   send(msg: TSdServiceS2CMessage) {
-    if (this._socket.readyState === WebSocket.OPEN) {
-      const uuid =
-        "uuid" in msg ? msg.uuid : "reqUuid" in msg ? msg.reqUuid : Uuid.new().toString();
-      const chunks =
-        this._ver === "2"
-          ? SdServiceMessageEncoder.encode(uuid, msg)
-          : this.#protocol.encode(msg).chunks;
-      for (const chunk of chunks) {
-        this._socket.send(chunk);
-      }
+    if (this._socket.readyState !== WebSocket.OPEN) return 0;
+
+    const uuid = "uuid" in msg ? msg.uuid : "reqUuid" in msg ? msg.reqUuid : Uuid.new().toString();
+    const chunks =
+      this._ver === "2"
+        ? SdServiceMessageEncoder.encode(uuid, msg)
+        : this.#protocol.encode(msg).chunks;
+    for (const chunk of chunks) {
+      this._socket.send(chunk);
     }
+
+    return chunks.sum(item => item.length);
   }
 
   addEventListener(key: string, eventName: string, info: any) {
