@@ -18,6 +18,8 @@ export interface IDbConn extends EventEmitter {
 
   executeAsync(queries: string[]): Promise<any[][]>;
 
+  executeParametrizedAsync(query: string, params?: any[]): Promise<any[][]>;
+
   bulkInsertAsync(
     tableName: string,
     columnDefs: IQueryColumnDef[],

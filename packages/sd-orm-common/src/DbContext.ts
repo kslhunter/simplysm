@@ -156,9 +156,14 @@ export abstract class DbContext {
     return await this._executor.executeDefsAsync(defs, options);
   }
 
-  async executeQueriesAsync(queries: string[]): Promise<any[][]> {
+  // async executeQueriesAsync(queries: string[]): Promise<any[][]> {
+  //   if (!this._executor) throw new Error("DB 실행기를 알 수 없습니다.");
+  //   return await this._executor.executeAsync(queries);
+  // }
+
+  async executeParametrizedAsync(query: string, params?: any[]): Promise<any[][]> {
     if (!this._executor) throw new Error("DB 실행기를 알 수 없습니다.");
-    return await this._executor.executeAsync(queries);
+    return await this._executor.executeParametrizedAsync(query, params);
   }
 
   async bulkInsertAsync(
@@ -484,7 +489,7 @@ export abstract class DbContext {
           },
         ]);
 
-        await this.executeQueriesAsync([`USE ${dbName};`]);
+        await this.executeParametrizedAsync(`USE ${dbName};`);
 
         await this.executeDefsAsync([
           {
@@ -493,7 +498,7 @@ export abstract class DbContext {
           },
         ]);
       }
-      await this.executeQueriesAsync([`USE ${this.opt.database};`]);
+      await this.executeParametrizedAsync(`USE ${this.opt.database};`);
 
       // TABLE 초기화: 생성/PK 설정
       for (const dbName of dbNames) {

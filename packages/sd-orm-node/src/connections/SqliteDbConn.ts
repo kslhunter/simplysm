@@ -192,6 +192,32 @@ export class SqliteDbConn extends EventEmitter implements IDbConn {
     return results;
   }
 
+  async executeParametrizedAsync(query: string, params?: any[]): Promise<any[][]> {
+    if (!this.#conn || !this.isConnected) {
+      throw new Error("'Connection'이 연결되어있지 않습니다.");
+    }
+
+    const conn = this.#conn;
+
+    const results: any[][] = [];
+    this.#logger.debug(`쿼리 실행(${query.length.toLocaleString()}): ${query}, ${params}`);
+    await new Promise<void>((resolve, reject) => {
+      conn.all(query, params ?? [], (err, queryResults) => {
+        this.#startTimeout();
+
+        if (err) {
+          reject(new SdError(err, "쿼리 수행중 오류발생\n-- query\n" + query.trim() + "\n--"));
+          return;
+        }
+
+        results.push(queryResults);
+        resolve();
+      });
+    });
+
+    return results;
+  }
+
   async bulkInsertAsync(
     tableName: string,
     columnDefs: IQueryColumnDef[],

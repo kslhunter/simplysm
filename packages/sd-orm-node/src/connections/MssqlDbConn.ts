@@ -201,6 +201,16 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
   }
 
   async executeAsync(queries: string[]): Promise<any[][]> {
+    const results: any[][] = [];
+    for (const query of queries.filter((item) => !StringUtils.isNullOrEmpty(item))) {
+      const resultItems = await this.executeParametrizedAsync(query);
+      results.push(...resultItems);
+    }
+
+    return results;
+  }
+
+  async executeParametrizedAsync(query: string, params?: any[]): Promise<any[][]> {
     if (!this.#conn || !this.isConnected) {
       throw new Error("'Connection'이 연결되어있지 않습니다.");
     }
@@ -209,101 +219,110 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
     const conn = this.#conn;
 
     const results: any[][] = [];
-    for (const query of queries.filter((item) => !StringUtils.isNullOrEmpty(item))) {
-      const queryStrings = query.split(/\r?\nGO(\r?\n|$)/g);
 
-      for (const queryString of queryStrings) {
-        this.#logger.debug("쿼리 실행:\n" + queryString);
-        await new Promise<void>((resolve, reject) => {
-          let rejected = false;
-          const queryRequest = new tedious.Request(queryString, (err) => {
-            if (err != null) {
-              rejected = true;
-              this.#requests.remove(queryRequest);
+    this.#logger.debug(`쿼리 실행(${query.length.toLocaleString()}): ${query}, ${params}`);
+    await new Promise<void>((resolve, reject) => {
+      let rejected = false;
+      const queryRequest = new tedious.Request(query, (err) => {
+        if (err != null) {
+          rejected = true;
+          this.#requests.remove(queryRequest);
 
-              if (err["code"] === "ECANCEL") {
-                reject(new Error("쿼리가 취소되었습니다."));
-              } else {
-                if (err["lineNumber"] > 0) {
-                  const splitQuery = queryString.split("\n");
-                  splitQuery[err["lineNumber"] - 1] = "==> " + splitQuery[err["lineNumber"] - 1];
-                  reject(
-                    new Error(
-                      `[${err["code"] as string}] ${err.message}\n-- query\n${splitQuery.join("\n")}\n--`,
-                    ),
-                  );
-                } else {
-                  reject(
-                    new Error(
-                      `[${err["code"] as string}] ${err.message}\n-- query\n${queryString}\n--`,
-                    ),
-                  );
-                }
-              }
+          if (err["code"] === "ECANCEL") {
+            reject(new Error("쿼리가 취소되었습니다."));
+          } else {
+            if (err["lineNumber"] > 0) {
+              const splitQuery = query.split("\n");
+              splitQuery[err["lineNumber"] - 1] = "==> " + splitQuery[err["lineNumber"] - 1];
+              reject(
+                new Error(
+                  `[${err["code"] as string}] ${err.message}\n-- query\n${splitQuery.join("\n")}\n--`,
+                ),
+              );
+            } else {
+              reject(
+                new Error(`[${err["code"] as string}] ${err.message}\n-- query\n${query}\n--`),
+              );
             }
-          })
-            .on("done", (rowCount, more, rst) => {
-              this.#startTimeout();
+          }
+        }
+      });
 
-              if (rejected) {
-                return;
-              }
+      queryRequest
+        .on("done", (rowCount, more, rst) => {
+          this.#startTimeout();
 
-              const result = (rst ?? []).map((item) => {
-                const resultItem = {};
-                for (const col of item) {
-                  resultItem[col.metadata.colName] = col.value;
-                }
-                return resultItem;
-              });
+          if (rejected) {
+            return;
+          }
 
-              results.push(result);
-            })
-            .on("doneInProc", (rowCount, more, rst) => {
-              this.#startTimeout();
+          const doneResult = (rst ?? []).map((item) => {
+            const resultItem = {};
+            for (const col of item) {
+              resultItem[col.metadata.colName] = col.value;
+            }
+            return resultItem;
+          });
 
-              if (rejected) {
-                return;
-              }
+          results.push(doneResult);
+        })
+        .on("doneInProc", (rowCount, more, rst) => {
+          this.#startTimeout();
 
-              const result = (rst ?? []).map((item) => {
-                const resultItem = {};
-                for (const col of item) {
-                  resultItem[col.metadata.colName] = col.value;
-                }
-                return resultItem;
-              });
+          if (rejected) {
+            return;
+          }
 
-              results.push(result);
-            })
-            .on("error", (err) => {
-              this.#startTimeout();
+          const doneResult = (rst ?? []).map((item) => {
+            const resultItem = {};
+            for (const col of item) {
+              resultItem[col.metadata.colName] = col.value;
+            }
+            return resultItem;
+          });
 
-              if (rejected) {
-                return;
-              }
+          results.push(doneResult);
+        })
+        .on("error", (err) => {
+          this.#startTimeout();
 
-              rejected = true;
-              this.#requests.remove(queryRequest);
-              reject(new Error(err.message));
-            })
-            .on("requestCompleted", () => {
-              this.#startTimeout();
+          if (rejected) {
+            return;
+          }
 
-              if (rejected) {
-                return;
-              }
+          rejected = true;
+          this.#requests.remove(queryRequest);
+          reject(new Error(err.message));
+        })
+        .on("requestCompleted", () => {
+          this.#startTimeout();
 
-              this.#requests.remove(queryRequest);
-              resolve();
-            });
+          if (rejected) {
+            return;
+          }
 
-          this.#requests.push(queryRequest);
-
-          conn.execSqlBatch(queryRequest);
+          this.#requests.remove(queryRequest);
+          resolve();
         });
+
+      this.#requests.push(queryRequest);
+
+      if (params) {
+        // 파라미터 주입 로직 추가
+        // 쿼리 내의 파라미터 명(@p0, @p1 등)과 순서가 맞아야 합니다.
+        for (let i = 0; i < params.length; i++) {
+          const paramValue = params[i];
+          const paramName = `p${i}`; // @p0, @p1 ... (클라이언트 쿼리 빌더가 생성하는 이름 규칙에 따름)
+          const type = this.#guessTediousType(paramValue); // 타입 추론 헬퍼 필요
+
+          queryRequest.addParameter(paramName, type, paramValue);
+        }
+
+        conn.execSql(queryRequest);
+      } else {
+        conn.execSqlBatch(queryRequest);
       }
-    }
+    });
 
     return results;
   }
@@ -467,6 +486,50 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
           throw new TypeError(typeof currType !== "undefined" ? currType.name : "undefined");
       }
     }
+  }
+
+  // JS 값으로 Tedious Type을 추론하는 헬퍼
+  #guessTediousType(value: any): DataType {
+    /*const currType = type as Type<TQueryValue> | undefined;
+    switch (currType) {
+      case String:
+        if (this._dialect === "mysql") {
+          return "VARCHAR(255)";
+        } else {
+          return "NVARCHAR(255)";
+        }
+      case Number:
+        return this._dialect === "sqlite" ? "INTEGER" : "BIGINT";
+      case Boolean:
+        return this._dialect === "mysql" ? "BOOLEAN" : "BIT";
+      case DateTime:
+        return this._dialect === "mysql" ? "DATETIME" : "DATETIME2";
+      case DateOnly:
+        return "DATE";
+      case Time:
+        return "TIME";
+      case Uuid:
+        return this._dialect === "mysql" ? "CHAR(38)" : "UNIQUEIDENTIFIER";
+      case Buffer:
+        return this.type({ type: "BINARY", length: "MAX" });
+      default:
+        throw new TypeError(currType != null ? currType.name : "undefined");
+    }*/
+
+    if (typeof value === "string") {
+      return tedious.TYPES.NVarChar;
+    }
+    if (typeof value === "number") {
+      return Number.isInteger(value) ? tedious.TYPES.BigInt : tedious.TYPES.Decimal;
+    }
+    if (typeof value === "boolean") return tedious.TYPES.Bit;
+    if (value instanceof DateTime) return tedious.TYPES.DateTime2;
+    if (value instanceof DateOnly) return tedious.TYPES.Date;
+    if (value instanceof Time) return tedious.TYPES.Time;
+    if (value instanceof Uuid) return tedious.TYPES.UniqueIdentifier;
+    if (Buffer.isBuffer(value)) return tedious.TYPES.VarBinary;
+
+    throw new TypeError(value);
   }
 }
 

@@ -6,6 +6,7 @@ export type TSdServiceS2CMessage =
   | ISdServiceClientReloadCommand
   | ISdServiceClientGetIdCommand
   | ISdServiceClientConnectedAlarm
+  | ISdServiceClientPong
   | TSdServiceResponse
   | ISdServiceResponseForSplit
   | ISdServiceSplitResponse
@@ -13,6 +14,7 @@ export type TSdServiceS2CMessage =
 
 export type TSdServiceC2SMessage =
   | ISdServiceClientGetIdResponse
+  | ISdServiceClientPing
   | ISdServiceRequest
   | ISdServiceSplitRequest;
 
@@ -35,11 +37,20 @@ interface ISdServiceClientConnectedAlarm {
   name: "connected";
 }
 
+interface ISdServiceClientPing {
+  name: "client-ping";
+}
+
+interface ISdServiceClientPong {
+  name: "client-pong";
+}
+
 export type TSdServiceResponse = ISdServiceSuccessResponse | ISdServiceErrorResponse;
 
 export interface ISdServiceSuccessResponse {
   name: "response";
   reqUuid: string;
+
   state: "success";
   body: any;
 }
@@ -47,6 +58,7 @@ export interface ISdServiceSuccessResponse {
 export interface ISdServiceErrorResponse {
   name: "response";
   reqUuid: string;
+
   state: "error";
   body: ISdServiceErrorBody;
 }
@@ -60,7 +72,8 @@ export interface ISdServiceErrorBody {
 export interface ISdServiceRequest {
   name: "request";
   clientName: string;
-  reqUuid: string;
+  uuid: string;
+
   command: TSdServiceCommand;
   params: any;
 }
@@ -70,7 +83,8 @@ export interface ISdServiceRequest {
  */
 export interface ISdServiceSplitRequest {
   name: "request-split";
-  reqUuid: string;
+  uuid: string;
+
   fullSize: number;
   index: number;
   body: string;
@@ -82,7 +96,8 @@ export interface ISdServiceSplitRequest {
 export interface ISdServiceResponseForSplit {
   name: "response-for-split";
   reqUuid: string;
-  fullSize: number;
+
+  totalSize: number;
   completedSize: number;
 }
 
@@ -92,6 +107,7 @@ export interface ISdServiceResponseForSplit {
 export interface ISdServiceSplitResponse {
   name: "response-split";
   reqUuid: string;
+
   fullSize: number;
   index: number;
   body: string;

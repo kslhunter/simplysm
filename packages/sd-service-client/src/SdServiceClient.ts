@@ -12,14 +12,20 @@ import {
 import { SdWebSocket } from "./internal/SdWebSocket";
 import { EventEmitter } from "events";
 import { SdServiceEventBus } from "./internal/SdServiceEventBus";
-import {
-  ISdServiceReconnectStrategy,
-  SdServiceDefaultReconnectStrategy,
-} from "./types/reconnect-strategy.types";
 import { SdServiceTransport } from "./internal/SdServiceTransport";
 import { ISdServiceProgressState } from "./types/progress.types";
 
 export class SdServiceClient extends EventEmitter {
+  // 하트비트
+  #HEARTBEAT_TIMEOUT = 30000; // 30초간 아무런 메시지가 없으면 끊김으로 간주
+  #PING_INTERVAL = 5000; // 5초마다 핑 전송
+  #heartbeatInterval?: NodeJS.Timeout;
+  #lastHeartbeatTime = Date.now();
+
+  // 재연결
+  #RECONNECT_DELAY = 3000; // 3초마다 재연결 시도
+  #RECONNECT_MAX_COUNT = 10; // 10번까지만 시도 후 오류
+
   isManualClose = false;
   isConnected = false;
   websocketUrl: string;
@@ -30,9 +36,6 @@ export class SdServiceClient extends EventEmitter {
 
   #transport: SdServiceTransport;
   #eventBus: SdServiceEventBus;
-
-  // 재연결 정책
-  #reconnectStrategy: ISdServiceReconnectStrategy | undefined;
 
   override on(event: "request-progress", listener: (state: ISdServiceProgressState) => void): this;
   override on(event: "response-progress", listener: (state: ISdServiceProgressState) => void): this;
@@ -61,12 +64,6 @@ export class SdServiceClient extends EventEmitter {
     this.#ws = new SdWebSocket(this.websocketUrl);
     this.#transport = new SdServiceTransport(this.#ws, this.name);
     this.#eventBus = new SdServiceEventBus(this.#transport);
-
-    // 전략 주입
-    this.#reconnectStrategy =
-      this.options.reconnectStrategy === false
-        ? undefined
-        : (this.options.reconnectStrategy ?? new SdServiceDefaultReconnectStrategy());
   }
 
   get connected(): boolean {
@@ -113,23 +110,22 @@ export class SdServiceClient extends EventEmitter {
     }
   }
 
-  async #reconectAsync(): Promise<void> {
+  async #reconnectAsync(): Promise<void> {
     // 재연결 사용 안 할 때
-    if (!this.#reconnectStrategy) {
+    if (this.options.disableReconnect) {
       console.error("WebSocket 연결이 끊겼습니다. 연결상태를 확인하세요.");
       return;
     }
 
-    // 재연결 전략에 따라 더 이상 재시도하지 않는 경우
-    if (!this.#reconnectStrategy.shouldReconnect(this.reconnectCount)) {
+    // 여러번 시도시, 재 연결 시도 안함
+    if (this.reconnectCount > this.#RECONNECT_MAX_COUNT) {
       console.error("연결이 너무 오래 끊겨있습니다. 연결상태 확인 후, 화면을 새로고침하세요.");
       return;
     }
 
     // 지연 시간 계산 후 대기
-    const delayMs = this.#reconnectStrategy.getDelayMs(this.reconnectCount);
     this.reconnectCount++;
-    await Wait.time(delayMs);
+    await Wait.time(this.#RECONNECT_DELAY);
 
     if (this.isConnected) {
       console.log("WebSocket 연결됨");
@@ -147,8 +143,37 @@ export class SdServiceClient extends EventEmitter {
     }
   }
 
+  #startHeartbeat() {
+    this.#stopHeartbeat();
+    this.#lastHeartbeatTime = Date.now();
+
+    this.#heartbeatInterval = setInterval(async () => {
+      const now = Date.now();
+
+      // 1. 타임아웃 체크 (서버가 응답이 없는 경우)
+      if (now - this.#lastHeartbeatTime > this.#HEARTBEAT_TIMEOUT) {
+        console.warn(`Heartbeat Timeout (${this.#HEARTBEAT_TIMEOUT}ms). Force close.`);
+        await this.#ws.closeAsync(); // 강제 종료 -> #handleSocketCloseAsync 호출됨 -> 재연결
+        return;
+      }
+
+      // 2. Ping 전송
+      try {
+        await this.#transport.sendMessageAsync({ name: "client-ping" });
+      } catch {}
+    }, this.#PING_INTERVAL);
+  }
+
+  #stopHeartbeat() {
+    if (this.#heartbeatInterval) {
+      clearInterval(this.#heartbeatInterval);
+      this.#heartbeatInterval = undefined;
+    }
+  }
+
   async #handleSocketCloseAsync(): Promise<void> {
     this.isConnected = false;
+    this.#stopHeartbeat(); // 연결 끊김 시 하트비트 중지
 
     if (this.isManualClose) {
       this.emit("state-change", "closed");
@@ -157,7 +182,7 @@ export class SdServiceClient extends EventEmitter {
     } else {
       this.emit("state-change", "reconnect");
       console.warn("WebSocket 연결 끊김 (재연결 시도)");
-      await this.#reconectAsync();
+      await this.#reconnectAsync();
     }
   }
 
@@ -166,6 +191,9 @@ export class SdServiceClient extends EventEmitter {
 
     await new Promise<void>(async (resolve, reject) => {
       this.#ws.on("message", async (msgJson) => {
+        // 1. 하트비트 갱신
+        this.#lastHeartbeatTime = Date.now();
+
         const msg = JsonConvert.parse(msgJson) as TSdServiceS2CMessage;
         await this.#handleServerMessageAsync(msg);
 
@@ -180,6 +208,7 @@ export class SdServiceClient extends EventEmitter {
 
       try {
         await this.#ws.connectAsync();
+        this.#startHeartbeat(); // 연결 성공 시 하트비트 시작
       } catch (err) {
         console.error("WebSocket 최초 연결 실패", err);
         reject(err);

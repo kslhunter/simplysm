@@ -28,7 +28,7 @@ export class SdServiceTransport {
     const req: ISdServiceRequest = {
       name: "request",
       clientName: this._clientName,
-      reqUuid: uuid,
+      uuid: uuid,
       command,
       params,
     };
@@ -76,7 +76,7 @@ export class SdServiceTransport {
             if (msg.name === "response-split") {
               progress?.response?.({
                 uuid,
-                fullSize: decoded.fullSize,
+                totalSize: decoded.totalSize,
                 completedSize: decoded.completedSize,
               });
             }
@@ -84,7 +84,7 @@ export class SdServiceTransport {
             if (msg.name === "response-for-split") {
               progress?.request?.({
                 uuid,
-                fullSize: msg.fullSize,
+                totalSize: msg.totalSize,
                 completedSize: msg.completedSize,
               });
             } else if (decoded.message.name === "response") {
@@ -113,8 +113,8 @@ export class SdServiceTransport {
 
     if (encoded.chunks.length > 1) {
       progress?.request?.({
-        uuid: req.reqUuid,
-        fullSize: encoded.json.length,
+        uuid: req.uuid,
+        totalSize: encoded.json.length,
         completedSize: 0,
       });
     }

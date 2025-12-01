@@ -124,9 +124,14 @@ export class SdOrmService extends SdServiceBase implements ISdOrmService {
     await conn.rollbackTransactionAsync();
   }
 
-  async execute(connId: number, queries: string[]): Promise<any[][]> {
+  /*async execute(connId: number, queries: string[]): Promise<any[][]> {
     const conn = this.#getConn(connId);
     return await conn.executeAsync(queries);
+  }*/
+
+  async executeParametrized(connId: number, query: string, params?: any[]): Promise<any[][]> {
+    const conn = this.#getConn(connId);
+    return await conn.executeParametrizedAsync(query, params);
   }
 
   async executeDefs(

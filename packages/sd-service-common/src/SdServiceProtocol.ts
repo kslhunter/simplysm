@@ -5,19 +5,20 @@ import {
   TSdServiceMessage,
 } from "./types/protocol.types";
 
-// 메시지 사이즈 상수
-export const SD_SERVICE_MAX_MESSAGE_SIZE = 3 * 1024 * 1024; // 3MB
-export const SD_SERVICE_SPLIT_MESSAGE_CHUNK_SIZE = 300 * 1024; // 300KB
-
 export class SdServiceProtocol {
+  // 메시지 사이즈 상수
+  private readonly _SPLIT_MESSAGE_SIZE = 3 * 1024 * 1024; // 3MB
+  private readonly _CHUNK_SIZE = 300 * 1024; // 300KB
+  private readonly _MAX_TOTAL_SIZE = 100 * 1024 * 1024; // 100MB
+
   // 조립 중인 메시지 보관소 (Key: reqUuid)
   private readonly _accumulator = new Map<
     string,
     {
       lastUpdatedAt: number;
-      fullSize: number;
+      totalSize: number;
       buffers: Map<number, string>;
-      receivedSize: number;
+      completedSize: number;
     }
   >();
 
@@ -42,8 +43,15 @@ export class SdServiceProtocol {
   encode(message: TSdServiceMessage): { json: string; chunks: string[] } {
     const json = JsonConvert.stringify(message);
 
+    const totalSize = json.length;
+
+    // 전체 사이즈 제한 체크 (가장 먼저 수행)
+    if (totalSize > this._MAX_TOTAL_SIZE) {
+      throw new Error(`Message size exceeded limit: ${totalSize}`);
+    }
+
     // 1. 사이즈가 작으면 그대로 반환
-    if (json.length <= SD_SERVICE_MAX_MESSAGE_SIZE) {
+    if (totalSize <= this._SPLIT_MESSAGE_SIZE) {
       return { json, chunks: [json] };
     }
 
@@ -54,24 +62,29 @@ export class SdServiceProtocol {
 
     // 3. 분할 처리
     const chunks: string[] = [];
-    const totalLength = json.length;
     let offset = 0;
     let index = 0;
 
-    while (offset < totalLength) {
-      const chunkBody = json.slice(offset, offset + SD_SERVICE_SPLIT_MESSAGE_CHUNK_SIZE);
+    while (offset < totalSize) {
+      const chunkBody = json.slice(offset, offset + this._CHUNK_SIZE);
 
       // 분할 패킷 생성
-      const splitPacket: ISdServiceSplitRequest | ISdServiceSplitResponse = {
+      const splitPacket = {
         name: `${message.name}-split`,
-        reqUuid: message.reqUuid,
-        fullSize: totalLength,
+        ...("uuid" in message
+          ? {
+              uuid: message.uuid,
+            }
+          : {
+              reqUuid: message.reqUuid,
+            }),
+        fullSize: totalSize,
         index,
         body: chunkBody,
-      };
+      } as ISdServiceSplitRequest | ISdServiceSplitResponse;
 
       chunks.push(JsonConvert.stringify(splitPacket));
-      offset += SD_SERVICE_SPLIT_MESSAGE_CHUNK_SIZE;
+      offset += this._CHUNK_SIZE;
       index++;
     }
 
@@ -87,29 +100,36 @@ export class SdServiceProtocol {
 
     // 2. 분할 패킷인 경우 (조립)
     if (packet.name === "request-split" || packet.name === "response-split") {
-      const { reqUuid, fullSize, index, body } = packet;
+      const { index, body } = packet;
+      const uuid = "reqUuid" in packet ? packet.reqUuid : packet.uuid;
+      const totalSize = packet.fullSize;
 
-      let item = this._accumulator.getOrCreate(reqUuid, {
+      // 전체 사이즈 제한 체크 (가장 먼저 수행)
+      if (totalSize > this._MAX_TOTAL_SIZE) {
+        throw new Error(`Message size exceeded limit: ${totalSize}`);
+      }
+
+      let item = this._accumulator.getOrCreate(uuid, {
         lastUpdatedAt: Date.now(),
-        fullSize,
+        totalSize,
         buffers: new Map(),
-        receivedSize: 0,
+        completedSize: 0,
       });
 
       // 중복 패킷 방어
       if (!item.buffers.has(index)) {
         item.buffers.set(index, body);
-        item.receivedSize += body.length;
+        item.completedSize += body.length;
         item.lastUpdatedAt = Date.now();
       }
 
       // 조립 완료 체크
-      if (item.receivedSize >= item.fullSize) {
+      if (item.completedSize >= item.totalSize) {
         const fullText = Array.from(item.buffers.keys())
           .orderBy()
           .map((k) => item.buffers.get(k))
           .join("");
-        this._accumulator.delete(reqUuid); // 메모리 해제
+        this._accumulator.delete(uuid); // 메모리 해제
 
         return { type: "complete", message: JsonConvert.parse(fullText) };
       }
@@ -117,9 +137,9 @@ export class SdServiceProtocol {
       // 진행 중
       return {
         type: "accumulating",
-        reqUuid,
-        completedSize: item.receivedSize,
-        fullSize: item.fullSize,
+        uuid: uuid,
+        completedSize: item.completedSize,
+        totalSize: item.totalSize,
       };
     }
 
@@ -131,4 +151,4 @@ export class SdServiceProtocol {
 // 결과 타입
 export type ISdServiceProtocolDecodeResult =
   | { type: "complete"; message: TSdServiceMessage }
-  | { type: "accumulating"; reqUuid: string; completedSize: number; fullSize: number };
+  | { type: "accumulating"; uuid: string; completedSize: number; totalSize: number };

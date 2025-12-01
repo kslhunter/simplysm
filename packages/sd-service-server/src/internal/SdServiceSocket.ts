@@ -147,8 +147,8 @@ export class SdServiceSocket extends EventEmitter {
       if (decodeResult.type === "accumulating") {
         this.send({
           name: "response-for-split",
-          reqUuid: decodeResult.reqUuid,
-          fullSize: decodeResult.fullSize,
+          reqUuid: decodeResult.uuid,
+          totalSize: decodeResult.totalSize,
           completedSize: decodeResult.completedSize,
         });
       }
@@ -157,6 +157,8 @@ export class SdServiceSocket extends EventEmitter {
         const msg = decodeResult.message as TSdServiceC2SMessage;
         if (msg.name === "request") {
           this.emit("request", msg);
+        } else if (msg.name === "client-ping") {
+          this.send({ name: "client-pong" });
         }
       }
     } catch (err) {

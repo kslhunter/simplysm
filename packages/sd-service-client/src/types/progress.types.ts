@@ -7,6 +7,6 @@ export interface ISdServiceProgress {
 
 export interface ISdServiceProgressState {
   uuid: string;
-  fullSize: number;
+  totalSize: number;
   completedSize: number;
 }

@@ -22,7 +22,9 @@ export interface IDbContextExecutor {
     options?: (IQueryResultParseOption | undefined)[],
   ): Promise<any[][]>;
 
-  executeAsync(queries: string[]): Promise<any[][]>;
+  // executeAsync(queries: string[]): Promise<any[][]>;
+
+  executeParametrizedAsync(query: string, params?: any[]): Promise<any[][]>;
 
   bulkInsertAsync(
     tableName: string,

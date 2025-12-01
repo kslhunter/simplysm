@@ -104,42 +104,37 @@ export class SdServiceBase {
         // 중복 실행 방지 플래그 설정
         SdServiceBase.#watchingPaths.add(filePath);
 
-        // 비동기로 Watcher 생성 (응답 속도를 위해 await 하지 않음, 필요시 await 가능)
-        SdFsWatcher.watchAsync([filePath])
-          .then((watcher) => {
-            SdServiceBase.#watchers.set(filePath, watcher);
+        try {
+          const watcher = await SdFsWatcher.watchAsync([filePath]);
+          SdServiceBase.#watchers.set(filePath, watcher);
 
-            watcher.onChange({ delay: 100 }, async (changes) => {
-              // 삭제(unlink) 감지 시: 캐시 및 왓처 제거
-              if (!FsUtils.exists(filePath)) {
-                SdServiceBase.#configCache.delete(filePath);
-                SdServiceBase.#watchingPaths.delete(filePath);
+          watcher.onChange({ delay: 100 }, async (changes) => {
+            // 삭제(unlink) 감지 시: 캐시 및 왓처 제거
+            if (!FsUtils.exists(filePath)) {
+              SdServiceBase.#configCache.delete(filePath);
+              SdServiceBase.#watchingPaths.delete(filePath);
 
-                await watcher.close();
-                SdServiceBase.#watchers.delete(filePath);
+              await watcher.close();
+              SdServiceBase.#watchers.delete(filePath);
 
-                SdServiceBase.#logger.debug(`설정 파일 삭제됨: ${path.basename(filePath)}`);
-                return;
-              }
+              SdServiceBase.#logger.debug(`설정 파일 삭제됨: ${path.basename(filePath)}`);
+              return;
+            }
 
-              // 변경(change/add) 감지 시: 리로드
-              try {
-                const newConfig = await FsUtils.readJsonAsync(filePath);
-                SdServiceBase.#configCache.set(filePath, newConfig);
-                SdServiceBase.#logger.debug(`설정 파일 실시간 갱신: ${path.basename(filePath)}`);
-              } catch (err) {
-                SdServiceBase.#logger.warn(
-                  `설정 파일 갱신 실패 (기존 설정 유지): ${filePath}`,
-                  err,
-                );
-              }
-            });
-          })
-          .catch((err) => {
-            SdServiceBase.#logger.error(`설정 파일 감시 시작 실패: ${filePath}`, err);
-            // 실패 시 플래그 해제하여 다음 요청 때 재시도 가능하게 함
-            SdServiceBase.#watchingPaths.delete(filePath);
+            // 변경(change/add) 감지 시: 리로드
+            try {
+              const newConfig = await FsUtils.readJsonAsync(filePath);
+              SdServiceBase.#configCache.set(filePath, newConfig);
+              SdServiceBase.#logger.debug(`설정 파일 실시간 갱신: ${path.basename(filePath)}`);
+            } catch (err) {
+              SdServiceBase.#logger.warn(`설정 파일 갱신 실패 (기존 설정 유지): ${filePath}`, err);
+            }
           });
+        } catch (err) {
+          SdServiceBase.#logger.error(`설정 파일 감시 시작 실패: ${filePath}`, err);
+          // 실패 시 플래그 해제하여 다음 요청 때 재시도 가능하게 함
+          SdServiceBase.#watchingPaths.delete(filePath);
+        }
       }
 
       return config;

@@ -23,7 +23,9 @@ export interface ISdOrmService {
 
   rollbackTransaction(connId: number): Promise<void>;
 
-  execute(connId: number, queries: string[]): Promise<any[][]>;
+  // execute(connId: number, queries: string[]): Promise<any[][]>;
+
+  executeParametrized(connId: number, query: string, params?: any[]): Promise<any[][]>;
 
   executeDefs(
     connId: number,

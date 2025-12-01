@@ -75,12 +75,20 @@ export class SdOrmServiceClientDbContextExecutor implements IDbContextExecutor {
     return await this.#ormService.executeDefs(this.#connId, defs, options);
   }
 
-  async executeAsync(queries: string[]): Promise<any[][]> {
+  /*async executeAsync(queries: string[]): Promise<any[][]> {
     if (this.#connId === undefined) {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
 
     return await this.#ormService.execute(this.#connId, queries);
+  }*/
+
+  async executeParametrizedAsync(query: string, params?: any[]): Promise<any[][]> {
+    if (this.#connId === undefined) {
+      throw new Error("DB에 연결되어있지 않습니다.");
+    }
+
+    return await this.#ormService.executeParametrized(this.#connId, query, params);
   }
 
   async bulkInsertAsync(

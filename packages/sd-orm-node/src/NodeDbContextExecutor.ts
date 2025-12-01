@@ -70,12 +70,20 @@ export class NodeDbContextExecutor implements IDbContextExecutor {
     await this.#conn.closeAsync();
   }
 
-  async executeAsync(queries: string[]): Promise<any[][]> {
+  /*async executeAsync(queries: string[]): Promise<any[][]> {
     if (!this.#conn) {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
 
     return await this.#conn.executeAsync(queries);
+  }*/
+
+  async executeParametrizedAsync(query: string, params?: any[]): Promise<any[][]>{
+    if (!this.#conn) {
+      throw new Error("DB에 연결되어있지 않습니다.");
+    }
+
+    return await this.#conn.executeParametrizedAsync(query, params);
   }
 
   async bulkInsertAsync(

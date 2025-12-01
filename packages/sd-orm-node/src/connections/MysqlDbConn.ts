@@ -177,6 +177,16 @@ export class MysqlDbConn extends EventEmitter implements IDbConn {
   }
 
   async executeAsync(queries: string[]): Promise<any[][]> {
+    const results: any[][] = [];
+    for (const query of queries.filter((item) => !StringUtils.isNullOrEmpty(item))) {
+      const resultItems = await this.executeParametrizedAsync(query);
+      results.push(...resultItems);
+    }
+
+    return results;
+  }
+
+  async executeParametrizedAsync(query: string, params?: any[]): Promise<any[][]> {
     if (!this.#conn || !this.isConnected) {
       throw new Error("'Connection'이 연결되어있지 않습니다.");
     }
@@ -184,65 +194,57 @@ export class MysqlDbConn extends EventEmitter implements IDbConn {
 
     const conn = this.#conn;
 
-    const results: any[][] = [];
-    for (const query of queries.filter((item) => !StringUtils.isNullOrEmpty(item))) {
-      const queryStrings = query.split(/\r?\nGO(\r?\n|$)/g);
+    const result: any[] = [];
 
-      const resultItems: any[] = [];
-      for (const queryString of queryStrings) {
-        this.#logger.debug(`쿼리 실행(${queryString.length.toLocaleString()}): ${queryString}`);
-        await new Promise<void>((resolve, reject) => {
-          let rejected = false;
-          conn
-            .query({ sql: queryString, timeout: this.#timeout }, (err, queryResults) => {
-              this.#startTimeout();
+    this.#logger.debug(`쿼리 실행(${query.length.toLocaleString()}): ${query}, ${params}`);
+    await new Promise<void>((resolve, reject) => {
+      let rejected = false;
+      conn
+        .query({ sql: query, timeout: this.#timeout, values: params }, (err, queryResults) => {
+          this.#startTimeout();
 
-              if (err) {
-                rejected = true;
-                reject(
-                  new SdError(
-                    err,
-                    "쿼리 수행중 오류발생" +
-                      (err.sql !== undefined ? "\n-- query\n" + err.sql.trim() + "\n--" : ""),
-                  ),
-                );
-                return;
-              }
+          if (err) {
+            rejected = true;
+            reject(
+              new SdError(
+                err,
+                "쿼리 수행중 오류발생" +
+                  (err.sql !== undefined ? "\n-- query\n" + err.sql.trim() + "\n--" : ""),
+              ),
+            );
+            return;
+          }
 
-              if (queryResults instanceof Array) {
-                for (const queryResult of queryResults.filter(
-                  (item) => !("affectedRows" in item && "fieldCount" in item),
-                )) {
-                  resultItems.push(queryResult);
-                }
-              }
-            })
-            .on("error", (err) => {
-              this.#startTimeout();
-              if (rejected) return;
+          if (queryResults instanceof Array) {
+            for (const queryResult of queryResults.filter(
+              (item) => !("affectedRows" in item && "fieldCount" in item),
+            )) {
+              result.push(queryResult);
+            }
+          }
+        })
+        .on("error", (err) => {
+          this.#startTimeout();
+          if (rejected) return;
 
-              rejected = true;
-              reject(
-                new SdError(
-                  err,
-                  "쿼리 수행중 오류발생" +
-                    (err.sql !== undefined ? "\n-- query\n" + err.sql.trim() + "\n--" : ""),
-                ),
-              );
-            })
-            .on("end", () => {
-              this.#startTimeout();
-              if (rejected) return;
+          rejected = true;
+          reject(
+            new SdError(
+              err,
+              "쿼리 수행중 오류발생" +
+                (err.sql !== undefined ? "\n-- query\n" + err.sql.trim() + "\n--" : ""),
+            ),
+          );
+        })
+        .on("end", () => {
+          this.#startTimeout();
+          if (rejected) return;
 
-              resolve();
-            });
+          resolve();
         });
-      }
+    });
 
-      results.push(resultItems);
-    }
-
-    return results;
+    return [result];
   }
 
   async bulkInsertAsync(

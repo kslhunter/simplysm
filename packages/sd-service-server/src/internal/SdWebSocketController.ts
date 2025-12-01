@@ -123,7 +123,7 @@ export class SdWebSocketController {
         // 응답
         return {
           name: "response",
-          reqUuid: req.reqUuid,
+          reqUuid: req.uuid,
           state: "success",
           body: result,
         };
@@ -134,7 +134,7 @@ export class SdWebSocketController {
 
         return {
           name: "response",
-          reqUuid: req.reqUuid,
+          reqUuid: req.uuid,
           state: "success",
           body: undefined,
         };
@@ -145,7 +145,7 @@ export class SdWebSocketController {
 
         return {
           name: "response",
-          reqUuid: req.reqUuid,
+          reqUuid: req.uuid,
           state: "success",
           body: undefined,
         };
@@ -154,7 +154,7 @@ export class SdWebSocketController {
 
         return {
           name: "response",
-          reqUuid: req.reqUuid,
+          reqUuid: req.uuid,
           state: "success",
           body: this.#getListenerInfos(eventName),
         };
@@ -165,7 +165,7 @@ export class SdWebSocketController {
 
         return {
           name: "response",
-          reqUuid: req.reqUuid,
+          reqUuid: req.uuid,
           state: "success",
           body: undefined,
         };
@@ -175,7 +175,7 @@ export class SdWebSocketController {
         // 에러 응답
         return {
           name: "response",
-          reqUuid: req.reqUuid,
+          reqUuid: req.uuid,
           state: "error",
           body: {
             message: err.message,
@@ -192,7 +192,7 @@ export class SdWebSocketController {
 
       return {
         name: "response",
-        reqUuid: req.reqUuid,
+        reqUuid: req.uuid,
         state: "error",
         body: {
           message: error.message,

@@ -100,9 +100,9 @@ export class SdServiceClientFactoryProvider {
       const toast = reqProgressToastMap.getOrCreate(state.uuid, () =>
         this.#sdToast.info("요청을 전송하는 중입니다.", true),
       );
-      toast?.progress.set((state.completedSize / state.fullSize) * 100);
+      toast?.progress.set((state.completedSize / state.totalSize) * 100);
 
-      if (state.completedSize === state.fullSize) {
+      if (state.completedSize === state.totalSize) {
         reqProgressToastMap.delete(state.uuid);
       }
     });
@@ -118,9 +118,9 @@ export class SdServiceClientFactoryProvider {
       const toast = resProgressToastMap.getOrCreate(state.uuid, () =>
         this.#sdToast.info("응답을 전송받는 중입니다.", true),
       );
-      toast?.progress.set((state.completedSize / state.fullSize) * 100);
+      toast?.progress.set((state.completedSize / state.totalSize) * 100);
 
-      if (state.completedSize === state.fullSize) {
+      if (state.completedSize === state.totalSize) {
         resProgressToastMap.delete(state.uuid);
       }
     });
