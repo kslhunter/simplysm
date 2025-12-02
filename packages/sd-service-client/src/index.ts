@@ -1,6 +1,6 @@
 export * from "./internal/SdServiceEventBus";
 export * from "./internal/SdServiceTransport";
-export * from "./internal/SdWebSocket";
+export * from "./internal/SdWebSocketWrapper";
 export * from "./SdServiceClient";
 export * from "./service-clients/orm/ISdOrmServiceConnectConfig";
 export * from "./service-clients/orm/SdOrmServiceClientConnector";

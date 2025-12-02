@@ -2,7 +2,7 @@ import path from "path";
 import semver from "semver";
 import { FsUtils } from "@simplysm/sd-core-node";
 import { ISdAutoUpdateService } from "@simplysm/sd-service-common";
-import { SdServiceBase } from "../types";
+import { SdServiceBase } from "../SdServiceBase";
 
 export class SdAutoUpdateService extends SdServiceBase implements ISdAutoUpdateService {
   // zip으로 업데이트하는 legacy에서는 apk가 undefined로 들어옴
@@ -17,10 +17,9 @@ export class SdAutoUpdateService extends SdServiceBase implements ISdAutoUpdateS
         downloadPath: string;
       }
     | undefined {
-    const clientPath = this.getClientPath();
-    if (!FsUtils.exists(path.resolve(clientPath, platform, "updates"))) return undefined;
+    if (!FsUtils.exists(path.resolve(this.clientPath, platform, "updates"))) return undefined;
 
-    const updates = FsUtils.readdir(path.resolve(clientPath, platform, "updates"));
+    const updates = FsUtils.readdir(path.resolve(this.clientPath, platform, "updates"));
     const versions = updates
       .map((item) => ({
         fileName: item,
@@ -46,7 +45,7 @@ export class SdAutoUpdateService extends SdServiceBase implements ISdAutoUpdateS
     const downloadPath =
       "/" +
       path.join(
-        this.request!.clientName,
+        this.socket?.clientName ?? this.v1?.request.clientName ?? "",
         platform,
         "updates",
         versions.single((item) => item.version === version)!.fileName,

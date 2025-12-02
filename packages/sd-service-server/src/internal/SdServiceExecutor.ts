@@ -1,6 +1,7 @@
 import { SdServiceServer } from "../SdServiceServer";
-import { ISdServiceRequest } from "@simplysm/sd-service-common";
-import { SdServiceSocket } from "./SdServiceSocket";
+import { SdServiceSocketV1 } from "../v1/SdServiceSocketV1";
+import { SdServiceSocketV2 } from "../v2/SdServiceSocketV2";
+import { ISdServiceRequest } from "../v1/protocol-v1.types";
 
 export class SdServiceExecutor {
   constructor(private readonly _server: SdServiceServer) {}
@@ -10,8 +11,12 @@ export class SdServiceExecutor {
     methodName: string;
     params: any[];
 
-    socket?: SdServiceSocket;
-    request?: ISdServiceRequest;
+    socket?: SdServiceSocketV2;
+
+    v1?: {
+      socket: SdServiceSocketV1;
+      request: ISdServiceRequest;
+    };
   }): Promise<any> {
     // 1. 서비스 클래스 찾기
     const ServiceClass = this._server.options.services.single(
@@ -23,9 +28,8 @@ export class SdServiceExecutor {
     }
 
     // 요청 검증 (Gatekeeper)
-    // 여기서 막으면 이 뒤의 서비스 로직은 clientName이 안전하다고 믿고 쓸 수 있습니다.
-    if (def.request?.clientName != null) {
-      const { clientName } = def.request;
+    const clientName = def.v1?.request.clientName ?? def.socket?.clientName;
+    if (clientName != null) {
       // 상위 경로(..), 루트(/), 윈도우 경로(\) 포함 시 차단
       if (clientName.includes("..") || clientName.includes("/") || clientName.includes("\\")) {
         throw new Error(`[Security] 유효하지 않은 클라이언트명입니다: ${clientName}`);
@@ -35,8 +39,8 @@ export class SdServiceExecutor {
     // 3. 서비스 인스턴스 생성 (Context 주입)
     const service = new ServiceClass();
     service.server = this._server;
-    service.request = def.request;
-    service.socketClient = def.socket;
+    service.v1 = def.v1;
+    service.socket = def.socket;
 
     // 4. 메소드 찾기
     const method = service[def.methodName];

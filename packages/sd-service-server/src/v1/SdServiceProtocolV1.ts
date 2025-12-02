@@ -3,12 +3,12 @@ import {
   ISdServiceSplitRequest,
   ISdServiceSplitResponse,
   TSdServiceMessage,
-} from "./types/protocol.types";
+} from "./protocol-v1.types";
 
 /**
  * @deprecated
  */
-export class SdServiceProtocol {
+export class SdServiceProtocolV1 {
   // 메시지 사이즈 상수
   private readonly _SPLIT_MESSAGE_SIZE = 3 * 1024 * 1024; // 3MB
   private readonly _CHUNK_SIZE = 300 * 1024; // 300KB

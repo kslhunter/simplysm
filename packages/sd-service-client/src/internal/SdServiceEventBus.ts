@@ -1,9 +1,6 @@
 import { Type, Uuid } from "@simplysm/sd-core-common";
-import {
-  SD_SERVICE_SPECIAL_COMMANDS,
-  SdServiceEventListenerBase,
-} from "@simplysm/sd-service-common";
 import { SdServiceTransport } from "./SdServiceTransport";
+import { SdServiceEventListenerBase } from "@simplysm/sd-service-common";
 
 type TEventCallback = (data: any) => PromiseLike<void> | void;
 
@@ -34,11 +31,10 @@ export class SdServiceEventBus {
   ): Promise<string> {
     const key = Uuid.new().toString();
 
-    await this._transport.sendCommandAsync(SD_SERVICE_SPECIAL_COMMANDS.ADD_EVENT_LISTENER, [
-      key,
-      eventListenerType.name,
-      info,
-    ]);
+    await this._transport.sendAsync(Uuid.new().toString(), {
+      name: "evt:add",
+      body: { key, name: eventListenerType.name, info },
+    });
 
     this.#listenerMap.set(key, {
       name: eventListenerType.name,
@@ -53,9 +49,7 @@ export class SdServiceEventBus {
    * 이벤트 리스너 제거
    */
   async removeListenerAsync(key: string): Promise<void> {
-    await this._transport.sendCommandAsync(SD_SERVICE_SPECIAL_COMMANDS.REMOVE_EVENT_LISTENER, [
-      key,
-    ]);
+    await this._transport.sendAsync(Uuid.new().toString(), { name: "evt:remove", body: { key } });
     this.#listenerMap.delete(key);
   }
 
@@ -65,22 +59,26 @@ export class SdServiceEventBus {
    */
   async reRegisterAllAsync(): Promise<void> {
     for (const [key, value] of this.#listenerMap.entries()) {
-      await this._transport.sendCommandAsync(SD_SERVICE_SPECIAL_COMMANDS.ADD_EVENT_LISTENER, [
-        key,
-        value.name,
-        value.info,
-      ]);
+      await this._transport.sendAsync(Uuid.new().toString(), {
+        name: "evt:add",
+        body: {
+          key,
+          name: value.name,
+          info: value.info,
+        },
+      });
     }
   }
 
   /**
    * 서버로부터 "event" 메시지 수신 시 콜백 실행
    */
-  async handleEventAsync(key: string, body: any): Promise<void> {
-    const entry = this.#listenerMap.get(key);
-    if (!entry) return;
-
-    await entry.cb(body);
+  async handleEventByKeysAsync(keys: string[], data: any): Promise<void> {
+    for (const key of keys) {
+      const entry = this.#listenerMap.get(key);
+      if (!entry) continue;
+      await entry.cb(data);
+    }
   }
 
   /**

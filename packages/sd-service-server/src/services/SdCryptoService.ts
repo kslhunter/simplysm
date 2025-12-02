@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { SdServiceBase } from "../types";
+import { SdServiceBase } from "../SdServiceBase";
 import { ICryptoConfig, ISdCryptoService } from "@simplysm/sd-service-common";
 
 export class SdCryptoService extends SdServiceBase implements ISdCryptoService {

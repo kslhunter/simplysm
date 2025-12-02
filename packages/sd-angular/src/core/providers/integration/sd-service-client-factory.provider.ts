@@ -49,7 +49,7 @@ export class SdServiceClientFactoryProvider {
     );
 
     // 리로드 이벤트 핸들러 등록 (기존 SdServiceClient에 있던 로직 이동)
-    client.on("client-reload", async (changedFileSet) => {
+    client.on("reload", async (changedFileSet) => {
       // 모두 css인 경우, refresh없이 css 파일만 전환
       if (Array.from(changedFileSet).every((item) => item.endsWith(".css"))) {
         for (const changedFile of changedFileSet) {

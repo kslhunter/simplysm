@@ -4,13 +4,11 @@ import { ISdServiceConnectionConfig } from "./types/ISdServiceConnectionConfig";
 import { Type, Uuid, Wait } from "@simplysm/sd-core-common";
 import {
   ISdServiceUploadResult,
-  SD_SERVICE_SPECIAL_COMMANDS,
-  SdServiceCommandHelper,
   SdServiceEventListenerBase,
-  SdServiceMessageDecoder,
-  TSdServiceS2CMessage,
+  SdServiceProtocolV2,
+  TSdServiceServerRawMessage,
 } from "@simplysm/sd-service-common";
-import { SdWebSocket } from "./internal/SdWebSocket";
+import { SdWebSocketWrapper } from "./internal/SdWebSocketWrapper";
 import { EventEmitter } from "events";
 import { SdServiceEventBus } from "./internal/SdServiceEventBus";
 import { SdServiceTransport } from "./internal/SdServiceTransport";
@@ -32,13 +30,12 @@ export class SdServiceClient extends EventEmitter {
   websocketUrl: string;
   serverUrl: string;
   reconnectCount = 0;
-  #id = Uuid.new().toString();
-  #ws: SdWebSocket;
+  #ws: SdWebSocketWrapper;
 
   #transport: SdServiceTransport;
   #eventBus: SdServiceEventBus;
 
-  #decoder = new SdServiceMessageDecoder();
+  #protocol = new SdServiceProtocolV2();
 
   override on(event: "request-progress", listener: (state: ISdServiceProgressState) => void): this;
   override on(event: "response-progress", listener: (state: ISdServiceProgressState) => void): this;
@@ -46,7 +43,7 @@ export class SdServiceClient extends EventEmitter {
     event: "state-change",
     listener: (state: "connected" | "closed" | "reconnect") => void,
   ): this;
-  override on(event: "client-reload", listener: (changedFileSet: Set<string>) => void): this; // 추가됨
+  override on(event: "reload", listener: (changedFileSet: Set<string>) => void): this; // 추가됨
   override on(event: string | symbol, listener: (...args: any[]) => void): this {
     return super.on(event, listener);
   }
@@ -64,8 +61,8 @@ export class SdServiceClient extends EventEmitter {
       this.options.ssl ? "https" : "http"
     }://${this.options.host}:${this.options.port}`;
 
-    this.#ws = new SdWebSocket(this.websocketUrl);
-    this.#transport = new SdServiceTransport(this.#ws, this.name);
+    this.#ws = new SdWebSocketWrapper(this.websocketUrl, this.name);
+    this.#transport = new SdServiceTransport(this.#ws);
     this.#eventBus = new SdServiceEventBus(this.#transport);
   }
 
@@ -73,7 +70,7 @@ export class SdServiceClient extends EventEmitter {
     return this.#ws.connected && this.isConnected;
   }
 
-  // [추가] 타입 안전성을 위한 Proxy 생성 메소드
+  // 타입 안전성을 위한 Proxy 생성 메소드
   getService<T>(serviceName: string): TRemoteService<T> {
     return new Proxy({} as TRemoteService<T>, {
       get: (target, prop) => {
@@ -85,32 +82,35 @@ export class SdServiceClient extends EventEmitter {
     });
   }
 
-  async #handleServerMessageAsync(msg: TSdServiceS2CMessage): Promise<void> {
-    // 서버에서 이벤트가 날아온 경우 → EventBus 통해 콜백 실행
-    if (msg.name === "event") {
-      await this.#eventBus.handleEventAsync(msg.key, msg.body);
-    }
-    // 클라이언트 리로드
-    else if (
-      typeof location !== "undefined" &&
-      msg.name === "client-reload" &&
-      this.name === msg.clientName
-    ) {
-      console.log("클라이언트 RELOAD 명령 수신", msg.changedFileSet);
-      // await this.#reloadAsync(msg.changedFileSet);
-      this.emit("client-reload", msg.changedFileSet); // 이벤트를 발생시켜 외부에서 처리하도록 위임
-    }
-    // 클라이언트 소켓 ID 가져오기
-    else if (msg.name === "client-get-id") {
-      await this.#transport.sendMessageAsync({ name: "client-get-id-response", body: this.#id });
-    }
-    // 서버 재 연결시, 리스너 재등록
-    else if (msg.name === "connected") {
-      this.emit("state-change", "success");
-      this.isConnected = true;
+  async connectAsync(): Promise<void> {
+    if (this.isConnected) return;
 
-      await this.#eventBus.reRegisterAllAsync();
-    }
+    await new Promise<void>(async (resolve, reject) => {
+      this.#ws.on("message", async (buf) => {
+        // 1. 하트비트 갱신
+        this.#lastHeartbeatTime = Date.now();
+
+        const decoded = this.#protocol.decode<TSdServiceServerRawMessage>(buf);
+        if (decoded.type === "complete") {
+          await this.#handleServerMessageAsync(decoded.message);
+          if (decoded.message.name === "connected") {
+            resolve();
+          }
+        }
+      });
+
+      this.#ws.on("close", async () => {
+        await this.#handleSocketCloseAsync();
+      });
+
+      try {
+        await this.#ws.connectAsync();
+        this.#startHeartbeat(); // 연결 성공 시 하트비트 시작
+      } catch (err) {
+        console.error("WebSocket 최초 연결 실패", err);
+        reject(err);
+      }
+    });
   }
 
   async #reconnectAsync(): Promise<void> {
@@ -146,91 +146,23 @@ export class SdServiceClient extends EventEmitter {
     }
   }
 
-  #startHeartbeat() {
-    this.#stopHeartbeat();
-    this.#lastHeartbeatTime = Date.now();
-
-    this.#heartbeatInterval = setInterval(async () => {
-      const now = Date.now();
-
-      // 1. 타임아웃 체크 (서버가 응답이 없는 경우)
-      if (now - this.#lastHeartbeatTime > this.#HEARTBEAT_TIMEOUT) {
-        console.warn(`Heartbeat Timeout (${this.#HEARTBEAT_TIMEOUT}ms). Force close.`);
-        await this.#ws.closeAsync(); // 강제 종료 -> #handleSocketCloseAsync 호출됨 -> 재연결
-        return;
-      }
-
-      // 2. Ping 전송
-      try {
-        await this.#transport.sendMessageAsync({ name: "client-ping" });
-      } catch {}
-    }, this.#HEARTBEAT_INTERVAL);
-  }
-
-  #stopHeartbeat() {
-    if (this.#heartbeatInterval) {
-      clearInterval(this.#heartbeatInterval);
-      this.#heartbeatInterval = undefined;
-    }
-  }
-
-  async #handleSocketCloseAsync(): Promise<void> {
-    this.isConnected = false;
-    this.#stopHeartbeat(); // 연결 끊김 시 하트비트 중지
-
-    if (this.isManualClose) {
-      this.emit("state-change", "closed");
-      console.warn("WebSocket 연결 끊김");
-      this.isManualClose = false;
-    } else {
-      this.emit("state-change", "reconnect");
-      console.warn("WebSocket 연결 끊김 (재연결 시도)");
-      await this.#reconnectAsync();
-    }
-  }
-
-  async connectAsync(): Promise<void> {
-    if (this.isConnected) return;
-
-    await new Promise<void>(async (resolve, reject) => {
-      this.#ws.on("message", async (buf) => {
-        // 1. 하트비트 갱신
-        this.#lastHeartbeatTime = Date.now();
-
-        const decoded = this.#decoder.decode<TSdServiceS2CMessage>(buf);
-        if ("message" in decoded) {
-          await this.#handleServerMessageAsync(decoded.message);
-          if (decoded.message.name === "connected") {
-            resolve();
-          }
-        }
-      });
-
-      this.#ws.on("close", async () => {
-        await this.#handleSocketCloseAsync();
-      });
-
-      try {
-        await this.#ws.connectAsync();
-        this.#startHeartbeat(); // 연결 성공 시 하트비트 시작
-      } catch (err) {
-        console.error("WebSocket 최초 연결 실패", err);
-        reject(err);
-      }
-    });
-  }
-
   async closeAsync(): Promise<void> {
     this.isManualClose = true;
     await this.#ws.closeAsync();
   }
 
   async sendAsync(serviceName: string, methodName: string, params: any[]): Promise<any> {
-    const cmd = SdServiceCommandHelper.buildMethodCommand({ serviceName, methodName });
-    return await this.#transport.sendCommandAsync(cmd, params, {
-      request: (state) => this.emit("request-progress", state),
-      response: (state) => this.emit("response-progress", state),
-    });
+    return await this.#transport.sendAsync(
+      Uuid.new().toString(),
+      {
+        name: `${serviceName}.${methodName}`,
+        body: params,
+      },
+      {
+        request: (state) => this.emit("request-progress", state),
+        response: (state) => this.emit("response-progress", state),
+      },
+    );
   }
 
   async addEventListenerAsync<T extends SdServiceEventListenerBase<any, any>>(
@@ -258,18 +190,21 @@ export class SdServiceClient extends EventEmitter {
     const listenerInfos: {
       key: string;
       info: T["info"];
-    }[] = await this.#transport.sendCommandAsync(
-      SD_SERVICE_SPECIAL_COMMANDS.GET_EVENT_LISTENER_INFOS,
-      [eventType.name],
-    );
+    }[] = await this.#transport.sendAsync(Uuid.new().toString(), {
+      name: "evt:gets",
+      body: { name: eventType.name },
+    });
     const targetListenerKeys = listenerInfos
       .filter((item) => infoSelector(item.info))
       .map((item) => item.key);
 
-    await this.#transport.sendCommandAsync(SD_SERVICE_SPECIAL_COMMANDS.EMIT_EVENT, [
-      targetListenerKeys,
-      data,
-    ]);
+    await this.#transport.sendAsync(Uuid.new().toString(), {
+      name: "evt:emit",
+      body: {
+        keys: targetListenerKeys,
+        data,
+      },
+    });
   }
 
   async downloadFileBufferAsync(relPath: string): Promise<Buffer> {
@@ -319,6 +254,72 @@ export class SdServiceClient extends EventEmitter {
 
     // 서버가 주는 [{ path, filename, size }] 응답 반환
     return await res.json();
+  }
+
+  async #handleServerMessageAsync(msg: TSdServiceServerRawMessage): Promise<void> {
+    // 서버에서 이벤트가 날아온 경우 → EventBus 통해 콜백 실행
+    if (msg.name === "evt:on") {
+      await this.#eventBus.handleEventByKeysAsync(msg.body.keys, msg.body.data);
+    }
+    // 리로드
+    else if (
+      typeof location !== "undefined" &&
+      msg.name === "reload" &&
+      this.name === msg.body.clientName
+    ) {
+      console.log("클라이언트 RELOAD 명령 수신", msg.body.changedFileSet);
+      this.emit("reload", msg.body.changedFileSet); // 이벤트를 발생시켜 외부에서 처리하도록 위임
+    }
+    // 서버 재 연결시, 리스너 재등록
+    else if (msg.name === "connected") {
+      this.emit("state-change", "success");
+      this.isConnected = true;
+
+      await this.#eventBus.reRegisterAllAsync();
+    }
+  }
+
+  #startHeartbeat() {
+    this.#stopHeartbeat();
+    this.#lastHeartbeatTime = Date.now();
+
+    this.#heartbeatInterval = setInterval(async () => {
+      const now = Date.now();
+
+      // 1. 타임아웃 체크 (서버가 응답이 없는 경우)
+      if (now - this.#lastHeartbeatTime > this.#HEARTBEAT_TIMEOUT) {
+        console.warn(`Heartbeat Timeout (${this.#HEARTBEAT_TIMEOUT}ms). Force close.`);
+        await this.#ws.closeAsync(); // 강제 종료 -> #handleSocketCloseAsync 호출됨 -> 재연결
+        return;
+      }
+
+      // 2. Ping 전송
+      try {
+        await this.#transport.sendAsync(Uuid.new().toString(), { name: "ping" });
+      } catch {}
+    }, this.#HEARTBEAT_INTERVAL);
+  }
+
+  #stopHeartbeat() {
+    if (this.#heartbeatInterval) {
+      clearInterval(this.#heartbeatInterval);
+      this.#heartbeatInterval = undefined;
+    }
+  }
+
+  async #handleSocketCloseAsync(): Promise<void> {
+    this.isConnected = false;
+    this.#stopHeartbeat(); // 연결 끊김 시 하트비트 중지
+
+    if (this.isManualClose) {
+      this.emit("state-change", "closed");
+      console.warn("WebSocket 연결 끊김");
+      this.isManualClose = false;
+    } else {
+      this.emit("state-change", "reconnect");
+      console.warn("WebSocket 연결 끊김 (재연결 시도)");
+      await this.#reconnectAsync();
+    }
   }
 }
 

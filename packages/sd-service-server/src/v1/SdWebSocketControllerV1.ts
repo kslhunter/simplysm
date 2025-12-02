@@ -1,27 +1,23 @@
-import http from "http";
 import { WebSocket } from "ws";
 import { Type } from "@simplysm/sd-core-common";
-import {
-  ISdServiceRequest,
-  SD_SERVICE_SPECIAL_COMMANDS,
-  SdServiceCommandHelper,
-  SdServiceEventListenerBase,
-  TSdServiceResponse,
-} from "@simplysm/sd-service-common";
 import { SdLogger } from "@simplysm/sd-core-node";
-import { SdServiceSocket } from "./SdServiceSocket";
-import { SdServiceExecutor } from "./SdServiceExecutor";
+import { SdServiceSocketV1 } from "./SdServiceSocketV1";
+import { SdServiceExecutor } from "../internal/SdServiceExecutor";
+import { ISdServiceRequest, TSdServiceResponse } from "./protocol-v1.types";
+import { SdServiceCommandHelperV1 } from "./SdServiceCommandHelperV1";
+import { SD_SERVICE_SPECIAL_COMMANDS } from "./command-v1.types";
+import { SdServiceEventListenerBase } from "@simplysm/sd-service-common";
 
-export class SdWebSocketController {
+export class SdWebSocketControllerV1 {
   readonly #logger = SdLogger.get(["simplysm", "sd-service-server", "SdWebsocketHandler"]);
 
-  readonly #socketMap = new Map<string, SdServiceSocket>();
+  readonly #socketMap = new Map<string, SdServiceSocketV1>();
 
   constructor(private readonly _executor: SdServiceExecutor) {}
 
-  async addSocket(socket: WebSocket, req: http.IncomingMessage) {
+  async addSocket(socket: WebSocket, remoteAddress: string | undefined) {
     try {
-      const serviceSocket = new SdServiceSocket(socket, req);
+      const serviceSocket = new SdServiceSocketV1(socket);
       const clientId = await serviceSocket.getClientIdAsync();
 
       // 기존 연결 끊기
@@ -54,8 +50,8 @@ export class SdWebSocketController {
 
       // 연결 로그
       this.#logger.debug(`클라이언트 연결됨`, {
-        clientId: clientId,
-        remoteAddress: req.socket.remoteAddress,
+        clientId,
+        remoteAddress,
         socketSize: this.#socketMap.size,
       });
 
@@ -67,7 +63,7 @@ export class SdWebSocketController {
     }
   }
 
-  close() {
+  closeAll() {
     for (const serviceSocket of this.#socketMap.values()) {
       serviceSocket.close();
     }
@@ -104,19 +100,22 @@ export class SdWebSocketController {
   }
 
   async #processRequestAsync(
-    serviceSocket: SdServiceSocket,
+    serviceSocket: SdServiceSocketV1,
     req: ISdServiceRequest,
   ): Promise<TSdServiceResponse> {
     try {
-      const methodCmdInfo = SdServiceCommandHelper.parseMethodCommand(req.command);
+      const methodCmdInfo = SdServiceCommandHelperV1.parseMethodCommand(req.command);
 
       if (methodCmdInfo) {
         const result = await this._executor.runMethodAsync({
-          socket: serviceSocket,
-          request: req,
           serviceName: methodCmdInfo.serviceName,
           methodName: methodCmdInfo.methodName,
           params: req.params,
+
+          v1: {
+            socket: serviceSocket,
+            request: req,
+          },
         });
 
         // 응답

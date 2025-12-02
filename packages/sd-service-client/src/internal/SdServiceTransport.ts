@@ -1,32 +1,25 @@
 import {
-  ISdServiceErrorBody,
-  ISdServiceRequest,
-  SdServiceMessageDecoder,
-  SdServiceMessageEncoder,
-  TSdServiceC2SMessage,
-  TSdServiceCommand,
-  TSdServiceS2CMessage,
+  ISdServiceErrorMessage,
+  ISdServiceResponseMessage,
+  SdServiceProtocolV2,
+  TSdServiceClientRawMessage,
 } from "@simplysm/sd-service-common";
-import { Uuid } from "@simplysm/sd-core-common";
-import { SdWebSocket } from "./SdWebSocket";
+import { SdWebSocketWrapper } from "./SdWebSocketWrapper";
 import { ISdServiceProgress } from "../types/progress.types";
 
 export class SdServiceTransport {
-  readonly #decoder = new SdServiceMessageDecoder();
+  readonly #protocol = new SdServiceProtocolV2();
 
   readonly #listenerMap = new Map<
     string,
     {
-      resolve: (msg: TSdServiceS2CMessage) => void;
+      resolve: (msg: ISdServiceResponseMessage) => void;
       reject: (err: Error) => void;
       progress?: ISdServiceProgress;
     }
   >();
 
-  constructor(
-    private readonly _ws: SdWebSocket,
-    private readonly _clientName: string,
-  ) {
+  constructor(private readonly _ws: SdWebSocketWrapper) {
     this._ws.on("message", this.#onMessage.bind(this));
 
     // 소켓이 끊기면 대기 중인 모든 요청을 에러 처리하여 메모리 해제
@@ -35,21 +28,12 @@ export class SdServiceTransport {
     });
   }
 
-  async sendCommandAsync(
-    command: TSdServiceCommand,
-    params: any[],
+  async sendAsync(
+    uuid: string,
+    message: TSdServiceClientRawMessage,
     progress?: ISdServiceProgress,
   ): Promise<any> {
-    const uuid = Uuid.new().toString();
-    const req: ISdServiceRequest = {
-      name: "request",
-      clientName: this._clientName,
-      uuid,
-      command,
-      params,
-    };
-
-    // 1. 응답 대기 시작 (요청 보내기 전에 리스너를 먼저 등록해야 안전함)
+    // 응답 대기 시작 (요청 보내기 전에 리스너를 먼저 등록해야 안전함)
     const responsePromise = new Promise((resolve, reject) => {
       this.#listenerMap.set(uuid, {
         resolve,
@@ -58,10 +42,21 @@ export class SdServiceTransport {
       });
     });
 
-    // 2. 요청 전송
+    // 요청 전송
     try {
-      // 2. 요청 전송
-      await this.#sendRequestAsync(req, progress);
+      const chunks = this.#protocol.encode(uuid, message);
+
+      if (chunks.length > 1) {
+        progress?.request?.({
+          uuid: uuid,
+          totalSize: chunks.sum((chunk) => chunk.length),
+          completedSize: 0,
+        });
+      }
+
+      for (const chunk of chunks) {
+        await this._ws.sendAsync(chunk);
+      }
     } catch (err) {
       // 전송 실패 시 즉시 정리
       this.#listenerMap.get(uuid)?.reject(err as Error);
@@ -69,19 +64,8 @@ export class SdServiceTransport {
       throw err;
     }
 
-    // 3. 응답 결과 반환
+    // 응답 결과 반환
     return await responsePromise;
-  }
-
-  async sendMessageAsync(msg: TSdServiceC2SMessage) {
-    const chunks = SdServiceMessageEncoder.encode(
-      "uuid" in msg ? msg.uuid : Uuid.new().toString(),
-      msg,
-    );
-
-    for (const chunk of chunks) {
-      await this._ws.sendAsync(chunk);
-    }
   }
 
   // 모든 대기 요청 취소 처리
@@ -92,12 +76,8 @@ export class SdServiceTransport {
     this.#listenerMap.clear();
   }
 
-  // =========================================================================
-  // Private Helper Methods
-  // =========================================================================
-
   #onMessage(buf: Buffer) {
-    const decoded = this.#decoder.decode(buf);
+    const decoded = this.#protocol.decode(buf);
 
     const listenerInfo = this.#listenerMap.get(decoded.uuid);
 
@@ -106,24 +86,22 @@ export class SdServiceTransport {
         listenerInfo?.progress?.response?.({
           uuid: decoded.uuid,
           totalSize: decoded.totalSize,
-          completedSize: decoded.receivedSize,
+          completedSize: decoded.completedSize,
         });
       } else {
-        if (decoded.message.name === "response-for-split") {
+        if (decoded.message.name === "progress") {
           listenerInfo?.progress?.request?.({
-            uuid: decoded.message.reqUuid,
-            totalSize: decoded.message.totalSize,
-            completedSize: decoded.message.completedSize,
+            uuid: decoded.uuid,
+            totalSize: decoded.message.body.totalSize,
+            completedSize: decoded.message.body.completedSize,
           });
         } else if (decoded.message.name === "response") {
           // 응답을 받았으므로 Map에서 제거
           this.#listenerMap.delete(decoded.uuid);
 
-          if (decoded.message.state === "error") {
-            listenerInfo?.reject(this.#toError(decoded.message.body));
-          } else {
-            listenerInfo?.resolve(decoded.message.body);
-          }
+          listenerInfo?.resolve(decoded.message.body);
+        } else if (decoded.message.name === "error") {
+          listenerInfo?.reject(this.#toError(decoded.message.body));
         }
       }
     } catch (err) {
@@ -131,32 +109,11 @@ export class SdServiceTransport {
     }
   }
 
-  /**
-   * 요청 메시지 전송
-   */
-  async #sendRequestAsync(
-    req: ISdServiceRequest,
-    progress: ISdServiceProgress | undefined,
-  ): Promise<void> {
-    const chunks = SdServiceMessageEncoder.encode(req.uuid, req);
-
-    if (chunks.length > 1) {
-      progress?.request?.({
-        uuid: req.uuid,
-        totalSize: chunks.sum((chunk) => chunk.length),
-        completedSize: 0,
-      });
-    }
-
-    for (const chunk of chunks) {
-      await this._ws.sendAsync(chunk);
-    }
-  }
-
-  #toError(body: ISdServiceErrorBody): Error {
+  #toError(body: ISdServiceErrorMessage["body"]): Error {
     const err = new Error(body.message);
     (err as any).code = body.code;
     if (body.stack != null) err.stack = body.stack;
+    if (body.detail != null) err["detail"] = body.detail;
     return err;
   }
 }

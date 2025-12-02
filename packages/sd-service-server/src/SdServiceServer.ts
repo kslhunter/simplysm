@@ -1,12 +1,12 @@
 import { SdLogger } from "@simplysm/sd-core-node";
 import { EventEmitter } from "events";
 import { SdServiceEventListenerBase } from "@simplysm/sd-service-common";
-import { SdWebSocketController } from "./internal/SdWebSocketController";
+import { SdWebSocketControllerV1 } from "./v1/SdWebSocketControllerV1";
 import { SdStaticFileHandler } from "./internal/SdStaticFileHandler";
 import { SdHttpRequestHandler } from "./internal/SdHttpRequestHandler";
 import { SdServiceExecutor } from "./internal/SdServiceExecutor";
 import { JsonConvert, Type } from "@simplysm/sd-core-common";
-import fastify, { FastifyInstance } from "fastify";
+import fastify, { FastifyInstance, FastifyRequest } from "fastify";
 import fastifyMiddie from "@fastify/middie";
 import fastifyWebsocket from "@fastify/websocket";
 import fastifyStatic from "@fastify/static";
@@ -16,8 +16,10 @@ import fastifyCors from "@fastify/cors";
 import fastifyReplyFrom from "@fastify/reply-from";
 import path from "path";
 import { SdUploadHandler } from "./internal/SdUploadHandler";
-import { SdServiceBase } from "./types";
+import { SdServiceBase } from "./SdServiceBase";
 import http from "http";
+import { SdWebSocketControllerV2 } from "./v2/SdWebSocketControllerV2";
+import { WebSocket } from "ws";
 
 export class SdServiceServer extends EventEmitter {
   isOpen = false;
@@ -29,7 +31,9 @@ export class SdServiceServer extends EventEmitter {
   #httpRequestHandler = new SdHttpRequestHandler(this, this.#serviceExecutor);
   #staticFileHandler = new SdStaticFileHandler(this);
   #uploadHandler = new SdUploadHandler(this);
-  #wsCtrl = new SdWebSocketController(this.#serviceExecutor);
+
+  #wsCtrlV1 = new SdWebSocketControllerV1(this.#serviceExecutor);
+  #wsCtrlV2 = new SdWebSocketControllerV2(this.#serviceExecutor);
 
   #fastify?: FastifyInstance;
 
@@ -138,12 +142,25 @@ export class SdServiceServer extends EventEmitter {
     });
 
     // WebSocket 라우트
-    this.#fastify.get("/", { websocket: true }, async (socket, req) => {
-      await this.#wsCtrl.addSocket(socket, req.raw);
-    });
-    this.#fastify.get("/ws", { websocket: true }, async (socket, req) => {
-      await this.#wsCtrl.addSocket(socket, req.raw);
-    });
+    const onWebSocketConnected = async (socket: WebSocket, req: FastifyRequest) => {
+      const { ver, clientId, clientName } = req.query as {
+        ver: string | undefined;
+        clientId: string | undefined;
+        clientName: string | undefined;
+      };
+      if (ver === "2") {
+        if (clientId == null || clientName == null) {
+          socket.close(1008, "Missing Client ID/NAME");
+          return;
+        }
+
+        this.#wsCtrlV2.addSocket(socket, clientId, clientName, req.socket.remoteAddress);
+      } else {
+        await this.#wsCtrlV1.addSocket(socket, req.socket.remoteAddress);
+      }
+    };
+    this.#fastify.get("/", { websocket: true }, onWebSocketConnected.bind(this));
+    this.#fastify.get("/ws", { websocket: true }, onWebSocketConnected.bind(this));
 
     // 정적 파일 와일드카드 핸들러
     this.#fastify.route({
@@ -187,7 +204,8 @@ export class SdServiceServer extends EventEmitter {
   }
 
   async closeAsync(): Promise<void> {
-    this.#wsCtrl.close();
+    this.#wsCtrlV1.closeAll();
+    this.#wsCtrlV2.closeAll();
     await this.#fastify?.close();
 
     this.isOpen = false;
@@ -197,7 +215,8 @@ export class SdServiceServer extends EventEmitter {
 
   broadcastReload(clientName: string | undefined, changedFileSet: Set<string>): void {
     this.#logger.debug("서버내 모든 클라이언트 RELOAD 명령 전송");
-    this.#wsCtrl.broadcastReload(clientName, changedFileSet);
+    this.#wsCtrlV1.broadcastReload(clientName, changedFileSet);
+    this.#wsCtrlV2.broadcastReload(clientName, changedFileSet);
   }
 
   emitEvent<T extends SdServiceEventListenerBase<any, any>>(
@@ -205,7 +224,8 @@ export class SdServiceServer extends EventEmitter {
     infoSelector: (item: T["info"]) => boolean,
     data: T["data"],
   ) {
-    this.#wsCtrl.emit(eventType, infoSelector, data);
+    this.#wsCtrlV1.emit(eventType, infoSelector, data);
+    this.#wsCtrlV2.emit(eventType, infoSelector, data);
   }
 
   // 종료 시그널 감지 및 처리

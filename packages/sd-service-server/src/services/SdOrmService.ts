@@ -11,14 +11,18 @@ import {
   TQueryDef,
 } from "@simplysm/sd-orm-common";
 import { SdLogger } from "@simplysm/sd-core-node";
-import { SdServiceBase } from "../types";
+import { SdServiceBase } from "../SdServiceBase";
 import { ISdOrmService, TDbConnOptions } from "@simplysm/sd-service-common";
-import { SdServiceSocket } from "../internal/SdServiceSocket";
+import { SdServiceSocketV1 } from "../v1/SdServiceSocketV1";
+import { SdServiceSocketV2 } from "../v2/SdServiceSocketV2";
 
 export class SdOrmService extends SdServiceBase implements ISdOrmService {
   readonly #logger = SdLogger.get(["simplysm", "sd-service-server", this.constructor.name]);
 
-  static readonly #socketConns = new WeakMap<SdServiceSocket, Map<number, IDbConn>>();
+  static readonly #socketConns = new WeakMap<
+    SdServiceSocketV1 | SdServiceSocketV2,
+    Map<number, IDbConn>
+  >();
 
   async #getConf(opt: TDbConnOptions & { configName: string }): Promise<TDbConnConf> {
     const config = (await this.getConfig<Record<string, TDbConnConf | undefined>>("orm"))[
@@ -30,10 +34,14 @@ export class SdOrmService extends SdServiceBase implements ISdOrmService {
     return { ...config, ...opt.config };
   }
 
-  #getConn(connId: number): IDbConn {
-    if (!this.socketClient) throw new Error("소켓 연결 필요");
+  get sock(): SdServiceSocketV1 | SdServiceSocketV2 {
+    const socket = this.socket ?? this.v1?.socket;
+    if (!socket) throw new Error("소켓 연결 필요");
+    return socket;
+  }
 
-    const myConns = SdOrmService.#socketConns.get(this.socketClient);
+  #getConn(connId: number): IDbConn {
+    const myConns = SdOrmService.#socketConns.get(this.sock);
     const conn = myConns?.get(connId);
     if (!conn) {
       throw new Error("DB에 연결되어있지 않습니다. (Invalid Connection ID)");
@@ -60,19 +68,15 @@ export class SdOrmService extends SdServiceBase implements ISdOrmService {
   }
 
   async connect(opt: TDbConnOptions & { configName: string }): Promise<number> {
-    if (!this.socketClient) {
-      throw new Error("소켓 연결이 필요합니다.");
-    }
-
     // 1. 현재 소켓에 매핑된 DB 연결 목록 가져오기 (없으면 생성)
-    let myConns = SdOrmService.#socketConns.get(this.socketClient);
+    let myConns = SdOrmService.#socketConns.get(this.sock);
     if (!myConns) {
       myConns = new Map<number, IDbConn>();
-      SdOrmService.#socketConns.set(this.socketClient, myConns);
+      SdOrmService.#socketConns.set(this.sock, myConns);
 
       // [수정] 소켓당 '단 한 번'만 close 리스너를 등록합니다.
       // 소켓이 끊어지면, 해당 소켓이 가진 모든 DB 연결을 일괄 종료(반납)합니다.
-      this.socketClient.on("close", async () => {
+      this.sock.on("close", async () => {
         if (!myConns) return;
 
         this.#logger.debug("소켓 연결 종료 감지: 열려있는 모든 DB 연결을 정리합니다.");
@@ -88,7 +92,7 @@ export class SdOrmService extends SdServiceBase implements ISdOrmService {
             } catch (err) {
               this.#logger.warn("DB 연결 강제 종료 중 오류 무시됨", err);
             }
-          })
+          }),
         );
 
         myConns.clear();

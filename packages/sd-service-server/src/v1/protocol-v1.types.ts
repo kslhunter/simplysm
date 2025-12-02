@@ -1,4 +1,4 @@
-import { TSdServiceCommand } from "./command.types";
+import { TSdServiceCommand } from "./command-v1.types";
 
 export type TSdServiceMessage = TSdServiceS2CMessage | TSdServiceC2SMessage;
 
@@ -128,15 +128,4 @@ interface ISdServiceEmittedEvent {
   name: "event";
   key: string;
   body: any;
-}
-
-export class SdServiceEventListenerBase<I, O> {
-  info!: I;
-  data!: O;
-}
-
-export interface ISdServiceUploadResult {
-  path: string;
-  filename: string;
-  size: number;
 }
