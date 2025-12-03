@@ -31,6 +31,6 @@ export class SdCryptoService extends SdServiceBase implements ISdCryptoService {
   }
 
   async #getConf() {
-    return await this.getConfig<ICryptoConfig>("crypto");
+    return await this.getConfigAsync<ICryptoConfig>("crypto");
   }
 }

@@ -25,7 +25,7 @@ export class SdOrmService extends SdServiceBase implements ISdOrmService {
   >();
 
   async #getConf(opt: TDbConnOptions & { configName: string }): Promise<TDbConnConf> {
-    const config = (await this.getConfig<Record<string, TDbConnConf | undefined>>("orm"))[
+    const config = (await this.getConfigAsync<Record<string, TDbConnConf | undefined>>("orm"))[
       opt.configName
     ];
     if (config == null) {

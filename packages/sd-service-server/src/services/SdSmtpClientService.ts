@@ -39,7 +39,7 @@ export class SdSmtpClientService extends SdServiceBase implements ISdSmtpClientS
 
   async sendByConfig(configName: string, options: ISmtpClientSendByDefaultOption): Promise<string> {
     const config = (
-      await this.getConfig<Record<string, ISmtpClientDefaultConfig | undefined>>("smtp")
+      await this.getConfigAsync<Record<string, ISmtpClientDefaultConfig | undefined>>("smtp")
     )[configName];
     if (config == null) {
       throw new Error(`SMTP 설정을 찾을 수 없습니다: ${configName}`);
