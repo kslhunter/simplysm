@@ -1,7 +1,7 @@
 import { JsonConvert, LazyGcMap, Uuid } from "@simplysm/sd-core-common";
-import { TSdServiceMessageV2 } from "./protocol-v2.types";
+import { TSdServiceMessage } from "./protocol.types";
 
-export class SdServiceProtocolV2 {
+export class SdServiceProtocol {
   private readonly _MAX_TOTAL_SIZE = 100 * 1024 * 1024; // 100MB
 
   // -------------------------------------------------------------------
@@ -14,7 +14,7 @@ export class SdServiceProtocolV2 {
   /**
    * 메시지 인코딩 (필요 시 자동 분할)
    */
-  encode(uuid: string, message: TSdServiceMessageV2): Buffer[] {
+  encode(uuid: string, message: TSdServiceMessage): Buffer[] {
     const msgJson = JsonConvert.stringify([
       message.name,
       ...("body" in message ? [message.body] : []),
@@ -100,7 +100,7 @@ export class SdServiceProtocolV2 {
   /**
    * 메시지 디코딩 (분할 패킷 자동 조립)
    */
-  decode<T extends TSdServiceMessageV2>(buffer: Buffer): ISdServiceMessageDecodeResult<T> {
+  decode<T extends TSdServiceMessage>(buffer: Buffer): ISdServiceMessageDecodeResult<T> {
     if (buffer.length < 28) {
       throw new Error(`Invalid Buffer: Size(${buffer.length}) is smaller than header size(28).`);
     }
@@ -159,6 +159,6 @@ export class SdServiceProtocolV2 {
 }
 
 // 결과 타입
-export type ISdServiceMessageDecodeResult<T extends TSdServiceMessageV2> =
+export type ISdServiceMessageDecodeResult<T extends TSdServiceMessage> =
   | { type: "complete"; uuid: string; message: T }
   | { type: "progress"; uuid: string; totalSize: number; completedSize: number };

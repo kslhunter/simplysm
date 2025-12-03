@@ -15,5 +15,5 @@ export * from "./v1/SdServiceCommandHelperV1";
 export * from "./v1/SdServiceProtocolV1";
 export * from "./v1/SdServiceSocketV1";
 export * from "./v1/SdWebSocketControllerV1";
-export * from "./v2/SdServiceSocketV2";
-export * from "./v2/SdWebSocketControllerV2";
+export * from "./internal/SdServiceSocket";
+export * from "./internal/SdWebSocketController";

@@ -1,7 +1,6 @@
 import { DateTime } from "@simplysm/sd-core-common";
 import { SdLogger } from "@simplysm/sd-core-node";
 import {
-  SdServiceProtocolV2,
   TSdServiceClientMessage,
   TSdServiceClientRawMessage,
   TSdServiceServerMessage,
@@ -10,11 +9,12 @@ import {
 import { WebSocket } from "ws";
 import { EventEmitter } from "events";
 import { clearInterval } from "node:timers";
+import { SdServiceProtocolWrapper } from "./SdServiceProtocolWrapper";
 
-export class SdServiceSocketV2 extends EventEmitter {
+export class SdServiceSocket extends EventEmitter {
   readonly #logger = SdLogger.get(["simplysm", "sd-service-server", "SdServiceSocket"]);
 
-  readonly #protocol = new SdServiceProtocolV2();
+  readonly #protocol = new SdServiceProtocolWrapper();
   readonly #listenerInfos: { eventName: string; key: string; info: any }[] = [];
 
   #isAlive = true;
@@ -65,13 +65,14 @@ export class SdServiceSocketV2 extends EventEmitter {
   }
 
   // 메시지 전송 (Protocol Encode 사용)
-  send(uuid: string, msg: TSdServiceServerMessage) {
-    return this.#send(uuid, msg);
+  async sendAsync(uuid: string, msg: TSdServiceServerMessage) {
+    return await this.#sendAsync(uuid, msg);
   }
-  #send(uuid: string, msg: TSdServiceServerRawMessage) {
+
+  async #sendAsync(uuid: string, msg: TSdServiceServerRawMessage) {
     if (this._socket.readyState !== WebSocket.OPEN) return 0;
 
-    const chunks = this.#protocol.encode(uuid, msg);
+    const chunks = await this.#protocol.encodeAsync(uuid, msg);
     for (const chunk of chunks) {
       this._socket.send(chunk);
     }
@@ -95,7 +96,7 @@ export class SdServiceSocketV2 extends EventEmitter {
 
   filterEventTargetKeys(targetKeys: string[]) {
     const targets = this.#listenerInfos.filter((item) => targetKeys.includes(item.key));
-    return targets.map(item => item.key)
+    return targets.map((item) => item.key);
     /*this.send(Uuid.new().toString(), {
       name: "evt:on",
       body: {
@@ -118,11 +119,11 @@ export class SdServiceSocketV2 extends EventEmitter {
     this.emit("close", code);
   }
 
-  #onMessage(msgBuffer: Buffer) {
+  async #onMessage(msgBuffer: Buffer) {
     try {
-      const decodeResult = this.#protocol.decode(msgBuffer);
+      const decodeResult = await this.#protocol.decodeAsync(msgBuffer);
       if (decodeResult.type === "progress") {
-        this.#send(decodeResult.uuid, {
+        await this.#sendAsync(decodeResult.uuid, {
           name: "progress",
           body: {
             totalSize: decodeResult.totalSize,
@@ -132,7 +133,7 @@ export class SdServiceSocketV2 extends EventEmitter {
       } else {
         const msg = decodeResult.message as TSdServiceClientRawMessage;
         if (msg.name === "ping") {
-          this.#send(decodeResult.uuid, { name: "response" });
+          await this.#sendAsync(decodeResult.uuid, { name: "response" });
         } else {
           this.emit("message", decodeResult.uuid, msg);
         }

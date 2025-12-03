@@ -5,7 +5,7 @@ import { Type, Uuid, Wait } from "@simplysm/sd-core-common";
 import {
   ISdServiceUploadResult,
   SdServiceEventListenerBase,
-  SdServiceProtocolV2,
+  SdServiceProtocol,
   TSdServiceServerRawMessage,
 } from "@simplysm/sd-service-common";
 import { SdWebSocketWrapper } from "./internal/SdWebSocketWrapper";
@@ -35,7 +35,7 @@ export class SdServiceClient extends EventEmitter {
   #transport: SdServiceTransport;
   #eventBus: SdServiceEventBus;
 
-  #protocol = new SdServiceProtocolV2();
+  #protocol = new SdServiceProtocol();
 
   override on(event: "request-progress", listener: (state: ISdServiceProgressState) => void): this;
   override on(event: "response-progress", listener: (state: ISdServiceProgressState) => void): this;

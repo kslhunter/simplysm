@@ -3,12 +3,12 @@ import path from "path";
 import { ObjectUtils } from "@simplysm/sd-core-common";
 import { SdConfigManager } from "./internal/SdConfigManager";
 import { SdServiceSocketV1 } from "./v1/SdServiceSocketV1";
-import { SdServiceSocketV2 } from "./v2/SdServiceSocketV2";
+import { SdServiceSocket } from "./internal/SdServiceSocket";
 import { ISdServiceRequest } from "./v1/protocol-v1.types";
 
 export class SdServiceBase {
   server!: SdServiceServer;
-  socket?: SdServiceSocketV2;
+  socket?: SdServiceSocket;
 
   v1?: {
     socket: SdServiceSocketV1;

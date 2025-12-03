@@ -1,6 +1,6 @@
 export const SD_SERVICE_MESSAGE_MAX_TOTAL_SIZE = 100 * 1024 * 1024; // 100MB
 
-export type TSdServiceMessageV2 =
+export type TSdServiceMessage =
   | ISdServiceConnectedMessage
   | ISdServiceReloadMessage
   | ISdServicePingMessage
@@ -26,8 +26,7 @@ export type TSdServiceServerMessage =
 
 export type TSdServiceServerRawMessage =
   // | ISdServicePongMessage -> ping response
-  | ISdServiceProgressMessage
-  | TSdServiceServerMessage;
+  ISdServiceProgressMessage | TSdServiceServerMessage;
 
 export type TSdServiceClientMessage =
   | ISdServiceRequestMessage

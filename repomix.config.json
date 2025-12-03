@@ -1,0 +1,15 @@
+{
+  "$schema": "https://repomix.com/schemas/latest/schema.json",
+  "output": {
+    "filePath": ".tmp/repomix-output.json",
+    "style": "json",
+    "fileSummary": true,
+    "directoryStructure": true,
+    "files": true
+  },
+  "include": ["eslint.config.js", "package.json", "tsconfig.base.json", "packages/**"],
+  "ignore": {
+    "useGitignore": true,
+    "customPatterns": ["**/dist/**", "**/node_modules/**"]
+  }
+}

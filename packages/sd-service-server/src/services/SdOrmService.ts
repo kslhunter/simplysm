@@ -14,13 +14,13 @@ import { SdLogger } from "@simplysm/sd-core-node";
 import { SdServiceBase } from "../SdServiceBase";
 import { ISdOrmService, TDbConnOptions } from "@simplysm/sd-service-common";
 import { SdServiceSocketV1 } from "../v1/SdServiceSocketV1";
-import { SdServiceSocketV2 } from "../v2/SdServiceSocketV2";
+import { SdServiceSocket } from "../internal/SdServiceSocket";
 
 export class SdOrmService extends SdServiceBase implements ISdOrmService {
   readonly #logger = SdLogger.get(["simplysm", "sd-service-server", this.constructor.name]);
 
   static readonly #socketConns = new WeakMap<
-    SdServiceSocketV1 | SdServiceSocketV2,
+    SdServiceSocketV1 | SdServiceSocket,
     Map<number, IDbConn>
   >();
 
@@ -34,7 +34,7 @@ export class SdOrmService extends SdServiceBase implements ISdOrmService {
     return { ...config, ...opt.config };
   }
 
-  get sock(): SdServiceSocketV1 | SdServiceSocketV2 {
+  get sock(): SdServiceSocketV1 | SdServiceSocket {
     const socket = this.socket ?? this.v1?.socket;
     if (!socket) throw new Error("소켓 연결 필요");
     return socket;

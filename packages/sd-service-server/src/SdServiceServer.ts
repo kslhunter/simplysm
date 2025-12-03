@@ -18,7 +18,7 @@ import path from "path";
 import { SdUploadHandler } from "./internal/SdUploadHandler";
 import { SdServiceBase } from "./SdServiceBase";
 import http from "http";
-import { SdWebSocketControllerV2 } from "./v2/SdWebSocketControllerV2";
+import { SdWebSocketController } from "./internal/SdWebSocketController";
 import { WebSocket } from "ws";
 
 export class SdServiceServer extends EventEmitter {
@@ -33,7 +33,7 @@ export class SdServiceServer extends EventEmitter {
   #uploadHandler = new SdUploadHandler(this);
 
   #wsCtrlV1 = new SdWebSocketControllerV1(this.#serviceExecutor);
-  #wsCtrlV2 = new SdWebSocketControllerV2(this.#serviceExecutor);
+  #wsCtrlV2 = new SdWebSocketController(this.#serviceExecutor);
 
   #fastify?: FastifyInstance;
 

@@ -36,6 +36,7 @@
     "eslint-timing": "cross-env TIMING=1 eslint \"**/+(*.ts|*.js|*.html)\"",
     "eslint-fix": "cross-env TIMING=1 eslint --fix \"**/+(*.ts|*.js|*.html)\"",
     "pre-upgrade": "node pre-upgrade.js",
+    "repomix": "repomix",
     "reinstall": "yarn install --refresh-lockfile",
     "postinstall": "yarn run _sd-cli_ postinstall"
   },
@@ -45,6 +46,7 @@
     "eslint": "^9.39.1",
     "glob": "^13.0.0",
     "prettier": "^3.7.3",
+    "repomix": "^1.9.2",
     "semver": "^7.7.3",
     "tsx": "^4.21.0",
     "typescript": "~5.8.3",

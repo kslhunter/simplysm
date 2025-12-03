@@ -1,6 +1,6 @@
 import { SdServiceServer } from "../SdServiceServer";
 import { SdServiceSocketV1 } from "../v1/SdServiceSocketV1";
-import { SdServiceSocketV2 } from "../v2/SdServiceSocketV2";
+import { SdServiceSocket } from "./SdServiceSocket";
 import { ISdServiceRequest } from "../v1/protocol-v1.types";
 
 export class SdServiceExecutor {
@@ -11,7 +11,7 @@ export class SdServiceExecutor {
     methodName: string;
     params: any[];
 
-    socket?: SdServiceSocketV2;
+    socket?: SdServiceSocket;
 
     v1?: {
       socket: SdServiceSocketV1;

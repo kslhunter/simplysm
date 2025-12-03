@@ -1,14 +1,14 @@
 import {
   ISdServiceErrorMessage,
   ISdServiceResponseMessage,
-  SdServiceProtocolV2,
+  SdServiceProtocol,
   TSdServiceClientRawMessage,
 } from "@simplysm/sd-service-common";
 import { SdWebSocketWrapper } from "./SdWebSocketWrapper";
 import { ISdServiceProgress } from "../types/progress.types";
 
 export class SdServiceTransport {
-  readonly #protocol = new SdServiceProtocolV2();
+  readonly #protocol = new SdServiceProtocol();
 
   readonly #listenerMap = new Map<
     string,
