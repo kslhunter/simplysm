@@ -3,9 +3,9 @@ export class Uuid {
     return new Uuid(crypto.randomUUID());
   }
 
-  static fromString(uuid: string): Uuid {
+  /*static fromString(uuid: string): Uuid {
     return new Uuid(uuid);
-  }
+  }*/
 
   static fromBuffer(buffer: Buffer): Uuid {
     if (buffer.length !== 16) {

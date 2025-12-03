@@ -62,7 +62,7 @@ export class SdServiceProtocol {
     const headerBuffer = Buffer.alloc(28);
 
     // UUID
-    const uuidBuffer = Uuid.fromString(header.uuid).toBuffer();
+    const uuidBuffer = new Uuid(header.uuid).toBuffer();
     headerBuffer.set(uuidBuffer, 0);
 
     // TOTAL_SIZE, INDEX

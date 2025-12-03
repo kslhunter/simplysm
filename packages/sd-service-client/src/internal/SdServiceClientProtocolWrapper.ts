@@ -3,7 +3,7 @@ import {
   SdServiceProtocol,
   TSdServiceMessage,
 } from "@simplysm/sd-service-common";
-import { LazyGcMap, TransferableConvert } from "@simplysm/sd-core-common";
+import { LazyGcMap, TransferableConvert, Uuid } from "@simplysm/sd-core-common";
 
 export class SdServiceClientProtocolWrapper {
   // 기준값: 1KB
@@ -64,7 +64,7 @@ export class SdServiceClientProtocolWrapper {
     transfer: Transferable[] = [],
   ): Promise<any> {
     return await new Promise((resolve, reject) => {
-      const id = crypto.randomUUID();
+      const id = Uuid.new().toString();
 
       SdServiceClientProtocolWrapper._workerResolvers.set(id, { resolve, reject });
       SdServiceClientProtocolWrapper.worker.postMessage({ id, type, data }, { transfer });

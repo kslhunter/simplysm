@@ -8,6 +8,7 @@ import { ISdServiceProgress } from "../types/progress.types";
 import { SdSocketProvider } from "./SdSocketProvider";
 import { EventEmitter } from "events";
 import { SdServiceClientProtocolWrapper } from "./SdServiceClientProtocolWrapper";
+import { Uuid } from "@simplysm/sd-core-common";
 
 export class SdServiceTransport extends EventEmitter {
   readonly #protocol = new SdServiceClientProtocolWrapper();
@@ -42,7 +43,7 @@ export class SdServiceTransport extends EventEmitter {
   }
 
   async sendAsync(message: TSdServiceClientMessage, progress?: ISdServiceProgress): Promise<any> {
-    const uuid = crypto.randomUUID();
+    const uuid = Uuid.new().toString();
 
     // 응답 대기 시작 (요청 보내기 전에 리스너를 먼저 등록해야 안전함)
     const responsePromise = new Promise((resolve, reject) => {
