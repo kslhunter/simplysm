@@ -34,6 +34,7 @@ export * from "./utils/NetUtils";
 export * from "./utils/NumberUtils";
 export * from "./utils/ObjectUtils";
 export * from "./utils/StringUtils";
+export * from "./utils/TransferableConvert";
 export * from "./utils/Wait";
 export * from "./utils/XmlConvert";
 export * from "./zip/SdZip";

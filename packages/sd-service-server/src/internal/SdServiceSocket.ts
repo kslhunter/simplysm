@@ -2,7 +2,6 @@ import { DateTime } from "@simplysm/sd-core-common";
 import { SdLogger } from "@simplysm/sd-core-node";
 import {
   TSdServiceClientMessage,
-  TSdServiceClientRawMessage,
   TSdServiceServerMessage,
   TSdServiceServerRawMessage,
 } from "@simplysm/sd-service-common";
@@ -12,6 +11,9 @@ import { clearInterval } from "node:timers";
 import { SdServiceProtocolWrapper } from "./SdServiceProtocolWrapper";
 
 export class SdServiceSocket extends EventEmitter {
+  // 미리 생성 (Zero Allocation)
+  private readonly _PONG_PACKET = Buffer.from([0x02]);
+
   readonly #logger = SdLogger.get(["simplysm", "sd-service-server", "SdServiceSocket"]);
 
   readonly #protocol = new SdServiceProtocolWrapper();
@@ -97,13 +99,6 @@ export class SdServiceSocket extends EventEmitter {
   filterEventTargetKeys(targetKeys: string[]) {
     const targets = this.#listenerInfos.filter((item) => targetKeys.includes(item.key));
     return targets.map((item) => item.key);
-    /*this.send(Uuid.new().toString(), {
-      name: "evt:on",
-      body: {
-        keys: targets.map((item) => item.key),
-        params,
-      },
-    });*/
   }
 
   // ===========================================================================
@@ -121,6 +116,15 @@ export class SdServiceSocket extends EventEmitter {
 
   async #onMessage(msgBuffer: Buffer) {
     try {
+      // ping에 대한 pong처리
+      if (msgBuffer.length === 1 && msgBuffer[0] === 0x01) {
+        // 즉시 Pong 응답 (await 불필요, 워커 불필요)
+        if (this._socket.readyState === WebSocket.OPEN) {
+          this._socket.send(this._PONG_PACKET);
+        }
+        return; // 여기서 종료
+      }
+
       const decodeResult = await this.#protocol.decodeAsync(msgBuffer);
       if (decodeResult.type === "progress") {
         await this.#sendAsync(decodeResult.uuid, {
@@ -131,12 +135,8 @@ export class SdServiceSocket extends EventEmitter {
           },
         });
       } else {
-        const msg = decodeResult.message as TSdServiceClientRawMessage;
-        if (msg.name === "ping") {
-          await this.#sendAsync(decodeResult.uuid, { name: "response" });
-        } else {
-          this.emit("message", decodeResult.uuid, msg);
-        }
+        const msg = decodeResult.message as TSdServiceClientMessage;
+        this.emit("message", decodeResult.uuid, msg);
       }
     } catch (err) {
       this.#logger.error("WebSocket 메시지 처리 중 오류 발생", err);

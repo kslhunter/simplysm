@@ -1,6 +1,6 @@
-import { JsonConvert } from "@simplysm/sd-core-common";
 import { parentPort } from "worker_threads";
 import { ISdWorkerRequest, ISdWorkerType, TSdWorkerResponse } from "./types";
+import { TransferableConvert } from "@simplysm/sd-core-common";
 
 export function createSdWorker<T extends ISdWorkerType>(methods: {
   [P in keyof T["methods"]]: (
@@ -11,12 +11,13 @@ export function createSdWorker<T extends ISdWorkerType>(methods: {
     throw new Error("This script must be run as a worker thread (parentPort required).");
 
   process.stdout.write = (chunk) => {
-    parentPort!.postMessage(JsonConvert.stringify({ type: "log", body: chunk.toString() }));
+    const serialized = TransferableConvert.encode({ type: "log", body: chunk });
+    parentPort!.postMessage(serialized.result, serialized.transferList);
     return true;
   };
 
-  parentPort.on("message", async (requestJson: string) => {
-    const request: ISdWorkerRequest<T, any> = JsonConvert.parse(requestJson);
+  parentPort.on("message", async (serializedRequest: any) => {
+    const request: ISdWorkerRequest<T, any> = TransferableConvert.decode(serializedRequest);
     for (const methodName of Object.keys(methods)) {
       if (request.method === methodName) {
         try {
@@ -27,7 +28,8 @@ export function createSdWorker<T extends ISdWorkerType>(methods: {
             body: result,
           };
 
-          parentPort!.postMessage(JsonConvert.stringify(response));
+          const serialized = TransferableConvert.encode(response);
+          parentPort!.postMessage(serialized.result, serialized.transferList);
         } catch (err) {
           const response: TSdWorkerResponse<T, any> = {
             request,
@@ -35,7 +37,8 @@ export function createSdWorker<T extends ISdWorkerType>(methods: {
             body: err,
           };
 
-          parentPort!.postMessage(JsonConvert.stringify(response));
+          const serialized = TransferableConvert.encode(response);
+          parentPort!.postMessage(serialized.result, serialized.transferList);
         }
         return;
       }
@@ -50,7 +53,8 @@ export function createSdWorker<T extends ISdWorkerType>(methods: {
         body,
       };
 
-      parentPort!.postMessage(JsonConvert.stringify(response));
+      const serialized = TransferableConvert.encode(response);
+      parentPort!.postMessage(serialized.result, serialized.transferList);
     },
   };
 }

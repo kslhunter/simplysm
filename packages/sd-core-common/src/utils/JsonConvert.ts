@@ -35,10 +35,13 @@ export class JsonConvert {
         return {
           __type__: "Error",
           data: {
-            ...currValue,
-            message: currValue.message,
             name: currValue.name,
+            message: currValue.message,
             stack: currValue.stack,
+
+            ...("code" in currValue ? { code: currValue.code } : {}),
+            ...("detail" in currValue ? { detail: currValue.detail } : {}),
+            ...("cause" in currValue ? { cause: currValue.cause } : {}),
           },
         };
       } else if (currValue?.type === "Buffer" && options?.hideBuffer === true) {

@@ -154,7 +154,7 @@ export class SdServiceServer extends EventEmitter {
           return;
         }
 
-        await this.#wsCtrlV2.addSocketAsync(socket, clientId, clientName, req.socket.remoteAddress);
+        this.#wsCtrlV2.addSocket(socket, clientId, clientName, req.socket.remoteAddress);
       } else {
         await this.#wsCtrlV1.addSocket(socket, req.socket.remoteAddress);
       }

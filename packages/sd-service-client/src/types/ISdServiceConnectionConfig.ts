@@ -3,5 +3,5 @@ export interface ISdServiceConnectionConfig {
   host: string;
   ssl?: boolean;
 
-  disableReconnect?: boolean;
+  maxReconnectCount?: number;
 }

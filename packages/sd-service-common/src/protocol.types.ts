@@ -1,32 +1,24 @@
 export const SD_SERVICE_MESSAGE_MAX_TOTAL_SIZE = 100 * 1024 * 1024; // 100MB
 
 export type TSdServiceMessage =
-  | ISdServiceConnectedMessage
   | ISdServiceReloadMessage
-  | ISdServicePingMessage
-  // | ISdServicePongMessage -> ping response
-  | ISdServiceProgressMessage
-  | ISdServiceErrorMessage
   | ISdServiceRequestMessage
+  | ISdServiceProgressMessage
   | ISdServiceResponseMessage
+  | ISdServiceErrorMessage
   | ISdServiceAddEventListenerMessage
   | ISdServiceRemoveEventListenerMessage
   | ISdServiceGetEventListenerInfosMessage
-  // | ISdServiceGetEventListenerInfosResponseMessage -> response
   | ISdServiceEmitEventMessage
   | ISdServiceEventMessage;
 
 export type TSdServiceServerMessage =
-  | ISdServiceConnectedMessage
-  | ISdServiceReloadMessage
-  | ISdServiceErrorMessage
+  | ISdServiceReloadMessage // 알림
   | ISdServiceResponseMessage
-  // | ISdServiceGetEventListenerInfosResponseMessage -> response
-  | ISdServiceEventMessage;
+  | ISdServiceErrorMessage
+  | ISdServiceEventMessage // 알림;
 
-export type TSdServiceServerRawMessage =
-  // | ISdServicePongMessage -> ping response
-  ISdServiceProgressMessage | TSdServiceServerMessage;
+export type TSdServiceServerRawMessage = ISdServiceProgressMessage | TSdServiceServerMessage;
 
 export type TSdServiceClientMessage =
   | ISdServiceRequestMessage
@@ -35,16 +27,9 @@ export type TSdServiceClientMessage =
   | ISdServiceGetEventListenerInfosMessage
   | ISdServiceEmitEventMessage;
 
-export type TSdServiceClientRawMessage = ISdServicePingMessage | TSdServiceClientMessage;
-
 // ----------------------------------------------------------------------
 // System 공통
 // ----------------------------------------------------------------------
-
-// 서버: 연결되었음을 클라이언트에 알림
-export interface ISdServiceConnectedMessage {
-  name: "connected";
-}
 
 // 서버: 클라이언트에게 reload 명령
 export interface ISdServiceReloadMessage {
@@ -54,16 +39,6 @@ export interface ISdServiceReloadMessage {
     changedFileSet: Set<string>; // 변경파일목록
   };
 }
-
-// 클라: ping (클라->서버에 대한 ping/pong은 수동으로 수행)
-export interface ISdServicePingMessage {
-  name: "ping";
-}
-
-// 서버: ping에 대한 응답
-/*export interface ISdServicePongMessage {
-  name: "pong";
-}*/
 
 // 서버: 받은 분할메시지에 대한 progress 알림
 export interface ISdServiceProgressMessage {
@@ -78,10 +53,12 @@ export interface ISdServiceProgressMessage {
 export interface ISdServiceErrorMessage {
   name: `error`;
   body: {
+    name: string;
     message: string;
     code: string;
     stack?: string;
     detail?: any;
+    cause?: any;
   };
 }
 
@@ -131,15 +108,6 @@ export interface ISdServiceGetEventListenerInfosMessage {
     name: string; // 이벤트명
   };
 }
-
-// 서버: 이벤트 리스너 정보 목록 응답
-/*export interface ISdServiceGetEventListenerInfosResponseMessage {
-  name: "evt:gets:res";
-  body: {
-    key: string; // 리스너키
-    info: any; // 리스너정보
-  }[];
-}*/
 
 // 클라: 이벤트 발생
 export interface ISdServiceEmitEventMessage {

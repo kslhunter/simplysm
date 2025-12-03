@@ -146,7 +146,7 @@ export abstract class CordovaAutoUpdate {
       opt.log(`권한 확인 중...`);
       await this.#checkPermissionAsync(
         opt.log,
-        opt.serviceClient.serverUrl + serverVersionInfo.downloadPath,
+        opt.serviceClient.hostUrl + serverVersionInfo.downloadPath,
       );
 
       // 최신버전이면 반환
@@ -158,7 +158,7 @@ export abstract class CordovaAutoUpdate {
 
       opt.log(`최신버전 파일 다운로드중...`);
       const buffer = await NetUtils.downloadBufferAsync(
-        opt.serviceClient.serverUrl + serverVersionInfo.downloadPath,
+        opt.serviceClient.hostUrl + serverVersionInfo.downloadPath,
         (progress) => {
           const progressText = ((progress.receivedLength * 100) / progress.contentLength).toFixed(
             2,

@@ -12,7 +12,7 @@ export class SdWebSocketController {
 
   constructor(private readonly _executor: SdServiceExecutor) {}
 
-  async addSocketAsync(
+  addSocket(
     socket: WebSocket,
     clientId: string,
     clientName: string,
@@ -54,9 +54,6 @@ export class SdWebSocketController {
         remoteAddress,
         socketSize: this.#socketMap.size,
       });
-
-      // 클라이언트에게 연결 완료 알림
-      await serviceSocket.sendAsync(Uuid.new().toString(), { name: "connected" });
     } catch (err) {
       this.#logger.error("연결 처리 중 오류 발생", err);
       socket.terminate();
@@ -167,10 +164,13 @@ export class SdWebSocketController {
         return await serviceSocket.sendAsync(uuid, {
           name: "error",
           body: {
+            name: err.name,
             message: err.message,
-            code: "BAD_MESSAGE",
             stack: err.stack,
-            detail: "detail" in err ? err.detail : undefined,
+            code: "BAD_MESSAGE",
+
+            ...("detail" in err ? { detail: err.detail } : {}),
+            ...("cause" in err ? { cause: err.cause } : {}),
           },
         });
       }
@@ -183,10 +183,13 @@ export class SdWebSocketController {
       return await serviceSocket.sendAsync(uuid, {
         name: "error",
         body: {
+          name: err.name,
           message: error.message,
           code: "INTERNAL_ERROR",
           stack: error.stack,
-          detail: "detail" in err ? err.detail : undefined,
+
+          ...("detail" in err ? { detail: err.detail } : {}),
+          ...("cause" in err ? { cause: err.cause } : {}),
         },
       });
     }

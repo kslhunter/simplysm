@@ -2,12 +2,15 @@ import {
   ISdServiceErrorMessage,
   ISdServiceResponseMessage,
   SdServiceProtocol,
-  TSdServiceClientRawMessage,
+  TSdServiceClientMessage,
+  TSdServiceServerRawMessage,
 } from "@simplysm/sd-service-common";
-import { SdWebSocketWrapper } from "./SdWebSocketWrapper";
 import { ISdServiceProgress } from "../types/progress.types";
 
-export class SdServiceTransport {
+import { SdSocketProvider } from "./SdSocketProvider";
+import { EventEmitter } from "events";
+
+export class SdServiceTransport extends EventEmitter {
   readonly #protocol = new SdServiceProtocol();
 
   readonly #listenerMap = new Map<
@@ -19,43 +22,50 @@ export class SdServiceTransport {
     }
   >();
 
-  constructor(private readonly _ws: SdWebSocketWrapper) {
-    this._ws.on("message", this.#onMessage.bind(this));
+  // 이벤트
+  override on(event: "reload", listener: (changedFileSet: Set<string>) => void): this;
+  override on(event: "event", listener: (keys: string[], data: any) => void): this;
+  override on(event: string | symbol, listener: (...args: any[]) => void): this {
+    return super.on(event, listener);
+  }
+
+  constructor(private readonly _socket: SdSocketProvider) {
+    super();
+
+    this._socket.on("message", this.#onMessage.bind(this));
 
     // 소켓이 끊기면 대기 중인 모든 요청을 에러 처리하여 메모리 해제
-    this._ws.on("close", () => {
-      this.#cancelAllRequests("Socket disconnected");
+    this._socket.on("state", (state) => {
+      if (state === "closed" || state === "reconnecting") {
+        this.#cancelAllRequests("Socket connection lost");
+      }
     });
   }
 
-  async sendAsync(
-    uuid: string,
-    message: TSdServiceClientRawMessage,
-    progress?: ISdServiceProgress,
-  ): Promise<any> {
+  async sendAsync(message: TSdServiceClientMessage, progress?: ISdServiceProgress): Promise<any> {
+    const uuid = crypto.randomUUID();
+
     // 응답 대기 시작 (요청 보내기 전에 리스너를 먼저 등록해야 안전함)
     const responsePromise = new Promise((resolve, reject) => {
-      this.#listenerMap.set(uuid, {
-        resolve,
-        reject,
-        progress,
-      });
+      this.#listenerMap.set(uuid, { resolve, reject, progress });
     });
 
     // 요청 전송
     try {
       const chunks = this.#protocol.encode(uuid, message);
 
+      // 진행률 초기화
       if (chunks.length > 1) {
         progress?.request?.({
-          uuid: uuid,
+          uuid,
           totalSize: chunks.sum((chunk) => chunk.length),
           completedSize: 0,
         });
       }
 
+      // 전송
       for (const chunk of chunks) {
-        await this._ws.sendAsync(chunk);
+        this._socket.send(chunk);
       }
     } catch (err) {
       // 전송 실패 시 즉시 정리
@@ -68,16 +78,8 @@ export class SdServiceTransport {
     return await responsePromise;
   }
 
-  // 모든 대기 요청 취소 처리
-  #cancelAllRequests(reason: string) {
-    for (const listenerInfo of this.#listenerMap.values()) {
-      listenerInfo.reject(new Error(`Request canceled: ${reason}`));
-    }
-    this.#listenerMap.clear();
-  }
-
   #onMessage(buf: Buffer) {
-    const decoded = this.#protocol.decode(buf);
+    const decoded = this.#protocol.decode<TSdServiceServerRawMessage>(buf);
 
     const listenerInfo = this.#listenerMap.get(decoded.uuid);
 
@@ -102,6 +104,16 @@ export class SdServiceTransport {
           listenerInfo?.resolve(decoded.message.body);
         } else if (decoded.message.name === "error") {
           listenerInfo?.reject(this.#toError(decoded.message.body));
+        } else if (decoded.message.name === "reload") {
+          if (this._socket.clientName === decoded.message.body.clientName) {
+            this.emit("reload", decoded.message.body.changedFileSet);
+          }
+        }
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        else if (decoded.message.name === "evt:on") {
+          this.emit("event", decoded.message.body.keys, decoded.message.body.data);
+        } else {
+          throw new Error("요청이 잘 못 되었습니다.");
         }
       }
     } catch (err) {
@@ -109,11 +121,17 @@ export class SdServiceTransport {
     }
   }
 
+  // 모든 대기 요청 취소 처리
+  #cancelAllRequests(reason: string) {
+    for (const listenerInfo of this.#listenerMap.values()) {
+      listenerInfo.reject(new Error(`Request canceled: ${reason}`));
+    }
+    this.#listenerMap.clear();
+  }
+
   #toError(body: ISdServiceErrorMessage["body"]): Error {
-    const err = new Error(body.message);
-    (err as any).code = body.code;
-    if (body.stack != null) err.stack = body.stack;
-    if (body.detail != null) err["detail"] = body.detail;
+    let err = new Error(body.message);
+    err = Object.assign(err, body);
     return err;
   }
 }

@@ -1,4 +1,4 @@
-import { JsonConvert, Uuid } from "@simplysm/sd-core-common";
+import { TransferableConvert, Uuid } from "@simplysm/sd-core-common";
 import { EventEmitter } from "events";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -58,8 +58,8 @@ export class SdWorker<T extends ISdWorkerType> extends EventEmitter {
       logger.error(err);
     });
 
-    this.#worker.on("message", (responseJson: string) => {
-      const response: TSdWorkerResponse<T, string> = JsonConvert.parse(responseJson);
+    this.#worker.on("message", (serializedResponse: any) => {
+      const response: TSdWorkerResponse<T, string> = TransferableConvert.decode(serializedResponse);
       if (response.type === "event") {
         this.emit(response.event, response.body);
       } else if (response.type === "log") {
@@ -83,8 +83,8 @@ export class SdWorker<T extends ISdWorkerType> extends EventEmitter {
   ): Promise<T["methods"][K]["returnType"]> {
     return await new Promise<T["methods"][K]["returnType"]>((resolve, reject) => {
       const request: ISdWorkerRequest<T, K> = { id: Uuid.new().toString(), method, params };
-      const callback = (responseJson: string) => {
-        const response: TSdWorkerResponse<T, K> = JsonConvert.parse(responseJson);
+      const callback = (serializedResponse: any) => {
+        const response: TSdWorkerResponse<T, K> = TransferableConvert.decode(serializedResponse);
         if (response.type === "return") {
           if (response.request.id === request.id) {
             this.#worker.off("message", callback);
@@ -99,7 +99,8 @@ export class SdWorker<T extends ISdWorkerType> extends EventEmitter {
       };
 
       this.#worker.on("message", callback);
-      this.#worker.postMessage(JsonConvert.stringify(request));
+      const serialized = TransferableConvert.encode(request);
+      this.#worker.postMessage(serialized.result, serialized.transferList);
     });
   }
 
