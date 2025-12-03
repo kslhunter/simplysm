@@ -9,9 +9,10 @@ import { transformBoolean } from "../../../core/utils/transforms/transformBoolea
   imports: [],
   styles: [
     /* language=SCSS */ `
+      @use "../../../../scss/commons/mixins";
+      
       sd-toast-container {
         display: flex;
-        flex-direction: column;
         position: fixed;
         top: 0;
         left: 0;
@@ -20,6 +21,8 @@ import { transformBoolean } from "../../../core/utils/transforms/transformBoolea
         pointer-events: none;
         padding: var(--gap-xxl);
         z-index: var(--z-index-toast);
+
+        @include mixins.flex-direction(column);
 
         @media all and (max-width: 520px) {
           flex-direction: column-reverse;

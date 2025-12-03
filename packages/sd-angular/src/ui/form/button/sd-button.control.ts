@@ -157,7 +157,7 @@ import { transformBoolean } from "../../../core/utils/transforms/transformBoolea
           padding: var(--gap-default) var(--gap-xl);
         }
 
-        &:has(button[disabled]) {
+        &[data-sd-disabled="true"] {
           &:active {
             pointer-events: none;
           }
@@ -170,6 +170,7 @@ import { transformBoolean } from "../../../core/utils/transforms/transformBoolea
     "[attr.data-sd-inline]": "inline()",
     "[attr.data-sd-size]": "size()",
     "[attr.data-sd-inset]": "inset()",
+    "[attr.data-sd-disabled]": "disabled()",
   },
 })
 export class SdButtonControl {

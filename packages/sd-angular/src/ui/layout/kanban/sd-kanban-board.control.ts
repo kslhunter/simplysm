@@ -21,13 +21,14 @@ import { SdKanbanControl } from "./sd-kanban.control";
   `,
   styles: [
     /* language=SCSS */ `
+      @use "../../../../scss/commons/mixins";
+
       sd-kanban-board {
         display: inline-flex;
         flex-wrap: nowrap;
-        flex-direction: row;
         white-space: nowrap;
-        gap: var(--gap-lg);
         height: 100%;
+        @include mixins.flex-direction(row, var(--gap-lg));
       }
     `,
   ],

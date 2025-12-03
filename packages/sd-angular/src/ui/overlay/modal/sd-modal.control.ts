@@ -116,7 +116,8 @@ import { SdActivatedModalProvider } from "./sd-modal.provider";
           width: 100%;
           height: 100%;
           //backdrop-filter: blur(2px);
-          background: color-mix(in srgb, var(--background-rev-color) 20%, transparent);
+          //background: color-mix(in srgb, var(--background-rev-color) 20%, transparent);
+          background: var(--trans-default);
         }
 
         > ._dialog {

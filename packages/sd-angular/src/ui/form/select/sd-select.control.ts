@@ -159,7 +159,7 @@ import { SdAnchorControl } from "../button/sd-anchor.control";
           background: var(--theme-secondary-lightest);
 
           &:focus,
-          &:has(:focus) {
+          &:focus-within {
             border-color: var(--theme-primary-default);
           }
 
@@ -259,7 +259,7 @@ import { SdAnchorControl } from "../button/sd-anchor.control";
             }
 
             &:focus,
-            &:has(:focus) {
+            &:focus-within {
               outline: 1px solid var(--theme-primary-default);
               outline-offset: -1px;
 

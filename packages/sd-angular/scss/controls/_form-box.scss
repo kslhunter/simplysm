@@ -1,7 +1,8 @@
+@use "../commons/mixins";
+
 .form-box {
   display: flex;
-  flex-direction: column;
-  gap: var(--gap-default);
+  @include mixins.flex-direction(column, var(--gap-default));
 
   > div,
   > .form-box-item {
@@ -27,9 +28,8 @@
 
 .form-box-inline {
   display: inline-flex;
-  flex-direction: row;
   flex-wrap: wrap;
-  gap: var(--gap-sm);
+  @include mixins.flex-direction(row, var(--gap-sm));
 
   > div,
   > .form-box-item {

@@ -7,7 +7,7 @@ import { TransferableConvert, Uuid } from "@simplysm/sd-core-common";
 
 export class SdServiceClientProtocolWrapper {
   // 기준값: 1KB
-  private readonly _SIZE_THRESHOLD = 1024;
+  private readonly _SIZE_THRESHOLD = 30 * 1024; // 30KB
 
   // 메인 스레드용 프로토콜 (가벼운 작업용)
   private readonly _protocol = new SdServiceProtocol();

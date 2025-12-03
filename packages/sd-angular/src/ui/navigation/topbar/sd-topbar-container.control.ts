@@ -11,10 +11,13 @@ import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/
   `,
   styles: [
     /* language=SCSS */ `
+      @use "../../../../scss/commons/mixins";
+      
       sd-topbar-container {
         display: flex;
-        flex-direction: column;
         height: 100%;
+
+        @include mixins.flex-direction(column);
       }
     `,
   ],

@@ -75,14 +75,14 @@ export class SdSocketProvider extends EventEmitter {
   }
 
   private async _createSocketAsync(): Promise<void> {
-    return await new Promise<void>((resolve, reject) => {
-      const clientId = Uuid.new().toString();
-      const params = new URLSearchParams({
-        ver: "2",
-        clientId,
-        clientName: this.clientName,
-      });
+    const clientId = Uuid.new().toString();
+    const params = new URLSearchParams({
+      ver: "2",
+      clientId,
+      clientName: this.clientName,
+    });
 
+    await new Promise<void>((resolve, reject) => {
       const ws = new WebSocket(`${this._url}?${params.toString()}`);
       ws.binaryType = "arraybuffer";
 
@@ -98,45 +98,45 @@ export class SdSocketProvider extends EventEmitter {
           reject(new Error(msg));
         }
       };
-
-      ws.onmessage = (event) => {
-        this._lastHeartbeatTime = Date.now(); // 하트비트 갱신
-
-        const data = event.data;
-        // Raw Ping/Pong 처리 (가장 먼저 체크)
-        // ArrayBuffer나 Buffer의 길이가 1이고, 첫 바이트가 0x02(Pong)이면 무시
-        // (하트비트 타임스탬프만 갱신하고 끝냄)
-        let byteLength = 0;
-        let firstByte = 0;
-
-        if (data instanceof ArrayBuffer) {
-          byteLength = data.byteLength;
-          if (byteLength === 1) firstByte = new Uint8Array(data)[0];
-        } else if (Buffer.isBuffer(data)) {
-          byteLength = data.length;
-          if (byteLength === 1) firstByte = data[0];
-        }
-
-        // 1바이트 Pong 패킷이면 여기서 종료 (Event Emit 안 함)
-        if (byteLength === 1 && firstByte === 0x02) return;
-
-        // Buffer 포맷 통일 (Browser/Node 호환)
-        let buffer: Buffer;
-        if (Buffer.isBuffer(data)) buffer = data;
-        else if (data instanceof ArrayBuffer) buffer = Buffer.from(data);
-        else if (Array.isArray(data)) buffer = Buffer.concat(data);
-        else buffer = Buffer.from(data);
-
-        this.emit("message", buffer);
-      };
-
-      ws.onclose = async () => {
-        this._stopHeartbeat();
-        if (!this._isManualClose) {
-          await this._tryReconnectAsync();
-        }
-      };
     });
+
+    this._ws!.onmessage = (event) => {
+      this._lastHeartbeatTime = Date.now(); // 하트비트 갱신
+
+      const data = event.data;
+      // Raw Ping/Pong 처리 (가장 먼저 체크)
+      // ArrayBuffer나 Buffer의 길이가 1이고, 첫 바이트가 0x02(Pong)이면 무시
+      // (하트비트 타임스탬프만 갱신하고 끝냄)
+      let byteLength = 0;
+      let firstByte = 0;
+
+      if (data instanceof ArrayBuffer) {
+        byteLength = data.byteLength;
+        if (byteLength === 1) firstByte = new Uint8Array(data)[0];
+      } else if (Buffer.isBuffer(data)) {
+        byteLength = data.length;
+        if (byteLength === 1) firstByte = data[0];
+      }
+
+      // 1바이트 Pong 패킷이면 여기서 종료 (Event Emit 안 함)
+      if (byteLength === 1 && firstByte === 0x02) return;
+
+      // Buffer 포맷 통일 (Browser/Node 호환)
+      let buffer: Buffer;
+      if (Buffer.isBuffer(data)) buffer = data;
+      else if (data instanceof ArrayBuffer) buffer = Buffer.from(data);
+      else if (Array.isArray(data)) buffer = Buffer.concat(data);
+      else buffer = Buffer.from(data);
+
+      this.emit("message", buffer);
+    };
+
+    this._ws!.onclose = async () => {
+      this._stopHeartbeat();
+      if (!this._isManualClose) {
+        await this._tryReconnectAsync();
+      }
+    };
   }
 
   private async _tryReconnectAsync() {
@@ -173,7 +173,30 @@ export class SdSocketProvider extends EventEmitter {
       // 타임아웃 체크
       if (Date.now() - this._lastHeartbeatTime > this._HEARTBEAT_TIMEOUT) {
         console.warn("Heartbeat Timeout. Connection lost.");
-        this._ws?.close(); // 강제 종료 -> onclose 트리거 -> 재연결 로직 수행
+
+        // 타임아웃이 발생했으므로 즉시 타이머를 멈춰서 반복 실행을 막습니다.
+        this._stopHeartbeat();
+
+        // 소켓이 닫히기를 기다리지 말고(onclose 미발생 대비), 강제로 정리 후 재연결합니다.
+        if (this._ws) {
+          const tempWs = this._ws;
+          this._ws = undefined; // 연결 상태 끊김으로 간주
+
+          // 기존 소켓의 이벤트 핸들러를 제거하여, 뒤늦게 onclose가 발생해도 중복 처리되지 않게 합니다.
+          tempWs.onclose = null;
+          tempWs.onerror = null;
+          tempWs.onmessage = null;
+
+          // 소켓 닫기 시도 (에러 무시)
+          try {
+            tempWs.close();
+          } catch {}
+
+          // 수동 종료가 아니라면 재연결 로직 강제 실행
+          if (!this._isManualClose) {
+            void this._tryReconnectAsync();
+          }
+        }
         return;
       }
 

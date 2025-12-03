@@ -51,6 +51,13 @@ import { SdAngularConfigProvider } from "../../../core/providers/app/sd-angular-
         );
         gap: var(--gap-sm);
 
+        @supports not (appearance: auto) {
+          gap: 0;
+          > * + * {
+            margin-left: var(--gap-sm);
+          }
+        }
+        
         > ._indicator_rect {
           display: inline-block;
           //vertical-align: calc((1em - var(--line-height)) / 2);
@@ -79,6 +86,7 @@ import { SdAngularConfigProvider } from "../../../core/providers/app/sd-angular-
           display: inline-block;
           vertical-align: top;
           padding-left: var(--gap-sm);
+          
         }
 
         > ._indicator_rect + ._contents:empty {
@@ -173,6 +181,11 @@ import { SdAngularConfigProvider } from "../../../core/providers/app/sd-angular-
           );
           padding: var(--gap-xs) var(--gap-sm);
           gap: var(--gap-xs);
+
+          @supports not (appearance: auto) {
+            gap: 0;
+            > * + * { margin-left: var(--gap-xs); }
+          }
         }
 
         &[data-sd-size="lg"] {
@@ -181,6 +194,11 @@ import { SdAngularConfigProvider } from "../../../core/providers/app/sd-angular-
           );
           padding: var(--gap-default) var(--gap-lg);
           gap: var(--gap-default);
+
+          @supports not (appearance: auto) {
+            gap: 0;
+            > * + * { margin-left: var(--gap-default); }
+          }
         }
 
         &[data-sd-inset="true"] {

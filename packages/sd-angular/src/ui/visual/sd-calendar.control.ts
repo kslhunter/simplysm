@@ -78,6 +78,8 @@ import { $computed } from "../../core/utils/bindings/$computed";
   `,
   styles: [
     /* language=SCSS */ `
+      @use "../../../scss/commons/mixins";
+      
       sd-calendar {
         > table {
           border-collapse: collapse;
@@ -117,8 +119,8 @@ import { $computed } from "../../core/utils/bindings/$computed";
             > .content {
               display: flex;
               flex-wrap: nowrap;
-              flex-direction: column;
-              gap: var(--gap-sm);
+
+              @include mixins.flex-direction(column, var(--gap-sm));
             }
           }
         }

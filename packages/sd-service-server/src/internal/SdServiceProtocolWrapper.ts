@@ -25,7 +25,7 @@ export class SdServiceProtocolWrapper {
   private readonly _protocol = new SdServiceProtocol();
 
   // 기준값 설정
-  private readonly _SIZE_THRESHOLD = 1024; // 1KB
+  private readonly _SIZE_THRESHOLD = 30 * 1024; // 30KB
 
   /**
    * 메시지 인코딩 (자동 분기 처리)

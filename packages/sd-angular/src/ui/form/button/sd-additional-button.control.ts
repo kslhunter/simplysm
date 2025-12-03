@@ -37,7 +37,7 @@ import { transformBoolean } from "../../../core/utils/transforms/transformBoolea
         > ._button {
           display: flex;
           flex-wrap: nowrap;
-          flex-direction: row;
+          @include mixins.flex-direction(row);
 
           > sd-anchor {
             padding: var(--gap-sm) !important;

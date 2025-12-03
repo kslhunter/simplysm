@@ -11,7 +11,7 @@ import { clearInterval } from "node:timers";
 import { SdServiceProtocolWrapper } from "./SdServiceProtocolWrapper";
 
 export class SdServiceSocket extends EventEmitter {
-  // 미리 생성 (Zero Allocation)
+  private readonly _PING_INTERVAL = 5000; // 5초마다 핑 전송
   private readonly _PONG_PACKET = Buffer.from([0x02]);
 
   readonly #logger = SdLogger.get(["simplysm", "sd-service-server", "SdServiceSocket"]);
@@ -20,7 +20,7 @@ export class SdServiceSocket extends EventEmitter {
   readonly #listenerInfos: { eventName: string; key: string; info: any }[] = [];
 
   #isAlive = true;
-  readonly #pingInterval: NodeJS.Timeout;
+  readonly #pingTimer: NodeJS.Timeout;
 
   readonly connectedAtDateTime = new DateTime();
 
@@ -50,7 +50,7 @@ export class SdServiceSocket extends EventEmitter {
       this.#isAlive = true;
     });
 
-    this.#pingInterval = setInterval(() => {
+    this.#pingTimer = setInterval(() => {
       if (!this.#isAlive) {
         this.close();
         return;
@@ -58,7 +58,7 @@ export class SdServiceSocket extends EventEmitter {
 
       this.#isAlive = false;
       this._socket.ping();
-    }, 10000);
+    }, this._PING_INTERVAL);
   }
 
   // 강제 종료
@@ -109,7 +109,7 @@ export class SdServiceSocket extends EventEmitter {
   }
 
   #onClose(code: number) {
-    clearInterval(this.#pingInterval);
+    clearInterval(this.#pingTimer);
     this.#protocol.dispose();
     this.emit("close", code);
   }

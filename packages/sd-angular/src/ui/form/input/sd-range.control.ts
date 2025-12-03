@@ -28,11 +28,13 @@ import { SdTextfieldControl, TSdTextfieldTypes } from "./sd-textfield.control";
   `,
   styles: [
     /* language=SCSS */ `
-      sd-range {
+      @use "../../../../scss/commons/mixins";
+      
+      sd-range {        
         display: flex;
-        flex-direction: row;
-        gap: var(--gap-sm);
         align-items: center;
+
+        @include mixins.flex-direction(row, var(--gap-sm));
       }
     `,
   ],
