@@ -154,7 +154,7 @@ export class SdServiceServer extends EventEmitter {
           return;
         }
 
-        this.#wsCtrlV2.addSocket(socket, clientId, clientName, req.socket.remoteAddress);
+        await this.#wsCtrlV2.addSocketAsync(socket, clientId, clientName, req.socket.remoteAddress);
       } else {
         await this.#wsCtrlV1.addSocket(socket, req.socket.remoteAddress);
       }
@@ -213,19 +213,19 @@ export class SdServiceServer extends EventEmitter {
     this.emit("close");
   }
 
-  broadcastReload(clientName: string | undefined, changedFileSet: Set<string>): void {
+  async broadcastReloadAsync(clientName: string | undefined, changedFileSet: Set<string>) {
     this.#logger.debug("서버내 모든 클라이언트 RELOAD 명령 전송");
     this.#wsCtrlV1.broadcastReload(clientName, changedFileSet);
-    this.#wsCtrlV2.broadcastReload(clientName, changedFileSet);
+    await this.#wsCtrlV2.broadcastReloadAsync(clientName, changedFileSet);
   }
 
-  emitEvent<T extends SdServiceEventListenerBase<any, any>>(
+  async emitEvent<T extends SdServiceEventListenerBase<any, any>>(
     eventType: Type<T>,
     infoSelector: (item: T["info"]) => boolean,
     data: T["data"],
   ) {
     this.#wsCtrlV1.emit(eventType, infoSelector, data);
-    this.#wsCtrlV2.emit(eventType, infoSelector, data);
+    await this.#wsCtrlV2.emitAsync(eventType, infoSelector, data);
   }
 
   // 종료 시그널 감지 및 처리

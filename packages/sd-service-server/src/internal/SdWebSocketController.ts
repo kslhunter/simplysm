@@ -12,7 +12,7 @@ export class SdWebSocketController {
 
   constructor(private readonly _executor: SdServiceExecutor) {}
 
-  addSocket(
+  async addSocketAsync(
     socket: WebSocket,
     clientId: string,
     clientName: string,
@@ -56,7 +56,7 @@ export class SdWebSocketController {
       });
 
       // 클라이언트에게 연결 완료 알림
-      serviceSocket.sendAsync(Uuid.new().toString(), { name: "connected" });
+      await serviceSocket.sendAsync(Uuid.new().toString(), { name: "connected" });
     } catch (err) {
       this.#logger.error("연결 처리 중 오류 발생", err);
       socket.terminate();
@@ -69,9 +69,9 @@ export class SdWebSocketController {
     }
   }
 
-  broadcastReload(clientName: string | undefined, changedFileSet: Set<string>) {
+  async broadcastReloadAsync(clientName: string | undefined, changedFileSet: Set<string>) {
     for (const serviceSocket of this.#socketMap.values()) {
-      serviceSocket.sendAsync(Uuid.new().toString(), {
+      await serviceSocket.sendAsync(Uuid.new().toString(), {
         name: "reload",
         body: {
           clientName,
@@ -81,7 +81,7 @@ export class SdWebSocketController {
     }
   }
 
-  emit<T extends SdServiceEventListenerBase<any, any>>(
+  async emitAsync<T extends SdServiceEventListenerBase<any, any>>(
     eventType: Type<T>,
     infoSelector: (item: T["info"]) => boolean,
     data: T["data"],
@@ -94,7 +94,7 @@ export class SdWebSocketController {
     for (const subSock of this.#socketMap.values()) {
       const subTargetKeys = subSock.filterEventTargetKeys(targetKeys);
       if (subTargetKeys.length > 0) {
-        subSock.sendAsync(Uuid.new().toString(), {
+        await subSock.sendAsync(Uuid.new().toString(), {
           name: "evt:on",
           body: {
             keys: subTargetKeys,
@@ -122,19 +122,19 @@ export class SdWebSocketController {
         });
 
         // 응답
-        return serviceSocket.sendAsync(uuid, { name: "response", body: result });
+        return await serviceSocket.sendAsync(uuid, { name: "response", body: result });
       } else if (message.name === "evt:add") {
         const { key, name, info } = message.body;
 
         serviceSocket.addEventListener(key, name, info);
 
-        return serviceSocket.sendAsync(uuid, { name: "response" });
+        return await serviceSocket.sendAsync(uuid, { name: "response" });
       } else if (message.name === "evt:remove") {
         const { key } = message.body;
 
         serviceSocket.removeEventListener(key);
 
-        return serviceSocket.sendAsync(uuid, { name: "response" });
+        return await serviceSocket.sendAsync(uuid, { name: "response" });
       } else if (message.name === "evt:gets") {
         const { name } = message.body;
 
@@ -142,14 +142,14 @@ export class SdWebSocketController {
           subSock.getEventListners(name),
         );
 
-        return serviceSocket.sendAsync(uuid, { name: "response", body: infos });
+        return await serviceSocket.sendAsync(uuid, { name: "response", body: infos });
       } else if (message.name === "evt:emit") {
         const { keys, data } = message.body;
 
         for (const subSock of this.#socketMap.values()) {
           const targetKeys = subSock.filterEventTargetKeys(keys);
           if (targetKeys.length > 0) {
-            subSock.sendAsync(uuid, {
+            await subSock.sendAsync(uuid, {
               name: "evt:on",
               body: {
                 keys: targetKeys,
@@ -159,12 +159,12 @@ export class SdWebSocketController {
           }
         }
 
-        return serviceSocket.sendAsync(uuid, { name: "response" });
+        return await serviceSocket.sendAsync(uuid, { name: "response" });
       } else {
         const err = new Error("요청이 잘못되었습니다.");
 
         // 에러 응답
-        return serviceSocket.sendAsync(uuid, {
+        return await serviceSocket.sendAsync(uuid, {
           name: "error",
           body: {
             message: err.message,
@@ -180,7 +180,7 @@ export class SdWebSocketController {
           ? err
           : new Error(typeof err === "string" ? err : "알 수 없는 오류가 발생하였습니다.");
 
-      return serviceSocket.sendAsync(uuid, {
+      return await serviceSocket.sendAsync(uuid, {
         name: "error",
         body: {
           message: error.message,

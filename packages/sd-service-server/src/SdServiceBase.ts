@@ -7,15 +7,15 @@ import { SdServiceSocket } from "./internal/SdServiceSocket";
 import { ISdServiceRequest } from "./v1/protocol-v1.types";
 
 export abstract class SdServiceBase {
-  protected readonly server!: SdServiceServer;
-  protected readonly socket?: SdServiceSocket;
+  server!: SdServiceServer;
+  socket?: SdServiceSocket;
 
-  protected readonly v1?: {
+  v1?: {
     socket: SdServiceSocketV1;
     request: ISdServiceRequest;
   };
 
-  protected get clientName(): string {
+  get clientName(): string {
     const clientName = this.v1?.request.clientName ?? this.socket?.clientName;
     if (clientName == null) throw new Error("api로 사용할 수 없는 서비스입니다.");
 
@@ -27,14 +27,14 @@ export abstract class SdServiceBase {
     return clientName;
   }
 
-  protected get clientPath(): string {
+  get clientPath(): string {
     return (
       this.server.options.pathProxy?.[this.clientName] ??
       path.resolve(this.server.options.rootPath, "www", this.clientName)
     );
   }
 
-  protected async getConfigAsync<T>(section: string): Promise<T> {
+  async getConfigAsync<T>(section: string): Promise<T> {
     let configParent: Record<string, T | undefined> = {};
 
     // 1. Root Config

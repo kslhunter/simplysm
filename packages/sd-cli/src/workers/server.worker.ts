@@ -48,7 +48,7 @@ createSdWorker<IServerWorkerType>({
   setPathProxy(pathProxy: Record<string, string>) {
     server.options.pathProxy = pathProxy;
   },
-  broadcastReload(clientName: string | undefined, changedFileSet: Set<string>) {
-    server.broadcastReload(clientName, changedFileSet);
+  async broadcastReload(clientName: string | undefined, changedFileSet: Set<string>) {
+    await server.broadcastReloadAsync(clientName, changedFileSet);
   },
 });
