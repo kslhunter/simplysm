@@ -84,6 +84,8 @@ export class SdCliIndexFileGenerator {
       path.resolve(pkgPath, "src/**/*.d.ts"),
       path.resolve(pkgPath, "src/index.ts"),
       path.resolve(pkgPath, "src/workers/**/*{.ts,.tsx}"),
+
+      // TODO: index에 없는 파일은 watch가 안됨... 처리 필요함.
       // path.resolve(pkgPath, "src/internal/**/*{.ts,.tsx}"),
     ].map((item) => item.replace(/\\/g, "/"));
   }

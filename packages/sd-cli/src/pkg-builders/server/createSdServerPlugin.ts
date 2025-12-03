@@ -12,7 +12,7 @@ export function createSdServerPlugin(
   resultCache: ISdCliServerPluginResultCache,
 ): esbuild.Plugin {
   return {
-    name: "sd-server-compile",
+    name: "sd-server-plugin",
     setup: (build: esbuild.PluginBuild) => {
       const tsCompiler = new SdTsCompiler(conf, true);
 

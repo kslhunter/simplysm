@@ -1,17 +1,16 @@
 import {
   ISdServiceErrorMessage,
   ISdServiceResponseMessage,
-  SdServiceProtocol,
   TSdServiceClientMessage,
-  TSdServiceServerRawMessage,
 } from "@simplysm/sd-service-common";
 import { ISdServiceProgress } from "../types/progress.types";
 
 import { SdSocketProvider } from "./SdSocketProvider";
 import { EventEmitter } from "events";
+import { SdServiceClientProtocolWrapper } from "./SdServiceClientProtocolWrapper";
 
 export class SdServiceTransport extends EventEmitter {
-  readonly #protocol = new SdServiceProtocol();
+  readonly #protocol = new SdServiceClientProtocolWrapper();
 
   readonly #listenerMap = new Map<
     string,
@@ -52,7 +51,7 @@ export class SdServiceTransport extends EventEmitter {
 
     // 요청 전송
     try {
-      const chunks = this.#protocol.encode(uuid, message);
+      const chunks = await this.#protocol.encodeAsync(uuid, message);
 
       // 진행률 초기화
       if (chunks.length > 1) {
@@ -78,8 +77,8 @@ export class SdServiceTransport extends EventEmitter {
     return await responsePromise;
   }
 
-  #onMessage(buf: Buffer) {
-    const decoded = this.#protocol.decode<TSdServiceServerRawMessage>(buf);
+  async #onMessage(buf: Buffer) {
+    const decoded = await this.#protocol.decodeAsync(buf);
 
     const listenerInfo = this.#listenerMap.get(decoded.uuid);
 
@@ -108,9 +107,7 @@ export class SdServiceTransport extends EventEmitter {
           if (this._socket.clientName === decoded.message.body.clientName) {
             this.emit("reload", decoded.message.body.changedFileSet);
           }
-        }
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        else if (decoded.message.name === "evt:on") {
+        } else if (decoded.message.name === "evt:on") {
           this.emit("event", decoded.message.body.keys, decoded.message.body.data);
         } else {
           throw new Error("요청이 잘 못 되었습니다.");

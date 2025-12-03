@@ -1,5 +1,5 @@
 import { Wait } from "./Wait";
-import EventEmitter from "node:events";
+import EventEmitter from "events";
 
 export class AsyncFnQueue extends EventEmitter {
   readonly #queue: (() => void | Promise<void>)[] = [];

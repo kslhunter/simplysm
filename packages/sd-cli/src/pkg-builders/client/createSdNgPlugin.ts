@@ -23,7 +23,7 @@ export function createSdNgPlugin(
   };
 
   return {
-    name: "sd-ng-compile",
+    name: "sd-ng-plugin",
     setup: (build: esbuild.PluginBuild) => {
       const tsCompiler = new SdTsCompiler(opt, true);
 

@@ -1,7 +1,3 @@
-export * from "./internal/SdServiceEventClient";
-export * from "./internal/SdServiceFileClient";
-export * from "./internal/SdServiceTransport";
-export * from "./internal/SdSocketProvider";
 export * from "./SdServiceClient";
 export * from "./service-clients/orm/ISdOrmServiceConnectConfig";
 export * from "./service-clients/orm/SdOrmServiceClientConnector";

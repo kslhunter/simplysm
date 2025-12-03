@@ -12,6 +12,7 @@ import { resolveAssets } from "@angular/build/src/utils/resolve-assets";
 import { ISdCliServerPluginResultCache } from "../../types/plugin/ISdCliServerPluginResultCache";
 import { ISdBuildResult } from "../../types/build/ISdBuildResult";
 import { ISdTsCompilerOptions } from "../../types/build/ISdTsCompilerOptions";
+import { SdWorkerPathPlugin } from "../commons/SdWorkerPathPlugin";
 
 export class SdServerBundler {
   #logger = SdLogger.get(["simplysm", "sd-cli", "SdServerBundler"]);
@@ -32,7 +33,7 @@ export class SdServerBundler {
     this.#esbuildOptions = {
       entryPoints: [
         path.resolve(this._opt.pkgPath, "src/main.ts"),
-        ...FsUtils.glob(path.resolve(this._opt.pkgPath, "src/workers/*.ts")),
+        // ...FsUtils.glob(path.resolve(this._opt.pkgPath, "src/workers/*.ts")),
       ],
       keepNames: true,
       bundle: true,
@@ -91,7 +92,10 @@ const require = __createRequire__(import.meta.url);
 const __filename = __fileURLToPath__(import.meta.url);
 const __dirname = __path__.dirname(__filename);`.trim(),
       },
-      plugins: [createSdServerPlugin(this._opt, this.#modifiedFileSet, this.#resultCache)],
+      plugins: [
+        createSdServerPlugin(this._opt, this.#modifiedFileSet, this.#resultCache),
+        SdWorkerPathPlugin(path.resolve(this._opt.pkgPath, "dist")),
+      ],
     };
   }
 

@@ -7,7 +7,7 @@ import { ISdBuildResult } from "../../types/build/ISdBuildResult";
 import { INpmConfig } from "../../types/common-config/INpmConfig";
 
 export class SdServerBuildRunner extends SdBuildRunnerBase<"server"> {
-  protected override _logger = SdLogger.get(["simplysm", "sd-cli", "SdServerBuild2Runner"]);
+  protected override _logger = SdLogger.get(["simplysm", "sd-cli", "SdServerBuildRunner"]);
 
   #serverBundler?: SdServerBundler;
 

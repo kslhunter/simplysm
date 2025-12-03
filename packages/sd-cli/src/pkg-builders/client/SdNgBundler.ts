@@ -40,6 +40,7 @@ import { ISdCliNgPluginResultCache } from "../../types/plugin/ISdCliNgPluginResu
 import { INpmConfig } from "../../types/common-config/INpmConfig";
 import { ISdBuildResult } from "../../types/build/ISdBuildResult";
 import { ISdTsCompilerOptions } from "../../types/build/ISdTsCompilerOptions";
+import { SdWorkerPathPlugin } from "../commons/SdWorkerPathPlugin";
 
 export class SdNgBundler {
   #logger = SdLogger.get(["simplysm", "sd-cli", "SdNgBundler"]);
@@ -109,8 +110,8 @@ export class SdNgBundler {
     this.#debug(`Preparing build contexts...`);
 
     if (!this.#contexts) {
-      this.#contexts = await perf.run("Preparing build contexts", async () => [
-        await this.#getAppContextAsync(),
+      this.#contexts = perf.run("Preparing build contexts", () => [
+        this.#getAppContext(),
         ...(FsUtils.exists(path.resolve(this._opt.pkgPath, "src/styles.scss"))
           ? [this.#getStyleContext()]
           : []),
@@ -440,10 +441,10 @@ export class SdNgBundler {
     );
   }
 
-  async #getAppContextAsync() {
-    const workerEntries = (
-      await FsUtils.globAsync(path.resolve(this._opt.pkgPath, "src/workers/*.ts"))
-    ).toObject((p) => "workers/" + path.basename(p, path.extname(p)));
+  #getAppContext() {
+    /*const workerEntries = (
+      await FsUtils.globAsync(path.resolve(this._opt.pkgPath, "src/workers/!*.ts"))
+    ).toObject((p) => "workers/" + path.basename(p, path.extname(p)));*/
 
     return new SdNgBundlerContext(this._opt.pkgPath, !!this._opt.watch, {
       absWorkingDir: this._opt.pkgPath,
@@ -500,7 +501,7 @@ export class SdNgBundler {
             }
           : {}),
 
-        ...workerEntries,
+        // ...workerEntries,
       },
       supported: { "async-await": false, "object-rest-spread": false },
       loader: {
@@ -557,6 +558,7 @@ export class SdNgBundler {
         ...(this._conf.builderType === "electron"
           ? []
           : [nodeStdLibBrowserPlugin(nodeStdLibBrowser)]),
+        SdWorkerPathPlugin(path.resolve(this._opt.pkgPath, "dist")),
         // {
         //   name: "log-circular",
         //   setup(build) {

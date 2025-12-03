@@ -12,7 +12,7 @@ export class SdServiceProtocolWrapper {
   private static get worker() {
     if (!this._worker) {
       this._worker = new SdWorker<ISdServiceProtocolWorker>(
-        import.meta.resolve("../workers/sd-service-protocol.worker"),
+        import.meta.resolve("../workers/service-protocol.worker"),
         {
           resourceLimits: { maxOldGenerationSizeMb: 4096 }, // 대용량 처리를 위해 넉넉히
         },
@@ -25,7 +25,7 @@ export class SdServiceProtocolWrapper {
   private readonly _protocol = new SdServiceProtocol();
 
   // 기준값 설정
-  private readonly _SIZE_THRESHOLD = 50 * 1024; // 50KB
+  private readonly _SIZE_THRESHOLD = 1024; // 1KB
 
   /**
    * 메시지 인코딩 (자동 분기 처리)
