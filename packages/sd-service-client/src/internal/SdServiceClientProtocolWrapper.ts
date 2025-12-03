@@ -3,7 +3,7 @@ import {
   SdServiceProtocol,
   TSdServiceMessage,
 } from "@simplysm/sd-service-common";
-import { TransferableConvert, Uuid } from "@simplysm/sd-core-common";
+import { LazyGcMap, TransferableConvert } from "@simplysm/sd-core-common";
 
 export class SdServiceClientProtocolWrapper {
   // 기준값: 1KB
@@ -15,10 +15,17 @@ export class SdServiceClientProtocolWrapper {
   // 워커 스레드 (무거운 작업용)
   private static _worker?: Worker;
   // 워커 요청 대기열 (Key: UUID)
-  private static _workerResolvers = new Map<
+  private static _workerResolvers = new LazyGcMap<
     string,
     { resolve: (res: any) => void; reject: (err: Error) => void }
-  >();
+  >({
+    gcInterval: 5 * 1000, // 5초마다 만료 검사
+    expireTime: 60 * 1000, // 60초가 지나면 만료 (타임아웃)
+    onExpire: (key, item) => {
+      // 만료 시 reject 호출 (메모리 릭 방지 핵심)
+      item.reject(new Error(`Worker task timed out (uuid: ${key})`));
+    },
+  });
 
   private static get worker() {
     if (!this._worker) {
@@ -57,9 +64,9 @@ export class SdServiceClientProtocolWrapper {
     transfer: Transferable[] = [],
   ): Promise<any> {
     return await new Promise((resolve, reject) => {
-      const id = Uuid.new().toString();
-      SdServiceClientProtocolWrapper._workerResolvers.set(id, { resolve, reject });
+      const id = crypto.randomUUID();
 
+      SdServiceClientProtocolWrapper._workerResolvers.set(id, { resolve, reject });
       SdServiceClientProtocolWrapper.worker.postMessage({ id, type, data }, { transfer });
     });
   }
