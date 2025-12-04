@@ -530,9 +530,9 @@ export abstract class AbsSdDataSheet<
   uploadExcel?(file: File): Promise<void> | void;
 
   //-- implement
-  private readonly _sdToast = inject(SdToastProvider);
-  private readonly _sdSharedData = inject(SdSharedDataProvider);
-  private readonly _sdFileDialog = inject(SdFileDialogProvider);
+  private readonly __sdToast = inject(SdToastProvider);
+  private readonly __sdSharedData = inject(SdSharedDataProvider);
+  private readonly __sdFileDialog = inject(SdFileDialogProvider);
 
   key = reflectComponentType(this.constructor as any)?.selector;
 
@@ -605,8 +605,8 @@ export abstract class AbsSdDataSheet<
         }
 
         this.busyCount.update((v) => v + 1);
-        await this._sdToast.try(async () => {
-          await this._sdSharedData.wait();
+        await this.__sdToast.try(async () => {
+          await this.__sdSharedData.wait();
           await this.refresh();
         });
         this.busyCount.update((v) => v - 1);
@@ -664,7 +664,7 @@ export abstract class AbsSdDataSheet<
     if (!result) return;
 
     this.busyCount.update((v) => v + 1);
-    await this._sdToast.try(async () => {
+    await this.__sdToast.try(async () => {
       await this.refresh();
     });
     this.busyCount.update((v) => v - 1);
@@ -674,7 +674,7 @@ export abstract class AbsSdDataSheet<
     if (!this.newItem) return;
 
     this.busyCount.update((v) => v + 1);
-    await this._sdToast.try(async () => {
+    await this.__sdToast.try(async () => {
       const newItem = (await this.newItem!()) as TItem;
       this.items.update((items) => [newItem, ...items]);
     });
@@ -690,18 +690,18 @@ export abstract class AbsSdDataSheet<
 
     if (diffs.length === 0) {
       if (!opt?.hideNoChangeMessage) {
-        this._sdToast.info("변경사항이 없습니다.");
+        this.__sdToast.info("변경사항이 없습니다.");
       }
       return;
     }
 
     this.busyCount.update((v) => v + 1);
-    await this._sdToast.try(
+    await this.__sdToast.try(
       async () => {
         const result = await this.submit!(diffs);
         if (!result) return;
 
-        this._sdToast.success("저장되었습니다.");
+        this.__sdToast.success("저장되었습니다.");
 
         await this.refresh();
       },
@@ -746,14 +746,14 @@ export abstract class AbsSdDataSheet<
 
     this.busyCount.update((v) => v + 1);
 
-    await this._sdToast.try(
+    await this.__sdToast.try(
       async () => {
         const result = await this.toggleDeleteItems!(del);
         if (!result) return;
 
         await this.refresh();
 
-        this._sdToast.success(`${del ? "삭제" : "복구"} 되었습니다.`);
+        this.__sdToast.success(`${del ? "삭제" : "복구"} 되었습니다.`);
       },
       (err) => this._getOrmDataEditToastErrorMessage(err),
     );
@@ -781,7 +781,7 @@ export abstract class AbsSdDataSheet<
     if (!this.downloadExcel) return;
 
     this.busyCount.update((v) => v + 1);
-    await this._sdToast.try(async () => {
+    await this.__sdToast.try(async () => {
       const items = (await this.search(false)).items;
       await this.downloadExcel!(items);
     });
@@ -791,7 +791,7 @@ export abstract class AbsSdDataSheet<
   async doUploadExcel() {
     if (!this.uploadExcel) return;
 
-    const file = await this._sdFileDialog.showAsync(
+    const file = await this.__sdFileDialog.showAsync(
       false,
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     );
@@ -799,13 +799,13 @@ export abstract class AbsSdDataSheet<
 
     this.busyCount.update((v) => v + 1);
 
-    await this._sdToast.try(
+    await this.__sdToast.try(
       async () => {
         await this.uploadExcel!(file);
 
         await this.refresh();
 
-        this._sdToast.success("엑셀 업로드가 완료 되었습니다.");
+        this.__sdToast.success("엑셀 업로드가 완료 되었습니다.");
       },
       (err) => this._getOrmDataEditToastErrorMessage(err),
     );
