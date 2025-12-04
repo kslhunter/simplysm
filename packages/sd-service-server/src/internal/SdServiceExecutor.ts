@@ -36,6 +36,9 @@ export class SdServiceExecutor {
       }
     }
 
+    // v2의 권한검사 로직
+    this._checkAuthorize(ServiceClass, def.methodName, def.socket?.authInfo);
+
     // 3. 서비스 인스턴스 생성 (Context 주입)
     const service = new ServiceClass();
     service.server = this._server;
@@ -50,5 +53,27 @@ export class SdServiceExecutor {
 
     // 5. 실행
     return await method.apply(service, def.params);
+  }
+
+  private _checkAuthorize(ServiceClass: any, methodName: string, token: string | undefined) {
+    // 1. 메소드 레벨 권한 확인
+    let required = Reflect.getMetadata(
+      "sd-service:authorize",
+      ServiceClass.prototype,
+      methodName,
+    ) as boolean | undefined;
+
+    // 2. 클래스 레벨 권한 확인 (메소드에 없으면)
+    if (required == null) {
+      required = Reflect.getMetadata("sd-service:authorize", ServiceClass) as boolean | undefined;
+    }
+
+    // 권한 설정이 없으면 통과 (Public API)
+    if (!required) return;
+
+    // 권한이 필요한데 인증정보가 없으면 에러
+    if (token == null) {
+      throw new Error("로그인이 필요합니다.");
+    }
   }
 }

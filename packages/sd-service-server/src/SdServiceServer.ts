@@ -20,6 +20,7 @@ import { SdServiceBase } from "./SdServiceBase";
 import http from "http";
 import { SdWebSocketController } from "./internal/SdWebSocketController";
 import { WebSocket } from "ws";
+import { SdServiceJwt } from "./auth/SdServiceJwt";
 
 export class SdServiceServer extends EventEmitter {
   isOpen = false;
@@ -143,10 +144,11 @@ export class SdServiceServer extends EventEmitter {
 
     // WebSocket 라우트
     const onWebSocketConnected = async (socket: WebSocket, req: FastifyRequest) => {
-      const { ver, clientId, clientName } = req.query as {
+      const { ver, clientId, clientName, token } = req.query as {
         ver: string | undefined;
         clientId: string | undefined;
         clientName: string | undefined;
+        token: string | undefined;
       };
       if (ver === "2") {
         if (clientId == null || clientName == null) {
@@ -154,7 +156,17 @@ export class SdServiceServer extends EventEmitter {
           return;
         }
 
-        this._wsCtrlV2.addSocket(socket, clientId, clientName, req.socket.remoteAddress);
+        let authInfo;
+        if (token != null) {
+          try {
+            authInfo = SdServiceJwt.verifyAsync(token);
+          } catch {
+            socket.close(1008, "Invalid Token");
+            return;
+          }
+        }
+
+        this._wsCtrlV2.addSocket(socket, clientId, clientName, authInfo, req.socket.remoteAddress);
       } else {
         await this._wsCtrlV1.addSocket(socket, req.socket.remoteAddress);
       }
