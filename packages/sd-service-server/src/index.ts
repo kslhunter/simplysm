@@ -1,5 +1,3 @@
-export * from "./auth/decorators/Authorize";
-export * from "./auth/SdServiceJwt";
 export * from "./internal/protocol.worker-types";
 export * from "./internal/SdConfigManager";
 export * from "./internal/SdHttpRequestHandler";

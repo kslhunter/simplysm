@@ -37,7 +37,6 @@ export class SdSocketProvider extends EventEmitter {
     private readonly _url: string,
     public readonly clientName: string,
     private readonly _maxReconnectCount: number,
-    private readonly _token: string | undefined,
   ) {
     super();
   }
@@ -82,10 +81,6 @@ export class SdSocketProvider extends EventEmitter {
       clientId,
       clientName: this.clientName,
     });
-
-    if (this._token != null) {
-      params.append("token", this._token);
-    }
 
     await new Promise<void>((resolve, reject) => {
       const ws = new WebSocket(`${this._url}?${params.toString()}`);

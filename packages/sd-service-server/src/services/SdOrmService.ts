@@ -15,9 +15,7 @@ import { SdServiceBase } from "../SdServiceBase";
 import { ISdOrmService, TDbConnOptions } from "@simplysm/sd-service-common";
 import { SdServiceSocketV1 } from "../v1/SdServiceSocketV1";
 import { SdServiceSocket } from "../internal/SdServiceSocket";
-import { Authorize } from "../auth/decorators/Authorize";
 
-@Authorize()
 export class SdOrmService extends SdServiceBase implements ISdOrmService {
   private readonly _logger = SdLogger.get(["simplysm", "sd-service-server", this.constructor.name]);
 

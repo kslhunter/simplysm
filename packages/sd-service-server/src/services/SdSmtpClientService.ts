@@ -6,9 +6,7 @@ import {
   ISmtpClientSendOption,
 } from "@simplysm/sd-service-common";
 import { SdServiceBase } from "../SdServiceBase";
-import { Authorize } from "../auth/decorators/Authorize";
 
-@Authorize()
 export class SdSmtpClientService extends SdServiceBase implements ISdSmtpClientService {
   async send(options: ISmtpClientSendOption): Promise<string> {
     return await new Promise<string>((resolve, reject) => {

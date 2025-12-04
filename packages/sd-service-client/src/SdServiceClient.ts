@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 
+import { ISdServiceConnectionConfig } from "./types/ISdServiceConnectionConfig";
 import { Type } from "@simplysm/sd-core-common";
 import { SdServiceEventListenerBase } from "@simplysm/sd-service-common";
 import { EventEmitter } from "events";
@@ -8,7 +9,6 @@ import { SdSocketProvider } from "./internal/SdSocketProvider";
 import { SdServiceEventClient } from "./internal/SdServiceEventClient";
 import { SdServiceFileClient } from "./internal/SdServiceFileClient";
 import { ISdServiceProgress, ISdServiceProgressState } from "./types/progress.types";
-import { ISdServiceConnectionConfig } from "./types/ISdServiceConnectionConfig";
 
 export class SdServiceClient extends EventEmitter {
   // 모듈들
@@ -26,17 +26,6 @@ export class SdServiceClient extends EventEmitter {
   override on(event: "reload", listener: (changedFileSet: Set<string>) => void): this; // 추가됨
   override on(event: string | symbol, listener: (...args: any[]) => void): this {
     return super.on(event, listener);
-  }
-
-  // 토큰관리
-  private _token?: string;
-
-  set token(val: string | undefined) {
-    this._token = val;
-    // 토큰이 바뀌면 재연결 로직 수행 (선택사항)
-    if (this.connected) {
-      void this.closeAsync().then(() => this.connectAsync());
-    }
   }
 
   // 상태 접근자
@@ -60,12 +49,7 @@ export class SdServiceClient extends EventEmitter {
     const wsUrl = `${wsProtocol}://${options.host}:${options.port}/ws`;
 
     // 모듈 초기화
-    this._socket = new SdSocketProvider(
-      wsUrl,
-      this.name,
-      this.options.maxReconnectCount ?? 10,
-      this._token,
-    );
+    this._socket = new SdSocketProvider(wsUrl, this.name, this.options.maxReconnectCount ?? 10);
     this._transport = new SdServiceTransport(this._socket);
     this._eventClient = new SdServiceEventClient(this._transport);
     this._fileClient = new SdServiceFileClient(hostUrl);

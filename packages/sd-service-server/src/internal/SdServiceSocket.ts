@@ -37,7 +37,6 @@ export class SdServiceSocket extends EventEmitter {
     private readonly _socket: WebSocket,
     private readonly _clientId: string,
     public readonly clientName: string,
-    public readonly authInfo: any | undefined,
   ) {
     super();
 

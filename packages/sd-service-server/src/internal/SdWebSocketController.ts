@@ -16,11 +16,10 @@ export class SdWebSocketController {
     socket: WebSocket,
     clientId: string,
     clientName: string,
-    authInfo: any | undefined,
     remoteAddress: string | undefined,
   ) {
     try {
-      const serviceSocket = new SdServiceSocket(socket, clientId, clientName, authInfo);
+      const serviceSocket = new SdServiceSocket(socket, clientId, clientName);
 
       // 기존 연결 끊기
       const prevServiceSocket = this._socketMap.get(clientId);
