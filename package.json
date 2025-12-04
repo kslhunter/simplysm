@@ -1,6 +1,6 @@
 {
   "name": "simplysm",
-  "version": "12.15.39",
+  "version": "12.15.40",
   "description": "심플리즘 패키지",
   "author": "김석래",
   "repository": {
@@ -33,8 +33,8 @@
     "---": "",
     "_sd-cli_": "cross-env NODE_OPTIONS=--max-old-space-size=8192 tsx --tsconfig packages/sd-cli/tsconfig.json packages/sd-cli/src/sd-cli.ts",
     "commit": "yarn run _sd-cli_ commit",
-    "eslint-timing": "cross-env TIMING=1 eslint \"**/+(*.ts|*.js|*.html)\"",
-    "eslint-fix": "cross-env TIMING=1 eslint --fix \"**/+(*.ts|*.js|*.html)\"",
+    "eslint:timing": "cross-env TIMING=1 eslint \"**/+(*.ts|*.js|*.html)\"",
+    "eslint:fix": "cross-env TIMING=1 eslint --fix \"**/+(*.ts|*.js|*.html)\"",
     "pre-upgrade": "node pre-upgrade.js",
     "repomix": "repomix",
     "reinstall": "yarn install --refresh-lockfile",
