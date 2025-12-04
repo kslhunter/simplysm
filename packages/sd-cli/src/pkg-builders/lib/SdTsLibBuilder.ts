@@ -6,15 +6,15 @@ import { ISdBuildResult } from "../../types/build/ISdBuildResult";
 import { ISdTsCompilerOptions } from "../../types/build/ISdTsCompilerOptions";
 
 export class SdTsLibBuilder {
-  #tsCompiler: SdTsCompiler;
-  #outputHashCache = new Map<TNormPath, string>();
+  private readonly _tsCompiler: SdTsCompiler;
+  private readonly _outputHashCache = new Map<TNormPath, string>();
 
   constructor(private readonly _opt: ISdTsCompilerOptions) {
-    this.#tsCompiler = new SdTsCompiler(_opt, false);
+    this._tsCompiler = new SdTsCompiler(_opt, false);
   }
 
   async buildAsync(modifiedFileSet?: Set<TNormPath>): Promise<ISdBuildResult> {
-    const tsCompileResult = await this.#tsCompiler.compileAsync(modifiedFileSet ?? new Set());
+    const tsCompileResult = await this._tsCompiler.compileAsync(modifiedFileSet ?? new Set());
 
     const emitFileSet = new Set<TNormPath>();
     for (const emitFile of tsCompileResult.emitFileSet) {
@@ -23,11 +23,11 @@ export class SdTsLibBuilder {
         for (const emitFileInfo of emitFileInfos) {
           if (emitFileInfo.outAbsPath != null) {
             const emitFilePath = PathUtils.norm(emitFileInfo.outAbsPath);
-            const prevHash = this.#outputHashCache.get(emitFilePath);
+            const prevHash = this._outputHashCache.get(emitFilePath);
             const currHash = HashUtils.get(Buffer.from(emitFileInfo.text));
             if (prevHash !== currHash) {
               FsUtils.writeFile(emitFilePath, emitFileInfo.text);
-              this.#outputHashCache.set(emitFilePath, currHash);
+              this._outputHashCache.set(emitFilePath, currHash);
               emitFileSet.add(emitFilePath);
             }
           }
@@ -44,11 +44,11 @@ export class SdTsLibBuilder {
             path.relative(this._opt.pkgPath, outputFile.path),
           );
           if (PathUtils.isChildPath(distPath, path.resolve(this._opt.pkgPath, "dist"))) {
-            const prevHash = this.#outputHashCache.get(distPath);
+            const prevHash = this._outputHashCache.get(distPath);
             const currHash = HashUtils.get(Buffer.from(outputFile.text));
             if (prevHash !== currHash) {
               FsUtils.writeFile(distPath, outputFile.text);
-              this.#outputHashCache.set(distPath, currHash);
+              this._outputHashCache.set(distPath, currHash);
               emitFileSet.add(distPath);
             }
           }

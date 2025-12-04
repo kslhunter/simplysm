@@ -333,7 +333,7 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
   });
 
   controlValue = $computed(() => {
-    return this.#convertToControlValue(this.value());
+    return this._convertToControlValue(this.value());
   });
 
   controlValueText = $computed(() => {
@@ -458,17 +458,17 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
 
   onInput(event: Event) {
     const inputEl = event.target as HTMLInputElement;
-    this.#setControlValue(inputEl.value);
+    this._setControlValue(inputEl.value);
   }
 
   onInputPaste(event: ClipboardEvent) {
     const text = event.clipboardData?.getData("text/plain").trim();
-    this.#setControlValue(text ?? "");
+    this._setControlValue(text ?? "");
   }
 
-  #setControlValue(value: string): void {
+  private _setControlValue(value: string): void {
     if (value === "") {
-      this.#setValue(undefined);
+      this._setValue(undefined);
     } else if (this.type() === "number") {
       const inputValue = value.replace(/[^0-9-.]/g, "");
       if (
@@ -477,42 +477,42 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
         (inputValue.includes(".") && Number(inputValue) === 0)
       ) {
       } else {
-        this.#setValue(NumberUtils.parseFloat(inputValue));
+        this._setValue(NumberUtils.parseFloat(inputValue));
       }
     } else if (this.type() === "format") {
       const nonFormatChars = this.format()?.match(/[^X]/g)?.distinct();
       if (nonFormatChars) {
-        this.#setValue(
+        this._setValue(
           value.replace(
             new RegExp(`[${nonFormatChars.map((item) => "\\" + item).join("")}]`, "g"),
             "",
           ),
         );
       } else {
-        this.#setValue(value);
+        this._setValue(value);
       }
     } else if (["year", "month", "date"].includes(this.type())) {
       try {
-        this.#setValue(DateOnly.parse(value));
+        this._setValue(DateOnly.parse(value));
       } catch {}
     } else if (["datetime", "datetime-sec"].includes(this.type())) {
       try {
-        this.#setValue(DateTime.parse(value));
+        this._setValue(DateTime.parse(value));
       } catch {}
     } else if (["time", "time-sec"].includes(this.type())) {
       try {
-        this.#setValue(Time.parse(value));
+        this._setValue(Time.parse(value));
       } catch {}
     } else {
-      this.#setValue(value);
+      this._setValue(value);
     }
   }
 
-  #setValue(newValue: any): void {
+  private _setValue(newValue: any): void {
     this.value.set(newValue);
   }
 
-  #convertToControlValue(value: TSdTextfieldTypes[K] | undefined): string {
+  private _convertToControlValue(value: TSdTextfieldTypes[K] | undefined): string {
     if (value == null) {
       return "";
     }

@@ -17,10 +17,10 @@ export class ObjectUtils {
       onlyOneDepth?: boolean;
     },
   ): T {
-    return this.#clone(source, options);
+    return this._clone(source, options);
   }
 
-  static #clone(
+  private static _clone(
     source: any,
     options?: {
       excludes?: any[];
@@ -42,13 +42,13 @@ export class ObjectUtils {
       if (options?.onlyOneDepth) {
         return [...source];
       } else {
-        return source.map((item) => this.#clone(item, options));
+        return source.map((item) => this._clone(item, options));
       }
     }
     if (source instanceof Map) {
       return Array.from(source.keys()).toMap(
-        (key) => this.#clone(key, options),
-        (key) => this.#clone(source.get(key), options),
+        (key) => this._clone(key, options),
+        (key) => this._clone(source.get(key), options),
       );
     }
     if (source instanceof Date) {
@@ -89,7 +89,7 @@ export class ObjectUtils {
             if (matchedPrevClone !== undefined) {
               result[key] = matchedPrevClone.clone;
             } else {
-              result[key] = this.#clone(
+              result[key] = this._clone(
                 source[key],
                 { useRefTypes: options?.useRefTypes },
                 currPrevClones,
@@ -616,7 +616,7 @@ export class ObjectUtils {
     return result;
   }
 
-  static #getChainSplits(chain: string): (string | number)[] {
+  private static _getChainSplits(chain: string): (string | number)[] {
     const split = chain
       .split(/[.\[\]]/g)
       .map((item) => item.replace(/[?!'"]/g, ""))
@@ -636,7 +636,7 @@ export class ObjectUtils {
   static getChainValue(obj: any, chain: string, optional: true): any | undefined;
   static getChainValue(obj: any, chain: string): any;
   static getChainValue(obj: any, chain: string, optional?: true): any | undefined {
-    const splits = this.#getChainSplits(chain);
+    const splits = this._getChainSplits(chain);
     let result = obj;
     for (const splitItem of splits) {
       if (optional && result === undefined) {
@@ -649,7 +649,7 @@ export class ObjectUtils {
   }
 
   static setChainValue(obj: any, chain: string, value: any): void {
-    const splits = this.#getChainSplits(chain);
+    const splits = this._getChainSplits(chain);
     let curr = obj;
     for (const splitItem of splits.slice(0, -1)) {
       curr[splitItem] = curr[splitItem] ?? {};
@@ -665,7 +665,7 @@ export class ObjectUtils {
   }
 
   static deleteChainValue(obj: any, chain: string): void {
-    const splits = this.#getChainSplits(chain);
+    const splits = this._getChainSplits(chain);
     let curr = obj;
     for (const splitItem of splits.slice(0, -1)) {
       curr = curr[splitItem];

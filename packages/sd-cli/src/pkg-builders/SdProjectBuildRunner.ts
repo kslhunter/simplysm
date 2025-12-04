@@ -14,9 +14,9 @@ import { IServerWorkerType } from "../types/worker/IServerWorkerType";
 import { INpmConfig } from "../types/common-config/INpmConfig";
 
 export class SdProjectBuildRunner {
-  static #logger = SdLogger.get(["simplysm", "sd-cli", "SdProjectBuildRunner"]);
+  private static readonly _logger = SdLogger.get(["simplysm", "sd-cli", "SdProjectBuildRunner"]);
 
-  static #buildInfoMap = new Map<
+  private static readonly _buildInfoMap = new Map<
     TNormPath,
     {
       buildWorker: SdWorker<ISdBuildRunnerWorkerType>;
@@ -24,7 +24,7 @@ export class SdProjectBuildRunner {
     }
   >();
 
-  static #serverInfoMap = new Map<
+  private static readonly _serverInfoMap = new Map<
     string,
     {
       worker?: SdWorker<any>;
@@ -39,7 +39,7 @@ export class SdProjectBuildRunner {
     }
   >();
 
-  static #resultCache = new Map<TNormPath, ISdBuildMessage[]>();
+  private static readonly _resultCache = new Map<TNormPath, ISdBuildMessage[]>();
 
   static async watchAsync(opt: {
     allPkgPaths: TNormPath[];
@@ -50,7 +50,7 @@ export class SdProjectBuildRunner {
     onChange: () => void;
     onComplete: (buildMessages: ISdBuildMessage[]) => void;
   }) {
-    const scopePathSet = await this.#getScopePathSetAsync(
+    const scopePathSet = await this._getScopePathSetAsync(
       opt.allPkgPaths,
       Object.keys(opt.projConf.localUpdates ?? {}),
     );
@@ -64,7 +64,7 @@ export class SdProjectBuildRunner {
 
       const changedPkgInfos = opt.pkgPaths
         .map((pkgPath) => {
-          let buildInfo = this.#buildInfoMap.get(pkgPath);
+          let buildInfo = this._buildInfoMap.get(pkgPath);
           if (!buildInfo) return { pkgPath };
 
           const modifiedFileSet = new Set(
@@ -116,7 +116,7 @@ export class SdProjectBuildRunner {
 
           const result = await buildWorker.run("rebuild", []);
 
-          this.#buildInfoMap.set(changedPkgInfo.pkgPath, {
+          this._buildInfoMap.set(changedPkgInfo.pkgPath, {
             buildWorker,
             watchFileSet: result.watchFileSet,
           });
@@ -156,10 +156,10 @@ export class SdProjectBuildRunner {
           const pkgConf = opt.projConf.packages[path.basename(buildResult.pkgPath)]!;
           if (pkgConf.type === "server") {
             const serverName = path.basename(buildResult.pkgPath);
-            this.#logger.debug(`서버 '${serverName}' 재시작...`);
+            this._logger.debug(`서버 '${serverName}' 재시작...`);
 
-            const serverInfo = this.#serverInfoMap.getOrCreate(serverName, {});
-            const restartServerResult = await this.#restartServerAsync(
+            const serverInfo = this._serverInfoMap.getOrCreate(serverName, {});
+            const restartServerResult = await this._restartServerAsync(
               serverInfo.worker,
               buildResult.pkgPath,
               pkgConf,
@@ -178,10 +178,10 @@ export class SdProjectBuildRunner {
             }*/
           } else if (pkgConf.type === "client" && typeof pkgConf.server === "object") {
             const serverName = pkgConf.server.port.toString();
-            this.#logger.debug(`서버 '${serverName}' 재시작...`);
+            this._logger.debug(`서버 '${serverName}' 재시작...`);
 
-            const serverInfo = this.#serverInfoMap.getOrCreate(serverName, {});
-            const restartServerResult = await this.#restartServerAsync(
+            const serverInfo = this._serverInfoMap.getOrCreate(serverName, {});
+            const restartServerResult = await this._restartServerAsync(
               serverInfo.worker,
               buildResult.pkgPath,
               pkgConf.server.port,
@@ -211,7 +211,7 @@ export class SdProjectBuildRunner {
                   : undefined;
             if (serverKey == null) continue;
 
-            const serverInfo = this.#serverInfoMap.get(serverKey);
+            const serverInfo = this._serverInfoMap.get(serverKey);
             if (!serverInfo || !serverInfo.worker) continue;
 
             const distPath = path.resolve(buildResult.pkgPath, "dist");
@@ -223,7 +223,7 @@ export class SdProjectBuildRunner {
 
             if (buildResult.isFirst) continue;
 
-            this.#logger.debug(`클라이언트 '${clientName}' 새로고침...`);
+            this._logger.debug(`클라이언트 '${clientName}' 새로고침...`);
             await serverInfo.worker.run("broadcastReload", [
               clientName,
               new Set(
@@ -241,7 +241,7 @@ export class SdProjectBuildRunner {
         }
 
         // 서버 Proxy 설정
-        for (const serverInfo of this.#serverInfoMap.values()) {
+        for (const serverInfo of this._serverInfoMap.values()) {
           if (!serverInfo.worker) continue;
 
           await serverInfo.worker.run("setPathProxy", [
@@ -256,8 +256,8 @@ export class SdProjectBuildRunner {
         }
 
         // 접속주소 logging
-        for (const serverName of this.#serverInfoMap.keys()) {
-          const serverInfo = this.#serverInfoMap.get(serverName);
+        for (const serverName of this._serverInfoMap.keys()) {
+          const serverInfo = this._serverInfoMap.get(serverName);
           const clientPaths: string[] = [];
           for (const [clientName, clientInfo] of serverInfo?.clientMap?.entries() ?? []) {
             for (const buildType of clientInfo.buildTypes) {
@@ -269,22 +269,22 @@ export class SdProjectBuildRunner {
             }
           }
 
-          this.#logger.info("클라이언트 개발 서버 접속 주소\n" + clientPaths.join("\n"));
+          this._logger.info("클라이언트 개발 서버 접속 주소\n" + clientPaths.join("\n"));
         }
       }
 
       // 빌드 완료 이벤트
 
       for (const buildResult of buildResults) {
-        this.#resultCache.delete(buildResult.pkgPath);
+        this._resultCache.delete(buildResult.pkgPath);
         for (const affectedFilePath of buildResult.affectedFileSet) {
-          this.#resultCache.delete(affectedFilePath);
+          this._resultCache.delete(affectedFilePath);
         }
       }
 
       for (const buildResult of buildResults) {
         for (const buildMessage of buildResult.buildMessages) {
-          const cacheItem = this.#resultCache.getOrCreate(
+          const cacheItem = this._resultCache.getOrCreate(
             buildMessage.filePath ?? buildResult.pkgPath,
             [],
           );
@@ -292,7 +292,7 @@ export class SdProjectBuildRunner {
         }
       }
 
-      opt.onComplete(Array.from(this.#resultCache.values()).mapMany());
+      opt.onComplete(Array.from(this._resultCache.values()).mapMany());
     });
   }
 
@@ -301,7 +301,7 @@ export class SdProjectBuildRunner {
     pkgPaths: TNormPath[];
     projConf: ISdProjectConfig;
   }) {
-    const scopePathSet = await this.#getScopePathSetAsync(
+    const scopePathSet = await this._getScopePathSetAsync(
       opt.allPkgPaths,
       Object.keys(opt.projConf.localUpdates ?? {}),
     );
@@ -337,7 +337,7 @@ export class SdProjectBuildRunner {
     return buildResults.mapMany((item) => item.buildMessages);
   }
 
-  static async #getScopePathSetAsync(pkgPaths: TNormPath[], localUpdateGlobs: string[]) {
+  private static async _getScopePathSetAsync(pkgPaths: TNormPath[], localUpdateGlobs: string[]) {
     const workspacePaths = pkgPaths.mapMany((item) => [
       path.resolve(item, "src"),
       path.resolve(item, "public"),
@@ -353,7 +353,7 @@ export class SdProjectBuildRunner {
     return new Set([...workspacePaths, ...localUpdatePaths].map((item) => PathUtils.norm(item)));
   }
 
-  static async #restartServerAsync(
+  private static async _restartServerAsync(
     prevWorker: SdWorker<IServerWorkerType> | undefined,
     pkgPath: string,
     pkgConfOrPort: ISdServerPackageConfig | number,
@@ -386,7 +386,7 @@ export class SdProjectBuildRunner {
     const port = await worker.run("listen", [
       typeof pkgConfOrPort === "number" ? pkgConfOrPort : pkgPath,
     ]);
-    this.#logger.debug("서버가 시작되었습니다.");
+    this._logger.debug("서버가 시작되었습니다.");
 
     return { worker, port };
   }

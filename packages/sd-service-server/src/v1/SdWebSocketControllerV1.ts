@@ -9,9 +9,9 @@ import { SD_SERVICE_SPECIAL_COMMANDS } from "./command-v1.types";
 import { SdServiceEventListenerBase } from "@simplysm/sd-service-common";
 
 export class SdWebSocketControllerV1 {
-  readonly #logger = SdLogger.get(["simplysm", "sd-service-server", "SdWebsocketHandler"]);
+  private readonly _logger = SdLogger.get(["simplysm", "sd-service-server", "SdWebsocketHandler"]);
 
-  readonly #socketMap = new Map<string, SdServiceSocketV1>();
+  private readonly _socketMap = new Map<string, SdServiceSocketV1>();
 
   constructor(private readonly _executor: SdServiceExecutor) {}
 
@@ -21,56 +21,56 @@ export class SdWebSocketControllerV1 {
       const clientId = await serviceSocket.getClientIdAsync();
 
       // 기존 연결 끊기
-      const prevServiceSocket = this.#socketMap.get(clientId);
+      const prevServiceSocket = this._socketMap.get(clientId);
       if (prevServiceSocket) {
         prevServiceSocket.close();
 
         const connectionDateTimeText =
           prevServiceSocket.connectedAtDateTime.toFormatString("yyyy:MM:dd HH:mm:ss.fff");
-        this.#logger.debug(`클라이언트 기존연결 끊음: ${clientId}: ${connectionDateTimeText}`);
+        this._logger.debug(`클라이언트 기존연결 끊음: ${clientId}: ${connectionDateTimeText}`);
       }
 
       // 클라이언트 객체 변경
-      this.#socketMap.set(clientId, serviceSocket);
+      this._socketMap.set(clientId, serviceSocket);
 
       serviceSocket.on("close", (code: number) => {
-        this.#logger.debug(`클라이언트 연결 끊김: (code: ${code})`);
+        this._logger.debug(`클라이언트 연결 끊김: (code: ${code})`);
 
         // clientId에 새로 set된경우, 시간차로 delete되버리지 않도록 client 동일여부 체크
-        if (this.#socketMap.get(clientId) !== serviceSocket) return;
-        this.#socketMap.delete(clientId);
+        if (this._socketMap.get(clientId) !== serviceSocket) return;
+        this._socketMap.delete(clientId);
       });
 
       serviceSocket.on("request", async (request) => {
-        this.#logger.debug("요청 수신", request);
-        const res = await this.#processRequestAsync(serviceSocket, request);
+        this._logger.debug("요청 수신", request);
+        const res = await this._processRequestAsync(serviceSocket, request);
         const sentSize = serviceSocket.send(res);
-        this.#logger.debug(`응답 전송 (size: ${sentSize})`);
+        this._logger.debug(`응답 전송 (size: ${sentSize})`);
       });
 
       // 연결 로그
-      this.#logger.debug(`클라이언트 연결됨`, {
+      this._logger.debug(`클라이언트 연결됨`, {
         clientId,
         remoteAddress,
-        socketSize: this.#socketMap.size,
+        socketSize: this._socketMap.size,
       });
 
       // 클라이언트에게 연결 완료 알림
       serviceSocket.send({ name: "connected" });
     } catch (err) {
-      this.#logger.error("연결 처리 중 오류 발생", err);
+      this._logger.error("연결 처리 중 오류 발생", err);
       socket.terminate();
     }
   }
 
   closeAll() {
-    for (const serviceSocket of this.#socketMap.values()) {
+    for (const serviceSocket of this._socketMap.values()) {
       serviceSocket.close();
     }
   }
 
   broadcastReload(clientName: string | undefined, changedFileSet: Set<string>) {
-    for (const serviceSocket of this.#socketMap.values()) {
+    for (const serviceSocket of this._socketMap.values()) {
       serviceSocket.send({ name: "client-reload", clientName, changedFileSet });
     }
   }
@@ -80,26 +80,26 @@ export class SdWebSocketControllerV1 {
     infoSelector: (item: T["info"]) => boolean,
     data: T["data"],
   ) {
-    const targetKeys = this.#getListenerInfos(eventType.name)
+    const targetKeys = this._getListenerInfos(eventType.name)
       .filter((item) => infoSelector(item.info))
       .map((item) => item.key);
 
-    this.#emitToTargets(targetKeys, data);
+    this._emitToTargets(targetKeys, data);
   }
 
-  #getListenerInfos(eventName: string): { key: string; info: any }[] {
-    return Array.from(this.#socketMap.values()).mapMany((serviceSocket) =>
+  private _getListenerInfos(eventName: string): { key: string; info: any }[] {
+    return Array.from(this._socketMap.values()).mapMany((serviceSocket) =>
       serviceSocket.getEventListners(eventName),
     );
   }
 
-  #emitToTargets(targetKeys: string[], data: any) {
-    for (const serviceSocket of this.#socketMap.values()) {
+  private _emitToTargets(targetKeys: string[], data: any) {
+    for (const serviceSocket of this._socketMap.values()) {
       serviceSocket.emitByKeys(targetKeys, data);
     }
   }
 
-  async #processRequestAsync(
+  private async _processRequestAsync(
     serviceSocket: SdServiceSocketV1,
     req: ISdServiceRequest,
   ): Promise<TSdServiceResponse> {
@@ -154,12 +154,12 @@ export class SdWebSocketControllerV1 {
           name: "response",
           reqUuid: req.uuid,
           state: "success",
-          body: this.#getListenerInfos(eventName),
+          body: this._getListenerInfos(eventName),
         };
       } else if (req.command === SD_SERVICE_SPECIAL_COMMANDS.EMIT_EVENT) {
         const [targetKeys, data] = req.params as [string[], any];
 
-        this.#emitToTargets(targetKeys, data);
+        this._emitToTargets(targetKeys, data);
 
         return {
           name: "response",

@@ -530,9 +530,9 @@ export abstract class AbsSdDataSheet<
   uploadExcel?(file: File): Promise<void> | void;
 
   //-- implement
-  #sdToast = inject(SdToastProvider);
-  #sdSharedData = inject(SdSharedDataProvider);
-  #sdFileDialog = inject(SdFileDialogProvider);
+  private readonly _sdToast = inject(SdToastProvider);
+  private readonly _sdSharedData = inject(SdSharedDataProvider);
+  private readonly _sdFileDialog = inject(SdFileDialogProvider);
 
   key = reflectComponentType(this.constructor as any)?.selector;
 
@@ -605,8 +605,8 @@ export abstract class AbsSdDataSheet<
         }
 
         this.busyCount.update((v) => v + 1);
-        await this.#sdToast.try(async () => {
-          await this.#sdSharedData.wait();
+        await this._sdToast.try(async () => {
+          await this._sdSharedData.wait();
           await this.refresh();
         });
         this.busyCount.update((v) => v - 1);
@@ -618,7 +618,7 @@ export abstract class AbsSdDataSheet<
   }
 
   checkIgnoreChanges() {
-    return this.#getDiffs().length === 0 || confirm(TXT_CHANGE_IGNORE_CONFIRM);
+    return this._getDiffs().length === 0 || confirm(TXT_CHANGE_IGNORE_CONFIRM);
   }
 
   doFilterSubmit() {
@@ -664,7 +664,7 @@ export abstract class AbsSdDataSheet<
     if (!result) return;
 
     this.busyCount.update((v) => v + 1);
-    await this.#sdToast.try(async () => {
+    await this._sdToast.try(async () => {
       await this.refresh();
     });
     this.busyCount.update((v) => v - 1);
@@ -674,7 +674,7 @@ export abstract class AbsSdDataSheet<
     if (!this.newItem) return;
 
     this.busyCount.update((v) => v + 1);
-    await this.#sdToast.try(async () => {
+    await this._sdToast.try(async () => {
       const newItem = (await this.newItem!()) as TItem;
       this.items.update((items) => [newItem, ...items]);
     });
@@ -686,33 +686,33 @@ export abstract class AbsSdDataSheet<
     if (opt?.permCheck && !this.canEdit()) return;
     if (!this.submit) return;
 
-    const diffs = this.#getDiffs();
+    const diffs = this._getDiffs();
 
     if (diffs.length === 0) {
       if (!opt?.hideNoChangeMessage) {
-        this.#sdToast.info("변경사항이 없습니다.");
+        this._sdToast.info("변경사항이 없습니다.");
       }
       return;
     }
 
     this.busyCount.update((v) => v + 1);
-    await this.#sdToast.try(
+    await this._sdToast.try(
       async () => {
         const result = await this.submit!(diffs);
         if (!result) return;
 
-        this.#sdToast.success("저장되었습니다.");
+        this._sdToast.success("저장되었습니다.");
 
         await this.refresh();
       },
-      (err) => this.#getOrmDataEditToastErrorMessage(err),
+      (err) => this._getOrmDataEditToastErrorMessage(err),
     );
     this.busyCount.update((v) => v - 1);
 
     this.submitted.emit(true);
   }
 
-  #getDiffs() {
+  private _getDiffs() {
     return $arr(this.items).diffs(
       this.diffsExcludes ? { excludes: this.diffsExcludes } : undefined,
     );
@@ -746,16 +746,16 @@ export abstract class AbsSdDataSheet<
 
     this.busyCount.update((v) => v + 1);
 
-    await this.#sdToast.try(
+    await this._sdToast.try(
       async () => {
         const result = await this.toggleDeleteItems!(del);
         if (!result) return;
 
         await this.refresh();
 
-        this.#sdToast.success(`${del ? "삭제" : "복구"} 되었습니다.`);
+        this._sdToast.success(`${del ? "삭제" : "복구"} 되었습니다.`);
       },
-      (err) => this.#getOrmDataEditToastErrorMessage(err),
+      (err) => this._getOrmDataEditToastErrorMessage(err),
     );
     this.busyCount.update((v) => v - 1);
   }
@@ -781,7 +781,7 @@ export abstract class AbsSdDataSheet<
     if (!this.downloadExcel) return;
 
     this.busyCount.update((v) => v + 1);
-    await this.#sdToast.try(async () => {
+    await this._sdToast.try(async () => {
       const items = (await this.search(false)).items;
       await this.downloadExcel!(items);
     });
@@ -791,7 +791,7 @@ export abstract class AbsSdDataSheet<
   async doUploadExcel() {
     if (!this.uploadExcel) return;
 
-    const file = await this.#sdFileDialog.showAsync(
+    const file = await this._sdFileDialog.showAsync(
       false,
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     );
@@ -799,15 +799,15 @@ export abstract class AbsSdDataSheet<
 
     this.busyCount.update((v) => v + 1);
 
-    await this.#sdToast.try(
+    await this._sdToast.try(
       async () => {
         await this.uploadExcel!(file);
 
         await this.refresh();
 
-        this.#sdToast.success("엑셀 업로드가 완료 되었습니다.");
+        this._sdToast.success("엑셀 업로드가 완료 되었습니다.");
       },
-      (err) => this.#getOrmDataEditToastErrorMessage(err),
+      (err) => this._getOrmDataEditToastErrorMessage(err),
     );
     this.busyCount.update((v) => v - 1);
   }
@@ -826,7 +826,7 @@ export abstract class AbsSdDataSheet<
     });
   }
 
-  #getOrmDataEditToastErrorMessage(err: Error) {
+  private _getOrmDataEditToastErrorMessage(err: Error) {
     if (
       err.message.includes("a parent row: a foreign key constraint") ||
       err.message.includes("conflicted with the REFERENCE")

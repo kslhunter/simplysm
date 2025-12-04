@@ -27,17 +27,17 @@ export class Uuid {
     return new Uuid(uuidStr);
   }
 
-  readonly #uuid: string;
+  private readonly _uuid: string;
 
   constructor(uuid: string) {
-    this.#uuid = uuid;
+    this._uuid = uuid;
   }
 
   toString(): string {
-    return this.#uuid;
+    return this._uuid;
   }
 
   toBuffer(): Buffer {
-    return Buffer.from(this.#uuid.replaceAll("-", ""), "hex");
+    return Buffer.from(this._uuid.replaceAll("-", ""), "hex");
   }
 }

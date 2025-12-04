@@ -9,15 +9,15 @@ import { INpmConfig } from "../../types/common-config/INpmConfig";
 export class SdServerBuildRunner extends SdBuildRunnerBase<"server"> {
   protected override _logger = SdLogger.get(["simplysm", "sd-cli", "SdServerBuildRunner"]);
 
-  #serverBundler?: SdServerBundler;
+  private _serverBundler?: SdServerBundler;
 
   protected override async _runAsync(modifiedFileSet?: Set<TNormPath>): Promise<ISdBuildResult> {
     // 최초
     if (!modifiedFileSet) {
-      const externalModules = this.#getExternalModules();
+      const externalModules = this._getExternalModules();
 
       if (!this._opt.watch?.dev) {
-        this.#generateProductionFiles(
+        this._generateProductionFiles(
           externalModules.filter((item) => item.exists).map((item) => item.name),
         );
       }
@@ -29,19 +29,19 @@ export class SdServerBuildRunner extends SdBuildRunnerBase<"server"> {
       }
 
       this._debug(`BUILD 준비...`);
-      this.#serverBundler = new SdServerBundler(this._opt, {
+      this._serverBundler = new SdServerBundler(this._opt, {
         external: externalModules.map((item) => item.name),
       });
     }
 
     this._debug(`BUILD...`);
-    const bundleResult = await this.#serverBundler!.bundleAsync(modifiedFileSet);
+    const bundleResult = await this._serverBundler!.bundleAsync(modifiedFileSet);
 
     this._debug(`빌드 완료`);
     return bundleResult;
   }
 
-  #generateProductionFiles(externals: string[]) {
+  private _generateProductionFiles(externals: string[]) {
     const npmConf = FsUtils.readJson(path.resolve(this._opt.pkgPath, "package.json")) as INpmConfig;
 
     this._debug("GEN package.json...");
@@ -185,7 +185,7 @@ Options = UnsafeLegacyRenegotiation`.trim(),
     }
   }
 
-  #getExternalModules(): {
+  private _getExternalModules(): {
     name: string;
     exists: boolean;
   }[] {

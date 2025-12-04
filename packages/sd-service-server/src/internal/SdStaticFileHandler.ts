@@ -4,7 +4,7 @@ import { SdServiceServer } from "../SdServiceServer";
 import { FastifyReply, FastifyRequest } from "fastify";
 
 export class SdStaticFileHandler {
-  readonly #logger = SdLogger.get(["simplysm", "sd-service-server", "SdStaticFileHandler"]);
+  private readonly _logger = SdLogger.get(["simplysm", "sd-service-server", "SdStaticFileHandler"]);
 
   constructor(private readonly _server: SdServiceServer) {}
 
@@ -40,8 +40,8 @@ export class SdStaticFileHandler {
     // 권한 확인 (숨김 파일 등)
     if (path.basename(targetFilePath).startsWith(".")) {
       const errorMessage = "파일을 사용할 권한이 없습니다.";
-      this.#responseErrorHtml(reply, 403, errorMessage);
-      this.#logger.warn(`[403] ${errorMessage} (${targetFilePath})`);
+      this._responseErrorHtml(reply, 403, errorMessage);
+      this._logger.warn(`[403] ${errorMessage} (${targetFilePath})`);
       return;
     }
 
@@ -54,17 +54,17 @@ export class SdStaticFileHandler {
     } catch (err: any) {
       if (err.code === "ENOENT") {
         const errorMessage = "파일을 찾을 수 없습니다.";
-        this.#responseErrorHtml(reply, 404, errorMessage);
-        this.#logger.warn(`[404] ${errorMessage} (${targetFilePath})`);
+        this._responseErrorHtml(reply, 404, errorMessage);
+        this._logger.warn(`[404] ${errorMessage} (${targetFilePath})`);
       } else {
         const errorMessage = "파일 전송 중 오류가 발생했습니다.";
-        this.#responseErrorHtml(reply, 500, errorMessage);
-        this.#logger.error(`[500] ${errorMessage}`, err);
+        this._responseErrorHtml(reply, 500, errorMessage);
+        this._logger.error(`[500] ${errorMessage}`, err);
       }
     }
   }
 
-  #responseErrorHtml(reply: FastifyReply, code: number, message: string) {
+  private _responseErrorHtml(reply: FastifyReply, code: number, message: string) {
     reply.status(code).type("text/html").send(`
 <!DOCTYPE html>
 <html>

@@ -43,7 +43,7 @@ export class SdSheetLayoutEngine<T> {
       }));
   });
 
-  #rawHeaderDefTable = $computed<(IRawHeaderDef | undefined)[][]>(() => {
+  private readonly _rawHeaderDefTable = $computed<(IRawHeaderDef | undefined)[][]>(() => {
     const result: (IRawHeaderDef | undefined)[][] = [];
     const defs = this.columnDefs();
 
@@ -70,7 +70,7 @@ export class SdSheetLayoutEngine<T> {
   });
 
   headerDefTable = $computed<(ISdSheetHeaderDef | undefined)[][]>(() => {
-    const rawTable = this.#rawHeaderDefTable();
+    const rawTable = this._rawHeaderDefTable();
 
     const isSame = (r: number, currC: number, targetC: number) => {
       const currDef = rawTable[r][currC];
@@ -133,7 +133,7 @@ export class SdSheetLayoutEngine<T> {
   );
 
   headerFeatureRowSpan = $computed<number>(
-    () => this.#rawHeaderDefTable().length + (this.hasSummary() ? 1 : 0),
+    () => this._rawHeaderDefTable().length + (this.hasSummary() ? 1 : 0),
   );
 }
 

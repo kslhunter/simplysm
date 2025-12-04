@@ -19,12 +19,12 @@ try {
 }
 
 export class SqliteDbConn extends EventEmitter implements IDbConn {
-  #logger = SdLogger.get(["simplysm", "sd-orm-node", this.constructor.name]);
+  private readonly _logger = SdLogger.get(["simplysm", "sd-orm-node", this.constructor.name]);
 
-  #timeout = 300000;
+  private readonly _timeout = 300000;
 
-  #conn?: sqlite3Type.Database;
-  #connTimeout?: NodeJS.Timeout;
+  private _conn?: sqlite3Type.Database;
+  private _connTimeout?: NodeJS.Timeout;
 
   isConnected = false;
   isOnTransaction = false;
@@ -45,20 +45,20 @@ export class SqliteDbConn extends EventEmitter implements IDbConn {
       this.emit("close");
       this.isConnected = false;
       this.isOnTransaction = false;
-      this.#conn = undefined;
+      this._conn = undefined;
     });
 
     await new Promise<void>((resolve, reject) => {
       conn.on("error", (error) => {
         if (this.isConnected) {
-          this.#logger.error("error: " + error.message);
+          this._logger.error("error: " + error.message);
         } else {
           reject(new Error(error.message));
         }
       });
 
       conn.on("open", () => {
-        this.#startTimeout();
+        this._startTimeout();
         this.isConnected = true;
         this.isOnTransaction = false;
         resolve();
@@ -67,18 +67,18 @@ export class SqliteDbConn extends EventEmitter implements IDbConn {
       conn.serialize();
     });
 
-    this.#conn = conn;
+    this._conn = conn;
   }
 
   async closeAsync() {
-    this.#stopTimeout();
+    this._stopTimeout();
 
     await new Promise<void>((resolve, reject) => {
-      if (!this.#conn || !this.isConnected) {
+      if (!this._conn || !this.isConnected) {
         return;
       }
 
-      this.#conn.close((err) => {
+      this._conn.close((err) => {
         if (err) {
           reject(err);
           return;
@@ -87,19 +87,19 @@ export class SqliteDbConn extends EventEmitter implements IDbConn {
         this.emit("close");
         this.isConnected = false;
         this.isOnTransaction = false;
-        this.#conn = undefined;
+        this._conn = undefined;
         resolve();
       });
     });
   }
 
   async beginTransactionAsync(isolationLevel?: ISOLATION_LEVEL) {
-    if (!this.#conn || !this.isConnected) {
+    if (!this._conn || !this.isConnected) {
       throw new Error("'Connection'이 연결되어있지 않습니다.");
     }
-    this.#startTimeout();
+    this._startTimeout();
 
-    const conn = this.#conn;
+    const conn = this._conn;
 
     await new Promise<void>((resolve, reject) => {
       conn.run("BEGIN;", (err) => {
@@ -112,12 +112,12 @@ export class SqliteDbConn extends EventEmitter implements IDbConn {
   }
 
   async commitTransactionAsync() {
-    if (!this.#conn || !this.isConnected) {
+    if (!this._conn || !this.isConnected) {
       throw new Error("'Connection'이 연결되어있지 않습니다.");
     }
-    this.#startTimeout();
+    this._startTimeout();
 
-    const conn = this.#conn;
+    const conn = this._conn;
 
     await new Promise<void>((resolve, reject) => {
       conn.run("COMMIT;", (err) => {
@@ -133,12 +133,12 @@ export class SqliteDbConn extends EventEmitter implements IDbConn {
   }
 
   async rollbackTransactionAsync() {
-    if (!this.#conn || !this.isConnected) {
+    if (!this._conn || !this.isConnected) {
       throw new Error("'Connection'이 연결되어있지 않습니다.");
     }
-    this.#startTimeout();
+    this._startTimeout();
 
-    const conn = this.#conn;
+    const conn = this._conn;
 
     await new Promise<void>((resolve, reject) => {
       conn.run("ROLLBACK;", (err: Error | null) => {
@@ -154,12 +154,12 @@ export class SqliteDbConn extends EventEmitter implements IDbConn {
   }
 
   async executeAsync(queries: string[]): Promise<any[][]> {
-    if (!this.#conn || !this.isConnected) {
+    if (!this._conn || !this.isConnected) {
       throw new Error("'Connection'이 연결되어있지 않습니다.");
     }
-    this.#startTimeout();
+    this._startTimeout();
 
-    const conn = this.#conn;
+    const conn = this._conn;
 
     const results: any[][] = [];
     for (const query of queries.filter((item) => !StringUtils.isNullOrEmpty(item))) {
@@ -168,10 +168,10 @@ export class SqliteDbConn extends EventEmitter implements IDbConn {
 
       const resultItems: any[] = [];
       for (const queryString of queryStrings) {
-        this.#logger.debug("쿼리 실행:\n" + queryString);
+        this._logger.debug("쿼리 실행:\n" + queryString);
         await new Promise<void>((resolve, reject) => {
           conn.all(queryString, (err, queryResults) => {
-            this.#startTimeout();
+            this._startTimeout();
 
             if (err) {
               reject(
@@ -193,17 +193,17 @@ export class SqliteDbConn extends EventEmitter implements IDbConn {
   }
 
   async executeParametrizedAsync(query: string, params?: any[]): Promise<any[][]> {
-    if (!this.#conn || !this.isConnected) {
+    if (!this._conn || !this.isConnected) {
       throw new Error("'Connection'이 연결되어있지 않습니다.");
     }
 
-    const conn = this.#conn;
+    const conn = this._conn;
 
     const results: any[][] = [];
-    this.#logger.debug(`쿼리 실행(${query.length.toLocaleString()}): ${query}, ${params}`);
+    this._logger.debug(`쿼리 실행(${query.length.toLocaleString()}): ${query}, ${params}`);
     await new Promise<void>((resolve, reject) => {
       conn.all(query, params ?? [], (err, queryResults) => {
-        this.#startTimeout();
+        this._startTimeout();
 
         if (err) {
           reject(new SdError(err, "쿼리 수행중 오류발생\n-- query\n" + query.trim() + "\n--"));
@@ -269,18 +269,18 @@ export class SqliteDbConn extends EventEmitter implements IDbConn {
     await this.executeAsync([q]);
   }
 
-  #stopTimeout() {
-    if (this.#connTimeout) {
-      clearTimeout(this.#connTimeout);
+  private _stopTimeout() {
+    if (this._connTimeout) {
+      clearTimeout(this._connTimeout);
     }
   }
 
-  #startTimeout() {
-    if (this.#connTimeout) {
-      clearTimeout(this.#connTimeout);
+  private _startTimeout() {
+    if (this._connTimeout) {
+      clearTimeout(this._connTimeout);
     }
-    this.#connTimeout = setTimeout(async () => {
+    this._connTimeout = setTimeout(async () => {
       await this.closeAsync();
-    }, this.#timeout * 2);
+    }, this._timeout * 2);
   }
 }

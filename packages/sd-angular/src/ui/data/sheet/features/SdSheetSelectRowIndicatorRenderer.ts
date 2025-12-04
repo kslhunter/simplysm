@@ -24,7 +24,7 @@ export class SdSheetSelectRowIndicatorRenderer<T> {
         .selectedItems()
         .map((item) => {
           const r = this._options.displayItems().indexOf(item);
-          return this.#getTrInfo(r);
+          return this._getTrInfo(r);
         })
         .filterExists();
 
@@ -50,7 +50,7 @@ export class SdSheetSelectRowIndicatorRenderer<T> {
     for (const selectRowIndicatorEl of selectRowIndicatorEls) {
       const r = NumberUtils.parseInt(selectRowIndicatorEl.getAttribute("data-r"))!;
 
-      const trInfo = this.#getTrInfo(r);
+      const trInfo = this._getTrInfo(r);
       if (!trInfo) return;
 
       Object.assign(selectRowIndicatorEl.style, {
@@ -61,7 +61,7 @@ export class SdSheetSelectRowIndicatorRenderer<T> {
     }
   }
 
-  #getTrInfo(r: number) {
+  private _getTrInfo(r: number) {
     const trEl = this._options.domAccessor.getRow(r);
     if (!trEl) return undefined;
 

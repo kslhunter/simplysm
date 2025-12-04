@@ -60,16 +60,16 @@ import { injectElementRef } from "../../../core/utils/injections/injectElementRe
   ],
 })
 export class SdDropdownPopupControl {
-  #parentControl = inject<SdDropdownControl>(forwardRef(() => SdDropdownControl));
-  #elRef = injectElementRef<HTMLElement>();
+  private readonly _parentControl = inject<SdDropdownControl>(forwardRef(() => SdDropdownControl));
+  private readonly _elRef = injectElementRef<HTMLElement>();
 
   onKeyDown(event: KeyboardEvent) {
-    this.#parentControl.onPopupKeydown(event);
+    this._parentControl.onPopupKeydown(event);
   }
 
   onResize() {
-    const el = this.#elRef.nativeElement;
-    const divEl = this.#elRef.nativeElement.firstElementChild!;
+    const el = this._elRef.nativeElement;
+    const divEl = this._elRef.nativeElement.firstElementChild!;
 
     if (divEl.clientHeight > 300) {
       el.style.height = "300px";

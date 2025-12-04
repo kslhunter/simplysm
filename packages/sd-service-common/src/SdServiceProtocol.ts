@@ -30,7 +30,7 @@ export class SdServiceProtocol {
 
     // 사이즈가 작으면 그대로 반환
     if (totalSize <= this._SPLIT_MESSAGE_SIZE) {
-      return [this.#encode({ uuid, totalSize, index: 0 }, msgBuffer)];
+      return [this._encode({ uuid, totalSize, index: 0 }, msgBuffer)];
     }
 
     // 3. 분할 처리
@@ -41,7 +41,7 @@ export class SdServiceProtocol {
     while (offset < totalSize) {
       const chunkBodyBuffer = msgBuffer.subarray(offset, offset + this._CHUNK_SIZE);
 
-      const chunk = this.#encode({ uuid, totalSize, index }, chunkBodyBuffer);
+      const chunk = this._encode({ uuid, totalSize, index }, chunkBodyBuffer);
       chunks.push(chunk);
 
       offset += this._CHUNK_SIZE;
@@ -51,7 +51,7 @@ export class SdServiceProtocol {
     return chunks;
   }
 
-  #encode(
+  private _encode(
     header: {
       uuid: string;
       totalSize: number;
@@ -89,8 +89,8 @@ export class SdServiceProtocol {
       buffers: (Buffer | undefined)[];
     }
   >({
-    gcInterval: 10000, // 10초마다
-    expireTime: 60000, // 60초 지난 것 삭제
+    gcInterval: 10 * 1000, // 10초마다
+    expireTime: 60 * 1000, // 60초 지난 것 삭제
   });
 
   dispose(): void {

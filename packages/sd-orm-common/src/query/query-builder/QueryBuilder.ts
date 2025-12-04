@@ -300,7 +300,7 @@ ORDER BY i.index_id, ic.key_ordinal;
       pkOrderBy: def.primaryKeys.single((pk) => pk.columnName === colDef.name)?.orderBy,
     }));
 
-    query += colDefs.map((colDef) => "  " + this.#getQueryOfColDef(colDef)).join(",\n");
+    query += colDefs.map((colDef) => "  " + this._getQueryOfColDef(colDef)).join(",\n");
     if (this._dialect === "sqlite") {
     } else if (def.primaryKeys.length > 0) {
       query += ",\n";
@@ -351,7 +351,7 @@ USE ${def.table.database};
 DECLARE @sql NVARCHAR(MAX) = N'
 
 CREATE PROCEDURE ${tableName}
-  ${def.columns.map((colDef) => "  " + this.#getQueryOfProcedureColDef(colDef)).join(",\r\n")}
+  ${def.columns.map((colDef) => "  " + this._getQueryOfProcedureColDef(colDef)).join(",\r\n")}
 AS
 BEGIN
 SET NOCOUNT ON
@@ -396,16 +396,16 @@ EXEC ${procedureName}
     const queries: string[] = [];
     if (!def.column.nullable && def.column.defaultValue !== undefined) {
       queries.push(`ALTER TABLE ${tableName}
-          ADD ${this.#getQueryOfColDef({
+          ADD ${this._getQueryOfColDef({
             ...def.column,
             nullable: true,
           })}`);
       queries.push(`UPDATE ${tableName}
                     SET ${this.wrap(def.column.name)} = ${this.getQueryOfQueryValue(def.column.defaultValue)}`);
-      queries.push(`ALTER TABLE ${tableName} ALTER COLUMN ${this.#getQueryOfColDef(def.column)}`);
+      queries.push(`ALTER TABLE ${tableName} ALTER COLUMN ${this._getQueryOfColDef(def.column)}`);
     } else {
       queries.push(`ALTER TABLE ${tableName}
-          ADD ${this.#getQueryOfColDef(def.column)}`);
+          ADD ${this._getQueryOfColDef(def.column)}`);
     }
 
     return queries;
@@ -423,7 +423,7 @@ EXEC ${procedureName}
       const queries: string[] = [];
       if (!def.column.nullable && def.column.defaultValue !== undefined) {
         queries.push(
-          `ALTER TABLE ${tableName} MODIFY COLUMN ${this.#getQueryOfColDef({
+          `ALTER TABLE ${tableName} MODIFY COLUMN ${this._getQueryOfColDef({
             ...def.column,
             nullable: true,
           })}`,
@@ -434,7 +434,7 @@ EXEC ${procedureName}
            WHERE ${this.wrap(def.column.name)} IS NULL`,
         );
       }
-      queries.push(`ALTER TABLE ${tableName} MODIFY COLUMN ${this.#getQueryOfColDef(def.column)}`);
+      queries.push(`ALTER TABLE ${tableName} MODIFY COLUMN ${this._getQueryOfColDef(def.column)}`);
       return queries;
     } else {
       const tableName = this.getTableName(def.table);
@@ -442,7 +442,7 @@ EXEC ${procedureName}
       const queries: string[] = [];
       if (!def.column.nullable && def.column.defaultValue !== undefined) {
         queries.push(
-          `ALTER TABLE ${tableName} ALTER COLUMN ${this.#getQueryOfColDef({
+          `ALTER TABLE ${tableName} ALTER COLUMN ${this._getQueryOfColDef({
             ...def.column,
             nullable: true,
           })}`,
@@ -451,7 +451,7 @@ EXEC ${procedureName}
                       SET ${this.wrap(def.column.name)} = ${this.getQueryOfQueryValue(def.column.defaultValue)}
                       WHERE ${this.wrap(def.column.name)} IS NULL`);
       }
-      queries.push(`ALTER TABLE ${tableName} ALTER COLUMN ${this.#getQueryOfColDef(def.column)}`);
+      queries.push(`ALTER TABLE ${tableName} ALTER COLUMN ${this._getQueryOfColDef(def.column)}`);
       return queries;
     }
   }
@@ -727,7 +727,7 @@ pragma writable_schema=0;`.trim();
 
     if (def.join && def.join.length > 0) {
       for (const joinDef of def.join) {
-        q += this.#getQueryOfJoinDef(joinDef);
+        q += this._getQueryOfJoinDef(joinDef);
         q += "\n";
       }
     }
@@ -875,7 +875,7 @@ pragma writable_schema=0;`.trim();
       // JOIN
       if (def.join && def.join.length > 0) {
         for (const joinDef of def.join) {
-          q += this.#getQueryOfJoinDef(joinDef);
+          q += this._getQueryOfJoinDef(joinDef);
           q += "\n";
         }
       }
@@ -911,7 +911,7 @@ pragma writable_schema=0;`.trim();
       // JOIN
       if (def.join && def.join.length > 0) {
         for (const joinDef of def.join) {
-          q += this.#getQueryOfJoinDef(joinDef);
+          q += this._getQueryOfJoinDef(joinDef);
           q += "\n";
         }
       }
@@ -1151,7 +1151,7 @@ DEALLOCATE PREPARE stmt;
       // JOIN
       if (def.join && def.join.length > 0) {
         for (const joinDef of def.join) {
-          q += this.#getQueryOfJoinDef(joinDef);
+          q += this._getQueryOfJoinDef(joinDef);
           q += "\n";
         }
       }
@@ -1242,7 +1242,7 @@ DEALLOCATE PREPARE stmt;
     }
   }
 
-  #getQueryOfColDef(colDef: IQueryColumnDef & { pkOrderBy?: "ASC" | "DESC" }): string {
+  private _getQueryOfColDef(colDef: IQueryColumnDef & { pkOrderBy?: "ASC" | "DESC" }): string {
     let q = "";
 
     if (this._dialect === "sqlite") {
@@ -1277,7 +1277,7 @@ DEALLOCATE PREPARE stmt;
     return q.trim();
   }
 
-  #getQueryOfProcedureColDef(colDef: IQueryColumnDef): string {
+  private _getQueryOfProcedureColDef(colDef: IQueryColumnDef): string {
     let q = "";
 
     q += "@" + colDef.name + " ";
@@ -1288,7 +1288,7 @@ DEALLOCATE PREPARE stmt;
     return q.trim();
   }
 
-  #getQueryOfJoinDef(def: IJoinQueryDef): string {
+  private _getQueryOfJoinDef(def: IJoinQueryDef): string {
     let q = "";
 
     if (

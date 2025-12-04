@@ -235,7 +235,7 @@ export class SdPermissionTableControl<TModule> {
   collapsedItems = $signal(new Set<ISdPermission<TModule>>());
 
   depthLength = $computed(() => {
-    return this.#getDepthLength(this.items(), 0);
+    return this._getDepthLength(this.items(), 0);
   });
 
   arr(len: number): number[] {
@@ -326,12 +326,12 @@ export class SdPermissionTableControl<TModule> {
   onPermCheckChange(item: ISdPermission<TModule>, type: "use" | "edit", val: boolean) {
     this.value.update((v) => {
       const r = ObjectUtils.clone(v);
-      this.#changePermCheck(r, item, type, val);
+      this._changePermCheck(r, item, type, val);
       return r;
     });
   }
 
-  #changePermCheck(
+  private _changePermCheck(
     value: Record<string, boolean>,
     item: ISdPermission<TModule>,
     type: "use" | "edit",
@@ -370,7 +370,7 @@ export class SdPermissionTableControl<TModule> {
     // 하위 권한을 함께 변경함
     if (item.children) {
       for (const child of item.children) {
-        const childChanged = this.#changePermCheck(value, child, type, val);
+        const childChanged = this._changePermCheck(value, child, type, val);
         if (childChanged) {
           changed = true;
         }
@@ -380,11 +380,11 @@ export class SdPermissionTableControl<TModule> {
     return changed;
   }
 
-  #getDepthLength(items: ISdPermission<TModule>[], depth: number): number {
+  private _getDepthLength(items: ISdPermission<TModule>[], depth: number): number {
     return (
       items.max((item) => {
         if (item.children) {
-          return this.#getDepthLength(item.children, depth + 1);
+          return this._getDepthLength(item.children, depth + 1);
         } else {
           return depth + 1;
         }

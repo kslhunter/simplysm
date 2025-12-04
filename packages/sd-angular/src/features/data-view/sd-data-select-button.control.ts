@@ -125,7 +125,7 @@ export abstract class AbsSdDataSelectButton<
   abstract load(keys: TKey[]): Promise<TItem[]> | TItem[];
 
   //-- implement
-  #sdModal = inject(SdModalProvider);
+  private readonly _sdModal = inject(SdModalProvider);
 
   value = model<TSelectModeValue<TKey>[TMode]>();
 
@@ -164,7 +164,7 @@ export abstract class AbsSdDataSelectButton<
 
   async doShowModal() {
     const modal = this.modal();
-    const result = await this.#sdModal.showAsync({
+    const result = await this._sdModal.showAsync({
       ...modal,
       inputs: {
         selectMode: this.selectMode(),

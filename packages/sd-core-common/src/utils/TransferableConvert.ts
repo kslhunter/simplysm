@@ -13,11 +13,11 @@ export abstract class TransferableConvert {
     transferList: Transferable[];
   } {
     const transferList: Transferable[] = [];
-    const result = this.#encode(obj, transferList);
+    const result = this._encode(obj, transferList);
     return { result, transferList };
   }
 
-  static #encode(obj: any, transferList: Transferable[]): any {
+  private static _encode(obj: any, transferList: Transferable[]): any {
     if (obj == null) return obj;
 
     // 1. Buffer / Uint8Array
@@ -43,37 +43,37 @@ export abstract class TransferableConvert {
           stack: obj.stack,
 
           ...("code" in obj ? { code: obj.code } : {}),
-          ...("detail" in obj ? { detail: this.#encode(obj.detail, transferList) } : {}),
-          ...("cause" in obj ? { cause: this.#encode(obj.cause, transferList) } : {}),
+          ...("detail" in obj ? { detail: this._encode(obj.detail, transferList) } : {}),
+          ...("cause" in obj ? { cause: this._encode(obj.cause, transferList) } : {}),
         },
       };
     }
 
     // 3. 배열 재귀 순회
     if (Array.isArray(obj)) {
-      return obj.map((item) => this.#encode(item, transferList));
+      return obj.map((item) => this._encode(item, transferList));
     }
 
     // 4. Map 재귀 순회
     if (obj instanceof Map) {
       return new Map(
         Array.from(obj.entries()).map(([k, v]) => [
-          this.#encode(k, transferList),
-          this.#encode(v, transferList),
+          this._encode(k, transferList),
+          this._encode(v, transferList),
         ]),
       );
     }
 
     // 5. Set 재귀 순회
     if (obj instanceof Set) {
-      return new Set(Array.from(obj).map((v) => this.#encode(v, transferList)));
+      return new Set(Array.from(obj).map((v) => this._encode(v, transferList)));
     }
 
     // 6. 일반 객체 재귀 순회
     if (typeof obj === "object") {
       const result: any = {};
       for (const key of Object.keys(obj)) {
-        result[key] = this.#encode(obj[key], transferList);
+        result[key] = this._encode(obj[key], transferList);
       }
       return result;
     }
@@ -103,6 +103,7 @@ export abstract class TransferableConvert {
         if ("code" in data) (err as any).code = data.code;
         if ("cause" in data) (err as any).cause = this.decode(data.cause);
         if ("detail" in data) (err as any).detail = this.decode(data.detail);
+        return err;
       }
     }
 

@@ -12,14 +12,14 @@ import { $effect } from "../../core/utils/bindings/$effect";
   template: ``,
 })
 export class SdBarcodeControl {
-  #elRef = injectElementRef<HTMLElement>();
+  private readonly _elRef = injectElementRef<HTMLElement>();
 
   type = input.required<TBarcodeType>();
   value = input<string>();
 
   constructor() {
     $effect(() => {
-      this.#elRef.nativeElement.innerHTML = bwipjs.toSVG({
+      this._elRef.nativeElement.innerHTML = bwipjs.toSVG({
         bcid: this.type(),
         text: this.value() ?? "",
       });

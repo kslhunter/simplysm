@@ -3,7 +3,7 @@ import { DateTimeFormatUtils } from "../../utils/DateTimeFormatUtils";
 import { DateTime } from "./DateTime";
 
 export class Time {
-  #tick: number;
+  private _tick: number;
 
   constructor();
   constructor(hour: number, minute: number, second?: number, millisecond?: number);
@@ -12,28 +12,28 @@ export class Time {
   constructor(arg1?: number | Date, arg2?: number, arg3?: number, arg4?: number) {
     if (arg1 === undefined) {
       const now = new Date();
-      this.#tick =
+      this._tick =
         (now.getMilliseconds() + // ms
           now.getSeconds() * 1000 + // s
           now.getMinutes() * 60 * 1000 + // m
           now.getHours() * 60 * 60 * 1000) % // h
         (24 * 60 * 60 * 1000);
     } else if (arg2 !== undefined) {
-      this.#tick =
+      this._tick =
         ((arg4 ?? 0) + // ms
           (arg3 ?? 0) * 1000 + // s
           arg2 * 60 * 1000 + // m
           (arg1 as number) * 60 * 60 * 1000) % // h
         (24 * 60 * 60 * 1000);
     } else if (arg1 instanceof Date) {
-      this.#tick =
+      this._tick =
         (arg1.getMilliseconds() + // ms
           arg1.getSeconds() * 1000 + // s
           arg1.getMinutes() * 60 * 1000 + // m
           arg1.getHours() * 60 * 60 * 1000) % // h
         (24 * 60 * 60 * 1000);
     } else {
-      this.#tick = arg1 % (24 * 60 * 60 * 1000);
+      this._tick = arg1 % (24 * 60 * 60 * 1000);
     }
   }
 
@@ -67,43 +67,43 @@ export class Time {
   }
 
   get hour(): number {
-    return Math.floor(this.#tick / (60 * 60 * 1000));
+    return Math.floor(this._tick / (60 * 60 * 1000));
   }
 
   set hour(value: number) {
-    this.#tick = (this.#tick + (value - this.hour) * 60 * 60 * 1000) % (24 * 60 * 60 * 1000);
+    this._tick = (this._tick + (value - this.hour) * 60 * 60 * 1000) % (24 * 60 * 60 * 1000);
   }
 
   get minute(): number {
-    return Math.floor(this.#tick / (60 * 1000)) % 60;
+    return Math.floor(this._tick / (60 * 1000)) % 60;
   }
 
   set minute(value: number) {
-    this.#tick = (this.#tick + (value - this.minute) * 60 * 1000) % (24 * 60 * 60 * 1000);
+    this._tick = (this._tick + (value - this.minute) * 60 * 1000) % (24 * 60 * 60 * 1000);
   }
 
   get second(): number {
-    return Math.floor(this.#tick / 1000) % 60;
+    return Math.floor(this._tick / 1000) % 60;
   }
 
   set second(value: number) {
-    this.#tick = (this.#tick + (value - this.second) * 1000) % (24 * 60 * 60 * 1000);
+    this._tick = (this._tick + (value - this.second) * 1000) % (24 * 60 * 60 * 1000);
   }
 
   get millisecond(): number {
-    return this.#tick % 1000;
+    return this._tick % 1000;
   }
 
   set millisecond(value: number) {
-    this.#tick = (this.#tick + (value - this.millisecond)) % (24 * 60 * 60 * 1000);
+    this._tick = (this._tick + (value - this.millisecond)) % (24 * 60 * 60 * 1000);
   }
 
   get tick(): number {
-    return this.#tick;
+    return this._tick;
   }
 
   set tick(tick: number) {
-    this.#tick = tick % (24 * 60 * 60 * 1000);
+    this._tick = tick % (24 * 60 * 60 * 1000);
   }
 
   setHour(hour: number): Time {

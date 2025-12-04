@@ -7,13 +7,13 @@ import { SdServiceProtocolV1 } from "./SdServiceProtocolV1";
 import { ISdServiceRequest, TSdServiceC2SMessage, TSdServiceS2CMessage } from "./protocol-v1.types";
 
 export class SdServiceSocketV1 extends EventEmitter {
-  readonly #logger = SdLogger.get(["simplysm", "sd-service-server", "SdServiceSocket"]);
+  private readonly _logger = SdLogger.get(["simplysm", "sd-service-server", "SdServiceSocket"]);
 
-  readonly #protocol = new SdServiceProtocolV1();
-  readonly #listenerInfos: { eventName: string; key: string; info: any }[] = [];
+  private readonly _protocol = new SdServiceProtocolV1();
+  private readonly _listenerInfos: { eventName: string; key: string; info: any }[] = [];
 
-  #isAlive = true;
-  readonly #pingInterval: NodeJS.Timeout;
+  private _isAlive = true;
+  private readonly _pingInterval: NodeJS.Timeout;
 
   readonly connectedAtDateTime = new DateTime();
 
@@ -27,22 +27,22 @@ export class SdServiceSocketV1 extends EventEmitter {
     super();
 
     // 소켓 이벤트 바인딩
-    this._socket.on("close", this.#onClose.bind(this));
-    this._socket.on("error", this.#onError.bind(this));
-    this._socket.on("message", this.#onMessage.bind(this));
+    this._socket.on("close", this._onClose.bind(this));
+    this._socket.on("error", this._onError.bind(this));
+    this._socket.on("message", this._onMessage.bind(this));
 
     // 핑퐁 로직
     this._socket.on("pong", () => {
-      this.#isAlive = true;
+      this._isAlive = true;
     });
 
-    this.#pingInterval = setInterval(() => {
-      if (!this.#isAlive) {
+    this._pingInterval = setInterval(() => {
+      if (!this._isAlive) {
         this.close();
         return;
       }
 
-      this.#isAlive = false;
+      this._isAlive = false;
       this._socket.ping();
     }, 10000);
   }
@@ -87,7 +87,7 @@ export class SdServiceSocketV1 extends EventEmitter {
   send(msg: TSdServiceS2CMessage) {
     if (this._socket.readyState !== WebSocket.OPEN) return 0;
 
-    const chunks = this.#protocol.encode(msg).chunks;
+    const chunks = this._protocol.encode(msg).chunks;
     for (const chunk of chunks) {
       this._socket.send(chunk);
     }
@@ -96,21 +96,21 @@ export class SdServiceSocketV1 extends EventEmitter {
   }
 
   addEventListener(key: string, eventName: string, info: any) {
-    this.#listenerInfos.push({ key, eventName, info });
+    this._listenerInfos.push({ key, eventName, info });
   }
 
   removeEventListener(key: string) {
-    this.#listenerInfos.remove((item) => item.key === key);
+    this._listenerInfos.remove((item) => item.key === key);
   }
 
   getEventListners(eventName: string) {
-    return this.#listenerInfos
+    return this._listenerInfos
       .filter((item) => item.eventName === eventName)
       .map((item) => ({ key: item.key, info: item.info }));
   }
 
   emitByKeys(targetKeys: string[], data: any) {
-    const targets = this.#listenerInfos.filter((item) => targetKeys.includes(item.key));
+    const targets = this._listenerInfos.filter((item) => targetKeys.includes(item.key));
     for (const target of targets) {
       this.send({
         name: "event",
@@ -122,20 +122,20 @@ export class SdServiceSocketV1 extends EventEmitter {
 
   // ===========================================================================
 
-  #onError(err: Error) {
-    this.#logger.error("WebSocket 클라이언트 오류 발생", err);
+  private _onError(err: Error) {
+    this._logger.error("WebSocket 클라이언트 오류 발생", err);
     this.emit("error", err);
   }
 
-  #onClose(code: number) {
-    clearInterval(this.#pingInterval);
-    this.#protocol.dispose();
+  private _onClose(code: number) {
+    clearInterval(this._pingInterval);
+    this._protocol.dispose();
     this.emit("close", code);
   }
 
-  #onMessage(msgBuffer: Buffer) {
+  private _onMessage(msgBuffer: Buffer) {
     try {
-      const decodeResult = this.#protocol.decode(msgBuffer.toString());
+      const decodeResult = this._protocol.decode(msgBuffer.toString());
 
       // A. 분할 메시지 수신 중 -> ACK (reqUuid 사용)
       if (decodeResult.type === "accumulating") {
@@ -156,7 +156,7 @@ export class SdServiceSocketV1 extends EventEmitter {
         }
       }
     } catch (err) {
-      this.#logger.error("WebSocket 메시지 처리 중 오류 발생", err);
+      this._logger.error("WebSocket 메시지 처리 중 오류 발생", err);
     }
   }
 }

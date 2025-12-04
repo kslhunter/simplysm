@@ -32,7 +32,7 @@ export class SdServiceProtocolWrapper {
    */
   async encodeAsync(uuid: string, message: TSdServiceMessage): Promise<Buffer[]> {
     // 1. 휴리스틱: 워커를 태울지 결정 (O(1))
-    if (this.#shouldUseWorkerForEncode(message)) {
+    if (this._shouldUseWorkerForEncode(message)) {
       // [Worker] 대용량 처리
       return await SdServiceProtocolWrapper.worker.run("encode", [uuid, message]);
     } else {
@@ -59,7 +59,7 @@ export class SdServiceProtocolWrapper {
   /**
    * 워커 사용 여부 판단 로직 (Encode)
    */
-  #shouldUseWorkerForEncode(msg: TSdServiceMessage): boolean {
+  private _shouldUseWorkerForEncode(msg: TSdServiceMessage): boolean {
     if (!("body" in msg)) return false;
 
     const body = msg.body;

@@ -16,13 +16,13 @@ export class DbConnFactory {
     }
 
     // 1. 풀 가져오기 (없으면 생성)
-    const pool = this.#getOrCreatePool(config);
+    const pool = this._getOrCreatePool(config);
 
     // 2. 래퍼 객체 반환
     return new PooledDbConn(pool, config);
   }
 
-  static #getOrCreatePool(config: TDbConnConf): Pool<IDbConn> {
+  private static _getOrCreatePool(config: TDbConnConf): Pool<IDbConn> {
     // 객체를 키로 쓰기 위해 문자열 변환
     const configKey = JSON.stringify(config);
 
@@ -30,7 +30,7 @@ export class DbConnFactory {
       const pool = createPool<IDbConn>(
         {
           create: async () => {
-            const conn = this.#createRawConnection(config);
+            const conn = this._createRawConnection(config);
             await conn.connectAsync(); // 풀에 담기 전 미리 연결
             return conn;
           },
@@ -57,7 +57,7 @@ export class DbConnFactory {
     return this._poolMap.get(configKey)!;
   }
 
-  static #createRawConnection(config: TDbConnConf): IDbConn {
+  private static _createRawConnection(config: TDbConnConf): IDbConn {
     if (config.dialect === "sqlite") {
       return new SqliteDbConn(config);
     } else if (config.dialect === "mysql") {

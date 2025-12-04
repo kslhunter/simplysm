@@ -3,7 +3,7 @@ import { SdExcelXmlWorksheet } from "./xmls/SdExcelXmlWorksheet";
 import { ZipCache } from "./utils/ZipCache";
 
 export class SdExcelCol {
-  #cellMap = new Map<number, SdExcelCell>();
+  private readonly _cellMap = new Map<number, SdExcelCell>();
 
   constructor(
     private readonly _zipCache: ZipCache,
@@ -12,7 +12,7 @@ export class SdExcelCol {
   ) {}
 
   cell(r: number): SdExcelCell {
-    return this.#cellMap.getOrCreate(
+    return this._cellMap.getOrCreate(
       r,
       new SdExcelCell(this._zipCache, this._targetFileName, r, this._c),
     );
@@ -21,7 +21,7 @@ export class SdExcelCol {
   async getCellsAsync(): Promise<SdExcelCell[]> {
     const result: SdExcelCell[] = [];
 
-    const wsData = await this.#getWsDataAsync();
+    const wsData = await this._getWsDataAsync();
 
     const range = wsData.range;
     for (let r = range.s.r; r <= range.e.r; r++) {
@@ -32,11 +32,11 @@ export class SdExcelCol {
   }
 
   async setWidthAsync(size: number) {
-    const wsData = await this.#getWsDataAsync();
+    const wsData = await this._getWsDataAsync();
     wsData.setColWidth((this._c + 1).toString(), size.toString());
   }
 
-  async #getWsDataAsync(): Promise<SdExcelXmlWorksheet> {
+  private async _getWsDataAsync(): Promise<SdExcelXmlWorksheet> {
     return (await this._zipCache.getAsync(
       `xl/worksheets/${this._targetFileName}`,
     )) as SdExcelXmlWorksheet;

@@ -17,14 +17,14 @@ import { SdServiceSocketV1 } from "../v1/SdServiceSocketV1";
 import { SdServiceSocket } from "../internal/SdServiceSocket";
 
 export class SdOrmService extends SdServiceBase implements ISdOrmService {
-  readonly #logger = SdLogger.get(["simplysm", "sd-service-server", this.constructor.name]);
+  private readonly _logger = SdLogger.get(["simplysm", "sd-service-server", this.constructor.name]);
 
-  static readonly #socketConns = new WeakMap<
+  private static readonly _socketConns = new WeakMap<
     SdServiceSocketV1 | SdServiceSocket,
     Map<number, IDbConn>
   >();
 
-  async #getConf(opt: TDbConnOptions & { configName: string }): Promise<TDbConnConf> {
+  private async _getConf(opt: TDbConnOptions & { configName: string }): Promise<TDbConnConf> {
     const config = (await this.getConfigAsync<Record<string, TDbConnConf | undefined>>("orm"))[
       opt.configName
     ];
@@ -40,8 +40,8 @@ export class SdOrmService extends SdServiceBase implements ISdOrmService {
     return socket;
   }
 
-  #getConn(connId: number): IDbConn {
-    const myConns = SdOrmService.#socketConns.get(this.sock);
+  private _getConn(connId: number): IDbConn {
+    const myConns = SdOrmService._socketConns.get(this.sock);
     const conn = myConns?.get(connId);
     if (!conn) {
       throw new Error("DB에 연결되어있지 않습니다. (Invalid Connection ID)");
@@ -55,7 +55,7 @@ export class SdOrmService extends SdServiceBase implements ISdOrmService {
     database?: string;
     schema?: string;
   }> {
-    const config = await this.#getConf(opt);
+    const config = await this._getConf(opt);
     return {
       dialect: config.dialect,
       ...(config.dialect === "sqlite"
@@ -69,17 +69,17 @@ export class SdOrmService extends SdServiceBase implements ISdOrmService {
 
   async connect(opt: TDbConnOptions & { configName: string }): Promise<number> {
     // 1. 현재 소켓에 매핑된 DB 연결 목록 가져오기 (없으면 생성)
-    let myConns = SdOrmService.#socketConns.get(this.sock);
+    let myConns = SdOrmService._socketConns.get(this.sock);
     if (!myConns) {
       myConns = new Map<number, IDbConn>();
-      SdOrmService.#socketConns.set(this.sock, myConns);
+      SdOrmService._socketConns.set(this.sock, myConns);
 
       // [수정] 소켓당 '단 한 번'만 close 리스너를 등록합니다.
       // 소켓이 끊어지면, 해당 소켓이 가진 모든 DB 연결을 일괄 종료(반납)합니다.
       this.sock.on("close", async () => {
         if (!myConns) return;
 
-        this.#logger.debug("소켓 연결 종료 감지: 열려있는 모든 DB 연결을 정리합니다.");
+        this._logger.debug("소켓 연결 종료 감지: 열려있는 모든 DB 연결을 정리합니다.");
         const conns = Array.from(myConns.values());
 
         // 병렬로 빠르게 닫기
@@ -90,7 +90,7 @@ export class SdOrmService extends SdServiceBase implements ISdOrmService {
                 await conn.closeAsync();
               }
             } catch (err) {
-              this.#logger.warn("DB 연결 강제 종료 중 오류 무시됨", err);
+              this._logger.warn("DB 연결 강제 종료 중 오류 무시됨", err);
             }
           }),
         );
@@ -100,7 +100,7 @@ export class SdOrmService extends SdServiceBase implements ISdOrmService {
     }
 
     // 2. 연결 생성 (이제 내부적으로 Pool에서 가져옴)
-    const config = await this.#getConf(opt);
+    const config = await this._getConf(opt);
     const conn = DbConnFactory.create(config);
     await conn.connectAsync();
 
@@ -120,25 +120,25 @@ export class SdOrmService extends SdServiceBase implements ISdOrmService {
 
   async close(connId: number): Promise<void> {
     try {
-      const conn = this.#getConn(connId);
+      const conn = this._getConn(connId);
       await conn.closeAsync();
     } catch (err) {
-      this.#logger.warn("DB 연결 종료 중 오류 무시됨", err);
+      this._logger.warn("DB 연결 종료 중 오류 무시됨", err);
     }
   }
 
   async beginTransaction(connId: number, isolationLevel?: ISOLATION_LEVEL): Promise<void> {
-    const conn = this.#getConn(connId);
+    const conn = this._getConn(connId);
     await conn.beginTransactionAsync(isolationLevel);
   }
 
   async commitTransaction(connId: number): Promise<void> {
-    const conn = this.#getConn(connId);
+    const conn = this._getConn(connId);
     await conn.commitTransactionAsync();
   }
 
   async rollbackTransaction(connId: number): Promise<void> {
-    const conn = this.#getConn(connId);
+    const conn = this._getConn(connId);
     await conn.rollbackTransactionAsync();
   }
 
@@ -148,7 +148,7 @@ export class SdOrmService extends SdServiceBase implements ISdOrmService {
   }*/
 
   async executeParametrized(connId: number, query: string, params?: any[]): Promise<any[][]> {
-    const conn = this.#getConn(connId);
+    const conn = this._getConn(connId);
     return await conn.executeParametrizedAsync(query, params);
   }
 
@@ -157,7 +157,7 @@ export class SdOrmService extends SdServiceBase implements ISdOrmService {
     defs: TQueryDef[],
     options?: (IQueryResultParseOption | undefined)[],
   ): Promise<any[][]> {
-    const conn = this.#getConn(connId);
+    const conn = this._getConn(connId);
 
     // 가져올데이터가 없는것으로 옵션 설정을 했을때, 하나의 쿼리로 한번의 요청보냄
     if (options && options.every((item) => item == null)) {
@@ -182,7 +182,7 @@ export class SdOrmService extends SdServiceBase implements ISdOrmService {
     columnDefs: IQueryColumnDef[],
     records: Record<string, any>[],
   ): Promise<void> {
-    const conn = this.#getConn(connId);
+    const conn = this._getConn(connId);
     await conn.bulkInsertAsync(tableName, columnDefs, records);
   }
 
@@ -192,7 +192,7 @@ export class SdOrmService extends SdServiceBase implements ISdOrmService {
     columnDefs: IQueryColumnDef[],
     records: Record<string, any>[],
   ): Promise<void> {
-    const conn = this.#getConn(connId);
+    const conn = this._getConn(connId);
     await conn.bulkUpsertAsync(tableName, columnDefs, records);
   }
 }

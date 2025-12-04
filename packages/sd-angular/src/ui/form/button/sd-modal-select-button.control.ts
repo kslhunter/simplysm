@@ -64,7 +64,7 @@ export class SdModalSelectButtonControl<
 > {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
 
-  #sdModal = inject(SdModalProvider);
+  private readonly _sdModal = inject(SdModalProvider);
 
   modal = input.required<TSdSelectModalInfo<ISdSelectModal<T>>>();
 
@@ -96,7 +96,7 @@ export class SdModalSelectButtonControl<
     event.stopPropagation();
 
     const modal = this.modal();
-    const result = await this.#sdModal.showAsync({
+    const result = await this._sdModal.showAsync({
       ...modal,
       inputs: {
         selectMode: this.selectMode(),

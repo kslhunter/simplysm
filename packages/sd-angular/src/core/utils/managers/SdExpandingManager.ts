@@ -10,7 +10,7 @@ export class SdExpandingManager<T> {
   }) {
   }
 
-  #itemDefs = $computed(() => {
+  private readonly _itemDefs = $computed(() => {
     let rootItems: ISdExpandItemDef<T>[] = this._options.items().map((item) => ({
       item,
       parentDef: undefined,
@@ -49,17 +49,17 @@ export class SdExpandingManager<T> {
     return result;
   });
 
-  flattedItems = $computed(() => this.#itemDefs().map(item => item.item));
+  flattedItems = $computed(() => this._itemDefs().map(item => item.item));
 
-  #expandableItems = $computed(() =>
-    this.#itemDefs().filter((itemDef) => itemDef.hasChildren).map((itemDef) => itemDef.item),
+  private readonly _expandableItems = $computed(() =>
+    this._itemDefs().filter((itemDef) => itemDef.hasChildren).map((itemDef) => itemDef.item),
   );
 
-  hasExpandable = $computed(() => this.#expandableItems().length > 0);
+  hasExpandable = $computed(() => this._expandableItems().length > 0);
 
   isAllExpanded = $computed(() =>
-    this.#expandableItems().length <= this._options.expandedItems().length &&
-    this.#expandableItems().every((item) => this._options.expandedItems().includes(item)),
+    this._expandableItems().length <= this._options.expandedItems().length &&
+    this._expandableItems().every((item) => this._options.expandedItems().includes(item)),
   );
 
   toggleAll() {
@@ -67,7 +67,7 @@ export class SdExpandingManager<T> {
       this._options.expandedItems.set([]);
     }
     else {
-      const expandedItems = this.#itemDefs()
+      const expandedItems = this._itemDefs()
         .filter((item) => item.hasChildren)
         .map((item) => item.item);
       this._options.expandedItems.set(expandedItems);
@@ -100,7 +100,7 @@ export class SdExpandingManager<T> {
   }
 
   getDef(item: T) {
-    return this.#itemDefs().single(item1 => item1.item === item)!;
+    return this._itemDefs().single(item1 => item1.item === item)!;
   }
 }
 

@@ -64,8 +64,9 @@ export default [
         },
       ],
 
-      // simplysm
+      //-- 심플리즘
       "@simplysm/no-subpath-imports-from-simplysm": ["error"],
+      "@simplysm/no-hard-private": ["error"],
     },
   },
   {
@@ -134,6 +135,7 @@ export default [
         },
       ],
       "@typescript-eslint/prefer-ts-expect-error": ["error"],
+      "@typescript-eslint/prefer-readonly": ["error"],
       /*"@typescript-eslint/explicit-member-accessibility": [
         "error",
         {
@@ -203,6 +205,7 @@ export default [
       //-- 심플리즘
       "@simplysm/ts-no-throw-not-implement-error": ["warn"],
       "@simplysm/no-subpath-imports-from-simplysm": ["error"],
+      "@simplysm/no-hard-private": ["error"],
 
       // -- 아래 적용 검토가 필요한것
       "import/no-extraneous-dependencies": [

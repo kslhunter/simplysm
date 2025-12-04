@@ -24,25 +24,25 @@ import { WebSocket } from "ws";
 export class SdServiceServer extends EventEmitter {
   isOpen = false;
 
-  readonly #logger = SdLogger.get(["simplysm", "sd-service-server", this.constructor.name]);
+  private readonly _logger = SdLogger.get(["simplysm", "sd-service-server", this.constructor.name]);
 
   // 핸들러 인스턴스
-  #serviceExecutor = new SdServiceExecutor(this);
-  #httpRequestHandler = new SdHttpRequestHandler(this, this.#serviceExecutor);
-  #staticFileHandler = new SdStaticFileHandler(this);
-  #uploadHandler = new SdUploadHandler(this);
+  private readonly _serviceExecutor = new SdServiceExecutor(this);
+  private readonly _httpRequestHandler = new SdHttpRequestHandler(this, this._serviceExecutor);
+  private readonly _staticFileHandler = new SdStaticFileHandler(this);
+  private readonly _uploadHandler = new SdUploadHandler(this);
 
-  #wsCtrlV1 = new SdWebSocketControllerV1(this.#serviceExecutor);
-  #wsCtrlV2 = new SdWebSocketController(this.#serviceExecutor);
+  private readonly _wsCtrlV1 = new SdWebSocketControllerV1(this._serviceExecutor);
+  private readonly _wsCtrlV2 = new SdWebSocketController(this._serviceExecutor);
 
-  #fastify?: FastifyInstance;
+  private _fastify?: FastifyInstance;
 
   constructor(readonly options: ISdServiceServerOptions) {
     super();
   }
 
   async listenAsync(): Promise<void> {
-    this.#logger.debug("서버 시작..." + process.env["SD_VERSION"]);
+    this._logger.debug("서버 시작..." + process.env["SD_VERSION"]);
 
     const httpsConf = this.options.ssl
       ? {
@@ -53,15 +53,15 @@ export class SdServiceServer extends EventEmitter {
           passphrase: this.options.ssl.passphrase,
         }
       : null;
-    this.#fastify = fastify({ https: httpsConf });
+    this._fastify = fastify({ https: httpsConf });
 
     // Websocket 플러그인
-    await this.#fastify.register(fastifyWebsocket);
+    await this._fastify.register(fastifyWebsocket);
 
     // 보안 플러그인
     // XSS 방지, HSTS 설정, iframe 클릭재킹 방지 등의 필수 보안 헤더를 자동으로 설정해 줍니다.
     // IP로 접속하는 고객사가 있으므로 이에 관한 보안은 지정할 수 없음.
-    await this.#fastify.register(fastifyHelmet, {
+    await this._fastify.register(fastifyHelmet, {
       global: true,
       contentSecurityPolicy: {
         directives: {
@@ -84,29 +84,29 @@ export class SdServiceServer extends EventEmitter {
     });
 
     // 업로드 플러그인
-    await this.#fastify.register(fastifyMultipart);
+    await this._fastify.register(fastifyMultipart);
 
     // 미들웨어 설정
-    await this.#fastify.register(fastifyMiddie);
+    await this._fastify.register(fastifyMiddie);
     if (this.options.middlewares) {
       for (const mdw of this.options.middlewares) {
-        this.#fastify.use(mdw);
+        this._fastify.use(mdw);
       }
     }
 
-    await this.#fastify.register(fastifyReplyFrom);
+    await this._fastify.register(fastifyReplyFrom);
 
     // @fastify/static 등록
     // 기본적으로 www 폴더를 루트로 잡지만, wildcard: false로 설정하여
     // 자동 라우팅을 끄고 우리가 직접 제어합니다.
-    await this.#fastify.register(fastifyStatic, {
+    await this._fastify.register(fastifyStatic, {
       root: path.resolve(this.options.rootPath, "www"),
       wildcard: false,
       serve: false, // 자동 서빙 방지 (수동 제어)
     });
 
     // CORS 설정
-    await this.#fastify.register(fastifyCors, {
+    await this._fastify.register(fastifyCors, {
       origin: (origin, cb) => {
         cb(null, true); // AllowALL
       },
@@ -114,7 +114,7 @@ export class SdServiceServer extends EventEmitter {
     });
 
     // JSON 파서
-    this.#fastify.addContentTypeParser(
+    this._fastify.addContentTypeParser(
       "application/json",
       { parseAs: "string" },
       (req, body, done) => {
@@ -129,16 +129,16 @@ export class SdServiceServer extends EventEmitter {
     );
 
     // JSON 생성기
-    this.#fastify.setSerializerCompiler(() => (data) => JsonConvert.stringify(data));
+    this._fastify.setSerializerCompiler(() => (data) => JsonConvert.stringify(data));
 
     // API 라우트
-    this.#fastify.all("/api/:service/:method", async (req, reply) => {
-      await this.#httpRequestHandler.handleAsync(req, reply);
+    this._fastify.all("/api/:service/:method", async (req, reply) => {
+      await this._httpRequestHandler.handleAsync(req, reply);
     });
 
     // 업로드 라우트
-    this.#fastify.all("/upload", async (req, reply) => {
-      await this.#uploadHandler.handleAsync(req, reply);
+    this._fastify.all("/upload", async (req, reply) => {
+      await this._uploadHandler.handleAsync(req, reply);
     });
 
     // WebSocket 라우트
@@ -154,16 +154,16 @@ export class SdServiceServer extends EventEmitter {
           return;
         }
 
-        this.#wsCtrlV2.addSocket(socket, clientId, clientName, req.socket.remoteAddress);
+        this._wsCtrlV2.addSocket(socket, clientId, clientName, req.socket.remoteAddress);
       } else {
-        await this.#wsCtrlV1.addSocket(socket, req.socket.remoteAddress);
+        await this._wsCtrlV1.addSocket(socket, req.socket.remoteAddress);
       }
     };
-    this.#fastify.get("/", { websocket: true }, onWebSocketConnected.bind(this));
-    this.#fastify.get("/ws", { websocket: true }, onWebSocketConnected.bind(this));
+    this._fastify.get("/", { websocket: true }, onWebSocketConnected.bind(this));
+    this._fastify.get("/ws", { websocket: true }, onWebSocketConnected.bind(this));
 
     // 정적 파일 와일드카드 핸들러
-    this.#fastify.route({
+    this._fastify.route({
       method: ["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD"],
       url: "/*",
       handler: async (req, reply) => {
@@ -183,40 +183,40 @@ export class SdServiceServer extends EventEmitter {
           }
         }
 
-        await this.#staticFileHandler.handleAsync(req, reply, urlPath);
+        await this._staticFileHandler.handleAsync(req, reply, urlPath);
       },
     });
 
     // HTTP 서버 수준의 에러 핸들링
-    this.#fastify.server.on("error", (err) => {
-      this.#logger.error("HTTP 서버 오류 발생", err);
+    this._fastify.server.on("error", (err) => {
+      this._logger.error("HTTP 서버 오류 발생", err);
     });
 
     // 리슨
-    await this.#fastify.listen({ port: this.options.port, host: "0.0.0.0" });
+    await this._fastify.listen({ port: this.options.port, host: "0.0.0.0" });
 
     // Graceful Shutdown 핸들러 등록
-    this.#registerGracefulShutdown();
+    this._registerGracefulShutdown();
 
     this.isOpen = true;
-    this.#logger.debug("서버 시작됨");
+    this._logger.debug("서버 시작됨");
     this.emit("ready");
   }
 
   async closeAsync(): Promise<void> {
-    this.#wsCtrlV1.closeAll();
-    this.#wsCtrlV2.closeAll();
-    await this.#fastify?.close();
+    this._wsCtrlV1.closeAll();
+    this._wsCtrlV2.closeAll();
+    await this._fastify?.close();
 
     this.isOpen = false;
-    this.#logger.debug("서버 종료됨");
+    this._logger.debug("서버 종료됨");
     this.emit("close");
   }
 
   async broadcastReloadAsync(clientName: string | undefined, changedFileSet: Set<string>) {
-    this.#logger.debug("서버내 모든 클라이언트 RELOAD 명령 전송");
-    this.#wsCtrlV1.broadcastReload(clientName, changedFileSet);
-    await this.#wsCtrlV2.broadcastReloadAsync(clientName, changedFileSet);
+    this._logger.debug("서버내 모든 클라이언트 RELOAD 명령 전송");
+    this._wsCtrlV1.broadcastReload(clientName, changedFileSet);
+    await this._wsCtrlV2.broadcastReloadAsync(clientName, changedFileSet);
   }
 
   async emitEvent<T extends SdServiceEventListenerBase<any, any>>(
@@ -224,18 +224,18 @@ export class SdServiceServer extends EventEmitter {
     infoSelector: (item: T["info"]) => boolean,
     data: T["data"],
   ) {
-    this.#wsCtrlV1.emit(eventType, infoSelector, data);
-    await this.#wsCtrlV2.emitAsync(eventType, infoSelector, data);
+    this._wsCtrlV1.emit(eventType, infoSelector, data);
+    await this._wsCtrlV2.emitAsync(eventType, infoSelector, data);
   }
 
   // 종료 시그널 감지 및 처리
-  #registerGracefulShutdown() {
+  private _registerGracefulShutdown() {
     const shutdownHandler = async (signal: string) => {
-      this.#logger.info(`${signal} 시그널 감지. 서버 종료 프로세스 시작...`);
+      this._logger.info(`${signal} 시그널 감지. 서버 종료 프로세스 시작...`);
 
       // 안전 장치: 10초가 지나도 안 꺼지면 강제 종료
       const forceExitTimer = setTimeout(() => {
-        this.#logger.error("서버 종료 시간 초과 (10초). 강제 종료합니다.");
+        this._logger.error("서버 종료 시간 초과 (10초). 강제 종료합니다.");
         process.exit(1);
       }, 10000); // 10초 (필요에 따라 조절)
 
@@ -243,11 +243,11 @@ export class SdServiceServer extends EventEmitter {
         if (this.isOpen) {
           await this.closeAsync();
         }
-        this.#logger.info("서버가 안전하게 종료되었습니다.");
+        this._logger.info("서버가 안전하게 종료되었습니다.");
         clearTimeout(forceExitTimer); // 정상 종료되면 타이머 해제
         process.exit(0);
       } catch (err) {
-        this.#logger.error("서버 종료 중 오류 발생", err);
+        this._logger.error("서버 종료 중 오류 발생", err);
         process.exit(1);
       }
     };

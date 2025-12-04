@@ -4,12 +4,12 @@ import { ICryptoConfig, ISdCryptoService } from "@simplysm/sd-service-common";
 
 export class SdCryptoService extends SdServiceBase implements ISdCryptoService {
   async encrypt(data: string | Buffer): Promise<string> {
-    const config = await this.#getConf();
+    const config = await this._getConf();
     return crypto.createHmac("sha256", config.key).update(data).digest("hex");
   }
 
   async encryptAes(data: Buffer): Promise<string> {
-    const config = await this.#getConf();
+    const config = await this._getConf();
 
     const iv = crypto.randomBytes(16);
     const cipher = crypto.createCipheriv("aes-256-cbc", Buffer.from(config.key), iv);
@@ -19,7 +19,7 @@ export class SdCryptoService extends SdServiceBase implements ISdCryptoService {
   }
 
   async decryptAes(encText: string): Promise<Buffer> {
-    const config = await this.#getConf();
+    const config = await this._getConf();
 
     const textParts = encText.split(":");
     const iv = Buffer.from(textParts.shift()!, "hex");
@@ -30,7 +30,7 @@ export class SdCryptoService extends SdServiceBase implements ISdCryptoService {
     return Buffer.concat([decrypted, decipher.final()]);
   }
 
-  async #getConf() {
+  private async _getConf() {
     return await this.getConfigAsync<ICryptoConfig>("crypto");
   }
 }

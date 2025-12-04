@@ -12,7 +12,7 @@ import { SdExcelXmlRelationShip } from "./xmls/SdExcelXmlRelationShip";
 import { SdExcelXmlDrawing } from "./xmls/SdExcelXmlDrawing";
 
 export class SdExcelWorksheet {
-  readonly #rowMap = new Map<number, SdExcelRow>();
+  private readonly _rowMap = new Map<number, SdExcelRow>();
 
   constructor(
     private readonly _zipCache: ZipCache,
@@ -21,17 +21,17 @@ export class SdExcelWorksheet {
   ) {}
 
   async getNameAsync(): Promise<string> {
-    const wbXmlData = await this.#getWbDataAsync();
+    const wbXmlData = await this._getWbDataAsync();
     return wbXmlData.getWorksheetNameById(this._relId)!;
   }
 
   async setNameAsync(newName: string): Promise<void> {
-    const wbXmlData = await this.#getWbDataAsync();
+    const wbXmlData = await this._getWbDataAsync();
     wbXmlData.setWorksheetNameById(this._relId, newName);
   }
 
   row(r: number): SdExcelRow {
-    return this.#rowMap.getOrCreate(r, new SdExcelRow(this._zipCache, this._targetFileName, r));
+    return this._rowMap.getOrCreate(r, new SdExcelRow(this._zipCache, this._targetFileName, r));
   }
 
   cell(r: number, c: number): SdExcelCell {
@@ -54,7 +54,7 @@ export class SdExcelWorksheet {
     srcAddr: { r: number; c: number },
     targetAddr: { r: number; c: number },
   ) {
-    const wsData = await this.#getWsDataAsync();
+    const wsData = await this._getWsDataAsync();
 
     const styleId = wsData.getCellStyleId(srcAddr);
     if (styleId != null) {
@@ -63,12 +63,12 @@ export class SdExcelWorksheet {
   }
 
   async copyRowAsync(srcR: number, targetR: number) {
-    const wsData = await this.#getWsDataAsync();
+    const wsData = await this._getWsDataAsync();
     wsData.copyRow(srcR, targetR);
   }
 
   async copyCellAsync(srcAddr: { r: number; c: number }, targetAddr: { r: number; c: number }) {
-    const wsData = await this.#getWsDataAsync();
+    const wsData = await this._getWsDataAsync();
     wsData.copyCell(srcAddr, targetAddr);
   }
 
@@ -83,14 +83,14 @@ export class SdExcelWorksheet {
   }
 
   async getRangeAsync(): Promise<ISdExcelAddressRangePoint> {
-    const xml = await this.#getWsDataAsync();
+    const xml = await this._getWsDataAsync();
     return xml.range;
   }
 
   async getCellsAsync(): Promise<SdExcelCell[][]> {
     const result: SdExcelCell[][] = [];
 
-    const xml = await this.#getWsDataAsync();
+    const xml = await this._getWsDataAsync();
 
     const range = xml.range;
     for (let r = range.s.r; r <= range.e.r; r++) {
@@ -110,7 +110,7 @@ export class SdExcelWorksheet {
 
     const headerMap = new Map<string, number>();
 
-    const xml = await this.#getWsDataAsync();
+    const xml = await this._getWsDataAsync();
     const range = xml.range;
 
     const startRow = opt?.headerRowIndex ?? range.s.r;
@@ -171,18 +171,18 @@ export class SdExcelWorksheet {
   }
 
   async setZoomAsync(percent: number) {
-    const wbXml = await this.#getWbDataAsync();
+    const wbXml = await this._getWbDataAsync();
     wbXml.initializeView();
 
-    const wsXml = await this.#getWsDataAsync();
+    const wsXml = await this._getWsDataAsync();
     wsXml.setZoom(percent);
   }
 
   async setFixAsync(point: { r?: number; c?: number }) {
-    const wbXml = await this.#getWbDataAsync();
+    const wbXml = await this._getWbDataAsync();
     wbXml.initializeView();
 
-    const wsXml = await this.#getWsDataAsync();
+    const wsXml = await this._getWsDataAsync();
     wsXml.setFix(point);
   }
 
@@ -251,7 +251,7 @@ export class SdExcelWorksheet {
     this._zipCache.set(sheetRelsPath, sheetRels);
 
     // 9. worksheet XML에 <drawing r:id="..."/> 추가 (worksheet XML 책임: SdExcelXmlWorksheet)
-    const wsXml = await this.#getWsDataAsync(); // SdExcelXmlWorksheet 인스턴스
+    const wsXml = await this._getWsDataAsync(); // SdExcelXmlWorksheet 인스턴스
     wsXml.data.worksheet.$["xmlns:r"] =
       wsXml.data.worksheet.$["xmlns:r"] ??
       "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
@@ -357,13 +357,13 @@ export class SdExcelWorksheet {
     return excelItems;
   }*/
 
-  async #getWsDataAsync() {
+  private async _getWsDataAsync() {
     return (await this._zipCache.getAsync(
       `xl/worksheets/${this._targetFileName}`,
     )) as SdExcelXmlWorksheet;
   }
 
-  async #getWbDataAsync() {
+  private async _getWbDataAsync() {
     return (await this._zipCache.getAsync("xl/workbook.xml")) as SdExcelXmlWorkbook;
   }
 }

@@ -15,22 +15,22 @@ import { ISdTsCompilerOptions } from "../../types/build/ISdTsCompilerOptions";
 import { SdWorkerPathPlugin } from "../commons/SdWorkerPathPlugin";
 
 export class SdServerBundler {
-  #logger = SdLogger.get(["simplysm", "sd-cli", "SdServerBundler"]);
+  private readonly _logger = SdLogger.get(["simplysm", "sd-cli", "SdServerBundler"]);
 
-  #context?: esbuild.BuildContext;
+  private _context?: esbuild.BuildContext;
 
-  #modifiedFileSet = new Set<TNormPath>();
-  #resultCache: ISdCliServerPluginResultCache = {};
+  private readonly _modifiedFileSet = new Set<TNormPath>();
+  private readonly _resultCache: ISdCliServerPluginResultCache = {};
 
-  #outputHashCache = new Map<TNormPath, string>();
+  private readonly _outputHashCache = new Map<TNormPath, string>();
 
-  #esbuildOptions: esbuild.BuildOptions;
+  private readonly _esbuildOptions: esbuild.BuildOptions;
 
   constructor(
     private readonly _opt: ISdTsCompilerOptions,
     private readonly _conf: { external: string[] },
   ) {
-    this.#esbuildOptions = {
+    this._esbuildOptions = {
       entryPoints: [
         path.resolve(this._opt.pkgPath, "src/main.ts"),
         // ...FsUtils.glob(path.resolve(this._opt.pkgPath, "src/workers/*.ts")),
@@ -93,26 +93,26 @@ const __filename = __fileURLToPath__(import.meta.url);
 const __dirname = __path__.dirname(__filename);`.trim(),
       },
       plugins: [
-        createSdServerPlugin(this._opt, this.#modifiedFileSet, this.#resultCache),
+        createSdServerPlugin(this._opt, this._modifiedFileSet, this._resultCache),
         SdWorkerPathPlugin(path.resolve(this._opt.pkgPath, "dist")),
       ],
     };
   }
 
   async bundleAsync(modifiedFileSet?: Set<TNormPath>): Promise<ISdBuildResult> {
-    this.#modifiedFileSet.clear();
+    this._modifiedFileSet.clear();
     if (modifiedFileSet) {
-      this.#modifiedFileSet.adds(...modifiedFileSet);
+      this._modifiedFileSet.adds(...modifiedFileSet);
     }
 
     let esbuildResult: esbuild.BuildResult;
     if (this._opt.watch) {
-      if (this.#context == null) {
-        this.#context = await esbuild.context(this.#esbuildOptions);
+      if (this._context == null) {
+        this._context = await esbuild.context(this._esbuildOptions);
       }
 
       try {
-        esbuildResult = await this.#context.rebuild();
+        esbuildResult = await this._context.rebuild();
       } catch (err) {
         if ("warnings" in err || "errors" in err) {
           esbuildResult = err;
@@ -122,7 +122,7 @@ const __dirname = __path__.dirname(__filename);`.trim(),
       }
     } else {
       try {
-        esbuildResult = await esbuild.build(this.#esbuildOptions);
+        esbuildResult = await esbuild.build(this._esbuildOptions);
       } catch (err) {
         if ("warnings" in err || "errors" in err) {
           esbuildResult = err;
@@ -139,8 +139,8 @@ const __dirname = __path__.dirname(__filename);`.trim(),
           this._opt.pkgPath,
         ),
 
-        watchFileSet: this.#resultCache.watchFileSet!,
-        affectedFileSet: this.#resultCache.affectedFileSet!,
+        watchFileSet: this._resultCache.watchFileSet!,
+        affectedFileSet: this._resultCache.affectedFileSet!,
         emitFileSet: new Set<TNormPath>(),
       };
     } else {
@@ -154,11 +154,11 @@ const __dirname = __path__.dirname(__filename);`.trim(),
 
         for (const outputFile of outputFiles) {
           const distFilePath = PathUtils.norm(this._opt.pkgPath, outputFile.path);
-          const prevHash = this.#outputHashCache.get(distFilePath);
+          const prevHash = this._outputHashCache.get(distFilePath);
           const currHash = HashUtils.get(Buffer.from(outputFile.contents));
           if (prevHash !== currHash) {
             FsUtils.writeFile(distFilePath, outputFile.contents);
-            this.#outputHashCache.set(distFilePath, currHash);
+            this._outputHashCache.set(distFilePath, currHash);
             emitFileSet.add(distFilePath);
           }
         }
@@ -173,14 +173,14 @@ const __dirname = __path__.dirname(__filename);`.trim(),
         );
 
         for (const assetFile of assetFiles) {
-          const prevHash = this.#outputHashCache.get(PathUtils.norm(assetFile.source));
+          const prevHash = this._outputHashCache.get(PathUtils.norm(assetFile.source));
           const currHash = HashUtils.get(FsUtils.readFileBuffer(assetFile.source));
           if (prevHash !== currHash) {
             FsUtils.copy(
               assetFile.source,
               path.resolve(this._opt.pkgPath, "dist", assetFile.destination),
             );
-            this.#outputHashCache.set(PathUtils.norm(assetFile.source), currHash);
+            this._outputHashCache.set(PathUtils.norm(assetFile.source), currHash);
             emitFileSet.add(PathUtils.norm(this._opt.pkgPath, "dist", assetFile.destination));
           }
         }
@@ -188,7 +188,7 @@ const __dirname = __path__.dirname(__filename);`.trim(),
         esbuildResult = err;
         for (const e of err.errors) {
           if (e.detail != null) {
-            this.#logger.error(e.detail);
+            this._logger.error(e.detail);
           }
         }
       }
@@ -199,8 +199,8 @@ const __dirname = __path__.dirname(__filename);`.trim(),
           this._opt.pkgPath,
         ),
 
-        watchFileSet: this.#resultCache.watchFileSet!,
-        affectedFileSet: this.#resultCache.affectedFileSet!,
+        watchFileSet: this._resultCache.watchFileSet!,
+        affectedFileSet: this._resultCache.affectedFileSet!,
         emitFileSet: emitFileSet,
       };
     }

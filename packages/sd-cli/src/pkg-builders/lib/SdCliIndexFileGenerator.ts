@@ -11,7 +11,7 @@ export class SdCliIndexFileGenerator {
       : undefined;
 
     const watcher = await SdFsWatcher.watchAsync([path.resolve(pkgPath, "src")], {
-      ignored: await this.#getExcludesAsync(pkgPath, excludes),
+      ignored: await this._getExcludesAsync(pkgPath, excludes),
     });
     watcher.onChange({ delay: 50 }, async (changeInfos) => {
       if (changeInfos.some((item) => ["add", "addDir", "unlink", "unlinkDir"].includes(item.event)))
@@ -34,7 +34,7 @@ export class SdCliIndexFileGenerator {
     }
 
     // 내부 파일들 import
-    const filePaths = await this.#getFilePathsAsync(pkgPath, excludes);
+    const filePaths = await this._getFilePathsAsync(pkgPath, excludes);
     for (const filePath of filePaths.orderBy()) {
       const requirePath = PathUtils.posix(path.relative(path.dirname(indexFilePath), filePath))
         .replace(/\.tsx?$/, "")
@@ -59,7 +59,7 @@ export class SdCliIndexFileGenerator {
     }
   }
 
-  async #getFilePathsAsync(pkgPath: string, excludes?: string[]) {
+  private async _getFilePathsAsync(pkgPath: string, excludes?: string[]) {
     /*const indexFilePath = path.resolve(pkgPath, "src/index.ts");
 
     const tsconfig = await FsUtils.readJsonAsync(path.resolve(pkgPath, "tsconfig.json"));
@@ -68,11 +68,11 @@ export class SdCliIndexFileGenerator {
 
     return await FsUtils.globAsync(path.resolve(pkgPath, "src/**/*{.ts,.tsx}"), {
       nodir: true,
-      ignore: await this.#getExcludesAsync(pkgPath, excludes),
+      ignore: await this._getExcludesAsync(pkgPath, excludes),
     });
   }
 
-  async #getExcludesAsync(pkgPath: string, excludes?: string[]) {
+  private async _getExcludesAsync(pkgPath: string, excludes?: string[]) {
     const indexFilePath = path.resolve(pkgPath, "src/index.ts");
 
     const tsconfig = await FsUtils.readJsonAsync(path.resolve(pkgPath, "tsconfig.json"));

@@ -124,7 +124,7 @@ import { SdAnchorControl } from "../../form/button/sd-anchor.control";
 export class SdKanbanLaneControl<L, T> {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
 
-  #boardControl = inject<SdKanbanBoardControl<L, T>>(forwardRef(() => SdKanbanBoardControl));
+  private readonly _boardControl = inject<SdKanbanBoardControl<L, T>>(forwardRef(() => SdKanbanBoardControl));
 
   busy = input(false, { transform: transformBoolean });
 
@@ -141,7 +141,7 @@ export class SdKanbanLaneControl<L, T> {
 
   isAllSelected = $computed(() => this.kanbanControls().every((ctrl) => ctrl.selected()));
 
-  dragKanban = $computed(() => this.#boardControl.dragKanban());
+  dragKanban = $computed(() => this._boardControl.dragKanban());
 
   dragOvered = $signal(false);
 
@@ -155,7 +155,7 @@ export class SdKanbanLaneControl<L, T> {
 
   onSelectAllButtonClick(val: boolean) {
     if (val) {
-      this.#boardControl.selectedValues.update((v) => {
+      this._boardControl.selectedValues.update((v) => {
         const r = [...v];
         for (const ctrl of this.kanbanControls()) {
           if (ctrl.value() == null) continue;
@@ -166,7 +166,7 @@ export class SdKanbanLaneControl<L, T> {
         return r.length === v.length ? v : r;
       });
     } else {
-      this.#boardControl.selectedValues.update((v) => {
+      this._boardControl.selectedValues.update((v) => {
         const r = [...v];
         for (const ctrl of this.kanbanControls()) {
           if (ctrl.value() == null) continue;
@@ -181,7 +181,7 @@ export class SdKanbanLaneControl<L, T> {
 
   @HostListener("dragover", ["$event"])
   onDragOver(event: DragEvent) {
-    if (this.#boardControl.dragKanban() == null) return;
+    if (this._boardControl.dragKanban() == null) return;
 
     event.preventDefault();
     event.stopPropagation();
@@ -199,12 +199,12 @@ export class SdKanbanLaneControl<L, T> {
 
   @HostListener("drop", ["$event"])
   onDragDrop(event: DragEvent) {
-    if (this.#boardControl.dragKanban() == null) return;
+    if (this._boardControl.dragKanban() == null) return;
     this.dragOvered.set(false);
 
     event.preventDefault();
     event.stopPropagation();
 
-    this.#boardControl.onDropTo(this);
+    this._boardControl.onDropTo(this);
   }
 }

@@ -79,14 +79,14 @@ import { SdButtonControl } from "../../form/button/sd-button.control";
 export class SdTopbarControl {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
 
-  #parentSidebarContainerControl = inject(SdSidebarContainerControl, { optional: true });
+  private readonly _parentSidebarContainerControl = inject(SdSidebarContainerControl, { optional: true });
 
   sidebarContainer = input<SdSidebarContainerControl>();
 
-  hasSidebar = $computed(() => !!this.sidebarContainer() || !!this.#parentSidebarContainerControl);
+  hasSidebar = $computed(() => !!this.sidebarContainer() || !!this._parentSidebarContainerControl);
 
   onSidebarToggleButtonClick() {
-    const sidebarContainerControl = this.sidebarContainer() ?? this.#parentSidebarContainerControl;
+    const sidebarContainerControl = this.sidebarContainer() ?? this._parentSidebarContainerControl;
     sidebarContainerControl!.toggle.update((v) => !v);
   }
 }

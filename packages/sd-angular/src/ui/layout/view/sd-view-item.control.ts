@@ -40,7 +40,7 @@ import { $computed } from "../../../core/utils/bindings/$computed";
 export class SdViewItemControl {
   value = input<any>();
 
-  #parentControl = inject<SdViewControl>(forwardRef(() => SdViewControl));
+  private readonly _parentControl = inject<SdViewControl>(forwardRef(() => SdViewControl));
 
-  isSelected = $computed(() => this.#parentControl.value() === this.value());
+  isSelected = $computed(() => this._parentControl.value() === this.value());
 }

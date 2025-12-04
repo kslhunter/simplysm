@@ -36,7 +36,7 @@ export abstract class DbContext {
 
   // noinspection TypeScriptAbstractClassConstructorCanBeMadeProtected
   constructor(
-    private _executor: IDbContextExecutor | undefined,
+    private readonly _executor: IDbContextExecutor | undefined,
     public opt: TDbContextOption,
   ) {}
 

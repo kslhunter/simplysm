@@ -7,10 +7,10 @@ import { ScopePathSet } from "./ScopePathSet";
 import path from "path";
 
 export class SdStyleBundler {
-  #ngStyleBundler: ComponentStylesheetBundler;
-  #resultCache = new Map<TNormPath, TStylesheetBundlingResult>();
-  #refCache = new Map<TNormPath, Set<TNormPath>>();
-  #revRefCache = new Map<TNormPath, Set<TNormPath>>();
+  private readonly _ngStyleBundler: ComponentStylesheetBundler;
+  private readonly _resultCache = new Map<TNormPath, TStylesheetBundlingResult>();
+  private readonly _refCache = new Map<TNormPath, Set<TNormPath>>();
+  private readonly _revRefCache = new Map<TNormPath, Set<TNormPath>>();
 
   constructor(
     private readonly _opt: {
@@ -19,7 +19,7 @@ export class SdStyleBundler {
       dev: boolean;
     },
   ) {
-    this.#ngStyleBundler = new ComponentStylesheetBundler(
+    this._ngStyleBundler = new ComponentStylesheetBundler(
       {
         workspaceRoot: this._opt.pkgPath,
         inlineFonts: !this._opt.dev,
@@ -51,7 +51,7 @@ export class SdStyleBundler {
   }
 
   getResultCache() {
-    return this.#resultCache;
+    return this._resultCache;
   }
 
   async bundleAsync(
@@ -64,9 +64,9 @@ export class SdStyleBundler {
     // referencedFiles: import한 외부 scss 파일 혹은 woff파일등 외부 파일
 
     const fileNPath = PathUtils.norm(resourceFile ?? containingFile);
-    if (this.#resultCache.has(fileNPath)) {
+    if (this._resultCache.has(fileNPath)) {
       return {
-        ...this.#resultCache.get(fileNPath)!,
+        ...this._resultCache.get(fileNPath)!,
         cached: true,
       };
     }
@@ -74,8 +74,8 @@ export class SdStyleBundler {
     try {
       const result =
         resourceFile != null
-          ? await this.#ngStyleBundler.bundleFile(resourceFile)
-          : await this.#ngStyleBundler.bundleInline(data, containingFile, "scss");
+          ? await this._ngStyleBundler.bundleFile(resourceFile)
+          : await this._ngStyleBundler.bundleInline(data, containingFile, "scss");
 
       for (const referencedFile of result.referencedFiles ?? []) {
         if (
@@ -85,10 +85,10 @@ export class SdStyleBundler {
           continue;
 
         // 참조하는 파일과 참조된 파일 사이의 의존성 관계 추가
-        this.#addReference(fileNPath, PathUtils.norm(referencedFile));
+        this._addReference(fileNPath, PathUtils.norm(referencedFile));
       }
 
-      this.#resultCache.set(fileNPath, result);
+      this._resultCache.set(fileNPath, result);
 
       return { ...result, cached: false };
     } catch (err) {
@@ -101,7 +101,7 @@ export class SdStyleBundler {
         ],
         warnings: [],
       };
-      this.#resultCache.set(fileNPath, result);
+      this._resultCache.set(fileNPath, result);
       return { ...result, cached: false };
     }
   }
@@ -109,44 +109,44 @@ export class SdStyleBundler {
   invalidate(modifiedNPathSet: Set<TNormPath>) {
     const affectedFileSet = this.getAffectedFileSet(modifiedNPathSet);
 
-    this.#ngStyleBundler.invalidate(affectedFileSet);
+    this._ngStyleBundler.invalidate(affectedFileSet);
     for (const fileNPath of affectedFileSet) {
-      this.#resultCache.delete(fileNPath);
+      this._resultCache.delete(fileNPath);
     }
 
     // revRefCache/refCache
     const targetSet = new Set<TNormPath>();
     for (const fileNPath of affectedFileSet) {
-      targetSet.adds(...(this.#refCache.get(fileNPath) ?? []));
+      targetSet.adds(...(this._refCache.get(fileNPath) ?? []));
     }
 
     for (const target of [...targetSet]) {
-      const source = this.#revRefCache.get(target);
+      const source = this._revRefCache.get(target);
       if (source == null) continue;
 
       for (const affectedFile of affectedFileSet) {
         source.delete(affectedFile);
       }
       if (source.size === 0) {
-        this.#revRefCache.delete(target);
+        this._revRefCache.delete(target);
       }
 
-      this.#refCache.delete(target);
+      this._refCache.delete(target);
     }
 
     return affectedFileSet;
   }
 
-  #addReference(fileNPath: TNormPath, referencedFile: TNormPath) {
+  private _addReference(fileNPath: TNormPath, referencedFile: TNormPath) {
     if (fileNPath === referencedFile) return;
-    this.#refCache.getOrCreate(fileNPath, new Set()).add(referencedFile);
-    this.#revRefCache.getOrCreate(referencedFile, new Set()).add(fileNPath);
+    this._refCache.getOrCreate(fileNPath, new Set()).add(referencedFile);
+    this._revRefCache.getOrCreate(referencedFile, new Set()).add(fileNPath);
   }
 
   getAllStyleFileSet() {
     return new Set([
-      ...this.#revRefCache.keys(),
-      ...Array.from(this.#revRefCache.values()).mapMany((item) => Array.from(item)),
+      ...this._revRefCache.keys(),
+      ...Array.from(this._revRefCache.values()).mapMany((item) => Array.from(item)),
     ]);
   }
 
@@ -155,13 +155,13 @@ export class SdStyleBundler {
     // 수정파일중 Result에 있는것
     const modifiedResultFiles = Array.from(modifiedNPathSet)
       // .filter((item) => item.endsWith(".scss"))
-      .filter((item) => this.#resultCache.has(item));
+      .filter((item) => this._resultCache.has(item));
     affectedFileSet.adds(...modifiedResultFiles);
 
     // 수정파일을 사용하는 파일
     const modifiedScssFiles = Array.from(modifiedNPathSet).filter((item) => item.endsWith(".scss"));
     for (const modifiedScss of modifiedScssFiles) {
-      affectedFileSet.adds(...(this.#revRefCache.get(modifiedScss) ?? []));
+      affectedFileSet.adds(...(this._revRefCache.get(modifiedScss) ?? []));
     }
 
     return affectedFileSet;

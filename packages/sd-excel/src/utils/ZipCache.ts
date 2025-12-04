@@ -10,11 +10,11 @@ import { SdZip, XmlConvert } from "@simplysm/sd-core-common";
 import { SdExcelXmlDrawing } from "../xmls/SdExcelXmlDrawing";
 
 export class ZipCache {
-  #cache = new Map<string, ISdExcelXml | Buffer | undefined>();
-  #zip: SdZip;
+  private readonly _cache = new Map<string, ISdExcelXml | Buffer | undefined>();
+  private readonly _zip: SdZip;
 
   constructor(arg?: Blob | Buffer) {
-    this.#zip = new SdZip(arg);
+    this._zip = new SdZip(arg);
   }
 
   /*keys(): IterableIterator<string> {
@@ -22,13 +22,13 @@ export class ZipCache {
   }*/
 
   async getAsync(filePath: string): Promise<ISdExcelXml | Buffer | undefined> {
-    if (this.#cache.has(filePath)) {
-      return this.#cache.get(filePath);
+    if (this._cache.has(filePath)) {
+      return this._cache.get(filePath);
     }
 
-    const fileData = await this.#zip.getAsync(filePath);
+    const fileData = await this._zip.getAsync(filePath);
     if (!fileData) {
-      this.#cache.set(filePath, undefined);
+      this._cache.set(filePath, undefined);
       return undefined;
     }
 
@@ -36,55 +36,55 @@ export class ZipCache {
       const fileText = new TextDecoder().decode(fileData);
       const xml = XmlConvert.parse(fileText, { stripTagPrefix: true });
       if (filePath.endsWith(".rels")) {
-        this.#cache.set(filePath, new SdExcelXmlRelationShip(xml));
+        this._cache.set(filePath, new SdExcelXmlRelationShip(xml));
       } else if (filePath === "[Content_Types].xml") {
-        this.#cache.set(filePath, new SdExcelXmlContentType(xml));
+        this._cache.set(filePath, new SdExcelXmlContentType(xml));
       } else if (filePath === "xl/workbook.xml") {
-        this.#cache.set(filePath, new SdExcelXmlWorkbook(xml));
+        this._cache.set(filePath, new SdExcelXmlWorkbook(xml));
       } else if (filePath.startsWith("xl/worksheets/sheet")) {
-        this.#cache.set(filePath, new SdExcelXmlWorksheet(xml));
+        this._cache.set(filePath, new SdExcelXmlWorksheet(xml));
       } else if (filePath.startsWith("xl/drawings/drawing")) {
-        this.#cache.set(filePath, new SdExcelXmlDrawing(xml));
+        this._cache.set(filePath, new SdExcelXmlDrawing(xml));
       } else if (filePath.startsWith("xl/sharedStrings.xml")) {
-        this.#cache.set(filePath, new SdExcelXmlSharedString(xml));
+        this._cache.set(filePath, new SdExcelXmlSharedString(xml));
       } else if (filePath.startsWith("xl/styles.xml")) {
-        this.#cache.set(filePath, new SdExcelXmlStyle(xml));
+        this._cache.set(filePath, new SdExcelXmlStyle(xml));
       } else {
-        this.#cache.set(filePath, new SdExcelXmlUnknown(xml));
+        this._cache.set(filePath, new SdExcelXmlUnknown(xml));
       }
     } else {
-      this.#cache.set(filePath, fileData);
+      this._cache.set(filePath, fileData);
     }
 
-    return this.#cache.get(filePath);
+    return this._cache.get(filePath);
   }
 
   async existsAsync(filePath: string): Promise<boolean> {
-    if (this.#cache.has(filePath)) {
+    if (this._cache.has(filePath)) {
       return true;
     }
 
-    return await this.#zip.existsAsync(filePath);
+    return await this._zip.existsAsync(filePath);
   }
 
   set(filePath: string, content: ISdExcelXml | Buffer): void {
-    this.#cache.set(filePath, content);
+    this._cache.set(filePath, content);
   }
 
   async toBufferAsync(): Promise<Buffer> {
-    for (const filePath of this.#cache.keys()) {
-      const content = this.#cache.get(filePath)!;
+    for (const filePath of this._cache.keys()) {
+      const content = this._cache.get(filePath)!;
       if ("cleanup" in content) {
         content.cleanup();
-        this.#zip.write(
+        this._zip.write(
           filePath,
           Buffer.from(new TextEncoder().encode(XmlConvert.stringify(content.data))),
         );
       } else {
-        this.#zip.write(filePath, content);
+        this._zip.write(filePath, content);
       }
     }
 
-    return await this.#zip.compressAsync();
+    return await this._zip.compressAsync();
   }
 }

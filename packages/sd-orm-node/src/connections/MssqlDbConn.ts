@@ -31,13 +31,13 @@ try {
 }
 
 export class MssqlDbConn extends EventEmitter implements IDbConn {
-  readonly #logger = SdLogger.get(["simplysm", "sd-orm-node", this.constructor.name]);
+  private readonly _logger = SdLogger.get(["simplysm", "sd-orm-node", this.constructor.name]);
 
-  readonly #timeout = 10 * 60 * 1000;
+  private readonly _timeout = 10 * 60 * 1000;
 
-  #conn?: tediousType.Connection;
-  #connTimeout?: NodeJS.Timeout;
-  #requests: tediousType.Request[] = [];
+  private _conn?: tediousType.Connection;
+  private _connTimeout?: NodeJS.Timeout;
+  private _requests: tediousType.Request[] = [];
 
   isConnected = false;
   isOnTransaction = false;
@@ -67,31 +67,31 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
         rowCollectionOnDone: true,
         useUTC: false,
         encrypt: this.config.dialect === "mssql-azure",
-        requestTimeout: this.#timeout,
+        requestTimeout: this._timeout,
         trustServerCertificate: true,
         // validateBulkLoadParameters: false,
-        connectTimeout: this.#timeout * 5,
+        connectTimeout: this._timeout * 5,
       } as any,
     });
 
     conn.on("infoMessage", (info) => {
-      this.#logger.debug(info.message);
+      this._logger.debug(info.message);
     });
 
     conn.on("errorMessage", (error) => {
-      this.#logger.error("errorMessage: " + error.message);
+      this._logger.error("errorMessage: " + error.message);
     });
 
     conn.on("error", (error) => {
-      this.#logger.error("error: " + error.message);
+      this._logger.error("error: " + error.message);
     });
 
     conn.on("end", () => {
       this.emit("close");
-      this.#requests = [];
+      this._requests = [];
       this.isConnected = false;
       this.isOnTransaction = false;
-      this.#conn = undefined;
+      this._conn = undefined;
     });
 
     await new Promise<void>((resolve, reject) => {
@@ -101,43 +101,43 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
           return;
         }
 
-        this.#startTimeout();
+        this._startTimeout();
         this.isConnected = true;
         this.isOnTransaction = false;
         resolve();
       });
     });
 
-    this.#conn = conn;
+    this._conn = conn;
   }
 
   async closeAsync(): Promise<void> {
     await new Promise<void>(async (resolve) => {
-      this.#stopTimeout();
+      this._stopTimeout();
 
-      if (!this.#conn || !this.isConnected) {
+      if (!this._conn || !this.isConnected) {
         // reject(new Error("'Connection'이 연결되어있지 않습니다."));
         return;
       }
 
-      this.#conn.on("end", async () => {
-        await Wait.until(() => this.#conn == null, undefined, 10000);
+      this._conn.on("end", async () => {
+        await Wait.until(() => this._conn == null, undefined, 10000);
         resolve();
       });
 
-      this.#conn.cancel();
-      await Wait.until(() => this.#requests.length < 1, undefined, 10000);
-      this.#conn.close();
+      this._conn.cancel();
+      await Wait.until(() => this._requests.length < 1, undefined, 10000);
+      this._conn.close();
     });
   }
 
   async beginTransactionAsync(isolationLevel?: ISOLATION_LEVEL): Promise<void> {
-    if (!this.#conn || !this.isConnected) {
+    if (!this._conn || !this.isConnected) {
       throw new Error("'Connection'이 연결되어있지 않습니다.");
     }
-    this.#startTimeout();
+    this._startTimeout();
 
-    const conn = this.#conn;
+    const conn = this._conn;
 
     await new Promise<void>((resolve, reject) => {
       conn.beginTransaction(
@@ -159,12 +159,12 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
   }
 
   async commitTransactionAsync(): Promise<void> {
-    if (!this.#conn || !this.isConnected) {
+    if (!this._conn || !this.isConnected) {
       throw new Error("'Connection'이 연결되어있지 않습니다.");
     }
-    this.#startTimeout();
+    this._startTimeout();
 
-    const conn = this.#conn;
+    const conn = this._conn;
 
     await new Promise<void>((resolve, reject) => {
       conn.commitTransaction((err) => {
@@ -180,12 +180,12 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
   }
 
   async rollbackTransactionAsync(): Promise<void> {
-    if (!this.#conn || !this.isConnected) {
+    if (!this._conn || !this.isConnected) {
       throw new Error("'Connection'이 연결되어있지 않습니다.");
     }
-    this.#startTimeout();
+    this._startTimeout();
 
-    const conn = this.#conn;
+    const conn = this._conn;
 
     await new Promise<void>((resolve, reject) => {
       conn.rollbackTransaction((err) => {
@@ -211,22 +211,22 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
   }
 
   async executeParametrizedAsync(query: string, params?: any[]): Promise<any[][]> {
-    if (!this.#conn || !this.isConnected) {
+    if (!this._conn || !this.isConnected) {
       throw new Error("'Connection'이 연결되어있지 않습니다.");
     }
-    this.#startTimeout();
+    this._startTimeout();
 
-    const conn = this.#conn;
+    const conn = this._conn;
 
     const results: any[][] = [];
 
-    this.#logger.debug(`쿼리 실행(${query.length.toLocaleString()}): ${query}, ${params}`);
+    this._logger.debug(`쿼리 실행(${query.length.toLocaleString()}): ${query}, ${params}`);
     await new Promise<void>((resolve, reject) => {
       let rejected = false;
       const queryRequest = new tedious.Request(query, (err) => {
         if (err != null) {
           rejected = true;
-          this.#requests.remove(queryRequest);
+          this._requests.remove(queryRequest);
 
           if (err["code"] === "ECANCEL") {
             reject(new Error("쿼리가 취소되었습니다."));
@@ -250,7 +250,7 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
 
       queryRequest
         .on("done", (rowCount, more, rst) => {
-          this.#startTimeout();
+          this._startTimeout();
 
           if (rejected) {
             return;
@@ -267,7 +267,7 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
           results.push(doneResult);
         })
         .on("doneInProc", (rowCount, more, rst) => {
-          this.#startTimeout();
+          this._startTimeout();
 
           if (rejected) {
             return;
@@ -284,28 +284,28 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
           results.push(doneResult);
         })
         .on("error", (err) => {
-          this.#startTimeout();
+          this._startTimeout();
 
           if (rejected) {
             return;
           }
 
           rejected = true;
-          this.#requests.remove(queryRequest);
+          this._requests.remove(queryRequest);
           reject(new Error(err.message));
         })
         .on("requestCompleted", () => {
-          this.#startTimeout();
+          this._startTimeout();
 
           if (rejected) {
             return;
           }
 
-          this.#requests.remove(queryRequest);
+          this._requests.remove(queryRequest);
           resolve();
         });
 
-      this.#requests.push(queryRequest);
+      this._requests.push(queryRequest);
 
       if (params) {
         // 파라미터 주입 로직 추가
@@ -313,7 +313,7 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
         for (let i = 0; i < params.length; i++) {
           const paramValue = params[i];
           const paramName = `p${i}`; // @p0, @p1 ... (클라이언트 쿼리 빌더가 생성하는 이름 규칙에 따름)
-          const type = this.#guessTediousType(paramValue); // 타입 추론 헬퍼 필요
+          const type = this._guessTediousType(paramValue); // 타입 추론 헬퍼 필요
 
           queryRequest.addParameter(paramName, type, paramValue);
         }
@@ -332,17 +332,17 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
     columnDefs: IQueryColumnDef[],
     records: Record<string, any>[],
   ): Promise<void> {
-    if (this.#conn === undefined || !this.isConnected) {
+    if (this._conn === undefined || !this.isConnected) {
       throw new Error("'Connection'이 연결되어있지 않습니다.");
     }
-    this.#startTimeout();
+    this._startTimeout();
 
     const tediousColumnDefs = columnDefs.map((item) =>
-      this.#convertColumnDefToTediousBulkColumnDef(item),
+      this._convertColumnDefToTediousBulkColumnDef(item),
     );
 
     await new Promise<void>((resolve, reject) => {
-      const bulkLoad = this.#conn?.newBulkLoad(tableName, (err) => {
+      const bulkLoad = this._conn?.newBulkLoad(tableName, (err) => {
         if (err != null) {
           reject(
             new Error(
@@ -359,7 +359,7 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
         bulkLoad.addColumn(tediousColumnDef.name, tediousColumnDef.type, tediousColumnDef.options);
       }
 
-      this.#conn?.execBulkLoad(bulkLoad, records);
+      this._conn?.execBulkLoad(bulkLoad, records);
     });
   }
 
@@ -372,27 +372,27 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
     throw new Error("'bulk upsert'는 'MSSQL'에서 지원되지 않는 기능입니다.");
   }
 
-  #stopTimeout(): void {
-    if (this.#connTimeout) {
-      clearTimeout(this.#connTimeout);
+  private _stopTimeout(): void {
+    if (this._connTimeout) {
+      clearTimeout(this._connTimeout);
     }
   }
 
-  #startTimeout(): void {
-    if (this.#connTimeout) {
-      clearTimeout(this.#connTimeout);
+  private _startTimeout(): void {
+    if (this._connTimeout) {
+      clearTimeout(this._connTimeout);
     }
-    this.#connTimeout = setTimeout(async () => {
+    this._connTimeout = setTimeout(async () => {
       await this.closeAsync();
-    }, this.#timeout * 2);
+    }, this._timeout * 2);
   }
 
-  #convertColumnDefToTediousBulkColumnDef(columnDef: IQueryColumnDef): {
+  private _convertColumnDefToTediousBulkColumnDef(columnDef: IQueryColumnDef): {
     name: string;
     type: DataType;
     options: ITediousColumnOptions;
   } {
-    const tediousDataType = this.#convertColumnDataTypeToTediousBulkColumnType(columnDef.dataType);
+    const tediousDataType = this._convertColumnDataTypeToTediousBulkColumnType(columnDef.dataType);
     return {
       name: columnDef.name,
       type: tediousDataType.type,
@@ -405,7 +405,7 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
     };
   }
 
-  #convertColumnDataTypeToTediousBulkColumnType(
+  private _convertColumnDataTypeToTediousBulkColumnType(
     type: Type<TQueryValue> | TSdOrmDataType | string,
   ): {
     type: DataType;
@@ -489,7 +489,7 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
   }
 
   // JS 값으로 Tedious Type을 추론하는 헬퍼
-  #guessTediousType(value: any): DataType {
+  private _guessTediousType(value: any): DataType {
     /*const currType = type as Type<TQueryValue> | undefined;
     switch (currType) {
       case String:

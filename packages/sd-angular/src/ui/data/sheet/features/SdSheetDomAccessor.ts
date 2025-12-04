@@ -1,14 +1,14 @@
 import { injectElementRef } from "../../../../core/utils/injections/injectElementRef";
 
 export class SdSheetDomAccessor {
-  #elRef = injectElementRef();
+  private readonly _elRef = injectElementRef();
 
   getRoot() {
-    return this.#elRef.nativeElement;
+    return this._elRef.nativeElement;
   }
 
   getContainer() {
-    return this.#elRef.nativeElement.findFirst<HTMLElement>("._sheet-container")!;
+    return this._elRef.nativeElement.findFirst<HTMLElement>("._sheet-container")!;
   }
 
   getTable() {

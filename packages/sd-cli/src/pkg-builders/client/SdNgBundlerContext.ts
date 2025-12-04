@@ -15,9 +15,9 @@ interface InitialFileRecord {
 }
 
 export class SdNgBundlerContext {
-  #logger = SdLogger.get(["simplysm", "sd-cli", "SdNgBundlerContext"]);
+  private readonly _logger = SdLogger.get(["simplysm", "sd-cli", "SdNgBundlerContext"]);
 
-  #context?: esbuild.BuildContext;
+  private _context?: esbuild.BuildContext;
 
   constructor(
     private readonly _pkgPath: string,
@@ -28,14 +28,14 @@ export class SdNgBundlerContext {
   async bundleAsync() {
     let esbuildResult: esbuild.BuildResult;
 
-    this.#debug(`Building...`);
+    this._debug(`Building...`);
     if (this._watch) {
-      if (this.#context == null) {
-        this.#context = await esbuild.context(this._esbuildOptions);
+      if (this._context == null) {
+        this._context = await esbuild.context(this._esbuildOptions);
       }
 
       try {
-        esbuildResult = await this.#context.rebuild();
+        esbuildResult = await this._context.rebuild();
       } catch (err) {
         if ("warnings" in err || "errors" in err) {
           esbuildResult = err;
@@ -54,9 +54,9 @@ export class SdNgBundlerContext {
         }
       }
     }
-    this.#debug(`Build completed`);
+    this._debug(`Build completed`);
 
-    this.#debug(`Converting results...`);
+    this._debug(`Converting results...`);
     const results = SdCliConvertMessageUtils.convertToBuildMessagesFromEsbuild(
       esbuildResult,
       this._pkgPath,
@@ -127,8 +127,8 @@ export class SdNgBundlerContext {
     };
   }
 
-  #debug(...msg: any[]): void {
-    this.#logger.debug(
+  private _debug(...msg: any[]): void {
+    this._logger.debug(
       `[${path.basename(this._pkgPath)}] (${Object.keys(
         this._esbuildOptions.entryPoints as Record<string, any>,
       ).join(", ")})`,

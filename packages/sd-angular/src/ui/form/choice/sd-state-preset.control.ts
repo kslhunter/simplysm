@@ -98,8 +98,8 @@ import { SdAnchorControl } from "../button/sd-anchor.control";
 export class SdStatePresetControl {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
 
-  #sdSystemConfig = inject(SdSystemConfigProvider);
-  #sdToast = inject(SdToastProvider);
+  private readonly _sdSystemConfig = inject(SdSystemConfigProvider);
+  private readonly _sdToast = inject(SdToastProvider);
 
   state = model<any>();
 
@@ -111,7 +111,7 @@ export class SdStatePresetControl {
   constructor() {
     $effect([this.key], async () => {
       this.presets.set(
-        (await this.#sdSystemConfig.getAsync(`sd-state-preset.${this.key()}`)) ?? [],
+        (await this._sdSystemConfig.getAsync(`sd-state-preset.${this.key()}`)) ?? [],
       );
     });
   }
@@ -127,9 +127,9 @@ export class SdStatePresetControl {
         state: ObjectUtils.clone(this.state()),
       },
     ]);
-    await this.#sdSystemConfig.setAsync(`sd-state-preset.${this.key()}`, this.presets());
+    await this._sdSystemConfig.setAsync(`sd-state-preset.${this.key()}`, this.presets());
 
-    this.#sdToast.info(`현재 상태가 '${newName}'에 저장되었습니다.`);
+    this._sdToast.info(`현재 상태가 '${newName}'에 저장되었습니다.`);
   }
 
   onItemClick(preset: ISdStatePreset) {
@@ -142,14 +142,14 @@ export class SdStatePresetControl {
     if (!confirm("저장된 '" + preset.name + "'상태가 삭제됩니다.")) return;
 
     this.presets.update((v) => v.filter((item) => item !== preset));
-    await this.#sdSystemConfig.setAsync(`sd-state-preset.${this.key()}`, this.presets());
+    await this._sdSystemConfig.setAsync(`sd-state-preset.${this.key()}`, this.presets());
   }
 
   async onSaveButtonClick(preset: ISdStatePreset) {
     preset.state = ObjectUtils.clone(this.state());
-    await this.#sdSystemConfig.setAsync(`sd-state-preset.${this.key()}`, this.presets());
+    await this._sdSystemConfig.setAsync(`sd-state-preset.${this.key()}`, this.presets());
 
-    this.#sdToast.info(`현재 상태가 ${preset.name}에 저장되었습니다.`);
+    this._sdToast.info(`현재 상태가 ${preset.name}에 저장되었습니다.`);
   }
 }
 

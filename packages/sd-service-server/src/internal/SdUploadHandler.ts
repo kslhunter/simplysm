@@ -7,7 +7,7 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import { ISdServiceUploadResult } from "@simplysm/sd-service-common";
 
 export class SdUploadHandler {
-  readonly #logger = SdLogger.get(["simplysm", "sd-service-server", "SdUploadHandler"]);
+  private readonly _logger = SdLogger.get(["simplysm", "sd-service-server", "SdUploadHandler"]);
 
   constructor(private readonly _server: SdServiceServer) {}
 
@@ -60,12 +60,12 @@ export class SdUploadHandler {
       // 처리 완료 후 JSON 응답
       reply.send(result);
     } catch (err) {
-      this.#logger.error("Upload Error", err);
+      this._logger.error("Upload Error", err);
 
       // 찌꺼기 파일 정리 (Cleanup)
       if (currentSavePath != null) {
         await FsUtils.removeAsync(currentSavePath).catch(() => {});
-        this.#logger.warn(`Incomplete file deleted: ${currentSavePath}`);
+        this._logger.warn(`Incomplete file deleted: ${currentSavePath}`);
       }
 
       reply.code(500).send("Upload Failed");

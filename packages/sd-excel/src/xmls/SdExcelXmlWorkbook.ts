@@ -30,7 +30,7 @@ export class SdExcelXmlWorkbook implements ISdExcelXml {
   }
 
   addWorksheet(name: string): this {
-    const replacedName = this.#getReplacedName(name);
+    const replacedName = this._getReplacedName(name);
 
     const newWsRelId = (this.lastWsRelId ?? 0) + 1;
 
@@ -84,21 +84,21 @@ export class SdExcelXmlWorkbook implements ISdExcelXml {
   }
 
   getWorksheetNameById(id: number): string | undefined {
-    return this.#getSheetDataById(id)?.$.name;
+    return this._getSheetDataById(id)?.$.name;
   }
 
   setWorksheetNameById(id: number, newName: string) {
-    const replacedName = this.#getReplacedName(newName);
-    this.#getSheetDataById(id)!.$.name = replacedName;
+    const replacedName = this._getReplacedName(newName);
+    this._getSheetDataById(id)!.$.name = replacedName;
   }
 
-  #getSheetDataById(id: number) {
+  private _getSheetDataById(id: number) {
     return this.data.workbook.sheets?.[0].sheet.single(
       (item) => NumberUtils.parseInt(item.$["r:id"]) === id,
     );
   }
 
-  #getReplacedName(name: string) {
+  private _getReplacedName(name: string) {
     //-- 시트명칭 사용불가 텍스트를 "_"로 변환
     return name.replace(/[:\\/?*\[\]']/g, "_");
   }

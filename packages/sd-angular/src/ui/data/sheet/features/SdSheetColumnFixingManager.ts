@@ -3,13 +3,13 @@ import { $computed } from "../../../../core/utils/bindings/$computed";
 import { $signal } from "../../../../core/utils/bindings/$signal";
 
 export class SdSheetColumnFixingManager {
-  #widths = $signal<Record<number, number>>({});
+  private readonly _widths = $signal<Record<number, number>>({});
 
   constructor(private readonly _options: { fixedLength: Signal<number> }) {}
 
   fixedLeftMap = $computed(() => {
     const fixedLength = this._options.fixedLength();
-    const widths = this.#widths();
+    const widths = this._widths();
 
     const result = new Map<number, number>();
     let nextLeft: number = 0;
@@ -26,8 +26,8 @@ export class SdSheetColumnFixingManager {
   });
 
   registerWidth(col: number, width: number) {
-    if (this.#widths()[col] !== width) {
-      this.#widths.update((v) => ({
+    if (this._widths()[col] !== width) {
+      this._widths.update((v) => ({
         ...v,
         [col]: width,
       }));

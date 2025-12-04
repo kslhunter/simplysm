@@ -12,8 +12,8 @@ import { ISdClientPackageConfig } from "../../types/config/ISdProjectConfig";
 export class SdClientBuildRunner extends SdBuildRunnerBase<"client"> {
   protected override _logger = SdLogger.get(["simplysm", "sd-cli", "SdClientBuildRunner"]);
 
-  #ngBundlers?: SdNgBundler[];
-  #cordova?: SdCliCordova;
+  private _ngBundlers?: SdNgBundler[];
+  private _cordova?: SdCliCordova;
 
   protected override async _runAsync(modifiedFileSet?: Set<TNormPath>): Promise<ISdBuildResult> {
     // 최초 한번
@@ -30,11 +30,11 @@ export class SdClientBuildRunner extends SdBuildRunnerBase<"client"> {
         // cordova
         if (this._pkgConf.builder?.cordova) {
           this._debug("Preparing Cordova...");
-          this.#cordova = new SdCliCordova({
+          this._cordova = new SdCliCordova({
             pkgPath: this._opt.pkgPath,
             config: this._pkgConf.builder.cordova,
           });
-          await this.#cordova.initializeAsync();
+          await this._cordova.initializeAsync();
         }
 
         // routes
@@ -65,7 +65,7 @@ export class SdClientBuildRunner extends SdBuildRunnerBase<"client"> {
         ISdClientPackageConfig["builder"]
       >)[];
 
-      this.#ngBundlers = builderTypes.map(
+      this._ngBundlers = builderTypes.map(
         (builderType) =>
           new SdNgBundler(this._opt, {
             builderType: builderType,
@@ -76,7 +76,7 @@ export class SdClientBuildRunner extends SdBuildRunnerBase<"client"> {
     }
 
     if (modifiedFileSet) {
-      for (const ngBundler of this.#ngBundlers!) {
+      for (const ngBundler of this._ngBundlers!) {
         ngBundler.markForChanges(Array.from(modifiedFileSet));
       }
     }
@@ -84,7 +84,7 @@ export class SdClientBuildRunner extends SdBuildRunnerBase<"client"> {
     if (this._opt.watch?.noEmit) {
       this._debug(`Building...`);
       const buildResults = await Promise.all(
-        this.#ngBundlers!.map((builder) => builder.bundleAsync()),
+        this._ngBundlers!.map((builder) => builder.bundleAsync()),
       );
       const watchFileSet = new Set(buildResults.mapMany((item) => Array.from(item.watchFileSet)));
       const affectedFileSet = new Set(
@@ -104,7 +104,7 @@ export class SdClientBuildRunner extends SdBuildRunnerBase<"client"> {
     } else {
       this._debug(`Building...`);
       const buildResults = await Promise.all(
-        this.#ngBundlers!.map((builder) => builder.bundleAsync()),
+        this._ngBundlers!.map((builder) => builder.bundleAsync()),
       );
       const watchFileSet = new Set(buildResults.mapMany((item) => Array.from(item.watchFileSet)));
       const affectedFileSet = new Set(
@@ -113,9 +113,9 @@ export class SdClientBuildRunner extends SdBuildRunnerBase<"client"> {
       const emitFileSet = new Set(buildResults.mapMany((item) => Array.from(item.emitFileSet)));
       const buildMessages = buildResults.mapMany((item) => item.buildMessages).distinct();
 
-      if (!this._opt.watch?.dev && this.#cordova) {
+      if (!this._opt.watch?.dev && this._cordova) {
         this._debug("Building Cordova...");
-        await this.#cordova.buildAsync(path.resolve(this._opt.pkgPath, "dist"));
+        await this._cordova.buildAsync(path.resolve(this._opt.pkgPath, "dist"));
       }
 
       if (!this._opt.watch?.dev && this._pkgConf.builder?.electron) {

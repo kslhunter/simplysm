@@ -7,9 +7,9 @@ import { SdLogger } from "../utils/SdLogger";
 import { ISdWorkerRequest, ISdWorkerType, TSdWorkerResponse } from "./types";
 
 export class SdWorker<T extends ISdWorkerType> extends EventEmitter {
-  #worker: Worker;
+  private readonly _worker: Worker;
 
-  #isTerminated = false;
+  private _isTerminated = false;
 
   constructor(filePath: string, opt?: Omit<WorkerOptions, "stdout" | "stderr">) {
     super();
@@ -18,7 +18,7 @@ export class SdWorker<T extends ISdWorkerType> extends EventEmitter {
 
     const ext = path.extname(import.meta.filename);
     if (ext === ".ts") {
-      this.#worker = new Worker(
+      this._worker = new Worker(
         path.resolve(import.meta.dirname, "../../lib/worker-dev-proxy.js"),
         {
           stdout: true,
@@ -32,7 +32,7 @@ export class SdWorker<T extends ISdWorkerType> extends EventEmitter {
         },
       );
     } else {
-      this.#worker = new Worker(fileURLToPath(filePath), {
+      this._worker = new Worker(fileURLToPath(filePath), {
         stdout: true,
         stderr: true,
         ...opt,
@@ -44,21 +44,21 @@ export class SdWorker<T extends ISdWorkerType> extends EventEmitter {
     }
 
     // 워커의 stdout/stderr을 메인에 출력
-    this.#worker.stdout.pipe(process.stdout);
-    this.#worker.stderr.pipe(process.stderr);
+    this._worker.stdout.pipe(process.stdout);
+    this._worker.stderr.pipe(process.stderr);
 
-    this.#worker.on("exit", (code) => {
-      if (!this.#isTerminated && code !== 0) {
+    this._worker.on("exit", (code) => {
+      if (!this._isTerminated && code !== 0) {
         const err = new Error(`오류와 함께 닫힘 (CODE: ${code})`);
         logger.error(err);
       }
     });
 
-    this.#worker.on("error", (err) => {
+    this._worker.on("error", (err) => {
       logger.error(err);
     });
 
-    this.#worker.on("message", (serializedResponse: any) => {
+    this._worker.on("message", (serializedResponse: any) => {
       const response: TSdWorkerResponse<T, string> = TransferableConvert.decode(serializedResponse);
       if (response.type === "event") {
         this.emit(response.event, response.body);
@@ -87,25 +87,25 @@ export class SdWorker<T extends ISdWorkerType> extends EventEmitter {
         const response: TSdWorkerResponse<T, K> = TransferableConvert.decode(serializedResponse);
         if (response.type === "return") {
           if (response.request.id === request.id) {
-            this.#worker.off("message", callback);
+            this._worker.off("message", callback);
             resolve(response.body);
           }
         } else if (response.type === "error") {
           if (response.request.id === request.id) {
-            this.#worker.off("message", callback);
+            this._worker.off("message", callback);
             reject(response.body);
           }
         }
       };
 
-      this.#worker.on("message", callback);
+      this._worker.on("message", callback);
       const serialized = TransferableConvert.encode(request);
-      this.#worker.postMessage(serialized.result, serialized.transferList);
+      this._worker.postMessage(serialized.result, serialized.transferList);
     });
   }
 
   async killAsync() {
-    this.#isTerminated = true;
-    await this.#worker.terminate();
+    this._isTerminated = true;
+    await this._worker.terminate();
   }
 }

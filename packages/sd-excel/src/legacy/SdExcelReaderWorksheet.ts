@@ -4,16 +4,16 @@ import { SdExcelReaderDataTable } from "./SdExcelReaderDataTable";
 export class SdExcelReaderWorksheet {
   constructor(private readonly _ws: XLSX.WorkSheet) {}
 
-  #range?: XLSX.Range;
+  private _range?: XLSX.Range;
   get range(): XLSX.Range {
-    if (!this.#range) {
-      this.#range = XLSX.utils.decode_range(this._ws["!ref"]!)!;
+    if (!this._range) {
+      this._range = XLSX.utils.decode_range(this._ws["!ref"]!)!;
     }
-    return this.#range;
+    return this._range;
   }
 
   val(r: number, c: number): string | number | boolean | Date | undefined {
-    const addr = this.#addr(r, c);
+    const addr = this._addr(r, c);
     const cell = this._ws[addr] as XLSX.CellObject;
 
     if (!Boolean(cell)) return undefined;
@@ -52,7 +52,7 @@ export class SdExcelReaderWorksheet {
     });
   }
 
-  #addr(r: number, c: number): string {
+  private _addr(r: number, c: number): string {
     return XLSX.utils.encode_cell({ r, c });
   }
 }

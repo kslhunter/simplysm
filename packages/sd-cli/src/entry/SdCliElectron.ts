@@ -8,42 +8,42 @@ import electronBuilder from "electron-builder";
 import { INpmConfig } from "../types/common-config/INpmConfig";
 
 export class SdCliElectron {
-  static #logger = SdLogger.get(["simplysm", "sd-cli", "SdCliElectron"]);
+  private static readonly _logger = SdLogger.get(["simplysm", "sd-cli", "SdCliElectron"]);
 
   static async runAsync(opt: { package: string; config: string; options?: string[] }) {
-    this.#logger.log("설정 가져오기...");
-    const { pkgPath, electronPath, electronConfig } = await this.#loadDevConfig(opt);
+    this._logger.log("설정 가져오기...");
+    const { pkgPath, electronPath, electronConfig } = await this._loadDevConfig(opt);
 
-    this.#logger.log("준비...");
-    await this.#prepareAsync({ pkgPath, electronPath, electronConfig });
+    this._logger.log("준비...");
+    await this._prepareAsync({ pkgPath, electronPath, electronConfig });
 
-    this.#logger.log("실행...");
+    this._logger.log("실행...");
     await SdProcess.spawnAsync("npx", ["electron", "."], { cwd: electronPath, showMessage: true });
   }
 
   static async buildForDevAsync(opt: { package: string; config: string; options?: string[] }) {
-    this.#logger.log("설정 가져오기...");
-    const { pkgPath, electronPath, electronConfig } = await this.#loadDevConfig(opt);
+    this._logger.log("설정 가져오기...");
+    const { pkgPath, electronPath, electronConfig } = await this._loadDevConfig(opt);
 
-    this.#logger.log("준비...");
-    const { npmConfig } = await this.#prepareAsync({ pkgPath, electronPath, electronConfig });
+    this._logger.log("준비...");
+    const { npmConfig } = await this._prepareAsync({ pkgPath, electronPath, electronConfig });
 
-    this.#logger.log("빌드...");
+    this._logger.log("빌드...");
     const electronDistPath = path.resolve(pkgPath, ".electron/dist");
-    await this.#buildAsync({ pkgPath, electronPath, electronDistPath, npmConfig, electronConfig });
+    await this._buildAsync({ pkgPath, electronPath, electronDistPath, npmConfig, electronConfig });
   }
 
   static async buildAsync(opt: {
     pkgPath: string;
     electronConfig: ISdClientBuilderElectronConfig;
   }) {
-    this.#logger.log("준비...");
+    this._logger.log("준비...");
     const electronPath = path.resolve(opt.pkgPath, ".electron/src");
-    const { npmConfig } = await this.#prepareAsync({ ...opt, electronPath });
+    const { npmConfig } = await this._prepareAsync({ ...opt, electronPath });
 
-    this.#logger.log("빌드...");
+    this._logger.log("빌드...");
     const electronDistPath = path.resolve(opt.pkgPath, ".electron/dist");
-    await this.#buildAsync({
+    await this._buildAsync({
       pkgPath: opt.pkgPath,
       electronPath,
       electronDistPath,
@@ -52,7 +52,7 @@ export class SdCliElectron {
     });
   }
 
-  static async #loadDevConfig(opt: { package: string; config: string; options?: string[] }) {
+  private static async _loadDevConfig(opt: { package: string; config: string; options?: string[] }) {
     const projConf = await loadProjConfAsync(process.cwd(), true, opt);
     const pkgConf = projConf.packages[opt.package];
     if (pkgConf?.type !== "client" || pkgConf.builder?.electron === undefined) {
@@ -68,7 +68,7 @@ export class SdCliElectron {
     };
   }
 
-  static async #prepareAsync(opt: {
+  private static async _prepareAsync(opt: {
     pkgPath: string;
     electronPath: string;
     electronConfig: ISdClientBuilderElectronConfig;
@@ -105,14 +105,14 @@ export class SdCliElectron {
     return { npmConfig };
   }
 
-  static async #buildAsync(opt: {
+  private static async _buildAsync(opt: {
     pkgPath: string;
     electronPath: string;
     electronDistPath: string;
     npmConfig: INpmConfig;
     electronConfig: ISdClientBuilderElectronConfig;
   }) {
-    if (!this.#canCreateSymlink()) {
+    if (!this._canCreateSymlink()) {
       throw new Error(
         "'Electron 빌드'를 위해서는 'Symlink 생성' 권한이 필요합니다. 윈도우의 개발자모드를 활성화하세요.",
       );
@@ -170,7 +170,7 @@ export class SdCliElectron {
     );
   }
 
-  static #canCreateSymlink() {
+  private static _canCreateSymlink() {
     const tmpDir = os.tmpdir();
     const testTarget = path.join(tmpDir, "symlink-test-target.txt");
     const testLink = path.join(tmpDir, "symlink-test-link.txt");

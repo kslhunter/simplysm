@@ -582,7 +582,7 @@ import { ISdSheetItemKeydownEventParam } from "./types/ISdSheetItemKeydownEventP
 export class SdSheetControl<T> {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
 
-  #sdModal = inject(SdModalProvider);
+  private readonly _sdModal = inject(SdModalProvider);
   hideConfigBar = input(false, { transform: transformBoolean });
   inset = input(false, { transform: transformBoolean });
   contentStyle = input<string>();
@@ -608,7 +608,7 @@ export class SdSheetControl<T> {
   });
 
   async onConfigButtonClick(): Promise<void> {
-    const result = await this.#sdModal.showAsync(
+    const result = await this._sdModal.showAsync(
       {
         type: SdSheetConfigModal,
         title: "시트 설정창",
@@ -627,7 +627,7 @@ export class SdSheetControl<T> {
     this.config.set(result);
   }
 
-  #saveColumnConfig(columnKey: string, config: Partial<ISdSheetConfigColumn>) {
+  private _saveColumnConfig(columnKey: string, config: Partial<ISdSheetConfigColumn>) {
     this.config.update((v) => ({
       ...v,
       columnRecord: {
@@ -663,10 +663,10 @@ export class SdSheetControl<T> {
 
   //region Resizing
 
-  #isOnResizing = false;
+  private _isOnResizing = false;
 
   onResizerMousedown(event: MouseEvent, colKey: string): void {
-    this.#isOnResizing = true;
+    this._isOnResizing = true;
 
     const thEl = (event.target as HTMLElement).findParent("th")!;
     const indicatorEl = this.domAccessor.getColumnResizeIndicator();
@@ -696,10 +696,10 @@ export class SdSheetControl<T> {
 
       const newWidthPx = Math.max(startWidthPx + e.clientX - startX, 5);
 
-      this.#saveColumnConfig(colKey, { width: newWidthPx + "px" });
+      this._saveColumnConfig(colKey, { width: newWidthPx + "px" });
 
       setTimeout(() => {
-        this.#isOnResizing = false;
+        this._isOnResizing = false;
       }, 300);
     };
 
@@ -708,7 +708,7 @@ export class SdSheetControl<T> {
   }
 
   onResizerDoubleClick(event: MouseEvent, colKey: string) {
-    this.#saveColumnConfig(colKey, { width: undefined });
+    this._saveColumnConfig(colKey, { width: undefined });
   }
 
   //endregion
@@ -723,7 +723,7 @@ export class SdSheetControl<T> {
 
   onHeaderCellClick(event: MouseEvent, headerCell: ISdSheetHeaderDef): void {
     if (headerCell.control.disableSorting()) return;
-    if (this.#isOnResizing) return;
+    if (this._isOnResizing) return;
 
     if (event.target instanceof HTMLElement && event.target.classList.contains("_resizer")) return;
 
@@ -734,7 +734,7 @@ export class SdSheetControl<T> {
     }
   }
 
-  #sortedItems = $computed(() => {
+  private readonly _sortedItems = $computed(() => {
     if (!this.useAutoSort()) return this.items();
     return this.sortingManager.sort(this.items());
   });
@@ -757,13 +757,13 @@ export class SdSheetControl<T> {
     }
   });
 
-  #sortedPagedItems = $computed(() => {
+  private readonly _sortedPagedItems = $computed(() => {
     const itemsPerPage = this.itemsPerPage();
-    if (itemsPerPage == null || itemsPerPage === 0) return this.#sortedItems();
-    if (this.items().length <= 0) return this.#sortedItems();
+    if (itemsPerPage == null || itemsPerPage === 0) return this._sortedItems();
+    if (this.items().length <= 0) return this._sortedItems();
 
     const currentPage = this.currentPage();
-    return this.#sortedItems().slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage);
+    return this._sortedItems().slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage);
   });
 
   //endregion
@@ -774,7 +774,7 @@ export class SdSheetControl<T> {
   getChildrenFn = input<(item: T, index: number) => T[] | undefined>();
 
   expandingManager = new SdExpandingManager({
-    items: this.#sortedPagedItems,
+    items: this._sortedPagedItems,
     expandedItems: this.expandedItems,
     getChildrenFn: this.getChildrenFn,
     sort: (items) => {

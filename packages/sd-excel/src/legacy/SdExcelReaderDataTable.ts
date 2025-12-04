@@ -2,7 +2,7 @@ import { SdExcelReaderWorksheet } from "./SdExcelReaderWorksheet";
 import * as XLSX from "xlsx";
 
 export class SdExcelReaderDataTable {
-  #headerColMap = new Map<string, number>();
+  private readonly _headerColMap = new Map<string, number>();
 
   constructor(
     private readonly _sws: SdExcelReaderWorksheet,
@@ -11,10 +11,10 @@ export class SdExcelReaderDataTable {
     for (let c = this._range.s.c; c <= this._range.e.c; c++) {
       const v = this._sws.val(this._range.s.r, c);
       if (typeof v === "string") {
-        if (this.#headerColMap.has(v)) {
+        if (this._headerColMap.has(v)) {
           throw new Error(`컬럼중복(${v})`);
         } else {
-          this.#headerColMap.set(v, c);
+          this._headerColMap.set(v, c);
         }
       }
     }
@@ -26,14 +26,14 @@ export class SdExcelReaderDataTable {
 
   get headers(): (string | undefined)[] {
     const result: (string | undefined)[] = [];
-    for (const entry of this.#headerColMap.entries()) {
+    for (const entry of this._headerColMap.entries()) {
       result[entry[1]] = entry[0];
     }
     return result;
   }
 
   val(r: number, colName: string): any {
-    const c = this.#headerColMap.get(colName);
+    const c = this._headerColMap.get(colName);
     if (c === undefined) return undefined;
     return this._sws.val(r + this._range.s.r + 1, c);
   }

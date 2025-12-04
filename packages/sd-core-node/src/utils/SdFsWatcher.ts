@@ -1,4 +1,4 @@
-import { AsyncFnQueue } from "@simplysm/sd-core-common";
+import { SdAsyncFnDebounceQueue } from "@simplysm/sd-core-common";
 import * as chokidar from "chokidar";
 import { PathUtils, TNormPath } from "./PathUtils";
 import { EventName } from "chokidar/handler";
@@ -10,7 +10,7 @@ export class SdFsWatcher {
   ): Promise<SdFsWatcher> {
     return await new Promise<SdFsWatcher>((resolve) => {
       const watcher = new SdFsWatcher(paths, options);
-      watcher.#watcher.on("ready", () => {
+      watcher._watcher.on("ready", () => {
         resolve(watcher);
         /*if (Object.keys(watcher.#watcher.getWatched()).length > 0) {
           resolve(watcher);
@@ -19,33 +19,33 @@ export class SdFsWatcher {
     });
   }
 
-  #watcher: chokidar.FSWatcher;
-  #ignoreInitial = true;
+  private readonly _watcher: chokidar.FSWatcher;
+  private readonly _ignoreInitial: boolean = true;
 
   private constructor(paths: string[], options?: chokidar.ChokidarOptions) {
-    this.#watcher = chokidar.watch(paths, {
+    this._watcher = chokidar.watch(paths, {
       persistent: true,
       ...options,
       ignoreInitial: true,
     });
-    this.#ignoreInitial = options?.ignoreInitial ?? this.#ignoreInitial;
+    this._ignoreInitial = options?.ignoreInitial ?? this._ignoreInitial;
   }
 
   onChange(
     opt: { delay?: number },
     cb: (changeInfos: ISdFsWatcherChangeInfo[]) => void | Promise<void>,
   ): this {
-    const fnQ = new AsyncFnQueue(opt.delay);
+    const fnQ = new SdAsyncFnDebounceQueue(opt.delay);
 
     let changeInfoMap = new Map<string, EventName>();
 
-    if (!this.#ignoreInitial) {
-      fnQ.runLast(async () => {
+    if (!this._ignoreInitial) {
+      fnQ.run(async () => {
         await cb([]);
       });
     }
 
-    this.#watcher.on("all", (event, filePath) => {
+    this._watcher.on("all", (event, filePath) => {
       if (!["add", "addDir", "change", "unlink", "unlinkDir"].includes(event)) return;
 
       const prevEvent = changeInfoMap.getOrCreate(filePath, event);
@@ -60,7 +60,7 @@ export class SdFsWatcher {
         changeInfoMap.set(filePath, event);
       }
 
-      fnQ.runLast(async () => {
+      fnQ.run(async () => {
         if (changeInfoMap.size === 0) return;
         const currChangeInfoMap = changeInfoMap;
         changeInfoMap = new Map<string, EventName>();
@@ -77,7 +77,7 @@ export class SdFsWatcher {
   }
 
   async close() {
-    await this.#watcher.close();
+    await this._watcher.close();
   }
 }
 

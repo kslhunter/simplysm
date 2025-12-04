@@ -62,12 +62,12 @@ import { SdListItemControl } from "../../ui/data/list/sd-list-item.control";
 export class SdThemeSelectorControl {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
 
-  #sdTheme = inject(SdThemeProvider);
+  private readonly _sdTheme = inject(SdThemeProvider);
 
   dropdownControl = viewChild.required(SdDropdownControl);
 
-  theme = this.#sdTheme.theme;
-  dark = this.#sdTheme.dark;
+  theme = this._sdTheme.theme;
+  dark = this._sdTheme.dark;
 
   isDev = process.env["NODE_ENV"] === "development";
 

@@ -6,9 +6,9 @@ import { SdServiceExecutor } from "./SdServiceExecutor";
 import { SdServiceSocket } from "./SdServiceSocket";
 
 export class SdWebSocketController {
-  readonly #logger = SdLogger.get(["simplysm", "sd-service-server", "SdWebsocketHandler"]);
+  private readonly _logger = SdLogger.get(["simplysm", "sd-service-server", "SdWebsocketHandler"]);
 
-  readonly #socketMap = new Map<string, SdServiceSocket>();
+  private readonly _socketMap = new Map<string, SdServiceSocket>();
 
   constructor(private readonly _executor: SdServiceExecutor) {}
 
@@ -22,52 +22,52 @@ export class SdWebSocketController {
       const serviceSocket = new SdServiceSocket(socket, clientId, clientName);
 
       // 기존 연결 끊기
-      const prevServiceSocket = this.#socketMap.get(clientId);
+      const prevServiceSocket = this._socketMap.get(clientId);
       if (prevServiceSocket) {
         prevServiceSocket.close();
 
         const connectionDateTimeText =
           prevServiceSocket.connectedAtDateTime.toFormatString("yyyy:MM:dd HH:mm:ss.fff");
-        this.#logger.debug(`클라이언트 기존연결 끊음: ${clientId}: ${connectionDateTimeText}`);
+        this._logger.debug(`클라이언트 기존연결 끊음: ${clientId}: ${connectionDateTimeText}`);
       }
 
       // 클라이언트 객체 변경
-      this.#socketMap.set(clientId, serviceSocket);
+      this._socketMap.set(clientId, serviceSocket);
 
       serviceSocket.on("close", (code: number) => {
-        this.#logger.debug(`클라이언트 연결 끊김: (code: ${code})`);
+        this._logger.debug(`클라이언트 연결 끊김: (code: ${code})`);
 
         // clientId에 새로 set된경우, 시간차로 delete되버리지 않도록 client 동일여부 체크
-        if (this.#socketMap.get(clientId) !== serviceSocket) return;
-        this.#socketMap.delete(clientId);
+        if (this._socketMap.get(clientId) !== serviceSocket) return;
+        this._socketMap.delete(clientId);
       });
 
       serviceSocket.on("message", async (uuid, message) => {
-        this.#logger.debug("요청 수신", message);
-        const sentSize = await this.#processRequestAsync(serviceSocket, uuid, message);
-        this.#logger.debug(`응답 전송 (size: ${sentSize})`);
+        this._logger.debug("요청 수신", message);
+        const sentSize = await this._processRequestAsync(serviceSocket, uuid, message);
+        this._logger.debug(`응답 전송 (size: ${sentSize})`);
       });
 
       // 연결 로그
-      this.#logger.debug(`클라이언트 연결됨`, {
+      this._logger.debug(`클라이언트 연결됨`, {
         clientId,
         remoteAddress,
-        socketSize: this.#socketMap.size,
+        socketSize: this._socketMap.size,
       });
     } catch (err) {
-      this.#logger.error("연결 처리 중 오류 발생", err);
+      this._logger.error("연결 처리 중 오류 발생", err);
       socket.terminate();
     }
   }
 
   closeAll() {
-    for (const serviceSocket of this.#socketMap.values()) {
+    for (const serviceSocket of this._socketMap.values()) {
       serviceSocket.close();
     }
   }
 
   async broadcastReloadAsync(clientName: string | undefined, changedFileSet: Set<string>) {
-    for (const serviceSocket of this.#socketMap.values()) {
+    for (const serviceSocket of this._socketMap.values()) {
       await serviceSocket.sendAsync(Uuid.new().toString(), {
         name: "reload",
         body: {
@@ -83,12 +83,12 @@ export class SdWebSocketController {
     infoSelector: (item: T["info"]) => boolean,
     data: T["data"],
   ) {
-    const targetKeys = Array.from(this.#socketMap.values())
+    const targetKeys = Array.from(this._socketMap.values())
       .mapMany((subSock) => subSock.getEventListners(eventType.name))
       .filter((item) => infoSelector(item.info))
       .map((item) => item.key);
 
-    for (const subSock of this.#socketMap.values()) {
+    for (const subSock of this._socketMap.values()) {
       const subTargetKeys = subSock.filterEventTargetKeys(targetKeys);
       if (subTargetKeys.length > 0) {
         await subSock.sendAsync(Uuid.new().toString(), {
@@ -102,7 +102,7 @@ export class SdWebSocketController {
     }
   }
 
-  async #processRequestAsync(
+  private async _processRequestAsync(
     serviceSocket: SdServiceSocket,
     uuid: string,
     message: TSdServiceClientMessage,
@@ -135,7 +135,7 @@ export class SdWebSocketController {
       } else if (message.name === "evt:gets") {
         const { name } = message.body;
 
-        const infos = Array.from(this.#socketMap.values()).mapMany((subSock) =>
+        const infos = Array.from(this._socketMap.values()).mapMany((subSock) =>
           subSock.getEventListners(name),
         );
 
@@ -143,7 +143,7 @@ export class SdWebSocketController {
       } else if (message.name === "evt:emit") {
         const { keys, data } = message.body;
 
-        for (const subSock of this.#socketMap.values()) {
+        for (const subSock of this._socketMap.values()) {
           const targetKeys = subSock.filterEventTargetKeys(keys);
           if (targetKeys.length > 0) {
             await subSock.sendAsync(uuid, {

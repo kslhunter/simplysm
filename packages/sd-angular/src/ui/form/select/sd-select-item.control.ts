@@ -82,7 +82,7 @@ import { $signal } from "../../../core/utils/bindings/$signal";
   },
 })
 export class SdSelectItemControl {
-  #selectControl: SdSelectControl<any, any> = inject(forwardRef(() => SdSelectControl));
+  private readonly _selectControl: SdSelectControl<any, any> = inject(forwardRef(() => SdSelectControl));
 
   elRef = injectElementRef<HTMLElement>();
 
@@ -90,8 +90,8 @@ export class SdSelectItemControl {
   disabled = input(false, { transform: transformBoolean });
   hidden = input(false, { transform: transformBoolean });
 
-  selectMode = $computed(() => this.#selectControl.selectMode());
-  isSelected = $computed(() => this.#selectControl.getIsSelectedItemControl(this));
+  selectMode = $computed(() => this._selectControl.selectMode());
+  isSelected = $computed(() => this._selectControl.getIsSelectedItemControl(this));
 
   contentHTML = $signal<string>("");
 
@@ -120,7 +120,7 @@ export class SdSelectItemControl {
     event.stopPropagation();
     if (this.disabled()) return;
 
-    this.#selectControl.onItemControlClick(this, this.selectMode() === "single");
+    this._selectControl.onItemControlClick(this, this.selectMode() === "single");
   }
 
   @HostListener("keydown", ["$event"])
@@ -131,13 +131,13 @@ export class SdSelectItemControl {
       event.preventDefault();
       event.stopPropagation();
 
-      this.#selectControl.onItemControlClick(this, false);
+      this._selectControl.onItemControlClick(this, false);
     }
     if (!event.ctrlKey && !event.altKey && event.key === "Enter") {
       event.preventDefault();
       event.stopPropagation();
 
-      this.#selectControl.onItemControlClick(this, this.selectMode() === "single");
+      this._selectControl.onItemControlClick(this, this.selectMode() === "single");
     }
   }
 }

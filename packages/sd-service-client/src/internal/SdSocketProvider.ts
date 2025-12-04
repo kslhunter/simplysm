@@ -182,7 +182,8 @@ export class SdSocketProvider extends EventEmitter {
           const tempWs = this._ws;
           this._ws = undefined; // 연결 상태 끊김으로 간주
 
-          // 기존 소켓의 이벤트 핸들러를 제거하여, 뒤늦게 onclose가 발생해도 중복 처리되지 않게 합니다.
+          // 기존 소켓의 이벤트 핸들러 제거
+          // 뒤늦게 발생한 onclose에 따른 중복 재연결 방지
           tempWs.onclose = null;
           tempWs.onerror = null;
           tempWs.onmessage = null;

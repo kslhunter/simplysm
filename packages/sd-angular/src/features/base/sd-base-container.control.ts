@@ -78,29 +78,29 @@ import { injectParent } from "../../core/utils/injections/injectParent";
 export class SdBaseContainerControl {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
 
-  #sdActivatedModal = inject(SdActivatedModalProvider, { optional: true });
-  #sdAppStructure = inject(SdAppStructureProvider);
+  private readonly _sdActivatedModal = inject(SdActivatedModalProvider, { optional: true });
+  private readonly _sdAppStructure = inject(SdAppStructureProvider);
 
-  #parent = injectParent();
+  private readonly _parent = injectParent();
 
-  #fullPageCode = useFullPageCodeSignal();
-  #currPageCode = useCurrentPageCodeSignal();
+  private readonly _fullPageCode = useFullPageCodeSignal();
+  private readonly _currPageCode = useCurrentPageCodeSignal();
 
   contentTplRef = contentChild.required("contentTpl", { read: TemplateRef });
 
   pageTopbarTplRef = contentChild("pageTopbarTpl", { read: TemplateRef });
   modalBottomTplRef = contentChild("modalBottomTpl", { read: TemplateRef });
 
-  #parentViewType = useViewTypeSignal(() => this.#parent);
+  private readonly _parentViewType = useViewTypeSignal(() => this._parent);
   viewType = input<TSdViewType>();
-  currViewType = $computed(() => this.viewType() ?? this.#parentViewType());
+  currViewType = $computed(() => this.viewType() ?? this._parentViewType());
 
   header = input<string>();
   modalOrPageTitle = $computed(
     () =>
       this.header() ??
-      this.#sdActivatedModal?.modalComponent()?.title() ??
-      this.#sdAppStructure.getTitleByFullCode(this.#currPageCode?.() ?? this.#fullPageCode()),
+      this._sdActivatedModal?.modalComponent()?.title() ??
+      this._sdAppStructure.getTitleByFullCode(this._currPageCode?.() ?? this._fullPageCode()),
   );
 
   initialized = input(undefined, { transform: transformBoolean });

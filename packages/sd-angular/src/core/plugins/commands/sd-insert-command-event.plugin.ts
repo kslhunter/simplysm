@@ -5,7 +5,7 @@ import { SdModalProvider } from "../../../ui/overlay/modal/sd-modal.provider";
 
 @Injectable({ providedIn: null })
 export class SdInsertCommandEventPlugin extends EventManagerPlugin {
-  #sdModal = inject(SdModalProvider);
+  private readonly _sdModal = inject(SdModalProvider);
 
   constructor() {
     super(inject(DOCUMENT));
@@ -22,7 +22,7 @@ export class SdInsertCommandEventPlugin extends EventManagerPlugin {
   ): () => void {
     const listener = (event: KeyboardEvent): void => {
       if (event.key === "Insert" && event.ctrlKey && !event.altKey && !event.shiftKey) {
-        if (this.#sdModal.modalCount() > 0) {
+        if (this._sdModal.modalCount() > 0) {
           if ((event.target as Element).findParent("sd-modal") === element.findParent("sd-modal")) {
             event.preventDefault();
             event.stopPropagation();

@@ -86,7 +86,7 @@ import { type ISdResizeEvent } from "../../../core/plugins/events/sd-resize-even
   ],
 })
 export class SdDockControl {
-  #elRef = injectElementRef<HTMLElement>();
+  private readonly _elRef = injectElementRef<HTMLElement>();
 
   key = input<string>();
   position = input<"top" | "bottom" | "right" | "left">("top");
@@ -94,38 +94,38 @@ export class SdDockControl {
 
   size = $signal(0);
 
-  #config = useSdSystemConfigResource<{ size?: string }>({ key: this.key });
+  private readonly _config = useSdSystemConfigResource<{ size?: string }>({ key: this.key });
 
   constructor() {
     $effect(() => {
-      const conf = this.#config.value();
+      const conf = this._config.value();
       if (this.resizable() && conf && conf.size != null) {
         if (["right", "left"].includes(this.position())) {
-          this.#elRef.nativeElement.style.width = conf.size;
+          this._elRef.nativeElement.style.width = conf.size;
         }
         if (["top", "bottom"].includes(this.position())) {
-          this.#elRef.nativeElement.style.height = conf.size;
+          this._elRef.nativeElement.style.height = conf.size;
         }
       }
     });
   }
 
   assignStyle(style: Partial<CSSStyleDeclaration>) {
-    Object.assign(this.#elRef.nativeElement.style, style);
+    Object.assign(this._elRef.nativeElement.style, style);
   }
 
   @HostListener("sdResize", ["$event"])
   onResize(event: ISdResizeEvent) {
     if (["top", "bottom"].includes(this.position()) && event.heightChanged) {
-      this.size.set(this.#elRef.nativeElement.clientHeight);
+      this.size.set(this._elRef.nativeElement.clientHeight);
     }
     if (["right", "left"].includes(this.position()) && event.widthChanged) {
-      this.size.set(this.#elRef.nativeElement.clientWidth);
+      this.size.set(this._elRef.nativeElement.clientWidth);
     }
   }
 
   onResizeBarMousedown(event: MouseEvent) {
-    const thisEl = this.#elRef.nativeElement;
+    const thisEl = this._elRef.nativeElement;
 
     const startX = event.clientX;
     const startY = event.clientY;
@@ -162,7 +162,7 @@ export class SdDockControl {
         } else {
           newConf.size = thisEl.style.height;
         }
-        this.#config.set(newConf);
+        this._config.set(newConf);
       }
     };
 

@@ -7,7 +7,7 @@ import { TEntityValue } from "../queryable/types";
 import { TQueryBuilderValue } from "../query-builder/types";
 
 export class CaseQueryHelper<T extends TQueryValue> {
-  readonly #cases: any[] = [];
+  private readonly _cases: any[] = [];
 
   constructor(
     private readonly _qh: QueryHelper,
@@ -20,7 +20,7 @@ export class CaseQueryHelper<T extends TQueryValue> {
   ): this {
     this._type = SdOrmUtils.getQueryValueType(then) ?? this._type;
 
-    this.#cases.push(
+    this._cases.push(
       ...[" WHEN ", this._qh.getQueryValue(predicate), " THEN ", this._qh.getQueryValue(then)],
     );
     return this;
@@ -30,7 +30,7 @@ export class CaseQueryHelper<T extends TQueryValue> {
     this._type = SdOrmUtils.getQueryValueType(then) ?? this._type;
     return new QueryUnit(this._type, [
       "CASE ",
-      ...this.#cases,
+      ...this._cases,
       " ELSE ",
       this._qh.getQueryValue(then),
       " END",

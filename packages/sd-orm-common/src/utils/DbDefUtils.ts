@@ -10,10 +10,10 @@ import {
 } from "../types";
 
 export class DbDefUtils {
-  static readonly #tableDefMetadataKey = "sd-orm-table-def";
+  private static readonly _tableDefMetadataKey = "sd-orm-table-def";
 
   static getTableDef(tableType: Type<any>, throws: boolean = true): ITableDef {
-    const tableDef = Reflect.getMetadata(this.#tableDefMetadataKey, tableType);
+    const tableDef = Reflect.getMetadata(this._tableDefMetadataKey, tableType);
     if (throws && tableDef === undefined) {
       throw new Error(`'${tableType.name}'에 '@Table()'이 지정되지 않았습니다.`);
     }
@@ -31,7 +31,7 @@ export class DbDefUtils {
   }
 
   static setTableDef(tableType: Type<any>, tableDef: ITableDef): void {
-    Reflect.defineMetadata(this.#tableDefMetadataKey, tableDef, tableType);
+    Reflect.defineMetadata(this._tableDefMetadataKey, tableDef, tableType);
   }
 
   static mergeTableDef(tableType: Type<any>, target: Partial<ITableDef>): void {

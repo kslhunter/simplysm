@@ -354,14 +354,14 @@ import { transformBoolean } from "../../../core/utils/transforms/transformBoolea
   },
 })
 export class SdBusyContainerControl {
-  #sdBusy = inject(SdBusyProvider);
+  private readonly _sdBusy = inject(SdBusyProvider);
 
   busy = input(false, { transform: transformBoolean });
   message = input<string>();
   type = input<"spinner" | "bar" | "cube">();
   progressPercent = input<number>();
 
-  currType = $computed(() => this.type() ?? this.#sdBusy.type());
+  currType = $computed(() => this.type() ?? this._sdBusy.type());
 
   @HostListener("keydown.capture", ["$event"])
   onKeydownCapture(event: KeyboardEvent) {

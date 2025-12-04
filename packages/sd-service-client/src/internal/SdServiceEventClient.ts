@@ -4,14 +4,14 @@ import { SdServiceEventListenerBase } from "@simplysm/sd-service-common";
 import { SdServiceTransport } from "./SdServiceTransport";
 
 export class SdServiceEventClient {
-  #listenerMap = new Map<
+  private readonly _listenerMap = new Map<
     string,
     { name: string; info: any; cb: (data: any) => PromiseLike<void> | void }
   >();
 
   constructor(private readonly _transport: SdServiceTransport) {
     this._transport.on("event", async (keys: string[], data: any) => {
-      await this.#executeByKeyAsync(keys, data);
+      await this._executeByKeyAsync(keys, data);
     });
   }
 
@@ -29,7 +29,7 @@ export class SdServiceEventClient {
     });
 
     // 로컬 맵에 저장 (재연결 시 복구용)
-    this.#listenerMap.set(key, {
+    this._listenerMap.set(key, {
       name: eventListenerType.name,
       info,
       cb,
@@ -40,7 +40,7 @@ export class SdServiceEventClient {
 
   async removeListenerAsync(key: string): Promise<void> {
     await this._transport.sendAsync({ name: "evt:remove", body: { key } });
-    this.#listenerMap.delete(key);
+    this._listenerMap.delete(key);
   }
 
   async emitAsync<T extends SdServiceEventListenerBase<any, any>>(
@@ -70,7 +70,7 @@ export class SdServiceEventClient {
 
   // 재연결 시 호출됨
   async reRegisterAllAsync(): Promise<void> {
-    for (const [key, value] of this.#listenerMap.entries()) {
+    for (const [key, value] of this._listenerMap.entries()) {
       try {
         await this._transport.sendAsync({
           name: "evt:add",
@@ -83,9 +83,9 @@ export class SdServiceEventClient {
   }
 
   // [추가] 서버에서 온 이벤트를 로컬 리스너에게 분배
-  async #executeByKeyAsync(keys: string[], data: any): Promise<void> {
+  private async _executeByKeyAsync(keys: string[], data: any): Promise<void> {
     for (const key of keys) {
-      const entry = this.#listenerMap.get(key);
+      const entry = this._listenerMap.get(key);
       if (entry) {
         try {
           await entry.cb(data);

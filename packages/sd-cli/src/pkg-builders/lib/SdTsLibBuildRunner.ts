@@ -8,7 +8,7 @@ import { SdCliDbContextFileGenerator } from "./SdCliDbContextFileGenerator";
 export class SdTsLibBuildRunner extends SdBuildRunnerBase<"library"> {
   protected override _logger = SdLogger.get(["simplysm", "sd-cli", "SdTsLibBuildRunner"]);
 
-  #builder?: SdTsLibBuilder;
+  private _builder?: SdTsLibBuilder;
 
   protected override async _runAsync(modifiedFileSet?: Set<TNormPath>): Promise<ISdBuildResult> {
     // 최초한번
@@ -35,11 +35,11 @@ export class SdTsLibBuildRunner extends SdBuildRunnerBase<"library"> {
       }
 
       this._debug(`BUILD 준비...`);
-      this.#builder = new SdTsLibBuilder(this._opt);
+      this._builder = new SdTsLibBuilder(this._opt);
     }
 
     this._debug(`BUILD...`);
-    const buildResult = await this.#builder!.buildAsync(modifiedFileSet);
+    const buildResult = await this._builder!.buildAsync(modifiedFileSet);
 
     this._debug(`빌드 완료`);
     return buildResult;

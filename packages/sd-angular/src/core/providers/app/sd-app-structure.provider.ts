@@ -120,7 +120,7 @@ export abstract class SdAppStructureUtils {
       const currCodeChain = [...codeChain, item.code];
 
       // 모듈 활성화 여부 확인
-      if ("modules" in item && !this.#isUsableModules(item.modules, usableModules)) continue;
+      if ("modules" in item && !this._isUsableModules(item.modules, usableModules)) continue;
 
       // 그룹 메뉴
       if ("children" in item) {
@@ -187,7 +187,7 @@ export abstract class SdAppStructureUtils {
       const currModulesChain =
         "modules" in item ? [...modulesChain, item.modules ?? []] : modulesChain;
 
-      if (!this.#isUsableModulesChain(currModulesChain, usableModules)) continue;
+      if (!this._isUsableModulesChain(currModulesChain, usableModules)) continue;
 
       if ("children" in item) {
         for (const child of item.children) {
@@ -222,7 +222,7 @@ export abstract class SdAppStructureUtils {
       const currCodeChain = [...codeChain, item.code];
 
       // 모듈 활성화 여부 확인
-      if ("modules" in item && !this.#isUsableModules(item.modules, usableModules)) continue;
+      if ("modules" in item && !this._isUsableModules(item.modules, usableModules)) continue;
 
       // 그룹
       if ("children" in item) {
@@ -285,7 +285,7 @@ export abstract class SdAppStructureUtils {
       const currModulesChain =
         "modules" in item ? [...modulesChain, item.modules ?? []] : modulesChain;
 
-      if (!this.#isUsableModulesChain(currModulesChain, usableModules)) continue;
+      if (!this._isUsableModulesChain(currModulesChain, usableModules)) continue;
 
       // 1. 자식 enqueue
       if ("children" in item) {
@@ -329,12 +329,12 @@ export abstract class SdAppStructureUtils {
 
   //-- Modules (private)
 
-  static #isUsableModulesChain<TModule>(
+  private static _isUsableModulesChain<TModule>(
     modulesChain: TModule[][],
     usableModules: TModule[] | undefined,
   ) {
     for (const modules of modulesChain) {
-      if (!this.#isUsableModules(modules, usableModules)) {
+      if (!this._isUsableModules(modules, usableModules)) {
         return false;
       }
     }
@@ -342,7 +342,7 @@ export abstract class SdAppStructureUtils {
     return true;
   }
 
-  static #isUsableModules<TModule>(
+  private static _isUsableModules<TModule>(
     modules: TModule[] | undefined,
     usableModules: TModule[] | undefined,
   ): boolean {

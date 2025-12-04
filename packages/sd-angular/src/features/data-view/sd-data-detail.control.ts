@@ -246,8 +246,8 @@ export abstract class AbsSdDataDetail<T extends object, R = boolean> implements 
   submit?(data: T): Promise<R | undefined> | R | undefined;
 
   //-- implement
-  #sdToast = inject(SdToastProvider);
-  #sdSharedData = inject(SdSharedDataProvider);
+  private readonly _sdToast = inject(SdToastProvider);
+  private readonly _sdSharedData = inject(SdSharedDataProvider);
 
   viewType = useViewTypeSignal(() => this);
 
@@ -272,8 +272,8 @@ export abstract class AbsSdDataDetail<T extends object, R = boolean> implements 
         }
 
         this.busyCount.update((v) => v + 1);
-        await this.#sdToast.try(async () => {
-          await this.#sdSharedData.wait();
+        await this._sdToast.try(async () => {
+          await this._sdSharedData.wait();
           await this.refresh();
         });
         this.busyCount.update((v) => v - 1);
@@ -294,7 +294,7 @@ export abstract class AbsSdDataDetail<T extends object, R = boolean> implements 
     if (!this.checkIgnoreChanges()) return;
 
     this.busyCount.update((v) => v + 1);
-    await this.#sdToast.try(async () => {
+    await this._sdToast.try(async () => {
       await this.refresh();
     });
     this.busyCount.update((v) => v - 1);
@@ -316,11 +316,11 @@ export abstract class AbsSdDataDetail<T extends object, R = boolean> implements 
     if (!this.toggleDelete) return;
 
     this.busyCount.update((v) => v + 1);
-    await this.#sdToast.try(async () => {
+    await this._sdToast.try(async () => {
       const result = await this.toggleDelete!(del);
       if (!result) return;
 
-      this.#sdToast.success(`${del ? "삭제" : "복구"}되었습니다.`);
+      this._sdToast.success(`${del ? "삭제" : "복구"}되었습니다.`);
 
       this.close.emit(result);
     });
@@ -334,17 +334,17 @@ export abstract class AbsSdDataDetail<T extends object, R = boolean> implements 
 
     if (!this.dataInfo()?.isNew && !$obj(this.data).changed()) {
       if (!opt?.hideNoChangeMessage) {
-        this.#sdToast.info("변경사항이 없습니다.");
+        this._sdToast.info("변경사항이 없습니다.");
       }
       return;
     }
 
     this.busyCount.update((v) => v + 1);
-    await this.#sdToast.try(async () => {
+    await this._sdToast.try(async () => {
       const result = await this.submit!(this.data());
       if (!result) return;
 
-      this.#sdToast.success("저장되었습니다.");
+      this._sdToast.success("저장되었습니다.");
 
       this.close.emit(result);
 

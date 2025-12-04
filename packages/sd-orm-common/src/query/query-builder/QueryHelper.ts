@@ -789,7 +789,7 @@ export class QueryHelper {
   getQueryValue(value: TEntityValue<any> | Queryable<any, any>): string | ISelectQueryDef {
     if (value instanceof QueryUnit) {
       if (value.query instanceof Array) {
-        return this.#getQueryValueArray(value.query);
+        return this._getQueryValueArray(value.query);
       } else if (value.query instanceof QueryUnit) {
         return this.getQueryValue(value.query);
       } else if (value.query instanceof Queryable) {
@@ -856,7 +856,7 @@ export class QueryHelper {
   getBulkInsertQueryValue(value: TEntityValue<any>): any {
     if (value instanceof QueryUnit) {
       if (value.query instanceof Array) {
-        return this.#getBulkInsertQueryValueArray(value.query);
+        return this._getBulkInsertQueryValueArray(value.query);
       } else if (value.query instanceof QueryUnit) {
         return this.getBulkInsertQueryValue(value.query);
       } else if (value.query instanceof Queryable) {
@@ -899,10 +899,10 @@ export class QueryHelper {
     }
   }
 
-  #getBulkInsertQueryValueArray(arr: any[]): TEntityValueOrQueryableOrArray<any, any> {
+  private _getBulkInsertQueryValueArray(arr: any[]): TEntityValueOrQueryableOrArray<any, any> {
     return arr.map((item) => {
       if (item instanceof Array) {
-        return this.#getBulkInsertQueryValueArray(item);
+        return this._getBulkInsertQueryValueArray(item);
       } else if (item instanceof QueryUnit) {
         return this.getBulkInsertQueryValue(item);
       } else if (item instanceof Queryable) {
@@ -913,10 +913,10 @@ export class QueryHelper {
     });
   }
 
-  #getQueryValueArray(arr: any[]): TEntityValueOrQueryableOrArray<any, any> {
+  private _getQueryValueArray(arr: any[]): TEntityValueOrQueryableOrArray<any, any> {
     return arr.map((item) => {
       if (item instanceof Array) {
-        return this.#getQueryValueArray(item);
+        return this._getQueryValueArray(item);
       } else if (item instanceof QueryUnit) {
         return this.getQueryValue(item);
       } else if (item instanceof Queryable) {

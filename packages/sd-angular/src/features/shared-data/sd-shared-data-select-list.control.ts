@@ -129,7 +129,7 @@ export class SdSharedDataSelectListControl<
 > {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
 
-  #sdModal = inject(SdModalProvider);
+  private readonly _sdModal = inject(SdModalProvider);
 
   selectedItem = model<TItem>();
   canChangeFn = input<(item: TItem | undefined) => boolean | Promise<boolean>>(() => true);
@@ -206,7 +206,7 @@ export class SdSharedDataSelectListControl<
     const modal = this.modal();
     if (!modal) return;
 
-    const result = await this.#sdModal.showAsync({
+    const result = await this._sdModal.showAsync({
       ...modal,
       inputs: {
         selectMode: "single",

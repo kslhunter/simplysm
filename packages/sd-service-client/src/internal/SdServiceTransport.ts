@@ -11,9 +11,9 @@ import { SdServiceClientProtocolWrapper } from "./SdServiceClientProtocolWrapper
 import { Uuid } from "@simplysm/sd-core-common";
 
 export class SdServiceTransport extends EventEmitter {
-  readonly #protocol = new SdServiceClientProtocolWrapper();
+  private readonly _protocol = new SdServiceClientProtocolWrapper();
 
-  readonly #listenerMap = new Map<
+  private readonly _listenerMap = new Map<
     string,
     {
       resolve: (msg: ISdServiceResponseMessage) => void;
@@ -32,12 +32,12 @@ export class SdServiceTransport extends EventEmitter {
   constructor(private readonly _socket: SdSocketProvider) {
     super();
 
-    this._socket.on("message", this.#onMessage.bind(this));
+    this._socket.on("message", this._onMessage.bind(this));
 
     // 소켓이 끊기면 대기 중인 모든 요청을 에러 처리하여 메모리 해제
     this._socket.on("state", (state) => {
       if (state === "closed" || state === "reconnecting") {
-        this.#cancelAllRequests("Socket connection lost");
+        this._cancelAllRequests("Socket connection lost");
       }
     });
   }
@@ -47,12 +47,12 @@ export class SdServiceTransport extends EventEmitter {
 
     // 응답 대기 시작 (요청 보내기 전에 리스너를 먼저 등록해야 안전함)
     const responsePromise = new Promise((resolve, reject) => {
-      this.#listenerMap.set(uuid, { resolve, reject, progress });
+      this._listenerMap.set(uuid, { resolve, reject, progress });
     });
 
     // 요청 전송
     try {
-      const chunks = await this.#protocol.encodeAsync(uuid, message);
+      const chunks = await this._protocol.encodeAsync(uuid, message);
 
       // 진행률 초기화
       if (chunks.length > 1) {
@@ -69,8 +69,8 @@ export class SdServiceTransport extends EventEmitter {
       }
     } catch (err) {
       // 전송 실패 시 즉시 정리
-      this.#listenerMap.get(uuid)?.reject(err as Error);
-      this.#listenerMap.delete(uuid);
+      this._listenerMap.get(uuid)?.reject(err as Error);
+      this._listenerMap.delete(uuid);
       throw err;
     }
 
@@ -78,10 +78,10 @@ export class SdServiceTransport extends EventEmitter {
     return await responsePromise;
   }
 
-  async #onMessage(buf: Buffer) {
-    const decoded = await this.#protocol.decodeAsync(buf);
+  private async _onMessage(buf: Buffer) {
+    const decoded = await this._protocol.decodeAsync(buf);
 
-    const listenerInfo = this.#listenerMap.get(decoded.uuid);
+    const listenerInfo = this._listenerMap.get(decoded.uuid);
 
     try {
       if (decoded.type === "progress") {
@@ -99,11 +99,11 @@ export class SdServiceTransport extends EventEmitter {
           });
         } else if (decoded.message.name === "response") {
           // 응답을 받았으므로 Map에서 제거
-          this.#listenerMap.delete(decoded.uuid);
+          this._listenerMap.delete(decoded.uuid);
 
           listenerInfo?.resolve(decoded.message.body);
         } else if (decoded.message.name === "error") {
-          listenerInfo?.reject(this.#toError(decoded.message.body));
+          listenerInfo?.reject(this._toError(decoded.message.body));
         } else if (decoded.message.name === "reload") {
           if (this._socket.clientName === decoded.message.body.clientName) {
             this.emit("reload", decoded.message.body.changedFileSet);
@@ -120,14 +120,14 @@ export class SdServiceTransport extends EventEmitter {
   }
 
   // 모든 대기 요청 취소 처리
-  #cancelAllRequests(reason: string) {
-    for (const listenerInfo of this.#listenerMap.values()) {
+  private _cancelAllRequests(reason: string) {
+    for (const listenerInfo of this._listenerMap.values()) {
       listenerInfo.reject(new Error(`Request canceled: ${reason}`));
     }
-    this.#listenerMap.clear();
+    this._listenerMap.clear();
   }
 
-  #toError(body: ISdServiceErrorMessage["body"]): Error {
+  private _toError(body: ISdServiceErrorMessage["body"]): Error {
     let err = new Error(body.message);
     err = Object.assign(err, body);
     return err;

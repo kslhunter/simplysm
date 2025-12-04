@@ -9,7 +9,7 @@ import mime from "mime";
 
 export class SdExcelWorkbook {
   zipCache: ZipCache;
-  #wsMap = new Map<number, SdExcelWorksheet>();
+  private readonly _wsMap = new Map<number, SdExcelWorksheet>();
 
   async getWorksheetNames(): Promise<string[]> {
     const wbData = (await this.zipCache.getAsync("xl/workbook.xml")) as SdExcelXmlWorkbook;
@@ -72,7 +72,7 @@ export class SdExcelWorkbook {
     this.zipCache.set(`xl/worksheets/sheet${newWsRelId}.xml`, wsXml);
 
     const ws = new SdExcelWorksheet(this.zipCache, newWsRelId, `sheet${newWsRelId}.xml`);
-    this.#wsMap.set(newWsRelId, ws);
+    this._wsMap.set(newWsRelId, ws);
     return ws;
   }
 
@@ -89,8 +89,8 @@ export class SdExcelWorkbook {
         throw new Error(`'${nameOrIndex}'번째 시트를 찾을 수 없습니다.`);
       }
     }
-    if (this.#wsMap.has(wsId)) {
-      return this.#wsMap.get(wsId)!;
+    if (this._wsMap.has(wsId)) {
+      return this._wsMap.get(wsId)!;
     }
 
     const relData = (await this.zipCache.getAsync(
@@ -99,7 +99,7 @@ export class SdExcelWorkbook {
     const targetFilePath = relData.getTargetByRelId(wsId)!;
 
     const ws = new SdExcelWorksheet(this.zipCache, wsId, path.basename(targetFilePath));
-    this.#wsMap.set(wsId, ws);
+    this._wsMap.set(wsId, ws);
     return ws;
   }
 

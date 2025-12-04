@@ -10,8 +10,8 @@ import { SdSystemLogProvider } from "../providers/app/sd-system-log.provider";
 
 @Injectable({ providedIn: null })
 export class SdGlobalErrorHandlerPlugin implements ErrorHandler {
-  #envInjector = inject(EnvironmentInjector);
-  #systemLog = inject(SdSystemLogProvider);
+  private readonly _envInjector = inject(EnvironmentInjector);
+  private readonly _systemLog = inject(SdSystemLogProvider);
 
   async handleError(event: any) {
     try {
@@ -19,20 +19,20 @@ export class SdGlobalErrorHandlerPlugin implements ErrorHandler {
         const reason = event.reason;
 
         if (reason instanceof Error) {
-          await this.#displayErrorMessage("Unhandled Promise Rejection", {
+          await this._displayErrorMessage("Unhandled Promise Rejection", {
             Message: reason.message,
             Stack: reason.stack ?? "(no stack)",
           });
         } else if (typeof reason === "object" && reason !== null) {
-          await this.#displayErrorMessage("Unhandled Promise Rejection", {
+          await this._displayErrorMessage("Unhandled Promise Rejection", {
             Reason: JSON.stringify(reason, null, 2),
           });
         } else if (typeof reason === "string") {
-          await this.#displayErrorMessage("Unhandled Promise Rejection", {
+          await this._displayErrorMessage("Unhandled Promise Rejection", {
             Reason: reason,
           });
         } else {
-          await this.#displayErrorMessage("Unhandled Promise Rejection", {
+          await this._displayErrorMessage("Unhandled Promise Rejection", {
             Event: JSON.stringify(event, null, 2),
           });
         }
@@ -40,7 +40,7 @@ export class SdGlobalErrorHandlerPlugin implements ErrorHandler {
         const { message, filename, lineno, colno, error } = event;
 
         if (error == null) {
-          await this.#warning(message);
+          await this._warning(message);
           return;
         }
 
@@ -49,12 +49,12 @@ export class SdGlobalErrorHandlerPlugin implements ErrorHandler {
           stack = "\n" + error.stack;
         }
 
-        await this.#displayErrorMessage("Uncaught Error", {
+        await this._displayErrorMessage("Uncaught Error", {
           Message: `${message}`,
           Source: `${filename}(${lineno}, ${colno})${stack}`,
         });
       } else if (event instanceof Error) {
-        await this.#displayErrorMessage(
+        await this._displayErrorMessage(
           "Uncaught Error",
           event.stack != null
             ? {
@@ -69,23 +69,23 @@ export class SdGlobalErrorHandlerPlugin implements ErrorHandler {
     } catch (err) {
       console.error(err, event);
 
-      const appRef = this.#envInjector.get<ApplicationRef>(ApplicationRef);
+      const appRef = this._envInjector.get<ApplicationRef>(ApplicationRef);
       appRef.destroy();
     }
 
     return false;
   }
 
-  async #warning(message: string) {
-    await this.#systemLog.writeAsync("warn", message);
+  private async _warning(message: string) {
+    await this._systemLog.writeAsync("warn", message);
   }
 
-  async #displayErrorMessage(title: string, param: Record<string, string>) {
+  private async _displayErrorMessage(title: string, param: Record<string, string>) {
     const paramLines = Object.keys(param).map((key) => key + ": " + param[key]);
 
-    await this.#systemLog.writeAsync("error", `[${title}]\n${paramLines.join("\n")}`);
+    await this._systemLog.writeAsync("error", `[${title}]\n${paramLines.join("\n")}`);
 
-    const appRef = this.#envInjector.get<ApplicationRef>(ApplicationRef);
+    const appRef = this._envInjector.get<ApplicationRef>(ApplicationRef);
     appRef.destroy();
 
     // HTML 그리는 순간 appRef의 각종 이벤트가 발생하기 때문에, appRef가 destroy된 다음 수행해야함

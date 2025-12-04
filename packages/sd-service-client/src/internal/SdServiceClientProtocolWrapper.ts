@@ -15,7 +15,7 @@ export class SdServiceClientProtocolWrapper {
   // 워커 스레드 (무거운 작업용)
   private static _worker?: Worker;
   // 워커 요청 대기열 (Key: UUID)
-  private static _workerResolvers = new LazyGcMap<
+  private static readonly _workerResolvers = new LazyGcMap<
     string,
     { resolve: (res: any) => void; reject: (err: Error) => void }
   >({
@@ -73,7 +73,7 @@ export class SdServiceClientProtocolWrapper {
 
   async encodeAsync(uuid: string, message: TSdServiceMessage): Promise<Buffer[]> {
     // 1. 휴리스틱 체크
-    if (this.#shouldUseWorkerForEncode(message)) {
+    if (this._shouldUseWorkerForEncode(message)) {
       // [Worker]
       // Encode는 객체를 보내야 하므로 Structured Clone이 발생함.
       // 하지만 JSON.stringify 비용을 메인 스레드에서 제거하는 이득이 더 큼.
@@ -101,7 +101,7 @@ export class SdServiceClientProtocolWrapper {
     }
   }
 
-  #shouldUseWorkerForEncode(msg: TSdServiceMessage): boolean {
+  private _shouldUseWorkerForEncode(msg: TSdServiceMessage): boolean {
     if (!("body" in msg)) return false;
     const body = msg.body;
 

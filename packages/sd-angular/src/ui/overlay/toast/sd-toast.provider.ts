@@ -18,29 +18,29 @@ import { $effect } from "../../../core/utils/bindings/$effect";
 
 @Injectable({ providedIn: "root" })
 export class SdToastProvider {
-  readonly #appRef = inject(ApplicationRef);
-  readonly #systemLog = inject(SdSystemLogProvider);
+  private readonly _appRef = inject(ApplicationRef);
+  private readonly _systemLog = inject(SdSystemLogProvider);
 
   readonly alertThemes = $signal<("info" | "success" | "warning" | "danger")[]>([]);
   readonly overlap = $signal(false);
 
-  #containerRef?: ComponentRef<SdToastContainerControl>;
+  private _containerRef?: ComponentRef<SdToastContainerControl>;
 
   beforeShowFn?: (theme: "info" | "success" | "warning" | "danger") => void;
 
   get containerRef() {
-    if (this.#containerRef == null) {
+    if (this._containerRef == null) {
       const compRef = createComponent(SdToastContainerControl, {
-        environmentInjector: this.#appRef.injector,
+        environmentInjector: this._appRef.injector,
         bindings: [inputBinding("overlap", this.overlap)],
       });
 
       document.body.appendChild(compRef.location.nativeElement);
-      this.#appRef.attachView(compRef.hostView);
-      this.#containerRef = compRef;
+      this._appRef.attachView(compRef.hostView);
+      this._containerRef = compRef;
     }
 
-    return this.#containerRef;
+    return this._containerRef;
   }
 
   async try<R>(fn: () => Promise<R>, messageFn?: (err: Error) => string): Promise<R | undefined>;
@@ -59,7 +59,7 @@ export class SdToastProvider {
           this.danger(err.message);
         }
 
-        await this.#systemLog.writeAsync("error", err.stack);
+        await this._systemLog.writeAsync("error", err.stack);
 
         return undefined;
       } else {
@@ -74,7 +74,7 @@ export class SdToastProvider {
 
     // component
     const compRef = createComponent(toast.type, {
-      environmentInjector: this.#appRef.injector,
+      environmentInjector: this._appRef.injector,
       bindings: [
         ...Object.keys(toast.inputs).map((inputKey) =>
           inputBinding(inputKey, () => toast.inputs[inputKey]),
@@ -86,15 +86,15 @@ export class SdToastProvider {
     // toast
     const bindings = { open: $signal(false) };
     const toastRef = createComponent(SdToastControl, {
-      environmentInjector: this.#appRef.injector,
+      environmentInjector: this._appRef.injector,
       projectableNodes: [[compRef.location.nativeElement]],
       bindings: [inputBinding("open", bindings.open)],
     });
     const toastEl = toastRef.location.nativeElement as HTMLElement;
     containerEl.appendChild(toastEl);
 
-    this.#appRef.attachView(toastRef.hostView);
-    this.#appRef.attachView(compRef.hostView);
+    this._appRef.attachView(toastRef.hostView);
+    this._appRef.attachView(compRef.hostView);
 
     bindings.open.set(true);
 
@@ -114,22 +114,22 @@ export class SdToastProvider {
   }
 
   info(message: string, userProgress: boolean = false) {
-    return this.#show("info", message, userProgress);
+    return this._show("info", message, userProgress);
   }
 
   success(message: string, useProgress: boolean = false) {
-    return this.#show("success", message, useProgress);
+    return this._show("success", message, useProgress);
   }
 
   warning(message: string, useProgress: boolean = false) {
-    return this.#show("warning", message, useProgress);
+    return this._show("warning", message, useProgress);
   }
 
   danger(message: string, useProgress: boolean = false) {
-    return this.#show("danger", message, useProgress);
+    return this._show("danger", message, useProgress);
   }
 
-  #show(theme: "info" | "success" | "warning" | "danger", message: string, useProgress: boolean) {
+  private _show(theme: "info" | "success" | "warning" | "danger", message: string, useProgress: boolean) {
     this.beforeShowFn?.(theme);
 
     if (this.alertThemes().includes(theme)) {
@@ -143,7 +143,7 @@ export class SdToastProvider {
       open: $signal(false),
     };
     const toastRef = createComponent(SdToastControl, {
-      environmentInjector: this.#appRef.injector,
+      environmentInjector: this._appRef.injector,
       bindings: [
         inputBinding("useProgress", () => useProgress),
         inputBinding("progress", bindings.progress),
@@ -161,7 +161,7 @@ export class SdToastProvider {
       }
     }
     containerEl.appendChild(toastEl);
-    this.#appRef.attachView(toastRef.hostView);
+    this._appRef.attachView(toastRef.hostView);
 
     // repaint
     containerEl.repaint();
@@ -176,7 +176,7 @@ export class SdToastProvider {
           closeAfterTime(1000);
         },
         {
-          injector: this.#appRef.injector,
+          injector: this._appRef.injector,
         },
       );
     } else {
