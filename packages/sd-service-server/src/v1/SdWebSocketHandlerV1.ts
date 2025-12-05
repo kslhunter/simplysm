@@ -2,13 +2,13 @@ import { WebSocket } from "ws";
 import { Type } from "@simplysm/sd-core-common";
 import { SdLogger } from "@simplysm/sd-core-node";
 import { SdServiceSocketV1 } from "./SdServiceSocketV1";
-import { SdServiceExecutor } from "../internal/SdServiceExecutor";
+import { SdServiceExecutor } from "../internal/features/SdServiceExecutor";
 import { ISdServiceRequest, TSdServiceResponse } from "./protocol-v1.types";
 import { SdServiceCommandHelperV1 } from "./SdServiceCommandHelperV1";
 import { SD_SERVICE_SPECIAL_COMMANDS } from "./command-v1.types";
 import { SdServiceEventListenerBase } from "@simplysm/sd-service-common";
 
-export class SdWebSocketControllerV1 {
+export class SdWebSocketHandlerV1 {
   private readonly _logger = SdLogger.get(["simplysm", "sd-service-server", "SdWebsocketHandler"]);
 
   private readonly _socketMap = new Map<string, SdServiceSocketV1>();

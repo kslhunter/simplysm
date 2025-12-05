@@ -1,10 +1,10 @@
 import { SdLogger } from "@simplysm/sd-core-node";
 import { EventEmitter } from "events";
 import { SdServiceEventListenerBase } from "@simplysm/sd-service-common";
-import { SdWebSocketControllerV1 } from "./v1/SdWebSocketControllerV1";
-import { SdStaticFileHandler } from "./internal/SdStaticFileHandler";
-import { SdHttpRequestHandler } from "./internal/SdHttpRequestHandler";
-import { SdServiceExecutor } from "./internal/SdServiceExecutor";
+import { SdWebSocketHandlerV1 } from "./v1/SdWebSocketHandlerV1";
+import { SdStaticFileHandler } from "./internal/handlers/SdStaticFileHandler";
+import { SdHttpRequestHandler } from "./internal/handlers/SdHttpRequestHandler";
+import { SdServiceExecutor } from "./internal/features/SdServiceExecutor";
 import { JsonConvert, Type } from "@simplysm/sd-core-common";
 import fastify, { FastifyInstance, FastifyRequest } from "fastify";
 import fastifyMiddie from "@fastify/middie";
@@ -15,25 +15,34 @@ import fastifyHelmet from "@fastify/helmet";
 import fastifyCors from "@fastify/cors";
 import fastifyReplyFrom from "@fastify/reply-from";
 import path from "path";
-import { SdUploadHandler } from "./internal/SdUploadHandler";
+import { SdUploadHandler } from "./internal/handlers/SdUploadHandler";
 import { SdServiceBase } from "./SdServiceBase";
 import http from "http";
-import { SdWebSocketController } from "./internal/SdWebSocketController";
+import { SdWebSocketHandler } from "./internal/handlers/SdWebSocketHandler";
 import { WebSocket } from "ws";
+import { SdServiceJwtManager } from "./internal/features/SdServiceJwtManager";
+import { IAuthTokenPayload } from "./internal/auth/IAuthTokenPayload";
 
 export class SdServiceServer extends EventEmitter {
   isOpen = false;
 
   private readonly _logger = SdLogger.get(["simplysm", "sd-service-server", this.constructor.name]);
 
-  // 핸들러 인스턴스
+  // 기능
   private readonly _serviceExecutor = new SdServiceExecutor(this);
-  private readonly _httpRequestHandler = new SdHttpRequestHandler(this, this._serviceExecutor);
-  private readonly _staticFileHandler = new SdStaticFileHandler(this);
-  private readonly _uploadHandler = new SdUploadHandler(this);
+  private readonly _jwt = new SdServiceJwtManager(this);
 
-  private readonly _wsCtrlV1 = new SdWebSocketControllerV1(this._serviceExecutor);
-  private readonly _wsCtrlV2 = new SdWebSocketController(this._serviceExecutor);
+  // 핸들러 인스턴스
+  private readonly _httpRequestHandler = new SdHttpRequestHandler(
+    this,
+    this._serviceExecutor,
+    this._jwt,
+  );
+  private readonly _staticFileHandler = new SdStaticFileHandler(this);
+  private readonly _uploadHandler = new SdUploadHandler(this, this._jwt);
+
+  private readonly _wsHandlerV1 = new SdWebSocketHandlerV1(this._serviceExecutor);
+  private readonly _wsHandlerV2 = new SdWebSocketHandler(this._serviceExecutor, this._jwt);
 
   private _fastify?: FastifyInstance;
 
@@ -110,7 +119,10 @@ export class SdServiceServer extends EventEmitter {
       origin: (origin, cb) => {
         cb(null, true); // AllowALL
       },
-      // credentials: true, // 쿠키/인증 정보 포함 시 필요
+      // 클라이언트가 보낼 수 있는 헤더 명시
+      allowedHeaders: ["Content-Type", "Authorization", "x-sd-client-name"],
+      // 클라이언트가 응답에서 읽을 수 있는 헤더 명시 (파일 다운로드 시 필요)
+      exposedHeaders: ["Content-Disposition", "Content-Length"],
     });
 
     // JSON 파서
@@ -154,9 +166,9 @@ export class SdServiceServer extends EventEmitter {
           return;
         }
 
-        this._wsCtrlV2.addSocket(socket, clientId, clientName, req.socket.remoteAddress);
+        this._wsHandlerV2.addSocket(socket, clientId, clientName, req.socket.remoteAddress);
       } else {
-        await this._wsCtrlV1.addSocket(socket, req.socket.remoteAddress);
+        await this._wsHandlerV1.addSocket(socket, req.socket.remoteAddress);
       }
     };
     this._fastify.get("/", { websocket: true }, onWebSocketConnected.bind(this));
@@ -204,8 +216,8 @@ export class SdServiceServer extends EventEmitter {
   }
 
   async closeAsync(): Promise<void> {
-    this._wsCtrlV1.closeAll();
-    this._wsCtrlV2.closeAll();
+    this._wsHandlerV1.closeAll();
+    this._wsHandlerV2.closeAll();
     await this._fastify?.close();
 
     this.isOpen = false;
@@ -215,8 +227,8 @@ export class SdServiceServer extends EventEmitter {
 
   async broadcastReloadAsync(clientName: string | undefined, changedFileSet: Set<string>) {
     this._logger.debug("서버내 모든 클라이언트 RELOAD 명령 전송");
-    this._wsCtrlV1.broadcastReload(clientName, changedFileSet);
-    await this._wsCtrlV2.broadcastReloadAsync(clientName, changedFileSet);
+    this._wsHandlerV1.broadcastReload(clientName, changedFileSet);
+    await this._wsHandlerV2.broadcastReloadAsync(clientName, changedFileSet);
   }
 
   async emitEvent<T extends SdServiceEventListenerBase<any, any>>(
@@ -224,8 +236,12 @@ export class SdServiceServer extends EventEmitter {
     infoSelector: (item: T["info"]) => boolean,
     data: T["data"],
   ) {
-    this._wsCtrlV1.emit(eventType, infoSelector, data);
-    await this._wsCtrlV2.emitAsync(eventType, infoSelector, data);
+    this._wsHandlerV1.emit(eventType, infoSelector, data);
+    await this._wsHandlerV2.emitAsync(eventType, infoSelector, data);
+  }
+
+  async generateAuthToken(payload: IAuthTokenPayload) {
+    return await this._jwt.signAsync(payload);
   }
 
   // 종료 시그널 감지 및 처리
@@ -266,6 +282,9 @@ export interface ISdServiceServerOptions {
   ssl?: {
     pfxBuffer: Buffer | (() => Promise<Buffer> | Buffer);
     passphrase: string;
+  };
+  auth?: {
+    jwtSecret: string;
   };
   pathProxy?: Record<string, string>;
   portProxy?: Record<string, number>;

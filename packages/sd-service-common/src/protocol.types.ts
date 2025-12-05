@@ -3,6 +3,7 @@ export const SD_SERVICE_MESSAGE_MAX_TOTAL_SIZE = 100 * 1024 * 1024; // 100MB
 export type TSdServiceMessage =
   | ISdServiceReloadMessage
   | ISdServiceRequestMessage
+  | ISdServiceAuthMessage
   | ISdServiceProgressMessage
   | ISdServiceResponseMessage
   | ISdServiceErrorMessage
@@ -16,12 +17,13 @@ export type TSdServiceServerMessage =
   | ISdServiceReloadMessage // 알림
   | ISdServiceResponseMessage
   | ISdServiceErrorMessage
-  | ISdServiceEventMessage // 알림;
+  | ISdServiceEventMessage; // 알림
 
 export type TSdServiceServerRawMessage = ISdServiceProgressMessage | TSdServiceServerMessage;
 
 export type TSdServiceClientMessage =
   | ISdServiceRequestMessage
+  | ISdServiceAuthMessage
   | ISdServiceAddEventListenerMessage
   | ISdServiceRemoveEventListenerMessage
   | ISdServiceGetEventListenerInfosMessage
@@ -60,6 +62,12 @@ export interface ISdServiceErrorMessage {
     detail?: any;
     cause?: any;
   };
+}
+
+// 클라: 인증 메시지
+export interface ISdServiceAuthMessage {
+  name: `auth`;
+  body: string; // 토큰
 }
 
 // ----------------------------------------------------------------------

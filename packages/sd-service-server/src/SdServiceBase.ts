@@ -5,8 +5,9 @@ import { SdConfigManager } from "./internal/SdConfigManager";
 import { SdServiceSocketV1 } from "./v1/SdServiceSocketV1";
 import { SdServiceSocket } from "./internal/SdServiceSocket";
 import { ISdServiceRequest } from "./v1/protocol-v1.types";
+import { IAuthTokenPayload } from "./internal/auth/IAuthTokenPayload";
 
-export abstract class SdServiceBase {
+export abstract class SdServiceBase<TAuthInfo = any> {
   server!: SdServiceServer;
   socket?: SdServiceSocket;
 
@@ -15,8 +16,14 @@ export abstract class SdServiceBase {
     request: ISdServiceRequest;
   };
 
+  http?: {
+    clientName: string;
+    authTokenPayload?: IAuthTokenPayload;
+  };
+
   get clientName(): string {
-    const clientName = this.v1?.request.clientName ?? this.socket?.clientName;
+    const clientName =
+      this.v1?.request.clientName ?? this.socket?.clientName ?? this.http?.clientName;
     if (clientName == null) throw new Error("api로 사용할 수 없는 서비스입니다.");
 
     // Path Traversal 방지
@@ -46,7 +53,8 @@ export abstract class SdServiceBase {
     }
 
     // 2. Client Config
-    const clientName = this.v1?.request.clientName ?? this.socket?.clientName;
+    const clientName =
+      this.v1?.request.clientName ?? this.socket?.clientName ?? this.http?.clientName;
     if (clientName != null) {
       const targetPath = this.clientPath;
       const clientFilePath = path.resolve(targetPath, ".config.json");
@@ -61,5 +69,9 @@ export abstract class SdServiceBase {
     const config = configParent[section];
     if (config == null) throw new Error(`설정 섹션을 찾을 수 없습니다: ${section}`);
     return config;
+  }
+
+  get authInfo(): TAuthInfo | undefined {
+    return this.socket?.authTokenPayload?.data ?? this.http?.authTokenPayload?.data;
   }
 }

@@ -1,11 +1,14 @@
 import { ISdServiceUploadResult } from "@simplysm/sd-service-common";
 
 export class SdServiceFileClient {
-  constructor(readonly hostUrl: string) {}
+  constructor(
+    private readonly _hostUrl: string,
+    private readonly _clientName: string,
+  ) {}
 
   async downloadAsync(relPath: string): Promise<Buffer> {
     // URL 구성
-    const url = `${this.hostUrl}${relPath.startsWith("/") ? "" : "/"}${relPath}`;
+    const url = `${this._hostUrl}${relPath.startsWith("/") ? "" : "/"}${relPath}`;
 
     const res = await fetch(url);
     if (!res.ok) {
@@ -18,6 +21,7 @@ export class SdServiceFileClient {
 
   async uploadAsync(
     files: File[] | FileList | { name: string; data: Blob | Buffer }[],
+    authToken: string,
   ): Promise<ISdServiceUploadResult[]> {
     const formData = new FormData();
     const fileList = files instanceof FileList ? Array.from(files) : files;
@@ -33,8 +37,12 @@ export class SdServiceFileClient {
       }
     }
 
-    const res = await fetch(`${this.hostUrl}/upload`, {
+    const res = await fetch(`${this._hostUrl}/upload`, {
       method: "POST",
+      headers: {
+        "x-sd-client-name": this._clientName,
+        "Authorization": `Bearer ${authToken}`,
+      },
       body: formData,
     });
 

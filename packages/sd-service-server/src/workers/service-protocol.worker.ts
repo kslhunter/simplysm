@@ -1,6 +1,6 @@
 import { createSdWorker } from "@simplysm/sd-core-node";
 import { SdServiceProtocol } from "@simplysm/sd-service-common";
-import { ISdServiceProtocolWorker } from "../internal/protocol.worker-types";
+import { ISdServiceProtocolWorker } from "../internal/protocol/protocol.worker-types";
 
 const protocol = new SdServiceProtocol();
 

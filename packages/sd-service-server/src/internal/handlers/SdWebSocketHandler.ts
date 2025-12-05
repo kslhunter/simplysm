@@ -2,15 +2,19 @@ import { WebSocket } from "ws";
 import { Type, Uuid } from "@simplysm/sd-core-common";
 import { SdServiceEventListenerBase, TSdServiceClientMessage } from "@simplysm/sd-service-common";
 import { SdLogger } from "@simplysm/sd-core-node";
-import { SdServiceExecutor } from "./SdServiceExecutor";
-import { SdServiceSocket } from "./SdServiceSocket";
+import { SdServiceExecutor } from "../features/SdServiceExecutor";
+import { SdServiceSocket } from "../SdServiceSocket";
+import { SdServiceJwtManager } from "../features/SdServiceJwtManager";
 
-export class SdWebSocketController {
+export class SdWebSocketHandler {
   private readonly _logger = SdLogger.get(["simplysm", "sd-service-server", "SdWebsocketHandler"]);
 
   private readonly _socketMap = new Map<string, SdServiceSocket>();
 
-  constructor(private readonly _executor: SdServiceExecutor) {}
+  constructor(
+    private readonly _executor: SdServiceExecutor,
+    private readonly _jwt: SdServiceJwtManager,
+  ) {}
 
   addSocket(
     socket: WebSocket,
@@ -155,6 +159,11 @@ export class SdWebSocketController {
             });
           }
         }
+
+        return await serviceSocket.sendAsync(uuid, { name: "response" });
+      } else if (message.name === "auth") {
+        const token = message.body;
+        serviceSocket.authTokenPayload = await this._jwt.verifyAsync(token);
 
         return await serviceSocket.sendAsync(uuid, { name: "response" });
       } else {

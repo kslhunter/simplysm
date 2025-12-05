@@ -8,7 +8,8 @@ import {
 import { WebSocket } from "ws";
 import { EventEmitter } from "events";
 import { clearInterval } from "node:timers";
-import { SdServiceProtocolWrapper } from "./SdServiceProtocolWrapper";
+import { SdServiceProtocolWrapper } from "./protocol/SdServiceProtocolWrapper";
+import {IAuthTokenPayload} from "./auth/IAuthTokenPayload";
 
 export class SdServiceSocket extends EventEmitter {
   private readonly _PING_INTERVAL = 5000; // 5초마다 핑 전송
@@ -23,6 +24,8 @@ export class SdServiceSocket extends EventEmitter {
   private readonly _pingTimer: NodeJS.Timeout;
 
   readonly connectedAtDateTime = new DateTime();
+
+  authTokenPayload?: IAuthTokenPayload;
 
   override on(event: "close", listener: (code: number) => void): this;
   override on(

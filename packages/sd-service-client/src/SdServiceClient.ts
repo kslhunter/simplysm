@@ -17,6 +17,8 @@ export class SdServiceClient extends EventEmitter {
   private readonly _eventClient: SdServiceEventClient;
   private readonly _fileClient: SdServiceFileClient;
 
+  private _authToken?: string;
+
   override on(event: "request-progress", listener: (state: ISdServiceProgressState) => void): this;
   override on(event: "response-progress", listener: (state: ISdServiceProgressState) => void): this;
   override on(
@@ -33,7 +35,8 @@ export class SdServiceClient extends EventEmitter {
     return this._socket.connected;
   }
   get hostUrl() {
-    return this._fileClient.hostUrl;
+    const hostProtocol = this.options.ssl ? "https" : "http";
+    return `${hostProtocol}://${this.options.host}:${this.options.port}`;
   }
 
   constructor(
@@ -42,9 +45,6 @@ export class SdServiceClient extends EventEmitter {
   ) {
     super();
 
-    const hostProtocol = options.ssl ? "https" : "http";
-    const hostUrl = `${hostProtocol}://${options.host}:${options.port}`;
-
     const wsProtocol = options.ssl ? "wss" : "ws";
     const wsUrl = `${wsProtocol}://${options.host}:${options.port}/ws`;
 
@@ -52,7 +52,7 @@ export class SdServiceClient extends EventEmitter {
     this._socket = new SdSocketProvider(wsUrl, this.name, this.options.maxReconnectCount ?? 10);
     this._transport = new SdServiceTransport(this._socket);
     this._eventClient = new SdServiceEventClient(this._transport);
-    this._fileClient = new SdServiceFileClient(hostUrl);
+    this._fileClient = new SdServiceFileClient(this.hostUrl, this.name);
 
     // 이벤트 바인딩
     this._socket.on("state", async (state) => {
@@ -61,6 +61,9 @@ export class SdServiceClient extends EventEmitter {
       // 재연결 시 이벤트 리스너 자동 복구
       if (state === "connected") {
         try {
+          if (this._authToken != null) {
+            await this.authAsync(this._authToken); // 재인증
+          }
           await this._eventClient.reRegisterAllAsync();
         } catch (err) {
           console.error("이벤트 리스너 복구 실패", err);
@@ -117,6 +120,11 @@ export class SdServiceClient extends EventEmitter {
     );
   }
 
+  async authAsync(token: string) {
+    await this._transport.sendAsync({ name: `auth`, body: token });
+    this._authToken = token;
+  }
+
   async addEventListenerAsync<T extends SdServiceEventListenerBase<any, any>>(
     eventType: Type<T>,
     info: T["info"],
@@ -139,7 +147,12 @@ export class SdServiceClient extends EventEmitter {
   }
 
   async uploadFileAsync(files: File[] | FileList | { name: string; data: Blob | Buffer }[]) {
-    return await this._fileClient.uploadAsync(files);
+    if (this._authToken == null) {
+      throw new Error(
+        "인증 토큰이 없습니다. 파일 업로드를 위해서는 먼저 authAsync()를 호출하여 인증해야 합니다.",
+      );
+    }
+    return await this._fileClient.uploadAsync(files, this._authToken);
   }
 
   async downloadFileBufferAsync(relPath: string) {
