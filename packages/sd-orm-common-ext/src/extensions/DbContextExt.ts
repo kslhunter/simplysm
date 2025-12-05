@@ -9,6 +9,7 @@ import { DateTime, JsonConvert, Uuid } from "@simplysm/sd-core-common";
 import { UniqueCode } from "../models/UniqueCode";
 import * as util from "node:util";
 
+/** @deprecated */
 export abstract class DbContextExt extends DbContext {
   uniqueCode = new Queryable(this, UniqueCode);
   systemDataLog = new Queryable(this, SystemDataLog);

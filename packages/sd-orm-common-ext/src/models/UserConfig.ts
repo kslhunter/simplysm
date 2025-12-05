@@ -1,6 +1,7 @@
 import { User } from "./User";
 import { Column, ForeignKey, Table } from "@simplysm/sd-orm-common";
 
+/** @deprecated */
 @Table({ description: "사용자설정" })
 export class UserConfig {
   @Column({ description: "사용자.ID", primaryKey: 1 })

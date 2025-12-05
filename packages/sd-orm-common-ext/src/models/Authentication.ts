@@ -2,6 +2,7 @@ import { DateTime, Uuid } from "@simplysm/sd-core-common";
 import { Column, ForeignKey, Index, Table } from "@simplysm/sd-orm-common";
 import { User } from "./User";
 
+/** @deprecated */
 @Table({ description: "인증" })
 export class Authentication {
   @Column({ description: "인증키", primaryKey: 1 })

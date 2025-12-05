@@ -2,6 +2,7 @@ import { DateTime } from "@simplysm/sd-core-common";
 import { Column, ForeignKey, Index, Table } from "@simplysm/sd-orm-common";
 import { User } from "./User";
 
+/** @deprecated */
 @Table({ description: "시스템 데이터 로그" })
 export class SystemDataLog {
   @Column({ description: "ID", autoIncrement: true, primaryKey: 1 })
