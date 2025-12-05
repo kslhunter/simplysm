@@ -1,10 +1,10 @@
 import { SdLogger } from "@simplysm/sd-core-node";
 import { EventEmitter } from "events";
 import { SdServiceEventListenerBase } from "@simplysm/sd-service-common";
-import { SdWebSocketHandlerV1 } from "./v1/SdWebSocketHandlerV1";
-import { SdStaticFileHandler } from "./internal/handlers/SdStaticFileHandler";
-import { SdHttpRequestHandler } from "./internal/handlers/SdHttpRequestHandler";
-import { SdServiceExecutor } from "./internal/features/SdServiceExecutor";
+import { SdWebSocketHandlerV1 } from "./transport-v1/SdWebSocketHandlerV1";
+import { SdStaticFileHandler } from "./transport/http/SdStaticFileHandler";
+import { SdHttpRequestHandler } from "./transport/http/SdHttpRequestHandler";
+import { SdServiceExecutor } from "./core/SdServiceExecutor";
 import { JsonConvert, Type } from "@simplysm/sd-core-common";
 import fastify, { FastifyInstance, FastifyRequest } from "fastify";
 import fastifyMiddie from "@fastify/middie";
@@ -15,13 +15,12 @@ import fastifyHelmet from "@fastify/helmet";
 import fastifyCors from "@fastify/cors";
 import fastifyReplyFrom from "@fastify/reply-from";
 import path from "path";
-import { SdUploadHandler } from "./internal/handlers/SdUploadHandler";
-import { SdServiceBase } from "./SdServiceBase";
-import http from "http";
-import { SdWebSocketHandler } from "./internal/handlers/SdWebSocketHandler";
+import { SdUploadHandler } from "./transport/http/SdUploadHandler";
+import { SdWebSocketHandler } from "./transport/socket/SdWebSocketHandler";
 import { WebSocket } from "ws";
-import { SdServiceJwtManager } from "./internal/features/SdServiceJwtManager";
-import { IAuthTokenPayload } from "./internal/auth/IAuthTokenPayload";
+import { SdServiceJwtManager } from "./auth/SdServiceJwtManager";
+import { IAuthTokenPayload } from "./auth/IAuthTokenPayload";
+import { ISdServiceServerOptions } from "./types/ISdServiceServerOptions";
 
 export class SdServiceServer extends EventEmitter {
   isOpen = false;
@@ -274,24 +273,4 @@ export class SdServiceServer extends EventEmitter {
     process.on("SIGINT", () => shutdownHandler("SIGINT"));
     process.on("SIGTERM", () => shutdownHandler("SIGTERM"));
   }
-}
-
-export interface ISdServiceServerOptions {
-  rootPath: string;
-  port: number;
-  ssl?: {
-    pfxBuffer: Buffer | (() => Promise<Buffer> | Buffer);
-    passphrase: string;
-  };
-  auth?: {
-    jwtSecret: string;
-  };
-  pathProxy?: Record<string, string>;
-  portProxy?: Record<string, number>;
-  services: Type<SdServiceBase>[];
-  middlewares?: ((
-    req: http.IncomingMessage,
-    res: http.ServerResponse,
-    next: (err?: any) => void,
-  ) => void)[];
 }

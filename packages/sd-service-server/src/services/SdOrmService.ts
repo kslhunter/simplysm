@@ -11,11 +11,11 @@ import {
   TQueryDef,
 } from "@simplysm/sd-orm-common";
 import { SdLogger } from "@simplysm/sd-core-node";
-import { SdServiceBase } from "../SdServiceBase";
+import { SdServiceBase } from "../core/SdServiceBase";
 import { ISdOrmService, TDbConnOptions } from "@simplysm/sd-service-common";
-import { SdServiceSocketV1 } from "../v1/SdServiceSocketV1";
-import { SdServiceSocket } from "../internal/SdServiceSocket";
-import { Authorize } from "../internal/auth/auth.decorators";
+import { SdServiceSocketV1 } from "../transport-v1/SdServiceSocketV1";
+import { SdServiceSocket } from "../transport/socket/SdServiceSocket";
+import { Authorize } from "../auth/auth.decorators";
 
 @Authorize()
 export class SdOrmService extends SdServiceBase implements ISdOrmService {

@@ -1,8 +1,8 @@
 import { JsonConvert } from "@simplysm/sd-core-common";
 import { SdServiceServer } from "../../SdServiceServer";
-import { SdServiceExecutor } from "../features/SdServiceExecutor";
+import { SdServiceExecutor } from "../../core/SdServiceExecutor";
 import { FastifyReply, FastifyRequest } from "fastify";
-import { SdServiceJwtManager } from "../features/SdServiceJwtManager";
+import { SdServiceJwtManager } from "../../auth/SdServiceJwtManager";
 
 export class SdHttpRequestHandler {
   constructor(

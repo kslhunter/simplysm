@@ -1,7 +1,7 @@
 import crypto from "crypto";
-import { SdServiceBase } from "../SdServiceBase";
+import { SdServiceBase } from "../core/SdServiceBase";
 import { ICryptoConfig, ISdCryptoService } from "@simplysm/sd-service-common";
-import { Authorize } from "../internal/auth/auth.decorators";
+import { Authorize } from "../auth/auth.decorators";
 
 @Authorize()
 export class SdCryptoService extends SdServiceBase implements ISdCryptoService {

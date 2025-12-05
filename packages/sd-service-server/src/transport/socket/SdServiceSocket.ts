@@ -8,8 +8,8 @@ import {
 import { WebSocket } from "ws";
 import { EventEmitter } from "events";
 import { clearInterval } from "node:timers";
-import { SdServiceProtocolWrapper } from "./protocol/SdServiceProtocolWrapper";
-import {IAuthTokenPayload} from "./auth/IAuthTokenPayload";
+import { SdServiceProtocolWrapper } from "../../protocol/SdServiceProtocolWrapper";
+import {IAuthTokenPayload} from "../../auth/IAuthTokenPayload";
 
 export class SdServiceSocket extends EventEmitter {
   private readonly _PING_INTERVAL = 5000; // 5초마다 핑 전송

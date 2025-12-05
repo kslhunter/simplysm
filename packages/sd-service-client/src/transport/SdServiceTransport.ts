@@ -7,7 +7,7 @@ import { ISdServiceProgress } from "../types/progress.types";
 
 import { SdSocketProvider } from "./SdSocketProvider";
 import { EventEmitter } from "events";
-import { SdServiceClientProtocolWrapper } from "./SdServiceClientProtocolWrapper";
+import { SdServiceClientProtocolWrapper } from "../protocol/SdServiceClientProtocolWrapper";
 import { Uuid } from "@simplysm/sd-core-common";
 
 export class SdServiceTransport extends EventEmitter {

@@ -5,7 +5,7 @@ import { FsUtils, SdLogger } from "@simplysm/sd-core-node";
 import { SdServiceServer } from "../../SdServiceServer";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { ISdServiceUploadResult } from "@simplysm/sd-service-common";
-import { SdServiceJwtManager } from "../features/SdServiceJwtManager";
+import { SdServiceJwtManager } from "../../auth/SdServiceJwtManager";
 
 export class SdUploadHandler {
   private readonly _logger = SdLogger.get(["simplysm", "sd-service-server", "SdUploadHandler"]);

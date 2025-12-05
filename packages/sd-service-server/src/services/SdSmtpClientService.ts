@@ -5,7 +5,7 @@ import {
   ISmtpClientSendByDefaultOption,
   ISmtpClientSendOption,
 } from "@simplysm/sd-service-common";
-import { SdServiceBase } from "../SdServiceBase";
+import { SdServiceBase } from "../core/SdServiceBase";
 
 export class SdSmtpClientService extends SdServiceBase implements ISdSmtpClientService {
   async send(options: ISmtpClientSendOption): Promise<string> {

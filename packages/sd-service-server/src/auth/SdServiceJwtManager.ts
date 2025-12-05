@@ -1,6 +1,6 @@
-import { SdServiceServer } from "../../SdServiceServer";
+import { SdServiceServer } from "../SdServiceServer";
 import { jwtVerify, SignJWT } from "jose";
-import { IAuthTokenPayload } from "../auth/IAuthTokenPayload";
+import { IAuthTokenPayload } from "./IAuthTokenPayload";
 
 export class SdServiceJwtManager {
   constructor(private readonly _server: SdServiceServer) {}

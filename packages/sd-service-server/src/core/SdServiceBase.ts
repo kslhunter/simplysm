@@ -1,11 +1,11 @@
-import { SdServiceServer } from "./SdServiceServer";
+import { SdServiceServer } from "../SdServiceServer";
 import path from "path";
 import { ObjectUtils } from "@simplysm/sd-core-common";
-import { SdConfigManager } from "./internal/SdConfigManager";
-import { SdServiceSocketV1 } from "./v1/SdServiceSocketV1";
-import { SdServiceSocket } from "./internal/SdServiceSocket";
-import { ISdServiceRequest } from "./v1/protocol-v1.types";
-import { IAuthTokenPayload } from "./internal/auth/IAuthTokenPayload";
+import { SdConfigManager } from "../utils/SdConfigManager";
+import { SdServiceSocketV1 } from "../transport-v1/SdServiceSocketV1";
+import { SdServiceSocket } from "../transport/socket/SdServiceSocket";
+import { ISdServiceRequest } from "../transport-v1/protocol-v1.types";
+import { IAuthTokenPayload } from "../auth/IAuthTokenPayload";
 
 export abstract class SdServiceBase<TAuthInfo = any> {
   server!: SdServiceServer;
@@ -20,6 +20,10 @@ export abstract class SdServiceBase<TAuthInfo = any> {
     clientName: string;
     authTokenPayload?: IAuthTokenPayload;
   };
+
+  get authInfo(): TAuthInfo | undefined {
+    return this.socket?.authTokenPayload?.data ?? this.http?.authTokenPayload?.data;
+  }
 
   get clientName(): string {
     const clientName =
@@ -69,9 +73,5 @@ export abstract class SdServiceBase<TAuthInfo = any> {
     const config = configParent[section];
     if (config == null) throw new Error(`설정 섹션을 찾을 수 없습니다: ${section}`);
     return config;
-  }
-
-  get authInfo(): TAuthInfo | undefined {
-    return this.socket?.authTokenPayload?.data ?? this.http?.authTokenPayload?.data;
   }
 }

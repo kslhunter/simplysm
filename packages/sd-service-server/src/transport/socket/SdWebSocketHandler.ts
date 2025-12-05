@@ -2,9 +2,9 @@ import { WebSocket } from "ws";
 import { Type, Uuid } from "@simplysm/sd-core-common";
 import { SdServiceEventListenerBase, TSdServiceClientMessage } from "@simplysm/sd-service-common";
 import { SdLogger } from "@simplysm/sd-core-node";
-import { SdServiceExecutor } from "../features/SdServiceExecutor";
-import { SdServiceSocket } from "../SdServiceSocket";
-import { SdServiceJwtManager } from "../features/SdServiceJwtManager";
+import { SdServiceExecutor } from "../../core/SdServiceExecutor";
+import { SdServiceSocket } from "./SdServiceSocket";
+import { SdServiceJwtManager } from "../../auth/SdServiceJwtManager";
 
 export class SdWebSocketHandler {
   private readonly _logger = SdLogger.get(["simplysm", "sd-service-server", "SdWebsocketHandler"]);

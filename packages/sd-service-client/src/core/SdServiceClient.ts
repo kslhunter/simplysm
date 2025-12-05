@@ -1,14 +1,14 @@
 /* eslint-disable no-console */
 
-import { ISdServiceConnectionConfig } from "./types/ISdServiceConnectionConfig";
+import { ISdServiceConnectionConfig } from "../types/ISdServiceConnectionConfig";
 import { Type } from "@simplysm/sd-core-common";
 import { SdServiceEventListenerBase } from "@simplysm/sd-service-common";
 import { EventEmitter } from "events";
-import { SdServiceTransport } from "./internal/SdServiceTransport";
-import { SdSocketProvider } from "./internal/SdSocketProvider";
-import { SdServiceEventClient } from "./internal/SdServiceEventClient";
-import { SdServiceFileClient } from "./internal/SdServiceFileClient";
-import { ISdServiceProgress, ISdServiceProgressState } from "./types/progress.types";
+import { SdServiceTransport } from "../transport/SdServiceTransport";
+import { SdSocketProvider } from "../transport/SdSocketProvider";
+import { SdServiceEventClient } from "../features/event/SdServiceEventClient";
+import { SdServiceFileClient } from "../features/file/SdServiceFileClient";
+import { ISdServiceProgress, ISdServiceProgressState } from "../types/progress.types";
 
 export class SdServiceClient extends EventEmitter {
   // 모듈들
