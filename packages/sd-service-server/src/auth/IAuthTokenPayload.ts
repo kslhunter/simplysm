@@ -1,6 +1,6 @@
 import { JWTPayload } from "jose";
 
-export interface IAuthTokenPayload extends JWTPayload {
+export interface IAuthTokenPayload<TAuthInfo = any> extends JWTPayload {
   perms: string[];
-  data: any;
+  data: TAuthInfo;
 }

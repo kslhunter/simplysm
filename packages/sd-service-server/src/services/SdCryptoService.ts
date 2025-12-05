@@ -1,9 +1,7 @@
 import crypto from "crypto";
 import { SdServiceBase } from "../core/SdServiceBase";
 import { ICryptoConfig, ISdCryptoService } from "@simplysm/sd-service-common";
-import { Authorize } from "../auth/auth.decorators";
 
-@Authorize()
 export class SdCryptoService extends SdServiceBase implements ISdCryptoService {
   async encrypt(data: string | Buffer): Promise<string> {
     const config = await this._getConf();

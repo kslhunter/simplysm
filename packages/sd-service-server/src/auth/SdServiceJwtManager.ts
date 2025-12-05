@@ -1,31 +1,31 @@
 import { SdServiceServer } from "../SdServiceServer";
-import { jwtVerify, SignJWT } from "jose";
+import * as jose from "jose";
 import { IAuthTokenPayload } from "./IAuthTokenPayload";
 
-export class SdServiceJwtManager {
-  constructor(private readonly _server: SdServiceServer) {}
+export class SdServiceJwtManager<TAuthInfo = any> {
+  constructor(private readonly _server: SdServiceServer<TAuthInfo>) {}
 
-  async signAsync(payload: IAuthTokenPayload): Promise<string> {
+  async signAsync(payload: IAuthTokenPayload<TAuthInfo>): Promise<string> {
     const jwtSecret = this._server.options.auth?.jwtSecret;
     if (jwtSecret == null) throw new Error("JWT Secret is not defined");
 
     const secret = new TextEncoder().encode(jwtSecret);
 
-    return await new SignJWT(payload) // Payload 주입
+    return await new jose.SignJWT(payload) // Payload 주입
       .setProtectedHeader({ alg: "HS256" }) // 알고리즘 명시 필수
       .setIssuedAt()
       .setExpirationTime("12h") // "12h", "2h" 등 문자열 지원함
       .sign(secret); // 서명
   }
 
-  async verifyAsync(token: string): Promise<IAuthTokenPayload | undefined> {
+  async verifyAsync(token: string): Promise<IAuthTokenPayload<TAuthInfo>> {
     const jwtSecret = this._server.options.auth?.jwtSecret;
     if (jwtSecret == null) throw new Error("JWT Secret is not defined");
 
     const secret = new TextEncoder().encode(this._server.options.auth?.jwtSecret);
 
     try {
-      const { payload } = await jwtVerify(token, secret);
+      const { payload } = await jose.jwtVerify(token, secret);
       return payload as any;
     } catch (err) {
       // jose 에러 처리
@@ -34,5 +34,12 @@ export class SdServiceJwtManager {
       }
       throw new Error("유효하지 않은 토큰입니다.");
     }
+  }
+
+  async decodeAsync(token: string): Promise<IAuthTokenPayload<TAuthInfo>> {
+    const jwtSecret = this._server.options.auth?.jwtSecret;
+    if (jwtSecret == null) throw new Error("JWT Secret is not defined");
+
+    return await jose.decodeJwt(token);
   }
 }

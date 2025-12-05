@@ -37,38 +37,38 @@ export class SdServiceExecutor {
 
     // 인증검사
     // 메소드 레벨 권한 확인
-    let requiredPerms: string[] | undefined = Reflect.getMetadata(
-      SD_SERVICE_AUTH_META,
-      ServiceClass.prototype,
-      def.methodName,
-    );
+    if (this._server.options.auth) {
+      let requiredPerms: string[] | undefined = Reflect.getMetadata(
+        SD_SERVICE_AUTH_META,
+        ServiceClass.prototype,
+        def.methodName,
+      );
 
-    // 클래스 레벨 권한 확인 (메소드에 없으면)
-    if (requiredPerms == null) {
-      requiredPerms = Reflect.getMetadata(SD_SERVICE_AUTH_META, ServiceClass);
-    }
-
-    // 권한 설정이 없으면 통과 (Public API)
-    if (requiredPerms) {
-      // V1은 인증이 필요한 서비스에 접근 불가
-      if (def.v1) {
-        throw new Error("보안강화로 인한 접근 불가");
+      // 클래스 레벨 권한 확인 (메소드에 없으면)
+      if (requiredPerms == null) {
+        requiredPerms = Reflect.getMetadata(SD_SERVICE_AUTH_META, ServiceClass);
       }
 
-      const authTokenPayload = def.socket?.authTokenPayload ?? def.http?.authTokenPayload;
+      // 권한 설정이 없으면 통과 (Public API)
+      if (requiredPerms) {
+        // V1은 인증이 필요한 서비스에 접근 불가
+        if (def.v1) {
+          throw new Error("보안강화로 인한 접근 불가");
+        }
 
-      // 권한이 필요한데 인증정보가 없으면 에러
-      if (!authTokenPayload) {
-        throw new Error("로그인이 필요합니다.");
-      }
+        const authTokenPayload = def.socket?.authTokenPayload ?? def.http?.authTokenPayload;
 
-      // 권한 목록 체크 (빈 배열이면 로그인만 체크)
-      if (requiredPerms.length > 0) {
-        const hasPerm = requiredPerms.some((perm) =>
-          authTokenPayload.perms.includes(perm),
-        );
-        if (!hasPerm) {
-          throw new Error("권한이 부족합니다.");
+        // 권한이 필요한데 인증정보가 없으면 에러
+        if (!authTokenPayload) {
+          throw new Error("로그인이 필요합니다.");
+        }
+
+        // 권한 목록 체크 (빈 배열이면 로그인만 체크)
+        if (requiredPerms.length > 0) {
+          const hasPerm = requiredPerms.some((perm) => authTokenPayload.perms.includes(perm));
+          if (!hasPerm) {
+            throw new Error("권한이 부족합니다.");
+          }
         }
       }
     }

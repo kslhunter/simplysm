@@ -22,14 +22,14 @@ import { SdServiceJwtManager } from "./auth/SdServiceJwtManager";
 import { IAuthTokenPayload } from "./auth/IAuthTokenPayload";
 import { ISdServiceServerOptions } from "./types/ISdServiceServerOptions";
 
-export class SdServiceServer extends EventEmitter {
+export class SdServiceServer<TAuthInfo = any> extends EventEmitter {
   isOpen = false;
 
   private readonly _logger = SdLogger.get(["simplysm", "sd-service-server", this.constructor.name]);
 
   // 기능
   private readonly _serviceExecutor = new SdServiceExecutor(this);
-  private readonly _jwt = new SdServiceJwtManager(this);
+  private readonly _jwt = new SdServiceJwtManager<TAuthInfo>(this);
 
   // 핸들러 인스턴스
   private readonly _httpRequestHandler = new SdHttpRequestHandler(
@@ -239,8 +239,12 @@ export class SdServiceServer extends EventEmitter {
     await this._wsHandlerV2.emitAsync(eventType, infoSelector, data);
   }
 
-  async generateAuthToken(payload: IAuthTokenPayload) {
+  async generateAuthTokenAsync(payload: IAuthTokenPayload<TAuthInfo>) {
     return await this._jwt.signAsync(payload);
+  }
+
+  async verifyAuthTokenAsync(token: string): Promise<IAuthTokenPayload<TAuthInfo>> {
+    return await this._jwt.verifyAsync(token);
   }
 
   // 종료 시그널 감지 및 처리

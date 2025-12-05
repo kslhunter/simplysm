@@ -8,7 +8,7 @@ import { ISdServiceRequest } from "../legacy/protocol-v1.types";
 import { IAuthTokenPayload } from "../auth/IAuthTokenPayload";
 
 export abstract class SdServiceBase<TAuthInfo = any> {
-  server!: SdServiceServer;
+  server!: SdServiceServer<TAuthInfo>;
   socket?: SdServiceSocket;
 
   v1?: {
