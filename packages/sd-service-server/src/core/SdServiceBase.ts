@@ -2,9 +2,9 @@ import { SdServiceServer } from "../SdServiceServer";
 import path from "path";
 import { ObjectUtils } from "@simplysm/sd-core-common";
 import { SdConfigManager } from "../utils/SdConfigManager";
-import { SdServiceSocketV1 } from "../transport-v1/SdServiceSocketV1";
+import { SdServiceSocketV1 } from "../legacy/SdServiceSocketV1";
 import { SdServiceSocket } from "../transport/socket/SdServiceSocket";
-import { ISdServiceRequest } from "../transport-v1/protocol-v1.types";
+import { ISdServiceRequest } from "../legacy/protocol-v1.types";
 import { IAuthTokenPayload } from "../auth/IAuthTokenPayload";
 
 export abstract class SdServiceBase<TAuthInfo = any> {

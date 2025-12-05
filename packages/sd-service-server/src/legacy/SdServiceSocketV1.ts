@@ -6,6 +6,7 @@ import { clearInterval } from "node:timers";
 import { SdServiceProtocolV1 } from "./SdServiceProtocolV1";
 import { ISdServiceRequest, TSdServiceC2SMessage, TSdServiceS2CMessage } from "./protocol-v1.types";
 
+/** @deprecated */
 export class SdServiceSocketV1 extends EventEmitter {
   private readonly _logger = SdLogger.get(["simplysm", "sd-service-server", "SdServiceSocket"]);
 

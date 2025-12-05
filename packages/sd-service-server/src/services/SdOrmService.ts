@@ -13,7 +13,7 @@ import {
 import { SdLogger } from "@simplysm/sd-core-node";
 import { SdServiceBase } from "../core/SdServiceBase";
 import { ISdOrmService, TDbConnOptions } from "@simplysm/sd-service-common";
-import { SdServiceSocketV1 } from "../transport-v1/SdServiceSocketV1";
+import { SdServiceSocketV1 } from "../legacy/SdServiceSocketV1";
 import { SdServiceSocket } from "../transport/socket/SdServiceSocket";
 import { Authorize } from "../auth/auth.decorators";
 

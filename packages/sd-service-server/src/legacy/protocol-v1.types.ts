@@ -1,7 +1,9 @@
 import { TSdServiceCommand } from "./command-v1.types";
 
+/** @deprecated */
 export type TSdServiceMessage = TSdServiceS2CMessage | TSdServiceC2SMessage;
 
+/** @deprecated */
 export type TSdServiceS2CMessage =
   | ISdServiceClientReloadCommand
   | ISdServiceClientGetIdCommand
@@ -13,41 +15,50 @@ export type TSdServiceS2CMessage =
   | ISdServiceSplitResponse
   | ISdServiceEmittedEvent;
 
+/** @deprecated */
 export type TSdServiceC2SMessage =
   | ISdServiceClientGetIdResponse
   | ISdServiceClientPing
   | ISdServiceRequest
   | ISdServiceSplitRequest;
 
+/** @deprecated */
 interface ISdServiceClientReloadCommand {
   name: "client-reload";
   clientName: string | undefined;
   changedFileSet: Set<string>;
 }
 
+/** @deprecated */
 interface ISdServiceClientGetIdCommand {
   name: "client-get-id";
 }
 
+/** @deprecated */
 interface ISdServiceClientGetIdResponse {
   name: "client-get-id-response";
   body: string;
 }
 
+/** @deprecated */
 interface ISdServiceClientConnectedAlarm {
   name: "connected";
 }
 
+/** @deprecated */
 interface ISdServiceClientPing {
   name: "client-ping";
 }
 
+/** @deprecated */
 interface ISdServiceClientPong {
   name: "client-pong";
 }
 
+/** @deprecated */
 export type TSdServiceResponse = ISdServiceSuccessResponse | ISdServiceErrorResponse;
 
+/** @deprecated */
 export interface ISdServiceSuccessResponse {
   name: "response";
   reqUuid: string;
@@ -56,6 +67,7 @@ export interface ISdServiceSuccessResponse {
   body: any;
 }
 
+/** @deprecated */
 export interface ISdServiceErrorResponse {
   name: "response";
   reqUuid: string;
@@ -64,12 +76,14 @@ export interface ISdServiceErrorResponse {
   body: ISdServiceErrorBody;
 }
 
+/** @deprecated */
 export interface ISdServiceErrorBody {
   message: string;
   code: string;
   stack?: string;
 }
 
+/** @deprecated */
 export interface ISdServiceRequest {
   name: "request";
   clientName: string;
@@ -79,6 +93,7 @@ export interface ISdServiceRequest {
   params: any;
 }
 
+/** @deprecated */
 export interface ISdServiceProgress {
   name: "progress";
   uuid: string;
@@ -124,6 +139,7 @@ export interface ISdServiceSplitResponse {
   body: string;
 }
 
+/** @deprecated */
 interface ISdServiceEmittedEvent {
   name: "event";
   key: string;

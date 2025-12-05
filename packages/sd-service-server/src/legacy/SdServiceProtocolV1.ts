@@ -152,6 +152,7 @@ export class SdServiceProtocolV1 {
 }
 
 // 결과 타입
+/** @deprecated */
 export type ISdServiceProtocolDecodeResult =
   | { type: "complete"; message: TSdServiceMessage }
   | { type: "accumulating"; uuid: string; completedSize: number; totalSize: number };

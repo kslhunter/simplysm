@@ -8,6 +8,7 @@ import { SdServiceCommandHelperV1 } from "./SdServiceCommandHelperV1";
 import { SD_SERVICE_SPECIAL_COMMANDS } from "./command-v1.types";
 import { SdServiceEventListenerBase } from "@simplysm/sd-service-common";
 
+/** @deprecated */
 export class SdWebSocketHandlerV1 {
   private readonly _logger = SdLogger.get(["simplysm", "sd-service-server", "SdWebsocketHandler"]);
 

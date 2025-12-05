@@ -1,7 +1,7 @@
 import { SdServiceServer } from "../SdServiceServer";
-import { SdServiceSocketV1 } from "../transport-v1/SdServiceSocketV1";
+import { SdServiceSocketV1 } from "../legacy/SdServiceSocketV1";
 import { SdServiceSocket } from "../transport/socket/SdServiceSocket";
-import { ISdServiceRequest } from "../transport-v1/protocol-v1.types";
+import { ISdServiceRequest } from "../legacy/protocol-v1.types";
 import { SD_SERVICE_AUTH_META } from "../auth/auth.decorators";
 import { IAuthTokenPayload } from "../auth/IAuthTokenPayload";
 

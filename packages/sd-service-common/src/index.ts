@@ -1,5 +1,5 @@
-export * from "./protocol.types";
-export * from "./SdServiceProtocol";
+export * from "./protocol/protocol.types";
+export * from "./protocol/SdServiceProtocol";
 export * from "./service-types/auto-update-service.types";
 export * from "./service-types/crypto-service.types";
 export * from "./service-types/orm-service.types";

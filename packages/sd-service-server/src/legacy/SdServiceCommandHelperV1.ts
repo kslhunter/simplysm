@@ -1,5 +1,6 @@
 import { ISdServiceMethodCommandInfo, TSdServiceMethodCommand } from "./command-v1.types";
 
+/** @deprecated */
 export abstract class SdServiceCommandHelperV1 {
   // 서비스 메소드 호출용 커맨드 빌더
   static buildMethodCommand(cmdInfo: ISdServiceMethodCommandInfo): TSdServiceMethodCommand {

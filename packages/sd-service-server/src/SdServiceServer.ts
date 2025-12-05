@@ -1,7 +1,7 @@
 import { SdLogger } from "@simplysm/sd-core-node";
 import { EventEmitter } from "events";
 import { SdServiceEventListenerBase } from "@simplysm/sd-service-common";
-import { SdWebSocketHandlerV1 } from "./transport-v1/SdWebSocketHandlerV1";
+import { SdWebSocketHandlerV1 } from "./legacy/SdWebSocketHandlerV1";
 import { SdStaticFileHandler } from "./transport/http/SdStaticFileHandler";
 import { SdHttpRequestHandler } from "./transport/http/SdHttpRequestHandler";
 import { SdServiceExecutor } from "./core/SdServiceExecutor";
