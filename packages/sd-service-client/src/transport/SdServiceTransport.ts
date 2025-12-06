@@ -65,7 +65,7 @@ export class SdServiceTransport extends EventEmitter {
 
       // 전송
       for (const chunk of chunks) {
-        this._socket.send(chunk);
+        await this._socket.sendAsync(chunk);
       }
     } catch (err) {
       // 전송 실패 시 즉시 정리

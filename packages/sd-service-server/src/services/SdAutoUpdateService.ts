@@ -5,13 +5,7 @@ import { ISdAutoUpdateService } from "@simplysm/sd-service-common";
 import { SdServiceBase } from "../core/SdServiceBase";
 
 export class SdAutoUpdateService extends SdServiceBase implements ISdAutoUpdateService {
-  // zip으로 업데이트하는 legacy에서는 apk가 undefined로 들어옴
-  // apk버전으로 변경한 최근것은 client에서 apk가 무조건 true로 들어옴
-  // 신규버전은 일단 sd-cli에서 zip과 apk모두 생성함
-  getLastVersion(
-    platform: string,
-    apk?: boolean,
-  ):
+  getLastVersion(platform: string):
     | {
         version: string;
         downloadPath: string;
@@ -28,11 +22,7 @@ export class SdAutoUpdateService extends SdServiceBase implements ISdAutoUpdateS
       }))
       .filter((item) => {
         if (platform === "android") {
-          if (apk) {
-            return item.extName === ".apk" && /^[0-9.]*$/.test(item.version);
-          } else {
-            return item.extName === ".zip" && /^[0-9.]*$/.test(item.version);
-          }
+          return item.extName === ".apk" && /^[0-9.]*$/.test(item.version);
         } else {
           return item.extName === ".exe" && /^[0-9.]*$/.test(item.version);
         }

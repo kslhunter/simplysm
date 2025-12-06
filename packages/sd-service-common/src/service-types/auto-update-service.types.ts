@@ -1,8 +1,5 @@
 export interface ISdAutoUpdateService {
-  getLastVersion(
-    platform: string,
-    apk?: boolean,
-  ):
+  getLastVersion(platform: string):
     | {
         version: string;
         downloadPath: string;

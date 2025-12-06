@@ -43,7 +43,10 @@ export abstract class CordovaAutoUpdate {
     `);
   }
 
-  private static async _checkPermissionAsync(log: (messageHtml: string) => void, targetHref?: string) {
+  private static async _checkPermissionAsync(
+    log: (messageHtml: string) => void,
+    targetHref?: string,
+  ) {
     if (!navigator.userAgent.toLowerCase().includes("android")) {
       throw new Error(`안드로이드만 지원합니다.`);
     }

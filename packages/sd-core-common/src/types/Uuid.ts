@@ -1,11 +1,18 @@
 export class Uuid {
   static new(): Uuid {
-    return new Uuid(crypto.randomUUID());
-  }
+    /*if (typeof crypto !== "undefined" && crypto.randomUUID) {
+      return new Uuid(crypto.randomUUID());
+    }*/
 
-  /*static fromString(uuid: string): Uuid {
-    return new Uuid(uuid);
-  }*/
+    // Fallback: 비보안 컨텍스트용
+    return new Uuid(
+      "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+        const r = (Math.random() * 16) | 0;
+        const v = c === "x" ? r : (r & 0x3) | 0x8;
+        return v.toString(16);
+      })
+    );
+  }
 
   static fromBuffer(buffer: Buffer): Uuid {
     if (buffer.length !== 16) {

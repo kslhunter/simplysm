@@ -28,9 +28,9 @@ $colors: (
 
 @function color-map($base) {
   @return (
-    lightest: color.mix(white, $base, 90%),
-    lighter: color.mix(white, $base, 75%),
-    light: color.mix(white, $base, 60%),
+    lightest: color.mix(white, $base, 85%),
+    lighter: color.mix(white, $base, 65%),
+    light: color.mix(white, $base, 50%),
     default: $base,
     dark: color.mix(black, $base, 10%),
     darker: color.mix(black, $base, 25%),

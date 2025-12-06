@@ -479,6 +479,7 @@ export class SdCliCordova {
     );
   }
 
+  /** @deprecated */
   private async _createUpdateZipAsync(
     cordovaPath: string,
     outPath: string,

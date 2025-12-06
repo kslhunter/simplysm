@@ -67,9 +67,11 @@ export class SdSocketProvider extends EventEmitter {
     this.emit("state", "closed");
   }
 
-  send(data: Buffer | Uint8Array) {
-    if (!this.connected) {
-      throw new Error("SOCKET_NOT_CONNECTED");
+  async sendAsync(data: Buffer | Uint8Array) {
+    try {
+      await Wait.until(() => this.connected, undefined, 5000);
+    } catch {
+      throw new Error("서버와 연결되어있지 않습니다. 인터넷 연결을 확인하세요.");
     }
     this._ws!.send(data);
   }

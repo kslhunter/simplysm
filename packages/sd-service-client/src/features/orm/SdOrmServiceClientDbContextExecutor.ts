@@ -7,7 +7,7 @@ import {
   TQueryDef,
 } from "@simplysm/sd-orm-common";
 import { ISdOrmService, TDbConnOptions } from "@simplysm/sd-service-common";
-import { SdServiceClient } from "../../core/SdServiceClient";
+import { SdServiceClient } from "../../SdServiceClient";
 
 export class SdOrmServiceClientDbContextExecutor implements IDbContextExecutor {
   private _connId?: number;
