@@ -3,7 +3,6 @@ import {
   Component,
   contentChild,
   ElementRef,
-  HostListener,
   input,
   model,
   ViewEncapsulation,
@@ -21,8 +20,11 @@ import { SdDropdownPopupControl } from "./sd-dropdown-popup.control";
   imports: [],
   host: {
     "[attr.tabindex]": "disabled() ? undefined : '0'",
-    "(click)": "onContentClick()",
-    "(keydown)": "onContentKeydown($event)",
+    "(click)": "onHostClick()",
+    "(keydown)": "onHostKeydown($event)",
+    "(document:scroll.capture)": "onDocumentScrollCapture($event)",
+    "(document:mouseover)": "onDocumentMouseover($event)",
+    "(document:blur.capture)": "onDocumentBlurCapture($event)",
   },
   template: `
     <ng-content />
@@ -106,7 +108,6 @@ export class SdDropdownControl {
     this.open.set(false);
   }
 
-  @HostListener("document:scroll.capture", ["$event"])
   onDocumentScrollCapture(event: Event) {
     if (this.elRef.nativeElement.findParent(event.target as Element)) {
       const contentEl = this.elRef.nativeElement;
@@ -130,7 +131,7 @@ export class SdDropdownControl {
     }
   }
 
-  onContentClick() {
+  onHostClick() {
     if (this.open()) {
       this._closePopup();
     } else {
@@ -138,7 +139,7 @@ export class SdDropdownControl {
     }
   }
 
-  onContentKeydown(event: KeyboardEvent) {
+  onHostKeydown(event: KeyboardEvent) {
     if (!event.ctrlKey && !event.altKey && event.key === "ArrowDown") {
       if (!this.open()) {
         event.preventDefault();
@@ -200,13 +201,11 @@ export class SdDropdownControl {
 
   private _mouseoverEl?: HTMLElement;
 
-  @HostListener("document:mouseover", ["$event"])
   onDocumentMouseover(event: MouseEvent) {
     this._mouseoverEl = event.target as HTMLElement;
   }
 
-  @HostListener("document:blur.capture", ["$event"])
-  onBlurCapture(event: FocusEvent) {
+  onDocumentBlurCapture(event: FocusEvent) {
     const contentEl = this.elRef.nativeElement;
     const popupEl = this.popupElRef().nativeElement;
 

@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  HostListener,
-  input,
-  ViewEncapsulation,
-} from "@angular/core";
+import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
 import { injectElementRef } from "../../core/utils/injections/injectElementRef";
 import * as echarts from "echarts";
 import { $effect } from "../../core/utils/bindings/$effect";
@@ -15,6 +9,9 @@ import { $effect } from "../../core/utils/bindings/$effect";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
+  host: {
+    "(sdResize)": "onHostResize()",
+  },
   template: `
     <ng-content></ng-content>
   `,
@@ -53,8 +50,7 @@ export class SdEchartsControl {
     });
   }
 
-  @HostListener("sdResize")
-  onResize() {
+  onHostResize() {
     this._chart.resize();
   }
 }

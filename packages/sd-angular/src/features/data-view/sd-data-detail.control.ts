@@ -4,7 +4,6 @@ import {
   Component,
   contentChild,
   Directive,
-  HostListener,
   inject,
   output,
   Signal,
@@ -45,6 +44,10 @@ import { SdAnchorControl } from "../../ui/form/button/sd-anchor.control";
     FaIconComponent,
     SdAnchorControl,
   ],
+  host: {
+    "(sdRefreshCommand)": "onRefreshButtonClick()",
+    "(sdSaveCommand)": "onSubmitButtonClick()",
+  },
   template: `
     <sd-base-container
       [busy]="parent.busyCount() > 0"
@@ -204,7 +207,6 @@ export class SdDataDetailControl {
     });
   }
 
-  @HostListener("sdRefreshCommand")
   async onRefreshButtonClick() {
     await this.parent.doRefresh();
   }
@@ -217,7 +219,6 @@ export class SdDataDetailControl {
     await this.parent.doToggleDelete(false);
   }
 
-  @HostListener("sdSaveCommand")
   onSubmitButtonClick() {
     this.formCtrl()?.requestSubmit();
   }

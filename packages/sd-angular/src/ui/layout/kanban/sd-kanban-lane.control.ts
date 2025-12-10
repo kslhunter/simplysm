@@ -5,7 +5,6 @@ import {
   contentChild,
   contentChildren,
   forwardRef,
-  HostListener,
   inject,
   input,
   model,
@@ -39,6 +38,9 @@ import { SdAnchorControl } from "../../form/button/sd-anchor.control";
   host: {
     "class": "flex-column p-default gap-default",
     "[attr.data-sd-drag-over]": "dragOvered()",
+    "(dragover)": "onDragOver($event)",
+    "(dragleave)": "onDragLeave($event)",
+    "(drop)": "onDragDrop($event)",
   },
   template: `
     @if (useCollapse() || titleTplRef()) {
@@ -124,7 +126,9 @@ import { SdAnchorControl } from "../../form/button/sd-anchor.control";
 export class SdKanbanLaneControl<L, T> {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
 
-  private readonly _boardControl = inject<SdKanbanBoardControl<L, T>>(forwardRef(() => SdKanbanBoardControl));
+  private readonly _boardControl = inject<SdKanbanBoardControl<L, T>>(
+    forwardRef(() => SdKanbanBoardControl),
+  );
 
   busy = input(false, { transform: transformBoolean });
 
@@ -179,7 +183,6 @@ export class SdKanbanLaneControl<L, T> {
     }
   }
 
-  @HostListener("dragover", ["$event"])
   onDragOver(event: DragEvent) {
     if (this._boardControl.dragKanban() == null) return;
 
@@ -189,7 +192,6 @@ export class SdKanbanLaneControl<L, T> {
     this.dragOvered.set(true);
   }
 
-  @HostListener("dragleave", ["$event"])
   onDragLeave(event: DragEvent) {
     event.preventDefault();
     event.stopPropagation();
@@ -197,7 +199,6 @@ export class SdKanbanLaneControl<L, T> {
     this.dragOvered.set(false);
   }
 
-  @HostListener("drop", ["$event"])
   onDragDrop(event: DragEvent) {
     if (this._boardControl.dragKanban() == null) return;
     this.dragOvered.set(false);

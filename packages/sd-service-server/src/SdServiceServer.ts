@@ -165,7 +165,7 @@ export class SdServiceServer<TAuthInfo = any> extends EventEmitter {
           return;
         }
 
-        this._wsHandlerV2.addSocket(socket, clientId, clientName, req.socket.remoteAddress);
+        this._wsHandlerV2.addSocket(socket, clientId, clientName, req);
       } else {
         await this._wsHandlerV1.addSocket(socket, req.socket.remoteAddress);
       }

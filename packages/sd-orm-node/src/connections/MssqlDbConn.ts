@@ -22,14 +22,6 @@ import {
 import type { DataType } from "tedious/lib/data-type";
 import type tediousType from "tedious";
 
-let tedious: typeof import("tedious");
-let importErr: any | undefined;
-try {
-  tedious = await import("tedious");
-} catch (err) {
-  importErr = err;
-}
-
 export class MssqlDbConn extends EventEmitter implements IDbConn {
   private readonly _logger = SdLogger.get(["simplysm", "sd-orm-node", this.constructor.name]);
 
@@ -42,9 +34,11 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
   isConnected = false;
   isOnTransaction = false;
 
-  constructor(readonly config: IDefaultDbConnConf) {
+  constructor(
+    private readonly _tedious: typeof import("tedious"),
+    readonly config: IDefaultDbConnConf,
+  ) {
     super();
-    if (importErr != null) throw importErr;
   }
 
   async connectAsync(): Promise<void> {
@@ -52,7 +46,7 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
       throw new Error("이미 'Connection'이 연결되어있습니다.");
     }
 
-    const conn = new tedious.Connection({
+    const conn = new this._tedious.Connection({
       server: this.config.host,
       authentication: {
         type: "default",
@@ -151,7 +145,7 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
           resolve();
         },
         "",
-        tedious.ISOLATION_LEVEL[
+        this._tedious.ISOLATION_LEVEL[
           isolationLevel ?? this.config.defaultIsolationLevel ?? "READ_COMMITTED"
         ],
       );
@@ -223,7 +217,7 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
     this._logger.debug(`쿼리 실행(${query.length.toLocaleString()}): ${query}, ${params}`);
     await new Promise<void>((resolve, reject) => {
       let rejected = false;
-      const queryRequest = new tedious.Request(query, (err) => {
+      const queryRequest = new this._tedious.Request(query, (err) => {
         if (err != null) {
           rejected = true;
           this._requests.remove(queryRequest);
@@ -417,23 +411,23 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
       const currType = type as TSdOrmDataType;
       switch (currType.type) {
         case "TEXT":
-          return { type: tedious.TYPES.NText };
+          return { type: this._tedious.TYPES.NText };
         case "DECIMAL":
           return {
-            type: tedious.TYPES.Decimal,
+            type: this._tedious.TYPES.Decimal,
             precision: currType.precision,
             scale: currType.digits,
           };
         case "STRING":
           return {
-            type: tedious.TYPES.NVarChar,
+            type: this._tedious.TYPES.NVarChar,
             length: currType.length === "MAX" ? Infinity : (currType.length ?? 255),
           };
         case "FIXSTRING":
-          return { type: tedious.TYPES.NChar, length: currType.length };
+          return { type: this._tedious.TYPES.NChar, length: currType.length };
         case "BINARY":
           return {
-            type: tedious.TYPES.VarBinary,
+            type: this._tedious.TYPES.VarBinary,
             length: currType.length === "MAX" ? Infinity : (currType.length ?? 255),
           };
         default:
@@ -450,15 +444,15 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
             : undefined;
       const digits = typeof split[2] !== "undefined" ? Number.parseInt(split[2], 10) : undefined;
 
-      const typeKey = Object.keys(tedious.TYPES).single(
+      const typeKey = Object.keys(this._tedious.TYPES).single(
         (item) => item.toLocaleLowerCase() === typeStr.toLowerCase(),
       );
       if (typeKey === undefined) {
         throw new NeverEntryError();
       }
-      const dataType = tedious.TYPES[typeKey];
+      const dataType = this._tedious.TYPES[typeKey];
 
-      if (dataType === tedious.TYPES.Decimal) {
+      if (dataType === this._tedious.TYPES.Decimal) {
         return { type: dataType, precision: length, scale: digits };
       } else {
         return { type: dataType, length };
@@ -467,21 +461,21 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
       const currType = type as Type<TQueryValue>;
       switch (currType) {
         case String:
-          return { type: tedious.TYPES.NVarChar, length: 255 };
+          return { type: this._tedious.TYPES.NVarChar, length: 255 };
         case Number:
-          return { type: tedious.TYPES.BigInt };
+          return { type: this._tedious.TYPES.BigInt };
         case Boolean:
-          return { type: tedious.TYPES.Bit };
+          return { type: this._tedious.TYPES.Bit };
         case DateTime:
-          return { type: tedious.TYPES.DateTime2 };
+          return { type: this._tedious.TYPES.DateTime2 };
         case DateOnly:
-          return { type: tedious.TYPES.Date };
+          return { type: this._tedious.TYPES.Date };
         case Time:
-          return { type: tedious.TYPES.Time };
+          return { type: this._tedious.TYPES.Time };
         case Uuid:
-          return { type: tedious.TYPES.UniqueIdentifier };
+          return { type: this._tedious.TYPES.UniqueIdentifier };
         case Buffer:
-          return { type: tedious.TYPES.Binary, length: Infinity };
+          return { type: this._tedious.TYPES.Binary, length: Infinity };
         default:
           throw new TypeError(typeof currType !== "undefined" ? currType.name : "undefined");
       }
@@ -517,17 +511,17 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
     }*/
 
     if (typeof value === "string") {
-      return tedious.TYPES.NVarChar;
+      return this._tedious.TYPES.NVarChar;
     }
     if (typeof value === "number") {
-      return Number.isInteger(value) ? tedious.TYPES.BigInt : tedious.TYPES.Decimal;
+      return Number.isInteger(value) ? this._tedious.TYPES.BigInt : this._tedious.TYPES.Decimal;
     }
-    if (typeof value === "boolean") return tedious.TYPES.Bit;
-    if (value instanceof DateTime) return tedious.TYPES.DateTime2;
-    if (value instanceof DateOnly) return tedious.TYPES.Date;
-    if (value instanceof Time) return tedious.TYPES.Time;
-    if (value instanceof Uuid) return tedious.TYPES.UniqueIdentifier;
-    if (Buffer.isBuffer(value)) return tedious.TYPES.VarBinary;
+    if (typeof value === "boolean") return this._tedious.TYPES.Bit;
+    if (value instanceof DateTime) return this._tedious.TYPES.DateTime2;
+    if (value instanceof DateOnly) return this._tedious.TYPES.Date;
+    if (value instanceof Time) return this._tedious.TYPES.Time;
+    if (value instanceof Uuid) return this._tedious.TYPES.UniqueIdentifier;
+    if (Buffer.isBuffer(value)) return this._tedious.TYPES.VarBinary;
 
     throw new TypeError(value);
   }

@@ -9,7 +9,8 @@ import { WebSocket } from "ws";
 import { EventEmitter } from "events";
 import { clearInterval } from "node:timers";
 import { SdServiceProtocolWrapper } from "../../protocol/SdServiceProtocolWrapper";
-import {IAuthTokenPayload} from "../../auth/IAuthTokenPayload";
+import { IAuthTokenPayload } from "../../auth/IAuthTokenPayload";
+import { FastifyRequest } from "fastify";
 
 export class SdServiceSocket extends EventEmitter {
   private readonly _PING_INTERVAL = 5000; // 5초마다 핑 전송
@@ -40,6 +41,7 @@ export class SdServiceSocket extends EventEmitter {
     private readonly _socket: WebSocket,
     private readonly _clientId: string,
     public readonly clientName: string,
+    public readonly connReq: FastifyRequest,
   ) {
     super();
 

@@ -202,6 +202,18 @@ export default [
         },
       ],*/
 
+      // "no-restricted-syntax": [
+      //   "error",
+      //   {
+      //     "selector": "Decorator[expression.callee.name='HostListener']",
+      //     "message": "Angular 20+ Modern Style: @HostListener 대신 컴포넌트 메타데이터의 'host' 속성을 사용하세요."
+      //   },
+      //   {
+      //     "selector": "Decorator[expression.callee.name='HostBinding']",
+      //     "message": "Angular 20+ Modern Style: @HostBinding 대신 컴포넌트 메타데이터의 'host' 속성과 Signal을 사용하세요."
+      //   }
+      // ],
+
       //-- 심플리즘
       "@simplysm/ts-no-throw-not-implement-error": ["warn"],
       "@simplysm/no-subpath-imports-from-simplysm": ["error"],

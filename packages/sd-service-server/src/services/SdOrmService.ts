@@ -103,7 +103,7 @@ export class SdOrmService extends SdServiceBase implements ISdOrmService {
 
     // 2. 연결 생성 (이제 내부적으로 Pool에서 가져옴)
     const config = await this._getConf(opt);
-    const dbConn = DbConnFactory.create(config);
+    const dbConn = await DbConnFactory.createAsync(config);
     await dbConn.connectAsync();
 
     // 3. ID 발급 및 목록에 저장

@@ -5,6 +5,7 @@ import { SdLogger } from "@simplysm/sd-core-node";
 import { SdServiceExecutor } from "../../core/SdServiceExecutor";
 import { SdServiceSocket } from "./SdServiceSocket";
 import { SdServiceJwtManager } from "../../auth/SdServiceJwtManager";
+import { FastifyRequest } from "fastify";
 
 export class SdWebSocketHandler {
   private readonly _logger = SdLogger.get(["simplysm", "sd-service-server", "SdWebsocketHandler"]);
@@ -20,10 +21,10 @@ export class SdWebSocketHandler {
     socket: WebSocket,
     clientId: string,
     clientName: string,
-    remoteAddress: string | undefined,
+    connReq: FastifyRequest
   ) {
     try {
-      const serviceSocket = new SdServiceSocket(socket, clientId, clientName);
+      const serviceSocket = new SdServiceSocket(socket, clientId, clientName, connReq);
 
       // 기존 연결 끊기
       const prevServiceSocket = this._socketMap.get(clientId);
@@ -55,7 +56,7 @@ export class SdWebSocketHandler {
       // 연결 로그
       this._logger.debug(`클라이언트 연결됨`, {
         clientId,
-        remoteAddress,
+        remoteAddress: connReq.socket.remoteAddress,
         socketSize: this._socketMap.size,
       });
     } catch (err) {

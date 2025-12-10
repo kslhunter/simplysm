@@ -9,10 +9,11 @@ export class DbConnFactory {
   // 설정별 커넥션 풀 캐싱
   private static readonly _poolMap = new Map<string, Pool<IDbConn>>();
 
-  static create(config: TDbConnConf): IDbConn {
+  static async createAsync(config: TDbConnConf): Promise<IDbConn> {
     // SQLite는 파일 락 등의 이유로 풀링에서 제외 (기존대로 새 인스턴스 반환)
     if (config.dialect === "sqlite") {
-      return new SqliteDbConn(config);
+      const sqlite3 = await this._ensureModuleAsync("sqlite3");
+      return new SqliteDbConn(sqlite3, config);
     }
 
     // 1. 풀 가져오기 (없으면 생성)
@@ -30,8 +31,8 @@ export class DbConnFactory {
       const pool = createPool<IDbConn>(
         {
           create: async () => {
-            const conn = this._createRawConnection(config);
-            await conn.connectAsync(); // 풀에 담기 전 미리 연결
+            const conn = await this._createRawConnectionAsync(config);
+            await conn.connectAsync();
             return conn;
           },
           destroy: async (conn) => {
@@ -57,13 +58,31 @@ export class DbConnFactory {
     return this._poolMap.get(configKey)!;
   }
 
-  private static _createRawConnection(config: TDbConnConf): IDbConn {
+  private static async _createRawConnectionAsync(config: TDbConnConf): Promise<IDbConn> {
     if (config.dialect === "sqlite") {
-      return new SqliteDbConn(config);
+      const sqlite3 = await this._ensureModuleAsync("sqlite3");
+      return new SqliteDbConn(sqlite3, config);
     } else if (config.dialect === "mysql") {
-      return new MysqlDbConn(config);
+      const mysql2 = await this._ensureModuleAsync("mysql2/promise");
+      return new MysqlDbConn(mysql2, config);
     } else {
-      return new MssqlDbConn(config);
+      const tedious = await this._ensureModuleAsync("tedious");
+      return new MssqlDbConn(tedious, config);
     }
+  }
+
+  private static readonly _modules: {
+    "tedious"?: typeof import("tedious");
+    "mysql2/promise"?: typeof import("mysql2/promise");
+    "sqlite3"?: typeof import("sqlite3");
+  } = {};
+
+  private static async _ensureModuleAsync<K extends keyof typeof this._modules>(
+    name: K,
+  ): Promise<NonNullable<(typeof this._modules)[K]>> {
+    if (!this._modules[name]) {
+      this._modules[name] = await import(name);
+    }
+    return this._modules[name]!;
   }
 }

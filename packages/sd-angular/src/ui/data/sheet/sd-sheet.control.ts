@@ -3,7 +3,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   contentChildren,
-  HostListener,
   inject,
   input,
   model,
@@ -57,6 +56,9 @@ import { ISdSheetItemKeydownEventParam } from "./types/ISdSheetItemKeydownEventP
     "class": "flex-column fill",
     "[attr.data-sd-inset]": "inset()",
     "[attr.data-sd-focus-mode]": "focusMode()",
+    "(keydown.capture)": "onKeydownCapture($event)",
+    "(focus.capture)": "onFocusCapture($event)",
+    "(blur.capture)": "onBlurCapture($event)",
   },
   template: `
     @if ((key() || effectivePageCount() > 0) && !hideConfigBar()) {
@@ -934,19 +936,16 @@ export class SdSheetControl<T> {
 
   //endregion
 
-  @HostListener("keydown.capture", ["$event"])
   async onKeydownCapture(event: KeyboardEvent) {
     await this.onKeydownCaptureForCellAgent(event);
   }
 
-  @HostListener("focus.capture", ["$event"])
   onFocusCapture(event: FocusEvent) {
     this.onFocusCaptureForSelection(event);
     this.onFocusCaptureForAutoScroll(event);
     this.onFocusCaptureForFocusIndicator();
   }
 
-  @HostListener("blur.capture", ["$event"])
   onBlurCapture(event: FocusEvent) {
     this.onBlurCaptureForCellAgent(event);
     this.onBlurCaptureForFocusIndicator();

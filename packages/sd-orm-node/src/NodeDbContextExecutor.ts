@@ -35,7 +35,7 @@ export class NodeDbContextExecutor implements IDbContextExecutor {
   }
 
   async connectAsync(): Promise<void> {
-    this._conn = DbConnFactory.create(this._config);
+    this._conn = await DbConnFactory.createAsync(this._config);
     await this._conn.connectAsync();
   }
 

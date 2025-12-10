@@ -1,4 +1,4 @@
-import { Directive, HostListener, inject, input } from "@angular/core";
+import { Directive, inject, input } from "@angular/core";
 import { Router } from "@angular/router";
 import { SdNavigateWindowProvider } from "../providers/integration/sd-navigate-window.provider";
 import * as querystring from "querystring";
@@ -9,6 +9,7 @@ import { ParsedUrlQuery } from "querystring";
   standalone: true,
   host: {
     "[style.cursor]": "'pointer'",
+    "(click)": "onClick($event)",
   },
 })
 export class SdRouterLinkDirective {
@@ -29,7 +30,6 @@ export class SdRouterLinkDirective {
     | undefined
   >(undefined, { alias: "sd-router-link" });
 
-  @HostListener("click", ["$event"])
   async onClick(event: MouseEvent): Promise<void> {
     const option = this.option();
 

@@ -5,7 +5,6 @@ import {
   contentChild,
   contentChildren,
   Directive,
-  HostListener,
   inject,
   input,
   InputSignal,
@@ -62,6 +61,10 @@ import { SdAnchorControl } from "../../ui/form/button/sd-anchor.control";
     FormatPipe,
     SdAnchorControl,
   ],
+  host: {
+    "(sdRefreshCommand)": "onRefreshButtonClick()",
+    "(sdSaveCommand)": "onSubmitButtonClick()",
+  },
   template: `
     <sd-base-container
       [busy]="parent.busyCount() > 0"
@@ -419,7 +422,6 @@ export class SdDataSheetControl {
     this.parent.doFilterSubmit();
   }
 
-  @HostListener("sdRefreshCommand")
   onRefreshButtonClick() {
     this.parent.doRefresh();
   }
@@ -445,7 +447,6 @@ export class SdDataSheetControl {
     this.parent.doToggleDeleteItem(item);
   }
 
-  @HostListener("sdSaveCommand")
   onSubmitButtonClick() {
     this.formCtrl()?.requestSubmit();
   }
@@ -484,8 +485,7 @@ export abstract class AbsSdDataSheet<
   TFilter extends Record<string, any>,
   TItem,
   TKey extends string | number | undefined,
-> implements ISdSelectModal<TItem>
-{
+> implements ISdSelectModal<TItem> {
   //-- abstract
   abstract canUse: Signal<boolean>;
   abstract canEdit: Signal<boolean>;

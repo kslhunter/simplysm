@@ -1,7 +1,6 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  HostListener,
   inject,
   input,
   ViewEncapsulation,
@@ -17,6 +16,11 @@ import { transformBoolean } from "../../../core/utils/transforms/transformBoolea
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
+  host: {
+    "[attr.data-sd-busy]": "busy()",
+    "[attr.data-sd-type]": "currType()",
+    "(keydown.capture)": "onKeydownCapture($event)",
+  },
   template: `
     <div class="_screen">
       <div class="_rect">
@@ -44,7 +48,6 @@ import { transformBoolean } from "../../../core/utils/transforms/transformBoolea
     </div>
     <ng-content></ng-content>
   `,
-  //region styles
   styles: [
     /* language=SCSS */ `
       @use "../../../../scss/commons/mixins";
@@ -347,11 +350,6 @@ import { transformBoolean } from "../../../core/utils/transforms/transformBoolea
       }
     `,
   ],
-  //endregion
-  host: {
-    "[attr.data-sd-busy]": "busy()",
-    "[attr.data-sd-type]": "currType()",
-  },
 })
 export class SdBusyContainerControl {
   private readonly _sdBusy = inject(SdBusyProvider);
@@ -363,7 +361,6 @@ export class SdBusyContainerControl {
 
   currType = $computed(() => this.type() ?? this._sdBusy.type());
 
-  @HostListener("keydown.capture", ["$event"])
   onKeydownCapture(event: KeyboardEvent) {
     if (this.busy()) {
       event.preventDefault();

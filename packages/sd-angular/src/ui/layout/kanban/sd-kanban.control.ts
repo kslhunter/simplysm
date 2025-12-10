@@ -2,7 +2,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   forwardRef,
-  HostListener,
   inject,
   input,
   ViewEncapsulation,
@@ -28,6 +27,8 @@ import { SdCardDirective } from "../sd-card.directive";
     "[attr.data-sd-dragging-this]": "dragKanban() === this",
     "[attr.data-sd-dragging]": "dragKanban() != null",
     "[attr.data-sd-drag-over]": "dragOvered()",
+    "(document:drop.capture)": "onDocumentDrop()",
+    "(click)": "onHostClick($event)",
   },
   template: `
     <div
@@ -110,8 +111,12 @@ import { SdCardDirective } from "../sd-card.directive";
   ],
 })
 export class SdKanbanControl<L, T> {
-  private readonly _boardControl = inject<SdKanbanBoardControl<L, T>>(forwardRef(() => SdKanbanBoardControl));
-  private readonly _laneControl = inject<SdKanbanLaneControl<L, T>>(forwardRef(() => SdKanbanLaneControl));
+  private readonly _boardControl = inject<SdKanbanBoardControl<L, T>>(
+    forwardRef(() => SdKanbanBoardControl),
+  );
+  private readonly _laneControl = inject<SdKanbanLaneControl<L, T>>(
+    forwardRef(() => SdKanbanLaneControl),
+  );
   private readonly _elRef = injectElementRef();
 
   value = input<T>();
@@ -134,8 +139,7 @@ export class SdKanbanControl<L, T> {
 
   cardHeight = $signal(0);
 
-  @HostListener("click", ["$event"])
-  onClick(event: MouseEvent) {
+  onHostClick(event: MouseEvent) {
     if (event.shiftKey) {
       if (!this.selectable()) return;
       if (this.value() == null) return;
@@ -153,6 +157,10 @@ export class SdKanbanControl<L, T> {
         return r;
       });
     }
+  }
+
+  onDocumentDrop() {
+    this.dragOvered.set(false);
   }
 
   onCardResize(event: ISdResizeEvent) {
@@ -191,10 +199,5 @@ export class SdKanbanControl<L, T> {
     event.stopPropagation();
 
     this._boardControl.onDropTo(this);
-  }
-
-  @HostListener("document:drop.capture")
-  onDocumentDrop() {
-    this.dragOvered.set(false);
   }
 }

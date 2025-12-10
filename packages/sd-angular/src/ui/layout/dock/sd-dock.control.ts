@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  HostListener,
-  input,
-  ViewEncapsulation,
-} from "@angular/core";
+import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
 import { $effect } from "../../../core/utils/bindings/$effect";
 import { $signal } from "../../../core/utils/bindings/$signal";
 import { injectElementRef } from "../../../core/utils/injections/injectElementRef";
@@ -21,6 +15,7 @@ import { type ISdResizeEvent } from "../../../core/plugins/events/sd-resize-even
   host: {
     "[attr.data-sd-position]": "position()",
     "[attr.data-sd-resizable]": "resizable()",
+    "(sdResize)": "onHostResize($event)",
   },
   template: `
     <ng-content></ng-content>
@@ -114,8 +109,7 @@ export class SdDockControl {
     Object.assign(this._elRef.nativeElement.style, style);
   }
 
-  @HostListener("sdResize", ["$event"])
-  onResize(event: ISdResizeEvent) {
+  onHostResize(event: ISdResizeEvent) {
     if (["top", "bottom"].includes(this.position()) && event.heightChanged) {
       this.size.set(this._elRef.nativeElement.clientHeight);
     }

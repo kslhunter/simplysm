@@ -2,7 +2,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
-  HostListener,
   inject,
   input,
   model,
@@ -30,6 +29,14 @@ import { SdActivatedModalProvider } from "./sd-modal.provider";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [SdEventsDirective, FaIconComponent, NgTemplateOutlet, SdAnchorControl],
+  host: {
+    "[attr.data-sd-open]": "open()",
+    "[attr.data-sd-float]": "float()",
+    "[attr.data-sd-position]": "position()",
+    "[attr.data-sd-fill]": "fill()",
+    "(sdResize)": "onHostResize($event)",
+    "(window:resize)": "onWindowResize()",
+  },
   template: `
     <div class="_backdrop" (click)="onBackdropClick()"></div>
 
@@ -309,12 +316,6 @@ import { SdActivatedModalProvider } from "./sd-modal.provider";
       }
     `,
   ],
-  host: {
-    "[attr.data-sd-open]": "open()",
-    "[attr.data-sd-float]": "float()",
-    "[attr.data-sd-position]": "position()",
-    "[attr.data-sd-fill]": "fill()",
-  },
 })
 export class SdModalControl {
   protected readonly icons = inject(SdAngularConfigProvider).icons;
@@ -392,8 +393,7 @@ export class SdModalControl {
     }
   }
 
-  @HostListener("sdResize", ["$event"])
-  onResize(event: ISdResizeEvent) {
+  onHostResize(event: ISdResizeEvent) {
     if (event.heightChanged) {
       this._calcHeight();
     }
@@ -431,7 +431,6 @@ export class SdModalControl {
     }
   }
 
-  @HostListener("window:resize")
   onWindowResize() {
     if (this.dialogElRef().nativeElement.offsetLeft > this._elRef.nativeElement.offsetWidth - 100) {
       this.dialogElRef().nativeElement.style.left =

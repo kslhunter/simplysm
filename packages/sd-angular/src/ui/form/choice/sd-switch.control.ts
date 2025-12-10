@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  HostListener,
-  input,
-  model,
-  ViewEncapsulation,
-} from "@angular/core";
+import { ChangeDetectionStrategy, Component, input, model, ViewEncapsulation } from "@angular/core";
 import { transformBoolean } from "../../../core/utils/transforms/transformBoolean";
 
 @Component({
@@ -14,6 +7,22 @@ import { transformBoolean } from "../../../core/utils/transforms/transformBoolea
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
+  host: {
+    "[attr.data-sd-on]": "value()",
+    "[attr.data-sd-disabled]": "disabled()",
+    "[attr.data-sd-inline]": "inline()",
+    "[attr.data-sd-inset]": "inset()",
+    "[attr.data-sd-size]": "size()",
+    "[attr.data-sd-theme]": "theme()",
+    "[attr.tabindex]": "'0'",
+    "(click)": "onClick($event)",
+    "(keydown)": "onKeydown($event)",
+  },
+  template: `
+    <div>
+      <div></div>
+    </div>
+  `,
   styles: [
     /* language=SCSS */ `
       @use "sass:map";
@@ -98,20 +107,6 @@ import { transformBoolean } from "../../../core/utils/transforms/transformBoolea
       }
     `,
   ],
-  template: `
-    <div>
-      <div></div>
-    </div>
-  `,
-  host: {
-    "[attr.data-sd-on]": "value()",
-    "[attr.data-sd-disabled]": "disabled()",
-    "[attr.data-sd-inline]": "inline()",
-    "[attr.data-sd-inset]": "inset()",
-    "[attr.data-sd-size]": "size()",
-    "[attr.data-sd-theme]": "theme()",
-    "[attr.tabindex]": "'0'",
-  },
 })
 export class SdSwitchControl {
   value = model(false);
@@ -125,7 +120,6 @@ export class SdSwitchControl {
     "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray"
   >();
 
-  @HostListener("click", ["$event"])
   onClick(event: Event) {
     if (this.disabled()) return;
 
@@ -135,7 +129,6 @@ export class SdSwitchControl {
     this.value.update((v) => !v);
   }
 
-  @HostListener("keydown", ["$event"])
   onKeydown(event: KeyboardEvent) {
     if (this.disabled()) return;
 

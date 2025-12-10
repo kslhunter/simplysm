@@ -1,7 +1,6 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  HostListener,
   model,
   output,
   ViewEncapsulation,
@@ -16,6 +15,9 @@ import { SdKanbanControl } from "./sd-kanban.control";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
+  host: {
+    "(document:dragend)": "onDocumentDragEnd()",
+  },
   template: `
     <ng-content></ng-content>
   `,
@@ -54,7 +56,6 @@ export class SdKanbanBoardControl<L, T> {
     this.dragKanban.set(undefined);
   }
 
-  @HostListener("document:dragend")
   onDocumentDragEnd() {
     this.dragKanban.set(undefined);
   }

@@ -10,14 +10,6 @@ import {
   QueryHelper,
 } from "@simplysm/sd-orm-common";
 
-let mysql2: typeof import("mysql2/promise");
-let importErr: any | undefined;
-try {
-  mysql2 = await import("mysql2/promise");
-} catch (err) {
-  importErr = err;
-}
-
 export class MysqlDbConn extends EventEmitter implements IDbConn {
   private static readonly ERR_NOT_CONNECTED = "'Connection'이 연결되어있지 않습니다.";
   private static readonly ERR_ALREADY_CONNECTED = "이미 'Connection'이 연결되어있습니다.";
@@ -31,9 +23,11 @@ export class MysqlDbConn extends EventEmitter implements IDbConn {
   isConnected = false;
   isOnTransaction = false;
 
-  constructor(readonly config: IDefaultDbConnConf) {
+  constructor(
+    private readonly _mysql2: typeof import("mysql2/promise"),
+    readonly config: IDefaultDbConnConf,
+  ) {
     super();
-    if (importErr != null) throw importErr;
   }
 
   async connectAsync(): Promise<void> {
@@ -41,7 +35,7 @@ export class MysqlDbConn extends EventEmitter implements IDbConn {
       throw new Error(MysqlDbConn.ERR_ALREADY_CONNECTED);
     }
 
-    const conn = await mysql2.createConnection({
+    const conn = await this._mysql2.createConnection({
       host: this.config.host,
       port: this.config.port,
       user: this.config.username,

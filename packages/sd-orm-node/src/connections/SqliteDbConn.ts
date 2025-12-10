@@ -10,14 +10,6 @@ import {
 import { SdLogger } from "@simplysm/sd-core-node";
 import type sqlite3Type from "sqlite3";
 
-let sqlite3: typeof import("sqlite3");
-let importErr: any | undefined;
-try {
-  sqlite3 = await import("sqlite3");
-} catch (err) {
-  importErr = err;
-}
-
 export class SqliteDbConn extends EventEmitter implements IDbConn {
   private readonly _logger = SdLogger.get(["simplysm", "sd-orm-node", this.constructor.name]);
 
@@ -29,9 +21,11 @@ export class SqliteDbConn extends EventEmitter implements IDbConn {
   isConnected = false;
   isOnTransaction = false;
 
-  constructor(readonly config: ISqliteDbConnConf) {
+  constructor(
+    private readonly _sqlite3: typeof import("sqlite3"),
+    readonly config: ISqliteDbConnConf,
+  ) {
     super();
-    if (importErr != null) throw importErr;
   }
 
   async connectAsync() {
@@ -39,7 +33,7 @@ export class SqliteDbConn extends EventEmitter implements IDbConn {
       throw new Error("이미 'Connection'이 연결되어있습니다.");
     }
 
-    const conn = new sqlite3.Database(this.config.filePath);
+    const conn = new this._sqlite3.Database(this.config.filePath);
 
     conn.on("close", () => {
       this.emit("close");

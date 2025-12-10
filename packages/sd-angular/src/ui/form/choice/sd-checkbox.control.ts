@@ -1,7 +1,6 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  HostListener,
   inject,
   input,
   model,
@@ -57,7 +56,7 @@ import { SdAngularConfigProvider } from "../../../core/providers/app/sd-angular-
             margin-left: var(--gap-sm);
           }
         }
-        
+
         > ._indicator_rect {
           display: inline-block;
           //vertical-align: calc((1em - var(--line-height)) / 2);
@@ -86,7 +85,6 @@ import { SdAngularConfigProvider } from "../../../core/providers/app/sd-angular-
           display: inline-block;
           vertical-align: top;
           padding-left: var(--gap-sm);
-          
         }
 
         > ._indicator_rect + ._contents:empty {
@@ -184,7 +182,9 @@ import { SdAngularConfigProvider } from "../../../core/providers/app/sd-angular-
 
           @supports not (appearance: auto) {
             gap: 0;
-            > * + * { margin-left: var(--gap-xs); }
+            > * + * {
+              margin-left: var(--gap-xs);
+            }
           }
         }
 
@@ -197,7 +197,9 @@ import { SdAngularConfigProvider } from "../../../core/providers/app/sd-angular-
 
           @supports not (appearance: auto) {
             gap: 0;
-            > * + * { margin-left: var(--gap-default); }
+            > * + * {
+              margin-left: var(--gap-default);
+            }
           }
         }
 
@@ -247,6 +249,8 @@ import { SdAngularConfigProvider } from "../../../core/providers/app/sd-angular-
     "[attr.data-sd-size]": "size()",
     "[attr.data-sd-theme]": "theme()",
     "[attr.tabindex]": "0",
+    "(click)": "onClick()",
+    "(keydown)": "onKeydown($event)",
   },
 })
 export class SdCheckboxControl {
@@ -281,7 +285,6 @@ export class SdCheckboxControl {
     setupRipple(() => !this.disabled());
   }
 
-  @HostListener("click")
   onClick() {
     if (this.disabled()) return;
     if (this.radio()) {
@@ -291,7 +294,6 @@ export class SdCheckboxControl {
     }
   }
 
-  @HostListener("keydown", ["$event"])
   onKeydown(event: KeyboardEvent): void {
     if (event.key === " ") {
       if (this.disabled()) return;

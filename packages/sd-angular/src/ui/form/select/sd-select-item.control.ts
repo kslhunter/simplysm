@@ -3,7 +3,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   forwardRef,
-  HostListener,
   inject,
   input,
   ViewEncapsulation,
@@ -23,6 +22,25 @@ import { $signal } from "../../../core/utils/bindings/$signal";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [SdCheckboxControl, SdGapControl],
+  host: {
+    "[attr.tabindex]": "'0'",
+    "[attr.data-sd-disabled]": "disabled()",
+    "[attr.data-sd-select-mode]": "selectMode()",
+    "[attr.data-sd-selected]": "isSelected()",
+    "[attr.data-sd-hidden]": "hidden()",
+    "(click)": "onClick($event)",
+    "(keydown)": "onKeydown($event)",
+  },
+  template: `
+    @if (selectMode() === "multi") {
+      <sd-checkbox [value]="isSelected()" [inline]="true"></sd-checkbox>
+      <sd-gap [width]="'sm'" />
+    }
+
+    <div class="_content" style="display: inline-block;">
+      <ng-content />
+    </div>
+  `,
   styles: [
     /* language=SCSS */ `
       @use "../../../../scss/commons/mixins";
@@ -63,26 +81,11 @@ import { $signal } from "../../../core/utils/bindings/$signal";
       }
     `,
   ],
-  template: `
-    @if (selectMode() === "multi") {
-      <sd-checkbox [value]="isSelected()" [inline]="true"></sd-checkbox>
-      <sd-gap [width]="'sm'" />
-    }
-
-    <div class="_content" style="display: inline-block;">
-      <ng-content />
-    </div>
-  `,
-  host: {
-    "[attr.tabindex]": "'0'",
-    "[attr.data-sd-disabled]": "disabled()",
-    "[attr.data-sd-select-mode]": "selectMode()",
-    "[attr.data-sd-selected]": "isSelected()",
-    "[attr.data-sd-hidden]": "hidden()",
-  },
 })
 export class SdSelectItemControl {
-  private readonly _selectControl: SdSelectControl<any, any> = inject(forwardRef(() => SdSelectControl));
+  private readonly _selectControl: SdSelectControl<any, any> = inject(
+    forwardRef(() => SdSelectControl),
+  );
 
   elRef = injectElementRef<HTMLElement>();
 
@@ -114,7 +117,6 @@ export class SdSelectItemControl {
     });
   }
 
-  @HostListener("click", ["$event"])
   onClick(event: MouseEvent) {
     event.preventDefault();
     event.stopPropagation();
@@ -123,7 +125,6 @@ export class SdSelectItemControl {
     this._selectControl.onItemControlClick(this, this.selectMode() === "single");
   }
 
-  @HostListener("keydown", ["$event"])
   onKeydown(event: KeyboardEvent) {
     if (this.disabled()) return;
 
