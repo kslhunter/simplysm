@@ -25,10 +25,10 @@ export abstract class SdServiceBase<TAuthInfo = any> {
     return this.socket?.authTokenPayload?.data ?? this.http?.authTokenPayload?.data;
   }
 
-  get clientName(): string {
+  get clientName(): string | undefined {
     const clientName =
       this.v1?.request.clientName ?? this.socket?.clientName ?? this.http?.clientName;
-    if (clientName == null) throw new Error("api로 사용할 수 없는 서비스입니다.");
+    if (clientName == null) return undefined;
 
     // Path Traversal 방지
     if (clientName.includes("..") || clientName.includes("/") || clientName.includes("\\")) {
@@ -38,11 +38,11 @@ export abstract class SdServiceBase<TAuthInfo = any> {
     return clientName;
   }
 
-  get clientPath(): string {
-    return (
-      this.server.options.pathProxy?.[this.clientName] ??
-      path.resolve(this.server.options.rootPath, "www", this.clientName)
-    );
+  get clientPath(): string | undefined {
+    return this.clientName == null
+      ? undefined
+      : (this.server.options.pathProxy?.[this.clientName] ??
+          path.resolve(this.server.options.rootPath, "www", this.clientName));
   }
 
   async getConfigAsync<T>(section: string): Promise<T> {
@@ -57,10 +57,8 @@ export abstract class SdServiceBase<TAuthInfo = any> {
     }
 
     // 2. Client Config
-    const clientName =
-      this.v1?.request.clientName ?? this.socket?.clientName ?? this.http?.clientName;
-    if (clientName != null) {
-      const targetPath = this.clientPath;
+    const targetPath = this.clientPath;
+    if (targetPath != null) {
       const clientFilePath = path.resolve(targetPath, ".config.json");
 
       // Manager에게 위임

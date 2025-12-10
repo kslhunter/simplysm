@@ -1,5 +1,5 @@
 import { SdLogger } from "@simplysm/sd-core-node";
-import type mysqlType from "mysql";
+import type { Connection } from "mysql2/promise";
 import { EventEmitter } from "events";
 import { SdError, StringUtils } from "@simplysm/sd-core-common";
 import {
@@ -10,20 +10,22 @@ import {
   QueryHelper,
 } from "@simplysm/sd-orm-common";
 
-let mysql: typeof import("mysql");
+let mysql2: typeof import("mysql2/promise");
 let importErr: any | undefined;
 try {
-  mysql = await import("mysql");
+  mysql2 = await import("mysql2/promise");
 } catch (err) {
   importErr = err;
 }
 
 export class MysqlDbConn extends EventEmitter implements IDbConn {
-  private readonly _logger = SdLogger.get(["simplysm", "sd-orm-node", this.constructor.name]);
+  private static readonly ERR_NOT_CONNECTED = "'Connection'이 연결되어있지 않습니다.";
+  private static readonly ERR_ALREADY_CONNECTED = "이미 'Connection'이 연결되어있습니다.";
 
+  private readonly _logger = SdLogger.get(["simplysm", "sd-orm-node", this.constructor.name]);
   private readonly _timeout = 5 * 60 * 1000;
 
-  private _conn?: mysqlType.Connection;
+  private _conn?: Connection;
   private _connTimeout?: NodeJS.Timeout;
 
   isConnected = false;
@@ -36,10 +38,10 @@ export class MysqlDbConn extends EventEmitter implements IDbConn {
 
   async connectAsync(): Promise<void> {
     if (this.isConnected) {
-      throw new Error("이미 'Connection'이 연결되어있습니다.");
+      throw new Error(MysqlDbConn.ERR_ALREADY_CONNECTED);
     }
 
-    const conn = mysql.createConnection({
+    const conn = await mysql2.createConnection({
       host: this.config.host,
       port: this.config.port,
       user: this.config.username,
@@ -51,33 +53,18 @@ export class MysqlDbConn extends EventEmitter implements IDbConn {
 
     conn.on("end", () => {
       this.emit("close");
-      this.isConnected = false;
-      this.isOnTransaction = false;
-      this._conn = undefined;
+      this._resetState();
     });
 
-    await new Promise<void>((resolve, reject) => {
-      conn.on("error", (error) => {
-        if (this.isConnected) {
-          this._logger.error("error: " + error.message);
-        } else {
-          reject(new Error(error.message));
-        }
-      });
-
-      conn.on("connect", () => {
-        this._startTimeout();
-        this.isConnected = true;
-        this.isOnTransaction = false;
-        resolve();
-      });
-
-      conn.connect();
+    conn.on("error", (error) => {
+      this._logger.error("error: " + error.message);
     });
+
     this._conn = conn;
+    this._startTimeout();
+    this.isConnected = true;
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
   async closeAsync(): Promise<void> {
     this._stopTimeout();
 
@@ -85,95 +72,40 @@ export class MysqlDbConn extends EventEmitter implements IDbConn {
       return;
     }
 
-    this._conn.destroy();
+    await this._conn.end();
 
     this.emit("close");
-    this.isConnected = false;
-    this.isOnTransaction = false;
-    this._conn = undefined;
+    this._resetState();
   }
 
   async beginTransactionAsync(isolationLevel?: ISOLATION_LEVEL): Promise<void> {
-    if (!this._conn || !this.isConnected) {
-      throw new Error("'Connection'이 연결되어있지 않습니다.");
-    }
-    this._startTimeout();
+    const conn = this._assertConnected();
 
-    const conn = this._conn;
+    await conn.beginTransaction();
 
-    await new Promise<void>((resolve, reject) => {
-      conn.beginTransaction((err: mysqlType.MysqlError | null) => {
-        if (err) {
-          reject(err);
-        }
-        resolve();
-      });
+    const level = (
+      isolationLevel ??
+      this.config.defaultIsolationLevel ??
+      "REPEATABLE_READ"
+    ).replace(/_/g, " ");
+    await conn.query({
+      sql: `SET SESSION TRANSACTION ISOLATION LEVEL ${level}`,
+      timeout: this._timeout,
     });
 
-    await new Promise<void>((resolve, reject) => {
-      conn.query(
-        {
-          sql:
-            "SET SESSION TRANSACTION ISOLATION LEVEL " +
-            (isolationLevel ?? this.config.defaultIsolationLevel ?? "REPEATABLE_READ").replace(
-              /_/g,
-              " ",
-            ),
-          timeout: this._timeout,
-        },
-        (err) => {
-          if (err) {
-            reject(new Error(err.message));
-            return;
-          }
-
-          this.isOnTransaction = true;
-          resolve();
-        },
-      );
-    });
+    this.isOnTransaction = true;
   }
 
   async commitTransactionAsync(): Promise<void> {
-    if (!this._conn || !this.isConnected) {
-      throw new Error("'Connection'이 연결되어있지 않습니다.");
-    }
-    this._startTimeout();
-
-    const conn = this._conn;
-
-    await new Promise<void>((resolve, reject) => {
-      conn.commit((err: mysqlType.MysqlError | null) => {
-        if (err != null) {
-          reject(new Error(err.message));
-          return;
-        }
-
-        this.isOnTransaction = false;
-        resolve();
-      });
-    });
+    const conn = this._assertConnected();
+    await conn.commit();
+    this.isOnTransaction = false;
   }
 
   async rollbackTransactionAsync(): Promise<void> {
-    if (!this._conn || !this.isConnected) {
-      throw new Error("'Connection'이 연결되어있지 않습니다.");
-    }
-    this._startTimeout();
-
-    const conn = this._conn;
-
-    await new Promise<void>((resolve, reject) => {
-      conn.rollback((err: mysqlType.MysqlError | null) => {
-        if (err != null) {
-          reject(new Error(err.message));
-          return;
-        }
-
-        this.isOnTransaction = false;
-        resolve();
-      });
-    });
+    const conn = this._assertConnected();
+    await conn.rollback();
+    this.isOnTransaction = false;
   }
 
   async executeAsync(queries: string[]): Promise<any[][]> {
@@ -182,69 +114,40 @@ export class MysqlDbConn extends EventEmitter implements IDbConn {
       const resultItems = await this.executeParametrizedAsync(query);
       results.push(...resultItems);
     }
-
     return results;
   }
 
   async executeParametrizedAsync(query: string, params?: any[]): Promise<any[][]> {
-    if (!this._conn || !this.isConnected) {
-      throw new Error("'Connection'이 연결되어있지 않습니다.");
-    }
-    this._startTimeout();
-
-    const conn = this._conn;
-
-    const result: any[] = [];
+    const conn = this._assertConnected();
 
     this._logger.debug(`쿼리 실행(${query.length.toLocaleString()}): ${query}, ${params}`);
-    await new Promise<void>((resolve, reject) => {
-      let rejected = false;
-      conn
-        .query({ sql: query, timeout: this._timeout, values: params }, (err, queryResults) => {
-          this._startTimeout();
 
-          if (err) {
-            rejected = true;
-            reject(
-              new SdError(
-                err,
-                "쿼리 수행중 오류발생" +
-                  (err.sql !== undefined ? "\n-- query\n" + err.sql.trim() + "\n--" : ""),
-              ),
-            );
-            return;
-          }
+    try {
+      const [queryResults] = await conn.query({
+        sql: query,
+        timeout: this._timeout,
+        values: params,
+      });
 
-          if (queryResults instanceof Array) {
-            for (const queryResult of queryResults.filter(
-              (item) => !("affectedRows" in item && "fieldCount" in item),
-            )) {
-              result.push(queryResult);
-            }
-          }
-        })
-        .on("error", (err) => {
-          this._startTimeout();
-          if (rejected) return;
+      this._startTimeout();
 
-          rejected = true;
-          reject(
-            new SdError(
-              err,
-              "쿼리 수행중 오류발생" +
-                (err.sql !== undefined ? "\n-- query\n" + err.sql.trim() + "\n--" : ""),
-            ),
-          );
-        })
-        .on("end", () => {
-          this._startTimeout();
-          if (rejected) return;
+      const result: any[] = [];
+      if (queryResults instanceof Array) {
+        for (const queryResult of queryResults.filter(
+          (item: any) => !("affectedRows" in item && "fieldCount" in item),
+        )) {
+          result.push(queryResult);
+        }
+      }
 
-          resolve();
-        });
-    });
-
-    return [result];
+      return [result];
+    } catch (err: any) {
+      this._startTimeout();
+      throw new SdError(
+        err,
+        "쿼리 수행중 오류발생" + (err.sql != null ? "\n-- query\n" + err.sql.trim() + "\n--" : ""),
+      );
+    }
   }
 
   async bulkInsertAsync(
@@ -252,19 +155,7 @@ export class MysqlDbConn extends EventEmitter implements IDbConn {
     columnDefs: IQueryColumnDef[],
     records: Record<string, any>[],
   ): Promise<void> {
-    const qh = new QueryHelper("mysql");
-
-    const colNames = columnDefs.map((def) => def.name);
-
-    let q = "";
-    q += `INSERT INTO ${tableName} (${colNames.map((item) => "`" + item + "`").join(", ")})
-          VALUES`;
-    q += "\n";
-    for (const record of records) {
-      q += `(${colNames.map((colName) => qh.getQueryValue(record[colName])).join(", ")}),\n`;
-    }
-    q = q.slice(0, -2) + ";";
-
+    const q = this._buildBulkValuesQuery(tableName, columnDefs, records) + ";";
     await this.executeAsync([q]);
   }
 
@@ -273,29 +164,48 @@ export class MysqlDbConn extends EventEmitter implements IDbConn {
     columnDefs: IQueryColumnDef[],
     records: Record<string, any>[],
   ): Promise<void> {
-    const qh = new QueryHelper("mysql");
+    let q = this._buildBulkValuesQuery(tableName, columnDefs, records);
 
-    const colNames = columnDefs.map((def) => def.name);
-
-    let q = "";
-    q += `INSERT INTO ${tableName} (${colNames.map((item) => "`" + item + "`").join(", ")})
-          VALUES`;
-    q += "\n";
-    for (const record of records) {
-      q += `(${colNames.map((colName) => qh.getQueryValue(record[colName])).join(", ")}),\n`;
-    }
-    q = q.slice(0, -2);
-
-    q += "\n";
-    q += "ON DUPLICATE KEY UPDATE\n";
-    for (const colName of columnDefs
+    q += "\nON DUPLICATE KEY UPDATE\n";
+    const updateCols = columnDefs
       .filter((item) => !item.autoIncrement)
-      .map((item) => item.name)) {
-      q += `${colName} = VALUES(${colName}),\n`;
-    }
-    q = q.slice(0, -2) + ";";
+      .map((item) => `${item.name} = VALUES(${item.name})`);
+    q += updateCols.join(",\n") + ";";
 
     await this.executeAsync([q]);
+  }
+
+  // ─────────────────────────────────────────────
+  // Private helpers
+  // ─────────────────────────────────────────────
+
+  private _assertConnected(): Connection {
+    if (!this._conn || !this.isConnected) {
+      throw new Error(MysqlDbConn.ERR_NOT_CONNECTED);
+    }
+    this._startTimeout();
+    return this._conn;
+  }
+
+  private _resetState(): void {
+    this.isConnected = false;
+    this.isOnTransaction = false;
+    this._conn = undefined;
+  }
+
+  private _buildBulkValuesQuery(
+    tableName: string,
+    columnDefs: IQueryColumnDef[],
+    records: Record<string, any>[],
+  ): string {
+    const qh = new QueryHelper("mysql");
+    const colNames = columnDefs.map((def) => def.name);
+
+    let q = `INSERT INTO ${tableName} (${colNames.map((c) => "\`" + c + "\`").join(", ")})\n          VALUES\n`;
+    for (const record of records) {
+      q += `(${colNames.map((c) => qh.getQueryValue(record[c])).join(", ")}),\n`;
+    }
+    return q.slice(0, -2);
   }
 
   private _stopTimeout(): void {
@@ -305,9 +215,7 @@ export class MysqlDbConn extends EventEmitter implements IDbConn {
   }
 
   private _startTimeout(): void {
-    if (this._connTimeout) {
-      clearTimeout(this._connTimeout);
-    }
+    this._stopTimeout();
     this._connTimeout = setTimeout(async () => {
       await this.closeAsync();
     }, this._timeout * 2);

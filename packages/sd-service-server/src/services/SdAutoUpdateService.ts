@@ -11,9 +11,12 @@ export class SdAutoUpdateService extends SdServiceBase implements ISdAutoUpdateS
         downloadPath: string;
       }
     | undefined {
-    if (!FsUtils.exists(path.resolve(this.clientPath, platform, "updates"))) return undefined;
+    const clientPath = this.clientPath;
+    if (clientPath == null) throw new Error("클라이언트 경로를 찾을 수 없습니다.");
 
-    const updates = FsUtils.readdir(path.resolve(this.clientPath, platform, "updates"));
+    if (!FsUtils.exists(path.resolve(clientPath, platform, "updates"))) return undefined;
+
+    const updates = FsUtils.readdir(path.resolve(clientPath, platform, "updates"));
     const versions = updates
       .map((item) => ({
         fileName: item,

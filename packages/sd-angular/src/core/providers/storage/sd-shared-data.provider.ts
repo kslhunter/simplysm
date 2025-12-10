@@ -24,7 +24,16 @@ export abstract class SdSharedDataProvider<
   abstract initialize(): void;
 
   register<K extends keyof T & string>(name: K, getter: ISharedDataInfo<T[K]>) {
-    this._infoMap.set(name, { getter });
+    const existing = this._infoMap.get(name);
+
+    if (existing?.signal) {
+      existing.getter = getter;
+      existing.listenerKey = undefined;
+      void this._loadDataAsync(name);
+    }
+    else{
+      this._infoMap.set(name, { getter });
+    }
   }
 
   async emitAsync<K extends keyof T & string>(name: K, changeKeys?: T[K]["__valueKey"][]) {
@@ -77,7 +86,10 @@ export abstract class SdSharedDataProvider<
     return info.signal as any;
   }
 
-  private async _loadDataAsync<K extends keyof T & string>(name: K, changeKeys?: T[K]["__valueKey"][]) {
+  private async _loadDataAsync<K extends keyof T & string>(
+    name: K,
+    changeKeys?: T[K]["__valueKey"][],
+  ) {
     this.loadingCount++;
     try {
       const info = this._infoMap.get(name);

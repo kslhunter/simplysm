@@ -38,22 +38,23 @@ export class SdCliAiCommand {
 
     process.stdout.write(`AI를 통해 커밋 메시지 생성중...(${diff.length.toLocaleString()})\n`);
     const message = await client.messages.create({
-      model: "claude-3-5-haiku-latest",
+      model: "claude-haiku-4-5",
       max_tokens: 1024,
       messages: [
         {
           role: "user",
           content: `
-다음 변경된 사항들을 분석하고, 변경된 기능들에 대한 적절한 커밋메시지를 생성해줘
+다음 변경된 사항들을 분석하고, 변경된 "기능"들에 대한 적절한 커밋메시지를 생성해줘
 
 [규칙]
 - 한국어로 작성 해줘
 - 첫줄은 변경사항 모두를 아우를 수 있는 하나의 메시지로 작성해줘
-- 반드시 커밋메시지만 "\`\`\`"코드블록으로 감싸서 답변해줘.
+- 반드시 커밋메시지만 답변해줘.
 - 첫줄 아래 한줄을 비우고, 자세한 기능 목록을 "-"로 구분하여 작성해줘.
 - 자세한 내용에는 모든 변경사항에 대한 설명이 누락 없이 표현되어야해
-- 변경사항을 명확하고 간결하게 설명해야해
+- 변경사항을 명확하고 간결하게 요약해야해
 - 수동적인 표현 대신 능동적 표현을 사용해
+- 가능하면 패키지별로 구분해서 표시되면 좋을것 같아. (여러패키지에 걸친 기능이면 어쩔 수 없고)
 
 [git log -n 3] 
 ${history.trim()}
@@ -73,12 +74,7 @@ ${diff}`,
         "\n-------------------------\n\n",
     );
 
-    const messages = message.content[0].text
-      .replaceAll(/"/g, '\\"')
-      .matchAll(/```(?:\w*\n)?([\s\S]*?)```/g);
-    const commitMessage = Array.from(messages)
-      .map((item) => item[1].trim())
-      .join("\n\n\n");
+    const commitMessage = message.content[0].text.replaceAll(/"/g, '\\"');
 
     await SdProcess.spawnAsync("git", ["commit", "-m", commitMessage]);
     process.stdout.write(

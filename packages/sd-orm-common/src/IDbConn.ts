@@ -6,6 +6,8 @@ export interface IDbConn extends EventEmitter {
   isConnected: boolean;
   isOnTransaction: boolean;
 
+  on(event: "close", listener: () => void): this;
+
   connectAsync(): Promise<void>;
 
   closeAsync(): Promise<void>;

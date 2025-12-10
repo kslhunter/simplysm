@@ -103,17 +103,17 @@ export class SdOrmService extends SdServiceBase implements ISdOrmService {
 
     // 2. 연결 생성 (이제 내부적으로 Pool에서 가져옴)
     const config = await this._getConf(opt);
-    const conn = DbConnFactory.create(config);
-    await conn.connectAsync();
+    const dbConn = DbConnFactory.create(config);
+    await dbConn.connectAsync();
 
     // 3. ID 발급 및 목록에 저장
     const lastConnId = Array.from(myConns.keys()).max() ?? 0;
     const connId = lastConnId + 1;
-    myConns.set(connId, conn);
+    myConns.set(connId, dbConn);
 
     // 4. 개별 연결이 (로직에 의해) 닫혔을 때, 목록에서만 제거
     // (소켓 리스너는 제거하지 않음 - 다른 연결이 있을 수 있으므로)
-    conn.on("close", () => {
+    dbConn.on("close", () => {
       myConns.delete(connId);
     });
 

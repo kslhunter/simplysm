@@ -1,6 +1,5 @@
 import { fileURLToPath } from "url";
 import fs from "fs";
-import path from "path";
 
 export class SdCliPostInstall {
   static run() {
@@ -11,7 +10,7 @@ export class SdCliPostInstall {
       fs.writeFileSync(filePath, JSON.stringify(contents, undefined, 2));
     }
 
-    {
+    /*{
       const fortawesomeDirPath = path.resolve(
         path.dirname(
           fileURLToPath(import.meta.resolve("@fortawesome/fontawesome-svg-core/package.json")),
@@ -29,7 +28,7 @@ export class SdCliPostInstall {
         );
         contents.exports = {
           "./package.json": "./package.json",
-          "./*": "./*.js",
+          "./!*": "./!*.js",
         };
         fs.writeFileSync(
           path.resolve(dirPath, "package.json"),
@@ -39,7 +38,7 @@ export class SdCliPostInstall {
         fs.rmSync(path.resolve(dirPath, "index.js"), { force: true });
         fs.rmSync(path.resolve(dirPath, "index.mjs"), { force: true });
       }
-    }
+    }*/
 
     {
       const filePath = fileURLToPath(import.meta.resolve("cordova/bin/cordova"));
