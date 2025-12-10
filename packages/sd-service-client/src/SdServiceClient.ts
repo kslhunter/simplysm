@@ -23,7 +23,7 @@ export class SdServiceClient extends EventEmitter {
   override on(event: "response-progress", listener: (state: ISdServiceProgressState) => void): this;
   override on(
     event: "state",
-    listener: (state: "connected" | "closed" | "reconnect") => void,
+    listener: (state: "connected" | "closed" | "reconnecting") => void,
   ): this;
   override on(event: "reload", listener: (changedFileSet: Set<string>) => void): this; // 추가됨
   override on(event: string | symbol, listener: (...args: any[]) => void): this {
