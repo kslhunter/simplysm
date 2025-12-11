@@ -4,7 +4,7 @@ export interface ISdServiceProtocolWorker {
   methods: {
     encode: {
       params: [string, TSdServiceMessage];
-      returnType: Buffer[];
+      returnType: { chunks: Buffer[]; totalSize: number };
     };
     decode: {
       params: [Buffer];

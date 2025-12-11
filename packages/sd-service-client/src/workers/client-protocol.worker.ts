@@ -16,7 +16,7 @@ self.onmessage = (event: MessageEvent) => {
       // [Main -> Worker] 인코딩 요청 (data: { uuid, message })
       // message는 이미 Plain Object로 넘어옴 (Structured Clone)
       const { uuid, message } = data;
-      const chunks = protocol.encode(uuid, message);
+      const { chunks } = protocol.encode(uuid, message);
 
       // Buffer[]는 전송 가능하므로 결과로 반환
       result = chunks;

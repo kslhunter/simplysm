@@ -71,7 +71,10 @@ export class SdServiceClientProtocolWrapper {
     });
   }
 
-  async encodeAsync(uuid: string, message: TSdServiceMessage): Promise<Buffer[]> {
+  async encodeAsync(
+    uuid: string,
+    message: TSdServiceMessage,
+  ): Promise<{ chunks: Buffer[]; totalSize: number }> {
     // 1. 휴리스틱 체크
     if (this._shouldUseWorkerForEncode(message)) {
       // [Worker]

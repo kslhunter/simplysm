@@ -52,13 +52,13 @@ export class SdServiceTransport extends EventEmitter {
 
     // 요청 전송
     try {
-      const chunks = await this._protocol.encodeAsync(uuid, message);
+      const { chunks, totalSize } = await this._protocol.encodeAsync(uuid, message);
 
       // 진행률 초기화
       if (chunks.length > 1) {
         progress?.request?.({
           uuid,
-          totalSize: chunks.sum((chunk) => chunk.length),
+          totalSize,
           completedSize: 0,
         });
       }

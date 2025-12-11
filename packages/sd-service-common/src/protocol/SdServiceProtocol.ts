@@ -14,7 +14,7 @@ export class SdServiceProtocol {
   /**
    * 메시지 인코딩 (필요 시 자동 분할)
    */
-  encode(uuid: string, message: TSdServiceMessage): Buffer[] {
+  encode(uuid: string, message: TSdServiceMessage): { chunks: Buffer[]; totalSize: number } {
     const msgJson = JsonConvert.stringify([
       message.name,
       ...("body" in message ? [message.body] : []),
@@ -30,7 +30,7 @@ export class SdServiceProtocol {
 
     // 사이즈가 작으면 그대로 반환
     if (totalSize <= this._SPLIT_MESSAGE_SIZE) {
-      return [this._encode({ uuid, totalSize, index: 0 }, msgBuffer)];
+      return { chunks: [this._encode({ uuid, totalSize, index: 0 }, msgBuffer)], totalSize };
     }
 
     // 3. 분할 처리
@@ -48,7 +48,7 @@ export class SdServiceProtocol {
       index++;
     }
 
-    return chunks;
+    return { chunks, totalSize };
   }
 
   private _encode(

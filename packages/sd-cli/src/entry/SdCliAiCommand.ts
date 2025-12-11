@@ -22,6 +22,7 @@ export class SdCliAiCommand {
       "--find-renames",
       "--find-copies",
       "--diff-algorithm=histogram",
+      "--diff-filter=d",
       "--",
       ".",
       `:(exclude).*`,
@@ -30,6 +31,14 @@ export class SdCliAiCommand {
       `:(exclude)**/package.json`,
       `:(exclude)packages/*/styles.css`,
       `:(exclude)*.map`,
+    ]);
+
+    // 삭제된 파일 목록만 따로
+    const deleted = await SdProcess.spawnAsync("git", [
+      "diff",
+      "--staged",
+      "--name-only",
+      "--diff-filter=D",
     ]);
 
     if (StringUtils.isNullOrEmpty(diff.trim())) {
@@ -70,7 +79,11 @@ ${stat}
 
 <diff>
 ${diff}
-</diff>`,
+</diff>
+
+<deleted_files>
+${deleted.trim() || "없음"}
+</deleted_files>`,
         },
       ],
     });

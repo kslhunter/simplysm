@@ -30,7 +30,10 @@ export class SdServiceProtocolWrapper {
   /**
    * 메시지 인코딩 (자동 분기 처리)
    */
-  async encodeAsync(uuid: string, message: TSdServiceMessage): Promise<Buffer[]> {
+  async encodeAsync(
+    uuid: string,
+    message: TSdServiceMessage,
+  ): Promise<{ chunks: Buffer[]; totalSize: number }> {
     // 1. 휴리스틱: 워커를 태울지 결정 (O(1))
     if (this._shouldUseWorkerForEncode(message)) {
       // [Worker] 대용량 처리

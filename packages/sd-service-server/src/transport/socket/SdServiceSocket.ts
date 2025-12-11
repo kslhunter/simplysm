@@ -79,7 +79,7 @@ export class SdServiceSocket extends EventEmitter {
   private async _sendAsync(uuid: string, msg: TSdServiceServerRawMessage) {
     if (this._socket.readyState !== WebSocket.OPEN) return 0;
 
-    const chunks = await this._protocol.encodeAsync(uuid, msg);
+    const { chunks } = await this._protocol.encodeAsync(uuid, msg);
     for (const chunk of chunks) {
       this._socket.send(chunk);
     }
