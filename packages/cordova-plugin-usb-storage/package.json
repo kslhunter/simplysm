@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/cordova-plugin-usb-storage",
-  "version": "12.15.62",
+  "version": "12.15.63",
   "description": "심플리즘 패키지 - Cordova USB Storage Plugin",
   "author": "김석래",
   "repository": {
