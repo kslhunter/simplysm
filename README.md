@@ -1,5 +1,12 @@
 # SIMPLYSM
 
+## 의존성
+
+* Angular 20.x
+* Typescript 5.8.x
+* Node 20.x
+
+
 ## 주요 업데이트
 
 ### 12.14.x > 12.15.x

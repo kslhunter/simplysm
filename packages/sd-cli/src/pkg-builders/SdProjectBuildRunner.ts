@@ -358,36 +358,41 @@ export class SdProjectBuildRunner {
     pkgPath: string,
     pkgConfOrPort: ISdServerPackageConfig | number,
   ): Promise<{
-    worker: SdWorker<IServerWorkerType>;
-    port: number;
+    worker?: SdWorker<IServerWorkerType>;
+    port?: number;
   }> {
-    if (prevWorker) {
-      await prevWorker.killAsync();
+    try {
+      if (prevWorker) {
+        await prevWorker.killAsync();
+      }
+
+      const npmConf = FsUtils.readJson(path.resolve(pkgPath, "package.json")) as INpmConfig;
+
+      const worker = new SdWorker<IServerWorkerType>(
+        import.meta.resolve("../workers/server.worker"),
+        {
+          env: {
+            NODE_ENV: "development",
+            TZ: "Asia/Seoul",
+            SD_VERSION: npmConf.version,
+            ...(typeof pkgConfOrPort === "number" ? {} : pkgConfOrPort.env),
+          },
+          resourceLimits: {
+            maxOldGenerationSizeMb: 2048,
+            maxYoungGenerationSizeMb: 8,
+            stackSizeMb: 2,
+          },
+        },
+      );
+      const port = await worker.run("listen", [
+        typeof pkgConfOrPort === "number" ? pkgConfOrPort : pkgPath,
+      ]);
+      this._logger.debug("서버가 시작되었습니다.");
+
+      return { worker, port };
+    } catch (err) {
+      this._logger.error("서버 재시작 실패: ", err);
+      return {};
     }
-
-    const npmConf = FsUtils.readJson(path.resolve(pkgPath, "package.json")) as INpmConfig;
-
-    const worker = new SdWorker<IServerWorkerType>(
-      import.meta.resolve("../workers/server.worker"),
-      {
-        env: {
-          NODE_ENV: "development",
-          TZ: "Asia/Seoul",
-          SD_VERSION: npmConf.version,
-          ...(typeof pkgConfOrPort === "number" ? {} : pkgConfOrPort.env),
-        },
-        resourceLimits: {
-          maxOldGenerationSizeMb: 2048,
-          maxYoungGenerationSizeMb: 8,
-          stackSizeMb: 2,
-        },
-      },
-    );
-    const port = await worker.run("listen", [
-      typeof pkgConfOrPort === "number" ? pkgConfOrPort : pkgPath,
-    ]);
-    this._logger.debug("서버가 시작되었습니다.");
-
-    return { worker, port };
   }
 }
