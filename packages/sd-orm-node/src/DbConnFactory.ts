@@ -12,8 +12,8 @@ export class DbConnFactory {
   static async createAsync(config: TDbConnConf): Promise<IDbConn> {
     // SQLite는 파일 락 등의 이유로 풀링에서 제외 (기존대로 새 인스턴스 반환)
     if (config.dialect === "sqlite") {
-      const sqlite3 = await this._ensureModuleAsync("sqlite3");
-      return new SqliteDbConn(sqlite3, config);
+      const sqlite = await this._ensureModuleAsync("sqlite");
+      return new SqliteDbConn(sqlite, config);
     }
 
     // 1. 풀 가져오기 (없으면 생성)
@@ -60,11 +60,11 @@ export class DbConnFactory {
 
   private static async _createRawConnectionAsync(config: TDbConnConf): Promise<IDbConn> {
     if (config.dialect === "sqlite") {
-      const sqlite3 = await this._ensureModuleAsync("sqlite3");
-      return new SqliteDbConn(sqlite3, config);
+      const sqlite = await this._ensureModuleAsync("sqlite");
+      return new SqliteDbConn(sqlite, config);
     } else if (config.dialect === "mysql") {
-      const mysql2 = await this._ensureModuleAsync("mysql2/promise");
-      return new MysqlDbConn(mysql2, config);
+      const mysql = await this._ensureModuleAsync("mysql");
+      return new MysqlDbConn(mysql, config);
     } else {
       const tedious = await this._ensureModuleAsync("tedious");
       return new MssqlDbConn(tedious, config);
@@ -72,16 +72,22 @@ export class DbConnFactory {
   }
 
   private static readonly _modules: {
-    "tedious"?: typeof import("tedious");
-    "mysql2/promise"?: typeof import("mysql2/promise");
-    "sqlite3"?: typeof import("sqlite3");
+    tedious?: typeof import("tedious");
+    mysql?: typeof import("mysql2/promise");
+    sqlite?: typeof import("sqlite3");
   } = {};
 
   private static async _ensureModuleAsync<K extends keyof typeof this._modules>(
     name: K,
   ): Promise<NonNullable<(typeof this._modules)[K]>> {
     if (!this._modules[name]) {
-      this._modules[name] = await import(name);
+      if (name === "mysql") {
+        this._modules.mysql = await import("mysql2/promise");
+      } else if (name === "sqlite") {
+        this._modules.sqlite = await import("sqlite3");
+      } else {
+        this._modules.tedious = await import("tedious");
+      }
     }
     return this._modules[name]!;
   }

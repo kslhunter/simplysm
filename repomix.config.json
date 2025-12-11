@@ -7,9 +7,24 @@
     "directoryStructure": true,
     "files": true
   },
-  "include": ["eslint.config.js", "package.json", "tsconfig.base.json", "packages/**"],
+  "include": [
+    "eslint.config.js",
+    "package.json",
+    "tsconfig.base.json",
+    "packages/**/*.ts",
+    "packages/**/*.js",
+    "packages/**/*.json",
+    "packages/**/*.html",
+    "packages/**/*.scss"
+  ],
   "ignore": {
     "useGitignore": true,
-    "customPatterns": ["**/dist/**", "**/node_modules/**"]
+    "customPatterns": [
+      "**/dist/**",
+      "**/node_modules/**",
+      "**/.cordova/**",
+      "**/.cache/**",
+      "**/.electron/**"
+    ]
   }
 }
