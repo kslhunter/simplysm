@@ -1,6 +1,6 @@
 {
   "name": "simplysm",
-  "version": "12.15.61",
+  "version": "12.15.62",
   "description": "심플리즘 패키지",
   "author": "김석래",
   "repository": {
@@ -50,7 +50,7 @@
     "repomix": "^1.9.2",
     "semver": "^7.7.3",
     "tsx": "^4.21.0",
-    "typescript": "~5.9.3",
+    "typescript": "~5.8.3",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^4.0.15"
   }
