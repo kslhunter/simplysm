@@ -11,20 +11,13 @@
     "eslint.config.js",
     "package.json",
     "tsconfig.base.json",
-    "packages/**/*.ts",
-    "packages/**/*.js",
-    "packages/**/*.json",
-    "packages/**/*.html",
-    "packages/**/*.scss"
-  ],
-  "ignore": {
-    "useGitignore": true,
-    "customPatterns": [
-      "**/dist/**",
-      "**/node_modules/**",
-      "**/.cordova/**",
-      "**/.cache/**",
-      "**/.electron/**"
-    ]
-  }
+    "packages/*/*",
+    "packages/*/src/**",
+    "packages/*/tests/**",
+    "packages/*/lib/**",
+    "packages/*/scss/**",
+    "packages/*/android/**",
+    "packages/*/browser/**",
+    "eslint.config.js"
+  ]
 }

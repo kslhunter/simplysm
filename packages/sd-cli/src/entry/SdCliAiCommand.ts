@@ -14,20 +14,22 @@ export class SdCliAiCommand {
     process.stdout.write(`컨텍스트 수집\n`);
     const history = await SdProcess.spawnAsync("git", ["log", "-n", "3"]);
 
+    const stat = await SdProcess.spawnAsync("git", ["diff", "--staged", "--stat"]);
     const diff = await SdProcess.spawnAsync("git", [
       "diff",
-      "--no-textconv",
       "--staged",
+      "--no-textconv",
       "--find-renames",
+      "--find-copies",
       "--diff-algorithm=histogram",
       "--",
       ".",
       `:(exclude).*`,
       `:(exclude)_*`,
       `:(exclude)yarn.lock`,
+      `:(exclude)**/package.json`,
       `:(exclude)packages/*/styles.css`,
-      `:(exclude)packages/*/package.json`,
-      `:(exclude)package.json`,
+      `:(exclude)*.map`,
     ]);
 
     if (StringUtils.isNullOrEmpty(diff.trim())) {
@@ -43,25 +45,32 @@ export class SdCliAiCommand {
       messages: [
         {
           role: "user",
-          content: `
-다음 변경된 사항들을 분석하고, 변경된 "기능"들에 대한 적절한 커밋메시지를 생성해줘
+          content: `Git 변경사항을 분석하여 한국어 커밋 메시지를 생성해줘.
+          
+<format>
+제목: 전체 변경을 아우르는 한 줄 요약 (50자 이내)
 
-[규칙]
-- 한국어로 작성 해줘
-- 첫줄은 변경사항 모두를 아우를 수 있는 하나의 메시지로 작성해줘
-- 반드시 커밋메시지만 답변해줘.
-- 첫줄 아래 한줄을 비우고, 자세한 기능 목록을 "-"로 구분하여 작성해줘.
-- 자세한 내용에는 모든 변경사항에 대한 설명이 누락 없이 표현되어야해
-- 변경사항을 명확하고 간결하게 요약해야해
-- 수동적인 표현 대신 능동적 표현을 사용해
-- 가능하면 패키지별로 구분해서 표시되면 좋을것 같아. (여러패키지에 걸친 기능이면 어쩔 수 없고)
-- 파일 하나하나 세부적으로 설명해줄 필요는 없어.
+- [패키지명] 변경 내용 1
+- [패키지명] 변경 내용 2
+</format>
 
-[git log -n 3] 
+<rules>
+- 능동태 사용 (예: "추가함", "수정함", "제거함")
+- 파일 단위가 아닌 기능 단위로 설명
+- 커밋 메시지만 출력 (부가 설명 없이)
+</rules>
+
+<history>
 ${history.trim()}
+</history>
 
-[git diff --staged]
-${diff}`,
+<stat>
+${stat}
+</stat>
+
+<diff>
+${diff}
+</diff>`,
         },
       ],
     });
@@ -75,9 +84,7 @@ ${diff}`,
         "\n-------------------------\n\n",
     );
 
-    const commitMessage = message.content[0].text.replaceAll(/"/g, '\\"');
-
-    await SdProcess.spawnAsync("git", ["commit", "-m", commitMessage]);
+    await SdProcess.spawnAsync("git", ["commit", "-m", message.content[0].text]);
     process.stdout.write(
       "커밋이 완료되었습니다. 위 커밋메시지가 맘에들지 않을경우, 직접 커밋을 취소하세요.\n",
     );
