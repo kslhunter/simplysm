@@ -20,7 +20,7 @@ export class SdServiceFileClient {
   }
 
   async uploadAsync(
-    files: File[] | FileList | { name: string; data: Blob | Buffer }[],
+    files: File[] | FileList | { name: string; data: BlobPart }[],
     authToken: string,
   ): Promise<ISdServiceUploadResult[]> {
     const formData = new FormData();

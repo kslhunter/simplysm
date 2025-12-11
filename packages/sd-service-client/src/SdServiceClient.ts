@@ -146,7 +146,7 @@ export class SdServiceClient extends EventEmitter {
     await this._eventClient.emitAsync(eventType, infoSelector, data);
   }
 
-  async uploadFileAsync(files: File[] | FileList | { name: string; data: Blob | Buffer }[]) {
+  async uploadFileAsync(files: File[] | FileList | { name: string; data: BlobPart }[]) {
     if (this._authToken == null) {
       throw new Error(
         "인증 토큰이 없습니다. 파일 업로드를 위해서는 먼저 authAsync()를 호출하여 인증해야 합니다.",
