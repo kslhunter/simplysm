@@ -132,30 +132,23 @@ export class SdCliProject {
 
     logger.debug("npm/yarn 토큰 유효성 체크...");
     try {
-      // npm 기본 체크
       const npmWhoami = await SdProcess.spawnAsync("npm", ["whoami"]);
       if (StringUtils.isNullOrEmpty(npmWhoami.trim())) {
         throw new Error();
       }
       logger.debug(`npm 로그인 확인: ${npmWhoami.trim()}`);
 
-      // yarn scoped 체크 (@simplysm)
-      const yarnWhoami = await SdProcess.spawnAsync("yarn", [
-        "npm",
-        "whoami",
-        "--scope",
-        "simplysm",
-      ]);
+      const yarnWhoami = await SdProcess.spawnAsync("yarn", ["npm", "whoami"]);
       if (StringUtils.isNullOrEmpty(yarnWhoami.trim())) {
         throw new Error();
       }
-      logger.debug(`yarn(@simplysm) 로그인 확인: ${yarnWhoami.trim()}`);
+      logger.debug(`yarn 로그인 확인: ${yarnWhoami.trim()}`);
     } catch {
       throw new Error(
         "npm 토큰이 유효하지 않거나 만료되었습니다.\n" +
-          "https://www.npmjs.com/settings/~/tokens 에서 Granular Access Token 생성 후:\n" +
-          "  npm config set //registry.npmjs.org/:_authToken <토큰>\n" +
-          "  yarn config set npmScopes.simplysm.npmAuthToken <토큰> --home",
+        "https://www.npmjs.com/settings/~/tokens 에서 Granular Access Token 생성 후:\n" +
+        "  npm config set //registry.npmjs.org/:_authToken <토큰>\n" +
+        "  yarn config set npmAuthToken <토큰> --home"
       );
     }
 
