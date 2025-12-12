@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-orm-common-ext",
-  "version": "12.16.2",
+  "version": "12.16.3",
   "deprecated": "이 패키지는 더 이상 유지보수되지 않습니다.",
   "description": "심플리즘 패키지 - ORM 확장 모듈 (common)",
   "author": "김석래",
@@ -14,7 +14,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@simplysm/sd-core-common": "12.16.2",
-    "@simplysm/sd-orm-common": "12.16.2"
+    "@simplysm/sd-core-common": "12.16.3",
+    "@simplysm/sd-orm-common": "12.16.3"
   }
 }
