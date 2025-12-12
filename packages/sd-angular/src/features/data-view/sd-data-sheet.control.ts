@@ -47,7 +47,7 @@ import {
   tablerEdit,
   tablerEraser,
   tablerFileExcel,
-  tablerPlus,
+  tablerCirclePlus,
   tablerRefresh,
   tablerRestore,
   tablerSearch,
@@ -146,7 +146,7 @@ import {
                       [theme]="'link-primary'"
                       (click)="onCreateItemButtonClick()"
                     >
-                      <ng-icon [svg]="tablerPlus" />
+                      <ng-icon [svg]="tablerCirclePlus" />
                       {{ insertText() ?? "등록" }}
                     </sd-button>
                   } @else if (parent.editMode === "inline" && parent.newItem) {
@@ -155,7 +155,7 @@ import {
                       [theme]="'link-primary'"
                       (click)="onAddItemButtonClick()"
                     >
-                      <ng-icon [svg]="tablerPlus" />
+                      <ng-icon [svg]="tablerCirclePlus" />
                       행 추가
                     </sd-button>
                   }
@@ -487,7 +487,7 @@ export class SdDataSheetControl {
   protected readonly tablerRefresh = tablerRefresh;
   protected readonly tablerDeviceFloppy = tablerDeviceFloppy;
   protected readonly tablerSearch = tablerSearch;
-  protected readonly tablerPlus = tablerPlus;
+  protected readonly tablerCirclePlus = tablerCirclePlus;
   protected readonly tablerUpload = tablerUpload;
   protected readonly tablerFileExcel = tablerFileExcel;
   protected readonly tablerEdit = tablerEdit;

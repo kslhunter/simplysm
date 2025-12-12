@@ -14,4 +14,8 @@
 ng-icon {
   --ng-icon__size: 1.25em;
   vertical-align: -0.125em !important;
+
+  svg {
+    stroke-width: 1.5 !important;
+  }
 }
