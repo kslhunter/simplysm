@@ -21,7 +21,7 @@ import { NgTemplateOutlet } from "@angular/common";
 import { SdAnchorControl } from "../../form/button/sd-anchor.control";
 import { SdActivatedModalProvider } from "./sd-modal.provider";
 import { NgIcon } from "@ng-icons/core";
-import { phosphorX } from "@ng-icons/phosphor-icons/regular";
+import { tablerX } from "@ng-icons/tabler-icons";
 
 @Component({
   selector: "sd-modal",
@@ -67,7 +67,7 @@ import { phosphorX } from "@ng-icons/phosphor-icons/regular";
             <ng-template [ngTemplateOutlet]="actionTplRef() ?? null" />
             @if (!hideCloseButton()) {
               <sd-anchor [theme]="'gray'" class="_close-button" (click)="onCloseButtonClick()">
-                <ng-icon [svg]="phosphorX" />
+                <ng-icon [svg]="tablerX" />
               </sd-anchor>
             }
           </div>
@@ -610,7 +610,7 @@ export class SdModalControl {
     document.documentElement.addEventListener("mouseup", stopDrag, false);
   }
 
-  protected readonly phosphorX = phosphorX;
+  protected readonly tablerX = tablerX;
 }
 
 export interface ISdModalConfig {

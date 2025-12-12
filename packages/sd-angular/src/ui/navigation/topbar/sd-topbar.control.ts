@@ -10,7 +10,7 @@ import { SdSidebarContainerControl } from "../sidebar/sd-sidebar-container.contr
 import { $computed } from "../../../core/utils/bindings/$computed";
 import { SdButtonControl } from "../../form/button/sd-button.control";
 import { NgIcon } from "@ng-icons/core";
-import { phosphorList } from "@ng-icons/phosphor-icons/regular";
+import { tablerMenu2 } from "@ng-icons/tabler-icons";
 
 @Component({
   selector: "sd-topbar",
@@ -28,7 +28,7 @@ import { phosphorList } from "@ng-icons/phosphor-icons/regular";
         [buttonClass]="'p-sm-default'"
         (click)="onSidebarToggleButtonClick()"
       >
-        <ng-icon [svg]="phosphorList" />
+        <ng-icon [svg]="tablerMenu2" />
       </sd-button>
     }
 
@@ -90,5 +90,5 @@ export class SdTopbarControl {
     sidebarContainerControl!.toggle.update((v) => !v);
   }
 
-  protected readonly phosphorList = phosphorList;
+  protected readonly tablerMenu2 = tablerMenu2;
 }

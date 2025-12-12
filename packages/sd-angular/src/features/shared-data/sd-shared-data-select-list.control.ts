@@ -28,7 +28,7 @@ import { SdAnchorControl } from "../../ui/form/button/sd-anchor.control";
 import { SdListControl } from "../../ui/data/list/sd-list.control";
 import { SdListItemControl } from "../../ui/data/list/sd-list-item.control";
 import { NgIcon } from "@ng-icons/core";
-import { phosphorArrowSquareOut } from "@ng-icons/phosphor-icons/regular";
+import { tablerExternalLink } from "@ng-icons/tabler-icons";
 
 @Component({
   selector: "sd-shared-data-select-list",
@@ -64,7 +64,7 @@ import { phosphorArrowSquareOut } from "@ng-icons/phosphor-icons/regular";
           </div>
           @if (modal()) {
             <sd-anchor (click)="onModalButtonClick()">
-              <ng-icon [svg]="phosphorArrowSquareOut" />
+              <ng-icon [svg]="tablerExternalLink" />
             </sd-anchor>
           }
         </div>
@@ -219,5 +219,5 @@ export class SdSharedDataSelectListControl<
     }
   }
 
-  protected readonly phosphorArrowSquareOut = phosphorArrowSquareOut;
+  protected readonly tablerExternalLink = tablerExternalLink;
 }

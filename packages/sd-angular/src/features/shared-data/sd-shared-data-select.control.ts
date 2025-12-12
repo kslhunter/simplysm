@@ -25,7 +25,7 @@ import { ISharedDataBase } from "../../core/providers/storage/sd-shared-data.pro
 import { ISdSelectModal, TSdSelectModalInfo } from "../data-view/sd-data-select-button.control";
 import { SdSelectControl, TSelectModeValue } from "../../ui/form/select/sd-select.control";
 import { NgIcon } from "@ng-icons/core";
-import { phosphorMagnifyingGlass, phosphorNotePencil } from "@ng-icons/phosphor-icons/regular";
+import { tablerEdit, tablerSearch } from "@ng-icons/tabler-icons";
 
 @Component({
   selector: "sd-shared-data-select",
@@ -61,12 +61,12 @@ import { phosphorMagnifyingGlass, phosphorNotePencil } from "@ng-icons/phosphor-
     >
       @if (modal()) {
         <sd-select-button (click)="onModalButtonClick($event)">
-          <ng-icon [svg]="phosphorMagnifyingGlass" />
+          <ng-icon [svg]="tablerSearch" />
         </sd-select-button>
       }
       @if (editModal()) {
         <sd-select-button (click)="onEditModalButtonClick($event)">
-          <ng-icon [svg]="phosphorNotePencil" />
+          <ng-icon [svg]="tablerEdit" />
         </sd-select-button>
       }
 
@@ -293,6 +293,6 @@ export class SdSharedDataSelectControl<
     await this._sdModal.showAsync(modal);
   }
 
-  protected readonly phosphorMagnifyingGlass = phosphorMagnifyingGlass;
-  protected readonly phosphorNotePencil = phosphorNotePencil;
+  protected readonly tablerSearch = tablerSearch;
+  protected readonly tablerEdit = tablerEdit;
 }

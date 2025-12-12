@@ -19,7 +19,7 @@ import {
   TSdSelectModalInfo,
 } from "../../../features/data-view/sd-data-select-button.control";
 import { NgIcon } from "@ng-icons/core";
-import { phosphorEraser, phosphorMagnifyingGlass } from "@ng-icons/phosphor-icons/regular";
+import { tablerEraser, tablerSearch } from "@ng-icons/tabler-icons";
 
 @Component({
   selector: "sd-modal-select-button",
@@ -33,7 +33,7 @@ import { phosphorEraser, phosphorMagnifyingGlass } from "@ng-icons/phosphor-icon
 
       @if (!disabled() && !isNoValue() && !required()) {
         <sd-anchor [theme]="'danger'" (click)="onCancelButtonClick()">
-          <ng-icon [svg]="phosphorEraser" />
+          <ng-icon [svg]="tablerEraser" />
         </sd-anchor>
       }
 
@@ -74,7 +74,7 @@ export class SdModalSelectButtonControl<
   size = input<"sm" | "lg">();
   selectMode = input<M>("single" as M);
 
-  searchIcon = input(phosphorMagnifyingGlass);
+  searchIcon = input(tablerSearch);
 
   isNoValue = $computed(() => {
     return (
@@ -118,5 +118,5 @@ export class SdModalSelectButtonControl<
     this.value.set((this.selectMode() === "multi" ? [] : undefined) as any);
   }
 
-  protected readonly phosphorEraser = phosphorEraser;
+  protected readonly tablerEraser = tablerEraser;
 }

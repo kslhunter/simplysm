@@ -29,11 +29,11 @@ import { $effect } from "../../core/utils/bindings/$effect";
 import { SdAnchorControl } from "../../ui/form/button/sd-anchor.control";
 import { NgIcon } from "@ng-icons/core";
 import {
-  phosphorArrowClockwise,
-  phosphorArrowsClockwise,
-  phosphorEraser,
-  phosphorFloppyDisk,
-} from "@ng-icons/phosphor-icons/regular";
+  tablerDeviceFloppy,
+  tablerEraser,
+  tablerRefresh,
+  tablerRestore,
+} from "@ng-icons/tabler-icons";
 
 @Component({
   selector: "sd-data-detail",
@@ -64,13 +64,13 @@ import {
       <ng-template #pageTopbarTpl>
         @if (parent.canEdit() && parent.submit) {
           <sd-button [theme]="'link-primary'" (click)="onSubmitButtonClick()">
-            <ng-icon [svg]="phosphorFloppyDisk" />
+            <ng-icon [svg]="tablerDeviceFloppy" />
             저장
             <small>(CTRL+S)</small>
           </sd-button>
         }
         <sd-button [theme]="'link-info'" (click)="onRefreshButtonClick()">
-          <ng-icon [svg]="phosphorArrowsClockwise" />
+          <ng-icon [svg]="tablerRefresh" />
           새로고침
           <small>(CTRL+ALT+L)</small>
         </sd-button>
@@ -83,12 +83,12 @@ import {
               @if (parent.viewType() === "control" && parent.canEdit()) {
                 @if (parent.submit) {
                   <sd-button [theme]="'primary'" (click)="onSubmitButtonClick()">
-                    <ng-icon [svg]="phosphorFloppyDisk" />
+                    <ng-icon [svg]="tablerDeviceFloppy" />
                     저장
                     <small>(CTRL+S)</small>
                   </sd-button>
                   <sd-button [theme]="'info'" (click)="onRefreshButtonClick()">
-                    <ng-icon [svg]="phosphorArrowsClockwise" />
+                    <ng-icon [svg]="tablerRefresh" />
                     새로고침
                     <small>(CTRL+ALT+L)</small>
                   </sd-button>
@@ -100,12 +100,12 @@ import {
                 ) {
                   @if (parent.dataInfo()?.isDeleted) {
                     <sd-button [theme]="'warning'" (click)="onRestoreButtonClick()">
-                      <ng-icon [svg]="phosphorArrowClockwise" />
+                      <ng-icon [svg]="tablerRestore" />
                       복구
                     </sd-button>
                   } @else {
                     <sd-button [theme]="'danger'" (click)="onDeleteButtonClick()">
-                      <ng-icon [svg]="phosphorEraser" />
+                      <ng-icon [svg]="tablerEraser" />
                       삭제
                     </sd-button>
                   }
@@ -185,7 +185,7 @@ import {
             (click)="onRefreshButtonClick()"
             title="새로고침(CTRL+ALT+L)"
           >
-            <ng-icon [svg]="phosphorArrowsClockwise" />
+            <ng-icon [svg]="tablerRefresh" />
           </sd-anchor>
         </ng-template>
       }
@@ -230,10 +230,10 @@ export class SdDataDetailControl {
     await this.parent.doSubmit({ permCheck: true });
   }
 
-  protected readonly phosphorFloppyDisk = phosphorFloppyDisk;
-  protected readonly phosphorArrowClockwise = phosphorArrowClockwise;
-  protected readonly phosphorEraser = phosphorEraser;
-  protected readonly phosphorArrowsClockwise = phosphorArrowsClockwise;
+  protected readonly tablerDeviceFloppy = tablerDeviceFloppy;
+  protected readonly tablerRefresh = tablerRefresh;
+  protected readonly tablerRestore = tablerRestore;
+  protected readonly tablerEraser = tablerEraser;
 }
 
 @Directive()

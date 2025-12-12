@@ -13,7 +13,7 @@ import { SdDropdownPopupControl } from "../../ui/overlay/dropdown/sd-dropdown-po
 import { SdListControl } from "../../ui/data/list/sd-list.control";
 import { SdListItemControl } from "../../ui/data/list/sd-list-item.control";
 import { NgIcon } from "@ng-icons/core";
-import { phosphorCheck, phosphorMountains } from "@ng-icons/phosphor-icons/regular";
+import { tablerCheck, tablerColorSwatch } from "@ng-icons/tabler-icons";
 
 @Component({
   selector: "sd-theme-selector",
@@ -31,7 +31,7 @@ import { phosphorCheck, phosphorMountains } from "@ng-icons/phosphor-icons/regul
   template: `
     <sd-dropdown>
       <sd-button [theme]="'link-gray'">
-        <ng-icon [svg]="phosphorMountains" />
+        <ng-icon [svg]="tablerColorSwatch" />
         <span>{{ theme() }}</span>
         @if (dark()) {
           <span>-dark</span>
@@ -42,14 +42,14 @@ import { phosphorCheck, phosphorMountains } from "@ng-icons/phosphor-icons/regul
         <sd-list>
           <sd-list-item
             [selected]="theme() === 'compact' && !dark()"
-            [selectedIcon]="phosphorCheck"
+            [selectedIcon]="tablerCheck"
             (click)="theme.set('compact'); dark.set(false)"
           >
             compact
           </sd-list-item>
           <sd-list-item
             [selected]="theme() === 'compact' && dark()"
-            [selectedIcon]="phosphorCheck"
+            [selectedIcon]="tablerCheck"
             (click)="theme.set('compact'); dark.set(true)"
           >
             compact-dark
@@ -75,6 +75,6 @@ export class SdThemeSelectorControl {
     });
   }
 
-  protected readonly phosphorMountains = phosphorMountains;
-  protected readonly phosphorCheck = phosphorCheck;
+  protected readonly tablerColorSwatch = tablerColorSwatch;
+  protected readonly tablerCheck = tablerCheck;
 }

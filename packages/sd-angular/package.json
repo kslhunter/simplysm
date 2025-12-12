@@ -21,7 +21,7 @@
     "@angular/router": "^20.3.15",
     "@angular/service-worker": "^20.3.15",
     "@ng-icons/core": "^32.5.0",
-    "@ng-icons/phosphor-icons": "^32.5.0",
+    "@ng-icons/tabler-icons": "^32.4.0",
     "@simplysm/sd-core-browser": "12.16.1",
     "@simplysm/sd-core-common": "12.16.1",
     "@simplysm/sd-excel": "12.16.1",

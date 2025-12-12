@@ -9,7 +9,7 @@ import { $signal } from "../../core/utils/bindings/$signal";
 import { transformBoolean } from "../../core/utils/transforms/transformBoolean";
 import { ISdPermission } from "../../core/providers/app/sd-app-structure.provider";
 import { SdAnchorControl } from "../../ui/form/button/sd-anchor.control";
-import { phosphorCaretRight } from "@ng-icons/phosphor-icons/regular";
+import { tablerChevronRight } from "@ng-icons/tabler-icons";
 
 /**
  * 권한 테이블 컴포넌트
@@ -160,7 +160,7 @@ import { phosphorCaretRight } from "@ng-icons/phosphor-icons/regular";
           <td class="_title">
             @if (item.children && item.children.length > 0) {
               <sd-anchor (click)="onPermCollapseToggle(item)">
-                <sd-collapse-icon [icon]="phosphorCaretRight" [open]="getIsPermCollapsed(item)" />
+                <sd-collapse-icon [icon]="tablerChevronRight" [open]="getIsPermCollapsed(item)" />
                 {{ item.title }}
               </sd-anchor>
             } @else {
@@ -389,5 +389,5 @@ export class SdPermissionTableControl<TModule> {
     depth: number;
     parent: ISdPermission<TModule> | undefined;
   };
-  protected readonly phosphorCaretRight = phosphorCaretRight;
+  protected readonly tablerChevronRight = tablerChevronRight;
 }

@@ -10,3 +10,8 @@
 @use "controls/form-box";
 @use "controls/form-table";
 @use "controls/table";
+
+ng-icon {
+  --ng-icon__size: 1.25em;
+  vertical-align: -0.125em !important;
+}

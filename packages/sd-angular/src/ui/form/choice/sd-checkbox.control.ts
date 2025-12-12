@@ -3,7 +3,7 @@ import { setupRipple } from "../../../core/utils/setups/setupRipple";
 import { transformBoolean } from "../../../core/utils/transforms/transformBoolean";
 import { setupModelHook } from "../../../core/utils/setups/setupModelHook";
 import { NgIcon } from "@ng-icons/core";
-import { phosphorCheck } from "@ng-icons/phosphor-icons/regular";
+import { tablerCheck } from "@ng-icons/tabler-icons";
 
 @Component({
   selector: "sd-checkbox",
@@ -250,7 +250,7 @@ export class SdCheckboxControl {
   value = model(false);
   canChangeFn = input<(item: boolean) => boolean | Promise<boolean>>(() => true);
 
-  icon = input(phosphorCheck);
+  icon = input(tablerCheck);
   radio = input(false, { transform: transformBoolean });
   disabled = input(false, { transform: transformBoolean });
 

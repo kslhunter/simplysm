@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
 import { $computed } from "../../../core/utils/bindings/$computed";
 import { transformBoolean } from "../../../core/utils/transforms/transformBoolean";
-import { phosphorCaretDown } from "@ng-icons/phosphor-icons/regular";
 import { NgIcon } from "@ng-icons/core";
+import { tablerChevronDown } from "@ng-icons/tabler-icons";
 
 @Component({
   selector: "sd-collapse-icon",
@@ -31,7 +31,7 @@ import { NgIcon } from "@ng-icons/core";
   },
 })
 export class SdCollapseIconControl {
-  icon = input(phosphorCaretDown);
+  icon = input(tablerChevronDown);
   open = input(false, { transform: transformBoolean });
   openRotate = input(90);
 

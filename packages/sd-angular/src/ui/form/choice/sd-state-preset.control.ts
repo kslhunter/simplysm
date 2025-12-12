@@ -14,7 +14,7 @@ import { $signal } from "../../../core/utils/bindings/$signal";
 import { SdGapControl } from "../../layout/sd-gap.control";
 import { SdAnchorControl } from "../button/sd-anchor.control";
 import { NgIcon } from "@ng-icons/core";
-import { phosphorFloppyDisk, phosphorStar, phosphorX } from "@ng-icons/phosphor-icons/regular";
+import { tablerDeviceFloppy, tablerStar, tablerX } from "@ng-icons/tabler-icons";
 
 @Component({
   selector: "sd-state-preset",
@@ -24,7 +24,7 @@ import { phosphorFloppyDisk, phosphorStar, phosphorX } from "@ng-icons/phosphor-
   imports: [SdGapControl, SdAnchorControl, NgIcon],
   template: `
     <sd-anchor (click)="onAddButtonClick()">
-      <ng-icon [svg]="phosphorStar" class="tx-theme-warning-default" />
+      <ng-icon [svg]="tablerStar" class="tx-theme-warning-default" />
     </sd-anchor>
     <sd-gap [width]="'sm'"></sd-gap>
     @for (preset of presets(); track preset.name) {
@@ -33,10 +33,10 @@ import { phosphorFloppyDisk, phosphorStar, phosphorX } from "@ng-icons/phosphor-
           {{ preset.name }}
         </sd-anchor>
         <sd-anchor (click)="onSaveButtonClick(preset)">
-          <ng-icon [svg]="phosphorFloppyDisk" [size]="'0.875em'" />
+          <ng-icon [svg]="tablerDeviceFloppy" [size]="'1em'" />
         </sd-anchor>
         <sd-anchor (click)="onRemoveButtonClick(preset)">
-          <ng-icon [svg]="phosphorX" [size]="'0.875em'" />
+          <ng-icon [svg]="tablerX" [size]="'1em'" />
         </sd-anchor>
       </div>
       <sd-gap [width]="'sm'"></sd-gap>
@@ -150,9 +150,9 @@ export class SdStatePresetControl {
     this._sdToast.info(`현재 상태가 ${preset.name}에 저장되었습니다.`);
   }
 
-  protected readonly phosphorStar = phosphorStar;
-  protected readonly phosphorFloppyDisk = phosphorFloppyDisk;
-  protected readonly phosphorX = phosphorX;
+  protected readonly tablerStar = tablerStar;
+  protected readonly tablerX = tablerX;
+  protected readonly tablerDeviceFloppy = tablerDeviceFloppy;
 }
 
 export interface ISdStatePreset {

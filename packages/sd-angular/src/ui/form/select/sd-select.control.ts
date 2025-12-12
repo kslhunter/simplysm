@@ -25,7 +25,7 @@ import { SdDropdownControl } from "../../overlay/dropdown/sd-dropdown.control";
 import { SdDropdownPopupControl } from "../../overlay/dropdown/sd-dropdown-popup.control";
 import { $afterRenderEffect } from "../../../core/utils/bindings/$afterRenderEffect";
 import { SdAnchorControl } from "../button/sd-anchor.control";
-import { phosphorCaretDownFill } from "@ng-icons/phosphor-icons/fill";
+import { tablerCaretDown } from "@ng-icons/tabler-icons";
 import { NgIcon } from "@ng-icons/core";
 
 @Component({
@@ -54,7 +54,7 @@ import { NgIcon } from "@ng-icons/core";
       <div class="_sd-select-control" [sd-ripple]="!disabled()">
         <div #contentEl class="_sd-select-control-content"></div>
         <div class="_sd-select-control-icon">
-          <ng-icon [svg]="phosphorCaretDownFill" />
+          <ng-icon [svg]="tablerCaretDown" />
         </div>
       </div>
 
@@ -436,7 +436,7 @@ export class SdSelectControl<M extends "single" | "multi", T> {
     items: T[];
     depth: number;
   };
-  protected readonly phosphorCaretDownFill = phosphorCaretDownFill;
+  protected readonly tablerCaretDown = tablerCaretDown;
 }
 
 export type TSelectModeValue<T> = {

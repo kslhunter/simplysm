@@ -20,7 +20,7 @@ import { SdKanbanBoardControl } from "./sd-kanban-board.control";
 import { SdKanbanControl } from "./sd-kanban.control";
 import { SdAnchorControl } from "../../form/button/sd-anchor.control";
 import { NgIcon } from "@ng-icons/core";
-import { phosphorEye, phosphorEyeSlash } from "@ng-icons/phosphor-icons/regular";
+import { tablerEye, tablerEyeOff } from "@ng-icons/tabler-icons";
 
 @Component({
   selector: "sd-kanban-lane",
@@ -40,7 +40,7 @@ import { phosphorEye, phosphorEyeSlash } from "@ng-icons/phosphor-icons/regular"
       <div>
         @if (useCollapse()) {
           <sd-anchor [theme]="'info'" (click)="onToggleCollapseButtonClick()">
-            <ng-icon [svg]="collapse() ? phosphorEyeSlash : phosphorEye" />
+            <ng-icon [svg]="collapse() ? tablerEyeOff : tablerEye" />
           </sd-anchor>
         }
 
@@ -200,6 +200,6 @@ export class SdKanbanLaneControl<L, T> {
     this._boardControl.onDropTo(this);
   }
 
-  protected readonly phosphorEyeSlash = phosphorEyeSlash;
-  protected readonly phosphorEye = phosphorEye;
+  protected readonly tablerEyeOff = tablerEyeOff;
+  protected readonly tablerEye = tablerEye;
 }

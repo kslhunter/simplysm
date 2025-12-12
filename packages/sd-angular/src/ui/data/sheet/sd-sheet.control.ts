@@ -36,13 +36,13 @@ import { ISdSheetHeaderDef } from "./types/ISdSheetHeaderDef";
 import { ISdSheetItemKeydownEventParam } from "./types/ISdSheetItemKeydownEventParam";
 import { NgIcon } from "@ng-icons/core";
 import {
-  phosphorArrowRight,
-  phosphorArrowsDownUp,
-  phosphorGear,
-  phosphorSortAscending,
-  phosphorSortDescending,
-} from "@ng-icons/phosphor-icons/regular";
-import { phosphorCaretRightFill } from "@ng-icons/phosphor-icons/fill";
+  tablerArrowRight,
+  tablerArrowsSort,
+  tablerCaretRight,
+  tablerSettings,
+  tablerSortAscending,
+  tablerSortDescending,
+} from "@ng-icons/tabler-icons";
 
 @Component({
   selector: "sd-sheet",
@@ -75,7 +75,7 @@ import { phosphorCaretRightFill } from "@ng-icons/phosphor-icons/fill";
             [theme]="'link-primary'"
             (click)="onConfigButtonClick()"
           >
-            <ng-icon [svg]="phosphorGear" />
+            <ng-icon [svg]="tablerSettings" />
           </sd-button>
         }
         @if (effectivePageCount() > 1) {
@@ -124,7 +124,7 @@ import { phosphorCaretRightFill } from "@ng-icons/phosphor-icons/fill";
                     (sdResize)="onHeaderLastRowCellResize($event, -1)"
                   >
                     <ng-icon
-                      [svg]="phosphorCaretRightFill"
+                      [svg]="tablerCaretRight"
                       [class.tx-theme-primary-default]="expandingManager.isAllExpanded()"
                       [style.transform]="
                         expandingManager.isAllExpanded() ? 'rotate(90deg)' : undefined
@@ -187,11 +187,11 @@ import { phosphorCaretRightFill } from "@ng-icons/phosphor-icons/fill";
                           <div class="_sort-icon">
                             @let _def = sortingManager.defMap().get(headerCell.control.key());
                             @if (_def?.desc === false) {
-                              <ng-icon [svg]="phosphorSortAscending" />
+                              <ng-icon [svg]="tablerSortAscending" />
                             } @else if (_def?.desc === true) {
-                              <ng-icon [svg]="phosphorSortDescending" />
+                              <ng-icon [svg]="tablerSortDescending" />
                             } @else {
-                              <ng-icon [svg]="phosphorArrowsDownUp" class="tx-trans-lightest" />
+                              <ng-icon [svg]="tablerArrowsSort" class="tx-trans-lightest" />
                             }
                             @let _idxText = _def?.indexText;
                             @if (_idxText) {
@@ -268,7 +268,7 @@ import { phosphorCaretRightFill } from "@ng-icons/phosphor-icons/fill";
                       (pointerdown)="selectionManager.toggle(item)"
                       [attr.title]="_selectable"
                     >
-                      <ng-icon [svg]="phosphorArrowRight" />
+                      <ng-icon [svg]="tablerArrowRight" />
                     </sd-anchor>
                   }
                 }
@@ -289,7 +289,7 @@ import { phosphorCaretRightFill } from "@ng-icons/phosphor-icons/fill";
                   }
                   @if (itemExpDef.hasChildren) {
                     <ng-icon
-                      [svg]="phosphorCaretRightFill"
+                      [svg]="tablerCaretRight"
                       [style.transform]="
                         expandedItems().includes(item) ? 'rotate(90deg)' : undefined
                       "
@@ -956,10 +956,10 @@ export class SdSheetControl<T> {
     this.onBlurCaptureForFocusIndicator();
   }
 
-  protected readonly phosphorGear = phosphorGear;
-  protected readonly phosphorCaretRightFill = phosphorCaretRightFill;
-  protected readonly phosphorSortAscending = phosphorSortAscending;
-  protected readonly phosphorSortDescending = phosphorSortDescending;
-  protected readonly phosphorArrowsDownUp = phosphorArrowsDownUp;
-  protected readonly phosphorArrowRight = phosphorArrowRight;
+  protected readonly tablerSettings = tablerSettings;
+  protected readonly tablerCaretRight = tablerCaretRight;
+  protected readonly tablerArrowsSort = tablerArrowsSort;
+  protected readonly tablerSortDescending = tablerSortDescending;
+  protected readonly tablerSortAscending = tablerSortAscending;
+  protected readonly tablerArrowRight = tablerArrowRight;
 }

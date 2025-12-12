@@ -10,7 +10,7 @@ import { SdDropdownPopupControl } from "../../overlay/dropdown/sd-dropdown-popup
 import { SdListControl } from "../../data/list/sd-list.control";
 import { SdListItemControl } from "../../data/list/sd-list-item.control";
 import { NgIcon } from "@ng-icons/core";
-import { phosphorCaretDownFill } from "@ng-icons/phosphor-icons/fill";
+import { tablerCaretDown } from "@ng-icons/tabler-icons";
 
 @Component({
   selector: "sd-topbar-menu",
@@ -39,7 +39,7 @@ import { phosphorCaretDownFill } from "@ng-icons/phosphor-icons/fill";
             <ng-icon [svg]="menu.icon" />
           }
           {{ menu.title }}
-          <ng-icon [svg]="phosphorCaretDownFill" />
+          <ng-icon [svg]="tablerCaretDown" />
         </sd-button>
 
         <sd-dropdown-popup>
@@ -145,7 +145,7 @@ export class SdTopbarMenuControl {
     dropdownEl: SdDropdownControl;
   };
 
-  protected readonly phosphorCaretDownFill = phosphorCaretDownFill;
+  protected readonly tablerCaretDown = tablerCaretDown;
 }
 
 export interface ISdTopbarMenu {

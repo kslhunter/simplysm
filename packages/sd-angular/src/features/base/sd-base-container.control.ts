@@ -20,7 +20,7 @@ import { TSdViewType, useViewTypeSignal } from "../../core/utils/signals/useView
 import { transformBoolean } from "../../core/utils/transforms/transformBoolean";
 import { injectParent } from "../../core/utils/injections/injectParent";
 import { NgIcon } from "@ng-icons/core";
-import { phosphorWarning } from "@ng-icons/phosphor-icons/regular";
+import { tablerAlertTriangle } from "@ng-icons/tabler-icons";
 
 @Component({
   selector: "sd-base-container",
@@ -40,7 +40,7 @@ import { phosphorWarning } from "@ng-icons/phosphor-icons/regular";
         @if (restricted()) {
           <div class="fill tx-theme-gray-light p-xxl tx-center">
             <br />
-            <ng-icon [svg]="phosphorWarning" [size]="'5em'" />
+            <ng-icon [svg]="tablerAlertTriangle" [size]="'5em'" />
             <br />
             <br />
             '{{ modalOrPageTitle() }}'에 대한 사용권한이 없습니다. 시스템 관리자에게 문의하세요.
@@ -105,5 +105,6 @@ export class SdBaseContainerControl {
   restricted = input(false, { transform: transformBoolean });
   busy = input(false, { transform: transformBoolean });
   busyMessage = input<string>();
-  protected readonly phosphorWarning = phosphorWarning;
+
+  protected readonly tablerAlertTriangle = tablerAlertTriangle;
 }

@@ -43,16 +43,16 @@ import { $effect } from "../../core/utils/bindings/$effect";
 import { SdAnchorControl } from "../../ui/form/button/sd-anchor.control";
 import { NgIcon } from "@ng-icons/core";
 import {
-  phosphorArrowClockwise,
-  phosphorArrowsClockwise,
-  phosphorEraser,
-  phosphorFloppyDisk,
-  phosphorMagnifyingGlass,
-  phosphorMicrosoftExcelLogo,
-  phosphorNotePencil,
-  phosphorPlus,
-  phosphorUploadSimple,
-} from "@ng-icons/phosphor-icons/regular";
+  tablerDeviceFloppy,
+  tablerEdit,
+  tablerEraser,
+  tablerFileExcel,
+  tablerPlus,
+  tablerRefresh,
+  tablerRestore,
+  tablerSearch,
+  tablerUpload,
+} from "@ng-icons/tabler-icons";
 
 @Component({
   selector: "sd-data-sheet",
@@ -86,13 +86,13 @@ import {
       <ng-template #pageTopbarTpl>
         @if (parent.canEdit() && parent.submit) {
           <sd-button [theme]="'link-primary'" (click)="onSubmitButtonClick()">
-            <ng-icon [svg]="phosphorFloppyDisk" />
+            <ng-icon [svg]="tablerDeviceFloppy" />
             저장
             <small>(CTRL+S)</small>
           </sd-button>
         }
         <sd-button [theme]="'link-info'" (click)="onRefreshButtonClick()">
-          <ng-icon [svg]="phosphorArrowsClockwise" />
+          <ng-icon [svg]="tablerRefresh" />
           새로고침
           <small>(CTRL+ALT+L)</small>
         </sd-button>
@@ -105,12 +105,12 @@ import {
           @if (parent.canEdit() && parent.submit && parent.viewType() === "control") {
             <div class="flex-row gap-sm p-default bdb bdb-theme-gray-lightest">
               <sd-button [size]="'sm'" [theme]="'primary'" (click)="onSubmitButtonClick()">
-                <ng-icon [svg]="phosphorFloppyDisk" />
+                <ng-icon [svg]="tablerDeviceFloppy" />
                 저장
                 <small>(CTRL+S)</small>
               </sd-button>
               <sd-button [size]="'sm'" [theme]="'info'" (click)="onRefreshButtonClick()">
-                <ng-icon [svg]="phosphorArrowsClockwise" />
+                <ng-icon [svg]="tablerRefresh" />
                 새로고침
                 <small>(CTRL+ALT+L)</small>
               </sd-button>
@@ -126,7 +126,7 @@ import {
                 <div class="form-box-inline">
                   <div>
                     <sd-button [type]="'submit'" [theme]="'info'">
-                      <ng-icon [svg]="phosphorMagnifyingGlass" />
+                      <ng-icon [svg]="tablerSearch" />
                       조회
                     </sd-button>
                   </div>
@@ -146,7 +146,7 @@ import {
                       [theme]="'link-primary'"
                       (click)="onCreateItemButtonClick()"
                     >
-                      <ng-icon [svg]="phosphorPlus" />
+                      <ng-icon [svg]="tablerPlus" />
                       {{ insertText() ?? "등록" }}
                     </sd-button>
                   } @else if (parent.editMode === "inline" && parent.newItem) {
@@ -155,7 +155,7 @@ import {
                       [theme]="'link-primary'"
                       (click)="onAddItemButtonClick()"
                     >
-                      <ng-icon [svg]="phosphorPlus" />
+                      <ng-icon [svg]="tablerPlus" />
                       행 추가
                     </sd-button>
                   }
@@ -192,7 +192,7 @@ import {
                       [theme]="'link-success'"
                       (click)="onUploadExcelButtonClick()"
                     >
-                      <ng-icon [svg]="phosphorUploadSimple" />
+                      <ng-icon [svg]="tablerUpload" />
                       엑셀 업로드
                     </sd-button>
                   }
@@ -204,7 +204,7 @@ import {
                     [theme]="'link-success'"
                     (click)="onDownloadExcelButtonClick()"
                   >
-                    <ng-icon [svg]="phosphorMicrosoftExcelLogo" />
+                    <ng-icon [svg]="tablerFileExcel" />
                     엑셀 다운로드
                   </sd-button>
                 }
@@ -296,7 +296,7 @@ import {
                         class="flex-row"
                       >
                         <div class="p-xs-sm">
-                          <ng-icon [svg]="phosphorNotePencil" />
+                          <ng-icon [svg]="tablerEdit" />
                         </div>
                         <div class="flex-fill">
                           <ng-template
@@ -388,7 +388,7 @@ import {
             (click)="onRefreshButtonClick()"
             title="새로고침(CTRL+ALT+L)"
           >
-            <ng-icon [svg]="phosphorArrowsClockwise" />
+            <ng-icon [svg]="tablerRefresh" />
           </sd-anchor>
         </ng-template>
       }
@@ -403,8 +403,8 @@ export class SdDataSheetControl {
   insertText = input<string>();
   deleteText = input<string>();
   restoreText = input<string>();
-  deleteIcon = input(phosphorEraser);
-  restoreIcon = input(phosphorArrowClockwise);
+  deleteIcon = input(tablerEraser);
+  restoreIcon = input(tablerRestore);
 
   pageTopbarTplRef = contentChild("pageTopbarTpl", { read: TemplateRef });
   prevTplRef = contentChild("prevTpl", { read: TemplateRef });
@@ -484,14 +484,13 @@ export class SdDataSheetControl {
     this.parent.doModalCancel();
   }
 
-  protected readonly phosphorFloppyDisk = phosphorFloppyDisk;
-  protected readonly phosphorArrowClockwise = phosphorArrowClockwise;
-  protected readonly phosphorPlus = phosphorPlus;
-  protected readonly phosphorMagnifyingGlass = phosphorMagnifyingGlass;
-  protected readonly phosphorArrowsClockwise = phosphorArrowsClockwise;
-  protected readonly phosphorUploadSimple = phosphorUploadSimple;
-  protected readonly phosphorMicrosoftExcelLogo = phosphorMicrosoftExcelLogo;
-  protected readonly phosphorNotePencil = phosphorNotePencil;
+  protected readonly tablerRefresh = tablerRefresh;
+  protected readonly tablerDeviceFloppy = tablerDeviceFloppy;
+  protected readonly tablerSearch = tablerSearch;
+  protected readonly tablerPlus = tablerPlus;
+  protected readonly tablerUpload = tablerUpload;
+  protected readonly tablerFileExcel = tablerFileExcel;
+  protected readonly tablerEdit = tablerEdit;
 }
 
 @Directive()

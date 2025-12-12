@@ -18,8 +18,8 @@ import { ISdModal } from "../../overlay/modal/sd-modal.provider";
 import { $effect } from "../../../core/utils/bindings/$effect";
 import { $signal } from "../../../core/utils/bindings/$signal";
 import { SdAnchorControl } from "../../form/button/sd-anchor.control";
-import { phosphorCaretDown, phosphorCaretUp, phosphorX } from "@ng-icons/phosphor-icons/regular";
 import { NgIcon } from "@ng-icons/core";
+import { tablerChevronDown, tablerChevronUp, tablerX } from "@ng-icons/tabler-icons";
 
 @Component({
   selector: "sd-sheet-config-modal",
@@ -76,7 +76,7 @@ import { NgIcon } from "@ng-icons/core";
                     [disabled]="index === 0 || (!item.fixed && items()[index - 1].fixed)"
                     (click)="onDisplayOrderUpButtonClick(item)"
                   >
-                    <ng-icon [svg]="phosphorCaretUp" />
+                    <ng-icon [svg]="tablerChevronUp" />
                   </sd-anchor>
                   <sd-anchor
                     [disabled]="
@@ -84,7 +84,7 @@ import { NgIcon } from "@ng-icons/core";
                     "
                     (click)="onDisplayOrderDownButtonClick(item)"
                   >
-                    <ng-icon [svg]="phosphorCaretDown" />
+                    <ng-icon [svg]="tablerChevronDown" />
                   </sd-anchor>
                 </div>
               </ng-template>
@@ -128,7 +128,7 @@ import { NgIcon } from "@ng-icons/core";
                     [inset]="true"
                     [(value)]="item.hidden"
                     (valueChange)="items.$mark()"
-                    [icon]="phosphorX"
+                    [icon]="tablerX"
                     [theme]="'danger'"
                   ></sd-checkbox>
                 </div>
@@ -261,9 +261,9 @@ export class SdSheetConfigModal<T> implements ISdModal<ISdSheetConfig> {
     }
   }
 
-  protected readonly phosphorCaretUp = phosphorCaretUp;
-  protected readonly phosphorCaretDown = phosphorCaretDown;
-  protected readonly phosphorX = phosphorX;
+  protected readonly tablerChevronUp = tablerChevronUp;
+  protected readonly tablerChevronDown = tablerChevronDown;
+  protected readonly tablerX = tablerX;
 }
 
 interface IItem {

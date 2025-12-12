@@ -13,7 +13,7 @@ import { transformBoolean } from "../../../core/utils/transforms/transformBoolea
 import { SdButtonControl } from "../button/sd-button.control";
 import { SdTextfieldControl } from "./sd-textfield.control";
 import { NgIcon } from "@ng-icons/core";
-import { phosphorArrowLeft, phosphorEraser } from "@ng-icons/phosphor-icons/regular";
+import { tablerArrowLeft, tablerEraser } from "@ng-icons/tabler-icons";
 
 @Component({
   selector: "sd-numpad",
@@ -63,7 +63,7 @@ import { phosphorArrowLeft, phosphorEraser } from "@ng-icons/phosphor-icons/regu
               [buttonClass]="'tx-theme-danger-default'"
               (click)="onButtonClick('C')"
             >
-              <ng-icon [svg]="phosphorEraser" />
+              <ng-icon [svg]="tablerEraser" />
             </sd-button>
           </td>
           <td>
@@ -72,7 +72,7 @@ import { phosphorArrowLeft, phosphorEraser } from "@ng-icons/phosphor-icons/regu
               [buttonClass]="'tx-theme-warning-default'"
               (click)="onButtonClick('BS')"
             >
-              <ng-icon [svg]="phosphorArrowLeft" />
+              <ng-icon [svg]="tablerArrowLeft" />
             </sd-button>
           </td>
         </tr>
@@ -170,6 +170,6 @@ export class SdNumpadControl {
     }
   }
 
-  protected readonly phosphorEraser = phosphorEraser;
-  protected readonly phosphorArrowLeft = phosphorArrowLeft;
+  protected readonly tablerEraser = tablerEraser;
+  protected readonly tablerArrowLeft = tablerArrowLeft;
 }

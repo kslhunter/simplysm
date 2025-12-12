@@ -28,7 +28,7 @@ import { SdAnchorControl } from "../../ui/form/button/sd-anchor.control";
 import { SdButtonControl } from "../../ui/form/button/sd-button.control";
 import { $signal } from "../../core/utils/bindings/$signal";
 import { NgIcon } from "@ng-icons/core";
-import { phosphorEraser, phosphorMagnifyingGlass } from "@ng-icons/phosphor-icons/regular";
+import { tablerEraser, tablerSearch } from "@ng-icons/tabler-icons";
 
 @Component({
   selector: "sd-data-select-button",
@@ -60,13 +60,13 @@ import { phosphorEraser, phosphorMagnifyingGlass } from "@ng-icons/phosphor-icon
 
       @if (!parent.disabled() && !parent.isNoValue() && !parent.required()) {
         <sd-anchor [theme]="'danger'" (click)="onCancelButtonClick()">
-          <ng-icon [svg]="phosphorEraser" />
+          <ng-icon [svg]="tablerEraser" />
         </sd-anchor>
       }
 
       @if (!parent.disabled()) {
         <sd-button (click)="onModalButtonClick($event)" [inset]="true">
-          <ng-icon [svg]="phosphorMagnifyingGlass" />
+          <ng-icon [svg]="tablerSearch" />
         </sd-button>
       }
     </sd-additional-button>
@@ -105,8 +105,8 @@ export class SdDataSelectButtonControl {
     await this.parent.doInitialValue();
   }
 
-  protected readonly phosphorEraser = phosphorEraser;
-  protected readonly phosphorMagnifyingGlass = phosphorMagnifyingGlass;
+  protected readonly tablerEraser = tablerEraser;
+  protected readonly tablerSearch = tablerSearch;
 }
 
 @Directive()

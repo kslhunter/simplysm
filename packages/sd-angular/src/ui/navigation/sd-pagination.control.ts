@@ -3,11 +3,11 @@ import { $computed } from "../../core/utils/bindings/$computed";
 import { SdAnchorControl } from "../form/button/sd-anchor.control";
 import { NgIcon } from "@ng-icons/core";
 import {
-  phosphorCaretDoubleLeft,
-  phosphorCaretDoubleRight,
-  phosphorCaretLeft,
-  phosphorCaretRight,
-} from "@ng-icons/phosphor-icons/regular";
+  tablerChevronLeft,
+  tablerChevronRight,
+  tablerChevronsLeft,
+  tablerChevronsRight,
+} from "@ng-icons/tabler-icons";
 
 @Component({
   selector: "sd-pagination",
@@ -20,10 +20,10 @@ import {
   },
   template: `
     <sd-anchor [disabled]="!hasPrev()" (click)="onGoFirstClick()">
-      <ng-icon [svg]="phosphorCaretDoubleLeft" />
+      <ng-icon [svg]="tablerChevronsLeft" />
     </sd-anchor>
     <sd-anchor [disabled]="!hasPrev()" (click)="onPrevClick()">
-      <ng-icon [svg]="phosphorCaretLeft" />
+      <ng-icon [svg]="tablerChevronLeft" />
     </sd-anchor>
     @for (displayPage of displayPages(); track displayPage) {
       <sd-anchor
@@ -34,10 +34,10 @@ import {
       </sd-anchor>
     }
     <sd-anchor [disabled]="!hasNext()" (click)="onNextClick()">
-      <ng-icon [svg]="phosphorCaretRight" />
+      <ng-icon [svg]="tablerChevronRight" />
     </sd-anchor>
     <sd-anchor [disabled]="!hasNext()" (click)="onGoLastClick()">
-      <ng-icon [svg]="phosphorCaretDoubleRight" />
+      <ng-icon [svg]="tablerChevronsRight" />
     </sd-anchor>
   `,
   styles: [
@@ -102,8 +102,8 @@ export class SdPaginationControl {
     this.currentPage.set(page);
   }
 
-  protected readonly phosphorCaretDoubleLeft = phosphorCaretDoubleLeft;
-  protected readonly phosphorCaretLeft = phosphorCaretLeft;
-  protected readonly phosphorCaretRight = phosphorCaretRight;
-  protected readonly phosphorCaretDoubleRight = phosphorCaretDoubleRight;
+  protected readonly tablerChevronsLeft = tablerChevronsLeft;
+  protected readonly tablerChevronLeft = tablerChevronLeft;
+  protected readonly tablerChevronRight = tablerChevronRight;
+  protected readonly tablerChevronsRight = tablerChevronsRight;
 }
