@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  ViewEncapsulation,
+} from "@angular/core";
 import { transformBoolean } from "../../../core/utils/transforms/transformBoolean";
 
 @Component({

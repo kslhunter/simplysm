@@ -87,7 +87,7 @@ export class SqliteDbConn extends EventEmitter implements IDbConn {
     });
   }
 
-  async beginTransactionAsync(isolationLevel?: ISOLATION_LEVEL) {
+  async beginTransactionAsync(_isolationLevel?: ISOLATION_LEVEL) {
     if (!this._conn || !this.isConnected) {
       throw new Error("'Connection'이 연결되어있지 않습니다.");
     }

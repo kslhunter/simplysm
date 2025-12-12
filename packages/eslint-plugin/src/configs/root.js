@@ -3,6 +3,7 @@ import tseslint from "typescript-eslint";
 import plugin from "../plugin.js";
 import ngeslint from "angular-eslint";
 import importPlugin from "eslint-plugin-import";
+import unusedImportsPlugin from "eslint-plugin-unused-imports";
 
 export default [
   {
@@ -24,6 +25,7 @@ export default [
     plugins: {
       "import": importPlugin,
       "@simplysm": plugin,
+      "unused-imports": unusedImportsPlugin,
     },
     rules: {
       // 기본
@@ -47,8 +49,20 @@ export default [
       "no-shadow": ["error"],
       "no-duplicate-imports": ["error"],
       "no-unused-expressions": ["error"],
-      "no-unused-vars": ["error"],
+      // "no-unused-vars": ["error"],
       "no-undef": ["error"],
+
+      // unused
+      "unused-imports/no-unused-imports": "error",
+      "unused-imports/no-unused-vars": [
+        "error",
+        {
+          vars: "all",
+          varsIgnorePattern: "^_",
+          args: "after-used",
+          argsIgnorePattern: "^_",
+        },
+      ],
 
       // import
       "import/no-extraneous-dependencies": [
@@ -76,6 +90,7 @@ export default [
       "@simplysm": plugin,
       "@angular-eslint": ngeslint.tsPlugin,
       "import": importPlugin,
+      "unused-imports": unusedImportsPlugin,
     },
     /*settings: {
       "import/resolver": {
@@ -126,7 +141,7 @@ export default [
       "@typescript-eslint/prefer-return-this-type": ["error"],
       "@typescript-eslint/typedef": ["error"],
       "@typescript-eslint/no-unused-expressions": ["error"],
-      "@typescript-eslint/no-unused-vars": ["error", { args: "none" }],
+      // "@typescript-eslint/no-unused-vars": ["error", { args: "none" }],
       "@typescript-eslint/strict-boolean-expressions": [
         "error",
         {
@@ -218,6 +233,20 @@ export default [
       "@simplysm/ts-no-throw-not-implement-error": ["warn"],
       "@simplysm/no-subpath-imports-from-simplysm": ["error"],
       "@simplysm/no-hard-private": ["error"],
+      "@simplysm/ts-no-unused-injects": ["error"],
+      "@simplysm/ts-no-unused-protected-readonly": ["error"],
+
+      // unused
+      "unused-imports/no-unused-imports": ["error"],
+      "unused-imports/no-unused-vars": [
+        "error",
+        {
+          vars: "all",
+          varsIgnorePattern: "^_",
+          args: "after-used",
+          argsIgnorePattern: "^_",
+        },
+      ],
 
       // -- 아래 적용 검토가 필요한것
       "import/no-extraneous-dependencies": [

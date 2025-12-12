@@ -1,5 +1,26 @@
 export default () => ({
   packages: {
+    "capacitor-plugin-auto-update": {
+      type: "library",
+      publish: "npm",
+      index: {
+        excludes: ["src/web/**/*"],
+      },
+    },
+    "capacitor-plugin-usb-storage": {
+      type: "library",
+      publish: "npm",
+      index: {
+        excludes: ["src/web/**/*"],
+      },
+    },
+    "capacitor-plugin-file-system": {
+      type: "library",
+      publish: "npm",
+      index: {
+        excludes: ["src/web/**/*"],
+      },
+    },
     "cordova-plugin-auto-update": {
       type: "library",
       publish: "npm",

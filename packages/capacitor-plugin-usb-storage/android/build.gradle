@@ -1,0 +1,10 @@
+apply plugin: 'com.android.library'
+
+android {
+    namespace "kr.co.simplysm.capacitor.usbstorage"
+}
+
+dependencies {
+    implementation project(':capacitor-android')
+    implementation 'me.jahnen.libaums:core:0.9.1'
+}

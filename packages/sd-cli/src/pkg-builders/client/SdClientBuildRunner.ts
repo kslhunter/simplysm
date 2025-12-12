@@ -8,12 +8,14 @@ import { INpmConfig } from "../../types/common-config/INpmConfig";
 import { SdCliNgRoutesFileGenerator } from "./SdCliNgRoutesFileGenerator";
 import { SdCliElectron } from "../../entry/SdCliElectron";
 import { ISdClientPackageConfig } from "../../types/config/ISdProjectConfig";
+import { SdCliCapacitor } from "../../entry/SdCliCapacitor";
 
 export class SdClientBuildRunner extends SdBuildRunnerBase<"client"> {
   protected override _logger = SdLogger.get(["simplysm", "sd-cli", "SdClientBuildRunner"]);
 
   private _ngBundlers?: SdNgBundler[];
   private _cordova?: SdCliCordova;
+  private _capacitor?: SdCliCapacitor
 
   protected override async _runAsync(modifiedFileSet?: Set<TNormPath>): Promise<ISdBuildResult> {
     // 최초 한번
@@ -35,6 +37,16 @@ export class SdClientBuildRunner extends SdBuildRunnerBase<"client"> {
             config: this._pkgConf.builder.cordova,
           });
           await this._cordova.initializeAsync();
+        }
+
+        // capacitor
+        if (this._pkgConf.builder?.capacitor) {
+          this._debug("Preparing Capacitor...");
+          this._capacitor = new SdCliCapacitor({
+            pkgPath: this._opt.pkgPath,
+            config: this._pkgConf.builder.capacitor,
+          });
+          await this._capacitor.initializeAsync();
         }
 
         // routes
@@ -116,6 +128,11 @@ export class SdClientBuildRunner extends SdBuildRunnerBase<"client"> {
       if (!this._opt.watch?.dev && this._cordova) {
         this._debug("Building Cordova...");
         await this._cordova.buildAsync(path.resolve(this._opt.pkgPath, "dist"));
+      }
+
+      if (!this._opt.watch?.dev && this._capacitor) {
+        this._debug("Building Capacitor...");
+        await this._capacitor.buildAsync(path.resolve(this._opt.pkgPath, "dist"));
       }
 
       if (!this._opt.watch?.dev && this._pkgConf.builder?.electron) {

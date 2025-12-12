@@ -5,6 +5,8 @@ import tsNoBufferInTypedArrayContext from "./rules/ts-no-buffer-in-typedarray-co
 import noSubpathImportsFromSimplysm from "./rules/no-subpath-imports-from-simplysm.js";
 import ngTemplateSdRequireBindingAttrs from "./rules/ng-template-sd-require-binding-attrs.js";
 import noHardPrivate from "./rules/no-hard-private.js";
+import tsNoUnusedInjects from "./rules/ts-no-unused-injects.js";
+import tsNoUnusedProtectedReadonly from "./rules/ts-no-unused-protected-readonly.js";
 
 export default {
   rules: {
@@ -15,5 +17,7 @@ export default {
     "no-subpath-imports-from-simplysm": noSubpathImportsFromSimplysm,
     "ng-template-sd-require-binding-attrs": ngTemplateSdRequireBindingAttrs,
     "no-hard-private": noHardPrivate,
+    "ts-no-unused-injects": tsNoUnusedInjects,
+    "ts-no-unused-protected-readonly": tsNoUnusedProtectedReadonly,
   },
 };

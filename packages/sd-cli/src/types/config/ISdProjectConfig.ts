@@ -62,6 +62,9 @@ export interface ISdClientPackageConfig {
   builder?: {
     web?: ISdClientBuilderWebConfig;
     electron?: ISdClientBuilderElectronConfig;
+    capacitor?: ISdClientBuilderCapacitorConfig;
+
+    /** @deprecated */
     cordova?: ISdClientBuilderCordovaConfig;
   };
 }
@@ -98,6 +101,7 @@ export interface ISdClientBuilderWebConfig {
   env?: Record<string, string>;
 }
 
+/** @deprecated */
 export interface ISdClientBuilderCordovaConfig {
   appId: string;
   appName: string;
@@ -115,6 +119,36 @@ export interface ISdClientBuilderCordovaConfig {
         alias: string;
         password: string;
         keystoreType: string;
+      };
+      sdkVersion?: number;
+      permissions?: {
+        name: string;
+        maxSdkVersion?: number;
+        ignore?: string;
+      }[];
+    };
+  };
+  env?: Record<string, string>;
+  browserslist?: string[];
+}
+
+
+export interface ISdClientBuilderCapacitorConfig {
+  appId: string;
+  appName: string;
+  plugins?: Record<string, Record<string, unknown> | true>;
+  icon?: string;
+  debug?: boolean;
+  platform?: {
+    android?: {
+      config?: Record<string, string>;
+      bundle?: boolean;
+      sign?: {
+        keystore: string;
+        storePassword: string;
+        alias: string;
+        password: string;
+        keystoreType?: string;
       };
       sdkVersion?: number;
       permissions?: {

@@ -399,7 +399,7 @@ export class Queryable<D extends DbContext, T> {
     valueColumn: VC,
     pivotColumn: PC,
     pivotKeys: string[],
-    resultType: Type<RT>,
+    _resultType: Type<RT>,
   ): Queryable<D, T & Record<PC, string> & Record<VC, UnwrappedType<RT> | undefined>> {
     const entity: any = { ...this._entity };
 

@@ -1,0 +1,9 @@
+apply plugin: 'com.android.library'
+
+android {
+    namespace "kr.co.simplysm.capacitor.apkinstaller"
+}
+
+dependencies {
+    implementation project(':capacitor-android')
+}

@@ -19,5 +19,8 @@
     "packages/*/android/**",
     "packages/*/browser/**",
     "eslint.config.js"
-  ]
+  ],
+  "ignore": {
+    "useGitignore": true
+  }
 }

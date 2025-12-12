@@ -90,7 +90,9 @@ export class SdNgBundler {
           ? PathUtils.norm(this._opt.pkgPath, ".electron/src")
           : this._conf.builderType === "cordova" && !this._opt.watch?.dev
             ? PathUtils.norm(this._opt.pkgPath, ".cordova/www")
-            : PathUtils.norm(this._opt.pkgPath, "dist", this._conf.builderType);
+            : this._conf.builderType === "capacitor" && !this._opt.watch?.dev
+              ? PathUtils.norm(this._opt.pkgPath, ".capacitor/www")
+              : PathUtils.norm(this._opt.pkgPath, "dist", this._conf.builderType);
   }
 
   markForChanges(filePaths: string[]): void {

@@ -1367,6 +1367,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@capacitor/core@npm:^7.4.4":
+  version: 7.4.4
+  resolution: "@capacitor/core@npm:7.4.4"
+  dependencies:
+    tslib: "npm:^2.1.0"
+  checksum: 10c0/6c89d2fe9ab64a45d2bcb786d9837380dbd652997c9bfd3ab8e62fa0759a8a8558342d800cd19b175f1f6238e290a5efefe3733b283ec737b088f178e1ed6c0d
+  languageName: node
+  linkType: hard
+
 "@clack/core@npm:0.5.0":
   version: 0.5.0
   resolution: "@clack/core@npm:0.5.0"
@@ -2721,9 +2730,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@modelcontextprotocol/sdk@npm:^1.22.0":
-  version: 1.24.1
-  resolution: "@modelcontextprotocol/sdk@npm:1.24.1"
+"@modelcontextprotocol/sdk@npm:^1.24.0":
+  version: 1.24.3
+  resolution: "@modelcontextprotocol/sdk@npm:1.24.3"
   dependencies:
     ajv: "npm:^8.17.1"
     ajv-formats: "npm:^3.0.1"
@@ -2747,7 +2756,7 @@ __metadata:
       optional: true
     zod:
       optional: false
-  checksum: 10c0/b99c2e3acffda7ee16008c88dd7c70f840922ca90a3a7d39d194b7bd99ab3073213ce3169250b613f6eaa066a4d369859e7c9a7b237f133c13bd9ff574fb7fc3
+  checksum: 10c0/91746ddf347d61815c09d2a09d3dc7564576b417f7349c33c672a7e3c69dcd215a52a066b02fcd9eaab1cdeab60cc827f3382b28b2ab68e7fc46d2e1f3824cad
   languageName: node
   linkType: hard
 
@@ -3847,20 +3856,50 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@simplysm/cordova-plugin-auto-update@workspace:packages/cordova-plugin-auto-update":
+"@simplysm/capacitor-plugin-auto-update@workspace:packages/capacitor-plugin-auto-update":
   version: 0.0.0-use.local
-  resolution: "@simplysm/cordova-plugin-auto-update@workspace:packages/cordova-plugin-auto-update"
+  resolution: "@simplysm/capacitor-plugin-auto-update@workspace:packages/capacitor-plugin-auto-update"
   dependencies:
-    "@simplysm/cordova-plugin-file-system": "npm:12.15.64"
-    "@simplysm/sd-core-common": "npm:12.15.64"
-    "@simplysm/sd-service-client": "npm:12.15.64"
-    "@simplysm/sd-service-common": "npm:12.15.64"
+    "@capacitor/core": "npm:^7.4.4"
+    "@simplysm/capacitor-plugin-file-system": "npm:12.15.68"
+    "@simplysm/sd-core-common": "npm:12.15.68"
+    "@simplysm/sd-service-client": "npm:12.15.68"
+    "@simplysm/sd-service-common": "npm:12.15.68"
     "@types/semver": "npm:^7.7.1"
     semver: "npm:^7.7.3"
   languageName: unknown
   linkType: soft
 
-"@simplysm/cordova-plugin-file-system@npm:12.15.64, @simplysm/cordova-plugin-file-system@workspace:packages/cordova-plugin-file-system":
+"@simplysm/capacitor-plugin-file-system@npm:12.15.68, @simplysm/capacitor-plugin-file-system@workspace:packages/capacitor-plugin-file-system":
+  version: 0.0.0-use.local
+  resolution: "@simplysm/capacitor-plugin-file-system@workspace:packages/capacitor-plugin-file-system"
+  dependencies:
+    "@capacitor/core": "npm:^7.4.4"
+  languageName: unknown
+  linkType: soft
+
+"@simplysm/capacitor-plugin-usb-storage@workspace:packages/capacitor-plugin-usb-storage":
+  version: 0.0.0-use.local
+  resolution: "@simplysm/capacitor-plugin-usb-storage@workspace:packages/capacitor-plugin-usb-storage"
+  dependencies:
+    "@capacitor/core": "npm:^7.4.4"
+  languageName: unknown
+  linkType: soft
+
+"@simplysm/cordova-plugin-auto-update@workspace:packages/cordova-plugin-auto-update":
+  version: 0.0.0-use.local
+  resolution: "@simplysm/cordova-plugin-auto-update@workspace:packages/cordova-plugin-auto-update"
+  dependencies:
+    "@simplysm/cordova-plugin-file-system": "npm:12.15.68"
+    "@simplysm/sd-core-common": "npm:12.15.68"
+    "@simplysm/sd-service-client": "npm:12.15.68"
+    "@simplysm/sd-service-common": "npm:12.15.68"
+    "@types/semver": "npm:^7.7.1"
+    semver: "npm:^7.7.3"
+  languageName: unknown
+  linkType: soft
+
+"@simplysm/cordova-plugin-file-system@npm:12.15.68, @simplysm/cordova-plugin-file-system@workspace:packages/cordova-plugin-file-system":
   version: 0.0.0-use.local
   resolution: "@simplysm/cordova-plugin-file-system@workspace:packages/cordova-plugin-file-system"
   dependencies:
@@ -3888,6 +3927,7 @@ __metadata:
     eslint: "npm:^9.39.1"
     eslint-import-resolver-typescript: "npm:^4.4.4"
     eslint-plugin-import: "npm:^2.32.0"
+    eslint-plugin-unused-imports: "npm:^4.3.0"
     globals: "npm:^16.5.0"
     typescript: "npm:~5.8.3"
     typescript-eslint: "npm:^8.49.0"
@@ -3906,11 +3946,11 @@ __metadata:
     "@angular/service-worker": "npm:^20.3.15"
     "@fortawesome/angular-fontawesome": "npm:^3.0.0"
     "@fortawesome/fontawesome-svg-core": "npm:^7.1.0"
-    "@simplysm/sd-core-browser": "npm:12.15.64"
-    "@simplysm/sd-core-common": "npm:12.15.64"
-    "@simplysm/sd-excel": "npm:12.15.64"
-    "@simplysm/sd-service-client": "npm:12.15.64"
-    "@simplysm/sd-service-common": "npm:12.15.64"
+    "@simplysm/sd-core-browser": "npm:12.15.68"
+    "@simplysm/sd-core-common": "npm:12.15.68"
+    "@simplysm/sd-excel": "npm:12.15.68"
+    "@simplysm/sd-service-client": "npm:12.15.68"
+    "@simplysm/sd-service-common": "npm:12.15.68"
     "@types/qrcode": "npm:^1.5.6"
     "@types/semver": "npm:^7.7.1"
     bwip-js: "npm:^4.8.0"
@@ -3936,10 +3976,10 @@ __metadata:
     "@angular/compiler-cli": "npm:^20.3.15"
     "@anthropic-ai/sdk": "npm:^0.71.2"
     "@electron/rebuild": "npm:^4.0.2"
-    "@simplysm/sd-core-common": "npm:12.15.64"
-    "@simplysm/sd-core-node": "npm:12.15.64"
-    "@simplysm/sd-service-server": "npm:12.15.64"
-    "@simplysm/sd-storage": "npm:12.15.64"
+    "@simplysm/sd-core-common": "npm:12.15.68"
+    "@simplysm/sd-core-node": "npm:12.15.68"
+    "@simplysm/sd-service-server": "npm:12.15.68"
+    "@simplysm/sd-storage": "npm:12.15.68"
     "@types/xml2js": "npm:^0.4.14"
     "@types/yargs": "npm:^17.0.35"
     browserslist: "npm:^4.28.1"
@@ -3964,30 +4004,30 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-core-browser@npm:12.15.64, @simplysm/sd-core-browser@workspace:packages/sd-core-browser":
+"@simplysm/sd-core-browser@npm:12.15.68, @simplysm/sd-core-browser@workspace:packages/sd-core-browser":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-core-browser@workspace:packages/sd-core-browser"
   dependencies:
-    "@simplysm/sd-core-common": "npm:12.15.64"
+    "@simplysm/sd-core-common": "npm:12.15.68"
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-core-common@npm:12.15.64, @simplysm/sd-core-common@workspace:packages/sd-core-common":
+"@simplysm/sd-core-common@npm:12.15.68, @simplysm/sd-core-common@workspace:packages/sd-core-common":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-core-common@workspace:packages/sd-core-common"
   dependencies:
     "@zip.js/zip.js": "npm:^2.8.11"
-    fast-xml-parser: "npm:^5.3.2"
+    fast-xml-parser: "npm:^5.3.3"
     reflect-metadata: "npm:^0.2.2"
     yaml: "npm:^2.8.2"
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-core-node@npm:12.15.64, @simplysm/sd-core-node@workspace:packages/sd-core-node":
+"@simplysm/sd-core-node@npm:12.15.68, @simplysm/sd-core-node@workspace:packages/sd-core-node":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-core-node@workspace:packages/sd-core-node"
   dependencies:
-    "@simplysm/sd-core-common": "npm:12.15.64"
+    "@simplysm/sd-core-common": "npm:12.15.68"
     "@types/glob": "npm:^9.0.0"
     chokidar: "npm:^5.0.0"
     glob: "npm:^13.0.0"
@@ -3995,11 +4035,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-excel@npm:12.15.64, @simplysm/sd-excel@workspace:packages/sd-excel":
+"@simplysm/sd-excel@npm:12.15.68, @simplysm/sd-excel@workspace:packages/sd-excel":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-excel@workspace:packages/sd-excel"
   dependencies:
-    "@simplysm/sd-core-common": "npm:12.15.64"
+    "@simplysm/sd-core-common": "npm:12.15.68"
     "@types/mime": "npm:^4.0.0"
     mime: "npm:^4.1.0"
     xlsx: "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
@@ -4010,26 +4050,26 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-orm-common-ext@workspace:packages/sd-orm-common-ext"
   dependencies:
-    "@simplysm/sd-core-common": "npm:12.15.64"
-    "@simplysm/sd-orm-common": "npm:12.15.64"
+    "@simplysm/sd-core-common": "npm:12.15.68"
+    "@simplysm/sd-orm-common": "npm:12.15.68"
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-orm-common@npm:12.15.64, @simplysm/sd-orm-common@workspace:packages/sd-orm-common":
+"@simplysm/sd-orm-common@npm:12.15.68, @simplysm/sd-orm-common@workspace:packages/sd-orm-common":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-orm-common@workspace:packages/sd-orm-common"
   dependencies:
-    "@simplysm/sd-core-common": "npm:12.15.64"
+    "@simplysm/sd-core-common": "npm:12.15.68"
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-orm-node@npm:12.15.64, @simplysm/sd-orm-node@workspace:packages/sd-orm-node":
+"@simplysm/sd-orm-node@npm:12.15.68, @simplysm/sd-orm-node@workspace:packages/sd-orm-node":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-orm-node@workspace:packages/sd-orm-node"
   dependencies:
-    "@simplysm/sd-core-common": "npm:12.15.64"
-    "@simplysm/sd-core-node": "npm:12.15.64"
-    "@simplysm/sd-orm-common": "npm:12.15.64"
+    "@simplysm/sd-core-common": "npm:12.15.68"
+    "@simplysm/sd-core-node": "npm:12.15.68"
+    "@simplysm/sd-orm-common": "npm:12.15.68"
     "@types/sqlite3": "npm:^5.1.0"
     generic-pool: "npm:^3.9.0"
     mysql2: "npm:^3.15.3"
@@ -4049,28 +4089,27 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-service-client@npm:12.15.64, @simplysm/sd-service-client@workspace:packages/sd-service-client":
+"@simplysm/sd-service-client@npm:12.15.68, @simplysm/sd-service-client@workspace:packages/sd-service-client":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-service-client@workspace:packages/sd-service-client"
   dependencies:
-    "@simplysm/sd-core-common": "npm:12.15.64"
-    "@simplysm/sd-orm-common": "npm:12.15.64"
-    "@simplysm/sd-service-common": "npm:12.15.64"
-    isomorphic-ws: "npm:^5.0.0"
+    "@simplysm/sd-core-common": "npm:12.15.68"
+    "@simplysm/sd-orm-common": "npm:12.15.68"
+    "@simplysm/sd-service-common": "npm:12.15.68"
     ws: "npm:^8.18.3"
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-service-common@npm:12.15.64, @simplysm/sd-service-common@workspace:packages/sd-service-common":
+"@simplysm/sd-service-common@npm:12.15.68, @simplysm/sd-service-common@workspace:packages/sd-service-common":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-service-common@workspace:packages/sd-service-common"
   dependencies:
-    "@simplysm/sd-core-common": "npm:12.15.64"
-    "@simplysm/sd-orm-common": "npm:12.15.64"
+    "@simplysm/sd-core-common": "npm:12.15.68"
+    "@simplysm/sd-orm-common": "npm:12.15.68"
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-service-server@npm:12.15.64, @simplysm/sd-service-server@workspace:packages/sd-service-server":
+"@simplysm/sd-service-server@npm:12.15.68, @simplysm/sd-service-server@workspace:packages/sd-service-server":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-service-server@workspace:packages/sd-service-server"
   dependencies:
@@ -4081,11 +4120,11 @@ __metadata:
     "@fastify/reply-from": "npm:^12.5.0"
     "@fastify/static": "npm:^8.3.0"
     "@fastify/websocket": "npm:^11.2.0"
-    "@simplysm/sd-core-common": "npm:12.15.64"
-    "@simplysm/sd-core-node": "npm:12.15.64"
-    "@simplysm/sd-orm-common": "npm:12.15.64"
-    "@simplysm/sd-orm-node": "npm:12.15.64"
-    "@simplysm/sd-service-common": "npm:12.15.64"
+    "@simplysm/sd-core-common": "npm:12.15.68"
+    "@simplysm/sd-core-node": "npm:12.15.68"
+    "@simplysm/sd-orm-common": "npm:12.15.68"
+    "@simplysm/sd-orm-node": "npm:12.15.68"
+    "@simplysm/sd-service-common": "npm:12.15.68"
     "@types/mime": "npm:^4.0.0"
     "@types/nodemailer": "npm:^7.0.4"
     "@types/ws": "npm:^8.18.1"
@@ -4100,11 +4139,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-storage@npm:12.15.64, @simplysm/sd-storage@workspace:packages/sd-storage":
+"@simplysm/sd-storage@npm:12.15.68, @simplysm/sd-storage@workspace:packages/sd-storage":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-storage@workspace:packages/sd-storage"
   dependencies:
-    "@simplysm/sd-core-common": "npm:12.15.64"
+    "@simplysm/sd-core-common": "npm:12.15.68"
     "@types/ssh2-sftp-client": "npm:^9.0.6"
     basic-ftp: "npm:^5.0.5"
     ssh2-sftp-client: "npm:^12.0.1"
@@ -8520,6 +8559,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"eslint-plugin-unused-imports@npm:^4.3.0":
+  version: 4.3.0
+  resolution: "eslint-plugin-unused-imports@npm:4.3.0"
+  peerDependencies:
+    "@typescript-eslint/eslint-plugin": ^8.0.0-0 || ^7.0.0 || ^6.0.0 || ^5.0.0
+    eslint: ^9.0.0 || ^8.0.0
+  peerDependenciesMeta:
+    "@typescript-eslint/eslint-plugin":
+      optional: true
+  checksum: 10c0/aa4d8ebd8bea5fc0ac8d3fdeb0d0ed2dd0fccb96a1f5569bca772f71b4c45edd1b3c32d9754fb175c45ccf4d123725f333bf99380b9896bb678a8d599e290aa3
+  languageName: node
+  linkType: hard
+
 "eslint-scope@npm:^8.4.0":
   version: 8.4.0
   resolution: "eslint-scope@npm:8.4.0"
@@ -8959,6 +9011,17 @@ __metadata:
   bin:
     fxparser: src/cli/cli.js
   checksum: 10c0/1b9e8adcd215c0771854a95557b409c980e793387e61938d1881ae0d456ee762b755d32912a66dda273d37f0447a59d1bfef9d3aba2e41553e049592e27a0ce7
+  languageName: node
+  linkType: hard
+
+"fast-xml-parser@npm:^5.3.3":
+  version: 5.3.3
+  resolution: "fast-xml-parser@npm:5.3.3"
+  dependencies:
+    strnum: "npm:^2.1.0"
+  bin:
+    fxparser: src/cli/cli.js
+  checksum: 10c0/2cc690f220a17f77b797923b8b943172c5072d066e3d9846d52be5443682fdbb2bad8302c9996f04a9e6a59603f05a99b2053b564459ac35bd8f6339e8ac06f3
   languageName: node
   linkType: hard
 
@@ -10633,15 +10696,6 @@ __metadata:
   version: 1.0.1
   resolution: "isomorphic-timers-promises@npm:1.0.1"
   checksum: 10c0/3b4761d0012ebe6b6382246079fc667f3513f36fe4042638f2bfb7db1557e4f1acd33a9c9907706c04270890ec6434120f132f3f300161a42a7dd8628926c8a4
-  languageName: node
-  linkType: hard
-
-"isomorphic-ws@npm:^5.0.0":
-  version: 5.0.0
-  resolution: "isomorphic-ws@npm:5.0.0"
-  peerDependencies:
-    ws: "*"
-  checksum: 10c0/a058ac8b5e6efe9e46252cb0bc67fd325005d7216451d1a51238bc62d7da8486f828ef017df54ddf742e0fffcbe4b1bcc2a66cc115b027ed0180334cd18df252
   languageName: node
   linkType: hard
 
@@ -13469,12 +13523,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"repomix@npm:^1.9.2":
-  version: 1.9.2
-  resolution: "repomix@npm:1.9.2"
+"repomix@npm:^1.10.0":
+  version: 1.10.0
+  resolution: "repomix@npm:1.10.0"
   dependencies:
     "@clack/prompts": "npm:^0.11.0"
-    "@modelcontextprotocol/sdk": "npm:^1.22.0"
+    "@modelcontextprotocol/sdk": "npm:^1.24.0"
     "@repomix/tree-sitter-wasms": "npm:^0.1.15"
     "@secretlint/core": "npm:^11.2.5"
     "@secretlint/secretlint-rule-preset-recommend": "npm:^11.2.5"
@@ -13497,10 +13551,10 @@ __metadata:
     tiktoken: "npm:^1.0.22"
     tinypool: "npm:^2.0.0"
     web-tree-sitter: "npm:^0.25.10"
-    zod: "npm:^4.1.12"
+    zod: "npm:^4.1.13"
   bin:
     repomix: bin/repomix.cjs
-  checksum: 10c0/df2c7a97b8a5017ae663f866b3587b2eeed49e561b249f170909672da2a7aa8b7336fb24b94456a6def24959324e48e3c344d4d6ccd8ef6624ae2bd84696db02
+  checksum: 10c0/f75c6a69bff2244ba35a35abc4ad9d142620b267eef6655ca035d239a021e78f53c9a9c445b2df1f4938c0018697451c31b0b917e273931aeafce12b4272166b
   languageName: node
   linkType: hard
 
@@ -14517,10 +14571,8 @@ __metadata:
     "@types/node": "npm:^20.19.26"
     cross-env: "npm:^10.1.0"
     eslint: "npm:^9.39.1"
-    glob: "npm:^13.0.0"
     prettier: "npm:^3.7.4"
-    repomix: "npm:^1.9.2"
-    semver: "npm:^7.7.3"
+    repomix: "npm:^1.10.0"
     tsx: "npm:^4.21.0"
     typescript: "npm:~5.8.3"
     vite-tsconfig-paths: "npm:^5.1.4"
@@ -16688,7 +16740,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod@npm:^3.25 || ^4.0, zod@npm:^4.1.12":
+"zod@npm:^3.25 || ^4.0, zod@npm:^4.1.13":
   version: 4.1.13
   resolution: "zod@npm:4.1.13"
   checksum: 10c0/d7e74e82dba81a91ffc3239cd85bc034abe193a28f7087a94ab258a3e48e9a7ca4141920cac979a0d781495b48fc547777394149f26be04c3dc642f58bbc3941

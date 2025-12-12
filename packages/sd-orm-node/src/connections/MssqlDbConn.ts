@@ -359,9 +359,9 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
 
   // eslint-disable-next-line @typescript-eslint/require-await
   async bulkUpsertAsync(
-    tableName: string,
-    columnDefs: IQueryColumnDef[],
-    records: Record<string, any>[],
+    _tableName: string,
+    _columnDefs: IQueryColumnDef[],
+    _records: Record<string, any>[],
   ): Promise<void> {
     throw new Error("'bulk upsert'는 'MSSQL'에서 지원되지 않는 기능입니다.");
   }

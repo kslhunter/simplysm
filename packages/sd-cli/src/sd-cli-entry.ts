@@ -12,12 +12,7 @@ import { SdCliElectron } from "./entry/SdCliElectron";
 import { SdCliLocalUpdate } from "./entry/SdCliLocalUpdate";
 import { SdCliPostInstall } from "./entry/SdCliPostInstall";
 import { SdCliProject } from "./entry/SdCliProject";
-import convertPrivateToHash from "./fix/convertPrivateToHash";
-import removeSdAngularSymbolNames from "./fix/removeSdAngularSymbolNames";
-import convertSdAngularSymbolNames from "./fix/convertSdAngularSymbolNames";
-import { removeUnusedInjects } from "./fix/removeUnusedInjects";
-import removeUnusedProtectedReadonly from "./fix/removeUnusedProtectedReadonly";
-import { removeUnusedImports } from "./fix/removeUnusedImports";
+import { SdCliCapacitor } from "./entry/SdCliCapacitor";
 
 Error.stackTraceLimit = Infinity;
 EventEmitter.defaultMaxListeners = 0;
@@ -245,6 +240,31 @@ await yargs(hideBin(process.argv))
     async (argv) => await SdCliCordova.runWebviewOnDeviceAsync(argv),
   )
   .command(
+    "run-capacitor <platform> <package> [url]",
+    "변경감지중인 플랫폼을 Capacitor 디바이스에 앱 형태로 띄웁니다.",
+    (cmd) =>
+      cmd
+        .version(false)
+        .hide("help")
+        .hide("debug")
+        .positional("platform", {
+          type: "string",
+          describe: "빌드 플랫폼(android,...)",
+          demandOption: true,
+        })
+        .positional("package", {
+          type: "string",
+          describe: "패키지명",
+          demandOption: true,
+        })
+        .positional("url", {
+          type: "string",
+          describe: "Webview로 오픈할 URL",
+          demandOption: true,
+        }),
+    async (argv) => await SdCliCapacitor.runWebviewOnDeviceAsync(argv),
+  )
+  .command(
     "commit",
     "AI를 통해 변경사항에 대한 커밋 메시지를 작성하여, 커밋 및 푸쉬를 수행합니다.",
     (cmd) => cmd.version(false).hide("help").hide("debug"),
@@ -255,56 +275,6 @@ await yargs(hideBin(process.argv))
     "설치후 자동실행할 작업",
     (cmd) => cmd.version(false).hide("help").hide("debug"),
     () => SdCliPostInstall.run(),
-  )
-  .command(
-    "fix",
-    "가능한 내용 자동 수정",
-    (cmd) =>
-      cmd
-        .version(false)
-        .hide("help")
-        .hide("debug")
-        .options({
-          library: {
-            type: "boolean",
-            describe: "simplysm 라이브러리 픽스",
-            default: false,
-          },
-        }),
-    (argv) => {
-      // GIT 사용중일 경우, 커밋되지 않은 수정사항이 있는지 확인
-      /*if (FsUtils.exists(path.resolve(process.cwd(), ".git"))) {
-        const gitStatusResult = await SdProcess.spawnAsync("git status");
-        if (gitStatusResult.includes("Changes") || gitStatusResult.includes("Untracked")) {
-          throw new Error("커밋되지 않은 정보가 있습니다. FIX오류시 롤백이 불가능하므로, 미리 커밋을 해놔야 합니다.\n" + gitStatusResult);
-        }
-      }*/
-
-      convertPrivateToHash();
-
-      //-- 심볼정리
-      removeSdAngularSymbolNames();
-      convertSdAngularSymbolNames();
-
-      //-- inject/import 정리
-      removeUnusedInjects();
-      removeUnusedProtectedReadonly();
-      removeUnusedImports();
-
-      if (argv.library) return;
-
-      // convertSdSheetBindingsSafely();
-      // convertSetupCumulateSelectedKeysToObjectParam();
-      // convertExtendsSdModalBaseToInterface();
-      // convertModalShowParams();
-      // convertExtendsSdPrintTemplateBaseToInterface();
-      // convertPrintParams();
-      // convertToUsePermsSignal();
-      // convertGetMenusToUsableMenus();
-      // convertFlatPagesToUsableFlatMenus();
-      // convertSdIconToFaIcon();
-      // convertSelectModalButtonToSelectButton();
-    },
   )
   .strict()
   .recommendCommands()
