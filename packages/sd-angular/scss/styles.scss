@@ -12,8 +12,8 @@
 @use "controls/table";
 
 ng-icon {
-  --ng-icon__size: 1.25em;
-  vertical-align: -0.125em !important;
+  --ng-icon__size: 1.33em; // 1.25em
+  vertical-align: -0.2em !important; // -0.125em
 
   svg {
     stroke-width: 1.5 !important;

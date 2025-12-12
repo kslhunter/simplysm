@@ -36,7 +36,7 @@ import { tablerCheck } from "@ng-icons/tabler-icons";
         @include mixins.form-control-base();
         color: inherit;
         cursor: pointer;
-        border-radius: var(--border-radius-default);
+        //border-radius: var(--border-radius-default);
 
         height: calc(
           var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-sm) * 2 + 2px
@@ -53,23 +53,26 @@ import { tablerCheck } from "@ng-icons/tabler-icons";
         > ._indicator_rect {
           display: inline-block;
           //vertical-align: calc((1em - var(--line-height)) / 2);
-          vertical-align: middle;
+          vertical-align: -0.125em;
           user-select: none;
 
           width: calc(var(--font-size-default) + 2px);
           height: calc(var(--font-size-default) + 2px);
           border: 1px solid var(--trans-light);
           background: var(--theme-secondary-lightest);
-          border-radius: var(--border-radius-xs);
+          //border-radius: var(--border-radius-xs);
 
           > ._indicator {
-            margin: 0 -1px;
+            margin: -1px -2px;
             text-align: center;
             opacity: 0;
             color: white;
 
-            > ng-icon > svg {
-              vertical-align: top;
+            > ng-icon {              
+              > svg {
+                vertical-align: top;
+                stroke-width: 3px !important;
+              }
             }
           }
         }
