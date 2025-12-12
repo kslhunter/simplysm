@@ -14,7 +14,7 @@
 - 그외, FontAwesome을 안쓰는것으로 업데이트됨
   - ng-icons를 사용할 것이며, sd-angular는 "@ng-icons/tabler-icons"를
     사용함 ([링크](https://ng-icons.github.io/ng-icons/#/browse-icons?iconset=tablerTools))
-  - tabler아닌 다른 아이콘 사용가능.
+  - ng-icons중 tabler아닌 다른 아이콘도 사용가능.
   - 물론 이미 쓰고있는 FontAwesome계속 써도됨.
     - sd-angular의 컨트롤의 \[icon\] attrigute에 넣던 것만 수정하면됨.
 
