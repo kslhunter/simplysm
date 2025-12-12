@@ -9,6 +9,12 @@
 
 ## 주요 업데이트
 
+### 12.15.x > 12.16.x
+* 앤간한 오류는 eslint일것임. `eslint --fix "**/+(*.ts|*.js|*.html)"`로 대부분 고쳐짐
+* 그외, FontAwesome을 안쓰는것으로 업데이트됨
+  * ng-icons를 사용할 것이며, 통상적으로 "@ng-icons/phosphor-icons"를
+    사용함 ([링크](https://ng-icons.github.io/ng-icons/#/browse-icons?iconset=phosphorPhosphorLogo))
+
 ### 12.14.x > 12.15.x
 
 * sd-dock-container, sd-dock 컨트롤 되 살림
