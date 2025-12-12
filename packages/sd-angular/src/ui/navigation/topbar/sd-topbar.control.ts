@@ -6,18 +6,18 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import { SdSidebarContainerControl } from "../sidebar/sd-sidebar-container.control";
-import { SdAngularConfigProvider } from "../../../core/providers/app/sd-angular-config.provider";
 
 import { $computed } from "../../../core/utils/bindings/$computed";
-import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { SdButtonControl } from "../../form/button/sd-button.control";
+import { NgIcon } from "@ng-icons/core";
+import { phosphorList } from "@ng-icons/phosphor-icons/regular";
 
 @Component({
   selector: "sd-topbar",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [FaIconComponent, SdButtonControl],
+  imports: [SdButtonControl, NgIcon],
   host: {
     class: "flex-row gap-default cross-align-center main-align-start",
   },
@@ -28,7 +28,7 @@ import { SdButtonControl } from "../../form/button/sd-button.control";
         [buttonClass]="'p-sm-default'"
         (click)="onSidebarToggleButtonClick()"
       >
-        <fa-icon [icon]="icons.bars" />
+        <ng-icon [svg]="phosphorList" />
       </sd-button>
     }
 
@@ -77,9 +77,9 @@ import { SdButtonControl } from "../../form/button/sd-button.control";
   ],
 })
 export class SdTopbarControl {
-  protected readonly icons = inject(SdAngularConfigProvider).icons;
-
-  private readonly _parentSidebarContainerControl = inject(SdSidebarContainerControl, { optional: true });
+  private readonly _parentSidebarContainerControl = inject(SdSidebarContainerControl, {
+    optional: true,
+  });
 
   sidebarContainer = input<SdSidebarContainerControl>();
 
@@ -89,4 +89,6 @@ export class SdTopbarControl {
     const sidebarContainerControl = this.sidebarContainer() ?? this._parentSidebarContainerControl;
     sidebarContainerControl!.toggle.update((v) => !v);
   }
+
+  protected readonly phosphorList = phosphorList;
 }

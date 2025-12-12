@@ -1,22 +1,15 @@
 import { NgTemplateOutlet } from "@angular/common";
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  input,
-  model,
-  ViewEncapsulation,
-} from "@angular/core";
+import { ChangeDetectionStrategy, Component, input, model, ViewEncapsulation } from "@angular/core";
 import { ObjectUtils } from "@simplysm/sd-core-common";
 import { SdCheckboxControl } from "../../ui/form/choice/sd-checkbox.control";
 import { SdCollapseIconControl } from "../../ui/navigation/collapse/sd-collapse-icon.control";
 import { SdTypedTemplateDirective } from "../../core/directives/sd-typed-template.directive";
-import { SdAngularConfigProvider } from "../../core/providers/app/sd-angular-config.provider";
 import { $computed } from "../../core/utils/bindings/$computed";
 import { $signal } from "../../core/utils/bindings/$signal";
 import { transformBoolean } from "../../core/utils/transforms/transformBoolean";
 import { ISdPermission } from "../../core/providers/app/sd-app-structure.provider";
 import { SdAnchorControl } from "../../ui/form/button/sd-anchor.control";
+import { phosphorCaretRight } from "@ng-icons/phosphor-icons/regular";
 
 /**
  * 권한 테이블 컴포넌트
@@ -167,7 +160,7 @@ import { SdAnchorControl } from "../../ui/form/button/sd-anchor.control";
           <td class="_title">
             @if (item.children && item.children.length > 0) {
               <sd-anchor (click)="onPermCollapseToggle(item)">
-                <sd-collapse-icon [icon]="icons.angleRight" [open]="getIsPermCollapsed(item)" />
+                <sd-collapse-icon [icon]="phosphorCaretRight" [open]="getIsPermCollapsed(item)" />
                 {{ item.title }}
               </sd-anchor>
             } @else {
@@ -225,8 +218,6 @@ import { SdAnchorControl } from "../../ui/form/button/sd-anchor.control";
   `,
 })
 export class SdPermissionTableControl<TModule> {
-  protected readonly icons = inject(SdAngularConfigProvider).icons;
-
   value = model<Record<string, boolean>>({});
 
   items = input<ISdPermission<TModule>[]>([]);
@@ -398,4 +389,5 @@ export class SdPermissionTableControl<TModule> {
     depth: number;
     parent: ISdPermission<TModule> | undefined;
   };
+  protected readonly phosphorCaretRight = phosphorCaretRight;
 }

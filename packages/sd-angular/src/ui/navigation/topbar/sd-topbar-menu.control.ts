@@ -1,24 +1,16 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  input,
-  ViewEncapsulation,
-} from "@angular/core";
+import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
 import { useFullPageCodeSignal } from "../../../core/utils/signals/useFullPageCodeSignal";
 import { NgTemplateOutlet } from "@angular/common";
 import { SdTypedTemplateDirective } from "../../../core/directives/sd-typed-template.directive";
 import { SdRouterLinkDirective } from "../../../core/directives/sd-router-link.directive";
-import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
-
 import * as querystring from "querystring";
-import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { SdDropdownControl } from "../../overlay/dropdown/sd-dropdown.control";
 import { SdButtonControl } from "../../form/button/sd-button.control";
-import { SdAngularConfigProvider } from "../../../core/providers/app/sd-angular-config.provider";
 import { SdDropdownPopupControl } from "../../overlay/dropdown/sd-dropdown-popup.control";
 import { SdListControl } from "../../data/list/sd-list.control";
 import { SdListItemControl } from "../../data/list/sd-list-item.control";
+import { NgIcon } from "@ng-icons/core";
+import { phosphorCaretDownFill } from "@ng-icons/phosphor-icons/fill";
 
 @Component({
   selector: "sd-topbar-menu",
@@ -29,12 +21,12 @@ import { SdListItemControl } from "../../data/list/sd-list-item.control";
     NgTemplateOutlet,
     SdTypedTemplateDirective,
     SdRouterLinkDirective,
-    FaIconComponent,
     SdDropdownControl,
     SdButtonControl,
     SdDropdownPopupControl,
     SdListControl,
     SdListItemControl,
+    NgIcon,
   ],
   host: {
     class: "flex-row gap-sm",
@@ -44,10 +36,10 @@ import { SdListItemControl } from "../../data/list/sd-list-item.control";
       <sd-dropdown #dropdownEl>
         <sd-button [theme]="'link-gray'">
           @if (menu.icon) {
-            <fa-icon [icon]="menu.icon" [fixedWidth]="true" />
+            <ng-icon [svg]="menu.icon" />
           }
           {{ menu.title }}
-          <fa-icon [icon]="icons.caretDown" [fixedWidth]="true" />
+          <ng-icon [svg]="phosphorCaretDownFill" />
         </sd-button>
 
         <sd-dropdown-popup>
@@ -82,7 +74,7 @@ import { SdListItemControl } from "../../data/list/sd-list-item.control";
           [layout]="'flat'"
         >
           @if (menu.icon) {
-            <fa-icon [icon]="menu.icon" [fixedWidth]="true" />
+            <ng-icon [svg]="menu.icon" />
             &nbsp;
           }
           {{ menu.title }}
@@ -114,8 +106,6 @@ import { SdListItemControl } from "../../data/list/sd-list-item.control";
   ],
 })
 export class SdTopbarMenuControl {
-  protected readonly icons = inject(SdAngularConfigProvider).icons;
-
   menus = input<ISdTopbarMenu[]>([]);
   getMenuIsSelectedFn = input<(menu: ISdTopbarMenu) => boolean>();
 
@@ -154,12 +144,14 @@ export class SdTopbarMenuControl {
     depth: number;
     dropdownEl: SdDropdownControl;
   };
+
+  protected readonly phosphorCaretDownFill = phosphorCaretDownFill;
 }
 
 export interface ISdTopbarMenu {
   title: string;
   codeChain: string[];
   url?: string;
-  icon?: IconDefinition;
+  icon?: string;
   children?: ISdTopbarMenu[];
 }

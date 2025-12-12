@@ -17,15 +17,15 @@ import {
   SdItemOfTemplateContext,
   SdItemOfTemplateDirective,
 } from "../../core/directives/sd-item-of-template.directive";
-import { SdAngularConfigProvider } from "../../core/providers/app/sd-angular-config.provider";
 import { ISdModal, ISdModalInfo, SdModalProvider } from "../../ui/overlay/modal/sd-modal.provider";
 import { $computed } from "../../core/utils/bindings/$computed";
 import { $signal } from "../../core/utils/bindings/$signal";
 import { transformBoolean } from "../../core/utils/transforms/transformBoolean";
 import { ISharedDataBase } from "../../core/providers/storage/sd-shared-data.provider";
-import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { ISdSelectModal, TSdSelectModalInfo } from "../data-view/sd-data-select-button.control";
 import { SdSelectControl, TSelectModeValue } from "../../ui/form/select/sd-select.control";
+import { NgIcon } from "@ng-icons/core";
+import { phosphorMagnifyingGlass, phosphorNotePencil } from "@ng-icons/phosphor-icons/regular";
 
 @Component({
   selector: "sd-shared-data-select",
@@ -39,7 +39,7 @@ import { SdSelectControl, TSelectModeValue } from "../../ui/form/select/sd-selec
     SdItemOfTemplateDirective,
     NgTemplateOutlet,
     SdSelectButtonControl,
-    FaIconComponent,
+    NgIcon,
   ],
   template: `
     <sd-select
@@ -61,12 +61,12 @@ import { SdSelectControl, TSelectModeValue } from "../../ui/form/select/sd-selec
     >
       @if (modal()) {
         <sd-select-button (click)="onModalButtonClick($event)">
-          <fa-icon [icon]="icons.search" />
+          <ng-icon [svg]="phosphorMagnifyingGlass" />
         </sd-select-button>
       }
       @if (editModal()) {
         <sd-select-button (click)="onEditModalButtonClick($event)">
-          <fa-icon [icon]="icons.edit" />
+          <ng-icon [svg]="phosphorNotePencil" />
         </sd-select-button>
       }
 
@@ -130,8 +130,6 @@ export class SdSharedDataSelectControl<
   TMode extends keyof TSelectModeValue<TItem>,
   TModal extends ISdSelectModal<any>,
 > {
-  protected readonly icons = inject(SdAngularConfigProvider).icons;
-
   private readonly _sdModal = inject(SdModalProvider);
 
   value = model<TSelectModeValue<TItem["__valueKey"] | undefined>[TMode]>();
@@ -294,4 +292,7 @@ export class SdSharedDataSelectControl<
 
     await this._sdModal.showAsync(modal);
   }
+
+  protected readonly phosphorMagnifyingGlass = phosphorMagnifyingGlass;
+  protected readonly phosphorNotePencil = phosphorNotePencil;
 }

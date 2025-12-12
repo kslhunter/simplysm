@@ -6,14 +6,14 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import { SdThemeProvider } from "../../core/providers/sd-theme-provider";
-import { SdAngularConfigProvider } from "../../core/providers/app/sd-angular-config.provider";
 import { $effect } from "../../core/utils/bindings/$effect";
-import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { SdDropdownControl } from "../../ui/overlay/dropdown/sd-dropdown.control";
 import { SdButtonControl } from "../../ui/form/button/sd-button.control";
 import { SdDropdownPopupControl } from "../../ui/overlay/dropdown/sd-dropdown-popup.control";
 import { SdListControl } from "../../ui/data/list/sd-list.control";
 import { SdListItemControl } from "../../ui/data/list/sd-list-item.control";
+import { NgIcon } from "@ng-icons/core";
+import { phosphorCheck, phosphorMountains } from "@ng-icons/phosphor-icons/regular";
 
 @Component({
   selector: "sd-theme-selector",
@@ -21,17 +21,17 @@ import { SdListItemControl } from "../../ui/data/list/sd-list-item.control";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
-    FaIconComponent,
     SdDropdownControl,
     SdButtonControl,
     SdDropdownPopupControl,
     SdListControl,
     SdListItemControl,
+    NgIcon,
   ],
   template: `
     <sd-dropdown>
       <sd-button [theme]="'link-gray'">
-        <fa-icon [icon]="icons.mountainSun" />
+        <ng-icon [svg]="phosphorMountains" />
         <span>{{ theme() }}</span>
         @if (dark()) {
           <span>-dark</span>
@@ -42,14 +42,14 @@ import { SdListItemControl } from "../../ui/data/list/sd-list-item.control";
         <sd-list>
           <sd-list-item
             [selected]="theme() === 'compact' && !dark()"
-            [selectedIcon]="icons.check"
+            [selectedIcon]="phosphorCheck"
             (click)="theme.set('compact'); dark.set(false)"
           >
             compact
           </sd-list-item>
           <sd-list-item
             [selected]="theme() === 'compact' && dark()"
-            [selectedIcon]="icons.check"
+            [selectedIcon]="phosphorCheck"
             (click)="theme.set('compact'); dark.set(true)"
           >
             compact-dark
@@ -60,8 +60,6 @@ import { SdListItemControl } from "../../ui/data/list/sd-list-item.control";
   `,
 })
 export class SdThemeSelectorControl {
-  protected readonly icons = inject(SdAngularConfigProvider).icons;
-
   private readonly _sdTheme = inject(SdThemeProvider);
 
   dropdownControl = viewChild.required(SdDropdownControl);
@@ -76,4 +74,7 @@ export class SdThemeSelectorControl {
       this.dropdownControl().open.set(false);
     });
   }
+
+  protected readonly phosphorMountains = phosphorMountains;
+  protected readonly phosphorCheck = phosphorCheck;
 }

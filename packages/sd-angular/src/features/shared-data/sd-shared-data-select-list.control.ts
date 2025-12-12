@@ -9,7 +9,6 @@ import {
   TemplateRef,
   ViewEncapsulation,
 } from "@angular/core";
-import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { StringUtils } from "@simplysm/sd-core-common";
 import { SdPaginationControl } from "../../ui/navigation/sd-pagination.control";
 import { SdTextfieldControl } from "../../ui/form/input/sd-textfield.control";
@@ -17,7 +16,6 @@ import {
   SdItemOfTemplateContext,
   SdItemOfTemplateDirective,
 } from "../../core/directives/sd-item-of-template.directive";
-import { SdAngularConfigProvider } from "../../core/providers/app/sd-angular-config.provider";
 import { SdModalProvider } from "../../ui/overlay/modal/sd-modal.provider";
 import { $computed } from "../../core/utils/bindings/$computed";
 import { $effect } from "../../core/utils/bindings/$effect";
@@ -25,11 +23,12 @@ import { $signal } from "../../core/utils/bindings/$signal";
 import { transformBoolean } from "../../core/utils/transforms/transformBoolean";
 import { ISharedDataBase } from "../../core/providers/storage/sd-shared-data.provider";
 import { setupModelHook } from "../../core/utils/setups/setupModelHook";
-import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { ISdSelectModal, TSdSelectModalInfo } from "../data-view/sd-data-select-button.control";
 import { SdAnchorControl } from "../../ui/form/button/sd-anchor.control";
 import { SdListControl } from "../../ui/data/list/sd-list.control";
 import { SdListItemControl } from "../../ui/data/list/sd-list-item.control";
+import { NgIcon } from "@ng-icons/core";
+import { phosphorArrowSquareOut } from "@ng-icons/phosphor-icons/regular";
 
 @Component({
   selector: "sd-shared-data-select-list",
@@ -39,12 +38,11 @@ import { SdListItemControl } from "../../ui/data/list/sd-list-item.control";
   imports: [
     NgTemplateOutlet,
     SdTextfieldControl,
-    FaIconComponent,
     SdPaginationControl,
-    FaIconComponent,
     SdAnchorControl,
     SdListControl,
     SdListItemControl,
+    NgIcon,
   ],
   host: {
     class: "flex-column",
@@ -66,7 +64,7 @@ import { SdListItemControl } from "../../ui/data/list/sd-list-item.control";
           </div>
           @if (modal()) {
             <sd-anchor (click)="onModalButtonClick()">
-              <fa-icon [icon]="icons.externalLink" [fixedWidth]="true" />
+              <ng-icon [svg]="phosphorArrowSquareOut" />
             </sd-anchor>
           }
         </div>
@@ -127,15 +125,13 @@ export class SdSharedDataSelectListControl<
   TItem extends ISharedDataBase<string | number>,
   TModal extends ISdSelectModal<any>,
 > {
-  protected readonly icons = inject(SdAngularConfigProvider).icons;
-
   private readonly _sdModal = inject(SdModalProvider);
 
   selectedItem = model<TItem>();
   canChangeFn = input<(item: TItem | undefined) => boolean | Promise<boolean>>(() => true);
 
   items = input.required<TItem[]>();
-  selectedIcon = input<IconDefinition>();
+  selectedIcon = input<string>();
   useUndefined = input(false, { transform: transformBoolean });
   filterFn = input<(item: TItem, index: number) => boolean>();
 
@@ -222,4 +218,6 @@ export class SdSharedDataSelectListControl<
       this.selectedItem.set(newSelectedItem);
     }
   }
+
+  protected readonly phosphorArrowSquareOut = phosphorArrowSquareOut;
 }

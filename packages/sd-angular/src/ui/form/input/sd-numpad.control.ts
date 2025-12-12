@@ -1,28 +1,26 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  inject,
   input,
   model,
   output,
   ViewEncapsulation,
 } from "@angular/core";
 import { NumberUtils, StringUtils } from "@simplysm/sd-core-common";
-import { SdAngularConfigProvider } from "../../../core/providers/app/sd-angular-config.provider";
 import { $effect } from "../../../core/utils/bindings/$effect";
 import { $signal } from "../../../core/utils/bindings/$signal";
 import { transformBoolean } from "../../../core/utils/transforms/transformBoolean";
 import { SdButtonControl } from "../button/sd-button.control";
-
 import { SdTextfieldControl } from "./sd-textfield.control";
-import { FaIconComponent } from "@fortawesome/angular-fontawesome";
+import { NgIcon } from "@ng-icons/core";
+import { phosphorArrowLeft, phosphorEraser } from "@ng-icons/phosphor-icons/regular";
 
 @Component({
   selector: "sd-numpad",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdTextfieldControl, SdButtonControl, FaIconComponent],
+  imports: [SdTextfieldControl, SdButtonControl, NgIcon],
   template: `
     <table>
       <thead>
@@ -65,7 +63,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
               [buttonClass]="'tx-theme-danger-default'"
               (click)="onButtonClick('C')"
             >
-              <fa-icon [icon]="icons.eraser" />
+              <ng-icon [svg]="phosphorEraser" />
             </sd-button>
           </td>
           <td>
@@ -74,7 +72,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
               [buttonClass]="'tx-theme-warning-default'"
               (click)="onButtonClick('BS')"
             >
-              <fa-icon [icon]="icons.arrowLeftLong" />
+              <ng-icon [svg]="phosphorArrowLeft" />
             </sd-button>
           </td>
         </tr>
@@ -121,8 +119,6 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
   ],
 })
 export class SdNumpadControl {
-  protected readonly icons = inject(SdAngularConfigProvider).icons;
-
   text = $signal<string>();
 
   placeholder = input<string>();
@@ -173,4 +169,7 @@ export class SdNumpadControl {
       this.text.update((v) => (v ?? "") + key);
     }
   }
+
+  protected readonly phosphorEraser = phosphorEraser;
+  protected readonly phosphorArrowLeft = phosphorArrowLeft;
 }

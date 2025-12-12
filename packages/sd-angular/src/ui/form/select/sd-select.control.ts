@@ -5,7 +5,6 @@ import {
   contentChild,
   contentChildren,
   ElementRef,
-  inject,
   input,
   model,
   TemplateRef,
@@ -18,16 +17,16 @@ import {
 } from "../../../core/directives/sd-item-of-template.directive";
 import { SdRippleDirective } from "../../../core/directives/sd-ripple.directive";
 import { SdTypedTemplateDirective } from "../../../core/directives/sd-typed-template.directive";
-import { SdAngularConfigProvider } from "../../../core/providers/app/sd-angular-config.provider";
 import { setupInvalid } from "../../../core/utils/setups/setupInvalid";
 import { transformBoolean } from "../../../core/utils/transforms/transformBoolean";
 import { SdGapControl } from "../../layout/sd-gap.control";
 import { SdSelectItemControl } from "./sd-select-item.control";
-import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { SdDropdownControl } from "../../overlay/dropdown/sd-dropdown.control";
 import { SdDropdownPopupControl } from "../../overlay/dropdown/sd-dropdown-popup.control";
 import { $afterRenderEffect } from "../../../core/utils/bindings/$afterRenderEffect";
 import { SdAnchorControl } from "../button/sd-anchor.control";
+import { phosphorCaretDownFill } from "@ng-icons/phosphor-icons/fill";
+import { NgIcon } from "@ng-icons/core";
 
 @Component({
   selector: "sd-select",
@@ -41,8 +40,8 @@ import { SdAnchorControl } from "../button/sd-anchor.control";
     NgTemplateOutlet,
     SdTypedTemplateDirective,
     SdRippleDirective,
-    FaIconComponent,
     SdAnchorControl,
+    NgIcon,
   ],
   template: `
     <sd-dropdown
@@ -55,7 +54,7 @@ import { SdAnchorControl } from "../button/sd-anchor.control";
       <div class="_sd-select-control" [sd-ripple]="!disabled()">
         <div #contentEl class="_sd-select-control-content"></div>
         <div class="_sd-select-control-icon">
-          <fa-icon [icon]="icons.caretDown" />
+          <ng-icon [svg]="phosphorCaretDownFill" />
         </div>
       </div>
 
@@ -289,8 +288,6 @@ import { SdAnchorControl } from "../button/sd-anchor.control";
   },
 })
 export class SdSelectControl<M extends "single" | "multi", T> {
-  protected readonly icons = inject(SdAngularConfigProvider).icons;
-
   value = model<TSelectModeValue<any>[M]>();
 
   open = model(false);
@@ -439,6 +436,7 @@ export class SdSelectControl<M extends "single" | "multi", T> {
     items: T[];
     depth: number;
   };
+  protected readonly phosphorCaretDownFill = phosphorCaretDownFill;
 }
 
 export type TSelectModeValue<T> = {

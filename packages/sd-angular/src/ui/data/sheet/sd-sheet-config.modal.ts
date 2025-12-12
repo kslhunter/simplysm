@@ -2,7 +2,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   forwardRef,
-  inject,
   input,
   output,
   ViewEncapsulation,
@@ -15,12 +14,12 @@ import { SdSheetColumnDirective } from "./directives/sd-sheet-column.directive";
 import { SdSheetControl } from "./sd-sheet.control";
 import { ISdSheetConfig } from "./types/ISdSheetConfig";
 import { SdTextfieldControl } from "../../form/input/sd-textfield.control";
-import { SdAngularConfigProvider } from "../../../core/providers/app/sd-angular-config.provider";
 import { ISdModal } from "../../overlay/modal/sd-modal.provider";
 import { $effect } from "../../../core/utils/bindings/$effect";
 import { $signal } from "../../../core/utils/bindings/$signal";
-import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { SdAnchorControl } from "../../form/button/sd-anchor.control";
+import { phosphorCaretDown, phosphorCaretUp, phosphorX } from "@ng-icons/phosphor-icons/regular";
+import { NgIcon } from "@ng-icons/core";
 
 @Component({
   selector: "sd-sheet-config-modal",
@@ -34,9 +33,9 @@ import { SdAnchorControl } from "../../form/button/sd-anchor.control";
     SdTextfieldControl,
     SdSheetColumnCellTemplateDirective,
     SdButtonControl,
-    FaIconComponent,
     SdBusyContainerControl,
     SdAnchorControl,
+    NgIcon,
   ],
   template: `
     <sd-busy-container [busy]="!initialized()">
@@ -77,7 +76,7 @@ import { SdAnchorControl } from "../../form/button/sd-anchor.control";
                     [disabled]="index === 0 || (!item.fixed && items()[index - 1].fixed)"
                     (click)="onDisplayOrderUpButtonClick(item)"
                   >
-                    <fa-icon [icon]="icons.angleUp" [fixedWidth]="true" />
+                    <ng-icon [svg]="phosphorCaretUp" />
                   </sd-anchor>
                   <sd-anchor
                     [disabled]="
@@ -85,7 +84,7 @@ import { SdAnchorControl } from "../../form/button/sd-anchor.control";
                     "
                     (click)="onDisplayOrderDownButtonClick(item)"
                   >
-                    <fa-icon [icon]="icons.angleDown" [fixedWidth]="true" />
+                    <ng-icon [svg]="phosphorCaretDown" />
                   </sd-anchor>
                 </div>
               </ng-template>
@@ -129,7 +128,7 @@ import { SdAnchorControl } from "../../form/button/sd-anchor.control";
                     [inset]="true"
                     [(value)]="item.hidden"
                     (valueChange)="items.$mark()"
-                    [icon]="icons.xmark"
+                    [icon]="phosphorX"
                     [theme]="'danger'"
                   ></sd-checkbox>
                 </div>
@@ -171,8 +170,6 @@ import { SdAnchorControl } from "../../form/button/sd-anchor.control";
   `,
 })
 export class SdSheetConfigModal<T> implements ISdModal<ISdSheetConfig> {
-  protected readonly icons = inject(SdAngularConfigProvider).icons;
-
   sheetKey = input.required<string>();
   controls = input.required<readonly SdSheetColumnDirective<T>[]>();
   config = input.required<ISdSheetConfig | undefined>();
@@ -263,6 +260,10 @@ export class SdSheetConfigModal<T> implements ISdModal<ISdSheetConfig> {
       this.close.emit({ columnRecord: {} });
     }
   }
+
+  protected readonly phosphorCaretUp = phosphorCaretUp;
+  protected readonly phosphorCaretDown = phosphorCaretDown;
+  protected readonly phosphorX = phosphorX;
 }
 
 interface IItem {

@@ -12,7 +12,6 @@ import {
 import { SdEventsDirective } from "../../../core/directives/sd-events.directive";
 import { SdSheetConfigModal } from "./sd-sheet-config.modal";
 import { ISdResizeEvent } from "../../../core/plugins/events/sd-resize-event.plugin";
-import { SdAngularConfigProvider } from "../../../core/providers/app/sd-angular-config.provider";
 import { SdModalProvider } from "../../overlay/modal/sd-modal.provider";
 import { $computed } from "../../../core/utils/bindings/$computed";
 import { SdExpandingManager } from "../../../core/utils/managers/SdExpandingManager";
@@ -30,12 +29,20 @@ import { SdSheetFocusIndicatorRenderer } from "./features/SdSheetFocusIndicatorR
 import { SdSheetLayoutEngine } from "./features/SdSheetLayoutEngine";
 import { SdSheetSelectRowIndicatorRenderer } from "./features/SdSheetSelectRowIndicatorRenderer";
 import { ISdSheetConfig, ISdSheetConfigColumn } from "./types/ISdSheetConfig";
-import { FaIconComponent, FaLayersComponent } from "@fortawesome/angular-fontawesome";
 import { SdButtonControl } from "../../form/button/sd-button.control";
 import { SdAnchorControl } from "../../form/button/sd-anchor.control";
 import { NumberUtils } from "@simplysm/sd-core-common";
 import { ISdSheetHeaderDef } from "./types/ISdSheetHeaderDef";
 import { ISdSheetItemKeydownEventParam } from "./types/ISdSheetItemKeydownEventParam";
+import { NgIcon } from "@ng-icons/core";
+import {
+  phosphorArrowRight,
+  phosphorArrowsDownUp,
+  phosphorGear,
+  phosphorSortAscending,
+  phosphorSortDescending,
+} from "@ng-icons/phosphor-icons/regular";
+import { phosphorCaretRightFill } from "@ng-icons/phosphor-icons/fill";
 
 @Component({
   selector: "sd-sheet",
@@ -47,10 +54,9 @@ import { ISdSheetItemKeydownEventParam } from "./types/ISdSheetItemKeydownEventP
     NgTemplateOutlet,
     SdCheckboxControl,
     SdEventsDirective,
-    FaIconComponent,
-    FaLayersComponent,
     SdButtonControl,
     SdAnchorControl,
+    NgIcon,
   ],
   host: {
     "class": "flex-column fill",
@@ -69,7 +75,7 @@ import { ISdSheetItemKeydownEventParam } from "./types/ISdSheetItemKeydownEventP
             [theme]="'link-primary'"
             (click)="onConfigButtonClick()"
           >
-            <fa-icon [icon]="icons.cog" [fixedWidth]="true" />
+            <ng-icon [svg]="phosphorGear" />
           </sd-button>
         }
         @if (effectivePageCount() > 1) {
@@ -117,11 +123,12 @@ import { ISdSheetItemKeydownEventParam } from "./types/ISdSheetItemKeydownEventP
                     [style.left.px]="columnFixingManager.fixedLeftMap().get(-1)"
                     (sdResize)="onHeaderLastRowCellResize($event, -1)"
                   >
-                    <fa-icon
-                      [icon]="icons.caretRight"
-                      [fixedWidth]="true"
+                    <ng-icon
+                      [svg]="phosphorCaretRightFill"
                       [class.tx-theme-primary-default]="expandingManager.isAllExpanded()"
-                      [rotate]="expandingManager.isAllExpanded() ? 90 : undefined"
+                      [style.transform]="
+                        expandingManager.isAllExpanded() ? 'rotate(90deg)' : undefined
+                      "
                       (click)="expandingManager.toggleAll()"
                     />
                   </th>
@@ -178,15 +185,14 @@ import { ISdSheetItemKeydownEventParam } from "./types/ISdSheetItemKeydownEventP
                         <!-- 정렬 아이콘 -->
                         @if (!headerCell.control.disableSorting()) {
                           <div class="_sort-icon">
-                            <fa-layers>
-                              <fa-icon [icon]="icons.sort" class="tx-trans-lightest" />
-                              @let _def = sortingManager.defMap().get(headerCell.control.key());
-                              @if (_def?.desc === false) {
-                                <fa-icon [icon]="icons.sortDown" />
-                              } @else if (_def?.desc === true) {
-                                <fa-icon [icon]="icons.sortUp" />
-                              }
-                            </fa-layers>
+                            @let _def = sortingManager.defMap().get(headerCell.control.key());
+                            @if (_def?.desc === false) {
+                              <ng-icon [svg]="phosphorSortAscending" />
+                            } @else if (_def?.desc === true) {
+                              <ng-icon [svg]="phosphorSortDescending" />
+                            } @else {
+                              <ng-icon [svg]="phosphorArrowsDownUp" class="tx-trans-lightest" />
+                            }
                             @let _idxText = _def?.indexText;
                             @if (_idxText) {
                               <sub>{{ _idxText }}</sub>
@@ -262,7 +268,7 @@ import { ISdSheetItemKeydownEventParam } from "./types/ISdSheetItemKeydownEventP
                       (pointerdown)="selectionManager.toggle(item)"
                       [attr.title]="_selectable"
                     >
-                      <fa-icon [icon]="icons.arrowRight" [fixedWidth]="true" />
+                      <ng-icon [svg]="phosphorArrowRight" />
                     </sd-anchor>
                   }
                 }
@@ -282,10 +288,11 @@ import { ISdSheetItemKeydownEventParam } from "./types/ISdSheetItemKeydownEventP
                     ></div>
                   }
                   @if (itemExpDef.hasChildren) {
-                    <fa-icon
-                      [icon]="icons.caretRight"
-                      [fixedWidth]="true"
-                      [rotate]="expandedItems().includes(item) ? 90 : undefined"
+                    <ng-icon
+                      [svg]="phosphorCaretRightFill"
+                      [style.transform]="
+                        expandedItems().includes(item) ? 'rotate(90deg)' : undefined
+                      "
                       [class.tx-theme-primary-default]="expandedItems().includes(item)"
                       (click)="expandingManager.toggle(item)"
                     />
@@ -417,7 +424,7 @@ import { ISdSheetItemKeydownEventParam } from "./types/ISdSheetItemKeydownEventP
                 padding: var(--sheet-pv) var(--sheet-ph);
                 text-align: left;
 
-                > fa-icon {
+                > ng-icon {
                   cursor: pointer;
                   color: var(--text-trans-lightest);
                 }
@@ -582,8 +589,6 @@ import { ISdSheetItemKeydownEventParam } from "./types/ISdSheetItemKeydownEventP
   ],
 })
 export class SdSheetControl<T> {
-  protected readonly icons = inject(SdAngularConfigProvider).icons;
-
   private readonly _sdModal = inject(SdModalProvider);
   hideConfigBar = input(false, { transform: transformBoolean });
   inset = input(false, { transform: transformBoolean });
@@ -950,4 +955,11 @@ export class SdSheetControl<T> {
     this.onBlurCaptureForCellAgent(event);
     this.onBlurCaptureForFocusIndicator();
   }
+
+  protected readonly phosphorGear = phosphorGear;
+  protected readonly phosphorCaretRightFill = phosphorCaretRightFill;
+  protected readonly phosphorSortAscending = phosphorSortAscending;
+  protected readonly phosphorSortDescending = phosphorSortDescending;
+  protected readonly phosphorArrowsDownUp = phosphorArrowsDownUp;
+  protected readonly phosphorArrowRight = phosphorArrowRight;
 }

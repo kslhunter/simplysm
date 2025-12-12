@@ -1,24 +1,17 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  input,
-  ViewEncapsulation,
-} from "@angular/core";
+import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
 import { $computed } from "../../../core/utils/bindings/$computed";
-
 import { transformBoolean } from "../../../core/utils/transforms/transformBoolean";
-import { FaIconComponent } from "@fortawesome/angular-fontawesome";
-import { SdAngularConfigProvider } from "../../../core/providers/app/sd-angular-config.provider";
+import { phosphorCaretDown } from "@ng-icons/phosphor-icons/regular";
+import { NgIcon } from "@ng-icons/core";
 
 @Component({
   selector: "sd-collapse-icon",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [FaIconComponent],
+  imports: [NgIcon],
   template: `
-    <fa-icon [icon]="icon()" [fixedWidth]="true" />
+    <ng-icon [svg]="icon()" />
   `,
   styles: [
     /* language=SCSS */ `
@@ -38,9 +31,7 @@ import { SdAngularConfigProvider } from "../../../core/providers/app/sd-angular-
   },
 })
 export class SdCollapseIconControl {
-  protected readonly icons = inject(SdAngularConfigProvider).icons;
-
-  icon = input(this.icons.angleDown);
+  icon = input(phosphorCaretDown);
   open = input(false, { transform: transformBoolean });
   openRotate = input(90);
 

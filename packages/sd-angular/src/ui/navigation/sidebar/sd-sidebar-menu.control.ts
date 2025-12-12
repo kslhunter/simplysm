@@ -3,13 +3,11 @@ import { useFullPageCodeSignal } from "../../../core/utils/signals/useFullPageCo
 import { NgTemplateOutlet } from "@angular/common";
 import { SdTypedTemplateDirective } from "../../../core/directives/sd-typed-template.directive";
 import { SdRouterLinkDirective } from "../../../core/directives/sd-router-link.directive";
-import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
-
 import * as querystring from "querystring";
 import { $computed } from "../../../core/utils/bindings/$computed";
-import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { SdListControl } from "../../data/list/sd-list.control";
 import { SdListItemControl } from "../../data/list/sd-list-item.control";
+import { NgIcon } from "@ng-icons/core";
 
 @Component({
   selector: "sd-sidebar-menu",
@@ -20,9 +18,9 @@ import { SdListItemControl } from "../../data/list/sd-list-item.control";
     NgTemplateOutlet,
     SdTypedTemplateDirective,
     SdRouterLinkDirective,
-    FaIconComponent,
     SdListControl,
     SdListItemControl,
+    NgIcon,
   ],
   host: {
     "class": "flex-column fill",
@@ -49,7 +47,7 @@ import { SdListItemControl } from "../../data/list/sd-list-item.control";
           [layout]="depth === 0 ? rootLayout() : 'accordion'"
         >
           @if (menu.icon) {
-            <fa-icon [icon]="menu.icon" [fixedWidth]="true" />
+            <ng-icon [svg]="menu.icon" />
             &nbsp;
           }
           {{ menu.title }}
@@ -135,6 +133,6 @@ export interface ISdSidebarMenu {
   title: string;
   codeChain: string[];
   url?: string;
-  icon?: IconDefinition;
+  icon?: string;
   children?: ISdSidebarMenu[];
 }

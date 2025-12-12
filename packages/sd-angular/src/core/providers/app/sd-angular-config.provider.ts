@@ -1,5 +1,4 @@
 import { Injectable } from "@angular/core";
-import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { TSdTheme } from "../sd-theme-provider";
 
 @Injectable({ providedIn: "root" })
@@ -7,9 +6,10 @@ export class SdAngularConfigProvider {
   clientName!: string;
   defaultTheme!: TSdTheme;
   defaultDark!: boolean;
-  icons!: ISdAngularIcon;
+  // icons!: ISdAngularIcon;
 }
 
+/*
 export interface ISdAngularIcon {
   fallback: IconDefinition;
 
@@ -52,3 +52,4 @@ export interface ISdAngularIcon {
 
   arrowRight: IconDefinition;
 }
+*/

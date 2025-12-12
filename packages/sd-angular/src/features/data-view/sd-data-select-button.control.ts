@@ -11,10 +11,8 @@ import {
   TemplateRef,
   ViewEncapsulation,
 } from "@angular/core";
-import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { SdAdditionalButtonControl } from "../../ui/form/button/sd-additional-button.control";
 import { TSelectModeValue } from "../../ui/form/select/sd-select.control";
-import { SdAngularConfigProvider } from "../../core/providers/app/sd-angular-config.provider";
 import { ISdModal, ISdModalInfo, SdModalProvider } from "../../ui/overlay/modal/sd-modal.provider";
 import { transformBoolean } from "../../core/utils/transforms/transformBoolean";
 import { $computed } from "../../core/utils/bindings/$computed";
@@ -29,19 +27,15 @@ import { injectParent } from "../../core/utils/injections/injectParent";
 import { SdAnchorControl } from "../../ui/form/button/sd-anchor.control";
 import { SdButtonControl } from "../../ui/form/button/sd-button.control";
 import { $signal } from "../../core/utils/bindings/$signal";
+import { NgIcon } from "@ng-icons/core";
+import { phosphorEraser, phosphorMagnifyingGlass } from "@ng-icons/phosphor-icons/regular";
 
 @Component({
   selector: "sd-data-select-button",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [
-    SdAdditionalButtonControl,
-    FaIconComponent,
-    NgTemplateOutlet,
-    SdAnchorControl,
-    SdButtonControl,
-  ],
+  imports: [SdAdditionalButtonControl, NgTemplateOutlet, SdAnchorControl, SdButtonControl, NgIcon],
   template: `
     <sd-additional-button [inset]="parent.inset()" [size]="parent.size()">
       @if (itemTplRef()) {
@@ -66,13 +60,13 @@ import { $signal } from "../../core/utils/bindings/$signal";
 
       @if (!parent.disabled() && !parent.isNoValue() && !parent.required()) {
         <sd-anchor [theme]="'danger'" (click)="onCancelButtonClick()">
-          <fa-icon [icon]="icons.eraser" />
+          <ng-icon [svg]="phosphorEraser" />
         </sd-anchor>
       }
 
       @if (!parent.disabled()) {
         <sd-button (click)="onModalButtonClick($event)" [inset]="true">
-          <fa-icon [icon]="icons.search" />
+          <ng-icon [svg]="phosphorMagnifyingGlass" />
         </sd-button>
       }
     </sd-additional-button>
@@ -91,8 +85,6 @@ import { $signal } from "../../core/utils/bindings/$signal";
   },
 })
 export class SdDataSelectButtonControl {
-  protected readonly icons = inject(SdAngularConfigProvider).icons;
-
   parent = injectParent();
 
   itemTplRef = contentChild<any, TemplateRef<SdItemOfTemplateContext<any>>>(
@@ -112,6 +104,9 @@ export class SdDataSelectButtonControl {
   async onCancelButtonClick() {
     await this.parent.doInitialValue();
   }
+
+  protected readonly phosphorEraser = phosphorEraser;
+  protected readonly phosphorMagnifyingGlass = phosphorMagnifyingGlass;
 }
 
 @Directive()

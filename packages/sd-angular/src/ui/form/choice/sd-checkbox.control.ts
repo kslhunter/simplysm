@@ -1,28 +1,21 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  input,
-  model,
-  ViewEncapsulation,
-} from "@angular/core";
+import { ChangeDetectionStrategy, Component, input, model, ViewEncapsulation } from "@angular/core";
 import { setupRipple } from "../../../core/utils/setups/setupRipple";
 import { transformBoolean } from "../../../core/utils/transforms/transformBoolean";
 import { setupModelHook } from "../../../core/utils/setups/setupModelHook";
-import { FaIconComponent } from "@fortawesome/angular-fontawesome";
-import { SdAngularConfigProvider } from "../../../core/providers/app/sd-angular-config.provider";
+import { NgIcon } from "@ng-icons/core";
+import { phosphorCheck } from "@ng-icons/phosphor-icons/regular";
 
 @Component({
   selector: "sd-checkbox",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [FaIconComponent],
+  imports: [NgIcon],
   template: `
     <div class="_indicator_rect">
       <div class="_indicator">
         @if (!radio()) {
-          <fa-icon [icon]="icon()" />
+          <ng-icon [svg]="icon()" />
         } @else {
           <div></div>
         }
@@ -75,7 +68,7 @@ import { SdAngularConfigProvider } from "../../../core/providers/app/sd-angular-
             opacity: 0;
             color: white;
 
-            > fa-icon > svg {
+            > ng-icon > svg {
               vertical-align: top;
             }
           }
@@ -254,12 +247,10 @@ import { SdAngularConfigProvider } from "../../../core/providers/app/sd-angular-
   },
 })
 export class SdCheckboxControl {
-  protected readonly icons = inject(SdAngularConfigProvider).icons;
-
   value = model(false);
   canChangeFn = input<(item: boolean) => boolean | Promise<boolean>>(() => true);
 
-  icon = input(this.icons.check);
+  icon = input(phosphorCheck);
   radio = input(false, { transform: transformBoolean });
   disabled = input(false, { transform: transformBoolean });
 

@@ -33,8 +33,6 @@ import { SdBaseContainerControl } from "../base/sd-base-container.control";
 import { SdSharedDataProvider } from "../../core/providers/storage/sd-shared-data.provider";
 import { SdDataSheetColumnDirective } from "./sd-data-sheet-column.directive";
 import { setupCloserWhenSingleSelectionChange } from "../../core/utils/setups/setupCloserWhenSingleSelectionChange";
-import { FaIconComponent } from "@fortawesome/angular-fontawesome";
-import { SdAngularConfigProvider } from "../../core/providers/app/sd-angular-config.provider";
 import { ISdSelectModal, ISelectModalOutputResult } from "./sd-data-select-button.control";
 import { injectParent } from "../../core/utils/injections/injectParent";
 import { FormatPipe } from "../../core/pipes/format.pipe";
@@ -43,6 +41,18 @@ import { $arr } from "../../core/utils/bindings/wrappers/$arr";
 import { TXT_CHANGE_IGNORE_CONFIRM } from "../../core/commons";
 import { $effect } from "../../core/utils/bindings/$effect";
 import { SdAnchorControl } from "../../ui/form/button/sd-anchor.control";
+import { NgIcon } from "@ng-icons/core";
+import {
+  phosphorArrowClockwise,
+  phosphorArrowsClockwise,
+  phosphorEraser,
+  phosphorFloppyDisk,
+  phosphorMagnifyingGlass,
+  phosphorMicrosoftExcelLogo,
+  phosphorNotePencil,
+  phosphorPlus,
+  phosphorUploadSimple,
+} from "@ng-icons/phosphor-icons/regular";
 
 @Component({
   selector: "sd-data-sheet",
@@ -57,9 +67,9 @@ import { SdAnchorControl } from "../../ui/form/button/sd-anchor.control";
     SdSheetColumnCellTemplateDirective,
     NgTemplateOutlet,
     SdBaseContainerControl,
-    FaIconComponent,
     FormatPipe,
     SdAnchorControl,
+    NgIcon,
   ],
   host: {
     "(sdRefreshCommand)": "onRefreshButtonClick()",
@@ -76,13 +86,13 @@ import { SdAnchorControl } from "../../ui/form/button/sd-anchor.control";
       <ng-template #pageTopbarTpl>
         @if (parent.canEdit() && parent.submit) {
           <sd-button [theme]="'link-primary'" (click)="onSubmitButtonClick()">
-            <fa-icon [icon]="icons.save" [fixedWidth]="true" />
+            <ng-icon [svg]="phosphorFloppyDisk" />
             저장
             <small>(CTRL+S)</small>
           </sd-button>
         }
         <sd-button [theme]="'link-info'" (click)="onRefreshButtonClick()">
-          <fa-icon [icon]="icons.refresh" [fixedWidth]="true" />
+          <ng-icon [svg]="phosphorArrowsClockwise" />
           새로고침
           <small>(CTRL+ALT+L)</small>
         </sd-button>
@@ -95,12 +105,12 @@ import { SdAnchorControl } from "../../ui/form/button/sd-anchor.control";
           @if (parent.canEdit() && parent.submit && parent.viewType() === "control") {
             <div class="flex-row gap-sm p-default bdb bdb-theme-gray-lightest">
               <sd-button [size]="'sm'" [theme]="'primary'" (click)="onSubmitButtonClick()">
-                <fa-icon [icon]="icons.save" [fixedWidth]="true" />
+                <ng-icon [svg]="phosphorFloppyDisk" />
                 저장
                 <small>(CTRL+S)</small>
               </sd-button>
               <sd-button [size]="'sm'" [theme]="'info'" (click)="onRefreshButtonClick()">
-                <fa-icon [icon]="icons.refresh" [fixedWidth]="true" />
+                <ng-icon [svg]="phosphorArrowsClockwise" />
                 새로고침
                 <small>(CTRL+ALT+L)</small>
               </sd-button>
@@ -116,7 +126,7 @@ import { SdAnchorControl } from "../../ui/form/button/sd-anchor.control";
                 <div class="form-box-inline">
                   <div>
                     <sd-button [type]="'submit'" [theme]="'info'">
-                      <fa-icon [icon]="icons.search" [fixedWidth]="true" />
+                      <ng-icon [svg]="phosphorMagnifyingGlass" />
                       조회
                     </sd-button>
                   </div>
@@ -136,7 +146,7 @@ import { SdAnchorControl } from "../../ui/form/button/sd-anchor.control";
                       [theme]="'link-primary'"
                       (click)="onCreateItemButtonClick()"
                     >
-                      <fa-icon [icon]="icons.add" [fixedWidth]="true" />
+                      <ng-icon [svg]="phosphorPlus" />
                       {{ insertText() ?? "등록" }}
                     </sd-button>
                   } @else if (parent.editMode === "inline" && parent.newItem) {
@@ -145,7 +155,7 @@ import { SdAnchorControl } from "../../ui/form/button/sd-anchor.control";
                       [theme]="'link-primary'"
                       (click)="onAddItemButtonClick()"
                     >
-                      <fa-icon [icon]="icons.add" [fixedWidth]="true" />
+                      <ng-icon [svg]="phosphorPlus" />
                       행 추가
                     </sd-button>
                   }
@@ -161,7 +171,7 @@ import { SdAnchorControl } from "../../ui/form/button/sd-anchor.control";
                       (click)="onToggleDeleteItemsButtonClick(true)"
                       [disabled]="!parent.isSelectedItemsHasNotDeleted()"
                     >
-                      <fa-icon [icon]="deleteIcon()" [fixedWidth]="true" />
+                      <ng-icon [svg]="deleteIcon()" />
                       선택 {{ deleteText() ?? "삭제" }}
                     </sd-button>
                     @if (parent.isSelectedItemsHasDeleted()) {
@@ -170,7 +180,7 @@ import { SdAnchorControl } from "../../ui/form/button/sd-anchor.control";
                         [theme]="'link-warning'"
                         (click)="onToggleDeleteItemsButtonClick(false)"
                       >
-                        <fa-icon [icon]="restoreIcon()" [fixedWidth]="true" />
+                        <ng-icon [svg]="restoreIcon()" />
                         선택 {{ restoreText() ?? "복구" }}
                       </sd-button>
                     }
@@ -182,7 +192,7 @@ import { SdAnchorControl } from "../../ui/form/button/sd-anchor.control";
                       [theme]="'link-success'"
                       (click)="onUploadExcelButtonClick()"
                     >
-                      <fa-icon [icon]="icons.upload" [fixedWidth]="true" />
+                      <ng-icon [svg]="phosphorUploadSimple" />
                       엑셀 업로드
                     </sd-button>
                   }
@@ -194,7 +204,7 @@ import { SdAnchorControl } from "../../ui/form/button/sd-anchor.control";
                     [theme]="'link-success'"
                     (click)="onDownloadExcelButtonClick()"
                   >
-                    <fa-icon [icon]="icons.fileExcel" [fixedWidth]="true" />
+                    <ng-icon [svg]="phosphorMicrosoftExcelLogo" />
                     엑셀 다운로드
                   </sd-button>
                 }
@@ -224,7 +234,7 @@ import { SdAnchorControl } from "../../ui/form/button/sd-anchor.control";
                 <sd-sheet-column [fixed]="true" [key]="parent.itemPropInfo.isDeleted">
                   <ng-template #headerTpl>
                     <div class="p-xs-sm tx-center">
-                      <fa-icon [icon]="deleteIcon()" />
+                      <ng-icon [svg]="deleteIcon()" />
                     </div>
                   </ng-template>
                   <ng-template [cell]="parent.items()" let-item>
@@ -234,11 +244,8 @@ import { SdAnchorControl } from "../../ui/form/button/sd-anchor.control";
                         (click)="onToggleDeleteItemButtonClick(item)"
                         [disabled]="!parent.getItemInfoFn(item).canDelete"
                       >
-                        <fa-icon
-                          [icon]="
-                            item[parent.itemPropInfo.isDeleted] ? restoreIcon() : deleteIcon()
-                          "
-                          [fixedWidth]="true"
+                        <ng-icon
+                          [svg]="item[parent.itemPropInfo.isDeleted] ? restoreIcon() : deleteIcon()"
                         />
                         {{ item[parent.itemPropInfo.isDeleted] ? restoreText() : deleteText() }}
                       </sd-anchor>
@@ -289,7 +296,7 @@ import { SdAnchorControl } from "../../ui/form/button/sd-anchor.control";
                         class="flex-row"
                       >
                         <div class="p-xs-sm">
-                          <fa-icon [icon]="icons.edit" [fixedWidth]="true" />
+                          <ng-icon [svg]="phosphorNotePencil" />
                         </div>
                         <div class="flex-fill">
                           <ng-template
@@ -381,7 +388,7 @@ import { SdAnchorControl } from "../../ui/form/button/sd-anchor.control";
             (click)="onRefreshButtonClick()"
             title="새로고침(CTRL+ALT+L)"
           >
-            <fa-icon [icon]="icons.refresh" [fixedWidth]="true" />
+            <ng-icon [svg]="phosphorArrowsClockwise" />
           </sd-anchor>
         </ng-template>
       }
@@ -389,8 +396,6 @@ import { SdAnchorControl } from "../../ui/form/button/sd-anchor.control";
   `,
 })
 export class SdDataSheetControl {
-  protected readonly icons = inject(SdAngularConfigProvider).icons;
-
   parent = injectParent<AbsSdDataSheet<any, any, any>>();
 
   formCtrl = viewChild<SdFormControl>("formCtrl");
@@ -398,8 +403,8 @@ export class SdDataSheetControl {
   insertText = input<string>();
   deleteText = input<string>();
   restoreText = input<string>();
-  deleteIcon = input(this.icons.eraser);
-  restoreIcon = input(this.icons.redo);
+  deleteIcon = input(phosphorEraser);
+  restoreIcon = input(phosphorArrowClockwise);
 
   pageTopbarTplRef = contentChild("pageTopbarTpl", { read: TemplateRef });
   prevTplRef = contentChild("prevTpl", { read: TemplateRef });
@@ -478,6 +483,15 @@ export class SdDataSheetControl {
   onCancelButtonClick() {
     this.parent.doModalCancel();
   }
+
+  protected readonly phosphorFloppyDisk = phosphorFloppyDisk;
+  protected readonly phosphorArrowClockwise = phosphorArrowClockwise;
+  protected readonly phosphorPlus = phosphorPlus;
+  protected readonly phosphorMagnifyingGlass = phosphorMagnifyingGlass;
+  protected readonly phosphorArrowsClockwise = phosphorArrowsClockwise;
+  protected readonly phosphorUploadSimple = phosphorUploadSimple;
+  protected readonly phosphorMicrosoftExcelLogo = phosphorMicrosoftExcelLogo;
+  protected readonly phosphorNotePencil = phosphorNotePencil;
 }
 
 @Directive()

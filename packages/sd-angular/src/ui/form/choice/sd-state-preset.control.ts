@@ -7,24 +7,24 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import { ObjectUtils } from "@simplysm/sd-core-common";
-import { SdAngularConfigProvider } from "../../../core/providers/app/sd-angular-config.provider";
 import { SdSystemConfigProvider } from "../../../core/providers/app/sd-system-config.provider";
 import { SdToastProvider } from "../../overlay/toast/sd-toast.provider";
 import { $effect } from "../../../core/utils/bindings/$effect";
 import { $signal } from "../../../core/utils/bindings/$signal";
 import { SdGapControl } from "../../layout/sd-gap.control";
-import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { SdAnchorControl } from "../button/sd-anchor.control";
+import { NgIcon } from "@ng-icons/core";
+import { phosphorFloppyDisk, phosphorStar, phosphorX } from "@ng-icons/phosphor-icons/regular";
 
 @Component({
   selector: "sd-state-preset",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdGapControl, FaIconComponent, SdAnchorControl],
+  imports: [SdGapControl, SdAnchorControl, NgIcon],
   template: `
     <sd-anchor (click)="onAddButtonClick()">
-      <fa-icon [icon]="icons.star" class="tx-theme-warning-default" [fixedWidth]="true" />
+      <ng-icon [svg]="phosphorStar" class="tx-theme-warning-default" />
     </sd-anchor>
     <sd-gap [width]="'sm'"></sd-gap>
     @for (preset of presets(); track preset.name) {
@@ -33,10 +33,10 @@ import { SdAnchorControl } from "../button/sd-anchor.control";
           {{ preset.name }}
         </sd-anchor>
         <sd-anchor (click)="onSaveButtonClick(preset)">
-          <fa-icon [icon]="icons.save" size="sm" />
+          <ng-icon [svg]="phosphorFloppyDisk" [size]="'0.875em'" />
         </sd-anchor>
         <sd-anchor (click)="onRemoveButtonClick(preset)">
-          <fa-icon [icon]="icons.xmark" size="sm" />
+          <ng-icon [svg]="phosphorX" [size]="'0.875em'" />
         </sd-anchor>
       </div>
       <sd-gap [width]="'sm'"></sd-gap>
@@ -96,8 +96,6 @@ import { SdAnchorControl } from "../button/sd-anchor.control";
   },
 })
 export class SdStatePresetControl {
-  protected readonly icons = inject(SdAngularConfigProvider).icons;
-
   private readonly _sdSystemConfig = inject(SdSystemConfigProvider);
   private readonly _sdToast = inject(SdToastProvider);
 
@@ -151,6 +149,10 @@ export class SdStatePresetControl {
 
     this._sdToast.info(`현재 상태가 ${preset.name}에 저장되었습니다.`);
   }
+
+  protected readonly phosphorStar = phosphorStar;
+  protected readonly phosphorFloppyDisk = phosphorFloppyDisk;
+  protected readonly phosphorX = phosphorX;
 }
 
 export interface ISdStatePreset {

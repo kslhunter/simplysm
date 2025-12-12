@@ -11,7 +11,6 @@ import {
 import { SdBusyContainerControl } from "../../ui/overlay/busy/sd-busy-container.control";
 import { SdTopbarContainerControl } from "../../ui/navigation/topbar/sd-topbar-container.control";
 import { SdTopbarControl } from "../../ui/navigation/topbar/sd-topbar.control";
-import { SdAngularConfigProvider } from "../../core/providers/app/sd-angular-config.provider";
 import { SdAppStructureProvider } from "../../core/providers/app/sd-app-structure.provider";
 import { SdActivatedModalProvider } from "../../ui/overlay/modal/sd-modal.provider";
 import { $computed } from "../../core/utils/bindings/$computed";
@@ -19,8 +18,9 @@ import { useCurrentPageCodeSignal } from "../../core/utils/signals/useCurrentPag
 import { useFullPageCodeSignal } from "../../core/utils/signals/useFullPageCodeSignal";
 import { TSdViewType, useViewTypeSignal } from "../../core/utils/signals/useViewTypeSignal";
 import { transformBoolean } from "../../core/utils/transforms/transformBoolean";
-import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { injectParent } from "../../core/utils/injections/injectParent";
+import { NgIcon } from "@ng-icons/core";
+import { phosphorWarning } from "@ng-icons/phosphor-icons/regular";
 
 @Component({
   selector: "sd-base-container",
@@ -28,11 +28,11 @@ import { injectParent } from "../../core/utils/injections/injectParent";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
-    FaIconComponent,
     SdTopbarContainerControl,
     SdTopbarControl,
     SdBusyContainerControl,
     NgTemplateOutlet,
+    NgIcon,
   ],
   template: `
     <sd-busy-container [busy]="busy()" [message]="busyMessage()">
@@ -40,7 +40,7 @@ import { injectParent } from "../../core/utils/injections/injectParent";
         @if (restricted()) {
           <div class="fill tx-theme-gray-light p-xxl tx-center">
             <br />
-            <fa-icon [icon]="icons.triangleExclamation" [fixedWidth]="true" size="5x" />
+            <ng-icon [svg]="phosphorWarning" [size]="'5em'" />
             <br />
             <br />
             '{{ modalOrPageTitle() }}'에 대한 사용권한이 없습니다. 시스템 관리자에게 문의하세요.
@@ -76,8 +76,6 @@ import { injectParent } from "../../core/utils/injections/injectParent";
   `,
 })
 export class SdBaseContainerControl {
-  protected readonly icons = inject(SdAngularConfigProvider).icons;
-
   private readonly _sdActivatedModal = inject(SdActivatedModalProvider, { optional: true });
   private readonly _sdAppStructure = inject(SdAppStructureProvider);
 
@@ -107,4 +105,5 @@ export class SdBaseContainerControl {
   restricted = input(false, { transform: transformBoolean });
   busy = input(false, { transform: transformBoolean });
   busyMessage = input<string>();
+  protected readonly phosphorWarning = phosphorWarning;
 }

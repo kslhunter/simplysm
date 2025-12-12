@@ -1,5 +1,4 @@
 import { inject, Injectable, Signal } from "@angular/core";
-import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { $computed } from "../../utils/bindings/$computed";
 
 export function usePermsSignal<K extends string>(viewCodes: string[], keys: K[]): Signal<K[]> {
@@ -326,9 +325,7 @@ export abstract class SdAppStructureUtils {
       if ("subPerms" in item) {
         for (const subPerm of item.subPerms ?? []) {
           // subPerm도 모듈 체크
-          if (
-            !this._isUsableModules(subPerm.modules, subPerm.requiredModules, usableModules)
-          )
+          if (!this._isUsableModules(subPerm.modules, subPerm.requiredModules, usableModules))
             continue;
 
           for (const perm of subPerm.perms) {
@@ -383,9 +380,7 @@ export abstract class SdAppStructureUtils {
 
     // 2. modules: 하나라도 있으면 됨 (OR)
     return (
-      modules == null ||
-      modules.length === 0 ||
-      modules.some((m) => usableModules?.includes(m))
+      modules == null || modules.length === 0 || modules.some((m) => usableModules?.includes(m))
     );
   }
 }
@@ -399,7 +394,7 @@ interface ISdAppStructureGroupItem<TModule> {
   title: string;
   modules?: TModule[];
   requiredModules?: TModule[];
-  icon?: IconDefinition;
+  icon?: string;
   children: TSdAppStructureItem<TModule>[];
 }
 
@@ -410,7 +405,7 @@ interface ISdAppStructureLeafItem<TModule> {
   requiredModules?: TModule[];
   perms?: ("use" | "edit")[];
   subPerms?: ISdAppStructureSubPermission<TModule>[];
-  icon?: IconDefinition;
+  icon?: string;
   isNotMenu?: boolean;
 }
 
@@ -425,7 +420,7 @@ interface ISdAppStructureSubPermission<TModule> {
 export interface ISdMenu<TModule = unknown> {
   title: string;
   codeChain: string[];
-  icon: IconDefinition | undefined;
+  icon: string | undefined;
   modules: TModule[] | undefined;
   children: ISdMenu<TModule>[] | undefined;
 }

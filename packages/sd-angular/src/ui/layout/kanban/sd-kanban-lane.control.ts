@@ -11,30 +11,23 @@ import {
   TemplateRef,
   ViewEncapsulation,
 } from "@angular/core";
-import { SdAngularConfigProvider } from "../../../core/providers/app/sd-angular-config.provider";
 import { $computed } from "../../../core/utils/bindings/$computed";
 import { $signal } from "../../../core/utils/bindings/$signal";
 import { transformBoolean } from "../../../core/utils/transforms/transformBoolean";
 import { SdBusyContainerControl } from "../../overlay/busy/sd-busy-container.control";
 import { SdCheckboxControl } from "../../form/choice/sd-checkbox.control";
-
 import { SdKanbanBoardControl } from "./sd-kanban-board.control";
 import { SdKanbanControl } from "./sd-kanban.control";
-import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { SdAnchorControl } from "../../form/button/sd-anchor.control";
+import { NgIcon } from "@ng-icons/core";
+import { phosphorEye, phosphorEyeSlash } from "@ng-icons/phosphor-icons/regular";
 
 @Component({
   selector: "sd-kanban-lane",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [
-    SdBusyContainerControl,
-    SdCheckboxControl,
-    NgTemplateOutlet,
-    FaIconComponent,
-    SdAnchorControl,
-  ],
+  imports: [SdBusyContainerControl, SdCheckboxControl, NgTemplateOutlet, SdAnchorControl, NgIcon],
   host: {
     "class": "flex-column p-default gap-default",
     "[attr.data-sd-drag-over]": "dragOvered()",
@@ -47,7 +40,7 @@ import { SdAnchorControl } from "../../form/button/sd-anchor.control";
       <div>
         @if (useCollapse()) {
           <sd-anchor [theme]="'info'" (click)="onToggleCollapseButtonClick()">
-            <fa-icon [icon]="collapse() ? icons.eyeSlash : icons.eye" [fixedWidth]="true" />
+            <ng-icon [svg]="collapse() ? phosphorEyeSlash : phosphorEye" />
           </sd-anchor>
         }
 
@@ -124,8 +117,6 @@ import { SdAnchorControl } from "../../form/button/sd-anchor.control";
   ],
 })
 export class SdKanbanLaneControl<L, T> {
-  protected readonly icons = inject(SdAngularConfigProvider).icons;
-
   private readonly _boardControl = inject<SdKanbanBoardControl<L, T>>(
     forwardRef(() => SdKanbanBoardControl),
   );
@@ -208,4 +199,7 @@ export class SdKanbanLaneControl<L, T> {
 
     this._boardControl.onDropTo(this);
   }
+
+  protected readonly phosphorEyeSlash = phosphorEyeSlash;
+  protected readonly phosphorEye = phosphorEye;
 }

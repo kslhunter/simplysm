@@ -9,28 +9,21 @@ import {
   TemplateRef,
   ViewEncapsulation,
 } from "@angular/core";
-import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 
 import { SdListControl } from "./sd-list.control";
-import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { SdRippleDirective } from "../../../core/directives/sd-ripple.directive";
 import { SdCollapseIconControl } from "../../navigation/collapse/sd-collapse-icon.control";
 import { SdCollapseControl } from "../../navigation/collapse/sd-collapse.control";
 import { transformBoolean } from "../../../core/utils/transforms/transformBoolean";
 import { $computed } from "../../../core/utils/bindings/$computed";
+import { NgIcon } from "@ng-icons/core";
 
 @Component({
   selector: "sd-list-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [
-    NgTemplateOutlet,
-    FaIconComponent,
-    SdRippleDirective,
-    SdCollapseIconControl,
-    SdCollapseControl,
-  ],
+  imports: [NgTemplateOutlet, SdRippleDirective, SdCollapseIconControl, SdCollapseControl, NgIcon],
   host: {
     "[attr.data-sd-layout]": "layout()",
     "[attr.data-sd-open]": "open()",
@@ -49,11 +42,10 @@ import { $computed } from "../../../core/utils/bindings/$computed";
       [sd-ripple]="!readonly() && !(layout() === 'flat' && hasChildren())"
     >
       @if (selectedIcon() && !hasChildren()) {
-        <fa-icon
+        <ng-icon
           [class.tx-theme-primary-default]="selected()"
           [class.tx-trans-lightest]="!selected()"
-          [icon]="selectedIcon()!"
-          [fixedWidth]="true"
+          [svg]="selectedIcon()!"
         />
       }
       <div class="flex-fill">
@@ -145,7 +137,7 @@ import { $computed } from "../../../core/utils/bindings/$computed";
 export class SdListItemControl {
   open = model(false);
 
-  selectedIcon = input<IconDefinition>();
+  selectedIcon = input<string>();
   selected = input(false, { transform: transformBoolean });
 
   layout = input<"flat" | "accordion">("accordion");

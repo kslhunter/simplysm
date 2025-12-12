@@ -11,24 +11,24 @@ import {
 } from "@angular/core";
 import { SdEventsDirective } from "../../../core/directives/sd-events.directive";
 import { type ISdResizeEvent } from "../../../core/plugins/events/sd-resize-event.plugin";
-import { SdAngularConfigProvider } from "../../../core/providers/app/sd-angular-config.provider";
 import { SdSystemConfigProvider } from "../../../core/providers/app/sd-system-config.provider";
 import { $effect } from "../../../core/utils/bindings/$effect";
 import { $signal } from "../../../core/utils/bindings/$signal";
 import { injectElementRef } from "../../../core/utils/injections/injectElementRef";
 import { transformBoolean } from "../../../core/utils/transforms/transformBoolean";
-import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { NumberUtils } from "@simplysm/sd-core-common";
 import { NgTemplateOutlet } from "@angular/common";
 import { SdAnchorControl } from "../../form/button/sd-anchor.control";
 import { SdActivatedModalProvider } from "./sd-modal.provider";
+import { NgIcon } from "@ng-icons/core";
+import { phosphorX } from "@ng-icons/phosphor-icons/regular";
 
 @Component({
   selector: "sd-modal",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdEventsDirective, FaIconComponent, NgTemplateOutlet, SdAnchorControl],
+  imports: [SdEventsDirective, NgTemplateOutlet, SdAnchorControl, NgIcon],
   host: {
     "[attr.data-sd-open]": "open()",
     "[attr.data-sd-float]": "float()",
@@ -67,7 +67,7 @@ import { SdActivatedModalProvider } from "./sd-modal.provider";
             <ng-template [ngTemplateOutlet]="actionTplRef() ?? null" />
             @if (!hideCloseButton()) {
               <sd-anchor [theme]="'gray'" class="_close-button" (click)="onCloseButtonClick()">
-                <fa-icon [icon]="icons.xmark" [fixedWidth]="true" />
+                <ng-icon [svg]="phosphorX" />
               </sd-anchor>
             }
           </div>
@@ -318,8 +318,6 @@ import { SdActivatedModalProvider } from "./sd-modal.provider";
   ],
 })
 export class SdModalControl {
-  protected readonly icons = inject(SdAngularConfigProvider).icons;
-
   private readonly _sdSystemConfig = inject(SdSystemConfigProvider);
   private readonly _sdActivatedModal = inject(SdActivatedModalProvider);
 
@@ -611,6 +609,8 @@ export class SdModalControl {
     document.documentElement.addEventListener("mousemove", doDrag, false);
     document.documentElement.addEventListener("mouseup", stopDrag, false);
   }
+
+  protected readonly phosphorX = phosphorX;
 }
 
 export interface ISdModalConfig {

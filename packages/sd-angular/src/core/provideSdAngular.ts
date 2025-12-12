@@ -1,7 +1,4 @@
-import {
-  ISdAngularIcon,
-  SdAngularConfigProvider,
-} from "./providers/app/sd-angular-config.provider";
+import { SdAngularConfigProvider } from "./providers/app/sd-angular-config.provider";
 import {
   DestroyRef,
   EnvironmentInjector,
@@ -38,7 +35,7 @@ export function provideSdAngular(opt: {
   clientName: string;
   defaultTheme: TSdTheme;
   defaultDark: boolean;
-  icons: ISdAngularIcon;
+  // icons: ISdAngularIcon;
 }): EnvironmentProviders {
   return makeEnvironmentProviders([
     {
@@ -87,7 +84,7 @@ export function provideSdAngular(opt: {
         provider.clientName = opt.clientName;
         provider.defaultTheme = opt.defaultTheme;
         provider.defaultDark = opt.defaultDark;
-        provider.icons = opt.icons;
+        // provider.icons = opt.icons;
         return provider;
       },
     },

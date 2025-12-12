@@ -14,7 +14,6 @@ import {
 import { TXT_CHANGE_IGNORE_CONFIRM } from "../../core/commons";
 import { SdButtonControl } from "../../ui/form/button/sd-button.control";
 import { SdFormControl } from "../../ui/form/sd-form.control";
-import { SdAngularConfigProvider } from "../../core/providers/app/sd-angular-config.provider";
 import { SdToastProvider } from "../../ui/overlay/toast/sd-toast.provider";
 import { $obj } from "../../core/utils/bindings/wrappers/$obj";
 import { setupCanDeactivate } from "../../core/utils/setups/setupCanDeactivate";
@@ -23,12 +22,18 @@ import { SdBaseContainerControl } from "../base/sd-base-container.control";
 import { DateTime } from "@simplysm/sd-core-common";
 import { FormatPipe } from "../../core/pipes/format.pipe";
 import { SdSharedDataProvider } from "../../core/providers/storage/sd-shared-data.provider";
-import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { $signal } from "../../core/utils/bindings/$signal";
 import { injectParent } from "../../core/utils/injections/injectParent";
 import { ISdModal } from "../../ui/overlay/modal/sd-modal.provider";
 import { $effect } from "../../core/utils/bindings/$effect";
 import { SdAnchorControl } from "../../ui/form/button/sd-anchor.control";
+import { NgIcon } from "@ng-icons/core";
+import {
+  phosphorArrowClockwise,
+  phosphorArrowsClockwise,
+  phosphorEraser,
+  phosphorFloppyDisk,
+} from "@ng-icons/phosphor-icons/regular";
 
 @Component({
   selector: "sd-data-detail",
@@ -41,8 +46,8 @@ import { SdAnchorControl } from "../../ui/form/button/sd-anchor.control";
     SdButtonControl,
     NgTemplateOutlet,
     FormatPipe,
-    FaIconComponent,
     SdAnchorControl,
+    NgIcon,
   ],
   host: {
     "(sdRefreshCommand)": "onRefreshButtonClick()",
@@ -59,13 +64,13 @@ import { SdAnchorControl } from "../../ui/form/button/sd-anchor.control";
       <ng-template #pageTopbarTpl>
         @if (parent.canEdit() && parent.submit) {
           <sd-button [theme]="'link-primary'" (click)="onSubmitButtonClick()">
-            <fa-icon [icon]="icons.save" [fixedWidth]="true" />
+            <ng-icon [svg]="phosphorFloppyDisk" />
             저장
             <small>(CTRL+S)</small>
           </sd-button>
         }
         <sd-button [theme]="'link-info'" (click)="onRefreshButtonClick()">
-          <fa-icon [icon]="icons.refresh" [fixedWidth]="true" />
+          <ng-icon [svg]="phosphorArrowsClockwise" />
           새로고침
           <small>(CTRL+ALT+L)</small>
         </sd-button>
@@ -78,12 +83,12 @@ import { SdAnchorControl } from "../../ui/form/button/sd-anchor.control";
               @if (parent.viewType() === "control" && parent.canEdit()) {
                 @if (parent.submit) {
                   <sd-button [theme]="'primary'" (click)="onSubmitButtonClick()">
-                    <fa-icon [icon]="icons.save" [fixedWidth]="true" />
+                    <ng-icon [svg]="phosphorFloppyDisk" />
                     저장
                     <small>(CTRL+S)</small>
                   </sd-button>
                   <sd-button [theme]="'info'" (click)="onRefreshButtonClick()">
-                    <fa-icon [icon]="icons.refresh" [fixedWidth]="true" />
+                    <ng-icon [svg]="phosphorArrowsClockwise" />
                     새로고침
                     <small>(CTRL+ALT+L)</small>
                   </sd-button>
@@ -95,12 +100,12 @@ import { SdAnchorControl } from "../../ui/form/button/sd-anchor.control";
                 ) {
                   @if (parent.dataInfo()?.isDeleted) {
                     <sd-button [theme]="'warning'" (click)="onRestoreButtonClick()">
-                      <fa-icon [icon]="icons.redo" [fixedWidth]="true" />
+                      <ng-icon [svg]="phosphorArrowClockwise" />
                       복구
                     </sd-button>
                   } @else {
                     <sd-button [theme]="'danger'" (click)="onDeleteButtonClick()">
-                      <fa-icon [icon]="icons.eraser" [fixedWidth]="true" />
+                      <ng-icon [svg]="phosphorEraser" />
                       삭제
                     </sd-button>
                   }
@@ -180,7 +185,7 @@ import { SdAnchorControl } from "../../ui/form/button/sd-anchor.control";
             (click)="onRefreshButtonClick()"
             title="새로고침(CTRL+ALT+L)"
           >
-            <fa-icon [icon]="icons.refresh" [fixedWidth]="true" />
+            <ng-icon [svg]="phosphorArrowsClockwise" />
           </sd-anchor>
         </ng-template>
       }
@@ -188,8 +193,6 @@ import { SdAnchorControl } from "../../ui/form/button/sd-anchor.control";
   `,
 })
 export class SdDataDetailControl {
-  protected readonly icons = inject(SdAngularConfigProvider).icons;
-
   parent = injectParent<AbsSdDataDetail<any>>();
 
   formCtrl = viewChild<SdFormControl>("formCtrl");
@@ -226,6 +229,11 @@ export class SdDataDetailControl {
   async onSubmit() {
     await this.parent.doSubmit({ permCheck: true });
   }
+
+  protected readonly phosphorFloppyDisk = phosphorFloppyDisk;
+  protected readonly phosphorArrowClockwise = phosphorArrowClockwise;
+  protected readonly phosphorEraser = phosphorEraser;
+  protected readonly phosphorArrowsClockwise = phosphorArrowsClockwise;
 }
 
 @Directive()

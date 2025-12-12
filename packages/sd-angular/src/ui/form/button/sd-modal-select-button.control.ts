@@ -6,10 +6,8 @@ import {
   model,
   ViewEncapsulation,
 } from "@angular/core";
-import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { SdAdditionalButtonControl } from "./sd-additional-button.control";
 import { TSelectModeValue } from "../select/sd-select.control";
-import { SdAngularConfigProvider } from "../../../core/providers/app/sd-angular-config.provider";
 import { SdModalProvider } from "../../overlay/modal/sd-modal.provider";
 import { transformBoolean } from "../../../core/utils/transforms/transformBoolean";
 import { $computed } from "../../../core/utils/bindings/$computed";
@@ -20,26 +18,28 @@ import {
   ISdSelectModal,
   TSdSelectModalInfo,
 } from "../../../features/data-view/sd-data-select-button.control";
+import { NgIcon } from "@ng-icons/core";
+import { phosphorEraser, phosphorMagnifyingGlass } from "@ng-icons/phosphor-icons/regular";
 
 @Component({
   selector: "sd-modal-select-button",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdAdditionalButtonControl, FaIconComponent, SdAnchorControl, SdButtonControl],
+  imports: [SdAdditionalButtonControl, SdAnchorControl, SdButtonControl, NgIcon],
   template: `
     <sd-additional-button [inset]="inset()" [size]="size()">
       <ng-content />
 
       @if (!disabled() && !isNoValue() && !required()) {
         <sd-anchor [theme]="'danger'" (click)="onCancelButtonClick()">
-          <fa-icon [icon]="icons.eraser" />
+          <ng-icon [svg]="phosphorEraser" />
         </sd-anchor>
       }
 
       @if (!disabled()) {
         <sd-button (click)="onModalButtonClick($event)" [inset]="true">
-          <fa-icon [icon]="searchIcon()" />
+          <ng-icon [svg]="searchIcon()" />
         </sd-button>
       }
     </sd-additional-button>
@@ -62,8 +62,6 @@ export class SdModalSelectButtonControl<
   K,
   M extends keyof TSelectModeValue<K> = keyof TSelectModeValue<K>,
 > {
-  protected readonly icons = inject(SdAngularConfigProvider).icons;
-
   private readonly _sdModal = inject(SdModalProvider);
 
   modal = input.required<TSdSelectModalInfo<ISdSelectModal<T>>>();
@@ -76,7 +74,7 @@ export class SdModalSelectButtonControl<
   size = input<"sm" | "lg">();
   selectMode = input<M>("single" as M);
 
-  searchIcon = input(this.icons.search);
+  searchIcon = input(phosphorMagnifyingGlass);
 
   isNoValue = $computed(() => {
     return (
@@ -119,4 +117,6 @@ export class SdModalSelectButtonControl<
   onCancelButtonClick() {
     this.value.set((this.selectMode() === "multi" ? [] : undefined) as any);
   }
+
+  protected readonly phosphorEraser = phosphorEraser;
 }

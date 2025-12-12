@@ -1,31 +1,29 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  input,
-  model,
-  ViewEncapsulation,
-} from "@angular/core";
-import { SdAngularConfigProvider } from "../../core/providers/app/sd-angular-config.provider";
+import { ChangeDetectionStrategy, Component, input, model, ViewEncapsulation } from "@angular/core";
 import { $computed } from "../../core/utils/bindings/$computed";
-import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { SdAnchorControl } from "../form/button/sd-anchor.control";
+import { NgIcon } from "@ng-icons/core";
+import {
+  phosphorCaretDoubleLeft,
+  phosphorCaretDoubleRight,
+  phosphorCaretLeft,
+  phosphorCaretRight,
+} from "@ng-icons/phosphor-icons/regular";
 
 @Component({
   selector: "sd-pagination",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [FaIconComponent, SdAnchorControl],
+  imports: [SdAnchorControl, NgIcon],
   host: {
     class: "flex-row gap-xs",
   },
   template: `
     <sd-anchor [disabled]="!hasPrev()" (click)="onGoFirstClick()">
-      <fa-icon [icon]="icons.angleDoubleLeft" [fixedWidth]="true" />
+      <ng-icon [svg]="phosphorCaretDoubleLeft" />
     </sd-anchor>
     <sd-anchor [disabled]="!hasPrev()" (click)="onPrevClick()">
-      <fa-icon [icon]="icons.angleLeft" [fixedWidth]="true" />
+      <ng-icon [svg]="phosphorCaretLeft" />
     </sd-anchor>
     @for (displayPage of displayPages(); track displayPage) {
       <sd-anchor
@@ -36,10 +34,10 @@ import { SdAnchorControl } from "../form/button/sd-anchor.control";
       </sd-anchor>
     }
     <sd-anchor [disabled]="!hasNext()" (click)="onNextClick()">
-      <fa-icon [icon]="icons.angleRight" [fixedWidth]="true" />
+      <ng-icon [svg]="phosphorCaretRight" />
     </sd-anchor>
     <sd-anchor [disabled]="!hasNext()" (click)="onGoLastClick()">
-      <fa-icon [icon]="icons.angleDoubleRight" [fixedWidth]="true" />
+      <ng-icon [svg]="phosphorCaretDoubleRight" />
     </sd-anchor>
   `,
   styles: [
@@ -56,8 +54,6 @@ import { SdAnchorControl } from "../form/button/sd-anchor.control";
   ],
 })
 export class SdPaginationControl {
-  protected readonly icons = inject(SdAngularConfigProvider).icons;
-
   currentPage = model<number>(0);
 
   totalPageCount = input(0);
@@ -105,4 +101,9 @@ export class SdPaginationControl {
     const page = this.totalPageCount() - 1;
     this.currentPage.set(page);
   }
+
+  protected readonly phosphorCaretDoubleLeft = phosphorCaretDoubleLeft;
+  protected readonly phosphorCaretLeft = phosphorCaretLeft;
+  protected readonly phosphorCaretRight = phosphorCaretRight;
+  protected readonly phosphorCaretDoubleRight = phosphorCaretDoubleRight;
 }
