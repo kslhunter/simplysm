@@ -26,8 +26,8 @@
     "----": "",
     "_sd-cli_": "cross-env NODE_OPTIONS=--max-old-space-size=8192 tsx --tsconfig packages/sd-cli/tsconfig.json packages/sd-cli/src/sd-cli.ts",
     "commit": "yarn run _sd-cli_ commit",
-    "eslint-timing": "cross-env TIMING=1 eslint \"**/+(*.ts|*.js|*.html)\"",
-    "eslint-fix": "cross-env TIMING=1 eslint --fix \"**/+(*.ts|*.js|*.html)\"",
+    "eslint:timing": "cross-env TIMING=1 eslint \"**/+(*.ts|*.js|*.html)\"",
+    "eslint:fix": "eslint --fix \"**/+(*.ts|*.js|*.html)\"",
     "reinstall": "yarn install --refresh-lockfile",
     "postinstall": "yarn run _sd-cli_ postinstall"
   },
