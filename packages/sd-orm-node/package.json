@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-orm-node",
-  "version": "12.16.4",
+  "version": "12.16.5",
   "description": "심플리즘 패키지 - ORM 모듈 (node)",
   "author": "김석래",
   "repository": {
@@ -13,9 +13,9 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@simplysm/sd-core-common": "12.16.4",
-    "@simplysm/sd-core-node": "12.16.4",
-    "@simplysm/sd-orm-common": "12.16.4",
+    "@simplysm/sd-core-common": "12.16.5",
+    "@simplysm/sd-core-node": "12.16.5",
+    "@simplysm/sd-orm-common": "12.16.5",
     "generic-pool": "^3.9.0"
   },
   "devDependencies": {
