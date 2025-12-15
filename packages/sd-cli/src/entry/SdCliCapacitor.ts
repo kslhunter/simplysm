@@ -18,7 +18,7 @@ export class SdCliCapacitor {
   private readonly _npmConfig: INpmConfig;
 
   constructor(private readonly _opt: { pkgPath: string; config: ISdClientBuilderCapacitorConfig }) {
-    this._platforms = Object.keys(this._opt.config.platform ?? { android: {} });
+    this._platforms = Object.keys(this._opt.config.platform ?? {});
     this._npmConfig = FsUtils.readJson(path.resolve(this._opt.pkgPath, "package.json"));
   }
 
@@ -37,7 +37,7 @@ export class SdCliCapacitor {
     await this._initializeCapacitorProjectAsync(capacitorPath);
 
     // 2. Capacitor 설정 파일 생성
-    this._createCapacitorConfig(capacitorPath);
+    await this._createCapacitorConfigAsync(capacitorPath);
 
     // 3. 플랫폼 관리
     await this._managePlatformsAsync(capacitorPath);
@@ -46,14 +46,14 @@ export class SdCliCapacitor {
     await this._managePluginsAsync(capacitorPath);
 
     // 5. 안드로이드 서명 설정
-    this._setupAndroidSign(capacitorPath);
+    await this._setupAndroidSignAsync(capacitorPath);
 
     // 6. 아이콘 및 스플래시 스크린 설정
     await this._setupIconAndSplashScreenAsync(capacitorPath);
 
     // 7. Android 네이티브 설정 (AndroidManifest.xml, build.gradle 등)
     if (this._platforms.includes("android")) {
-      this._configureAndroidNative(capacitorPath);
+      await this._configureAndroidNativeAsync(capacitorPath);
     }
 
     // 8. 웹 자산 동기화
@@ -66,24 +66,43 @@ export class SdCliCapacitor {
       SdCliCapacitor._logger.log("이미 생성되어있는 '.capacitor'를 사용합니다.");
 
       // 버전 동기화
-      this._syncVersion(capacitorPath);
+      await this._syncVersionAsync(capacitorPath);
     } else {
-      FsUtils.mkdirs(capacitorPath);
+      await FsUtils.mkdirsAsync(capacitorPath);
 
       // package.json 생성
+      const projNpmConfig = await FsUtils.readJsonAsync(
+        path.resolve(this._opt.pkgPath, "../../package.json"),
+      );
       const pkgJson = {
         name: this._opt.config.appId,
         version: this._npmConfig.version,
         private: true,
+        volta: projNpmConfig.volta,
         dependencies: {
           "@capacitor/core": "^7.0.0",
         },
         devDependencies: {
           "@capacitor/cli": "^7.0.0",
           "@capacitor/assets": "^3.0.0",
+          ...this._platforms.toObject(
+            (item) => `@capacitor/${item}`,
+            () => "^7.0.0",
+          ),
         },
       };
-      FsUtils.writeJson(path.resolve(capacitorPath, "package.json"), pkgJson, { space: 2 });
+      await FsUtils.writeJsonAsync(path.resolve(capacitorPath, "package.json"), pkgJson, {
+        space: 2,
+      });
+
+      // .yarnrc.yml 작성
+      await FsUtils.writeFileAsync(
+        path.resolve(capacitorPath, ".yarnrc.yml"),
+        "nodeLinker: node-modules",
+      );
+
+      // yarn.lock 작성
+      await FsUtils.writeFileAsync(path.resolve(capacitorPath, "yarn.lock"), "");
 
       // yarn install
       await SdCliCapacitor._execAsync("yarn", ["install"], capacitorPath);
@@ -95,25 +114,32 @@ export class SdCliCapacitor {
         capacitorPath,
       );
     }
+
+    // www/index.html 생성
+    const wwwPath = path.resolve(capacitorPath, "www");
+    await FsUtils.writeFileAsync(
+      path.resolve(wwwPath, "index.html"),
+      "<!DOCTYPE html><html><head></head><body></body></html>",
+    );
   }
 
   // 버전 동기화
-  private _syncVersion(capacitorPath: string): void {
+  private async _syncVersionAsync(capacitorPath: string) {
     const pkgJsonPath = path.resolve(capacitorPath, "package.json");
 
     if (FsUtils.exists(pkgJsonPath)) {
-      const pkgJson = FsUtils.readJson(pkgJsonPath) as INpmConfig;
+      const pkgJson = (await FsUtils.readJsonAsync(pkgJsonPath)) as INpmConfig;
 
       if (pkgJson.version !== this._npmConfig.version) {
         pkgJson.version = this._npmConfig.version;
-        FsUtils.writeJson(pkgJsonPath, pkgJson, { space: 2 });
+        await FsUtils.writeJsonAsync(pkgJsonPath, pkgJson, { space: 2 });
         SdCliCapacitor._logger.log(`버전 동기화: ${this._npmConfig.version}`);
       }
     }
   }
 
   // 2. Capacitor 설정 파일 생성
-  private _createCapacitorConfig(capacitorPath: string): void {
+  private async _createCapacitorConfigAsync(capacitorPath: string) {
     const configFilePath = path.resolve(capacitorPath, this._CONFIG_FILE_NAME);
 
     // 플러그인 옵션 생성
@@ -151,7 +177,7 @@ export class SdCliCapacitor {
       export default config;
     `;
 
-    FsUtils.writeFile(configFilePath, configContent);
+    await FsUtils.writeFileAsync(configFilePath, configContent);
   }
 
   // 3. 플랫폼 관리
@@ -166,7 +192,7 @@ export class SdCliCapacitor {
   // 4. 플러그인 관리
   private async _managePluginsAsync(capacitorPath: string): Promise<void> {
     const pkgJsonPath = path.resolve(capacitorPath, "package.json");
-    const pkgJson = FsUtils.readJson(pkgJsonPath) as INpmConfig;
+    const pkgJson = (await FsUtils.readJsonAsync(pkgJsonPath)) as INpmConfig;
     const currentDeps = Object.keys(pkgJson.dependencies ?? {});
 
     const usePlugins = Object.keys(this._opt.config.plugins ?? {});
@@ -198,27 +224,27 @@ export class SdCliCapacitor {
     // 새 플러그인 설치
     for (const plugin of usePlugins) {
       if (!currentDeps.includes(plugin)) {
-        try {
-          await SdCliCapacitor._execAsync("yarn", ["add", plugin], capacitorPath);
-          SdCliCapacitor._logger.log(`플러그인 설치: ${plugin}`);
+        await SdCliCapacitor._execAsync("yarn", ["add", plugin], capacitorPath);
+        SdCliCapacitor._logger.log(`플러그인 설치: ${plugin}`);
+        /*try {
         } catch {
           SdCliCapacitor._logger.warn(`플러그인 설치 실패: ${plugin}`);
-        }
+        }*/
       }
     }
   }
 
   // 5. 안드로이드 서명 설정
-  private _setupAndroidSign(capacitorPath: string): void {
+  private async _setupAndroidSignAsync(capacitorPath: string) {
     const keystorePath = path.resolve(capacitorPath, this._KEYSTORE_FILE_NAME);
 
     if (this._opt.config.platform?.android?.sign) {
-      FsUtils.copy(
+      await FsUtils.copyAsync(
         path.resolve(this._opt.pkgPath, this._opt.config.platform.android.sign.keystore),
         keystorePath,
       );
     } else {
-      FsUtils.remove(keystorePath);
+      await FsUtils.removeAsync(keystorePath);
     }
   }
 
@@ -228,13 +254,13 @@ export class SdCliCapacitor {
 
     // ICON 파일 복사
     if (this._opt.config.icon != null) {
-      FsUtils.mkdirs(iconDirPath);
+      await FsUtils.mkdirsAsync(iconDirPath);
 
       const iconSource = path.resolve(this._opt.pkgPath, this._opt.config.icon);
 
       // icon.png, splash.png 둘 다 같은 파일 사용
-      FsUtils.copy(iconSource, path.resolve(iconDirPath, "icon.png"));
-      FsUtils.copy(iconSource, path.resolve(iconDirPath, "splash.png"));
+      await FsUtils.copyAsync(iconSource, path.resolve(iconDirPath, "icon.png"));
+      await FsUtils.copyAsync(iconSource, path.resolve(iconDirPath, "splash.png"));
 
       // @capacitor/assets로 아이콘/스플래시 리사이징
       try {
@@ -247,36 +273,93 @@ export class SdCliCapacitor {
         SdCliCapacitor._logger.warn("아이콘 리사이징 실패, 기본 아이콘 사용");
       }
     } else {
-      FsUtils.remove(iconDirPath);
+      await FsUtils.removeAsync(iconDirPath);
     }
   }
 
   // 7. Android 네이티브 설정
-  private _configureAndroidNative(capacitorPath: string): void {
+  private async _configureAndroidNativeAsync(capacitorPath: string) {
     const androidPath = path.resolve(capacitorPath, "android");
 
     if (!FsUtils.exists(androidPath)) {
       return;
     }
 
+    // JAVA_HOME 찾기
+    await this._configureAndroidGradlePropertiesAsync(androidPath);
+
+    // local.properties 생성
+    await this._configureSdkPathAsync(androidPath);
+
     // AndroidManifest.xml 수정
-    this._configureAndroidManifest(androidPath);
+    await this._configureAndroidManifestAsync(androidPath);
 
     // build.gradle 수정 (필요시)
-    this._configureAndroidBuildGradle(androidPath);
+    await this._configureAndroidBuildGradleAsync(androidPath);
 
     // strings.xml 앱 이름 수정
-    this._configureAndroidStrings(androidPath);
+    await this._configureAndroidStringsAsync(androidPath);
   }
 
-  private _configureAndroidManifest(androidPath: string): void {
+  private async _configureAndroidGradlePropertiesAsync(androidPath: string) {
+    const gradlePropsPath = path.resolve(androidPath, "gradle.properties");
+
+    if (!FsUtils.exists(gradlePropsPath)) {
+      return;
+    }
+
+    let content = await FsUtils.readFileAsync(gradlePropsPath);
+
+    // Java 21 경로 자동 탐색
+    const java21Path = this._findJava21();
+    if (java21Path != null && !content.includes("org.gradle.java.home")) {
+      content += `\norg.gradle.java.home=${java21Path.replace(/\\/g, "\\\\")}\n`;
+      FsUtils.writeFile(gradlePropsPath, content);
+    }
+  }
+
+  private _findJava21(): string | undefined {
+    const patterns = [
+      "C:/Program Files/Amazon Corretto/jdk21*",
+      "C:/Program Files/Eclipse Adoptium/jdk-21*",
+      "C:/Program Files/Java/jdk-21*",
+      "C:/Program Files/Microsoft/jdk-21*",
+    ];
+
+    for (const pattern of patterns) {
+      const matches = FsUtils.glob(pattern);
+      if (matches.length > 0) {
+        // 가장 최신 버전 선택 (정렬 후 마지막)
+        return matches.sort().at(-1);
+      }
+    }
+
+    return undefined;
+  }
+
+  private async _configureSdkPathAsync(androidPath: string) {
+    // local.properties 생성
+    const localPropsPath = path.resolve(androidPath, "local.properties");
+
+    if (FsUtils.exists(localPropsPath)) {
+      return;
+    }
+
+    // SDK 경로 탐색 (Cordova 방식과 유사)
+    const sdkPath = this._findAndroidSdk();
+    if (sdkPath != null) {
+      await FsUtils.writeFileAsync(localPropsPath, `sdk.dir=${sdkPath.replace(/\\/g, "/")}\n`);
+    }
+  }
+
+  private async _configureAndroidManifestAsync(androidPath: string) {
     const manifestPath = path.resolve(androidPath, "app/src/main/AndroidManifest.xml");
 
     if (!FsUtils.exists(manifestPath)) {
       return;
     }
 
-    let manifestContent = FsUtils.readFile(manifestPath);
+    let manifestContent = await FsUtils.readFileAsync(manifestPath);
 
     // usesCleartextTraffic 설정
     if (!manifestContent.includes("android:usesCleartextTraffic")) {
@@ -319,17 +402,17 @@ export class SdCliCapacitor {
       }
     }
 
-    FsUtils.writeFile(manifestPath, manifestContent);
+    await FsUtils.writeFileAsync(manifestPath, manifestContent);
   }
 
-  private _configureAndroidBuildGradle(androidPath: string): void {
+  private async _configureAndroidBuildGradleAsync(androidPath: string) {
     const buildGradlePath = path.resolve(androidPath, "app/build.gradle");
 
     if (!FsUtils.exists(buildGradlePath)) {
       return;
     }
 
-    let gradleContent = FsUtils.readFile(buildGradlePath);
+    let gradleContent = await FsUtils.readFileAsync(buildGradlePath);
 
     // versionName, versionCode 설정
     const version = this._npmConfig.version;
@@ -384,17 +467,17 @@ export class SdCliCapacitor {
       }
     }
 
-    FsUtils.writeFile(buildGradlePath, gradleContent);
+    await FsUtils.writeFileAsync(buildGradlePath, gradleContent);
   }
 
-  private _configureAndroidStrings(androidPath: string): void {
+  private async _configureAndroidStringsAsync(androidPath: string) {
     const stringsPath = path.resolve(androidPath, "app/src/main/res/values/strings.xml");
 
     if (!FsUtils.exists(stringsPath)) {
       return;
     }
 
-    let stringsContent = FsUtils.readFile(stringsPath);
+    let stringsContent = await FsUtils.readFileAsync(stringsPath);
     stringsContent = stringsContent.replace(
       /<string name="app_name">[^<]+<\/string>/,
       `<string name="app_name">${this._opt.config.appName}</string>`,
@@ -412,7 +495,7 @@ export class SdCliCapacitor {
       `<string name="custom_url_scheme">${this._opt.config.appId}</string>`,
     );
 
-    FsUtils.writeFile(stringsPath, stringsContent);
+    await FsUtils.writeFileAsync(stringsPath, stringsContent);
   }
 
   async buildAsync(outPath: string): Promise<void> {
@@ -470,14 +553,14 @@ export class SdCliCapacitor {
     await SdCliCapacitor._execAsync(gradleCmd, [gradleTask, "--no-daemon"], androidPath);
 
     // 빌드 결과물 복사
-    this._copyAndroidBuildOutput(androidPath, targetOutPath, buildType);
+    await this._copyAndroidBuildOutputAsync(androidPath, targetOutPath, buildType);
   }
 
-  private _copyAndroidBuildOutput(
+  private async _copyAndroidBuildOutputAsync(
     androidPath: string,
     targetOutPath: string,
     buildType: string,
-  ): void {
+  ) {
     const isBundle = this._opt.config.platform?.android?.bundle;
     const isSigned = !!this._opt.config.platform?.android?.sign;
 
@@ -510,12 +593,39 @@ export class SdCliCapacitor {
 
     const outputFileName = `${this._opt.config.appName}${isSigned ? "" : "-unsigned"}-latest.${ext}`;
 
-    FsUtils.mkdirs(targetOutPath);
-    FsUtils.copy(actualPath, path.resolve(targetOutPath, outputFileName));
+    await FsUtils.mkdirsAsync(targetOutPath);
+    await FsUtils.copyAsync(actualPath, path.resolve(targetOutPath, outputFileName));
 
     const updatesPath = path.resolve(targetOutPath, "updates");
-    FsUtils.mkdirs(updatesPath);
-    FsUtils.copy(actualPath, path.resolve(updatesPath, `${this._npmConfig.version}.${ext}`));
+    await FsUtils.mkdirsAsync(updatesPath);
+    await FsUtils.copyAsync(
+      actualPath,
+      path.resolve(updatesPath, `${this._npmConfig.version}.${ext}`),
+    );
+  }
+
+  private _findAndroidSdk(): string | undefined {
+    // 1. 환경변수 확인
+    const fromEnv = process.env["ANDROID_HOME"] ?? process.env["ANDROID_SDK_ROOT"];
+    if (fromEnv != null && FsUtils.exists(fromEnv)) {
+      return fromEnv;
+    }
+
+    // 2. 일반적인 설치 경로 탐색
+    const candidates = [
+      path.resolve(process.env["LOCALAPPDATA"] ?? "", "Android/Sdk"),
+      path.resolve(process.env["HOME"] ?? "", "Android/Sdk"),
+      "C:/Program Files/Android/Sdk",
+      "C:/Android/Sdk",
+    ];
+
+    for (const candidate of candidates) {
+      if (FsUtils.exists(candidate)) {
+        return candidate;
+      }
+    }
+
+    return undefined;
   }
 
   static async runWebviewOnDeviceAsync(opt: {
@@ -523,9 +633,11 @@ export class SdCliCapacitor {
     package: string;
     url?: string;
   }): Promise<void> {
-    const projNpmConf = FsUtils.readJson(path.resolve(process.cwd(), "package.json")) as INpmConfig;
-    const allPkgPaths = projNpmConf.workspaces!.mapMany((item) =>
-      FsUtils.glob(PathUtils.posix(process.cwd(), item)),
+    const projNpmConf = (await FsUtils.readJsonAsync(
+      path.resolve(process.cwd(), "package.json"),
+    )) as INpmConfig;
+    const allPkgPaths = await projNpmConf.workspaces!.mapManyAsync(
+      async (item) => await FsUtils.globAsync(PathUtils.posix(process.cwd(), item)),
     );
 
     const capacitorPath = path.resolve(
@@ -537,7 +649,7 @@ export class SdCliCapacitor {
       // capacitor.config.ts의 server.url 설정 업데이트
       const configPath = path.resolve(capacitorPath, "capacitor.config.ts");
       if (FsUtils.exists(configPath)) {
-        let configContent = FsUtils.readFile(configPath);
+        let configContent = await FsUtils.readFileAsync(configPath);
         const serverUrl = `${opt.url.replace(/\/$/, "")}/${opt.package}/capacitor/`;
 
         // 기존 url 설정이 있으면 교체, 없으면 server 블록 첫 줄에 추가
@@ -549,12 +661,17 @@ export class SdCliCapacitor {
             `server: {\n    url: "${serverUrl}",`,
           );
         }
-        FsUtils.writeFile(configPath, configContent);
+        await FsUtils.writeFileAsync(configPath, configContent);
       }
     }
 
     // cap sync 후 run
     await this._execAsync("npx", ["cap", "sync", opt.platform], capacitorPath);
-    await this._execAsync("npx", ["cap", "run", opt.platform, "--target", "device"], capacitorPath);
+
+    try {
+      await this._execAsync("npx", ["cap", "run", opt.platform], capacitorPath);
+    } catch {
+      await SdProcess.spawnAsync("adb", ["kill-server"]);
+    }
   }
 }
