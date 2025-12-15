@@ -132,7 +132,6 @@ export interface ISdClientBuilderCordovaConfig {
   browserslist?: string[];
 }
 
-
 export interface ISdClientBuilderCapacitorConfig {
   appId: string;
   appName: string;
@@ -143,6 +142,10 @@ export interface ISdClientBuilderCapacitorConfig {
     android?: {
       config?: Record<string, string>;
       bundle?: boolean;
+      intentFilters?: {
+        action?: string;
+        category?: string;
+      }[];
       sign?: {
         keystore: string;
         storePassword: string;
