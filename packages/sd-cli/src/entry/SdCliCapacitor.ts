@@ -63,58 +63,58 @@ export class SdCliCapacitor {
 
   // 1. Capacitor 프로젝트 초기화
   private async _initializeCapacitorProjectAsync(capacitorPath: string): Promise<void> {
-    /*if (FsUtils.exists(capacitorPath)) {
+    if (FsUtils.exists(path.resolve(capacitorPath, "www"))) {
       SdCliCapacitor._logger.log("이미 생성되어있는 '.capacitor'를 사용합니다.");
 
       // 버전 동기화
       await this._syncVersionAsync(capacitorPath);
-    } else {*/
-    await FsUtils.mkdirsAsync(capacitorPath);
+    } else {
+      await FsUtils.mkdirsAsync(capacitorPath);
 
-    // package.json 생성
-    const projNpmConfig = await FsUtils.readJsonAsync(
-      path.resolve(this._opt.pkgPath, "../../package.json"),
-    );
-    const pkgJson = {
-      name: this._opt.config.appId,
-      version: this._npmConfig.version,
-      private: true,
-      volta: projNpmConfig.volta,
-      dependencies: {
-        "@capacitor/core": "^7.0.0",
-      },
-      devDependencies: {
-        "@capacitor/cli": "^7.0.0",
-        "@capacitor/assets": "^3.0.0",
-        ...this._platforms.toObject(
-          (item) => `@capacitor/${item}`,
-          () => "^7.0.0",
-        ),
-      },
-    };
-    await FsUtils.writeJsonAsync(path.resolve(capacitorPath, "package.json"), pkgJson, {
-      space: 2,
-    });
+      // package.json 생성
+      const projNpmConfig = await FsUtils.readJsonAsync(
+        path.resolve(this._opt.pkgPath, "../../package.json"),
+      );
+      const pkgJson = {
+        name: this._opt.config.appId,
+        version: this._npmConfig.version,
+        private: true,
+        volta: projNpmConfig.volta,
+        dependencies: {
+          "@capacitor/core": "^7.0.0",
+        },
+        devDependencies: {
+          "@capacitor/cli": "^7.0.0",
+          "@capacitor/assets": "^3.0.0",
+          ...this._platforms.toObject(
+            (item) => `@capacitor/${item}`,
+            () => "^7.0.0",
+          ),
+        },
+      };
+      await FsUtils.writeJsonAsync(path.resolve(capacitorPath, "package.json"), pkgJson, {
+        space: 2,
+      });
 
-    // .yarnrc.yml 작성
-    await FsUtils.writeFileAsync(
-      path.resolve(capacitorPath, ".yarnrc.yml"),
-      "nodeLinker: node-modules",
-    );
+      // .yarnrc.yml 작성
+      await FsUtils.writeFileAsync(
+        path.resolve(capacitorPath, ".yarnrc.yml"),
+        "nodeLinker: node-modules",
+      );
 
-    // yarn.lock 작성
-    await FsUtils.writeFileAsync(path.resolve(capacitorPath, "yarn.lock"), "");
+      // yarn.lock 작성
+      await FsUtils.writeFileAsync(path.resolve(capacitorPath, "yarn.lock"), "");
 
-    // yarn install
-    await SdCliCapacitor._execAsync("yarn", ["install"], capacitorPath);
+      // yarn install
+      await SdCliCapacitor._execAsync("yarn", ["install"], capacitorPath);
 
-    // capacitor init
-    await SdCliCapacitor._execAsync(
-      "npx",
-      ["cap", "init", this._opt.config.appName, this._opt.config.appId],
-      capacitorPath,
-    );
-    // }
+      // capacitor init
+      await SdCliCapacitor._execAsync(
+        "npx",
+        ["cap", "init", this._opt.config.appName, this._opt.config.appId],
+        capacitorPath,
+      );
+    }
 
     // www/index.html 생성
     const wwwPath = path.resolve(capacitorPath, "www");
@@ -287,8 +287,8 @@ export class SdCliCapacitor {
 
   private async _createPaddedIconAsync(sourcePath: string, outputPath: string): Promise<void> {
     const size = 1024;
-    const iconSize = 680;  // safe zone
-    const padding = Math.floor((size - iconSize) / 2);  // 172px
+    const iconSize = 680; // safe zone
+    const padding = Math.floor((size - iconSize) / 2); // 172px
 
     await sharp(sourcePath)
       .resize(iconSize, iconSize, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
@@ -297,7 +297,7 @@ export class SdCliCapacitor {
         bottom: padding,
         left: padding,
         right: padding,
-        background: { r: 0, g: 0, b: 0, alpha: 0 },  // 투명
+        background: { r: 0, g: 0, b: 0, alpha: 0 }, // 투명
       })
       .toFile(outputPath);
   }
