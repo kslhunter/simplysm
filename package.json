@@ -32,11 +32,11 @@
     "postinstall": "yarn run _sd-cli_ postinstall"
   },
   "devDependencies": {
-    "@types/node": "^20.19.26",
+    "@types/node": "^20.19.27",
     "cross-env": "^10.1.0",
-    "eslint": "^9.39.1",
+    "eslint": "^9.39.2",
     "prettier": "^3.7.4",
-    "repomix": "^1.10.0",
+    "repomix": "^1.10.1",
     "tsx": "^4.21.0",
     "typescript": "~5.8.3",
     "vite-tsconfig-paths": "^5.1.4",

@@ -220,11 +220,10 @@ export class SdCliCapacitor {
     }
 
     // 새 플러그인 설치
-    const mainPkgJson = this._npmConfig;
     const mainDeps = {
-      ...mainPkgJson.dependencies,
-      ...mainPkgJson.devDependencies,
-      ...mainPkgJson.peerDependencies,
+      ...this._npmConfig.dependencies,
+      ...this._npmConfig.devDependencies,
+      ...this._npmConfig.peerDependencies,
     };
 
     for (const plugin of usePlugins) {
@@ -262,13 +261,11 @@ export class SdCliCapacitor {
 
       const iconSource = path.resolve(this._opt.pkgPath, this._opt.config.icon);
 
-      // Adaptive Icon용 여백 추가된 이미지 생성
-      // 1024x1024 중 680x680이 safe zone (약 66%)
-      const paddedIconPath = path.resolve(iconDirPath, "icon-only.png");
-      await this._createPaddedIconAsync(iconSource, paddedIconPath);
+      // icon.png 자체를 여백 포함으로 생성
+      const iconPath = path.resolve(iconDirPath, "icon.png");
+      await this._createPaddedIconAsync(iconSource, iconPath);
 
-      // splash, icon 복사
-      await FsUtils.copyAsync(iconSource, path.resolve(iconDirPath, "icon.png"));
+      // splash는 원본 사용
       await FsUtils.copyAsync(iconSource, path.resolve(iconDirPath, "splash.png"));
 
       try {
@@ -286,18 +283,22 @@ export class SdCliCapacitor {
   }
 
   private async _createPaddedIconAsync(sourcePath: string, outputPath: string): Promise<void> {
-    const size = 1024;
-    const iconSize = 680; // safe zone
-    const padding = Math.floor((size - iconSize) / 2); // 172px
+    const outputSize = 1024;
+    const iconSize = 680; // safe zone (66%)
+    const padding = Math.floor((outputSize - iconSize) / 2); // 172px
 
+    // 원본 크기 상관없이 iconSize로 리사이즈 후 여백 추가
     await sharp(sourcePath)
-      .resize(iconSize, iconSize, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+      .resize(iconSize, iconSize, {
+        fit: "contain",
+        background: { r: 0, g: 0, b: 0, alpha: 0 },
+      })
       .extend({
         top: padding,
         bottom: padding,
         left: padding,
         right: padding,
-        background: { r: 0, g: 0, b: 0, alpha: 0 }, // 투명
+        background: { r: 0, g: 0, b: 0, alpha: 0 },
       })
       .toFile(outputPath);
   }
