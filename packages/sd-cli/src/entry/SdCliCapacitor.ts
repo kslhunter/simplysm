@@ -90,6 +90,7 @@ export class SdCliCapacitor {
       dependencies: {
         "@capacitor/core": "^7.0.0",
         "@capacitor/app": "^7.0.0",
+        "@capacitor/splash-screen": "^7.0.0",
       },
       devDependencies: {
         "@capacitor/cli": "^7.0.0",
