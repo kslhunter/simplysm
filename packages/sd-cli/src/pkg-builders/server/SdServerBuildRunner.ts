@@ -136,7 +136,7 @@ Options = UnsafeLegacyRenegotiation`.trim(),
           arrayProcess: "concat",
           useDelTargetNull: true
         };`
-        .replaceAll("\n        ", "\n")
+        .replace(/\n {8}/g, "\n")
         .trim();
 
       FsUtils.writeFile(path.resolve(this._opt.pkgPath, "dist/pm2.config.cjs"), str);

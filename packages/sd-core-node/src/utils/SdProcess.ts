@@ -6,7 +6,7 @@ export class SdProcess {
     args: string[],
     options?: cp.SpawnOptionsWithoutStdio & {
       messageConvert?: (buffer: Buffer) => string;
-      showMessage?: boolean;
+      showMessage?: boolean | ((message: string) => void);
     },
   ): Promise<string> {
     /*const splitCmd = this.#splitCommand(command);
@@ -17,7 +17,12 @@ export class SdProcess {
     return await new Promise<string>((resolve, reject) => {
       const ps = cp.spawn(cmd, args, {
         cwd: process.cwd(),
-        env: { ...process.env },
+        env: {
+          ...process.env,
+          FORCE_COLOR: "1", // chalk, supports-color 계열
+          CLICOLOR_FORCE: "1", // 일부 Unix 도구
+          COLORTERM: "truecolor", // 추가 힌트
+        },
         ...options,
       });
 
@@ -28,13 +33,17 @@ export class SdProcess {
       let messageBuffer = Buffer.from([]);
       ps.stdout.on("data", (data) => {
         messageBuffer = Buffer.concat([messageBuffer, data]);
-        if (options?.showMessage) {
+        if (typeof options?.showMessage === "function") {
+          options.showMessage(data.toString());
+        } else if (options?.showMessage) {
           process.stdout.write(data);
         }
       });
       ps.stderr.on("data", (data) => {
         messageBuffer = Buffer.concat([messageBuffer, data]);
-        if (options?.showMessage) {
+        if (typeof options?.showMessage === "function") {
+          options.showMessage(data.toString());
+        } else if (options?.showMessage) {
           process.stderr.write(data);
         }
       });

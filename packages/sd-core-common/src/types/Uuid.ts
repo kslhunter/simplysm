@@ -45,6 +45,6 @@ export class Uuid {
   }
 
   toBuffer(): Buffer {
-    return Buffer.from(this._uuid.replaceAll("-", ""), "hex");
+    return Buffer.from(this._uuid.replace(/-/g, ""), "hex");
   }
 }

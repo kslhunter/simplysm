@@ -40,7 +40,16 @@
     "semver": "^7.7.3"
   },
   "devDependencies": {
+    "@capacitor/app": "^7.1.1",
     "@types/qrcode": "^1.5.6",
     "@types/semver": "^7.7.1"
+  },
+  "peerDependencies": {
+    "@capacitor/app": "^7.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@capacitor/app": {
+      "optional": true
+    }
   }
 }

@@ -82,6 +82,7 @@ export class SdCliCapacitor {
         volta: projNpmConfig.volta,
         dependencies: {
           "@capacitor/core": "^7.0.0",
+          "@capacitor/app": "^7.0.0",
         },
         devDependencies: {
           "@capacitor/cli": "^7.0.0",
@@ -739,8 +740,9 @@ export class SdCliCapacitor {
 
     try {
       await this._execAsync("npx", ["cap", "run", opt.platform], capacitorPath);
-    } catch {
+    } catch (err) {
       await SdProcess.spawnAsync("adb", ["kill-server"]);
+      throw err;
     }
   }
 }

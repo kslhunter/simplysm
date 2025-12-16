@@ -12,7 +12,11 @@ export class SdBackbuttonEventPlugin extends EventManagerPlugin {
     return eventName === "sdBackbutton";
   }
 
-  override addEventListener(element: HTMLElement, eventName: string, handler: (event: Event) => void): () => void {
+  override addEventListener(
+    element: HTMLElement,
+    eventName: string,
+    handler: (event: Event) => void,
+  ): () => void {
     const listener = (event: Event): void => {
       event.preventDefault();
       event.stopPropagation();
@@ -29,11 +33,30 @@ export class SdBackbuttonEventPlugin extends EventManagerPlugin {
       }
     };
 
-    document.addEventListener("backbutton", listener);
+    // Capacitor App 플러그인 리스너 핸들
+    let capacitorListenerHandle: { remove: () => Promise<void> } | undefined;
+
+    // Capacitor 체크 및 리스너 등록
+    void (async () => {
+      try {
+        const { App } = await import("@capacitor/app");
+        capacitorListenerHandle = await App.addListener("backButton", () => {
+          handler(new Event("sdBackbutton"));
+        });
+      } catch {
+        // @capacitor/app이 없으면 Cordova 방식 사용
+        document.addEventListener("backbutton", listener);
+      }
+    })();
+
     document.addEventListener("keydown", listener2);
 
     return (): void => {
-      document.removeEventListener("backbutton", listener);
+      if (capacitorListenerHandle) {
+        void capacitorListenerHandle.remove();
+      } else {
+        document.removeEventListener("backbutton", listener);
+      }
       document.removeEventListener("keydown", listener2);
     };
   }

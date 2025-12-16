@@ -499,7 +499,7 @@ export class SdTsCompiler {
             createWorkerTransformer((file, importer) => {
               const fullPath = path.resolve(path.dirname(importer), file);
               const relPath = path.relative(path.resolve(this._opt.pkgPath, "src"), fullPath);
-              return relPath.replace(/\.ts$/, "").replaceAll("\\", "/") + ".js";
+              return relPath.replace(/\.ts$/, "").replace(/\\/, "/") + ".js";
             }),
           );
         }
