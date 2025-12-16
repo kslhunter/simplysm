@@ -7,6 +7,13 @@ export default () => ({
         excludes: ["src/web/**/*"],
       },
     },
+    "capacitor-plugin-broadcast": {
+      type: "library",
+      publish: "npm",
+      index: {
+        excludes: ["src/web/**/*"],
+      },
+    },
     "capacitor-plugin-usb-storage": {
       type: "library",
       publish: "npm",

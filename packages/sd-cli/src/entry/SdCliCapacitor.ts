@@ -35,7 +35,7 @@ export class SdCliCapacitor {
     const capacitorPath = path.resolve(this._opt.pkgPath, this._CAPACITOR_DIR_NAME);
 
     // 1. Capacitor 프로젝트 초기화
-    await this._initializeCapacitorProjectAsync(capacitorPath);
+    const isNewProject = await this._initializeCapacitorProjectAsync(capacitorPath);
 
     // 2. Capacitor 설정 파일 생성
     await this._createCapacitorConfigAsync(capacitorPath);
@@ -44,7 +44,7 @@ export class SdCliCapacitor {
     await this._managePlatformsAsync(capacitorPath);
 
     // 4. 플러그인 관리
-    await this._managePluginsAsync(capacitorPath);
+    const pluginsChanged = await this._managePluginsAsync(capacitorPath);
 
     // 5. 안드로이드 서명 설정
     await this._setupAndroidSignAsync(capacitorPath);
@@ -58,64 +58,70 @@ export class SdCliCapacitor {
     }
 
     // 8. 웹 자산 동기화
-    await SdCliCapacitor._execAsync("npx", ["cap", "sync"], capacitorPath);
+    if (isNewProject || pluginsChanged) {
+      await SdCliCapacitor._execAsync("npx", ["cap", "sync"], capacitorPath);
+    } else {
+      await SdCliCapacitor._execAsync("npx", ["cap", "copy"], capacitorPath);
+    }
   }
 
   // 1. Capacitor 프로젝트 초기화
-  private async _initializeCapacitorProjectAsync(capacitorPath: string): Promise<void> {
+  private async _initializeCapacitorProjectAsync(capacitorPath: string): Promise<boolean> {
     if (FsUtils.exists(path.resolve(capacitorPath, "www"))) {
       SdCliCapacitor._logger.log("이미 생성되어있는 '.capacitor'를 사용합니다.");
 
       // 버전 동기화
       await this._syncVersionAsync(capacitorPath);
-    } else {
-      await FsUtils.mkdirsAsync(capacitorPath);
-
-      // package.json 생성
-      const projNpmConfig = await FsUtils.readJsonAsync(
-        path.resolve(this._opt.pkgPath, "../../package.json"),
-      );
-      const pkgJson = {
-        name: this._opt.config.appId,
-        version: this._npmConfig.version,
-        private: true,
-        volta: projNpmConfig.volta,
-        dependencies: {
-          "@capacitor/core": "^7.0.0",
-          "@capacitor/app": "^7.0.0",
-        },
-        devDependencies: {
-          "@capacitor/cli": "^7.0.0",
-          "@capacitor/assets": "^3.0.0",
-          ...this._platforms.toObject(
-            (item) => `@capacitor/${item}`,
-            () => "^7.0.0",
-          ),
-        },
-      };
-      await FsUtils.writeJsonAsync(path.resolve(capacitorPath, "package.json"), pkgJson, {
-        space: 2,
-      });
-
-      // .yarnrc.yml 작성
-      await FsUtils.writeFileAsync(
-        path.resolve(capacitorPath, ".yarnrc.yml"),
-        "nodeLinker: node-modules",
-      );
-
-      // yarn.lock 작성
-      await FsUtils.writeFileAsync(path.resolve(capacitorPath, "yarn.lock"), "");
-
-      // yarn install
-      await SdCliCapacitor._execAsync("yarn", ["install"], capacitorPath);
-
-      // capacitor init
-      await SdCliCapacitor._execAsync(
-        "npx",
-        ["cap", "init", this._opt.config.appName, this._opt.config.appId],
-        capacitorPath,
-      );
+      return false;
     }
+
+
+    await FsUtils.mkdirsAsync(capacitorPath);
+
+    // package.json 생성
+    const projNpmConfig = await FsUtils.readJsonAsync(
+      path.resolve(this._opt.pkgPath, "../../package.json"),
+    );
+    const pkgJson = {
+      name: this._opt.config.appId,
+      version: this._npmConfig.version,
+      private: true,
+      volta: projNpmConfig.volta,
+      dependencies: {
+        "@capacitor/core": "^7.0.0",
+        "@capacitor/app": "^7.0.0",
+      },
+      devDependencies: {
+        "@capacitor/cli": "^7.0.0",
+        "@capacitor/assets": "^3.0.0",
+        ...this._platforms.toObject(
+          (item) => `@capacitor/${item}`,
+          () => "^7.0.0",
+        ),
+      },
+    };
+    await FsUtils.writeJsonAsync(path.resolve(capacitorPath, "package.json"), pkgJson, {
+      space: 2,
+    });
+
+    // .yarnrc.yml 작성
+    await FsUtils.writeFileAsync(
+      path.resolve(capacitorPath, ".yarnrc.yml"),
+      "nodeLinker: node-modules",
+    );
+
+    // yarn.lock 작성
+    await FsUtils.writeFileAsync(path.resolve(capacitorPath, "yarn.lock"), "");
+
+    // yarn install
+    await SdCliCapacitor._execAsync("yarn", ["install"], capacitorPath);
+
+    // capacitor init
+    await SdCliCapacitor._execAsync(
+      "npx",
+      ["cap", "init", this._opt.config.appName, this._opt.config.appId],
+      capacitorPath,
+    );
 
     // www/index.html 생성
     const wwwPath = path.resolve(capacitorPath, "www");
@@ -123,6 +129,8 @@ export class SdCliCapacitor {
       path.resolve(wwwPath, "index.html"),
       "<!DOCTYPE html><html><head></head><body></body></html>",
     );
+
+    return true;
   }
 
   // 버전 동기화
@@ -192,51 +200,62 @@ export class SdCliCapacitor {
     }
   }
 
-  // 4. 플러그인 관리
-  private async _managePluginsAsync(capacitorPath: string): Promise<void> {
+  private async _managePluginsAsync(capacitorPath: string): Promise<boolean> {
     const pkgJsonPath = path.resolve(capacitorPath, "package.json");
     const pkgJson = (await FsUtils.readJsonAsync(pkgJsonPath)) as INpmConfig;
-    const currentDeps = Object.keys(pkgJson.dependencies ?? {});
 
-    const usePlugins = Object.keys(this._opt.config.plugins ?? {});
-
-    // 사용하지 않는 플러그인 제거
-    for (const dep of currentDeps) {
-      // @capacitor/core, @capacitor/android 등 기본 패키지는 제외
-      if (
-        dep.startsWith("@capacitor/") &&
-        ["core", "android", "ios"].some((p) => dep.endsWith(p))
-      ) {
-        continue;
-      }
-
-      // 플러그인 목록에 없는 패키지는 제거
-      if (!usePlugins.includes(dep)) {
-        // Capacitor 관련 플러그인만 제거
-        if (dep.startsWith("@capacitor/") || dep.includes("capacitor-plugin")) {
-          await SdCliCapacitor._execAsync("yarn", ["remove", dep], capacitorPath);
-          SdCliCapacitor._logger.debug(`플러그인 제거: ${dep}`);
-        }
-      }
-    }
-
-    // 새 플러그인 설치
     const mainDeps = {
       ...this._npmConfig.dependencies,
       ...this._npmConfig.devDependencies,
       ...this._npmConfig.peerDependencies,
     };
 
-    for (const plugin of usePlugins) {
-      if (!currentDeps.includes(plugin)) {
-        // 메인 프로젝트에 버전이 있으면 그 버전으로 설치
-        const version = mainDeps[plugin];
-        const pluginWithVersion = version ? `${plugin}@${version}` : plugin;
+    const usePlugins = Object.keys(this._opt.config.plugins ?? {});
+    const currentDeps = pkgJson.dependencies ?? {};
 
-        await SdCliCapacitor._execAsync("yarn", ["add", pluginWithVersion], capacitorPath);
-        SdCliCapacitor._logger.debug(`플러그인 설치: ${pluginWithVersion}`);
+    let changed = false;
+
+    // 사용하지 않는 플러그인 제거
+    for (const dep of Object.keys(currentDeps)) {
+      if (this._isCapacitorPlugin(dep) && !usePlugins.includes(dep)) {
+        delete currentDeps[dep];
+        changed = true;
+        SdCliCapacitor._logger.debug(`플러그인 제거: ${dep}`);
       }
     }
+
+    // 새 플러그인 추가
+    for (const plugin of usePlugins) {
+      if (!(plugin in currentDeps)) {
+        const version = mainDeps[plugin] ?? "^7.0.0";
+        currentDeps[plugin] = version;
+        changed = true;
+        SdCliCapacitor._logger.debug(`플러그인 추가: ${plugin}@${version}`);
+      }
+    }
+
+    // 변경사항 있을 때만 저장 & install
+    if (changed) {
+      pkgJson.dependencies = currentDeps;
+      await FsUtils.writeJsonAsync(pkgJsonPath, pkgJson, { space: 2 });
+      await SdCliCapacitor._execAsync("yarn", ["install"], capacitorPath);
+      return true;
+    }
+    // 변경 없으면 아무것도 안 함 → 오프라인 OK
+    return false;
+  }
+
+  private _isCapacitorPlugin(dep: string): boolean {
+    // 기본 패키지 제외
+    const corePackages = [
+      "@capacitor/core",
+      "@capacitor/android",
+      "@capacitor/ios",
+      "@capacitor/app",
+    ];
+    if (corePackages.includes(dep)) return false;
+
+    return dep.startsWith("@capacitor/") || dep.includes("capacitor-plugin");
   }
 
   // 5. 안드로이드 서명 설정
@@ -255,42 +274,60 @@ export class SdCliCapacitor {
 
   // 6. 아이콘 및 스플래시 스크린 설정
   private async _setupIconAndSplashScreenAsync(capacitorPath: string): Promise<void> {
-    const iconDirPath = path.resolve(capacitorPath, this._ICON_DIR_PATH);
+    const resourcesDirPath = path.resolve(capacitorPath, this._ICON_DIR_PATH);
 
     if (this._opt.config.icon != null) {
-      await FsUtils.mkdirsAsync(iconDirPath);
+      await FsUtils.mkdirsAsync(resourcesDirPath);
 
       const iconSource = path.resolve(this._opt.pkgPath, this._opt.config.icon);
 
-      // icon.png 자체를 여백 포함으로 생성
-      const iconPath = path.resolve(iconDirPath, "icon.png");
-      await this._createPaddedIconAsync(iconSource, iconPath);
+      // logo.png: 1024x1024 (Easy Mode)
+      // 로고 크기 약 60% - safe zone(61%) 내에서 최대한 크게
+      const logoPath = path.resolve(resourcesDirPath, "logo.png");
+      await this._createCenteredImageAsync(iconSource, logoPath, 1024, 0.6);
 
-      // splash는 원본 사용
-      await FsUtils.copyAsync(iconSource, path.resolve(iconDirPath, "splash.png"));
+      // splash.png: 2732x2732
+      // 로고 크기 약 35% - 화면 중앙에 적당한 크기로
+      const splashPath = path.resolve(resourcesDirPath, "splash.png");
+      await this._createCenteredImageAsync(iconSource, splashPath, 2732, 0.35);
+
+      // 기존 아이콘 삭제 (겹침 방지)
+      await this._cleanupExistingIconsAsync(capacitorPath);
 
       try {
         await SdCliCapacitor._execAsync(
           "npx",
-          ["@capacitor/assets", "generate", "--android"],
+          [
+            "@capacitor/assets",
+            "generate",
+            "--android",
+            "--iconBackgroundColor",
+            "#ffffff",
+            "--splashBackgroundColor",
+            "#ffffff",
+          ],
           capacitorPath,
         );
       } catch {
-        SdCliCapacitor._logger.warn("아이콘 리사이징 실패, 기본 아이콘 사용");
+        SdCliCapacitor._logger.warn("아이콘 생성 실패, 기본 아이콘 사용");
       }
     } else {
-      await FsUtils.removeAsync(iconDirPath);
+      await FsUtils.removeAsync(resourcesDirPath);
     }
   }
 
-  private async _createPaddedIconAsync(sourcePath: string, outputPath: string): Promise<void> {
-    const outputSize = 1024;
-    const iconSize = 680; // safe zone (66%)
-    const padding = Math.floor((outputSize - iconSize) / 2); // 172px
+  // 중앙에 로고를 배치한 이미지 생성
+  private async _createCenteredImageAsync(
+    sourcePath: string,
+    outputPath: string,
+    outputSize: number,
+    logoRatio: number, // 0.0 ~ 1.0
+  ): Promise<void> {
+    const logoSize = Math.floor(outputSize * logoRatio);
+    const padding = Math.floor((outputSize - logoSize) / 2);
 
-    // 원본 크기 상관없이 iconSize로 리사이즈 후 여백 추가
     await sharp(sourcePath)
-      .resize(iconSize, iconSize, {
+      .resize(logoSize, logoSize, {
         fit: "contain",
         background: { r: 0, g: 0, b: 0, alpha: 0 },
       })
@@ -302,6 +339,21 @@ export class SdCliCapacitor {
         background: { r: 0, g: 0, b: 0, alpha: 0 },
       })
       .toFile(outputPath);
+  }
+
+  // 기존 아이콘 파일 삭제
+  private async _cleanupExistingIconsAsync(capacitorPath: string): Promise<void> {
+    const androidResPath = path.resolve(capacitorPath, "android/app/src/main/res");
+
+    if (!FsUtils.exists(androidResPath)) return;
+
+    const mipmapDirs = await FsUtils.globAsync(path.resolve(androidResPath, "mipmap-*"));
+    for (const dir of mipmapDirs) {
+      const iconFiles = await FsUtils.globAsync(path.resolve(dir, "ic_launcher*.png"));
+      for (const file of iconFiles) {
+        await FsUtils.removeAsync(file);
+      }
+    }
   }
 
   // 7. Android 네이티브 설정
@@ -572,14 +624,13 @@ export class SdCliCapacitor {
     const capacitorPath = path.resolve(this._opt.pkgPath, this._CAPACITOR_DIR_NAME);
     const buildType = this._opt.config.debug ? "debug" : "release";
 
-    // 웹 자산 동기화
-    await SdCliCapacitor._execAsync("npx", ["cap", "sync"], capacitorPath);
-
     // 플랫폼별 빌드
     await Promise.all(
-      this._platforms.map((platform) =>
-        this._buildPlatformAsync(capacitorPath, outPath, platform, buildType),
-      ),
+      this._platforms.map(async (platform) => {
+        // 해당 플랫폼만 copy
+        await SdCliCapacitor._execAsync("npx", ["cap", "copy", platform], capacitorPath);
+        await this._buildPlatformAsync(capacitorPath, outPath, platform, buildType);
+      }),
     );
   }
 
@@ -736,7 +787,7 @@ export class SdCliCapacitor {
     }
 
     // cap sync 후 run
-    await this._execAsync("npx", ["cap", "sync", opt.platform], capacitorPath);
+    await SdCliCapacitor._execAsync("npx", ["cap", "copy", opt.platform], capacitorPath);
 
     try {
       await this._execAsync("npx", ["cap", "run", opt.platform], capacitorPath);

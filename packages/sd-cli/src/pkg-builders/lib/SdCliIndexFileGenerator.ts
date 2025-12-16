@@ -78,15 +78,17 @@ export class SdCliIndexFileGenerator {
     const tsconfig = await FsUtils.readJsonAsync(path.resolve(pkgPath, "tsconfig.json"));
 
     return [
-      ...(tsconfig.excludes ?? []),
-      ...(excludes ?? []),
       indexFilePath,
-      path.resolve(pkgPath, "src/**/*.d.ts"),
-      path.resolve(pkgPath, "src/index.ts"),
-      path.resolve(pkgPath, "src/workers/**/*{.ts,.tsx}"),
+      ...[
+        ...(tsconfig.excludes ?? []),
+        ...(excludes ?? []),
+        "src/**/*.d.ts",
+        "src/index.ts",
+        "src/workers/**/*{.ts,.tsx}",
 
-      // TODO: index에 없는 파일은 watch가 안됨... 처리 필요함.
-      // path.resolve(pkgPath, "src/internal/**/*{.ts,.tsx}"),
+        // TODO: index에 없는 파일은 watch가 안됨... 처리 필요함.
+        // "src/internal/**/*{.ts,.tsx}",
+      ].map((item) => path.resolve(pkgPath, item)),
     ].map((item) => item.replace(/\\/g, "/"));
   }
 }
