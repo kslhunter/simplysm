@@ -102,14 +102,14 @@ export class SdCliCapacitor {
       dependencies: {
         "@capacitor/core": "^7.0.0",
         "@capacitor/app": "^7.0.0",
-      },
-      devDependencies: {
-        "@capacitor/cli": "^7.0.0",
-        "@capacitor/assets": "^3.0.0",
         ...this._platforms.toObject(
           (item) => `@capacitor/${item}`,
           () => "^7.0.0",
         ),
+      },
+      devDependencies: {
+        "@capacitor/cli": "^7.0.0",
+        "@capacitor/assets": "^3.0.0",
       },
     };
     await FsUtils.writeJsonAsync(path.resolve(capacitorPath, "package.json"), pkgJson, {
@@ -216,19 +216,26 @@ export class SdCliCapacitor {
 
     let changed = false;
 
+    const prevPlugins = Object.keys(currentDeps).filter(item => ![
+      "@capacitor/core",
+      "@capacitor/android",
+      "@capacitor/ios",
+      "@capacitor/app",
+    ].includes(item));
+
     // 사용하지 않는 플러그인 제거
-    for (const dep of Object.keys(currentDeps)) {
-      if (this._isCapacitorPlugin(dep) && !usePlugins.includes(dep)) {
-        delete currentDeps[dep];
+    for (const prevPlugin of prevPlugins) {
+      if (!usePlugins.includes(prevPlugin)) {
+        delete currentDeps[prevPlugin];
         changed = true;
-        SdCliCapacitor._logger.debug(`플러그인 제거: ${dep}`);
+        SdCliCapacitor._logger.debug(`플러그인 제거: ${prevPlugin}`);
       }
     }
 
     // 새 플러그인 추가
     for (const plugin of usePlugins) {
       if (!(plugin in currentDeps)) {
-        const version = mainDeps[plugin] ?? "^7.0.0";
+        const version = mainDeps[plugin] ?? "*";
         currentDeps[plugin] = version;
         changed = true;
         SdCliCapacitor._logger.debug(`플러그인 추가: ${plugin}@${version}`);
@@ -244,19 +251,6 @@ export class SdCliCapacitor {
     }
     // 변경 없으면 아무것도 안 함 → 오프라인 OK
     return false;
-  }
-
-  private _isCapacitorPlugin(dep: string): boolean {
-    // 기본 패키지 제외
-    const corePackages = [
-      "@capacitor/core",
-      "@capacitor/android",
-      "@capacitor/ios",
-      "@capacitor/app",
-    ];
-    if (corePackages.includes(dep)) return false;
-
-    return dep.startsWith("@capacitor/") || dep.includes("capacitor-plugin");
   }
 
   // 5. 안드로이드 서명 설정

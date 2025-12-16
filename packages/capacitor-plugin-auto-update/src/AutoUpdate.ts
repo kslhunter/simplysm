@@ -144,6 +144,7 @@ export abstract class AutoUpdate {
       const serverVersionInfo = await autoUpdateServiceClient.getLastVersion("android");
       if (!serverVersionInfo) {
         // throw new Error("서버에서 최신버전 정보를 가져오지 못했습니다.");
+        // eslint-disable-next-line no-console
         console.log("서버에서 최신버전 정보를 가져오지 못했습니다.");
         return;
       }
