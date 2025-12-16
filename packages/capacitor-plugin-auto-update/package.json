@@ -18,14 +18,18 @@
     }
   },
   "dependencies": {
-    "@capacitor/core": "^7.4.4",
-    "@simplysm/capacitor-plugin-file-system": "12.16.12",
     "@simplysm/sd-core-common": "12.16.12",
     "@simplysm/sd-service-client": "12.16.12",
     "@simplysm/sd-service-common": "12.16.12",
     "semver": "^7.7.3"
   },
   "devDependencies": {
+    "@capacitor/core": "^7.4.4",
+    "@simplysm/capacitor-plugin-file-system": "12.16.12",
     "@types/semver": "^7.7.1"
+  },
+  "peerDependencies": {
+    "@capacitor/core": "^7.0.0",
+    "@simplysm/capacitor-plugin-file-system": "12.16.0"
   }
 }

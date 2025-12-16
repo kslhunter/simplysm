@@ -33,7 +33,6 @@ export function SdWorkerPathPlugin(outdir: string): esbuild.Plugin {
             }
 
             // 2. 출력될 워커 파일명 결정 (캐싱 및 중복 방지를 위해 해시 사용 권장)
-            // 예: dist/workers/protocol.worker-X7A8B9.js
             const fileContent = await FsUtils.readFileBufferAsync(resolvedWorkerPath);
             const hash = HashUtils.get(fileContent).substring(0, 8);
             const workerBaseName = path.basename(

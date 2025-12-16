@@ -10,7 +10,7 @@ export class SdCliCapacitor {
   private readonly _CAPACITOR_DIR_NAME = ".capacitor";
   private readonly _CONFIG_FILE_NAME = "capacitor.config.ts";
   private readonly _KEYSTORE_FILE_NAME = "android.keystore";
-  private readonly _ICON_DIR_PATH = "resources";
+  private readonly _ICON_DIR_NAME = "resources";
 
   // private readonly _ANDROID_DIR_NAME = "android";
   // private readonly _WWW_DIR_NAME = "www";
@@ -67,16 +67,28 @@ export class SdCliCapacitor {
 
   // 1. Capacitor 프로젝트 초기화
   private async _initializeCapacitorProjectAsync(capacitorPath: string): Promise<boolean> {
-    if (FsUtils.exists(path.resolve(capacitorPath, "www"))) {
+    const wwwPath = path.resolve(capacitorPath, "www");
+
+    if (FsUtils.exists(wwwPath)) {
       SdCliCapacitor._logger.log("이미 생성되어있는 '.capacitor'를 사용합니다.");
 
       // 버전 동기화
-      await this._syncVersionAsync(capacitorPath);
+      const pkgJsonPath = path.resolve(capacitorPath, "package.json");
+
+      if (FsUtils.exists(pkgJsonPath)) {
+        const pkgJson = (await FsUtils.readJsonAsync(pkgJsonPath)) as INpmConfig;
+
+        if (pkgJson.version !== this._npmConfig.version) {
+          pkgJson.version = this._npmConfig.version;
+          await FsUtils.writeJsonAsync(pkgJsonPath, pkgJson, { space: 2 });
+          SdCliCapacitor._logger.debug(`버전 동기화: ${this._npmConfig.version}`);
+        }
+      }
       return false;
     }
 
-
-    await FsUtils.mkdirsAsync(capacitorPath);
+    // www 폴더 생성
+    await FsUtils.mkdirsAsync(wwwPath);
 
     // package.json 생성
     const projNpmConfig = await FsUtils.readJsonAsync(
@@ -90,7 +102,6 @@ export class SdCliCapacitor {
       dependencies: {
         "@capacitor/core": "^7.0.0",
         "@capacitor/app": "^7.0.0",
-        "@capacitor/splash-screen": "^7.0.0",
       },
       devDependencies: {
         "@capacitor/cli": "^7.0.0",
@@ -111,10 +122,15 @@ export class SdCliCapacitor {
       "nodeLinker: node-modules",
     );
 
-    // yarn.lock 작성
+    // 빈 yarn.lock 작성
     await FsUtils.writeFileAsync(path.resolve(capacitorPath, "yarn.lock"), "");
 
     // yarn install
+    await SdCliCapacitor._execAsync(
+      "yarn",
+      ["dlx", "npm-check-updates", "-u", "--target", "semver"],
+      capacitorPath,
+    );
     await SdCliCapacitor._execAsync("yarn", ["install"], capacitorPath);
 
     // capacitor init
@@ -125,28 +141,12 @@ export class SdCliCapacitor {
     );
 
     // www/index.html 생성
-    const wwwPath = path.resolve(capacitorPath, "www");
     await FsUtils.writeFileAsync(
       path.resolve(wwwPath, "index.html"),
       "<!DOCTYPE html><html><head></head><body></body></html>",
     );
 
     return true;
-  }
-
-  // 버전 동기화
-  private async _syncVersionAsync(capacitorPath: string) {
-    const pkgJsonPath = path.resolve(capacitorPath, "package.json");
-
-    if (FsUtils.exists(pkgJsonPath)) {
-      const pkgJson = (await FsUtils.readJsonAsync(pkgJsonPath)) as INpmConfig;
-
-      if (pkgJson.version !== this._npmConfig.version) {
-        pkgJson.version = this._npmConfig.version;
-        await FsUtils.writeJsonAsync(pkgJsonPath, pkgJson, { space: 2 });
-        SdCliCapacitor._logger.debug(`버전 동기화: ${this._npmConfig.version}`);
-      }
-    }
   }
 
   // 2. Capacitor 설정 파일 생성
@@ -273,26 +273,18 @@ export class SdCliCapacitor {
     }
   }
 
-  // 6. 아이콘 및 스플래시 스크린 설정
   private async _setupIconAndSplashScreenAsync(capacitorPath: string): Promise<void> {
-    const resourcesDirPath = path.resolve(capacitorPath, this._ICON_DIR_PATH);
+    const resourcesDirPath = path.resolve(capacitorPath, this._ICON_DIR_NAME);
 
     if (this._opt.config.icon != null) {
       await FsUtils.mkdirsAsync(resourcesDirPath);
 
       const iconSource = path.resolve(this._opt.pkgPath, this._opt.config.icon);
 
-      // logo.png: 1024x1024 (Easy Mode)
-      // 로고 크기 약 60% - safe zone(61%) 내에서 최대한 크게
+      // 아이콘만 생성
       const logoPath = path.resolve(resourcesDirPath, "logo.png");
       await this._createCenteredImageAsync(iconSource, logoPath, 1024, 0.6);
 
-      // splash.png: 2732x2732
-      // 로고 크기 약 35% - 화면 중앙에 적당한 크기로
-      const splashPath = path.resolve(resourcesDirPath, "splash.png");
-      await this._createCenteredImageAsync(iconSource, splashPath, 2732, 0.35);
-
-      // 기존 아이콘 삭제 (겹침 방지)
       await this._cleanupExistingIconsAsync(capacitorPath);
 
       try {
@@ -309,8 +301,8 @@ export class SdCliCapacitor {
           ],
           capacitorPath,
         );
-      } catch {
-        SdCliCapacitor._logger.warn("아이콘 생성 실패, 기본 아이콘 사용");
+      } catch (e) {
+        SdCliCapacitor._logger.warn("아이콘 생성 실패, 기본 아이콘 사용", e);
       }
     } else {
       await FsUtils.removeAsync(resourcesDirPath);
@@ -348,10 +340,21 @@ export class SdCliCapacitor {
 
     if (!FsUtils.exists(androidResPath)) return;
 
+    // mipmap 폴더의 모든 ic_launcher 관련 파일 삭제 (png + xml)
     const mipmapDirs = await FsUtils.globAsync(path.resolve(androidResPath, "mipmap-*"));
     for (const dir of mipmapDirs) {
-      const iconFiles = await FsUtils.globAsync(path.resolve(dir, "ic_launcher*.png"));
+      const iconFiles = await FsUtils.globAsync(path.resolve(dir, "ic_launcher*")); // 확장자 제거
       for (const file of iconFiles) {
+        await FsUtils.removeAsync(file);
+      }
+    }
+
+    // drawable 폴더의 splash/icon 관련 파일도 삭제
+    const drawableDirs = await FsUtils.globAsync(path.resolve(androidResPath, "drawable*"));
+    for (const dir of drawableDirs) {
+      const splashFiles = await FsUtils.globAsync(path.resolve(dir, "splash*"));
+      const iconFiles = await FsUtils.globAsync(path.resolve(dir, "ic_launcher*"));
+      for (const file of [...splashFiles, ...iconFiles]) {
         await FsUtils.removeAsync(file);
       }
     }
@@ -393,13 +396,29 @@ export class SdCliCapacitor {
 
     let stylesContent = await FsUtils.readFileAsync(stylesPath);
 
-    // Edge-to-Edge 비활성화
+    // Edge-to-Edge 비활성화만
     if (!stylesContent.includes("android:windowOptOutEdgeToEdgeEnforcement")) {
       stylesContent = stylesContent.replace(
-        /(<style[^>]*AppTheme[^>]*>)/,
+        /(<style[^>]*name="AppTheme"[^>]*>)/,
         `$1\n        <item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>`,
       );
     }
+
+    // NoActionBarLaunch를 단순 NoActionBar로
+    stylesContent = stylesContent.replace(
+      /(<style\s+name="AppTheme\.NoActionBarLaunch"\s+parent=")[^"]+(")/,
+      `$1Theme.AppCompat.Light.NoActionBar$2`,
+    );
+
+    // splash 관련 전부 제거
+    stylesContent = stylesContent.replace(
+      /\s*<item name="android:background">@drawable\/splash<\/item>/g,
+      "",
+    );
+    stylesContent = stylesContent.replace(
+      /\s*<item name="android:windowSplashScreen[^"]*">[^<]*<\/item>/g,
+      "",
+    );
 
     await FsUtils.writeFileAsync(stylesPath, stylesContent);
   }
@@ -561,7 +580,7 @@ export class SdCliCapacitor {
     // Signing 설정
     const signConfig = this._opt.config.platform?.android?.sign;
     if (signConfig) {
-      const keystoreRelativePath = `../${this._KEYSTORE_FILE_NAME}`;
+      const keystoreRelativePath = `../../${this._KEYSTORE_FILE_NAME}`;
       const keystoreType = signConfig.keystoreType ?? "jks";
 
       // signingConfigs 블록 추가
@@ -570,15 +589,18 @@ export class SdCliCapacitor {
     signingConfigs {
         release {
             storeFile file("${keystoreRelativePath}")
-            storePassword "${signConfig.storePassword}"
-            keyAlias "${signConfig.alias}"
-            keyPassword "${signConfig.password}"
+            storePassword '${signConfig.storePassword}'
+            keyAlias '${signConfig.alias}'
+            keyPassword '${signConfig.password}'
             storeType "${keystoreType}"
         }
     }
 `;
         // android { 블록 내부에 추가
-        gradleContent = gradleContent.replace(/(android\s*\{)/, `$1${signingConfigsBlock}`);
+        gradleContent = gradleContent.replace(
+          /(android\s*\{)/,
+          (match) => `${match}${signingConfigsBlock}`,
+        );
       }
 
       // buildTypes.release에 signingConfig 추가
@@ -630,21 +652,12 @@ export class SdCliCapacitor {
       this._platforms.map(async (platform) => {
         // 해당 플랫폼만 copy
         await SdCliCapacitor._execAsync("npx", ["cap", "copy", platform], capacitorPath);
-        await this._buildPlatformAsync(capacitorPath, outPath, platform, buildType);
+
+        if (platform === "android") {
+          await this._buildAndroidAsync(capacitorPath, outPath, buildType);
+        }
       }),
     );
-  }
-
-  private async _buildPlatformAsync(
-    capacitorPath: string,
-    outPath: string,
-    platform: string,
-    buildType: string,
-  ): Promise<void> {
-    if (platform === "android") {
-      await this._buildAndroidAsync(capacitorPath, outPath, buildType);
-    }
-    // iOS 지원 시 추가
   }
 
   private async _buildAndroidAsync(
@@ -655,24 +668,16 @@ export class SdCliCapacitor {
     const androidPath = path.resolve(capacitorPath, "android");
     const targetOutPath = path.resolve(outPath, "android");
 
-    // Gradle wrapper로 빌드
     const isBundle = this._opt.config.platform?.android?.bundle;
     const gradleTask =
       buildType === "release" ? (isBundle ? "bundleRelease" : "assembleRelease") : "assembleDebug";
 
-    // gradlew 실행 권한 부여 (Linux/Mac)
-    const gradlewPath = path.resolve(androidPath, "gradlew");
-    if (FsUtils.exists(gradlewPath)) {
-      try {
-        await SdCliCapacitor._execAsync("chmod", ["+x", "gradlew"], androidPath);
-      } catch {
-        // Windows에서는 무시
-      }
-    }
-
     // Gradle 빌드 실행
-    const gradleCmd = process.platform === "win32" ? "gradlew.bat" : "./gradlew";
-    await SdCliCapacitor._execAsync(gradleCmd, [gradleTask, "--no-daemon"], androidPath);
+    await SdCliCapacitor._execAsync(
+      "cmd",
+      ["/c", "gradlew.bat", gradleTask, "--no-daemon"],
+      androidPath,
+    );
 
     // 빌드 결과물 복사
     await this._copyAndroidBuildOutputAsync(androidPath, targetOutPath, buildType);

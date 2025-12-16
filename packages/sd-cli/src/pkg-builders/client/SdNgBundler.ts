@@ -560,7 +560,7 @@ export class SdNgBundler {
         ...(this._conf.builderType === "electron"
           ? []
           : [nodeStdLibBrowserPlugin(nodeStdLibBrowser)]),
-        SdWorkerPathPlugin(path.resolve(this._opt.pkgPath, "dist")),
+        SdWorkerPathPlugin(this._outputPath),
         // {
         //   name: "log-circular",
         //   setup(build) {
