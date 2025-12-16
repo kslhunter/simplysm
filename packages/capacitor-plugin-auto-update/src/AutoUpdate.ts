@@ -48,7 +48,7 @@ export abstract class AutoUpdate {
     targetHref?: string,
   ) {
     if (!navigator.userAgent.toLowerCase().includes("android")) {
-      throw new Error(`안드로이드만 지원합니다.`);
+      throw new Error("안드로이드만 지원합니다.");
     }
 
     try {
@@ -143,7 +143,9 @@ export abstract class AutoUpdate {
 
       const serverVersionInfo = await autoUpdateServiceClient.getLastVersion("android");
       if (!serverVersionInfo) {
-        throw new Error("서버에서 최신버전 정보를 가져오지 못했습니다.");
+        // throw new Error("서버에서 최신버전 정보를 가져오지 못했습니다.");
+        console.log("서버에서 최신버전 정보를 가져오지 못했습니다.");
+        return;
       }
 
       opt.log(`권한 확인 중...`);

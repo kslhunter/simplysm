@@ -12,12 +12,11 @@ export async function sdHmrBootstrapAsync(
   rootComponent: Type<unknown>,
   options?: ApplicationConfig,
 ): Promise<ApplicationRef> {
-  const isCapacitor = typeof (window as any).Capacitor !== "undefined";
   const isCordova = Array.from(document.body.querySelectorAll("script")).some((script) =>
     script.src.includes("cordova"),
   );
 
-  if (isCapacitor || isCordova) {
+  if (isCordova) {
     return await new Promise<ApplicationRef>((resolve) => {
       document.addEventListener("deviceready", bootstrap, false);
 
