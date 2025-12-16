@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <plugin id="@simplysm/cordova-plugin-auto-update"
-        version="12.16.13"
+        version="12.16.14"
         xmlns="http://apache.org/cordova/ns/plugins/1.0"
         xmlns:android="http://schemas.android.com/apk/res/android">
   <name>Auto Update</name>
