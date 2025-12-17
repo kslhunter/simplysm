@@ -17,13 +17,11 @@ export class SdProcess {
     return await new Promise<string>((resolve, reject) => {
       const ps = cp.spawn(cmd, args, {
         cwd: process.cwd(),
+        ...options,
         env: {
           ...process.env,
-          FORCE_COLOR: "1", // chalk, supports-color 계열
-          CLICOLOR_FORCE: "1", // 일부 Unix 도구
-          COLORTERM: "truecolor", // 추가 힌트
+          ...options?.env
         },
-        ...options,
       });
 
       ps.on("error", (err) => {
