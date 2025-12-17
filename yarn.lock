@@ -2439,6 +2439,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@hono/node-server@npm:^1.19.7":
+  version: 1.19.7
+  resolution: "@hono/node-server@npm:1.19.7"
+  peerDependencies:
+    hono: ^4
+  checksum: 10c0/293818e02a9100122a9319fba7032a3bae86d5f98f55d1a0ff4843c2b729eb6b471978ea15e29f4fb680c6a0be23a6e5a2132f3790ab31e88fb0b6b6fcc6829e
+  languageName: node
+  linkType: hard
+
 "@humanfs/core@npm:^0.19.1":
   version: 0.19.1
   resolution: "@humanfs/core@npm:0.19.1"
@@ -2947,10 +2956,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@modelcontextprotocol/sdk@npm:^1.24.0":
-  version: 1.24.3
-  resolution: "@modelcontextprotocol/sdk@npm:1.24.3"
+"@modelcontextprotocol/sdk@npm:^1.24.3":
+  version: 1.25.1
+  resolution: "@modelcontextprotocol/sdk@npm:1.25.1"
   dependencies:
+    "@hono/node-server": "npm:^1.19.7"
     ajv: "npm:^8.17.1"
     ajv-formats: "npm:^3.0.1"
     content-type: "npm:^1.0.5"
@@ -2961,6 +2971,7 @@ __metadata:
     express: "npm:^5.0.1"
     express-rate-limit: "npm:^7.5.0"
     jose: "npm:^6.1.1"
+    json-schema-typed: "npm:^8.0.2"
     pkce-challenge: "npm:^5.0.0"
     raw-body: "npm:^3.0.0"
     zod: "npm:^3.25 || ^4.0"
@@ -2973,7 +2984,7 @@ __metadata:
       optional: true
     zod:
       optional: false
-  checksum: 10c0/91746ddf347d61815c09d2a09d3dc7564576b417f7349c33c672a7e3c69dcd215a52a066b02fcd9eaab1cdeab60cc827f3382b28b2ab68e7fc46d2e1f3824cad
+  checksum: 10c0/bca74e841b5c2c534a3c20a760cc1508f0b20dab8d2b37bcb01944fac875704b40de8bf17f2865fb5d22684b261a5472ab339d80736e651639cd44d8edaa83d5
   languageName: node
   linkType: hard
 
@@ -3675,6 +3686,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@repomix/strip-comments@npm:^2.4.2":
+  version: 2.4.2
+  resolution: "@repomix/strip-comments@npm:2.4.2"
+  checksum: 10c0/c501535af5ab741aecd236bbe7b70c7a8688f79be5018506bf90db1f0680b91ba1e577df9b3b833a5be773f7dd31e0e5b9f2dd402a55ae155be8f53c7ef9875f
+  languageName: node
+  linkType: hard
+
 "@repomix/tree-sitter-wasms@npm:^0.1.15":
   version: 0.1.15
   resolution: "@repomix/tree-sitter-wasms@npm:0.1.15"
@@ -4100,15 +4118,15 @@ __metadata:
   resolution: "@simplysm/capacitor-plugin-auto-update@workspace:packages/capacitor-plugin-auto-update"
   dependencies:
     "@capacitor/core": "npm:^7.4.4"
-    "@simplysm/capacitor-plugin-file-system": "npm:12.16.12"
-    "@simplysm/sd-core-common": "npm:12.16.12"
-    "@simplysm/sd-service-client": "npm:12.16.12"
-    "@simplysm/sd-service-common": "npm:12.16.12"
+    "@simplysm/capacitor-plugin-file-system": "npm:12.16.15"
+    "@simplysm/sd-core-common": "npm:12.16.15"
+    "@simplysm/sd-service-client": "npm:12.16.15"
+    "@simplysm/sd-service-common": "npm:12.16.15"
     "@types/semver": "npm:^7.7.1"
     semver: "npm:^7.7.3"
   peerDependencies:
     "@capacitor/core": ^7.0.0
-    "@simplysm/capacitor-plugin-file-system": 12.16.0
+    "@simplysm/capacitor-plugin-file-system": 12.16.15
   languageName: unknown
   linkType: soft
 
@@ -4122,7 +4140,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@simplysm/capacitor-plugin-file-system@npm:12.16.12, @simplysm/capacitor-plugin-file-system@workspace:packages/capacitor-plugin-file-system":
+"@simplysm/capacitor-plugin-file-system@npm:12.16.15, @simplysm/capacitor-plugin-file-system@workspace:packages/capacitor-plugin-file-system":
   version: 0.0.0-use.local
   resolution: "@simplysm/capacitor-plugin-file-system@workspace:packages/capacitor-plugin-file-system"
   dependencies:
@@ -4146,16 +4164,16 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@simplysm/cordova-plugin-auto-update@workspace:packages/cordova-plugin-auto-update"
   dependencies:
-    "@simplysm/cordova-plugin-file-system": "npm:12.16.12"
-    "@simplysm/sd-core-common": "npm:12.16.12"
-    "@simplysm/sd-service-client": "npm:12.16.12"
-    "@simplysm/sd-service-common": "npm:12.16.12"
+    "@simplysm/cordova-plugin-file-system": "npm:12.16.15"
+    "@simplysm/sd-core-common": "npm:12.16.15"
+    "@simplysm/sd-service-client": "npm:12.16.15"
+    "@simplysm/sd-service-common": "npm:12.16.15"
     "@types/semver": "npm:^7.7.1"
     semver: "npm:^7.7.3"
   languageName: unknown
   linkType: soft
 
-"@simplysm/cordova-plugin-file-system@npm:12.16.12, @simplysm/cordova-plugin-file-system@workspace:packages/cordova-plugin-file-system":
+"@simplysm/cordova-plugin-file-system@npm:12.16.15, @simplysm/cordova-plugin-file-system@workspace:packages/cordova-plugin-file-system":
   version: 0.0.0-use.local
   resolution: "@simplysm/cordova-plugin-file-system@workspace:packages/cordova-plugin-file-system"
   dependencies:
@@ -4204,11 +4222,11 @@ __metadata:
     "@capacitor/core": "npm:^7.4.4"
     "@ng-icons/core": "npm:^32.5.0"
     "@ng-icons/tabler-icons": "npm:^32.4.0"
-    "@simplysm/sd-core-browser": "npm:12.16.12"
-    "@simplysm/sd-core-common": "npm:12.16.12"
-    "@simplysm/sd-excel": "npm:12.16.12"
-    "@simplysm/sd-service-client": "npm:12.16.12"
-    "@simplysm/sd-service-common": "npm:12.16.12"
+    "@simplysm/sd-core-browser": "npm:12.16.15"
+    "@simplysm/sd-core-common": "npm:12.16.15"
+    "@simplysm/sd-excel": "npm:12.16.15"
+    "@simplysm/sd-service-client": "npm:12.16.15"
+    "@simplysm/sd-service-common": "npm:12.16.15"
     "@types/qrcode": "npm:^1.5.6"
     "@types/semver": "npm:^7.7.1"
     bwip-js: "npm:^4.8.0"
@@ -4242,10 +4260,10 @@ __metadata:
     "@angular/compiler-cli": "npm:^20.3.15"
     "@anthropic-ai/sdk": "npm:^0.71.2"
     "@electron/rebuild": "npm:^4.0.2"
-    "@simplysm/sd-core-common": "npm:12.16.12"
-    "@simplysm/sd-core-node": "npm:12.16.12"
-    "@simplysm/sd-service-server": "npm:12.16.12"
-    "@simplysm/sd-storage": "npm:12.16.12"
+    "@simplysm/sd-core-common": "npm:12.16.15"
+    "@simplysm/sd-core-node": "npm:12.16.15"
+    "@simplysm/sd-service-server": "npm:12.16.15"
+    "@simplysm/sd-storage": "npm:12.16.15"
     "@types/xml2js": "npm:^0.4.14"
     "@types/yargs": "npm:^17.0.35"
     browserslist: "npm:^4.28.1"
@@ -4271,15 +4289,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-core-browser@npm:12.16.12, @simplysm/sd-core-browser@workspace:packages/sd-core-browser":
+"@simplysm/sd-core-browser@npm:12.16.15, @simplysm/sd-core-browser@workspace:packages/sd-core-browser":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-core-browser@workspace:packages/sd-core-browser"
   dependencies:
-    "@simplysm/sd-core-common": "npm:12.16.12"
+    "@simplysm/sd-core-common": "npm:12.16.15"
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-core-common@npm:12.16.12, @simplysm/sd-core-common@workspace:packages/sd-core-common":
+"@simplysm/sd-core-common@npm:12.16.15, @simplysm/sd-core-common@workspace:packages/sd-core-common":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-core-common@workspace:packages/sd-core-common"
   dependencies:
@@ -4290,11 +4308,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-core-node@npm:12.16.12, @simplysm/sd-core-node@workspace:packages/sd-core-node":
+"@simplysm/sd-core-node@npm:12.16.15, @simplysm/sd-core-node@workspace:packages/sd-core-node":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-core-node@workspace:packages/sd-core-node"
   dependencies:
-    "@simplysm/sd-core-common": "npm:12.16.12"
+    "@simplysm/sd-core-common": "npm:12.16.15"
     "@types/glob": "npm:^9.0.0"
     chokidar: "npm:^5.0.0"
     glob: "npm:^13.0.0"
@@ -4302,11 +4320,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-excel@npm:12.16.12, @simplysm/sd-excel@workspace:packages/sd-excel":
+"@simplysm/sd-excel@npm:12.16.15, @simplysm/sd-excel@workspace:packages/sd-excel":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-excel@workspace:packages/sd-excel"
   dependencies:
-    "@simplysm/sd-core-common": "npm:12.16.12"
+    "@simplysm/sd-core-common": "npm:12.16.15"
     "@types/mime": "npm:^4.0.0"
     mime: "npm:^4.1.0"
     xlsx: "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
@@ -4317,29 +4335,29 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-orm-common-ext@workspace:packages/sd-orm-common-ext"
   dependencies:
-    "@simplysm/sd-core-common": "npm:12.16.12"
-    "@simplysm/sd-orm-common": "npm:12.16.12"
+    "@simplysm/sd-core-common": "npm:12.16.15"
+    "@simplysm/sd-orm-common": "npm:12.16.15"
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-orm-common@npm:12.16.12, @simplysm/sd-orm-common@workspace:packages/sd-orm-common":
+"@simplysm/sd-orm-common@npm:12.16.15, @simplysm/sd-orm-common@workspace:packages/sd-orm-common":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-orm-common@workspace:packages/sd-orm-common"
   dependencies:
-    "@simplysm/sd-core-common": "npm:12.16.12"
+    "@simplysm/sd-core-common": "npm:12.16.15"
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-orm-node@npm:12.16.12, @simplysm/sd-orm-node@workspace:packages/sd-orm-node":
+"@simplysm/sd-orm-node@npm:12.16.15, @simplysm/sd-orm-node@workspace:packages/sd-orm-node":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-orm-node@workspace:packages/sd-orm-node"
   dependencies:
-    "@simplysm/sd-core-common": "npm:12.16.12"
-    "@simplysm/sd-core-node": "npm:12.16.12"
-    "@simplysm/sd-orm-common": "npm:12.16.12"
+    "@simplysm/sd-core-common": "npm:12.16.15"
+    "@simplysm/sd-core-node": "npm:12.16.15"
+    "@simplysm/sd-orm-common": "npm:12.16.15"
     "@types/sqlite3": "npm:^5.1.0"
     generic-pool: "npm:^3.9.0"
-    mysql2: "npm:^3.15.3"
+    mysql2: "npm:^3.16.0"
     sqlite3: "npm:^5.1.7"
     tedious: "npm:^19.1.3"
   peerDependencies:
@@ -4356,27 +4374,27 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-service-client@npm:12.16.12, @simplysm/sd-service-client@workspace:packages/sd-service-client":
+"@simplysm/sd-service-client@npm:12.16.15, @simplysm/sd-service-client@workspace:packages/sd-service-client":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-service-client@workspace:packages/sd-service-client"
   dependencies:
-    "@simplysm/sd-core-common": "npm:12.16.12"
-    "@simplysm/sd-orm-common": "npm:12.16.12"
-    "@simplysm/sd-service-common": "npm:12.16.12"
+    "@simplysm/sd-core-common": "npm:12.16.15"
+    "@simplysm/sd-orm-common": "npm:12.16.15"
+    "@simplysm/sd-service-common": "npm:12.16.15"
     ws: "npm:^8.18.3"
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-service-common@npm:12.16.12, @simplysm/sd-service-common@workspace:packages/sd-service-common":
+"@simplysm/sd-service-common@npm:12.16.15, @simplysm/sd-service-common@workspace:packages/sd-service-common":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-service-common@workspace:packages/sd-service-common"
   dependencies:
-    "@simplysm/sd-core-common": "npm:12.16.12"
-    "@simplysm/sd-orm-common": "npm:12.16.12"
+    "@simplysm/sd-core-common": "npm:12.16.15"
+    "@simplysm/sd-orm-common": "npm:12.16.15"
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-service-server@npm:12.16.12, @simplysm/sd-service-server@workspace:packages/sd-service-server":
+"@simplysm/sd-service-server@npm:12.16.15, @simplysm/sd-service-server@workspace:packages/sd-service-server":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-service-server@workspace:packages/sd-service-server"
   dependencies:
@@ -4387,11 +4405,11 @@ __metadata:
     "@fastify/reply-from": "npm:^12.5.0"
     "@fastify/static": "npm:^8.3.0"
     "@fastify/websocket": "npm:^11.2.0"
-    "@simplysm/sd-core-common": "npm:12.16.12"
-    "@simplysm/sd-core-node": "npm:12.16.12"
-    "@simplysm/sd-orm-common": "npm:12.16.12"
-    "@simplysm/sd-orm-node": "npm:12.16.12"
-    "@simplysm/sd-service-common": "npm:12.16.12"
+    "@simplysm/sd-core-common": "npm:12.16.15"
+    "@simplysm/sd-core-node": "npm:12.16.15"
+    "@simplysm/sd-orm-common": "npm:12.16.15"
+    "@simplysm/sd-orm-node": "npm:12.16.15"
+    "@simplysm/sd-service-common": "npm:12.16.15"
     "@types/mime": "npm:^4.0.0"
     "@types/nodemailer": "npm:^7.0.4"
     "@types/ws": "npm:^8.18.1"
@@ -4406,11 +4424,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-storage@npm:12.16.12, @simplysm/sd-storage@workspace:packages/sd-storage":
+"@simplysm/sd-storage@npm:12.16.15, @simplysm/sd-storage@workspace:packages/sd-storage":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-storage@workspace:packages/sd-storage"
   dependencies:
-    "@simplysm/sd-core-common": "npm:12.16.12"
+    "@simplysm/sd-core-common": "npm:12.16.15"
     "@types/ssh2-sftp-client": "npm:^9.0.6"
     basic-ftp: "npm:^5.0.5"
     ssh2-sftp-client: "npm:^12.0.1"
@@ -5689,25 +5707,25 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vitest/expect@npm:4.0.15":
-  version: 4.0.15
-  resolution: "@vitest/expect@npm:4.0.15"
+"@vitest/expect@npm:4.0.16":
+  version: 4.0.16
+  resolution: "@vitest/expect@npm:4.0.16"
   dependencies:
     "@standard-schema/spec": "npm:^1.0.0"
     "@types/chai": "npm:^5.2.2"
-    "@vitest/spy": "npm:4.0.15"
-    "@vitest/utils": "npm:4.0.15"
+    "@vitest/spy": "npm:4.0.16"
+    "@vitest/utils": "npm:4.0.16"
     chai: "npm:^6.2.1"
     tinyrainbow: "npm:^3.0.3"
-  checksum: 10c0/0cb98a4918ca84b28cd14120bb66c1bc3084f8f95b649066cdab2f5234ecdbe247cdc6bc47c0d939521d964ff3c150aadd9558272495c26872c9f3a97373bf7b
+  checksum: 10c0/add4dde3548b6f65b6d7d364607713f9db258642add248a23805fa1172e48d76a7822080249efb882120b408772684569b2e78581ed3d5f282e215d7f21be183
   languageName: node
   linkType: hard
 
-"@vitest/mocker@npm:4.0.15":
-  version: 4.0.15
-  resolution: "@vitest/mocker@npm:4.0.15"
+"@vitest/mocker@npm:4.0.16":
+  version: 4.0.16
+  resolution: "@vitest/mocker@npm:4.0.16"
   dependencies:
-    "@vitest/spy": "npm:4.0.15"
+    "@vitest/spy": "npm:4.0.16"
     estree-walker: "npm:^3.0.3"
     magic-string: "npm:^0.30.21"
   peerDependencies:
@@ -5718,54 +5736,54 @@ __metadata:
       optional: true
     vite:
       optional: true
-  checksum: 10c0/7a164aa25daab3e92013ec95aab5c5778e805b1513e266ce6c00e0647eb9f7b281e33fcaf0d9d2aed88321079183b60c1aeab90961f618c24e2e3a5143308850
+  checksum: 10c0/cf4469a4745e3cdd46e8ee4e20aa04369e7f985d40175d974d3a6f6d331bf9d8610f9638c5a18f7ff59a30ff04b19f4b823457b4c79142186fe463fa4cee80c5
   languageName: node
   linkType: hard
 
-"@vitest/pretty-format@npm:4.0.15":
-  version: 4.0.15
-  resolution: "@vitest/pretty-format@npm:4.0.15"
+"@vitest/pretty-format@npm:4.0.16":
+  version: 4.0.16
+  resolution: "@vitest/pretty-format@npm:4.0.16"
   dependencies:
     tinyrainbow: "npm:^3.0.3"
-  checksum: 10c0/d863f3818627b198f9c66515f8faa200e76a1c30c7f2b25ac805e253204ae51abbfa6b6211c58b2d75e1a273a2e6925e3a8fa480ebfa9c479d75a19815e1cbea
+  checksum: 10c0/11243e9c2d2d011ae23825c6b7464a4385a4a4efc4ceb28b7854bb9d73491f440b89d12f62c5c9737d26375cf9585b11bc20183d4dea4e983e79d5e162407eb9
   languageName: node
   linkType: hard
 
-"@vitest/runner@npm:4.0.15":
-  version: 4.0.15
-  resolution: "@vitest/runner@npm:4.0.15"
+"@vitest/runner@npm:4.0.16":
+  version: 4.0.16
+  resolution: "@vitest/runner@npm:4.0.16"
   dependencies:
-    "@vitest/utils": "npm:4.0.15"
+    "@vitest/utils": "npm:4.0.16"
     pathe: "npm:^2.0.3"
-  checksum: 10c0/0b0f23b8fed1a98bb85d71a7fc105726e0fae68667b090c40b636011126fef548a5f853eab40aaf47314913ab6480eefe2aa5bd6bcefc4116e034fdc1ac0f7d0
+  checksum: 10c0/7f4614a9fe5e9f3683d30fb82d1489796c669df45fbc0beb22d39539e4b12ebef462062705545ca04391a0406af62088cbf1d613a812ecc9ea753a0edbfd5d26
   languageName: node
   linkType: hard
 
-"@vitest/snapshot@npm:4.0.15":
-  version: 4.0.15
-  resolution: "@vitest/snapshot@npm:4.0.15"
+"@vitest/snapshot@npm:4.0.16":
+  version: 4.0.16
+  resolution: "@vitest/snapshot@npm:4.0.16"
   dependencies:
-    "@vitest/pretty-format": "npm:4.0.15"
+    "@vitest/pretty-format": "npm:4.0.16"
     magic-string: "npm:^0.30.21"
     pathe: "npm:^2.0.3"
-  checksum: 10c0/f05a19f74512cbad9bcfe4afe814c676b72b7e54ccf09c5b36e06e73614a24fdba47bdb8a94279162b7fdf83c9c840f557073a114a9339df7e75ccb9f4e99218
+  checksum: 10c0/4fa63ffa4f30c909078210a1edcb059dbfa3ec3deaebb8f93637f65a7efae9a2d7714129bae0cf615512a683e925cf31f281fc4cb02f1fdc4c72f68ce21ca11f
   languageName: node
   linkType: hard
 
-"@vitest/spy@npm:4.0.15":
-  version: 4.0.15
-  resolution: "@vitest/spy@npm:4.0.15"
-  checksum: 10c0/22319cead44964882d9e7bd197a9cd317c945ff75a4a9baefe06c32c5719d4cb887e86b4560d79716765f288a93a6c76e78e3eeab0000f24b2236dab678b7c34
+"@vitest/spy@npm:4.0.16":
+  version: 4.0.16
+  resolution: "@vitest/spy@npm:4.0.16"
+  checksum: 10c0/2502918e703d60ef64854d0fa83ebf94da64b80e81b80c319568feee3d86069fd46e24880a768edba06c8caba13801e44005e17a0f16d9b389486f24d539f0bf
   languageName: node
   linkType: hard
 
-"@vitest/utils@npm:4.0.15":
-  version: 4.0.15
-  resolution: "@vitest/utils@npm:4.0.15"
+"@vitest/utils@npm:4.0.16":
+  version: 4.0.16
+  resolution: "@vitest/utils@npm:4.0.16"
   dependencies:
-    "@vitest/pretty-format": "npm:4.0.15"
+    "@vitest/pretty-format": "npm:4.0.16"
     tinyrainbow: "npm:^3.0.3"
-  checksum: 10c0/2ef661c2c2359ae956087f0b728b6a0f7555cd10524a7def27909f320f6b8ba00560ee1bd856bf68d4debc01020cea21b200203a5d2af36c44e94528c5587aee
+  checksum: 10c0/bba35b4e102be03e106ced227809437573aa5c5f64d512301ca8de127dcb91cbedc11a2e823305f8ba82528c909c10510ec8c7e3d92b3d6d1c1aec33e143572a
   languageName: node
   linkType: hard
 
@@ -6383,12 +6401,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"binaryextensions@npm:^6.11.0":
-  version: 6.11.0
-  resolution: "binaryextensions@npm:6.11.0"
-  dependencies:
-    editions: "npm:^6.21.0"
-  checksum: 10c0/7cd07215d2ba9722cc2c378de554e294e2577ee8b53e8e3715abf1f3e0f23db75851c9820dc34c117a3d44a778360cc28d4800e4802cdb9bc20774b71f3f5202
+"binary-extensions@npm:^3.0.0":
+  version: 3.1.0
+  resolution: "binary-extensions@npm:3.1.0"
+  checksum: 10c0/5488342caf45e895fd578ff6fdc849dd32ab0a034660761261d9e450b37375e719e7ecc62907250b95f14bf7c9677a975a9dfde4b736a269b3f84187e6ba89d4
   languageName: node
   linkType: hard
 
@@ -8102,15 +8118,6 @@ __metadata:
     tslib: "npm:2.3.0"
     zrender: "npm:6.0.0"
   checksum: 10c0/60bbb4f00ac679d2f81d7a0aa684597c8ccc46041c5ae536def4c4bbb85d5557c1653a536ac6e11f42757718ab66e2bbc35d53d795173c50e8541154c8d59bbd
-  languageName: node
-  linkType: hard
-
-"editions@npm:^6.21.0":
-  version: 6.22.0
-  resolution: "editions@npm:6.22.0"
-  dependencies:
-    version-range: "npm:^4.15.0"
-  checksum: 10c0/566edfdea81c5b9e9e366e4ceea7d0911095cc7689640e31113c49530762daaa39df4c60b2811ba05c769c485051592bf136325da019e1642bbead7d60bb7c1a
   languageName: node
   linkType: hard
 
@@ -10503,6 +10510,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"is-binary-path@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "is-binary-path@npm:3.0.0"
+  dependencies:
+    binary-extensions: "npm:^3.0.0"
+  checksum: 10c0/3e16206a5b2f057e5adbdec2a6de52a748db88cca5a8c2e6588898c3f2e30c8d0dc331b1a5f93455f33a946447abf20a7e173c8f69ff768a6c20c94b4af1e661
+  languageName: node
+  linkType: hard
+
 "is-boolean-object@npm:^1.2.1":
   version: 1.2.2
   resolution: "is-boolean-object@npm:1.2.2"
@@ -10929,7 +10945,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"isbinaryfile@npm:^5.0.0":
+"isbinaryfile@npm:^5.0.0, isbinaryfile@npm:^5.0.2":
   version: 5.0.7
   resolution: "isbinaryfile@npm:5.0.7"
   checksum: 10c0/4cd98a91aaf969d7cae91f74d041dd1df35d9e140c522b7879180035f7eab9ba9c0c3d678e00e72a2777ee7245fd8f20b60c0787132c5fdbf6fc113492325e11
@@ -10981,17 +10997,6 @@ __metadata:
     istanbul-lib-coverage: "npm:^3.2.0"
     semver: "npm:^7.5.4"
   checksum: 10c0/a1894e060dd2a3b9f046ffdc87b44c00a35516f5e6b7baf4910369acca79e506fc5323a816f811ae23d82334b38e3ddeb8b3b331bd2c860540793b59a8689128
-  languageName: node
-  linkType: hard
-
-"istextorbinary@npm:^9.5.0":
-  version: 9.5.0
-  resolution: "istextorbinary@npm:9.5.0"
-  dependencies:
-    binaryextensions: "npm:^6.11.0"
-    editions: "npm:^6.21.0"
-    textextensions: "npm:^6.11.0"
-  checksum: 10c0/76ed0355b48ceb351301ade26824f136be9436a1a31432b37191e591e868a081d6953fb7b5faa964681a24cad0435863635618354c5d440c79b65b75a9d788c5
   languageName: node
   linkType: hard
 
@@ -11138,6 +11143,13 @@ __metadata:
   version: 1.0.0
   resolution: "json-schema-traverse@npm:1.0.0"
   checksum: 10c0/71e30015d7f3d6dc1c316d6298047c8ef98a06d31ad064919976583eb61e1018a60a0067338f0f79cabc00d84af3fcc489bd48ce8a46ea165d9541ba17fb30c6
+  languageName: node
+  linkType: hard
+
+"json-schema-typed@npm:^8.0.2":
+  version: 8.0.2
+  resolution: "json-schema-typed@npm:8.0.2"
+  checksum: 10c0/89f5e2fb1495483b705c027203c07277ee6bf2665165ad25a9cb55de5af7f72570326d13d32565180781e4083ad5c9688102f222baed7b353c2f39c1e02b0428
   languageName: node
   linkType: hard
 
@@ -12165,9 +12177,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mysql2@npm:^3.15.3":
-  version: 3.15.3
-  resolution: "mysql2@npm:3.15.3"
+"mysql2@npm:^3.16.0":
+  version: 3.16.0
+  resolution: "mysql2@npm:3.16.0"
   dependencies:
     aws-ssl-profiles: "npm:^1.1.1"
     denque: "npm:^2.1.0"
@@ -12178,7 +12190,7 @@ __metadata:
     named-placeholders: "npm:^1.1.3"
     seq-queue: "npm:^0.0.5"
     sqlstring: "npm:^2.3.2"
-  checksum: 10c0/e10c51eebb2b2783837b732f1f4edc9e0ea15d9c5d80167e739b1dc97a323c786f5b3261e229f586b2903c44abcc71422c473113dfb261fa6215efcbbb5fe6ef
+  checksum: 10c0/79e4f7067d53a9183589558a1f6cdbbec3c635af3e7f42c81921df3cf619e3637a58d4377a9e01bd8192e28ff60c4e441fff855248a17a3e51bfc02b535ca358
   languageName: node
   linkType: hard
 
@@ -13788,12 +13800,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"repomix@npm:^1.10.1":
-  version: 1.10.1
-  resolution: "repomix@npm:1.10.1"
+"repomix@npm:^1.10.2":
+  version: 1.10.2
+  resolution: "repomix@npm:1.10.2"
   dependencies:
     "@clack/prompts": "npm:^0.11.0"
-    "@modelcontextprotocol/sdk": "npm:^1.24.0"
+    "@modelcontextprotocol/sdk": "npm:^1.24.3"
+    "@repomix/strip-comments": "npm:^2.4.2"
     "@repomix/tree-sitter-wasms": "npm:^0.1.15"
     "@secretlint/core": "npm:^11.2.5"
     "@secretlint/secretlint-rule-preset-recommend": "npm:^11.2.5"
@@ -13805,21 +13818,21 @@ __metadata:
     globby: "npm:^16.0.0"
     handlebars: "npm:^4.7.8"
     iconv-lite: "npm:^0.7.0"
-    istextorbinary: "npm:^9.5.0"
+    is-binary-path: "npm:^3.0.0"
+    isbinaryfile: "npm:^5.0.2"
     jiti: "npm:^2.6.1"
     jschardet: "npm:^3.1.4"
     json5: "npm:^2.2.3"
     log-update: "npm:^7.0.2"
     minimatch: "npm:^10.1.1"
     picocolors: "npm:^1.1.1"
-    strip-comments: "npm:^2.0.1"
     tiktoken: "npm:^1.0.22"
     tinypool: "npm:^2.0.0"
     web-tree-sitter: "npm:^0.25.10"
     zod: "npm:^4.1.13"
   bin:
     repomix: bin/repomix.cjs
-  checksum: 10c0/ca3500b099358b2b968b75a57fcde3a162e7cb8b1797a089d226f895c657cfaf7b7963991fe339682ba852cbaf641cc96e03707a957ae42837fb8326b5de5297
+  checksum: 10c0/970db7bd6e19f0c6c1cb936152b367b81ea3e5465f80bf1ddcc8ff7a3187333288440490eca358260047eedd2dad20708944458ba2264c809330ce499bd6c5dc
   languageName: node
   linkType: hard
 
@@ -14938,11 +14951,11 @@ __metadata:
     cross-env: "npm:^10.1.0"
     eslint: "npm:^9.39.2"
     prettier: "npm:^3.7.4"
-    repomix: "npm:^1.10.1"
+    repomix: "npm:^1.10.2"
     tsx: "npm:^4.21.0"
     typescript: "npm:~5.8.3"
     vite-tsconfig-paths: "npm:^5.1.4"
-    vitest: "npm:^4.0.15"
+    vitest: "npm:^4.0.16"
   languageName: unknown
   linkType: soft
 
@@ -15445,13 +15458,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"strip-comments@npm:^2.0.1":
-  version: 2.0.1
-  resolution: "strip-comments@npm:2.0.1"
-  checksum: 10c0/984321b1ec47a531bdcfddd87f217590934e2d2f142198a080ec88588280239a5b58a81ca780730679b6195e52afef83673c6d6466c07c2277f71f44d7d9553d
-  languageName: node
-  linkType: hard
-
 "strip-final-newline@npm:^2.0.0":
   version: 2.0.0
   resolution: "strip-final-newline@npm:2.0.0"
@@ -15656,15 +15662,6 @@ __metadata:
   dependencies:
     utrie: "npm:^1.0.2"
   checksum: 10c0/8b9ae8524e3a332371060d0ca62f10ad49a13e954719ea689a6c3a8b8c15c8a56365ede2bb91c322fb0d44b6533785f0da603e066b7554d052999967fb72d600
-  languageName: node
-  linkType: hard
-
-"textextensions@npm:^6.11.0":
-  version: 6.11.0
-  resolution: "textextensions@npm:6.11.0"
-  dependencies:
-    editions: "npm:^6.21.0"
-  checksum: 10c0/6077ca91af65d8067007973635d9e22c712c08cc06004cf2fa91f221239f0a833ededa18bf977131b45649be4a34fe44a7d1cb7b3f6c6c49d5677a197a10b0e0
   languageName: node
   linkType: hard
 
@@ -16443,13 +16440,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"version-range@npm:^4.15.0":
-  version: 4.15.0
-  resolution: "version-range@npm:4.15.0"
-  checksum: 10c0/ab40c6f1399e0ad5b5de7f295bb93f79f80a7cda919324d4682e388d937f1e50d6127d8cd6aa46c38bb185f4905e53bdad4cdc36ec5c14ec730e5954422f06ab
-  languageName: node
-  linkType: hard
-
 "vite-tsconfig-paths@npm:^5.1.4":
   version: 5.1.4
   resolution: "vite-tsconfig-paths@npm:5.1.4"
@@ -16576,17 +16566,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vitest@npm:^4.0.15":
-  version: 4.0.15
-  resolution: "vitest@npm:4.0.15"
+"vitest@npm:^4.0.16":
+  version: 4.0.16
+  resolution: "vitest@npm:4.0.16"
   dependencies:
-    "@vitest/expect": "npm:4.0.15"
-    "@vitest/mocker": "npm:4.0.15"
-    "@vitest/pretty-format": "npm:4.0.15"
-    "@vitest/runner": "npm:4.0.15"
-    "@vitest/snapshot": "npm:4.0.15"
-    "@vitest/spy": "npm:4.0.15"
-    "@vitest/utils": "npm:4.0.15"
+    "@vitest/expect": "npm:4.0.16"
+    "@vitest/mocker": "npm:4.0.16"
+    "@vitest/pretty-format": "npm:4.0.16"
+    "@vitest/runner": "npm:4.0.16"
+    "@vitest/snapshot": "npm:4.0.16"
+    "@vitest/spy": "npm:4.0.16"
+    "@vitest/utils": "npm:4.0.16"
     es-module-lexer: "npm:^1.7.0"
     expect-type: "npm:^1.2.2"
     magic-string: "npm:^0.30.21"
@@ -16604,10 +16594,10 @@ __metadata:
     "@edge-runtime/vm": "*"
     "@opentelemetry/api": ^1.9.0
     "@types/node": ^20.0.0 || ^22.0.0 || >=24.0.0
-    "@vitest/browser-playwright": 4.0.15
-    "@vitest/browser-preview": 4.0.15
-    "@vitest/browser-webdriverio": 4.0.15
-    "@vitest/ui": 4.0.15
+    "@vitest/browser-playwright": 4.0.16
+    "@vitest/browser-preview": 4.0.16
+    "@vitest/browser-webdriverio": 4.0.16
+    "@vitest/ui": 4.0.16
     happy-dom: "*"
     jsdom: "*"
   peerDependenciesMeta:
@@ -16631,7 +16621,7 @@ __metadata:
       optional: true
   bin:
     vitest: vitest.mjs
-  checksum: 10c0/fd57913dbcba81b67ca67bae37f0920f2785a60939a9029a82ebb843253f7a67f93f2c959cb90bb23a57055c0256ec0a6059ec9a10c129e8912c09b6e407242b
+  checksum: 10c0/b195c272198f7957c11186eb70ee78e2ec0f4524b4b5306ca8f05e41b3d84c6a4a15d02fca58d82f2b32ba61f610ae8a2a23d463a8336d7323e4832db5eef223
   languageName: node
   linkType: hard
 

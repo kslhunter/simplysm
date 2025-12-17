@@ -631,18 +631,16 @@ export class SdCliCapacitor {
     const buildType = this._opt.config.debug ? "debug" : "release";
 
     // 플랫폼별 빌드
-    await Promise.all(
-      this._platforms.map(async (platform) => {
-        // 해당 플랫폼만 copy
-        await SdCliCapacitor._execAsync("npx", ["cap", "copy", platform], this._capPath);
+    for (const platform of this._platforms) {
+      // 해당 플랫폼만 copy
+      await SdCliCapacitor._execAsync("npx", ["cap", "copy", platform], this._capPath);
 
-        if (platform === "android") {
-          await this._buildAndroidAsync(outPath, buildType);
-        } else {
-          throw new NotImplementError();
-        }
-      }),
-    );
+      if (platform === "android") {
+        await this._buildAndroidAsync(outPath, buildType);
+      } else {
+        throw new NotImplementError();
+      }
+    }
   }
 
   private async _buildAndroidAsync(outPath: string, buildType: string): Promise<void> {

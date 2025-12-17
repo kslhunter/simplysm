@@ -20,7 +20,7 @@
   },
   "devDependencies": {
     "@types/sqlite3": "^5.1.0",
-    "mysql2": "^3.15.3",
+    "mysql2": "^3.16.0",
     "sqlite3": "^5.1.7",
     "tedious": "^19.1.3"
   },
