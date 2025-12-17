@@ -71,7 +71,7 @@ import { tablerCheck } from "@ng-icons/tabler-icons";
             > ng-icon {              
               > svg {
                 vertical-align: top;
-                stroke-width: 3px !important;
+                stroke-width: 2.5px !important;
               }
             }
           }

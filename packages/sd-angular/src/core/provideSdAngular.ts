@@ -30,6 +30,7 @@ import { SdBusyProvider } from "../ui/overlay/busy/sd-busy.provider";
 import { SwUpdate } from "@angular/service-worker";
 import { SdGlobalErrorHandlerPlugin } from "./plugins/sd-global-error-handler.plugin";
 import { IMAGE_CONFIG } from "@angular/common";
+import { provideNgIconsConfig } from "@ng-icons/core";
 
 export function provideSdAngular(opt: {
   clientName: string;
@@ -45,6 +46,10 @@ export function provideSdAngular(opt: {
         disableImageLazyLoadWarning: true,
       },
     },
+    provideNgIconsConfig({
+      strokeWidth: 1.5,
+      size: "1.33em"
+    }),
     provideEnvironmentInitializer(() => {
       const _sdNgConf = inject(SdAngularConfigProvider);
       const _sdTheme = inject(SdThemeProvider);

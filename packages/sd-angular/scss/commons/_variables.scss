@@ -1,46 +1,50 @@
 @use "sass:map";
 @use "sass:color";
 
+@function to-rgb($oklch-color) {
+  @return color.to-space($oklch-color, rgb);
+}
+
 $colors: (
-  red: color.to-space(oklch(0.704 0.191 22.216), rgb),
-  orange: color.to-space(oklch(0.75 0.183 55.934), rgb),
-  amber: color.to-space(oklch(0.828 0.189 84.429), rgb),
-  yellow: color.to-space(oklch(0.852 0.199 91.936), rgb),
-  lime: color.to-space(oklch(0.841 0.238 128.85), rgb),
-  green: color.to-space(oklch(0.792 0.209 151.711), rgb),
-  emerald: color.to-space(oklch(0.765 0.177 163.223), rgb),
-  teal: color.to-space(oklch(0.777 0.152 181.912), rgb),
-  cyan: color.to-space(oklch(0.789 0.154 211.53), rgb),
-  sky: color.to-space(oklch(0.746 0.16 232.661), rgb),
-  blue: color.to-space(oklch(0.707 0.165 254.624), rgb),
-  indigo: color.to-space(oklch(0.673 0.182 276.935), rgb),
-  violet: color.to-space(oklch(0.702 0.183 293.541), rgb),
-  purple: color.to-space(oklch(0.714 0.203 305.504), rgb),
-  fuchsia: color.to-space(oklch(0.74 0.238 322.16), rgb),
-  pink: color.to-space(oklch(0.718 0.202 349.761), rgb),
-  rose: color.to-space(oklch(0.712 0.194 13.428), rgb),
-  slate: color.to-space(oklch(0.704 0.04 256.788), rgb),
-  gray: color.to-space(oklch(0.707 0.022 261.325), rgb),
-  zinc: color.to-space(oklch(0.705 0.015 286.067), rgb),
-  neutral: color.to-space(oklch(0.708 0 0), rgb),
-  stone: color.to-space(oklch(0.709 0.01 56.259), rgb),
+  red: to-rgb(oklch(0.704 0.191 22.216)),
+  orange: to-rgb(oklch(0.75 0.183 55.934)),
+  amber: to-rgb(oklch(0.828 0.189 84.429)),
+  yellow: to-rgb(oklch(0.852 0.199 91.936)),
+  lime: to-rgb(oklch(0.841 0.238 128.85)),
+  green: to-rgb(oklch(0.792 0.209 151.711)),
+  emerald: to-rgb(oklch(0.765 0.177 163.223)),
+  teal: to-rgb(oklch(0.777 0.152 181.912)),
+  cyan: to-rgb(oklch(0.789 0.154 211.53)),
+  sky: to-rgb(oklch(0.746 0.16 232.661)),
+  blue: to-rgb(oklch(0.707 0.165 254.624)),
+  indigo: to-rgb(oklch(0.673 0.182 276.935)),
+  violet: to-rgb(oklch(0.702 0.183 293.541)),
+  purple: to-rgb(oklch(0.714 0.203 305.504)),
+  fuchsia: to-rgb(oklch(0.74 0.238 322.16)),
+  pink: to-rgb(oklch(0.718 0.202 349.761)),
+  rose: to-rgb(oklch(0.712 0.194 13.428)),
+  slate: to-rgb(oklch(0.704 0.04 256.788)),
+  gray: to-rgb(oklch(0.707 0.022 261.325)),
+  zinc: to-rgb(oklch(0.705 0.015 286.067)),
+  neutral: to-rgb(oklch(0.708 0 0)),
+  stone: to-rgb(oklch(0.709 0.01 56.259)),
 );
 
-@function color-map($base) {
+@function color-map($base, $offset: 0%) {
   @return (
-    lightest: color.mix(white, $base, 85%),
-    lighter: color.mix(white, $base, 65%),
-    light: color.mix(white, $base, 50%),
+    lightest: color.scale($base, $lightness: 90% + $offset),
+    lighter: color.scale($base, $lightness: 75% + $offset),
+    light: color.scale($base, $lightness: 60% + $offset),
     default: $base,
-    dark: color.mix(black, $base, 10%),
-    darker: color.mix(black, $base, 25%),
-    darkest: color.mix(black, $base, 40%)
+    dark: color.scale($base, $lightness: 10% + $offset),
+    darker: color.scale($base, $lightness: 25% + $offset),
+    darkest: color.scale($base, $lightness: 40% + $offset)
   );
 }
 
 $vars: (
   theme: (
-    "gray": color-map(map.get($colors, gray)),
+    "gray": color-map(map.get($colors, gray), -5%),
     blue-gray: color-map(map.get($colors, slate)),
     primary: color-map(map.get($colors, blue)),
     secondary: color-map(map.get($colors, blue)),

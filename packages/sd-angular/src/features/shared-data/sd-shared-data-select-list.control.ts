@@ -45,7 +45,7 @@ import { tablerExternalLink } from "@ng-icons/tabler-icons";
     NgIcon,
   ],
   host: {
-    class: "flex-column",
+    class: "flex-column fill",
   },
   template: `
     @if (header()) {
