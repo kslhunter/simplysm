@@ -15,7 +15,6 @@ import {
   imports: [],
   template: `
     <form #formEl novalidate (submit)="handleSubmit($event)">
-      <!-- (invalid.capture)="invalid.emit()": 입력할때마다 에러떠버리네.. -->
       <ng-content />
       <button hidden type="submit"></button>
     </form>

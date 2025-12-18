@@ -2,6 +2,7 @@ import { inject, Injectable } from "@angular/core";
 import { EventManagerPlugin } from "@angular/platform-browser";
 import { DOCUMENT } from "@angular/common";
 
+/** @deprecated */
 @Injectable({ providedIn: null })
 export class SdBackbuttonEventPlugin extends EventManagerPlugin {
   constructor() {

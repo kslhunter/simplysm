@@ -22,7 +22,7 @@ HTMLElement.prototype.getRelativeOffset = function (parent: HTMLElement | string
 } {
   // 1. parent 요소 찾기
   const parentEl = typeof parent === "string"
-    ? this.closest(parent) // findParent 대신 더 신뢰할 수 있는 closest 사용
+    ? this.closest(parent)
     : parent;
 
   if (!(parentEl instanceof HTMLElement)) {

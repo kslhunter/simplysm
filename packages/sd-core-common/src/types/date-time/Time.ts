@@ -62,7 +62,10 @@ export class Time {
       const dt = DateTime.parse(str);
       return new Time(dt.hour, dt.minute, dt.second, dt.millisecond);
     } catch {
-      throw new ArgumentError({ str });
+      throw new ArgumentError(
+        `시간 형식을 파싱할 수 없습니다. 지원 형식: 'HH:mm:ss', 'HH:mm:ss.fff', '오전/오후 HH:mm:ss'`,
+        { input: str }
+      );
     }
   }
 

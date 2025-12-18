@@ -74,7 +74,10 @@ export class DateOnly {
       );
     }
 
-    throw new ArgumentError({ str });
+    throw new ArgumentError(
+      `날짜 형식을 파싱할 수 없습니다. 지원 형식: 'yyyy-MM-dd', 'yyyyMMdd', ISO 8601 날짜`,
+      { input: str }
+    );
   }
 
   /**
@@ -287,7 +290,7 @@ export class DateOnly {
   setMonth(month: number): DateOnly {
     const date = new Date(this.tick);
     date.setDate(1);
-    date.setMonth(month);
+    date.setMonth(month - 1);
     date.setDate(0);
 
     const lastDay = date.getDate();

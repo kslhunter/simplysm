@@ -12,7 +12,7 @@ export * from "./errors/TimeoutError";
 export * from "./extensions/Array.ext";
 import "./extensions/Map.ext";
 import "./extensions/Set.ext";
-export * from "./temaplte-strings";
+export * from "./template-strings";
 export * from "./types/date-time/DateOnly";
 export * from "./types/date-time/DateTime";
 export * from "./types/date-time/Time";

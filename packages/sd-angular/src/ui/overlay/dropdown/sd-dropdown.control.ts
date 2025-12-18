@@ -22,7 +22,7 @@ import { SdDropdownPopupControl } from "./sd-dropdown-popup.control";
     "[attr.tabindex]": "disabled() ? undefined : '0'",
     "(click)": "onHostClick()",
     "(keydown)": "onHostKeydown($event)",
-    "(document:scroll.capture)": "onDocumentScrollCapture($event)",
+    "(document:scroll.capture.passive)": "onDocumentScrollCapture($event)",
     "(document:mouseover)": "onDocumentMouseover($event)",
     "(document:blur.capture)": "onDocumentBlurCapture($event)",
   },

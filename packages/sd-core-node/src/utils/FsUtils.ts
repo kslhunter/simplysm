@@ -49,11 +49,7 @@ export class FsUtils {
     try {
       return await fs.promises.readdir(targetPath);
     } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(err, targetPath);
-      } else {
-        throw err;
-      }
+      throw new SdError(err, targetPath);
     }
   }
 
@@ -61,11 +57,7 @@ export class FsUtils {
     try {
       return fs.readdirSync(targetPath);
     } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(err, targetPath);
-      } else {
-        throw err;
-      }
+      throw new SdError(err, targetPath);
     }
   }
 
@@ -73,11 +65,7 @@ export class FsUtils {
     try {
       return fs.existsSync(targetPath);
     } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(err, targetPath);
-      } else {
-        throw err;
-      }
+      throw new SdError(err, targetPath);
     }
   }
 
@@ -90,11 +78,7 @@ export class FsUtils {
         maxRetries: 6,
       });
     } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(err, targetPath);
-      } else {
-        throw err;
-      }
+      throw new SdError(err, targetPath);
     }
   }
 
@@ -102,11 +86,7 @@ export class FsUtils {
     try {
       fs.rmSync(targetPath, { recursive: true, force: true });
     } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(err, targetPath);
-      } else {
-        throw err;
-      }
+      throw new SdError(err, targetPath);
     }
   }
 
@@ -123,11 +103,7 @@ export class FsUtils {
     try {
       lstat = await fs.promises.lstat(sourcePath);
     } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(err, targetPath);
-      } else {
-        throw err;
-      }
+      throw new SdError(err, targetPath);
     }
 
     if (lstat.isDirectory()) {
@@ -150,11 +126,7 @@ export class FsUtils {
       try {
         await fs.promises.copyFile(sourcePath, targetPath);
       } catch (err) {
-        if (err instanceof Error) {
-          throw new SdError(err, targetPath);
-        } else {
-          throw err;
-        }
+        throw new SdError(err, targetPath);
       }
     }
   }
@@ -168,11 +140,7 @@ export class FsUtils {
     try {
       lstat = fs.lstatSync(sourcePath);
     } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(err, targetPath);
-      } else {
-        throw err;
-      }
+      throw new SdError(err, targetPath);
     }
     if (lstat.isDirectory()) {
       FsUtils.mkdirs(targetPath);
@@ -194,11 +162,7 @@ export class FsUtils {
       try {
         fs.copyFileSync(sourcePath, targetPath);
       } catch (err) {
-        if (err instanceof Error) {
-          throw new SdError(err, targetPath);
-        } else {
-          throw err;
-        }
+        throw new SdError(err, targetPath);
       }
     }
   }
@@ -209,11 +173,7 @@ export class FsUtils {
     try {
       await fs.promises.mkdir(targetPath, { recursive: true });
     } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(err, targetPath);
-      } else {
-        throw err;
-      }
+      throw new SdError(err, targetPath);
     }
   }
 
@@ -223,11 +183,7 @@ export class FsUtils {
     try {
       fs.mkdirSync(targetPath, { recursive: true });
     } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(err, targetPath);
-      } else {
-        throw err;
-      }
+      throw new SdError(err, targetPath);
     }
   }
 
@@ -285,17 +241,7 @@ export class FsUtils {
     try {
       await fs.promises.writeFile(targetPath, data);
     } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(
-          err,
-          targetPath +
-            (typeof data === "object"
-              ? ((data.constructor?.name ?? "object") as string)
-              : typeof data),
-        );
-      } else {
-        throw err;
-      }
+      throw new SdError(err, targetPath);
     }
   }
 
@@ -307,11 +253,7 @@ export class FsUtils {
         flush: true,
       });
     } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(err, targetPath);
-      } else {
-        throw err;
-      }
+      throw new SdError(err, targetPath);
     }
   }
 
@@ -319,11 +261,7 @@ export class FsUtils {
     try {
       return fs.readFileSync(targetPath, "utf-8");
     } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(err, targetPath);
-      } else {
-        throw err;
-      }
+      throw new SdError(err, targetPath);
     }
   }
 
@@ -335,11 +273,7 @@ export class FsUtils {
     try {
       return await fs.promises.readFile(targetPath, "utf-8");
     } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(err, targetPath);
-      } else {
-        throw err;
-      }
+      throw new SdError(err, targetPath);
     }
   }
 
@@ -347,11 +281,7 @@ export class FsUtils {
     try {
       return fs.readFileSync(targetPath);
     } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(err, targetPath);
-      } else {
-        throw err;
-      }
+      throw new SdError(err, targetPath);
     }
   }
 
@@ -359,11 +289,7 @@ export class FsUtils {
     try {
       return await fs.promises.readFile(targetPath);
     } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(err, targetPath);
-      } else {
-        throw err;
-      }
+      throw new SdError(err, targetPath);
     }
   }
 
@@ -377,11 +303,7 @@ export class FsUtils {
     try {
       return JsonConvert.parse(contents);
     } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(err, targetPath + os.EOL + contents);
-      } else {
-        throw err;
-      }
+      throw new SdError(err, targetPath + os.EOL + contents);
     }
   }
 
@@ -389,11 +311,7 @@ export class FsUtils {
     try {
       return fs.lstatSync(targetPath);
     } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(err, targetPath);
-      } else {
-        throw err;
-      }
+      throw new SdError(err, targetPath);
     }
   }
 
@@ -401,11 +319,7 @@ export class FsUtils {
     try {
       return await fs.promises.lstat(targetPath);
     } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(err, targetPath);
-      } else {
-        throw err;
-      }
+      throw new SdError(err, targetPath);
     }
   }
 
@@ -413,11 +327,7 @@ export class FsUtils {
     try {
       return fs.statSync(targetPath);
     } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(err, targetPath);
-      } else {
-        throw err;
-      }
+      throw new SdError(err, targetPath);
     }
   }
 
@@ -425,11 +335,7 @@ export class FsUtils {
     try {
       return await fs.promises.stat(targetPath);
     } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(err, targetPath);
-      } else {
-        throw err;
-      }
+      throw new SdError(err, targetPath);
     }
   }
 
@@ -437,11 +343,7 @@ export class FsUtils {
     try {
       fs.appendFileSync(targetPath, data, "utf8");
     } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(err, targetPath);
-      } else {
-        throw err;
-      }
+      throw new SdError(err, targetPath);
     }
   }
 
@@ -449,11 +351,7 @@ export class FsUtils {
     try {
       return fs.openSync(targetPath, flags);
     } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(err, targetPath);
-      } else {
-        throw err;
-      }
+      throw new SdError(err, targetPath);
     }
   }
 
@@ -464,11 +362,7 @@ export class FsUtils {
     try {
       return await fs.promises.open(targetPath, flags);
     } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(err, targetPath);
-      } else {
-        throw err;
-      }
+      throw new SdError(err, targetPath);
     }
   }
 
@@ -476,11 +370,7 @@ export class FsUtils {
     try {
       return fs.createReadStream(sourcePath);
     } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(err, sourcePath);
-      } else {
-        throw err;
-      }
+      throw new SdError(err, sourcePath);
     }
   }
 
@@ -488,21 +378,9 @@ export class FsUtils {
     try {
       return fs.createWriteStream(targetPath);
     } catch (err) {
-      if (err instanceof Error) {
-        throw new SdError(err, targetPath);
-      } else {
-        throw err;
-      }
+      throw new SdError(err, targetPath);
     }
   }
-
-  /*public static async isDirectoryAsync(targetPath: string): Promise<boolean> {
-    return (await FsUtil.lstatAsync(targetPath)).isDirectory();
-  }
-
-  public static isDirectory(targetPath: string): boolean {
-    return FsUtil.stat(targetPath).isDirectory();
-  }*/
 
   static async clearEmptyDirectoryAsync(dirPath: string): Promise<void> {
     if (!FsUtils.exists(dirPath)) return;

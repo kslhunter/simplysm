@@ -75,7 +75,6 @@ export * from "./features/shared-data/sd-shared-data-select-button.control";
 export * from "./features/shared-data/sd-shared-data-select-list.control";
 export * from "./features/shared-data/sd-shared-data-select.control";
 export * from "./features/theme/sd-theme-selector.control";
-export * from "./legacy/SdNgHelper";
 export * from "./ui/data/list/sd-list-item.control";
 export * from "./ui/data/list/sd-list.control";
 export * from "./ui/data/sheet/directives/sd-sheet-column-cell-template.directive";

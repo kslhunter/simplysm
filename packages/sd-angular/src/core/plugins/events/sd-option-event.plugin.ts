@@ -9,21 +9,27 @@ export class SdOptionEventPlugin extends EventManagerPlugin {
   }
 
   override supports(eventName: string): boolean {
-    return !eventName.startsWith("sd") && eventName.includes(".capture");
+    if (!/\.(capture|passive|once)/.test(eventName)) return false;
+
+    const realEventName = eventName.replace(/\.(capture|passive|once)/g, "");
+
+    return `on${realEventName}` in window ||
+      `on${realEventName}` in document ||
+      `on${realEventName}` in HTMLElement.prototype;
   }
 
   override addEventListener(element: HTMLElement, eventName: string, handler: (event: Event) => void): () => void {
-    const capture = eventName.includes(".capture");
-    const realEventName = eventName.replace(/\.capture/, "") as keyof DocumentEventMap;
-
-    const listener = (event: Event): void => {
-      handler(event);
+    const options: AddEventListenerOptions = {
+      capture: eventName.includes(".capture"),
+      passive: eventName.includes(".passive"),
+      once: eventName.includes(".once"),
     };
 
-    element.addEventListener(realEventName, listener, capture);
+    const realEventName = eventName
+      .replace(/\.(capture|passive|once)/g, "") as keyof HTMLElementEventMap;
 
-    return (): void => {
-      element.removeEventListener(realEventName, listener, capture);
-    };
+    element.addEventListener(realEventName, handler, options);
+
+    return () => element.removeEventListener(realEventName, handler, options);
   }
 }

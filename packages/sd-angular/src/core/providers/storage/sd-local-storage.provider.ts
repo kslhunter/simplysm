@@ -14,7 +14,7 @@ export class SdLocalStorageProvider<T> {
     localStorage.setItem(`${this._sdNgConf.clientName}.${key}`, JsonConvert.stringify(value));
   }
 
-  get(key: keyof T & string) {
+  get<K extends keyof T & string>(key: K): T[K] | undefined {
     const json = localStorage.getItem(`${this._sdNgConf.clientName}.${key}`);
     if (json == null) return undefined;
     return JsonConvert.parse(json);

@@ -142,4 +142,8 @@ export class SdExcelWorkbook {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     });
   }
+
+  async closeAsync() {
+    await this.zipCache.closeAsync();
+  }
 }

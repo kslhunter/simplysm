@@ -27,82 +27,100 @@ export class ObjectUtils {
       useRefTypes?: any[];
       onlyOneDepth?: boolean;
     },
-    prevClones?: {
-      source: any;
-      clone: any;
-    }[],
+    prevClones?: WeakMap<object, any>,
   ): any {
-    if (source == null) {
+    // primitive는 그대로 반환
+    if (typeof source !== "object") {
       return source;
     }
-    if (source instanceof Buffer) {
-      return Buffer.from(source);
-    }
-    if (source instanceof Array) {
-      if (options?.onlyOneDepth) {
-        return [...source];
-      } else {
-        return source.map((item) => this._clone(item, options));
-      }
-    }
-    if (source instanceof Map) {
-      return Array.from(source.keys()).toMap(
-        (key) => this._clone(key, options),
-        (key) => this._clone(source.get(key), options),
-      );
-    }
+
+    // Immutable-like 타입들 (내부에 object 참조 없음)
     if (source instanceof Date) {
       return new Date(source.getTime());
     }
+
     if (source instanceof DateTime) {
       return new DateTime(source.tick);
     }
+
     if (source instanceof DateOnly) {
       return new DateOnly(source.tick);
     }
+
     if (source instanceof Time) {
       return new Time(source.tick);
     }
+
     if (source instanceof Uuid) {
       return new Uuid(source.toString());
     }
-    if (typeof source === "object") {
-      if (options?.onlyOneDepth) {
-        return { ...source };
-      } else {
-        const result: Record<string, any> = {};
-        Object.setPrototypeOf(result, source.constructor.prototype);
-        const currPrevClones = prevClones ?? [];
-        currPrevClones.push({
-          source,
-          clone: result,
-        });
-        for (const key of Object.keys(source).filter(
-          (sourceKey) => options?.excludes?.includes(sourceKey) !== true,
-        )) {
-          if (source[key] === undefined) {
-            result[key] = undefined;
-          } else if (options?.useRefTypes?.includes(source[key].constructor) === true) {
-            result[key] = source[key];
-          } else {
-            const matchedPrevClone = prevClones?.single((item) => item.source === source[key]);
-            if (matchedPrevClone !== undefined) {
-              result[key] = matchedPrevClone.clone;
-            } else {
-              result[key] = this._clone(
-                source[key],
-                { useRefTypes: options?.useRefTypes },
-                currPrevClones,
-              );
-            }
-          }
-        }
 
-        return result;
+    // 순환 참조 체크
+    const currPrevClones = prevClones ?? new WeakMap<object, any>();
+    if (currPrevClones.has(source)) {
+      return currPrevClones.get(source);
+    }
+
+    if (source instanceof Buffer) {
+      const result = Buffer.from(source);
+      currPrevClones.set(source, result);
+      return result;
+    }
+
+    if (source instanceof Array) {
+      if (options?.onlyOneDepth) {
+        return [...source];
+      }
+
+      const result: any[] = [];
+      currPrevClones.set(source, result);
+      for (const item of source) {
+        result.push(this._clone(item, options, currPrevClones));
+      }
+      return result;
+    }
+
+    if (source instanceof Map) {
+      const result = new Map();
+      currPrevClones.set(source, result);
+      for (const [key, value] of source) {
+        result.set(
+          this._clone(key, options, currPrevClones),
+          this._clone(value, options, currPrevClones),
+        );
+      }
+      return result;
+    }
+
+    // 기타 Object
+    if (options?.onlyOneDepth) {
+      return { ...source };
+    }
+
+    const result: Record<string, any> = {};
+    Object.setPrototypeOf(result, source.constructor.prototype);
+    currPrevClones.set(source, result);
+
+    for (const key of Object.keys(source)) {
+      if (options?.excludes?.includes(key)) {
+        continue;
+      }
+
+      const value = source[key];
+      if (value == null) {
+        result[key] = undefined;
+      } else if (options?.useRefTypes?.includes(value.constructor)) {
+        result[key] = value;
+      } else {
+        result[key] = this._clone(
+          source[key],
+          { useRefTypes: options?.useRefTypes },
+          currPrevClones,
+        );
       }
     }
 
-    return source;
+    return result;
   }
 
   static merge<T, P>(

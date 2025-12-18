@@ -99,7 +99,7 @@ export class SdServiceProtocolV1 {
    */
   decode(json: string): ISdServiceProtocolDecodeResult {
     // 1. 파싱
-    const packet = JsonConvert.parse(json) as TSdServiceMessage;
+    const packet = JsonConvert.parse<TSdServiceMessage>(json);
 
     // 2. 분할 패킷인 경우 (조립)
     if (packet.name === "request-split" || packet.name === "response-split") {

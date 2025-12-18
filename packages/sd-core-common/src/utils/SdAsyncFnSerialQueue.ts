@@ -40,9 +40,6 @@ export class SdAsyncFnSerialQueue extends EventEmitter {
           await Wait.time(this._gap);
         }
       }
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error(String(err));
-      this.emit("error", new SdError(error, "큐 내부 오류 발생"));
     } finally {
       this._isQueueRunning = false;
     }

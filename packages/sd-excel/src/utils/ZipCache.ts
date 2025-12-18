@@ -87,4 +87,8 @@ export class ZipCache {
 
     return await this._zip.compressAsync();
   }
+
+  async closeAsync(): Promise<void> {
+    await this._zip.closeAsync();
+  }
 }

@@ -145,7 +145,7 @@ export class SdServiceProtocol {
       this._accumulator.delete(uuid); // 메모리 해제
 
       const resultBuffer = Buffer.concat(accItem.buffers.filterExists());
-      const messageArr = JsonConvert.parse(resultBuffer.toString());
+      const messageArr = JsonConvert.parse<[any, any]>(resultBuffer.toString());
       return {
         type: "complete",
         uuid: uuid,

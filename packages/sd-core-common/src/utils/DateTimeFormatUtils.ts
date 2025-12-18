@@ -1,106 +1,139 @@
 export class DateTimeFormatUtils {
-  static format(format: string, args: {
-    year?: number;
-    month?: number;
-    day?: number;
-    hour?: number;
-    minute?: number;
-    second?: number;
-    millisecond?: number;
-    timezoneOffsetMinutes?: number;
-  }): string {
-    const year = args.year;
-    const month = args.month;
-    const day = args.day;
-    const hour = args.hour;
-    const minute = args.minute;
-    const second = args.second;
-    const millisecond = args.millisecond;
-    const offsetHour = args.timezoneOffsetMinutes !== undefined
-      ? Math.floor(args.timezoneOffsetMinutes / 60)
-      : undefined;
-    const offsetMinute = args.timezoneOffsetMinutes !== undefined
-      ? args.timezoneOffsetMinutes % 60
-      : undefined;
-    const week = (year !== undefined && month !== undefined && day !== undefined)
-      ? new Date(year, month - 1, day).getDay()
-      : undefined;
+  // 정규식 캐싱 (클래스 로드 시 1회만 생성)
+  private static readonly _patterns = {
+    yyyy: /yyyy/g,
+    yy: /yy/g,
+    MM: /MM/g,
+    M: /M/g,
+    ddd: /ddd/g,
+    dd: /dd/g,
+    d: /d/g,
+    tt: /tt/g,
+    hh: /hh/g,
+    h: /h/g,
+    HH: /HH/g,
+    H: /H/g,
+    mm: /mm/g,
+    m: /m/g,
+    ss: /ss/g,
+    s: /s/g,
+    fff: /fff/g,
+    ff: /ff/g,
+    f: /f/g,
+    zzz: /zzz/g,
+    zz: /zz/g,
+    z: /z/g,
+  };
 
-    const weekString
-      = week === 0 ? "일"
-      : week === 1 ? "월"
-        : week === 2 ? "화"
-          : week === 3 ? "수"
-            : week === 4 ? "목"
-              : week === 5 ? "금"
-                : week === 6 ? "토"
-                  : undefined;
+  private static readonly _weekStrings = ["일", "월", "화", "수", "목", "금", "토"];
+
+  static format(
+    format: string,
+    args: {
+      year?: number;
+      month?: number;
+      day?: number;
+      hour?: number;
+      minute?: number;
+      second?: number;
+      millisecond?: number;
+      timezoneOffsetMinutes?: number;
+    },
+  ): string {
+    const { year, month, day, hour, minute, second, millisecond, timezoneOffsetMinutes } = args;
+
+    const offsetHour =
+      timezoneOffsetMinutes !== undefined ? Math.floor(timezoneOffsetMinutes / 60) : undefined;
+    const offsetMinute =
+      timezoneOffsetMinutes !== undefined ? timezoneOffsetMinutes % 60 : undefined;
+
+    const week =
+      year !== undefined && month !== undefined && day !== undefined
+        ? new Date(year, month - 1, day).getDay()
+        : undefined;
 
     let result = format;
+
+    // 연도
     if (year !== undefined) {
-      result = result.replace(/yyyy/g, year.toString());
-      result = result.replace(/yy/g, year.toString().substring(2, 4));
+      const yearStr = year.toString();
+      result = result.replace(DateTimeFormatUtils._patterns.yyyy, yearStr);
+      result = result.replace(DateTimeFormatUtils._patterns.yy, yearStr.substring(2, 4));
     }
 
+    // 월
     if (month !== undefined) {
-      result = result.replace(/MM/g, month.toString().padStart(2, "0"));
-      result = result.replace(/M/g, month.toString());
+      const monthStr = month.toString();
+      result = result.replace(DateTimeFormatUtils._patterns.MM, monthStr.padStart(2, "0"));
+      result = result.replace(DateTimeFormatUtils._patterns.M, monthStr);
     }
 
-    if (weekString !== undefined) {
-      result = result.replace(/ddd/g, weekString);
+    // 요일
+    if (week !== undefined) {
+      result = result.replace(
+        DateTimeFormatUtils._patterns.ddd,
+        DateTimeFormatUtils._weekStrings[week],
+      );
     }
 
+    // 일
     if (day !== undefined) {
-      result = result.replace(/dd/g, day.toString().padStart(2, "0"));
-      result = result.replace(/d/g, day.toString());
+      const dayStr = day.toString();
+      result = result.replace(DateTimeFormatUtils._patterns.dd, dayStr.padStart(2, "0"));
+      result = result.replace(DateTimeFormatUtils._patterns.d, dayStr);
     }
 
+    // 시간
     if (hour !== undefined) {
-      result = result.replace(/tt/g, hour < 12 ? "오전" : "오후");
+      result = result.replace(DateTimeFormatUtils._patterns.tt, hour < 12 ? "오전" : "오후");
 
-      if (hour === 12) {
-        result = result.replace(/hh/g, "12");
-        result = result.replace(/h/g, "12");
-      }
-      else {
-        result = result.replace(/hh/g, (hour % 12).toString().padStart(2, "0"));
-        result = result.replace(/h/g, (hour % 12).toString());
-      }
+      const hour12 = hour % 12 || 12;
+      const hour12Str = hour12.toString();
+      result = result.replace(DateTimeFormatUtils._patterns.hh, hour12Str.padStart(2, "0"));
+      result = result.replace(DateTimeFormatUtils._patterns.h, hour12Str);
 
-      result = result.replace(/HH/g, hour.toString().padStart(2, "0"));
-      result = result.replace(/H/g, hour.toString());
+      const hourStr = hour.toString();
+      result = result.replace(DateTimeFormatUtils._patterns.HH, hourStr.padStart(2, "0"));
+      result = result.replace(DateTimeFormatUtils._patterns.H, hourStr);
     }
 
+    // 분
     if (minute !== undefined) {
-      result = result.replace(/mm/g, minute.toString().padStart(2, "0"));
-      result = result.replace(/m/g, minute.toString());
+      const minuteStr = minute.toString();
+      result = result.replace(DateTimeFormatUtils._patterns.mm, minuteStr.padStart(2, "0"));
+      result = result.replace(DateTimeFormatUtils._patterns.m, minuteStr);
     }
 
+    // 초
     if (second !== undefined) {
-      result = result.replace(/ss/g, second.toString().padStart(2, "0"));
-      result = result.replace(/s/g, second.toString());
+      const secondStr = second.toString();
+      result = result.replace(DateTimeFormatUtils._patterns.ss, secondStr.padStart(2, "0"));
+      result = result.replace(DateTimeFormatUtils._patterns.s, secondStr);
     }
 
+    // 밀리초
     if (millisecond !== undefined) {
-      result = result.replace(/fff/g, millisecond.toString().padStart(3, "0"));
-      result = result.replace(/ff/g, millisecond.toString().padStart(3, "0").substring(0, 2));
-      result = result.replace(/f/g, millisecond.toString().padStart(3, "0").substring(0, 1));
+      const msStr = millisecond.toString().padStart(3, "0");
+      result = result.replace(DateTimeFormatUtils._patterns.fff, msStr);
+      result = result.replace(DateTimeFormatUtils._patterns.ff, msStr.substring(0, 2));
+      result = result.replace(DateTimeFormatUtils._patterns.f, msStr.substring(0, 1));
     }
 
+    // 타임존
     if (offsetHour !== undefined && offsetMinute !== undefined) {
+      const sign = offsetHour >= 0 ? "+" : "-";
+      const absHour = Math.abs(offsetHour);
+      const absMinute = Math.abs(offsetMinute);
+
       result = result.replace(
-        /zzz/g,
-        (offsetHour > 0 ? "+" : "-")
-        + Math.abs(offsetHour).toString().padStart(2, "0")
-        + ":"
-        + Math.abs(offsetMinute).toString().padStart(2, "0"),
+        DateTimeFormatUtils._patterns.zzz,
+        `${sign}${absHour.toString().padStart(2, "0")}:${absMinute.toString().padStart(2, "0")}`,
       );
       result = result.replace(
-        /zz/g,
-        (offsetHour > 0 ? "+" : "-") + Math.abs(offsetHour).toString().padStart(2, "0"),
+        DateTimeFormatUtils._patterns.zz,
+        `${sign}${absHour.toString().padStart(2, "0")}`,
       );
-      result = result.replace(/z/g, (offsetHour > 0 ? "+" : "-") + Math.abs(offsetHour).toString());
+      result = result.replace(DateTimeFormatUtils._patterns.z, `${sign}${absHour}`);
     }
 
     return result;

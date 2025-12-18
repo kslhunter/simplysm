@@ -89,7 +89,11 @@ import {
       </div>
     }
 
-    <div class="_sheet-container flex-fill" (scroll)="onContainerScroll()" [style]="contentStyle()">
+    <div
+      class="_sheet-container flex-fill"
+      (scroll.passive)="onContainerScroll()"
+      [style]="contentStyle()"
+    >
       <table (sdResize)="onSheetResize($event)">
         <thead>
           @for (headerRow of layoutEngine.headerDefTable(); let r = $index; track r) {

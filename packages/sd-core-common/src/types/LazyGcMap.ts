@@ -2,8 +2,8 @@ export class LazyGcMap<K, V> {
   // 실제 데이터와 마지막 접근 시간을 함께 저장
   private readonly _map = new Map<K, { value: V; lastAccess: number }>();
 
-  // GC 타이머 (any: Node.js와 브라우저 호환성)
-  private _gcTimer?: any;
+  // GC 타이머
+  private _gcTimer?: ReturnType<typeof setInterval>;
 
   constructor(
     private readonly _options: {

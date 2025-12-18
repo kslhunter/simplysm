@@ -117,10 +117,11 @@ export abstract class TransferableConvert {
 
     // 3. Map 재귀
     if (obj instanceof Map) {
+      const newMap = new Map();
       for (const [k, v] of obj) {
-        obj.set(this.decode(k), this.decode(v));
+        newMap.set(this.decode(k), this.decode(v));
       }
-      return obj;
+      return newMap;
     }
 
     // 4. Set 재귀

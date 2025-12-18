@@ -163,11 +163,13 @@ export abstract class AutoUpdate {
       opt.log(`최신버전 파일 다운로드중...`);
       const buffer = await NetUtils.downloadBufferAsync(
         opt.serviceClient.hostUrl + serverVersionInfo.downloadPath,
-        (progress) => {
-          const progressText = ((progress.receivedLength * 100) / progress.contentLength).toFixed(
-            2,
-          );
-          opt.log(`최신버전 파일 다운로드중...(${progressText}%)`);
+        {
+          progressCallback: (progress) => {
+            const progressText = ((progress.receivedLength * 100) / progress.contentLength).toFixed(
+              2,
+            );
+            opt.log(`최신버전 파일 다운로드중...(${progressText}%)`);
+          },
         },
       );
       const storagePath = await FileSystem.getStoragePathAsync("appCache");

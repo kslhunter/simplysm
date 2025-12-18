@@ -60,7 +60,7 @@ export class SdServiceSocketV1 extends EventEmitter {
     return await new Promise<string>((resolve, reject) => {
       const tempListener = (resBuf: Buffer): void => {
         try {
-          let res = JsonConvert.parse(resBuf.toString());
+          let res = JsonConvert.parse<TSdServiceC2SMessage>(resBuf.toString());
 
           if (res.name === "client-get-id-response") {
             socket.off("message", tempListener);

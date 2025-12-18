@@ -1,10 +1,30 @@
 export class Uuid {
-  static new(): Uuid {
-    /*if (typeof crypto !== "undefined" && crypto.randomUUID) {
-      return new Uuid(crypto.randomUUID());
-    }*/
+  // 0x00 ~ 0xFF에 대한 hex 문자열 미리 계산 (256개)
+  private static readonly _hexTable: string[] = Array.from(
+    { length: 256 },
+    (_, i) => i.toString(16).padStart(2, "0")
+  );
 
-    // Fallback: 비보안 컨텍스트용
+  static new(): Uuid {
+    if (typeof crypto !== "undefined" && "getRandomValues" in crypto) {
+      const bytes = new Uint8Array(16);
+      crypto.getRandomValues(bytes);
+
+      bytes[6] = (bytes[6] & 0x0f) | 0x40;
+      bytes[8] = (bytes[8] & 0x3f) | 0x80;
+
+      // lookup table 사용 - 함수 호출 없이 직접 인덱싱
+      const h = Uuid._hexTable;
+      return new Uuid(
+        h[bytes[0]] + h[bytes[1]] + h[bytes[2]] + h[bytes[3]] + "-" +
+        h[bytes[4]] + h[bytes[5]] + "-" +
+        h[bytes[6]] + h[bytes[7]] + "-" +
+        h[bytes[8]] + h[bytes[9]] + "-" +
+        h[bytes[10]] + h[bytes[11]] + h[bytes[12]] + h[bytes[13]] + h[bytes[14]] + h[bytes[15]]
+      );
+    }
+
+    // Fallback (거의 도달하지 않음)
     return new Uuid(
       "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
         const r = (Math.random() * 16) | 0;
