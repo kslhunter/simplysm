@@ -7,11 +7,6 @@ export class SdError extends Error {
   constructor(innerError: Error, ...messages: string[]);
   constructor(...messages: string[]);
   constructor(arg1: Error | string, ...messages: string[]) {
-    if (typeof arg1 === "object" && "message" in arg1) {
-      super([arg1.message, ...messages].reverse().join(" => "));
-    } else {
-    }
-
     super(
       [typeof arg1 === "object" && "message" in arg1 ? arg1.message : arg1, ...messages]
         .reverse()
