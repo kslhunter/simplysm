@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/cordova-plugin-file-system",
-  "version": "12.16.17",
+  "version": "12.16.18",
   "deprecated": "이 패키지는 더 이상 유지보수되지 않습니다. (Capacitor로 전환)",
   "description": "심플리즘 패키지 - Cordova File System Plugin",
   "author": "김석래",
