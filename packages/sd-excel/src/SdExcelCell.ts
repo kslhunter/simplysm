@@ -120,7 +120,7 @@ export class SdExcelCell {
         numFmtId: SdExcelUtils.convertNumFmtNameToId("Time").toString(),
       });
     } else {
-      throw new Error(`[${this.addr}] 지원되지 않는 타입입니다: ${val}`);
+      throw new Error(`[${SdExcelUtils.stringifyAddr(this.addr)}] 지원되지 않는 타입입니다: ${val}`);
     }
   }
 
@@ -144,7 +144,7 @@ export class SdExcelCell {
       return NumberUtils.parseFloat(cellVal);
     } else if (cellType === "e") {
       throw new Error(
-        `[${this.addr}] 타입분석 실패\n- 셀 내용에서, 에러가 감지되었습니다.(${cellVal})`,
+        `[${SdExcelUtils.stringifyAddr(this.addr)}] 타입분석 실패\n- 셀 내용에서, 에러가 감지되었습니다.(${cellVal})`,
       );
     } else if (cellType === undefined) {
       const cellStyleId = wsData.getCellStyleId(this.addr);
@@ -156,7 +156,7 @@ export class SdExcelCell {
       const numFmtId = styleData.get(cellStyleId).numFmtId;
       if (numFmtId === undefined) {
         return NumberUtils.parseFloat(cellVal);
-        // throw new Error(`[${this.addr}] 타입분석 실패\n- [numFmtId: ${numFmtId}]에 대한 형식을 알 수 없습니다.`);
+        // throw new Error(`[${SdExcelUtils.stringifyAddr(this.addr)}] 타입분석 실패\n- [numFmtId: ${numFmtId}]에 대한 형식을 알 수 없습니다.`);
       }
 
       const numFmtCode = styleData.getNumFmtCode(numFmtId);
@@ -185,10 +185,10 @@ export class SdExcelCell {
         const tick = SdExcelUtils.convertNumberToTimeTick(dateNum);
         return new Time(tick);
       } else {
-        throw new Error(`[${this.addr}] 타입분석 실패 (${numFmt})`);
+        throw new Error(`[${SdExcelUtils.stringifyAddr(this.addr)}] 타입분석 실패 (${numFmt})`);
       }
     } else {
-      throw new Error(`[${this.addr}] 지원되지 않는 타입입니다: ${cellType}`);
+      throw new Error(`[${SdExcelUtils.stringifyAddr(this.addr)}] 지원되지 않는 타입입니다: ${cellType}`);
     }
   }
 

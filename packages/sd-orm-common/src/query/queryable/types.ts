@@ -29,12 +29,6 @@ export type TSelectEntity<T> = {
       : TEntity<T[K]>;
 };
 
-/*export type TEntityUnwrap<T> = {
-  [K in keyof T]: T[K] extends QueryUnit<infer A> ? A
-    : T[K] extends (infer A)[] ? TEntityUnwrap<A>[]
-      : T[K] extends TQueryValue ? T[K]
-        : (TEntityUnwrap<T[K]> | undefined);
-};*/
 export type TEntityUnwrap<T> = {
   [K in keyof T]: T[K] extends QueryUnit<infer A>
     ? A

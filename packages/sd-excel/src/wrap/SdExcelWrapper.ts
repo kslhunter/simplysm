@@ -88,13 +88,13 @@ export class SdExcelWrapper<VT extends TExcelValidObject> {
     const defaultFieldConf =
       typeof this._fieldConf === "function" ? this._fieldConf() : this._fieldConf;
     const headers = Object.keys(defaultFieldConf).map((key) => defaultFieldConf[key].displayName);
-    const wsdt = (await ws.getDataTableAsync({
+    const wsdt = await ws.getDataTableAsync({
       usableHeaderNameFn: (headerName) => headers.includes(headerName),
-    })) as any[];
+    });
 
     const excelItems: TExcelValidateObjectRecord<VT>[] = [];
     for (const item of wsdt) {
-      const fieldConf = this._getFieldConf(item);
+      const fieldConf = this._getFieldConf(item as any);
 
       const firstNotNullFieldKey = Object.keys(fieldConf).first(
         (key) => fieldConf[key].notnull ?? false,

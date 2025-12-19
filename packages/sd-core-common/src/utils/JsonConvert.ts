@@ -59,7 +59,7 @@ export class JsonConvert {
     return result1;
   }
 
-  static parse<T = unknown>(json: string): T {
+  static parse<T = any>(json: string): T {
     try {
       return ObjectUtils.nullToUndefined(
         JSON.parse(json, (key, value) => {

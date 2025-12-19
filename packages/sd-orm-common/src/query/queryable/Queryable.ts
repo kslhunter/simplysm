@@ -26,6 +26,7 @@ import {
   IQueryableDef,
   TEntity,
   TEntityUnwrap,
+  /*TEntityUnwrap,*/
   TEntityValue,
   TEntityValueOrQueryableOrArray,
   TIncludeEntity,
@@ -456,7 +457,7 @@ export class Queryable<D extends DbContext, T> {
     joinTypeOrQrs: Type<J> | Queryable<D, J>[],
     as: A,
     fwd: (qr: Queryable<D, J>, en: TEntity<T>) => Queryable<D, R>,
-  ): Queryable<D, T & { [K in A]: R[] }> {
+  ): Queryable<D, Omit<T, A> & { [K in A]: R[] }> {
     const realAs = this._as !== undefined ? this._as + "." + as : as;
 
     if (this._def.join?.some((item) => item.as === this.db.qb.wrap(`TBL.${realAs}`))) {
@@ -472,7 +473,7 @@ export class Queryable<D extends DbContext, T> {
     const joinQueryable = fwd(joinTableQueryable, this._entity);
     const joinEntity = this._getParentEntity(joinQueryable._entity, realAs, undefined);
 
-    const entity = { ...this._entity } as TEntity<T & { [K in A]: R[] }>;
+    const entity = { ...this._entity } as TEntity<Omit<T, A> & { [K in A]: R[] }>;
     this._setEntityChainValue(entity, as, [joinEntity]);
 
     const result = new Queryable(this.db, this as any, entity);

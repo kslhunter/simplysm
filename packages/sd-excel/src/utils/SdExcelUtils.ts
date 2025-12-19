@@ -90,13 +90,13 @@ export class SdExcelUtils {
   static convertNumFmtCodeToName(numFmtCode: string): TSdExcelNumberFormat {
     if (numFmtCode === "General") {
       return "number";
-    } else if (/yy/i.test(numFmtCode) || /dd/i.test(numFmtCode)) {
-      return "DateTime";
     } else if (
       (/yy/i.test(numFmtCode) || /dd/i.test(numFmtCode)) &&
       (/hh/i.test(numFmtCode) || /ss/i.test(numFmtCode))
     ) {
       return "DateOnly";
+    } else if (/yy/i.test(numFmtCode) || /dd/i.test(numFmtCode)) {
+      return "DateTime";
     } else if (/^[0.#,_;()\-\\$ @*?"]*$/.test(numFmtCode.split("]").last()!)) {
       return "number";
     } else if (numFmtCode.split("]").last()!.includes("#,0")) {

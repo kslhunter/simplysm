@@ -90,5 +90,6 @@ export class ZipCache {
 
   async closeAsync(): Promise<void> {
     await this._zip.closeAsync();
+    this._cache.clear();
   }
 }

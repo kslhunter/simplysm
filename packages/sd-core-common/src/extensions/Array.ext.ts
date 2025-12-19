@@ -112,11 +112,11 @@ interface IReadonlyArrayExt<T> {
 
   sum(selector?: (item: T, index: number) => number): number;
 
-  min(): T extends (number | string) ? T | undefined : never;
+  min(): T extends number | string ? T | undefined : never;
 
   min<P extends number | string>(selector?: (item: T, index: number) => P): P | undefined;
 
-  max(): T extends (number | string) ? T | undefined : never;
+  max(): T extends number | string ? T | undefined : never;
 
   max<P extends number | string>(selector?: (item: T, index: number) => P): P | undefined;
 
@@ -235,7 +235,7 @@ const arrayReadonlyExtensions: IReadonlyArrayExt<any> & ThisType<any[]> = {
 
   mapMany<T, R>(selector?: (item: T, index: number) => R[]): T | R[] {
     const arr = selector ? this.map(selector) : this;
-    return arr.length > 0 ? arr.reduce((p, n) => (p ?? []).concat(n ?? [])) : [];
+    return arr.flat().filterExists();
   },
 
   async mapManyAsync<T, R>(selector?: (item: T, index: number) => Promise<R[]>): Promise<T | R[]> {
@@ -260,7 +260,7 @@ const arrayReadonlyExtensions: IReadonlyArrayExt<any> & ThisType<any[]> = {
       const keyObj = keySelector(this[i], i);
       const valueObj = valueSelector !== undefined ? valueSelector(this[i], i) : this[i];
 
-      const existsRecord = result.single((item) => ObjectUtils.equal(item.key, keyObj));
+      const existsRecord = result.find((item) => ObjectUtils.equal(item.key, keyObj));
       if (existsRecord !== undefined) {
         existsRecord.values.push(valueObj);
       } else {
@@ -416,11 +416,11 @@ const arrayReadonlyExtensions: IReadonlyArrayExt<any> & ThisType<any[]> = {
 
     for (const item of this) {
       // primitive 타입은 빠른 경로
-      if (item === null || typeof item !== 'object') {
+      if (item === null || typeof item !== "object") {
         const type = typeof item;
 
         // symbol, function은 Map key로 직접 사용 (identity 비교)
-        if (type === 'symbol' || type === 'function') {
+        if (type === "symbol" || type === "function") {
           if (!result.includes(item)) {
             result.push(item);
           }
@@ -428,9 +428,9 @@ const arrayReadonlyExtensions: IReadonlyArrayExt<any> & ThisType<any[]> = {
         }
 
         // 나머지 primitive는 타입 prefix + 특수 케이스 처리
-        let key = type + ':';
+        let key = type + ":";
         if (Object.is(item, -0)) {
-          key += '-0';
+          key += "-0";
         } else {
           key += String(item);
         }
@@ -661,9 +661,13 @@ const arrayMutableExtensions: IMutableArrayExt<any> & ThisType<any[]> = {
     // 뒤에서부터 순회, 앞에 같은 요소가 있으면 제거
     for (let i = this.length - 1; i >= 0; i--) {
       const item = this[i];
-      const hasDuplicateBefore = this.slice(0, i).some((prev) =>
-        matchAddress === true ? prev === item : ObjectUtils.equal(prev, item),
-      );
+      let hasDuplicateBefore = false;
+      for (let j = 0; j < i; j++) {
+        if (matchAddress === true ? this[j] === item : ObjectUtils.equal(this[j], item)) {
+          hasDuplicateBefore = true;
+          break;
+        }
+      }
       if (hasDuplicateBefore) {
         this.splice(i, 1);
       }

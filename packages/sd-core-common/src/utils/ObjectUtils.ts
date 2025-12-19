@@ -306,9 +306,9 @@ export class ObjectUtils {
       onlyOneDepth?: boolean;
     },
   ): boolean {
-    if (source === target) {
-      return true;
-    }
+    if (source === target) return true;
+    if (source == null || target == null) return false;
+    if (typeof source !== typeof target) return false;
 
     if (source instanceof Date && target instanceof Date) {
       return source.getTime() === target.getTime();
